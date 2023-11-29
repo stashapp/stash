@@ -5,22 +5,27 @@ import {
   MultiCriterionInput,
 } from "src/core/generated-graphql";
 import { ILabeledId, ILabeledValueListValue } from "../types";
-import { Criterion, CriterionOption } from "./criterion";
+import { Criterion, CriterionOption, IEncodedCriterion } from "./criterion";
 
 const modifierOptions = [
   CriterionModifier.IncludesAll,
   CriterionModifier.Includes,
   CriterionModifier.Equals,
+  CriterionModifier.IsNull,
+  CriterionModifier.NotNull,
 ];
 
 const defaultModifier = CriterionModifier.IncludesAll;
 
+const inputType = "performers";
+
 export const PerformersCriterionOption = new CriterionOption({
   messageID: "performers",
   type: "performers",
-  parameterName: "performers",
   modifierOptions,
   defaultModifier,
+  inputType,
+  makeCriterion: () => new PerformersCriterion(),
 });
 
 export class PerformersCriterion extends Criterion<ILabeledValueListValue> {
@@ -28,20 +33,50 @@ export class PerformersCriterion extends Criterion<ILabeledValueListValue> {
     super(PerformersCriterionOption, { items: [], excluded: [] });
   }
 
-  public setValueFromQueryString(v: ILabeledId[] | ILabeledValueListValue) {
-    // #3619 - the format of performer value was changed from an array
-    // to an object. Check for both formats.
-    if (Array.isArray(v)) {
-      this.value = { items: v, excluded: [] };
-    } else {
-      this.value = {
-        items: v.items || [],
-        excluded: v.excluded || [],
-      };
+  override get modifier(): CriterionModifier {
+    return this._modifier;
+  }
+  override set modifier(value: CriterionModifier) {
+    this._modifier = value;
+
+    // excluded only makes sense for includes and includes all
+    // reset it for other modifiers
+    if (
+      value !== CriterionModifier.Includes &&
+      value !== CriterionModifier.IncludesAll
+    ) {
+      this.value.excluded = [];
     }
   }
 
-  public getLabelValue(_intl: IntlShape): string {
+  public setFromEncodedCriterion(
+    encodedCriterion: IEncodedCriterion<ILabeledId[] | ILabeledValueListValue>
+  ) {
+    const { modifier, value } = encodedCriterion;
+
+    // #3619 - the format of performer value was changed from an array
+    // to an object. Check for both formats.
+    if (Array.isArray(value)) {
+      this.value = { items: value, excluded: [] };
+    } else if (value !== undefined) {
+      this.value = {
+        items: value.items || [],
+        excluded: value.excluded || [],
+      };
+    }
+
+    // if the previous modifier was excludes, replace it with the equivalent includes criterion
+    // this is what is done on the backend
+    if (modifier === CriterionModifier.Excludes) {
+      this.modifier = CriterionModifier.Includes;
+      this.value.excluded = [...this.value.excluded, ...this.value.items];
+      this.value.items = [];
+    } else {
+      this.modifier = modifier;
+    }
+  }
+
+  protected getLabelValue(_intl: IntlShape): string {
     return this.value.items.map((v) => v.label).join(", ");
   }
 
@@ -60,8 +95,7 @@ export class PerformersCriterion extends Criterion<ILabeledValueListValue> {
   public isValid(): boolean {
     if (
       this.modifier === CriterionModifier.IsNull ||
-      this.modifier === CriterionModifier.NotNull ||
-      this.modifier === CriterionModifier.Equals
+      this.modifier === CriterionModifier.NotNull
     ) {
       return true;
     }
@@ -73,22 +107,29 @@ export class PerformersCriterion extends Criterion<ILabeledValueListValue> {
   }
 
   public getLabel(intl: IntlShape): string {
-    const modifierString = Criterion.getModifierLabel(intl, this.modifier);
+    let id = "criterion_modifier.format_string";
+    let modifierString = Criterion.getModifierLabel(intl, this.modifier);
     let valueString = "";
+    let excludedString = "";
 
     if (
       this.modifier !== CriterionModifier.IsNull &&
       this.modifier !== CriterionModifier.NotNull
     ) {
       valueString = this.value.items.map((v) => v.label).join(", ");
-    }
 
-    let id = "criterion_modifier.format_string";
-    let excludedString = "";
-
-    if (this.value.excluded && this.value.excluded.length > 0) {
-      id = "criterion_modifier.format_string_excludes";
-      excludedString = this.value.excluded.map((v) => v.label).join(", ");
+      if (this.value.excluded && this.value.excluded.length > 0) {
+        if (this.value.items.length === 0) {
+          modifierString = Criterion.getModifierLabel(
+            intl,
+            CriterionModifier.Excludes
+          );
+          valueString = this.value.excluded.map((v) => v.label).join(", ");
+        } else {
+          id = "criterion_modifier.format_string_excludes";
+          excludedString = this.value.excluded.map((v) => v.label).join(", ");
+        }
+      }
     }
 
     return intl.formatMessage(

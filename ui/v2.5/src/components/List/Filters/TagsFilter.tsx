@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { useFindTagsQuery } from "src/core/generated-graphql";
 import { HierarchicalObjectsFilter } from "./SelectableFilter";
 import { StudiosCriterion } from "src/models/list-filter/criteria/studios";
@@ -8,8 +8,8 @@ interface ITagsFilter {
   setCriterion: (c: StudiosCriterion) => void;
 }
 
-function useStudioQuery(query: string) {
-  const results = useFindTagsQuery({
+function useTagQuery(query: string) {
+  const { data, loading } = useFindTagsQuery({
     variables: {
       filter: {
         q: query,
@@ -18,14 +18,18 @@ function useStudioQuery(query: string) {
     },
   });
 
-  return (
-    results.data?.findTags.tags.map((p) => {
-      return {
-        id: p.id,
-        label: p.name,
-      };
-    }) ?? []
+  const results = useMemo(
+    () =>
+      data?.findTags.tags.map((p) => {
+        return {
+          id: p.id,
+          label: p.name,
+        };
+      }) ?? [],
+    [data]
   );
+
+  return { results, loading };
 }
 
 const TagsFilter: React.FC<ITagsFilter> = ({ criterion, setCriterion }) => {
@@ -33,7 +37,7 @@ const TagsFilter: React.FC<ITagsFilter> = ({ criterion, setCriterion }) => {
     <HierarchicalObjectsFilter
       criterion={criterion}
       setCriterion={setCriterion}
-      queryHook={useStudioQuery}
+      useResults={useTagQuery}
     />
   );
 };

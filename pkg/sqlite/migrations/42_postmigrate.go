@@ -10,7 +10,7 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
+	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/sqlite"
 )
 
@@ -136,7 +136,7 @@ func (m *schema42Migrator) migratePerformerAliases(id int, aliases string) error
 	}
 
 	// remove duplicates
-	aliasList = stringslice.StrAppendUniques(nil, aliasList)
+	aliasList = sliceutil.AppendUniques(nil, aliasList)
 
 	// insert aliases into table
 	for _, alias := range aliasList {

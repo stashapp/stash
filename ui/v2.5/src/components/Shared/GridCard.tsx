@@ -72,7 +72,6 @@ export const GridCard: React.FC<ICardProps> = (props: ICardProps) => {
           checked={props.selected}
           onChange={() => props.onSelectedChanged!(!props.selected, shiftKey)}
           onClick={(event: React.MouseEvent<HTMLInputElement, MouseEvent>) => {
-            // eslint-disable-next-line prefer-destructuring
             shiftKey = event.shiftKey;
             event.stopPropagation();
           }}
@@ -85,6 +84,7 @@ export const GridCard: React.FC<ICardProps> = (props: ICardProps) => {
     if (props.interactiveHeatmap) {
       return (
         <img
+          loading="lazy"
           src={props.interactiveHeatmap}
           alt="interactive heatmap"
           className="interactive-heatmap"

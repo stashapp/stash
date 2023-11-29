@@ -1,13 +1,10 @@
 type Movie {
   id: ID!
-  checksum: String!
   name: String!
   aliases: String
-  """Duration in seconds"""
+  "Duration in seconds"
   duration: Int
   date: String
-  # rating expressed as 1-5
-  rating: Int @deprecated(reason: "Use 1-100 range with rating100")
   # rating expressed as 1-100
   rating100: Int
   studio: Studio
@@ -19,27 +16,25 @@ type Movie {
 
   front_image_path: String # Resolver
   back_image_path: String # Resolver
-  scene_count: Int # Resolver
+  scene_count: Int! # Resolver
   scenes: [Scene!]!
 }
 
 input MovieCreateInput {
   name: String!
   aliases: String
-  """Duration in seconds"""
+  "Duration in seconds"
   duration: Int
   date: String
-  # rating expressed as 1-5
-  rating: Int @deprecated(reason: "Use 1-100 range with rating100")
   # rating expressed as 1-100
   rating100: Int
   studio_id: ID
   director: String
   synopsis: String
   url: String
-  """This should be a URL or a base64 encoded data URL"""
+  "This should be a URL or a base64 encoded data URL"
   front_image: String
-  """This should be a URL or a base64 encoded data URL"""
+  "This should be a URL or a base64 encoded data URL"
   back_image: String
 }
 
@@ -49,25 +44,21 @@ input MovieUpdateInput {
   aliases: String
   duration: Int
   date: String
-  # rating expressed as 1-5
-  rating: Int @deprecated(reason: "Use 1-100 range with rating100")
   # rating expressed as 1-100
   rating100: Int
   studio_id: ID
   director: String
   synopsis: String
   url: String
-  """This should be a URL or a base64 encoded data URL"""
+  "This should be a URL or a base64 encoded data URL"
   front_image: String
-  """This should be a URL or a base64 encoded data URL"""
+  "This should be a URL or a base64 encoded data URL"
   back_image: String
 }
 
 input BulkMovieUpdateInput {
   clientMutationId: String
   ids: [ID!]
-  # rating expressed as 1-5
-  rating: Int @deprecated(reason: "Use 1-100 range with rating100")
   # rating expressed as 1-100
   rating100: Int
   studio_id: ID

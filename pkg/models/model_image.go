@@ -5,26 +5,27 @@ import (
 	"path/filepath"
 	"strconv"
 	"time"
-
-	"github.com/stashapp/stash/pkg/file"
 )
 
 // Image stores the metadata for a single image.
 type Image struct {
 	ID int `json:"id"`
 
-	Title string `json:"title"`
+	Title        string `json:"title"`
+	Code         string `json:"code"`
+	Details      string `json:"details"`
+	Photographer string `json:"photographer"`
 	// Rating expressed in 1-100 scale
-	Rating    *int   `json:"rating"`
-	Organized bool   `json:"organized"`
-	OCounter  int    `json:"o_counter"`
-	StudioID  *int   `json:"studio_id"`
-	URL       string `json:"url"`
-	Date      *Date  `json:"date"`
+	Rating    *int           `json:"rating"`
+	Organized bool           `json:"organized"`
+	OCounter  int            `json:"o_counter"`
+	StudioID  *int           `json:"studio_id"`
+	URLs      RelatedStrings `json:"urls"`
+	Date      *Date          `json:"date"`
 
 	// transient - not persisted
 	Files         RelatedFiles
-	PrimaryFileID *file.ID
+	PrimaryFileID *FileID
 	// transient - path of primary file - empty if no files
 	Path string
 	// transient - checksum of primary file - empty if no files
@@ -38,14 +39,56 @@ type Image struct {
 	PerformerIDs RelatedIDs `json:"performer_ids"`
 }
 
+func NewImage() Image {
+	currentTime := time.Now()
+	return Image{
+		CreatedAt: currentTime,
+		UpdatedAt: currentTime,
+	}
+}
+
+type ImagePartial struct {
+	Title OptionalString
+	Code  OptionalString
+	// Rating expressed in 1-100 scale
+	Rating       OptionalInt
+	URLs         *UpdateStrings
+	Date         OptionalDate
+	Details      OptionalString
+	Photographer OptionalString
+	Organized    OptionalBool
+	OCounter     OptionalInt
+	StudioID     OptionalInt
+	CreatedAt    OptionalTime
+	UpdatedAt    OptionalTime
+
+	GalleryIDs    *UpdateIDs
+	TagIDs        *UpdateIDs
+	PerformerIDs  *UpdateIDs
+	PrimaryFileID *FileID
+}
+
+func NewImagePartial() ImagePartial {
+	currentTime := time.Now()
+	return ImagePartial{
+		UpdatedAt: NewOptionalTime(currentTime),
+	}
+}
+
+func (i *Image) LoadURLs(ctx context.Context, l URLLoader) error {
+	return i.URLs.load(func() ([]string, error) {
+		return l.GetURLs(ctx, i.ID)
+	})
+}
+
 func (i *Image) LoadFiles(ctx context.Context, l FileLoader) error {
-	return i.Files.load(func() ([]file.File, error) {
+	return i.Files.load(func() ([]File, error) {
 		return l.GetFiles(ctx, i.ID)
 	})
 }
 
-func (i *Image) LoadPrimaryFile(ctx context.Context, l file.Finder) error {
-	return i.Files.loadPrimary(func() (file.File, error) {
+func (i *Image) LoadPrimaryFile(ctx context.Context, l FileGetter) error {
+	return i.Files.loadPrimary(func() (File, error) {
 		if i.PrimaryFileID == nil {
 			return nil, nil
 		}
@@ -103,44 +146,4 @@ func (i Image) DisplayName() string {
 	}
 
 	return strconv.Itoa(i.ID)
-}
-
-type ImageCreateInput struct {
-	*Image
-	FileIDs []file.ID
-}
-
-type ImagePartial struct {
-	Title OptionalString
-	// Rating expressed in 1-100 scale
-	Rating    OptionalInt
-	URL       OptionalString
-	Date      OptionalDate
-	Organized OptionalBool
-	OCounter  OptionalInt
-	StudioID  OptionalInt
-	CreatedAt OptionalTime
-	UpdatedAt OptionalTime
-
-	GalleryIDs    *UpdateIDs
-	TagIDs        *UpdateIDs
-	PerformerIDs  *UpdateIDs
-	PrimaryFileID *file.ID
-}
-
-func NewImagePartial() ImagePartial {
-	updatedTime := time.Now()
-	return ImagePartial{
-		UpdatedAt: NewOptionalTime(updatedTime),
-	}
-}
-
-type Images []*Image
-
-func (i *Images) Append(o interface{}) {
-	*i = append(*i, o.(*Image))
-}
-
-func (i *Images) New() interface{} {
-	return &Image{}
 }

@@ -42,9 +42,6 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   excludes
   imageExcludes
   customPerformerImageLocation
-  scraperUserAgent
-  scraperCertCheck
-  scraperCDPPath
   stashBoxes {
     name
     endpoint
@@ -56,6 +53,17 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   liveTranscodeInputArgs
   liveTranscodeOutputArgs
   drawFunscriptHeatmapRange
+
+  scraperPackageSources {
+    name
+    url
+    local_path
+  }
+  pluginPackageSources {
+    name
+    url
+    local_path
+  }
 }
 
 fragment ConfigInterfaceData on ConfigInterfaceResult {
@@ -90,9 +98,11 @@ fragment ConfigInterfaceData on ConfigInterfaceResult {
     performer
     tag
     studio
+    movie
   }
   handyKey
   funscriptOffset
+  useStashHostedFunscript
 }
 
 fragment ConfigDLNAData on ConfigDLNAResult {
@@ -123,6 +133,10 @@ fragment IdentifyMetadataOptionsData on IdentifyMetadataOptions {
   setCoverImage
   setOrganized
   includeMalePerformers
+  skipMultipleMatches
+  skipMultipleMatchTag
+  skipSingleNamePerformers
+  skipSingleNamePerformerTag
 }
 
 fragment ScraperSourceData on ScraperSource {
@@ -133,8 +147,6 @@ fragment ScraperSourceData on ScraperSource {
 
 fragment ConfigDefaultSettingsData on ConfigDefaultSettingsResult {
   scan {
-    useFileMetadata
-    stripFileExtension
     scanGenerateCovers
     scanGeneratePreviews
     scanGenerateImagePreviews
@@ -143,7 +155,7 @@ fragment ConfigDefaultSettingsData on ConfigDefaultSettingsResult {
     scanGenerateThumbnails
     scanGenerateClipPreviews
   }
-  
+
   identify {
     sources {
       source {
@@ -206,4 +218,5 @@ fragment ConfigData on ConfigResult {
     ...ConfigDefaultSettingsData
   }
   ui
+  plugins
 }

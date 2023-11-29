@@ -9,11 +9,13 @@ const stringResolutionMap = new Map<string, ResolutionEnum>([
   ["720p", ResolutionEnum.StandardHd],
   ["1080p", ResolutionEnum.FullHd],
   ["1440p", ResolutionEnum.QuadHd],
-  ["1920p", ResolutionEnum.VrHd],
+  // ["1920p", ResolutionEnum.VrHd],
   ["4k", ResolutionEnum.FourK],
   ["5k", ResolutionEnum.FiveK],
   ["6k", ResolutionEnum.SixK],
+  ["7k", ResolutionEnum.SevenK],
   ["8k", ResolutionEnum.EightK],
+  ["Huge", ResolutionEnum.Huge],
 ]);
 
 export const stringToResolution = (

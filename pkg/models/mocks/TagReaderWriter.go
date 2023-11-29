@@ -58,27 +58,60 @@ func (_m *TagReaderWriter) Count(ctx context.Context) (int, error) {
 	return r0, r1
 }
 
-// Create provides a mock function with given fields: ctx, newTag
-func (_m *TagReaderWriter) Create(ctx context.Context, newTag models.Tag) (*models.Tag, error) {
-	ret := _m.Called(ctx, newTag)
+// CountByChildTagID provides a mock function with given fields: ctx, childID
+func (_m *TagReaderWriter) CountByChildTagID(ctx context.Context, childID int) (int, error) {
+	ret := _m.Called(ctx, childID)
 
-	var r0 *models.Tag
-	if rf, ok := ret.Get(0).(func(context.Context, models.Tag) *models.Tag); ok {
-		r0 = rf(ctx, newTag)
+	var r0 int
+	if rf, ok := ret.Get(0).(func(context.Context, int) int); ok {
+		r0 = rf(ctx, childID)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*models.Tag)
-		}
+		r0 = ret.Get(0).(int)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, models.Tag) error); ok {
-		r1 = rf(ctx, newTag)
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, childID)
 	} else {
 		r1 = ret.Error(1)
 	}
 
 	return r0, r1
+}
+
+// CountByParentTagID provides a mock function with given fields: ctx, parentID
+func (_m *TagReaderWriter) CountByParentTagID(ctx context.Context, parentID int) (int, error) {
+	ret := _m.Called(ctx, parentID)
+
+	var r0 int
+	if rf, ok := ret.Get(0).(func(context.Context, int) int); ok {
+		r0 = rf(ctx, parentID)
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, parentID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// Create provides a mock function with given fields: ctx, newTag
+func (_m *TagReaderWriter) Create(ctx context.Context, newTag *models.Tag) error {
+	ret := _m.Called(ctx, newTag)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, *models.Tag) error); ok {
+		r0 = rf(ctx, newTag)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
 }
 
 // Destroy provides a mock function with given fields: ctx, id
@@ -394,13 +427,13 @@ func (_m *TagReaderWriter) FindMany(ctx context.Context, ids []int) ([]*models.T
 	return r0, r1
 }
 
-// GetAliases provides a mock function with given fields: ctx, tagID
-func (_m *TagReaderWriter) GetAliases(ctx context.Context, tagID int) ([]string, error) {
-	ret := _m.Called(ctx, tagID)
+// GetAliases provides a mock function with given fields: ctx, relatedID
+func (_m *TagReaderWriter) GetAliases(ctx context.Context, relatedID int) ([]string, error) {
+	ret := _m.Called(ctx, relatedID)
 
 	var r0 []string
 	if rf, ok := ret.Get(0).(func(context.Context, int) []string); ok {
-		r0 = rf(ctx, tagID)
+		r0 = rf(ctx, relatedID)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]string)
@@ -409,7 +442,7 @@ func (_m *TagReaderWriter) GetAliases(ctx context.Context, tagID int) ([]string,
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
-		r1 = rf(ctx, tagID)
+		r1 = rf(ctx, relatedID)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -528,27 +561,18 @@ func (_m *TagReaderWriter) QueryForAutoTag(ctx context.Context, words []string) 
 	return r0, r1
 }
 
-// Update provides a mock function with given fields: ctx, updateTag
-func (_m *TagReaderWriter) Update(ctx context.Context, updateTag models.TagPartial) (*models.Tag, error) {
-	ret := _m.Called(ctx, updateTag)
+// Update provides a mock function with given fields: ctx, updatedTag
+func (_m *TagReaderWriter) Update(ctx context.Context, updatedTag *models.Tag) error {
+	ret := _m.Called(ctx, updatedTag)
 
-	var r0 *models.Tag
-	if rf, ok := ret.Get(0).(func(context.Context, models.TagPartial) *models.Tag); ok {
-		r0 = rf(ctx, updateTag)
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, *models.Tag) error); ok {
+		r0 = rf(ctx, updatedTag)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*models.Tag)
-		}
+		r0 = ret.Error(0)
 	}
 
-	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, models.TagPartial) error); ok {
-		r1 = rf(ctx, updateTag)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
+	return r0
 }
 
 // UpdateAliases provides a mock function with given fields: ctx, tagID, aliases
@@ -579,29 +603,6 @@ func (_m *TagReaderWriter) UpdateChildTags(ctx context.Context, tagID int, paren
 	return r0
 }
 
-// UpdateFull provides a mock function with given fields: ctx, updatedTag
-func (_m *TagReaderWriter) UpdateFull(ctx context.Context, updatedTag models.Tag) (*models.Tag, error) {
-	ret := _m.Called(ctx, updatedTag)
-
-	var r0 *models.Tag
-	if rf, ok := ret.Get(0).(func(context.Context, models.Tag) *models.Tag); ok {
-		r0 = rf(ctx, updatedTag)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*models.Tag)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, models.Tag) error); ok {
-		r1 = rf(ctx, updatedTag)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // UpdateImage provides a mock function with given fields: ctx, tagID, image
 func (_m *TagReaderWriter) UpdateImage(ctx context.Context, tagID int, image []byte) error {
 	ret := _m.Called(ctx, tagID, image)
@@ -628,4 +629,27 @@ func (_m *TagReaderWriter) UpdateParentTags(ctx context.Context, tagID int, pare
 	}
 
 	return r0
+}
+
+// UpdatePartial provides a mock function with given fields: ctx, id, updateTag
+func (_m *TagReaderWriter) UpdatePartial(ctx context.Context, id int, updateTag models.TagPartial) (*models.Tag, error) {
+	ret := _m.Called(ctx, id, updateTag)
+
+	var r0 *models.Tag
+	if rf, ok := ret.Get(0).(func(context.Context, int, models.TagPartial) *models.Tag); ok {
+		r0 = rf(ctx, id, updateTag)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.Tag)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, int, models.TagPartial) error); ok {
+		r1 = rf(ctx, id, updateTag)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }

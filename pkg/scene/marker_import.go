@@ -2,26 +2,22 @@ package scene
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"strconv"
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
-	"github.com/stashapp/stash/pkg/tag"
 )
 
 type MarkerCreatorUpdater interface {
-	Create(ctx context.Context, newSceneMarker models.SceneMarker) (*models.SceneMarker, error)
-	Update(ctx context.Context, updatedSceneMarker models.SceneMarker) (*models.SceneMarker, error)
+	models.SceneMarkerCreatorUpdater
 	FindBySceneID(ctx context.Context, sceneID int) ([]*models.SceneMarker, error)
-	UpdateTags(ctx context.Context, markerID int, tagIDs []int) error
 }
 
 type MarkerImporter struct {
 	SceneID             int
 	ReaderWriter        MarkerCreatorUpdater
-	TagWriter           tag.NameFinderCreator
+	TagWriter           models.TagFinderCreator
 	Input               jsonschema.SceneMarker
 	MissingRefBehaviour models.ImportMissingRefEnum
 
@@ -34,9 +30,9 @@ func (i *MarkerImporter) PreImport(ctx context.Context) error {
 	i.marker = models.SceneMarker{
 		Title:     i.Input.Title,
 		Seconds:   seconds,
-		SceneID:   sql.NullInt64{Int64: int64(i.SceneID), Valid: true},
-		CreatedAt: models.SQLiteTimestamp{Timestamp: i.Input.CreatedAt.GetTime()},
-		UpdatedAt: models.SQLiteTimestamp{Timestamp: i.Input.UpdatedAt.GetTime()},
+		SceneID:   i.SceneID,
+		CreatedAt: i.Input.CreatedAt.GetTime(),
+		UpdatedAt: i.Input.UpdatedAt.GetTime(),
 	}
 
 	if err := i.populateTags(ctx); err != nil {
@@ -108,19 +104,19 @@ func (i *MarkerImporter) FindExistingID(ctx context.Context) (*int, error) {
 }
 
 func (i *MarkerImporter) Create(ctx context.Context) (*int, error) {
-	created, err := i.ReaderWriter.Create(ctx, i.marker)
+	err := i.ReaderWriter.Create(ctx, &i.marker)
 	if err != nil {
 		return nil, fmt.Errorf("error creating marker: %v", err)
 	}
 
-	id := created.ID
+	id := i.marker.ID
 	return &id, nil
 }
 
 func (i *MarkerImporter) Update(ctx context.Context, id int) error {
 	marker := i.marker
 	marker.ID = id
-	_, err := i.ReaderWriter.Update(ctx, marker)
+	err := i.ReaderWriter.Update(ctx, &marker)
 	if err != nil {
 		return fmt.Errorf("error updating existing marker: %v", err)
 	}

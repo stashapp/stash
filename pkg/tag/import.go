@@ -2,7 +2,6 @@ package tag
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 
 	"github.com/stashapp/stash/pkg/models"
@@ -10,13 +9,9 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
-type NameFinderCreatorUpdater interface {
+type ImporterReaderWriter interface {
+	models.TagCreatorUpdater
 	FindByName(ctx context.Context, name string, nocase bool) (*models.Tag, error)
-	Create(ctx context.Context, newTag models.Tag) (*models.Tag, error)
-	UpdateFull(ctx context.Context, updatedTag models.Tag) (*models.Tag, error)
-	UpdateImage(ctx context.Context, tagID int, image []byte) error
-	UpdateAliases(ctx context.Context, tagID int, aliases []string) error
-	UpdateParentTags(ctx context.Context, tagID int, parentIDs []int) error
 }
 
 type ParentTagNotExistError struct {
@@ -32,7 +27,7 @@ func (e ParentTagNotExistError) MissingParent() string {
 }
 
 type Importer struct {
-	ReaderWriter        NameFinderCreatorUpdater
+	ReaderWriter        ImporterReaderWriter
 	Input               jsonschema.Tag
 	MissingRefBehaviour models.ImportMissingRefEnum
 
@@ -43,10 +38,10 @@ type Importer struct {
 func (i *Importer) PreImport(ctx context.Context) error {
 	i.tag = models.Tag{
 		Name:          i.Input.Name,
-		Description:   sql.NullString{String: i.Input.Description, Valid: true},
+		Description:   i.Input.Description,
 		IgnoreAutoTag: i.Input.IgnoreAutoTag,
-		CreatedAt:     models.SQLiteTimestamp{Timestamp: i.Input.CreatedAt.GetTime()},
-		UpdatedAt:     models.SQLiteTimestamp{Timestamp: i.Input.UpdatedAt.GetTime()},
+		CreatedAt:     i.Input.CreatedAt.GetTime(),
+		UpdatedAt:     i.Input.UpdatedAt.GetTime(),
 	}
 
 	var err error
@@ -103,19 +98,19 @@ func (i *Importer) FindExistingID(ctx context.Context) (*int, error) {
 }
 
 func (i *Importer) Create(ctx context.Context) (*int, error) {
-	created, err := i.ReaderWriter.Create(ctx, i.tag)
+	err := i.ReaderWriter.Create(ctx, &i.tag)
 	if err != nil {
 		return nil, fmt.Errorf("error creating tag: %v", err)
 	}
 
-	id := created.ID
+	id := i.tag.ID
 	return &id, nil
 }
 
 func (i *Importer) Update(ctx context.Context, id int) error {
 	tag := i.tag
 	tag.ID = id
-	_, err := i.ReaderWriter.UpdateFull(ctx, tag)
+	err := i.ReaderWriter.Update(ctx, &tag)
 	if err != nil {
 		return fmt.Errorf("error updating existing tag: %v", err)
 	}
@@ -156,12 +151,13 @@ func (i *Importer) getParents(ctx context.Context) ([]int, error) {
 }
 
 func (i *Importer) createParent(ctx context.Context, name string) (int, error) {
-	newTag := *models.NewTag(name)
+	newTag := models.NewTag()
+	newTag.Name = name
 
-	created, err := i.ReaderWriter.Create(ctx, newTag)
+	err := i.ReaderWriter.Create(ctx, &newTag)
 	if err != nil {
 		return 0, err
 	}
 
-	return created.ID, nil
+	return newTag.ID, nil
 }

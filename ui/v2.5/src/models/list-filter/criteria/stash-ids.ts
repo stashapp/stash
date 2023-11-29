@@ -10,13 +10,13 @@ import { Criterion, CriterionOption } from "./criterion";
 export const StashIDCriterionOption = new CriterionOption({
   messageID: "stash_id",
   type: "stash_id_endpoint",
-  parameterName: "stash_id_endpoint",
   modifierOptions: [
     CriterionModifier.Equals,
     CriterionModifier.NotEquals,
     CriterionModifier.IsNull,
     CriterionModifier.NotNull,
   ],
+  makeCriterion: () => new StashIDCriterion(),
 });
 
 export class StashIDCriterion extends Criterion<IStashIDValue> {
@@ -74,7 +74,7 @@ export class StashIDCriterion extends Criterion<IStashIDValue> {
     );
   }
 
-  public getLabelValue(_intl: IntlShape) {
+  protected getLabelValue(_intl: IntlShape) {
     let ret = this.value.stashID;
     if (this.value.endpoint) {
       ret += " (" + this.value.endpoint + ")";

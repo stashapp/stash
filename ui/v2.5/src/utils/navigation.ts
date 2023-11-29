@@ -20,6 +20,7 @@ import {
 import { GalleriesCriterion } from "src/models/list-filter/criteria/galleries";
 import { PhashCriterion } from "src/models/list-filter/criteria/phash";
 import { ILabeledId } from "src/models/list-filter/types";
+import { IntlShape } from "react-intl";
 
 function addExtraCriteria(
   dest: Criterion<CriterionValue>[],
@@ -72,8 +73,13 @@ const makePerformerImagesUrl = (
   return `/images?${filter.makeQueryParameters()}`;
 };
 
+export interface INamedObject {
+  id?: string;
+  name?: string;
+}
+
 const makePerformerGalleriesUrl = (
-  performer: Partial<GQL.PerformerDataFragment>,
+  performer: INamedObject,
   extraPerformer?: ILabeledId,
   extraCriteria?: Criterion<CriterionValue>[]
 ) => {
@@ -212,6 +218,10 @@ const makeMovieScenesUrl = (movie: Partial<GQL.MovieDataFragment>) => {
   return `/scenes?${filter.makeQueryParameters()}`;
 };
 
+const makeTagUrl = (id: string) => {
+  return `/tags/${id}`;
+};
+
 const makeParentTagsUrl = (tag: Partial<GQL.TagDataFragment>) => {
   if (!tag.id) return "#";
   const filter = new ListFilterModel(GQL.FilterMode.Tags, undefined);
@@ -346,6 +356,21 @@ const makeGalleryImagesUrl = (
   return `/images?${filter.makeQueryParameters()}`;
 };
 
+export function handleUnsavedChanges(
+  intl: IntlShape,
+  basepath: string,
+  id?: string
+) {
+  return function (location: { pathname: string }) {
+    // #2291 - don't prompt if we're navigating within the gallery being edited
+    if (id !== undefined && location.pathname === `/${basepath}/${id}`) {
+      return true;
+    }
+
+    return intl.formatMessage({ id: "dialogs.unsaved_changes" });
+  };
+}
+
 const NavUtils = {
   makePerformerScenesUrl,
   makePerformerImagesUrl,
@@ -357,6 +382,7 @@ const NavUtils = {
   makeStudioGalleriesUrl,
   makeStudioMoviesUrl,
   makeStudioPerformersUrl,
+  makeTagUrl,
   makeParentTagsUrl,
   makeChildTagsUrl,
   makeTagSceneMarkersUrl,

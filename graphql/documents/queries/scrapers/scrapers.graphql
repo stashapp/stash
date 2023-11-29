@@ -1,5 +1,5 @@
 query ListPerformerScrapers {
-  listPerformerScrapers {
+  listScrapers(types: [PERFORMER]) {
     id
     name
     performer {
@@ -10,7 +10,7 @@ query ListPerformerScrapers {
 }
 
 query ListSceneScrapers {
-  listSceneScrapers {
+  listScrapers(types: [SCENE]) {
     id
     name
     scene {
@@ -21,7 +21,7 @@ query ListSceneScrapers {
 }
 
 query ListGalleryScrapers {
-  listGalleryScrapers {
+  listScrapers(types: [GALLERY]) {
     id
     name
     gallery {
@@ -32,7 +32,7 @@ query ListGalleryScrapers {
 }
 
 query ListMovieScrapers {
-  listMovieScrapers {
+  listScrapers(types: [MOVIE]) {
     id
     name
     movie {
@@ -42,13 +42,28 @@ query ListMovieScrapers {
   }
 }
 
-query ScrapeSinglePerformer($source: ScraperSourceInput!, $input: ScrapeSinglePerformerInput!) {
+query ScrapeSingleStudio(
+  $source: ScraperSourceInput!
+  $input: ScrapeSingleStudioInput!
+) {
+  scrapeSingleStudio(source: $source, input: $input) {
+    ...ScrapedStudioData
+  }
+}
+
+query ScrapeSinglePerformer(
+  $source: ScraperSourceInput!
+  $input: ScrapeSinglePerformerInput!
+) {
   scrapeSinglePerformer(source: $source, input: $input) {
     ...ScrapedPerformerData
   }
 }
 
-query ScrapeMultiPerformers($source: ScraperSourceInput!, $input: ScrapeMultiPerformersInput!) {
+query ScrapeMultiPerformers(
+  $source: ScraperSourceInput!
+  $input: ScrapeMultiPerformersInput!
+) {
   scrapeMultiPerformers(source: $source, input: $input) {
     ...ScrapedPerformerData
   }
@@ -60,13 +75,19 @@ query ScrapePerformerURL($url: String!) {
   }
 }
 
-query ScrapeSingleScene($source: ScraperSourceInput!, $input: ScrapeSingleSceneInput!) {
+query ScrapeSingleScene(
+  $source: ScraperSourceInput!
+  $input: ScrapeSingleSceneInput!
+) {
   scrapeSingleScene(source: $source, input: $input) {
     ...ScrapedSceneData
   }
 }
 
-query ScrapeMultiScenes($source: ScraperSourceInput!, $input: ScrapeMultiScenesInput!) {
+query ScrapeMultiScenes(
+  $source: ScraperSourceInput!
+  $input: ScrapeMultiScenesInput!
+) {
   scrapeMultiScenes(source: $source, input: $input) {
     ...ScrapedSceneData
   }
@@ -78,7 +99,10 @@ query ScrapeSceneURL($url: String!) {
   }
 }
 
-query ScrapeSingleGallery($source: ScraperSourceInput!, $input: ScrapeSingleGalleryInput!) {
+query ScrapeSingleGallery(
+  $source: ScraperSourceInput!
+  $input: ScrapeSingleGalleryInput!
+) {
   scrapeSingleGallery(source: $source, input: $input) {
     ...ScrapedGalleryData
   }
@@ -93,5 +117,29 @@ query ScrapeGalleryURL($url: String!) {
 query ScrapeMovieURL($url: String!) {
   scrapeMovieURL(url: $url) {
     ...ScrapedMovieData
+  }
+}
+
+query InstalledScraperPackages {
+  installedPackages(type: Scraper) {
+    ...PackageData
+  }
+}
+
+query InstalledScraperPackagesStatus {
+  installedPackages(type: Scraper) {
+    ...PackageData
+    upgrade {
+      ...PackageData
+    }
+  }
+}
+
+query AvailableScraperPackages($source: String!) {
+  availablePackages(source: $source, type: Scraper) {
+    ...PackageData
+    requires {
+      package_id
+    }
   }
 }

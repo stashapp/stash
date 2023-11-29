@@ -4,7 +4,7 @@ import * as GQL from "src/core/generated-graphql";
 import { GridCard } from "../Shared/GridCard";
 import { HoverPopover } from "../Shared/HoverPopover";
 import { Icon } from "../Shared/Icon";
-import { TagLink } from "../Shared/TagLink";
+import { SceneLink } from "../Shared/TagLink";
 import { TruncatedText } from "../Shared/TruncatedText";
 import { FormattedMessage } from "react-intl";
 import { RatingBanner } from "../Shared/RatingBanner";
@@ -36,7 +36,7 @@ export const MovieCard: React.FC<IProps> = (props: IProps) => {
     if (props.movie.scenes.length === 0) return;
 
     const popoverContent = props.movie.scenes.map((scene) => (
-      <TagLink key={scene.id} scene={scene} />
+      <SceneLink key={scene.id} scene={scene} />
     ));
 
     return (
@@ -76,6 +76,7 @@ export const MovieCard: React.FC<IProps> = (props: IProps) => {
       image={
         <>
           <img
+            loading="lazy"
             className="movie-card-image"
             alt={props.movie.name ?? ""}
             src={props.movie.front_image_path ?? ""}

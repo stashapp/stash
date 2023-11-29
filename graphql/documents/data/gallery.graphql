@@ -3,9 +3,11 @@ fragment GalleryData on Gallery {
   created_at
   updated_at
   title
+  code
   date
-  url
+  urls
   details
+  photographer
   rating100
   organized
 

@@ -7,13 +7,12 @@ import (
 	"context"
 	"testing"
 
-	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestChapterFindByGalleryID(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		mqb := sqlite.GalleryChapterReaderWriter
+		mqb := db.GalleryChapter
 
 		galleryID := galleryIDs[galleryIdxWithChapters]
 		chapters, err := mqb.FindByGalleryID(ctx, galleryID)
@@ -24,7 +23,7 @@ func TestChapterFindByGalleryID(t *testing.T) {
 
 		assert.Greater(t, len(chapters), 0)
 		for _, chapter := range chapters {
-			assert.Equal(t, galleryIDs[galleryIdxWithChapters], int(chapter.GalleryID.Int64))
+			assert.Equal(t, galleryIDs[galleryIdxWithChapters], chapter.GalleryID)
 		}
 
 		chapters, err = mqb.FindByGalleryID(ctx, 0)

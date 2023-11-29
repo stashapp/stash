@@ -10,31 +10,31 @@ input GenerateMetadataInput {
   markerImagePreviews: Boolean
   markerScreenshots: Boolean
   transcodes: Boolean
-  """Generate transcodes even if not required"""
+  "Generate transcodes even if not required"
   forceTranscodes: Boolean
   phashes: Boolean
   interactiveHeatmapsSpeeds: Boolean
   clipPreviews: Boolean
 
-  """scene ids to generate for"""
+  "scene ids to generate for"
   sceneIDs: [ID!]
-  """marker ids to generate for"""
+  "marker ids to generate for"
   markerIDs: [ID!]
 
-  """overwrite existing media"""
+  "overwrite existing media"
   overwrite: Boolean
 }
 
 input GeneratePreviewOptionsInput {
-  """Number of segments in a preview file"""
+  "Number of segments in a preview file"
   previewSegments: Int
-  """Preview segment duration, in seconds"""
+  "Preview segment duration, in seconds"
   previewSegmentDuration: Float
-  """Duration of start of video to exclude when generating previews"""
+  "Duration of start of video to exclude when generating previews"
   previewExcludeStart: String
-  """Duration of end of video to exclude when generating previews"""
+  "Duration of end of video to exclude when generating previews"
   previewExcludeEnd: String
-  """Preset when generating preview"""
+  "Preset when generating preview"
   previewPreset: PreviewPreset
 }
 
@@ -54,15 +54,15 @@ type GenerateMetadataOptions {
 }
 
 type GeneratePreviewOptions {
-  """Number of segments in a preview file"""
+  "Number of segments in a preview file"
   previewSegments: Int
-  """Preview segment duration, in seconds"""
+  "Preview segment duration, in seconds"
   previewSegmentDuration: Float
-  """Duration of start of video to exclude when generating previews"""
+  "Duration of start of video to exclude when generating previews"
   previewExcludeStart: String
-  """Duration of end of video to exclude when generating previews"""
+  "Duration of end of video to exclude when generating previews"
   previewExcludeEnd: String
-  """Preset when generating preview"""
+  "Preset when generating preview"
   previewPreset: PreviewPreset
 }
 
@@ -75,32 +75,19 @@ input ScanMetaDataFilterInput {
 input ScanMetadataInput {
   paths: [String!]
 
-  # useFileMetadata is deprecated with the new file management system
-  # if this functionality is desired, then we can make a built in scraper instead.
-
-  """Set name, date, details from metadata (if present)"""
-  useFileMetadata: Boolean @deprecated(reason: "Not implemented")
-
-  # stripFileExtension is deprecated since we no longer set the title from the 
-  # filename - it is automatically returned if the object has no title. If this
-  # functionality is desired, then we could make this an option to not include
-  # the extension in the auto-generated title.
-
-  """Strip file extension from title"""
-  stripFileExtension: Boolean @deprecated(reason: "Not implemented")
-  """Generate covers during scan"""
+  "Generate covers during scan"
   scanGenerateCovers: Boolean
-  """Generate previews during scan"""
+  "Generate previews during scan"
   scanGeneratePreviews: Boolean
-  """Generate image previews during scan"""
+  "Generate image previews during scan"
   scanGenerateImagePreviews: Boolean
-  """Generate sprites during scan"""
+  "Generate sprites during scan"
   scanGenerateSprites: Boolean
-  """Generate phashes during scan"""
+  "Generate phashes during scan"
   scanGeneratePhashes: Boolean
-  """Generate image thumbnails during scan"""
+  "Generate image thumbnails during scan"
   scanGenerateThumbnails: Boolean
-  """Generate image clip previews during scan"""
+  "Generate image clip previews during scan"
   scanGenerateClipPreviews: Boolean
 
   "Filter options for the scan"
@@ -108,62 +95,71 @@ input ScanMetadataInput {
 }
 
 type ScanMetadataOptions {
-  """Set name, date, details from metadata (if present)"""
-  useFileMetadata: Boolean! @deprecated(reason: "Not implemented")
-  """Strip file extension from title"""
-  stripFileExtension: Boolean! @deprecated(reason: "Not implemented")
-  """Generate covers during scan"""
+  "Generate covers during scan"
   scanGenerateCovers: Boolean!
-  """Generate previews during scan"""
+  "Generate previews during scan"
   scanGeneratePreviews: Boolean!
-  """Generate image previews during scan"""
+  "Generate image previews during scan"
   scanGenerateImagePreviews: Boolean!
-  """Generate sprites during scan"""
+  "Generate sprites during scan"
   scanGenerateSprites: Boolean!
-  """Generate phashes during scan"""
+  "Generate phashes during scan"
   scanGeneratePhashes: Boolean!
-  """Generate image thumbnails during scan"""
+  "Generate image thumbnails during scan"
   scanGenerateThumbnails: Boolean!
-  """Generate image clip previews during scan"""
+  "Generate image clip previews during scan"
   scanGenerateClipPreviews: Boolean!
 }
 
 input CleanMetadataInput {
   paths: [String!]
-  
-  """Do a dry run. Don't delete any files"""
+
+  "Do a dry run. Don't delete any files"
   dryRun: Boolean!
 }
 
 input AutoTagMetadataInput {
-  """Paths to tag, null for all files"""
+  "Paths to tag, null for all files"
   paths: [String!]
-  """IDs of performers to tag files with, or "*" for all"""
+  """
+  IDs of performers to tag files with, or "*" for all
+  """
   performers: [String!]
-  """IDs of studios to tag files with, or "*" for all"""
+  """
+  IDs of studios to tag files with, or "*" for all
+  """
   studios: [String!]
-  """IDs of tags to tag files with, or "*" for all"""
+  """
+  IDs of tags to tag files with, or "*" for all
+  """
   tags: [String!]
 }
 
 type AutoTagMetadataOptions {
-  """IDs of performers to tag files with, or "*" for all"""
+  """
+  IDs of performers to tag files with, or "*" for all
+  """
   performers: [String!]
-  """IDs of studios to tag files with, or "*" for all"""
+  """
+  IDs of studios to tag files with, or "*" for all
+  """
   studios: [String!]
-  """IDs of tags to tag files with, or "*" for all"""
+  """
+  IDs of tags to tag files with, or "*" for all
+  """
   tags: [String!]
 }
 
 enum IdentifyFieldStrategy {
-  """Never sets the field value"""
+  "Never sets the field value"
   IGNORE
   """
   For multi-value fields, merge with existing.
   For single-value fields, ignore if already set
   """
   MERGE
-  """Always replaces the value if a value is found.
+  """
+  Always replaces the value if a value is found.
   For multi-value fields, any existing values are removed and replaced with the
   scraped values.
   """
@@ -173,36 +169,44 @@ enum IdentifyFieldStrategy {
 input IdentifyFieldOptionsInput {
   field: String!
   strategy: IdentifyFieldStrategy!
-  """creates missing objects if needed - only applicable for performers, tags and studios"""
+  "creates missing objects if needed - only applicable for performers, tags and studios"
   createMissing: Boolean
 }
 
 input IdentifyMetadataOptionsInput {
-  """any fields missing from here are defaulted to MERGE and createMissing false"""
+  "any fields missing from here are defaulted to MERGE and createMissing false"
   fieldOptions: [IdentifyFieldOptionsInput!]
-  """defaults to true if not provided"""
+  "defaults to true if not provided"
   setCoverImage: Boolean
   setOrganized: Boolean
-  """defaults to true if not provided"""
+  "defaults to true if not provided"
   includeMalePerformers: Boolean
+  "defaults to true if not provided"
+  skipMultipleMatches: Boolean
+  "tag to tag skipped multiple matches with"
+  skipMultipleMatchTag: String
+  "defaults to true if not provided"
+  skipSingleNamePerformers: Boolean
+  "tag to tag skipped single name performers with"
+  skipSingleNamePerformerTag: String
 }
 
 input IdentifySourceInput {
   source: ScraperSourceInput!
-  """Options defined for a source override the defaults"""
+  "Options defined for a source override the defaults"
   options: IdentifyMetadataOptionsInput
 }
 
 input IdentifyMetadataInput {
-  """An ordered list of sources to identify items with. Only the first source that finds a match is used."""
+  "An ordered list of sources to identify items with. Only the first source that finds a match is used."
   sources: [IdentifySourceInput!]!
-  """Options defined here override the configured defaults"""
+  "Options defined here override the configured defaults"
   options: IdentifyMetadataOptionsInput
 
-  """scene ids to identify"""
+  "scene ids to identify"
   sceneIDs: [ID!]
 
-  """paths of scenes to identify - ignored if scene ids are set"""
+  "paths of scenes to identify - ignored if scene ids are set"
   paths: [String!]
 }
 
@@ -210,30 +214,38 @@ input IdentifyMetadataInput {
 type IdentifyFieldOptions {
   field: String!
   strategy: IdentifyFieldStrategy!
-  """creates missing objects if needed - only applicable for performers, tags and studios"""
+  "creates missing objects if needed - only applicable for performers, tags and studios"
   createMissing: Boolean
 }
 
 type IdentifyMetadataOptions {
-  """any fields missing from here are defaulted to MERGE and createMissing false"""
+  "any fields missing from here are defaulted to MERGE and createMissing false"
   fieldOptions: [IdentifyFieldOptions!]
-  """defaults to true if not provided"""
+  "defaults to true if not provided"
   setCoverImage: Boolean
   setOrganized: Boolean
-  """defaults to true if not provided"""
+  "defaults to true if not provided"
   includeMalePerformers: Boolean
+  "defaults to true if not provided"
+  skipMultipleMatches: Boolean
+  "tag to tag skipped multiple matches with"
+  skipMultipleMatchTag: String
+  "defaults to true if not provided"
+  skipSingleNamePerformers: Boolean
+  "tag to tag skipped single name performers with"
+  skipSingleNamePerformerTag: String
 }
 
 type IdentifySource {
   source: ScraperSource!
-  """Options defined for a source override the defaults"""
+  "Options defined for a source override the defaults"
   options: IdentifyMetadataOptions
 }
 
 type IdentifyMetadataTaskOptions {
-  """An ordered list of sources to identify items with. Only the first source that finds a match is used."""
+  "An ordered list of sources to identify items with. Only the first source that finds a match is used."
   sources: [IdentifySource!]!
-  """Options defined here override the configured defaults"""
+  "Options defined here override the configured defaults"
   options: IdentifyMetadataOptions
 }
 
@@ -291,6 +303,9 @@ type SystemStatus {
   configPath: String
   appSchema: Int!
   status: SystemStatusEnum!
+  os: String!
+  workingDir: String!
+  homeDir: String!
 }
 
 input MigrateInput {

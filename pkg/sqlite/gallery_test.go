@@ -10,7 +10,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stretchr/testify/assert"
 )
@@ -18,6 +17,11 @@ import (
 var invalidID = -1
 
 func loadGalleryRelationships(ctx context.Context, expected models.Gallery, actual *models.Gallery) error {
+	if expected.URLs.Loaded() {
+		if err := actual.LoadURLs(ctx, db.Gallery); err != nil {
+			return err
+		}
+	}
 	if expected.SceneIDs.Loaded() {
 		if err := actual.LoadSceneIDs(ctx, db.Gallery); err != nil {
 			return err
@@ -52,17 +56,19 @@ func loadGalleryRelationships(ctx context.Context, expected models.Gallery, actu
 
 func Test_galleryQueryBuilder_Create(t *testing.T) {
 	var (
-		title     = "title"
-		url       = "url"
-		rating    = 60
-		details   = "details"
-		createdAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
-		updatedAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		title        = "title"
+		code         = "1337"
+		url          = "url"
+		rating       = 60
+		details      = "details"
+		photographer = "photographer"
+		createdAt    = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		updatedAt    = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 
 		galleryFile = makeFileWithID(fileIdxStartGalleryFiles)
 	)
 
-	date := models.NewDate("2003-02-01")
+	date, _ := models.ParseDate("2003-02-01")
 
 	tests := []struct {
 		name      string
@@ -73,9 +79,11 @@ func Test_galleryQueryBuilder_Create(t *testing.T) {
 			"full",
 			models.Gallery{
 				Title:        title,
-				URL:          url,
+				Code:         code,
+				URLs:         models.NewRelatedStrings([]string{url}),
 				Date:         &date,
 				Details:      details,
+				Photographer: photographer,
 				Rating:       &rating,
 				Organized:    true,
 				StudioID:     &studioIDs[studioIdxWithScene],
@@ -90,14 +98,16 @@ func Test_galleryQueryBuilder_Create(t *testing.T) {
 		{
 			"with file",
 			models.Gallery{
-				Title:     title,
-				URL:       url,
-				Date:      &date,
-				Details:   details,
-				Rating:    &rating,
-				Organized: true,
-				StudioID:  &studioIDs[studioIdxWithScene],
-				Files: models.NewRelatedFiles([]file.File{
+				Title:        title,
+				Code:         code,
+				URLs:         models.NewRelatedStrings([]string{url}),
+				Date:         &date,
+				Details:      details,
+				Photographer: photographer,
+				Rating:       &rating,
+				Organized:    true,
+				StudioID:     &studioIDs[studioIdxWithScene],
+				Files: models.NewRelatedFiles([]models.File{
 					galleryFile,
 				}),
 				CreatedAt:    createdAt,
@@ -145,9 +155,9 @@ func Test_galleryQueryBuilder_Create(t *testing.T) {
 			assert := assert.New(t)
 
 			s := tt.newObject
-			var fileIDs []file.ID
+			var fileIDs []models.FileID
 			if s.Files.Loaded() {
-				fileIDs = []file.ID{s.Files.List()[0].Base().ID}
+				fileIDs = []models.FileID{s.Files.List()[0].Base().ID}
 			}
 
 			if err := qb.Create(ctx, &s, fileIDs); (err != nil) != tt.wantErr {
@@ -195,7 +205,7 @@ func Test_galleryQueryBuilder_Create(t *testing.T) {
 	}
 }
 
-func makeGalleryFileWithID(i int) *file.BaseFile {
+func makeGalleryFileWithID(i int) *models.BaseFile {
 	ret := makeGalleryFile(i)
 	ret.ID = galleryFileIDs[i]
 	return ret
@@ -203,15 +213,17 @@ func makeGalleryFileWithID(i int) *file.BaseFile {
 
 func Test_galleryQueryBuilder_Update(t *testing.T) {
 	var (
-		title     = "title"
-		url       = "url"
-		rating    = 60
-		details   = "details"
-		createdAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
-		updatedAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		title        = "title"
+		code         = "code"
+		url          = "url"
+		rating       = 60
+		details      = "details"
+		photographer = "photographer"
+		createdAt    = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		updatedAt    = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 	)
 
-	date := models.NewDate("2003-02-01")
+	date, _ := models.ParseDate("2003-02-01")
 
 	tests := []struct {
 		name          string
@@ -221,15 +233,17 @@ func Test_galleryQueryBuilder_Update(t *testing.T) {
 		{
 			"full",
 			&models.Gallery{
-				ID:        galleryIDs[galleryIdxWithScene],
-				Title:     title,
-				URL:       url,
-				Date:      &date,
-				Details:   details,
-				Rating:    &rating,
-				Organized: true,
-				StudioID:  &studioIDs[studioIdxWithScene],
-				Files: models.NewRelatedFiles([]file.File{
+				ID:           galleryIDs[galleryIdxWithScene],
+				Title:        title,
+				Code:         code,
+				URLs:         models.NewRelatedStrings([]string{url}),
+				Date:         &date,
+				Details:      details,
+				Photographer: photographer,
+				Rating:       &rating,
+				Organized:    true,
+				StudioID:     &studioIDs[studioIdxWithScene],
+				Files: models.NewRelatedFiles([]models.File{
 					makeGalleryFileWithID(galleryIdxWithScene),
 				}),
 				CreatedAt:    createdAt,
@@ -244,6 +258,7 @@ func Test_galleryQueryBuilder_Update(t *testing.T) {
 			"clear nullables",
 			&models.Gallery{
 				ID:           galleryIDs[galleryIdxWithImage],
+				URLs:         models.NewRelatedStrings([]string{}),
 				SceneIDs:     models.NewRelatedIDs([]int{}),
 				TagIDs:       models.NewRelatedIDs([]int{}),
 				PerformerIDs: models.NewRelatedIDs([]int{}),
@@ -384,8 +399,10 @@ func clearGalleryPartial() models.GalleryPartial {
 	// leave mandatory fields
 	return models.GalleryPartial{
 		Title:        models.OptionalString{Set: true, Null: true},
+		Code:         models.OptionalString{Set: true, Null: true},
 		Details:      models.OptionalString{Set: true, Null: true},
-		URL:          models.OptionalString{Set: true, Null: true},
+		Photographer: models.OptionalString{Set: true, Null: true},
+		URLs:         &models.UpdateStrings{Mode: models.RelationshipUpdateModeSet},
 		Date:         models.OptionalDate{Set: true, Null: true},
 		Rating:       models.OptionalInt{Set: true, Null: true},
 		StudioID:     models.OptionalInt{Set: true, Null: true},
@@ -396,14 +413,16 @@ func clearGalleryPartial() models.GalleryPartial {
 
 func Test_galleryQueryBuilder_UpdatePartial(t *testing.T) {
 	var (
-		title     = "title"
-		details   = "details"
-		url       = "url"
-		rating    = 60
-		createdAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
-		updatedAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		title        = "title"
+		code         = "code"
+		details      = "details"
+		photographer = "photographer"
+		url          = "url"
+		rating       = 60
+		createdAt    = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		updatedAt    = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 
-		date = models.NewDate("2003-02-01")
+		date, _ = models.ParseDate("2003-02-01")
 	)
 
 	tests := []struct {
@@ -417,9 +436,14 @@ func Test_galleryQueryBuilder_UpdatePartial(t *testing.T) {
 			"full",
 			galleryIDs[galleryIdxWithImage],
 			models.GalleryPartial{
-				Title:     models.NewOptionalString(title),
-				Details:   models.NewOptionalString(details),
-				URL:       models.NewOptionalString(url),
+				Title:        models.NewOptionalString(title),
+				Code:         models.NewOptionalString(code),
+				Details:      models.NewOptionalString(details),
+				Photographer: models.NewOptionalString(photographer),
+				URLs: &models.UpdateStrings{
+					Values: []string{url},
+					Mode:   models.RelationshipUpdateModeSet,
+				},
 				Date:      models.NewOptionalDate(date),
 				Rating:    models.NewOptionalInt(rating),
 				Organized: models.NewOptionalBool(true),
@@ -441,15 +465,17 @@ func Test_galleryQueryBuilder_UpdatePartial(t *testing.T) {
 				},
 			},
 			models.Gallery{
-				ID:        galleryIDs[galleryIdxWithImage],
-				Title:     title,
-				Details:   details,
-				URL:       url,
-				Date:      &date,
-				Rating:    &rating,
-				Organized: true,
-				StudioID:  &studioIDs[studioIdxWithGallery],
-				Files: models.NewRelatedFiles([]file.File{
+				ID:           galleryIDs[galleryIdxWithImage],
+				Title:        title,
+				Code:         code,
+				Details:      details,
+				Photographer: photographer,
+				URLs:         models.NewRelatedStrings([]string{url}),
+				Date:         &date,
+				Rating:       &rating,
+				Organized:    true,
+				StudioID:     &studioIDs[studioIdxWithGallery],
+				Files: models.NewRelatedFiles([]models.File{
 					makeGalleryFile(galleryIdxWithImage),
 				}),
 				CreatedAt:    createdAt,
@@ -466,7 +492,7 @@ func Test_galleryQueryBuilder_UpdatePartial(t *testing.T) {
 			clearGalleryPartial(),
 			models.Gallery{
 				ID: galleryIDs[galleryIdxWithImage],
-				Files: models.NewRelatedFiles([]file.File{
+				Files: models.NewRelatedFiles([]models.File{
 					makeGalleryFile(galleryIdxWithImage),
 				}),
 				SceneIDs:     models.NewRelatedIDs([]int{}),
@@ -831,7 +857,7 @@ func Test_galleryQueryBuilder_Destroy(t *testing.T) {
 			// ensure cannot be found
 			i, err := qb.Find(ctx, tt.id)
 
-			assert.NotNil(err)
+			assert.Nil(err)
 			assert.Nil(i)
 			return
 
@@ -844,11 +870,7 @@ func makeGalleryWithID(index int) *models.Gallery {
 	ret := makeGallery(index, includeScenes)
 	ret.ID = galleryIDs[index]
 
-	if ret.Date != nil && ret.Date.IsZero() {
-		ret.Date = nil
-	}
-
-	ret.Files = models.NewRelatedFiles([]file.File{makeGalleryFile(index)})
+	ret.Files = models.NewRelatedFiles([]models.File{makeGalleryFile(index)})
 
 	return ret
 }
@@ -870,7 +892,7 @@ func Test_galleryQueryBuilder_Find(t *testing.T) {
 			"invalid",
 			invalidID,
 			nil,
-			true,
+			false,
 		},
 		{
 			"with performers",
@@ -1285,7 +1307,7 @@ func galleriesToIDs(i []*models.Gallery) []int {
 func Test_galleryStore_FindByFileID(t *testing.T) {
 	tests := []struct {
 		name    string
-		fileID  file.ID
+		fileID  models.FileID
 		include []int
 		exclude []int
 	}{
@@ -1334,7 +1356,7 @@ func Test_galleryStore_FindByFileID(t *testing.T) {
 func Test_galleryStore_FindByFolderID(t *testing.T) {
 	tests := []struct {
 		name     string
-		folderID file.FolderID
+		folderID models.FolderID
 		include  []int
 		exclude  []int
 	}{
@@ -1658,7 +1680,13 @@ func TestGalleryQueryURL(t *testing.T) {
 
 	verifyFn := func(g *models.Gallery) {
 		t.Helper()
-		verifyString(t, g.URL, urlCriterion)
+		urls := g.URLs.List()
+		var url string
+		if len(urls) > 0 {
+			url = urls[0]
+		}
+
+		verifyString(t, url, urlCriterion)
 	}
 
 	verifyGalleryQuery(t, filter, verifyFn)
@@ -1688,59 +1716,17 @@ func verifyGalleryQuery(t *testing.T, filter models.GalleryFilterType, verifyFn 
 
 		galleries := queryGallery(ctx, t, sqb, &filter, nil)
 
+		for _, g := range galleries {
+			if err := g.LoadURLs(ctx, sqb); err != nil {
+				t.Errorf("Error loading gallery URLs: %v", err)
+			}
+		}
+
 		// assume it should find at least one
 		assert.Greater(t, len(galleries), 0)
 
 		for _, gallery := range galleries {
 			verifyFn(gallery)
-		}
-
-		return nil
-	})
-}
-
-func TestGalleryQueryLegacyRating(t *testing.T) {
-	const rating = 3
-	ratingCriterion := models.IntCriterionInput{
-		Value:    rating,
-		Modifier: models.CriterionModifierEquals,
-	}
-
-	verifyGalleriesLegacyRating(t, ratingCriterion)
-
-	ratingCriterion.Modifier = models.CriterionModifierNotEquals
-	verifyGalleriesLegacyRating(t, ratingCriterion)
-
-	ratingCriterion.Modifier = models.CriterionModifierGreaterThan
-	verifyGalleriesLegacyRating(t, ratingCriterion)
-
-	ratingCriterion.Modifier = models.CriterionModifierLessThan
-	verifyGalleriesLegacyRating(t, ratingCriterion)
-
-	ratingCriterion.Modifier = models.CriterionModifierIsNull
-	verifyGalleriesLegacyRating(t, ratingCriterion)
-
-	ratingCriterion.Modifier = models.CriterionModifierNotNull
-	verifyGalleriesLegacyRating(t, ratingCriterion)
-}
-
-func verifyGalleriesLegacyRating(t *testing.T, ratingCriterion models.IntCriterionInput) {
-	withTxn(func(ctx context.Context) error {
-		sqb := db.Gallery
-		galleryFilter := models.GalleryFilterType{
-			Rating: &ratingCriterion,
-		}
-
-		galleries, _, err := sqb.Query(ctx, &galleryFilter, nil)
-		if err != nil {
-			t.Errorf("Error querying gallery: %s", err.Error())
-		}
-
-		// convert criterion value to the 100 value
-		ratingCriterion.Value = models.Rating5To100(ratingCriterion.Value)
-
-		for _, gallery := range galleries {
-			verifyIntPtr(t, gallery.Rating, ratingCriterion)
 		}
 
 		return nil
@@ -1932,12 +1918,12 @@ func TestGalleryQueryIsMissingDate(t *testing.T) {
 
 		galleries := queryGallery(ctx, t, sqb, &galleryFilter, nil)
 
-		// three in four scenes have no date
-		assert.Len(t, galleries, int(math.Ceil(float64(totalGalleries)/4*3)))
+		// one in four galleries have no date
+		assert.Len(t, galleries, int(math.Ceil(float64(totalGalleries)/4)))
 
-		// ensure date is null, empty or "0001-01-01"
+		// ensure date is null
 		for _, g := range galleries {
-			assert.True(t, g.Date == nil || g.Date.Time == time.Time{})
+			assert.Nil(t, g.Date)
 		}
 
 		return nil
@@ -1945,154 +1931,369 @@ func TestGalleryQueryIsMissingDate(t *testing.T) {
 }
 
 func TestGalleryQueryPerformers(t *testing.T) {
-	withTxn(func(ctx context.Context) error {
-		sqb := db.Gallery
-		performerCriterion := models.MultiCriterionInput{
-			Value: []string{
-				strconv.Itoa(performerIDs[performerIdxWithGallery]),
-				strconv.Itoa(performerIDs[performerIdx1WithGallery]),
+	tests := []struct {
+		name        string
+		filter      models.MultiCriterionInput
+		includeIdxs []int
+		excludeIdxs []int
+		wantErr     bool
+	}{
+		{
+			"includes",
+			models.MultiCriterionInput{
+				Value: []string{
+					strconv.Itoa(performerIDs[performerIdxWithGallery]),
+					strconv.Itoa(performerIDs[performerIdx1WithGallery]),
+				},
+				Modifier: models.CriterionModifierIncludes,
 			},
-			Modifier: models.CriterionModifierIncludes,
-		}
-
-		galleryFilter := models.GalleryFilterType{
-			Performers: &performerCriterion,
-		}
-
-		galleries := queryGallery(ctx, t, sqb, &galleryFilter, nil)
-
-		assert.Len(t, galleries, 2)
-
-		// ensure ids are correct
-		for _, gallery := range galleries {
-			assert.True(t, gallery.ID == galleryIDs[galleryIdxWithPerformer] || gallery.ID == galleryIDs[galleryIdxWithTwoPerformers])
-		}
-
-		performerCriterion = models.MultiCriterionInput{
-			Value: []string{
-				strconv.Itoa(performerIDs[performerIdx1WithGallery]),
-				strconv.Itoa(performerIDs[performerIdx2WithGallery]),
+			[]int{
+				galleryIdxWithPerformer,
+				galleryIdxWithTwoPerformers,
 			},
-			Modifier: models.CriterionModifierIncludesAll,
-		}
-
-		galleries = queryGallery(ctx, t, sqb, &galleryFilter, nil)
-
-		assert.Len(t, galleries, 1)
-		assert.Equal(t, galleryIDs[galleryIdxWithTwoPerformers], galleries[0].ID)
-
-		performerCriterion = models.MultiCriterionInput{
-			Value: []string{
-				strconv.Itoa(performerIDs[performerIdx1WithGallery]),
+			[]int{
+				galleryIdxWithImage,
 			},
-			Modifier: models.CriterionModifierExcludes,
-		}
+			false,
+		},
+		{
+			"includes all",
+			models.MultiCriterionInput{
+				Value: []string{
+					strconv.Itoa(performerIDs[performerIdx1WithGallery]),
+					strconv.Itoa(performerIDs[performerIdx2WithGallery]),
+				},
+				Modifier: models.CriterionModifierIncludesAll,
+			},
+			[]int{
+				galleryIdxWithTwoPerformers,
+			},
+			[]int{
+				galleryIdxWithPerformer,
+			},
+			false,
+		},
+		{
+			"excludes",
+			models.MultiCriterionInput{
+				Modifier: models.CriterionModifierExcludes,
+				Value:    []string{strconv.Itoa(tagIDs[performerIdx1WithGallery])},
+			},
+			nil,
+			[]int{galleryIdxWithTwoPerformers},
+			false,
+		},
+		{
+			"is null",
+			models.MultiCriterionInput{
+				Modifier: models.CriterionModifierIsNull,
+			},
+			[]int{galleryIdxWithTag},
+			[]int{
+				galleryIdxWithPerformer,
+				galleryIdxWithTwoPerformers,
+				galleryIdxWithPerformerTwoTags,
+			},
+			false,
+		},
+		{
+			"not null",
+			models.MultiCriterionInput{
+				Modifier: models.CriterionModifierNotNull,
+			},
+			[]int{
+				galleryIdxWithPerformer,
+				galleryIdxWithTwoPerformers,
+				galleryIdxWithPerformerTwoTags,
+			},
+			[]int{galleryIdxWithTag},
+			false,
+		},
+		{
+			"equals",
+			models.MultiCriterionInput{
+				Modifier: models.CriterionModifierEquals,
+				Value: []string{
+					strconv.Itoa(tagIDs[performerIdx1WithGallery]),
+					strconv.Itoa(tagIDs[performerIdx2WithGallery]),
+				},
+			},
+			[]int{galleryIdxWithTwoPerformers},
+			[]int{
+				galleryIdxWithThreePerformers,
+			},
+			false,
+		},
+		{
+			"not equals",
+			models.MultiCriterionInput{
+				Modifier: models.CriterionModifierNotEquals,
+				Value: []string{
+					strconv.Itoa(tagIDs[performerIdx1WithGallery]),
+					strconv.Itoa(tagIDs[performerIdx2WithGallery]),
+				},
+			},
+			nil,
+			nil,
+			true,
+		},
+	}
 
-		q := getGalleryStringValue(galleryIdxWithTwoPerformers, titleField)
-		findFilter := models.FindFilterType{
-			Q: &q,
-		}
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
 
-		galleries = queryGallery(ctx, t, sqb, &galleryFilter, &findFilter)
-		assert.Len(t, galleries, 0)
+			results, _, err := db.Gallery.Query(ctx, &models.GalleryFilterType{
+				Performers: &tt.filter,
+			}, nil)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GalleryStore.Query() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
 
-		return nil
-	})
+			ids := galleriesToIDs(results)
+
+			include := indexesToIDs(galleryIDs, tt.includeIdxs)
+			exclude := indexesToIDs(galleryIDs, tt.excludeIdxs)
+
+			for _, i := range include {
+				assert.Contains(ids, i)
+			}
+			for _, e := range exclude {
+				assert.NotContains(ids, e)
+			}
+		})
+	}
 }
 
 func TestGalleryQueryTags(t *testing.T) {
-	withTxn(func(ctx context.Context) error {
-		sqb := db.Gallery
-		tagCriterion := models.HierarchicalMultiCriterionInput{
-			Value: []string{
-				strconv.Itoa(tagIDs[tagIdxWithGallery]),
-				strconv.Itoa(tagIDs[tagIdx1WithGallery]),
+	tests := []struct {
+		name        string
+		filter      models.HierarchicalMultiCriterionInput
+		includeIdxs []int
+		excludeIdxs []int
+		wantErr     bool
+	}{
+		{
+			"includes",
+			models.HierarchicalMultiCriterionInput{
+				Value: []string{
+					strconv.Itoa(tagIDs[tagIdxWithGallery]),
+					strconv.Itoa(tagIDs[tagIdx1WithGallery]),
+				},
+				Modifier: models.CriterionModifierIncludes,
 			},
-			Modifier: models.CriterionModifierIncludes,
-		}
-
-		galleryFilter := models.GalleryFilterType{
-			Tags: &tagCriterion,
-		}
-
-		galleries := queryGallery(ctx, t, sqb, &galleryFilter, nil)
-		assert.Len(t, galleries, 2)
-
-		// ensure ids are correct
-		for _, gallery := range galleries {
-			assert.True(t, gallery.ID == galleryIDs[galleryIdxWithTag] || gallery.ID == galleryIDs[galleryIdxWithTwoTags])
-		}
-
-		tagCriterion = models.HierarchicalMultiCriterionInput{
-			Value: []string{
-				strconv.Itoa(tagIDs[tagIdx1WithGallery]),
-				strconv.Itoa(tagIDs[tagIdx2WithGallery]),
+			[]int{
+				galleryIdxWithTag,
+				galleryIdxWithTwoTags,
 			},
-			Modifier: models.CriterionModifierIncludesAll,
-		}
-
-		galleries = queryGallery(ctx, t, sqb, &galleryFilter, nil)
-
-		assert.Len(t, galleries, 1)
-		assert.Equal(t, galleryIDs[galleryIdxWithTwoTags], galleries[0].ID)
-
-		tagCriterion = models.HierarchicalMultiCriterionInput{
-			Value: []string{
-				strconv.Itoa(tagIDs[tagIdx1WithGallery]),
+			[]int{
+				galleryIdxWithImage,
 			},
-			Modifier: models.CriterionModifierExcludes,
-		}
+			false,
+		},
+		{
+			"includes all",
+			models.HierarchicalMultiCriterionInput{
+				Value: []string{
+					strconv.Itoa(tagIDs[tagIdx1WithGallery]),
+					strconv.Itoa(tagIDs[tagIdx2WithGallery]),
+				},
+				Modifier: models.CriterionModifierIncludesAll,
+			},
+			[]int{
+				galleryIdxWithTwoTags,
+			},
+			[]int{
+				galleryIdxWithTag,
+			},
+			false,
+		},
+		{
+			"excludes",
+			models.HierarchicalMultiCriterionInput{
+				Modifier: models.CriterionModifierExcludes,
+				Value:    []string{strconv.Itoa(tagIDs[tagIdx1WithGallery])},
+			},
+			nil,
+			[]int{galleryIdxWithTwoTags},
+			false,
+		},
+		{
+			"is null",
+			models.HierarchicalMultiCriterionInput{
+				Modifier: models.CriterionModifierIsNull,
+			},
+			[]int{galleryIdx1WithPerformer},
+			[]int{
+				galleryIdxWithTag,
+				galleryIdxWithTwoTags,
+				galleryIdxWithThreeTags,
+			},
+			false,
+		},
+		{
+			"not null",
+			models.HierarchicalMultiCriterionInput{
+				Modifier: models.CriterionModifierNotNull,
+			},
+			[]int{
+				galleryIdxWithTag,
+				galleryIdxWithTwoTags,
+				galleryIdxWithThreeTags,
+			},
+			[]int{galleryIdx1WithPerformer},
+			false,
+		},
+		{
+			"equals",
+			models.HierarchicalMultiCriterionInput{
+				Modifier: models.CriterionModifierEquals,
+				Value: []string{
+					strconv.Itoa(tagIDs[tagIdx1WithGallery]),
+					strconv.Itoa(tagIDs[tagIdx2WithGallery]),
+				},
+			},
+			[]int{galleryIdxWithTwoTags},
+			[]int{
+				galleryIdxWithThreeTags,
+			},
+			false,
+		},
+		{
+			"not equals",
+			models.HierarchicalMultiCriterionInput{
+				Modifier: models.CriterionModifierNotEquals,
+				Value: []string{
+					strconv.Itoa(tagIDs[tagIdx1WithGallery]),
+					strconv.Itoa(tagIDs[tagIdx2WithGallery]),
+				},
+			},
+			nil,
+			nil,
+			true,
+		},
+	}
 
-		q := getGalleryStringValue(galleryIdxWithTwoTags, titleField)
-		findFilter := models.FindFilterType{
-			Q: &q,
-		}
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
 
-		galleries = queryGallery(ctx, t, sqb, &galleryFilter, &findFilter)
-		assert.Len(t, galleries, 0)
+			results, _, err := db.Gallery.Query(ctx, &models.GalleryFilterType{
+				Tags: &tt.filter,
+			}, nil)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GalleryStore.Query() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
 
-		return nil
-	})
+			ids := galleriesToIDs(results)
+
+			include := indexesToIDs(imageIDs, tt.includeIdxs)
+			exclude := indexesToIDs(imageIDs, tt.excludeIdxs)
+
+			for _, i := range include {
+				assert.Contains(ids, i)
+			}
+			for _, e := range exclude {
+				assert.NotContains(ids, e)
+			}
+		})
+	}
 }
 
 func TestGalleryQueryStudio(t *testing.T) {
-	withTxn(func(ctx context.Context) error {
-		sqb := db.Gallery
-		studioCriterion := models.HierarchicalMultiCriterionInput{
-			Value: []string{
-				strconv.Itoa(studioIDs[studioIdxWithGallery]),
+	tests := []struct {
+		name            string
+		q               string
+		studioCriterion models.HierarchicalMultiCriterionInput
+		expectedIDs     []int
+		wantErr         bool
+	}{
+		{
+			"includes",
+			"",
+			models.HierarchicalMultiCriterionInput{
+				Value: []string{
+					strconv.Itoa(studioIDs[studioIdxWithGallery]),
+				},
+				Modifier: models.CriterionModifierIncludes,
 			},
-			Modifier: models.CriterionModifierIncludes,
-		}
-
-		galleryFilter := models.GalleryFilterType{
-			Studios: &studioCriterion,
-		}
-
-		galleries := queryGallery(ctx, t, sqb, &galleryFilter, nil)
-
-		assert.Len(t, galleries, 1)
-
-		// ensure id is correct
-		assert.Equal(t, galleryIDs[galleryIdxWithStudio], galleries[0].ID)
-
-		studioCriterion = models.HierarchicalMultiCriterionInput{
-			Value: []string{
-				strconv.Itoa(studioIDs[studioIdxWithGallery]),
+			[]int{galleryIDs[galleryIdxWithStudio]},
+			false,
+		},
+		{
+			"excludes",
+			getGalleryStringValue(galleryIdxWithStudio, titleField),
+			models.HierarchicalMultiCriterionInput{
+				Value: []string{
+					strconv.Itoa(studioIDs[studioIdxWithGallery]),
+				},
+				Modifier: models.CriterionModifierExcludes,
 			},
-			Modifier: models.CriterionModifierExcludes,
-		}
+			[]int{},
+			false,
+		},
+		{
+			"excludes includes null",
+			getGalleryStringValue(galleryIdxWithImage, titleField),
+			models.HierarchicalMultiCriterionInput{
+				Value: []string{
+					strconv.Itoa(studioIDs[studioIdxWithGallery]),
+				},
+				Modifier: models.CriterionModifierExcludes,
+			},
+			[]int{galleryIDs[galleryIdxWithImage]},
+			false,
+		},
+		{
+			"equals",
+			"",
+			models.HierarchicalMultiCriterionInput{
+				Value: []string{
+					strconv.Itoa(studioIDs[studioIdxWithGallery]),
+				},
+				Modifier: models.CriterionModifierEquals,
+			},
+			[]int{galleryIDs[galleryIdxWithStudio]},
+			false,
+		},
+		{
+			"not equals",
+			getGalleryStringValue(galleryIdxWithStudio, titleField),
+			models.HierarchicalMultiCriterionInput{
+				Value: []string{
+					strconv.Itoa(studioIDs[studioIdxWithGallery]),
+				},
+				Modifier: models.CriterionModifierNotEquals,
+			},
+			[]int{},
+			false,
+		},
+	}
 
-		q := getGalleryStringValue(galleryIdxWithStudio, titleField)
-		findFilter := models.FindFilterType{
-			Q: &q,
-		}
+	qb := db.Gallery
 
-		galleries = queryGallery(ctx, t, sqb, &galleryFilter, &findFilter)
-		assert.Len(t, galleries, 0)
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			studioCriterion := tt.studioCriterion
 
-		return nil
-	})
+			galleryFilter := models.GalleryFilterType{
+				Studios: &studioCriterion,
+			}
+
+			var findFilter *models.FindFilterType
+			if tt.q != "" {
+				findFilter = &models.FindFilterType{
+					Q: &tt.q,
+				}
+			}
+
+			gallerys := queryGallery(ctx, t, qb, &galleryFilter, findFilter)
+
+			assert.ElementsMatch(t, galleriesToIDs(gallerys), tt.expectedIDs)
+		})
+	}
 }
 
 func TestGalleryQueryStudioDepth(t *testing.T) {
@@ -2157,81 +2358,198 @@ func TestGalleryQueryStudioDepth(t *testing.T) {
 }
 
 func TestGalleryQueryPerformerTags(t *testing.T) {
-	withTxn(func(ctx context.Context) error {
-		sqb := db.Gallery
-		tagCriterion := models.HierarchicalMultiCriterionInput{
-			Value: []string{
-				strconv.Itoa(tagIDs[tagIdxWithPerformer]),
-				strconv.Itoa(tagIDs[tagIdx1WithPerformer]),
+	allDepth := -1
+
+	tests := []struct {
+		name        string
+		findFilter  *models.FindFilterType
+		filter      *models.GalleryFilterType
+		includeIdxs []int
+		excludeIdxs []int
+		wantErr     bool
+	}{
+		{
+			"includes",
+			nil,
+			&models.GalleryFilterType{
+				PerformerTags: &models.HierarchicalMultiCriterionInput{
+					Value: []string{
+						strconv.Itoa(tagIDs[tagIdxWithPerformer]),
+						strconv.Itoa(tagIDs[tagIdx1WithPerformer]),
+					},
+					Modifier: models.CriterionModifierIncludes,
+				},
 			},
-			Modifier: models.CriterionModifierIncludes,
-		}
-
-		galleryFilter := models.GalleryFilterType{
-			PerformerTags: &tagCriterion,
-		}
-
-		galleries := queryGallery(ctx, t, sqb, &galleryFilter, nil)
-		assert.Len(t, galleries, 2)
-
-		// ensure ids are correct
-		for _, gallery := range galleries {
-			assert.True(t, gallery.ID == galleryIDs[galleryIdxWithPerformerTag] || gallery.ID == galleryIDs[galleryIdxWithPerformerTwoTags])
-		}
-
-		tagCriterion = models.HierarchicalMultiCriterionInput{
-			Value: []string{
-				strconv.Itoa(tagIDs[tagIdx1WithPerformer]),
-				strconv.Itoa(tagIDs[tagIdx2WithPerformer]),
+			[]int{
+				galleryIdxWithPerformerTag,
+				galleryIdxWithPerformerTwoTags,
+				galleryIdxWithTwoPerformerTag,
 			},
-			Modifier: models.CriterionModifierIncludesAll,
-		}
-
-		galleries = queryGallery(ctx, t, sqb, &galleryFilter, nil)
-
-		assert.Len(t, galleries, 1)
-		assert.Equal(t, galleryIDs[galleryIdxWithPerformerTwoTags], galleries[0].ID)
-
-		tagCriterion = models.HierarchicalMultiCriterionInput{
-			Value: []string{
-				strconv.Itoa(tagIDs[tagIdx1WithPerformer]),
+			[]int{
+				galleryIdxWithPerformer,
 			},
-			Modifier: models.CriterionModifierExcludes,
-		}
+			false,
+		},
+		{
+			"includes sub-tags",
+			nil,
+			&models.GalleryFilterType{
+				PerformerTags: &models.HierarchicalMultiCriterionInput{
+					Value: []string{
+						strconv.Itoa(tagIDs[tagIdxWithParentAndChild]),
+					},
+					Depth:    &allDepth,
+					Modifier: models.CriterionModifierIncludes,
+				},
+			},
+			[]int{
+				galleryIdxWithPerformerParentTag,
+			},
+			[]int{
+				galleryIdxWithPerformer,
+				galleryIdxWithPerformerTag,
+				galleryIdxWithPerformerTwoTags,
+				galleryIdxWithTwoPerformerTag,
+			},
+			false,
+		},
+		{
+			"includes all",
+			nil,
+			&models.GalleryFilterType{
+				PerformerTags: &models.HierarchicalMultiCriterionInput{
+					Value: []string{
+						strconv.Itoa(tagIDs[tagIdx1WithPerformer]),
+						strconv.Itoa(tagIDs[tagIdx2WithPerformer]),
+					},
+					Modifier: models.CriterionModifierIncludesAll,
+				},
+			},
+			[]int{
+				galleryIdxWithPerformerTwoTags,
+			},
+			[]int{
+				galleryIdxWithPerformer,
+				galleryIdxWithPerformerTag,
+				galleryIdxWithTwoPerformerTag,
+			},
+			false,
+		},
+		{
+			"excludes performer tag tagIdx2WithPerformer",
+			nil,
+			&models.GalleryFilterType{
+				PerformerTags: &models.HierarchicalMultiCriterionInput{
+					Modifier: models.CriterionModifierExcludes,
+					Value:    []string{strconv.Itoa(tagIDs[tagIdx2WithPerformer])},
+				},
+			},
+			nil,
+			[]int{galleryIdxWithTwoPerformerTag},
+			false,
+		},
+		{
+			"excludes sub-tags",
+			nil,
+			&models.GalleryFilterType{
+				PerformerTags: &models.HierarchicalMultiCriterionInput{
+					Value: []string{
+						strconv.Itoa(tagIDs[tagIdxWithParentAndChild]),
+					},
+					Depth:    &allDepth,
+					Modifier: models.CriterionModifierExcludes,
+				},
+			},
+			[]int{
+				galleryIdxWithPerformer,
+				galleryIdxWithPerformerTag,
+				galleryIdxWithPerformerTwoTags,
+				galleryIdxWithTwoPerformerTag,
+			},
+			[]int{
+				galleryIdxWithPerformerParentTag,
+			},
+			false,
+		},
+		{
+			"is null",
+			nil,
+			&models.GalleryFilterType{
+				PerformerTags: &models.HierarchicalMultiCriterionInput{
+					Modifier: models.CriterionModifierIsNull,
+				},
+			},
+			[]int{galleryIdx1WithImage},
+			[]int{galleryIdxWithPerformerTag},
+			false,
+		},
+		{
+			"not null",
+			nil,
+			&models.GalleryFilterType{
+				PerformerTags: &models.HierarchicalMultiCriterionInput{
+					Modifier: models.CriterionModifierNotNull,
+				},
+			},
+			[]int{galleryIdxWithPerformerTag},
+			[]int{galleryIdx1WithImage},
+			false,
+		},
+		{
+			"equals",
+			nil,
+			&models.GalleryFilterType{
+				PerformerTags: &models.HierarchicalMultiCriterionInput{
+					Modifier: models.CriterionModifierEquals,
+					Value: []string{
+						strconv.Itoa(tagIDs[tagIdx2WithPerformer]),
+					},
+				},
+			},
+			nil,
+			nil,
+			true,
+		},
+		{
+			"not equals",
+			nil,
+			&models.GalleryFilterType{
+				PerformerTags: &models.HierarchicalMultiCriterionInput{
+					Modifier: models.CriterionModifierNotEquals,
+					Value: []string{
+						strconv.Itoa(tagIDs[tagIdx2WithPerformer]),
+					},
+				},
+			},
+			nil,
+			nil,
+			true,
+		},
+	}
 
-		q := getGalleryStringValue(galleryIdxWithPerformerTwoTags, titleField)
-		findFilter := models.FindFilterType{
-			Q: &q,
-		}
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
 
-		galleries = queryGallery(ctx, t, sqb, &galleryFilter, &findFilter)
-		assert.Len(t, galleries, 0)
+			results, _, err := db.Gallery.Query(ctx, tt.filter, tt.findFilter)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ImageStore.Query() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
 
-		tagCriterion = models.HierarchicalMultiCriterionInput{
-			Modifier: models.CriterionModifierIsNull,
-		}
-		q = getGalleryStringValue(galleryIdx1WithImage, titleField)
+			ids := galleriesToIDs(results)
 
-		galleries = queryGallery(ctx, t, sqb, &galleryFilter, &findFilter)
-		assert.Len(t, galleries, 1)
-		assert.Equal(t, galleryIDs[galleryIdx1WithImage], galleries[0].ID)
+			include := indexesToIDs(galleryIDs, tt.includeIdxs)
+			exclude := indexesToIDs(galleryIDs, tt.excludeIdxs)
 
-		q = getGalleryStringValue(galleryIdxWithPerformerTag, titleField)
-		galleries = queryGallery(ctx, t, sqb, &galleryFilter, &findFilter)
-		assert.Len(t, galleries, 0)
-
-		tagCriterion.Modifier = models.CriterionModifierNotNull
-
-		galleries = queryGallery(ctx, t, sqb, &galleryFilter, &findFilter)
-		assert.Len(t, galleries, 1)
-		assert.Equal(t, galleryIDs[galleryIdxWithPerformerTag], galleries[0].ID)
-
-		q = getGalleryStringValue(galleryIdx1WithImage, titleField)
-		galleries = queryGallery(ctx, t, sqb, &galleryFilter, &findFilter)
-		assert.Len(t, galleries, 0)
-
-		return nil
-	})
+			for _, i := range include {
+				assert.Contains(ids, i)
+			}
+			for _, e := range exclude {
+				assert.NotContains(ids, e)
+			}
+		})
+	}
 }
 
 func TestGalleryQueryTagCount(t *testing.T) {

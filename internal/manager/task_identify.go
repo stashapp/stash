@@ -14,7 +14,6 @@ import (
 	"github.com/stashapp/stash/pkg/scraper"
 	"github.com/stashapp/stash/pkg/scraper/stashbox"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
-	"github.com/stashapp/stash/pkg/txn"
 )
 
 var ErrInput = errors.New("invalid request input")
@@ -52,7 +51,8 @@ func (j *IdentifyJob) Execute(ctx context.Context, progress *job.Progress) {
 	// if scene ids provided, use those
 	// otherwise, batch query for all scenes - ordering by path
 	// don't use a transaction to query scenes
-	if err := txn.WithDatabase(ctx, instance.Repository, func(ctx context.Context) error {
+	r := instance.Repository
+	if err := r.WithDB(ctx, func(ctx context.Context) error {
 		if len(j.input.SceneIDs) == 0 {
 			return j.identifyAllScenes(ctx, sources)
 		}
@@ -70,13 +70,13 @@ func (j *IdentifyJob) Execute(ctx context.Context, progress *job.Progress) {
 
 			// find the scene
 			var err error
-			scene, err := instance.Repository.Scene.Find(ctx, id)
+			scene, err := r.Scene.Find(ctx, id)
 			if err != nil {
-				return fmt.Errorf("error finding scene with id %d: %w", id, err)
+				return fmt.Errorf("finding scene id %d: %w", id, err)
 			}
 
 			if scene == nil {
-				return fmt.Errorf("%w: scene with id %d", models.ErrNotFound, id)
+				return fmt.Errorf("scene with id %d not found", id)
 			}
 
 			j.identifyScene(ctx, scene, sources)
@@ -89,6 +89,8 @@ func (j *IdentifyJob) Execute(ctx context.Context, progress *job.Progress) {
 }
 
 func (j *IdentifyJob) identifyAllScenes(ctx context.Context, sources []identify.ScraperSource) error {
+	r := instance.Repository
+
 	// exclude organised
 	organised := false
 	sceneFilter := scene.FilterFromPaths(j.input.Paths)
@@ -102,7 +104,7 @@ func (j *IdentifyJob) identifyAllScenes(ctx context.Context, sources []identify.
 	// get the count
 	pp := 0
 	findFilter.PerPage = &pp
-	countResult, err := instance.Repository.Scene.Query(ctx, models.SceneQueryOptions{
+	countResult, err := r.Scene.Query(ctx, models.SceneQueryOptions{
 		QueryOptions: models.QueryOptions{
 			FindFilter: findFilter,
 			Count:      true,
@@ -115,7 +117,7 @@ func (j *IdentifyJob) identifyAllScenes(ctx context.Context, sources []identify.
 
 	j.progress.SetTotal(countResult.Count)
 
-	return scene.BatchProcess(ctx, instance.Repository.Scene, sceneFilter, findFilter, func(scene *models.Scene) error {
+	return scene.BatchProcess(ctx, r.Scene, sceneFilter, findFilter, func(scene *models.Scene) error {
 		if job.IsCancelled(ctx) {
 			return nil
 		}
@@ -132,18 +134,20 @@ func (j *IdentifyJob) identifyScene(ctx context.Context, s *models.Scene, source
 
 	var taskError error
 	j.progress.ExecuteTask("Identifying "+s.Path, func() {
+		r := instance.Repository
 		task := identify.SceneIdentifier{
-			SceneReaderUpdater: instance.Repository.Scene,
-			StudioCreator:      instance.Repository.Studio,
-			PerformerCreator:   instance.Repository.Performer,
-			TagCreator:         instance.Repository.Tag,
+			TxnManager:         r.TxnManager,
+			SceneReaderUpdater: r.Scene,
+			StudioReaderWriter: r.Studio,
+			PerformerCreator:   r.Performer,
+			TagFinderCreator:   r.Tag,
 
 			DefaultOptions:              j.input.Options,
 			Sources:                     sources,
 			SceneUpdatePostHookExecutor: j.postHookExecutor,
 		}
 
-		taskError = task.Identify(ctx, instance.Repository, s)
+		taskError = task.Identify(ctx, s)
 	})
 
 	if taskError != nil {
@@ -164,15 +168,11 @@ func (j *IdentifyJob) getSources() ([]identify.ScraperSource, error) {
 
 		var src identify.ScraperSource
 		if stashBox != nil {
+			stashboxRepository := stashbox.NewRepository(instance.Repository)
 			src = identify.ScraperSource{
 				Name: "stash-box: " + stashBox.Endpoint,
 				Scraper: stashboxSource{
-					stashbox.NewClient(*stashBox, instance.Repository, stashbox.Repository{
-						Scene:     instance.Repository.Scene,
-						Performer: instance.Repository.Performer,
-						Tag:       instance.Repository.Tag,
-						Studio:    instance.Repository.Studio,
-					}),
+					stashbox.NewClient(*stashBox, stashboxRepository),
 					stashBox.Endpoint,
 				},
 				RemoteSite: stashBox.Endpoint,
@@ -248,14 +248,14 @@ type stashboxSource struct {
 	endpoint string
 }
 
-func (s stashboxSource) ScrapeScene(ctx context.Context, sceneID int) (*scraper.ScrapedScene, error) {
+func (s stashboxSource) ScrapeScenes(ctx context.Context, sceneID int) ([]*scraper.ScrapedScene, error) {
 	results, err := s.FindStashBoxSceneByFingerprints(ctx, sceneID)
 	if err != nil {
 		return nil, fmt.Errorf("error querying stash-box using scene ID %d: %w", sceneID, err)
 	}
 
 	if len(results) > 0 {
-		return results[0], nil
+		return results, nil
 	}
 
 	return nil, nil
@@ -270,7 +270,7 @@ type scraperSource struct {
 	scraperID string
 }
 
-func (s scraperSource) ScrapeScene(ctx context.Context, sceneID int) (*scraper.ScrapedScene, error) {
+func (s scraperSource) ScrapeScenes(ctx context.Context, sceneID int) ([]*scraper.ScrapedScene, error) {
 	content, err := s.cache.ScrapeID(ctx, s.scraperID, sceneID, scraper.ScrapeContentTypeScene)
 	if err != nil {
 		return nil, err
@@ -282,7 +282,7 @@ func (s scraperSource) ScrapeScene(ctx context.Context, sceneID int) (*scraper.S
 	}
 
 	if scene, ok := content.(scraper.ScrapedScene); ok {
-		return &scene, nil
+		return []*scraper.ScrapedScene{&scene}, nil
 	}
 
 	return nil, errors.New("could not convert content to scene")

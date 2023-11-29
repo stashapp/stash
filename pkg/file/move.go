@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/txn"
 )
 
@@ -40,14 +41,14 @@ func (r folderCreatorStatRenamerImpl) Mkdir(name string, perm os.FileMode) error
 
 type Mover struct {
 	Renamer DirMakerStatRenamer
-	Files   GetterUpdater
-	Folders FolderStore
+	Files   models.FileFinderUpdater
+	Folders models.FolderReaderWriter
 
 	moved          map[string]string
 	foldersCreated []string
 }
 
-func NewMover(fileStore GetterUpdater, folderStore FolderStore) *Mover {
+func NewMover(fileStore models.FileFinderUpdater, folderStore models.FolderReaderWriter) *Mover {
 	return &Mover{
 		Files:   fileStore,
 		Folders: folderStore,
@@ -60,7 +61,7 @@ func NewMover(fileStore GetterUpdater, folderStore FolderStore) *Mover {
 
 // Move moves the file to the given folder and basename. If basename is empty, then the existing basename is used.
 // Assumes that the parent folder exists in the filesystem.
-func (m *Mover) Move(ctx context.Context, f File, folder *Folder, basename string) error {
+func (m *Mover) Move(ctx context.Context, f models.File, folder *models.Folder, basename string) error {
 	fBase := f.Base()
 
 	// don't allow moving files in zip files
@@ -180,7 +181,7 @@ func (m *Mover) moveFile(oldPath, newPath string) error {
 	return nil
 }
 
-func (m *Mover) RegisterHooks(ctx context.Context, mgr txn.Manager) {
+func (m *Mover) RegisterHooks(ctx context.Context) {
 	txn.AddPostCommitHook(ctx, func(ctx context.Context) {
 		m.commit()
 	})
@@ -210,4 +211,35 @@ func (m *Mover) rollback() {
 			logger.Errorf("error removing folder %s: %s", folder, err.Error())
 		}
 	}
+}
+
+// correctSubFolderHierarchy sets the path of all contained folders to be relative to the given folder.
+// It does not move the folder hierarchy in the filesystem.
+func correctSubFolderHierarchy(ctx context.Context, rw models.FolderReaderWriter, folder *models.Folder) error {
+	folders, err := rw.FindByParentFolderID(ctx, folder.ID)
+	if err != nil {
+		return fmt.Errorf("finding contained folders in folder %s: %w", folder.Path, err)
+	}
+
+	folderPath := folder.Path
+
+	for _, f := range folders {
+		oldPath := f.Path
+		folderBasename := filepath.Base(f.Path)
+		correctPath := filepath.Join(folderPath, folderBasename)
+
+		logger.Debugf("updating folder %s to %s", oldPath, correctPath)
+
+		f.Path = correctPath
+		if err := rw.Update(ctx, f); err != nil {
+			return fmt.Errorf("updating folder path %s -> %s: %w", oldPath, f.Path, err)
+		}
+
+		// recurse
+		if err := correctSubFolderHierarchy(ctx, rw, f); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

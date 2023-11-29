@@ -2,7 +2,7 @@ mutation SaveFilter($input: SaveFilterInput!) {
   saveFilter(input: $input) {
     ...SavedFilterData
   }
-} 
+}
 
 mutation DestroySavedFilter($input: DestroyFilterInput!) {
   destroySavedFilter(input: $input)

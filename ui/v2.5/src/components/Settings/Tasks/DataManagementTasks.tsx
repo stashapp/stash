@@ -10,6 +10,7 @@ import {
   mutateAnonymiseDatabase,
   mutateMigrateSceneScreenshots,
   mutateMigrateBlobs,
+  mutateOptimiseDatabase,
 } from "src/core/StashService";
 import { useToast } from "src/hooks/Toast";
 import downloadFile from "src/utils/download";
@@ -105,7 +106,7 @@ const CleanDialog: React.FC<ICleanDialog> = ({
           {pathSelection ? (
             <FolderSelect
               currentDirectory={currentDirectory}
-              setCurrentDirectory={(v) => setCurrentDirectory(v)}
+              onChangeDirectory={setCurrentDirectory}
               defaultDirectories={libraryPaths}
               appendButton={
                 <Button
@@ -195,12 +196,12 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
     setDialogOpen({ importAlert: false });
     try {
       await mutateMetadataImport();
-      Toast.success({
-        content: intl.formatMessage(
+      Toast.success(
+        intl.formatMessage(
           { id: "config.tasks.added_job_to_queue" },
           { operation_name: intl.formatMessage({ id: "actions.import" }) }
-        ),
-      });
+        )
+      );
     } catch (e) {
       Toast.error(e);
     }
@@ -238,12 +239,12 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
         paths,
       });
 
-      Toast.success({
-        content: intl.formatMessage(
+      Toast.success(
+        intl.formatMessage(
           { id: "config.tasks.added_job_to_queue" },
           { operation_name: intl.formatMessage({ id: "actions.clean" }) }
-        ),
-      });
+        )
+      );
     } catch (e) {
       Toast.error(e);
     } finally {
@@ -254,16 +255,16 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
   async function onMigrateHashNaming() {
     try {
       await mutateMigrateHashNaming();
-      Toast.success({
-        content: intl.formatMessage(
+      Toast.success(
+        intl.formatMessage(
           { id: "config.tasks.added_job_to_queue" },
           {
             operation_name: intl.formatMessage({
               id: "actions.hash_migration",
             }),
           }
-        ),
-      });
+        )
+      );
     } catch (err) {
       Toast.error(err);
     }
@@ -272,16 +273,16 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
   async function onMigrateSceneScreenshots() {
     try {
       await mutateMigrateSceneScreenshots(migrateSceneScreenshotsOptions);
-      Toast.success({
-        content: intl.formatMessage(
+      Toast.success(
+        intl.formatMessage(
           { id: "config.tasks.added_job_to_queue" },
           {
             operation_name: intl.formatMessage({
               id: "actions.migrate_scene_screenshots",
             }),
           }
-        ),
-      });
+        )
+      );
     } catch (err) {
       Toast.error(err);
     }
@@ -290,16 +291,16 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
   async function onMigrateBlobs() {
     try {
       await mutateMigrateBlobs(migrateBlobsOptions);
-      Toast.success({
-        content: intl.formatMessage(
+      Toast.success(
+        intl.formatMessage(
           { id: "config.tasks.added_job_to_queue" },
           {
             operation_name: intl.formatMessage({
               id: "actions.migrate_blobs",
             }),
           }
-        ),
-      });
+        )
+      );
     } catch (err) {
       Toast.error(err);
     }
@@ -308,12 +309,12 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
   async function onExport() {
     try {
       await mutateMetadataExport();
-      Toast.success({
-        content: intl.formatMessage(
+      Toast.success(
+        intl.formatMessage(
           { id: "config.tasks.added_job_to_queue" },
           { operation_name: intl.formatMessage({ id: "actions.export" }) }
-        ),
-      });
+        )
+      );
     } catch (err) {
       Toast.error(err);
     }
@@ -335,6 +336,24 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
       Toast.error(e);
     } finally {
       setIsBackupRunning(false);
+    }
+  }
+
+  async function onOptimiseDatabase() {
+    try {
+      await mutateOptimiseDatabase();
+      Toast.success(
+        intl.formatMessage(
+          { id: "config.tasks.added_job_to_queue" },
+          {
+            operation_name: intl.formatMessage({
+              id: "actions.optimise_database",
+            }),
+          }
+        )
+      );
+    } catch (e) {
+      Toast.error(e);
     }
   }
 
@@ -419,6 +438,25 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
             setOptions={(o) => setCleanOptions(o)}
           />
         </div>
+
+        <Setting
+          headingID="actions.optimise_database"
+          subHeading={
+            <>
+              <FormattedMessage id="config.tasks.optimise_database" />
+              <br />
+              <FormattedMessage id="config.tasks.optimise_database_warning" />
+            </>
+          }
+        >
+          <Button
+            id="optimiseDatabase"
+            variant="danger"
+            onClick={() => onOptimiseDatabase()}
+          >
+            <FormattedMessage id="actions.optimise_database" />
+          </Button>
+        </Setting>
       </SettingSection>
 
       <SettingSection headingID="metadata">
@@ -519,7 +557,7 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
           )}
         >
           <Button
-            id="backup"
+            id="anonymise"
             variant="secondary"
             type="submit"
             onClick={() => onAnonymise()}
@@ -533,7 +571,7 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
           subHeadingID="config.tasks.anonymise_and_download"
         >
           <Button
-            id="anonymousDownload"
+            id="anonymiseDownload"
             variant="secondary"
             type="submit"
             onClick={() => onAnonymise(true)}

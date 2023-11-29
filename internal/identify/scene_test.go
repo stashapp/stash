@@ -1,7 +1,6 @@
 package identify
 
 import (
-	"context"
 	"errors"
 	"reflect"
 	"strconv"
@@ -16,6 +15,7 @@ import (
 
 func Test_sceneRelationships_studio(t *testing.T) {
 	validStoredID := "1"
+	remoteSiteID := "2"
 	var validStoredIDInt = 1
 	invalidStoredID := "invalidStoredID"
 	createMissing := true
@@ -24,14 +24,16 @@ func Test_sceneRelationships_studio(t *testing.T) {
 		Strategy: FieldStrategyMerge,
 	}
 
-	mockStudioReaderWriter := &mocks.StudioReaderWriter{}
-	mockStudioReaderWriter.On("Create", testCtx, mock.Anything).Return(&models.Studio{
-		ID: int(validStoredIDInt),
-	}, nil)
+	db := mocks.NewDatabase()
+
+	db.Studio.On("Create", testCtx, mock.Anything).Run(func(args mock.Arguments) {
+		s := args.Get(1).(*models.Studio)
+		s.ID = validStoredIDInt
+	}).Return(nil)
 
 	tr := sceneRelationships{
-		studioCreator: mockStudioReaderWriter,
-		fieldOptions:  make(map[string]*FieldOptions),
+		studioReaderWriter: db.Studio,
+		fieldOptions:       make(map[string]*FieldOptions),
 	}
 
 	tests := []struct {
@@ -109,7 +111,7 @@ func Test_sceneRelationships_studio(t *testing.T) {
 				Strategy:      FieldStrategyMerge,
 				CreateMissing: &createMissing,
 			},
-			&models.ScrapedStudio{},
+			&models.ScrapedStudio{RemoteSiteID: &remoteSiteID},
 			&validStoredIDInt,
 			false,
 		},
@@ -119,6 +121,9 @@ func Test_sceneRelationships_studio(t *testing.T) {
 			tr.scene = tt.scene
 			tr.fieldOptions["studio"] = tt.fieldOptions
 			tr.result = &scrapeResult{
+				source: ScraperSource{
+					RemoteSite: "endpoint",
+				},
 				result: &scraper.ScrapedScene{
 					Studio: tt.result,
 				},
@@ -170,8 +175,10 @@ func Test_sceneRelationships_performers(t *testing.T) {
 		}),
 	}
 
+	db := mocks.NewDatabase()
+
 	tr := sceneRelationships{
-		sceneReader:  &mocks.SceneReaderWriter{},
+		sceneReader:  db.Scene,
 		fieldOptions: make(map[string]*FieldOptions),
 	}
 
@@ -359,21 +366,21 @@ func Test_sceneRelationships_tags(t *testing.T) {
 		StashIDs:     models.NewRelatedStashIDs([]models.StashID{}),
 	}
 
-	mockSceneReaderWriter := &mocks.SceneReaderWriter{}
-	mockTagReaderWriter := &mocks.TagReaderWriter{}
+	db := mocks.NewDatabase()
 
-	mockTagReaderWriter.On("Create", testCtx, mock.MatchedBy(func(p models.Tag) bool {
+	db.Tag.On("Create", testCtx, mock.MatchedBy(func(p *models.Tag) bool {
 		return p.Name == validName
-	})).Return(&models.Tag{
-		ID: validStoredIDInt,
-	}, nil)
-	mockTagReaderWriter.On("Create", testCtx, mock.MatchedBy(func(p models.Tag) bool {
+	})).Run(func(args mock.Arguments) {
+		t := args.Get(1).(*models.Tag)
+		t.ID = validStoredIDInt
+	}).Return(nil)
+	db.Tag.On("Create", testCtx, mock.MatchedBy(func(p *models.Tag) bool {
 		return p.Name == invalidName
-	})).Return(nil, errors.New("error creating tag"))
+	})).Return(errors.New("error creating tag"))
 
 	tr := sceneRelationships{
-		sceneReader:  mockSceneReaderWriter,
-		tagCreator:   mockTagReaderWriter,
+		sceneReader:  db.Scene,
+		tagCreator:   db.Tag,
 		fieldOptions: make(map[string]*FieldOptions),
 	}
 
@@ -547,10 +554,10 @@ func Test_sceneRelationships_stashIDs(t *testing.T) {
 		}),
 	}
 
-	mockSceneReaderWriter := &mocks.SceneReaderWriter{}
+	db := mocks.NewDatabase()
 
 	tr := sceneRelationships{
-		sceneReader:  mockSceneReaderWriter,
+		sceneReader:  db.Scene,
 		fieldOptions: make(map[string]*FieldOptions),
 	}
 
@@ -701,12 +708,13 @@ func Test_sceneRelationships_cover(t *testing.T) {
 	newDataEncoded := base64Prefix + utils.GetBase64StringFromData(newData)
 	invalidData := newDataEncoded + "!!!"
 
-	mockSceneReaderWriter := &mocks.SceneReaderWriter{}
-	mockSceneReaderWriter.On("GetCover", testCtx, sceneID).Return(existingData, nil)
-	mockSceneReaderWriter.On("GetCover", testCtx, errSceneID).Return(nil, errors.New("error getting cover"))
+	db := mocks.NewDatabase()
+
+	db.Scene.On("GetCover", testCtx, sceneID).Return(existingData, nil)
+	db.Scene.On("GetCover", testCtx, errSceneID).Return(nil, errors.New("error getting cover"))
 
 	tr := sceneRelationships{
-		sceneReader:  mockSceneReaderWriter,
+		sceneReader:  db.Scene,
 		fieldOptions: make(map[string]*FieldOptions),
 	}
 
@@ -764,7 +772,7 @@ func Test_sceneRelationships_cover(t *testing.T) {
 				},
 			}
 
-			got, err := tr.cover(context.TODO())
+			got, err := tr.cover(testCtx)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("sceneRelationships.cover() error = %v, wantErr %v", err, tt.wantErr)
 				return

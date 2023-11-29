@@ -3,7 +3,6 @@ package api
 import (
 	"context"
 	"strconv"
-	"strings"
 
 	"github.com/stashapp/stash/internal/api/loaders"
 	"github.com/stashapp/stash/internal/api/urlbuilders"
@@ -12,24 +11,6 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/performer"
 )
-
-// Checksum is deprecated
-func (r *performerResolver) Checksum(ctx context.Context, obj *models.Performer) (*string, error) {
-	return nil, nil
-}
-
-func (r *performerResolver) Aliases(ctx context.Context, obj *models.Performer) (*string, error) {
-	if !obj.Aliases.Loaded() {
-		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-			return obj.LoadAliases(ctx, r.repository.Performer)
-		}); err != nil {
-			return nil, err
-		}
-	}
-
-	ret := strings.Join(obj.Aliases.List(), ", ")
-	return &ret, nil
-}
 
 func (r *performerResolver) AliasList(ctx context.Context, obj *models.Performer) ([]string, error) {
 	if !obj.Aliases.Loaded() {
@@ -92,40 +73,59 @@ func (r *performerResolver) Tags(ctx context.Context, obj *models.Performer) (re
 	return ret, firstError(errs)
 }
 
-func (r *performerResolver) SceneCount(ctx context.Context, obj *models.Performer) (ret *int, err error) {
-	var res int
+func (r *performerResolver) SceneCount(ctx context.Context, obj *models.Performer) (ret int, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		res, err = r.repository.Scene.CountByPerformerID(ctx, obj.ID)
+		ret, err = r.repository.Scene.CountByPerformerID(ctx, obj.ID)
 		return err
 	}); err != nil {
-		return nil, err
+		return 0, err
 	}
 
-	return &res, nil
+	return ret, nil
 }
 
-func (r *performerResolver) ImageCount(ctx context.Context, obj *models.Performer) (ret *int, err error) {
-	var res int
+func (r *performerResolver) ImageCount(ctx context.Context, obj *models.Performer) (ret int, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		res, err = image.CountByPerformerID(ctx, r.repository.Image, obj.ID)
+		ret, err = image.CountByPerformerID(ctx, r.repository.Image, obj.ID)
 		return err
 	}); err != nil {
-		return nil, err
+		return 0, err
 	}
 
-	return &res, nil
+	return ret, nil
 }
 
-func (r *performerResolver) GalleryCount(ctx context.Context, obj *models.Performer) (ret *int, err error) {
-	var res int
+func (r *performerResolver) GalleryCount(ctx context.Context, obj *models.Performer) (ret int, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		res, err = gallery.CountByPerformerID(ctx, r.repository.Gallery, obj.ID)
+		ret, err = gallery.CountByPerformerID(ctx, r.repository.Gallery, obj.ID)
 		return err
 	}); err != nil {
-		return nil, err
+		return 0, err
 	}
 
-	return &res, nil
+	return ret, nil
+}
+
+func (r *performerResolver) MovieCount(ctx context.Context, obj *models.Performer) (ret int, err error) {
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+		ret, err = r.repository.Movie.CountByPerformerID(ctx, obj.ID)
+		return err
+	}); err != nil {
+		return 0, err
+	}
+
+	return ret, nil
+}
+
+func (r *performerResolver) PerformerCount(ctx context.Context, obj *models.Performer) (ret int, err error) {
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+		ret, err = performer.CountByAppearsWith(ctx, r.repository.Performer, obj.ID)
+		return err
+	}); err != nil {
+		return 0, err
+	}
+
+	return ret, nil
 }
 
 func (r *performerResolver) OCounter(ctx context.Context, obj *models.Performer) (ret *int, err error) {
@@ -167,14 +167,6 @@ func (r *performerResolver) StashIds(ctx context.Context, obj *models.Performer)
 	return stashIDsSliceToPtrSlice(obj.StashIDs.List()), nil
 }
 
-func (r *performerResolver) Rating(ctx context.Context, obj *models.Performer) (*int, error) {
-	if obj.Rating != nil {
-		rating := models.Rating100To5(*obj.Rating)
-		return &rating, nil
-	}
-	return nil, nil
-}
-
 func (r *performerResolver) Rating100(ctx context.Context, obj *models.Performer) (*int, error) {
 	return obj.Rating, nil
 }
@@ -196,28 +188,4 @@ func (r *performerResolver) Movies(ctx context.Context, obj *models.Performer) (
 	}
 
 	return ret, nil
-}
-
-func (r *performerResolver) MovieCount(ctx context.Context, obj *models.Performer) (ret *int, err error) {
-	var res int
-	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		res, err = r.repository.Movie.CountByPerformerID(ctx, obj.ID)
-		return err
-	}); err != nil {
-		return nil, err
-	}
-
-	return &res, nil
-}
-
-func (r *performerResolver) PerformerCount(ctx context.Context, obj *models.Performer) (ret *int, err error) {
-	var res int
-	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		res, err = performer.CountByAppearsWith(ctx, r.repository.Performer, obj.ID)
-		return err
-	}); err != nil {
-		return nil, err
-	}
-
-	return &res, nil
 }

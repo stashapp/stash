@@ -88,7 +88,11 @@ export const QueueViewer: React.FC<IPlaylistViewer> = ({
         >
           <div className="ml-1 d-flex align-items-center">
             <div className="thumbnail-container">
-              <img alt={scene.title ?? ""} src={scene.paths.screenshot ?? ""} />
+              <img
+                loading="lazy"
+                alt={scene.title ?? ""}
+                src={scene.paths.screenshot ?? ""}
+              />
             </div>
             <div>
               <span className="align-middle text-break">

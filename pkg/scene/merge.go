@@ -6,20 +6,19 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sliceutil/intslice"
+	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/txn"
 )
 
 func (s *Service) Merge(ctx context.Context, sourceIDs []int, destinationID int, scenePartial models.ScenePartial) error {
 	// ensure source ids are unique
-	sourceIDs = intslice.IntAppendUniques(nil, sourceIDs)
+	sourceIDs = sliceutil.AppendUniques(nil, sourceIDs)
 
 	// ensure destination is not in source list
-	if intslice.IntInclude(sourceIDs, destinationID) {
+	if sliceutil.Contains(sourceIDs, destinationID) {
 		return errors.New("destination scene cannot be in source list")
 	}
 
@@ -33,7 +32,7 @@ func (s *Service) Merge(ctx context.Context, sourceIDs []int, destinationID int,
 		return fmt.Errorf("finding source scenes: %w", err)
 	}
 
-	var fileIDs []file.ID
+	var fileIDs []models.FileID
 
 	for _, src := range sources {
 		// TODO - delete generated files as needed
@@ -99,9 +98,9 @@ func (s *Service) mergeSceneMarkers(ctx context.Context, dest *models.Scene, src
 		srcHash := src.GetHash(s.Config.GetVideoFileNamingAlgorithm())
 
 		// updated the scene id
-		m.SceneID.Int64 = int64(dest.ID)
+		m.SceneID = dest.ID
 
-		if _, err := s.MarkerRepository.Update(ctx, *m); err != nil {
+		if err := s.MarkerRepository.Update(ctx, m); err != nil {
 			return fmt.Errorf("updating scene marker %d: %w", m.ID, err)
 		}
 

@@ -1,25 +1,41 @@
 package models
 
 import (
-	"database/sql"
+	"time"
 )
 
 type SceneMarker struct {
-	ID           int             `db:"id" json:"id"`
-	Title        string          `db:"title" json:"title"`
-	Seconds      float64         `db:"seconds" json:"seconds"`
-	PrimaryTagID int             `db:"primary_tag_id" json:"primary_tag_id"`
-	SceneID      sql.NullInt64   `db:"scene_id,omitempty" json:"scene_id"`
-	CreatedAt    SQLiteTimestamp `db:"created_at" json:"created_at"`
-	UpdatedAt    SQLiteTimestamp `db:"updated_at" json:"updated_at"`
+	ID           int       `json:"id"`
+	Title        string    `json:"title"`
+	Seconds      float64   `json:"seconds"`
+	PrimaryTagID int       `json:"primary_tag_id"`
+	SceneID      int       `json:"scene_id"`
+	CreatedAt    time.Time `json:"created_at"`
+	UpdatedAt    time.Time `json:"updated_at"`
 }
 
-type SceneMarkers []*SceneMarker
-
-func (m *SceneMarkers) Append(o interface{}) {
-	*m = append(*m, o.(*SceneMarker))
+func NewSceneMarker() SceneMarker {
+	currentTime := time.Now()
+	return SceneMarker{
+		CreatedAt: currentTime,
+		UpdatedAt: currentTime,
+	}
 }
 
-func (m *SceneMarkers) New() interface{} {
-	return &SceneMarker{}
+// SceneMarkerPartial represents part of a SceneMarker object.
+// It is used to update the database entry.
+type SceneMarkerPartial struct {
+	Title        OptionalString
+	Seconds      OptionalFloat64
+	PrimaryTagID OptionalInt
+	SceneID      OptionalInt
+	CreatedAt    OptionalTime
+	UpdatedAt    OptionalTime
+}
+
+func NewSceneMarkerPartial() SceneMarkerPartial {
+	currentTime := time.Now()
+	return SceneMarkerPartial{
+		UpdatedAt: NewOptionalTime(currentTime),
+	}
 }

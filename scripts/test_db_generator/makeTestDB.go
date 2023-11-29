@@ -15,14 +15,15 @@ import (
 	"strconv"
 	"time"
 
+	"gopkg.in/yaml.v2"
+
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sliceutil/intslice"
+	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/txn"
-	"gopkg.in/yaml.v2"
 )
 
 const batchSize = 50000
@@ -36,7 +37,7 @@ type config struct {
 	Markers    int          `yaml:"markers"`
 	Images     int          `yaml:"images"`
 	Galleries  int          `yaml:"galleries"`
-        Chapters   int          `yaml:"chapters"`
+	Chapters   int          `yaml:"chapters"`
 	Performers int          `yaml:"performers"`
 	Studios    int          `yaml:"studios"`
 	Tags       int          `yaml:"tags"`
@@ -98,7 +99,7 @@ func populateDB() {
 	makeScenes(c.Scenes)
 	makeImages(c.Images)
 	makeGalleries(c.Galleries)
-        makeChapters(c.Chapters)
+	makeChapters(c.Chapters)
 	makeMarkers(c.Markers)
 }
 
@@ -504,35 +505,35 @@ func generateGallery(i int) models.Gallery {
 }
 
 func makeChapters(n int) {
-        logf("creating %d chapters...", n)
-        for i := 0; i < n; {
-                // do in batches of 1000
-                batch := i + batchSize
-                if err := withTxn(func(ctx context.Context) error {
-                        for ; i < batch && i < n; i++ {
-                                chapter := generateChapter(i)
-                                chapter.GalleryID = models.NullInt64(int64(getRandomGallery()))
+	logf("creating %d chapters...", n)
+	for i := 0; i < n; {
+		// do in batches of 1000
+		batch := i + batchSize
+		if err := withTxn(func(ctx context.Context) error {
+			for ; i < batch && i < n; i++ {
+				chapter := generateChapter(i)
+				chapter.GalleryID = models.NullInt64(int64(getRandomGallery()))
 
-                                created, err := repo.GalleryChapter.Create(ctx, chapter)
-                                if err != nil {
-                                        return err
-                                }
-                        }
+				created, err := repo.GalleryChapter.Create(ctx, chapter)
+				if err != nil {
+					return err
+				}
+			}
 
-                        logf("... created %d chapters", i)
+			logf("... created %d chapters", i)
 
-                        return nil
-                }); err != nil {
-                        panic(err)
-                }
-        }
+			return nil
+		}); err != nil {
+			panic(err)
+		}
+	}
 }
 
 func generateChapter(i int) models.GalleryChapter {
-        return models.GalleryChapter{
-                Title: names[c.Naming.Galleries].generateName(rand.Intn(7) + 1),
-                ImageIndex: rand.Intn(200),
-        }
+	return models.GalleryChapter{
+		Title:      names[c.Naming.Galleries].generateName(rand.Intn(7) + 1),
+		ImageIndex: rand.Intn(200),
+	}
 }
 
 func makeMarkers(n int) {
@@ -553,7 +554,7 @@ func makeMarkers(n int) {
 
 				tags := getRandomTags(ctx, 0, 5)
 				// remove primary tag
-				tags = intslice.IntExclude(tags, []int{marker.PrimaryTagID})
+				tags = sliceutil.Exclude(tags, []int{marker.PrimaryTagID})
 				if err := repo.SceneMarker.UpdateTags(ctx, created.ID, tags); err != nil {
 					return err
 				}
@@ -641,12 +642,12 @@ func getRandomPerformers(ctx context.Context) []int {
 	// 	}
 
 	// 	for _, pp := range p {
-	// 		ret = intslice.IntAppendUnique(ret, pp.ID)
+	// 		ret = sliceutil.AppendUnique(ret, pp.ID)
 	// 	}
 	// }
 
 	for i := 0; i < n; i++ {
-		ret = intslice.IntAppendUnique(ret, rand.Intn(c.Performers)+1)
+		ret = sliceutil.AppendUnique(ret, rand.Intn(c.Performers)+1)
 	}
 
 	return ret
@@ -657,7 +658,7 @@ func getRandomScene() int {
 }
 
 func getRandomGallery() int {
-        return rand.Intn(c.Galleries) + 1
+	return rand.Intn(c.Galleries) + 1
 }
 
 func getRandomTags(ctx context.Context, min, max int) []int {
@@ -676,12 +677,12 @@ func getRandomTags(ctx context.Context, min, max int) []int {
 	// 	}
 
 	// 	for _, tt := range t {
-	// 		ret = intslice.IntAppendUnique(ret, tt.ID)
+	// 		ret = sliceutil.AppendUnique(ret, tt.ID)
 	// 	}
 	// }
 
 	for i := 0; i < n; i++ {
-		ret = intslice.IntAppendUnique(ret, rand.Intn(c.Tags)+1)
+		ret = sliceutil.AppendUnique(ret, rand.Intn(c.Tags)+1)
 	}
 
 	return ret
@@ -698,12 +699,12 @@ func getRandomImages(ctx context.Context) []int {
 	// 	}
 
 	// 	for _, tt := range t {
-	// 		ret = intslice.IntAppendUnique(ret, tt.ID)
+	// 		ret = sliceutil.AppendUnique(ret, tt.ID)
 	// 	}
 	// }
 
 	for i := 0; i < n; i++ {
-		ret = intslice.IntAppendUnique(ret, rand.Intn(c.Images)+1)
+		ret = sliceutil.AppendUnique(ret, rand.Intn(c.Images)+1)
 	}
 
 	return ret

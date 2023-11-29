@@ -3,18 +3,18 @@ import { CriterionModifier } from "src/core/generated-graphql";
 import { getCountryByISO } from "src/utils/country";
 import { StringCriterion, StringCriterionOption } from "./criterion";
 
-const countryCriterionOption = new StringCriterionOption(
+export const CountryCriterionOption = new StringCriterionOption(
   "country",
   "country",
-  "country"
+  () => new CountryCriterion()
 );
 
 export class CountryCriterion extends StringCriterion {
   constructor() {
-    super(countryCriterionOption);
+    super(CountryCriterionOption);
   }
 
-  public getLabelValue(intl: IntlShape) {
+  protected getLabelValue(intl: IntlShape) {
     if (
       this.modifier === CriterionModifier.Equals ||
       this.modifier === CriterionModifier.NotEquals

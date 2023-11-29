@@ -5,6 +5,7 @@ import (
 	"io"
 	"strconv"
 
+	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 )
 
@@ -77,36 +78,58 @@ func (u *UpdateIDs) ImpactedIDs(existing []int) []int {
 
 	switch u.Mode {
 	case RelationshipUpdateModeAdd:
-		return intslice.IntExclude(u.IDs, existing)
+		return sliceutil.Exclude(u.IDs, existing)
 	case RelationshipUpdateModeRemove:
-		return intslice.IntIntercect(existing, u.IDs)
+		return sliceutil.Intersect(existing, u.IDs)
 	case RelationshipUpdateModeSet:
 		// get the difference between the two lists
-		return intslice.IntNotIntersect(existing, u.IDs)
+		return sliceutil.NotIntersect(existing, u.IDs)
 	}
 
 	return nil
 }
 
-// GetEffectiveIDs returns the new IDs that will be effective after the update.
-func (u *UpdateIDs) EffectiveIDs(existing []int) []int {
+// Apply applies the update to a list of existing ids, returning the result.
+func (u *UpdateIDs) Apply(existing []int) []int {
 	if u == nil {
-		return nil
+		return existing
 	}
 
-	switch u.Mode {
-	case RelationshipUpdateModeAdd:
-		return intslice.IntAppendUniques(existing, u.IDs)
-	case RelationshipUpdateModeRemove:
-		return intslice.IntExclude(existing, u.IDs)
-	case RelationshipUpdateModeSet:
-		return u.IDs
-	}
-
-	return nil
+	return applyUpdate(u.IDs, u.Mode, existing)
 }
 
 type UpdateStrings struct {
 	Values []string               `json:"values"`
 	Mode   RelationshipUpdateMode `json:"mode"`
+}
+
+func (u *UpdateStrings) Strings() []string {
+	if u == nil {
+		return nil
+	}
+
+	return u.Values
+}
+
+// Apply applies the update to a list of existing strings, returning the result.
+func (u *UpdateStrings) Apply(existing []string) []string {
+	if u == nil {
+		return existing
+	}
+
+	return applyUpdate(u.Values, u.Mode, existing)
+}
+
+// applyUpdate applies values to existing, using the update mode specified.
+func applyUpdate[T comparable](values []T, mode RelationshipUpdateMode, existing []T) []T {
+	switch mode {
+	case RelationshipUpdateModeAdd:
+		return sliceutil.AppendUniques(existing, values)
+	case RelationshipUpdateModeRemove:
+		return sliceutil.Exclude(existing, values)
+	case RelationshipUpdateModeSet:
+		return values
+	}
+
+	return nil
 }

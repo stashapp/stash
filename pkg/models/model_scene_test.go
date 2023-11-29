@@ -12,20 +12,19 @@ func TestScenePartial_UpdateInput(t *testing.T) {
 	)
 
 	var (
-		title        = "title"
-		code         = "1337"
-		details      = "details"
-		director     = "director"
-		url          = "url"
-		date         = "2001-02-03"
-		ratingLegacy = 4
-		rating100    = 80
-		organized    = true
-		studioID     = 2
-		studioIDStr  = "2"
+		title       = "title"
+		code        = "1337"
+		details     = "details"
+		director    = "director"
+		url         = "url"
+		date        = "2001-02-03"
+		rating100   = 80
+		organized   = true
+		studioID    = 2
+		studioIDStr = "2"
 	)
 
-	dateObj := NewDate(date)
+	dateObj, _ := ParseDate(date)
 
 	tests := []struct {
 		name string
@@ -37,11 +36,14 @@ func TestScenePartial_UpdateInput(t *testing.T) {
 			"full",
 			id,
 			ScenePartial{
-				Title:     NewOptionalString(title),
-				Code:      NewOptionalString(code),
-				Details:   NewOptionalString(details),
-				Director:  NewOptionalString(director),
-				URL:       NewOptionalString(url),
+				Title:    NewOptionalString(title),
+				Code:     NewOptionalString(code),
+				Details:  NewOptionalString(details),
+				Director: NewOptionalString(director),
+				URLs: &UpdateStrings{
+					Values: []string{url},
+					Mode:   RelationshipUpdateModeSet,
+				},
 				Date:      NewOptionalDate(dateObj),
 				Rating:    NewOptionalInt(rating100),
 				Organized: NewOptionalBool(organized),
@@ -53,9 +55,8 @@ func TestScenePartial_UpdateInput(t *testing.T) {
 				Code:      &code,
 				Details:   &details,
 				Director:  &director,
-				URL:       &url,
+				Urls:      []string{url},
 				Date:      &date,
-				Rating:    &ratingLegacy,
 				Rating100: &rating100,
 				Organized: &organized,
 				StudioID:  &studioIDStr,

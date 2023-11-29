@@ -1,43 +1,73 @@
+type PluginPaths {
+  # path to javascript files
+  javascript: [String!]
+  # path to css files
+  css: [String!]
+}
 
 type Plugin {
-    id: ID!
-    name: String!
-    description: String
-    url: String
-    version: String
+  id: ID!
+  name: String!
+  description: String
+  url: String
+  version: String
 
-    tasks: [PluginTask!]
-    hooks: [PluginHook!]
+  enabled: Boolean!
+
+  tasks: [PluginTask!]
+  hooks: [PluginHook!]
+  settings: [PluginSetting!]
+
+  """
+  Plugin IDs of plugins that this plugin depends on.
+  Applies only for UI plugins to indicate css/javascript load order.
+  """
+  requires: [ID!]
+
+  paths: PluginPaths!
 }
 
 type PluginTask {
-    name: String!
-    description: String
-    plugin: Plugin!
+  name: String!
+  description: String
+  plugin: Plugin!
 }
 
 type PluginHook {
-    name: String!
-    description: String
-    hooks: [String!]
-    plugin: Plugin!
+  name: String!
+  description: String
+  hooks: [String!]
+  plugin: Plugin!
 }
 
 type PluginResult {
-    error: String
-    result: String
+  error: String
+  result: String
 }
 
 input PluginArgInput {
-    key: String!
-    value: PluginValueInput
+  key: String!
+  value: PluginValueInput
 }
 
 input PluginValueInput {
-    str: String
-    i: Int
-    b: Boolean
-    f: Float
-    o: [PluginArgInput!]
-    a: [PluginValueInput!]
+  str: String
+  i: Int
+  b: Boolean
+  f: Float
+  o: [PluginArgInput!]
+  a: [PluginValueInput!]
+}
+
+enum PluginSettingTypeEnum {
+  STRING
+  NUMBER
+  BOOLEAN
+}
+
+type PluginSetting {
+  name: String!
+  display_name: String
+  description: String
+  type: PluginSettingTypeEnum!
 }

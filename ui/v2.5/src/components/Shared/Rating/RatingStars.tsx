@@ -13,8 +13,8 @@ import {
 import { useIntl } from "react-intl";
 
 export interface IRatingStarsProps {
-  value?: number;
-  onSetRating?: (value?: number) => void;
+  value: number | null;
+  onSetRating?: (value: number | null) => void;
   disabled?: boolean;
   precision: RatingStarPrecision;
   valueRequired?: boolean;
@@ -87,7 +87,7 @@ export const RatingStars: React.FC<IRatingStarsProps> = (
     setHoverRating(undefined);
 
     if (!newRating) {
-      props.onSetRating(undefined);
+      props.onSetRating(null);
       return;
     }
 

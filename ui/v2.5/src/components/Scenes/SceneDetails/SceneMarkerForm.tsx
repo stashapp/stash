@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Button, Form } from "react-bootstrap";
-import { FormattedMessage } from "react-intl";
-import { Field, FieldProps, Form as FormikForm, Formik } from "formik";
+import { FormattedMessage, useIntl } from "react-intl";
+import { useFormik } from "formik";
+import * as yup from "yup";
 import * as GQL from "src/core/generated-graphql";
 import {
   useSceneMarkerCreate,
@@ -9,193 +10,235 @@ import {
   useSceneMarkerDestroy,
 } from "src/core/StashService";
 import { DurationInput } from "src/components/Shared/DurationInput";
-import { TagSelect, MarkerTitleSuggest } from "src/components/Shared/Select";
+import {
+  TagSelect,
+  MarkerTitleSuggest,
+  SelectObject,
+} from "src/components/Shared/Select";
 import { getPlayerPosition } from "src/components/ScenePlayer/util";
 import { useToast } from "src/hooks/Toast";
-
-interface IFormFields {
-  title: string;
-  seconds: string;
-  primaryTagId: string;
-  tagIds: string[];
-}
+import isEqual from "lodash-es/isEqual";
+import { formikUtils } from "src/utils/form";
+import { yupFormikValidate } from "src/utils/yup";
 
 interface ISceneMarkerForm {
   sceneID: string;
-  editingMarker?: GQL.SceneMarkerDataFragment;
+  marker?: GQL.SceneMarkerDataFragment;
   onClose: () => void;
 }
 
 export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
   sceneID,
-  editingMarker,
+  marker,
   onClose,
 }) => {
+  const intl = useIntl();
+
   const [sceneMarkerCreate] = useSceneMarkerCreate();
   const [sceneMarkerUpdate] = useSceneMarkerUpdate();
   const [sceneMarkerDestroy] = useSceneMarkerDestroy();
   const Toast = useToast();
 
-  const onSubmit = (values: IFormFields) => {
-    const variables: GQL.SceneMarkerUpdateInput | GQL.SceneMarkerCreateInput = {
-      title: values.title,
-      seconds: parseFloat(values.seconds),
-      scene_id: sceneID,
-      primary_tag_id: values.primaryTagId,
-      tag_ids: values.tagIds,
-    };
-    if (!editingMarker) {
-      sceneMarkerCreate({ variables })
-        .then(onClose)
-        .catch((err) => Toast.error(err));
-    } else {
-      const updateVariables = variables as GQL.SceneMarkerUpdateInput;
-      updateVariables.id = editingMarker!.id;
-      sceneMarkerUpdate({ variables: updateVariables })
-        .then(onClose)
-        .catch((err) => Toast.error(err));
+  const isNew = marker === undefined;
+
+  const schema = yup.object({
+    title: yup.string().ensure(),
+    seconds: yup.number().min(0).required(),
+    primary_tag_id: yup.string().required(),
+    tag_ids: yup.array(yup.string().required()).defined(),
+  });
+
+  // useMemo to only run getPlayerPosition when the input marker actually changes
+  const initialValues = useMemo(
+    () => ({
+      title: marker?.title ?? "",
+      seconds: marker?.seconds ?? Math.round(getPlayerPosition() ?? 0),
+      primary_tag_id: marker?.primary_tag.id ?? "",
+      tag_ids: marker?.tags.map((tag) => tag.id) ?? [],
+    }),
+    [marker]
+  );
+
+  type InputValues = yup.InferType<typeof schema>;
+
+  const formik = useFormik<InputValues>({
+    initialValues,
+    enableReinitialize: true,
+    validate: yupFormikValidate(schema),
+    onSubmit: (values) => onSave(schema.cast(values)),
+  });
+
+  async function onSave(input: InputValues) {
+    try {
+      if (isNew) {
+        await sceneMarkerCreate({
+          variables: {
+            scene_id: sceneID,
+            ...input,
+          },
+        });
+      } else {
+        await sceneMarkerUpdate({
+          variables: {
+            id: marker.id,
+            scene_id: sceneID,
+            ...input,
+          },
+        });
+      }
+    } catch (e) {
+      Toast.error(e);
+    } finally {
+      onClose();
     }
+  }
+
+  async function onDelete() {
+    if (isNew) return;
+
+    try {
+      await sceneMarkerDestroy({ variables: { id: marker.id } });
+    } catch (e) {
+      Toast.error(e);
+    } finally {
+      onClose();
+    }
+  }
+
+  async function onSetPrimaryTagID(tags: SelectObject[]) {
+    await formik.setFieldValue("primary_tag_id", tags[0]?.id);
+    await formik.setFieldTouched("primary_tag_id", true);
+  }
+
+  const splitProps = {
+    labelProps: {
+      column: true,
+      sm: 3,
+    },
+    fieldProps: {
+      sm: 9,
+    },
   };
-
-  const onDelete = () => {
-    if (!editingMarker) return;
-
-    sceneMarkerDestroy({ variables: { id: editingMarker.id } })
-      .then(onClose)
-      .catch((err) => Toast.error(err));
+  const fullWidthProps = {
+    labelProps: {
+      column: true,
+      sm: 3,
+      xl: 12,
+    },
+    fieldProps: {
+      sm: 9,
+      xl: 12,
+    },
   };
-  const renderTitleField = (fieldProps: FieldProps<string>) => (
-    <MarkerTitleSuggest
-      initialMarkerTitle={fieldProps.field.value}
-      onChange={(query: string) =>
-        fieldProps.form.setFieldValue("title", query)
-      }
-    />
-  );
+  const { renderField } = formikUtils(intl, formik, splitProps);
 
-  const renderSecondsField = (fieldProps: FieldProps<string>) => (
-    <DurationInput
-      onValueChange={(s) => fieldProps.form.setFieldValue("seconds", s)}
-      onReset={() =>
-        fieldProps.form.setFieldValue(
-          "seconds",
-          Math.round(getPlayerPosition() ?? 0)
-        )
-      }
-      numericValue={Number.parseInt(fieldProps.field.value ?? "0", 10)}
-      mandatory
-    />
-  );
+  function renderTitleField() {
+    const title = intl.formatMessage({ id: "title" });
+    const control = (
+      <MarkerTitleSuggest
+        initialMarkerTitle={formik.values.title}
+        onChange={(v) => formik.setFieldValue("title", v)}
+      />
+    );
 
-  const renderPrimaryTagField = (fieldProps: FieldProps<string>) => (
-    <TagSelect
-      onSelect={(tags) =>
-        fieldProps.form.setFieldValue("primaryTagId", tags[0]?.id)
-      }
-      ids={fieldProps.field.value ? [fieldProps.field.value] : []}
-      noSelectionString="Select/create tag..."
-    />
-  );
+    return renderField("title", title, control);
+  }
 
-  const renderTagsField = (fieldProps: FieldProps<string[]>) => (
-    <TagSelect
-      isMulti
-      onSelect={(tags) =>
-        fieldProps.form.setFieldValue(
-          "tagIds",
-          tags.map((tag) => tag.id)
-        )
-      }
-      ids={fieldProps.field.value}
-      noSelectionString="Select/create tags..."
-    />
-  );
+  function renderPrimaryTagField() {
+    const primaryTagId = formik.values.primary_tag_id;
 
-  const values: IFormFields = {
-    title: editingMarker?.title ?? "",
-    seconds: (
-      editingMarker?.seconds ?? Math.round(getPlayerPosition() ?? 0)
-    ).toString(),
-    primaryTagId: editingMarker?.primary_tag.id ?? "",
-    tagIds: editingMarker?.tags.map((tag) => tag.id) ?? [],
-  };
+    const title = intl.formatMessage({ id: "primary_tag" });
+    const control = (
+      <>
+        <TagSelect
+          onSelect={onSetPrimaryTagID}
+          ids={primaryTagId ? [primaryTagId] : []}
+          hoverPlacement="right"
+        />
+        {formik.touched.primary_tag_id && (
+          <Form.Control.Feedback type="invalid">
+            {formik.errors.primary_tag_id}
+          </Form.Control.Feedback>
+        )}
+      </>
+    );
+
+    return renderField("primary_tag_id", title, control);
+  }
+
+  function renderTimeField() {
+    const { error } = formik.getFieldMeta("seconds");
+
+    const title = intl.formatMessage({ id: "time" });
+    const control = (
+      <DurationInput
+        value={formik.values.seconds}
+        setValue={(v) => formik.setFieldValue("seconds", v)}
+        onReset={() =>
+          formik.setFieldValue("seconds", Math.round(getPlayerPosition() ?? 0))
+        }
+        error={error}
+      />
+    );
+
+    return renderField("seconds", title, control);
+  }
+
+  function renderTagsField() {
+    const title = intl.formatMessage({ id: "tags" });
+    const control = (
+      <TagSelect
+        isMulti
+        onSelect={(items) =>
+          formik.setFieldValue(
+            "tag_ids",
+            items.map((item) => item.id)
+          )
+        }
+        ids={formik.values.tag_ids}
+        hoverPlacement="right"
+      />
+    );
+
+    return renderField("tag_ids", title, control, fullWidthProps);
+  }
 
   return (
-    <Formik initialValues={values} onSubmit={onSubmit}>
-      <FormikForm>
-        <div>
-          <Form.Group className="row">
-            <Form.Label
-              htmlFor="title"
-              className="col-sm-3 col-md-2 col-xl-12 col-form-label"
-            >
-              Marker Title
-            </Form.Label>
-            <div className="col-sm-9 col-md-10 col-xl-12">
-              <Field name="title">{renderTitleField}</Field>
-            </div>
-          </Form.Group>
-          <Form.Group className="row">
-            <Form.Label
-              htmlFor="primaryTagId"
-              className="col-sm-3 col-md-2 col-xl-12 col-form-label"
-            >
-              Primary Tag
-            </Form.Label>
-            <div className="col-sm-4 col-md-6 col-xl-12 mb-3 mb-sm-0 mb-xl-3">
-              <Field name="primaryTagId">{renderPrimaryTagField}</Field>
-            </div>
-            <div className="col-sm-5 col-md-4 col-xl-12">
-              <div className="row">
-                <Form.Label
-                  htmlFor="seconds"
-                  className="col-sm-4 col-md-4 col-xl-12 col-form-label text-sm-right text-xl-left"
-                >
-                  Time
-                </Form.Label>
-                <div className="col-sm-8 col-xl-12">
-                  <Field name="seconds">{renderSecondsField}</Field>
-                </div>
-              </div>
-            </div>
-          </Form.Group>
-          <Form.Group className="row">
-            <Form.Label
-              htmlFor="tagIds"
-              className="col-sm-3 col-md-2 col-xl-12 col-form-label"
-            >
-              Tags
-            </Form.Label>
-            <div className="col-sm-9 col-md-10 col-xl-12">
-              <Field name="tagIds">{renderTagsField}</Field>
-            </div>
-          </Form.Group>
-        </div>
-        <div className="buttons-container row">
-          <div className="col d-flex">
-            <Button variant="primary" type="submit">
-              Submit
-            </Button>
+    <Form noValidate onSubmit={formik.handleSubmit}>
+      <div className="form-container px-3">
+        {renderTitleField()}
+        {renderPrimaryTagField()}
+        {renderTimeField()}
+        {renderTagsField()}
+      </div>
+      <div className="buttons-container px-3">
+        <div className="d-flex">
+          <Button
+            variant="primary"
+            disabled={(!isNew && !formik.dirty) || !isEqual(formik.errors, {})}
+            onClick={() => formik.submitForm()}
+          >
+            <FormattedMessage id="actions.save" />
+          </Button>
+          <Button
+            variant="secondary"
+            type="button"
+            onClick={onClose}
+            className="ml-2"
+          >
+            <FormattedMessage id="actions.cancel" />
+          </Button>
+          {!isNew && (
             <Button
-              variant="secondary"
-              type="button"
-              onClick={onClose}
-              className="ml-2"
+              variant="danger"
+              className="ml-auto"
+              onClick={() => onDelete()}
             >
-              <FormattedMessage id="actions.cancel" />
+              <FormattedMessage id="actions.delete" />
             </Button>
-            {editingMarker && (
-              <Button
-                variant="danger"
-                className="ml-auto"
-                onClick={() => onDelete()}
-              >
-                <FormattedMessage id="actions.delete" />
-              </Button>
-            )}
-          </div>
+          )}
         </div>
-      </FormikForm>
-    </Formik>
+      </div>
+    </Form>
   );
 };

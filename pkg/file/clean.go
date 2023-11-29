@@ -10,12 +10,12 @@ import (
 
 	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/txn"
+	"github.com/stashapp/stash/pkg/models"
 )
 
 // Cleaner scans through stored file and folder instances and removes those that are no longer present on disk.
 type Cleaner struct {
-	FS         FS
+	FS         models.FS
 	Repository Repository
 
 	Handlers []CleanHandler
@@ -55,44 +55,44 @@ func (s *Cleaner) Clean(ctx context.Context, options CleanOptions, progress *job
 }
 
 type fileOrFolder struct {
-	fileID   ID
-	folderID FolderID
+	fileID   models.FileID
+	folderID models.FolderID
 }
 
 type deleteSet struct {
 	orderedList []fileOrFolder
-	fileIDSet   map[ID]string
+	fileIDSet   map[models.FileID]string
 
-	folderIDSet map[FolderID]string
+	folderIDSet map[models.FolderID]string
 }
 
 func newDeleteSet() deleteSet {
 	return deleteSet{
-		fileIDSet:   make(map[ID]string),
-		folderIDSet: make(map[FolderID]string),
+		fileIDSet:   make(map[models.FileID]string),
+		folderIDSet: make(map[models.FolderID]string),
 	}
 }
 
-func (s *deleteSet) add(id ID, path string) {
+func (s *deleteSet) add(id models.FileID, path string) {
 	if _, ok := s.fileIDSet[id]; !ok {
 		s.orderedList = append(s.orderedList, fileOrFolder{fileID: id})
 		s.fileIDSet[id] = path
 	}
 }
 
-func (s *deleteSet) has(id ID) bool {
+func (s *deleteSet) has(id models.FileID) bool {
 	_, ok := s.fileIDSet[id]
 	return ok
 }
 
-func (s *deleteSet) addFolder(id FolderID, path string) {
+func (s *deleteSet) addFolder(id models.FolderID, path string) {
 	if _, ok := s.folderIDSet[id]; !ok {
 		s.orderedList = append(s.orderedList, fileOrFolder{folderID: id})
 		s.folderIDSet[id] = path
 	}
 }
 
-func (s *deleteSet) hasFolder(id FolderID) bool {
+func (s *deleteSet) hasFolder(id models.FolderID) bool {
 	_, ok := s.folderIDSet[id]
 	return ok
 }
@@ -111,14 +111,15 @@ func (j *cleanJob) execute(ctx context.Context) error {
 		folderCount int
 	)
 
-	if err := txn.WithReadTxn(ctx, j.Repository, func(ctx context.Context) error {
+	r := j.Repository
+	if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
 		var err error
-		fileCount, err = j.Repository.CountAllInPaths(ctx, j.options.Paths)
+		fileCount, err = r.File.CountAllInPaths(ctx, j.options.Paths)
 		if err != nil {
 			return err
 		}
 
-		folderCount, err = j.Repository.FolderStore.CountAllInPaths(ctx, j.options.Paths)
+		folderCount, err = r.Folder.CountAllInPaths(ctx, j.options.Paths)
 		if err != nil {
 			return err
 		}
@@ -171,13 +172,14 @@ func (j *cleanJob) assessFiles(ctx context.Context, toDelete *deleteSet) error {
 	progress := j.progress
 
 	more := true
-	if err := txn.WithReadTxn(ctx, j.Repository, func(ctx context.Context) error {
+	r := j.Repository
+	if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
 		for more {
 			if job.IsCancelled(ctx) {
 				return nil
 			}
 
-			files, err := j.Repository.FindAllInPaths(ctx, j.options.Paths, batchSize, offset)
+			files, err := r.File.FindAllInPaths(ctx, j.options.Paths, batchSize, offset)
 			if err != nil {
 				return fmt.Errorf("error querying for files: %w", err)
 			}
@@ -221,9 +223,10 @@ func (j *cleanJob) assessFiles(ctx context.Context, toDelete *deleteSet) error {
 }
 
 // flagFolderForDelete adds folders to the toDelete set, with the leaf folders added first
-func (j *cleanJob) flagFileForDelete(ctx context.Context, toDelete *deleteSet, f File) error {
+func (j *cleanJob) flagFileForDelete(ctx context.Context, toDelete *deleteSet, f models.File) error {
+	r := j.Repository
 	// add contained files first
-	containedFiles, err := j.Repository.FindByZipFileID(ctx, f.Base().ID)
+	containedFiles, err := r.File.FindByZipFileID(ctx, f.Base().ID)
 	if err != nil {
 		return fmt.Errorf("error finding contained files for %q: %w", f.Base().Path, err)
 	}
@@ -234,7 +237,7 @@ func (j *cleanJob) flagFileForDelete(ctx context.Context, toDelete *deleteSet, f
 	}
 
 	// add contained folders as well
-	containedFolders, err := j.Repository.FolderStore.FindByZipFileID(ctx, f.Base().ID)
+	containedFolders, err := r.Folder.FindByZipFileID(ctx, f.Base().ID)
 	if err != nil {
 		return fmt.Errorf("error finding contained folders for %q: %w", f.Base().Path, err)
 	}
@@ -255,13 +258,14 @@ func (j *cleanJob) assessFolders(ctx context.Context, toDelete *deleteSet) error
 	progress := j.progress
 
 	more := true
-	if err := txn.WithReadTxn(ctx, j.Repository, func(ctx context.Context) error {
+	r := j.Repository
+	if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
 		for more {
 			if job.IsCancelled(ctx) {
 				return nil
 			}
 
-			folders, err := j.Repository.FolderStore.FindAllInPaths(ctx, j.options.Paths, batchSize, offset)
+			folders, err := r.Folder.FindAllInPaths(ctx, j.options.Paths, batchSize, offset)
 			if err != nil {
 				return fmt.Errorf("error querying for folders: %w", err)
 			}
@@ -306,7 +310,7 @@ func (j *cleanJob) assessFolders(ctx context.Context, toDelete *deleteSet) error
 	return nil
 }
 
-func (j *cleanJob) flagFolderForDelete(ctx context.Context, toDelete *deleteSet, folder *Folder) error {
+func (j *cleanJob) flagFolderForDelete(ctx context.Context, toDelete *deleteSet, folder *models.Folder) error {
 	// it is possible that child folders may be included while parent folders are not
 	// so we need to check child folders separately
 	toDelete.addFolder(folder.ID, folder.Path)
@@ -314,7 +318,7 @@ func (j *cleanJob) flagFolderForDelete(ctx context.Context, toDelete *deleteSet,
 	return nil
 }
 
-func (j *cleanJob) shouldClean(ctx context.Context, f File) bool {
+func (j *cleanJob) shouldClean(ctx context.Context, f models.File) bool {
 	path := f.Base().Path
 
 	info, err := f.Base().Info(j.FS)
@@ -336,7 +340,7 @@ func (j *cleanJob) shouldClean(ctx context.Context, f File) bool {
 	return !filter.Accept(ctx, path, info)
 }
 
-func (j *cleanJob) shouldCleanFolder(ctx context.Context, f *Folder) bool {
+func (j *cleanJob) shouldCleanFolder(ctx context.Context, f *models.Folder) bool {
 	path := f.Path
 
 	info, err := f.Info(j.FS)
@@ -376,41 +380,43 @@ func (j *cleanJob) shouldCleanFolder(ctx context.Context, f *Folder) bool {
 	return !filter.Accept(ctx, path, info)
 }
 
-func (j *cleanJob) deleteFile(ctx context.Context, fileID ID, fn string) {
+func (j *cleanJob) deleteFile(ctx context.Context, fileID models.FileID, fn string) {
 	// delete associated objects
 	fileDeleter := NewDeleter()
-	if err := txn.WithTxn(ctx, j.Repository, func(ctx context.Context) error {
+	r := j.Repository
+	if err := r.WithTxn(ctx, func(ctx context.Context) error {
 		fileDeleter.RegisterHooks(ctx)
 
 		if err := j.fireHandlers(ctx, fileDeleter, fileID); err != nil {
 			return err
 		}
 
-		return j.Repository.Destroy(ctx, fileID)
+		return r.File.Destroy(ctx, fileID)
 	}); err != nil {
 		logger.Errorf("Error deleting file %q from database: %s", fn, err.Error())
 		return
 	}
 }
 
-func (j *cleanJob) deleteFolder(ctx context.Context, folderID FolderID, fn string) {
+func (j *cleanJob) deleteFolder(ctx context.Context, folderID models.FolderID, fn string) {
 	// delete associated objects
 	fileDeleter := NewDeleter()
-	if err := txn.WithTxn(ctx, j.Repository, func(ctx context.Context) error {
+	r := j.Repository
+	if err := r.WithTxn(ctx, func(ctx context.Context) error {
 		fileDeleter.RegisterHooks(ctx)
 
 		if err := j.fireFolderHandlers(ctx, fileDeleter, folderID); err != nil {
 			return err
 		}
 
-		return j.Repository.FolderStore.Destroy(ctx, folderID)
+		return r.Folder.Destroy(ctx, folderID)
 	}); err != nil {
 		logger.Errorf("Error deleting folder %q from database: %s", fn, err.Error())
 		return
 	}
 }
 
-func (j *cleanJob) fireHandlers(ctx context.Context, fileDeleter *Deleter, fileID ID) error {
+func (j *cleanJob) fireHandlers(ctx context.Context, fileDeleter *Deleter, fileID models.FileID) error {
 	for _, h := range j.Handlers {
 		if err := h.HandleFile(ctx, fileDeleter, fileID); err != nil {
 			return err
@@ -420,7 +426,7 @@ func (j *cleanJob) fireHandlers(ctx context.Context, fileDeleter *Deleter, fileI
 	return nil
 }
 
-func (j *cleanJob) fireFolderHandlers(ctx context.Context, fileDeleter *Deleter, folderID FolderID) error {
+func (j *cleanJob) fireFolderHandlers(ctx context.Context, fileDeleter *Deleter, folderID models.FolderID) error {
 	for _, h := range j.Handlers {
 		if err := h.HandleFolder(ctx, fileDeleter, folderID); err != nil {
 			return err

@@ -73,6 +73,9 @@ const CLASSNAME_NAVSELECTED = `${CLASSNAME_NAV}-selected`;
 const DEFAULT_SLIDESHOW_DELAY = 5000;
 const SECONDS_TO_MS = 1000;
 const MIN_VALID_INTERVAL_SECONDS = 1;
+const MIN_ZOOM = 0.1;
+const SCROLL_ZOOM_TIMEOUT = 250;
+const ZOOM_NONE_EPSILON = 0.015;
 
 interface IProps {
   images: ILightboxImage[];
@@ -120,6 +123,18 @@ export const LightboxComponent: React.FC<IProps> = ({
   const oldImages = useRef<ILightboxImage[]>([]);
 
   const [zoom, setZoom] = useState(1);
+
+  function updateZoom(v: number) {
+    if (v < MIN_ZOOM) {
+      setZoom(MIN_ZOOM);
+    } else if (Math.abs(v - 1) < ZOOM_NONE_EPSILON) {
+      // "snap to 1" effect: if new zoom is close to 1, set to 1
+      setZoom(1);
+    } else {
+      setZoom(v);
+    }
+  }
+
   const [resetPosition, setResetPosition] = useState(false);
 
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -212,7 +227,6 @@ export const LightboxComponent: React.FC<IProps> = ({
 
   const disableInstantTransition = useDebounce(
     () => setInstantTransition(false),
-    [],
     400
   );
 
@@ -284,8 +298,7 @@ export const LightboxComponent: React.FC<IProps> = ({
     if (isVisible) {
       if (index === null) setIndex(initialIndex);
       document.body.style.overflow = "hidden";
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (Mousetrap as any).pause();
+      Mousetrap.pause();
     }
   }, [initialIndex, isVisible, setIndex, index]);
 
@@ -305,12 +318,11 @@ export const LightboxComponent: React.FC<IProps> = ({
   });
 
   const close = useCallback(() => {
-    if (!isFullscreen) {
-      hide();
-      document.body.style.overflow = "auto";
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (Mousetrap as any).unpause();
-    } else document.exitFullscreen();
+    if (isFullscreen) document.exitFullscreen();
+
+    hide();
+    document.body.style.overflow = "auto";
+    Mousetrap.unpause();
   }, [isFullscreen, hide]);
 
   const handleClose = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -373,6 +385,14 @@ export const LightboxComponent: React.FC<IProps> = ({
       index,
     ]
   );
+
+  const firstScroll = useRef<number | null>(null);
+  const inScrollGroup = useRef(false);
+
+  const debouncedScrollReset = useDebounce(() => {
+    firstScroll.current = null;
+    inScrollGroup.current = false;
+  }, SCROLL_ZOOM_TIMEOUT);
 
   const handleKey = useCallback(
     (e: KeyboardEvent) => {
@@ -663,63 +683,266 @@ export const LightboxComponent: React.FC<IProps> = ({
     );
   }
 
+  function renderBody() {
+    if (images.length === 0 || isLoading || isSwitchingPage) {
+      return <LoadingIndicator />;
+    }
+
+    const currentImage: ILightboxImage | undefined = images[currentIndex];
+
+    function setRating(v: number | null) {
+      if (currentImage?.id) {
+        updateImage({
+          variables: {
+            input: {
+              id: currentImage.id,
+              rating100: v,
+            },
+          },
+        });
+      }
+    }
+
+    async function onIncrementClick() {
+      if (currentImage?.id === undefined) return;
+      try {
+        await mutateImageIncrementO(currentImage.id);
+      } catch (e) {
+        Toast.error(e);
+      }
+    }
+
+    async function onDecrementClick() {
+      if (currentImage?.id === undefined) return;
+      try {
+        await mutateImageDecrementO(currentImage.id);
+      } catch (e) {
+        Toast.error(e);
+      }
+    }
+
+    async function onResetClick() {
+      if (currentImage?.id === undefined) return;
+      try {
+        await mutateImageResetO(currentImage?.id);
+      } catch (e) {
+        Toast.error(e);
+      }
+    }
+
+    const pageHeader =
+      page && pages
+        ? intl.formatMessage(
+            { id: "dialogs.lightbox.page_header" },
+            { page, total: pages }
+          )
+        : "";
+
+    return (
+      <>
+        <div className={CLASSNAME_HEADER}>
+          <div className={CLASSNAME_LEFT_SPACER}>{renderChapterMenu()}</div>
+          <div className={CLASSNAME_INDICATOR}>
+            <span>
+              {chapterHeader()} {pageHeader}
+            </span>
+            {images.length > 1 ? (
+              <b ref={indicatorRef}>{`${currentIndex + 1} / ${
+                images.length
+              }`}</b>
+            ) : undefined}
+          </div>
+          <div className={CLASSNAME_RIGHT}>
+            <div className={CLASSNAME_OPTIONS}>
+              <div className={CLASSNAME_OPTIONS_ICON}>
+                <Button
+                  ref={overlayTarget}
+                  variant="link"
+                  title={intl.formatMessage({
+                    id: "dialogs.lightbox.options",
+                  })}
+                  onClick={() => setShowOptions(!showOptions)}
+                >
+                  <Icon icon={faCog} />
+                </Button>
+                <Overlay
+                  target={overlayTarget.current}
+                  show={showOptions}
+                  placement="bottom"
+                  container={containerRef}
+                  rootClose
+                  onHide={() => setShowOptions(false)}
+                >
+                  {({ placement, arrowProps, show: _show, ...props }) => (
+                    <div
+                      className="popover"
+                      {...props}
+                      style={{ ...props.style }}
+                    >
+                      <Popover.Title>
+                        {intl.formatMessage({
+                          id: "dialogs.lightbox.options",
+                        })}
+                      </Popover.Title>
+                      <Popover.Content>{renderOptionsForm()}</Popover.Content>
+                    </div>
+                  )}
+                </Overlay>
+              </div>
+              <InputGroup className={CLASSNAME_OPTIONS_INLINE}>
+                {renderOptionsForm()}
+              </InputGroup>
+            </div>
+            {slideshowEnabled && (
+              <Button
+                variant="link"
+                onClick={toggleSlideshow}
+                title="Toggle Slideshow"
+              >
+                <Icon icon={slideshowInterval !== null ? faPause : faPlay} />
+              </Button>
+            )}
+            {zoom !== 1 && (
+              <Button
+                variant="link"
+                onClick={() => {
+                  setResetPosition(!resetPosition);
+                  setZoom(1);
+                }}
+                title="Reset zoom"
+              >
+                <Icon icon={faSearchMinus} />
+              </Button>
+            )}
+            {document.fullscreenEnabled && (
+              <Button
+                variant="link"
+                onClick={toggleFullscreen}
+                title="Toggle Fullscreen"
+              >
+                <Icon icon={faExpand} />
+              </Button>
+            )}
+            <Button
+              variant="link"
+              onClick={() => close()}
+              title="Close Lightbox"
+            >
+              <Icon icon={faTimes} />
+            </Button>
+          </div>
+        </div>
+        <div className={CLASSNAME_DISPLAY}>
+          {allowNavigation && (
+            <Button
+              variant="link"
+              onClick={handleLeft}
+              className={`${CLASSNAME_NAVBUTTON} d-none d-lg-block`}
+            >
+              <Icon icon={faChevronLeft} />
+            </Button>
+          )}
+
+          <div
+            className={cx(CLASSNAME_CAROUSEL, {
+              [CLASSNAME_INSTANT]: instantTransition,
+            })}
+            style={{ left: `${currentIndex * -100}vw` }}
+            ref={carouselRef}
+          >
+            {images.map((image, i) => (
+              <div className={`${CLASSNAME_IMAGE}`} key={image.paths.image}>
+                {i >= currentIndex - 1 && i <= currentIndex + 1 ? (
+                  <LightboxImage
+                    src={image.paths.image ?? ""}
+                    displayMode={displayMode}
+                    scaleUp={lightboxSettings?.scaleUp ?? false}
+                    scrollMode={
+                      lightboxSettings?.scrollMode ??
+                      GQL.ImageLightboxScrollMode.Zoom
+                    }
+                    resetPosition={resetPosition}
+                    zoom={i === currentIndex ? zoom : 1}
+                    scrollAttemptsBeforeChange={scrollAttemptsBeforeChange}
+                    firstScroll={firstScroll}
+                    inScrollGroup={inScrollGroup}
+                    current={i === currentIndex}
+                    alignBottom={movingLeft}
+                    setZoom={updateZoom}
+                    debouncedScrollReset={debouncedScrollReset}
+                    onLeft={handleLeft}
+                    onRight={handleRight}
+                    isVideo={isVideo(image.visual_files?.[0] ?? {})}
+                  />
+                ) : undefined}
+              </div>
+            ))}
+          </div>
+
+          {allowNavigation && (
+            <Button
+              variant="link"
+              onClick={handleRight}
+              className={`${CLASSNAME_NAVBUTTON} d-none d-lg-block`}
+            >
+              <Icon icon={faChevronRight} />
+            </Button>
+          )}
+        </div>
+        {showNavigation && !isFullscreen && images.length > 1 && (
+          <div className={CLASSNAME_NAV} style={navOffset} ref={navRef}>
+            <Button
+              variant="link"
+              onClick={() => setIndex(images.length - 1)}
+              className={CLASSNAME_NAVBUTTON}
+            >
+              <Icon icon={faArrowLeft} className="mr-4" />
+            </Button>
+            {navItems}
+            <Button
+              variant="link"
+              onClick={() => setIndex(0)}
+              className={CLASSNAME_NAVBUTTON}
+            >
+              <Icon icon={faArrowRight} className="ml-4" />
+            </Button>
+          </div>
+        )}
+        <div className={CLASSNAME_FOOTER}>
+          <div className={CLASSNAME_FOOTER_LEFT}>
+            {currentImage?.id !== undefined && (
+              <>
+                <div>
+                  <OCounterButton
+                    onDecrement={onDecrementClick}
+                    onIncrement={onIncrementClick}
+                    onReset={onResetClick}
+                    value={currentImage?.o_counter ?? 0}
+                  />
+                </div>
+                <RatingSystem
+                  value={currentImage?.rating100}
+                  onSetRating={(v) => setRating(v)}
+                />
+              </>
+            )}
+          </div>
+          <div>
+            {currentImage?.title && (
+              <Link to={`/images/${currentImage.id}`} onClick={() => close()}>
+                {currentImage.title ?? ""}
+              </Link>
+            )}
+          </div>
+          <div></div>
+        </div>
+      </>
+    );
+  }
+
   if (!isVisible) {
     return <></>;
   }
-
-  if (images.length === 0 || isLoading || isSwitchingPage) {
-    return <LoadingIndicator />;
-  }
-
-  const currentImage: ILightboxImage | undefined = images[currentIndex];
-
-  function setRating(v: number | null) {
-    if (currentImage?.id) {
-      updateImage({
-        variables: {
-          input: {
-            id: currentImage.id,
-            rating100: v,
-          },
-        },
-      });
-    }
-  }
-
-  async function onIncrementClick() {
-    if (currentImage?.id === undefined) return;
-    try {
-      await mutateImageIncrementO(currentImage.id);
-    } catch (e) {
-      Toast.error(e);
-    }
-  }
-
-  async function onDecrementClick() {
-    if (currentImage?.id === undefined) return;
-    try {
-      await mutateImageDecrementO(currentImage.id);
-    } catch (e) {
-      Toast.error(e);
-    }
-  }
-
-  async function onResetClick() {
-    if (currentImage?.id === undefined) return;
-    try {
-      await mutateImageResetO(currentImage?.id);
-    } catch (e) {
-      Toast.error(e);
-    }
-  }
-
-  const pageHeader =
-    page && pages
-      ? intl.formatMessage(
-          { id: "dialogs.lightbox.page_header" },
-          { page, total: pages }
-        )
-      : "";
 
   return (
     <div
@@ -728,195 +951,7 @@ export const LightboxComponent: React.FC<IProps> = ({
       ref={containerRef}
       onClick={handleClose}
     >
-      <div className={CLASSNAME_HEADER}>
-        <div className={CLASSNAME_LEFT_SPACER}>{renderChapterMenu()}</div>
-        <div className={CLASSNAME_INDICATOR}>
-          <span>
-            {chapterHeader()} {pageHeader}
-          </span>
-          {images.length > 1 ? (
-            <b ref={indicatorRef}>{`${currentIndex + 1} / ${images.length}`}</b>
-          ) : undefined}
-        </div>
-        <div className={CLASSNAME_RIGHT}>
-          <div className={CLASSNAME_OPTIONS}>
-            <div className={CLASSNAME_OPTIONS_ICON}>
-              <Button
-                ref={overlayTarget}
-                variant="link"
-                title={intl.formatMessage({
-                  id: "dialogs.lightbox.options",
-                })}
-                onClick={() => setShowOptions(!showOptions)}
-              >
-                <Icon icon={faCog} />
-              </Button>
-              <Overlay
-                target={overlayTarget.current}
-                show={showOptions}
-                placement="bottom"
-                container={containerRef}
-                rootClose
-                onHide={() => setShowOptions(false)}
-              >
-                {({ placement, arrowProps, show: _show, ...props }) => (
-                  <div
-                    className="popover"
-                    {...props}
-                    style={{ ...props.style }}
-                  >
-                    <Popover.Title>
-                      {intl.formatMessage({
-                        id: "dialogs.lightbox.options",
-                      })}
-                    </Popover.Title>
-                    <Popover.Content>{renderOptionsForm()}</Popover.Content>
-                  </div>
-                )}
-              </Overlay>
-            </div>
-            <InputGroup className={CLASSNAME_OPTIONS_INLINE}>
-              {renderOptionsForm()}
-            </InputGroup>
-          </div>
-          {slideshowEnabled && (
-            <Button
-              variant="link"
-              onClick={toggleSlideshow}
-              title="Toggle Slideshow"
-            >
-              <Icon icon={slideshowInterval !== null ? faPause : faPlay} />
-            </Button>
-          )}
-          {zoom !== 1 && (
-            <Button
-              variant="link"
-              onClick={() => {
-                setResetPosition(!resetPosition);
-                setZoom(1);
-              }}
-              title="Reset zoom"
-            >
-              <Icon icon={faSearchMinus} />
-            </Button>
-          )}
-          {document.fullscreenEnabled && (
-            <Button
-              variant="link"
-              onClick={toggleFullscreen}
-              title="Toggle Fullscreen"
-            >
-              <Icon icon={faExpand} />
-            </Button>
-          )}
-          <Button variant="link" onClick={() => close()} title="Close Lightbox">
-            <Icon icon={faTimes} />
-          </Button>
-        </div>
-      </div>
-      <div className={CLASSNAME_DISPLAY}>
-        {allowNavigation && (
-          <Button
-            variant="link"
-            onClick={handleLeft}
-            className={`${CLASSNAME_NAVBUTTON} d-none d-lg-block`}
-          >
-            <Icon icon={faChevronLeft} />
-          </Button>
-        )}
-
-        <div
-          className={cx(CLASSNAME_CAROUSEL, {
-            [CLASSNAME_INSTANT]: instantTransition,
-          })}
-          style={{ left: `${currentIndex * -100}vw` }}
-          ref={carouselRef}
-        >
-          {images.map((image, i) => (
-            <div className={`${CLASSNAME_IMAGE}`} key={image.paths.image}>
-              {i >= currentIndex - 1 && i <= currentIndex + 1 ? (
-                <LightboxImage
-                  src={image.paths.image ?? ""}
-                  displayMode={displayMode}
-                  scaleUp={lightboxSettings?.scaleUp ?? false}
-                  scrollMode={
-                    lightboxSettings?.scrollMode ??
-                    GQL.ImageLightboxScrollMode.Zoom
-                  }
-                  onLeft={handleLeft}
-                  onRight={handleRight}
-                  alignBottom={movingLeft}
-                  zoom={i === currentIndex ? zoom : 1}
-                  current={i === currentIndex}
-                  scrollAttemptsBeforeChange={scrollAttemptsBeforeChange}
-                  setZoom={(v) => setZoom(v)}
-                  resetPosition={resetPosition}
-                  isVideo={isVideo(image.visual_files?.[0] ?? {})}
-                />
-              ) : undefined}
-            </div>
-          ))}
-        </div>
-
-        {allowNavigation && (
-          <Button
-            variant="link"
-            onClick={handleRight}
-            className={`${CLASSNAME_NAVBUTTON} d-none d-lg-block`}
-          >
-            <Icon icon={faChevronRight} />
-          </Button>
-        )}
-      </div>
-      {showNavigation && !isFullscreen && images.length > 1 && (
-        <div className={CLASSNAME_NAV} style={navOffset} ref={navRef}>
-          <Button
-            variant="link"
-            onClick={() => setIndex(images.length - 1)}
-            className={CLASSNAME_NAVBUTTON}
-          >
-            <Icon icon={faArrowLeft} className="mr-4" />
-          </Button>
-          {navItems}
-          <Button
-            variant="link"
-            onClick={() => setIndex(0)}
-            className={CLASSNAME_NAVBUTTON}
-          >
-            <Icon icon={faArrowRight} className="ml-4" />
-          </Button>
-        </div>
-      )}
-      <div className={CLASSNAME_FOOTER}>
-        <div className={CLASSNAME_FOOTER_LEFT}>
-          {currentImage?.id !== undefined && (
-            <>
-              <div>
-                <OCounterButton
-                  onDecrement={onDecrementClick}
-                  onIncrement={onIncrementClick}
-                  onReset={onResetClick}
-                  value={currentImage?.o_counter ?? 0}
-                />
-              </div>
-              <RatingSystem
-                value={currentImage?.rating100 ?? undefined}
-                onSetRating={(v) => {
-                  setRating(v ?? null);
-                }}
-              />
-            </>
-          )}
-        </div>
-        <div>
-          {currentImage?.title && (
-            <Link to={`/images/${currentImage.id}`} onClick={() => close()}>
-              {currentImage.title ?? ""}
-            </Link>
-          )}
-        </div>
-        <div></div>
-      </div>
+      {renderBody()}
     </div>
   );
 };

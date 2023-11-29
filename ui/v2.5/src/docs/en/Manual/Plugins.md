@@ -43,6 +43,26 @@ ui:
   javascript:
     - <path to javascript file>
 
+  # optional list of plugin IDs to load prior to this plugin
+  requires:
+    - <plugin ID>
+
+  # optional list of assets 
+  assets:
+    urlPrefix: fsLocation
+    ...
+
+  # content-security policy overrides
+  csp:
+    script-src:
+      - http://alloweddomain.com
+    
+    style-src:
+      - http://alloweddomain.com
+    
+    connect-src:
+      - http://alloweddomain.com
+
 # the following are used for plugin tasks only
 exec:
   - ...
@@ -55,6 +75,34 @@ tasks:
 The `name`, `description`, `version` and `url` fields are displayed on the plugins page.
 
 The `exec`, `interface`, `errLog` and `tasks` fields are used only for plugins with tasks.
+
+## UI Configuration
+
+The `css` and `javascript` field values may be relative paths to the plugin configuration file, or
+may be full external URLs.
+
+The `requires` field is a list of plugin IDs which must have their javascript/css files loaded
+before this plugins javascript/css files.
+
+The `assets` field is a map of URL prefixes to filesystem paths relative to the plugin configuration file.
+Assets are mounted to the `/plugin/{pluginID}/assets` path. 
+
+As an example, for a plugin with id `foo` with the following `assets` value:
+```
+assets:
+  foo: bar
+  root: .
+```
+The following URLs will be mapped to these locations:
+`/plugin/foo/assets/foo/file.txt` -> `{pluginDir}/bar/file.txt`
+`/plugin/foo/assets/file.txt` -> `{pluginDir}/file.txt`
+`/plugin/foo/assets/bar/file.txt` -> `{pluginDir}/bar/file.txt` (via the `root` entry)
+
+Mappings that try to go outside of the directory containing the plugin configuration file will be
+ignored.
+
+The `csp` field contains overrides to the content security policies. The URLs in `script-src`,
+`style-src` and `connect-src` will be added to the applicable content security policy.
 
 See [External Plugins](/help/ExternalPlugins.md) for details for making plugins with external tasks.
 

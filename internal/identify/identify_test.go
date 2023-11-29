@@ -4,12 +4,14 @@ import (
 	"context"
 	"errors"
 	"reflect"
+	"strconv"
 	"testing"
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/mocks"
 	"github.com/stashapp/stash/pkg/scraper"
-	"github.com/stashapp/stash/pkg/sliceutil/intslice"
+	"github.com/stashapp/stash/pkg/sliceutil"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -17,11 +19,11 @@ var testCtx = context.Background()
 
 type mockSceneScraper struct {
 	errIDs  []int
-	results map[int]*scraper.ScrapedScene
+	results map[int][]*scraper.ScrapedScene
 }
 
-func (s mockSceneScraper) ScrapeScene(ctx context.Context, sceneID int) (*scraper.ScrapedScene, error) {
-	if intslice.IntInclude(s.errIDs, sceneID) {
+func (s mockSceneScraper) ScrapeScenes(ctx context.Context, sceneID int) ([]*scraper.ScrapedScene, error) {
+	if sliceutil.Contains(s.errIDs, sceneID) {
 		return nil, errors.New("scrape scene error")
 	}
 	return s.results[sceneID], nil
@@ -40,100 +42,170 @@ func TestSceneIdentifier_Identify(t *testing.T) {
 		missingID
 		found1ID
 		found2ID
+		multiFoundID
+		multiFound2ID
 		errUpdateID
 	)
 
-	var scrapedTitle = "scrapedTitle"
+	var (
+		skipMultipleTagID    = 1
+		skipMultipleTagIDStr = strconv.Itoa(skipMultipleTagID)
+	)
 
-	defaultOptions := &MetadataOptions{}
+	var (
+		scrapedTitle  = "scrapedTitle"
+		scrapedTitle2 = "scrapedTitle2"
+
+		boolFalse = false
+		boolTrue  = true
+	)
+
+	defaultOptions := &MetadataOptions{
+		SetOrganized:             &boolFalse,
+		SetCoverImage:            &boolFalse,
+		IncludeMalePerformers:    &boolFalse,
+		SkipSingleNamePerformers: &boolFalse,
+	}
 	sources := []ScraperSource{
 		{
 			Scraper: mockSceneScraper{
 				errIDs: []int{errID1},
-				results: map[int]*scraper.ScrapedScene{
-					found1ID: {
+				results: map[int][]*scraper.ScrapedScene{
+					found1ID: {{
 						Title: &scrapedTitle,
-					},
+					}},
 				},
 			},
 		},
 		{
 			Scraper: mockSceneScraper{
 				errIDs: []int{errID2},
-				results: map[int]*scraper.ScrapedScene{
-					found2ID: {
+				results: map[int][]*scraper.ScrapedScene{
+					found2ID: {{
 						Title: &scrapedTitle,
+					}},
+					errUpdateID: {{
+						Title: &scrapedTitle,
+					}},
+					multiFoundID: {
+						{
+							Title: &scrapedTitle,
+						},
+						{
+							Title: &scrapedTitle2,
+						},
 					},
-					errUpdateID: {
-						Title: &scrapedTitle,
+					multiFound2ID: {
+						{
+							Title: &scrapedTitle,
+						},
+						{
+							Title: &scrapedTitle2,
+						},
 					},
 				},
 			},
 		},
 	}
 
-	mockSceneReaderWriter := &mocks.SceneReaderWriter{}
+	db := mocks.NewDatabase()
 
-	mockSceneReaderWriter.On("UpdatePartial", mock.Anything, mock.MatchedBy(func(id int) bool {
+	db.Scene.On("GetURLs", mock.Anything, mock.Anything).Return(nil, nil)
+	db.Scene.On("UpdatePartial", mock.Anything, mock.MatchedBy(func(id int) bool {
 		return id == errUpdateID
 	}), mock.Anything).Return(nil, errors.New("update error"))
-	mockSceneReaderWriter.On("UpdatePartial", mock.Anything, mock.MatchedBy(func(id int) bool {
+	db.Scene.On("UpdatePartial", mock.Anything, mock.MatchedBy(func(id int) bool {
 		return id != errUpdateID
 	}), mock.Anything).Return(nil, nil)
+
+	db.Tag.On("Find", mock.Anything, skipMultipleTagID).Return(&models.Tag{
+		ID:   skipMultipleTagID,
+		Name: skipMultipleTagIDStr,
+	}, nil)
 
 	tests := []struct {
 		name    string
 		sceneID int
+		options *MetadataOptions
 		wantErr bool
 	}{
 		{
 			"error scraping",
 			errID1,
+			nil,
 			false,
 		},
 		{
 			"error scraping from second",
 			errID2,
+			nil,
 			false,
 		},
 		{
 			"found in first scraper",
 			found1ID,
+			nil,
 			false,
 		},
 		{
 			"found in second scraper",
 			found2ID,
+			nil,
 			false,
 		},
 		{
 			"not found",
 			missingID,
+			nil,
 			false,
 		},
 		{
 			"error modifying",
 			errUpdateID,
+			nil,
 			true,
 		},
-	}
-
-	identifier := SceneIdentifier{
-		SceneReaderUpdater:          mockSceneReaderWriter,
-		DefaultOptions:              defaultOptions,
-		Sources:                     sources,
-		SceneUpdatePostHookExecutor: mockHookExecutor{},
+		{
+			"multiple found",
+			multiFoundID,
+			nil,
+			false,
+		},
+		{
+			"multiple found - set tag",
+			multiFound2ID,
+			&MetadataOptions{
+				SkipMultipleMatches:  &boolTrue,
+				SkipMultipleMatchTag: &skipMultipleTagIDStr,
+			},
+			false,
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			identifier := SceneIdentifier{
+				TxnManager:                  db,
+				SceneReaderUpdater:          db.Scene,
+				StudioReaderWriter:          db.Studio,
+				PerformerCreator:            db.Performer,
+				TagFinderCreator:            db.Tag,
+				DefaultOptions:              defaultOptions,
+				Sources:                     sources,
+				SceneUpdatePostHookExecutor: mockHookExecutor{},
+			}
+
+			if tt.options != nil {
+				identifier.DefaultOptions = tt.options
+			}
+
 			scene := &models.Scene{
 				ID:           tt.sceneID,
 				PerformerIDs: models.NewRelatedIDs([]int{}),
 				TagIDs:       models.NewRelatedIDs([]int{}),
 				StashIDs:     models.NewRelatedStashIDs([]models.StashID{}),
 			}
-			if err := identifier.Identify(testCtx, &mocks.TxnManager{}, scene); (err != nil) != tt.wantErr {
+			if err := identifier.Identify(testCtx, scene); (err != nil) != tt.wantErr {
 				t.Errorf("SceneIdentifier.Identify() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -141,10 +213,23 @@ func TestSceneIdentifier_Identify(t *testing.T) {
 }
 
 func TestSceneIdentifier_modifyScene(t *testing.T) {
-	repo := models.Repository{
-		TxnManager: &mocks.TxnManager{},
+	db := mocks.NewDatabase()
+
+	boolFalse := false
+	defaultOptions := &MetadataOptions{
+		SetOrganized:             &boolFalse,
+		SetCoverImage:            &boolFalse,
+		IncludeMalePerformers:    &boolFalse,
+		SkipSingleNamePerformers: &boolFalse,
 	}
-	tr := &SceneIdentifier{}
+	tr := &SceneIdentifier{
+		TxnManager:         db,
+		SceneReaderUpdater: db.Scene,
+		StudioReaderWriter: db.Studio,
+		PerformerCreator:   db.Performer,
+		TagFinderCreator:   db.Tag,
+		DefaultOptions:     defaultOptions,
+	}
 
 	type args struct {
 		scene  *models.Scene
@@ -159,12 +244,16 @@ func TestSceneIdentifier_modifyScene(t *testing.T) {
 			"empty update",
 			args{
 				&models.Scene{
+					URLs:         models.NewRelatedStrings([]string{}),
 					PerformerIDs: models.NewRelatedIDs([]int{}),
 					TagIDs:       models.NewRelatedIDs([]int{}),
 					StashIDs:     models.NewRelatedStashIDs([]models.StashID{}),
 				},
 				&scrapeResult{
 					result: &scraper.ScrapedScene{},
+					source: ScraperSource{
+						Options: defaultOptions,
+					},
 				},
 			},
 			false,
@@ -172,7 +261,7 @@ func TestSceneIdentifier_modifyScene(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tr.modifyScene(testCtx, repo, tt.args.scene, tt.args.result); (err != nil) != tt.wantErr {
+			if err := tr.modifyScene(testCtx, tt.args.scene, tt.args.result); (err != nil) != tt.wantErr {
 				t.Errorf("SceneIdentifier.modifyScene() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -264,40 +353,51 @@ func Test_getScenePartial(t *testing.T) {
 		scrapedURL     = "scrapedURL"
 	)
 
-	originalDateObj := models.NewDate(originalDate)
-	scrapedDateObj := models.NewDate(scrapedDate)
+	originalDateObj, _ := models.ParseDate(originalDate)
+	scrapedDateObj, _ := models.ParseDate(scrapedDate)
 
 	originalScene := &models.Scene{
 		Title:   originalTitle,
 		Date:    &originalDateObj,
 		Details: originalDetails,
-		URL:     originalURL,
+		URLs:    models.NewRelatedStrings([]string{originalURL}),
 	}
 
 	organisedScene := *originalScene
 	organisedScene.Organized = true
 
-	emptyScene := &models.Scene{}
+	emptyScene := &models.Scene{
+		URLs: models.NewRelatedStrings([]string{}),
+	}
 
 	postPartial := models.ScenePartial{
 		Title:   models.NewOptionalString(scrapedTitle),
 		Date:    models.NewOptionalDate(scrapedDateObj),
 		Details: models.NewOptionalString(scrapedDetails),
-		URL:     models.NewOptionalString(scrapedURL),
+		URLs: &models.UpdateStrings{
+			Values: []string{scrapedURL},
+			Mode:   models.RelationshipUpdateModeSet,
+		},
+	}
+
+	postPartialMerge := postPartial
+	postPartialMerge.URLs = &models.UpdateStrings{
+		Values: []string{scrapedURL},
+		Mode:   models.RelationshipUpdateModeSet,
 	}
 
 	scrapedScene := &scraper.ScrapedScene{
 		Title:   &scrapedTitle,
 		Date:    &scrapedDate,
 		Details: &scrapedDetails,
-		URL:     &scrapedURL,
+		URLs:    []string{scrapedURL},
 	}
 
 	scrapedUnchangedScene := &scraper.ScrapedScene{
 		Title:   &originalTitle,
 		Date:    &originalDate,
 		Details: &originalDetails,
-		URL:     &originalURL,
+		URLs:    []string{originalURL},
 	}
 
 	makeFieldOptions := func(input *FieldOptions) map[string]*FieldOptions {
@@ -360,7 +460,12 @@ func Test_getScenePartial(t *testing.T) {
 				mergeAll,
 				false,
 			},
-			models.ScenePartial{},
+			models.ScenePartial{
+				URLs: &models.UpdateStrings{
+					Values: []string{originalURL, scrapedURL},
+					Mode:   models.RelationshipUpdateModeSet,
+				},
+			},
 		},
 		{
 			"merge (empty values)",
@@ -370,7 +475,7 @@ func Test_getScenePartial(t *testing.T) {
 				mergeAll,
 				false,
 			},
-			postPartial,
+			postPartialMerge,
 		},
 		{
 			"unchanged",
@@ -407,9 +512,9 @@ func Test_getScenePartial(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := getScenePartial(tt.args.scene, tt.args.scraped, tt.args.fieldOptions, tt.args.setOrganized); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("getScenePartial() = %v, want %v", got, tt.want)
-			}
+			got := getScenePartial(tt.args.scene, tt.args.scraped, tt.args.fieldOptions, tt.args.setOrganized)
+
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }

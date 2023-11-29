@@ -32,12 +32,12 @@ const StudioCreate: React.FC = () => {
     });
     if (result.data?.studioCreate?.id) {
       history.push(`/studios/${result.data.studioCreate.id}`);
-      Toast.success({
-        content: intl.formatMessage(
+      Toast.success(
+        intl.formatMessage(
           { id: "toast.created_entity" },
           { entity: intl.formatMessage({ id: "studio" }).toLocaleLowerCase() }
-        ),
-      });
+        )
+      );
     }
   }
 
@@ -58,7 +58,9 @@ const StudioCreate: React.FC = () => {
         </h2>
         <div className="text-center">
           {encodingImage ? (
-            <LoadingIndicator message="Encoding image..." />
+            <LoadingIndicator
+              message={intl.formatMessage({ id: "actions.encoding_image" })}
+            />
           ) : (
             renderImage()
           )}

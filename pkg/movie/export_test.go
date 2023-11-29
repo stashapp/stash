@@ -1,7 +1,6 @@
 package movie
 
 import (
-	"database/sql"
 	"errors"
 
 	"github.com/stashapp/stash/pkg/models"
@@ -32,16 +31,15 @@ const (
 const movieName = "testMovie"
 const movieAliases = "aliases"
 
-var date = models.SQLiteDate{
-	String: "2001-01-01",
-	Valid:  true,
-}
-
-const rating = 5
-const duration = 100
-const director = "director"
-const synopsis = "synopsis"
-const url = "url"
+var (
+	date       = "2001-01-01"
+	dateObj, _ = models.ParseDate(date)
+	rating     = 5
+	duration   = 100
+	director   = "director"
+	synopsis   = "synopsis"
+	url        = "url"
+)
 
 const studioName = "studio"
 
@@ -56,7 +54,7 @@ var (
 )
 
 var movieStudio models.Studio = models.Studio{
-	Name: models.NullString(studioName),
+	Name: studioName,
 }
 
 var (
@@ -66,43 +64,26 @@ var (
 
 func createFullMovie(id int, studioID int) models.Movie {
 	return models.Movie{
-		ID:      id,
-		Name:    models.NullString(movieName),
-		Aliases: models.NullString(movieAliases),
-		Date:    date,
-		Rating: sql.NullInt64{
-			Int64: rating,
-			Valid: true,
-		},
-		Duration: sql.NullInt64{
-			Int64: duration,
-			Valid: true,
-		},
-		Director: models.NullString(director),
-		Synopsis: models.NullString(synopsis),
-		URL:      models.NullString(url),
-		StudioID: sql.NullInt64{
-			Int64: int64(studioID),
-			Valid: true,
-		},
-		CreatedAt: models.SQLiteTimestamp{
-			Timestamp: createTime,
-		},
-		UpdatedAt: models.SQLiteTimestamp{
-			Timestamp: updateTime,
-		},
+		ID:        id,
+		Name:      movieName,
+		Aliases:   movieAliases,
+		Date:      &dateObj,
+		Rating:    &rating,
+		Duration:  &duration,
+		Director:  director,
+		Synopsis:  synopsis,
+		URL:       url,
+		StudioID:  &studioID,
+		CreatedAt: createTime,
+		UpdatedAt: updateTime,
 	}
 }
 
 func createEmptyMovie(id int) models.Movie {
 	return models.Movie{
-		ID: id,
-		CreatedAt: models.SQLiteTimestamp{
-			Timestamp: createTime,
-		},
-		UpdatedAt: models.SQLiteTimestamp{
-			Timestamp: updateTime,
-		},
+		ID:        id,
+		CreatedAt: createTime,
+		UpdatedAt: updateTime,
 	}
 }
 
@@ -110,7 +91,7 @@ func createFullJSONMovie(studio, frontImage, backImage string) *jsonschema.Movie
 	return &jsonschema.Movie{
 		Name:       movieName,
 		Aliases:    movieAliases,
-		Date:       date.String,
+		Date:       date,
 		Rating:     rating,
 		Duration:   duration,
 		Director:   director,
@@ -187,34 +168,32 @@ func initTestTable() {
 func TestToJSON(t *testing.T) {
 	initTestTable()
 
-	mockMovieReader := &mocks.MovieReaderWriter{}
+	db := mocks.NewDatabase()
 
 	imageErr := errors.New("error getting image")
 
-	mockMovieReader.On("GetFrontImage", testCtx, movieID).Return(frontImageBytes, nil).Once()
-	mockMovieReader.On("GetFrontImage", testCtx, missingStudioMovieID).Return(frontImageBytes, nil).Once()
-	mockMovieReader.On("GetFrontImage", testCtx, emptyID).Return(nil, nil).Once().Maybe()
-	mockMovieReader.On("GetFrontImage", testCtx, errFrontImageID).Return(nil, imageErr).Once()
-	mockMovieReader.On("GetFrontImage", testCtx, errBackImageID).Return(frontImageBytes, nil).Once()
+	db.Movie.On("GetFrontImage", testCtx, movieID).Return(frontImageBytes, nil).Once()
+	db.Movie.On("GetFrontImage", testCtx, missingStudioMovieID).Return(frontImageBytes, nil).Once()
+	db.Movie.On("GetFrontImage", testCtx, emptyID).Return(nil, nil).Once().Maybe()
+	db.Movie.On("GetFrontImage", testCtx, errFrontImageID).Return(nil, imageErr).Once()
+	db.Movie.On("GetFrontImage", testCtx, errBackImageID).Return(frontImageBytes, nil).Once()
 
-	mockMovieReader.On("GetBackImage", testCtx, movieID).Return(backImageBytes, nil).Once()
-	mockMovieReader.On("GetBackImage", testCtx, missingStudioMovieID).Return(backImageBytes, nil).Once()
-	mockMovieReader.On("GetBackImage", testCtx, emptyID).Return(nil, nil).Once()
-	mockMovieReader.On("GetBackImage", testCtx, errBackImageID).Return(nil, imageErr).Once()
-	mockMovieReader.On("GetBackImage", testCtx, errFrontImageID).Return(backImageBytes, nil).Maybe()
-	mockMovieReader.On("GetBackImage", testCtx, errStudioMovieID).Return(backImageBytes, nil).Maybe()
-
-	mockStudioReader := &mocks.StudioReaderWriter{}
+	db.Movie.On("GetBackImage", testCtx, movieID).Return(backImageBytes, nil).Once()
+	db.Movie.On("GetBackImage", testCtx, missingStudioMovieID).Return(backImageBytes, nil).Once()
+	db.Movie.On("GetBackImage", testCtx, emptyID).Return(nil, nil).Once()
+	db.Movie.On("GetBackImage", testCtx, errBackImageID).Return(nil, imageErr).Once()
+	db.Movie.On("GetBackImage", testCtx, errFrontImageID).Return(backImageBytes, nil).Maybe()
+	db.Movie.On("GetBackImage", testCtx, errStudioMovieID).Return(backImageBytes, nil).Maybe()
 
 	studioErr := errors.New("error getting studio")
 
-	mockStudioReader.On("Find", testCtx, studioID).Return(&movieStudio, nil)
-	mockStudioReader.On("Find", testCtx, missingStudioID).Return(nil, nil)
-	mockStudioReader.On("Find", testCtx, errStudioID).Return(nil, studioErr)
+	db.Studio.On("Find", testCtx, studioID).Return(&movieStudio, nil)
+	db.Studio.On("Find", testCtx, missingStudioID).Return(nil, nil)
+	db.Studio.On("Find", testCtx, errStudioID).Return(nil, studioErr)
 
 	for i, s := range scenarios {
 		movie := s.movie
-		json, err := ToJSON(testCtx, mockMovieReader, mockStudioReader, &movie)
+		json, err := ToJSON(testCtx, db.Movie, db.Studio, &movie)
 
 		switch {
 		case !s.err && err != nil:
@@ -226,6 +205,5 @@ func TestToJSON(t *testing.T) {
 		}
 	}
 
-	mockMovieReader.AssertExpectations(t)
-	mockStudioReader.AssertExpectations(t)
+	db.AssertExpectations(t)
 }

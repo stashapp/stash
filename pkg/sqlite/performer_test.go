@@ -69,8 +69,8 @@ func Test_PerformerStore_Create(t *testing.T) {
 		createdAt      = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 		updatedAt      = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 
-		birthdate = models.NewDate("2003-02-01")
-		deathdate = models.NewDate("2023-02-01")
+		birthdate, _ = models.ParseDate("2003-02-01")
+		deathdate, _ = models.ParseDate("2023-02-01")
 	)
 
 	tests := []struct {
@@ -217,8 +217,8 @@ func Test_PerformerStore_Update(t *testing.T) {
 		createdAt      = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 		updatedAt      = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 
-		birthdate = models.NewDate("2003-02-01")
-		deathdate = models.NewDate("2023-02-01")
+		birthdate, _ = models.ParseDate("2003-02-01")
+		deathdate, _ = models.ParseDate("2023-02-01")
 	)
 
 	tests := []struct {
@@ -400,8 +400,8 @@ func Test_PerformerStore_UpdatePartial(t *testing.T) {
 		createdAt      = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 		updatedAt      = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 
-		birthdate = models.NewDate("2003-02-01")
-		deathdate = models.NewDate("2023-02-01")
+		birthdate, _ = models.ParseDate("2003-02-01")
+		deathdate, _ = models.ParseDate("2023-02-01")
 	)
 
 	tests := []struct {
@@ -513,12 +513,13 @@ func Test_PerformerStore_UpdatePartial(t *testing.T) {
 			performerIDs[performerIdxWithTwoTags],
 			clearPerformerPartial(),
 			models.Performer{
-				ID:       performerIDs[performerIdxWithTwoTags],
-				Name:     getPerformerStringValue(performerIdxWithTwoTags, "Name"),
-				Favorite: true,
-				Aliases:  models.NewRelatedStrings([]string{}),
-				TagIDs:   models.NewRelatedIDs([]int{}),
-				StashIDs: models.NewRelatedStashIDs([]models.StashID{}),
+				ID:            performerIDs[performerIdxWithTwoTags],
+				Name:          getPerformerStringValue(performerIdxWithTwoTags, "Name"),
+				Favorite:      getPerformerBoolValue(performerIdxWithTwoTags),
+				Aliases:       models.NewRelatedStrings([]string{}),
+				TagIDs:        models.NewRelatedIDs([]int{}),
+				StashIDs:      models.NewRelatedStashIDs([]models.StashID{}),
+				IgnoreAutoTag: getIgnoreAutoTag(performerIdxWithTwoTags),
 			},
 			false,
 		},
@@ -1167,44 +1168,6 @@ func TestPerformerUpdatePerformerImage(t *testing.T) {
 	}
 }
 
-func TestPerformerDestroyPerformerImage(t *testing.T) {
-	if err := withRollbackTxn(func(ctx context.Context) error {
-		qb := db.Performer
-
-		// create performer to test against
-		const name = "TestPerformerDestroyPerformerImage"
-		performer := models.Performer{
-			Name: name,
-		}
-		err := qb.Create(ctx, &performer)
-		if err != nil {
-			return fmt.Errorf("Error creating performer: %s", err.Error())
-		}
-
-		image := []byte("image")
-		err = qb.UpdateImage(ctx, performer.ID, image)
-		if err != nil {
-			return fmt.Errorf("Error updating performer image: %s", err.Error())
-		}
-
-		err = qb.DestroyImage(ctx, performer.ID)
-		if err != nil {
-			return fmt.Errorf("Error destroying performer image: %s", err.Error())
-		}
-
-		// image should be nil
-		storedImage, err := qb.GetImage(ctx, performer.ID)
-		if err != nil {
-			return fmt.Errorf("Error getting image: %s", err.Error())
-		}
-		assert.Nil(t, storedImage)
-
-		return nil
-	}); err != nil {
-		t.Error(err.Error())
-	}
-}
-
 func TestPerformerQueryAge(t *testing.T) {
 	const age = 19
 	ageCriterion := models.IntCriterionInput{
@@ -1756,50 +1719,6 @@ func testPerformerStashIDs(ctx context.Context, t *testing.T, s *models.Performe
 	assert.Len(t, s.StashIDs.List(), 0)
 }
 
-func TestPerformerQueryLegacyRating(t *testing.T) {
-	const rating = 3
-	ratingCriterion := models.IntCriterionInput{
-		Value:    rating,
-		Modifier: models.CriterionModifierEquals,
-	}
-
-	verifyPerformersLegacyRating(t, ratingCriterion)
-
-	ratingCriterion.Modifier = models.CriterionModifierNotEquals
-	verifyPerformersLegacyRating(t, ratingCriterion)
-
-	ratingCriterion.Modifier = models.CriterionModifierGreaterThan
-	verifyPerformersLegacyRating(t, ratingCriterion)
-
-	ratingCriterion.Modifier = models.CriterionModifierLessThan
-	verifyPerformersLegacyRating(t, ratingCriterion)
-
-	ratingCriterion.Modifier = models.CriterionModifierIsNull
-	verifyPerformersLegacyRating(t, ratingCriterion)
-
-	ratingCriterion.Modifier = models.CriterionModifierNotNull
-	verifyPerformersLegacyRating(t, ratingCriterion)
-}
-
-func verifyPerformersLegacyRating(t *testing.T, ratingCriterion models.IntCriterionInput) {
-	withTxn(func(ctx context.Context) error {
-		performerFilter := models.PerformerFilterType{
-			Rating: &ratingCriterion,
-		}
-
-		performers := queryPerformers(ctx, t, &performerFilter, nil)
-
-		// convert criterion value to the 100 value
-		ratingCriterion.Value = models.Rating5To100(ratingCriterion.Value)
-
-		for _, performer := range performers {
-			verifyIntPtr(t, performer.Rating, ratingCriterion)
-		}
-
-		return nil
-	})
-}
-
 func TestPerformerQueryRating100(t *testing.T) {
 	const rating = 60
 	ratingCriterion := models.IntCriterionInput{
@@ -1904,10 +1823,10 @@ func TestPerformerQuerySortScenesCount(t *testing.T) {
 
 		assert.True(t, len(performers) > 0)
 
-		// first performer should be performerIdxWithTwoScenes
+		// first performer should be performerIdx1WithScene
 		firstPerformer := performers[0]
 
-		assert.Equal(t, performerIDs[performerIdxWithTwoScenes], firstPerformer.ID)
+		assert.Equal(t, performerIDs[performerIdx1WithScene], firstPerformer.ID)
 
 		// sort in ascending order
 		direction = models.SortDirectionEnumAsc
@@ -1920,7 +1839,7 @@ func TestPerformerQuerySortScenesCount(t *testing.T) {
 		assert.True(t, len(performers) > 0)
 		lastPerformer := performers[len(performers)-1]
 
-		assert.Equal(t, performerIDs[performerIdxWithTwoScenes], lastPerformer.ID)
+		assert.Equal(t, performerIDs[performerIdxWithTag], lastPerformer.ID)
 
 		return nil
 	})
@@ -2060,7 +1979,7 @@ func TestPerformerStore_FindByStashIDStatus(t *testing.T) {
 			name:             "!hasStashID",
 			hasStashID:       false,
 			stashboxEndpoint: getPerformerStringValue(performerIdxWithScene, "endpoint"),
-			include:          []int{performerIdxWithImage},
+			include:          []int{performerIdxWithTwoScenes},
 			exclude:          []int{performerIdx2WithScene},
 			wantErr:          false,
 		},

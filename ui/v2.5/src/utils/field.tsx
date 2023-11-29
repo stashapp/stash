@@ -90,3 +90,50 @@ export const URLField: React.FC<IURLField> = ({
     </>
   );
 };
+
+interface IURLsField {
+  id?: string;
+  name?: string;
+  abbr?: string | null;
+  urls?: string[] | null;
+  truncate?: boolean | null;
+  target?: string;
+  // use for internal links
+  trusted?: boolean;
+}
+
+export const URLsField: React.FC<IURLsField> = ({
+  id,
+  name,
+  urls,
+  abbr,
+  truncate,
+  target,
+  trusted,
+}) => {
+  const values = urls ?? [];
+  if (!values.length) {
+    return null;
+  }
+
+  const message = (
+    <>{id ? <FormattedMessage id={id} defaultMessage={name} /> : name}:</>
+  );
+
+  const rel = !trusted ? "noopener noreferrer" : undefined;
+
+  return (
+    <>
+      <dt>{abbr ? <abbr title={abbr}>{message}</abbr> : message}</dt>
+      <dd>
+        <dl>
+          {values.map((url, i) => (
+            <a key={i} href={url} target={target || "_blank"} rel={rel}>
+              {truncate ? <TruncatedText text={url} /> : url}
+            </a>
+          ))}
+        </dl>
+      </dd>
+    </>
+  );
+};

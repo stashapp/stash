@@ -3,7 +3,6 @@ package gallery
 import (
 	"errors"
 
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/json"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
@@ -28,13 +27,13 @@ const (
 )
 
 var (
-	url       = "url"
-	title     = "title"
-	date      = "2001-01-01"
-	dateObj   = models.NewDate(date)
-	rating    = 5
-	organized = true
-	details   = "details"
+	url        = "url"
+	title      = "title"
+	date       = "2001-01-01"
+	dateObj, _ = models.ParseDate(date)
+	rating     = 5
+	organized  = true
+	details    = "details"
 )
 
 const (
@@ -50,8 +49,8 @@ var (
 func createFullGallery(id int) models.Gallery {
 	return models.Gallery{
 		ID: id,
-		Files: models.NewRelatedFiles([]file.File{
-			&file.BaseFile{
+		Files: models.NewRelatedFiles([]models.File{
+			&models.BaseFile{
 				Path: path,
 			},
 		}),
@@ -60,7 +59,7 @@ func createFullGallery(id int) models.Gallery {
 		Details:   details,
 		Rating:    &rating,
 		Organized: organized,
-		URL:       url,
+		URLs:      models.NewRelatedStrings([]string{url}),
 		CreatedAt: createTime,
 		UpdatedAt: updateTime,
 	}
@@ -69,8 +68,8 @@ func createFullGallery(id int) models.Gallery {
 func createEmptyGallery(id int) models.Gallery {
 	return models.Gallery{
 		ID: id,
-		Files: models.NewRelatedFiles([]file.File{
-			&file.BaseFile{
+		Files: models.NewRelatedFiles([]models.File{
+			&models.BaseFile{
 				Path: path,
 			},
 		}),
@@ -86,7 +85,7 @@ func createFullJSONGallery() *jsonschema.Gallery {
 		Details:   details,
 		Rating:    rating,
 		Organized: organized,
-		URL:       url,
+		URLs:      []string{url},
 		ZipFiles:  []string{path},
 		CreatedAt: json.JSONTime{
 			Time: createTime,
@@ -158,19 +157,19 @@ var getStudioScenarios = []stringTestScenario{
 }
 
 func TestGetStudioName(t *testing.T) {
-	mockStudioReader := &mocks.StudioReaderWriter{}
+	db := mocks.NewDatabase()
 
 	studioErr := errors.New("error getting image")
 
-	mockStudioReader.On("Find", testCtx, studioID).Return(&models.Studio{
-		Name: models.NullString(studioName),
+	db.Studio.On("Find", testCtx, studioID).Return(&models.Studio{
+		Name: studioName,
 	}, nil).Once()
-	mockStudioReader.On("Find", testCtx, missingStudioID).Return(nil, nil).Once()
-	mockStudioReader.On("Find", testCtx, errStudioID).Return(nil, studioErr).Once()
+	db.Studio.On("Find", testCtx, missingStudioID).Return(nil, nil).Once()
+	db.Studio.On("Find", testCtx, errStudioID).Return(nil, studioErr).Once()
 
 	for i, s := range getStudioScenarios {
 		gallery := s.input
-		json, err := GetStudioName(testCtx, mockStudioReader, &gallery)
+		json, err := GetStudioName(testCtx, db.Studio, &gallery)
 
 		switch {
 		case !s.err && err != nil:
@@ -182,7 +181,7 @@ func TestGetStudioName(t *testing.T) {
 		}
 	}
 
-	mockStudioReader.AssertExpectations(t)
+	db.AssertExpectations(t)
 }
 
 const (
@@ -246,38 +245,30 @@ var validChapters = []*models.GalleryChapter{
 		ID:         validChapterID1,
 		Title:      chapterTitle1,
 		ImageIndex: chapterImageIndex1,
-		CreatedAt: models.SQLiteTimestamp{
-			Timestamp: createTime,
-		},
-		UpdatedAt: models.SQLiteTimestamp{
-			Timestamp: updateTime,
-		},
+		CreatedAt:  createTime,
+		UpdatedAt:  updateTime,
 	},
 	{
 		ID:         validChapterID2,
 		Title:      chapterTitle2,
 		ImageIndex: chapterImageIndex2,
-		CreatedAt: models.SQLiteTimestamp{
-			Timestamp: createTime,
-		},
-		UpdatedAt: models.SQLiteTimestamp{
-			Timestamp: updateTime,
-		},
+		CreatedAt:  createTime,
+		UpdatedAt:  updateTime,
 	},
 }
 
 func TestGetGalleryChaptersJSON(t *testing.T) {
-	mockChapterReader := &mocks.GalleryChapterReaderWriter{}
+	db := mocks.NewDatabase()
 
 	chaptersErr := errors.New("error getting gallery chapters")
 
-	mockChapterReader.On("FindByGalleryID", testCtx, galleryID).Return(validChapters, nil).Once()
-	mockChapterReader.On("FindByGalleryID", testCtx, noChaptersID).Return(nil, nil).Once()
-	mockChapterReader.On("FindByGalleryID", testCtx, errChaptersID).Return(nil, chaptersErr).Once()
+	db.GalleryChapter.On("FindByGalleryID", testCtx, galleryID).Return(validChapters, nil).Once()
+	db.GalleryChapter.On("FindByGalleryID", testCtx, noChaptersID).Return(nil, nil).Once()
+	db.GalleryChapter.On("FindByGalleryID", testCtx, errChaptersID).Return(nil, chaptersErr).Once()
 
 	for i, s := range getGalleryChaptersJSONScenarios {
 		gallery := s.input
-		json, err := GetGalleryChaptersJSON(testCtx, mockChapterReader, &gallery)
+		json, err := GetGalleryChaptersJSON(testCtx, db.GalleryChapter, &gallery)
 
 		switch {
 		case !s.err && err != nil:
@@ -289,4 +280,5 @@ func TestGetGalleryChaptersJSON(t *testing.T) {
 		}
 	}
 
+	db.AssertExpectations(t)
 }

@@ -5,11 +5,13 @@ import (
 	"strconv"
 
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/performer"
 	"github.com/stashapp/stash/pkg/studio"
 	"github.com/stashapp/stash/pkg/tag"
 )
 
 type PerformerFinder interface {
+	models.PerformerQueryer
 	FindByNames(ctx context.Context, names []string, nocase bool) ([]*models.Performer, error)
 	FindByStashID(ctx context.Context, stashID models.StashID) ([]*models.Performer, error)
 }
@@ -47,9 +49,17 @@ func ScrapedPerformer(ctx context.Context, qb PerformerFinder, p *models.Scraped
 		return err
 	}
 
-	if len(performers) != 1 {
-		// ignore - cannot match
-		return nil
+	if performers == nil || len(performers) != 1 {
+		// try matching a single performer by exact alias
+		performers, err = performer.ByAlias(ctx, qb, *p.Name)
+		if err != nil {
+			return err
+		}
+
+		if performers == nil || len(performers) != 1 {
+			// ignore - cannot match
+			return nil
+		}
 	}
 
 	id := strconv.Itoa(performers[0].ID)
@@ -58,7 +68,7 @@ func ScrapedPerformer(ctx context.Context, qb PerformerFinder, p *models.Scraped
 }
 
 type StudioFinder interface {
-	studio.Queryer
+	models.StudioQueryer
 	FindByStashID(ctx context.Context, stashID models.StashID) ([]*models.Studio, error)
 }
 
@@ -134,7 +144,7 @@ func ScrapedMovie(ctx context.Context, qb MovieNamesFinder, m *models.ScrapedMov
 
 // ScrapedTag matches the provided tag with the tags
 // in the database and sets the ID field if one is found.
-func ScrapedTag(ctx context.Context, qb tag.Queryer, s *models.ScrapedTag) error {
+func ScrapedTag(ctx context.Context, qb models.TagQueryer, s *models.ScrapedTag) error {
 	if s.StoredID != nil {
 		return nil
 	}

@@ -3,13 +3,13 @@ package api
 import (
 	"context"
 	"errors"
-	"io"
 	"io/fs"
 	"net/http"
 	"os/exec"
 	"strconv"
 
-	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/v5"
+
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/internal/static"
 	"github.com/stashapp/stash/pkg/file"
@@ -17,19 +17,18 @@ import (
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/txn"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
 type ImageFinder interface {
-	Find(ctx context.Context, id int) (*models.Image, error)
+	models.ImageGetter
 	FindByChecksum(ctx context.Context, checksum string) ([]*models.Image, error)
 }
 
 type imageRoutes struct {
-	txnManager  txn.Manager
+	routes
 	imageFinder ImageFinder
-	fileFinder  file.Finder
+	fileGetter  models.FileGetter
 }
 
 func (rs imageRoutes) Routes() chi.Router {
@@ -45,8 +44,6 @@ func (rs imageRoutes) Routes() chi.Router {
 
 	return r
 }
-
-// region Handlers
 
 func (rs imageRoutes) Thumbnail(w http.ResponseWriter, r *http.Request) {
 	img := r.Context().Value(imageKey).(*models.Image)
@@ -71,7 +68,7 @@ func (rs imageRoutes) Thumbnail(w http.ResponseWriter, r *http.Request) {
 			Preset:     manager.GetInstance().Config.GetPreviewPreset().String(),
 		}
 
-		encoder := image.NewThumbnailEncoder(manager.GetInstance().FFMPEG, manager.GetInstance().FFProbe, clipPreviewOptions)
+		encoder := image.NewThumbnailEncoder(manager.GetInstance().FFMpeg, manager.GetInstance().FFProbe, clipPreviewOptions)
 		data, err := encoder.GetThumbnail(f, models.DefaultGthumbWidth)
 		if err != nil {
 			// don't log for unsupported image format
@@ -119,8 +116,6 @@ func (rs imageRoutes) Image(w http.ResponseWriter, r *http.Request) {
 }
 
 func (rs imageRoutes) serveImage(w http.ResponseWriter, r *http.Request, i *models.Image, useDefault bool) {
-	const defaultImageImage = "image/image.svg"
-
 	if i.Files.Primary() != nil {
 		err := i.Files.Primary().Base().Serve(&file.OsFS{}, w, r)
 		if err == nil {
@@ -141,14 +136,10 @@ func (rs imageRoutes) serveImage(w http.ResponseWriter, r *http.Request, i *mode
 		return
 	}
 
-	// fall back to static image
-	f, _ := static.Image.Open(defaultImageImage)
-	defer f.Close()
-	image, _ := io.ReadAll(f)
+	// fallback to default image
+	image := static.ReadAll(static.DefaultImageImage)
 	utils.ServeImage(w, r, image)
 }
-
-// endregion
 
 func (rs imageRoutes) ImageCtx(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -156,7 +147,7 @@ func (rs imageRoutes) ImageCtx(next http.Handler) http.Handler {
 		imageID, _ := strconv.Atoi(imageIdentifierQueryParam)
 
 		var image *models.Image
-		_ = txn.WithReadTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
+		_ = rs.withReadTxn(r, func(ctx context.Context) error {
 			qb := rs.imageFinder
 			if imageID == 0 {
 				images, _ := qb.FindByChecksum(ctx, imageIdentifierQueryParam)
@@ -168,7 +159,7 @@ func (rs imageRoutes) ImageCtx(next http.Handler) http.Handler {
 			}
 
 			if image != nil {
-				if err := image.LoadPrimaryFile(ctx, rs.fileFinder); err != nil {
+				if err := image.LoadPrimaryFile(ctx, rs.fileGetter); err != nil {
 					if !errors.Is(err, context.Canceled) {
 						logger.Errorf("error loading primary file for image %d: %v", imageID, err)
 					}

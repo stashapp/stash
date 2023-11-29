@@ -2,15 +2,15 @@ package studio
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/stashapp/stash/pkg/models"
 )
 
-type NameFinderCreator interface {
-	FindByName(ctx context.Context, name string, nocase bool) (*models.Studio, error)
-	Create(ctx context.Context, newStudio models.Studio) (*models.Studio, error)
-}
+var (
+	ErrStudioOwnAncestor = errors.New("studio cannot be an ancestor of itself")
+)
 
 type NameExistsError struct {
 	Name string
@@ -31,7 +31,7 @@ func (e *NameUsedByAliasError) Error() string {
 
 // EnsureStudioNameUnique returns an error if the studio name provided
 // is used as a name or alias of another existing tag.
-func EnsureStudioNameUnique(ctx context.Context, id int, name string, qb Queryer) error {
+func EnsureStudioNameUnique(ctx context.Context, id int, name string, qb models.StudioQueryer) error {
 	// ensure name is unique
 	sameNameStudio, err := ByName(ctx, qb, name)
 	if err != nil {
@@ -53,18 +53,88 @@ func EnsureStudioNameUnique(ctx context.Context, id int, name string, qb Queryer
 	if sameNameStudio != nil && id != sameNameStudio.ID {
 		return &NameUsedByAliasError{
 			Name:        name,
-			OtherStudio: sameNameStudio.Name.String,
+			OtherStudio: sameNameStudio.Name,
 		}
 	}
 
 	return nil
 }
 
-func EnsureAliasesUnique(ctx context.Context, id int, aliases []string, qb Queryer) error {
+func EnsureAliasesUnique(ctx context.Context, id int, aliases []string, qb models.StudioQueryer) error {
 	for _, a := range aliases {
 		if err := EnsureStudioNameUnique(ctx, id, a, qb); err != nil {
 			return err
 		}
+	}
+
+	return nil
+}
+
+type ValidateModifyReader interface {
+	models.StudioGetter
+	models.StudioQueryer
+	models.AliasLoader
+}
+
+// Checks to make sure that:
+// 1. The studio exists locally
+// 2. The studio is not its own ancestor
+// 3. The studio's aliases are unique
+// 4. The name is unique
+func ValidateModify(ctx context.Context, s models.StudioPartial, qb ValidateModifyReader) error {
+	existing, err := qb.Find(ctx, s.ID)
+	if err != nil {
+		return err
+	}
+	if existing == nil {
+		return fmt.Errorf("studio with id %d not found", s.ID)
+	}
+
+	newParentID := s.ParentID.Ptr()
+
+	if newParentID != nil {
+		if err := validateParent(ctx, s.ID, *newParentID, qb); err != nil {
+			return err
+		}
+	}
+
+	if s.Aliases != nil {
+		if err := existing.LoadAliases(ctx, qb); err != nil {
+			return err
+		}
+
+		effectiveAliases := s.Aliases.Apply(existing.Aliases.List())
+		if err := EnsureAliasesUnique(ctx, s.ID, effectiveAliases, qb); err != nil {
+			return err
+		}
+	}
+
+	if s.Name.Set && s.Name.Value != existing.Name {
+		if err := EnsureStudioNameUnique(ctx, 0, s.Name.Value, qb); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func validateParent(ctx context.Context, studioID int, newParentID int, qb models.StudioGetter) error {
+	if newParentID == studioID {
+		return ErrStudioOwnAncestor
+	}
+
+	// ensure there is no cyclic dependency
+	parentStudio, err := qb.Find(ctx, newParentID)
+	if err != nil {
+		return fmt.Errorf("error finding parent studio: %v", err)
+	}
+
+	if parentStudio == nil {
+		return fmt.Errorf("studio with id %d not found", newParentID)
+	}
+
+	if parentStudio.ParentID != nil {
+		return validateParent(ctx, studioID, *parentStudio.ParentID, qb)
 	}
 
 	return nil

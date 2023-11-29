@@ -10,19 +10,26 @@ import (
 )
 
 type Image struct {
-	Title      string        `json:"title,omitempty"`
-	Studio     string        `json:"studio,omitempty"`
-	Rating     int           `json:"rating,omitempty"`
-	URL        string        `json:"url,omitempty"`
-	Date       string        `json:"date,omitempty"`
-	Organized  bool          `json:"organized,omitempty"`
-	OCounter   int           `json:"o_counter,omitempty"`
-	Galleries  []GalleryRef  `json:"galleries,omitempty"`
-	Performers []string      `json:"performers,omitempty"`
-	Tags       []string      `json:"tags,omitempty"`
-	Files      []string      `json:"files,omitempty"`
-	CreatedAt  json.JSONTime `json:"created_at,omitempty"`
-	UpdatedAt  json.JSONTime `json:"updated_at,omitempty"`
+	Title  string `json:"title,omitempty"`
+	Code   string `json:"code,omitempty"`
+	Studio string `json:"studio,omitempty"`
+	Rating int    `json:"rating,omitempty"`
+
+	// deprecated - for import only
+	URL string `json:"url,omitempty"`
+
+	URLs         []string      `json:"urls,omitempty"`
+	Date         string        `json:"date,omitempty"`
+	Details      string        `json:"details,omitempty"`
+	Photographer string        `json:"photographer,omitempty"`
+	Organized    bool          `json:"organized,omitempty"`
+	OCounter     int           `json:"o_counter,omitempty"`
+	Galleries    []GalleryRef  `json:"galleries,omitempty"`
+	Performers   []string      `json:"performers,omitempty"`
+	Tags         []string      `json:"tags,omitempty"`
+	Files        []string      `json:"files,omitempty"`
+	CreatedAt    json.JSONTime `json:"created_at,omitempty"`
+	UpdatedAt    json.JSONTime `json:"updated_at,omitempty"`
 }
 
 func (s Image) Filename(basename string, hash string) string {

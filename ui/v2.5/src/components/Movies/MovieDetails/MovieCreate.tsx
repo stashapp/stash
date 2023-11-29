@@ -27,16 +27,16 @@ const MovieCreate: React.FC = () => {
 
   async function onSave(input: GQL.MovieCreateInput) {
     const result = await createMovie({
-      variables: input,
+      variables: { input },
     });
     if (result.data?.movieCreate?.id) {
       history.push(`/movies/${result.data.movieCreate.id}`);
-      Toast.success({
-        content: intl.formatMessage(
+      Toast.success(
+        intl.formatMessage(
           { id: "toast.created_entity" },
           { entity: intl.formatMessage({ id: "gallery" }).toLocaleLowerCase() }
-        ),
-      });
+        )
+      );
     }
   }
 
@@ -66,7 +66,9 @@ const MovieCreate: React.FC = () => {
       <div className="movie-details mb-3 col">
         <div className="logo w-100">
           {encodingImage ? (
-            <LoadingIndicator message="Encoding image..." />
+            <LoadingIndicator
+              message={intl.formatMessage({ id: "actions.encoding_image" })}
+            />
           ) : (
             <div className="movie-images">
               {renderFrontImage()}

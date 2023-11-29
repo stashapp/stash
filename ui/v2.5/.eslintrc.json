@@ -2,9 +2,6 @@
   "env": {
     "browser": true
   },
-  "globals": {
-    "Mousetrap": "readonly"
-  },
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
     "project": "./tsconfig.json"
@@ -25,7 +22,7 @@
   },
   "ignorePatterns": ["node_modules/", "src/core/generated-graphql.tsx"],
   "rules": {
-    "@typescript-eslint/no-explicit-any": 2,
+    "@typescript-eslint/lines-between-class-members": "off",
     "@typescript-eslint/naming-convention": [
       "error",
       {
@@ -37,8 +34,11 @@
         }
       }
     ],
-    "lines-between-class-members": "off",
-    "@typescript-eslint/lines-between-class-members": "off",
+    "@typescript-eslint/no-explicit-any": 2,
+    "@typescript-eslint/no-use-before-define": [
+      "error",
+      { "functions": false, "classes": false }
+    ],
     "import/extensions": [
       "error",
       "ignorePackages",
@@ -52,30 +52,24 @@
     "import/named": "off",
     "import/namespace": "off",
     "import/no-unresolved": "off",
+    "lines-between-class-members": "off",
+    "no-nested-ternary": "off",
+    "prefer-destructuring": [
+      "error",
+      {
+        "VariableDeclarator": {
+          "array": false,
+          "object": true
+        },
+        "AssignmentExpression": {
+          "array": false,
+          "object": false
+        }
+      }
+    ],
     "react/display-name": "off",
-    "react-hooks/exhaustive-deps": [
-      "error",
-      { "additionalHooks": "^(useDebounce)$" }
-    ],
     "react/prop-types": "off",
-    "react/style-prop-object": [
-      "error",
-      {
-        "allow": ["FormattedNumber"]
-      }
-    ],
-    "spaced-comment": [
-      "error",
-      "always",
-      {
-        "markers": ["/"]
-      }
-    ],
-    "prefer-destructuring": ["error", { "object": true, "array": false }],
-    "@typescript-eslint/no-use-before-define": [
-      "error",
-      { "functions": false, "classes": true }
-    ],
-    "no-nested-ternary": "off"
+    "react/style-prop-object": ["error", { "allow": ["FormattedNumber"] }],
+    "spaced-comment": ["error", "always", { "markers": ["/"] }]
   }
 }

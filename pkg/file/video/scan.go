@@ -7,6 +7,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/file"
+	"github.com/stashapp/stash/pkg/models"
 )
 
 // Decorator adds video specific fields to a File.
@@ -14,7 +15,7 @@ type Decorator struct {
 	FFProbe ffmpeg.FFProbe
 }
 
-func (d *Decorator) Decorate(ctx context.Context, fs file.FS, f file.File) (file.File, error) {
+func (d *Decorator) Decorate(ctx context.Context, fs models.FS, f models.File) (models.File, error) {
 	if d.FFProbe == "" {
 		return f, errors.New("ffprobe not configured")
 	}
@@ -42,7 +43,7 @@ func (d *Decorator) Decorate(ctx context.Context, fs file.FS, f file.File) (file
 		interactive = true
 	}
 
-	return &file.VideoFile{
+	return &models.VideoFile{
 		BaseFile:    base,
 		Format:      string(container),
 		VideoCodec:  videoFile.VideoCodec,
@@ -56,13 +57,13 @@ func (d *Decorator) Decorate(ctx context.Context, fs file.FS, f file.File) (file
 	}, nil
 }
 
-func (d *Decorator) IsMissingMetadata(ctx context.Context, fs file.FS, f file.File) bool {
+func (d *Decorator) IsMissingMetadata(ctx context.Context, fs models.FS, f models.File) bool {
 	const (
 		unsetString = "unset"
 		unsetNumber = -1
 	)
 
-	vf, ok := f.(*file.VideoFile)
+	vf, ok := f.(*models.VideoFile)
 	if !ok {
 		return true
 	}

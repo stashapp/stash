@@ -5,7 +5,7 @@ import (
 	"database/sql/driver"
 	"fmt"
 
-	"github.com/fvbommel/sortorder/casefolded"
+	"github.com/WithoutPants/sortorder/casefolded"
 	sqlite3 "github.com/mattn/go-sqlite3"
 )
 

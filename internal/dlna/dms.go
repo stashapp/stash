@@ -48,13 +48,11 @@ import (
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/scene"
-	"github.com/stashapp/stash/pkg/txn"
 )
 
 type SceneFinder interface {
-	scene.Queryer
-	scene.IDFinder
+	models.SceneGetter
+	models.SceneQueryer
 }
 
 type StudioFinder interface {
@@ -272,7 +270,6 @@ type Server struct {
 	// Time interval between SSPD announces
 	NotifyInterval time.Duration
 
-	txnManager         txn.Manager
 	repository         Repository
 	sceneServer        sceneServer
 	ipWhitelistManager *ipWhitelistManager
@@ -440,12 +437,13 @@ func (me *Server) serveIcon(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var scene *models.Scene
-	err := txn.WithReadTxn(r.Context(), me.txnManager, func(ctx context.Context) error {
+	repo := me.repository
+	err := repo.WithReadTxn(r.Context(), func(ctx context.Context) error {
 		idInt, err := strconv.Atoi(sceneId)
 		if err != nil {
 			return nil
 		}
-		scene, _ = me.repository.SceneFinder.Find(ctx, idInt)
+		scene, _ = repo.SceneFinder.Find(ctx, idInt)
 		return nil
 	})
 	if err != nil {
@@ -580,12 +578,13 @@ func (me *Server) initMux(mux *http.ServeMux) {
 	mux.HandleFunc(resPath, func(w http.ResponseWriter, r *http.Request) {
 		sceneId := r.URL.Query().Get("scene")
 		var scene *models.Scene
-		err := txn.WithReadTxn(r.Context(), me.txnManager, func(ctx context.Context) error {
+		repo := me.repository
+		err := repo.WithReadTxn(r.Context(), func(ctx context.Context) error {
 			sceneIdInt, err := strconv.Atoi(sceneId)
 			if err != nil {
 				return nil
 			}
-			scene, _ = me.repository.SceneFinder.Find(ctx, sceneIdInt)
+			scene, _ = repo.SceneFinder.Find(ctx, sceneIdInt)
 			return nil
 		})
 		if err != nil {

@@ -2,18 +2,17 @@ package api
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"strconv"
-	"time"
 
-	"github.com/stashapp/stash/pkg/hash/md5"
+	"github.com/stashapp/stash/internal/static"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
+// used to refetch movie after hooks run
 func (r *mutationResolver) getMovie(ctx context.Context, id int) (ret *models.Movie, err error) {
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		ret, err = r.repository.Movie.Find(ctx, id)
@@ -26,98 +25,74 @@ func (r *mutationResolver) getMovie(ctx context.Context, id int) (ret *models.Mo
 }
 
 func (r *mutationResolver) MovieCreate(ctx context.Context, input MovieCreateInput) (*models.Movie, error) {
-	// generate checksum from movie name rather than image
-	checksum := md5.FromString(input.Name)
-
-	var frontimageData []byte
-	var backimageData []byte
-	var err error
-
-	// HACK: if back image is being set, set the front image to the default.
-	// This is because we can't have a null front image with a non-null back image.
-	if input.FrontImage == nil && input.BackImage != nil {
-		input.FrontImage = &models.DefaultMovieImage
-	}
-
-	// Process the base 64 encoded image string
-	if input.FrontImage != nil {
-		frontimageData, err = utils.ProcessImageInput(ctx, *input.FrontImage)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	// Process the base 64 encoded image string
-	if input.BackImage != nil {
-		backimageData, err = utils.ProcessImageInput(ctx, *input.BackImage)
-		if err != nil {
-			return nil, err
-		}
+	translator := changesetTranslator{
+		inputMap: getUpdateInputMap(ctx),
 	}
 
 	// Populate a new movie from the input
-	currentTime := time.Now()
-	newMovie := models.Movie{
-		Checksum:  checksum,
-		Name:      sql.NullString{String: input.Name, Valid: true},
-		CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
-		UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
+	newMovie := models.NewMovie()
+
+	newMovie.Name = input.Name
+	newMovie.Aliases = translator.string(input.Aliases)
+	newMovie.Duration = input.Duration
+	newMovie.Rating = input.Rating100
+	newMovie.Director = translator.string(input.Director)
+	newMovie.Synopsis = translator.string(input.Synopsis)
+	newMovie.URL = translator.string(input.URL)
+
+	var err error
+
+	newMovie.Date, err = translator.datePtr(input.Date)
+	if err != nil {
+		return nil, fmt.Errorf("converting date: %w", err)
+	}
+	newMovie.StudioID, err = translator.intPtrFromString(input.StudioID)
+	if err != nil {
+		return nil, fmt.Errorf("converting studio id: %w", err)
 	}
 
-	if input.Aliases != nil {
-		newMovie.Aliases = sql.NullString{String: *input.Aliases, Valid: true}
-	}
-	if input.Duration != nil {
-		duration := int64(*input.Duration)
-		newMovie.Duration = sql.NullInt64{Int64: duration, Valid: true}
-	}
-
-	if input.Date != nil {
-		newMovie.Date = models.SQLiteDate{String: *input.Date, Valid: true}
+	// Process the base 64 encoded image string
+	var frontimageData []byte
+	if input.FrontImage != nil {
+		frontimageData, err = utils.ProcessImageInput(ctx, *input.FrontImage)
+		if err != nil {
+			return nil, fmt.Errorf("processing front image: %w", err)
+		}
 	}
 
-	if input.Rating100 != nil {
-		newMovie.Rating = sql.NullInt64{Int64: int64(*input.Rating100), Valid: true}
-	} else if input.Rating != nil {
-		rating := models.Rating5To100(*input.Rating)
-		newMovie.Rating = sql.NullInt64{Int64: int64(rating), Valid: true}
+	// Process the base 64 encoded image string
+	var backimageData []byte
+	if input.BackImage != nil {
+		backimageData, err = utils.ProcessImageInput(ctx, *input.BackImage)
+		if err != nil {
+			return nil, fmt.Errorf("processing back image: %w", err)
+		}
 	}
 
-	if input.StudioID != nil {
-		studioID, _ := strconv.ParseInt(*input.StudioID, 10, 64)
-		newMovie.StudioID = sql.NullInt64{Int64: studioID, Valid: true}
-	}
-
-	if input.Director != nil {
-		newMovie.Director = sql.NullString{String: *input.Director, Valid: true}
-	}
-
-	if input.Synopsis != nil {
-		newMovie.Synopsis = sql.NullString{String: *input.Synopsis, Valid: true}
-	}
-
-	if input.URL != nil {
-		newMovie.URL = sql.NullString{String: *input.URL, Valid: true}
+	// HACK: if back image is being set, set the front image to the default.
+	// This is because we can't have a null front image with a non-null back image.
+	if len(frontimageData) == 0 && len(backimageData) != 0 {
+		frontimageData = static.ReadAll(static.DefaultMovieImage)
 	}
 
 	// Start the transaction and save the movie
-	var movie *models.Movie
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Movie
-		movie, err = qb.Create(ctx, newMovie)
+
+		err = qb.Create(ctx, &newMovie)
 		if err != nil {
 			return err
 		}
 
 		// update image table
 		if len(frontimageData) > 0 {
-			if err := qb.UpdateFrontImage(ctx, movie.ID, frontimageData); err != nil {
+			if err := qb.UpdateFrontImage(ctx, newMovie.ID, frontimageData); err != nil {
 				return err
 			}
 		}
 
 		if len(backimageData) > 0 {
-			if err := qb.UpdateBackImage(ctx, movie.ID, backimageData); err != nil {
+			if err := qb.UpdateBackImage(ctx, newMovie.ID, backimageData); err != nil {
 				return err
 			}
 		}
@@ -127,24 +102,38 @@ func (r *mutationResolver) MovieCreate(ctx context.Context, input MovieCreateInp
 		return nil, err
 	}
 
-	r.hookExecutor.ExecutePostHooks(ctx, movie.ID, plugin.MovieCreatePost, input, nil)
-	return r.getMovie(ctx, movie.ID)
+	r.hookExecutor.ExecutePostHooks(ctx, newMovie.ID, plugin.MovieCreatePost, input, nil)
+	return r.getMovie(ctx, newMovie.ID)
 }
 
 func (r *mutationResolver) MovieUpdate(ctx context.Context, input MovieUpdateInput) (*models.Movie, error) {
-	// Populate movie from the input
 	movieID, err := strconv.Atoi(input.ID)
 	if err != nil {
-		return nil, err
-	}
-
-	updatedMovie := models.MoviePartial{
-		ID:        movieID,
-		UpdatedAt: &models.SQLiteTimestamp{Timestamp: time.Now()},
+		return nil, fmt.Errorf("converting id: %w", err)
 	}
 
 	translator := changesetTranslator{
 		inputMap: getUpdateInputMap(ctx),
+	}
+
+	// Populate movie from the input
+	updatedMovie := models.NewMoviePartial()
+
+	updatedMovie.Name = translator.optionalString(input.Name, "name")
+	updatedMovie.Aliases = translator.optionalString(input.Aliases, "aliases")
+	updatedMovie.Duration = translator.optionalInt(input.Duration, "duration")
+	updatedMovie.Rating = translator.optionalInt(input.Rating100, "rating100")
+	updatedMovie.Director = translator.optionalString(input.Director, "director")
+	updatedMovie.Synopsis = translator.optionalString(input.Synopsis, "synopsis")
+	updatedMovie.URL = translator.optionalString(input.URL, "url")
+
+	updatedMovie.Date, err = translator.optionalDate(input.Date, "date")
+	if err != nil {
+		return nil, fmt.Errorf("converting date: %w", err)
+	}
+	updatedMovie.StudioID, err = translator.optionalIntFromString(input.StudioID, "studio_id")
+	if err != nil {
+		return nil, fmt.Errorf("converting studio id: %w", err)
 	}
 
 	var frontimageData []byte
@@ -152,39 +141,24 @@ func (r *mutationResolver) MovieUpdate(ctx context.Context, input MovieUpdateInp
 	if input.FrontImage != nil {
 		frontimageData, err = utils.ProcessImageInput(ctx, *input.FrontImage)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("processing front image: %w", err)
 		}
 	}
-	backImageIncluded := translator.hasField("back_image")
+
 	var backimageData []byte
+	backImageIncluded := translator.hasField("back_image")
 	if input.BackImage != nil {
 		backimageData, err = utils.ProcessImageInput(ctx, *input.BackImage)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("processing back image: %w", err)
 		}
 	}
-
-	if input.Name != nil {
-		// generate checksum from movie name rather than image
-		checksum := md5.FromString(*input.Name)
-		updatedMovie.Name = &sql.NullString{String: *input.Name, Valid: true}
-		updatedMovie.Checksum = &checksum
-	}
-
-	updatedMovie.Aliases = translator.nullString(input.Aliases, "aliases")
-	updatedMovie.Duration = translator.nullInt64(input.Duration, "duration")
-	updatedMovie.Date = translator.sqliteDate(input.Date, "date")
-	updatedMovie.Rating = translator.ratingConversion(input.Rating, input.Rating100)
-	updatedMovie.StudioID = translator.nullInt64FromString(input.StudioID, "studio_id")
-	updatedMovie.Director = translator.nullString(input.Director, "director")
-	updatedMovie.Synopsis = translator.nullString(input.Synopsis, "synopsis")
-	updatedMovie.URL = translator.nullString(input.URL, "url")
 
 	// Start the transaction and save the movie
 	var movie *models.Movie
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Movie
-		movie, err = qb.Update(ctx, updatedMovie)
+		movie, err = qb.UpdatePartial(ctx, movieID, updatedMovie)
 		if err != nil {
 			return err
 		}
@@ -214,22 +188,23 @@ func (r *mutationResolver) MovieUpdate(ctx context.Context, input MovieUpdateInp
 func (r *mutationResolver) BulkMovieUpdate(ctx context.Context, input BulkMovieUpdateInput) ([]*models.Movie, error) {
 	movieIDs, err := stringslice.StringSliceToIntSlice(input.Ids)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("converting ids: %w", err)
 	}
-
-	updatedTime := time.Now()
 
 	translator := changesetTranslator{
 		inputMap: getUpdateInputMap(ctx),
 	}
 
-	updatedMovie := models.MoviePartial{
-		UpdatedAt: &models.SQLiteTimestamp{Timestamp: updatedTime},
-	}
+	// Populate movie from the input
+	updatedMovie := models.NewMoviePartial()
 
-	updatedMovie.Rating = translator.ratingConversion(input.Rating, input.Rating100)
-	updatedMovie.StudioID = translator.nullInt64FromString(input.StudioID, "studio_id")
-	updatedMovie.Director = translator.nullString(input.Director, "director")
+	updatedMovie.Rating = translator.optionalInt(input.Rating100, "rating100")
+	updatedMovie.Director = translator.optionalString(input.Director, "director")
+
+	updatedMovie.StudioID, err = translator.optionalIntFromString(input.StudioID, "studio_id")
+	if err != nil {
+		return nil, fmt.Errorf("converting studio id: %w", err)
+	}
 
 	ret := []*models.Movie{}
 
@@ -237,18 +212,7 @@ func (r *mutationResolver) BulkMovieUpdate(ctx context.Context, input BulkMovieU
 		qb := r.repository.Movie
 
 		for _, movieID := range movieIDs {
-			updatedMovie.ID = movieID
-
-			existing, err := qb.Find(ctx, movieID)
-			if err != nil {
-				return err
-			}
-
-			if existing == nil {
-				return fmt.Errorf("movie with id %d not found", movieID)
-			}
-
-			movie, err := qb.Update(ctx, updatedMovie)
+			movie, err := qb.UpdatePartial(ctx, movieID, updatedMovie)
 			if err != nil {
 				return err
 			}
@@ -279,7 +243,7 @@ func (r *mutationResolver) BulkMovieUpdate(ctx context.Context, input BulkMovieU
 func (r *mutationResolver) MovieDestroy(ctx context.Context, input MovieDestroyInput) (bool, error) {
 	id, err := strconv.Atoi(input.ID)
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("converting id: %w", err)
 	}
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
@@ -296,7 +260,7 @@ func (r *mutationResolver) MovieDestroy(ctx context.Context, input MovieDestroyI
 func (r *mutationResolver) MoviesDestroy(ctx context.Context, movieIDs []string) (bool, error) {
 	ids, err := stringslice.StringSliceToIntSlice(movieIDs)
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("converting ids: %w", err)
 	}
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {

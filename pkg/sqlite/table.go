@@ -11,11 +11,9 @@ import (
 	"github.com/jmoiron/sqlx"
 	"gopkg.in/guregu/null.v4"
 
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sliceutil/intslice"
-	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
+	"github.com/stashapp/stash/pkg/sliceutil"
 )
 
 type table struct {
@@ -202,7 +200,7 @@ func (t *joinTable) insertJoins(ctx context.Context, id int, foreignIDs []int) e
 	defer stmt.Close()
 
 	// eliminate duplicates
-	foreignIDs = intslice.IntAppendUniques(nil, foreignIDs)
+	foreignIDs = sliceutil.AppendUniques(nil, foreignIDs)
 
 	for _, fk := range foreignIDs {
 		if _, err := tx.ExecStmt(ctx, stmt, id, fk); err != nil {
@@ -229,7 +227,7 @@ func (t *joinTable) addJoins(ctx context.Context, id int, foreignIDs []int) erro
 	}
 
 	// only add foreign keys that are not already present
-	foreignIDs = intslice.IntExclude(foreignIDs, fks)
+	foreignIDs = sliceutil.Exclude(foreignIDs, fks)
 	return t.insertJoins(ctx, id, foreignIDs)
 }
 
@@ -440,7 +438,7 @@ func (t *stringTable) addJoins(ctx context.Context, id int, v []string) error {
 	}
 
 	// only add values that are not already present
-	filtered := stringslice.StrExclude(v, existing)
+	filtered := sliceutil.Exclude(v, existing)
 	return t.insertJoins(ctx, id, filtered)
 }
 
@@ -460,6 +458,113 @@ func (t *stringTable) destroyJoins(ctx context.Context, id int, v []string) erro
 }
 
 func (t *stringTable) modifyJoins(ctx context.Context, id int, v []string, mode models.RelationshipUpdateMode) error {
+	switch mode {
+	case models.RelationshipUpdateModeSet:
+		return t.replaceJoins(ctx, id, v)
+	case models.RelationshipUpdateModeAdd:
+		return t.addJoins(ctx, id, v)
+	case models.RelationshipUpdateModeRemove:
+		return t.destroyJoins(ctx, id, v)
+	}
+
+	return nil
+}
+
+type orderedValueTable[T comparable] struct {
+	table
+	valueColumn exp.IdentifierExpression
+}
+
+func (t *orderedValueTable[T]) positionColumn() exp.IdentifierExpression {
+	const positionColumn = "position"
+	return t.table.table.Col(positionColumn)
+}
+
+func (t *orderedValueTable[T]) get(ctx context.Context, id int) ([]T, error) {
+	q := dialect.Select(t.valueColumn).From(t.table.table).Where(t.idColumn.Eq(id)).Order(t.positionColumn().Asc())
+
+	const single = false
+	var ret []T
+	if err := queryFunc(ctx, q, single, func(rows *sqlx.Rows) error {
+		var v T
+		if err := rows.Scan(&v); err != nil {
+			return err
+		}
+
+		ret = append(ret, v)
+
+		return nil
+	}); err != nil {
+		return nil, fmt.Errorf("getting stash ids from %s: %w", t.table.table.GetTable(), err)
+	}
+
+	return ret, nil
+}
+
+func (t *orderedValueTable[T]) insertJoin(ctx context.Context, id int, position int, v T) (sql.Result, error) {
+	q := dialect.Insert(t.table.table).Cols(t.idColumn.GetCol(), t.positionColumn().GetCol(), t.valueColumn.GetCol()).Vals(
+		goqu.Vals{id, position, v},
+	)
+	ret, err := exec(ctx, q)
+	if err != nil {
+		return nil, fmt.Errorf("inserting into %s: %w", t.table.table.GetTable(), err)
+	}
+
+	return ret, nil
+}
+
+func (t *orderedValueTable[T]) insertJoins(ctx context.Context, id int, startPos int, v []T) error {
+	for i, fk := range v {
+		if _, err := t.insertJoin(ctx, id, i+startPos, fk); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (t *orderedValueTable[T]) replaceJoins(ctx context.Context, id int, v []T) error {
+	if err := t.destroy(ctx, []int{id}); err != nil {
+		return err
+	}
+
+	const startPos = 0
+	return t.insertJoins(ctx, id, startPos, v)
+}
+
+func (t *orderedValueTable[T]) addJoins(ctx context.Context, id int, v []T) error {
+	// get existing foreign keys
+	existing, err := t.get(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	// only add values that are not already present
+	filtered := sliceutil.Exclude(v, existing)
+
+	if len(filtered) == 0 {
+		return nil
+	}
+
+	startPos := len(existing)
+	return t.insertJoins(ctx, id, startPos, filtered)
+}
+
+func (t *orderedValueTable[T]) destroyJoins(ctx context.Context, id int, v []T) error {
+	existing, err := t.get(ctx, id)
+	if err != nil {
+		return fmt.Errorf("getting existing %s: %w", t.table.table.GetTable(), err)
+	}
+
+	newValue := sliceutil.Exclude(existing, v)
+	if len(newValue) == len(existing) {
+		return nil
+	}
+
+	return t.replaceJoins(ctx, id, newValue)
+}
+
+func (t *orderedValueTable[T]) modifyJoins(ctx context.Context, id int, v []T, mode models.RelationshipUpdateMode) error {
 	switch mode {
 	case models.RelationshipUpdateModeSet:
 		return t.replaceJoins(ctx, id, v)
@@ -599,12 +704,12 @@ type relatedFilesTable struct {
 }
 
 // type scenesFilesRow struct {
-// 	SceneID int     `db:"scene_id"`
-// 	Primary bool    `db:"primary"`
-// 	FileID  file.ID `db:"file_id"`
+// 	SceneID int           `db:"scene_id"`
+// 	Primary bool          `db:"primary"`
+// 	FileID  models.FileID `db:"file_id"`
 // }
 
-func (t *relatedFilesTable) insertJoin(ctx context.Context, id int, primary bool, fileID file.ID) error {
+func (t *relatedFilesTable) insertJoin(ctx context.Context, id int, primary bool, fileID models.FileID) error {
 	q := dialect.Insert(t.table.table).Cols(t.idColumn.GetCol(), "primary", "file_id").Vals(
 		goqu.Vals{id, primary, fileID},
 	)
@@ -616,7 +721,7 @@ func (t *relatedFilesTable) insertJoin(ctx context.Context, id int, primary bool
 	return nil
 }
 
-func (t *relatedFilesTable) insertJoins(ctx context.Context, id int, firstPrimary bool, fileIDs []file.ID) error {
+func (t *relatedFilesTable) insertJoins(ctx context.Context, id int, firstPrimary bool, fileIDs []models.FileID) error {
 	for i, fk := range fileIDs {
 		if err := t.insertJoin(ctx, id, firstPrimary && i == 0, fk); err != nil {
 			return err
@@ -626,7 +731,7 @@ func (t *relatedFilesTable) insertJoins(ctx context.Context, id int, firstPrimar
 	return nil
 }
 
-func (t *relatedFilesTable) replaceJoins(ctx context.Context, id int, fileIDs []file.ID) error {
+func (t *relatedFilesTable) replaceJoins(ctx context.Context, id int, fileIDs []models.FileID) error {
 	if err := t.destroy(ctx, []int{id}); err != nil {
 		return err
 	}
@@ -636,7 +741,7 @@ func (t *relatedFilesTable) replaceJoins(ctx context.Context, id int, fileIDs []
 }
 
 // destroyJoins destroys all entries in the table with the provided fileIDs
-func (t *relatedFilesTable) destroyJoins(ctx context.Context, fileIDs []file.ID) error {
+func (t *relatedFilesTable) destroyJoins(ctx context.Context, fileIDs []models.FileID) error {
 	q := dialect.Delete(t.table.table).Where(t.table.table.Col("file_id").In(fileIDs))
 
 	if _, err := exec(ctx, q); err != nil {
@@ -646,7 +751,7 @@ func (t *relatedFilesTable) destroyJoins(ctx context.Context, fileIDs []file.ID)
 	return nil
 }
 
-func (t *relatedFilesTable) setPrimary(ctx context.Context, id int, fileID file.ID) error {
+func (t *relatedFilesTable) setPrimary(ctx context.Context, id int, fileID models.FileID) error {
 	table := t.table.table
 
 	q := dialect.Update(table).Prepared(true).Set(goqu.Record{

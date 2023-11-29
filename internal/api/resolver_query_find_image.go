@@ -2,13 +2,11 @@ package api
 
 import (
 	"context"
-	"database/sql"
-	"errors"
 	"strconv"
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
+	"github.com/stashapp/stash/pkg/sliceutil"
 )
 
 func (r *queryResolver) FindImage(ctx context.Context, id *string, checksum *string) (*models.Image, error) {
@@ -25,7 +23,7 @@ func (r *queryResolver) FindImage(ctx context.Context, id *string, checksum *str
 			}
 
 			image, err = qb.Find(ctx, idInt)
-			if err != nil && !errors.Is(err, sql.ErrNoRows) {
+			if err != nil {
 				return err
 			}
 		} else if checksum != nil {
@@ -57,11 +55,11 @@ func (r *queryResolver) FindImages(ctx context.Context, imageFilter *models.Imag
 		result, err := qb.Query(ctx, models.ImageQueryOptions{
 			QueryOptions: models.QueryOptions{
 				FindFilter: filter,
-				Count:      stringslice.StrInclude(fields, "count"),
+				Count:      sliceutil.Contains(fields, "count"),
 			},
 			ImageFilter: imageFilter,
-			Megapixels:  stringslice.StrInclude(fields, "megapixels"),
-			TotalSize:   stringslice.StrInclude(fields, "filesize"),
+			Megapixels:  sliceutil.Contains(fields, "megapixels"),
+			TotalSize:   sliceutil.Contains(fields, "filesize"),
 		})
 		if err != nil {
 			return err

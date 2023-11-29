@@ -12,7 +12,6 @@ import {
   DateCriterion,
   TimestampCriterion,
   BooleanCriterion,
-  PathCriterionOption,
 } from "src/models/list-filter/criteria/criterion";
 import { useIntl } from "react-intl";
 import {
@@ -47,6 +46,7 @@ import TagsFilter from "./Filters/TagsFilter";
 import { PhashCriterion } from "src/models/list-filter/criteria/phash";
 import { PhashFilter } from "./Filters/PhashFilter";
 import cx from "classnames";
+import { PathCriterion } from "src/models/list-filter/criteria/path";
 
 interface IGenericCriterionEditor {
   criterion: Criterion<CriterionValue>;
@@ -77,17 +77,15 @@ const GenericCriterionEditor: React.FC<IGenericCriterionEditor> = ({
 
     return (
       <Form.Group className="modifier-options">
-        {modifierOptions.map((c) => (
+        {modifierOptions.map((m) => (
           <Button
             className={cx("modifier-option", {
-              selected: criterion.modifier === c.value,
+              selected: criterion.modifier === m,
             })}
-            key={c.value}
-            onClick={() =>
-              onChangedModifierSelect(c.value as CriterionModifier)
-            }
+            key={m}
+            onClick={() => onChangedModifierSelect(m)}
           >
-            {c.label ? intl.formatMessage({ id: c.label }) : ""}
+            {Criterion.getModifierLabel(intl, m)}
           </Button>
         ))}
       </Form.Group>
@@ -177,7 +175,7 @@ const GenericCriterionEditor: React.FC<IGenericCriterionEditor> = ({
         );
       }
     }
-    if (criterion.criterionOption instanceof PathCriterionOption) {
+    if (criterion instanceof PathCriterion) {
       return (
         <PathFilter criterion={criterion} onValueChanged={onValueChanged} />
       );

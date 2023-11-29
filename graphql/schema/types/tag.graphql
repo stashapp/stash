@@ -8,14 +8,16 @@ type Tag {
   updated_at: Time!
 
   image_path: String # Resolver
-  scene_count: Int # Resolver
-  scene_marker_count: Int # Resolver
-  image_count: Int # Resolver
-  gallery_count: Int # Resolver
-  performer_count: Int
-
+  scene_count(depth: Int): Int! # Resolver
+  scene_marker_count(depth: Int): Int! # Resolver
+  image_count(depth: Int): Int! # Resolver
+  gallery_count(depth: Int): Int! # Resolver
+  performer_count(depth: Int): Int! # Resolver
   parents: [Tag!]!
   children: [Tag!]!
+
+  parent_count: Int! # Resolver
+  child_count: Int! # Resolver
 }
 
 input TagCreateInput {
@@ -24,7 +26,7 @@ input TagCreateInput {
   aliases: [String!]
   ignore_auto_tag: Boolean
 
-  """This should be a URL or a base64 encoded data URL"""
+  "This should be a URL or a base64 encoded data URL"
   image: String
 
   parent_ids: [ID!]
@@ -38,7 +40,7 @@ input TagUpdateInput {
   aliases: [String!]
   ignore_auto_tag: Boolean
 
-  """This should be a URL or a base64 encoded data URL"""
+  "This should be a URL or a base64 encoded data URL"
   image: String
 
   parent_ids: [ID!]

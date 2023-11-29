@@ -75,21 +75,23 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
             id,
             mode: filter.mode,
             name,
-            filter: filterCopy.makeSavedFilterJSON(),
+            find_filter: filterCopy.makeFindFilter(),
+            object_filter: filterCopy.makeSavedFindFilter(),
+            ui_options: filterCopy.makeUIOptions(),
           },
         },
       });
 
-      Toast.success({
-        content: intl.formatMessage(
+      Toast.success(
+        intl.formatMessage(
           {
             id: "toast.saved_entity",
           },
           {
             entity: intl.formatMessage({ id: "filter" }).toLocaleLowerCase(),
           }
-        ),
-      });
+        )
+      );
       setFilterName("");
       setOverwritingFilter(undefined);
       refetch();
@@ -112,8 +114,8 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
         },
       });
 
-      Toast.success({
-        content: intl.formatMessage(
+      Toast.success(
+        intl.formatMessage(
           {
             id: "toast.delete_past_tense",
           },
@@ -122,8 +124,8 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
             singularEntity: intl.formatMessage({ id: "filter" }),
             pluralEntity: intl.formatMessage({ id: "filters" }),
           }
-        ),
-      });
+        )
+      );
       refetch();
     } catch (err) {
       Toast.error(err);
@@ -143,16 +145,18 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
         variables: {
           input: {
             mode: filter.mode,
-            filter: filterCopy.makeSavedFilterJSON(),
+            find_filter: filterCopy.makeFindFilter(),
+            object_filter: filterCopy.makeSavedFindFilter(),
+            ui_options: filterCopy.makeUIOptions(),
           },
         },
       });
 
-      Toast.success({
-        content: intl.formatMessage({
+      Toast.success(
+        intl.formatMessage({
           id: "toast.default_filter_set",
-        }),
-      });
+        })
+      );
     } catch (err) {
       Toast.error(err);
     } finally {
@@ -166,7 +170,7 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
     newFilter.currentPage = 1;
     // #1795 - reset search term if not present in saved filter
     newFilter.searchTerm = "";
-    newFilter.configureFromJSON(f.filter);
+    newFilter.configureFromSavedFilter(f);
     // #1507 - reset random seed when loaded
     newFilter.randomSeed = -1;
 

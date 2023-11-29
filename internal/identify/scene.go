@@ -3,39 +3,39 @@ package identify
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/sliceutil"
-	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
-type SceneReaderUpdater interface {
+type SceneCoverGetter interface {
 	GetCover(ctx context.Context, sceneID int) ([]byte, error)
-	scene.Updater
+}
+
+type SceneReaderUpdater interface {
+	SceneCoverGetter
+	models.SceneUpdater
 	models.PerformerIDLoader
 	models.TagIDLoader
 	models.StashIDLoader
-}
-
-type TagCreator interface {
-	Create(ctx context.Context, newTag models.Tag) (*models.Tag, error)
+	models.URLLoader
 }
 
 type sceneRelationships struct {
-	sceneReader      SceneReaderUpdater
-	studioCreator    StudioCreator
-	performerCreator PerformerCreator
-	tagCreator       TagCreator
-	scene            *models.Scene
-	result           *scrapeResult
-	fieldOptions     map[string]*FieldOptions
+	sceneReader              SceneCoverGetter
+	studioReaderWriter       models.StudioReaderWriter
+	performerCreator         PerformerCreator
+	tagCreator               models.TagCreator
+	scene                    *models.Scene
+	result                   *scrapeResult
+	fieldOptions             map[string]*FieldOptions
+	skipSingleNamePerformers bool
 }
 
 func (g sceneRelationships) studio(ctx context.Context) (*int, error) {
@@ -62,7 +62,7 @@ func (g sceneRelationships) studio(ctx context.Context) (*int, error) {
 			return &studioID, nil
 		}
 	} else if createMissing {
-		return createMissingStudio(ctx, endpoint, g.studioCreator, scraped)
+		return createMissingStudio(ctx, endpoint, g.studioReaderWriter, scraped)
 	}
 
 	return nil, nil
@@ -93,26 +93,38 @@ func (g sceneRelationships) performers(ctx context.Context, ignoreMale bool) ([]
 		performerIDs = originalPerformerIDs
 	}
 
+	singleNamePerformerSkipped := false
+
 	for _, p := range scraped {
 		if ignoreMale && p.Gender != nil && strings.EqualFold(*p.Gender, models.GenderEnumMale.String()) {
 			continue
 		}
 
-		performerID, err := getPerformerID(ctx, endpoint, g.performerCreator, p, createMissing)
+		performerID, err := getPerformerID(ctx, endpoint, g.performerCreator, p, createMissing, g.skipSingleNamePerformers)
 		if err != nil {
+			if errors.Is(err, ErrSkipSingleNamePerformer) {
+				singleNamePerformerSkipped = true
+				continue
+			}
 			return nil, err
 		}
 
 		if performerID != nil {
-			performerIDs = intslice.IntAppendUnique(performerIDs, *performerID)
+			performerIDs = sliceutil.AppendUnique(performerIDs, *performerID)
 		}
 	}
 
 	// don't return if nothing was added
 	if sliceutil.SliceSame(originalPerformerIDs, performerIDs) {
+		if singleNamePerformerSkipped {
+			return nil, ErrSkipSingleNamePerformer
+		}
 		return nil, nil
 	}
 
+	if singleNamePerformerSkipped {
+		return performerIDs, ErrSkipSingleNamePerformer
+	}
 	return performerIDs, nil
 }
 
@@ -148,19 +160,17 @@ func (g sceneRelationships) tags(ctx context.Context) ([]int, error) {
 				return nil, fmt.Errorf("error converting tag ID %s: %w", *t.StoredID, err)
 			}
 
-			tagIDs = intslice.IntAppendUnique(tagIDs, int(tagID))
+			tagIDs = sliceutil.AppendUnique(tagIDs, int(tagID))
 		} else if createMissing {
-			now := time.Now()
-			created, err := g.tagCreator.Create(ctx, models.Tag{
-				Name:      t.Name,
-				CreatedAt: models.SQLiteTimestamp{Timestamp: now},
-				UpdatedAt: models.SQLiteTimestamp{Timestamp: now},
-			})
+			newTag := models.NewTag()
+			newTag.Name = t.Name
+
+			err := g.tagCreator.Create(ctx, &newTag)
 			if err != nil {
 				return nil, fmt.Errorf("error creating tag: %w", err)
 			}
 
-			tagIDs = append(tagIDs, created.ID)
+			tagIDs = append(tagIDs, newTag.ID)
 		}
 	}
 
@@ -228,7 +238,7 @@ func (g sceneRelationships) stashIDs(ctx context.Context) ([]models.StashID, err
 func (g sceneRelationships) cover(ctx context.Context) ([]byte, error) {
 	scraped := g.result.result.Image
 
-	if scraped == nil {
+	if scraped == nil || *scraped == "" {
 		return nil, nil
 	}
 

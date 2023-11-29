@@ -1,9 +1,12 @@
 fragment ImageData on Image {
   id
   title
+  code
   rating100
   date
-  url
+  urls
+  details
+  photographer
   organized
   o_counter
   created_at
@@ -26,7 +29,7 @@ fragment ImageData on Image {
   studio {
     ...SlimStudioData
   }
-  
+
   tags {
     ...SlimTagData
   }

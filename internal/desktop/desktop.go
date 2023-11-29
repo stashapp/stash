@@ -9,15 +9,12 @@ import (
 	"strings"
 
 	"github.com/pkg/browser"
+	"github.com/stashapp/stash/internal/build"
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"golang.org/x/term"
 )
-
-type ShutdownHandler interface {
-	Shutdown(code int)
-}
 
 type FaviconProvider interface {
 	GetFavicon() []byte
@@ -26,7 +23,7 @@ type FaviconProvider interface {
 
 // Start starts the desktop icon process. It blocks until the process exits.
 // MUST be run on the main goroutine or will have no effect on macOS
-func Start(shutdownHandler ShutdownHandler, faviconProvider FaviconProvider) {
+func Start(exit chan<- int, faviconProvider FaviconProvider) {
 	if IsDesktop() {
 		hideConsole()
 
@@ -35,7 +32,7 @@ func Start(shutdownHandler ShutdownHandler, faviconProvider FaviconProvider) {
 			openURLInBrowser("")
 		}
 		writeStashIcon(faviconProvider)
-		startSystray(shutdownHandler, faviconProvider)
+		startSystray(exit, faviconProvider)
 	}
 }
 
@@ -104,7 +101,7 @@ func writeStashIcon(faviconProvider FaviconProvider) {
 func IsAllowedAutoUpdate() bool {
 
 	// Only try to update if downloaded from official sources
-	if !config.IsOfficialBuild() {
+	if !build.IsOfficial() {
 		return false
 	}
 

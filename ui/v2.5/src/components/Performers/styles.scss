@@ -16,12 +16,9 @@
 
   .performer-head {
     display: inline-block;
-    margin-bottom: 2rem;
     vertical-align: top;
 
     .name-icons {
-      margin-left: 10px;
-
       .not-favorite {
         color: rgba(191, 204, 214, 0.5);
       }
@@ -161,13 +158,14 @@
 
 .PerformerScrapeModal {
   &-list {
-    list-style-type: none;
+    list-style: none;
     max-height: 50vh;
-    overflow-x: auto;
-    padding-left: 1rem;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding-inline-start: 0;
 
-    .btn {
-      font-size: 1.2rem;
+    li {
+      cursor: pointer;
     }
   }
 }
@@ -210,7 +208,27 @@
 
 .performer-disambiguation {
   color: $text-muted;
-  /* stylelint-disable */
   font-size: 0.875em;
-  /* stylelint-enable */
+}
+
+.performer-result .performer-details > span {
+  &::after {
+    content: " • ";
+  }
+
+  &:last-child::after {
+    content: "";
+  }
+}
+
+.performer-select {
+  .alias {
+    font-weight: bold;
+  }
+
+  .performer-select-image {
+    margin-right: 0.5em;
+    max-height: 50px;
+    max-width: 50px;
+  }
 }

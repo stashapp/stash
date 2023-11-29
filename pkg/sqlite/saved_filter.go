@@ -3,55 +3,149 @@ package sqlite
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"fmt"
 
+	"github.com/doug-martin/goqu/v9"
+	"github.com/doug-martin/goqu/v9/exp"
+	"github.com/jmoiron/sqlx"
+
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sliceutil"
 )
 
-const savedFilterTable = "saved_filters"
-const savedFilterDefaultName = ""
+const (
+	savedFilterTable       = "saved_filters"
+	savedFilterDefaultName = ""
+)
 
-type savedFilterQueryBuilder struct {
+type savedFilterRow struct {
+	ID           int               `db:"id" goqu:"skipinsert"`
+	Mode         models.FilterMode `db:"mode"`
+	Name         string            `db:"name"`
+	FindFilter   string            `db:"find_filter"`
+	ObjectFilter string            `db:"object_filter"`
+	UIOptions    string            `db:"ui_options"`
+}
+
+func encodeJSONOrEmpty(v interface{}) string {
+	if v == nil {
+		return ""
+	}
+
+	encoded, err := json.Marshal(v)
+	if err != nil {
+		logger.Errorf("error encoding json %v: %v", v, err)
+	}
+
+	return string(encoded)
+}
+
+func decodeJSON(s string, v interface{}) {
+	if s == "" {
+		return
+	}
+
+	if err := json.Unmarshal([]byte(s), v); err != nil {
+		logger.Errorf("error decoding json %q: %v", s, err)
+	}
+}
+
+func (r *savedFilterRow) fromSavedFilter(o models.SavedFilter) {
+	r.ID = o.ID
+	r.Mode = o.Mode
+	r.Name = o.Name
+
+	// encode the filters as json
+	r.FindFilter = encodeJSONOrEmpty(o.FindFilter)
+	r.ObjectFilter = encodeJSONOrEmpty(o.ObjectFilter)
+	r.UIOptions = encodeJSONOrEmpty(o.UIOptions)
+}
+
+func (r *savedFilterRow) resolve() *models.SavedFilter {
+	ret := &models.SavedFilter{
+		ID:   r.ID,
+		Mode: r.Mode,
+		Name: r.Name,
+	}
+
+	// decode the filters from json
+	if r.FindFilter != "" {
+		ret.FindFilter = &models.FindFilterType{}
+		decodeJSON(r.FindFilter, &ret.FindFilter)
+	}
+	if r.ObjectFilter != "" {
+		ret.ObjectFilter = make(map[string]interface{})
+		decodeJSON(r.ObjectFilter, &ret.ObjectFilter)
+	}
+	if r.UIOptions != "" {
+		ret.UIOptions = make(map[string]interface{})
+		decodeJSON(r.UIOptions, &ret.UIOptions)
+	}
+
+	return ret
+}
+
+type SavedFilterStore struct {
 	repository
+	tableMgr *table
 }
 
-var SavedFilterReaderWriter = &savedFilterQueryBuilder{
-	repository{
-		tableName: savedFilterTable,
-		idColumn:  idColumn,
-	},
+func NewSavedFilterStore() *SavedFilterStore {
+	return &SavedFilterStore{
+		repository: repository{
+			tableName: savedFilterTable,
+			idColumn:  idColumn,
+		},
+		tableMgr: savedFilterTableMgr,
+	}
 }
 
-func (qb *savedFilterQueryBuilder) Create(ctx context.Context, newObject models.SavedFilter) (*models.SavedFilter, error) {
-	var ret models.SavedFilter
-	if err := qb.insertObject(ctx, newObject, &ret); err != nil {
-		return nil, err
+func (qb *SavedFilterStore) table() exp.IdentifierExpression {
+	return qb.tableMgr.table
+}
+
+func (qb *SavedFilterStore) selectDataset() *goqu.SelectDataset {
+	return dialect.From(qb.table()).Select(qb.table().All())
+}
+
+func (qb *SavedFilterStore) Create(ctx context.Context, newObject *models.SavedFilter) error {
+	var r savedFilterRow
+	r.fromSavedFilter(*newObject)
+
+	id, err := qb.tableMgr.insertID(ctx, r)
+	if err != nil {
+		return err
 	}
 
-	return &ret, nil
-}
-
-func (qb *savedFilterQueryBuilder) Update(ctx context.Context, updatedObject models.SavedFilter) (*models.SavedFilter, error) {
-	const partial = false
-	if err := qb.update(ctx, updatedObject.ID, updatedObject, partial); err != nil {
-		return nil, err
+	updated, err := qb.Find(ctx, id)
+	if err != nil {
+		return fmt.Errorf("finding after create: %w", err)
 	}
 
-	var ret models.SavedFilter
-	if err := qb.getByID(ctx, updatedObject.ID, &ret); err != nil {
-		return nil, err
-	}
+	*newObject = *updated
 
-	return &ret, nil
+	return nil
 }
 
-func (qb *savedFilterQueryBuilder) SetDefault(ctx context.Context, obj models.SavedFilter) (*models.SavedFilter, error) {
+func (qb *SavedFilterStore) Update(ctx context.Context, updatedObject *models.SavedFilter) error {
+	var r savedFilterRow
+	r.fromSavedFilter(*updatedObject)
+
+	if err := qb.tableMgr.updateByID(ctx, updatedObject.ID, r); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (qb *SavedFilterStore) SetDefault(ctx context.Context, obj *models.SavedFilter) error {
 	// find the existing default
 	existing, err := qb.FindDefault(ctx, obj.Mode)
-
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	obj.Name = savedFilterDefaultName
@@ -64,72 +158,122 @@ func (qb *savedFilterQueryBuilder) SetDefault(ctx context.Context, obj models.Sa
 	return qb.Create(ctx, obj)
 }
 
-func (qb *savedFilterQueryBuilder) Destroy(ctx context.Context, id int) error {
+func (qb *SavedFilterStore) Destroy(ctx context.Context, id int) error {
 	return qb.destroyExisting(ctx, []int{id})
 }
 
-func (qb *savedFilterQueryBuilder) Find(ctx context.Context, id int) (*models.SavedFilter, error) {
-	var ret models.SavedFilter
-	if err := qb.getByID(ctx, id, &ret); err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, nil
+// returns nil, nil if not found
+func (qb *SavedFilterStore) Find(ctx context.Context, id int) (*models.SavedFilter, error) {
+	ret, err := qb.find(ctx, id)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, nil
+	}
+	return ret, err
+}
+
+func (qb *SavedFilterStore) FindMany(ctx context.Context, ids []int, ignoreNotFound bool) ([]*models.SavedFilter, error) {
+	ret := make([]*models.SavedFilter, len(ids))
+
+	table := qb.table()
+	q := qb.selectDataset().Prepared(true).Where(table.Col(idColumn).In(ids))
+	unsorted, err := qb.getMany(ctx, q)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, s := range unsorted {
+		i := sliceutil.Index(ids, s.ID)
+		ret[i] = s
+	}
+
+	if !ignoreNotFound {
+		for i := range ret {
+			if ret[i] == nil {
+				return nil, fmt.Errorf("filter with id %d not found", ids[i])
+			}
 		}
-		return nil, err
 	}
-	return &ret, nil
+
+	return ret, nil
 }
 
-func (qb *savedFilterQueryBuilder) FindMany(ctx context.Context, ids []int, ignoreNotFound bool) ([]*models.SavedFilter, error) {
-	var filters []*models.SavedFilter
-	for _, id := range ids {
-		filter, err := qb.Find(ctx, id)
-		if err != nil {
-			return nil, err
+// returns nil, sql.ErrNoRows if not found
+func (qb *SavedFilterStore) find(ctx context.Context, id int) (*models.SavedFilter, error) {
+	q := qb.selectDataset().Where(qb.tableMgr.byID(id))
+
+	ret, err := qb.get(ctx, q)
+	if err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+}
+
+func (qb *SavedFilterStore) get(ctx context.Context, q *goqu.SelectDataset) (*models.SavedFilter, error) {
+	ret, err := qb.getMany(ctx, q)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(ret) == 0 {
+		return nil, sql.ErrNoRows
+	}
+
+	return ret[0], nil
+}
+
+func (qb *SavedFilterStore) getMany(ctx context.Context, q *goqu.SelectDataset) ([]*models.SavedFilter, error) {
+	const single = false
+	var ret []*models.SavedFilter
+	if err := queryFunc(ctx, q, single, func(r *sqlx.Rows) error {
+		var f savedFilterRow
+		if err := r.StructScan(&f); err != nil {
+			return err
 		}
 
-		if filter == nil && !ignoreNotFound {
-			return nil, fmt.Errorf("filter with id %d not found", id)
-		}
+		s := f.resolve()
 
-		filters = append(filters, filter)
-	}
-
-	return filters, nil
-}
-
-func (qb *savedFilterQueryBuilder) FindByMode(ctx context.Context, mode models.FilterMode) ([]*models.SavedFilter, error) {
-	// exclude empty-named filters - these are the internal default filters
-
-	query := fmt.Sprintf(`SELECT * FROM %s WHERE mode = ? AND name != ? ORDER BY name ASC`, savedFilterTable)
-
-	var ret models.SavedFilters
-	if err := qb.query(ctx, query, []interface{}{mode, savedFilterDefaultName}, &ret); err != nil {
+		ret = append(ret, s)
+		return nil
+	}); err != nil {
 		return nil, err
 	}
 
-	return []*models.SavedFilter(ret), nil
+	return ret, nil
 }
 
-func (qb *savedFilterQueryBuilder) FindDefault(ctx context.Context, mode models.FilterMode) (*models.SavedFilter, error) {
-	query := fmt.Sprintf(`SELECT * FROM %s WHERE mode = ? AND name = ?`, savedFilterTable)
+func (qb *SavedFilterStore) FindByMode(ctx context.Context, mode models.FilterMode) ([]*models.SavedFilter, error) {
+	// SELECT * FROM %s WHERE mode = ? AND name != ? ORDER BY name ASC
+	table := qb.table()
+	sq := qb.selectDataset().Prepared(true).Where(
+		table.Col("mode").Eq(mode),
+		table.Col("name").Neq(savedFilterDefaultName),
+	).Order(table.Col("name").Asc())
+	ret, err := qb.getMany(ctx, sq)
 
-	var ret models.SavedFilters
-	if err := qb.query(ctx, query, []interface{}{mode, savedFilterDefaultName}, &ret); err != nil {
+	if err != nil {
 		return nil, err
 	}
 
-	if len(ret) > 0 {
-		return ret[0], nil
-	}
-
-	return nil, nil
+	return ret, nil
 }
 
-func (qb *savedFilterQueryBuilder) All(ctx context.Context) ([]*models.SavedFilter, error) {
-	var ret models.SavedFilters
-	if err := qb.query(ctx, selectAll(savedFilterTable), nil, &ret); err != nil {
+func (qb *SavedFilterStore) FindDefault(ctx context.Context, mode models.FilterMode) (*models.SavedFilter, error) {
+	// SELECT * FROM saved_filters WHERE mode = ? AND name = ?
+	table := qb.table()
+	sq := qb.selectDataset().Prepared(true).Where(
+		table.Col("mode").Eq(mode),
+		table.Col("name").Eq(savedFilterDefaultName),
+	)
+
+	ret, err := qb.get(ctx, sq)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return nil, err
 	}
 
-	return []*models.SavedFilter(ret), nil
+	return ret, nil
+}
+
+func (qb *SavedFilterStore) All(ctx context.Context) ([]*models.SavedFilter, error) {
+	return qb.getMany(ctx, qb.selectDataset())
 }

@@ -6,21 +6,18 @@
 * [GolangCI](https://golangci-lint.run/) - A meta-linter which runs several linters in parallel
   * To install, follow the [local installation instructions](https://golangci-lint.run/usage/install/#local-installation)
 * [Yarn](https://yarnpkg.com/en/docs/install) - Yarn package manager
-  * Run `yarn install --frozen-lockfile` in the `stash/ui/v2.5` folder (before running make generate for first time).
-
-NOTE: You may need to run the `go get` commands outside the project directory to avoid modifying the projects module file.
 
 ## Environment
 
 ### Windows
 
 1. Download and install [Go for Windows](https://golang.org/dl/)
-2. Download and extract [MingW64](https://sourceforge.net/projects/mingw-w64/files/) (scroll down and select x86_64-posix-seh, dont use the autoinstaller it doesnt work)
-3. Search for "advanced system settings" and open the system properties dialog.
+2. Download and extract [MinGW64](https://sourceforge.net/projects/mingw-w64/files/) (scroll down and select x86_64-posix-seh, don't use the autoinstaller, it doesn't work)
+3. Search for "Advanced System Settings" and open the System Properties dialog.
     1. Click the `Environment Variables` button
-    2. Under system variables find the `Path`.  Edit and add `C:\MinGW\bin` (replace with the correct path to where you extracted MingW64).
+    2. Under System Variables find `Path`. Edit and add `C:\MinGW\bin` (replace with the correct path to where you extracted MingW64).
 
-NOTE: The `make` command in Windows will be `mingw32-make` with MingW. For example `make pre-ui` will be `mingw32-make pre-ui`
+NOTE: The `make` command in Windows will be `mingw32-make` with MinGW. For example, `make pre-ui` will be `mingw32-make pre-ui`.
 
 ### macOS
 
@@ -30,28 +27,59 @@ NOTE: The `make` command in Windows will be `mingw32-make` with MingW. For examp
 ### Linux
 
 #### Arch Linux
+
 1. Install dependencies: `sudo pacman -S go git yarn gcc make nodejs ffmpeg --needed`
 
 #### Ubuntu
-1. Install dependencies: `sudo apt-get install golang git gcc nodejs ffmpeg -y`
-2. Enable corepack in Node.js: `corepack enable`
-3. Install yarn: `corepack prepare yarn@stable --activate`
+
+1. Install dependencies: `sudo apt-get install golang git yarnpkg gcc nodejs ffmpeg -y`
+
+### OpenBSD
+
+1. Install dependencies `doas pkg_add gmake go git yarn node cmake`
+2. Compile a custom ffmpeg from ports. The default ffmpeg in OpenBSD's packages is not compiled with WebP support, which is required by Stash.
+   - If you've already installed ffmpeg, uninstall it: `doas pkg_delete ffmpeg`
+   - If you haven't already, [fetch the ports tree and verify](https://www.openbsd.org/faq/ports/ports.html#PortsFetch).
+   - Find the ffmpeg port in `/usr/ports/graphics/ffmpeg`, and patch the Makefile to include libwebp
+     - Add `webp` to `WANTLIB`
+     - Add `graphics/libwebp` to the list in `LIB_DEPENDS`
+     - Add `-lwebp -lwebpdecoder -lwebpdemux -lwebpmux` to `LIBavcodec_EXTRALIBS`
+     - Add `--enable-libweb` to the list in `CONFIGURE_ARGS`
+     - If you've already built ffmpeg from ports before, you may need to also increment `REVISION`
+     - Run `doas make install`
+   - Follow the instructions below to build a release, but replace the final step `make build-release` with `gmake flags-release stash`, to [avoid the PIE buildmode](https://github.com/golang/go/issues/59866).
+
+NOTE: The `make` command in OpenBSD will be `gmake`. For example, `make pre-ui` will be `gmake pre-ui`.
 
 ## Commands
 
-* `make pre-ui` - Installs the UI dependencies. Only needs to be run once before building the UI for the first time, or if the dependencies are updated
-* `make generate` - Generate Go and UI GraphQL files
-* `make fmt-ui` - Formats the UI source code
-* `make ui` - Builds the frontend
-* `make build` - Builds the binary (make sure to build the UI as well... see below)
+* `make pre-ui` - Installs the UI dependencies. This only needs to be run once after cloning the repository, or if the dependencies are updated.
+* `make generate` - Generates Go and UI GraphQL files. Requires `make pre-ui` to have been run.
+* `make generate-stash-box-client` - Generate Go files for the Stash-box client code.
+* `make ui` - Builds the UI. Requires `make pre-ui` to have been run.
+* `make stash` - Builds the `stash` binary (make sure to build the UI as well... see below)
+* `make stash-macapp` - Builds the `Stash.app` macOS app (only works when on macOS, for cross-compilation see below)
+* `make phasher` - Builds the `phasher` binary
+* `make build` - Builds both the `stash` and `phasher` binaries, alias for `make stash phasher`
+* `make build-release` - Builds release versions (debug information removed) of both the `stash` and `phasher` binaries, alias for `make flags-release flags-pie build`
 * `make docker-build` - Locally builds and tags a complete 'stash/build' docker image
-* `make lint` - Run the linter on the backend
-* `make fmt` - Run `go fmt`
-* `make it` - Run the unit and integration tests
-* `make validate` - Run all of the tests and checks required to submit a PR
-* `make server-start` - Runs an instance of the server in the `.local` directory.
-* `make server-clean` - Removes the `.local` directory and all of its contents.
-* `make ui-start` - Runs the UI in development mode. Requires a running stash server to connect to. Stash server port can be changed from the default of `9999` using environment variable `VITE_APP_PLATFORM_PORT`. UI runs on port `3000` or the next available port.
+* `make docker-cuda-build` - Locally builds and tags a complete 'stash/cuda-build' docker image
+* `make validate` - Runs all of the tests and checks required to submit a PR
+* `make lint` - Runs `golangci-lint` on the backend
+* `make it` - Runs all unit and integration tests
+* `make fmt` - Formats the Go source code
+* `make fmt-ui` - Formats the UI source code
+* `make server-start` - Runs a development stash server in the `.local` directory
+* `make server-clean` - Removes the `.local` directory and all of its contents
+* `make ui-start` - Runs the UI in development mode. Requires a running Stash server to connect to - the server URL can be changed from the default of `http://localhost:9999` using the environment variable `VITE_APP_PLATFORM_URL`, but keep in mind that authentication cannot be used since the session authorization cookie cannot be sent cross-origin. The UI runs on port `3000` or the next available port.
+
+When building, you can optionally prepend `flags-*` targets to the target list in your `make` command to use different build flags:
+
+* `flags-release` (e.g. `make flags-release stash`) - Remove debug information from the binary.
+* `flags-pie` (e.g. `make flags-pie build`) - Build a PIE (Position Independent Executable) binary. This provides increased security, but it is unsupported on some systems (notably 32-bit ARM and OpenBSD).
+* `flags-static` (e.g. `make flags-static phasher`) - Build a statically linked binary (the default is a dynamically linked binary).
+* `flags-static-pie` (e.g. `make flags-static-pie stash`) - Build a statically linked PIE binary (using `flags-static` and `flags-pie` separately will not work).
+* `flags-static-windows` (e.g. `make flags-static-windows build`) - Identical to `flags-static-pie`, but does not enable the `netgo` build tag, which is not needed for static builds on Windows.
 
 ## Local development quickstart
 
@@ -59,13 +87,14 @@ NOTE: The `make` command in Windows will be `mingw32-make` with MingW. For examp
 2. Run `make generate` to create generated files
 3. In one terminal, run `make server-start` to run the server code
 4. In a separate terminal, run `make ui-start` to run the UI in development mode
-5. Open the UI in a browser `http://localhost:3000/`
+5. Open the UI in a browser: `http://localhost:3000/`
 
 Changes to the UI code can be seen by reloading the browser page.
 
-Changes to the server code requires a restart (`CTRL-C` in the server terminal).
+Changes to the backend code require a server restart (`CTRL-C` in the server terminal, followed by `make server-start` again) to be seen.
 
 On first launch:
+
 1. On the "Stash Setup Wizard" screen, choose a directory with some files to test with
 2. Press "Next" to use the default locations for the database and generated content
 3. Press the "Confirm" and "Finish" buttons to get into the UI
@@ -73,25 +102,34 @@ On first launch:
 5. You're all set! Set any other configurations you'd like and test your code changes.
 
 To start fresh with new configuration:
+
 1. Stop the server (`CTRL-C` in the server terminal)
-2. Run `make server-clean` to clear all config, database, and generated files (under `.local/`)
+2. Run `make server-clean` to clear all config, database, and generated files (under `.local`)
 3. Run `make server-start` to restart the server
 4. Follow the "On first launch" steps above
 
 ## Building a release
 
+Simply run `make` or `make release`, or equivalently:
+
 1. Run `make pre-ui` to install UI dependencies
 2. Run `make generate` to create generated files
-3. Run `make ui` to compile the frontend
-4. Run `make build` to build the executable for your current platform
+3. Run `make ui` to build the frontend
+4. Run `make build-release` to build a release executable for your current platform
 
-## Cross compiling
+## Cross-compiling
 
-This project uses a modification of the [CI-GoReleaser](https://github.com/bep/dockerfiles/tree/master/ci-goreleaser) docker container to create an environment
-where the app can be cross-compiled.  This process is kicked off by CI via the `scripts/cross-compile.sh` script.  Run the following
-command to open a bash shell to the container to poke around:
+This project uses a modification of the [CI-GoReleaser](https://github.com/bep/dockerfiles/tree/master/ci-goreleaser) Docker container for cross-compilation, defined in `docker/compiler/Dockerfile`.
 
-`docker run --rm --mount type=bind,source="$(pwd)",target=/stash -w /stash -i -t stashapp/compiler:latest /bin/bash`
+To cross-compile the app yourself:
+
+1. Run `make pre-ui`, `make generate` and `make ui` outside the container, to generate files and build the UI.
+2. Pull the latest compiler image from Docker Hub: `docker pull stashapp/compiler`
+3. Run `docker run --rm --mount type=bind,source="$(pwd)",target=/stash -w /stash -it stashapp/compiler /bin/bash` to open a shell inside the container.
+4. From inside the container, run `make build-cc-all` to build for all platforms, or run `make build-cc-{platform}` to build for a specific platform (have a look at the `Makefile` for the list of targets).
+5. You will find the compiled binaries in `dist/`.
+
+NOTE: Since the container is run as UID 0 (root), the resulting binaries (and the `dist/` folder itself, if it had to be created) will be owned by root.
 
 ## Profiling
 

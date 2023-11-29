@@ -4,9 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/file/video"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
@@ -19,21 +17,22 @@ var (
 	ErrNotVideoFile = errors.New("not a video file")
 )
 
-type CreatorUpdater interface {
-	FindByFileID(ctx context.Context, fileID file.ID) ([]*models.Scene, error)
-	FindByFingerprints(ctx context.Context, fp []file.Fingerprint) ([]*models.Scene, error)
-	Creator
+type ScanCreatorUpdater interface {
+	FindByFileID(ctx context.Context, fileID models.FileID) ([]*models.Scene, error)
+	FindByFingerprints(ctx context.Context, fp []models.Fingerprint) ([]*models.Scene, error)
+	GetFiles(ctx context.Context, relatedID int) ([]*models.VideoFile, error)
+
+	Create(ctx context.Context, newScene *models.Scene, fileIDs []models.FileID) error
 	UpdatePartial(ctx context.Context, id int, updatedScene models.ScenePartial) (*models.Scene, error)
-	AddFileID(ctx context.Context, id int, fileID file.ID) error
-	models.VideoFileLoader
+	AddFileID(ctx context.Context, id int, fileID models.FileID) error
 }
 
 type ScanGenerator interface {
-	Generate(ctx context.Context, s *models.Scene, f *file.VideoFile) error
+	Generate(ctx context.Context, s *models.Scene, f *models.VideoFile) error
 }
 
 type ScanHandler struct {
-	CreatorUpdater CreatorUpdater
+	CreatorUpdater ScanCreatorUpdater
 
 	ScanGenerator  ScanGenerator
 	CaptionUpdater video.CaptionUpdater
@@ -63,12 +62,12 @@ func (h *ScanHandler) validate() error {
 	return nil
 }
 
-func (h *ScanHandler) Handle(ctx context.Context, f file.File, oldFile file.File) error {
+func (h *ScanHandler) Handle(ctx context.Context, f models.File, oldFile models.File) error {
 	if err := h.validate(); err != nil {
 		return err
 	}
 
-	videoFile, ok := f.(*file.VideoFile)
+	videoFile, ok := f.(*models.VideoFile)
 	if !ok {
 		return ErrNotVideoFile
 	}
@@ -100,21 +99,17 @@ func (h *ScanHandler) Handle(ctx context.Context, f file.File, oldFile file.File
 		}
 	} else {
 		// create a new scene
-		now := time.Now()
-		newScene := &models.Scene{
-			CreatedAt: now,
-			UpdatedAt: now,
-		}
+		newScene := models.NewScene()
 
 		logger.Infof("%s doesn't exist. Creating new scene...", f.Base().Path)
 
-		if err := h.CreatorUpdater.Create(ctx, newScene, []file.ID{videoFile.ID}); err != nil {
+		if err := h.CreatorUpdater.Create(ctx, &newScene, []models.FileID{videoFile.ID}); err != nil {
 			return fmt.Errorf("creating new scene: %w", err)
 		}
 
 		h.PluginCache.RegisterPostHooks(ctx, newScene.ID, plugin.SceneCreatePost, nil, nil)
 
-		existing = []*models.Scene{newScene}
+		existing = []*models.Scene{&newScene}
 	}
 
 	if oldFile != nil {
@@ -140,7 +135,7 @@ func (h *ScanHandler) Handle(ctx context.Context, f file.File, oldFile file.File
 	return nil
 }
 
-func (h *ScanHandler) associateExisting(ctx context.Context, existing []*models.Scene, f *file.VideoFile, updateExisting bool) error {
+func (h *ScanHandler) associateExisting(ctx context.Context, existing []*models.Scene, f *models.VideoFile, updateExisting bool) error {
 	for _, s := range existing {
 		if err := s.LoadFiles(ctx, h.CreatorUpdater); err != nil {
 			return err
@@ -162,7 +157,8 @@ func (h *ScanHandler) associateExisting(ctx context.Context, existing []*models.
 			}
 
 			// update updated_at time
-			if _, err := h.CreatorUpdater.UpdatePartial(ctx, s.ID, models.NewScenePartial()); err != nil {
+			scenePartial := models.NewScenePartial()
+			if _, err := h.CreatorUpdater.UpdatePartial(ctx, s.ID, scenePartial); err != nil {
 				return fmt.Errorf("updating scene: %w", err)
 			}
 		}

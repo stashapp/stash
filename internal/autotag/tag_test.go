@@ -83,7 +83,7 @@ func testTagScenes(t *testing.T, tc testTagCase) {
 	aliasName := tc.aliasName
 	aliasRegex := tc.aliasRegex
 
-	mockSceneReader := &mocks.SceneReaderWriter{}
+	db := mocks.NewDatabase()
 
 	const tagID = 2
 
@@ -131,7 +131,7 @@ func testTagScenes(t *testing.T, tc testTagCase) {
 	}
 
 	// if alias provided, then don't find by name
-	onNameQuery := mockSceneReader.On("Query", testCtx, scene.QueryOptions(expectedSceneFilter, expectedFindFilter, false))
+	onNameQuery := db.Scene.On("Query", testCtx, scene.QueryOptions(expectedSceneFilter, expectedFindFilter, false))
 	if aliasName == "" {
 		onNameQuery.Return(mocks.SceneQueryResult(scenes, len(scenes)), nil).Once()
 	} else {
@@ -145,30 +145,36 @@ func testTagScenes(t *testing.T, tc testTagCase) {
 			},
 		}
 
-		mockSceneReader.On("Query", mock.Anything, scene.QueryOptions(expectedAliasFilter, expectedFindFilter, false)).
+		db.Scene.On("Query", mock.Anything, scene.QueryOptions(expectedAliasFilter, expectedFindFilter, false)).
 			Return(mocks.SceneQueryResult(scenes, len(scenes)), nil).Once()
 	}
 
 	for i := range matchingPaths {
 		sceneID := i + 1
-		mockSceneReader.On("UpdatePartial", mock.Anything, sceneID, models.ScenePartial{
-			TagIDs: &models.UpdateIDs{
-				IDs:  []int{tagID},
-				Mode: models.RelationshipUpdateModeAdd,
-			},
-		}).Return(nil, nil).Once()
+
+		matchPartial := mock.MatchedBy(func(got models.ScenePartial) bool {
+			expected := models.ScenePartial{
+				TagIDs: &models.UpdateIDs{
+					IDs:  []int{tagID},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			}
+
+			return scenePartialsEqual(got, expected)
+		})
+		db.Scene.On("UpdatePartial", mock.Anything, sceneID, matchPartial).Return(nil, nil).Once()
 	}
 
 	tagger := Tagger{
-		TxnManager: &mocks.TxnManager{},
+		TxnManager: db,
 	}
 
-	err := tagger.TagScenes(testCtx, &tag, nil, aliases, mockSceneReader)
+	err := tagger.TagScenes(testCtx, &tag, nil, aliases, db.Scene)
 
 	assert := assert.New(t)
 
 	assert.Nil(err)
-	mockSceneReader.AssertExpectations(t)
+	db.AssertExpectations(t)
 }
 
 func TestTagImages(t *testing.T) {
@@ -185,7 +191,7 @@ func testTagImages(t *testing.T, tc testTagCase) {
 	aliasName := tc.aliasName
 	aliasRegex := tc.aliasRegex
 
-	mockImageReader := &mocks.ImageReaderWriter{}
+	db := mocks.NewDatabase()
 
 	const tagID = 2
 
@@ -232,7 +238,7 @@ func testTagImages(t *testing.T, tc testTagCase) {
 	}
 
 	// if alias provided, then don't find by name
-	onNameQuery := mockImageReader.On("Query", testCtx, image.QueryOptions(expectedImageFilter, expectedFindFilter, false))
+	onNameQuery := db.Image.On("Query", testCtx, image.QueryOptions(expectedImageFilter, expectedFindFilter, false))
 	if aliasName == "" {
 		onNameQuery.Return(mocks.ImageQueryResult(images, len(images)), nil).Once()
 	} else {
@@ -246,31 +252,36 @@ func testTagImages(t *testing.T, tc testTagCase) {
 			},
 		}
 
-		mockImageReader.On("Query", mock.Anything, image.QueryOptions(expectedAliasFilter, expectedFindFilter, false)).
+		db.Image.On("Query", mock.Anything, image.QueryOptions(expectedAliasFilter, expectedFindFilter, false)).
 			Return(mocks.ImageQueryResult(images, len(images)), nil).Once()
 	}
 
 	for i := range matchingPaths {
 		imageID := i + 1
 
-		mockImageReader.On("UpdatePartial", mock.Anything, imageID, models.ImagePartial{
-			TagIDs: &models.UpdateIDs{
-				IDs:  []int{tagID},
-				Mode: models.RelationshipUpdateModeAdd,
-			},
-		}).Return(nil, nil).Once()
+		matchPartial := mock.MatchedBy(func(got models.ImagePartial) bool {
+			expected := models.ImagePartial{
+				TagIDs: &models.UpdateIDs{
+					IDs:  []int{tagID},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			}
+
+			return imagePartialsEqual(got, expected)
+		})
+		db.Image.On("UpdatePartial", mock.Anything, imageID, matchPartial).Return(nil, nil).Once()
 	}
 
 	tagger := Tagger{
-		TxnManager: &mocks.TxnManager{},
+		TxnManager: db,
 	}
 
-	err := tagger.TagImages(testCtx, &tag, nil, aliases, mockImageReader)
+	err := tagger.TagImages(testCtx, &tag, nil, aliases, db.Image)
 
 	assert := assert.New(t)
 
 	assert.Nil(err)
-	mockImageReader.AssertExpectations(t)
+	db.AssertExpectations(t)
 }
 
 func TestTagGalleries(t *testing.T) {
@@ -287,7 +298,7 @@ func testTagGalleries(t *testing.T, tc testTagCase) {
 	aliasName := tc.aliasName
 	aliasRegex := tc.aliasRegex
 
-	mockGalleryReader := &mocks.GalleryReaderWriter{}
+	db := mocks.NewDatabase()
 
 	const tagID = 2
 
@@ -335,7 +346,7 @@ func testTagGalleries(t *testing.T, tc testTagCase) {
 	}
 
 	// if alias provided, then don't find by name
-	onNameQuery := mockGalleryReader.On("Query", testCtx, expectedGalleryFilter, expectedFindFilter)
+	onNameQuery := db.Gallery.On("Query", testCtx, expectedGalleryFilter, expectedFindFilter)
 	if aliasName == "" {
 		onNameQuery.Return(galleries, len(galleries), nil).Once()
 	} else {
@@ -349,29 +360,34 @@ func testTagGalleries(t *testing.T, tc testTagCase) {
 			},
 		}
 
-		mockGalleryReader.On("Query", mock.Anything, expectedAliasFilter, expectedFindFilter).Return(galleries, len(galleries), nil).Once()
+		db.Gallery.On("Query", mock.Anything, expectedAliasFilter, expectedFindFilter).Return(galleries, len(galleries), nil).Once()
 	}
 
 	for i := range matchingPaths {
 		galleryID := i + 1
 
-		mockGalleryReader.On("UpdatePartial", mock.Anything, galleryID, models.GalleryPartial{
-			TagIDs: &models.UpdateIDs{
-				IDs:  []int{tagID},
-				Mode: models.RelationshipUpdateModeAdd,
-			},
-		}).Return(nil, nil).Once()
+		matchPartial := mock.MatchedBy(func(got models.GalleryPartial) bool {
+			expected := models.GalleryPartial{
+				TagIDs: &models.UpdateIDs{
+					IDs:  []int{tagID},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			}
+
+			return galleryPartialsEqual(got, expected)
+		})
+		db.Gallery.On("UpdatePartial", mock.Anything, galleryID, matchPartial).Return(nil, nil).Once()
 
 	}
 
 	tagger := Tagger{
-		TxnManager: &mocks.TxnManager{},
+		TxnManager: db,
 	}
 
-	err := tagger.TagGalleries(testCtx, &tag, nil, aliases, mockGalleryReader)
+	err := tagger.TagGalleries(testCtx, &tag, nil, aliases, db.Gallery)
 
 	assert := assert.New(t)
 
 	assert.Nil(err)
-	mockGalleryReader.AssertExpectations(t)
+	db.AssertExpectations(t)
 }
