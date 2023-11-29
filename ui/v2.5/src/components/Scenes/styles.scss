@@ -543,9 +543,13 @@ input[type="range"].blue-slider {
 #queue-viewer {
   .queue-controls {
     align-items: center;
+    background-color: $body-bg;
     display: flex;
     flex: 0 1 auto;
+    height: 30px;
     justify-content: space-between;
+    position: sticky;
+    top: 0;
   }
 
   .thumbnail-container {
