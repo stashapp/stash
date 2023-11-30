@@ -47,6 +47,23 @@ func (rs routes) getAllFilters(ctx context.Context) (scenesMap map[string][]int,
 		return
 	}
 
+	dfilter, err := func() (*models.SavedFilter, error) {
+		var filter *models.SavedFilter
+		err = rs.withReadTxn(ctx, func(ctx context.Context) error {
+			filter, err = rs.FilterFinder.FindDefault(ctx, models.FilterModeScenes)
+			return err
+		})
+		return filter, err
+	}()
+
+	if err != nil {
+		err = fmt.Errorf("heresphere FilterTest SavedFilter.FindDefault error: %s", err.Error())
+		return
+	}
+
+	dfilter.Name = "Default"
+	savedfilters = append(savedfilters, dfilter)
+
 	for _, savedfilter := range savedfilters {
 		filter := savedfilter.FindFilter
 		sceneFilter, err := parseObjectFilter(savedfilter)
