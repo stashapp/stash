@@ -23,7 +23,7 @@ type FaviconProvider interface {
 
 // Start starts the desktop icon process. It blocks until the process exits.
 // MUST be run on the main goroutine or will have no effect on macOS
-func Start(exit chan<- int, faviconProvider FaviconProvider) {
+func Start(exit chan int, faviconProvider FaviconProvider) {
 	if IsDesktop() {
 		hideConsole()
 

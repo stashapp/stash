@@ -14,7 +14,7 @@ import (
 )
 
 // MUST be run on the main goroutine or will have no effect on macOS
-func startSystray(exit chan<- int, faviconProvider FaviconProvider) {
+func startSystray(exit chan int, faviconProvider FaviconProvider) {
 	// Shows a small notification to inform that Stash will no longer show a terminal window,
 	// and instead will be available in the tray. Will only show the first time a pre-desktop integration
 	// system is started from a non-terminal method, e.g. double-clicking an icon.
@@ -23,7 +23,7 @@ func startSystray(exit chan<- int, faviconProvider FaviconProvider) {
 		SendNotification("Stash has moved!", "Stash now runs in your tray, instead of a terminal window.")
 		c.Set(config.ShowOneTimeMovedNotification, false)
 		if err := c.Write(); err != nil {
-			logger.Errorf("Error while writing configuration file: %s", err.Error())
+			logger.Errorf("Error while writing configuration file: %v", err)
 		}
 	}
 
@@ -37,11 +37,16 @@ func startSystray(exit chan<- int, faviconProvider FaviconProvider) {
 	// 	}
 	// }()
 
-	for {
-		systray.Run(func() {
-			systrayInitialize(exit, faviconProvider)
-		}, nil)
-	}
+	// "intercept" an exit code to quit the systray, allowing the call to systray.Run() below to return.
+	go func() {
+		exitCode := <-exit
+		systray.Quit()
+		exit <- exitCode
+	}()
+
+	systray.Run(func() {
+		systrayInitialize(exit, faviconProvider)
+	}, nil)
 }
 
 func systrayInitialize(exit chan<- int, faviconProvider FaviconProvider) {
@@ -85,8 +90,8 @@ func systrayInitialize(exit chan<- int, faviconProvider FaviconProvider) {
 			case <-openStashButton.ClickedCh:
 				openURLInBrowser("")
 			case <-quitStashButton.ClickedCh:
-				systray.Quit()
 				exit <- 0
+				return
 			}
 		}
 	}()
