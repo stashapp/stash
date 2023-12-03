@@ -176,7 +176,12 @@ func parse(filePath string, probeJSON *FFProbeJSON) (*VideoFile, error) {
 			framerate = 0
 		}
 		result.FrameRate = math.Round(framerate*100) / 100
-		if rotate, err := strconv.ParseInt(videoStream.Tags.Rotate, 10, 64); err == nil && rotate != 180 {
+		rotate, err := strconv.ParseInt(videoStream.Tags.Rotate, 10, 64)
+		if err != nil && len(videoStream.SideDataList) > 0 {
+			err = nil
+			rotate = videoStream.SideDataList[0].Rotation
+		}
+		if err == nil && rotate != 180 {
 			result.Width = videoStream.Height
 			result.Height = videoStream.Width
 		} else {
