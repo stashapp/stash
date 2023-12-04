@@ -64,10 +64,11 @@ export function formikUtils<V extends FormikValues>(
   }: IProps = {}
 ) {
   type Field = keyof V & string;
+  type ErrorMessage = string | undefined;
 
   function renderFormControl(field: Field, type: string, placeholder: string) {
     const formikProps = formik.getFieldProps({ name: field, type: type });
-    const { error } = formik.getFieldMeta(field);
+    const error = formik.errors[field] as ErrorMessage;
 
     let { value } = formikProps;
     if (value === null) {
@@ -181,7 +182,7 @@ export function formikUtils<V extends FormikValues>(
     props?: IProps
   ) {
     const value = formik.values[field] as string;
-    const { error } = formik.getFieldMeta(field);
+    const error = formik.errors[field] as ErrorMessage;
 
     const title = intl.formatMessage({ id: messageID });
     const control = (
@@ -201,7 +202,7 @@ export function formikUtils<V extends FormikValues>(
     props?: IProps
   ) {
     const value = formik.values[field] as number | null;
-    const { error } = formik.getFieldMeta(field);
+    const error = formik.errors[field] as ErrorMessage;
 
     const title = intl.formatMessage({ id: messageID });
     const control = (
@@ -233,24 +234,43 @@ export function formikUtils<V extends FormikValues>(
     return renderField(field, title, control, props);
   }
 
+  // flattens a potential list of errors into a [errorMsg, errorIdx] tuple
+  // error messages are joined with newlines, and duplicate messages are skipped
+  function flattenError(
+    error: ErrorMessage[] | ErrorMessage
+  ): [string | undefined, number[] | undefined] {
+    if (Array.isArray(error)) {
+      let errors: string[] = [];
+      const errorIdx = [];
+      for (let i = 0; i < error.length; i++) {
+        const err = error[i];
+        if (err) {
+          if (!errors.includes(err)) {
+            errors.push(err);
+          }
+          errorIdx.push(i);
+        }
+      }
+      return [errors.join("\n"), errorIdx];
+    } else {
+      return [error, undefined];
+    }
+  }
+
   function renderStringListField(
     field: Field,
-    errorMessageID: string,
     messageID: string = field,
     props?: IProps
   ) {
-    const formikProps = formik.getFieldProps(field);
-    const { error } = formik.getFieldMeta(field);
+    const value = formik.values[field] as string[];
+    const error = formik.errors[field] as ErrorMessage[] | ErrorMessage;
 
-    const errorMsg = error
-      ? intl.formatMessage({ id: errorMessageID })
-      : undefined;
-    const errorIdx = error?.split(" ").map((e) => parseInt(e));
+    const [errorMsg, errorIdx] = flattenError(error);
 
     const title = intl.formatMessage({ id: messageID });
     const control = (
       <StringListInput
-        value={formikProps.value ?? []}
+        value={value}
         setValue={(v) => formik.setFieldValue(field, v)}
         errors={errorMsg}
         errorIdx={errorIdx}
@@ -262,19 +282,15 @@ export function formikUtils<V extends FormikValues>(
 
   function renderURLListField(
     field: Field,
-    errorMessageID: string,
     onScrapeClick?: (url: string) => void,
     urlScrapable?: (url: string) => boolean,
     messageID: string = field,
     props?: IProps
   ) {
     const value = formik.values[field] as string[];
-    const { error } = formik.getFieldMeta(field);
+    const error = formik.errors[field] as ErrorMessage[] | ErrorMessage;
 
-    const errorMsg = error
-      ? intl.formatMessage({ id: errorMessageID })
-      : undefined;
-    const errorIdx = error?.split(" ").map((e) => parseInt(e));
+    const [errorMsg, errorIdx] = flattenError(error);
 
     const title = intl.formatMessage({ id: messageID });
     const control = (

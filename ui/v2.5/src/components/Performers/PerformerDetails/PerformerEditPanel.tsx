@@ -96,7 +96,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   const schema = yup.object({
     name: yup.string().required(),
     disambiguation: yup.string().ensure(),
-    alias_list: yupUniqueAliases("alias_list", "name"),
+    alias_list: yupUniqueAliases(intl, "name"),
     gender: yupInputEnum(GQL.GenderEnum).nullable().defined(),
     birthdate: yupDateString(intl),
     death_date: yupDateString(intl),
@@ -755,11 +755,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
         {renderInputField("name")}
         {renderInputField("disambiguation")}
 
-        {renderStringListField(
-          "alias_list",
-          "validation.aliases_must_be_unique",
-          "aliases"
-        )}
+        {renderStringListField("alias_list", "aliases")}
 
         {renderSelectField("gender", stringGenderMap)}
 
