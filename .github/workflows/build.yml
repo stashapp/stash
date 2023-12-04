@@ -90,6 +90,7 @@ jobs:
         docker exec -t build /bin/bash -c "make build-cc-linux-arm64v8"
         docker exec -t build /bin/bash -c "make build-cc-linux-arm32v7"
         docker exec -t build /bin/bash -c "make build-cc-linux-arm32v6"
+        docker exec -t build /bin/bash -c "make build-cc-freebsd"
 
     - name: Cleanup build container
       run: docker rm -f -v build
@@ -145,6 +146,7 @@ jobs:
           dist/stash-linux-arm64v8
           dist/stash-linux-arm32v7
           dist/stash-linux-arm32v6
+          dist/stash-freebsd
           CHECKSUMS_SHA1
 
     - name: Master release
@@ -163,6 +165,7 @@ jobs:
           dist/stash-linux-arm64v8
           dist/stash-linux-arm32v7
           dist/stash-linux-arm32v6
+          dist/stash-freebsd
           CHECKSUMS_SHA1
         gzip: false
 
