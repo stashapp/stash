@@ -370,7 +370,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     };
 
     const includeUrl = !excludedFieldList.includes("url")
-    if(includeUrl && scene.urls) {
+    if (includeUrl && scene.urls) {
       sceneCreateInput.urls = uniq(stashScene.urls.concat(scene.urls))
     } else {
       sceneCreateInput.urls = stashScene.urls
