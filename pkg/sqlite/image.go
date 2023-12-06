@@ -9,7 +9,7 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sliceutil/intslice"
+	"github.com/stashapp/stash/pkg/sliceutil"
 	"gopkg.in/guregu/null.v4"
 	"gopkg.in/guregu/null.v4/zero"
 
@@ -31,21 +31,27 @@ const (
 type imageRow struct {
 	ID    int         `db:"id" goqu:"skipinsert"`
 	Title zero.String `db:"title"`
+	Code  zero.String `db:"code"`
 	// expressed as 1-100
-	Rating    null.Int  `db:"rating"`
-	Date      NullDate  `db:"date"`
-	Organized bool      `db:"organized"`
-	OCounter  int       `db:"o_counter"`
-	StudioID  null.Int  `db:"studio_id,omitempty"`
-	CreatedAt Timestamp `db:"created_at"`
-	UpdatedAt Timestamp `db:"updated_at"`
+	Rating       null.Int    `db:"rating"`
+	Date         NullDate    `db:"date"`
+	Details      zero.String `db:"details"`
+	Photographer zero.String `db:"photographer"`
+	Organized    bool        `db:"organized"`
+	OCounter     int         `db:"o_counter"`
+	StudioID     null.Int    `db:"studio_id,omitempty"`
+	CreatedAt    Timestamp   `db:"created_at"`
+	UpdatedAt    Timestamp   `db:"updated_at"`
 }
 
 func (r *imageRow) fromImage(i models.Image) {
 	r.ID = i.ID
 	r.Title = zero.StringFrom(i.Title)
+	r.Code = zero.StringFrom(i.Code)
 	r.Rating = intFromPtr(i.Rating)
 	r.Date = NullDateFromDatePtr(i.Date)
+	r.Details = zero.StringFrom(i.Details)
+	r.Photographer = zero.StringFrom(i.Photographer)
 	r.Organized = i.Organized
 	r.OCounter = i.OCounter
 	r.StudioID = intFromPtr(i.StudioID)
@@ -63,13 +69,16 @@ type imageQueryRow struct {
 
 func (r *imageQueryRow) resolve() *models.Image {
 	ret := &models.Image{
-		ID:        r.ID,
-		Title:     r.Title.String,
-		Rating:    nullIntPtr(r.Rating),
-		Date:      r.Date.DatePtr(),
-		Organized: r.Organized,
-		OCounter:  r.OCounter,
-		StudioID:  nullIntPtr(r.StudioID),
+		ID:           r.ID,
+		Title:        r.Title.String,
+		Code:         r.Code.String,
+		Rating:       nullIntPtr(r.Rating),
+		Date:         r.Date.DatePtr(),
+		Details:      r.Details.String,
+		Photographer: r.Photographer.String,
+		Organized:    r.Organized,
+		OCounter:     r.OCounter,
+		StudioID:     nullIntPtr(r.StudioID),
 
 		PrimaryFileID: nullIntFileIDPtr(r.PrimaryFileID),
 		Checksum:      r.PrimaryFileChecksum.String,
@@ -91,8 +100,11 @@ type imageRowRecord struct {
 
 func (r *imageRowRecord) fromPartial(i models.ImagePartial) {
 	r.setNullString("title", i.Title)
+	r.setNullString("code", i.Code)
 	r.setNullInt("rating", i.Rating)
 	r.setNullDate("date", i.Date)
+	r.setNullString("details", i.Details)
+	r.setNullString("photographer", i.Photographer)
 	r.setBool("organized", i.Organized)
 	r.setInt("o_counter", i.OCounter)
 	r.setNullInt("studio_id", i.StudioID)
@@ -323,7 +335,7 @@ func (qb *ImageStore) FindMany(ctx context.Context, ids []int) ([]*models.Image,
 		}
 
 		for _, s := range unsorted {
-			i := intslice.IntIndex(ids, s.ID)
+			i := sliceutil.Index(ids, s.ID)
 			images[i] = s
 		}
 
@@ -672,12 +684,13 @@ func (qb *ImageStore) makeFilter(ctx context.Context, imageFilter *models.ImageF
 		stringCriterionHandler(imageFilter.Checksum, "fingerprints_md5.fingerprint")(ctx, f)
 	}))
 	query.handleCriterion(ctx, stringCriterionHandler(imageFilter.Title, "images.title"))
+	query.handleCriterion(ctx, stringCriterionHandler(imageFilter.Code, "images.code"))
+	query.handleCriterion(ctx, stringCriterionHandler(imageFilter.Details, "images.details"))
+	query.handleCriterion(ctx, stringCriterionHandler(imageFilter.Photographer, "images.photographer"))
 
 	query.handleCriterion(ctx, pathCriterionHandler(imageFilter.Path, "folders.path", "files.basename", qb.addFoldersTable))
 	query.handleCriterion(ctx, imageFileCountCriterionHandler(qb, imageFilter.FileCount))
 	query.handleCriterion(ctx, intCriterionHandler(imageFilter.Rating100, "images.rating", nil))
-	// legacy rating handler
-	query.handleCriterion(ctx, rating5CriterionHandler(imageFilter.Rating, "images.rating", nil))
 	query.handleCriterion(ctx, intCriterionHandler(imageFilter.OCounter, "images.o_counter", nil))
 	query.handleCriterion(ctx, boolCriterionHandler(imageFilter.Organized, "images.organized", nil))
 	query.handleCriterion(ctx, dateCriterionHandler(imageFilter.Date, "images.date"))
@@ -801,24 +814,43 @@ func (qb *ImageStore) queryGroupedFields(ctx context.Context, options models.Ima
 		aggregateQuery.addColumn("COUNT(DISTINCT temp.id) as total")
 	}
 
-	// TODO - this doesn't work yet
-	// if options.Megapixels {
-	// 	query.addColumn("COALESCE(images.width, 0) * COALESCE(images.height, 0) / 1000000 as megapixels")
-	// 	aggregateQuery.addColumn("COALESCE(SUM(temp.megapixels), 0) as megapixels")
-	// }
+	if options.Megapixels {
+		query.addJoins(
+			join{
+				table:    imagesFilesTable,
+				onClause: "images_files.image_id = images.id",
+			},
+			join{
+				table:    imageFileTable,
+				onClause: "images_files.file_id = image_files.file_id",
+			},
+		)
+		query.addColumn("COALESCE(image_files.width, 0) * COALESCE(image_files.height, 0) as megapixels")
+		aggregateQuery.addColumn("COALESCE(SUM(temp.megapixels), 0) / 1000000 as megapixels")
+	}
 
-	// if options.TotalSize {
-	// 	query.addColumn("COALESCE(images.size, 0) as size")
-	// 	aggregateQuery.addColumn("COALESCE(SUM(temp.size), 0) as size")
-	// }
+	if options.TotalSize {
+		query.addJoins(
+			join{
+				table:    imagesFilesTable,
+				onClause: "images_files.image_id = images.id",
+			},
+			join{
+				table:    fileTable,
+				onClause: "images_files.file_id = files.id",
+			},
+		)
+		query.addColumn("COALESCE(files.size, 0) as size")
+		aggregateQuery.addColumn("SUM(temp.size) as size")
+	}
 
 	const includeSortPagination = false
 	aggregateQuery.from = fmt.Sprintf("(%s) as temp", query.toSQL(includeSortPagination))
 
 	out := struct {
 		Total      int
-		Megapixels float64
-		Size       float64
+		Megapixels null.Float
+		Size       null.Float
 	}{}
 	if err := qb.repository.queryStruct(ctx, aggregateQuery.toSQL(includeSortPagination), query.args, &out); err != nil {
 		return nil, err
@@ -826,8 +858,8 @@ func (qb *ImageStore) queryGroupedFields(ctx context.Context, options models.Ima
 
 	ret := models.NewImageQueryResult(qb)
 	ret.Count = out.Total
-	ret.Megapixels = out.Megapixels
-	ret.TotalSize = out.Size
+	ret.Megapixels = out.Megapixels.Float64
+	ret.TotalSize = out.Size.Float64
 	return ret, nil
 }
 

@@ -120,6 +120,7 @@ export type CriterionType =
   | "o_counter"
   | "resolution"
   | "average_resolution"
+  | "framerate"
   | "video_codec"
   | "audio_codec"
   | "duration"
@@ -194,5 +195,6 @@ export type CriterionType =
   | "scene_updated_at"
   | "description"
   | "code"
+  | "photographer"
   | "disambiguation"
   | "has_chapters";

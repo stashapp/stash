@@ -21,6 +21,8 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/paths"
+	"github.com/stashapp/stash/pkg/sliceutil"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 const (
@@ -131,7 +133,13 @@ const (
 	PythonPath = "python_path"
 
 	// plugin options
-	PluginsPath = "plugins_path"
+	PluginsPath          = "plugins_path"
+	PluginsSetting       = "plugins.settings"
+	PluginsSettingPrefix = PluginsSetting + "."
+	DisabledPlugins      = "plugins.disabled"
+
+	PluginPackageSources  = "plugins.package_sources"
+	ScraperPackageSources = "scrapers.package_sources"
 
 	// i18n
 	Language = "language"
@@ -184,7 +192,7 @@ const (
 
 	UI = "ui"
 
-	defaultImageLightboxSlideshowDelay = 5000
+	defaultImageLightboxSlideshowDelay = 5
 
 	DisableDropdownCreatePerformer = "disable_dropdown_create.performer"
 	DisableDropdownCreateStudio    = "disable_dropdown_create.studio"
@@ -274,7 +282,7 @@ func (s *StashBoxError) Error() string {
 	return "Stash-box: " + s.msg
 }
 
-type Instance struct {
+type Config struct {
 	// main instance - backed by config file
 	main *viper.Viper
 
@@ -282,8 +290,7 @@ type Instance struct {
 	// not written to config file
 	overrides *viper.Viper
 
-	cpuProfilePath string
-	isNewSystem    bool
+	isNewSystem bool
 	// configUpdates  chan int
 	certFile string
 	keyFile  string
@@ -291,19 +298,26 @@ type Instance struct {
 	// deadlock.RWMutex // for deadlock testing/issues
 }
 
-var instance *Instance
+var instance *Config
 
-func (i *Instance) IsNewSystem() bool {
+func GetInstance() *Config {
+	if instance == nil {
+		panic("config not initialized")
+	}
+	return instance
+}
+
+func (i *Config) IsNewSystem() bool {
 	return i.isNewSystem
 }
 
-func (i *Instance) SetConfigFile(fn string) {
+func (i *Config) SetConfigFile(fn string) {
 	i.Lock()
 	defer i.Unlock()
 	i.main.SetConfigFile(fn)
 }
 
-func (i *Instance) InitTLS() {
+func (i *Config) InitTLS() {
 	configDirectory := i.GetConfigPath()
 	tlsPaths := []string{
 		configDirectory,
@@ -314,27 +328,20 @@ func (i *Instance) InitTLS() {
 	i.keyFile = fsutil.FindInPaths(tlsPaths, "stash.key")
 }
 
-func (i *Instance) GetTLSFiles() (certFile, keyFile string) {
+func (i *Config) GetTLSFiles() (certFile, keyFile string) {
 	return i.certFile, i.keyFile
 }
 
-func (i *Instance) HasTLSConfig() bool {
+func (i *Config) HasTLSConfig() bool {
 	certFile, keyFile := i.GetTLSFiles()
 	return certFile != "" && keyFile != ""
 }
 
-// GetCPUProfilePath returns the path to the CPU profile file to output
-// profiling info to. This is set only via a commandline flag. Returns an
-// empty string if not set.
-func (i *Instance) GetCPUProfilePath() string {
-	return i.cpuProfilePath
-}
-
-func (i *Instance) GetNoBrowser() bool {
+func (i *Config) GetNoBrowser() bool {
 	return i.getBool(NoBrowser)
 }
 
-func (i *Instance) GetNotificationsEnabled() bool {
+func (i *Config) GetNotificationsEnabled() bool {
 	return i.getBool(NotificationsEnabled)
 }
 
@@ -345,11 +352,11 @@ func (i *Instance) GetNotificationsEnabled() bool {
 // GetShowOneTimeMovedNotification shows whether a small notification to inform the user that Stash
 // will no longer show a terminal window, and instead will be available in the tray, should be shown.
 // It is true when an existing system is started after upgrading, and set to false forever after it is shown.
-func (i *Instance) GetShowOneTimeMovedNotification() bool {
+func (i *Config) GetShowOneTimeMovedNotification() bool {
 	return i.getBool(ShowOneTimeMovedNotification)
 }
 
-func (i *Instance) Set(key string, value interface{}) {
+func (i *Config) Set(key string, value interface{}) {
 	// if key == MenuItems {
 	// 	i.configUpdates <- 0
 	// }
@@ -358,13 +365,13 @@ func (i *Instance) Set(key string, value interface{}) {
 	i.main.Set(key, value)
 }
 
-func (i *Instance) SetDefault(key string, value interface{}) {
+func (i *Config) SetDefault(key string, value interface{}) {
 	i.Lock()
 	defer i.Unlock()
 	i.main.SetDefault(key, value)
 }
 
-func (i *Instance) SetPassword(value string) {
+func (i *Config) SetPassword(value string) {
 	// if blank, don't bother hashing; we want it to be blank
 	if value == "" {
 		i.Set(Password, "")
@@ -373,7 +380,7 @@ func (i *Instance) SetPassword(value string) {
 	}
 }
 
-func (i *Instance) Write() error {
+func (i *Config) Write() error {
 	i.Lock()
 	defer i.Unlock()
 	return i.main.WriteConfig()
@@ -386,7 +393,7 @@ func FileEnvSet() bool {
 }
 
 // GetConfigFile returns the full path to the used configuration file.
-func (i *Instance) GetConfigFile() string {
+func (i *Config) GetConfigFile() string {
 	i.RLock()
 	defer i.RUnlock()
 	return i.main.ConfigFileUsed()
@@ -394,20 +401,20 @@ func (i *Instance) GetConfigFile() string {
 
 // GetConfigPath returns the path of the directory containing the used
 // configuration file.
-func (i *Instance) GetConfigPath() string {
+func (i *Config) GetConfigPath() string {
 	return filepath.Dir(i.GetConfigFile())
 }
 
 // GetDefaultDatabaseFilePath returns the default database filename,
 // which is located in the same directory as the config file.
-func (i *Instance) GetDefaultDatabaseFilePath() string {
+func (i *Config) GetDefaultDatabaseFilePath() string {
 	return filepath.Join(i.GetConfigPath(), "stash-go.sqlite")
 }
 
 // viper returns the viper instance that should be used to get the provided
 // key. Returns the overrides instance if the key exists there, otherwise it
 // returns the main instance. Assumes read lock held.
-func (i *Instance) viper(key string) *viper.Viper {
+func (i *Config) viper(key string) *viper.Viper {
 	v := i.main
 	if i.overrides.IsSet(key) {
 		v = i.overrides
@@ -418,7 +425,7 @@ func (i *Instance) viper(key string) *viper.Viper {
 
 // viper returns the viper instance that has the key set. Returns nil
 // if no instance has the key. Assumes read lock held.
-func (i *Instance) viperWith(key string) *viper.Viper {
+func (i *Config) viperWith(key string) *viper.Viper {
 	v := i.viper(key)
 
 	if v.IsSet(key) {
@@ -428,7 +435,7 @@ func (i *Instance) viperWith(key string) *viper.Viper {
 	return nil
 }
 
-func (i *Instance) HasOverride(key string) bool {
+func (i *Config) HasOverride(key string) bool {
 	i.RLock()
 	defer i.RUnlock()
 
@@ -438,35 +445,35 @@ func (i *Instance) HasOverride(key string) bool {
 // These functions wrap the equivalent viper functions, checking the override
 // instance first, then the main instance.
 
-func (i *Instance) unmarshalKey(key string, rawVal interface{}) error {
+func (i *Config) unmarshalKey(key string, rawVal interface{}) error {
 	i.RLock()
 	defer i.RUnlock()
 
 	return i.viper(key).UnmarshalKey(key, rawVal)
 }
 
-func (i *Instance) getStringSlice(key string) []string {
+func (i *Config) getStringSlice(key string) []string {
 	i.RLock()
 	defer i.RUnlock()
 
 	return i.viper(key).GetStringSlice(key)
 }
 
-func (i *Instance) getString(key string) string {
+func (i *Config) getString(key string) string {
 	i.RLock()
 	defer i.RUnlock()
 
 	return i.viper(key).GetString(key)
 }
 
-func (i *Instance) getBool(key string) bool {
+func (i *Config) getBool(key string) bool {
 	i.RLock()
 	defer i.RUnlock()
 
 	return i.viper(key).GetBool(key)
 }
 
-func (i *Instance) getBoolDefault(key string, def bool) bool {
+func (i *Config) getBoolDefault(key string, def bool) bool {
 	i.RLock()
 	defer i.RUnlock()
 
@@ -478,21 +485,21 @@ func (i *Instance) getBoolDefault(key string, def bool) bool {
 	return ret
 }
 
-func (i *Instance) getInt(key string) int {
+func (i *Config) getInt(key string) int {
 	i.RLock()
 	defer i.RUnlock()
 
 	return i.viper(key).GetInt(key)
 }
 
-func (i *Instance) getFloat64(key string) float64 {
+func (i *Config) getFloat64(key string) float64 {
 	i.RLock()
 	defer i.RUnlock()
 
 	return i.viper(key).GetFloat64(key)
 }
 
-func (i *Instance) getStringMapString(key string) map[string]string {
+func (i *Config) getStringMapString(key string) map[string]string {
 	i.RLock()
 	defer i.RUnlock()
 
@@ -510,7 +517,7 @@ func (i *Instance) getStringMapString(key string) map[string]string {
 // GetStathPaths returns the configured stash library paths.
 // Works opposite to the usual case - it will return the override
 // value only if the main value is not set.
-func (i *Instance) GetStashPaths() StashConfigs {
+func (i *Config) GetStashPaths() StashConfigs {
 	i.RLock()
 	defer i.RUnlock()
 
@@ -536,19 +543,19 @@ func (i *Instance) GetStashPaths() StashConfigs {
 	return ret
 }
 
-func (i *Instance) GetCachePath() string {
+func (i *Config) GetCachePath() string {
 	return i.getString(Cache)
 }
 
-func (i *Instance) GetGeneratedPath() string {
+func (i *Config) GetGeneratedPath() string {
 	return i.getString(Generated)
 }
 
-func (i *Instance) GetBlobsPath() string {
+func (i *Config) GetBlobsPath() string {
 	return i.getString(BlobsPath)
 }
 
-func (i *Instance) GetBlobsStorage() BlobsStorageType {
+func (i *Config) GetBlobsStorage() BlobsStorageType {
 	ret := BlobsStorageType(i.getString(BlobsStorage))
 
 	if !ret.IsValid() {
@@ -560,19 +567,19 @@ func (i *Instance) GetBlobsStorage() BlobsStorageType {
 	return ret
 }
 
-func (i *Instance) GetMetadataPath() string {
+func (i *Config) GetMetadataPath() string {
 	return i.getString(Metadata)
 }
 
-func (i *Instance) GetDatabasePath() string {
+func (i *Config) GetDatabasePath() string {
 	return i.getString(Database)
 }
 
-func (i *Instance) GetBackupDirectoryPath() string {
+func (i *Config) GetBackupDirectoryPath() string {
 	return i.getString(BackupDirectoryPath)
 }
 
-func (i *Instance) GetBackupDirectoryPathOrDefault() string {
+func (i *Config) GetBackupDirectoryPathOrDefault() string {
 	ret := i.GetBackupDirectoryPath()
 	if ret == "" {
 		return i.GetConfigPath()
@@ -581,30 +588,30 @@ func (i *Instance) GetBackupDirectoryPathOrDefault() string {
 	return ret
 }
 
-func (i *Instance) GetJWTSignKey() []byte {
+func (i *Config) GetJWTSignKey() []byte {
 	return []byte(i.getString(JWTSignKey))
 }
 
-func (i *Instance) GetSessionStoreKey() []byte {
+func (i *Config) GetSessionStoreKey() []byte {
 	return []byte(i.getString(SessionStoreKey))
 }
 
-func (i *Instance) GetDefaultScrapersPath() string {
+func (i *Config) GetDefaultScrapersPath() string {
 	// default to the same directory as the config file
 	fn := filepath.Join(i.GetConfigPath(), "scrapers")
 
 	return fn
 }
 
-func (i *Instance) GetExcludes() []string {
+func (i *Config) GetExcludes() []string {
 	return i.getStringSlice(Exclude)
 }
 
-func (i *Instance) GetImageExcludes() []string {
+func (i *Config) GetImageExcludes() []string {
 	return i.getStringSlice(ImageExclude)
 }
 
-func (i *Instance) GetVideoExtensions() []string {
+func (i *Config) GetVideoExtensions() []string {
 	ret := i.getStringSlice(VideoExtensions)
 	if ret == nil {
 		ret = defaultVideoExtensions
@@ -612,7 +619,7 @@ func (i *Instance) GetVideoExtensions() []string {
 	return ret
 }
 
-func (i *Instance) GetImageExtensions() []string {
+func (i *Config) GetImageExtensions() []string {
 	ret := i.getStringSlice(ImageExtensions)
 	if ret == nil {
 		ret = defaultImageExtensions
@@ -620,7 +627,7 @@ func (i *Instance) GetImageExtensions() []string {
 	return ret
 }
 
-func (i *Instance) GetGalleryExtensions() []string {
+func (i *Config) GetGalleryExtensions() []string {
 	ret := i.getStringSlice(GalleryExtensions)
 	if ret == nil {
 		ret = defaultGalleryExtensions
@@ -628,11 +635,11 @@ func (i *Instance) GetGalleryExtensions() []string {
 	return ret
 }
 
-func (i *Instance) GetCreateGalleriesFromFolders() bool {
+func (i *Config) GetCreateGalleriesFromFolders() bool {
 	return i.getBool(CreateGalleriesFromFolders)
 }
 
-func (i *Instance) GetLanguage() string {
+func (i *Config) GetLanguage() string {
 	ret := i.getString(Language)
 
 	// default to English
@@ -645,13 +652,13 @@ func (i *Instance) GetLanguage() string {
 
 // IsCalculateMD5 returns true if MD5 checksums should be generated for
 // scene video files.
-func (i *Instance) IsCalculateMD5() bool {
+func (i *Config) IsCalculateMD5() bool {
 	return i.getBool(CalculateMD5)
 }
 
 // GetVideoFileNamingAlgorithm returns what hash algorithm should be used for
 // naming generated scene video files.
-func (i *Instance) GetVideoFileNamingAlgorithm() models.HashAlgorithm {
+func (i *Config) GetVideoFileNamingAlgorithm() models.HashAlgorithm {
 	ret := i.getString(VideoFileNamingAlgorithm)
 
 	// default to oshash
@@ -662,11 +669,11 @@ func (i *Instance) GetVideoFileNamingAlgorithm() models.HashAlgorithm {
 	return models.HashAlgorithm(ret)
 }
 
-func (i *Instance) GetSequentialScanning() bool {
+func (i *Config) GetSequentialScanning() bool {
 	return i.getBool(SequentialScanning)
 }
 
-func (i *Instance) GetGalleryCoverRegex() string {
+func (i *Config) GetGalleryCoverRegex() string {
 	var regexString = i.getString(GalleryCoverRegex)
 
 	_, err := regexp.Compile(regexString)
@@ -678,31 +685,31 @@ func (i *Instance) GetGalleryCoverRegex() string {
 	return regexString
 }
 
-func (i *Instance) GetScrapersPath() string {
+func (i *Config) GetScrapersPath() string {
 	return i.getString(ScrapersPath)
 }
 
-func (i *Instance) GetScraperUserAgent() string {
+func (i *Config) GetScraperUserAgent() string {
 	return i.getString(ScraperUserAgent)
 }
 
 // GetScraperCDPPath gets the path to the Chrome executable or remote address
 // to an instance of Chrome.
-func (i *Instance) GetScraperCDPPath() string {
+func (i *Config) GetScraperCDPPath() string {
 	return i.getString(ScraperCDPPath)
 }
 
 // GetScraperCertCheck returns true if the scraper should check for insecure
 // certificates when fetching an image or a page.
-func (i *Instance) GetScraperCertCheck() bool {
+func (i *Config) GetScraperCertCheck() bool {
 	return i.getBoolDefault(ScraperCertCheck, true)
 }
 
-func (i *Instance) GetScraperExcludeTagPatterns() []string {
+func (i *Config) GetScraperExcludeTagPatterns() []string {
 	return i.getStringSlice(ScraperExcludeTagPatterns)
 }
 
-func (i *Instance) GetStashBoxes() []*models.StashBox {
+func (i *Config) GetStashBoxes() []*models.StashBox {
 	var boxes []*models.StashBox
 	if err := i.unmarshalKey(StashBoxes, &boxes); err != nil {
 		logger.Warnf("error in unmarshalkey: %v", err)
@@ -711,22 +718,73 @@ func (i *Instance) GetStashBoxes() []*models.StashBox {
 	return boxes
 }
 
-func (i *Instance) GetDefaultPluginsPath() string {
+func (i *Config) GetDefaultPluginsPath() string {
 	// default to the same directory as the config file
 	fn := filepath.Join(i.GetConfigPath(), "plugins")
 
 	return fn
 }
 
-func (i *Instance) GetPluginsPath() string {
+func (i *Config) GetPluginsPath() string {
 	return i.getString(PluginsPath)
 }
 
-func (i *Instance) GetPythonPath() string {
+func (i *Config) GetAllPluginConfiguration() map[string]interface{} {
+	i.RLock()
+	defer i.RUnlock()
+
+	ret := make(map[string]interface{})
+
+	sub := i.viper(PluginsSetting).GetStringMap(PluginsSetting)
+	if sub == nil {
+		return ret
+	}
+
+	for plugin := range sub {
+		// HACK: viper changes map keys to case insensitive values, so the workaround is to
+		// convert map keys to snake case for storage
+		name := fromSnakeCase(plugin)
+		ret[name] = fromSnakeCaseMap(i.viper(PluginsSetting).GetStringMap(PluginsSettingPrefix + plugin))
+	}
+
+	return ret
+}
+
+func (i *Config) GetPluginConfiguration(pluginID string) map[string]interface{} {
+	i.RLock()
+	defer i.RUnlock()
+
+	key := PluginsSettingPrefix + toSnakeCase(pluginID)
+
+	// HACK: viper changes map keys to case insensitive values, so the workaround is to
+	// convert map keys to snake case for storage
+	v := i.viper(key).GetStringMap(key)
+
+	return fromSnakeCaseMap(v)
+}
+
+func (i *Config) SetPluginConfiguration(pluginID string, v map[string]interface{}) {
+	i.Lock()
+	defer i.Unlock()
+
+	pluginID = toSnakeCase(pluginID)
+
+	key := PluginsSettingPrefix + pluginID
+
+	// HACK: viper changes map keys to case insensitive values, so the workaround is to
+	// convert map keys to snake case for storage
+	i.viper(key).Set(key, toSnakeCaseMap(v))
+}
+
+func (i *Config) GetDisabledPlugins() []string {
+	return i.getStringSlice(DisabledPlugins)
+}
+
+func (i *Config) GetPythonPath() string {
 	return i.getString(PythonPath)
 }
 
-func (i *Instance) GetHost() string {
+func (i *Config) GetHost() string {
 	ret := i.getString(Host)
 	if ret == "" {
 		ret = hostDefault
@@ -735,7 +793,7 @@ func (i *Instance) GetHost() string {
 	return ret
 }
 
-func (i *Instance) GetPort() int {
+func (i *Config) GetPort() int {
 	ret := i.getInt(Port)
 	if ret == 0 {
 		ret = portDefault
@@ -744,27 +802,27 @@ func (i *Instance) GetPort() int {
 	return ret
 }
 
-func (i *Instance) GetThemeColor() string {
+func (i *Config) GetThemeColor() string {
 	return i.getString(ThemeColor)
 }
 
-func (i *Instance) GetExternalHost() string {
+func (i *Config) GetExternalHost() string {
 	return i.getString(ExternalHost)
 }
 
 // GetPreviewSegmentDuration returns the duration of a single segment in a
 // scene preview file, in seconds.
-func (i *Instance) GetPreviewSegmentDuration() float64 {
+func (i *Config) GetPreviewSegmentDuration() float64 {
 	return i.getFloat64(PreviewSegmentDuration)
 }
 
 // GetParallelTasks returns the number of parallel tasks that should be started
 // by scan or generate task.
-func (i *Instance) GetParallelTasks() int {
+func (i *Config) GetParallelTasks() int {
 	return i.getInt(ParallelTasks)
 }
 
-func (i *Instance) GetParallelTasksWithAutoDetection() int {
+func (i *Config) GetParallelTasksWithAutoDetection() int {
 	parallelTasks := i.getInt(ParallelTasks)
 	if parallelTasks <= 0 {
 		parallelTasks = (runtime.NumCPU() / 4) + 1
@@ -772,12 +830,12 @@ func (i *Instance) GetParallelTasksWithAutoDetection() int {
 	return parallelTasks
 }
 
-func (i *Instance) GetPreviewAudio() bool {
+func (i *Config) GetPreviewAudio() bool {
 	return i.getBool(PreviewAudio)
 }
 
 // GetPreviewSegments returns the amount of segments in a scene preview file.
-func (i *Instance) GetPreviewSegments() int {
+func (i *Config) GetPreviewSegments() int {
 	return i.getInt(PreviewSegments)
 }
 
@@ -787,7 +845,7 @@ func (i *Instance) GetPreviewSegments() int {
 // of seconds to exclude from the start of the video before it is included
 // in the preview. If the value is suffixed with a '%' character (for example
 // '2%'), then it is interpreted as a proportion of the total video duration.
-func (i *Instance) GetPreviewExcludeStart() string {
+func (i *Config) GetPreviewExcludeStart() string {
 	return i.getString(PreviewExcludeStart)
 }
 
@@ -796,13 +854,13 @@ func (i *Instance) GetPreviewExcludeStart() string {
 // is interpreted as the amount of seconds to exclude from the end of the video
 // when generating previews. If the value is suffixed with a '%' character,
 // then it is interpreted as a proportion of the total video duration.
-func (i *Instance) GetPreviewExcludeEnd() string {
+func (i *Config) GetPreviewExcludeEnd() string {
 	return i.getString(PreviewExcludeEnd)
 }
 
 // GetPreviewPreset returns the preset when generating previews. Defaults to
 // Slow.
-func (i *Instance) GetPreviewPreset() models.PreviewPreset {
+func (i *Config) GetPreviewPreset() models.PreviewPreset {
 	ret := i.getString(PreviewPreset)
 
 	// default to slow
@@ -813,11 +871,11 @@ func (i *Instance) GetPreviewPreset() models.PreviewPreset {
 	return models.PreviewPreset(ret)
 }
 
-func (i *Instance) GetTranscodeHardwareAcceleration() bool {
+func (i *Config) GetTranscodeHardwareAcceleration() bool {
 	return i.getBool(TranscodeHardwareAcceleration)
 }
 
-func (i *Instance) GetMaxTranscodeSize() models.StreamingResolutionEnum {
+func (i *Config) GetMaxTranscodeSize() models.StreamingResolutionEnum {
 	ret := i.getString(MaxTranscodeSize)
 
 	// default to original
@@ -828,7 +886,7 @@ func (i *Instance) GetMaxTranscodeSize() models.StreamingResolutionEnum {
 	return models.StreamingResolutionEnum(ret)
 }
 
-func (i *Instance) GetMaxStreamingTranscodeSize() models.StreamingResolutionEnum {
+func (i *Config) GetMaxStreamingTranscodeSize() models.StreamingResolutionEnum {
 	ret := i.getString(MaxStreamingTranscodeSize)
 
 	// default to original
@@ -839,49 +897,49 @@ func (i *Instance) GetMaxStreamingTranscodeSize() models.StreamingResolutionEnum
 	return models.StreamingResolutionEnum(ret)
 }
 
-func (i *Instance) GetTranscodeInputArgs() []string {
+func (i *Config) GetTranscodeInputArgs() []string {
 	return i.getStringSlice(TranscodeInputArgs)
 }
 
-func (i *Instance) GetTranscodeOutputArgs() []string {
+func (i *Config) GetTranscodeOutputArgs() []string {
 	return i.getStringSlice(TranscodeOutputArgs)
 }
 
-func (i *Instance) GetLiveTranscodeInputArgs() []string {
+func (i *Config) GetLiveTranscodeInputArgs() []string {
 	return i.getStringSlice(LiveTranscodeInputArgs)
 }
 
-func (i *Instance) GetLiveTranscodeOutputArgs() []string {
+func (i *Config) GetLiveTranscodeOutputArgs() []string {
 	return i.getStringSlice(LiveTranscodeOutputArgs)
 }
 
-func (i *Instance) GetDrawFunscriptHeatmapRange() bool {
+func (i *Config) GetDrawFunscriptHeatmapRange() bool {
 	return i.getBoolDefault(DrawFunscriptHeatmapRange, drawFunscriptHeatmapRangeDefault)
 }
 
 // IsWriteImageThumbnails returns true if image thumbnails should be written
 // to disk after generating on the fly.
-func (i *Instance) IsWriteImageThumbnails() bool {
+func (i *Config) IsWriteImageThumbnails() bool {
 	return i.getBool(WriteImageThumbnails)
 }
 
-func (i *Instance) IsCreateImageClipsFromVideos() bool {
+func (i *Config) IsCreateImageClipsFromVideos() bool {
 	return i.getBool(CreateImageClipsFromVideos)
 }
 
-func (i *Instance) GetAPIKey() string {
+func (i *Config) GetAPIKey() string {
 	return i.getString(ApiKey)
 }
 
-func (i *Instance) GetUsername() string {
+func (i *Config) GetUsername() string {
 	return i.getString(Username)
 }
 
-func (i *Instance) GetPasswordHash() string {
+func (i *Config) GetPasswordHash() string {
 	return i.getString(Password)
 }
 
-func (i *Instance) GetCredentials() (string, string) {
+func (i *Config) GetCredentials() (string, string) {
 	if i.HasCredentials() {
 		return i.getString(Username), i.getString(Password)
 	}
@@ -889,7 +947,7 @@ func (i *Instance) GetCredentials() (string, string) {
 	return "", ""
 }
 
-func (i *Instance) HasCredentials() bool {
+func (i *Config) HasCredentials() bool {
 	username := i.getString(Username)
 	pwHash := i.getString(Password)
 
@@ -902,7 +960,7 @@ func hashPassword(password string) string {
 	return string(hash)
 }
 
-func (i *Instance) ValidateCredentials(username string, password string) bool {
+func (i *Config) ValidateCredentials(username string, password string) bool {
 	if !i.HasCredentials() {
 		// don't need to authenticate if no credentials saved
 		return true
@@ -923,7 +981,7 @@ type StashBoxInput struct {
 	Name     string `json:"name"`
 }
 
-func (i *Instance) ValidateStashBoxes(boxes []*StashBoxInput) error {
+func (i *Config) ValidateStashBoxes(boxes []*StashBoxInput) error {
 	isMulti := len(boxes) > 1
 
 	for _, box := range boxes {
@@ -950,7 +1008,7 @@ func (i *Instance) ValidateStashBoxes(boxes []*StashBoxInput) error {
 
 // GetMaxSessionAge gets the maximum age for session cookies, in seconds.
 // Session cookie expiry times are refreshed every request.
-func (i *Instance) GetMaxSessionAge() int {
+func (i *Config) GetMaxSessionAge() int {
 	i.RLock()
 	defer i.RUnlock()
 
@@ -965,16 +1023,16 @@ func (i *Instance) GetMaxSessionAge() int {
 
 // GetCustomServedFolders gets the map of custom paths to their applicable
 // filesystem locations
-func (i *Instance) GetCustomServedFolders() URLMap {
+func (i *Config) GetCustomServedFolders() utils.URLMap {
 	return i.getStringMapString(CustomServedFolders)
 }
 
-func (i *Instance) GetCustomUILocation() string {
+func (i *Config) GetCustomUILocation() string {
 	return i.getString(CustomUILocation)
 }
 
 // Interface options
-func (i *Instance) GetMenuItems() []string {
+func (i *Config) GetMenuItems() []string {
 	i.RLock()
 	defer i.RUnlock()
 	v := i.viper(MenuItems)
@@ -984,11 +1042,11 @@ func (i *Instance) GetMenuItems() []string {
 	return defaultMenuItems
 }
 
-func (i *Instance) GetSoundOnPreview() bool {
+func (i *Config) GetSoundOnPreview() bool {
 	return i.getBool(SoundOnPreview)
 }
 
-func (i *Instance) GetWallShowTitle() bool {
+func (i *Config) GetWallShowTitle() bool {
 	i.RLock()
 	defer i.RUnlock()
 
@@ -1000,11 +1058,11 @@ func (i *Instance) GetWallShowTitle() bool {
 	return ret
 }
 
-func (i *Instance) GetCustomPerformerImageLocation() string {
+func (i *Config) GetCustomPerformerImageLocation() string {
 	return i.getString(CustomPerformerImageLocation)
 }
 
-func (i *Instance) GetWallPlayback() string {
+func (i *Config) GetWallPlayback() string {
 	i.RLock()
 	defer i.RUnlock()
 
@@ -1017,31 +1075,31 @@ func (i *Instance) GetWallPlayback() string {
 	return ret
 }
 
-func (i *Instance) GetShowScrubber() bool {
+func (i *Config) GetShowScrubber() bool {
 	return i.getBoolDefault(ShowScrubber, showScrubberDefault)
 }
 
-func (i *Instance) GetMaximumLoopDuration() int {
+func (i *Config) GetMaximumLoopDuration() int {
 	return i.getInt(MaximumLoopDuration)
 }
 
-func (i *Instance) GetAutostartVideo() bool {
+func (i *Config) GetAutostartVideo() bool {
 	return i.getBool(AutostartVideo)
 }
 
-func (i *Instance) GetAutostartVideoOnPlaySelected() bool {
+func (i *Config) GetAutostartVideoOnPlaySelected() bool {
 	return i.getBoolDefault(AutostartVideoOnPlaySelected, autostartVideoOnPlaySelectedDefault)
 }
 
-func (i *Instance) GetContinuePlaylistDefault() bool {
+func (i *Config) GetContinuePlaylistDefault() bool {
 	return i.getBool(ContinuePlaylistDefault)
 }
 
-func (i *Instance) GetShowStudioAsText() bool {
+func (i *Config) GetShowStudioAsText() bool {
 	return i.getBool(ShowStudioAsText)
 }
 
-func (i *Instance) getSlideshowDelay() int {
+func (i *Config) getSlideshowDelay() int {
 	// assume have lock
 
 	ret := defaultImageLightboxSlideshowDelay
@@ -1059,7 +1117,7 @@ func (i *Instance) getSlideshowDelay() int {
 	return ret
 }
 
-func (i *Instance) GetImageLightboxOptions() ConfigImageLightboxResult {
+func (i *Config) GetImageLightboxOptions() ConfigImageLightboxResult {
 	i.RLock()
 	defer i.RUnlock()
 
@@ -1092,7 +1150,7 @@ func (i *Instance) GetImageLightboxOptions() ConfigImageLightboxResult {
 	return ret
 }
 
-func (i *Instance) GetDisableDropdownCreate() *ConfigDisableDropdownCreate {
+func (i *Config) GetDisableDropdownCreate() *ConfigDisableDropdownCreate {
 	return &ConfigDisableDropdownCreate{
 		Performer: i.getBool(DisableDropdownCreatePerformer),
 		Studio:    i.getBool(DisableDropdownCreateStudio),
@@ -1101,7 +1159,7 @@ func (i *Instance) GetDisableDropdownCreate() *ConfigDisableDropdownCreate {
 	}
 }
 
-func (i *Instance) GetUIConfiguration() map[string]interface{} {
+func (i *Config) GetUIConfiguration() map[string]interface{} {
 	i.RLock()
 	defer i.RUnlock()
 
@@ -1112,16 +1170,16 @@ func (i *Instance) GetUIConfiguration() map[string]interface{} {
 	return fromSnakeCaseMap(v)
 }
 
-func (i *Instance) SetUIConfiguration(v map[string]interface{}) {
-	i.RLock()
-	defer i.RUnlock()
+func (i *Config) SetUIConfiguration(v map[string]interface{}) {
+	i.Lock()
+	defer i.Unlock()
 
 	// HACK: viper changes map keys to case insensitive values, so the workaround is to
 	// convert map keys to snake case for storage
 	i.viper(UI).Set(UI, toSnakeCaseMap(v))
 }
 
-func (i *Instance) GetCSSPath() string {
+func (i *Config) GetCSSPath() string {
 	// use custom.css in the same directory as the config file
 	configFileUsed := i.GetConfigFile()
 	configDir := filepath.Dir(configFileUsed)
@@ -1131,7 +1189,7 @@ func (i *Instance) GetCSSPath() string {
 	return fn
 }
 
-func (i *Instance) GetCSS() string {
+func (i *Config) GetCSS() string {
 	fn := i.GetCSSPath()
 
 	exists, _ := fsutil.FileExists(fn)
@@ -1148,7 +1206,7 @@ func (i *Instance) GetCSS() string {
 	return string(buf)
 }
 
-func (i *Instance) SetCSS(css string) {
+func (i *Config) SetCSS(css string) {
 	fn := i.GetCSSPath()
 	i.Lock()
 	defer i.Unlock()
@@ -1160,11 +1218,11 @@ func (i *Instance) SetCSS(css string) {
 	}
 }
 
-func (i *Instance) GetCSSEnabled() bool {
+func (i *Config) GetCSSEnabled() bool {
 	return i.getBool(CSSEnabled)
 }
 
-func (i *Instance) GetJavascriptPath() string {
+func (i *Config) GetJavascriptPath() string {
 	// use custom.js in the same directory as the config file
 	configFileUsed := i.GetConfigFile()
 	configDir := filepath.Dir(configFileUsed)
@@ -1174,7 +1232,7 @@ func (i *Instance) GetJavascriptPath() string {
 	return fn
 }
 
-func (i *Instance) GetJavascript() string {
+func (i *Config) GetJavascript() string {
 	fn := i.GetJavascriptPath()
 
 	exists, _ := fsutil.FileExists(fn)
@@ -1191,7 +1249,7 @@ func (i *Instance) GetJavascript() string {
 	return string(buf)
 }
 
-func (i *Instance) SetJavascript(javascript string) {
+func (i *Config) SetJavascript(javascript string) {
 	fn := i.GetJavascriptPath()
 	i.Lock()
 	defer i.Unlock()
@@ -1203,11 +1261,11 @@ func (i *Instance) SetJavascript(javascript string) {
 	}
 }
 
-func (i *Instance) GetJavascriptEnabled() bool {
+func (i *Config) GetJavascriptEnabled() bool {
 	return i.getBool(JavascriptEnabled)
 }
 
-func (i *Instance) GetCustomLocalesPath() string {
+func (i *Config) GetCustomLocalesPath() string {
 	// use custom-locales.json in the same directory as the config file
 	configFileUsed := i.GetConfigFile()
 	configDir := filepath.Dir(configFileUsed)
@@ -1217,7 +1275,7 @@ func (i *Instance) GetCustomLocalesPath() string {
 	return fn
 }
 
-func (i *Instance) GetCustomLocales() string {
+func (i *Config) GetCustomLocales() string {
 	fn := i.GetCustomLocalesPath()
 
 	exists, _ := fsutil.FileExists(fn)
@@ -1234,7 +1292,7 @@ func (i *Instance) GetCustomLocales() string {
 	return string(buf)
 }
 
-func (i *Instance) SetCustomLocales(customLocales string) {
+func (i *Config) SetCustomLocales(customLocales string) {
 	fn := i.GetCustomLocalesPath()
 	i.Lock()
 	defer i.Unlock()
@@ -1246,34 +1304,34 @@ func (i *Instance) SetCustomLocales(customLocales string) {
 	}
 }
 
-func (i *Instance) GetCustomLocalesEnabled() bool {
+func (i *Config) GetCustomLocalesEnabled() bool {
 	return i.getBool(CustomLocalesEnabled)
 }
 
-func (i *Instance) GetHandyKey() string {
+func (i *Config) GetHandyKey() string {
 	return i.getString(HandyKey)
 }
 
-func (i *Instance) GetFunscriptOffset() int {
+func (i *Config) GetFunscriptOffset() int {
 	return i.getInt(FunscriptOffset)
 }
 
-func (i *Instance) GetUseStashHostedFunscript() bool {
+func (i *Config) GetUseStashHostedFunscript() bool {
 	return i.getBoolDefault(UseStashHostedFunscript, useStashHostedFunscriptDefault)
 }
 
-func (i *Instance) GetDeleteFileDefault() bool {
+func (i *Config) GetDeleteFileDefault() bool {
 	return i.getBool(DeleteFileDefault)
 }
 
-func (i *Instance) GetDeleteGeneratedDefault() bool {
+func (i *Config) GetDeleteGeneratedDefault() bool {
 	return i.getBoolDefault(DeleteGeneratedDefault, deleteGeneratedDefaultDefault)
 }
 
 // GetDefaultIdentifySettings returns the default Identify task settings.
 // Returns nil if the settings could not be unmarshalled, or if it
 // has not been set.
-func (i *Instance) GetDefaultIdentifySettings() *identify.Options {
+func (i *Config) GetDefaultIdentifySettings() *identify.Options {
 	i.RLock()
 	defer i.RUnlock()
 	v := i.viper(DefaultIdentifySettings)
@@ -1292,7 +1350,7 @@ func (i *Instance) GetDefaultIdentifySettings() *identify.Options {
 // GetDefaultScanSettings returns the default Scan task settings.
 // Returns nil if the settings could not be unmarshalled, or if it
 // has not been set.
-func (i *Instance) GetDefaultScanSettings() *ScanMetadataOptions {
+func (i *Config) GetDefaultScanSettings() *ScanMetadataOptions {
 	i.RLock()
 	defer i.RUnlock()
 	v := i.viper(DefaultScanSettings)
@@ -1311,7 +1369,7 @@ func (i *Instance) GetDefaultScanSettings() *ScanMetadataOptions {
 // GetDefaultAutoTagSettings returns the default Scan task settings.
 // Returns nil if the settings could not be unmarshalled, or if it
 // has not been set.
-func (i *Instance) GetDefaultAutoTagSettings() *AutoTagMetadataOptions {
+func (i *Config) GetDefaultAutoTagSettings() *AutoTagMetadataOptions {
 	i.RLock()
 	defer i.RUnlock()
 	v := i.viper(DefaultAutoTagSettings)
@@ -1330,7 +1388,7 @@ func (i *Instance) GetDefaultAutoTagSettings() *AutoTagMetadataOptions {
 // GetDefaultGenerateSettings returns the default Scan task settings.
 // Returns nil if the settings could not be unmarshalled, or if it
 // has not been set.
-func (i *Instance) GetDefaultGenerateSettings() *models.GenerateMetadataOptions {
+func (i *Config) GetDefaultGenerateSettings() *models.GenerateMetadataOptions {
 	i.RLock()
 	defer i.RUnlock()
 	v := i.viper(DefaultGenerateSettings)
@@ -1348,43 +1406,43 @@ func (i *Instance) GetDefaultGenerateSettings() *models.GenerateMetadataOptions 
 
 // GetDangerousAllowPublicWithoutAuth determines if the security feature is enabled.
 // See https://docs.stashapp.cc/networking/authentication-required-when-accessing-stash-from-the-internet
-func (i *Instance) GetDangerousAllowPublicWithoutAuth() bool {
+func (i *Config) GetDangerousAllowPublicWithoutAuth() bool {
 	return i.getBool(dangerousAllowPublicWithoutAuth)
 }
 
 // GetSecurityTripwireAccessedFromPublicInternet returns a public IP address if stash
 // has been accessed from the public internet, with no auth enabled, and
 // DangerousAllowPublicWithoutAuth disabled. Returns an empty string otherwise.
-func (i *Instance) GetSecurityTripwireAccessedFromPublicInternet() string {
+func (i *Config) GetSecurityTripwireAccessedFromPublicInternet() string {
 	return i.getString(SecurityTripwireAccessedFromPublicInternet)
 }
 
 // GetDLNAServerName returns the visible name of the DLNA server. If empty,
 // "stash" will be used.
-func (i *Instance) GetDLNAServerName() string {
+func (i *Config) GetDLNAServerName() string {
 	return i.getString(DLNAServerName)
 }
 
 // GetDLNADefaultEnabled returns true if the DLNA is enabled by default.
-func (i *Instance) GetDLNADefaultEnabled() bool {
+func (i *Config) GetDLNADefaultEnabled() bool {
 	return i.getBool(DLNADefaultEnabled)
 }
 
 // GetDLNADefaultIPWhitelist returns a list of IP addresses/wildcards that
 // are allowed to use the DLNA service.
-func (i *Instance) GetDLNADefaultIPWhitelist() []string {
+func (i *Config) GetDLNADefaultIPWhitelist() []string {
 	return i.getStringSlice(DLNADefaultIPWhitelist)
 }
 
 // GetDLNAInterfaces returns a list of interface names to expose DLNA on. If
 // empty, runs on all interfaces.
-func (i *Instance) GetDLNAInterfaces() []string {
+func (i *Config) GetDLNAInterfaces() []string {
 	return i.getStringSlice(DLNAInterfaces)
 }
 
 // GetVideoSortOrder returns the sort order to display videos. If
 // empty, videos will be sorted by titles.
-func (i *Instance) GetVideoSortOrder() string {
+func (i *Config) GetVideoSortOrder() string {
 	ret := i.getString(DLNAVideoSortOrder)
 	if ret == "" {
 		ret = dlnaVideoSortOrderDefault
@@ -1395,20 +1453,20 @@ func (i *Instance) GetVideoSortOrder() string {
 
 // GetLogFile returns the filename of the file to output logs to.
 // An empty string means that file logging will be disabled.
-func (i *Instance) GetLogFile() string {
+func (i *Config) GetLogFile() string {
 	return i.getString(LogFile)
 }
 
 // GetLogOut returns true if logging should be output to the terminal
 // in addition to writing to a log file. Logging will be output to the
 // terminal if file logging is disabled. Defaults to true.
-func (i *Instance) GetLogOut() bool {
+func (i *Config) GetLogOut() bool {
 	return i.getBoolDefault(LogOut, defaultLogOut)
 }
 
 // GetLogLevel returns the lowest log level to write to the log.
 // Should be one of "Debug", "Info", "Warning", "Error"
-func (i *Instance) GetLogLevel() string {
+func (i *Config) GetLogLevel() string {
 	value := i.getString(LogLevel)
 	if value != "Debug" && value != "Info" && value != "Warning" && value != "Error" && value != "Trace" {
 		value = defaultLogLevel
@@ -1419,12 +1477,12 @@ func (i *Instance) GetLogLevel() string {
 
 // GetLogAccess returns true if http requests should be logged to the terminal.
 // HTTP requests are not logged to the log file. Defaults to true.
-func (i *Instance) GetLogAccess() bool {
+func (i *Config) GetLogAccess() bool {
 	return i.getBoolDefault(LogAccess, defaultLogAccess)
 }
 
 // Max allowed graphql upload size in megabytes
-func (i *Instance) GetMaxUploadSize() int64 {
+func (i *Config) GetMaxUploadSize() int64 {
 	i.RLock()
 	defer i.RUnlock()
 	ret := int64(1024)
@@ -1437,7 +1495,7 @@ func (i *Instance) GetMaxUploadSize() int64 {
 }
 
 // GetProxy returns the url of a http proxy to be used for all outgoing http calls.
-func (i *Instance) GetProxy() string {
+func (i *Config) GetProxy() string {
 	// Validate format
 	reg := regexp.MustCompile(`^((?:socks5h?|https?):\/\/)(([\P{Cc}]+):([\P{Cc}]+)@)?(([a-zA-Z0-9][a-zA-Z0-9.-]*)(:[0-9]{1,5})?)`)
 	proxy := i.getString(Proxy)
@@ -1452,7 +1510,7 @@ func (i *Instance) GetProxy() string {
 }
 
 // GetProxy returns the url of a http proxy to be used for all outgoing http calls.
-func (i *Instance) GetNoProxy() string {
+func (i *Config) GetNoProxy() string {
 	// NoProxy does not require validation, it is validated by the native Go library sufficiently
 	return i.getString(NoProxy)
 }
@@ -1460,12 +1518,67 @@ func (i *Instance) GetNoProxy() string {
 // ActivatePublicAccessTripwire sets the security_tripwire_accessed_from_public_internet
 // config field to the provided IP address to indicate that stash has been accessed
 // from this public IP without authentication.
-func (i *Instance) ActivatePublicAccessTripwire(requestIP string) error {
+func (i *Config) ActivatePublicAccessTripwire(requestIP string) error {
 	i.Set(SecurityTripwireAccessedFromPublicInternet, requestIP)
 	return i.Write()
 }
 
-func (i *Instance) Validate() error {
+func (i *Config) getPackageSources(key string) []*models.PackageSource {
+	var sources []*models.PackageSource
+	if err := i.unmarshalKey(key, &sources); err != nil {
+		logger.Warnf("error in unmarshalkey: %v", err)
+	}
+
+	return sources
+}
+
+func (i *Config) GetPluginPackageSources() []*models.PackageSource {
+	return i.getPackageSources(PluginPackageSources)
+}
+
+func (i *Config) GetScraperPackageSources() []*models.PackageSource {
+	return i.getPackageSources(ScraperPackageSources)
+}
+
+type packagePathGetter struct {
+	getterFn func() []*models.PackageSource
+}
+
+func (g packagePathGetter) GetAllSourcePaths() []string {
+	p := g.getterFn()
+	var ret []string
+	for _, v := range p {
+		ret = sliceutil.AppendUnique(ret, v.LocalPath)
+	}
+
+	return ret
+}
+
+func (g packagePathGetter) GetSourcePath(srcURL string) string {
+	p := g.getterFn()
+
+	for _, v := range p {
+		if v.URL == srcURL {
+			return v.LocalPath
+		}
+	}
+
+	return ""
+}
+
+func (i *Config) GetPluginPackagePathGetter() packagePathGetter {
+	return packagePathGetter{
+		getterFn: i.GetPluginPackageSources,
+	}
+}
+
+func (i *Config) GetScraperPackagePathGetter() packagePathGetter {
+	return packagePathGetter{
+		getterFn: i.GetScraperPackageSources,
+	}
+}
+
+func (i *Config) Validate() error {
 	i.RLock()
 	defer i.RUnlock()
 	mandatoryPaths := []string{
@@ -1496,7 +1609,7 @@ func (i *Instance) Validate() error {
 	return nil
 }
 
-func (i *Instance) setDefaultValues(write bool) error {
+func (i *Config) setDefaultValues() {
 	// read data before write lock scope
 	defaultDatabaseFilePath := i.GetDefaultDatabaseFilePath()
 	defaultScrapersPath := i.GetDefaultScrapersPath()
@@ -1545,54 +1658,30 @@ func (i *Instance) setDefaultValues(write bool) error {
 
 	// Set NoProxy default
 	i.main.SetDefault(NoProxy, noProxyDefault)
-
-	if write {
-		return i.main.WriteConfig()
-	}
-
-	return nil
 }
 
 // setExistingSystemDefaults sets config options that are new and unset in an existing install,
 // but should have a separate default than for brand-new systems, to maintain behavior.
-func (i *Instance) setExistingSystemDefaults() error {
+// The config file will not be written.
+func (i *Config) setExistingSystemDefaults() {
 	i.Lock()
 	defer i.Unlock()
 	if !i.isNewSystem {
-		configDirtied := false
-
 		// Existing systems as of the introduction of auto-browser open should retain existing
 		// behavior and not start the browser automatically.
 		if !i.main.InConfig(NoBrowser) {
-			configDirtied = true
 			i.main.Set(NoBrowser, true)
 		}
 
 		// Existing systems as of the introduction of the taskbar should inform users.
 		if !i.main.InConfig(ShowOneTimeMovedNotification) {
-			configDirtied = true
 			i.main.Set(ShowOneTimeMovedNotification, true)
 		}
-
-		if configDirtied {
-			return i.main.WriteConfig()
-		}
 	}
-
-	return nil
 }
 
-// SetInitialConfig fills in missing required config fields
-func (i *Instance) SetInitialConfig() error {
-	return i.setInitialConfig(true)
-}
-
-// SetInitialMemoryConfig fills in missing required config fields without writing the configuration
-func (i *Instance) SetInitialMemoryConfig() error {
-	return i.setInitialConfig(false)
-}
-
-func (i *Instance) setInitialConfig(write bool) error {
+// SetInitialConfig fills in missing required config fields. The config file will not be written.
+func (i *Config) SetInitialConfig() error {
 	// generate some api keys
 	const apiKeyLength = 32
 
@@ -1612,10 +1701,12 @@ func (i *Instance) setInitialConfig(write bool) error {
 		i.Set(SessionStoreKey, sessionStoreKey)
 	}
 
-	return i.setDefaultValues(write)
+	i.setDefaultValues()
+
+	return nil
 }
 
-func (i *Instance) FinalizeSetup() {
+func (i *Config) FinalizeSetup() {
 	i.isNewSystem = false
 	// i.configUpdates <- 0
 }

@@ -7,7 +7,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
-	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
+	"github.com/stashapp/stash/pkg/sliceutil"
 )
 
 type ImporterReaderWriter interface {
@@ -62,8 +62,14 @@ func (i *Importer) galleryJSONToGallery(galleryJSON jsonschema.Gallery) models.G
 	if galleryJSON.Title != "" {
 		newGallery.Title = galleryJSON.Title
 	}
+	if galleryJSON.Code != "" {
+		newGallery.Code = galleryJSON.Code
+	}
 	if galleryJSON.Details != "" {
 		newGallery.Details = galleryJSON.Details
+	}
+	if galleryJSON.Photographer != "" {
+		newGallery.Photographer = galleryJSON.Photographer
 	}
 	if len(galleryJSON.URLs) > 0 {
 		newGallery.URLs = models.NewRelatedStrings(galleryJSON.URLs)
@@ -146,8 +152,8 @@ func (i *Importer) populatePerformers(ctx context.Context) error {
 			pluckedNames = append(pluckedNames, performer.Name)
 		}
 
-		missingPerformers := stringslice.StrFilter(names, func(name string) bool {
-			return !stringslice.StrInclude(pluckedNames, name)
+		missingPerformers := sliceutil.Filter(names, func(name string) bool {
+			return !sliceutil.Contains(pluckedNames, name)
 		})
 
 		if len(missingPerformers) > 0 {
@@ -205,8 +211,8 @@ func (i *Importer) populateTags(ctx context.Context) error {
 			pluckedNames = append(pluckedNames, tag.Name)
 		}
 
-		missingTags := stringslice.StrFilter(names, func(name string) bool {
-			return !stringslice.StrInclude(pluckedNames, name)
+		missingTags := sliceutil.Filter(names, func(name string) bool {
+			return !sliceutil.Contains(pluckedNames, name)
 		})
 
 		if len(missingTags) > 0 {

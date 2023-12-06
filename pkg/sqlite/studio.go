@@ -13,7 +13,7 @@ import (
 	"gopkg.in/guregu/null.v4/zero"
 
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sliceutil/intslice"
+	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/studio"
 )
 
@@ -240,7 +240,7 @@ func (qb *StudioStore) FindMany(ctx context.Context, ids []int) ([]*models.Studi
 		}
 
 		for _, s := range unsorted {
-			i := intslice.IntIndex(ids, s.ID)
+			i := sliceutil.Index(ids, s.ID)
 			ret[i] = s
 		}
 
@@ -496,8 +496,6 @@ func (qb *StudioStore) makeFilter(ctx context.Context, studioFilter *models.Stud
 	query.handleCriterion(ctx, stringCriterionHandler(studioFilter.Details, studioTable+".details"))
 	query.handleCriterion(ctx, stringCriterionHandler(studioFilter.URL, studioTable+".url"))
 	query.handleCriterion(ctx, intCriterionHandler(studioFilter.Rating100, studioTable+".rating", nil))
-	// legacy rating handler
-	query.handleCriterion(ctx, rating5CriterionHandler(studioFilter.Rating, studioTable+".rating", nil))
 	query.handleCriterion(ctx, boolCriterionHandler(studioFilter.IgnoreAutoTag, studioTable+".ignore_auto_tag", nil))
 
 	query.handleCriterion(ctx, criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {

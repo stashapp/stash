@@ -67,10 +67,6 @@
   .tab-content {
     min-height: 15rem;
   }
-
-  .scene-description {
-    width: 100%;
-  }
 }
 
 textarea.scene-description {
@@ -547,9 +543,13 @@ input[type="range"].blue-slider {
 #queue-viewer {
   .queue-controls {
     align-items: center;
+    background-color: $body-bg;
     display: flex;
     flex: 0 1 auto;
+    height: 30px;
     justify-content: space-between;
+    position: sticky;
+    top: 0;
   }
 
   .thumbnail-container {
@@ -684,6 +684,16 @@ input[type="range"].blue-slider {
     position: absolute;
     width: 100%;
     z-index: 1;
+  }
+
+  &.hover-scrubber-inactive {
+    .hover-scrubber-area {
+      cursor: inherit;
+    }
+
+    .hover-scrubber-indicator {
+      background-color: inherit;
+    }
   }
 
   .hover-scrubber-indicator {

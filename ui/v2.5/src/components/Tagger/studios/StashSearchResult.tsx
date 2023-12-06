@@ -7,6 +7,7 @@ import StudioModal from "../scenes/StudioModal";
 import { faTags } from "@fortawesome/free-solid-svg-icons";
 import { useStudioCreate } from "src/core/StashService";
 import { useIntl } from "react-intl";
+import { apolloError } from "src/utils";
 
 interface IStashSearchResultProps {
   studio: GQL.SlimStudioDataFragment;
@@ -75,9 +76,8 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
           });
           input.parent_id = parentRes.data?.studioCreate?.id;
         }
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } catch (e: any) {
-        handleSaveError(parentInput.name, e.message ?? "");
+      } catch (e) {
+        handleSaveError(parentInput.name, apolloError(e));
       }
     }
 
@@ -102,7 +102,12 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
       key={p.remote_site_id}
       onClick={() => setModalStudio(p)}
     >
-      <img src={(p.image ?? [])[0]} alt="" className="StudioTagger-thumb" />
+      <img
+        loading="lazy"
+        src={(p.image ?? [])[0]}
+        alt=""
+        className="StudioTagger-thumb"
+      />
       <span>{p.name}</span>
     </Button>
   ));

@@ -80,6 +80,7 @@ type ValidateModifyReader interface {
 // 1. The studio exists locally
 // 2. The studio is not its own ancestor
 // 3. The studio's aliases are unique
+// 4. The name is unique
 func ValidateModify(ctx context.Context, s models.StudioPartial, qb ValidateModifyReader) error {
 	existing, err := qb.Find(ctx, s.ID)
 	if err != nil {
@@ -102,8 +103,14 @@ func ValidateModify(ctx context.Context, s models.StudioPartial, qb ValidateModi
 			return err
 		}
 
-		effectiveAliases := s.Aliases.EffectiveValues(existing.Aliases.List())
+		effectiveAliases := s.Aliases.Apply(existing.Aliases.List())
 		if err := EnsureAliasesUnique(ctx, s.ID, effectiveAliases, qb); err != nil {
+			return err
+		}
+	}
+
+	if s.Name.Set && s.Name.Value != existing.Name {
+		if err := EnsureStudioNameUnique(ctx, 0, s.Name.Value, qb); err != nil {
 			return err
 		}
 	}

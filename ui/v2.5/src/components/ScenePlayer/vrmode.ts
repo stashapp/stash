@@ -14,12 +14,16 @@ export interface VRMenuOptions {
 }
 
 enum VRType {
-  Spherical = "360",
+  LR180 = "180 LR",
+  TB360 = "360 TB",
+  Mono360 = "360 Mono",
   Off = "Off",
 }
 
 const vrTypeProjection: Record<VRType, ProjectionType> = {
-  [VRType.Spherical]: "360",
+  [VRType.LR180]: "180_LR",
+  [VRType.TB360]: "360_TB",
+  [VRType.Mono360]: "360",
   [VRType.Off]: "NONE",
 };
 

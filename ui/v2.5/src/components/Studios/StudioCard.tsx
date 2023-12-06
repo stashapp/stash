@@ -160,6 +160,7 @@ export const StudioCard: React.FC<IProps> = ({
       linkClassName="studio-card-header"
       image={
         <img
+          loading="lazy"
           className="studio-card-image"
           alt={studio.name}
           src={studio.image_path ?? ""}

@@ -40,4 +40,5 @@ fragment SelectPerformerData on Performer {
   name
   disambiguation
   alias_list
+  image_path
 }

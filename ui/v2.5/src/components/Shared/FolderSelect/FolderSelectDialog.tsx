@@ -23,7 +23,7 @@ export const FolderSelectDialog: React.FC<IProps> = ({
         <div className="dialog-content">
           <FolderSelect
             currentDirectory={currentDirectory}
-            setCurrentDirectory={(v) => setCurrentDirectory(v)}
+            onChangeDirectory={setCurrentDirectory}
           />
         </div>
       </Modal.Body>

@@ -140,12 +140,12 @@ export const GenerateDialog: React.FC<ISceneGenerateDialog> = ({
         ...options,
         sceneIDs: selectedIds,
       });
-      Toast.success({
-        content: intl.formatMessage(
+      Toast.success(
+        intl.formatMessage(
           { id: "config.tasks.added_job_to_queue" },
           { operation_name: intl.formatMessage({ id: "actions.generate" }) }
-        ),
-      });
+        )
+      );
     } catch (e) {
       Toast.error(e);
     } finally {

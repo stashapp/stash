@@ -6,21 +6,22 @@ import * as GQL from "src/core/generated-graphql";
 import * as yup from "yup";
 import { TagSelect, StudioSelect } from "src/components/Shared/Select";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
-import { URLListInput } from "src/components/Shared/URLField";
 import { useToast } from "src/hooks/Toast";
-import FormUtils from "src/utils/form";
 import { useFormik } from "formik";
 import { Prompt } from "react-router-dom";
-import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { useRatingKeybinds } from "src/hooks/keybinds";
 import { ConfigurationContext } from "src/hooks/Config";
 import isEqual from "lodash-es/isEqual";
-import { DateInput } from "src/components/Shared/DateInput";
-import { yupDateString, yupUniqueStringList } from "src/utils/yup";
+import {
+  yupDateString,
+  yupFormikValidate,
+  yupUniqueStringList,
+} from "src/utils/yup";
 import {
   Performer,
   PerformerSelect,
 } from "src/components/Performers/PerformerSelect";
+import { formikUtils } from "src/utils/form";
 
 interface IProps {
   image: GQL.ImageDataFragment;
@@ -47,9 +48,12 @@ export const ImageEditPanel: React.FC<IProps> = ({
 
   const schema = yup.object({
     title: yup.string().ensure(),
+    code: yup.string().ensure(),
     urls: yupUniqueStringList("urls"),
     date: yupDateString(intl),
-    rating100: yup.number().nullable().defined(),
+    details: yup.string().ensure(),
+    photographer: yup.string().ensure(),
+    rating100: yup.number().integer().nullable().defined(),
     studio_id: yup.string().required().nullable(),
     performer_ids: yup.array(yup.string().required()).defined(),
     tag_ids: yup.array(yup.string().required()).defined(),
@@ -57,8 +61,11 @@ export const ImageEditPanel: React.FC<IProps> = ({
 
   const initialValues = {
     title: image.title ?? "",
+    code: image.code ?? "",
     urls: image?.urls ?? [],
     date: image?.date ?? "",
+    details: image.details ?? "",
+    photographer: image.photographer ?? "",
     rating100: image.rating100 ?? null,
     studio_id: image.studio?.id ?? null,
     performer_ids: (image.performers ?? []).map((p) => p.id),
@@ -70,8 +77,8 @@ export const ImageEditPanel: React.FC<IProps> = ({
   const formik = useFormik<InputValues>({
     initialValues,
     enableReinitialize: true,
-    validationSchema: schema,
-    onSubmit: (values) => onSave(values),
+    validate: yupFormikValidate(schema),
+    onSubmit: (values) => onSave(schema.cast(values)),
   });
 
   function setRating(v: number) {
@@ -128,36 +135,96 @@ export const ImageEditPanel: React.FC<IProps> = ({
     setIsLoading(false);
   }
 
-  function renderTextField(field: string, title: string, placeholder?: string) {
-    return (
-      <Form.Group controlId={field} as={Row}>
-        {FormUtils.renderLabel({
-          title,
-        })}
-        <Col xs={9}>
-          <Form.Control
-            className="text-input"
-            placeholder={placeholder ?? title}
-            {...formik.getFieldProps(field)}
-            isInvalid={!!formik.getFieldMeta(field).error}
-          />
-          <Form.Control.Feedback type="invalid">
-            {formik.getFieldMeta(field).error}
-          </Form.Control.Feedback>
-        </Col>
-      </Form.Group>
-    );
-  }
-
   if (isLoading) return <LoadingIndicator />;
 
-  const urlsErrors = Array.isArray(formik.errors.urls)
-    ? formik.errors.urls[0]
-    : formik.errors.urls;
-  const urlsErrorMsg = urlsErrors
-    ? intl.formatMessage({ id: "validation.urls_must_be_unique" })
-    : undefined;
-  const urlsErrorIdx = urlsErrors?.split(" ").map((e) => parseInt(e));
+  const splitProps = {
+    labelProps: {
+      column: true,
+      sm: 3,
+    },
+    fieldProps: {
+      sm: 9,
+    },
+  };
+  const fullWidthProps = {
+    labelProps: {
+      column: true,
+      sm: 3,
+      xl: 12,
+    },
+    fieldProps: {
+      sm: 9,
+      xl: 12,
+    },
+  };
+  const {
+    renderField,
+    renderInputField,
+    renderDateField,
+    renderRatingField,
+    renderURLListField,
+  } = formikUtils(intl, formik, splitProps);
+
+  function renderStudioField() {
+    const title = intl.formatMessage({ id: "studio" });
+    const control = (
+      <StudioSelect
+        onSelect={(items) =>
+          formik.setFieldValue(
+            "studio_id",
+            items.length > 0 ? items[0]?.id : null
+          )
+        }
+        ids={formik.values.studio_id ? [formik.values.studio_id] : []}
+      />
+    );
+
+    return renderField("studio_id", title, control);
+  }
+
+  function renderPerformersField() {
+    const title = intl.formatMessage({ id: "performers" });
+    const control = (
+      <PerformerSelect isMulti onSelect={onSetPerformers} values={performers} />
+    );
+
+    return renderField("performer_ids", title, control, fullWidthProps);
+  }
+
+  function renderTagsField() {
+    const title = intl.formatMessage({ id: "tags" });
+    const control = (
+      <TagSelect
+        isMulti
+        onSelect={(items) =>
+          formik.setFieldValue(
+            "tag_ids",
+            items.map((item) => item.id)
+          )
+        }
+        ids={formik.values.tag_ids}
+        hoverPlacement="right"
+      />
+    );
+
+    return renderField("tag_ids", title, control, fullWidthProps);
+  }
+
+  function renderDetailsField() {
+    const props = {
+      labelProps: {
+        column: true,
+        sm: 3,
+        lg: 12,
+      },
+      fieldProps: {
+        sm: 9,
+        lg: 12,
+      },
+    };
+
+    return renderInputField("details", "textarea", "details", props);
+  }
 
   return (
     <div id="image-edit-details">
@@ -167,8 +234,8 @@ export const ImageEditPanel: React.FC<IProps> = ({
       />
 
       <Form noValidate onSubmit={formik.handleSubmit}>
-        <div className="form-container row px-3 pt-3">
-          <div className="col edit-buttons mb-3 pl-0">
+        <Row className="form-container edit-buttons-container px-3 pt-3">
+          <div className="edit-buttons mb-3 pl-0">
             <Button
               className="edit-button"
               variant="primary"
@@ -185,110 +252,26 @@ export const ImageEditPanel: React.FC<IProps> = ({
               <FormattedMessage id="actions.delete" />
             </Button>
           </div>
-        </div>
-        <div className="form-container row px-3">
-          <div className="col-12 col-lg-6 col-xl-12">
-            {renderTextField("title", intl.formatMessage({ id: "title" }))}
-            <Form.Group controlId="urls" as={Row}>
-              <Col xs={3} className="pr-0 url-label">
-                <Form.Label className="col-form-label">
-                  <FormattedMessage id="urls" />
-                </Form.Label>
-              </Col>
-              <Col xs={9}>
-                <URLListInput
-                  value={formik.values.urls ?? []}
-                  setValue={(value) => formik.setFieldValue("urls", value)}
-                  errors={urlsErrorMsg}
-                  errorIdx={urlsErrorIdx}
-                />
-              </Col>
-            </Form.Group>
-            <Form.Group controlId="date" as={Row}>
-              {FormUtils.renderLabel({
-                title: intl.formatMessage({ id: "date" }),
-              })}
-              <Col xs={9}>
-                <DateInput
-                  value={formik.values.date}
-                  onValueChange={(value) => formik.setFieldValue("date", value)}
-                  error={formik.errors.date}
-                />
-              </Col>
-            </Form.Group>
-            <Form.Group controlId="rating" as={Row}>
-              {FormUtils.renderLabel({
-                title: intl.formatMessage({ id: "rating" }),
-              })}
-              <Col xs={9}>
-                <RatingSystem
-                  value={formik.values.rating100 ?? undefined}
-                  onSetRating={(value) =>
-                    formik.setFieldValue("rating100", value ?? null)
-                  }
-                />
-              </Col>
-            </Form.Group>
-            <Form.Group controlId="studio" as={Row}>
-              {FormUtils.renderLabel({
-                title: intl.formatMessage({ id: "studio" }),
-              })}
-              <Col xs={9}>
-                <StudioSelect
-                  onSelect={(items) =>
-                    formik.setFieldValue(
-                      "studio_id",
-                      items.length > 0 ? items[0]?.id : null
-                    )
-                  }
-                  ids={formik.values.studio_id ? [formik.values.studio_id] : []}
-                />
-              </Col>
-            </Form.Group>
+        </Row>
+        <Row className="form-container px-3">
+          <Col lg={7} xl={12}>
+            {renderInputField("title")}
+            {renderInputField("code", "text", "scene_code")}
 
-            <Form.Group controlId="performers" as={Row}>
-              {FormUtils.renderLabel({
-                title: intl.formatMessage({ id: "performers" }),
-                labelProps: {
-                  column: true,
-                  sm: 3,
-                  xl: 12,
-                },
-              })}
-              <Col sm={9} xl={12}>
-                <PerformerSelect
-                  isMulti
-                  onSelect={onSetPerformers}
-                  values={performers}
-                />
-              </Col>
-            </Form.Group>
+            {renderURLListField("urls", "validation.urls_must_be_unique")}
 
-            <Form.Group controlId="tags" as={Row}>
-              {FormUtils.renderLabel({
-                title: intl.formatMessage({ id: "tags" }),
-                labelProps: {
-                  column: true,
-                  sm: 3,
-                  xl: 12,
-                },
-              })}
-              <Col sm={9} xl={12}>
-                <TagSelect
-                  isMulti
-                  onSelect={(items) =>
-                    formik.setFieldValue(
-                      "tag_ids",
-                      items.map((item) => item.id)
-                    )
-                  }
-                  ids={formik.values.tag_ids}
-                  hoverPlacement="right"
-                />
-              </Col>
-            </Form.Group>
-          </div>
-        </div>
+            {renderDateField("date")}
+            {renderInputField("photographer")}
+            {renderRatingField("rating100", "rating")}
+
+            {renderStudioField()}
+            {renderPerformersField()}
+            {renderTagsField()}
+          </Col>
+          <Col lg={5} xl={12}>
+            {renderDetailsField()}
+          </Col>
+        </Row>
       </Form>
     </div>
   );

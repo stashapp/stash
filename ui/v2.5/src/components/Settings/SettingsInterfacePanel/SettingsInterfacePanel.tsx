@@ -13,8 +13,8 @@ import {
   SelectSetting,
   StringSetting,
 } from "../Inputs";
-import { SettingStateContext } from "../context";
-import DurationUtils from "src/utils/duration";
+import { useSettings } from "../context";
+import TextUtils from "src/utils/text";
 import * as GQL from "src/core/generated-graphql";
 import {
   imageLightboxDisplayModeIntlMap,
@@ -65,7 +65,7 @@ export const SettingsInterfacePanel: React.FC = () => {
     saveUI,
     loading,
     error,
-  } = React.useContext(SettingStateContext);
+  } = useSettings();
 
   const {
     interactive,
@@ -361,7 +361,7 @@ export const SettingsInterfacePanel: React.FC = () => {
             />
           )}
           renderValue={(v) => {
-            return <span>{DurationUtils.secondsToString(v ?? 0)}</span>;
+            return <span>{TextUtils.secondsToTimestamp(v ?? 0)}</span>;
           }}
         />
 

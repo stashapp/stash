@@ -177,6 +177,22 @@ export const SceneDuplicateChecker: React.FC = () => {
     });
   };
 
+  const findLargestResolutionScene = (group: GQL.SlimSceneDataFragment[]) => {
+    // Get resolution of a scene
+    const sceneResolution = (scene: GQL.SlimSceneDataFragment) => {
+      return scene.files.reduce(
+        (sum: number, f) => sum + (f.height * f.width || 0),
+        0
+      );
+    };
+    // Find scene object with maximum resolution
+    return group.reduce((largest, scene) => {
+      const largestSize = sceneResolution(largest);
+      const currentSize = sceneResolution(scene);
+      return currentSize > largestSize ? scene : largest;
+    });
+  };
+
   // Helper to get file date
 
   const findFirstFileByAge = (
@@ -216,6 +232,13 @@ export const SceneDuplicateChecker: React.FC = () => {
     return new Set(codecs).size === 1;
   }
 
+  function checkSameResolution(dataGroup: GQL.SlimSceneDataFragment[]) {
+    const resolutions = dataGroup.map(
+      (s) => s.files[0]?.width * s.files[0]?.height
+    );
+    return new Set(resolutions).size === 1;
+  }
+
   const onSelectLargestClick = () => {
     setSelectedScenes([]);
     const checkedArray: Record<string, boolean> = {};
@@ -228,6 +251,30 @@ export const SceneDuplicateChecker: React.FC = () => {
       const largest = findLargestScene(group);
       group.forEach((scene) => {
         if (scene !== largest) {
+          checkedArray[scene.id] = true;
+        }
+      });
+    });
+
+    setCheckedScenes(checkedArray);
+  };
+
+  const onSelectLargestResolutionClick = () => {
+    setSelectedScenes([]);
+    const checkedArray: Record<string, boolean> = {};
+
+    filteredScenes.forEach((group) => {
+      if (chkSafeSelect && !checkSameCodec(group)) {
+        return;
+      }
+      // Don't select scenes where resolution is identical.
+      if (checkSameResolution(group)) {
+        return;
+      }
+      // Find the highest resolution scene in group.
+      const highest = findLargestResolutionScene(group);
+      group.forEach((scene) => {
+        if (scene !== highest) {
           checkedArray[scene.id] = true;
         }
       });
@@ -713,6 +760,14 @@ export const SceneDuplicateChecker: React.FC = () => {
                   <Dropdown.Menu className="bg-secondary text-white">
                     <Dropdown.Item onClick={() => resetCheckboxSelection()}>
                       {intl.formatMessage({ id: "dupe_check.select_none" })}
+                    </Dropdown.Item>
+
+                    <Dropdown.Item
+                      onClick={() => onSelectLargestResolutionClick()}
+                    >
+                      {intl.formatMessage({
+                        id: "dupe_check.select_all_but_largest_resolution",
+                      })}
                     </Dropdown.Item>
 
                     <Dropdown.Item onClick={() => onSelectLargestClick()}>

@@ -9,7 +9,7 @@ import {
   TimestampCriterionInput,
   ConfigDataFragment,
 } from "src/core/generated-graphql";
-import DurationUtils from "src/utils/duration";
+import TextUtils from "src/utils/text";
 import {
   CriterionType,
   IHierarchicalLabelValue,
@@ -772,8 +772,8 @@ export class DurationCriterion extends Criterion<INumberValue> {
   }
 
   protected getLabelValue(_intl: IntlShape) {
-    const value = DurationUtils.secondsToString(this.value.value ?? 0);
-    const value2 = DurationUtils.secondsToString(this.value.value2 ?? 0);
+    const value = TextUtils.secondsToTimestamp(this.value.value ?? 0);
+    const value2 = TextUtils.secondsToTimestamp(this.value.value2 ?? 0);
     if (
       this.modifier === CriterionModifier.Between ||
       this.modifier === CriterionModifier.NotBetween

@@ -4,6 +4,7 @@ import { Button, Collapse, Form, Modal, ModalProps } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Icon } from "../Shared/Icon";
 import { StringListInput } from "../Shared/StringListInput";
+import { PatchComponent } from "src/pluginApi";
 
 interface ISetting {
   id?: string;
@@ -17,57 +18,64 @@ interface ISetting {
   disabled?: boolean;
 }
 
-export const Setting: React.FC<PropsWithChildren<ISetting>> = ({
-  id,
-  className,
-  heading,
-  headingID,
-  subHeadingID,
-  subHeading,
-  children,
-  tooltipID,
-  onClick,
-  disabled,
-}) => {
-  const intl = useIntl();
+export const Setting: React.FC<PropsWithChildren<ISetting>> = PatchComponent(
+  "Setting",
+  (props: PropsWithChildren<ISetting>) => {
+    const {
+      id,
+      className,
+      heading,
+      headingID,
+      subHeadingID,
+      subHeading,
+      children,
+      tooltipID,
+      onClick,
+      disabled,
+    } = props;
 
-  function renderHeading() {
-    if (headingID) {
-      return intl.formatMessage({ id: headingID });
+    const intl = useIntl();
+
+    function renderHeading() {
+      if (headingID) {
+        return intl.formatMessage({ id: headingID });
+      }
+      return heading;
     }
-    return heading;
-  }
 
-  function renderSubHeading() {
-    if (subHeadingID) {
-      return (
-        <div className="sub-heading">
-          {intl.formatMessage({ id: subHeadingID })}
+    function renderSubHeading() {
+      if (subHeadingID) {
+        return (
+          <div className="sub-heading">
+            {intl.formatMessage({ id: subHeadingID })}
+          </div>
+        );
+      }
+      if (subHeading) {
+        return <div className="sub-heading">{subHeading}</div>;
+      }
+    }
+
+    const tooltip = tooltipID
+      ? intl.formatMessage({ id: tooltipID })
+      : undefined;
+    const disabledClassName = disabled ? "disabled" : "";
+
+    return (
+      <div
+        className={`setting ${className ?? ""} ${disabledClassName}`}
+        id={id}
+        onClick={onClick}
+      >
+        <div>
+          <h3 title={tooltip}>{renderHeading()}</h3>
+          {renderSubHeading()}
         </div>
-      );
-    }
-    if (subHeading) {
-      return <div className="sub-heading">{subHeading}</div>;
-    }
-  }
-
-  const tooltip = tooltipID ? intl.formatMessage({ id: tooltipID }) : undefined;
-  const disabledClassName = disabled ? "disabled" : "";
-
-  return (
-    <div
-      className={`setting ${className ?? ""} ${disabledClassName}`}
-      id={id}
-      onClick={onClick}
-    >
-      <div>
-        <h3 title={tooltip}>{renderHeading()}</h3>
-        {renderSubHeading()}
+        <div>{children}</div>
       </div>
-      <div>{children}</div>
-    </div>
-  );
-};
+    );
+  }
+) as React.FC<PropsWithChildren<ISetting>>;
 
 interface ISettingGroup {
   settingProps?: ISetting;
@@ -192,6 +200,7 @@ export const ChangeButtonSetting = <T extends {}>(props: IDialogSetting<T>) => {
     id,
     className,
     headingID,
+    heading,
     tooltipID,
     subHeadingID,
     subHeading,
@@ -211,7 +220,11 @@ export const ChangeButtonSetting = <T extends {}>(props: IDialogSetting<T>) => {
     <div className={`setting ${className ?? ""} ${disabledClassName}`} id={id}>
       <div>
         <h3 title={tooltip}>
-          {headingID ? intl.formatMessage({ id: headingID }) : undefined}
+          {headingID
+            ? intl.formatMessage({ id: headingID })
+            : heading
+            ? heading
+            : undefined}
         </h3>
 
         <div className="value">
@@ -240,7 +253,7 @@ export const ChangeButtonSetting = <T extends {}>(props: IDialogSetting<T>) => {
 };
 
 export interface ISettingModal<T> {
-  heading?: string;
+  heading?: React.ReactNode;
   headingID?: string;
   subHeadingID?: string;
   subHeading?: React.ReactNode;
@@ -248,6 +261,7 @@ export interface ISettingModal<T> {
   close: (v?: T) => void;
   renderField: (value: T | undefined, setValue: (v?: T) => void) => JSX.Element;
   modalProps?: ModalProps;
+  validate?: (v: T) => boolean | undefined;
 }
 
 export const SettingModal = <T extends {}>(props: ISettingModal<T>) => {
@@ -260,6 +274,7 @@ export const SettingModal = <T extends {}>(props: ISettingModal<T>) => {
     close,
     renderField,
     modalProps,
+    validate,
   } = props;
 
   const intl = useIntl();
@@ -294,6 +309,7 @@ export const SettingModal = <T extends {}>(props: ISettingModal<T>) => {
             type="submit"
             variant="primary"
             onClick={() => close(currentValue)}
+            disabled={!currentValue || (validate && !validate(currentValue))}
           >
             <FormattedMessage id="actions.confirm" />
           </Button>
@@ -319,6 +335,7 @@ export const ModalSetting = <T extends {}>(props: IModalSetting<T>) => {
     className,
     value,
     headingID,
+    heading,
     subHeadingID,
     subHeading,
     onChange,
@@ -338,6 +355,7 @@ export const ModalSetting = <T extends {}>(props: IModalSetting<T>) => {
         <SettingModal<T>
           headingID={headingID}
           subHeadingID={subHeadingID}
+          heading={heading}
           subHeading={subHeading}
           value={value}
           renderField={renderField}
@@ -356,6 +374,7 @@ export const ModalSetting = <T extends {}>(props: IModalSetting<T>) => {
         buttonText={buttonText}
         buttonTextID={buttonTextID}
         headingID={headingID}
+        heading={heading}
         tooltipID={tooltipID}
         subHeadingID={subHeadingID}
         subHeading={subHeading}

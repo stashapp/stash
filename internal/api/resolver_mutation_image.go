@@ -10,7 +10,7 @@ import (
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
-	"github.com/stashapp/stash/pkg/sliceutil/intslice"
+	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -107,7 +107,10 @@ func (r *mutationResolver) imageUpdate(ctx context.Context, input ImageUpdateInp
 	updatedImage := models.NewImagePartial()
 
 	updatedImage.Title = translator.optionalString(input.Title, "title")
-	updatedImage.Rating = translator.optionalRatingConversion(input.Rating, input.Rating100)
+	updatedImage.Code = translator.optionalString(input.Code, "code")
+	updatedImage.Details = translator.optionalString(input.Details, "details")
+	updatedImage.Photographer = translator.optionalString(input.Photographer, "photographer")
+	updatedImage.Rating = translator.optionalInt(input.Rating100, "rating100")
 	updatedImage.Organized = translator.optionalBool(input.Organized, "organized")
 
 	updatedImage.Date, err = translator.optionalDate(input.Date, "date")
@@ -203,7 +206,10 @@ func (r *mutationResolver) BulkImageUpdate(ctx context.Context, input BulkImageU
 	updatedImage := models.NewImagePartial()
 
 	updatedImage.Title = translator.optionalString(input.Title, "title")
-	updatedImage.Rating = translator.optionalRatingConversion(input.Rating, input.Rating100)
+	updatedImage.Code = translator.optionalString(input.Code, "code")
+	updatedImage.Details = translator.optionalString(input.Details, "details")
+	updatedImage.Photographer = translator.optionalString(input.Photographer, "photographer")
+	updatedImage.Rating = translator.optionalInt(input.Rating100, "rating100")
 	updatedImage.Organized = translator.optionalBool(input.Organized, "organized")
 
 	updatedImage.Date, err = translator.optionalDate(input.Date, "date")
@@ -256,7 +262,7 @@ func (r *mutationResolver) BulkImageUpdate(ctx context.Context, input BulkImageU
 				}
 
 				thisUpdatedGalleryIDs := updatedImage.GalleryIDs.ImpactedIDs(i.GalleryIDs.List())
-				updatedGalleryIDs = intslice.IntAppendUniques(updatedGalleryIDs, thisUpdatedGalleryIDs)
+				updatedGalleryIDs = sliceutil.AppendUniques(updatedGalleryIDs, thisUpdatedGalleryIDs)
 			}
 
 			image, err := qb.UpdatePartial(ctx, imageID, updatedImage)

@@ -89,16 +89,16 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
         },
       });
 
-      Toast.success({
-        content: intl.formatMessage(
+      Toast.success(
+        intl.formatMessage(
           {
             id: "toast.saved_entity",
           },
           {
             entity: intl.formatMessage({ id: "filter" }).toLocaleLowerCase(),
           }
-        ),
-      });
+        )
+      );
       setFilterName("");
       setOverwritingFilter(undefined);
       refetch();
@@ -121,8 +121,8 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
         },
       });
 
-      Toast.success({
-        content: intl.formatMessage(
+      Toast.success(
+        intl.formatMessage(
           {
             id: "toast.delete_past_tense",
           },
@@ -131,8 +131,8 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
             singularEntity: intl.formatMessage({ id: "filter" }),
             pluralEntity: intl.formatMessage({ id: "filters" }),
           }
-        ),
-      });
+        )
+      );
       refetch();
     } catch (err) {
       Toast.error(err);
@@ -222,11 +222,11 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
         },
       });
 
-      Toast.success({
-        content: intl.formatMessage({
+      Toast.success(
+        intl.formatMessage({
           id: "toast.default_filter_set",
-        }),
-      });
+        })
+      );
     } catch (err) {
       Toast.error(err);
     } finally {

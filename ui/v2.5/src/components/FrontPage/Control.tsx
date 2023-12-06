@@ -1,10 +1,6 @@
 import React, { useContext, useMemo } from "react";
 import { useIntl } from "react-intl";
-import {
-  FrontPageContent,
-  ICustomFilter,
-  ISavedFilterRow,
-} from "src/core/config";
+import { FrontPageContent, ICustomFilter } from "src/core/config";
 import * as GQL from "src/core/generated-graphql";
 import { useFindSavedFilter } from "src/core/StashService";
 import { ConfigurationContext } from "src/hooks/Config";
@@ -167,17 +163,15 @@ interface IProps {
 export const Control: React.FC<IProps> = ({ content }) => {
   switch (content.__typename) {
     case "SavedFilter":
-      if (!(content as ISavedFilterRow).savedFilterId) {
+      if (!content.savedFilterId) {
         return <div>Error: missing savedFilterId</div>;
       }
 
       return (
-        <SavedFilterResults
-          savedFilterID={(content as ISavedFilterRow).savedFilterId.toString()}
-        />
+        <SavedFilterResults savedFilterID={content.savedFilterId.toString()} />
       );
     case "CustomFilter":
-      return <CustomFilterResults customFilter={content as ICustomFilter} />;
+      return <CustomFilterResults customFilter={content} />;
     default:
       return <></>;
   }

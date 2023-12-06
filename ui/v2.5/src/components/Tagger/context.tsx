@@ -141,7 +141,7 @@ export const TaggerContext: React.FC = ({ children }) => {
     }
 
     const { stashBoxes } = stashConfig.general;
-    const scrapers = Scrapers.data.listSceneScrapers;
+    const scrapers = Scrapers.data.listScrapers;
 
     const stashboxSources: ITaggerSource[] = stashBoxes.map((s, i) => ({
       id: `${STASH_BOX_PREFIX}${i}`,
@@ -463,7 +463,8 @@ export const TaggerContext: React.FC = ({ children }) => {
         variables: {
           input: {
             ...sceneCreateInput,
-            organized: config?.markSceneAsOrganizedOnSave,
+            // only set organized if it is enabled in the config
+            organized: config?.markSceneAsOrganizedOnSave || undefined,
           },
         },
       });
@@ -530,13 +531,11 @@ export const TaggerContext: React.FC = ({ children }) => {
 
       setSearchResults(newSearchResults);
 
-      Toast.success({
-        content: (
-          <span>
-            Created tag: <b>{toCreate.name}</b>
-          </span>
-        ),
-      });
+      Toast.success(
+        <span>
+          Created tag: <b>{toCreate.name}</b>
+        </span>
+      );
 
       return tagID;
     } catch (e) {
@@ -580,13 +579,11 @@ export const TaggerContext: React.FC = ({ children }) => {
 
       setSearchResults(newSearchResults);
 
-      Toast.success({
-        content: (
-          <span>
-            Created performer: <b>{toCreate.name}</b>
-          </span>
-        ),
-      });
+      Toast.success(
+        <span>
+          Created performer: <b>{toCreate.name}</b>
+        </span>
+      );
 
       return performerID;
     } catch (e) {
@@ -648,9 +645,7 @@ export const TaggerContext: React.FC = ({ children }) => {
 
         setSearchResults(newSearchResults);
 
-        Toast.success({
-          content: <span>Added stash-id to performer</span>,
-        });
+        Toast.success(<span>Added stash-id to performer</span>);
       }
     } catch (e) {
       Toast.error(e);
@@ -690,13 +685,11 @@ export const TaggerContext: React.FC = ({ children }) => {
 
       setSearchResults(newSearchResults);
 
-      Toast.success({
-        content: (
-          <span>
-            Created studio: <b>{toCreate.name}</b>
-          </span>
-        ),
-      });
+      Toast.success(
+        <span>
+          Created studio: <b>{toCreate.name}</b>
+        </span>
+      );
 
       return studioID;
     } catch (e) {
@@ -739,13 +732,11 @@ export const TaggerContext: React.FC = ({ children }) => {
         setSearchResults(newSearchResults);
       }
 
-      Toast.success({
-        content: (
-          <span>
-            Created studio: <b>{input.name}</b>
-          </span>
-        ),
-      });
+      Toast.success(
+        <span>
+          Created studio: <b>{input.name}</b>
+        </span>
+      );
     } catch (e) {
       Toast.error(e);
     }
@@ -799,9 +790,7 @@ export const TaggerContext: React.FC = ({ children }) => {
 
         setSearchResults(newSearchResults);
 
-        Toast.success({
-          content: <span>Added stash-id to studio</span>,
-        });
+        Toast.success(<span>Added stash-id to studio</span>);
       }
     } catch (e) {
       Toast.error(e);

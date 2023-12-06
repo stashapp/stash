@@ -10,7 +10,7 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/json"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
-	"github.com/stashapp/stash/pkg/sliceutil/intslice"
+	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -125,7 +125,7 @@ func GetDependentTagIDs(ctx context.Context, tags TagFinder, markerReader models
 	}
 
 	for _, tt := range t {
-		ret = intslice.IntAppendUnique(ret, tt.ID)
+		ret = sliceutil.AppendUnique(ret, tt.ID)
 	}
 
 	sm, err := markerReader.FindBySceneID(ctx, scene.ID)
@@ -134,14 +134,14 @@ func GetDependentTagIDs(ctx context.Context, tags TagFinder, markerReader models
 	}
 
 	for _, smm := range sm {
-		ret = intslice.IntAppendUnique(ret, smm.PrimaryTagID)
+		ret = sliceutil.AppendUnique(ret, smm.PrimaryTagID)
 		smmt, err := tags.FindBySceneMarkerID(ctx, smm.ID)
 		if err != nil {
 			return nil, fmt.Errorf("invalid tags for scene marker: %v", err)
 		}
 
 		for _, smmtt := range smmt {
-			ret = intslice.IntAppendUnique(ret, smmtt.ID)
+			ret = sliceutil.AppendUnique(ret, smmtt.ID)
 		}
 	}
 

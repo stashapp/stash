@@ -114,40 +114,39 @@ const possibleTypes = {
 export const baseURL =
   document.querySelector("base")?.getAttribute("href") ?? "/";
 
-export const getPlatformURL = (ws?: boolean) => {
-  const platformUrl = new URL(window.location.origin + baseURL);
+export const getPlatformURL = (path?: string) => {
+  let url = new URL(window.location.origin + baseURL);
 
   if (import.meta.env.DEV) {
-    platformUrl.port = import.meta.env.VITE_APP_PLATFORM_PORT ?? "9999";
-
-    if (import.meta.env.VITE_APP_HTTPS === "true") {
-      platformUrl.protocol = "https:";
-    }
-  }
-
-  if (ws) {
-    if (platformUrl.protocol === "https:") {
-      platformUrl.protocol = "wss:";
+    if (import.meta.env.VITE_APP_PLATFORM_URL) {
+      url = new URL(import.meta.env.VITE_APP_PLATFORM_URL);
     } else {
-      platformUrl.protocol = "ws:";
+      url.port = import.meta.env.VITE_APP_PLATFORM_PORT ?? "9999";
     }
   }
 
-  return platformUrl;
+  if (path) {
+    url.pathname += path;
+  }
+
+  return url;
 };
 
 export const createClient = () => {
-  const platformUrl = getPlatformURL();
-  const wsPlatformUrl = getPlatformURL(true);
+  const url = getPlatformURL("graphql");
 
-  const url = `${platformUrl}graphql`;
-  const wsUrl = `${wsPlatformUrl}graphql`;
+  const wsUrl = getPlatformURL("graphql");
+  if (wsUrl.protocol === "https:") {
+    wsUrl.protocol = "wss:";
+  } else {
+    wsUrl.protocol = "ws:";
+  }
 
-  const httpLink = createUploadLink({ uri: url });
+  const httpLink = createUploadLink({ uri: url.toString() });
 
   const wsLink = new GraphQLWsLink(
     createWSClient({
-      url: wsUrl,
+      url: wsUrl.toString(),
       retryAttempts: Infinity,
       shouldRetry() {
         return true;
@@ -156,10 +155,20 @@ export const createClient = () => {
   );
 
   const errorLink = onError(({ networkError }) => {
-    // handle unauthorized error by redirecting to the login page
+    // handle graphql unauthorized error
     if (networkError && (networkError as ServerError).statusCode === 401) {
+      if (import.meta.env.DEV) {
+        alert(`\
+GraphQL server error: 401 Unauthorized
+Authentication cannot be used with the dev server, since the session authorization cookie cannot be sent cross-origin.
+Please disable it on the server and refresh the page.`);
+        return;
+      }
       // redirect to login page
-      const newURL = new URL(`${baseURL}login`, window.location.toString());
+      const newURL = new URL(
+        getPlatformURL("login"),
+        window.location.toString()
+      );
       newURL.searchParams.append("returnURL", window.location.href);
       window.location.href = newURL.toString();
     }

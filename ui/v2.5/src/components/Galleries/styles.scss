@@ -15,10 +15,6 @@
   .tab-content {
     min-height: 15rem;
   }
-
-  .gallery-description {
-    width: 100%;
-  }
 }
 
 .gallery-card {
@@ -56,6 +52,7 @@
 .gallery-tabs {
   max-height: calc(100vh - 4rem);
 
+  overflow: auto;
   overflow-wrap: break-word;
   word-wrap: break-word;
 }
@@ -66,7 +63,6 @@ $galleryTabWidth: 450px;
   .gallery-tabs {
     flex: 0 0 $galleryTabWidth;
     max-width: $galleryTabWidth;
-    overflow: auto;
 
     &.collapsed {
       display: none;
@@ -288,4 +284,8 @@ $galleryTabWidth: 450px;
   dl {
     margin-bottom: 0;
   }
+}
+
+.col-form-label {
+  padding-right: 2px;
 }

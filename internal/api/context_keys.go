@@ -13,4 +13,5 @@ const (
 	tagKey
 	downloadKey
 	imageKey
+	pluginKey
 )

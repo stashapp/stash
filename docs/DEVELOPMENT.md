@@ -32,9 +32,24 @@ NOTE: The `make` command in Windows will be `mingw32-make` with MinGW. For examp
 
 #### Ubuntu
 
-1. Install dependencies: `sudo apt-get install golang git gcc nodejs ffmpeg -y`
-2. Enable corepack in Node.js: `corepack enable`
-3. Install yarn: `corepack prepare yarn@stable --activate`
+1. Install dependencies: `sudo apt-get install golang git yarnpkg gcc nodejs ffmpeg -y`
+
+### OpenBSD
+
+1. Install dependencies `doas pkg_add gmake go git yarn node cmake`
+2. Compile a custom ffmpeg from ports. The default ffmpeg in OpenBSD's packages is not compiled with WebP support, which is required by Stash.
+   - If you've already installed ffmpeg, uninstall it: `doas pkg_delete ffmpeg`
+   - If you haven't already, [fetch the ports tree and verify](https://www.openbsd.org/faq/ports/ports.html#PortsFetch).
+   - Find the ffmpeg port in `/usr/ports/graphics/ffmpeg`, and patch the Makefile to include libwebp
+     - Add `webp` to `WANTLIB`
+     - Add `graphics/libwebp` to the list in `LIB_DEPENDS`
+     - Add `-lwebp -lwebpdecoder -lwebpdemux -lwebpmux` to `LIBavcodec_EXTRALIBS`
+     - Add `--enable-libweb` to the list in `CONFIGURE_ARGS`
+     - If you've already built ffmpeg from ports before, you may need to also increment `REVISION`
+     - Run `doas make install`
+   - Follow the instructions below to build a release, but replace the final step `make build-release` with `gmake flags-release stash`, to [avoid the PIE buildmode](https://github.com/golang/go/issues/59866).
+
+NOTE: The `make` command in OpenBSD will be `gmake`. For example, `make pre-ui` will be `gmake pre-ui`.
 
 ## Commands
 
@@ -43,11 +58,10 @@ NOTE: The `make` command in Windows will be `mingw32-make` with MinGW. For examp
 * `make generate-stash-box-client` - Generate Go files for the Stash-box client code.
 * `make ui` - Builds the UI. Requires `make pre-ui` to have been run.
 * `make stash` - Builds the `stash` binary (make sure to build the UI as well... see below)
-* `make stash-release` - Builds a release version the `stash` binary, with debug information removed
+* `make stash-macapp` - Builds the `Stash.app` macOS app (only works when on macOS, for cross-compilation see below)
 * `make phasher` - Builds the `phasher` binary
-* `make phasher-release` - Builds a release version the `phasher` binary, with debug information removed
-* `make build` - Builds both the `stash` and `phasher` binaries
-* `make build-release` - Builds release versions of both the `stash` and `phasher` binaries
+* `make build` - Builds both the `stash` and `phasher` binaries, alias for `make stash phasher`
+* `make build-release` - Builds release versions (debug information removed) of both the `stash` and `phasher` binaries, alias for `make flags-release flags-pie build`
 * `make docker-build` - Locally builds and tags a complete 'stash/build' docker image
 * `make docker-cuda-build` - Locally builds and tags a complete 'stash/cuda-build' docker image
 * `make validate` - Runs all of the tests and checks required to submit a PR
@@ -57,7 +71,15 @@ NOTE: The `make` command in Windows will be `mingw32-make` with MinGW. For examp
 * `make fmt-ui` - Formats the UI source code
 * `make server-start` - Runs a development stash server in the `.local` directory
 * `make server-clean` - Removes the `.local` directory and all of its contents
-* `make ui-start` - Runs the UI in development mode. Requires a running Stash server to connect to. The server port can be changed from the default of `9999` using the environment variable `VITE_APP_PLATFORM_PORT`. The UI runs on port `3000` or the next available port.
+* `make ui-start` - Runs the UI in development mode. Requires a running Stash server to connect to - the server URL can be changed from the default of `http://localhost:9999` using the environment variable `VITE_APP_PLATFORM_URL`, but keep in mind that authentication cannot be used since the session authorization cookie cannot be sent cross-origin. The UI runs on port `3000` or the next available port.
+
+When building, you can optionally prepend `flags-*` targets to the target list in your `make` command to use different build flags:
+
+* `flags-release` (e.g. `make flags-release stash`) - Remove debug information from the binary.
+* `flags-pie` (e.g. `make flags-pie build`) - Build a PIE (Position Independent Executable) binary. This provides increased security, but it is unsupported on some systems (notably 32-bit ARM and OpenBSD).
+* `flags-static` (e.g. `make flags-static phasher`) - Build a statically linked binary (the default is a dynamically linked binary).
+* `flags-static-pie` (e.g. `make flags-static-pie stash`) - Build a statically linked PIE binary (using `flags-static` and `flags-pie` separately will not work).
+* `flags-static-windows` (e.g. `make flags-static-windows build`) - Identical to `flags-static-pie`, but does not enable the `netgo` build tag, which is not needed for static builds on Windows.
 
 ## Local development quickstart
 
@@ -95,13 +117,19 @@ Simply run `make` or `make release`, or equivalently:
 3. Run `make ui` to build the frontend
 4. Run `make build-release` to build a release executable for your current platform
 
-## Cross compiling
+## Cross-compiling
 
-This project uses a modification of the [CI-GoReleaser](https://github.com/bep/dockerfiles/tree/master/ci-goreleaser) docker container to create an environment
-where the app can be cross-compiled.  This process is kicked off by CI via the `scripts/cross-compile.sh` script.  Run the following
-command to open a bash shell to the container to poke around:
+This project uses a modification of the [CI-GoReleaser](https://github.com/bep/dockerfiles/tree/master/ci-goreleaser) Docker container for cross-compilation, defined in `docker/compiler/Dockerfile`.
 
-`docker run --rm --mount type=bind,source="$(pwd)",target=/stash -w /stash -i -t stashapp/compiler:latest /bin/bash`
+To cross-compile the app yourself:
+
+1. Run `make pre-ui`, `make generate` and `make ui` outside the container, to generate files and build the UI.
+2. Pull the latest compiler image from Docker Hub: `docker pull stashapp/compiler`
+3. Run `docker run --rm --mount type=bind,source="$(pwd)",target=/stash -w /stash -it stashapp/compiler /bin/bash` to open a shell inside the container.
+4. From inside the container, run `make build-cc-all` to build for all platforms, or run `make build-cc-{platform}` to build for a specific platform (have a look at the `Makefile` for the list of targets).
+5. You will find the compiled binaries in `dist/`.
+
+NOTE: Since the container is run as UID 0 (root), the resulting binaries (and the `dist/` folder itself, if it had to be created) will be owned by root.
 
 ## Profiling
 

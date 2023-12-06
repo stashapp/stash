@@ -2,6 +2,7 @@ query Plugins {
   plugins {
     id
     name
+    enabled
     description
     url
     version
@@ -16,6 +17,20 @@ query Plugins {
       description
       hooks
     }
+
+    settings {
+      name
+      display_name
+      description
+      type
+    }
+
+    requires
+
+    paths {
+      css
+      javascript
+    }
   }
 }
 
@@ -26,6 +41,31 @@ query PluginTasks {
     plugin {
       id
       name
+      enabled
+    }
+  }
+}
+
+query InstalledPluginPackages {
+  installedPackages(type: Plugin) {
+    ...PackageData
+  }
+}
+
+query InstalledPluginPackagesStatus {
+  installedPackages(type: Plugin) {
+    ...PackageData
+    upgrade {
+      ...PackageData
+    }
+  }
+}
+
+query AvailablePluginPackages($source: String!) {
+  availablePackages(source: $source, type: Plugin) {
+    ...PackageData
+    requires {
+      package_id
     }
   }
 }

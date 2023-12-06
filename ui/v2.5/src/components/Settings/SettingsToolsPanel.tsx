@@ -4,11 +4,14 @@ import { FormattedMessage } from "react-intl";
 import { Link } from "react-router-dom";
 import { Setting } from "./Inputs";
 import { SettingSection } from "./SettingSection";
+import { PatchContainerComponent } from "src/pluginApi";
+
+const SettingsToolsSection = PatchContainerComponent("SettingsToolsSection");
 
 export const SettingsToolsPanel: React.FC = () => {
   return (
-    <>
-      <SettingSection headingID="config.tools.scene_tools">
+    <SettingSection headingID="config.tools.scene_tools">
+      <SettingsToolsSection>
         <Setting
           heading={
             <Link to="/sceneFilenameParser">
@@ -28,7 +31,7 @@ export const SettingsToolsPanel: React.FC = () => {
             </Link>
           }
         />
-      </SettingSection>
-    </>
+      </SettingsToolsSection>
+    </SettingSection>
   );
 };

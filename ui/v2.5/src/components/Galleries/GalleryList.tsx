@@ -165,6 +165,7 @@ export const GalleryList: React.FC<IGalleryList> = ({
                     <Link to={`/galleries/${gallery.id}`}>
                       {gallery.cover ? (
                         <img
+                          loading="lazy"
                           alt={gallery.title ?? ""}
                           className="w-100 w-sm-auto"
                           src={`${gallery.cover.paths.thumbnail}`}

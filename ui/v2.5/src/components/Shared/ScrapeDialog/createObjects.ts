@@ -22,16 +22,16 @@ function useCreateObject<T>(
     try {
       await createFunc(o);
 
-      Toast.success({
-        content: intl.formatMessage(
+      Toast.success(
+        intl.formatMessage(
           { id: "toast.created_entity" },
           {
             entity: intl
               .formatMessage({ id: entityTypeID })
               .toLocaleLowerCase(),
           }
-        ),
-      });
+        )
+      );
     } catch (e) {
       Toast.error(e);
     }

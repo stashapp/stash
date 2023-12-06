@@ -34,7 +34,7 @@ export type SelectObject = {
 
 export type Performer = Pick<
   GQL.Performer,
-  "id" | "name" | "alias_list" | "disambiguation"
+  "id" | "name" | "alias_list" | "disambiguation" | "image_path"
 >;
 type Option = SelectOption<Performer>;
 
@@ -86,6 +86,18 @@ export const PerformerSelect: React.FC<
       ...optionProps,
       children: (
         <span>
+          <a
+            href={`/performers/${object.id}`}
+            target="_blank"
+            rel="noreferrer"
+            className="performer-select-image-link"
+          >
+            <img
+              className="performer-select-image"
+              src={object.image_path ?? ""}
+              loading="lazy"
+            />
+          </a>
           <span>{name}</span>
           {object.disambiguation && (
             <span className="performer-disambiguation">{` (${object.disambiguation})`}</span>
@@ -122,7 +134,14 @@ export const PerformerSelect: React.FC<
 
     thisOptionProps = {
       ...optionProps,
-      children: object.name,
+      children: (
+        <>
+          {object.name}
+          {object.disambiguation && (
+            <span className="performer-disambiguation">{` (${object.disambiguation})`}</span>
+          )}
+        </>
+      ),
     };
 
     return <reactSelectComponents.SingleValue {...thisOptionProps} />;
@@ -193,7 +212,11 @@ export const PerformerSelect: React.FC<
         props.noSelectionString ??
         intl.formatMessage(
           { id: "actions.select_entity" },
-          { entityType: intl.formatMessage({ id: "performer" }) }
+          {
+            entityType: intl.formatMessage({
+              id: props.isMulti ? "performers" : "performer",
+            }),
+          }
         )
       }
     />

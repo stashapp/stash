@@ -16,10 +16,6 @@ import (
 	"golang.org/x/term"
 )
 
-type ShutdownHandler interface {
-	Shutdown(code int)
-}
-
 type FaviconProvider interface {
 	GetFavicon() []byte
 	GetFaviconPng() []byte
@@ -27,7 +23,7 @@ type FaviconProvider interface {
 
 // Start starts the desktop icon process. It blocks until the process exits.
 // MUST be run on the main goroutine or will have no effect on macOS
-func Start(shutdownHandler ShutdownHandler, faviconProvider FaviconProvider) {
+func Start(exit chan int, faviconProvider FaviconProvider) {
 	if IsDesktop() {
 		hideConsole()
 
@@ -36,7 +32,7 @@ func Start(shutdownHandler ShutdownHandler, faviconProvider FaviconProvider) {
 			openURLInBrowser("")
 		}
 		writeStashIcon(faviconProvider)
-		startSystray(shutdownHandler, faviconProvider)
+		startSystray(exit, faviconProvider)
 	}
 }
 

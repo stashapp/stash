@@ -109,7 +109,7 @@ export const ListFilter: React.FC<IListFilterProps> = ({
   // clear search input when filter is cleared
   useEffect(() => {
     if (!filter.searchTerm) {
-      queryRef.current.value = "";
+      if (queryRef.current) queryRef.current.value = "";
       setQueryClearShowing(false);
     }
   }, [filter.searchTerm, queryRef]);
@@ -141,7 +141,7 @@ export const ListFilter: React.FC<IListFilterProps> = ({
   }
 
   function onClearQuery() {
-    queryRef.current.value = "";
+    if (queryRef.current) queryRef.current.value = "";
     searchQueryUpdated("");
     setQueryFocus();
     setQueryClearShowing(false);

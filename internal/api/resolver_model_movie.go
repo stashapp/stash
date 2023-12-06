@@ -5,27 +5,13 @@ import (
 
 	"github.com/stashapp/stash/internal/api/loaders"
 	"github.com/stashapp/stash/internal/api/urlbuilders"
-	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/models"
 )
-
-func (r *movieResolver) Checksum(ctx context.Context, obj *models.Movie) (string, error) {
-	// generate checksum from movie name
-	return md5.FromString(obj.Name), nil
-}
 
 func (r *movieResolver) Date(ctx context.Context, obj *models.Movie) (*string, error) {
 	if obj.Date != nil {
 		result := obj.Date.String()
 		return &result, nil
-	}
-	return nil, nil
-}
-
-func (r *movieResolver) Rating(ctx context.Context, obj *models.Movie) (*int, error) {
-	if obj.Rating != nil {
-		rating := models.Rating100To5(*obj.Rating)
-		return &rating, nil
 	}
 	return nil, nil
 }

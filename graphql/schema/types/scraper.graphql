@@ -99,7 +99,9 @@ input ScrapedSceneInput {
 
 type ScrapedGallery {
   title: String
+  code: String
   details: String
+  photographer: String
   url: String @deprecated(reason: "use urls")
   urls: [String!]
   date: String
@@ -111,7 +113,9 @@ type ScrapedGallery {
 
 input ScrapedGalleryInput {
   title: String
+  code: String
   details: String
+  photographer: String
   url: String @deprecated(reason: "use urls")
   urls: [String!]
   date: String

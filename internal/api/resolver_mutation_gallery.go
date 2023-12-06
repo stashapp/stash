@@ -43,8 +43,10 @@ func (r *mutationResolver) GalleryCreate(ctx context.Context, input GalleryCreat
 	newGallery := models.NewGallery()
 
 	newGallery.Title = input.Title
+	newGallery.Code = translator.string(input.Code)
 	newGallery.Details = translator.string(input.Details)
-	newGallery.Rating = translator.ratingConversion(input.Rating, input.Rating100)
+	newGallery.Photographer = translator.string(input.Photographer)
+	newGallery.Rating = input.Rating100
 
 	var err error
 
@@ -182,8 +184,10 @@ func (r *mutationResolver) galleryUpdate(ctx context.Context, input models.Galle
 		updatedGallery.Title = models.NewOptionalString(*input.Title)
 	}
 
+	updatedGallery.Code = translator.optionalString(input.Code, "code")
 	updatedGallery.Details = translator.optionalString(input.Details, "details")
-	updatedGallery.Rating = translator.optionalRatingConversion(input.Rating, input.Rating100)
+	updatedGallery.Photographer = translator.optionalString(input.Photographer, "photographer")
+	updatedGallery.Rating = translator.optionalInt(input.Rating100, "rating100")
 	updatedGallery.Organized = translator.optionalBool(input.Organized, "organized")
 
 	updatedGallery.Date, err = translator.optionalDate(input.Date, "date")
@@ -257,8 +261,10 @@ func (r *mutationResolver) BulkGalleryUpdate(ctx context.Context, input BulkGall
 	// Populate gallery from the input
 	updatedGallery := models.NewGalleryPartial()
 
+	updatedGallery.Code = translator.optionalString(input.Code, "code")
 	updatedGallery.Details = translator.optionalString(input.Details, "details")
-	updatedGallery.Rating = translator.optionalRatingConversion(input.Rating, input.Rating100)
+	updatedGallery.Photographer = translator.optionalString(input.Photographer, "photographer")
+	updatedGallery.Rating = translator.optionalInt(input.Rating100, "rating100")
 	updatedGallery.Organized = translator.optionalBool(input.Organized, "organized")
 	updatedGallery.URLs = translator.optionalURLsBulk(input.Urls, input.URL)
 

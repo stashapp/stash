@@ -10,9 +10,11 @@ import (
 type Gallery struct {
 	ID int `json:"id"`
 
-	Title   string `json:"title"`
-	Date    *Date  `json:"date"`
-	Details string `json:"details"`
+	Title        string `json:"title"`
+	Code         string `json:"code"`
+	Date         *Date  `json:"date"`
+	Details      string `json:"details"`
+	Photographer string `json:"photographer"`
 	// Rating expressed in 1-100 scale
 	Rating    *int `json:"rating"`
 	Organized bool `json:"organized"`
@@ -50,10 +52,12 @@ type GalleryPartial struct {
 	// Path        OptionalString
 	// Checksum    OptionalString
 	// Zip         OptionalBool
-	Title   OptionalString
-	URLs    *UpdateStrings
-	Date    OptionalDate
-	Details OptionalString
+	Title        OptionalString
+	Code         OptionalString
+	URLs         *UpdateStrings
+	Date         OptionalDate
+	Details      OptionalString
+	Photographer OptionalString
 	// Rating expressed in 1-100 scale
 	Rating    OptionalInt
 	Organized OptionalBool

@@ -1,4 +1,10 @@
-import React, { useEffect, useState, useContext, createContext } from "react";
+import React, {
+  useState,
+  useContext,
+  createContext,
+  useCallback,
+  useMemo,
+} from "react";
 import { Toast } from "react-bootstrap";
 
 interface IToast {
@@ -7,18 +13,20 @@ interface IToast {
   delay?: number;
   variant?: "success" | "danger" | "warning";
 }
+
 interface IActiveToast extends IToast {
   id: number;
 }
 
 let toastID = 0;
+
 const ToastContext = createContext<(item: IToast) => void>(() => {});
 
 export const ToastProvider: React.FC = ({ children }) => {
   const [toasts, setToasts] = useState<IActiveToast[]>([]);
 
   const removeToast = (id: number) =>
-    setToasts(toasts.filter((item) => item.id !== id));
+    setToasts((prev) => prev.filter((item) => item.id !== id));
 
   const toastItems = toasts.map((toast) => (
     <Toast
@@ -35,8 +43,9 @@ export const ToastProvider: React.FC = ({ children }) => {
     </Toast>
   ));
 
-  const addToast = (toast: IToast) =>
-    setToasts([...toasts, { ...toast, id: toastID++ }]);
+  const addToast = useCallback((toast: IToast) => {
+    setToasts((prev) => [...prev, { ...toast, id: toastID++ }]);
+  }, []);
 
   return (
     <ToastContext.Provider value={addToast}>
@@ -46,41 +55,37 @@ export const ToastProvider: React.FC = ({ children }) => {
   );
 };
 
-function createHookObject(toastFunc: (toast: IToast) => void) {
-  return {
-    success: toastFunc,
-    error: (error: unknown) => {
-      /* eslint-disable @typescript-eslint/no-explicit-any, no-console */
-      let message: string;
-      if (error instanceof Error) {
-        message = error.message ?? error.toString();
-      } else if ((error as any).toString) {
-        message = (error as any).toString();
-      } else {
+export const useToast = () => {
+  const addToast = useContext(ToastContext);
+
+  return useMemo(
+    () => ({
+      toast: addToast,
+      success(message: React.ReactNode | string) {
+        addToast({
+          content: message,
+        });
+      },
+      error(error: unknown) {
+        let message;
+        if (error instanceof Error) {
+          message = error.message;
+        }
+        if (!message) {
+          message = String(error);
+        }
+        if (!message) {
+          message = "Unknown error";
+        }
+
         console.error(error);
-        toastFunc({
+        addToast({
           variant: "danger",
           header: "Error",
-          content: "Unknown error",
+          content: message,
         });
-        return;
-      }
-
-      console.error(message);
-      toastFunc({
-        variant: "danger",
-        header: "Error",
-        content: message,
-      });
-      /* eslint-enable @typescript-eslint/no-explicit-any, no-console */
-    },
-  };
-}
-
-export const useToast = () => {
-  const setToast = useContext(ToastContext);
-  const [hookObject, setHookObject] = useState(createHookObject(setToast));
-  useEffect(() => setHookObject(createHookObject(setToast)), [setToast]);
-
-  return hookObject;
+      },
+    }),
+    [addToast]
+  );
 };

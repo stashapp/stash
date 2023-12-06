@@ -1,5 +1,5 @@
 query ListPerformerScrapers {
-  listPerformerScrapers {
+  listScrapers(types: [PERFORMER]) {
     id
     name
     performer {
@@ -10,7 +10,7 @@ query ListPerformerScrapers {
 }
 
 query ListSceneScrapers {
-  listSceneScrapers {
+  listScrapers(types: [SCENE]) {
     id
     name
     scene {
@@ -21,7 +21,7 @@ query ListSceneScrapers {
 }
 
 query ListGalleryScrapers {
-  listGalleryScrapers {
+  listScrapers(types: [GALLERY]) {
     id
     name
     gallery {
@@ -32,7 +32,7 @@ query ListGalleryScrapers {
 }
 
 query ListMovieScrapers {
-  listMovieScrapers {
+  listScrapers(types: [MOVIE]) {
     id
     name
     movie {
@@ -117,5 +117,29 @@ query ScrapeGalleryURL($url: String!) {
 query ScrapeMovieURL($url: String!) {
   scrapeMovieURL(url: $url) {
     ...ScrapedMovieData
+  }
+}
+
+query InstalledScraperPackages {
+  installedPackages(type: Scraper) {
+    ...PackageData
+  }
+}
+
+query InstalledScraperPackagesStatus {
+  installedPackages(type: Scraper) {
+    ...PackageData
+    upgrade {
+      ...PackageData
+    }
+  }
+}
+
+query AvailableScraperPackages($source: String!) {
+  availablePackages(source: $source, type: Scraper) {
+    ...PackageData
+    requires {
+      package_id
+    }
   }
 }
