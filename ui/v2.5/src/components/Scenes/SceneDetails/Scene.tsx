@@ -531,9 +531,9 @@ const ScenePage: React.FC<IProps> = ({
         </Button>
       </div>
       <SubmitStashBoxDraft
+        type="scene"
         boxes={boxes}
         entity={scene}
-        query={GQL.SubmitStashBoxSceneDraftDocument}
         show={showDraftModal}
         onHide={() => setShowDraftModal(false)}
       />

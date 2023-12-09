@@ -1945,6 +1945,22 @@ export const queryScrapeGalleryURL = (url: string) =>
     fetchPolicy: "network-only",
   });
 
+export const mutateSubmitStashBoxSceneDraft = (
+  input: GQL.StashBoxDraftSubmissionInput
+) =>
+  client.mutate<GQL.SubmitStashBoxSceneDraftMutation>({
+    mutation: GQL.SubmitStashBoxSceneDraftDocument,
+    variables: { input },
+  });
+
+export const mutateSubmitStashBoxPerformerDraft = (
+  input: GQL.StashBoxDraftSubmissionInput
+) =>
+  client.mutate<GQL.SubmitStashBoxPerformerDraftMutation>({
+    mutation: GQL.SubmitStashBoxPerformerDraftDocument,
+    variables: { input },
+  });
+
 /// Packages
 export const useInstalledScraperPackages = GQL.useInstalledScraperPackagesQuery;
 export const useInstalledScraperPackagesStatus =
