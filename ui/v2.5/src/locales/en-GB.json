@@ -1390,11 +1390,10 @@
   "url": "URL",
   "urls": "URLs",
   "validation": {
-    "aliases_must_be_unique": "aliases must be unique",
+    "blank": "${path} must not be blank",
     "date_invalid_form": "${path} must be in YYYY-MM-DD form",
     "required": "${path} is a required field",
-    "unique": "${path} must be unique",
-    "urls_must_be_unique": "URLs must be unique"
+    "unique": "${path} must be unique"
   },
   "videos": "Videos",
   "video_codec": "Video Codec",

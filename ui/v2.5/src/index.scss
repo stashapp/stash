@@ -1346,6 +1346,7 @@ dl.details-list {
 
 .invalid-feedback {
   display: block;
+  white-space: pre-wrap;
 
   &:empty {
     display: none;
