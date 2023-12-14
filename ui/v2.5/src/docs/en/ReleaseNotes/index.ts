@@ -1,5 +1,6 @@
 import v0170 from "./v0170.md";
 import v0200 from "./v0200.md";
+import v0240 from "./v0240.md";
 
 export interface IReleaseNotes {
   // handle should be in the form of YYYYMMDD
@@ -9,6 +10,11 @@ export interface IReleaseNotes {
 }
 
 export const releaseNotes: IReleaseNotes[] = [
+  {
+    date: 20231212,
+    version: "v0.24.0",
+    content: v0240,
+  },
   {
     date: 20230301,
     version: "v0.20.0",
