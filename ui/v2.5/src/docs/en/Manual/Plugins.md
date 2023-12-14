@@ -10,7 +10,43 @@ Plugin tasks can be implemented using embedded Javascript, or by calling an exte
 
 > **⚠️ Note:** Plugin support is still experimental and is likely to change.
 
-# Adding plugins
+## Managing Plugins
+
+Plugins can be installed and managed from the `Settings > Plugins` page. 
+
+Scrapers are installed using the `Available Plugins` section. This section allows configuring sources from which to install plugins. The `Community (stable)` source is configured by default. This source contains plugins for the current _stable_ version of stash.
+
+These are the plugin sources maintained by the stashapp organisation:
+
+| Name | Index URL | Recommended Local Path | Notes |
+|------|-----------|------------------------|-------|
+| Community (stable) | `https://stashapp.github.io/CommunityScripts/stable/index.yml` | `stable` | For the current stable version of stash. |
+| Community (develop) | `https://stashapp.github.io/CommunityScripts/develop/index.yml` | `develop` | For the develop version of stash. |
+
+Installed plugins can be updated or uninstalled from the `Installed Plugins` section.
+
+### Source URLs
+
+The source URL must return a yaml file containing all the available packages for the source. An example source yaml file looks like the following:
+
+```
+- id: <package id>
+  name: <package name>
+  version: <version>
+  date: <date>
+  requires:
+  - <ids of packages required by this package (optional)>
+  - ...
+  path: <path to package zip file>
+  sha256: <sha256 of zip>
+  metadata:
+    <optional key/value pairs for extra information>
+- ...
+```
+
+Path can be a relative path to the zip file or an external URL.
+
+# Adding plugins manually
 
 By default, Stash looks for plugin configurations in the `plugins` sub-directory of the directory where the stash `config.yml` is read. This will either be the `$HOME/.stash` directory or the current working directory.
 
