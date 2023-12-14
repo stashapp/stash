@@ -48,3 +48,5 @@ ENV NVIDIA_DRIVER_CAPABILITIES=video,utility
 ENV STASH_CONFIG_FILE=/root/.stash/config.yml
 EXPOSE 9999
 ENTRYPOINT ["docker-entrypoint.sh", "stash"]
+
+# vim: ft=dockerfile
