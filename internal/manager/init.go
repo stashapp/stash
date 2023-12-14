@@ -155,7 +155,16 @@ func initialisePackageManager(localPath string, srcPathGetter pkg.SourcePathGett
 }
 
 func formatDuration(t time.Duration) string {
-	return fmt.Sprintf("%02.f:%02.f:%02.f", t.Hours(), t.Minutes(), t.Seconds())
+	switch {
+	case t >= time.Minute: // 1m23s or 2h45m12s
+		t = t.Round(time.Second)
+	case t >= time.Second: // 45.36s
+		t = t.Round(10 * time.Millisecond)
+	default: // 51ms
+		t = t.Round(time.Millisecond)
+	}
+
+	return t.String()
 }
 
 func initJobManager(cfg *config.Config) *job.Manager {
@@ -177,7 +186,7 @@ func initJobManager(cfg *config.Config) *job.Manager {
 					}
 
 					timeElapsed := j.EndTime.Sub(*j.StartTime)
-					msg := fmt.Sprintf("Task \"%s\" is finished in %s.", cleanDesc, formatDuration(timeElapsed))
+					msg := fmt.Sprintf("Task \"%s\" finished in %s.", cleanDesc, formatDuration(timeElapsed))
 					desktop.SendNotification("Task Finished", msg)
 				}
 			case <-ctx.Done():
