@@ -292,7 +292,8 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
       </Accordion>
     );
   }, [props.scene, loading, Toast, deletingFile, reassigningFile]);
-
+  console.log(props.scene.play_duration)
+  console.log(TextUtils.secondsToTimestamp(props.scene.play_duration ?? 0))
   return (
     <>
       <dl className="container scene-file-info details-list">
