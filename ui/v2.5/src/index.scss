@@ -475,38 +475,38 @@ textarea.text-input {
     margin: 0;
   }
 
+  /* stylelint-disable declaration-no-important */
   .column-select {
-    margin: 0!important;
+    margin: 0 !important;
     padding: 7px;
   }
 
   .comma-list {
     list-style: none;
-    padding: 0px;
+    margin: 0;
     overflow: hidden;
+    padding: 4px 2px;
     text-overflow: ellipsis;
     white-space: nowrap;
     width: 190px;
-    padding: 4px 2px;
-    margin: 0;
   }
 
   .comma-list:hover {
-    position: absolute;
-    overflow: hidden;
-    top: auto;
-    width: max-content;
-    margin-top: -.9rem;
-    margin-left: -.4rem;
-    display: block;
-    border: 1px solid #414c53;
     background: #28343c;
-    box-shadow: 0 2px 4px 0 rgba(0,0,0,.28);
-    padding: .1rem .5rem;
-    z-index: 100;
-    max-width: 40rem;
+    border: 1px solid #414c53;
+    box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.28);
+    display: block;
     height: auto;
+    margin-left: -0.4rem;
+    margin-top: -0.9rem;
+    max-width: 40rem;
+    overflow: hidden;
+    padding: 0.1rem 0.5rem;
+    position: absolute;
+    top: auto;
     white-space: normal;
+    width: max-content;
+    z-index: 100;
   }
 
   .comma-list li {
@@ -531,13 +531,15 @@ textarea.text-input {
     white-space: nowrap;
   }
 
+  /* stylelint-disable */
   td > a > span {
     display: block;
-    text-overflow: ellipsis;
-    white-space: nowrap;
     max-width: 190px;
     overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
+  /* stylelint-enable */
 
   td .star-rating-number {
     display: none;
@@ -557,7 +559,7 @@ textarea.text-input {
 }
 
 .table-list tbody tr:hover {
-  background-color: #2d3942!important;
+  background-color: #2d3942 !important;
 }
 
 .table-list a {

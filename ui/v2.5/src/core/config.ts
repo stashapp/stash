@@ -80,6 +80,8 @@ export interface IUIConfig {
 
   vrTag?: string;
   pinnedFilters?: PinnedFilters;
+
+  defaultSceneColumns?: [{ value: string; label: string }];
 }
 
 interface ISavedFilterRowBroken extends ISavedFilterRow {
