@@ -292,6 +292,7 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
       </Accordion>
     );
   }, [props.scene, loading, Toast, deletingFile, reassigningFile]);
+
   return (
     <>
       <dl className="container scene-file-info details-list">

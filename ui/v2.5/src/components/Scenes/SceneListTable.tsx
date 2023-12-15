@@ -78,13 +78,29 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
     value: "play_duration",
     label: intl.formatMessage({ id: "play_duration" }),
   };
+  const oCounterCol = {
+    value: "o_counter",
+    label: intl.formatMessage({ id: "o_counter" }),
+  };
   const resolutionCol = {
     value: "resolution",
     label: intl.formatMessage({ id: "resolution" }),
   };
+  const frameRateCol = {
+    value: "framerate",
+    label: intl.formatMessage({ id: "framerate" }),
+  };
   const bitRateCol = {
     value: "bitrate",
     label: intl.formatMessage({ id: "bitrate" }),
+  };
+  const videoCodecCol = {
+    value: "video_codec",
+    label: intl.formatMessage({ id: "video_codec" }),
+  };
+  const audioCodecCol = {
+    value: "audio_codec",
+    label: intl.formatMessage({ id: "audio_codec" }),
   };
   const Column = [
     coverImageCol,
@@ -100,8 +116,12 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
     galleriesCol,
     playCountCol,
     playDurationCol,
+    oCounterCol,
     resolutionCol,
+    frameRateCol,
     bitRateCol,
+    videoCodecCol,
+    audioCodecCol,
   ];
   const defaultColumn = uiConfig?.defaultSceneColumns
     ? uiConfig.defaultSceneColumns
@@ -400,6 +420,16 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
     }
   }
 
+  function maybeRenderOCounterCell(scene: GQL.SlimSceneDataFragment) {
+    if (
+      column.some(
+        (e: { value: string; label: string }) => e.value === oCounterCol.value
+      )
+    ) {
+      return <td className={`${oCounterCol.value}-data`}>{scene.o_counter}</td>;
+    }
+  }
+
   function maybeRenderResolutionCell(scene: GQL.SlimSceneDataFragment) {
     if (
       column.some(
@@ -412,6 +442,31 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
             {scene.files.map((file) => (
               <li key={file.id}>
                 <span> {TextUtils.resolution(file?.width, file?.height)}</span>
+              </li>
+            ))}
+          </ul>
+        </td>
+      );
+    }
+  }
+
+  function maybeRenderFrameRateCell(scene: GQL.SlimSceneDataFragment) {
+    if (
+      column.some(
+        (e: { value: string; label: string }) => e.value === frameRateCol.value
+      )
+    ) {
+      return (
+        <td className={`${frameRateCol.value}-data`}>
+          <ul className="comma-list">
+            {scene.files.map((file) => (
+              <li key={file.id}>
+                <span>
+                  <FormattedMessage
+                    id="frames_per_second"
+                    values={{ value: intl.formatNumber(file.frame_rate ?? 0) }}
+                  />
+                </span>
               </li>
             ))}
           </ul>
@@ -441,6 +496,46 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
                     }}
                   />
                 </span>
+              </li>
+            ))}
+          </ul>
+        </td>
+      );
+    }
+  }
+
+  function maybeRenderAudioCodecCell(scene: GQL.SlimSceneDataFragment) {
+    if (
+      column.some(
+        (e: { value: string; label: string }) => e.value === audioCodecCol.value
+      )
+    ) {
+      return (
+        <td className={`${audioCodecCol.value}-data`}>
+          <ul className="comma-list">
+            {scene.files.map((file) => (
+              <li key={file.id}>
+                <span>{file.audio_codec}</span>
+              </li>
+            ))}
+          </ul>
+        </td>
+      );
+    }
+  }
+
+  function maybeRenderVideoCodecCell(scene: GQL.SlimSceneDataFragment) {
+    if (
+      column.some(
+        (e: { value: string; label: string }) => e.value === videoCodecCol.value
+      )
+    ) {
+      return (
+        <td className={`${videoCodecCol.value}-data`}>
+          <ul className="comma-list">
+            {scene.files.map((file) => (
+              <li key={file.id}>
+                <span>{file.video_codec}</span>
               </li>
             ))}
           </ul>
@@ -493,8 +588,12 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
         {maybeRenderGalleriesCell(scene)}
         {maybeRenderPlayCountCell(scene)}
         {maybeRenderPlayDurationCell(scene)}
+        {maybeRenderOCounterCell(scene)}
         {maybeRenderResolutionCell(scene)}
+        {maybeRenderFrameRateCell(scene)}
         {maybeRenderBitRateCell(scene)}
+        {maybeRenderVideoCodecCell(scene)}
+        {maybeRenderAudioCodecCell(scene)}
       </tr>
     );
   };
@@ -531,8 +630,12 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
             {maybeRenderColHead(galleriesCol)}
             {maybeRenderColHead(playCountCol)}
             {maybeRenderColHead(playDurationCol)}
+            {maybeRenderColHead(oCounterCol)}
             {maybeRenderColHead(resolutionCol)}
+            {maybeRenderColHead(frameRateCol)}
             {maybeRenderColHead(bitRateCol)}
+            {maybeRenderColHead(videoCodecCol)}
+            {maybeRenderColHead(audioCodecCol)}
           </tr>
         </thead>
         <tbody>{props.scenes.map(renderSceneRow)}</tbody>
