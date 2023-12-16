@@ -38,7 +38,7 @@ Scrapers are installed using the `Available Scrapers` section. This section allo
 
 These are the scraper sources maintained by the stashapp organisation:
 
-| Name | Index URL | Recommended Local Path | Notes |
+| Name | Source URL | Recommended Local Path | Notes |
 |------|-----------|------------------------|-------|
 | Community (stable) | `https://stashapp.github.io/CommunityScrapers/stable/index.yml` | `stable` | For the current stable version of stash. |
 | Community (develop) | `https://stashapp.github.io/CommunityScrapers/develop/index.yml` | `develop` | For the develop version of stash. |

@@ -18,7 +18,7 @@ Scrapers are installed using the `Available Plugins` section. This section allow
 
 These are the plugin sources maintained by the stashapp organisation:
 
-| Name | Index URL | Recommended Local Path | Notes |
+| Name | Source URL | Recommended Local Path | Notes |
 |------|-----------|------------------------|-------|
 | Community (stable) | `https://stashapp.github.io/CommunityScripts/stable/index.yml` | `stable` | For the current stable version of stash. |
 | Community (develop) | `https://stashapp.github.io/CommunityScripts/develop/index.yml` | `develop` | For the develop version of stash. |
