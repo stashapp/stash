@@ -1,14 +1,15 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import * as GQL from "src/core/generated-graphql";
 import {
   evictQueries,
   getClient,
   queryAvailableScraperPackages,
-  useInstallScraperPackages,
   useInstalledScraperPackages,
   useInstalledScraperPackagesStatus,
-  useUninstallScraperPackages,
-  useUpdateScraperPackages,
+  mutateUpdateScraperPackages,
+  mutateUninstallScraperPackages,
+  mutateInstallScraperPackages,
+  scraperMutationImpactedQueries,
 } from "src/core/StashService";
 import { useMonitorJob } from "src/utils/job";
 import {
@@ -19,14 +20,6 @@ import {
 import { useSettings } from "./context";
 import { LoadingIndicator } from "../Shared/LoadingIndicator";
 import { SettingSection } from "./SettingSection";
-
-const impactedPackageChangeQueries = [
-  GQL.ListPerformerScrapersDocument,
-  GQL.ListSceneScrapersDocument,
-  GQL.ListMovieScrapersDocument,
-  GQL.InstalledScraperPackagesDocument,
-  GQL.InstalledScraperPackagesStatusDocument,
-];
 
 export const InstalledScraperPackages: React.FC = () => {
   const [loadUpgrades, setLoadUpgrades] = useState(false);
@@ -46,25 +39,14 @@ export const InstalledScraperPackages: React.FC = () => {
     skip: !loadUpgrades,
   });
 
-  const [updatePackages] = useUpdateScraperPackages();
-  const [uninstallPackages] = useUninstallScraperPackages();
-
   async function onUpdatePackages(packages: GQL.PackageSpecInput[]) {
-    const r = await updatePackages({
-      variables: {
-        packages,
-      },
-    });
+    const r = await mutateUpdateScraperPackages(packages);
 
     setJobID(r.data?.updatePackages);
   }
 
   async function onUninstallPackages(packages: GQL.PackageSpecInput[]) {
-    const r = await uninstallPackages({
-      variables: {
-        packages,
-      },
-    });
+    const r = await mutateUninstallScraperPackages(packages);
 
     setJobID(r.data?.uninstallPackages);
   }
@@ -77,7 +59,7 @@ export const InstalledScraperPackages: React.FC = () => {
   function onPackageChanges() {
     // job is complete, refresh all local data
     const ac = getClient();
-    evictQueries(ac.cache, impactedPackageChangeQueries);
+    evictQueries(ac.cache, scraperMutationImpactedQueries);
   }
 
   function onCheckForUpdates() {
@@ -131,18 +113,11 @@ export const InstalledScraperPackages: React.FC = () => {
 export const AvailableScraperPackages: React.FC = () => {
   const { general, loading: configLoading, error, saveGeneral } = useSettings();
 
-  const [sources, setSources] = useState<GQL.PackageSource[]>();
   const [jobID, setJobID] = useState<string>();
   const { job } = useMonitorJob(jobID, () => onPackageChanges());
 
-  const [installPackages] = useInstallScraperPackages();
-
   async function onInstallPackages(packages: GQL.PackageSpecInput[]) {
-    const r = await installPackages({
-      variables: {
-        packages,
-      },
-    });
+    const r = await mutateInstallScraperPackages(packages);
 
     setJobID(r.data?.installPackages);
   }
@@ -150,14 +125,8 @@ export const AvailableScraperPackages: React.FC = () => {
   function onPackageChanges() {
     // job is complete, refresh all local data
     const ac = getClient();
-    evictQueries(ac.cache, impactedPackageChangeQueries);
+    evictQueries(ac.cache, scraperMutationImpactedQueries);
   }
-
-  useEffect(() => {
-    if (!sources && !configLoading && general.scraperPackageSources) {
-      setSources(general.scraperPackageSources);
-    }
-  }, [sources, configLoading, general.scraperPackageSources]);
 
   async function loadSource(source: string): Promise<RemotePackage[]> {
     const { data } = await queryAvailableScraperPackages(source);
@@ -168,10 +137,6 @@ export const AvailableScraperPackages: React.FC = () => {
     saveGeneral({
       scraperPackageSources: [...(general.scraperPackageSources ?? []), source],
     });
-
-    setSources((prev) => {
-      return [...(prev ?? []), source];
-    });
   }
 
   function editSource(existing: GQL.PackageSource, changed: GQL.PackageSource) {
@@ -179,10 +144,6 @@ export const AvailableScraperPackages: React.FC = () => {
       scraperPackageSources: general.scraperPackageSources?.map((s) =>
         s.url === existing.url ? changed : s
       ),
-    });
-
-    setSources((prev) => {
-      return prev?.map((s) => (s.url === existing.url ? changed : s));
     });
   }
 
@@ -192,16 +153,14 @@ export const AvailableScraperPackages: React.FC = () => {
         (s) => s.url !== source.url
       ),
     });
-
-    setSources((prev) => {
-      return prev?.filter((s) => s.url !== source.url);
-    });
   }
 
   if (error) return <h1>{error.message}</h1>;
   if (configLoading) return <LoadingIndicator />;
 
   const loading = !!job;
+
+  const sources = general?.scraperPackageSources ?? [];
 
   return (
     <SettingSection headingID="config.scraping.available_scrapers">
@@ -210,7 +169,7 @@ export const AvailableScraperPackages: React.FC = () => {
           loading={loading}
           onInstallPackages={onInstallPackages}
           loadSource={(source) => loadSource(source)}
-          sources={sources ?? []}
+          sources={sources}
           addSource={addSource}
           editSource={editSource}
           deleteSource={deleteSource}

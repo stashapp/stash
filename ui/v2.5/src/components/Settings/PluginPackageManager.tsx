@@ -1,14 +1,15 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import * as GQL from "src/core/generated-graphql";
 import {
   evictQueries,
   getClient,
   queryAvailablePluginPackages,
-  useInstallPluginPackages,
   useInstalledPluginPackages,
   useInstalledPluginPackagesStatus,
-  useUninstallPluginPackages,
-  useUpdatePluginPackages,
+  mutateInstallPluginPackages,
+  mutateUninstallPluginPackages,
+  mutateUpdatePluginPackages,
+  pluginMutationImpactedQueries,
 } from "src/core/StashService";
 import { useMonitorJob } from "src/utils/job";
 import {
@@ -19,13 +20,6 @@ import {
 import { useSettings } from "./context";
 import { LoadingIndicator } from "../Shared/LoadingIndicator";
 import { SettingSection } from "./SettingSection";
-
-const impactedPackageChangeQueries = [
-  GQL.PluginsDocument,
-  GQL.PluginTasksDocument,
-  GQL.InstalledPluginPackagesDocument,
-  GQL.InstalledPluginPackagesStatusDocument,
-];
 
 export const InstalledPluginPackages: React.FC = () => {
   const [loadUpgrades, setLoadUpgrades] = useState(false);
@@ -45,25 +39,14 @@ export const InstalledPluginPackages: React.FC = () => {
     skip: !loadUpgrades,
   });
 
-  const [updatePackages] = useUpdatePluginPackages();
-  const [uninstallPackages] = useUninstallPluginPackages();
-
   async function onUpdatePackages(packages: GQL.PackageSpecInput[]) {
-    const r = await updatePackages({
-      variables: {
-        packages,
-      },
-    });
+    const r = await mutateUpdatePluginPackages(packages);
 
     setJobID(r.data?.updatePackages);
   }
 
   async function onUninstallPackages(packages: GQL.PackageSpecInput[]) {
-    const r = await uninstallPackages({
-      variables: {
-        packages,
-      },
-    });
+    const r = await mutateUninstallPluginPackages(packages);
 
     setJobID(r.data?.uninstallPackages);
   }
@@ -76,7 +59,7 @@ export const InstalledPluginPackages: React.FC = () => {
   function onPackageChanges() {
     // job is complete, refresh all local data
     const ac = getClient();
-    evictQueries(ac.cache, impactedPackageChangeQueries);
+    evictQueries(ac.cache, pluginMutationImpactedQueries);
   }
 
   function onCheckForUpdates() {
@@ -130,18 +113,11 @@ export const InstalledPluginPackages: React.FC = () => {
 export const AvailablePluginPackages: React.FC = () => {
   const { general, loading: configLoading, error, saveGeneral } = useSettings();
 
-  const [sources, setSources] = useState<GQL.PackageSource[]>();
   const [jobID, setJobID] = useState<string>();
   const { job } = useMonitorJob(jobID, () => onPackageChanges());
 
-  const [installPackages] = useInstallPluginPackages();
-
   async function onInstallPackages(packages: GQL.PackageSpecInput[]) {
-    const r = await installPackages({
-      variables: {
-        packages,
-      },
-    });
+    const r = await mutateInstallPluginPackages(packages);
 
     setJobID(r.data?.installPackages);
   }
@@ -149,14 +125,8 @@ export const AvailablePluginPackages: React.FC = () => {
   function onPackageChanges() {
     // job is complete, refresh all local data
     const ac = getClient();
-    evictQueries(ac.cache, impactedPackageChangeQueries);
+    evictQueries(ac.cache, pluginMutationImpactedQueries);
   }
-
-  useEffect(() => {
-    if (!sources && !configLoading && general.pluginPackageSources) {
-      setSources(general.pluginPackageSources);
-    }
-  }, [sources, configLoading, general.pluginPackageSources]);
 
   async function loadSource(source: string): Promise<RemotePackage[]> {
     const { data } = await queryAvailablePluginPackages(source);
@@ -167,10 +137,6 @@ export const AvailablePluginPackages: React.FC = () => {
     saveGeneral({
       pluginPackageSources: [...(general.pluginPackageSources ?? []), source],
     });
-
-    setSources((prev) => {
-      return [...(prev ?? []), source];
-    });
   }
 
   function editSource(existing: GQL.PackageSource, changed: GQL.PackageSource) {
@@ -179,10 +145,6 @@ export const AvailablePluginPackages: React.FC = () => {
         s.url === existing.url ? changed : s
       ),
     });
-
-    setSources((prev) => {
-      return prev?.map((s) => (s.url === existing.url ? changed : s));
-    });
   }
 
   function deleteSource(source: GQL.PackageSource) {
@@ -190,10 +152,6 @@ export const AvailablePluginPackages: React.FC = () => {
       pluginPackageSources: general.pluginPackageSources?.filter(
         (s) => s.url !== source.url
       ),
-    });
-
-    setSources((prev) => {
-      return prev?.filter((s) => s.url !== source.url);
     });
   }
 
@@ -208,6 +166,8 @@ export const AvailablePluginPackages: React.FC = () => {
 
   const loading = !!job;
 
+  const sources = general?.pluginPackageSources ?? [];
+
   return (
     <SettingSection headingID="config.plugins.available_plugins">
       <div className="package-manager">
@@ -216,7 +176,7 @@ export const AvailablePluginPackages: React.FC = () => {
           onInstallPackages={onInstallPackages}
           renderDescription={renderDescription}
           loadSource={(source) => loadSource(source)}
-          sources={sources ?? []}
+          sources={sources}
           addSource={addSource}
           editSource={editSource}
           deleteSource={deleteSource}

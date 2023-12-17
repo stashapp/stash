@@ -1961,43 +1961,6 @@ export const mutateSubmitStashBoxPerformerDraft = (
     variables: { input },
   });
 
-/// Packages
-export const useInstalledScraperPackages = GQL.useInstalledScraperPackagesQuery;
-export const useInstalledScraperPackagesStatus =
-  GQL.useInstalledScraperPackagesStatusQuery;
-
-export const queryAvailableScraperPackages = (source: string) =>
-  client.query<GQL.AvailableScraperPackagesQuery>({
-    query: GQL.AvailableScraperPackagesDocument,
-    variables: {
-      source,
-    },
-    fetchPolicy: "network-only",
-  });
-
-export const useInstallScraperPackages = GQL.useInstallScraperPackagesMutation;
-export const useUpdateScraperPackages = GQL.useUpdateScraperPackagesMutation;
-export const useUninstallScraperPackages =
-  GQL.useUninstallScraperPackagesMutation;
-
-export const useInstalledPluginPackages = GQL.useInstalledPluginPackagesQuery;
-export const useInstalledPluginPackagesStatus =
-  GQL.useInstalledPluginPackagesStatusQuery;
-
-export const queryAvailablePluginPackages = (source: string) =>
-  client.query<GQL.AvailablePluginPackagesQuery>({
-    query: GQL.AvailablePluginPackagesDocument,
-    variables: {
-      source,
-    },
-    fetchPolicy: "network-only",
-  });
-
-export const useInstallPluginPackages = GQL.useInstallPluginPackagesMutation;
-export const useUpdatePluginPackages = GQL.useUpdatePluginPackagesMutation;
-export const useUninstallPluginPackages =
-  GQL.useUninstallPluginPackagesMutation;
-
 /// Configuration
 
 export const useConfiguration = () => GQL.useConfigurationQuery();
@@ -2043,6 +2006,65 @@ export const useJobsSubscribe = () => GQL.useJobsSubscribeSubscription();
 
 export const useLoggingSubscribe = () => GQL.useLoggingSubscribeSubscription();
 
+// all scraper-related queries
+export const scraperMutationImpactedQueries = [
+  GQL.ListMovieScrapersDocument,
+  GQL.ListPerformerScrapersDocument,
+  GQL.ListSceneScrapersDocument,
+  GQL.InstalledScraperPackagesDocument,
+  GQL.InstalledScraperPackagesStatusDocument,
+];
+
+export const mutateReloadScrapers = () =>
+  client.mutate<GQL.ReloadScrapersMutation>({
+    mutation: GQL.ReloadScrapersDocument,
+    update(cache, result) {
+      if (!result.data?.reloadScrapers) return;
+
+      evictQueries(cache, scraperMutationImpactedQueries);
+    },
+  });
+
+// all plugin-related queries
+export const pluginMutationImpactedQueries = [
+  GQL.PluginsDocument,
+  GQL.PluginTasksDocument,
+  GQL.InstalledPluginPackagesDocument,
+  GQL.InstalledPluginPackagesStatusDocument,
+];
+
+export const mutateReloadPlugins = () =>
+  client.mutate<GQL.ReloadPluginsMutation>({
+    mutation: GQL.ReloadPluginsDocument,
+    update(cache, result) {
+      if (!result.data?.reloadPlugins) return;
+
+      evictQueries(cache, pluginMutationImpactedQueries);
+    },
+  });
+
+type BoolMap = { [key: string]: boolean };
+
+export const mutateSetPluginsEnabled = (enabledMap: BoolMap) =>
+  client.mutate<GQL.SetPluginsEnabledMutation>({
+    mutation: GQL.SetPluginsEnabledDocument,
+    variables: { enabledMap },
+    update(cache, result) {
+      if (!result.data?.setPluginsEnabled) return;
+
+      for (const id in enabledMap) {
+        cache.modify({
+          id: cache.identify({ __typename: "Plugin", id }),
+          fields: {
+            enabled() {
+              return enabledMap[id];
+            },
+          },
+        });
+      }
+    },
+  });
+
 function updateConfiguration(cache: ApolloCache<unknown>, result: FetchResult) {
   if (!result.data) return;
 
@@ -2051,7 +2073,15 @@ function updateConfiguration(cache: ApolloCache<unknown>, result: FetchResult) {
 
 export const useConfigureGeneral = () =>
   GQL.useConfigureGeneralMutation({
-    update: updateConfiguration,
+    update(cache, result) {
+      if (!result.data?.configureGeneral) return;
+
+      evictQueries(cache, [
+        GQL.ConfigurationDocument,
+        ...scraperMutationImpactedQueries,
+        ...pluginMutationImpactedQueries,
+      ]);
+    },
   });
 
 export const useConfigureInterface = () =>
@@ -2097,48 +2127,6 @@ export const useAddTempDLNAIP = () => GQL.useAddTempDlnaipMutation();
 
 export const useRemoveTempDLNAIP = () => GQL.useRemoveTempDlnaipMutation();
 
-export const mutateReloadScrapers = () =>
-  client.mutate<GQL.ReloadScrapersMutation>({
-    mutation: GQL.ReloadScrapersDocument,
-    update(cache, result) {
-      if (!result.data?.reloadScrapers) return;
-
-      evictQueries(cache, [
-        GQL.ListMovieScrapersDocument,
-        GQL.ListPerformerScrapersDocument,
-        GQL.ListSceneScrapersDocument,
-      ]);
-    },
-  });
-
-const pluginMutationImpactedQueries = [
-  GQL.PluginsDocument,
-  GQL.PluginTasksDocument,
-];
-
-export const mutateReloadPlugins = () =>
-  client.mutate<GQL.ReloadPluginsMutation>({
-    mutation: GQL.ReloadPluginsDocument,
-    update(cache, result) {
-      if (!result.data?.reloadPlugins) return;
-
-      evictQueries(cache, pluginMutationImpactedQueries);
-    },
-  });
-
-type BoolMap = { [key: string]: boolean };
-
-export const mutateSetPluginsEnabled = (enabledMap: BoolMap) =>
-  client.mutate<GQL.SetPluginsEnabledMutation>({
-    mutation: GQL.SetPluginsEnabledDocument,
-    variables: { enabledMap },
-    update(cache, result) {
-      if (!result.data?.setPluginsEnabled) return;
-
-      evictQueries(cache, pluginMutationImpactedQueries);
-    },
-  });
-
 export const mutateStopJob = (jobID: string) =>
   client.mutate<GQL.StopJobMutation>({
     mutation: GQL.StopJobDocument,
@@ -2169,6 +2157,88 @@ export const mutateMigrate = (input: GQL.MigrateInput) =>
       if (!result.data?.migrate) return;
 
       evictQueries(cache, setupMutationImpactedQueries);
+    },
+  });
+
+/// Packages
+
+export const useInstalledScraperPackages = GQL.useInstalledScraperPackagesQuery;
+export const useInstalledScraperPackagesStatus =
+  GQL.useInstalledScraperPackagesStatusQuery;
+
+export const queryAvailableScraperPackages = (source: string) =>
+  client.query<GQL.AvailableScraperPackagesQuery>({
+    query: GQL.AvailableScraperPackagesDocument,
+    variables: {
+      source,
+    },
+    fetchPolicy: "network-only",
+  });
+
+export const mutateInstallScraperPackages = (
+  packages: GQL.PackageSpecInput[]
+) =>
+  client.mutate<GQL.InstallScraperPackagesMutation>({
+    mutation: GQL.InstallScraperPackagesDocument,
+    variables: {
+      packages,
+    },
+  });
+
+export const mutateUpdateScraperPackages = (packages: GQL.PackageSpecInput[]) =>
+  client.mutate<GQL.UpdateScraperPackagesMutation>({
+    mutation: GQL.UpdateScraperPackagesDocument,
+    variables: {
+      packages,
+    },
+  });
+
+export const mutateUninstallScraperPackages = (
+  packages: GQL.PackageSpecInput[]
+) =>
+  client.mutate<GQL.UninstallScraperPackagesMutation>({
+    mutation: GQL.UninstallScraperPackagesDocument,
+    variables: {
+      packages,
+    },
+  });
+
+export const useInstalledPluginPackages = GQL.useInstalledPluginPackagesQuery;
+export const useInstalledPluginPackagesStatus =
+  GQL.useInstalledPluginPackagesStatusQuery;
+
+export const queryAvailablePluginPackages = (source: string) =>
+  client.query<GQL.AvailablePluginPackagesQuery>({
+    query: GQL.AvailablePluginPackagesDocument,
+    variables: {
+      source,
+    },
+    fetchPolicy: "network-only",
+  });
+
+export const mutateInstallPluginPackages = (packages: GQL.PackageSpecInput[]) =>
+  client.mutate<GQL.InstallPluginPackagesMutation>({
+    mutation: GQL.InstallPluginPackagesDocument,
+    variables: {
+      packages,
+    },
+  });
+
+export const mutateUpdatePluginPackages = (packages: GQL.PackageSpecInput[]) =>
+  client.mutate<GQL.UpdatePluginPackagesMutation>({
+    mutation: GQL.UpdatePluginPackagesDocument,
+    variables: {
+      packages,
+    },
+  });
+
+export const mutateUninstallPluginPackages = (
+  packages: GQL.PackageSpecInput[]
+) =>
+  client.mutate<GQL.UninstallPluginPackagesMutation>({
+    mutation: GQL.UninstallPluginPackagesDocument,
+    variables: {
+      packages,
     },
   });
 
