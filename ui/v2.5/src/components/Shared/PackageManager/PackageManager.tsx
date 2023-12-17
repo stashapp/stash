@@ -655,11 +655,15 @@ const SourcePackagesList: React.FC<{
   }
 
   function toggleSourceOpen() {
-    if (packages === undefined) {
-      loadPackages();
+    if (sourceOpen) {
+      setLoadError(undefined);
+      setSourceOpen(false);
+    } else {
+      if (packages === undefined) {
+        loadPackages();
+      }
+      setSourceOpen(true);
     }
-
-    setSourceOpen((prev) => !prev);
   }
 
   function renderCollapseButton() {
