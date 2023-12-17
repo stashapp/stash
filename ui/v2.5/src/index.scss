@@ -468,8 +468,10 @@ textarea.text-input {
   margin-bottom: 1rem;
   margin-left: 0;
   margin-right: 0;
+  max-height: 78dvh;
   min-width: min-content;
   overflow-x: auto;
+  position: relative;
 
   table {
     margin: 0;
@@ -550,7 +552,10 @@ textarea.text-input {
   }
 
   th {
+    background-color: #202b33;
     border: none;
+    position: sticky;
+    z-index: 100;
   }
 
   .date-head {
