@@ -1088,7 +1088,7 @@
     "required_by": "Required by {packages}",
     "source": {
       "name": "Name",
-      "url": "Index URL",
+      "url": "Source URL",
       "local_path": {
         "heading": "Local Path",
         "description": "Relative path to store packages for this source. Note that changing this requires the packages to be moved manually."
