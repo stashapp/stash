@@ -213,36 +213,33 @@ const InstalledPackagesToolbar: React.FC<{
   const intl = useIntl();
   return (
     <div className="package-manager-toolbar">
-      <div>
-        <ClearableInput
-          placeholder={`${intl.formatMessage({ id: "filter" })}...`}
-          value={filter}
-          setValue={(v) => setFilter(v)}
-        />
-      </div>
-      <div>
-        <Button
-          variant="primary"
-          onClick={() => onCheckForUpdates()}
-          disabled={loading}
-        >
-          <FormattedMessage id="package_manager.check_for_updates" />
-        </Button>
-        <Button
-          variant="primary"
-          disabled={!checkedPackages.length || loading}
-          onClick={() => onUpdatePackages()}
-        >
-          <FormattedMessage id="package_manager.update" />
-        </Button>
-        <Button
-          variant="danger"
-          disabled={!checkedPackages.length || loading}
-          onClick={() => onUninstallPackages()}
-        >
-          <FormattedMessage id="package_manager.uninstall" />
-        </Button>
-      </div>
+      <ClearableInput
+        placeholder={`${intl.formatMessage({ id: "filter" })}...`}
+        value={filter}
+        setValue={(v) => setFilter(v)}
+      />
+      <div className="flex-grow-1" />
+      <Button
+        variant="primary"
+        onClick={() => onCheckForUpdates()}
+        disabled={loading}
+      >
+        <FormattedMessage id="package_manager.check_for_updates" />
+      </Button>
+      <Button
+        variant="primary"
+        disabled={!checkedPackages.length || loading}
+        onClick={() => onUpdatePackages()}
+      >
+        <FormattedMessage id="package_manager.update" />
+      </Button>
+      <Button
+        variant="danger"
+        disabled={!checkedPackages.length || loading}
+        onClick={() => onUninstallPackages()}
+      >
+        <FormattedMessage id="package_manager.uninstall" />
+      </Button>
     </div>
   );
 };
@@ -353,31 +350,28 @@ const AvailablePackagesToolbar: React.FC<{
 
   return (
     <div className="package-manager-toolbar">
-      <div>
-        <ClearableInput
-          placeholder={`${intl.formatMessage({ id: "filter" })}...`}
-          value={filter}
-          setValue={(v) => setFilter(v)}
-        />
-        {hasSelectedPackages && (
-          <Button
-            size="sm"
-            variant="primary"
-            onClick={() => setSelectedOnly(!selectedOnly)}
-          >
-            <FormattedMessage id={selectedOnlyId} />
-          </Button>
-        )}
-      </div>
-      <div>
+      <ClearableInput
+        placeholder={`${intl.formatMessage({ id: "filter" })}...`}
+        value={filter}
+        setValue={(v) => setFilter(v)}
+      />
+      {hasSelectedPackages && (
         <Button
+          size="sm"
           variant="primary"
-          disabled={!hasSelectedPackages || loading}
-          onClick={() => onInstallPackages()}
+          onClick={() => setSelectedOnly(!selectedOnly)}
         >
-          <FormattedMessage id="package_manager.install" />
+          <FormattedMessage id={selectedOnlyId} />
         </Button>
-      </div>
+      )}
+      <div className="flex-grow-1" />
+      <Button
+        variant="primary"
+        disabled={!hasSelectedPackages || loading}
+        onClick={() => onInstallPackages()}
+      >
+        <FormattedMessage id="package_manager.install" />
+      </Button>
     </div>
   );
 };
