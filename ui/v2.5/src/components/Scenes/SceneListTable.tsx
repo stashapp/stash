@@ -399,7 +399,10 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
     ) {
       return (
         <td className={`${playCountCol.value}-data`}>
-          {`${scene.play_count} plays`}
+          <FormattedMessage
+            id="plays"
+            values={{ value: intl.formatNumber(scene.play_count ?? 0) }}
+          />
         </td>
       );
     }
@@ -579,11 +582,11 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
         {maybeRenderTitleCell(sceneLink, title)}
         {maybeRenderDateCell(scene)}
         {maybeRenderRatingCell(scene)}
+        {maybeRenderStudioCell(scene)}
         {maybeRenderStudioCodeCell(scene)}
         {maybeRenderDurationCell(scene)}
-        {maybeRenderTagCell(scene)}
         {maybeRenderPerformersCell(scene)}
-        {maybeRenderStudioCell(scene)}
+        {maybeRenderTagCell(scene)}
         {maybeRenderMovieCell(scene)}
         {maybeRenderGalleriesCell(scene)}
         {maybeRenderPlayCountCell(scene)}
@@ -621,11 +624,11 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
             {maybeRenderColHead(titleCol)}
             {maybeRenderColHead(dateCol)}
             {maybeRenderColHead(ratingCol)}
+            {maybeRenderColHead(studioCol)}
             {maybeRenderColHead(studioCodeCol)}
             {maybeRenderColHead(durationCol)}
-            {maybeRenderColHead(tagsCol)}
             {maybeRenderColHead(performersCol)}
-            {maybeRenderColHead(studioCol)}
+            {maybeRenderColHead(tagsCol)}
             {maybeRenderColHead(moviesCol)}
             {maybeRenderColHead(galleriesCol)}
             {maybeRenderColHead(playCountCol)}
