@@ -2,6 +2,7 @@ import React, { useContext } from "react";
 import { useConfigureUI } from "src/core/StashService";
 import { useToast } from "src/hooks/Toast";
 import { ConfigurationContext } from "src/hooks/Config";
+import { IUIConfig } from "src/core/config";
 import { CheckBoxSelect } from "src/components/Shared/Select";
 
 interface IColumn {
@@ -23,8 +24,8 @@ export const ColumnSelector: React.FC<IProps> = ({
   const { configuration } = useContext(ConfigurationContext);
   const [saveUI] = useConfigureUI();
   const Toast = useToast();
-  const selectedColumns =
-    configuration?.ui?.tableColumns[tableName] ?? defaultColumns;
+  const uiConfig = configuration?.ui as IUIConfig | undefined;
+  const selectedColumns = uiConfig?.tableColumns?.[tableName] ?? defaultColumns;
   const selectedOptions = columns.filter((col) =>
     selectedColumns.includes(col.value)
   );
