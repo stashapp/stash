@@ -8,6 +8,7 @@ import Select, {
   MenuListProps,
   GroupBase,
   OptionsOrGroups,
+  DropdownIndicatorProps,
 } from "react-select";
 import CreatableSelect from "react-select/creatable";
 
@@ -34,7 +35,6 @@ import { Placement } from "react-bootstrap/esm/Overlay";
 import { PerformerIDSelect } from "../Performers/PerformerSelect";
 import { Icon } from "./Icon";
 import { faTableColumns } from "@fortawesome/free-solid-svg-icons";
-import ReactSelect from "react-select";
 
 export type SelectObject = {
   id: string;
@@ -984,125 +984,82 @@ export const ListSelect = <T extends {}>(props: IListSelect<T>) => {
 };
 
 interface ICheckBoxSelectProps {
-  options: { value: string; label: string }[];
-  value: { value: string; label: string }[];
-  setOptions: React.Dispatch<
-    React.SetStateAction<{ value: string; label: string }[]>
-  >;
-  onUpdateConfig: (
-    columns?: [{ value: string; label: string }] | undefined
-  ) => Promise<void>;
+  options: Option[];
+  selectedOptions?: Option[];
+  onChange: (item: OnChangeValue<Option, true>) => void;
 }
 
-export const CheckBoxSelect: React.FC<ICheckBoxSelectProps> = (
-  props: ICheckBoxSelectProps
-) => {
-  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-  const Option = (fprops: any) => {
-    return (
-      <div>
-        <reactSelectComponents.Option {...fprops}>
-          <input
-            type="checkbox"
-            checked={fprops.isSelected}
-            onChange={() => null}
-          />{" "}
-          <label>{fprops.label}</label>
-        </reactSelectComponents.Option>
-      </div>
-    );
-  };
+export const CheckBoxSelect: React.FC<ICheckBoxSelectProps> = ({
+  options,
+  selectedOptions,
+  onChange,
+}) => {
+  const Option = (props: OptionProps<Option, true>) => (
+    <reactSelectComponents.Option {...props}>
+      <input
+        type="checkbox"
+        checked={props.isSelected}
+        onChange={() => null}
+        className="mr-1"
+      />
+      <label>{props.label}</label>
+    </reactSelectComponents.Option>
+  );
 
-  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-  const DropdownIndicator = (fprops: any) => {
-    return (
-      <div>
-        <reactSelectComponents.DropdownIndicator {...fprops}>
-          <Icon icon={faTableColumns} className="column-select" />
-        </reactSelectComponents.DropdownIndicator>
-      </div>
-    );
-  };
-
-  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-  const handleChange = (selected: any) => {
-    props.setOptions(selected);
-    if (props.onUpdateConfig) {
-      props.onUpdateConfig(selected);
-    }
-  };
+  const DropdownIndicator = (props: DropdownIndicatorProps<Option, true>) => (
+    <reactSelectComponents.DropdownIndicator {...props}>
+      <Icon icon={faTableColumns} className="column-select" />
+    </reactSelectComponents.DropdownIndicator>
+  );
 
   return (
-    <>
-      <ReactSelect
-        options={props.options}
-        value={props.value}
-        isMulti
-        closeMenuOnSelect={false}
-        hideSelectedOptions={false}
-        isSearchable={false}
-        isClearable={false}
-        components={{
-          DropdownIndicator,
-          Option,
-        }}
-        onChange={handleChange}
-        styles={{
-          container: (base) => ({
-            ...base,
-            display: "inline-block",
-          }),
-          control: (base) => ({
-            ...base,
-            height: "25px",
-            width: "25px",
-            backgroundColor: "none",
-            border: "none",
-            transition: "none",
-          }),
-          valueContainer: (base) => {
-            return {
-              ...base,
-              display: "none",
-            };
-          },
-          dropdownIndicator: (base) => {
-            return {
-              ...base,
-              color: "rgb(255, 255, 255)",
-              padding: "0",
-            };
-          },
-          indicatorSeparator: (base) => {
-            return {
-              ...base,
-              display: "none",
-            };
-          },
-          menu: (base) => {
-            return {
-              ...base,
-              width: "150px!important",
-              backgroundColor: "rgb(57, 75, 89)",
-            };
-          },
-          option: (base, fprops) => {
-            return {
-              ...base,
-              backgroundColor: fprops.isFocused
-                ? "rgb(37, 49, 58)"
-                : "rgb(57, 75, 89)",
-              padding: "0px 12px",
-            };
-          },
-          menuList: (base) => {
-            return {
-              ...base,
-              position: "fixed",
-            };
-          },
-        }}
-      />
-    </>
+    <Select
+      className="CheckBoxSelect"
+      options={options}
+      value={selectedOptions}
+      isMulti
+      closeMenuOnSelect={false}
+      hideSelectedOptions={false}
+      isSearchable={false}
+      isClearable={false}
+      components={{
+        DropdownIndicator,
+        Option,
+        ValueContainer: () => null,
+        IndicatorSeparator: () => null,
+      }}
+      onChange={onChange}
+      styles={{
+        control: (base) => ({
+          ...base,
+          height: "25px",
+          width: "25px",
+          backgroundColor: "none",
+          border: "none",
+          transition: "none",
+          cursor: "pointer",
+        }),
+        dropdownIndicator: (base) => ({
+          ...base,
+          color: "rgb(255, 255, 255)",
+          padding: "0",
+        }),
+        menu: (base) => ({
+          ...base,
+          backgroundColor: "rgb(57, 75, 89)",
+        }),
+        option: (base, fprops) => ({
+          ...base,
+          backgroundColor: fprops.isFocused
+            ? "rgb(37, 49, 58)"
+            : "rgb(57, 75, 89)",
+          padding: "0px 12px",
+        }),
+        menuList: (base) => ({
+          ...base,
+          position: "fixed",
+        }),
+      }}
+    />
   );
 };
