@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 )
 
@@ -46,9 +47,21 @@ func GetOrCreateFolderHierarchy(ctx context.Context, fc models.FolderFinderCreat
 	return folder, nil
 }
 
-// TransferZipFolderHierarchy creates the folder hierarchy for zipFileID under newPath, and removes
+func transferZipHierarchy(ctx context.Context, folderStore models.FolderReaderWriter, files models.FileFinderUpdater, zipFileID models.FileID, oldPath string, newPath string) error {
+	if err := transferZipFolderHierarchy(ctx, folderStore, zipFileID, oldPath, newPath); err != nil {
+		return fmt.Errorf("moving folder hierarchy for file %s: %w", oldPath, err)
+	}
+
+	if err := transferZipFileEntries(ctx, folderStore, files, zipFileID, oldPath, newPath); err != nil {
+		return fmt.Errorf("moving zip file contents for file %s: %w", oldPath, err)
+	}
+
+	return nil
+}
+
+// transferZipFolderHierarchy creates the folder hierarchy for zipFileID under newPath, and removes
 // ZipFileID from folders under oldPath.
-func TransferZipFolderHierarchy(ctx context.Context, folderStore models.FolderReaderWriter, zipFileID models.FileID, oldPath string, newPath string) error {
+func transferZipFolderHierarchy(ctx context.Context, folderStore models.FolderReaderWriter, zipFileID models.FileID, oldPath string, newPath string) error {
 	zipFolders, err := folderStore.FindByZipFileID(ctx, zipFileID)
 	if err != nil {
 		return err
@@ -74,15 +87,56 @@ func TransferZipFolderHierarchy(ctx context.Context, folderStore models.FolderRe
 		}
 
 		// add ZipFileID to new folder
+		logger.Debugf("adding zip file %s to folder %s", zipFileID, newFolder.Path)
 		newFolder.ZipFileID = &zipFileID
 		if err = folderStore.Update(ctx, newFolder); err != nil {
 			return err
 		}
 
 		// remove ZipFileID from old folder
+		logger.Debugf("removing zip file %s from folder %s", zipFileID, oldFolder.Path)
 		oldFolder.ZipFileID = nil
 		if err = folderStore.Update(ctx, oldFolder); err != nil {
 			return err
+		}
+	}
+
+	return nil
+}
+
+func transferZipFileEntries(ctx context.Context, folders models.FolderFinderCreator, files models.FileFinderUpdater, zipFileID models.FileID, oldPath, newPath string) error {
+	// move contained files if file is a zip file
+	zipFiles, err := files.FindByZipFileID(ctx, zipFileID)
+	if err != nil {
+		return fmt.Errorf("finding contained files in file %s: %w", oldPath, err)
+	}
+	for _, zf := range zipFiles {
+		zfBase := zf.Base()
+		oldZfPath := zfBase.Path
+		oldZfDir := filepath.Dir(oldZfPath)
+
+		// sanity check - ignore files which aren't under oldPath
+		if !strings.HasPrefix(oldZfPath, oldPath) {
+			continue
+		}
+
+		relZfDir, err := filepath.Rel(oldPath, oldZfDir)
+		if err != nil {
+			return fmt.Errorf("moving contained file %s: %w", zfBase.ID, err)
+		}
+		newZfDir := filepath.Join(newPath, relZfDir)
+
+		// folder should have been created by transferZipFolderHierarchy
+		newZfFolder, err := GetOrCreateFolderHierarchy(ctx, folders, newZfDir)
+		if err != nil {
+			return fmt.Errorf("getting or creating folder hierarchy: %w", err)
+		}
+
+		// update file parent folder
+		zfBase.ParentFolderID = newZfFolder.ID
+		logger.Debugf("moving %s to folder %s", zfBase.Path, newZfFolder.Path)
+		if err := files.Update(ctx, zf); err != nil {
+			return fmt.Errorf("updating file %s: %w", oldZfPath, err)
 		}
 	}
 
