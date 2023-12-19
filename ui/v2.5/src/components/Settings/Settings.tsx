@@ -101,10 +101,7 @@ const SettingTabs: React.FC = () => {
             <Nav.Item>
               <div className="advanced-switch">
                 <Form.Label htmlFor="advanced-settings">
-                  {/* {intl.formatMessage({
-                      id: "config.tools.scene_filename_parser.filename_pattern",
-                    })} */}
-                  Advanced Mode
+                  <FormattedMessage id="config.advanced_mode" />
                 </Form.Label>
                 <Form.Switch
                   id="advanced-settings"
