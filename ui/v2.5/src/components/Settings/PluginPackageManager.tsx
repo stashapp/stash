@@ -26,15 +26,20 @@ export const InstalledPluginPackages: React.FC = () => {
   const [jobID, setJobID] = useState<string>();
   const { job } = useMonitorJob(jobID, () => onPackageChanges());
 
-  const { data: installedPlugins, refetch: refetchPackages1 } =
-    useInstalledPluginPackages({
-      skip: loadUpgrades,
-    });
+  const {
+    data: installedPlugins,
+    refetch: refetchPackages1,
+    loading: loading1,
+    error: error1,
+  } = useInstalledPluginPackages({
+    skip: loadUpgrades,
+  });
 
   const {
     data: withStatus,
     refetch: refetchPackages2,
-    loading: statusLoading,
+    loading: loading2,
+    error: error2,
   } = useInstalledPluginPackagesStatus({
     skip: !loadUpgrades,
   });
@@ -78,13 +83,15 @@ export const InstalledPluginPackages: React.FC = () => {
     return installedPlugins?.installedPackages ?? [];
   }, [installedPlugins, withStatus]);
 
-  const loading = !!job || statusLoading;
+  const loading = !!job || loading1 || loading2;
+  const error = error1 || error2;
 
   return (
     <SettingSection headingID="config.plugins.installed_plugins">
       <div className="package-manager">
         <InstalledPackages
           loading={loading}
+          error={error?.message}
           packages={installedPackages}
           onCheckForUpdates={onCheckForUpdates}
           onUpdatePackages={(packages) =>

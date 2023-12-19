@@ -97,6 +97,7 @@ const InstalledPackageRow: React.FC<{
 const InstalledPackagesList: React.FC<{
   filter: string;
   loading?: boolean;
+  error?: string;
   updatesLoaded: boolean;
   packages: InstalledPackage[];
   checkedPackages: InstalledPackage[];
@@ -108,6 +109,7 @@ const InstalledPackagesList: React.FC<{
   setCheckedPackages,
   updatesLoaded,
   loading,
+  error,
 }) => {
   const checkedMap = useMemo(() => {
     const map: Record<string, boolean> = {};
@@ -141,6 +143,41 @@ const InstalledPackagesList: React.FC<{
     });
   }
 
+  function renderBody() {
+    if (error) {
+      return (
+        <tr>
+          <td />
+          <td colSpan={1000} className="source-error">
+            <Icon icon={faWarning} />
+            <span>{error}</span>
+          </td>
+        </tr>
+      );
+    }
+
+    if (filteredPackages.length === 0) {
+      return (
+        <tr className="package-manager-no-results">
+          <td colSpan={1000}>
+            <FormattedMessage id="package_manager.no_packages" />
+          </td>
+        </tr>
+      );
+    }
+
+    return filteredPackages.map((pkg) => (
+      <InstalledPackageRow
+        key={`${pkg.sourceURL}-${pkg.package_id}`}
+        loading={loading}
+        pkg={pkg}
+        selected={checkedMap[`${pkg.sourceURL}-${pkg.package_id}`] ?? false}
+        togglePackage={() => togglePackage(pkg)}
+        updatesLoaded={updatesLoaded}
+      />
+    ));
+  }
+
   return (
     <div className="package-manager-table-container">
       <Table>
@@ -166,28 +203,7 @@ const InstalledPackagesList: React.FC<{
             ) : undefined}
           </tr>
         </thead>
-        <tbody>
-          {filteredPackages.length === 0 ? (
-            <tr className="package-manager-no-results">
-              <td colSpan={updatesLoaded ? 4 : 3}>
-                <FormattedMessage id="package_manager.no_packages" />
-              </td>
-            </tr>
-          ) : (
-            filteredPackages.map((pkg) => (
-              <InstalledPackageRow
-                key={`${pkg.sourceURL}-${pkg.package_id}`}
-                loading={loading}
-                pkg={pkg}
-                selected={
-                  checkedMap[`${pkg.sourceURL}-${pkg.package_id}`] ?? false
-                }
-                togglePackage={() => togglePackage(pkg)}
-                updatesLoaded={updatesLoaded}
-              />
-            ))
-          )}
-        </tbody>
+        <tbody>{renderBody()}</tbody>
       </Table>
     </div>
   );
@@ -246,6 +262,7 @@ const InstalledPackagesToolbar: React.FC<{
 
 export const InstalledPackages: React.FC<{
   loading?: boolean;
+  error?: string;
   packages: InstalledPackage[];
   updatesLoaded: boolean;
   onCheckForUpdates: () => void;
@@ -258,6 +275,7 @@ export const InstalledPackages: React.FC<{
   onUpdatePackages,
   onUninstallPackages,
   loading,
+  error,
 }) => {
   const [checkedPackages, setCheckedPackages] = useState<InstalledPackage[]>(
     []
@@ -313,6 +331,7 @@ export const InstalledPackages: React.FC<{
         <InstalledPackagesList
           filter={filter}
           loading={loading}
+          error={error}
           packages={packages}
           // use original checked packages so that check boxes are not affected by filter
           checkedPackages={checkedPackages}

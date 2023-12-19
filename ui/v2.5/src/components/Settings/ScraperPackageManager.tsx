@@ -26,7 +26,12 @@ export const InstalledScraperPackages: React.FC = () => {
   const [jobID, setJobID] = useState<string>();
   const { job } = useMonitorJob(jobID, () => onPackageChanges());
 
-  const { data: installedScrapers, refetch: refetchPackages1 } =
+  const {
+    data: installedScrapers,
+    refetch: refetchPackages1,
+    loading: loading1,
+    error: error1,
+  } =
     useInstalledScraperPackages({
       skip: loadUpgrades,
     });
@@ -34,7 +39,8 @@ export const InstalledScraperPackages: React.FC = () => {
   const {
     data: withStatus,
     refetch: refetchPackages2,
-    loading: statusLoading,
+    loading: loading2,
+    error: error2,
   } = useInstalledScraperPackagesStatus({
     skip: !loadUpgrades,
   });
@@ -78,13 +84,15 @@ export const InstalledScraperPackages: React.FC = () => {
     return installedScrapers?.installedPackages ?? [];
   }, [installedScrapers, withStatus]);
 
-  const loading = !!job || statusLoading;
+  const loading = !!job || loading1 || loading2;
+  const error = error1 || error2;
 
   return (
     <SettingSection headingID="config.scraping.installed_scrapers">
       <div className="package-manager">
         <InstalledPackages
           loading={loading}
+          error={error?.message}
           packages={installedPackages}
           onCheckForUpdates={onCheckForUpdates}
           onUpdatePackages={(packages) =>
