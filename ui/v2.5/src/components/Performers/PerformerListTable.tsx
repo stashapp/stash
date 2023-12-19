@@ -12,6 +12,7 @@ import { usePerformerUpdate } from "src/core/StashService";
 import { useTableColumns } from "src/hooks/useTableColumns";
 import { ColumnSelector, IColumn } from "../Shared/ColumnSelector";
 import { RatingSystem } from "../Shared/Rating/RatingSystem";
+import cx from "classnames";
 import {
   FormatCircumcised,
   FormatHeight,
@@ -130,8 +131,8 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
     imageCol,
     nameCol,
     aliasesCol,
-    genderCol,
     ratingCol,
+    genderCol,
     ageCol,
     deathdateCol,
     favoriteCol,
@@ -188,6 +189,19 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
           input: {
             id: performerId,
             rating100: v,
+          },
+        },
+      });
+    }
+  }
+
+  function setFavorite(v: boolean, performerId: string) {
+    if (performerId) {
+      updatePerformer({
+        variables: {
+          input: {
+            id: performerId,
+            favorite: v,
           },
         },
       });
@@ -271,11 +285,15 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
 
   const FavoriteCell = (performer: GQL.PerformerDataFragment) => (
     <td className={`${favoriteCol.value}-data`}>
-      {performer.favorite && (
-        <Button disabled className="favorite">
-          <Icon icon={faHeart} />
-        </Button>
-      )}
+      <Button
+        className={cx(
+          "minimal",
+          performer.favorite ? "favorite" : "not-favorite"
+        )}
+        onClick={() => setFavorite(!performer.favorite, performer.id)}
+      >
+        <Icon icon={faHeart} />
+      </Button>
     </td>
   );
 
@@ -400,8 +418,8 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
       {maybeRenderCell(imageCol, ImageCell(performer))}
       {maybeRenderCell(nameCol, NameCell(performer))}
       {maybeRenderCell(aliasesCol, AliasesCell(performer))}
-      {maybeRenderCell(genderCol, GenderCell(performer))}
       {maybeRenderCell(ratingCol, RatingCell(performer))}
+      {maybeRenderCell(genderCol, GenderCell(performer))}
       {maybeRenderCell(ageCol, AgeCell(performer))}
       {maybeRenderCell(deathdateCol, DeathdateCell(performer))}
       {maybeRenderCell(favoriteCol, FavoriteCell(performer))}
@@ -444,8 +462,8 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
             {maybeRenderColHead(imageCol)}
             {maybeRenderColHead(nameCol)}
             {maybeRenderColHead(aliasesCol)}
-            {maybeRenderColHead(genderCol)}
             {maybeRenderColHead(ratingCol)}
+            {maybeRenderColHead(genderCol)}
             {maybeRenderColHead(ageCol)}
             {maybeRenderColHead(deathdateCol)}
             {maybeRenderColHead(favoriteCol)}
