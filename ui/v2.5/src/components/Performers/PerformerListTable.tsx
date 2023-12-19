@@ -283,7 +283,9 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
     const { locale } = useIntl();
     return (
       <td className={`${countryCol.value}-data`}>
-        <span className="ellips-data">{getCountryByISO(performer.country, locale)}</span>
+        <span className="ellips-data">
+          {getCountryByISO(performer.country, locale)}
+        </span>
       </td>
     );
   };
