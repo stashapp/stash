@@ -45,7 +45,7 @@ func (s *scriptScraper) runScraperScript(ctx context.Context, inString string, o
 			logger.Warnf("%s", err)
 		} else {
 			cmd = p.Command(context.TODO(), command[1:])
-			envVariable := filepath.Dir(filepath.Dir(s.config.path))
+			envVariable, _ := filepath.Abs(filepath.Dir(filepath.Dir(s.config.path)))
 			// Respect the users PYTHONPATH if set
 			if currentValue, set := os.LookupEnv("PYTHONPATH"); set {
 				envVariable = fmt.Sprintf("%s%c%s", currentValue, os.PathListSeparator, envVariable)
