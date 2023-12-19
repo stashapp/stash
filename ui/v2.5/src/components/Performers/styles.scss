@@ -206,9 +206,16 @@
   }
 }
 
+.table-list .height-imperial,
+.table-list .weight-imperial,
+.table-list .penis-length-imperial,
 .performer-disambiguation {
   color: $text-muted;
   font-size: 0.875em;
+}
+
+.table-list .age-data span {
+  border-bottom: 1px dotted #f5f8fa;
 }
 
 .performer-result .performer-details > span {

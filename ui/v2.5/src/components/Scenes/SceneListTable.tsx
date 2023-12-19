@@ -180,7 +180,7 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
   const TitleCell = (sceneLink: string, title: string) => (
     <td className={`${titleCol.value}-data`} title={title}>
       <Link to={sceneLink}>
-        <span>{title}</span>
+        <span className="ellips-data">{title}</span>
       </Link>
     </td>
   );
@@ -246,7 +246,7 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
           to={NavUtils.makeStudioScenesUrl(scene.studio)}
           title={scene.studio.name}
         >
-          <span>{scene.studio.name}</span>
+          <span className="ellips-data">{scene.studio.name}</span>
         </Link>
       )}
     </td>
@@ -258,7 +258,7 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
         {scene.movies.map((sceneMovie) => (
           <li key={sceneMovie.movie.id}>
             <Link to={NavUtils.makeMovieScenesUrl(sceneMovie.movie)}>
-              <span>{sceneMovie.movie.name}</span>
+              <span className="ellips-data">{sceneMovie.movie.name}</span>
             </Link>
           </li>
         ))}

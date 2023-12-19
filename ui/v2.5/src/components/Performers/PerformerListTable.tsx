@@ -12,7 +12,6 @@ import { usePerformerUpdate } from "src/core/StashService";
 import { useTableColumns } from "src/hooks/useTableColumns";
 import { ColumnSelector, IColumn } from "../Shared/ColumnSelector";
 import { RatingSystem } from "../Shared/Rating/RatingSystem";
-import { CountryFlag } from "../Shared/CountryFlag";
 import {
   FormatCircumcised,
   FormatHeight,
@@ -20,6 +19,7 @@ import {
   FormatWeight,
 } from "./PerformerList";
 import TextUtils from "src/utils/text";
+import { getCountryByISO } from "src/utils/country";
 
 interface IPerformerListTableProps {
   performers: GQL.PerformerDataFragment[];
@@ -210,14 +210,14 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
   const NameCell = (performer: GQL.PerformerDataFragment) => (
     <td className={`${nameCol.value}-data`} title={performer.name}>
       <Link to={`/performers/${performer.id}`}>
-        <h5>
+        <div className="ellips-data">
           {performer.name}
           {performer.disambiguation && (
             <span className="performer-disambiguation">
               {` (${performer.disambiguation})`}
             </span>
           )}
-        </h5>
+        </div>
       </Link>
     </td>
   );
@@ -226,7 +226,7 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
     let aliases = performer.alias_list ? performer.alias_list.join(", ") : "";
     return (
       <td className={`${nameCol.value}-data`} title={aliases}>
-        {aliases}
+        <span className="ellips-data">{aliases}</span>
       </td>
     );
   };
@@ -249,10 +249,19 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
   );
 
   const AgeCell = (performer: GQL.PerformerDataFragment) => (
-    <td className={`${ageCol.value}-data`}>
-      {performer.birthdate
-        ? TextUtils.age(performer.birthdate, performer.death_date)
-        : ""}
+    <td
+      className={`${ageCol.value}-data`}
+      title={
+        performer.birthdate
+          ? TextUtils.formatDate(intl, performer.birthdate ?? undefined)
+          : ""
+      }
+    >
+      <span>
+        {performer.birthdate
+          ? TextUtils.age(performer.birthdate, performer.death_date)
+          : ""}
+      </span>
     </td>
   );
 
@@ -270,15 +279,14 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
     </td>
   );
 
-  const CountryCell = (performer: GQL.PerformerDataFragment) => (
-    <td className={`${countryCol.value}-data`}>
-      <CountryFlag
-        country={performer.country}
-        className="mr-2"
-        includeName={true}
-      />
-    </td>
-  );
+  const CountryCell = (performer: GQL.PerformerDataFragment) => {
+    const { locale } = useIntl();
+    return (
+      <td className={`${countryCol.value}-data`}>
+        <span className="ellips-data">{getCountryByISO(performer.country, locale)}</span>
+      </td>
+    );
+  };
 
   const EthnicityCell = (performer: GQL.PerformerDataFragment) => (
     <td className={`${ethnicityCol.value}-data`}>{performer.ethnicity}</td>
@@ -286,7 +294,7 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
 
   const MeasurementsCell = (performer: GQL.PerformerDataFragment) => (
     <td className={`${measurementsCol.value}-data`}>
-      {performer.measurements}
+      <span className="ellips-data">{performer.measurements}</span>
     </td>
   );
 
@@ -307,7 +315,9 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
   );
 
   const HairColorCell = (performer: GQL.PerformerDataFragment) => (
-    <td className={`${hairColorCol.value}-data`}>{performer.hair_color}</td>
+    <td className={`${hairColorCol.value}-data`}>
+      <span className="ellips-data">{performer.hair_color}</span>
+    </td>
   );
 
   const EyeColorCell = (performer: GQL.PerformerDataFragment) => (
@@ -328,14 +338,14 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
 
   const CareerLengthCell = (performer: GQL.PerformerDataFragment) => (
     <td className={`${careerLengthCol.value}-data`}>
-      {performer.career_length}
+      <span className="ellips-data">{performer.career_length}</span>
     </td>
   );
 
   const SceneCountCell = (performer: GQL.PerformerDataFragment) => (
     <td className={`${sceneCountCol.value}-data`}>
       <Link to={NavUtils.makePerformerScenesUrl(performer)}>
-        <h6>{performer.scene_count}</h6>
+        {performer.scene_count}
       </Link>
     </td>
   );
@@ -343,7 +353,7 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
   const GalleryCountCell = (performer: GQL.PerformerDataFragment) => (
     <td className={`${galleryCountCol.value}-data`}>
       <Link to={NavUtils.makePerformerGalleriesUrl(performer)}>
-        <h6>{performer.gallery_count}</h6>
+        {performer.gallery_count}
       </Link>
     </td>
   );
@@ -351,15 +361,13 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
   const ImageCountCell = (performer: GQL.PerformerDataFragment) => (
     <td className={`${imageCountCol.value}-data`}>
       <Link to={NavUtils.makePerformerImagesUrl(performer)}>
-        <h6>{performer.image_count}</h6>
+        {performer.image_count}
       </Link>
     </td>
   );
 
   const OCounterCell = (performer: GQL.PerformerDataFragment) => (
-    <td className={`${oCounterCol.value}-data`}>
-      <h6>{performer.o_counter}</h6>
-    </td>
+    <td className={`${oCounterCol.value}-data`}>{performer.o_counter}</td>
   );
 
   let shiftKey = false;

@@ -531,20 +531,18 @@ textarea.text-input {
   td {
     position: relative;
     white-space: nowrap;
-  }
 
-  /* stylelint-disable */
-  td > a > span {
-    display: block;
-    max-width: 190px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  /* stylelint-enable */
+    .ellips-data {
+      display: block;
+      max-width: 190px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
 
-  td .star-rating-number {
-    display: none;
+    .star-rating-number {
+      display: none;
+    }
   }
 
   td.select-col {
@@ -556,6 +554,10 @@ textarea.text-input {
     border: none;
     position: sticky;
     z-index: 100;
+  }
+
+  tr {
+    border-collapse: collapse;
   }
 
   .date-head {
