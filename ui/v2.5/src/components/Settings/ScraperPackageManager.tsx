@@ -1,11 +1,10 @@
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 import * as GQL from "src/core/generated-graphql";
 import {
   evictQueries,
   getClient,
   queryAvailableScraperPackages,
   useInstalledScraperPackages,
-  useInstalledScraperPackagesStatus,
   mutateUpdateScraperPackages,
   mutateUninstallScraperPackages,
   mutateInstallScraperPackages,
@@ -26,24 +25,8 @@ export const InstalledScraperPackages: React.FC = () => {
   const [jobID, setJobID] = useState<string>();
   const { job } = useMonitorJob(jobID, () => onPackageChanges());
 
-  const {
-    data: installedScrapers,
-    refetch: refetchPackages1,
-    loading: loading1,
-    error: error1,
-  } =
-    useInstalledScraperPackages({
-      skip: loadUpgrades,
-    });
-
-  const {
-    data: withStatus,
-    refetch: refetchPackages2,
-    loading: loading2,
-    error: error2,
-  } = useInstalledScraperPackagesStatus({
-    skip: !loadUpgrades,
-  });
+  const { data, previousData, refetch, loading, error } =
+    useInstalledScraperPackages(loadUpgrades);
 
   async function onUpdatePackages(packages: GQL.PackageSpecInput[]) {
     const r = await mutateUpdateScraperPackages(packages);
@@ -57,11 +40,6 @@ export const InstalledScraperPackages: React.FC = () => {
     setJobID(r.data?.uninstallPackages);
   }
 
-  function refetchPackages() {
-    refetchPackages1();
-    refetchPackages2();
-  }
-
   function onPackageChanges() {
     // job is complete, refresh all local data
     const ac = getClient();
@@ -72,26 +50,21 @@ export const InstalledScraperPackages: React.FC = () => {
     if (!loadUpgrades) {
       setLoadUpgrades(true);
     } else {
-      refetchPackages();
+      refetch();
     }
   }
 
-  const installedPackages = useMemo(() => {
-    if (withStatus?.installedPackages) {
-      return withStatus.installedPackages;
-    }
-
-    return installedScrapers?.installedPackages ?? [];
-  }, [installedScrapers, withStatus]);
-
-  const loading = !!job || loading1 || loading2;
-  const error = error1 || error2;
+  // when loadUpgrades changes from false to true, data is set to undefined while the request is loading
+  // so use previousData as a fallback, which will be the result when loadUpgrades was false,
+  // to prevent displaying a "No packages found" message
+  const installedPackages =
+    data?.installedPackages ?? previousData?.installedPackages ?? [];
 
   return (
     <SettingSection headingID="config.scraping.installed_scrapers">
       <div className="package-manager">
         <InstalledPackages
-          loading={loading}
+          loading={!!job || loading}
           error={error?.message}
           packages={installedPackages}
           onCheckForUpdates={onCheckForUpdates}
@@ -111,7 +84,7 @@ export const InstalledScraperPackages: React.FC = () => {
               }))
             )
           }
-          updatesLoaded={loadUpgrades}
+          updatesLoaded={loadUpgrades && !loading}
         />
       </div>
     </SettingSection>

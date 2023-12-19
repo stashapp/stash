@@ -1,4 +1,9 @@
-import { ApolloCache, DocumentNode, FetchResult } from "@apollo/client";
+import {
+  ApolloCache,
+  DocumentNode,
+  FetchResult,
+  useQuery,
+} from "@apollo/client";
 import { Modifiers } from "@apollo/client/cache";
 import {
   isField,
@@ -2162,9 +2167,24 @@ export const mutateMigrate = (input: GQL.MigrateInput) =>
 
 /// Packages
 
-export const useInstalledScraperPackages = GQL.useInstalledScraperPackagesQuery;
-export const useInstalledScraperPackagesStatus =
-  GQL.useInstalledScraperPackagesStatusQuery;
+// Acts like GQL.useInstalledScraperPackagesStatusQuery if loadUpgrades is true,
+// and GQL.useInstalledScraperPackagesQuery if it is false
+export const useInstalledScraperPackages = <T extends boolean>(
+  loadUpgrades: T
+) => {
+  const query = loadUpgrades
+    ? GQL.InstalledScraperPackagesStatusDocument
+    : GQL.InstalledScraperPackagesDocument;
+
+  type TData = T extends true
+    ? GQL.InstalledScraperPackagesStatusQuery
+    : GQL.InstalledScraperPackagesQuery;
+  type TVariables = T extends true
+    ? GQL.InstalledScraperPackagesStatusQueryVariables
+    : GQL.InstalledScraperPackagesQueryVariables;
+
+  return useQuery<TData, TVariables>(query);
+};
 
 export const queryAvailableScraperPackages = (source: string) =>
   client.query<GQL.AvailableScraperPackagesQuery>({
@@ -2203,9 +2223,24 @@ export const mutateUninstallScraperPackages = (
     },
   });
 
-export const useInstalledPluginPackages = GQL.useInstalledPluginPackagesQuery;
-export const useInstalledPluginPackagesStatus =
-  GQL.useInstalledPluginPackagesStatusQuery;
+// Acts like GQL.useInstalledPluginPackagesStatusQuery if loadUpgrades is true,
+// and GQL.useInstalledPluginPackagesQuery if it is false
+export const useInstalledPluginPackages = <T extends boolean>(
+  loadUpgrades: T
+) => {
+  const query = loadUpgrades
+    ? GQL.InstalledPluginPackagesStatusDocument
+    : GQL.InstalledPluginPackagesDocument;
+
+  type TData = T extends true
+    ? GQL.InstalledPluginPackagesStatusQuery
+    : GQL.InstalledPluginPackagesQuery;
+  type TVariables = T extends true
+    ? GQL.InstalledPluginPackagesStatusQueryVariables
+    : GQL.InstalledPluginPackagesQueryVariables;
+
+  return useQuery<TData, TVariables>(query);
+};
 
 export const queryAvailablePluginPackages = (source: string) =>
   client.query<GQL.AvailablePluginPackagesQuery>({
