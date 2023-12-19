@@ -4,7 +4,7 @@ import { useToast } from "src/hooks/Toast";
 import { ConfigurationContext } from "src/hooks/Config";
 import { CheckBoxSelect } from "src/components/Shared/Select";
 
-interface IColumn {
+export interface IColumn {
   label: string;
   value: string;
 }

@@ -11,12 +11,7 @@ import SceneQueue from "src/models/sceneQueue";
 import { RatingSystem } from "../Shared/Rating/RatingSystem";
 import { useSceneUpdate } from "src/core/StashService";
 import { useTableColumns } from "src/hooks/useTableColumns";
-import { ColumnSelector } from "../Shared/ColumnSelector";
-
-interface IColumn {
-  value: string;
-  label: string;
-}
+import { ColumnSelector, IColumn } from "../Shared/ColumnSelector";
 
 interface ISceneListTableProps {
   scenes: GQL.SlimSceneDataFragment[];
