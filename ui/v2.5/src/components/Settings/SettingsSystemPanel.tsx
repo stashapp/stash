@@ -202,7 +202,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
         />
       </SettingSection>
 
-      <SettingSection headingID="config.general.hashing">
+      <SettingSection advanced headingID="config.general.hashing">
         <BooleanSetting
           id="calculate-md5-and-ohash"
           headingID="config.general.calculate_md5_and_ohash_label"
@@ -232,6 +232,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
 
       <SettingSection headingID="config.system.transcoding">
         <SelectSetting
+          advanced
           id="transcode-size"
           headingID="config.general.maximum_transcode_size_head"
           subHeadingID="config.general.maximum_transcode_size_desc"
@@ -274,6 +275,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
         />
 
         <StringListSetting
+          advanced
           id="transcode-input-args"
           headingID="config.general.ffmpeg.transcode.input_args.heading"
           subHeadingID="config.general.ffmpeg.transcode.input_args.desc"
@@ -281,6 +283,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
           value={general.transcodeInputArgs ?? []}
         />
         <StringListSetting
+          advanced
           id="transcode-output-args"
           headingID="config.general.ffmpeg.transcode.output_args.heading"
           subHeadingID="config.general.ffmpeg.transcode.output_args.desc"
@@ -289,6 +292,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
         />
 
         <StringListSetting
+          advanced
           id="live-transcode-input-args"
           headingID="config.general.ffmpeg.live_transcode.input_args.heading"
           subHeadingID="config.general.ffmpeg.live_transcode.input_args.desc"
@@ -296,6 +300,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
           value={general.liveTranscodeInputArgs ?? []}
         />
         <StringListSetting
+          advanced
           id="live-transcode-output-args"
           headingID="config.general.ffmpeg.live_transcode.output_args.heading"
           subHeadingID="config.general.ffmpeg.live_transcode.output_args.desc"
