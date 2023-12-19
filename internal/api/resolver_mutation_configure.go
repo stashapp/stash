@@ -114,6 +114,17 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 		c.Set(config.ScrapersPath, input.ScrapersPath)
 	}
 
+	refreshPluginCache := false
+	existingPluginsPath := c.GetPluginsPath()
+	if input.PluginsPath != nil && existingPluginsPath != *input.PluginsPath {
+		if err := validateDir(config.PluginsPath, *input.PluginsPath, false); err != nil {
+			return makeConfigGeneralResult(), err
+		}
+
+		refreshPluginCache = true
+		c.Set(config.PluginsPath, input.PluginsPath)
+	}
+
 	existingMetadataPath := c.GetMetadataPath()
 	if input.MetadataPath != nil && existingMetadataPath != *input.MetadataPath {
 		if err := validateDir(config.Metadata, *input.MetadataPath, true); err != nil {
@@ -366,6 +377,9 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 	manager.GetInstance().RefreshConfig()
 	if refreshScraperCache {
 		manager.GetInstance().RefreshScraperCache()
+	}
+	if refreshPluginCache {
+		manager.GetInstance().RefreshPluginCache()
 	}
 	if refreshStreamManager {
 		manager.GetInstance().RefreshStreamManager()
