@@ -223,6 +223,10 @@ func (r *mutationResolver) FileSetFingerprints(ctx context.Context, input FileSe
 	)
 
 	for _, i := range input.Fingerprints {
+		if i.Type == models.FingerprintTypeMD5 || i.Type == models.FingerprintTypeOshash {
+			return false, fmt.Errorf("cannot modify %s fingerprint", i.Type)
+		}
+
 		if i.Value == nil {
 			toDelete = append(toDelete, i.Type)
 		} else {
