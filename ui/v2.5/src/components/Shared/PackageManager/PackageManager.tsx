@@ -19,6 +19,12 @@ import { LoadingIndicator } from "../LoadingIndicator";
 import { ApolloError } from "@apollo/client";
 import { ClearableInput } from "../ClearableInput";
 
+function packageKey(
+  pkg: Pick<GQL.Package, "package_id" | "sourceURL">
+): string {
+  return `${pkg.sourceURL}-${pkg.package_id}`;
+}
+
 function displayVersion(intl: IntlShape, version: string | undefined | null) {
   if (!version) return intl.formatMessage({ id: "package_manager.unknown" });
 
@@ -130,7 +136,7 @@ const InstalledPackagesList: React.FC<{
   const checkedMap = useMemo(() => {
     const map: Record<string, boolean> = {};
     for (const pkg of checkedPackages) {
-      map[`${pkg.sourceURL}-${pkg.package_id}`] = true;
+      map[packageKey(pkg)] = true;
     }
     return map;
   }, [checkedPackages]);
@@ -152,9 +158,9 @@ const InstalledPackagesList: React.FC<{
 
     setCheckedPackages((prev) => {
       if (prev.includes(pkg)) {
-        return prev.filter((n) => n.package_id !== pkg.package_id);
+        return prev.filter((n) => packageKey(n) !== packageKey(pkg));
       } else {
-        return prev.concat(pkg);
+        return [...prev, pkg];
       }
     });
   }
@@ -184,10 +190,10 @@ const InstalledPackagesList: React.FC<{
 
     return filteredPackages.map((pkg) => (
       <InstalledPackageRow
-        key={`${pkg.sourceURL}-${pkg.package_id}`}
+        key={packageKey(pkg)}
         loading={loading}
         pkg={pkg}
-        selected={checkedMap[`${pkg.sourceURL}-${pkg.package_id}`] ?? false}
+        selected={checkedMap[packageKey(pkg)] ?? false}
         togglePackage={() => togglePackage(pkg)}
         updatesLoaded={updatesLoaded}
       />
@@ -306,7 +312,7 @@ export const InstalledPackages: React.FC<{
   useEffect(() => {
     setCheckedPackages((prev) => {
       const newVal = prev.filter((pkg) =>
-        packages.find((p) => p.package_id === pkg.package_id)
+        packages.find((p) => packageKey(p) === packageKey(pkg))
       );
       if (newVal.length !== prev.length) {
         return newVal;

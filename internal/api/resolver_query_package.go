@@ -98,11 +98,24 @@ func sortedPackageSpecKeys[V any](m map[models.PackageSpecInput]V) []models.Pack
 	}
 
 	sort.Slice(keys, func(i, j int) bool {
-		if strings.EqualFold(keys[i].ID, keys[j].ID) {
-			return keys[i].ID < keys[j].ID
+		a := keys[i]
+		b := keys[j]
+
+		aID := a.ID
+		bID := b.ID
+
+		if aID == bID {
+			return a.SourceURL < b.SourceURL
 		}
 
-		return strings.ToLower(keys[i].ID) < strings.ToLower(keys[j].ID)
+		aIDL := strings.ToLower(aID)
+		bIDL := strings.ToLower(bID)
+
+		if aIDL == bIDL {
+			return aID < bID
+		}
+
+		return aIDL < bIDL
 	})
 
 	return keys
