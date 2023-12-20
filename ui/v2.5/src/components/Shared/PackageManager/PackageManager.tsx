@@ -17,7 +17,13 @@ import { LoadingIndicator } from "../LoadingIndicator";
 import { ApolloError } from "@apollo/client";
 import { ClearableInput } from "../ClearableInput";
 
-function formatDate(intl: IntlShape, date: string | undefined | null) {
+function displayVersion(intl: IntlShape, version: string | undefined | null) {
+  if (!version) return intl.formatMessage({ id: "package_manager.unknown" });
+
+  return version;
+}
+
+function displayDate(intl: IntlShape, date: string | undefined | null) {
   if (!date) return;
 
   const d = new Date(date);
@@ -79,17 +85,21 @@ const InstalledPackageRow: React.FC<{
         <span className="package-id">{pkg.package_id}</span>
       </td>
       <td>
-        <span className="package-version">{pkg.version}</span>
-        <span className="package-date">{formatDate(intl, pkg.date)}</span>
+        <span className="package-version">
+          {displayVersion(intl, pkg.version)}
+        </span>
+        <span className="package-date">{displayDate(intl, pkg.date)}</span>
       </td>
-      {updatesLoaded ? (
+      {updatesLoaded && pkg.upgrade && (
         <td>
-          <span className="package-version">{pkg.upgrade?.version}</span>
+          <span className="package-version">
+            {displayVersion(intl, pkg.upgrade.version)}
+          </span>
           <span className="package-date">
-            {formatDate(intl, pkg.upgrade?.date)}
+            {displayDate(intl, pkg.upgrade.date)}
           </span>
         </td>
-      ) : undefined}
+      )}
     </tr>
   );
 };
@@ -578,8 +588,10 @@ const AvailablePackageRow: React.FC<{
         <span className="package-id">{pkg.package_id}</span>
       </td>
       <td>
-        <span className="package-version">{pkg.version}</span>
-        <span className="package-date">{formatDate(intl, pkg.date)}</span>
+        <span className="package-version">
+          {displayVersion(intl, pkg.version)}
+        </span>
+        <span className="package-date">{displayDate(intl, pkg.date)}</span>
       </td>
       <td>
         {renderRequiredBy()}
