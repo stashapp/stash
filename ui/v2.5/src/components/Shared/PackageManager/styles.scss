@@ -41,17 +41,27 @@
     vertical-align: middle;
   }
 
+  .package-name,
+  .package-id,
   .package-version,
   .package-date,
-  .package-name,
-  .package-id {
+  .package-latest-version,
+  .package-latest-date {
     display: block;
   }
 
+  .package-id,
   .package-date,
-  .package-id {
+  .package-latest-date {
     color: $muted-gray;
     font-size: 0.8rem;
+  }
+
+  .package-update-available {
+    .package-latest-version,
+    .package-latest-date {
+      font-weight: 700;
+    }
   }
 
   .package-manager-toolbar {

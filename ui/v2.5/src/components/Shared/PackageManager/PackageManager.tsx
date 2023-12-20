@@ -3,7 +3,9 @@ import React, { useState, useMemo, useEffect } from "react";
 import { FormattedMessage, IntlShape, useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import { Icon } from "../Icon";
+import cx from "classnames";
 import {
+  faAnglesUp,
   faChevronDown,
   faChevronRight,
   faRotate,
@@ -65,14 +67,17 @@ const InstalledPackageRow: React.FC<{
 }> = ({ loading, pkg, selected, togglePackage, updatesLoaded }) => {
   const intl = useIntl();
 
-  function rowClassname() {
-    if (pkg.upgrade?.version) {
-      return "package-update-available";
-    }
-  }
+  const updateAvailable = useMemo(() => {
+    if (!updatesLoaded) return false;
+    if (!pkg.date || !pkg.source_package?.date) return false;
+
+    const pkgDate = new Date(pkg.date);
+    const upgradeDate = new Date(pkg.source_package.date);
+    return upgradeDate > pkgDate;
+  }, [updatesLoaded, pkg]);
 
   return (
-    <tr className={rowClassname()}>
+    <tr className={cx({ "package-update-available": updateAvailable })}>
       <td>
         <Form.Check
           checked={selected}
@@ -90,13 +95,14 @@ const InstalledPackageRow: React.FC<{
         </span>
         <span className="package-date">{displayDate(intl, pkg.date)}</span>
       </td>
-      {updatesLoaded && pkg.upgrade && (
+      {updatesLoaded && pkg.source_package && (
         <td>
-          <span className="package-version">
-            {displayVersion(intl, pkg.upgrade.version)}
+          <span className="package-latest-version">
+            {displayVersion(intl, pkg.source_package.version)}
+            {updateAvailable && <Icon icon={faAnglesUp} />}
           </span>
-          <span className="package-date">
-            {displayDate(intl, pkg.upgrade.date)}
+          <span className="package-latest-date">
+            {displayDate(intl, pkg.source_package.date)}
           </span>
         </td>
       )}
@@ -123,9 +129,9 @@ const InstalledPackagesList: React.FC<{
 }) => {
   const checkedMap = useMemo(() => {
     const map: Record<string, boolean> = {};
-    checkedPackages.forEach((pkg) => {
+    for (const pkg of checkedPackages) {
       map[`${pkg.sourceURL}-${pkg.package_id}`] = true;
-    });
+    }
     return map;
   }, [checkedPackages]);
 

@@ -129,9 +129,9 @@ func (r *queryResolver) getInstalledPackagesWithUpgrades(ctx context.Context, pm
 	for _, k := range sortedPackageSpecKeys(packageStatusIndex) {
 		v := packageStatusIndex[k]
 		p := manifestToPackage(*v.Local)
-		if v.Upgradable() {
+		if v.Remote != nil {
 			pp := remotePackageToPackage(*v.Remote, allRemoteList)
-			p.Upgrade = pp
+			p.SourcePackage = pp
 		}
 		ret[i] = p
 		i++
@@ -146,19 +146,19 @@ func (r *queryResolver) InstalledPackages(ctx context.Context, typeArg PackageTy
 		return nil, err
 	}
 
-	installed, err := pm.ListInstalled(ctx)
-	if err != nil {
-		return nil, err
-	}
-
 	var ret []*Package
 
-	if sliceutil.Contains(graphql.CollectAllFields(ctx), "upgrade") {
+	if sliceutil.Contains(graphql.CollectAllFields(ctx), "source_package") {
 		ret, err = r.getInstalledPackagesWithUpgrades(ctx, pm)
 		if err != nil {
 			return nil, err
 		}
 	} else {
+		installed, err := pm.ListInstalled(ctx)
+		if err != nil {
+			return nil, err
+		}
+
 		ret = make([]*Package, len(installed))
 		i := 0
 		for _, k := range sortedPackageSpecKeys(installed) {

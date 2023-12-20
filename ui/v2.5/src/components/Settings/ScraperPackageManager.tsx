@@ -72,7 +72,7 @@ export const InstalledScraperPackages: React.FC = () => {
             onUpdatePackages(
               packages.map((p) => ({
                 id: p.package_id,
-                sourceURL: p.upgrade!.sourceURL,
+                sourceURL: p.sourceURL,
               }))
             )
           }

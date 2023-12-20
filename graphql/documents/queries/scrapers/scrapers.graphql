@@ -129,7 +129,7 @@ query InstalledScraperPackages {
 query InstalledScraperPackagesStatus {
   installedPackages(type: Scraper) {
     ...PackageData
-    upgrade {
+    source_package {
       ...PackageData
     }
   }
