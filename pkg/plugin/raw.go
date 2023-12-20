@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"sync"
 
@@ -52,6 +53,9 @@ func (t *rawPluginTask) Start() error {
 			logger.Warnf("%s", err)
 		} else {
 			cmd = p.Command(context.TODO(), command[1:])
+
+			envVariable, _ := filepath.Abs(filepath.Dir(filepath.Dir(t.plugin.path)))
+			python.AppendPythonPath(cmd, envVariable)
 		}
 	}
 
