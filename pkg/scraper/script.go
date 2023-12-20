@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
@@ -46,11 +45,7 @@ func (s *scriptScraper) runScraperScript(ctx context.Context, inString string, o
 		} else {
 			cmd = p.Command(context.TODO(), command[1:])
 			envVariable, _ := filepath.Abs(filepath.Dir(filepath.Dir(s.config.path)))
-			// Respect the users PYTHONPATH if set
-			if currentValue, set := os.LookupEnv("PYTHONPATH"); set {
-				envVariable = fmt.Sprintf("%s%c%s", currentValue, os.PathListSeparator, envVariable)
-			}
-			cmd.Env = append(os.Environ(), fmt.Sprintf("PYTHONPATH=%s", envVariable))
+			python.AppendPythonPath(cmd, envVariable)
 		}
 	}
 
