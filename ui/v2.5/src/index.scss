@@ -491,6 +491,18 @@ textarea.text-input {
     text-overflow: ellipsis;
     white-space: nowrap;
     width: 190px;
+
+    li {
+      display: inline;
+    }
+
+    li::after {
+      content: ", ";
+    }
+
+    li:last-child::after {
+      content: "";
+    }
   }
 
   .comma-list:hover {
@@ -511,25 +523,9 @@ textarea.text-input {
     z-index: 100;
   }
 
-  .comma-list li {
-    display: inline;
-  }
-
-  .comma-list li::after {
-    content: ", ";
-  }
-
-  .comma-list li:last-child::after {
-    content: "";
-  }
-
-  .comma-list li span {
-    font-weight: 600;
-    white-space: nowrap;
-  }
-
   td {
     position: relative;
+    text-align: left;
     white-space: nowrap;
 
     .ellips-data {
@@ -543,6 +539,13 @@ textarea.text-input {
     .star-rating-number {
       display: none;
     }
+
+    /* stylelint-disable selector-max-type */
+    a div,
+    a span {
+      font-weight: 600;
+      white-space: nowrap;
+    }
   }
 
   td.select-col {
@@ -553,6 +556,8 @@ textarea.text-input {
     background-color: #202b33;
     border: none;
     position: sticky;
+    text-align: left;
+    white-space: nowrap;
     z-index: 100;
   }
 

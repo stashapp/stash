@@ -365,7 +365,7 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
   const SceneCountCell = (performer: GQL.PerformerDataFragment) => (
     <td className={`${sceneCountCol.value}-data`}>
       <Link to={NavUtils.makePerformerScenesUrl(performer)}>
-        {performer.scene_count}
+        <span>{performer.scene_count}</span>
       </Link>
     </td>
   );
@@ -373,7 +373,7 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
   const GalleryCountCell = (performer: GQL.PerformerDataFragment) => (
     <td className={`${galleryCountCol.value}-data`}>
       <Link to={NavUtils.makePerformerGalleriesUrl(performer)}>
-        {performer.gallery_count}
+        <span>{performer.gallery_count}</span>
       </Link>
     </td>
   );
@@ -381,7 +381,7 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
   const ImageCountCell = (performer: GQL.PerformerDataFragment) => (
     <td className={`${imageCountCol.value}-data`}>
       <Link to={NavUtils.makePerformerImagesUrl(performer)}>
-        {performer.image_count}
+        <span>{performer.image_count}</span>
       </Link>
     </td>
   );
