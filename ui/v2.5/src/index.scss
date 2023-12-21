@@ -477,9 +477,8 @@ textarea.text-input {
     margin: 0;
   }
 
-  /* stylelint-disable declaration-no-important */
   .column-select {
-    margin: 0 !important;
+    margin: 0;
     padding: 7px;
   }
 
@@ -571,13 +570,14 @@ textarea.text-input {
 }
 
 .table-list tbody tr:hover {
-  background-color: #2d3942 !important;
+  background-color: #2d3942;
 }
 
 .table-list a {
   color: $text-color;
 }
 
+/* stylelint-disable declaration-no-important */
 .table-list td,
 .table-list th {
   font-size: 1rem;
