@@ -57,6 +57,14 @@
     font-size: 0.8rem;
   }
 
+  .package-id,
+  .package-version,
+  .package-date,
+  .package-latest-version,
+  .package-latest-date {
+    white-space: nowrap;
+  }
+
   .package-update-available {
     .package-latest-version,
     .package-latest-date {
