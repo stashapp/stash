@@ -281,12 +281,11 @@ textarea.scene-description {
   }
 }
 
-/* stylelint-disable */
+/* stylelint-disable selector-class-pattern */
 .table .cover_image-head,
 .table .cover_image-data {
   text-align: center;
 }
-/* stylelint-enable */
 
 input[type="range"].filter-slider {
   height: 100%;
