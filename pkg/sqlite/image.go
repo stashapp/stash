@@ -551,6 +551,18 @@ func (qb *ImageStore) OCountByPerformerID(ctx context.Context, performerID int) 
 	return ret, nil
 }
 
+func (qb *ImageStore) OCount(ctx context.Context) (int, error) {
+	table := qb.table()
+
+	q := dialect.Select(goqu.COALESCE(goqu.SUM("o_counter"), 0)).From(table)
+	var ret int
+	if err := querySimple(ctx, q, &ret); err != nil {
+		return 0, err
+	}
+
+	return ret, nil
+}
+
 func (qb *ImageStore) FindByFolderID(ctx context.Context, folderID models.FolderID) ([]*models.Image, error) {
 	table := qb.table()
 	fileTable := goqu.T(fileTable)
