@@ -4,6 +4,15 @@
   .package-source {
     font-weight: bold;
 
+    .source-collapse {
+      padding-left: 0;
+      padding-right: 0;
+
+      .btn {
+        color: $text-color;
+      }
+    }
+
     .source-controls {
       align-items: center;
       display: flex;
@@ -17,10 +26,6 @@
     cursor: pointer;
   }
 
-  .package-collapse-button {
-    color: $text-color;
-  }
-
   .package-manager-table-container {
     max-height: 300px;
     overflow-y: auto;
@@ -32,8 +37,12 @@
     top: 0;
     z-index: 1;
 
-    .button-cell {
+    .check-cell {
       width: 40px;
+    }
+
+    .collapse-cell {
+      width: 30px;
     }
   }
 
