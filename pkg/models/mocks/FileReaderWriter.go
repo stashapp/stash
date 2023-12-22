@@ -86,6 +86,20 @@ func (_m *FileReaderWriter) Destroy(ctx context.Context, id models.FileID) error
 	return r0
 }
 
+// DestroyFingerprints provides a mock function with given fields: ctx, fileID, types
+func (_m *FileReaderWriter) DestroyFingerprints(ctx context.Context, fileID models.FileID, types []string) error {
+	ret := _m.Called(ctx, fileID, types)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, models.FileID, []string) error); ok {
+		r0 = rf(ctx, fileID, types)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // Find provides a mock function with given fields: ctx, id
 func (_m *FileReaderWriter) Find(ctx context.Context, id ...models.FileID) ([]models.File, error) {
 	_va := make([]interface{}, len(id))
@@ -296,6 +310,20 @@ func (_m *FileReaderWriter) IsPrimary(ctx context.Context, fileID models.FileID)
 	}
 
 	return r0, r1
+}
+
+// ModifyFingerprints provides a mock function with given fields: ctx, fileID, fingerprints
+func (_m *FileReaderWriter) ModifyFingerprints(ctx context.Context, fileID models.FileID, fingerprints []models.Fingerprint) error {
+	ret := _m.Called(ctx, fileID, fingerprints)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, models.FileID, []models.Fingerprint) error); ok {
+		r0 = rf(ctx, fileID, fingerprints)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
 }
 
 // Query provides a mock function with given fields: ctx, options
