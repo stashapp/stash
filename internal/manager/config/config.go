@@ -1666,16 +1666,16 @@ func (i *Config) setDefaultValues() {
 	i.main.SetDefault(NoProxy, noProxyDefault)
 
 	// set default package sources
-	i.main.SetDefault(PluginPackageSources, map[string]string{
-		"name":       sourceDefaultName,
-		"url":        pluginPackageSourcesDefault,
-		"local_path": sourceDefaultPath,
-	})
-	i.main.SetDefault(ScraperPackageSources, map[string]string{
-		"name":       sourceDefaultName,
-		"url":        scraperPackageSourcesDefault,
-		"local_path": sourceDefaultPath,
-	})
+	i.main.SetDefault(PluginPackageSources, []map[string]string{{
+		"name":      sourceDefaultName,
+		"url":       pluginPackageSourcesDefault,
+		"localpath": sourceDefaultPath,
+	}})
+	i.main.SetDefault(ScraperPackageSources, []map[string]string{{
+		"name":      sourceDefaultName,
+		"url":       scraperPackageSourcesDefault,
+		"localpath": sourceDefaultPath,
+	}})
 }
 
 // setExistingSystemDefaults sets config options that are new and unset in an existing install,
