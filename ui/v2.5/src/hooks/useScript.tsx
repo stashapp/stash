@@ -14,6 +14,7 @@ const useScript = (urls: string | string[], condition?: boolean) => {
       const script = document.createElement("script");
 
       script.src = url;
+      script.async = false;
       script.defer = true;
       return script;
     });
