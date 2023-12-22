@@ -138,7 +138,7 @@ const (
 	PluginsSettingPrefix = PluginsSetting + "."
 	DisabledPlugins      = "plugins.disabled"
 
-	sourceDefaultPath = "stable"
+	sourceDefaultPath = "community"
 	sourceDefaultName = "Community (stable)"
 
 	PluginPackageSources        = "plugins.package_sources"
