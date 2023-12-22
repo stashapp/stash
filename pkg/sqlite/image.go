@@ -622,7 +622,7 @@ func (qb *ImageStore) Size(ctx context.Context) (float64, error) {
 	table := qb.table()
 	fileTable := fileTableMgr.table
 	q := dialect.Select(
-		goqu.SUM(fileTableMgr.table.Col("size")),
+		goqu.COALESCE(goqu.SUM(fileTableMgr.table.Col("size")), 0),
 	).From(table).InnerJoin(
 		imagesFilesJoinTable,
 		goqu.On(table.Col(idColumn).Eq(imagesFilesJoinTable.Col(imageIDColumn))),
