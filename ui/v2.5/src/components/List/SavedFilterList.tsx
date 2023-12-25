@@ -311,20 +311,22 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
   function maybeRenderSetDefaultButton() {
     if (persistState === PersistanceLevel.ALL) {
       return (
-        <Button
-          className="set-as-default-button"
-          variant="secondary"
-          size="sm"
-          onClick={() => onSetDefaultFilter()}
-        >
-          {intl.formatMessage({ id: "actions.set_as_default" })}
-        </Button>
+        <div className="mt-1">
+          <Button
+            className="set-as-default-button"
+            variant="secondary"
+            size="sm"
+            onClick={() => onSetDefaultFilter()}
+          >
+            {intl.formatMessage({ id: "actions.set_as_default" })}
+          </Button>
+        </div>
       );
     }
   }
 
   return (
-    <div>
+    <>
       {maybeRenderDeleteAlert()}
       {maybeRenderOverwriteAlert()}
       <InputGroup>
@@ -359,6 +361,6 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
       </InputGroup>
       {renderSavedFilters()}
       {maybeRenderSetDefaultButton()}
-    </div>
+    </>
   );
 };
