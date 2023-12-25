@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState } from "react";
 import {
   Button,
   ButtonGroup,
@@ -39,7 +39,6 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
   const intl = useIntl();
 
   const { data, error, loading, refetch } = useFindSavedFilters(filter.mode);
-  const oldError = useRef(error);
 
   const [filterName, setFilterName] = useState("");
   const [saving, setSaving] = useState(false);
@@ -55,14 +54,6 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
   const [setDefaultFilter] = useSetDefaultFilter();
 
   const savedFilters = data?.findSavedFilters ?? [];
-
-  useEffect(() => {
-    if (error && error !== oldError.current) {
-      Toast.error(error);
-    }
-
-    oldError.current = error;
-  }, [error, Toast, oldError]);
 
   async function onSaveFilter(name: string, id?: string) {
     const filterCopy = filter.clone();
@@ -285,6 +276,8 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
   }
 
   function renderSavedFilters() {
+    if (error) return <h6 className="text-center">{error.message}</h6>;
+
     if (loading || saving) {
       return (
         <div className="loading">
