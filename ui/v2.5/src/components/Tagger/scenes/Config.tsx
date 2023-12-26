@@ -29,10 +29,14 @@ const Config: React.FC<IConfigProps> = ({ show }) => {
     const input = blacklistRef.current.value;
     if (!input) return;
 
-    setConfig({
-      ...config,
-      blacklist: [...config.blacklist, input],
-    });
+    // don't add duplicate items
+    if (!config.blacklist.includes(input)) {
+      setConfig({
+        ...config,
+        blacklist: [...config.blacklist, input],
+      });
+    }
+
     blacklistRef.current.value = "";
   }
 
