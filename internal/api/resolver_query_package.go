@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"errors"
+	"fmt"
 	"sort"
 	"strings"
 
@@ -24,6 +25,10 @@ func getPackageManager(typeArg PackageType) (*pkg.Manager, error) {
 		pm = manager.GetInstance().PluginPackageManager
 	default:
 		return nil, ErrInvalidPackageType
+	}
+
+	if pm == nil {
+		return nil, fmt.Errorf("%s package manager not initialized", typeArg)
 	}
 
 	return pm, nil
