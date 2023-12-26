@@ -198,7 +198,16 @@ const Config: React.FC<IConfigProps> = ({ show }) => {
               <FormattedMessage id="component_tagger.config.blacklist_label" />
             </h5>
             <InputGroup>
-              <Form.Control className="text-input" ref={blacklistRef} />
+              <Form.Control
+                className="text-input"
+                ref={blacklistRef}
+                onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) => {
+                  if (e.key === "Enter") {
+                    addBlacklistItem();
+                    e.preventDefault();
+                  }
+                }}
+              />
               <InputGroup.Append>
                 <Button onClick={() => addBlacklistItem()}>
                   <FormattedMessage id="actions.add" />
