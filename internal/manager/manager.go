@@ -4,9 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
 	"os"
 	"path/filepath"
 	"runtime"
+	"time"
 
 	"github.com/stashapp/stash/internal/dlna"
 	"github.com/stashapp/stash/internal/log"
@@ -145,12 +147,31 @@ func (s *Manager) RefreshDLNA() {
 	}
 }
 
+func createPackageManager(localPath string, srcPathGetter pkg.SourcePathGetter) *pkg.Manager {
+	const timeout = 10 * time.Second
+	httpClient := &http.Client{
+		Transport: &http.Transport{
+			Proxy: http.ProxyFromEnvironment,
+		},
+		Timeout: timeout,
+	}
+
+	return &pkg.Manager{
+		Local: &pkg.Store{
+			BaseDir:      localPath,
+			ManifestFile: pkg.ManifestFile,
+		},
+		PackagePathGetter: srcPathGetter,
+		Client:            httpClient,
+	}
+}
+
 func (s *Manager) RefreshScraperSourceManager() {
-	s.ScraperPackageManager = initialisePackageManager(s.Config.GetScrapersPath(), s.Config.GetScraperPackagePathGetter())
+	s.ScraperPackageManager = createPackageManager(s.Config.GetScrapersPath(), s.Config.GetScraperPackagePathGetter())
 }
 
 func (s *Manager) RefreshPluginSourceManager() {
-	s.PluginPackageManager = initialisePackageManager(s.Config.GetPluginsPath(), s.Config.GetPluginPackagePathGetter())
+	s.PluginPackageManager = createPackageManager(s.Config.GetPluginsPath(), s.Config.GetPluginPackagePathGetter())
 }
 
 func setSetupDefaults(input *SetupInput) {
