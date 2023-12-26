@@ -200,10 +200,6 @@ func (s *Manager) Setup(ctx context.Context, input SetupInput) error {
 	setSetupDefaults(&input)
 	cfg := s.Config
 
-	if err := cfg.SetInitialConfig(); err != nil {
-		return fmt.Errorf("error setting initial configuration: %v", err)
-	}
-
 	// create the config directory if it does not exist
 	// don't do anything if config is already set in the environment
 	if !config.FileEnvSet() {
@@ -226,6 +222,10 @@ func (s *Manager) Setup(ctx context.Context, input SetupInput) error {
 		}
 
 		s.Config.SetConfigFile(configFile)
+	}
+
+	if err := cfg.SetInitialConfig(); err != nil {
+		return fmt.Errorf("error setting initial configuration: %v", err)
 	}
 
 	// create the generated directory if it does not exist
