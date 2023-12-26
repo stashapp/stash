@@ -104,6 +104,7 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 	}
 
 	refreshScraperCache := false
+	refreshScraperSource := false
 	existingScrapersPath := c.GetScrapersPath()
 	if input.ScrapersPath != nil && existingScrapersPath != *input.ScrapersPath {
 		if err := validateDir(config.ScrapersPath, *input.ScrapersPath, false); err != nil {
@@ -111,7 +112,21 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 		}
 
 		refreshScraperCache = true
+		refreshScraperSource = true
 		c.Set(config.ScrapersPath, input.ScrapersPath)
+	}
+
+	refreshPluginCache := false
+	refreshPluginSource := false
+	existingPluginsPath := c.GetPluginsPath()
+	if input.PluginsPath != nil && existingPluginsPath != *input.PluginsPath {
+		if err := validateDir(config.PluginsPath, *input.PluginsPath, false); err != nil {
+			return makeConfigGeneralResult(), err
+		}
+
+		refreshPluginCache = true
+		refreshPluginSource = true
+		c.Set(config.PluginsPath, input.PluginsPath)
 	}
 
 	existingMetadataPath := c.GetMetadataPath()
@@ -347,13 +362,11 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 		c.Set(config.DrawFunscriptHeatmapRange, input.DrawFunscriptHeatmapRange)
 	}
 
-	refreshScraperSource := false
 	if input.ScraperPackageSources != nil {
 		c.Set(config.ScraperPackageSources, input.ScraperPackageSources)
 		refreshScraperSource = true
 	}
 
-	refreshPluginSource := false
 	if input.PluginPackageSources != nil {
 		c.Set(config.PluginPackageSources, input.PluginPackageSources)
 		refreshPluginSource = true
@@ -366,6 +379,9 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 	manager.GetInstance().RefreshConfig()
 	if refreshScraperCache {
 		manager.GetInstance().RefreshScraperCache()
+	}
+	if refreshPluginCache {
+		manager.GetInstance().RefreshPluginCache()
 	}
 	if refreshStreamManager {
 		manager.GetInstance().RefreshStreamManager()

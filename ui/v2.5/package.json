@@ -72,7 +72,7 @@
     "videojs-contrib-dash": "^5.1.1",
     "videojs-mobile-ui": "^0.8.0",
     "videojs-seek-buttons": "^3.0.1",
-    "videojs-vr": "^2.0.0",
+    "videojs-vr": "1.8.0",
     "videojs-vtt.js": "^0.15.4",
     "yup": "^1.3.2"
   },

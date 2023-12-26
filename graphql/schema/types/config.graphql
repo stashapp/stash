@@ -73,6 +73,8 @@ input ConfigGeneralInput {
   metadataPath: String
   "Path to scrapers"
   scrapersPath: String
+  "Path to plugins"
+  pluginsPath: String
   "Path to cache"
   cachePath: String
   "Path to blobs - required for filesystem blob storage"
@@ -189,6 +191,8 @@ type ConfigGeneralResult {
   configFilePath: String!
   "Path to scrapers"
   scrapersPath: String!
+  "Path to plugins"
+  pluginsPath: String!
   "Path to cache"
   cachePath: String!
   "Path to blobs - required for filesystem blob storage"

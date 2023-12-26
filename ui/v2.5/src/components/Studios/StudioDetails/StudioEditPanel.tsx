@@ -47,7 +47,7 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
     url: yup.string().ensure(),
     details: yup.string().ensure(),
     parent_id: yup.string().required().nullable(),
-    aliases: yupUniqueAliases("aliases", "name"),
+    aliases: yupUniqueAliases(intl, "name"),
     ignore_auto_tag: yup.boolean().defined(),
     stash_ids: yup.mixed<GQL.StashIdInput[]>().defined(),
     image: yup.string().nullable().optional(),
@@ -158,7 +158,7 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
 
       <Form noValidate onSubmit={formik.handleSubmit} id="studio-edit">
         {renderInputField("name")}
-        {renderStringListField("aliases", "validation.aliases_must_be_unique")}
+        {renderStringListField("aliases")}
         {renderInputField("url")}
         {renderInputField("details", "textarea")}
         {renderParentStudioField()}

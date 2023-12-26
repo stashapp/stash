@@ -7666,10 +7666,10 @@ thehandy@^1.0.3:
   resolved "https://registry.yarnpkg.com/thehandy/-/thehandy-1.0.3.tgz#51c5e9bae5932a6e5c563203711d78610b99d402"
   integrity sha512-zuuyWKBx/jqku9+MZkdkoK2oLM2mS8byWVR/vkQYq/ygAT6gPAXwiT94rfGuqv+1BLmsyJxm69nhVIzOZjfyIg==
 
-three@0.125.2:
-  version "0.125.2"
-  resolved "https://registry.yarnpkg.com/three/-/three-0.125.2.tgz#dcba12749a2eb41522e15212b919cd3fbf729b12"
-  integrity sha512-7rIRO23jVKWcAPFdW/HREU2NZMGWPBZ4XwEMt0Ak0jwLUKVJhcKM55eCBWyGZq/KiQbeo1IeuAoo/9l2dzhTXA==
+three@0.93.0:
+  version "0.93.0"
+  resolved "https://registry.yarnpkg.com/three/-/three-0.93.0.tgz#3fd6c367ef4554abbb6e16ad69936283e895c123"
+  integrity sha512-Ys9+UBBsd6FxTZZl4BH7B4b2F+B2uR0cOwY7OQ/aCzU/VgO4Wmmr1LbWPH1fsTvSVik9KAuwxwOHlSC4IMGOLA==
 
 throttle-debounce@^5.0.0:
   version "5.0.0"
@@ -8180,14 +8180,14 @@ videojs-seek-buttons@^3.0.1:
   dependencies:
     global "^4.4.0"
 
-videojs-vr@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/videojs-vr/-/videojs-vr-2.0.0.tgz#3d86e3fececf7373cfb89b950ed6ab77ca783d2b"
-  integrity sha512-ix4iN8XHaDSEe89Jqybj9DuLKYuK33EIzcSI0IEdnv1KJuH8bd0PYlQEgqIZTOmWruFpW/+rjYFCVUQ9PTypJw==
+videojs-vr@1.8.0:
+  version "1.8.0"
+  resolved "https://registry.yarnpkg.com/videojs-vr/-/videojs-vr-1.8.0.tgz#7f2f07f760d8a329c615acd316e49da6ee8edd34"
+  integrity sha512-776gXqt8g6/rLeV56nn/aUcO0sRy+mgFITCw8cIqzTzl93SE1PEK/QE3YNqtppUfU5igayrx7WKsWhDOpsXMpw==
   dependencies:
     "@babel/runtime" "^7.14.5"
     global "^4.4.0"
-    three "0.125.2"
+    three "0.93.0"
     video.js "^6 || ^7"
     webvr-polyfill "0.10.12"
 

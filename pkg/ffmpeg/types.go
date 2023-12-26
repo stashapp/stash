@@ -64,7 +64,7 @@ type FFProbeStream struct {
 		VisualImpaired  int `json:"visual_impaired"`
 	} `json:"disposition"`
 	Duration          string `json:"duration"`
-	DurationTs        int    `json:"duration_ts"`
+	DurationTs        int64  `json:"duration_ts"`
 	HasBFrames        int    `json:"has_b_frames,omitempty"`
 	Height            int    `json:"height,omitempty"`
 	Index             int    `json:"index"`
@@ -78,7 +78,7 @@ type FFProbeStream struct {
 	RFrameRate        string `json:"r_frame_rate"`
 	Refs              int    `json:"refs,omitempty"`
 	SampleAspectRatio string `json:"sample_aspect_ratio,omitempty"`
-	StartPts          int    `json:"start_pts"`
+	StartPts          int64  `json:"start_pts"`
 	StartTime         string `json:"start_time"`
 	Tags              struct {
 		CreationTime json.JSONTime `json:"creation_time"`

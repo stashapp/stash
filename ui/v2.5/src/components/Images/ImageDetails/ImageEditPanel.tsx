@@ -49,7 +49,7 @@ export const ImageEditPanel: React.FC<IProps> = ({
   const schema = yup.object({
     title: yup.string().ensure(),
     code: yup.string().ensure(),
-    urls: yupUniqueStringList("urls"),
+    urls: yupUniqueStringList(intl),
     date: yupDateString(intl),
     details: yup.string().ensure(),
     photographer: yup.string().ensure(),
@@ -258,7 +258,7 @@ export const ImageEditPanel: React.FC<IProps> = ({
             {renderInputField("title")}
             {renderInputField("code", "text", "scene_code")}
 
-            {renderURLListField("urls", "validation.urls_must_be_unique")}
+            {renderURLListField("urls")}
 
             {renderDateField("date")}
             {renderInputField("photographer")}

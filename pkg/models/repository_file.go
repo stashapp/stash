@@ -72,11 +72,17 @@ type FileReader interface {
 	IsPrimary(ctx context.Context, fileID FileID) (bool, error)
 }
 
+type FileFingerprintWriter interface {
+	ModifyFingerprints(ctx context.Context, fileID FileID, fingerprints []Fingerprint) error
+	DestroyFingerprints(ctx context.Context, fileID FileID, types []string) error
+}
+
 // FileWriter provides all methods to modify files.
 type FileWriter interface {
 	FileCreator
 	FileUpdater
 	FileDestroyer
+	FileFingerprintWriter
 
 	UpdateCaptions(ctx context.Context, fileID FileID, captions []*VideoCaption) error
 }

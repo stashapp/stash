@@ -138,8 +138,14 @@ const (
 	PluginsSettingPrefix = PluginsSetting + "."
 	DisabledPlugins      = "plugins.disabled"
 
-	PluginPackageSources  = "plugins.package_sources"
-	ScraperPackageSources = "scrapers.package_sources"
+	sourceDefaultPath = "community"
+	sourceDefaultName = "Community (stable)"
+
+	PluginPackageSources        = "plugins.package_sources"
+	pluginPackageSourcesDefault = "https://stashapp.github.io/CommunityScripts/stable/index.yml"
+
+	ScraperPackageSources        = "scrapers.package_sources"
+	scraperPackageSourcesDefault = "https://stashapp.github.io/CommunityScrapers/stable/index.yml"
 
 	// i18n
 	Language = "language"
@@ -1713,6 +1719,18 @@ func (i *Config) setDefaultValues() {
 
 	// Set NoProxy default
 	i.main.SetDefault(NoProxy, noProxyDefault)
+
+	// set default package sources
+	i.main.SetDefault(PluginPackageSources, []map[string]string{{
+		"name":      sourceDefaultName,
+		"url":       pluginPackageSourcesDefault,
+		"localpath": sourceDefaultPath,
+	}})
+	i.main.SetDefault(ScraperPackageSources, []map[string]string{{
+		"name":      sourceDefaultName,
+		"url":       scraperPackageSourcesDefault,
+		"localpath": sourceDefaultPath,
+	}})
 }
 
 // setExistingSystemDefaults sets config options that are new and unset in an existing install,

@@ -104,7 +104,7 @@ func (t *GenerateMarkersTask) generateSceneMarkers(ctx context.Context) {
 }
 
 func (t *GenerateMarkersTask) generateMarker(videoFile *models.VideoFile, scene *models.Scene, sceneMarker *models.SceneMarker) {
-	sceneHash := t.Scene.GetHash(t.fileNamingAlgorithm)
+	sceneHash := scene.GetHash(t.fileNamingAlgorithm)
 	seconds := int(sceneMarker.Seconds)
 
 	g := t.generator
