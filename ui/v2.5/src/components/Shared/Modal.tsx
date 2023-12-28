@@ -60,24 +60,6 @@ export const ModalComponent: React.FC<IModal> = ({
       <div>{leftFooterButtons}</div>
       <div>
         {footerButtons}
-        <Button
-          disabled={isRunning || disabled}
-          variant={accept?.variant ?? "primary"}
-          onClick={accept?.onClick}
-          className="ml-2"
-        >
-          {isRunning ? (
-            <Spinner animation="border" role="status" size="sm" />
-          ) : (
-            accept?.text ?? (
-              <FormattedMessage
-                id="actions.close"
-                defaultMessage="Close"
-                description="Closes the current modal."
-              />
-            )
-          )}
-        </Button>
         {cancel ? (
           <Button
             disabled={isRunning}
@@ -96,6 +78,24 @@ export const ModalComponent: React.FC<IModal> = ({
         ) : (
           ""
         )}
+        <Button
+          disabled={isRunning || disabled}
+          variant={accept?.variant ?? "primary"}
+          onClick={accept?.onClick}
+          className="ml-2"
+        >
+          {isRunning ? (
+            <Spinner animation="border" role="status" size="sm" />
+          ) : (
+            accept?.text ?? (
+              <FormattedMessage
+                id="actions.close"
+                defaultMessage="Close"
+                description="Closes the current modal."
+              />
+            )
+          )}
+        </Button>
       </div>
     </Modal.Footer>
   </Modal>
