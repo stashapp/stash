@@ -2,48 +2,131 @@ import { FormikErrors, yupToFormErrors } from "formik";
 import { IntlShape } from "react-intl";
 import * as yup from "yup";
 
-export function yupUniqueStringList(fieldName: string) {
+// equivalent to yup.array(yup.string().required())
+// except that error messages will be e.g.
+// 'urls must not be blank' instead of
+// 'urls["0"] is a required field'
+export function yupRequiredStringArray(intl: IntlShape) {
   return yup
-    .array(yup.string().required())
-    .defined()
+    .array(
+      // we enforce that each string in the array is "required" in the outer test function
+      // so cast to avoid having to add a redundant `.required()` here
+      yup.string() as yup.StringSchema<string>
+    )
     .test({
-      name: "unique",
-      test: (value) => {
-        const values: string[] = [];
-        const dupes: number[] = [];
+      name: "blank",
+      test(value) {
+        if (!value || !value.length) return true;
+
+        const blanks: number[] = [];
         for (let i = 0; i < value.length; i++) {
-          const a = value[i];
-          if (values.includes(a)) {
-            dupes.push(i);
-          } else {
-            values.push(a);
+          const s = value[i];
+          if (!s) {
+            blanks.push(i);
           }
         }
-        if (dupes.length === 0) return true;
-        return new yup.ValidationError(dupes.join(" "), value, fieldName);
+        if (blanks.length === 0) return true;
+
+        // each error message is identical
+        const msg = yup.ValidationError.formatError(
+          intl.formatMessage({ id: "validation.blank" }),
+          {
+            label: this.schema.spec.label,
+            path: this.path,
+          }
+        );
+
+        // return multiple errors, one for each blank string
+        const errors = blanks.map(
+          (i) =>
+            new yup.ValidationError(
+              msg,
+              value[i],
+              // the path to this "sub-error": e.g. 'urls["0"]'
+              `${this.path}["${i}"]`,
+              "blank"
+            )
+        );
+
+        return new yup.ValidationError(errors, value, this.path, "blank");
       },
     });
 }
 
-export function yupUniqueAliases(fieldName: string, nameField: string) {
-  return yup
-    .array(yup.string().required())
+export function yupUniqueStringList(intl: IntlShape) {
+  return yupRequiredStringArray(intl)
     .defined()
     .test({
       name: "unique",
-      test: (value, context) => {
-        const aliases = [context.parent[nameField].toLowerCase()];
+      test(value) {
+        const values: string[] = [];
         const dupes: number[] = [];
         for (let i = 0; i < value.length; i++) {
-          const a = value[i].toLowerCase();
-          if (aliases.includes(a)) {
+          const s = value[i];
+          if (values.includes(s)) {
             dupes.push(i);
           } else {
-            aliases.push(a);
+            values.push(s);
           }
         }
         if (dupes.length === 0) return true;
-        return new yup.ValidationError(dupes.join(" "), value, fieldName);
+
+        const msg = yup.ValidationError.formatError(
+          intl.formatMessage({ id: "validation.unique" }),
+          {
+            label: this.schema.spec.label,
+            path: this.path,
+          }
+        );
+        const errors = dupes.map(
+          (i) =>
+            new yup.ValidationError(
+              msg,
+              value[i],
+              `${this.path}["${i}"]`,
+              "unique"
+            )
+        );
+        return new yup.ValidationError(errors, value, this.path, "unique");
+      },
+    });
+}
+
+export function yupUniqueAliases(intl: IntlShape, nameField: string) {
+  return yupRequiredStringArray(intl)
+    .defined()
+    .test({
+      name: "unique",
+      test(value) {
+        const aliases = [this.parent[nameField].toLowerCase()];
+        const dupes: number[] = [];
+        for (let i = 0; i < value.length; i++) {
+          const s = value[i].toLowerCase();
+          if (aliases.includes(s)) {
+            dupes.push(i);
+          } else {
+            aliases.push(s);
+          }
+        }
+        if (dupes.length === 0) return true;
+
+        const msg = yup.ValidationError.formatError(
+          intl.formatMessage({ id: "validation.unique" }),
+          {
+            label: this.schema.spec.label,
+            path: this.path,
+          }
+        );
+        const errors = dupes.map(
+          (i) =>
+            new yup.ValidationError(
+              msg,
+              value[i],
+              `${this.path}["${i}"]`,
+              "unique"
+            )
+        );
+        return new yup.ValidationError(errors, value, this.path, "unique");
       },
     });
 }
@@ -54,7 +137,7 @@ export function yupDateString(intl: IntlShape) {
     .ensure()
     .test({
       name: "date",
-      test: (value) => {
+      test(value) {
         if (!value) return true;
         if (!value.match(/^\d{4}-\d{2}-\d{2}$/)) return false;
         if (Number.isNaN(Date.parse(value))) return false;

@@ -138,6 +138,14 @@ export const SettingsConfigurationPanel: React.FC = () => {
         />
 
         <StringSetting
+          id="plugins-path"
+          headingID="config.general.plugins_path.heading"
+          subHeadingID="config.general.plugins_path.description"
+          value={general.pluginsPath ?? undefined}
+          onChange={(v) => saveGeneral({ pluginsPath: v })}
+        />
+
+        <StringSetting
           id="metadata-path"
           headingID="config.general.metadata_path.heading"
           subHeadingID="config.general.metadata_path.description"

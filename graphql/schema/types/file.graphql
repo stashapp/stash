@@ -113,3 +113,15 @@ input MoveFilesInput {
   "valid only for single file id. If empty, existing basename is used"
   destination_basename: String
 }
+
+input SetFingerprintsInput {
+  type: String!
+  "an null value will remove the fingerprint"
+  value: String
+}
+
+input FileSetFingerprintsInput {
+  id: ID!
+  "only supplied fingerprint types will be modified"
+  fingerprints: [SetFingerprintsInput!]!
+}

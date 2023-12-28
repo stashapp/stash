@@ -112,7 +112,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
   const schema = yup.object({
     title: yup.string().ensure(),
     code: yup.string().ensure(),
-    urls: yupUniqueStringList("urls"),
+    urls: yupUniqueStringList(intl),
     date: yupDateString(intl),
     director: yup.string().ensure(),
     rating100: yup.number().integer().nullable().defined(),
@@ -824,12 +824,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
             {renderInputField("title")}
             {renderInputField("code", "text", "scene_code")}
 
-            {renderURLListField(
-              "urls",
-              "validation.urls_must_be_unique",
-              onScrapeSceneURL,
-              urlScrapable
-            )}
+            {renderURLListField("urls", onScrapeSceneURL, urlScrapable)}
 
             {renderDateField("date")}
             {renderInputField("director")}

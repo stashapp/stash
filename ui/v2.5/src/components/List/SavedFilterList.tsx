@@ -44,7 +44,6 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
   const intl = useIntl();
 
   const { data, error, loading, refetch } = useFindSavedFilters(filter.mode);
-  const oldError = useRef(error);
 
   const [filterName, setFilterName] = useState("");
   const [saving, setSaving] = useState(false);
@@ -62,14 +61,6 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
   const [saveUI] = useConfigureUI();
 
   const savedFilters = data?.findSavedFilters ?? [];
-
-  useEffect(() => {
-    if (error && error !== oldError.current) {
-      Toast.error(error);
-    }
-
-    oldError.current = error;
-  }, [error, Toast, oldError]);
 
   async function onSaveFilter(name: string, id?: string) {
     const filterCopy = filter.clone();
@@ -355,6 +346,8 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
   }
 
   function renderSavedFilters() {
+    if (error) return <h6 className="text-center">{error.message}</h6>;
+
     if (loading || saving) {
       return (
         <div className="loading">
@@ -381,20 +374,22 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
   function maybeRenderSetDefaultButton() {
     if (view) {
       return (
-        <Button
-          className="set-as-default-button"
-          variant="secondary"
-          size="sm"
-          onClick={() => onSetDefaultFilter()}
-        >
-          {intl.formatMessage({ id: "actions.set_as_default" })}
-        </Button>
+        <div className="mt-1">
+          <Button
+            className="set-as-default-button"
+            variant="secondary"
+            size="sm"
+            onClick={() => onSetDefaultFilter()}
+          >
+            {intl.formatMessage({ id: "actions.set_as_default" })}
+          </Button>
+        </div>
       );
     }
   }
 
   return (
-    <div>
+    <>
       {maybeRenderDeleteAlert()}
       {maybeRenderOverwriteAlert()}
       <InputGroup>
@@ -429,6 +424,6 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
       </InputGroup>
       {renderSavedFilters()}
       {maybeRenderSetDefaultButton()}
-    </div>
+    </>
   );
 };

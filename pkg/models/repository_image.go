@@ -31,6 +31,7 @@ type ImageCounter interface {
 	Count(ctx context.Context) (int, error)
 	CountByFileID(ctx context.Context, fileID FileID) (int, error)
 	CountByGalleryID(ctx context.Context, galleryID int) (int, error)
+	OCount(ctx context.Context) (int, error)
 	OCountByPerformerID(ctx context.Context, performerID int) (int, error)
 }
 

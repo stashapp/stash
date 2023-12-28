@@ -68,12 +68,46 @@ func (qb *fingerprintQueryBuilder) insertJoins(ctx context.Context, fileID model
 	return nil
 }
 
+func (qb *fingerprintQueryBuilder) upsertJoins(ctx context.Context, fileID models.FileID, f []models.Fingerprint) error {
+	types := make([]string, len(f))
+	for i, ff := range f {
+		types[i] = ff.Type
+	}
+
+	if err := qb.destroyJoins(ctx, fileID, types); err != nil {
+		return err
+	}
+
+	for _, ff := range f {
+		if err := qb.insert(ctx, fileID, ff); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (qb *fingerprintQueryBuilder) replaceJoins(ctx context.Context, fileID models.FileID, f []models.Fingerprint) error {
 	if err := qb.destroy(ctx, []int{int(fileID)}); err != nil {
 		return err
 	}
 
 	return qb.insertJoins(ctx, fileID, f)
+}
+
+func (qb *fingerprintQueryBuilder) destroyJoins(ctx context.Context, fileID models.FileID, types []string) error {
+	table := qb.table()
+	q := dialect.Delete(table).Where(
+		table.Col(fileIDColumn).Eq(fileID),
+		table.Col("type").In(types),
+	)
+
+	_, err := exec(ctx, q)
+	if err != nil {
+		return fmt.Errorf("deleting from %s: %w", table.GetTable(), err)
+	}
+
+	return nil
 }
 
 func (qb *fingerprintQueryBuilder) table() exp.IdentifierExpression {

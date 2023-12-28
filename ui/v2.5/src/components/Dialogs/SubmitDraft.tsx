@@ -1,81 +1,181 @@
-import React, { useState } from "react";
-import { useMutation, DocumentNode } from "@apollo/client";
-import { Button, Form } from "react-bootstrap";
+import React, { useEffect, useState } from "react";
+import { Form } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
+import {
+  mutateSubmitStashBoxPerformerDraft,
+  mutateSubmitStashBoxSceneDraft,
+} from "src/core/StashService";
 import { ModalComponent } from "src/components/Shared/Modal";
 import { getStashboxBase } from "src/utils/stashbox";
 import { FormattedMessage, useIntl } from "react-intl";
 import { faPaperPlane } from "@fortawesome/free-solid-svg-icons";
 
 interface IProps {
-  show: boolean;
-  entity: {
-    name?: string | null;
-    id: string;
-    title?: string | null;
-    stash_ids: { stash_id: string; endpoint: string }[];
-  };
+  type: "scene" | "performer";
+  entity: Pick<
+    GQL.SceneDataFragment | GQL.PerformerDataFragment,
+    "id" | "stash_ids"
+  >;
   boxes: Pick<GQL.StashBox, "name" | "endpoint">[];
-  query: DocumentNode;
+  show: boolean;
   onHide: () => void;
 }
 
-type Variables =
-  | GQL.SubmitStashBoxSceneDraftMutationVariables
-  | GQL.SubmitStashBoxPerformerDraftMutationVariables;
-type Query =
-  | GQL.SubmitStashBoxSceneDraftMutation
-  | GQL.SubmitStashBoxPerformerDraftMutation;
-
-const isSceneDraft = (
-  query: Query | null
-): query is GQL.SubmitStashBoxSceneDraftMutation =>
-  (query as GQL.SubmitStashBoxSceneDraftMutation).submitStashBoxSceneDraft !==
-  undefined;
-
-const getResponseId = (query: Query | null) =>
-  isSceneDraft(query)
-    ? query.submitStashBoxSceneDraft
-    : query?.submitStashBoxPerformerDraft;
-
 export const SubmitStashBoxDraft: React.FC<IProps> = ({
-  show,
+  type,
   boxes,
   entity,
-  query,
+  show,
   onHide,
 }) => {
-  const [submit, { data, error, loading }] = useMutation<Query, Variables>(
-    query
-  );
-  const [selectedBoxIndex, setSelectedBoxIndex] = useState(0);
   const intl = useIntl();
 
-  const handleSubmit = () => {
-    submit({
-      variables: {
-        input: {
-          id: entity.id,
-          stash_box_index: selectedBoxIndex,
-        },
-      },
-    });
-  };
+  const [selectedBoxIndex, setSelectedBoxIndex] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string>();
+  const [reviewUrl, setReviewUrl] = useState<string>();
 
-  const selectedBox =
-    boxes.length > selectedBoxIndex ? boxes[selectedBoxIndex] : undefined;
+  // this can be undefined, if e.g. boxes is empty
+  // since we aren't using noUncheckedIndexedAccess, add undefined explicitly
+  const selectedBox: (typeof boxes)[number] | undefined =
+    boxes[selectedBoxIndex];
 
-  const handleSelectBox = (e: React.ChangeEvent<HTMLSelectElement>) =>
-    setSelectedBoxIndex(Number.parseInt(e.currentTarget.value) ?? 0);
+  // #4354: reset state when shown, or if any props change
+  useEffect(() => {
+    if (show) {
+      setSelectedBoxIndex(0);
+      setLoading(false);
+      setError(undefined);
+      setReviewUrl(undefined);
+    }
+  }, [show, type, boxes, entity]);
 
-  if (!selectedBox) {
-    return <></>;
+  async function doSubmit() {
+    if (type === "scene") {
+      const r = await mutateSubmitStashBoxSceneDraft({
+        id: entity.id,
+        stash_box_index: selectedBoxIndex,
+      });
+      return r.data?.submitStashBoxSceneDraft;
+    } else if (type === "performer") {
+      const r = await mutateSubmitStashBoxPerformerDraft({
+        id: entity.id,
+        stash_box_index: selectedBoxIndex,
+      });
+      return r.data?.submitStashBoxPerformerDraft;
+    }
   }
 
-  // If the scene has an attached stash_id from that endpoint, the operation will be an update
-  const isUpdate =
-    entity.stash_ids.find((id) => id.endpoint === selectedBox.endpoint) !==
-    undefined;
+  async function onSubmit() {
+    if (!selectedBox) return;
+
+    try {
+      setLoading(true);
+      const responseId = await doSubmit();
+
+      const stashboxBase = getStashboxBase(selectedBox.endpoint);
+      if (responseId) {
+        setReviewUrl(`${stashboxBase}drafts/${responseId}`);
+      } else {
+        // if the mutation returned a null id but didn't error, then just link to the drafts page
+        setReviewUrl(`${stashboxBase}drafts`);
+      }
+    } catch (e) {
+      if (e instanceof Error && e.message) {
+        setError(e.message);
+      } else {
+        setError(String(e));
+      }
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function renderContents() {
+    if (error !== undefined) {
+      return (
+        <>
+          <h6 className="mt-2">
+            <FormattedMessage id="stashbox.submission_failed" />
+          </h6>
+          <div>{error}</div>
+        </>
+      );
+    } else if (reviewUrl !== undefined) {
+      return (
+        <>
+          <h6>
+            <FormattedMessage id="stashbox.submission_successful" />
+          </h6>
+          <div>
+            <a target="_blank" rel="noreferrer noopener" href={reviewUrl}>
+              <FormattedMessage
+                id="stashbox.go_review_draft"
+                values={{ endpoint_name: selectedBox?.name }}
+              />
+            </a>
+          </div>
+        </>
+      );
+    } else {
+      return (
+        <Form.Group className="form-row align-items-end">
+          <Form.Label className="col-6">
+            <FormattedMessage id="stashbox.selected_stash_box" />:
+          </Form.Label>
+          <Form.Control
+            as="select"
+            onChange={(e) => setSelectedBoxIndex(Number(e.currentTarget.value))}
+            value={selectedBoxIndex}
+            className="col-6 input-control"
+          >
+            {boxes.map((box, i) => (
+              <option value={i} key={`${box.endpoint}-${i}`}>
+                {box.name}
+              </option>
+            ))}
+          </Form.Control>
+        </Form.Group>
+      );
+    }
+  }
+
+  function getFooterProps() {
+    if (error !== undefined || reviewUrl !== undefined) {
+      return {
+        accept: {
+          onClick: () => onHide(),
+        },
+      };
+    }
+
+    // If the scene has an attached stash_id from that endpoint, the operation will be an update
+    const isUpdate =
+      entity.stash_ids.find((id) => id.endpoint === selectedBox?.endpoint) !==
+      undefined;
+
+    return {
+      footerButtons: isUpdate && !loading && (
+        <span className="mr-2 align-middle">
+          <FormattedMessage
+            id="stashbox.submit_update"
+            values={{ endpoint_name: selectedBox?.name }}
+          />
+        </span>
+      ),
+      accept: {
+        onClick: () => onSubmit(),
+        text: intl.formatMessage({
+          id: isUpdate ? "actions.submit_update" : "actions.submit",
+        }),
+        variant: isUpdate ? "primary" : "success",
+      },
+      cancel: {
+        onClick: () => onHide(),
+        variant: "secondary",
+      },
+    };
+  }
 
   return (
     <ModalComponent
@@ -83,77 +183,11 @@ export const SubmitStashBoxDraft: React.FC<IProps> = ({
       header={intl.formatMessage({ id: "actions.submit_stash_box" })}
       isRunning={loading}
       show={show}
-      accept={{
-        onClick: onHide,
-      }}
+      onHide={onHide}
+      disabled={!selectedBox}
+      {...getFooterProps()}
     >
-      {data === undefined ? (
-        <>
-          <Form.Group className="form-row align-items-end">
-            <Form.Label className="col-6">
-              <FormattedMessage id="stashbox.selected_stash_box" />:
-            </Form.Label>
-            <Form.Control
-              as="select"
-              onChange={handleSelectBox}
-              value={selectedBoxIndex}
-              className="col-6 input-control"
-            >
-              {boxes.map((box, i) => (
-                <option value={i} key={`${box.endpoint}-${i}`}>
-                  {box.name}
-                </option>
-              ))}
-            </Form.Control>
-          </Form.Group>
-          <div className="text-right">
-            {isUpdate && (
-              <span className="mr-2">
-                <FormattedMessage
-                  id="stashbox.submit_update"
-                  values={{ endpoint_name: boxes[selectedBoxIndex].name }}
-                />
-              </span>
-            )}
-            <Button
-              onClick={handleSubmit}
-              variant={isUpdate ? "primary" : "success"}
-            >
-              <FormattedMessage
-                id={`actions.${isUpdate ? "submit_update" : "submit"}`}
-              />{" "}
-            </Button>
-          </div>
-        </>
-      ) : (
-        <>
-          <h6>
-            <FormattedMessage id="stashbox.submission_successful" />
-          </h6>
-          <div>
-            <a
-              target="_blank"
-              rel="noreferrer noopener"
-              href={`${getStashboxBase(
-                boxes[selectedBoxIndex].endpoint
-              )}drafts/${getResponseId(data)}`}
-            >
-              <FormattedMessage
-                id="stashbox.go_review_draft"
-                values={{ endpoint_name: boxes[selectedBoxIndex].name }}
-              />
-            </a>
-          </div>
-        </>
-      )}
-      {error !== undefined && (
-        <>
-          <h6 className="mt-2">
-            <FormattedMessage id="stashbox.submission_failed" />
-          </h6>
-          <div>{error.message}</div>
-        </>
-      )}
+      {renderContents()}
     </ModalComponent>
   );
 };

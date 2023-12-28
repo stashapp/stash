@@ -30,18 +30,51 @@ Stash provides the following built-in scrapers:
 | Freeones | `search` Performer scraper for freeones.xxx. |
 | Auto Tag | Scene `fragment` scraper that matches existing performers, studio and tags using the filename. |
 
-## Adding Scrapers
+## Managing Scrapers
 
+Scrapers can be installed and managed from the `Settings > Metadata Providers` page. 
+
+Scrapers are installed using the `Available Scrapers` section. This section allows configuring sources from which to install scrapers. The `Community (stable)` source is configured by default. This source contains scrapers for the current _stable_ version of stash.
+
+These are the scraper sources maintained by the stashapp organisation:
+
+| Name | Source URL | Recommended Local Path | Notes |
+|------|-----------|------------------------|-------|
+| Community (stable) | `https://stashapp.github.io/CommunityScrapers/stable/index.yml` | `stable` | For the current stable version of stash. |
+| Community (develop) | `https://stashapp.github.io/CommunityScrapers/develop/index.yml` | `develop` | For the develop version of stash. |
+
+Installed scrapers can be updated or uninstalled from the `Installed Scrapers` section.
+
+### Source URLs
+
+The source URL must return a yaml file containing all the available packages for the source. An example source yaml file looks like the following:
+
+```
+- id: <package id>
+  name: <package name>
+  version: <version>
+  date: <date>
+  requires:
+  - <ids of packages required by this package (optional)>
+  - ...
+  path: <path to package zip file>
+  sha256: <sha256 of zip>
+  metadata:
+    <optional key/value pairs for extra information>
+- ...
+```
+
+Path can be a relative path to the zip file or an external URL.
+
+## Adding Scrapers manually
 
 By default, Stash looks for scraper configurations in the `scrapers` sub-directory of the directory where the stash `config.yml` is read. This will either be the `$HOME/.stash` directory or the current working directory.
 
-Scrapers are added by placing yaml configuration files (format: `scrapername.yml`) in the `scrapers` directory.
+Scrapers are added manually by placing yaml configuration files (format: `scrapername.yml`) in the `scrapers` directory.
 
 > **⚠️ Note:** Some scrapers may require more than just the yaml file, consult the individual scraper documentation
 
 After the yaml files are added, removed or edited while stash is running, they can be reloaded going to `Settings > Metadata Providers > Scrapers` and clicking `Reload Scrapers`.
-
-The stash community maintains a number of custom scraper configuration files that can be found [here](https://github.com/stashapp/CommunityScrapers).
   
 ## Using Scrapers
 

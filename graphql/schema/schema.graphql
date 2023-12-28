@@ -311,6 +311,8 @@ type Mutation {
   moveFiles(input: MoveFilesInput!): Boolean!
   deleteFiles(ids: [ID!]!): Boolean!
 
+  fileSetFingerprints(input: FileSetFingerprintsInput!): Boolean!
+
   # Saved filters
   saveFilter(input: SaveFilterInput!): SavedFilter!
   destroySavedFilter(input: DestroyFilterInput!): Boolean!

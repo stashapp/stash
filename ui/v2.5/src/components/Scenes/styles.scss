@@ -139,9 +139,9 @@ textarea.scene-description {
   z-index: 8;
 
   .image-thumbnail {
-    height: auto;
-    max-height: 50px;
-    max-width: 100%;
+    height: 50px;
+    object-fit: contain;
+    width: 100%;
   }
 
   a {

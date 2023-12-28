@@ -168,27 +168,90 @@ func (r *queryResolver) Stats(ctx context.Context) (*StatsResultType, error) {
 	var ret StatsResultType
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		repo := r.repository
-		scenesQB := repo.Scene
+		sceneQB := repo.Scene
 		imageQB := repo.Image
 		galleryQB := repo.Gallery
-		studiosQB := repo.Studio
-		performersQB := repo.Performer
-		moviesQB := repo.Movie
-		tagsQB := repo.Tag
-		scenesCount, _ := scenesQB.Count(ctx)
-		scenesSize, _ := scenesQB.Size(ctx)
-		scenesDuration, _ := scenesQB.Duration(ctx)
-		imageCount, _ := imageQB.Count(ctx)
-		imageSize, _ := imageQB.Size(ctx)
-		galleryCount, _ := galleryQB.Count(ctx)
-		performersCount, _ := performersQB.Count(ctx)
-		studiosCount, _ := studiosQB.Count(ctx)
-		moviesCount, _ := moviesQB.Count(ctx)
-		tagsCount, _ := tagsQB.Count(ctx)
-		totalOCount, _ := scenesQB.OCount(ctx)
-		totalPlayDuration, _ := scenesQB.PlayDuration(ctx)
-		totalPlayCount, _ := scenesQB.PlayCount(ctx)
-		uniqueScenePlayCount, _ := scenesQB.UniqueScenePlayCount(ctx)
+		studioQB := repo.Studio
+		performerQB := repo.Performer
+		movieQB := repo.Movie
+		tagQB := repo.Tag
+
+		// embrace the error
+
+		scenesCount, err := sceneQB.Count(ctx)
+		if err != nil {
+			return err
+		}
+
+		scenesSize, err := sceneQB.Size(ctx)
+		if err != nil {
+			return err
+		}
+
+		scenesDuration, err := sceneQB.Duration(ctx)
+		if err != nil {
+			return err
+		}
+
+		imageCount, err := imageQB.Count(ctx)
+		if err != nil {
+			return err
+		}
+
+		imageSize, err := imageQB.Size(ctx)
+		if err != nil {
+			return err
+		}
+
+		galleryCount, err := galleryQB.Count(ctx)
+		if err != nil {
+			return err
+		}
+
+		performersCount, err := performerQB.Count(ctx)
+		if err != nil {
+			return err
+		}
+
+		studiosCount, err := studioQB.Count(ctx)
+		if err != nil {
+			return err
+		}
+
+		moviesCount, err := movieQB.Count(ctx)
+		if err != nil {
+			return err
+		}
+
+		tagsCount, err := tagQB.Count(ctx)
+		if err != nil {
+			return err
+		}
+
+		scenesTotalOCount, err := sceneQB.OCount(ctx)
+		if err != nil {
+			return err
+		}
+		imagesTotalOCount, err := imageQB.OCount(ctx)
+		if err != nil {
+			return err
+		}
+		totalOCount := scenesTotalOCount + imagesTotalOCount
+
+		totalPlayDuration, err := sceneQB.PlayDuration(ctx)
+		if err != nil {
+			return err
+		}
+
+		totalPlayCount, err := sceneQB.PlayCount(ctx)
+		if err != nil {
+			return err
+		}
+
+		uniqueScenePlayCount, err := sceneQB.UniqueScenePlayCount(ctx)
+		if err != nil {
+			return err
+		}
 
 		ret = StatsResultType{
 			SceneCount:        scenesCount,

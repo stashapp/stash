@@ -660,7 +660,6 @@ div.react-select__menu,
 div.dropdown-menu {
   background-color: $secondary;
   color: $text-color;
-  z-index: 1600;
 
   .react-select__option,
   .dropdown-item {
@@ -1346,6 +1345,7 @@ dl.details-list {
 
 .invalid-feedback {
   display: block;
+  white-space: pre-wrap;
 
   &:empty {
     display: none;

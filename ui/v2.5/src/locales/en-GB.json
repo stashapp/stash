@@ -360,6 +360,10 @@
       "number_of_parallel_task_for_scan_generation_desc": "Set to 0 for auto-detection. Warning running more tasks than is required to achieve 100% cpu utilisation will decrease performance and potentially cause other issues.",
       "number_of_parallel_task_for_scan_generation_head": "Number of parallel task for scan/generation",
       "parallel_scan_head": "Parallel Scan/Generation",
+      "plugins_path": {
+        "description": "Directory location of plugin configuration files",
+        "heading": "Plugins Path"
+      },
       "preview_generation": "Preview Generation",
       "python_path": {
         "description": "Path to the python executable (not just the folder). Used for script scrapers and plugins. If blank, python will be resolved from the environment",
@@ -917,6 +921,7 @@
     "unknown": "Unknown",
     "wall": "Wall"
   },
+  "distance": "Distance",
   "donate": "Donate",
   "dupe_check": {
     "description": "Levels below 'Exact' can take longer to calculate. False positives might also be returned on lower accuracy levels.",
@@ -1088,7 +1093,7 @@
     "required_by": "Required by {packages}",
     "source": {
       "name": "Name",
-      "url": "Index URL",
+      "url": "Source URL",
       "local_path": {
         "heading": "Local Path",
         "description": "Relative path to store packages for this source. Note that changing this requires the packages to be moved manually."
@@ -1098,6 +1103,7 @@
     "selected_only": "Selected only",
     "show_all": "Show all",
     "uninstall": "Uninstall",
+    "unknown": "<unknown>",
     "update": "Update",
     "version": "Version"
   },
@@ -1390,11 +1396,10 @@
   "url": "URL",
   "urls": "URLs",
   "validation": {
-    "aliases_must_be_unique": "aliases must be unique",
+    "blank": "${path} must not be blank",
     "date_invalid_form": "${path} must be in YYYY-MM-DD form",
     "required": "${path} is a required field",
-    "unique": "${path} must be unique",
-    "urls_must_be_unique": "URLs must be unique"
+    "unique": "${path} must be unique"
   },
   "videos": "Videos",
   "video_codec": "Video Codec",
