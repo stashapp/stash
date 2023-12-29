@@ -43,7 +43,7 @@ export const PhashFilter: React.FC<IPhashFilterProps> = ({
           className="btn-secondary"
           onChange={valueChanged}
           value={value ? value.value : ""}
-          placeholder={intl.formatMessage({ id: "phash" })}
+          placeholder={intl.formatMessage({ id: "media_info.phash" })}
         />
       </Form.Group>
       {criterion.modifier !== CriterionModifier.IsNull &&

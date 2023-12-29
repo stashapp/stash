@@ -921,6 +921,7 @@
     "unknown": "Unknown",
     "wall": "Wall"
   },
+  "distance": "Distance",
   "donate": "Donate",
   "dupe_check": {
     "description": "Levels below 'Exact' can take longer to calculate. False positives might also be returned on lower accuracy levels.",

@@ -65,8 +65,14 @@ input[type="range"].zoom-slider {
 .saved-filter-list-menu {
   width: 300px;
 
+  &.dropdown-menu.show {
+    display: flex;
+    flex-direction: column;
+  }
+
   .set-as-default-button {
     float: right;
+    margin-right: 0.5rem;
   }
 
   .LoadingIndicator {
@@ -94,12 +100,17 @@ input[type="range"].zoom-slider {
       align-items: center;
       display: inline;
       overflow-x: hidden;
+      padding-left: 1.25rem;
       padding-right: 0.25rem;
       text-overflow: ellipsis;
     }
 
     .btn-group {
       margin-left: auto;
+
+      .btn {
+        border-radius: 0;
+      }
     }
 
     .delete-button {

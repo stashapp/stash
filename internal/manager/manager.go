@@ -4,9 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
 	"os"
 	"path/filepath"
 	"runtime"
+	"time"
 
 	"github.com/stashapp/stash/internal/dlna"
 	"github.com/stashapp/stash/internal/log"
@@ -145,12 +147,31 @@ func (s *Manager) RefreshDLNA() {
 	}
 }
 
+func createPackageManager(localPath string, srcPathGetter pkg.SourcePathGetter) *pkg.Manager {
+	const timeout = 10 * time.Second
+	httpClient := &http.Client{
+		Transport: &http.Transport{
+			Proxy: http.ProxyFromEnvironment,
+		},
+		Timeout: timeout,
+	}
+
+	return &pkg.Manager{
+		Local: &pkg.Store{
+			BaseDir:      localPath,
+			ManifestFile: pkg.ManifestFile,
+		},
+		PackagePathGetter: srcPathGetter,
+		Client:            httpClient,
+	}
+}
+
 func (s *Manager) RefreshScraperSourceManager() {
-	s.ScraperPackageManager = initialisePackageManager(s.Config.GetScrapersPath(), s.Config.GetScraperPackagePathGetter())
+	s.ScraperPackageManager = createPackageManager(s.Config.GetScrapersPath(), s.Config.GetScraperPackagePathGetter())
 }
 
 func (s *Manager) RefreshPluginSourceManager() {
-	s.PluginPackageManager = initialisePackageManager(s.Config.GetPluginsPath(), s.Config.GetPluginPackagePathGetter())
+	s.PluginPackageManager = createPackageManager(s.Config.GetPluginsPath(), s.Config.GetPluginPackagePathGetter())
 }
 
 func setSetupDefaults(input *SetupInput) {
@@ -179,10 +200,6 @@ func (s *Manager) Setup(ctx context.Context, input SetupInput) error {
 	setSetupDefaults(&input)
 	cfg := s.Config
 
-	if err := cfg.SetInitialConfig(); err != nil {
-		return fmt.Errorf("error setting initial configuration: %v", err)
-	}
-
 	// create the config directory if it does not exist
 	// don't do anything if config is already set in the environment
 	if !config.FileEnvSet() {
@@ -205,6 +222,10 @@ func (s *Manager) Setup(ctx context.Context, input SetupInput) error {
 		}
 
 		s.Config.SetConfigFile(configFile)
+	}
+
+	if err := cfg.SetInitialConfig(); err != nil {
+		return fmt.Errorf("error setting initial configuration: %v", err)
 	}
 
 	// create the generated directory if it does not exist
