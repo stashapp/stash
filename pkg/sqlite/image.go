@@ -642,6 +642,24 @@ func (qb *ImageStore) All(ctx context.Context) ([]*models.Image, error) {
 	return qb.getMany(ctx, qb.selectDataset())
 }
 
+func orientationCriterionHandler(orientation *models.OrientationEnum, heightColumn string, widthColumn string, addJoinFn func(f *filterBuilder)) criterionHandlerFunc {
+	return func(ctx context.Context, f *filterBuilder) {
+		if orientation != nil && orientation.IsValid() {
+			if addJoinFn != nil {
+				addJoinFn(f)
+			}
+			switch *orientation {
+			case models.OrientationPortrait:
+				f.addWhere(fmt.Sprintf("ROUND(%s*1.0/%s, 3) < 1.0", widthColumn, heightColumn))
+			case models.OrientationLandscape:
+				f.addWhere(fmt.Sprintf("ROUND(%s*1.0/%s, 3) > 1.0", widthColumn, heightColumn))
+			case models.OrientationSquare:
+				f.addWhere(fmt.Sprintf("ROUND(%s*1.0/%s, 3) = 1.0", widthColumn, heightColumn))
+			}
+		}
+	}
+}
+
 func (qb *ImageStore) validateFilter(imageFilter *models.ImageFilterType) error {
 	const and = "AND"
 	const or = "OR"
@@ -709,6 +727,7 @@ func (qb *ImageStore) makeFilter(ctx context.Context, imageFilter *models.ImageF
 	query.handleCriterion(ctx, imageURLsCriterionHandler(imageFilter.URL))
 
 	query.handleCriterion(ctx, resolutionCriterionHandler(imageFilter.Resolution, "image_files.height", "image_files.width", qb.addImageFilesTable))
+	query.handleCriterion(ctx, orientationCriterionHandler(imageFilter.Orientation, "image_files.height", "image_files.width", qb.addImageFilesTable))
 	query.handleCriterion(ctx, imageIsMissingCriterionHandler(qb, imageFilter.IsMissing))
 
 	query.handleCriterion(ctx, imageTagsCriterionHandler(qb, imageFilter.Tags))
