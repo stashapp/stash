@@ -359,7 +359,7 @@ const ScenePage: React.FC<IProps> = ({
               <FormattedMessage id="details" />
             </Nav.Link>
           </Nav.Item>
-          {(queueScenes ?? []).length > 0 ? (
+          {queueScenes.length > 0 ? (
             <Nav.Item>
               <Nav.Link eventKey="scene-queue-panel">
                 <FormattedMessage id="queue" />
@@ -595,7 +595,7 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
 
   const autoplay = queryParams.get("autoplay") === "true";
   const currentQueueIndex = useMemo(
-    () => (queueScenes ? queueScenes.findIndex((s) => s.id === id) : -1),
+    () => queueScenes.findIndex((s) => s.id === id),
     [queueScenes, id]
   );
 
@@ -695,7 +695,6 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
   function onDelete() {
     if (
       continuePlaylist &&
-      queueScenes &&
       currentQueueIndex >= 0 &&
       currentQueueIndex < queueScenes.length - 1
     ) {
@@ -706,8 +705,6 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
   }
 
   async function onQueueNext() {
-    if (!queueScenes) return;
-
     if (currentQueueIndex >= 0 && currentQueueIndex < queueScenes.length - 1) {
       loadScene(queueScenes[currentQueueIndex + 1].id, true);
     } else {
@@ -728,8 +725,6 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
   }
 
   async function onQueuePrevious() {
-    if (!queueScenes) return;
-
     if (currentQueueIndex > 0) {
       loadScene(queueScenes[currentQueueIndex - 1].id, true);
     } else {
@@ -745,8 +740,6 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
   }
 
   async function onQueueRandom() {
-    if (!queueScenes) return;
-
     if (sceneQueue.query) {
       const { query } = sceneQueue;
       const pages = Math.ceil(queueTotal / query.itemsPerPage);
@@ -769,8 +762,6 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
   }
 
   function onComplete() {
-    if (!queueScenes) return;
-
     // load the next scene if we're continuing
     if (continuePlaylist) {
       onQueueNext();
@@ -804,7 +795,7 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
       <ScenePage
         scene={scene}
         setTimestamp={setTimestamp}
-        queueScenes={queueScenes ?? []}
+        queueScenes={queueScenes}
         queueStart={queueStart}
         onDelete={onDelete}
         onQueueNext={onQueueNext}
