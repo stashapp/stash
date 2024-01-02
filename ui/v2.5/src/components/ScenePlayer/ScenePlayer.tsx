@@ -554,7 +554,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         enterOnRotate: true,
         exitOnRotate: true,
         lockOnRotate: true,
-        lockToLandscapeOnEnter: isLandscape,
+        lockToLandscapeOnEnter: uiConfig?.disableMobileMediaAutoRotateEnabled ? false : isLandscape,
       },
       touchControls: {
         disabled: true,

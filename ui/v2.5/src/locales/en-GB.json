@@ -701,6 +701,7 @@
             "heading": "Continue playlist by default"
           },
           "enable_chromecast": "Enable Chromecast",
+          "disable_mobile_media_auto_rotate": "Disable auto-rotate of fullscreen media on Mobile",
           "show_ab_loop_controls": "Show AB Loop plugin controls",
           "show_scrubber": "Show Scrubber",
           "track_activity": "Track Activity",
