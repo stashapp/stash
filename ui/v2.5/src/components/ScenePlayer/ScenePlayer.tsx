@@ -680,6 +680,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     autoplay,
     interfaceConfig?.autostartVideo,
     uiConfig?.alwaysStartFromBeginning,
+    uiConfig?.disableMobileMediaAutoRotateEnabled,
     _initialTimestamp,
   ]);
 
