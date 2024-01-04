@@ -56,7 +56,7 @@ func (e GenderEnum) MarshalGQL(w io.Writer) {
 }
 
 type GenderCriterionInput struct {
-	Value    *GenderEnum       `json:"value"`
+	Value    []GenderEnum      `json:"value"`
 	Modifier CriterionModifier `json:"modifier"`
 }
 

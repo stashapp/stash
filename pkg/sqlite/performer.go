@@ -600,7 +600,8 @@ func (qb *PerformerStore) makeFilter(ctx context.Context, filter *models.Perform
 
 	query.handleCriterion(ctx, criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
 		if gender := filter.Gender; gender != nil {
-			f.addWhere(tableName+".gender = ?", gender.Value.String())
+			v := utils.StringerSliceToStringSlice(gender.Value)
+			enumCriterionHandler(gender.Modifier, v, tableName+".gender")(ctx, f)
 		}
 	}))
 
