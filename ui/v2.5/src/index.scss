@@ -475,6 +475,13 @@ textarea.text-input {
 
   table {
     margin: 0;
+
+    thead {
+      background-color: #202b33;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
   }
 
   .column-select {
@@ -551,13 +558,10 @@ textarea.text-input {
     text-align: center;
   }
 
+  /* stylelint-disable declaration-no-important */
   th {
-    background-color: #202b33;
-    border: none;
-    position: sticky;
-    text-align: left;
+    border: none !important;
     white-space: nowrap;
-    z-index: 100;
   }
 
   tr {
@@ -577,7 +581,6 @@ textarea.text-input {
   color: $text-color;
 }
 
-/* stylelint-disable declaration-no-important */
 .table-list td,
 .table-list th {
   font-size: 1rem;
@@ -591,6 +594,12 @@ textarea.text-input {
   &:first-child {
     border-left: none;
   }
+}
+
+.border-row {
+  background-color: #414c53;
+  height: 1px;
+  padding: 0 !important;
 }
 
 @media (max-width: 576px) {

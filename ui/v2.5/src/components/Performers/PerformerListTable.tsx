@@ -483,6 +483,9 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
             {maybeRenderColHead(imageCountCol)}
             {maybeRenderColHead(oCounterCol)}
           </tr>
+          <tr>
+            <th className="border-row" colSpan={100}></th>
+          </tr>
         </thead>
         <tbody>{props.performers.map(renderPerformerRow)}</tbody>
       </Table>

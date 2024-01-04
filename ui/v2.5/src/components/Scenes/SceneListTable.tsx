@@ -468,6 +468,9 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
             {maybeRenderColHead(videoCodecCol)}
             {maybeRenderColHead(audioCodecCol)}
           </tr>
+          <tr>
+            <th className="border-row" colSpan={100}></th>
+          </tr>
         </thead>
         <tbody>{props.scenes.map(renderSceneRow)}</tbody>
       </Table>
