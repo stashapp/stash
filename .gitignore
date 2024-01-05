@@ -61,3 +61,4 @@ node_modules
 dist
 .DS_Store
 /.local*
+cmd/stash/blobs/*

@@ -224,6 +224,9 @@ const InstalledPackagesList: React.FC<{
               </th>
             ) : undefined}
           </tr>
+          <tr>
+            <th className="border-row" colSpan={100}></th>
+          </tr>
         </thead>
         <tbody>{renderBody()}</tbody>
       </Table>
@@ -982,6 +985,9 @@ const AvailablePackagesList: React.FC<{
               <th>
                 <FormattedMessage id="package_manager.description" />
               </th>
+            </tr>
+            <tr>
+              <th className="border-row" colSpan={100}></th>
             </tr>
           </thead>
           <tbody>{renderBody()}</tbody>
