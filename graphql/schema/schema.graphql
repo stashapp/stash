@@ -150,6 +150,12 @@ type Query {
     input: ScrapeSingleMovieInput!
   ): [ScrapedMovie!]!
 
+  "Scrape for a single image"
+  scrapeSingleImage(
+    source: ScraperSourceInput!
+    input: ScrapeSingleImageInput!
+  ): [ScrapedImage!]!
+
   "Scrapes content based on a URL"
   scrapeURL(url: String!, ty: ScrapeContentType!): ScrapedContent
 
@@ -159,6 +165,8 @@ type Query {
   scrapeSceneURL(url: String!): ScrapedScene
   "Scrapes a complete gallery record based on a URL"
   scrapeGalleryURL(url: String!): ScrapedGallery
+  "Scrapes a complete image record based on a URL"
+  scrapeImageURL(url: String!): ScrapedImage
   "Scrapes a complete movie record based on a URL"
   scrapeMovieURL(url: String!): ScrapedMovie
 

@@ -27,7 +27,7 @@ func (r *mutationResolver) getImage(ctx context.Context, id int) (ret *models.Im
 	return ret, nil
 }
 
-func (r *mutationResolver) ImageUpdate(ctx context.Context, input ImageUpdateInput) (ret *models.Image, err error) {
+func (r *mutationResolver) ImageUpdate(ctx context.Context, input models.ImageUpdateInput) (ret *models.Image, err error) {
 	translator := changesetTranslator{
 		inputMap: getUpdateInputMap(ctx),
 	}
@@ -45,7 +45,7 @@ func (r *mutationResolver) ImageUpdate(ctx context.Context, input ImageUpdateInp
 	return r.getImage(ctx, ret.ID)
 }
 
-func (r *mutationResolver) ImagesUpdate(ctx context.Context, input []*ImageUpdateInput) (ret []*models.Image, err error) {
+func (r *mutationResolver) ImagesUpdate(ctx context.Context, input []*models.ImageUpdateInput) (ret []*models.Image, err error) {
 	inputMaps := getUpdateInputMaps(ctx)
 
 	// Start the transaction and save the image
@@ -88,7 +88,7 @@ func (r *mutationResolver) ImagesUpdate(ctx context.Context, input []*ImageUpdat
 	return newRet, nil
 }
 
-func (r *mutationResolver) imageUpdate(ctx context.Context, input ImageUpdateInput, translator changesetTranslator) (*models.Image, error) {
+func (r *mutationResolver) imageUpdate(ctx context.Context, input models.ImageUpdateInput, translator changesetTranslator) (*models.Image, error) {
 	imageID, err := strconv.Atoi(input.ID)
 	if err != nil {
 		return nil, fmt.Errorf("converting id: %w", err)

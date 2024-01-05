@@ -32,6 +32,8 @@ func (c Cache) postScrape(ctx context.Context, content ScrapedContent) (ScrapedC
 		}
 	case ScrapedGallery:
 		return c.postScrapeGallery(ctx, v)
+	case ScrapedImage:
+		return c.postScrapeImage(ctx, v)
 	case *models.ScrapedMovie:
 		if v != nil {
 			return c.postScrapeMovie(ctx, *v)
@@ -169,6 +171,49 @@ func (c Cache) postScrapeScene(ctx context.Context, scene ScrapedScene) (Scraped
 }
 
 func (c Cache) postScrapeGallery(ctx context.Context, g ScrapedGallery) (ScrapedContent, error) {
+	// set the URL/URLs field
+	if g.URL == nil && len(g.URLs) > 0 {
+		g.URL = &g.URLs[0]
+	}
+	if g.URL != nil && len(g.URLs) == 0 {
+		g.URLs = []string{*g.URL}
+	}
+
+	r := c.repository
+	if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
+		pqb := r.PerformerFinder
+		tqb := r.TagFinder
+		sqb := r.StudioFinder
+
+		for _, p := range g.Performers {
+			err := match.ScrapedPerformer(ctx, pqb, p, nil)
+			if err != nil {
+				return err
+			}
+		}
+
+		tags, err := postProcessTags(ctx, tqb, g.Tags)
+		if err != nil {
+			return err
+		}
+		g.Tags = tags
+
+		if g.Studio != nil {
+			err := match.ScrapedStudio(ctx, sqb, g.Studio, nil)
+			if err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return g, nil
+}
+
+func (c Cache) postScrapeImage(ctx context.Context, g ScrapedImage) (ScrapedContent, error) {
 	// set the URL/URLs field
 	if g.URL == nil && len(g.URLs) > 0 {
 		g.URL = &g.URLs[0]

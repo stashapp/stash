@@ -53,6 +53,28 @@ type ImageFilterType struct {
 	UpdatedAt *TimestampCriterionInput `json:"updated_at"`
 }
 
+type ImageUpdateInput struct {
+	ClientMutationID *string  `json:"clientMutationId"`
+	ID               string   `json:"id"`
+	Title            *string  `json:"title"`
+	Code             *string  `json:"code"`
+	Urls             []string `json:"urls"`
+	Date             *string  `json:"date"`
+	Details          *string  `json:"details"`
+	Photographer     *string  `json:"photographer"`
+	Rating100        *int     `json:"rating100"`
+	Organized        *bool    `json:"organized"`
+	SceneIds         []string `json:"scene_ids"`
+	StudioID         *string  `json:"studio_id"`
+	TagIds           []string `json:"tag_ids"`
+	PerformerIds     []string `json:"performer_ids"`
+	GalleryIds       []string `json:"gallery_ids"`
+	PrimaryFileID    *string  `json:"primary_file_id"`
+
+	// deprecated
+	URL *string `json:"url"`
+}
+
 type ImageDestroyInput struct {
 	ID              string `json:"id"`
 	DeleteFile      *bool  `json:"delete_file"`

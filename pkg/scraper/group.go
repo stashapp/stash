@@ -33,6 +33,9 @@ func (g group) fragmentScraper(input Input) *scraperTypeConfig {
 	case input.Gallery != nil:
 		// TODO - this should be galleryByQueryFragment
 		return g.config.GalleryByFragment
+	case input.Image != nil:
+		// TODO - this should be imageByImageFragment
+		return g.config.ImageByFragment
 	case input.Scene != nil:
 		return g.config.SceneByQueryFragment
 	}
@@ -75,6 +78,15 @@ func (g group) viaGallery(ctx context.Context, client *http.Client, gallery *mod
 	return s.scrapeGalleryByGallery(ctx, gallery)
 }
 
+func (g group) viaImage(ctx context.Context, client *http.Client, gallery *models.Image) (*ScrapedImage, error) {
+	if g.config.ImageByFragment == nil {
+		return nil, ErrNotSupported
+	}
+
+	s := g.config.getScraper(*g.config.ImageByFragment, client, g.globalConf)
+	return s.scrapeImageByImage(ctx, gallery)
+}
+
 func loadUrlCandidates(c config, ty ScrapeContentType) []*scrapeByURLConfig {
 	switch ty {
 	case ScrapeContentTypePerformer:
@@ -85,6 +97,8 @@ func loadUrlCandidates(c config, ty ScrapeContentType) []*scrapeByURLConfig {
 		return c.MovieByURL
 	case ScrapeContentTypeGallery:
 		return c.GalleryByURL
+	case ScrapeContentTypeImage:
+		return c.ImageByURL
 	}
 
 	panic("loadUrlCandidates: unreachable")

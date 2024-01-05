@@ -126,6 +126,15 @@ func (r *queryResolver) ScrapeGalleryURL(ctx context.Context, url string) (*scra
 	return marshalScrapedGallery(content)
 }
 
+func (r *queryResolver) ScrapeImageURL(ctx context.Context, url string) (*scraper.ScrapedImage, error) {
+	content, err := r.scraperCache().ScrapeURL(ctx, url, scraper.ScrapeContentTypeImage)
+	if err != nil {
+		return nil, err
+	}
+
+	return marshalScrapedImage(content)
+}
+
 func (r *queryResolver) ScrapeMovieURL(ctx context.Context, url string) (*models.ScrapedMovie, error) {
 	content, err := r.scraperCache().ScrapeURL(ctx, url, scraper.ScrapeContentTypeMovie)
 	if err != nil {
@@ -358,6 +367,39 @@ func (r *queryResolver) ScrapeSingleGallery(ctx context.Context, source scraper.
 			return nil, err
 		}
 		return marshalScrapedGalleries([]scraper.ScrapedContent{c})
+	default:
+		return nil, ErrNotImplemented
+	}
+}
+
+func (r *queryResolver) ScrapeSingleImage(ctx context.Context, source scraper.Source, input ScrapeSingleImageInput) ([]*scraper.ScrapedImage, error) {
+	if source.StashBoxIndex != nil {
+		return nil, ErrNotSupported
+	}
+
+	if source.ScraperID == nil {
+		return nil, fmt.Errorf("%w: scraper_id must be set", ErrInput)
+	}
+
+	var c scraper.ScrapedContent
+
+	switch {
+	case input.ImageID != nil:
+		imageID, err := strconv.Atoi(*input.ImageID)
+		if err != nil {
+			return nil, fmt.Errorf("%w: image id is not an integer: '%s'", ErrInput, *input.ImageID)
+		}
+		c, err = r.scraperCache().ScrapeID(ctx, *source.ScraperID, imageID, scraper.ScrapeContentTypeImage)
+		if err != nil {
+			return nil, err
+		}
+		return marshalScrapedImages([]scraper.ScrapedContent{c})
+	case input.ImageInput != nil:
+		c, err := r.scraperCache().ScrapeFragment(ctx, *source.ScraperID, scraper.Input{Image: input.ImageInput})
+		if err != nil {
+			return nil, err
+		}
+		return marshalScrapedImages([]scraper.ScrapedContent{c})
 	default:
 		return nil, ErrNotImplemented
 	}

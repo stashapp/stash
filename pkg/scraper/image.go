@@ -11,6 +11,36 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
+type ScrapedImage struct {
+	Title        *string  `json:"title"`
+	Code         *string  `json:"code"`
+	Details      *string  `json:"details"`
+	Photographer *string  `json:"photographer"`
+	Director     *string  `json:"director"`
+	URL          *string  `json:"url"`
+	URLs         []string `json:"urls"`
+	Date         *string  `json:"date"`
+	// This should be a base64 encoded data URL
+	Scene        *string                       `json:"scene"`
+	File         *models.SceneFileType         `json:"file"`
+	Studio       *models.ScrapedStudio         `json:"studio"`
+	Tags         []*models.ScrapedTag          `json:"tags"`
+	Performers   []*models.ScrapedPerformer    `json:"performers"`
+	Movies       []*models.ScrapedMovie        `json:"movies"`
+	RemoteSiteID *string                       `json:"remote_site_id"`
+	Fingerprints []*models.StashBoxFingerprint `json:"fingerprints"`
+}
+
+func (ScrapedImage) IsScrapedContent() {}
+
+type ScrapedImageInput struct {
+	Title   *string  `json:"title"`
+	Code    *string  `json:"code"`
+	Details *string  `json:"details"`
+	URLs    []string `json:"urls"`
+	Date    *string  `json:"date"`
+}
+
 func setPerformerImage(ctx context.Context, client *http.Client, p *models.ScrapedPerformer, globalConfig GlobalConfig) error {
 	if p.Image == nil || !strings.HasPrefix(*p.Image, "http") {
 		// nothing to do

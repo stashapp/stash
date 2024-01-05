@@ -71,6 +71,8 @@ func (s *xpathScraper) scrapeByURL(ctx context.Context, url string, ty ScrapeCon
 		return scraper.scrapeGallery(ctx, q)
 	case ScrapeContentTypeMovie:
 		return scraper.scrapeMovie(ctx, q)
+	case ScrapeContentTypeImage:
+		return scraper.scrapeImage(ctx, q)
 	}
 
 	return nil, ErrNotSupported
@@ -208,6 +210,30 @@ func (s *xpathScraper) scrapeGalleryByGallery(ctx context.Context, gallery *mode
 
 	q := s.getXPathQuery(doc)
 	return scraper.scrapeGallery(ctx, q)
+}
+
+func (s *xpathScraper) scrapeImageByImage(ctx context.Context, image *models.Image) (*ScrapedImage, error) {
+	// construct the URL
+	queryURL := queryURLParametersFromImage(image)
+	if s.scraper.QueryURLReplacements != nil {
+		queryURL.applyReplacements(s.scraper.QueryURLReplacements)
+	}
+	url := queryURL.constructURL(s.scraper.QueryURL)
+
+	scraper := s.getXpathScraper()
+
+	if scraper == nil {
+		return nil, errors.New("xpath scraper with name " + s.scraper.Scraper + " not found in config")
+	}
+
+	doc, err := s.loadURL(ctx, url)
+
+	if err != nil {
+		return nil, err
+	}
+
+	q := s.getXPathQuery(doc)
+	return scraper.scrapeImage(ctx, q)
 }
 
 func (s *xpathScraper) loadURL(ctx context.Context, url string) (*html.Node, error) {

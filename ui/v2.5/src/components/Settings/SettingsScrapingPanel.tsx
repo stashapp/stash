@@ -7,6 +7,7 @@ import {
   useListPerformerScrapers,
   useListSceneScrapers,
   useListGalleryScrapers,
+  useListImageScrapers,
 } from "src/core/StashService";
 import { useToast } from "src/hooks/Toast";
 import TextUtils from "src/utils/text";
@@ -87,6 +88,8 @@ export const SettingsScrapingPanel: React.FC = () => {
     useListSceneScrapers();
   const { data: galleryScrapers, loading: loadingGalleries } =
     useListGalleryScrapers();
+  const { data: imageScrapers, loading: loadingImages } =
+    useListImageScrapers();
   const { data: movieScrapers, loading: loadingMovies } =
     useListMovieScrapers();
 
@@ -151,6 +154,28 @@ export const SettingsScrapingPanel: React.FC = () => {
           return intl.formatMessage(
             { id: "config.scraping.entity_metadata" },
             { entityType: intl.formatMessage({ id: "gallery" }) }
+          );
+        default:
+          return t;
+      }
+    });
+
+    return (
+      <ul>
+        {typeStrings.map((t) => (
+          <li key={t}>{t}</li>
+        ))}
+      </ul>
+    );
+  }
+
+  function renderImageScrapeTypes(types: ScrapeType[]) {
+    const typeStrings = types.map((t) => {
+      switch (t) {
+        case ScrapeType.Fragment:
+          return intl.formatMessage(
+            { id: "config.scraping.entity_metadata" },
+            { entityType: intl.formatMessage({ id: "image" }) }
           );
         default:
           return t;
@@ -232,6 +257,26 @@ export const SettingsScrapingPanel: React.FC = () => {
     );
   }
 
+  function renderImageScrapers() {
+    const elements = (imageScrapers?.listScrapers ?? []).map((scraper) => (
+      <tr key={scraper.id}>
+        <td>{scraper.name}</td>
+        <td>
+          {renderImageScrapeTypes(scraper.image?.supported_scrapes ?? [])}
+        </td>
+        <td>{renderURLs(scraper.image?.urls ?? [])}</td>
+      </tr>
+    ));
+
+    return renderTable(
+      intl.formatMessage(
+        { id: "config.scraping.entity_scrapers" },
+        { entityType: intl.formatMessage({ id: "image" }) }
+      ),
+      elements
+    );
+  }
+
   function renderPerformerScrapers() {
     const elements = (performerScrapers?.listScrapers ?? []).map((scraper) => (
       <tr key={scraper.id}>
@@ -304,6 +349,7 @@ export const SettingsScrapingPanel: React.FC = () => {
     loading ||
     loadingScenes ||
     loadingGalleries ||
+    loadingImages ||
     loadingPerformers ||
     loadingMovies
   )
@@ -368,6 +414,7 @@ export const SettingsScrapingPanel: React.FC = () => {
         <div className="content">
           {renderSceneScrapers()}
           {renderGalleryScrapers()}
+          {renderImageScrapers()}
           {renderPerformerScrapers()}
           {renderMovieScrapers()}
         </div>

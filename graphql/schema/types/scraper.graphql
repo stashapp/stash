@@ -10,6 +10,7 @@ enum ScrapeType {
 "Type of the content a scraper generates"
 enum ScrapeContentType {
   GALLERY
+  IMAGE
   MOVIE
   PERFORMER
   SCENE
@@ -21,6 +22,7 @@ union ScrapedContent =
   | ScrapedTag
   | ScrapedScene
   | ScrapedGallery
+  | ScrapedImage
   | ScrapedMovie
   | ScrapedPerformer
 
@@ -39,6 +41,8 @@ type Scraper {
   scene: ScraperSpec
   "Details for gallery scraper"
   gallery: ScraperSpec
+  "Details for image scraper"
+  image: ScraperSpec
   "Details for movie scraper"
   movie: ScraperSpec
 }
@@ -123,6 +127,26 @@ input ScrapedGalleryInput {
   # no studio, tags or performers
 }
 
+type ScrapedImage {
+  title: String
+  code: String
+  details: String
+  photographer: String
+  urls: [String!]
+  date: String
+  studio: ScrapedStudio
+  tags: [ScrapedTag!]
+  performers: [ScrapedPerformer!]
+}
+
+input ScrapedImageInput {
+  title: String
+  code: String
+  details: String
+  urls: [String!]
+  date: String
+}
+
 input ScraperSourceInput {
   "Index of the configured stash-box instance to use. Should be unset if scraper_id is set"
   stash_box_index: Int @deprecated(reason: "use stash_box_endpoint")
@@ -183,6 +207,15 @@ input ScrapeSingleGalleryInput {
   gallery_id: ID
   "Instructs to query by gallery fragment"
   gallery_input: ScrapedGalleryInput
+}
+
+input ScrapeSingleImageInput {
+  "Instructs to query by string"
+  query: String
+  "Instructs to query by image id"
+  image_id: ID
+  "Instructs to query by image fragment"
+  image_input: ScrapedImageInput
 }
 
 input ScrapeSingleMovieInput {

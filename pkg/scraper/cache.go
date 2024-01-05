@@ -76,11 +76,18 @@ type GalleryFinder interface {
 	models.URLLoader
 }
 
+type ImageFinder interface {
+	models.ImageGetter
+	models.FileLoader
+	models.URLLoader
+}
+
 type Repository struct {
 	TxnManager models.TxnManager
 
 	SceneFinder     SceneFinder
 	GalleryFinder   GalleryFinder
+	ImageFinder     ImageFinder
 	TagFinder       TagFinder
 	PerformerFinder PerformerFinder
 	MovieFinder     match.MovieNamesFinder
@@ -92,6 +99,7 @@ func NewRepository(repo models.Repository) Repository {
 		TxnManager:      repo.TxnManager,
 		SceneFinder:     repo.Scene,
 		GalleryFinder:   repo.Gallery,
+		ImageFinder:     repo.Image,
 		TagFinder:       repo.Tag,
 		PerformerFinder: repo.Performer,
 		MovieFinder:     repo.Movie,
@@ -359,6 +367,28 @@ func (c Cache) ScrapeID(ctx context.Context, scraperID string, id int, ty Scrape
 		if scraped != nil {
 			ret = scraped
 		}
+
+	case ScrapeContentTypeImage:
+		is, ok := s.(imageScraper)
+		if !ok {
+			return nil, fmt.Errorf("%w: cannot use scraper %s as a image scraper", ErrNotSupported, scraperID)
+		}
+
+		scene, err := c.getImage(ctx, id)
+		if err != nil {
+			return nil, fmt.Errorf("scraper %s: unable to load image id %v: %w", scraperID, id, err)
+		}
+
+		// don't assign nil concrete pointer to ret interface, otherwise nil
+		// detection is harder
+		scraped, err := is.viaImage(ctx, c.client, scene)
+		if err != nil {
+			return nil, fmt.Errorf("scraper %s: %w", scraperID, err)
+		}
+
+		if scraped != nil {
+			ret = scraped
+		}
 	}
 
 	return c.postScrape(ctx, ret)
@@ -401,6 +431,34 @@ func (c Cache) getGallery(ctx context.Context, galleryID int) (*models.Gallery, 
 
 		if ret == nil {
 			return fmt.Errorf("gallery with id %d not found", galleryID)
+		}
+
+		err = ret.LoadFiles(ctx, qb)
+		if err != nil {
+			return err
+		}
+
+		return ret.LoadURLs(ctx, qb)
+	}); err != nil {
+		return nil, err
+	}
+	return ret, nil
+}
+
+func (c Cache) getImage(ctx context.Context, imageID int) (*models.Image, error) {
+	var ret *models.Image
+	r := c.repository
+	if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
+		qb := r.ImageFinder
+
+		var err error
+		ret, err = qb.Find(ctx, imageID)
+		if err != nil {
+			return err
+		}
+
+		if ret == nil {
+			return fmt.Errorf("gallery with id %d not found", imageID)
 		}
 
 		err = ret.LoadFiles(ctx, qb)

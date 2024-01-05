@@ -203,6 +203,27 @@ fragment ScrapedGalleryData on ScrapedGallery {
   }
 }
 
+fragment ScrapedImageData on ScrapedImage {
+  title
+  code
+  details
+  photographer
+  urls
+  date
+
+  studio {
+    ...ScrapedSceneStudioData
+  }
+
+  tags {
+    ...ScrapedSceneTagData
+  }
+
+  performers {
+    ...ScrapedScenePerformerData
+  }
+}
+
 fragment ScrapedStashBoxSceneData on ScrapedScene {
   title
   code

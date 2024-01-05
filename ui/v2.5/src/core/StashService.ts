@@ -1929,6 +1929,8 @@ export const queryScrapeMovieURL = (url: string) =>
 
 export const useListGalleryScrapers = () => GQL.useListGalleryScrapersQuery();
 
+export const useListImageScrapers = () => GQL.useListImageScrapersQuery();
+
 export const queryScrapeGallery = (scraperId: string, galleryId: string) =>
   client.query<GQL.ScrapeSingleGalleryQuery>({
     query: GQL.ScrapeSingleGalleryDocument,
@@ -1946,6 +1948,27 @@ export const queryScrapeGallery = (scraperId: string, galleryId: string) =>
 export const queryScrapeGalleryURL = (url: string) =>
   client.query<GQL.ScrapeGalleryUrlQuery>({
     query: GQL.ScrapeGalleryUrlDocument,
+    variables: { url },
+    fetchPolicy: "network-only",
+  });
+
+export const queryScrapeImage = (scraperId: string, imageId: string) =>
+  client.query<GQL.ScrapeSingleImageQuery>({
+    query: GQL.ScrapeSingleImageDocument,
+    variables: {
+      source: {
+        scraper_id: scraperId,
+      },
+      input: {
+        image_id: imageId,
+      },
+    },
+    fetchPolicy: "network-only",
+  });
+
+export const queryScrapeImageURL = (url: string) =>
+  client.query<GQL.ScrapeImageUrlQuery>({
+    query: GQL.ScrapeImageUrlDocument,
     variables: { url },
     fetchPolicy: "network-only",
   });
@@ -2016,6 +2039,7 @@ export const scraperMutationImpactedQueries = [
   GQL.ListMovieScrapersDocument,
   GQL.ListPerformerScrapersDocument,
   GQL.ListSceneScrapersDocument,
+  GQL.ListImageScrapersDocument,
   GQL.InstalledScraperPackagesDocument,
   GQL.InstalledScraperPackagesStatusDocument,
 ];

@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { Button, Form, Col, Row } from "react-bootstrap";
+import {
+  Button,
+  Form,
+  Col,
+  Row,
+  Dropdown,
+  DropdownButton,
+} from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
@@ -22,6 +29,16 @@ import {
   PerformerSelect,
 } from "src/components/Performers/PerformerSelect";
 import { formikUtils } from "src/utils/form";
+import { Icon } from "../../Shared/Icon";
+import { faSyncAlt } from "@fortawesome/free-solid-svg-icons";
+import {
+  mutateReloadScrapers,
+  queryScrapeImage,
+  queryScrapeImageURL,
+  useListImageScrapers,
+} from "../../../core/StashService";
+import { ImageScrapeDialog } from "./ImageScrapeDialog";
+import { ScrapedImageDataFragment } from "src/core/generated-graphql";
 
 interface IProps {
   image: GQL.ImageDataFragment;
@@ -45,6 +62,10 @@ export const ImageEditPanel: React.FC<IProps> = ({
   const { configuration } = React.useContext(ConfigurationContext);
 
   const [performers, setPerformers] = useState<Performer[]>([]);
+
+  const Scrapers = useListImageScrapers();
+  const [queryableScrapers, setQueryableScrapers] = useState<GQL.Scraper[]>([]);
+  const [scrapedImage, setScrapedImage] = useState<GQL.ScrapedImage | null>();
 
   const schema = yup.object({
     title: yup.string().ensure(),
@@ -121,6 +142,14 @@ export const ImageEditPanel: React.FC<IProps> = ({
     }
   });
 
+  useEffect(() => {
+    const newQueryableScrapers = (Scrapers?.data?.listScrapers ?? []).filter(
+      (s) => s.image?.supported_scrapes.includes(GQL.ScrapeType.Fragment)
+    );
+
+    setQueryableScrapers(newQueryableScrapers);
+  }, [Scrapers]);
+
   async function onSave(input: InputValues) {
     setIsLoading(true);
     try {
@@ -133,6 +162,127 @@ export const ImageEditPanel: React.FC<IProps> = ({
       Toast.error(e);
     }
     setIsLoading(false);
+  }
+
+  async function onScrapeClicked(scraper: GQL.Scraper) {
+    if (!image || !image.id) return;
+
+    setIsLoading(true);
+    try {
+      const result = await queryScrapeImage(scraper.id, image.id);
+      if (!result.data || !result.data.scrapeSingleImage?.length) {
+        Toast.success("No galleries found");
+        return;
+      }
+      setScrapedImage(result.data.scrapeSingleImage[0]);
+    } catch (e) {
+      Toast.error(e);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  function urlScrapable(scrapedUrl: string): boolean {
+    return (Scrapers?.data?.listScrapers ?? []).some((s) =>
+      (s?.image?.urls ?? []).some((u) => scrapedUrl.includes(u))
+    );
+  }
+
+  function updateImageFromScrapedGallery(
+    imageData: GQL.ScrapedImageDataFragment
+  ) {
+    if (imageData.title) {
+      formik.setFieldValue("title", imageData.title);
+    }
+
+    if (imageData.code) {
+      formik.setFieldValue("code", imageData.code);
+    }
+
+    if (imageData.details) {
+      formik.setFieldValue("details", imageData.details);
+    }
+
+    if (imageData.photographer) {
+      formik.setFieldValue("photographer", imageData.photographer);
+    }
+
+    if (imageData.date) {
+      formik.setFieldValue("date", imageData.date);
+    }
+
+    if (imageData.urls) {
+      formik.setFieldValue("urls", imageData.urls);
+    }
+
+    if (imageData.studio?.stored_id) {
+      formik.setFieldValue("studio_id", imageData.studio.stored_id);
+    }
+
+    if (imageData.performers?.length) {
+      const idPerfs = imageData.performers.filter((p) => {
+        return p.stored_id !== undefined && p.stored_id !== null;
+      });
+
+      if (idPerfs.length > 0) {
+        onSetPerformers(
+          idPerfs.map((p) => {
+            return {
+              id: p.stored_id!,
+              name: p.name ?? "",
+              alias_list: [],
+            };
+          })
+        );
+      }
+    }
+
+    if (imageData?.tags?.length) {
+      const idTags = imageData.tags.filter((t) => {
+        return t.stored_id !== undefined && t.stored_id !== null;
+      });
+
+      if (idTags.length > 0) {
+        const newIds = idTags.map((t) => t.stored_id);
+        formik.setFieldValue("tag_ids", newIds as string[]);
+      }
+    }
+  }
+
+  async function onReloadScrapers() {
+    setIsLoading(true);
+    try {
+      await mutateReloadScrapers();
+    } catch (e) {
+      Toast.error(e);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function onScrapeDialogClosed(data?: ScrapedImageDataFragment) {
+    if (data) {
+      updateImageFromScrapedGallery(data);
+    }
+    setScrapedImage(undefined);
+  }
+
+  async function onScrapeImageURL(url: string) {
+    if (!url) {
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const result = await queryScrapeImageURL(url);
+      if (!result || !result.data || !result.data.scrapeImageURL) {
+        return;
+      }
+      setScrapedImage(result.data.scrapeImageURL);
+    } catch (e) {
+      Toast.error(e);
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   if (isLoading) return <LoadingIndicator />;
@@ -226,6 +376,58 @@ export const ImageEditPanel: React.FC<IProps> = ({
     return renderInputField("details", "textarea", "details", props);
   }
 
+  function maybeRenderScrapeDialog() {
+    if (!scrapedImage) {
+      return;
+    }
+
+    const currentImage = {
+      id: image.id!,
+      ...formik.values,
+    };
+
+    return (
+      <ImageScrapeDialog
+        image={currentImage}
+        imagePerformer={performers}
+        scraped={scrapedImage}
+        onClose={(data) => {
+          onScrapeDialogClosed(data);
+        }}
+      />
+    );
+  }
+
+  function renderScraperMenu() {
+    /*
+    if (isNew) {
+      return;
+    }
+     */
+
+    return (
+      <DropdownButton
+        className="d-inline-block"
+        id="gallery-scrape"
+        title={intl.formatMessage({ id: "actions.scrape_with" })}
+      >
+        {queryableScrapers.map((s) => (
+          <Dropdown.Item key={s.name} onClick={() => onScrapeClicked(s)}>
+            {s.name}
+          </Dropdown.Item>
+        ))}
+        <Dropdown.Item onClick={() => onReloadScrapers()}>
+          <span className="fa-icon">
+            <Icon icon={faSyncAlt} />
+          </span>
+          <span>
+            <FormattedMessage id="actions.reload_scrapers" />
+          </span>
+        </Dropdown.Item>
+      </DropdownButton>
+    );
+  }
+
   return (
     <div id="image-edit-details">
       <Prompt
@@ -233,6 +435,7 @@ export const ImageEditPanel: React.FC<IProps> = ({
         message={intl.formatMessage({ id: "dialogs.unsaved_changes" })}
       />
 
+      {maybeRenderScrapeDialog()}
       <Form noValidate onSubmit={formik.handleSubmit}>
         <Row className="form-container edit-buttons-container px-3 pt-3">
           <div className="edit-buttons mb-3 pl-0">
@@ -252,13 +455,14 @@ export const ImageEditPanel: React.FC<IProps> = ({
               <FormattedMessage id="actions.delete" />
             </Button>
           </div>
+          <div className="ml-auto text-right d-flex">{renderScraperMenu()}</div>
         </Row>
         <Row className="form-container px-3">
           <Col lg={7} xl={12}>
             {renderInputField("title")}
             {renderInputField("code", "text", "scene_code")}
 
-            {renderURLListField("urls")}
+            {renderURLListField("urls", onScrapeImageURL, urlScrapable)}
 
             {renderDateField("date")}
             {renderInputField("photographer")}
