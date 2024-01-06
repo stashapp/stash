@@ -155,7 +155,7 @@ func (j *IdentifyGalleryJob) Execute(ctx context.Context, progress *job.Progress
 
 		return nil
 	}); err != nil {
-		logger.Errorf("Error encountered while identifying scenes: %v", err)
+		logger.Errorf("Error encountered while identifying galleries: %v", err)
 	}
 }
 
