@@ -539,7 +539,6 @@ func TestMain(m *testing.M) {
 	// initialise empty config - needed by some migrations
 	_ = config.InitializeEmpty()
 
-
 	ret := runTests(m)
 	os.Exit(ret)
 }

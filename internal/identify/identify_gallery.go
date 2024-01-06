@@ -4,51 +4,54 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strconv"
-
+	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/scraper"
 	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/txn"
 	"github.com/stashapp/stash/pkg/utils"
+	"strconv"
 )
 
-type MultipleMatchesFoundError struct {
-	Source ScraperSource
+type GalleryMultipleMatchesFoundError struct {
+	Source GalleryScraperSource
 }
 
-type SceneScraper interface {
-	ScrapeScenes(ctx context.Context, sceneID int) ([]*scraper.ScrapedScene, error)
+type GalleryScraper interface {
+	ScrapeGalleries(ctx context.Context, galleryID int) ([]*scraper.ScrapedGallery, error)
 }
 
-type SceneUpdatePostHookExecutor interface {
-	ExecuteSceneUpdatePostHooks(ctx context.Context, input models.SceneUpdateInput, inputFields []string)
+func (e *GalleryMultipleMatchesFoundError) Error() string {
+	return fmt.Sprintf("multiple matches found for %s", e.Source.Name)
 }
 
-type ScraperSource struct {
+type GalleryUpdatePostHookExecutor interface {
+	ExecuteGalleryUpdatePostHooks(ctx context.Context, input models.GalleryUpdateInput, inputFields []string)
+}
+
+type GalleryScraperSource struct {
 	Name       string
-	Options    *MetadataOptions
-	Scraper    SceneScraper
+	Options    *GalleryMetadataOptions
+	Scraper    GalleryScraper
 	RemoteSite string
 }
 
-type SceneIdentifier struct {
-	TxnManager         txn.Manager
-	SceneReaderUpdater SceneReaderUpdater
-	StudioReaderWriter models.StudioReaderWriter
-	PerformerCreator   PerformerCreator
-	TagFinderCreator   models.TagFinderCreator
+type GalleryIdentifier struct {
+	TxnManager           txn.Manager
+	GalleryReaderUpdater GalleryReaderUpdater
+	StudioReaderWriter   models.StudioReaderWriter
+	PerformerCreator     PerformerCreator
+	TagFinderCreator     models.TagFinderCreator
 
-	DefaultOptions              *MetadataOptions
-	Sources                     []ScraperSource
-	SceneUpdatePostHookExecutor SceneUpdatePostHookExecutor
+	DefaultOptions                *GalleryMetadataOptions
+	Sources                       []GalleryScraperSource
+	GalleryUpdatePostHookExecutor GalleryUpdatePostHookExecutor
 }
 
-func (t *SceneIdentifier) Identify(ctx context.Context, scene *models.Scene) error {
-	result, err := t.scrapeScene(ctx, scene)
-	var multipleMatchErr *MultipleMatchesFoundError
+func (t *GalleryIdentifier) Identify(ctx context.Context, gallery *models.Gallery) error {
+	result, err := t.scrapeGallery(ctx, gallery)
+	var multipleMatchErr *GalleryMultipleMatchesFoundError
 	if err != nil {
 		if !errors.As(err, &multipleMatchErr) {
 			return err
@@ -57,42 +60,42 @@ func (t *SceneIdentifier) Identify(ctx context.Context, scene *models.Scene) err
 
 	if result == nil {
 		if multipleMatchErr != nil {
-			logger.Debugf("Identify skipped because multiple results returned for %s", scene.Path)
+			logger.Debugf("Identify skipped because multiple results returned for %s", gallery.Path)
 
-			// find if the scene should be tagged for multiple results
+			// find if the gallery should be tagged for multiple results
 			options := t.getOptions(multipleMatchErr.Source)
 			if options.SkipMultipleMatchTag != nil && len(*options.SkipMultipleMatchTag) > 0 {
 				// Tag it with the multiple results tag
-				err := t.addTagToScene(ctx, scene, *options.SkipMultipleMatchTag)
+				err := t.addTagToGallery(ctx, gallery, *options.SkipMultipleMatchTag)
 				if err != nil {
 					return err
 				}
 				return nil
 			}
 		} else {
-			logger.Debugf("Unable to identify %s", scene.Path)
+			logger.Debugf("Unable to identify %s", gallery.Path)
 		}
 		return nil
 	}
 
-	// results were found, modify the scene
-	if err := t.modifyScene(ctx, scene, result); err != nil {
-		return fmt.Errorf("error modifying scene: %v", err)
+	// results were found, modify the gallery
+	if err := t.modifyGallery(ctx, gallery, result); err != nil {
+		return fmt.Errorf("error modifying gallery: %v", err)
 	}
 
 	return nil
 }
 
-type scrapeResult struct {
-	result *scraper.ScrapedScene
-	source ScraperSource
+type galleryScrapeResult struct {
+	result *scraper.ScrapedGallery
+	source GalleryScraperSource
 }
 
-func (t *SceneIdentifier) scrapeScene(ctx context.Context, scene *models.Scene) (*scrapeResult, error) {
+func (t *GalleryIdentifier) scrapeGallery(ctx context.Context, gallery *models.Gallery) (*galleryScrapeResult, error) {
 	// iterate through the input sources
 	for _, source := range t.Sources {
 		// scrape using the source
-		results, err := source.Scraper.ScrapeScenes(ctx, scene.ID)
+		results, err := source.Scraper.ScrapeGalleries(ctx, gallery.ID)
 		if err != nil {
 			logger.Errorf("error scraping from %v: %v", source.Scraper, err)
 			continue
@@ -101,12 +104,12 @@ func (t *SceneIdentifier) scrapeScene(ctx context.Context, scene *models.Scene) 
 		if len(results) > 0 {
 			options := t.getOptions(source)
 			if len(results) > 1 && utils.IsTrue(options.SkipMultipleMatches) {
-				return nil, &MultipleMatchesFoundError{
+				return nil, &GalleryMultipleMatchesFoundError{
 					Source: source,
 				}
 			} else {
 				// if results were found then return
-				return &scrapeResult{
+				return &galleryScrapeResult{
 					result: results[0],
 					source: source,
 				}, nil
@@ -117,9 +120,9 @@ func (t *SceneIdentifier) scrapeScene(ctx context.Context, scene *models.Scene) 
 	return nil, nil
 }
 
-// Returns a MetadataOptions object with any default options overwritten by source specific options
-func (t *SceneIdentifier) getOptions(source ScraperSource) MetadataOptions {
-	var options MetadataOptions
+// Returns a GalleryMetadataOptions object with any default options overwritten by source specific options
+func (t *GalleryIdentifier) getOptions(source GalleryScraperSource) GalleryMetadataOptions {
+	var options GalleryMetadataOptions
 	if t.DefaultOptions != nil {
 		options = *t.DefaultOptions
 	}
@@ -127,9 +130,6 @@ func (t *SceneIdentifier) getOptions(source ScraperSource) MetadataOptions {
 		return options
 	}
 
-	if source.Options.SetCoverImage != nil {
-		options.SetCoverImage = source.Options.SetCoverImage
-	}
 	if source.Options.SetOrganized != nil {
 		options.SetOrganized = source.Options.SetOrganized
 	}
@@ -152,12 +152,12 @@ func (t *SceneIdentifier) getOptions(source ScraperSource) MetadataOptions {
 	return options
 }
 
-func (t *SceneIdentifier) getSceneUpdater(ctx context.Context, s *models.Scene, result *scrapeResult) (*scene.UpdateSet, error) {
-	ret := &scene.UpdateSet{
+func (t *GalleryIdentifier) getGalleryUpdater(ctx context.Context, s *models.Gallery, result *galleryScrapeResult) (*gallery.UpdateSet, error) {
+	ret := &gallery.UpdateSet{
 		ID: s.ID,
 	}
 
-	allOptions := []MetadataOptions{}
+	allOptions := []GalleryMetadataOptions{}
 	if result.source.Options != nil {
 		allOptions = append(allOptions, *result.source.Options)
 	}
@@ -165,24 +165,23 @@ func (t *SceneIdentifier) getSceneUpdater(ctx context.Context, s *models.Scene, 
 		allOptions = append(allOptions, *t.DefaultOptions)
 	}
 
-	fieldOptions := getFieldOptions(allOptions)
+	fieldOptions := getFieldOptionsGallery(allOptions)
 	options := t.getOptions(result.source)
 
 	scraped := result.result
 
-	rel := sceneRelationships{
-		sceneReader:              t.SceneReaderUpdater,
+	rel := galleryRelationships{
 		studioReaderWriter:       t.StudioReaderWriter,
 		performerCreator:         t.PerformerCreator,
 		tagCreator:               t.TagFinderCreator,
-		scene:                    s,
+		gallery:                  s,
 		result:                   result,
 		fieldOptions:             fieldOptions,
 		skipSingleNamePerformers: utils.IsTrue(options.SkipSingleNamePerformers),
 	}
 
 	setOrganized := utils.IsTrue(options.SetOrganized)
-	ret.Partial = getScenePartial(s, scraped, fieldOptions, setOrganized)
+	ret.Partial = getGalleryPartial(s, scraped, fieldOptions, setOrganized)
 
 	studioID, err := rel.studio(ctx)
 	if err != nil {
@@ -233,46 +232,25 @@ func (t *SceneIdentifier) getSceneUpdater(ctx context.Context, s *models.Scene, 
 		}
 	}
 
-	stashIDs, err := rel.stashIDs(ctx)
-	if err != nil {
-		return nil, err
-	}
-	if stashIDs != nil {
-		ret.Partial.StashIDs = &models.UpdateStashIDs{
-			StashIDs: stashIDs,
-			Mode:     models.RelationshipUpdateModeSet,
-		}
-	}
-
-	if utils.IsTrue(options.SetCoverImage) {
-		ret.CoverImage, err = rel.cover(ctx)
-		if err != nil {
-			return nil, err
-		}
-	}
-
 	return ret, nil
 }
 
-func (t *SceneIdentifier) modifyScene(ctx context.Context, s *models.Scene, result *scrapeResult) error {
-	var updater *scene.UpdateSet
+func (t *GalleryIdentifier) modifyGallery(ctx context.Context, s *models.Gallery, result *galleryScrapeResult) error {
+	var updater *gallery.UpdateSet
 	if err := txn.WithTxn(ctx, t.TxnManager, func(ctx context.Context) error {
-		// load scene relationships
-		if err := s.LoadURLs(ctx, t.SceneReaderUpdater); err != nil {
+		// load gallery relationships
+		if err := s.LoadURLs(ctx, t.GalleryReaderUpdater); err != nil {
 			return err
 		}
-		if err := s.LoadPerformerIDs(ctx, t.SceneReaderUpdater); err != nil {
+		if err := s.LoadPerformerIDs(ctx, t.GalleryReaderUpdater); err != nil {
 			return err
 		}
-		if err := s.LoadTagIDs(ctx, t.SceneReaderUpdater); err != nil {
-			return err
-		}
-		if err := s.LoadStashIDs(ctx, t.SceneReaderUpdater); err != nil {
+		if err := s.LoadTagIDs(ctx, t.GalleryReaderUpdater); err != nil {
 			return err
 		}
 
 		var err error
-		updater, err = t.getSceneUpdater(ctx, s, result)
+		updater, err = t.getGalleryUpdater(ctx, s, result)
 		if err != nil {
 			return err
 		}
@@ -283,8 +261,8 @@ func (t *SceneIdentifier) modifyScene(ctx context.Context, s *models.Scene, resu
 			return nil
 		}
 
-		if _, err := updater.Update(ctx, t.SceneReaderUpdater); err != nil {
-			return fmt.Errorf("error updating scene: %w", err)
+		if _, err := updater.Update(ctx, t.GalleryReaderUpdater); err != nil {
+			return fmt.Errorf("error updating gallery: %w", err)
 		}
 
 		as := ""
@@ -303,38 +281,38 @@ func (t *SceneIdentifier) modifyScene(ctx context.Context, s *models.Scene, resu
 	if !updater.IsEmpty() {
 		updateInput := updater.UpdateInput()
 		fields := utils.NotNilFields(updateInput, "json")
-		t.SceneUpdatePostHookExecutor.ExecuteSceneUpdatePostHooks(ctx, updateInput, fields)
+		t.GalleryUpdatePostHookExecutor.ExecuteGalleryUpdatePostHooks(ctx, updateInput, fields)
 	}
 
 	return nil
 }
 
-func (t *SceneIdentifier) addTagToScene(ctx context.Context, s *models.Scene, tagToAdd string) error {
+func (t *GalleryIdentifier) addTagToGallery(ctx context.Context, s *models.Gallery, tagToAdd string) error {
 	if err := txn.WithTxn(ctx, t.TxnManager, func(ctx context.Context) error {
 		tagID, err := strconv.Atoi(tagToAdd)
 		if err != nil {
 			return fmt.Errorf("error converting tag ID %s: %w", tagToAdd, err)
 		}
 
-		if err := s.LoadTagIDs(ctx, t.SceneReaderUpdater); err != nil {
+		if err := s.LoadTagIDs(ctx, t.GalleryReaderUpdater); err != nil {
 			return err
 		}
 		existing := s.TagIDs.List()
 
 		if sliceutil.Contains(existing, tagID) {
-			// skip if the scene was already tagged
+			// skip if the gallery was already tagged
 			return nil
 		}
 
-		if err := scene.AddTag(ctx, t.SceneReaderUpdater, s, tagID); err != nil {
+		if err := gallery.AddTag(ctx, t.GalleryReaderUpdater, s, tagID); err != nil {
 			return err
 		}
 
 		ret, err := t.TagFinderCreator.Find(ctx, tagID)
 		if err != nil {
-			logger.Infof("Added tag id %s to skipped scene %s", tagToAdd, s.Path)
+			logger.Infof("Added tag id %s to skipped gallery %s", tagToAdd, s.Path)
 		} else {
-			logger.Infof("Added tag %s to skipped scene %s", ret.Name, s.Path)
+			logger.Infof("Added tag %s to skipped gallery %s", ret.Name, s.Path)
 		}
 
 		return nil
@@ -344,7 +322,69 @@ func (t *SceneIdentifier) addTagToScene(ctx context.Context, s *models.Scene, ta
 	return nil
 }
 
-func getFieldOptions(options []MetadataOptions) map[string]*FieldOptions {
+func getGalleryPartial(gallery *models.Gallery, scraped *scraper.ScrapedGallery, fieldOptions map[string]*FieldOptions, setOrganized bool) models.GalleryPartial {
+	partial := models.GalleryPartial{}
+
+	if scraped.Title != nil && (gallery.Title != *scraped.Title) {
+		if shouldSetSingleValueField(fieldOptions["title"], gallery.Title != "") {
+			partial.Title = models.NewOptionalString(*scraped.Title)
+		}
+	}
+	if scraped.Date != nil && (gallery.Date == nil || gallery.Date.String() != *scraped.Date) {
+		if shouldSetSingleValueField(fieldOptions["date"], gallery.Date != nil) {
+			d, err := models.ParseDate(*scraped.Date)
+			if err == nil {
+				partial.Date = models.NewOptionalDate(d)
+			}
+		}
+	}
+	if scraped.Details != nil && (gallery.Details != *scraped.Details) {
+		if shouldSetSingleValueField(fieldOptions["details"], gallery.Details != "") {
+			partial.Details = models.NewOptionalString(*scraped.Details)
+		}
+	}
+	if len(scraped.URLs) > 0 && shouldSetSingleValueField(fieldOptions["url"], false) {
+		// if overwrite, then set over the top
+		switch getFieldStrategy(fieldOptions["url"]) {
+		case FieldStrategyOverwrite:
+			// only overwrite if not equal
+			if len(sliceutil.Exclude(gallery.URLs.List(), scraped.URLs)) != 0 {
+				partial.URLs = &models.UpdateStrings{
+					Values: scraped.URLs,
+					Mode:   models.RelationshipUpdateModeSet,
+				}
+			}
+		case FieldStrategyMerge:
+			// if merge, add if not already present
+			urls := sliceutil.AppendUniques(gallery.URLs.List(), scraped.URLs)
+
+			if len(urls) != len(gallery.URLs.List()) {
+				partial.URLs = &models.UpdateStrings{
+					Values: urls,
+					Mode:   models.RelationshipUpdateModeSet,
+				}
+			}
+		}
+	}
+	if scraped.Photographer != nil && (gallery.Photographer != *scraped.Photographer) {
+		if shouldSetSingleValueField(fieldOptions["photographer"], gallery.Photographer != "") {
+			partial.Photographer = models.NewOptionalString(*scraped.Photographer)
+		}
+	}
+	if scraped.Code != nil && (gallery.Code != *scraped.Code) {
+		if shouldSetSingleValueField(fieldOptions["code"], gallery.Code != "") {
+			partial.Code = models.NewOptionalString(*scraped.Code)
+		}
+	}
+
+	if setOrganized && !gallery.Organized {
+		partial.Organized = models.NewOptionalBool(true)
+	}
+
+	return partial
+}
+
+func getFieldOptionsGallery(options []GalleryMetadataOptions) map[string]*FieldOptions {
 	// prefer source-specific field strategies, then the defaults
 	ret := make(map[string]*FieldOptions)
 	for _, oo := range options {
@@ -356,65 +396,4 @@ func getFieldOptions(options []MetadataOptions) map[string]*FieldOptions {
 	}
 
 	return ret
-}
-func getScenePartial(scene *models.Scene, scraped *scraper.ScrapedScene, fieldOptions map[string]*FieldOptions, setOrganized bool) models.ScenePartial {
-	partial := models.ScenePartial{}
-
-	if scraped.Title != nil && (scene.Title != *scraped.Title) {
-		if shouldSetSingleValueField(fieldOptions["title"], scene.Title != "") {
-			partial.Title = models.NewOptionalString(*scraped.Title)
-		}
-	}
-	if scraped.Date != nil && (scene.Date == nil || scene.Date.String() != *scraped.Date) {
-		if shouldSetSingleValueField(fieldOptions["date"], scene.Date != nil) {
-			d, err := models.ParseDate(*scraped.Date)
-			if err == nil {
-				partial.Date = models.NewOptionalDate(d)
-			}
-		}
-	}
-	if scraped.Details != nil && (scene.Details != *scraped.Details) {
-		if shouldSetSingleValueField(fieldOptions["details"], scene.Details != "") {
-			partial.Details = models.NewOptionalString(*scraped.Details)
-		}
-	}
-	if len(scraped.URLs) > 0 && shouldSetSingleValueField(fieldOptions["url"], false) {
-		// if overwrite, then set over the top
-		switch getFieldStrategy(fieldOptions["url"]) {
-		case FieldStrategyOverwrite:
-			// only overwrite if not equal
-			if len(sliceutil.Exclude(scene.URLs.List(), scraped.URLs)) != 0 {
-				partial.URLs = &models.UpdateStrings{
-					Values: scraped.URLs,
-					Mode:   models.RelationshipUpdateModeSet,
-				}
-			}
-		case FieldStrategyMerge:
-			// if merge, add if not already present
-			urls := sliceutil.AppendUniques(scene.URLs.List(), scraped.URLs)
-
-			if len(urls) != len(scene.URLs.List()) {
-				partial.URLs = &models.UpdateStrings{
-					Values: urls,
-					Mode:   models.RelationshipUpdateModeSet,
-				}
-			}
-		}
-	}
-	if scraped.Director != nil && (scene.Director != *scraped.Director) {
-		if shouldSetSingleValueField(fieldOptions["director"], scene.Director != "") {
-			partial.Director = models.NewOptionalString(*scraped.Director)
-		}
-	}
-	if scraped.Code != nil && (scene.Code != *scraped.Code) {
-		if shouldSetSingleValueField(fieldOptions["code"], scene.Code != "") {
-			partial.Code = models.NewOptionalString(*scraped.Code)
-		}
-	}
-
-	if setOrganized && !scene.Organized {
-		partial.Organized = models.NewOptionalBool(true)
-	}
-
-	return partial
 }

@@ -111,12 +111,20 @@ models:
     model: github.com/stashapp/stash/internal/dlna.Dlnaip
   IdentifySource:
     model: github.com/stashapp/stash/internal/identify.Source
+  IdentifyGallerySource:
+    model: github.com/stashapp/stash/internal/identify.GallerySource
   IdentifyMetadataTaskOptions:
     model: github.com/stashapp/stash/internal/identify.Options
+  IdentifyGalleryMetadataTaskOptions:
+    model: github.com/stashapp/stash/internal/identify.GalleryOptions
   IdentifyMetadataInput:
     model: github.com/stashapp/stash/internal/identify.Options
+  IdentifyGalleryMetadataInput:
+    model: github.com/stashapp/stash/internal/identify.GalleryOptions
   IdentifyMetadataOptions:
     model: github.com/stashapp/stash/internal/identify.MetadataOptions
+  IdentifyGalleryMetadataOptions:
+    model: github.com/stashapp/stash/internal/identify.GalleryMetadataOptions
   IdentifyFieldOptions:
     model: github.com/stashapp/stash/internal/identify.FieldOptions
   IdentifyFieldStrategy:
@@ -128,10 +136,14 @@ models:
     model: github.com/stashapp/stash/pkg/models.StashID
   IdentifySourceInput:
     model: github.com/stashapp/stash/internal/identify.Source
+  IdentifyGallerySourceInput:
+    model: github.com/stashapp/stash/internal/identify.GallerySource
   IdentifyFieldOptionsInput:
     model: github.com/stashapp/stash/internal/identify.FieldOptions
   IdentifyMetadataOptionsInput:
     model: github.com/stashapp/stash/internal/identify.MetadataOptions
+  IdentifyGalleryMetadataOptionsInput:
+    model: github.com/stashapp/stash/internal/identify.GalleryMetadataOptions
   ScraperSourceInput:
     model: github.com/stashapp/stash/pkg/scraper.Source
   SavedFindFilterType:

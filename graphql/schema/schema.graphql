@@ -358,7 +358,8 @@ type Mutation {
   metadataClean(input: CleanMetadataInput!): ID!
   "Identifies scenes using scrapers. Returns the job ID"
   metadataIdentify(input: IdentifyMetadataInput!): ID!
-
+  "Identifies galleries using scrapers. Returns the job ID"
+  metadataIdentifyGallery(input: IdentifyGalleryMetadataInput!): ID!
   "Migrate generated files for the current hash naming"
   migrateHashNaming: ID!
   "Migrates legacy scene screenshot files into the blob storage"

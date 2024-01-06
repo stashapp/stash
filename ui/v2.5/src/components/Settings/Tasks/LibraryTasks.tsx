@@ -10,6 +10,7 @@ import {
 import { withoutTypename } from "src/utils/data";
 import { ConfigurationContext } from "src/hooks/Config";
 import { IdentifyDialog } from "../../Dialogs/IdentifyDialog/IdentifyDialog";
+import { IdentifyDialog as IdentifyGalleryDialog } from "../../Dialogs/IdentifyGalleryDialog/IdentifyDialog";
 import * as GQL from "src/core/generated-graphql";
 import { DirectorySelectionDialog } from "./DirectorySelectionDialog";
 import { ScanOptions } from "./ScanOptions";
@@ -78,6 +79,7 @@ export const LibraryTasks: React.FC = () => {
     scan: false,
     autoTag: false,
     identify: false,
+    identifyGallery: false,
   });
 
   const [scanOptions, setScanOptions] = useState<GQL.ScanMetadataInput>({});
@@ -259,6 +261,16 @@ export const LibraryTasks: React.FC = () => {
     );
   }
 
+  function maybeRenderIdentifyGalleryDialog() {
+    if (!dialogOpen.identifyGallery) return;
+
+    return (
+      <IdentifyGalleryDialog
+        onClose={() => setDialogOpen({ identifyGallery: false })}
+      />
+    );
+  }
+
   async function onGenerateClicked() {
     try {
       configureDefaults({
@@ -286,6 +298,7 @@ export const LibraryTasks: React.FC = () => {
       {renderScanDialog()}
       {renderAutoTagDialog()}
       {maybeRenderIdentifyDialog()}
+      {maybeRenderIdentifyGalleryDialog()}
 
       <SettingSection headingID="library">
         <SettingGroup
@@ -345,6 +358,13 @@ export const LibraryTasks: React.FC = () => {
             onClick={() => setDialogOpen({ identify: true })}
           >
             <FormattedMessage id="actions.identify" />…
+          </Button>
+          <Button
+            variant="secondary"
+            type="submit"
+            onClick={() => setDialogOpen({ identifyGallery: true })}
+          >
+            <FormattedMessage id="actions.identify_galleries" />…
           </Button>
         </Setting>
       </SettingSection>

@@ -5,6 +5,7 @@ package sqlite_test
 
 import (
 	"context"
+	"github.com/stashapp/stash/pkg/sliceutil"
 	"math"
 	"strconv"
 	"testing"
@@ -1213,6 +1214,31 @@ func Test_galleryQueryBuilder_FindBySceneID(t *testing.T) {
 	}
 }
 
+func TestGalleryFindByPerformerID(t *testing.T) {
+	withTxn(func(ctx context.Context) error {
+		sqb := db.Gallery
+
+		galleries, err := sqb.FindByPerformerID(ctx, performerIDs[performerIdxWithGallery])
+
+		if err != nil {
+			t.Errorf("error calling FindByPerformerID: %s", err.Error())
+		}
+
+		assert.Len(t, galleries, 1)
+		assert.Equal(t, galleryIDs[galleryIdxWithPerformer], galleries[0].ID)
+
+		galleries, err = sqb.FindByPerformerID(ctx, 0)
+
+		if err != nil {
+			t.Errorf("error calling FindByPerformerID: %s", err.Error())
+		}
+
+		assert.Len(t, galleries, 0)
+
+		return nil
+	})
+}
+
 func Test_galleryQueryBuilder_FindByImageID(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -1402,45 +1428,46 @@ func TestGalleryQueryQ(t *testing.T) {
 		const galleryIdx = 0
 
 		q := getGalleryStringValue(galleryIdx, pathField)
-		galleryQueryQ(ctx, t, q, galleryIdx)
+		sqb := db.Gallery
+		galleryQueryQ(ctx, t, sqb, q, galleryIdx)
 
 		return nil
 	})
 }
 
-func galleryQueryQ(ctx context.Context, t *testing.T, q string, expectedGalleryIdx int) {
-	qb := db.Gallery
-
+func galleryQueryQ(ctx context.Context, t *testing.T, sqb models.GalleryReader, q string, expectedGalleryIdx int) {
 	filter := models.FindFilterType{
 		Q: &q,
 	}
-	galleries, _, err := qb.Query(ctx, nil, &filter)
-	if err != nil {
-		t.Errorf("Error querying gallery: %s", err.Error())
+	galleries := queryGallery(ctx, t, sqb, nil, &filter)
+
+	if !assert.Len(t, galleries, 1) {
 		return
 	}
-
-	assert.Len(t, galleries, 1)
 	gallery := galleries[0]
 	assert.Equal(t, galleryIDs[expectedGalleryIdx], gallery.ID)
 
 	// no Q should return all results
 	filter.Q = nil
-	galleries, _, err = qb.Query(ctx, nil, &filter)
-	if err != nil {
-		t.Errorf("Error querying gallery: %s", err.Error())
-	}
+	pp := totalGalleries
+	filter.PerPage = &pp
+	galleries = queryGallery(ctx, t, sqb, nil, &filter)
 
 	assert.Len(t, galleries, totalGalleries)
 }
 
 func TestGalleryQueryPath(t *testing.T) {
-	const galleryIdx = 1
+	const (
+		galleryIdx      = 1
+		otherGalleryIdx = 2
+	)
 	galleryPath := getFilePath(folderIdxWithGalleryFiles, getGalleryBasename(galleryIdx))
 
 	tests := []struct {
-		name  string
-		input models.StringCriterionInput
+		name        string
+		input       models.StringCriterionInput
+		mustInclude []int
+		mustExclude []int
 	}{
 		{
 			"equals",
@@ -1448,6 +1475,8 @@ func TestGalleryQueryPath(t *testing.T) {
 				Value:    galleryPath,
 				Modifier: models.CriterionModifierEquals,
 			},
+			[]int{galleryIdx},
+			[]int{otherGalleryIdx},
 		},
 		{
 			"not equals",
@@ -1455,6 +1484,8 @@ func TestGalleryQueryPath(t *testing.T) {
 				Value:    galleryPath,
 				Modifier: models.CriterionModifierNotEquals,
 			},
+			[]int{otherGalleryIdx},
+			[]int{galleryIdx},
 		},
 		{
 			"matches regex",
@@ -1462,6 +1493,8 @@ func TestGalleryQueryPath(t *testing.T) {
 				Value:    "gallery.*1_Path",
 				Modifier: models.CriterionModifierMatchesRegex,
 			},
+			[]int{galleryIdx},
+			nil,
 		},
 		{
 			"not matches regex",
@@ -1469,18 +1502,8 @@ func TestGalleryQueryPath(t *testing.T) {
 				Value:    "gallery.*1_Path",
 				Modifier: models.CriterionModifierNotMatchesRegex,
 			},
-		},
-		{
-			"is null",
-			models.StringCriterionInput{
-				Modifier: models.CriterionModifierIsNull,
-			},
-		},
-		{
-			"not null",
-			models.StringCriterionInput{
-				Modifier: models.CriterionModifierNotNull,
-			},
+			nil,
+			[]int{galleryIdx},
 		},
 	}
 
@@ -1488,38 +1511,48 @@ func TestGalleryQueryPath(t *testing.T) {
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
-			got, count, err := qb.Query(ctx, &models.GalleryFilterType{
-				Path: &tt.input,
-			}, nil)
+			got, err := qb.Query(ctx, models.GalleryQueryOptions{
+				GalleryFilter: &models.GalleryFilterType{
+					Path: &tt.input,
+				},
+			})
 
 			if err != nil {
-				t.Errorf("GalleryStore.TestSceneQueryPath() error = %v", err)
+				t.Errorf("GalleryStore.TestGalleryQueryPath() error = %v", err)
 				return
 			}
 
-			assert.NotEqual(t, 0, count)
+			mustInclude := indexesToIDs(galleryIDs, tt.mustInclude)
+			mustExclude := indexesToIDs(galleryIDs, tt.mustExclude)
 
-			for _, gallery := range got {
-				verifyString(t, gallery.Path, tt.input)
+			missing := sliceutil.Exclude(mustInclude, got.IDs)
+			if len(missing) > 0 {
+				t.Errorf("GalleryStore.TestGalleryQueryPath() missing expected IDs: %v", missing)
+			}
+
+			notExcluded := sliceutil.Intersect(mustExclude, got.IDs)
+			if len(notExcluded) > 0 {
+				t.Errorf("GalleryStore.TestGalleryQueryPath() expected IDs to be excluded: %v", notExcluded)
 			}
 		})
 	}
 }
 
-func verifyGalleriesPath(ctx context.Context, t *testing.T, pathCriterion models.StringCriterionInput) {
-	galleryFilter := models.GalleryFilterType{
-		Path: &pathCriterion,
-	}
+func verifyGallerysPath(t *testing.T, pathCriterion models.StringCriterionInput) {
+	withTxn(func(ctx context.Context) error {
+		sqb := db.Gallery
+		galleryFilter := models.GalleryFilterType{
+			Path: &pathCriterion,
+		}
 
-	sqb := db.Gallery
-	galleries, _, err := sqb.Query(ctx, &galleryFilter, nil)
-	if err != nil {
-		t.Errorf("Error querying gallery: %s", err.Error())
-	}
+		galleries := queryGallery(ctx, t, sqb, &galleryFilter, nil)
 
-	for _, gallery := range galleries {
-		verifyString(t, gallery.Path, pathCriterion)
-	}
+		for _, gallery := range galleries {
+			verifyString(t, gallery.Path, pathCriterion)
+		}
+
+		return nil
+	})
 }
 
 func TestGalleryQueryPathOr(t *testing.T) {
@@ -1648,17 +1681,21 @@ func TestGalleryIllegalQuery(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
 		sqb := db.Gallery
 
-		_, _, err := sqb.Query(ctx, galleryFilter, nil)
+		queryOptions := models.GalleryQueryOptions{
+			GalleryFilter: galleryFilter,
+		}
+
+		_, err := sqb.Query(ctx, queryOptions)
 		assert.NotNil(err)
 
 		galleryFilter.Or = nil
 		galleryFilter.Not = &subFilter
-		_, _, err = sqb.Query(ctx, galleryFilter, nil)
+		_, err = sqb.Query(ctx, queryOptions)
 		assert.NotNil(err)
 
 		galleryFilter.And = nil
 		galleryFilter.Or = &subFilter
-		_, _, err = sqb.Query(ctx, galleryFilter, nil)
+		_, err = sqb.Query(ctx, queryOptions)
 		assert.NotNil(err)
 
 		return nil
@@ -1765,10 +1802,7 @@ func verifyGalleriesRating100(t *testing.T, ratingCriterion models.IntCriterionI
 			Rating100: &ratingCriterion,
 		}
 
-		galleries, _, err := sqb.Query(ctx, &galleryFilter, nil)
-		if err != nil {
-			t.Errorf("Error querying gallery: %s", err.Error())
-		}
+		galleries := queryGallery(ctx, t, sqb, &galleryFilter, nil)
 
 		for _, gallery := range galleries {
 			verifyIntPtr(t, gallery.Rating, ratingCriterion)
@@ -1780,7 +1814,7 @@ func verifyGalleriesRating100(t *testing.T, ratingCriterion models.IntCriterionI
 
 func TestGalleryQueryIsMissingScene(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		qb := db.Gallery
+		sqb := db.Gallery
 		isMissing := "scenes"
 		galleryFilter := models.GalleryFilterType{
 			IsMissing: &isMissing,
@@ -1791,18 +1825,12 @@ func TestGalleryQueryIsMissingScene(t *testing.T) {
 			Q: &q,
 		}
 
-		galleries, _, err := qb.Query(ctx, &galleryFilter, &findFilter)
-		if err != nil {
-			t.Errorf("Error querying gallery: %s", err.Error())
-		}
+		galleries := queryGallery(ctx, t, sqb, &galleryFilter, &findFilter)
 
 		assert.Len(t, galleries, 0)
 
 		findFilter.Q = nil
-		galleries, _, err = qb.Query(ctx, &galleryFilter, &findFilter)
-		if err != nil {
-			t.Errorf("Error querying gallery: %s", err.Error())
-		}
+		galleries = queryGallery(ctx, t, sqb, &galleryFilter, &findFilter)
 
 		// ensure non of the ids equal the one with gallery
 		for _, gallery := range galleries {
@@ -1814,9 +1842,18 @@ func TestGalleryQueryIsMissingScene(t *testing.T) {
 }
 
 func queryGallery(ctx context.Context, t *testing.T, sqb models.GalleryReader, galleryFilter *models.GalleryFilterType, findFilter *models.FindFilterType) []*models.Gallery {
-	galleries, _, err := sqb.Query(ctx, galleryFilter, findFilter)
+
+	result, err := sqb.Query(ctx, models.GalleryQueryOptions{
+		QueryOptions: models.QueryOptions{
+			FindFilter: findFilter,
+			Count:      true,
+		},
+		GalleryFilter: galleryFilter,
+	})
+
+	galleries, err := result.Resolve(ctx)
 	if err != nil {
-		t.Errorf("Error querying gallery: %s", err.Error())
+		t.Errorf("Error resolving galleries: %v", err)
 	}
 
 	return galleries
@@ -2043,24 +2080,25 @@ func TestGalleryQueryPerformers(t *testing.T) {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
 
-			results, _, err := db.Gallery.Query(ctx, &models.GalleryFilterType{
-				Performers: &tt.filter,
-			}, nil)
+			results, err := db.Gallery.Query(ctx, models.GalleryQueryOptions{
+				GalleryFilter: &models.GalleryFilterType{
+					Performers: &tt.filter,
+				},
+			})
+
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GalleryStore.Query() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 
-			ids := galleriesToIDs(results)
-
 			include := indexesToIDs(galleryIDs, tt.includeIdxs)
 			exclude := indexesToIDs(galleryIDs, tt.excludeIdxs)
 
 			for _, i := range include {
-				assert.Contains(ids, i)
+				assert.Contains(results.IDs, i)
 			}
 			for _, e := range exclude {
-				assert.NotContains(ids, e)
+				assert.NotContains(results.IDs, e)
 			}
 		})
 	}
@@ -2179,24 +2217,24 @@ func TestGalleryQueryTags(t *testing.T) {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
 
-			results, _, err := db.Gallery.Query(ctx, &models.GalleryFilterType{
-				Tags: &tt.filter,
-			}, nil)
+			results, err := db.Gallery.Query(ctx, models.GalleryQueryOptions{
+				GalleryFilter: &models.GalleryFilterType{
+					Tags: &tt.filter,
+				},
+			})
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GalleryStore.Query() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 
-			ids := galleriesToIDs(results)
-
 			include := indexesToIDs(imageIDs, tt.includeIdxs)
 			exclude := indexesToIDs(imageIDs, tt.excludeIdxs)
 
 			for _, i := range include {
-				assert.Contains(ids, i)
+				assert.Contains(results.IDs, i)
 			}
 			for _, e := range exclude {
-				assert.NotContains(ids, e)
+				assert.NotContains(results.IDs, e)
 			}
 		})
 	}
@@ -2531,22 +2569,25 @@ func TestGalleryQueryPerformerTags(t *testing.T) {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
 
-			results, _, err := db.Gallery.Query(ctx, tt.filter, tt.findFilter)
+			results, err := db.Gallery.Query(ctx, models.GalleryQueryOptions{
+				GalleryFilter: tt.filter,
+				QueryOptions: models.QueryOptions{
+					FindFilter: tt.findFilter,
+				},
+			})
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ImageStore.Query() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 
-			ids := galleriesToIDs(results)
-
 			include := indexesToIDs(galleryIDs, tt.includeIdxs)
 			exclude := indexesToIDs(galleryIDs, tt.excludeIdxs)
 
 			for _, i := range include {
-				assert.Contains(ids, i)
+				assert.Contains(results.IDs, i)
 			}
 			for _, e := range exclude {
-				assert.NotContains(ids, e)
+				assert.NotContains(results.IDs, e)
 			}
 		})
 	}
@@ -2746,9 +2787,13 @@ func TestGalleryQuerySorting(t *testing.T) {
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
-			got, _, err := qb.Query(ctx, nil, &models.FindFilterType{
-				Sort:      &tt.sortBy,
-				Direction: &tt.dir,
+			got, err := qb.Query(ctx, models.GalleryQueryOptions{
+				QueryOptions: models.QueryOptions{
+					FindFilter: &models.FindFilterType{
+						Sort:      &tt.sortBy,
+						Direction: &tt.dir,
+					},
+				},
 			})
 
 			if err != nil {
@@ -2756,13 +2801,19 @@ func TestGalleryQuerySorting(t *testing.T) {
 				return
 			}
 
-			if !assert.Greater(len(got), 0) {
+			galleries, err := got.Resolve(ctx)
+			if err != nil {
+				t.Errorf("galleryQueryBuilder.TestGalleryQuerySorting() error = %v", err)
+				return
+			}
+
+			if !assert.Greater(len(galleries), 0) {
 				return
 			}
 
 			// scenes should be in same order as indexes
-			firstGallery := got[0]
-			lastGallery := got[len(got)-1]
+			firstGallery := galleries[0]
+			lastGallery := galleries[len(galleries)-1]
 
 			if tt.firstGalleryIdx != -1 {
 				firstID := galleryIDs[tt.firstGalleryIdx]

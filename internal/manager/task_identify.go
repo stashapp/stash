@@ -4,7 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/stashapp/stash/pkg/gallery"
+	"math/rand"
 	"strings"
+	"time"
 
 	"github.com/stashapp/stash/internal/identify"
 	"github.com/stashapp/stash/pkg/job"
@@ -26,11 +29,25 @@ type IdentifyJob struct {
 	progress   *job.Progress
 }
 
+type IdentifyGalleryJob struct {
+	postHookExecutor identify.GalleryUpdatePostHookExecutor
+	input            identify.GalleryOptions
+
+	progress *job.Progress
+}
+
 func CreateIdentifyJob(input identify.Options) *IdentifyJob {
 	return &IdentifyJob{
 		postHookExecutor: instance.PluginCache,
 		input:            input,
 		stashBoxes:       instance.Config.GetStashBoxes(),
+	}
+}
+
+func CreateIdentifyGalleryJob(input identify.GalleryOptions) *IdentifyGalleryJob {
+	return &IdentifyGalleryJob{
+		postHookExecutor: instance.PluginCache,
+		input:            input,
 	}
 }
 
@@ -88,6 +105,60 @@ func (j *IdentifyJob) Execute(ctx context.Context, progress *job.Progress) {
 	}
 }
 
+func (j *IdentifyGalleryJob) Execute(ctx context.Context, progress *job.Progress) {
+	j.progress = progress
+
+	// if no sources provided - just return
+	if len(j.input.Sources) == 0 {
+		return
+	}
+
+	sources, err := j.getSources()
+	if err != nil {
+		logger.Error(err)
+		return
+	}
+
+	// if gallery ids provided, use those
+	// otherwise, batch query for all gallery - ordering by path
+	// don't use a transaction to query gallery
+	r := instance.Repository
+	if err := r.WithDB(ctx, func(ctx context.Context) error {
+		if len(j.input.GalleryIDs) == 0 {
+			return j.identifyAllGalleries(ctx, sources)
+		}
+
+		galleryIDs, err := stringslice.StringSliceToIntSlice(j.input.GalleryIDs)
+		if err != nil {
+			return fmt.Errorf("invalid gallery IDs: %w", err)
+		}
+
+		progress.SetTotal(len(galleryIDs))
+		for _, id := range galleryIDs {
+			if job.IsCancelled(ctx) {
+				break
+			}
+
+			// find the gallery
+			var err error
+			gallery, err := r.Gallery.Find(ctx, id)
+			if err != nil {
+				return fmt.Errorf("finding gallery id %d: %w", id, err)
+			}
+
+			if gallery == nil {
+				return fmt.Errorf("gallery with id %d not found", id)
+			}
+
+			j.identifyGallery(ctx, gallery, sources)
+		}
+
+		return nil
+	}); err != nil {
+		logger.Errorf("Error encountered while identifying scenes: %v", err)
+	}
+}
+
 func (j *IdentifyJob) identifyAllScenes(ctx context.Context, sources []identify.ScraperSource) error {
 	r := instance.Repository
 
@@ -127,6 +198,49 @@ func (j *IdentifyJob) identifyAllScenes(ctx context.Context, sources []identify.
 	})
 }
 
+func (j *IdentifyGalleryJob) identifyAllGalleries(ctx context.Context, sources []identify.GalleryScraperSource) error {
+	r := instance.Repository
+
+	// exclude organised
+	organised := false
+	galleryFilter := gallery.FilterFromPaths(j.input.Paths)
+	galleryFilter.Organized = &organised
+
+	sort := "path"
+	findFilter := &models.FindFilterType{
+		Sort: &sort,
+	}
+
+	// get the count
+	pp := 0
+	findFilter.PerPage = &pp
+	countResult, err := r.Gallery.Query(ctx, models.GalleryQueryOptions{
+		QueryOptions: models.QueryOptions{
+			FindFilter: findFilter,
+			Count:      true,
+		},
+		GalleryFilter: galleryFilter,
+	})
+	if err != nil {
+		return fmt.Errorf("error getting gallery count: %w", err)
+	}
+
+	j.progress.SetTotal(countResult.Count)
+
+	return gallery.BatchProcess(ctx, r.Gallery, galleryFilter, findFilter,
+		func(gallery *models.Gallery) error {
+			if job.IsCancelled(ctx) {
+				return nil
+			}
+			j.identifyGallery(ctx, gallery, sources)
+			if countResult.Count > 1 {
+				// Avoid flooding site
+				time.Sleep(time.Duration(3+rand.Intn(3)) * time.Second)
+			}
+			return nil
+		})
+}
+
 func (j *IdentifyJob) identifyScene(ctx context.Context, s *models.Scene, sources []identify.ScraperSource) {
 	if job.IsCancelled(ctx) {
 		return
@@ -145,6 +259,36 @@ func (j *IdentifyJob) identifyScene(ctx context.Context, s *models.Scene, source
 			DefaultOptions:              j.input.Options,
 			Sources:                     sources,
 			SceneUpdatePostHookExecutor: j.postHookExecutor,
+		}
+
+		taskError = task.Identify(ctx, s)
+	})
+
+	if taskError != nil {
+		logger.Errorf("Error encountered identifying %s: %v", s.Path, taskError)
+	}
+
+	j.progress.Increment()
+}
+
+func (j *IdentifyGalleryJob) identifyGallery(ctx context.Context, s *models.Gallery, sources []identify.GalleryScraperSource) {
+	if job.IsCancelled(ctx) {
+		return
+	}
+
+	var taskError error
+	j.progress.ExecuteTask("Identifying "+s.Path, func() {
+		r := instance.Repository
+		task := identify.GalleryIdentifier{
+			TxnManager:           r.TxnManager,
+			GalleryReaderUpdater: r.Gallery,
+			StudioReaderWriter:   r.Studio,
+			PerformerCreator:     r.Performer,
+			TagFinderCreator:     r.Tag,
+
+			DefaultOptions:                j.input.Options,
+			Sources:                       sources,
+			GalleryUpdatePostHookExecutor: j.postHookExecutor,
 		}
 
 		taskError = task.Identify(ctx, s)
@@ -190,6 +334,32 @@ func (j *IdentifyJob) getSources() ([]identify.ScraperSource, error) {
 					scraperID: scraperID,
 				},
 			}
+		}
+
+		src.Options = source.Options
+		ret = append(ret, src)
+	}
+
+	return ret, nil
+}
+
+func (j *IdentifyGalleryJob) getSources() ([]identify.GalleryScraperSource, error) {
+	var ret []identify.GalleryScraperSource
+	for _, source := range j.input.Sources {
+
+		var src identify.GalleryScraperSource
+
+		scraperID := *source.Source.ScraperID
+		s := instance.ScraperCache.GetScraper(scraperID)
+		if s == nil {
+			return nil, fmt.Errorf("%w: scraper with id %q", models.ErrNotFound, scraperID)
+		}
+		src = identify.GalleryScraperSource{
+			Name: s.Name,
+			Scraper: scraperSource{
+				cache:     instance.ScraperCache,
+				scraperID: scraperID,
+			},
 		}
 
 		src.Options = source.Options
@@ -286,6 +456,23 @@ func (s scraperSource) ScrapeScenes(ctx context.Context, sceneID int) ([]*scrape
 	}
 
 	return nil, errors.New("could not convert content to scene")
+}
+func (s scraperSource) ScrapeGalleries(ctx context.Context, galleryID int) ([]*scraper.ScrapedGallery, error) {
+	content, err := s.cache.ScrapeID(ctx, s.scraperID, galleryID, scraper.ScrapeContentTypeGallery)
+	if err != nil {
+		return nil, err
+	}
+
+	// don't try to convert nil return value
+	if content == nil {
+		return nil, nil
+	}
+
+	if gallery, ok := content.(scraper.ScrapedGallery); ok {
+		return []*scraper.ScrapedGallery{&gallery}, nil
+	}
+
+	return nil, errors.New("could not convert content to gallery")
 }
 
 func (s scraperSource) String() string {

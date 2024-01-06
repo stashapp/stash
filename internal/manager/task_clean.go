@@ -3,6 +3,7 @@ package manager
 import (
 	"context"
 	"fmt"
+	"github.com/stashapp/stash/pkg/gallery"
 	"io/fs"
 	"path/filepath"
 	"time"
@@ -64,7 +65,7 @@ func (j *cleanJob) cleanEmptyGalleries(ctx context.Context) {
 	if err := r.WithTxn(ctx, func(ctx context.Context) error {
 		found := true
 		for found {
-			emptyGalleries, _, err := r.Gallery.Query(ctx, &models.GalleryFilterType{
+			emptyGalleries, err := gallery.Query(ctx, r.Gallery, &models.GalleryFilterType{
 				ImageCount: &models.IntCriterionInput{
 					Value:    0,
 					Modifier: models.CriterionModifierEquals,

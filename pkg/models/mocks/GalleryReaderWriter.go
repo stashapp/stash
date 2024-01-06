@@ -556,34 +556,27 @@ func (_m *GalleryReaderWriter) GetURLs(ctx context.Context, relatedID int) ([]st
 	return r0, r1
 }
 
-// Query provides a mock function with given fields: ctx, galleryFilter, findFilter
-func (_m *GalleryReaderWriter) Query(ctx context.Context, galleryFilter *models.GalleryFilterType, findFilter *models.FindFilterType) ([]*models.Gallery, int, error) {
-	ret := _m.Called(ctx, galleryFilter, findFilter)
+// Query provides a mock function with given fields: ctx, options
+func (_m *GalleryReaderWriter) Query(ctx context.Context, options models.GalleryQueryOptions) (*models.GalleryQueryResult, error) {
+	ret := _m.Called(ctx, options)
 
-	var r0 []*models.Gallery
-	if rf, ok := ret.Get(0).(func(context.Context, *models.GalleryFilterType, *models.FindFilterType) []*models.Gallery); ok {
-		r0 = rf(ctx, galleryFilter, findFilter)
+	var r0 *models.GalleryQueryResult
+	if rf, ok := ret.Get(0).(func(context.Context, models.GalleryQueryOptions) *models.GalleryQueryResult); ok {
+		r0 = rf(ctx, options)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*models.Gallery)
+			r0 = ret.Get(0).(*models.GalleryQueryResult)
 		}
 	}
 
-	var r1 int
-	if rf, ok := ret.Get(1).(func(context.Context, *models.GalleryFilterType, *models.FindFilterType) int); ok {
-		r1 = rf(ctx, galleryFilter, findFilter)
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, models.GalleryQueryOptions) error); ok {
+		r1 = rf(ctx, options)
 	} else {
-		r1 = ret.Get(1).(int)
+		r1 = ret.Error(1)
 	}
 
-	var r2 error
-	if rf, ok := ret.Get(2).(func(context.Context, *models.GalleryFilterType, *models.FindFilterType) error); ok {
-		r2 = rf(ctx, galleryFilter, findFilter)
-	} else {
-		r2 = ret.Error(2)
-	}
-
-	return r0, r1, r2
+	return r0, r1
 }
 
 // QueryCount provides a mock function with given fields: ctx, galleryFilter, findFilter

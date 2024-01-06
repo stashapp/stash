@@ -2291,6 +2291,14 @@ export const mutateMetadataIdentify = (input: GQL.IdentifyMetadataInput) =>
     variables: { input },
   });
 
+export const mutateMetadataIdentifyGallery = (
+  input: GQL.IdentifyGalleryMetadataInput
+) =>
+  client.mutate<GQL.MetadataIdentifyGalleryMutation>({
+    mutation: GQL.MetadataIdentifyGalleryDocument,
+    variables: { input },
+  });
+
 export const mutateMetadataAutoTag = (input: GQL.AutoTagMetadataInput) =>
   client.mutate<GQL.MetadataAutoTagMutation>({
     mutation: GQL.MetadataAutoTagDocument,

@@ -241,10 +241,11 @@ const (
 	defaultLogAccess = true
 
 	// Default settings
-	DefaultScanSettings     = "defaults.scan_task"
-	DefaultIdentifySettings = "defaults.identify_task"
-	DefaultAutoTagSettings  = "defaults.auto_tag_task"
-	DefaultGenerateSettings = "defaults.generate_task"
+	DefaultScanSettings            = "defaults.scan_task"
+	DefaultIdentifySettings        = "defaults.identify_task"
+	DefaultIdentifyGallerySettings = "defaults.identify_gallery_task"
+	DefaultAutoTagSettings         = "defaults.auto_tag_task"
+	DefaultGenerateSettings        = "defaults.generate_task"
 
 	DeleteFileDefault             = "defaults.delete_file"
 	DeleteGeneratedDefault        = "defaults.delete_generated"
@@ -1345,6 +1346,25 @@ func (i *Config) GetDefaultIdentifySettings() *identify.Options {
 	if v.IsSet(DefaultIdentifySettings) {
 		var ret identify.Options
 		if err := v.UnmarshalKey(DefaultIdentifySettings, &ret); err != nil {
+			return nil
+		}
+		return &ret
+	}
+
+	return nil
+}
+
+// GetDefaultIdentifyGallerySettings returns the default Identify Gallery task settings.
+// Returns nil if the settings could not be unmarshalled, or if it
+// has not been set.
+func (i *Config) GetDefaultIdentifyGallerySettings() *identify.GalleryOptions {
+	i.RLock()
+	defer i.RUnlock()
+	v := i.viper(DefaultIdentifyGallerySettings)
+
+	if v.IsSet(DefaultIdentifyGallerySettings) {
+		var ret identify.GalleryOptions
+		if err := v.UnmarshalKey(DefaultIdentifyGallerySettings, &ret); err != nil {
 			return nil
 		}
 		return &ret

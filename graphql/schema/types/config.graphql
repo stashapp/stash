@@ -506,6 +506,7 @@ type ConfigScrapingResult {
 type ConfigDefaultSettingsResult {
   scan: ScanMetadataOptions
   identify: IdentifyMetadataTaskOptions
+  identifyGallery: IdentifyGalleryMetadataTaskOptions
   autoTag: AutoTagMetadataOptions
   generate: GenerateMetadataOptions
 
@@ -518,6 +519,7 @@ type ConfigDefaultSettingsResult {
 input ConfigDefaultSettingsInput {
   scan: ScanMetadataInput
   identify: IdentifyMetadataInput
+  identifyGallery: IdentifyGalleryMetadataInput
   autoTag: AutoTagMetadataInput
   generate: GenerateMetadataInput
 

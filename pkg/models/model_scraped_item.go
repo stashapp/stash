@@ -242,17 +242,20 @@ func (p *ScrapedPerformer) ToPerformer(endpoint string, excluded map[string]bool
 
 func (p *ScrapedPerformer) GetImage(ctx context.Context, excluded map[string]bool) ([]byte, error) {
 	// Process the base 64 encoded image string
-	if len(p.Images) > 0 && !excluded["image"] {
-		var err error
-		img, err := utils.ProcessImageInput(ctx, p.Images[0])
+	var err error
+	var img []byte
+	if !excluded["image"] {
+		if len(p.Images) > 0 {
+			img, err = utils.ProcessImageInput(ctx, p.Images[0])
+		} else if p.Image != nil && len(*p.Image) > 0 {
+			img, err = utils.ReadImageFromURL(ctx, *p.Image)
+		}
 		if err != nil {
 			return nil, err
 		}
-
-		return img, nil
 	}
 
-	return nil, nil
+	return img, err
 }
 
 func (p *ScrapedPerformer) ToPartial(endpoint string, excluded map[string]bool, existingStashIDs []StashID) PerformerPartial {

@@ -525,20 +525,11 @@ func verifyStudiosGalleryCount(t *testing.T, galleryCountCriterion models.IntCri
 		assert.Greater(t, len(studios), 0)
 
 		for _, studio := range studios {
-			pp := 0
-
-			_, count, err := db.Gallery.Query(ctx, &models.GalleryFilterType{
-				Studios: &models.HierarchicalMultiCriterionInput{
-					Value:    []string{strconv.Itoa(studio.ID)},
-					Modifier: models.CriterionModifierIncludes,
-				},
-			}, &models.FindFilterType{
-				PerPage: &pp,
-			})
+			galleryCount, err := db.Gallery.CountByStudioID(ctx, studio.ID)
 			if err != nil {
 				return err
 			}
-			verifyInt(t, count, galleryCountCriterion)
+			verifyInt(t, galleryCount, galleryCountCriterion)
 		}
 
 		return nil

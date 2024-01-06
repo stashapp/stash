@@ -1,5 +1,7 @@
 package models
 
+import "context"
+
 type GalleryFilterType struct {
 	And          *GalleryFilterType    `json:"AND"`
 	Or           *GalleryFilterType    `json:"OR"`
@@ -76,6 +78,11 @@ type GalleryUpdateInput struct {
 	URL *string `json:"url"`
 }
 
+type GalleryQueryOptions struct {
+	QueryOptions
+	GalleryFilter *GalleryFilterType
+}
+
 type GalleryDestroyInput struct {
 	Ids []string `json:"ids"`
 	// If true, then the zip file will be deleted if the gallery is zip-file-based.
@@ -83,4 +90,26 @@ type GalleryDestroyInput struct {
 	// galleries will be deleted, along with the folder, if it is not empty.
 	DeleteFile      *bool `json:"delete_file"`
 	DeleteGenerated *bool `json:"delete_generated"`
+}
+
+func NewGalleryQueryResult(getter GalleryGetter) *GalleryQueryResult {
+	return &GalleryQueryResult{
+		getter: getter,
+	}
+}
+
+func (r *GalleryQueryResult) Resolve(ctx context.Context) ([]*Gallery, error) {
+	// cache results
+	if r.galleries == nil && r.resolveErr == nil {
+		r.galleries, r.resolveErr = r.getter.FindMany(ctx, r.IDs)
+	}
+	return r.galleries, r.resolveErr
+}
+
+type GalleryQueryResult struct {
+	QueryResult
+
+	getter     GalleryGetter
+	galleries  []*Gallery
+	resolveErr error
 }

@@ -1545,20 +1545,11 @@ func verifyPerformersGalleryCount(t *testing.T, galleryCountCriterion models.Int
 		assert.Greater(t, len(performers), 0)
 
 		for _, performer := range performers {
-			pp := 0
-
-			_, count, err := db.Gallery.Query(ctx, &models.GalleryFilterType{
-				Performers: &models.MultiCriterionInput{
-					Value:    []string{strconv.Itoa(performer.ID)},
-					Modifier: models.CriterionModifierIncludes,
-				},
-			}, &models.FindFilterType{
-				PerPage: &pp,
-			})
+			ids, err := db.Gallery.FindByPerformerID(ctx, performer.ID)
 			if err != nil {
 				return err
 			}
-			verifyInt(t, count, galleryCountCriterion)
+			verifyInt(t, len(ids), galleryCountCriterion)
 		}
 
 		return nil

@@ -140,6 +140,18 @@ fragment IdentifyMetadataOptionsData on IdentifyMetadataOptions {
   skipSingleNamePerformerTag
 }
 
+fragment IdentifyGalleryMetadataOptionsData on IdentifyGalleryMetadataOptions {
+  fieldOptions {
+    ...IdentifyFieldOptionsData
+  }
+  setOrganized
+  includeMalePerformers
+  skipMultipleMatches
+  skipMultipleMatchTag
+  skipSingleNamePerformers
+  skipSingleNamePerformerTag
+}
+
 fragment ScraperSourceData on ScraperSource {
   stash_box_index
   stash_box_endpoint
@@ -168,6 +180,20 @@ fragment ConfigDefaultSettingsData on ConfigDefaultSettingsResult {
     }
     options {
       ...IdentifyMetadataOptionsData
+    }
+  }
+
+  identifyGallery {
+    sources {
+      source {
+        ...ScraperSourceData
+      }
+      options {
+        ...IdentifyGalleryMetadataOptionsData
+      }
+    }
+    options {
+      ...IdentifyGalleryMetadataOptionsData
     }
   }
 

@@ -292,6 +292,15 @@ func (c Cache) RegisterPostHooks(ctx context.Context, id int, hookType HookTrigg
 	})
 }
 
+func (c Cache) ExecuteGalleryUpdatePostHooks(ctx context.Context, input models.GalleryUpdateInput, inputFields []string) {
+	id, err := strconv.Atoi(input.ID)
+	if err != nil {
+		logger.Errorf("error converting id in GalleryUpdatePostHooks: %v", err)
+		return
+	}
+	c.ExecutePostHooks(ctx, id, GalleryUpdatePost, input, inputFields)
+}
+
 func (c Cache) ExecuteSceneUpdatePostHooks(ctx context.Context, input models.SceneUpdateInput, inputFields []string) {
 	id, err := strconv.Atoi(input.ID)
 	if err != nil {

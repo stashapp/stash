@@ -2,10 +2,62 @@ package gallery
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"time"
 
 	"github.com/stashapp/stash/pkg/models"
 )
+
+var ErrEmptyUpdater = errors.New("no fields have been set")
+
+// UpdateSet is used to update a gallery and its relationships.
+type UpdateSet struct {
+	ID int
+
+	Partial models.GalleryPartial
+
+	// in future these could be moved into a separate struct and reused
+	// for a Creator struct
+
+	// Not set if nil. Set to []byte{} to clear existing
+	CoverImage []byte
+}
+
+// IsEmpty returns true if there is nothing to update.
+func (u *UpdateSet) IsEmpty() bool {
+	withoutID := u.Partial
+
+	return withoutID == models.GalleryPartial{} &&
+		u.CoverImage == nil
+}
+
+// Update updates a Gallery by updating the fields in the Partial field, then
+// updates non-nil relationships. Returns an error if there is no work to
+// be done.
+func (u *UpdateSet) Update(ctx context.Context, qb models.GalleryUpdater) (*models.Gallery, error) {
+	if u.IsEmpty() {
+		return nil, ErrEmptyUpdater
+	}
+
+	partial := u.Partial
+	updatedAt := time.Now()
+	partial.UpdatedAt = models.NewOptionalTime(updatedAt)
+
+	ret, err := qb.UpdatePartial(ctx, u.ID, partial)
+	if err != nil {
+		return nil, fmt.Errorf("error updating gallery: %w", err)
+	}
+
+	return ret, nil
+}
+
+// UpdateInput converts the UpdateSet into GalleryUpdateInput for hook firing purposes.
+func (u UpdateSet) UpdateInput() models.GalleryUpdateInput {
+	// ensure the partial ID is set
+	ret := u.Partial.UpdateInput(u.ID)
+	return ret
+}
 
 type ImageUpdater interface {
 	GetImageIDs(ctx context.Context, galleryID int) ([]int, error)

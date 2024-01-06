@@ -191,10 +191,32 @@ input IdentifyMetadataOptionsInput {
   skipSingleNamePerformerTag: String
 }
 
+input IdentifyGalleryMetadataOptionsInput {
+  "any fields missing from here are defaulted to MERGE and createMissing false"
+  fieldOptions: [IdentifyFieldOptionsInput!]
+  setOrganized: Boolean
+  "defaults to true if not provided"
+  includeMalePerformers: Boolean
+  "defaults to true if not provided"
+  skipMultipleMatches: Boolean
+  "tag to tag skipped multiple matches with"
+  skipMultipleMatchTag: String
+  "defaults to true if not provided"
+  skipSingleNamePerformers: Boolean
+  "tag to tag skipped single name performers with"
+  skipSingleNamePerformerTag: String
+}
+
 input IdentifySourceInput {
   source: ScraperSourceInput!
   "Options defined for a source override the defaults"
   options: IdentifyMetadataOptionsInput
+}
+
+input IdentifyGallerySourceInput {
+  source: ScraperSourceInput!
+  "Options defined for a source override the defaults"
+  options: IdentifyGalleryMetadataOptionsInput
 }
 
 input IdentifyMetadataInput {
@@ -207,6 +229,19 @@ input IdentifyMetadataInput {
   sceneIDs: [ID!]
 
   "paths of scenes to identify - ignored if scene ids are set"
+  paths: [String!]
+}
+
+input IdentifyGalleryMetadataInput {
+  "An ordered list of sources to identify items with. Only the first source that finds a match is used."
+  sources: [IdentifyGallerySourceInput!]!
+  "Options defined here override the configured defaults"
+  options: IdentifyGalleryMetadataOptionsInput
+
+  "gallery ids to identify"
+  galleryIDs: [ID!]
+
+  "paths of galleries to identify - ignored if gallery ids are set"
   paths: [String!]
 }
 
@@ -236,10 +271,33 @@ type IdentifyMetadataOptions {
   skipSingleNamePerformerTag: String
 }
 
+type IdentifyGalleryMetadataOptions {
+  "any fields missing from here are defaulted to MERGE and createMissing false"
+  fieldOptions: [IdentifyFieldOptions!]
+  "defaults to true if not provided"
+  setOrganized: Boolean
+  "defaults to true if not provided"
+  includeMalePerformers: Boolean
+  "defaults to true if not provided"
+  skipMultipleMatches: Boolean
+  "tag to tag skipped multiple matches with"
+  skipMultipleMatchTag: String
+  "defaults to true if not provided"
+  skipSingleNamePerformers: Boolean
+  "tag to tag skipped single name performers with"
+  skipSingleNamePerformerTag: String
+}
+
 type IdentifySource {
   source: ScraperSource!
   "Options defined for a source override the defaults"
   options: IdentifyMetadataOptions
+}
+
+type IdentifyGallerySource {
+  source: ScraperSource!
+  "Options defined for a source override the defaults"
+  options: IdentifyGalleryMetadataOptions
 }
 
 type IdentifyMetadataTaskOptions {
@@ -247,6 +305,13 @@ type IdentifyMetadataTaskOptions {
   sources: [IdentifySource!]!
   "Options defined here override the configured defaults"
   options: IdentifyMetadataOptions
+}
+
+type IdentifyGalleryMetadataTaskOptions {
+  "An ordered list of sources to identify items with. Only the first source that finds a match is used."
+  sources: [IdentifyGallerySource!]!
+  "Options defined here override the configured defaults"
+  options: IdentifyGalleryMetadataOptions
 }
 
 input ExportObjectTypeInput {

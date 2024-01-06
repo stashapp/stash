@@ -555,6 +555,19 @@ func (qb *GalleryStore) FindByFolderID(ctx context.Context, folderID models.Fold
 	return ret, nil
 }
 
+func (qb *GalleryStore) FindByPerformerID(ctx context.Context, performerID int) ([]*models.Gallery, error) {
+	sq := dialect.From(performersGalleriesJoinTable).Select(performersGalleriesJoinTable.Col(galleryIDColumn)).Where(
+		performersGalleriesJoinTable.Col(performerIDColumn).Eq(performerID),
+	)
+	ret, err := qb.findBySubquery(ctx, sq)
+
+	if err != nil {
+		return nil, fmt.Errorf("getting scenes for performer %d: %w", performerID, err)
+	}
+
+	return ret, nil
+}
+
 func (qb *GalleryStore) FindBySceneID(ctx context.Context, sceneID int) ([]*models.Gallery, error) {
 	sq := dialect.From(galleriesScenesJoinTable).Select(galleriesScenesJoinTable.Col(galleryIDColumn)).Where(
 		galleriesScenesJoinTable.Col(sceneIDColumn).Eq(sceneID),
@@ -787,23 +800,58 @@ func (qb *GalleryStore) makeQuery(ctx context.Context, galleryFilter *models.Gal
 	return &query, nil
 }
 
-func (qb *GalleryStore) Query(ctx context.Context, galleryFilter *models.GalleryFilterType, findFilter *models.FindFilterType) ([]*models.Gallery, int, error) {
-	query, err := qb.makeQuery(ctx, galleryFilter, findFilter)
+func (qb *GalleryStore) Query(ctx context.Context, options models.GalleryQueryOptions) (*models.GalleryQueryResult, error) {
+	query, err := qb.makeQuery(ctx, options.GalleryFilter, options.FindFilter)
 	if err != nil {
-		return nil, 0, err
+		return nil, err
 	}
 
-	idsResult, countResult, err := query.executeFind(ctx)
+	result, err := qb.queryGroupedFields(ctx, options, *query)
 	if err != nil {
-		return nil, 0, err
+		return nil, fmt.Errorf("error querying aggregate fields: %w", err)
 	}
 
-	galleries, err := qb.FindMany(ctx, idsResult)
+	idsResult, err := query.findIDs(ctx)
 	if err != nil {
-		return nil, 0, err
+		return nil, fmt.Errorf("error finding IDs: %w", err)
 	}
 
-	return galleries, countResult, nil
+	result.IDs = idsResult
+	return result, nil
+}
+
+func (qb *GalleryStore) CountByStudioID(ctx context.Context, studioID int) (int, error) {
+	table := qb.table()
+
+	q := dialect.Select(goqu.COUNT("*")).From(table).Where(table.Col(studioIDColumn).Eq(studioID))
+	return count(ctx, q)
+}
+
+func (qb *GalleryStore) queryGroupedFields(ctx context.Context, options models.GalleryQueryOptions, query queryBuilder) (*models.GalleryQueryResult, error) {
+	if !options.Count {
+		// nothing to do - return empty result
+		return models.NewGalleryQueryResult(qb), nil
+	}
+
+	aggregateQuery := qb.newQuery()
+
+	if options.Count {
+		aggregateQuery.addColumn("COUNT(DISTINCT temp.id) as total")
+	}
+
+	const includeSortPagination = false
+	aggregateQuery.from = fmt.Sprintf("(%s) as temp", query.toSQL(includeSortPagination))
+
+	out := struct {
+		Total int
+	}{}
+	if err := qb.repository.queryStruct(ctx, aggregateQuery.toSQL(includeSortPagination), query.args, &out); err != nil {
+		return nil, err
+	}
+
+	ret := models.NewGalleryQueryResult(qb)
+	ret.Count = out.Total
+	return ret, nil
 }
 
 func (qb *GalleryStore) QueryCount(ctx context.Context, galleryFilter *models.GalleryFilterType, findFilter *models.FindFilterType) (int, error) {

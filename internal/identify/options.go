@@ -14,6 +14,12 @@ type Source struct {
 	Options *MetadataOptions `json:"options"`
 }
 
+type GallerySource struct {
+	Source *scraper.Source `json:"source"`
+	// Options defined for a source override the defaults
+	Options *GalleryMetadataOptions `json:"options"`
+}
+
 type Options struct {
 	// An ordered list of sources to identify items with. Only the first source that finds a match is used.
 	Sources []*Source `json:"sources"`
@@ -25,12 +31,40 @@ type Options struct {
 	Paths []string `json:"paths"`
 }
 
+type GalleryOptions struct {
+	// An ordered list of sources to identify items with. Only the first source that finds a match is used.
+	Sources []*GallerySource `json:"sources"`
+	// Options defined here override the configured defaults
+	Options *GalleryMetadataOptions `json:"options"`
+	// gallery ids to identify
+	GalleryIDs []string `json:"galleryIDs"`
+	// paths of galleries to identify - ignored if gallery ids are set
+	Paths []string `json:"paths"`
+}
+
 type MetadataOptions struct {
 	// any fields missing from here are defaulted to MERGE and createMissing false
 	FieldOptions []*FieldOptions `json:"fieldOptions"`
 	// defaults to true if not provided
 	SetCoverImage *bool `json:"setCoverImage"`
 	SetOrganized  *bool `json:"setOrganized"`
+	// defaults to true if not provided
+	IncludeMalePerformers *bool `json:"includeMalePerformers"`
+	// defaults to true if not provided
+	SkipMultipleMatches *bool `json:"skipMultipleMatches"`
+	// ID of tag to tag skipped multiple matches with
+	SkipMultipleMatchTag *string `json:"skipMultipleMatchTag"`
+	// defaults to true if not provided
+	SkipSingleNamePerformers *bool `json:"skipSingleNamePerformers"`
+	// ID of tag to tag skipped single name performers with
+	SkipSingleNamePerformerTag *string `json:"skipSingleNamePerformerTag"`
+}
+
+type GalleryMetadataOptions struct {
+	// any fields missing from here are defaulted to MERGE and createMissing false
+	FieldOptions []*FieldOptions `json:"fieldOptions"`
+	// defaults to true if not provided
+	SetOrganized *bool `json:"setOrganized"`
 	// defaults to true if not provided
 	IncludeMalePerformers *bool `json:"includeMalePerformers"`
 	// defaults to true if not provided

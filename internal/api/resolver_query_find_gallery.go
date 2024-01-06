@@ -25,15 +25,31 @@ func (r *queryResolver) FindGallery(ctx context.Context, id string) (ret *models
 
 func (r *queryResolver) FindGalleries(ctx context.Context, galleryFilter *models.GalleryFilterType, filter *models.FindFilterType) (ret *FindGalleriesResultType, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		galleries, total, err := r.repository.Gallery.Query(ctx, galleryFilter, filter)
+		var galleries []*models.Gallery
+		var err error
+
+		var result *models.GalleryQueryResult
+
+		result, err = r.repository.Gallery.Query(ctx, models.GalleryQueryOptions{
+			QueryOptions: models.QueryOptions{
+				FindFilter: filter,
+				Count:      true,
+			},
+			GalleryFilter: galleryFilter,
+		})
+		if err == nil {
+			galleries, err = result.Resolve(ctx)
+		}
+
 		if err != nil {
 			return err
 		}
 
 		ret = &FindGalleriesResultType{
-			Count:     total,
+			Count:     result.Count,
 			Galleries: galleries,
 		}
+
 		return nil
 	}); err != nil {
 		return nil, err
