@@ -57,7 +57,7 @@ export const ExternalPlayerButton: React.FC<IExternalPlayerButtonProps> = ({
     >
       <a href={url}>
         <Icon icon={faExternalLinkAlt} color="white" />
-      </a>
+      </a>&nbsp;
     </Button>
   );
 };
