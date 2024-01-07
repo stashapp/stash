@@ -552,15 +552,15 @@ textarea.text-input {
       font-weight: 600;
       white-space: nowrap;
     }
+    /* stylelint-enable selector-max-type */
   }
 
   td.select-col {
     text-align: center;
   }
 
-  /* stylelint-disable declaration-no-important */
-  th {
-    border: none !important;
+  .table thead th {
+    border: none;
     white-space: nowrap;
   }
 
@@ -581,10 +581,10 @@ textarea.text-input {
   color: $text-color;
 }
 
-.table-list td,
-.table-list th {
+.table-list .table-striped td,
+.table-list .table-striped th {
   font-size: 1rem;
-  vertical-align: middle !important;
+  vertical-align: middle;
 
   h5,
   h6 {
@@ -596,11 +596,13 @@ textarea.text-input {
   }
 }
 
+ /* stylelint-disable declaration-no-important */
 .border-row {
   background-color: #414c53;
   height: 1px;
   padding: 0 !important;
 }
+ /* stylelint-enable declaration-no-important */
 
 @media (max-width: 576px) {
   .row.justify-content-center {
