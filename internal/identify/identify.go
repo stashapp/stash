@@ -392,7 +392,7 @@ func getScenePartial(scene *models.Scene, scraped *scraper.ScrapedScene, fieldOp
 		switch getFieldStrategy(fieldOptions["url"]) {
 		case FieldStrategyOverwrite:
 			// only overwrite if not equal
-			if len(sliceutil.Exclude(scene.URLs.List(), scraped.URLs)) != 0 {
+			if len(sliceutil.Exclude(scraped.URLs, scene.URLs.List())) != 0 {
 				partial.URLs = &models.UpdateStrings{
 					Values: scraped.URLs,
 					Mode:   models.RelationshipUpdateModeSet,
