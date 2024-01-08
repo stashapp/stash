@@ -491,6 +491,14 @@ textarea.text-input {
   }
 }
 
+/* stylelint-disable declaration-no-important */
+.border-row {
+  background-color: #414c53;
+  height: 1px;
+  padding: 0 !important;
+}
+/* stylelint-enable declaration-no-important */
+
 @media (max-width: 576px) {
   .row.justify-content-center {
     margin-left: 0;
