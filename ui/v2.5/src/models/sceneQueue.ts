@@ -112,8 +112,8 @@ export class SceneQueue {
     let params = [
       this.makeQueryParameters(options.sceneIndex, options.newPage),
     ];
-    if (options.autoPlay !== undefined) {
-      params.push("autoplay=" + options.autoPlay);
+    if (options.autoPlay) {
+      params.push("autoplay=true");
     }
     if (options.continue !== undefined) {
       params.push("continue=" + options.continue);
