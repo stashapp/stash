@@ -542,6 +542,9 @@ func getPathSearchClauseMany(pathColumn, basenameColumn, p string, addWildcards,
 func intCriterionHandler(c *models.IntCriterionInput, column string, addJoinFn func(f *filterBuilder)) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if c != nil {
+			if addJoinFn != nil {
+				addJoinFn(f)
+			}
 			clause, args := getIntCriterionWhereClause(column, *c)
 			f.addWhere(clause, args...)
 		}
@@ -551,6 +554,9 @@ func intCriterionHandler(c *models.IntCriterionInput, column string, addJoinFn f
 func floatCriterionHandler(c *models.FloatCriterionInput, column string, addJoinFn func(f *filterBuilder)) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if c != nil {
+			if addJoinFn != nil {
+				addJoinFn(f)
+			}
 			clause, args := getFloatCriterionWhereClause(column, *c)
 			f.addWhere(clause, args...)
 		}
