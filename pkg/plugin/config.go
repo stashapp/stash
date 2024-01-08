@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/stashapp/stash/pkg/utils"
@@ -206,7 +207,15 @@ func convertHooks(hooks []HookTriggerEnum) []string {
 func (c Config) getPluginSettings() []PluginSetting {
 	ret := []PluginSetting{}
 
-	for k, o := range c.Settings {
+	var keys []string
+	for k := range c.Settings {
+		keys = append(keys, k)
+	}
+
+	sort.Strings(keys)
+
+	for _, k := range keys {
+		o := c.Settings[k]
 		t := o.Type
 		if t == "" {
 			t = PluginSettingTypeEnumString
