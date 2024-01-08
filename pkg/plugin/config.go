@@ -248,6 +248,7 @@ func (c Config) toPlugin() *Plugin {
 			ExternalCSS:    c.UI.getExternalCSS(),
 			Javascript:     c.UI.getJavascriptFiles(c),
 			CSS:            c.UI.getCSSFiles(c),
+			CSP:            c.UI.CSP,
 			Assets:         c.UI.Assets,
 		},
 		Settings:   c.getPluginSettings(),
