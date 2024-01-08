@@ -161,6 +161,7 @@ export const AvailableScraperPackages: React.FC = () => {
           addSource={addSource}
           editSource={editSource}
           deleteSource={deleteSource}
+          allowSelectAll
         />
       </div>
     </SettingSection>

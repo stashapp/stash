@@ -623,6 +623,7 @@ const SourcePackagesList: React.FC<{
   loadSource: () => Promise<RemotePackage[]>;
   selectedOnly: boolean;
   selectedPackages: RemotePackage[];
+  allowSelectAll?: boolean;
   setSelectedPackages: React.Dispatch<React.SetStateAction<RemotePackage[]>>;
   renderDescription?: (pkg: RemotePackage) => React.ReactNode;
   editSource: () => void;
@@ -630,6 +631,7 @@ const SourcePackagesList: React.FC<{
 }> = ({
   source,
   loadSource,
+  allowSelectAll,
   selectedOnly,
   selectedPackages,
   setSelectedPackages,
@@ -788,7 +790,7 @@ const SourcePackagesList: React.FC<{
     <>
       <tr className="package-source">
         <td>
-          {packages !== undefined ? (
+          {allowSelectAll && packages !== undefined ? (
             <Form.Check
               checked={sourceChecked ?? false}
               onChange={() => toggleSource()}
@@ -847,6 +849,7 @@ const AvailablePackagesList: React.FC<{
     React.SetStateAction<Record<string, RemotePackage[]>>
   >;
   selectedOnly: boolean;
+  allowSourceSelectAll?: boolean;
   addSource: (src: GQL.PackageSource) => void;
   editSource: (existing: GQL.PackageSource, changed: GQL.PackageSource) => void;
   deleteSource: (source: GQL.PackageSource) => void;
@@ -862,6 +865,7 @@ const AvailablePackagesList: React.FC<{
   addSource,
   editSource,
   deleteSource,
+  allowSourceSelectAll,
 }) => {
   const [deletingSource, setDeletingSource] = useState<GQL.PackageSource>();
   const [editingSource, setEditingSource] = useState<GQL.PackageSource>();
@@ -923,6 +927,7 @@ const AvailablePackagesList: React.FC<{
             setSelectedPackages={(v) => setSelectedSourcePackages(src, v)}
             editSource={() => setEditingSource(src)}
             deleteSource={() => setDeletingSource(src)}
+            allowSelectAll={allowSourceSelectAll}
           />
         ))}
         <tr className="add-package-source">
@@ -1006,6 +1011,7 @@ export const AvailablePackages: React.FC<{
   addSource: (src: GQL.PackageSource) => void;
   editSource: (existing: GQL.PackageSource, changed: GQL.PackageSource) => void;
   deleteSource: (source: GQL.PackageSource) => void;
+  allowSelectAll?: boolean;
 }> = ({
   sources,
   loadSource,
@@ -1015,6 +1021,7 @@ export const AvailablePackages: React.FC<{
   addSource,
   editSource,
   deleteSource,
+  allowSelectAll,
 }) => {
   const [checkedPackages, setCheckedPackages] = useState<
     Record<string, RemotePackage[]>
@@ -1066,6 +1073,7 @@ export const AvailablePackages: React.FC<{
         addSource={addSource}
         editSource={editSource}
         deleteSource={deleteSource}
+        allowSourceSelectAll={allowSelectAll}
       />
     </div>
   );
