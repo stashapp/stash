@@ -716,3 +716,41 @@ input[type="range"].blue-slider {
     bottom: 0;
   }
 }
+
+#scenes-page {
+  display: flex;
+  flex-direction: row;
+
+  .scene-filter {
+    flex: 0 0 20rem;
+    margin-right: 1rem;
+  }
+
+  .scenes-page-results {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    max-height: calc(100vh - 4rem);
+
+    .scenes-page-items {
+      max-height: 100%;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+  }
+
+  .list-header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+
+    & > div {
+      align-items: center;
+      display: flex;
+
+      & > div {
+        margin-right: 0.5rem;
+      }
+    }
+  }
+}
