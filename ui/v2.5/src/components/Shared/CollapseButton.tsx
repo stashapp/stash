@@ -8,6 +8,7 @@ import { Icon } from "./Icon";
 
 interface IProps {
   text: string;
+  rightControls?: React.ReactNode;
 }
 
 export const CollapseButton: React.FC<React.PropsWithChildren<IProps>> = (
@@ -21,8 +22,11 @@ export const CollapseButton: React.FC<React.PropsWithChildren<IProps>> = (
         onClick={() => setOpen(!open)}
         className="minimal collapse-button"
       >
-        <Icon icon={open ? faChevronDown : faChevronRight} />
-        <span>{props.text}</span>
+        <span>
+          <Icon icon={open ? faChevronDown : faChevronRight} />
+          <span>{props.text}</span>
+        </span>
+        <span>{props.rightControls}</span>
       </Button>
       <Collapse in={open}>
         <div>{props.children}</div>

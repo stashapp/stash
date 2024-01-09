@@ -170,6 +170,12 @@
   }
 }
 
+button.collapse-button {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
 button.collapse-button.btn-primary:not(:disabled):not(.disabled):hover,
 button.collapse-button.btn-primary:not(:disabled):not(.disabled):focus,
 button.collapse-button.btn-primary:not(:disabled):not(.disabled):active {
