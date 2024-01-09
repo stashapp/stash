@@ -570,16 +570,18 @@ export const SceneDuplicateChecker: React.FC = () => {
             </OverlayTrigger>
           </ButtonGroup>
         )}
-        <Pagination
-          itemsPerPage={pageSize}
-          currentPage={currentPage}
-          totalItems={scenes.length}
-          metadataByline={[]}
-          onChangePage={(newPage) => {
-            setQuery({ page: newPage === 1 ? undefined : newPage });
-            resetCheckboxSelection();
-          }}
-        />
+        <div className="filter-container">
+          <Pagination
+            itemsPerPage={pageSize}
+            currentPage={currentPage}
+            totalItems={scenes.length}
+            metadataByline={[]}
+            onChangePage={(newPage) => {
+              setQuery({ page: newPage === 1 ? undefined : newPage });
+              resetCheckboxSelection();
+            }}
+          />
+        </div>
         <Form.Control
           as="select"
           className="w-auto ml-2 btn-secondary"

@@ -112,7 +112,7 @@ export const PageSizeSelect: React.FC<{
   }, [intl, pageSize]);
 
   return (
-    <div className="mb-2">
+    <div>
       <Form.Control
         as="select"
         ref={perPageSelect}
@@ -222,7 +222,7 @@ export const SortBySelect: React.FC<{
   }
 
   return (
-    <Dropdown as={ButtonGroup} className="mr-2 mb-2">
+    <Dropdown as={ButtonGroup}>
       <InputGroup.Prepend>
         <Dropdown.Toggle variant="secondary">
           {currentSortBy
@@ -432,14 +432,16 @@ export const ListFilter: React.FC<IListFilterProps> = ({
           </OverlayTrigger>
         </ButtonGroup>
 
-        <SortBySelect
-          sortBy={filter.sortBy}
-          direction={filter.sortDirection}
-          options={filterOptions.sortByOptions}
-          setSortBy={onChangeSortBy}
-          setDirection={onChangeSortDirection}
-          onReshuffleRandomSort={onReshuffleRandomSort}
-        />
+        <div className="mr-2 mb-2">
+          <SortBySelect
+            sortBy={filter.sortBy}
+            direction={filter.sortDirection}
+            options={filterOptions.sortByOptions}
+            setSortBy={onChangeSortBy}
+            setDirection={onChangeSortDirection}
+            onReshuffleRandomSort={onReshuffleRandomSort}
+          />
+        </div>
 
         <PageSizeSelect
           pageSize={filter.itemsPerPage}

@@ -379,13 +379,15 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
     function renderPagination() {
       if (hidePagination) return;
       return (
-        <Pagination
-          itemsPerPage={filter.itemsPerPage}
-          currentPage={filter.currentPage}
-          totalItems={totalCount}
-          metadataByline={metadataByline}
-          onChangePage={onChangePage}
-        />
+        <div className="filter-container">
+          <Pagination
+            itemsPerPage={filter.itemsPerPage}
+            currentPage={filter.currentPage}
+            totalItems={totalCount}
+            metadataByline={metadataByline}
+            onChangePage={onChangePage}
+          />
+        </div>
       );
     }
 
