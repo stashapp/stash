@@ -12,8 +12,8 @@ type Package {
 
   sourceURL: String!
 
-  "The available upgraded version of this package"
-  upgrade: Package
+  "The version of this package currently available from the remote source"
+  source_package: Package
 
   metadata: Map!
 }

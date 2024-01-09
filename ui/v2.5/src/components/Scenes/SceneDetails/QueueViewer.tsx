@@ -15,7 +15,7 @@ import { objectTitle } from "src/core/files";
 import { QueuedScene } from "src/models/sceneQueue";
 
 export interface IPlaylistViewer {
-  scenes?: QueuedScene[];
+  scenes: QueuedScene[];
   currentID?: string;
   start?: number;
   continue?: boolean;
@@ -47,7 +47,7 @@ export const QueueViewer: React.FC<IPlaylistViewer> = ({
   const [lessLoading, setLessLoading] = useState(false);
   const [moreLoading, setMoreLoading] = useState(false);
 
-  const currentIndex = scenes?.findIndex((s) => s.id === currentID) ?? 0;
+  const currentIndex = scenes.findIndex((s) => s.id === currentID);
 
   useEffect(() => {
     setLessLoading(false);
@@ -130,7 +130,7 @@ export const QueueViewer: React.FC<IPlaylistViewer> = ({
           ) : (
             ""
           )}
-          {currentIndex < (scenes ?? []).length - 1 || hasMoreScenes ? (
+          {currentIndex < scenes.length - 1 || hasMoreScenes ? (
             <Button
               className="minimal"
               variant="secondary"
@@ -162,7 +162,7 @@ export const QueueViewer: React.FC<IPlaylistViewer> = ({
             </Button>
           </div>
         ) : undefined}
-        <ol start={start}>{(scenes ?? []).map(renderPlaylistEntry)}</ol>
+        <ol start={start}>{scenes.map(renderPlaylistEntry)}</ol>
         {hasMoreScenes ? (
           <div className="d-flex justify-content-center">
             <Button onClick={() => moreClicked()} disabled={moreLoading}>

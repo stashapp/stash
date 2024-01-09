@@ -87,6 +87,7 @@ func makeConfigGeneralResult() *ConfigGeneralResult {
 		MetadataPath:                  config.GetMetadataPath(),
 		ConfigFilePath:                config.GetConfigFile(),
 		ScrapersPath:                  config.GetScrapersPath(),
+		PluginsPath:                   config.GetPluginsPath(),
 		CachePath:                     config.GetCachePath(),
 		BlobsPath:                     config.GetBlobsPath(),
 		BlobsStorage:                  config.GetBlobsStorage(),

@@ -87,7 +87,7 @@ export const GalleryEditPanel: React.FC<IProps> = ({
   const schema = yup.object({
     title: titleRequired ? yup.string().required() : yup.string().ensure(),
     code: yup.string().ensure(),
-    urls: yupUniqueStringList("urls"),
+    urls: yupUniqueStringList(intl),
     date: yupDateString(intl),
     photographer: yup.string().ensure(),
     rating100: yup.number().integer().nullable().defined(),
@@ -504,12 +504,7 @@ export const GalleryEditPanel: React.FC<IProps> = ({
             {renderInputField("title")}
             {renderInputField("code", "text", "scene_code")}
 
-            {renderURLListField(
-              "urls",
-              "validation.urls_must_be_unique",
-              onScrapeGalleryURL,
-              urlScrapable
-            )}
+            {renderURLListField("urls", onScrapeGalleryURL, urlScrapable)}
 
             {renderDateField("date")}
             {renderInputField("photographer")}

@@ -23,28 +23,31 @@ const Config: React.FC<IConfigProps> = ({ show }) => {
   const intl = useIntl();
   const blacklistRef = useRef<HTMLInputElement | null>(null);
 
-  const removeBlacklist = (index: number) => {
-    setConfig({
-      ...config,
-      blacklist: [
-        ...config.blacklist.slice(0, index),
-        ...config.blacklist.slice(index + 1),
-      ],
-    });
-  };
-
-  const handleBlacklistAddition = () => {
+  function addBlacklistItem() {
     if (!blacklistRef.current) return;
 
     const input = blacklistRef.current.value;
-    if (input.length === 0) return;
+    if (!input) return;
 
+    // don't add duplicate items
+    if (!config.blacklist.includes(input)) {
+      setConfig({
+        ...config,
+        blacklist: [...config.blacklist, input],
+      });
+    }
+
+    blacklistRef.current.value = "";
+  }
+
+  function removeBlacklistItem(index: number) {
+    const newBlacklist = [...config.blacklist];
+    newBlacklist.splice(index, 1);
     setConfig({
       ...config,
-      blacklist: [...config.blacklist, input],
+      blacklist: newBlacklist,
     });
-    blacklistRef.current.value = "";
-  };
+  }
 
   return (
     <Collapse in={show}>
@@ -61,7 +64,7 @@ const Config: React.FC<IConfigProps> = ({ show }) => {
                   <FormattedMessage id="component_tagger.config.show_male_label" />
                 }
                 checked={config.showMales}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                onChange={(e) =>
                   setConfig({ ...config, showMales: e.currentTarget.checked })
                 }
               />
@@ -75,7 +78,7 @@ const Config: React.FC<IConfigProps> = ({ show }) => {
                   <FormattedMessage id="component_tagger.config.set_cover_label" />
                 }
                 checked={config.setCoverImage}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                onChange={(e) =>
                   setConfig({
                     ...config,
                     setCoverImage: e.currentTarget.checked,
@@ -95,7 +98,7 @@ const Config: React.FC<IConfigProps> = ({ show }) => {
                   }
                   className="mr-4"
                   checked={config.setTags}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  onChange={(e) =>
                     setConfig({ ...config, setTags: e.currentTarget.checked })
                   }
                 />
@@ -104,7 +107,7 @@ const Config: React.FC<IConfigProps> = ({ show }) => {
                   className="col-md-2 col-3 input-control"
                   as="select"
                   value={config.tagOperation}
-                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                  onChange={(e) =>
                     setConfig({
                       ...config,
                       tagOperation: e.currentTarget.value as TagOperation,
@@ -135,7 +138,7 @@ const Config: React.FC<IConfigProps> = ({ show }) => {
                   as="select"
                   className="col-md-2 col-3 input-control"
                   value={config.mode}
-                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                  onChange={(e) =>
                     setConfig({
                       ...config,
                       mode: e.currentTarget.value as ParseMode,
@@ -182,7 +185,7 @@ const Config: React.FC<IConfigProps> = ({ show }) => {
                   <FormattedMessage id="component_tagger.config.mark_organized_label" />
                 }
                 checked={config.markSceneAsOrganizedOnSave}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                onChange={(e) =>
                   setConfig({
                     ...config,
                     markSceneAsOrganizedOnSave: e.currentTarget.checked,
@@ -199,9 +202,18 @@ const Config: React.FC<IConfigProps> = ({ show }) => {
               <FormattedMessage id="component_tagger.config.blacklist_label" />
             </h5>
             <InputGroup>
-              <Form.Control className="text-input" ref={blacklistRef} />
+              <Form.Control
+                className="text-input"
+                ref={blacklistRef}
+                onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) => {
+                  if (e.key === "Enter") {
+                    addBlacklistItem();
+                    e.preventDefault();
+                  }
+                }}
+              />
               <InputGroup.Append>
-                <Button onClick={handleBlacklistAddition}>
+                <Button onClick={() => addBlacklistItem()}>
                   <FormattedMessage id="actions.add" />
                 </Button>
               </InputGroup.Append>
@@ -221,7 +233,7 @@ const Config: React.FC<IConfigProps> = ({ show }) => {
                 {item.toString()}
                 <Button
                   className="minimal ml-2"
-                  onClick={() => removeBlacklist(index)}
+                  onClick={() => removeBlacklistItem(index)}
                 >
                   <Icon icon={faTimes} />
                 </Button>

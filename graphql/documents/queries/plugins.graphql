@@ -55,7 +55,7 @@ query InstalledPluginPackages {
 query InstalledPluginPackagesStatus {
   installedPackages(type: Plugin) {
     ...PackageData
-    upgrade {
+    source_package {
       ...PackageData
     }
   }

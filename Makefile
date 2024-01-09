@@ -142,6 +142,7 @@ stash-macapp: flags-release flags-pie stash
 
 # build-cc- targets should be run within the compiler docker container
 
+.PHONY: build-cc-windows
 build-cc-windows: export GOOS := windows
 build-cc-windows: export GOARCH := amd64
 build-cc-windows: export CC := x86_64-w64-mingw32-gcc
