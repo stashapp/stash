@@ -26,7 +26,10 @@ import {
 import { Icon } from "../Shared/Icon";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import useFocus from "src/utils/focus";
-import { ListFilterOptions } from "src/models/list-filter/filter-options";
+import {
+  ISortByOption,
+  ListFilterOptions,
+} from "src/models/list-filter/filter-options";
 import { FormattedMessage, useIntl } from "react-intl";
 import { PersistanceLevel } from "./ItemList";
 import { SavedFilterList } from "./SavedFilterList";
@@ -167,6 +170,103 @@ export const PageSizeSelect: React.FC<{
   );
 };
 
+export const SortBySelect: React.FC<{
+  sortBy: string | undefined;
+  direction: SortDirectionEnum;
+  options: ISortByOption[];
+  setSortBy: (sortBy: string | null) => void;
+  setDirection: (direction: SortDirectionEnum) => void;
+  onReshuffleRandomSort: () => void;
+}> = ({
+  sortBy,
+  direction: sortDirection,
+  options: sortByOptions,
+  setSortBy,
+  setDirection,
+  onReshuffleRandomSort,
+}) => {
+  const intl = useIntl();
+
+  const currentSortBy = useMemo(
+    () => sortByOptions.find((o) => o.value === sortBy),
+    [sortByOptions, sortBy]
+  );
+
+  function renderSortByOptions() {
+    return sortByOptions
+      .map((o) => {
+        return {
+          message: intl.formatMessage({ id: o.messageID }),
+          value: o.value,
+        };
+      })
+      .sort((a, b) => a.message.localeCompare(b.message))
+      .map((option) => (
+        <Dropdown.Item
+          onSelect={setSortBy}
+          key={option.value}
+          className="bg-secondary text-white"
+          eventKey={option.value}
+        >
+          {option.message}
+        </Dropdown.Item>
+      ));
+  }
+
+  function onChangeSortDirection() {
+    if (sortDirection === SortDirectionEnum.Asc) {
+      setDirection(SortDirectionEnum.Desc);
+    } else {
+      setDirection(SortDirectionEnum.Asc);
+    }
+  }
+
+  return (
+    <Dropdown as={ButtonGroup} className="mr-2 mb-2">
+      <InputGroup.Prepend>
+        <Dropdown.Toggle variant="secondary">
+          {currentSortBy
+            ? intl.formatMessage({ id: currentSortBy.messageID })
+            : ""}
+        </Dropdown.Toggle>
+      </InputGroup.Prepend>
+      <Dropdown.Menu className="bg-secondary text-white">
+        {renderSortByOptions()}
+      </Dropdown.Menu>
+      <OverlayTrigger
+        overlay={
+          <Tooltip id="sort-direction-tooltip">
+            {sortDirection === SortDirectionEnum.Asc
+              ? intl.formatMessage({ id: "ascending" })
+              : intl.formatMessage({ id: "descending" })}
+          </Tooltip>
+        }
+      >
+        <Button variant="secondary" onClick={onChangeSortDirection}>
+          <Icon
+            icon={
+              sortDirection === SortDirectionEnum.Asc ? faCaretUp : faCaretDown
+            }
+          />
+        </Button>
+      </OverlayTrigger>
+      {sortBy === "random" && (
+        <OverlayTrigger
+          overlay={
+            <Tooltip id="sort-reshuffle-tooltip">
+              {intl.formatMessage({ id: "actions.reshuffle" })}
+            </Tooltip>
+          }
+        >
+          <Button variant="secondary" onClick={onReshuffleRandomSort}>
+            <Icon icon={faRandom} />
+          </Button>
+        </OverlayTrigger>
+      )}
+    </Dropdown>
+  );
+};
+
 export const ListFilter: React.FC<IListFilterProps> = ({
   onFilterUpdate,
   filter,
@@ -239,14 +339,9 @@ export const ListFilter: React.FC<IListFilterProps> = ({
     setQueryClearShowing(false);
   }
 
-  function onChangeSortDirection() {
+  function onChangeSortDirection(dir: SortDirectionEnum) {
     const newFilter = cloneDeep(filter);
-    if (filter.sortDirection === SortDirectionEnum.Asc) {
-      newFilter.sortDirection = SortDirectionEnum.Desc;
-    } else {
-      newFilter.sortDirection = SortDirectionEnum.Asc;
-    }
-
+    newFilter.sortDirection = dir;
     onFilterUpdate(newFilter);
   }
 
@@ -262,27 +357,6 @@ export const ListFilter: React.FC<IListFilterProps> = ({
     newFilter.currentPage = 1;
     newFilter.randomSeed = -1;
     onFilterUpdate(newFilter);
-  }
-
-  function renderSortByOptions() {
-    return filterOptions.sortByOptions
-      .map((o) => {
-        return {
-          message: intl.formatMessage({ id: o.messageID }),
-          value: o.value,
-        };
-      })
-      .sort((a, b) => a.message.localeCompare(b.message))
-      .map((option) => (
-        <Dropdown.Item
-          onSelect={onChangeSortBy}
-          key={option.value}
-          className="bg-secondary text-white"
-          eventKey={option.value}
-        >
-          {option.message}
-        </Dropdown.Item>
-      ));
   }
 
   const SavedFilterDropdown = React.forwardRef<
@@ -302,10 +376,6 @@ export const ListFilter: React.FC<IListFilterProps> = ({
   SavedFilterDropdown.displayName = "SavedFilterDropdown";
 
   function render() {
-    const currentSortBy = filterOptions.sortByOptions.find(
-      (o) => o.value === filter.sortBy
-    );
-
     return (
       <>
         <div className="mb-2 mr-2 d-flex">
@@ -362,50 +432,14 @@ export const ListFilter: React.FC<IListFilterProps> = ({
           </OverlayTrigger>
         </ButtonGroup>
 
-        <Dropdown as={ButtonGroup} className="mr-2 mb-2">
-          <InputGroup.Prepend>
-            <Dropdown.Toggle variant="secondary">
-              {currentSortBy
-                ? intl.formatMessage({ id: currentSortBy.messageID })
-                : ""}
-            </Dropdown.Toggle>
-          </InputGroup.Prepend>
-          <Dropdown.Menu className="bg-secondary text-white">
-            {renderSortByOptions()}
-          </Dropdown.Menu>
-          <OverlayTrigger
-            overlay={
-              <Tooltip id="sort-direction-tooltip">
-                {filter.sortDirection === SortDirectionEnum.Asc
-                  ? intl.formatMessage({ id: "ascending" })
-                  : intl.formatMessage({ id: "descending" })}
-              </Tooltip>
-            }
-          >
-            <Button variant="secondary" onClick={onChangeSortDirection}>
-              <Icon
-                icon={
-                  filter.sortDirection === SortDirectionEnum.Asc
-                    ? faCaretUp
-                    : faCaretDown
-                }
-              />
-            </Button>
-          </OverlayTrigger>
-          {filter.sortBy === "random" && (
-            <OverlayTrigger
-              overlay={
-                <Tooltip id="sort-reshuffle-tooltip">
-                  {intl.formatMessage({ id: "actions.reshuffle" })}
-                </Tooltip>
-              }
-            >
-              <Button variant="secondary" onClick={onReshuffleRandomSort}>
-                <Icon icon={faRandom} />
-              </Button>
-            </OverlayTrigger>
-          )}
-        </Dropdown>
+        <SortBySelect
+          sortBy={filter.sortBy}
+          direction={filter.sortDirection}
+          options={filterOptions.sortByOptions}
+          setSortBy={onChangeSortBy}
+          setDirection={onChangeSortDirection}
+          onReshuffleRandomSort={onReshuffleRandomSort}
+        />
 
         <PageSizeSelect
           pageSize={filter.itemsPerPage}
