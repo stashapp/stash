@@ -25,6 +25,31 @@ interface IListViewOptionsProps {
   displayModeOptions: DisplayMode[];
 }
 
+export const ZoomSelect: React.FC<{
+  minZoom: number;
+  maxZoom: number;
+  zoomIndex: number;
+  onChangeZoom: (v: number) => void;
+}> = ({
+  minZoom,
+  maxZoom,
+  zoomIndex,
+  onChangeZoom,
+}) => {
+  return (
+    <Form.Control
+      className="zoom-slider"
+      type="range"
+      min={minZoom}
+      max={maxZoom}
+      value={zoomIndex}
+      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+        onChangeZoom(Number.parseInt(e.currentTarget.value, 10))
+      }
+    />
+  );
+}
+
 export const ListViewOptions: React.FC<IListViewOptionsProps> = ({
   zoomIndex,
   onSetZoom,
@@ -141,15 +166,11 @@ export const ListViewOptions: React.FC<IListViewOptionsProps> = ({
     if (onSetZoom && displayMode === DisplayMode.Grid) {
       return (
         <div className="ml-2 mb-2 d-none d-sm-inline-flex">
-          <Form.Control
-            className="zoom-slider ml-1"
-            type="range"
-            min={minZoom}
-            max={maxZoom}
-            value={zoomIndex}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              onChangeZoom(Number.parseInt(e.currentTarget.value, 10))
-            }
+          <ZoomSelect 
+            minZoom={minZoom} 
+            maxZoom={maxZoom} 
+            zoomIndex={zoomIndex ?? minZoom} 
+            onChangeZoom={onChangeZoom} 
           />
         </div>
       );
