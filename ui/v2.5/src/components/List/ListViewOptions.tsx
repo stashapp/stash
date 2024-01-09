@@ -30,12 +30,7 @@ export const ZoomSelect: React.FC<{
   maxZoom: number;
   zoomIndex: number;
   onChangeZoom: (v: number) => void;
-}> = ({
-  minZoom,
-  maxZoom,
-  zoomIndex,
-  onChangeZoom,
-}) => {
+}> = ({ minZoom, maxZoom, zoomIndex, onChangeZoom }) => {
   return (
     <Form.Control
       className="zoom-slider"
@@ -48,7 +43,7 @@ export const ZoomSelect: React.FC<{
       }
     />
   );
-}
+};
 
 export const ListViewOptions: React.FC<IListViewOptionsProps> = ({
   zoomIndex,
@@ -166,11 +161,11 @@ export const ListViewOptions: React.FC<IListViewOptionsProps> = ({
     if (onSetZoom && displayMode === DisplayMode.Grid) {
       return (
         <div className="ml-2 mb-2 d-none d-sm-inline-flex">
-          <ZoomSelect 
-            minZoom={minZoom} 
-            maxZoom={maxZoom} 
-            zoomIndex={zoomIndex ?? minZoom} 
-            onChangeZoom={onChangeZoom} 
+          <ZoomSelect
+            minZoom={minZoom}
+            maxZoom={maxZoom}
+            zoomIndex={zoomIndex ?? minZoom}
+            onChangeZoom={onChangeZoom}
           />
         </div>
       );

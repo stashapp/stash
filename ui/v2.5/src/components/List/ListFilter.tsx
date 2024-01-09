@@ -267,6 +267,64 @@ export const SortBySelect: React.FC<{
   );
 };
 
+export const SearchField: React.FC<{
+  searchTerm: string;
+  setSearchTerm: (searchTerm: string) => void;
+  queryRef: React.MutableRefObject<HTMLInputElement | null>;
+  setQueryFocus: () => void;
+}> = ({ searchTerm, setSearchTerm, queryRef, setQueryFocus }) => {
+  const intl = useIntl();
+
+  const [queryClearShowing, setQueryClearShowing] = useState(!!searchTerm);
+
+  // clear search input when filter is cleared
+  useEffect(() => {
+    if (!searchTerm) {
+      if (queryRef.current) queryRef.current.value = "";
+      setQueryClearShowing(false);
+    }
+  }, [searchTerm, queryRef]);
+
+  const searchCallback = useDebounce((value: string) => {
+    setSearchTerm(value);
+  }, 500);
+
+  function onChangeQuery(event: React.FormEvent<HTMLInputElement>) {
+    searchCallback(event.currentTarget.value);
+    setQueryClearShowing(!!event.currentTarget.value);
+  }
+
+  function onClearQuery() {
+    if (queryRef.current) queryRef.current.value = "";
+    setSearchTerm("");
+    setQueryFocus();
+    setQueryClearShowing(false);
+  }
+
+  return (
+    <div className="flex-grow-1 query-text-field-group">
+      <FormControl
+        ref={queryRef}
+        placeholder={`${intl.formatMessage({ id: "actions.search" })}…`}
+        defaultValue={searchTerm}
+        onInput={onChangeQuery}
+        className="query-text-field bg-secondary text-white border-secondary"
+      />
+      <Button
+        variant="secondary"
+        onClick={onClearQuery}
+        title={intl.formatMessage({ id: "actions.clear" })}
+        className={cx(
+          "query-text-field-clear",
+          queryClearShowing ? "" : "d-none"
+        )}
+      >
+        <Icon icon={faTimes} />
+      </Button>
+    </div>
+  );
+};
+
 export const ListFilter: React.FC<IListFilterProps> = ({
   onFilterUpdate,
   filter,
@@ -275,9 +333,6 @@ export const ListFilter: React.FC<IListFilterProps> = ({
   persistState,
 }) => {
   const [queryRef, setQueryFocus] = useFocus();
-  const [queryClearShowing, setQueryClearShowing] = useState(
-    !!filter.searchTerm
-  );
 
   const searchQueryUpdated = useCallback(
     (value: string) => {
@@ -288,15 +343,6 @@ export const ListFilter: React.FC<IListFilterProps> = ({
     },
     [filter, onFilterUpdate]
   );
-
-  const searchCallback = useDebounce((value: string) => {
-    const newFilter = cloneDeep(filter);
-    newFilter.searchTerm = value;
-    newFilter.currentPage = 1;
-    onFilterUpdate(newFilter);
-  }, 500);
-
-  const intl = useIntl();
 
   useEffect(() => {
     Mousetrap.bind("/", (e) => {
@@ -312,31 +358,11 @@ export const ListFilter: React.FC<IListFilterProps> = ({
     };
   });
 
-  // clear search input when filter is cleared
-  useEffect(() => {
-    if (!filter.searchTerm) {
-      if (queryRef.current) queryRef.current.value = "";
-      setQueryClearShowing(false);
-    }
-  }, [filter.searchTerm, queryRef]);
-
   function onChangePageSize(val: number) {
     const newFilter = cloneDeep(filter);
     newFilter.itemsPerPage = val;
     newFilter.currentPage = 1;
     onFilterUpdate(newFilter);
-  }
-
-  function onChangeQuery(event: React.FormEvent<HTMLInputElement>) {
-    searchCallback(event.currentTarget.value);
-    setQueryClearShowing(!!event.currentTarget.value);
-  }
-
-  function onClearQuery() {
-    if (queryRef.current) queryRef.current.value = "";
-    searchQueryUpdated("");
-    setQueryFocus();
-    setQueryClearShowing(false);
   }
 
   function onChangeSortDirection(dir: SortDirectionEnum) {
@@ -379,26 +405,12 @@ export const ListFilter: React.FC<IListFilterProps> = ({
     return (
       <>
         <div className="mb-2 mr-2 d-flex">
-          <div className="flex-grow-1 query-text-field-group">
-            <FormControl
-              ref={queryRef}
-              placeholder={`${intl.formatMessage({ id: "actions.search" })}…`}
-              defaultValue={filter.searchTerm}
-              onInput={onChangeQuery}
-              className="query-text-field bg-secondary text-white border-secondary"
-            />
-            <Button
-              variant="secondary"
-              onClick={onClearQuery}
-              title={intl.formatMessage({ id: "actions.clear" })}
-              className={cx(
-                "query-text-field-clear",
-                queryClearShowing ? "" : "d-none"
-              )}
-            >
-              <Icon icon={faTimes} />
-            </Button>
-          </div>
+          <SearchField
+            searchTerm={filter.searchTerm}
+            setSearchTerm={searchQueryUpdated}
+            queryRef={queryRef}
+            setQueryFocus={setQueryFocus}
+          />
         </div>
 
         <ButtonGroup className="mr-2 mb-2">
