@@ -568,6 +568,17 @@ input[type="range"].blue-slider {
   }
 }
 
+@media (max-width: 1200px) {
+  .queue-scene-title,
+  .queue-scene-studio,
+  .queue-scene-performers,
+  .queue-scene-date {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
 #queue-viewer {
   .queue-controls {
     align-items: center;
