@@ -540,6 +540,34 @@ input[type="range"].blue-slider {
   padding-right: 0.25rem;
 }
 
+@media (min-width: 1200px) {
+  #queue-viewer {
+    .queue-scene-details {
+      width: 245px;
+    }
+
+    .queue-scene-title,
+    .queue-scene-studio,
+    .queue-scene-performers,
+    .queue-scene-date {
+      margin-right: auto;
+      min-width: 245px;
+      overflow: hidden;
+      position: relative;
+      transform: translateX(0);
+      transition: 2s;
+      white-space: nowrap;
+    }
+
+    .queue-scene-title:hover,
+    .queue-scene-studio:hover,
+    .queue-scene-performers:hover,
+    .queue-scene-date:hover {
+      transform: translateX(calc(245px - 100%));
+    }
+  }
+}
+
 #queue-viewer {
   .queue-controls {
     align-items: center;
@@ -557,27 +585,6 @@ input[type="range"].blue-slider {
     display: grid;
     overflow: hidden;
     position: relative;
-    width: 245px;
-  }
-
-  .queue-scene-title,
-  .queue-scene-studio,
-  .queue-scene-performers,
-  .queue-scene-date {
-    margin-right: auto;
-    min-width: 245px;
-    overflow: hidden;
-    position: relative;
-    transform: translateX(0);
-    transition: 2s;
-    white-space: nowrap;
-  }
-
-  .queue-scene-title:hover,
-  .queue-scene-studio:hover,
-  .queue-scene-performers:hover,
-  .queue-scene-date:hover {
-    transform: translateX(calc(245px - 100%));
   }
 
   .queue-scene-title {
