@@ -508,15 +508,15 @@ export const ListHeader: React.FC<{
   return (
     <div className="list-header">
       <div>
+        <PageSizeSelect
+          pageSize={filter.itemsPerPage}
+          setPageSize={onChangePageSize}
+        />
         <Pagination
           currentPage={filter.currentPage}
           itemsPerPage={filter.itemsPerPage}
           totalItems={totalItems}
           onChangePage={onChangePage}
-        />
-        <PageSizeSelect
-          pageSize={filter.itemsPerPage}
-          setPageSize={onChangePageSize}
         />
       </div>
       <div>
