@@ -94,10 +94,17 @@ export const QueueViewer: React.FC<IPlaylistViewer> = ({
                 src={scene.paths.screenshot ?? ""}
               />
             </div>
-            <div>
-              <span className="align-middle text-break">
-                {objectTitle(scene)}
+            <div className="queue-scene-details">
+              <span className="queue-scene-title">{objectTitle(scene)}</span>
+              <span className="queue-scene-studio">{scene?.studio?.name}</span>
+              <span className="queue-scene-performers">
+                {scene?.performers
+                  .map(function (performer) {
+                    return performer.name;
+                  })
+                  .join(", ")}
               </span>
+              <span className="queue-scene-date">{scene?.date}</span>
             </div>
           </div>
         </Link>

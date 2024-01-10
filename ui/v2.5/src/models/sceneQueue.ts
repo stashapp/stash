@@ -2,7 +2,12 @@ import { FilterMode, Scene } from "src/core/generated-graphql";
 import { ListFilterModel } from "./list-filter/filter";
 import { SceneListFilterOptions } from "./list-filter/scenes";
 
-export type QueuedScene = Pick<Scene, "id" | "title" | "paths">;
+// I ran into issues when setting stduio and performer in the previous pick code so I converted type to any
+// export type QueuedScene = any;
+export type QueuedScene = Pick<
+  Scene,
+  "id" | "title" | "date" | "studio" | "performers" | "paths"
+>;
 
 export interface IPlaySceneOptions {
   sceneIndex?: number;
