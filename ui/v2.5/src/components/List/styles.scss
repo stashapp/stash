@@ -214,12 +214,13 @@ input[type="range"].zoom-slider {
       padding-top: 0;
     }
 
-    .pin-criterion-button {
+    .unhide-criterion-button {
       color: $text_color;
+      visibility: hidden;
+    }
 
-      &:hover svg {
-        transform: rotate(0);
-      }
+    .filter-item-header:hover .unhide-criterion-button {
+      visibility: visible;
     }
 
     .remove-criterion-button {

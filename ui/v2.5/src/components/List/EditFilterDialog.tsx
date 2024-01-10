@@ -154,7 +154,7 @@ const CriterionOptionList: React.FC<ICriterionList> = ({
           )}
           {!!onUnhideCriterion && (
             <Button
-              className="pin-criterion-button"
+              className="unhide-criterion-button"
               variant="minimal"
               onClick={(e) => unhideCriterion(e, c)}
             >
