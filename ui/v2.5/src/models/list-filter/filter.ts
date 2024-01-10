@@ -413,9 +413,13 @@ export class ListFilterModel {
   }
 
   public makeCriterion(type: CriterionType) {
-    const { criterionOptions } = getFilterOptions(this.mode);
+    const { criterionOptions, defaultHiddenOptions } = getFilterOptions(
+      this.mode
+    );
 
-    const option = criterionOptions.find((o) => o.type === type);
+    const option = criterionOptions
+      .concat(defaultHiddenOptions)
+      .find((o) => o.type === type);
 
     if (!option) {
       throw new Error(`Unknown criterion parameter name: ${type}`);

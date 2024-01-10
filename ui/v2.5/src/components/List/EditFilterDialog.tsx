@@ -17,7 +17,6 @@ import {
 import { FormattedMessage, useIntl } from "react-intl";
 import { ConfigurationContext } from "src/hooks/Config";
 import { ListFilterModel } from "src/models/list-filter/filter";
-import { getFilterOptions } from "src/models/list-filter/factory";
 import { FilterTags } from "./FilterTags";
 import { CriterionEditor } from "./CriterionEditor";
 import { Icon } from "../Shared/Icon";
@@ -207,16 +206,16 @@ function filterModeToConfigKey(filterMode: FilterMode) {
 
 interface IEditFilterProps {
   filter: ListFilterModel;
+  criterionOptions: CriterionOption[];
   editingCriterion?: string;
-  onApply: (filter: ListFilterModel) => void;
-  onCancel: () => void;
+  onClose: (filter?: ListFilterModel) => void;
 }
 
 export const EditFilterDialog: React.FC<IEditFilterProps> = ({
   filter,
+  criterionOptions,
   editingCriterion,
-  onApply,
-  onCancel,
+  onClose,
 }) => {
   const Toast = useToast();
   const intl = useIntl();
@@ -236,18 +235,6 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
   const criteriaList = useMemo(() => {
     return criteria.map((c) => c.criterionOption.type);
   }, [criteria]);
-
-  const filterOptions = useMemo(() => {
-    return getFilterOptions(currentFilter.mode);
-  }, [currentFilter.mode]);
-
-  const criterionOptions = useMemo(() => {
-    return [...filterOptions.criterionOptions].sort((a, b) => {
-      return intl
-        .formatMessage({ id: a.messageID })
-        .localeCompare(intl.formatMessage({ id: b.messageID }));
-    });
-  }, [intl, filterOptions.criterionOptions]);
 
   const optionSelected = useCallback(
     (option?: CriterionOption) => {
@@ -424,7 +411,7 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
 
   return (
     <>
-      <Modal show onHide={() => onCancel()} className="edit-filter-dialog">
+      <Modal show onHide={() => onClose()} className="edit-filter-dialog">
         <Modal.Header>
           <div>
             <FormattedMessage id="search_filter.edit_filter" />
@@ -467,10 +454,10 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
           </div>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => onCancel()}>
+          <Button variant="secondary" onClick={() => onClose()}>
             <FormattedMessage id="actions.cancel" />
           </Button>
-          <Button onClick={() => onApply(currentFilter)}>
+          <Button onClick={() => onClose(currentFilter)}>
             <FormattedMessage id="actions.apply" />
           </Button>
         </Modal.Footer>

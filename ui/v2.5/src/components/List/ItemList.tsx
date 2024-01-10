@@ -33,6 +33,7 @@ import { ListOperationButtons } from "./ListOperationButtons";
 import { LoadingIndicator } from "../Shared/LoadingIndicator";
 import { DisplayMode } from "src/models/list-filter/types";
 import { ButtonToolbar } from "react-bootstrap";
+import { useIntl } from "react-intl";
 
 export enum PersistanceLevel {
   // do not load default query or persist display mode
@@ -148,6 +149,8 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
     renderDeleteDialog,
     addKeybinds,
   }) => {
+    const intl = useIntl();
+
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -454,16 +457,25 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
       updateFilter(newFilter);
     }
 
-    function onApplyEditFilter(f: ListFilterModel) {
+    function onApplyEditFilter(f?: ListFilterModel) {
       setShowEditFilter(false);
       setEditingCriterion(undefined);
+
+      if (!f) return;
       updateFilter(f);
     }
 
-    function onCancelEditFilter() {
-      setShowEditFilter(false);
-      setEditingCriterion(undefined);
-    }
+    const criterionOptions = useMemo(() => {
+      const options = filterOptions.criterionOptions.concat(
+        filterOptions.defaultHiddenOptions
+      );
+
+      return options.sort((a, b) => {
+        return intl
+          .formatMessage({ id: a.messageID })
+          .localeCompare(intl.formatMessage({ id: b.messageID }));
+      });
+    }, [intl]);
 
     return (
       <div className="item-list-container">
@@ -500,8 +512,8 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
         {(showEditFilter || editingCriterion) && (
           <EditFilterDialog
             filter={filter}
-            onApply={onApplyEditFilter}
-            onCancel={onCancelEditFilter}
+            criterionOptions={criterionOptions}
+            onClose={onApplyEditFilter}
             editingCriterion={editingCriterion}
           />
         )}

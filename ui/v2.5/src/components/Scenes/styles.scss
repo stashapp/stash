@@ -724,6 +724,27 @@ input[type="range"].blue-slider {
   .scene-filter {
     flex: 0 0 20rem;
     margin-right: 1rem;
+    max-height: calc(100vh - 4rem);
+    overflow-y: auto;
+
+    button.collapse-button {
+      padding: 0;
+      text-align: left;
+      width: 100%;
+    }
+
+    .hide-criterion-button {
+      color: $text-muted;
+      visibility: hidden;
+    }
+
+    .remove-criterion-button {
+      color: $danger;
+    }
+
+    .criterion-list .collapse-button:hover .hide-criterion-button {
+      visibility: visible;
+    }
   }
 
   .scenes-page-results {
@@ -734,8 +755,8 @@ input[type="range"].blue-slider {
 
     .scenes-page-items {
       max-height: 100%;
-      overflow-y: auto;
       overflow-x: hidden;
+      overflow-y: auto;
     }
   }
 
@@ -751,6 +772,88 @@ input[type="range"].blue-slider {
       & > div {
         margin-right: 0.5rem;
       }
+    }
+  }
+}
+
+.filter-criteria-list ul {
+  list-style-type: none;
+  margin-top: 0.5rem;
+  max-height: 300px;
+  overflow-y: auto;
+  // to prevent unnecessary vertical scrollbar
+  padding-bottom: 0.15rem;
+  padding-inline-start: 0;
+
+  .unselected-object {
+    opacity: 0.8;
+  }
+
+  .filter-criteria-list-item {
+    cursor: pointer;
+    margin-bottom: 0.25rem;
+    min-height: 2em;
+
+    a {
+      align-items: center;
+      display: flex;
+      font-size: 14px;
+      justify-content: space-between;
+      min-height: 2em;
+      outline: none;
+      padding: 0.25rem;
+
+      &:hover,
+      &:focus-visible {
+        background-color: rgba(138, 155, 168, 0.15);
+      }
+    }
+
+    .include-button {
+      color: $success;
+    }
+
+    .remove-criterion-button {
+      color: $danger;
+    }
+
+    .exclude-button {
+      align-items: center;
+      display: flex;
+      margin-left: 0.25rem;
+      padding-left: 0.25rem;
+      padding-right: 0.25rem;
+
+      .exclude-button-text {
+        color: $danger;
+        display: none;
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      &:hover {
+        background-color: inherit;
+      }
+
+      &:hover .exclude-button-text,
+      &:focus .exclude-button-text {
+        display: inline;
+      }
+    }
+
+    .object-count {
+      color: $text-muted;
+      font-size: 12px;
+    }
+  }
+
+  .selected-object:hover,
+  .selected-object a:focus-visible,
+  .excluded-object:hover,
+  .excluded-object a:focus-visible {
+    .include-button,
+    .exclude-icon {
+      color: #fff;
     }
   }
 }

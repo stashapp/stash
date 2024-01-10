@@ -21,6 +21,7 @@ export class ListFilterOptions {
   public readonly sortByOptions: ISortByOption[] = [];
   public readonly displayModeOptions: DisplayMode[] = [];
   public readonly criterionOptions: CriterionOption[] = [];
+  public readonly defaultHiddenOptions: CriterionOption[] = [];
 
   public static createSortBy(value: string) {
     return {
@@ -33,7 +34,8 @@ export class ListFilterOptions {
     defaultSortBy: string,
     sortByOptions: ISortByOption[],
     displayModeOptions: DisplayMode[],
-    criterionOptions: CriterionOption[]
+    criterionOptions: CriterionOption[],
+    defaultHiddenOptions: CriterionOption[] = []
   ) {
     this.defaultSortBy = defaultSortBy;
     this.sortByOptions = [
@@ -43,5 +45,6 @@ export class ListFilterOptions {
     ];
     this.displayModeOptions = displayModeOptions;
     this.criterionOptions = criterionOptions;
+    this.defaultHiddenOptions = defaultHiddenOptions;
   }
 }

@@ -1,7 +1,13 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { Pagination } from "../List/Pagination";
 import { ListViewOptions, ZoomSelect } from "../List/ListViewOptions";
-import { DisplayMode } from "src/models/list-filter/types";
+import { CriterionType, DisplayMode } from "src/models/list-filter/types";
 import { PageSizeSelect, SearchField, SortBySelect } from "../List/ListFilter";
 import { FilterMode, SortDirectionEnum } from "src/core/generated-graphql";
 import { getFilterOptions } from "src/models/list-filter/factory";
@@ -14,12 +20,245 @@ import { SceneWallPanel } from "../Wall/WallPanel";
 import { Tagger } from "../Tagger/scenes/SceneTagger";
 import { TaggerContext } from "../Tagger/context";
 import useFocus from "src/utils/focus";
+import {
+  Criterion,
+  CriterionOption,
+  CriterionValue,
+} from "src/models/list-filter/criteria/criterion";
+import { Button } from "react-bootstrap";
+import { Icon } from "../Shared/Icon";
+import { useIntl } from "react-intl";
+import { faEyeSlash, faTimes } from "@fortawesome/free-solid-svg-icons";
+import { CriterionEditor } from "../List/CriterionEditor";
+import { CollapseButton } from "../Shared/CollapseButton";
+import cx from "classnames";
+import { EditFilterDialog } from "../List/EditFilterDialog";
+
+const FilterCriteriaList: React.FC<{
+  filter: ListFilterModel;
+  hiddenOptions: CriterionOption[];
+  onRemoveCriterion: (c: Criterion<CriterionValue>) => void;
+  onEditCriterion: (c: Criterion<CriterionValue>) => void;
+}> = ({ filter, hiddenOptions, onRemoveCriterion, onEditCriterion }) => {
+  const intl = useIntl();
+
+  const criteria = useMemo(
+    () =>
+      filter.criteria.filter((c) => {
+        return hiddenOptions.some((h) => h.type === c.criterionOption.type);
+      }),
+    [filter.criteria, hiddenOptions]
+  );
+
+  if (criteria.length === 0) return null;
+
+  function onClickRemoveCriterion(
+    criterion: Criterion<CriterionValue>,
+    $event: React.MouseEvent<HTMLElement, MouseEvent>
+  ) {
+    if (!criterion) {
+      return;
+    }
+    onRemoveCriterion(criterion);
+    $event.stopPropagation();
+  }
+
+  function onClickCriterionTag(criterion: Criterion<CriterionValue>) {
+    onEditCriterion(criterion);
+  }
+
+  return (
+    <div className="filter-criteria-list">
+      <ul>
+        {criteria.map((c) => {
+          return (
+            <li className="filter-criteria-list-item" key={c.getId()}>
+              <a onClick={() => onClickCriterionTag(c)}>
+                <span>{c.getLabel(intl)}</span>
+                <Button
+                  className="remove-criterion-button"
+                  variant="minimal"
+                  onClick={($event) => onClickRemoveCriterion(c, $event)}
+                >
+                  <Icon icon={faTimes} />
+                </Button>
+              </a>
+            </li>
+          );
+        })}
+      </ul>
+      <hr />
+    </div>
+  );
+};
+
+interface ICriterionList {
+  filter: ListFilterModel;
+  currentCriterion?: Criterion<CriterionValue>;
+  setCriterion: (c: Criterion<CriterionValue>) => void;
+  criterionOptions: CriterionOption[];
+  hiddenOptions: CriterionOption[];
+  onRemoveCriterion: (c: string) => void;
+  onHideCriterion: (o: CriterionOption) => void;
+  onOpenEditFilter: () => void;
+}
+
+const CriterionOptionList: React.FC<ICriterionList> = ({
+  filter,
+  currentCriterion,
+  setCriterion,
+  criterionOptions,
+  hiddenOptions,
+  onRemoveCriterion,
+  onHideCriterion,
+  onOpenEditFilter,
+}) => {
+  const intl = useIntl();
+
+  const scrolled = useRef(false);
+
+  const type = currentCriterion?.criterionOption.type;
+
+  const criteriaRefs = useMemo(() => {
+    const refs: Record<string, React.RefObject<HTMLDivElement>> = {};
+    criterionOptions.forEach((c) => {
+      refs[c.type] = React.createRef();
+    });
+    return refs;
+  }, [criterionOptions]);
+
+  useEffect(() => {
+    // scrolling to the current criterion doesn't work well when the
+    // dialog is already open, so limit to when we click on the
+    // criterion from the external tags
+    if (!scrolled.current && type && criteriaRefs[type]?.current) {
+      criteriaRefs[type].current!.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+      scrolled.current = true;
+    }
+  }, [currentCriterion, criteriaRefs, type]);
+
+  function getReleventCriterion(t: CriterionType) {
+    // find the existing criterion if present
+    const existing = filter.criteria.find((c) => c.criterionOption.type === t);
+    if (existing) {
+      return existing;
+    } else {
+      const newCriterion = filter.makeCriterion(t);
+      return newCriterion;
+    }
+  }
+
+  function removeClicked(ev: React.MouseEvent, t: string) {
+    // needed to prevent the nav item from being selected
+    ev.stopPropagation();
+    ev.preventDefault();
+    onRemoveCriterion(t);
+  }
+
+  function hideClicked(ev: React.MouseEvent, o: CriterionOption) {
+    // needed to prevent the nav item from being selected
+    ev.stopPropagation();
+    ev.preventDefault();
+    onHideCriterion(o);
+  }
+
+  function renderCard(c: CriterionOption) {
+    return (
+      <div>
+        <CollapseButton
+          text={intl.formatMessage({ id: c.messageID })}
+          rightControls={
+            <span>
+              <Button
+                className="hide-criterion-button"
+                variant="minimal"
+                onClick={(e) => hideClicked(e, c)}
+              >
+                <Icon icon={faEyeSlash} />
+              </Button>
+              <Button
+                className={cx("remove-criterion-button", {
+                  invisible: !filter.criteria.some(
+                    (cc) => c.type === cc.criterionOption.type
+                  ),
+                })}
+                variant="minimal"
+                onClick={(e) => removeClicked(e, c.type)}
+              >
+                <Icon icon={faTimes} />
+              </Button>
+            </span>
+          }
+        >
+          <CriterionEditor
+            criterion={getReleventCriterion(c.type)!}
+            setCriterion={setCriterion}
+          />
+        </CollapseButton>
+      </div>
+    );
+  }
+
+  function maybeRenderHidden() {
+    if (hiddenOptions.length === 0) {
+      return;
+    }
+
+    return (
+      <div>
+        <Button onClick={() => onOpenEditFilter()}>Others...</Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="criterion-list">
+      {criterionOptions.map((c) => renderCard(c))}
+      {maybeRenderHidden()}
+    </div>
+  );
+};
 
 const SceneFilter: React.FC<{
   filter: ListFilterModel;
   setFilter: (filter: ListFilterModel) => void;
 }> = ({ filter, setFilter }) => {
   const [queryRef, setQueryFocus] = useFocus();
+
+  const getCriterionOptions = useCallback(() => {
+    const options = getFilterOptions(filter.mode);
+    return options.criterionOptions;
+  }, [filter.mode]);
+
+  const getDefaultHiddenCriterionOptions = useCallback(() => {
+    const options = getFilterOptions(filter.mode);
+    return options.defaultHiddenOptions;
+  }, [filter.mode]);
+
+  const [criterionOptions, setCriterionOptions] = useState(
+    getCriterionOptions()
+  );
+  const [hiddenOptions, setHiddenOptions] = useState<CriterionOption[]>(
+    getDefaultHiddenCriterionOptions()
+  );
+
+  const [criterion, setCriterion] = useState<Criterion<CriterionValue>>();
+
+  const [editingCriterion, setEditingCriterion] = useState<string>();
+  const [showEditFilter, setShowEditFilter] = useState(false);
+
+  useEffect(() => {
+    setCriterionOptions(getCriterionOptions());
+  }, [getCriterionOptions]);
+
+  useEffect(() => {
+    setHiddenOptions(getDefaultHiddenCriterionOptions());
+  }, [getCriterionOptions, getDefaultHiddenCriterionOptions]);
+
+  const { criteria } = filter;
 
   const searchQueryUpdated = useCallback(
     (value: string) => {
@@ -31,6 +270,99 @@ const SceneFilter: React.FC<{
     [filter, setFilter]
   );
 
+  const optionSelected = useCallback(
+    (option?: CriterionOption) => {
+      if (!option) {
+        setCriterion(undefined);
+        return;
+      }
+
+      // find the existing criterion if present
+      const existing = criteria.find(
+        (c) => c.criterionOption.type === option.type
+      );
+      if (existing) {
+        setCriterion(existing);
+      } else {
+        const newCriterion = filter.makeCriterion(option.type);
+        setCriterion(newCriterion);
+      }
+    },
+    [filter, criteria]
+  );
+
+  function removeCriterion(c: Criterion<CriterionValue>) {
+    const newFilter = filter.clone();
+
+    const newCriteria = criteria.filter((cc) => {
+      return cc.getId() !== c.getId();
+    });
+
+    newFilter.criteria = newCriteria;
+
+    setFilter(newFilter);
+    if (criterion?.getId() === c.getId()) {
+      optionSelected(undefined);
+    }
+  }
+
+  function removeCriterionString(c: string) {
+    const cc = criteria.find((ccc) => ccc.criterionOption.type === c);
+    if (cc) {
+      removeCriterion(cc);
+    }
+  }
+
+  function replaceCriterion(c: Criterion<CriterionValue>) {
+    const newFilter = filter.clone();
+
+    if (!c.isValid()) {
+      // remove from the filter if present
+      const newCriteria = criteria.filter((cc) => {
+        return cc.criterionOption.type !== c.criterionOption.type;
+      });
+
+      newFilter.criteria = newCriteria;
+    } else {
+      let found = false;
+
+      const newCriteria = criteria.map((cc) => {
+        if (cc.criterionOption.type === c.criterionOption.type) {
+          found = true;
+          return c;
+        }
+
+        return cc;
+      });
+
+      if (!found) {
+        newCriteria.push(c);
+      }
+
+      newFilter.criteria = newCriteria;
+    }
+
+    setFilter(newFilter);
+  }
+
+  function hideCriterion(o: CriterionOption) {
+    const newHidden = [...hiddenOptions, o];
+    setHiddenOptions(newHidden);
+
+    const newOptions = criterionOptions.filter(
+      (c) => !newHidden.some((h) => h.type === c.type)
+    );
+    setCriterionOptions(newOptions);
+  }
+
+  function onApplyEditFilter(f?: ListFilterModel) {
+    setShowEditFilter(false);
+    setEditingCriterion(undefined);
+
+    if (!f) return;
+    setFilter(f);
+  }
+
   return (
     <div className="scene-filter">
       <SearchField
@@ -39,6 +371,39 @@ const SceneFilter: React.FC<{
         queryRef={queryRef}
         setQueryFocus={setQueryFocus}
       />
+      <div>
+        <h5>Saved Filters</h5>
+      </div>
+      <div>
+        <FilterCriteriaList
+          filter={filter}
+          hiddenOptions={hiddenOptions}
+          onRemoveCriterion={(c) =>
+            removeCriterionString(c.criterionOption.type)
+          }
+          onEditCriterion={(c) => setEditingCriterion(c.criterionOption.type)}
+        />
+      </div>
+      <div>
+        <CriterionOptionList
+          filter={filter}
+          currentCriterion={criterion}
+          setCriterion={replaceCriterion}
+          criterionOptions={criterionOptions}
+          hiddenOptions={hiddenOptions}
+          onRemoveCriterion={(c) => removeCriterionString(c)}
+          onHideCriterion={(o) => hideCriterion(o)}
+          onOpenEditFilter={() => setShowEditFilter(true)}
+        />
+      </div>
+      {(showEditFilter || editingCriterion) && (
+        <EditFilterDialog
+          filter={filter}
+          criterionOptions={hiddenOptions}
+          onClose={onApplyEditFilter}
+          editingCriterion={editingCriterion}
+        />
+      )}
     </div>
   );
 };
@@ -66,6 +431,26 @@ export const ListHeader: React.FC<{
     const newFilter = filter.clone();
     newFilter.itemsPerPage = val;
     newFilter.currentPage = 1;
+    setFilter(newFilter);
+  }
+
+  function onChangeSortDirection(dir: SortDirectionEnum) {
+    const newFilter = filter.clone();
+    newFilter.sortDirection = dir;
+    setFilter(newFilter);
+  }
+
+  function onChangeSortBy(eventKey: string | null) {
+    const newFilter = filter.clone();
+    newFilter.sortBy = eventKey ?? undefined;
+    newFilter.currentPage = 1;
+    setFilter(newFilter);
+  }
+
+  function onReshuffleRandomSort() {
+    const newFilter = filter.clone();
+    newFilter.currentPage = 1;
+    newFilter.randomSeed = -1;
     setFilter(newFilter);
   }
 
@@ -103,12 +488,12 @@ export const ListHeader: React.FC<{
       </div>
       <div>
         <SortBySelect
-          sortBy="title"
-          direction={SortDirectionEnum.Asc}
+          sortBy={filter.sortBy}
+          direction={filter.sortDirection}
           options={filterOptions.sortByOptions}
-          setSortBy={() => {}}
-          setDirection={() => {}}
-          onReshuffleRandomSort={() => {}}
+          setSortBy={onChangeSortBy}
+          setDirection={onChangeSortDirection}
+          onReshuffleRandomSort={onReshuffleRandomSort}
         />
         <div>
           <ZoomSelect
@@ -134,7 +519,7 @@ export const ScenesPage: React.FC = ({}) => {
   );
 
   const result = useFindScenes(filter);
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [selectedIds /* setSelectedIds */] = useState<Set<string>>(new Set());
   const totalCount = useMemo(
     () => result.data?.findScenes.count ?? 0,
     [result.data?.findScenes.count]
