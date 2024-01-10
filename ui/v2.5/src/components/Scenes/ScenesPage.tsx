@@ -33,6 +33,7 @@ import { CriterionEditor } from "../List/CriterionEditor";
 import { CollapseButton } from "../Shared/CollapseButton";
 import cx from "classnames";
 import { EditFilterDialog } from "../List/EditFilterDialog";
+import { SavedFilterList } from "../List/SavedFilterList";
 
 const FilterCriteriaList: React.FC<{
   filter: ListFilterModel;
@@ -226,6 +227,8 @@ const SceneFilter: React.FC<{
   filter: ListFilterModel;
   setFilter: (filter: ListFilterModel) => void;
 }> = ({ filter, setFilter }) => {
+  const intl = useIntl();
+
   const [queryRef, setQueryFocus] = useFocus();
 
   const getCriterionOptions = useCallback(() => {
@@ -371,9 +374,15 @@ const SceneFilter: React.FC<{
         queryRef={queryRef}
         setQueryFocus={setQueryFocus}
       />
+      <hr />
       <div>
-        <h5>Saved Filters</h5>
+        <CollapseButton
+          text={intl.formatMessage({ id: "search_filter.saved_filters" })}
+        >
+          <SavedFilterList filter={filter} onSetFilter={setFilter} />
+        </CollapseButton>
       </div>
+      <hr />
       <div>
         <FilterCriteriaList
           filter={filter}

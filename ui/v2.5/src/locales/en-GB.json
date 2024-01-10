@@ -859,7 +859,7 @@
       "destination": "Destination",
       "source": "Source"
     },
-    "overwrite_filter_confirm": "Are you sure you want to overwrite existing saved query {entityName}?",
+    "overwrite_filter_warning": "Saved filter \"{entityName}\" will be overwritten.",
     "reassign_entity_title": "{count, plural, one {Reassign {singularEntity}} other {Reassign {pluralEntity}}}",
     "reassign_files": {
       "destination": "Reassign to"
