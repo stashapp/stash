@@ -745,6 +745,11 @@ input[type="range"].blue-slider {
     .criterion-list .collapse-button:hover .hide-criterion-button {
       visibility: visible;
     }
+
+    .criterion-editor {
+      padding-bottom: 0.5rem;
+      padding-top: 0.5rem;
+    }
   }
 
   .scenes-page-results {
@@ -815,45 +820,6 @@ input[type="range"].blue-slider {
 
     .remove-criterion-button {
       color: $danger;
-    }
-
-    .exclude-button {
-      align-items: center;
-      display: flex;
-      margin-left: 0.25rem;
-      padding-left: 0.25rem;
-      padding-right: 0.25rem;
-
-      .exclude-button-text {
-        color: $danger;
-        display: none;
-        font-size: 12px;
-        font-weight: 600;
-      }
-
-      &:hover {
-        background-color: inherit;
-      }
-
-      &:hover .exclude-button-text,
-      &:focus .exclude-button-text {
-        display: inline;
-      }
-    }
-
-    .object-count {
-      color: $text-muted;
-      font-size: 12px;
-    }
-  }
-
-  .selected-object:hover,
-  .selected-object a:focus-visible,
-  .excluded-object:hover,
-  .excluded-object a:focus-visible {
-    .include-button,
-    .exclude-icon {
-      color: #fff;
     }
   }
 }
