@@ -34,6 +34,7 @@ import { CollapseButton } from "../Shared/CollapseButton";
 import cx from "classnames";
 import { EditFilterDialog } from "../List/EditFilterDialog";
 import { SavedFilterList } from "../List/SavedFilterList";
+import { useDragReorder } from "src/hooks/dragReorder";
 
 const FilterCriteriaList: React.FC<{
   filter: ListFilterModel;
@@ -122,12 +123,8 @@ const CriterionOptionList: React.FC<ICriterionList> = ({
 
   const type = currentCriterion?.criterionOption.type;
 
-  const [stageOptions, setStageOptions] = useState(criterionOptions);
-  const [dragIndex, setDragIndex] = useState<number | undefined>();
-
-  useEffect(() => {
-    setStageOptions(criterionOptions);
-  }, [criterionOptions]);
+  const { stageList, onDragStart, onDragOver, onDragOverDefault, onDrop } =
+    useDragReorder(criterionOptions, setCriterionOptions);
 
   const criteriaRefs = useMemo(() => {
     const refs: Record<string, React.RefObject<HTMLDivElement>> = {};
@@ -173,36 +170,6 @@ const CriterionOptionList: React.FC<ICriterionList> = ({
     ev.stopPropagation();
     ev.preventDefault();
     onHideCriterion(o);
-  }
-
-  function onDragStart(event: React.DragEvent<HTMLElement>, index: number) {
-    event.dataTransfer.effectAllowed = "move";
-    setDragIndex(index);
-  }
-
-  function onDragOver(event: React.DragEvent<HTMLElement>, index?: number) {
-    if (dragIndex !== undefined && index !== undefined && index !== dragIndex) {
-      const newOptions = [...stageOptions];
-      const moved = newOptions.splice(dragIndex, 1);
-      newOptions.splice(index, 0, moved[0]);
-      setStageOptions(newOptions);
-      setDragIndex(index);
-    }
-
-    event.dataTransfer.dropEffect = "move";
-    event.preventDefault();
-  }
-
-  function onDragOverDefault(event: React.DragEvent<HTMLDivElement>) {
-    event.dataTransfer.dropEffect = "move";
-    event.preventDefault();
-  }
-
-  function onDrop() {
-    // assume we've already set the temp source list
-    // feed it up
-    setCriterionOptions(stageOptions);
-    setDragIndex(undefined);
   }
 
   function renderCard(c: CriterionOption, index: number) {
@@ -261,7 +228,7 @@ const CriterionOptionList: React.FC<ICriterionList> = ({
 
   return (
     <div className="criterion-list" onDragOver={onDragOverDefault}>
-      {stageOptions.map((c, i) => renderCard(c, i))}
+      {stageList.map((c, i) => renderCard(c, i))}
       {maybeRenderHidden()}
     </div>
   );
@@ -402,6 +369,16 @@ const SceneFilter: React.FC<{
     setCriterionOptions(newOptions);
   }
 
+  function unhideCriterion(o: CriterionOption) {
+    const newOptions = [...criterionOptions, o];
+    setCriterionOptions(newOptions);
+
+    const newHidden = hiddenOptions.filter(
+      (c) => !newOptions.some((h) => h.type === c.type)
+    );
+    setHiddenOptions(newHidden);
+  }
+
   function onApplyEditFilter(f?: ListFilterModel) {
     setShowEditFilter(false);
     setEditingCriterion(undefined);
@@ -454,6 +431,8 @@ const SceneFilter: React.FC<{
         <EditFilterDialog
           filter={filter}
           criterionOptions={hiddenOptions}
+          setCriterionOptions={(o) => setHiddenOptions(o)}
+          onUnhideCriterion={(o) => unhideCriterion(o)}
           onClose={onApplyEditFilter}
           editingCriterion={editingCriterion}
         />

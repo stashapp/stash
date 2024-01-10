@@ -1,6 +1,5 @@
 import { FilterMode, Scene } from "src/core/generated-graphql";
 import { ListFilterModel } from "./list-filter/filter";
-import { SceneListFilterOptions } from "./list-filter/scenes";
 
 export type QueuedScene = Pick<Scene, "id" | "title" | "paths">;
 
@@ -93,11 +92,7 @@ export class SceneQueue {
         c: params.getAll("qfc"),
       };
       const decoded = ListFilterModel.decodeParams(translated);
-      const query = new ListFilterModel(
-        FilterMode.Scenes,
-        undefined,
-        SceneListFilterOptions.defaultSortBy
-      );
+      const query = new ListFilterModel(FilterMode.Scenes);
       query.configureFromDecodedParams(decoded);
       ret.query = query;
     } else if (params.has("qs")) {

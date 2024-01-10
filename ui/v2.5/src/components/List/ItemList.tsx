@@ -33,7 +33,6 @@ import { ListOperationButtons } from "./ListOperationButtons";
 import { LoadingIndicator } from "../Shared/LoadingIndicator";
 import { DisplayMode } from "src/models/list-filter/types";
 import { ButtonToolbar } from "react-bootstrap";
-import { useIntl } from "react-intl";
 
 export enum PersistanceLevel {
   // do not load default query or persist display mode
@@ -149,8 +148,6 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
     renderDeleteDialog,
     addKeybinds,
   }) => {
-    const intl = useIntl();
-
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -465,17 +462,9 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
       updateFilter(f);
     }
 
-    const criterionOptions = useMemo(() => {
-      const options = filterOptions.criterionOptions.concat(
-        filterOptions.defaultHiddenOptions
-      );
-
-      return options.sort((a, b) => {
-        return intl
-          .formatMessage({ id: a.messageID })
-          .localeCompare(intl.formatMessage({ id: b.messageID }));
-      });
-    }, [intl]);
+    const [criterionOptions, setCriterionOptions] = useState(
+      filterOptions.criterionOptions.concat(filterOptions.defaultHiddenOptions)
+    );
 
     return (
       <div className="item-list-container">
@@ -513,6 +502,7 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
           <EditFilterDialog
             filter={filter}
             criterionOptions={criterionOptions}
+            setCriterionOptions={(o) => setCriterionOptions(o)}
             onClose={onApplyEditFilter}
             editingCriterion={editingCriterion}
           />
@@ -611,13 +601,7 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
       // Only run once
       if (filterInitialised) return;
 
-      let newFilter = new ListFilterModel(
-        filterMode,
-        config,
-        defaultSort,
-        defaultDisplayMode,
-        defaultZoomIndex
-      );
+      let newFilter = new ListFilterModel(filterMode, config, defaultZoomIndex);
       let loadDefault = true;
       if (alterQuery && location.search) {
         loadDefault = false;

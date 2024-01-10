@@ -56,19 +56,17 @@ export class ListFilterModel {
   public constructor(
     mode: FilterMode,
     config?: ConfigDataFragment,
-    defaultSort?: string,
-    defaultDisplayMode?: DisplayMode,
     defaultZoomIndex?: number
   ) {
     this.mode = mode;
+    const { defaultSortBy, displayModeOptions } = getFilterOptions(mode);
+
     this.config = config;
-    this.sortBy = defaultSort;
+    this.sortBy = defaultSortBy;
     if (this.sortBy === "date") {
       this.sortDirection = SortDirectionEnum.Desc;
     }
-    if (defaultDisplayMode !== undefined) {
-      this.displayMode = defaultDisplayMode;
-    }
+    this.displayMode = displayModeOptions[0];
     if (defaultZoomIndex !== undefined) {
       this.defaultZoomIndex = defaultZoomIndex;
       this.zoomIndex = defaultZoomIndex;
