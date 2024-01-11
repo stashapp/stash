@@ -765,9 +765,6 @@ input[type="range"].blue-slider {
   }
 
   .scenes-page-results {
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1;
     max-height: calc(100vh - 4rem);
 
     .scenes-page-items {
@@ -780,11 +777,16 @@ input[type="range"].blue-slider {
   .list-header {
     display: flex;
     flex-direction: row;
+    height: 40px;
     justify-content: space-between;
 
     .filter-button {
       margin-left: -15px;
       margin-right: 15px;
+    }
+
+    .select-none {
+      color: $danger;
     }
 
     & > div {

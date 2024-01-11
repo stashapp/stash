@@ -9,7 +9,11 @@ import { Pagination, PaginationIndex } from "../List/Pagination";
 import { ListViewOptions, ZoomSelect } from "../List/ListViewOptions";
 import { CriterionType, DisplayMode } from "src/models/list-filter/types";
 import { PageSizeSelect, SearchField, SortBySelect } from "../List/ListFilter";
-import { FilterMode, SortDirectionEnum } from "src/core/generated-graphql";
+import {
+  FilterMode,
+  FindScenesQueryResult,
+  SortDirectionEnum,
+} from "src/core/generated-graphql";
 import { getFilterOptions } from "src/models/list-filter/factory";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { useFindScenes } from "src/core/StashService";
@@ -43,6 +47,12 @@ import { EditFilterDialog } from "../List/EditFilterDialog";
 import { SavedFilterList } from "../List/SavedFilterList";
 import TextUtils from "src/utils/text";
 import { FilterButton } from "../List/Filters/FilterButton";
+import { useListSelect } from "src/hooks/listSelect";
+import {
+  IListFilterOperation,
+  ListOperationButtons,
+} from "../List/ListOperationButtons";
+import { IItemListOperation } from "../List/ItemList";
 
 const FilterCriteriaList: React.FC<{
   filter: ListFilterModel;
@@ -413,7 +423,7 @@ const SceneFilter: React.FC<{
   );
 };
 
-export const ListHeader: React.FC<{
+export const DefaultListHeader: React.FC<{
   filter: ListFilterModel;
   setFilter: (filter: ListFilterModel) => void;
   totalItems: number;
@@ -536,14 +546,54 @@ export const ListHeader: React.FC<{
   );
 };
 
+export const SelectedListHeader: React.FC<{
+  selectedIds: Set<string>;
+  onSelectAll: () => void;
+  onSelectNone: () => void;
+  otherOperations: IListFilterOperation[];
+}> = ({ selectedIds, onSelectAll, onSelectNone, otherOperations }) => {
+  return (
+    <div className="list-header">
+      <div>
+        <span>{selectedIds.size} items selected</span>
+        <Button variant="link" onClick={() => onSelectAll()}>
+          <FormattedMessage id="actions.select_all" />
+        </Button>
+      </div>
+      <div>
+        <Button className="play-scenes-button" variant="secondary">
+          <Icon icon={faPlay} />
+        </Button>
+
+        <ListOperationButtons
+          itemsSelected
+          onEdit={() => {}}
+          onDelete={() => {}}
+          otherOperations={otherOperations}
+        />
+      </div>
+      <div>
+        <Button className="minimal select-none" onClick={() => onSelectNone()}>
+          <Icon icon={faTimes} />
+        </Button>
+      </div>
+    </div>
+  );
+};
+
 export const ScenesPage: React.FC = ({}) => {
+  const intl = useIntl();
+
   const [filter, setFilter] = useState<ListFilterModel>(
     () => new ListFilterModel(FilterMode.Scenes)
   );
   const [showFilter, setShowFilter] = useState(true);
 
   const result = useFindScenes(filter);
-  const [selectedIds /* setSelectedIds */] = useState<Set<string>>(new Set());
+  const items = result.data?.findScenes.scenes ?? [];
+  const { selectedIds, onSelectChange, onSelectAll, onSelectNone } =
+    useListSelect(items);
+
   const totalCount = useMemo(
     () => result.data?.findScenes.count ?? 0,
     [result.data?.findScenes.count]
@@ -593,40 +643,150 @@ export const ScenesPage: React.FC = ({}) => {
     if (filter.displayMode === DisplayMode.Grid) {
       return (
         <SceneCardsGrid
-          scenes={result.data.findScenes.scenes}
+          scenes={items}
           queue={queue}
           zoomIndex={filter.zoomIndex}
           selectedIds={selectedIds}
-          onSelectChange={() => {}}
+          onSelectChange={onSelectChange}
         />
       );
     }
     if (filter.displayMode === DisplayMode.List) {
       return (
         <SceneListTable
-          scenes={result.data.findScenes.scenes}
+          scenes={items}
           queue={queue}
           selectedIds={selectedIds}
-          onSelectChange={() => {}}
+          onSelectChange={onSelectChange}
         />
       );
     }
     if (filter.displayMode === DisplayMode.Wall) {
-      return (
-        <SceneWallPanel
-          scenes={result.data.findScenes.scenes}
-          sceneQueue={queue}
-        />
-      );
+      return <SceneWallPanel scenes={items} sceneQueue={queue} />;
     }
     if (filter.displayMode === DisplayMode.Tagger) {
       return (
         <TaggerContext>
-          <Tagger scenes={result.data.findScenes.scenes} queue={queue} />
+          <Tagger scenes={items} queue={queue} />
         </TaggerContext>
       );
     }
   }
+
+  // async function playSelected(
+  //   result: FindScenesQueryResult,
+  //   filter: ListFilterModel,
+  //   selectedIds: Set<string>
+  // ) {
+  //   // populate queue and go to first scene
+  //   // const sceneIDs = Array.from(selectedIds.values());
+  //   // const queue = SceneQueue.fromSceneIDList(sceneIDs);
+  //   // const autoPlay =
+  //   //   config.configuration?.interface.autostartVideoOnPlaySelected ?? false;
+  //   // playScene(queue, sceneIDs[0], { autoPlay });
+  // }
+
+  // async function playRandom(r: FindScenesQueryResult, filter: ListFilterModel) {
+  // query for a random scene
+  // if (result.data?.findScenes) {
+  //   const { count } = result.data.findScenes;
+  //   const pages = Math.ceil(count / filter.itemsPerPage);
+  //   const page = Math.floor(Math.random() * pages) + 1;
+  //   const indexMax = Math.min(filter.itemsPerPage, count);
+  //   const index = Math.floor(Math.random() * indexMax);
+  //   const filterCopy = filter.clone();
+  //   filterCopy.currentPage = page;
+  //   filterCopy.sortBy = "random";
+  //   const queryResults = await queryFindScenes(filterCopy);
+  //   const scene = queryResults.data.findScenes.scenes[index];
+  //   if (scene) {
+  //     // navigate to the image player page
+  //     const queue = SceneQueue.fromListFilterModel(filterCopy);
+  //     const autoPlay =
+  //       config.configuration?.interface.autostartVideoOnPlaySelected ?? false;
+  //     playScene(queue, scene.id, { sceneIndex: index, autoPlay });
+  //   }
+  // }
+  // }
+
+  // async function onMerge(
+  //   r: FindScenesQueryResult,
+  //   f: ListFilterModel,
+  //   selectedIds: Set<string>
+  // ) {
+  //   // const selected =
+  //   //   result.data?.findScenes.scenes
+  //   //     .filter((s) => selectedIds.has(s.id))
+  //   //     .map((s) => {
+  //   //       return {
+  //   //         id: s.id,
+  //   //         title: objectTitle(s),
+  //   //       };
+  //   //     }) ?? [];
+  //   // setMergeScenes(selected);
+  // }
+
+  // async function onExport() {
+  //   // setIsExportAll(false);
+  //   // setIsExportDialogOpen(true);
+  // }
+
+  // async function onExportAll() {
+  //   // setIsExportAll(true);
+  //   // setIsExportDialogOpen(true);
+  // }
+
+  const otherOperations: IItemListOperation<FindScenesQueryResult>[] = [
+    {
+      text: intl.formatMessage({ id: "actions.play_random" }),
+      onClick: async () => {}, // playRandom,
+    },
+    {
+      text: `${intl.formatMessage({ id: "actions.generate" })}…`,
+      onClick: async () => {}, // setIsGenerateDialogOpen(true),
+    },
+    {
+      text: `${intl.formatMessage({ id: "actions.identify" })}…`,
+      onClick: async () => {}, // setIsIdentifyDialogOpen(true),
+    },
+    {
+      text: `${intl.formatMessage({ id: "actions.merge" })}…`,
+      onClick: async () => {}, // onMerge,
+    },
+    {
+      text: intl.formatMessage({ id: "actions.export" }),
+      onClick: async () => {}, // onExport,
+    },
+    {
+      text: intl.formatMessage({ id: "actions.export_all" }),
+      onClick: async () => {}, // onExportAll,
+    },
+  ];
+
+  async function onOperationClicked(
+    o: IItemListOperation<FindScenesQueryResult>
+  ) {
+    await o.onClick(result, filter, selectedIds);
+    if (o.postRefetch) {
+      result.refetch();
+    }
+  }
+
+  const operations = otherOperations?.map((o) => ({
+    text: o.text,
+    onClick: () => {
+      onOperationClicked(o);
+    },
+    isDisplayed: () => {
+      if (o.isDisplayed) {
+        return o.isDisplayed(result, filter, selectedIds);
+      }
+
+      return true;
+    },
+    icon: o.icon,
+    buttonVariant: o.buttonVariant,
+  }));
 
   return (
     <div id="scenes-page">
@@ -638,13 +798,22 @@ export const ScenesPage: React.FC = ({}) => {
         />
       )}
       <div className="scenes-page-results">
-        <ListHeader
-          filter={filter}
-          setFilter={(f) => setFilter(f)}
-          totalItems={totalCount}
-          filterHidden={!showFilter}
-          onShowFilter={() => setShowFilter(true)}
-        />
+        {selectedIds.size === 0 ? (
+          <DefaultListHeader
+            filter={filter}
+            setFilter={setFilter}
+            totalItems={totalCount}
+            filterHidden={!showFilter}
+            onShowFilter={() => setShowFilter(true)}
+          />
+        ) : (
+          <SelectedListHeader
+            selectedIds={selectedIds}
+            onSelectAll={onSelectAll}
+            onSelectNone={onSelectNone}
+            otherOperations={operations}
+          />
+        )}
         <div className="scenes-page-items">
           <PaginationIndex
             itemsPerPage={filter.itemsPerPage}
