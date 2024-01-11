@@ -412,14 +412,16 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
             openFilterDialog={() => setShowEditFilter(true)}
             persistState={persistState}
           />
-          <ListOperationButtons
-            onSelectAll={selectable ? onSelectAll : undefined}
-            onSelectNone={selectable ? onSelectNone : undefined}
-            otherOperations={operations}
-            itemsSelected={selectedIds.size > 0}
-            onEdit={renderEditDialog ? onEdit : undefined}
-            onDelete={renderDeleteDialog ? onDelete : undefined}
-          />
+          <div className="ml-2 mb-2">
+            <ListOperationButtons
+              onSelectAll={selectable ? onSelectAll : undefined}
+              onSelectNone={selectable ? onSelectNone : undefined}
+              otherOperations={operations}
+              itemsSelected={selectedIds.size > 0}
+              onEdit={renderEditDialog ? onEdit : undefined}
+              onDelete={renderDeleteDialog ? onDelete : undefined}
+            />
+          </div>
           <ListViewOptions
             displayMode={filter.displayMode}
             displayModeOptions={filterOptions.displayModeOptions}

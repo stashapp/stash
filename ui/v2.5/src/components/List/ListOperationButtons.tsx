@@ -16,7 +16,7 @@ import {
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 
-interface IListFilterOperation {
+export interface IListFilterOperation {
   text: string;
   onClick: () => void;
   isDisplayed?: () => boolean;
@@ -99,7 +99,7 @@ export const ListOperationButtons: React.FC<IListOperationButtonsProps> = ({
 
     if (buttons.length > 0) {
       return (
-        <ButtonGroup className="ml-2 mb-2">
+        <ButtonGroup>
           {buttons.map((button) => {
             return (
               <OverlayTrigger
@@ -191,7 +191,7 @@ export const ListOperationButtons: React.FC<IListOperationButtonsProps> = ({
     <>
       {maybeRenderButtons()}
 
-      <div className="mx-2 mb-2">{renderMore()}</div>
+      <div className="mx-2">{renderMore()}</div>
     </>
   );
 };
