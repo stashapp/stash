@@ -61,8 +61,6 @@ export const Pagination: React.FC<IPaginationProps> = ({
     return [...Array(endPage + 1 - startPage).keys()].map((i) => startPage + i);
   }, [totalPages, currentPage, pagesToShow]);
 
-  console.log(pages);
-
   const pageButtons = useMemo(
     () =>
       pages.map((page: number) => {
