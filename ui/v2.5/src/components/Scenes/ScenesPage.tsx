@@ -5,7 +5,7 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { Pagination } from "../List/Pagination";
+import { Pagination, PaginationIndex } from "../List/Pagination";
 import { ListViewOptions, ZoomSelect } from "../List/ListViewOptions";
 import { CriterionType, DisplayMode } from "src/models/list-filter/types";
 import { PageSizeSelect, SearchField, SortBySelect } from "../List/ListFilter";
@@ -27,13 +27,19 @@ import {
 } from "src/models/list-filter/criteria/criterion";
 import { Button } from "react-bootstrap";
 import { Icon } from "../Shared/Icon";
-import { FormattedMessage, useIntl } from "react-intl";
-import { faFilter, faTimes } from "@fortawesome/free-solid-svg-icons";
+import { FormattedMessage, FormattedNumber, useIntl } from "react-intl";
+import {
+  faFilter,
+  faPlay,
+  faShuffle,
+  faTimes,
+} from "@fortawesome/free-solid-svg-icons";
 import { CriterionEditor } from "../List/CriterionEditor";
 import { CollapseButton } from "../Shared/CollapseButton";
 import cx from "classnames";
 import { EditFilterDialog } from "../List/EditFilterDialog";
 import { SavedFilterList } from "../List/SavedFilterList";
+import TextUtils from "src/utils/text";
 
 const FilterCriteriaList: React.FC<{
   filter: ListFilterModel;
@@ -470,9 +476,18 @@ export const ListHeader: React.FC<{
           itemsPerPage={filter.itemsPerPage}
           totalItems={totalItems}
           onChangePage={onChangePage}
+          pagesToShow={1}
         />
       </div>
       <div>
+        <div>
+          <Button className="play-scenes-button" variant="secondary">
+            <Icon icon={faPlay} />
+          </Button>
+          <Button className="shuffle-scenes-button" variant="secondary">
+            <Icon icon={faShuffle} />
+          </Button>
+        </div>
         <SortBySelect
           sortBy={filter.sortBy}
           direction={filter.sortDirection}
@@ -510,6 +525,42 @@ export const ScenesPage: React.FC = ({}) => {
     () => result.data?.findScenes.count ?? 0,
     [result.data?.findScenes.count]
   );
+
+  const metadataByline = useMemo(() => {
+    const duration = result?.data?.findScenes?.duration;
+    const size = result?.data?.findScenes?.filesize;
+    const filesize = size ? TextUtils.fileSize(size) : undefined;
+
+    if (!duration && !size) {
+      return;
+    }
+
+    const separator = duration && size ? " - " : "";
+
+    return (
+      <span className="scenes-stats">
+        &nbsp;(
+        {duration ? (
+          <span className="scenes-duration">
+            {TextUtils.secondsAsTimeString(duration, 3)}
+          </span>
+        ) : undefined}
+        {separator}
+        {size && filesize ? (
+          <span className="scenes-size">
+            <FormattedNumber
+              value={filesize.size}
+              maximumFractionDigits={TextUtils.fileSizeFractionalDigits(
+                filesize.unit
+              )}
+            />
+            {` ${TextUtils.formatFileSizeUnit(filesize.unit)}`}
+          </span>
+        ) : undefined}
+        )
+      </span>
+    );
+  }, [result]);
 
   function renderScenes() {
     if (!result.data?.findScenes) return;
@@ -563,7 +614,15 @@ export const ScenesPage: React.FC = ({}) => {
           setFilter={(f) => setFilter(f)}
           totalItems={totalCount}
         />
-        <div className="scenes-page-items">{renderScenes()}</div>
+        <div className="scenes-page-items">
+          <PaginationIndex
+            itemsPerPage={filter.itemsPerPage}
+            currentPage={filter.currentPage}
+            totalItems={totalCount}
+            metadataByline={metadataByline}
+          />
+          {renderScenes()}
+        </div>
       </div>
     </div>
   );

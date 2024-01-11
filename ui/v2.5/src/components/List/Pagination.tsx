@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Button, ButtonGroup } from "react-bootstrap";
 import { FormattedNumber, useIntl } from "react-intl";
 
@@ -7,6 +7,7 @@ interface IPaginationProps {
   currentPage: number;
   totalItems: number;
   metadataByline?: React.ReactNode;
+  pagesToShow?: number;
   onChangePage: (page: number) => void;
 }
 
@@ -21,54 +22,76 @@ export const Pagination: React.FC<IPaginationProps> = ({
   itemsPerPage,
   currentPage,
   totalItems,
+  pagesToShow,
   onChangePage,
 }) => {
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
-
-  let startPage: number;
-  let endPage: number;
-  if (totalPages <= 10) {
-    // less than 10 total pages so show all
-    startPage = 1;
-    endPage = totalPages;
-  } else if (currentPage <= 6) {
-    startPage = 1;
-    endPage = 10;
-  } else if (currentPage + 4 >= totalPages) {
-    startPage = totalPages - 9;
-    endPage = totalPages;
-  } else {
-    startPage = currentPage - 5;
-    endPage = currentPage + 4;
-  }
-
-  const pages = [...Array(endPage + 1 - startPage).keys()].map(
-    (i) => startPage + i
+  const totalPages = useMemo(
+    () => Math.ceil(totalItems / itemsPerPage),
+    [totalItems, itemsPerPage]
   );
 
-  const calculatePageClass = (buttonPage: number) => {
-    if (pages.length <= 4) return "";
+  const pages = useMemo(() => {
+    let startPage: number;
+    let endPage: number;
 
-    if (currentPage === 1 && buttonPage <= 4) return "";
-    const maxPage = pages[pages.length - 1];
-    if (currentPage === maxPage && buttonPage > maxPage - 3) return "";
-    if (Math.abs(buttonPage - currentPage) <= 1) return "";
-    return "d-none d-sm-block";
-  };
+    if (pagesToShow !== undefined) {
+      startPage = Math.max(1, currentPage - Math.floor(pagesToShow / 2));
+      endPage = Math.min(totalPages, startPage + pagesToShow - 1);
 
-  const pageButtons = pages.map((page: number) => (
-    <Button
-      variant="secondary"
-      className={calculatePageClass(page)}
-      key={page}
-      active={currentPage === page}
-      onClick={() => onChangePage(page)}
-    >
-      <FormattedNumber value={page} />
-    </Button>
-  ));
+      if (endPage - startPage + 1 < pagesToShow) {
+        startPage = Math.max(1, endPage - pagesToShow + 1);
+      }
+    } else {
+      if (totalPages <= 10) {
+        // less than 10 total pages so show all
+        startPage = 1;
+        endPage = totalPages;
+      } else if (currentPage <= 6) {
+        startPage = 1;
+        endPage = 10;
+      } else if (currentPage + 4 >= totalPages) {
+        startPage = totalPages - 9;
+        endPage = totalPages;
+      } else {
+        startPage = currentPage - 5;
+        endPage = currentPage + 4;
+      }
+    }
 
-  if (pages.length <= 1) return <div />;
+    return [...Array(endPage + 1 - startPage).keys()].map((i) => startPage + i);
+  }, [totalPages, currentPage, pagesToShow]);
+
+  console.log(pages);
+
+  const pageButtons = useMemo(
+    () =>
+      pages.map((page: number) => {
+        const calculatePageClass = (buttonPage: number) => {
+          if (pages.length <= 4) return "";
+
+          if (currentPage === 1 && buttonPage <= 4) return "";
+          const maxPage = pages[pages.length - 1];
+          if (currentPage === maxPage && buttonPage > maxPage - 3) return "";
+          if (Math.abs(buttonPage - currentPage) <= 1) return "";
+          return "d-none d-sm-block";
+        };
+
+        return (
+          <Button
+            variant="secondary"
+            className={calculatePageClass(page)}
+            key={page}
+            active={currentPage === page}
+            onClick={() => onChangePage(page)}
+          >
+            <FormattedNumber value={page} />
+          </Button>
+        );
+      }),
+    [pages, currentPage, onChangePage]
+  );
+
+  if (totalPages <= 1) return <div />;
 
   return (
     <ButtonGroup className="pagination">
