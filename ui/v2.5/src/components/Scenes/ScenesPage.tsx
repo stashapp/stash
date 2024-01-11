@@ -25,10 +25,12 @@ import {
   CriterionOption,
   CriterionValue,
 } from "src/models/list-filter/criteria/criterion";
-import { Button } from "react-bootstrap";
+import { Button, ButtonGroup } from "react-bootstrap";
 import { Icon } from "../Shared/Icon";
 import { FormattedMessage, FormattedNumber, useIntl } from "react-intl";
 import {
+  faChevronLeft,
+  faChevronRight,
   faFilter,
   faPlay,
   faShuffle,
@@ -40,6 +42,7 @@ import cx from "classnames";
 import { EditFilterDialog } from "../List/EditFilterDialog";
 import { SavedFilterList } from "../List/SavedFilterList";
 import TextUtils from "src/utils/text";
+import { FilterButton } from "../List/Filters/FilterButton";
 
 const FilterCriteriaList: React.FC<{
   filter: ListFilterModel;
@@ -215,7 +218,8 @@ interface ICriterionOption {
 const SceneFilter: React.FC<{
   filter: ListFilterModel;
   setFilter: (filter: ListFilterModel) => void;
-}> = ({ filter, setFilter }) => {
+  onHide: () => void;
+}> = ({ filter, setFilter, onHide }) => {
   const intl = useIntl();
 
   const [queryRef, setQueryFocus] = useFocus();
@@ -352,12 +356,21 @@ const SceneFilter: React.FC<{
 
   return (
     <div className="scene-filter">
-      <SearchField
-        searchTerm={filter.searchTerm}
-        setSearchTerm={searchQueryUpdated}
-        queryRef={queryRef}
-        setQueryFocus={setQueryFocus}
-      />
+      <ButtonGroup className="search-field-group">
+        <SearchField
+          searchTerm={filter.searchTerm}
+          setSearchTerm={searchQueryUpdated}
+          queryRef={queryRef}
+          setQueryFocus={setQueryFocus}
+        />
+        <Button
+          onClick={() => onHide()}
+          variant="secondary"
+          className="collapse-filter-button"
+        >
+          <Icon icon={faChevronLeft} />
+        </Button>
+      </ButtonGroup>
       <hr />
       <div>
         <CollapseButton
@@ -404,7 +417,9 @@ export const ListHeader: React.FC<{
   filter: ListFilterModel;
   setFilter: (filter: ListFilterModel) => void;
   totalItems: number;
-}> = ({ filter, setFilter, totalItems }) => {
+  filterHidden: boolean;
+  onShowFilter: () => void;
+}> = ({ filter, setFilter, totalItems, filterHidden, onShowFilter }) => {
   const filterOptions = getFilterOptions(filter.mode);
 
   function onChangeZoom(newZoomIndex: number) {
@@ -467,6 +482,13 @@ export const ListHeader: React.FC<{
   return (
     <div className="list-header">
       <div>
+        {filterHidden && (
+          <FilterButton
+            filter={filter}
+            icon={faChevronRight}
+            onClick={() => onShowFilter()}
+          />
+        )}
         <PageSizeSelect
           pageSize={filter.itemsPerPage}
           setPageSize={onChangePageSize}
@@ -518,6 +540,7 @@ export const ScenesPage: React.FC = ({}) => {
   const [filter, setFilter] = useState<ListFilterModel>(
     () => new ListFilterModel(FilterMode.Scenes)
   );
+  const [showFilter, setShowFilter] = useState(true);
 
   const result = useFindScenes(filter);
   const [selectedIds /* setSelectedIds */] = useState<Set<string>>(new Set());
@@ -607,12 +630,20 @@ export const ScenesPage: React.FC = ({}) => {
 
   return (
     <div id="scenes-page">
-      <SceneFilter filter={filter} setFilter={(f) => setFilter(f)} />
+      {showFilter && (
+        <SceneFilter
+          onHide={() => setShowFilter(false)}
+          filter={filter}
+          setFilter={(f) => setFilter(f)}
+        />
+      )}
       <div className="scenes-page-results">
         <ListHeader
           filter={filter}
           setFilter={(f) => setFilter(f)}
           totalItems={totalCount}
+          filterHidden={!showFilter}
+          onShowFilter={() => setShowFilter(true)}
         />
         <div className="scenes-page-items">
           <PaginationIndex
