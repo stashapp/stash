@@ -1,6 +1,6 @@
 import React from "react";
 import { Button, ButtonGroup } from "react-bootstrap";
-import { FormattedMessage, FormattedNumber, useIntl } from "react-intl";
+import { FormattedNumber, useIntl } from "react-intl";
 
 interface IPaginationProps {
   itemsPerPage: number;
@@ -77,10 +77,7 @@ export const Pagination: React.FC<IPaginationProps> = ({
         disabled={currentPage === 1}
         onClick={() => onChangePage(1)}
       >
-        <span className="d-none d-sm-inline">
-          <FormattedMessage id="pagination.first" />
-        </span>
-        <span className="d-inline d-sm-none">&#x300a;</span>
+        <span>«</span>
       </Button>
       <Button
         className="d-none d-sm-block"
@@ -88,7 +85,7 @@ export const Pagination: React.FC<IPaginationProps> = ({
         disabled={currentPage === 1}
         onClick={() => onChangePage(currentPage - 1)}
       >
-        <FormattedMessage id="pagination.previous" />
+        &lt;
       </Button>
       {pageButtons}
       <Button
@@ -97,17 +94,14 @@ export const Pagination: React.FC<IPaginationProps> = ({
         disabled={currentPage === totalPages}
         onClick={() => onChangePage(currentPage + 1)}
       >
-        <FormattedMessage id="pagination.next" />
+        &gt;
       </Button>
       <Button
         variant="secondary"
         disabled={currentPage === totalPages}
         onClick={() => onChangePage(totalPages)}
       >
-        <span className="d-none d-sm-inline">
-          <FormattedMessage id="pagination.last" />
-        </span>
-        <span className="d-inline d-sm-none">&#x300b;</span>
+        <span>»</span>
       </Button>
     </ButtonGroup>
   );
