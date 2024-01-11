@@ -25,7 +25,10 @@ import { ConfigurationContext } from "src/hooks/Config";
 import { getFilterOptions } from "src/models/list-filter/factory";
 import { useFindDefaultFilter } from "src/core/StashService";
 import { Pagination, PaginationIndex } from "./Pagination";
-import { EditFilterDialog } from "src/components/List/EditFilterDialog";
+import {
+  EditFilterDialog,
+  ICriterionOption,
+} from "src/components/List/EditFilterDialog";
 import { ListFilter } from "./ListFilter";
 import { FilterTags } from "./FilterTags";
 import { ListViewOptions } from "./ListViewOptions";
@@ -462,8 +465,13 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
       updateFilter(f);
     }
 
-    const [criterionOptions, setCriterionOptions] = useState(
-      filterOptions.criterionOptions.concat(filterOptions.defaultHiddenOptions)
+    const [criterionOptions, setCriterionOptions] = useState<
+      ICriterionOption[]
+    >(
+      filterOptions.criterionOptions.map((c) => ({
+        option: c,
+        showInSidebar: false,
+      }))
     );
 
     return (
@@ -502,7 +510,7 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
           <EditFilterDialog
             filter={filter}
             criterionOptions={criterionOptions}
-            setCriterionOptions={(o) => setCriterionOptions(o)}
+            setCriterionOptions={setCriterionOptions}
             onClose={onApplyEditFilter}
             editingCriterion={editingCriterion}
           />

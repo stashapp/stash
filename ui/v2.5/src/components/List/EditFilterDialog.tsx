@@ -23,6 +23,7 @@ import {
   faChevronRight,
   faTimes,
   faEye,
+  faEyeSlash,
 } from "@fortawesome/free-solid-svg-icons";
 import { useCompare, usePrevious } from "src/hooks/state";
 import { CriterionType } from "src/models/list-filter/types";
@@ -30,13 +31,17 @@ import { useFocusOnce } from "src/utils/focus";
 import Mousetrap from "mousetrap";
 import { useDragReorder } from "src/hooks/dragReorder";
 
+export interface ICriterionOption {
+  option: CriterionOption;
+  showInSidebar: boolean;
+}
+
 interface ICriterionList {
   criteria: string[];
   currentCriterion?: Criterion<CriterionValue>;
   setCriterion: (c: Criterion<CriterionValue>) => void;
-  criterionOptions: CriterionOption[];
-  setCriterionOptions?: (c: CriterionOption[]) => void;
-  onUnhideCriterion?: (c: CriterionOption) => void;
+  criterionOptions: ICriterionOption[];
+  setCriterionOptions?: (c: ICriterionOption[]) => void;
   selected?: CriterionOption;
   optionSelected: (o?: CriterionOption) => void;
   onRemoveCriterion: (c: string) => void;
@@ -46,9 +51,8 @@ const CriterionOptionList: React.FC<ICriterionList> = ({
   criteria,
   currentCriterion,
   setCriterion,
-  criterionOptions,
+  criterionOptions: icriterionOptions,
   setCriterionOptions,
-  onUnhideCriterion,
   selected,
   optionSelected,
   onRemoveCriterion,
@@ -61,7 +65,11 @@ const CriterionOptionList: React.FC<ICriterionList> = ({
   const prevType = prevCriterion?.criterionOption.type;
 
   const { stageList, onDragStart, onDragOver, onDrop, onDragOverDefault } =
-    useDragReorder(criterionOptions, setCriterionOptions ?? (() => {}));
+    useDragReorder(icriterionOptions, setCriterionOptions ?? (() => {}));
+
+  const criterionOptions = useMemo(() => {
+    return stageList.map((c) => c.option);
+  }, [stageList]);
 
   const criteriaRefs = useMemo(() => {
     const refs: Record<string, React.RefObject<HTMLDivElement>> = {};
@@ -111,17 +119,28 @@ const CriterionOptionList: React.FC<ICriterionList> = ({
     onRemoveCriterion(t);
   }
 
-  function unhideCriterion(ev: React.MouseEvent, c: CriterionOption) {
+  function toggleShowInSidebar(ev: React.MouseEvent, o: CriterionOption) {
     // needed to prevent the nav item from being selected
     ev.stopPropagation();
     ev.preventDefault();
 
-    if (onUnhideCriterion) {
-      onUnhideCriterion(c);
-    }
+    if (!setCriterionOptions) return;
+
+    const newOptions = icriterionOptions.map((c) => {
+      if (c.option.type === o.type) {
+        return {
+          ...c,
+          showInSidebar: !c.showInSidebar,
+        } as ICriterionOption;
+      }
+      return c;
+    });
+
+    setCriterionOptions(newOptions);
   }
 
-  function renderCard(c: CriterionOption, index: number) {
+  function renderCard(o: ICriterionOption, index: number) {
+    const c = o.option;
     return (
       <Card key={c.type} data-type={c.type} ref={criteriaRefs[c.type]!}>
         <Accordion.Toggle
@@ -152,13 +171,13 @@ const CriterionOptionList: React.FC<ICriterionList> = ({
               <Icon icon={faTimes} />
             </Button>
           )}
-          {!!onUnhideCriterion && (
+          {!!setCriterionOptions && (
             <Button
-              className="unhide-criterion-button"
+              className="toggle-criterion-sidebar-button"
               variant="minimal"
-              onClick={(e) => unhideCriterion(e, c)}
+              onClick={(e) => toggleShowInSidebar(e, c)}
             >
-              <Icon icon={faEye} />
+              <Icon icon={!o.showInSidebar ? faEye : faEyeSlash} />
             </Button>
           )}
         </Accordion.Toggle>
@@ -208,18 +227,16 @@ const CriterionOptionList: React.FC<ICriterionList> = ({
 
 interface IEditFilterProps {
   filter: ListFilterModel;
-  criterionOptions: CriterionOption[];
-  setCriterionOptions?: (c: CriterionOption[]) => void;
-  onUnhideCriterion?: (c: CriterionOption) => void;
+  criterionOptions: ICriterionOption[];
+  setCriterionOptions?: (c: ICriterionOption[]) => void;
   editingCriterion?: string;
   onClose: (filter?: ListFilterModel) => void;
 }
 
 export const EditFilterDialog: React.FC<IEditFilterProps> = ({
   filter,
-  criterionOptions,
+  criterionOptions: icriterionOptions,
   setCriterionOptions,
-  onUnhideCriterion,
   editingCriterion,
   onClose,
 }) => {
@@ -268,29 +285,31 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
   const filteredOptions = useMemo(() => {
     const trimmedSearch = searchValue.trim().toLowerCase();
     if (!trimmedSearch) {
-      return criterionOptions;
+      return icriterionOptions;
     }
 
-    return criterionOptions.filter((c) => {
+    return icriterionOptions.filter((c) => {
       return intl
-        .formatMessage({ id: c.messageID })
+        .formatMessage({ id: c.option.messageID })
         .toLowerCase()
         .includes(trimmedSearch);
     });
-  }, [intl, searchValue, criterionOptions]);
+  }, [intl, searchValue, icriterionOptions]);
 
   const editingCriterionChanged = useCompare(editingCriterion);
 
   useEffect(() => {
     if (editingCriterionChanged && editingCriterion) {
-      const option = criterionOptions.find((c) => c.type === editingCriterion);
+      const option = icriterionOptions.find(
+        (c) => c.option.type === editingCriterion
+      );
       if (option) {
-        optionSelected(option);
+        optionSelected(option.option);
       }
     }
   }, [
     editingCriterion,
-    criterionOptions,
+    icriterionOptions,
     optionSelected,
     editingCriterionChanged,
   ]);
@@ -413,7 +432,6 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
               setCriterion={replaceCriterion}
               criterionOptions={filteredOptions}
               setCriterionOptions={setCriterionOptions}
-              onUnhideCriterion={onUnhideCriterion}
               optionSelected={optionSelected}
               selected={criterion?.criterionOption}
               onRemoveCriterion={(c) => removeCriterionString(c)}

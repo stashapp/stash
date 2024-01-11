@@ -27,14 +27,13 @@ import {
 } from "src/models/list-filter/criteria/criterion";
 import { Button } from "react-bootstrap";
 import { Icon } from "../Shared/Icon";
-import { useIntl } from "react-intl";
-import { faEyeSlash, faTimes } from "@fortawesome/free-solid-svg-icons";
+import { FormattedMessage, useIntl } from "react-intl";
+import { faFilter, faTimes } from "@fortawesome/free-solid-svg-icons";
 import { CriterionEditor } from "../List/CriterionEditor";
 import { CollapseButton } from "../Shared/CollapseButton";
 import cx from "classnames";
 import { EditFilterDialog } from "../List/EditFilterDialog";
 import { SavedFilterList } from "../List/SavedFilterList";
-import { useDragReorder } from "src/hooks/dragReorder";
 
 const FilterCriteriaList: React.FC<{
   filter: ListFilterModel;
@@ -99,10 +98,7 @@ interface ICriterionList {
   currentCriterion?: Criterion<CriterionValue>;
   setCriterion: (c: Criterion<CriterionValue>) => void;
   criterionOptions: CriterionOption[];
-  setCriterionOptions: (o: CriterionOption[]) => void;
-  hiddenOptions: CriterionOption[];
   onRemoveCriterion: (c: string) => void;
-  onHideCriterion: (o: CriterionOption) => void;
   onOpenEditFilter: () => void;
 }
 
@@ -111,10 +107,7 @@ const CriterionOptionList: React.FC<ICriterionList> = ({
   currentCriterion,
   setCriterion,
   criterionOptions,
-  setCriterionOptions,
-  hiddenOptions,
   onRemoveCriterion,
-  onHideCriterion,
   onOpenEditFilter,
 }) => {
   const intl = useIntl();
@@ -122,9 +115,6 @@ const CriterionOptionList: React.FC<ICriterionList> = ({
   const scrolled = useRef(false);
 
   const type = currentCriterion?.criterionOption.type;
-
-  const { stageList, onDragStart, onDragOver, onDragOverDefault, onDrop } =
-    useDragReorder(criterionOptions, setCriterionOptions);
 
   const criteriaRefs = useMemo(() => {
     const refs: Record<string, React.RefObject<HTMLDivElement>> = {};
@@ -165,32 +155,13 @@ const CriterionOptionList: React.FC<ICriterionList> = ({
     onRemoveCriterion(t);
   }
 
-  function hideClicked(ev: React.MouseEvent, o: CriterionOption) {
-    // needed to prevent the nav item from being selected
-    ev.stopPropagation();
-    ev.preventDefault();
-    onHideCriterion(o);
-  }
-
-  function renderCard(c: CriterionOption, index: number) {
+  function renderCard(c: CriterionOption) {
     return (
-      <div
-        draggable
-        onDragStart={(e) => onDragStart(e, index)}
-        onDragEnter={(e) => onDragOver(e, index)}
-        onDrop={() => onDrop()}
-      >
+      <div>
         <CollapseButton
           text={intl.formatMessage({ id: c.messageID })}
           rightControls={
             <span>
-              <Button
-                className="hide-criterion-button"
-                variant="minimal"
-                onClick={(e) => hideClicked(e, c)}
-              >
-                <Icon icon={faEyeSlash} />
-              </Button>
               <Button
                 className={cx("remove-criterion-button", {
                   invisible: !filter.criteria.some(
@@ -214,25 +185,26 @@ const CriterionOptionList: React.FC<ICriterionList> = ({
     );
   }
 
-  function maybeRenderHidden() {
-    if (hiddenOptions.length === 0) {
-      return;
-    }
-
-    return (
-      <div>
-        <Button onClick={() => onOpenEditFilter()}>Others...</Button>
-      </div>
-    );
-  }
-
   return (
-    <div className="criterion-list" onDragOver={onDragOverDefault}>
-      {stageList.map((c, i) => renderCard(c, i))}
-      {maybeRenderHidden()}
+    <div className="criterion-list">
+      {criterionOptions.map((c) => renderCard(c))}
+      <div>
+        <Button
+          className="minimal edit-filter-button"
+          onClick={() => onOpenEditFilter()}
+        >
+          <Icon icon={faFilter} />{" "}
+          <FormattedMessage id="search_filter.edit_filter" />
+        </Button>
+      </div>
     </div>
   );
 };
+
+interface ICriterionOption {
+  option: CriterionOption;
+  showInSidebar: boolean;
+}
 
 const SceneFilter: React.FC<{
   filter: ListFilterModel;
@@ -244,19 +216,28 @@ const SceneFilter: React.FC<{
 
   const getCriterionOptions = useCallback(() => {
     const options = getFilterOptions(filter.mode);
-    return options.criterionOptions;
-  }, [filter.mode]);
 
-  const getDefaultHiddenCriterionOptions = useCallback(() => {
-    const options = getFilterOptions(filter.mode);
-    return options.defaultHiddenOptions;
+    return options.criterionOptions.map((o) => {
+      return {
+        option: o,
+        showInSidebar: !options.defaultHiddenOptions.some(
+          (c) => c.type === o.type
+        ),
+      } as ICriterionOption;
+    });
   }, [filter.mode]);
 
   const [criterionOptions, setCriterionOptions] = useState(
     getCriterionOptions()
   );
-  const [hiddenOptions, setHiddenOptions] = useState<CriterionOption[]>(
-    getDefaultHiddenCriterionOptions()
+
+  const sidebarOptions = useMemo(
+    () => criterionOptions.filter((o) => o.showInSidebar).map((o) => o.option),
+    [criterionOptions]
+  );
+  const hiddenOptions = useMemo(
+    () => criterionOptions.filter((o) => !o.showInSidebar).map((o) => o.option),
+    [criterionOptions]
   );
 
   const [criterion, setCriterion] = useState<Criterion<CriterionValue>>();
@@ -267,10 +248,6 @@ const SceneFilter: React.FC<{
   useEffect(() => {
     setCriterionOptions(getCriterionOptions());
   }, [getCriterionOptions]);
-
-  useEffect(() => {
-    setHiddenOptions(getDefaultHiddenCriterionOptions());
-  }, [getCriterionOptions, getDefaultHiddenCriterionOptions]);
 
   const { criteria } = filter;
 
@@ -359,26 +336,6 @@ const SceneFilter: React.FC<{
     setFilter(newFilter);
   }
 
-  function hideCriterion(o: CriterionOption) {
-    const newHidden = [...hiddenOptions, o];
-    setHiddenOptions(newHidden);
-
-    const newOptions = criterionOptions.filter(
-      (c) => !newHidden.some((h) => h.type === c.type)
-    );
-    setCriterionOptions(newOptions);
-  }
-
-  function unhideCriterion(o: CriterionOption) {
-    const newOptions = [...criterionOptions, o];
-    setCriterionOptions(newOptions);
-
-    const newHidden = hiddenOptions.filter(
-      (c) => !newOptions.some((h) => h.type === c.type)
-    );
-    setHiddenOptions(newHidden);
-  }
-
   function onApplyEditFilter(f?: ListFilterModel) {
     setShowEditFilter(false);
     setEditingCriterion(undefined);
@@ -419,20 +376,16 @@ const SceneFilter: React.FC<{
           filter={filter}
           currentCriterion={criterion}
           setCriterion={replaceCriterion}
-          criterionOptions={criterionOptions}
-          setCriterionOptions={(o) => setCriterionOptions(o)}
-          hiddenOptions={hiddenOptions}
+          criterionOptions={sidebarOptions}
           onRemoveCriterion={(c) => removeCriterionString(c)}
-          onHideCriterion={(o) => hideCriterion(o)}
           onOpenEditFilter={() => setShowEditFilter(true)}
         />
       </div>
       {(showEditFilter || editingCriterion) && (
         <EditFilterDialog
           filter={filter}
-          criterionOptions={hiddenOptions}
-          setCriterionOptions={(o) => setHiddenOptions(o)}
-          onUnhideCriterion={(o) => unhideCriterion(o)}
+          criterionOptions={criterionOptions}
+          setCriterionOptions={(o) => setCriterionOptions(o)}
           onClose={onApplyEditFilter}
           editingCriterion={editingCriterion}
         />

@@ -108,6 +108,6 @@ export const SceneListFilterOptions = new ListFilterOptions(
   defaultSortBy,
   sortByOptions,
   displayModeOptions,
-  criterionOptions,
+  criterionOptions.concat(defaultHiddenCriterionOptions),
   defaultHiddenCriterionOptions
 );
