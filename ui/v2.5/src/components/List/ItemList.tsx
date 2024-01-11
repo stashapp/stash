@@ -7,7 +7,6 @@ import React, {
   useRef,
   useState,
 } from "react";
-import clone from "lodash-es/clone";
 import cloneDeep from "lodash-es/cloneDeep";
 import isEqual from "lodash-es/isEqual";
 import Mousetrap from "mousetrap";
@@ -36,6 +35,7 @@ import { ListOperationButtons } from "./ListOperationButtons";
 import { LoadingIndicator } from "../Shared/LoadingIndicator";
 import { DisplayMode } from "src/models/list-filter/types";
 import { ButtonToolbar } from "react-bootstrap";
+import { useListSelect } from "src/hooks/listSelect";
 
 export enum PersistanceLevel {
   // do not load default query or persist display mode
@@ -153,8 +153,6 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
   }) => {
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-    const [lastClickedId, setLastClickedId] = useState<string>();
 
     const [editingCriterion, setEditingCriterion] = useState<string>();
     const [showEditFilter, setShowEditFilter] = useState(false);
@@ -163,6 +161,9 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
     const [totalCount, setTotalCount] = useState(0);
     const [metadataByline, setMetadataByline] = useState<React.ReactNode>();
     const items = useMemo(() => getItems(result), [result]);
+
+    const { selectedIds, onSelectChange, onSelectAll, onSelectNone } =
+      useListSelect(items);
 
     const [arePaging, setArePaging] = useState(false);
     const hidePagination = !arePaging && result.loading;
@@ -248,79 +249,6 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
         };
       }
     }, [addKeybinds, result, filter, selectedIds]);
-
-    function singleSelect(id: string, selected: boolean) {
-      setLastClickedId(id);
-
-      const newSelectedIds = clone(selectedIds);
-      if (selected) {
-        newSelectedIds.add(id);
-      } else {
-        newSelectedIds.delete(id);
-      }
-
-      setSelectedIds(newSelectedIds);
-    }
-
-    function selectRange(startIndex: number, endIndex: number) {
-      let start = startIndex;
-      let end = endIndex;
-      if (start > end) {
-        const tmp = start;
-        start = end;
-        end = tmp;
-      }
-
-      const subset = items.slice(start, end + 1);
-      const newSelectedIds = new Set<string>();
-
-      subset.forEach((item) => {
-        newSelectedIds.add(item.id);
-      });
-
-      setSelectedIds(newSelectedIds);
-    }
-
-    function multiSelect(id: string) {
-      let startIndex = 0;
-      let thisIndex = -1;
-
-      if (lastClickedId) {
-        startIndex = items.findIndex((item) => {
-          return item.id === lastClickedId;
-        });
-      }
-
-      thisIndex = items.findIndex((item) => {
-        return item.id === id;
-      });
-
-      selectRange(startIndex, thisIndex);
-    }
-
-    function onSelectChange(id: string, selected: boolean, shiftKey: boolean) {
-      if (shiftKey) {
-        multiSelect(id);
-      } else {
-        singleSelect(id, selected);
-      }
-    }
-
-    function onSelectAll() {
-      const newSelectedIds = new Set<string>();
-      items.forEach((item) => {
-        newSelectedIds.add(item.id);
-      });
-
-      setSelectedIds(newSelectedIds);
-      setLastClickedId(undefined);
-    }
-
-    function onSelectNone() {
-      const newSelectedIds = new Set<string>();
-      setSelectedIds(newSelectedIds);
-      setLastClickedId(undefined);
-    }
 
     function onChangeZoom(newZoomIndex: number) {
       const newFilter = cloneDeep(filter);
