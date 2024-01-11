@@ -1,29 +1,16 @@
 import React, { useEffect } from "react";
 import Mousetrap from "mousetrap";
-import {
-  Button,
-  ButtonGroup,
-  Form,
-  OverlayTrigger,
-  Tooltip,
-} from "react-bootstrap";
+import { Dropdown, Form } from "react-bootstrap";
 import { DisplayMode } from "src/models/list-filter/types";
 import { useIntl } from "react-intl";
 import { Icon } from "../Shared/Icon";
 import {
+  faChevronDown,
   faList,
   faSquare,
   faTags,
   faThLarge,
 } from "@fortawesome/free-solid-svg-icons";
-
-interface IListViewOptionsProps {
-  zoomIndex?: number;
-  onSetZoom?: (zoomIndex: number) => void;
-  displayMode: DisplayMode;
-  onSetDisplayMode: (m: DisplayMode) => void;
-  displayModeOptions: DisplayMode[];
-}
 
 export const ZoomSelect: React.FC<{
   minZoom: number;
@@ -31,6 +18,24 @@ export const ZoomSelect: React.FC<{
   zoomIndex: number;
   onChangeZoom: (v: number) => void;
 }> = ({ minZoom, maxZoom, zoomIndex, onChangeZoom }) => {
+  useEffect(() => {
+    Mousetrap.bind("+", () => {
+      if (zoomIndex !== undefined && zoomIndex < maxZoom) {
+        onChangeZoom(zoomIndex + 1);
+      }
+    });
+    Mousetrap.bind("-", () => {
+      if (zoomIndex !== undefined && zoomIndex > minZoom) {
+        onChangeZoom(zoomIndex - 1);
+      }
+    });
+
+    return () => {
+      Mousetrap.unbind("+");
+      Mousetrap.unbind("-");
+    };
+  });
+
   return (
     <Form.Control
       className="zoom-slider"
@@ -45,16 +50,17 @@ export const ZoomSelect: React.FC<{
   );
 };
 
-export const ListViewOptions: React.FC<IListViewOptionsProps> = ({
-  zoomIndex,
-  onSetZoom,
+interface IDisplayModeSelectProps {
+  displayMode: DisplayMode;
+  onSetDisplayMode: (m: DisplayMode) => void;
+  displayModeOptions: DisplayMode[];
+}
+
+export const DisplayModeSelect: React.FC<IDisplayModeSelectProps> = ({
   displayMode,
   onSetDisplayMode,
   displayModeOptions,
 }) => {
-  const minZoom = 0;
-  const maxZoom = 3;
-
   const intl = useIntl();
 
   useEffect(() => {
@@ -73,23 +79,11 @@ export const ListViewOptions: React.FC<IListViewOptionsProps> = ({
         onSetDisplayMode(DisplayMode.Wall);
       }
     });
-    Mousetrap.bind("+", () => {
-      if (onSetZoom && zoomIndex !== undefined && zoomIndex < maxZoom) {
-        onSetZoom(zoomIndex + 1);
-      }
-    });
-    Mousetrap.bind("-", () => {
-      if (onSetZoom && zoomIndex !== undefined && zoomIndex > minZoom) {
-        onSetZoom(zoomIndex - 1);
-      }
-    });
 
     return () => {
       Mousetrap.unbind("v g");
       Mousetrap.unbind("v l");
       Mousetrap.unbind("v w");
-      Mousetrap.unbind("+");
-      Mousetrap.unbind("-");
     };
   });
 
@@ -130,52 +124,25 @@ export const ListViewOptions: React.FC<IListViewOptionsProps> = ({
     }
 
     return (
-      <ButtonGroup className="mb-2">
-        {displayModeOptions.map((option) => (
-          <OverlayTrigger
-            key={option}
-            overlay={
-              <Tooltip id="display-mode-tooltip">{getLabel(option)}</Tooltip>
-            }
-          >
-            <Button
-              variant="secondary"
+      <Dropdown className="display-mode-select">
+        <Dropdown.Toggle className="minimal" title={getLabel(displayMode)}>
+          <Icon icon={getIcon(displayMode)} />
+          <Icon size="xs" icon={faChevronDown} />
+        </Dropdown.Toggle>
+        <Dropdown.Menu>
+          {displayModeOptions.map((option) => (
+            <Dropdown.Item
+              key={option}
               active={displayMode === option}
               onClick={() => onSetDisplayMode(option)}
             >
-              <Icon icon={getIcon(option)} />
-            </Button>
-          </OverlayTrigger>
-        ))}
-      </ButtonGroup>
+              <Icon icon={getIcon(option)} /> {getLabel(option)}
+            </Dropdown.Item>
+          ))}
+        </Dropdown.Menu>
+      </Dropdown>
     );
   }
 
-  function onChangeZoom(v: number) {
-    if (onSetZoom) {
-      onSetZoom(v);
-    }
-  }
-
-  function maybeRenderZoom() {
-    if (onSetZoom && displayMode === DisplayMode.Grid) {
-      return (
-        <div className="ml-2 mb-2 d-none d-sm-inline-flex">
-          <ZoomSelect
-            minZoom={minZoom}
-            maxZoom={maxZoom}
-            zoomIndex={zoomIndex ?? minZoom}
-            onChangeZoom={onChangeZoom}
-          />
-        </div>
-      );
-    }
-  }
-
-  return (
-    <>
-      {maybeRenderDisplayModeOptions()}
-      {maybeRenderZoom()}
-    </>
-  );
+  return <>{maybeRenderDisplayModeOptions()}</>;
 };

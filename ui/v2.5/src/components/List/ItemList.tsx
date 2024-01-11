@@ -30,7 +30,7 @@ import {
 } from "src/components/List/EditFilterDialog";
 import { ListFilter } from "./ListFilter";
 import { FilterTags } from "./FilterTags";
-import { ListViewOptions } from "./ListViewOptions";
+import { DisplayModeSelect, ZoomSelect } from "./ListViewOptions";
 import { ListOperationButtons } from "./ListOperationButtons";
 import { LoadingIndicator } from "../Shared/LoadingIndicator";
 import { DisplayMode } from "src/models/list-filter/types";
@@ -402,6 +402,9 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
       }))
     );
 
+    const minZoom = 0;
+    const maxZoom = 3;
+
     return (
       <div className="item-list-container">
         <ButtonToolbar className="justify-content-center">
@@ -422,13 +425,23 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
               onDelete={renderDeleteDialog ? onDelete : undefined}
             />
           </div>
-          <ListViewOptions
-            displayMode={filter.displayMode}
-            displayModeOptions={filterOptions.displayModeOptions}
-            onSetDisplayMode={onChangeDisplayMode}
-            zoomIndex={zoomable ? filter.zoomIndex : undefined}
-            onSetZoom={zoomable ? onChangeZoom : undefined}
-          />
+          <div className="mb-2 d-inline-flex">
+            <DisplayModeSelect
+              displayMode={filter.displayMode}
+              displayModeOptions={filterOptions.displayModeOptions}
+              onSetDisplayMode={onChangeDisplayMode}
+            />
+            {!!zoomable && filter.displayMode === DisplayMode.Grid && (
+              <div className="ml-2 d-none d-sm-inline-flex">
+                <ZoomSelect
+                  minZoom={minZoom}
+                  maxZoom={maxZoom}
+                  zoomIndex={filter.zoomIndex ?? minZoom}
+                  onChangeZoom={onChangeZoom}
+                />
+              </div>
+            )}
+          </div>
         </ButtonToolbar>
         <FilterTags
           criteria={filter.criteria}

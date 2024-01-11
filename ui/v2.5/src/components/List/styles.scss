@@ -394,3 +394,8 @@ input[type="range"].zoom-slider {
 .tilted {
   transform: rotate(45deg);
 }
+
+.display-mode-select .dropdown-toggle {
+  padding-left: 0.375rem;
+  padding-right: 0.375rem;
+}

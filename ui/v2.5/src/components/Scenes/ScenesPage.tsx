@@ -6,7 +6,7 @@ import React, {
   useState,
 } from "react";
 import { Pagination, PaginationIndex } from "../List/Pagination";
-import { ListViewOptions, ZoomSelect } from "../List/ListViewOptions";
+import { DisplayModeSelect, ZoomSelect } from "../List/ListViewOptions";
 import { CriterionType, DisplayMode } from "src/models/list-filter/types";
 import { PageSizeSelect, SearchField, SortBySelect } from "../List/ListFilter";
 import {
@@ -536,7 +536,7 @@ export const DefaultListHeader: React.FC<{
             onChangeZoom={onChangeZoom}
           />
         </div>
-        <ListViewOptions
+        <DisplayModeSelect
           displayMode={filter.displayMode}
           displayModeOptions={filterOptions.displayModeOptions}
           onSetDisplayMode={onChangeDisplayMode}
@@ -797,7 +797,7 @@ export const ScenesPage: React.FC = ({}) => {
           setFilter={(f) => setFilter(f)}
         />
       )}
-      <div className="scenes-page-results">
+      <div className={cx("scenes-page-results", { expanded: !showFilter })}>
         {selectedIds.size === 0 ? (
           <DefaultListHeader
             filter={filter}

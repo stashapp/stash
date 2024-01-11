@@ -723,9 +723,10 @@ input[type="range"].blue-slider {
 
   .scene-filter {
     flex: 0 0 20rem;
-    margin-right: 1rem;
     max-height: calc(100vh - 4rem);
+    max-width: 20rem;
     overflow-y: auto;
+    padding-right: 1rem;
 
     .search-field-group {
       width: 100%;
@@ -765,7 +766,16 @@ input[type="range"].blue-slider {
   }
 
   .scenes-page-results {
+    flex: 0 0 calc(100% - 20rem);
     max-height: calc(100vh - 4rem);
+    max-width: calc(100% - 20rem);
+    overflow-x: auto;
+    overflow-y: hidden;
+
+    &.expanded {
+      flex-basis: 100%;
+      max-width: 100%;
+    }
 
     .scenes-page-items {
       max-height: 100%;
