@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 
-export function useDragReorder<T>(list: T[], setList: (list: T[]) => void) {
+export function useDragReorder<T>(list: T[], setList?: (list: T[]) => void) {
   const [stageList, setStageList] = useState(list);
+  const [dragStartIndex, setDragStartIndex] = useState<number | undefined>();
   const [dragIndex, setDragIndex] = useState<number | undefined>();
 
   useEffect(() => {
@@ -11,6 +12,7 @@ export function useDragReorder<T>(list: T[], setList: (list: T[]) => void) {
   function onDragStart(event: React.DragEvent<HTMLElement>, index: number) {
     event.dataTransfer.effectAllowed = "move";
     setDragIndex(index);
+    setDragStartIndex(index);
   }
 
   function onDragOver(event: React.DragEvent<HTMLElement>, index?: number) {
@@ -34,15 +36,27 @@ export function useDragReorder<T>(list: T[], setList: (list: T[]) => void) {
   function onDrop() {
     // assume we've already set the temp source list
     // feed it up
-    setList(stageList);
+    if (setList) {
+      setList(stageList);
+    }
     setDragIndex(undefined);
+    setDragStartIndex(undefined);
+  }
+
+  function abortDrag() {
+    setStageList(list);
+    setDragIndex(undefined);
+    setDragStartIndex(undefined);
   }
 
   return {
     stageList,
+    dragStartIndex,
+    dragIndex,
     onDragStart,
     onDragOver,
     onDragOverDefault,
     onDrop,
+    abortDrag,
   };
 }
