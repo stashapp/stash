@@ -7,7 +7,6 @@ import React, {
 } from "react";
 import { CriterionType } from "src/models/list-filter/types";
 import { SearchField } from "../List/ListFilter";
-import { getFilterOptions } from "src/models/list-filter/factory";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import useFocus from "src/utils/focus";
 import {
@@ -28,6 +27,7 @@ import { CollapseButton } from "../Shared/CollapseButton";
 import cx from "classnames";
 import { EditFilterDialog } from "../List/EditFilterDialog";
 import { SavedFilterList } from "../List/SavedFilterList";
+import { useFilterConfig } from "./util";
 
 const FilterCriteriaList: React.FC<{
   filter: ListFilterModel;
@@ -195,11 +195,6 @@ const CriterionOptionList: React.FC<ICriterionList> = ({
   );
 };
 
-interface ICriterionOption {
-  option: CriterionOption;
-  showInSidebar: boolean;
-}
-
 export const FilterSidebar: React.FC<{
   filter: ListFilterModel;
   setFilter: (filter: ListFilterModel) => void;
@@ -209,40 +204,16 @@ export const FilterSidebar: React.FC<{
 
   const [queryRef, setQueryFocus] = useFocus();
 
-  const getCriterionOptions = useCallback(() => {
-    const options = getFilterOptions(filter.mode);
-
-    return options.criterionOptions.map((o) => {
-      return {
-        option: o,
-        showInSidebar: !options.defaultHiddenOptions.some(
-          (c) => c.type === o.type
-        ),
-      } as ICriterionOption;
-    });
-  }, [filter.mode]);
-
-  const [criterionOptions, setCriterionOptions] = useState(
-    getCriterionOptions()
-  );
-
-  const sidebarOptions = useMemo(
-    () => criterionOptions.filter((o) => o.showInSidebar).map((o) => o.option),
-    [criterionOptions]
-  );
-  const hiddenOptions = useMemo(
-    () => criterionOptions.filter((o) => !o.showInSidebar).map((o) => o.option),
-    [criterionOptions]
-  );
-
   const [criterion, setCriterion] = useState<Criterion<CriterionValue>>();
+  const {
+    criterionOptions,
+    sidebarOptions,
+    hiddenOptions,
+    setCriterionOptions,
+  } = useFilterConfig(filter.mode);
 
   const [editingCriterion, setEditingCriterion] = useState<string>();
   const [showEditFilter, setShowEditFilter] = useState(false);
-
-  useEffect(() => {
-    setCriterionOptions(getCriterionOptions());
-  }, [getCriterionOptions]);
 
   const { criteria } = filter;
 

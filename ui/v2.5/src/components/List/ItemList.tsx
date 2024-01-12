@@ -24,10 +24,7 @@ import { ConfigurationContext } from "src/hooks/Config";
 import { getFilterOptions } from "src/models/list-filter/factory";
 import { useFindDefaultFilter } from "src/core/StashService";
 import { Pagination, PaginationIndex } from "./Pagination";
-import {
-  EditFilterDialog,
-  ICriterionOption,
-} from "src/components/List/EditFilterDialog";
+import { EditFilterDialog } from "src/components/List/EditFilterDialog";
 import { ListFilter } from "./ListFilter";
 import { FilterTags } from "./FilterTags";
 import { DisplayModeSelect, ZoomSelect } from "./ListViewOptions";
@@ -36,6 +33,7 @@ import { LoadingIndicator } from "../Shared/LoadingIndicator";
 import { DisplayMode } from "src/models/list-filter/types";
 import { ButtonToolbar } from "react-bootstrap";
 import { useListSelect } from "src/hooks/listSelect";
+import { useFilterConfig } from "./util";
 
 export enum PersistanceLevel {
   // do not load default query or persist display mode
@@ -156,6 +154,10 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
 
     const [editingCriterion, setEditingCriterion] = useState<string>();
     const [showEditFilter, setShowEditFilter] = useState(false);
+
+    const { criterionOptions, setCriterionOptions } = useFilterConfig(
+      filter.mode
+    );
 
     const result = useResult(filter);
     const [totalCount, setTotalCount] = useState(0);
@@ -392,15 +394,6 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
       if (!f) return;
       updateFilter(f);
     }
-
-    const [criterionOptions, setCriterionOptions] = useState<
-      ICriterionOption[]
-    >(
-      filterOptions.criterionOptions.map((c) => ({
-        option: c,
-        showInSidebar: false,
-      }))
-    );
 
     const minZoom = 0;
     const maxZoom = 3;

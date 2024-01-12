@@ -210,21 +210,6 @@ const CriterionOptionList: React.FC<ICriterionList> = ({
   );
 };
 
-// const FilterModeToConfigKey = {
-//   [FilterMode.Galleries]: "galleries",
-//   [FilterMode.Images]: "images",
-//   [FilterMode.Movies]: "movies",
-//   [FilterMode.Performers]: "performers",
-//   [FilterMode.SceneMarkers]: "sceneMarkers",
-//   [FilterMode.Scenes]: "scenes",
-//   [FilterMode.Studios]: "studios",
-//   [FilterMode.Tags]: "tags",
-// };
-
-// function filterModeToConfigKey(filterMode: FilterMode) {
-//   return FilterModeToConfigKey[filterMode];
-// }
-
 interface IEditFilterProps {
   filter: ListFilterModel;
   criterionOptions: ICriterionOption[];
@@ -241,8 +226,6 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
   onClose,
 }) => {
   const intl = useIntl();
-
-  // const { configuration } = useContext(ConfigurationContext);
 
   const [searchValue, setSearchValue] = useState("");
   const [currentFilter, setCurrentFilter] = useState<ListFilterModel>(
@@ -278,9 +261,6 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
     },
     [filter, criteria]
   );
-
-  // const ui = (configuration?.ui ?? {}) as IUIConfig;
-  // const [saveUI] = useConfigureUI();
 
   const filteredOptions = useMemo(() => {
     const trimmedSearch = searchValue.trim().toLowerCase();
@@ -324,25 +304,6 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
       Mousetrap.unbind("/");
     };
   });
-
-  // async function updatePinnedFilters(filters: string[]) {
-  //   const configKey = filterModeToConfigKey(currentFilter.mode);
-  //   try {
-  //     await saveUI({
-  //       variables: {
-  //         input: {
-  //           ...configuration?.ui,
-  //           pinnedFilters: {
-  //             ...ui.pinnedFilters,
-  //             [configKey]: filters,
-  //           },
-  //         },
-  //       },
-  //     });
-  //   } catch (e) {
-  //     Toast.error(e);
-  //   }
-  // }
 
   function replaceCriterion(c: Criterion<CriterionValue>) {
     const newFilter = cloneDeep(currentFilter);
