@@ -329,14 +329,6 @@ export const FilterSidebar: React.FC<{
       </ButtonGroup>
       <hr />
       <div>
-        <CollapseButton
-          text={intl.formatMessage({ id: "search_filter.saved_filters" })}
-        >
-          <SavedFilterList filter={filter} onSetFilter={setFilter} />
-        </CollapseButton>
-      </div>
-      <hr />
-      <div>
         <FilterCriteriaList
           filter={filter}
           hiddenOptions={hiddenOptions}
@@ -346,6 +338,15 @@ export const FilterSidebar: React.FC<{
           onEditCriterion={(c) => setEditingCriterion(c.criterionOption.type)}
         />
       </div>
+      <hr />
+      <div>
+        <CollapseButton
+          text={intl.formatMessage({ id: "search_filter.saved_filters" })}
+        >
+          <SavedFilterList filter={filter} onSetFilter={setFilter} />
+        </CollapseButton>
+      </div>
+      <hr />
       <div>
         <CriterionOptionList
           filter={filter}
