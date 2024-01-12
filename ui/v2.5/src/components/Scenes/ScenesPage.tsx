@@ -1,14 +1,7 @@
-import React, { useCallback, useMemo, useState } from "react";
-import { Pagination, PaginationIndex } from "../List/Pagination";
-import { DisplayModeSelect, ZoomSelect } from "../List/ListViewOptions";
+import React, { useMemo, useState } from "react";
+import { PaginationIndex } from "../List/Pagination";
 import { DisplayMode } from "src/models/list-filter/types";
-import { PageSizeSelect, SortBySelect } from "../List/ListFilter";
-import {
-  FilterMode,
-  FindScenesQueryResult,
-  SortDirectionEnum,
-} from "src/core/generated-graphql";
-import { getFilterOptions } from "src/models/list-filter/factory";
+import { FilterMode, FindScenesQueryResult } from "src/core/generated-graphql";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { useFindScenes } from "src/core/StashService";
 import { SceneCardsGrid } from "./SceneCardsGrid";
@@ -17,183 +10,13 @@ import { SceneListTable } from "./SceneListTable";
 import { SceneWallPanel } from "../Wall/WallPanel";
 import { Tagger } from "../Tagger/scenes/SceneTagger";
 import { TaggerContext } from "../Tagger/context";
-import { Button } from "react-bootstrap";
-import { Icon } from "../Shared/Icon";
-import { FormattedMessage, FormattedNumber, useIntl } from "react-intl";
-import {
-  faChevronRight,
-  faPlay,
-  faShuffle,
-  faTimes,
-} from "@fortawesome/free-solid-svg-icons";
+import { FormattedNumber, useIntl } from "react-intl";
 import cx from "classnames";
 import TextUtils from "src/utils/text";
-import { FilterButton } from "../List/Filters/FilterButton";
 import { useListSelect } from "src/hooks/listSelect";
-import {
-  IListFilterOperation,
-  ListOperationButtons,
-} from "../List/ListOperationButtons";
 import { IItemListOperation } from "../List/ItemList";
 import { FilterSidebar } from "../List/FilterSidebar";
-
-export const DefaultListHeader: React.FC<{
-  filter: ListFilterModel;
-  setFilter: (filter: ListFilterModel) => void;
-  totalItems: number;
-  filterHidden: boolean;
-  onShowFilter: () => void;
-}> = ({ filter, setFilter, totalItems, filterHidden, onShowFilter }) => {
-  const filterOptions = getFilterOptions(filter.mode);
-
-  function onChangeZoom(newZoomIndex: number) {
-    const newFilter = filter.clone();
-    newFilter.zoomIndex = newZoomIndex;
-    setFilter(newFilter);
-  }
-
-  function onChangeDisplayMode(displayMode: DisplayMode) {
-    const newFilter = filter.clone();
-    newFilter.displayMode = displayMode;
-    setFilter(newFilter);
-  }
-
-  function onChangePageSize(val: number) {
-    const newFilter = filter.clone();
-    newFilter.itemsPerPage = val;
-    newFilter.currentPage = 1;
-    setFilter(newFilter);
-  }
-
-  function onChangeSortDirection(dir: SortDirectionEnum) {
-    const newFilter = filter.clone();
-    newFilter.sortDirection = dir;
-    setFilter(newFilter);
-  }
-
-  function onChangeSortBy(eventKey: string | null) {
-    const newFilter = filter.clone();
-    newFilter.sortBy = eventKey ?? undefined;
-    newFilter.currentPage = 1;
-    setFilter(newFilter);
-  }
-
-  function onReshuffleRandomSort() {
-    const newFilter = filter.clone();
-    newFilter.currentPage = 1;
-    newFilter.randomSeed = -1;
-    setFilter(newFilter);
-  }
-
-  const onChangePage = useCallback(
-    (page: number) => {
-      const newFilter = filter.clone();
-      newFilter.currentPage = page;
-      setFilter(newFilter);
-
-      // if the current page has a detail-header, then
-      // scroll up relative to that rather than 0, 0
-      const detailHeader = document.querySelector(".detail-header");
-      if (detailHeader) {
-        window.scrollTo(0, detailHeader.scrollHeight - 50);
-      } else {
-        window.scrollTo(0, 0);
-      }
-    },
-    [filter, setFilter]
-  );
-
-  return (
-    <div className="list-header">
-      <div>
-        {filterHidden && (
-          <FilterButton
-            filter={filter}
-            icon={faChevronRight}
-            onClick={() => onShowFilter()}
-          />
-        )}
-        <PageSizeSelect
-          pageSize={filter.itemsPerPage}
-          setPageSize={onChangePageSize}
-        />
-        <Pagination
-          currentPage={filter.currentPage}
-          itemsPerPage={filter.itemsPerPage}
-          totalItems={totalItems}
-          onChangePage={onChangePage}
-          pagesToShow={1}
-        />
-      </div>
-      <div>
-        <div>
-          <Button className="play-scenes-button" variant="secondary">
-            <Icon icon={faPlay} />
-          </Button>
-          <Button className="shuffle-scenes-button" variant="secondary">
-            <Icon icon={faShuffle} />
-          </Button>
-        </div>
-        <SortBySelect
-          sortBy={filter.sortBy}
-          direction={filter.sortDirection}
-          options={filterOptions.sortByOptions}
-          setSortBy={onChangeSortBy}
-          setDirection={onChangeSortDirection}
-          onReshuffleRandomSort={onReshuffleRandomSort}
-        />
-        <div>
-          <ZoomSelect
-            minZoom={0}
-            maxZoom={3}
-            zoomIndex={filter.zoomIndex}
-            onChangeZoom={onChangeZoom}
-          />
-        </div>
-        <DisplayModeSelect
-          displayMode={filter.displayMode}
-          displayModeOptions={filterOptions.displayModeOptions}
-          onSetDisplayMode={onChangeDisplayMode}
-        />
-      </div>
-    </div>
-  );
-};
-
-export const SelectedListHeader: React.FC<{
-  selectedIds: Set<string>;
-  onSelectAll: () => void;
-  onSelectNone: () => void;
-  otherOperations: IListFilterOperation[];
-}> = ({ selectedIds, onSelectAll, onSelectNone, otherOperations }) => {
-  return (
-    <div className="list-header">
-      <div>
-        <span>{selectedIds.size} items selected</span>
-        <Button variant="link" onClick={() => onSelectAll()}>
-          <FormattedMessage id="actions.select_all" />
-        </Button>
-      </div>
-      <div>
-        <Button className="play-scenes-button" variant="secondary">
-          <Icon icon={faPlay} />
-        </Button>
-
-        <ListOperationButtons
-          itemsSelected
-          onEdit={() => {}}
-          onDelete={() => {}}
-          otherOperations={otherOperations}
-        />
-      </div>
-      <div>
-        <Button className="minimal select-none" onClick={() => onSelectNone()}>
-          <Icon icon={faTimes} />
-        </Button>
-      </div>
-    </div>
-  );
-};
+import { ListHeader } from "../List/ListHeader";
 
 export const ScenesPage: React.FC = ({}) => {
   const intl = useIntl();
@@ -412,22 +235,17 @@ export const ScenesPage: React.FC = ({}) => {
         />
       )}
       <div className={cx("scenes-page-results", { expanded: !showFilter })}>
-        {selectedIds.size === 0 ? (
-          <DefaultListHeader
-            filter={filter}
-            setFilter={setFilter}
-            totalItems={totalCount}
-            filterHidden={!showFilter}
-            onShowFilter={() => setShowFilter(true)}
-          />
-        ) : (
-          <SelectedListHeader
-            selectedIds={selectedIds}
-            onSelectAll={onSelectAll}
-            onSelectNone={onSelectNone}
-            otherOperations={operations}
-          />
-        )}
+        <ListHeader
+          filter={filter}
+          setFilter={setFilter}
+          totalItems={totalCount}
+          filterHidden={!showFilter}
+          onShowFilter={() => setShowFilter(true)}
+          selectedIds={selectedIds}
+          onSelectAll={onSelectAll}
+          onSelectNone={onSelectNone}
+          otherOperations={operations}
+        />
         <div className="scenes-page-items">
           <PaginationIndex
             itemsPerPage={filter.itemsPerPage}

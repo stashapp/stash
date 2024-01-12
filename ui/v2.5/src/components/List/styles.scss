@@ -442,4 +442,72 @@ input[type="range"].zoom-slider {
   .edit-filter-button {
     width: 100%;
   }
+
+  .filter-criteria-list ul {
+    list-style-type: none;
+    margin-top: 0.5rem;
+    max-height: 300px;
+    overflow-y: auto;
+    // to prevent unnecessary vertical scrollbar
+    padding-bottom: 0.15rem;
+    padding-inline-start: 0;
+
+    .unselected-object {
+      opacity: 0.8;
+    }
+
+    .filter-criteria-list-item {
+      cursor: pointer;
+      margin-bottom: 0.25rem;
+      min-height: 2em;
+
+      a {
+        align-items: center;
+        display: flex;
+        font-size: 14px;
+        justify-content: space-between;
+        min-height: 2em;
+        outline: none;
+        padding: 0.25rem;
+
+        &:hover,
+        &:focus-visible {
+          background-color: rgba(138, 155, 168, 0.15);
+        }
+      }
+
+      .include-button {
+        color: $success;
+      }
+
+      .remove-criterion-button {
+        color: $danger;
+      }
+    }
+  }
+}
+
+.list-header {
+  display: flex;
+  flex-direction: row;
+  height: 40px;
+  justify-content: space-between;
+
+  .filter-button {
+    margin-left: -15px;
+    margin-right: 15px;
+  }
+
+  .select-none {
+    color: $danger;
+  }
+
+  & > div {
+    align-items: center;
+    display: flex;
+
+    & > div {
+      margin-right: 0.5rem;
+    }
+  }
 }
