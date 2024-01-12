@@ -16,10 +16,6 @@ import {
   faTimes,
 } from "@fortawesome/free-solid-svg-icons";
 import { FilterButton } from "../List/Filters/FilterButton";
-import {
-  IListFilterOperation,
-  ListOperationButtons,
-} from "../List/ListOperationButtons";
 
 interface IDefaultListHeaderProps {
   filter: ListFilterModel;
@@ -156,14 +152,14 @@ interface ISelectedListHeader {
   selectedIds: Set<string>;
   onSelectAll: () => void;
   onSelectNone: () => void;
-  otherOperations: IListFilterOperation[];
+  renderButtons?: (selectedIds: Set<string>) => React.ReactNode;
 }
 
 export const SelectedListHeader: React.FC<ISelectedListHeader> = ({
   selectedIds,
   onSelectAll,
   onSelectNone,
-  otherOperations,
+  renderButtons = () => null,
 }) => {
   return (
     <div className="list-header">
@@ -173,18 +169,7 @@ export const SelectedListHeader: React.FC<ISelectedListHeader> = ({
           <FormattedMessage id="actions.select_all" />
         </Button>
       </div>
-      <div>
-        <Button className="play-scenes-button" variant="secondary">
-          <Icon icon={faPlay} />
-        </Button>
-
-        <ListOperationButtons
-          itemsSelected
-          onEdit={() => {}}
-          onDelete={() => {}}
-          otherOperations={otherOperations}
-        />
-      </div>
+      {renderButtons(selectedIds)}
       <div>
         <Button className="minimal select-none" onClick={() => onSelectNone()}>
           <Icon icon={faTimes} />

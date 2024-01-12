@@ -66,3 +66,10 @@ export function sortStoredIdObjects(
 
   return ret;
 }
+
+export function getFromIds<T extends { id: string }>(
+  data: T[],
+  ids: Set<string>
+) {
+  return data.filter((value) => ids.has(value.id));
+}
