@@ -19,17 +19,13 @@ type UpdateSet struct {
 
 	// in future these could be moved into a separate struct and reused
 	// for a Creator struct
-
-	// Not set if nil. Set to []byte{} to clear existing
-	CoverImage []byte
 }
 
 // IsEmpty returns true if there is nothing to update.
 func (u *UpdateSet) IsEmpty() bool {
 	withoutID := u.Partial
 
-	return withoutID == models.GalleryPartial{} &&
-		u.CoverImage == nil
+	return withoutID == models.GalleryPartial{}
 }
 
 // Update updates a Gallery by updating the fields in the Partial field, then
