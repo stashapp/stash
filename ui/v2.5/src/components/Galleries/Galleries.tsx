@@ -7,6 +7,7 @@ import Gallery from "./GalleryDetails/Gallery";
 import GalleryCreate from "./GalleryDetails/GalleryCreate";
 import { GalleryList } from "./GalleryList";
 import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
+import { GalleriesPage } from "./GalleriesPages";
 
 const Galleries: React.FC = () => {
   useScrollToTopOnMount();
@@ -20,7 +21,8 @@ const GalleryRoutes: React.FC = () => {
     <>
       <Helmet {...titleProps} />
       <Switch>
-        <Route exact path="/galleries" component={Galleries} />
+        <Route exact path="/galleries" component={GalleriesPage} />
+        <Route exact path="/galleries/old" component={Galleries} />
         <Route exact path="/galleries/new" component={GalleryCreate} />
         <Route path="/galleries/:id/:tab?" component={Gallery} />
       </Switch>

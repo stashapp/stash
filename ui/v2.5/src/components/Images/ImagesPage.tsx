@@ -227,6 +227,8 @@ export const ImagesPage: React.FC = ({}) => {
   }
 
   async function viewRandom() {
+    if (images.length === 0) return;
+
     // query for a random image
     if (result.data?.findImages) {
       const { count } = result.data.findImages;
@@ -248,7 +250,7 @@ export const ImagesPage: React.FC = ({}) => {
     showModal(
       <ExportDialog
         exportInput={{
-          scenes: {
+          images: {
             ids: Array.from(selectedIds.values()),
             all,
           },
