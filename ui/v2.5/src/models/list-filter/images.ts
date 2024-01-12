@@ -32,33 +32,38 @@ const sortByOptions = [
 
 const displayModeOptions = [DisplayMode.Grid, DisplayMode.Wall];
 const criterionOptions = [
+  RatingCriterionOption,
+  StudiosCriterionOption,
+  PerformersCriterionOption,
+  TagsCriterionOption,
+  OrganizedCriterionOption,
+];
+
+const defaultHiddenCriterionOptions = [
   createStringCriterionOption("title"),
   createStringCriterionOption("code", "scene_code"),
   createStringCriterionOption("details"),
   createStringCriterionOption("photographer"),
   createMandatoryStringCriterionOption("checksum", "media_info.checksum"),
   PathCriterionOption,
-  OrganizedCriterionOption,
   createMandatoryNumberCriterionOption("o_counter"),
   ResolutionCriterionOption,
   ImageIsMissingCriterionOption,
-  TagsCriterionOption,
-  RatingCriterionOption,
   createMandatoryNumberCriterionOption("tag_count"),
   PerformerTagsCriterionOption,
-  PerformersCriterionOption,
   createMandatoryNumberCriterionOption("performer_count"),
   PerformerFavoriteCriterionOption,
-  StudiosCriterionOption,
   createStringCriterionOption("url"),
   createDateCriterionOption("date"),
   createMandatoryNumberCriterionOption("file_count"),
   createMandatoryTimestampCriterionOption("created_at"),
   createMandatoryTimestampCriterionOption("updated_at"),
 ];
+
 export const ImageListFilterOptions = new ListFilterOptions(
   defaultSortBy,
   sortByOptions,
   displayModeOptions,
-  criterionOptions
+  criterionOptions.concat(defaultHiddenCriterionOptions),
+  defaultHiddenCriterionOptions
 );
