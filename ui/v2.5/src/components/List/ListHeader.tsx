@@ -9,12 +9,7 @@ import { ListFilterModel } from "src/models/list-filter/filter";
 import { Button } from "react-bootstrap";
 import { Icon } from "../Shared/Icon";
 import { FormattedMessage } from "react-intl";
-import {
-  faChevronRight,
-  faPlay,
-  faShuffle,
-  faTimes,
-} from "@fortawesome/free-solid-svg-icons";
+import { faChevronRight, faTimes } from "@fortawesome/free-solid-svg-icons";
 import { FilterButton } from "../List/Filters/FilterButton";
 
 interface IDefaultListHeaderProps {
@@ -23,6 +18,7 @@ interface IDefaultListHeaderProps {
   totalItems: number;
   filterHidden: boolean;
   onShowFilter: () => void;
+  actionButtons?: React.ReactNode;
 }
 
 const DefaultListHeader: React.FC<IDefaultListHeaderProps> = ({
@@ -31,6 +27,7 @@ const DefaultListHeader: React.FC<IDefaultListHeaderProps> = ({
   totalItems,
   filterHidden,
   onShowFilter,
+  actionButtons,
 }) => {
   const filterOptions = getFilterOptions(filter.mode);
 
@@ -114,14 +111,7 @@ const DefaultListHeader: React.FC<IDefaultListHeaderProps> = ({
         />
       </div>
       <div>
-        <div>
-          <Button className="play-scenes-button" variant="secondary">
-            <Icon icon={faPlay} />
-          </Button>
-          <Button className="shuffle-scenes-button" variant="secondary">
-            <Icon icon={faShuffle} />
-          </Button>
-        </div>
+        <div>{actionButtons}</div>
         <SortBySelect
           sortBy={filter.sortBy}
           direction={filter.sortDirection}
@@ -152,14 +142,14 @@ interface ISelectedListHeader {
   selectedIds: Set<string>;
   onSelectAll: () => void;
   onSelectNone: () => void;
-  renderButtons?: (selectedIds: Set<string>) => React.ReactNode;
+  selectedButtons?: (selectedIds: Set<string>) => React.ReactNode;
 }
 
 export const SelectedListHeader: React.FC<ISelectedListHeader> = ({
   selectedIds,
   onSelectAll,
   onSelectNone,
-  renderButtons = () => null,
+  selectedButtons = () => null,
 }) => {
   return (
     <div className="list-header">
@@ -169,7 +159,7 @@ export const SelectedListHeader: React.FC<ISelectedListHeader> = ({
           <FormattedMessage id="actions.select_all" />
         </Button>
       </div>
-      {renderButtons(selectedIds)}
+      {selectedButtons(selectedIds)}
       <div>
         <Button className="minimal select-none" onClick={() => onSelectNone()}>
           <Icon icon={faTimes} />

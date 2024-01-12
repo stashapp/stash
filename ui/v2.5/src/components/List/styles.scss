@@ -400,6 +400,30 @@ input[type="range"].zoom-slider {
   padding-right: 0.375rem;
 }
 
+.list-page {
+  display: flex;
+  flex-direction: row;
+
+  .list-page-results {
+    flex: 0 0 calc(100% - 20rem);
+    max-height: calc(100vh - 4rem);
+    max-width: calc(100% - 20rem);
+    overflow-x: auto;
+    overflow-y: hidden;
+
+    &.expanded {
+      flex-basis: 100%;
+      max-width: 100%;
+    }
+
+    .list-page-items {
+      max-height: 100%;
+      overflow-x: hidden;
+      overflow-y: auto;
+    }
+  }
+}
+
 .filter-sidebar {
   flex: 0 0 20rem;
   max-height: calc(100vh - 4rem);

@@ -21,7 +21,7 @@ import { Button } from "react-bootstrap";
 import { Icon } from "../Shared/Icon";
 import { ListOperationButtons } from "../List/ListOperationButtons";
 import { ListOperationDropdown } from "../List/ListOperationDropdown";
-import { faPlay } from "@fortawesome/free-solid-svg-icons";
+import { faPlay, faShuffle } from "@fortawesome/free-solid-svg-icons";
 import { ConfigurationContext } from "src/hooks/Config";
 import { useHistory } from "react-router-dom";
 import { objectTitle } from "src/core/files";
@@ -139,6 +139,15 @@ export const ScenesPage: React.FC = ({}) => {
     history.push(queue.makeLink(sceneID, options));
   }
 
+  async function playAll() {
+    if (items.length === 0) return;
+
+    const queue = SceneQueue.fromListFilterModel(filter);
+    const autoPlay =
+      config.configuration?.interface.autostartVideoOnPlaySelected ?? false;
+    playScene(queue, items[0].id, { autoPlay });
+  }
+
   async function playSelected() {
     // populate queue and go to first scene
     const sceneIDs = Array.from(selectedIds.values());
@@ -149,6 +158,8 @@ export const ScenesPage: React.FC = ({}) => {
   }
 
   async function playRandom() {
+    if (items.length === 0) return;
+
     // query for a random scene
     if (result.data?.findScenes) {
       const { count } = result.data.findScenes;
@@ -210,10 +221,6 @@ export const ScenesPage: React.FC = ({}) => {
   }
 
   const otherOperations: IItemListOperation<FindScenesQueryResult>[] = [
-    {
-      text: intl.formatMessage({ id: "actions.play_random" }),
-      onClick: () => playRandom(),
-    },
     {
       text: `${intl.formatMessage({ id: "actions.generate" })}…`,
       onClick: async () => {
@@ -314,7 +321,7 @@ export const ScenesPage: React.FC = ({}) => {
   }
 
   return (
-    <div id="scenes-page">
+    <div id="scenes-page" className="list-page">
       {modal}
 
       {showFilter && (
@@ -324,7 +331,7 @@ export const ScenesPage: React.FC = ({}) => {
           setFilter={(f) => setFilter(f)}
         />
       )}
-      <div className={cx("scenes-page-results", { expanded: !showFilter })}>
+      <div className={cx("list-page-results", { expanded: !showFilter })}>
         <ListHeader
           filter={filter}
           setFilter={setFilter}
@@ -334,9 +341,29 @@ export const ScenesPage: React.FC = ({}) => {
           selectedIds={selectedIds}
           onSelectAll={onSelectAll}
           onSelectNone={onSelectNone}
-          renderButtons={renderButtons}
+          actionButtons={
+            items.length > 0 && (
+              <div>
+                <Button
+                  className="play-scenes-button"
+                  variant="secondary"
+                  onClick={() => playAll()}
+                >
+                  <Icon icon={faPlay} />
+                </Button>
+                <Button
+                  className="shuffle-scenes-button"
+                  variant="secondary"
+                  onClick={() => playRandom()}
+                >
+                  <Icon icon={faShuffle} />
+                </Button>
+              </div>
+            )
+          }
+          selectedButtons={renderButtons}
         />
-        <div className="scenes-page-items">
+        <div className="list-page-items">
           <PaginationIndex
             itemsPerPage={filter.itemsPerPage}
             currentPage={filter.currentPage}
