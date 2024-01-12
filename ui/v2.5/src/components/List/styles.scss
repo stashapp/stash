@@ -399,3 +399,47 @@ input[type="range"].zoom-slider {
   padding-left: 0.375rem;
   padding-right: 0.375rem;
 }
+
+.filter-sidebar {
+  flex: 0 0 20rem;
+  max-height: calc(100vh - 4rem);
+  max-width: 20rem;
+  overflow-y: auto;
+  padding-right: 1rem;
+
+  .search-field-group {
+    width: 100%;
+
+    .collapse-filter-button {
+      flex-grow: 0;
+    }
+  }
+
+  button.collapse-button {
+    padding: 0;
+    text-align: left;
+    width: 100%;
+  }
+
+  .hide-criterion-button {
+    color: $text-muted;
+    visibility: hidden;
+  }
+
+  .remove-criterion-button {
+    color: $danger;
+  }
+
+  .criterion-list .collapse-button:hover .hide-criterion-button {
+    visibility: visible;
+  }
+
+  .criterion-editor {
+    padding-bottom: 0.5rem;
+    padding-top: 0.5rem;
+  }
+
+  .edit-filter-button {
+    width: 100%;
+  }
+}
