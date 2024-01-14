@@ -15,25 +15,31 @@ import {
 } from "src/core/StashService";
 import { useToast } from "src/hooks/Toast";
 import { ListFilterModel } from "src/models/list-filter/filter";
-import { SavedFilterDataFragment } from "src/core/generated-graphql";
+import {
+  FilterMode,
+  SavedFilterDataFragment,
+} from "src/core/generated-graphql";
 import { PersistanceLevel } from "./ItemList";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Icon } from "../Shared/Icon";
 import { LoadingIndicator } from "../Shared/LoadingIndicator";
 import { faSave, faTimes } from "@fortawesome/free-solid-svg-icons";
 
-const SaveFilterDialog: React.FC<{
-  savedFilters: SavedFilterDataFragment[];
+export const SaveFilterDialog: React.FC<{
+  mode: FilterMode;
   onClose: (name?: string, id?: string) => void;
-}> = ({ savedFilters, onClose }) => {
+}> = ({ mode, onClose }) => {
   const intl = useIntl();
   const [filterName, setFilterName] = useState("");
 
+  const { data } = useFindSavedFilters(mode);
+
   const overwritingFilter = useMemo(() => {
+    const savedFilters = data?.findSavedFilters ?? [];
     return savedFilters.find(
       (f) => f.name.toLowerCase() === filterName.toLowerCase()
     );
-  }, [savedFilters, filterName]);
+  }, [data?.findSavedFilters, filterName]);
 
   return (
     <Modal show>
@@ -284,7 +290,7 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
 
     return (
       <SaveFilterDialog
-        savedFilters={savedFilters}
+        mode={filter.mode}
         onClose={(name, id) => {
           setShowSaveDialog(false);
           if (name) {

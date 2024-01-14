@@ -20,14 +20,18 @@ import { FormattedMessage, useIntl } from "react-intl";
 import {
   faChevronLeft,
   faFilter,
+  faHeart,
   faTimes,
 } from "@fortawesome/free-solid-svg-icons";
 import { CriterionEditor } from "../List/CriterionEditor";
 import { CollapseButton } from "../Shared/CollapseButton";
 import cx from "classnames";
 import { EditFilterDialog } from "../List/EditFilterDialog";
-import { SavedFilterList } from "../List/SavedFilterList";
+import { SaveFilterDialog, SavedFilterList } from "../List/SavedFilterList";
 import { useFilterConfig } from "./util";
+import { useModal } from "src/hooks/modal";
+import { mutateSaveFilter } from "src/core/StashService";
+import { useToast } from "src/hooks/Toast";
 
 const FilterCriteriaList: React.FC<{
   filter: ListFilterModel;
@@ -148,16 +152,19 @@ const CriterionOptionList: React.FC<ICriterionList> = ({
   }
 
   function renderCard(c: CriterionOption) {
+    const isPopulated = filter.criteria.some(
+      (cc) => c.type === cc.criterionOption.type
+    );
+
     return (
       <CollapseButton
+        className={cx({ populated: isPopulated })}
         text={intl.formatMessage({ id: c.messageID })}
         rightControls={
           <span>
             <Button
               className={cx("remove-criterion-button", {
-                invisible: !filter.criteria.some(
-                  (cc) => c.type === cc.criterionOption.type
-                ),
+                invisible: !isPopulated,
               })}
               variant="minimal"
               onClick={(e) => removeClicked(e, c.type)}
@@ -188,7 +195,9 @@ export const FilterSidebar: React.FC<{
   onHide: () => void;
 }> = ({ filter, setFilter, onHide }) => {
   const intl = useIntl();
+  const Toast = useToast();
 
+  const { modal, showModal, closeModal } = useModal();
   const [queryRef, setQueryFocus] = useFocus();
 
   const [criterion, setCriterion] = useState<Criterion<CriterionValue>>();
@@ -297,6 +306,29 @@ export const FilterSidebar: React.FC<{
     setFilter(f);
   }
 
+  async function onSaveFilterDialogClose(name?: string, id?: string) {
+    try {
+      if (!name) return;
+
+      await mutateSaveFilter(name, id, filter);
+
+      Toast.success(
+        intl.formatMessage(
+          {
+            id: "toast.saved_entity",
+          },
+          {
+            entity: intl.formatMessage({ id: "filter" }).toLocaleLowerCase(),
+          }
+        )
+      );
+    } catch (err) {
+      Toast.error(err);
+    } finally {
+      closeModal();
+    }
+  }
+
   return (
     <div className="filter-sidebar">
       <ButtonGroup className="search-field-group">
@@ -347,7 +379,23 @@ export const FilterSidebar: React.FC<{
           <Icon icon={faFilter} />{" "}
           <FormattedMessage id="search_filter.edit_filter" />
         </Button>
+
+        <Button
+          variant="secondary"
+          className="save-filter-button"
+          onClick={() => {
+            showModal(
+              <SaveFilterDialog
+                mode={filter.mode}
+                onClose={onSaveFilterDialogClose}
+              />
+            );
+          }}
+        >
+          <Icon icon={faHeart} /> <FormattedMessage id="actions.save_filter" />
+        </Button>
       </div>
+      {modal}
       {(showEditFilter || editingCriterion) && (
         <EditFilterDialog
           filter={filter}
