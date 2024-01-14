@@ -355,6 +355,10 @@ func (t *StashBoxBatchTagTask) processMatchedStudio(ctx context.Context, s *mode
 		err = r.WithTxn(ctx, func(ctx context.Context) error {
 			qb := r.Studio
 
+			if err := studio.ValidateCreate(ctx, *newStudio, qb); err != nil {
+				return err
+			}
+
 			if err := qb.Create(ctx, newStudio); err != nil {
 				return err
 			}
