@@ -93,7 +93,6 @@ interface ICriterionList {
   setCriterion: (c: Criterion<CriterionValue>) => void;
   criterionOptions: CriterionOption[];
   onRemoveCriterion: (c: string) => void;
-  onOpenEditFilter: () => void;
 }
 
 const CriterionOptionList: React.FC<ICriterionList> = ({
@@ -102,7 +101,6 @@ const CriterionOptionList: React.FC<ICriterionList> = ({
   setCriterion,
   criterionOptions,
   onRemoveCriterion,
-  onOpenEditFilter,
 }) => {
   const intl = useIntl();
 
@@ -151,46 +149,35 @@ const CriterionOptionList: React.FC<ICriterionList> = ({
 
   function renderCard(c: CriterionOption) {
     return (
-      <div>
-        <CollapseButton
-          text={intl.formatMessage({ id: c.messageID })}
-          rightControls={
-            <span>
-              <Button
-                className={cx("remove-criterion-button", {
-                  invisible: !filter.criteria.some(
-                    (cc) => c.type === cc.criterionOption.type
-                  ),
-                })}
-                variant="minimal"
-                onClick={(e) => removeClicked(e, c.type)}
-              >
-                <Icon icon={faTimes} />
-              </Button>
-            </span>
-          }
-        >
-          <CriterionEditor
-            criterion={getReleventCriterion(c.type)!}
-            setCriterion={setCriterion}
-          />
-        </CollapseButton>
-      </div>
+      <CollapseButton
+        text={intl.formatMessage({ id: c.messageID })}
+        rightControls={
+          <span>
+            <Button
+              className={cx("remove-criterion-button", {
+                invisible: !filter.criteria.some(
+                  (cc) => c.type === cc.criterionOption.type
+                ),
+              })}
+              variant="minimal"
+              onClick={(e) => removeClicked(e, c.type)}
+            >
+              <Icon icon={faTimes} />
+            </Button>
+          </span>
+        }
+      >
+        <CriterionEditor
+          criterion={getReleventCriterion(c.type)!}
+          setCriterion={setCriterion}
+        />
+      </CollapseButton>
     );
   }
 
   return (
     <div className="criterion-list">
       {criterionOptions.map((c) => renderCard(c))}
-      <div>
-        <Button
-          className="minimal edit-filter-button"
-          onClick={() => onOpenEditFilter()}
-        >
-          <Icon icon={faFilter} />{" "}
-          <FormattedMessage id="search_filter.edit_filter" />
-        </Button>
-      </div>
     </div>
   );
 };
@@ -327,7 +314,6 @@ export const FilterSidebar: React.FC<{
           <Icon icon={faChevronLeft} />
         </Button>
       </ButtonGroup>
-      <hr />
       <div>
         <FilterCriteriaList
           filter={filter}
@@ -338,24 +324,29 @@ export const FilterSidebar: React.FC<{
           onEditCriterion={(c) => setEditingCriterion(c.criterionOption.type)}
         />
       </div>
-      <hr />
-      <div>
+      <div className="saved-filters">
         <CollapseButton
           text={intl.formatMessage({ id: "search_filter.saved_filters" })}
         >
           <SavedFilterList filter={filter} onSetFilter={setFilter} />
         </CollapseButton>
       </div>
-      <hr />
+      <CriterionOptionList
+        filter={filter}
+        currentCriterion={criterion}
+        setCriterion={replaceCriterion}
+        criterionOptions={sidebarOptions}
+        onRemoveCriterion={(c) => removeCriterionString(c)}
+      />
       <div>
-        <CriterionOptionList
-          filter={filter}
-          currentCriterion={criterion}
-          setCriterion={replaceCriterion}
-          criterionOptions={sidebarOptions}
-          onRemoveCriterion={(c) => removeCriterionString(c)}
-          onOpenEditFilter={() => setShowEditFilter(true)}
-        />
+        <Button
+          variant="secondary"
+          className="edit-filter-button"
+          onClick={() => setShowEditFilter(true)}
+        >
+          <Icon icon={faFilter} />{" "}
+          <FormattedMessage id="search_filter.edit_filter" />
+        </Button>
       </div>
       {(showEditFilter || editingCriterion) && (
         <EditFilterDialog

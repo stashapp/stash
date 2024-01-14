@@ -431,6 +431,10 @@ input[type="range"].zoom-slider {
   overflow-y: auto;
   padding-right: 1rem;
 
+  hr {
+    background-color: $secondary;
+  }
+
   .search-field-group {
     width: 100%;
 
@@ -439,10 +443,43 @@ input[type="range"].zoom-slider {
     }
   }
 
-  button.collapse-button {
+  .criterion-list {
+    margin-bottom: 0.75rem;
+    margin-top: 0.5rem;
+  }
+
+  .saved-filters {
+    margin-bottom: 0.5rem;
+    margin-top: 0.5rem;
+  }
+
+  .criterion-list .collapse-button-container,
+  .saved-filters .collapse-button-container {
+    & > .collapse-button-group .btn {
+      svg {
+        margin-right: 0.5rem;
+      }
+      padding-left: 0;
+    }
+  }
+
+  .criterion-list .collapse-button-container {
+    border-top: 1px solid $secondary;
+    padding-bottom: 0.25rem;
+    padding-top: 0.25rem;
+
+    &:last-child {
+      border-bottom: 1px solid $secondary;
+    }
+  }
+
+  .collapse-button-group {
     padding: 0;
-    text-align: left;
     width: 100%;
+
+    button.collapse-button {
+      text-align: left;
+    }
   }
 
   .hide-criterion-button {
@@ -452,10 +489,6 @@ input[type="range"].zoom-slider {
 
   .remove-criterion-button {
     color: $danger;
-  }
-
-  .criterion-list .collapse-button:hover .hide-criterion-button {
-    visibility: visible;
   }
 
   .criterion-editor {
