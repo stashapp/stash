@@ -10,7 +10,7 @@ import { SceneListTable } from "./SceneListTable";
 import { SceneWallPanel } from "../Wall/WallPanel";
 import { Tagger } from "../Tagger/scenes/SceneTagger";
 import { TaggerContext } from "../Tagger/context";
-import { FormattedNumber, useIntl } from "react-intl";
+import { FormattedMessage, FormattedNumber, useIntl } from "react-intl";
 import cx from "classnames";
 import TextUtils from "src/utils/text";
 import { useListSelect } from "src/hooks/listSelect";
@@ -343,22 +343,32 @@ export const ScenesPage: React.FC = ({}) => {
           onSelectNone={onSelectNone}
           actionButtons={
             items.length > 0 && (
-              <div>
-                <Button
-                  className="play-scenes-button"
-                  variant="secondary"
-                  onClick={() => playAll()}
-                >
-                  <Icon icon={faPlay} />
-                </Button>
-                <Button
-                  className="shuffle-scenes-button"
-                  variant="secondary"
-                  onClick={() => playRandom()}
-                >
-                  <Icon icon={faShuffle} />
-                </Button>
-              </div>
+              <>
+                <div>
+                  <Button
+                    className="play-scenes-button"
+                    variant="secondary"
+                    onClick={() => playAll()}
+                  >
+                    <Icon icon={faPlay} />
+                    <span>
+                      <FormattedMessage id="actions.play" />
+                    </span>
+                  </Button>
+                </div>
+                <div>
+                  <Button
+                    className="shuffle-scenes-button"
+                    variant="secondary"
+                    onClick={() => playRandom()}
+                  >
+                    <Icon icon={faShuffle} />
+                    <span>
+                      <FormattedMessage id="actions.shuffle" />
+                    </span>
+                  </Button>
+                </div>
+              </>
             )
           }
           selectedButtons={renderButtons}

@@ -1,6 +1,6 @@
 import React, { useCallback } from "react";
 import { Pagination } from "../List/Pagination";
-import { DisplayModeSelect, ZoomSelect } from "../List/ListViewOptions";
+import { DisplayModeSelect } from "../List/ListViewOptions";
 import { DisplayMode } from "src/models/list-filter/types";
 import { PageSizeSelect, SortBySelect } from "../List/ListFilter";
 import { SortDirectionEnum } from "src/core/generated-graphql";
@@ -31,11 +31,11 @@ const DefaultListHeader: React.FC<IDefaultListHeaderProps> = ({
 }) => {
   const filterOptions = getFilterOptions(filter.mode);
 
-  function onChangeZoom(newZoomIndex: number) {
-    const newFilter = filter.clone();
-    newFilter.zoomIndex = newZoomIndex;
-    setFilter(newFilter);
-  }
+  // function onChangeZoom(newZoomIndex: number) {
+  //   const newFilter = filter.clone();
+  //   newFilter.zoomIndex = newZoomIndex;
+  //   setFilter(newFilter);
+  // }
 
   function onChangeDisplayMode(displayMode: DisplayMode) {
     const newFilter = filter.clone();
@@ -98,10 +98,9 @@ const DefaultListHeader: React.FC<IDefaultListHeaderProps> = ({
             onClick={() => onShowFilter()}
           />
         )}
-        <PageSizeSelect
-          pageSize={filter.itemsPerPage}
-          setPageSize={onChangePageSize}
-        />
+        {actionButtons}
+      </div>
+      <div>
         <Pagination
           currentPage={filter.currentPage}
           itemsPerPage={filter.itemsPerPage}
@@ -111,7 +110,6 @@ const DefaultListHeader: React.FC<IDefaultListHeaderProps> = ({
         />
       </div>
       <div>
-        <div>{actionButtons}</div>
         <SortBySelect
           sortBy={filter.sortBy}
           direction={filter.sortDirection}
@@ -120,14 +118,18 @@ const DefaultListHeader: React.FC<IDefaultListHeaderProps> = ({
           setDirection={onChangeSortDirection}
           onReshuffleRandomSort={onReshuffleRandomSort}
         />
-        <div>
+        <PageSizeSelect
+          pageSize={filter.itemsPerPage}
+          setPageSize={onChangePageSize}
+        />
+        {/* <div>
           <ZoomSelect
             minZoom={0}
             maxZoom={3}
             zoomIndex={filter.zoomIndex}
             onChangeZoom={onChangeZoom}
           />
-        </div>
+        </div> */}
         <DisplayModeSelect
           displayMode={filter.displayMode}
           displayModeOptions={filterOptions.displayModeOptions}

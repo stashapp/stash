@@ -125,7 +125,7 @@ export const DisplayModeSelect: React.FC<IDisplayModeSelectProps> = ({
 
     return (
       <Dropdown className="display-mode-select">
-        <Dropdown.Toggle className="minimal" title={getLabel(displayMode)}>
+        <Dropdown.Toggle variant="secondary" title={getLabel(displayMode)}>
           <Icon icon={getIcon(displayMode)} />
           <Icon size="xs" icon={faChevronDown} />
         </Dropdown.Toggle>
