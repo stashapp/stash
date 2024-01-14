@@ -404,12 +404,21 @@ input[type="range"].zoom-slider {
   display: flex;
   flex-direction: row;
 
+  .collapse-divider {
+    min-height: calc(100vh - 4rem);
+
+    &.collapsed {
+      margin-left: -15px;
+    }
+  }
+
   .list-page-results {
     flex: 0 0 calc(100% - 20rem);
     max-height: calc(100vh - 4rem);
     max-width: calc(100% - 20rem);
     overflow-x: auto;
     overflow-y: hidden;
+    padding-left: 1rem;
 
     &.expanded {
       flex-basis: 100%;
@@ -428,19 +437,11 @@ input[type="range"].zoom-slider {
   flex: 0 0 20rem;
   max-height: calc(100vh - 4rem);
   max-width: 20rem;
+  min-height: calc(100vh - 4rem);
   overflow-y: auto;
-  padding-right: 1rem;
 
   hr {
     background-color: $secondary;
-  }
-
-  .search-field-group {
-    width: 100%;
-
-    .collapse-filter-button {
-      flex-grow: 0;
-    }
   }
 
   .criterion-list {

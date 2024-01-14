@@ -29,6 +29,7 @@ import { DeleteImagesDialog } from "./DeleteImagesDialog";
 import { Button } from "react-bootstrap";
 import { Icon } from "../Shared/Icon";
 import { faShuffle } from "@fortawesome/free-solid-svg-icons";
+import { CollapseDivider } from "../Shared/CollapseDivider";
 
 export const ImagesPage: React.FC = ({}) => {
   const intl = useIntl();
@@ -37,7 +38,7 @@ export const ImagesPage: React.FC = ({}) => {
   const [filter, setFilter] = useState<ListFilterModel>(
     () => new ListFilterModel(FilterMode.Images)
   );
-  const [showFilter, setShowFilter] = useState(true);
+  const [filterCollapsed, setFilterCollapsed] = useState(false);
   const [slideshowRunning, setSlideshowRunning] = useState<boolean>(false);
 
   const result = useFindImages(filter);
@@ -328,20 +329,18 @@ export const ImagesPage: React.FC = ({}) => {
     <div id="images-page" className="list-page">
       {modal}
 
-      {showFilter && (
-        <FilterSidebar
-          onHide={() => setShowFilter(false)}
-          filter={filter}
-          setFilter={(f) => setFilter(f)}
-        />
+      {!filterCollapsed && (
+        <FilterSidebar filter={filter} setFilter={(f) => setFilter(f)} />
       )}
-      <div className={cx("list-page-results", { expanded: !showFilter })}>
+      <CollapseDivider
+        collapsed={filterCollapsed}
+        setCollapsed={(v) => setFilterCollapsed(v)}
+      />
+      <div className={cx("list-page-results", { expanded: filterCollapsed })}>
         <ListHeader
           filter={filter}
           setFilter={setFilter}
           totalItems={totalCount}
-          filterHidden={!showFilter}
-          onShowFilter={() => setShowFilter(true)}
           selectedIds={selectedIds}
           onSelectAll={onSelectAll}
           onSelectNone={onSelectNone}

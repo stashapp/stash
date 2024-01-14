@@ -9,15 +9,12 @@ import { ListFilterModel } from "src/models/list-filter/filter";
 import { Button } from "react-bootstrap";
 import { Icon } from "../Shared/Icon";
 import { FormattedMessage } from "react-intl";
-import { faChevronRight, faTimes } from "@fortawesome/free-solid-svg-icons";
-import { FilterButton } from "../List/Filters/FilterButton";
+import { faTimes } from "@fortawesome/free-solid-svg-icons";
 
 interface IDefaultListHeaderProps {
   filter: ListFilterModel;
   setFilter: (filter: ListFilterModel) => void;
   totalItems: number;
-  filterHidden: boolean;
-  onShowFilter: () => void;
   actionButtons?: React.ReactNode;
 }
 
@@ -25,8 +22,6 @@ const DefaultListHeader: React.FC<IDefaultListHeaderProps> = ({
   filter,
   setFilter,
   totalItems,
-  filterHidden,
-  onShowFilter,
   actionButtons,
 }) => {
   const filterOptions = getFilterOptions(filter.mode);
@@ -90,16 +85,7 @@ const DefaultListHeader: React.FC<IDefaultListHeaderProps> = ({
 
   return (
     <div className="list-header">
-      <div>
-        {filterHidden && (
-          <FilterButton
-            filter={filter}
-            icon={faChevronRight}
-            onClick={() => onShowFilter()}
-          />
-        )}
-        {actionButtons}
-      </div>
+      <div>{actionButtons}</div>
       <div>
         <Pagination
           currentPage={filter.currentPage}

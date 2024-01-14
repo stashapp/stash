@@ -27,6 +27,7 @@ import { galleryTitle } from "src/core/galleries";
 import GalleryWallCard from "./GalleryWallCard";
 import { EditGalleriesDialog } from "./EditGalleriesDialog";
 import { DeleteGalleriesDialog } from "./DeleteGalleriesDialog";
+import { CollapseDivider } from "../Shared/CollapseDivider";
 
 export const GalleriesPage: React.FC = ({}) => {
   const intl = useIntl();
@@ -35,7 +36,7 @@ export const GalleriesPage: React.FC = ({}) => {
   const [filter, setFilter] = useState<ListFilterModel>(
     () => new ListFilterModel(FilterMode.Galleries)
   );
-  const [showFilter, setShowFilter] = useState(true);
+  const [filterCollapsed, setFilterCollapsed] = useState(false);
 
   const result = useFindGalleries(filter);
   const items = result.data?.findGalleries.galleries ?? [];
@@ -223,20 +224,18 @@ export const GalleriesPage: React.FC = ({}) => {
     <div id="galleries-page" className="list-page">
       {modal}
 
-      {showFilter && (
-        <FilterSidebar
-          onHide={() => setShowFilter(false)}
-          filter={filter}
-          setFilter={(f) => setFilter(f)}
-        />
+      {!filterCollapsed && (
+        <FilterSidebar filter={filter} setFilter={(f) => setFilter(f)} />
       )}
-      <div className={cx("list-page-results", { expanded: !showFilter })}>
+      <CollapseDivider
+        collapsed={filterCollapsed}
+        setCollapsed={(v) => setFilterCollapsed(v)}
+      />
+      <div className={cx("list-page-results", { expanded: filterCollapsed })}>
         <ListHeader
           filter={filter}
           setFilter={setFilter}
           totalItems={totalCount}
-          filterHidden={!showFilter}
-          onShowFilter={() => setShowFilter(true)}
           selectedIds={selectedIds}
           onSelectAll={onSelectAll}
           onSelectNone={onSelectNone}

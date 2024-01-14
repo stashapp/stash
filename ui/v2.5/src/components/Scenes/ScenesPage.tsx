@@ -33,6 +33,7 @@ import { ExportDialog } from "../Shared/ExportDialog";
 import { getFromIds } from "src/utils/data";
 import { EditScenesDialog } from "./EditScenesDialog";
 import { DeleteScenesDialog } from "./DeleteScenesDialog";
+import { CollapseDivider } from "../Shared/CollapseDivider";
 
 export const ScenesPage: React.FC = ({}) => {
   const intl = useIntl();
@@ -43,7 +44,7 @@ export const ScenesPage: React.FC = ({}) => {
   const [filter, setFilter] = useState<ListFilterModel>(
     () => new ListFilterModel(FilterMode.Scenes)
   );
-  const [showFilter, setShowFilter] = useState(true);
+  const [filterCollapsed, setFilterCollapsed] = useState(false);
 
   const result = useFindScenes(filter);
   const items = result.data?.findScenes.scenes ?? [];
@@ -324,20 +325,18 @@ export const ScenesPage: React.FC = ({}) => {
     <div id="scenes-page" className="list-page">
       {modal}
 
-      {showFilter && (
-        <FilterSidebar
-          onHide={() => setShowFilter(false)}
-          filter={filter}
-          setFilter={(f) => setFilter(f)}
-        />
+      {!filterCollapsed && (
+        <FilterSidebar filter={filter} setFilter={(f) => setFilter(f)} />
       )}
-      <div className={cx("list-page-results", { expanded: !showFilter })}>
+      <CollapseDivider
+        collapsed={filterCollapsed}
+        setCollapsed={(v) => setFilterCollapsed(v)}
+      />
+      <div className={cx("list-page-results", { expanded: filterCollapsed })}>
         <ListHeader
           filter={filter}
           setFilter={setFilter}
           totalItems={totalCount}
-          filterHidden={!showFilter}
-          onShowFilter={() => setShowFilter(true)}
           selectedIds={selectedIds}
           onSelectAll={onSelectAll}
           onSelectNone={onSelectNone}

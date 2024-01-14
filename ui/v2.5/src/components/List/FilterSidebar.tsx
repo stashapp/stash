@@ -14,15 +14,10 @@ import {
   CriterionOption,
   CriterionValue,
 } from "src/models/list-filter/criteria/criterion";
-import { Button, ButtonGroup } from "react-bootstrap";
+import { Button } from "react-bootstrap";
 import { Icon } from "../Shared/Icon";
 import { FormattedMessage, useIntl } from "react-intl";
-import {
-  faChevronLeft,
-  faFilter,
-  faHeart,
-  faTimes,
-} from "@fortawesome/free-solid-svg-icons";
+import { faFilter, faHeart, faTimes } from "@fortawesome/free-solid-svg-icons";
 import { CriterionEditor } from "../List/CriterionEditor";
 import { CollapseButton } from "../Shared/CollapseButton";
 import cx from "classnames";
@@ -192,8 +187,7 @@ const CriterionOptionList: React.FC<ICriterionList> = ({
 export const FilterSidebar: React.FC<{
   filter: ListFilterModel;
   setFilter: (filter: ListFilterModel) => void;
-  onHide: () => void;
-}> = ({ filter, setFilter, onHide }) => {
+}> = ({ filter, setFilter }) => {
   const intl = useIntl();
   const Toast = useToast();
 
@@ -331,21 +325,12 @@ export const FilterSidebar: React.FC<{
 
   return (
     <div className="filter-sidebar">
-      <ButtonGroup className="search-field-group">
-        <SearchField
-          searchTerm={filter.searchTerm}
-          setSearchTerm={searchQueryUpdated}
-          queryRef={queryRef}
-          setQueryFocus={setQueryFocus}
-        />
-        <Button
-          onClick={() => onHide()}
-          variant="secondary"
-          className="collapse-filter-button"
-        >
-          <Icon icon={faChevronLeft} />
-        </Button>
-      </ButtonGroup>
+      <SearchField
+        searchTerm={filter.searchTerm}
+        setSearchTerm={searchQueryUpdated}
+        queryRef={queryRef}
+        setQueryFocus={setQueryFocus}
+      />
       <div>
         <FilterCriteriaList
           filter={filter}

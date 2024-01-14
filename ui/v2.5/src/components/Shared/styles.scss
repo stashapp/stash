@@ -522,3 +522,31 @@ div.react-datepicker {
     border-radius: 0 0.25rem 0.25rem 0;
   }
 }
+
+.collapse-divider {
+  border-right: 1px solid $secondary;
+  flex: 0 0 15px;
+  max-width: 15px;
+  z-index: 1;
+
+  button {
+    background-color: transparent;
+    border: 0;
+    color: $link-color;
+    cursor: pointer;
+    font-size: 10px;
+    font-weight: 800;
+    height: 100%;
+    line-height: 100%;
+    padding: 0;
+    text-align: center;
+    width: 100%;
+
+    &:active:not(:hover),
+    &:focus:not(:hover) {
+      background-color: transparent;
+      border: 0;
+      box-shadow: none;
+    }
+  }
+}
