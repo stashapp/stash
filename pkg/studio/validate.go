@@ -76,7 +76,7 @@ func ValidateCreate(ctx context.Context, studio models.Studio, qb models.StudioQ
 		return err
 	}
 
-	if len(studio.Aliases.List()) > 0 {
+	if studio.Aliases.Loaded() && len(studio.Aliases.List()) > 0 {
 		if err := EnsureAliasesUnique(ctx, 0, studio.Aliases.List(), qb); err != nil {
 			return err
 		}
