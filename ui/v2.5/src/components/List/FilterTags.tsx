@@ -73,6 +73,10 @@ export const FilterTags: React.FC<IFilterTagsProps> = ({
     );
   }
 
+  if (criteria.length === 0) {
+    return null;
+  }
+
   return (
     <div className="d-flex justify-content-center mb-2 wrap-tags filter-tags">
       {renderFilterTags()}
