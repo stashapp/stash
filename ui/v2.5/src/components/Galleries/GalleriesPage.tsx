@@ -224,20 +224,29 @@ export const GalleriesPage: React.FC = ({}) => {
         setFilter={(f) => setFilter(f)}
         listSelect={listSelect}
         actionButtons={
-          items.length > 0 && (
+          <>
             <div>
-              <Button
-                className="shuffle-galleries-button"
-                variant="secondary"
-                onClick={() => viewRandom()}
-              >
-                <Icon icon={faShuffle} />
-                <span>
-                  <FormattedMessage id="actions.shuffle" />
-                </span>
-              </Button>
+              <Link to="/galleries/new">
+                <Button variant="primary">
+                  <FormattedMessage id="new" defaultMessage="New" />
+                </Button>
+              </Link>
             </div>
-          )
+            {items.length > 0 && (
+              <div>
+                <Button
+                  className="shuffle-galleries-button"
+                  variant="secondary"
+                  onClick={() => viewRandom()}
+                >
+                  <Icon icon={faShuffle} />
+                  <span>
+                    <FormattedMessage id="actions.shuffle" />
+                  </span>
+                </Button>
+              </div>
+            )}
+          </>
         }
         selectedButtons={renderButtons}
         totalCount={totalCount}

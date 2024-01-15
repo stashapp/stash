@@ -97,7 +97,7 @@ const allMenuItems: IMenuItem[] = [
     href: "/scenes",
     icon: faPlayCircle,
     hotkey: "g s",
-    userCreatable: true,
+    // userCreatable false as new button now in scene header bar
   },
   {
     name: "images",
@@ -127,7 +127,7 @@ const allMenuItems: IMenuItem[] = [
     href: "/galleries",
     icon: faImages,
     hotkey: "g l",
-    userCreatable: true,
+    // userCreatable false as new button now in gallery header bar
   },
   {
     name: "performers",

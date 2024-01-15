@@ -19,7 +19,7 @@ import { ListOperationButtons } from "../List/ListOperationButtons";
 import { ListOperationDropdown } from "../List/ListOperationDropdown";
 import { faPlay, faShuffle } from "@fortawesome/free-solid-svg-icons";
 import { ConfigurationContext } from "src/hooks/Config";
-import { useHistory } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 import { objectTitle } from "src/core/files";
 import { useModal } from "src/hooks/modal";
 import { GenerateDialog } from "../Dialogs/GenerateDialog";
@@ -325,34 +325,43 @@ export const ScenesPage: React.FC = ({}) => {
         setFilter={(f) => setFilter(f)}
         listSelect={listSelect}
         actionButtons={
-          items.length > 0 && (
-            <>
-              <div>
-                <Button
-                  className="play-scenes-button"
-                  variant="secondary"
-                  onClick={() => playAll()}
-                >
-                  <Icon icon={faPlay} />
-                  <span>
-                    <FormattedMessage id="actions.play" />
-                  </span>
+          <>
+            <div>
+              <Link to="/scenes/new">
+                <Button variant="primary">
+                  <FormattedMessage id="new" defaultMessage="New" />
                 </Button>
-              </div>
-              <div>
-                <Button
-                  className="shuffle-scenes-button"
-                  variant="secondary"
-                  onClick={() => playRandom()}
-                >
-                  <Icon icon={faShuffle} />
-                  <span>
-                    <FormattedMessage id="actions.shuffle" />
-                  </span>
-                </Button>
-              </div>
-            </>
-          )
+              </Link>
+            </div>
+            {items.length > 0 && (
+              <>
+                <div>
+                  <Button
+                    className="play-scenes-button"
+                    variant="secondary"
+                    onClick={() => playAll()}
+                  >
+                    <Icon icon={faPlay} />
+                    <span>
+                      <FormattedMessage id="actions.play" />
+                    </span>
+                  </Button>
+                </div>
+                <div>
+                  <Button
+                    className="shuffle-scenes-button"
+                    variant="secondary"
+                    onClick={() => playRandom()}
+                  >
+                    <Icon icon={faShuffle} />
+                    <span>
+                      <FormattedMessage id="actions.shuffle" />
+                    </span>
+                  </Button>
+                </div>
+              </>
+            )}
+          </>
         }
         selectedButtons={renderButtons}
         metadataByline={metadataByline}
