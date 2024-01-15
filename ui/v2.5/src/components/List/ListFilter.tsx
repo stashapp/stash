@@ -192,6 +192,14 @@ export const SortBySelect: React.FC<{
     [sortByOptions, sortBy]
   );
 
+  function onSetSortBy(v: string | null) {
+    if (v === "random") {
+      // set the direction to ascending when switching to random
+      setDirection(SortDirectionEnum.Asc);
+    }
+    setSortBy(v);
+  }
+
   function renderSortByOptions() {
     return sortByOptions
       .map((o) => {
@@ -203,7 +211,7 @@ export const SortBySelect: React.FC<{
       .sort((a, b) => a.message.localeCompare(b.message))
       .map((option) => (
         <Dropdown.Item
-          onSelect={setSortBy}
+          onSelect={onSetSortBy}
           key={option.value}
           className="bg-secondary text-white"
           eventKey={option.value}
@@ -233,23 +241,27 @@ export const SortBySelect: React.FC<{
       <Dropdown.Menu className="bg-secondary text-white">
         {renderSortByOptions()}
       </Dropdown.Menu>
-      <OverlayTrigger
-        overlay={
-          <Tooltip id="sort-direction-tooltip">
-            {sortDirection === SortDirectionEnum.Asc
-              ? intl.formatMessage({ id: "ascending" })
-              : intl.formatMessage({ id: "descending" })}
-          </Tooltip>
-        }
-      >
-        <Button variant="secondary" onClick={onChangeSortDirection}>
-          <Icon
-            icon={
-              sortDirection === SortDirectionEnum.Asc ? faCaretUp : faCaretDown
-            }
-          />
-        </Button>
-      </OverlayTrigger>
+      {sortBy !== "random" && (
+        <OverlayTrigger
+          overlay={
+            <Tooltip id="sort-direction-tooltip">
+              {sortDirection === SortDirectionEnum.Asc
+                ? intl.formatMessage({ id: "ascending" })
+                : intl.formatMessage({ id: "descending" })}
+            </Tooltip>
+          }
+        >
+          <Button variant="secondary" onClick={onChangeSortDirection}>
+            <Icon
+              icon={
+                sortDirection === SortDirectionEnum.Asc
+                  ? faCaretUp
+                  : faCaretDown
+              }
+            />
+          </Button>
+        </OverlayTrigger>
+      )}
       {sortBy === "random" && (
         <OverlayTrigger
           overlay={
