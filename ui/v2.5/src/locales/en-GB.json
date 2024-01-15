@@ -1110,6 +1110,7 @@
     "version": "Version"
   },
   "pagination": {
+    "current_total": "{current} of {total}",
     "first": "First",
     "last": "Last",
     "next": "Next",

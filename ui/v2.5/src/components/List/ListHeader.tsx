@@ -92,7 +92,6 @@ const DefaultListHeader: React.FC<IDefaultListHeaderProps> = ({
           itemsPerPage={filter.itemsPerPage}
           totalItems={totalItems}
           onChangePage={onChangePage}
-          pagesToShow={1}
         />
       </div>
       <div>

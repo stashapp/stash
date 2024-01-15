@@ -7,6 +7,11 @@
     padding-right: 15px;
     transition: none;
 
+    &.page-count {
+      background-color: $card-bg;
+      border-color: $card-bg;
+    }
+
     &:first-child {
       border-left: none;
     }
