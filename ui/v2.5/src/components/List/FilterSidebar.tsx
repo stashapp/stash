@@ -17,7 +17,11 @@ import {
 import { Button } from "react-bootstrap";
 import { Icon } from "../Shared/Icon";
 import { FormattedMessage, useIntl } from "react-intl";
-import { faFilter, faHeart, faTimes } from "@fortawesome/free-solid-svg-icons";
+import {
+  faFilter,
+  faFloppyDisk,
+  faTimes,
+} from "@fortawesome/free-solid-svg-icons";
 import { CriterionEditor } from "../List/CriterionEditor";
 import { CollapseButton } from "../Shared/CollapseButton";
 import cx from "classnames";
@@ -312,7 +316,8 @@ export const FilterSidebar: React.FC<{
             );
           }}
         >
-          <Icon icon={faHeart} /> <FormattedMessage id="actions.save_filter" />
+          <Icon icon={faFloppyDisk} />{" "}
+          <FormattedMessage id="actions.save_filter" />
         </Button>
       </div>
       {modal}
