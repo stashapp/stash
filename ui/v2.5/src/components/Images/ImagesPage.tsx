@@ -1,5 +1,4 @@
 import React, { useCallback, useMemo, useState } from "react";
-import { PaginationIndex } from "../List/Pagination";
 import { DisplayMode } from "src/models/list-filter/types";
 import {
   FilterMode,
@@ -8,13 +7,10 @@ import {
 } from "src/core/generated-graphql";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { queryFindImages, useFindImages } from "src/core/StashService";
-import { FormattedNumber, useIntl } from "react-intl";
-import cx from "classnames";
+import { FormattedMessage, FormattedNumber, useIntl } from "react-intl";
 import TextUtils from "src/utils/text";
 import { useListSelect } from "src/hooks/listSelect";
 import { IItemListOperation } from "../List/ItemList";
-import { FilterSidebar } from "../List/FilterSidebar";
-import { ListHeader } from "../List/ListHeader";
 import { ListOperationButtons } from "../List/ListOperationButtons";
 import { ListOperationDropdown } from "../List/ListOperationDropdown";
 import { useModal } from "src/hooks/modal";
@@ -29,10 +25,7 @@ import { DeleteImagesDialog } from "./DeleteImagesDialog";
 import { Button } from "react-bootstrap";
 import { Icon } from "../Shared/Icon";
 import { faShuffle } from "@fortawesome/free-solid-svg-icons";
-import { CollapseDivider } from "../Shared/CollapseDivider";
-import { useFilterConfig } from "../List/util";
-import { FilterTags } from "../List/FilterTags";
-import { EditFilterDialog } from "../List/EditFilterDialog";
+import { ListPage } from "../List/ListPage";
 
 export const ImagesPage: React.FC = ({}) => {
   const intl = useIntl();
@@ -41,19 +34,16 @@ export const ImagesPage: React.FC = ({}) => {
   const [filter, setFilter] = useState<ListFilterModel>(
     () => new ListFilterModel(FilterMode.Images)
   );
-  const [filterCollapsed, setFilterCollapsed] = useState(false);
   const [slideshowRunning, setSlideshowRunning] = useState<boolean>(false);
-
-  const { criterionOptions, setCriterionOptions, sidebarOptions } =
-    useFilterConfig(filter.mode);
 
   const result = useFindImages(filter);
   const images = useMemo(
     () => result.data?.findImages.images ?? [],
     [result.data?.findImages.images]
   );
-  const { selectedIds, onSelectChange, onSelectAll, onSelectNone } =
-    useListSelect(images);
+
+  const listSelect = useListSelect(images);
+  const { selectedIds, onSelectChange } = listSelect;
 
   const { modal, showModal, closeModal } = useModal();
 
@@ -332,79 +322,36 @@ export const ImagesPage: React.FC = ({}) => {
   }
 
   return (
-    <div id="images-page" className="list-page">
+    <>
+      <ListPage
+        id="images-page"
+        filter={filter}
+        setFilter={(f) => setFilter(f)}
+        listSelect={listSelect}
+        actionButtons={
+          images.length > 0 && (
+            <div>
+              <Button
+                className="shuffle-images-button"
+                variant="secondary"
+                onClick={() => viewRandom()}
+              >
+                <Icon icon={faShuffle} />
+                <span>
+                  <FormattedMessage id="actions.shuffle" />
+                </span>
+              </Button>
+            </div>
+          )
+        }
+        selectedButtons={renderButtons}
+        metadataByline={metadataByline}
+        totalCount={totalCount}
+      >
+        {renderImages()}
+      </ListPage>
       {modal}
-
-      {!filterCollapsed && (
-        <FilterSidebar
-          filter={filter}
-          setFilter={(f) => setFilter(f)}
-          criterionOptions={criterionOptions}
-          setCriterionOptions={(o) => setCriterionOptions(o)}
-          sidebarOptions={sidebarOptions}
-        />
-      )}
-      <CollapseDivider
-        collapsed={filterCollapsed}
-        setCollapsed={(v) => setFilterCollapsed(v)}
-      />
-      <div className={cx("list-page-results", { expanded: filterCollapsed })}>
-        <ListHeader
-          filter={filter}
-          setFilter={setFilter}
-          totalItems={totalCount}
-          selectedIds={selectedIds}
-          onSelectAll={onSelectAll}
-          onSelectNone={onSelectNone}
-          actionButtons={
-            images.length > 0 && (
-              <div>
-                <Button
-                  className="shuffle-images-button"
-                  variant="secondary"
-                  onClick={() => viewRandom()}
-                >
-                  <Icon icon={faShuffle} />
-                </Button>
-              </div>
-            )
-          }
-          selectedButtons={renderButtons}
-        />
-        <div>
-          <FilterTags
-            criteria={filter.criteria}
-            onEditCriterion={(c) => {
-              showModal(
-                <EditFilterDialog
-                  filter={filter}
-                  criterionOptions={criterionOptions}
-                  setCriterionOptions={(o) => setCriterionOptions(o)}
-                  onClose={(f) => {
-                    if (f) setFilter(f);
-                    closeModal();
-                  }}
-                  editingCriterion={c.criterionOption.type}
-                />
-              );
-            }}
-            onRemoveAll={() => setFilter(filter.clearCriteria())}
-            onRemoveCriterion={(c) =>
-              setFilter(filter.removeCriterion(c.criterionOption.type))
-            }
-          />
-        </div>
-        <div className="list-page-items">
-          <PaginationIndex
-            itemsPerPage={filter.itemsPerPage}
-            currentPage={filter.currentPage}
-            totalItems={totalCount}
-            metadataByline={metadataByline}
-          />
-          {renderImages()}
-        </div>
-      </div>
-    </div>
+    </>
   );
 };
 

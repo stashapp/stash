@@ -1,5 +1,4 @@
 import React, { useMemo, useState } from "react";
-import { PaginationIndex } from "../List/Pagination";
 import { DisplayMode } from "src/models/list-filter/types";
 import {
   FilterMode,
@@ -7,12 +6,9 @@ import {
 } from "src/core/generated-graphql";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { queryFindGalleries, useFindGalleries } from "src/core/StashService";
-import { useIntl } from "react-intl";
-import cx from "classnames";
+import { FormattedMessage, useIntl } from "react-intl";
 import { useListSelect } from "src/hooks/listSelect";
 import { IItemListOperation } from "../List/ItemList";
-import { FilterSidebar } from "../List/FilterSidebar";
-import { ListHeader } from "../List/ListHeader";
 import { Button, Table } from "react-bootstrap";
 import { Icon } from "../Shared/Icon";
 import { ListOperationButtons } from "../List/ListOperationButtons";
@@ -27,10 +23,7 @@ import { galleryTitle } from "src/core/galleries";
 import GalleryWallCard from "./GalleryWallCard";
 import { EditGalleriesDialog } from "./EditGalleriesDialog";
 import { DeleteGalleriesDialog } from "./DeleteGalleriesDialog";
-import { CollapseDivider } from "../Shared/CollapseDivider";
-import { useFilterConfig } from "../List/util";
-import { FilterTags } from "../List/FilterTags";
-import { EditFilterDialog } from "../List/EditFilterDialog";
+import { ListPage } from "../List/ListPage";
 
 export const GalleriesPage: React.FC = ({}) => {
   const intl = useIntl();
@@ -39,15 +32,12 @@ export const GalleriesPage: React.FC = ({}) => {
   const [filter, setFilter] = useState<ListFilterModel>(
     () => new ListFilterModel(FilterMode.Galleries)
   );
-  const [filterCollapsed, setFilterCollapsed] = useState(false);
-
-  const { criterionOptions, setCriterionOptions, sidebarOptions } =
-    useFilterConfig(filter.mode);
 
   const result = useFindGalleries(filter);
   const items = result.data?.findGalleries.galleries ?? [];
-  const { selectedIds, onSelectChange, onSelectAll, onSelectNone } =
-    useListSelect(items);
+
+  const listSelect = useListSelect(items);
+  const { selectedIds, onSelectChange } = listSelect;
 
   const { modal, showModal, closeModal } = useModal();
 
@@ -227,78 +217,35 @@ export const GalleriesPage: React.FC = ({}) => {
   }
 
   return (
-    <div id="galleries-page" className="list-page">
+    <>
+      <ListPage
+        id="galleries-page"
+        filter={filter}
+        setFilter={(f) => setFilter(f)}
+        listSelect={listSelect}
+        actionButtons={
+          items.length > 0 && (
+            <div>
+              <Button
+                className="shuffle-galleries-button"
+                variant="secondary"
+                onClick={() => viewRandom()}
+              >
+                <Icon icon={faShuffle} />
+                <span>
+                  <FormattedMessage id="actions.shuffle" />
+                </span>
+              </Button>
+            </div>
+          )
+        }
+        selectedButtons={renderButtons}
+        totalCount={totalCount}
+      >
+        {renderGalleries()}
+      </ListPage>
       {modal}
-
-      {!filterCollapsed && (
-        <FilterSidebar
-          filter={filter}
-          setFilter={(f) => setFilter(f)}
-          criterionOptions={criterionOptions}
-          setCriterionOptions={(o) => setCriterionOptions(o)}
-          sidebarOptions={sidebarOptions}
-        />
-      )}
-      <CollapseDivider
-        collapsed={filterCollapsed}
-        setCollapsed={(v) => setFilterCollapsed(v)}
-      />
-      <div className={cx("list-page-results", { expanded: filterCollapsed })}>
-        <ListHeader
-          filter={filter}
-          setFilter={setFilter}
-          totalItems={totalCount}
-          selectedIds={selectedIds}
-          onSelectAll={onSelectAll}
-          onSelectNone={onSelectNone}
-          actionButtons={
-            items.length > 0 && (
-              <div>
-                <Button
-                  className="shuffle-galleries-button"
-                  variant="secondary"
-                  onClick={() => viewRandom()}
-                >
-                  <Icon icon={faShuffle} />
-                </Button>
-              </div>
-            )
-          }
-          selectedButtons={renderButtons}
-        />
-        <div>
-          <FilterTags
-            criteria={filter.criteria}
-            onEditCriterion={(c) => {
-              showModal(
-                <EditFilterDialog
-                  filter={filter}
-                  criterionOptions={criterionOptions}
-                  setCriterionOptions={(o) => setCriterionOptions(o)}
-                  onClose={(f) => {
-                    if (f) setFilter(f);
-                    closeModal();
-                  }}
-                  editingCriterion={c.criterionOption.type}
-                />
-              );
-            }}
-            onRemoveAll={() => setFilter(filter.clearCriteria())}
-            onRemoveCriterion={(c) =>
-              setFilter(filter.removeCriterion(c.criterionOption.type))
-            }
-          />
-        </div>
-        <div className="list-page-items">
-          <PaginationIndex
-            itemsPerPage={filter.itemsPerPage}
-            currentPage={filter.currentPage}
-            totalItems={totalCount}
-          />
-          {renderGalleries()}
-        </div>
-      </div>
-    </div>
+    </>
   );
 };
 

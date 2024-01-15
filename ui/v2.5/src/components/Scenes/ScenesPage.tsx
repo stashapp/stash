@@ -1,5 +1,4 @@
 import React, { useMemo, useState } from "react";
-import { PaginationIndex } from "../List/Pagination";
 import { DisplayMode } from "src/models/list-filter/types";
 import { FilterMode, FindScenesQueryResult } from "src/core/generated-graphql";
 import { ListFilterModel } from "src/models/list-filter/filter";
@@ -11,12 +10,9 @@ import { SceneWallPanel } from "../Wall/WallPanel";
 import { Tagger } from "../Tagger/scenes/SceneTagger";
 import { TaggerContext } from "../Tagger/context";
 import { FormattedMessage, FormattedNumber, useIntl } from "react-intl";
-import cx from "classnames";
 import TextUtils from "src/utils/text";
 import { useListSelect } from "src/hooks/listSelect";
 import { IItemListOperation } from "../List/ItemList";
-import { FilterSidebar } from "../List/FilterSidebar";
-import { ListHeader } from "../List/ListHeader";
 import { Button } from "react-bootstrap";
 import { Icon } from "../Shared/Icon";
 import { ListOperationButtons } from "../List/ListOperationButtons";
@@ -33,10 +29,7 @@ import { ExportDialog } from "../Shared/ExportDialog";
 import { getFromIds } from "src/utils/data";
 import { EditScenesDialog } from "./EditScenesDialog";
 import { DeleteScenesDialog } from "./DeleteScenesDialog";
-import { CollapseDivider } from "../Shared/CollapseDivider";
-import { FilterTags } from "../List/FilterTags";
-import { EditFilterDialog } from "../List/EditFilterDialog";
-import { useFilterConfig } from "../List/util";
+import { ListPage } from "../List/ListPage";
 
 export const ScenesPage: React.FC = ({}) => {
   const intl = useIntl();
@@ -47,15 +40,12 @@ export const ScenesPage: React.FC = ({}) => {
   const [filter, setFilter] = useState<ListFilterModel>(
     () => new ListFilterModel(FilterMode.Scenes)
   );
-  const [filterCollapsed, setFilterCollapsed] = useState(false);
-
-  const { criterionOptions, setCriterionOptions, sidebarOptions } =
-    useFilterConfig(filter.mode);
 
   const result = useFindScenes(filter);
   const items = result.data?.findScenes.scenes ?? [];
-  const { selectedIds, onSelectChange, onSelectAll, onSelectNone } =
-    useListSelect(items);
+
+  const listSelect = useListSelect(items);
+  const { selectedIds, onSelectChange } = listSelect;
 
   const { modal, showModal, closeModal } = useModal();
 
@@ -328,96 +318,50 @@ export const ScenesPage: React.FC = ({}) => {
   }
 
   return (
-    <div id="scenes-page" className="list-page">
+    <>
+      <ListPage
+        id="scenes-page"
+        filter={filter}
+        setFilter={(f) => setFilter(f)}
+        listSelect={listSelect}
+        actionButtons={
+          items.length > 0 && (
+            <>
+              <div>
+                <Button
+                  className="play-scenes-button"
+                  variant="secondary"
+                  onClick={() => playAll()}
+                >
+                  <Icon icon={faPlay} />
+                  <span>
+                    <FormattedMessage id="actions.play" />
+                  </span>
+                </Button>
+              </div>
+              <div>
+                <Button
+                  className="shuffle-scenes-button"
+                  variant="secondary"
+                  onClick={() => playRandom()}
+                >
+                  <Icon icon={faShuffle} />
+                  <span>
+                    <FormattedMessage id="actions.shuffle" />
+                  </span>
+                </Button>
+              </div>
+            </>
+          )
+        }
+        selectedButtons={renderButtons}
+        metadataByline={metadataByline}
+        totalCount={totalCount}
+      >
+        {renderScenes()}
+      </ListPage>
       {modal}
-
-      {!filterCollapsed && (
-        <FilterSidebar
-          filter={filter}
-          setFilter={(f) => setFilter(f)}
-          criterionOptions={criterionOptions}
-          setCriterionOptions={(o) => setCriterionOptions(o)}
-          sidebarOptions={sidebarOptions}
-        />
-      )}
-      <CollapseDivider
-        collapsed={filterCollapsed}
-        setCollapsed={(v) => setFilterCollapsed(v)}
-      />
-      <div className={cx("list-page-results", { expanded: filterCollapsed })}>
-        <ListHeader
-          filter={filter}
-          setFilter={setFilter}
-          totalItems={totalCount}
-          selectedIds={selectedIds}
-          onSelectAll={onSelectAll}
-          onSelectNone={onSelectNone}
-          actionButtons={
-            items.length > 0 && (
-              <>
-                <div>
-                  <Button
-                    className="play-scenes-button"
-                    variant="secondary"
-                    onClick={() => playAll()}
-                  >
-                    <Icon icon={faPlay} />
-                    <span>
-                      <FormattedMessage id="actions.play" />
-                    </span>
-                  </Button>
-                </div>
-                <div>
-                  <Button
-                    className="shuffle-scenes-button"
-                    variant="secondary"
-                    onClick={() => playRandom()}
-                  >
-                    <Icon icon={faShuffle} />
-                    <span>
-                      <FormattedMessage id="actions.shuffle" />
-                    </span>
-                  </Button>
-                </div>
-              </>
-            )
-          }
-          selectedButtons={renderButtons}
-        />
-        <div>
-          <FilterTags
-            criteria={filter.criteria}
-            onEditCriterion={(c) => {
-              showModal(
-                <EditFilterDialog
-                  filter={filter}
-                  criterionOptions={criterionOptions}
-                  setCriterionOptions={(o) => setCriterionOptions(o)}
-                  onClose={(f) => {
-                    if (f) setFilter(f);
-                    closeModal();
-                  }}
-                  editingCriterion={c.criterionOption.type}
-                />
-              );
-            }}
-            onRemoveAll={() => setFilter(filter.clearCriteria())}
-            onRemoveCriterion={(c) =>
-              setFilter(filter.removeCriterion(c.criterionOption.type))
-            }
-          />
-        </div>
-        <div className="list-page-items">
-          <PaginationIndex
-            itemsPerPage={filter.itemsPerPage}
-            currentPage={filter.currentPage}
-            totalItems={totalCount}
-            metadataByline={metadataByline}
-          />
-          {renderScenes()}
-        </div>
-      </div>
-    </div>
+    </>
   );
 };
 
