@@ -7,7 +7,7 @@ import Gallery from "./GalleryDetails/Gallery";
 import GalleryCreate from "./GalleryDetails/GalleryCreate";
 import { GalleryList } from "./GalleryList";
 import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
-import { GalleriesPage } from "./GalleriesPages";
+import { GalleriesPage } from "./GalleriesPage";
 
 const Galleries: React.FC = () => {
   useScrollToTopOnMount();
