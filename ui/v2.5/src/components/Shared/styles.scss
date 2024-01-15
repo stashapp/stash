@@ -524,9 +524,8 @@ div.react-datepicker {
 }
 
 .collapse-divider {
-  border-right: 1px solid $secondary;
-  flex: 0 0 15px;
-  max-width: 15px;
+  flex: 0 0 30px;
+  max-width: 30px;
   z-index: 1;
 
   button {
@@ -534,6 +533,7 @@ div.react-datepicker {
     border: 0;
     color: $link-color;
     cursor: pointer;
+    display: flex;
     font-size: 10px;
     font-weight: 800;
     height: 100%;
@@ -547,6 +547,17 @@ div.react-datepicker {
       background-color: transparent;
       border: 0;
       box-shadow: none;
+    }
+
+    div {
+      height: 100%;
+    }
+
+    div:first-child {
+      align-items: center;
+      border-right: 1px solid $secondary;
+      display: flex;
+      height: 100%;
     }
   }
 }

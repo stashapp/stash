@@ -16,7 +16,10 @@ export const CollapseDivider: React.FC<{
   return (
     <div className={cx("collapse-divider", { collapsed })}>
       <Button onClick={() => setCollapsed(!collapsed)}>
-        <Icon className="fa-fw" icon={icon} />
+        <div>
+          <Icon className="fa-fw" icon={icon} />
+        </div>
+        <div></div>
       </Button>
     </div>
   );

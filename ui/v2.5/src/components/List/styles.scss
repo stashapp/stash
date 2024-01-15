@@ -418,16 +418,15 @@ input[type="range"].zoom-slider {
   }
 
   .list-page-results {
-    flex: 0 0 calc(100% - 20rem);
+    flex: 0 0 calc(100% - 20rem - 30px);
     max-height: calc(100vh - 4rem);
-    max-width: calc(100% - 20rem);
+    max-width: calc(100% - 20rem - 30px);
     overflow-x: auto;
     overflow-y: hidden;
-    padding-left: 1rem;
 
     &.expanded {
-      flex-basis: 100%;
-      max-width: 100%;
+      flex-basis: calc(100% - 15px);
+      max-width: calc(100% - 15px);
     }
 
     .list-page-items {
