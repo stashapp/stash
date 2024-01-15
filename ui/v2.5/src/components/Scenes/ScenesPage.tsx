@@ -34,6 +34,9 @@ import { getFromIds } from "src/utils/data";
 import { EditScenesDialog } from "./EditScenesDialog";
 import { DeleteScenesDialog } from "./DeleteScenesDialog";
 import { CollapseDivider } from "../Shared/CollapseDivider";
+import { FilterTags } from "../List/FilterTags";
+import { EditFilterDialog } from "../List/EditFilterDialog";
+import { useFilterConfig } from "../List/util";
 
 export const ScenesPage: React.FC = ({}) => {
   const intl = useIntl();
@@ -45,6 +48,9 @@ export const ScenesPage: React.FC = ({}) => {
     () => new ListFilterModel(FilterMode.Scenes)
   );
   const [filterCollapsed, setFilterCollapsed] = useState(false);
+
+  const { criterionOptions, setCriterionOptions, sidebarOptions } =
+    useFilterConfig(filter.mode);
 
   const result = useFindScenes(filter);
   const items = result.data?.findScenes.scenes ?? [];
@@ -326,7 +332,13 @@ export const ScenesPage: React.FC = ({}) => {
       {modal}
 
       {!filterCollapsed && (
-        <FilterSidebar filter={filter} setFilter={(f) => setFilter(f)} />
+        <FilterSidebar
+          filter={filter}
+          setFilter={(f) => setFilter(f)}
+          criterionOptions={criterionOptions}
+          setCriterionOptions={(o) => setCriterionOptions(o)}
+          sidebarOptions={sidebarOptions}
+        />
       )}
       <CollapseDivider
         collapsed={filterCollapsed}
@@ -372,6 +384,29 @@ export const ScenesPage: React.FC = ({}) => {
           }
           selectedButtons={renderButtons}
         />
+        <div>
+          <FilterTags
+            criteria={filter.criteria}
+            onEditCriterion={(c) => {
+              showModal(
+                <EditFilterDialog
+                  filter={filter}
+                  criterionOptions={criterionOptions}
+                  setCriterionOptions={(o) => setCriterionOptions(o)}
+                  onClose={(f) => {
+                    if (f) setFilter(f);
+                    closeModal();
+                  }}
+                  editingCriterion={c.criterionOption.type}
+                />
+              );
+            }}
+            onRemoveAll={() => setFilter(filter.clearCriteria())}
+            onRemoveCriterion={(c) =>
+              setFilter(filter.removeCriterion(c.criterionOption.type))
+            }
+          />
+        </div>
         <div className="list-page-items">
           <PaginationIndex
             itemsPerPage={filter.itemsPerPage}

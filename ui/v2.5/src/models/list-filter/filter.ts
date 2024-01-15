@@ -462,4 +462,24 @@ export class ListFilterModel {
       zoom_index: this.zoomIndex,
     };
   }
+
+  public clearCriteria() {
+    const ret = this.clone();
+    ret.criteria = [];
+    return ret;
+  }
+
+  public removeCriterion(type: CriterionType) {
+    const ret = this.clone();
+    const c = ret.criteria.find((cc) => cc.criterionOption.type === type);
+
+    if (!c) return ret;
+
+    const newCriteria = ret.criteria.filter((cc) => {
+      return cc.getId() !== c.getId();
+    });
+
+    ret.criteria = newCriteria;
+    return ret;
+  }
 }

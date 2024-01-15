@@ -23,68 +23,10 @@ import { CollapseButton } from "../Shared/CollapseButton";
 import cx from "classnames";
 import { EditFilterDialog } from "../List/EditFilterDialog";
 import { SaveFilterDialog, SavedFilterList } from "../List/SavedFilterList";
-import { useFilterConfig } from "./util";
+import { ICriterionOption } from "./util";
 import { useModal } from "src/hooks/modal";
 import { mutateSaveFilter } from "src/core/StashService";
 import { useToast } from "src/hooks/Toast";
-
-const FilterCriteriaList: React.FC<{
-  filter: ListFilterModel;
-  hiddenOptions: CriterionOption[];
-  onRemoveCriterion: (c: Criterion<CriterionValue>) => void;
-  onEditCriterion: (c: Criterion<CriterionValue>) => void;
-}> = ({ filter, hiddenOptions, onRemoveCriterion, onEditCriterion }) => {
-  const intl = useIntl();
-
-  const criteria = useMemo(
-    () =>
-      filter.criteria.filter((c) => {
-        return hiddenOptions.some((h) => h.type === c.criterionOption.type);
-      }),
-    [filter.criteria, hiddenOptions]
-  );
-
-  if (criteria.length === 0) return null;
-
-  function onClickRemoveCriterion(
-    criterion: Criterion<CriterionValue>,
-    $event: React.MouseEvent<HTMLElement, MouseEvent>
-  ) {
-    if (!criterion) {
-      return;
-    }
-    onRemoveCriterion(criterion);
-    $event.stopPropagation();
-  }
-
-  function onClickCriterionTag(criterion: Criterion<CriterionValue>) {
-    onEditCriterion(criterion);
-  }
-
-  return (
-    <div className="filter-criteria-list">
-      <ul>
-        {criteria.map((c) => {
-          return (
-            <li className="filter-criteria-list-item" key={c.getId()}>
-              <a onClick={() => onClickCriterionTag(c)}>
-                <span>{c.getLabel(intl)}</span>
-                <Button
-                  className="remove-criterion-button"
-                  variant="minimal"
-                  onClick={($event) => onClickRemoveCriterion(c, $event)}
-                >
-                  <Icon icon={faTimes} />
-                </Button>
-              </a>
-            </li>
-          );
-        })}
-      </ul>
-      <hr />
-    </div>
-  );
-};
 
 interface ICriterionList {
   filter: ListFilterModel;
@@ -187,7 +129,16 @@ const CriterionOptionList: React.FC<ICriterionList> = ({
 export const FilterSidebar: React.FC<{
   filter: ListFilterModel;
   setFilter: (filter: ListFilterModel) => void;
-}> = ({ filter, setFilter }) => {
+  criterionOptions: ICriterionOption[];
+  sidebarOptions: CriterionOption[];
+  setCriterionOptions: React.Dispatch<React.SetStateAction<ICriterionOption[]>>;
+}> = ({
+  filter,
+  setFilter,
+  criterionOptions,
+  sidebarOptions,
+  setCriterionOptions,
+}) => {
   const intl = useIntl();
   const Toast = useToast();
 
@@ -195,12 +146,6 @@ export const FilterSidebar: React.FC<{
   const [queryRef, setQueryFocus] = useFocus();
 
   const [criterion, setCriterion] = useState<Criterion<CriterionValue>>();
-  const {
-    criterionOptions,
-    sidebarOptions,
-    hiddenOptions,
-    setCriterionOptions,
-  } = useFilterConfig(filter.mode);
 
   const [editingCriterion, setEditingCriterion] = useState<string>();
   const [showEditFilter, setShowEditFilter] = useState(false);
@@ -331,16 +276,6 @@ export const FilterSidebar: React.FC<{
         queryRef={queryRef}
         setQueryFocus={setQueryFocus}
       />
-      <div>
-        <FilterCriteriaList
-          filter={filter}
-          hiddenOptions={hiddenOptions}
-          onRemoveCriterion={(c) =>
-            removeCriterionString(c.criterionOption.type)
-          }
-          onEditCriterion={(c) => setEditingCriterion(c.criterionOption.type)}
-        />
-      </div>
       <div className="saved-filters">
         <CollapseButton
           text={intl.formatMessage({ id: "search_filter.saved_filters" })}

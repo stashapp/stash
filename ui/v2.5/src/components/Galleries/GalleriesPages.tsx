@@ -28,6 +28,9 @@ import GalleryWallCard from "./GalleryWallCard";
 import { EditGalleriesDialog } from "./EditGalleriesDialog";
 import { DeleteGalleriesDialog } from "./DeleteGalleriesDialog";
 import { CollapseDivider } from "../Shared/CollapseDivider";
+import { useFilterConfig } from "../List/util";
+import { FilterTags } from "../List/FilterTags";
+import { EditFilterDialog } from "../List/EditFilterDialog";
 
 export const GalleriesPage: React.FC = ({}) => {
   const intl = useIntl();
@@ -37,6 +40,9 @@ export const GalleriesPage: React.FC = ({}) => {
     () => new ListFilterModel(FilterMode.Galleries)
   );
   const [filterCollapsed, setFilterCollapsed] = useState(false);
+
+  const { criterionOptions, setCriterionOptions, sidebarOptions } =
+    useFilterConfig(filter.mode);
 
   const result = useFindGalleries(filter);
   const items = result.data?.findGalleries.galleries ?? [];
@@ -225,7 +231,13 @@ export const GalleriesPage: React.FC = ({}) => {
       {modal}
 
       {!filterCollapsed && (
-        <FilterSidebar filter={filter} setFilter={(f) => setFilter(f)} />
+        <FilterSidebar
+          filter={filter}
+          setFilter={(f) => setFilter(f)}
+          criterionOptions={criterionOptions}
+          setCriterionOptions={(o) => setCriterionOptions(o)}
+          sidebarOptions={sidebarOptions}
+        />
       )}
       <CollapseDivider
         collapsed={filterCollapsed}
@@ -254,6 +266,29 @@ export const GalleriesPage: React.FC = ({}) => {
           }
           selectedButtons={renderButtons}
         />
+        <div>
+          <FilterTags
+            criteria={filter.criteria}
+            onEditCriterion={(c) => {
+              showModal(
+                <EditFilterDialog
+                  filter={filter}
+                  criterionOptions={criterionOptions}
+                  setCriterionOptions={(o) => setCriterionOptions(o)}
+                  onClose={(f) => {
+                    if (f) setFilter(f);
+                    closeModal();
+                  }}
+                  editingCriterion={c.criterionOption.type}
+                />
+              );
+            }}
+            onRemoveAll={() => setFilter(filter.clearCriteria())}
+            onRemoveCriterion={(c) =>
+              setFilter(filter.removeCriterion(c.criterionOption.type))
+            }
+          />
+        </div>
         <div className="list-page-items">
           <PaginationIndex
             itemsPerPage={filter.itemsPerPage}
