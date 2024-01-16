@@ -779,7 +779,7 @@ func (qb *SceneStore) Size(ctx context.Context) (float64, error) {
 	table := qb.table()
 	fileTable := fileTableMgr.table
 	q := dialect.Select(
-		goqu.SUM(fileTableMgr.table.Col("size")),
+		goqu.COALESCE(goqu.SUM(fileTableMgr.table.Col("size")), 0),
 	).From(table).InnerJoin(
 		scenesFilesJoinTable,
 		goqu.On(table.Col(idColumn).Eq(scenesFilesJoinTable.Col(sceneIDColumn))),
@@ -800,7 +800,8 @@ func (qb *SceneStore) Duration(ctx context.Context) (float64, error) {
 	videoFileTable := videoFileTableMgr.table
 
 	q := dialect.Select(
-		goqu.SUM(videoFileTable.Col("duration"))).From(table).InnerJoin(
+		goqu.COALESCE(goqu.SUM(videoFileTable.Col("duration")), 0),
+	).From(table).InnerJoin(
 		scenesFilesJoinTable,
 		goqu.On(scenesFilesJoinTable.Col("scene_id").Eq(table.Col(idColumn))),
 	).InnerJoin(
@@ -981,6 +982,7 @@ func (qb *SceneStore) makeFilter(ctx context.Context, sceneFilter *models.SceneF
 
 	query.handleCriterion(ctx, floatIntCriterionHandler(sceneFilter.Duration, "video_files.duration", qb.addVideoFilesTable))
 	query.handleCriterion(ctx, resolutionCriterionHandler(sceneFilter.Resolution, "video_files.height", "video_files.width", qb.addVideoFilesTable))
+	query.handleCriterion(ctx, orientationCriterionHandler(sceneFilter.Orientation, "video_files.height", "video_files.width", qb.addVideoFilesTable))
 	query.handleCriterion(ctx, floatIntCriterionHandler(sceneFilter.Framerate, "ROUND(video_files.frame_rate)", qb.addVideoFilesTable))
 	query.handleCriterion(ctx, codecCriterionHandler(sceneFilter.VideoCodec, "video_files.video_codec", qb.addVideoFilesTable))
 	query.handleCriterion(ctx, codecCriterionHandler(sceneFilter.AudioCodec, "video_files.audio_codec", qb.addVideoFilesTable))

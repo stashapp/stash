@@ -9,6 +9,7 @@ import (
 )
 
 var (
+	ErrNameMissing       = errors.New("studio name must not be blank")
 	ErrStudioOwnAncestor = errors.New("studio cannot be an ancestor of itself")
 )
 
@@ -70,6 +71,32 @@ func EnsureAliasesUnique(ctx context.Context, id int, aliases []string, qb model
 	return nil
 }
 
+func ValidateCreate(ctx context.Context, studio models.Studio, qb models.StudioQueryer) error {
+	if err := validateName(ctx, 0, studio.Name, qb); err != nil {
+		return err
+	}
+
+	if studio.Aliases.Loaded() && len(studio.Aliases.List()) > 0 {
+		if err := EnsureAliasesUnique(ctx, 0, studio.Aliases.List(), qb); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func validateName(ctx context.Context, studioID int, name string, qb models.StudioQueryer) error {
+	if name == "" {
+		return ErrNameMissing
+	}
+
+	if err := EnsureStudioNameUnique(ctx, studioID, name, qb); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 type ValidateModifyReader interface {
 	models.StudioGetter
 	models.StudioQueryer
@@ -110,7 +137,7 @@ func ValidateModify(ctx context.Context, s models.StudioPartial, qb ValidateModi
 	}
 
 	if s.Name.Set && s.Name.Value != existing.Name {
-		if err := EnsureStudioNameUnique(ctx, 0, s.Name.Value, qb); err != nil {
+		if err := validateName(ctx, s.ID, s.Name.Value, qb); err != nil {
 			return err
 		}
 	}

@@ -44,6 +44,8 @@ func (s *scriptScraper) runScraperScript(ctx context.Context, inString string, o
 			logger.Warnf("%s", err)
 		} else {
 			cmd = p.Command(context.TODO(), command[1:])
+			envVariable, _ := filepath.Abs(filepath.Dir(filepath.Dir(s.config.path)))
+			python.AppendPythonPath(cmd, envVariable)
 		}
 	}
 

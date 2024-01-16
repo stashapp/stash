@@ -61,6 +61,19 @@ input ResolutionCriterionInput {
   modifier: CriterionModifier!
 }
 
+enum OrientationEnum {
+  "Landscape"
+  LANDSCAPE
+  "Portrait"
+  PORTRAIT
+  "Square"
+  SQUARE
+}
+
+input OrientationCriterionInput {
+  value: [OrientationEnum!]!
+}
+
 input PHashDuplicationCriterionInput {
   duplicated: Boolean
   "Currently unimplemented"
@@ -212,6 +225,8 @@ input SceneFilterType {
   duplicated: PHashDuplicationCriterionInput
   "Filter by resolution"
   resolution: ResolutionCriterionInput
+  "Filter by orientation"
+  orientation: OrientationCriterionInput
   "Filter by frame rate"
   framerate: IntCriterionInput
   "Filter by video codec"
@@ -465,6 +480,8 @@ input ImageFilterType {
   o_counter: IntCriterionInput
   "Filter by resolution"
   resolution: ResolutionCriterionInput
+  "Filter by orientation"
+  orientation: OrientationCriterionInput
   "Filter to only include images missing this property"
   is_missing: String
   "Filter to only include images with this studio"
@@ -545,6 +562,7 @@ input MultiCriterionInput {
 
 input GenderCriterionInput {
   value: GenderEnum
+  value_list: [GenderEnum!]
   modifier: CriterionModifier!
 }
 

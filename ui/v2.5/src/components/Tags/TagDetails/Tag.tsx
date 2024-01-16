@@ -144,7 +144,7 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
   useEffect(() => {
     Mousetrap.bind("e", () => toggleEditing());
     Mousetrap.bind("d d", () => {
-      onDelete();
+      setIsDeleteAlertOpen(true);
     });
     Mousetrap.bind(",", () => setCollapsed(!collapsed));
 

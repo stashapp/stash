@@ -24,6 +24,7 @@ import { useLocalForage } from "src/hooks/LocalForage";
 import { useToast } from "src/hooks/Toast";
 import { ConfigurationContext } from "src/hooks/Config";
 import { ITaggerSource, SCRAPER_PREFIX, STASH_BOX_PREFIX } from "./constants";
+import { errorToString } from "src/utils";
 
 export interface ITaggerContextState {
   config: ITaggerConfig;
@@ -293,21 +294,29 @@ export const TaggerContext: React.FC = ({ children }) => {
       return;
     }
 
-    const results = await queryScrapeScene(currentSource.sourceInput, sceneID);
     let newResult: ISceneQueryResult;
 
-    if (results.error) {
-      newResult = { error: results.error.message };
-    } else if (results.errors) {
-      newResult = { error: results.errors.toString() };
-    } else {
-      newResult = {
-        results: results.data.scrapeSingleScene.map((r) => ({
-          ...r,
-          // scenes are already resolved if they are scraped via fragment
-          resolved: true,
-        })),
-      };
+    try {
+      const results = await queryScrapeScene(
+        currentSource.sourceInput,
+        sceneID
+      );
+
+      if (results.error) {
+        newResult = { error: results.error.message };
+      } else if (results.errors) {
+        newResult = { error: results.errors.toString() };
+      } else {
+        newResult = {
+          results: results.data.scrapeSingleScene.map((r) => ({
+            ...r,
+            // scenes are already resolved if they are scraped via fragment
+            resolved: true,
+          })),
+        };
+      }
+    } catch (err: unknown) {
+      newResult = { error: errorToString(err) };
     }
 
     setSearchResults((current) => {

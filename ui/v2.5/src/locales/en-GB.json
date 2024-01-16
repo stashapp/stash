@@ -361,6 +361,10 @@
       "number_of_parallel_task_for_scan_generation_desc": "Set to 0 for auto-detection. Warning running more tasks than is required to achieve 100% cpu utilisation will decrease performance and potentially cause other issues.",
       "number_of_parallel_task_for_scan_generation_head": "Number of parallel task for scan/generation",
       "parallel_scan_head": "Parallel Scan/Generation",
+      "plugins_path": {
+        "description": "Directory location of plugin configuration files",
+        "heading": "Plugins Path"
+      },
       "preview_generation": "Preview Generation",
       "python_path": {
         "description": "Path to the python executable (not just the folder). Used for script scrapers and plugins. If blank, python will be resolved from the environment",
@@ -918,6 +922,7 @@
     "unknown": "Unknown",
     "wall": "Wall"
   },
+  "distance": "Distance",
   "donate": "Donate",
   "dupe_check": {
     "description": "Levels below 'Exact' can take longer to calculate. False positives might also be returned on lower accuracy levels.",
@@ -1072,6 +1077,7 @@
   "none": "None",
   "o_counter": "O-Counter",
   "operations": "Operations",
+  "orientation": "Orientation",
   "organized": "Organised",
   "package_manager": {
     "add_source": "Add Source",
@@ -1099,6 +1105,7 @@
     "selected_only": "Selected only",
     "show_all": "Show all",
     "uninstall": "Uninstall",
+    "unknown": "<unknown>",
     "update": "Update",
     "version": "Version"
   },

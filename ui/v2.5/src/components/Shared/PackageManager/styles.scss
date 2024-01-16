@@ -4,9 +4,19 @@
   .package-source {
     font-weight: bold;
 
+    .source-collapse {
+      padding-left: 0;
+      padding-right: 0;
+
+      .btn {
+        color: $text-color;
+      }
+    }
+
     .source-controls {
       align-items: center;
       display: flex;
+      gap: 0.5rem;
       justify-content: end;
     }
   }
@@ -16,13 +26,13 @@
     cursor: pointer;
   }
 
-  .package-collapse-button {
-    color: $text-color;
-  }
-
   .package-manager-table-container {
     max-height: 300px;
     overflow-y: auto;
+
+    th {
+      border: none;
+    }
   }
 
   table thead {
@@ -31,8 +41,12 @@
     top: 0;
     z-index: 1;
 
-    .button-cell {
+    .check-cell {
       width: 40px;
+    }
+
+    .collapse-cell {
+      width: 30px;
     }
   }
 
@@ -40,30 +54,41 @@
     vertical-align: middle;
   }
 
+  .package-name,
+  .package-id,
   .package-version,
   .package-date,
-  .package-name,
-  .package-id {
+  .package-latest-version,
+  .package-latest-date {
     display: block;
   }
 
+  .package-id,
   .package-date,
-  .package-id {
+  .package-latest-date {
     color: $muted-gray;
     font-size: 0.8rem;
   }
 
+  .package-id,
+  .package-version,
+  .package-date,
+  .package-latest-version,
+  .package-latest-date {
+    white-space: nowrap;
+  }
+
+  .package-update-available {
+    .package-latest-version,
+    .package-latest-date {
+      font-weight: 700;
+    }
+  }
+
   .package-manager-toolbar {
     display: flex;
-    justify-content: space-between;
-
-    div {
-      display: flex;
-    }
-
-    .btn {
-      margin-left: 0.5em;
-    }
+    gap: 0.5rem;
+    padding-bottom: 0.25rem;
   }
 
   .package-required-by {

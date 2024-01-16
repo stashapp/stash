@@ -1,6 +1,7 @@
 import React from "react";
 import { Tab, Nav, Row, Col, Form } from "react-bootstrap";
-import { useHistory, useLocation } from "react-router-dom";
+import { Redirect } from "react-router-dom";
+import { LinkContainer } from "react-router-bootstrap";
 import { FormattedMessage } from "react-intl";
 import { Helmet } from "react-helmet";
 import { useTitleProps } from "src/hooks/title";
@@ -18,85 +19,135 @@ import { SettingsLibraryPanel } from "./SettingsLibraryPanel";
 import { SettingsSecurityPanel } from "./SettingsSecurityPanel";
 import Changelog from "../Changelog/Changelog";
 
-const SettingTabs: React.FC = () => {
-  const location = useLocation();
-  const history = useHistory();
-  const defaultTab = new URLSearchParams(location.search).get("tab") ?? "tasks";
+const validTabs = [
+  "tasks",
+  "library",
+  "interface",
+  "security",
+  "metadata-providers",
+  "services",
+  "system",
+  "plugins",
+  "logs",
+  "tools",
+  "changelog",
+  "about",
+] as const;
+type TabKey = (typeof validTabs)[number];
 
-  const onSelect = (val: string) => history.push(`?tab=${val}`);
+const defaultTab: TabKey = "tasks";
+
+function isTabKey(tab: string | null): tab is TabKey {
+  return validTabs.includes(tab as TabKey);
+}
+
+const SettingTabs: React.FC = () => {
+  const tab = new URLSearchParams(location.search).get("tab");
 
   const { advancedMode, setAdvancedMode } = useSettings();
 
   const titleProps = useTitleProps({ id: "settings" });
+
+  if (!isTabKey(tab)) {
+    return (
+      <Redirect
+        to={{
+          ...location,
+          search: `tab=${defaultTab}`,
+        }}
+      />
+    );
+  }
+
   return (
-    <Tab.Container
-      activeKey={defaultTab}
-      id="configuration-tabs"
-      onSelect={(tab) => tab && onSelect(tab)}
-    >
+    <Tab.Container activeKey={tab} id="configuration-tabs">
       <Helmet {...titleProps} />
       <Row>
         <Col id="settings-menu-container" sm={3} md={3} xl={2}>
           <Nav variant="pills" className="flex-column">
             <Nav.Item>
-              <Nav.Link eventKey="tasks">
-                <FormattedMessage id="config.categories.tasks" />
-              </Nav.Link>
+              <LinkContainer to="/settings?tab=tasks">
+                <Nav.Link eventKey="tasks">
+                  <FormattedMessage id="config.categories.tasks" />
+                </Nav.Link>
+              </LinkContainer>
             </Nav.Item>
             <Nav.Item>
-              <Nav.Link eventKey="library">
-                <FormattedMessage id="library" />
-              </Nav.Link>
+              <LinkContainer to="/settings?tab=library">
+                <Nav.Link eventKey="library">
+                  <FormattedMessage id="library" />
+                </Nav.Link>
+              </LinkContainer>
             </Nav.Item>
             <Nav.Item>
-              <Nav.Link eventKey="interface">
-                <FormattedMessage id="config.categories.interface" />
-              </Nav.Link>
+              <LinkContainer to="/settings?tab=interface">
+                <Nav.Link eventKey="interface">
+                  <FormattedMessage id="config.categories.interface" />
+                </Nav.Link>
+              </LinkContainer>
             </Nav.Item>
             <Nav.Item>
-              <Nav.Link eventKey="security">
-                <FormattedMessage id="config.categories.security" />
-              </Nav.Link>
+              <LinkContainer to="/settings?tab=security">
+                <Nav.Link eventKey="security">
+                  <FormattedMessage id="config.categories.security" />
+                </Nav.Link>
+              </LinkContainer>
             </Nav.Item>
             <Nav.Item>
-              <Nav.Link eventKey="metadata-providers">
-                <FormattedMessage id="config.categories.metadata_providers" />
-              </Nav.Link>
+              <LinkContainer to="/settings?tab=metadata-providers">
+                <Nav.Link eventKey="metadata-providers">
+                  <FormattedMessage id="config.categories.metadata_providers" />
+                </Nav.Link>
+              </LinkContainer>
             </Nav.Item>
             <Nav.Item>
-              <Nav.Link eventKey="services">
-                <FormattedMessage id="config.categories.services" />
-              </Nav.Link>
+              <LinkContainer to="/settings?tab=services">
+                <Nav.Link eventKey="services">
+                  <FormattedMessage id="config.categories.services" />
+                </Nav.Link>
+              </LinkContainer>
             </Nav.Item>
             <Nav.Item>
-              <Nav.Link eventKey="system">
-                <FormattedMessage id="config.categories.system" />
-              </Nav.Link>
+              <LinkContainer to="/settings?tab=system">
+                <Nav.Link eventKey="system">
+                  <FormattedMessage id="config.categories.system" />
+                </Nav.Link>
+              </LinkContainer>
             </Nav.Item>
             <Nav.Item>
-              <Nav.Link eventKey="plugins">
-                <FormattedMessage id="config.categories.plugins" />
-              </Nav.Link>
+              <LinkContainer to="/settings?tab=plugins">
+                <Nav.Link eventKey="plugins">
+                  <FormattedMessage id="config.categories.plugins" />
+                </Nav.Link>
+              </LinkContainer>
             </Nav.Item>
             <Nav.Item>
-              <Nav.Link eventKey="logs">
-                <FormattedMessage id="config.categories.logs" />
-              </Nav.Link>
+              <LinkContainer to="/settings?tab=logs">
+                <Nav.Link eventKey="logs">
+                  <FormattedMessage id="config.categories.logs" />
+                </Nav.Link>
+              </LinkContainer>
             </Nav.Item>
             <Nav.Item>
-              <Nav.Link eventKey="tools">
-                <FormattedMessage id="config.categories.tools" />
-              </Nav.Link>
+              <LinkContainer to="/settings?tab=tools">
+                <Nav.Link eventKey="tools">
+                  <FormattedMessage id="config.categories.tools" />
+                </Nav.Link>
+              </LinkContainer>
             </Nav.Item>
             <Nav.Item>
-              <Nav.Link eventKey="changelog">
-                <FormattedMessage id="config.categories.changelog" />
-              </Nav.Link>
+              <LinkContainer to="/settings?tab=changelog">
+                <Nav.Link eventKey="changelog">
+                  <FormattedMessage id="config.categories.changelog" />
+                </Nav.Link>
+              </LinkContainer>
             </Nav.Item>
             <Nav.Item>
-              <Nav.Link eventKey="about">
-                <FormattedMessage id="config.categories.about" />
-              </Nav.Link>
+              <LinkContainer to="/settings?tab=about">
+                <Nav.Link eventKey="about">
+                  <FormattedMessage id="config.categories.about" />
+                </Nav.Link>
+              </LinkContainer>
             </Nav.Item>
             <Nav.Item>
               <div className="advanced-switch">

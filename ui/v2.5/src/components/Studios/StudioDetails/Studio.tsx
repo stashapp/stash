@@ -147,7 +147,7 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
   useEffect(() => {
     Mousetrap.bind("e", () => toggleEditing());
     Mousetrap.bind("d d", () => {
-      onDelete();
+      setIsDeleteAlertOpen(true);
     });
     Mousetrap.bind(",", () => setCollapsed(!collapsed));
 

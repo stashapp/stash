@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"errors"
+	"fmt"
 	"sort"
 	"strings"
 
@@ -24,6 +25,10 @@ func getPackageManager(typeArg PackageType) (*pkg.Manager, error) {
 		pm = manager.GetInstance().PluginPackageManager
 	default:
 		return nil, ErrInvalidPackageType
+	}
+
+	if pm == nil {
+		return nil, fmt.Errorf("%s package manager not initialized", typeArg)
 	}
 
 	return pm, nil
@@ -98,11 +103,24 @@ func sortedPackageSpecKeys[V any](m map[models.PackageSpecInput]V) []models.Pack
 	}
 
 	sort.Slice(keys, func(i, j int) bool {
-		if strings.EqualFold(keys[i].ID, keys[j].ID) {
-			return keys[i].ID < keys[j].ID
+		a := keys[i]
+		b := keys[j]
+
+		aID := a.ID
+		bID := b.ID
+
+		if aID == bID {
+			return a.SourceURL < b.SourceURL
 		}
 
-		return strings.ToLower(keys[i].ID) < strings.ToLower(keys[j].ID)
+		aIDL := strings.ToLower(aID)
+		bIDL := strings.ToLower(bID)
+
+		if aIDL == bIDL {
+			return aID < bID
+		}
+
+		return aIDL < bIDL
 	})
 
 	return keys
@@ -129,9 +147,9 @@ func (r *queryResolver) getInstalledPackagesWithUpgrades(ctx context.Context, pm
 	for _, k := range sortedPackageSpecKeys(packageStatusIndex) {
 		v := packageStatusIndex[k]
 		p := manifestToPackage(*v.Local)
-		if v.Upgradable() {
+		if v.Remote != nil {
 			pp := remotePackageToPackage(*v.Remote, allRemoteList)
-			p.Upgrade = pp
+			p.SourcePackage = pp
 		}
 		ret[i] = p
 		i++
@@ -146,19 +164,19 @@ func (r *queryResolver) InstalledPackages(ctx context.Context, typeArg PackageTy
 		return nil, err
 	}
 
-	installed, err := pm.ListInstalled(ctx)
-	if err != nil {
-		return nil, err
-	}
-
 	var ret []*Package
 
-	if sliceutil.Contains(graphql.CollectAllFields(ctx), "upgrade") {
+	if sliceutil.Contains(graphql.CollectAllFields(ctx), "source_package") {
 		ret, err = r.getInstalledPackagesWithUpgrades(ctx, pm)
 		if err != nil {
 			return nil, err
 		}
 	} else {
+		installed, err := pm.ListInstalled(ctx)
+		if err != nil {
+			return nil, err
+		}
+
 		ret = make([]*Package, len(installed))
 		i := 0
 		for _, k := range sortedPackageSpecKeys(installed) {

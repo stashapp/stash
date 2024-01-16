@@ -361,6 +361,15 @@ func (qb *FileStore) Update(ctx context.Context, f models.File) error {
 	return nil
 }
 
+// ModifyFingerprints updates existing fingerprints and adds new ones.
+func (qb *FileStore) ModifyFingerprints(ctx context.Context, fileID models.FileID, fingerprints []models.Fingerprint) error {
+	return FingerprintReaderWriter.upsertJoins(ctx, fileID, fingerprints)
+}
+
+func (qb *FileStore) DestroyFingerprints(ctx context.Context, fileID models.FileID, types []string) error {
+	return FingerprintReaderWriter.destroyJoins(ctx, fileID, types)
+}
+
 func (qb *FileStore) Destroy(ctx context.Context, id models.FileID) error {
 	return qb.tableMgr.destroyExisting(ctx, []int{int(id)})
 }

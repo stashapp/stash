@@ -491,7 +491,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     if (!player) return;
 
     function onplay(this: VideoJsPlayer) {
-      this.persistVolume().enabled = true;
       if (scene.interactive && interactiveReady.current) {
         interactiveClient.play(this.currentTime());
       }
@@ -767,13 +766,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       return;
     }
 
-    player.play()?.catch(() => {
-      // Browser probably blocking non-muted autoplay, so mute and try again
-      player.persistVolume().enabled = false;
-      player.muted(true);
-
-      player.play();
-    });
+    player.play();
     auto.current = false;
   }, [getPlayer, scene, ready, interactiveClient, currentScript]);
 
