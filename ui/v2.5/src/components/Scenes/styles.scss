@@ -281,6 +281,12 @@ textarea.scene-description {
   }
 }
 
+/* stylelint-disable selector-class-pattern */
+.table .cover_image-head,
+.table .cover_image-data {
+  text-align: center;
+}
+
 input[type="range"].filter-slider {
   height: 100%;
   margin: 0;
@@ -684,23 +690,18 @@ input[type="range"].blue-slider {
 }
 
 .scene-table {
-  table,
-  tr,
-  td,
-  label,
-  input {
-    height: 100%;
-  }
-
   td:first-child {
     padding: 0;
   }
 
   label {
-    display: block;
     margin: 0;
     padding: 0.5rem;
   }
+}
+
+.select-col {
+  width: 20px;
 }
 
 .scrape-dialog .rating-number.disabled {

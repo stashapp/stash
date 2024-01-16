@@ -206,9 +206,20 @@
   }
 }
 
+.favourite-data .favorite {
+  color: #ff7373;
+}
+
+.performer-table .height-imperial,
+.performer-table .weight-imperial,
+.performer-table .penis-length-imperial,
 .performer-disambiguation {
   color: $text-muted;
   font-size: 0.875em;
+}
+
+.performer-table .age-data span {
+  border-bottom: 1px dotted #f5f8fa;
 }
 
 .performer-result .performer-details > span {
