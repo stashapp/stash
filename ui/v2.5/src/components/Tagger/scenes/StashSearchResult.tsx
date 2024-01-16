@@ -690,27 +690,30 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     }
   }
 
-  const renderTagsField = () => (
-    <div className="mt-2">
-      <div>
-        <Form.Group controlId="tags" as={Row}>
-          {FormUtils.renderLabel({
-            title: `${intl.formatMessage({ id: "tags" })}:`,
-          })}
-          <Col sm={9} xl={12}>
-            <TagSelect
-              isMulti
-              onSelect={(items) => {
-                setTagIDs(items.map((i) => i.id));
-              }}
-              ids={tagIDs}
-            />
-          </Col>
-        </Form.Group>
-      </div>
-      {scene.tags
-        ?.filter((t) => !t.stored_id)
-        .map((t) => (
+  function maybeRenderTagsField() {
+    if (!config.setTags) return;
+
+    const createTags = scene.tags?.filter((t) => !t.stored_id);
+
+    return (
+      <div className="mt-2">
+        <div>
+          <Form.Group controlId="tags" as={Row}>
+            {FormUtils.renderLabel({
+              title: `${intl.formatMessage({ id: "tags" })}:`,
+            })}
+            <Col sm={9} xl={12}>
+              <TagSelect
+                isMulti
+                onSelect={(items) => {
+                  setTagIDs(items.map((i) => i.id));
+                }}
+                ids={tagIDs}
+              />
+            </Col>
+          </Form.Group>
+        </div>
+        {createTags?.map((t) => (
           <Badge
             className="tag-item"
             variant="secondary"
@@ -725,8 +728,9 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
             </Button>
           </Badge>
         ))}
-    </div>
-  );
+      </div>
+    );
+  }
 
   if (loading) {
     return <LoadingIndicator card />;
@@ -769,7 +773,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
         <div className="col-lg-6">
           {maybeRenderStudioField()}
           {renderPerformerField()}
-          {renderTagsField()}
+          {maybeRenderTagsField()}
 
           <div className="row no-gutters mt-2 align-items-center justify-content-end">
             <OperationButton operation={handleSave}>

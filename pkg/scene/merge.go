@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
@@ -129,6 +130,12 @@ func (s *Service) mergeSceneMarkers(ctx context.Context, dest *models.Scene, src
 				destExists, _ := fsutil.FileExists(e.dest)
 
 				if srcExists && !destExists {
+					destDir := filepath.Dir(e.dest)
+					if err := fsutil.EnsureDir(destDir); err != nil {
+						logger.Errorf("Error creating generated marker folder %s: %v", destDir, err)
+						continue
+					}
+
 					if err := os.Rename(e.src, e.dest); err != nil {
 						logger.Errorf("Error renaming generated marker file from %s to %s: %v", e.src, e.dest, err)
 					}
