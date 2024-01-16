@@ -600,8 +600,13 @@ func (qb *PerformerStore) makeFilter(ctx context.Context, filter *models.Perform
 
 	query.handleCriterion(ctx, criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
 		if gender := filter.Gender; gender != nil {
-			v := utils.StringerSliceToStringSlice(gender.Value)
-			enumCriterionHandler(gender.Modifier, v, tableName+".gender")(ctx, f)
+			genderCopy := *gender
+			if genderCopy.Value.IsValid() && len(genderCopy.ValueList) == 0 {
+				genderCopy.ValueList = []models.GenderEnum{genderCopy.Value}
+			}
+
+			v := utils.StringerSliceToStringSlice(genderCopy.ValueList)
+			enumCriterionHandler(genderCopy.Modifier, v, tableName+".gender")(ctx, f)
 		}
 	}))
 
