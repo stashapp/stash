@@ -370,3 +370,138 @@ input[type="range"].zoom-slider {
 .tilted {
   transform: rotate(45deg);
 }
+
+.table-list {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  margin-bottom: 1rem;
+  margin-left: 0;
+  margin-right: 0;
+  max-height: 78dvh;
+  min-width: min-content;
+  overflow-x: auto;
+  position: relative;
+
+  table {
+    margin: 0;
+
+    thead {
+      background-color: #202b33;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+  }
+
+  .column-select {
+    margin: 0;
+    padding: 7px;
+  }
+
+  .comma-list {
+    list-style: none;
+    margin: 0;
+    overflow: hidden;
+    padding: 4px 2px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width: 190px;
+
+    li {
+      display: inline;
+    }
+
+    li::after {
+      content: ", ";
+    }
+
+    li:last-child::after {
+      content: "";
+    }
+  }
+
+  .comma-list:hover {
+    background: #28343c;
+    border: 1px solid #414c53;
+    box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.28);
+    display: block;
+    height: auto;
+    margin-left: -0.4rem;
+    margin-top: -0.9rem;
+    max-width: 40rem;
+    overflow: hidden;
+    padding: 0.1rem 0.5rem;
+    position: absolute;
+    top: auto;
+    white-space: normal;
+    width: max-content;
+    z-index: 100;
+  }
+
+  .comma-list li .ellips-data:hover {
+    max-width: fit-content;
+  }
+
+  td {
+    position: relative;
+    text-align: left;
+    white-space: nowrap;
+
+    .ellips-data {
+      display: block;
+      max-width: 190px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .star-rating-number {
+      display: none;
+    }
+
+    a {
+      font-weight: 600;
+      white-space: nowrap;
+    }
+  }
+
+  td.select-col {
+    text-align: center;
+  }
+
+  .table thead th {
+    border: none;
+    white-space: nowrap;
+  }
+
+  tr {
+    border-collapse: collapse;
+  }
+
+  .date-head {
+    width: 97px;
+  }
+}
+
+.table-list tbody tr:hover {
+  background-color: #2d3942;
+}
+
+.table-list a {
+  color: $text-color;
+}
+
+.table-list .table-striped td,
+.table-list .table-striped th {
+  font-size: 1rem;
+  vertical-align: middle;
+
+  h5,
+  h6 {
+    font-size: 1rem;
+  }
+
+  &:first-child {
+    border-left: none;
+  }
+}

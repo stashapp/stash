@@ -997,7 +997,7 @@
   "filters": "Filters",
   "folder": "Folder",
   "framerate": "Frame Rate",
-  "frames_per_second": "{value} frames per second",
+  "frames_per_second": "{value} fps",
   "front_page": {
     "types": {
       "premade_filter": "Premade Filter",
@@ -1068,7 +1068,7 @@
     "stream": "Stream",
     "video_codec": "Video Codec"
   },
-  "megabits_per_second": "{value} megabits per second",
+  "megabits_per_second": "{value} mbps",
   "metadata": "Metadata",
   "movie": "Movie",
   "movie_scene_number": "Movie Scene Number",
@@ -1171,6 +1171,7 @@
   "performers": "Performers",
   "photographer": "Photographer",
   "piercings": "Piercings",
+  "plays": "{value} plays",
   "play_count": "Play Count",
   "play_duration": "Play Duration",
   "primary_file": "Primary file",
