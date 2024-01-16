@@ -1,6 +1,7 @@
 import React, { useMemo } from "react";
 import { Table, Form } from "react-bootstrap";
 import { CheckBoxSelect } from "../Shared/Select";
+import cx from "classnames";
 
 export interface IColumn {
   label: string;
@@ -38,6 +39,7 @@ export const ColumnSelector: React.FC<{
 };
 
 interface IListTableProps<T> {
+  className?: string;
   items: T[];
   columns: string[];
   setColumns: (columns: string[]) => void;
@@ -51,6 +53,7 @@ export const ListTable = <T extends { id: string }>(
   props: IListTableProps<T>
 ) => {
   const {
+    className,
     items,
     columns,
     setColumns,
@@ -107,7 +110,7 @@ export const ListTable = <T extends { id: string }>(
   }, [visibleColumns]);
 
   return (
-    <div className="row scene-table table-list justify-content-center">
+    <div className={cx("table-list", className)}>
       <Table striped bordered>
         <thead>
           <tr>

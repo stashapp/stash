@@ -373,6 +373,7 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
 
   return (
     <ListTable
+      className="scene-table"
       items={props.scenes}
       allColumns={allColumns}
       columns={selectedColumns}

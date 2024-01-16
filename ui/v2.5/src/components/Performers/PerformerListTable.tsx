@@ -387,6 +387,7 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
 
   return (
     <ListTable
+      className="performer-table"
       items={props.performers}
       allColumns={allColumns}
       columns={selectedColumns}
