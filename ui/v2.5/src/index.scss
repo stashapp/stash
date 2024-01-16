@@ -542,6 +542,10 @@ textarea.text-input {
       white-space: nowrap;
     }
 
+    li a .ellips-data:hover {
+      max-width: fit-content;
+    }
+
     .star-rating-number {
       display: none;
     }
