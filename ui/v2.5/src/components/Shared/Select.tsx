@@ -983,10 +983,14 @@ export const ListSelect = <T extends {}>(props: IListSelect<T>) => {
   );
 };
 
+type DisableOption = Option & {
+  disabled?: boolean;
+};
+
 interface ICheckBoxSelectProps {
-  options: Option[];
-  selectedOptions?: Option[];
-  onChange: (item: OnChangeValue<Option, true>) => void;
+  options: DisableOption[];
+  selectedOptions?: DisableOption[];
+  onChange: (item: OnChangeValue<DisableOption, true>) => void;
 }
 
 export const CheckBoxSelect: React.FC<ICheckBoxSelectProps> = ({
@@ -994,10 +998,11 @@ export const CheckBoxSelect: React.FC<ICheckBoxSelectProps> = ({
   selectedOptions,
   onChange,
 }) => {
-  const Option = (props: OptionProps<Option, true>) => (
+  const Option = (props: OptionProps<DisableOption, true>) => (
     <reactSelectComponents.Option {...props}>
       <input
         type="checkbox"
+        disabled={props.data.disabled}
         checked={props.isSelected}
         onChange={() => null}
         className="mr-1"
@@ -1006,7 +1011,9 @@ export const CheckBoxSelect: React.FC<ICheckBoxSelectProps> = ({
     </reactSelectComponents.Option>
   );
 
-  const DropdownIndicator = (props: DropdownIndicatorProps<Option, true>) => (
+  const DropdownIndicator = (
+    props: DropdownIndicatorProps<DisableOption, true>
+  ) => (
     <reactSelectComponents.DropdownIndicator {...props}>
       <Icon icon={faTableColumns} className="column-select" />
     </reactSelectComponents.DropdownIndicator>

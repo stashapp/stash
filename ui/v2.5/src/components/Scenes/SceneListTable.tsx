@@ -1,5 +1,4 @@
 import React from "react";
-import { Table, Form } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 import NavUtils from "src/utils/navigation";
@@ -10,8 +9,8 @@ import { galleryTitle } from "src/core/galleries";
 import SceneQueue from "src/models/sceneQueue";
 import { RatingSystem } from "../Shared/Rating/RatingSystem";
 import { useSceneUpdate } from "src/core/StashService";
+import { IColumn, ListTable } from "../List/ListTable";
 import { useTableColumns } from "src/hooks/useTableColumns";
-import { ColumnSelector, IColumn } from "../Shared/ColumnSelector";
 
 interface ISceneListTableProps {
   scenes: GQL.SlimSceneDataFragment[];
@@ -27,125 +26,7 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
 ) => {
   const intl = useIntl();
 
-  const coverImageCol = {
-    value: "cover_image",
-    label: intl.formatMessage({ id: "cover_image" }),
-  };
-  const titleCol = {
-    value: "title",
-    label: intl.formatMessage({ id: "title" }),
-  };
-  const dateCol = {
-    value: "date",
-    label: intl.formatMessage({ id: "date" }),
-  };
-  const ratingCol = {
-    value: "rating",
-    label: intl.formatMessage({ id: "rating" }),
-  };
-  const studioCodeCol = {
-    value: "scene_code",
-    label: intl.formatMessage({ id: "scene_code" }),
-  };
-  const durationCol = {
-    value: "duration",
-    label: intl.formatMessage({ id: "duration" }),
-  };
-  const tagsCol = { value: "tags", label: intl.formatMessage({ id: "tags" }) };
-  const performersCol = {
-    value: "performers",
-    label: intl.formatMessage({ id: "performers" }),
-  };
-  const studioCol = {
-    value: "studio",
-    label: intl.formatMessage({ id: "studio" }),
-  };
-  const moviesCol = {
-    value: "movies",
-    label: intl.formatMessage({ id: "movies" }),
-  };
-  const galleriesCol = {
-    value: "galleries",
-    label: intl.formatMessage({ id: "galleries" }),
-  };
-  const playCountCol = {
-    value: "play_count",
-    label: intl.formatMessage({ id: "play_count" }),
-  };
-  const playDurationCol = {
-    value: "play_duration",
-    label: intl.formatMessage({ id: "play_duration" }),
-  };
-  const oCounterCol = {
-    value: "o_counter",
-    label: intl.formatMessage({ id: "o_counter" }),
-  };
-  const resolutionCol = {
-    value: "resolution",
-    label: intl.formatMessage({ id: "resolution" }),
-  };
-  const frameRateCol = {
-    value: "framerate",
-    label: intl.formatMessage({ id: "framerate" }),
-  };
-  const bitRateCol = {
-    value: "bitrate",
-    label: intl.formatMessage({ id: "bitrate" }),
-  };
-  const videoCodecCol = {
-    value: "video_codec",
-    label: intl.formatMessage({ id: "video_codec" }),
-  };
-  const audioCodecCol = {
-    value: "audio_codec",
-    label: intl.formatMessage({ id: "audio_codec" }),
-  };
-  const columns = [
-    coverImageCol,
-    titleCol,
-    dateCol,
-    ratingCol,
-    studioCodeCol,
-    durationCol,
-    tagsCol,
-    performersCol,
-    studioCol,
-    moviesCol,
-    galleriesCol,
-    playCountCol,
-    playDurationCol,
-    oCounterCol,
-    resolutionCol,
-    frameRateCol,
-    bitRateCol,
-    videoCodecCol,
-    audioCodecCol,
-  ];
-  const defaultColumns = [
-    coverImageCol,
-    titleCol,
-    dateCol,
-    ratingCol,
-    durationCol,
-    tagsCol,
-    performersCol,
-    studioCol,
-    moviesCol,
-    galleriesCol,
-  ].map((c) => c.value);
-
   const [updateScene] = useSceneUpdate();
-  const selectedColumns = useTableColumns(TABLE_NAME, defaultColumns);
-
-  function maybeRenderColHead(column: IColumn) {
-    if (selectedColumns[column.value]) {
-      return <th className={`${column.value}-head`}>{column.label}</th>;
-    }
-  }
-
-  const maybeRenderCell = (column: IColumn, cell: React.ReactNode) => {
-    if (selectedColumns[column.value]) return cell;
-  };
 
   function setRating(v: number | null, sceneId: string) {
     if (sceneId) {
@@ -160,12 +41,13 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
     }
   }
 
-  const CoverImageCell = (
-    scene: GQL.SlimSceneDataFragment,
-    sceneLink: string,
-    title: string
-  ) => (
-    <td className={`${coverImageCol.value}-data`}>
+  const CoverImageCell = (scene: GQL.SlimSceneDataFragment, index: number) => {
+    const title = objectTitle(scene);
+    const sceneLink = props.queue
+      ? props.queue.makeLink(scene.id, { sceneIndex: index })
+      : `/scenes/${scene.id}`;
+
+    return (
       <Link to={sceneLink}>
         <img
           loading="lazy"
@@ -174,306 +56,330 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
           src={scene.paths.screenshot ?? ""}
         />
       </Link>
-    </td>
-  );
+    );
+  };
 
-  const TitleCell = (sceneLink: string, title: string) => (
-    <td className={`${titleCol.value}-data`} title={title}>
+  const TitleCell = (scene: GQL.SlimSceneDataFragment, index: number) => {
+    const title = objectTitle(scene);
+    const sceneLink = props.queue
+      ? props.queue.makeLink(scene.id, { sceneIndex: index })
+      : `/scenes/${scene.id}`;
+
+    return (
       <Link to={sceneLink}>
         <span className="ellips-data">{title}</span>
       </Link>
-    </td>
-  );
+    );
+  };
 
-  const DateCell = (scene: GQL.SlimSceneDataFragment) => (
-    <td className={`${dateCol.value}-data`}>{scene.date}</td>
-  );
+  const DateCell = (scene: GQL.SlimSceneDataFragment) => <>{scene.date}</>;
 
   const RatingCell = (scene: GQL.SlimSceneDataFragment) => (
-    <td className={`${ratingCol.value}-data`}>
-      <RatingSystem
-        value={scene.rating100}
-        onSetRating={(value) => setRating(value, scene.id)}
-      />
-    </td>
-  );
-
-  const StudioCodeCell = (scene: GQL.SlimSceneDataFragment) => (
-    <td className={`${studioCodeCol.value}-data`}>{scene.code}</td>
+    <RatingSystem
+      value={scene.rating100}
+      onSetRating={(value) => setRating(value, scene.id)}
+    />
   );
 
   const DurationCell = (scene: GQL.SlimSceneDataFragment) => {
     const file = scene.files.length > 0 ? scene.files[0] : undefined;
-    return (
-      <td className={`${durationCol.value}-data`}>
-        {file?.duration && TextUtils.secondsToTimestamp(file.duration)}
-      </td>
-    );
+    return file?.duration && TextUtils.secondsToTimestamp(file.duration);
   };
 
   const TagCell = (scene: GQL.SlimSceneDataFragment) => (
-    <td className={`${tagsCol.value}-data`}>
-      <ul className="comma-list">
-        {scene.tags.map((tag) => (
-          <li key={tag.id}>
-            <Link to={NavUtils.makeTagScenesUrl(tag)}>
-              <span>{tag.name}</span>
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </td>
+    <ul className="comma-list">
+      {scene.tags.map((tag) => (
+        <li key={tag.id}>
+          <Link to={NavUtils.makeTagScenesUrl(tag)}>
+            <span>{tag.name}</span>
+          </Link>
+        </li>
+      ))}
+    </ul>
   );
 
   const PerformersCell = (scene: GQL.SlimSceneDataFragment) => (
-    <td className={`${performersCol.value}-data`}>
-      <ul className="comma-list">
-        {scene.performers.map((performer) => (
-          <li key={performer.id}>
-            <Link to={NavUtils.makePerformerScenesUrl(performer)}>
-              <span>{performer.name}</span>
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </td>
+    <ul className="comma-list">
+      {scene.performers.map((performer) => (
+        <li key={performer.id}>
+          <Link to={NavUtils.makePerformerScenesUrl(performer)}>
+            <span>{performer.name}</span>
+          </Link>
+        </li>
+      ))}
+    </ul>
   );
 
-  const StudioCell = (scene: GQL.SlimSceneDataFragment) => (
-    <td className={`${studioCol.value}-data`}>
-      {scene.studio && (
+  const StudioCell = (scene: GQL.SlimSceneDataFragment) => {
+    if (scene.studio) {
+      return (
         <Link
           to={NavUtils.makeStudioScenesUrl(scene.studio)}
           title={scene.studio.name}
         >
           <span className="ellips-data">{scene.studio.name}</span>
         </Link>
-      )}
-    </td>
-  );
+      );
+    }
+  };
 
   const MovieCell = (scene: GQL.SlimSceneDataFragment) => (
-    <td className={`${moviesCol.value}-data`}>
-      <ul className="comma-list">
-        {scene.movies.map((sceneMovie) => (
-          <li key={sceneMovie.movie.id}>
-            <Link to={NavUtils.makeMovieScenesUrl(sceneMovie.movie)}>
-              <span className="ellips-data">{sceneMovie.movie.name}</span>
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </td>
+    <ul className="comma-list">
+      {scene.movies.map((sceneMovie) => (
+        <li key={sceneMovie.movie.id}>
+          <Link to={NavUtils.makeMovieScenesUrl(sceneMovie.movie)}>
+            <span className="ellips-data">{sceneMovie.movie.name}</span>
+          </Link>
+        </li>
+      ))}
+    </ul>
   );
 
   const GalleriesCell = (scene: GQL.SlimSceneDataFragment) => (
-    <td className={`${galleriesCol.value}-data`}>
-      <ul className="comma-list">
-        {scene.galleries.map((gallery) => (
-          <li key={gallery.id}>
-            <Link to={`/galleries/${gallery.id}`}>
-              <span>{galleryTitle(gallery)}</span>
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </td>
+    <ul className="comma-list">
+      {scene.galleries.map((gallery) => (
+        <li key={gallery.id}>
+          <Link to={`/galleries/${gallery.id}`}>
+            <span>{galleryTitle(gallery)}</span>
+          </Link>
+        </li>
+      ))}
+    </ul>
   );
 
   const PlayCountCell = (scene: GQL.SlimSceneDataFragment) => (
-    <td className={`${playCountCol.value}-data`}>
-      <FormattedMessage
-        id="plays"
-        values={{ value: intl.formatNumber(scene.play_count ?? 0) }}
-      />
-    </td>
+    <FormattedMessage
+      id="plays"
+      values={{ value: intl.formatNumber(scene.play_count ?? 0) }}
+    />
   );
 
   const PlayDurationCell = (scene: GQL.SlimSceneDataFragment) => (
-    <td className={`${playDurationCol.value}-data`}>
-      {TextUtils.secondsToTimestamp(scene.play_duration ?? 0)}
-    </td>
-  );
-
-  const OCounterCell = (scene: GQL.SlimSceneDataFragment) => (
-    <td className={`${oCounterCol.value}-data`}>{scene.o_counter}</td>
+    <>{TextUtils.secondsToTimestamp(scene.play_duration ?? 0)}</>
   );
 
   const ResolutionCell = (scene: GQL.SlimSceneDataFragment) => (
-    <td className={`${resolutionCol.value}-data`}>
-      <ul className="comma-list">
-        {scene.files.map((file) => (
-          <li key={file.id}>
-            <span> {TextUtils.resolution(file?.width, file?.height)}</span>
-          </li>
-        ))}
-      </ul>
-    </td>
+    <ul className="comma-list">
+      {scene.files.map((file) => (
+        <li key={file.id}>
+          <span> {TextUtils.resolution(file?.width, file?.height)}</span>
+        </li>
+      ))}
+    </ul>
   );
 
   const FrameRateCell = (scene: GQL.SlimSceneDataFragment) => (
-    <td className={`${frameRateCol.value}-data`}>
-      <ul className="comma-list">
-        {scene.files.map((file) => (
-          <li key={file.id}>
-            <span>
-              <FormattedMessage
-                id="frames_per_second"
-                values={{ value: intl.formatNumber(file.frame_rate ?? 0) }}
-              />
-            </span>
-          </li>
-        ))}
-      </ul>
-    </td>
+    <ul className="comma-list">
+      {scene.files.map((file) => (
+        <li key={file.id}>
+          <span>
+            <FormattedMessage
+              id="frames_per_second"
+              values={{ value: intl.formatNumber(file.frame_rate ?? 0) }}
+            />
+          </span>
+        </li>
+      ))}
+    </ul>
   );
 
   const BitRateCell = (scene: GQL.SlimSceneDataFragment) => (
-    <td className={`${bitRateCol.value}-data`}>
-      <ul className="comma-list">
-        {scene.files.map((file) => (
-          <li key={file.id}>
-            <span>
-              <FormattedMessage
-                id="megabits_per_second"
-                values={{
-                  value: intl.formatNumber((file.bit_rate ?? 0) / 1000000, {
-                    maximumFractionDigits: 2,
-                  }),
-                }}
-              />
-            </span>
-          </li>
-        ))}
-      </ul>
-    </td>
+    <ul className="comma-list">
+      {scene.files.map((file) => (
+        <li key={file.id}>
+          <span>
+            <FormattedMessage
+              id="megabits_per_second"
+              values={{
+                value: intl.formatNumber((file.bit_rate ?? 0) / 1000000, {
+                  maximumFractionDigits: 2,
+                }),
+              }}
+            />
+          </span>
+        </li>
+      ))}
+    </ul>
   );
 
   const AudioCodecCell = (scene: GQL.SlimSceneDataFragment) => (
-    <td className={`${audioCodecCol.value}-data`}>
-      <ul className="comma-list">
-        {scene.files.map((file) => (
-          <li key={file.id}>
-            <span>{file.audio_codec}</span>
-          </li>
-        ))}
-      </ul>
-    </td>
+    <ul className="comma-list">
+      {scene.files.map((file) => (
+        <li key={file.id}>
+          <span>{file.audio_codec}</span>
+        </li>
+      ))}
+    </ul>
   );
 
   const VideoCodecCell = (scene: GQL.SlimSceneDataFragment) => (
-    <td className={`${videoCodecCol.value}-data`}>
-      <ul className="comma-list">
-        {scene.files.map((file) => (
-          <li key={file.id}>
-            <span>{file.video_codec}</span>
-          </li>
-        ))}
-      </ul>
-    </td>
+    <ul className="comma-list">
+      {scene.files.map((file) => (
+        <li key={file.id}>
+          <span>{file.video_codec}</span>
+        </li>
+      ))}
+    </ul>
   );
 
-  const renderSceneRow = (scene: GQL.SlimSceneDataFragment, index: number) => {
-    const sceneLink = props.queue
-      ? props.queue.makeLink(scene.id, { sceneIndex: index })
-      : `/scenes/${scene.id}`;
+  interface IColumnSpec {
+    value: string;
+    label: string;
+    defaultShow?: boolean;
+    mandatory?: boolean;
+    render?: (
+      scene: GQL.SlimSceneDataFragment,
+      index: number
+    ) => React.ReactNode;
+  }
 
-    let shiftKey = false;
+  const allColumns: IColumnSpec[] = [
+    {
+      value: "cover_image",
+      label: intl.formatMessage({ id: "cover_image" }),
+      defaultShow: true,
+      render: CoverImageCell,
+    },
+    {
+      value: "title",
+      label: intl.formatMessage({ id: "title" }),
+      defaultShow: true,
+      mandatory: true,
+      render: TitleCell,
+    },
+    {
+      value: "date",
+      label: intl.formatMessage({ id: "date" }),
+      defaultShow: true,
+      render: DateCell,
+    },
+    {
+      value: "rating",
+      label: intl.formatMessage({ id: "rating" }),
+      defaultShow: true,
+      render: RatingCell,
+    },
+    {
+      value: "scene_code",
+      label: intl.formatMessage({ id: "scene_code" }),
+      render: (s) => <>{s.code}</>,
+    },
+    {
+      value: "duration",
+      label: intl.formatMessage({ id: "duration" }),
+      defaultShow: true,
+      render: DurationCell,
+    },
+    {
+      value: "tags",
+      label: intl.formatMessage({ id: "tags" }),
+      defaultShow: true,
+      render: TagCell,
+    },
+    {
+      value: "performers",
+      label: intl.formatMessage({ id: "performers" }),
+      defaultShow: true,
+      render: PerformersCell,
+    },
+    {
+      value: "studio",
+      label: intl.formatMessage({ id: "studio" }),
+      defaultShow: true,
+      render: StudioCell,
+    },
+    {
+      value: "movies",
+      label: intl.formatMessage({ id: "movies" }),
+      defaultShow: true,
+      render: MovieCell,
+    },
+    {
+      value: "galleries",
+      label: intl.formatMessage({ id: "galleries" }),
+      defaultShow: true,
+      render: GalleriesCell,
+    },
+    {
+      value: "play_count",
+      label: intl.formatMessage({ id: "play_count" }),
+      render: PlayCountCell,
+    },
+    {
+      value: "play_duration",
+      label: intl.formatMessage({ id: "play_duration" }),
+      render: PlayDurationCell,
+    },
+    {
+      value: "o_counter",
+      label: intl.formatMessage({ id: "o_counter" }),
+      render: (s) => <>{s.o_counter}</>,
+    },
+    {
+      value: "resolution",
+      label: intl.formatMessage({ id: "resolution" }),
+      render: ResolutionCell,
+    },
+    {
+      value: "framerate",
+      label: intl.formatMessage({ id: "framerate" }),
+      render: FrameRateCell,
+    },
+    {
+      value: "bitrate",
+      label: intl.formatMessage({ id: "bitrate" }),
+      render: BitRateCell,
+    },
+    {
+      value: "video_codec",
+      label: intl.formatMessage({ id: "video_codec" }),
+      render: VideoCodecCell,
+    },
+    {
+      value: "audio_codec",
+      label: intl.formatMessage({ id: "audio_codec" }),
+      render: AudioCodecCell,
+    },
+  ];
 
-    const title = objectTitle(scene);
-    return (
-      <tr key={scene.id}>
-        <td className="select-col">
-          <label>
-            <Form.Control
-              type="checkbox"
-              checked={props.selectedIds.has(scene.id)}
-              onChange={() =>
-                props.onSelectChange(
-                  scene.id,
-                  !props.selectedIds.has(scene.id),
-                  shiftKey
-                )
-              }
-              onClick={(
-                event: React.MouseEvent<HTMLInputElement, MouseEvent>
-              ) => {
-                shiftKey = event.shiftKey;
-                event.stopPropagation();
-              }}
-            />
-          </label>
-        </td>
-        {maybeRenderCell(
-          coverImageCol,
-          CoverImageCell(scene, sceneLink, title)
-        )}
-        {maybeRenderCell(titleCol, TitleCell(sceneLink, title))}
-        {maybeRenderCell(dateCol, DateCell(scene))}
-        {maybeRenderCell(ratingCol, RatingCell(scene))}
-        {maybeRenderCell(studioCol, StudioCell(scene))}
-        {maybeRenderCell(studioCodeCol, StudioCodeCell(scene))}
-        {maybeRenderCell(durationCol, DurationCell(scene))}
-        {maybeRenderCell(performersCol, PerformersCell(scene))}
-        {maybeRenderCell(tagsCol, TagCell(scene))}
-        {maybeRenderCell(moviesCol, MovieCell(scene))}
-        {maybeRenderCell(galleriesCol, GalleriesCell(scene))}
-        {maybeRenderCell(playCountCol, PlayCountCell(scene))}
-        {maybeRenderCell(playDurationCol, PlayDurationCell(scene))}
-        {maybeRenderCell(oCounterCol, OCounterCell(scene))}
-        {maybeRenderCell(resolutionCol, ResolutionCell(scene))}
-        {maybeRenderCell(frameRateCol, FrameRateCell(scene))}
-        {maybeRenderCell(bitRateCol, BitRateCell(scene))}
-        {maybeRenderCell(videoCodecCol, VideoCodecCell(scene))}
-        {maybeRenderCell(audioCodecCol, AudioCodecCell(scene))}
-      </tr>
-    );
-  };
+  const defaultColumns = allColumns
+    .filter((col) => col.defaultShow)
+    .map((col) => col.value);
+
+  const { selectedColumns, saveColumns } = useTableColumns(
+    TABLE_NAME,
+    defaultColumns
+  );
+
+  const columnRenderFuncs: Record<
+    string,
+    (scene: GQL.SlimSceneDataFragment, index: number) => React.ReactNode
+  > = {};
+  allColumns.forEach((col) => {
+    if (col.render) {
+      columnRenderFuncs[col.value] = col.render;
+    }
+  });
+
+  function renderCell(
+    column: IColumn,
+    scene: GQL.SlimSceneDataFragment,
+    index: number
+  ) {
+    const render = columnRenderFuncs[column.value];
+
+    if (render) return render(scene, index);
+  }
 
   return (
-    <div className="row scene-table table-list justify-content-center">
-      <Table striped bordered>
-        <thead>
-          <tr>
-            <th className="select-col">
-              <div
-                className="d-inline-block"
-                data-toggle="popover"
-                data-trigger="focus"
-              >
-                <ColumnSelector
-                  tableName={TABLE_NAME}
-                  columns={columns}
-                  defaultColumns={defaultColumns}
-                />
-              </div>
-            </th>
-            {maybeRenderColHead(coverImageCol)}
-            {maybeRenderColHead(titleCol)}
-            {maybeRenderColHead(dateCol)}
-            {maybeRenderColHead(ratingCol)}
-            {maybeRenderColHead(studioCol)}
-            {maybeRenderColHead(studioCodeCol)}
-            {maybeRenderColHead(durationCol)}
-            {maybeRenderColHead(performersCol)}
-            {maybeRenderColHead(tagsCol)}
-            {maybeRenderColHead(moviesCol)}
-            {maybeRenderColHead(galleriesCol)}
-            {maybeRenderColHead(playCountCol)}
-            {maybeRenderColHead(playDurationCol)}
-            {maybeRenderColHead(oCounterCol)}
-            {maybeRenderColHead(resolutionCol)}
-            {maybeRenderColHead(frameRateCol)}
-            {maybeRenderColHead(bitRateCol)}
-            {maybeRenderColHead(videoCodecCol)}
-            {maybeRenderColHead(audioCodecCol)}
-          </tr>
-          <tr>
-            <th className="border-row" colSpan={100}></th>
-          </tr>
-        </thead>
-        <tbody>{props.scenes.map(renderSceneRow)}</tbody>
-      </Table>
-    </div>
+    <ListTable
+      items={props.scenes}
+      allColumns={allColumns}
+      columns={selectedColumns}
+      setColumns={(c) => saveColumns(c)}
+      selectedIds={props.selectedIds}
+      onSelectChange={props.onSelectChange}
+      renderCell={renderCell}
+    />
   );
 };
