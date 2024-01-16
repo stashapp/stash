@@ -279,6 +279,12 @@ export const SettingsInterfacePanel: React.FC = () => {
           onChange={(v) => saveUI({ enableChromecast: v })}
         />
         <BooleanSetting
+          id="disable-mobile-media-auto-rotate"
+          headingID="config.ui.scene_player.options.disable_mobile_media_auto_rotate"
+          checked={ui.disableMobileMediaAutoRotateEnabled ?? undefined}
+          onChange={(v) => saveUI({ disableMobileMediaAutoRotateEnabled: v })}
+        />
+        <BooleanSetting
           id="show-scrubber"
           headingID="config.ui.scene_player.options.show_scrubber"
           checked={iface.showScrubber ?? undefined}
