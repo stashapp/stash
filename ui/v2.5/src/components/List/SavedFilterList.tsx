@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import {
   Button,
   ButtonGroup,
@@ -10,30 +10,35 @@ import {
   Tooltip,
 } from "react-bootstrap";
 import {
+  useConfigureUI,
   useFindSavedFilters,
   useSavedFilterDestroy,
   useSaveFilter,
-  useSetDefaultFilter,
 } from "src/core/StashService";
 import { useToast } from "src/hooks/Toast";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { SavedFilterDataFragment } from "src/core/generated-graphql";
-import { PersistanceLevel } from "./ItemList";
+import { View } from "./views";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Icon } from "../Shared/Icon";
 import { LoadingIndicator } from "../Shared/LoadingIndicator";
 import { faSave, faTimes } from "@fortawesome/free-solid-svg-icons";
+import { DefaultFilters, IUIConfig } from "src/core/config";
+import { ConfigurationContext } from "src/hooks/Config";
+import { IHierarchicalLabelValue } from "src/models/list-filter/types";
 
 interface ISavedFilterListProps {
   filter: ListFilterModel;
   onSetFilter: (f: ListFilterModel) => void;
-  persistState?: PersistanceLevel;
+  view?: View;
+  filterHook?: (filter: ListFilterModel) => ListFilterModel;
 }
 
 export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
   filter,
   onSetFilter,
-  persistState,
+  view,
+  filterHook,
 }) => {
   const Toast = useToast();
   const intl = useIntl();
@@ -51,7 +56,9 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
 
   const [saveFilter] = useSaveFilter();
   const [destroyFilter] = useSavedFilterDestroy();
-  const [setDefaultFilter] = useSetDefaultFilter();
+  const { configuration } = useContext(ConfigurationContext);
+  const ui = (configuration?.ui ?? {}) as IUIConfig;
+  const [saveUI] = useConfigureUI();
 
   const savedFilters = data?.findSavedFilters ?? [];
 
@@ -127,18 +134,81 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
   }
 
   async function onSetDefaultFilter() {
+    if (!view) {
+      return;
+    }
+
     const filterCopy = filter.clone();
 
     try {
       setSaving(true);
 
-      await setDefaultFilter({
+      // TODO - this is a horrible temporary hack to work around stupid viper
+      let existingDefaultFilters: DefaultFilters;
+      try {
+        existingDefaultFilters = JSON.parse(ui.defaultFilters ?? "{}");
+      } catch (e) {
+        // ignore
+        existingDefaultFilters = {};
+      }
+
+      let objectFilter = filterCopy.makeSavedFindFilter();
+      // Remove Subview Filter from default Filter
+      if (filterHook) {
+        let subViewFilter = filterHook(
+          new ListFilterModel(filterCopy.mode, undefined)
+        );
+        subViewFilter.criteria.forEach((criterion) => {
+          let subViewCriterionValue =
+            criterion.value as IHierarchicalLabelValue;
+          let subViewType = criterion.criterionOption.type;
+          if (
+            Object.keys(objectFilter).indexOf(subViewType) > -1 &&
+            objectFilter[subViewType].modifier === criterion.modifier
+          ) {
+            let value = objectFilter[subViewType]
+              .value as IHierarchicalLabelValue;
+            value.items = value.items.filter((item) => {
+              let ret = true;
+              subViewCriterionValue.items.forEach((subViewItem) => {
+                if (ret) {
+                  ret = item.id != subViewItem.id;
+                }
+              });
+              return ret;
+            });
+            value.excluded = value.excluded.filter((excluded) => {
+              let ret = true;
+              subViewCriterionValue.excluded.forEach((subViewExcluded) => {
+                if (ret) {
+                  ret = excluded.id != subViewExcluded.id;
+                }
+              });
+              return ret;
+            });
+            objectFilter[subViewType].value = value;
+            if (value.items.length === 0 && value.excluded.length === 0) {
+              delete objectFilter[subViewType];
+            }
+          }
+        });
+      }
+
+      const newDefaultFilters = JSON.stringify({
+        ...existingDefaultFilters,
+        [view.toString()]: {
+          mode: filter.mode,
+          find_filter: filter.makeFindFilter(),
+          object_filter: objectFilter,
+          ui_options: filterCopy.makeUIOptions(),
+        },
+      });
+
+      await saveUI({
         variables: {
           input: {
-            mode: filter.mode,
-            find_filter: filterCopy.makeFindFilter(),
-            object_filter: filterCopy.makeSavedFindFilter(),
-            ui_options: filterCopy.makeUIOptions(),
+            ...configuration?.ui,
+            defaultFilters: newDefaultFilters,
           },
         },
       });
@@ -302,7 +372,7 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
   }
 
   function maybeRenderSetDefaultButton() {
-    if (persistState === PersistanceLevel.ALL) {
+    if (view) {
       return (
         <div className="mt-1">
           <Button

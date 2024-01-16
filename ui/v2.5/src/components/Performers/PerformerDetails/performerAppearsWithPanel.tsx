@@ -2,6 +2,7 @@ import React from "react";
 import * as GQL from "src/core/generated-graphql";
 import { PerformerList } from "src/components/Performers/PerformerList";
 import { usePerformerFilterHook } from "src/core/performers";
+import { View } from "src/components/List/views";
 
 interface IPerformerDetailsProps {
   active: boolean;
@@ -28,6 +29,7 @@ export const PerformerAppearsWithPanel: React.FC<IPerformerDetailsProps> = ({
       filterHook={filterHook}
       extraCriteria={extraCriteria}
       alterQuery={active}
+      view={View.PerformerAppearsWith}
     />
   );
 };

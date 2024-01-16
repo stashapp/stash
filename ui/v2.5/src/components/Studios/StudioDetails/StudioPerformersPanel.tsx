@@ -3,6 +3,7 @@ import * as GQL from "src/core/generated-graphql";
 import { useStudioFilterHook } from "src/core/studios";
 import { PerformerList } from "src/components/Performers/PerformerList";
 import { StudiosCriterion } from "src/models/list-filter/criteria/studios";
+import { View } from "src/components/List/views";
 
 interface IStudioPerformersPanel {
   active: boolean;
@@ -34,6 +35,7 @@ export const StudioPerformersPanel: React.FC<IStudioPerformersPanel> = ({
       filterHook={filterHook}
       extraCriteria={extraCriteria}
       alterQuery={active}
+      view={View.StudioPerformers}
     />
   );
 };

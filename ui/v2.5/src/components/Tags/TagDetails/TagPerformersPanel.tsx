@@ -2,6 +2,7 @@ import React from "react";
 import * as GQL from "src/core/generated-graphql";
 import { useTagFilterHook } from "src/core/tags";
 import { PerformerList } from "src/components/Performers/PerformerList";
+import { View } from "src/components/List/views";
 
 interface ITagPerformersPanel {
   active: boolean;
@@ -13,5 +14,11 @@ export const TagPerformersPanel: React.FC<ITagPerformersPanel> = ({
   tag,
 }) => {
   const filterHook = useTagFilterHook(tag);
-  return <PerformerList filterHook={filterHook} alterQuery={active} />;
+  return (
+    <PerformerList
+      filterHook={filterHook}
+      alterQuery={active}
+      view={View.TagPerformers}
+    />
+  );
 };

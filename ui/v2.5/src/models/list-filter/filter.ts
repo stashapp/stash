@@ -8,6 +8,11 @@ import {
 import { Criterion, CriterionValue } from "./criteria/criterion";
 import { getFilterOptions } from "./factory";
 import { CriterionType, DisplayMode } from "./types";
+import * as GQL from "src/core/generated-graphql";
+import { useContext, useMemo } from "react";
+import { ConfigurationContext } from "src/hooks/Config";
+import { View } from "src/components/List/views";
+import { DefaultFilters, IUIConfig } from "src/core/config";
 
 interface IDecodedParams {
   perPage?: number;
@@ -85,12 +90,32 @@ export class ListFilterModel {
     return this.criteria.length;
   }
 
-  public configureFromDecodedParams(params: IDecodedParams) {
+  public configureFromDecodedParams(
+    params: IDecodedParams,
+    defaultFilter: ListFilterModel | undefined = undefined
+  ) {
     if (params.perPage !== undefined) {
       this.itemsPerPage = params.perPage;
+    } else if (
+      defaultFilter !== undefined &&
+      defaultFilter.itemsPerPage !== undefined
+    ) {
+      this.itemsPerPage = defaultFilter.itemsPerPage;
     }
     if (params.sortby !== undefined) {
       this.sortBy = params.sortby;
+
+      // parse the random seed if provided
+      const match = this.sortBy.match(/^random_(\d+)$/);
+      if (match) {
+        this.sortBy = "random";
+        this.randomSeed = Number.parseInt(match[1], 10);
+      }
+    } else if (
+      defaultFilter !== undefined &&
+      defaultFilter.sortBy !== undefined
+    ) {
+      this.sortBy = defaultFilter.sortBy;
 
       // parse the random seed if provided
       const match = this.sortBy.match(/^random_(\d+)$/);
@@ -104,6 +129,11 @@ export class ListFilterModel {
         params.sortdir === "desc"
           ? SortDirectionEnum.Desc
           : SortDirectionEnum.Asc;
+    } else if (
+      defaultFilter !== undefined &&
+      defaultFilter.sortDirection !== undefined
+    ) {
+      this.sortDirection = defaultFilter.sortDirection;
     } else {
       // #3193 - sortdir undefined means asc
       // #3559 - unless sortby is date, then desc
@@ -114,13 +144,28 @@ export class ListFilterModel {
     }
     if (params.disp !== undefined) {
       this.displayMode = params.disp;
+    } else if (
+      defaultFilter !== undefined &&
+      defaultFilter.displayMode !== undefined
+    ) {
+      this.displayMode = defaultFilter.displayMode;
     }
     if (params.q !== undefined) {
       this.searchTerm = params.q;
+    } else if (
+      defaultFilter !== undefined &&
+      defaultFilter.searchTerm !== undefined
+    ) {
+      this.searchTerm = defaultFilter.searchTerm;
     }
-    this.currentPage = params.p ?? 1;
+    this.currentPage = params.p ?? defaultFilter?.currentPage ?? 1;
     if (params.z !== undefined) {
       this.zoomIndex = params.z;
+    } else if (
+      defaultFilter !== undefined &&
+      defaultFilter.zoomIndex !== undefined
+    ) {
+      this.zoomIndex = defaultFilter.zoomIndex;
     }
 
     this.criteria = [];
@@ -134,6 +179,20 @@ export class ListFilterModel {
         } catch (err) {
           // eslint-disable-next-line no-console
           console.error("Failed to parse encoded criterion:", err);
+        }
+      }
+    }
+    if (defaultFilter !== undefined && defaultFilter.criteria !== undefined) {
+      for (const criterion of defaultFilter.criteria) {
+        let addCriterion = true;
+        for (const existingCriterion of this.criteria) {
+          if (existingCriterion.criterionOption === criterion.criterionOption) {
+            addCriterion = false;
+            break;
+          }
+        }
+        if (addCriterion) {
+          this.criteria.push(criterion);
         }
       }
     }
@@ -230,7 +289,10 @@ export class ListFilterModel {
       .join("");
   }
 
-  public configureFromQueryString(queryString: string) {
+  public configureFromQueryString(
+    queryString: string,
+    defaultFilter: ListFilterModel | undefined = undefined
+  ) {
     const query = new URLSearchParams(queryString);
     const params = {
       perPage: query.get("perPage"),
@@ -241,9 +303,13 @@ export class ListFilterModel {
       p: query.get("p"),
       z: query.get("z"),
       c: query.getAll("c"),
+      defaultFilter: query.get("defaultFilter"),
     };
     const decoded = ListFilterModel.decodeParams(params);
-    this.configureFromDecodedParams(decoded);
+    this.configureFromDecodedParams(
+      decoded,
+      params.defaultFilter?.toLowerCase() == "true" ? defaultFilter : undefined
+    );
   }
 
   public configureFromSavedFilter(savedFilter: SavedFilterDataFragment) {
@@ -378,7 +444,7 @@ export class ListFilterModel {
     return JSON.stringify(result);
   }
 
-  public makeQueryParameters(): string {
+  public makeQueryParameters(defaultFilter: boolean = true): string {
     const query: string[] = [];
     const params = this.getEncodedParams();
 
@@ -408,6 +474,7 @@ export class ListFilterModel {
     if (params.p) {
       query.push(`p=${params.p}`);
     }
+    query.push(`defaultFilter=${defaultFilter}`);
 
     return query.join("&");
   }
@@ -446,7 +513,8 @@ export class ListFilterModel {
   }
 
   public makeSavedFindFilter() {
-    const output: Record<string, unknown> = {};
+    const output: Record<string, { value: CriterionValue; modifier: string }> =
+      {};
     this.criteria.forEach((criterion) => {
       criterion.toSavedFilter(output);
     });
@@ -461,3 +529,54 @@ export class ListFilterModel {
     };
   }
 }
+
+// const recursiveRenameToSnakeCase = (
+//   camelCaseObject: Record<string, unknown>
+// ) => {
+//   let camelCaseKeys = Object.keys(camelCaseObject);
+//   camelCaseKeys.forEach((key) => {
+//     if (
+//       typeof camelCaseObject[key] === "object" &&
+//       !Array.isArray(camelCaseObject[key]) &&
+//       camelCaseObject[key] !== null
+//     ) {
+//       let cco: Record<string, unknown> = Object(camelCaseObject[key]);
+//       camelCaseObject[key] = recursiveRenameToSnakeCase(cco);
+//     }
+//     let snakeCaseKey = key.replace(/([a-z])([A-Z])/g, "$1_$2").toLowerCase();
+//     if (snakeCaseKey !== key) {
+//       camelCaseObject[snakeCaseKey] = camelCaseObject[key];
+//       delete camelCaseObject[key];
+//     }
+//   });
+//   return camelCaseObject;
+// };
+
+export const useDefaultFilter = (mode: GQL.FilterMode, view?: View) => {
+  let { configuration: config, loading } = useContext(ConfigurationContext);
+  const { defaultFilters } = config?.ui as IUIConfig;
+
+  const defaultFilter = useMemo(() => {
+    // TODO - this is a horrible temporary workaround for viper
+    let parsed: DefaultFilters;
+
+    try {
+      parsed = JSON.parse(defaultFilters ?? "{}");
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.error("Failed to parse default filters:", e);
+      return undefined;
+    }
+
+    const savedFilter = view ? parsed[view] : undefined;
+    if (!view || !savedFilter) return undefined;
+
+    let filter = new ListFilterModel(mode, config);
+    filter.configureFromSavedFilter(savedFilter);
+    filter.currentPage = 1;
+    filter.randomSeed = -1;
+    return filter;
+  }, [config, mode, view, defaultFilters]);
+
+  return { defaultFilter, loading };
+};
