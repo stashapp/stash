@@ -4,7 +4,11 @@ import {
   GenderEnum,
 } from "src/core/generated-graphql";
 import { genderStrings, stringToGender } from "src/utils/gender";
-import { CriterionOption, MultiStringCriterion } from "./criterion";
+import {
+  CriterionOption,
+  IEncodedCriterion,
+  MultiStringCriterion,
+} from "./criterion";
 
 export const GenderCriterionOption = new CriterionOption({
   messageID: "gender",
@@ -32,5 +36,19 @@ export class GenderCriterion extends MultiStringCriterion {
       value_list: value,
       modifier: this.modifier,
     };
+  }
+
+  public setFromEncodedCriterion(
+    encodedCriterion: IEncodedCriterion<string[]>
+  ) {
+    // backwards compatibility - if the value is a string, convert it to an array
+    if (typeof encodedCriterion.value === "string") {
+      encodedCriterion = {
+        ...encodedCriterion,
+        value: [encodedCriterion.value],
+      };
+    }
+
+    super.setFromEncodedCriterion(encodedCriterion);
   }
 }
