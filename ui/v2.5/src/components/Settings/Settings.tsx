@@ -1,6 +1,6 @@
 import React from "react";
-import { Tab, Nav, Row, Col } from "react-bootstrap";
-import { Redirect, RouteComponentProps } from "react-router-dom";
+import { Tab, Nav, Row, Col, Form } from "react-bootstrap";
+import { Redirect } from "react-router-dom";
 import { LinkContainer } from "react-router-bootstrap";
 import { FormattedMessage } from "react-intl";
 import { Helmet } from "react-helmet";
@@ -14,7 +14,7 @@ import { SettingsPluginsPanel } from "./SettingsPluginsPanel";
 import { SettingsScrapingPanel } from "./SettingsScrapingPanel";
 import { SettingsToolsPanel } from "./SettingsToolsPanel";
 import { SettingsServicesPanel } from "./SettingsServicesPanel";
-import { SettingsContext } from "./context";
+import { SettingsContext, useSettings } from "./context";
 import { SettingsLibraryPanel } from "./SettingsLibraryPanel";
 import { SettingsSecurityPanel } from "./SettingsSecurityPanel";
 import Changelog from "../Changelog/Changelog";
@@ -41,8 +41,10 @@ function isTabKey(tab: string | null): tab is TabKey {
   return validTabs.includes(tab as TabKey);
 }
 
-const Settings: React.FC<RouteComponentProps> = ({ location }) => {
+const SettingTabs: React.FC = () => {
   const tab = new URLSearchParams(location.search).get("tab");
+
+  const { advancedMode, setAdvancedMode } = useSettings();
 
   const titleProps = useTitleProps({ id: "settings" });
 
@@ -147,6 +149,18 @@ const Settings: React.FC<RouteComponentProps> = ({ location }) => {
                 </Nav.Link>
               </LinkContainer>
             </Nav.Item>
+            <Nav.Item>
+              <div className="advanced-switch">
+                <Form.Label htmlFor="advanced-settings">
+                  <FormattedMessage id="config.advanced_mode" />
+                </Form.Label>
+                <Form.Switch
+                  id="advanced-settings"
+                  checked={advancedMode}
+                  onChange={() => setAdvancedMode(!advancedMode)}
+                />
+              </div>
+            </Nav.Item>
             <hr className="d-sm-none" />
           </Nav>
         </Col>
@@ -156,49 +170,55 @@ const Settings: React.FC<RouteComponentProps> = ({ location }) => {
           md={{ offset: 3 }}
           xl={{ offset: 2 }}
         >
-          <SettingsContext>
-            <Tab.Content className="mx-auto">
-              <Tab.Pane eventKey="library">
-                <SettingsLibraryPanel />
-              </Tab.Pane>
-              <Tab.Pane eventKey="interface">
-                <SettingsInterfacePanel />
-              </Tab.Pane>
-              <Tab.Pane eventKey="security">
-                <SettingsSecurityPanel />
-              </Tab.Pane>
-              <Tab.Pane eventKey="tasks">
-                <SettingsTasksPanel />
-              </Tab.Pane>
-              <Tab.Pane eventKey="services" unmountOnExit>
-                <SettingsServicesPanel />
-              </Tab.Pane>
-              <Tab.Pane eventKey="tools" unmountOnExit>
-                <SettingsToolsPanel />
-              </Tab.Pane>
-              <Tab.Pane eventKey="metadata-providers" unmountOnExit>
-                <SettingsScrapingPanel />
-              </Tab.Pane>
-              <Tab.Pane eventKey="system">
-                <SettingsConfigurationPanel />
-              </Tab.Pane>
-              <Tab.Pane eventKey="plugins" unmountOnExit>
-                <SettingsPluginsPanel />
-              </Tab.Pane>
-              <Tab.Pane eventKey="logs" unmountOnExit>
-                <SettingsLogsPanel />
-              </Tab.Pane>
-              <Tab.Pane eventKey="changelog" unmountOnExit>
-                <Changelog />
-              </Tab.Pane>
-              <Tab.Pane eventKey="about" unmountOnExit>
-                <SettingsAboutPanel />
-              </Tab.Pane>
-            </Tab.Content>
-          </SettingsContext>
+          <Tab.Content className="mx-auto">
+            <Tab.Pane eventKey="library">
+              <SettingsLibraryPanel />
+            </Tab.Pane>
+            <Tab.Pane eventKey="interface">
+              <SettingsInterfacePanel />
+            </Tab.Pane>
+            <Tab.Pane eventKey="security">
+              <SettingsSecurityPanel />
+            </Tab.Pane>
+            <Tab.Pane eventKey="tasks">
+              <SettingsTasksPanel />
+            </Tab.Pane>
+            <Tab.Pane eventKey="services" unmountOnExit>
+              <SettingsServicesPanel />
+            </Tab.Pane>
+            <Tab.Pane eventKey="tools" unmountOnExit>
+              <SettingsToolsPanel />
+            </Tab.Pane>
+            <Tab.Pane eventKey="metadata-providers" unmountOnExit>
+              <SettingsScrapingPanel />
+            </Tab.Pane>
+            <Tab.Pane eventKey="system">
+              <SettingsConfigurationPanel />
+            </Tab.Pane>
+            <Tab.Pane eventKey="plugins" unmountOnExit>
+              <SettingsPluginsPanel />
+            </Tab.Pane>
+            <Tab.Pane eventKey="logs" unmountOnExit>
+              <SettingsLogsPanel />
+            </Tab.Pane>
+            <Tab.Pane eventKey="changelog" unmountOnExit>
+              <Changelog />
+            </Tab.Pane>
+            <Tab.Pane eventKey="about" unmountOnExit>
+              <SettingsAboutPanel />
+            </Tab.Pane>
+          </Tab.Content>
         </Col>
       </Row>
     </Tab.Container>
+  );
+};
+
+export const Settings: React.FC = () => {
+  return (
+    <SettingsContext>
+      <SettingTabs />
+    </SettingsContext>
   );
 };
 

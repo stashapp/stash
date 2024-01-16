@@ -240,6 +240,7 @@ export const SettingsInterfacePanel: React.FC = () => {
         />
 
         <SelectSetting
+          advanced
           id="wall-preview"
           headingID="config.ui.preview_type.heading"
           subHeadingID="config.ui.preview_type.description"

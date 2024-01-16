@@ -215,6 +215,7 @@
       "stash_wiki": "Stash {url} page",
       "version": "Version"
     },
+    "advanced_mode": "Advanced Mode",
     "application_paths": {
       "heading": "Application Paths"
     },

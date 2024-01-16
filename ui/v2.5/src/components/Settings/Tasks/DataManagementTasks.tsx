@@ -583,6 +583,7 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
 
       <SettingSection headingID="config.tasks.migrations">
         <Setting
+          advanced
           headingID="actions.rename_gen_files"
           subHeadingID="config.tasks.migrate_hash_files"
         >
