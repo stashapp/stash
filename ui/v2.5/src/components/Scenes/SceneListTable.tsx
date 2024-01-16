@@ -66,7 +66,7 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
       : `/scenes/${scene.id}`;
 
     return (
-      <Link to={sceneLink}>
+      <Link to={sceneLink} title={title}>
         <span className="ellips-data">{title}</span>
       </Link>
     );

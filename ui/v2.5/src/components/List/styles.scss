@@ -420,8 +420,7 @@ input[type="range"].zoom-slider {
     }
   }
 
-  .comma-list:hover,
-  td .ellips-data:hover {
+  .comma-list:hover {
     background: #28343c;
     border: 1px solid #414c53;
     box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.28);
@@ -457,6 +456,10 @@ input[type="range"].zoom-slider {
     }
 
     /* stylelint-disable selector-max-type */
+    li a .ellips-data:hover {
+      max-width: fit-content;
+    }
+
     a div,
     a span {
       font-weight: 600;
