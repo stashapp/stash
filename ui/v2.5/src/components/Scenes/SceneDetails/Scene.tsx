@@ -624,7 +624,7 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
   async function getQueueFilterScenes(filter: ListFilterModel) {
     const query = await queryFindScenes(filter);
     const { scenes, count } = query.data.findScenes;
-    setQueueScenes(scenes as unknown as QueuedScene[]);
+    setQueueScenes(scenes);
     setQueueTotal(count);
     setQueueStart((filter.currentPage - 1) * filter.itemsPerPage + 1);
   }
@@ -632,7 +632,7 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
   async function getQueueScenes(sceneIDs: number[]) {
     const query = await queryFindScenesByID(sceneIDs);
     const { scenes, count } = query.data.findScenes;
-    setQueueScenes(scenes as unknown as QueuedScene[]);
+    setQueueScenes(scenes);
     setQueueTotal(count);
     setQueueStart(1);
   }
@@ -657,7 +657,7 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
     const { scenes } = query.data.findScenes;
 
     // prepend scenes to scene list
-    const newScenes = (scenes as unknown as QueuedScene[]).concat(queueScenes);
+    const newScenes = (scenes as QueuedScene[]).concat(queueScenes);
     setQueueScenes(newScenes);
     setQueueStart(newStart);
 
@@ -680,7 +680,7 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
     const { scenes } = query.data.findScenes;
 
     // append scenes to scene list
-    const newScenes = queueScenes.concat(scenes as unknown as QueuedScene[]);
+    const newScenes = queueScenes.concat(scenes);
     setQueueScenes(newScenes);
     // don't change queue start
     return scenes;
