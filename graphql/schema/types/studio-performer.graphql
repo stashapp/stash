@@ -1,0 +1,18 @@
+type StudioPerformer {
+  performer_id: ID!
+  studio_id: ID!
+  "Number of Scenes the Performer appears in for the Studio"
+  scene_count: Int! # Resolver
+  "Number of Images the Performer appears in for the Studio"
+  image_count: Int! # Resolver
+  "Number of Galleries the Performer appears in for the Studio"
+  gallery_count: Int! # Resolver
+  "Number of Movies the Performer appears in for the Studio"
+  movie_count: Int! # Resolver
+  performer: Performer!
+}
+
+type FindStudioPerformersResultType {
+  count: Int!
+  studioPerformer: [StudioPerformer!]!
+}

@@ -310,6 +310,36 @@ export const useFindStudios = (filter?: ListFilterModel) =>
     },
   });
 
+export const useFindStudioPerformers = (
+  filter?: ListFilterModel,
+  id?: string,
+  depth?: number
+) =>
+  GQL.useFindStudioPerformersQuery({
+    skip: id === "" || id === undefined,
+    variables: {
+      id: id as string,
+      depth: depth,
+      filter: filter?.makeFindFilter(),
+      performer_filter: filter?.makeFilter(),
+    },
+  });
+
+export const queryFindStudioPerformers = (
+  filter: ListFilterModel,
+  id: string,
+  depth?: number
+) =>
+  client.query<GQL.FindStudioPerformersQuery>({
+    query: GQL.FindStudioPerformersDocument,
+    variables: {
+      id: id,
+      depth: depth,
+      filter: filter?.makeFindFilter(),
+      performer_filter: filter?.makeFilter(),
+    },
+  });
+
 export const queryFindStudios = (filter: ListFilterModel) =>
   client.query<GQL.FindStudiosQuery>({
     query: GQL.FindStudiosDocument,
@@ -403,7 +433,7 @@ const sceneMutationImpactedTypeFields = {
     "movie_count",
     "performer_count",
   ],
-  Studio: ["scene_count", "performer_count"],
+  Studio: ["scene_count", "performer_count", "performers"],
   Tag: ["scene_count"],
 };
 
@@ -790,7 +820,7 @@ export const useSceneIncrementPlayCount = () =>
 const imageMutationImpactedTypeFields = {
   Gallery: ["images", "image_count"],
   Performer: ["image_count", "performer_count"],
-  Studio: ["image_count", "performer_count"],
+  Studio: ["image_count", "performer_count", "performers"],
   Tag: ["image_count"],
 };
 
@@ -1190,7 +1220,7 @@ export const useSceneMarkerDestroy = () =>
 const galleryMutationImpactedTypeFields = {
   Scene: ["galleries"],
   Performer: ["gallery_count", "performer_count"],
-  Studio: ["gallery_count", "performer_count"],
+  Studio: ["gallery_count", "performer_count", "performers"],
   Tag: ["gallery_count"],
 };
 

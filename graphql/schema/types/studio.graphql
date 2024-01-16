@@ -20,6 +20,13 @@ type Studio {
   created_at: Time!
   updated_at: Time!
   movies: [Movie!]!
+  "Returns Performers appearing in Scenes, Images, Galleries or Movies with the Studio"
+  performers(
+    performer_filter: PerformerFilterType
+    filter: FindFilterType
+    "How far down the Studio hierarchy to fetch Performers. -1 = all, 0 (default) = current studio only, 1 = current and children, 2 = current, children and grandchildren, etc"
+    depth: Int
+  ): FindStudioPerformersResultType!
 }
 
 input StudioCreateInput {

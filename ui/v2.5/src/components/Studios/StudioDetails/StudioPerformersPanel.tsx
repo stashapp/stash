@@ -1,8 +1,9 @@
 import React from "react";
 import * as GQL from "src/core/generated-graphql";
-import { useStudioFilterHook } from "src/core/studios";
 import { PerformerList } from "src/components/Performers/PerformerList";
 import { StudiosCriterion } from "src/models/list-filter/criteria/studios";
+import { ConfigurationContext } from "src/hooks/Config";
+import { IUIConfig } from "src/core/config";
 
 interface IStudioPerformersPanel {
   active: boolean;
@@ -14,10 +15,15 @@ export const StudioPerformersPanel: React.FC<IStudioPerformersPanel> = ({
   studio,
 }) => {
   const studioCriterion = new StudiosCriterion();
+  const config = React.useContext(ConfigurationContext);
+  const depth = (config?.configuration?.ui as IUIConfig)?.showChildStudioContent
+    ? -1
+    : 0;
+
   studioCriterion.value = {
     items: [{ id: studio.id!, label: studio.name || `Studio ${studio.id}` }],
     excluded: [],
-    depth: 0,
+    depth: depth,
   };
 
   const extraCriteria = {
@@ -27,11 +33,15 @@ export const StudioPerformersPanel: React.FC<IStudioPerformersPanel> = ({
     movies: [studioCriterion],
   };
 
-  const filterHook = useStudioFilterHook(studio);
+  const queryArgs = {
+    id: studio.id,
+    depth: depth,
+    type: "STUDIO",
+  };
 
   return (
     <PerformerList
-      filterHook={filterHook}
+      queryArgs={queryArgs}
       extraCriteria={extraCriteria}
       alterQuery={active}
     />
