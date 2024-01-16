@@ -41,6 +41,7 @@ export const ScanOptions: React.FC<IScanOptions> = ({
         onChange={(v) => setOptions({ scanGeneratePreviews: v })}
       />
       <BooleanSetting
+        advanced
         id="scan-generate-image-previews"
         className="sub-setting"
         headingID="config.tasks.generate_previews_during_scan"

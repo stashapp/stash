@@ -83,6 +83,8 @@ export interface IUIConfig {
 
   vrTag?: string;
   pinnedFilters?: PinnedFilters;
+
+  advancedMode?: boolean;
 }
 
 interface ISavedFilterRowBroken extends ISavedFilterRow {

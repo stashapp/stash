@@ -34,6 +34,8 @@ export interface ISettingsContextState {
   ui: IUIConfig;
   plugins: PluginSettings;
 
+  advancedMode: boolean;
+
   // apikey isn't directly settable, so expose it here
   apiKey: string;
 
@@ -44,6 +46,7 @@ export interface ISettingsContextState {
   saveDLNA: (input: Partial<GQL.ConfigDlnaInput>) => void;
   saveUI: (input: Partial<IUIConfig>) => void;
   savePluginSettings: (pluginID: string, input: {}) => void;
+  setAdvancedMode: (value: boolean) => void;
 
   refetch: () => void;
 }
@@ -91,7 +94,7 @@ export const SettingsContext: React.FC = ({ children }) => {
   const [pendingDLNA, setPendingDLNA] = useState<GQL.ConfigDlnaInput>();
   const [updateDLNAConfig] = useConfigureDLNA();
 
-  const [ui, setUI] = useState({});
+  const [ui, setUI] = useState<IUIConfig>({});
   const [pendingUI, setPendingUI] = useState<{}>();
   const [updateUIConfig] = useConfigureUI();
 
@@ -430,6 +433,12 @@ export const SettingsContext: React.FC = ({ children }) => {
     });
   }
 
+  function setAdvancedMode(value: boolean) {
+    saveUI({
+      advancedMode: value,
+    });
+  }
+
   // saves the configuration if no further changes are made after a half second
   const savePluginConfig = useDebounce(async (input: PluginSettings) => {
     try {
@@ -536,6 +545,7 @@ export const SettingsContext: React.FC = ({ children }) => {
         dlna,
         ui,
         plugins,
+        advancedMode: ui.advancedMode ?? false,
         saveGeneral,
         saveInterface,
         saveDefaults,
@@ -544,6 +554,7 @@ export const SettingsContext: React.FC = ({ children }) => {
         saveUI,
         refetch,
         savePluginSettings,
+        setAdvancedMode,
       }}
     >
       {maybeRenderLoadingIndicator()}
