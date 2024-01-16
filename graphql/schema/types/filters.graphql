@@ -564,6 +564,7 @@ input MultiCriterionInput {
 
 input GenderCriterionInput {
   value: GenderEnum
+  value_list: [GenderEnum!]
   modifier: CriterionModifier!
 }
 
