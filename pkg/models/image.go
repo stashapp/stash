@@ -30,7 +30,7 @@ type ImageFilterType struct {
 	// Filter by resolution
 	Resolution *ResolutionCriterionInput `json:"resolution"`
 	// Filter by landscape/portrait
-	Orientation *OrientationEnum `json:"orientation"`
+	Orientation *OrientationCriterionInput `json:"orientation"`
 	// Filter to only include images missing this property
 	IsMissing *string `json:"is_missing"`
 	// Filter to only include images with this studio

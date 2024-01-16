@@ -3,9 +3,9 @@ package models
 type OrientationEnum string
 
 const (
-	OrientationLandscape OrientationEnum = "Landscape"
-	OrientationPortrait  OrientationEnum = "Portrait"
-	OrientationSquare    OrientationEnum = "Square"
+	OrientationLandscape OrientationEnum = "LANDSCAPE"
+	OrientationPortrait  OrientationEnum = "PORTRAIT"
+	OrientationSquare    OrientationEnum = "SQUARE"
 )
 
 func (e OrientationEnum) IsValid() bool {

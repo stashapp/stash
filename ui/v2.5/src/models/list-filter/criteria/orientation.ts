@@ -1,11 +1,18 @@
-import { orientationStrings } from "src/utils/orientation";
+import { orientationStrings, stringToOrientation } from "src/utils/orientation";
 import { CriterionType } from "../types";
-import { CriterionOption, StringCriterion } from "./criterion";
-import { CriterionModifier } from "../../../core/generated-graphql";
+import { CriterionOption, MultiStringCriterion } from "./criterion";
+import {
+  OrientationCriterionInput,
+  OrientationEnum,
+} from "src/core/generated-graphql";
 
-export class OrientationCriterion extends StringCriterion {
-  protected toCriterionInput(): string {
-    return this.value;
+export class OrientationCriterion extends MultiStringCriterion {
+  protected toCriterionInput(): OrientationCriterionInput {
+    return {
+      value: this.value
+        .map((v) => stringToOrientation(v))
+        .filter((v) => v) as OrientationEnum[],
+    };
   }
 }
 
@@ -14,9 +21,7 @@ class BaseOrientationCriterionOption extends CriterionOption {
     super({
       messageID: value,
       type: value,
-      modifierOptions: [],
       options: orientationStrings,
-      defaultModifier: CriterionModifier.Equals,
       makeCriterion: () => new OrientationCriterion(this),
     });
   }
