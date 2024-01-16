@@ -1,8 +1,4 @@
-import {
-  FilterMode,
-  Scene,
-  SceneDataFragment,
-} from "src/core/generated-graphql";
+import { FilterMode, Scene } from "src/core/generated-graphql";
 import { ListFilterModel } from "./list-filter/filter";
 import { SceneListFilterOptions } from "./list-filter/scenes";
 import { INamedObject } from "src/utils/navigation";

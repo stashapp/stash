@@ -567,16 +567,6 @@ input[type="range"].blue-slider {
     }
   }
 }
-@media (max-width: 1200px) {
-  .queue-scene-title,
-  .queue-scene-studio,
-  .queue-scene-performers,
-  .queue-scene-date {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-}
 
 #queue-viewer {
   .queue-controls {
@@ -599,6 +589,10 @@ input[type="range"].blue-slider {
 
   .queue-scene-title {
     font-size: 1.2rem;
+
+    @media (max-width: 576px) {
+      font-size: 1rem;
+    }
   }
 
   .queue-scene-studio {
@@ -611,6 +605,10 @@ input[type="range"].blue-slider {
     color: #d3d0d0;
     font-size: 0.9rem;
     font-weight: 400;
+
+    @media (max-width: 576px) {
+      font-size: 0.8rem;
+    }
   }
 
   .thumbnail-container {
