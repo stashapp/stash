@@ -438,6 +438,10 @@ input[type="range"].zoom-slider {
     z-index: 100;
   }
 
+  .comma-list li .ellips-data:hover {
+    max-width: fit-content;
+  }
+
   td {
     position: relative;
     text-align: left;
@@ -455,17 +459,10 @@ input[type="range"].zoom-slider {
       display: none;
     }
 
-    /* stylelint-disable selector-max-type */
-    li a .ellips-data:hover {
-      max-width: fit-content;
-    }
-
-    a div,
-    a span {
+    a {
       font-weight: 600;
       white-space: nowrap;
     }
-    /* stylelint-enable selector-max-type */
   }
 
   td.select-col {
