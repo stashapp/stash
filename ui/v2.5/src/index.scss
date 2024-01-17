@@ -462,35 +462,6 @@ textarea.text-input {
   overflow-y: scroll;
 }
 
-.table-list {
-  min-width: min-content;
-}
-
-.table-list a {
-  color: $text-color;
-}
-
-.table-list table {
-  width: inherit;
-}
-
-.table-list td,
-.table-list th {
-  border-left: 1px solid #414c53;
-  font-size: 1rem;
-  text-align: center;
-  vertical-align: middle;
-
-  h5,
-  h6 {
-    font-size: 1rem;
-  }
-
-  &:first-child {
-    border-left: none;
-  }
-}
-
 /* stylelint-disable declaration-no-important */
 .border-row {
   background-color: #414c53;

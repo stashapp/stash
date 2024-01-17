@@ -8,6 +8,7 @@ import Select, {
   MenuListProps,
   GroupBase,
   OptionsOrGroups,
+  DropdownIndicatorProps,
 } from "react-select";
 import CreatableSelect from "react-select/creatable";
 
@@ -32,6 +33,8 @@ import { defaultMaxOptionsShown, IUIConfig } from "src/core/config";
 import { useDebounce } from "src/hooks/debounce";
 import { Placement } from "react-bootstrap/esm/Overlay";
 import { PerformerIDSelect } from "../Performers/PerformerSelect";
+import { Icon } from "./Icon";
+import { faTableColumns } from "@fortawesome/free-solid-svg-icons";
 
 export type SelectObject = {
   id: string;
@@ -975,6 +978,94 @@ export const ListSelect = <T extends {}>(props: IListSelect<T>) => {
         IndicatorSeparator: () => null,
         ...{ DropdownIndicator: () => null },
         ...{ MultiValueRemove: () => null },
+      }}
+    />
+  );
+};
+
+type DisableOption = Option & {
+  disabled?: boolean;
+};
+
+interface ICheckBoxSelectProps {
+  options: DisableOption[];
+  selectedOptions?: DisableOption[];
+  onChange: (item: OnChangeValue<DisableOption, true>) => void;
+}
+
+export const CheckBoxSelect: React.FC<ICheckBoxSelectProps> = ({
+  options,
+  selectedOptions,
+  onChange,
+}) => {
+  const Option = (props: OptionProps<DisableOption, true>) => (
+    <reactSelectComponents.Option {...props}>
+      <input
+        type="checkbox"
+        disabled={props.data.disabled}
+        checked={props.isSelected}
+        onChange={() => null}
+        className="mr-1"
+      />
+      <label>{props.label}</label>
+    </reactSelectComponents.Option>
+  );
+
+  const DropdownIndicator = (
+    props: DropdownIndicatorProps<DisableOption, true>
+  ) => (
+    <reactSelectComponents.DropdownIndicator {...props}>
+      <Icon icon={faTableColumns} className="column-select" />
+    </reactSelectComponents.DropdownIndicator>
+  );
+
+  return (
+    <Select
+      className="CheckBoxSelect"
+      options={options}
+      value={selectedOptions}
+      isMulti
+      closeMenuOnSelect={false}
+      hideSelectedOptions={false}
+      isSearchable={false}
+      isClearable={false}
+      components={{
+        DropdownIndicator,
+        Option,
+        ValueContainer: () => null,
+        IndicatorSeparator: () => null,
+      }}
+      onChange={onChange}
+      styles={{
+        control: (base) => ({
+          ...base,
+          height: "25px",
+          width: "25px",
+          backgroundColor: "none",
+          border: "none",
+          transition: "none",
+          cursor: "pointer",
+        }),
+        dropdownIndicator: (base) => ({
+          ...base,
+          color: "rgb(255, 255, 255)",
+          padding: "0",
+        }),
+        menu: (base) => ({
+          ...base,
+          backgroundColor: "rgb(57, 75, 89)",
+        }),
+        option: (base, fprops) => ({
+          ...base,
+          backgroundColor: fprops.isFocused
+            ? "rgb(37, 49, 58)"
+            : "rgb(57, 75, 89)",
+          padding: "0px 12px",
+        }),
+        menuList: (base) => ({
+          ...base,
+          position: "fixed",
+        }),
       }}
     />
   );

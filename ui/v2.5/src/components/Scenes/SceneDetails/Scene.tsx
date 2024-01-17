@@ -680,7 +680,7 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
     const { scenes } = query.data.findScenes;
 
     // append scenes to scene list
-    const newScenes = queueScenes.concat(scenes as QueuedScene[]);
+    const newScenes = queueScenes.concat(scenes);
     setQueueScenes(newScenes);
     // don't change queue start
     return scenes;

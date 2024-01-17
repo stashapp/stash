@@ -15,6 +15,7 @@ export const CircumcisedCriterionOption = new CriterionOption({
     CriterionModifier.IsNull,
     CriterionModifier.NotNull,
   ],
+  defaultModifier: CriterionModifier.Includes,
   options: circumcisedStrings,
   makeCriterion: () => new CircumcisedCriterion(),
 });

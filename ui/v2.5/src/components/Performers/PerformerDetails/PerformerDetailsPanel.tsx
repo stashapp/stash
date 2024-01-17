@@ -3,10 +3,16 @@ import { useIntl } from "react-intl";
 import { TagLink } from "src/components/Shared/TagLink";
 import * as GQL from "src/core/generated-graphql";
 import TextUtils from "src/utils/text";
-import { cmToImperial, cmToInches, kgToLbs } from "src/utils/units";
 import { DetailItem } from "src/components/Shared/DetailItem";
 import { CountryFlag } from "src/components/Shared/CountryFlag";
 import { StashIDPill } from "src/components/Shared/StashID";
+import {
+  FormatAge,
+  FormatCircumcised,
+  FormatHeight,
+  FormatPenisLength,
+  FormatWeight,
+} from "../PerformerList";
 
 interface IPerformerDetails {
   performer: GQL.PerformerDataFragment;
@@ -50,123 +56,6 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
       </ul>
     );
   }
-
-  const formatHeight = (height?: number | null) => {
-    if (!height) {
-      return "";
-    }
-
-    const [feet, inches] = cmToImperial(height);
-
-    return (
-      <span className="performer-height">
-        <span className="height-metric">
-          {intl.formatNumber(height, {
-            style: "unit",
-            unit: "centimeter",
-            unitDisplay: "short",
-          })}
-        </span>
-        <span className="height-imperial">
-          {intl.formatNumber(feet, {
-            style: "unit",
-            unit: "foot",
-            unitDisplay: "narrow",
-          })}
-          {intl.formatNumber(inches, {
-            style: "unit",
-            unit: "inch",
-            unitDisplay: "narrow",
-          })}
-        </span>
-      </span>
-    );
-  };
-
-  const formatAge = (birthdate?: string | null, deathdate?: string | null) => {
-    if (!birthdate) {
-      return "";
-    }
-
-    const age = TextUtils.age(birthdate, deathdate);
-
-    return (
-      <span className="performer-age">
-        <span className="age">{age}</span>
-        <span className="birthdate"> ({birthdate})</span>
-      </span>
-    );
-  };
-
-  const formatWeight = (weight?: number | null) => {
-    if (!weight) {
-      return "";
-    }
-
-    const lbs = kgToLbs(weight);
-
-    return (
-      <span className="performer-weight">
-        <span className="weight-metric">
-          {intl.formatNumber(weight, {
-            style: "unit",
-            unit: "kilogram",
-            unitDisplay: "short",
-          })}
-        </span>
-        <span className="weight-imperial">
-          {intl.formatNumber(lbs, {
-            style: "unit",
-            unit: "pound",
-            unitDisplay: "short",
-          })}
-        </span>
-      </span>
-    );
-  };
-
-  const formatPenisLength = (penis_length?: number | null) => {
-    if (!penis_length) {
-      return "";
-    }
-
-    const inches = cmToInches(penis_length);
-
-    return (
-      <span className="performer-penis-length">
-        <span className="penis-length-metric">
-          {intl.formatNumber(penis_length, {
-            style: "unit",
-            unit: "centimeter",
-            unitDisplay: "short",
-            maximumFractionDigits: 2,
-          })}
-        </span>
-        <span className="penis-length-imperial">
-          {intl.formatNumber(inches, {
-            style: "unit",
-            unit: "inch",
-            unitDisplay: "narrow",
-            maximumFractionDigits: 2,
-          })}
-        </span>
-      </span>
-    );
-  };
-
-  const formatCircumcised = (circumcised?: GQL.CircumisedEnum | null) => {
-    if (!circumcised) {
-      return "";
-    }
-
-    return (
-      <span className="penis-circumcised">
-        {intl.formatMessage({
-          id: "circumcised_types." + performer.circumcised,
-        })}
-      </span>
-    );
-  };
 
   function maybeRenderExtraDetails() {
     if (!collapsed) {
@@ -224,7 +113,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
         value={
           !fullWidth
             ? TextUtils.age(performer.birthdate, performer.death_date)
-            : formatAge(performer.birthdate, performer.death_date)
+            : FormatAge(performer.birthdate, performer.death_date)
         }
         title={
           !fullWidth
@@ -266,22 +155,22 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
       />
       <DetailItem
         id="height"
-        value={formatHeight(performer.height_cm)}
+        value={FormatHeight(performer.height_cm)}
         fullWidth={fullWidth}
       />
       <DetailItem
         id="weight"
-        value={formatWeight(performer.weight)}
+        value={FormatWeight(performer.weight)}
         fullWidth={fullWidth}
       />
       <DetailItem
         id="penis_length"
-        value={formatPenisLength(performer.penis_length)}
+        value={FormatPenisLength(performer.penis_length)}
         fullWidth={fullWidth}
       />
       <DetailItem
         id="circumcised"
-        value={formatCircumcised(performer.circumcised)}
+        value={FormatCircumcised(performer.circumcised)}
         fullWidth={fullWidth}
       />
       <DetailItem

@@ -60,6 +60,9 @@ export interface IUIConfig {
   // if true the chromecast option will enabled
   enableChromecast?: boolean;
 
+  // if true the fullscreen mobile media auto-rotate option will be disabled
+  disableMobileMediaAutoRotateEnabled?: boolean;
+
   // if true continue scene will always play from the beginning
   alwaysStartFromBeginning?: boolean;
   // if true enable activity tracking
@@ -80,6 +83,8 @@ export interface IUIConfig {
 
   vrTag?: string;
   pinnedFilters?: PinnedFilters;
+
+  advancedMode?: boolean;
 }
 
 interface ISavedFilterRowBroken extends ISavedFilterRow {

@@ -281,6 +281,12 @@ textarea.scene-description {
   }
 }
 
+/* stylelint-disable selector-class-pattern */
+.table .cover_image-head,
+.table .cover_image-data {
+  text-align: center;
+}
+
 input[type="range"].filter-slider {
   height: 100%;
   margin: 0;
@@ -540,6 +546,34 @@ input[type="range"].blue-slider {
   padding-right: 0.25rem;
 }
 
+@media (min-width: 1200px) {
+  #queue-viewer {
+    .queue-scene-details {
+      width: 245px;
+    }
+
+    .queue-scene-title,
+    .queue-scene-studio,
+    .queue-scene-performers,
+    .queue-scene-date {
+      margin-right: auto;
+      min-width: 245px;
+      overflow: hidden;
+      position: relative;
+      transform: translateX(0);
+      transition: 2s;
+      white-space: nowrap;
+    }
+
+    .queue-scene-title:hover,
+    .queue-scene-studio:hover,
+    .queue-scene-performers:hover,
+    .queue-scene-date:hover {
+      transform: translateX(calc(245px - 100%));
+    }
+  }
+}
+
 #queue-viewer {
   .queue-controls {
     align-items: center;
@@ -550,15 +584,50 @@ input[type="range"].blue-slider {
     justify-content: space-between;
     position: sticky;
     top: 0;
+    z-index: 100;
+  }
+
+  .queue-scene-details {
+    display: grid;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .queue-scene-title {
+    font-size: 1.2rem;
+
+    @media (max-width: 576px) {
+      font-size: 1rem;
+    }
+  }
+
+  .queue-scene-studio {
+    color: #d3d0d0;
+    font-weight: 600;
+  }
+
+  .queue-scene-performers,
+  .queue-scene-date {
+    color: #d3d0d0;
+    font-size: 0.9rem;
+    font-weight: 400;
+
+    @media (max-width: 576px) {
+      font-size: 0.8rem;
+    }
   }
 
   .thumbnail-container {
-    height: 50px;
+    height: 80px;
     margin-bottom: 5px;
     margin-right: 0.75rem;
     margin-top: 5px;
-    min-width: 100px;
-    width: 100px;
+    min-width: 142px;
+    width: 142px;
+  }
+
+  ol {
+    padding-left: 20px;
   }
 
   img {
@@ -621,23 +690,18 @@ input[type="range"].blue-slider {
 }
 
 .scene-table {
-  table,
-  tr,
-  td,
-  label,
-  input {
-    height: 100%;
-  }
-
   td:first-child {
     padding: 0;
   }
 
   label {
-    display: block;
     margin: 0;
     padding: 0.5rem;
   }
+}
+
+.select-col {
+  width: 20px;
 }
 
 .scrape-dialog .rating-number.disabled {
