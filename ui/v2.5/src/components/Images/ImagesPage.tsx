@@ -26,15 +26,23 @@ import { Button } from "react-bootstrap";
 import { Icon } from "../Shared/Icon";
 import { faShuffle } from "@fortawesome/free-solid-svg-icons";
 import { ListPage } from "../List/ListPage";
+import { useFilterURL } from "../List/util";
 
 export const ImagesPage: React.FC = ({}) => {
   const intl = useIntl();
   const history = useHistory();
 
-  const [filter, setFilter] = useState<ListFilterModel>(
+  const [filter, setFilterState] = useState<ListFilterModel>(
     () => new ListFilterModel(FilterMode.Images)
   );
   const [slideshowRunning, setSlideshowRunning] = useState<boolean>(false);
+
+  const defaultFilter = useMemo(
+    () => new ListFilterModel(FilterMode.Images),
+    []
+  );
+
+  const { setFilter } = useFilterURL(filter, setFilterState, defaultFilter);
 
   const result = useFindImages(filter);
   const images = useMemo(

@@ -24,14 +24,22 @@ import GalleryWallCard from "./GalleryWallCard";
 import { EditGalleriesDialog } from "./EditGalleriesDialog";
 import { DeleteGalleriesDialog } from "./DeleteGalleriesDialog";
 import { ListPage } from "../List/ListPage";
+import { useFilterURL } from "../List/util";
 
 export const GalleriesPage: React.FC = ({}) => {
   const intl = useIntl();
   const history = useHistory();
 
-  const [filter, setFilter] = useState<ListFilterModel>(
+  const [filter, setFilterState] = useState<ListFilterModel>(
     () => new ListFilterModel(FilterMode.Galleries)
   );
+
+  const defaultFilter = useMemo(
+    () => new ListFilterModel(FilterMode.Galleries),
+    []
+  );
+
+  const { setFilter } = useFilterURL(filter, setFilterState, defaultFilter);
 
   const result = useFindGalleries(filter);
   const items = useMemo(

@@ -30,6 +30,7 @@ import { getFromIds } from "src/utils/data";
 import { EditScenesDialog } from "./EditScenesDialog";
 import { DeleteScenesDialog } from "./DeleteScenesDialog";
 import { ListPage } from "../List/ListPage";
+import { useFilterURL } from "../List/util";
 
 export const ScenesPage: React.FC = ({}) => {
   const intl = useIntl();
@@ -37,9 +38,16 @@ export const ScenesPage: React.FC = ({}) => {
 
   const config = React.useContext(ConfigurationContext);
 
-  const [filter, setFilter] = useState<ListFilterModel>(
+  const [filter, setFilterState] = useState<ListFilterModel>(
     () => new ListFilterModel(FilterMode.Scenes)
   );
+
+  const defaultFilter = useMemo(
+    () => new ListFilterModel(FilterMode.Scenes),
+    []
+  );
+
+  const { setFilter } = useFilterURL(filter, setFilterState, defaultFilter);
 
   const result = useFindScenes(filter);
   const items = useMemo(
