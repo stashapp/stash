@@ -567,21 +567,21 @@ input[type="range"].zoom-slider {
   height: 40px;
 
   .list-header-left {
-    flex: 0 0 33%;
+    flex-basis: 33%;
     justify-content: flex-start;
     max-width: 33%;
   }
 
   .list-header-center {
-    flex: 0 0 33%;
+    flex-basis: 33%;
     justify-content: center;
     max-width: 33%;
   }
 
   .list-header-right {
-    flex: 0 0 33%;
+    flex-basis: 34%;
     justify-content: flex-end;
-    max-width: 33%;
+    max-width: 34%;
   }
 
   .query-text-field-group {
