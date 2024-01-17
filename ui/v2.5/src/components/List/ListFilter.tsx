@@ -337,6 +337,49 @@ export const SearchField: React.FC<{
   );
 };
 
+export const SavedFilterSelect: React.FC<{
+  onFilterUpdate: (newFilter: ListFilterModel) => void;
+  filter: ListFilterModel;
+  persistState?: PersistanceLevel;
+}> = ({ onFilterUpdate, filter, persistState }) => {
+  const SavedFilterDropdown = React.forwardRef<
+    HTMLDivElement,
+    HTMLAttributes<HTMLDivElement>
+  >(({ style, className }: HTMLAttributes<HTMLDivElement>, ref) => (
+    <div ref={ref} style={style} className={className}>
+      <SavedFilterList
+        filter={filter}
+        onSetFilter={(f) => {
+          onFilterUpdate(f);
+        }}
+        persistState={persistState}
+      />
+    </div>
+  ));
+  SavedFilterDropdown.displayName = "SavedFilterDropdown";
+
+  return (
+    <Dropdown>
+      <OverlayTrigger
+        placement="top"
+        overlay={
+          <Tooltip id="filter-tooltip">
+            <FormattedMessage id="search_filter.saved_filters" />
+          </Tooltip>
+        }
+      >
+        <Dropdown.Toggle variant="secondary">
+          <Icon icon={faBookmark} />
+        </Dropdown.Toggle>
+      </OverlayTrigger>
+      <Dropdown.Menu
+        as={SavedFilterDropdown}
+        className="saved-filter-list-menu"
+      />
+    </Dropdown>
+  );
+};
+
 export const ListFilter: React.FC<IListFilterProps> = ({
   onFilterUpdate,
   filter,
@@ -397,22 +440,6 @@ export const ListFilter: React.FC<IListFilterProps> = ({
     onFilterUpdate(newFilter);
   }
 
-  const SavedFilterDropdown = React.forwardRef<
-    HTMLDivElement,
-    HTMLAttributes<HTMLDivElement>
-  >(({ style, className }: HTMLAttributes<HTMLDivElement>, ref) => (
-    <div ref={ref} style={style} className={className}>
-      <SavedFilterList
-        filter={filter}
-        onSetFilter={(f) => {
-          onFilterUpdate(f);
-        }}
-        persistState={persistState}
-      />
-    </div>
-  ));
-  SavedFilterDropdown.displayName = "SavedFilterDropdown";
-
   function render() {
     return (
       <>
@@ -426,24 +453,11 @@ export const ListFilter: React.FC<IListFilterProps> = ({
         </div>
 
         <ButtonGroup className="mr-2 mb-2">
-          <Dropdown>
-            <OverlayTrigger
-              placement="top"
-              overlay={
-                <Tooltip id="filter-tooltip">
-                  <FormattedMessage id="search_filter.saved_filters" />
-                </Tooltip>
-              }
-            >
-              <Dropdown.Toggle variant="secondary">
-                <Icon icon={faBookmark} />
-              </Dropdown.Toggle>
-            </OverlayTrigger>
-            <Dropdown.Menu
-              as={SavedFilterDropdown}
-              className="saved-filter-list-menu"
-            />
-          </Dropdown>
+          <SavedFilterSelect
+            filter={filter}
+            onFilterUpdate={onFilterUpdate}
+            persistState={persistState}
+          />
           <OverlayTrigger
             placement="top"
             overlay={

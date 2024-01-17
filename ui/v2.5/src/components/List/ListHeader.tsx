@@ -2,7 +2,12 @@ import React, { useCallback } from "react";
 import { Pagination } from "../List/Pagination";
 import { DisplayModeSelect } from "../List/ListViewOptions";
 import { DisplayMode } from "src/models/list-filter/types";
-import { PageSizeSelect, SearchField, SortBySelect } from "../List/ListFilter";
+import {
+  PageSizeSelect,
+  // SavedFilterSelect,
+  // SearchField,
+  SortBySelect,
+} from "../List/ListFilter";
 import { SortDirectionEnum } from "src/core/generated-graphql";
 import { getFilterOptions } from "src/models/list-filter/factory";
 import { ListFilterModel } from "src/models/list-filter/filter";
@@ -10,7 +15,7 @@ import { Button } from "react-bootstrap";
 import { Icon } from "../Shared/Icon";
 import { FormattedMessage } from "react-intl";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
-import useFocus from "src/utils/focus";
+// import useFocus from "src/utils/focus";
 
 interface IDefaultListHeaderProps {
   filter: ListFilterModel;
@@ -25,9 +30,9 @@ const DefaultListHeader: React.FC<IDefaultListHeaderProps> = ({
   setFilter,
   totalItems,
   actionButtons,
-  sidebarCollapsed,
+  // sidebarCollapsed,
 }) => {
-  const [queryRef, setQueryFocus] = useFocus();
+  // const [queryRef, setQueryFocus] = useFocus();
 
   const filterOptions = getFilterOptions(filter.mode);
 
@@ -37,15 +42,15 @@ const DefaultListHeader: React.FC<IDefaultListHeaderProps> = ({
   //   setFilter(newFilter);
   // }
 
-  const searchQueryUpdated = useCallback(
-    (value: string) => {
-      const newFilter = filter.clone();
-      newFilter.searchTerm = value;
-      newFilter.currentPage = 1;
-      setFilter(newFilter);
-    },
-    [filter, setFilter]
-  );
+  // const searchQueryUpdated = useCallback(
+  //   (value: string) => {
+  //     const newFilter = filter.clone();
+  //     newFilter.searchTerm = value;
+  //     newFilter.currentPage = 1;
+  //     setFilter(newFilter);
+  //   },
+  //   [filter, setFilter]
+  // );
 
   function onChangeDisplayMode(displayMode: DisplayMode) {
     const newFilter = filter.clone();
@@ -101,14 +106,20 @@ const DefaultListHeader: React.FC<IDefaultListHeaderProps> = ({
   return (
     <div className="list-header">
       <div className="list-header-left">
-        {sidebarCollapsed && (
-          <SearchField
-            searchTerm={filter.searchTerm}
-            setSearchTerm={searchQueryUpdated}
-            queryRef={queryRef}
-            setQueryFocus={setQueryFocus}
-          />
-        )}
+        {/* possible iteration - query field and saved filter dropdown on the left side
+            with action buttons on the right side
+         */}
+        {/* {sidebarCollapsed && (
+          <>
+            <SearchField
+              searchTerm={filter.searchTerm}
+              setSearchTerm={searchQueryUpdated}
+              queryRef={queryRef}
+              setQueryFocus={setQueryFocus}
+            />
+            <SavedFilterSelect filter={filter} onFilterUpdate={setFilter} />
+          </>
+        )} */}
         {actionButtons}
       </div>
       <div className="list-header-center">
