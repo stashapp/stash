@@ -2,7 +2,7 @@ import React, { useCallback } from "react";
 import { Pagination } from "../List/Pagination";
 import { DisplayModeSelect } from "../List/ListViewOptions";
 import { DisplayMode } from "src/models/list-filter/types";
-import { PageSizeSelect, SortBySelect } from "../List/ListFilter";
+import { PageSizeSelect, SearchField, SortBySelect } from "../List/ListFilter";
 import { SortDirectionEnum } from "src/core/generated-graphql";
 import { getFilterOptions } from "src/models/list-filter/factory";
 import { ListFilterModel } from "src/models/list-filter/filter";
@@ -10,12 +10,14 @@ import { Button } from "react-bootstrap";
 import { Icon } from "../Shared/Icon";
 import { FormattedMessage } from "react-intl";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
+import useFocus from "src/utils/focus";
 
 interface IDefaultListHeaderProps {
   filter: ListFilterModel;
   setFilter: (filter: ListFilterModel) => void;
   totalItems: number;
   actionButtons?: React.ReactNode;
+  sidebarCollapsed?: boolean;
 }
 
 const DefaultListHeader: React.FC<IDefaultListHeaderProps> = ({
@@ -23,7 +25,10 @@ const DefaultListHeader: React.FC<IDefaultListHeaderProps> = ({
   setFilter,
   totalItems,
   actionButtons,
+  sidebarCollapsed,
 }) => {
+  const [queryRef, setQueryFocus] = useFocus();
+
   const filterOptions = getFilterOptions(filter.mode);
 
   // function onChangeZoom(newZoomIndex: number) {
@@ -31,6 +36,16 @@ const DefaultListHeader: React.FC<IDefaultListHeaderProps> = ({
   //   newFilter.zoomIndex = newZoomIndex;
   //   setFilter(newFilter);
   // }
+
+  const searchQueryUpdated = useCallback(
+    (value: string) => {
+      const newFilter = filter.clone();
+      newFilter.searchTerm = value;
+      newFilter.currentPage = 1;
+      setFilter(newFilter);
+    },
+    [filter, setFilter]
+  );
 
   function onChangeDisplayMode(displayMode: DisplayMode) {
     const newFilter = filter.clone();
@@ -85,7 +100,17 @@ const DefaultListHeader: React.FC<IDefaultListHeaderProps> = ({
 
   return (
     <div className="list-header">
-      <div className="list-header-left">{actionButtons}</div>
+      <div className="list-header-left">
+        {sidebarCollapsed && (
+          <SearchField
+            searchTerm={filter.searchTerm}
+            setSearchTerm={searchQueryUpdated}
+            queryRef={queryRef}
+            setQueryFocus={setQueryFocus}
+          />
+        )}
+        {actionButtons}
+      </div>
       <div className="list-header-center">
         <Pagination
           currentPage={filter.currentPage}

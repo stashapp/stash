@@ -282,8 +282,8 @@ export const SortBySelect: React.FC<{
 export const SearchField: React.FC<{
   searchTerm: string;
   setSearchTerm: (searchTerm: string) => void;
-  queryRef: React.MutableRefObject<HTMLInputElement | null>;
-  setQueryFocus: () => void;
+  queryRef?: React.MutableRefObject<HTMLInputElement | null>;
+  setQueryFocus?: () => void;
 }> = ({ searchTerm, setSearchTerm, queryRef, setQueryFocus }) => {
   const intl = useIntl();
 
@@ -292,7 +292,7 @@ export const SearchField: React.FC<{
   // clear search input when filter is cleared
   useEffect(() => {
     if (!searchTerm) {
-      if (queryRef.current) queryRef.current.value = "";
+      if (queryRef?.current) queryRef.current.value = "";
       setQueryClearShowing(false);
     }
   }, [searchTerm, queryRef]);
@@ -307,14 +307,14 @@ export const SearchField: React.FC<{
   }
 
   function onClearQuery() {
-    if (queryRef.current) queryRef.current.value = "";
+    if (queryRef?.current) queryRef.current.value = "";
     setSearchTerm("");
-    setQueryFocus();
+    if (setQueryFocus) setQueryFocus();
     setQueryClearShowing(false);
   }
 
   return (
-    <div className="flex-grow-1 query-text-field-group">
+    <div className="query-text-field-group">
       <FormControl
         ref={queryRef}
         placeholder={`${intl.formatMessage({ id: "actions.search" })}…`}

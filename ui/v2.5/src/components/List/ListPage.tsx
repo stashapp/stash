@@ -73,6 +73,7 @@ export const ListPage: React.FC<
           onSelectNone={onSelectNone}
           actionButtons={actionButtons}
           selectedButtons={selectedButtons}
+          sidebarCollapsed={filterCollapsed}
         />
         <div>
           <FilterTags
