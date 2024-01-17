@@ -10,6 +10,7 @@ import { FilterTags } from "../List/FilterTags";
 import { EditFilterDialog } from "../List/EditFilterDialog";
 import { useFilterConfig } from "../List/util";
 import { useListSelect } from "src/hooks/listSelect";
+import { LoadingIndicator } from "../Shared/LoadingIndicator";
 
 type ListSelectProps = ReturnType<typeof useListSelect>;
 
@@ -24,6 +25,7 @@ export const ListPage: React.FC<
     selectedButtons?: (selectedIds: Set<string>) => React.ReactNode;
     metadataByline?: JSX.Element;
     totalCount: number;
+    loading: boolean;
   }>
 > = ({
   id,
@@ -35,6 +37,7 @@ export const ListPage: React.FC<
   selectedButtons,
   metadataByline,
   totalCount,
+  loading,
   children,
 }) => {
   const { selectedIds, onSelectAll, onSelectNone } = listSelect;
@@ -99,13 +102,19 @@ export const ListPage: React.FC<
           />
         </div>
         <div className="list-page-items">
-          <PaginationIndex
-            itemsPerPage={filter.itemsPerPage}
-            currentPage={filter.currentPage}
-            totalItems={totalCount}
-            metadataByline={metadataByline}
-          />
-          {children}
+          {loading ? (
+            <LoadingIndicator />
+          ) : (
+            <>
+              <PaginationIndex
+                itemsPerPage={filter.itemsPerPage}
+                currentPage={filter.currentPage}
+                totalItems={totalCount}
+                metadataByline={metadataByline}
+              />
+              {children}
+            </>
+          )}
         </div>
       </div>
     </div>

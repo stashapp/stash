@@ -24,7 +24,7 @@ import GalleryWallCard from "./GalleryWallCard";
 import { EditGalleriesDialog } from "./EditGalleriesDialog";
 import { DeleteGalleriesDialog } from "./DeleteGalleriesDialog";
 import { ListPage } from "../List/ListPage";
-import { useFilterURL } from "../List/util";
+import { useFilterURL, useResultCount } from "../List/util";
 
 export const GalleriesPage: React.FC = ({}) => {
   const intl = useIntl();
@@ -42,6 +42,7 @@ export const GalleriesPage: React.FC = ({}) => {
   const { setFilter } = useFilterURL(filter, setFilterState, defaultFilter);
 
   const result = useFindGalleries(filter);
+  const { loading } = result;
   const items = useMemo(
     () => result.data?.findGalleries.galleries ?? [],
     [result.data?.findGalleries.galleries]
@@ -52,9 +53,10 @@ export const GalleriesPage: React.FC = ({}) => {
 
   const { modal, showModal, closeModal } = useModal();
 
-  const totalCount = useMemo(
-    () => result.data?.findGalleries.count ?? 0,
-    [result.data?.findGalleries.count]
+  const totalCount = useResultCount(
+    filter,
+    loading,
+    result.data?.findGalleries.count ?? 0
   );
 
   function renderGalleries() {
@@ -231,6 +233,7 @@ export const GalleriesPage: React.FC = ({}) => {
     <>
       <ListPage
         id="galleries-page"
+        loading={loading}
         filter={filter}
         setFilter={(f) => setFilter(f)}
         listSelect={listSelect}

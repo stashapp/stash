@@ -26,7 +26,7 @@ import { Button } from "react-bootstrap";
 import { Icon } from "../Shared/Icon";
 import { faShuffle } from "@fortawesome/free-solid-svg-icons";
 import { ListPage } from "../List/ListPage";
-import { useFilterURL } from "../List/util";
+import { useFilterURL, useResultCount } from "../List/util";
 
 export const ImagesPage: React.FC = ({}) => {
   const intl = useIntl();
@@ -45,9 +45,16 @@ export const ImagesPage: React.FC = ({}) => {
   const { setFilter } = useFilterURL(filter, setFilterState, defaultFilter);
 
   const result = useFindImages(filter);
+  const { loading } = result;
   const images = useMemo(
     () => result.data?.findImages.images ?? [],
     [result.data?.findImages.images]
+  );
+
+  const totalCount = useResultCount(
+    filter,
+    loading,
+    result.data?.findImages.count ?? 0
   );
 
   const listSelect = useListSelect(images);
@@ -55,9 +62,7 @@ export const ImagesPage: React.FC = ({}) => {
 
   const { modal, showModal, closeModal } = useModal();
 
-  const pageCount = Math.ceil(
-    (result.data?.findImages.count ?? 0) / filter.itemsPerPage
-  );
+  const pageCount = Math.ceil(totalCount / filter.itemsPerPage);
 
   const onChangePage = useCallback(
     (page: number) => {
@@ -129,11 +134,6 @@ export const ImagesPage: React.FC = ({}) => {
   ]);
 
   const showLightbox = useLightbox(lightboxState, []);
-
-  const totalCount = useMemo(
-    () => result.data?.findImages.count ?? 0,
-    [result.data?.findImages.count]
-  );
 
   const metadataByline = useMemo(() => {
     const megapixels = result?.data?.findImages?.megapixels;
@@ -333,6 +333,7 @@ export const ImagesPage: React.FC = ({}) => {
     <>
       <ListPage
         id="images-page"
+        loading={loading}
         filter={filter}
         setFilter={(f) => setFilter(f)}
         listSelect={listSelect}

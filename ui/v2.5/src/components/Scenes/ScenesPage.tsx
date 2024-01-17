@@ -30,7 +30,7 @@ import { getFromIds } from "src/utils/data";
 import { EditScenesDialog } from "./EditScenesDialog";
 import { DeleteScenesDialog } from "./DeleteScenesDialog";
 import { ListPage } from "../List/ListPage";
-import { useFilterURL } from "../List/util";
+import { useFilterURL, useResultCount } from "../List/util";
 
 export const ScenesPage: React.FC = ({}) => {
   const intl = useIntl();
@@ -50,6 +50,7 @@ export const ScenesPage: React.FC = ({}) => {
   const { setFilter } = useFilterURL(filter, setFilterState, defaultFilter);
 
   const result = useFindScenes(filter);
+  const { loading } = result;
   const items = useMemo(
     () => result.data?.findScenes.scenes ?? [],
     [result.data?.findScenes.scenes]
@@ -60,17 +61,19 @@ export const ScenesPage: React.FC = ({}) => {
 
   const { modal, showModal, closeModal } = useModal();
 
-  const totalCount = useMemo(
-    () => result.data?.findScenes.count ?? 0,
-    [result.data?.findScenes.count]
+  const totalCount = useResultCount(
+    filter,
+    loading,
+    result.data?.findScenes.count ?? 0
   );
 
   const metadataByline = useMemo(() => {
-    const duration = result?.data?.findScenes?.duration;
-    const size = result?.data?.findScenes?.filesize;
+    const { data } = result;
+    const duration = data?.findScenes?.duration;
+    const size = data?.findScenes?.filesize;
     const filesize = size ? TextUtils.fileSize(size) : undefined;
 
-    if (!duration && !size) {
+    if (loading || (!duration && !size)) {
       return;
     }
 
@@ -99,7 +102,7 @@ export const ScenesPage: React.FC = ({}) => {
         )
       </span>
     );
-  }, [result]);
+  }, [result, loading]);
 
   function renderScenes() {
     if (!result.data?.findScenes) return;
@@ -332,6 +335,7 @@ export const ScenesPage: React.FC = ({}) => {
     <>
       <ListPage
         id="scenes-page"
+        loading={loading}
         filter={filter}
         setFilter={(f) => setFilter(f)}
         listSelect={listSelect}
@@ -344,7 +348,7 @@ export const ScenesPage: React.FC = ({}) => {
                 </Button>
               </Link>
             </div>
-            {items.length > 0 && (
+            {items.length !== 0 && (
               <>
                 <div>
                   <Button

@@ -95,3 +95,44 @@ export function useFilterURL(
 
   return { setFilter: updateFilter };
 }
+
+// returns true if the filter has changed in a way that impacts the total count
+function totalCountImpacted(
+  oldFilter: ListFilterModel,
+  newFilter: ListFilterModel
+) {
+  return (
+    oldFilter.criteria.length !== newFilter.criteria.length ||
+    oldFilter.criteria.some((c) => {
+      const newCriterion = newFilter.criteria.find(
+        (nc) => nc.getId() === c.getId()
+      );
+      return !newCriterion || !isEqual(c, newCriterion);
+    })
+  );
+}
+
+// this hook caches the total count of results, and only updates it when the filter changes
+export function useResultCount(
+  filter: ListFilterModel,
+  loading: boolean,
+  count: number
+) {
+  const [resultCount, setResultCount] = useState(count);
+  const [lastFilter, setLastFilter] = useState(filter);
+
+  // if we are only changing the page or sort, don't update the result count
+  useEffect(() => {
+    if (!loading) {
+      setResultCount(count);
+    } else {
+      if (totalCountImpacted(lastFilter, filter)) {
+        setResultCount(count);
+      }
+    }
+
+    setLastFilter(filter);
+  }, [loading, filter, count, lastFilter]);
+
+  return resultCount;
+}
