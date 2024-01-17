@@ -85,8 +85,8 @@ const DefaultListHeader: React.FC<IDefaultListHeaderProps> = ({
 
   return (
     <div className="list-header">
-      <div>{actionButtons}</div>
-      <div>
+      <div className="list-header-left">{actionButtons}</div>
+      <div className="list-header-center">
         <Pagination
           currentPage={filter.currentPage}
           itemsPerPage={filter.itemsPerPage}
@@ -94,7 +94,7 @@ const DefaultListHeader: React.FC<IDefaultListHeaderProps> = ({
           onChangePage={onChangePage}
         />
       </div>
-      <div>
+      <div className="list-header-right">
         <SortBySelect
           sortBy={filter.sortBy}
           direction={filter.sortDirection}

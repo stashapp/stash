@@ -565,7 +565,24 @@ input[type="range"].zoom-slider {
   display: flex;
   flex-direction: row;
   height: 40px;
-  justify-content: space-between;
+
+  .list-header-left {
+    flex: 0 0 33%;
+    justify-content: flex-start;
+    max-width: 33%;
+  }
+
+  .list-header-center {
+    flex: 0 0 33%;
+    justify-content: center;
+    max-width: 33%;
+  }
+
+  .list-header-right {
+    flex: 0 0 33%;
+    justify-content: flex-end;
+    max-width: 33%;
+  }
 
   .filter-button {
     margin-left: -15px;
