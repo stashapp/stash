@@ -1,10 +1,19 @@
-import React, { useState, useCallback, useMemo, useEffect } from "react";
+import React, {
+  useState,
+  useCallback,
+  useMemo,
+  useEffect,
+  useContext,
+} from "react";
 import * as GQL from "src/core/generated-graphql";
 import { getFilterOptions } from "src/models/list-filter/factory";
 import { CriterionOption } from "src/models/list-filter/criteria/criterion";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { useHistory, useLocation } from "react-router-dom";
 import isEqual from "lodash-es/isEqual";
+import { useConfigureUI } from "src/core/StashService";
+import { ConfigurationContext } from "src/hooks/Config";
+import { IUIConfig } from "src/core/config";
 
 export interface ICriterionOption {
   option: CriterionOption;
@@ -12,9 +21,20 @@ export interface ICriterionOption {
 }
 
 export function useFilterConfig(mode: GQL.FilterMode) {
-  // TODO - save this in the UI config
+  const { configuration } = useContext(ConfigurationContext);
+  const [saveUI] = useConfigureUI();
 
-  const getCriterionOptions = useCallback(() => {
+  const ui = (configuration?.ui ?? {}) as IUIConfig;
+
+  const savedOrder: string[] = useMemo(
+    () => ui.criterionOrder?.[mode.toLowerCase()] ?? [],
+    [mode, ui.criterionOrder]
+  );
+
+  const savedSidebar: string[] | undefined =
+    ui.sidebarCriteria?.[mode.toLocaleLowerCase()];
+
+  const defaultOptions = useMemo(() => {
     const options = getFilterOptions(mode);
 
     return options.criterionOptions.map((o) => {
@@ -27,9 +47,61 @@ export function useFilterConfig(mode: GQL.FilterMode) {
     });
   }, [mode]);
 
-  const [criterionOptions, setCriterionOptions] = useState(
-    getCriterionOptions()
-  );
+  const [criterionOptions, setCriterionOptionsState] = useState(defaultOptions);
+
+  useEffect(() => {
+    const newOrder: ICriterionOption[] = [];
+    savedOrder.forEach((o) => {
+      const option = defaultOptions.find((d) => d.option.type === o);
+      if (option) {
+        newOrder.push({ ...option });
+      }
+    });
+
+    // insert any missing options at the index they would be in the default order
+    defaultOptions.forEach((o, i) => {
+      if (!newOrder.some((n) => n.option.type === o.option.type)) {
+        newOrder.splice(i, 0, { ...o });
+      }
+    });
+
+    // override sidebar options
+    if (savedSidebar) {
+      newOrder.forEach((o) => {
+        o.showInSidebar = savedSidebar.includes(o.option.type);
+      });
+    }
+
+    setCriterionOptionsState(newOrder);
+  }, [defaultOptions, savedOrder, savedSidebar]);
+
+  function saveCriterionOptions(newOptions: ICriterionOption[]) {
+    const criteriaOrder = newOptions.map((o) => o.option.type);
+    const sidebarCriteria = newOptions
+      .filter((o) => o.showInSidebar)
+      .map((o) => o.option.type);
+
+    saveUI({
+      variables: {
+        input: {
+          ...configuration?.ui,
+          criterionOrder: {
+            ...configuration?.ui?.criterionOrder,
+            [mode.toLowerCase()]: criteriaOrder,
+          },
+          sidebarCriteria: {
+            ...configuration?.ui?.sidebarCriteria,
+            [mode.toLowerCase()]: sidebarCriteria,
+          },
+        },
+      },
+    });
+  }
+
+  function setCriterionOptions(newOptions: ICriterionOption[]) {
+    setCriterionOptionsState(newOptions);
+    saveCriterionOptions(newOptions);
+  }
 
   const sidebarOptions = useMemo(
     () => criterionOptions.filter((o) => o.showInSidebar).map((o) => o.option),

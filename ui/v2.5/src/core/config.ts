@@ -83,6 +83,8 @@ export interface IUIConfig {
 
   vrTag?: string;
   pinnedFilters?: PinnedFilters;
+  criterionOrder?: Record<string, string[]>;
+  sidebarCriteria?: Record<string, string[]>;
 
   advancedMode?: boolean;
 }

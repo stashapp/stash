@@ -136,7 +136,7 @@ export const FilterSidebar: React.FC<{
   setFilter: (filter: ListFilterModel) => void;
   criterionOptions: ICriterionOption[];
   sidebarOptions: CriterionOption[];
-  setCriterionOptions: React.Dispatch<React.SetStateAction<ICriterionOption[]>>;
+  setCriterionOptions: (v: ICriterionOption[]) => void;
 }> = ({
   filter,
   setFilter,
