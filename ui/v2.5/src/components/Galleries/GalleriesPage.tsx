@@ -34,7 +34,10 @@ export const GalleriesPage: React.FC = ({}) => {
   );
 
   const result = useFindGalleries(filter);
-  const items = result.data?.findGalleries.galleries ?? [];
+  const items = useMemo(
+    () => result.data?.findGalleries.galleries ?? [],
+    [result.data?.findGalleries.galleries]
+  );
 
   const listSelect = useListSelect(items);
   const { selectedIds, onSelectChange } = listSelect;

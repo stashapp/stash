@@ -42,7 +42,10 @@ export const ScenesPage: React.FC = ({}) => {
   );
 
   const result = useFindScenes(filter);
-  const items = result.data?.findScenes.scenes ?? [];
+  const items = useMemo(
+    () => result.data?.findScenes.scenes ?? [],
+    [result.data?.findScenes.scenes]
+  );
 
   const listSelect = useListSelect(items);
   const { selectedIds, onSelectChange } = listSelect;
