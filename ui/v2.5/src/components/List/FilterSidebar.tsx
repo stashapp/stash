@@ -92,7 +92,9 @@ const CriterionOptionList: React.FC<ICriterionList> = ({
     onRemoveCriterion(t);
   }
 
-  function renderCard(c: CriterionOption) {
+  const CriterionOptionCard: React.FC<{ option: CriterionOption }> = ({
+    option: c,
+  }) => {
     const isPopulated = filter.criteria.some(
       (cc) => c.type === cc.criterionOption.type
     );
@@ -121,11 +123,13 @@ const CriterionOptionList: React.FC<ICriterionList> = ({
         />
       </CollapseButton>
     );
-  }
+  };
 
   return (
     <div className="criterion-list">
-      {criterionOptions.map((c) => renderCard(c))}
+      {criterionOptions.map((c) => (
+        <CriterionOptionCard key={c.type} option={c} />
+      ))}
     </div>
   );
 };
