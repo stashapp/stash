@@ -330,8 +330,10 @@ type Mutation {
   # overwrites the entire plugin configuration for the given plugin
   configurePlugin(plugin_id: ID!, input: Map!): Map!
 
-  # overwrites the entire UI configuration
-  configureUI(input: Map!): Map!
+  # overwrites the UI configuration
+  # if input is provided, then the entire UI configuration is replaced
+  # if partial is provided, then the partial UI configuration is merged into the existing UI configuration
+  configureUI(input: Map, partial: Map): Map!
   # sets a single UI key value
   # key is a dot separated path to the value
   configureUISetting(key: String!, value: Any): Map!
