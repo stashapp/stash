@@ -83,14 +83,11 @@ export function useFilterConfig(mode: GQL.FilterMode) {
 
     saveUI({
       variables: {
-        input: {
-          ...configuration?.ui,
+        partial: {
           criterionOrder: {
-            ...configuration?.ui?.criterionOrder,
             [mode.toLowerCase()]: criteriaOrder,
           },
           sidebarCriteria: {
-            ...configuration?.ui?.sidebarCriteria,
             [mode.toLowerCase()]: sidebarCriteria,
           },
         },

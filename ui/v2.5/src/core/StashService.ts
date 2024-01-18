@@ -2131,9 +2131,9 @@ export const useConfigureDefaults = () =>
 
 function updateUIConfig(
   cache: ApolloCache<Record<string, StoreObject>>,
-  result: FetchResult<GQL.ConfigureUiMutation>
+  result: GQL.ConfigureUiMutation["configureUI"]
 ) {
-  if (!result.data?.configureUI) return;
+  if (!result) return;
 
   const existing = cache.readQuery<GQL.ConfigurationQuery>({
     query: GQL.ConfigurationDocument,
@@ -2144,7 +2144,7 @@ function updateUIConfig(
     data: {
       configuration: {
         ...existing?.configuration,
-        ui: result.data?.configureUI,
+        ui: result,
       },
     },
   });
@@ -2152,7 +2152,13 @@ function updateUIConfig(
 
 export const useConfigureUI = () =>
   GQL.useConfigureUiMutation({
-    update: updateUIConfig,
+    update: (cache, result) => updateUIConfig(cache, result.data?.configureUI),
+  });
+
+export const useConfigureUISetting = () =>
+  GQL.useConfigureUiSettingMutation({
+    update: (cache, result) =>
+      updateUIConfig(cache, result.data?.configureUISetting),
   });
 
 export const useConfigureScraping = () =>
