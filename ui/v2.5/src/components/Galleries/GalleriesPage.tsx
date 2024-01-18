@@ -9,7 +9,7 @@ import { queryFindGalleries, useFindGalleries } from "src/core/StashService";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useListSelect } from "src/hooks/listSelect";
 import { IItemListOperation } from "../List/ItemList";
-import { Button, Table } from "react-bootstrap";
+import { Button } from "react-bootstrap";
 import { Icon } from "../Shared/Icon";
 import { ListOperationButtons } from "../List/ListOperationButtons";
 import { ListOperationDropdown } from "../List/ListOperationDropdown";
@@ -19,12 +19,12 @@ import { useModal } from "src/hooks/modal";
 import { ExportDialog } from "../Shared/ExportDialog";
 import { getFromIds } from "src/utils/data";
 import { GalleryCard } from "./GalleryCard";
-import { galleryTitle } from "src/core/galleries";
 import GalleryWallCard from "./GalleryWallCard";
 import { EditGalleriesDialog } from "./EditGalleriesDialog";
 import { DeleteGalleriesDialog } from "./DeleteGalleriesDialog";
 import { ListPage } from "../List/ListPage";
 import { useFilterURL, useInitialFilter, useResultCount } from "../List/util";
+import { GalleryListTable } from "./GalleryListTable";
 
 const filterMode = FilterMode.Galleries;
 
@@ -79,47 +79,18 @@ export const GalleriesPageImpl: React.FC<{
     }
     if (filter.displayMode === DisplayMode.List) {
       return (
-        <Table className="col col-sm-6 mx-auto">
-          <thead>
-            <tr>
-              <th>{intl.formatMessage({ id: "actions.preview" })}</th>
-              <th className="d-none d-sm-none">
-                {intl.formatMessage({ id: "title" })}
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {items.map((gallery) => (
-              <tr key={gallery.id}>
-                <td>
-                  <Link to={`/galleries/${gallery.id}`}>
-                    {gallery.cover ? (
-                      <img
-                        loading="lazy"
-                        alt={gallery.title ?? ""}
-                        className="w-100 w-sm-auto"
-                        src={`${gallery.cover.paths.thumbnail}`}
-                      />
-                    ) : undefined}
-                  </Link>
-                </td>
-                <td className="d-none d-sm-block">
-                  <Link to={`/galleries/${gallery.id}`}>
-                    {galleryTitle(gallery)} ({gallery.image_count}{" "}
-                    {gallery.image_count === 1 ? "image" : "images"})
-                  </Link>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
+        <GalleryListTable
+          galleries={items}
+          selectedIds={selectedIds}
+          onSelectChange={onSelectChange}
+        />
       );
     }
     if (filter.displayMode === DisplayMode.Wall) {
       return (
         <div className="row">
           <div className="GalleryWall">
-            {result.data.findGalleries.galleries.map((gallery) => (
+            {items.map((gallery) => (
               <GalleryWallCard key={gallery.id} gallery={gallery} />
             ))}
           </div>
