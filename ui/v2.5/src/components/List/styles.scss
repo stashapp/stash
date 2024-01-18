@@ -463,6 +463,7 @@
     max-width: calc(100% - 20rem - 30px);
     overflow-x: auto;
     overflow-y: hidden;
+    transition: 0.3s ease;
 
     &.expanded {
       flex-basis: calc(100% - 15px);
@@ -477,12 +478,24 @@
   }
 }
 
-.filter-sidebar {
+.sidebar-container {
   flex: 0 0 20rem;
+  max-width: 20rem;
+  overflow: hidden;
+  transition: 0.3s ease;
+
+  &.collapsed {
+    max-width: 0;
+  }
+}
+
+.filter-sidebar {
   max-height: calc(100vh - 4rem);
   max-width: 20rem;
   min-height: calc(100vh - 4rem);
+  overflow-x: hidden;
   overflow-y: auto;
+  width: 20rem;
 
   hr {
     background-color: $secondary;

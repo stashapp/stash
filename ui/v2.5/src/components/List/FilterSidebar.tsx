@@ -132,12 +132,14 @@ const CriterionOptionList: React.FC<ICriterionList> = ({
 };
 
 export const FilterSidebar: React.FC<{
+  className?: string;
   filter: ListFilterModel;
   setFilter: (filter: ListFilterModel) => void;
   criterionOptions: ICriterionOption[];
   sidebarOptions: CriterionOption[];
   setCriterionOptions: (v: ICriterionOption[]) => void;
 }> = ({
+  className,
   filter,
   setFilter,
   criterionOptions,
@@ -301,7 +303,7 @@ export const FilterSidebar: React.FC<{
   }
 
   return (
-    <div className="filter-sidebar">
+    <div className={cx("filter-sidebar", className)}>
       <SearchField
         searchTerm={filter.searchTerm}
         setSearchTerm={searchQueryUpdated}

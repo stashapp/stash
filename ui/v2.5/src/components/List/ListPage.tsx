@@ -53,15 +53,16 @@ export const ListPage: React.FC<
     <div id={id} className={cx("list-page", className)}>
       {modal}
 
-      {!filterCollapsed && (
+      <div className={cx("sidebar-container", { collapsed: filterCollapsed })}>
         <FilterSidebar
+          className={cx({ collapsed: filterCollapsed })}
           filter={filter}
           setFilter={(f) => setFilter(f)}
           criterionOptions={criterionOptions}
           setCriterionOptions={(o) => setCriterionOptions(o)}
           sidebarOptions={sidebarOptions}
         />
-      )}
+      </div>
       <CollapseDivider
         collapsed={filterCollapsed}
         setCollapsed={(v) => setFilterCollapsed(v)}
