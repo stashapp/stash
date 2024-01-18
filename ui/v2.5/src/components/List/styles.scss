@@ -741,3 +741,21 @@ input[type="range"].zoom-slider {
     border-left: none;
   }
 }
+
+.save-filter-dialog .existing-filter-list {
+  list-style: none;
+  margin-bottom: 0;
+  max-height: 230px;
+  overflow-y: auto;
+  padding-left: 0;
+
+  .btn {
+    text-align: left;
+    width: 100%;
+
+    &:hover,
+    &:focus {
+      text-decoration: none;
+    }
+  }
+}

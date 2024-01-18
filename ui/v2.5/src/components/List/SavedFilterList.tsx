@@ -25,6 +25,36 @@ import { Icon } from "../Shared/Icon";
 import { LoadingIndicator } from "../Shared/LoadingIndicator";
 import { faSave, faTimes } from "@fortawesome/free-solid-svg-icons";
 
+const ExistingSavedFilterList: React.FC<{
+  name: string;
+  setName: (name: string) => void;
+  existing: { name: string; id: string }[];
+}> = ({ name, setName, existing }) => {
+  const filtered = useMemo(() => {
+    if (!name) return existing;
+
+    return existing.filter((f) =>
+      f.name.toLowerCase().includes(name.toLowerCase())
+    );
+  }, [existing, name]);
+
+  return (
+    <ul className="existing-filter-list">
+      {filtered.map((f) => (
+        <li key={f.id}>
+          <Button
+            className="minimal"
+            variant="link"
+            onClick={() => setName(f.name)}
+          >
+            {f.name}
+          </Button>
+        </li>
+      ))}
+    </ul>
+  );
+};
+
 export const SaveFilterDialog: React.FC<{
   mode: FilterMode;
   onClose: (name?: string, id?: string) => void;
@@ -42,7 +72,7 @@ export const SaveFilterDialog: React.FC<{
   }, [data?.findSavedFilters, filterName]);
 
   return (
-    <Modal show>
+    <Modal show className="save-filter-dialog">
       <Modal.Body>
         <Form.Group>
           <Form.Label>
@@ -55,6 +85,13 @@ export const SaveFilterDialog: React.FC<{
             onChange={(e) => setFilterName(e.target.value)}
           />
         </Form.Group>
+
+        <ExistingSavedFilterList
+          name={filterName}
+          setName={setFilterName}
+          existing={data?.findSavedFilters ?? []}
+        />
+
         {!!overwritingFilter && (
           <span className="saved-filter-overwrite-warning">
             <FormattedMessage
