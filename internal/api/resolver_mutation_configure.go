@@ -12,6 +12,7 @@ import (
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 var ErrOverriddenConfig = errors.New("cannot set overridden value")
@@ -653,8 +654,8 @@ func (r *mutationResolver) ConfigureUI(ctx context.Context, input map[string]int
 func (r *mutationResolver) ConfigureUISetting(ctx context.Context, key string, value interface{}) (map[string]interface{}, error) {
 	c := config.GetInstance()
 
-	cfg := c.GetUIConfiguration()
-	cfg[key] = value
+	cfg := utils.NestedMap(c.GetUIConfiguration())
+	cfg.Set(key, value)
 
 	return r.ConfigureUI(ctx, cfg)
 }
