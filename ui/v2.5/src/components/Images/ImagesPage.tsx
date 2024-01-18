@@ -26,21 +26,19 @@ import { Button } from "react-bootstrap";
 import { Icon } from "../Shared/Icon";
 import { faShuffle } from "@fortawesome/free-solid-svg-icons";
 import { ListPage } from "../List/ListPage";
-import { useFilterURL, useResultCount } from "../List/util";
+import { useFilterURL, useInitialFilter, useResultCount } from "../List/util";
 
-export const ImagesPage: React.FC = ({}) => {
+const filterMode = FilterMode.Images;
+
+export const ImagesPageImpl: React.FC<{
+  defaultFilter: ListFilterModel;
+}> = ({ defaultFilter }) => {
   const intl = useIntl();
   const history = useHistory();
 
-  const [filter, setFilterState] = useState<ListFilterModel>(
-    () => new ListFilterModel(FilterMode.Images)
-  );
   const [slideshowRunning, setSlideshowRunning] = useState<boolean>(false);
 
-  const defaultFilter = useMemo(
-    () => new ListFilterModel(FilterMode.Images),
-    []
-  );
+  const [filter, setFilterState] = useState<ListFilterModel>(defaultFilter);
 
   const { setFilter } = useFilterURL(filter, setFilterState, defaultFilter);
 
@@ -362,6 +360,16 @@ export const ImagesPage: React.FC = ({}) => {
       {modal}
     </>
   );
+};
+
+export const ImagesPage: React.FC = () => {
+  const initialFilter = useInitialFilter(filterMode);
+
+  if (!initialFilter) {
+    return null;
+  }
+
+  return <ImagesPageImpl defaultFilter={initialFilter} />;
 };
 
 export default ImagesPage;

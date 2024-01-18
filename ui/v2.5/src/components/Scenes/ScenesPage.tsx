@@ -30,22 +30,19 @@ import { getFromIds } from "src/utils/data";
 import { EditScenesDialog } from "./EditScenesDialog";
 import { DeleteScenesDialog } from "./DeleteScenesDialog";
 import { ListPage } from "../List/ListPage";
-import { useFilterURL, useResultCount } from "../List/util";
+import { useFilterURL, useInitialFilter, useResultCount } from "../List/util";
 
-export const ScenesPage: React.FC = ({}) => {
+const filterMode = FilterMode.Scenes;
+
+const ScenesPageImpl: React.FC<{
+  defaultFilter: ListFilterModel;
+}> = ({ defaultFilter }) => {
   const intl = useIntl();
   const history = useHistory();
 
   const config = React.useContext(ConfigurationContext);
 
-  const [filter, setFilterState] = useState<ListFilterModel>(
-    () => new ListFilterModel(FilterMode.Scenes)
-  );
-
-  const defaultFilter = useMemo(
-    () => new ListFilterModel(FilterMode.Scenes),
-    []
-  );
+  const [filter, setFilterState] = useState<ListFilterModel>(defaultFilter);
 
   const { setFilter } = useFilterURL(filter, setFilterState, defaultFilter);
 
@@ -387,6 +384,16 @@ export const ScenesPage: React.FC = ({}) => {
       {modal}
     </>
   );
+};
+
+export const ScenesPage: React.FC = () => {
+  const initialFilter = useInitialFilter(filterMode);
+
+  if (!initialFilter) {
+    return null;
+  }
+
+  return <ScenesPageImpl defaultFilter={initialFilter} />;
 };
 
 export default ScenesPage;

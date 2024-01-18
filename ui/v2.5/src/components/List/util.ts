@@ -11,9 +11,10 @@ import { CriterionOption } from "src/models/list-filter/criteria/criterion";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { useHistory, useLocation } from "react-router-dom";
 import isEqual from "lodash-es/isEqual";
-import { useConfigureUI } from "src/core/StashService";
+import { useConfigureUI, useFindDefaultFilter } from "src/core/StashService";
 import { ConfigurationContext } from "src/hooks/Config";
 import { IUIConfig } from "src/core/config";
+import { useMemoOnce } from "src/hooks/state";
 
 export interface ICriterionOption {
   option: CriterionOption;
@@ -120,7 +121,7 @@ export function useFilterConfig(mode: GQL.FilterMode) {
 export function useFilterURL(
   filter: ListFilterModel,
   setFilter: React.Dispatch<React.SetStateAction<ListFilterModel>>,
-  defaultFilter: ListFilterModel
+  defaultFilter: ListFilterModel | undefined
 ) {
   const history = useHistory();
   const location = useLocation();
@@ -132,12 +133,21 @@ export function useFilterURL(
   //   history.replace({ ...history.location, search: newParams });
   // }, [filter, history]);
 
+  // when the filter changes, update the URL
+  const updateFilter = useCallback(
+    (newFilter: ListFilterModel) => {
+      const newParams = newFilter.makeQueryParameters();
+      history.replace({ ...history.location, search: newParams });
+    },
+    [history]
+  );
+
   // This hook runs on every page location change (ie navigation),
   // and updates the filter accordingly.
   useEffect(() => {
     // re-init to load default filter on empty new query params
     if (!location.search) {
-      setFilter(defaultFilter.clone());
+      if (defaultFilter) updateFilter(defaultFilter.clone());
       return;
     }
 
@@ -151,16 +161,7 @@ export function useFilterURL(
         return prevFilter;
       }
     });
-  }, [location.search, defaultFilter, setFilter]);
-
-  // when the filter changes, update the URL
-  const updateFilter = useCallback(
-    (newFilter: ListFilterModel) => {
-      const newParams = newFilter.makeQueryParameters();
-      history.replace({ ...history.location, search: newParams });
-    },
-    [history]
-  );
+  }, [location.search, defaultFilter, setFilter, updateFilter]);
 
   return { setFilter: updateFilter };
 }
@@ -204,4 +205,50 @@ export function useResultCount(
   }, [loading, filter, count, lastFilter]);
 
   return resultCount;
+}
+
+export function useDefaultFilter(mode: GQL.FilterMode) {
+  const emptyFilter = useMemo(() => new ListFilterModel(mode), [mode]);
+
+  const { data, loading } = useFindDefaultFilter(mode);
+
+  const defaultFilter = useMemo(() => {
+    if (data?.findDefaultFilter) {
+      const newFilter = emptyFilter.clone();
+
+      newFilter.currentPage = 1;
+      try {
+        newFilter.configureFromSavedFilter(data.findDefaultFilter);
+      } catch (err) {
+        console.log(err);
+        // ignore
+      }
+      // #1507 - reset random seed when loaded
+      newFilter.randomSeed = -1;
+      return newFilter;
+    }
+  }, [data?.findDefaultFilter, emptyFilter]);
+
+  const retFilter = loading ? undefined : defaultFilter ?? emptyFilter;
+
+  return { defaultFilter: retFilter, loading };
+}
+
+export function useInitialFilter(mode: GQL.FilterMode) {
+  const { defaultFilter } = useDefaultFilter(mode);
+
+  // load the default filter on first render
+  const initialFilter = useMemoOnce(() => {
+    if (!defaultFilter) return [undefined, false];
+
+    if (!location.search) {
+      return [defaultFilter, true];
+    }
+
+    const newFilter = new ListFilterModel(mode);
+    newFilter.configureFromQueryString(location.search);
+    return [newFilter, true];
+  }, [defaultFilter, location.search]);
+
+  return initialFilter;
 }

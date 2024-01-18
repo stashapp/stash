@@ -24,20 +24,17 @@ import GalleryWallCard from "./GalleryWallCard";
 import { EditGalleriesDialog } from "./EditGalleriesDialog";
 import { DeleteGalleriesDialog } from "./DeleteGalleriesDialog";
 import { ListPage } from "../List/ListPage";
-import { useFilterURL, useResultCount } from "../List/util";
+import { useFilterURL, useInitialFilter, useResultCount } from "../List/util";
 
-export const GalleriesPage: React.FC = ({}) => {
+const filterMode = FilterMode.Galleries;
+
+export const GalleriesPageImpl: React.FC<{
+  defaultFilter: ListFilterModel;
+}> = ({ defaultFilter }) => {
   const intl = useIntl();
   const history = useHistory();
 
-  const [filter, setFilterState] = useState<ListFilterModel>(
-    () => new ListFilterModel(FilterMode.Galleries)
-  );
-
-  const defaultFilter = useMemo(
-    () => new ListFilterModel(FilterMode.Galleries),
-    []
-  );
+  const [filter, setFilterState] = useState<ListFilterModel>(defaultFilter);
 
   const { setFilter } = useFilterURL(filter, setFilterState, defaultFilter);
 
@@ -270,6 +267,16 @@ export const GalleriesPage: React.FC = ({}) => {
       {modal}
     </>
   );
+};
+
+export const GalleriesPage: React.FC = () => {
+  const initialFilter = useInitialFilter(filterMode);
+
+  if (!initialFilter) {
+    return null;
+  }
+
+  return <GalleriesPageImpl defaultFilter={initialFilter} />;
 };
 
 export default GalleriesPage;
