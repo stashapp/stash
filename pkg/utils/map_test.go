@@ -5,32 +5,6 @@ import (
 	"testing"
 )
 
-// func TestNestedMap_Get(t *testing.T) {
-// 	type args struct {
-// 		key string
-// 	}
-// 	tests := []struct {
-// 		name  string
-// 		m     NestedMap
-// 		args  args
-// 		want  interface{}
-// 		want1 bool
-// 	}{
-
-// 	}
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			got, got1 := tt.m.Get(tt.args.key)
-// 			if !reflect.DeepEqual(got, tt.want) {
-// 				t.Errorf("NestedMap.Get() got = %v, want %v", got, tt.want)
-// 			}
-// 			if got1 != tt.want1 {
-// 				t.Errorf("NestedMap.Get() got1 = %v, want %v", got1, tt.want1)
-// 			}
-// 		})
-// 	}
-// }
-
 func TestNestedMapGet(t *testing.T) {
 	m := NestedMap{
 		"foo": map[string]interface{}{
@@ -143,6 +117,101 @@ func TestNestedMapSet(t *testing.T) {
 			tt.existing.Set(tt.key, "qux")
 			if !reflect.DeepEqual(tt.existing, tt.want) {
 				t.Errorf("NestedMap.Set() got = %v, want %v", tt.existing, tt.want)
+			}
+		})
+	}
+}
+
+func TestMergeMaps(t *testing.T) {
+	tests := []struct {
+		name   string
+		dest   map[string]interface{}
+		src    map[string]interface{}
+		result map[string]interface{}
+	}{
+		{
+			name: "Merge two maps",
+			dest: map[string]interface{}{
+				"foo": "bar",
+			},
+			src: map[string]interface{}{
+				"baz": "qux",
+			},
+			result: map[string]interface{}{
+				"foo": "bar",
+				"baz": "qux",
+			},
+		},
+		{
+			name: "Merge two maps with overlapping keys",
+			dest: map[string]interface{}{
+				"foo": "bar",
+				"baz": "qux",
+			},
+			src: map[string]interface{}{
+				"baz": "quux",
+			},
+			result: map[string]interface{}{
+				"foo": "bar",
+				"baz": "quux",
+			},
+		},
+		{
+			name: "Merge two maps with overlapping keys and nested maps",
+			dest: map[string]interface{}{
+				"foo": map[string]interface{}{
+					"bar": "baz",
+				},
+			},
+			src: map[string]interface{}{
+				"foo": map[string]interface{}{
+					"qux": "quux",
+				},
+			},
+			result: map[string]interface{}{
+				"foo": map[string]interface{}{
+					"bar": "baz",
+					"qux": "quux",
+				},
+			},
+		},
+		{
+			name: "Merge two maps with overlapping keys and nested maps",
+			dest: map[string]interface{}{
+				"foo": map[string]interface{}{
+					"bar": "baz",
+				},
+			},
+			src: map[string]interface{}{
+				"foo": "qux",
+			},
+			result: map[string]interface{}{
+				"foo": "qux",
+			},
+		},
+		{
+			name: "Merge two maps with overlapping keys and nested maps",
+			dest: map[string]interface{}{
+				"foo": "qux",
+			},
+			src: map[string]interface{}{
+				"foo": map[string]interface{}{
+					"bar": "baz",
+				},
+			},
+			result: map[string]interface{}{
+				"foo": map[string]interface{}{
+					"bar": "baz",
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			MergeMaps(tt.dest, tt.src)
+			if !reflect.DeepEqual(tt.dest, tt.result) {
+				t.Errorf("NestedMap.Set() got = %v, want %v", tt.dest, tt.result)
 			}
 		})
 	}

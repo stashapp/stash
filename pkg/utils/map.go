@@ -46,3 +46,19 @@ func (m NestedMap) Set(key string, value interface{}) {
 
 	current[fields[len(fields)-1]] = value
 }
+
+// MergeMaps merges src into dest. If a key exists in both maps, the value from src is used.
+func MergeMaps(dest map[string]interface{}, src map[string]interface{}) {
+	for k, v := range src {
+		if _, ok := dest[k]; ok {
+			if srcMap, ok := v.(map[string]interface{}); ok {
+				if destMap, ok := dest[k].(map[string]interface{}); ok {
+					MergeMaps(destMap, srcMap)
+					continue
+				}
+			}
+		}
+
+		dest[k] = v
+	}
+}
