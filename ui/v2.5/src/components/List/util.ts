@@ -143,7 +143,7 @@ export function useFilterURL(
 
     // the query has changed, update filter if necessary
     setFilter((prevFilter) => {
-      let newFilter = prevFilter.clone();
+      let newFilter = prevFilter.empty();
       newFilter.configureFromQueryString(location.search);
       if (!isEqual(newFilter, prevFilter)) {
         return newFilter;

@@ -77,6 +77,10 @@ export class ListFilterModel {
     return Object.assign(new ListFilterModel(this.mode, this.config), this);
   }
 
+  public empty() {
+    return new ListFilterModel(this.mode, this.config, this.defaultZoomIndex);
+  }
+
   // returns the number of filters applied
   public count() {
     // don't include search term
