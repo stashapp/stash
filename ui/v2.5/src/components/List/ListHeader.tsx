@@ -36,11 +36,11 @@ const DefaultListHeader: React.FC<IDefaultListHeaderProps> = ({
 
   const filterOptions = getFilterOptions(filter.mode);
 
-  // function onChangeZoom(newZoomIndex: number) {
-  //   const newFilter = filter.clone();
-  //   newFilter.zoomIndex = newZoomIndex;
-  //   setFilter(newFilter);
-  // }
+  function onChangeZoom(newZoomIndex: number) {
+    const newFilter = filter.clone();
+    newFilter.zoomIndex = newZoomIndex;
+    setFilter(newFilter);
+  }
 
   // const searchQueryUpdated = useCallback(
   //   (value: string) => {
@@ -103,6 +103,16 @@ const DefaultListHeader: React.FC<IDefaultListHeaderProps> = ({
     [filter, setFilter]
   );
 
+  const zoomSelectProps =
+    filter.displayMode === DisplayMode.Grid
+      ? {
+          minZoom: 0,
+          maxZoom: 3,
+          zoomIndex: filter.zoomIndex,
+          onChangeZoom,
+        }
+      : undefined;
+
   return (
     <div className="list-header">
       <div className="list-header-left">
@@ -143,18 +153,11 @@ const DefaultListHeader: React.FC<IDefaultListHeaderProps> = ({
           pageSize={filter.itemsPerPage}
           setPageSize={onChangePageSize}
         />
-        {/* <div>
-          <ZoomSelect
-            minZoom={0}
-            maxZoom={3}
-            zoomIndex={filter.zoomIndex}
-            onChangeZoom={onChangeZoom}
-          />
-        </div> */}
         <DisplayModeSelect
           displayMode={filter.displayMode}
           displayModeOptions={filterOptions.displayModeOptions}
           onSetDisplayMode={onChangeDisplayMode}
+          zoomSelectProps={zoomSelectProps}
         />
       </div>
     </div>
