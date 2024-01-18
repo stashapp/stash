@@ -29,7 +29,7 @@ import { EditFilterDialog } from "../List/EditFilterDialog";
 import { SaveFilterDialog, SavedFilterList } from "../List/SavedFilterList";
 import { ICriterionOption } from "./util";
 import { useModal } from "src/hooks/modal";
-import { mutateSaveFilter } from "src/core/StashService";
+import { mutateSaveFilter, useSetDefaultFilter } from "src/core/StashService";
 import { useToast } from "src/hooks/Toast";
 
 interface ICriterionList {
@@ -149,6 +149,8 @@ export const FilterSidebar: React.FC<{
 
   const { modal, showModal, closeModal } = useModal();
   const [queryRef, setQueryFocus] = useFocus();
+
+  const [setDefaultFilter] = useSetDefaultFilter();
 
   const [criterion, setCriterion] = useState<Criterion<CriterionValue>>();
 
@@ -273,6 +275,31 @@ export const FilterSidebar: React.FC<{
     }
   }
 
+  async function onSetDefaultFilter() {
+    const filterCopy = filter.clone();
+
+    try {
+      await setDefaultFilter({
+        variables: {
+          input: {
+            mode: filter.mode,
+            find_filter: filterCopy.makeFindFilter(),
+            object_filter: filterCopy.makeSavedFindFilter(),
+            ui_options: filterCopy.makeUIOptions(),
+          },
+        },
+      });
+
+      Toast.success(
+        intl.formatMessage({
+          id: "toast.default_filter_set",
+        })
+      );
+    } catch (err) {
+      Toast.error(err);
+    }
+  }
+
   return (
     <div className="filter-sidebar">
       <SearchField
@@ -313,6 +340,10 @@ export const FilterSidebar: React.FC<{
               <SaveFilterDialog
                 mode={filter.mode}
                 onClose={onSaveFilterDialogClose}
+                onSaveAsDefault={() => {
+                  closeModal();
+                  onSetDefaultFilter();
+                }}
               />
             );
           }}

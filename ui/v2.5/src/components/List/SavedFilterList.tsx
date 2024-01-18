@@ -58,7 +58,8 @@ const ExistingSavedFilterList: React.FC<{
 export const SaveFilterDialog: React.FC<{
   mode: FilterMode;
   onClose: (name?: string, id?: string) => void;
-}> = ({ mode, onClose }) => {
+  onSaveAsDefault?: () => void;
+}> = ({ mode, onClose, onSaveAsDefault }) => {
   const intl = useIntl();
   const [filterName, setFilterName] = useState("");
 
@@ -104,15 +105,24 @@ export const SaveFilterDialog: React.FC<{
         )}
       </Modal.Body>
       <Modal.Footer>
-        <Button
-          variant="primary"
-          onClick={() => onClose(filterName, overwritingFilter?.id)}
-        >
-          {intl.formatMessage({ id: "actions.save" })}
-        </Button>
-        <Button variant="secondary" onClick={() => onClose()}>
-          {intl.formatMessage({ id: "actions.cancel" })}
-        </Button>
+        <div>
+          {onSaveAsDefault && (
+            <Button variant="secondary" onClick={() => onSaveAsDefault()}>
+              {intl.formatMessage({ id: "actions.set_as_default" })}
+            </Button>
+          )}
+        </div>
+        <div>
+          <Button
+            variant="primary"
+            onClick={() => onClose(filterName, overwritingFilter?.id)}
+          >
+            {intl.formatMessage({ id: "actions.save" })}
+          </Button>
+          <Button variant="secondary" onClick={() => onClose()}>
+            {intl.formatMessage({ id: "actions.cancel" })}
+          </Button>
+        </div>
       </Modal.Footer>
     </Modal>
   );
@@ -333,6 +343,10 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
           if (name) {
             onSaveFilter(name, id);
           }
+        }}
+        onSaveAsDefault={() => {
+          setShowSaveDialog(false);
+          onSetDefaultFilter();
         }}
       />
     );
