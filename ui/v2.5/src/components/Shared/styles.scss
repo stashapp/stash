@@ -560,4 +560,13 @@ div.react-datepicker {
       height: 100%;
     }
   }
+
+  &.collapsed {
+    margin-right: -15px;
+    z-index: 0;
+
+    button div:first-child {
+      border-right: 0;
+    }
+  }
 }

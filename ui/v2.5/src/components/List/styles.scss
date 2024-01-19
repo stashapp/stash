@@ -466,8 +466,8 @@
     transition: 0.3s ease;
 
     &.expanded {
-      flex-basis: calc(100% - 15px);
-      max-width: calc(100% - 15px);
+      flex-basis: 100%;
+      max-width: 100%;
     }
 
     .list-page-items {
@@ -618,6 +618,11 @@
   display: flex;
   flex-direction: row;
   height: 40px;
+
+  // set z-index above collapse button
+  // position must be relative for this
+  position: relative;
+  z-index: 1;
 
   .list-header-left {
     flex-basis: 33%;
