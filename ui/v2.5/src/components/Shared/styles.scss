@@ -569,4 +569,8 @@ div.react-datepicker {
       border-right: 0;
     }
   }
+
+  &.collapsed:hover {
+    z-index: 101;
+  }
 }

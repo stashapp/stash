@@ -451,6 +451,7 @@
 
   .collapse-divider {
     min-height: calc(100vh - 4rem);
+    z-index: 101;
 
     &.collapsed {
       margin-left: -15px;
@@ -622,7 +623,7 @@
   // set z-index above collapse button
   // position must be relative for this
   position: relative;
-  z-index: 1;
+  z-index: 100;
 
   .list-header-left {
     flex-basis: 33%;
