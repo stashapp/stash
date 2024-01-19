@@ -683,9 +683,9 @@
         }
       },
       "scene_list": {
-        "heading": "Scene List",
+        "heading": "Grid View",
         "options": {
-          "show_studio_as_text": "Show Studios as text"
+          "show_studio_as_text": "Display studio overlay as text"
         }
       },
       "scene_player": {
