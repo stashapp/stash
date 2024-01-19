@@ -4,22 +4,24 @@ import { DisplayModeSelect } from "../List/ListViewOptions";
 import { DisplayMode } from "src/models/list-filter/types";
 import {
   PageSizeSelect,
-  // SavedFilterSelect,
-  // SearchField,
+  SavedFilterSelect,
+  SearchField,
   SortBySelect,
 } from "../List/ListFilter";
 import { SortDirectionEnum } from "src/core/generated-graphql";
 import { getFilterOptions } from "src/models/list-filter/factory";
 import { ListFilterModel } from "src/models/list-filter/filter";
-import { Button } from "react-bootstrap";
+import { Button, ButtonGroup, Dropdown } from "react-bootstrap";
 import { Icon } from "../Shared/Icon";
 import { FormattedMessage } from "react-intl";
-import { faTimes } from "@fortawesome/free-solid-svg-icons";
-// import useFocus from "src/utils/focus";
+import { faEllipsisH, faTimes } from "@fortawesome/free-solid-svg-icons";
+import useFocus from "src/utils/focus";
+import { FilterButton } from "./Filters/FilterButton";
 
 interface IDefaultListHeaderProps {
   filter: ListFilterModel;
   setFilter: (filter: ListFilterModel) => void;
+  showFilterDialog?: () => void;
   totalItems: number;
   actionButtons?: React.ReactNode;
   sidebarCollapsed?: boolean;
@@ -28,11 +30,12 @@ interface IDefaultListHeaderProps {
 const DefaultListHeader: React.FC<IDefaultListHeaderProps> = ({
   filter,
   setFilter,
+  showFilterDialog,
   totalItems,
   actionButtons,
-  // sidebarCollapsed,
+  sidebarCollapsed,
 }) => {
-  // const [queryRef, setQueryFocus] = useFocus();
+  const [queryRef, setQueryFocus] = useFocus();
 
   const filterOptions = getFilterOptions(filter.mode);
 
@@ -42,15 +45,15 @@ const DefaultListHeader: React.FC<IDefaultListHeaderProps> = ({
     setFilter(newFilter);
   }
 
-  // const searchQueryUpdated = useCallback(
-  //   (value: string) => {
-  //     const newFilter = filter.clone();
-  //     newFilter.searchTerm = value;
-  //     newFilter.currentPage = 1;
-  //     setFilter(newFilter);
-  //   },
-  //   [filter, setFilter]
-  // );
+  const searchQueryUpdated = useCallback(
+    (value: string) => {
+      const newFilter = filter.clone();
+      newFilter.searchTerm = value;
+      newFilter.currentPage = 1;
+      setFilter(newFilter);
+    },
+    [filter, setFilter]
+  );
 
   function onChangeDisplayMode(displayMode: DisplayMode) {
     const newFilter = filter.clone();
@@ -116,10 +119,7 @@ const DefaultListHeader: React.FC<IDefaultListHeaderProps> = ({
   return (
     <div className="list-header">
       <div className="list-header-left">
-        {/* possible iteration - query field and saved filter dropdown on the left side
-            with action buttons on the right side
-         */}
-        {/* {sidebarCollapsed && (
+        {sidebarCollapsed && (
           <>
             <SearchField
               searchTerm={filter.searchTerm}
@@ -127,10 +127,17 @@ const DefaultListHeader: React.FC<IDefaultListHeaderProps> = ({
               queryRef={queryRef}
               setQueryFocus={setQueryFocus}
             />
-            <SavedFilterSelect filter={filter} onFilterUpdate={setFilter} />
+            <ButtonGroup>
+              <SavedFilterSelect filter={filter} onFilterUpdate={setFilter} />
+              {showFilterDialog && (
+                <FilterButton
+                  filter={filter}
+                  onClick={() => showFilterDialog()}
+                />
+              )}
+            </ButtonGroup>
           </>
-        )} */}
-        {actionButtons}
+        )}
       </div>
       <div className="list-header-center">
         <Pagination
@@ -141,6 +148,16 @@ const DefaultListHeader: React.FC<IDefaultListHeaderProps> = ({
         />
       </div>
       <div className="list-header-right">
+        {actionButtons && (
+          <Dropdown>
+            <Dropdown.Toggle variant="secondary" id="more-menu">
+              <Icon icon={faEllipsisH} />
+            </Dropdown.Toggle>
+            <Dropdown.Menu className="bg-secondary text-white">
+              {actionButtons}
+            </Dropdown.Menu>
+          </Dropdown>
+        )}
         <SortBySelect
           sortBy={filter.sortBy}
           direction={filter.sortDirection}

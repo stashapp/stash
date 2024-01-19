@@ -1,8 +1,9 @@
 import React, { useMemo } from "react";
-import { Badge, Button } from "react-bootstrap";
+import { Badge, Button, OverlayTrigger, Tooltip } from "react-bootstrap";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { IconDefinition, faFilter } from "@fortawesome/free-solid-svg-icons";
 import { Icon } from "src/components/Shared/Icon";
+import { FormattedMessage } from "react-intl";
 
 interface IFilterButtonProps {
   filter: ListFilterModel;
@@ -18,13 +19,22 @@ export const FilterButton: React.FC<IFilterButtonProps> = ({
   const count = useMemo(() => filter.count(), [filter]);
 
   return (
-    <Button variant="secondary" className="filter-button" onClick={onClick}>
-      <Icon icon={icon} />
-      {count ? (
-        <Badge pill variant="info">
-          {count}
-        </Badge>
-      ) : undefined}
-    </Button>
+    <OverlayTrigger
+      placement="top"
+      overlay={
+        <Tooltip id="filter-tooltip">
+          <FormattedMessage id="search_filter.name" />
+        </Tooltip>
+      }
+    >
+      <Button variant="secondary" className="filter-button" onClick={onClick}>
+        <Icon icon={icon} />
+        {count ? (
+          <Badge pill variant="info">
+            {count}
+          </Badge>
+        ) : undefined}
+      </Button>
+    </OverlayTrigger>
   );
 };

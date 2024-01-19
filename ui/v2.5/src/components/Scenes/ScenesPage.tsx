@@ -17,9 +17,9 @@ import { Button } from "react-bootstrap";
 import { Icon } from "../Shared/Icon";
 import { ListOperationButtons } from "../List/ListOperationButtons";
 import { ListOperationDropdown } from "../List/ListOperationDropdown";
-import { faPlay, faShuffle } from "@fortawesome/free-solid-svg-icons";
+import { faPlay, faPlus, faShuffle } from "@fortawesome/free-solid-svg-icons";
 import { ConfigurationContext } from "src/hooks/Config";
-import { Link, useHistory } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 import { objectTitle } from "src/core/files";
 import { useModal } from "src/hooks/modal";
 import { GenerateDialog } from "../Dialogs/GenerateDialog";
@@ -31,6 +31,7 @@ import { EditScenesDialog } from "./EditScenesDialog";
 import { DeleteScenesDialog } from "./DeleteScenesDialog";
 import { ListPage } from "../List/ListPage";
 import { useFilterURL, useInitialFilter, useResultCount } from "../List/util";
+import DropdownItem from "react-bootstrap/esm/DropdownItem";
 
 const filterMode = FilterMode.Scenes;
 
@@ -338,39 +339,30 @@ const ScenesPageImpl: React.FC<{
         listSelect={listSelect}
         actionButtons={
           <>
-            <div>
-              <Link to="/scenes/new">
-                <Button variant="primary">
-                  <FormattedMessage id="new" defaultMessage="New" />
-                </Button>
-              </Link>
-            </div>
+            <DropdownItem href="/scenes/new">
+              <Icon icon={faPlus} />
+              <FormattedMessage id="new" defaultMessage="New" />
+            </DropdownItem>
             {items.length !== 0 && (
               <>
-                <div>
-                  <Button
-                    className="play-scenes-button"
-                    variant="secondary"
-                    onClick={() => playAll()}
-                  >
-                    <Icon icon={faPlay} />
-                    <span>
-                      <FormattedMessage id="actions.play" />
-                    </span>
-                  </Button>
-                </div>
-                <div>
-                  <Button
-                    className="shuffle-scenes-button"
-                    variant="secondary"
-                    onClick={() => playRandom()}
-                  >
-                    <Icon icon={faShuffle} />
-                    <span>
-                      <FormattedMessage id="actions.shuffle" />
-                    </span>
-                  </Button>
-                </div>
+                <DropdownItem
+                  className="play-scenes-button"
+                  onClick={() => playAll()}
+                >
+                  <Icon icon={faPlay} />
+                  <span>
+                    <FormattedMessage id="actions.play" />
+                  </span>
+                </DropdownItem>
+                <DropdownItem
+                  className="shuffle-scenes-button"
+                  onClick={() => playRandom()}
+                >
+                  <Icon icon={faShuffle} />
+                  <span>
+                    <FormattedMessage id="actions.shuffle" />
+                  </span>
+                </DropdownItem>
               </>
             )}
           </>

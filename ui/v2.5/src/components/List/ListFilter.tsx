@@ -458,16 +458,7 @@ export const ListFilter: React.FC<IListFilterProps> = ({
             onFilterUpdate={onFilterUpdate}
             persistState={persistState}
           />
-          <OverlayTrigger
-            placement="top"
-            overlay={
-              <Tooltip id="filter-tooltip">
-                <FormattedMessage id="search_filter.name" />
-              </Tooltip>
-            }
-          >
-            <FilterButton onClick={() => openFilterDialog()} filter={filter} />
-          </OverlayTrigger>
+          <FilterButton onClick={() => openFilterDialog()} filter={filter} />
         </ButtonGroup>
 
         <div className="mr-2 mb-2">

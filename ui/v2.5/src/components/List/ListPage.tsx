@@ -11,6 +11,7 @@ import { EditFilterDialog } from "../List/EditFilterDialog";
 import { useFilterConfig } from "../List/util";
 import { useListSelect } from "src/hooks/listSelect";
 import { LoadingIndicator } from "../Shared/LoadingIndicator";
+import { CriterionType } from "src/models/list-filter/types";
 
 type ListSelectProps = ReturnType<typeof useListSelect>;
 
@@ -49,6 +50,21 @@ export const ListPage: React.FC<
 
   const { modal, showModal, closeModal } = useModal();
 
+  function editFilter(editType?: CriterionType) {
+    showModal(
+      <EditFilterDialog
+        filter={filter}
+        criterionOptions={criterionOptions}
+        setCriterionOptions={(o) => setCriterionOptions(o)}
+        onClose={(f) => {
+          if (f) setFilter(f);
+          closeModal();
+        }}
+        editingCriterion={editType}
+      />
+    );
+  }
+
   return (
     <div id={id} className={cx("list-page", className)}>
       {modal}
@@ -78,24 +94,12 @@ export const ListPage: React.FC<
           actionButtons={actionButtons}
           selectedButtons={selectedButtons}
           sidebarCollapsed={filterCollapsed}
+          showFilterDialog={() => editFilter()}
         />
         <div>
           <FilterTags
             criteria={filter.criteria}
-            onEditCriterion={(c) => {
-              showModal(
-                <EditFilterDialog
-                  filter={filter}
-                  criterionOptions={criterionOptions}
-                  setCriterionOptions={(o) => setCriterionOptions(o)}
-                  onClose={(f) => {
-                    if (f) setFilter(f);
-                    closeModal();
-                  }}
-                  editingCriterion={c.criterionOption.type}
-                />
-              );
-            }}
+            onEditCriterion={(c) => editFilter(c.criterionOption.type)}
             onRemoveAll={() => setFilter(filter.clearCriteria())}
             onRemoveCriterion={(c) =>
               setFilter(filter.removeCriterion(c.criterionOption.type))
