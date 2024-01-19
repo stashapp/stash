@@ -617,7 +617,7 @@
 .list-header {
   display: flex;
   flex-direction: row;
-  height: 40px;
+  padding-bottom: 0.5rem;
 
   // set z-index above collapse button
   // position must be relative for this
@@ -661,6 +661,57 @@
 
     & > div {
       margin-right: 0.5rem;
+    }
+  }
+}
+
+@include media-breakpoint-down(lg) {
+  .list-header {
+    flex-wrap: wrap;
+    row-gap: 0.5rem;
+
+    .list-header-left {
+      display: none;
+    }
+
+    .list-header-center {
+      flex-basis: 100%;
+      max-width: 100%;
+      order: 3;
+    }
+
+    .list-header-right {
+      flex-basis: 100%;
+      justify-content: center;
+      max-width: 100%;
+      order: 2;
+    }
+  }
+
+  .expanded .list-header {
+    .list-header-left {
+      display: flex;
+    }
+
+    .list-header-right {
+      justify-content: flex-end;
+    }
+
+    .list-header-left,
+    .list-header-right {
+      flex-basis: 50%;
+      max-width: 50%;
+    }
+  }
+}
+@include media-breakpoint-down(xs) {
+  .list-page-results .list-header {
+    .list-header-left,
+    .list-header-center,
+    .list-header-right {
+      flex-basis: 100%;
+      justify-content: center;
+      max-width: 100%;
     }
   }
 }
