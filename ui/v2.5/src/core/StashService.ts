@@ -344,6 +344,23 @@ export const queryFindTags = (filter: ListFilterModel) =>
     },
   });
 
+export const queryFindTagsByIDForSelect = (tagIDs: number[]) =>
+  client.query<GQL.FindTagsForSelectQuery>({
+    query: GQL.FindTagsForSelectDocument,
+    variables: {
+      tag_ids: tagIDs,
+    },
+  });
+
+export const queryFindTagsForSelect = (filter: ListFilterModel) =>
+  client.query<GQL.FindTagsForSelectQuery>({
+    query: GQL.FindTagsForSelectDocument,
+    variables: {
+      filter: filter.makeFindFilter(),
+      tag_filter: filter.makeFilter(),
+    },
+  });
+
 export const useAllTagsForFilter = () => GQL.useAllTagsForFilterQuery();
 
 export const useFindSavedFilter = (id: string) =>
