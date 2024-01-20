@@ -22,11 +22,11 @@ import { ImageWall } from "./ImageList";
 import { useHistory } from "react-router-dom";
 import { EditImagesDialog } from "./EditImagesDialog";
 import { DeleteImagesDialog } from "./DeleteImagesDialog";
-import { Button } from "react-bootstrap";
 import { Icon } from "../Shared/Icon";
 import { faShuffle } from "@fortawesome/free-solid-svg-icons";
 import { ListPage } from "../List/ListPage";
 import { useFilterURL, useInitialFilter, useResultCount } from "../List/util";
+import DropdownItem from "react-bootstrap/esm/DropdownItem";
 
 const filterMode = FilterMode.Images;
 
@@ -337,18 +337,17 @@ export const ImagesPageImpl: React.FC<{
         listSelect={listSelect}
         actionButtons={
           images.length > 0 && (
-            <div>
-              <Button
+            <>
+              <DropdownItem
                 className="shuffle-images-button"
-                variant="secondary"
                 onClick={() => viewRandom()}
               >
                 <Icon icon={faShuffle} />
                 <span>
                   <FormattedMessage id="actions.shuffle" />
                 </span>
-              </Button>
-            </div>
+              </DropdownItem>
+            </>
           )
         }
         selectedButtons={renderButtons}

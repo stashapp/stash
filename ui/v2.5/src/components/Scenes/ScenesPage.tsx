@@ -17,7 +17,7 @@ import { Button } from "react-bootstrap";
 import { Icon } from "../Shared/Icon";
 import { ListOperationButtons } from "../List/ListOperationButtons";
 import { ListOperationDropdown } from "../List/ListOperationDropdown";
-import { faPlay, faPlus, faShuffle } from "@fortawesome/free-solid-svg-icons";
+import { faPlay, faShuffle } from "@fortawesome/free-solid-svg-icons";
 import { ConfigurationContext } from "src/hooks/Config";
 import { useHistory } from "react-router-dom";
 import { objectTitle } from "src/core/files";
@@ -339,10 +339,10 @@ const ScenesPageImpl: React.FC<{
         listSelect={listSelect}
         actionButtons={
           <>
-            <DropdownItem href="/scenes/new">
+            {/* <DropdownItem href="/scenes/new">
               <Icon icon={faPlus} />
               <FormattedMessage id="new" defaultMessage="New" />
-            </DropdownItem>
+            </DropdownItem> */}
             {items.length !== 0 && (
               <>
                 <DropdownItem

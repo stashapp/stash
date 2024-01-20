@@ -9,12 +9,11 @@ import { queryFindGalleries, useFindGalleries } from "src/core/StashService";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useListSelect } from "src/hooks/listSelect";
 import { IItemListOperation } from "../List/ItemList";
-import { Button } from "react-bootstrap";
 import { Icon } from "../Shared/Icon";
 import { ListOperationButtons } from "../List/ListOperationButtons";
 import { ListOperationDropdown } from "../List/ListOperationDropdown";
 import { faShuffle } from "@fortawesome/free-solid-svg-icons";
-import { Link, useHistory } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 import { useModal } from "src/hooks/modal";
 import { ExportDialog } from "../Shared/ExportDialog";
 import { getFromIds } from "src/utils/data";
@@ -25,6 +24,7 @@ import { DeleteGalleriesDialog } from "./DeleteGalleriesDialog";
 import { ListPage } from "../List/ListPage";
 import { useFilterURL, useInitialFilter, useResultCount } from "../List/util";
 import { GalleryListTable } from "./GalleryListTable";
+import DropdownItem from "react-bootstrap/esm/DropdownItem";
 
 const filterMode = FilterMode.Galleries;
 
@@ -207,26 +207,25 @@ export const GalleriesPageImpl: React.FC<{
         listSelect={listSelect}
         actionButtons={
           <>
-            <div>
+            {/* <div>
               <Link to="/galleries/new">
                 <Button variant="primary">
                   <FormattedMessage id="new" defaultMessage="New" />
                 </Button>
               </Link>
-            </div>
+            </div> */}
             {items.length > 0 && (
-              <div>
-                <Button
+              <>
+                <DropdownItem
                   className="shuffle-galleries-button"
-                  variant="secondary"
                   onClick={() => viewRandom()}
                 >
                   <Icon icon={faShuffle} />
                   <span>
                     <FormattedMessage id="actions.shuffle" />
                   </span>
-                </Button>
-              </div>
+                </DropdownItem>
+              </>
             )}
           </>
         }
