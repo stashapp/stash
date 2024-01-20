@@ -348,7 +348,7 @@ export const queryFindTagsByIDForSelect = (tagIDs: number[]) =>
   client.query<GQL.FindTagsForSelectQuery>({
     query: GQL.FindTagsForSelectDocument,
     variables: {
-      tag_ids: tagIDs,
+      ids: tagIDs,
     },
   });
 
