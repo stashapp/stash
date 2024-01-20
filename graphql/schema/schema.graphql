@@ -89,6 +89,7 @@ type Query {
   findTags(
     tag_filter: TagFilterType
     filter: FindFilterType
+    ids: [Int!]
   ): FindTagsResultType!
 
   "Retrieve random scene markers for the wall"
