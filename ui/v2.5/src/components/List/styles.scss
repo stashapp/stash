@@ -426,6 +426,7 @@
 .display-mode-select {
   padding-left: 0.375rem;
   padding-right: 0.375rem;
+  text-wrap: nowrap;
 }
 
 .display-mode-menu {
@@ -448,6 +449,7 @@
 .list-page {
   display: flex;
   flex-direction: row;
+  margin-right: -15px;
 
   .collapse-divider {
     min-height: calc(100vh - 4rem);
@@ -459,7 +461,9 @@
   }
 
   .list-page-results {
+    display: flex;
     flex: 0 0 calc(100% - 20rem - 30px);
+    flex-direction: column;
     max-height: calc(100vh - 4rem);
     max-width: calc(100% - 20rem - 30px);
     overflow-x: auto;
@@ -475,8 +479,28 @@
       max-height: 100%;
       overflow-x: hidden;
       overflow-y: auto;
+
+      padding-right: 15px;
+      padding-top: 0.5rem;
+
+      .table-list {
+        margin-right: -15px;
+      }
+
+      .wall {
+        padding-right: 15px;
+      }
     }
   }
+}
+
+.list-page-results {
+  // make main scrollbar similar to default scrollbar size
+  ::-webkit-scrollbar {
+    width: 18px;
+  }
+
+  scrollbar-width: 18px;
 }
 
 .sidebar-container {
@@ -618,6 +642,7 @@
 .list-header {
   display: flex;
   flex-direction: row;
+  margin-right: 15px;
   padding-bottom: 0.5rem;
 
   // set z-index above collapse button
