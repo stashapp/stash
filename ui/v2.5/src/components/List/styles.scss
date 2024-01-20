@@ -697,7 +697,8 @@
     row-gap: 0.5rem;
 
     .list-header-left {
-      display: none;
+      flex-basis: 50%;
+      max-width: 50%;
     }
 
     .list-header-center {
@@ -707,9 +708,8 @@
     }
 
     .list-header-right {
-      flex-basis: 100%;
-      justify-content: center;
-      max-width: 100%;
+      flex-basis: 50%;
+      max-width: 50%;
       order: 2;
     }
   }
@@ -727,6 +727,33 @@
     .list-header-right {
       flex-basis: 50%;
       max-width: 50%;
+    }
+  }
+}
+@include media-breakpoint-down(md) {
+  .list-page-results .list-header {
+    .list-header-left,
+    .list-header-center,
+    .list-header-right {
+      flex-basis: 100%;
+      justify-content: center;
+      max-width: 100%;
+    }
+  }
+
+  .expanded .list-header {
+    .list-header-left,
+    .list-header-right {
+      flex-basis: 50%;
+      max-width: 50%;
+    }
+
+    .list-header-left {
+      justify-content: flex-start;
+    }
+
+    .list-header-right {
+      justify-content: flex-end;
     }
   }
 }
