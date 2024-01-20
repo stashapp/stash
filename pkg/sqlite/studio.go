@@ -517,6 +517,7 @@ func (qb *StudioStore) makeFilter(ctx context.Context, studioFilter *models.Stud
 	query.handleCriterion(ctx, studioGalleryCountCriterionHandler(qb, studioFilter.GalleryCount))
 	query.handleCriterion(ctx, studioParentCriterionHandler(qb, studioFilter.Parents))
 	query.handleCriterion(ctx, studioAliasCriterionHandler(qb, studioFilter.Aliases))
+	query.handleCriterion(ctx, studioChildCountCriterionHandler(qb, studioFilter.ChildCount))
 	query.handleCriterion(ctx, timestampCriterionHandler(studioFilter.CreatedAt, studioTable+".created_at"))
 	query.handleCriterion(ctx, timestampCriterionHandler(studioFilter.UpdatedAt, studioTable+".updated_at"))
 
@@ -649,6 +650,17 @@ func studioAliasCriterionHandler(qb *StudioStore, alias *models.StringCriterionI
 	return h.handler(alias)
 }
 
+func studioChildCountCriterionHandler(qb *StudioStore, childCount *models.IntCriterionInput) criterionHandlerFunc {
+	return func(ctx context.Context, f *filterBuilder) {
+		if childCount != nil {
+			f.addLeftJoin("studios", "children_count", "children_count.parent_id = studios.id")
+			clause, args := getIntCriterionWhereClause("count(distinct children_count.id)", *childCount)
+
+			f.addHaving(clause, args...)
+		}
+	}
+}
+
 func (qb *StudioStore) getStudioSort(findFilter *models.FindFilterType) string {
 	var sort string
 	var direction string
@@ -668,6 +680,8 @@ func (qb *StudioStore) getStudioSort(findFilter *models.FindFilterType) string {
 		sortQuery += getCountSort(studioTable, imageTable, studioIDColumn, direction)
 	case "galleries_count":
 		sortQuery += getCountSort(studioTable, galleryTable, studioIDColumn, direction)
+	case "child_count":
+		sortQuery += getCountSort(studioTable, studioTable, studioParentIDColumn, direction)
 	default:
 		sortQuery += getSort(sort, direction, "studios")
 	}
