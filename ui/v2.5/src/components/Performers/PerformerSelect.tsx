@@ -85,7 +85,7 @@ export const PerformerSelect: React.FC<
     thisOptionProps = {
       ...optionProps,
       children: (
-        <span>
+        <span className="react-select-image-option">
           <a
             href={`/performers/${object.id}`}
             target="_blank"
