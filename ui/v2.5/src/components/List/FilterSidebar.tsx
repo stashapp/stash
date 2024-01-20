@@ -6,9 +6,9 @@ import React, {
   useState,
 } from "react";
 import { CriterionType } from "src/models/list-filter/types";
-import { SearchField } from "../List/ListFilter";
+// import { SearchField } from "../List/ListFilter";
 import { ListFilterModel } from "src/models/list-filter/filter";
-import useFocus from "src/utils/focus";
+// import useFocus from "src/utils/focus";
 import {
   Criterion,
   CriterionOption,
@@ -150,7 +150,7 @@ export const FilterSidebar: React.FC<{
   const Toast = useToast();
 
   const { modal, showModal, closeModal } = useModal();
-  const [queryRef, setQueryFocus] = useFocus();
+  // const [queryRef, setQueryFocus] = useFocus();
 
   const [setDefaultFilter] = useSetDefaultFilter();
 
@@ -161,15 +161,15 @@ export const FilterSidebar: React.FC<{
 
   const { criteria } = filter;
 
-  const searchQueryUpdated = useCallback(
-    (value: string) => {
-      const newFilter = filter.clone();
-      newFilter.searchTerm = value;
-      newFilter.currentPage = 1;
-      setFilter(newFilter);
-    },
-    [filter, setFilter]
-  );
+  // const searchQueryUpdated = useCallback(
+  //   (value: string) => {
+  //     const newFilter = filter.clone();
+  //     newFilter.searchTerm = value;
+  //     newFilter.currentPage = 1;
+  //     setFilter(newFilter);
+  //   },
+  //   [filter, setFilter]
+  // );
 
   const optionSelected = useCallback(
     (option?: CriterionOption) => {
@@ -304,12 +304,12 @@ export const FilterSidebar: React.FC<{
 
   return (
     <div className={cx("filter-sidebar", className)}>
-      <SearchField
+      {/* <SearchField
         searchTerm={filter.searchTerm}
         setSearchTerm={searchQueryUpdated}
         queryRef={queryRef}
         setQueryFocus={setQueryFocus}
-      />
+      /> */}
       <div className="saved-filters">
         <CollapseButton
           text={intl.formatMessage({ id: "search_filter.saved_filters" })}

@@ -119,24 +119,22 @@ const DefaultListHeader: React.FC<IDefaultListHeaderProps> = ({
   return (
     <div className="list-header">
       <div className="list-header-left">
+        <SearchField
+          searchTerm={filter.searchTerm}
+          setSearchTerm={searchQueryUpdated}
+          queryRef={queryRef}
+          setQueryFocus={setQueryFocus}
+        />
         {sidebarCollapsed && (
-          <>
-            <SearchField
-              searchTerm={filter.searchTerm}
-              setSearchTerm={searchQueryUpdated}
-              queryRef={queryRef}
-              setQueryFocus={setQueryFocus}
-            />
-            <ButtonGroup>
-              <SavedFilterSelect filter={filter} onFilterUpdate={setFilter} />
-              {showFilterDialog && (
-                <FilterButton
-                  filter={filter}
-                  onClick={() => showFilterDialog()}
-                />
-              )}
-            </ButtonGroup>
-          </>
+          <ButtonGroup>
+            <SavedFilterSelect filter={filter} onFilterUpdate={setFilter} />
+            {showFilterDialog && (
+              <FilterButton
+                filter={filter}
+                onClick={() => showFilterDialog()}
+              />
+            )}
+          </ButtonGroup>
         )}
       </div>
       <div className="list-header-center">
