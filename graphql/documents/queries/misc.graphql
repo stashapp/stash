@@ -21,14 +21,6 @@ query AllMoviesForFilter {
   }
 }
 
-query AllTagsForFilter {
-  allTags {
-    id
-    name
-    aliases
-  }
-}
-
 query Stats {
   stats {
     scene_count

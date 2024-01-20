@@ -361,8 +361,6 @@ export const queryFindTagsForSelect = (filter: ListFilterModel) =>
     },
   });
 
-export const useAllTagsForFilter = () => GQL.useAllTagsForFilterQuery();
-
 export const useFindSavedFilter = (id: string) =>
   GQL.useFindSavedFilterQuery({
     variables: { id },
@@ -1614,8 +1612,6 @@ export const useTagCreate = () =>
     update(cache, result) {
       const tag = result.data?.tagCreate;
       if (!tag) return;
-
-      appendObject(cache, tag, GQL.AllTagsForFilterDocument);
 
       // update stats
       updateStats(cache, "tag_count", 1);
