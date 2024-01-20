@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   OptionProps,
   components as reactSelectComponents,
@@ -41,6 +41,7 @@ export const TagSelect: React.FC<
   IFilterProps &
     IFilterValueProps<Tag> & {
       hoverPlacement?: Placement;
+      excludeIds?: string[];
     }
 > = (props) => {
   const [createTag] = useTagCreate();
@@ -52,6 +53,8 @@ export const TagSelect: React.FC<
   const defaultCreatable =
     !configuration?.interface.disableDropdownCreate.tag ?? true;
 
+  const exclude = useMemo(() => props.excludeIds ?? [], [props.excludeIds]);
+
   async function loadTags(input: string): Promise<Option[]> {
     const filter = new ListFilterModel(GQL.FilterMode.Tags);
     filter.searchTerm = input;
@@ -60,16 +63,20 @@ export const TagSelect: React.FC<
     filter.sortBy = "name";
     filter.sortDirection = GQL.SortDirectionEnum.Asc;
     const query = await queryFindTagsForSelect(filter);
-    return query.data.findTags.tags.map((tag) => ({
-      value: tag.id,
-      object: tag,
-    }));
+    return query.data.findTags.tags
+      .filter((tag) => {
+        // HACK - we should probably exclude these in the backend query, but
+        // this will do in the short-term
+        return !exclude.includes(tag.id.toString());
+      })
+      .map((tag) => ({
+        value: tag.id,
+        object: tag,
+      }));
   }
 
   const TagOption: React.FC<OptionProps<Option, boolean>> = (optionProps) => {
     let thisOptionProps = optionProps;
-
-    const targetRef = useRef<HTMLDivElement>(null);
 
     const { object } = optionProps.data;
 
@@ -87,33 +94,33 @@ export const TagSelect: React.FC<
     thisOptionProps = {
       ...optionProps,
       children: (
-        <span className="react-select-image-option" ref={targetRef}>
-          <TagPopover
-            id={object.id}
-            placement={props.hoverPlacement}
-            target={targetRef}
-          >
-            <a
-              href={`/tags/${object.id}`}
-              target="_blank"
-              rel="noreferrer"
-              className="tag-select-image-link"
+        <TagPopover id={object.id} placement={props.hoverPlacement}>
+          <span className="react-select-image-option">
+            {/* the following code causes re-rendering issues when selecting tags */}
+            {/* <TagPopover
+              id={object.id}
+              placement={props.hoverPlacement}
+              target={targetRef}
             >
-              <img
-                className="tag-select-image"
-                src={object.image_path ?? ""}
-                loading="lazy"
-              />
-            </a>
-          </TagPopover>
-          <span>{name}</span>
-          {alias && <span className="alias">{` (${alias})`}</span>}
-        </span>
+              <a
+                href={`/tags/${object.id}`}
+                target="_blank"
+                rel="noreferrer"
+                className="tag-select-image-link"
+              >
+                <img
+                  className="tag-select-image"
+                  src={object.image_path ?? ""}
+                  loading="lazy"
+                />
+              </a>
+            </TagPopover> */}
+            <span>{name}</span>
+            {alias && <span className="alias">{` (${alias})`}</span>}
+          </span>
+        </TagPopover>
       ),
     };
-
-    // const hide = (optionProps.data as Option & { __isNew__: boolean })
-    //   .__isNew__;
 
     return <reactSelectComponents.Option {...thisOptionProps} />;
   };
@@ -218,6 +225,7 @@ export const TagSelect: React.FC<
           }
         )
       }
+      closeMenuOnSelect={!props.isMulti}
     />
   );
 };
