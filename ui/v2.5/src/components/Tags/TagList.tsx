@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import cloneDeep from "lodash-es/cloneDeep";
 import Mousetrap from "mousetrap";
 import { ListFilterModel } from "src/models/list-filter/filter";
@@ -28,6 +28,7 @@ import { TagCard } from "./TagCard";
 import { ExportDialog } from "../Shared/ExportDialog";
 import { tagRelationHook } from "../../core/tags";
 import { faTrashAlt } from "@fortawesome/free-solid-svg-icons";
+import { useContainerDimensions } from "../Shared/GridCard";
 
 interface ITagList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
@@ -161,6 +162,9 @@ export const TagList: React.FC<ITagList> = ({ filterHook, alterQuery }) => {
     }
   }
 
+  const componentRef = useRef<HTMLDivElement>(null);
+  const { width } = useContainerDimensions(componentRef);
+
   function renderContent(
     result: GQL.FindTagsQueryResult,
     filter: ListFilterModel,
@@ -188,10 +192,11 @@ export const TagList: React.FC<ITagList> = ({ filterHook, alterQuery }) => {
 
       if (filter.displayMode === DisplayMode.Grid) {
         return (
-          <div className="row px-xl-5 justify-content-center">
+          <div className="row justify-content-center" ref={componentRef}>
             {result.data.findTags.tags.map((tag) => (
               <TagCard
                 key={tag.id}
+                containerWidth={width}
                 tag={tag}
                 zoomIndex={filter.zoomIndex}
                 selecting={selectedIds.size > 0}

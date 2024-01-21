@@ -1,5 +1,5 @@
 import { ButtonGroup } from "react-bootstrap";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 import NavUtils from "src/utils/navigation";
@@ -10,6 +10,7 @@ import { PopoverCountButton } from "../Shared/PopoverCountButton";
 
 interface IProps {
   tag: GQL.TagDataFragment;
+  containerWidth?: number;
   zoomIndex: number;
   selecting?: boolean;
   selected?: boolean;
@@ -18,11 +19,40 @@ interface IProps {
 
 export const TagCard: React.FC<IProps> = ({
   tag,
+  containerWidth,
   zoomIndex,
   selecting,
   selected,
   onSelectedChanged,
 }) => {
+  const [cardWidth, setCardWidth] = useState<number>();
+
+  useEffect(() => {
+    if (!containerWidth || zoomIndex === undefined) return;
+
+    let containerPadding = 30;
+    let maxUsableWidth = containerWidth - containerPadding;
+    let zoomValue = zoomIndex;
+    let maxCardWidth: number;
+    let paddingOffset = 10;
+    switch (zoomValue) {
+      case 0:
+        maxCardWidth = 240;
+        break;
+      case 1:
+        maxCardWidth = 340;
+        break;
+      case 2:
+        maxCardWidth = 480;
+        break;
+      case 3:
+        maxCardWidth = 640;
+    }
+    let maxElementsOnRow = Math.ceil(maxUsableWidth / maxCardWidth!);
+    let fittedCardWidth = maxUsableWidth / maxElementsOnRow - paddingOffset;
+    setCardWidth(fittedCardWidth);
+  }, [containerWidth, zoomIndex]);
+
   function maybeRenderDescription() {
     if (tag.description) {
       return (
@@ -181,6 +211,7 @@ export const TagCard: React.FC<IProps> = ({
     <GridCard
       className={`tag-card zoom-${zoomIndex}`}
       url={`/tags/${tag.id}`}
+      width={cardWidth}
       title={tag.name ?? ""}
       linkClassName="tag-card-header"
       image={

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { useIntl } from "react-intl";
 import cloneDeep from "lodash-es/cloneDeep";
 import Mousetrap from "mousetrap";
@@ -20,6 +20,7 @@ import { ExportDialog } from "../Shared/ExportDialog";
 import { DeleteEntityDialog } from "../Shared/DeleteEntityDialog";
 import { MovieCard } from "./MovieCard";
 import { EditMoviesDialog } from "./EditMoviesDialog";
+import { useContainerDimensions } from "../Shared/GridCard";
 
 const MovieItemList = makeItemList({
   filterMode: GQL.FilterMode.Movies,
@@ -103,6 +104,9 @@ export const MovieList: React.FC<IMovieList> = ({ filterHook, alterQuery }) => {
     setIsExportDialogOpen(true);
   }
 
+  const componentRef = useRef<HTMLDivElement>(null);
+  const { width } = useContainerDimensions(componentRef);
+
   function renderContent(
     result: GQL.FindMoviesQueryResult,
     filter: ListFilterModel,
@@ -130,10 +134,11 @@ export const MovieList: React.FC<IMovieList> = ({ filterHook, alterQuery }) => {
 
       if (filter.displayMode === DisplayMode.Grid) {
         return (
-          <div className="row justify-content-center">
+          <div className="row justify-content-center" ref={componentRef}>
             {result.data.findMovies.movies.map((p) => (
               <MovieCard
                 key={p.id}
+                containerWidth={width}
                 movie={p}
                 selecting={selectedIds.size > 0}
                 selected={selectedIds.has(p.id)}

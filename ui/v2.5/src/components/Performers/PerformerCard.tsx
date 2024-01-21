@@ -34,8 +34,6 @@ export interface IPerformerCardExtraCriteria {
 interface IPerformerCardProps {
   performer: GQL.PerformerDataFragment;
   containerWidth?: number;
-  previewHeight?: number;
-  setPreviewHeight?: React.Dispatch<React.SetStateAction<number | undefined>>;
   ageFromDate?: string;
   selecting?: boolean;
   selected?: boolean;
@@ -68,14 +66,13 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
     { id: ageL10nId },
     { age, years_old: ageL10String }
   );
-  
+
   const [updatePerformer] = usePerformerUpdate();
   const [cardWidth, setCardWidth] = useState<number>();
   const [imageHeight, setImageHeight] = useState<number>();
 
   useEffect(() => {
-    if (!containerWidth)
-      return;
+    if (!containerWidth) return;
 
     let containerPadding = 30;
     let maxUsableWidth = containerWidth - containerPadding;
@@ -83,7 +80,7 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
     let paddingOffset = 10;
 
     let maxElementsOnRow = Math.ceil(maxUsableWidth / maxCardWidth!);
-    let fittedCardWidth = (maxUsableWidth / maxElementsOnRow) - paddingOffset;
+    let fittedCardWidth = maxUsableWidth / maxElementsOnRow - paddingOffset;
     let fittedimageHeight = (fittedCardWidth / 2) * 3;
     setCardWidth(fittedCardWidth);
     setImageHeight(fittedimageHeight);

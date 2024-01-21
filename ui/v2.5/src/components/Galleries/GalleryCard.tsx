@@ -1,5 +1,5 @@
 import { Button, ButtonGroup, OverlayTrigger, Tooltip } from "react-bootstrap";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 import { GridCard } from "../Shared/GridCard";
@@ -17,6 +17,7 @@ import { galleryTitle } from "src/core/galleries";
 
 interface IProps {
   gallery: GQL.SlimGalleryDataFragment;
+  containerWidth?: number;
   selecting?: boolean;
   selected?: boolean | undefined;
   zoomIndex?: number;
@@ -26,6 +27,33 @@ interface IProps {
 export const GalleryCard: React.FC<IProps> = (props) => {
   const { configuration } = React.useContext(ConfigurationContext);
   const showStudioAsText = configuration?.interface.showStudioAsText ?? false;
+  const [cardWidth, setCardWidth] = useState<number>();
+
+  useEffect(() => {
+    if (!props.containerWidth || props.zoomIndex === undefined) return;
+
+    let containerPadding = 30;
+    let containerWidth = props.containerWidth - containerPadding;
+    let zoomValue = props.zoomIndex;
+    let maxCardWidth: number;
+    let paddingOffset = 10;
+    switch (zoomValue) {
+      case 0:
+        maxCardWidth = 240;
+        break;
+      case 1:
+        maxCardWidth = 340;
+        break;
+      case 2:
+        maxCardWidth = 480;
+        break;
+      case 3:
+        maxCardWidth = 640;
+    }
+    let maxElementsOnRow = Math.ceil(containerWidth / maxCardWidth!);
+    let fittedCardWidth = containerWidth / maxElementsOnRow - paddingOffset;
+    setCardWidth(fittedCardWidth);
+  }, [props, props.containerWidth, props.zoomIndex]);
 
   function maybeRenderScenePopoverButton() {
     if (props.gallery.scenes.length === 0) return;
@@ -153,6 +181,7 @@ export const GalleryCard: React.FC<IProps> = (props) => {
     <GridCard
       className={`gallery-card zoom-${props.zoomIndex}`}
       url={`/galleries/${props.gallery.id}`}
+      width={cardWidth}
       title={galleryTitle(props.gallery)}
       linkClassName="gallery-card-header"
       image={

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { useIntl } from "react-intl";
 import cloneDeep from "lodash-es/cloneDeep";
 import { useHistory } from "react-router-dom";
@@ -20,6 +20,7 @@ import { ExportDialog } from "../Shared/ExportDialog";
 import { DeleteEntityDialog } from "../Shared/DeleteEntityDialog";
 import { StudioCard } from "./StudioCard";
 import { StudioTagger } from "../Tagger/studios/StudioTagger";
+import { useContainerDimensions } from "../Shared/GridCard";
 
 const StudioItemList = makeItemList({
   filterMode: GQL.FilterMode.Studios,
@@ -108,6 +109,9 @@ export const StudioList: React.FC<IStudioList> = ({
     setIsExportDialogOpen(true);
   }
 
+  const componentRef = useRef<HTMLDivElement>(null);
+  const { width } = useContainerDimensions(componentRef);
+
   function renderContent(
     result: GQL.FindStudiosQueryResult,
     filter: ListFilterModel,
@@ -135,10 +139,11 @@ export const StudioList: React.FC<IStudioList> = ({
 
       if (filter.displayMode === DisplayMode.Grid) {
         return (
-          <div className="row px-xl-5 justify-content-center">
+          <div className="row justify-content-center" ref={componentRef}>
             {result.data.findStudios.studios.map((studio) => (
               <StudioCard
                 key={studio.id}
+                containerWidth={width}
                 studio={studio}
                 hideParent={fromParent}
                 selecting={selectedIds.size > 0}

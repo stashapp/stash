@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Button, ButtonGroup } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
 import { GridCard } from "../Shared/GridCard";
@@ -12,6 +12,7 @@ import { faPlayCircle } from "@fortawesome/free-solid-svg-icons";
 
 interface IProps {
   movie: GQL.MovieDataFragment;
+  containerWidth?: number;
   sceneIndex?: number;
   selecting?: boolean;
   selected?: boolean;
@@ -19,6 +20,21 @@ interface IProps {
 }
 
 export const MovieCard: React.FC<IProps> = (props: IProps) => {
+  const [cardWidth, setCardWidth] = useState<number>();
+
+  useEffect(() => {
+    if (!props.containerWidth) return;
+
+    let containerPadding = 30;
+    let maxUsableWidth = props.containerWidth - containerPadding;
+    let maxCardWidth = 250;
+    let paddingOffset = 10;
+
+    let maxElementsOnRow = Math.ceil(maxUsableWidth / maxCardWidth!);
+    let fittedCardWidth = maxUsableWidth / maxElementsOnRow - paddingOffset;
+    setCardWidth(fittedCardWidth);
+  }, [props, props.containerWidth]);
+
   function maybeRenderSceneNumber() {
     if (!props.sceneIndex) return;
 
@@ -71,6 +87,7 @@ export const MovieCard: React.FC<IProps> = (props: IProps) => {
     <GridCard
       className="movie-card"
       url={`/movies/${props.movie.id}`}
+      width={cardWidth}
       title={props.movie.name}
       linkClassName="movie-card-header"
       image={

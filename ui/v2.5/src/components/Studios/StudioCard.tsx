@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 import NavUtils from "src/utils/navigation";
@@ -10,6 +10,7 @@ import { RatingBanner } from "../Shared/RatingBanner";
 
 interface IProps {
   studio: GQL.StudioDataFragment;
+  containerWidth?: number;
   hideParent?: boolean;
   selecting?: boolean;
   selected?: boolean;
@@ -59,11 +60,27 @@ function maybeRenderChildren(studio: GQL.StudioDataFragment) {
 
 export const StudioCard: React.FC<IProps> = ({
   studio,
+  containerWidth,
   hideParent,
   selecting,
   selected,
   onSelectedChanged,
 }) => {
+  const [cardWidth, setCardWidth] = useState<number>();
+
+  useEffect(() => {
+    if (!containerWidth) return;
+
+    let containerPadding = 30;
+    let maxUsableWidth = containerWidth - containerPadding;
+    let maxCardWidth = 340;
+    let paddingOffset = 10;
+
+    let maxElementsOnRow = Math.ceil(maxUsableWidth / maxCardWidth!);
+    let fittedCardWidth = maxUsableWidth / maxElementsOnRow - paddingOffset;
+    setCardWidth(fittedCardWidth);
+  }, [containerWidth]);
+
   function maybeRenderScenesPopoverButton() {
     if (!studio.scene_count) return;
 
@@ -156,6 +173,7 @@ export const StudioCard: React.FC<IProps> = ({
     <GridCard
       className="studio-card"
       url={`/studios/${studio.id}`}
+      width={cardWidth}
       title={studio.name}
       linkClassName="studio-card-header"
       image={
