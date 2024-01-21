@@ -8,7 +8,7 @@ import { useModal } from "src/hooks/modal";
 import { CollapseDivider } from "../Shared/CollapseDivider";
 import { FilterTags } from "../List/FilterTags";
 import { EditFilterDialog } from "../List/EditFilterDialog";
-import { useFilterConfig } from "../List/util";
+import { useFilterConfig, useSaveLocalFilterState } from "../List/util";
 import { useListSelect } from "src/hooks/listSelect";
 import { LoadingIndicator } from "../Shared/LoadingIndicator";
 import { CriterionType } from "src/models/list-filter/types";
@@ -20,6 +20,7 @@ export const ListPage: React.FC<
     id?: string;
     className?: string;
     filter: ListFilterModel;
+    initialSidebarCollapsed?: boolean;
     setFilter: (filter: ListFilterModel) => void;
     listSelect: ListSelectProps;
     actionButtons?: React.ReactNode;
@@ -27,11 +28,13 @@ export const ListPage: React.FC<
     metadataByline?: JSX.Element;
     totalCount: number;
     loading: boolean;
+    pageView?: string;
   }>
 > = ({
   id,
   className,
   filter,
+  initialSidebarCollapsed,
   setFilter,
   listSelect,
   actionButtons,
@@ -39,16 +42,21 @@ export const ListPage: React.FC<
   metadataByline,
   totalCount,
   loading,
+  pageView,
   children,
 }) => {
   const { selectedIds, onSelectAll, onSelectNone } = listSelect;
 
-  const [filterCollapsed, setFilterCollapsed] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(
+    initialSidebarCollapsed ?? false
+  );
 
   const { criterionOptions, setCriterionOptions, sidebarOptions } =
     useFilterConfig(filter.mode);
 
   const { modal, showModal, closeModal } = useModal();
+
+  useSaveLocalFilterState(pageView, filter, sidebarCollapsed);
 
   function editFilter(editType?: CriterionType) {
     showModal(
@@ -69,9 +77,9 @@ export const ListPage: React.FC<
     <div id={id} className={cx("list-page", className)}>
       {modal}
 
-      <div className={cx("sidebar-container", { collapsed: filterCollapsed })}>
+      <div className={cx("sidebar-container", { collapsed: sidebarCollapsed })}>
         <FilterSidebar
-          className={cx({ collapsed: filterCollapsed })}
+          className={cx({ collapsed: sidebarCollapsed })}
           filter={filter}
           setFilter={(f) => setFilter(f)}
           criterionOptions={criterionOptions}
@@ -80,10 +88,10 @@ export const ListPage: React.FC<
         />
       </div>
       <CollapseDivider
-        collapsed={filterCollapsed}
-        setCollapsed={(v) => setFilterCollapsed(v)}
+        collapsed={sidebarCollapsed}
+        setCollapsed={(v) => setSidebarCollapsed(v)}
       />
-      <div className={cx("list-page-results", { expanded: filterCollapsed })}>
+      <div className={cx("list-page-results", { expanded: sidebarCollapsed })}>
         <ListHeader
           filter={filter}
           setFilter={setFilter}
@@ -93,7 +101,7 @@ export const ListPage: React.FC<
           onSelectNone={onSelectNone}
           actionButtons={actionButtons}
           selectedButtons={selectedButtons}
-          sidebarCollapsed={filterCollapsed}
+          sidebarCollapsed={sidebarCollapsed}
           showFilterDialog={() => editFilter()}
         />
         <div>

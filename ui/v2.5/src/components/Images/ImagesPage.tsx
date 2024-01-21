@@ -25,14 +25,21 @@ import { DeleteImagesDialog } from "./DeleteImagesDialog";
 import { Icon } from "../Shared/Icon";
 import { faShuffle } from "@fortawesome/free-solid-svg-icons";
 import { ListPage } from "../List/ListPage";
-import { useFilterURL, useInitialFilter, useResultCount } from "../List/util";
+import {
+  useFilterURL,
+  useInitialFilter,
+  useLocalFilterState,
+  useResultCount,
+} from "../List/util";
 import DropdownItem from "react-bootstrap/esm/DropdownItem";
 
 const filterMode = FilterMode.Images;
+const pageView = "images";
 
 export const ImagesPageImpl: React.FC<{
   defaultFilter: ListFilterModel;
-}> = ({ defaultFilter }) => {
+  defaultSidebarCollapsed?: boolean;
+}> = ({ defaultFilter, defaultSidebarCollapsed }) => {
   const intl = useIntl();
   const history = useHistory();
 
@@ -335,6 +342,8 @@ export const ImagesPageImpl: React.FC<{
         filter={filter}
         setFilter={(f) => setFilter(f)}
         listSelect={listSelect}
+        pageView={pageView}
+        initialSidebarCollapsed={defaultSidebarCollapsed}
         actionButtons={
           images.length > 0 && (
             <>
@@ -363,12 +372,20 @@ export const ImagesPageImpl: React.FC<{
 
 export const ImagesPage: React.FC = () => {
   const initialFilter = useInitialFilter(filterMode);
+  const initialLocalFilterState = useLocalFilterState(pageView, filterMode);
 
-  if (!initialFilter) {
+  if (!initialFilter || !initialLocalFilterState) {
     return null;
   }
 
-  return <ImagesPageImpl defaultFilter={initialFilter} />;
+  const initialSidebarCollapsed = initialLocalFilterState.sidebarCollapsed;
+
+  return (
+    <ImagesPageImpl
+      defaultFilter={initialFilter}
+      defaultSidebarCollapsed={initialSidebarCollapsed}
+    />
+  );
 };
 
 export default ImagesPage;

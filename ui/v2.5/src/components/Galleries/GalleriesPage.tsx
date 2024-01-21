@@ -22,15 +22,22 @@ import GalleryWallCard from "./GalleryWallCard";
 import { EditGalleriesDialog } from "./EditGalleriesDialog";
 import { DeleteGalleriesDialog } from "./DeleteGalleriesDialog";
 import { ListPage } from "../List/ListPage";
-import { useFilterURL, useInitialFilter, useResultCount } from "../List/util";
+import {
+  useFilterURL,
+  useInitialFilter,
+  useLocalFilterState,
+  useResultCount,
+} from "../List/util";
 import { GalleryListTable } from "./GalleryListTable";
 import DropdownItem from "react-bootstrap/esm/DropdownItem";
 
 const filterMode = FilterMode.Galleries;
+const pageView = "galleries";
 
 export const GalleriesPageImpl: React.FC<{
   defaultFilter: ListFilterModel;
-}> = ({ defaultFilter }) => {
+  defaultSidebarCollapsed?: boolean;
+}> = ({ defaultFilter, defaultSidebarCollapsed }) => {
   const intl = useIntl();
   const history = useHistory();
 
@@ -205,6 +212,8 @@ export const GalleriesPageImpl: React.FC<{
         filter={filter}
         setFilter={(f) => setFilter(f)}
         listSelect={listSelect}
+        pageView={pageView}
+        initialSidebarCollapsed={defaultSidebarCollapsed}
         actionButtons={
           <>
             {/* <div>
@@ -241,12 +250,20 @@ export const GalleriesPageImpl: React.FC<{
 
 export const GalleriesPage: React.FC = () => {
   const initialFilter = useInitialFilter(filterMode);
+  const initialLocalFilterState = useLocalFilterState(pageView, filterMode);
 
-  if (!initialFilter) {
+  if (!initialFilter || !initialLocalFilterState) {
     return null;
   }
 
-  return <GalleriesPageImpl defaultFilter={initialFilter} />;
+  const initialSidebarCollapsed = initialLocalFilterState.sidebarCollapsed;
+
+  return (
+    <GalleriesPageImpl
+      defaultFilter={initialFilter}
+      defaultSidebarCollapsed={initialSidebarCollapsed}
+    />
+  );
 };
 
 export default GalleriesPage;

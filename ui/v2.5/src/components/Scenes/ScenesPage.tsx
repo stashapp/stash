@@ -30,14 +30,21 @@ import { getFromIds } from "src/utils/data";
 import { EditScenesDialog } from "./EditScenesDialog";
 import { DeleteScenesDialog } from "./DeleteScenesDialog";
 import { ListPage } from "../List/ListPage";
-import { useFilterURL, useInitialFilter, useResultCount } from "../List/util";
+import {
+  useFilterURL,
+  useInitialFilter,
+  useLocalFilterState,
+  useResultCount,
+} from "../List/util";
 import DropdownItem from "react-bootstrap/esm/DropdownItem";
 
 const filterMode = FilterMode.Scenes;
+const pageView = "scenes";
 
 const ScenesPageImpl: React.FC<{
   defaultFilter: ListFilterModel;
-}> = ({ defaultFilter }) => {
+  defaultSidebarCollapsed?: boolean;
+}> = ({ defaultFilter, defaultSidebarCollapsed }) => {
   const intl = useIntl();
   const history = useHistory();
 
@@ -337,6 +344,8 @@ const ScenesPageImpl: React.FC<{
         filter={filter}
         setFilter={(f) => setFilter(f)}
         listSelect={listSelect}
+        pageView={pageView}
+        initialSidebarCollapsed={defaultSidebarCollapsed}
         actionButtons={
           <>
             {/* <DropdownItem href="/scenes/new">
@@ -380,12 +389,20 @@ const ScenesPageImpl: React.FC<{
 
 export const ScenesPage: React.FC = () => {
   const initialFilter = useInitialFilter(filterMode);
+  const initialLocalFilterState = useLocalFilterState(pageView, filterMode);
 
-  if (!initialFilter) {
+  if (!initialFilter || !initialLocalFilterState) {
     return null;
   }
 
-  return <ScenesPageImpl defaultFilter={initialFilter} />;
+  const initialSidebarCollapsed = initialLocalFilterState.sidebarCollapsed;
+
+  return (
+    <ScenesPageImpl
+      defaultFilter={initialFilter}
+      defaultSidebarCollapsed={initialSidebarCollapsed}
+    />
+  );
 };
 
 export default ScenesPage;

@@ -7,6 +7,7 @@ interface IInterfaceQueryConfig {
   filter: string;
   itemsPerPage: number;
   currentPage: number;
+  sidebarCollapsed: boolean;
 }
 
 type IQueryConfig = Record<string, IInterfaceQueryConfig>;

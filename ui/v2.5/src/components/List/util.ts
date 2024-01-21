@@ -15,6 +15,7 @@ import { useConfigureUI, useFindDefaultFilter } from "src/core/StashService";
 import { ConfigurationContext } from "src/hooks/Config";
 import { IUIConfig } from "src/core/config";
 import { useMemoOnce } from "src/hooks/state";
+import { useInterfaceLocalForage } from "src/hooks/LocalForage";
 
 export interface ICriterionOption {
   option: CriterionOption;
@@ -251,4 +252,87 @@ export function useInitialFilter(mode: GQL.FilterMode) {
   }, [defaultFilter, location.search]);
 
   return initialFilter;
+}
+
+export function useLocalFilterState(pageView: string, mode: GQL.FilterMode) {
+  const [interfaceData] = useInterfaceLocalForage();
+
+  const { loading } = interfaceData;
+
+  const localFilterState = useMemo(() => {
+    if (!pageView) return null;
+    if (loading) {
+      return undefined;
+    }
+
+    const { data: existing } = interfaceData;
+
+    return existing?.queryConfig?.[pageView] ?? null;
+  }, [interfaceData, loading, pageView]);
+
+  const localState = useMemoOnce<
+    | {
+        filter: ListFilterModel | undefined;
+        sidebarCollapsed: boolean;
+      }
+    | undefined
+  >(() => {
+    if (loading) return [undefined, false];
+
+    if (localFilterState) {
+      // TODO - set the filter state from local storage
+      const storedQuery = localFilterState?.filter;
+
+      const newFilter = new ListFilterModel(mode);
+      newFilter.configureFromQueryString(storedQuery);
+
+      return [
+        {
+          filter: newFilter,
+          sidebarCollapsed: localFilterState.sidebarCollapsed,
+        },
+        true,
+      ];
+    }
+
+    return [{ filter: undefined, sidebarCollapsed: false }, true];
+  }, [localFilterState, mode, loading]);
+
+  return localState;
+}
+
+export function useSaveLocalFilterState(
+  pageView: string | undefined,
+  filter: ListFilterModel,
+  sidebarCollapsed: boolean
+) {
+  const [, setInterfaceState] = useInterfaceLocalForage();
+
+  const setLocalFilterState = useCallback(
+    (updatedFilter: ListFilterModel, updatedSidebarCollapsed: boolean) => {
+      if (!pageView) return;
+
+      setInterfaceState((prevState) => {
+        return {
+          ...prevState,
+          queryConfig: {
+            ...(prevState?.queryConfig ?? {}),
+            [pageView]: {
+              filter: updatedFilter.makeQueryParameters(),
+              itemsPerPage: updatedFilter.itemsPerPage,
+              currentPage: updatedFilter.currentPage,
+              sidebarCollapsed: updatedSidebarCollapsed,
+            },
+          },
+        };
+      });
+    },
+    [pageView, setInterfaceState]
+  );
+
+  // set the filter and sidebar state when changed
+  useEffect(() => {
+    if (!pageView) return;
+    setLocalFilterState(filter, sidebarCollapsed);
+  }, [pageView, filter, setLocalFilterState, sidebarCollapsed]);
 }
