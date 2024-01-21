@@ -27,7 +27,8 @@ interface ICardProps {
 export const useContainerDimensions = (
   myRef: React.RefObject<HTMLDivElement>
 ) => {
-  const [dimensions, setDimensions] = useState({ width: window.innerWidth, height: 0 });
+  // 15 pixel offset accounts for scrollbar
+  const [dimensions, setDimensions] = useState({ width: window.innerWidth-15, height: 0 });
 
   useEffect(() => {
     const getDimensions = () => ({
