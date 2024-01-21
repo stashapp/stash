@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Button, ButtonGroup, OverlayTrigger, Tooltip } from "react-bootstrap";
 import { Link, useHistory } from "react-router-dom";
 import cx from "classnames";
@@ -37,6 +37,7 @@ interface IScenePreviewProps {
   isPortrait: boolean;
   image?: string;
   video?: string;
+  height?: number;
   soundActive: boolean;
   vttPath?: string;
   onScrubberClick?: (timestamp: number) => void;
@@ -45,6 +46,7 @@ interface IScenePreviewProps {
 export const ScenePreview: React.FC<IScenePreviewProps> = ({
   image,
   video,
+  height,
   isPortrait,
   soundActive,
   vttPath,
@@ -71,7 +73,10 @@ export const ScenePreview: React.FC<IScenePreviewProps> = ({
   }, [soundActive]);
 
   return (
-    <div className={cx("scene-card-preview", { portrait: isPortrait })}>
+    <div
+      className={cx("scene-card-preview", { portrait: isPortrait })}
+      style={height ? { height: `${height}px` } : {}}
+    >
       <img
         className="scene-card-preview-image"
         loading="lazy"
@@ -95,6 +100,9 @@ export const ScenePreview: React.FC<IScenePreviewProps> = ({
 
 interface ISceneCardProps {
   scene: GQL.SlimSceneDataFragment;
+  containerWidth?: number;
+  previewHeight?: number;
+  setPreviewHeight?: React.Dispatch<React.SetStateAction<number | undefined>>;
   index?: number;
   queue?: SceneQueue;
   compact?: boolean;
@@ -443,6 +451,7 @@ const SceneCardImage = PatchComponent(
       <>
         <ScenePreview
           image={props.scene.paths.screenshot ?? undefined}
+          height={props.previewHeight}
           video={props.scene.paths.preview ?? undefined}
           isPortrait={isPortrait()}
           soundActive={configuration?.interface?.soundOnPreview ?? false}
@@ -461,6 +470,7 @@ export const SceneCard = PatchComponent(
   "SceneCard",
   (props: ISceneCardProps) => {
     const { configuration } = React.useContext(ConfigurationContext);
+    const [cardWidth, setCardWidth] = useState<number>();
 
     const file = useMemo(
       () => (props.scene.files.length > 0 ? props.scene.files[0] : undefined),
@@ -483,6 +493,39 @@ export const SceneCard = PatchComponent(
       return "";
     }
 
+    useEffect(() => {
+      if (
+        !props.containerWidth ||
+        props.zoomIndex === undefined ||
+        !props.setPreviewHeight
+      )
+        return;
+
+      let containerPadding = 30;
+      let containerWidth = props.containerWidth - containerPadding;
+      let zoomValue = props.zoomIndex;
+      let maxCardWidth: number;
+      let paddingOffset = 10;
+      switch (zoomValue) {
+        case 0:
+          maxCardWidth = 240;
+          break;
+        case 1:
+          maxCardWidth = 340;
+          break;
+        case 2:
+          maxCardWidth = 480;
+          break;
+        case 3:
+          maxCardWidth = 640;
+      }
+      let maxElementsOnRow = Math.ceil(containerWidth / maxCardWidth!);
+      let fittedCardWidth = containerWidth / maxElementsOnRow - paddingOffset;
+      let imageHeight = (fittedCardWidth / 16) * 9;
+      setCardWidth(fittedCardWidth);
+      props.setPreviewHeight(imageHeight);
+    }, [props, props.containerWidth, props.zoomIndex]);
+
     const cont = configuration?.interface.continuePlaylistDefault ?? false;
 
     const sceneLink = props.queue
@@ -497,6 +540,7 @@ export const SceneCard = PatchComponent(
         className={`scene-card ${zoomIndex()} ${filelessClass()}`}
         url={sceneLink}
         title={objectTitle(props.scene)}
+        width={cardWidth}
         linkClassName="scene-card-link"
         thumbnailSectionClassName="video-section"
         resumeTime={props.scene.resume_time ?? undefined}
