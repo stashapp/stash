@@ -1,5 +1,5 @@
 import cloneDeep from "lodash-es/cloneDeep";
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { useIntl } from "react-intl";
 import { useHistory } from "react-router-dom";
 import Mousetrap from "mousetrap";
@@ -24,6 +24,7 @@ import { PerformerListTable } from "./PerformerListTable";
 import { EditPerformersDialog } from "./EditPerformersDialog";
 import { cmToImperial, cmToInches, kgToLbs } from "src/utils/units";
 import TextUtils from "src/utils/text";
+import { useContainerDimensions } from "../Shared/GridCard";
 
 const PerformerItemList = makeItemList({
   filterMode: GQL.FilterMode.Performers,
@@ -234,6 +235,9 @@ export const PerformerList: React.FC<IPerformerList> = ({
     setIsExportDialogOpen(true);
   }
 
+  const componentRef = useRef<HTMLDivElement>(null);
+  const { width } = useContainerDimensions(componentRef);
+
   function renderContent(
     result: GQL.FindPerformersQueryResult,
     filter: ListFilterModel,
@@ -263,10 +267,11 @@ export const PerformerList: React.FC<IPerformerList> = ({
 
       if (filter.displayMode === DisplayMode.Grid) {
         return (
-          <div className="row justify-content-center">
+          <div className="row justify-content-center" ref={componentRef}>
             {result.data.findPerformers.performers.map((p) => (
               <PerformerCard
                 key={p.id}
+                containerWidth={width}
                 performer={p}
                 selecting={selectedIds.size > 0}
                 selected={selectedIds.has(p.id)}
