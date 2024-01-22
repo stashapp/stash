@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useState } from "react";
 import cloneDeep from "lodash-es/cloneDeep";
 import Mousetrap from "mousetrap";
 import { ListFilterModel } from "src/models/list-filter/filter";
@@ -24,11 +24,10 @@ import NavUtils from "src/utils/navigation";
 import { Icon } from "../Shared/Icon";
 import { ModalComponent } from "../Shared/Modal";
 import { DeleteEntityDialog } from "../Shared/DeleteEntityDialog";
-import { TagCard } from "./TagCard";
 import { ExportDialog } from "../Shared/ExportDialog";
 import { tagRelationHook } from "../../core/tags";
 import { faTrashAlt } from "@fortawesome/free-solid-svg-icons";
-import { useContainerDimensions } from "../Shared/GridCard";
+import { TagCardGrid } from "./TagCardGrid";
 
 interface ITagList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
@@ -162,9 +161,6 @@ export const TagList: React.FC<ITagList> = ({ filterHook, alterQuery }) => {
     }
   }
 
-  const componentRef = useRef<HTMLDivElement>(null);
-  const { width } = useContainerDimensions(componentRef);
-
   function renderContent(
     result: GQL.FindTagsQueryResult,
     filter: ListFilterModel,
@@ -192,21 +188,12 @@ export const TagList: React.FC<ITagList> = ({ filterHook, alterQuery }) => {
 
       if (filter.displayMode === DisplayMode.Grid) {
         return (
-          <div className="row justify-content-center" ref={componentRef}>
-            {result.data.findTags.tags.map((tag) => (
-              <TagCard
-                key={tag.id}
-                containerWidth={width}
-                tag={tag}
-                zoomIndex={filter.zoomIndex}
-                selecting={selectedIds.size > 0}
-                selected={selectedIds.has(tag.id)}
-                onSelectedChanged={(selected: boolean, shiftKey: boolean) =>
-                  onSelectChange(tag.id, selected, shiftKey)
-                }
-              />
-            ))}
-          </div>
+          <TagCardGrid
+            tags={result.data.findTags.tags}
+            zoomIndex={filter.zoomIndex}
+            selectedIds={selectedIds}
+            onSelectChange={onSelectChange}
+          />
         );
       }
       if (filter.displayMode === DisplayMode.List) {
