@@ -111,6 +111,8 @@
     "set_image": "Set image…",
     "show": "Show",
     "show_configuration": "Show Configuration",
+    "show_results": "Show results",
+    "show_count_results": "Show {count} results",
     "shuffle": "Shuffle",
     "skip": "Skip",
     "split": "Split",

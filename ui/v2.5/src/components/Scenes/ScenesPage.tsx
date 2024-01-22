@@ -31,6 +31,7 @@ import { EditScenesDialog } from "./EditScenesDialog";
 import { DeleteScenesDialog } from "./DeleteScenesDialog";
 import { ListPage } from "../List/ListPage";
 import {
+  initialSidebarState,
   useFilterURL,
   useInitialFilter,
   useLocalFilterState,
@@ -398,7 +399,9 @@ export const ScenesPage: React.FC = () => {
     return null;
   }
 
-  const initialSidebarCollapsed = initialLocalFilterState.sidebarCollapsed;
+  const initialSidebarCollapsed = initialSidebarState(
+    initialLocalFilterState.sidebarCollapsed
+  );
 
   return (
     <ScenesPageImpl

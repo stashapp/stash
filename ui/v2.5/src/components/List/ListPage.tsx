@@ -99,6 +99,8 @@ export const ListPage: React.FC<
           criterionOptions={criterionOptions}
           setCriterionOptions={(o) => setCriterionOptions(o)}
           sidebarOptions={sidebarOptions}
+          hideSidebar={() => setSidebarCollapsed(true)}
+          totalCount={loading ? undefined : totalCount}
         />
       </div>
       <CollapseDivider
@@ -117,6 +119,7 @@ export const ListPage: React.FC<
           selectedButtons={selectedButtons}
           sidebarCollapsed={sidebarCollapsed}
           showFilterDialog={() => editFilter()}
+          showSidebar={() => setSidebarCollapsed(false)}
         />
         <div>
           <FilterTags

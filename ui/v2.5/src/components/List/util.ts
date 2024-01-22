@@ -17,6 +17,7 @@ import { IUIConfig } from "src/core/config";
 import { useMemoOnce } from "src/hooks/state";
 import { useInterfaceLocalForage } from "src/hooks/LocalForage";
 import Mousetrap from "mousetrap";
+import ScreenUtils from "src/utils/screen";
 
 export interface ICriterionOption {
   option: CriterionOption;
@@ -336,6 +337,12 @@ export function useSaveLocalFilterState(
     if (!pageView) return;
     setLocalFilterState(filter, sidebarCollapsed);
   }, [pageView, filter, setLocalFilterState, sidebarCollapsed]);
+}
+
+export function initialSidebarState(defaultSidebarCollapsed: boolean) {
+  const isMobile = ScreenUtils.isMobile();
+  const initialSidebarCollapsed = isMobile ? true : defaultSidebarCollapsed;
+  return initialSidebarCollapsed;
 }
 
 export function useListKeyboardShortcuts(props: {

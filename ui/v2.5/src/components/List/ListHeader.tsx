@@ -14,7 +14,11 @@ import { ListFilterModel } from "src/models/list-filter/filter";
 import { Button, ButtonGroup, Dropdown } from "react-bootstrap";
 import { Icon } from "../Shared/Icon";
 import { FormattedMessage } from "react-intl";
-import { faEllipsisH, faTimes } from "@fortawesome/free-solid-svg-icons";
+import {
+  faChevronRight,
+  faEllipsisH,
+  faTimes,
+} from "@fortawesome/free-solid-svg-icons";
 import useFocus from "src/utils/focus";
 import { FilterButton } from "./Filters/FilterButton";
 import Mousetrap from "mousetrap";
@@ -26,6 +30,7 @@ interface IDefaultListHeaderProps {
   totalItems: number;
   actionButtons?: React.ReactNode;
   sidebarCollapsed?: boolean;
+  showSidebar?: () => void;
 }
 
 const DefaultListHeader: React.FC<IDefaultListHeaderProps> = ({
@@ -35,6 +40,7 @@ const DefaultListHeader: React.FC<IDefaultListHeaderProps> = ({
   totalItems,
   actionButtons,
   sidebarCollapsed,
+  showSidebar,
 }) => {
   const [queryRef, setQueryFocus] = useFocus();
 
@@ -139,6 +145,15 @@ const DefaultListHeader: React.FC<IDefaultListHeaderProps> = ({
   return (
     <div className="list-header">
       <div className="list-header-left">
+        {sidebarCollapsed && showSidebar && (
+          <Button
+            className="show-siderbar-button-xs"
+            variant="secondary"
+            onClick={() => showSidebar()}
+          >
+            <Icon size="sm" icon={faChevronRight} />
+          </Button>
+        )}
         <SearchField
           searchTerm={filter.searchTerm}
           setSearchTerm={searchQueryUpdated}
@@ -146,7 +161,7 @@ const DefaultListHeader: React.FC<IDefaultListHeaderProps> = ({
           setQueryFocus={setQueryFocus}
         />
         {sidebarCollapsed && (
-          <ButtonGroup>
+          <ButtonGroup className="filter-button-group">
             <SavedFilterSelect filter={filter} onFilterUpdate={setFilter} />
             {showFilterDialog && (
               <FilterButton

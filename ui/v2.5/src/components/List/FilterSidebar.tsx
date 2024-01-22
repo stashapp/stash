@@ -138,6 +138,8 @@ export const FilterSidebar: React.FC<{
   criterionOptions: ICriterionOption[];
   sidebarOptions: CriterionOption[];
   setCriterionOptions: (v: ICriterionOption[]) => void;
+  hideSidebar?: () => void;
+  totalCount?: number;
 }> = ({
   className,
   filter,
@@ -145,6 +147,8 @@ export const FilterSidebar: React.FC<{
   criterionOptions,
   sidebarOptions,
   setCriterionOptions,
+  hideSidebar,
+  totalCount,
 }) => {
   const intl = useIntl();
   const Toast = useToast();
@@ -310,6 +314,18 @@ export const FilterSidebar: React.FC<{
         queryRef={queryRef}
         setQueryFocus={setQueryFocus}
       /> */}
+      <div className="show-results-container-xs">
+        <Button onClick={() => hideSidebar?.()}>
+          {totalCount === undefined ? (
+            <FormattedMessage id="actions.show_results" />
+          ) : (
+            <FormattedMessage
+              id="actions.show_count_results"
+              values={{ count: intl.formatNumber(totalCount) }}
+            />
+          )}
+        </Button>
+      </div>
       <div className="saved-filters">
         <CollapseButton
           text={intl.formatMessage({ id: "search_filter.saved_filters" })}

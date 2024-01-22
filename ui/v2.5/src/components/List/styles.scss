@@ -503,24 +503,26 @@
   }
 }
 
-.list-page > .list-page-results {
-  // make main scrollbar similar to default scrollbar size
-  ::-webkit-scrollbar {
-    width: 18px;
-  }
-
-  scrollbar-width: 18px;
-
-  /* stylelint-disable selector-max-universal */
-  & > * {
-    // make main scrollbar similar to other scrollbar sizes
+@include media-breakpoint-up(sm) {
+  .list-page > .list-page-results {
+    // make main scrollbar similar to default scrollbar size
     ::-webkit-scrollbar {
-      width: 10px;
+      width: 18px;
     }
 
-    scrollbar-width: 10px;
+    scrollbar-width: 18px;
+
+    /* stylelint-disable selector-max-universal */
+    & > * {
+      // make main scrollbar similar to other scrollbar sizes
+      ::-webkit-scrollbar {
+        width: 10px;
+      }
+
+      scrollbar-width: 10px;
+    }
+    /* stylelint-enable selector-max-universal */
   }
-  /* stylelint-enable selector-max-universal */
 }
 
 .sidebar-container {
@@ -534,6 +536,38 @@
   }
 }
 
+@include media-breakpoint-down(xs) {
+  // don't pin the header on small screens
+  .list-page .list-page-results {
+    &.expanded {
+      max-height: 100%;
+    }
+  }
+
+  .list-page,
+  .list-page .list-header {
+    margin-right: 0;
+  }
+
+  .list-page .collapse-divider {
+    display: none;
+  }
+
+  .list-page .list-page-results {
+    max-width: 0;
+  }
+
+  .sidebar-container {
+    flex-basis: 100%;
+    max-width: 100%;
+
+    .filter-sidebar {
+      max-width: 100%;
+      width: 100%;
+    }
+  }
+}
+
 .filter-sidebar {
   max-height: calc(100vh - 4rem);
   max-width: 20rem;
@@ -541,6 +575,10 @@
   overflow-x: hidden;
   overflow-y: auto;
   width: 20rem;
+
+  .show-results-container-xs {
+    display: none;
+  }
 
   hr {
     background-color: $secondary;
@@ -674,6 +712,10 @@
     flex-basis: 33%;
     justify-content: flex-start;
     max-width: 33%;
+
+    .filter-button-group {
+      margin-right: 0;
+    }
   }
 
   .list-header-center {
@@ -708,6 +750,10 @@
     & > div {
       margin-right: 0.5rem;
     }
+  }
+
+  .show-siderbar-button-xs {
+    display: none;
   }
 }
 
@@ -786,6 +832,20 @@
       justify-content: center;
       max-width: 100%;
     }
+  }
+
+  .list-page-results .list-header .show-siderbar-button-xs {
+    display: block;
+    margin-right: 0.5rem;
+  }
+
+  .filter-sidebar .show-results-container-xs {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .list-page .list-page-results .list-page-items {
+    padding-right: 0;
   }
 }
 

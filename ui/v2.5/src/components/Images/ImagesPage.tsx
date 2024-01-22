@@ -26,6 +26,7 @@ import { Icon } from "../Shared/Icon";
 import { faShuffle } from "@fortawesome/free-solid-svg-icons";
 import { ListPage } from "../List/ListPage";
 import {
+  initialSidebarState,
   useFilterURL,
   useInitialFilter,
   useLocalFilterState,
@@ -381,7 +382,9 @@ export const ImagesPage: React.FC = () => {
     return null;
   }
 
-  const initialSidebarCollapsed = initialLocalFilterState.sidebarCollapsed;
+  const initialSidebarCollapsed = initialSidebarState(
+    initialLocalFilterState.sidebarCollapsed
+  );
 
   return (
     <ImagesPageImpl
