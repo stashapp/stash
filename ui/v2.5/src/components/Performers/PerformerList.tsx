@@ -19,11 +19,12 @@ import { DisplayMode } from "src/models/list-filter/types";
 import { PerformerTagger } from "../Tagger/performers/PerformerTagger";
 import { ExportDialog } from "../Shared/ExportDialog";
 import { DeleteEntityDialog } from "../Shared/DeleteEntityDialog";
-import { IPerformerCardExtraCriteria, PerformerCard } from "./PerformerCard";
+import { IPerformerCardExtraCriteria } from "./PerformerCard";
 import { PerformerListTable } from "./PerformerListTable";
 import { EditPerformersDialog } from "./EditPerformersDialog";
 import { cmToImperial, cmToInches, kgToLbs } from "src/utils/units";
 import TextUtils from "src/utils/text";
+import { PerformerCardGrid } from "./PerformerCardGrid";
 
 const PerformerItemList = makeItemList({
   filterMode: GQL.FilterMode.Performers,
@@ -263,20 +264,13 @@ export const PerformerList: React.FC<IPerformerList> = ({
 
       if (filter.displayMode === DisplayMode.Grid) {
         return (
-          <div className="row justify-content-center">
-            {result.data.findPerformers.performers.map((p) => (
-              <PerformerCard
-                key={p.id}
-                performer={p}
-                selecting={selectedIds.size > 0}
-                selected={selectedIds.has(p.id)}
-                onSelectedChanged={(selected: boolean, shiftKey: boolean) =>
-                  onSelectChange(p.id, selected, shiftKey)
-                }
-                extraCriteria={extraCriteria}
-              />
-            ))}
-          </div>
+          <PerformerCardGrid
+            performers={result.data.findPerformers.performers}
+            zoomIndex={filter.zoomIndex}
+            selectedIds={selectedIds}
+            onSelectChange={onSelectChange}
+            extraCriteria={extraCriteria}
+          />
         );
       }
       if (filter.displayMode === DisplayMode.List) {
