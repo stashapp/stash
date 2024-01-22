@@ -702,6 +702,31 @@ input[type="range"].blue-slider {
 
 .select-col {
   width: 20px;
+
+  /* stylelint-disable */
+  .checkbox-wrapper {
+    position: relative;
+    z-index: 0;
+
+    input[type="checkbox"]:checked + label span {
+      transform: scale(0.8);
+    }
+
+    input[type="checkbox"]:checked + label:hover span {
+      transform: scale(0.8);
+    }
+
+    label {
+      margin: 0;
+      opacity: 1;
+      padding: 0;
+
+      span {
+        transform: scale(0.6);
+      }
+    }
+  }
+  /* stylelint-enable */
 }
 
 .scrape-dialog .rating-number.disabled {
