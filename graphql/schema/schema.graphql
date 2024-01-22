@@ -69,6 +69,7 @@ type Query {
   findStudios(
     studio_filter: StudioFilterType
     filter: FindFilterType
+    ids: [ID!]
   ): FindStudiosResultType!
 
   "Find a movie by ID"
@@ -202,11 +203,11 @@ type Query {
   allSceneMarkers: [SceneMarker!]!
   allImages: [Image!]!
   allGalleries: [Gallery!]!
-  allStudios: [Studio!]!
   allMovies: [Movie!]!
 
   allPerformers: [Performer!]! @deprecated(reason: "Use findPerformers instead")
   allTags: [Tag!]! @deprecated(reason: "Use findTags instead")
+  allStudios: [Studio!]! @deprecated(reason: "Use findStudios instead")
 
   # Get everything with minimal metadata
 

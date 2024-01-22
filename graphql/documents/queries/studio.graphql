@@ -12,3 +12,16 @@ query FindStudio($id: ID!) {
     ...StudioData
   }
 }
+
+query FindStudiosForSelect(
+  $filter: FindFilterType
+  $studio_filter: StudioFilterType
+  $ids: [ID!]
+) {
+  findStudios(filter: $filter, studio_filter: $studio_filter, ids: $ids) {
+    count
+    studios {
+      ...SelectStudioData
+    }
+  }
+}
