@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useState } from "react";
 import { useIntl } from "react-intl";
 import cloneDeep from "lodash-es/cloneDeep";
 import { useHistory } from "react-router-dom";
@@ -18,9 +18,8 @@ import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 import { ExportDialog } from "../Shared/ExportDialog";
 import { DeleteEntityDialog } from "../Shared/DeleteEntityDialog";
-import { StudioCard } from "./StudioCard";
 import { StudioTagger } from "../Tagger/studios/StudioTagger";
-import { useContainerDimensions } from "../Shared/GridCard";
+import { StudioCardGrid } from "./StudioCardGrid";
 
 const StudioItemList = makeItemList({
   filterMode: GQL.FilterMode.Studios,
@@ -109,9 +108,6 @@ export const StudioList: React.FC<IStudioList> = ({
     setIsExportDialogOpen(true);
   }
 
-  const componentRef = useRef<HTMLDivElement>(null);
-  const { width } = useContainerDimensions(componentRef);
-
   function renderContent(
     result: GQL.FindStudiosQueryResult,
     filter: ListFilterModel,
@@ -139,21 +135,12 @@ export const StudioList: React.FC<IStudioList> = ({
 
       if (filter.displayMode === DisplayMode.Grid) {
         return (
-          <div className="row justify-content-center" ref={componentRef}>
-            {result.data.findStudios.studios.map((studio) => (
-              <StudioCard
-                key={studio.id}
-                containerWidth={width}
-                studio={studio}
-                hideParent={fromParent}
-                selecting={selectedIds.size > 0}
-                selected={selectedIds.has(studio.id)}
-                onSelectedChanged={(selected: boolean, shiftKey: boolean) =>
-                  onSelectChange(studio.id, selected, shiftKey)
-                }
-              />
-            ))}
-          </div>
+          <StudioCardGrid
+            studios={result.data.findStudios.studios}
+            fromParent={fromParent}
+            selectedIds={selectedIds}
+            onSelectChange={onSelectChange}
+          />
         );
       }
       if (filter.displayMode === DisplayMode.List) {

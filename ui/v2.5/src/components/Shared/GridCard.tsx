@@ -27,12 +27,7 @@ interface ICardProps {
 export const useContainerDimensions = (
   myRef: React.RefObject<HTMLDivElement>
 ) => {
-  const overflow = window?.visualViewport?.height! < window.innerHeight;
-  const defaultWidth = overflow ? window.innerWidth - 15 : window.innerWidth;
-  const [dimensions, setDimensions] = useState({
-    width: defaultWidth,
-    height: 0,
-  });
+  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
   useEffect(() => {
     const getDimensions = () => ({

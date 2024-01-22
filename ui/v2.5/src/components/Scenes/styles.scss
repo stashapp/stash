@@ -82,6 +82,10 @@ textarea.scene-description {
   }
 }
 
+.justify-content-center .studio-card .studio-card-image {
+  width: 100%;
+}
+
 .studio-card {
   padding: 0.5rem;
 
@@ -99,7 +103,7 @@ textarea.scene-description {
     max-height: 150px;
     object-fit: contain;
     vertical-align: middle;
-    width: 100%;
+    width: 320px;
 
     @media (max-width: 576px) {
       width: 100%;
