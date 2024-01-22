@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { DisplayMode } from "src/models/list-filter/types";
 import {
   FilterMode,
@@ -32,6 +32,7 @@ import {
   useResultCount,
 } from "../List/util";
 import DropdownItem from "react-bootstrap/esm/DropdownItem";
+import Mousetrap from "mousetrap";
 
 const filterMode = FilterMode.Images;
 const pageView = "images";
@@ -236,25 +237,27 @@ export const ImagesPageImpl: React.FC<{
     }
   }
 
-  async function viewRandom() {
-    if (images.length === 0) return;
+  const viewRandom = useCallback(async () => {
+    if (totalCount === 0) return;
 
-    // query for a random image
-    if (result.data?.findImages) {
-      const { count } = result.data.findImages;
-
-      const index = Math.floor(Math.random() * count);
-      const filterCopy = filter.clone();
-      filterCopy.itemsPerPage = 1;
-      filterCopy.currentPage = index + 1;
-      const singleResult = await queryFindImages(filterCopy);
-      if (singleResult.data.findImages.images.length === 1) {
-        const { id } = singleResult.data.findImages.images[0];
-        // navigate to the image player page
-        history.push(`/images/${id}`);
-      }
+    const randomFilter = filter.randomSingle(totalCount);
+    const singleResult = await queryFindImages(randomFilter);
+    if (singleResult.data.findImages.images.length === 1) {
+      const { id } = singleResult.data.findImages.images[0];
+      // navigate to the image player page
+      history.push(`/images/${id}`);
     }
-  }
+  }, [totalCount, filter, history]);
+
+  useEffect(() => {
+    Mousetrap.bind("p r", () => {
+      viewRandom();
+    });
+
+    return () => {
+      Mousetrap.unbind("p r");
+    };
+  }, [viewRandom]);
 
   async function onExport(all: boolean) {
     showModal(

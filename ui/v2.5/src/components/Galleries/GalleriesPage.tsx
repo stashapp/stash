@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { DisplayMode } from "src/models/list-filter/types";
 import {
   FilterMode,
@@ -30,6 +30,7 @@ import {
 } from "../List/util";
 import { GalleryListTable } from "./GalleryListTable";
 import DropdownItem from "react-bootstrap/esm/DropdownItem";
+import Mousetrap from "mousetrap";
 
 const filterMode = FilterMode.Galleries;
 const pageView = "galleries";
@@ -106,25 +107,28 @@ export const GalleriesPageImpl: React.FC<{
     }
   }
 
-  async function viewRandom() {
-    if (items.length === 0) return;
+  const viewRandom = useCallback(async () => {
+    if (totalCount === 0) return;
 
-    // query for a random image
-    if (result.data?.findGalleries) {
-      const { count } = result.data.findGalleries;
+    const randomFilter = filter.randomSingle(totalCount);
+    const singleResult = await queryFindGalleries(randomFilter);
 
-      const index = Math.floor(Math.random() * count);
-      const filterCopy = filter.clone();
-      filterCopy.itemsPerPage = 1;
-      filterCopy.currentPage = index + 1;
-      const singleResult = await queryFindGalleries(filterCopy);
-      if (singleResult.data.findGalleries.galleries.length === 1) {
-        const { id } = singleResult.data.findGalleries.galleries[0];
-        // navigate to the image player page
-        history.push(`/galleries/${id}`);
-      }
+    if (singleResult.data.findGalleries.galleries.length === 1) {
+      const { id } = singleResult.data.findGalleries.galleries[0];
+      // navigate to the image player page
+      history.push(`/galleries/${id}`);
     }
-  }
+  }, [totalCount, filter, history]);
+
+  useEffect(() => {
+    Mousetrap.bind("p r", () => {
+      viewRandom();
+    });
+
+    return () => {
+      Mousetrap.unbind("p r");
+    };
+  }, [viewRandom]);
 
   async function onExport(all: boolean) {
     showModal(

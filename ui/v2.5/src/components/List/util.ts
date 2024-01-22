@@ -16,6 +16,7 @@ import { ConfigurationContext } from "src/hooks/Config";
 import { IUIConfig } from "src/core/config";
 import { useMemoOnce } from "src/hooks/state";
 import { useInterfaceLocalForage } from "src/hooks/LocalForage";
+import Mousetrap from "mousetrap";
 
 export interface ICriterionOption {
   option: CriterionOption;
@@ -335,4 +336,104 @@ export function useSaveLocalFilterState(
     if (!pageView) return;
     setLocalFilterState(filter, sidebarCollapsed);
   }, [pageView, filter, setLocalFilterState, sidebarCollapsed]);
+}
+
+export function useListKeyboardShortcuts(props: {
+  filter?: ListFilterModel;
+  setFilter?: (filter: ListFilterModel) => void;
+  showEditFilter?: () => void;
+  totalCount?: number;
+  toggleSidebarCollapsed?: () => void;
+  onSelectAll?: () => void;
+  onSelectNone?: () => void;
+}) {
+  const {
+    filter,
+    setFilter,
+    showEditFilter,
+    totalCount = 0,
+    toggleSidebarCollapsed,
+    onSelectAll,
+    onSelectNone,
+  } = props;
+
+  // set up hotkeys
+  useEffect(() => {
+    if (showEditFilter) {
+      Mousetrap.bind("f", (e) => {
+        showEditFilter();
+        // prevent default behavior of typing f in a text field
+        // otherwise the filter dialog closes, the query field is focused and
+        // f is typed.
+        e.preventDefault();
+      });
+
+      return () => {
+        Mousetrap.unbind("f");
+      };
+    }
+  }, [showEditFilter]);
+
+  useEffect(() => {
+    if (!filter || !setFilter || !totalCount) return;
+
+    const pages = Math.ceil(totalCount / filter.itemsPerPage);
+
+    function onChangePage(page: number) {
+      if (!filter || !setFilter || !totalCount) return;
+      if (page >= 1 && page <= pages) {
+        setFilter(filter.changePage(page));
+      }
+    }
+
+    Mousetrap.bind("right", () => {
+      onChangePage(filter.currentPage + 1);
+    });
+    Mousetrap.bind("left", () => {
+      onChangePage(filter.currentPage - 1);
+    });
+    Mousetrap.bind("shift+right", () => {
+      onChangePage(Math.min(pages, filter.currentPage + 10));
+    });
+    Mousetrap.bind("shift+left", () => {
+      onChangePage(Math.max(1, filter.currentPage - 10));
+    });
+    Mousetrap.bind("ctrl+end", () => {
+      onChangePage(pages);
+    });
+    Mousetrap.bind("ctrl+home", () => {
+      onChangePage(1);
+    });
+
+    return () => {
+      Mousetrap.unbind("right");
+      Mousetrap.unbind("left");
+      Mousetrap.unbind("shift+right");
+      Mousetrap.unbind("shift+left");
+      Mousetrap.unbind("ctrl+end");
+      Mousetrap.unbind("ctrl+home");
+    };
+  }, [filter, setFilter, totalCount]);
+
+  useEffect(() => {
+    if (toggleSidebarCollapsed) {
+      Mousetrap.bind(",", () => {
+        toggleSidebarCollapsed();
+      });
+
+      return () => {
+        Mousetrap.unbind(",");
+      };
+    }
+  }, [toggleSidebarCollapsed]);
+
+  useEffect(() => {
+    Mousetrap.bind("s a", () => onSelectAll?.());
+    Mousetrap.bind("s n", () => onSelectNone?.());
+
+    return () => {
+      Mousetrap.unbind("s a");
+      Mousetrap.unbind("s n");
+    };
+  }, [onSelectAll, onSelectNone]);
 }

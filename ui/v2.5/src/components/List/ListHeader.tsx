@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useEffect } from "react";
 import { Pagination } from "../List/Pagination";
 import { DisplayModeSelect } from "../List/ListViewOptions";
 import { DisplayMode } from "src/models/list-filter/types";
@@ -17,6 +17,7 @@ import { FormattedMessage } from "react-intl";
 import { faEllipsisH, faTimes } from "@fortawesome/free-solid-svg-icons";
 import useFocus from "src/utils/focus";
 import { FilterButton } from "./Filters/FilterButton";
+import Mousetrap from "mousetrap";
 
 interface IDefaultListHeaderProps {
   filter: ListFilterModel;
@@ -81,12 +82,12 @@ const DefaultListHeader: React.FC<IDefaultListHeaderProps> = ({
     setFilter(newFilter);
   }
 
-  function onReshuffleRandomSort() {
+  const onReshuffleRandomSort = useCallback(() => {
     const newFilter = filter.clone();
     newFilter.currentPage = 1;
     newFilter.randomSeed = -1;
     setFilter(newFilter);
-  }
+  }, [filter, setFilter]);
 
   const onChangePage = useCallback(
     (page: number) => {
@@ -105,6 +106,25 @@ const DefaultListHeader: React.FC<IDefaultListHeaderProps> = ({
     },
     [filter, setFilter]
   );
+
+  useEffect(() => {
+    Mousetrap.bind("/", (e) => {
+      setQueryFocus();
+      e.preventDefault();
+    });
+
+    return () => {
+      Mousetrap.unbind("/");
+    };
+  }, [setQueryFocus]);
+
+  useEffect(() => {
+    Mousetrap.bind("r", () => onReshuffleRandomSort());
+
+    return () => {
+      Mousetrap.unbind("r");
+    };
+  }, [onReshuffleRandomSort]);
 
   const zoomSelectProps =
     filter.displayMode === DisplayMode.Grid

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { DisplayMode } from "src/models/list-filter/types";
 import { FilterMode, FindScenesQueryResult } from "src/core/generated-graphql";
 import { ListFilterModel } from "src/models/list-filter/filter";
@@ -37,6 +37,7 @@ import {
   useResultCount,
 } from "../List/util";
 import DropdownItem from "react-bootstrap/esm/DropdownItem";
+import Mousetrap from "mousetrap";
 
 const filterMode = FilterMode.Scenes;
 const pageView = "scenes";
@@ -49,6 +50,8 @@ const ScenesPageImpl: React.FC<{
   const history = useHistory();
 
   const config = React.useContext(ConfigurationContext);
+  const autoPlay =
+    config.configuration?.interface.autostartVideoOnPlaySelected ?? false;
 
   const [filter, setFilterState] = useState<ListFilterModel>(defaultFilter);
 
@@ -147,20 +150,17 @@ const ScenesPageImpl: React.FC<{
     }
   }
 
-  function playScene(
-    queue: SceneQueue,
-    sceneID: string,
-    options: IPlaySceneOptions
-  ) {
-    history.push(queue.makeLink(sceneID, options));
-  }
+  const playScene = useCallback(
+    (queue: SceneQueue, sceneID: string, options: IPlaySceneOptions) => {
+      history.push(queue.makeLink(sceneID, options));
+    },
+    [history]
+  );
 
   async function playAll() {
     if (items.length === 0) return;
 
     const queue = SceneQueue.fromListFilterModel(filter);
-    const autoPlay =
-      config.configuration?.interface.autostartVideoOnPlaySelected ?? false;
     playScene(queue, items[0].id, { autoPlay });
   }
 
@@ -168,35 +168,38 @@ const ScenesPageImpl: React.FC<{
     // populate queue and go to first scene
     const sceneIDs = Array.from(selectedIds.values());
     const queue = SceneQueue.fromSceneIDList(sceneIDs);
-    const autoPlay =
-      config.configuration?.interface.autostartVideoOnPlaySelected ?? false;
     playScene(queue, sceneIDs[0], { autoPlay });
   }
 
-  async function playRandom() {
-    if (items.length === 0) return;
+  const playRandom = useCallback(async () => {
+    if (totalCount === 0) return;
 
     // query for a random scene
-    if (result.data?.findScenes) {
-      const { count } = result.data.findScenes;
-      const pages = Math.ceil(count / filter.itemsPerPage);
-      const page = Math.floor(Math.random() * pages) + 1;
-      const indexMax = Math.min(filter.itemsPerPage, count);
-      const index = Math.floor(Math.random() * indexMax);
-      const filterCopy = filter.clone();
-      filterCopy.currentPage = page;
-      filterCopy.sortBy = "random";
-      const queryResults = await queryFindScenes(filterCopy);
-      const scene = queryResults.data.findScenes.scenes[index];
-      if (scene) {
-        // navigate to the image player page
-        const queue = SceneQueue.fromListFilterModel(filterCopy);
-        const autoPlay =
-          config.configuration?.interface.autostartVideoOnPlaySelected ?? false;
-        playScene(queue, scene.id, { sceneIndex: index, autoPlay });
-      }
+    const pages = Math.ceil(totalCount / filter.itemsPerPage);
+    const page = Math.floor(Math.random() * pages) + 1;
+    const indexMax = Math.min(filter.itemsPerPage, totalCount);
+    const index = Math.floor(Math.random() * indexMax);
+    const filterCopy = filter.clone();
+    filterCopy.currentPage = page;
+    filterCopy.sortBy = "random";
+    const queryResults = await queryFindScenes(filterCopy);
+    const scene = queryResults.data.findScenes.scenes[index];
+    if (scene) {
+      // navigate to the image player page
+      const queue = SceneQueue.fromListFilterModel(filterCopy);
+      playScene(queue, scene.id, { sceneIndex: index, autoPlay });
     }
-  }
+  }, [totalCount, playScene, filter, autoPlay]);
+
+  useEffect(() => {
+    Mousetrap.bind("p r", () => {
+      playRandom();
+    });
+
+    return () => {
+      Mousetrap.unbind("p r");
+    };
+  }, [playRandom]);
 
   async function onMerge() {
     const selected =

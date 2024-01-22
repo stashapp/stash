@@ -486,4 +486,19 @@ export class ListFilterModel {
     ret.criteria = newCriteria;
     return ret;
   }
+
+  public changePage(page: number) {
+    const ret = this.clone();
+    ret.currentPage = page;
+    return ret;
+  }
+
+  public randomSingle(totalCount: number) {
+    const index = Math.floor(Math.random() * totalCount);
+
+    const ret = this.clone();
+    ret.itemsPerPage = 1;
+    ret.currentPage = index + 1;
+    return ret;
+  }
 }

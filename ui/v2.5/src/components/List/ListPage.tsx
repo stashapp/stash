@@ -8,7 +8,11 @@ import { useModal } from "src/hooks/modal";
 import { CollapseDivider } from "../Shared/CollapseDivider";
 import { FilterTags } from "../List/FilterTags";
 import { EditFilterDialog } from "../List/EditFilterDialog";
-import { useFilterConfig, useSaveLocalFilterState } from "../List/util";
+import {
+  useFilterConfig,
+  useListKeyboardShortcuts,
+  useSaveLocalFilterState,
+} from "../List/util";
 import { useListSelect } from "src/hooks/listSelect";
 import { LoadingIndicator } from "../Shared/LoadingIndicator";
 import { CriterionType } from "src/models/list-filter/types";
@@ -72,6 +76,16 @@ export const ListPage: React.FC<
       />
     );
   }
+
+  useListKeyboardShortcuts({
+    filter,
+    setFilter,
+    showEditFilter: editFilter,
+    totalCount,
+    toggleSidebarCollapsed: () => setSidebarCollapsed(!sidebarCollapsed),
+    onSelectAll,
+    onSelectNone,
+  });
 
   return (
     <div id={id} className={cx("list-page", className)}>
