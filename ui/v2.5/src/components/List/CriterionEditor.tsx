@@ -1,5 +1,5 @@
 import cloneDeep from "lodash-es/cloneDeep";
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback, useEffect, useMemo } from "react";
 import { Button, Form } from "react-bootstrap";
 import { CriterionModifier } from "src/core/generated-graphql";
 import {
@@ -54,12 +54,28 @@ interface IGenericCriterionEditor {
 }
 
 const GenericCriterionEditor: React.FC<IGenericCriterionEditor> = ({
-  criterion,
-  setCriterion,
+  criterion: inputCriterion,
+  setCriterion: setInputCriterion,
 }) => {
   const intl = useIntl();
 
+  const [criterion, setCriterionState] = React.useState(inputCriterion);
   const { options, modifierOptions } = criterion.criterionOption;
+
+  const setCriterion = useCallback(
+    (c: Criterion<CriterionValue>) => {
+      setCriterionState(c);
+
+      if (c.isValid()) {
+        setInputCriterion(c);
+      }
+    },
+    [setInputCriterion]
+  );
+
+  useEffect(() => {
+    setCriterionState(criterion);
+  }, [criterion]);
 
   const onChangedModifierSelect = useCallback(
     (m: CriterionModifier) => {
