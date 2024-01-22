@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   Button,
   ButtonGroup,
+  Dropdown,
   Form,
   InputGroup,
   Overlay,
@@ -51,6 +52,17 @@ export const Pagination: React.FC<IPaginationProps> = ({
     [totalItems, itemsPerPage]
   );
 
+  const pageOptions = useMemo(() => {
+    const maxPagesToShow = 10;
+    const min = Math.max(1, currentPage - maxPagesToShow / 2);
+    const max = Math.min(min + maxPagesToShow, totalPages);
+    const pages = [];
+    for (let i = min; i <= max; i++) {
+      pages.push(i);
+    }
+    return pages;
+  }, [totalPages, currentPage]);
+
   function onCustomChangePage() {
     const newPage = Number.parseInt(pageInput.current?.value ?? "0");
     if (newPage) {
@@ -81,24 +93,44 @@ export const Pagination: React.FC<IPaginationProps> = ({
         &lt;
       </Button>
       <div>
-        <Button
-          variant="secondary"
-          className="page-count"
-          ref={currentPageCtrl}
-          onClick={() => {
-            setShowSelectPage(true);
-            pageFocus();
-          }}
-        >
-          <FormattedMessage
-            id="pagination.current_total"
-            values={{
-              current: intl.formatNumber(currentPage),
-              total: intl.formatNumber(totalPages),
+        <ButtonGroup>
+          <Button
+            variant="secondary"
+            className="page-count"
+            ref={currentPageCtrl}
+            onClick={() => {
+              setShowSelectPage(true);
+              pageFocus();
             }}
-          />{" "}
-          <Icon size="xs" icon={faChevronDown} />
-        </Button>
+          >
+            <FormattedMessage
+              id="pagination.current_total"
+              values={{
+                current: intl.formatNumber(currentPage),
+                total: intl.formatNumber(totalPages),
+              }}
+            />
+          </Button>
+          <Dropdown>
+            <Dropdown.Toggle
+              variant="secondary"
+              className="page-count-dropdown"
+            >
+              <Icon size="xs" icon={faChevronDown} />
+            </Dropdown.Toggle>
+            <Dropdown.Menu>
+              {pageOptions.map((s) => (
+                <Dropdown.Item
+                  key={s}
+                  active={s === currentPage}
+                  onClick={() => onChangePage(s)}
+                >
+                  {s}
+                </Dropdown.Item>
+              ))}
+            </Dropdown.Menu>
+          </Dropdown>
+        </ButtonGroup>
         <Overlay
           target={currentPageCtrl.current}
           show={showSelectPage}
@@ -122,6 +154,9 @@ export const Pagination: React.FC<IPaginationProps> = ({
                       e.preventDefault();
                     }
                   }}
+                  onFocus={(e: React.FocusEvent<HTMLInputElement>) =>
+                    e.target.select()
+                  }
                 />
                 <InputGroup.Append>
                   <Button

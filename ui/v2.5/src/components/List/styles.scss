@@ -7,9 +7,18 @@
     padding-right: 15px;
     transition: none;
 
-    &.page-count {
+    &.page-count,
+    &.page-count-dropdown {
       background-color: $card-bg;
       border-color: $card-bg;
+    }
+
+    &.page-count {
+      padding-right: 5px;
+    }
+
+    &.page-count-dropdown {
+      padding-left: 5px;
     }
 
     &:first-child {
@@ -494,13 +503,24 @@
   }
 }
 
-.list-page-results {
+.list-page > .list-page-results {
   // make main scrollbar similar to default scrollbar size
   ::-webkit-scrollbar {
     width: 18px;
   }
 
   scrollbar-width: 18px;
+
+  /* stylelint-disable selector-max-universal */
+  & > * {
+    // make main scrollbar similar to other scrollbar sizes
+    ::-webkit-scrollbar {
+      width: 10px;
+    }
+
+    scrollbar-width: 10px;
+  }
+  /* stylelint-enable selector-max-universal */
 }
 
 .sidebar-container {
