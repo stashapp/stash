@@ -27,6 +27,7 @@ import {
   faQuestionCircle,
 } from "@fortawesome/free-solid-svg-icons";
 import { releaseNotes } from "src/docs/en/ReleaseNotes";
+import { SettingsContext } from "../Settings/context";
 
 export const Setup: React.FC = () => {
   const { configuration, loading: configLoading } =
@@ -549,10 +550,12 @@ export const Setup: React.FC = () => {
               <FormattedMessage id="setup.paths.where_is_your_porn_located_description" />
             </p>
             <Card>
-              <StashConfiguration
-                stashes={stashes}
-                setStashes={(s) => setStashes(s)}
-              />
+              <SettingsContext>
+                <StashConfiguration
+                  stashes={stashes}
+                  setStashes={(s) => setStashes(s)}
+                />
+              </SettingsContext>
             </Card>
           </Form.Group>
           {maybeRenderDatabase()}
