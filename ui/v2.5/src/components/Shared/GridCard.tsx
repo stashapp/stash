@@ -25,7 +25,6 @@ interface ICardProps {
 
 export const GridCard: React.FC<ICardProps> = (props: ICardProps) => {
   const cardID = props.url.substring(1).split("?")[0].replace("/", "-");
-  console.log(cardID);
   function handleImageClick(event: React.MouseEvent<HTMLElement, MouseEvent>) {
     const { shiftKey } = event;
 
