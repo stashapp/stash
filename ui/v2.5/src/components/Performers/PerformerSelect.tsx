@@ -26,6 +26,7 @@ import {
 } from "../Shared/FilterSelect";
 import { useCompare } from "src/hooks/state";
 import { Link } from "react-router-dom";
+import { sortByRelevance } from "src/utils/query";
 
 export type SelectObject = {
   id: string;
@@ -59,7 +60,11 @@ export const PerformerSelect: React.FC<
     filter.sortBy = "name";
     filter.sortDirection = GQL.SortDirectionEnum.Asc;
     const query = await queryFindPerformersForSelect(filter);
-    return query.data.findPerformers.performers.map((performer) => ({
+    return sortByRelevance(
+      input,
+      query.data.findPerformers.performers,
+      (p) => p.alias_list
+    ).map((performer) => ({
       value: performer.id,
       object: performer,
     }));
