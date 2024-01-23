@@ -43,6 +43,7 @@ import { lazyComponent } from "./utils/lazyComponent";
 import { isPlatformUniquelyRenderedByApple } from "./utils/apple";
 import useScript, { useCSS } from "./hooks/useScript";
 import { useMemoOnce } from "./hooks/state";
+import Event from "./hooks/event";
 import { uniq } from "lodash-es";
 
 import { PluginRoutes } from "./plugins";
@@ -286,6 +287,10 @@ export const App: React.FC = () => {
     if (!systemStatusData) {
       return <LoadingIndicator />;
     }
+
+    // page change event
+    const location = useLocation();
+    Event.dispatch("page", "", { location });
 
     return (
       <ErrorBoundary>
