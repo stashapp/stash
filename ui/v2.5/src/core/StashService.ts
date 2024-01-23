@@ -319,6 +319,23 @@ export const queryFindStudios = (filter: ListFilterModel) =>
     },
   });
 
+export const queryFindStudiosByIDForSelect = (studioIDs: number[]) =>
+  client.query<GQL.FindStudiosForSelectQuery>({
+    query: GQL.FindStudiosForSelectDocument,
+    variables: {
+      ids: studioIDs,
+    },
+  });
+
+export const queryFindStudiosForSelect = (filter: ListFilterModel) =>
+  client.query<GQL.FindStudiosForSelectQuery>({
+    query: GQL.FindStudiosForSelectDocument,
+    variables: {
+      filter: filter.makeFindFilter(),
+      studio_filter: filter.makeFilter(),
+    },
+  });
+
 export const useAllStudiosForFilter = () => GQL.useAllStudiosForFilterQuery();
 
 export const useFindTag = (id: string) => {

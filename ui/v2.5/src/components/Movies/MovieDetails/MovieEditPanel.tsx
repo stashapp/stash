@@ -8,7 +8,6 @@ import {
   useListMovieScrapers,
 } from "src/core/StashService";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
-import { StudioSelect } from "src/components/Shared/Select";
 import { DetailsEditNavbar } from "src/components/Shared/DetailsEditNavbar";
 import { URLField } from "src/components/Shared/URLField";
 import { useToast } from "src/hooks/Toast";
@@ -22,6 +21,7 @@ import isEqual from "lodash-es/isEqual";
 import { handleUnsavedChanges } from "src/utils/navigation";
 import { formikUtils } from "src/utils/form";
 import { yupDateString, yupFormikValidate } from "src/utils/yup";
+import { Studio, StudioSelect } from "src/components/Studios/StudioSelect";
 
 interface IMovieEditPanel {
   movie: Partial<GQL.MovieDataFragment>;
@@ -55,6 +55,8 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
   const Scrapers = useListMovieScrapers();
   const [scrapedMovie, setScrapedMovie] = useState<GQL.ScrapedMovie>();
 
+  const [studio, setStudio] = useState<Studio | null>(null);
+
   const schema = yup.object({
     name: yup.string().required(),
     aliases: yup.string().ensure(),
@@ -87,6 +89,15 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
     validate: yupFormikValidate(schema),
     onSubmit: (values) => onSave(schema.cast(values)),
   });
+
+  function onSetStudio(item: Studio | null) {
+    setStudio(item);
+    formik.setFieldValue("studio_id", item ? item.id : null);
+  }
+
+  useEffect(() => {
+    setStudio(movie.studio ?? null);
+  }, [movie.studio]);
 
   // set up hotkeys
   useEffect(() => {
@@ -129,7 +140,11 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
     }
 
     if (state.studio && state.studio.stored_id) {
-      formik.setFieldValue("studio_id", state.studio.stored_id);
+      onSetStudio({
+        id: state.studio.stored_id,
+        name: state.studio.name ?? "",
+        aliases: [],
+      });
     }
 
     if (state.director) {
@@ -324,13 +339,8 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
     const title = intl.formatMessage({ id: "studio" });
     const control = (
       <StudioSelect
-        onSelect={(items) =>
-          formik.setFieldValue(
-            "studio_id",
-            items.length > 0 ? items[0]?.id : null
-          )
-        }
-        ids={formik.values.studio_id ? [formik.values.studio_id] : []}
+        onSelect={(items) => onSetStudio(items.length > 0 ? items[0] : null)}
+        values={studio ? [studio] : []}
       />
     );
 
