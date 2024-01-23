@@ -336,8 +336,6 @@ export const queryFindStudiosForSelect = (filter: ListFilterModel) =>
     },
   });
 
-export const useAllStudiosForFilter = () => GQL.useAllStudiosForFilterQuery();
-
 export const useFindTag = (id: string) => {
   const skip = id === "new" || id === "";
   return GQL.useFindTagQuery({ variables: { id }, skip });
@@ -1535,8 +1533,6 @@ export const useStudioCreate = () =>
     update(cache, result, { variables }) {
       const studio = result.data?.studioCreate;
       if (!studio || !variables) return;
-
-      appendObject(cache, studio, GQL.AllStudiosForFilterDocument);
 
       // update stats
       updateStats(cache, "studio_count", 1);
