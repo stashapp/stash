@@ -9,7 +9,7 @@ class StashEvent extends EventTarget {
         detail: {
           event: event,
           ...(id ? { id } : {}),
-          ...(data ? { data: data } : {}),
+          ...(data ? { data } : {}),
         },
       })
     );
