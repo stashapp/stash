@@ -12,6 +12,7 @@ import * as Intl from "react-intl";
 import * as FontAwesomeSolid from "@fortawesome/free-solid-svg-icons";
 import * as FontAwesomeRegular from "@fortawesome/free-regular-svg-icons";
 import { useSpriteInfo } from "./hooks/sprite";
+import Event from "./hooks/event";
 
 // due to code splitting, some components may not have been loaded when a plugin
 // page is loaded. This function will load all components passed to it.
@@ -140,6 +141,7 @@ export const PluginApi = {
     // and the result of the original function
     after,
   },
+  Event: Event,
 };
 
 // patches a function to implement the before/instead/after functionality
