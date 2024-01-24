@@ -89,6 +89,7 @@ type Query {
   findTags(
     tag_filter: TagFilterType
     filter: FindFilterType
+    ids: [Int!]
   ): FindTagsResultType!
 
   "Retrieve random scene markers for the wall"
@@ -203,9 +204,9 @@ type Query {
   allGalleries: [Gallery!]!
   allStudios: [Studio!]!
   allMovies: [Movie!]!
-  allTags: [Tag!]!
 
   allPerformers: [Performer!]! @deprecated(reason: "Use findPerformers instead")
+  allTags: [Tag!]! @deprecated(reason: "Use findTags instead")
 
   # Get everything with minimal metadata
 

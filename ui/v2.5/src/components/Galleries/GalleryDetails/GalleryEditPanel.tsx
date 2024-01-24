@@ -18,11 +18,7 @@ import {
   useListGalleryScrapers,
   mutateReloadScrapers,
 } from "src/core/StashService";
-import {
-  TagSelect,
-  SceneSelect,
-  StudioSelect,
-} from "src/components/Shared/Select";
+import { SceneSelect, StudioSelect } from "src/components/Shared/Select";
 import { Icon } from "src/components/Shared/Icon";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { useToast } from "src/hooks/Toast";
@@ -44,6 +40,7 @@ import {
   yupUniqueStringList,
 } from "src/utils/yup";
 import { formikUtils } from "src/utils/form";
+import { Tag, TagSelect } from "src/components/Tags/TagSelect";
 
 interface IProps {
   gallery: Partial<GQL.GalleryDataFragment>;
@@ -68,6 +65,7 @@ export const GalleryEditPanel: React.FC<IProps> = ({
   );
 
   const [performers, setPerformers] = useState<Performer[]>([]);
+  const [tags, setTags] = useState<Tag[]>([]);
 
   const isNew = gallery.id === undefined;
   const { configuration: stashConfig } = React.useContext(ConfigurationContext);
@@ -146,6 +144,14 @@ export const GalleryEditPanel: React.FC<IProps> = ({
     );
   }
 
+  function onSetTags(items: Tag[]) {
+    setTags(items);
+    formik.setFieldValue(
+      "tag_ids",
+      items.map((item) => item.id)
+    );
+  }
+
   useRatingKeybinds(
     isVisible,
     stashConfig?.ui?.ratingSystemOptions?.type,
@@ -155,6 +161,10 @@ export const GalleryEditPanel: React.FC<IProps> = ({
   useEffect(() => {
     setPerformers(gallery.performers ?? []);
   }, [gallery.performers]);
+
+  useEffect(() => {
+    setTags(gallery.tags ?? []);
+  }, [gallery.tags]);
 
   useEffect(() => {
     if (isVisible) {
@@ -340,8 +350,15 @@ export const GalleryEditPanel: React.FC<IProps> = ({
       });
 
       if (idTags.length > 0) {
-        const newIds = idTags.map((t) => t.stored_id);
-        formik.setFieldValue("tag_ids", newIds as string[]);
+        onSetTags(
+          idTags.map((p) => {
+            return {
+              id: p.stored_id!,
+              name: p.name ?? "",
+              aliases: [],
+            };
+          })
+        );
       }
     }
   }
@@ -438,13 +455,8 @@ export const GalleryEditPanel: React.FC<IProps> = ({
     const control = (
       <TagSelect
         isMulti
-        onSelect={(items) =>
-          formik.setFieldValue(
-            "tag_ids",
-            items.map((item) => item.id)
-          )
-        }
-        ids={formik.values.tag_ids}
+        onSelect={onSetTags}
+        values={tags}
         hoverPlacement="right"
       />
     );

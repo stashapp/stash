@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Button, Form } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useFormik } from "formik";
@@ -10,16 +10,13 @@ import {
   useSceneMarkerDestroy,
 } from "src/core/StashService";
 import { DurationInput } from "src/components/Shared/DurationInput";
-import {
-  TagSelect,
-  MarkerTitleSuggest,
-  SelectObject,
-} from "src/components/Shared/Select";
+import { MarkerTitleSuggest } from "src/components/Shared/Select";
 import { getPlayerPosition } from "src/components/ScenePlayer/util";
 import { useToast } from "src/hooks/Toast";
 import isEqual from "lodash-es/isEqual";
 import { formikUtils } from "src/utils/form";
 import { yupFormikValidate } from "src/utils/yup";
+import { Tag, TagSelect } from "src/components/Tags/TagSelect";
 
 interface ISceneMarkerForm {
   sceneID: string;
@@ -38,6 +35,9 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
   const [sceneMarkerUpdate] = useSceneMarkerUpdate();
   const [sceneMarkerDestroy] = useSceneMarkerDestroy();
   const Toast = useToast();
+
+  const [primaryTag, setPrimaryTag] = useState<Tag>();
+  const [tags, setTags] = useState<Tag[]>([]);
 
   const isNew = marker === undefined;
 
@@ -67,6 +67,34 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
     validate: yupFormikValidate(schema),
     onSubmit: (values) => onSave(schema.cast(values)),
   });
+
+  function onSetPrimaryTag(item: Tag) {
+    setPrimaryTag(item);
+    formik.setFieldValue("primary_tag_id", item.id);
+  }
+
+  function onSetTags(items: Tag[]) {
+    setTags(items);
+    formik.setFieldValue(
+      "tag_ids",
+      items.map((item) => item.id)
+    );
+  }
+
+  useEffect(() => {
+    setPrimaryTag(
+      marker?.primary_tag ? { ...marker.primary_tag, aliases: [] } : undefined
+    );
+  }, [marker?.primary_tag]);
+
+  useEffect(() => {
+    setTags(
+      marker?.tags.map((t) => ({
+        ...t,
+        aliases: [],
+      })) ?? []
+    );
+  }, [marker?.tags]);
 
   async function onSave(input: InputValues) {
     try {
@@ -105,11 +133,6 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
     }
   }
 
-  async function onSetPrimaryTagID(tags: SelectObject[]) {
-    await formik.setFieldValue("primary_tag_id", tags[0]?.id);
-    await formik.setFieldTouched("primary_tag_id", true);
-  }
-
   const splitProps = {
     labelProps: {
       column: true,
@@ -145,14 +168,12 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
   }
 
   function renderPrimaryTagField() {
-    const primaryTagId = formik.values.primary_tag_id;
-
     const title = intl.formatMessage({ id: "primary_tag" });
     const control = (
       <>
         <TagSelect
-          onSelect={onSetPrimaryTagID}
-          ids={primaryTagId ? [primaryTagId] : []}
+          onSelect={(t) => onSetPrimaryTag(t[0])}
+          values={primaryTag ? [primaryTag] : []}
           hoverPlacement="right"
         />
         {formik.touched.primary_tag_id && (
@@ -189,13 +210,8 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
     const control = (
       <TagSelect
         isMulti
-        onSelect={(items) =>
-          formik.setFieldValue(
-            "tag_ids",
-            items.map((item) => item.id)
-          )
-        }
-        ids={formik.values.tag_ids}
+        onSelect={onSetTags}
+        values={tags}
         hoverPlacement="right"
       />
     );
