@@ -26,6 +26,7 @@ import {
 } from "../Shared/FilterSelect";
 import { useCompare } from "src/hooks/state";
 import { Placement } from "react-bootstrap/esm/Overlay";
+import { sortByRelevance } from "src/utils/query";
 
 export type SelectObject = {
   id: string;
@@ -62,16 +63,16 @@ export const StudioSelect: React.FC<
     filter.sortBy = "name";
     filter.sortDirection = GQL.SortDirectionEnum.Asc;
     const query = await queryFindStudiosForSelect(filter);
-    return query.data.findStudios.studios
-      .filter((studio) => {
-        // HACK - we should probably exclude these in the backend query, but
-        // this will do in the short-term
-        return !exclude.includes(studio.id.toString());
-      })
-      .map((studio) => ({
-        value: studio.id,
-        object: studio,
-      }));
+    let ret = query.data.findStudios.studios.filter((studio) => {
+      // HACK - we should probably exclude these in the backend query, but
+      // this will do in the short-term
+      return !exclude.includes(studio.id.toString());
+    });
+
+    return sortByRelevance(input, ret, (o) => o.aliases).map((studio) => ({
+      value: studio.id,
+      object: studio,
+    }));
   }
 
   const StudioOption: React.FC<OptionProps<Option, boolean>> = (
