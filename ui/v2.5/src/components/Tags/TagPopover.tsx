@@ -38,6 +38,7 @@ interface ITagPopoverProps {
   id: string;
   hide?: boolean;
   placement?: Placement;
+  target?: React.RefObject<HTMLElement>;
 }
 
 export const TagPopover: React.FC<ITagPopoverProps> = ({
@@ -45,6 +46,7 @@ export const TagPopover: React.FC<ITagPopoverProps> = ({
   hide,
   children,
   placement = "top",
+  target,
 }) => {
   const { configuration: config } = React.useContext(ConfigurationContext);
 
@@ -57,6 +59,7 @@ export const TagPopover: React.FC<ITagPopoverProps> = ({
 
   return (
     <HoverPopover
+      target={target}
       placement={placement}
       enterDelay={500}
       leaveDelay={100}
