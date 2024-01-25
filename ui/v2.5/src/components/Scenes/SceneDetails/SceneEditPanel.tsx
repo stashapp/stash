@@ -20,7 +20,6 @@ import {
   queryScrapeSceneQueryFragment,
 } from "src/core/StashService";
 import {
-  TagSelect,
   StudioSelect,
   GallerySelect,
   MovieSelect,
@@ -52,6 +51,7 @@ import {
   PerformerSelect,
 } from "src/components/Performers/PerformerSelect";
 import { formikUtils } from "src/utils/form";
+import { Tag, TagSelect } from "src/components/Tags/TagSelect";
 
 const SceneScrapeDialog = lazyComponent(() => import("./SceneScrapeDialog"));
 const SceneQueryModal = lazyComponent(() => import("./SceneQueryModal"));
@@ -80,6 +80,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
     []
   );
   const [performers, setPerformers] = useState<Performer[]>([]);
+  const [tags, setTags] = useState<Tag[]>([]);
 
   const Scrapers = useListSceneScrapers();
   const [fragmentScrapers, setFragmentScrapers] = useState<GQL.Scraper[]>([]);
@@ -103,6 +104,10 @@ export const SceneEditPanel: React.FC<IProps> = ({
   useEffect(() => {
     setPerformers(scene.performers ?? []);
   }, [scene.performers]);
+
+  useEffect(() => {
+    setTags(scene.tags ?? []);
+  }, [scene.tags]);
 
   const { configuration: stashConfig } = React.useContext(ConfigurationContext);
 
@@ -198,6 +203,14 @@ export const SceneEditPanel: React.FC<IProps> = ({
     setPerformers(items);
     formik.setFieldValue(
       "performer_ids",
+      items.map((item) => item.id)
+    );
+  }
+
+  function onSetTags(items: Tag[]) {
+    setTags(items);
+    formik.setFieldValue(
+      "tag_ids",
       items.map((item) => item.id)
     );
   }
@@ -578,8 +591,15 @@ export const SceneEditPanel: React.FC<IProps> = ({
       });
 
       if (idTags.length > 0) {
-        const newIds = idTags.map((p) => p.stored_id);
-        formik.setFieldValue("tag_ids", newIds as string[]);
+        onSetTags(
+          idTags.map((p) => {
+            return {
+              id: p.stored_id!,
+              name: p.name ?? "",
+              aliases: [],
+            };
+          })
+        );
       }
     }
 
@@ -748,13 +768,8 @@ export const SceneEditPanel: React.FC<IProps> = ({
     const control = (
       <TagSelect
         isMulti
-        onSelect={(items) =>
-          formik.setFieldValue(
-            "tag_ids",
-            items.map((item) => item.id)
-          )
-        }
-        ids={formik.values.tag_ids}
+        onSelect={onSetTags}
+        values={tags}
         hoverPlacement="right"
       />
     );

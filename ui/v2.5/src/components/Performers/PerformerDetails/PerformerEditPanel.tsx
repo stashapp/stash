@@ -15,7 +15,6 @@ import { Icon } from "src/components/Shared/Icon";
 import { ImageInput } from "src/components/Shared/ImageInput";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { CollapseButton } from "src/components/Shared/CollapseButton";
-import { TagSelect } from "src/components/Shared/Select";
 import { CountrySelect } from "src/components/Shared/CountrySelect";
 import { URLField } from "src/components/Shared/URLField";
 import ImageUtils from "src/utils/image";
@@ -49,6 +48,7 @@ import {
   yupDateString,
   yupUniqueAliases,
 } from "src/utils/yup";
+import { Tag, TagSelect } from "src/components/Tags/TagSelect";
 
 const isScraper = (
   scraper: GQL.Scraper | GQL.StashBox
@@ -82,6 +82,8 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
   // Network state
   const [isLoading, setIsLoading] = useState(false);
+
+  const [tags, setTags] = useState<Tag[]>([]);
 
   const Scrapers = useListPerformerScrapers();
   const [queryableScrapers, setQueryableScrapers] = useState<GQL.Scraper[]>([]);
@@ -160,6 +162,18 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     validate: yupFormikValidate(schema),
     onSubmit: (values) => onSave(schema.cast(values)),
   });
+
+  function onSetTags(items: Tag[]) {
+    setTags(items);
+    formik.setFieldValue(
+      "tag_ids",
+      items.map((item) => item.id)
+    );
+  }
+
+  useEffect(() => {
+    setTags(performer.tags ?? []);
+  }, [performer.tags]);
 
   function translateScrapedGender(scrapedGender?: string) {
     if (!scrapedGender) {
@@ -300,8 +314,15 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     }
     if (state.tags) {
       // map tags to their ids and filter out those not found
-      const newTagIds = state.tags.map((t) => t.stored_id).filter((t) => t);
-      formik.setFieldValue("tag_ids", newTagIds);
+      onSetTags(
+        state.tags.map((p) => {
+          return {
+            id: p.stored_id!,
+            name: p.name ?? "",
+            aliases: [],
+          };
+        })
+      );
 
       setNewTags(state.tags.filter((t) => !t.stored_id));
     }
@@ -725,13 +746,8 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
         <TagSelect
           menuPortalTarget={document.body}
           isMulti
-          onSelect={(items) =>
-            formik.setFieldValue(
-              "tag_ids",
-              items.map((item) => item.id)
-            )
-          }
-          ids={formik.values.tag_ids}
+          onSelect={onSetTags}
+          values={tags}
         />
         {renderNewTags()}
       </>

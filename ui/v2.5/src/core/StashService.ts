@@ -344,7 +344,22 @@ export const queryFindTags = (filter: ListFilterModel) =>
     },
   });
 
-export const useAllTagsForFilter = () => GQL.useAllTagsForFilterQuery();
+export const queryFindTagsByIDForSelect = (tagIDs: number[]) =>
+  client.query<GQL.FindTagsForSelectQuery>({
+    query: GQL.FindTagsForSelectDocument,
+    variables: {
+      ids: tagIDs,
+    },
+  });
+
+export const queryFindTagsForSelect = (filter: ListFilterModel) =>
+  client.query<GQL.FindTagsForSelectQuery>({
+    query: GQL.FindTagsForSelectDocument,
+    variables: {
+      filter: filter.makeFindFilter(),
+      tag_filter: filter.makeFilter(),
+    },
+  });
 
 export const useFindSavedFilter = (id: string) =>
   GQL.useFindSavedFilterQuery({
@@ -1597,8 +1612,6 @@ export const useTagCreate = () =>
     update(cache, result) {
       const tag = result.data?.tagCreate;
       if (!tag) return;
-
-      appendObject(cache, tag, GQL.AllTagsForFilterDocument);
 
       // update stats
       updateStats(cache, "tag_count", 1);

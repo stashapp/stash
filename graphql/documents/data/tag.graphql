@@ -24,3 +24,16 @@ fragment TagData on Tag {
     ...SlimTagData
   }
 }
+
+fragment SelectTagData on Tag {
+  id
+  name
+  description
+  aliases
+  image_path
+
+  parents {
+    id
+    name
+  }
+}
