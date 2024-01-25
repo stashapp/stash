@@ -391,11 +391,24 @@ input[type="range"].zoom-slider {
       top: 0;
       z-index: 100;
     }
+
+    td:first-child {
+      padding: 0;
+    }
+
+    label {
+      margin: 0;
+      padding: 0.5rem;
+    }
   }
 
   .column-select {
     margin: 0;
     padding: 7px;
+  }
+
+  .select-col {
+    width: 20px;
   }
 
   .comma-list {

@@ -18,7 +18,7 @@ export const ColumnSelector: React.FC<{
     return allColumns.map((col) => {
       return {
         ...col,
-        disabled: col.mandatory,
+        isDisabled: col.mandatory,
       };
     });
   }, [allColumns]);
