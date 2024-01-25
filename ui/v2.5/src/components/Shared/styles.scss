@@ -486,12 +486,14 @@ div.react-datepicker {
 
 /* stylelint-disable */
 .card:has(input:checked) label,
-.checkbox-wrapper label:hover {
+.card:hover label {
   opacity: 1;
 }
 
 .checkbox-wrapper {
+  left: .5rem;
   position: absolute;
+  top: .5rem;
   z-index: 100;
 
   .checkbox {
@@ -551,8 +553,8 @@ div.react-datepicker {
     cursor: pointer;
     display: inline-block;
     margin-bottom: 0;
-    margin-left: 0.6rem;
-    margin-top: 0.6rem;
+    margin-left: 0.3rem;
+    margin-top: 0.3rem;
     opacity: 0;
     position: relative;
 
