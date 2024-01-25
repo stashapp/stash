@@ -1,5 +1,6 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
+import { Link } from "react-router-dom";
 import { ExternalLink } from "src/components/Shared/ExternalLink";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
 
@@ -45,8 +46,8 @@ interface IURLField {
   url?: string | null;
   truncate?: boolean | null;
   target?: string;
-  // use for internal links
-  trusted?: boolean;
+  // an internal link (uses <Link to={url}>)
+  internal?: boolean;
 }
 
 export const URLField: React.FC<IURLField> = ({
@@ -57,7 +58,7 @@ export const URLField: React.FC<IURLField> = ({
   abbr,
   truncate,
   target = "_blank",
-  trusted,
+  internal,
 }) => {
   if (!value) {
     return null;
@@ -72,11 +73,11 @@ export const URLField: React.FC<IURLField> = ({
 
     const children = truncate ? <TruncatedText text={value} /> : value;
 
-    if (trusted) {
+    if (internal) {
       return (
-        <a href={url} target={target}>
+        <Link to={url} target={target}>
           {children}
-        </a>
+        </Link>
       );
     } else {
       return (
@@ -102,8 +103,8 @@ interface IURLsField {
   urls?: string[] | null;
   truncate?: boolean | null;
   target?: string;
-  // use for internal links
-  trusted?: boolean;
+  // an internal link (uses <Link to={url}>)
+  internal?: boolean;
 }
 
 export const URLsField: React.FC<IURLsField> = ({
@@ -113,7 +114,7 @@ export const URLsField: React.FC<IURLsField> = ({
   abbr,
   truncate,
   target = "_blank",
-  trusted,
+  internal,
 }) => {
   if (!urls || !urls.length) {
     return null;
@@ -129,11 +130,11 @@ export const URLsField: React.FC<IURLsField> = ({
 
       const children = truncate ? <TruncatedText text={url} /> : url;
 
-      if (trusted) {
+      if (internal) {
         return (
-          <a key={i} href={url} target={target}>
+          <Link key={i} to={url} target={target}>
             {children}
-          </a>
+          </Link>
         );
       } else {
         return (

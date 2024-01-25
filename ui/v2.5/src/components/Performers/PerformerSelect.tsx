@@ -25,6 +25,7 @@ import {
   Option as SelectOption,
 } from "../Shared/FilterSelect";
 import { useCompare } from "src/hooks/state";
+import { Link } from "react-router-dom";
 
 export type SelectObject = {
   id: string;
@@ -86,10 +87,9 @@ export const PerformerSelect: React.FC<
       ...optionProps,
       children: (
         <span className="react-select-image-option">
-          <a
-            href={`/performers/${object.id}`}
+          <Link
+            to={`/performers/${object.id}`}
             target="_blank"
-            rel="noreferrer"
             className="performer-select-image-link"
           >
             <img
@@ -97,7 +97,7 @@ export const PerformerSelect: React.FC<
               src={object.image_path ?? ""}
               loading="lazy"
             />
-          </a>
+          </Link>
           <span>{name}</span>
           {object.disambiguation && (
             <span className="performer-disambiguation">{` (${object.disambiguation})`}</span>
