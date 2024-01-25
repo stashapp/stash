@@ -18,6 +18,7 @@ import {
   faImage,
 } from "@fortawesome/free-solid-svg-icons";
 import { objectPath, objectTitle } from "src/core/files";
+import { ExternalLink } from "src/components/Shared/ExternalLink";
 
 interface ITaggerSceneDetails {
   scene: GQL.SlimSceneDataFragment;
@@ -174,15 +175,13 @@ export const TaggerScene: React.FC<PropsWithChildren<ITaggerScene>> = ({
       const stashLinks = scene.stash_ids.map((stashID) => {
         const base = stashID.endpoint.match(/https?:\/\/.*?\//)?.[0];
         const link = base ? (
-          <a
+          <ExternalLink
             key={`${stashID.endpoint}${stashID.stash_id}`}
             className="small d-block"
             href={`${base}scenes/${stashID.stash_id}`}
-            target="_blank"
-            rel="noopener noreferrer"
           >
             {stashID.stash_id}
-          </a>
+          </ExternalLink>
         ) : (
           <div className="small">{stashID.stash_id}</div>
         );

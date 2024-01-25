@@ -18,6 +18,7 @@ import {
   faExternalLinkAlt,
   faTimes,
 } from "@fortawesome/free-solid-svg-icons";
+import { ExternalLink } from "../Shared/ExternalLink";
 
 interface IPerformerModalProps {
   performer: GQL.ScrapedScenePerformerDataFragment;
@@ -173,14 +174,10 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({
 
     return (
       <h6 className="mt-2">
-        <a
-          href={`${base}performers/${performer.remote_site_id}`}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
+        <ExternalLink href={`${base}performers/${performer.remote_site_id}`}>
           <FormattedMessage id="stashbox.source" />
           <Icon icon={faExternalLinkAlt} className="ml-2" />
-        </a>
+        </ExternalLink>
       </h6>
     );
   }

@@ -38,6 +38,7 @@ import { DetailImage } from "src/components/Shared/DetailImage";
 import { useRatingKeybinds } from "src/hooks/keybinds";
 import { useLoadStickyHeader } from "src/hooks/detailsPanel";
 import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
+import { ExternalLink } from "src/components/Shared/ExternalLink";
 
 interface IProps {
   movie: GQL.MovieDataFragment;
@@ -274,15 +275,13 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
   const renderClickableIcons = () => (
     <span className="name-icons">
       {movie.url && (
-        <Button className="minimal icon-link" title={movie.url}>
-          <a
-            href={TextUtils.sanitiseURL(movie.url)}
-            className="link"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Icon icon={faLink} />
-          </a>
+        <Button
+          as={ExternalLink}
+          href={TextUtils.sanitiseURL(movie.url)}
+          className="minimal link"
+          title={movie.url}
+        >
+          <Icon icon={faLink} />
         </Button>
       )}
     </span>

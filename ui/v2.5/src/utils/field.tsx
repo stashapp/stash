@@ -1,5 +1,6 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
+import { ExternalLink } from "src/components/Shared/ExternalLink";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
 
 interface ITextField {
@@ -55,11 +56,10 @@ export const URLField: React.FC<IURLField> = ({
   url,
   abbr,
   truncate,
-  children,
-  target,
+  target = "_blank",
   trusted,
 }) => {
-  if (!value && !children) {
+  if (!value) {
     return null;
   }
 
@@ -67,26 +67,30 @@ export const URLField: React.FC<IURLField> = ({
     <>{id ? <FormattedMessage id={id} defaultMessage={name} /> : name}:</>
   );
 
-  const rel = !trusted ? "noopener noreferrer" : undefined;
+  function maybeRenderUrl() {
+    if (!url) return;
+
+    const children = truncate ? <TruncatedText text={value} /> : value;
+
+    if (trusted) {
+      return (
+        <a href={url} target={target}>
+          {children}
+        </a>
+      );
+    } else {
+      return (
+        <ExternalLink href={url} target={target}>
+          {children}
+        </ExternalLink>
+      );
+    }
+  }
 
   return (
     <>
       <dt>{abbr ? <abbr title={abbr}>{message}</abbr> : message}</dt>
-      <dd>
-        {url ? (
-          <a href={url} target={target || "_blank"} rel={rel}>
-            {value ? (
-              truncate ? (
-                <TruncatedText text={value} />
-              ) : (
-                value
-              )
-            ) : (
-              children
-            )}
-          </a>
-        ) : undefined}
-      </dd>
+      <dd>{maybeRenderUrl()}</dd>
     </>
   );
 };
@@ -108,11 +112,10 @@ export const URLsField: React.FC<IURLsField> = ({
   urls,
   abbr,
   truncate,
-  target,
+  target = "_blank",
   trusted,
 }) => {
-  const values = urls ?? [];
-  if (!values.length) {
+  if (!urls || !urls.length) {
     return null;
   }
 
@@ -120,19 +123,33 @@ export const URLsField: React.FC<IURLsField> = ({
     <>{id ? <FormattedMessage id={id} defaultMessage={name} /> : name}:</>
   );
 
-  const rel = !trusted ? "noopener noreferrer" : undefined;
+  const renderUrls = () => {
+    return urls.map((url, i) => {
+      if (!url) return;
+
+      const children = truncate ? <TruncatedText text={url} /> : url;
+
+      if (trusted) {
+        return (
+          <a key={i} href={url} target={target}>
+            {children}
+          </a>
+        );
+      } else {
+        return (
+          <ExternalLink key={i} href={url} target={target}>
+            {children}
+          </ExternalLink>
+        );
+      }
+    });
+  };
 
   return (
     <>
       <dt>{abbr ? <abbr title={abbr}>{message}</abbr> : message}</dt>
       <dd>
-        <dl>
-          {values.map((url, i) => (
-            <a key={i} href={url} target={target || "_blank"} rel={rel}>
-              {truncate ? <TruncatedText text={url} /> : url}
-            </a>
-          ))}
-        </dl>
+        <dl>{renderUrls()}</dl>
       </dd>
     </>
   );
