@@ -705,7 +705,9 @@ input[type="range"].blue-slider {
 
   /* stylelint-disable */
   .checkbox-wrapper {
+    left: auto;
     position: relative;
+    top: auto;
     z-index: 0;
 
     input[type="checkbox"]:checked + label span {
