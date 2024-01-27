@@ -32,6 +32,7 @@ import {
 import { objectPath, objectTitle } from "src/core/files";
 import { PreviewScrubber } from "./PreviewScrubber";
 import { PatchComponent } from "src/pluginApi";
+import ScreenUtils from "src/utils/screen";
 
 interface IScenePreviewProps {
   isPortrait: boolean;
@@ -497,7 +498,8 @@ export const SceneCard = PatchComponent(
       if (
         !props.containerWidth ||
         props.zoomIndex === undefined ||
-        !props.setPreviewHeight
+        !props.setPreviewHeight ||
+        ScreenUtils.isMobile()
       )
         return;
 
@@ -511,7 +513,7 @@ export const SceneCard = PatchComponent(
           maxCardWidth = 240;
           break;
         case 1:
-          maxCardWidth = 340;
+          maxCardWidth = 340; // this value is intentionally higher than 320
           break;
         case 2:
           maxCardWidth = 480;
@@ -523,7 +525,7 @@ export const SceneCard = PatchComponent(
       let fittedCardWidth = containerWidth / maxElementsOnRow - paddingOffset;
       let imageHeight = (fittedCardWidth / 16) * 9;
       setCardWidth(fittedCardWidth);
-      props.setPreviewHeight(imageHeight);
+      // props.setPreviewHeight(imageHeight);
     }, [props, props.containerWidth, props.zoomIndex]);
 
     const cont = configuration?.interface.continuePlaylistDefault ?? false;

@@ -7,6 +7,7 @@ import { ButtonGroup } from "react-bootstrap";
 import { FormattedMessage } from "react-intl";
 import { PopoverCountButton } from "../Shared/PopoverCountButton";
 import { RatingBanner } from "../Shared/RatingBanner";
+import ScreenUtils from "src/utils/screen";
 
 interface IProps {
   studio: GQL.StudioDataFragment;
@@ -69,7 +70,7 @@ export const StudioCard: React.FC<IProps> = ({
   const [cardWidth, setCardWidth] = useState<number>();
 
   useEffect(() => {
-    if (!containerWidth) return;
+    if (!containerWidth || ScreenUtils.isMobile()) return;
 
     let containerPadding = 30;
     let maxUsableWidth = containerWidth - containerPadding;

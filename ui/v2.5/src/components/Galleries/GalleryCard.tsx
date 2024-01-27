@@ -14,6 +14,7 @@ import { ConfigurationContext } from "src/hooks/Config";
 import { RatingBanner } from "../Shared/RatingBanner";
 import { faBox, faPlayCircle, faTag } from "@fortawesome/free-solid-svg-icons";
 import { galleryTitle } from "src/core/galleries";
+import ScreenUtils from "src/utils/screen";
 
 interface IProps {
   gallery: GQL.SlimGalleryDataFragment;
@@ -30,7 +31,7 @@ export const GalleryCard: React.FC<IProps> = (props) => {
   const [cardWidth, setCardWidth] = useState<number>();
 
   useEffect(() => {
-    if (!props.containerWidth || props.zoomIndex === undefined) return;
+    if (!props.containerWidth || props.zoomIndex === undefined || ScreenUtils.isMobile()) return;
 
     let containerPadding = 30;
     let containerWidth = props.containerWidth - containerPadding;

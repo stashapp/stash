@@ -7,6 +7,7 @@ import { FormattedMessage } from "react-intl";
 import { TruncatedText } from "../Shared/TruncatedText";
 import { GridCard } from "../Shared/GridCard";
 import { PopoverCountButton } from "../Shared/PopoverCountButton";
+import ScreenUtils from "src/utils/screen";
 
 interface IProps {
   tag: GQL.TagDataFragment;
@@ -28,7 +29,7 @@ export const TagCard: React.FC<IProps> = ({
   const [cardWidth, setCardWidth] = useState<number>();
 
   useEffect(() => {
-    if (!containerWidth || zoomIndex === undefined) return;
+    if (!containerWidth || zoomIndex === undefined || ScreenUtils.isMobile()) return;
 
     let containerPadding = 30;
     let maxUsableWidth = containerWidth - containerPadding;

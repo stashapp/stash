@@ -9,6 +9,7 @@ import { TruncatedText } from "../Shared/TruncatedText";
 import { FormattedMessage } from "react-intl";
 import { RatingBanner } from "../Shared/RatingBanner";
 import { faPlayCircle } from "@fortawesome/free-solid-svg-icons";
+import ScreenUtils from "src/utils/screen";
 
 interface IProps {
   movie: GQL.MovieDataFragment;
@@ -23,7 +24,7 @@ export const MovieCard: React.FC<IProps> = (props: IProps) => {
   const [cardWidth, setCardWidth] = useState<number>();
 
   useEffect(() => {
-    if (!props.containerWidth) return;
+    if (!props.containerWidth || ScreenUtils.isMobile()) return;
 
     let containerPadding = 30;
     let maxUsableWidth = props.containerWidth - containerPadding;

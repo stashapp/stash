@@ -17,6 +17,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { objectTitle } from "src/core/files";
 import { TruncatedText } from "../Shared/TruncatedText";
+import ScreenUtils from "src/utils/screen";
 
 interface IImageCardProps {
   image: GQL.SlimImageDataFragment;
@@ -34,7 +35,7 @@ export const ImageCard: React.FC<IImageCardProps> = (
   const [cardWidth, setCardWidth] = useState<number>();
 
   useEffect(() => {
-    if (!props.containerWidth || props.zoomIndex === undefined) return;
+    if (!props.containerWidth || props.zoomIndex === undefined || ScreenUtils.isMobile()) return;
 
     let containerPadding = 30;
     let containerWidth = props.containerWidth - containerPadding;

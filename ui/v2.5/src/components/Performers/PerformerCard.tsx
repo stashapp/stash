@@ -22,6 +22,7 @@ import { RatingBanner } from "../Shared/RatingBanner";
 import cx from "classnames";
 import { usePerformerUpdate } from "src/core/StashService";
 import { ILabeledId } from "src/models/list-filter/types";
+import ScreenUtils from "src/utils/screen";
 
 export interface IPerformerCardExtraCriteria {
   scenes?: Criterion<CriterionValue>[];
@@ -72,7 +73,7 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
   const [imageHeight, setImageHeight] = useState<number>();
 
   useEffect(() => {
-    if (!containerWidth) return;
+    if (!containerWidth || ScreenUtils.isMobile()) return;
 
     let containerPadding = 30;
     let maxUsableWidth = containerWidth - containerPadding;

@@ -168,6 +168,13 @@ textarea.scene-description {
   text-transform: uppercase;
 }
 
+.scene-card {
+
+  &-preview {
+    aspect-ratio: 16/9;
+  }
+}
+
 .scene-card,
 .gallery-card {
   a {
