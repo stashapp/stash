@@ -8,10 +8,9 @@ import {
 import { ListFilterModel } from "src/models/list-filter/filter";
 import React from "react";
 import { ConfigurationContext } from "src/hooks/Config";
-import { IUIConfig } from "./config";
 
 export const useTagFilterHook = (tag: GQL.TagDataFragment) => {
-  const config = React.useContext(ConfigurationContext);
+  const { configuration } = React.useContext(ConfigurationContext);
   return (filter: ListFilterModel) => {
     const tagValue = { id: tag.id, label: tag.name };
     // if tag is already present, then we modify it, otherwise add
@@ -43,9 +42,7 @@ export const useTagFilterHook = (tag: GQL.TagDataFragment) => {
       tagCriterion.value = {
         items: [tagValue],
         excluded: [],
-        depth: (config?.configuration?.ui as IUIConfig)?.showChildTagContent
-          ? -1
-          : 0,
+        depth: configuration?.ui.showChildTagContent ? -1 : 0,
       };
       tagCriterion.modifier = GQL.CriterionModifier.IncludesAll;
       filter.criteria.push(tagCriterion);

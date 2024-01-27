@@ -99,9 +99,9 @@ type FrontPageContentBroken = ISavedFilterRowBroken | ICustomFilterBroken;
 
 // #4128: deal with incorrectly insensitivised keys (sortBy and savedFilterId)
 export function getFrontPageContent(
-  ui: IUIConfig
+  ui: IUIConfig | undefined
 ): FrontPageContent[] | undefined {
-  return (ui.frontPageContent as FrontPageContentBroken[] | undefined)?.map(
+  return (ui?.frontPageContent as FrontPageContentBroken[] | undefined)?.map(
     (content) => {
       switch (content.__typename) {
         case "SavedFilter":

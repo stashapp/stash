@@ -105,7 +105,7 @@ export const ImageEditPanel: React.FC<IProps> = ({
 
   useRatingKeybinds(
     true,
-    configuration?.ui?.ratingSystemOptions?.type,
+    configuration?.ui.ratingSystemOptions?.type,
     setRating
   );
 

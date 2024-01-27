@@ -15,7 +15,7 @@ import {
 } from "src/core/StashService";
 import { ConfigurationContext } from "src/hooks/Config";
 import { useIntl } from "react-intl";
-import { defaultMaxOptionsShown, IUIConfig } from "src/core/config";
+import { defaultMaxOptionsShown } from "src/core/config";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import {
   FilterSelectComponent,
@@ -46,7 +46,7 @@ export const PerformerSelect: React.FC<
   const { configuration } = React.useContext(ConfigurationContext);
   const intl = useIntl();
   const maxOptionsShown =
-    (configuration?.ui as IUIConfig).maxOptionsShown ?? defaultMaxOptionsShown;
+    configuration?.ui.maxOptionsShown ?? defaultMaxOptionsShown;
   const defaultCreatable =
     !configuration?.interface.disableDropdownCreate.performer ?? true;
 

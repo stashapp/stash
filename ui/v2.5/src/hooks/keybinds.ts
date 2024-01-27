@@ -4,7 +4,7 @@ import { RatingSystemType } from "src/utils/rating";
 
 export function useRatingKeybinds(
   isVisible: boolean,
-  ratingSystem: RatingSystemType,
+  ratingSystem: RatingSystemType | undefined,
   setRating: (v: number) => void
 ) {
   const firstChar = useRef<string | undefined>(undefined);
