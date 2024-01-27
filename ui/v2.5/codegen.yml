@@ -9,4 +9,11 @@ generates:
       - typescript-operations
       - typescript-react-apollo
     config:
+      scalars:
+        Time: string
+        Timestamp: string
+        Map: "{ [key: string]: any }"
+        Any: any
+        Int64: number
+        Upload: File
       withRefetchFn: true
