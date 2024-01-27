@@ -123,6 +123,65 @@ textarea.scene-description {
   right: 0.7rem;
 }
 
+.table-list {
+  tr:hover {
+    .title-data {
+      button {
+        opacity: 1;
+      }
+    }
+  }
+
+  .title-data {
+    padding-left: 3.5rem;
+
+    button {
+      background-color: unset;
+      border: none;
+      color: unset;
+      height: -webkit-fill-available;
+      left: 0;
+      margin: auto;
+      opacity: 0;
+      position: absolute;
+      top: 0;
+
+      .circular-playbutton {
+        border: 2px solid hsla(0, 0%, 100%, 0.7);
+        border-radius: 50%;
+        display: inline-block;
+        font-size: 10px;
+        height: 24px;
+        line-height: 24px;
+        position: relative;
+        text-align: center;
+        transition: all 0.2s;
+        width: 24px;
+
+        path {
+          fill: #fff;
+        }
+      }
+    }
+
+    button:hover {
+      .circular-playbutton {
+        background-color: #e5a00d;
+        border: 2px solid hsla(0, 0%, 100%, 0.7);
+        border-color: #e5a00d;
+
+        path {
+          fill: #1f2326;
+        }
+      }
+    }
+
+    td {
+      padding: 0.75rem;
+    }
+  }
+}
+
 .scene-interactive-speed-overlay {
   left: 0.7rem;
 }

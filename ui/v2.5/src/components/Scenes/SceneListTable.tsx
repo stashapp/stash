@@ -1,5 +1,5 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 import NavUtils from "src/utils/navigation";
 import TextUtils from "src/utils/text";
@@ -25,8 +25,25 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
   props: ISceneListTableProps
 ) => {
   const intl = useIntl();
+  const history = useHistory();
 
   const [updateScene] = useSceneUpdate();
+
+  function onPlayClick(
+    scene: GQL.SlimSceneDataFragment,
+    timestamp: number,
+    index: number
+  ) {
+    const link = props.queue
+      ? props.queue.makeLink(scene.id, {
+          sceneIndex: index,
+          continue: false,
+          start: 1.911,
+        })
+      : `/scenes/${scene.id}?t=${timestamp}`;
+
+    history.push(link);
+  }
 
   function setRating(v: number | null, sceneId: string) {
     if (sceneId) {
@@ -66,9 +83,20 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
       : `/scenes/${scene.id}`;
 
     return (
-      <Link to={sceneLink} title={title}>
-        <span className="ellips-data">{title}</span>
-      </Link>
+      <>
+        <button onClick={() => onPlayClick(scene, 0, index)}>
+          <svg
+            className="circular-playbutton"
+            viewBox="0 0 560 560"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path d="M216 170l190.5 110L216 390z"></path>
+          </svg>
+        </button>
+        <Link to={sceneLink} title={title}>
+          <span className="ellips-data">{title}</span>
+        </Link>
+      </>
     );
   };
 
