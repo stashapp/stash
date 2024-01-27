@@ -478,14 +478,36 @@ textarea.text-input {
 }
 
 .zoom-0 {
-  width: 240px;
+  .card-popovers {
+    svg {
+      height: .75rem;
+    }
 
-  .scene-card-preview {
-    height: 135px;
+    .btn {
+      padding-bottom: 1.8px;
+      padding-top: 1.8px;
+    }
+
+    .fa-icon {
+      margin: 0 .46rem;
+    }
   }
 
-  .portrait {
-    height: 180px;
+  h5 {
+    font-size: .875rem;
+  }
+
+  .card-section{
+    padding: .33rem .66rem 0;
+  }
+
+  .scene-card__details, .gallery-card__details {
+    margin-bottom: .66rem;
+  }
+
+  .scene-card__description,
+  span {
+    font-size: .75rem;
   }
 
   .gallery-card-image,
@@ -496,14 +518,6 @@ textarea.text-input {
 
 .zoom-1 {
   width: 320px;
-
-  .scene-card-preview {
-    height: 180px;
-  }
-
-  .portrait {
-    height: 240px;
-  }
 
   .gallery-card-image,
   .tag-card-image {
@@ -516,14 +530,36 @@ textarea.text-input {
 }
 
 .zoom-2 {
-  width: 480px;
+  .card-popovers {
+    svg {
+      height: 1.35rem;
+    }
 
-  .scene-card-preview {
-    height: 270px;
+    .btn {
+      padding-bottom: 4.8px;
+      padding-top: 4.8px;
+    }
+
+    .fa-icon {
+      margin: 0 .64rem;
+    }
   }
 
-  .portrait {
-    height: 360px;
+  h5 {
+    font-size: 2rem;
+  }
+
+  .card-section{
+    padding: .6rem 1.6rem 0;
+  }
+
+  .scene-card__details, .gallery-card__details {
+    margin-bottom: 1.6rem;
+  }
+
+  .scene-card__description,
+  span {
+    font-size: 1.35rem;
   }
 
   .gallery-card-image,
@@ -537,14 +573,36 @@ textarea.text-input {
 }
 
 .zoom-3 {
-  width: 640px;
+  .card-popovers {
+    svg {
+      height: 1.8rem;
+    }
 
-  .scene-card-preview {
-    height: 360px;
+    .btn {
+      padding-bottom: 5.4px;
+      padding-top: 5.4px;
+    }
+
+    .fa-icon {
+      margin: 0 .72rem;
+    }
   }
 
-  .portrait {
-    height: 480px;
+  h5 {
+    font-size: 2.25rem;
+  }
+
+  .card-section{
+    padding: .9rem 1.8rem 0;
+  }
+
+  .scene-card__details, .gallery-card__details {
+    margin-bottom: 1.8rem;
+  }
+
+  .scene-card__description,
+  span {
+    font-size: 1.8rem;
   }
 
   .tag-card-image,
