@@ -87,8 +87,8 @@ export const tagRelationHook = (
           id: cache.identify(o),
           fields: {
             [property](value, { readField }) {
-              return value.filter(
-                (t: GQL.SlimTagDataFragment) => readField("id", t) !== tag.id
+              return (value as GQL.SlimTagDataFragment[]).filter(
+                (t) => readField("id", t) !== tag.id
               );
             },
           },
@@ -102,7 +102,7 @@ export const tagRelationHook = (
           id: cache.identify(u),
           fields: {
             [property](value) {
-              return [...value, tagRef];
+              return [...(value as unknown[]), tagRef];
             },
           },
         });
