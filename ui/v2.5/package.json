@@ -14,7 +14,7 @@
     "check": "tsc --noEmit",
     "format": "prettier --write . ../../graphql",
     "format-check": "prettier --check . ../../graphql",
-    "gqlgen": "gql-gen --config codegen.yml",
+    "gqlgen": "gql-gen --config codegen.ts",
     "extract": "NODE_ENV=development extract-messages -l=en,de -o src/locale -d en --flat false 'src/**/!(*.test).tsx'"
   },
   "dependencies": {

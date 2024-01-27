@@ -1,0 +1,5 @@
+scalar UIConfig
+
+extend type ConfigResult {
+  ui: UIConfig!
+}
