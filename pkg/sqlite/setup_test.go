@@ -14,9 +14,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stashapp/stash/pkg/file"
+	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sliceutil/intslice"
+	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/txn"
 
@@ -289,11 +289,11 @@ const (
 )
 
 var (
-	folderIDs      []file.FolderID
-	fileIDs        []file.ID
-	sceneFileIDs   []file.ID
-	imageFileIDs   []file.ID
-	galleryFileIDs []file.ID
+	folderIDs      []models.FolderID
+	fileIDs        []models.FileID
+	sceneFileIDs   []models.FileID
+	imageFileIDs   []models.FileID
+	galleryFileIDs []models.FileID
 	chapterIDs     []int
 
 	sceneIDs       []int
@@ -555,6 +555,9 @@ func indexFromID(ids []int, id int) int {
 var db *sqlite.Database
 
 func TestMain(m *testing.M) {
+	// initialise empty config - needed by some migrations
+	_ = config.InitializeEmpty()
+
 	ret := runTests(m)
 	os.Exit(ret)
 }
@@ -620,10 +623,10 @@ func runTests(m *testing.M) int {
 	err = populateDB()
 	if err != nil {
 		panic(fmt.Sprintf("Could not populate database: %s", err.Error()))
-	} else {
-		// run the tests
-		return m.Run()
 	}
+
+	// run the tests
+	return m.Run()
 }
 
 func populateDB() error {
@@ -724,8 +727,8 @@ func getFolderModTime(index int) time.Time {
 	return time.Date(2000, 1, (index%10)+1, 0, 0, 0, 0, time.UTC)
 }
 
-func makeFolder(i int) file.Folder {
-	var folderID *file.FolderID
+func makeFolder(i int) models.Folder {
+	var folderID *models.FolderID
 	var folderIdx *int
 	if pidx, ok := folderParentFolders[i]; ok {
 		folderIdx = &pidx
@@ -733,9 +736,9 @@ func makeFolder(i int) file.Folder {
 		folderID = &v
 	}
 
-	return file.Folder{
+	return models.Folder{
 		ParentFolderID: folderID,
-		DirEntry: file.DirEntry{
+		DirEntry: models.DirEntry{
 			// zip files have to be added after creating files
 			ModTime: getFolderModTime(i),
 		},
@@ -772,8 +775,8 @@ func getFileModTime(index int) time.Time {
 	return getFolderModTime(index)
 }
 
-func getFileFingerprints(index int) []file.Fingerprint {
-	return []file.Fingerprint{
+func getFileFingerprints(index int) []models.Fingerprint {
+	return []models.Fingerprint{
 		{
 			Type:        "MD5",
 			Fingerprint: getPrefixedStringValue("file", index, "md5"),
@@ -796,22 +799,22 @@ func getFileDuration(index int) float64 {
 	return float64(duration) + 0.432
 }
 
-func makeFile(i int) file.File {
+func makeFile(i int) models.File {
 	folderID := folderIDs[fileFolders[i]]
 	if folderID == 0 {
 		folderID = folderIDs[folderIdxWithFiles]
 	}
 
-	var zipFileID *file.ID
+	var zipFileID *models.FileID
 	if zipFileIndex, found := fileZipFiles[i]; found {
 		zipFileID = &fileIDs[zipFileIndex]
 	}
 
-	var ret file.File
-	baseFile := &file.BaseFile{
+	var ret models.File
+	baseFile := &models.BaseFile{
 		Basename:       getFileBaseName(i),
 		ParentFolderID: folderID,
-		DirEntry: file.DirEntry{
+		DirEntry: models.DirEntry{
 			// zip files have to be added after creating files
 			ModTime:   getFileModTime(i),
 			ZipFileID: zipFileID,
@@ -823,7 +826,7 @@ func makeFile(i int) file.File {
 	ret = baseFile
 
 	if i >= fileIdxStartVideoFiles && i < fileIdxStartImageFiles {
-		ret = &file.VideoFile{
+		ret = &models.VideoFile{
 			BaseFile:   baseFile,
 			Format:     getFileStringValue(i, "format"),
 			Width:      getWidth(i),
@@ -835,7 +838,7 @@ func makeFile(i int) file.File {
 			BitRate:    int64(getFileDuration(i)) * 3,
 		}
 	} else if i >= fileIdxStartImageFiles && i < fileIdxStartGalleryFiles {
-		ret = &file.ImageFile{
+		ret = &models.ImageFile{
 			BaseFile: baseFile,
 			Format:   getFileStringValue(i, "format"),
 			Width:    getWidth(i),
@@ -1001,27 +1004,27 @@ func getSceneBasename(index int) string {
 	return getSceneStringValue(index, pathField)
 }
 
-func makeSceneFile(i int) *file.VideoFile {
-	fp := []file.Fingerprint{
+func makeSceneFile(i int) *models.VideoFile {
+	fp := []models.Fingerprint{
 		{
-			Type:        file.FingerprintTypeMD5,
+			Type:        models.FingerprintTypeMD5,
 			Fingerprint: getSceneStringValue(i, checksumField),
 		},
 		{
-			Type:        file.FingerprintTypeOshash,
+			Type:        models.FingerprintTypeOshash,
 			Fingerprint: getSceneStringValue(i, "oshash"),
 		},
 	}
 
 	if i != sceneIdxMissingPhash {
-		fp = append(fp, file.Fingerprint{
-			Type:        file.FingerprintTypePhash,
+		fp = append(fp, models.Fingerprint{
+			Type:        models.FingerprintTypePhash,
 			Fingerprint: getScenePhash(i, "phash"),
 		})
 	}
 
-	return &file.VideoFile{
-		BaseFile: &file.BaseFile{
+	return &models.VideoFile{
+		BaseFile: &models.BaseFile{
 			Path:           getFilePath(folderIdxWithSceneFiles, getSceneBasename(i)),
 			Basename:       getSceneBasename(i),
 			ParentFolderID: folderIDs[folderIdxWithSceneFiles],
@@ -1124,7 +1127,7 @@ func createScenes(ctx context.Context, n int) error {
 
 		scene := makeScene(i)
 
-		if err := sqb.Create(ctx, scene, []file.ID{f.ID}); err != nil {
+		if err := sqb.Create(ctx, scene, []models.FileID{f.ID}); err != nil {
 			return fmt.Errorf("Error creating scene %v+: %s", scene, err.Error())
 		}
 
@@ -1138,19 +1141,32 @@ func getImageStringValue(index int, field string) string {
 	return fmt.Sprintf("image_%04d_%s", index, field)
 }
 
+func getImageNullStringPtr(index int, field string) *string {
+	return getStringPtrFromNullString(getPrefixedNullStringValue("image", index, field))
+}
+
+func getImageEmptyString(index int, field string) string {
+	v := getImageNullStringPtr(index, field)
+	if v == nil {
+		return ""
+	}
+
+	return *v
+}
+
 func getImageBasename(index int) string {
 	return getImageStringValue(index, pathField)
 }
 
-func makeImageFile(i int) *file.ImageFile {
-	return &file.ImageFile{
-		BaseFile: &file.BaseFile{
+func makeImageFile(i int) *models.ImageFile {
+	return &models.ImageFile{
+		BaseFile: &models.BaseFile{
 			Path:           getFilePath(folderIdxWithImageFiles, getImageBasename(i)),
 			Basename:       getImageBasename(i),
 			ParentFolderID: folderIDs[folderIdxWithImageFiles],
-			Fingerprints: []file.Fingerprint{
+			Fingerprints: []models.Fingerprint{
 				{
-					Type:        file.FingerprintTypeMD5,
+					Type:        models.FingerprintTypeMD5,
 					Fingerprint: getImageStringValue(i, checksumField),
 				},
 			},
@@ -1173,10 +1189,12 @@ func makeImage(i int) *models.Image {
 	tids := indexesToIDs(tagIDs, imageTags[i])
 
 	return &models.Image{
-		Title:        title,
-		Rating:       getIntPtr(getRating(i)),
-		Date:         getObjectDate(i),
-		URL:          getImageStringValue(i, urlField),
+		Title:  title,
+		Rating: getIntPtr(getRating(i)),
+		Date:   getObjectDate(i),
+		URLs: models.NewRelatedStrings([]string{
+			getImageEmptyString(i, urlField),
+		}),
 		OCounter:     getOCounter(i),
 		StudioID:     studioID,
 		GalleryIDs:   models.NewRelatedIDs(gids),
@@ -1186,7 +1204,7 @@ func makeImage(i int) *models.Image {
 }
 
 func createImages(ctx context.Context, n int) error {
-	qb := db.TxnRepository().Image
+	qb := db.Image
 	fqb := db.File
 
 	for i := 0; i < n; i++ {
@@ -1202,10 +1220,7 @@ func createImages(ctx context.Context, n int) error {
 
 		image := makeImage(i)
 
-		err := qb.Create(ctx, &models.ImageCreateInput{
-			Image:   image,
-			FileIDs: []file.ID{f.ID},
-		})
+		err := qb.Create(ctx, image, []models.FileID{f.ID})
 
 		if err != nil {
 			return fmt.Errorf("Error creating image %v+: %s", image, err.Error())
@@ -1226,21 +1241,30 @@ func getGalleryNullStringValue(index int, field string) sql.NullString {
 }
 
 func getGalleryNullStringPtr(index int, field string) *string {
-	return getStringPtr(getPrefixedStringValue("gallery", index, field))
+	return getStringPtrFromNullString(getPrefixedNullStringValue("gallery", index, field))
+}
+
+func getGalleryEmptyString(index int, field string) string {
+	v := getGalleryNullStringPtr(index, field)
+	if v == nil {
+		return ""
+	}
+
+	return *v
 }
 
 func getGalleryBasename(index int) string {
 	return getGalleryStringValue(index, pathField)
 }
 
-func makeGalleryFile(i int) *file.BaseFile {
-	return &file.BaseFile{
+func makeGalleryFile(i int) *models.BaseFile {
+	return &models.BaseFile{
 		Path:           getFilePath(folderIdxWithGalleryFiles, getGalleryBasename(i)),
 		Basename:       getGalleryBasename(i),
 		ParentFolderID: folderIDs[folderIdxWithGalleryFiles],
-		Fingerprints: []file.Fingerprint{
+		Fingerprints: []models.Fingerprint{
 			{
-				Type:        file.FingerprintTypeMD5,
+				Type:        models.FingerprintTypeMD5,
 				Fingerprint: getGalleryStringValue(i, checksumField),
 			},
 		},
@@ -1258,8 +1282,10 @@ func makeGallery(i int, includeScenes bool) *models.Gallery {
 	tids := indexesToIDs(tagIDs, galleryTags[i])
 
 	ret := &models.Gallery{
-		Title:        getGalleryStringValue(i, titleField),
-		URL:          getGalleryNullStringValue(i, urlField).String,
+		Title: getGalleryStringValue(i, titleField),
+		URLs: models.NewRelatedStrings([]string{
+			getGalleryEmptyString(i, urlField),
+		}),
 		Rating:       getIntPtr(getRating(i)),
 		Date:         getObjectDate(i),
 		StudioID:     studioID,
@@ -1275,18 +1301,18 @@ func makeGallery(i int, includeScenes bool) *models.Gallery {
 }
 
 func createGalleries(ctx context.Context, n int) error {
-	gqb := db.TxnRepository().Gallery
+	gqb := db.Gallery
 	fqb := db.File
 
 	for i := 0; i < n; i++ {
-		var fileIDs []file.ID
+		var fileIDs []models.FileID
 		if i != galleryIdxWithoutFile {
 			f := makeGalleryFile(i)
 			if err := fqb.Create(ctx, f); err != nil {
 				return fmt.Errorf("creating gallery file: %w", err)
 			}
 			galleryFileIDs = append(galleryFileIDs, f.ID)
-			fileIDs = []file.ID{f.ID}
+			fileIDs = []models.FileID{f.ID}
 		} else {
 			galleryFileIDs = append(galleryFileIDs, 0)
 		}
@@ -1508,7 +1534,7 @@ func getTagMarkerCount(id int) int {
 	count := 0
 	idx := indexFromID(tagIDs, id)
 	for _, s := range markerSpecs {
-		if s.primaryTagIdx == idx || intslice.IntInclude(s.tagIdxs, idx) {
+		if s.primaryTagIdx == idx || sliceutil.Contains(s.tagIdxs, idx) {
 			count++
 		}
 	}
@@ -1754,10 +1780,29 @@ func getSavedFilterName(index int) string {
 
 func createSavedFilters(ctx context.Context, qb models.SavedFilterReaderWriter, n int) error {
 	for i := 0; i < n; i++ {
+		filterQ := ""
+		filterPage := i
+		filterPerPage := i * 40
+		filterSort := "date"
+		filterDirection := models.SortDirectionEnumAsc
+		findFilter := models.FindFilterType{
+			Q:         &filterQ,
+			Page:      &filterPage,
+			PerPage:   &filterPerPage,
+			Sort:      &filterSort,
+			Direction: &filterDirection,
+		}
 		savedFilter := models.SavedFilter{
-			Mode:   getSavedFilterMode(i),
-			Name:   getSavedFilterName(i),
-			Filter: getPrefixedStringValue("savedFilter", i, "Filter"),
+			Mode:       getSavedFilterMode(i),
+			Name:       getSavedFilterName(i),
+			FindFilter: &findFilter,
+			ObjectFilter: map[string]interface{}{
+				"test": "object",
+			},
+			UIOptions: map[string]interface{}{
+				"display_mode": 1,
+				"zoom_index":   1,
+			},
 		}
 
 		err := qb.Create(ctx, &savedFilter)

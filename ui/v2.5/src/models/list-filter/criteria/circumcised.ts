@@ -9,13 +9,15 @@ import { CriterionOption, MultiStringCriterion } from "./criterion";
 export const CircumcisedCriterionOption = new CriterionOption({
   messageID: "circumcised",
   type: "circumcised",
-  options: circumcisedStrings,
   modifierOptions: [
     CriterionModifier.Includes,
     CriterionModifier.Excludes,
     CriterionModifier.IsNull,
     CriterionModifier.NotNull,
   ],
+  defaultModifier: CriterionModifier.Includes,
+  options: circumcisedStrings,
+  makeCriterion: () => new CircumcisedCriterion(),
 });
 
 export class CircumcisedCriterion extends MultiStringCriterion {

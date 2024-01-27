@@ -1,5 +1,5 @@
 import { Tabs, Tab, Dropdown, Button } from "react-bootstrap";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useHistory, Redirect, RouteComponentProps } from "react-router-dom";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Helmet } from "react-helmet";
@@ -53,6 +53,7 @@ interface ITagParams {
 }
 
 const validTabs = [
+  "default",
   "scenes",
   "images",
   "galleries",
@@ -61,7 +62,7 @@ const validTabs = [
 ] as const;
 type TabKey = (typeof validTabs)[number];
 
-const defaultTab: TabKey = "scenes";
+const defaultTab: TabKey = "default";
 
 function isTabKey(tab: string): tab is TabKey {
   return validTabs.includes(tab as TabKey);
@@ -77,7 +78,7 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
   const uiConfig = configuration?.ui as IUIConfig | undefined;
   const abbreviateCounter = uiConfig?.abbreviateCounters ?? false;
   const enableBackgroundImage = uiConfig?.enableTagBackgroundImage ?? false;
-  const showAllDetails = uiConfig?.showAllDetails ?? false;
+  const showAllDetails = uiConfig?.showAllDetails ?? true;
   const compactExpandedDetails = uiConfig?.compactExpandedDetails ?? false;
 
   const [collapsed, setCollapsed] = useState<boolean>(!showAllDetails);
@@ -107,11 +108,32 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
   const performerCount =
     (showAllCounts ? tag.performer_count_all : tag.performer_count) ?? 0;
 
+  const populatedDefaultTab = useMemo(() => {
+    let ret: TabKey = "scenes";
+    if (sceneCount == 0) {
+      if (imageCount != 0) {
+        ret = "images";
+      } else if (galleryCount != 0) {
+        ret = "galleries";
+      } else if (sceneMarkerCount != 0) {
+        ret = "markers";
+      } else if (performerCount != 0) {
+        ret = "performers";
+      }
+    }
+
+    return ret;
+  }, [sceneCount, imageCount, galleryCount, sceneMarkerCount, performerCount]);
+
+  if (tabKey === defaultTab) {
+    tabKey = populatedDefaultTab;
+  }
+
   function setTabKey(newTabKey: string | null) {
-    if (!newTabKey) newTabKey = defaultTab;
+    if (!newTabKey || newTabKey === defaultTab) newTabKey = populatedDefaultTab;
     if (newTabKey === tabKey) return;
 
-    if (newTabKey === defaultTab) {
+    if (newTabKey === populatedDefaultTab) {
       history.replace(`/tags/${tag.id}`);
     } else if (isTabKey(newTabKey)) {
       history.replace(`/tags/${tag.id}/${newTabKey}`);
@@ -122,7 +144,7 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
   useEffect(() => {
     Mousetrap.bind("e", () => toggleEditing());
     Mousetrap.bind("d d", () => {
-      onDelete();
+      setIsDeleteAlertOpen(true);
     });
     Mousetrap.bind(",", () => setCollapsed(!collapsed));
 
@@ -157,12 +179,12 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
         parents: updated.parents,
         children: updated.children,
       });
-      Toast.success({
-        content: intl.formatMessage(
+      Toast.success(
+        intl.formatMessage(
           { id: "toast.updated_entity" },
           { entity: intl.formatMessage({ id: "tag" }).toLocaleLowerCase() }
-        ),
-      });
+        )
+      );
     }
   }
 
@@ -170,9 +192,7 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
     if (!tag.id) return;
     try {
       await mutateMetadataAutoTag({ tags: [tag.id] });
-      Toast.success({
-        content: intl.formatMessage({ id: "toast.started_auto_tagging" }),
-      });
+      Toast.success(intl.formatMessage({ id: "toast.started_auto_tagging" }));
     } catch (e) {
       Toast.error(e);
     }
@@ -280,7 +300,7 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
 
   function renderMergeButton() {
     return (
-      <Dropdown drop="up">
+      <Dropdown>
         <Dropdown.Toggle variant="secondary">
           <FormattedMessage id="actions.merge" />
           ...
@@ -496,7 +516,7 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
           <div className="detail-header-image">
             {encodingImage ? (
               <LoadingIndicator
-                message={`${intl.formatMessage({ id: "encoding_image" })}...`}
+                message={intl.formatMessage({ id: "actions.encoding_image" })}
               />
             ) : (
               renderImage()

@@ -105,23 +105,17 @@ func (d *FileDeleter) MarkMarkerFiles(scene *models.Scene, seconds int) error {
 	return d.Files(files)
 }
 
-type Destroyer interface {
-	Destroy(ctx context.Context, id int) error
-}
-
-type MarkerDestroyer interface {
-	FindBySceneID(ctx context.Context, sceneID int) ([]*models.SceneMarker, error)
-	Destroy(ctx context.Context, id int) error
-}
-
-type FilterDestroyer interface {
-	FindBySceneID(ctx context.Context, sceneID int) ([]*models.SceneFilter, error)
-	Destroy(ctx context.Context, id int) error
-}
-
 // Destroy deletes a scene and its associated relationships from the
 // database.
 func (s *Service) Destroy(ctx context.Context, scene *models.Scene, fileDeleter *FileDeleter, deleteGenerated, deleteFile bool) error {
+	fqb := s.FilterRepository
+	filters, _ := fqb.FindBySceneID(ctx, scene.ID)
+	for _, m := range filters {
+		if err := DestroyFilter(ctx, scene, m, fqb); err != nil {
+			return err
+		}
+	}
+
 	mqb := s.MarkerRepository
 	markers, err := mqb.FindBySceneID(ctx, scene.ID)
 	if err != nil {
@@ -191,10 +185,18 @@ func (s *Service) deleteFiles(ctx context.Context, scene *models.Scene, fileDele
 	return nil
 }
 
+// DestroyFilter deletes the scene filter from the database
+func DestroyFilter(ctx context.Context, scene *models.Scene, sceneFilter *models.SceneFilter, qb models.SceneFilterDestroyer) error {
+	if err := qb.Destroy(ctx, sceneFilter.ID); err != nil {
+		return err
+	}
+	return nil
+}
+
 // DestroyMarker deletes the scene marker from the database and returns a
 // function that removes the generated files, to be executed after the
 // transaction is successfully committed.
-func DestroyMarker(ctx context.Context, scene *models.Scene, sceneMarker *models.SceneMarker, qb MarkerDestroyer, fileDeleter *FileDeleter) error {
+func DestroyMarker(ctx context.Context, scene *models.Scene, sceneMarker *models.SceneMarker, qb models.SceneMarkerDestroyer, fileDeleter *FileDeleter) error {
 	if err := qb.Destroy(ctx, sceneMarker.ID); err != nil {
 		return err
 	}

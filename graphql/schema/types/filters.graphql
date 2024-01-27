@@ -12,6 +12,17 @@ input FindFilterType {
   direction: SortDirectionEnum
 }
 
+type SavedFindFilterType {
+  q: String
+  page: Int
+  """
+  use per_page = -1 to indicate all results. Defaults to 25.
+  """
+  per_page: Int
+  sort: String
+  direction: SortDirectionEnum
+}
+
 enum ResolutionEnum {
   "144p"
   VERY_LOW
@@ -48,6 +59,19 @@ enum ResolutionEnum {
 input ResolutionCriterionInput {
   value: ResolutionEnum!
   modifier: CriterionModifier!
+}
+
+enum OrientationEnum {
+  "Landscape"
+  LANDSCAPE
+  "Portrait"
+  PORTRAIT
+  "Square"
+  SQUARE
+}
+
+input OrientationCriterionInput {
+  value: [OrientationEnum!]!
 }
 
 input PHashDuplicationCriterionInput {
@@ -87,8 +111,6 @@ input PerformerFilterType {
   country: StringCriterionInput
   "Filter by eye color"
   eye_color: StringCriterionInput
-  "Filter by height"
-  height: StringCriterionInput @deprecated(reason: "Use height_cm instead")
   "Filter by height in cm"
   height_cm: IntCriterionInput
   "Filter by measurements"
@@ -124,13 +146,7 @@ input PerformerFilterType {
   "Filter by o count"
   o_counter: IntCriterionInput
   "Filter by StashID"
-  stash_id: StringCriterionInput
-    @deprecated(reason: "Use stash_id_endpoint instead")
-  "Filter by StashID"
   stash_id_endpoint: StashIDCriterionInput
-  "Filter by rating"
-  rating: IntCriterionInput
-    @deprecated(reason: "Use 1-100 range with rating100")
   # rating expressed as 1-100
   rating100: IntCriterionInput
   "Filter by url"
@@ -171,8 +187,6 @@ input SceneFilterFilterType {
 }
 
 input SceneMarkerFilterType {
-  "Filter to only include scene markers with this tag"
-  tag_id: ID @deprecated(reason: "use tags filter instead")
   "Filter to only include scene markers with these tags"
   tags: HierarchicalMultiCriterionInput
   "Filter to only include scene markers attached to a scene with these tags"
@@ -216,9 +230,6 @@ input SceneFilterType {
   path: StringCriterionInput
   "Filter by file count"
   file_count: IntCriterionInput
-  "Filter by rating"
-  rating: IntCriterionInput
-    @deprecated(reason: "Use 1-100 range with rating100")
   # rating expressed as 1-100
   rating100: IntCriterionInput
   "Filter by organized"
@@ -229,6 +240,10 @@ input SceneFilterType {
   duplicated: PHashDuplicationCriterionInput
   "Filter by resolution"
   resolution: ResolutionCriterionInput
+  "Filter by orientation"
+  orientation: OrientationCriterionInput
+  "Filter by frame rate"
+  framerate: IntCriterionInput
   "Filter by video codec"
   video_codec: StringCriterionInput
   "Filter by audio codec"
@@ -257,9 +272,6 @@ input SceneFilterType {
   performers: MultiCriterionInput
   "Filter by performer count"
   performer_count: IntCriterionInput
-  "Filter by StashID"
-  stash_id: StringCriterionInput
-    @deprecated(reason: "Use stash_id_endpoint instead")
   "Filter by StashID"
   stash_id_endpoint: StashIDCriterionInput
   "Filter by url"
@@ -291,9 +303,6 @@ input MovieFilterType {
 
   "Filter by duration (in seconds)"
   duration: IntCriterionInput
-  "Filter by rating"
-  rating: IntCriterionInput
-    @deprecated(reason: "Use 1-100 range with rating100")
   # rating expressed as 1-100
   rating100: IntCriterionInput
   "Filter to only include movies with this studio"
@@ -322,15 +331,9 @@ input StudioFilterType {
   "Filter to only include studios with this parent studio"
   parents: MultiCriterionInput
   "Filter by StashID"
-  stash_id: StringCriterionInput
-    @deprecated(reason: "Use stash_id_endpoint instead")
-  "Filter by StashID"
   stash_id_endpoint: StashIDCriterionInput
   "Filter to only include studios missing this property"
   is_missing: String
-  "Filter by rating"
-  rating: IntCriterionInput
-    @deprecated(reason: "Use 1-100 range with rating100")
   # rating expressed as 1-100
   rating100: IntCriterionInput
   "Filter by scene count"
@@ -370,9 +373,6 @@ input GalleryFilterType {
   is_missing: String
   "Filter to include/exclude galleries that were created from zip"
   is_zip: Boolean
-  "Filter by rating"
-  rating: IntCriterionInput
-    @deprecated(reason: "Use 1-100 range with rating100")
   # rating expressed as 1-100
   rating100: IntCriterionInput
   "Filter by organized"
@@ -407,6 +407,10 @@ input GalleryFilterType {
   created_at: TimestampCriterionInput
   "Filter by last update time"
   updated_at: TimestampCriterionInput
+  "Filter by studio code"
+  code: StringCriterionInput
+  "Filter by photographer"
+  photographer: StringCriterionInput
 }
 
 input TagFilterType {
@@ -469,6 +473,7 @@ input ImageFilterType {
   NOT: ImageFilterType
 
   title: StringCriterionInput
+  details: StringCriterionInput
 
   " Filter by image id"
   id: IntCriterionInput
@@ -478,9 +483,6 @@ input ImageFilterType {
   path: StringCriterionInput
   "Filter by file count"
   file_count: IntCriterionInput
-  "Filter by rating"
-  rating: IntCriterionInput
-    @deprecated(reason: "Use 1-100 range with rating100")
   # rating expressed as 1-100
   rating100: IntCriterionInput
   "Filter by date"
@@ -493,6 +495,8 @@ input ImageFilterType {
   o_counter: IntCriterionInput
   "Filter by resolution"
   resolution: ResolutionCriterionInput
+  "Filter by orientation"
+  orientation: OrientationCriterionInput
   "Filter to only include images missing this property"
   is_missing: String
   "Filter to only include images with this studio"
@@ -515,6 +519,10 @@ input ImageFilterType {
   created_at: TimestampCriterionInput
   "Filter by last update time"
   updated_at: TimestampCriterionInput
+  "Filter by studio code"
+  code: StringCriterionInput
+  "Filter by photographer"
+  photographer: StringCriterionInput
 }
 
 enum CriterionModifier {
@@ -569,6 +577,7 @@ input MultiCriterionInput {
 
 input GenderCriterionInput {
   value: GenderEnum
+  value_list: [GenderEnum!]
   modifier: CriterionModifier!
 }
 
@@ -620,6 +629,13 @@ type SavedFilter {
   name: String!
   "JSON-encoded filter string"
   filter: String!
+    @deprecated(reason: "use find_filter and object_filter instead")
+  find_filter: SavedFindFilterType
+  # maps to any of the AnyFilterInput types
+  # using a generic Map instead of creating and maintaining match types for inputs
+  object_filter: Map
+  # generic map for ui options
+  ui_options: Map
 }
 
 input SaveFilterInput {
@@ -627,8 +643,10 @@ input SaveFilterInput {
   id: ID
   mode: FilterMode!
   name: String!
-  "JSON-encoded filter string"
-  filter: String!
+  find_filter: FindFilterType
+  object_filter: Map
+  # generic map for ui options
+  ui_options: Map
 }
 
 input DestroyFilterInput {
@@ -637,6 +655,9 @@ input DestroyFilterInput {
 
 input SetDefaultFilterInput {
   mode: FilterMode!
-  "JSON-encoded filter string - null to clear"
-  filter: String
+  "null to clear"
+  find_filter: FindFilterType
+  object_filter: Map
+  # generic map for ui options
+  ui_options: Map
 }

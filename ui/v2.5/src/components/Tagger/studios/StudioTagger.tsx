@@ -25,6 +25,7 @@ import StudioConfig from "./Config";
 import { LOCAL_FORAGE_KEY, ITaggerConfig, initialConfig } from "../constants";
 import StudioModal from "../scenes/StudioModal";
 import { useUpdateStudio } from "../queries";
+import { apolloError } from "src/utils";
 import { faStar, faTags } from "@fortawesome/free-solid-svg-icons";
 
 type JobFragment = Pick<
@@ -120,7 +121,7 @@ const StudioBatchUpdateModal: React.FC<IStudioBatchUpdateModal> = ({
           type="radio"
           name="studio-query"
           label={<FormattedMessage id="studio_tagger.current_page" />}
-          defaultChecked={!queryAll}
+          checked={!queryAll}
           onChange={() => setQueryAll(false)}
         />
         <Form.Check
@@ -130,7 +131,7 @@ const StudioBatchUpdateModal: React.FC<IStudioBatchUpdateModal> = ({
           label={intl.formatMessage({
             id: "studio_tagger.query_all_studios_in_the_database",
           })}
-          defaultChecked={queryAll}
+          checked={queryAll}
           onChange={() => setQueryAll(true)}
         />
       </Form.Group>
@@ -147,7 +148,7 @@ const StudioBatchUpdateModal: React.FC<IStudioBatchUpdateModal> = ({
           label={intl.formatMessage({
             id: "studio_tagger.untagged_studios",
           })}
-          defaultChecked={!refresh}
+          checked={!refresh}
           onChange={() => setRefresh(false)}
         />
         <Form.Text>
@@ -160,7 +161,7 @@ const StudioBatchUpdateModal: React.FC<IStudioBatchUpdateModal> = ({
           label={intl.formatMessage({
             id: "studio_tagger.refresh_tagged_studios",
           })}
-          defaultChecked={refresh}
+          checked={refresh}
           onChange={() => setRefresh(true)}
         />
         <Form.Text>
@@ -400,7 +401,7 @@ const StudioTaggerList: React.FC<IStudioTaggerListProps> = ({
           { studio: modalStudio?.name }
         ),
         details:
-          message === "UNIQUE constraint failed: studios.checksum"
+          message === "UNIQUE constraint failed: studios.name"
             ? intl.formatMessage({
                 id: "studio_tagger.name_already_exists",
               })
@@ -431,9 +432,8 @@ const StudioTaggerList: React.FC<IStudioTaggerListProps> = ({
             });
             input.parent_id = parentRes.data?.studioCreate?.id;
           }
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } catch (e: any) {
-          handleSaveError(studioID, parentInput.name, e.message ?? "");
+        } catch (e) {
+          handleSaveError(studioID, parentInput.name, apolloError(e));
         }
       }
 
@@ -611,7 +611,7 @@ const StudioTaggerList: React.FC<IStudioTaggerListProps> = ({
             <div></div>
             <div>
               <Card className="studio-card">
-                <img src={studio.image_path ?? ""} alt="" />
+                <img loading="lazy" src={studio.image_path ?? ""} alt="" />
               </Card>
             </div>
             <div className={`${CLASSNAME}-details-text`}>

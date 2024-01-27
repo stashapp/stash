@@ -15,14 +15,15 @@ import (
 	"strconv"
 	"time"
 
+	"gopkg.in/yaml.v2"
+
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sliceutil/intslice"
+	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/txn"
-	"gopkg.in/yaml.v2"
 )
 
 const batchSize = 50000
@@ -553,7 +554,7 @@ func makeMarkers(n int) {
 
 				tags := getRandomTags(ctx, 0, 5)
 				// remove primary tag
-				tags = intslice.IntExclude(tags, []int{marker.PrimaryTagID})
+				tags = sliceutil.Exclude(tags, []int{marker.PrimaryTagID})
 				if err := repo.SceneMarker.UpdateTags(ctx, created.ID, tags); err != nil {
 					return err
 				}
@@ -641,12 +642,12 @@ func getRandomPerformers(ctx context.Context) []int {
 	// 	}
 
 	// 	for _, pp := range p {
-	// 		ret = intslice.IntAppendUnique(ret, pp.ID)
+	// 		ret = sliceutil.AppendUnique(ret, pp.ID)
 	// 	}
 	// }
 
 	for i := 0; i < n; i++ {
-		ret = intslice.IntAppendUnique(ret, rand.Intn(c.Performers)+1)
+		ret = sliceutil.AppendUnique(ret, rand.Intn(c.Performers)+1)
 	}
 
 	return ret
@@ -676,12 +677,12 @@ func getRandomTags(ctx context.Context, min, max int) []int {
 	// 	}
 
 	// 	for _, tt := range t {
-	// 		ret = intslice.IntAppendUnique(ret, tt.ID)
+	// 		ret = sliceutil.AppendUnique(ret, tt.ID)
 	// 	}
 	// }
 
 	for i := 0; i < n; i++ {
-		ret = intslice.IntAppendUnique(ret, rand.Intn(c.Tags)+1)
+		ret = sliceutil.AppendUnique(ret, rand.Intn(c.Tags)+1)
 	}
 
 	return ret
@@ -698,12 +699,12 @@ func getRandomImages(ctx context.Context) []int {
 	// 	}
 
 	// 	for _, tt := range t {
-	// 		ret = intslice.IntAppendUnique(ret, tt.ID)
+	// 		ret = sliceutil.AppendUnique(ret, tt.ID)
 	// 	}
 	// }
 
 	for i := 0; i < n; i++ {
-		ret = intslice.IntAppendUnique(ret, rand.Intn(c.Images)+1)
+		ret = sliceutil.AppendUnique(ret, rand.Intn(c.Images)+1)
 	}
 
 	return ret

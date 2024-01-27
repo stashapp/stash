@@ -66,6 +66,7 @@ type Query {
   findPerformers(
     performer_filter: PerformerFilterType
     filter: FindFilterType
+    performer_ids: [Int!]
   ): FindPerformersResultType!
 
   "Find a studio by ID"
@@ -94,6 +95,7 @@ type Query {
   findTags(
     tag_filter: TagFilterType
     filter: FindFilterType
+    ids: [Int!]
   ): FindTagsResultType!
 
   "Retrieve random scene markers for the wall"
@@ -114,14 +116,6 @@ type Query {
 
   "List available scrapers"
   listScrapers(types: [ScrapeContentType!]!): [Scraper!]!
-  listPerformerScrapers: [Scraper!]!
-    @deprecated(reason: "Use listScrapers(types: [PERFORMER])")
-  listSceneScrapers: [Scraper!]!
-    @deprecated(reason: "Use listScrapers(types: [SCENE])")
-  listGalleryScrapers: [Scraper!]!
-    @deprecated(reason: "Use listScrapers(types: [GALLERY])")
-  listMovieScrapers: [Scraper!]!
-    @deprecated(reason: "Use listScrapers(types: [MOVIE])")
 
   "Scrape for a single scene"
   scrapeSingleScene(
@@ -175,32 +169,17 @@ type Query {
   "Scrapes a complete movie record based on a URL"
   scrapeMovieURL(url: String!): ScrapedMovie
 
-  "Scrape a list of performers based on name"
-  scrapePerformerList(scraper_id: ID!, query: String!): [ScrapedPerformer!]!
-    @deprecated(reason: "use scrapeSinglePerformer")
-  "Scrapes a complete performer record based on a scrapePerformerList result"
-  scrapePerformer(
-    scraper_id: ID!
-    scraped_performer: ScrapedPerformerInput!
-  ): ScrapedPerformer @deprecated(reason: "use scrapeSinglePerformer")
-  "Scrapes a complete scene record based on an existing scene"
-  scrapeScene(scraper_id: ID!, scene: SceneUpdateInput!): ScrapedScene
-    @deprecated(reason: "use scrapeSingleScene")
-  "Scrapes a complete gallery record based on an existing gallery"
-  scrapeGallery(scraper_id: ID!, gallery: GalleryUpdateInput!): ScrapedGallery
-    @deprecated(reason: "use scrapeSingleGallery")
-
-  "Scrape a list of performers from a query"
-  scrapeFreeonesPerformerList(query: String!): [String!]!
-    @deprecated(
-      reason: "use scrapeSinglePerformer with scraper_id = builtin_freeones"
-    )
-
   # Plugins
   "List loaded plugins"
   plugins: [Plugin!]
   "List available plugin operations"
   pluginTasks: [PluginTask!]
+
+  # Packages
+  "List installed packages"
+  installedPackages(type: PackageType!): [Package!]!
+  "List available packages"
+  availablePackages(type: PackageType!, source: String!): [Package!]!
 
   # Config
   "Returns the current, complete configuration"
@@ -229,10 +208,11 @@ type Query {
   allSceneMarkers: [SceneMarker!]!
   allImages: [Image!]!
   allGalleries: [Gallery!]!
-  allPerformers: [Performer!]!
   allStudios: [Studio!]!
   allMovies: [Movie!]!
-  allTags: [Tag!]!
+
+  allPerformers: [Performer!]! @deprecated(reason: "Use findPerformers instead")
+  allTags: [Tag!]! @deprecated(reason: "Use findTags instead")
 
   # Get everything with minimal metadata
 
@@ -345,6 +325,8 @@ type Mutation {
   moveFiles(input: MoveFilesInput!): Boolean!
   deleteFiles(ids: [ID!]!): Boolean!
 
+  fileSetFingerprints(input: FileSetFingerprintsInput!): Boolean!
+
   # Saved filters
   saveFilter(input: SaveFilterInput!): SavedFilter!
   destroySavedFilter(input: DestroyFilterInput!): Boolean!
@@ -358,6 +340,9 @@ type Mutation {
   configureDefaults(
     input: ConfigDefaultSettingsInput!
   ): ConfigDefaultSettingsResult!
+
+  # overwrites the entire plugin configuration for the given plugin
+  configurePlugin(plugin_id: ID!, input: Map!): Map!
 
   # overwrites the entire UI configuration
   configureUI(input: Map!): Map!
@@ -404,6 +389,12 @@ type Mutation {
   "Reload scrapers"
   reloadScrapers: Boolean!
 
+  """
+  Enable/disable plugins - enabledMap is a map of plugin IDs to enabled booleans.
+  Plugins not in the map are not affected.
+  """
+  setPluginsEnabled(enabledMap: BoolMap!): Boolean!
+
   "Run plugin task. Returns the job ID"
   runPluginTask(
     plugin_id: ID!
@@ -411,6 +402,29 @@ type Mutation {
     args: [PluginArgInput!]
   ): ID!
   reloadPlugins: Boolean!
+
+  """
+  Installs the given packages.
+  If a package is already installed, it will be updated if needed..
+  If an error occurs when installing a package, the job will continue to install the remaining packages.
+  Returns the job ID
+  """
+  installPackages(type: PackageType!, packages: [PackageSpecInput!]!): ID!
+  """
+  Updates the given packages.
+  If a package is not installed, it will not be installed.
+  If a package does not need to be updated, it will not be updated.
+  If no packages are provided, all packages of the given type will be updated.
+  If an error occurs when updating a package, the job will continue to update the remaining packages.
+  Returns the job ID.
+  """
+  updatePackages(type: PackageType!, packages: [PackageSpecInput!]): ID!
+  """
+  Uninstalls the given packages.
+  If an error occurs when uninstalling a package, the job will continue to uninstall the remaining packages.
+  Returns the job ID
+  """
+  uninstallPackages(type: PackageType!, packages: [PackageSpecInput!]!): ID!
 
   stopJob(job_id: ID!): Boolean!
   stopAllJobs: Boolean!

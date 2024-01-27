@@ -9,9 +9,11 @@ endif
 ifdef IS_WIN_SHELL
   RM := del /s /q
   RMDIR := rmdir /s /q
+  NOOP := @@
 else
   RM := rm -f
   RMDIR := rm -rf
+  NOOP := @:
 endif
 
 # set LDFLAGS environment variable to any extra ldflags required
@@ -36,7 +38,7 @@ GO_BUILD_FLAGS := $(GO_BUILD_FLAGS)
 
 # set GO_BUILD_TAGS environment variable to any extra build tags required
 GO_BUILD_TAGS := $(GO_BUILD_TAGS)
-GO_BUILD_TAGS += sqlite_stat4
+GO_BUILD_TAGS += sqlite_stat4 sqlite_math_functions
 
 # set STASH_NOLEGACY environment variable or uncomment to disable legacy browser support
 # STASH_NOLEGACY := true
@@ -50,29 +52,40 @@ export CGO_ENABLED := 1
 release: pre-ui generate ui build-release
 
 # targets to set various build flags
+# use combinations on the make command-line to configure a build, e.g.:
+# for a static-pie release build: `make flags-static-pie flags-release stash`
+# for a static windows debug build: `make flags-static-windows stash`
+
+# $(NOOP) prevents "nothing to be done" warnings
 
 .PHONY: flags-release
-flags-release: 
+flags-release:
+	$(NOOP)
 	$(eval LDFLAGS += -s -w)
 	$(eval GO_BUILD_FLAGS += -trimpath)
 
 .PHONY: flags-pie
 flags-pie:
+	$(NOOP)
 	$(eval GO_BUILD_FLAGS += -buildmode=pie)
 
 .PHONY: flags-static
-flags-static: 
+flags-static:
+	$(NOOP)
 	$(eval LDFLAGS += -extldflags=-static)
 	$(eval GO_BUILD_TAGS += sqlite_omit_load_extension osusergo netgo)
 
 .PHONY: flags-static-pie
-flags-static-pie: 
+flags-static-pie:
+	$(NOOP)
 	$(eval LDFLAGS += -extldflags=-static-pie)
 	$(eval GO_BUILD_FLAGS += -buildmode=pie)
 	$(eval GO_BUILD_TAGS += sqlite_omit_load_extension osusergo netgo)
 
+# identical to flags-static-pie, but excluding netgo, which is not needed on windows
 .PHONY: flags-static-windows
 flags-static-windows:
+	$(NOOP)
 	$(eval LDFLAGS += -extldflags=-static-pie)
 	$(eval GO_BUILD_FLAGS += -buildmode=pie)
 	$(eval GO_BUILD_TAGS += sqlite_omit_load_extension osusergo)
@@ -105,166 +118,141 @@ build-flags: build-info
 stash: build-flags
 	go build $(STASH_OUTPUT) $(BUILD_FLAGS) ./cmd/stash
 
-.PHONY: stash-release
-stash-release: flags-release
-stash-release: flags-pie
-stash-release: stash
-
-.PHONY: stash-release-static
-stash-release-static: flags-release
-stash-release-static: flags-static-pie
-stash-release-static: stash
-
-.PHONY: stash-release-static-windows
-stash-release-static-windows: flags-release
-stash-release-static-windows: flags-static-windows
-stash-release-static-windows: stash
-
 .PHONY: phasher
 phasher: build-flags
 	go build $(PHASHER_OUTPUT) $(BUILD_FLAGS) ./cmd/phasher
-
-.PHONY: phasher-release
-phasher-release: flags-release
-phasher-release: flags-pie
-phasher-release: phasher
-
-.PHONY: phasher-release-static
-phasher-release-static: flags-release
-phasher-release-static: flags-static-pie
-phasher-release-static: phasher
-
-.PHONY: phasher-release-static-windows
-phasher-release-static-windows: flags-release
-phasher-release-static-windows: flags-static-windows
-phasher-release-static-windows: phasher
 
 # builds dynamically-linked debug binaries
 .PHONY: build
 build: stash phasher
 
-# builds dynamically-linked release binaries
+# builds dynamically-linked PIE release binaries
 .PHONY: build-release
-build-release: stash-release phasher-release
+build-release: flags-release flags-pie build
 
-# builds statically-linked release binaries
-.PHONY: build-release-static
-build-release-static: stash-release-static phasher-release-static
+# compile and bundle into Stash.app
+# for when on macOS itself
+.PHONY: stash-macapp
+stash-macapp: STASH_OUTPUT := -o stash
+stash-macapp: flags-release flags-pie stash
+	rm -rf Stash.app
+	cp -R scripts/macos-bundle Stash.app
+	mkdir Stash.app/Contents/MacOS
+	cp stash Stash.app/Contents/MacOS/stash
 
-# build-release-static, but excluding netgo, which is not needed on windows
-.PHONY: build-release-static-windows
-build-release-static-windows: stash-release-static-windows phasher-release-static-windows
+# build-cc- targets should be run within the compiler docker container
 
-# cross-compile- targets should be run within the compiler docker container
-.PHONY: cross-compile-windows
-cross-compile-windows: export GOOS := windows
-cross-compile-windows: export GOARCH := amd64
-cross-compile-windows: export CC := x86_64-w64-mingw32-gcc
-cross-compile-windows: export CXX := x86_64-w64-mingw32-g++
-cross-compile-windows: STASH_OUTPUT := -o dist/stash-win.exe
-cross-compile-windows: PHASHER_OUTPUT := -o dist/phasher-win.exe
-cross-compile-windows: flags-release
-cross-compile-windows: flags-static-windows
-cross-compile-windows: build
+.PHONY: build-cc-windows
+build-cc-windows: export GOOS := windows
+build-cc-windows: export GOARCH := amd64
+build-cc-windows: export CC := x86_64-w64-mingw32-gcc
+build-cc-windows: STASH_OUTPUT := -o dist/stash-win.exe
+build-cc-windows: PHASHER_OUTPUT :=-o dist/phasher-win.exe
+build-cc-windows: flags-release
+build-cc-windows: flags-static-windows
+build-cc-windows: build
 
-.PHONY: cross-compile-macos-intel
-cross-compile-macos-intel: export GOOS := darwin
-cross-compile-macos-intel: export GOARCH := amd64
-cross-compile-macos-intel: export CC := o64-clang
-cross-compile-macos-intel: export CXX := o64-clang++
-cross-compile-macos-intel: STASH_OUTPUT := -o dist/stash-macos-intel
-cross-compile-macos-intel: PHASHER_OUTPUT := -o dist/phasher-macos-intel
-cross-compile-macos-intel: flags-release
-# can't use static build for OSX
-cross-compile-macos-intel: flags-pie
-cross-compile-macos-intel: build
+.PHONY: build-cc-macos-intel
+build-cc-macos-intel: export GOOS := darwin
+build-cc-macos-intel: export GOARCH := amd64
+build-cc-macos-intel: export CC := o64-clang
+build-cc-macos-intel: STASH_OUTPUT := -o dist/stash-macos-intel
+build-cc-macos-intel: PHASHER_OUTPUT := -o dist/phasher-macos-intel
+build-cc-macos-intel: flags-release
+# can't use static build for macOS
+build-cc-macos-intel: flags-pie
+build-cc-macos-intel: build
 
-.PHONY: cross-compile-macos-applesilicon
-cross-compile-macos-applesilicon: export GOOS := darwin
-cross-compile-macos-applesilicon: export GOARCH := arm64
-cross-compile-macos-applesilicon: export CC := oa64e-clang
-cross-compile-macos-applesilicon: export CXX := oa64e-clang++
-cross-compile-macos-applesilicon: STASH_OUTPUT := -o dist/stash-macos-applesilicon
-cross-compile-macos-applesilicon: PHASHER_OUTPUT := -o dist/phasher-macos-applesilicon
-cross-compile-macos-applesilicon: flags-release
-# can't use static build for OSX
-cross-compile-macos-applesilicon: flags-pie
-cross-compile-macos-applesilicon: build
+.PHONY: build-cc-macos-arm
+build-cc-macos-arm: export GOOS := darwin
+build-cc-macos-arm: export GOARCH := arm64
+build-cc-macos-arm: export CC := oa64e-clang
+build-cc-macos-arm: STASH_OUTPUT := -o dist/stash-macos-arm
+build-cc-macos-arm: PHASHER_OUTPUT := -o dist/phasher-macos-arm
+build-cc-macos-arm: flags-release
+# can't use static build for macOS
+build-cc-macos-arm: flags-pie
+build-cc-macos-arm: build
 
-.PHONY: cross-compile-macos
-cross-compile-macos:
-	rm -rf dist/Stash.app dist/Stash-macos.zip
-	make cross-compile-macos-applesilicon
-	make cross-compile-macos-intel
-	# Combine into one universal binary
-	lipo -create -output dist/stash-macos-universal dist/stash-macos-intel dist/stash-macos-applesilicon
-	rm dist/stash-macos-intel dist/stash-macos-applesilicon
+.PHONY: build-cc-macos
+build-cc-macos:
+	make build-cc-macos-arm
+	make build-cc-macos-intel
+
+	# Combine into universal binaries
+	lipo -create -output dist/stash-macos dist/stash-macos-intel dist/stash-macos-arm
+	rm dist/stash-macos-intel dist/stash-macos-arm
+	lipo -create -output dist/phasher-macos dist/phasher-macos-intel dist/phasher-macos-arm
+	rm dist/phasher-macos-intel dist/phasher-macos-arm
+
 	# Place into bundle and zip up
+	rm -rf dist/Stash.app
 	cp -R scripts/macos-bundle dist/Stash.app
 	mkdir dist/Stash.app/Contents/MacOS
-	mv dist/stash-macos-universal dist/Stash.app/Contents/MacOS/stash
-	cd dist && zip -r Stash-macos.zip Stash.app && cd ..
+	cp dist/stash-macos dist/Stash.app/Contents/MacOS/stash
+	cd dist && rm -f Stash.app.zip && zip -r Stash.app.zip Stash.app
 	rm -rf dist/Stash.app
 
-.PHONY: cross-compile-freebsd
-cross-compile-freebsd: export GOOS := freebsd
-cross-compile-freebsd: export GOARCH := amd64
-cross-compile-freebsd: STASH_OUTPUT := -o dist/stash-freebsd
-cross-compile-freebsd: PHASHER_OUTPUT := -o dist/phasher-freebsd
-cross-compile-freebsd: flags-release
-cross-compile-freebsd: flags-static-pie
-cross-compile-freebsd: build
+.PHONY: build-cc-freebsd
+build-cc-freebsd: export GOOS := freebsd
+build-cc-freebsd: export GOARCH := amd64
+build-cc-freebsd: export CC := clang -target x86_64-unknown-freebsd12.0 --sysroot=/opt/cross-freebsd
+build-cc-freebsd: STASH_OUTPUT := -o dist/stash-freebsd
+build-cc-freebsd: PHASHER_OUTPUT := -o dist/phasher-freebsd
+build-cc-freebsd: flags-release
+build-cc-freebsd: flags-static-pie
+build-cc-freebsd: build
 
-.PHONY: cross-compile-linux
-cross-compile-linux: export GOOS := linux
-cross-compile-linux: export GOARCH := amd64
-cross-compile-linux: STASH_OUTPUT := -o dist/stash-linux
-cross-compile-linux: PHASHER_OUTPUT := -o dist/phasher-linux
-cross-compile-linux: flags-release
-cross-compile-linux: flags-static-pie
-cross-compile-linux: build
+.PHONY: build-cc-linux
+build-cc-linux: export GOOS := linux
+build-cc-linux: export GOARCH := amd64
+build-cc-linux: STASH_OUTPUT := -o dist/stash-linux
+build-cc-linux: PHASHER_OUTPUT := -o dist/phasher-linux
+build-cc-linux: flags-release
+build-cc-linux: flags-static-pie
+build-cc-linux: build
 
-.PHONY: cross-compile-linux-arm64v8
-cross-compile-linux-arm64v8: export GOOS := linux
-cross-compile-linux-arm64v8: export GOARCH := arm64
-cross-compile-linux-arm64v8: export CC := aarch64-linux-gnu-gcc
-cross-compile-linux-arm64v8: STASH_OUTPUT := -o dist/stash-linux-arm64v8
-cross-compile-linux-arm64v8: PHASHER_OUTPUT := -o dist/phasher-linux-arm64v8
-cross-compile-linux-arm64v8: flags-release
-cross-compile-linux-arm64v8: flags-static-pie
-cross-compile-linux-arm64v8: build
+.PHONY: build-cc-linux-arm64v8
+build-cc-linux-arm64v8: export GOOS := linux
+build-cc-linux-arm64v8: export GOARCH := arm64
+build-cc-linux-arm64v8: export CC := aarch64-linux-gnu-gcc
+build-cc-linux-arm64v8: STASH_OUTPUT := -o dist/stash-linux-arm64v8
+build-cc-linux-arm64v8: PHASHER_OUTPUT := -o dist/phasher-linux-arm64v8
+build-cc-linux-arm64v8: flags-release
+build-cc-linux-arm64v8: flags-static-pie
+build-cc-linux-arm64v8: build
 
-.PHONY: cross-compile-linux-arm32v7
-cross-compile-linux-arm32v7: export GOOS := linux
-cross-compile-linux-arm32v7: export GOARCH := arm
-cross-compile-linux-arm32v7: export GOARM := 7
-cross-compile-linux-arm32v7: export CC := arm-linux-gnueabihf-gcc
-cross-compile-linux-arm32v7: STASH_OUTPUT := -o dist/stash-linux-arm32v7
-cross-compile-linux-arm32v7: PHASHER_OUTPUT := -o dist/phasher-linux-arm32v7
-cross-compile-linux-arm32v7: flags-release
-cross-compile-linux-arm32v7: flags-static
-cross-compile-linux-arm32v7: build
+.PHONY: build-cc-linux-arm32v7
+build-cc-linux-arm32v7: export GOOS := linux
+build-cc-linux-arm32v7: export GOARCH := arm
+build-cc-linux-arm32v7: export GOARM := 7
+build-cc-linux-arm32v7: export CC := arm-linux-gnueabi-gcc -march=armv7-a
+build-cc-linux-arm32v7: STASH_OUTPUT := -o dist/stash-linux-arm32v7
+build-cc-linux-arm32v7: PHASHER_OUTPUT := -o dist/phasher-linux-arm32v7
+build-cc-linux-arm32v7: flags-release
+build-cc-linux-arm32v7: flags-static
+build-cc-linux-arm32v7: build
 
-.PHONY: cross-compile-linux-arm32v6
-cross-compile-linux-arm32v6: export GOOS := linux
-cross-compile-linux-arm32v6: export GOARCH := arm
-cross-compile-linux-arm32v6: export GOARM := 6
-cross-compile-linux-arm32v6: export CC := arm-linux-gnueabi-gcc
-cross-compile-linux-arm32v6: STASH_OUTPUT := -o dist/stash-linux-arm32v6
-cross-compile-linux-arm32v6: PHASHER_OUTPUT := -o dist/phasher-linux-arm32v6
-cross-compile-linux-arm32v6: flags-release
-cross-compile-linux-arm32v6: flags-static
-cross-compile-linux-arm32v6: build
+.PHONY: build-cc-linux-arm32v6
+build-cc-linux-arm32v6: export GOOS := linux
+build-cc-linux-arm32v6: export GOARCH := arm
+build-cc-linux-arm32v6: export GOARM := 6
+build-cc-linux-arm32v6: export CC := arm-linux-gnueabi-gcc
+build-cc-linux-arm32v6: STASH_OUTPUT := -o dist/stash-linux-arm32v6
+build-cc-linux-arm32v6: PHASHER_OUTPUT := -o dist/phasher-linux-arm32v6
+build-cc-linux-arm32v6: flags-release
+build-cc-linux-arm32v6: flags-static
+build-cc-linux-arm32v6: build
 
-.PHONY: cross-compile-all
-cross-compile-all:
-	make cross-compile-windows
-	make cross-compile-macos-intel
-	make cross-compile-macos-applesilicon
-	make cross-compile-linux
-	make cross-compile-linux-arm64v8
-	make cross-compile-linux-arm32v7
-	make cross-compile-linux-arm32v6
+.PHONY: build-cc-all
+build-cc-all:
+	make build-cc-windows
+	make build-cc-macos
+	make build-cc-linux
+	make build-cc-linux-arm64v8
+	make build-cc-linux-arm32v7
+	make build-cc-linux-arm32v6
+	make build-cc-freebsd
 
 .PHONY: touch-ui
 touch-ui:
@@ -319,7 +307,7 @@ it:
 # generates test mocks
 .PHONY: generate-test-mocks
 generate-test-mocks:
-	go run github.com/vektra/mockery/v2 --dir ./pkg/models --name '.*ReaderWriter' --outpkg mocks --output ./pkg/models/mocks
+	go run github.com/vektra/mockery/v2
 
 # runs server
 # sets the config file to use the local dev config
@@ -359,14 +347,6 @@ endif
 .PHONY: ui
 ui: ui-env
 	cd ui/v2.5 && yarn build
-
-.PHONY: ui-nolegacy
-ui-nolegacy: STASH_NOLEGACY := true
-ui-nolegacy: ui
-
-.PHONY: ui-sourcemaps
-ui-sourcemaps: STASH_SOURCEMAPS := true
-ui-sourcemaps: ui
 
 .PHONY: ui-start
 ui-start: ui-env

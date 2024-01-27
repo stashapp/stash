@@ -75,19 +75,6 @@ input ScanMetaDataFilterInput {
 input ScanMetadataInput {
   paths: [String!]
 
-  # useFileMetadata is deprecated with the new file management system
-  # if this functionality is desired, then we can make a built in scraper instead.
-
-  "Set name, date, details from metadata (if present)"
-  useFileMetadata: Boolean @deprecated(reason: "Not implemented")
-
-  # stripFileExtension is deprecated since we no longer set the title from the
-  # filename - it is automatically returned if the object has no title. If this
-  # functionality is desired, then we could make this an option to not include
-  # the extension in the auto-generated title.
-
-  "Strip file extension from title"
-  stripFileExtension: Boolean @deprecated(reason: "Not implemented")
   "Generate covers during scan"
   scanGenerateCovers: Boolean
   "Generate previews during scan"
@@ -108,10 +95,6 @@ input ScanMetadataInput {
 }
 
 type ScanMetadataOptions {
-  "Set name, date, details from metadata (if present)"
-  useFileMetadata: Boolean! @deprecated(reason: "Not implemented")
-  "Strip file extension from title"
-  stripFileExtension: Boolean! @deprecated(reason: "Not implemented")
   "Generate covers during scan"
   scanGenerateCovers: Boolean!
   "Generate previews during scan"
@@ -320,6 +303,9 @@ type SystemStatus {
   configPath: String
   appSchema: Int!
   status: SystemStatusEnum!
+  os: String!
+  workingDir: String!
+  homeDir: String!
 }
 
 input MigrateInput {

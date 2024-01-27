@@ -6,7 +6,6 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/json"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
-	"github.com/stashapp/stash/pkg/studio"
 )
 
 // ToBasicJSON converts a image object into its JSON object equivalent. It
@@ -14,10 +13,13 @@ import (
 // of cover image.
 func ToBasicJSON(image *models.Image) *jsonschema.Image {
 	newImageJSON := jsonschema.Image{
-		Title:     image.Title,
-		URL:       image.URL,
-		CreatedAt: json.JSONTime{Time: image.CreatedAt},
-		UpdatedAt: json.JSONTime{Time: image.UpdatedAt},
+		Title:        image.Title,
+		Code:         image.Code,
+		URLs:         image.URLs.List(),
+		Details:      image.Details,
+		Photographer: image.Photographer,
+		CreatedAt:    json.JSONTime{Time: image.CreatedAt},
+		UpdatedAt:    json.JSONTime{Time: image.UpdatedAt},
 	}
 
 	if image.Rating != nil {
@@ -38,22 +40,9 @@ func ToBasicJSON(image *models.Image) *jsonschema.Image {
 	return &newImageJSON
 }
 
-// func getImageFileJSON(image *models.Image) *jsonschema.ImageFile {
-// 	ret := &jsonschema.ImageFile{}
-
-// 	f := image.PrimaryFile()
-
-// 	ret.ModTime = json.JSONTime{Time: f.ModTime}
-// 	ret.Size = f.Size
-// 	ret.Width = f.Width
-// 	ret.Height = f.Height
-
-// 	return ret
-// }
-
 // GetStudioName returns the name of the provided image's studio. It returns an
 // empty string if there is no studio assigned to the image.
-func GetStudioName(ctx context.Context, reader studio.Finder, image *models.Image) (string, error) {
+func GetStudioName(ctx context.Context, reader models.StudioGetter, image *models.Image) (string, error) {
 	if image.StudioID != nil {
 		studio, err := reader.Find(ctx, *image.StudioID)
 		if err != nil {

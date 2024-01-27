@@ -29,7 +29,7 @@ func GetPaths(paths []string) (string, string) {
 
 	// Check if ffmpeg exists in the config directory
 	if ffmpegPath == "" {
-		ffmpegPath = fsutil.FindInPaths(paths, getFFMPEGFilename())
+		ffmpegPath = fsutil.FindInPaths(paths, getFFMpegFilename())
 	}
 	if ffprobePath == "" {
 		ffprobePath = fsutil.FindInPaths(paths, getFFProbeFilename())
@@ -39,7 +39,7 @@ func GetPaths(paths []string) (string, string) {
 }
 
 func Download(ctx context.Context, configDirectory string) error {
-	for _, url := range getFFMPEGURL() {
+	for _, url := range getFFmpegURL() {
 		err := downloadSingle(ctx, configDirectory, url)
 		if err != nil {
 			return err
@@ -47,7 +47,7 @@ func Download(ctx context.Context, configDirectory string) error {
 	}
 
 	// validate that the urls contained what we needed
-	executables := []string{getFFMPEGFilename(), getFFProbeFilename()}
+	executables := []string{getFFMpegFilename(), getFFProbeFilename()}
 	for _, executable := range executables {
 		_, err := os.Stat(filepath.Join(configDirectory, executable))
 		if err != nil {
@@ -173,7 +173,7 @@ func downloadSingle(ctx context.Context, configDirectory, url string) error {
 	return nil
 }
 
-func getFFMPEGURL() []string {
+func getFFmpegURL() []string {
 	var urls []string
 	switch runtime.GOOS {
 	case "darwin":
@@ -195,7 +195,7 @@ func getFFMPEGURL() []string {
 	return urls
 }
 
-func getFFMPEGFilename() string {
+func getFFMpegFilename() string {
 	if runtime.GOOS == "windows" {
 		return "ffmpeg.exe"
 	}
@@ -209,7 +209,7 @@ func getFFProbeFilename() string {
 	return "ffprobe"
 }
 
-// Checks if FFMPEG in the path has the correct flags
+// Checks if ffmpeg in the path has the correct flags
 func pathBinaryHasCorrectFlags() bool {
 	ffmpegPath, err := exec.LookPath("ffmpeg")
 	if err != nil {

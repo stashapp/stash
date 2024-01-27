@@ -1,19 +1,19 @@
 import {
   CriterionModifier,
   PhashDistanceCriterionInput,
+  PHashDuplicationCriterionInput,
 } from "src/core/generated-graphql";
 import { IPhashDistanceValue } from "../types";
 import {
   BooleanCriterionOption,
   Criterion,
   CriterionOption,
-  PhashDuplicateCriterion,
+  StringCriterion,
 } from "./criterion";
 
 export const PhashCriterionOption = new CriterionOption({
   messageID: "media_info.phash",
-  type: "phash",
-  parameterName: "phash_distance",
+  type: "phash_distance",
   inputType: "text",
   modifierOptions: [
     CriterionModifier.Equals,
@@ -21,6 +21,7 @@ export const PhashCriterionOption = new CriterionOption({
     CriterionModifier.IsNull,
     CriterionModifier.NotNull,
   ],
+  makeCriterion: () => new PhashCriterion(),
 });
 
 export class PhashCriterion extends Criterion<IPhashDistanceValue> {
@@ -53,11 +54,17 @@ export class PhashCriterion extends Criterion<IPhashDistanceValue> {
 export const DuplicatedCriterionOption = new BooleanCriterionOption(
   "duplicated_phash",
   "duplicated",
-  "duplicated"
+  () => new DuplicatedCriterion()
 );
 
-export class DuplicatedCriterion extends PhashDuplicateCriterion {
+export class DuplicatedCriterion extends StringCriterion {
   constructor() {
     super(DuplicatedCriterionOption);
+  }
+
+  protected toCriterionInput(): PHashDuplicationCriterionInput {
+    return {
+      duplicated: this.value === "true",
+    };
   }
 }

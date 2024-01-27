@@ -5,5 +5,8 @@ query SystemStatus {
     appSchema
     status
     configPath
+    os
+    workingDir
+    homeDir
   }
 }

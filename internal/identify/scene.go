@@ -7,36 +7,31 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/sliceutil"
-	"github.com/stashapp/stash/pkg/sliceutil/intslice"
-	"github.com/stashapp/stash/pkg/tag"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
-type SceneReaderUpdater interface {
+type SceneCoverGetter interface {
 	GetCover(ctx context.Context, sceneID int) ([]byte, error)
-	scene.Updater
+}
+
+type SceneReaderUpdater interface {
+	SceneCoverGetter
+	models.SceneUpdater
 	models.PerformerIDLoader
 	models.TagIDLoader
 	models.StashIDLoader
 	models.URLLoader
 }
 
-type TagCreatorFinder interface {
-	Create(ctx context.Context, newTag *models.Tag) error
-	tag.Finder
-}
-
 type sceneRelationships struct {
-	sceneReader              SceneReaderUpdater
+	sceneReader              SceneCoverGetter
 	studioReaderWriter       models.StudioReaderWriter
 	performerCreator         PerformerCreator
-	tagCreatorFinder         TagCreatorFinder
+	tagCreator               models.TagCreator
 	scene                    *models.Scene
 	result                   *scrapeResult
 	fieldOptions             map[string]*FieldOptions
@@ -115,7 +110,7 @@ func (g sceneRelationships) performers(ctx context.Context, ignoreMale bool) ([]
 		}
 
 		if performerID != nil {
-			performerIDs = intslice.IntAppendUnique(performerIDs, *performerID)
+			performerIDs = sliceutil.AppendUnique(performerIDs, *performerID)
 		}
 	}
 
@@ -165,15 +160,12 @@ func (g sceneRelationships) tags(ctx context.Context) ([]int, error) {
 				return nil, fmt.Errorf("error converting tag ID %s: %w", *t.StoredID, err)
 			}
 
-			tagIDs = intslice.IntAppendUnique(tagIDs, int(tagID))
+			tagIDs = sliceutil.AppendUnique(tagIDs, int(tagID))
 		} else if createMissing {
-			now := time.Now()
-			newTag := models.Tag{
-				Name:      t.Name,
-				CreatedAt: now,
-				UpdatedAt: now,
-			}
-			err := g.tagCreatorFinder.Create(ctx, &newTag)
+			newTag := models.NewTag()
+			newTag.Name = t.Name
+
+			err := g.tagCreator.Create(ctx, &newTag)
 			if err != nil {
 				return nil, fmt.Errorf("error creating tag: %w", err)
 			}

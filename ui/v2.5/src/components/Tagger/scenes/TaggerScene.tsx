@@ -7,7 +7,7 @@ import { FormattedMessage } from "react-intl";
 import { sortPerformers } from "src/core/performers";
 import { Icon } from "src/components/Shared/Icon";
 import { OperationButton } from "src/components/Shared/OperationButton";
-import { TagLink } from "src/components/Shared/TagLink";
+import { PerformerLink, TagLink } from "src/components/Shared/TagLink";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
 import { parsePath, prepareQueryString } from "src/components/Tagger/utils";
 import { ScenePreview } from "src/components/Scenes/SceneCard";
@@ -49,12 +49,13 @@ const TaggerSceneDetails: React.FC<ITaggerSceneDetails> = ({ scene }) => {
                     className="performer-tag col m-auto zoom-2"
                   >
                     <img
+                      loading="lazy"
                       className="image-thumbnail"
                       alt={performer.name ?? ""}
                       src={performer.image_path ?? ""}
                     />
                   </Link>
-                  <TagLink
+                  <PerformerLink
                     key={performer.id}
                     performer={performer}
                     className="d-block"

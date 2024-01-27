@@ -9,6 +9,7 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   generatedPath
   metadataPath
   scrapersPath
+  pluginsPath
   cachePath
   blobsPath
   blobsStorage
@@ -42,9 +43,6 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   excludes
   imageExcludes
   customPerformerImageLocation
-  scraperUserAgent
-  scraperCertCheck
-  scraperCDPPath
   stashBoxes {
     name
     endpoint
@@ -56,6 +54,17 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   liveTranscodeInputArgs
   liveTranscodeOutputArgs
   drawFunscriptHeatmapRange
+
+  scraperPackageSources {
+    name
+    url
+    local_path
+  }
+  pluginPackageSources {
+    name
+    url
+    local_path
+  }
 }
 
 fragment ConfigInterfaceData on ConfigInterfaceResult {
@@ -139,8 +148,6 @@ fragment ScraperSourceData on ScraperSource {
 
 fragment ConfigDefaultSettingsData on ConfigDefaultSettingsResult {
   scan {
-    useFileMetadata
-    stripFileExtension
     scanGenerateCovers
     scanGeneratePreviews
     scanGenerateImagePreviews
@@ -212,4 +219,5 @@ fragment ConfigData on ConfigResult {
     ...ConfigDefaultSettingsData
   }
   ui
+  plugins
 }

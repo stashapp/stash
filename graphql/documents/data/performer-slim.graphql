@@ -34,3 +34,11 @@ fragment SlimPerformerData on Performer {
   death_date
   weight
 }
+
+fragment SelectPerformerData on Performer {
+  id
+  name
+  disambiguation
+  alias_list
+  image_path
+}

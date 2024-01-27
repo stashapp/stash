@@ -129,16 +129,11 @@ const secondsAsTime = (seconds: number = 0): DurationCount[] => {
   return result;
 };
 
-const timeAsString = (time: DurationCount[]): string => {
-  return time.join(" ");
-};
-
 const secondsAsTimeString = (
   seconds: number = 0,
   maxUnitCount: number = 2
 ): string => {
-  const timeArray = secondsAsTime(seconds).slice(0, maxUnitCount);
-  return timeAsString(timeArray);
+  return secondsAsTime(seconds).slice(0, maxUnitCount).join(" ");
 };
 
 const formatFileSizeUnit = (u: Unit) => {
@@ -156,18 +151,68 @@ const fileSizeFractionalDigits = (unit: Unit) => {
   return 0;
 };
 
+// Converts seconds to a hh:mm:ss or mm:ss timestamp.
+// A negative input will result in a -hh:mm:ss or -mm:ss output.
+// Fractional inputs are truncated.
 const secondsToTimestamp = (seconds: number) => {
-  let ret = new Date(seconds * 1000).toISOString().substr(11, 8);
+  let neg = false;
+  if (seconds < 0) {
+    neg = true;
+    seconds = -seconds;
+  }
+  seconds = Math.trunc(seconds);
 
-  if (ret.startsWith("00")) {
-    // strip hours if under one hour
-    ret = ret.substr(3);
+  const s = seconds % 60;
+  seconds = (seconds - s) / 60;
+
+  const m = seconds % 60;
+  seconds = (seconds - m) / 60;
+
+  const h = seconds;
+
+  let ret = String(s).padStart(2, "0");
+  if (h === 0) {
+    ret = String(m) + ":" + ret;
+  } else {
+    ret = String(m).padStart(2, "0") + ":" + ret;
+    ret = String(h) + ":" + ret;
   }
-  if (ret.startsWith("0")) {
-    // for duration under a minute, leave one leading zero
-    ret = ret.substr(1);
+  if (neg) {
+    return "-" + ret;
+  } else {
+    return ret;
   }
-  return ret;
+};
+
+const timestampToSeconds = (v: string | null | undefined) => {
+  if (!v) {
+    return null;
+  }
+
+  const splits = v.split(":");
+
+  if (splits.length > 3) {
+    return null;
+  }
+
+  let seconds = 0;
+  let factor = 1;
+  while (splits.length > 0) {
+    const thisSplit = splits.pop();
+    if (thisSplit === undefined) {
+      return null;
+    }
+
+    const thisInt = parseInt(thisSplit, 10);
+    if (Number.isNaN(thisInt)) {
+      return null;
+    }
+
+    seconds += factor * thisInt;
+    factor *= 60;
+  }
+
+  return seconds;
 };
 
 const fileNameFromPath = (path: string) => {
@@ -387,11 +432,6 @@ const formatDateTime = (intl: IntlShape, dateTime?: string, utc = false) =>
     timeZone: utc ? "utc" : undefined,
   })}`;
 
-const capitalize = (val: string) =>
-  val
-    .replace(/^[-_]*(.)/, (_, c) => c.toUpperCase())
-    .replace(/[-_]+(.)/g, (_, c) => ` ${c.toUpperCase()}`);
-
 type CountUnit = "" | "K" | "M" | "B";
 const CountUnits: CountUnit[] = ["", "K", "M", "B"];
 
@@ -415,11 +455,25 @@ const abbreviateCounter = (counter: number = 0) => {
   };
 };
 
+/*
+ * Trims quotes if the text has leading/trailing quotes
+ */
+const stripQuotes = (text: string) => {
+  if (text.startsWith('"') && text.endsWith('"')) return text.slice(1, -1);
+  return text;
+};
+
+/*
+ * Wraps string in quotes
+ */
+const addQuotes = (text: string) => `"${text}"`;
+
 const TextUtils = {
   fileSize,
   formatFileSizeUnit,
   fileSizeFractionalDigits,
   secondsToTimestamp,
+  timestampToSeconds,
   fileNameFromPath,
   stringToDate,
   stringToFuzzyDate,
@@ -435,9 +489,10 @@ const TextUtils = {
   instagramURL,
   formatDate,
   formatDateTime,
-  capitalize,
   secondsAsTimeString,
   abbreviateCounter,
+  stripQuotes,
+  addQuotes,
 };
 
 export default TextUtils;

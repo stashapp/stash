@@ -5,41 +5,41 @@ import (
 	"fmt"
 	"path/filepath"
 	"strings"
-	"time"
 
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
 )
 
-type FinderCreatorUpdater interface {
-	Finder
-	Create(ctx context.Context, newGallery *models.Gallery, fileIDs []file.ID) error
+type ScanCreatorUpdater interface {
+	FindByFileID(ctx context.Context, fileID models.FileID) ([]*models.Gallery, error)
+	FindByFingerprints(ctx context.Context, fp []models.Fingerprint) ([]*models.Gallery, error)
+	GetFiles(ctx context.Context, relatedID int) ([]models.File, error)
+
+	Create(ctx context.Context, newGallery *models.Gallery, fileIDs []models.FileID) error
 	UpdatePartial(ctx context.Context, id int, updatedGallery models.GalleryPartial) (*models.Gallery, error)
-	AddFileID(ctx context.Context, id int, fileID file.ID) error
-	models.FileLoader
+	AddFileID(ctx context.Context, id int, fileID models.FileID) error
 }
 
-type SceneFinderUpdater interface {
+type ScanSceneFinderUpdater interface {
 	FindByPath(ctx context.Context, p string) ([]*models.Scene, error)
 	Update(ctx context.Context, updatedScene *models.Scene) error
 	AddGalleryIDs(ctx context.Context, sceneID int, galleryIDs []int) error
 }
 
-type ImageFinderUpdater interface {
-	FindByZipFileID(ctx context.Context, zipFileID file.ID) ([]*models.Image, error)
+type ScanImageFinderUpdater interface {
+	FindByZipFileID(ctx context.Context, zipFileID models.FileID) ([]*models.Image, error)
 	UpdatePartial(ctx context.Context, id int, partial models.ImagePartial) (*models.Image, error)
 }
 
 type ScanHandler struct {
-	CreatorUpdater     FullCreatorUpdater
-	SceneFinderUpdater SceneFinderUpdater
-	ImageFinderUpdater ImageFinderUpdater
+	CreatorUpdater     ScanCreatorUpdater
+	SceneFinderUpdater ScanSceneFinderUpdater
+	ImageFinderUpdater ScanImageFinderUpdater
 	PluginCache        *plugin.Cache
 }
 
-func (h *ScanHandler) Handle(ctx context.Context, f file.File, oldFile file.File) error {
+func (h *ScanHandler) Handle(ctx context.Context, f models.File, oldFile models.File) error {
 	baseFile := f.Base()
 
 	// try to match the file to a gallery
@@ -75,15 +75,11 @@ func (h *ScanHandler) Handle(ctx context.Context, f file.File, oldFile file.File
 		}
 
 		// create a new gallery
-		now := time.Now()
-		newGallery := &models.Gallery{
-			CreatedAt: now,
-			UpdatedAt: now,
-		}
+		newGallery := models.NewGallery()
 
 		logger.Infof("%s doesn't exist. Creating new gallery...", f.Base().Path)
 
-		if err := h.CreatorUpdater.Create(ctx, newGallery, []file.ID{baseFile.ID}); err != nil {
+		if err := h.CreatorUpdater.Create(ctx, &newGallery, []models.FileID{baseFile.ID}); err != nil {
 			return fmt.Errorf("creating new gallery: %w", err)
 		}
 
@@ -91,18 +87,21 @@ func (h *ScanHandler) Handle(ctx context.Context, f file.File, oldFile file.File
 
 		// associate all the images in the zip file with the gallery
 		for _, i := range images {
-			if _, err := h.ImageFinderUpdater.UpdatePartial(ctx, i.ID, models.ImagePartial{
+			imagePartial := models.ImagePartial{
 				GalleryIDs: &models.UpdateIDs{
 					IDs:  []int{newGallery.ID},
 					Mode: models.RelationshipUpdateModeAdd,
 				},
-				UpdatedAt: models.NewOptionalTime(now),
-			}); err != nil {
+				// set UpdatedAt directly instead of using NewImagePartial, to ensure
+				// that the images have the same UpdatedAt time as the gallery
+				UpdatedAt: models.NewOptionalTime(newGallery.UpdatedAt),
+			}
+			if _, err := h.ImageFinderUpdater.UpdatePartial(ctx, i.ID, imagePartial); err != nil {
 				return fmt.Errorf("adding image %s to gallery: %w", i.Path, err)
 			}
 		}
 
-		existing = []*models.Gallery{newGallery}
+		existing = []*models.Gallery{&newGallery}
 	}
 
 	if err := h.associateScene(ctx, existing, f); err != nil {
@@ -112,7 +111,7 @@ func (h *ScanHandler) Handle(ctx context.Context, f file.File, oldFile file.File
 	return nil
 }
 
-func (h *ScanHandler) associateExisting(ctx context.Context, existing []*models.Gallery, f file.File, updateExisting bool) error {
+func (h *ScanHandler) associateExisting(ctx context.Context, existing []*models.Gallery, f models.File, updateExisting bool) error {
 	for _, i := range existing {
 		if err := i.LoadFiles(ctx, h.CreatorUpdater); err != nil {
 			return err
@@ -146,7 +145,7 @@ func (h *ScanHandler) associateExisting(ctx context.Context, existing []*models.
 	return nil
 }
 
-func (h *ScanHandler) associateScene(ctx context.Context, existing []*models.Gallery, f file.File) error {
+func (h *ScanHandler) associateScene(ctx context.Context, existing []*models.Gallery, f models.File) error {
 	galleryIDs := make([]int, len(existing))
 	for i, g := range existing {
 		galleryIDs[i] = g.ID

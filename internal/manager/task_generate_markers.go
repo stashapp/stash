@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
@@ -13,7 +12,7 @@ import (
 )
 
 type GenerateMarkersTask struct {
-	TxnManager          Repository
+	repository          models.Repository
 	Scene               *models.Scene
 	Marker              *models.SceneMarker
 	Overwrite           bool
@@ -42,9 +41,10 @@ func (t *GenerateMarkersTask) Start(ctx context.Context) {
 
 	if t.Marker != nil {
 		var scene *models.Scene
-		if err := t.TxnManager.WithReadTxn(ctx, func(ctx context.Context) error {
+		r := t.repository
+		if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
 			var err error
-			scene, err = t.TxnManager.Scene.Find(ctx, t.Marker.SceneID)
+			scene, err = r.Scene.Find(ctx, t.Marker.SceneID)
 			if err != nil {
 				return err
 			}
@@ -52,7 +52,7 @@ func (t *GenerateMarkersTask) Start(ctx context.Context) {
 				return fmt.Errorf("scene with id %d not found", t.Marker.SceneID)
 			}
 
-			return scene.LoadPrimaryFile(ctx, t.TxnManager.File)
+			return scene.LoadPrimaryFile(ctx, r.File)
 		}); err != nil {
 			logger.Errorf("error finding scene for marker generation: %v", err)
 			return
@@ -71,9 +71,10 @@ func (t *GenerateMarkersTask) Start(ctx context.Context) {
 
 func (t *GenerateMarkersTask) generateSceneMarkers(ctx context.Context) {
 	var sceneMarkers []*models.SceneMarker
-	if err := t.TxnManager.WithReadTxn(ctx, func(ctx context.Context) error {
+	r := t.repository
+	if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
 		var err error
-		sceneMarkers, err = t.TxnManager.SceneMarker.FindBySceneID(ctx, t.Scene.ID)
+		sceneMarkers, err = r.SceneMarker.FindBySceneID(ctx, t.Scene.ID)
 		return err
 	}); err != nil {
 		logger.Errorf("error getting scene markers: %s", err.Error())
@@ -102,8 +103,8 @@ func (t *GenerateMarkersTask) generateSceneMarkers(ctx context.Context) {
 	}
 }
 
-func (t *GenerateMarkersTask) generateMarker(videoFile *file.VideoFile, scene *models.Scene, sceneMarker *models.SceneMarker) {
-	sceneHash := t.Scene.GetHash(t.fileNamingAlgorithm)
+func (t *GenerateMarkersTask) generateMarker(videoFile *models.VideoFile, scene *models.Scene, sceneMarker *models.SceneMarker) {
+	sceneHash := scene.GetHash(t.fileNamingAlgorithm)
 	seconds := int(sceneMarker.Seconds)
 
 	g := t.generator
@@ -130,7 +131,7 @@ func (t *GenerateMarkersTask) generateMarker(videoFile *file.VideoFile, scene *m
 
 func (t *GenerateMarkersTask) markersNeeded(ctx context.Context) int {
 	markers := 0
-	sceneMarkers, err := t.TxnManager.SceneMarker.FindBySceneID(ctx, t.Scene.ID)
+	sceneMarkers, err := t.repository.SceneMarker.FindBySceneID(ctx, t.Scene.ID)
 	if err != nil {
 		logger.Errorf("error finding scene markers: %s", err.Error())
 		return 0

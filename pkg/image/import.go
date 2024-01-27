@@ -5,13 +5,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
-	"github.com/stashapp/stash/pkg/performer"
-	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
-	"github.com/stashapp/stash/pkg/studio"
-	"github.com/stashapp/stash/pkg/tag"
+	"github.com/stashapp/stash/pkg/sliceutil"
 )
 
 type GalleryFinder interface {
@@ -19,18 +15,18 @@ type GalleryFinder interface {
 	FindUserGalleryByTitle(ctx context.Context, title string) ([]*models.Gallery, error)
 }
 
-type FullCreatorUpdater interface {
-	FinderCreatorUpdater
-	Update(ctx context.Context, updatedImage *models.Image) error
+type ImporterReaderWriter interface {
+	models.ImageCreatorUpdater
+	FindByFileID(ctx context.Context, fileID models.FileID) ([]*models.Image, error)
 }
 
 type Importer struct {
-	ReaderWriter        FullCreatorUpdater
-	FileFinder          file.Getter
-	StudioWriter        studio.NameFinderCreator
+	ReaderWriter        ImporterReaderWriter
+	FileFinder          models.FileFinder
+	StudioWriter        models.StudioFinderCreator
 	GalleryFinder       GalleryFinder
-	PerformerWriter     performer.NameFinderCreator
-	TagWriter           tag.NameFinderCreator
+	PerformerWriter     models.PerformerFinderCreator
+	TagWriter           models.TagFinderCreator
 	Input               jsonschema.Image
 	MissingRefBehaviour models.ImportMissingRefEnum
 
@@ -66,8 +62,6 @@ func (i *Importer) PreImport(ctx context.Context) error {
 
 func (i *Importer) imageJSONToImage(imageJSON jsonschema.Image) models.Image {
 	newImage := models.Image{
-		// Checksum: imageJSON.Checksum,
-		// Path:     i.Path,
 		PerformerIDs: models.NewRelatedIDs([]int{}),
 		TagIDs:       models.NewRelatedIDs([]int{}),
 		GalleryIDs:   models.NewRelatedIDs([]int{}),
@@ -82,12 +76,24 @@ func (i *Importer) imageJSONToImage(imageJSON jsonschema.Image) models.Image {
 	if imageJSON.Title != "" {
 		newImage.Title = imageJSON.Title
 	}
+	if imageJSON.Code != "" {
+		newImage.Code = imageJSON.Code
+	}
+	if imageJSON.Details != "" {
+		newImage.Details = imageJSON.Details
+	}
+	if imageJSON.Photographer != "" {
+		newImage.Photographer = imageJSON.Photographer
+	}
 	if imageJSON.Rating != 0 {
 		newImage.Rating = &imageJSON.Rating
 	}
-	if imageJSON.URL != "" {
-		newImage.URL = imageJSON.URL
+	if len(imageJSON.URLs) > 0 {
+		newImage.URLs = models.NewRelatedStrings(imageJSON.URLs)
+	} else if imageJSON.URL != "" {
+		newImage.URLs = models.NewRelatedStrings([]string{imageJSON.URL})
 	}
+
 	if imageJSON.Date != "" {
 		d, err := models.ParseDate(imageJSON.Date)
 		if err == nil {
@@ -99,7 +105,7 @@ func (i *Importer) imageJSONToImage(imageJSON jsonschema.Image) models.Image {
 }
 
 func (i *Importer) populateFiles(ctx context.Context) error {
-	files := make([]file.File, 0)
+	files := make([]models.File, 0)
 
 	for _, ref := range i.Input.Files {
 		path := ref
@@ -152,11 +158,10 @@ func (i *Importer) populateStudio(ctx context.Context) error {
 }
 
 func (i *Importer) createStudio(ctx context.Context, name string) (int, error) {
-	newStudio := &models.Studio{
-		Name: name,
-	}
+	newStudio := models.NewStudio()
+	newStudio.Name = name
 
-	err := i.StudioWriter.Create(ctx, newStudio)
+	err := i.StudioWriter.Create(ctx, &newStudio)
 	if err != nil {
 		return 0, err
 	}
@@ -233,8 +238,8 @@ func (i *Importer) populatePerformers(ctx context.Context) error {
 			pluckedNames = append(pluckedNames, performer.Name)
 		}
 
-		missingPerformers := stringslice.StrFilter(names, func(name string) bool {
-			return !stringslice.StrInclude(pluckedNames, name)
+		missingPerformers := sliceutil.Filter(names, func(name string) bool {
+			return !sliceutil.Contains(pluckedNames, name)
 		})
 
 		if len(missingPerformers) > 0 {
@@ -265,7 +270,8 @@ func (i *Importer) populatePerformers(ctx context.Context) error {
 func (i *Importer) createPerformers(ctx context.Context, names []string) ([]*models.Performer, error) {
 	var ret []*models.Performer
 	for _, name := range names {
-		newPerformer := *models.NewPerformer(name)
+		newPerformer := models.NewPerformer()
+		newPerformer.Name = name
 
 		err := i.PerformerWriter.Create(ctx, &newPerformer)
 		if err != nil {
@@ -330,15 +336,12 @@ func (i *Importer) FindExistingID(ctx context.Context) (*int, error) {
 }
 
 func (i *Importer) Create(ctx context.Context) (*int, error) {
-	var fileIDs []file.ID
+	var fileIDs []models.FileID
 	for _, f := range i.image.Files.List() {
 		fileIDs = append(fileIDs, f.Base().ID)
 	}
 
-	err := i.ReaderWriter.Create(ctx, &models.ImageCreateInput{
-		Image:   &i.image,
-		FileIDs: fileIDs,
-	})
+	err := i.ReaderWriter.Create(ctx, &i.image, fileIDs)
 	if err != nil {
 		return nil, fmt.Errorf("error creating image: %v", err)
 	}
@@ -360,7 +363,7 @@ func (i *Importer) Update(ctx context.Context, id int) error {
 	return nil
 }
 
-func importTags(ctx context.Context, tagWriter tag.NameFinderCreator, names []string, missingRefBehaviour models.ImportMissingRefEnum) ([]*models.Tag, error) {
+func importTags(ctx context.Context, tagWriter models.TagFinderCreator, names []string, missingRefBehaviour models.ImportMissingRefEnum) ([]*models.Tag, error) {
 	tags, err := tagWriter.FindByNames(ctx, names, false)
 	if err != nil {
 		return nil, err
@@ -371,8 +374,8 @@ func importTags(ctx context.Context, tagWriter tag.NameFinderCreator, names []st
 		pluckedNames = append(pluckedNames, tag.Name)
 	}
 
-	missingTags := stringslice.StrFilter(names, func(name string) bool {
-		return !stringslice.StrInclude(pluckedNames, name)
+	missingTags := sliceutil.Filter(names, func(name string) bool {
+		return !sliceutil.Contains(pluckedNames, name)
 	})
 
 	if len(missingTags) > 0 {
@@ -395,17 +398,18 @@ func importTags(ctx context.Context, tagWriter tag.NameFinderCreator, names []st
 	return tags, nil
 }
 
-func createTags(ctx context.Context, tagWriter tag.NameFinderCreator, names []string) ([]*models.Tag, error) {
+func createTags(ctx context.Context, tagWriter models.TagCreator, names []string) ([]*models.Tag, error) {
 	var ret []*models.Tag
 	for _, name := range names {
-		newTag := models.NewTag(name)
+		newTag := models.NewTag()
+		newTag.Name = name
 
-		err := tagWriter.Create(ctx, newTag)
+		err := tagWriter.Create(ctx, &newTag)
 		if err != nil {
 			return nil, err
 		}
 
-		ret = append(ret, newTag)
+		ret = append(ret, &newTag)
 	}
 
 	return ret, nil

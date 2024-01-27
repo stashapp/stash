@@ -75,16 +75,12 @@ export const ListFilter: React.FC<IListFilterProps> = ({
     [filter, onFilterUpdate]
   );
 
-  const searchCallback = useDebounce(
-    (value: string) => {
-      const newFilter = cloneDeep(filter);
-      newFilter.searchTerm = value;
-      newFilter.currentPage = 1;
-      onFilterUpdate(newFilter);
-    },
-    [filter, onFilterUpdate],
-    500
-  );
+  const searchCallback = useDebounce((value: string) => {
+    const newFilter = cloneDeep(filter);
+    newFilter.searchTerm = value;
+    newFilter.currentPage = 1;
+    onFilterUpdate(newFilter);
+  }, 500);
 
   const intl = useIntl();
 
@@ -111,7 +107,7 @@ export const ListFilter: React.FC<IListFilterProps> = ({
   // clear search input when filter is cleared
   useEffect(() => {
     if (!filter.searchTerm) {
-      queryRef.current.value = "";
+      if (queryRef.current) queryRef.current.value = "";
       setQueryClearShowing(false);
     }
   }, [filter.searchTerm, queryRef]);
@@ -143,7 +139,7 @@ export const ListFilter: React.FC<IListFilterProps> = ({
   }
 
   function onClearQuery() {
-    queryRef.current.value = "";
+    if (queryRef.current) queryRef.current.value = "";
     searchQueryUpdated("");
     setQueryFocus();
     setQueryClearShowing(false);

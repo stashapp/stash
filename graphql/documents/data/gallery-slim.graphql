@@ -1,9 +1,11 @@
 fragment SlimGalleryData on Gallery {
   id
   title
+  code
   date
-  url
+  urls
   details
+  photographer
   rating100
   organized
   files {

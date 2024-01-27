@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/logger"
@@ -34,7 +33,7 @@ func (t *GenerateClipPreviewTask) Start(ctx context.Context) {
 		Preset:     GetInstance().Config.GetPreviewPreset().String(),
 	}
 
-	encoder := image.NewThumbnailEncoder(GetInstance().FFMPEG, GetInstance().FFProbe, clipPreviewOptions)
+	encoder := image.NewThumbnailEncoder(GetInstance().FFMpeg, GetInstance().FFProbe, clipPreviewOptions)
 	err := encoder.GetPreview(filePath, prevPath, models.DefaultGthumbWidth)
 	if err != nil {
 		logger.Errorf("getting preview for image %s: %w", filePath, err)
@@ -44,7 +43,7 @@ func (t *GenerateClipPreviewTask) Start(ctx context.Context) {
 }
 
 func (t *GenerateClipPreviewTask) required() bool {
-	_, ok := t.Image.Files.Primary().(*file.VideoFile)
+	_, ok := t.Image.Files.Primary().(*models.VideoFile)
 	if !ok {
 		return false
 	}

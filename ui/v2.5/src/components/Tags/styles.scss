@@ -72,3 +72,34 @@
     padding: 0;
   }
 }
+
+.tag-item {
+  .icon-wrapper {
+    color: #202b33;
+    opacity: 0.5;
+    padding-left: 6px;
+  }
+}
+
+.tag-item {
+  .tag-icon {
+    color: #202b33;
+    margin: 0;
+    opacity: 0.5;
+    padding-left: 3px;
+    transform: scale(0.7);
+  }
+}
+
+.tag-select {
+  .alias {
+    font-weight: bold;
+    white-space: pre;
+  }
+}
+
+.tag-select-image {
+  height: 25px;
+  margin-right: 0.5em;
+  width: 25px;
+}

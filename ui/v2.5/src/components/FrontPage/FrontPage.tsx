@@ -10,6 +10,7 @@ import { ConfigurationContext } from "src/hooks/Config";
 import {
   FrontPageContent,
   generateDefaultFrontPageContent,
+  getFrontPageContent,
   IUIConfig,
 } from "src/core/config";
 import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
@@ -65,12 +66,12 @@ const FrontPage: React.FC = () => {
     onUpdateConfig(defaultContent);
   }
 
-  const { frontPageContent } = ui;
+  const frontPageContent = getFrontPageContent(ui);
 
   return (
     <div className="recommendations-container">
       <div>
-        {frontPageContent?.map((content: FrontPageContent, i) => (
+        {frontPageContent?.map((content, i) => (
           <Control key={i} content={content} />
         ))}
       </div>

@@ -113,3 +113,25 @@ func (r *tagResolver) ImagePath(ctx context.Context, obj *models.Tag) (*string, 
 	imagePath := urlbuilders.NewTagURLBuilder(baseURL, obj).GetTagImageURL(hasImage)
 	return &imagePath, nil
 }
+
+func (r *tagResolver) ParentCount(ctx context.Context, obj *models.Tag) (ret int, err error) {
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+		ret, err = r.repository.Tag.CountByParentTagID(ctx, obj.ID)
+		return err
+	}); err != nil {
+		return ret, err
+	}
+
+	return ret, nil
+}
+
+func (r *tagResolver) ChildCount(ctx context.Context, obj *models.Tag) (ret int, err error) {
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+		ret, err = r.repository.Tag.CountByChildTagID(ctx, obj.ID)
+		return err
+	}); err != nil {
+		return ret, err
+	}
+
+	return ret, nil
+}

@@ -14,6 +14,7 @@ resolver:
 struct_tag: gqlgen
 
 autobind:
+  - github.com/stashapp/stash/internal/api
   - github.com/stashapp/stash/pkg/models
   - github.com/stashapp/stash/pkg/plugin
   - github.com/stashapp/stash/pkg/scraper
@@ -23,16 +24,31 @@ autobind:
 
 models:
   # Scalars
+  ID:
+    model:
+      - github.com/99designs/gqlgen/graphql.ID
+      - github.com/99designs/gqlgen/graphql.IntID
+      - github.com/stashapp/stash/pkg/models.FileID
+      - github.com/stashapp/stash/pkg/models.FolderID
   Int64:
     model: github.com/99designs/gqlgen/graphql.Int64
   Timestamp:
     model: github.com/stashapp/stash/internal/api.Timestamp
+  BoolMap:
+    model: github.com/stashapp/stash/internal/api.BoolMap
   # define to force resolvers
   Image:
     model: github.com/stashapp/stash/pkg/models.Image
     fields:
       title:
         resolver: true
+  VideoFile:
+    fields:
+      # override float fields - #1572
+      duration:
+        fieldName: DurationFinite
+      frame_rate:
+        fieldName: FrameRateFinite
   # autobind on config causes generation issues
   BlobsStorageType:
     model: github.com/stashapp/stash/internal/manager/config.BlobsStorageType
@@ -118,4 +134,11 @@ models:
     model: github.com/stashapp/stash/internal/identify.MetadataOptions
   ScraperSourceInput:
     model: github.com/stashapp/stash/pkg/scraper.Source
+  SavedFindFilterType:
+    model: github.com/stashapp/stash/pkg/models.FindFilterType
+  # force resolvers
+  ConfigResult:
+    fields:
+      plugins:
+        resolver: true
   

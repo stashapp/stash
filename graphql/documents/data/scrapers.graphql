@@ -110,6 +110,12 @@ fragment ScrapedSceneMovieData on ScrapedMovie {
   director
   url
   synopsis
+  front_image
+  back_image
+
+  studio {
+    ...ScrapedMovieStudioData
+  }
 }
 
 fragment ScrapedSceneStudioData on ScrapedStudio {
@@ -178,8 +184,10 @@ fragment ScrapedSceneData on ScrapedScene {
 
 fragment ScrapedGalleryData on ScrapedGallery {
   title
+  code
   details
-  url
+  urls
+  photographer
   date
 
   studio {

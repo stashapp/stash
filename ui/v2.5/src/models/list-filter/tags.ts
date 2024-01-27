@@ -53,17 +53,9 @@ const criterionOptions = [
   createMandatoryNumberCriterionOption("performer_count"),
   createMandatoryNumberCriterionOption("marker_count"),
   ParentTagsCriterionOption,
-  new MandatoryNumberCriterionOption(
-    "parent_tag_count",
-    "parent_tag_count",
-    "parent_count"
-  ),
+  new MandatoryNumberCriterionOption("parent_tag_count", "parent_count"),
   ChildTagsCriterionOption,
-  new MandatoryNumberCriterionOption(
-    "sub_tag_count",
-    "child_tag_count",
-    "child_count"
-  ),
+  new MandatoryNumberCriterionOption("sub_tag_count", "child_count"),
   createMandatoryTimestampCriterionOption("created_at"),
   createMandatoryTimestampCriterionOption("updated_at"),
 ];

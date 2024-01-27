@@ -33,7 +33,8 @@ export type FrontPageContent = ISavedFilterRow | ICustomFilter;
 export const defaultMaxOptionsShown = 200;
 
 export interface IUIConfig {
-  frontPageContent?: FrontPageContent[];
+  // unknown to prevent direct access - use getFrontPageContent
+  frontPageContent?: unknown;
 
   showChildTagContent?: boolean;
   showChildStudioContent?: boolean;
@@ -55,8 +56,13 @@ export interface IUIConfig {
   compactExpandedDetails?: boolean;
   // if true show all content details by default
   showAllDetails?: boolean;
+
   // if true the chromecast option will enabled
   enableChromecast?: boolean;
+
+  // if true the fullscreen mobile media auto-rotate option will be disabled
+  disableMobileMediaAutoRotateEnabled?: boolean;
+
   // if true continue scene will always play from the beginning
   alwaysStartFromBeginning?: boolean;
   // if true enable activity tracking
@@ -64,6 +70,8 @@ export interface IUIConfig {
   // the minimum percentage of scene duration which a scene must be played
   // before the play count is incremented
   minimumPlayPercent?: number;
+
+  showAbLoopControls?: boolean;
 
   // maximum number of items to shown in the dropdown list - defaults to 200
   // upper limit of 1000
@@ -75,6 +83,50 @@ export interface IUIConfig {
 
   vrTag?: string;
   pinnedFilters?: PinnedFilters;
+
+  advancedMode?: boolean;
+}
+
+interface ISavedFilterRowBroken extends ISavedFilterRow {
+  savedfilterid?: number;
+}
+
+interface ICustomFilterBroken extends ICustomFilter {
+  sortby?: string;
+}
+
+type FrontPageContentBroken = ISavedFilterRowBroken | ICustomFilterBroken;
+
+// #4128: deal with incorrectly insensitivised keys (sortBy and savedFilterId)
+export function getFrontPageContent(
+  ui: IUIConfig
+): FrontPageContent[] | undefined {
+  return (ui.frontPageContent as FrontPageContentBroken[] | undefined)?.map(
+    (content) => {
+      switch (content.__typename) {
+        case "SavedFilter":
+          if (content.savedfilterid) {
+            return {
+              ...content,
+              savedFilterId: content.savedFilterId ?? content.savedfilterid,
+              savedfilterid: undefined,
+            };
+          }
+          return content;
+        case "CustomFilter":
+          if (content.sortby) {
+            return {
+              ...content,
+              sortBy: content.sortBy ?? content.sortby,
+              sortby: undefined,
+            };
+          }
+          return content;
+        default:
+          return content;
+      }
+    }
+  );
 }
 
 function recentlyReleased(

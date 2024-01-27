@@ -14,9 +14,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sliceutil/intslice"
+	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -165,8 +164,8 @@ func Test_sceneQueryBuilder_Create(t *testing.T) {
 				Organized: true,
 				OCounter:  ocounter,
 				StudioID:  &studioIDs[studioIdxWithScene],
-				Files: models.NewRelatedVideoFiles([]*file.VideoFile{
-					videoFile.(*file.VideoFile),
+				Files: models.NewRelatedVideoFiles([]*models.VideoFile{
+					videoFile.(*models.VideoFile),
 				}),
 				CreatedAt:    createdAt,
 				UpdatedAt:    updatedAt,
@@ -248,7 +247,7 @@ func Test_sceneQueryBuilder_Create(t *testing.T) {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
 
-			var fileIDs []file.ID
+			var fileIDs []models.FileID
 			if tt.newObject.Files.Loaded() {
 				for _, f := range tt.newObject.Files.List() {
 					fileIDs = append(fileIDs, f.ID)
@@ -308,7 +307,7 @@ func clearSceneFileIDs(scene *models.Scene) {
 	}
 }
 
-func makeSceneFileWithID(i int) *file.VideoFile {
+func makeSceneFileWithID(i int) *models.VideoFile {
 	ret := makeSceneFile(i)
 	ret.ID = sceneFileIDs[i]
 	return ret
@@ -626,7 +625,7 @@ func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 			},
 			models.Scene{
 				ID: sceneIDs[sceneIdxWithSpacedName],
-				Files: models.NewRelatedVideoFiles([]*file.VideoFile{
+				Files: models.NewRelatedVideoFiles([]*models.VideoFile{
 					makeSceneFile(sceneIdxWithSpacedName),
 				}),
 				Title:        title,
@@ -678,7 +677,7 @@ func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 			models.Scene{
 				ID:       sceneIDs[sceneIdxWithSpacedName],
 				OCounter: getOCounter(sceneIdxWithSpacedName),
-				Files: models.NewRelatedVideoFiles([]*file.VideoFile{
+				Files: models.NewRelatedVideoFiles([]*models.VideoFile{
 					makeSceneFile(sceneIdxWithSpacedName),
 				}),
 				GalleryIDs:   models.NewRelatedIDs([]int{}),
@@ -1460,7 +1459,7 @@ func makeSceneWithID(index int) *models.Scene {
 	ret := makeScene(index)
 	ret.ID = sceneIDs[index]
 
-	ret.Files = models.NewRelatedVideoFiles([]*file.VideoFile{makeSceneFile(index)})
+	ret.Files = models.NewRelatedVideoFiles([]*models.VideoFile{makeSceneFile(index)})
 
 	return ret
 }
@@ -1891,7 +1890,7 @@ func scenesToIDs(i []*models.Scene) []int {
 func Test_sceneStore_FindByFileID(t *testing.T) {
 	tests := []struct {
 		name    string
-		fileID  file.ID
+		fileID  models.FileID
 		include []int
 		exclude []int
 	}{
@@ -1940,7 +1939,7 @@ func Test_sceneStore_FindByFileID(t *testing.T) {
 func Test_sceneStore_CountByFileID(t *testing.T) {
 	tests := []struct {
 		name   string
-		fileID file.ID
+		fileID models.FileID
 		want   int
 	}{
 		{
@@ -2377,12 +2376,12 @@ func TestSceneQueryPath(t *testing.T) {
 			mustInclude := indexesToIDs(sceneIDs, tt.mustInclude)
 			mustExclude := indexesToIDs(sceneIDs, tt.mustExclude)
 
-			missing := intslice.IntExclude(mustInclude, got.IDs)
+			missing := sliceutil.Exclude(mustInclude, got.IDs)
 			if len(missing) > 0 {
 				t.Errorf("SceneStore.TestSceneQueryPath() missing expected IDs: %v", missing)
 			}
 
-			notExcluded := intslice.IntIntercect(mustExclude, got.IDs)
+			notExcluded := sliceutil.Intersect(mustExclude, got.IDs)
 			if len(notExcluded) > 0 {
 				t.Errorf("SceneStore.TestSceneQueryPath() expected IDs to be excluded: %v", notExcluded)
 			}
@@ -2672,51 +2671,6 @@ func verifyString(t *testing.T, value string, criterion models.StringCriterionIn
 	case models.CriterionModifierNotNull:
 		assert.NotEqual("", value)
 	}
-}
-
-func TestSceneQueryRating(t *testing.T) {
-	const rating = 3
-	ratingCriterion := models.IntCriterionInput{
-		Value:    rating,
-		Modifier: models.CriterionModifierEquals,
-	}
-
-	verifyScenesLegacyRating(t, ratingCriterion)
-
-	ratingCriterion.Modifier = models.CriterionModifierNotEquals
-	verifyScenesLegacyRating(t, ratingCriterion)
-
-	ratingCriterion.Modifier = models.CriterionModifierGreaterThan
-	verifyScenesLegacyRating(t, ratingCriterion)
-
-	ratingCriterion.Modifier = models.CriterionModifierLessThan
-	verifyScenesLegacyRating(t, ratingCriterion)
-
-	ratingCriterion.Modifier = models.CriterionModifierIsNull
-	verifyScenesLegacyRating(t, ratingCriterion)
-
-	ratingCriterion.Modifier = models.CriterionModifierNotNull
-	verifyScenesLegacyRating(t, ratingCriterion)
-}
-
-func verifyScenesLegacyRating(t *testing.T, ratingCriterion models.IntCriterionInput) {
-	withTxn(func(ctx context.Context) error {
-		sqb := db.Scene
-		sceneFilter := models.SceneFilterType{
-			Rating: &ratingCriterion,
-		}
-
-		scenes := queryScene(ctx, t, sqb, &sceneFilter, nil)
-
-		// convert criterion value to the 100 value
-		ratingCriterion.Value = models.Rating5To100(ratingCriterion.Value)
-
-		for _, scene := range scenes {
-			verifyIntPtr(t, scene.Rating, ratingCriterion)
-		}
-
-		return nil
-	})
 }
 
 func TestSceneQueryRating100(t *testing.T) {
@@ -3053,8 +3007,8 @@ func queryScenes(ctx context.Context, t *testing.T, queryBuilder models.SceneRea
 func createScene(ctx context.Context, width int, height int) (*models.Scene, error) {
 	name := fmt.Sprintf("TestSceneQueryResolutionModifiers %d %d", width, height)
 
-	sceneFile := &file.VideoFile{
-		BaseFile: &file.BaseFile{
+	sceneFile := &models.VideoFile{
+		BaseFile: &models.BaseFile{
 			Basename:       name,
 			ParentFolderID: folderIDs[folderIdxWithSceneFiles],
 		},
@@ -3068,7 +3022,7 @@ func createScene(ctx context.Context, width int, height int) (*models.Scene, err
 
 	scene := &models.Scene{}
 
-	if err := db.Scene.Create(ctx, scene, []file.ID{sceneFile.ID}); err != nil {
+	if err := db.Scene.Create(ctx, scene, []models.FileID{sceneFile.ID}); err != nil {
 		return nil, err
 	}
 
@@ -4559,7 +4513,7 @@ func TestSceneStore_AssignFiles(t *testing.T) {
 	tests := []struct {
 		name    string
 		sceneID int
-		fileID  file.ID
+		fileID  models.FileID
 		wantErr bool
 	}{
 		{
@@ -4587,7 +4541,7 @@ func TestSceneStore_AssignFiles(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			withRollbackTxn(func(ctx context.Context) error {
-				if err := qb.AssignFiles(ctx, tt.sceneID, []file.ID{tt.fileID}); (err != nil) != tt.wantErr {
+				if err := qb.AssignFiles(ctx, tt.sceneID, []models.FileID{tt.fileID}); (err != nil) != tt.wantErr {
 					t.Errorf("SceneStore.AssignFiles() error = %v, wantErr %v", err, tt.wantErr)
 				}
 

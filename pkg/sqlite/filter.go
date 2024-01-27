@@ -542,6 +542,9 @@ func getPathSearchClauseMany(pathColumn, basenameColumn, p string, addWildcards,
 func intCriterionHandler(c *models.IntCriterionInput, column string, addJoinFn func(f *filterBuilder)) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if c != nil {
+			if addJoinFn != nil {
+				addJoinFn(f)
+			}
 			clause, args := getIntCriterionWhereClause(column, *c)
 			f.addWhere(clause, args...)
 		}
@@ -551,6 +554,9 @@ func intCriterionHandler(c *models.IntCriterionInput, column string, addJoinFn f
 func floatCriterionHandler(c *models.FloatCriterionInput, column string, addJoinFn func(f *filterBuilder)) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if c != nil {
+			if addJoinFn != nil {
+				addJoinFn(f)
+			}
 			clause, args := getFloatCriterionWhereClause(column, *c)
 			f.addWhere(clause, args...)
 		}
@@ -571,25 +577,6 @@ func boolCriterionHandler(c *bool, column string, addJoinFn func(f *filterBuilde
 			}
 
 			f.addWhere(column + " = " + v)
-		}
-	}
-}
-
-func rating5CriterionHandler(c *models.IntCriterionInput, column string, addJoinFn func(f *filterBuilder)) criterionHandlerFunc {
-	return func(ctx context.Context, f *filterBuilder) {
-		if c != nil {
-			// make a copy so we can adjust it
-			cc := *c
-			if cc.Value != 0 {
-				cc.Value = models.Rating5To100(cc.Value)
-			}
-			if cc.Value2 != nil {
-				val := models.Rating5To100(*cc.Value2)
-				cc.Value2 = &val
-			}
-
-			clause, args := getIntCriterionWhereClause(column, cc)
-			f.addWhere(clause, args...)
 		}
 	}
 }

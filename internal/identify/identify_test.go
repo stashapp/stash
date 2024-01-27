@@ -10,7 +10,7 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/mocks"
 	"github.com/stashapp/stash/pkg/scraper"
-	"github.com/stashapp/stash/pkg/sliceutil/intslice"
+	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -23,7 +23,7 @@ type mockSceneScraper struct {
 }
 
 func (s mockSceneScraper) ScrapeScenes(ctx context.Context, sceneID int) ([]*scraper.ScrapedScene, error) {
-	if intslice.IntInclude(s.errIDs, sceneID) {
+	if sliceutil.Contains(s.errIDs, sceneID) {
 		return nil, errors.New("scrape scene error")
 	}
 	return s.results[sceneID], nil
@@ -108,17 +108,17 @@ func TestSceneIdentifier_Identify(t *testing.T) {
 		},
 	}
 
-	mockSceneReaderWriter := &mocks.SceneReaderWriter{}
-	mockSceneReaderWriter.On("GetURLs", mock.Anything, mock.Anything).Return(nil, nil)
-	mockSceneReaderWriter.On("UpdatePartial", mock.Anything, mock.MatchedBy(func(id int) bool {
+	db := mocks.NewDatabase()
+
+	db.Scene.On("GetURLs", mock.Anything, mock.Anything).Return(nil, nil)
+	db.Scene.On("UpdatePartial", mock.Anything, mock.MatchedBy(func(id int) bool {
 		return id == errUpdateID
 	}), mock.Anything).Return(nil, errors.New("update error"))
-	mockSceneReaderWriter.On("UpdatePartial", mock.Anything, mock.MatchedBy(func(id int) bool {
+	db.Scene.On("UpdatePartial", mock.Anything, mock.MatchedBy(func(id int) bool {
 		return id != errUpdateID
 	}), mock.Anything).Return(nil, nil)
 
-	mockTagFinderCreator := &mocks.TagReaderWriter{}
-	mockTagFinderCreator.On("Find", mock.Anything, skipMultipleTagID).Return(&models.Tag{
+	db.Tag.On("Find", mock.Anything, skipMultipleTagID).Return(&models.Tag{
 		ID:   skipMultipleTagID,
 		Name: skipMultipleTagIDStr,
 	}, nil)
@@ -185,8 +185,11 @@ func TestSceneIdentifier_Identify(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			identifier := SceneIdentifier{
-				SceneReaderUpdater:          mockSceneReaderWriter,
-				TagCreatorFinder:            mockTagFinderCreator,
+				TxnManager:                  db,
+				SceneReaderUpdater:          db.Scene,
+				StudioReaderWriter:          db.Studio,
+				PerformerCreator:            db.Performer,
+				TagFinderCreator:            db.Tag,
 				DefaultOptions:              defaultOptions,
 				Sources:                     sources,
 				SceneUpdatePostHookExecutor: mockHookExecutor{},
@@ -202,7 +205,7 @@ func TestSceneIdentifier_Identify(t *testing.T) {
 				TagIDs:       models.NewRelatedIDs([]int{}),
 				StashIDs:     models.NewRelatedStashIDs([]models.StashID{}),
 			}
-			if err := identifier.Identify(testCtx, &mocks.TxnManager{}, scene); (err != nil) != tt.wantErr {
+			if err := identifier.Identify(testCtx, scene); (err != nil) != tt.wantErr {
 				t.Errorf("SceneIdentifier.Identify() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -210,9 +213,8 @@ func TestSceneIdentifier_Identify(t *testing.T) {
 }
 
 func TestSceneIdentifier_modifyScene(t *testing.T) {
-	repo := models.Repository{
-		TxnManager: &mocks.TxnManager{},
-	}
+	db := mocks.NewDatabase()
+
 	boolFalse := false
 	defaultOptions := &MetadataOptions{
 		SetOrganized:             &boolFalse,
@@ -221,7 +223,12 @@ func TestSceneIdentifier_modifyScene(t *testing.T) {
 		SkipSingleNamePerformers: &boolFalse,
 	}
 	tr := &SceneIdentifier{
-		DefaultOptions: defaultOptions,
+		TxnManager:         db,
+		SceneReaderUpdater: db.Scene,
+		StudioReaderWriter: db.Studio,
+		PerformerCreator:   db.Performer,
+		TagFinderCreator:   db.Tag,
+		DefaultOptions:     defaultOptions,
 	}
 
 	type args struct {
@@ -254,7 +261,7 @@ func TestSceneIdentifier_modifyScene(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tr.modifyScene(testCtx, repo, tt.args.scene, tt.args.result); (err != nil) != tt.wantErr {
+			if err := tr.modifyScene(testCtx, tt.args.scene, tt.args.result); (err != nil) != tt.wantErr {
 				t.Errorf("SceneIdentifier.modifyScene() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})

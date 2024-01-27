@@ -3,8 +3,7 @@ import { FormattedMessage } from "react-intl";
 
 interface IDetailItem {
   id?: string | null;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  value?: any;
+  value?: React.ReactNode;
   title?: string;
   fullWidth?: boolean;
 }

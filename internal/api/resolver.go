@@ -13,7 +13,7 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/scraper"
-	"github.com/stashapp/stash/pkg/txn"
+	"github.com/stashapp/stash/pkg/scraper/stashbox"
 )
 
 var (
@@ -33,8 +33,7 @@ type hookExecutor interface {
 }
 
 type Resolver struct {
-	txnManager     txn.Manager
-	repository     manager.Repository
+	repository     models.Repository
 	sceneService   manager.SceneService
 	imageService   manager.ImageService
 	galleryService manager.GalleryService
@@ -85,6 +84,24 @@ func (r *Resolver) Subscription() SubscriptionResolver {
 func (r *Resolver) Tag() TagResolver {
 	return &tagResolver{r}
 }
+func (r *Resolver) GalleryFile() GalleryFileResolver {
+	return &galleryFileResolver{r}
+}
+func (r *Resolver) VideoFile() VideoFileResolver {
+	return &videoFileResolver{r}
+}
+func (r *Resolver) ImageFile() ImageFileResolver {
+	return &imageFileResolver{r}
+}
+func (r *Resolver) SavedFilter() SavedFilterResolver {
+	return &savedFilterResolver{r}
+}
+func (r *Resolver) Plugin() PluginResolver {
+	return &pluginResolver{r}
+}
+func (r *Resolver) ConfigResult() ConfigResultResolver {
+	return &configResultResolver{r}
+}
 
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
@@ -100,13 +117,23 @@ type imageResolver struct{ *Resolver }
 type studioResolver struct{ *Resolver }
 type movieResolver struct{ *Resolver }
 type tagResolver struct{ *Resolver }
+type galleryFileResolver struct{ *Resolver }
+type videoFileResolver struct{ *Resolver }
+type imageFileResolver struct{ *Resolver }
+type savedFilterResolver struct{ *Resolver }
+type pluginResolver struct{ *Resolver }
+type configResultResolver struct{ *Resolver }
 
 func (r *Resolver) withTxn(ctx context.Context, fn func(ctx context.Context) error) error {
-	return txn.WithTxn(ctx, r.txnManager, fn)
+	return r.repository.WithTxn(ctx, fn)
 }
 
 func (r *Resolver) withReadTxn(ctx context.Context, fn func(ctx context.Context) error) error {
-	return txn.WithReadTxn(ctx, r.txnManager, fn)
+	return r.repository.WithReadTxn(ctx, fn)
+}
+
+func (r *Resolver) stashboxRepository() stashbox.Repository {
+	return stashbox.NewRepository(r.repository)
 }
 
 func (r *queryResolver) MarkerWall(ctx context.Context, q *string) (ret []*models.SceneMarker, err error) {
@@ -145,27 +172,90 @@ func (r *queryResolver) Stats(ctx context.Context) (*StatsResultType, error) {
 	var ret StatsResultType
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		repo := r.repository
-		scenesQB := repo.Scene
+		sceneQB := repo.Scene
 		imageQB := repo.Image
 		galleryQB := repo.Gallery
-		studiosQB := repo.Studio
-		performersQB := repo.Performer
-		moviesQB := repo.Movie
-		tagsQB := repo.Tag
-		scenesCount, _ := scenesQB.Count(ctx)
-		scenesSize, _ := scenesQB.Size(ctx)
-		scenesDuration, _ := scenesQB.Duration(ctx)
-		imageCount, _ := imageQB.Count(ctx)
-		imageSize, _ := imageQB.Size(ctx)
-		galleryCount, _ := galleryQB.Count(ctx)
-		performersCount, _ := performersQB.Count(ctx)
-		studiosCount, _ := studiosQB.Count(ctx)
-		moviesCount, _ := moviesQB.Count(ctx)
-		tagsCount, _ := tagsQB.Count(ctx)
-		totalOCount, _ := scenesQB.OCount(ctx)
-		totalPlayDuration, _ := scenesQB.PlayDuration(ctx)
-		totalPlayCount, _ := scenesQB.PlayCount(ctx)
-		uniqueScenePlayCount, _ := scenesQB.UniqueScenePlayCount(ctx)
+		studioQB := repo.Studio
+		performerQB := repo.Performer
+		movieQB := repo.Movie
+		tagQB := repo.Tag
+
+		// embrace the error
+
+		scenesCount, err := sceneQB.Count(ctx)
+		if err != nil {
+			return err
+		}
+
+		scenesSize, err := sceneQB.Size(ctx)
+		if err != nil {
+			return err
+		}
+
+		scenesDuration, err := sceneQB.Duration(ctx)
+		if err != nil {
+			return err
+		}
+
+		imageCount, err := imageQB.Count(ctx)
+		if err != nil {
+			return err
+		}
+
+		imageSize, err := imageQB.Size(ctx)
+		if err != nil {
+			return err
+		}
+
+		galleryCount, err := galleryQB.Count(ctx)
+		if err != nil {
+			return err
+		}
+
+		performersCount, err := performerQB.Count(ctx)
+		if err != nil {
+			return err
+		}
+
+		studiosCount, err := studioQB.Count(ctx)
+		if err != nil {
+			return err
+		}
+
+		moviesCount, err := movieQB.Count(ctx)
+		if err != nil {
+			return err
+		}
+
+		tagsCount, err := tagQB.Count(ctx)
+		if err != nil {
+			return err
+		}
+
+		scenesTotalOCount, err := sceneQB.OCount(ctx)
+		if err != nil {
+			return err
+		}
+		imagesTotalOCount, err := imageQB.OCount(ctx)
+		if err != nil {
+			return err
+		}
+		totalOCount := scenesTotalOCount + imagesTotalOCount
+
+		totalPlayDuration, err := sceneQB.PlayDuration(ctx)
+		if err != nil {
+			return err
+		}
+
+		totalPlayCount, err := sceneQB.PlayCount(ctx)
+		if err != nil {
+			return err
+		}
+
+		uniqueScenePlayCount, err := sceneQB.UniqueScenePlayCount(ctx)
+		if err != nil {
+			return err
+		}
 
 		ret = StatsResultType{
 			SceneCount:        scenesCount,

@@ -25,6 +25,8 @@ const (
 	missingParentStudioName  = "existingParentStudioName"
 )
 
+var testCtx = context.Background()
+
 func TestImporterName(t *testing.T) {
 	i := Importer{
 		Input: jsonschema.Studio{
@@ -43,22 +45,21 @@ func TestImporterPreImport(t *testing.T) {
 			IgnoreAutoTag: autoTagIgnored,
 		},
 	}
-	ctx := context.Background()
 
-	err := i.PreImport(ctx)
+	err := i.PreImport(testCtx)
 
 	assert.NotNil(t, err)
 
 	i.Input.Image = image
 
-	err = i.PreImport(ctx)
+	err = i.PreImport(testCtx)
 
 	assert.Nil(t, err)
 
 	i.Input = *createFullJSONStudio(studioName, image, []string{"alias"})
 	i.Input.ParentStudio = ""
 
-	err = i.PreImport(ctx)
+	err = i.PreImport(testCtx)
 
 	assert.Nil(t, err)
 	expectedStudio := createFullStudio(0, 0)
@@ -67,11 +68,10 @@ func TestImporterPreImport(t *testing.T) {
 }
 
 func TestImporterPreImportWithParent(t *testing.T) {
-	readerWriter := &mocks.StudioReaderWriter{}
-	ctx := context.Background()
+	db := mocks.NewDatabase()
 
 	i := Importer{
-		ReaderWriter: readerWriter,
+		ReaderWriter: db.Studio,
 		Input: jsonschema.Studio{
 			Name:         studioName,
 			Image:        image,
@@ -79,28 +79,27 @@ func TestImporterPreImportWithParent(t *testing.T) {
 		},
 	}
 
-	readerWriter.On("FindByName", ctx, existingParentStudioName, false).Return(&models.Studio{
+	db.Studio.On("FindByName", testCtx, existingParentStudioName, false).Return(&models.Studio{
 		ID: existingStudioID,
 	}, nil).Once()
-	readerWriter.On("FindByName", ctx, existingParentStudioErr, false).Return(nil, errors.New("FindByName error")).Once()
+	db.Studio.On("FindByName", testCtx, existingParentStudioErr, false).Return(nil, errors.New("FindByName error")).Once()
 
-	err := i.PreImport(ctx)
+	err := i.PreImport(testCtx)
 	assert.Nil(t, err)
 	assert.Equal(t, existingStudioID, *i.studio.ParentID)
 
 	i.Input.ParentStudio = existingParentStudioErr
-	err = i.PreImport(ctx)
+	err = i.PreImport(testCtx)
 	assert.NotNil(t, err)
 
-	readerWriter.AssertExpectations(t)
+	db.AssertExpectations(t)
 }
 
 func TestImporterPreImportWithMissingParent(t *testing.T) {
-	readerWriter := &mocks.StudioReaderWriter{}
-	ctx := context.Background()
+	db := mocks.NewDatabase()
 
 	i := Importer{
-		ReaderWriter: readerWriter,
+		ReaderWriter: db.Studio,
 		Input: jsonschema.Studio{
 			Name:         studioName,
 			Image:        image,
@@ -109,33 +108,32 @@ func TestImporterPreImportWithMissingParent(t *testing.T) {
 		MissingRefBehaviour: models.ImportMissingRefEnumFail,
 	}
 
-	readerWriter.On("FindByName", ctx, missingParentStudioName, false).Return(nil, nil).Times(3)
-	readerWriter.On("Create", ctx, mock.AnythingOfType("*models.Studio")).Run(func(args mock.Arguments) {
+	db.Studio.On("FindByName", testCtx, missingParentStudioName, false).Return(nil, nil).Times(3)
+	db.Studio.On("Create", testCtx, mock.AnythingOfType("*models.Studio")).Run(func(args mock.Arguments) {
 		s := args.Get(1).(*models.Studio)
 		s.ID = existingStudioID
 	}).Return(nil)
 
-	err := i.PreImport(ctx)
+	err := i.PreImport(testCtx)
 	assert.NotNil(t, err)
 
 	i.MissingRefBehaviour = models.ImportMissingRefEnumIgnore
-	err = i.PreImport(ctx)
+	err = i.PreImport(testCtx)
 	assert.Nil(t, err)
 
 	i.MissingRefBehaviour = models.ImportMissingRefEnumCreate
-	err = i.PreImport(ctx)
+	err = i.PreImport(testCtx)
 	assert.Nil(t, err)
 	assert.Equal(t, existingStudioID, *i.studio.ParentID)
 
-	readerWriter.AssertExpectations(t)
+	db.AssertExpectations(t)
 }
 
 func TestImporterPreImportWithMissingParentCreateErr(t *testing.T) {
-	readerWriter := &mocks.StudioReaderWriter{}
-	ctx := context.Background()
+	db := mocks.NewDatabase()
 
 	i := Importer{
-		ReaderWriter: readerWriter,
+		ReaderWriter: db.Studio,
 		Input: jsonschema.Studio{
 			Name:         studioName,
 			Image:        image,
@@ -144,19 +142,20 @@ func TestImporterPreImportWithMissingParentCreateErr(t *testing.T) {
 		MissingRefBehaviour: models.ImportMissingRefEnumCreate,
 	}
 
-	readerWriter.On("FindByName", ctx, missingParentStudioName, false).Return(nil, nil).Once()
-	readerWriter.On("Create", ctx, mock.AnythingOfType("*models.Studio")).Return(errors.New("Create error"))
+	db.Studio.On("FindByName", testCtx, missingParentStudioName, false).Return(nil, nil).Once()
+	db.Studio.On("Create", testCtx, mock.AnythingOfType("*models.Studio")).Return(errors.New("Create error"))
 
-	err := i.PreImport(ctx)
+	err := i.PreImport(testCtx)
 	assert.NotNil(t, err)
+
+	db.AssertExpectations(t)
 }
 
 func TestImporterPostImport(t *testing.T) {
-	readerWriter := &mocks.StudioReaderWriter{}
-	ctx := context.Background()
+	db := mocks.NewDatabase()
 
 	i := Importer{
-		ReaderWriter: readerWriter,
+		ReaderWriter: db.Studio,
 		Input: jsonschema.Studio{
 			Aliases: []string{"alias"},
 		},
@@ -165,56 +164,54 @@ func TestImporterPostImport(t *testing.T) {
 
 	updateStudioImageErr := errors.New("UpdateImage error")
 
-	readerWriter.On("UpdateImage", ctx, studioID, imageBytes).Return(nil).Once()
-	readerWriter.On("UpdateImage", ctx, errImageID, imageBytes).Return(updateStudioImageErr).Once()
+	db.Studio.On("UpdateImage", testCtx, studioID, imageBytes).Return(nil).Once()
+	db.Studio.On("UpdateImage", testCtx, errImageID, imageBytes).Return(updateStudioImageErr).Once()
 
-	err := i.PostImport(ctx, studioID)
+	err := i.PostImport(testCtx, studioID)
 	assert.Nil(t, err)
 
-	err = i.PostImport(ctx, errImageID)
+	err = i.PostImport(testCtx, errImageID)
 	assert.NotNil(t, err)
 
-	readerWriter.AssertExpectations(t)
+	db.AssertExpectations(t)
 }
 
 func TestImporterFindExistingID(t *testing.T) {
-	readerWriter := &mocks.StudioReaderWriter{}
-	ctx := context.Background()
+	db := mocks.NewDatabase()
 
 	i := Importer{
-		ReaderWriter: readerWriter,
+		ReaderWriter: db.Studio,
 		Input: jsonschema.Studio{
 			Name: studioName,
 		},
 	}
 
 	errFindByName := errors.New("FindByName error")
-	readerWriter.On("FindByName", ctx, studioName, false).Return(nil, nil).Once()
-	readerWriter.On("FindByName", ctx, existingStudioName, false).Return(&models.Studio{
+	db.Studio.On("FindByName", testCtx, studioName, false).Return(nil, nil).Once()
+	db.Studio.On("FindByName", testCtx, existingStudioName, false).Return(&models.Studio{
 		ID: existingStudioID,
 	}, nil).Once()
-	readerWriter.On("FindByName", ctx, studioNameErr, false).Return(nil, errFindByName).Once()
+	db.Studio.On("FindByName", testCtx, studioNameErr, false).Return(nil, errFindByName).Once()
 
-	id, err := i.FindExistingID(ctx)
+	id, err := i.FindExistingID(testCtx)
 	assert.Nil(t, id)
 	assert.Nil(t, err)
 
 	i.Input.Name = existingStudioName
-	id, err = i.FindExistingID(ctx)
+	id, err = i.FindExistingID(testCtx)
 	assert.Equal(t, existingStudioID, *id)
 	assert.Nil(t, err)
 
 	i.Input.Name = studioNameErr
-	id, err = i.FindExistingID(ctx)
+	id, err = i.FindExistingID(testCtx)
 	assert.Nil(t, id)
 	assert.NotNil(t, err)
 
-	readerWriter.AssertExpectations(t)
+	db.AssertExpectations(t)
 }
 
 func TestCreate(t *testing.T) {
-	readerWriter := &mocks.StudioReaderWriter{}
-	ctx := context.Background()
+	db := mocks.NewDatabase()
 
 	studio := models.Studio{
 		Name: studioName,
@@ -225,32 +222,31 @@ func TestCreate(t *testing.T) {
 	}
 
 	i := Importer{
-		ReaderWriter: readerWriter,
+		ReaderWriter: db.Studio,
 		studio:       studio,
 	}
 
 	errCreate := errors.New("Create error")
-	readerWriter.On("Create", ctx, &studio).Run(func(args mock.Arguments) {
+	db.Studio.On("Create", testCtx, &studio).Run(func(args mock.Arguments) {
 		s := args.Get(1).(*models.Studio)
 		s.ID = studioID
 	}).Return(nil).Once()
-	readerWriter.On("Create", ctx, &studioErr).Return(errCreate).Once()
+	db.Studio.On("Create", testCtx, &studioErr).Return(errCreate).Once()
 
-	id, err := i.Create(ctx)
+	id, err := i.Create(testCtx)
 	assert.Equal(t, studioID, *id)
 	assert.Nil(t, err)
 
 	i.studio = studioErr
-	id, err = i.Create(ctx)
+	id, err = i.Create(testCtx)
 	assert.Nil(t, id)
 	assert.NotNil(t, err)
 
-	readerWriter.AssertExpectations(t)
+	db.AssertExpectations(t)
 }
 
 func TestUpdate(t *testing.T) {
-	readerWriter := &mocks.StudioReaderWriter{}
-	ctx := context.Background()
+	db := mocks.NewDatabase()
 
 	studio := models.Studio{
 		Name: studioName,
@@ -261,7 +257,7 @@ func TestUpdate(t *testing.T) {
 	}
 
 	i := Importer{
-		ReaderWriter: readerWriter,
+		ReaderWriter: db.Studio,
 		studio:       studio,
 	}
 
@@ -269,19 +265,19 @@ func TestUpdate(t *testing.T) {
 
 	// id needs to be set for the mock input
 	studio.ID = studioID
-	readerWriter.On("Update", ctx, &studio).Return(nil).Once()
+	db.Studio.On("Update", testCtx, &studio).Return(nil).Once()
 
-	err := i.Update(ctx, studioID)
+	err := i.Update(testCtx, studioID)
 	assert.Nil(t, err)
 
 	i.studio = studioErr
 
 	// need to set id separately
 	studioErr.ID = errImageID
-	readerWriter.On("Update", ctx, &studioErr).Return(errUpdate).Once()
+	db.Studio.On("Update", testCtx, &studioErr).Return(errUpdate).Once()
 
-	err = i.Update(ctx, errImageID)
+	err = i.Update(testCtx, errImageID)
 	assert.NotNil(t, err)
 
-	readerWriter.AssertExpectations(t)
+	db.AssertExpectations(t)
 }

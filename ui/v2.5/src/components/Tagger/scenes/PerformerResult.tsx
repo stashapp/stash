@@ -1,14 +1,49 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Button, ButtonGroup } from "react-bootstrap";
 import { FormattedMessage } from "react-intl";
-import cx from "classnames";
 
 import * as GQL from "src/core/generated-graphql";
 import { Icon } from "src/components/Shared/Icon";
 import { OperationButton } from "src/components/Shared/OperationButton";
-import { PerformerSelect, SelectObject } from "src/components/Shared/Select";
 import { OptionalField } from "../IncludeButton";
 import { faSave } from "@fortawesome/free-solid-svg-icons";
+import {
+  Performer,
+  PerformerSelect,
+} from "src/components/Performers/PerformerSelect";
+import { getStashboxBase } from "src/utils/stashbox";
+
+interface IPerformerName {
+  performer: GQL.ScrapedPerformer | Performer;
+  id: string | undefined | null;
+  baseURL: string | undefined;
+}
+
+const PerformerName: React.FC<IPerformerName> = ({
+  performer,
+  id,
+  baseURL,
+}) => {
+  const name =
+    baseURL && id ? (
+      <a href={`${baseURL}${id}`} target="_blank" rel="noreferrer">
+        {performer.name}
+      </a>
+    ) : (
+      performer.name
+    );
+
+  return (
+    <>
+      <span>{name}</span>
+      {performer.disambiguation && (
+        <span className="performer-disambiguation">
+          {` (${performer.disambiguation})`}
+        </span>
+      )}
+    </>
+  );
+};
 
 interface IPerformerResultProps {
   performer: GQL.ScrapedPerformer;
@@ -40,16 +75,37 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
       stashID.stash_id === performer.remote_site_id
   );
 
-  const handlePerformerSelect = (performers: SelectObject[]) => {
+  const [selectedPerformer, setSelectedPerformer] = useState<Performer>();
+
+  const stashboxPerformerPrefix = endpoint
+    ? `${getStashboxBase(endpoint)}performers/`
+    : undefined;
+  const performerURLPrefix = "/performers/";
+
+  function selectPerformer(selected: Performer | undefined) {
+    setSelectedPerformer(selected);
+    setSelectedID(selected?.id);
+  }
+
+  useEffect(() => {
+    if (
+      performerData?.findPerformer &&
+      selectedID === performerData?.findPerformer?.id
+    ) {
+      setSelectedPerformer(performerData.findPerformer);
+    }
+  }, [performerData?.findPerformer, selectedID]);
+
+  const handleSelect = (performers: Performer[]) => {
     if (performers.length) {
-      setSelectedID(performers[0].id);
+      selectPerformer(performers[0]);
     } else {
-      setSelectedID(undefined);
+      selectPerformer(undefined);
     }
   };
 
-  const handlePerformerSkip = () => {
-    setSelectedID(undefined);
+  const handleSkip = () => {
+    selectPerformer(undefined);
   };
 
   if (stashLoading) return <div>Loading performer</div>;
@@ -59,20 +115,32 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
       <div className="row no-gutters my-2">
         <div className="entity-name">
           <FormattedMessage id="countables.performers" values={{ count: 1 }} />:
-          <b className="ml-2">{performer.name}</b>
+          <b className="ml-2">
+            <PerformerName
+              performer={performer}
+              id={performer.remote_site_id}
+              baseURL={stashboxPerformerPrefix}
+            />
+          </b>
         </div>
         <span className="ml-auto">
           <OptionalField
             exclude={selectedID === undefined}
             setExclude={(v) =>
-              v ? handlePerformerSkip() : setSelectedID(matchedPerformer.id)
+              v ? handleSkip() : setSelectedID(matchedPerformer.id)
             }
           >
             <div>
               <span className="mr-2">
                 <FormattedMessage id="component_tagger.verb_matched" />:
               </span>
-              <b className="col-3 text-right">{matchedPerformer.name}</b>
+              <b className="col-3 text-right">
+                <PerformerName
+                  performer={matchedPerformer}
+                  id={matchedPerformer.id}
+                  baseURL={performerURLPrefix}
+                />
+              </b>
             </div>
           </OptionalField>
         </span>
@@ -101,7 +169,13 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
     <div className="row no-gutters align-items-center mt-2">
       <div className="entity-name">
         <FormattedMessage id="countables.performers" values={{ count: 1 }} />:
-        <b className="ml-2">{performer.name}</b>
+        <b className="ml-2">
+          <PerformerName
+            performer={performer}
+            id={performer.remote_site_id}
+            baseURL={stashboxPerformerPrefix}
+          />
+        </b>
       </div>
       <ButtonGroup>
         <Button variant="secondary" onClick={() => onCreate()}>
@@ -109,16 +183,14 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
         </Button>
         <Button
           variant={selectedSource === "skip" ? "primary" : "secondary"}
-          onClick={() => handlePerformerSkip()}
+          onClick={() => handleSkip()}
         >
           <FormattedMessage id="actions.skip" />
         </Button>
         <PerformerSelect
-          ids={selectedID ? [selectedID] : []}
-          onSelect={handlePerformerSelect}
-          className={cx("performer-select", {
-            "performer-select-active": selectedSource === "existing",
-          })}
+          values={selectedPerformer ? [selectedPerformer] : []}
+          onSelect={handleSelect}
+          active={selectedSource === "existing"}
           isClearable={false}
         />
         {maybeRenderLinkButton()}

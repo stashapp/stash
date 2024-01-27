@@ -9,6 +9,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/txn"
 )
 
@@ -179,7 +180,7 @@ func (d *Deleter) renameForRestore(path string) error {
 	return d.RenamerRemover.Rename(path+deleteFileSuffix, path)
 }
 
-func Destroy(ctx context.Context, destroyer Destroyer, f File, fileDeleter *Deleter, deleteFile bool) error {
+func Destroy(ctx context.Context, destroyer models.FileDestroyer, f models.File, fileDeleter *Deleter, deleteFile bool) error {
 	if err := destroyer.Destroy(ctx, f.Base().ID); err != nil {
 		return err
 	}
@@ -195,11 +196,11 @@ func Destroy(ctx context.Context, destroyer Destroyer, f File, fileDeleter *Dele
 }
 
 type ZipDestroyer struct {
-	FileDestroyer   GetterDestroyer
-	FolderDestroyer FolderGetterDestroyer
+	FileDestroyer   models.FileFinderDestroyer
+	FolderDestroyer models.FolderFinderDestroyer
 }
 
-func (d *ZipDestroyer) DestroyZip(ctx context.Context, f File, fileDeleter *Deleter, deleteFile bool) error {
+func (d *ZipDestroyer) DestroyZip(ctx context.Context, f models.File, fileDeleter *Deleter, deleteFile bool) error {
 	// destroy contained files
 	files, err := d.FileDestroyer.FindByZipFileID(ctx, f.Base().ID)
 	if err != nil {

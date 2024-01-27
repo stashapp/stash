@@ -5,6 +5,7 @@ import * as GQL from "src/core/generated-graphql";
 import { useUpdatePerformer } from "../queries";
 import PerformerModal from "../PerformerModal";
 import { faTags } from "@fortawesome/free-solid-svg-icons";
+import { mergeStashIDs } from "src/utils/stashbox";
 
 interface IStashSearchResultProps {
   performer: GQL.SlimPerformerDataFragment;
@@ -24,9 +25,8 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
   excludedPerformerFields,
   endpoint,
 }) => {
-  const [modalPerformer, setModalPerformer] = useState<
-    GQL.ScrapedPerformerDataFragment | undefined
-  >();
+  const [modalPerformer, setModalPerformer] =
+    useState<GQL.ScrapedPerformerDataFragment>();
   const [saveState, setSaveState] = useState<string>("");
   const [error, setError] = useState<{ message?: string; details?: string }>(
     {}
@@ -38,6 +38,10 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     setError({});
     setSaveState("Saving performer");
     setModalPerformer(undefined);
+
+    if (input.stash_ids?.length) {
+      input.stash_ids = mergeStashIDs(performer.stash_ids, input.stash_ids);
+    }
 
     const updateData: GQL.PerformerUpdateInput = {
       ...input,
@@ -51,7 +55,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
         message: `Failed to save performer "${performer.name}"`,
         details:
           res?.errors?.[0].message ===
-          "UNIQUE constraint failed: performers.checksum"
+          "UNIQUE constraint failed: performers.name"
             ? "Name already exists"
             : res?.errors?.[0].message,
       });

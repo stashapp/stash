@@ -1,7 +1,5 @@
 package models
 
-import "context"
-
 type StudioFilterType struct {
 	And     *StudioFilterType     `json:"AND"`
 	Or      *StudioFilterType     `json:"OR"`
@@ -16,8 +14,6 @@ type StudioFilterType struct {
 	StashIDEndpoint *StashIDCriterionInput `json:"stash_id_endpoint"`
 	// Filter to only include studios missing this property
 	IsMissing *string `json:"is_missing"`
-	// Filter by rating expressed as 1-5
-	Rating *IntCriterionInput `json:"rating"`
 	// Filter by rating expressed as 1-100
 	Rating100 *IntCriterionInput `json:"rating100"`
 	// Filter by scene count
@@ -38,38 +34,29 @@ type StudioFilterType struct {
 	UpdatedAt *TimestampCriterionInput `json:"updated_at"`
 }
 
-type StudioFinder interface {
-	FindMany(ctx context.Context, ids []int) ([]*Studio, error)
+type StudioCreateInput struct {
+	Name     string  `json:"name"`
+	URL      *string `json:"url"`
+	ParentID *string `json:"parent_id"`
+	// This should be a URL or a base64 encoded data URL
+	Image         *string   `json:"image"`
+	StashIds      []StashID `json:"stash_ids"`
+	Rating100     *int      `json:"rating100"`
+	Details       *string   `json:"details"`
+	Aliases       []string  `json:"aliases"`
+	IgnoreAutoTag *bool     `json:"ignore_auto_tag"`
 }
 
-type StudioReader interface {
-	Find(ctx context.Context, id int) (*Studio, error)
-	StudioFinder
-	FindChildren(ctx context.Context, id int) ([]*Studio, error)
-	FindByName(ctx context.Context, name string, nocase bool) (*Studio, error)
-	FindByStashID(ctx context.Context, stashID StashID) ([]*Studio, error)
-	FindByStashIDStatus(ctx context.Context, hasStashID bool, stashboxEndpoint string) ([]*Studio, error)
-	Count(ctx context.Context) (int, error)
-	All(ctx context.Context) ([]*Studio, error)
-	// TODO - this interface is temporary until the filter schema can fully
-	// support the query needed
-	QueryForAutoTag(ctx context.Context, words []string) ([]*Studio, error)
-	Query(ctx context.Context, studioFilter *StudioFilterType, findFilter *FindFilterType) ([]*Studio, int, error)
-	GetImage(ctx context.Context, studioID int) ([]byte, error)
-	HasImage(ctx context.Context, studioID int) (bool, error)
-	AliasLoader
-	StashIDLoader
-}
-
-type StudioWriter interface {
-	Create(ctx context.Context, newStudio *Studio) error
-	UpdatePartial(ctx context.Context, input StudioPartial) (*Studio, error)
-	Update(ctx context.Context, updatedStudio *Studio) error
-	Destroy(ctx context.Context, id int) error
-	UpdateImage(ctx context.Context, studioID int, image []byte) error
-}
-
-type StudioReaderWriter interface {
-	StudioReader
-	StudioWriter
+type StudioUpdateInput struct {
+	ID       string  `json:"id"`
+	Name     *string `json:"name"`
+	URL      *string `json:"url"`
+	ParentID *string `json:"parent_id"`
+	// This should be a URL or a base64 encoded data URL
+	Image         *string   `json:"image"`
+	StashIds      []StashID `json:"stash_ids"`
+	Rating100     *int      `json:"rating100"`
+	Details       *string   `json:"details"`
+	Aliases       []string  `json:"aliases"`
+	IgnoreAutoTag *bool     `json:"ignore_auto_tag"`
 }

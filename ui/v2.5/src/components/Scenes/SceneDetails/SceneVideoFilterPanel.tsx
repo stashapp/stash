@@ -101,8 +101,6 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = ({
       sliderRanges.aspectRatioRange.default
   );
 
-  console.log("isNew: " + isNew);
-
   const setDefaultFilterValues = useCallback(() => {
     setContrastValue(sliderRanges.contrastRange.default);
     setBrightnessValue(sliderRanges.brightnessRange.default);
@@ -266,6 +264,7 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = ({
   async function onSave(input: InputValues) {
     try {
       if (isNew == true) {
+
         const result = await sceneFilterCreate({
           variables: {
             scene_id: props.scene.id,
@@ -294,6 +293,7 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = ({
         }
       }
     } catch (e) {
+
       Toast.error(e);
     }
   }

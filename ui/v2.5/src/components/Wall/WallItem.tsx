@@ -66,6 +66,7 @@ const Preview: React.FC<{
 
   const image = (
     <img
+      loading="lazy"
       alt=""
       className="wall-item-media"
       src={

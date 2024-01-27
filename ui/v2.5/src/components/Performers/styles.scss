@@ -206,12 +206,20 @@
   }
 }
 
+.favourite-data .favorite {
+  color: #ff7373;
+}
+
+.performer-table .height-imperial,
+.performer-table .weight-imperial,
+.performer-table .penis-length-imperial,
 .performer-disambiguation {
   color: $text-muted;
-  /* stylelint-disable */
   font-size: 0.875em;
-  /* stylelint-enable */
-  padding-right: 0.5rem;
+}
+
+.performer-table .age-data span {
+  border-bottom: 1px dotted #f5f8fa;
 }
 
 .performer-result .performer-details > span {
@@ -221,5 +229,18 @@
 
   &:last-child::after {
     content: "";
+  }
+}
+
+.performer-select {
+  .alias {
+    font-weight: bold;
+    white-space: pre;
+  }
+
+  .performer-select-image {
+    margin-right: 0.5em;
+    max-height: 50px;
+    max-width: 50px;
   }
 }

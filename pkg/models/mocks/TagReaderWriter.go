@@ -58,6 +58,48 @@ func (_m *TagReaderWriter) Count(ctx context.Context) (int, error) {
 	return r0, r1
 }
 
+// CountByChildTagID provides a mock function with given fields: ctx, childID
+func (_m *TagReaderWriter) CountByChildTagID(ctx context.Context, childID int) (int, error) {
+	ret := _m.Called(ctx, childID)
+
+	var r0 int
+	if rf, ok := ret.Get(0).(func(context.Context, int) int); ok {
+		r0 = rf(ctx, childID)
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, childID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// CountByParentTagID provides a mock function with given fields: ctx, parentID
+func (_m *TagReaderWriter) CountByParentTagID(ctx context.Context, parentID int) (int, error) {
+	ret := _m.Called(ctx, parentID)
+
+	var r0 int
+	if rf, ok := ret.Get(0).(func(context.Context, int) int); ok {
+		r0 = rf(ctx, parentID)
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, parentID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Create provides a mock function with given fields: ctx, newTag
 func (_m *TagReaderWriter) Create(ctx context.Context, newTag *models.Tag) error {
 	ret := _m.Called(ctx, newTag)
@@ -385,13 +427,13 @@ func (_m *TagReaderWriter) FindMany(ctx context.Context, ids []int) ([]*models.T
 	return r0, r1
 }
 
-// GetAliases provides a mock function with given fields: ctx, tagID
-func (_m *TagReaderWriter) GetAliases(ctx context.Context, tagID int) ([]string, error) {
-	ret := _m.Called(ctx, tagID)
+// GetAliases provides a mock function with given fields: ctx, relatedID
+func (_m *TagReaderWriter) GetAliases(ctx context.Context, relatedID int) ([]string, error) {
+	ret := _m.Called(ctx, relatedID)
 
 	var r0 []string
 	if rf, ok := ret.Get(0).(func(context.Context, int) []string); ok {
-		r0 = rf(ctx, tagID)
+		r0 = rf(ctx, relatedID)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]string)
@@ -400,7 +442,7 @@ func (_m *TagReaderWriter) GetAliases(ctx context.Context, tagID int) ([]string,
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
-		r1 = rf(ctx, tagID)
+		r1 = rf(ctx, relatedID)
 	} else {
 		r1 = ret.Error(1)
 	}

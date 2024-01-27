@@ -11,7 +11,7 @@ import (
 	"github.com/jmoiron/sqlx"
 
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sliceutil/intslice"
+	"github.com/stashapp/stash/pkg/sliceutil"
 )
 
 const sceneFilterTable = "scene_filters"
@@ -157,7 +157,7 @@ func (qb *SceneFilterStore) FindMany(ctx context.Context, ids []int) ([]*models.
 	}
 
 	for _, s := range unsorted {
-		i := intslice.IntIndex(ids, int(s.ID))
+		i := sliceutil.Index(ids, s.ID)
 		ret[i] = s
 	}
 

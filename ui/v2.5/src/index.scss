@@ -18,6 +18,7 @@
 @import "src/components/Studios/styles.scss";
 @import "src/components/Shared/styles.scss";
 @import "src/components/Shared/Rating/styles.scss";
+@import "src/components/Shared/PackageManager/styles.scss";
 @import "src/components/Tags/styles.scss";
 @import "src/components/Wall/styles.scss";
 @import "src/components/Tagger/styles.scss";
@@ -341,19 +342,21 @@ dd {
   border-radius: 0.5rem;
 }
 
-#tag-page .full-width .detail-header-image img {
-  max-width: 22rem;
-
-  @media (max-width: 576px) {
-    max-width: 100%;
+#tag-page {
+  .full-width .detail-header-image img {
+    max-width: 22rem;
   }
-}
 
-#tag-page .detail-header-image img {
-  max-width: 18rem;
+  .detail-header.collapsed .detail-header-image img {
+    max-width: 18rem;
+  }
 
-  @media (max-width: 576px) {
-    max-width: 100%;
+  .detail-header-image img {
+    max-width: 20rem;
+
+    @media (max-width: 576px) {
+      max-width: 100%;
+    }
   }
 }
 
@@ -459,34 +462,13 @@ textarea.text-input {
   overflow-y: scroll;
 }
 
-.table-list {
-  min-width: min-content;
+/* stylelint-disable declaration-no-important */
+.border-row {
+  background-color: #414c53;
+  height: 1px;
+  padding: 0 !important;
 }
-
-.table-list a {
-  color: $text-color;
-}
-
-.table-list table {
-  width: inherit;
-}
-
-.table-list td,
-.table-list th {
-  border-left: 1px solid #414c53;
-  font-size: 1rem;
-  text-align: center;
-  vertical-align: middle;
-
-  h5,
-  h6 {
-    font-size: 1rem;
-  }
-
-  &:first-child {
-    border-left: none;
-  }
-}
+/* stylelint-enable declaration-no-important */
 
 @media (max-width: 576px) {
   .row.justify-content-center {
@@ -494,85 +476,84 @@ textarea.text-input {
     margin-right: 0;
   }
 }
-@media (min-width: 576px) {
-  .zoom-0 {
-    width: 240px;
 
-    .scene-card-preview {
-      height: 135px;
-    }
+.zoom-0 {
+  width: 240px;
 
-    .portrait {
-      height: 180px;
-    }
-
-    .gallery-card-image,
-    .tag-card-image {
-      max-height: 180px;
-    }
+  .scene-card-preview {
+    height: 135px;
   }
 
-  .zoom-1 {
-    width: 320px;
-
-    .scene-card-preview {
-      height: 180px;
-    }
-
-    .portrait {
-      height: 240px;
-    }
-
-    .gallery-card-image,
-    .tag-card-image {
-      max-height: 240px;
-    }
-
-    .image-card-preview {
-      height: 240px;
-    }
+  .portrait {
+    height: 180px;
   }
 
-  .zoom-2 {
-    width: 480px;
+  .gallery-card-image,
+  .tag-card-image {
+    max-height: 180px;
+  }
+}
 
-    .scene-card-preview {
-      height: 270px;
-    }
+.zoom-1 {
+  width: 320px;
 
-    .portrait {
-      height: 360px;
-    }
-
-    .gallery-card-image,
-    .tag-card-image {
-      max-height: 360px;
-    }
-
-    .image-card-preview {
-      height: 360px;
-    }
+  .scene-card-preview {
+    height: 180px;
   }
 
-  .zoom-3 {
-    width: 640px;
+  .portrait {
+    height: 240px;
+  }
 
-    .scene-card-preview {
-      height: 360px;
-    }
+  .gallery-card-image,
+  .tag-card-image {
+    max-height: 240px;
+  }
 
-    .portrait {
-      height: 480px;
-    }
+  .image-card-preview {
+    height: 240px;
+  }
+}
 
-    .tag-card-image,
-    .gallery-card-image {
-      max-height: 480px;
-    }
+.zoom-2 {
+  width: 480px;
 
-    .image-card-preview {
-      height: 480px;
-    }
+  .scene-card-preview {
+    height: 270px;
+  }
+
+  .portrait {
+    height: 360px;
+  }
+
+  .gallery-card-image,
+  .tag-card-image {
+    max-height: 360px;
+  }
+
+  .image-card-preview {
+    height: 360px;
+  }
+}
+
+.zoom-3 {
+  width: 640px;
+
+  .scene-card-preview {
+    height: 360px;
+  }
+
+  .portrait {
+    height: 480px;
+  }
+
+  .tag-card-image,
+  .gallery-card-image {
+    max-height: 480px;
+  }
+
+  .image-card-preview {
+    height: 480px;
   }
 }
 
@@ -658,7 +639,6 @@ div.react-select__menu,
 div.dropdown-menu {
   background-color: $secondary;
   color: $text-color;
-  z-index: 1600;
 
   .react-select__option,
   .dropdown-item {
@@ -739,8 +719,9 @@ div.dropdown-menu {
     color: $dark-text;
     font-size: 12px;
     line-height: 1rem;
+    margin-right: -0.5rem;
     opacity: 0.5;
-    padding: 0 0 0 0.5rem;
+    padding: 0 0.5rem;
     position: relative;
 
     &:active,
@@ -1343,6 +1324,7 @@ dl.details-list {
 
 .invalid-feedback {
   display: block;
+  white-space: pre-wrap;
 
   &:empty {
     display: none;

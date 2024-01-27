@@ -1,14 +1,19 @@
 import { FilterMode, Scene } from "src/core/generated-graphql";
 import { ListFilterModel } from "./list-filter/filter";
 import { SceneListFilterOptions } from "./list-filter/scenes";
+import { INamedObject } from "src/utils/navigation";
 
-export type QueuedScene = Pick<Scene, "id" | "title" | "paths">;
+export type QueuedScene = Pick<Scene, "id" | "title" | "date" | "paths"> & {
+  performers?: INamedObject[] | null;
+  studio?: INamedObject | null;
+};
 
 export interface IPlaySceneOptions {
   sceneIndex?: number;
   newPage?: number;
   autoPlay?: boolean;
   continue?: boolean;
+  start?: number;
 }
 
 export class SceneQueue {
@@ -111,11 +116,14 @@ export class SceneQueue {
     let params = [
       this.makeQueryParameters(options.sceneIndex, options.newPage),
     ];
-    if (options.autoPlay !== undefined) {
-      params.push("autoplay=" + options.autoPlay);
+    if (options.autoPlay) {
+      params.push("autoplay=true");
     }
     if (options.continue !== undefined) {
       params.push("continue=" + options.continue);
+    }
+    if (options.start !== undefined) {
+      params.push("t=" + options.start);
     }
     return `/scenes/${sceneID}${params.length ? "?" + params.join("&") : ""}`;
   }
