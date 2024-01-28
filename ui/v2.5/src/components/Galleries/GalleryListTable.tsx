@@ -85,7 +85,7 @@ export const GalleryListTable: React.FC<IGalleryListTableProps> = (
   };
 
   const TagCell = (gallery: GQL.SlimGalleryDataFragment) => (
-    <ul className="comma-list">
+    <ul className="comma-list overflowable">
       {gallery.tags.map((tag) => (
         <li key={tag.id}>
           <Link to={NavUtils.makeTagGalleriesUrl(tag)}>
@@ -97,7 +97,7 @@ export const GalleryListTable: React.FC<IGalleryListTableProps> = (
   );
 
   const PerformersCell = (gallery: GQL.SlimGalleryDataFragment) => (
-    <ul className="comma-list">
+    <ul className="comma-list overflowable">
       {gallery.performers.map((performer) => (
         <li key={performer.id}>
           <Link to={NavUtils.makePerformerGalleriesUrl(performer)}>
