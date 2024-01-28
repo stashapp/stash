@@ -35,7 +35,12 @@ export const ImageCard: React.FC<IImageCardProps> = (
   const [cardWidth, setCardWidth] = useState<number>();
 
   useEffect(() => {
-    if (!props.containerWidth || props.zoomIndex === undefined || ScreenUtils.isMobile()) return;
+    if (
+      !props.containerWidth ||
+      props.zoomIndex === undefined ||
+      ScreenUtils.isMobile()
+    )
+      return;
 
     let containerPadding = 30;
     let containerWidth = props.containerWidth - containerPadding;

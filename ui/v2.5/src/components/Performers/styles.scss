@@ -76,11 +76,11 @@
   }
 
   &-image {
+    aspect-ratio: 2/3;
     min-width: 11.25rem;
     object-fit: cover;
     object-position: top;
     width: 100%;
-    aspect-ratio: 2/3;
   }
 
   .fi {

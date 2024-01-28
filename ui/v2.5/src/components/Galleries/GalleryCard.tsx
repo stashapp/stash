@@ -31,7 +31,12 @@ export const GalleryCard: React.FC<IProps> = (props) => {
   const [cardWidth, setCardWidth] = useState<number>();
 
   useEffect(() => {
-    if (!props.containerWidth || props.zoomIndex === undefined || ScreenUtils.isMobile()) return;
+    if (
+      !props.containerWidth ||
+      props.zoomIndex === undefined ||
+      ScreenUtils.isMobile()
+    )
+      return;
 
     let containerPadding = 30;
     let containerWidth = props.containerWidth - containerPadding;

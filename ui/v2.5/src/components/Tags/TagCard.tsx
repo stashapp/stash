@@ -29,7 +29,8 @@ export const TagCard: React.FC<IProps> = ({
   const [cardWidth, setCardWidth] = useState<number>();
 
   useEffect(() => {
-    if (!containerWidth || zoomIndex === undefined || ScreenUtils.isMobile()) return;
+    if (!containerWidth || zoomIndex === undefined || ScreenUtils.isMobile())
+      return;
 
     let containerPadding = 30;
     let maxUsableWidth = containerWidth - containerPadding;
