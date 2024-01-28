@@ -34,22 +34,22 @@ export const TagCard: React.FC<IProps> = ({
     let containerPadding = 30;
     let maxUsableWidth = containerWidth - containerPadding;
     let zoomValue = zoomIndex;
-    let maxCardWidth: number;
+    let preferredCardWidth: number;
     let paddingOffset = 10;
     switch (zoomValue) {
       case 0:
-        maxCardWidth = 240;
+        preferredCardWidth = 240;
         break;
       case 1:
-        maxCardWidth = 340;
+        preferredCardWidth = 340;
         break;
       case 2:
-        maxCardWidth = 480;
+        preferredCardWidth = 480;
         break;
       case 3:
-        maxCardWidth = 640;
+        preferredCardWidth = 640;
     }
-    let maxElementsOnRow = Math.ceil(maxUsableWidth / maxCardWidth!);
+    let maxElementsOnRow = Math.ceil(maxUsableWidth / preferredCardWidth!);
     let fittedCardWidth = maxUsableWidth / maxElementsOnRow - paddingOffset;
     setCardWidth(fittedCardWidth);
   }, [containerWidth, zoomIndex]);

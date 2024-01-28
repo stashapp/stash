@@ -506,26 +506,24 @@ export const SceneCard = PatchComponent(
       let containerPadding = 30;
       let containerWidth = props.containerWidth - containerPadding;
       let zoomValue = props.zoomIndex;
-      let maxCardWidth: number;
+      let preferredCardWidth: number;
       let paddingOffset = 10;
       switch (zoomValue) {
         case 0:
-          maxCardWidth = 240;
+          preferredCardWidth = 240;
           break;
         case 1:
-          maxCardWidth = 340; // this value is intentionally higher than 320
+          preferredCardWidth = 340; // this value is intentionally higher than 320
           break;
         case 2:
-          maxCardWidth = 480;
+          preferredCardWidth = 480;
           break;
         case 3:
-          maxCardWidth = 640;
+          preferredCardWidth = 640;
       }
-      let maxElementsOnRow = Math.ceil(containerWidth / maxCardWidth!);
+      let maxElementsOnRow = Math.ceil(containerWidth / preferredCardWidth!);
       let fittedCardWidth = containerWidth / maxElementsOnRow - paddingOffset;
-      let imageHeight = (fittedCardWidth / 16) * 9;
       setCardWidth(fittedCardWidth);
-      // props.setPreviewHeight(imageHeight);
     }, [props, props.containerWidth, props.zoomIndex]);
 
     const cont = configuration?.interface.continuePlaylistDefault ?? false;

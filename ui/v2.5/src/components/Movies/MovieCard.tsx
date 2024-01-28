@@ -28,10 +28,10 @@ export const MovieCard: React.FC<IProps> = (props: IProps) => {
 
     let containerPadding = 30;
     let maxUsableWidth = props.containerWidth - containerPadding;
-    let maxCardWidth = 250;
+    let preferredCardWidth = 250;
     let paddingOffset = 10;
 
-    let maxElementsOnRow = Math.ceil(maxUsableWidth / maxCardWidth!);
+    let maxElementsOnRow = Math.ceil(maxUsableWidth / preferredCardWidth!);
     let fittedCardWidth = maxUsableWidth / maxElementsOnRow - paddingOffset;
     setCardWidth(fittedCardWidth);
   }, [props, props.containerWidth]);

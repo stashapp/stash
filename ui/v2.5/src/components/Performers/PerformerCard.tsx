@@ -70,21 +70,18 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
 
   const [updatePerformer] = usePerformerUpdate();
   const [cardWidth, setCardWidth] = useState<number>();
-  const [imageHeight, setImageHeight] = useState<number>();
 
   useEffect(() => {
     if (!containerWidth || ScreenUtils.isMobile()) return;
 
     let containerPadding = 30;
     let maxUsableWidth = containerWidth - containerPadding;
-    let maxCardWidth = 300;
+    let preferredCardWidth = 300;
     let paddingOffset = 10;
 
-    let maxElementsOnRow = Math.ceil(maxUsableWidth / maxCardWidth!);
+    let maxElementsOnRow = Math.ceil(maxUsableWidth / preferredCardWidth!);
     let fittedCardWidth = maxUsableWidth / maxElementsOnRow - paddingOffset;
-    let fittedimageHeight = (fittedCardWidth / 2) * 3;
     setCardWidth(fittedCardWidth);
-    setImageHeight(fittedimageHeight);
   }, [containerWidth]);
 
   function renderFavoriteIcon() {
@@ -288,7 +285,6 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
       image={
         <>
           <img
-            style={imageHeight ? { height: `${imageHeight}px` } : {}}
             loading="lazy"
             className="performer-card-image"
             alt={performer.name ?? ""}

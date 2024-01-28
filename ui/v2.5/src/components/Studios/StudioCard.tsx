@@ -74,10 +74,10 @@ export const StudioCard: React.FC<IProps> = ({
 
     let containerPadding = 30;
     let maxUsableWidth = containerWidth - containerPadding;
-    let maxCardWidth = 340;
+    let preferredCardWidth = 340;
     let paddingOffset = 10;
 
-    let maxElementsOnRow = Math.ceil(maxUsableWidth / maxCardWidth!);
+    let maxElementsOnRow = Math.ceil(maxUsableWidth / preferredCardWidth!);
     let fittedCardWidth = maxUsableWidth / maxElementsOnRow - paddingOffset;
     setCardWidth(fittedCardWidth);
   }, [containerWidth]);
