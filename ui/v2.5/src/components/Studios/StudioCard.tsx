@@ -2,7 +2,11 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 import NavUtils from "src/utils/navigation";
-import { GridCard, cardPadding, containerPadding } from "src/components/Shared/GridCard";
+import {
+  GridCard,
+  cardPadding,
+  containerPadding,
+} from "src/components/Shared/GridCard";
 import { ButtonGroup } from "react-bootstrap";
 import { FormattedMessage } from "react-intl";
 import { PopoverCountButton } from "../Shared/PopoverCountButton";

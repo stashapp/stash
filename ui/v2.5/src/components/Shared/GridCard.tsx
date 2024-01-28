@@ -3,6 +3,7 @@ import { Card, Form } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import cx from "classnames";
 import { TruncatedText } from "./TruncatedText";
+import ScreenUtils from "src/utils/screen";
 
 interface ICardProps {
   className?: string;
@@ -24,8 +25,8 @@ interface ICardProps {
   interactiveHeatmap?: string;
 }
 
-export const containerPadding = 30
-export const cardPadding = 10
+export const containerPadding = 30;
+export const cardPadding = 10;
 
 export const useContainerDimensions = (
   myRef: React.RefObject<HTMLDivElement>
@@ -149,7 +150,11 @@ export const GridCard: React.FC<ICardProps> = (props: ICardProps) => {
       onDragStart={handleDrag}
       onDragOver={handleDragOver}
       draggable={props.onSelectedChanged && props.selecting}
-      style={props.width ? { width: `${props.width}px` } : {}}
+      style={
+        props.width && !ScreenUtils.isMobile
+          ? { width: `${props.width}px` }
+          : {}
+      }
     >
       {maybeRenderCheckbox()}
 
