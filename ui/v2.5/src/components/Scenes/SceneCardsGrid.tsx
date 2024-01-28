@@ -21,15 +21,12 @@ export const SceneCardsGrid: React.FC<ISceneCardsGrid> = ({
 }) => {
   const componentRef = useRef<HTMLDivElement>(null);
   const { width } = useContainerDimensions(componentRef);
-  const [previewHeight, setPreviewHeight] = useState<number>();
   return (
     <div className="row justify-content-center" ref={componentRef}>
       {scenes.map((scene, index) => (
         <SceneCard
           key={scene.id}
           containerWidth={width}
-          previewHeight={previewHeight}
-          setPreviewHeight={setPreviewHeight}
           scene={scene}
           queue={queue}
           index={index}

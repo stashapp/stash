@@ -38,7 +38,6 @@ interface IScenePreviewProps {
   isPortrait: boolean;
   image?: string;
   video?: string;
-  height?: number;
   soundActive: boolean;
   vttPath?: string;
   onScrubberClick?: (timestamp: number) => void;
@@ -47,7 +46,6 @@ interface IScenePreviewProps {
 export const ScenePreview: React.FC<IScenePreviewProps> = ({
   image,
   video,
-  height,
   isPortrait,
   soundActive,
   vttPath,
@@ -74,10 +72,7 @@ export const ScenePreview: React.FC<IScenePreviewProps> = ({
   }, [soundActive]);
 
   return (
-    <div
-      className={cx("scene-card-preview", { portrait: isPortrait })}
-      style={height ? { height: `${height}px` } : {}}
-    >
+    <div className={cx("scene-card-preview", { portrait: isPortrait })}>
       <img
         className="scene-card-preview-image"
         loading="lazy"
@@ -103,7 +98,6 @@ interface ISceneCardProps {
   scene: GQL.SlimSceneDataFragment;
   containerWidth?: number;
   previewHeight?: number;
-  setPreviewHeight?: React.Dispatch<React.SetStateAction<number | undefined>>;
   index?: number;
   queue?: SceneQueue;
   compact?: boolean;
@@ -452,7 +446,6 @@ const SceneCardImage = PatchComponent(
       <>
         <ScenePreview
           image={props.scene.paths.screenshot ?? undefined}
-          height={props.previewHeight}
           video={props.scene.paths.preview ?? undefined}
           isPortrait={isPortrait()}
           soundActive={configuration?.interface?.soundOnPreview ?? false}
@@ -498,7 +491,6 @@ export const SceneCard = PatchComponent(
       if (
         !props.containerWidth ||
         props.zoomIndex === undefined ||
-        !props.setPreviewHeight ||
         ScreenUtils.isMobile()
       )
         return;
