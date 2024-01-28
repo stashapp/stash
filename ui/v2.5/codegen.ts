@@ -19,10 +19,12 @@ const config: CodegenConfig = {
         "typescript-react-apollo",
       ],
       config: {
+        strictScalars: true,
         scalars: {
           Time: "string",
           Timestamp: "string",
           Map: "{ [key: string]: any }",
+          BoolMap: "{ [key: string]: boolean }",
           Any: "any",
           Int64: "number",
           Upload: "File",
