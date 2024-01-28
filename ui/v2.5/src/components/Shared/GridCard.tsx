@@ -151,7 +151,7 @@ export const GridCard: React.FC<ICardProps> = (props: ICardProps) => {
       onDragOver={handleDragOver}
       draggable={props.onSelectedChanged && props.selecting}
       style={
-        props.width && !ScreenUtils.isMobile
+        props.width && !ScreenUtils.isMobile()
           ? { width: `${props.width}px` }
           : {}
       }
