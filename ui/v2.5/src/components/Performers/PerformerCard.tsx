@@ -4,7 +4,7 @@ import { useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import NavUtils from "src/utils/navigation";
 import TextUtils from "src/utils/text";
-import { GridCard } from "../Shared/GridCard";
+import { GridCard, cardPadding, containerPadding } from "../Shared/GridCard";
 import { CountryFlag } from "../Shared/CountryFlag";
 import { SweatDrops } from "../Shared/SweatDrops";
 import { HoverPopover } from "../Shared/HoverPopover";
@@ -74,13 +74,11 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
   useEffect(() => {
     if (!containerWidth || ScreenUtils.isMobile()) return;
 
-    let containerPadding = 30;
     let maxUsableWidth = containerWidth - containerPadding;
     let preferredCardWidth = 300;
-    let paddingOffset = 10;
 
     let maxElementsOnRow = Math.ceil(maxUsableWidth / preferredCardWidth!);
-    let fittedCardWidth = maxUsableWidth / maxElementsOnRow - paddingOffset;
+    let fittedCardWidth = maxUsableWidth / maxElementsOnRow - cardPadding;
     setCardWidth(fittedCardWidth);
   }, [containerWidth]);
 

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Button, ButtonGroup } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
-import { GridCard } from "../Shared/GridCard";
+import { GridCard, cardPadding, containerPadding } from "../Shared/GridCard";
 import { HoverPopover } from "../Shared/HoverPopover";
 import { Icon } from "../Shared/Icon";
 import { SceneLink } from "../Shared/TagLink";
@@ -26,13 +26,11 @@ export const MovieCard: React.FC<IProps> = (props: IProps) => {
   useEffect(() => {
     if (!props.containerWidth || ScreenUtils.isMobile()) return;
 
-    let containerPadding = 30;
     let maxUsableWidth = props.containerWidth - containerPadding;
     let preferredCardWidth = 250;
-    let paddingOffset = 10;
 
     let maxElementsOnRow = Math.ceil(maxUsableWidth / preferredCardWidth!);
-    let fittedCardWidth = maxUsableWidth / maxElementsOnRow - paddingOffset;
+    let fittedCardWidth = maxUsableWidth / maxElementsOnRow - cardPadding;
     setCardWidth(fittedCardWidth);
   }, [props, props.containerWidth]);
 

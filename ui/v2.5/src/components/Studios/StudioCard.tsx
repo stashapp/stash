@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 import NavUtils from "src/utils/navigation";
-import { GridCard } from "src/components/Shared/GridCard";
+import { GridCard, cardPadding, containerPadding } from "src/components/Shared/GridCard";
 import { ButtonGroup } from "react-bootstrap";
 import { FormattedMessage } from "react-intl";
 import { PopoverCountButton } from "../Shared/PopoverCountButton";
@@ -72,13 +72,11 @@ export const StudioCard: React.FC<IProps> = ({
   useEffect(() => {
     if (!containerWidth || ScreenUtils.isMobile()) return;
 
-    let containerPadding = 30;
     let maxUsableWidth = containerWidth - containerPadding;
     let preferredCardWidth = 340;
-    let paddingOffset = 10;
 
     let maxElementsOnRow = Math.ceil(maxUsableWidth / preferredCardWidth!);
-    let fittedCardWidth = maxUsableWidth / maxElementsOnRow - paddingOffset;
+    let fittedCardWidth = maxUsableWidth / maxElementsOnRow - cardPadding;
     setCardWidth(fittedCardWidth);
   }, [containerWidth]);
 

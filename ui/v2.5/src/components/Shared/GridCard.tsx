@@ -24,6 +24,9 @@ interface ICardProps {
   interactiveHeatmap?: string;
 }
 
+export const containerPadding = 30
+export const cardPadding = 10
+
 export const useContainerDimensions = (
   myRef: React.RefObject<HTMLDivElement>
 ) => {

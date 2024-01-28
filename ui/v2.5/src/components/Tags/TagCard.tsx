@@ -5,7 +5,7 @@ import * as GQL from "src/core/generated-graphql";
 import NavUtils from "src/utils/navigation";
 import { FormattedMessage } from "react-intl";
 import { TruncatedText } from "../Shared/TruncatedText";
-import { GridCard } from "../Shared/GridCard";
+import { GridCard, cardPadding, containerPadding } from "../Shared/GridCard";
 import { PopoverCountButton } from "../Shared/PopoverCountButton";
 import ScreenUtils from "src/utils/screen";
 
@@ -32,11 +32,9 @@ export const TagCard: React.FC<IProps> = ({
     if (!containerWidth || zoomIndex === undefined || ScreenUtils.isMobile())
       return;
 
-    let containerPadding = 30;
     let maxUsableWidth = containerWidth - containerPadding;
     let zoomValue = zoomIndex;
     let preferredCardWidth: number;
-    let paddingOffset = 10;
     switch (zoomValue) {
       case 0:
         preferredCardWidth = 240;
@@ -51,7 +49,7 @@ export const TagCard: React.FC<IProps> = ({
         preferredCardWidth = 640;
     }
     let maxElementsOnRow = Math.ceil(maxUsableWidth / preferredCardWidth!);
-    let fittedCardWidth = maxUsableWidth / maxElementsOnRow - paddingOffset;
+    let fittedCardWidth = maxUsableWidth / maxElementsOnRow - cardPadding;
     setCardWidth(fittedCardWidth);
   }, [containerWidth, zoomIndex]);
 
