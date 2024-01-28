@@ -26,7 +26,7 @@ interface ICardProps {
 }
 
 export const containerPadding = 30;
-export const cardPadding = 10;
+export const cardMargin = 10;
 
 export const useContainerDimensions = (
   myRef: React.RefObject<HTMLDivElement>

@@ -2,7 +2,7 @@ import { Button, ButtonGroup, OverlayTrigger, Tooltip } from "react-bootstrap";
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
-import { GridCard, cardPadding, containerPadding } from "../Shared/GridCard";
+import { GridCard, cardMargin, containerPadding } from "../Shared/GridCard";
 import { HoverPopover } from "../Shared/HoverPopover";
 import { Icon } from "../Shared/Icon";
 import { SceneLink, TagLink } from "../Shared/TagLink";
@@ -55,7 +55,7 @@ export const GalleryCard: React.FC<IProps> = (props) => {
         preferredCardWidth = 640;
     }
     let maxElementsOnRow = Math.ceil(containerWidth / preferredCardWidth!);
-    let fittedCardWidth = containerWidth / maxElementsOnRow - cardPadding;
+    let fittedCardWidth = containerWidth / maxElementsOnRow - cardMargin;
     setCardWidth(fittedCardWidth);
   }, [props, props.containerWidth, props.zoomIndex]);
 

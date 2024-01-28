@@ -9,7 +9,7 @@ import { SweatDrops } from "src/components/Shared/SweatDrops";
 import { PerformerPopoverButton } from "src/components/Shared/PerformerPopoverButton";
 import {
   GridCard,
-  cardPadding,
+  cardMargin,
   containerPadding,
 } from "src/components/Shared/GridCard";
 import { RatingBanner } from "src/components/Shared/RatingBanner";
@@ -63,7 +63,7 @@ export const ImageCard: React.FC<IImageCardProps> = (
         preferredCardWidth = 640;
     }
     let maxElementsOnRow = Math.ceil(containerWidth / preferredCardWidth!);
-    let fittedCardWidth = containerWidth / maxElementsOnRow - cardPadding;
+    let fittedCardWidth = containerWidth / maxElementsOnRow - cardMargin;
     setCardWidth(fittedCardWidth);
   }, [props, props.containerWidth, props.zoomIndex]);
 

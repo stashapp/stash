@@ -4,7 +4,7 @@ import { useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import NavUtils from "src/utils/navigation";
 import TextUtils from "src/utils/text";
-import { GridCard, cardPadding, containerPadding } from "../Shared/GridCard";
+import { GridCard, cardMargin, containerPadding } from "../Shared/GridCard";
 import { CountryFlag } from "../Shared/CountryFlag";
 import { SweatDrops } from "../Shared/SweatDrops";
 import { HoverPopover } from "../Shared/HoverPopover";
@@ -78,7 +78,7 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
     let preferredCardWidth = 300;
 
     let maxElementsOnRow = Math.ceil(maxUsableWidth / preferredCardWidth!);
-    let fittedCardWidth = maxUsableWidth / maxElementsOnRow - cardPadding;
+    let fittedCardWidth = maxUsableWidth / maxElementsOnRow - cardMargin;
     setCardWidth(fittedCardWidth);
   }, [containerWidth]);
 

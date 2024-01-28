@@ -18,7 +18,7 @@ import TextUtils from "src/utils/text";
 import { SceneQueue } from "src/models/sceneQueue";
 import { ConfigurationContext } from "src/hooks/Config";
 import { PerformerPopoverButton } from "../Shared/PerformerPopoverButton";
-import { GridCard, cardPadding, containerPadding } from "../Shared/GridCard";
+import { GridCard, cardMargin, containerPadding } from "../Shared/GridCard";
 import { RatingBanner } from "../Shared/RatingBanner";
 import { FormattedNumber } from "react-intl";
 import {
@@ -512,7 +512,7 @@ export const SceneCard = PatchComponent(
           preferredCardWidth = 640;
       }
       let maxElementsOnRow = Math.ceil(containerWidth / preferredCardWidth!);
-      let fittedCardWidth = containerWidth / maxElementsOnRow - cardPadding;
+      let fittedCardWidth = containerWidth / maxElementsOnRow - cardMargin;
       setCardWidth(fittedCardWidth);
     }, [props, props.containerWidth, props.zoomIndex]);
 

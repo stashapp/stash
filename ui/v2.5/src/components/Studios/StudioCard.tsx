@@ -4,7 +4,7 @@ import * as GQL from "src/core/generated-graphql";
 import NavUtils from "src/utils/navigation";
 import {
   GridCard,
-  cardPadding,
+  cardMargin,
   containerPadding,
 } from "src/components/Shared/GridCard";
 import { ButtonGroup } from "react-bootstrap";
@@ -80,7 +80,7 @@ export const StudioCard: React.FC<IProps> = ({
     let preferredCardWidth = 340;
 
     let maxElementsOnRow = Math.ceil(maxUsableWidth / preferredCardWidth!);
-    let fittedCardWidth = maxUsableWidth / maxElementsOnRow - cardPadding;
+    let fittedCardWidth = maxUsableWidth / maxElementsOnRow - cardMargin;
     setCardWidth(fittedCardWidth);
   }, [containerWidth]);
 
