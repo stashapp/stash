@@ -7,11 +7,7 @@ import { GalleryLink, TagLink } from "src/components/Shared/TagLink";
 import { HoverPopover } from "src/components/Shared/HoverPopover";
 import { SweatDrops } from "src/components/Shared/SweatDrops";
 import { PerformerPopoverButton } from "src/components/Shared/PerformerPopoverButton";
-import {
-  GridCard,
-  cardMargin,
-  containerPadding,
-} from "src/components/Shared/GridCard";
+import { GridCard, calculateCardWidth } from "src/components/Shared/GridCard";
 import { RatingBanner } from "src/components/Shared/RatingBanner";
 import {
   faBox,
@@ -46,7 +42,6 @@ export const ImageCard: React.FC<IImageCardProps> = (
     )
       return;
 
-    let containerWidth = props.containerWidth - containerPadding;
     let zoomValue = props.zoomIndex;
     let preferredCardWidth: number;
     switch (zoomValue) {
@@ -62,8 +57,10 @@ export const ImageCard: React.FC<IImageCardProps> = (
       case 3:
         preferredCardWidth = 640;
     }
-    let maxElementsOnRow = Math.ceil(containerWidth / preferredCardWidth!);
-    let fittedCardWidth = containerWidth / maxElementsOnRow - cardMargin;
+    let fittedCardWidth = calculateCardWidth(
+      props.containerWidth,
+      preferredCardWidth!
+    );
     setCardWidth(fittedCardWidth);
   }, [props, props.containerWidth, props.zoomIndex]);
 

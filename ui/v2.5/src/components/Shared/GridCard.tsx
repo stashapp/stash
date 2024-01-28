@@ -25,8 +25,16 @@ interface ICardProps {
   interactiveHeatmap?: string;
 }
 
-export const containerPadding = 30;
-export const cardMargin = 10;
+export const calculateCardWidth = (
+  containerWidth: number,
+  preferredWidth: number
+) => {
+  const containerPadding = 30;
+  const cardMargin = 10;
+  let maxUsableWidth = containerWidth - containerPadding;
+  let maxElementsOnRow = Math.ceil(maxUsableWidth / preferredWidth);
+  return maxUsableWidth / maxElementsOnRow - cardMargin;
+};
 
 export const useContainerDimensions = (
   myRef: React.RefObject<HTMLDivElement>
