@@ -233,6 +233,10 @@
 }
 
 .performer-select {
+  .performer-disambiguation {
+    white-space: pre;
+  }
+
   .alias {
     font-weight: bold;
     white-space: pre;

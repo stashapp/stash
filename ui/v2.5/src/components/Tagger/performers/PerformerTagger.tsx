@@ -356,7 +356,7 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
       [performerID]: {
         message: intl.formatMessage(
           { id: "performer_tagger.failed_to_save_performer" },
-          { studio: modalPerformer?.name }
+          { performer: modalPerformer?.name }
         ),
         details:
           message === "UNIQUE constraint failed: performers.name"
