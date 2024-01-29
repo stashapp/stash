@@ -455,18 +455,22 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
   function maybeRenderHeaderBackgroundImage() {
     let studioImage = studio.image_path;
     if (enableBackgroundImage && !isEditing && studioImage) {
-      return (
-        <div className="background-image-container">
-          <picture>
-            <source src={studioImage} />
-            <img
-              className="background-image"
-              src={studioImage}
-              alt={`${studio.name} background`}
-            />
-          </picture>
-        </div>
-      );
+      const studioImageURL = new URL(studioImage);
+      let isDefaultImage = studioImageURL.searchParams.get("default");
+      if (!isDefaultImage) {
+        return (
+          <div className="background-image-container">
+            <picture>
+              <source src={studioImage} />
+              <img
+                className="background-image"
+                src={studioImage}
+                alt={`${studio.name} background`}
+              />
+            </picture>
+          </div>
+        );
+      }
     }
   }
 

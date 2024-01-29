@@ -362,18 +362,22 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
   function maybeRenderHeaderBackgroundImage() {
     let image = movie.front_image_path;
     if (enableBackgroundImage && !isEditing && image) {
-      return (
-        <div className="background-image-container">
-          <picture>
-            <source src={image} />
-            <img
-              className="background-image"
-              src={image}
-              alt={`${movie.name} background`}
-            />
-          </picture>
-        </div>
-      );
+      const imageURL = new URL(image);
+      let isDefaultImage = imageURL.searchParams.get("default");
+      if (!isDefaultImage) {
+        return (
+          <div className="background-image-container">
+            <picture>
+              <source src={image} />
+              <img
+                className="background-image"
+                src={image}
+                alt={`${movie.name} background`}
+              />
+            </picture>
+          </div>
+        );
+      }
     }
   }
 

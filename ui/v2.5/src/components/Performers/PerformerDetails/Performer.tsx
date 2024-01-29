@@ -336,18 +336,22 @@ const PerformerPage: React.FC<IProps> = ({ performer, tabKey }) => {
 
   function maybeRenderHeaderBackgroundImage() {
     if (enableBackgroundImage && !isEditing && activeImage) {
-      return (
-        <div className="background-image-container">
-          <picture>
-            <source src={activeImage} />
-            <img
-              className="background-image"
-              src={activeImage}
-              alt={`${performer.name} background`}
-            />
-          </picture>
-        </div>
-      );
+      const activeImageURL = new URL(activeImage);
+      let isDefaultImage = activeImageURL.searchParams.get("default");
+      if (!isDefaultImage) {
+        return (
+          <div className="background-image-container">
+            <picture>
+              <source src={activeImage} />
+              <img
+                className="background-image"
+                src={activeImage}
+                alt={`${performer.name} background`}
+              />
+            </picture>
+          </div>
+        );
+      }
     }
   }
 
