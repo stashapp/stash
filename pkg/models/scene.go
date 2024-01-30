@@ -96,8 +96,7 @@ type SceneFilterType struct {
 	// Filter by updated at
 	UpdatedAt *TimestampCriterionInput `json:"updated_at"`
 	// Filter by scene filters
-	Filters   *StringCriterionInput `json:"filters"`
-
+	Filters *StringCriterionInput `json:"filters"`
 }
 
 type SceneQueryOptions struct {

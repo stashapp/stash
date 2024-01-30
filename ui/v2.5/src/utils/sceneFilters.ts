@@ -328,4 +328,3 @@ export function updateSceneFiltersStyle(
     style.value = `${styleString};`;
   }
 }
-

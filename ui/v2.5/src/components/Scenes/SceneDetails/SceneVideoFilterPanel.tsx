@@ -1,12 +1,25 @@
-import React, { useState } from "react";
+import React, { useEffect, useState, useMemo, useRef } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Button, Form } from "react-bootstrap";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
 import { VIDEO_PLAYER_ID } from "src/components/ScenePlayer/util";
+import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
+import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
+import { useToast } from "src/hooks/Toast";
+import { useFormik } from "formik";
+import {
+  updateSceneFilters,
+  updateSceneFiltersStyle,
+  sliderRanges,
+} from "src/utils/sceneFilters";
+import * as yup from "yup";
+import { useSceneUpdate } from "src/core/StashService";
+import isEqual from "lodash-es/isEqual";
 
 interface ISceneVideoFilterPanelProps {
   scene: GQL.SceneDataFragment;
+  isVisible: boolean;
 }
 
 // References
@@ -21,307 +34,215 @@ type SliderRange = {
   divider: number;
 };
 
-export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = (
-  props: ISceneVideoFilterPanelProps
-) => {
-  const contrastRange: SliderRange = {
-    min: 0,
-    default: 100,
-    max: 200,
-    divider: 1,
-  };
-  const brightnessRange: SliderRange = {
-    min: 0,
-    default: 100,
-    max: 200,
-    divider: 1,
-  };
-  const gammaRange: SliderRange = {
-    min: 0,
-    default: 100,
-    max: 200,
-    divider: 200,
-  };
-  const saturateRange: SliderRange = {
-    min: 0,
-    default: 100,
-    max: 200,
-    divider: 1,
-  };
-  const hueRotateRange: SliderRange = {
-    min: 0,
-    default: 0,
-    max: 360,
-    divider: 1,
-  };
-  const whiteBalanceRange: SliderRange = {
-    min: 0,
-    default: 100,
-    max: 200,
-    divider: 200,
-  };
-  const colourRange: SliderRange = {
-    min: 0,
-    default: 100,
-    max: 200,
-    divider: 1,
-  };
-  const blurRange: SliderRange = { min: 0, default: 0, max: 250, divider: 10 };
-  const rotateRange: SliderRange = {
-    min: 0,
-    default: 2,
-    max: 4,
-    divider: 1 / 90,
-  };
-  const scaleRange: SliderRange = {
-    min: 0,
-    default: 100,
-    max: 200,
-    divider: 1,
-  };
-  const aspectRatioRange: SliderRange = {
-    min: 0,
-    default: 150,
-    max: 300,
-    divider: 100,
-  };
+interface IFilters {
+  contrast?: number;
+  brightness?: number;
+  gamma?: number;
+  saturate?: number;
+  hue_rotate?: number;
+  warmth?: number;
+  red?: number;
+  green?: number;
+  blue?: number;
+  blur?: number;
+  rotate?: number;
+  scale?: number;
+  aspect_ratio?: number;
+}
 
+export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = ({
+  isVisible,
+  ...props
+}) => {
   const intl = useIntl();
+  const Toast = useToast();
+  const [isLoading, setIsLoading] = useState(false);
+  const [sceneFilterUpdate] = useSceneUpdate();
+  const hasFiltersRef = useRef<boolean>();
+  const [filters, setFilters] = useState<IFilters | null>(null);
 
-  const [contrastValue, setContrastValue] = useState(contrastRange.default);
+  const [contrastValue, setContrastValue] = useState(
+    sliderRanges.contrastRange.default
+  );
   const [brightnessValue, setBrightnessValue] = useState(
-    brightnessRange.default
+    sliderRanges.brightnessRange.default
   );
-  const [gammaValue, setGammaValue] = useState(gammaRange.default);
-  const [saturateValue, setSaturateValue] = useState(saturateRange.default);
-  const [hueRotateValue, setHueRotateValue] = useState(hueRotateRange.default);
-  const [whiteBalanceValue, setWhiteBalanceValue] = useState(
-    whiteBalanceRange.default
+  const [gammaValue, setGammaValue] = useState(sliderRanges.gammaRange.default);
+  const [saturateValue, setSaturateValue] = useState(
+    filters?.saturate ?? sliderRanges.saturateRange.default
   );
-  const [redValue, setRedValue] = useState(colourRange.default);
-  const [greenValue, setGreenValue] = useState(colourRange.default);
-  const [blueValue, setBlueValue] = useState(colourRange.default);
-  const [blurValue, setBlurValue] = useState(blurRange.default);
-  const [rotateValue, setRotateValue] = useState(rotateRange.default);
-  const [scaleValue, setScaleValue] = useState(scaleRange.default);
+  const [hueRotateValue, setHueRotateValue] = useState(
+    sliderRanges.hueRotateRange.default
+  );
+  const [warmthValue, setWarmthValue] = useState(
+    sliderRanges.warmthRange.default
+  );
+  const [redValue, setRedValue] = useState(sliderRanges.colourRange.default);
+  const [greenValue, setGreenValue] = useState(
+    sliderRanges.colourRange.default
+  );
+  const [blueValue, setBlueValue] = useState(sliderRanges.colourRange.default);
+  const [blurValue, setBlurValue] = useState(sliderRanges.blurRange.default);
+  const [rotateValue, setRotateValue] = useState(
+    sliderRanges.rotateRange.default
+  );
+  const [scaleValue, setScaleValue] = useState(sliderRanges.scaleRange.default);
   const [aspectRatioValue, setAspectRatioValue] = useState(
-    aspectRatioRange.default
+    sliderRanges.aspectRatioRange.default
   );
 
-  // eslint-disable-next-line
-  function getVideoElement(playerVideoContainer: any) {
-    let videoElements = playerVideoContainer.getElementsByTagName("canvas");
-
-    if (videoElements.length == 0) {
-      videoElements = playerVideoContainer.getElementsByTagName("video");
-    }
-
-    if (videoElements.length > 0) {
-      return videoElements[0];
-    }
-  }
-
-  function updateVideoStyle() {
-    const playerVideoContainer = document.getElementById(VIDEO_PLAYER_ID)!;
-    if (!playerVideoContainer) {
-      return;
-    }
-
-    const playerVideoElement = getVideoElement(playerVideoContainer);
-    if (playerVideoElement != null) {
-      let styleString = "filter:";
-      let style = playerVideoElement.attributes.getNamedItem("style");
-
-      if (style == null) {
-        style = document.createAttribute("style");
-        playerVideoElement.attributes.setNamedItem(style);
-      }
-
-      if (
-        whiteBalanceValue !== whiteBalanceRange.default ||
-        redValue !== colourRange.default ||
-        greenValue !== colourRange.default ||
-        blueValue !== colourRange.default ||
-        gammaValue !== gammaRange.default
-      ) {
-        styleString += " url(#videoFilter)";
-      }
-
-      if (contrastValue !== contrastRange.default) {
-        styleString += ` contrast(${contrastValue}%)`;
-      }
-
-      if (brightnessValue !== brightnessRange.default) {
-        styleString += ` brightness(${brightnessValue}%)`;
-      }
-
-      if (saturateValue !== saturateRange.default) {
-        styleString += ` saturate(${saturateValue}%)`;
-      }
-
-      if (hueRotateValue !== hueRotateRange.default) {
-        styleString += ` hue-rotate(${hueRotateValue}deg)`;
-      }
-
-      if (blurValue > blurRange.default) {
-        styleString += ` blur(${blurValue / blurRange.divider}px)`;
-      }
-
-      styleString += "; transform:";
-
-      if (rotateValue !== rotateRange.default) {
-        styleString += ` rotate(${
-          (rotateValue - rotateRange.default) / rotateRange.divider
-        }deg)`;
-      }
-
-      if (
-        scaleValue !== scaleRange.default ||
-        aspectRatioValue !== aspectRatioRange.default
-      ) {
-        let xScale = scaleValue / scaleRange.divider / 100.0;
-        let yScale = scaleValue / scaleRange.divider / 100.0;
-
-        if (aspectRatioValue > aspectRatioRange.default) {
-          xScale *=
-            (aspectRatioRange.divider +
-              aspectRatioValue -
-              aspectRatioRange.default) /
-            aspectRatioRange.divider;
-        } else if (aspectRatioValue < aspectRatioRange.default) {
-          yScale *=
-            (aspectRatioRange.divider +
-              aspectRatioRange.default -
-              aspectRatioValue) /
-            aspectRatioRange.divider;
-        }
-
-        styleString += ` scale(${xScale},${yScale})`;
-      }
-
-      if (playerVideoElement.tagName == "CANVAS") {
-        styleString += "; width: 100%; height: 100%; position: absolute; top:0";
-      }
-
-      style.value = `${styleString};`;
-    }
-  }
-
-  function updateVideoFilters() {
-    const filterContainer = document.getElementById("video-filter-container");
-
-    if (filterContainer == null) {
-      return;
-    }
-
-    const svg1 = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    const videoFilter = document.createElementNS(
-      "http://www.w3.org/2000/svg",
-      "filter"
-    );
-    videoFilter.setAttribute("id", "videoFilter");
-
-    if (
-      whiteBalanceValue !== whiteBalanceRange.default ||
-      redValue !== colourRange.default ||
-      greenValue !== colourRange.default ||
-      blueValue !== colourRange.default
-    ) {
-      const feColorMatrix = document.createElementNS(
-        "http://www.w3.org/2000/svg",
-        "feColorMatrix"
-      );
-      feColorMatrix.setAttribute(
-        "values",
-        `${
-          1 +
-          (whiteBalanceValue - whiteBalanceRange.default) /
-            whiteBalanceRange.divider +
-          (redValue - colourRange.default) / colourRange.divider
-        } 0 0 0 0   0 ${
-          1.0 + (greenValue - colourRange.default) / colourRange.divider
-        } 0 0 0   0 0 ${
-          1 -
-          (whiteBalanceValue - whiteBalanceRange.default) /
-            whiteBalanceRange.divider +
-          (blueValue - colourRange.default) / colourRange.divider
-        } 0 0   0 0 0 1.0 0`
-      );
-      videoFilter.appendChild(feColorMatrix);
-    }
-
-    if (gammaValue !== gammaRange.default) {
-      const feComponentTransfer = document.createElementNS(
-        "http://www.w3.org/2000/svg",
-        "feComponentTransfer"
-      );
-
-      const feFuncR = document.createElementNS(
-        "http://www.w3.org/2000/svg",
-        "feFuncR"
-      );
-      feFuncR.setAttribute("type", "gamma");
-      feFuncR.setAttribute("amplitude", "1.0");
-      feFuncR.setAttribute(
-        "exponent",
-        `${1 + (gammaRange.default - gammaValue) / gammaRange.divider}`
-      );
-      feFuncR.setAttribute("offset", "0.0");
-      feComponentTransfer.appendChild(feFuncR);
-
-      const feFuncG = document.createElementNS(
-        "http://www.w3.org/2000/svg",
-        "feFuncG"
-      );
-      feFuncG.setAttribute("type", "gamma");
-      feFuncG.setAttribute("amplitude", "1.0");
-      feFuncG.setAttribute(
-        "exponent",
-        `${1 + (gammaRange.default - gammaValue) / gammaRange.divider}`
-      );
-      feFuncG.setAttribute("offset", "0.0");
-      feComponentTransfer.appendChild(feFuncG);
-
-      const feFuncB = document.createElementNS(
-        "http://www.w3.org/2000/svg",
-        "feFuncB"
-      );
-      feFuncB.setAttribute("type", "gamma");
-      feFuncB.setAttribute("amplitude", "1.0");
-      feFuncB.setAttribute(
-        "exponent",
-        `${1 + (gammaRange.default - gammaValue) / gammaRange.divider}`
-      );
-      feFuncB.setAttribute("offset", "0.0");
-      feComponentTransfer.appendChild(feFuncB);
-
-      const feFuncA = document.createElementNS(
-        "http://www.w3.org/2000/svg",
-        "feFuncA"
-      );
-      feFuncA.setAttribute("type", "gamma");
-      feFuncA.setAttribute("amplitude", "1.0");
-      feFuncA.setAttribute("exponent", "1.0");
-      feFuncA.setAttribute("offset", "0.0");
-      feComponentTransfer.appendChild(feFuncA);
-
-      videoFilter.appendChild(feComponentTransfer);
-    }
-
-    svg1.appendChild(videoFilter);
-
-    // Add or Replace existing svg
-    const filterContainerSvgs = filterContainer.getElementsByTagNameNS(
-      "http://www.w3.org/2000/svg",
-      "svg"
-    );
-    if (filterContainerSvgs.length === 0) {
-      // attach container to document
-      filterContainer.appendChild(svg1);
+  useEffect(() => {
+    if (props.scene.filters && props.scene.filters.length > 0) {
+      hasFiltersRef.current = false;
+      const parsedFilters = JSON.parse(props.scene.filters);
+      setFilters(parsedFilters);
+      setContrastValue(parsedFilters.contrast);
+      setBrightnessValue(parsedFilters.brightness);
+      setGammaValue(parsedFilters.gamma);
+      setHueRotateValue(parsedFilters.hue_rotate);
+      setWarmthValue(parsedFilters.warmth);
+      setRedValue(parsedFilters.red);
+      setGreenValue(parsedFilters.green);
+      setBlueValue(parsedFilters.blue);
+      setBlurValue(parsedFilters.blur);
+      setRotateValue(parsedFilters.rotate);
+      setScaleValue(parsedFilters.scale);
+      setAspectRatioValue(parsedFilters.aspect_ratio);
+      setContrastValue(parsedFilters.contrast);
     } else {
-      // assume only one svg... maybe issue
-      filterContainer.replaceChild(svg1, filterContainerSvgs[0]);
+      hasFiltersRef.current = true;
+      setFilters(null);
+      setContrastValue(sliderRanges.contrastRange.default);
+      setBrightnessValue(sliderRanges.brightnessRange.default);
+      setGammaValue(sliderRanges.gammaRange.default);
+      setHueRotateValue(sliderRanges.hueRotateRange.default);
+      setWarmthValue(sliderRanges.warmthRange.default);
+      setRedValue(sliderRanges.colourRange.default);
+      setGreenValue(sliderRanges.colourRange.default);
+      setBlueValue(sliderRanges.colourRange.default);
+      setBlurValue(sliderRanges.blurRange.default);
+      setRotateValue(sliderRanges.rotateRange.default);
+      setScaleValue(sliderRanges.scaleRange.default);
+      setAspectRatioValue(sliderRanges.aspectRatioRange.default);
+      setContrastValue(sliderRanges.contrastRange.default);
     }
+  }, [props.scene]);
+
+  const schema = yup.object({
+    contrast: yup.number().required(),
+    brightness: yup.number().required(),
+    gamma: yup.number().required(),
+    saturate: yup.number().required(),
+    hue_rotate: yup.number().required(),
+    warmth: yup.number().required(),
+    red: yup.number().required(),
+    green: yup.number().required(),
+    blue: yup.number().required(),
+    blur: yup.number().required(),
+    rotate: yup.number().required(),
+    scale: yup.number().required(),
+    aspect_ratio: yup.number().required(),
+  });
+
+  const initialValues = useMemo(
+    () => ({
+      contrast: filters?.contrast ?? 100,
+      brightness: filters?.brightness ?? 100,
+      gamma: filters?.gamma ?? 100,
+      saturate: filters?.saturate ?? 100,
+      hue_rotate: filters?.hue_rotate ?? 0,
+      warmth: filters?.warmth ?? 100,
+      red: filters?.red ?? 100,
+      green: filters?.green ?? 100,
+      blue: filters?.blue ?? 100,
+      blur: filters?.blur ?? 0,
+      rotate: filters?.rotate ?? 2,
+      scale: filters?.scale ?? 100,
+      aspect_ratio: filters?.aspect_ratio ?? 150,
+    }),
+    [filters]
+  );
+
+  type InputValues = yup.InferType<typeof schema>;
+
+  const formik = useFormik<InputValues>({
+    initialValues,
+    enableReinitialize: true,
+    validationSchema: schema,
+    onSubmit: (values) => onSceneUpdate(values),
+  });
+
+  useEffect(() => {
+    if (isVisible) {
+      Mousetrap.bind("s s", () => {
+        if (formik.dirty) {
+          formik.submitForm();
+        }
+      });
+      Mousetrap.bind("d d", () => {
+        if (isVisible) {
+          onSceneUpdate(null);
+        }
+      });
+
+      return () => {
+        Mousetrap.unbind("s s");
+        Mousetrap.unbind("d d");
+      };
+    }
+  });
+
+  async function onSceneUpdate(input: InputValues | null) {
+    setIsLoading(true);
+    try {
+      const result = await sceneFilterUpdate({
+        variables: {
+          input: {
+            id: props.scene.id,
+            filters: input
+              ? JSON.stringify({
+                  contrast: input.contrast,
+                  brightness: input.brightness,
+                  gamma: input.gamma,
+                  saturate: input.saturate,
+                  hue_rotate: input.hue_rotate,
+                  warmth: input.warmth,
+                  red: input.red,
+                  green: input.green,
+                  blue: input.blue,
+                  blur: input.blur,
+                  rotate: input.rotate,
+                  scale: input.scale,
+                  aspect_ratio: input.aspect_ratio,
+                })
+              : null,
+          },
+        },
+      });
+
+      if (result) {
+        if (input) {
+          Toast.success(
+            intl.formatMessage({ id: "toast.scene_video_filter_saved" })
+          );
+        } else {
+          Toast.success(
+            intl.formatMessage({ id: "toast.scene_video_filter_deleted" })
+          );
+          onResetTransforms();
+          onResetFilters();
+        }
+      }
+      return;
+    } catch (e) {
+      Toast.error(e);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function onDeleteAction() {
+    await onSceneUpdate(null);
   }
 
   interface ISliderProps {
@@ -329,8 +250,10 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = (
     className?: string;
     range: SliderRange;
     value: number;
+    // setValue: (value: number) => void;
     setValue: (value: React.SetStateAction<number>) => void;
     displayValue: string;
+    fieldName: string;
   }
 
   function renderSlider(sliderProps: ISliderProps) {
@@ -344,9 +267,11 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = (
             min={sliderProps.range.min}
             max={sliderProps.range.max}
             value={sliderProps.value}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              sliderProps.setValue(Number.parseInt(e.currentTarget.value, 10))
-            }
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+              const newValue = Number.parseInt(e.currentTarget.value, 10);
+              sliderProps.setValue(newValue);
+              formik.setFieldValue(sliderProps.fieldName, newValue);
+            }}
           />
         </span>
         <span
@@ -364,10 +289,11 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = (
   function renderBlur() {
     return renderSlider({
       title: intl.formatMessage({ id: "effect_filters.blur" }),
-      range: blurRange,
+      range: sliderRanges.blurRange,
       value: blurValue,
       setValue: setBlurValue,
-      displayValue: `${blurValue / blurRange.divider}px`,
+      displayValue: `${blurValue / sliderRanges.blurRange.divider}px`,
+      fieldName: "blur",
     });
   }
 
@@ -375,10 +301,11 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = (
     return renderSlider({
       title: intl.formatMessage({ id: "effect_filters.contrast" }),
       className: "contrast-slider",
-      range: contrastRange,
+      range: sliderRanges.contrastRange,
       value: contrastValue,
       setValue: setContrastValue,
-      displayValue: `${contrastValue / brightnessRange.divider}%`,
+      displayValue: `${contrastValue / sliderRanges.brightnessRange.divider}%`,
+      fieldName: "contrast",
     });
   }
 
@@ -386,10 +313,13 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = (
     return renderSlider({
       title: intl.formatMessage({ id: "effect_filters.brightness" }),
       className: "brightness-slider",
-      range: brightnessRange,
+      range: sliderRanges.brightnessRange,
       value: brightnessValue,
       setValue: setBrightnessValue,
-      displayValue: `${brightnessValue / brightnessRange.divider}%`,
+      displayValue: `${
+        brightnessValue / sliderRanges.brightnessRange.divider
+      }%`,
+      fieldName: "brightness",
     });
   }
 
@@ -397,10 +327,14 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = (
     return renderSlider({
       title: intl.formatMessage({ id: "effect_filters.gamma" }),
       className: "gamma-slider",
-      range: gammaRange,
+      range: sliderRanges.gammaRange,
       value: gammaValue,
       setValue: setGammaValue,
-      displayValue: `${(gammaValue - gammaRange.default) / gammaRange.divider}`,
+      displayValue: `${
+        (gammaValue - sliderRanges.gammaRange.default) /
+        sliderRanges.gammaRange.divider
+      }`,
+      fieldName: "gamma",
     });
   }
 
@@ -408,10 +342,11 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = (
     return renderSlider({
       title: intl.formatMessage({ id: "effect_filters.saturation" }),
       className: "saturation-slider",
-      range: saturateRange,
+      range: sliderRanges.saturateRange,
       value: saturateValue,
       setValue: setSaturateValue,
-      displayValue: `${saturateValue / saturateRange.divider}%`,
+      displayValue: `${saturateValue / sliderRanges.saturateRange.divider}%`,
+      fieldName: "saturate",
     });
   }
 
@@ -419,24 +354,28 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = (
     return renderSlider({
       title: intl.formatMessage({ id: "effect_filters.hue" }),
       className: "hue-rotate-slider",
-      range: hueRotateRange,
+      range: sliderRanges.hueRotateRange,
       value: hueRotateValue,
       setValue: setHueRotateValue,
-      displayValue: `${hueRotateValue / hueRotateRange.divider}\xB0`,
+      displayValue: `${
+        hueRotateValue / sliderRanges.hueRotateRange.divider
+      }\xB0`,
+      fieldName: "hue_rotate",
     });
   }
 
-  function renderWhiteBalance() {
+  function renderWarmth() {
     return renderSlider({
       title: intl.formatMessage({ id: "effect_filters.warmth" }),
       className: "white-balance-slider",
-      range: whiteBalanceRange,
-      value: whiteBalanceValue,
-      setValue: setWhiteBalanceValue,
+      range: sliderRanges.warmthRange,
+      value: warmthValue,
+      setValue: setWarmthValue,
       displayValue: `${
-        (whiteBalanceValue - whiteBalanceRange.default) /
-        whiteBalanceRange.divider
+        (warmthValue - sliderRanges.warmthRange.default) /
+        sliderRanges.warmthRange.divider
       }`,
+      fieldName: "warmth",
     });
   }
 
@@ -444,12 +383,14 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = (
     return renderSlider({
       title: intl.formatMessage({ id: "effect_filters.red" }),
       className: "red-slider",
-      range: colourRange,
+      range: sliderRanges.colourRange,
       value: redValue,
       setValue: setRedValue,
       displayValue: `${
-        (redValue - colourRange.default) / colourRange.divider
+        (redValue - sliderRanges.colourRange.default) /
+        sliderRanges.colourRange.divider
       }%`,
+      fieldName: "red",
     });
   }
 
@@ -457,12 +398,14 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = (
     return renderSlider({
       title: intl.formatMessage({ id: "effect_filters.green" }),
       className: "green-slider",
-      range: colourRange,
+      range: sliderRanges.colourRange,
       value: greenValue,
       setValue: setGreenValue,
       displayValue: `${
-        (greenValue - colourRange.default) / colourRange.divider
+        (greenValue - sliderRanges.colourRange.default) /
+        sliderRanges.colourRange.divider
       }%`,
+      fieldName: "green",
     });
   }
 
@@ -470,46 +413,53 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = (
     return renderSlider({
       title: intl.formatMessage({ id: "effect_filters.blue" }),
       className: "blue-slider",
-      range: colourRange,
+      range: sliderRanges.colourRange,
       value: blueValue,
       setValue: setBlueValue,
       displayValue: `${
-        (blueValue - colourRange.default) / colourRange.divider
+        (blueValue - sliderRanges.colourRange.default) /
+        sliderRanges.colourRange.divider
       }%`,
+      fieldName: "blue",
     });
   }
 
   function renderRotate() {
     return renderSlider({
       title: intl.formatMessage({ id: "effect_filters.rotate" }),
-      range: rotateRange,
+      range: sliderRanges.rotateRange,
       value: rotateValue,
       setValue: setRotateValue,
       displayValue: `${
-        (rotateValue - rotateRange.default) / rotateRange.divider
+        (rotateValue - sliderRanges.rotateRange.default) /
+        sliderRanges.rotateRange.divider
       }\xB0`,
+      fieldName: "rotate",
     });
   }
 
   function renderScale() {
     return renderSlider({
       title: intl.formatMessage({ id: "effect_filters.scale" }),
-      range: scaleRange,
+      range: sliderRanges.scaleRange,
       value: scaleValue,
       setValue: setScaleValue,
-      displayValue: `${scaleValue / scaleRange.divider}%`,
+      displayValue: `${scaleValue / sliderRanges.scaleRange.divider}%`,
+      fieldName: "scale",
     });
   }
 
   function renderAspectRatio() {
     return renderSlider({
       title: intl.formatMessage({ id: "effect_filters.aspect" }),
-      range: aspectRatioRange,
+      range: sliderRanges.aspectRatioRange,
       value: aspectRatioValue,
       setValue: setAspectRatioValue,
       displayValue: `${
-        (aspectRatioValue - aspectRatioRange.default) / aspectRatioRange.divider
+        (aspectRatioValue - sliderRanges.aspectRatioRange.default) /
+        sliderRanges.aspectRatioRange.divider
       }`,
+      fieldName: "aspect_ratio",
     });
   }
 
@@ -595,22 +545,22 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = (
   }
 
   function onResetFilters() {
-    setContrastValue(contrastRange.default);
-    setBrightnessValue(brightnessRange.default);
-    setGammaValue(gammaRange.default);
-    setSaturateValue(saturateRange.default);
-    setHueRotateValue(hueRotateRange.default);
-    setWhiteBalanceValue(whiteBalanceRange.default);
-    setRedValue(colourRange.default);
-    setGreenValue(colourRange.default);
-    setBlueValue(colourRange.default);
-    setBlurValue(blurRange.default);
+    setContrastValue(sliderRanges.contrastRange.default);
+    setBrightnessValue(sliderRanges.brightnessRange.default);
+    setGammaValue(sliderRanges.gammaRange.default);
+    setSaturateValue(sliderRanges.saturateRange.default);
+    setHueRotateValue(sliderRanges.hueRotateRange.default);
+    setWarmthValue(sliderRanges.warmthRange.default);
+    setRedValue(sliderRanges.colourRange.default);
+    setGreenValue(sliderRanges.colourRange.default);
+    setBlueValue(sliderRanges.colourRange.default);
+    setBlurValue(sliderRanges.blurRange.default);
   }
 
   function onResetTransforms() {
-    setScaleValue(scaleRange.default);
-    setRotateValue(rotateRange.default);
-    setAspectRatioValue(aspectRatioRange.default);
+    setScaleValue(sliderRanges.scaleRange.default);
+    setRotateValue(sliderRanges.rotateRange.default);
+    setAspectRatioValue(sliderRanges.aspectRatioRange.default);
   }
 
   function renderResetButton() {
@@ -640,53 +590,101 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = (
     );
   }
 
+  function renderSaveButtons() {
+    return (
+      <>
+        <div className="form-container edit-buttons-container row px-3 pt-3">
+          <div className="edit-buttons mb-3 pl-0">
+            <Button
+              className="edit-button"
+              variant="primary"
+              disabled={!formik.dirty || !isEqual(formik.errors, {})}
+              onClick={() => onSceneUpdate(formik.values)}
+            >
+              <FormattedMessage id="actions.save" />
+            </Button>
+            <Button
+              className="edit-button"
+              variant="danger"
+              onClick={onDeleteAction}
+              disabled={hasFiltersRef.current}
+            >
+              <FormattedMessage id="actions.delete" />
+            </Button>
+          </div>
+        </div>
+      </>
+    );
+  }
+
   function renderFilterContainer() {
     return <div id="video-filter-container" />;
   }
 
+  if (isLoading) return <LoadingIndicator />;
+
   // On render update video style.
-  updateVideoFilters();
-  updateVideoStyle();
+  updateSceneFilters(gammaValue, redValue, greenValue, blueValue, warmthValue);
+  updateSceneFiltersStyle(
+    aspectRatioValue,
+    blurValue,
+    brightnessValue,
+    contrastValue,
+    gammaValue,
+    hueRotateValue,
+    redValue,
+    greenValue,
+    blueValue,
+    rotateValue,
+    saturateValue,
+    scaleValue,
+    warmthValue
+  );
 
   return (
-    <div className="container scene-video-filter">
-      <div className="row form-group">
-        <span className="col-12">
-          <h5>
-            <FormattedMessage id="effect_filters.name" />
-          </h5>
-        </span>
+    <div className="scene-filters-panel">
+      <div className="scene-video-filter form-container">
+        <Form noValidate onSubmit={formik.handleSubmit}>
+          {renderSaveButtons()}
+          <div className="row form-group">
+            <span className="col-12">
+              <h5>
+                <FormattedMessage id="effect_filters.name" />
+              </h5>
+            </span>
+          </div>
+          {renderBrightness()}
+          {renderContrast()}
+          {renderGammaSlider()}
+          {renderSaturate()}
+          {renderHueRotateSlider()}
+          {renderWarmth()}
+          {renderRedSlider()}
+          {renderGreenSlider()}
+          {renderBlueSlider()}
+          {renderBlur()}
+          <div className="row form-group">
+            <span className="col-12">
+              <h5>
+                <FormattedMessage id="effect_filters.name_transforms" />
+              </h5>
+            </span>
+          </div>
+          {renderRotate()}
+          {renderScale()}
+          {renderAspectRatio()}
+        </Form>
+        <div className="row form-group">
+          <span className="col-12">
+            <h5>
+              <FormattedMessage id="actions_name" />
+            </h5>
+          </span>
+        </div>
+        {renderRotateAndScale()}
+        {renderResetButton()}
+        {renderFilterContainer()}
       </div>
-      {renderBrightness()}
-      {renderContrast()}
-      {renderGammaSlider()}
-      {renderSaturate()}
-      {renderHueRotateSlider()}
-      {renderWhiteBalance()}
-      {renderRedSlider()}
-      {renderGreenSlider()}
-      {renderBlueSlider()}
-      {renderBlur()}
-      <div className="row form-group">
-        <span className="col-12">
-          <h5>
-            <FormattedMessage id="effect_filters.name_transforms" />
-          </h5>
-        </span>
-      </div>
-      {renderRotate()}
-      {renderScale()}
-      {renderAspectRatio()}
-      <div className="row form-group">
-        <span className="col-12">
-          <h5>
-            <FormattedMessage id="actions_name" />
-          </h5>
-        </span>
-      </div>
-      {renderRotateAndScale()}
-      {renderResetButton()}
-      {renderFilterContainer()}
     </div>
   );
 };
