@@ -3,3 +3,7 @@ scalar UIConfig
 extend type ConfigResult {
   ui: UIConfig!
 }
+
+extend type Mutation {
+  configureUI(input: UIConfig!): UIConfig!
+}

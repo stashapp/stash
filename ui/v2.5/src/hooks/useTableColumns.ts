@@ -14,10 +14,9 @@ export const useTableColumns = (
 
   const ui = configuration?.ui;
 
-  const selectedColumns: string[] =
-    ui?.tableColumns?.[tableName] ?? defaultColumns;
+  const selectedColumns = ui?.tableColumns?.[tableName] ?? defaultColumns;
 
-  async function saveColumns(updatedColumns: readonly string[]) {
+  async function saveColumns(updatedColumns: string[]) {
     try {
       await saveUI({
         variables: {

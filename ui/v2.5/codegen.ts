@@ -23,10 +23,10 @@ const config: CodegenConfig = {
         scalars: {
           Time: "string",
           Timestamp: "string",
-          Map: "{ [key: string]: any }",
+          Map: "{ [key: string]: unknown }",
           BoolMap: "{ [key: string]: boolean }",
           PluginConfigMap: "{ [id: string]: { [key: string]: unknown } }",
-          Any: "any",
+          Any: "unknown",
           Int64: "number",
           Upload: "File",
           UIConfig: "src/core/config#IUIConfig",
