@@ -6,13 +6,13 @@ import (
 	"github.com/stashapp/stash/internal/manager/config"
 )
 
-func (r *configResultResolver) Plugins(ctx context.Context, obj *ConfigResult, include []string) (map[string]interface{}, error) {
+func (r *configResultResolver) Plugins(ctx context.Context, obj *ConfigResult, include []string) (map[string]map[string]interface{}, error) {
 	if len(include) == 0 {
 		ret := config.GetInstance().GetAllPluginConfiguration()
 		return ret, nil
 	}
 
-	ret := make(map[string]interface{})
+	ret := make(map[string]map[string]interface{})
 
 	for _, plugin := range include {
 		c := config.GetInstance().GetPluginConfiguration(plugin)

@@ -25,6 +25,7 @@ const config: CodegenConfig = {
           Timestamp: "string",
           Map: "{ [key: string]: any }",
           BoolMap: "{ [key: string]: boolean }",
+          PluginConfigMap: "{ [id: string]: { [key: string]: unknown } }",
           Any: "any",
           Int64: "number",
           Upload: "File",

@@ -14,6 +14,9 @@ scalar Map
 "A String -> Boolean map"
 scalar BoolMap
 
+"A plugin ID -> Map (String -> Any map) map"
+scalar PluginConfigMap
+
 scalar Any
 
 scalar Int64
