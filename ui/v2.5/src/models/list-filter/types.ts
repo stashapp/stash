@@ -125,7 +125,6 @@ export interface IOptionType {
 
 export type CriterionType =
   | "path"
-  | "rating"
   | "rating100"
   | "organized"
   | "o_counter"
@@ -152,7 +151,6 @@ export type CriterionType =
   | "country"
   | "hair_color"
   | "eye_color"
-  | "height"
   | "height_cm"
   | "weight"
   | "measurements"
@@ -173,7 +171,6 @@ export type CriterionType =
   | "performer_count"
   | "death_year"
   | "url"
-  | "stash_id"
   | "interactive"
   | "interactive_speed"
   | "captions"
