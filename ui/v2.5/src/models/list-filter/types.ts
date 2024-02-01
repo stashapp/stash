@@ -1,3 +1,14 @@
+import { CriterionValue, IEncodedCriterion } from "./criteria/criterion";
+
+export type SavedObjectFilter = {
+  [K in CriterionType]?: IEncodedCriterion<CriterionValue>;
+};
+
+export type SavedUIOptions = {
+  display_mode?: DisplayMode;
+  zoom_index?: number;
+};
+
 // NOTE: add new enum values to the end, to ensure existing data
 // is not impacted
 export enum DisplayMode {

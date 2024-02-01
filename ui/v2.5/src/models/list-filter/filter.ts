@@ -5,7 +5,11 @@ import {
   SavedFilterDataFragment,
   SortDirectionEnum,
 } from "src/core/generated-graphql";
-import { Criterion, CriterionValue } from "./criteria/criterion";
+import {
+  Criterion,
+  CriterionValue,
+  IEncodedCriterion,
+} from "./criteria/criterion";
 import { getFilterOptions } from "./factory";
 import { CriterionType, DisplayMode } from "./types";
 
@@ -272,11 +276,13 @@ export class ListFilterModel {
 
     this.criteria = [];
     if (objectFilter) {
-      Object.keys(objectFilter).forEach((key) => {
-        const criterion = this.makeCriterion(key as CriterionType);
-        criterion.setFromEncodedCriterion(objectFilter[key]);
+      for (const [k, v] of Object.entries(objectFilter)) {
+        const criterion = this.makeCriterion(k as CriterionType);
+        criterion.setFromEncodedCriterion(
+          v as IEncodedCriterion<CriterionValue>
+        );
         this.criteria.push(criterion);
-      });
+      }
     }
   }
 

@@ -30,6 +30,8 @@ const config: CodegenConfig = {
           Int64: "number",
           Upload: "File",
           UIConfig: "src/core/config#IUIConfig",
+          SavedObjectFilter: "src/models/list-filter/types#SavedObjectFilter",
+          SavedUIOptions: "src/models/list-filter/types#SavedUIOptions",
         },
         withRefetchFn: true,
       },
