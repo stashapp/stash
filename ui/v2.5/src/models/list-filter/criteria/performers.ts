@@ -5,7 +5,7 @@ import {
   MultiCriterionInput,
 } from "src/core/generated-graphql";
 import { ILabeledId, ILabeledValueListValue } from "../types";
-import { Criterion, CriterionOption, IEncodedCriterion } from "./criterion";
+import { Criterion, CriterionOption, ISavedCriterion } from "./criterion";
 
 const modifierOptions = [
   CriterionModifier.IncludesAll,
@@ -49,10 +49,10 @@ export class PerformersCriterion extends Criterion<ILabeledValueListValue> {
     }
   }
 
-  public setFromEncodedCriterion(
-    encodedCriterion: IEncodedCriterion<ILabeledId[] | ILabeledValueListValue>
+  public setFromSavedCriterion(
+    criterion: ISavedCriterion<ILabeledId[] | ILabeledValueListValue>
   ) {
-    const { modifier, value } = encodedCriterion;
+    const { modifier, value } = criterion;
 
     // #3619 - the format of performer value was changed from an array
     // to an object. Check for both formats.
@@ -80,7 +80,7 @@ export class PerformersCriterion extends Criterion<ILabeledValueListValue> {
     return this.value.items.map((v) => v.label).join(", ");
   }
 
-  protected toCriterionInput(): MultiCriterionInput {
+  public toCriterionInput(): MultiCriterionInput {
     let excludes: string[] = [];
     if (this.value.excluded) {
       excludes = this.value.excluded.map((v) => v.id);

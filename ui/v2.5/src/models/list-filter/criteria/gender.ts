@@ -6,7 +6,7 @@ import {
 import { genderStrings, stringToGender } from "src/utils/gender";
 import {
   CriterionOption,
-  IEncodedCriterion,
+  ISavedCriterion,
   MultiStringCriterion,
 } from "./criterion";
 
@@ -29,7 +29,7 @@ export class GenderCriterion extends MultiStringCriterion {
     super(GenderCriterionOption);
   }
 
-  protected toCriterionInput(): GenderCriterionInput {
+  public toCriterionInput(): GenderCriterionInput {
     const value = this.value.map((v) => stringToGender(v)) as GenderEnum[];
 
     return {
@@ -38,17 +38,15 @@ export class GenderCriterion extends MultiStringCriterion {
     };
   }
 
-  public setFromEncodedCriterion(
-    encodedCriterion: IEncodedCriterion<string[]>
-  ) {
+  public setFromSavedCriterion(criterion: ISavedCriterion<string[]>) {
     // backwards compatibility - if the value is a string, convert it to an array
-    if (typeof encodedCriterion.value === "string") {
-      encodedCriterion = {
-        ...encodedCriterion,
-        value: [encodedCriterion.value],
+    if (typeof criterion.value === "string") {
+      criterion = {
+        ...criterion,
+        value: [criterion.value],
       };
     }
 
-    super.setFromEncodedCriterion(encodedCriterion);
+    super.setFromSavedCriterion(criterion);
   }
 }

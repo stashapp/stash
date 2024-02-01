@@ -1,7 +1,7 @@
-import { CriterionValue, IEncodedCriterion } from "./criteria/criterion";
+import { CriterionValue, ISavedCriterion } from "./criteria/criterion";
 
 export type SavedObjectFilter = {
-  [K in CriterionType]?: IEncodedCriterion<CriterionValue>;
+  [K in CriterionType]?: ISavedCriterion<CriterionValue>;
 };
 
 export type SavedUIOptions = {
