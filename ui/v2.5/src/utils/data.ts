@@ -47,9 +47,9 @@ export interface IHasStoredID {
   stored_id?: string | null;
 }
 
-export function sortStoredIdObjects(
-  scrapedObjects?: IHasStoredID[]
-): IHasStoredID[] | undefined {
+export function sortStoredIdObjects<T extends IHasStoredID>(
+  scrapedObjects?: T[]
+): T[] | undefined {
   if (!scrapedObjects) {
     return undefined;
   }
