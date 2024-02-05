@@ -26,6 +26,7 @@ import {
   AvailablePluginPackages,
   InstalledPluginPackages,
 } from "./PluginPackageManager";
+import { ExternalLink } from "../Shared/ExternalLink";
 
 interface IPluginSettingProps {
   pluginID: string;
@@ -97,15 +98,12 @@ export const SettingsPluginsPanel: React.FC = () => {
     function renderLink(url?: string) {
       if (url) {
         return (
-          <Button className="minimal">
-            <a
-              href={TextUtils.sanitiseURL(url)}
-              className="link"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <Icon icon={faLink} />
-            </a>
+          <Button
+            as={ExternalLink}
+            href={TextUtils.sanitiseURL(url)}
+            className="minimal link"
+          >
+            <Icon icon={faLink} />
           </Button>
         );
       }

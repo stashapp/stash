@@ -7,6 +7,7 @@ import { BooleanSetting, StringListSetting, StringSetting } from "./Inputs";
 import { useSettings } from "./context";
 import { useIntl } from "react-intl";
 import { faQuestionCircle } from "@fortawesome/free-solid-svg-icons";
+import { ExternalLink } from "../Shared/ExternalLink";
 
 export const SettingsLibraryPanel: React.FC = () => {
   const intl = useIntl();
@@ -76,13 +77,9 @@ export const SettingsLibraryPanel: React.FC = () => {
               {intl.formatMessage({
                 id: "config.general.excluded_video_patterns_desc",
               })}
-              <a
-                href="https://docs.stashapp.cc/beginner-guides/exclude-file-configuration"
-                rel="noopener noreferrer"
-                target="_blank"
-              >
+              <ExternalLink href="https://docs.stashapp.cc/beginner-guides/exclude-file-configuration">
                 <Icon icon={faQuestionCircle} />
-              </a>
+              </ExternalLink>
             </span>
           }
           value={general.excludes ?? undefined}
@@ -98,13 +95,9 @@ export const SettingsLibraryPanel: React.FC = () => {
               {intl.formatMessage({
                 id: "config.general.excluded_image_gallery_patterns_desc",
               })}
-              <a
-                href="https://docs.stashapp.cc/beginner-guides/exclude-file-configuration"
-                rel="noopener noreferrer"
-                target="_blank"
-              >
+              <ExternalLink href="https://docs.stashapp.cc/beginner-guides/exclude-file-configuration">
                 <Icon icon={faQuestionCircle} />
-              </a>
+              </ExternalLink>
             </span>
           }
           value={general.imageExcludes ?? undefined}
