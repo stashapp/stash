@@ -391,6 +391,15 @@ input[type="range"].zoom-slider {
       top: 0;
       z-index: 100;
     }
+
+    td:first-child {
+      padding: 0;
+    }
+
+    label {
+      margin: 0;
+      padding: 0.5rem;
+    }
   }
 
   .column-select {
@@ -398,14 +407,14 @@ input[type="range"].zoom-slider {
     padding: 7px;
   }
 
+  .select-col {
+    width: 20px;
+  }
+
   .comma-list {
     list-style: none;
     margin: 0;
-    overflow: hidden;
     padding: 4px 2px;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    width: 190px;
 
     li {
       display: inline;
@@ -420,7 +429,14 @@ input[type="range"].zoom-slider {
     }
   }
 
-  .comma-list:hover {
+  .comma-list.overflowable {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width: 190px;
+  }
+
+  .comma-list.overflowable:hover {
     background: #28343c;
     border: 1px solid #414c53;
     box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.28);
@@ -438,11 +454,13 @@ input[type="range"].zoom-slider {
     z-index: 100;
   }
 
-  .comma-list li .ellips-data:hover {
+  .comma-list.overflowable li .ellips-data:hover {
     max-width: fit-content;
   }
 
   td {
+    color: hsla(0, 0%, 100%, 0.6);
+    font-weight: 500;
     position: relative;
     text-align: left;
     white-space: nowrap;
