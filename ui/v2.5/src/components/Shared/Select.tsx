@@ -705,7 +705,7 @@ export const ListSelect = <T extends {}>(props: IListSelect<T>) => {
 };
 
 type DisableOption = Option & {
-  disabled?: boolean;
+  isDisabled?: boolean;
 };
 
 interface ICheckBoxSelectProps {
@@ -723,7 +723,7 @@ export const CheckBoxSelect: React.FC<ICheckBoxSelectProps> = ({
     <reactSelectComponents.Option {...props}>
       <input
         type="checkbox"
-        disabled={props.data.disabled}
+        disabled={props.isDisabled}
         checked={props.isSelected}
         onChange={() => null}
         className="mr-1"

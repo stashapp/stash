@@ -205,6 +205,15 @@ dd {
   }
 }
 
+.btn.link {
+  color: $link-color;
+
+  &:hover:not(:disabled),
+  &:active:not(:disabled) {
+    color: $link-color;
+  }
+}
+
 .detail-header.edit {
   background-color: unset;
   overflow: visible;
@@ -691,12 +700,11 @@ div.dropdown-menu {
   flex-wrap: wrap;
   row-gap: 10px;
 
-  /* stylelint-disable */
   .badge {
-    white-space: normal !important;
     margin: unset;
+    // stylelint-disable declaration-no-important
+    white-space: normal !important;
   }
-  /* stylelint-enable */
 }
 
 .tag-item {

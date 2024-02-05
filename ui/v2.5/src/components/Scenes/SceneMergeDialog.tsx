@@ -112,7 +112,7 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
     };
   }
 
-  function uniqIDStoredIDs(objs: IHasStoredID[]) {
+  function uniqIDStoredIDs<T extends IHasStoredID>(objs: T[]) {
     return objs.filter((o, i) => {
       return objs.findIndex((oo) => oo.stored_id === o.stored_id) === i;
     });
@@ -130,8 +130,10 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
     new ScrapeResult<string[]>(sortIdList(dest.movies.map((p) => p.movie.id)))
   );
 
-  const [tags, setTags] = useState<ScrapeResult<string[]>>(
-    new ScrapeResult<string[]>(sortIdList(dest.tags.map((t) => t.id)))
+  const [tags, setTags] = useState<ObjectListScrapeResult<GQL.ScrapedTag>>(
+    new ObjectListScrapeResult<GQL.ScrapedTag>(
+      sortStoredIdObjects(dest.tags.map(idToStoredID))
+    )
   );
 
   const [details, setDetails] = useState<ScrapeResult<string>>(
@@ -210,9 +212,9 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
       )
     );
     setTags(
-      new ScrapeResult(
-        dest.tags.map((p) => p.id),
-        uniq(all.map((s) => s.tags.map((p) => p.id)).flat())
+      new ObjectListScrapeResult<GQL.ScrapedTag>(
+        sortStoredIdObjects(dest.tags.map(idToStoredID)),
+        uniqIDStoredIDs(all.map((s) => s.tags.map(idToStoredID)).flat())
       )
     );
     setDetails(
@@ -592,7 +594,7 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
           scene_index: found!.scene_index,
         };
       }),
-      tag_ids: tags.getNewValue(),
+      tag_ids: tags.getNewValue()?.map((t) => t.stored_id!),
       details: details.getNewValue(),
       organized: organized.getNewValue(),
       stash_ids: stashIDs.getNewValue(),

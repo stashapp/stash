@@ -145,7 +145,11 @@ class SourceSelectorPlugin extends videojs.getPlugin("plugin") {
       if (!error) return;
 
       // Only try next source if media was unsupported
-      if (error.code !== MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED) return;
+      if (
+        error.code !== MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED &&
+        error.code !== MediaError.MEDIA_ERR_DECODE
+      )
+        return;
 
       const currentSource = player.currentSource() as ISource;
       console.log(`Source '${currentSource.label}' is unsupported`);

@@ -322,7 +322,10 @@ export const SettingModal = <T extends {}>(props: ISettingModal<T>) => {
             type="submit"
             variant="primary"
             onClick={() => close(currentValue)}
-            disabled={!currentValue || (validate && !validate(currentValue))}
+            disabled={
+              currentValue === undefined ||
+              (validate && !validate(currentValue))
+            }
           >
             <FormattedMessage id="actions.confirm" />
           </Button>

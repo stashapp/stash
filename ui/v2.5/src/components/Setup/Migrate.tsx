@@ -5,6 +5,7 @@ import { useHistory } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 import { useSystemStatus, mutateMigrate } from "src/core/StashService";
 import { migrationNotes } from "src/docs/en/MigrationNotes";
+import { ExternalLink } from "../Shared/ExternalLink";
 import { LoadingIndicator } from "../Shared/LoadingIndicator";
 import { MarkdownPage } from "../Shared/MarkdownPage";
 
@@ -35,18 +36,12 @@ export const Migrate: React.FC = () => {
     : "";
 
   const discordLink = (
-    <a href="https://discord.gg/2TsNFKt" target="_blank" rel="noreferrer">
-      Discord
-    </a>
+    <ExternalLink href="https://discord.gg/2TsNFKt">Discord</ExternalLink>
   );
   const githubLink = (
-    <a
-      href="https://github.com/stashapp/stash/issues"
-      target="_blank"
-      rel="noreferrer"
-    >
+    <ExternalLink href="https://github.com/stashapp/stash/issues">
       <FormattedMessage id="setup.github_repository" />
-    </a>
+    </ExternalLink>
   );
 
   useEffect(() => {

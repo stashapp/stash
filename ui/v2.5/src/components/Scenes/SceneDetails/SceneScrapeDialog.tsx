@@ -28,10 +28,12 @@ import {
   useCreateScrapedStudio,
   useCreateScrapedTag,
 } from "src/components/Shared/ScrapeDialog/createObjects";
+import { Tag } from "src/components/Tags/TagSelect";
 
 interface ISceneScrapeDialogProps {
   scene: Partial<GQL.SceneUpdateInput>;
   scenePerformers: Performer[];
+  sceneTags: Tag[];
   scraped: GQL.ScrapedScene;
   endpoint?: string;
 
@@ -41,6 +43,7 @@ interface ISceneScrapeDialogProps {
 export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
   scene,
   scenePerformers,
+  sceneTags,
   scraped,
   onClose,
   endpoint,
@@ -146,10 +149,15 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
     scraped.movies?.filter((t) => !t.stored_id) ?? []
   );
 
-  const [tags, setTags] = useState<ScrapeResult<string[]>>(
-    new ScrapeResult<string[]>(
-      sortIdList(scene.tag_ids),
-      mapStoredIdObjects(scraped.tags ?? undefined)
+  const [tags, setTags] = useState<ObjectListScrapeResult<GQL.ScrapedTag>>(
+    new ObjectListScrapeResult<GQL.ScrapedTag>(
+      sortStoredIdObjects(
+        sceneTags.map((t) => ({
+          stored_id: t.id,
+          name: t.name,
+        }))
+      ),
+      sortStoredIdObjects(scraped.tags ?? undefined)
     )
   );
   const [newTags, setNewTags] = useState<GQL.ScrapedTag[]>(
@@ -240,12 +248,7 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
           name: "",
         };
       }),
-      tags: tags.getNewValue()?.map((m) => {
-        return {
-          stored_id: m,
-          name: "",
-        };
-      }),
+      tags: tags.getNewValue(),
       details: details.getNewValue(),
       image: image.getNewValue(),
       remote_site_id: stashID.getNewValue(),

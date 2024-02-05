@@ -18,6 +18,7 @@ import {
   faExternalLinkAlt,
   faTimes,
 } from "@fortawesome/free-solid-svg-icons";
+import { ExternalLink } from "../Shared/ExternalLink";
 
 interface IPerformerModalProps {
   performer: GQL.ScrapedScenePerformerDataFragment;
@@ -82,12 +83,14 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({
       [name]: !excluded[name],
     });
 
-  const renderField = (
+  function maybeRenderField(
     name: string,
     text: string | null | undefined,
     truncate: boolean = true
-  ) =>
-    text && (
+  ) {
+    if (!text) return;
+
+    return (
       <div className="row no-gutters">
         <div className="col-5 performer-create-modal-field" key={name}>
           {!create && (
@@ -112,11 +115,72 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({
         )}
       </div>
     );
+  }
 
-  const base = endpoint?.match(/https?:\/\/.*?\//)?.[0];
-  const link = base
-    ? `${base}performers/${performer.remote_site_id}`
-    : undefined;
+  function maybeRenderImage() {
+    if (!images.length) return;
+
+    return (
+      <div className="col-5 image-selection">
+        <div className="performer-image">
+          {!create && (
+            <Button
+              onClick={() => toggleField("image")}
+              variant="secondary"
+              className={cx(
+                "performer-image-exclude",
+                excluded.image ? "text-muted" : "text-success"
+              )}
+            >
+              <Icon icon={excluded.image ? faTimes : faCheck} />
+            </Button>
+          )}
+          <img
+            src={images[imageIndex]}
+            className={cx({ "d-none": imageState !== "loaded" })}
+            alt=""
+            onLoad={() => handleLoad(imageIndex)}
+            onError={handleError}
+          />
+          {imageState === "loading" && (
+            <LoadingIndicator message="Loading image..." />
+          )}
+          {imageState === "error" && (
+            <div className="h-100 d-flex justify-content-center align-items-center">
+              <b>Error loading image.</b>
+            </div>
+          )}
+        </div>
+        <div className="d-flex mt-3">
+          <Button onClick={setPrev} disabled={images.length === 1}>
+            <Icon icon={faArrowLeft} />
+          </Button>
+          <h5 className="flex-grow-1">
+            Select performer image
+            <br />
+            {imageIndex + 1} of {images.length}
+          </h5>
+          <Button onClick={setNext} disabled={images.length === 1}>
+            <Icon icon={faArrowRight} />
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  function maybeRenderStashBoxLink() {
+    const base = endpoint?.match(/https?:\/\/.*?\//)?.[0];
+    if (!base) return;
+
+    return (
+      <h6 className="mt-2">
+        <ExternalLink href={`${base}performers/${performer.remote_site_id}`}>
+          <FormattedMessage id="stashbox.source" />
+          <Icon icon={faExternalLinkAlt} className="ml-2" />
+        </ExternalLink>
+      </h6>
+    );
+  }
 
   function onSaveClicked() {
     if (!performer.name) {
@@ -201,89 +265,37 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({
     >
       <div className="row">
         <div className="col-7">
-          {renderField("name", performer.name)}
-          {renderField("disambiguation", performer.disambiguation)}
-          {renderField("aliases", performer.aliases)}
-          {renderField(
+          {maybeRenderField("name", performer.name)}
+          {maybeRenderField("disambiguation", performer.disambiguation)}
+          {maybeRenderField("aliases", performer.aliases)}
+          {maybeRenderField(
             "gender",
             performer.gender
               ? intl.formatMessage({ id: "gender_types." + performer.gender })
               : ""
           )}
-          {renderField("birthdate", performer.birthdate)}
-          {renderField("death_date", performer.death_date)}
-          {renderField("ethnicity", performer.ethnicity)}
-          {renderField("country", getCountryByISO(performer.country))}
-          {renderField("hair_color", performer.hair_color)}
-          {renderField("eye_color", performer.eye_color)}
-          {renderField("height", performer.height)}
-          {renderField("weight", performer.weight)}
-          {renderField("measurements", performer.measurements)}
+          {maybeRenderField("birthdate", performer.birthdate)}
+          {maybeRenderField("death_date", performer.death_date)}
+          {maybeRenderField("ethnicity", performer.ethnicity)}
+          {maybeRenderField("country", getCountryByISO(performer.country))}
+          {maybeRenderField("hair_color", performer.hair_color)}
+          {maybeRenderField("eye_color", performer.eye_color)}
+          {maybeRenderField("height", performer.height)}
+          {maybeRenderField("weight", performer.weight)}
+          {maybeRenderField("measurements", performer.measurements)}
           {performer?.gender !== GQL.GenderEnum.Male &&
-            renderField("fake_tits", performer.fake_tits)}
-          {renderField("career_length", performer.career_length)}
-          {renderField("tattoos", performer.tattoos, false)}
-          {renderField("piercings", performer.piercings, false)}
-          {renderField("weight", performer.weight, false)}
-          {renderField("details", performer.details)}
-          {renderField("url", performer.url)}
-          {renderField("twitter", performer.twitter)}
-          {renderField("instagram", performer.instagram)}
-          {link && (
-            <h6 className="mt-2">
-              <a href={link} target="_blank" rel="noopener noreferrer">
-                <FormattedMessage id="stashbox.source" />
-                <Icon icon={faExternalLinkAlt} className="ml-2" />
-              </a>
-            </h6>
-          )}
+            maybeRenderField("fake_tits", performer.fake_tits)}
+          {maybeRenderField("career_length", performer.career_length)}
+          {maybeRenderField("tattoos", performer.tattoos, false)}
+          {maybeRenderField("piercings", performer.piercings, false)}
+          {maybeRenderField("weight", performer.weight, false)}
+          {maybeRenderField("details", performer.details)}
+          {maybeRenderField("url", performer.url)}
+          {maybeRenderField("twitter", performer.twitter)}
+          {maybeRenderField("instagram", performer.instagram)}
+          {maybeRenderStashBoxLink()}
         </div>
-        {images.length > 0 && (
-          <div className="col-5 image-selection">
-            <div className="performer-image">
-              {!create && (
-                <Button
-                  onClick={() => toggleField("image")}
-                  variant="secondary"
-                  className={cx(
-                    "performer-image-exclude",
-                    excluded.image ? "text-muted" : "text-success"
-                  )}
-                >
-                  <Icon icon={excluded.image ? faTimes : faCheck} />
-                </Button>
-              )}
-              <img
-                src={images[imageIndex]}
-                className={cx({ "d-none": imageState !== "loaded" })}
-                alt=""
-                onLoad={() => handleLoad(imageIndex)}
-                onError={handleError}
-              />
-              {imageState === "loading" && (
-                <LoadingIndicator message="Loading image..." />
-              )}
-              {imageState === "error" && (
-                <div className="h-100 d-flex justify-content-center align-items-center">
-                  <b>Error loading image.</b>
-                </div>
-              )}
-            </div>
-            <div className="d-flex mt-3">
-              <Button onClick={setPrev} disabled={images.length === 1}>
-                <Icon icon={faArrowLeft} />
-              </Button>
-              <h5 className="flex-grow-1">
-                Select performer image
-                <br />
-                {imageIndex + 1} of {images.length}
-              </h5>
-              <Button onClick={setNext} disabled={images.length === 1}>
-                <Icon icon={faArrowRight} />
-              </Button>
-            </div>
-          </div>
-        )}
+        {maybeRenderImage()}
       </div>
     </ModalComponent>
   );
