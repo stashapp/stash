@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 import NavUtils from "src/utils/navigation";
 import TextUtils from "src/utils/text";
-import { FormattedMessage, useIntl } from "react-intl";
+import { FormattedMessage, FormattedNumber, useIntl } from "react-intl";
 import { objectTitle } from "src/core/files";
 import { galleryTitle } from "src/core/galleries";
 import SceneQueue from "src/models/sceneQueue";
@@ -168,6 +168,28 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
     </ul>
   );
 
+  function renderFileSize(file: { size: number | undefined }) {
+    const { size, unit } = TextUtils.fileSize(file.size);
+
+    return (
+      <FormattedNumber
+        value={size}
+        style="unit"
+        unit={unit}
+        unitDisplay="narrow"
+        maximumFractionDigits={2}
+      />
+    );
+  }
+
+  const FileSizeCell = (scene: GQL.SlimSceneDataFragment) => (
+    <ul className="comma-list">
+      {scene.files.map((file) => (
+        <li key={file.id}>{renderFileSize(file)}</li>
+      ))}
+    </ul>
+  );
+
   const FrameRateCell = (scene: GQL.SlimSceneDataFragment) => (
     <ul className="comma-list">
       {scene.files.map((file) => (
@@ -319,6 +341,11 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
       value: "resolution",
       label: intl.formatMessage({ id: "resolution" }),
       render: ResolutionCell,
+    },
+    {
+      value: "filesize",
+      label: intl.formatMessage({ id: "filesize" }),
+      render: FileSizeCell,
     },
     {
       value: "framerate",
