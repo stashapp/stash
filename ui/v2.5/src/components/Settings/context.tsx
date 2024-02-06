@@ -51,6 +51,35 @@ export interface ISettingsContextState {
   refetch: () => void;
 }
 
+function noop() {}
+
+const emptyState: ISettingsContextState = {
+  loading: false,
+  error: undefined,
+  general: {},
+  interface: {},
+  defaults: {},
+  scraping: {},
+  dlna: {},
+  ui: {},
+  plugins: {},
+
+  advancedMode: false,
+
+  apiKey: "",
+
+  saveGeneral: noop,
+  saveInterface: noop,
+  saveDefaults: noop,
+  saveScraping: noop,
+  saveDLNA: noop,
+  saveUI: noop,
+  savePluginSettings: noop,
+  setAdvancedMode: noop,
+
+  refetch: noop,
+};
+
 export const SettingStateContext =
   React.createContext<ISettingsContextState | null>(null);
 
@@ -63,6 +92,16 @@ export const useSettings = () => {
 
   return context;
 };
+
+export function useSettingsOptional(): ISettingsContextState {
+  const context = React.useContext(SettingStateContext);
+
+  if (context === null) {
+    return emptyState;
+  }
+
+  return context;
+}
 
 export const SettingsContext: React.FC = ({ children }) => {
   const Toast = useToast();

@@ -5,7 +5,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { Icon } from "../Shared/Icon";
 import { StringListInput } from "../Shared/StringListInput";
 import { PatchComponent } from "src/pluginApi";
-import { useSettings } from "./context";
+import { useSettings, useSettingsOptional } from "./context";
 
 interface ISetting {
   id?: string;
@@ -37,7 +37,8 @@ export const Setting: React.FC<PropsWithChildren<ISetting>> = PatchComponent(
       advanced,
     } = props;
 
-    const { advancedMode } = useSettings();
+    // these components can be used in the setup wizard, where advanced mode is not available
+    const { advancedMode } = useSettingsOptional();
 
     const intl = useIntl();
 
