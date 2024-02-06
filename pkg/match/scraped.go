@@ -44,22 +44,21 @@ func ScrapedPerformer(ctx context.Context, qb PerformerFinder, p *models.Scraped
 	}
 
 	performers, err := qb.FindByNames(ctx, []string{*p.Name}, true)
-
 	if err != nil {
 		return err
 	}
 
-	if performers == nil || len(performers) != 1 {
-		// try matching a single performer by exact alias
+	if len(performers) == 0 {
+		// if no names matched, try match an exact alias
 		performers, err = performer.ByAlias(ctx, qb, *p.Name)
 		if err != nil {
 			return err
 		}
+	}
 
-		if performers == nil || len(performers) != 1 {
-			// ignore - cannot match
-			return nil
-		}
+	if len(performers) != 1 {
+		// ignore - cannot match
+		return nil
 	}
 
 	id := strconv.Itoa(performers[0].ID)

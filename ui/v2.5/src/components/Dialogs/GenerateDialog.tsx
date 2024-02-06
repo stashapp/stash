@@ -12,6 +12,7 @@ import { withoutTypename } from "src/utils/data";
 import { GenerateOptions } from "../Settings/Tasks/GenerateOptions";
 import { SettingSection } from "../Settings/SettingSection";
 import { faCogs, faQuestionCircle } from "@fortawesome/free-solid-svg-icons";
+import { SettingsContext } from "../Settings/context";
 
 interface ISceneGenerateDialog {
   selectedIds?: string[];
@@ -196,13 +197,15 @@ export const GenerateDialog: React.FC<ISceneGenerateDialog> = ({
     >
       <Form>
         {selectionStatus}
-        <SettingSection>
-          <GenerateOptions
-            options={options}
-            setOptions={setOptions}
-            selection
-          />
-        </SettingSection>
+        <SettingsContext>
+          <SettingSection>
+            <GenerateOptions
+              options={options}
+              setOptions={setOptions}
+              selection
+            />
+          </SettingSection>
+        </SettingsContext>
       </Form>
     </ModalComponent>
   );

@@ -24,6 +24,7 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scraper"
 	"github.com/stashapp/stash/pkg/scraper/stashbox/graphql"
+	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 	"github.com/stashapp/stash/pkg/txn"
 	"github.com/stashapp/stash/pkg/utils"
@@ -669,6 +670,12 @@ func performerFragmentToScrapedPerformer(p graphql.PerformerFragment) *models.Sc
 	}
 
 	if len(p.Aliases) > 0 {
+		// #4437 - stash-box may return aliases that are equal to the performer name
+		// filter these out
+		p.Aliases = sliceutil.Filter(p.Aliases, func(s string) bool {
+			return !strings.EqualFold(s, p.Name)
+		})
+
 		alias := strings.Join(p.Aliases, ", ")
 		sp.Aliases = &alias
 	}

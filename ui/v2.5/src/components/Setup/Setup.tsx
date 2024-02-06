@@ -27,6 +27,7 @@ import {
   faQuestionCircle,
 } from "@fortawesome/free-solid-svg-icons";
 import { releaseNotes } from "src/docs/en/ReleaseNotes";
+import { ExternalLink } from "../Shared/ExternalLink";
 
 export const Setup: React.FC = () => {
   const { configuration, loading: configLoading } =
@@ -103,18 +104,12 @@ export const Setup: React.FC = () => {
   }, [configuration]);
 
   const discordLink = (
-    <a href="https://discord.gg/2TsNFKt" target="_blank" rel="noreferrer">
-      Discord
-    </a>
+    <ExternalLink href="https://discord.gg/2TsNFKt">Discord</ExternalLink>
   );
   const githubLink = (
-    <a
-      href="https://github.com/stashapp/stash/issues"
-      target="_blank"
-      rel="noreferrer"
-    >
+    <ExternalLink href="https://github.com/stashapp/stash/issues">
       <FormattedMessage id="setup.github_repository" />
-    </a>
+    </ExternalLink>
   );
 
   function onConfigLocationChosen(inWorkDir: boolean) {
@@ -825,14 +820,9 @@ export const Setup: React.FC = () => {
               id="setup.success.open_collective"
               values={{
                 open_collective_link: (
-                  <a
-                    href="https://opencollective.com/stashapp"
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    {" "}
-                    OpenCollective{" "}
-                  </a>
+                  <ExternalLink href="https://opencollective.com/stashapp">
+                    Open Collective
+                  </ExternalLink>
                 ),
               }}
             />

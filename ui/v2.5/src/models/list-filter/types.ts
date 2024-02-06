@@ -173,6 +173,7 @@ export type CriterionType =
   | "details"
   | "title"
   | "oshash"
+  | "orientation"
   | "checksum"
   | "phash_distance"
   | "director"

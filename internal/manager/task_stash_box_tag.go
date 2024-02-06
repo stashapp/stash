@@ -7,6 +7,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/performer"
 	"github.com/stashapp/stash/pkg/scraper/stashbox"
 	"github.com/stashapp/stash/pkg/studio"
 )
@@ -155,6 +156,10 @@ func (t *StashBoxBatchTagTask) processMatchedPerformer(ctx context.Context, p *m
 
 			partial := p.ToPartial(t.box.Endpoint, excluded, existingStashIDs)
 
+			if err := performer.ValidateUpdate(ctx, t.performer.ID, partial, qb); err != nil {
+				return err
+			}
+
 			if _, err := qb.UpdatePartial(ctx, t.performer.ID, partial); err != nil {
 				return err
 			}
@@ -184,6 +189,10 @@ func (t *StashBoxBatchTagTask) processMatchedPerformer(ctx context.Context, p *m
 		r := instance.Repository
 		err = r.WithTxn(ctx, func(ctx context.Context) error {
 			qb := r.Performer
+
+			if err := performer.ValidateCreate(ctx, *newPerformer, qb); err != nil {
+				return err
+			}
 
 			if err := qb.Create(ctx, newPerformer); err != nil {
 				return err
@@ -345,6 +354,10 @@ func (t *StashBoxBatchTagTask) processMatchedStudio(ctx context.Context, s *mode
 		r := instance.Repository
 		err = r.WithTxn(ctx, func(ctx context.Context) error {
 			qb := r.Studio
+
+			if err := studio.ValidateCreate(ctx, *newStudio, qb); err != nil {
+				return err
+			}
 
 			if err := qb.Create(ctx, newStudio); err != nil {
 				return err

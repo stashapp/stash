@@ -340,7 +340,7 @@ export const LibraryTasks: React.FC = () => {
         </SettingGroup>
       </SettingSection>
 
-      <SettingSection>
+      <SettingSection advanced>
         <Setting
           heading={
             <>
@@ -369,7 +369,7 @@ export const LibraryTasks: React.FC = () => {
         </Setting>
       </SettingSection>
 
-      <SettingSection>
+      <SettingSection advanced>
         <SettingGroup
           settingProps={{
             heading: (

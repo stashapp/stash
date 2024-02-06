@@ -319,7 +319,22 @@ export const queryFindStudios = (filter: ListFilterModel) =>
     },
   });
 
-export const useAllStudiosForFilter = () => GQL.useAllStudiosForFilterQuery();
+export const queryFindStudiosByIDForSelect = (studioIDs: number[]) =>
+  client.query<GQL.FindStudiosForSelectQuery>({
+    query: GQL.FindStudiosForSelectDocument,
+    variables: {
+      ids: studioIDs,
+    },
+  });
+
+export const queryFindStudiosForSelect = (filter: ListFilterModel) =>
+  client.query<GQL.FindStudiosForSelectQuery>({
+    query: GQL.FindStudiosForSelectDocument,
+    variables: {
+      filter: filter.makeFindFilter(),
+      studio_filter: filter.makeFilter(),
+    },
+  });
 
 export const useFindTag = (id: string) => {
   const skip = id === "new" || id === "";
@@ -344,7 +359,22 @@ export const queryFindTags = (filter: ListFilterModel) =>
     },
   });
 
-export const useAllTagsForFilter = () => GQL.useAllTagsForFilterQuery();
+export const queryFindTagsByIDForSelect = (tagIDs: number[]) =>
+  client.query<GQL.FindTagsForSelectQuery>({
+    query: GQL.FindTagsForSelectDocument,
+    variables: {
+      ids: tagIDs,
+    },
+  });
+
+export const queryFindTagsForSelect = (filter: ListFilterModel) =>
+  client.query<GQL.FindTagsForSelectQuery>({
+    query: GQL.FindTagsForSelectDocument,
+    variables: {
+      filter: filter.makeFindFilter(),
+      tag_filter: filter.makeFilter(),
+    },
+  });
 
 export const useFindSavedFilter = (id: string) =>
   GQL.useFindSavedFilterQuery({
@@ -1504,8 +1534,6 @@ export const useStudioCreate = () =>
       const studio = result.data?.studioCreate;
       if (!studio || !variables) return;
 
-      appendObject(cache, studio, GQL.AllStudiosForFilterDocument);
-
       // update stats
       updateStats(cache, "studio_count", 1);
 
@@ -1597,8 +1625,6 @@ export const useTagCreate = () =>
     update(cache, result) {
       const tag = result.data?.tagCreate;
       if (!tag) return;
-
-      appendObject(cache, tag, GQL.AllTagsForFilterDocument);
 
       // update stats
       updateStats(cache, "tag_count", 1);

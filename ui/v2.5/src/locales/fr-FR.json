@@ -690,6 +690,7 @@
                         "heading": "Continuer la liste de lecture par défaut"
                     },
                     "enable_chromecast": "Activer Chromecast",
+                    "disable_mobile_media_auto_rotate": "Désactiver la rotation automatique des médias en plein écran sur mobile",
                     "show_scrubber": "Montrer la barre de progression",
                     "track_activity": "Suivre l'activité",
                     "vr_tag": {

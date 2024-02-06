@@ -680,6 +680,7 @@
                         "heading": "VR Tagg"
                     },
                     "enable_chromecast": "Aktivera Chromecast",
+                    "disable_mobile_media_auto_rotate": "Inaktivera automatisk rotering av helskärmsmedia på mobil",
                     "show_ab_loop_controls": "Visa AB-loop plugin kontroller"
                 }
             },

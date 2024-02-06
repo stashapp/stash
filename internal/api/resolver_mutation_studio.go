@@ -61,14 +61,8 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input models.Studio
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Studio
 
-		if err := studio.EnsureStudioNameUnique(ctx, 0, newStudio.Name, qb); err != nil {
+		if err := studio.ValidateCreate(ctx, newStudio, qb); err != nil {
 			return err
-		}
-
-		if len(input.Aliases) > 0 {
-			if err := studio.EnsureAliasesUnique(ctx, 0, input.Aliases, qb); err != nil {
-				return err
-			}
 		}
 
 		err = qb.Create(ctx, &newStudio)

@@ -216,6 +216,7 @@
       "stash_wiki": "Stash {url} page",
       "version": "Version"
     },
+    "advanced_mode": "Advanced Mode",
     "application_paths": {
       "heading": "Application Paths"
     },
@@ -271,7 +272,7 @@
         "log_to_terminal": "Log to terminal",
         "log_to_terminal_desc": "Logs to the terminal in addition to a file. Always true if file logging is disabled. Requires restart.",
         "maximum_session_age": "Maximum Session Age",
-        "maximum_session_age_desc": "Maximum idle time before a login session is expired, in seconds.",
+        "maximum_session_age_desc": "Maximum idle time before a login session is expired, in seconds. Requires restart.",
         "password": "Password",
         "password_desc": "Password to access Stash. Leave blank to disable user authentication",
         "stash-box_integration": "Stash-box integration",
@@ -685,9 +686,9 @@
         }
       },
       "scene_list": {
-        "heading": "Scene List",
+        "heading": "Grid View",
         "options": {
-          "show_studio_as_text": "Show Studios as text"
+          "show_studio_as_text": "Display studio overlay as text"
         }
       },
       "scene_player": {
@@ -704,6 +705,7 @@
             "heading": "Continue playlist by default"
           },
           "enable_chromecast": "Enable Chromecast",
+          "disable_mobile_media_auto_rotate": "Disable auto-rotate of fullscreen media on Mobile",
           "show_ab_loop_controls": "Show AB Loop plugin controls",
           "show_scrubber": "Show Scrubber",
           "track_activity": "Track Activity",
@@ -998,7 +1000,7 @@
   "filters": "Filters",
   "folder": "Folder",
   "framerate": "Frame Rate",
-  "frames_per_second": "{value} frames per second",
+  "frames_per_second": "{value} fps",
   "front_page": {
     "types": {
       "premade_filter": "Premade Filter",
@@ -1069,7 +1071,7 @@
     "stream": "Stream",
     "video_codec": "Video Codec"
   },
-  "megabits_per_second": "{value} megabits per second",
+  "megabits_per_second": "{value} mbps",
   "metadata": "Metadata",
   "movie": "Movie",
   "movie_scene_number": "Movie Scene Number",
@@ -1079,6 +1081,7 @@
   "none": "None",
   "o_counter": "O-Counter",
   "operations": "Operations",
+  "orientation": "Orientation",
   "organized": "Organised",
   "package_manager": {
     "add_source": "Add Source",
@@ -1171,6 +1174,7 @@
   "performers": "Performers",
   "photographer": "Photographer",
   "piercings": "Piercings",
+  "plays": "{value} plays",
   "play_count": "Play Count",
   "play_duration": "Play Duration",
   "primary_file": "Primary file",

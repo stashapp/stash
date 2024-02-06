@@ -169,3 +169,7 @@ type PhashDistanceCriterionInput struct {
 	Modifier CriterionModifier `json:"modifier"`
 	Distance *int              `json:"distance"`
 }
+
+type OrientationCriterionInput struct {
+	Value []OrientationEnum `json:"value"`
+}
