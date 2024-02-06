@@ -1,7 +1,9 @@
 class StashEvent extends EventTarget {
   dispatch(event: string, id?: string, data?: object) {
+    event = `stash:${event}${id ? `:${id}` : ""}`;
+
     this.dispatchEvent(
-      new CustomEvent(`stash:${event}${id ? `:${id}` : ""}`, {
+      new CustomEvent(event, {
         detail: {
           event: event,
           ...(id ? { id } : {}),
