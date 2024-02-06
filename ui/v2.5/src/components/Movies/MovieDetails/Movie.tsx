@@ -37,6 +37,7 @@ import { DetailImage } from "src/components/Shared/DetailImage";
 import { useRatingKeybinds } from "src/hooks/keybinds";
 import { useLoadStickyHeader } from "src/hooks/detailsPanel";
 import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
+import { ExternalLink } from "src/components/Shared/ExternalLink";
 
 interface IProps {
   movie: GQL.MovieDataFragment;
@@ -273,15 +274,13 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
   const renderClickableIcons = () => (
     <span className="name-icons">
       {movie.url && (
-        <Button className="minimal icon-link" title={movie.url}>
-          <a
-            href={TextUtils.sanitiseURL(movie.url)}
-            className="link"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Icon icon={faLink} />
-          </a>
+        <Button
+          as={ExternalLink}
+          href={TextUtils.sanitiseURL(movie.url)}
+          className="minimal link"
+          title={movie.url}
+        >
+          <Icon icon={faLink} />
         </Button>
       )}
     </span>
@@ -361,18 +360,22 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
   function maybeRenderHeaderBackgroundImage() {
     let image = movie.front_image_path;
     if (enableBackgroundImage && !isEditing && image) {
-      return (
-        <div className="background-image-container">
-          <picture>
-            <source src={image} />
-            <img
-              className="background-image"
-              src={image}
-              alt={`${movie.name} background`}
-            />
-          </picture>
-        </div>
-      );
+      const imageURL = new URL(image);
+      let isDefaultImage = imageURL.searchParams.get("default");
+      if (!isDefaultImage) {
+        return (
+          <div className="background-image-container">
+            <picture>
+              <source src={image} />
+              <img
+                className="background-image"
+                src={image}
+                alt={`${movie.name} background`}
+              />
+            </picture>
+          </div>
+        );
+      }
     }
   }
 

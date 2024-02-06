@@ -7,7 +7,6 @@ import {
   ScrapedStringListRow,
   ScrapedTextAreaRow,
 } from "src/components/Shared/ScrapeDialog/ScrapeDialog";
-import clone from "lodash-es/clone";
 import {
   ObjectListScrapeResult,
   ScrapeResult,
@@ -25,21 +24,23 @@ import {
   useCreateScrapedTag,
 } from "src/components/Shared/ScrapeDialog/createObjects";
 import { uniq } from "lodash-es";
+import { Tag } from "src/components/Tags/TagSelect";
+import { Studio } from "src/components/Studios/StudioSelect";
 
 interface IGalleryScrapeDialogProps {
   gallery: Partial<GQL.GalleryUpdateInput>;
+  galleryStudio: Studio | null;
+  galleryTags: Tag[];
   galleryPerformers: Performer[];
   scraped: GQL.ScrapedGallery;
 
   onClose: (scrapedGallery?: GQL.ScrapedGallery) => void;
 }
 
-interface IHasStoredID {
-  stored_id?: string | null;
-}
-
 export const GalleryScrapeDialog: React.FC<IGalleryScrapeDialogProps> = ({
   gallery,
+  galleryStudio,
+  galleryTags,
   galleryPerformers,
   scraped,
   onClose,
@@ -65,50 +66,20 @@ export const GalleryScrapeDialog: React.FC<IGalleryScrapeDialogProps> = ({
   const [photographer, setPhotographer] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(gallery.photographer, scraped.photographer)
   );
-  const [studio, setStudio] = useState<ScrapeResult<string>>(
-    new ScrapeResult<string>(gallery.studio_id, scraped.studio?.stored_id)
+  const [studio, setStudio] = useState<ScrapeResult<GQL.ScrapedStudio>>(
+    new ScrapeResult<GQL.ScrapedStudio>(
+      galleryStudio
+        ? {
+            stored_id: galleryStudio.id,
+            name: galleryStudio.name,
+          }
+        : undefined,
+      scraped.studio
+    )
   );
   const [newStudio, setNewStudio] = useState<GQL.ScrapedStudio | undefined>(
     scraped.studio && !scraped.studio.stored_id ? scraped.studio : undefined
   );
-
-  function mapStoredIdObjects(
-    scrapedObjects?: IHasStoredID[]
-  ): string[] | undefined {
-    if (!scrapedObjects) {
-      return undefined;
-    }
-    const ret = scrapedObjects
-      .map((p) => p.stored_id)
-      .filter((p) => {
-        return p !== undefined && p !== null;
-      }) as string[];
-
-    if (ret.length === 0) {
-      return undefined;
-    }
-
-    // sort by id numerically
-    ret.sort((a, b) => {
-      return parseInt(a, 10) - parseInt(b, 10);
-    });
-
-    return ret;
-  }
-
-  function sortIdList(idList?: string[] | null) {
-    if (!idList) {
-      return;
-    }
-
-    const ret = clone(idList);
-    // sort by id numerically
-    ret.sort((a, b) => {
-      return parseInt(a, 10) - parseInt(b, 10);
-    });
-
-    return ret;
-  }
 
   const [performers, setPerformers] = useState<
     ObjectListScrapeResult<GQL.ScrapedPerformer>
@@ -127,10 +98,15 @@ export const GalleryScrapeDialog: React.FC<IGalleryScrapeDialogProps> = ({
     scraped.performers?.filter((t) => !t.stored_id) ?? []
   );
 
-  const [tags, setTags] = useState<ScrapeResult<string[]>>(
-    new ScrapeResult<string[]>(
-      sortIdList(gallery.tag_ids),
-      mapStoredIdObjects(scraped.tags ?? undefined)
+  const [tags, setTags] = useState<ObjectListScrapeResult<GQL.ScrapedTag>>(
+    new ObjectListScrapeResult<GQL.ScrapedTag>(
+      sortStoredIdObjects(
+        galleryTags.map((t) => ({
+          stored_id: t.id,
+          name: t.name,
+        }))
+      ),
+      sortStoredIdObjects(scraped.tags ?? undefined)
     )
   );
   const [newTags, setNewTags] = useState<GQL.ScrapedTag[]>(
@@ -191,19 +167,9 @@ export const GalleryScrapeDialog: React.FC<IGalleryScrapeDialogProps> = ({
       urls: urls.getNewValue(),
       date: date.getNewValue(),
       photographer: photographer.getNewValue(),
-      studio: newStudioValue
-        ? {
-            stored_id: newStudioValue,
-            name: "",
-          }
-        : undefined,
+      studio: newStudioValue,
       performers: performers.getNewValue(),
-      tags: tags.getNewValue()?.map((m) => {
-        return {
-          stored_id: m,
-          name: "",
-        };
-      }),
+      tags: tags.getNewValue(),
       details: details.getNewValue(),
     };
   }

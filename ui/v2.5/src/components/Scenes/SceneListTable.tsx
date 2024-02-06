@@ -87,7 +87,7 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
   };
 
   const TagCell = (scene: GQL.SlimSceneDataFragment) => (
-    <ul className="comma-list">
+    <ul className="comma-list overflowable">
       {scene.tags.map((tag) => (
         <li key={tag.id}>
           <Link to={NavUtils.makeTagScenesUrl(tag)}>
@@ -99,7 +99,7 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
   );
 
   const PerformersCell = (scene: GQL.SlimSceneDataFragment) => (
-    <ul className="comma-list">
+    <ul className="comma-list overflowable">
       {scene.performers.map((performer) => (
         <li key={performer.id}>
           <Link to={NavUtils.makePerformerScenesUrl(performer)}>
@@ -124,7 +124,7 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
   };
 
   const MovieCell = (scene: GQL.SlimSceneDataFragment) => (
-    <ul className="comma-list">
+    <ul className="comma-list overflowable">
       {scene.movies.map((sceneMovie) => (
         <li key={sceneMovie.movie.id}>
           <Link to={NavUtils.makeMovieScenesUrl(sceneMovie.movie)}>
@@ -136,7 +136,7 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
   );
 
   const GalleriesCell = (scene: GQL.SlimSceneDataFragment) => (
-    <ul className="comma-list">
+    <ul className="comma-list overflowable">
       {scene.galleries.map((gallery) => (
         <li key={gallery.id}>
           <Link to={`/galleries/${gallery.id}`}>
@@ -271,10 +271,10 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
       render: DurationCell,
     },
     {
-      value: "tags",
-      label: intl.formatMessage({ id: "tags" }),
+      value: "studio",
+      label: intl.formatMessage({ id: "studio" }),
       defaultShow: true,
-      render: TagCell,
+      render: StudioCell,
     },
     {
       value: "performers",
@@ -283,10 +283,10 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
       render: PerformersCell,
     },
     {
-      value: "studio",
-      label: intl.formatMessage({ id: "studio" }),
+      value: "tags",
+      label: intl.formatMessage({ id: "tags" }),
       defaultShow: true,
-      render: StudioCell,
+      render: TagCell,
     },
     {
       value: "movies",

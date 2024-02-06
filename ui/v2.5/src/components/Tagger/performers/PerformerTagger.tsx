@@ -26,6 +26,7 @@ import PerformerModal from "../PerformerModal";
 import { useUpdatePerformer } from "../queries";
 import { faStar, faTags } from "@fortawesome/free-solid-svg-icons";
 import { mergeStashIDs } from "src/utils/stashbox";
+import { ExternalLink } from "src/components/Shared/ExternalLink";
 
 type JobFragment = Pick<
   GQL.Job,
@@ -356,7 +357,7 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
       [performerID]: {
         message: intl.formatMessage(
           { id: "performer_tagger.failed_to_save_performer" },
-          { studio: modalPerformer?.name }
+          { performer: modalPerformer?.name }
         ),
         details:
           message === "UNIQUE constraint failed: performers.name"
@@ -466,14 +467,12 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
       if (stashID !== undefined) {
         const base = stashID.endpoint.match(/https?:\/\/.*?\//)?.[0];
         const link = base ? (
-          <a
+          <ExternalLink
             className="small d-block"
             href={`${base}performers/${stashID.stash_id}`}
-            target="_blank"
-            rel="noopener noreferrer"
           >
             {stashID.stash_id}
-          </a>
+          </ExternalLink>
         ) : (
           <div className="small">{stashID.stash_id}</div>
         );

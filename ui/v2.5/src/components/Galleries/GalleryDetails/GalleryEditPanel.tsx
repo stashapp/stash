@@ -18,7 +18,7 @@ import {
   useListGalleryScrapers,
   mutateReloadScrapers,
 } from "src/core/StashService";
-import { SceneSelect, StudioSelect } from "src/components/Shared/Select";
+import { SceneSelect } from "src/components/Shared/Select";
 import { Icon } from "src/components/Shared/Icon";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { useToast } from "src/hooks/Toast";
@@ -41,6 +41,7 @@ import {
 } from "src/utils/yup";
 import { formikUtils } from "src/utils/form";
 import { Tag, TagSelect } from "src/components/Tags/TagSelect";
+import { Studio, StudioSelect } from "src/components/Studios/StudioSelect";
 
 interface IProps {
   gallery: Partial<GQL.GalleryDataFragment>;
@@ -66,6 +67,7 @@ export const GalleryEditPanel: React.FC<IProps> = ({
 
   const [performers, setPerformers] = useState<Performer[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
+  const [studio, setStudio] = useState<Studio | null>(null);
 
   const isNew = gallery.id === undefined;
   const { configuration: stashConfig } = React.useContext(ConfigurationContext);
@@ -152,6 +154,11 @@ export const GalleryEditPanel: React.FC<IProps> = ({
     );
   }
 
+  function onSetStudio(item: Studio | null) {
+    setStudio(item);
+    formik.setFieldValue("studio_id", item ? item.id : null);
+  }
+
   useRatingKeybinds(
     isVisible,
     stashConfig?.ui.ratingSystemOptions?.type,
@@ -165,6 +172,10 @@ export const GalleryEditPanel: React.FC<IProps> = ({
   useEffect(() => {
     setTags(gallery.tags ?? []);
   }, [gallery.tags]);
+
+  useEffect(() => {
+    setStudio(gallery.studio ?? null);
+  }, [gallery.studio]);
 
   useEffect(() => {
     if (isVisible) {
@@ -252,6 +263,8 @@ export const GalleryEditPanel: React.FC<IProps> = ({
     return (
       <GalleryScrapeDialog
         gallery={currentGallery}
+        galleryStudio={studio}
+        galleryTags={tags}
         galleryPerformers={performers}
         scraped={scrapedGallery}
         onClose={(data) => {
@@ -323,7 +336,11 @@ export const GalleryEditPanel: React.FC<IProps> = ({
     }
 
     if (galleryData.studio?.stored_id) {
-      formik.setFieldValue("studio_id", galleryData.studio.stored_id);
+      onSetStudio({
+        id: galleryData.studio.stored_id,
+        name: galleryData.studio.name ?? "",
+        aliases: [],
+      });
     }
 
     if (galleryData.performers?.length) {
@@ -428,13 +445,8 @@ export const GalleryEditPanel: React.FC<IProps> = ({
     const title = intl.formatMessage({ id: "studio" });
     const control = (
       <StudioSelect
-        onSelect={(items) =>
-          formik.setFieldValue(
-            "studio_id",
-            items.length > 0 ? items[0]?.id : null
-          )
-        }
-        ids={formik.values.studio_id ? [formik.values.studio_id] : []}
+        onSelect={(items) => onSetStudio(items.length > 0 ? items[0] : null)}
+        values={studio ? [studio] : []}
       />
     );
 

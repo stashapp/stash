@@ -9,6 +9,7 @@ import { ModalComponent } from "src/components/Shared/Modal";
 import { getStashboxBase } from "src/utils/stashbox";
 import { FormattedMessage, useIntl } from "react-intl";
 import { faPaperPlane } from "@fortawesome/free-solid-svg-icons";
+import { ExternalLink } from "../Shared/ExternalLink";
 
 interface IProps {
   type: "scene" | "performer";
@@ -108,12 +109,12 @@ export const SubmitStashBoxDraft: React.FC<IProps> = ({
             <FormattedMessage id="stashbox.submission_successful" />
           </h6>
           <div>
-            <a target="_blank" rel="noreferrer noopener" href={reviewUrl}>
+            <ExternalLink href={reviewUrl}>
               <FormattedMessage
                 id="stashbox.go_review_draft"
                 values={{ endpoint_name: selectedBox?.name }}
               />
-            </a>
+            </ExternalLink>
           </div>
         </>
       );
