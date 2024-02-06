@@ -319,7 +319,22 @@ export const queryFindStudios = (filter: ListFilterModel) =>
     },
   });
 
-export const useAllStudiosForFilter = () => GQL.useAllStudiosForFilterQuery();
+export const queryFindStudiosByIDForSelect = (studioIDs: number[]) =>
+  client.query<GQL.FindStudiosForSelectQuery>({
+    query: GQL.FindStudiosForSelectDocument,
+    variables: {
+      ids: studioIDs,
+    },
+  });
+
+export const queryFindStudiosForSelect = (filter: ListFilterModel) =>
+  client.query<GQL.FindStudiosForSelectQuery>({
+    query: GQL.FindStudiosForSelectDocument,
+    variables: {
+      filter: filter.makeFindFilter(),
+      studio_filter: filter.makeFilter(),
+    },
+  });
 
 export const useFindTag = (id: string) => {
   const skip = id === "new" || id === "";
@@ -1518,8 +1533,6 @@ export const useStudioCreate = () =>
     update(cache, result, { variables }) {
       const studio = result.data?.studioCreate;
       if (!studio || !variables) return;
-
-      appendObject(cache, studio, GQL.AllStudiosForFilterDocument);
 
       // update stats
       updateStats(cache, "studio_count", 1);

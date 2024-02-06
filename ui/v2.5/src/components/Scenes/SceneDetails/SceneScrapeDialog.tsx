@@ -29,9 +29,11 @@ import {
   useCreateScrapedTag,
 } from "src/components/Shared/ScrapeDialog/createObjects";
 import { Tag } from "src/components/Tags/TagSelect";
+import { Studio } from "src/components/Studios/StudioSelect";
 
 interface ISceneScrapeDialogProps {
   scene: Partial<GQL.SceneUpdateInput>;
+  sceneStudio: Studio | null;
   scenePerformers: Performer[];
   sceneTags: Tag[];
   scraped: GQL.ScrapedScene;
@@ -42,6 +44,7 @@ interface ISceneScrapeDialogProps {
 
 export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
   scene,
+  sceneStudio,
   scenePerformers,
   sceneTags,
   scraped,
@@ -70,8 +73,16 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
   const [director, setDirector] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(scene.director, scraped.director)
   );
-  const [studio, setStudio] = useState<ScrapeResult<string>>(
-    new ScrapeResult<string>(scene.studio_id, scraped.studio?.stored_id)
+  const [studio, setStudio] = useState<ScrapeResult<GQL.ScrapedStudio>>(
+    new ScrapeResult<GQL.ScrapedStudio>(
+      sceneStudio
+        ? {
+            stored_id: sceneStudio.id,
+            name: sceneStudio.name,
+          }
+        : undefined,
+      scraped.studio?.stored_id ? scraped.studio : undefined
+    )
   );
   const [newStudio, setNewStudio] = useState<GQL.ScrapedStudio | undefined>(
     scraped.studio && !scraped.studio.stored_id ? scraped.studio : undefined
@@ -235,12 +246,7 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
       urls: urls.getNewValue(),
       date: date.getNewValue(),
       director: director.getNewValue(),
-      studio: newStudioValue
-        ? {
-            stored_id: newStudioValue,
-            name: "",
-          }
-        : undefined,
+      studio: newStudioValue,
       performers: performers.getNewValue(),
       movies: movies.getNewValue()?.map((m) => {
         return {
