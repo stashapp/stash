@@ -135,5 +135,5 @@ Returns `void`.
 Allows plugins to listen for Stash's events.
 
 ```js
-PluginApi.Event.addEventListener("stash:page", (e) => console.log("Page Changed", e.detail.data.location.pathname))
+PluginApi.Event.addEventListener("stash:location", (e) => console.log("Page Changed", e.detail.data.location.pathname))
 ```

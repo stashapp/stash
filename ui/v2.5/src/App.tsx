@@ -251,6 +251,11 @@ export const App: React.FC = () => {
   const history = useHistory();
   const setupMatch = useRouteMatch(["/setup", "/migrate"]);
 
+  // dispatch event when location changes
+  useEffect(() => {
+    Event.dispatch("location", "", { location });
+  }, [location]);
+
   // redirect to setup or migrate as needed
   useEffect(() => {
     if (!systemStatusData) {
@@ -287,10 +292,6 @@ export const App: React.FC = () => {
     if (!systemStatusData) {
       return <LoadingIndicator />;
     }
-
-    // page change event
-    const location = useLocation();
-    Event.dispatch("page", "", { location });
 
     return (
       <ErrorBoundary>
