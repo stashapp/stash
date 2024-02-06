@@ -18,8 +18,8 @@ import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 import { ExportDialog } from "../Shared/ExportDialog";
 import { DeleteEntityDialog } from "../Shared/DeleteEntityDialog";
-import { StudioCard } from "./StudioCard";
 import { StudioTagger } from "../Tagger/studios/StudioTagger";
+import { StudioCardGrid } from "./StudioCardGrid";
 
 const StudioItemList = makeItemList({
   filterMode: GQL.FilterMode.Studios,
@@ -135,20 +135,12 @@ export const StudioList: React.FC<IStudioList> = ({
 
       if (filter.displayMode === DisplayMode.Grid) {
         return (
-          <div className="row px-xl-5 justify-content-center">
-            {result.data.findStudios.studios.map((studio) => (
-              <StudioCard
-                key={studio.id}
-                studio={studio}
-                hideParent={fromParent}
-                selecting={selectedIds.size > 0}
-                selected={selectedIds.has(studio.id)}
-                onSelectedChanged={(selected: boolean, shiftKey: boolean) =>
-                  onSelectChange(studio.id, selected, shiftKey)
-                }
-              />
-            ))}
-          </div>
+          <StudioCardGrid
+            studios={result.data.findStudios.studios}
+            fromParent={fromParent}
+            selectedIds={selectedIds}
+            onSelectChange={onSelectChange}
+          />
         );
       }
       if (filter.displayMode === DisplayMode.List) {

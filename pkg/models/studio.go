@@ -26,6 +26,8 @@ type StudioFilterType struct {
 	URL *StringCriterionInput `json:"url"`
 	// Filter by studio aliases
 	Aliases *StringCriterionInput `json:"aliases"`
+	// Filter by subsidiary studio count
+	ChildCount *IntCriterionInput `json:"child_count"`
 	// Filter by autotag ignore value
 	IgnoreAutoTag *bool `json:"ignore_auto_tag"`
 	// Filter by created at

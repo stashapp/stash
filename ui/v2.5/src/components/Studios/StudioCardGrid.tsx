@@ -1,40 +1,35 @@
 import React, { useRef } from "react";
 import * as GQL from "src/core/generated-graphql";
-import { SceneQueue } from "src/models/sceneQueue";
-import { SceneCard } from "./SceneCard";
 import { useContainerDimensions } from "../Shared/GridCard";
+import { StudioCard } from "./StudioCard";
 
-interface ISceneCardsGrid {
-  scenes: GQL.SlimSceneDataFragment[];
-  queue?: SceneQueue;
+interface IStudioCardGrid {
+  studios: GQL.StudioDataFragment[];
+  fromParent: boolean | undefined;
   selectedIds: Set<string>;
-  zoomIndex: number;
   onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void;
 }
 
-export const SceneCardsGrid: React.FC<ISceneCardsGrid> = ({
-  scenes,
-  queue,
+export const StudioCardGrid: React.FC<IStudioCardGrid> = ({
+  studios,
+  fromParent,
   selectedIds,
-  zoomIndex,
   onSelectChange,
 }) => {
   const componentRef = useRef<HTMLDivElement>(null);
   const { width } = useContainerDimensions(componentRef);
   return (
     <div className="row justify-content-center" ref={componentRef}>
-      {scenes.map((scene, index) => (
-        <SceneCard
-          key={scene.id}
+      {studios.map((studio) => (
+        <StudioCard
+          key={studio.id}
           containerWidth={width}
-          scene={scene}
-          queue={queue}
-          index={index}
-          zoomIndex={zoomIndex}
+          studio={studio}
+          hideParent={fromParent}
           selecting={selectedIds.size > 0}
-          selected={selectedIds.has(scene.id)}
+          selected={selectedIds.has(studio.id)}
           onSelectedChanged={(selected: boolean, shiftKey: boolean) =>
-            onSelectChange(scene.id, selected, shiftKey)
+            onSelectChange(studio.id, selected, shiftKey)
           }
         />
       ))}

@@ -44,6 +44,7 @@ import airplay from "@silvermine/videojs-airplay";
 // @ts-ignore
 import chromecast from "@silvermine/videojs-chromecast";
 import abLoopPlugin from "videojs-abloop";
+import ScreenUtils from "src/utils/screen";
 
 // register videojs plugins
 airplay(videojs);
@@ -283,7 +284,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     }
 
     const onResize = () => {
-      const show = window.innerHeight >= 450 && window.innerWidth >= 576;
+      const show = window.innerHeight >= 450 && !ScreenUtils.isMobile();
       setShowScrubber(show);
     };
     onResize();
