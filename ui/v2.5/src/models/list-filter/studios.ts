@@ -28,6 +28,10 @@ const sortByOptions = ["name", "random", "rating"]
       messageID: "scene_count",
       value: "scenes_count",
     },
+    {
+      messageID: "subsidiary_studio_count",
+      value: "child_count",
+    },
   ]);
 
 const displayModeOptions = [DisplayMode.Grid, DisplayMode.Tagger];
@@ -44,6 +48,10 @@ const criterionOptions = [
   createStringCriterionOption("url"),
   StashIDCriterionOption,
   createStringCriterionOption("aliases"),
+  createMandatoryNumberCriterionOption(
+    "child_count",
+    "subsidiary_studio_count"
+  ),
   createMandatoryTimestampCriterionOption("created_at"),
   createMandatoryTimestampCriterionOption("updated_at"),
 ];
