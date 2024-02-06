@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import * as GQL from "src/core/generated-graphql";
-import { MovieSelect, StudioSelect } from "src/components/Shared/Select";
+import { MovieSelect } from "src/components/Shared/Select";
 import {
   ScrapeDialogRow,
   IHasName,
@@ -8,11 +8,12 @@ import {
 import { PerformerSelect } from "src/components/Performers/PerformerSelect";
 import { ScrapeResult } from "src/components/Shared/ScrapeDialog/scrapeResult";
 import { TagSelect } from "src/components/Tags/TagSelect";
+import { StudioSelect } from "src/components/Studios/StudioSelect";
 
 interface IScrapedStudioRow {
   title: string;
-  result: ScrapeResult<string>;
-  onChange: (value: ScrapeResult<string>) => void;
+  result: ScrapeResult<GQL.ScrapedStudio>;
+  onChange: (value: ScrapeResult<GQL.ScrapedStudio>) => void;
   newStudio?: GQL.ScrapedStudio;
   onCreateNew?: (value: GQL.ScrapedStudio) => void;
 }
@@ -25,14 +26,23 @@ export const ScrapedStudioRow: React.FC<IScrapedStudioRow> = ({
   onCreateNew,
 }) => {
   function renderScrapedStudio(
-    scrapeResult: ScrapeResult<string>,
+    scrapeResult: ScrapeResult<GQL.ScrapedStudio>,
     isNew?: boolean,
-    onChangeFn?: (value: string) => void
+    onChangeFn?: (value: GQL.ScrapedStudio) => void
   ) {
     const resultValue = isNew
       ? scrapeResult.newValue
       : scrapeResult.originalValue;
     const value = resultValue ? [resultValue] : [];
+
+    const selectValue = value.map((p) => {
+      const aliases: string[] = [];
+      return {
+        id: p.stored_id ?? "",
+        name: p.name ?? "",
+        aliases,
+      };
+    });
 
     return (
       <StudioSelect
@@ -40,10 +50,10 @@ export const ScrapedStudioRow: React.FC<IScrapedStudioRow> = ({
         isDisabled={!isNew}
         onSelect={(items) => {
           if (onChangeFn) {
-            onChangeFn(items[0]?.id);
+            onChangeFn(items[0]);
           }
         }}
-        ids={value}
+        values={selectValue}
       />
     );
   }

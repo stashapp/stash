@@ -4,7 +4,6 @@ import { FormattedMessage, useIntl } from "react-intl";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
 import * as yup from "yup";
-import { StudioSelect } from "src/components/Shared/Select";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { useToast } from "src/hooks/Toast";
 import { useFormik } from "formik";
@@ -23,6 +22,7 @@ import {
 } from "src/components/Performers/PerformerSelect";
 import { formikUtils } from "src/utils/form";
 import { Tag, TagSelect } from "src/components/Tags/TagSelect";
+import { Studio, StudioSelect } from "src/components/Studios/StudioSelect";
 
 interface IProps {
   image: GQL.ImageDataFragment;
@@ -47,6 +47,7 @@ export const ImageEditPanel: React.FC<IProps> = ({
 
   const [performers, setPerformers] = useState<Performer[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
+  const [studio, setStudio] = useState<Studio | null>(null);
 
   const schema = yup.object({
     title: yup.string().ensure(),
@@ -103,6 +104,11 @@ export const ImageEditPanel: React.FC<IProps> = ({
     );
   }
 
+  function onSetStudio(item: Studio | null) {
+    setStudio(item);
+    formik.setFieldValue("studio_id", item ? item.id : null);
+  }
+
   useRatingKeybinds(
     true,
     configuration?.ui?.ratingSystemOptions?.type,
@@ -116,6 +122,10 @@ export const ImageEditPanel: React.FC<IProps> = ({
   useEffect(() => {
     setTags(image.tags ?? []);
   }, [image.tags]);
+
+  useEffect(() => {
+    setStudio(image.studio ?? null);
+  }, [image.studio]);
 
   useEffect(() => {
     if (isVisible) {
@@ -183,13 +193,8 @@ export const ImageEditPanel: React.FC<IProps> = ({
     const title = intl.formatMessage({ id: "studio" });
     const control = (
       <StudioSelect
-        onSelect={(items) =>
-          formik.setFieldValue(
-            "studio_id",
-            items.length > 0 ? items[0]?.id : null
-          )
-        }
-        ids={formik.values.studio_id ? [formik.values.studio_id] : []}
+        onSelect={(items) => onSetStudio(items.length > 0 ? items[0] : null)}
+        values={studio ? [studio] : []}
       />
     );
 

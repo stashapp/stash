@@ -25,9 +25,11 @@ import {
 } from "src/components/Shared/ScrapeDialog/createObjects";
 import { uniq } from "lodash-es";
 import { Tag } from "src/components/Tags/TagSelect";
+import { Studio } from "src/components/Studios/StudioSelect";
 
 interface IGalleryScrapeDialogProps {
   gallery: Partial<GQL.GalleryUpdateInput>;
+  galleryStudio: Studio | null;
   galleryTags: Tag[];
   galleryPerformers: Performer[];
   scraped: GQL.ScrapedGallery;
@@ -37,6 +39,7 @@ interface IGalleryScrapeDialogProps {
 
 export const GalleryScrapeDialog: React.FC<IGalleryScrapeDialogProps> = ({
   gallery,
+  galleryStudio,
   galleryTags,
   galleryPerformers,
   scraped,
@@ -63,8 +66,16 @@ export const GalleryScrapeDialog: React.FC<IGalleryScrapeDialogProps> = ({
   const [photographer, setPhotographer] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(gallery.photographer, scraped.photographer)
   );
-  const [studio, setStudio] = useState<ScrapeResult<string>>(
-    new ScrapeResult<string>(gallery.studio_id, scraped.studio?.stored_id)
+  const [studio, setStudio] = useState<ScrapeResult<GQL.ScrapedStudio>>(
+    new ScrapeResult<GQL.ScrapedStudio>(
+      galleryStudio
+        ? {
+            stored_id: galleryStudio.id,
+            name: galleryStudio.name,
+          }
+        : undefined,
+      scraped.studio
+    )
   );
   const [newStudio, setNewStudio] = useState<GQL.ScrapedStudio | undefined>(
     scraped.studio && !scraped.studio.stored_id ? scraped.studio : undefined
@@ -156,12 +167,7 @@ export const GalleryScrapeDialog: React.FC<IGalleryScrapeDialogProps> = ({
       urls: urls.getNewValue(),
       date: date.getNewValue(),
       photographer: photographer.getNewValue(),
-      studio: newStudioValue
-        ? {
-            stored_id: newStudioValue,
-            name: "",
-          }
-        : undefined,
+      studio: newStudioValue,
       performers: performers.getNewValue(),
       tags: tags.getNewValue(),
       details: details.getNewValue(),

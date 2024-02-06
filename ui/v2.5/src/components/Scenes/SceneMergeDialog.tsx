@@ -87,8 +87,17 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
     new ScrapeResult<number>(dest.play_duration)
   );
 
-  const [studio, setStudio] = useState<ScrapeResult<string>>(
-    new ScrapeResult<string>(dest.studio?.id)
+  function idToStoredID(o: { id: string; name: string }) {
+    return {
+      stored_id: o.id,
+      name: o.name,
+    };
+  }
+
+  const [studio, setStudio] = useState<ScrapeResult<GQL.ScrapedStudio>>(
+    new ScrapeResult<GQL.ScrapedStudio>(
+      dest.studio ? idToStoredID(dest.studio) : undefined
+    )
   );
 
   function sortIdList(idList?: string[] | null) {
@@ -103,13 +112,6 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
     });
 
     return ret;
-  }
-
-  function idToStoredID(o: { id: string; name: string }) {
-    return {
-      stored_id: o.id,
-      name: o.name,
-    };
   }
 
   function uniqIDStoredIDs<T extends IHasStoredID>(objs: T[]) {
@@ -197,10 +199,18 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
     setDate(
       new ScrapeResult(dest.date, sources.find((s) => s.date)?.date, !dest.date)
     );
+
+    const foundStudio = sources.find((s) => s.studio)?.studio;
+
     setStudio(
-      new ScrapeResult(
-        dest.studio?.id,
-        sources.find((s) => s.studio)?.studio?.id,
+      new ScrapeResult<GQL.ScrapedStudio>(
+        dest.studio ? idToStoredID(dest.studio) : undefined,
+        foundStudio
+          ? {
+              stored_id: foundStudio.id,
+              name: foundStudio.name,
+            }
+          : undefined,
         !dest.studio
       )
     );
@@ -581,7 +591,7 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
       play_count: playCount.getNewValue(),
       play_duration: playDuration.getNewValue(),
       gallery_ids: galleries.getNewValue(),
-      studio_id: studio.getNewValue(),
+      studio_id: studio.getNewValue()?.stored_id,
       performer_ids: performers.getNewValue()?.map((p) => p.stored_id!),
       movies: movies.getNewValue()?.map((m) => {
         // find the equivalent movie in the original scenes
