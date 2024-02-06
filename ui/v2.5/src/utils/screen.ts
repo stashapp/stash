@@ -1,5 +1,5 @@
 const isMobile = () =>
-  window.matchMedia("only screen and (max-width: 767px)").matches;
+  window.matchMedia("only screen and (max-width: 576px)").matches;
 
 const ScreenUtils = {
   isMobile,

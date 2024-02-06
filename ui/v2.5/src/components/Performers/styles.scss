@@ -63,7 +63,7 @@
   }
 
   &-image {
-    height: 30rem;
+    aspect-ratio: 2/3;
     min-width: 11.25rem;
     object-fit: cover;
     object-position: top;

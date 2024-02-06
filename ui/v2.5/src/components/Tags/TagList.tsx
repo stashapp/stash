@@ -24,10 +24,10 @@ import NavUtils from "src/utils/navigation";
 import { Icon } from "../Shared/Icon";
 import { ModalComponent } from "../Shared/Modal";
 import { DeleteEntityDialog } from "../Shared/DeleteEntityDialog";
-import { TagCard } from "./TagCard";
 import { ExportDialog } from "../Shared/ExportDialog";
 import { tagRelationHook } from "../../core/tags";
 import { faTrashAlt } from "@fortawesome/free-solid-svg-icons";
+import { TagCardGrid } from "./TagCardGrid";
 
 interface ITagList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
@@ -188,20 +188,12 @@ export const TagList: React.FC<ITagList> = ({ filterHook, alterQuery }) => {
 
       if (filter.displayMode === DisplayMode.Grid) {
         return (
-          <div className="row px-xl-5 justify-content-center">
-            {result.data.findTags.tags.map((tag) => (
-              <TagCard
-                key={tag.id}
-                tag={tag}
-                zoomIndex={filter.zoomIndex}
-                selecting={selectedIds.size > 0}
-                selected={selectedIds.has(tag.id)}
-                onSelectedChanged={(selected: boolean, shiftKey: boolean) =>
-                  onSelectChange(tag.id, selected, shiftKey)
-                }
-              />
-            ))}
-          </div>
+          <TagCardGrid
+            tags={result.data.findTags.tags}
+            zoomIndex={filter.zoomIndex}
+            selectedIds={selectedIds}
+            onSelectChange={onSelectChange}
+          />
         );
       }
       if (filter.displayMode === DisplayMode.List) {
