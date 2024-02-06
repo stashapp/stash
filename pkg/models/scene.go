@@ -95,6 +95,8 @@ type SceneFilterType struct {
 	CreatedAt *TimestampCriterionInput `json:"created_at"`
 	// Filter by updated at
 	UpdatedAt *TimestampCriterionInput `json:"updated_at"`
+	// Filter by scene filters
+	Filters *StringCriterionInput `json:"filters"`
 }
 
 type SceneQueryOptions struct {
@@ -138,6 +140,7 @@ type SceneCreateInput struct {
 	// This should be a URL or a base64 encoded data URL
 	CoverImage *string   `json:"cover_image"`
 	StashIds   []StashID `json:"stash_ids"`
+	Filters    *string   `json:"filters"`
 	// The first id will be assigned as primary.
 	// Files will be reassigned from existing scenes if applicable.
 	// Files must not already be primary for another scene.
@@ -162,6 +165,7 @@ type SceneUpdateInput struct {
 	PerformerIds     []string          `json:"performer_ids"`
 	Movies           []SceneMovieInput `json:"movies"`
 	TagIds           []string          `json:"tag_ids"`
+	Filters          *string           `json:"filters"`
 	// This should be a URL or a base64 encoded data URL
 	CoverImage    *string   `json:"cover_image"`
 	StashIds      []StashID `json:"stash_ids"`

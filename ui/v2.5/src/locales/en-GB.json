@@ -1391,7 +1391,9 @@
     "started_auto_tagging": "Started auto tagging",
     "started_generating": "Started generating",
     "started_importing": "Started importing",
-    "updated_entity": "Updated {entity}"
+    "updated_entity": "Updated {entity}",
+    "scene_video_filter_saved": "Scene filter saved",
+    "scene_video_filter_deleted": "Scene filter deleted"
   },
   "total": "Total",
   "true": "True",

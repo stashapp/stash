@@ -89,6 +89,7 @@ type sceneRow struct {
 	ResumeTime   float64       `db:"resume_time"`
 	PlayDuration float64       `db:"play_duration"`
 	PlayCount    int           `db:"play_count"`
+	Filters      zero.String   `db:"filters"`
 
 	// not used in resolutions or updates
 	CoverBlob zero.String `db:"cover_blob"`
@@ -111,6 +112,7 @@ func (r *sceneRow) fromScene(o models.Scene) {
 	r.ResumeTime = o.ResumeTime
 	r.PlayDuration = o.PlayDuration
 	r.PlayCount = o.PlayCount
+	r.Filters = zero.StringFrom(o.Filters)
 }
 
 type sceneQueryRow struct {
@@ -146,6 +148,7 @@ func (r *sceneQueryRow) resolve() *models.Scene {
 		ResumeTime:   r.ResumeTime,
 		PlayDuration: r.PlayDuration,
 		PlayCount:    r.PlayCount,
+		Filters:      r.Filters.String,
 	}
 
 	if r.PrimaryFileFolderPath.Valid && r.PrimaryFileBasename.Valid {
@@ -175,6 +178,7 @@ func (r *sceneRowRecord) fromPartial(o models.ScenePartial) {
 	r.setFloat64("resume_time", o.ResumeTime)
 	r.setFloat64("play_duration", o.PlayDuration)
 	r.setInt("play_count", o.PlayCount)
+	r.setNullString("filters", o.Filters)
 }
 
 type SceneStore struct {
@@ -1012,6 +1016,7 @@ func (qb *SceneStore) makeFilter(ctx context.Context, sceneFilter *models.SceneF
 	query.handleCriterion(ctx, floatIntCriterionHandler(sceneFilter.ResumeTime, "scenes.resume_time", nil))
 	query.handleCriterion(ctx, floatIntCriterionHandler(sceneFilter.PlayDuration, "scenes.play_duration", nil))
 	query.handleCriterion(ctx, intCriterionHandler(sceneFilter.PlayCount, "scenes.play_count", nil))
+	query.handleCriterion(ctx, stringCriterionHandler(sceneFilter.Filters, "scenes.filters"))
 
 	query.handleCriterion(ctx, sceneTagsCriterionHandler(qb, sceneFilter.Tags))
 	query.handleCriterion(ctx, sceneTagCountCriterionHandler(qb, sceneFilter.TagCount))

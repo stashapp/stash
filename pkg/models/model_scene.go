@@ -46,6 +46,7 @@ type Scene struct {
 	PerformerIDs RelatedIDs      `json:"performer_ids"`
 	Movies       RelatedMovies   `json:"movies"`
 	StashIDs     RelatedStashIDs `json:"stash_ids"`
+	Filters      string          `json:"filters"`
 }
 
 func NewScene() Scene {
@@ -75,6 +76,7 @@ type ScenePartial struct {
 	PlayDuration OptionalFloat64
 	PlayCount    OptionalInt
 	LastPlayedAt OptionalTime
+	Filters      OptionalString
 
 	URLs          *UpdateStrings
 	GalleryIDs    *UpdateIDs

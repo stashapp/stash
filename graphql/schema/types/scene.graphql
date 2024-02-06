@@ -57,6 +57,8 @@ type Scene {
   play_duration: Float
   "The number ot times a scene has been played"
   play_count: Int
+  "Scene filters JSON data"
+  filters: String
 
   files: [VideoFile!]!
   paths: ScenePathsType! # Resolver
@@ -96,7 +98,7 @@ input SceneCreateInput {
   "This should be a URL or a base64 encoded data URL"
   cover_image: String
   stash_ids: [StashIDInput!]
-
+  filters: String
   """
   The first id will be assigned as primary.
   Files will be reassigned from existing scenes if applicable.
@@ -127,6 +129,7 @@ input SceneUpdateInput {
   "This should be a URL or a base64 encoded data URL"
   cover_image: String
   stash_ids: [StashIDInput!]
+  filters: String
 
   "The time index a scene was left at"
   resume_time: Float

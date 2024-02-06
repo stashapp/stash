@@ -48,6 +48,7 @@ func (r *mutationResolver) SceneCreate(ctx context.Context, input models.SceneCr
 	newScene.Rating = input.Rating100
 	newScene.Organized = translator.bool(input.Organized)
 	newScene.StashIDs = models.NewRelatedStashIDs(input.StashIds)
+	newScene.Filters = translator.string(input.Filters)
 
 	newScene.Date, err = translator.datePtr(input.Date)
 	if err != nil {
@@ -174,6 +175,7 @@ func scenePartialFromInput(input models.SceneUpdateInput, translator changesetTr
 	updatedScene.PlayDuration = translator.optionalFloat64(input.PlayDuration, "play_duration")
 	updatedScene.Organized = translator.optionalBool(input.Organized, "organized")
 	updatedScene.StashIDs = translator.updateStashIDs(input.StashIds, "stash_ids")
+	updatedScene.Filters = translator.optionalString(input.Filters, "filters")
 
 	var err error
 

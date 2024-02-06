@@ -67,6 +67,7 @@ type Scene struct {
 	PlayCount    int              `json:"play_count,omitempty"`
 	PlayDuration float64          `json:"play_duration,omitempty"`
 	StashIDs     []models.StashID `json:"stash_ids,omitempty"`
+	Filters      string           `json:"filters,omitempty"`
 }
 
 func (s Scene) Filename(id int, basename string, hash string) string {

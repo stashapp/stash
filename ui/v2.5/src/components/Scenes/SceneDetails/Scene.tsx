@@ -75,7 +75,9 @@ const SceneVideoFilterPanel = lazyComponent(
 import { objectPath, objectTitle } from "src/core/files";
 
 interface IProps {
-  scene: GQL.SceneDataFragment;
+  scene: GQL.SceneDataFragment & {
+    filters?: string | null | undefined;
+  };
   setTimestamp: (num: number) => void;
   queueScenes: QueuedScene[];
   onQueueNext: () => void;
@@ -157,6 +159,7 @@ const ScenePage: React.FC<IProps> = ({
     Mousetrap.bind("q", () => setActiveTabKey("scene-queue-panel"));
     Mousetrap.bind("e", () => setActiveTabKey("scene-edit-panel"));
     Mousetrap.bind("k", () => setActiveTabKey("scene-markers-panel"));
+    Mousetrap.bind("f", () => setActiveTabKey("scene-video-filter-panel"));
     Mousetrap.bind("i", () => setActiveTabKey("scene-file-info-panel"));
     Mousetrap.bind("o", () => {
       onIncrementClick();
@@ -171,6 +174,7 @@ const ScenePage: React.FC<IProps> = ({
       Mousetrap.unbind("q");
       Mousetrap.unbind("e");
       Mousetrap.unbind("k");
+      Mousetrap.unbind("f");
       Mousetrap.unbind("i");
       Mousetrap.unbind("o");
       Mousetrap.unbind("p n");
@@ -474,7 +478,10 @@ const ScenePage: React.FC<IProps> = ({
           </Tab.Pane>
         )}
         <Tab.Pane eventKey="scene-video-filter-panel">
-          <SceneVideoFilterPanel scene={scene} />
+          <SceneVideoFilterPanel
+            scene={scene}
+            isVisible={activeTabKey === "scene-filters-panel"}
+          />
         </Tab.Pane>
         <Tab.Pane className="file-info-panel" eventKey="scene-file-info-panel">
           <SceneFileInfoPanel scene={scene} />
