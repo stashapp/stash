@@ -10,7 +10,7 @@ import { GraphQLWsLink } from "@apollo/client/link/subscriptions";
 import { createClient as createWSClient } from "graphql-ws";
 import { onError } from "@apollo/client/link/error";
 import { getMainDefinition } from "@apollo/client/utilities";
-import { createUploadLink } from "apollo-upload-client";
+import createUploadLink from "apollo-upload-client/createUploadLink.mjs";
 import * as GQL from "src/core/generated-graphql";
 import { FieldReadFunction } from "@apollo/client/cache";
 

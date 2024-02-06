@@ -37,7 +37,6 @@ import {
   faSignOutAlt,
   faTrashAlt,
 } from "@fortawesome/free-solid-svg-icons";
-import { IUIConfig } from "src/core/config";
 import { DetailImage } from "src/components/Shared/DetailImage";
 import { useLoadStickyHeader } from "src/hooks/detailsPanel";
 import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
@@ -75,7 +74,7 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
 
   // Configuration settings
   const { configuration } = React.useContext(ConfigurationContext);
-  const uiConfig = configuration?.ui as IUIConfig | undefined;
+  const uiConfig = configuration?.ui;
   const abbreviateCounter = uiConfig?.abbreviateCounters ?? false;
   const enableBackgroundImage = uiConfig?.enableTagBackgroundImage ?? false;
   const showAllDetails = uiConfig?.showAllDetails ?? true;
@@ -96,7 +95,7 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
   const [updateTag] = useTagUpdate();
   const [deleteTag] = useTagDestroy({ id: tag.id });
 
-  const showAllCounts = (configuration?.ui as IUIConfig)?.showChildTagContent;
+  const showAllCounts = uiConfig?.showChildTagContent;
   const sceneCount =
     (showAllCounts ? tag.scene_count_all : tag.scene_count) ?? 0;
   const imageCount =

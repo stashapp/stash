@@ -1,3 +1,14 @@
+import { CriterionValue, ISavedCriterion } from "./criteria/criterion";
+
+export type SavedObjectFilter = {
+  [K in CriterionType]?: ISavedCriterion<CriterionValue>;
+};
+
+export type SavedUIOptions = {
+  display_mode?: DisplayMode;
+  zoom_index?: number;
+};
+
 // NOTE: add new enum values to the end, to ensure existing data
 // is not impacted
 export enum DisplayMode {
@@ -114,7 +125,6 @@ export interface IOptionType {
 
 export type CriterionType =
   | "path"
-  | "rating"
   | "rating100"
   | "organized"
   | "o_counter"
@@ -141,7 +151,6 @@ export type CriterionType =
   | "country"
   | "hair_color"
   | "eye_color"
-  | "height"
   | "height_cm"
   | "weight"
   | "measurements"
@@ -162,7 +171,6 @@ export type CriterionType =
   | "performer_count"
   | "death_year"
   | "url"
-  | "stash_id"
   | "interactive"
   | "interactive_speed"
   | "captions"

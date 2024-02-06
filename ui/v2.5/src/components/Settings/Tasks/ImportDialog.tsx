@@ -95,6 +95,8 @@ export const ImportDialog: React.FC<IImportDialogProps> = (
   }
 
   async function onImport() {
+    if (!file) return;
+
     try {
       setIsRunning(true);
       await mutateImportObjects({

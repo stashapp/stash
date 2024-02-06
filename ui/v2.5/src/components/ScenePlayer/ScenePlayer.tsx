@@ -38,7 +38,6 @@ import {
 import { SceneInteractiveStatus } from "src/hooks/Interactive/status";
 import { languageMap } from "src/utils/caption";
 import { VIDEO_PLAYER_ID } from "./util";
-import { IUIConfig } from "src/core/config";
 
 // @ts-ignore
 import airplay from "@silvermine/videojs-airplay";
@@ -223,7 +222,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 }) => {
   const { configuration } = useContext(ConfigurationContext);
   const interfaceConfig = configuration?.interface;
-  const uiConfig = configuration?.ui as IUIConfig | undefined;
+  const uiConfig = configuration?.ui;
   const videoRef = useRef<HTMLDivElement>(null);
   const [_player, setPlayer] = useState<VideoJsPlayer>();
   const sceneId = useRef<string>();

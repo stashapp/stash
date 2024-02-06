@@ -224,7 +224,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
   useRatingKeybinds(
     isVisible,
-    stashConfig?.ui?.ratingSystemOptions?.type,
+    stashConfig?.ui.ratingSystemOptions?.type,
     setRating
   );
 

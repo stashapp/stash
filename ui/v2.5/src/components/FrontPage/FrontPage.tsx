@@ -11,7 +11,6 @@ import {
   FrontPageContent,
   generateDefaultFrontPageContent,
   getFrontPageContent,
-  IUIConfig,
 } from "src/core/config";
 import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
 
@@ -59,7 +58,7 @@ const FrontPage: React.FC = () => {
     return <FrontPageConfig onClose={(content) => onUpdateConfig(content)} />;
   }
 
-  const ui = (configuration?.ui ?? {}) as IUIConfig;
+  const ui = configuration?.ui ?? {};
 
   if (!ui.frontPageContent) {
     const defaultContent = generateDefaultFrontPageContent(intl);

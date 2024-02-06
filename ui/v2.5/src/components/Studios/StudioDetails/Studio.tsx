@@ -38,7 +38,6 @@ import {
   faChevronDown,
   faChevronUp,
 } from "@fortawesome/free-solid-svg-icons";
-import { IUIConfig } from "src/core/config";
 import TextUtils from "src/utils/text";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { DetailImage } from "src/components/Shared/DetailImage";
@@ -81,7 +80,7 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
 
   // Configuration settings
   const { configuration } = React.useContext(ConfigurationContext);
-  const uiConfig = configuration?.ui as IUIConfig | undefined;
+  const uiConfig = configuration?.ui;
   const abbreviateCounter = uiConfig?.abbreviateCounters ?? false;
   const enableBackgroundImage = uiConfig?.enableStudioBackgroundImage ?? false;
   const showAllDetails = uiConfig?.showAllDetails ?? true;
@@ -101,8 +100,7 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
   const [updateStudio] = useStudioUpdate();
   const [deleteStudio] = useStudioDestroy({ id: studio.id });
 
-  const showAllCounts = (configuration?.ui as IUIConfig)
-    ?.showChildStudioContent;
+  const showAllCounts = uiConfig?.showChildStudioContent;
   const sceneCount =
     (showAllCounts ? studio.scene_count_all : studio.scene_count) ?? 0;
   const galleryCount =
@@ -161,7 +159,7 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
 
   useRatingKeybinds(
     true,
-    configuration?.ui?.ratingSystemOptions?.type,
+    configuration?.ui.ratingSystemOptions?.type,
     setRating
   );
 

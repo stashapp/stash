@@ -87,7 +87,7 @@ function appendObject(
   cache.modify({
     fields: {
       [keyName]: (value, { toReference }) => {
-        return [...value, toReference(obj)];
+        return [...(value as unknown[]), toReference(obj)];
       },
     },
   });
