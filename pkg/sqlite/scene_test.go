@@ -15,7 +15,7 @@ import (
 	"time"
 
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sliceutil/intslice"
+	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -2380,12 +2380,12 @@ func TestSceneQueryPath(t *testing.T) {
 			mustInclude := indexesToIDs(sceneIDs, tt.mustInclude)
 			mustExclude := indexesToIDs(sceneIDs, tt.mustExclude)
 
-			missing := intslice.IntExclude(mustInclude, got.IDs)
+			missing := sliceutil.Exclude(mustInclude, got.IDs)
 			if len(missing) > 0 {
 				t.Errorf("SceneStore.TestSceneQueryPath() missing expected IDs: %v", missing)
 			}
 
-			notExcluded := intslice.IntIntercect(mustExclude, got.IDs)
+			notExcluded := sliceutil.Intersect(mustExclude, got.IDs)
 			if len(notExcluded) > 0 {
 				t.Errorf("SceneStore.TestSceneQueryPath() expected IDs to be excluded: %v", notExcluded)
 			}
@@ -2675,51 +2675,6 @@ func verifyString(t *testing.T, value string, criterion models.StringCriterionIn
 	case models.CriterionModifierNotNull:
 		assert.NotEqual("", value)
 	}
-}
-
-func TestSceneQueryRating(t *testing.T) {
-	const rating = 3
-	ratingCriterion := models.IntCriterionInput{
-		Value:    rating,
-		Modifier: models.CriterionModifierEquals,
-	}
-
-	verifyScenesLegacyRating(t, ratingCriterion)
-
-	ratingCriterion.Modifier = models.CriterionModifierNotEquals
-	verifyScenesLegacyRating(t, ratingCriterion)
-
-	ratingCriterion.Modifier = models.CriterionModifierGreaterThan
-	verifyScenesLegacyRating(t, ratingCriterion)
-
-	ratingCriterion.Modifier = models.CriterionModifierLessThan
-	verifyScenesLegacyRating(t, ratingCriterion)
-
-	ratingCriterion.Modifier = models.CriterionModifierIsNull
-	verifyScenesLegacyRating(t, ratingCriterion)
-
-	ratingCriterion.Modifier = models.CriterionModifierNotNull
-	verifyScenesLegacyRating(t, ratingCriterion)
-}
-
-func verifyScenesLegacyRating(t *testing.T, ratingCriterion models.IntCriterionInput) {
-	withTxn(func(ctx context.Context) error {
-		sqb := db.Scene
-		sceneFilter := models.SceneFilterType{
-			Rating: &ratingCriterion,
-		}
-
-		scenes := queryScene(ctx, t, sqb, &sceneFilter, nil)
-
-		// convert criterion value to the 100 value
-		ratingCriterion.Value = models.Rating5To100(ratingCriterion.Value)
-
-		for _, scene := range scenes {
-			verifyIntPtr(t, scene.Rating, ratingCriterion)
-		}
-
-		return nil
-	})
 }
 
 func TestSceneQueryRating100(t *testing.T) {

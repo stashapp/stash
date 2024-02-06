@@ -13,7 +13,7 @@ import (
 	"gopkg.in/guregu/null.v4/zero"
 
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sliceutil/intslice"
+	"github.com/stashapp/stash/pkg/sliceutil"
 )
 
 const (
@@ -204,7 +204,7 @@ func (qb *MovieStore) FindMany(ctx context.Context, ids []int) ([]*models.Movie,
 		}
 
 		for _, s := range unsorted {
-			i := intslice.IntIndex(ids, s.ID)
+			i := sliceutil.Index(ids, s.ID)
 			ret[i] = s
 		}
 
@@ -334,8 +334,6 @@ func (qb *MovieStore) makeFilter(ctx context.Context, movieFilter *models.MovieF
 	query.handleCriterion(ctx, stringCriterionHandler(movieFilter.Director, "movies.director"))
 	query.handleCriterion(ctx, stringCriterionHandler(movieFilter.Synopsis, "movies.synopsis"))
 	query.handleCriterion(ctx, intCriterionHandler(movieFilter.Rating100, "movies.rating", nil))
-	// legacy rating handler
-	query.handleCriterion(ctx, rating5CriterionHandler(movieFilter.Rating, "movies.rating", nil))
 	query.handleCriterion(ctx, floatIntCriterionHandler(movieFilter.Duration, "movies.duration", nil))
 	query.handleCriterion(ctx, movieIsMissingCriterionHandler(qb, movieFilter.IsMissing))
 	query.handleCriterion(ctx, stringCriterionHandler(movieFilter.URL, "movies.url"))

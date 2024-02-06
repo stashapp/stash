@@ -80,10 +80,9 @@
   }
 }
 
-.folder-list {
-  margin-top: 0.5rem 0 0 0;
-  max-height: 30vw;
-  overflow-x: auto;
+// z-index gets set on button groups for some reason
+.multi-set .btn-group > button.btn {
+  z-index: auto;
 }
 
 .folder-item {
@@ -92,14 +91,12 @@
   }
 }
 
-// z-index gets set on button groups for some reason
-.multi-set .btn-group > button.btn {
-  z-index: auto;
-}
-
 .folder-list {
   list-style-type: none;
   margin: 0;
+  max-height: 30vw;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
   padding-top: 1rem;
 
   &-item {
@@ -460,23 +457,67 @@ div.react-datepicker {
 .clearable-text-field,
 .clearable-text-field:active,
 .clearable-text-field:focus {
-  background-color: #394b59;
+  background-color: $secondary;
   border: 0;
-  border-color: #394b59;
+  border-color: $secondary;
   color: #fff;
 }
 
 .clearable-text-field-clear {
-  background-color: #394b59;
-  color: #bfccd6;
+  background-color: $secondary;
+  color: $muted-gray;
   font-size: 0.875rem;
   margin: 0.375rem 0.75rem;
   padding: 0;
   position: absolute;
   right: 0;
   z-index: 4;
+
+  &:hover,
+  &:focus,
+  &:active,
+  &:not(:disabled):not(.disabled):active,
+  &:not(:disabled):not(.disabled):active:focus {
+    background-color: $secondary;
+    border-color: transparent;
+    box-shadow: none;
+  }
 }
 
 .string-list-row .input-group {
   flex-wrap: nowrap;
+}
+
+.stash-id-pill {
+  display: inline-block;
+  font-size: 90%;
+  font-weight: 700;
+  line-height: 1;
+  padding-bottom: 0.25em;
+  padding-top: 0.25em;
+  text-align: center;
+  vertical-align: baseline;
+  white-space: nowrap;
+
+  span,
+  a {
+    display: inline-block;
+    padding: 0.25em 0.6em;
+  }
+
+  span {
+    background-color: $primary;
+    border-radius: 0.25rem 0 0 0.25rem;
+    min-width: 5em;
+  }
+
+  a {
+    background-color: $secondary;
+    border-radius: 0 0.25rem 0.25rem 0;
+  }
+}
+
+.react-select-image-option {
+  align-items: baseline;
+  display: flex;
 }

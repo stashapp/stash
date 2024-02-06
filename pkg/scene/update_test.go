@@ -1,7 +1,6 @@
 package scene
 
 import (
-	"context"
 	"errors"
 	"strconv"
 	"testing"
@@ -105,8 +104,6 @@ func TestUpdater_Update(t *testing.T) {
 		tagID
 	)
 
-	ctx := context.Background()
-
 	performerIDs := []int{performerID}
 	tagIDs := []int{tagID}
 	stashID := "stashID"
@@ -119,14 +116,15 @@ func TestUpdater_Update(t *testing.T) {
 
 	updateErr := errors.New("error updating")
 
-	qb := mocks.SceneReaderWriter{}
-	qb.On("UpdatePartial", ctx, mock.MatchedBy(func(id int) bool {
+	db := mocks.NewDatabase()
+
+	db.Scene.On("UpdatePartial", testCtx, mock.MatchedBy(func(id int) bool {
 		return id != badUpdateID
 	}), mock.Anything).Return(validScene, nil)
-	qb.On("UpdatePartial", ctx, badUpdateID, mock.Anything).Return(nil, updateErr)
+	db.Scene.On("UpdatePartial", testCtx, badUpdateID, mock.Anything).Return(nil, updateErr)
 
-	qb.On("UpdateCover", ctx, sceneID, cover).Return(nil).Once()
-	qb.On("UpdateCover", ctx, badCoverID, cover).Return(updateErr).Once()
+	db.Scene.On("UpdateCover", testCtx, sceneID, cover).Return(nil).Once()
+	db.Scene.On("UpdateCover", testCtx, badCoverID, cover).Return(updateErr).Once()
 
 	tests := []struct {
 		name    string
@@ -204,7 +202,7 @@ func TestUpdater_Update(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.u.Update(ctx, &qb)
+			got, err := tt.u.Update(testCtx, db.Scene)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Updater.Update() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -215,7 +213,7 @@ func TestUpdater_Update(t *testing.T) {
 		})
 	}
 
-	qb.AssertExpectations(t)
+	db.AssertExpectations(t)
 }
 
 func TestUpdateSet_UpdateInput(t *testing.T) {

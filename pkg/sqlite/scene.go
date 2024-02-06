@@ -18,7 +18,7 @@ import (
 	"gopkg.in/guregu/null.v4/zero"
 
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sliceutil/intslice"
+	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -475,7 +475,7 @@ func (qb *SceneStore) FindMany(ctx context.Context, ids []int) ([]*models.Scene,
 		}
 
 		for _, s := range unsorted {
-			i := intslice.IntIndex(ids, s.ID)
+			i := sliceutil.Index(ids, s.ID)
 			scenes[i] = s
 		}
 
@@ -798,7 +798,7 @@ func (qb *SceneStore) Size(ctx context.Context) (float64, error) {
 	table := qb.table()
 	fileTable := fileTableMgr.table
 	q := dialect.Select(
-		goqu.SUM(fileTableMgr.table.Col("size")),
+		goqu.COALESCE(goqu.SUM(fileTableMgr.table.Col("size")), 0),
 	).From(table).InnerJoin(
 		scenesFilesJoinTable,
 		goqu.On(table.Col(idColumn).Eq(scenesFilesJoinTable.Col(sceneIDColumn))),
@@ -819,7 +819,8 @@ func (qb *SceneStore) Duration(ctx context.Context) (float64, error) {
 	videoFileTable := videoFileTableMgr.table
 
 	q := dialect.Select(
-		goqu.SUM(videoFileTable.Col("duration"))).From(table).InnerJoin(
+		goqu.COALESCE(goqu.SUM(videoFileTable.Col("duration")), 0),
+	).From(table).InnerJoin(
 		scenesFilesJoinTable,
 		goqu.On(scenesFilesJoinTable.Col("scene_id").Eq(table.Col(idColumn))),
 	).InnerJoin(
@@ -995,14 +996,13 @@ func (qb *SceneStore) makeFilter(ctx context.Context, sceneFilter *models.SceneF
 	query.handleCriterion(ctx, scenePhashDistanceCriterionHandler(qb, sceneFilter.PhashDistance))
 
 	query.handleCriterion(ctx, intCriterionHandler(sceneFilter.Rating100, "scenes.rating", nil))
-	// legacy rating handler
-	query.handleCriterion(ctx, rating5CriterionHandler(sceneFilter.Rating, "scenes.rating", nil))
 	query.handleCriterion(ctx, intCriterionHandler(sceneFilter.OCounter, "scenes.o_counter", nil))
 	query.handleCriterion(ctx, boolCriterionHandler(sceneFilter.Organized, "scenes.organized", nil))
 
 	query.handleCriterion(ctx, floatIntCriterionHandler(sceneFilter.Duration, "video_files.duration", qb.addVideoFilesTable))
 	query.handleCriterion(ctx, resolutionCriterionHandler(sceneFilter.Resolution, "video_files.height", "video_files.width", qb.addVideoFilesTable))
-
+	query.handleCriterion(ctx, orientationCriterionHandler(sceneFilter.Orientation, "video_files.height", "video_files.width", qb.addVideoFilesTable))
+	query.handleCriterion(ctx, floatIntCriterionHandler(sceneFilter.Framerate, "ROUND(video_files.frame_rate)", qb.addVideoFilesTable))
 	query.handleCriterion(ctx, codecCriterionHandler(sceneFilter.VideoCodec, "video_files.video_codec", qb.addVideoFilesTable))
 	query.handleCriterion(ctx, codecCriterionHandler(sceneFilter.AudioCodec, "video_files.audio_codec", qb.addVideoFilesTable))
 
@@ -2034,7 +2034,7 @@ func (qb *SceneStore) FindDuplicates(ctx context.Context, distance int, duration
 			var sceneIds []int
 			for _, strId := range strIds {
 				if intId, err := strconv.Atoi(strId); err == nil {
-					sceneIds = intslice.IntAppendUnique(sceneIds, intId)
+					sceneIds = sliceutil.AppendUnique(sceneIds, intId)
 				}
 			}
 			// filter out

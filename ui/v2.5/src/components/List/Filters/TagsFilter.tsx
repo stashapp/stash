@@ -2,6 +2,7 @@ import React, { useMemo } from "react";
 import { useFindTagsQuery } from "src/core/generated-graphql";
 import { HierarchicalObjectsFilter } from "./SelectableFilter";
 import { StudiosCriterion } from "src/models/list-filter/criteria/studios";
+import { sortByRelevance } from "src/utils/query";
 
 interface ITagsFilter {
   criterion: StudiosCriterion;
@@ -18,16 +19,18 @@ function useTagQuery(query: string) {
     },
   });
 
-  const results = useMemo(
-    () =>
-      data?.findTags.tags.map((p) => {
-        return {
-          id: p.id,
-          label: p.name,
-        };
-      }) ?? [],
-    [data]
-  );
+  const results = useMemo(() => {
+    return sortByRelevance(
+      query,
+      data?.findTags.tags ?? [],
+      (t) => t.aliases
+    ).map((p) => {
+      return {
+        id: p.id,
+        label: p.name,
+      };
+    });
+  }, [data, query]);
 
   return { results, loading };
 }

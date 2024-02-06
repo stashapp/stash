@@ -133,10 +133,6 @@ type BaseFile struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-func (f *BaseFile) FingerprintSlice() []Fingerprint {
-	return f.Fingerprints
-}
-
 // SetFingerprints sets the fingerprints of the file.
 // If a fingerprint of the same type already exists, it is overwritten.
 func (f *BaseFile) SetFingerprints(fp Fingerprints) {

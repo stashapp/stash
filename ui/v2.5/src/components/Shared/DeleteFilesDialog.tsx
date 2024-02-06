@@ -44,7 +44,7 @@ export const DeleteFilesDialog: React.FC<IDeleteSceneDialogProps> = (
     setIsDeleting(true);
     try {
       await mutateDeleteFiles(props.selected.map((f) => f.id));
-      Toast.success({ content: toastMessage });
+      Toast.success(toastMessage);
       props.onClose(true);
     } catch (e) {
       Toast.error(e);

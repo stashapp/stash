@@ -11,7 +11,6 @@ import {
 } from "src/core/generated-graphql";
 import { INumberValue } from "../types";
 import { Criterion, CriterionOption } from "./criterion";
-import { IUIConfig } from "src/core/config";
 
 const modifierOptions = [
   CriterionModifier.Equals,
@@ -25,9 +24,7 @@ const modifierOptions = [
 ];
 
 function getRatingSystemOptions(config?: ConfigDataFragment) {
-  return (
-    (config?.ui as IUIConfig)?.ratingSystemOptions ?? defaultRatingSystemOptions
-  );
+  return config?.ui.ratingSystemOptions ?? defaultRatingSystemOptions;
 }
 
 export const RatingCriterionOption = new CriterionOption({
@@ -58,7 +55,7 @@ export class RatingCriterion extends Criterion<INumberValue> {
     }
   }
 
-  protected toCriterionInput(): IntCriterionInput {
+  public toCriterionInput(): IntCriterionInput {
     return {
       modifier: this.modifier,
       value: this.value.value ?? 0,

@@ -27,6 +27,7 @@ import {
   faQuestionCircle,
 } from "@fortawesome/free-solid-svg-icons";
 import { releaseNotes } from "src/docs/en/ReleaseNotes";
+import { ExternalLink } from "../Shared/ExternalLink";
 
 export const Setup: React.FC = () => {
   const { configuration, loading: configLoading } =
@@ -34,7 +35,7 @@ export const Setup: React.FC = () => {
   const [saveUI] = useConfigureUI();
 
   const [step, setStep] = useState(0);
-  const [configLocation, setConfigLocation] = useState("");
+  const [setupInWorkDir, setSetupInWorkDir] = useState(false);
   const [stashes, setStashes] = useState<GQL.StashConfig[]>([]);
   const [showStashAlert, setShowStashAlert] = useState(false);
   const [databaseFile, setDatabaseFile] = useState("");
@@ -43,7 +44,7 @@ export const Setup: React.FC = () => {
   const [storeBlobsInDatabase, setStoreBlobsInDatabase] = useState(false);
   const [blobsLocation, setBlobsLocation] = useState("");
   const [loading, setLoading] = useState(false);
-  const [setupError, setSetupError] = useState("");
+  const [setupError, setSetupError] = useState<string>();
 
   const intl = useIntl();
   const history = useHistory();
@@ -54,16 +55,43 @@ export const Setup: React.FC = () => {
   const [showBlobsDialog, setShowBlobsDialog] = useState(false);
 
   const { data: systemStatus, loading: statusLoading } = useSystemStatus();
+  const status = systemStatus?.systemStatus;
 
-  useEffect(() => {
-    if (systemStatus?.systemStatus.configPath) {
-      setConfigLocation(systemStatus.systemStatus.configPath);
-    }
-  }, [systemStatus]);
+  const windows = status?.os === "windows";
+  const pathSep = windows ? "\\" : "/";
+  const homeDir = windows ? "%USERPROFILE%" : "$HOME";
+  const pwd = windows ? "%CD%" : "$PWD";
+
+  function pathJoin(...paths: string[]) {
+    return paths.join(pathSep);
+  }
+
+  // simply returns everything preceding the last path separator
+  function pathDir(path: string) {
+    const lastSep = path.lastIndexOf(pathSep);
+    if (lastSep === -1) return "";
+    return path.slice(0, lastSep);
+  }
+
+  const workingDir = status?.workingDir ?? ".";
+
+  // When running Stash.app, the working directory is (usually) set to /.
+  // Assume that the user doesn't want to set up in / (it's usually mounted read-only anyway),
+  // so in this situation disallow setting up in the working directory.
+  const macApp = status?.os === "darwin" && workingDir === "/";
+
+  const fallbackStashDir = pathJoin(homeDir, ".stash");
+  const fallbackConfigPath = pathJoin(fallbackStashDir, "config.yml");
+
+  const overrideConfig = status?.configPath;
+  const overrideGenerated = configuration?.general.generatedPath;
+  const overrideCache = configuration?.general.cachePath;
+  const overrideBlobs = configuration?.general.blobsPath;
+  const overrideDatabase = configuration?.general.databasePath;
 
   useEffect(() => {
     if (configuration) {
-      const { stashes: configStashes, generatedPath } = configuration.general;
+      const configStashes = configuration.general.stashes;
       if (configStashes.length > 0) {
         setStashes(
           configStashes.map((s) => {
@@ -72,29 +100,20 @@ export const Setup: React.FC = () => {
           })
         );
       }
-      if (generatedPath) {
-        setGeneratedLocation(generatedPath);
-      }
     }
   }, [configuration]);
 
   const discordLink = (
-    <a href="https://discord.gg/2TsNFKt" target="_blank" rel="noreferrer">
-      Discord
-    </a>
+    <ExternalLink href="https://discord.gg/2TsNFKt">Discord</ExternalLink>
   );
   const githubLink = (
-    <a
-      href="https://github.com/stashapp/stash/issues"
-      target="_blank"
-      rel="noreferrer"
-    >
+    <ExternalLink href="https://github.com/stashapp/stash/issues">
       <FormattedMessage id="setup.github_repository" />
-    </a>
+    </ExternalLink>
   );
 
-  function onConfigLocationChosen(loc: string) {
-    setConfigLocation(loc);
+  function onConfigLocationChosen(inWorkDir: boolean) {
+    setSetupInWorkDir(inWorkDir);
     next();
   }
 
@@ -159,7 +178,7 @@ export const Setup: React.FC = () => {
             <FormattedMessage
               id="setup.welcome_specific_config.config_path"
               values={{
-                path: configLocation,
+                path: overrideConfig,
                 code: (chunks: string) => <code>{chunks}</code>,
               }}
             />
@@ -181,6 +200,8 @@ export const Setup: React.FC = () => {
   }
 
   function renderWelcome() {
+    const homeDirPath = pathJoin(status?.homeDir ?? homeDir, ".stash");
+
     return (
       <>
         <section>
@@ -195,6 +216,7 @@ export const Setup: React.FC = () => {
               id="setup.welcome.config_path_logic_explained"
               values={{
                 code: (chunks: string) => <code>{chunks}</code>,
+                fallback_path: fallbackConfigPath,
               }}
             />
           </p>
@@ -219,20 +241,56 @@ export const Setup: React.FC = () => {
           <div className="d-flex justify-content-center">
             <Button
               variant="secondary mx-2 p-5"
-              onClick={() => onConfigLocationChosen("")}
+              onClick={() => onConfigLocationChosen(false)}
             >
               <FormattedMessage
                 id="setup.welcome.in_current_stash_directory"
                 values={{
                   code: (chunks: string) => <code>{chunks}</code>,
+                  path: fallbackStashDir,
                 }}
               />
+              <br />
+              <code>{homeDirPath}</code>
             </Button>
             <Button
               variant="secondary mx-2 p-5"
-              onClick={() => onConfigLocationChosen("config.yml")}
+              onClick={() => onConfigLocationChosen(true)}
+              disabled={macApp}
             >
-              <FormattedMessage id="setup.welcome.in_the_current_working_directory" />
+              {macApp ? (
+                <>
+                  <FormattedMessage
+                    id="setup.welcome.in_the_current_working_directory_disabled"
+                    values={{
+                      code: (chunks: string) => <code>{chunks}</code>,
+                      path: pwd,
+                    }}
+                  />
+                  <br />
+                  <b>
+                    <FormattedMessage
+                      id="setup.welcome.in_the_current_working_directory_disabled_macos"
+                      values={{
+                        code: (chunks: string) => <code>{chunks}</code>,
+                        br: () => <br />,
+                      }}
+                    />
+                  </b>
+                </>
+              ) : (
+                <>
+                  <FormattedMessage
+                    id="setup.welcome.in_the_current_working_directory"
+                    values={{
+                      code: (chunks: string) => <code>{chunks}</code>,
+                      path: pwd,
+                    }}
+                  />
+                  <br />
+                  <code>{workingDir}</code>
+                </>
+              )}
             </Button>
           </div>
         </section>
@@ -272,45 +330,78 @@ export const Setup: React.FC = () => {
     return <FolderSelectDialog onClose={onBlobsClosed} />;
   }
 
+  function maybeRenderDatabase() {
+    if (overrideDatabase) return;
+
+    return (
+      <Form.Group id="database">
+        <h3>
+          <FormattedMessage id="setup.paths.where_can_stash_store_its_database" />
+        </h3>
+        <p>
+          <FormattedMessage
+            id="setup.paths.where_can_stash_store_its_database_description"
+            values={{
+              code: (chunks: string) => <code>{chunks}</code>,
+            }}
+          />
+          <br />
+          <FormattedMessage
+            id="setup.paths.where_can_stash_store_its_database_warning"
+            values={{
+              strong: (chunks: string) => <strong>{chunks}</strong>,
+            }}
+          />
+        </p>
+        <Form.Control
+          className="text-input"
+          defaultValue={databaseFile}
+          placeholder={intl.formatMessage({
+            id: "setup.paths.database_filename_empty_for_default",
+          })}
+          onChange={(e) => setDatabaseFile(e.currentTarget.value)}
+        />
+      </Form.Group>
+    );
+  }
+
   function maybeRenderGenerated() {
-    if (!configuration?.general.generatedPath) {
-      return (
-        <Form.Group id="generated">
-          <h3>
-            <FormattedMessage id="setup.paths.where_can_stash_store_its_generated_content" />
-          </h3>
-          <p>
-            <FormattedMessage
-              id="setup.paths.where_can_stash_store_its_generated_content_description"
-              values={{
-                code: (chunks: string) => <code>{chunks}</code>,
-              }}
-            />
-          </p>
-          <InputGroup>
-            <Form.Control
+    if (overrideGenerated) return;
+
+    return (
+      <Form.Group id="generated">
+        <h3>
+          <FormattedMessage id="setup.paths.where_can_stash_store_its_generated_content" />
+        </h3>
+        <p>
+          <FormattedMessage
+            id="setup.paths.where_can_stash_store_its_generated_content_description"
+            values={{
+              code: (chunks: string) => <code>{chunks}</code>,
+            }}
+          />
+        </p>
+        <InputGroup>
+          <Form.Control
+            className="text-input"
+            value={generatedLocation}
+            placeholder={intl.formatMessage({
+              id: "setup.paths.path_to_generated_directory_empty_for_default",
+            })}
+            onChange={(e) => setGeneratedLocation(e.currentTarget.value)}
+          />
+          <InputGroup.Append>
+            <Button
+              variant="secondary"
               className="text-input"
-              value={generatedLocation}
-              placeholder={intl.formatMessage({
-                id: "setup.paths.path_to_generated_directory_empty_for_default",
-              })}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setGeneratedLocation(e.currentTarget.value)
-              }
-            />
-            <InputGroup.Append>
-              <Button
-                variant="secondary"
-                className="text-input"
-                onClick={() => setShowGeneratedSelectDialog(true)}
-              >
-                <Icon icon={faEllipsisH} />
-              </Button>
-            </InputGroup.Append>
-          </InputGroup>
-        </Form.Group>
-      );
-    }
+              onClick={() => setShowGeneratedSelectDialog(true)}
+            >
+              <Icon icon={faEllipsisH} />
+            </Button>
+          </InputGroup.Append>
+        </InputGroup>
+      </Form.Group>
+    );
   }
 
   function onCacheSelectClosed(d?: string) {
@@ -330,110 +421,106 @@ export const Setup: React.FC = () => {
   }
 
   function maybeRenderCache() {
-    if (!configuration?.general.cachePath) {
-      return (
-        <Form.Group id="cache">
-          <h3>
-            <FormattedMessage id="setup.paths.where_can_stash_store_cache_files" />
-          </h3>
-          <p>
-            <FormattedMessage
-              id="setup.paths.where_can_stash_store_cache_files_description"
-              values={{
-                code: (chunks: string) => <code>{chunks}</code>,
-              }}
-            />
-          </p>
+    if (overrideCache) return;
+
+    return (
+      <Form.Group id="cache">
+        <h3>
+          <FormattedMessage id="setup.paths.where_can_stash_store_cache_files" />
+        </h3>
+        <p>
+          <FormattedMessage
+            id="setup.paths.where_can_stash_store_cache_files_description"
+            values={{
+              code: (chunks: string) => <code>{chunks}</code>,
+            }}
+          />
+        </p>
+        <InputGroup>
+          <Form.Control
+            className="text-input"
+            value={cacheLocation}
+            placeholder={intl.formatMessage({
+              id: "setup.paths.path_to_cache_directory_empty_for_default",
+            })}
+            onChange={(e) => setCacheLocation(e.currentTarget.value)}
+          />
+          <InputGroup.Append>
+            <Button
+              variant="secondary"
+              className="text-input"
+              onClick={() => setShowCacheSelectDialog(true)}
+            >
+              <Icon icon={faEllipsisH} />
+            </Button>
+          </InputGroup.Append>
+        </InputGroup>
+      </Form.Group>
+    );
+  }
+
+  function maybeRenderBlobs() {
+    if (overrideBlobs) return;
+
+    return (
+      <Form.Group id="blobs">
+        <h3>
+          <FormattedMessage id="setup.paths.where_can_stash_store_blobs" />
+        </h3>
+        <p>
+          <FormattedMessage
+            id="setup.paths.where_can_stash_store_blobs_description"
+            values={{
+              code: (chunks: string) => <code>{chunks}</code>,
+            }}
+          />
+        </p>
+        <p>
+          <FormattedMessage
+            id="setup.paths.where_can_stash_store_blobs_description_addendum"
+            values={{
+              code: (chunks: string) => <code>{chunks}</code>,
+              strong: (chunks: string) => <strong>{chunks}</strong>,
+            }}
+          />
+        </p>
+
+        <p>
+          <Form.Check
+            id="store-blobs-in-database"
+            checked={storeBlobsInDatabase}
+            label={intl.formatMessage({
+              id: "setup.paths.store_blobs_in_database",
+            })}
+            onChange={() => setStoreBlobsInDatabase(!storeBlobsInDatabase)}
+          />
+        </p>
+
+        {!storeBlobsInDatabase && (
           <InputGroup>
             <Form.Control
               className="text-input"
-              value={cacheLocation}
+              value={blobsLocation}
               placeholder={intl.formatMessage({
-                id: "setup.paths.path_to_cache_directory_empty_for_default",
+                id: "setup.paths.path_to_blobs_directory_empty_for_default",
               })}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setCacheLocation(e.currentTarget.value)
-              }
+              onChange={(e) => setBlobsLocation(e.currentTarget.value)}
+              disabled={storeBlobsInDatabase}
             />
             <InputGroup.Append>
               <Button
                 variant="secondary"
                 className="text-input"
-                onClick={() => setShowCacheSelectDialog(true)}
+                onClick={() => setShowBlobsDialog(true)}
+                disabled={storeBlobsInDatabase}
               >
                 <Icon icon={faEllipsisH} />
               </Button>
             </InputGroup.Append>
           </InputGroup>
-        </Form.Group>
-      );
-    }
-  }
-
-  function maybeRenderBlobs() {
-    if (!configuration?.general.blobsPath) {
-      return (
-        <Form.Group id="blobs">
-          <h3>
-            <FormattedMessage id="setup.paths.where_can_stash_store_blobs" />
-          </h3>
-          <p>
-            <FormattedMessage
-              id="setup.paths.where_can_stash_store_blobs_description"
-              values={{
-                code: (chunks: string) => <code>{chunks}</code>,
-              }}
-            />
-          </p>
-          <p>
-            <FormattedMessage
-              id="setup.paths.where_can_stash_store_blobs_description_addendum"
-              values={{
-                code: (chunks: string) => <code>{chunks}</code>,
-                strong: (chunks: string) => <strong>{chunks}</strong>,
-              }}
-            />
-          </p>
-
-          <p>
-            <Form.Check
-              id="store-blobs-in-database"
-              checked={storeBlobsInDatabase}
-              label={intl.formatMessage({
-                id: "setup.paths.store_blobs_in_database",
-              })}
-              onChange={() => setStoreBlobsInDatabase(!storeBlobsInDatabase)}
-            />
-          </p>
-
-          {!storeBlobsInDatabase && (
-            <InputGroup>
-              <Form.Control
-                className="text-input"
-                value={blobsLocation}
-                placeholder={intl.formatMessage({
-                  id: "setup.paths.path_to_blobs_directory_empty_for_default",
-                })}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  setBlobsLocation(e.currentTarget.value)
-                }
-                disabled={storeBlobsInDatabase}
-              />
-              <InputGroup.Append>
-                <Button
-                  variant="secondary"
-                  className="text-input"
-                  onClick={() => setShowBlobsDialog(true)}
-                  disabled={storeBlobsInDatabase}
-                >
-                  <Icon icon={faEllipsisH} />
-                </Button>
-              </InputGroup.Append>
-            </InputGroup>
-          )}
-        </Form.Group>
-      );
-    }
+        )}
+      </Form.Group>
+    );
   }
 
   function renderSetPaths() {
@@ -463,36 +550,7 @@ export const Setup: React.FC = () => {
               />
             </Card>
           </Form.Group>
-          <Form.Group id="database">
-            <h3>
-              <FormattedMessage id="setup.paths.where_can_stash_store_its_database" />
-            </h3>
-            <p>
-              <FormattedMessage
-                id="setup.paths.where_can_stash_store_its_database_description"
-                values={{
-                  code: (chunks: string) => <code>{chunks}</code>,
-                }}
-              />
-              <br />
-              <FormattedMessage
-                id="setup.paths.where_can_stash_store_its_database_warning"
-                values={{
-                  strong: (chunks: string) => <strong>{chunks}</strong>,
-                }}
-              />
-            </p>
-            <Form.Control
-              className="text-input"
-              defaultValue={databaseFile}
-              placeholder={intl.formatMessage({
-                id: "setup.paths.database_filename_empty_for_default",
-              })}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setDatabaseFile(e.currentTarget.value)
-              }
-            />
-          </Form.Group>
+          {maybeRenderDatabase()}
           {maybeRenderGenerated()}
           {maybeRenderCache()}
           {maybeRenderBlobs()}
@@ -511,18 +569,6 @@ export const Setup: React.FC = () => {
     );
   }
 
-  function renderConfigLocation() {
-    if (configLocation === "config.yml") {
-      return <code>&lt;current working directory&gt;/config.yml</code>;
-    }
-
-    if (configLocation === "") {
-      return <code>$HOME/.stash/config.yml</code>;
-    }
-
-    return <code>{configLocation}</code>;
-  }
-
   function maybeRenderExclusions(s: GQL.StashConfig) {
     if (!s.excludeImage && !s.excludeVideo) {
       return;
@@ -539,20 +585,12 @@ export const Setup: React.FC = () => {
     return `(excludes ${excludes.join(" and ")})`;
   }
 
-  function renderStashLibraries() {
-    return (
-      <ul>
-        {stashes.map((s) => (
-          <li key={s.path}>
-            <code>{s.path} </code>
-            {maybeRenderExclusions(s)}
-          </li>
-        ))}
-      </ul>
-    );
-  }
-
   async function onSave() {
+    let configLocation = overrideConfig;
+    if (!configLocation) {
+      configLocation = setupInWorkDir ? "config.yml" : "";
+    }
+
     try {
       setLoading(true);
       await mutateSetup({
@@ -574,7 +612,11 @@ export const Setup: React.FC = () => {
         },
       });
     } catch (e) {
-      if (e instanceof Error) setSetupError(e.message ?? e.toString());
+      if (e instanceof Error && e.message) {
+        setSetupError(e.message);
+      } else {
+        setSetupError(String(e));
+      }
     } finally {
       setLoading(false);
       next();
@@ -582,6 +624,24 @@ export const Setup: React.FC = () => {
   }
 
   function renderConfirm() {
+    let cfgDir: string;
+    let config: string;
+    if (overrideConfig) {
+      cfgDir = pathDir(overrideConfig);
+      config = overrideConfig;
+    } else {
+      cfgDir = setupInWorkDir ? pwd : fallbackStashDir;
+      config = pathJoin(cfgDir, "config.yml");
+    }
+
+    function joinCfgDir(path: string) {
+      if (cfgDir) {
+        return pathJoin(cfgDir, path);
+      } else {
+        return path;
+      }
+    }
+
     return (
       <>
         <section>
@@ -595,72 +655,71 @@ export const Setup: React.FC = () => {
             <dt>
               <FormattedMessage id="setup.confirm.configuration_file_location" />
             </dt>
-            <dd>{renderConfigLocation()}</dd>
+            <dd>
+              <code>{config}</code>
+            </dd>
           </dl>
           <dl>
             <dt>
               <FormattedMessage id="setup.confirm.stash_library_directories" />
             </dt>
-            <dd>{renderStashLibraries()}</dd>
-          </dl>
-          <dl>
-            <dt>
-              <FormattedMessage id="setup.confirm.database_file_path" />
-            </dt>
             <dd>
-              <code>
-                {databaseFile !== ""
-                  ? databaseFile
-                  : intl.formatMessage({
-                      id: "setup.confirm.default_db_location",
-                    })}
-              </code>
+              <ul>
+                {stashes.map((s) => (
+                  <li key={s.path}>
+                    <code>{s.path} </code>
+                    {maybeRenderExclusions(s)}
+                  </li>
+                ))}
+              </ul>
             </dd>
           </dl>
-          <dl>
-            <dt>
-              <FormattedMessage id="setup.confirm.generated_directory" />
-            </dt>
-            <dd>
-              <code>
-                {generatedLocation !== ""
-                  ? generatedLocation
-                  : intl.formatMessage({
-                      id: "setup.confirm.default_generated_content_location",
-                    })}
-              </code>
-            </dd>
-          </dl>
-          <dl>
-            <dt>
-              <FormattedMessage id="setup.confirm.cache_directory" />
-            </dt>
-            <dd>
-              <code>
-                {cacheLocation !== ""
-                  ? cacheLocation
-                  : intl.formatMessage({
-                      id: "setup.confirm.default_cache_location",
-                    })}
-              </code>
-            </dd>
-            <dt>
-              <FormattedMessage id="setup.confirm.blobs_directory" />
-            </dt>
-            <dd>
-              <code>
-                {storeBlobsInDatabase
-                  ? intl.formatMessage({
-                      id: "setup.confirm.blobs_use_database",
-                    })
-                  : blobsLocation !== ""
-                  ? blobsLocation
-                  : intl.formatMessage({
-                      id: "setup.confirm.default_blobs_location",
-                    })}
-              </code>
-            </dd>
-          </dl>
+          {!overrideDatabase && (
+            <dl>
+              <dt>
+                <FormattedMessage id="setup.confirm.database_file_path" />
+              </dt>
+              <dd>
+                <code>{databaseFile || joinCfgDir("stash-go.sqlite")}</code>
+              </dd>
+            </dl>
+          )}
+          {!overrideGenerated && (
+            <dl>
+              <dt>
+                <FormattedMessage id="setup.confirm.generated_directory" />
+              </dt>
+              <dd>
+                <code>{generatedLocation || joinCfgDir("generated")}</code>
+              </dd>
+            </dl>
+          )}
+          {!overrideCache && (
+            <dl>
+              <dt>
+                <FormattedMessage id="setup.confirm.cache_directory" />
+              </dt>
+              <dd>
+                <code>{cacheLocation || joinCfgDir("cache")}</code>
+              </dd>
+            </dl>
+          )}
+          {!overrideBlobs && (
+            <dl>
+              <dt>
+                <FormattedMessage id="setup.confirm.blobs_directory" />
+              </dt>
+              <dd>
+                <code>
+                  {storeBlobsInDatabase ? (
+                    <FormattedMessage id="setup.confirm.blobs_use_database" />
+                  ) : (
+                    blobsLocation || joinCfgDir("blobs")
+                  )}
+                </code>
+              </dd>
+            </dl>
+          )}
         </section>
         <section className="mt-5">
           <div className="d-flex justify-content-center">
@@ -677,6 +736,11 @@ export const Setup: React.FC = () => {
   }
 
   function renderError() {
+    function onBackClick() {
+      setSetupError(undefined);
+      goBack(2);
+    }
+
     return (
       <>
         <section>
@@ -698,7 +762,7 @@ export const Setup: React.FC = () => {
         </section>
         <section className="mt-5">
           <div className="d-flex justify-content-center">
-            <Button variant="secondary mx-2 p-5" onClick={() => goBack(2)}>
+            <Button variant="secondary mx-2 p-5" onClick={onBackClick}>
               <FormattedMessage id="actions.previous_action" />
             </Button>
           </div>
@@ -756,14 +820,9 @@ export const Setup: React.FC = () => {
               id="setup.success.open_collective"
               values={{
                 open_collective_link: (
-                  <a
-                    href="https://opencollective.com/stashapp"
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    {" "}
-                    OpenCollective{" "}
-                  </a>
+                  <ExternalLink href="https://opencollective.com/stashapp">
+                    Open Collective
+                  </ExternalLink>
                 ),
               }}
             />
@@ -791,7 +850,7 @@ export const Setup: React.FC = () => {
   }
 
   function renderFinish() {
-    if (setupError) {
+    if (setupError !== undefined) {
       return renderError();
     }
 
@@ -803,20 +862,15 @@ export const Setup: React.FC = () => {
     return <LoadingIndicator />;
   }
 
-  if (
-    step === 0 &&
-    systemStatus &&
-    systemStatus.systemStatus.status !== GQL.SystemStatusEnum.Setup
-  ) {
+  if (step === 0 && status && status.status !== GQL.SystemStatusEnum.Setup) {
     // redirect to main page
     history.push("/");
     return <LoadingIndicator />;
   }
 
-  const welcomeStep =
-    systemStatus && systemStatus.systemStatus.configPath !== ""
-      ? renderWelcomeSpecificConfig
-      : renderWelcome;
+  const welcomeStep = overrideConfig
+    ? renderWelcomeSpecificConfig
+    : renderWelcome;
   const steps = [welcomeStep, renderSetPaths, renderConfirm, renderFinish];
 
   function renderCreating() {

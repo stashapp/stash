@@ -33,11 +33,11 @@ import TextUtils from "src/utils/text";
 import { Icon } from "src/components/Shared/Icon";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { ConfigurationContext } from "src/hooks/Config";
-import { IUIConfig } from "src/core/config";
 import { DetailImage } from "src/components/Shared/DetailImage";
 import { useRatingKeybinds } from "src/hooks/keybinds";
 import { useLoadStickyHeader } from "src/hooks/detailsPanel";
 import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
+import { ExternalLink } from "src/components/Shared/ExternalLink";
 
 interface IProps {
   movie: GQL.MovieDataFragment;
@@ -54,7 +54,7 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
 
   // Configuration settings
   const { configuration } = React.useContext(ConfigurationContext);
-  const uiConfig = configuration?.ui as IUIConfig | undefined;
+  const uiConfig = configuration?.ui;
   const enableBackgroundImage = uiConfig?.enableMovieBackgroundImage ?? false;
   const compactExpandedDetails = uiConfig?.compactExpandedDetails ?? false;
   const showAllDetails = uiConfig?.showAllDetails ?? true;
@@ -117,7 +117,7 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
   useEffect(() => {
     Mousetrap.bind("e", () => toggleEditing());
     Mousetrap.bind("d d", () => {
-      onDelete();
+      setIsDeleteAlertOpen(true);
     });
     Mousetrap.bind(",", () => setCollapsed(!collapsed));
 
@@ -129,7 +129,7 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
 
   useRatingKeybinds(
     true,
-    configuration?.ui?.ratingSystemOptions?.type,
+    configuration?.ui.ratingSystemOptions?.type,
     setRating
   );
 
@@ -143,12 +143,12 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
       },
     });
     toggleEditing(false);
-    Toast.success({
-      content: intl.formatMessage(
+    Toast.success(
+      intl.formatMessage(
         { id: "toast.updated_entity" },
         { entity: intl.formatMessage({ id: "movie" }).toLocaleLowerCase() }
-      ),
-    });
+      )
+    );
   }
 
   async function onDelete() {
@@ -274,15 +274,13 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
   const renderClickableIcons = () => (
     <span className="name-icons">
       {movie.url && (
-        <Button className="minimal icon-link" title={movie.url}>
-          <a
-            href={TextUtils.sanitiseURL(movie.url)}
-            className="link"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Icon icon={faLink} />
-          </a>
+        <Button
+          as={ExternalLink}
+          href={TextUtils.sanitiseURL(movie.url)}
+          className="minimal link"
+          title={movie.url}
+        >
+          <Icon icon={faLink} />
         </Button>
       )}
     </span>
@@ -362,18 +360,22 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
   function maybeRenderHeaderBackgroundImage() {
     let image = movie.front_image_path;
     if (enableBackgroundImage && !isEditing && image) {
-      return (
-        <div className="background-image-container">
-          <picture>
-            <source src={image} />
-            <img
-              className="background-image"
-              src={image}
-              alt={`${movie.name} background`}
-            />
-          </picture>
-        </div>
-      );
+      const imageURL = new URL(image);
+      let isDefaultImage = imageURL.searchParams.get("default");
+      if (!isDefaultImage) {
+        return (
+          <div className="background-image-container">
+            <picture>
+              <source src={image} />
+              <img
+                className="background-image"
+                src={image}
+                alt={`${movie.name} background`}
+              />
+            </picture>
+          </div>
+        );
+      }
     }
   }
 
@@ -404,7 +406,7 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
             <div className="logo w-100">
               {encodingImage ? (
                 <LoadingIndicator
-                  message={`${intl.formatMessage({ id: "encoding_image" })}...`}
+                  message={intl.formatMessage({ id: "actions.encoding_image" })}
                 />
               ) : (
                 <div className="movie-images">
@@ -423,8 +425,8 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
               </h2>
               {maybeRenderAliases()}
               <RatingSystem
-                value={movie.rating100 ?? undefined}
-                onSetRating={(value) => setRating(value ?? null)}
+                value={movie.rating100}
+                onSetRating={(value) => setRating(value)}
               />
               {maybeRenderDetails()}
               {maybeRenderEditPanel()}

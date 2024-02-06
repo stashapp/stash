@@ -89,6 +89,7 @@ const SelectComponent = <T, IsMulti extends boolean>(
     ...props,
     styles,
     defaultOptions: true,
+    isClearable: true,
     value: selectedOptions ?? null,
     className: cx("react-select", props.className),
     classNamePrefix: "react-select",
@@ -197,13 +198,11 @@ export const FilterSelectComponent = <
       }
 
       setLoading(false);
-      Toast.success({
-        content: (
-          <span>
-            {message}: <b>{name}</b>
-          </span>
-        ),
-      });
+      Toast.success(
+        <span>
+          {message}: <b>{name}</b>
+        </span>
+      );
     } catch (e) {
       Toast.error(e);
     }

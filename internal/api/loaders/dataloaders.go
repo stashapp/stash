@@ -17,9 +17,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/txn"
 )
 
 type contextKey struct{ name string }
@@ -49,8 +47,7 @@ type Loaders struct {
 }
 
 type Middleware struct {
-	DatabaseProvider txn.DatabaseProvider
-	Repository       manager.Repository
+	Repository models.Repository
 }
 
 func (m Middleware) Middleware(next http.Handler) http.Handler {
@@ -131,13 +128,9 @@ func toErrorSlice(err error) []error {
 	return nil
 }
 
-func (m Middleware) withTxn(ctx context.Context, fn func(ctx context.Context) error) error {
-	return txn.WithDatabase(ctx, m.DatabaseProvider, fn)
-}
-
 func (m Middleware) fetchScenes(ctx context.Context) func(keys []int) ([]*models.Scene, []error) {
 	return func(keys []int) (ret []*models.Scene, errs []error) {
-		err := m.withTxn(ctx, func(ctx context.Context) error {
+		err := m.Repository.WithDB(ctx, func(ctx context.Context) error {
 			var err error
 			ret, err = m.Repository.Scene.FindMany(ctx, keys)
 			return err
@@ -148,7 +141,7 @@ func (m Middleware) fetchScenes(ctx context.Context) func(keys []int) ([]*models
 
 func (m Middleware) fetchImages(ctx context.Context) func(keys []int) ([]*models.Image, []error) {
 	return func(keys []int) (ret []*models.Image, errs []error) {
-		err := m.withTxn(ctx, func(ctx context.Context) error {
+		err := m.Repository.WithDB(ctx, func(ctx context.Context) error {
 			var err error
 			ret, err = m.Repository.Image.FindMany(ctx, keys)
 			return err
@@ -160,7 +153,7 @@ func (m Middleware) fetchImages(ctx context.Context) func(keys []int) ([]*models
 
 func (m Middleware) fetchGalleries(ctx context.Context) func(keys []int) ([]*models.Gallery, []error) {
 	return func(keys []int) (ret []*models.Gallery, errs []error) {
-		err := m.withTxn(ctx, func(ctx context.Context) error {
+		err := m.Repository.WithDB(ctx, func(ctx context.Context) error {
 			var err error
 			ret, err = m.Repository.Gallery.FindMany(ctx, keys)
 			return err
@@ -172,7 +165,7 @@ func (m Middleware) fetchGalleries(ctx context.Context) func(keys []int) ([]*mod
 
 func (m Middleware) fetchPerformers(ctx context.Context) func(keys []int) ([]*models.Performer, []error) {
 	return func(keys []int) (ret []*models.Performer, errs []error) {
-		err := m.withTxn(ctx, func(ctx context.Context) error {
+		err := m.Repository.WithDB(ctx, func(ctx context.Context) error {
 			var err error
 			ret, err = m.Repository.Performer.FindMany(ctx, keys)
 			return err
@@ -184,7 +177,7 @@ func (m Middleware) fetchPerformers(ctx context.Context) func(keys []int) ([]*mo
 
 func (m Middleware) fetchStudios(ctx context.Context) func(keys []int) ([]*models.Studio, []error) {
 	return func(keys []int) (ret []*models.Studio, errs []error) {
-		err := m.withTxn(ctx, func(ctx context.Context) error {
+		err := m.Repository.WithDB(ctx, func(ctx context.Context) error {
 			var err error
 			ret, err = m.Repository.Studio.FindMany(ctx, keys)
 			return err
@@ -195,7 +188,7 @@ func (m Middleware) fetchStudios(ctx context.Context) func(keys []int) ([]*model
 
 func (m Middleware) fetchTags(ctx context.Context) func(keys []int) ([]*models.Tag, []error) {
 	return func(keys []int) (ret []*models.Tag, errs []error) {
-		err := m.withTxn(ctx, func(ctx context.Context) error {
+		err := m.Repository.WithDB(ctx, func(ctx context.Context) error {
 			var err error
 			ret, err = m.Repository.Tag.FindMany(ctx, keys)
 			return err
@@ -206,7 +199,7 @@ func (m Middleware) fetchTags(ctx context.Context) func(keys []int) ([]*models.T
 
 func (m Middleware) fetchMovies(ctx context.Context) func(keys []int) ([]*models.Movie, []error) {
 	return func(keys []int) (ret []*models.Movie, errs []error) {
-		err := m.withTxn(ctx, func(ctx context.Context) error {
+		err := m.Repository.WithDB(ctx, func(ctx context.Context) error {
 			var err error
 			ret, err = m.Repository.Movie.FindMany(ctx, keys)
 			return err
@@ -217,7 +210,7 @@ func (m Middleware) fetchMovies(ctx context.Context) func(keys []int) ([]*models
 
 func (m Middleware) fetchFiles(ctx context.Context) func(keys []models.FileID) ([]models.File, []error) {
 	return func(keys []models.FileID) (ret []models.File, errs []error) {
-		err := m.withTxn(ctx, func(ctx context.Context) error {
+		err := m.Repository.WithDB(ctx, func(ctx context.Context) error {
 			var err error
 			ret, err = m.Repository.File.Find(ctx, keys...)
 			return err
@@ -228,7 +221,7 @@ func (m Middleware) fetchFiles(ctx context.Context) func(keys []models.FileID) (
 
 func (m Middleware) fetchScenesFileIDs(ctx context.Context) func(keys []int) ([][]models.FileID, []error) {
 	return func(keys []int) (ret [][]models.FileID, errs []error) {
-		err := m.withTxn(ctx, func(ctx context.Context) error {
+		err := m.Repository.WithDB(ctx, func(ctx context.Context) error {
 			var err error
 			ret, err = m.Repository.Scene.GetManyFileIDs(ctx, keys)
 			return err
@@ -239,7 +232,7 @@ func (m Middleware) fetchScenesFileIDs(ctx context.Context) func(keys []int) ([]
 
 func (m Middleware) fetchImagesFileIDs(ctx context.Context) func(keys []int) ([][]models.FileID, []error) {
 	return func(keys []int) (ret [][]models.FileID, errs []error) {
-		err := m.withTxn(ctx, func(ctx context.Context) error {
+		err := m.Repository.WithDB(ctx, func(ctx context.Context) error {
 			var err error
 			ret, err = m.Repository.Image.GetManyFileIDs(ctx, keys)
 			return err
@@ -250,7 +243,7 @@ func (m Middleware) fetchImagesFileIDs(ctx context.Context) func(keys []int) ([]
 
 func (m Middleware) fetchGalleriesFileIDs(ctx context.Context) func(keys []int) ([][]models.FileID, []error) {
 	return func(keys []int) (ret [][]models.FileID, errs []error) {
-		err := m.withTxn(ctx, func(ctx context.Context) error {
+		err := m.Repository.WithDB(ctx, func(ctx context.Context) error {
 			var err error
 			ret, err = m.Repository.Gallery.GetManyFileIDs(ctx, keys)
 			return err

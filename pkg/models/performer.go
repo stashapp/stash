@@ -56,8 +56,9 @@ func (e GenderEnum) MarshalGQL(w io.Writer) {
 }
 
 type GenderCriterionInput struct {
-	Value    *GenderEnum       `json:"value"`
-	Modifier CriterionModifier `json:"modifier"`
+	Value     GenderEnum        `json:"value"`
+	ValueList []GenderEnum      `json:"value_list"`
+	Modifier  CriterionModifier `json:"modifier"`
 }
 
 type CircumisedEnum string
@@ -165,8 +166,6 @@ type PerformerFilterType struct {
 	StashID *StringCriterionInput `json:"stash_id"`
 	// Filter by StashID Endpoint
 	StashIDEndpoint *StashIDCriterionInput `json:"stash_id_endpoint"`
-	// Filter by rating expressed as 1-5
-	Rating *IntCriterionInput `json:"rating"`
 	// Filter by rating expressed as 1-100
 	Rating100 *IntCriterionInput `json:"rating100"`
 	// Filter by url
@@ -220,7 +219,6 @@ type PerformerCreateInput struct {
 	// This should be a URL or a base64 encoded data URL
 	Image         *string   `json:"image"`
 	StashIds      []StashID `json:"stash_ids"`
-	Rating        *int      `json:"rating"`
 	Rating100     *int      `json:"rating100"`
 	Details       *string   `json:"details"`
 	DeathDate     *string   `json:"death_date"`
@@ -257,7 +255,6 @@ type PerformerUpdateInput struct {
 	// This should be a URL or a base64 encoded data URL
 	Image         *string   `json:"image"`
 	StashIds      []StashID `json:"stash_ids"`
-	Rating        *int      `json:"rating"`
 	Rating100     *int      `json:"rating100"`
 	Details       *string   `json:"details"`
 	DeathDate     *string   `json:"death_date"`

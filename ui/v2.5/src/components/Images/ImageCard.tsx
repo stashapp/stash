@@ -1,4 +1,4 @@
-import React, { MouseEvent, useMemo } from "react";
+import React, { MouseEvent, useEffect, useMemo, useState } from "react";
 import { Button, ButtonGroup } from "react-bootstrap";
 import cx from "classnames";
 import * as GQL from "src/core/generated-graphql";
@@ -7,7 +7,7 @@ import { GalleryLink, TagLink } from "src/components/Shared/TagLink";
 import { HoverPopover } from "src/components/Shared/HoverPopover";
 import { SweatDrops } from "src/components/Shared/SweatDrops";
 import { PerformerPopoverButton } from "src/components/Shared/PerformerPopoverButton";
-import { GridCard } from "src/components/Shared/GridCard";
+import { GridCard, calculateCardWidth } from "src/components/Shared/GridCard";
 import { RatingBanner } from "src/components/Shared/RatingBanner";
 import {
   faBox,
@@ -16,9 +16,12 @@ import {
   faTag,
 } from "@fortawesome/free-solid-svg-icons";
 import { objectTitle } from "src/core/files";
+import { TruncatedText } from "../Shared/TruncatedText";
+import ScreenUtils from "src/utils/screen";
 
 interface IImageCardProps {
   image: GQL.SlimImageDataFragment;
+  containerWidth?: number;
   selecting?: boolean;
   selected?: boolean | undefined;
   zoomIndex: number;
@@ -29,6 +32,38 @@ interface IImageCardProps {
 export const ImageCard: React.FC<IImageCardProps> = (
   props: IImageCardProps
 ) => {
+  const [cardWidth, setCardWidth] = useState<number>();
+
+  useEffect(() => {
+    if (
+      !props.containerWidth ||
+      props.zoomIndex === undefined ||
+      ScreenUtils.isMobile()
+    )
+      return;
+
+    let zoomValue = props.zoomIndex;
+    let preferredCardWidth: number;
+    switch (zoomValue) {
+      case 0:
+        preferredCardWidth = 240;
+        break;
+      case 1:
+        preferredCardWidth = 340;
+        break;
+      case 2:
+        preferredCardWidth = 480;
+        break;
+      case 3:
+        preferredCardWidth = 640;
+    }
+    let fittedCardWidth = calculateCardWidth(
+      props.containerWidth,
+      preferredCardWidth!
+    );
+    setCardWidth(fittedCardWidth);
+  }, [props, props.containerWidth, props.zoomIndex]);
+
   const file = useMemo(
     () =>
       props.image.visual_files.length > 0
@@ -152,6 +187,7 @@ export const ImageCard: React.FC<IImageCardProps> = (
     <GridCard
       className={`image-card zoom-${props.zoomIndex}`}
       url={`/images/${props.image.id}`}
+      width={cardWidth}
       title={objectTitle(props.image)}
       linkClassName="image-card-link"
       image={
@@ -174,6 +210,16 @@ export const ImageCard: React.FC<IImageCardProps> = (
           </div>
           <RatingBanner rating={props.image.rating100} />
         </>
+      }
+      details={
+        <div className="image-card__details">
+          <span className="image-card__date">{props.image.date}</span>
+          <TruncatedText
+            className="image-card__description"
+            text={props.image.details}
+            lineCount={3}
+          />
+        </div>
       }
       popovers={maybeRenderPopoverButtonGroup()}
       selected={props.selected}

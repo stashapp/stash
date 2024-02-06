@@ -11,7 +11,7 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/scene"
-	"github.com/stashapp/stash/pkg/sliceutil/intslice"
+	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -45,7 +45,7 @@ func (r *mutationResolver) SceneCreate(ctx context.Context, input models.SceneCr
 	newScene.Code = translator.string(input.Code)
 	newScene.Details = translator.string(input.Details)
 	newScene.Director = translator.string(input.Director)
-	newScene.Rating = translator.ratingConversion(input.Rating, input.Rating100)
+	newScene.Rating = input.Rating100
 	newScene.Organized = translator.bool(input.Organized)
 	newScene.StashIDs = models.NewRelatedStashIDs(input.StashIds)
 
@@ -168,7 +168,7 @@ func scenePartialFromInput(input models.SceneUpdateInput, translator changesetTr
 	updatedScene.Code = translator.optionalString(input.Code, "code")
 	updatedScene.Details = translator.optionalString(input.Details, "details")
 	updatedScene.Director = translator.optionalString(input.Director, "director")
-	updatedScene.Rating = translator.optionalRatingConversion(input.Rating, input.Rating100)
+	updatedScene.Rating = translator.optionalInt(input.Rating100, "rating100")
 	updatedScene.OCounter = translator.optionalInt(input.OCounter, "o_counter")
 	updatedScene.PlayCount = translator.optionalInt(input.PlayCount, "play_count")
 	updatedScene.PlayDuration = translator.optionalFloat64(input.PlayDuration, "play_duration")
@@ -321,7 +321,7 @@ func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input BulkSceneU
 	updatedScene.Code = translator.optionalString(input.Code, "code")
 	updatedScene.Details = translator.optionalString(input.Details, "details")
 	updatedScene.Director = translator.optionalString(input.Director, "director")
-	updatedScene.Rating = translator.optionalRatingConversion(input.Rating, input.Rating100)
+	updatedScene.Rating = translator.optionalInt(input.Rating100, "rating100")
 	updatedScene.Organized = translator.optionalBool(input.Organized, "organized")
 
 	updatedScene.Date, err = translator.optionalDate(input.Date, "date")
@@ -627,7 +627,7 @@ func (r *mutationResolver) SceneMarkerCreate(ctx context.Context, input SceneMar
 
 		// Save the marker tags
 		// If this tag is the primary tag, then let's not add it.
-		tagIDs = intslice.IntExclude(tagIDs, []int{newMarker.PrimaryTagID})
+		tagIDs = sliceutil.Exclude(tagIDs, []int{newMarker.PrimaryTagID})
 		return qb.UpdateTags(ctx, newMarker.ID, tagIDs)
 	}); err != nil {
 		return nil, err
@@ -716,7 +716,7 @@ func (r *mutationResolver) SceneMarkerUpdate(ctx context.Context, input SceneMar
 		if tagIdsIncluded {
 			// Save the marker tags
 			// If this tag is the primary tag, then let's not add it.
-			tagIDs = intslice.IntExclude(tagIDs, []int{newMarker.PrimaryTagID})
+			tagIDs = sliceutil.Exclude(tagIDs, []int{newMarker.PrimaryTagID})
 			if err := qb.UpdateTags(ctx, markerID, tagIDs); err != nil {
 				return err
 			}

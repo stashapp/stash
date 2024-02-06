@@ -7,7 +7,6 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
-	"strings"
 	"time"
 
 	"github.com/stashapp/stash/pkg/logger"
@@ -88,42 +87,8 @@ func (m *Mover) Move(ctx context.Context, f models.File, folder *models.Folder, 
 		return fmt.Errorf("file %s already exists", newPath)
 	}
 
-	if err := TransferZipFolderHierarchy(ctx, m.Folders, fBase.ID, oldPath, newPath); err != nil {
+	if err := transferZipHierarchy(ctx, m.Folders, m.Files, fBase.ID, oldPath, newPath); err != nil {
 		return fmt.Errorf("moving folder hierarchy for file %s: %w", fBase.Path, err)
-	}
-
-	// move contained files if file is a zip file
-	zipFiles, err := m.Files.FindByZipFileID(ctx, fBase.ID)
-	if err != nil {
-		return fmt.Errorf("finding contained files in file %s: %w", fBase.Path, err)
-	}
-	for _, zf := range zipFiles {
-		zfBase := zf.Base()
-		oldZfPath := zfBase.Path
-		oldZfDir := filepath.Dir(oldZfPath)
-
-		// sanity check - ignore files which aren't under oldPath
-		if !strings.HasPrefix(oldZfPath, oldPath) {
-			continue
-		}
-
-		relZfDir, err := filepath.Rel(oldPath, oldZfDir)
-		if err != nil {
-			return fmt.Errorf("moving contained file %s: %w", zfBase.ID, err)
-		}
-		newZfDir := filepath.Join(newPath, relZfDir)
-
-		// folder should have been created by moveZipFolderHierarchy
-		newZfFolder, err := GetOrCreateFolderHierarchy(ctx, m.Folders, newZfDir)
-		if err != nil {
-			return fmt.Errorf("getting or creating folder hierarchy: %w", err)
-		}
-
-		// update file parent folder
-		zfBase.ParentFolderID = newZfFolder.ID
-		if err := m.Files.Update(ctx, zf); err != nil {
-			return fmt.Errorf("updating file %s: %w", oldZfPath, err)
-		}
 	}
 
 	fBase.ParentFolderID = folder.ID
@@ -181,7 +146,7 @@ func (m *Mover) moveFile(oldPath, newPath string) error {
 	return nil
 }
 
-func (m *Mover) RegisterHooks(ctx context.Context, mgr txn.Manager) {
+func (m *Mover) RegisterHooks(ctx context.Context) {
 	txn.AddPostCommitHook(ctx, func(ctx context.Context) {
 		m.commit()
 	})
@@ -211,4 +176,35 @@ func (m *Mover) rollback() {
 			logger.Errorf("error removing folder %s: %s", folder, err.Error())
 		}
 	}
+}
+
+// correctSubFolderHierarchy sets the path of all contained folders to be relative to the given folder.
+// It does not move the folder hierarchy in the filesystem.
+func correctSubFolderHierarchy(ctx context.Context, rw models.FolderReaderWriter, folder *models.Folder) error {
+	folders, err := rw.FindByParentFolderID(ctx, folder.ID)
+	if err != nil {
+		return fmt.Errorf("finding contained folders in folder %s: %w", folder.Path, err)
+	}
+
+	folderPath := folder.Path
+
+	for _, f := range folders {
+		oldPath := f.Path
+		folderBasename := filepath.Base(f.Path)
+		correctPath := filepath.Join(folderPath, folderBasename)
+
+		logger.Debugf("updating folder %s to %s", oldPath, correctPath)
+
+		f.Path = correctPath
+		if err := rw.Update(ctx, f); err != nil {
+			return fmt.Errorf("updating folder path %s -> %s: %w", oldPath, f.Path, err)
+		}
+
+		// recurse
+		if err := correctSubFolderHierarchy(ctx, rw, f); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

@@ -1,12 +1,14 @@
 package models
 
 type GalleryFilterType struct {
-	And     *GalleryFilterType    `json:"AND"`
-	Or      *GalleryFilterType    `json:"OR"`
-	Not     *GalleryFilterType    `json:"NOT"`
-	ID      *IntCriterionInput    `json:"id"`
-	Title   *StringCriterionInput `json:"title"`
-	Details *StringCriterionInput `json:"details"`
+	And          *GalleryFilterType    `json:"AND"`
+	Or           *GalleryFilterType    `json:"OR"`
+	Not          *GalleryFilterType    `json:"NOT"`
+	ID           *IntCriterionInput    `json:"id"`
+	Title        *StringCriterionInput `json:"title"`
+	Code         *StringCriterionInput `json:"code"`
+	Details      *StringCriterionInput `json:"details"`
+	Photographer *StringCriterionInput `json:"photographer"`
 	// Filter by file checksum
 	Checksum *StringCriterionInput `json:"checksum"`
 	// Filter by path
@@ -17,8 +19,6 @@ type GalleryFilterType struct {
 	IsMissing *string `json:"is_missing"`
 	// Filter to include/exclude galleries that were created from zip
 	IsZip *bool `json:"is_zip"`
-	// Filter by rating expressed as 1-5
-	Rating *IntCriterionInput `json:"rating"`
 	// Filter by rating expressed as 1-100
 	Rating100 *IntCriterionInput `json:"rating100"`
 	// Filter by organized
@@ -59,10 +59,11 @@ type GalleryUpdateInput struct {
 	ClientMutationID *string  `json:"clientMutationId"`
 	ID               string   `json:"id"`
 	Title            *string  `json:"title"`
+	Code             *string  `json:"code"`
 	Urls             []string `json:"urls"`
 	Date             *string  `json:"date"`
 	Details          *string  `json:"details"`
-	Rating           *int     `json:"rating"`
+	Photographer     *string  `json:"photographer"`
 	Rating100        *int     `json:"rating100"`
 	Organized        *bool    `json:"organized"`
 	SceneIds         []string `json:"scene_ids"`

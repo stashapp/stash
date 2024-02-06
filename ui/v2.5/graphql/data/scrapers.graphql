@@ -1,0 +1,256 @@
+fragment ScrapedStudioData on ScrapedStudio {
+  stored_id
+  name
+  url
+  parent {
+    stored_id
+    name
+    url
+    image
+    remote_site_id
+  }
+  image
+  remote_site_id
+}
+
+fragment ScrapedPerformerData on ScrapedPerformer {
+  stored_id
+  name
+  disambiguation
+  gender
+  url
+  twitter
+  instagram
+  birthdate
+  ethnicity
+  country
+  eye_color
+  height
+  measurements
+  fake_tits
+  penis_length
+  circumcised
+  career_length
+  tattoos
+  piercings
+  aliases
+  tags {
+    ...ScrapedSceneTagData
+  }
+  images
+  details
+  death_date
+  hair_color
+  weight
+  remote_site_id
+}
+
+fragment ScrapedScenePerformerData on ScrapedPerformer {
+  stored_id
+  name
+  disambiguation
+  gender
+  url
+  twitter
+  instagram
+  birthdate
+  ethnicity
+  country
+  eye_color
+  height
+  measurements
+  fake_tits
+  penis_length
+  circumcised
+  career_length
+  tattoos
+  piercings
+  aliases
+  tags {
+    ...ScrapedSceneTagData
+  }
+  remote_site_id
+  images
+  details
+  death_date
+  hair_color
+  weight
+}
+
+fragment ScrapedMovieStudioData on ScrapedStudio {
+  stored_id
+  name
+  url
+}
+
+fragment ScrapedMovieData on ScrapedMovie {
+  name
+  aliases
+  duration
+  date
+  rating
+  director
+  url
+  synopsis
+  front_image
+  back_image
+
+  studio {
+    ...ScrapedMovieStudioData
+  }
+}
+
+fragment ScrapedSceneMovieData on ScrapedMovie {
+  stored_id
+  name
+  aliases
+  duration
+  date
+  rating
+  director
+  url
+  synopsis
+  front_image
+  back_image
+
+  studio {
+    ...ScrapedMovieStudioData
+  }
+}
+
+fragment ScrapedSceneStudioData on ScrapedStudio {
+  stored_id
+  name
+  url
+  parent {
+    stored_id
+    name
+    url
+    image
+    remote_site_id
+  }
+  image
+  remote_site_id
+}
+
+fragment ScrapedSceneTagData on ScrapedTag {
+  stored_id
+  name
+}
+
+fragment ScrapedSceneData on ScrapedScene {
+  title
+  code
+  details
+  director
+  urls
+  date
+  image
+  remote_site_id
+
+  file {
+    size
+    duration
+    video_codec
+    audio_codec
+    width
+    height
+    framerate
+    bitrate
+  }
+
+  studio {
+    ...ScrapedSceneStudioData
+  }
+
+  tags {
+    ...ScrapedSceneTagData
+  }
+
+  performers {
+    ...ScrapedScenePerformerData
+  }
+
+  movies {
+    ...ScrapedSceneMovieData
+  }
+
+  fingerprints {
+    hash
+    algorithm
+    duration
+  }
+}
+
+fragment ScrapedGalleryData on ScrapedGallery {
+  title
+  code
+  details
+  urls
+  photographer
+  date
+
+  studio {
+    ...ScrapedSceneStudioData
+  }
+
+  tags {
+    ...ScrapedSceneTagData
+  }
+
+  performers {
+    ...ScrapedScenePerformerData
+  }
+}
+
+fragment ScrapedStashBoxSceneData on ScrapedScene {
+  title
+  code
+  details
+  director
+  url
+  date
+  image
+  remote_site_id
+  duration
+
+  file {
+    size
+    duration
+    video_codec
+    audio_codec
+    width
+    height
+    framerate
+    bitrate
+  }
+
+  fingerprints {
+    hash
+    algorithm
+    duration
+  }
+
+  studio {
+    ...ScrapedSceneStudioData
+  }
+
+  tags {
+    ...ScrapedSceneTagData
+  }
+
+  performers {
+    ...ScrapedScenePerformerData
+  }
+
+  movies {
+    ...ScrapedSceneMovieData
+  }
+}
+
+fragment ScrapedStashBoxPerformerData on StashBoxPerformerQueryResult {
+  query
+  results {
+    ...ScrapedScenePerformerData
+  }
+}

@@ -1,0 +1,15 @@
+mutation ReloadScrapers {
+  reloadScrapers
+}
+
+mutation InstallScraperPackages($packages: [PackageSpecInput!]!) {
+  installPackages(type: Scraper, packages: $packages)
+}
+
+mutation UpdateScraperPackages($packages: [PackageSpecInput!]!) {
+  updatePackages(type: Scraper, packages: $packages)
+}
+
+mutation UninstallScraperPackages($packages: [PackageSpecInput!]!) {
+  uninstallPackages(type: Scraper, packages: $packages)
+}

@@ -1,5 +1,5 @@
 # generated
-src/core/generated-*.tsx
+src/core/generated-graphql.ts
 
 # dependencies
 /node_modules

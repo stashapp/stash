@@ -6,10 +6,11 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/v5"
+
+	"github.com/stashapp/stash/internal/static"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/txn"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -20,7 +21,7 @@ type MovieFinder interface {
 }
 
 type movieRoutes struct {
-	txnManager  txn.Manager
+	routes
 	movieFinder MovieFinder
 }
 
@@ -41,7 +42,7 @@ func (rs movieRoutes) FrontImage(w http.ResponseWriter, r *http.Request) {
 	defaultParam := r.URL.Query().Get("default")
 	var image []byte
 	if defaultParam != "true" {
-		readTxnErr := txn.WithReadTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
+		readTxnErr := rs.withReadTxn(r, func(ctx context.Context) error {
 			var err error
 			image, err = rs.movieFinder.GetFrontImage(ctx, movie.ID)
 			return err
@@ -54,8 +55,9 @@ func (rs movieRoutes) FrontImage(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// fallback to default image
 	if len(image) == 0 {
-		image, _ = utils.ProcessBase64Image(models.DefaultMovieImage)
+		image = static.ReadAll(static.DefaultMovieImage)
 	}
 
 	utils.ServeImage(w, r, image)
@@ -66,7 +68,7 @@ func (rs movieRoutes) BackImage(w http.ResponseWriter, r *http.Request) {
 	defaultParam := r.URL.Query().Get("default")
 	var image []byte
 	if defaultParam != "true" {
-		readTxnErr := txn.WithReadTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
+		readTxnErr := rs.withReadTxn(r, func(ctx context.Context) error {
 			var err error
 			image, err = rs.movieFinder.GetBackImage(ctx, movie.ID)
 			return err
@@ -79,8 +81,9 @@ func (rs movieRoutes) BackImage(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// fallback to default image
 	if len(image) == 0 {
-		image, _ = utils.ProcessBase64Image(models.DefaultMovieImage)
+		image = static.ReadAll(static.DefaultMovieImage)
 	}
 
 	utils.ServeImage(w, r, image)
@@ -95,7 +98,7 @@ func (rs movieRoutes) MovieCtx(next http.Handler) http.Handler {
 		}
 
 		var movie *models.Movie
-		_ = txn.WithReadTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
+		_ = rs.withReadTxn(r, func(ctx context.Context) error {
 			movie, _ = rs.movieFinder.Find(ctx, movieID)
 			return nil
 		})

@@ -14,8 +14,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sliceutil/intslice"
+	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/txn"
 
@@ -535,6 +536,9 @@ func indexFromID(ids []int, id int) int {
 var db *sqlite.Database
 
 func TestMain(m *testing.M) {
+	// initialise empty config - needed by some migrations
+	_ = config.InitializeEmpty()
+
 	ret := runTests(m)
 	os.Exit(ret)
 }
@@ -600,10 +604,10 @@ func runTests(m *testing.M) int {
 	err = populateDB()
 	if err != nil {
 		panic(fmt.Sprintf("Could not populate database: %s", err.Error()))
-	} else {
-		// run the tests
-		return m.Run()
 	}
+
+	// run the tests
+	return m.Run()
 }
 
 func populateDB() error {
@@ -1176,7 +1180,7 @@ func makeImage(i int) *models.Image {
 }
 
 func createImages(ctx context.Context, n int) error {
-	qb := db.TxnRepository().Image
+	qb := db.Image
 	fqb := db.File
 
 	for i := 0; i < n; i++ {
@@ -1273,7 +1277,7 @@ func makeGallery(i int, includeScenes bool) *models.Gallery {
 }
 
 func createGalleries(ctx context.Context, n int) error {
-	gqb := db.TxnRepository().Gallery
+	gqb := db.Gallery
 	fqb := db.File
 
 	for i := 0; i < n; i++ {
@@ -1506,7 +1510,7 @@ func getTagMarkerCount(id int) int {
 	count := 0
 	idx := indexFromID(tagIDs, id)
 	for _, s := range markerSpecs {
-		if s.primaryTagIdx == idx || intslice.IntInclude(s.tagIdxs, idx) {
+		if s.primaryTagIdx == idx || sliceutil.Contains(s.tagIdxs, idx) {
 			count++
 		}
 	}

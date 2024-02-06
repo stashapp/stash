@@ -15,6 +15,7 @@ import {
 import { Button, Form } from "react-bootstrap";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
 import { excludeFields } from "src/utils/data";
+import { ExternalLink } from "src/components/Shared/ExternalLink";
 
 interface IStudioDetailsProps {
   studio: GQL.ScrapedSceneStudioDataFragment;
@@ -83,15 +84,15 @@ const StudioDetails: React.FC<IStudioDetailsProps> = ({
     );
   }
 
-  function maybeRenderLink() {
+  function maybeRenderStashBoxLink() {
     if (!link) return;
 
     return (
       <h6 className="mt-2">
-        <a href={link} target="_blank" rel="noopener noreferrer">
+        <ExternalLink href={link}>
           <FormattedMessage id="stashbox.source" />
           <Icon icon={faExternalLinkAlt} className="ml-2" />
-        </a>
+        </ExternalLink>
       </h6>
     );
   }
@@ -104,7 +105,7 @@ const StudioDetails: React.FC<IStudioDetailsProps> = ({
           {maybeRenderField("name", studio.name, !isNew)}
           {maybeRenderField("url", studio.url)}
           {maybeRenderField("parent_studio", studio.parent?.name, false)}
-          {maybeRenderLink()}
+          {maybeRenderStashBoxLink()}
         </div>
       </div>
     </div>

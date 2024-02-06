@@ -2,6 +2,7 @@ import React, { useMemo } from "react";
 import { PerformersCriterion } from "src/models/list-filter/criteria/performers";
 import { useFindPerformersQuery } from "src/core/generated-graphql";
 import { ObjectsFilter } from "./SelectableFilter";
+import { sortByRelevance } from "src/utils/query";
 
 interface IPerformersFilter {
   criterion: PerformersCriterion;
@@ -18,16 +19,18 @@ function usePerformerQuery(query: string) {
     },
   });
 
-  const results = useMemo(
-    () =>
-      data?.findPerformers.performers.map((p) => {
-        return {
-          id: p.id,
-          label: p.name,
-        };
-      }) ?? [],
-    [data]
-  );
+  const results = useMemo(() => {
+    return sortByRelevance(
+      query,
+      data?.findPerformers.performers ?? [],
+      (p) => p.alias_list
+    ).map((p) => {
+      return {
+        id: p.id,
+        label: p.name,
+      };
+    });
+  }, [data, query]);
 
   return { results, loading };
 }

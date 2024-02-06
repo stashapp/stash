@@ -22,8 +22,9 @@ func Test_getPerformerID(t *testing.T) {
 	remoteSiteID := "2"
 	name := "name"
 
-	mockPerformerReaderWriter := mocks.PerformerReaderWriter{}
-	mockPerformerReaderWriter.On("Create", testCtx, mock.Anything).Run(func(args mock.Arguments) {
+	db := mocks.NewDatabase()
+
+	db.Performer.On("Create", testCtx, mock.Anything).Run(func(args mock.Arguments) {
 		p := args.Get(1).(*models.Performer)
 		p.ID = validStoredID
 	}).Return(nil)
@@ -131,7 +132,7 @@ func Test_getPerformerID(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := getPerformerID(testCtx, tt.args.endpoint, &mockPerformerReaderWriter, tt.args.p, tt.args.createMissing, tt.args.skipSingleName)
+			got, err := getPerformerID(testCtx, tt.args.endpoint, db.Performer, tt.args.p, tt.args.createMissing, tt.args.skipSingleName)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("getPerformerID() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -151,15 +152,16 @@ func Test_createMissingPerformer(t *testing.T) {
 	invalidName := "invalidName"
 	performerID := 1
 
-	mockPerformerReaderWriter := mocks.PerformerReaderWriter{}
-	mockPerformerReaderWriter.On("Create", testCtx, mock.MatchedBy(func(p *models.Performer) bool {
+	db := mocks.NewDatabase()
+
+	db.Performer.On("Create", testCtx, mock.MatchedBy(func(p *models.Performer) bool {
 		return p.Name == validName
 	})).Run(func(args mock.Arguments) {
 		p := args.Get(1).(*models.Performer)
 		p.ID = performerID
 	}).Return(nil)
 
-	mockPerformerReaderWriter.On("Create", testCtx, mock.MatchedBy(func(p *models.Performer) bool {
+	db.Performer.On("Create", testCtx, mock.MatchedBy(func(p *models.Performer) bool {
 		return p.Name == invalidName
 	})).Return(errors.New("error creating performer"))
 
@@ -212,7 +214,7 @@ func Test_createMissingPerformer(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := createMissingPerformer(testCtx, tt.args.endpoint, &mockPerformerReaderWriter, tt.args.p)
+			got, err := createMissingPerformer(testCtx, tt.args.endpoint, db.Performer, tt.args.p)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("createMissingPerformer() error = %v, wantErr %v", err, tt.wantErr)
 				return

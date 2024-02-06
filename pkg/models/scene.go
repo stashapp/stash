@@ -29,8 +29,6 @@ type SceneFilterType struct {
 	Path *StringCriterionInput `json:"path"`
 	// Filter by file count
 	FileCount *IntCriterionInput `json:"file_count"`
-	// Filter by rating expressed as 1-5
-	Rating *IntCriterionInput `json:"rating"`
 	// Filter by rating expressed as 1-100
 	Rating100 *IntCriterionInput `json:"rating100"`
 	// Filter by organized
@@ -41,6 +39,10 @@ type SceneFilterType struct {
 	Duplicated *PHashDuplicationCriterionInput `json:"duplicated"`
 	// Filter by resolution
 	Resolution *ResolutionCriterionInput `json:"resolution"`
+	// Filter by orientation
+	Orientation *OrientationCriterionInput `json:"orientation"`
+	// Filter by framerate
+	Framerate *IntCriterionInput `json:"framerate"`
 	// Filter by video codec
 	VideoCodec *StringCriterionInput `json:"video_codec"`
 	// Filter by audio codec
@@ -126,7 +128,6 @@ type SceneCreateInput struct {
 	URL          *string           `json:"url"`
 	Urls         []string          `json:"urls"`
 	Date         *string           `json:"date"`
-	Rating       *int              `json:"rating"`
 	Rating100    *int              `json:"rating100"`
 	Organized    *bool             `json:"organized"`
 	StudioID     *string           `json:"studio_id"`
@@ -153,7 +154,6 @@ type SceneUpdateInput struct {
 	URL              *string           `json:"url"`
 	Urls             []string          `json:"urls"`
 	Date             *string           `json:"date"`
-	Rating           *int              `json:"rating"`
 	Rating100        *int              `json:"rating100"`
 	OCounter         *int              `json:"o_counter"`
 	Organized        *bool             `json:"organized"`

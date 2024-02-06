@@ -3,17 +3,18 @@ import { FormattedMessage, useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import * as yup from "yup";
 import { DetailsEditNavbar } from "src/components/Shared/DetailsEditNavbar";
-import { TagSelect } from "src/components/Shared/Select";
-import { Form, Col, Row } from "react-bootstrap";
+import { Form } from "react-bootstrap";
 import ImageUtils from "src/utils/image";
 import { useFormik } from "formik";
 import { Prompt } from "react-router-dom";
 import Mousetrap from "mousetrap";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
-import { StringListInput } from "src/components/Shared/StringListInput";
 import isEqual from "lodash-es/isEqual";
 import { useToast } from "src/hooks/Toast";
 import { handleUnsavedChanges } from "src/utils/navigation";
+import { formikUtils } from "src/utils/form";
+import { yupFormikValidate, yupUniqueAliases } from "src/utils/yup";
+import { Tag, TagSelect } from "../TagSelect";
 
 interface ITagEditPanel {
   tag: Partial<GQL.TagDataFragment>;
@@ -40,33 +41,12 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
   // Network state
   const [isLoading, setIsLoading] = useState(false);
 
-  const labelXS = 3;
-  const labelXL = 2;
-  const fieldXS = 9;
-  const fieldXL = 7;
+  const [childTags, setChildTags] = useState<Tag[]>([]);
+  const [parentTags, setParentTags] = useState<Tag[]>([]);
 
   const schema = yup.object({
     name: yup.string().required(),
-    aliases: yup
-      .array(yup.string().required())
-      .defined()
-      .test({
-        name: "unique",
-        test: (value, context) => {
-          const aliases = [context.parent.name, ...value];
-          const dupes = aliases
-            .map((e, i, a) => {
-              if (a.indexOf(e) !== i) {
-                return String(i - 1);
-              } else {
-                return null;
-              }
-            })
-            .filter((e) => e !== null) as string[];
-          if (dupes.length === 0) return true;
-          return new yup.ValidationError(dupes.join(" "), value, "aliases");
-        },
-      }),
+    aliases: yupUniqueAliases(intl, "name"),
     description: yup.string().ensure(),
     parent_ids: yup.array(yup.string().required()).defined(),
     child_ids: yup.array(yup.string().required()).defined(),
@@ -87,10 +67,34 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
 
   const formik = useFormik<InputValues>({
     initialValues,
-    validationSchema: schema,
     enableReinitialize: true,
-    onSubmit: (values) => onSave(values),
+    validate: yupFormikValidate(schema),
+    onSubmit: (values) => onSave(schema.cast(values)),
   });
+
+  function onSetParentTags(items: Tag[]) {
+    setParentTags(items);
+    formik.setFieldValue(
+      "parent_ids",
+      items.map((item) => item.id)
+    );
+  }
+
+  function onSetChildTags(items: Tag[]) {
+    setChildTags(items);
+    formik.setFieldValue(
+      "child_ids",
+      items.map((item) => item.id)
+    );
+  }
+
+  useEffect(() => {
+    setParentTags(tag.parents ?? []);
+  }, [tag.parents]);
+
+  useEffect(() => {
+    setChildTags(tag.children ?? []);
+  }, [tag.children]);
 
   // set up hotkeys
   useEffect(() => {
@@ -134,17 +138,44 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
     ImageUtils.onImageChange(event, onImageLoad);
   }
 
-  const aliasErrors = Array.isArray(formik.errors.aliases)
-    ? formik.errors.aliases[0]
-    : formik.errors.aliases;
-  const aliasErrorMsg = aliasErrors
-    ? intl.formatMessage({ id: "validation.aliases_must_be_unique" })
-    : undefined;
-  const aliasErrorIdx = aliasErrors?.split(" ").map((e) => parseInt(e));
+  const { renderField, renderInputField, renderStringListField } = formikUtils(
+    intl,
+    formik
+  );
+
+  function renderParentTagsField() {
+    const title = intl.formatMessage({ id: "parent_tags" });
+    const control = (
+      <TagSelect
+        isMulti
+        onSelect={onSetParentTags}
+        values={parentTags}
+        excludeIds={[...(tag?.id ? [tag.id] : []), ...formik.values.child_ids]}
+        creatable={false}
+        hoverPlacement="right"
+      />
+    );
+
+    return renderField("parent_ids", title, control);
+  }
+
+  function renderSubTagsField() {
+    const title = intl.formatMessage({ id: "sub_tags" });
+    const control = (
+      <TagSelect
+        isMulti
+        onSelect={onSetChildTags}
+        values={childTags}
+        excludeIds={[...(tag?.id ? [tag.id] : []), ...formik.values.parent_ids]}
+        creatable={false}
+        hoverPlacement="right"
+      />
+    );
+
+    return renderField("child_ids", title, control);
+  }
 
   if (isLoading) return <LoadingIndicator />;
-
-  const isEditing = true;
 
   // TODO: CSS class
   return (
@@ -171,121 +202,20 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
       />
 
       <Form noValidate onSubmit={formik.handleSubmit} id="tag-edit">
-        <Form.Group controlId="name" as={Row}>
-          <Form.Label column xs={labelXS} xl={labelXL}>
-            <FormattedMessage id="name" />
-          </Form.Label>
-          <Col xs={fieldXS} xl={fieldXL}>
-            <Form.Control
-              className="text-input"
-              placeholder={intl.formatMessage({ id: "name" })}
-              {...formik.getFieldProps("name")}
-              isInvalid={!!formik.errors.name}
-            />
-            <Form.Control.Feedback type="invalid">
-              {formik.errors.name}
-            </Form.Control.Feedback>
-          </Col>
-        </Form.Group>
-
-        <Form.Group controlId="aliases" as={Row}>
-          <Form.Label column xs={labelXS} xl={labelXL}>
-            <FormattedMessage id="aliases" />
-          </Form.Label>
-          <Col xs={fieldXS} xl={fieldXL}>
-            <StringListInput
-              value={formik.values.aliases}
-              setValue={(value) => formik.setFieldValue("aliases", value)}
-              errors={aliasErrorMsg}
-              errorIdx={aliasErrorIdx}
-            />
-          </Col>
-        </Form.Group>
-
-        <Form.Group controlId="description" as={Row}>
-          <Form.Label column xs={labelXS} xl={labelXL}>
-            <FormattedMessage id="description" />
-          </Form.Label>
-          <Col xs={fieldXS} xl={fieldXL}>
-            <Form.Control
-              as="textarea"
-              className="text-input"
-              placeholder={intl.formatMessage({ id: "description" })}
-              {...formik.getFieldProps("description")}
-            />
-          </Col>
-        </Form.Group>
-
-        <Form.Group controlId="parent_tags" as={Row}>
-          <Form.Label column xs={labelXS} xl={labelXL}>
-            <FormattedMessage id="parent_tags" />
-          </Form.Label>
-          <Col xs={fieldXS} xl={fieldXL}>
-            <TagSelect
-              isMulti
-              onSelect={(items) =>
-                formik.setFieldValue(
-                  "parent_ids",
-                  items.map((item) => item.id)
-                )
-              }
-              ids={formik.values.parent_ids}
-              excludeIds={[
-                ...(tag?.id ? [tag.id] : []),
-                ...formik.values.child_ids,
-              ]}
-              creatable={false}
-              hoverPlacement="right"
-            />
-          </Col>
-        </Form.Group>
-
-        <Form.Group controlId="sub_tags" as={Row}>
-          <Form.Label column xs={labelXS} xl={labelXL}>
-            <FormattedMessage id="sub_tags" />
-          </Form.Label>
-          <Col xs={fieldXS} xl={fieldXL}>
-            <TagSelect
-              isMulti
-              onSelect={(items) =>
-                formik.setFieldValue(
-                  "child_ids",
-                  items.map((item) => item.id)
-                )
-              }
-              ids={formik.values.child_ids}
-              excludeIds={[
-                ...(tag?.id ? [tag.id] : []),
-                ...formik.values.parent_ids,
-              ]}
-              creatable={false}
-              hoverPlacement="right"
-            />
-          </Col>
-        </Form.Group>
-
+        {renderInputField("name")}
+        {renderStringListField("aliases")}
+        {renderInputField("description", "textarea")}
+        {renderParentTagsField()}
+        {renderSubTagsField()}
         <hr />
-
-        <Form.Group controlId="ignore-auto-tag" as={Row}>
-          <Form.Label column xs={labelXS} xl={labelXL}>
-            <FormattedMessage id="ignore_auto_tag" />
-          </Form.Label>
-          <Col xs={fieldXS} xl={fieldXL}>
-            <Form.Check
-              {...formik.getFieldProps({
-                name: "ignore_auto_tag",
-                type: "checkbox",
-              })}
-            />
-          </Col>
-        </Form.Group>
+        {renderInputField("ignore_auto_tag", "checkbox")}
       </Form>
 
       <DetailsEditNavbar
         objectName={tag?.name ?? intl.formatMessage({ id: "tag" })}
         classNames="col-xl-9 mt-3"
         isNew={isNew}
-        isEditing={isEditing}
+        isEditing
         onToggleEdit={onCancel}
         onSave={formik.handleSubmit}
         saveDisabled={(!isNew && !formik.dirty) || !isEqual(formik.errors, {})}

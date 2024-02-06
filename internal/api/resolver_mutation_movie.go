@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/stashapp/stash/internal/static"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
@@ -34,7 +35,7 @@ func (r *mutationResolver) MovieCreate(ctx context.Context, input MovieCreateInp
 	newMovie.Name = input.Name
 	newMovie.Aliases = translator.string(input.Aliases)
 	newMovie.Duration = input.Duration
-	newMovie.Rating = translator.ratingConversion(input.Rating, input.Rating100)
+	newMovie.Rating = input.Rating100
 	newMovie.Director = translator.string(input.Director)
 	newMovie.Synopsis = translator.string(input.Synopsis)
 	newMovie.URL = translator.string(input.URL)
@@ -48,12 +49,6 @@ func (r *mutationResolver) MovieCreate(ctx context.Context, input MovieCreateInp
 	newMovie.StudioID, err = translator.intPtrFromString(input.StudioID)
 	if err != nil {
 		return nil, fmt.Errorf("converting studio id: %w", err)
-	}
-
-	// HACK: if back image is being set, set the front image to the default.
-	// This is because we can't have a null front image with a non-null back image.
-	if input.FrontImage == nil && input.BackImage != nil {
-		input.FrontImage = &models.DefaultMovieImage
 	}
 
 	// Process the base 64 encoded image string
@@ -72,6 +67,12 @@ func (r *mutationResolver) MovieCreate(ctx context.Context, input MovieCreateInp
 		if err != nil {
 			return nil, fmt.Errorf("processing back image: %w", err)
 		}
+	}
+
+	// HACK: if back image is being set, set the front image to the default.
+	// This is because we can't have a null front image with a non-null back image.
+	if len(frontimageData) == 0 && len(backimageData) != 0 {
+		frontimageData = static.ReadAll(static.DefaultMovieImage)
 	}
 
 	// Start the transaction and save the movie
@@ -121,7 +122,7 @@ func (r *mutationResolver) MovieUpdate(ctx context.Context, input MovieUpdateInp
 	updatedMovie.Name = translator.optionalString(input.Name, "name")
 	updatedMovie.Aliases = translator.optionalString(input.Aliases, "aliases")
 	updatedMovie.Duration = translator.optionalInt(input.Duration, "duration")
-	updatedMovie.Rating = translator.optionalRatingConversion(input.Rating, input.Rating100)
+	updatedMovie.Rating = translator.optionalInt(input.Rating100, "rating100")
 	updatedMovie.Director = translator.optionalString(input.Director, "director")
 	updatedMovie.Synopsis = translator.optionalString(input.Synopsis, "synopsis")
 	updatedMovie.URL = translator.optionalString(input.URL, "url")
@@ -197,7 +198,7 @@ func (r *mutationResolver) BulkMovieUpdate(ctx context.Context, input BulkMovieU
 	// Populate movie from the input
 	updatedMovie := models.NewMoviePartial()
 
-	updatedMovie.Rating = translator.optionalRatingConversion(input.Rating, input.Rating100)
+	updatedMovie.Rating = translator.optionalInt(input.Rating100, "rating100")
 	updatedMovie.Director = translator.optionalString(input.Director, "director")
 
 	updatedMovie.StudioID, err = translator.optionalIntFromString(input.StudioID, "studio_id")

@@ -12,7 +12,7 @@ import (
 	"github.com/doug-martin/goqu/v9/exp"
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sliceutil/intslice"
+	"github.com/stashapp/stash/pkg/sliceutil"
 	"gopkg.in/guregu/null.v4"
 	"gopkg.in/guregu/null.v4/zero"
 )
@@ -31,10 +31,12 @@ const (
 )
 
 type galleryRow struct {
-	ID      int         `db:"id" goqu:"skipinsert"`
-	Title   zero.String `db:"title"`
-	Date    NullDate    `db:"date"`
-	Details zero.String `db:"details"`
+	ID           int         `db:"id" goqu:"skipinsert"`
+	Title        zero.String `db:"title"`
+	Code         zero.String `db:"code"`
+	Date         NullDate    `db:"date"`
+	Details      zero.String `db:"details"`
+	Photographer zero.String `db:"photographer"`
 	// expressed as 1-100
 	Rating    null.Int  `db:"rating"`
 	Organized bool      `db:"organized"`
@@ -47,8 +49,10 @@ type galleryRow struct {
 func (r *galleryRow) fromGallery(o models.Gallery) {
 	r.ID = o.ID
 	r.Title = zero.StringFrom(o.Title)
+	r.Code = zero.StringFrom(o.Code)
 	r.Date = NullDateFromDatePtr(o.Date)
 	r.Details = zero.StringFrom(o.Details)
+	r.Photographer = zero.StringFrom(o.Photographer)
 	r.Rating = intFromPtr(o.Rating)
 	r.Organized = o.Organized
 	r.StudioID = intFromPtr(o.StudioID)
@@ -70,8 +74,10 @@ func (r *galleryQueryRow) resolve() *models.Gallery {
 	ret := &models.Gallery{
 		ID:            r.ID,
 		Title:         r.Title.String,
+		Code:          r.Code.String,
 		Date:          r.Date.DatePtr(),
 		Details:       r.Details.String,
+		Photographer:  r.Photographer.String,
 		Rating:        nullIntPtr(r.Rating),
 		Organized:     r.Organized,
 		StudioID:      nullIntPtr(r.StudioID),
@@ -96,8 +102,10 @@ type galleryRowRecord struct {
 
 func (r *galleryRowRecord) fromPartial(o models.GalleryPartial) {
 	r.setNullString("title", o.Title)
+	r.setNullString("code", o.Code)
 	r.setNullDate("date", o.Date)
 	r.setNullString("details", o.Details)
+	r.setNullString("photographer", o.Photographer)
 	r.setNullInt("rating", o.Rating)
 	r.setBool("organized", o.Organized)
 	r.setNullInt("studio_id", o.StudioID)
@@ -343,7 +351,7 @@ func (qb *GalleryStore) FindMany(ctx context.Context, ids []int) ([]*models.Gall
 		}
 
 		for _, s := range unsorted {
-			i := intslice.IntIndex(ids, s.ID)
+			i := sliceutil.Index(ids, s.ID)
 			galleries[i] = s
 		}
 
@@ -655,7 +663,9 @@ func (qb *GalleryStore) makeFilter(ctx context.Context, galleryFilter *models.Ga
 
 	query.handleCriterion(ctx, intCriterionHandler(galleryFilter.ID, "galleries.id", nil))
 	query.handleCriterion(ctx, stringCriterionHandler(galleryFilter.Title, "galleries.title"))
+	query.handleCriterion(ctx, stringCriterionHandler(galleryFilter.Code, "galleries.code"))
 	query.handleCriterion(ctx, stringCriterionHandler(galleryFilter.Details, "galleries.details"))
+	query.handleCriterion(ctx, stringCriterionHandler(galleryFilter.Photographer, "galleries.photographer"))
 
 	query.handleCriterion(ctx, criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
 		if galleryFilter.Checksum != nil {
@@ -681,8 +691,6 @@ func (qb *GalleryStore) makeFilter(ctx context.Context, galleryFilter *models.Ga
 	query.handleCriterion(ctx, qb.galleryPathCriterionHandler(galleryFilter.Path))
 	query.handleCriterion(ctx, galleryFileCountCriterionHandler(qb, galleryFilter.FileCount))
 	query.handleCriterion(ctx, intCriterionHandler(galleryFilter.Rating100, "galleries.rating", nil))
-	// legacy rating handler
-	query.handleCriterion(ctx, rating5CriterionHandler(galleryFilter.Rating, "galleries.rating", nil))
 	query.handleCriterion(ctx, galleryURLsCriterionHandler(galleryFilter.URL))
 	query.handleCriterion(ctx, boolCriterionHandler(galleryFilter.Organized, "galleries.organized", nil))
 	query.handleCriterion(ctx, galleryIsMissingCriterionHandler(qb, galleryFilter.IsMissing))

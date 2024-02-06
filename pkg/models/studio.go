@@ -14,8 +14,6 @@ type StudioFilterType struct {
 	StashIDEndpoint *StashIDCriterionInput `json:"stash_id_endpoint"`
 	// Filter to only include studios missing this property
 	IsMissing *string `json:"is_missing"`
-	// Filter by rating expressed as 1-5
-	Rating *IntCriterionInput `json:"rating"`
 	// Filter by rating expressed as 1-100
 	Rating100 *IntCriterionInput `json:"rating100"`
 	// Filter by scene count
@@ -28,6 +26,8 @@ type StudioFilterType struct {
 	URL *StringCriterionInput `json:"url"`
 	// Filter by studio aliases
 	Aliases *StringCriterionInput `json:"aliases"`
+	// Filter by subsidiary studio count
+	ChildCount *IntCriterionInput `json:"child_count"`
 	// Filter by autotag ignore value
 	IgnoreAutoTag *bool `json:"ignore_auto_tag"`
 	// Filter by created at
@@ -43,7 +43,6 @@ type StudioCreateInput struct {
 	// This should be a URL or a base64 encoded data URL
 	Image         *string   `json:"image"`
 	StashIds      []StashID `json:"stash_ids"`
-	Rating        *int      `json:"rating"`
 	Rating100     *int      `json:"rating100"`
 	Details       *string   `json:"details"`
 	Aliases       []string  `json:"aliases"`
@@ -58,7 +57,6 @@ type StudioUpdateInput struct {
 	// This should be a URL or a base64 encoded data URL
 	Image         *string   `json:"image"`
 	StashIds      []StashID `json:"stash_ids"`
-	Rating        *int      `json:"rating"`
 	Rating100     *int      `json:"rating100"`
 	Details       *string   `json:"details"`
 	Aliases       []string  `json:"aliases"`

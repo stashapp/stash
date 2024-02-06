@@ -81,12 +81,12 @@ export const GalleryPage: React.FC<IProps> = ({ gallery, add }) => {
         },
       },
     });
-    Toast.success({
-      content: intl.formatMessage(
+    Toast.success(
+      intl.formatMessage(
         { id: "toast.updated_entity" },
         { entity: intl.formatMessage({ id: "gallery" }).toLocaleLowerCase() }
-      ),
-    });
+      )
+    );
   }
 
   const onOrganizedClick = async () => {
@@ -120,15 +120,15 @@ export const GalleryPage: React.FC<IProps> = ({ gallery, add }) => {
       paths: [path],
     });
 
-    Toast.success({
-      content: intl.formatMessage(
+    Toast.success(
+      intl.formatMessage(
         { id: "toast.rescanning_entity" },
         {
           count: 1,
           singularEntity: intl.formatMessage({ id: "gallery" }),
         }
-      ),
-    });
+      )
+    );
   }
 
   async function onClickChapter(imageindex: number) {

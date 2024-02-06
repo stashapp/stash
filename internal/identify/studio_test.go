@@ -19,18 +19,19 @@ func Test_createMissingStudio(t *testing.T) {
 	invalidName := "invalidName"
 	createdID := 1
 
-	mockStudioReaderWriter := &mocks.StudioReaderWriter{}
-	mockStudioReaderWriter.On("Create", testCtx, mock.MatchedBy(func(p *models.Studio) bool {
+	db := mocks.NewDatabase()
+
+	db.Studio.On("Create", testCtx, mock.MatchedBy(func(p *models.Studio) bool {
 		return p.Name == validName
 	})).Run(func(args mock.Arguments) {
 		s := args.Get(1).(*models.Studio)
 		s.ID = createdID
 	}).Return(nil)
-	mockStudioReaderWriter.On("Create", testCtx, mock.MatchedBy(func(p *models.Studio) bool {
+	db.Studio.On("Create", testCtx, mock.MatchedBy(func(p *models.Studio) bool {
 		return p.Name == invalidName
 	})).Return(errors.New("error creating studio"))
 
-	mockStudioReaderWriter.On("UpdatePartial", testCtx, models.StudioPartial{
+	db.Studio.On("UpdatePartial", testCtx, models.StudioPartial{
 		ID: createdID,
 		StashIDs: &models.UpdateStashIDs{
 			StashIDs: []models.StashID{
@@ -42,7 +43,7 @@ func Test_createMissingStudio(t *testing.T) {
 			Mode: models.RelationshipUpdateModeSet,
 		},
 	}).Return(nil, errors.New("error updating stash ids"))
-	mockStudioReaderWriter.On("UpdatePartial", testCtx, models.StudioPartial{
+	db.Studio.On("UpdatePartial", testCtx, models.StudioPartial{
 		ID: createdID,
 		StashIDs: &models.UpdateStashIDs{
 			StashIDs: []models.StashID{
@@ -106,7 +107,7 @@ func Test_createMissingStudio(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := createMissingStudio(testCtx, tt.args.endpoint, mockStudioReaderWriter, tt.args.studio)
+			got, err := createMissingStudio(testCtx, tt.args.endpoint, db.Studio, tt.args.studio)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("createMissingStudio() error = %v, wantErr %v", err, tt.wantErr)
 				return

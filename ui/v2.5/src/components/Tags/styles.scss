@@ -90,3 +90,16 @@
     transform: scale(0.7);
   }
 }
+
+.tag-select {
+  .alias {
+    font-weight: bold;
+    white-space: pre;
+  }
+}
+
+.tag-select-image {
+  height: 25px;
+  margin-right: 0.5em;
+  width: 25px;
+}

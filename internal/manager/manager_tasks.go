@@ -9,6 +9,9 @@ import (
 	"time"
 
 	"github.com/stashapp/stash/internal/manager/config"
+	"github.com/stashapp/stash/pkg/file"
+	file_image "github.com/stashapp/stash/pkg/file/image"
+	"github.com/stashapp/stash/pkg/file/video"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/logger"
@@ -90,12 +93,32 @@ type ScanMetaDataFilterInput struct {
 }
 
 func (s *Manager) Scan(ctx context.Context, input ScanMetadataInput) (int, error) {
-	if err := s.validateFFMPEG(); err != nil {
+	if err := s.validateFFmpeg(); err != nil {
 		return 0, err
 	}
 
+	scanner := &file.Scanner{
+		Repository: file.NewRepository(s.Repository),
+		FileDecorators: []file.Decorator{
+			&file.FilteredDecorator{
+				Decorator: &video.Decorator{
+					FFProbe: s.FFProbe,
+				},
+				Filter: file.FilterFunc(videoFileFilter),
+			},
+			&file.FilteredDecorator{
+				Decorator: &file_image.Decorator{
+					FFProbe: s.FFProbe,
+				},
+				Filter: file.FilterFunc(imageFileFilter),
+			},
+		},
+		FingerprintCalculator: &fingerprintCalculator{s.Config},
+		FS:                    &file.OsFS{},
+	}
+
 	scanJob := ScanJob{
-		scanner:       s.Scanner,
+		scanner:       scanner,
 		input:         input,
 		subscriptions: s.scanSubs,
 	}
@@ -112,7 +135,8 @@ func (s *Manager) Import(ctx context.Context) (int, error) {
 
 	j := job.MakeJobExec(func(ctx context.Context, progress *job.Progress) {
 		task := ImportTask{
-			txnManager:          s.Repository,
+			repository:          s.Repository,
+			resetter:            s.Database,
 			BaseDir:             metadataPath,
 			Reset:               true,
 			DuplicateBehaviour:  ImportDuplicateEnumFail,
@@ -136,7 +160,7 @@ func (s *Manager) Export(ctx context.Context) (int, error) {
 		var wg sync.WaitGroup
 		wg.Add(1)
 		task := ExportTask{
-			txnManager:          s.Repository,
+			repository:          s.Repository,
 			full:                true,
 			fileNamingAlgorithm: config.GetVideoFileNamingAlgorithm(),
 		}
@@ -159,7 +183,7 @@ func (s *Manager) RunSingleTask(ctx context.Context, t Task) int {
 }
 
 func (s *Manager) Generate(ctx context.Context, input GenerateMetadataInput) (int, error) {
-	if err := s.validateFFMPEG(); err != nil {
+	if err := s.validateFFmpeg(); err != nil {
 		return 0, err
 	}
 	if err := instance.Paths.Generated.EnsureTmpDir(); err != nil {
@@ -167,7 +191,7 @@ func (s *Manager) Generate(ctx context.Context, input GenerateMetadataInput) (in
 	}
 
 	j := &GenerateJob{
-		txnManager: s.Repository,
+		repository: s.Repository,
 		input:      input,
 	}
 
@@ -212,7 +236,7 @@ func (s *Manager) generateScreenshot(ctx context.Context, sceneId string, at *fl
 		}
 
 		task := GenerateCoverTask{
-			txnManager:   s.Repository,
+			repository:   s.Repository,
 			Scene:        *scene,
 			ScreenshotAt: at,
 			Overwrite:    true,
@@ -239,7 +263,7 @@ type AutoTagMetadataInput struct {
 
 func (s *Manager) AutoTag(ctx context.Context, input AutoTagMetadataInput) int {
 	j := autoTagJob{
-		txnManager: s.Repository,
+		repository: s.Repository,
 		input:      input,
 	}
 
@@ -253,9 +277,17 @@ type CleanMetadataInput struct {
 }
 
 func (s *Manager) Clean(ctx context.Context, input CleanMetadataInput) int {
+	cleaner := &file.Cleaner{
+		FS:         &file.OsFS{},
+		Repository: file.NewRepository(s.Repository),
+		Handlers: []file.CleanHandler{
+			&cleanHandler{},
+		},
+	}
+
 	j := cleanJob{
-		cleaner:      s.Cleaner,
-		txnManager:   s.Repository,
+		cleaner:      cleaner,
+		repository:   s.Repository,
 		sceneService: s.SceneService,
 		imageService: s.ImageService,
 		input:        input,

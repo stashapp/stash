@@ -67,7 +67,7 @@
       min-width: 100px;
       text-align: right;
 
-      button {
+      .btn {
         margin: 0.25rem;
       }
     }
@@ -409,4 +409,19 @@
 
 .empty-queue-message {
   color: $text-muted;
+}
+
+.advanced-switch {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 1rem;
+
+  .form-label {
+    color: $text-muted;
+    margin-right: 0.5rem;
+  }
+
+  .custom-switch {
+    display: inline-block;
+  }
 }

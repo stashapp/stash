@@ -341,6 +341,20 @@ scene:
 ### Post-processing options
 
 Post-processing operations are contained in the `postProcess` key. Post-processing operations are performed in the order they are specified. The following post-processing operations are available:
+* `javascript`: accepts a javascript code block, that must return a string value. The input string is declared in the `value` variable. If an error occurs while compiling or running the script, then the original value is returned.
+Example:
+```yaml
+performer:
+  Name:
+    selector: //div[@class="example element"]
+    postProcess:
+      - javascript: |
+          // capitalise the first letter
+          if (value && value.length) {
+            return value[0].toUpperCase() + value.substring(1)
+          }
+```
+Note that the `otto` javascript engine is missing a few built-in methods and may not be consistent with other modern javascript implementations.
 * `feetToCm`: converts a string containing feet and inches numbers into centimeters. Looks for up to two separate integers and interprets the first as the number of feet, and the second as the number of inches. The numbers can be separated by any non-numeric character including the `.` character. It does not handle decimal numbers. For example `6.3` and `6ft3.3` would both be interpreted as 6 feet, 3 inches before converting into centimeters.
 * `lbToKg`: converts a string containing lbs to kg.
 * `map`: contains a map of input values to output values. Where a value matches one of the input values, it is replaced with the matching output value. If no value is matched, then value is unmodified.

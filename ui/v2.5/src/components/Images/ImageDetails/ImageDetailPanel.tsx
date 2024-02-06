@@ -21,6 +21,18 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
     [props.image]
   );
 
+  function renderDetails() {
+    if (!props.image.details) return;
+    return (
+      <>
+        <h6>
+          <FormattedMessage id="details" />:{" "}
+        </h6>
+        <p className="pre">{props.image.details}</p>
+      </>
+    );
+  }
+
   function renderTags() {
     if (props.image.tags.length === 0) return;
     const tags = props.image.tags.map((tag) => (
@@ -135,6 +147,16 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
               {TextUtils.formatDateTime(intl, props.image.updated_at)}{" "}
             </h6>
           }
+          {props.image.code && (
+            <h6>
+              <FormattedMessage id="scene_code" />: {props.image.code}{" "}
+            </h6>
+          )}
+          {props.image.photographer && (
+            <h6>
+              <FormattedMessage id="photographer" />: {props.image.photographer}{" "}
+            </h6>
+          )}
         </div>
         {props.image.studio && (
           <div className="col-3 d-xl-none">
@@ -150,6 +172,7 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
       </div>
       <div className="row">
         <div className="col-12">
+          {renderDetails()}
           {renderTags()}
           {renderPerformers()}
         </div>

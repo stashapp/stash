@@ -12,6 +12,7 @@ import { PathCriterionOption } from "./criteria/path";
 import { PerformersCriterionOption } from "./criteria/performers";
 import { RatingCriterionOption } from "./criteria/rating";
 import { ResolutionCriterionOption } from "./criteria/resolution";
+import { OrientationCriterionOption } from "./criteria/orientation";
 import { StudiosCriterionOption } from "./criteria/studios";
 import {
   PerformerTagsCriterionOption,
@@ -33,11 +34,15 @@ const sortByOptions = [
 const displayModeOptions = [DisplayMode.Grid, DisplayMode.Wall];
 const criterionOptions = [
   createStringCriterionOption("title"),
+  createStringCriterionOption("code", "scene_code"),
+  createStringCriterionOption("details"),
+  createStringCriterionOption("photographer"),
   createMandatoryStringCriterionOption("checksum", "media_info.checksum"),
   PathCriterionOption,
   OrganizedCriterionOption,
   createMandatoryNumberCriterionOption("o_counter"),
   ResolutionCriterionOption,
+  OrientationCriterionOption,
   ImageIsMissingCriterionOption,
   TagsCriterionOption,
   RatingCriterionOption,

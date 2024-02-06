@@ -34,7 +34,7 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input models.Studio
 
 	newStudio.Name = input.Name
 	newStudio.URL = translator.string(input.URL)
-	newStudio.Rating = translator.ratingConversion(input.Rating, input.Rating100)
+	newStudio.Rating = input.Rating100
 	newStudio.Details = translator.string(input.Details)
 	newStudio.IgnoreAutoTag = translator.bool(input.IgnoreAutoTag)
 	newStudio.Aliases = models.NewRelatedStrings(input.Aliases)
@@ -61,10 +61,8 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input models.Studio
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Studio
 
-		if len(input.Aliases) > 0 {
-			if err := studio.EnsureAliasesUnique(ctx, 0, input.Aliases, qb); err != nil {
-				return err
-			}
+		if err := studio.ValidateCreate(ctx, newStudio, qb); err != nil {
+			return err
 		}
 
 		err = qb.Create(ctx, &newStudio)
@@ -104,7 +102,7 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 	updatedStudio.Name = translator.optionalString(input.Name, "name")
 	updatedStudio.URL = translator.optionalString(input.URL, "url")
 	updatedStudio.Details = translator.optionalString(input.Details, "details")
-	updatedStudio.Rating = translator.optionalRatingConversion(input.Rating, input.Rating100)
+	updatedStudio.Rating = translator.optionalInt(input.Rating100, "rating100")
 	updatedStudio.IgnoreAutoTag = translator.optionalBool(input.IgnoreAutoTag, "ignore_auto_tag")
 	updatedStudio.Aliases = translator.updateStrings(input.Aliases, "aliases")
 	updatedStudio.StashIDs = translator.updateStashIDs(input.StashIds, "stash_ids")

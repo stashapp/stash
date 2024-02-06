@@ -40,6 +40,7 @@ export const GenerateOptions: React.FC<IGenerateOptions> = ({
         onChange={(v) => setOptions({ previews: v })}
       />
       <BooleanSetting
+        advanced
         className="sub-setting"
         id="image-preview-task"
         checked={options.imagePreviews ?? false}
@@ -88,6 +89,7 @@ export const GenerateOptions: React.FC<IGenerateOptions> = ({
         onChange={(v) => setOptions({ markers: v })}
       />
       <BooleanSetting
+        advanced
         id="marker-image-preview-task"
         className="sub-setting"
         checked={options.markerImagePreviews ?? false}
@@ -101,6 +103,7 @@ export const GenerateOptions: React.FC<IGenerateOptions> = ({
         }
       />
       <BooleanSetting
+        advanced
         id="marker-screenshot-task"
         className="sub-setting"
         checked={options.markerScreenshots ?? false}
@@ -111,6 +114,7 @@ export const GenerateOptions: React.FC<IGenerateOptions> = ({
       />
 
       <BooleanSetting
+        advanced
         id="transcode-task"
         checked={options.transcodes ?? false}
         headingID="dialogs.scene_gen.transcodes"
@@ -119,6 +123,7 @@ export const GenerateOptions: React.FC<IGenerateOptions> = ({
       />
       {selection ? (
         <BooleanSetting
+          advanced
           id="force-transcode"
           className="sub-setting"
           checked={options.forceTranscodes ?? false}

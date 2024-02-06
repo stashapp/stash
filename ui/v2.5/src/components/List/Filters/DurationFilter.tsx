@@ -17,9 +17,9 @@ export const DurationFilter: React.FC<IDurationFilterProps> = ({
 }) => {
   const intl = useIntl();
 
-  function onChanged(v: number | undefined, property: "value" | "value2") {
+  function onChanged(v: number | null, property: "value" | "value2") {
     const { value } = criterion;
-    value[property] = v;
+    value[property] = v ?? undefined;
     onValueChanged(value);
   }
 
