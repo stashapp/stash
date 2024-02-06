@@ -6,6 +6,18 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
+type galleryResolver struct {
+	galleries []*models.Gallery
+}
+
+func (g galleryResolver) FindMany(ctx context.Context, ids []int) ([]*models.Gallery, error) {
+	return g.galleries, nil
+}
+
+func (g galleryResolver) Find(ctx context.Context, id int) (*models.Gallery, error) {
+	panic("not implemented")
+}
+
 type sceneResolver struct {
 	scenes []*models.Scene
 }
@@ -16,6 +28,15 @@ func (s *sceneResolver) Find(ctx context.Context, id int) (*models.Scene, error)
 
 func (s *sceneResolver) FindMany(ctx context.Context, ids []int) ([]*models.Scene, error) {
 	return s.scenes, nil
+}
+
+func GalleryQueryResult(galleries []*models.Gallery, count int) *models.GalleryQueryResult {
+	ret := models.NewGalleryQueryResult(&galleryResolver{
+		galleries: galleries,
+	})
+
+	ret.Count = count
+	return ret
 }
 
 func SceneQueryResult(scenes []*models.Scene, count int) *models.SceneQueryResult {

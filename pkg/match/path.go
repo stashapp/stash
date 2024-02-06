@@ -424,7 +424,7 @@ func PathToGalleriesFn(ctx context.Context, name string, paths []string, gallery
 			}
 		}
 
-		galleries, _, err := galleryReader.Query(ctx, &filter, &models.FindFilterType{
+		galleries, err := gallery.Query(ctx, galleryReader, &filter, &models.FindFilterType{
 			PerPage:   &pp,
 			Sort:      &sort,
 			Direction: &sortDir,

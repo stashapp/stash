@@ -1,6 +1,7 @@
 package autotag
 
 import (
+	"github.com/stashapp/stash/pkg/gallery"
 	"path/filepath"
 	"testing"
 
@@ -338,11 +339,11 @@ func testStudioGalleries(t *testing.T, tc testStudioCase) {
 	}
 
 	// if alias provided, then don't find by name
-	onNameQuery := db.Gallery.On("Query", mock.Anything, expectedGalleryFilter, expectedFindFilter)
+	onNameQuery := db.Gallery.On("Query", mock.Anything, gallery.QueryOptions(expectedGalleryFilter, expectedFindFilter, false))
 	if aliasName == "" {
-		onNameQuery.Return(galleries, len(galleries), nil).Once()
+		onNameQuery.Return(mocks.GalleryQueryResult(galleries, len(galleries)), nil).Once()
 	} else {
-		onNameQuery.Return(nil, 0, nil).Once()
+		onNameQuery.Return(mocks.GalleryQueryResult(nil, 0), nil).Once()
 
 		expectedAliasFilter := &models.GalleryFilterType{
 			Organized: &organized,
@@ -352,7 +353,8 @@ func testStudioGalleries(t *testing.T, tc testStudioCase) {
 			},
 		}
 
-		db.Gallery.On("Query", mock.Anything, expectedAliasFilter, expectedFindFilter).Return(galleries, len(galleries), nil).Once()
+		db.Gallery.On("Query", mock.Anything, gallery.QueryOptions(expectedAliasFilter, expectedFindFilter, false)).
+			Return(mocks.GalleryQueryResult(galleries, len(galleries)), nil).Once()
 	}
 
 	for i := range matchingPaths {

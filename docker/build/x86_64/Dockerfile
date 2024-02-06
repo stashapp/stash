@@ -32,7 +32,12 @@ RUN make flags-release flags-pie stash
 
 # Final Runnable Image
 FROM alpine:latest
-RUN apk add --no-cache ca-certificates vips-tools ffmpeg
+RUN apk add --no-cache --virtual .build-deps gcc python3-dev musl-dev \
+    && apk add --no-cache ca-certificates python3 py3-requests py3-requests-toolbelt py3-lxml py3-pip ffmpeg ruby tzdata \
+    && apk add --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/v3.18/community vips=8.14.3-r0 vips-tools=8.14.3-r0 \
+    && pip install --user --break-system-packages mechanicalsoup cloudscraper bencoder.pyx \
+    && gem install faraday \
+    && apk del .build-deps
 COPY --from=backend /stash/stash /usr/bin/
 ENV STASH_CONFIG_FILE=/root/.stash/config.yml
 EXPOSE 9999

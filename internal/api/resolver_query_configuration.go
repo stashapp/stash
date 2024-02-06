@@ -224,6 +224,7 @@ func makeConfigDefaultsResult() *ConfigDefaultSettingsResult {
 
 	return &ConfigDefaultSettingsResult{
 		Identify:        config.GetDefaultIdentifySettings(),
+		IdentifyGallery: config.GetDefaultIdentifyGallerySettings(),
 		Scan:            config.GetDefaultScanSettings(),
 		AutoTag:         config.GetDefaultAutoTagSettings(),
 		Generate:        config.GetDefaultGenerateSettings(),

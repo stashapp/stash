@@ -3,6 +3,7 @@ package manager
 import (
 	"context"
 	"fmt"
+	"github.com/stashapp/stash/pkg/gallery"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -516,12 +517,19 @@ func (t *autoTagFilesTask) getCount(ctx context.Context) (int, error) {
 
 	imageCount := imageResults.Count
 
-	_, galleryCount, err := r.Gallery.Query(ctx, t.makeGalleryFilter(), findFilter)
+	galleryCount, err := r.Gallery.Query(ctx, models.GalleryQueryOptions{
+		QueryOptions: models.QueryOptions{
+			FindFilter: findFilter,
+			Count:      true,
+		},
+		GalleryFilter: t.makeGalleryFilter(),
+	})
+
 	if err != nil {
 		return 0, fmt.Errorf("getting gallery count: %w", err)
 	}
 
-	return sceneCount + imageCount + galleryCount, nil
+	return sceneCount + imageCount + galleryCount.Count, nil
 }
 
 func (t *autoTagFilesTask) processScenes(ctx context.Context) {
@@ -669,7 +677,7 @@ func (t *autoTagFilesTask) processGalleries(ctx context.Context) {
 		var galleries []*models.Gallery
 		if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
 			var err error
-			galleries, _, err = r.Gallery.Query(ctx, galleryFilter, findFilter)
+			galleries, err = gallery.Query(ctx, r.Gallery, galleryFilter, findFilter)
 			return err
 		}); err != nil {
 			if !job.IsCancelled(ctx) {

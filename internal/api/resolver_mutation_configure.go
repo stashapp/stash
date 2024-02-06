@@ -587,6 +587,10 @@ func (r *mutationResolver) ConfigureDefaults(ctx context.Context, input ConfigDe
 		c.Set(config.DefaultIdentifySettings, input.Identify)
 	}
 
+	if input.IdentifyGallery != nil {
+		c.Set(config.DefaultIdentifyGallerySettings, input.IdentifyGallery)
+	}
+
 	if input.Scan != nil {
 		// if input.Scan is used then ScanMetadataOptions is included in the config file
 		// this causes the values to not be read correctly

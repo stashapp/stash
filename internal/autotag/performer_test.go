@@ -1,6 +1,7 @@
 package autotag
 
 import (
+	"github.com/stashapp/stash/pkg/gallery"
 	"path/filepath"
 	"testing"
 
@@ -275,7 +276,8 @@ func testPerformerGalleries(t *testing.T, performerName, expectedRegex string) {
 		Direction: &direction,
 	}
 
-	db.Gallery.On("Query", mock.Anything, expectedGalleryFilter, expectedFindFilter).Return(galleries, len(galleries), nil).Once()
+	db.Gallery.On("Query", mock.Anything, gallery.QueryOptions(expectedGalleryFilter, expectedFindFilter, false)).
+		Return(mocks.GalleryQueryResult(galleries, len(galleries)), nil).Once()
 
 	for i := range matchingPaths {
 		galleryID := i + 1

@@ -88,7 +88,14 @@ func (r *mutationResolver) MetadataAutoTag(ctx context.Context, input manager.Au
 
 func (r *mutationResolver) MetadataIdentify(ctx context.Context, input identify.Options) (string, error) {
 	t := manager.CreateIdentifyJob(input)
-	jobID := manager.GetInstance().JobManager.Add(ctx, "Identifying...", t)
+	jobID := manager.GetInstance().JobManager.Add(ctx, "Identifying scenes...", t)
+
+	return strconv.Itoa(jobID), nil
+}
+
+func (r *mutationResolver) MetadataIdentifyGallery(ctx context.Context, input identify.GalleryOptions) (string, error) {
+	t := manager.CreateIdentifyGalleryJob(input)
+	jobID := manager.GetInstance().JobManager.Add(ctx, "Identifying galleries...", t)
 
 	return strconv.Itoa(jobID), nil
 }

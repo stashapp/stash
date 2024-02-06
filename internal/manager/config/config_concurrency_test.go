@@ -104,6 +104,7 @@ func TestConcurrentConfigAccess(t *testing.T) {
 				i.Set(MaxUploadSize, i.GetMaxUploadSize())
 				i.Set(FunscriptOffset, i.GetFunscriptOffset())
 				i.Set(DefaultIdentifySettings, i.GetDefaultIdentifySettings())
+				i.Set(DefaultIdentifyGallerySettings, i.GetDefaultIdentifyGallerySettings())
 				i.Set(DeleteGeneratedDefault, i.GetDeleteGeneratedDefault())
 				i.Set(DeleteFileDefault, i.GetDeleteFileDefault())
 				i.Set(dangerousAllowPublicWithoutAuth, i.GetDangerousAllowPublicWithoutAuth())
