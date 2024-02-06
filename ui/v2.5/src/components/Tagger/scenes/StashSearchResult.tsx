@@ -24,6 +24,7 @@ import StudioResult from "./StudioResult";
 import { useInitialState } from "src/hooks/state";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { getStashboxBase } from "src/utils/stashbox";
+import { ExternalLink } from "src/components/Shared/ExternalLink";
 
 const getDurationStatus = (
   scene: IScrapedScene,
@@ -488,14 +489,9 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     const url = scene.urls?.length ? scene.urls[0] : null;
 
     const sceneTitleEl = url ? (
-      <a
-        href={url}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="scene-link"
-      >
+      <ExternalLink className="scene-link" href={url}>
         <TruncatedText text={scene.title} />
-      </a>
+      </ExternalLink>
     ) : (
       <TruncatedText text={scene.title} />
     );
@@ -592,9 +588,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
           >
             {scene.urls.map((url) => (
               <div key={url}>
-                <a href={url} target="_blank" rel="noopener noreferrer">
-                  {url}
-                </a>
+                <ExternalLink href={url}>{url}</ExternalLink>
               </div>
             ))}
           </OptionalField>
@@ -626,9 +620,9 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
             exclude={excludedFields[fields.stash_ids]}
             setExclude={(v) => setExcludedField(fields.stash_ids, v)}
           >
-            <a href={stashBoxURL} target="_blank" rel="noopener noreferrer">
+            <ExternalLink href={stashBoxURL}>
               {scene.remote_site_id}
-            </a>
+            </ExternalLink>
           </OptionalField>
         </div>
       );

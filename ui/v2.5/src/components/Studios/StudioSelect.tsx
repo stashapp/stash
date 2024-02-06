@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   OptionProps,
   components as reactSelectComponents,
@@ -9,9 +9,9 @@ import cx from "classnames";
 
 import * as GQL from "src/core/generated-graphql";
 import {
-  usePerformerCreate,
-  queryFindPerformersByIDForSelect,
-  queryFindPerformersForSelect,
+  useStudioCreate,
+  queryFindStudiosByIDForSelect,
+  queryFindStudiosForSelect,
 } from "src/core/StashService";
 import { ConfigurationContext } from "src/hooks/Config";
 import { useIntl } from "react-intl";
@@ -25,7 +25,7 @@ import {
   Option as SelectOption,
 } from "../Shared/FilterSelect";
 import { useCompare } from "src/hooks/state";
-import { Link } from "react-router-dom";
+import { Placement } from "react-bootstrap/esm/Overlay";
 
 export type SelectObject = {
   id: string;
@@ -33,39 +33,48 @@ export type SelectObject = {
   title?: string | null;
 };
 
-export type Performer = Pick<
-  GQL.Performer,
-  "id" | "name" | "alias_list" | "disambiguation" | "image_path"
->;
-type Option = SelectOption<Performer>;
+export type Studio = Pick<GQL.Studio, "id" | "name" | "aliases" | "image_path">;
+type Option = SelectOption<Studio>;
 
-export const PerformerSelect: React.FC<
-  IFilterProps & IFilterValueProps<Performer>
+export const StudioSelect: React.FC<
+  IFilterProps &
+    IFilterValueProps<Studio> & {
+      hoverPlacement?: Placement;
+      excludeIds?: string[];
+    }
 > = (props) => {
-  const [createPerformer] = usePerformerCreate();
+  const [createStudio] = useStudioCreate();
 
   const { configuration } = React.useContext(ConfigurationContext);
   const intl = useIntl();
   const maxOptionsShown =
     (configuration?.ui as IUIConfig).maxOptionsShown ?? defaultMaxOptionsShown;
   const defaultCreatable =
-    !configuration?.interface.disableDropdownCreate.performer ?? true;
+    !configuration?.interface.disableDropdownCreate.studio ?? true;
 
-  async function loadPerformers(input: string): Promise<Option[]> {
-    const filter = new ListFilterModel(GQL.FilterMode.Performers);
+  const exclude = useMemo(() => props.excludeIds ?? [], [props.excludeIds]);
+
+  async function loadStudios(input: string): Promise<Option[]> {
+    const filter = new ListFilterModel(GQL.FilterMode.Studios);
     filter.searchTerm = input;
     filter.currentPage = 1;
     filter.itemsPerPage = maxOptionsShown;
     filter.sortBy = "name";
     filter.sortDirection = GQL.SortDirectionEnum.Asc;
-    const query = await queryFindPerformersForSelect(filter);
-    return query.data.findPerformers.performers.map((performer) => ({
-      value: performer.id,
-      object: performer,
-    }));
+    const query = await queryFindStudiosForSelect(filter);
+    return query.data.findStudios.studios
+      .filter((studio) => {
+        // HACK - we should probably exclude these in the backend query, but
+        // this will do in the short-term
+        return !exclude.includes(studio.id.toString());
+      })
+      .map((studio) => ({
+        value: studio.id,
+        object: studio,
+      }));
   }
 
-  const PerformerOption: React.FC<OptionProps<Option, boolean>> = (
+  const StudioOption: React.FC<OptionProps<Option, boolean>> = (
     optionProps
   ) => {
     let thisOptionProps = optionProps;
@@ -78,7 +87,7 @@ export const PerformerSelect: React.FC<
     const { inputValue } = optionProps.selectProps;
     let alias: string | undefined = "";
     if (!name.toLowerCase().includes(inputValue.toLowerCase())) {
-      alias = object.alias_list?.find((a) =>
+      alias = object.aliases?.find((a) =>
         a.toLowerCase().includes(inputValue.toLowerCase())
       );
     }
@@ -87,21 +96,7 @@ export const PerformerSelect: React.FC<
       ...optionProps,
       children: (
         <span className="react-select-image-option">
-          <Link
-            to={`/performers/${object.id}`}
-            target="_blank"
-            className="performer-select-image-link"
-          >
-            <img
-              className="performer-select-image"
-              src={object.image_path ?? ""}
-              loading="lazy"
-            />
-          </Link>
           <span>{name}</span>
-          {object.disambiguation && (
-            <span className="performer-disambiguation">{` (${object.disambiguation})`}</span>
-          )}
           {alias && <span className="alias">{` (${alias})`}</span>}
         </span>
       ),
@@ -110,7 +105,7 @@ export const PerformerSelect: React.FC<
     return <reactSelectComponents.Option {...thisOptionProps} />;
   };
 
-  const PerformerMultiValueLabel: React.FC<
+  const StudioMultiValueLabel: React.FC<
     MultiValueGenericProps<Option, boolean>
   > = (optionProps) => {
     let thisOptionProps = optionProps;
@@ -125,7 +120,7 @@ export const PerformerSelect: React.FC<
     return <reactSelectComponents.MultiValueLabel {...thisOptionProps} />;
   };
 
-  const PerformerValueLabel: React.FC<SingleValueProps<Option, boolean>> = (
+  const StudioValueLabel: React.FC<SingleValueProps<Option, boolean>> = (
     optionProps
   ) => {
     let thisOptionProps = optionProps;
@@ -134,27 +129,20 @@ export const PerformerSelect: React.FC<
 
     thisOptionProps = {
       ...optionProps,
-      children: (
-        <>
-          {object.name}
-          {object.disambiguation && (
-            <span className="performer-disambiguation">{` (${object.disambiguation})`}</span>
-          )}
-        </>
-      ),
+      children: <>{object.name}</>,
     };
 
     return <reactSelectComponents.SingleValue {...thisOptionProps} />;
   };
 
   const onCreate = async (name: string) => {
-    const result = await createPerformer({
+    const result = await createStudio({
       variables: { input: { name } },
     });
     return {
-      value: result.data!.performerCreate!.id,
-      item: result.data!.performerCreate!,
-      message: "Created performer",
+      value: result.data!.studioCreate!.id,
+      item: result.data!.studioCreate!,
+      message: "Created studio",
     };
   };
 
@@ -162,11 +150,11 @@ export const PerformerSelect: React.FC<
     return {
       id,
       name,
-      alias_list: [],
+      aliases: [],
     };
   };
 
-  const isValidNewOption = (inputValue: string, options: Performer[]) => {
+  const isValidNewOption = (inputValue: string, options: Studio[]) => {
     if (!inputValue) {
       return false;
     }
@@ -175,9 +163,7 @@ export const PerformerSelect: React.FC<
       options.some((o) => {
         return (
           o.name.toLowerCase() === inputValue.toLowerCase() ||
-          o.alias_list?.some(
-            (a) => a.toLowerCase() === inputValue.toLowerCase()
-          )
+          o.aliases?.some((a) => a.toLowerCase() === inputValue.toLowerCase())
         );
       })
     ) {
@@ -188,22 +174,22 @@ export const PerformerSelect: React.FC<
   };
 
   return (
-    <FilterSelectComponent<Performer, boolean>
+    <FilterSelectComponent<Studio, boolean>
       {...props}
       className={cx(
-        "performer-select",
+        "studio-select",
         {
-          "performer-select-active": props.active,
+          "studio-select-active": props.active,
         },
         props.className
       )}
-      loadOptions={loadPerformers}
+      loadOptions={loadStudios}
       getNamedObject={getNamedObject}
       isValidNewOption={isValidNewOption}
       components={{
-        Option: PerformerOption,
-        MultiValueLabel: PerformerMultiValueLabel,
-        SingleValue: PerformerValueLabel,
+        Option: StudioOption,
+        MultiValueLabel: StudioMultiValueLabel,
+        SingleValue: StudioValueLabel,
       }}
       isMulti={props.isMulti ?? false}
       creatable={props.creatable ?? defaultCreatable}
@@ -214,34 +200,35 @@ export const PerformerSelect: React.FC<
           { id: "actions.select_entity" },
           {
             entityType: intl.formatMessage({
-              id: props.isMulti ? "performers" : "performer",
+              id: props.isMulti ? "studios" : "studio",
             }),
           }
         )
       }
+      closeMenuOnSelect={!props.isMulti}
     />
   );
 };
 
-export const PerformerIDSelect: React.FC<
-  IFilterProps & IFilterIDProps<Performer>
-> = (props) => {
+export const StudioIDSelect: React.FC<IFilterProps & IFilterIDProps<Studio>> = (
+  props
+) => {
   const { ids, onSelect: onSelectValues } = props;
 
-  const [values, setValues] = useState<Performer[]>([]);
+  const [values, setValues] = useState<Studio[]>([]);
   const idsChanged = useCompare(ids);
 
-  function onSelect(items: Performer[]) {
+  function onSelect(items: Studio[]) {
     setValues(items);
     onSelectValues?.(items);
   }
 
-  async function loadObjectsByID(idsToLoad: string[]): Promise<Performer[]> {
-    const performerIDs = idsToLoad.map((id) => parseInt(id));
-    const query = await queryFindPerformersByIDForSelect(performerIDs);
-    const { performers: loadedPerformers } = query.data.findPerformers;
+  async function loadObjectsByID(idsToLoad: string[]): Promise<Studio[]> {
+    const studioIDs = idsToLoad.map((id) => parseInt(id));
+    const query = await queryFindStudiosByIDForSelect(studioIDs);
+    const { studios: loadedStudios } = query.data.findStudios;
 
-    return loadedPerformers;
+    return loadedStudios;
   }
 
   useEffect(() => {
@@ -268,5 +255,5 @@ export const PerformerIDSelect: React.FC<
     load();
   }, [ids, idsChanged, values]);
 
-  return <PerformerSelect {...props} values={values} onSelect={onSelect} />;
+  return <StudioSelect {...props} values={values} onSelect={onSelect} />;
 };

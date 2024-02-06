@@ -205,6 +205,15 @@ dd {
   }
 }
 
+.btn.link {
+  color: $link-color;
+
+  &:hover:not(:disabled),
+  &:active:not(:disabled) {
+    color: $link-color;
+  }
+}
+
 .detail-header.edit {
   background-color: unset;
   overflow: visible;
@@ -478,16 +487,6 @@ textarea.text-input {
 }
 
 .zoom-0 {
-  width: 240px;
-
-  .scene-card-preview {
-    height: 135px;
-  }
-
-  .portrait {
-    height: 180px;
-  }
-
   .gallery-card-image,
   .tag-card-image {
     max-height: 180px;
@@ -496,14 +495,6 @@ textarea.text-input {
 
 .zoom-1 {
   width: 320px;
-
-  .scene-card-preview {
-    height: 180px;
-  }
-
-  .portrait {
-    height: 240px;
-  }
 
   .gallery-card-image,
   .tag-card-image {
@@ -516,16 +507,6 @@ textarea.text-input {
 }
 
 .zoom-2 {
-  width: 480px;
-
-  .scene-card-preview {
-    height: 270px;
-  }
-
-  .portrait {
-    height: 360px;
-  }
-
   .gallery-card-image,
   .tag-card-image {
     max-height: 360px;
@@ -537,16 +518,6 @@ textarea.text-input {
 }
 
 .zoom-3 {
-  width: 640px;
-
-  .scene-card-preview {
-    height: 360px;
-  }
-
-  .portrait {
-    height: 480px;
-  }
-
   .tag-card-image,
   .gallery-card-image {
     max-height: 480px;
@@ -691,12 +662,11 @@ div.dropdown-menu {
   flex-wrap: wrap;
   row-gap: 10px;
 
-  /* stylelint-disable */
   .badge {
-    white-space: normal !important;
     margin: unset;
+    // stylelint-disable declaration-no-important
+    white-space: normal !important;
   }
-  /* stylelint-enable */
 }
 
 .tag-item {

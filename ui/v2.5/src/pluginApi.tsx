@@ -1,5 +1,8 @@
 import React from "react";
+import ReactDOM from "react-dom";
 import * as ReactRouterDOM from "react-router-dom";
+import Mousetrap from "mousetrap";
+import MousetrapPause from "mousetrap-pause";
 import NavUtils from "./utils/navigation";
 import { HoverPopover } from "./components/Shared/HoverPopover";
 import { TagLink } from "./components/Shared/TagLink";
@@ -98,6 +101,7 @@ export function RegisterComponent(component: string, fn: Function) {
 }
 export const PluginApi = {
   React,
+  ReactDOM,
   GQL,
   libraries: {
     ReactRouterDOM,
@@ -106,6 +110,8 @@ export const PluginApi = {
     Intl,
     FontAwesomeRegular,
     FontAwesomeSolid,
+    Mousetrap,
+    MousetrapPause,
   },
   register: {
     // register a route to be added to the main router

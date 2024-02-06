@@ -27,21 +27,8 @@
         color: #ff7373;
       }
 
-      .link {
-        color: rgb(191, 204, 214);
-      }
-
       .instagram {
         color: pink;
-      }
-
-      .icon-link {
-        padding: 0;
-
-        a {
-          display: inline-block;
-          padding: $btn-padding-y $btn-padding-x;
-        }
       }
     }
 
@@ -76,7 +63,7 @@
   }
 
   &-image {
-    height: 30rem;
+    aspect-ratio: 2/3;
     min-width: 11.25rem;
     object-fit: cover;
     object-position: top;
@@ -233,6 +220,10 @@
 }
 
 .performer-select {
+  .performer-disambiguation {
+    white-space: pre;
+  }
+
   .alias {
     font-weight: bold;
     white-space: pre;

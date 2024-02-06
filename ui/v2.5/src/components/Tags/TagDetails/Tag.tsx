@@ -471,18 +471,22 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
   function maybeRenderHeaderBackgroundImage() {
     let tagImage = tag.image_path;
     if (enableBackgroundImage && !isEditing && tagImage) {
-      return (
-        <div className="background-image-container">
-          <picture>
-            <source src={tagImage} />
-            <img
-              className="background-image"
-              src={tagImage}
-              alt={`${tag.name} background`}
-            />
-          </picture>
-        </div>
-      );
+      const tagImageURL = new URL(tagImage);
+      let isDefaultImage = tagImageURL.searchParams.get("default");
+      if (!isDefaultImage) {
+        return (
+          <div className="background-image-container">
+            <picture>
+              <source src={tagImage} />
+              <img
+                className="background-image"
+                src={tagImage}
+                alt={`${tag.name} background`}
+              />
+            </picture>
+          </div>
+        );
+      }
     }
   }
 

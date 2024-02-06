@@ -1,40 +1,32 @@
 import React, { useRef } from "react";
 import * as GQL from "src/core/generated-graphql";
-import { SceneQueue } from "src/models/sceneQueue";
-import { SceneCard } from "./SceneCard";
+import { MovieCard } from "./MovieCard";
 import { useContainerDimensions } from "../Shared/GridCard";
 
-interface ISceneCardsGrid {
-  scenes: GQL.SlimSceneDataFragment[];
-  queue?: SceneQueue;
+interface IMovieCardGrid {
+  movies: GQL.MovieDataFragment[];
   selectedIds: Set<string>;
-  zoomIndex: number;
   onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void;
 }
 
-export const SceneCardsGrid: React.FC<ISceneCardsGrid> = ({
-  scenes,
-  queue,
+export const MovieCardGrid: React.FC<IMovieCardGrid> = ({
+  movies,
   selectedIds,
-  zoomIndex,
   onSelectChange,
 }) => {
   const componentRef = useRef<HTMLDivElement>(null);
   const { width } = useContainerDimensions(componentRef);
   return (
     <div className="row justify-content-center" ref={componentRef}>
-      {scenes.map((scene, index) => (
-        <SceneCard
-          key={scene.id}
+      {movies.map((p) => (
+        <MovieCard
+          key={p.id}
           containerWidth={width}
-          scene={scene}
-          queue={queue}
-          index={index}
-          zoomIndex={zoomIndex}
+          movie={p}
           selecting={selectedIds.size > 0}
-          selected={selectedIds.has(scene.id)}
+          selected={selectedIds.has(p.id)}
           onSelectedChanged={(selected: boolean, shiftKey: boolean) =>
-            onSelectChange(scene.id, selected, shiftKey)
+            onSelectChange(p.id, selected, shiftKey)
           }
         />
       ))}

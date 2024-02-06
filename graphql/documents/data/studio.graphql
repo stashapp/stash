@@ -33,3 +33,16 @@ fragment StudioData on Studio {
   rating100
   aliases
 }
+
+fragment SelectStudioData on Studio {
+  id
+  name
+  aliases
+  details
+  image_path
+
+  parent_studio {
+    id
+    name
+  }
+}

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import Select, {
   OnChangeValue,
   StylesConfig,
@@ -15,9 +15,7 @@ import CreatableSelect from "react-select/creatable";
 import * as GQL from "src/core/generated-graphql";
 import {
   useAllMoviesForFilter,
-  useAllStudiosForFilter,
   useMarkerStrings,
-  useStudioCreate,
   useMovieCreate,
 } from "src/core/StashService";
 import { useToast } from "src/hooks/Toast";
@@ -33,6 +31,7 @@ import { PerformerIDSelect } from "../Performers/PerformerSelect";
 import { Icon } from "./Icon";
 import { faTableColumns } from "@fortawesome/free-solid-svg-icons";
 import { TagIDSelect } from "../Tags/TagSelect";
+import { StudioIDSelect } from "../Studios/StudioSelect";
 
 export type SelectObject = {
   id: string;
@@ -534,144 +533,7 @@ export const PerformerSelect: React.FC<IFilterProps> = (props) => {
 export const StudioSelect: React.FC<
   IFilterProps & { excludeIds?: string[] }
 > = (props) => {
-  const [studioAliases, setStudioAliases] = useState<Record<string, string[]>>(
-    {}
-  );
-  const [allAliases, setAllAliases] = useState<string[]>([]);
-  const { data, loading } = useAllStudiosForFilter();
-  const [createStudio] = useStudioCreate();
-  const intl = useIntl();
-
-  const { configuration } = React.useContext(ConfigurationContext);
-  const defaultCreatable =
-    !configuration?.interface.disableDropdownCreate.studio ?? true;
-
-  const exclude = useMemo(() => props.excludeIds ?? [], [props.excludeIds]);
-  const studios = useMemo(
-    () =>
-      (data?.allStudios ?? []).filter((studio) => !exclude.includes(studio.id)),
-    [data?.allStudios, exclude]
-  );
-
-  useEffect(() => {
-    // build the studio aliases map
-    const newAliases: Record<string, string[]> = {};
-    const newAll: string[] = [];
-    studios.forEach((s) => {
-      newAliases[s.id] = s.aliases;
-      newAll.push(...s.aliases);
-    });
-    setStudioAliases(newAliases);
-    setAllAliases(newAll);
-  }, [studios]);
-
-  const StudioOption: React.FC<OptionProps<Option, boolean>> = (
-    optionProps
-  ) => {
-    const { inputValue } = optionProps.selectProps;
-
-    let thisOptionProps = optionProps;
-    if (
-      inputValue &&
-      !optionProps.label.toLowerCase().includes(inputValue.toLowerCase())
-    ) {
-      // must be alias
-      const newLabel = `${optionProps.data.label} (alias)`;
-      thisOptionProps = {
-        ...optionProps,
-        children: newLabel,
-      };
-    }
-
-    return <reactSelectComponents.Option {...thisOptionProps} />;
-  };
-
-  const filterOption = (option: Option, rawInput: string): boolean => {
-    if (!rawInput) {
-      return true;
-    }
-
-    const input = rawInput.toLowerCase();
-    const optionVal = option.label.toLowerCase();
-
-    if (optionVal.includes(input)) {
-      return true;
-    }
-
-    // search for studio aliases
-    const aliases = studioAliases[option.value];
-    // only match on alias if exact
-    if (aliases && aliases.some((a) => a.toLowerCase() === input)) {
-      return true;
-    }
-
-    return false;
-  };
-
-  const onCreate = async (name: string) => {
-    const result = await createStudio({
-      variables: {
-        input: { name },
-      },
-    });
-    return {
-      item: result.data!.studioCreate!,
-      message: intl.formatMessage(
-        { id: "toast.created_entity" },
-        { entity: intl.formatMessage({ id: "studio" }).toLocaleLowerCase() }
-      ),
-    };
-  };
-
-  const isValidNewOption = (
-    inputValue: string,
-    value: OnChangeValue<Option, boolean>,
-    options: OptionsOrGroups<Option, GroupBase<Option>>
-  ) => {
-    if (!inputValue) {
-      return false;
-    }
-
-    if (
-      (options as Options<Option>).some((o: Option) => {
-        return o.label.toLowerCase() === inputValue.toLowerCase();
-      })
-    ) {
-      return false;
-    }
-
-    if (allAliases.some((a) => a.toLowerCase() === inputValue.toLowerCase())) {
-      return false;
-    }
-
-    return true;
-  };
-
-  return (
-    <FilterSelectComponent
-      {...props}
-      filterOption={filterOption}
-      isValidNewOption={isValidNewOption}
-      components={{ Option: StudioOption }}
-      isMulti={props.isMulti ?? false}
-      type="studios"
-      isLoading={loading}
-      items={studios}
-      placeholder={
-        props.noSelectionString ??
-        intl.formatMessage(
-          { id: "actions.select_entity" },
-          {
-            entityType: intl.formatMessage({
-              id: props.isMulti ? "studios" : "studio",
-            }),
-          }
-        )
-      }
-      creatable={props.creatable ?? defaultCreatable}
-      onCreate={onCreate}
-    />
-  );
+  return <StudioIDSelect {...props} />;
 };
 
 export const MovieSelect: React.FC<IFilterProps> = (props) => {
@@ -843,7 +705,7 @@ export const ListSelect = <T extends {}>(props: IListSelect<T>) => {
 };
 
 type DisableOption = Option & {
-  disabled?: boolean;
+  isDisabled?: boolean;
 };
 
 interface ICheckBoxSelectProps {
@@ -861,7 +723,7 @@ export const CheckBoxSelect: React.FC<ICheckBoxSelectProps> = ({
     <reactSelectComponents.Option {...props}>
       <input
         type="checkbox"
-        disabled={props.data.disabled}
+        disabled={props.isDisabled}
         checked={props.isSelected}
         onChange={() => null}
         className="mr-1"
