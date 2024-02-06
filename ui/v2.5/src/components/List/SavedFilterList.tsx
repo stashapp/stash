@@ -67,8 +67,8 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
             mode: filter.mode,
             name,
             find_filter: filterCopy.makeFindFilter(),
-            object_filter: filterCopy.makeSavedFindFilter(),
-            ui_options: filterCopy.makeUIOptions(),
+            object_filter: filterCopy.makeSavedFilter(),
+            ui_options: filterCopy.makeSavedUIOptions(),
           },
         },
       });
@@ -137,8 +137,8 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
           input: {
             mode: filter.mode,
             find_filter: filterCopy.makeFindFilter(),
-            object_filter: filterCopy.makeSavedFindFilter(),
-            ui_options: filterCopy.makeUIOptions(),
+            object_filter: filterCopy.makeSavedFilter(),
+            ui_options: filterCopy.makeSavedUIOptions(),
           },
         },
       });

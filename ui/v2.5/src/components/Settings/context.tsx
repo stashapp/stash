@@ -22,7 +22,8 @@ import { useToast } from "src/hooks/Toast";
 import { withoutTypename } from "src/utils/data";
 import { Icon } from "../Shared/Icon";
 
-type PluginSettings = Record<string, Record<string, unknown>>;
+type PluginConfigs = Record<string, Record<string, unknown>>;
+
 export interface ISettingsContextState {
   loading: boolean;
   error: ApolloError | undefined;
@@ -32,7 +33,7 @@ export interface ISettingsContextState {
   scraping: GQL.ConfigScrapingInput;
   dlna: GQL.ConfigDlnaInput;
   ui: IUIConfig;
-  plugins: PluginSettings;
+  plugins: PluginConfigs;
 
   advancedMode: boolean;
 
@@ -137,8 +138,8 @@ export const SettingsContext: React.FC = ({ children }) => {
   const [pendingUI, setPendingUI] = useState<{}>();
   const [updateUIConfig] = useConfigureUI();
 
-  const [plugins, setPlugins] = useState<PluginSettings>({});
-  const [pendingPlugins, setPendingPlugins] = useState<PluginSettings>();
+  const [plugins, setPlugins] = useState<PluginConfigs>({});
+  const [pendingPlugins, setPendingPlugins] = useState<PluginConfigs>();
   const [updatePluginConfig] = useConfigurePlugin();
 
   const [updateSuccess, setUpdateSuccess] = useState<boolean>();
@@ -479,7 +480,7 @@ export const SettingsContext: React.FC = ({ children }) => {
   }
 
   // saves the configuration if no further changes are made after a half second
-  const savePluginConfig = useDebounce(async (input: PluginSettings) => {
+  const savePluginConfig = useDebounce(async (input: PluginConfigs) => {
     try {
       setUpdateSuccess(undefined);
 

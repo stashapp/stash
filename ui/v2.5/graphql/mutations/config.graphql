@@ -36,7 +36,7 @@ mutation ConfigureDefaults($input: ConfigDefaultSettingsInput!) {
   }
 }
 
-mutation ConfigureUI($input: Map!) {
+mutation ConfigureUI($input: UIConfig!) {
   configureUI(input: $input)
 }
 
