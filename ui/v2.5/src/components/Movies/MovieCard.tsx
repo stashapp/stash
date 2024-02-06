@@ -1,7 +1,7 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Button, ButtonGroup } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
-import { GridCard } from "../Shared/GridCard";
+import { GridCard, calculateCardWidth } from "../Shared/GridCard";
 import { HoverPopover } from "../Shared/HoverPopover";
 import { Icon } from "../Shared/Icon";
 import { SceneLink } from "../Shared/TagLink";
@@ -9,9 +9,11 @@ import { TruncatedText } from "../Shared/TruncatedText";
 import { FormattedMessage } from "react-intl";
 import { RatingBanner } from "../Shared/RatingBanner";
 import { faPlayCircle } from "@fortawesome/free-solid-svg-icons";
+import ScreenUtils from "src/utils/screen";
 
 interface IProps {
   movie: GQL.MovieDataFragment;
+  containerWidth?: number;
   sceneIndex?: number;
   selecting?: boolean;
   selected?: boolean;
@@ -19,6 +21,19 @@ interface IProps {
 }
 
 export const MovieCard: React.FC<IProps> = (props: IProps) => {
+  const [cardWidth, setCardWidth] = useState<number>();
+
+  useEffect(() => {
+    if (!props.containerWidth || ScreenUtils.isMobile()) return;
+
+    let preferredCardWidth = 250;
+    let fittedCardWidth = calculateCardWidth(
+      props.containerWidth,
+      preferredCardWidth!
+    );
+    setCardWidth(fittedCardWidth);
+  }, [props, props.containerWidth]);
+
   function maybeRenderSceneNumber() {
     if (!props.sceneIndex) return;
 
@@ -71,6 +86,7 @@ export const MovieCard: React.FC<IProps> = (props: IProps) => {
     <GridCard
       className="movie-card"
       url={`/movies/${props.movie.id}`}
+      width={cardWidth}
       title={props.movie.name}
       linkClassName="movie-card-header"
       image={

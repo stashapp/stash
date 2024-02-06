@@ -4,6 +4,7 @@ import React, {
   useMemo,
   MouseEvent,
   useContext,
+  useRef,
 } from "react";
 import { FormattedNumber, useIntl } from "react-intl";
 import cloneDeep from "lodash-es/cloneDeep";
@@ -32,6 +33,7 @@ import { objectTitle } from "src/core/files";
 import TextUtils from "src/utils/text";
 import { ConfigurationContext } from "src/hooks/Config";
 import { IUIConfig } from "src/core/config";
+import { useContainerDimensions } from "../Shared/GridCard";
 
 interface IImageWallProps {
   images: GQL.SlimImageDataFragment[];
@@ -196,6 +198,9 @@ const ImageListImages: React.FC<IImageListImages> = ({
     ev.preventDefault();
   }
 
+  const componentRef = useRef<HTMLDivElement>(null);
+  const { width } = useContainerDimensions(componentRef);
+
   function renderImageCard(
     index: number,
     image: GQL.SlimImageDataFragment,
@@ -204,6 +209,7 @@ const ImageListImages: React.FC<IImageListImages> = ({
     return (
       <ImageCard
         key={image.id}
+        containerWidth={width}
         image={image}
         zoomIndex={zoomIndex}
         selecting={selectedIds.size > 0}
@@ -220,7 +226,7 @@ const ImageListImages: React.FC<IImageListImages> = ({
 
   if (filter.displayMode === DisplayMode.Grid) {
     return (
-      <div className="row justify-content-center">
+      <div className="row justify-content-center" ref={componentRef}>
         {images.map((image, index) =>
           renderImageCard(index, image, filter.zoomIndex)
         )}
