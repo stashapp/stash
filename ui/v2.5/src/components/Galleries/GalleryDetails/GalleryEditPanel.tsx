@@ -263,6 +263,7 @@ export const GalleryEditPanel: React.FC<IProps> = ({
     return (
       <GalleryScrapeDialog
         gallery={currentGallery}
+        galleryStudio={studio}
         galleryTags={tags}
         galleryPerformers={performers}
         scraped={scrapedGallery}

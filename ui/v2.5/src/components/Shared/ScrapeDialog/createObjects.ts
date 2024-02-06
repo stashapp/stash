@@ -41,8 +41,8 @@ function useCreateObject<T>(
 }
 
 interface IUseCreateNewStudioProps {
-  scrapeResult: ScrapeResult<string>;
-  setScrapeResult: (scrapeResult: ScrapeResult<string>) => void;
+  scrapeResult: ScrapeResult<GQL.ScrapedStudio>;
+  setScrapeResult: (scrapeResult: ScrapeResult<GQL.ScrapedStudio>) => void;
   setNewObject: (newObject: GQL.ScrapedStudio | undefined) => void;
 }
 
@@ -62,7 +62,12 @@ export function useCreateScrapedStudio(props: IUseCreateNewStudioProps) {
     });
 
     // set the new studio as the value
-    setScrapeResult(scrapeResult.cloneWithValue(result.data!.studioCreate!.id));
+    setScrapeResult(
+      scrapeResult.cloneWithValue({
+        stored_id: result.data!.studioCreate!.id,
+        name: toCreate.name,
+      })
+    );
     setNewObject(undefined);
   }
 

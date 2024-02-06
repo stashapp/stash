@@ -401,6 +401,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
     return (
       <SceneScrapeDialog
         scene={currentScene}
+        sceneStudio={studio}
         sceneTags={tags}
         scenePerformers={performers}
         scraped={scrapedScene}
