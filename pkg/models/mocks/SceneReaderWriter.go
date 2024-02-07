@@ -291,6 +291,27 @@ func (_m *SceneReaderWriter) CountMissingOSHash(ctx context.Context) (int, error
 	return r0, r1
 }
 
+// CountViews provides a mock function with given fields: ctx, id
+func (_m *SceneReaderWriter) CountViews(ctx context.Context, id int) (int, error) {
+	ret := _m.Called(ctx, id)
+
+	var r0 int
+	if rf, ok := ret.Get(0).(func(context.Context, int) int); ok {
+		r0 = rf(ctx, id)
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, id)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Create provides a mock function with given fields: ctx, newScene, fileIDs
 func (_m *SceneReaderWriter) Create(ctx context.Context, newScene *models.Scene, fileIDs []models.FileID) error {
 	ret := _m.Called(ctx, newScene, fileIDs)
@@ -771,6 +792,121 @@ func (_m *SceneReaderWriter) GetManyFileIDs(ctx context.Context, ids []int) ([][
 	return r0, r1
 }
 
+// GetManyLastViewed provides a mock function with given fields: ctx, ids
+func (_m *SceneReaderWriter) GetManyLastViewed(ctx context.Context, ids []int) ([]*time.Time, error) {
+	ret := _m.Called(ctx, ids)
+
+	var r0 []*time.Time
+	if rf, ok := ret.Get(0).(func(context.Context, []int) []*time.Time); ok {
+		r0 = rf(ctx, ids)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*time.Time)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, []int) error); ok {
+		r1 = rf(ctx, ids)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetManyOCount provides a mock function with given fields: ctx, ids
+func (_m *SceneReaderWriter) GetManyOCount(ctx context.Context, ids []int) ([]int, error) {
+	ret := _m.Called(ctx, ids)
+
+	var r0 []int
+	if rf, ok := ret.Get(0).(func(context.Context, []int) []int); ok {
+		r0 = rf(ctx, ids)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]int)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, []int) error); ok {
+		r1 = rf(ctx, ids)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetManyODates provides a mock function with given fields: ctx, ids
+func (_m *SceneReaderWriter) GetManyODates(ctx context.Context, ids []int) ([][]time.Time, error) {
+	ret := _m.Called(ctx, ids)
+
+	var r0 [][]time.Time
+	if rf, ok := ret.Get(0).(func(context.Context, []int) [][]time.Time); ok {
+		r0 = rf(ctx, ids)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([][]time.Time)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, []int) error); ok {
+		r1 = rf(ctx, ids)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetManyViewCount provides a mock function with given fields: ctx, ids
+func (_m *SceneReaderWriter) GetManyViewCount(ctx context.Context, ids []int) ([]int, error) {
+	ret := _m.Called(ctx, ids)
+
+	var r0 []int
+	if rf, ok := ret.Get(0).(func(context.Context, []int) []int); ok {
+		r0 = rf(ctx, ids)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]int)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, []int) error); ok {
+		r1 = rf(ctx, ids)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetManyViewDates provides a mock function with given fields: ctx, ids
+func (_m *SceneReaderWriter) GetManyViewDates(ctx context.Context, ids []int) ([][]time.Time, error) {
+	ret := _m.Called(ctx, ids)
+
+	var r0 [][]time.Time
+	if rf, ok := ret.Get(0).(func(context.Context, []int) [][]time.Time); ok {
+		r0 = rf(ctx, ids)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([][]time.Time)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, []int) error); ok {
+		r1 = rf(ctx, ids)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetMovies provides a mock function with given fields: ctx, id
 func (_m *SceneReaderWriter) GetMovies(ctx context.Context, id int) ([]models.MoviesScenes, error) {
 	ret := _m.Called(ctx, id)
@@ -782,6 +918,27 @@ func (_m *SceneReaderWriter) GetMovies(ctx context.Context, id int) ([]models.Mo
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]models.MoviesScenes)
 		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, id)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetOCount provides a mock function with given fields: ctx, id
+func (_m *SceneReaderWriter) GetOCount(ctx context.Context, id int) (int, error) {
+	ret := _m.Called(ctx, id)
+
+	var r0 int
+	if rf, ok := ret.Get(0).(func(context.Context, int) int); ok {
+		r0 = rf(ctx, id)
+	} else {
+		r0 = ret.Get(0).(int)
 	}
 
 	var r1 error

@@ -125,17 +125,15 @@ func getHistory(historyJSON []json.JSONTime, count int, last json.JSONTime, crea
 		for _, d := range historyJSON {
 			ret = append(ret, d.GetTime())
 		}
-	} else {
-		if count > 0 {
-			createdAt := createdAt.GetTime()
-			for j := 0; j < count; j++ {
-				t := createdAt
-				if j+1 == count && !last.IsZero() {
-					// last one, use last play date
-					t = last.GetTime()
-				}
-				ret = append(ret, t)
+	} else if count > 0 {
+		createdAt := createdAt.GetTime()
+		for j := 0; j < count; j++ {
+			t := createdAt
+			if j+1 == count && !last.IsZero() {
+				// last one, use last play date
+				t = last.GetTime()
 			}
+			ret = append(ret, t)
 		}
 	}
 

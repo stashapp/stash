@@ -322,53 +322,60 @@ func (r *sceneResolver) Urls(ctx context.Context, obj *models.Scene) ([]string, 
 }
 
 func (r *sceneResolver) OCounter(ctx context.Context, obj *models.Scene) (*int, error) {
-	panic("not implemented")
+	ret, err := loaders.From(ctx).SceneOCount.Load(obj.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &ret, nil
 }
 
 func (r *sceneResolver) LastPlayedAt(ctx context.Context, obj *models.Scene) (*time.Time, error) {
-	panic("not implemented")
+	ret, err := loaders.From(ctx).SceneLastPlayed.Load(obj.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	return ret, nil
 }
 
 func (r *sceneResolver) PlayCount(ctx context.Context, obj *models.Scene) (*int, error) {
-	panic("not implemented")
+	ret, err := loaders.From(ctx).ScenePlayCount.Load(obj.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &ret, nil
 }
 
 func (r *sceneResolver) PlayHistory(ctx context.Context, obj *models.Scene) ([]*time.Time, error) {
-	panic("not implemented")
-	// if !obj.PlayDates.Loaded() {
-	// 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-	// 		return obj.LoadPlayDates(ctx, r.repository.Scene)
-	// 	}); err != nil {
-	// 		return nil, err
-	// 	}
-	// }
+	ret, err := loaders.From(ctx).ScenePlayHistory.Load(obj.ID)
+	if err != nil {
+		return nil, err
+	}
 
-	// playDates := obj.PlayDates.List()
-	// ptrPlayDates := make([]*string, len(playDates))
-	// for i, date := range playDates {
-	// 	ptrDate := date
-	// 	ptrPlayDates[i] = &ptrDate
-	// }
+	// convert to pointer slice
+	ptrRet := make([]*time.Time, len(ret))
+	for i, t := range ret {
+		tt := t
+		ptrRet[i] = &tt
+	}
 
-	// return ptrPlayDates, nil
+	return ptrRet, nil
 }
 
 func (r *sceneResolver) OHistory(ctx context.Context, obj *models.Scene) ([]*time.Time, error) {
-	panic("not implemented")
-	// if !obj.ODates.Loaded() {
-	// 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-	// 		return obj.LoadODates(ctx, r.repository.Scene)
-	// 	}); err != nil {
-	// 		return nil, err
-	// 	}
-	// }
+	ret, err := loaders.From(ctx).SceneOHistory.Load(obj.ID)
+	if err != nil {
+		return nil, err
+	}
 
-	// oDates := obj.ODates.List()
-	// ptrODates := make([]*string, len(oDates))
-	// for i, date := range oDates {
-	// 	ptrDate := date
-	// 	ptrODates[i] = &ptrDate
-	// }
+	// convert to pointer slice
+	ptrRet := make([]*time.Time, len(ret))
+	for i, t := range ret {
+		tt := t
+		ptrRet[i] = &tt
+	}
 
-	// return ptrODates, nil
+	return ptrRet, nil
 }

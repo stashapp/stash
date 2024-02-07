@@ -13,12 +13,25 @@ func (qb *viewDateManager) GetViewDates(ctx context.Context, id int) ([]time.Tim
 	return qb.tableMgr.getDates(ctx, id)
 }
 
+func (qb *viewDateManager) GetManyViewDates(ctx context.Context, ids []int) ([][]time.Time, error) {
+	return qb.tableMgr.getManyDates(ctx, ids)
+}
+
 func (qb *viewDateManager) CountViews(ctx context.Context, id int) (int, error) {
 	return qb.tableMgr.getCount(ctx, id)
 }
 
+func (qb *viewDateManager) GetManyViewCount(ctx context.Context, ids []int) ([]int, error) {
+	return qb.tableMgr.getManyCount(ctx, ids)
+}
+
 func (qb *viewDateManager) LastView(ctx context.Context, id int) (*time.Time, error) {
 	return qb.tableMgr.getLastDate(ctx, id)
+}
+
+func (qb *viewDateManager) GetManyLastViewed(ctx context.Context, ids []int) ([]*time.Time, error) {
+	return qb.tableMgr.getManyLastDate(ctx, ids)
+
 }
 
 func (qb *viewDateManager) AddView(ctx context.Context, id int, date *time.Time) (int, error) {
@@ -41,8 +54,16 @@ func (qb *oDateManager) GetODates(ctx context.Context, id int) ([]time.Time, err
 	return qb.tableMgr.getDates(ctx, id)
 }
 
+func (qb *oDateManager) GetManyODates(ctx context.Context, ids []int) ([][]time.Time, error) {
+	return qb.tableMgr.getManyDates(ctx, ids)
+}
+
 func (qb *oDateManager) GetOCount(ctx context.Context, id int) (int, error) {
 	return qb.tableMgr.getCount(ctx, id)
+}
+
+func (qb *oDateManager) GetManyOCount(ctx context.Context, ids []int) ([]int, error) {
+	return qb.tableMgr.getManyCount(ctx, ids)
 }
 
 func (qb *oDateManager) AddO(ctx context.Context, id int, date *time.Time) (int, error) {

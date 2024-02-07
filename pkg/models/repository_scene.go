@@ -72,11 +72,18 @@ type SceneCreatorUpdater interface {
 }
 
 type ViewDateReader interface {
+	CountViews(ctx context.Context, id int) (int, error)
+	GetManyViewCount(ctx context.Context, ids []int) ([]int, error)
 	GetViewDates(ctx context.Context, relatedID int) ([]time.Time, error)
+	GetManyViewDates(ctx context.Context, ids []int) ([][]time.Time, error)
+	GetManyLastViewed(ctx context.Context, ids []int) ([]*time.Time, error)
 }
 
 type ODateReader interface {
+	GetOCount(ctx context.Context, id int) (int, error)
+	GetManyOCount(ctx context.Context, ids []int) ([]int, error)
 	GetODates(ctx context.Context, relatedID int) ([]time.Time, error)
+	GetManyODates(ctx context.Context, ids []int) ([][]time.Time, error)
 }
 
 // SceneReader provides all methods to read scenes.
