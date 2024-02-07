@@ -5,6 +5,8 @@ import (
 	"time"
 )
 
+const TimestampFormat = time.RFC3339
+
 // Timestamp represents a time stored in RFC3339 format.
 type Timestamp struct {
 	Timestamp time.Time
@@ -18,7 +20,7 @@ func (t *Timestamp) Scan(value interface{}) error {
 
 // Value implements the driver Valuer interface.
 func (t Timestamp) Value() (driver.Value, error) {
-	return t.Timestamp.Format(time.RFC3339), nil
+	return t.Timestamp.Format(TimestampFormat), nil
 }
 
 // NullTimestamp represents a nullable time stored in RFC3339 format.
@@ -47,7 +49,7 @@ func (t NullTimestamp) Value() (driver.Value, error) {
 		return nil, nil
 	}
 
-	return t.Timestamp.Format(time.RFC3339), nil
+	return t.Timestamp.Format(TimestampFormat), nil
 }
 
 func (t NullTimestamp) TimePtr() *time.Time {

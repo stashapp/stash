@@ -791,15 +791,42 @@ func (t *viewHistoryTable) getDates(ctx context.Context, id int) ([]time.Time, e
 	const single = false
 	var ret []time.Time
 	if err := queryFunc(ctx, q, single, func(rows *sqlx.Rows) error {
-		var date string
+		var date Timestamp
 		if err := rows.Scan(&date); err != nil {
 			return err
 		}
-		t, err := time.Parse(time.RFC3339Nano, date)
-		if err != nil {
-			return fmt.Errorf("parsing date %v: %w", date, err)
+		ret = append(ret, date.Timestamp)
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+}
+
+func (t *viewHistoryTable) getManyDates(ctx context.Context, ids []int) ([][]time.Time, error) {
+	table := t.table.table
+
+	q := dialect.Select(
+		t.idColumn,
+		t.dateColumn,
+	).From(table).Where(
+		t.idColumn.In(ids),
+	).Order(t.dateColumn.Desc())
+
+	ret := make([][]time.Time, len(ids))
+	idToIndex := idToIndexMap(ids)
+
+	const single = false
+	if err := queryFunc(ctx, q, single, func(rows *sqlx.Rows) error {
+		var id int
+		var date Timestamp
+		if err := rows.Scan(&id, &date); err != nil {
+			return err
 		}
-		ret = append(ret, t)
+
+		idx := idToIndex[id]
+		ret[idx] = append(ret[idx], date.Timestamp)
 		return nil
 	}); err != nil {
 		return nil, err
@@ -814,17 +841,51 @@ func (t *viewHistoryTable) getLastDate(ctx context.Context, id int) (*time.Time,
 		t.idColumn.Eq(id),
 	).Order(t.dateColumn.Desc()).Limit(1)
 
-	var date string
+	var date NullTimestamp
 	if err := querySimple(ctx, q, &date); err != nil {
 		return nil, err
 	}
 
-	ret, err := time.Parse(time.RFC3339Nano, date)
-	if err != nil {
-		return nil, fmt.Errorf("parsing date %v: %w", date, err)
+	return date.TimePtr(), nil
+}
+
+func (t *viewHistoryTable) getManyLastDate(ctx context.Context, ids []int) ([]*time.Time, error) {
+	table := t.table.table
+
+	q := dialect.Select(
+		t.idColumn,
+		goqu.MAX(t.dateColumn),
+	).From(table).Where(
+		t.idColumn.In(ids),
+	).GroupBy(t.idColumn)
+
+	ret := make([]*time.Time, len(ids))
+	idToIndex := idToIndexMap(ids)
+
+	const single = false
+	if err := queryFunc(ctx, q, single, func(rows *sqlx.Rows) error {
+		var id int
+
+		// MAX appears to return a string, so handle it manually
+		var dateString string
+
+		if err := rows.Scan(&id, &dateString); err != nil {
+			return err
+		}
+
+		t, err := time.Parse(TimestampFormat, dateString)
+		if err != nil {
+			return fmt.Errorf("parsing date %v: %w", dateString, err)
+		}
+
+		idx := idToIndex[id]
+		ret[idx] = &t
+		return nil
+	}); err != nil {
+		return nil, err
 	}
 
-	return &ret, nil
+	return ret, nil
 }
 
 func (t *viewHistoryTable) getCount(ctx context.Context, id int) (int, error) {
@@ -845,17 +906,47 @@ func (t *viewHistoryTable) getCount(ctx context.Context, id int) (int, error) {
 	return ret, nil
 }
 
+func (t *viewHistoryTable) getManyCount(ctx context.Context, ids []int) ([]int, error) {
+	table := t.table.table
+
+	q := dialect.Select(
+		t.idColumn,
+		goqu.COUNT(t.dateColumn),
+	).From(table).Where(
+		t.idColumn.In(ids),
+	).GroupBy(t.idColumn)
+
+	ret := make([]int, len(ids))
+	idToIndex := idToIndexMap(ids)
+
+	const single = false
+	if err := queryFunc(ctx, q, single, func(rows *sqlx.Rows) error {
+		var id int
+		var count int
+		if err := rows.Scan(&id, &count); err != nil {
+			return err
+		}
+
+		idx := idToIndex[id]
+		ret[idx] = count
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+}
+
 func (t *viewHistoryTable) addDate(ctx context.Context, id int, date *time.Time) (int, error) {
 	table := t.table.table
-	var dateString string
-	if date != nil {
-		dateString = date.Format(time.RFC3339Nano)
-	} else {
-		dateString = time.Now().Local().Format(time.RFC3339Nano)
+
+	if date == nil {
+		now := time.Now()
+		date = &now
 	}
 
 	q := dialect.Insert(table).Cols(t.idColumn.GetCol(), t.dateColumn.GetCol()).Vals(
-		goqu.Vals{id, dateString},
+		goqu.Vals{id, Timestamp{*date}},
 	)
 
 	if _, err := exec(ctx, q); err != nil {
@@ -871,7 +962,7 @@ func (t *viewHistoryTable) deleteDate(ctx context.Context, id int, date *time.Ti
 	if date != nil {
 		subquery = dialect.Select("rowid").From(table).Where(
 			t.idColumn.Eq(id),
-			t.dateColumn.Eq(date.Format(time.RFC3339Nano)),
+			t.dateColumn.Eq(Timestamp{*date}),
 		).Limit(1)
 	} else {
 		// delete the most recent
