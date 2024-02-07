@@ -1,106 +1,62 @@
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
+import { Counter } from "src/components/Shared/Counter";
 import * as GQL from "src/core/generated-graphql";
 import TextUtils from "src/utils/text";
+
+const History: React.FC<{
+  className?: string;
+  history: string[];
+  noneID: string;
+}> = ({ className, history, noneID }) => {
+  const intl = useIntl();
+
+  if (history.length === 0) {
+    return <FormattedMessage id={noneID} />;
+  }
+
+  return (
+    <ul className={className}>
+      {history.map((playdate, index) => (
+        <li key={index}>{TextUtils.formatDateTime(intl, playdate)}</li>
+      ))}
+    </ul>
+  );
+};
 
 interface ISceneHistoryProps {
   scene: GQL.SceneDataFragment;
 }
 
-export const SceneHistoryPanel: React.FC<ISceneHistoryProps> = (props) => {
-  const intl = useIntl();
+export const SceneHistoryPanel: React.FC<ISceneHistoryProps> = ({ scene }) => {
+  const playHistory = (scene.play_history ?? []).filter(
+    (h) => h != null
+  ) as string[];
+  const oHistory = (scene.o_history ?? []).filter((h) => h != null) as string[];
 
   return (
-    <>
-      {/* Could replace these play/ocount displays with data from the scenes_playdates/odates table once accessible in GraphQL */}
-      {/* Could also check then if the recorded dates are the same as scene.created_at then that they are 'Estimated Play Date' */}
-      <div className="row">
-        <div className="col-12">
-          <h5>
-            <FormattedMessage id="play_history" />{" "}
-          </h5>
-          {props.scene.playdates && props.scene.playdates.length > 0 ? (
-            props.scene.playdates.map((playdate, index) => (
-              <h6 key={index}>
-                <FormattedMessage id="playdate_recorded" />
-                {": "}
-                {playdate && TextUtils.formatDateTime(intl, playdate)}
-              </h6>
-            ))
-          ) : props.scene.play_count != null && props.scene.play_count !== 0 ? (
-            <>
-              {Array.from({ length: props.scene.play_count - 1 }).map(
-                (_, index) => (
-                  <h6 key={index}>
-                    <FormattedMessage id="playdate_recorded" />
-                  </h6>
-                )
-              )}
-              {props.scene.last_played_at && (
-                <h6>
-                  <FormattedMessage id="playdate_recorded" />
-                  {": "}
-                  {TextUtils.formatDateTime(intl, props.scene.last_played_at)}
-                </h6>
-              )}
-            </>
-          ) : props.scene.play_count === 0 ? (
-            <h6>
-              <FormattedMessage id="playdate_recorded_no" />
-            </h6>
-          ) : (
-            <h6>N/A</h6>
-          )}
-          <h6>
-            {/* Could make this a toggle if Track Activity is off*/}
-            <FormattedMessage id="media_info.play_duration" />
-            :&nbsp;
-            {TextUtils.secondsToTimestamp(props.scene.play_duration ?? 0)}
-          </h6>
-        </div>
+    <div>
+      <div className="play-history">
+        <h5>
+          <FormattedMessage id="play_history" />
+          <Counter count={playHistory.length} hideZero hideOne />
+        </h5>
+        <History history={playHistory ?? []} noneID="playdate_recorded_no" />
+        <h6>
+          <FormattedMessage id="media_info.play_duration" />
+          :&nbsp;
+          {TextUtils.secondsToTimestamp(scene.play_duration ?? 0)}
+        </h6>
       </div>
-      <div className="row">
-        <div className="col-12">
-          <h5>
-            <FormattedMessage id="o_history" />{" "}
-          </h5>
-          {props.scene.odates && props.scene.odates.length > 0 ? (
-            props.scene.odates.map((odate, index) => (
-              <h6 key={index}>
-                <FormattedMessage id="odate_recorded" />
-                {": "}
-                {odate && TextUtils.formatDateTime(intl, odate)}
-              </h6>
-            ))
-          ) : props.scene.o_counter != null && props.scene.o_counter !== 0 ? (
-            <>
-              {Array.from({ length: props.scene.o_counter - 1 }).map(
-                (_, index) => (
-                  <h6 key={index}>
-                    <FormattedMessage id="odate_recorded" />
-                  </h6>
-                )
-              )}
-              {props.scene.odates && (
-                <h6>
-                  <FormattedMessage id="odate_recorded" />
-                  {": "}
-                  {props.scene.odates && props.scene.odates.filter(Boolean).map((odate) => odate && TextUtils.formatDateTime(intl, odate)).join(", ")}
-                </h6>
-              )}
-            </>
-          ) : props.scene.o_counter === 0 ? (
-            <h6>
-              <FormattedMessage id="odate_recorded_no" />
-            </h6>
-          ) : (
-            <h6>N/A</h6>
-          )}
-        </div>
+      <div className="o-history">
+        <h5>
+          <FormattedMessage id="o_history" />
+          <Counter count={oHistory.length} hideZero />
+        </h5>
+        <History history={oHistory} noneID="odate_recorded_no" />
       </div>
-    </>
+    </div>
   );
 };
-
 
 export default SceneHistoryPanel;

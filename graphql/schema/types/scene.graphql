@@ -122,7 +122,8 @@ input SceneUpdateInput {
   date: String
   # rating expressed as 1-100
   rating100: Int
-  o_counter: Int @deprecated(reason: "Unsupported - Use sceneIncrementO/sceneDecrementO")
+  o_counter: Int
+    @deprecated(reason: "Unsupported - Use sceneIncrementO/sceneDecrementO")
   organized: Boolean
   studio_id: ID
   gallery_ids: [ID!]
@@ -138,7 +139,10 @@ input SceneUpdateInput {
   "The total time a scene has spent playing"
   play_duration: Float
   "The number ot times a scene has been played"
-  play_count: Int @deprecated(reason: "Unsupported - Use sceneIncrementPlayCount/sceneDecrementPlayCount")
+  play_count: Int
+    @deprecated(
+      reason: "Unsupported - Use sceneIncrementPlayCount/sceneDecrementPlayCount"
+    )
 
   primary_file_id: ID
 }

@@ -546,7 +546,7 @@ export const useScenesDestroy = (input: GQL.ScenesDestroyInput) =>
     },
   });
 
-  type ScenePlayMutation =
+type ScenePlayMutation =
   | GQL.SceneIncrementPlayCountMutation
   | GQL.SceneDecrementPlayCountMutation
   | GQL.SceneResetPlayCountMutation;

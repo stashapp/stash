@@ -242,9 +242,9 @@ type Mutation {
 
   "Increments the play count for the scene. Uses the current time if not provided. Returns the new play count value."
   sceneIncrementPlayCount(id: ID!, time: Time): Int!
-  """Decrements the play count for the scene, removing the specific time or the last recorded time if not provided. Returns the new play count value."""
+  "Decrements the play count for the scene, removing the specific time or the last recorded time if not provided. Returns the new play count value."
   sceneDecrementPlayCount(id: ID!, time: Time): Int!
-  """Resets the play count for a scene to 0. Returns the new play count value."""
+  "Resets the play count for a scene to 0. Returns the new play count value."
   sceneResetPlayCount(id: ID!): Int!
 
   "Generates screenshot at specified time in seconds. Leave empty to generate default screenshot"

@@ -536,9 +536,7 @@ const ScenePage: React.FC<IProps> = ({
           />
         </Tab.Pane>
         <Tab.Pane eventKey="scene-history-panel">
-          <SceneHistoryPanel
-            scene={scene}
-          />
+          <SceneHistoryPanel scene={scene} />
         </Tab.Pane>
       </Tab.Content>
     </Tab.Container>
