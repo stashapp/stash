@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/doug-martin/goqu/v9"
 	"github.com/doug-martin/goqu/v9/exp"
@@ -59,68 +60,6 @@ func (t *table) updateByID(ctx context.Context, id interface{}, o interface{}) e
 
 	if _, err := exec(ctx, q); err != nil {
 		return fmt.Errorf("updating %s: %w", t.table.GetTable(), err)
-	}
-
-	return nil
-}
-
-func (t *table) addODateByID(ctx context.Context, id interface{}, o interface{}) error {
-	q := dialect.Insert("scenes_odates").Rows(o)
-
-	if _, err := exec(ctx, q); err != nil {
-		return fmt.Errorf("inserting into %s: %w", "scenes_odates", err)
-	}
-
-	return nil
-}
-
-func (t *table) deleteODateByID(ctx context.Context, sceneID interface{}) error {
-	subquery := dialect.Select("id").From("scenes_odates").Where(goqu.I("scene_id").Eq(sceneID)).Order(goqu.I("id").Desc()).Limit(1)
-	q := dialect.Delete("scenes_odates").Where(goqu.I("id").Eq(subquery))
-
-	if _, err := exec(ctx, q); err != nil {
-		return fmt.Errorf("deleting from %s: %w", "scenes_odates", err)
-	}
-
-	return nil
-}
-
-func (t *table) resetODateByID(ctx context.Context, sceneID interface{}) error {
-	q := dialect.Delete("scenes_odates").Where(goqu.I("scene_id").Eq(sceneID))
-
-	if _, err := exec(ctx, q); err != nil {
-		return fmt.Errorf("resetting odates for scene_id %v: %w", sceneID, err)
-	}
-
-	return nil
-}
-
-func (t *table) addPlayDateByID(ctx context.Context, id interface{}, o interface{}) error {
-	q := dialect.Insert("scenes_playdates").Rows(o)
-
-	if _, err := exec(ctx, q); err != nil {
-		return fmt.Errorf("inserting into %s: %w", "scenes_playdates", err)
-	}
-
-	return nil
-}
-
-func (t *table) deletePlayDateByID(ctx context.Context, sceneID interface{}) error {
-	subquery := dialect.Select("id").From("scenes_playdates").Where(goqu.I("scene_id").Eq(sceneID)).Order(goqu.I("id").Desc()).Limit(1)
-	q := dialect.Delete("scenes_playdates").Where(goqu.I("id").Eq(subquery))
-
-	if _, err := exec(ctx, q); err != nil {
-		return fmt.Errorf("deleting from %s: %w", "scenes_playdates", err)
-	}
-
-	return nil
-}
-
-func (t *table) resetPlayDateByID(ctx context.Context, sceneID interface{}) error {
-	q := dialect.Delete("scenes_playdates").Where(goqu.I("scene_id").Eq(sceneID))
-
-	if _, err := exec(ctx, q); err != nil {
-		return fmt.Errorf("resetting playdates for scene_id %v: %w", sceneID, err)
 	}
 
 	return nil
@@ -538,12 +477,7 @@ type orderedValueTable[T comparable] struct {
 }
 
 func (t *orderedValueTable[T]) positionColumn() exp.IdentifierExpression {
-	var positionColumn string
-	if t.table.table == scenesPlayDatesJoinTable || t.table.table == scenesODatesJoinTable {
-		positionColumn = "id"
-	} else {
-		positionColumn = "position"
-	}
+	const positionColumn = "position"
 	return t.table.table.Col(positionColumn)
 }
 
@@ -838,6 +772,132 @@ func (t *relatedFilesTable) setPrimary(ctx context.Context, id int, fileID model
 	}
 
 	return nil
+}
+
+type viewHistoryTable struct {
+	table
+	dateColumn exp.IdentifierExpression
+}
+
+func (t *viewHistoryTable) getDates(ctx context.Context, id int) ([]time.Time, error) {
+	table := t.table.table
+
+	q := dialect.Select(
+		t.dateColumn,
+	).From(table).Where(
+		t.idColumn.Eq(id),
+	).Order(t.dateColumn.Desc())
+
+	const single = false
+	var ret []time.Time
+	if err := queryFunc(ctx, q, single, func(rows *sqlx.Rows) error {
+		var date string
+		if err := rows.Scan(&date); err != nil {
+			return err
+		}
+		t, err := time.Parse(time.RFC3339Nano, date)
+		if err != nil {
+			return fmt.Errorf("parsing date %v: %w", date, err)
+		}
+		ret = append(ret, t)
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+}
+
+func (t *viewHistoryTable) getLastDate(ctx context.Context, id int) (*time.Time, error) {
+	table := t.table.table
+	q := dialect.Select(t.dateColumn).From(table).Where(
+		t.idColumn.Eq(id),
+	).Order(t.dateColumn.Desc()).Limit(1)
+
+	var date string
+	if err := querySimple(ctx, q, &date); err != nil {
+		return nil, err
+	}
+
+	ret, err := time.Parse(time.RFC3339Nano, date)
+	if err != nil {
+		return nil, fmt.Errorf("parsing date %v: %w", date, err)
+	}
+
+	return &ret, nil
+}
+
+func (t *viewHistoryTable) getCount(ctx context.Context, id int) (int, error) {
+	table := t.table.table
+	q := dialect.Select(goqu.COUNT("*")).From(table).Where(t.idColumn.Eq(id))
+
+	const single = true
+	var ret int
+	if err := queryFunc(ctx, q, single, func(rows *sqlx.Rows) error {
+		if err := rows.Scan(&ret); err != nil {
+			return err
+		}
+		return nil
+	}); err != nil {
+		return 0, err
+	}
+
+	return ret, nil
+}
+
+func (t *viewHistoryTable) addDate(ctx context.Context, id int, date *time.Time) (int, error) {
+	table := t.table.table
+	var dateString string
+	if date != nil {
+		dateString = date.Format(time.RFC3339Nano)
+	} else {
+		dateString = time.Now().Local().Format(time.RFC3339Nano)
+	}
+
+	q := dialect.Insert(table).Cols(t.idColumn.GetCol(), t.dateColumn.GetCol()).Vals(
+		goqu.Vals{id, dateString},
+	)
+
+	if _, err := exec(ctx, q); err != nil {
+		return 0, fmt.Errorf("inserting into %s: %w", table.GetTable(), err)
+	}
+
+	return t.getCount(ctx, id)
+}
+
+func (t *viewHistoryTable) deleteDate(ctx context.Context, id int, date *time.Time) (int, error) {
+	table := t.table.table
+	var subquery *goqu.SelectDataset
+	if date != nil {
+		subquery = dialect.Select("rowid").From(table).Where(
+			t.idColumn.Eq(id),
+			t.dateColumn.Eq(date.Format(time.RFC3339Nano)),
+		).Limit(1)
+	} else {
+		// delete the most recent
+		subquery = dialect.Select("rowid").From(table).Where(
+			t.idColumn.Eq(id),
+		).Order(t.dateColumn.Desc()).Limit(1)
+	}
+
+	q := dialect.Delete(table).Where(goqu.I("rowid").Eq(subquery))
+
+	if _, err := exec(ctx, q); err != nil {
+		return 0, fmt.Errorf("deleting from %s: %w", table.GetTable(), err)
+	}
+
+	return t.getCount(ctx, id)
+}
+
+func (t *viewHistoryTable) deleteAllDates(ctx context.Context, id int) (int, error) {
+	table := t.table.table
+	q := dialect.Delete(table).Where(t.idColumn.Eq(id))
+
+	if _, err := exec(ctx, q); err != nil {
+		return 0, fmt.Errorf("resetting dates for id %v: %w", id, err)
+	}
+
+	return t.getCount(ctx, id)
 }
 
 type sqler interface {

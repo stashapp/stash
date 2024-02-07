@@ -5,9 +5,11 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/pkg/file"
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/scene"
@@ -169,8 +171,15 @@ func scenePartialFromInput(input models.SceneUpdateInput, translator changesetTr
 	updatedScene.Details = translator.optionalString(input.Details, "details")
 	updatedScene.Director = translator.optionalString(input.Director, "director")
 	updatedScene.Rating = translator.optionalInt(input.Rating100, "rating100")
-	updatedScene.OCounter = translator.optionalInt(input.OCounter, "o_counter")
-	updatedScene.PlayCount = translator.optionalInt(input.PlayCount, "play_count")
+
+	if input.OCounter != nil {
+		logger.Warnf("o_counter is deprecated and no longer supported, use sceneIncrementO/sceneDecrementO instead")
+	}
+
+	if input.PlayCount != nil {
+		logger.Warnf("play_count is deprecated and no longer supported, use sceneIncrementPlayCount/sceneDecrementPlayCount instead")
+	}
+
 	updatedScene.PlayDuration = translator.optionalFloat64(input.PlayDuration, "play_duration")
 	updatedScene.Organized = translator.optionalBool(input.Organized, "organized")
 	updatedScene.StashIDs = translator.updateStashIDs(input.StashIds, "stash_ids")
@@ -804,7 +813,7 @@ func (r *mutationResolver) SceneSaveActivity(ctx context.Context, id string, res
 	return ret, nil
 }
 
-func (r *mutationResolver) SceneIncrementPlayCount(ctx context.Context, id string) (ret int, err error) {
+func (r *mutationResolver) SceneIncrementPlayCount(ctx context.Context, id string, time *time.Time) (ret int, err error) {
 	sceneID, err := strconv.Atoi(id)
 	if err != nil {
 		return 0, fmt.Errorf("converting id: %w", err)
@@ -813,7 +822,7 @@ func (r *mutationResolver) SceneIncrementPlayCount(ctx context.Context, id strin
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Scene
 
-		ret, err = qb.IncrementWatchCount(ctx, sceneID)
+		ret, err = qb.AddView(ctx, sceneID, time)
 		return err
 	}); err != nil {
 		return 0, err
@@ -822,7 +831,7 @@ func (r *mutationResolver) SceneIncrementPlayCount(ctx context.Context, id strin
 	return ret, nil
 }
 
-func (r *mutationResolver) SceneDecrementPlayCount(ctx context.Context, id string) (ret int, err error) {
+func (r *mutationResolver) SceneDecrementPlayCount(ctx context.Context, id string, time *time.Time) (ret int, err error) {
 	sceneID, err := strconv.Atoi(id)
 	if err != nil {
 		return 0, err
@@ -831,7 +840,7 @@ func (r *mutationResolver) SceneDecrementPlayCount(ctx context.Context, id strin
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Scene
 
-		ret, err = qb.DecrementWatchCount(ctx, sceneID)
+		ret, err = qb.DeleteView(ctx, sceneID, time)
 		return err
 	}); err != nil {
 		return 0, err
@@ -849,7 +858,7 @@ func (r *mutationResolver) SceneResetPlayCount(ctx context.Context, id string) (
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Scene
 
-		ret, err = qb.ResetWatchCount(ctx, sceneID)
+		ret, err = qb.DeleteAllViews(ctx, sceneID)
 		return err
 	}); err != nil {
 		return 0, err
@@ -858,7 +867,7 @@ func (r *mutationResolver) SceneResetPlayCount(ctx context.Context, id string) (
 	return ret, nil
 }
 
-func (r *mutationResolver) SceneIncrementO(ctx context.Context, id string) (ret int, err error) {
+func (r *mutationResolver) SceneIncrementO(ctx context.Context, id string, time *time.Time) (ret int, err error) {
 	sceneID, err := strconv.Atoi(id)
 	if err != nil {
 		return 0, fmt.Errorf("converting id: %w", err)
@@ -867,7 +876,7 @@ func (r *mutationResolver) SceneIncrementO(ctx context.Context, id string) (ret 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Scene
 
-		ret, err = qb.IncrementOCounterDate(ctx, sceneID)
+		ret, err = qb.AddO(ctx, sceneID, time)
 		return err
 	}); err != nil {
 		return 0, err
@@ -876,7 +885,7 @@ func (r *mutationResolver) SceneIncrementO(ctx context.Context, id string) (ret 
 	return ret, nil
 }
 
-func (r *mutationResolver) SceneDecrementO(ctx context.Context, id string) (ret int, err error) {
+func (r *mutationResolver) SceneDecrementO(ctx context.Context, id string, time *time.Time) (ret int, err error) {
 	sceneID, err := strconv.Atoi(id)
 	if err != nil {
 		return 0, fmt.Errorf("converting id: %w", err)
@@ -885,7 +894,7 @@ func (r *mutationResolver) SceneDecrementO(ctx context.Context, id string) (ret 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Scene
 
-		ret, err = qb.DecrementOCounterDate(ctx, sceneID)
+		ret, err = qb.DeleteO(ctx, sceneID, time)
 		return err
 	}); err != nil {
 		return 0, err
@@ -903,7 +912,7 @@ func (r *mutationResolver) SceneResetO(ctx context.Context, id string) (ret int,
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Scene
 
-		ret, err = qb.ResetOCounterDate(ctx, sceneID)
+		ret, err = qb.ResetO(ctx, sceneID)
 		return err
 	}); err != nil {
 		return 0, err

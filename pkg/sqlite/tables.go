@@ -27,8 +27,6 @@ var (
 	scenesStashIDsJoinTable   = goqu.T("scene_stash_ids")
 	scenesMoviesJoinTable     = goqu.T(moviesScenesTable)
 	scenesURLsJoinTable       = goqu.T(scenesURLsTable)
-	scenesPlayDatesJoinTable  = goqu.T(scenesPlayDatesTable)
-	scenesODatesJoinTable     = goqu.T(scenesODatesTable)
 
 	performersAliasesJoinTable  = goqu.T(performersAliasesTable)
 	performersTagsJoinTable     = goqu.T(performersTagsTable)
@@ -146,32 +144,6 @@ var (
 		idColumn: goqu.T(sceneMarkerTable).Col(idColumn),
 	}
 
-	scenePlayDateTableMgr = &table{
-		table:    goqu.T(scenePlayDateTable),
-		idColumn: goqu.T(scenePlayDateTable).Col(idColumn),
-	}
-
-	scenesPlayDatesTableMgr = &orderedValueTable[string]{
-		table: table{
-			table:    scenesPlayDatesJoinTable,
-			idColumn: scenesPlayDatesJoinTable.Col(sceneIDColumn),
-		},
-		valueColumn: scenesPlayDatesJoinTable.Col(scenePlayDateColumn),
-	}
-
-	sceneODateTableMgr = &table{
-		table:    goqu.T(sceneODateTable),
-		idColumn: goqu.T(sceneODateTable).Col(idColumn),
-	}
-
-	scenesODatesTableMgr = &orderedValueTable[string]{
-		table: table{
-			table:    scenesODatesJoinTable,
-			idColumn: scenesODatesJoinTable.Col(sceneIDColumn),
-		},
-		valueColumn: scenesODatesJoinTable.Col(sceneODateColumn),
-	}
-
 	scenesFilesTableMgr = &relatedFilesTable{
 		table: table{
 			table:    scenesFilesJoinTable,
@@ -217,6 +189,22 @@ var (
 			idColumn: scenesURLsJoinTable.Col(sceneIDColumn),
 		},
 		valueColumn: scenesURLsJoinTable.Col(sceneURLColumn),
+	}
+
+	scenesViewTableMgr = &viewHistoryTable{
+		table: table{
+			table:    goqu.T(scenesViewDatesTable),
+			idColumn: goqu.T(scenesViewDatesTable).Col(sceneIDColumn),
+		},
+		dateColumn: goqu.T(scenesViewDatesTable).Col(sceneViewDateColumn),
+	}
+
+	scenesOTableMgr = &viewHistoryTable{
+		table: table{
+			table:    goqu.T(scenesODatesTable),
+			idColumn: goqu.T(scenesODatesTable).Col(sceneIDColumn),
+		},
+		dateColumn: goqu.T(scenesODatesTable).Col(sceneODateColumn),
 	}
 )
 

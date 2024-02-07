@@ -1,6 +1,8 @@
 package models
 
-import "context"
+import (
+	"context"
+)
 
 type SceneIDLoader interface {
 	GetSceneIDs(ctx context.Context, relatedID int) ([]int, error)
@@ -48,14 +50,6 @@ type AliasLoader interface {
 
 type URLLoader interface {
 	GetURLs(ctx context.Context, relatedID int) ([]string, error)
-}
-
-type PlayDateLoader interface {
-	GetPlayDates(ctx context.Context, relatedID int) ([]string, error)
-}
-
-type ODateLoader interface {
-	GetODates(ctx context.Context, relatedID int) ([]string, error)
 }
 
 // RelatedIDs represents a list of related IDs.

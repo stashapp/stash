@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/stashapp/stash/internal/api/loaders"
 	"github.com/stashapp/stash/internal/api/urlbuilders"
@@ -320,40 +321,54 @@ func (r *sceneResolver) Urls(ctx context.Context, obj *models.Scene) ([]string, 
 	return obj.URLs.List(), nil
 }
 
-func (r *sceneResolver) Playdates(ctx context.Context, obj *models.Scene) ([]*string, error) {
-	if !obj.PlayDates.Loaded() {
-		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-			return obj.LoadPlayDates(ctx, r.repository.Scene)
-		}); err != nil {
-			return nil, err
-		}
-	}
-
-	playDates := obj.PlayDates.List()
-	ptrPlayDates := make([]*string, len(playDates))
-	for i, date := range playDates {
-		ptrDate := date
-		ptrPlayDates[i] = &ptrDate
-	}
-
-	return ptrPlayDates, nil
+func (r *sceneResolver) OCounter(ctx context.Context, obj *models.Scene) (*int, error) {
+	panic("not implemented")
 }
 
-func (r *sceneResolver) Odates(ctx context.Context, obj *models.Scene) ([]*string, error) {
-	if !obj.ODates.Loaded() {
-		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-			return obj.LoadODates(ctx, r.repository.Scene)
-		}); err != nil {
-			return nil, err
-		}
-	}
+func (r *sceneResolver) LastPlayedAt(ctx context.Context, obj *models.Scene) (*time.Time, error) {
+	panic("not implemented")
+}
 
-	oDates := obj.ODates.List()
-	ptrODates := make([]*string, len(oDates))
-	for i, date := range oDates {
-		ptrDate := date
-		ptrODates[i] = &ptrDate
-	}
+func (r *sceneResolver) PlayCount(ctx context.Context, obj *models.Scene) (*int, error) {
+	panic("not implemented")
+}
 
-	return ptrODates, nil
+func (r *sceneResolver) PlayHistory(ctx context.Context, obj *models.Scene) ([]*time.Time, error) {
+	panic("not implemented")
+	// if !obj.PlayDates.Loaded() {
+	// 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+	// 		return obj.LoadPlayDates(ctx, r.repository.Scene)
+	// 	}); err != nil {
+	// 		return nil, err
+	// 	}
+	// }
+
+	// playDates := obj.PlayDates.List()
+	// ptrPlayDates := make([]*string, len(playDates))
+	// for i, date := range playDates {
+	// 	ptrDate := date
+	// 	ptrPlayDates[i] = &ptrDate
+	// }
+
+	// return ptrPlayDates, nil
+}
+
+func (r *sceneResolver) OHistory(ctx context.Context, obj *models.Scene) ([]*time.Time, error) {
+	panic("not implemented")
+	// if !obj.ODates.Loaded() {
+	// 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+	// 		return obj.LoadODates(ctx, r.repository.Scene)
+	// 	}); err != nil {
+	// 		return nil, err
+	// 	}
+	// }
+
+	// oDates := obj.ODates.List()
+	// ptrODates := make([]*string, len(oDates))
+	// for i, date := range oDates {
+	// 	ptrDate := date
+	// 	ptrODates[i] = &ptrDate
+	// }
+
+	// return ptrODates, nil
 }

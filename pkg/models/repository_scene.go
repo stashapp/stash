@@ -1,6 +1,9 @@
 package models
 
-import "context"
+import (
+	"context"
+	"time"
+)
 
 // SceneGetter provides methods to get scenes by ID.
 type SceneGetter interface {
@@ -68,6 +71,14 @@ type SceneCreatorUpdater interface {
 	SceneUpdater
 }
 
+type ViewDateReader interface {
+	GetViewDates(ctx context.Context, relatedID int) ([]time.Time, error)
+}
+
+type ODateReader interface {
+	GetODates(ctx context.Context, relatedID int) ([]time.Time, error)
+}
+
 // SceneReader provides all methods to read scenes.
 type SceneReader interface {
 	SceneFinder
@@ -75,8 +86,8 @@ type SceneReader interface {
 	SceneCounter
 
 	URLLoader
-	PlayDateLoader
-	ODateLoader
+	ViewDateReader
+	ODateReader
 	FileIDLoader
 	GalleryIDLoader
 	PerformerIDLoader
@@ -94,6 +105,18 @@ type SceneReader interface {
 	HasCover(ctx context.Context, sceneID int) (bool, error)
 }
 
+type OHistoryWriter interface {
+	AddO(ctx context.Context, id int, date *time.Time) (int, error)
+	DeleteO(ctx context.Context, id int, date *time.Time) (int, error)
+	ResetO(ctx context.Context, id int) (int, error)
+}
+
+type ViewHistoryWriter interface {
+	AddView(ctx context.Context, sceneID int, date *time.Time) (int, error)
+	DeleteView(ctx context.Context, id int, date *time.Time) (int, error)
+	DeleteAllViews(ctx context.Context, id int) (int, error)
+}
+
 // SceneWriter provides all methods to modify scenes.
 type SceneWriter interface {
 	SceneCreator
@@ -103,13 +126,10 @@ type SceneWriter interface {
 	AddFileID(ctx context.Context, id int, fileID FileID) error
 	AddGalleryIDs(ctx context.Context, sceneID int, galleryIDs []int) error
 	AssignFiles(ctx context.Context, sceneID int, fileID []FileID) error
-	IncrementOCounterDate(ctx context.Context, id int) (int, error)
-	DecrementOCounterDate(ctx context.Context, id int) (int, error)
-	ResetOCounterDate(ctx context.Context, id int) (int, error)
+
+	OHistoryWriter
+	ViewHistoryWriter
 	SaveActivity(ctx context.Context, sceneID int, resumeTime *float64, playDuration *float64) (bool, error)
-	IncrementWatchCount(ctx context.Context, sceneID int) (int, error)
-	DecrementWatchCount(ctx context.Context, id int) (int, error)
-	ResetWatchCount(ctx context.Context, id int) (int, error)
 }
 
 // SceneReaderWriter provides all scene methods.

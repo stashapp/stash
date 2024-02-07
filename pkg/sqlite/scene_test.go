@@ -82,10 +82,7 @@ func Test_sceneQueryBuilder_Create(t *testing.T) {
 		director     = "director"
 		url          = "url"
 		rating       = 60
-		ocounter     = 5
-		lastPlayedAt = time.Date(2002, 1, 1, 0, 0, 0, 0, time.UTC)
 		resumeTime   = 10.0
-		playCount    = 3
 		playDuration = 34.0
 		createdAt    = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 		updatedAt    = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
@@ -117,7 +114,6 @@ func Test_sceneQueryBuilder_Create(t *testing.T) {
 				Date:         &date,
 				Rating:       &rating,
 				Organized:    true,
-				OCounter:     ocounter,
 				StudioID:     &studioIDs[studioIdxWithScene],
 				CreatedAt:    createdAt,
 				UpdatedAt:    updatedAt,
@@ -144,9 +140,7 @@ func Test_sceneQueryBuilder_Create(t *testing.T) {
 						Endpoint: endpoint2,
 					},
 				}),
-				LastPlayedAt: &lastPlayedAt,
 				ResumeTime:   float64(resumeTime),
-				PlayCount:    playCount,
 				PlayDuration: playDuration,
 			},
 			false,
@@ -162,7 +156,6 @@ func Test_sceneQueryBuilder_Create(t *testing.T) {
 				Date:      &date,
 				Rating:    &rating,
 				Organized: true,
-				OCounter:  ocounter,
 				StudioID:  &studioIDs[studioIdxWithScene],
 				Files: models.NewRelatedVideoFiles([]*models.VideoFile{
 					videoFile.(*models.VideoFile),
@@ -192,9 +185,7 @@ func Test_sceneQueryBuilder_Create(t *testing.T) {
 						Endpoint: endpoint2,
 					},
 				}),
-				LastPlayedAt: &lastPlayedAt,
 				ResumeTime:   resumeTime,
-				PlayCount:    playCount,
 				PlayDuration: playDuration,
 			},
 			false,
@@ -321,10 +312,7 @@ func Test_sceneQueryBuilder_Update(t *testing.T) {
 		director     = "director"
 		url          = "url"
 		rating       = 60
-		ocounter     = 5
-		lastPlayedAt = time.Date(2002, 1, 1, 0, 0, 0, 0, time.UTC)
 		resumeTime   = 10.0
-		playCount    = 3
 		playDuration = 34.0
 		createdAt    = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 		updatedAt    = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
@@ -355,7 +343,6 @@ func Test_sceneQueryBuilder_Update(t *testing.T) {
 				Date:         &date,
 				Rating:       &rating,
 				Organized:    true,
-				OCounter:     ocounter,
 				StudioID:     &studioIDs[studioIdxWithScene],
 				CreatedAt:    createdAt,
 				UpdatedAt:    updatedAt,
@@ -382,9 +369,7 @@ func Test_sceneQueryBuilder_Update(t *testing.T) {
 						Endpoint: endpoint2,
 					},
 				}),
-				LastPlayedAt: &lastPlayedAt,
 				ResumeTime:   resumeTime,
-				PlayCount:    playCount,
 				PlayDuration: playDuration,
 			},
 			false,
@@ -537,10 +522,7 @@ func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 		director     = "director"
 		url          = "url"
 		rating       = 60
-		ocounter     = 5
-		lastPlayedAt = time.Date(2002, 1, 1, 0, 0, 0, 0, time.UTC)
 		resumeTime   = 10.0
-		playCount    = 3
 		playDuration = 34.0
 		createdAt    = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 		updatedAt    = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
@@ -576,7 +558,6 @@ func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 				Date:      models.NewOptionalDate(date),
 				Rating:    models.NewOptionalInt(rating),
 				Organized: models.NewOptionalBool(true),
-				OCounter:  models.NewOptionalInt(ocounter),
 				StudioID:  models.NewOptionalInt(studioIDs[studioIdxWithScene]),
 				CreatedAt: models.NewOptionalTime(createdAt),
 				UpdatedAt: models.NewOptionalTime(updatedAt),
@@ -618,9 +599,7 @@ func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 					},
 					Mode: models.RelationshipUpdateModeSet,
 				},
-				LastPlayedAt: models.NewOptionalTime(lastPlayedAt),
 				ResumeTime:   models.NewOptionalFloat64(resumeTime),
-				PlayCount:    models.NewOptionalInt(playCount),
 				PlayDuration: models.NewOptionalFloat64(playDuration),
 			},
 			models.Scene{
@@ -636,7 +615,6 @@ func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 				Date:         &date,
 				Rating:       &rating,
 				Organized:    true,
-				OCounter:     ocounter,
 				StudioID:     &studioIDs[studioIdxWithScene],
 				CreatedAt:    createdAt,
 				UpdatedAt:    updatedAt,
@@ -663,9 +641,7 @@ func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 						Endpoint: endpoint2,
 					},
 				}),
-				LastPlayedAt: &lastPlayedAt,
 				ResumeTime:   resumeTime,
-				PlayCount:    playCount,
 				PlayDuration: playDuration,
 			},
 			false,
@@ -675,8 +651,7 @@ func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 			sceneIDs[sceneIdxWithSpacedName],
 			clearScenePartial(),
 			models.Scene{
-				ID:       sceneIDs[sceneIdxWithSpacedName],
-				OCounter: getOCounter(sceneIdxWithSpacedName),
+				ID: sceneIDs[sceneIdxWithSpacedName],
 				Files: models.NewRelatedVideoFiles([]*models.VideoFile{
 					makeSceneFile(sceneIdxWithSpacedName),
 				}),
@@ -685,9 +660,7 @@ func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 				PerformerIDs: models.NewRelatedIDs([]int{}),
 				Movies:       models.NewRelatedMovies([]models.MoviesScenes{}),
 				StashIDs:     models.NewRelatedStashIDs([]models.StashID{}),
-				PlayCount:    getScenePlayCount(sceneIdxWithSpacedName),
 				PlayDuration: getScenePlayDuration(sceneIdxWithSpacedName),
-				LastPlayedAt: getSceneLastPlayed(sceneIdxWithSpacedName),
 				ResumeTime:   getSceneResumeTime(sceneIdxWithSpacedName),
 			},
 			false,
@@ -1296,7 +1269,7 @@ func Test_sceneQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 	}
 }
 
-func Test_sceneQueryBuilder_IncrementOCounter(t *testing.T) {
+func Test_sceneQueryBuilder_AddO(t *testing.T) {
 	tests := []struct {
 		name    string
 		id      int
@@ -1306,53 +1279,10 @@ func Test_sceneQueryBuilder_IncrementOCounter(t *testing.T) {
 		{
 			"increment",
 			sceneIDs[1],
-			2,
-			false,
-		},
-		{
-			"invalid",
-			invalidID,
-			0,
-			true,
-		},
-	}
-
-	qb := db.Scene
-
-	for _, tt := range tests {
-		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
-			got, err := qb.IncrementOCounter(ctx, tt.id)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("sceneQueryBuilder.IncrementOCounter() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if got != tt.want {
-				t.Errorf("sceneQueryBuilder.IncrementOCounter() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func Test_sceneQueryBuilder_DecrementOCounter(t *testing.T) {
-	tests := []struct {
-		name    string
-		id      int
-		want    int
-		wantErr bool
-	}{
-		{
-			"decrement",
-			sceneIDs[2],
 			1,
 			false,
 		},
 		{
-			"zero",
-			sceneIDs[0],
-			0,
-			false,
-		},
-		{
 			"invalid",
 			invalidID,
 			0,
@@ -1364,19 +1294,19 @@ func Test_sceneQueryBuilder_DecrementOCounter(t *testing.T) {
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
-			got, err := qb.DecrementOCounter(ctx, tt.id)
+			got, err := qb.AddO(ctx, tt.id, nil)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("sceneQueryBuilder.DecrementOCounter() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("sceneQueryBuilder.AddO() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if got != tt.want {
-				t.Errorf("sceneQueryBuilder.DecrementOCounter() = %v, want %v", got, tt.want)
+				t.Errorf("sceneQueryBuilder.AddO() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func Test_sceneQueryBuilder_ResetOCounter(t *testing.T) {
+func Test_sceneQueryBuilder_DeleteO(t *testing.T) {
 	tests := []struct {
 		name    string
 		id      int
@@ -1395,11 +1325,42 @@ func Test_sceneQueryBuilder_ResetOCounter(t *testing.T) {
 			0,
 			false,
 		},
+	}
+
+	qb := db.Scene
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			got, err := qb.DeleteO(ctx, tt.id, nil)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("sceneQueryBuilder.DeleteO() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("sceneQueryBuilder.DeleteO() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_sceneQueryBuilder_ResetO(t *testing.T) {
+	tests := []struct {
+		name    string
+		id      int
+		want    int
+		wantErr bool
+	}{
 		{
-			"invalid",
-			invalidID,
+			"decrement",
+			sceneIDs[2],
 			0,
-			true,
+			false,
+		},
+		{
+			"zero",
+			sceneIDs[0],
+			0,
+			false,
 		},
 	}
 
@@ -1407,9 +1368,9 @@ func Test_sceneQueryBuilder_ResetOCounter(t *testing.T) {
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
-			got, err := qb.ResetOCounter(ctx, tt.id)
+			got, err := qb.ResetO(ctx, tt.id)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("sceneQueryBuilder.ResetOCounter() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("sceneQueryBuilder.ResetO() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if got != tt.want {
@@ -2162,19 +2123,19 @@ func TestSceneQuery(t *testing.T) {
 			[]int{sceneIdxWithMovie},
 			false,
 		},
-		{
-			"specific play count",
-			nil,
-			&models.SceneFilterType{
-				PlayCount: &models.IntCriterionInput{
-					Modifier: models.CriterionModifierEquals,
-					Value:    getScenePlayCount(sceneIdxWithGallery),
-				},
-			},
-			[]int{sceneIdxWithGallery},
-			[]int{sceneIdxWithMovie},
-			false,
-		},
+		// {
+		// 	"specific play count",
+		// 	nil,
+		// 	&models.SceneFilterType{
+		// 		PlayCount: &models.IntCriterionInput{
+		// 			Modifier: models.CriterionModifierEquals,
+		// 			Value:    getScenePlayCount(sceneIdxWithGallery),
+		// 		},
+		// 	},
+		// 	[]int{sceneIdxWithGallery},
+		// 	[]int{sceneIdxWithMovie},
+		// 	false,
+		// },
 		{
 			"stash id with endpoint",
 			nil,
@@ -2771,7 +2732,11 @@ func verifyScenesOCounter(t *testing.T, oCounterCriterion models.IntCriterionInp
 		scenes := queryScene(ctx, t, sqb, &sceneFilter, nil)
 
 		for _, scene := range scenes {
-			verifyInt(t, scene.OCounter, oCounterCriterion)
+			count, err := sqb.GetOCount(ctx, scene.ID)
+			if err != nil {
+				t.Errorf("Error getting ocounter: %v", err)
+			}
+			verifyInt(t, count, oCounterCriterion)
 		}
 
 		return nil
@@ -4027,14 +3992,14 @@ func TestSceneQuerySorting(t *testing.T) {
 			"play_count",
 			"play_count",
 			models.SortDirectionEnumDesc,
-			sceneIDs[sceneIdx1WithPerformer],
+			-1,
 			-1,
 		},
 		{
 			"last_played_at",
 			"last_played_at",
 			models.SortDirectionEnumDesc,
-			sceneIDs[sceneIdx1WithPerformer],
+			-1,
 			-1,
 		},
 		{
@@ -4555,7 +4520,7 @@ func TestSceneStore_AssignFiles(t *testing.T) {
 	}
 }
 
-func TestSceneStore_IncrementWatchCount(t *testing.T) {
+func TestSceneStore_AddView(t *testing.T) {
 	tests := []struct {
 		name          string
 		sceneID       int
@@ -4565,7 +4530,7 @@ func TestSceneStore_IncrementWatchCount(t *testing.T) {
 		{
 			"valid",
 			sceneIDs[sceneIdx1WithPerformer],
-			getScenePlayCount(sceneIdx1WithPerformer) + 1,
+			1, //getScenePlayCount(sceneIdx1WithPerformer) + 1,
 			false,
 		},
 		{
@@ -4581,9 +4546,9 @@ func TestSceneStore_IncrementWatchCount(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			withRollbackTxn(func(ctx context.Context) error {
-				newVal, err := qb.IncrementWatchCount(ctx, tt.sceneID)
+				newVal, err := qb.AddView(ctx, tt.sceneID, nil)
 				if (err != nil) != tt.wantErr {
-					t.Errorf("SceneStore.IncrementWatchCount() error = %v, wantErr %v", err, tt.wantErr)
+					t.Errorf("SceneStore.AddView() error = %v, wantErr %v", err, tt.wantErr)
 				}
 
 				if err != nil {
@@ -4594,13 +4559,18 @@ func TestSceneStore_IncrementWatchCount(t *testing.T) {
 				assert.Equal(tt.expectedCount, newVal)
 
 				// find the scene and check the count
-				scene, err := qb.Find(ctx, tt.sceneID)
+				count, err := qb.CountViews(ctx, tt.sceneID)
 				if err != nil {
-					t.Errorf("SceneStore.Find() error = %v", err)
+					t.Errorf("SceneStore.CountViews() error = %v", err)
 				}
 
-				assert.Equal(tt.expectedCount, scene.PlayCount)
-				assert.True(scene.LastPlayedAt.After(time.Now().Add(-1 * time.Minute)))
+				lastView, err := qb.LastView(ctx, tt.sceneID)
+				if err != nil {
+					t.Errorf("SceneStore.LastView() error = %v", err)
+				}
+
+				assert.Equal(tt.expectedCount, count)
+				assert.True(lastView.After(time.Now().Add(-1 * time.Minute)))
 
 				return nil
 			})

@@ -73,8 +73,6 @@ type Database struct {
 	GalleryChapter *GalleryChapterStore
 	Scene          *SceneStore
 	SceneMarker    *SceneMarkerStore
-	ScenePlayDate  *ScenePlayDateStore
-	SceneODate     *SceneODateStore
 	Performer      *PerformerStore
 	SavedFilter    *SavedFilterStore
 	Studio         *StudioStore
@@ -100,8 +98,6 @@ func NewDatabase() *Database {
 		Folder:         folderStore,
 		Scene:          NewSceneStore(fileStore, blobStore),
 		SceneMarker:    NewSceneMarkerStore(),
-		ScenePlayDate:  NewScenePlayDateStore(),
-		SceneODate:     NewSceneODateStore(),
 		Image:          NewImageStore(fileStore),
 		Gallery:        NewGalleryStore(fileStore, folderStore),
 		GalleryChapter: NewGalleryChapterStore(),
