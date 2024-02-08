@@ -6,8 +6,19 @@ import {
 import React from "react";
 import { Button, Dropdown } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
+import { AlertModal } from "src/components/Shared/Alert";
 import { Counter } from "src/components/Shared/Counter";
+import { DateInput } from "src/components/Shared/DateInput";
 import { Icon } from "src/components/Shared/Icon";
+import { ModalComponent } from "src/components/Shared/Modal";
+import {
+  useSceneDecrementO,
+  useSceneDecrementPlayCount,
+  useSceneIncrementO,
+  useSceneIncrementPlayCount,
+  useSceneResetO,
+  useSceneResetPlayCount,
+} from "src/core/StashService";
 import * as GQL from "src/core/generated-graphql";
 import { TextField } from "src/utils/field";
 import TextUtils from "src/utils/text";
@@ -88,12 +99,160 @@ const HistoryMenu: React.FC<{
   );
 };
 
+const DatePickerModal: React.FC<{
+  show: boolean;
+  onClose: (t?: string) => void;
+}> = ({ show, onClose }) => {
+  const intl = useIntl();
+  const [date, setDate] = React.useState<string>(
+    TextUtils.dateTimeToString(new Date())
+  );
+
+  return (
+    <ModalComponent
+      show={show}
+      header={<FormattedMessage id="actions.choose_date" />}
+      accept={{
+        onClick: () => onClose(date),
+        text: intl.formatMessage({ id: "actions.confirm" }),
+      }}
+      cancel={{
+        variant: "secondary",
+        onClick: () => onClose(),
+        text: intl.formatMessage({ id: "actions.cancel" }),
+      }}
+    >
+      <div>
+        <DateInput value={date} onValueChange={(d) => setDate(d)} isTime />
+      </div>
+    </ModalComponent>
+  );
+};
+
 interface ISceneHistoryProps {
   scene: GQL.SceneDataFragment;
 }
 
 export const SceneHistoryPanel: React.FC<ISceneHistoryProps> = ({ scene }) => {
   const intl = useIntl();
+
+  const [dialogs, setDialogs] = React.useState({
+    playHistory: false,
+    oHistory: false,
+    addPlay: false,
+    addO: false,
+  });
+
+  function setDialogPartial(partial: Partial<typeof dialogs>) {
+    setDialogs({ ...dialogs, ...partial });
+  }
+
+  const [incrementPlayCount] = useSceneIncrementPlayCount();
+  const [decrementPlayCount] = useSceneDecrementPlayCount();
+  const [clearPlayCount] = useSceneResetPlayCount();
+  const [incrementOCount] = useSceneIncrementO(scene.id);
+  const [decrementOCount] = useSceneDecrementO(scene.id);
+  const [resetO] = useSceneResetO(scene.id);
+
+  function handleAddPlayDate(time?: string) {
+    incrementPlayCount({
+      variables: {
+        id: scene.id,
+        time,
+      },
+    });
+  }
+
+  function handleDeletePlayDate(time: string) {
+    decrementPlayCount({
+      variables: {
+        id: scene.id,
+        time,
+      },
+    });
+  }
+
+  function handleClearPlayDates() {
+    setDialogPartial({ playHistory: false });
+    clearPlayCount({
+      variables: {
+        id: scene.id,
+      },
+    });
+  }
+
+  function handleAddODate(time?: string) {
+    incrementOCount({
+      variables: {
+        id: scene.id,
+        time,
+      },
+    });
+  }
+
+  function handleDeleteODate(time: string) {
+    decrementOCount({
+      variables: {
+        id: scene.id,
+        time,
+      },
+    });
+  }
+
+  function handleClearODates() {
+    setDialogPartial({ oHistory: false });
+    resetO({
+      variables: {
+        id: scene.id,
+      },
+    });
+  }
+
+  function maybeRenderDialogs() {
+    return (
+      <>
+        <AlertModal
+          show={dialogs.playHistory}
+          text={intl.formatMessage({
+            id: "dialogs.clear_play_history_confirm",
+          })}
+          confirmButtonText={intl.formatMessage({ id: "actions.clear" })}
+          onConfirm={() => handleClearPlayDates()}
+          onCancel={() => setDialogPartial({ playHistory: false })}
+        />
+        <AlertModal
+          show={dialogs.oHistory}
+          text={intl.formatMessage({ id: "dialogs.clear_o_history_confirm" })}
+          confirmButtonText={intl.formatMessage({ id: "actions.clear" })}
+          onConfirm={() => handleClearODates()}
+          onCancel={() => setDialogPartial({ oHistory: false })}
+        />
+        {/* add conditions here so that date is generated correctly */}
+        {dialogs.addPlay && (
+          <DatePickerModal
+            show
+            onClose={(t) => {
+              if (t) {
+                handleAddPlayDate(t);
+              }
+              setDialogPartial({ addPlay: false });
+            }}
+          />
+        )}
+        {dialogs.addO && (
+          <DatePickerModal
+            show
+            onClose={(t) => {
+              if (t) {
+                handleAddODate(t);
+              }
+              setDialogPartial({ addO: false });
+            }}
+          />
+        )}
+      </>
+    );
+  }
 
   const playHistory = (scene.play_history ?? []).filter(
     (h) => h != null
@@ -102,6 +261,7 @@ export const SceneHistoryPanel: React.FC<ISceneHistoryProps> = ({ scene }) => {
 
   return (
     <div>
+      {maybeRenderDialogs()}
       <div className="play-history">
         <div className="history-header">
           <h5>
@@ -115,13 +275,14 @@ export const SceneHistoryPanel: React.FC<ISceneHistoryProps> = ({ scene }) => {
                 variant="minimal"
                 className="add-date-button"
                 title={intl.formatMessage({ id: "actions.add_play" })}
+                onClick={() => handleAddPlayDate()}
               >
                 <Icon icon={faPlus} />
               </Button>
               <HistoryMenu
                 hasHistory={playHistory.length > 0}
-                onAddDate={() => {}}
-                onClearDates={() => {}}
+                onAddDate={() => setDialogPartial({ addPlay: true })}
+                onClearDates={() => setDialogPartial({ playHistory: true })}
               />
             </span>
           </h5>
@@ -130,7 +291,7 @@ export const SceneHistoryPanel: React.FC<ISceneHistoryProps> = ({ scene }) => {
         <History
           history={playHistory ?? []}
           noneID="playdate_recorded_no"
-          onRemove={() => {}}
+          onRemove={(t) => handleDeletePlayDate(t)}
         />
         <dl className="details-list">
           <TextField
@@ -153,13 +314,14 @@ export const SceneHistoryPanel: React.FC<ISceneHistoryProps> = ({ scene }) => {
                 variant="minimal"
                 className="add-date-button"
                 title={intl.formatMessage({ id: "actions.add_o" })}
+                onClick={() => handleAddODate()}
               >
                 <Icon icon={faPlus} />
               </Button>
               <HistoryMenu
                 hasHistory={oHistory.length > 0}
-                onAddDate={() => {}}
-                onClearDates={() => {}}
+                onAddDate={() => setDialogPartial({ addO: true })}
+                onClearDates={() => setDialogPartial({ oHistory: true })}
               />
             </span>
           </h5>
@@ -167,7 +329,7 @@ export const SceneHistoryPanel: React.FC<ISceneHistoryProps> = ({ scene }) => {
         <History
           history={oHistory}
           noneID="odate_recorded_no"
-          onRemove={() => {}}
+          onRemove={(t) => handleDeleteODate(t)}
         />
       </div>
     </div>

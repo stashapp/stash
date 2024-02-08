@@ -16,6 +16,7 @@
     "backup": "Backup",
     "browse_for_image": "Browse for image…",
     "cancel": "Cancel",
+    "choose_date": "Choose a date",
     "clean": "Clean",
     "clear": "Clear",
     "clear_back_image": "Clear back image",
@@ -812,6 +813,8 @@
   "details": "Details",
   "developmentVersion": "Development Version",
   "dialogs": {
+    "clear_o_history_confirm": "Are you sure you want to clear the O history?",
+    "clear_play_history_confirm": "Are you sure you want to clear the play history?",
     "create_new_entity": "Create new {entity}",
     "delete_alert": "The following {count, plural, one {{singularEntity}} other {{pluralEntity}}} will be deleted permanently:",
     "delete_confirm": "Are you sure you want to delete {entityName}?",

@@ -592,6 +592,10 @@ export const useSceneIncrementO = (id: string) =>
   GQL.useSceneIncrementOMutation({
     variables: { id },
     update(cache, result) {
+      // this is not perfectly accurate, the time is set server-side
+      // it isn't even displayed anywhere in the UI anyway
+      const at = new Date().toISOString();
+
       const updatedOCount = result.data?.sceneIncrementO;
       if (updatedOCount === undefined) return;
 
@@ -621,6 +625,16 @@ export const useSceneIncrementO = (id: string) =>
       }
 
       updateStats(cache, "total_o_count", 1);
+
+      cache.modify({
+        id: cache.identify({ __typename: "Scene", id }),
+        fields: {
+          o_history(value) {
+            return [at, ...value];
+          },
+        },
+      });
+
       updateO(cache, "Scene", id, updatedOCount);
       evictQueries(cache, [
         GQL.FindScenesDocument, // filter by o_counter
@@ -632,9 +646,11 @@ export const useSceneIncrementO = (id: string) =>
 export const useSceneDecrementO = (id: string) =>
   GQL.useSceneDecrementOMutation({
     variables: { id },
-    update(cache, result) {
+    update(cache, result, { variables }) {
       const updatedOCount = result.data?.sceneDecrementO;
-      if (updatedOCount === undefined) return;
+      if (updatedOCount === undefined || !variables) return;
+
+      const { time } = variables;
 
       const scene = cache.readFragment<GQL.SlimSceneDataFragment>({
         id: cache.identify({ __typename: "Scene", id }),
@@ -662,6 +678,29 @@ export const useSceneDecrementO = (id: string) =>
       }
 
       updateStats(cache, "total_o_count", -1);
+
+      cache.modify({
+        id: cache.identify({ __typename: "Scene", id }),
+        fields: {
+          o_history(value) {
+            let found = false;
+            const ret = time
+              ? value.filter((v: string) => {
+                  // only remove one entry
+                  if (found) return true;
+                  if (v === time) {
+                    found = true;
+                    return false;
+                  }
+                  return true;
+                })
+              : value.slice(1);
+
+            return ret;
+          },
+        },
+      });
+
       updateO(cache, "Scene", id, updatedOCount);
       evictQueries(cache, [
         GQL.FindScenesDocument, // filter by o_counter
@@ -712,6 +751,16 @@ export const useSceneResetO = (id: string) =>
           },
         });
       }
+
+      cache.modify({
+        id: cache.identify({ __typename: "Scene", id }),
+        fields: {
+          o_history() {
+            const ret: string[] = [];
+            return ret;
+          },
+        },
+      });
 
       updateO(cache, "Scene", id, updatedOCount);
       evictQueries(cache, [
@@ -809,7 +858,7 @@ export const useSceneSaveActivity = () =>
         id: cache.identify({ __typename: "Scene", id }),
         fields: {
           resume_time() {
-            return resumeTime;
+            return resumeTime ?? null;
           },
           play_duration(value) {
             return value + playDuration;
@@ -830,20 +879,28 @@ export const useSceneSaveActivity = () =>
 export const useSceneIncrementPlayCount = () =>
   GQL.useSceneIncrementPlayCountMutation({
     update(cache, result, { variables }) {
-      if (!result.data?.sceneIncrementPlayCount || !variables) return;
+      if (!variables) return;
+
+      const { id, time } = variables;
 
       let lastPlayCount = 0;
+
+      // this is not perfectly accurate, the time is set server-side
+      // it isn't even displayed anywhere in the UI anyway
+      const playedAt = time ?? new Date().toISOString();
+
       cache.modify({
-        id: cache.identify({ __typename: "Scene", id: variables.id }),
+        id: cache.identify({ __typename: "Scene", id }),
         fields: {
           play_count(value) {
             lastPlayCount = value;
             return value + 1;
           },
           last_played_at() {
-            // this is not perfectly accurate, the time is set server-side
-            // it isn't even displayed anywhere in the UI anyway
-            return new Date().toISOString();
+            return playedAt;
+          },
+          play_history(value) {
+            return [playedAt, ...value];
           },
         },
       });
@@ -851,6 +908,102 @@ export const useSceneIncrementPlayCount = () =>
       updateStats(cache, "total_play_count", 1);
       if (lastPlayCount === 0) {
         updateStats(cache, "scenes_played", 1);
+      }
+
+      evictQueries(cache, [
+        GQL.FindScenesDocument, // filter by play count
+      ]);
+    },
+  });
+
+export const useSceneDecrementPlayCount = () =>
+  GQL.useSceneDecrementPlayCountMutation({
+    update(cache, result, { variables }) {
+      if (!variables) return;
+
+      const { id, time } = variables;
+
+      let lastPlayCount = 0;
+      let lastPlayedAt: string | null = null;
+      cache.modify({
+        id: cache.identify({ __typename: "Scene", id }),
+        fields: {
+          play_count(value) {
+            lastPlayCount = value;
+            return value > 0 ? value - 1 : value;
+          },
+          play_history(value) {
+            let found = false;
+            const ret = time
+              ? value.filter((v: string) => {
+                  // only remove one entry
+                  if (found) return true;
+                  if (v === time) {
+                    found = true;
+                    return false;
+                  }
+                  return true;
+                })
+              : value.slice(1);
+
+            if (ret.length > 0) {
+              lastPlayedAt = ret[0];
+            }
+            return ret;
+          },
+        },
+      });
+
+      cache.modify({
+        id: cache.identify({ __typename: "Scene", id }),
+        fields: {
+          last_played_at() {
+            return lastPlayedAt;
+          },
+        },
+      });
+
+      if (lastPlayCount > 0) {
+        updateStats(cache, "total_play_count", 1);
+      }
+      if (lastPlayCount === 1) {
+        updateStats(cache, "scenes_played", -1);
+      }
+
+      evictQueries(cache, [
+        GQL.FindScenesDocument, // filter by play count
+      ]);
+    },
+  });
+
+export const useSceneResetPlayCount = () =>
+  GQL.useSceneResetPlayCountMutation({
+    update(cache, result, { variables }) {
+      if (!variables) return;
+
+      let lastPlayCount = 0;
+      cache.modify({
+        id: cache.identify({ __typename: "Scene", id: variables.id }),
+        fields: {
+          play_count(value) {
+            lastPlayCount = value;
+            return 0;
+          },
+          play_history() {
+            const ret: string[] = [];
+            return ret;
+          },
+          last_played_at() {
+            return null;
+          },
+        },
+      });
+
+      if (lastPlayCount > 0) {
+        updateStats(cache, "total_play_count", -lastPlayCount);
+      }
+      if (lastPlayCount > 0) {
+        updateStats(cache, "scenes_played", -1);
       }
 
       evictQueries(cache, [
