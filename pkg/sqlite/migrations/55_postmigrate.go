@@ -29,7 +29,7 @@ func (m *schema55Migrator) migrate(ctx context.Context) error {
 	// the last_played_at column was storing in a different format than the rest of the timestamps
 	// convert the play history date to the correct format
 	if err := m.withTxn(ctx, func(tx *sqlx.Tx) error {
-		query := "SELECT DISTINCT `id`, `view_date` FROM `scenes_view_dates`"
+		query := "SELECT DISTINCT `scene_id`, `view_date` FROM `scenes_view_dates`"
 
 		rows, err := m.db.Query(query)
 		if err != nil {

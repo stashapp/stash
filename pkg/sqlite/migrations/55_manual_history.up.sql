@@ -1,17 +1,15 @@
 PRAGMA foreign_keys=OFF;
 
 CREATE TABLE `scenes_view_dates` (
-  `id` integer not null primary key autoincrement,
   `scene_id` integer,
   `view_date` datetime not null,
-  foreign key(`scene_id`) references `scenes`(`id`)
+  foreign key(`scene_id`) references `scenes`(`id`) on delete CASCADE
 );
 
 CREATE TABLE `scenes_o_dates` (
-  `id` integer not null primary key autoincrement,
   `scene_id` integer,
   `o_date` datetime not null,
-  foreign key(`scene_id`) references `scenes`(`id`)
+  foreign key(`scene_id`) references `scenes`(`id`) on delete CASCADE
 );
 
 -- drop o_counter, play_count and last_played_at
