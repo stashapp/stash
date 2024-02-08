@@ -328,28 +328,6 @@ func getCountCriterionClause(primaryTable, joinTable, primaryFK string, criterio
 	return getIntCriterionWhereClause(lhs, criterion)
 }
 
-func getJoinedMultiSumCriterionClause(primaryTable, foreignTable1, joinTable1, foreignTable2, joinTable2, primaryFK string, foreignFK1 string, foreignFK2 string, sum string, criterion models.IntCriterionInput) (string, []interface{}) {
-	lhs := fmt.Sprintf("(SELECT SUM(%s) "+
-		"FROM ("+
-		"SELECT SUM(%s) as %s from %s s "+
-		"LEFT JOIN %s ON %s.id = s.%s "+
-		"WHERE s.%s = %s.id "+
-		"UNION ALL "+
-		"SELECT SUM(%s) as %s from %s s "+
-		"LEFT JOIN %s ON %s.id = s.%s "+
-		"WHERE s.%s = %s.id "+
-		"))",
-		sum,
-		sum, sum, joinTable1,
-		foreignTable1, foreignTable1, foreignFK1,
-		primaryFK, primaryTable,
-		sum, sum, joinTable2,
-		foreignTable2, foreignTable2, foreignFK2,
-		primaryFK, primaryTable,
-	)
-	return getIntCriterionWhereClause(lhs, criterion)
-}
-
 func coalesce(column string) string {
 	return fmt.Sprintf("COALESCE(%s, '')", column)
 }
