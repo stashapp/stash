@@ -571,7 +571,11 @@ func (r *mutationResolver) SceneMerge(ctx context.Context, input SceneMergeInput
 
 	var ret *models.Scene
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		if err := r.Resolver.sceneService.Merge(ctx, srcIDs, destID, *values); err != nil {
+		if err := r.Resolver.sceneService.Merge(ctx, srcIDs, destID, scene.MergeOptions{
+			ScenePartial:       *values,
+			IncludePlayHistory: utils.IsTrue(input.PlayHistory),
+			IncludeOHistory:    utils.IsTrue(input.OHistory),
+		}); err != nil {
 			return err
 		}
 
@@ -813,22 +817,23 @@ func (r *mutationResolver) SceneSaveActivity(ctx context.Context, id string, res
 	return ret, nil
 }
 
-func (r *mutationResolver) SceneIncrementPlayCount(ctx context.Context, id string, time *time.Time) (ret int, err error) {
+func (r *mutationResolver) SceneIncrementPlayCount(ctx context.Context, id string, t []*time.Time) (ret int, err error) {
 	sceneID, err := strconv.Atoi(id)
 	if err != nil {
 		return 0, fmt.Errorf("converting id: %w", err)
 	}
 
+	var times []time.Time
+
 	// convert time to local time, so that sorting is consistent
-	if time != nil {
-		localTime := time.Local()
-		time = &localTime
+	for _, tt := range t {
+		times = append(times, tt.Local())
 	}
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Scene
 
-		ret, err = qb.AddView(ctx, sceneID, time)
+		ret, err = qb.AddViews(ctx, sceneID, times)
 		return err
 	}); err != nil {
 		return 0, err
@@ -837,16 +842,22 @@ func (r *mutationResolver) SceneIncrementPlayCount(ctx context.Context, id strin
 	return ret, nil
 }
 
-func (r *mutationResolver) SceneDecrementPlayCount(ctx context.Context, id string, time *time.Time) (ret int, err error) {
+func (r *mutationResolver) SceneDecrementPlayCount(ctx context.Context, id string, t []*time.Time) (ret int, err error) {
 	sceneID, err := strconv.Atoi(id)
 	if err != nil {
 		return 0, err
 	}
 
+	var times []time.Time
+
+	for _, tt := range t {
+		times = append(times, *tt)
+	}
+
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Scene
 
-		ret, err = qb.DeleteView(ctx, sceneID, time)
+		ret, err = qb.DeleteViews(ctx, sceneID, times)
 		return err
 	}); err != nil {
 		return 0, err
@@ -873,22 +884,23 @@ func (r *mutationResolver) SceneResetPlayCount(ctx context.Context, id string) (
 	return ret, nil
 }
 
-func (r *mutationResolver) SceneIncrementO(ctx context.Context, id string, time *time.Time) (ret int, err error) {
+func (r *mutationResolver) SceneIncrementO(ctx context.Context, id string, t []*time.Time) (ret int, err error) {
 	sceneID, err := strconv.Atoi(id)
 	if err != nil {
 		return 0, fmt.Errorf("converting id: %w", err)
 	}
 
+	var times []time.Time
+
 	// convert time to local time, so that sorting is consistent
-	if time != nil {
-		localTime := time.Local()
-		time = &localTime
+	for _, tt := range t {
+		times = append(times, tt.Local())
 	}
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Scene
 
-		ret, err = qb.AddO(ctx, sceneID, time)
+		ret, err = qb.AddO(ctx, sceneID, times)
 		return err
 	}); err != nil {
 		return 0, err
@@ -897,16 +909,22 @@ func (r *mutationResolver) SceneIncrementO(ctx context.Context, id string, time 
 	return ret, nil
 }
 
-func (r *mutationResolver) SceneDecrementO(ctx context.Context, id string, time *time.Time) (ret int, err error) {
+func (r *mutationResolver) SceneDecrementO(ctx context.Context, id string, t []*time.Time) (ret int, err error) {
 	sceneID, err := strconv.Atoi(id)
 	if err != nil {
 		return 0, fmt.Errorf("converting id: %w", err)
 	}
 
+	var times []time.Time
+
+	for _, tt := range t {
+		times = append(times, *tt)
+	}
+
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Scene
 
-		ret, err = qb.DeleteO(ctx, sceneID, time)
+		ret, err = qb.DeleteO(ctx, sceneID, times)
 		return err
 	}); err != nil {
 		return 0, err

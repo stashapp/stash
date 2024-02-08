@@ -162,7 +162,7 @@ export const SceneHistoryPanel: React.FC<ISceneHistoryProps> = ({ scene }) => {
     incrementPlayCount({
       variables: {
         id: scene.id,
-        time,
+        times: time ? [time] : undefined,
       },
     });
   }
@@ -171,7 +171,7 @@ export const SceneHistoryPanel: React.FC<ISceneHistoryProps> = ({ scene }) => {
     decrementPlayCount({
       variables: {
         id: scene.id,
-        time,
+        times: time ? [time] : undefined,
       },
     });
   }
@@ -189,7 +189,7 @@ export const SceneHistoryPanel: React.FC<ISceneHistoryProps> = ({ scene }) => {
     incrementOCount({
       variables: {
         id: scene.id,
-        time,
+        times: time ? [time] : undefined,
       },
     });
   }
@@ -198,7 +198,7 @@ export const SceneHistoryPanel: React.FC<ISceneHistoryProps> = ({ scene }) => {
     decrementOCount({
       variables: {
         id: scene.id,
-        time,
+        times: time ? [time] : undefined,
       },
     });
   }

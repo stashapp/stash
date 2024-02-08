@@ -34,12 +34,12 @@ func (qb *viewDateManager) GetManyLastViewed(ctx context.Context, ids []int) ([]
 
 }
 
-func (qb *viewDateManager) AddView(ctx context.Context, id int, date *time.Time) (int, error) {
-	return qb.tableMgr.addDate(ctx, id, date)
+func (qb *viewDateManager) AddViews(ctx context.Context, id int, dates []time.Time) (int, error) {
+	return qb.tableMgr.addDates(ctx, id, dates)
 }
 
-func (qb *viewDateManager) DeleteView(ctx context.Context, id int, date *time.Time) (int, error) {
-	return qb.tableMgr.deleteDate(ctx, id, date)
+func (qb *viewDateManager) DeleteViews(ctx context.Context, id int, dates []time.Time) (int, error) {
+	return qb.tableMgr.deleteDates(ctx, id, dates)
 }
 
 func (qb *viewDateManager) DeleteAllViews(ctx context.Context, id int) (int, error) {
@@ -66,12 +66,12 @@ func (qb *oDateManager) GetManyOCount(ctx context.Context, ids []int) ([]int, er
 	return qb.tableMgr.getManyCount(ctx, ids)
 }
 
-func (qb *oDateManager) AddO(ctx context.Context, id int, date *time.Time) (int, error) {
-	return qb.tableMgr.addDate(ctx, id, date)
+func (qb *oDateManager) AddO(ctx context.Context, id int, dates []time.Time) (int, error) {
+	return qb.tableMgr.addDates(ctx, id, dates)
 }
 
-func (qb *oDateManager) DeleteO(ctx context.Context, id int, date *time.Time) (int, error) {
-	return qb.tableMgr.deleteDate(ctx, id, date)
+func (qb *oDateManager) DeleteO(ctx context.Context, id int, dates []time.Time) (int, error) {
+	return qb.tableMgr.deleteDates(ctx, id, dates)
 }
 
 func (qb *oDateManager) ResetO(ctx context.Context, id int) (int, error) {

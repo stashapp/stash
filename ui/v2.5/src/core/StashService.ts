@@ -549,13 +549,16 @@ export const useScenesDestroy = (input: GQL.ScenesDestroyInput) =>
 export const useSceneIncrementO = (id: string) =>
   GQL.useSceneIncrementOMutation({
     variables: { id },
-    update(cache, result) {
+    update(cache, result, { variables }) {
       // this is not perfectly accurate, the time is set server-side
       // it isn't even displayed anywhere in the UI anyway
       const at = new Date().toISOString();
 
       const updatedOCount = result.data?.sceneIncrementO;
-      if (updatedOCount === undefined) return;
+      if (updatedOCount === undefined || !variables) return;
+
+      const { times } = variables;
+      const timeArray = !times ? [at] : Array.isArray(times) ? times : [times];
 
       const scene = cache.readFragment<GQL.SlimSceneDataFragment>({
         id: cache.identify({ __typename: "Scene", id }),
@@ -570,7 +573,7 @@ export const useSceneIncrementO = (id: string) =>
             id: cache.identify(performer),
             fields: {
               o_counter(value) {
-                return value + 1;
+                return value + timeArray.length;
               },
             },
           });
@@ -582,13 +585,13 @@ export const useSceneIncrementO = (id: string) =>
         });
       }
 
-      updateStats(cache, "total_o_count", 1);
+      updateStats(cache, "total_o_count", timeArray.length);
 
       cache.modify({
         id: cache.identify({ __typename: "Scene", id }),
         fields: {
           o_history(value) {
-            return [at, ...value];
+            return timeArray.concat(value);
           },
         },
       });
@@ -601,6 +604,18 @@ export const useSceneIncrementO = (id: string) =>
     },
   });
 
+function removeEntries(src: string[], toRemove: string[]) {
+  let leftover = toRemove;
+  return src.filter((v: string) => {
+    const index = leftover.indexOf(v);
+    if (index !== -1) {
+      leftover.splice(index, 1);
+      return false;
+    }
+    return true;
+  });
+}
+
 export const useSceneDecrementO = (id: string) =>
   GQL.useSceneDecrementOMutation({
     variables: { id },
@@ -608,7 +623,8 @@ export const useSceneDecrementO = (id: string) =>
       const updatedOCount = result.data?.sceneDecrementO;
       if (updatedOCount === undefined || !variables) return;
 
-      const { time } = variables;
+      const { times } = variables;
+      const timeArray = !times ? null : Array.isArray(times) ? times : [times];
 
       const scene = cache.readFragment<GQL.SlimSceneDataFragment>({
         id: cache.identify({ __typename: "Scene", id }),
@@ -623,7 +639,7 @@ export const useSceneDecrementO = (id: string) =>
             id: cache.identify(performer),
             fields: {
               o_counter(value) {
-                return value - 1;
+                return value - (timeArray?.length ?? 1);
               },
             },
           });
@@ -635,23 +651,14 @@ export const useSceneDecrementO = (id: string) =>
         });
       }
 
-      updateStats(cache, "total_o_count", -1);
+      updateStats(cache, "total_o_count", -(timeArray?.length ?? 1));
 
       cache.modify({
         id: cache.identify({ __typename: "Scene", id }),
         fields: {
           o_history(value) {
-            let found = false;
-            const ret = time
-              ? value.filter((v: string) => {
-                  // only remove one entry
-                  if (found) return true;
-                  if (v === time) {
-                    found = true;
-                    return false;
-                  }
-                  return true;
-                })
+            const ret = timeArray
+              ? removeEntries(value, timeArray)
               : value.slice(1);
 
             return ret;
@@ -778,7 +785,9 @@ export const mutateSceneAssignFile = (sceneID: string, fileID: string) =>
 export const mutateSceneMerge = (
   destination: string,
   source: string[],
-  values: GQL.SceneUpdateInput
+  values: GQL.SceneUpdateInput,
+  includeViewHistory: boolean,
+  includeOHistory: boolean
 ) =>
   client.mutate<GQL.SceneMergeMutation>({
     mutation: GQL.SceneMergeDocument,
@@ -787,6 +796,8 @@ export const mutateSceneMerge = (
         source,
         destination,
         values,
+        play_history: includeViewHistory,
+        include_o_history: includeOHistory,
       },
     },
     update(cache, result) {
@@ -839,26 +850,31 @@ export const useSceneIncrementPlayCount = () =>
     update(cache, result, { variables }) {
       if (!variables) return;
 
-      const { id, time } = variables;
-
-      let lastPlayCount = 0;
+      const { id, times } = variables;
 
       // this is not perfectly accurate, the time is set server-side
       // it isn't even displayed anywhere in the UI anyway
-      const playedAt = time ?? new Date().toISOString();
+      const timeArray = !times
+        ? [new Date().toISOString()]
+        : Array.isArray(times)
+        ? times
+        : [times];
+
+      let lastPlayCount = 0;
 
       cache.modify({
         id: cache.identify({ __typename: "Scene", id }),
         fields: {
           play_count(value) {
             lastPlayCount = value;
-            return value + 1;
+            return value + timeArray.length;
           },
           last_played_at() {
-            return playedAt;
+            // assume only one entry - or the first is the most recent
+            return timeArray[0];
           },
           play_history(value) {
-            return [playedAt, ...value];
+            return timeArray.concat(value);
           },
         },
       });
@@ -879,7 +895,9 @@ export const useSceneDecrementPlayCount = () =>
     update(cache, result, { variables }) {
       if (!variables) return;
 
-      const { id, time } = variables;
+      const { id, times } = variables;
+      const timeArray = !times ? null : Array.isArray(times) ? times : [times];
+      const nRemoved = timeArray?.length ?? 1;
 
       let lastPlayCount = 0;
       let lastPlayedAt: string | null = null;
@@ -888,20 +906,11 @@ export const useSceneDecrementPlayCount = () =>
         fields: {
           play_count(value) {
             lastPlayCount = value;
-            return value > 0 ? value - 1 : value;
+            return Math.max(value - nRemoved, 0);
           },
           play_history(value) {
-            let found = false;
-            const ret = time
-              ? value.filter((v: string) => {
-                  // only remove one entry
-                  if (found) return true;
-                  if (v === time) {
-                    found = true;
-                    return false;
-                  }
-                  return true;
-                })
+            const ret = timeArray
+              ? removeEntries(value, timeArray)
               : value.slice(1);
 
             if (ret.length > 0) {
@@ -922,9 +931,13 @@ export const useSceneDecrementPlayCount = () =>
       });
 
       if (lastPlayCount > 0) {
-        updateStats(cache, "total_play_count", 1);
+        updateStats(
+          cache,
+          "total_play_count",
+          nRemoved > lastPlayCount ? -lastPlayCount : -nRemoved
+        );
       }
-      if (lastPlayCount === 1) {
+      if (lastPlayCount - nRemoved <= 0) {
         updateStats(cache, "scenes_played", -1);
       }
 

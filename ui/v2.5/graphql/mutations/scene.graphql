@@ -34,24 +34,24 @@ mutation SceneSaveActivity(
   )
 }
 
-mutation SceneIncrementPlayCount($id: ID!, $time: Timestamp) {
-  sceneIncrementPlayCount(id: $id, time: $time)
+mutation SceneIncrementPlayCount($id: ID!, $times: [Timestamp!]) {
+  sceneIncrementPlayCount(id: $id, times: $times)
 }
 
-mutation SceneDecrementPlayCount($id: ID!, $time: Timestamp) {
-  sceneDecrementPlayCount(id: $id, time: $time)
+mutation SceneDecrementPlayCount($id: ID!, $times: [Timestamp!]) {
+  sceneDecrementPlayCount(id: $id, times: $times)
 }
 
 mutation SceneResetPlayCount($id: ID!) {
   sceneResetPlayCount(id: $id)
 }
 
-mutation SceneIncrementO($id: ID!, $time: Timestamp) {
-  sceneIncrementO(id: $id, time: $time)
+mutation SceneIncrementO($id: ID!, $times: [Timestamp!]) {
+  sceneIncrementO(id: $id, times: $times)
 }
 
-mutation SceneDecrementO($id: ID!, $time: Timestamp) {
-  sceneDecrementO(id: $id, time: $time)
+mutation SceneDecrementO($id: ID!, $times: [Timestamp!]) {
+  sceneDecrementO(id: $id, times: $times)
 }
 
 mutation SceneResetO($id: ID!) {

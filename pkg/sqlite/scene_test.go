@@ -4546,7 +4546,7 @@ func TestSceneStore_AddView(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			withRollbackTxn(func(ctx context.Context) error {
-				newVal, err := qb.AddView(ctx, tt.sceneID, nil)
+				newVal, err := qb.AddViews(ctx, tt.sceneID, nil)
 				if (err != nil) != tt.wantErr {
 					t.Errorf("SceneStore.AddView() error = %v, wantErr %v", err, tt.wantErr)
 				}

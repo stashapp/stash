@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
@@ -14,7 +15,15 @@ import (
 	"github.com/stashapp/stash/pkg/txn"
 )
 
-func (s *Service) Merge(ctx context.Context, sourceIDs []int, destinationID int, scenePartial models.ScenePartial) error {
+type MergeOptions struct {
+	ScenePartial       models.ScenePartial
+	IncludePlayHistory bool
+	IncludeOHistory    bool
+}
+
+func (s *Service) Merge(ctx context.Context, sourceIDs []int, destinationID int, options MergeOptions) error {
+	scenePartial := options.ScenePartial
+
 	// ensure source ids are unique
 	sourceIDs = sliceutil.AppendUniques(nil, sourceIDs)
 
@@ -68,6 +77,44 @@ func (s *Service) Merge(ctx context.Context, sourceIDs []int, destinationID int,
 
 	if _, err := s.Repository.UpdatePartial(ctx, destinationID, scenePartial); err != nil {
 		return fmt.Errorf("updating scene: %w", err)
+	}
+
+	// merge play history
+	if options.IncludePlayHistory {
+		var allDates []time.Time
+		for _, src := range sources {
+			thisDates, err := s.Repository.GetViewDates(ctx, src.ID)
+			if err != nil {
+				return fmt.Errorf("getting view dates for scene %d: %w", src.ID, err)
+			}
+
+			allDates = append(allDates, thisDates...)
+		}
+
+		if len(allDates) > 0 {
+			if _, err := s.Repository.AddViews(ctx, destinationID, allDates); err != nil {
+				return fmt.Errorf("adding view dates to scene %d: %w", destinationID, err)
+			}
+		}
+	}
+
+	// merge o history
+	if options.IncludeOHistory {
+		var allDates []time.Time
+		for _, src := range sources {
+			thisDates, err := s.Repository.GetODates(ctx, src.ID)
+			if err != nil {
+				return fmt.Errorf("getting o dates for scene %d: %w", src.ID, err)
+			}
+
+			allDates = append(allDates, thisDates...)
+		}
+
+		if len(allDates) > 0 {
+			if _, err := s.Repository.AddO(ctx, destinationID, allDates); err != nil {
+				return fmt.Errorf("adding o dates to scene %d: %w", destinationID, err)
+			}
+		}
 	}
 
 	// delete old scenes

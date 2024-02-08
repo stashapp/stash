@@ -260,4 +260,8 @@ input SceneMergeInput {
   destination: ID!
   # values defined here will override values in the destination
   values: SceneUpdateInput
+
+  # if true, the source history will be combined with the destination
+  play_history: Boolean
+  o_history: Boolean
 }

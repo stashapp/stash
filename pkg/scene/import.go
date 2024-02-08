@@ -409,8 +409,8 @@ func (i *Importer) populateTags(ctx context.Context) error {
 }
 
 func (i *Importer) addViewHistory(ctx context.Context) error {
-	for _, d := range i.viewHistory {
-		_, err := i.ReaderWriter.AddView(ctx, i.ID, &d)
+	if len(i.viewHistory) > 0 {
+		_, err := i.ReaderWriter.AddViews(ctx, i.ID, i.viewHistory)
 		if err != nil {
 			return fmt.Errorf("error adding view date: %v", err)
 		}
@@ -420,8 +420,8 @@ func (i *Importer) addViewHistory(ctx context.Context) error {
 }
 
 func (i *Importer) addOHistory(ctx context.Context) error {
-	for _, d := range i.oHistory {
-		_, err := i.ReaderWriter.AddO(ctx, i.ID, &d)
+	if len(i.oHistory) > 0 {
+		_, err := i.ReaderWriter.AddO(ctx, i.ID, i.oHistory)
 		if err != nil {
 			return fmt.Errorf("error adding o date: %v", err)
 		}

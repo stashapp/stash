@@ -937,44 +937,54 @@ func (t *viewHistoryTable) getManyCount(ctx context.Context, ids []int) ([]int, 
 	return ret, nil
 }
 
-func (t *viewHistoryTable) addDate(ctx context.Context, id int, date *time.Time) (int, error) {
+func (t *viewHistoryTable) addDates(ctx context.Context, id int, dates []time.Time) (int, error) {
 	table := t.table.table
 
-	if date == nil {
-		now := time.Now()
-		date = &now
+	if len(dates) == 0 {
+		dates = []time.Time{time.Now()}
 	}
 
-	q := dialect.Insert(table).Cols(t.idColumn.GetCol(), t.dateColumn.GetCol()).Vals(
-		goqu.Vals{id, Timestamp{*date}},
-	)
+	for _, d := range dates {
+		q := dialect.Insert(table).Cols(t.idColumn.GetCol(), t.dateColumn.GetCol()).Vals(
+			goqu.Vals{id, Timestamp{d}},
+		)
 
-	if _, err := exec(ctx, q); err != nil {
-		return 0, fmt.Errorf("inserting into %s: %w", table.GetTable(), err)
+		if _, err := exec(ctx, q); err != nil {
+			return 0, fmt.Errorf("inserting into %s: %w", table.GetTable(), err)
+		}
 	}
 
 	return t.getCount(ctx, id)
 }
 
-func (t *viewHistoryTable) deleteDate(ctx context.Context, id int, date *time.Time) (int, error) {
+func (t *viewHistoryTable) deleteDates(ctx context.Context, id int, dates []time.Time) (int, error) {
 	table := t.table.table
-	var subquery *goqu.SelectDataset
-	if date != nil {
-		subquery = dialect.Select("rowid").From(table).Where(
-			t.idColumn.Eq(id),
-			t.dateColumn.Eq(Timestamp{*date}),
-		).Limit(1)
-	} else {
-		// delete the most recent
-		subquery = dialect.Select("rowid").From(table).Where(
-			t.idColumn.Eq(id),
-		).Order(t.dateColumn.Desc()).Limit(1)
+
+	mostRecent := false
+	if len(dates) == 0 {
+		mostRecent = true
+		dates = []time.Time{time.Now()}
 	}
 
-	q := dialect.Delete(table).Where(goqu.I("rowid").Eq(subquery))
+	for _, date := range dates {
+		var subquery *goqu.SelectDataset
+		if mostRecent {
+			// delete the most recent
+			subquery = dialect.Select("rowid").From(table).Where(
+				t.idColumn.Eq(id),
+			).Order(t.dateColumn.Desc()).Limit(1)
+		} else {
+			subquery = dialect.Select("rowid").From(table).Where(
+				t.idColumn.Eq(id),
+				t.dateColumn.Eq(Timestamp{date}),
+			).Limit(1)
+		}
 
-	if _, err := exec(ctx, q); err != nil {
-		return 0, fmt.Errorf("deleting from %s: %w", table.GetTable(), err)
+		q := dialect.Delete(table).Where(goqu.I("rowid").Eq(subquery))
+
+		if _, err := exec(ctx, q); err != nil {
+			return 0, fmt.Errorf("deleting from %s: %w", table.GetTable(), err)
+		}
 	}
 
 	return t.getCount(ctx, id)
