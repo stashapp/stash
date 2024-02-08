@@ -819,6 +819,12 @@ func (r *mutationResolver) SceneIncrementPlayCount(ctx context.Context, id strin
 		return 0, fmt.Errorf("converting id: %w", err)
 	}
 
+	// convert time to local time, so that sorting is consistent
+	if time != nil {
+		localTime := time.Local()
+		time = &localTime
+	}
+
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Scene
 
@@ -871,6 +877,12 @@ func (r *mutationResolver) SceneIncrementO(ctx context.Context, id string, time 
 	sceneID, err := strconv.Atoi(id)
 	if err != nil {
 		return 0, fmt.Errorf("converting id: %w", err)
+	}
+
+	// convert time to local time, so that sorting is consistent
+	if time != nil {
+		localTime := time.Local()
+		time = &localTime
 	}
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {

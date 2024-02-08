@@ -79,7 +79,6 @@ const HistoryMenu: React.FC<{
       </Dropdown.Toggle>
       <Dropdown.Menu className="bg-secondary text-white">
         <Dropdown.Item
-          key="generate"
           className="bg-secondary text-white"
           onClick={() => onAddDate()}
         >
@@ -87,7 +86,6 @@ const HistoryMenu: React.FC<{
         </Dropdown.Item>
         {hasHistory && (
           <Dropdown.Item
-            key="generate"
             className="bg-secondary text-white"
             onClick={() => onClearDates()}
           >
@@ -153,6 +151,12 @@ export const SceneHistoryPanel: React.FC<ISceneHistoryProps> = ({ scene }) => {
   const [incrementOCount] = useSceneIncrementO(scene.id);
   const [decrementOCount] = useSceneDecrementO(scene.id);
   const [resetO] = useSceneResetO(scene.id);
+
+  function dateStringToISOString(time: string) {
+    const date = TextUtils.stringToFuzzyDateTime(time);
+    if (!date) return null;
+    return date.toISOString();
+  }
 
   function handleAddPlayDate(time?: string) {
     incrementPlayCount({
@@ -232,8 +236,9 @@ export const SceneHistoryPanel: React.FC<ISceneHistoryProps> = ({ scene }) => {
           <DatePickerModal
             show
             onClose={(t) => {
-              if (t) {
-                handleAddPlayDate(t);
+              const tt = t ? dateStringToISOString(t) : null;
+              if (tt) {
+                handleAddPlayDate(tt);
               }
               setDialogPartial({ addPlay: false });
             }}
@@ -243,8 +248,9 @@ export const SceneHistoryPanel: React.FC<ISceneHistoryProps> = ({ scene }) => {
           <DatePickerModal
             show
             onClose={(t) => {
-              if (t) {
-                handleAddODate(t);
+              const tt = t ? dateStringToISOString(t) : null;
+              if (tt) {
+                handleAddODate(tt);
               }
               setDialogPartial({ addO: false });
             }}
