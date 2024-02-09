@@ -69,7 +69,12 @@ export const StudioSelect: React.FC<
       return !exclude.includes(studio.id.toString());
     });
 
-    return sortByRelevance(input, ret, (o) => o.aliases).map((studio) => ({
+    return sortByRelevance(
+      input,
+      ret,
+      (s) => s.name,
+      (s) => s.aliases
+    ).map((studio) => ({
       value: studio.id,
       object: studio,
     }));
