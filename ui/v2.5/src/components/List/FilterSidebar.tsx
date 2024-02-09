@@ -290,8 +290,8 @@ export const FilterSidebar: React.FC<{
           input: {
             mode: filter.mode,
             find_filter: filterCopy.makeFindFilter(),
-            object_filter: filterCopy.makeSavedFindFilter(),
-            ui_options: filterCopy.makeUIOptions(),
+            object_filter: filterCopy.makeSavedFilter(),
+            ui_options: filterCopy.makeSavedUIOptions(),
           },
         },
       });

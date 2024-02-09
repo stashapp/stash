@@ -87,7 +87,7 @@ function appendObject(
   cache.modify({
     fields: {
       [keyName]: (value, { toReference }) => {
-        return [...value, toReference(obj)];
+        return [...(value as unknown[]), toReference(obj)];
       },
     },
   });
@@ -244,6 +244,14 @@ export const queryFindGalleries = (filter: ListFilterModel) =>
     },
   });
 
+export const queryFindGalleriesByIDForSelect = (galleryIDs: number[]) =>
+  client.query<GQL.FindGalleriesForSelectQuery>({
+    query: GQL.FindGalleriesForSelectDocument,
+    variables: {
+      ids: galleryIDs,
+    },
+  });
+
 export const useFindPerformer = (id: string) => {
   const skip = id === "new" || id === "";
   return GQL.useFindPerformerQuery({ variables: { id }, skip });
@@ -319,7 +327,22 @@ export const queryFindStudios = (filter: ListFilterModel) =>
     },
   });
 
-export const useAllStudiosForFilter = () => GQL.useAllStudiosForFilterQuery();
+export const queryFindStudiosByIDForSelect = (studioIDs: number[]) =>
+  client.query<GQL.FindStudiosForSelectQuery>({
+    query: GQL.FindStudiosForSelectDocument,
+    variables: {
+      ids: studioIDs,
+    },
+  });
+
+export const queryFindStudiosForSelect = (filter: ListFilterModel) =>
+  client.query<GQL.FindStudiosForSelectQuery>({
+    query: GQL.FindStudiosForSelectDocument,
+    variables: {
+      filter: filter.makeFindFilter(),
+      studio_filter: filter.makeFilter(),
+    },
+  });
 
 export const useFindTag = (id: string) => {
   const skip = id === "new" || id === "";
@@ -344,7 +367,22 @@ export const queryFindTags = (filter: ListFilterModel) =>
     },
   });
 
-export const useAllTagsForFilter = () => GQL.useAllTagsForFilterQuery();
+export const queryFindTagsByIDForSelect = (tagIDs: number[]) =>
+  client.query<GQL.FindTagsForSelectQuery>({
+    query: GQL.FindTagsForSelectDocument,
+    variables: {
+      ids: tagIDs,
+    },
+  });
+
+export const queryFindTagsForSelect = (filter: ListFilterModel) =>
+  client.query<GQL.FindTagsForSelectQuery>({
+    query: GQL.FindTagsForSelectDocument,
+    variables: {
+      filter: filter.makeFindFilter(),
+      tag_filter: filter.makeFilter(),
+    },
+  });
 
 export const useFindSavedFilter = (id: string) =>
   GQL.useFindSavedFilterQuery({
@@ -1504,8 +1542,6 @@ export const useStudioCreate = () =>
       const studio = result.data?.studioCreate;
       if (!studio || !variables) return;
 
-      appendObject(cache, studio, GQL.AllStudiosForFilterDocument);
-
       // update stats
       updateStats(cache, "studio_count", 1);
 
@@ -1597,8 +1633,6 @@ export const useTagCreate = () =>
     update(cache, result) {
       const tag = result.data?.tagCreate;
       if (!tag) return;
-
-      appendObject(cache, tag, GQL.AllTagsForFilterDocument);
 
       // update stats
       updateStats(cache, "tag_count", 1);
@@ -1718,8 +1752,8 @@ export const mutateSaveFilter = (
         mode: filter.mode,
         name,
         find_filter: filter.makeFindFilter(),
-        object_filter: filter.makeSavedFindFilter(),
-        ui_options: filter.makeUIOptions(),
+        object_filter: filter.makeSavedFilter(),
+        ui_options: filter.makeSavedUIOptions(),
       },
     },
     update(cache, result) {
@@ -2131,7 +2165,7 @@ export const useConfigureDefaults = () =>
 
 function updateUIConfig(
   cache: ApolloCache<Record<string, StoreObject>>,
-  result: GQL.ConfigureUiMutation["configureUI"]
+  result: GQL.ConfigureUiMutation["configureUI"] | undefined
 ) {
   if (!result) return;
 

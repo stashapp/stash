@@ -12,6 +12,10 @@ An example using various aspects of `PluginApi` may be found in the source code 
 
 An instance of the React library.
 
+### `ReactDOM`
+
+An instance of the ReactDOM library.
+
 ### `GQL`
 
 This namespace contains the generated graphql client interface. This is a low-level interface. In many cases, `StashService` should be used instead.
@@ -25,6 +29,8 @@ This namespace contains the generated graphql client interface. This is a low-le
 - `Intl`
 - `FontAwesomeRegular`
 - `FontAwesomeSolid`
+- `Mousetrap`
+- `MousetrapPause`
 
 ### `register`
 

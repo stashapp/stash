@@ -275,7 +275,7 @@
         "log_to_terminal": "Log to terminal",
         "log_to_terminal_desc": "Logs to the terminal in addition to a file. Always true if file logging is disabled. Requires restart.",
         "maximum_session_age": "Maximum Session Age",
-        "maximum_session_age_desc": "Maximum idle time before a login session is expired, in seconds.",
+        "maximum_session_age_desc": "Maximum idle time before a login session is expired, in seconds. Requires restart.",
         "password": "Password",
         "password_desc": "Password to access Stash. Leave blank to disable user authentication",
         "stash-box_integration": "Stash-box integration",
@@ -687,9 +687,9 @@
         }
       },
       "scene_list": {
-        "heading": "Scene List",
+        "heading": "Grid View",
         "options": {
-          "show_studio_as_text": "Show Studios as text"
+          "show_studio_as_text": "Display studio overlay as text"
         }
       },
       "scene_player": {
@@ -1368,6 +1368,7 @@
   "sub_tag_count": "Sub-Tag Count",
   "sub_tag_of": "Sub-tag of {parent}",
   "sub_tags": "Sub-Tags",
+  "subsidiary_studio_count": "Subsidiary Studio Count",
   "subsidiary_studios": "Subsidiary Studios",
   "synopsis": "Synopsis",
   "tag": "Tag",

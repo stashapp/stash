@@ -40,11 +40,11 @@ import {
   faLink,
 } from "@fortawesome/free-solid-svg-icons";
 import { faInstagram, faTwitter } from "@fortawesome/free-brands-svg-icons";
-import { IUIConfig } from "src/core/config";
 import { useRatingKeybinds } from "src/hooks/keybinds";
 import { DetailImage } from "src/components/Shared/DetailImage";
 import { useLoadStickyHeader } from "src/hooks/detailsPanel";
 import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
+import { ExternalLink } from "src/components/Shared/ExternalLink";
 
 interface IProps {
   performer: GQL.PerformerDataFragment;
@@ -79,7 +79,7 @@ const PerformerPage: React.FC<IProps> = ({ performer, tabKey }) => {
 
   // Configuration settings
   const { configuration } = React.useContext(ConfigurationContext);
-  const uiConfig = configuration?.ui as IUIConfig | undefined;
+  const uiConfig = configuration?.ui;
   const abbreviateCounter = uiConfig?.abbreviateCounters ?? false;
   const enableBackgroundImage =
     uiConfig?.enablePerformerBackgroundImage ?? false;
@@ -159,7 +159,7 @@ const PerformerPage: React.FC<IProps> = ({ performer, tabKey }) => {
 
   useRatingKeybinds(
     true,
-    configuration?.ui?.ratingSystemOptions?.type,
+    configuration?.ui.ratingSystemOptions?.type,
     setRating
   );
 
@@ -336,18 +336,22 @@ const PerformerPage: React.FC<IProps> = ({ performer, tabKey }) => {
 
   function maybeRenderHeaderBackgroundImage() {
     if (enableBackgroundImage && !isEditing && activeImage) {
-      return (
-        <div className="background-image-container">
-          <picture>
-            <source src={activeImage} />
-            <img
-              className="background-image"
-              src={activeImage}
-              alt={`${performer.name} background`}
-            />
-          </picture>
-        </div>
-      );
+      const activeImageURL = new URL(activeImage);
+      let isDefaultImage = activeImageURL.searchParams.get("default");
+      if (!isDefaultImage) {
+        return (
+          <div className="background-image-container">
+            <picture>
+              <source src={activeImage} />
+              <img
+                className="background-image"
+                src={activeImage}
+                alt={`${performer.name} background`}
+              />
+            </picture>
+          </div>
+        );
+      }
     }
   }
 
@@ -489,57 +493,50 @@ const PerformerPage: React.FC<IProps> = ({ performer, tabKey }) => {
           <Icon icon={faHeart} />
         </Button>
         {performer.url && (
-          <Button className="minimal icon-link" title={performer.url}>
-            <a
-              href={TextUtils.sanitiseURL(performer.url)}
-              className="link"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <Icon icon={faLink} />
-            </a>
+          <Button
+            as={ExternalLink}
+            href={TextUtils.sanitiseURL(performer.url)}
+            className="minimal link"
+            title={performer.url}
+          >
+            <Icon icon={faLink} />
           </Button>
         )}
         {(urls ?? []).map((url, index) => (
-          <Button key={index} className="minimal icon-link" title={url}>
-            <a
-              href={TextUtils.sanitiseURL(url)}
-              className={`detail-link ${index}`}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <Icon icon={faLink} />
-            </a>
+          <Button
+            key={index}
+            as={ExternalLink}
+            href={TextUtils.sanitiseURL(url)}
+            className={`minimal link detail-link detail-link-${index}`}
+            title={url}
+          >
+            <Icon icon={faLink} />
           </Button>
         ))}
         {performer.twitter && (
-          <Button className="minimal icon-link" title={performer.twitter}>
-            <a
-              href={TextUtils.sanitiseURL(
-                performer.twitter,
-                TextUtils.twitterURL
-              )}
-              className="twitter"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <Icon icon={faTwitter} />
-            </a>
+          <Button
+            as={ExternalLink}
+            href={TextUtils.sanitiseURL(
+              performer.twitter,
+              TextUtils.twitterURL
+            )}
+            className="minimal link twitter"
+            title={performer.twitter}
+          >
+            <Icon icon={faTwitter} />
           </Button>
         )}
         {performer.instagram && (
-          <Button className="minimal icon-link" title={performer.instagram}>
-            <a
-              href={TextUtils.sanitiseURL(
-                performer.instagram,
-                TextUtils.instagramURL
-              )}
-              className="instagram"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <Icon icon={faInstagram} />
-            </a>
+          <Button
+            as={ExternalLink}
+            href={TextUtils.sanitiseURL(
+              performer.instagram,
+              TextUtils.instagramURL
+            )}
+            className="minimal link instagram"
+            title={performer.instagram}
+          >
+            <Icon icon={faInstagram} />
           </Button>
         )}
       </span>

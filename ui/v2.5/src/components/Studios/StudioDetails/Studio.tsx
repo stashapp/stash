@@ -38,13 +38,13 @@ import {
   faChevronDown,
   faChevronUp,
 } from "@fortawesome/free-solid-svg-icons";
-import { IUIConfig } from "src/core/config";
 import TextUtils from "src/utils/text";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { DetailImage } from "src/components/Shared/DetailImage";
 import { useRatingKeybinds } from "src/hooks/keybinds";
 import { useLoadStickyHeader } from "src/hooks/detailsPanel";
 import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
+import { ExternalLink } from "src/components/Shared/ExternalLink";
 
 interface IProps {
   studio: GQL.StudioDataFragment;
@@ -80,7 +80,7 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
 
   // Configuration settings
   const { configuration } = React.useContext(ConfigurationContext);
-  const uiConfig = configuration?.ui as IUIConfig | undefined;
+  const uiConfig = configuration?.ui;
   const abbreviateCounter = uiConfig?.abbreviateCounters ?? false;
   const enableBackgroundImage = uiConfig?.enableStudioBackgroundImage ?? false;
   const showAllDetails = uiConfig?.showAllDetails ?? true;
@@ -100,8 +100,7 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
   const [updateStudio] = useStudioUpdate();
   const [deleteStudio] = useStudioDestroy({ id: studio.id });
 
-  const showAllCounts = (configuration?.ui as IUIConfig)
-    ?.showChildStudioContent;
+  const showAllCounts = uiConfig?.showChildStudioContent;
   const sceneCount =
     (showAllCounts ? studio.scene_count_all : studio.scene_count) ?? 0;
   const galleryCount =
@@ -160,7 +159,7 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
 
   useRatingKeybinds(
     true,
-    configuration?.ui?.ratingSystemOptions?.type,
+    configuration?.ui.ratingSystemOptions?.type,
     setRating
   );
 
@@ -285,15 +284,13 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
   const renderClickableIcons = () => (
     <span className="name-icons">
       {studio.url && (
-        <Button className="minimal icon-link" title={studio.url}>
-          <a
-            href={TextUtils.sanitiseURL(studio.url)}
-            className="link"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Icon icon={faLink} />
-          </a>
+        <Button
+          as={ExternalLink}
+          href={TextUtils.sanitiseURL(studio.url)}
+          className="minimal link"
+          title={studio.url}
+        >
+          <Icon icon={faLink} />
         </Button>
       )}
     </span>
@@ -455,18 +452,22 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
   function maybeRenderHeaderBackgroundImage() {
     let studioImage = studio.image_path;
     if (enableBackgroundImage && !isEditing && studioImage) {
-      return (
-        <div className="background-image-container">
-          <picture>
-            <source src={studioImage} />
-            <img
-              className="background-image"
-              src={studioImage}
-              alt={`${studio.name} background`}
-            />
-          </picture>
-        </div>
-      );
+      const studioImageURL = new URL(studioImage);
+      let isDefaultImage = studioImageURL.searchParams.get("default");
+      if (!isDefaultImage) {
+        return (
+          <div className="background-image-container">
+            <picture>
+              <source src={studioImage} />
+              <img
+                className="background-image"
+                src={studioImage}
+                alt={`${studio.name} background`}
+              />
+            </picture>
+          </div>
+        );
+      }
     }
   }
 

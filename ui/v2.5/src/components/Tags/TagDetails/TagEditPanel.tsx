@@ -3,7 +3,6 @@ import { FormattedMessage, useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import * as yup from "yup";
 import { DetailsEditNavbar } from "src/components/Shared/DetailsEditNavbar";
-import { TagSelect } from "src/components/Shared/Select";
 import { Form } from "react-bootstrap";
 import ImageUtils from "src/utils/image";
 import { useFormik } from "formik";
@@ -15,6 +14,7 @@ import { useToast } from "src/hooks/Toast";
 import { handleUnsavedChanges } from "src/utils/navigation";
 import { formikUtils } from "src/utils/form";
 import { yupFormikValidate, yupUniqueAliases } from "src/utils/yup";
+import { Tag, TagSelect } from "../TagSelect";
 
 interface ITagEditPanel {
   tag: Partial<GQL.TagDataFragment>;
@@ -40,6 +40,9 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
 
   // Network state
   const [isLoading, setIsLoading] = useState(false);
+
+  const [childTags, setChildTags] = useState<Tag[]>([]);
+  const [parentTags, setParentTags] = useState<Tag[]>([]);
 
   const schema = yup.object({
     name: yup.string().required(),
@@ -68,6 +71,30 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
     validate: yupFormikValidate(schema),
     onSubmit: (values) => onSave(schema.cast(values)),
   });
+
+  function onSetParentTags(items: Tag[]) {
+    setParentTags(items);
+    formik.setFieldValue(
+      "parent_ids",
+      items.map((item) => item.id)
+    );
+  }
+
+  function onSetChildTags(items: Tag[]) {
+    setChildTags(items);
+    formik.setFieldValue(
+      "child_ids",
+      items.map((item) => item.id)
+    );
+  }
+
+  useEffect(() => {
+    setParentTags(tag.parents ?? []);
+  }, [tag.parents]);
+
+  useEffect(() => {
+    setChildTags(tag.children ?? []);
+  }, [tag.children]);
 
   // set up hotkeys
   useEffect(() => {
@@ -121,13 +148,8 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
     const control = (
       <TagSelect
         isMulti
-        onSelect={(items) =>
-          formik.setFieldValue(
-            "parent_ids",
-            items.map((item) => item.id)
-          )
-        }
-        ids={formik.values.parent_ids}
+        onSelect={onSetParentTags}
+        values={parentTags}
         excludeIds={[...(tag?.id ? [tag.id] : []), ...formik.values.child_ids]}
         creatable={false}
         hoverPlacement="right"
@@ -142,13 +164,8 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
     const control = (
       <TagSelect
         isMulti
-        onSelect={(items) =>
-          formik.setFieldValue(
-            "child_ids",
-            items.map((item) => item.id)
-          )
-        }
-        ids={formik.values.child_ids}
+        onSelect={onSetChildTags}
+        values={childTags}
         excludeIds={[...(tag?.id ? [tag.id] : []), ...formik.values.parent_ids]}
         creatable={false}
         hoverPlacement="right"

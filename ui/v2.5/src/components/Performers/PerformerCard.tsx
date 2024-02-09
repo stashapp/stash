@@ -1,10 +1,10 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import NavUtils from "src/utils/navigation";
 import TextUtils from "src/utils/text";
-import { GridCard } from "../Shared/GridCard";
+import { GridCard, calculateCardWidth } from "../Shared/GridCard";
 import { CountryFlag } from "../Shared/CountryFlag";
 import { SweatDrops } from "../Shared/SweatDrops";
 import { HoverPopover } from "../Shared/HoverPopover";
@@ -22,6 +22,7 @@ import { RatingBanner } from "../Shared/RatingBanner";
 import cx from "classnames";
 import { usePerformerUpdate } from "src/core/StashService";
 import { ILabeledId } from "src/models/list-filter/types";
+import ScreenUtils from "src/utils/screen";
 
 export interface IPerformerCardExtraCriteria {
   scenes?: Criterion<CriterionValue>[];
@@ -33,6 +34,7 @@ export interface IPerformerCardExtraCriteria {
 
 interface IPerformerCardProps {
   performer: GQL.PerformerDataFragment;
+  containerWidth?: number;
   ageFromDate?: string;
   selecting?: boolean;
   selected?: boolean;
@@ -42,6 +44,7 @@ interface IPerformerCardProps {
 
 export const PerformerCard: React.FC<IPerformerCardProps> = ({
   performer,
+  containerWidth,
   ageFromDate,
   selecting,
   selected,
@@ -66,6 +69,18 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
   );
 
   const [updatePerformer] = usePerformerUpdate();
+  const [cardWidth, setCardWidth] = useState<number>();
+
+  useEffect(() => {
+    if (!containerWidth || ScreenUtils.isMobile()) return;
+
+    let preferredCardWidth = 300;
+    let fittedCardWidth = calculateCardWidth(
+      containerWidth,
+      preferredCardWidth!
+    );
+    setCardWidth(fittedCardWidth);
+  }, [containerWidth]);
 
   function renderFavoriteIcon() {
     return (
@@ -251,6 +266,7 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
     <GridCard
       className="performer-card"
       url={`/performers/${performer.id}`}
+      width={cardWidth}
       pretitleIcon={
         <GenderIcon className="gender-icon" gender={performer.gender} />
       }

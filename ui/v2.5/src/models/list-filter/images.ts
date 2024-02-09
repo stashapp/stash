@@ -20,6 +20,7 @@ import {
 } from "./criteria/tags";
 import { ListFilterOptions, MediaSortByOptions } from "./filter-options";
 import { DisplayMode } from "./types";
+import { GalleriesCriterionOption } from "./criteria/galleries";
 
 const defaultSortBy = "path";
 
@@ -47,6 +48,7 @@ const defaultHiddenCriterionOptions = [
   createStringCriterionOption("photographer"),
   createMandatoryStringCriterionOption("checksum", "media_info.checksum"),
   PathCriterionOption,
+  GalleriesCriterionOption,
   createMandatoryNumberCriterionOption("o_counter"),
   ResolutionCriterionOption,
   OrientationCriterionOption,

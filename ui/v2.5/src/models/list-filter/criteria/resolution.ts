@@ -32,7 +32,7 @@ class BaseResolutionCriterionOption extends CriterionOption {
 }
 
 class BaseResolutionCriterion extends StringCriterion {
-  protected toCriterionInput(): ResolutionCriterionInput | undefined {
+  public toCriterionInput(): ResolutionCriterionInput | undefined {
     const value = stringToResolution(this.value);
 
     if (value !== undefined) {

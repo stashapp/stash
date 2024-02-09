@@ -22,7 +22,8 @@ import { useToast } from "src/hooks/Toast";
 import { withoutTypename } from "src/utils/data";
 import { Icon } from "../Shared/Icon";
 
-type PluginSettings = Record<string, Record<string, unknown>>;
+type PluginConfigs = Record<string, Record<string, unknown>>;
+
 export interface ISettingsContextState {
   loading: boolean;
   error: ApolloError | undefined;
@@ -32,7 +33,7 @@ export interface ISettingsContextState {
   scraping: GQL.ConfigScrapingInput;
   dlna: GQL.ConfigDlnaInput;
   ui: IUIConfig;
-  plugins: PluginSettings;
+  plugins: PluginConfigs;
 
   advancedMode: boolean;
 
@@ -51,6 +52,35 @@ export interface ISettingsContextState {
   refetch: () => void;
 }
 
+function noop() {}
+
+const emptyState: ISettingsContextState = {
+  loading: false,
+  error: undefined,
+  general: {},
+  interface: {},
+  defaults: {},
+  scraping: {},
+  dlna: {},
+  ui: {},
+  plugins: {},
+
+  advancedMode: false,
+
+  apiKey: "",
+
+  saveGeneral: noop,
+  saveInterface: noop,
+  saveDefaults: noop,
+  saveScraping: noop,
+  saveDLNA: noop,
+  saveUI: noop,
+  savePluginSettings: noop,
+  setAdvancedMode: noop,
+
+  refetch: noop,
+};
+
 export const SettingStateContext =
   React.createContext<ISettingsContextState | null>(null);
 
@@ -63,6 +93,16 @@ export const useSettings = () => {
 
   return context;
 };
+
+export function useSettingsOptional(): ISettingsContextState {
+  const context = React.useContext(SettingStateContext);
+
+  if (context === null) {
+    return emptyState;
+  }
+
+  return context;
+}
 
 export const SettingsContext: React.FC = ({ children }) => {
   const Toast = useToast();
@@ -98,8 +138,8 @@ export const SettingsContext: React.FC = ({ children }) => {
   const [pendingUI, setPendingUI] = useState<{}>();
   const [updateUIConfig] = useConfigureUI();
 
-  const [plugins, setPlugins] = useState<PluginSettings>({});
-  const [pendingPlugins, setPendingPlugins] = useState<PluginSettings>();
+  const [plugins, setPlugins] = useState<PluginConfigs>({});
+  const [pendingPlugins, setPendingPlugins] = useState<PluginConfigs>();
   const [updatePluginConfig] = useConfigurePlugin();
 
   const [updateSuccess, setUpdateSuccess] = useState<boolean>();
@@ -383,13 +423,15 @@ export const SettingsContext: React.FC = ({ children }) => {
     });
   }
 
+  type UIConfigInput = GQL.Scalars["Map"]["input"];
+
   // saves the configuration if no further changes are made after a half second
   const saveUIConfig = useDebounce(async (input: IUIConfig) => {
     try {
       setUpdateSuccess(undefined);
       await updateUIConfig({
         variables: {
-          input,
+          input: input as UIConfigInput,
         },
       });
 
@@ -440,7 +482,7 @@ export const SettingsContext: React.FC = ({ children }) => {
   }
 
   // saves the configuration if no further changes are made after a half second
-  const savePluginConfig = useDebounce(async (input: PluginSettings) => {
+  const savePluginConfig = useDebounce(async (input: PluginConfigs) => {
     try {
       setUpdateSuccess(undefined);
 

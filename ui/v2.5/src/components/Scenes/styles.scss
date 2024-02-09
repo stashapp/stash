@@ -82,6 +82,10 @@ textarea.scene-description {
   }
 }
 
+.justify-content-center .studio-card .studio-card-image {
+  width: 100%;
+}
+
 .studio-card {
   padding: 0.5rem;
 
@@ -162,6 +166,12 @@ textarea.scene-description {
   font-weight: 900;
   margin-right: 0.3rem;
   text-transform: uppercase;
+}
+
+.scene-card {
+  &-preview {
+    aspect-ratio: 16/9;
+  }
 }
 
 .scene-card,
@@ -687,21 +697,6 @@ input[type="range"].blue-slider {
   dl {
     margin-bottom: 0;
   }
-}
-
-.scene-table {
-  td:first-child {
-    padding: 0;
-  }
-
-  label {
-    margin: 0;
-    padding: 0.5rem;
-  }
-}
-
-.select-col {
-  width: 20px;
 }
 
 .scrape-dialog .rating-number.disabled {

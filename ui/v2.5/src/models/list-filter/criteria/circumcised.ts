@@ -25,7 +25,7 @@ export class CircumcisedCriterion extends MultiStringCriterion {
     super(CircumcisedCriterionOption);
   }
 
-  protected toCriterionInput(): CircumcisionCriterionInput {
+  public toCriterionInput(): CircumcisionCriterionInput {
     const value = this.value.map((v) =>
       stringToCircumcised(v)
     ) as CircumisedEnum[];

@@ -6,26 +6,10 @@ query MarkerStrings($q: String, $sort: String) {
   }
 }
 
-query AllStudiosForFilter {
-  allStudios {
-    id
-    name
-    aliases
-  }
-}
-
 query AllMoviesForFilter {
   allMovies {
     id
     name
-  }
-}
-
-query AllTagsForFilter {
-  allTags {
-    id
-    name
-    aliases
   }
 }
 

@@ -12,3 +12,16 @@ query FindTag($id: ID!) {
     ...TagData
   }
 }
+
+query FindTagsForSelect(
+  $filter: FindFilterType
+  $tag_filter: TagFilterType
+  $ids: [Int!]
+) {
+  findTags(filter: $filter, tag_filter: $tag_filter, ids: $ids) {
+    count
+    tags {
+      ...SelectTagData
+    }
+  }
+}

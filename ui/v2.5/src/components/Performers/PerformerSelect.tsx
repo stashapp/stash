@@ -15,7 +15,7 @@ import {
 } from "src/core/StashService";
 import { ConfigurationContext } from "src/hooks/Config";
 import { useIntl } from "react-intl";
-import { defaultMaxOptionsShown, IUIConfig } from "src/core/config";
+import { defaultMaxOptionsShown } from "src/core/config";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import {
   FilterSelectComponent,
@@ -25,6 +25,8 @@ import {
   Option as SelectOption,
 } from "../Shared/FilterSelect";
 import { useCompare } from "src/hooks/state";
+import { Link } from "react-router-dom";
+import { sortByRelevance } from "src/utils/query";
 
 export type SelectObject = {
   id: string;
@@ -46,7 +48,7 @@ export const PerformerSelect: React.FC<
   const { configuration } = React.useContext(ConfigurationContext);
   const intl = useIntl();
   const maxOptionsShown =
-    (configuration?.ui as IUIConfig).maxOptionsShown ?? defaultMaxOptionsShown;
+    configuration?.ui.maxOptionsShown ?? defaultMaxOptionsShown;
   const defaultCreatable =
     !configuration?.interface.disableDropdownCreate.performer ?? true;
 
@@ -58,7 +60,12 @@ export const PerformerSelect: React.FC<
     filter.sortBy = "name";
     filter.sortDirection = GQL.SortDirectionEnum.Asc;
     const query = await queryFindPerformersForSelect(filter);
-    return query.data.findPerformers.performers.map((performer) => ({
+    return sortByRelevance(
+      input,
+      query.data.findPerformers.performers,
+      (p) => p.name,
+      (p) => p.alias_list
+    ).map((performer) => ({
       value: performer.id,
       object: performer,
     }));
@@ -85,11 +92,10 @@ export const PerformerSelect: React.FC<
     thisOptionProps = {
       ...optionProps,
       children: (
-        <span>
-          <a
-            href={`/performers/${object.id}`}
+        <span className="react-select-image-option">
+          <Link
+            to={`/performers/${object.id}`}
             target="_blank"
-            rel="noreferrer"
             className="performer-select-image-link"
           >
             <img
@@ -97,7 +103,7 @@ export const PerformerSelect: React.FC<
               src={object.image_path ?? ""}
               loading="lazy"
             />
-          </a>
+          </Link>
           <span>{name}</span>
           {object.disambiguation && (
             <span className="performer-disambiguation">{` (${object.disambiguation})`}</span>

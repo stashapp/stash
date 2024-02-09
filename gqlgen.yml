@@ -36,6 +36,8 @@ models:
     model: github.com/stashapp/stash/internal/api.Timestamp
   BoolMap:
     model: github.com/stashapp/stash/internal/api.BoolMap
+  PluginConfigMap:
+    model: github.com/stashapp/stash/internal/api.PluginConfigMap
   # define to force resolvers
   Image:
     model: github.com/stashapp/stash/pkg/models.Image

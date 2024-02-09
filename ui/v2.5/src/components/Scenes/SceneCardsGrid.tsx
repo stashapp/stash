@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useRef } from "react";
 import * as GQL from "src/core/generated-graphql";
 import { SceneQueue } from "src/models/sceneQueue";
 import { SceneCard } from "./SceneCard";
+import { useContainerDimensions } from "../Shared/GridCard";
 
 interface ISceneCardsGrid {
   scenes: GQL.SlimSceneDataFragment[];
@@ -18,11 +19,14 @@ export const SceneCardsGrid: React.FC<ISceneCardsGrid> = ({
   zoomIndex,
   onSelectChange,
 }) => {
+  const componentRef = useRef<HTMLDivElement>(null);
+  const { width } = useContainerDimensions(componentRef);
   return (
-    <div className="row justify-content-center">
+    <div className="row justify-content-center" ref={componentRef}>
       {scenes.map((scene, index) => (
         <SceneCard
           key={scene.id}
+          containerWidth={width}
           scene={scene}
           queue={queue}
           index={index}
