@@ -62,7 +62,9 @@ export const GallerySelect: React.FC<
       return !exclude.includes(gallery.id.toString());
     });
 
-    return sortByRelevance(input, ret, galleryTitle).map((gallery) => ({
+    return sortByRelevance(input, ret, galleryTitle, (g) => {
+      return g.files.map((f) => f.path).concat(g.folder?.path ?? []);
+    }).map((gallery) => ({
       value: gallery.id,
       object: gallery,
     }));
@@ -84,6 +86,13 @@ export const GallerySelect: React.FC<
       matchedPath = object.files?.find((a) =>
         a.path.toLowerCase().includes(inputValue.toLowerCase())
       )?.path;
+
+      if (
+        !matchedPath &&
+        object.folder?.path.toLowerCase().includes(inputValue.toLowerCase())
+      ) {
+        matchedPath = object.folder?.path;
+      }
     }
 
     thisOptionProps = {
@@ -91,7 +100,9 @@ export const GallerySelect: React.FC<
       children: (
         <span>
           <span>{title}</span>
-          {matchedPath && <span className="alias">{` (${matchedPath})`}</span>}
+          {matchedPath && (
+            <span className="gallery-select-alias">{` (${matchedPath})`}</span>
+          )}
         </span>
       ),
     };
