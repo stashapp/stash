@@ -423,13 +423,15 @@ export const SettingsContext: React.FC = ({ children }) => {
     });
   }
 
+  type UIConfigInput = GQL.Scalars["Map"]["input"];
+
   // saves the configuration if no further changes are made after a half second
   const saveUIConfig = useDebounce(async (input: IUIConfig) => {
     try {
       setUpdateSuccess(undefined);
       await updateUIConfig({
         variables: {
-          input,
+          input: input as UIConfigInput,
         },
       });
 
