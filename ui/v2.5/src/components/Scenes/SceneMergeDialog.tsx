@@ -1,5 +1,5 @@
 import { Form, Col, Row, Button, FormControl } from "react-bootstrap";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import * as GQL from "src/core/generated-graphql";
 import { Icon } from "../Shared/Icon";
 import { LoadingIndicator } from "../Shared/LoadingIndicator";
@@ -20,7 +20,6 @@ import {
   ScrapedTextAreaRow,
 } from "../Shared/ScrapeDialog/ScrapeDialog";
 import { clone, uniq } from "lodash-es";
-import { galleryTitle } from "src/core/galleries";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { ModalComponent } from "../Shared/Modal";
 import { IHasStoredID, sortStoredIdObjects } from "src/utils/data";
@@ -302,34 +301,6 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
     loadImages();
   }, [sources, dest]);
 
-  const convertGalleries = useCallback(
-    (ids?: string[]) => {
-      const all = [dest, ...sources];
-      return ids
-        ?.map((g) =>
-          all
-            .map((s) => s.galleries)
-            .flat()
-            .find((gg) => g === gg.id)
-        )
-        .map((g) => {
-          return {
-            id: g!.id,
-            title: galleryTitle(g!),
-          };
-        });
-    },
-    [dest, sources]
-  );
-
-  const originalGalleries = useMemo(() => {
-    return convertGalleries(galleries.originalValue);
-  }, [galleries, convertGalleries]);
-
-  const newGalleries = useMemo(() => {
-    return convertGalleries(galleries.newValue);
-  }, [galleries, convertGalleries]);
-
   // ensure this is updated if fields are changed
   const hasValues = useMemo(() => {
     return hasScrapedValues([
@@ -492,17 +463,19 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
           renderOriginalField={() => (
             <GallerySelect
               className="form-control react-select"
-              selected={originalGalleries ?? []}
+              ids={galleries.originalValue ?? []}
               onSelect={() => {}}
-              disabled
+              isMulti
+              isDisabled
             />
           )}
           renderNewField={() => (
             <GallerySelect
               className="form-control react-select"
-              selected={newGalleries ?? []}
+              ids={galleries.newValue ?? []}
               onSelect={() => {}}
-              disabled
+              isMulti
+              isDisabled
             />
           )}
           onChange={(value) => setGalleries(value)}
