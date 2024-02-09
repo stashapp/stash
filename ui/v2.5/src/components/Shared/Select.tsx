@@ -23,7 +23,6 @@ import { SelectComponents } from "react-select/dist/declarations/src/components"
 import { ConfigurationContext } from "src/hooks/Config";
 import { useIntl } from "react-intl";
 import { objectTitle } from "src/core/files";
-import { galleryTitle } from "src/core/galleries";
 import { defaultMaxOptionsShown } from "src/core/config";
 import { useDebounce } from "src/hooks/debounce";
 import { Placement } from "react-bootstrap/esm/Overlay";
@@ -32,6 +31,7 @@ import { Icon } from "./Icon";
 import { faTableColumns } from "@fortawesome/free-solid-svg-icons";
 import { TagIDSelect } from "../Tags/TagSelect";
 import { StudioIDSelect } from "../Studios/StudioSelect";
+import { GalleryIDSelect } from "../Galleries/GallerySelect";
 
 export type SelectObject = {
   id: string;
@@ -47,7 +47,8 @@ interface ITypeProps {
     | "tags"
     | "scene_tags"
     | "performer_tags"
-    | "movies";
+    | "movies"
+    | "galleries";
 }
 interface IFilterProps {
   ids?: string[];
@@ -333,55 +334,10 @@ const FilterSelectComponent = <T extends boolean>(
   );
 };
 
-export const GallerySelect: React.FC<ITitledSelect> = (props) => {
-  const [query, setQuery] = useState<string>("");
-  const { data, loading } = GQL.useFindGalleriesQuery({
-    skip: query === "",
-    variables: {
-      filter: {
-        q: query,
-      },
-    },
-  });
-
-  const galleries = data?.findGalleries.galleries ?? [];
-  const items = galleries.map((g) => ({
-    label: galleryTitle(g),
-    value: g.id,
-  }));
-
-  const onInputChange = useDebounce(setQuery, 500);
-
-  const onChange = (selectedItems: OnChangeValue<Option, boolean>) => {
-    const selected = getSelectedItems(selectedItems);
-    props.onSelect(
-      selected.map((s) => ({
-        id: s.value,
-        title: s.label,
-      }))
-    );
-  };
-
-  const options = props.selected.map((g) => ({
-    value: g.id,
-    label: g.title ?? "Unknown",
-  }));
-
-  return (
-    <SelectComponent
-      className={props.className}
-      onChange={onChange}
-      onInputChange={onInputChange}
-      isLoading={loading}
-      items={items}
-      selectedOptions={options}
-      isMulti
-      placeholder="Search for gallery..."
-      noOptionsMessage={query === "" ? null : "No galleries found."}
-      showDropdown={false}
-      isDisabled={props.disabled}
-    />
-  );
+export const GallerySelect: React.FC<
+  IFilterProps & { excludeIds?: string[] }
+> = (props) => {
+  return <GalleryIDSelect {...props} />;
 };
 
 export const SceneSelect: React.FC<ITitledSelect> = (props) => {
@@ -590,14 +546,17 @@ export const TagSelect: React.FC<
 };
 
 export const FilterSelect: React.FC<IFilterProps & ITypeProps> = (props) => {
-  if (props.type === "performers") {
-    return <PerformerSelect {...props} creatable={false} />;
-  } else if (props.type === "studios") {
-    return <StudioSelect {...props} creatable={false} />;
-  } else if (props.type === "movies") {
-    return <MovieSelect {...props} creatable={false} />;
-  } else {
-    return <TagSelect {...props} creatable={false} />;
+  switch (props.type) {
+    case "performers":
+      return <PerformerSelect {...props} creatable={false} />;
+    case "studios":
+      return <StudioSelect {...props} creatable={false} />;
+    case "movies":
+      return <MovieSelect {...props} creatable={false} />;
+    case "galleries":
+      return <GallerySelect {...props} />;
+    default:
+      return <TagSelect {...props} creatable={false} />;
   }
 };
 

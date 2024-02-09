@@ -23,6 +23,7 @@ function usePerformerQuery(query: string) {
     return sortByRelevance(
       query,
       data?.findPerformers.performers ?? [],
+      (p) => p.name,
       (p) => p.alias_list
     ).map((p) => {
       return {

@@ -23,6 +23,7 @@ function useTagQuery(query: string) {
     return sortByRelevance(
       query,
       data?.findTags.tags ?? [],
+      (t) => t.name,
       (t) => t.aliases
     ).map((p) => {
       return {

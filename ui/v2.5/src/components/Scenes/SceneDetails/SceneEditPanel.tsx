@@ -19,7 +19,7 @@ import {
   mutateReloadScrapers,
   queryScrapeSceneQueryFragment,
 } from "src/core/StashService";
-import { GallerySelect, MovieSelect } from "src/components/Shared/Select";
+import { MovieSelect } from "src/components/Shared/Select";
 import { Icon } from "src/components/Shared/Icon";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { ImageInput } from "src/components/Shared/ImageInput";
@@ -49,6 +49,7 @@ import {
 import { formikUtils } from "src/utils/form";
 import { Tag, TagSelect } from "src/components/Tags/TagSelect";
 import { Studio, StudioSelect } from "src/components/Studios/StudioSelect";
+import { Gallery, GallerySelect } from "src/components/Galleries/GallerySelect";
 
 const SceneScrapeDialog = lazyComponent(() => import("./SceneScrapeDialog"));
 const SceneQueryModal = lazyComponent(() => import("./SceneQueryModal"));
@@ -73,9 +74,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
   const intl = useIntl();
   const Toast = useToast();
 
-  const [galleries, setGalleries] = useState<{ id: string; title: string }[]>(
-    []
-  );
+  const [galleries, setGalleries] = useState<Gallery[]>([]);
   const [performers, setPerformers] = useState<Performer[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
   const [studio, setStudio] = useState<Studio | null>(null);
@@ -95,6 +94,8 @@ export const SceneEditPanel: React.FC<IProps> = ({
       scene.galleries?.map((g) => ({
         id: g.id,
         title: galleryTitle(g),
+        files: g.files,
+        folder: g.folder,
       })) ?? []
     );
   }, [scene.galleries]);
@@ -188,12 +189,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
     formik.setFieldValue("rating100", v);
   }
 
-  interface IGallerySelectValue {
-    id: string;
-    title: string;
-  }
-
-  function onSetGalleries(items: IGallerySelectValue[]) {
+  function onSetGalleries(items: Gallery[]) {
     setGalleries(items);
     formik.setFieldValue(
       "gallery_ids",
@@ -725,7 +721,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
     const title = intl.formatMessage({ id: "galleries" });
     const control = (
       <GallerySelect
-        selected={galleries}
+        values={galleries}
         onSelect={(items) => onSetGalleries(items)}
         isMulti
       />

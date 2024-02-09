@@ -38,3 +38,14 @@ fragment GalleryData on Gallery {
     ...SlimSceneData
   }
 }
+
+fragment SelectGalleryData on Gallery {
+  id
+  title
+  files {
+    path
+  }
+  folder {
+    path
+  }
+}
