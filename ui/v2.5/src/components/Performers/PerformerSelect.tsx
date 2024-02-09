@@ -63,6 +63,7 @@ export const PerformerSelect: React.FC<
     return sortByRelevance(
       input,
       query.data.findPerformers.performers,
+      (p) => p.name,
       (p) => p.alias_list
     ).map((performer) => ({
       value: performer.id,

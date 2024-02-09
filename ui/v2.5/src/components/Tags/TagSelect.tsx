@@ -70,7 +70,12 @@ export const TagSelect: React.FC<
       return !exclude.includes(tag.id.toString());
     });
 
-    return sortByRelevance(input, ret, (o) => o.aliases).map((tag) => ({
+    return sortByRelevance(
+      input,
+      ret,
+      (t) => t.name,
+      (t) => t.aliases
+    ).map((tag) => ({
       value: tag.id,
       object: tag,
     }));
