@@ -522,6 +522,10 @@
       scrollbar-width: 10px;
     }
     /* stylelint-enable selector-max-universal */
+
+    .scroll-to-top-button {
+      display: none;
+    }
   }
 }
 
@@ -555,6 +559,12 @@
 
   .list-page .list-page-results {
     max-width: 0;
+
+    .scroll-to-top-button {
+      bottom: 6rem;
+      position: fixed;
+      right: 3rem;
+    }
   }
 
   .sidebar-container {

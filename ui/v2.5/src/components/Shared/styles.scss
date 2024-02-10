@@ -579,3 +579,14 @@ div.react-datepicker {
   align-items: baseline;
   display: flex;
 }
+
+.scroll-to-top-button {
+  border-radius: 50%;
+  display: none;
+  opacity: 75%;
+  z-index: 1000;
+
+  &.show {
+    display: block;
+  }
+}

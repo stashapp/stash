@@ -16,6 +16,7 @@ import {
 import { useListSelect } from "src/hooks/listSelect";
 import { LoadingIndicator } from "../Shared/LoadingIndicator";
 import { CriterionType } from "src/models/list-filter/types";
+import { ScrollToTopButton, useScrollTop } from "../Shared/ScrollToTopButton";
 
 type ListSelectProps = ReturnType<typeof useListSelect>;
 
@@ -54,6 +55,10 @@ export const ListPage: React.FC<
   const [sidebarCollapsed, setSidebarCollapsed] = useState(
     initialSidebarCollapsed ?? false
   );
+
+  // scroll to top button only applies when in small viewports where the header is not
+  // sticky. useScrollTop returns the window scroll position
+  const scrollTop = useScrollTop();
 
   const { criterionOptions, setCriterionOptions, sidebarOptions } =
     useFilterConfig(filter.mode);
@@ -141,6 +146,12 @@ export const ListPage: React.FC<
                 currentPage={filter.currentPage}
                 totalItems={totalCount}
                 metadataByline={metadataByline}
+              />
+              <ScrollToTopButton
+                scrollTop={scrollTop}
+                onClick={() => {
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }}
               />
               {children}
             </>
