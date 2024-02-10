@@ -37,7 +37,7 @@ const CommonLinkComponent: React.FC<ICommonLinkProps> = ({
 };
 
 interface IPerformerLinkProps {
-  performer: INamedObject;
+  performer: INamedObject & { disambiguation?: string | null };
   linkType?: "scene" | "gallery" | "image";
   className?: string;
 }
@@ -63,7 +63,10 @@ export const PerformerLink: React.FC<IPerformerLinkProps> = ({
 
   return (
     <CommonLinkComponent link={link} className={className}>
-      {title}
+      <span>{title}</span>
+      {performer.disambiguation && (
+        <span className="performer-disambiguation">{` (${performer.disambiguation})`}</span>
+      )}
     </CommonLinkComponent>
   );
 };
