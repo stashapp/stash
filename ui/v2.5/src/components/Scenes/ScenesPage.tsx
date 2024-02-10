@@ -304,7 +304,7 @@ const ScenesPageImpl: React.FC<{
 
   function renderButtons() {
     return (
-      <div>
+      <>
         <div>
           <Button
             className="play-scenes-button"
@@ -336,7 +336,7 @@ const ScenesPageImpl: React.FC<{
         />
 
         <ListOperationDropdown operations={operations} />
-      </div>
+      </>
     );
   }
 

@@ -842,6 +842,22 @@
       justify-content: center;
       max-width: 100%;
     }
+
+    &.selected-list-header {
+      .list-header-left,
+      .list-header-right {
+        flex-basis: 50%;
+        max-width: 50%;
+      }
+
+      .list-header-left {
+        justify-content: flex-start;
+      }
+
+      .list-header-right {
+        justify-content: flex-end;
+      }
+    }
   }
 
   .list-page-results .list-header .show-siderbar-button-xs {

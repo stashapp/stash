@@ -312,7 +312,7 @@ export const ImagesPageImpl: React.FC<{
 
   function renderButtons() {
     return (
-      <div>
+      <>
         <ListOperationButtons
           itemsSelected
           onEdit={() =>
@@ -334,7 +334,7 @@ export const ImagesPageImpl: React.FC<{
         />
 
         <ListOperationDropdown operations={operations} />
-      </div>
+      </>
     );
   }
 

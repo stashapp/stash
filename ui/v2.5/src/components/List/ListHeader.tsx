@@ -228,15 +228,15 @@ export const SelectedListHeader: React.FC<ISelectedListHeader> = ({
   selectedButtons = () => null,
 }) => {
   return (
-    <div className="list-header">
-      <div>
+    <div className="list-header selected-list-header">
+      <div className="list-header-left">
         <span>{selectedIds.size} items selected</span>
         <Button variant="link" onClick={() => onSelectAll()}>
           <FormattedMessage id="actions.select_all" />
         </Button>
       </div>
-      {selectedButtons(selectedIds)}
-      <div>
+      <div className="list-header-center">{selectedButtons(selectedIds)}</div>
+      <div className="list-header-right">
         <Button className="minimal select-none" onClick={() => onSelectNone()}>
           <Icon icon={faTimes} />
         </Button>

@@ -182,7 +182,7 @@ export const GalleriesPageImpl: React.FC<{
 
   function renderButtons() {
     return (
-      <div>
+      <>
         <ListOperationButtons
           itemsSelected
           onEdit={() =>
@@ -204,7 +204,7 @@ export const GalleriesPageImpl: React.FC<{
         />
 
         <ListOperationDropdown operations={operations} />
-      </div>
+      </>
     );
   }
 

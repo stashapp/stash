@@ -112,7 +112,12 @@ export const ListPage: React.FC<
         collapsed={sidebarCollapsed}
         setCollapsed={(v) => setSidebarCollapsed(v)}
       />
-      <div className={cx("list-page-results", { expanded: sidebarCollapsed })}>
+      <div
+        className={cx("list-page-results", {
+          expanded: sidebarCollapsed,
+          "items-selected": selectedIds.size > 0,
+        })}
+      >
         <ListHeader
           filter={filter}
           setFilter={setFilter}
