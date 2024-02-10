@@ -7,7 +7,7 @@ import { GalleryLink, TagLink } from "src/components/Shared/TagLink";
 import { HoverPopover } from "src/components/Shared/HoverPopover";
 import { SweatDrops } from "src/components/Shared/SweatDrops";
 import { PerformerPopoverButton } from "src/components/Shared/PerformerPopoverButton";
-import { GridCard, calculateCardWidth } from "src/components/Shared/GridCard";
+import { GridCard, calculateCardWidth } from "src/components/Shared/GridCard/GridCard";
 import { RatingBanner } from "src/components/Shared/RatingBanner";
 import {
   faBox,

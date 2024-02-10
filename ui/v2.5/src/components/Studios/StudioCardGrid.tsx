@@ -1,6 +1,6 @@
 import React, { useRef } from "react";
 import * as GQL from "src/core/generated-graphql";
-import { useContainerDimensions } from "../Shared/GridCard";
+import { useContainerDimensions } from "../Shared/GridCard/GridCard";
 import { StudioCard } from "./StudioCard";
 
 interface IStudioCardGrid {

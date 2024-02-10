@@ -2,7 +2,7 @@ import { Button, ButtonGroup, OverlayTrigger, Tooltip } from "react-bootstrap";
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
-import { GridCard, calculateCardWidth } from "../Shared/GridCard";
+import { GridCard, calculateCardWidth } from "../Shared/GridCard/GridCard";
 import { HoverPopover } from "../Shared/HoverPopover";
 import { Icon } from "../Shared/Icon";
 import { SceneLink, TagLink } from "../Shared/TagLink";

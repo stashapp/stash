@@ -18,7 +18,7 @@ import TextUtils from "src/utils/text";
 import { SceneQueue } from "src/models/sceneQueue";
 import { ConfigurationContext } from "src/hooks/Config";
 import { PerformerPopoverButton } from "../Shared/PerformerPopoverButton";
-import { GridCard, calculateCardWidth } from "../Shared/GridCard";
+import { GridCard, calculateCardWidth } from "../Shared/GridCard/GridCard";
 import { RatingBanner } from "../Shared/RatingBanner";
 import { FormattedNumber } from "react-intl";
 import {
