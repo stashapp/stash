@@ -33,6 +33,7 @@ import { objectPath, objectTitle } from "src/core/files";
 import { PreviewScrubber } from "./PreviewScrubber";
 import { PatchComponent } from "src/pluginApi";
 import ScreenUtils from "src/utils/screen";
+import { StudioOverlay } from "../Shared/GridCard/StudioOverlay";
 
 interface IScenePreviewProps {
   isPortrait: boolean;
@@ -328,44 +329,7 @@ const SceneCardDetails = PatchComponent(
 const SceneCardOverlays = PatchComponent(
   "SceneCard.Overlays",
   (props: ISceneCardProps) => {
-    const { configuration } = React.useContext(ConfigurationContext);
-
-    function renderStudioThumbnail() {
-      const studioImage = props.scene.studio?.image_path;
-      const studioName = props.scene.studio?.name;
-
-      if (configuration?.interface.showStudioAsText || !studioImage) {
-        return studioName;
-      }
-
-      const studioImageURL = new URL(studioImage);
-      if (studioImageURL.searchParams.get("default") === "true") {
-        return studioName;
-      }
-
-      return (
-        <img
-          className="image-thumbnail"
-          loading="lazy"
-          alt={studioName}
-          src={studioImage}
-        />
-      );
-    }
-
-    function maybeRenderSceneStudioOverlay() {
-      if (!props.scene.studio) return;
-
-      return (
-        <div className="scene-studio-overlay">
-          <Link to={`/studios/${props.scene.studio.id}`}>
-            {renderStudioThumbnail()}
-          </Link>
-        </div>
-      );
-    }
-
-    return <>{maybeRenderSceneStudioOverlay()}</>;
+    return <StudioOverlay studio={props.scene.studio} />;
   }
 );
 
