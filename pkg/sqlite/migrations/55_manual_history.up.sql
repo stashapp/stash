@@ -79,7 +79,7 @@ WITH max_view_count AS (
 INSERT INTO scenes_view_dates (scene_id, view_date)
 SELECT scenes.id, 
        CASE 
-         WHEN numbers.n = scenes.play_count THEN scenes.last_played_at
+         WHEN numbers.n = scenes.play_count THEN COALESCE(scenes.last_played_at, scenes.created_at) 
          ELSE scenes.created_at
        END AS view_date
 FROM scenes
