@@ -1,5 +1,5 @@
 import { Tabs, Tab, Dropdown, Button } from "react-bootstrap";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useHistory, Redirect, RouteComponentProps } from "react-router-dom";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Helmet } from "react-helmet";
@@ -124,20 +124,24 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
     return ret;
   }, [sceneCount, imageCount, galleryCount, sceneMarkerCount, performerCount]);
 
-  if (tabKey === defaultTab) {
-    tabKey = populatedDefaultTab;
-  }
+  const setTabKey = useCallback(
+    (newTabKey: string | null) => {
+      if (!newTabKey || newTabKey === defaultTab)
+        newTabKey = populatedDefaultTab;
+      if (newTabKey === tabKey) return;
 
-  function setTabKey(newTabKey: string | null) {
-    if (!newTabKey || newTabKey === defaultTab) newTabKey = populatedDefaultTab;
-    if (newTabKey === tabKey) return;
+      if (isTabKey(newTabKey)) {
+        history.replace(`/tags/${tag.id}/${newTabKey}`);
+      }
+    },
+    [populatedDefaultTab, tabKey, history, tag.id]
+  );
 
-    if (newTabKey === populatedDefaultTab) {
-      history.replace(`/tags/${tag.id}`);
-    } else if (isTabKey(newTabKey)) {
-      history.replace(`/tags/${tag.id}/${newTabKey}`);
+  useEffect(() => {
+    if (tabKey === defaultTab) {
+      setTabKey(populatedDefaultTab);
     }
-  }
+  }, [setTabKey, populatedDefaultTab, tabKey]);
 
   // set up hotkeys
   useEffect(() => {

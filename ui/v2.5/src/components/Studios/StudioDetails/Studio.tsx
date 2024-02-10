@@ -1,5 +1,5 @@
 import { Button, Tabs, Tab } from "react-bootstrap";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useHistory, Redirect, RouteComponentProps } from "react-router-dom";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Helmet } from "react-helmet";
@@ -138,9 +138,24 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
     studio,
   ]);
 
-  if (tabKey === defaultTab) {
-    tabKey = populatedDefaultTab;
-  }
+  const setTabKey = useCallback(
+    (newTabKey: string | null) => {
+      if (!newTabKey || newTabKey === defaultTab)
+        newTabKey = populatedDefaultTab;
+      if (newTabKey === tabKey) return;
+
+      if (isTabKey(newTabKey)) {
+        history.replace(`/studios/${studio.id}/${newTabKey}`);
+      }
+    },
+    [populatedDefaultTab, tabKey, history, studio.id]
+  );
+
+  useEffect(() => {
+    if (tabKey === defaultTab) {
+      setTabKey(populatedDefaultTab);
+    }
+  }, [setTabKey, populatedDefaultTab, tabKey]);
 
   // set up hotkeys
   useEffect(() => {
@@ -267,17 +282,6 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
       return (
         <DetailImage className="logo" alt={studio.name} src={studioImage} />
       );
-    }
-  }
-
-  function setTabKey(newTabKey: string | null) {
-    if (!newTabKey || newTabKey === defaultTab) newTabKey = populatedDefaultTab;
-    if (newTabKey === tabKey) return;
-
-    if (newTabKey === populatedDefaultTab) {
-      history.replace(`/studios/${studio.id}`);
-    } else if (isTabKey(newTabKey)) {
-      history.replace(`/studios/${studio.id}/${newTabKey}`);
     }
   }
 

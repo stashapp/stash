@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Button, Tabs, Tab, Col, Row } from "react-bootstrap";
 import { useIntl } from "react-intl";
 import { useHistory, Redirect, RouteComponentProps } from "react-router-dom";
@@ -133,20 +133,24 @@ const PerformerPage: React.FC<IProps> = ({ performer, tabKey }) => {
     return ret;
   }, [performer]);
 
-  if (tabKey === defaultTab) {
-    tabKey = populatedDefaultTab;
-  }
+  const setTabKey = useCallback(
+    (newTabKey: string | null) => {
+      if (!newTabKey || newTabKey === defaultTab)
+        newTabKey = populatedDefaultTab;
+      if (newTabKey === tabKey) return;
 
-  function setTabKey(newTabKey: string | null) {
-    if (!newTabKey || newTabKey === defaultTab) newTabKey = populatedDefaultTab;
-    if (newTabKey === tabKey) return;
+      if (isTabKey(newTabKey)) {
+        history.replace(`/performers/${performer.id}/${newTabKey}`);
+      }
+    },
+    [populatedDefaultTab, tabKey, history, performer.id]
+  );
 
-    if (newTabKey === populatedDefaultTab) {
-      history.replace(`/performers/${performer.id}`);
-    } else if (isTabKey(newTabKey)) {
-      history.replace(`/performers/${performer.id}/${newTabKey}`);
+  useEffect(() => {
+    if (tabKey === defaultTab) {
+      setTabKey(populatedDefaultTab);
     }
-  }
+  }, [setTabKey, populatedDefaultTab, tabKey]);
 
   async function onAutoTag() {
     try {
