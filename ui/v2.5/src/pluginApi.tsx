@@ -15,6 +15,7 @@ import * as Intl from "react-intl";
 import * as FontAwesomeSolid from "@fortawesome/free-solid-svg-icons";
 import * as FontAwesomeRegular from "@fortawesome/free-regular-svg-icons";
 import { useSpriteInfo } from "./hooks/sprite";
+import { useToast } from "./hooks/Toast";
 
 // due to code splitting, some components may not have been loaded when a plugin
 // page is loaded. This function will load all components passed to it.
@@ -94,10 +95,15 @@ function registerRoute(path: string, component: React.FC) {
 
 export function RegisterComponent(component: string, fn: Function) {
   // register with the plugin api
+  if (components[component]) {
+    throw new Error("Component " + component + " has already been registered");
+  }
+
   components[component] = fn;
 
   return fn;
 }
+
 export const PluginApi = {
   React,
   ReactDOM,
@@ -131,6 +137,7 @@ export const PluginApi = {
   hooks: {
     useLoadComponents,
     useSpriteInfo,
+    useToast,
   },
   patch: {
     // intercept the arguments of supported functions
