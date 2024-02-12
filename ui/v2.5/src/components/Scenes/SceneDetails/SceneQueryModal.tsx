@@ -47,7 +47,7 @@ const SceneSearchResultDetails: React.FC<ISceneSearchResultDetailsProps> = ({
               <Badge
                 className="tag-item"
                 variant="secondary"
-                key={tag.stored_id}
+                key={tag.name}
               >
                 {tag.name}
               </Badge>
