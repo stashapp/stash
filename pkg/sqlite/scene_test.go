@@ -1299,7 +1299,7 @@ func Test_sceneQueryBuilder_AddO(t *testing.T) {
 				t.Errorf("sceneQueryBuilder.AddO() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if got != tt.want {
+			if len(got) != tt.want {
 				t.Errorf("sceneQueryBuilder.AddO() = %v, want %v", got, tt.want)
 			}
 		})
@@ -1336,7 +1336,7 @@ func Test_sceneQueryBuilder_DeleteO(t *testing.T) {
 				t.Errorf("sceneQueryBuilder.DeleteO() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if got != tt.want {
+			if len(got) != tt.want {
 				t.Errorf("sceneQueryBuilder.DeleteO() = %v, want %v", got, tt.want)
 			}
 		})
@@ -4546,7 +4546,7 @@ func TestSceneStore_AddView(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			withRollbackTxn(func(ctx context.Context) error {
-				newVal, err := qb.AddViews(ctx, tt.sceneID, nil)
+				views, err := qb.AddViews(ctx, tt.sceneID, nil)
 				if (err != nil) != tt.wantErr {
 					t.Errorf("SceneStore.AddView() error = %v, wantErr %v", err, tt.wantErr)
 				}
@@ -4556,7 +4556,7 @@ func TestSceneStore_AddView(t *testing.T) {
 				}
 
 				assert := assert.New(t)
-				assert.Equal(tt.expectedCount, newVal)
+				assert.Equal(tt.expectedCount, len(views))
 
 				// find the scene and check the count
 				count, err := qb.CountViews(ctx, tt.sceneID)

@@ -547,16 +547,17 @@ export const useScenesDestroy = (input: GQL.ScenesDestroyInput) =>
   });
 
 export const useSceneIncrementO = (id: string) =>
-  GQL.useSceneIncrementOMutation({
+  GQL.useSceneAddOMutation({
     variables: { id },
     update(cache, result, { variables }) {
       // this is not perfectly accurate, the time is set server-side
       // it isn't even displayed anywhere in the UI anyway
       const at = new Date().toISOString();
 
-      const updatedOCount = result.data?.sceneIncrementO;
-      if (updatedOCount === undefined || !variables) return;
+      const mutationResult = result.data?.sceneAddO;
+      if (!mutationResult || !variables) return;
 
+      const { history } = mutationResult;
       const { times } = variables;
       const timeArray = !times ? [at] : Array.isArray(times) ? times : [times];
 
@@ -590,13 +591,13 @@ export const useSceneIncrementO = (id: string) =>
       cache.modify({
         id: cache.identify({ __typename: "Scene", id }),
         fields: {
-          o_history(value) {
-            return timeArray.concat(value);
+          o_history() {
+            return history;
           },
         },
       });
 
-      updateO(cache, "Scene", id, updatedOCount);
+      updateO(cache, "Scene", id, history.length);
       evictQueries(cache, [
         GQL.FindScenesDocument, // filter by o_counter
         GQL.FindPerformersDocument, // filter by o_counter
@@ -604,25 +605,14 @@ export const useSceneIncrementO = (id: string) =>
     },
   });
 
-function removeEntries(src: string[], toRemove: string[]) {
-  let leftover = toRemove;
-  return src.filter((v: string) => {
-    const index = leftover.indexOf(v);
-    if (index !== -1) {
-      leftover.splice(index, 1);
-      return false;
-    }
-    return true;
-  });
-}
-
 export const useSceneDecrementO = (id: string) =>
-  GQL.useSceneDecrementOMutation({
+  GQL.useSceneDeleteOMutation({
     variables: { id },
     update(cache, result, { variables }) {
-      const updatedOCount = result.data?.sceneDecrementO;
-      if (updatedOCount === undefined || !variables) return;
+      const mutationResult = result.data?.sceneDeleteO;
+      if (!mutationResult || !variables) return;
 
+      const { history } = mutationResult;
       const { times } = variables;
       const timeArray = !times ? null : Array.isArray(times) ? times : [times];
 
@@ -656,17 +646,13 @@ export const useSceneDecrementO = (id: string) =>
       cache.modify({
         id: cache.identify({ __typename: "Scene", id }),
         fields: {
-          o_history(value) {
-            const ret = timeArray
-              ? removeEntries(value, timeArray)
-              : value.slice(1);
-
-            return ret;
+          o_history() {
+            return history;
           },
         },
       });
 
-      updateO(cache, "Scene", id, updatedOCount);
+      updateO(cache, "Scene", id, history.length);
       evictQueries(cache, [
         GQL.FindScenesDocument, // filter by o_counter
         GQL.FindPerformersDocument, // filter by o_counter
@@ -846,40 +832,36 @@ export const useSceneSaveActivity = () =>
   });
 
 export const useSceneIncrementPlayCount = () =>
-  GQL.useSceneIncrementPlayCountMutation({
+  GQL.useSceneAddPlayMutation({
     update(cache, result, { variables }) {
-      if (!variables) return;
+      const mutationResult = result.data?.sceneAddPlay;
 
-      const { id, times } = variables;
+      if (!mutationResult || !variables) return;
 
-      // this is not perfectly accurate, the time is set server-side
-      // it isn't even displayed anywhere in the UI anyway
-      const timeArray = !times
-        ? [new Date().toISOString()]
-        : Array.isArray(times)
-        ? times
-        : [times];
+      const { history } = mutationResult;
+      const { id } = variables;
 
       let lastPlayCount = 0;
+      const playCount = history.length;
 
       cache.modify({
         id: cache.identify({ __typename: "Scene", id }),
         fields: {
           play_count(value) {
             lastPlayCount = value;
-            return value + timeArray.length;
+            return history.length;
           },
           last_played_at() {
             // assume only one entry - or the first is the most recent
-            return timeArray[0];
+            return history[0];
           },
           play_history(value) {
-            return timeArray.concat(value);
+            return history;
           },
         },
       });
 
-      updateStats(cache, "total_play_count", 1);
+      updateStats(cache, "total_play_count", playCount - lastPlayCount);
       if (lastPlayCount === 0) {
         updateStats(cache, "scenes_played", 1);
       }
@@ -891,32 +873,33 @@ export const useSceneIncrementPlayCount = () =>
   });
 
 export const useSceneDecrementPlayCount = () =>
-  GQL.useSceneDecrementPlayCountMutation({
+  GQL.useSceneDeletePlayMutation({
     update(cache, result, { variables }) {
-      if (!variables) return;
+      const mutationResult = result.data?.sceneDeletePlay;
 
+      if (!mutationResult || !variables) return;
+
+      const { history } = mutationResult;
       const { id, times } = variables;
       const timeArray = !times ? null : Array.isArray(times) ? times : [times];
       const nRemoved = timeArray?.length ?? 1;
 
       let lastPlayCount = 0;
       let lastPlayedAt: string | null = null;
+      const playCount = history.length;
+
       cache.modify({
         id: cache.identify({ __typename: "Scene", id }),
         fields: {
           play_count(value) {
             lastPlayCount = value;
-            return Math.max(value - nRemoved, 0);
+            return playCount;
           },
-          play_history(value) {
-            const ret = timeArray
-              ? removeEntries(value, timeArray)
-              : value.slice(1);
-
-            if (ret.length > 0) {
-              lastPlayedAt = ret[0];
+          play_history() {
+            if (history.length > 0) {
+              lastPlayedAt = history[0];
             }
-            return ret;
+            return history;
           },
         },
       });

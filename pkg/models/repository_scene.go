@@ -113,14 +113,14 @@ type SceneReader interface {
 }
 
 type OHistoryWriter interface {
-	AddO(ctx context.Context, id int, dates []time.Time) (int, error)
-	DeleteO(ctx context.Context, id int, dates []time.Time) (int, error)
+	AddO(ctx context.Context, id int, dates []time.Time) ([]time.Time, error)
+	DeleteO(ctx context.Context, id int, dates []time.Time) ([]time.Time, error)
 	ResetO(ctx context.Context, id int) (int, error)
 }
 
 type ViewHistoryWriter interface {
-	AddViews(ctx context.Context, sceneID int, dates []time.Time) (int, error)
-	DeleteViews(ctx context.Context, id int, dates []time.Time) (int, error)
+	AddViews(ctx context.Context, sceneID int, dates []time.Time) ([]time.Time, error)
+	DeleteViews(ctx context.Context, id int, dates []time.Time) ([]time.Time, error)
 	DeleteAllViews(ctx context.Context, id int) (int, error)
 }
 

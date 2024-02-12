@@ -45,14 +45,16 @@ func (_m *SceneReaderWriter) AddGalleryIDs(ctx context.Context, sceneID int, gal
 }
 
 // AddO provides a mock function with given fields: ctx, id, dates
-func (_m *SceneReaderWriter) AddO(ctx context.Context, id int, dates []time.Time) (int, error) {
+func (_m *SceneReaderWriter) AddO(ctx context.Context, id int, dates []time.Time) ([]time.Time, error) {
 	ret := _m.Called(ctx, id, dates)
 
-	var r0 int
-	if rf, ok := ret.Get(0).(func(context.Context, int, []time.Time) int); ok {
+	var r0 []time.Time
+	if rf, ok := ret.Get(0).(func(context.Context, int, []time.Time) []time.Time); ok {
 		r0 = rf(ctx, id, dates)
 	} else {
-		r0 = ret.Get(0).(int)
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]time.Time)
+		}
 	}
 
 	var r1 error
@@ -66,14 +68,16 @@ func (_m *SceneReaderWriter) AddO(ctx context.Context, id int, dates []time.Time
 }
 
 // AddViews provides a mock function with given fields: ctx, sceneID, dates
-func (_m *SceneReaderWriter) AddViews(ctx context.Context, sceneID int, dates []time.Time) (int, error) {
+func (_m *SceneReaderWriter) AddViews(ctx context.Context, sceneID int, dates []time.Time) ([]time.Time, error) {
 	ret := _m.Called(ctx, sceneID, dates)
 
-	var r0 int
-	if rf, ok := ret.Get(0).(func(context.Context, int, []time.Time) int); ok {
+	var r0 []time.Time
+	if rf, ok := ret.Get(0).(func(context.Context, int, []time.Time) []time.Time); ok {
 		r0 = rf(ctx, sceneID, dates)
 	} else {
-		r0 = ret.Get(0).(int)
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]time.Time)
+		}
 	}
 
 	var r1 error
@@ -348,14 +352,16 @@ func (_m *SceneReaderWriter) DeleteAllViews(ctx context.Context, id int) (int, e
 }
 
 // DeleteO provides a mock function with given fields: ctx, id, dates
-func (_m *SceneReaderWriter) DeleteO(ctx context.Context, id int, dates []time.Time) (int, error) {
+func (_m *SceneReaderWriter) DeleteO(ctx context.Context, id int, dates []time.Time) ([]time.Time, error) {
 	ret := _m.Called(ctx, id, dates)
 
-	var r0 int
-	if rf, ok := ret.Get(0).(func(context.Context, int, []time.Time) int); ok {
+	var r0 []time.Time
+	if rf, ok := ret.Get(0).(func(context.Context, int, []time.Time) []time.Time); ok {
 		r0 = rf(ctx, id, dates)
 	} else {
-		r0 = ret.Get(0).(int)
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]time.Time)
+		}
 	}
 
 	var r1 error
@@ -369,14 +375,16 @@ func (_m *SceneReaderWriter) DeleteO(ctx context.Context, id int, dates []time.T
 }
 
 // DeleteViews provides a mock function with given fields: ctx, id, dates
-func (_m *SceneReaderWriter) DeleteViews(ctx context.Context, id int, dates []time.Time) (int, error) {
+func (_m *SceneReaderWriter) DeleteViews(ctx context.Context, id int, dates []time.Time) ([]time.Time, error) {
 	ret := _m.Called(ctx, id, dates)
 
-	var r0 int
-	if rf, ok := ret.Get(0).(func(context.Context, int, []time.Time) int); ok {
+	var r0 []time.Time
+	if rf, ok := ret.Get(0).(func(context.Context, int, []time.Time) []time.Time); ok {
 		r0 = rf(ctx, id, dates)
 	} else {
-		r0 = ret.Get(0).(int)
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]time.Time)
+		}
 	}
 
 	var r1 error

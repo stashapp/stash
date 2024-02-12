@@ -937,7 +937,7 @@ func (t *viewHistoryTable) getManyCount(ctx context.Context, ids []int) ([]int, 
 	return ret, nil
 }
 
-func (t *viewHistoryTable) addDates(ctx context.Context, id int, dates []time.Time) (int, error) {
+func (t *viewHistoryTable) addDates(ctx context.Context, id int, dates []time.Time) ([]time.Time, error) {
 	table := t.table.table
 
 	if len(dates) == 0 {
@@ -950,14 +950,14 @@ func (t *viewHistoryTable) addDates(ctx context.Context, id int, dates []time.Ti
 		)
 
 		if _, err := exec(ctx, q); err != nil {
-			return 0, fmt.Errorf("inserting into %s: %w", table.GetTable(), err)
+			return nil, fmt.Errorf("inserting into %s: %w", table.GetTable(), err)
 		}
 	}
 
-	return t.getCount(ctx, id)
+	return t.getDates(ctx, id)
 }
 
-func (t *viewHistoryTable) deleteDates(ctx context.Context, id int, dates []time.Time) (int, error) {
+func (t *viewHistoryTable) deleteDates(ctx context.Context, id int, dates []time.Time) ([]time.Time, error) {
 	table := t.table.table
 
 	mostRecent := false
@@ -983,11 +983,11 @@ func (t *viewHistoryTable) deleteDates(ctx context.Context, id int, dates []time
 		q := dialect.Delete(table).Where(goqu.I("rowid").Eq(subquery))
 
 		if _, err := exec(ctx, q); err != nil {
-			return 0, fmt.Errorf("deleting from %s: %w", table.GetTable(), err)
+			return nil, fmt.Errorf("deleting from %s: %w", table.GetTable(), err)
 		}
 	}
 
-	return t.getCount(ctx, id)
+	return t.getDates(ctx, id)
 }
 
 func (t *viewHistoryTable) deleteAllDates(ctx context.Context, id int) (int, error) {

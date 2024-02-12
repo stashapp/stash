@@ -230,20 +230,30 @@ type Mutation {
   scenesDestroy(input: ScenesDestroyInput!): Boolean!
   scenesUpdate(input: [SceneUpdateInput!]!): [Scene]
 
-  "Increments the o-counter for a scene. Uses the current time if none provided. Returns the new value"
-  sceneIncrementO(id: ID!, times: [Timestamp!]): Int!
+  "Increments the o-counter for a scene. Returns the new value"
+  sceneIncrementO(id: ID!): Int! @deprecated(reason: "Use sceneAddO instead")
+  "Decrements the o-counter for a scene. Returns the new value"
+  sceneDecrementO(id: ID!): Int! @deprecated(reason: "Use sceneRemoveO instead")
+
+  "Increments the o-counter for a scene. Uses the current time if none provided."
+  sceneAddO(id: ID!, times: [Timestamp!]): HistoryMutationResult!
   "Decrements the o-counter for a scene, removing the last recorded time if specific time not provided. Returns the new value"
-  sceneDecrementO(id: ID!, times: [Timestamp!]): Int!
+  sceneDeleteO(id: ID!, times: [Timestamp!]): HistoryMutationResult!
+
   "Resets the o-counter for a scene to 0. Returns the new value"
   sceneResetO(id: ID!): Int!
 
   "Sets the resume time point (if provided) and adds the provided duration to the scene's play duration"
   sceneSaveActivity(id: ID!, resume_time: Float, playDuration: Float): Boolean!
 
-  "Increments the play count for the scene. Uses the current time if none provided. Returns the new play count value."
-  sceneIncrementPlayCount(id: ID!, times: [Timestamp!]): Int!
-  "Decrements the play count for the scene, removing the specific times or the last recorded time if not provided. Returns the new play count value."
-  sceneDecrementPlayCount(id: ID!, times: [Timestamp!]): Int!
+  "Increments the play count for the scene. Returns the new play count value."
+  sceneIncrementPlayCount(id: ID!): Int!
+    @deprecated(reason: "Use sceneAddPlay instead")
+
+  "Increments the play count for the scene. Uses the current time if none provided."
+  sceneAddPlay(id: ID!, times: [Timestamp!]): HistoryMutationResult!
+  "Decrements the play count for the scene, removing the specific times or the last recorded time if not provided."
+  sceneDeletePlay(id: ID!, times: [Timestamp!]): HistoryMutationResult!
   "Resets the play count for a scene to 0. Returns the new play count value."
   sceneResetPlayCount(id: ID!): Int!
 

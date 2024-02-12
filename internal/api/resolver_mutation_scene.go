@@ -817,10 +817,31 @@ func (r *mutationResolver) SceneSaveActivity(ctx context.Context, id string, res
 	return ret, nil
 }
 
-func (r *mutationResolver) SceneIncrementPlayCount(ctx context.Context, id string, t []*time.Time) (ret int, err error) {
+// deprecated
+func (r *mutationResolver) SceneIncrementPlayCount(ctx context.Context, id string) (ret int, err error) {
 	sceneID, err := strconv.Atoi(id)
 	if err != nil {
 		return 0, fmt.Errorf("converting id: %w", err)
+	}
+
+	var updatedTimes []time.Time
+
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		qb := r.repository.Scene
+
+		updatedTimes, err = qb.AddViews(ctx, sceneID, nil)
+		return err
+	}); err != nil {
+		return 0, err
+	}
+
+	return len(updatedTimes), nil
+}
+
+func (r *mutationResolver) SceneAddPlay(ctx context.Context, id string, t []*time.Time) (*HistoryMutationResult, error) {
+	sceneID, err := strconv.Atoi(id)
+	if err != nil {
+		return nil, fmt.Errorf("converting id: %w", err)
 	}
 
 	var times []time.Time
@@ -830,22 +851,27 @@ func (r *mutationResolver) SceneIncrementPlayCount(ctx context.Context, id strin
 		times = append(times, tt.Local())
 	}
 
+	var updatedTimes []time.Time
+
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Scene
 
-		ret, err = qb.AddViews(ctx, sceneID, times)
+		updatedTimes, err = qb.AddViews(ctx, sceneID, times)
 		return err
 	}); err != nil {
-		return 0, err
+		return nil, err
 	}
 
-	return ret, nil
+	return &HistoryMutationResult{
+		Count:   len(updatedTimes),
+		History: sliceutil.ValuesToPtrs(updatedTimes),
+	}, nil
 }
 
-func (r *mutationResolver) SceneDecrementPlayCount(ctx context.Context, id string, t []*time.Time) (ret int, err error) {
+func (r *mutationResolver) SceneDeletePlay(ctx context.Context, id string, t []*time.Time) (*HistoryMutationResult, error) {
 	sceneID, err := strconv.Atoi(id)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 
 	var times []time.Time
@@ -854,16 +880,21 @@ func (r *mutationResolver) SceneDecrementPlayCount(ctx context.Context, id strin
 		times = append(times, *tt)
 	}
 
+	var updatedTimes []time.Time
+
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Scene
 
-		ret, err = qb.DeleteViews(ctx, sceneID, times)
+		updatedTimes, err = qb.DeleteViews(ctx, sceneID, times)
 		return err
 	}); err != nil {
-		return 0, err
+		return nil, err
 	}
 
-	return ret, nil
+	return &HistoryMutationResult{
+		Count:   len(updatedTimes),
+		History: sliceutil.ValuesToPtrs(updatedTimes),
+	}, nil
 }
 
 func (r *mutationResolver) SceneResetPlayCount(ctx context.Context, id string) (ret int, err error) {
@@ -884,53 +915,46 @@ func (r *mutationResolver) SceneResetPlayCount(ctx context.Context, id string) (
 	return ret, nil
 }
 
-func (r *mutationResolver) SceneIncrementO(ctx context.Context, id string, t []*time.Time) (ret int, err error) {
+// deprecated
+func (r *mutationResolver) SceneIncrementO(ctx context.Context, id string) (ret int, err error) {
 	sceneID, err := strconv.Atoi(id)
 	if err != nil {
 		return 0, fmt.Errorf("converting id: %w", err)
 	}
 
-	var times []time.Time
-
-	// convert time to local time, so that sorting is consistent
-	for _, tt := range t {
-		times = append(times, tt.Local())
-	}
+	var updatedTimes []time.Time
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Scene
 
-		ret, err = qb.AddO(ctx, sceneID, times)
+		updatedTimes, err = qb.AddO(ctx, sceneID, nil)
 		return err
 	}); err != nil {
 		return 0, err
 	}
 
-	return ret, nil
+	return len(updatedTimes), nil
 }
 
-func (r *mutationResolver) SceneDecrementO(ctx context.Context, id string, t []*time.Time) (ret int, err error) {
+// deprecated
+func (r *mutationResolver) SceneDecrementO(ctx context.Context, id string) (ret int, err error) {
 	sceneID, err := strconv.Atoi(id)
 	if err != nil {
 		return 0, fmt.Errorf("converting id: %w", err)
 	}
 
-	var times []time.Time
-
-	for _, tt := range t {
-		times = append(times, *tt)
-	}
+	var updatedTimes []time.Time
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Scene
 
-		ret, err = qb.DeleteO(ctx, sceneID, times)
+		updatedTimes, err = qb.DeleteO(ctx, sceneID, nil)
 		return err
 	}); err != nil {
 		return 0, err
 	}
 
-	return ret, nil
+	return len(updatedTimes), nil
 }
 
 func (r *mutationResolver) SceneResetO(ctx context.Context, id string) (ret int, err error) {
@@ -949,6 +973,65 @@ func (r *mutationResolver) SceneResetO(ctx context.Context, id string) (ret int,
 	}
 
 	return ret, nil
+}
+
+func (r *mutationResolver) SceneAddO(ctx context.Context, id string, t []*time.Time) (*HistoryMutationResult, error) {
+	sceneID, err := strconv.Atoi(id)
+	if err != nil {
+		return nil, fmt.Errorf("converting id: %w", err)
+	}
+
+	var times []time.Time
+
+	// convert time to local time, so that sorting is consistent
+	for _, tt := range t {
+		times = append(times, tt.Local())
+	}
+
+	var updatedTimes []time.Time
+
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		qb := r.repository.Scene
+
+		updatedTimes, err = qb.AddO(ctx, sceneID, times)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return &HistoryMutationResult{
+		Count:   len(updatedTimes),
+		History: sliceutil.ValuesToPtrs(updatedTimes),
+	}, nil
+}
+
+func (r *mutationResolver) SceneDeleteO(ctx context.Context, id string, t []*time.Time) (*HistoryMutationResult, error) {
+	sceneID, err := strconv.Atoi(id)
+	if err != nil {
+		return nil, fmt.Errorf("converting id: %w", err)
+	}
+
+	var times []time.Time
+
+	for _, tt := range t {
+		times = append(times, *tt)
+	}
+
+	var updatedTimes []time.Time
+
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		qb := r.repository.Scene
+
+		updatedTimes, err = qb.DeleteO(ctx, sceneID, times)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return &HistoryMutationResult{
+		Count:   len(updatedTimes),
+		History: sliceutil.ValuesToPtrs(updatedTimes),
+	}, nil
 }
 
 func (r *mutationResolver) SceneGenerateScreenshot(ctx context.Context, id string, at *float64) (string, error) {
