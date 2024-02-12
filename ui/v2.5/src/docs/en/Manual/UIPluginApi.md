@@ -82,6 +82,7 @@ Returns a `Promise<void>` that resolves when all of the components have been loa
 
 This namespace provides access to the following core utility hooks:
 - `useSpriteInfo`
+- `useToast`
 
 It also provides plugin-specific hooks.
 

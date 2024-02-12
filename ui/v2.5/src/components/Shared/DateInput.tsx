@@ -7,6 +7,7 @@ import { Icon } from "./Icon";
 
 import "react-datepicker/dist/react-datepicker.css";
 import { useIntl } from "react-intl";
+import { PatchComponent } from "src/pluginApi";
 
 interface IProps {
   disabled?: boolean;
@@ -28,7 +29,7 @@ const ShowPickerButton = forwardRef<
   </Button>
 ));
 
-export const DateInput: React.FC<IProps> = (props: IProps) => {
+const _DateInput: React.FC<IProps> = (props: IProps) => {
   const intl = useIntl();
 
   const date = useMemo(() => {
@@ -98,3 +99,5 @@ export const DateInput: React.FC<IProps> = (props: IProps) => {
     </div>
   );
 };
+
+export const DateInput = PatchComponent("DateInput", _DateInput);
