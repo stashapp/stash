@@ -106,6 +106,23 @@ export class ObjectListScrapeResult<
   }
 }
 
+export class ObjectScrapeResult<
+  T extends IHasStoredID
+> extends ScrapeResult<T> {
+  public constructor(
+    originalValue?: T | null,
+    newValue?: T | null,
+    useNewValue?: boolean
+  ) {
+    super(
+      originalValue,
+      newValue,
+      useNewValue,
+      (o1, o2) => o1?.stored_id === o2?.stored_id
+    );
+  }
+}
+
 export function hasScrapedValues(values: { scraped: boolean }[]): boolean {
   return values.some((r) => r.scraped);
 }
