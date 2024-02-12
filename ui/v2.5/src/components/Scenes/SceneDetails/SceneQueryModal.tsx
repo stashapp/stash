@@ -44,11 +44,7 @@ const SceneSearchResultDetails: React.FC<ISceneSearchResultDetailsProps> = ({
         <Row>
           <Col>
             {scene.tags?.map((tag) => (
-              <Badge
-                className="tag-item"
-                variant="secondary"
-                key={tag.name}
-              >
+              <Badge className="tag-item" variant="secondary" key={tag.name}>
                 {tag.name}
               </Badge>
             ))}
