@@ -125,7 +125,14 @@ export const PerformerSelect: React.FC<
 
     thisOptionProps = {
       ...optionProps,
-      children: object.name,
+      children: (
+        <>
+          <span>{object.name}</span>
+          {object.disambiguation && (
+            <span className="performer-disambiguation">{` (${object.disambiguation})`}</span>
+          )}
+        </>
+      ),
     };
 
     return <reactSelectComponents.MultiValueLabel {...thisOptionProps} />;
