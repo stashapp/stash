@@ -48,7 +48,7 @@ import { ExternalLink } from "src/components/Shared/ExternalLink";
 
 interface IProps {
   performer: GQL.PerformerDataFragment;
-  tabKey: TabKey;
+  tabKey?: TabKey;
 }
 
 interface IPerformerParams {
@@ -65,8 +65,6 @@ const validTabs = [
   "appearswith",
 ] as const;
 type TabKey = (typeof validTabs)[number];
-
-const defaultTab: TabKey = "default";
 
 function isTabKey(tab: string): tab is TabKey {
   return validTabs.includes(tab as TabKey);
@@ -135,8 +133,7 @@ const PerformerPage: React.FC<IProps> = ({ performer, tabKey }) => {
 
   const setTabKey = useCallback(
     (newTabKey: string | null) => {
-      if (!newTabKey || newTabKey === defaultTab)
-        newTabKey = populatedDefaultTab;
+      if (!newTabKey) newTabKey = populatedDefaultTab;
       if (newTabKey === tabKey) return;
 
       if (isTabKey(newTabKey)) {
@@ -147,7 +144,7 @@ const PerformerPage: React.FC<IProps> = ({ performer, tabKey }) => {
   );
 
   useEffect(() => {
-    if (tabKey === defaultTab) {
+    if (!tabKey) {
       setTabKey(populatedDefaultTab);
     }
   }, [setTabKey, populatedDefaultTab, tabKey]);
@@ -625,11 +622,7 @@ const PerformerLoader: React.FC<RouteComponentProps<IPerformerParams>> = ({
   if (!data?.findPerformer)
     return <ErrorMessage error={`No performer found with id ${id}.`} />;
 
-  if (!tab) {
-    return <PerformerPage performer={data.findPerformer} tabKey={defaultTab} />;
-  }
-
-  if (!isTabKey(tab)) {
+  if (tab && !isTabKey(tab)) {
     return (
       <Redirect
         to={{
@@ -640,7 +633,12 @@ const PerformerLoader: React.FC<RouteComponentProps<IPerformerParams>> = ({
     );
   }
 
-  return <PerformerPage performer={data.findPerformer} tabKey={tab} />;
+  return (
+    <PerformerPage
+      performer={data.findPerformer}
+      tabKey={tab as TabKey | undefined}
+    />
+  );
 };
 
 export default PerformerLoader;

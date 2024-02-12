@@ -48,7 +48,7 @@ import { ExternalLink } from "src/components/Shared/ExternalLink";
 
 interface IProps {
   studio: GQL.StudioDataFragment;
-  tabKey: TabKey;
+  tabKey?: TabKey;
 }
 
 interface IStudioParams {
@@ -140,8 +140,7 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
 
   const setTabKey = useCallback(
     (newTabKey: string | null) => {
-      if (!newTabKey || newTabKey === defaultTab)
-        newTabKey = populatedDefaultTab;
+      if (!newTabKey) newTabKey = populatedDefaultTab;
       if (newTabKey === tabKey) return;
 
       if (isTabKey(newTabKey)) {
@@ -578,11 +577,7 @@ const StudioLoader: React.FC<RouteComponentProps<IStudioParams>> = ({
   if (!data?.findStudio)
     return <ErrorMessage error={`No studio found with id ${id}.`} />;
 
-  if (!tab) {
-    return <StudioPage studio={data.findStudio} tabKey={defaultTab} />;
-  }
-
-  if (!isTabKey(tab)) {
+  if (tab && !isTabKey(tab)) {
     return (
       <Redirect
         to={{
@@ -593,7 +588,9 @@ const StudioLoader: React.FC<RouteComponentProps<IStudioParams>> = ({
     );
   }
 
-  return <StudioPage studio={data.findStudio} tabKey={tab} />;
+  return (
+    <StudioPage studio={data.findStudio} tabKey={tab as TabKey | undefined} />
+  );
 };
 
 export default StudioLoader;

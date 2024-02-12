@@ -43,7 +43,7 @@ import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
 
 interface IProps {
   tag: GQL.TagDataFragment;
-  tabKey: TabKey;
+  tabKey?: TabKey;
 }
 
 interface ITagParams {
@@ -60,8 +60,6 @@ const validTabs = [
   "performers",
 ] as const;
 type TabKey = (typeof validTabs)[number];
-
-const defaultTab: TabKey = "default";
 
 function isTabKey(tab: string): tab is TabKey {
   return validTabs.includes(tab as TabKey);
@@ -126,8 +124,7 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
 
   const setTabKey = useCallback(
     (newTabKey: string | null) => {
-      if (!newTabKey || newTabKey === defaultTab)
-        newTabKey = populatedDefaultTab;
+      if (!newTabKey) newTabKey = populatedDefaultTab;
       if (newTabKey === tabKey) return;
 
       if (isTabKey(newTabKey)) {
@@ -138,7 +135,7 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
   );
 
   useEffect(() => {
-    if (tabKey === defaultTab) {
+    if (!tabKey) {
       setTabKey(populatedDefaultTab);
     }
   }, [setTabKey, populatedDefaultTab, tabKey]);
@@ -568,11 +565,7 @@ const TagLoader: React.FC<RouteComponentProps<ITagParams>> = ({
   if (!data?.findTag)
     return <ErrorMessage error={`No tag found with id ${id}.`} />;
 
-  if (!tab) {
-    return <TagPage tag={data.findTag} tabKey={defaultTab} />;
-  }
-
-  if (!isTabKey(tab)) {
+  if (tab && !isTabKey(tab)) {
     return (
       <Redirect
         to={{
@@ -583,7 +576,7 @@ const TagLoader: React.FC<RouteComponentProps<ITagParams>> = ({
     );
   }
 
-  return <TagPage tag={data.findTag} tabKey={tab} />;
+  return <TagPage tag={data.findTag} tabKey={tab as TabKey | undefined} />;
 };
 
 export default TagLoader;
