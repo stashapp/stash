@@ -27,6 +27,7 @@ import {
 import { useCompare } from "src/hooks/state";
 import { Link } from "react-router-dom";
 import { sortByRelevance } from "src/utils/query";
+import { PatchComponent } from "src/pluginApi";
 
 export type SelectObject = {
   id: string;
@@ -40,7 +41,7 @@ export type Performer = Pick<
 >;
 type Option = SelectOption<Performer>;
 
-export const PerformerSelect: React.FC<
+const _PerformerSelect: React.FC<
   IFilterProps & IFilterValueProps<Performer>
 > = (props) => {
   const [createPerformer] = usePerformerCreate();
@@ -229,9 +230,14 @@ export const PerformerSelect: React.FC<
   );
 };
 
-export const PerformerIDSelect: React.FC<
-  IFilterProps & IFilterIDProps<Performer>
-> = (props) => {
+export const PerformerSelect = PatchComponent(
+  "PerformerSelect",
+  _PerformerSelect
+);
+
+const _PerformerIDSelect: React.FC<IFilterProps & IFilterIDProps<Performer>> = (
+  props
+) => {
   const { ids, onSelect: onSelectValues } = props;
 
   const [values, setValues] = useState<Performer[]>([]);
@@ -276,3 +282,8 @@ export const PerformerIDSelect: React.FC<
 
   return <PerformerSelect {...props} values={values} onSelect={onSelect} />;
 };
+
+export const PerformerIDSelect = PatchComponent(
+  "PerformerIDSelect",
+  _PerformerIDSelect
+);

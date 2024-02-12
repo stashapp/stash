@@ -3,6 +3,7 @@ import Creatable from "react-select/creatable";
 import { useIntl } from "react-intl";
 import { getCountries } from "src/utils/country";
 import { CountryLabel } from "./CountryLabel";
+import { PatchComponent } from "src/pluginApi";
 
 interface IProps {
   value?: string;
@@ -14,7 +15,7 @@ interface IProps {
   menuPortalTarget?: HTMLElement | null;
 }
 
-export const CountrySelect: React.FC<IProps> = ({
+const _CountrySelect: React.FC<IProps> = ({
   value,
   onChange,
   disabled = false,
@@ -50,3 +51,5 @@ export const CountrySelect: React.FC<IProps> = ({
     />
   );
 };
+
+export const CountrySelect = PatchComponent("CountrySelect", _CountrySelect);

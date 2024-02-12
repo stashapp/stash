@@ -7,6 +7,7 @@ import { faEllipsis, faTimes } from "@fortawesome/free-solid-svg-icons";
 import { useDebounce } from "src/hooks/debounce";
 import TextUtils from "src/utils/text";
 import { useDirectoryPaths } from "./useDirectoryPaths";
+import { PatchComponent } from "src/pluginApi";
 
 interface IProps {
   currentDirectory: string;
@@ -18,7 +19,7 @@ interface IProps {
   hideError?: boolean;
 }
 
-export const FolderSelect: React.FC<IProps> = ({
+const _FolderSelect: React.FC<IProps> = ({
   currentDirectory,
   onChangeDirectory,
   defaultDirectories = [],
@@ -132,3 +133,5 @@ export const FolderSelect: React.FC<IProps> = ({
     </>
   );
 };
+
+export const FolderSelect = PatchComponent("FolderSelect", _FolderSelect);

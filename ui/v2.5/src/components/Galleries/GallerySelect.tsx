@@ -27,6 +27,7 @@ import { useCompare } from "src/hooks/state";
 import { Placement } from "react-bootstrap/esm/Overlay";
 import { sortByRelevance } from "src/utils/query";
 import { galleryTitle } from "src/core/galleries";
+import { PatchComponent } from "src/pluginApi";
 
 export type Gallery = Pick<GQL.Gallery, "id" | "title"> & {
   files: Pick<GQL.GalleryFile, "path">[];
@@ -34,7 +35,7 @@ export type Gallery = Pick<GQL.Gallery, "id" | "title"> & {
 };
 type Option = SelectOption<Gallery>;
 
-export const GallerySelect: React.FC<
+const _GallerySelect: React.FC<
   IFilterProps &
     IFilterValueProps<Gallery> & {
       hoverPlacement?: Placement;
@@ -173,9 +174,11 @@ export const GallerySelect: React.FC<
   );
 };
 
-export const GalleryIDSelect: React.FC<
-  IFilterProps & IFilterIDProps<Gallery>
-> = (props) => {
+export const GallerySelect = PatchComponent("GallerySelect", _GallerySelect);
+
+const _GalleryIDSelect: React.FC<IFilterProps & IFilterIDProps<Gallery>> = (
+  props
+) => {
   const { ids, onSelect: onSelectValues } = props;
 
   const [values, setValues] = useState<Gallery[]>([]);
@@ -220,3 +223,8 @@ export const GalleryIDSelect: React.FC<
 
   return <GallerySelect {...props} values={values} onSelect={onSelect} />;
 };
+
+export const GalleryIDSelect = PatchComponent(
+  "GalleryIDSelect",
+  _GalleryIDSelect
+);
