@@ -783,7 +783,7 @@ export const mutateSceneMerge = (
         destination,
         values,
         play_history: includeViewHistory,
-        include_o_history: includeOHistory,
+        o_history: includeOHistory,
       },
     },
     update(cache, result) {
@@ -855,7 +855,7 @@ export const useSceneIncrementPlayCount = () =>
             // assume only one entry - or the first is the most recent
             return history[0];
           },
-          play_history(value) {
+          play_history() {
             return history;
           },
         },
