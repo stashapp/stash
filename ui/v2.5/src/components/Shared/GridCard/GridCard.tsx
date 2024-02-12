@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Card, Form } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import cx from "classnames";
-import { TruncatedText } from "./TruncatedText";
+import { TruncatedText } from "../TruncatedText";
 import ScreenUtils from "src/utils/screen";
 
 interface ICardProps {
