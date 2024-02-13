@@ -9,6 +9,7 @@ import {
 } from "src/components/Shared/ScrapeDialog/ScrapeDialog";
 import {
   ObjectListScrapeResult,
+  ObjectScrapeResult,
   ScrapeResult,
 } from "src/components/Shared/ScrapeDialog/scrapeResult";
 import {
@@ -66,8 +67,8 @@ export const GalleryScrapeDialog: React.FC<IGalleryScrapeDialogProps> = ({
   const [photographer, setPhotographer] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(gallery.photographer, scraped.photographer)
   );
-  const [studio, setStudio] = useState<ScrapeResult<GQL.ScrapedStudio>>(
-    new ScrapeResult<GQL.ScrapedStudio>(
+  const [studio, setStudio] = useState<ObjectScrapeResult<GQL.ScrapedStudio>>(
+    new ObjectScrapeResult<GQL.ScrapedStudio>(
       galleryStudio
         ? {
             stored_id: galleryStudio.id,

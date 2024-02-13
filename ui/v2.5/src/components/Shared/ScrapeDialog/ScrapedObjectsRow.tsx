@@ -6,14 +6,17 @@ import {
   IHasName,
 } from "src/components/Shared/ScrapeDialog/ScrapeDialog";
 import { PerformerSelect } from "src/components/Performers/PerformerSelect";
-import { ScrapeResult } from "src/components/Shared/ScrapeDialog/scrapeResult";
+import {
+  ObjectScrapeResult,
+  ScrapeResult,
+} from "src/components/Shared/ScrapeDialog/scrapeResult";
 import { TagSelect } from "src/components/Tags/TagSelect";
 import { StudioSelect } from "src/components/Studios/StudioSelect";
 
 interface IScrapedStudioRow {
   title: string;
-  result: ScrapeResult<GQL.ScrapedStudio>;
-  onChange: (value: ScrapeResult<GQL.ScrapedStudio>) => void;
+  result: ObjectScrapeResult<GQL.ScrapedStudio>;
+  onChange: (value: ObjectScrapeResult<GQL.ScrapedStudio>) => void;
   newStudio?: GQL.ScrapedStudio;
   onCreateNew?: (value: GQL.ScrapedStudio) => void;
 }
@@ -26,7 +29,7 @@ export const ScrapedStudioRow: React.FC<IScrapedStudioRow> = ({
   onCreateNew,
 }) => {
   function renderScrapedStudio(
-    scrapeResult: ScrapeResult<GQL.ScrapedStudio>,
+    scrapeResult: ObjectScrapeResult<GQL.ScrapedStudio>,
     isNew?: boolean,
     onChangeFn?: (value: GQL.ScrapedStudio) => void
   ) {
