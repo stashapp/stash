@@ -6,7 +6,7 @@ import {
   useStudioCreate,
   useTagCreate,
 } from "src/core/StashService";
-import { ScrapeResult } from "./scrapeResult";
+import { ObjectScrapeResult, ScrapeResult } from "./scrapeResult";
 import { useIntl } from "react-intl";
 import { scrapedPerformerToCreateInput } from "src/core/performers";
 import { scrapedMovieToCreateInput } from "src/core/movies";
@@ -41,8 +41,10 @@ function useCreateObject<T>(
 }
 
 interface IUseCreateNewStudioProps {
-  scrapeResult: ScrapeResult<GQL.ScrapedStudio>;
-  setScrapeResult: (scrapeResult: ScrapeResult<GQL.ScrapedStudio>) => void;
+  scrapeResult: ObjectScrapeResult<GQL.ScrapedStudio>;
+  setScrapeResult: (
+    scrapeResult: ObjectScrapeResult<GQL.ScrapedStudio>
+  ) => void;
   setNewObject: (newObject: GQL.ScrapedStudio | undefined) => void;
 }
 
