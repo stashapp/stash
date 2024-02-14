@@ -9,8 +9,8 @@ import cx from "classnames";
 
 import * as GQL from "src/core/generated-graphql";
 import {
-  queryFindMovies,
-  // queryFindMoviesByIDForSelect,
+  queryFindMoviesForSelect,
+  queryFindMoviesByIDForSelect,
 } from "src/core/StashService";
 import { ConfigurationContext } from "src/hooks/Config";
 import { useIntl } from "react-intl";
@@ -50,9 +50,9 @@ const _MovieSelect: React.FC<
     filter.searchTerm = input;
     filter.currentPage = 1;
     filter.itemsPerPage = maxOptionsShown;
-    filter.sortBy = "title";
+    filter.sortBy = "name";
     filter.sortDirection = GQL.SortDirectionEnum.Asc;
-    const query = await queryFindMovies(filter);
+    const query = await queryFindMoviesForSelect(filter);
     let ret = query.data.findMovies.movies.filter((movie) => {
       // HACK - we should probably exclude these in the backend query, but
       // this will do in the short-term
@@ -148,50 +148,48 @@ export const MovieSelect = PatchComponent("MovieSelect", _MovieSelect);
 const _MovieIDSelect: React.FC<IFilterProps & IFilterIDProps<Movie>> = (
   props
 ) => {
-  // const { ids, onSelect: onSelectValues } = props;
+  const { ids, onSelect: onSelectValues } = props;
 
-  // const [values, setValues] = useState<Movie[]>([]);
-  // const idsChanged = useCompare(ids);
+  const [values, setValues] = useState<Movie[]>([]);
+  const idsChanged = useCompare(ids);
 
-  // function onSelect(items: Movie[]) {
-  //   setValues(items);
-  //   onSelectValues?.(items);
-  // }
+  function onSelect(items: Movie[]) {
+    setValues(items);
+    onSelectValues?.(items);
+  }
 
-  // async function loadObjectsByID(idsToLoad: string[]): Promise<Movie[]> {
-  //   const movieIDs = idsToLoad.map((id) => parseInt(id));
-  //   const query = await queryFindMoviesByIDForSelect(movieIDs);
-  //   const { movies: loadedMovies } = query.data.findMovies;
+  async function loadObjectsByID(idsToLoad: string[]): Promise<Movie[]> {
+    const query = await queryFindMoviesByIDForSelect(idsToLoad);
+    const { movies: loadedMovies } = query.data.findMovies;
 
-  //   return loadedMovies;
-  // }
+    return loadedMovies;
+  }
 
-  // useEffect(() => {
-  //   if (!idsChanged) {
-  //     return;
-  //   }
+  useEffect(() => {
+    if (!idsChanged) {
+      return;
+    }
 
-  //   if (!ids || ids?.length === 0) {
-  //     setValues([]);
-  //     return;
-  //   }
+    if (!ids || ids?.length === 0) {
+      setValues([]);
+      return;
+    }
 
-  //   // load the values if we have ids and they haven't been loaded yet
-  //   const filteredValues = values.filter((v) => ids.includes(v.id.toString()));
-  //   if (filteredValues.length === ids.length) {
-  //     return;
-  //   }
+    // load the values if we have ids and they haven't been loaded yet
+    const filteredValues = values.filter((v) => ids.includes(v.id.toString()));
+    if (filteredValues.length === ids.length) {
+      return;
+    }
 
-  //   const load = async () => {
-  //     const items = await loadObjectsByID(ids);
-  //     setValues(items);
-  //   };
+    const load = async () => {
+      const items = await loadObjectsByID(ids);
+      setValues(items);
+    };
 
-  //   load();
-  // }, [ids, idsChanged, values]);
+    load();
+  }, [ids, idsChanged, values]);
 
-  // return <MovieSelect {...props} values={values} onSelect={onSelect} />;
-  return <></>;
+  return <MovieSelect {...props} values={values} onSelect={onSelect} />;
 };
 
 export const MovieIDSelect = PatchComponent("MovieIDSelect", _MovieIDSelect);

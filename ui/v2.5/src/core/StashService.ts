@@ -199,6 +199,23 @@ export const queryFindMovies = (filter: ListFilterModel) =>
     },
   });
 
+export const queryFindMoviesByIDForSelect = (movieIDs: string[]) =>
+  client.query<GQL.FindMoviesForSelectQuery>({
+    query: GQL.FindMoviesForSelectDocument,
+    variables: {
+      ids: movieIDs,
+    },
+  });
+
+export const queryFindMoviesForSelect = (filter: ListFilterModel) =>
+  client.query<GQL.FindMoviesForSelectQuery>({
+    query: GQL.FindMoviesForSelectDocument,
+    variables: {
+      filter: filter.makeFindFilter(),
+      movie_filter: filter.makeFilter(),
+    },
+  });
+
 export const useAllMoviesForFilter = () => GQL.useAllMoviesForFilterQuery();
 
 export const useFindSceneMarkers = (filter?: ListFilterModel) =>

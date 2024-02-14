@@ -19,7 +19,6 @@ import {
   mutateReloadScrapers,
   queryScrapeSceneQueryFragment,
 } from "src/core/StashService";
-import { MovieSelect } from "src/components/Shared/Select";
 import { Icon } from "src/components/Shared/Icon";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { ImageInput } from "src/components/Shared/ImageInput";
@@ -50,6 +49,7 @@ import { formikUtils } from "src/utils/form";
 import { Tag, TagSelect } from "src/components/Tags/TagSelect";
 import { Studio, StudioSelect } from "src/components/Studios/StudioSelect";
 import { Gallery, GallerySelect } from "src/components/Galleries/GallerySelect";
+import { Movie, MovieSelect } from "src/components/Movies/MovieSelect";
 
 const SceneScrapeDialog = lazyComponent(() => import("./SceneScrapeDialog"));
 const SceneQueryModal = lazyComponent(() => import("./SceneQueryModal"));
@@ -76,6 +76,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
   const [galleries, setGalleries] = useState<Gallery[]>([]);
   const [performers, setPerformers] = useState<Performer[]>([]);
+  const [movies, setMovies] = useState<Movie[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
   const [studio, setStudio] = useState<Studio | null>(null);
 
@@ -103,6 +104,10 @@ export const SceneEditPanel: React.FC<IProps> = ({
   useEffect(() => {
     setPerformers(scene.performers ?? []);
   }, [scene.performers]);
+
+  useEffect(() => {
+    setMovies(scene.movies?.map((m) => m.movie) ?? []);
+  }, [scene.movies]);
 
   useEffect(() => {
     setTags(scene.tags ?? []);
@@ -258,17 +263,19 @@ export const SceneEditPanel: React.FC<IProps> = ({
     setQueryableScrapers(newQueryableScrapers);
   }, [Scrapers, stashConfig]);
 
-  function setMovieIds(movieIds: string[]) {
+  function onSetMovies(items: Movie[]) {
+    setMovies(items);
+
     const existingMovies = formik.values.movies;
 
-    const newMovies = movieIds.map((m) => {
-      const existing = existingMovies.find((mm) => mm.movie_id === m);
+    const newMovies = items.map((m) => {
+      const existing = existingMovies.find((mm) => mm.movie_id === m.id);
       if (existing) {
         return existing;
       }
 
       return {
-        movie_id: m,
+        movie_id: m.id,
         scene_index: null,
       };
     });
@@ -400,6 +407,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
         sceneStudio={studio}
         sceneTags={tags}
         scenePerformers={performers}
+        sceneMovies={movies}
         scraped={scrapedScene}
         endpoint={endpoint}
         onClose={(s) => onScrapeDialogClosed(s)}
@@ -589,8 +597,14 @@ export const SceneEditPanel: React.FC<IProps> = ({
       });
 
       if (idMovis.length > 0) {
-        const newIds = idMovis.map((p) => p.stored_id);
-        setMovieIds(newIds as string[]);
+        onSetMovies(
+          idMovis.map((p) => {
+            return {
+              id: p.stored_id!,
+              name: p.name ?? "",
+            };
+          })
+        );
       }
     }
 
@@ -757,8 +771,8 @@ export const SceneEditPanel: React.FC<IProps> = ({
       <>
         <MovieSelect
           isMulti
-          onSelect={(items) => setMovieIds(items.map((item) => item.id))}
-          ids={formik.values.movies.map((m) => m.movie_id)}
+          onSelect={(items) => onSetMovies(items)}
+          values={movies}
         />
         {renderTableMovies()}
       </>
