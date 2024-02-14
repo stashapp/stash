@@ -347,17 +347,6 @@ export const GalleryPage: React.FC<IProps> = ({ gallery, add }) => {
       {maybeRenderDeleteDialog()}
       <div className={`gallery-tabs ${collapsed ? "collapsed" : ""}`}>
         <div className="d-none d-xl-block">
-          {gallery.studio && (
-            <h1 className="text-center">
-              <Link to={`/studios/${gallery.studio.id}`}>
-                <img
-                  src={gallery.studio.image_path ?? ""}
-                  alt={`${gallery.studio.name} logo`}
-                  className="studio-logo"
-                />
-              </Link>
-            </h1>
-          )}
           <h3 className="gallery-header">{title}</h3>
         </div>
         {renderTabs()}
