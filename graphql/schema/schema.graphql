@@ -78,6 +78,7 @@ type Query {
   findMovies(
     movie_filter: MovieFilterType
     filter: FindFilterType
+    ids: [ID!]
   ): FindMoviesResultType!
 
   findGallery(id: ID!): Gallery
