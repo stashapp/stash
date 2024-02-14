@@ -75,11 +75,13 @@ func GetInstance() *Manager {
 func (s *Manager) SetBlobStoreOptions() {
 	storageType := s.Config.GetBlobsStorage()
 	blobsPath := s.Config.GetBlobsPath()
+	extraBlobsPaths := s.Config.GetExtraBlobsPaths()
 
 	s.Database.SetBlobStoreOptions(sqlite.BlobStoreOptions{
-		UseFilesystem: storageType == config.BlobStorageTypeFilesystem,
-		UseDatabase:   storageType == config.BlobStorageTypeDatabase,
-		Path:          blobsPath,
+		UseFilesystem:      storageType == config.BlobStorageTypeFilesystem,
+		UseDatabase:        storageType == config.BlobStorageTypeDatabase,
+		Path:               blobsPath,
+		SupplementaryPaths: extraBlobsPaths,
 	})
 }
 
