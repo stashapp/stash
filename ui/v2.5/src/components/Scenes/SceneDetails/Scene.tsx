@@ -510,17 +510,6 @@ const ScenePage: React.FC<IProps> = ({
         }`}
       >
         <div className="d-none d-xl-block">
-          {scene.studio && (
-            <h1 className="mt-3 text-center">
-              <Link to={`/studios/${scene.studio.id}`}>
-                <img
-                  src={scene.studio.image_path ?? ""}
-                  alt={`${scene.studio.name} logo`}
-                  className="studio-logo"
-                />
-              </Link>
-            </h1>
-          )}
           <h3 className="scene-header">{title}</h3>
         </div>
         {renderTabs()}
