@@ -9,7 +9,7 @@ import cx from "classnames";
 
 import * as GQL from "src/core/generated-graphql";
 import {
-  queryFindGalleries,
+  queryFindGalleriesForSelect,
   queryFindGalleriesByIDForSelect,
 } from "src/core/StashService";
 import { ConfigurationContext } from "src/hooks/Config";
@@ -56,7 +56,7 @@ const _GallerySelect: React.FC<
     filter.itemsPerPage = maxOptionsShown;
     filter.sortBy = "title";
     filter.sortDirection = GQL.SortDirectionEnum.Asc;
-    const query = await queryFindGalleries(filter);
+    const query = await queryFindGalleriesForSelect(filter);
     let ret = query.data.findGalleries.galleries.filter((gallery) => {
       // HACK - we should probably exclude these in the backend query, but
       // this will do in the short-term

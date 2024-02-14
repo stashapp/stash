@@ -244,6 +244,15 @@ export const queryFindGalleries = (filter: ListFilterModel) =>
     },
   });
 
+export const queryFindGalleriesForSelect = (filter: ListFilterModel) =>
+  client.query<GQL.FindGalleriesForSelectQuery>({
+    query: GQL.FindGalleriesForSelectDocument,
+    variables: {
+      filter: filter.makeFindFilter(),
+      gallery_filter: filter.makeFilter(),
+    },
+  });
+
 export const queryFindGalleriesByIDForSelect = (galleryIDs: string[]) =>
   client.query<GQL.FindGalleriesForSelectQuery>({
     query: GQL.FindGalleriesForSelectDocument,
