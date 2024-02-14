@@ -276,17 +276,6 @@ const ImagePage: React.FC<IProps> = ({ image }) => {
       {maybeRenderDeleteDialog()}
       <div className="image-tabs order-xl-first order-last">
         <div className="d-none d-xl-block">
-          {image.studio && (
-            <h1 className="text-center">
-              <Link to={`/studios/${image.studio.id}`}>
-                <img
-                  src={image.studio.image_path ?? ""}
-                  alt={`${image.studio.name} logo`}
-                  className="studio-logo"
-                />
-              </Link>
-            </h1>
-          )}
           <h3 className="image-header">{title}</h3>
         </div>
         {renderTabs()}
