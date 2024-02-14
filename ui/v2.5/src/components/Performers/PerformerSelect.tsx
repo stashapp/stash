@@ -256,8 +256,7 @@ const _PerformerIDSelect: React.FC<IFilterProps & IFilterIDProps<Performer>> = (
   }
 
   async function loadObjectsByID(idsToLoad: string[]): Promise<Performer[]> {
-    const performerIDs = idsToLoad.map((id) => parseInt(id));
-    const query = await queryFindPerformersByIDForSelect(performerIDs);
+    const query = await queryFindPerformersByIDForSelect(idsToLoad);
     const { performers: loadedPerformers } = query.data.findPerformers;
 
     return loadedPerformers;

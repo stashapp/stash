@@ -190,8 +190,7 @@ const _GalleryIDSelect: React.FC<IFilterProps & IFilterIDProps<Gallery>> = (
   }
 
   async function loadObjectsByID(idsToLoad: string[]): Promise<Gallery[]> {
-    const galleryIDs = idsToLoad.map((id) => parseInt(id));
-    const query = await queryFindGalleriesByIDForSelect(galleryIDs);
+    const query = await queryFindGalleriesByIDForSelect(idsToLoad);
     const { galleries: loadedGalleries } = query.data.findGalleries;
 
     return loadedGalleries;

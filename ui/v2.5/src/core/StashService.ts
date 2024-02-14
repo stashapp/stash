@@ -244,7 +244,7 @@ export const queryFindGalleries = (filter: ListFilterModel) =>
     },
   });
 
-export const queryFindGalleriesByIDForSelect = (galleryIDs: number[]) =>
+export const queryFindGalleriesByIDForSelect = (galleryIDs: string[]) =>
   client.query<GQL.FindGalleriesForSelectQuery>({
     query: GQL.FindGalleriesForSelectDocument,
     variables: {
@@ -281,11 +281,11 @@ export const queryFindPerformers = (filter: ListFilterModel) =>
     },
   });
 
-export const queryFindPerformersByIDForSelect = (performerIDs: number[]) =>
+export const queryFindPerformersByIDForSelect = (performerIDs: string[]) =>
   client.query<GQL.FindPerformersForSelectQuery>({
     query: GQL.FindPerformersForSelectDocument,
     variables: {
-      performer_ids: performerIDs,
+      ids: performerIDs,
     },
   });
 
@@ -327,7 +327,7 @@ export const queryFindStudios = (filter: ListFilterModel) =>
     },
   });
 
-export const queryFindStudiosByIDForSelect = (studioIDs: number[]) =>
+export const queryFindStudiosByIDForSelect = (studioIDs: string[]) =>
   client.query<GQL.FindStudiosForSelectQuery>({
     query: GQL.FindStudiosForSelectDocument,
     variables: {
@@ -367,7 +367,7 @@ export const queryFindTags = (filter: ListFilterModel) =>
     },
   });
 
-export const queryFindTagsByIDForSelect = (tagIDs: number[]) =>
+export const queryFindTagsByIDForSelect = (tagIDs: string[]) =>
   client.query<GQL.FindTagsForSelectQuery>({
     query: GQL.FindTagsForSelectDocument,
     variables: {
