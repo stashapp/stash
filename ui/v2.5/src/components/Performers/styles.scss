@@ -236,3 +236,9 @@
     max-width: 50px;
   }
 }
+
+.edit-performers-dialog .modal-body {
+  max-height: calc(100vh - 12rem);
+  overflow-y: auto;
+  padding-right: 1.5rem;
+}
