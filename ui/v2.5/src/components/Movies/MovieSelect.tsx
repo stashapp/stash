@@ -11,6 +11,7 @@ import * as GQL from "src/core/generated-graphql";
 import {
   queryFindMoviesForSelect,
   queryFindMoviesByIDForSelect,
+  useMovieCreate,
 } from "src/core/StashService";
 import { ConfigurationContext } from "src/hooks/Config";
 import { useIntl } from "react-intl";
@@ -38,10 +39,14 @@ const _MovieSelect: React.FC<
       excludeIds?: string[];
     }
 > = (props) => {
+  const [createMovie] = useMovieCreate();
+
   const { configuration } = React.useContext(ConfigurationContext);
   const intl = useIntl();
   const maxOptionsShown =
     configuration?.ui.maxOptionsShown ?? defaultMaxOptionsShown;
+  const defaultCreatable =
+    !configuration?.interface.disableDropdownCreate.movie ?? true;
 
   const exclude = useMemo(() => props.excludeIds ?? [], [props.excludeIds]);
 
@@ -110,6 +115,40 @@ const _MovieSelect: React.FC<
     return <reactSelectComponents.SingleValue {...thisOptionProps} />;
   };
 
+  const onCreate = async (name: string) => {
+    const result = await createMovie({
+      variables: { input: { name } },
+    });
+    return {
+      value: result.data!.movieCreate!.id,
+      item: result.data!.movieCreate!,
+      message: "Created movie",
+    };
+  };
+
+  const getNamedObject = (id: string, name: string) => {
+    return {
+      id,
+      name,
+    };
+  };
+
+  const isValidNewOption = (inputValue: string, options: Movie[]) => {
+    if (!inputValue) {
+      return false;
+    }
+
+    if (
+      options.some((o) => {
+        return o.name.toLowerCase() === inputValue.toLowerCase();
+      })
+    ) {
+      return false;
+    }
+
+    return true;
+  };
+
   return (
     <FilterSelectComponent<Movie, boolean>
       {...props}
@@ -121,12 +160,16 @@ const _MovieSelect: React.FC<
         props.className
       )}
       loadOptions={loadMovies}
+      getNamedObject={getNamedObject}
+      isValidNewOption={isValidNewOption}
       components={{
         Option: MovieOption,
         MultiValueLabel: MovieMultiValueLabel,
         SingleValue: MovieValueLabel,
       }}
       isMulti={props.isMulti ?? false}
+      creatable={props.creatable ?? defaultCreatable}
+      onCreate={onCreate}
       placeholder={
         props.noSelectionString ??
         intl.formatMessage(
