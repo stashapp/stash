@@ -29,7 +29,7 @@ import { useFormik } from "formik";
 import { Prompt } from "react-router-dom";
 import { ConfigurationContext } from "src/hooks/Config";
 import { stashboxDisplayName } from "src/utils/stashbox";
-import { SceneMovieTable } from "./SceneMovieTable";
+import { IMovieEntry, SceneMovieTable } from "./SceneMovieTable";
 import { faSearch, faSyncAlt } from "@fortawesome/free-solid-svg-icons";
 import { objectTitle } from "src/core/files";
 import { galleryTitle } from "src/core/galleries";
@@ -49,7 +49,7 @@ import { formikUtils } from "src/utils/form";
 import { Tag, TagSelect } from "src/components/Tags/TagSelect";
 import { Studio, StudioSelect } from "src/components/Studios/StudioSelect";
 import { Gallery, GallerySelect } from "src/components/Galleries/GallerySelect";
-import { Movie, MovieSelect } from "src/components/Movies/MovieSelect";
+import { Movie } from "src/components/Movies/MovieSelect";
 
 const SceneScrapeDialog = lazyComponent(() => import("./SceneScrapeDialog"));
 const SceneQueryModal = lazyComponent(() => import("./SceneQueryModal"));
@@ -190,6 +190,17 @@ export const SceneEditPanel: React.FC<IProps> = ({
     return sceneImage;
   }, [formik.values.cover_image, scene.paths?.screenshot]);
 
+  const movieEntries = useMemo(() => {
+    return formik.values.movies
+      .map((m) => {
+        return {
+          movie: movies.find((mm) => mm.id === m.movie_id),
+          scene_index: m.scene_index,
+        };
+      })
+      .filter((m) => m.movie !== undefined) as IMovieEntry[];
+  }, [formik.values.movies, movies]);
+
   function setRating(v: number) {
     formik.setFieldValue("rating100", v);
   }
@@ -292,17 +303,6 @@ export const SceneEditPanel: React.FC<IProps> = ({
       Toast.error(e);
     }
     setIsLoading(false);
-  }
-
-  function renderTableMovies() {
-    return (
-      <SceneMovieTable
-        movieScenes={formik.values.movies}
-        onUpdate={(items) => {
-          formik.setFieldValue("movies", items);
-        }}
-      />
-    );
   }
 
   const encodingImage = ImageUtils.usePasteImage(onImageLoad);
@@ -765,17 +765,21 @@ export const SceneEditPanel: React.FC<IProps> = ({
     return renderField("performer_ids", title, control, fullWidthProps);
   }
 
+  function onSetMovieEntries(input: IMovieEntry[]) {
+    setMovies(input.map((m) => m.movie));
+
+    const newMovies = input.map((m) => ({
+      movie_id: m.movie.id,
+      scene_index: m.scene_index,
+    }));
+
+    formik.setFieldValue("movies", newMovies);
+  }
+
   function renderMoviesField() {
     const title = intl.formatMessage({ id: "movies" });
     const control = (
-      <>
-        <MovieSelect
-          isMulti
-          onSelect={(items) => onSetMovies(items)}
-          values={movies}
-        />
-        {renderTableMovies()}
-      </>
+      <SceneMovieTable value={movieEntries} onUpdate={onSetMovieEntries} />
     );
 
     return renderField("movies", title, control, fullWidthProps);
