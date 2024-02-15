@@ -204,15 +204,16 @@ type Query {
 
   # Get everything
 
-  allScenes: [Scene!]!
+  allScenes: [Scene!]! @deprecated(reason: "Use findScenes instead")
   allSceneMarkers: [SceneMarker!]!
-  allImages: [Image!]!
-  allGalleries: [Gallery!]!
-  allMovies: [Movie!]!
+    @deprecated(reason: "Use findSceneMarkers instead")
+  allImages: [Image!]! @deprecated(reason: "Use findImages instead")
+  allGalleries: [Gallery!]! @deprecated(reason: "Use findGalleries instead")
 
-  allPerformers: [Performer!]! @deprecated(reason: "Use findPerformers instead")
+  allPerformers: [Performer!]!
   allTags: [Tag!]! @deprecated(reason: "Use findTags instead")
   allStudios: [Studio!]! @deprecated(reason: "Use findStudios instead")
+  allMovies: [Movie!]! @deprecated(reason: "Use findMovies instead")
 
   # Get everything with minimal metadata
 

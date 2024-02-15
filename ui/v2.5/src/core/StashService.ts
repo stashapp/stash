@@ -73,26 +73,6 @@ function evictTypeFields(
   }
 }
 
-// Appends obj to the cached result of the given query.
-// Use to append objects to "All*" queries in "Create" mutations.
-function appendObject(
-  cache: ApolloCache<unknown>,
-  obj: StoreObject,
-  query: DocumentNode
-) {
-  const field = getQueryDefinition(query).selectionSet.selections[0];
-  if (!isField(field)) return;
-  const keyName = field.name.value;
-
-  cache.modify({
-    fields: {
-      [keyName]: (value, { toReference }) => {
-        return [...(value as unknown[]), toReference(obj)];
-      },
-    },
-  });
-}
-
 // Deletes obj from the cache, and sets the
 // cached result of the given query to null.
 // Use with "Destroy" mutations.
@@ -215,8 +195,6 @@ export const queryFindMoviesForSelect = (filter: ListFilterModel) =>
       movie_filter: filter.makeFilter(),
     },
   });
-
-export const useAllMoviesForFilter = () => GQL.useAllMoviesForFilterQuery();
 
 export const useFindSceneMarkers = (filter?: ListFilterModel) =>
   GQL.useFindSceneMarkersQuery({
@@ -1098,6 +1076,7 @@ export const mutateImageSetPrimaryFile = (id: string, fileID: string) =>
   });
 
 const movieMutationImpactedTypeFields = {
+  Performer: ["movie_count"],
   Studio: ["movie_count"],
 };
 
@@ -1111,10 +1090,8 @@ export const useMovieCreate = () =>
       const movie = result.data?.movieCreate;
       if (!movie) return;
 
-      appendObject(cache, movie, GQL.AllMoviesForFilterDocument);
-
       // update stats
-      updateStats(cache, "studio_count", 1);
+      updateStats(cache, "movie_count", 1);
 
       evictTypeFields(cache, movieMutationImpactedTypeFields);
       evictQueries(cache, movieMutationImpactedQueries);
