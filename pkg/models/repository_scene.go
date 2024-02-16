@@ -43,10 +43,7 @@ type SceneCounter interface {
 	CountByTagID(ctx context.Context, tagID int) (int, error)
 	CountMissingChecksum(ctx context.Context) (int, error)
 	CountMissingOSHash(ctx context.Context) (int, error)
-	OCount(ctx context.Context) (int, error)
 	OCountByPerformerID(ctx context.Context, performerID int) (int, error)
-	PlayCount(ctx context.Context) (int, error)
-	UniqueScenePlayCount(ctx context.Context) (int, error)
 }
 
 // SceneCreator provides methods to create scenes.
@@ -73,6 +70,8 @@ type SceneCreatorUpdater interface {
 
 type ViewDateReader interface {
 	CountViews(ctx context.Context, id int) (int, error)
+	CountAllViews(ctx context.Context) (int, error)
+	CountUniqueViews(ctx context.Context) (int, error)
 	GetManyViewCount(ctx context.Context, ids []int) ([]int, error)
 	GetViewDates(ctx context.Context, relatedID int) ([]time.Time, error)
 	GetManyViewDates(ctx context.Context, ids []int) ([][]time.Time, error)
@@ -82,6 +81,7 @@ type ViewDateReader interface {
 type ODateReader interface {
 	GetOCount(ctx context.Context, id int) (int, error)
 	GetManyOCount(ctx context.Context, ids []int) ([]int, error)
+	GetAllOCount(ctx context.Context) (int, error)
 	GetODates(ctx context.Context, relatedID int) ([]time.Time, error)
 	GetManyODates(ctx context.Context, ids []int) ([][]time.Time, error)
 }

@@ -148,6 +148,27 @@ func (_m *SceneReaderWriter) Count(ctx context.Context) (int, error) {
 	return r0, r1
 }
 
+// CountAllViews provides a mock function with given fields: ctx
+func (_m *SceneReaderWriter) CountAllViews(ctx context.Context) (int, error) {
+	ret := _m.Called(ctx)
+
+	var r0 int
+	if rf, ok := ret.Get(0).(func(context.Context) int); ok {
+		r0 = rf(ctx)
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = rf(ctx)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // CountByFileID provides a mock function with given fields: ctx, fileID
 func (_m *SceneReaderWriter) CountByFileID(ctx context.Context, fileID models.FileID) (int, error) {
 	ret := _m.Called(ctx, fileID)
@@ -276,6 +297,27 @@ func (_m *SceneReaderWriter) CountMissingChecksum(ctx context.Context) (int, err
 
 // CountMissingOSHash provides a mock function with given fields: ctx
 func (_m *SceneReaderWriter) CountMissingOSHash(ctx context.Context) (int, error) {
+	ret := _m.Called(ctx)
+
+	var r0 int
+	if rf, ok := ret.Get(0).(func(context.Context) int); ok {
+		r0 = rf(ctx)
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = rf(ctx)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// CountUniqueViews provides a mock function with given fields: ctx
+func (_m *SceneReaderWriter) CountUniqueViews(ctx context.Context) (int, error) {
 	ret := _m.Called(ctx)
 
 	var r0 int
@@ -708,6 +750,27 @@ func (_m *SceneReaderWriter) FindMany(ctx context.Context, ids []int) ([]*models
 	return r0, r1
 }
 
+// GetAllOCount provides a mock function with given fields: ctx
+func (_m *SceneReaderWriter) GetAllOCount(ctx context.Context) (int, error) {
+	ret := _m.Called(ctx)
+
+	var r0 int
+	if rf, ok := ret.Get(0).(func(context.Context) int); ok {
+		r0 = rf(ctx)
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = rf(ctx)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetCover provides a mock function with given fields: ctx, sceneID
 func (_m *SceneReaderWriter) GetCover(ctx context.Context, sceneID int) ([]byte, error) {
 	ret := _m.Called(ctx, sceneID)
@@ -1118,27 +1181,6 @@ func (_m *SceneReaderWriter) HasCover(ctx context.Context, sceneID int) (bool, e
 	return r0, r1
 }
 
-// OCount provides a mock function with given fields: ctx
-func (_m *SceneReaderWriter) OCount(ctx context.Context) (int, error) {
-	ret := _m.Called(ctx)
-
-	var r0 int
-	if rf, ok := ret.Get(0).(func(context.Context) int); ok {
-		r0 = rf(ctx)
-	} else {
-		r0 = ret.Get(0).(int)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
-		r1 = rf(ctx)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // OCountByPerformerID provides a mock function with given fields: ctx, performerID
 func (_m *SceneReaderWriter) OCountByPerformerID(ctx context.Context, performerID int) (int, error) {
 	ret := _m.Called(ctx, performerID)
@@ -1153,27 +1195,6 @@ func (_m *SceneReaderWriter) OCountByPerformerID(ctx context.Context, performerI
 	var r1 error
 	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
 		r1 = rf(ctx, performerID)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// PlayCount provides a mock function with given fields: ctx
-func (_m *SceneReaderWriter) PlayCount(ctx context.Context) (int, error) {
-	ret := _m.Called(ctx)
-
-	var r0 int
-	if rf, ok := ret.Get(0).(func(context.Context) int); ok {
-		r0 = rf(ctx)
-	} else {
-		r0 = ret.Get(0).(int)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
-		r1 = rf(ctx)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1297,27 +1318,6 @@ func (_m *SceneReaderWriter) Size(ctx context.Context) (float64, error) {
 		r0 = rf(ctx)
 	} else {
 		r0 = ret.Get(0).(float64)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
-		r1 = rf(ctx)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// UniqueScenePlayCount provides a mock function with given fields: ctx
-func (_m *SceneReaderWriter) UniqueScenePlayCount(ctx context.Context) (int, error) {
-	ret := _m.Called(ctx)
-
-	var r0 int
-	if rf, ok := ret.Get(0).(func(context.Context) int); ok {
-		r0 = rf(ctx)
-	} else {
-		r0 = ret.Get(0).(int)
 	}
 
 	var r1 error

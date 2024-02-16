@@ -937,6 +937,42 @@ func (t *viewHistoryTable) getManyCount(ctx context.Context, ids []int) ([]int, 
 	return ret, nil
 }
 
+func (t *viewHistoryTable) getAllCount(ctx context.Context) (int, error) {
+	table := t.table.table
+	q := dialect.Select(goqu.COUNT("*")).From(table)
+
+	const single = true
+	var ret int
+	if err := queryFunc(ctx, q, single, func(rows *sqlx.Rows) error {
+		if err := rows.Scan(&ret); err != nil {
+			return err
+		}
+		return nil
+	}); err != nil {
+		return 0, err
+	}
+
+	return ret, nil
+}
+
+func (t *viewHistoryTable) getUniqueCount(ctx context.Context) (int, error) {
+	table := t.table.table
+	q := dialect.Select(goqu.COUNT(goqu.DISTINCT(t.idColumn))).From(table)
+
+	const single = true
+	var ret int
+	if err := queryFunc(ctx, q, single, func(rows *sqlx.Rows) error {
+		if err := rows.Scan(&ret); err != nil {
+			return err
+		}
+		return nil
+	}); err != nil {
+		return 0, err
+	}
+
+	return ret, nil
+}
+
 func (t *viewHistoryTable) addDates(ctx context.Context, id int, dates []time.Time) ([]time.Time, error) {
 	table := t.table.table
 
