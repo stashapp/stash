@@ -128,7 +128,9 @@ func (c *Cache) RegisterSessionStore(sessionStore *session.Store) {
 // If a plugin cannot be loaded, an error is logged and the plugin is skipped.
 func (c *Cache) ReloadPlugins() {
 	path := c.config.GetPluginsPath()
+	// # 4484 - ensure plugin ids are unique
 	plugins := make([]Config, 0)
+	pluginIDs := make(map[string]bool)
 
 	logger.Debugf("Reading plugin configs from %s", path)
 
@@ -138,6 +140,11 @@ func (c *Cache) ReloadPlugins() {
 			if err != nil {
 				logger.Errorf("Error loading plugin %s: %v", fp, err)
 			} else {
+				if _, exists := pluginIDs[plugin.id]; exists {
+					logger.Errorf("Error loading plugin %s: plugin ID %s already exists", fp, plugin.id)
+					return nil
+				}
+				pluginIDs[plugin.id] = true
 				plugins = append(plugins, *plugin)
 			}
 		}
