@@ -110,13 +110,13 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
             <h5>
               <FormattedMessage id="studio" />
             </h5>
-            {props.scene.studio?.name && (
+            {props.scene.studio?.name ? (
               <h6>
                 <Link to={`/studios/${props.scene.studio.id}`}>
                   <TruncatedText text={props.scene.studio?.name} />
                 </Link>
               </h6>
-            )}
+            ) : (<h6>&nbsp;</h6>)}
           </div>
           <div className="col-6">
             <h5>
@@ -130,7 +130,7 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
                   timeZone="utc"
                 />
               </h6>
-            ) : undefined}
+            ) : (<h6>&nbsp;</h6>)}
           </div>
         </div>
         <div className="row">
@@ -138,11 +138,11 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
             <h5>
               <FormattedMessage id="scene_code" />
             </h5>
-            {props.scene.code && (
+            {props.scene.code ? (
               <h6>
                 {props.scene.code}{" "}
               </h6>
-            )}
+            ) : (<h6>&nbsp;</h6>)}
           </div>
           <div className="col-6">
             <h5>
@@ -152,9 +152,7 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
               <h6>
                 <RatingSystem value={props.scene.rating100} disabled />
               </h6>
-            ) : (
-              ""
-            )}
+            ) : (<h6>&nbsp;</h6>)}
           </div>
         </div>
         <div className="row">
@@ -162,11 +160,11 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
             <h5>
               <FormattedMessage id="director" />
             </h5>
-            {props.scene.director && (
+            {props.scene.director ? (
               <h6>
                 <TruncatedText text={props.scene.director} />
               </h6>
-            )}
+            ) : (<h6>&nbsp;</h6>)}
           </div>
           <div className="col-6">
             <h5>
@@ -176,7 +174,7 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
               <h6>
                 {TextUtils.resolution(file.width, file.height)}
               </h6>
-            )}
+            ) || (<h6>&nbsp;</h6>)}
           </div>
         </div>
       </div>
@@ -195,21 +193,6 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
           </h6>
         </div>
       </div>
-      {/*
-          
-          
-          <div className="row">
-            <div className="col-12">
-              {renderPerformers()}
-            </div>
-          </div>
-          <div className="row">
-            <div className="col-12 extra-details">
-              
-            </div>
-          </div>
-        </div>
-      </div> */}
     </div>
   );
 };
