@@ -4680,3 +4680,77 @@ func TestSceneStore_SaveActivity(t *testing.T) {
 
 // TODO Count
 // TODO SizeCount
+
+// TODO - this should be in history_test and generalised
+func TestSceneStore_CountAllViews(t *testing.T) {
+	withRollbackTxn(func(ctx context.Context) error {
+		qb := db.Scene
+
+		sceneID := sceneIDs[sceneIdx1WithPerformer]
+
+		// get the current play count
+		currentCount, err := qb.CountAllViews(ctx)
+		if err != nil {
+			t.Errorf("SceneStore.CountAllViews() error = %v", err)
+			return nil
+		}
+
+		// add a view
+		_, err = qb.AddViews(ctx, sceneID, nil)
+		if err != nil {
+			t.Errorf("SceneStore.AddViews() error = %v", err)
+			return nil
+		}
+
+		// get the new play count
+		newCount, err := qb.CountAllViews(ctx)
+		if err != nil {
+			t.Errorf("SceneStore.CountAllViews() error = %v", err)
+			return nil
+		}
+
+		assert.Equal(t, currentCount+1, newCount)
+
+		return nil
+	})
+}
+
+func TestSceneStore_CountUniqueViews(t *testing.T) {
+	withRollbackTxn(func(ctx context.Context) error {
+		qb := db.Scene
+
+		sceneID := sceneIDs[sceneIdx1WithPerformer]
+
+		// get the current play count
+		currentCount, err := qb.CountUniqueViews(ctx)
+		if err != nil {
+			t.Errorf("SceneStore.CountUniqueViews() error = %v", err)
+			return nil
+		}
+
+		// add a view
+		_, err = qb.AddViews(ctx, sceneID, nil)
+		if err != nil {
+			t.Errorf("SceneStore.AddViews() error = %v", err)
+			return nil
+		}
+
+		// add a second view
+		_, err = qb.AddViews(ctx, sceneID, nil)
+		if err != nil {
+			t.Errorf("SceneStore.AddViews() error = %v", err)
+			return nil
+		}
+
+		// get the new play count
+		newCount, err := qb.CountUniqueViews(ctx)
+		if err != nil {
+			t.Errorf("SceneStore.CountUniqueViews() error = %v", err)
+			return nil
+		}
+
+		assert.Equal(t, currentCount+1, newCount)
+
+		return nil
+	})
+}
