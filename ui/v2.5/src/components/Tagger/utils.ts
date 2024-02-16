@@ -1,5 +1,7 @@
 import * as GQL from "src/core/generated-graphql";
 import { ParseMode } from "./constants";
+import { queryFindStudio } from "src/core/StashService";
+import { mergeStashIDs } from "src/utils/stashbox";
 
 const months = [
   "jan",
@@ -142,3 +144,15 @@ export const parsePath = (filePath: string) => {
 
   return { paths, file, ext };
 };
+
+export async function mergeStudioStashIDs(
+  id: string,
+  newStashIDs: GQL.StashIdInput[]
+) {
+  const existing = await queryFindStudio(id);
+  if (existing?.data?.findStudio?.stash_ids) {
+    return mergeStashIDs(existing.data.findStudio.stash_ids, newStashIDs);
+  }
+
+  return newStashIDs;
+}
