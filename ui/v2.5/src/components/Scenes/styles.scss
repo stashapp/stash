@@ -1,5 +1,6 @@
 .card-popovers {
   display: flex;
+  flex-wrap: wrap;
   justify-content: center;
   margin-bottom: 10px;
 
@@ -26,6 +27,10 @@
 .movie-tag-container {
   display: inline-block;
   margin: 5px;
+}
+
+.performer-tag-container .performer-disambiguation {
+  color: initial;
 }
 
 .performer-tag.image,
@@ -131,33 +136,6 @@ textarea.scene-description {
   left: 0.7rem;
 }
 
-.scene-studio-overlay {
-  display: block;
-  font-weight: 900;
-  height: 10%;
-  max-width: 40%;
-  opacity: 0.75;
-  position: absolute;
-  right: 0.7rem;
-  top: 0.7rem;
-  z-index: 8;
-
-  .image-thumbnail {
-    height: 50px;
-    object-fit: contain;
-    width: 100%;
-  }
-
-  a {
-    color: $text-color;
-    display: inline-block;
-    letter-spacing: -0.03rem;
-    text-align: right;
-    text-decoration: none;
-    text-shadow: 0 0 3px #000;
-  }
-}
-
 .extra-scene-info {
   display: none;
 }
@@ -176,14 +154,7 @@ textarea.scene-description {
 
 .scene-card,
 .gallery-card {
-  a {
-    color: $text-color;
-    text-decoration: none;
-  }
-
-  .scene-specs-overlay,
-  .rating-banner,
-  .scene-studio-overlay {
+  .scene-specs-overlay {
     transition: opacity 0.5s;
   }
 
@@ -222,16 +193,8 @@ textarea.scene-description {
 
   &:hover,
   &:active {
-    .scene-specs-overlay,
-    .rating-banner,
-    .scene-studio-overlay {
+    .scene-specs-overlay {
       opacity: 0;
-      transition: opacity 0.5s;
-    }
-
-    .scene-studio-overlay:hover,
-    .scene-studio-overlay:active {
-      opacity: 0.75;
       transition: opacity 0.5s;
     }
 

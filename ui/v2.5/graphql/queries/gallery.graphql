@@ -15,3 +15,16 @@ query FindGallery($id: ID!) {
     ...GalleryData
   }
 }
+
+query FindGalleriesForSelect(
+  $filter: FindFilterType
+  $gallery_filter: GalleryFilterType
+  $ids: [ID!]
+) {
+  findGalleries(filter: $filter, gallery_filter: $gallery_filter, ids: $ids) {
+    count
+    galleries {
+      ...SelectGalleryData
+    }
+  }
+}

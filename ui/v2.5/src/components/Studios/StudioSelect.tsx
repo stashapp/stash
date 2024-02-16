@@ -27,6 +27,7 @@ import {
 import { useCompare } from "src/hooks/state";
 import { Placement } from "react-bootstrap/esm/Overlay";
 import { sortByRelevance } from "src/utils/query";
+import { PatchComponent } from "src/pluginApi";
 
 export type SelectObject = {
   id: string;
@@ -37,7 +38,7 @@ export type SelectObject = {
 export type Studio = Pick<GQL.Studio, "id" | "name" | "aliases" | "image_path">;
 type Option = SelectOption<Studio>;
 
-export const StudioSelect: React.FC<
+const _StudioSelect: React.FC<
   IFilterProps &
     IFilterValueProps<Studio> & {
       hoverPlacement?: Placement;
@@ -69,7 +70,12 @@ export const StudioSelect: React.FC<
       return !exclude.includes(studio.id.toString());
     });
 
-    return sortByRelevance(input, ret, (o) => o.aliases).map((studio) => ({
+    return sortByRelevance(
+      input,
+      ret,
+      (s) => s.name,
+      (s) => s.aliases
+    ).map((studio) => ({
       value: studio.id,
       object: studio,
     }));
@@ -211,7 +217,9 @@ export const StudioSelect: React.FC<
   );
 };
 
-export const StudioIDSelect: React.FC<IFilterProps & IFilterIDProps<Studio>> = (
+export const StudioSelect = PatchComponent("StudioSelect", _StudioSelect);
+
+const _StudioIDSelect: React.FC<IFilterProps & IFilterIDProps<Studio>> = (
   props
 ) => {
   const { ids, onSelect: onSelectValues } = props;
@@ -258,3 +266,5 @@ export const StudioIDSelect: React.FC<IFilterProps & IFilterIDProps<Studio>> = (
 
   return <StudioSelect {...props} values={values} onSelect={onSelect} />;
 };
+
+export const StudioIDSelect = PatchComponent("StudioIDSelect", _StudioIDSelect);

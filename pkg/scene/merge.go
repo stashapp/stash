@@ -21,7 +21,7 @@ type MergeOptions struct {
 	IncludeOHistory    bool
 }
 
-func (s *Service) Merge(ctx context.Context, sourceIDs []int, destinationID int, options MergeOptions) error {
+func (s *Service) Merge(ctx context.Context, sourceIDs []int, destinationID int, fileDeleter *FileDeleter, options MergeOptions) error {
 	scenePartial := options.ScenePartial
 
 	// ensure source ids are unique
@@ -45,8 +45,6 @@ func (s *Service) Merge(ctx context.Context, sourceIDs []int, destinationID int,
 	var fileIDs []models.FileID
 
 	for _, src := range sources {
-		// TODO - delete generated files as needed
-
 		if err := src.LoadRelationships(ctx, s.Repository); err != nil {
 			return fmt.Errorf("loading scene relationships from %d: %w", src.ID, err)
 		}
@@ -118,9 +116,11 @@ func (s *Service) Merge(ctx context.Context, sourceIDs []int, destinationID int,
 	}
 
 	// delete old scenes
-	for _, srcID := range sourceIDs {
-		if err := s.Repository.Destroy(ctx, srcID); err != nil {
-			return fmt.Errorf("deleting scene %d: %w", srcID, err)
+	for _, src := range sources {
+		const deleteGenerated = true
+		const deleteFile = false
+		if err := s.Destroy(ctx, src, fileDeleter, deleteGenerated, deleteFile); err != nil {
+			return fmt.Errorf("deleting scene %d: %w", src.ID, err)
 		}
 	}
 

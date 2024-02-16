@@ -23,6 +23,7 @@ function useStudioQuery(query: string) {
     return sortByRelevance(
       query,
       data?.findStudios.studios ?? [],
+      (s) => s.name,
       (s) => s.aliases
     ).map((p) => {
       return {

@@ -264,7 +264,7 @@ export const GalleryPage: React.FC<IProps> = ({ gallery, add }) => {
               isVisible={activeTabKey === "gallery-chapter-panel"}
             />
           </Tab.Pane>
-          <Tab.Pane eventKey="gallery-edit-panel">
+          <Tab.Pane eventKey="gallery-edit-panel" mountOnEnter>
             <GalleryEditPanel
               isVisible={activeTabKey === "gallery-edit-panel"}
               gallery={gallery}

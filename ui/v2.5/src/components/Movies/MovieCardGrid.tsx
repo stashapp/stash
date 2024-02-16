@@ -1,7 +1,7 @@
 import React, { useRef } from "react";
 import * as GQL from "src/core/generated-graphql";
 import { MovieCard } from "./MovieCard";
-import { useContainerDimensions } from "../Shared/GridCard";
+import { useContainerDimensions } from "../Shared/GridCard/GridCard";
 
 interface IMovieCardGrid {
   movies: GQL.MovieDataFragment[];

@@ -8,7 +8,7 @@ import React, {
 import { Toast } from "react-bootstrap";
 import { errorToString } from "src/utils";
 
-interface IToast {
+export interface IToast {
   header?: string;
   content: React.ReactNode | string;
   delay?: number;

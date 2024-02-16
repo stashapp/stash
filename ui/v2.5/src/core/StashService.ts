@@ -244,6 +244,14 @@ export const queryFindGalleries = (filter: ListFilterModel) =>
     },
   });
 
+export const queryFindGalleriesByIDForSelect = (galleryIDs: number[]) =>
+  client.query<GQL.FindGalleriesForSelectQuery>({
+    query: GQL.FindGalleriesForSelectDocument,
+    variables: {
+      ids: galleryIDs,
+    },
+  });
+
 export const useFindPerformer = (id: string) => {
   const skip = id === "new" || id === "";
   return GQL.useFindPerformerQuery({ variables: { id }, skip });

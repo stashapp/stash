@@ -7,7 +7,10 @@ import { GalleryLink, TagLink } from "src/components/Shared/TagLink";
 import { HoverPopover } from "src/components/Shared/HoverPopover";
 import { SweatDrops } from "src/components/Shared/SweatDrops";
 import { PerformerPopoverButton } from "src/components/Shared/PerformerPopoverButton";
-import { GridCard, calculateCardWidth } from "src/components/Shared/GridCard";
+import {
+  GridCard,
+  calculateCardWidth,
+} from "src/components/Shared/GridCard/GridCard";
 import { RatingBanner } from "src/components/Shared/RatingBanner";
 import {
   faBox,
@@ -18,6 +21,7 @@ import {
 import { objectTitle } from "src/core/files";
 import { TruncatedText } from "../Shared/TruncatedText";
 import ScreenUtils from "src/utils/screen";
+import { StudioOverlay } from "../Shared/GridCard/StudioOverlay";
 
 interface IImageCardProps {
   image: GQL.SlimImageDataFragment;
@@ -221,6 +225,7 @@ export const ImageCard: React.FC<IImageCardProps> = (
           />
         </div>
       }
+      overlays={<StudioOverlay studio={props.image.studio} />}
       popovers={maybeRenderPopoverButtonGroup()}
       selected={props.selected}
       selecting={props.selecting}
