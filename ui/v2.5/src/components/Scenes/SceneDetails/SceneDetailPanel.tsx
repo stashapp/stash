@@ -148,11 +148,7 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
             <h5>
               <FormattedMessage id="rating" />
             </h5>
-            {props.scene.rating100 ? (
-              <h6>
-                <RatingSystem value={props.scene.rating100} disabled />
-              </h6>
-            ) : (<h6>&nbsp;</h6>)}
+            <RatingSystem value={props.scene.rating100 ?? undefined} disabled />
           </div>
         </div>
         <div className="row">
