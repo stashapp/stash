@@ -26,9 +26,10 @@ import TextUtils from "src/utils/text";
 const History: React.FC<{
   className?: string;
   history: string[];
+  unknownDate?: string;
   onRemove: (date: string) => void;
   noneID: string;
-}> = ({ className, history, noneID, onRemove }) => {
+}> = ({ className, history, unknownDate, noneID, onRemove }) => {
   const intl = useIntl();
 
   if (history.length === 0) {
@@ -39,12 +40,20 @@ const History: React.FC<{
     );
   }
 
+  function renderDate(date: string) {
+    if (date === unknownDate) {
+      return intl.formatMessage({ id: "unknown_date" });
+    }
+
+    return TextUtils.formatDateTime(intl, date);
+  }
+
   return (
     <div className="scene-history">
       <ul className={className}>
         {history.map((playdate, index) => (
           <li key={index}>
-            <span>{TextUtils.formatDateTime(intl, playdate)}</span>
+            <span>{renderDate(playdate)}</span>
             <Button
               className="remove-date-button"
               size="sm"
@@ -297,6 +306,7 @@ export const SceneHistoryPanel: React.FC<ISceneHistoryProps> = ({ scene }) => {
         <History
           history={playHistory ?? []}
           noneID="playdate_recorded_no"
+          unknownDate={scene.created_at}
           onRemove={(t) => handleDeletePlayDate(t)}
         />
         <dl className="details-list">
@@ -335,6 +345,7 @@ export const SceneHistoryPanel: React.FC<ISceneHistoryProps> = ({ scene }) => {
         <History
           history={oHistory}
           noneID="odate_recorded_no"
+          unknownDate={scene.created_at}
           onRemove={(t) => handleDeleteODate(t)}
         />
       </div>
