@@ -1,4 +1,6 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
+import { Button } from "react-bootstrap";
+import { Icon } from "src/components/Shared/Icon";
 import { Link } from "react-router-dom";
 import { FormattedDate, FormattedMessage, useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
@@ -9,6 +11,10 @@ import { PerformerCard } from "src/components/Performers/PerformerCard";
 import { sortPerformers } from "src/core/performers";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { objectTitle } from "src/core/files";
+import {
+  faChevronDown,
+  faChevronUp
+} from "@fortawesome/free-solid-svg-icons";
 
 interface ISceneDetailProps {
   scene: GQL.SceneDataFragment;
@@ -16,43 +22,55 @@ interface ISceneDetailProps {
 
 export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
   const intl = useIntl();
+  const [collapsed, setCollapsed] = useState<boolean>(true);
 
   const file = useMemo(
     () => (props.scene.files.length > 0 ? props.scene.files[0] : undefined),
     [props.scene]
   );
 
-  function renderDetails() {
+  function getCollapseButtonIcon() {
+    return collapsed ? faChevronDown : faChevronUp;
+  }
+
+  function maybeRenderDetails() {
     if (!props.scene.details || props.scene.details === "") return;
     return (
-      <>
-        <h6>
-          <FormattedMessage id="details" />:{" "}
-        </h6>
-        <p className="pre">{props.scene.details}</p>
-      </>
+      <div className="row details-description">
+        <div className="col-12">
+          <h5>
+            <FormattedMessage id="details" />
+            <Button
+              className="minimal expand-collapse"
+              onClick={() => setCollapsed(!collapsed)}
+            >
+              <Icon className="fa-fw" icon={getCollapseButtonIcon()} />
+            </Button>
+          </h5>
+          <p className={`pre details-description ${collapsed ? 'collapsed' : ''}`}>{props.scene.details}</p>
+        </div>
+      </div>
     );
   }
 
-  function renderTags() {
+  function maybeRenderTags() {
     if (props.scene.tags.length === 0) return;
     const tags = props.scene.tags.map((tag) => (
       <TagLink key={tag.id} tag={tag} />
     ));
     return (
-      <>
-        <h6>
-          <FormattedMessage
-            id="countables.tags"
-            values={{ count: props.scene.tags.length }}
-          />
-        </h6>
-        {tags}
-      </>
+      <div className="row details-tags">
+        <div className="col-12">
+          <h5>
+            <FormattedMessage id="tags" />
+          </h5>
+          {tags}
+        </div>
+      </div>
     );
   }
 
-  function renderPerformers() {
+  function maybeRenderPerformers() {
     if (props.scene.performers.length === 0) return;
     const performers = sortPerformers(props.scene.performers);
     const cards = performers.map((performer) => (
@@ -64,55 +82,109 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
     ));
 
     return (
-      <>
-        <h6>
-          <FormattedMessage
-            id="countables.performers"
-            values={{ count: props.scene.performers.length }}
-          />
-        </h6>
-        <div className="row justify-content-center scene-performers">
-          {cards}
+      <div className="row details-performers">
+        <div className="col-12">
+          <h5>
+            <FormattedMessage id="performers" />
+          </h5>
+          <div className="row scene-performers">
+            {cards}
+          </div>
         </div>
-      </>
+      </div>
     );
   }
 
-  // filename should use entire row if there is no studio
-  const sceneDetailsWidth = props.scene.studio ? "col-9" : "col-12";
-
   return (
-    <>
-      <div className="row">
-        <div className={`${sceneDetailsWidth} col-xl-12 scene-details`}>
+    <div className="col-xl-12 details-display">
+      <div className="details-basic">
+        <div className="row">
           <div className="scene-header d-xl-none">
             <h3>
               <TruncatedText text={objectTitle(props.scene)} />
             </h3>
           </div>
-          {props.scene.date ? (
+        </div>
+        <div className="row">
+          <div className="col-6">
             <h5>
-              <FormattedDate
-                value={props.scene.date}
-                format="long"
-                timeZone="utc"
-              />
+              <FormattedMessage id="studio" />
             </h5>
-          ) : undefined}
-          {props.scene.rating100 ? (
-            <h6>
-              <FormattedMessage id="rating" />:{" "}
-              <RatingSystem value={props.scene.rating100} disabled />
-            </h6>
-          ) : (
-            ""
-          )}
-          {file?.width && file?.height && (
-            <h6>
-              <FormattedMessage id="resolution" />:{" "}
-              {TextUtils.resolution(file.width, file.height)}
-            </h6>
-          )}
+            {props.scene.studio?.name && (
+              <h6>
+                <Link to={`/studios/${props.scene.studio.id}`}>
+                  <TruncatedText text={props.scene.studio?.name} />
+                </Link>
+              </h6>
+            )}
+          </div>
+          <div className="col-6">
+            <h5>
+              <FormattedMessage id="date" />
+            </h5>
+            {props.scene.date ? (
+              <h6>
+                <FormattedDate
+                  value={props.scene.date}
+                  format="long"
+                  timeZone="utc"
+                />
+              </h6>
+            ) : undefined}
+          </div>
+        </div>
+        <div className="row">
+          <div className="col-6">
+            <h5>
+              <FormattedMessage id="scene_code" />
+            </h5>
+            {props.scene.code && (
+              <h6>
+                {props.scene.code}{" "}
+              </h6>
+            )}
+          </div>
+          <div className="col-6">
+            <h5>
+              <FormattedMessage id="rating" />
+            </h5>
+            {props.scene.rating100 ? (
+              <h6>
+                <RatingSystem value={props.scene.rating100} disabled />
+              </h6>
+            ) : (
+              ""
+            )}
+          </div>
+        </div>
+        <div className="row">
+          <div className="col-6">
+            <h5>
+              <FormattedMessage id="director" />
+            </h5>
+            {props.scene.director && (
+              <h6>
+                <TruncatedText text={props.scene.director} />
+              </h6>
+            )}
+          </div>
+          <div className="col-6">
+            <h5>
+              <FormattedMessage id="resolution" />
+            </h5>
+            {file?.width && file?.height && (
+              <h6>
+                {TextUtils.resolution(file.width, file.height)}
+              </h6>
+            )}
+          </div>
+        </div>
+      </div>
+      {maybeRenderTags()}
+      {maybeRenderDetails()}
+      {maybeRenderPerformers()}
+      <div className="row details-extra">
+        <div className="col-12">
           <h6>
             <FormattedMessage id="created_at" />:{" "}
             {TextUtils.formatDateTime(intl, props.scene.created_at)}{" "}
@@ -121,37 +193,24 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
             <FormattedMessage id="updated_at" />:{" "}
             {TextUtils.formatDateTime(intl, props.scene.updated_at)}{" "}
           </h6>
-          {props.scene.code && (
-            <h6>
-              <FormattedMessage id="scene_code" />: {props.scene.code}{" "}
-            </h6>
-          )}
-          {props.scene.director && (
-            <h6>
-              <FormattedMessage id="director" />: {props.scene.director}{" "}
-            </h6>
-          )}
         </div>
-        {props.scene.studio && (
-          <div className="col-3 d-xl-none">
-            <Link to={`/studios/${props.scene.studio.id}`}>
-              <img
-                src={props.scene.studio.image_path ?? ""}
-                alt={`${props.scene.studio.name} logo`}
-                className="studio-logo float-right"
-              />
-            </Link>
+      </div>
+      {/*
+          
+          
+          <div className="row">
+            <div className="col-12">
+              {renderPerformers()}
+            </div>
           </div>
-        )}
-      </div>
-      <div className="row">
-        <div className="col-12">
-          {renderDetails()}
-          {renderTags()}
-          {renderPerformers()}
+          <div className="row">
+            <div className="col-12 extra-details">
+              
+            </div>
+          </div>
         </div>
-      </div>
-    </>
+      </div> */}
+    </div>
   );
 };
 
