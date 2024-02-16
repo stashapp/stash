@@ -23,6 +23,7 @@ import {
   queryFindScenesByID,
 } from "src/core/StashService";
 
+import { SceneEditPanel } from "./SceneEditPanel";
 import { ErrorMessage } from "src/components/Shared/ErrorMessage";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { Icon } from "src/components/Shared/Icon";
@@ -59,7 +60,6 @@ const ExternalPlayerButton = lazyComponent(
 const QueueViewer = lazyComponent(() => import("./QueueViewer"));
 const SceneMarkersPanel = lazyComponent(() => import("./SceneMarkersPanel"));
 const SceneFileInfoPanel = lazyComponent(() => import("./SceneFileInfoPanel"));
-const SceneEditPanel = lazyComponent(() => import("./SceneEditPanel"));
 const SceneDetailPanel = lazyComponent(() => import("./SceneDetailPanel"));
 const SceneMoviePanel = lazyComponent(() => import("./SceneMoviePanel"));
 const SceneGalleriesPanel = lazyComponent(
@@ -479,7 +479,7 @@ const ScenePage: React.FC<IProps> = ({
         <Tab.Pane className="file-info-panel" eventKey="scene-file-info-panel">
           <SceneFileInfoPanel scene={scene} />
         </Tab.Pane>
-        <Tab.Pane eventKey="scene-edit-panel">
+        <Tab.Pane eventKey="scene-edit-panel" mountOnEnter>
           <SceneEditPanel
             isVisible={activeTabKey === "scene-edit-panel"}
             scene={scene}
