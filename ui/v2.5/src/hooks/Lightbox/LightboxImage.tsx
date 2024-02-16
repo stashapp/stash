@@ -52,6 +52,8 @@ function calculateDefaultZoom(
 
 interface IProps {
   src: string;
+  width: number;
+  height: number;
   displayMode: GQL.ImageLightboxDisplayMode;
   scaleUp: boolean;
   scrollMode: GQL.ImageLightboxScrollMode;
@@ -74,6 +76,8 @@ interface IProps {
 
 export const LightboxImage: React.FC<IProps> = ({
   src,
+  width,
+  height,
   displayMode,
   scaleUp,
   scrollMode,
@@ -94,8 +98,6 @@ export const LightboxImage: React.FC<IProps> = ({
   const [moving, setMoving] = useState(false);
   const [positionX, setPositionX] = useState(0);
   const [positionY, setPositionY] = useState(0);
-  const [width, setWidth] = useState(0);
-  const [height, setHeight] = useState(0);
   const [boxWidth, setBoxWidth] = useState(0);
   const [boxHeight, setBoxHeight] = useState(0);
 
@@ -134,24 +136,6 @@ export const LightboxImage: React.FC<IProps> = ({
       toggleVideoPlay();
     }, 250);
   }, [container]);
-
-  useEffect(() => {
-    let mounted = true;
-    const img = new Image();
-    function onLoad() {
-      if (mounted) {
-        setWidth(img.width);
-        setHeight(img.height);
-      }
-    }
-
-    img.onload = onLoad;
-    img.src = src;
-
-    return () => {
-      mounted = false;
-    };
-  }, [src]);
 
   const minMaxY = useCallback(
     (appliedZoom: number) => {
@@ -528,15 +512,6 @@ export const LightboxImage: React.FC<IProps> = ({
   }
 
   const ImageView = isVideo ? "video" : "img";
-  const customStyle = isVideo
-    ? {
-        touchAction: "none",
-        display: "flex",
-        margin: "auto",
-        width: "100%",
-        "max-height": "90vh",
-      }
-    : { touchAction: "none" };
 
   return (
     <div
@@ -559,7 +534,7 @@ export const LightboxImage: React.FC<IProps> = ({
             src={src}
             alt=""
             draggable={false}
-            style={customStyle}
+            style={{ touchAction: "none" }}
             onWheel={current ? (e) => onImageScroll(e) : undefined}
             onMouseDown={onImageMouseDown}
             onMouseUp={onImageMouseUp}
