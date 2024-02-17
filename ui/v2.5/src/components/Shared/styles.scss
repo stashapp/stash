@@ -30,6 +30,65 @@
   }
 }
 
+.details-display {
+  display: flex;
+  flex-direction: column;
+  margin-left: -15px;
+
+  h5 {
+    color: gray;
+  }
+
+  .row {
+    margin-bottom: 1em;
+  }
+
+  .tag-item {
+    margin: 0em 0.5em 0.5em 0em;
+  }
+
+  .details-basic {
+    order: 0;
+  }
+
+  .details-galleries {
+    order: 1;
+  }
+
+  .details-tags {
+    order: 2;
+  }
+
+  .details-description {
+    order: 3;
+
+    .collapsed {
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;  
+      overflow: hidden;
+    }
+  }
+
+  .details-performers {
+    order: 4;
+
+    .scene-performers,
+    .image-performers {
+      margin-left: -5px;
+    }
+  }
+
+  .details-extra {
+    order: 5;
+    color: gray;
+
+    h6 {
+      font-size: 0.8rem;
+    }
+  }
+}
+
 .details-edit {
   /*
     The penultimate button should be wrapped in an unstyled div.
