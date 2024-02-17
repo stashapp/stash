@@ -15,6 +15,8 @@ import {
   faChevronDown,
   faChevronUp
 } from "@fortawesome/free-solid-svg-icons";
+import { ConfigurationContext } from "src/hooks/Config";
+import { IUIConfig } from "src/core/config";
 
 interface ISceneDetailProps {
   scene: GQL.SceneDataFragment;
@@ -22,7 +24,11 @@ interface ISceneDetailProps {
 
 export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
   const intl = useIntl();
-  const [collapsed, setCollapsed] = useState<boolean>(true);
+
+  const { configuration } = React.useContext(ConfigurationContext);
+  const uiConfig = configuration?.ui as IUIConfig | undefined;
+  const showAllDetails = uiConfig?.showAllDetails ?? true;
+  const [collapsed, setCollapsed] = useState<boolean>(!showAllDetails);
 
   const file = useMemo(
     () => (props.scene.files.length > 0 ? props.scene.files[0] : undefined),
