@@ -891,6 +891,16 @@ div.dropdown-menu {
   }
 }
 
+@include media-breakpoint-down(xs) {
+  .toast-container {
+    bottom: 4rem;
+    left: 50%;
+    margin-left: -175px;
+    right: unset;
+    top: unset;
+  }
+}
+
 .image-input {
   margin-bottom: 0;
   position: relative;
@@ -940,6 +950,7 @@ div.dropdown-menu {
 .top-nav {
   justify-content: start;
   padding: 0.25rem 1rem;
+  z-index: 1052;
 
   @include media-breakpoint-down(xs) {
     padding: 0.25rem 2rem;
