@@ -1,6 +1,6 @@
 .image-header {
-  flex-basis: auto;
-  margin-top: 30px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 #image-details-container {
@@ -80,7 +80,6 @@ $imageTabWidth: 450px;
 .image-tabs,
 .image-container {
   padding-left: 15px;
-  padding-right: 15px;
   position: relative;
   width: 100%;
 }
@@ -103,7 +102,7 @@ $imageTabWidth: 450px;
 @media (min-width: 1200px), (max-width: 575px) {
   .image-performers {
     .performer-card {
-      width: 15rem;
+      width: 14rem;
 
       &-image {
         height: 22.5rem;
