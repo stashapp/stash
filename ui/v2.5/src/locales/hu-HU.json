@@ -609,5 +609,15 @@
     "circumcised_types": {
         "CUT": "Körülmetélt",
         "UNCUT": "Nem körülmetélt"
-    }
+    },
+    "also_known_as": "Más néven ismert",
+    "appears_with": "Megjelenik a következővel",
+    "between_and": "és",
+    "blobs_storage_type": {
+        "database": "Adatbázis",
+        "filesystem": "Fájlrendszer"
+    },
+    "captions": "Feliratok",
+    "chapters": "Fejezetek",
+    "circumcised": "Körülmetélt"
 }
