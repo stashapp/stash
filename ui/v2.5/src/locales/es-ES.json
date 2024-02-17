@@ -929,7 +929,6 @@
   "path": "Ruta",
   "perceptual_similarity": "Similaridad perceptiva (phash)",
   "performer": "Actriz/Actor",
-  "performer_tags": "Etiquetas de actriz/actor",
   "performer_age": "Edad de la actriz/actor",
   "performer_count": "Número de actrices/actores",
   "performer_favorite": "Actriz/actor favorita/o",
@@ -969,6 +968,7 @@
     "update_performers": "Actualizar actrices/actores",
     "updating_untagged_performers_description": "Actualizar las actrices/actores no etiquetados intentará seleccionar cualquier actriz/actor que carecen de un StashID y actualizará los metadatos."
   },
+  "performer_tags": "Etiquetas de actriz/actor",
   "performers": "Actrices/Actores",
   "piercings": "Piercings",
   "queue": "Cola",
@@ -977,9 +977,9 @@
   "resolution": "Resolución",
   "scene": "Escena",
   "sceneTagger": "Etiquetador de escenas",
-  "scene_tags": "Etiquetas de escena",
   "scene_count": "Número de escenas",
   "scene_id": "Indentificador de escena",
+  "scene_tags": "Etiquetas de escena",
   "scenes": "Escenas",
   "scenes_updated_at": "Fecha de actualización de la escena",
   "search_filter": {
