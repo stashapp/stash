@@ -3,67 +3,73 @@ import {
   faChevronUp,
   faClock,
 } from "@fortawesome/free-solid-svg-icons";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Button, ButtonGroup, InputGroup, Form } from "react-bootstrap";
 import { Icon } from "./Icon";
-import DurationUtils from "src/utils/duration";
+import TextUtils from "src/utils/text";
 
 interface IProps {
   disabled?: boolean;
-  numericValue: number | undefined;
-  mandatory?: boolean;
-  onValueChange(
-    valueAsNumber: number | undefined,
-    valueAsString?: string
-  ): void;
+  value: number | null | undefined;
+  setValue(value: number | null): void;
   onReset?(): void;
   className?: string;
   placeholder?: string;
+  error?: string;
+  allowNegative?: boolean;
 }
 
-export const DurationInput: React.FC<IProps> = (props: IProps) => {
-  const [value, setValue] = useState<string | undefined>(
-    props.numericValue !== undefined
-      ? DurationUtils.secondsToString(props.numericValue)
-      : undefined
-  );
+export const DurationInput: React.FC<IProps> = ({
+  disabled,
+  value,
+  setValue,
+  onReset,
+  className,
+  placeholder,
+  error,
+  allowNegative = false,
+}) => {
+  const [tmpValue, setTmpValue] = useState<string>();
 
-  useEffect(() => {
-    if (props.numericValue !== undefined || props.mandatory) {
-      setValue(DurationUtils.secondsToString(props.numericValue ?? 0));
-    } else {
-      setValue(undefined);
+  function onChange(e: React.ChangeEvent<HTMLInputElement>) {
+    setTmpValue(e.currentTarget.value);
+  }
+
+  function onBlur() {
+    if (tmpValue !== undefined) {
+      updateValue(TextUtils.timestampToSeconds(tmpValue));
+      setTmpValue(undefined);
     }
-  }, [props.numericValue, props.mandatory]);
+  }
+
+  function updateValue(v: number | null) {
+    if (v !== null && !allowNegative && v < 0) {
+      v = null;
+    }
+    setValue(v);
+  }
 
   function increment() {
-    if (value === undefined) {
-      return;
-    }
-
-    let seconds = DurationUtils.stringToSeconds(value);
-    seconds += 1;
-    props.onValueChange(seconds, DurationUtils.secondsToString(seconds));
+    setTmpValue(undefined);
+    updateValue((value ?? 0) + 1);
   }
 
   function decrement() {
-    if (value === undefined) {
-      return;
+    setTmpValue(undefined);
+    if (allowNegative) {
+      updateValue((value ?? 0) - 1);
+    } else {
+      updateValue(value ? value - 1 : 0);
     }
-
-    let seconds = DurationUtils.stringToSeconds(value);
-    seconds -= 1;
-    props.onValueChange(seconds, DurationUtils.secondsToString(seconds));
   }
 
   function renderButtons() {
-    if (!props.disabled) {
+    if (!disabled) {
       return (
         <ButtonGroup vertical>
           <Button
             variant="secondary"
             className="duration-button"
-            disabled={props.disabled}
             onClick={() => increment()}
           >
             <Icon icon={faChevronUp} />
@@ -71,7 +77,6 @@ export const DurationInput: React.FC<IProps> = (props: IProps) => {
           <Button
             variant="secondary"
             className="duration-button"
-            disabled={props.disabled}
             onClick={() => decrement()}
           >
             <Icon icon={faChevronDown} />
@@ -81,51 +86,45 @@ export const DurationInput: React.FC<IProps> = (props: IProps) => {
     }
   }
 
-  function onReset() {
-    if (props.onReset) {
-      props.onReset();
-    }
-  }
-
   function maybeRenderReset() {
-    if (props.onReset) {
+    if (onReset) {
       return (
-        <Button variant="secondary" onClick={onReset}>
+        <Button variant="secondary" onClick={() => onReset()}>
           <Icon icon={faClock} />
         </Button>
       );
     }
   }
 
+  let inputValue = "";
+  if (tmpValue !== undefined) {
+    inputValue = tmpValue;
+  } else if (value !== null && value !== undefined) {
+    inputValue = TextUtils.secondsToTimestamp(value);
+  }
+
+  if (placeholder) {
+    placeholder = `${placeholder} (hh:mm:ss)`;
+  } else {
+    placeholder = "hh:mm:ss";
+  }
+
   return (
-    <div className={`duration-input ${props.className}`}>
+    <div className={`duration-input ${className}`}>
       <InputGroup>
         <Form.Control
           className="duration-control text-input"
-          disabled={props.disabled}
-          value={value}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            setValue(e.currentTarget.value)
-          }
-          onBlur={() => {
-            if (props.mandatory || (value !== undefined && value !== "")) {
-              props.onValueChange(DurationUtils.stringToSeconds(value), value);
-            } else {
-              props.onValueChange(undefined);
-            }
-          }}
-          placeholder={
-            !props.disabled
-              ? props.placeholder
-                ? `${props.placeholder} (hh:mm:ss)`
-                : "hh:mm:ss"
-              : undefined
-          }
+          disabled={disabled}
+          value={inputValue}
+          onChange={onChange}
+          onBlur={onBlur}
+          placeholder={placeholder}
         />
         <InputGroup.Append>
           {maybeRenderReset()}
           {renderButtons()}
         </InputGroup.Append>
+        <Form.Control.Feedback type="invalid">{error}</Form.Control.Feedback>
       </InputGroup>
     </div>
   );

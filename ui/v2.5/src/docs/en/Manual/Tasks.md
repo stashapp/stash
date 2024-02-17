@@ -15,9 +15,9 @@ The scan task accepts the following options:
 | Option | Description |
 |--------|-------------|
 | Generate scene covers | Generates scene covers for video files. |
-| Generate previews | Generates video previews which play when hovering over a scene. |
-| Generate animated image previews | Generates animated webp previews. Only required if the Preview Type is set to Animated Image. Requires Generate previews to be enabled. |
-| Generate scrubber sprites | Generates sprites for the scene scrubber. |
+| Generate previews | Generates video previews (mp4) which play when hovering over a scene. |
+| Generate animated image previews | Also generate animated (webp) previews, only required when Scene/Marker Wall Preview Type is set to Animated Image. When browsing they use less CPU than the video previews, but are generated in addition to them and are larger files. |
+| Generate scrubber sprites | The set of images displayed below the video player for easy navigation. |
 | Generate perceptual hashes | Generates perceptual hashes for scene deduplication and identification. |
 | Generate thumbnails for images | Generates thumbnails for image files. | 
 | Generate previews for image clips | Generates a gif/looping video as thumbnail for image clips/gifs. |
@@ -43,11 +43,11 @@ The generate task accepts the following options:
 | Option | Description |
 |--------|-------------|
 | Scene covers | Generates scene covers for video files. |
-| Previews | Generates video previews which play when hovering over a scene. |
-| Animated image previews | Generates animated webp previews. Only required if the Preview Type is set to Animated Image. Requires Generate previews to be enabled. |
-| Scene Scrubber Sprites | Generates sprites for the scene scrubber. |
-| Markers Previews | Generates 20 second videos which begin at the marker timecode. |
-| Marker Animated Image Previews | Generates animated webp previews for markers. Only required if the Preview Type is set to Animated Image. Requires Markers to be enabled. |
+| Previews | Generates video previews (mp4) which play when hovering over a scene. |
+| Animated image previews | Generates animated previews (webp). Only required if the Preview Type is set to Animated Image. Requires Generate previews to be enabled. |
+| Scene Scrubber Sprites | The set of images displayed below the video player for easy navigation. |
+| Markers Previews | Generates 20 second video previews (mp4) which begin at the marker timecode. |
+| Marker Animated Image Previews | Also generate animated (webp) previews, only required when Scene/Marker Wall Preview Type is set to Animated Image. When browsing they use less CPU than the video previews, but are generated in addition to them and are larger files. |
 | Marker Screenshots | Generates static JPG images for markers. Only required if Preview Type is set to Static Image. Requires Marker Previews to be enabled. | 
 | Transcodes | MP4 conversions of unsupported video formats. Allows direct streaming instead of live transcoding. |
 | Perceptual hashes (for deduplication) | Generates perceptual hashes for scene deduplication and identification. |

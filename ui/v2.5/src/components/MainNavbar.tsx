@@ -33,6 +33,7 @@ import {
   faVideo,
 } from "@fortawesome/free-solid-svg-icons";
 import { baseURL } from "src/core/createClient";
+import { PatchComponent } from "src/pluginApi";
 
 interface IMenuItem {
   name: string;
@@ -158,6 +159,20 @@ const newPathsList = allMenuItems
   .filter((item) => item.userCreatable)
   .map((item) => item.href);
 
+const MainNavbarMenuItems = PatchComponent(
+  "MainNavBar.MenuItems",
+  (props: React.PropsWithChildren<{}>) => {
+    return <Nav>{props.children}</Nav>;
+  }
+);
+
+const MainNavbarUtilityItems = PatchComponent(
+  "MainNavBar.UtilityItems",
+  (props: React.PropsWithChildren<{}>) => {
+    return <>{props.children}</>;
+  }
+);
+
 export const MainNavbar: React.FC = () => {
   const history = useHistory();
   const location = useLocation();
@@ -181,8 +196,7 @@ export const MainNavbar: React.FC = () => {
   }, [configuration]);
 
   // react-bootstrap typing bug
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const navbarRef = useRef<any>();
+  const navbarRef = useRef<HTMLElement | null>(null);
   const intl = useIntl();
 
   const maybeCollapse = useCallback(
@@ -336,7 +350,7 @@ export const MainNavbar: React.FC = () => {
         <Navbar.Collapse className="bg-dark order-sm-1">
           <Fade in={!loading}>
             <>
-              <Nav>
+              <MainNavbarMenuItems>
                 {menuItems.map(({ href, icon, message }) => (
                   <Nav.Link
                     eventKey={href}
@@ -355,8 +369,12 @@ export const MainNavbar: React.FC = () => {
                     </LinkContainer>
                   </Nav.Link>
                 ))}
+              </MainNavbarMenuItems>
+              <Nav>
+                <MainNavbarUtilityItems>
+                  {renderUtilityButtons()}
+                </MainNavbarUtilityItems>
               </Nav>
-              <Nav>{renderUtilityButtons()}</Nav>
             </>
           </Fade>
         </Navbar.Collapse>
@@ -377,7 +395,9 @@ export const MainNavbar: React.FC = () => {
               </Link>
             </div>
           )}
-          {renderUtilityButtons()}
+          <MainNavbarUtilityItems>
+            {renderUtilityButtons()}
+          </MainNavbarUtilityItems>
           <Navbar.Toggle className="nav-menu-toggle ml-sm-2">
             <Icon icon={expanded ? faTimes : faBars} />
           </Navbar.Toggle>

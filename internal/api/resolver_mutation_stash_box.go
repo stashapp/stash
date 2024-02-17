@@ -11,15 +11,6 @@ import (
 	"github.com/stashapp/stash/pkg/scraper/stashbox"
 )
 
-func (r *Resolver) stashboxRepository() stashbox.Repository {
-	return stashbox.Repository{
-		Scene:     r.repository.Scene,
-		Performer: r.repository.Performer,
-		Tag:       r.repository.Tag,
-		Studio:    r.repository.Studio,
-	}
-}
-
 func (r *mutationResolver) SubmitStashBoxFingerprints(ctx context.Context, input StashBoxFingerprintSubmissionInput) (bool, error) {
 	boxes := config.GetInstance().GetStashBoxes()
 
@@ -27,7 +18,7 @@ func (r *mutationResolver) SubmitStashBoxFingerprints(ctx context.Context, input
 		return false, fmt.Errorf("invalid stash_box_index %d", input.StashBoxIndex)
 	}
 
-	client := stashbox.NewClient(*boxes[input.StashBoxIndex], r.txnManager, r.stashboxRepository())
+	client := stashbox.NewClient(*boxes[input.StashBoxIndex], r.stashboxRepository())
 
 	return client.SubmitStashBoxFingerprints(ctx, input.SceneIds, boxes[input.StashBoxIndex].Endpoint)
 }
@@ -49,11 +40,11 @@ func (r *mutationResolver) SubmitStashBoxSceneDraft(ctx context.Context, input S
 		return nil, fmt.Errorf("invalid stash_box_index %d", input.StashBoxIndex)
 	}
 
-	client := stashbox.NewClient(*boxes[input.StashBoxIndex], r.txnManager, r.stashboxRepository())
+	client := stashbox.NewClient(*boxes[input.StashBoxIndex], r.stashboxRepository())
 
 	id, err := strconv.Atoi(input.ID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("converting id: %w", err)
 	}
 
 	var res *string
@@ -91,11 +82,11 @@ func (r *mutationResolver) SubmitStashBoxPerformerDraft(ctx context.Context, inp
 		return nil, fmt.Errorf("invalid stash_box_index %d", input.StashBoxIndex)
 	}
 
-	client := stashbox.NewClient(*boxes[input.StashBoxIndex], r.txnManager, r.stashboxRepository())
+	client := stashbox.NewClient(*boxes[input.StashBoxIndex], r.stashboxRepository())
 
 	id, err := strconv.Atoi(input.ID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("converting id: %w", err)
 	}
 
 	var res *string

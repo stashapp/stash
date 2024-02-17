@@ -39,7 +39,13 @@ func createMissingStudio(ctx context.Context, endpoint string, w models.StudioRe
 			s.Parent.StoredID = &storedId
 		} else {
 			// The parent studio matched an existing one and the user has chosen in the UI to link and/or update it
-			existingStashIDs := getStashIDsForStudio(ctx, *s.Parent.StoredID, w)
+			storedID, _ := strconv.Atoi(*s.Parent.StoredID)
+
+			existingStashIDs, err := w.GetStashIDs(ctx, storedID)
+			if err != nil {
+				return nil, err
+			}
+
 			studioPartial := s.Parent.ToPartial(s.Parent.StoredID, endpoint, nil, existingStashIDs)
 			parentImage, err := s.Parent.GetImage(ctx, nil)
 			if err != nil {
@@ -82,15 +88,4 @@ func createMissingStudio(ctx context.Context, endpoint string, w models.StudioRe
 	}
 
 	return &newStudio.ID, nil
-}
-
-func getStashIDsForStudio(ctx context.Context, studioID string, w models.StudioReaderWriter) []models.StashID {
-	id, _ := strconv.Atoi(studioID)
-	tempStudio := &models.Studio{ID: id}
-
-	err := tempStudio.LoadStashIDs(ctx, w)
-	if err != nil {
-		return nil
-	}
-	return tempStudio.StashIDs.List()
 }

@@ -8,6 +8,7 @@ import (
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/fsutil"
+	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 )
 
@@ -16,16 +17,16 @@ func (r *mutationResolver) MoveFiles(ctx context.Context, input MoveFilesInput) 
 		fileStore := r.repository.File
 		folderStore := r.repository.Folder
 		mover := file.NewMover(fileStore, folderStore)
-		mover.RegisterHooks(ctx, r.txnManager)
+		mover.RegisterHooks(ctx)
 
 		var (
-			folder   *file.Folder
+			folder   *models.Folder
 			basename string
 		)
 
 		fileIDs, err := stringslice.StringSliceToIntSlice(input.Ids)
 		if err != nil {
-			return fmt.Errorf("converting file ids: %w", err)
+			return fmt.Errorf("converting ids: %w", err)
 		}
 
 		switch {
@@ -34,10 +35,10 @@ func (r *mutationResolver) MoveFiles(ctx context.Context, input MoveFilesInput) 
 
 			folderID, err := strconv.Atoi(*input.DestinationFolderID)
 			if err != nil {
-				return fmt.Errorf("invalid folder id %s: %w", *input.DestinationFolderID, err)
+				return fmt.Errorf("converting destination folder id: %w", err)
 			}
 
-			folder, err = folderStore.Find(ctx, file.FolderID(folderID))
+			folder, err = folderStore.Find(ctx, models.FolderID(folderID))
 			if err != nil {
 				return fmt.Errorf("finding destination folder: %w", err)
 			}
@@ -82,7 +83,7 @@ func (r *mutationResolver) MoveFiles(ctx context.Context, input MoveFilesInput) 
 		}
 
 		for _, fileIDInt := range fileIDs {
-			fileID := file.ID(fileIDInt)
+			fileID := models.FileID(fileIDInt)
 			f, err := fileStore.Find(ctx, fileID)
 			if err != nil {
 				return fmt.Errorf("finding file %d: %w", fileID, err)
@@ -145,7 +146,7 @@ func (r *mutationResolver) validateFileExtensionList(exts []string, oldBasename,
 func (r *mutationResolver) DeleteFiles(ctx context.Context, ids []string) (ret bool, err error) {
 	fileIDs, err := stringslice.StringSliceToIntSlice(ids)
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("converting ids: %w", err)
 	}
 
 	fileDeleter := file.NewDeleter()
@@ -158,7 +159,7 @@ func (r *mutationResolver) DeleteFiles(ctx context.Context, ids []string) (ret b
 		qb := r.repository.File
 
 		for _, fileIDInt := range fileIDs {
-			fileID := file.ID(fileIDInt)
+			fileID := models.FileID(fileIDInt)
 			f, err := qb.Find(ctx, fileID)
 			if err != nil {
 				return err
@@ -203,6 +204,71 @@ func (r *mutationResolver) DeleteFiles(ctx context.Context, ids []string) (ret b
 
 	// perform the post-commit actions
 	fileDeleter.Commit()
+
+	return true, nil
+}
+
+func (r *mutationResolver) FileSetFingerprints(ctx context.Context, input FileSetFingerprintsInput) (bool, error) {
+	fileIDInt, err := strconv.Atoi(input.ID)
+	if err != nil {
+		return false, fmt.Errorf("converting id: %w", err)
+	}
+
+	fileID := models.FileID(fileIDInt)
+
+	// determine what we're doing
+	var (
+		fingerprints []models.Fingerprint
+		toDelete     []string
+	)
+
+	for _, i := range input.Fingerprints {
+		if i.Type == models.FingerprintTypeMD5 || i.Type == models.FingerprintTypeOshash {
+			return false, fmt.Errorf("cannot modify %s fingerprint", i.Type)
+		}
+
+		if i.Value == nil {
+			toDelete = append(toDelete, i.Type)
+		} else {
+			// phashes need to be converted from string into uint64
+			var v interface{}
+			v = *i.Value
+
+			if i.Type == models.FingerprintTypePhash {
+				vInt, err := strconv.ParseUint(*i.Value, 16, 64)
+				if err != nil {
+					return false, fmt.Errorf("converting phash %s: %w", *i.Value, err)
+				}
+
+				v = vInt
+			}
+
+			fingerprints = append(fingerprints, models.Fingerprint{
+				Type:        i.Type,
+				Fingerprint: v,
+			})
+		}
+	}
+
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		qb := r.repository.File
+
+		if len(fingerprints) > 0 {
+			if err := qb.ModifyFingerprints(ctx, fileID, fingerprints); err != nil {
+				return fmt.Errorf("modifying fingerprints: %w", err)
+			}
+		}
+
+		if len(toDelete) > 0 {
+			if err := qb.DestroyFingerprints(ctx, fileID, toDelete); err != nil {
+				return fmt.Errorf("destroying fingerprints: %w", err)
+			}
+		}
+
+		return nil
+	}); err != nil {
+		return false, err
+	}
 
 	return true, nil
 }

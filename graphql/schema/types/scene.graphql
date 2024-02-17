@@ -15,7 +15,6 @@ type ScenePathsType {
   stream: String # Resolver
   webp: String # Resolver
   vtt: String # Resolver
-  chapters_vtt: String @deprecated
   sprite: String # Resolver
   funscript: String # Resolver
   interactive_heatmap: String # Resolver
@@ -34,29 +33,22 @@ type VideoCaption {
 
 type Scene {
   id: ID!
-  checksum: String @deprecated(reason: "Use files.fingerprints")
-  oshash: String @deprecated(reason: "Use files.fingerprints")
   title: String
   code: String
   details: String
   director: String
   url: String @deprecated(reason: "Use urls")
-  urls: [String!]
+  urls: [String!]!
   date: String
-  # rating expressed as 1-5
-  rating: Int @deprecated(reason: "Use 1-100 range with rating100")
   # rating expressed as 1-100
   rating100: Int
   organized: Boolean!
   o_counter: Int
-  path: String! @deprecated(reason: "Use files.path")
-  phash: String @deprecated(reason: "Use files.fingerprints")
   interactive: Boolean!
   interactive_speed: Int
   captions: [VideoCaption!]
   created_at: Time!
   updated_at: Time!
-  file_mod_time: Time
   "The last time play count was updated"
   last_played_at: Time
   "The time index a scene was left at"
@@ -66,7 +58,6 @@ type Scene {
   "The number ot times a scene has been played"
   play_count: Int
 
-  file: SceneFileType! @deprecated(reason: "Use files")
   files: [VideoFile!]!
   paths: ScenePathsType! # Resolver
   scene_markers: [SceneMarker!]!
@@ -94,8 +85,6 @@ input SceneCreateInput {
   url: String @deprecated(reason: "Use urls")
   urls: [String!]
   date: String
-  # rating expressed as 1-5
-  rating: Int @deprecated(reason: "Use 1-100 range with rating100")
   # rating expressed as 1-100
   rating100: Int
   organized: Boolean
@@ -126,8 +115,6 @@ input SceneUpdateInput {
   url: String @deprecated(reason: "Use urls")
   urls: [String!]
   date: String
-  # rating expressed as 1-5
-  rating: Int @deprecated(reason: "Use 1-100 range with rating100")
   # rating expressed as 1-100
   rating100: Int
   o_counter: Int
@@ -172,8 +159,6 @@ input BulkSceneUpdateInput {
   url: String @deprecated(reason: "Use urls")
   urls: BulkUpdateStrings
   date: String
-  # rating expressed as 1-5
-  rating: Int @deprecated(reason: "Use 1-100 range with rating100")
   # rating expressed as 1-100
   rating100: Int
   organized: Boolean

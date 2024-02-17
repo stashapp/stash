@@ -2,13 +2,13 @@ import { Form, Col, Row } from "react-bootstrap";
 import React, { useState } from "react";
 import * as GQL from "src/core/generated-graphql";
 import { ModalComponent } from "src/components/Shared/Modal";
-import { TagSelect } from "src/components/Shared/Select";
-import FormUtils from "src/utils/form";
+import * as FormUtils from "src/utils/form";
 import { useTagsMerge } from "src/core/StashService";
 import { useIntl } from "react-intl";
 import { useToast } from "src/hooks/Toast";
 import { useHistory } from "react-router-dom";
 import { faSignInAlt, faSignOutAlt } from "@fortawesome/free-solid-svg-icons";
+import { Tag, TagSelect } from "../TagSelect";
 
 interface ITagMergeModalProps {
   show: boolean;
@@ -23,8 +23,9 @@ export const TagMergeModal: React.FC<ITagMergeModalProps> = ({
   tag,
   mergeType,
 }) => {
-  const [srcIds, setSrcIds] = useState<string[]>([]);
-  const [destId, setDestId] = useState<string | null>(null);
+  const [src, setSrc] = useState<Tag[]>([]);
+  const [dest, setDest] = useState<Tag | null>(null);
+
   const [running, setRunning] = useState(false);
 
   const [mergeTags] = useTagsMerge();
@@ -38,8 +39,8 @@ export const TagMergeModal: React.FC<ITagMergeModalProps> = ({
   });
 
   async function onMerge() {
-    const source = mergeType === "from" ? srcIds : [tag.id];
-    const destination = mergeType === "from" ? tag.id : destId;
+    const source = mergeType === "from" ? src.map((s) => s.id) : [tag.id];
+    const destination = mergeType === "from" ? tag.id : dest?.id ?? null;
 
     if (!destination) return;
 
@@ -52,9 +53,7 @@ export const TagMergeModal: React.FC<ITagMergeModalProps> = ({
         },
       });
       if (result.data?.tagsMerge) {
-        Toast.success({
-          content: intl.formatMessage({ id: "toast.merged_tags" }),
-        });
+        Toast.success(intl.formatMessage({ id: "toast.merged_tags" }));
         onClose();
         history.push(`/tags/${destination}`);
       }
@@ -67,8 +66,8 @@ export const TagMergeModal: React.FC<ITagMergeModalProps> = ({
 
   function canMerge() {
     return (
-      (mergeType === "from" && srcIds.length > 0) ||
-      (mergeType === "into" && destId)
+      (mergeType === "from" && src.length > 0) ||
+      (mergeType === "into" && dest !== null)
     );
   }
 
@@ -104,8 +103,8 @@ export const TagMergeModal: React.FC<ITagMergeModalProps> = ({
                 <TagSelect
                   isMulti
                   creatable={false}
-                  onSelect={(items) => setSrcIds(items.map((item) => item.id))}
-                  ids={srcIds}
+                  onSelect={(items) => setSrc(items)}
+                  values={src}
                   excludeIds={tag?.id ? [tag.id] : []}
                 />
               </Col>
@@ -127,8 +126,8 @@ export const TagMergeModal: React.FC<ITagMergeModalProps> = ({
                 <TagSelect
                   isMulti={false}
                   creatable={false}
-                  onSelect={(items) => setDestId(items[0]?.id)}
-                  ids={destId ? [destId] : undefined}
+                  onSelect={(items) => setDest(items[0])}
+                  values={dest ? [dest] : undefined}
                   excludeIds={tag?.id ? [tag.id] : []}
                 />
               </Col>

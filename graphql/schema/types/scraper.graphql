@@ -99,8 +99,11 @@ input ScrapedSceneInput {
 
 type ScrapedGallery {
   title: String
+  code: String
   details: String
-  url: String
+  photographer: String
+  url: String @deprecated(reason: "use urls")
+  urls: [String!]
   date: String
 
   studio: ScrapedStudio
@@ -110,8 +113,11 @@ type ScrapedGallery {
 
 input ScrapedGalleryInput {
   title: String
+  code: String
   details: String
-  url: String
+  photographer: String
+  url: String @deprecated(reason: "use urls")
+  urls: [String!]
   date: String
 
   # no studio, tags or performers

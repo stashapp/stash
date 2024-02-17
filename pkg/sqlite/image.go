@@ -8,9 +8,8 @@ import (
 	"path/filepath"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sliceutil/intslice"
+	"github.com/stashapp/stash/pkg/sliceutil"
 	"gopkg.in/guregu/null.v4"
 	"gopkg.in/guregu/null.v4/zero"
 
@@ -25,28 +24,34 @@ const (
 	performersImagesTable = "performers_images"
 	imagesTagsTable       = "images_tags"
 	imagesFilesTable      = "images_files"
+	imagesURLsTable       = "image_urls"
+	imageURLColumn        = "url"
 )
 
 type imageRow struct {
 	ID    int         `db:"id" goqu:"skipinsert"`
 	Title zero.String `db:"title"`
+	Code  zero.String `db:"code"`
 	// expressed as 1-100
-	Rating    null.Int    `db:"rating"`
-	URL       zero.String `db:"url"`
-	Date      NullDate    `db:"date"`
-	Organized bool        `db:"organized"`
-	OCounter  int         `db:"o_counter"`
-	StudioID  null.Int    `db:"studio_id,omitempty"`
-	CreatedAt Timestamp   `db:"created_at"`
-	UpdatedAt Timestamp   `db:"updated_at"`
+	Rating       null.Int    `db:"rating"`
+	Date         NullDate    `db:"date"`
+	Details      zero.String `db:"details"`
+	Photographer zero.String `db:"photographer"`
+	Organized    bool        `db:"organized"`
+	OCounter     int         `db:"o_counter"`
+	StudioID     null.Int    `db:"studio_id,omitempty"`
+	CreatedAt    Timestamp   `db:"created_at"`
+	UpdatedAt    Timestamp   `db:"updated_at"`
 }
 
 func (r *imageRow) fromImage(i models.Image) {
 	r.ID = i.ID
 	r.Title = zero.StringFrom(i.Title)
+	r.Code = zero.StringFrom(i.Code)
 	r.Rating = intFromPtr(i.Rating)
-	r.URL = zero.StringFrom(i.URL)
 	r.Date = NullDateFromDatePtr(i.Date)
+	r.Details = zero.StringFrom(i.Details)
+	r.Photographer = zero.StringFrom(i.Photographer)
 	r.Organized = i.Organized
 	r.OCounter = i.OCounter
 	r.StudioID = intFromPtr(i.StudioID)
@@ -64,14 +69,16 @@ type imageQueryRow struct {
 
 func (r *imageQueryRow) resolve() *models.Image {
 	ret := &models.Image{
-		ID:        r.ID,
-		Title:     r.Title.String,
-		Rating:    nullIntPtr(r.Rating),
-		URL:       r.URL.String,
-		Date:      r.Date.DatePtr(),
-		Organized: r.Organized,
-		OCounter:  r.OCounter,
-		StudioID:  nullIntPtr(r.StudioID),
+		ID:           r.ID,
+		Title:        r.Title.String,
+		Code:         r.Code.String,
+		Rating:       nullIntPtr(r.Rating),
+		Date:         r.Date.DatePtr(),
+		Details:      r.Details.String,
+		Photographer: r.Photographer.String,
+		Organized:    r.Organized,
+		OCounter:     r.OCounter,
+		StudioID:     nullIntPtr(r.StudioID),
 
 		PrimaryFileID: nullIntFileIDPtr(r.PrimaryFileID),
 		Checksum:      r.PrimaryFileChecksum.String,
@@ -93,9 +100,11 @@ type imageRowRecord struct {
 
 func (r *imageRowRecord) fromPartial(i models.ImagePartial) {
 	r.setNullString("title", i.Title)
+	r.setNullString("code", i.Code)
 	r.setNullInt("rating", i.Rating)
-	r.setNullString("url", i.URL)
 	r.setNullDate("date", i.Date)
+	r.setNullString("details", i.Details)
+	r.setNullString("photographer", i.Photographer)
 	r.setBool("organized", i.Organized)
 	r.setInt("o_counter", i.OCounter)
 	r.setNullInt("studio_id", i.StudioID)
@@ -150,7 +159,7 @@ func (qb *ImageStore) selectDataset() *goqu.SelectDataset {
 		checksum,
 		goqu.On(
 			checksum.Col(fileIDColumn).Eq(imagesFilesJoinTable.Col(fileIDColumn)),
-			checksum.Col("type").Eq(file.FingerprintTypeMD5),
+			checksum.Col("type").Eq(models.FingerprintTypeMD5),
 		),
 	).Select(
 		qb.table().All(),
@@ -161,18 +170,25 @@ func (qb *ImageStore) selectDataset() *goqu.SelectDataset {
 	)
 }
 
-func (qb *ImageStore) Create(ctx context.Context, newObject *models.ImageCreateInput) error {
+func (qb *ImageStore) Create(ctx context.Context, newObject *models.Image, fileIDs []models.FileID) error {
 	var r imageRow
-	r.fromImage(*newObject.Image)
+	r.fromImage(*newObject)
 
 	id, err := qb.tableMgr.insertID(ctx, r)
 	if err != nil {
 		return err
 	}
 
-	if len(newObject.FileIDs) > 0 {
+	if len(fileIDs) > 0 {
 		const firstPrimary = true
-		if err := imagesFilesTableMgr.insertJoins(ctx, id, firstPrimary, newObject.FileIDs); err != nil {
+		if err := imagesFilesTableMgr.insertJoins(ctx, id, firstPrimary, fileIDs); err != nil {
+			return err
+		}
+	}
+
+	if newObject.URLs.Loaded() {
+		const startPos = 0
+		if err := imagesURLsTableMgr.insertJoins(ctx, id, startPos, newObject.URLs.List()); err != nil {
 			return err
 		}
 	}
@@ -199,7 +215,7 @@ func (qb *ImageStore) Create(ctx context.Context, newObject *models.ImageCreateI
 		return fmt.Errorf("finding after create: %w", err)
 	}
 
-	*newObject.Image = *updated
+	*newObject = *updated
 
 	return nil
 }
@@ -221,6 +237,12 @@ func (qb *ImageStore) UpdatePartial(ctx context.Context, id int, partial models.
 
 	if partial.GalleryIDs != nil {
 		if err := imageGalleriesTableMgr.modifyJoins(ctx, id, partial.GalleryIDs.IDs, partial.GalleryIDs.Mode); err != nil {
+			return nil, err
+		}
+	}
+
+	if partial.URLs != nil {
+		if err := imagesURLsTableMgr.modifyJoins(ctx, id, partial.URLs.Values, partial.URLs.Mode); err != nil {
 			return nil, err
 		}
 	}
@@ -252,6 +274,12 @@ func (qb *ImageStore) Update(ctx context.Context, updatedObject *models.Image) e
 		return err
 	}
 
+	if updatedObject.URLs.Loaded() {
+		if err := imagesURLsTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.URLs.List()); err != nil {
+			return err
+		}
+	}
+
 	if updatedObject.PerformerIDs.Loaded() {
 		if err := imagesPerformersTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.PerformerIDs.List()); err != nil {
 			return err
@@ -271,7 +299,7 @@ func (qb *ImageStore) Update(ctx context.Context, updatedObject *models.Image) e
 	}
 
 	if updatedObject.Files.Loaded() {
-		fileIDs := make([]file.ID, len(updatedObject.Files.List()))
+		fileIDs := make([]models.FileID, len(updatedObject.Files.List()))
 		for i, f := range updatedObject.Files.List() {
 			fileIDs[i] = f.Base().ID
 		}
@@ -307,7 +335,7 @@ func (qb *ImageStore) FindMany(ctx context.Context, ids []int) ([]*models.Image,
 		}
 
 		for _, s := range unsorted {
-			i := intslice.IntIndex(ids, s.ID)
+			i := sliceutil.Index(ids, s.ID)
 			images[i] = s
 		}
 
@@ -389,7 +417,7 @@ func (qb *ImageStore) getMany(ctx context.Context, q *goqu.SelectDataset) ([]*mo
 	return ret, nil
 }
 
-func (qb *ImageStore) GetFiles(ctx context.Context, id int) ([]file.File, error) {
+func (qb *ImageStore) GetFiles(ctx context.Context, id int) ([]models.File, error) {
 	fileIDs, err := qb.filesRepository().get(ctx, id)
 	if err != nil {
 		return nil, err
@@ -404,12 +432,12 @@ func (qb *ImageStore) GetFiles(ctx context.Context, id int) ([]file.File, error)
 	return files, nil
 }
 
-func (qb *ImageStore) GetManyFileIDs(ctx context.Context, ids []int) ([][]file.ID, error) {
+func (qb *ImageStore) GetManyFileIDs(ctx context.Context, ids []int) ([][]models.FileID, error) {
 	const primaryOnly = false
 	return qb.filesRepository().getMany(ctx, ids, primaryOnly)
 }
 
-func (qb *ImageStore) FindByFileID(ctx context.Context, fileID file.ID) ([]*models.Image, error) {
+func (qb *ImageStore) FindByFileID(ctx context.Context, fileID models.FileID) ([]*models.Image, error) {
 	table := qb.table()
 
 	sq := dialect.From(table).
@@ -427,14 +455,14 @@ func (qb *ImageStore) FindByFileID(ctx context.Context, fileID file.ID) ([]*mode
 	return ret, nil
 }
 
-func (qb *ImageStore) CountByFileID(ctx context.Context, fileID file.ID) (int, error) {
+func (qb *ImageStore) CountByFileID(ctx context.Context, fileID models.FileID) (int, error) {
 	joinTable := imagesFilesJoinTable
 
 	q := dialect.Select(goqu.COUNT("*")).From(joinTable).Where(joinTable.Col(fileIDColumn).Eq(fileID))
 	return count(ctx, q)
 }
 
-func (qb *ImageStore) FindByFingerprints(ctx context.Context, fp []file.Fingerprint) ([]*models.Image, error) {
+func (qb *ImageStore) FindByFingerprints(ctx context.Context, fp []models.Fingerprint) ([]*models.Image, error) {
 	table := qb.table()
 	fingerprintTable := fingerprintTableMgr.table
 
@@ -467,9 +495,9 @@ func (qb *ImageStore) FindByFingerprints(ctx context.Context, fp []file.Fingerpr
 }
 
 func (qb *ImageStore) FindByChecksum(ctx context.Context, checksum string) ([]*models.Image, error) {
-	return qb.FindByFingerprints(ctx, []file.Fingerprint{
+	return qb.FindByFingerprints(ctx, []models.Fingerprint{
 		{
-			Type:        file.FingerprintTypeMD5,
+			Type:        models.FingerprintTypeMD5,
 			Fingerprint: checksum,
 		},
 	})
@@ -523,7 +551,19 @@ func (qb *ImageStore) OCountByPerformerID(ctx context.Context, performerID int) 
 	return ret, nil
 }
 
-func (qb *ImageStore) FindByFolderID(ctx context.Context, folderID file.FolderID) ([]*models.Image, error) {
+func (qb *ImageStore) OCount(ctx context.Context) (int, error) {
+	table := qb.table()
+
+	q := dialect.Select(goqu.COALESCE(goqu.SUM("o_counter"), 0)).From(table)
+	var ret int
+	if err := querySimple(ctx, q, &ret); err != nil {
+		return 0, err
+	}
+
+	return ret, nil
+}
+
+func (qb *ImageStore) FindByFolderID(ctx context.Context, folderID models.FolderID) ([]*models.Image, error) {
 	table := qb.table()
 	fileTable := goqu.T(fileTable)
 
@@ -548,7 +588,7 @@ func (qb *ImageStore) FindByFolderID(ctx context.Context, folderID file.FolderID
 	return ret, nil
 }
 
-func (qb *ImageStore) FindByZipFileID(ctx context.Context, zipFileID file.ID) ([]*models.Image, error) {
+func (qb *ImageStore) FindByZipFileID(ctx context.Context, zipFileID models.FileID) ([]*models.Image, error) {
 	table := qb.table()
 	fileTable := goqu.T(fileTable)
 
@@ -582,7 +622,7 @@ func (qb *ImageStore) Size(ctx context.Context) (float64, error) {
 	table := qb.table()
 	fileTable := fileTableMgr.table
 	q := dialect.Select(
-		goqu.SUM(fileTableMgr.table.Col("size")),
+		goqu.COALESCE(goqu.SUM(fileTableMgr.table.Col("size")), 0),
 	).From(table).InnerJoin(
 		imagesFilesJoinTable,
 		goqu.On(table.Col(idColumn).Eq(imagesFilesJoinTable.Col(imageIDColumn))),
@@ -656,18 +696,20 @@ func (qb *ImageStore) makeFilter(ctx context.Context, imageFilter *models.ImageF
 		stringCriterionHandler(imageFilter.Checksum, "fingerprints_md5.fingerprint")(ctx, f)
 	}))
 	query.handleCriterion(ctx, stringCriterionHandler(imageFilter.Title, "images.title"))
+	query.handleCriterion(ctx, stringCriterionHandler(imageFilter.Code, "images.code"))
+	query.handleCriterion(ctx, stringCriterionHandler(imageFilter.Details, "images.details"))
+	query.handleCriterion(ctx, stringCriterionHandler(imageFilter.Photographer, "images.photographer"))
 
 	query.handleCriterion(ctx, pathCriterionHandler(imageFilter.Path, "folders.path", "files.basename", qb.addFoldersTable))
 	query.handleCriterion(ctx, imageFileCountCriterionHandler(qb, imageFilter.FileCount))
 	query.handleCriterion(ctx, intCriterionHandler(imageFilter.Rating100, "images.rating", nil))
-	// legacy rating handler
-	query.handleCriterion(ctx, rating5CriterionHandler(imageFilter.Rating, "images.rating", nil))
 	query.handleCriterion(ctx, intCriterionHandler(imageFilter.OCounter, "images.o_counter", nil))
 	query.handleCriterion(ctx, boolCriterionHandler(imageFilter.Organized, "images.organized", nil))
 	query.handleCriterion(ctx, dateCriterionHandler(imageFilter.Date, "images.date"))
-	query.handleCriterion(ctx, stringCriterionHandler(imageFilter.URL, "images.url"))
+	query.handleCriterion(ctx, imageURLsCriterionHandler(imageFilter.URL))
 
 	query.handleCriterion(ctx, resolutionCriterionHandler(imageFilter.Resolution, "image_files.height", "image_files.width", qb.addImageFilesTable))
+	query.handleCriterion(ctx, orientationCriterionHandler(imageFilter.Orientation, "image_files.height", "image_files.width", qb.addImageFilesTable))
 	query.handleCriterion(ctx, imageIsMissingCriterionHandler(qb, imageFilter.IsMissing))
 
 	query.handleCriterion(ctx, imageTagsCriterionHandler(qb, imageFilter.Tags))
@@ -785,24 +827,43 @@ func (qb *ImageStore) queryGroupedFields(ctx context.Context, options models.Ima
 		aggregateQuery.addColumn("COUNT(DISTINCT temp.id) as total")
 	}
 
-	// TODO - this doesn't work yet
-	// if options.Megapixels {
-	// 	query.addColumn("COALESCE(images.width, 0) * COALESCE(images.height, 0) / 1000000 as megapixels")
-	// 	aggregateQuery.addColumn("COALESCE(SUM(temp.megapixels), 0) as megapixels")
-	// }
+	if options.Megapixels {
+		query.addJoins(
+			join{
+				table:    imagesFilesTable,
+				onClause: "images_files.image_id = images.id",
+			},
+			join{
+				table:    imageFileTable,
+				onClause: "images_files.file_id = image_files.file_id",
+			},
+		)
+		query.addColumn("COALESCE(image_files.width, 0) * COALESCE(image_files.height, 0) as megapixels")
+		aggregateQuery.addColumn("COALESCE(SUM(temp.megapixels), 0) / 1000000 as megapixels")
+	}
 
-	// if options.TotalSize {
-	// 	query.addColumn("COALESCE(images.size, 0) as size")
-	// 	aggregateQuery.addColumn("COALESCE(SUM(temp.size), 0) as size")
-	// }
+	if options.TotalSize {
+		query.addJoins(
+			join{
+				table:    imagesFilesTable,
+				onClause: "images_files.image_id = images.id",
+			},
+			join{
+				table:    fileTable,
+				onClause: "images_files.file_id = files.id",
+			},
+		)
+		query.addColumn("COALESCE(files.size, 0) as size")
+		aggregateQuery.addColumn("SUM(temp.size) as size")
+	}
 
 	const includeSortPagination = false
 	aggregateQuery.from = fmt.Sprintf("(%s) as temp", query.toSQL(includeSortPagination))
 
 	out := struct {
 		Total      int
-		Megapixels float64
-		Size       float64
+		Megapixels null.Float
+		Size       null.Float
 	}{}
 	if err := qb.repository.queryStruct(ctx, aggregateQuery.toSQL(includeSortPagination), query.args, &out); err != nil {
 		return nil, err
@@ -810,8 +871,8 @@ func (qb *ImageStore) queryGroupedFields(ctx context.Context, options models.Ima
 
 	ret := models.NewImageQueryResult(qb)
 	ret.Count = out.Total
-	ret.Megapixels = out.Megapixels
-	ret.TotalSize = out.Size
+	ret.Megapixels = out.Megapixels.Float64
+	ret.TotalSize = out.Size.Float64
 	return ret, nil
 }
 
@@ -854,6 +915,18 @@ func imageIsMissingCriterionHandler(qb *ImageStore, isMissing *string) criterion
 			}
 		}
 	}
+}
+
+func imageURLsCriterionHandler(url *models.StringCriterionInput) criterionHandlerFunc {
+	h := stringListCriterionHandlerBuilder{
+		joinTable:    imagesURLsTable,
+		stringColumn: imageURLColumn,
+		addJoinTable: func(f *filterBuilder) {
+			imagesURLsTableMgr.join(f, "", "images.id")
+		},
+	}
+
+	return h.handler(url)
 }
 
 func (qb *ImageStore) getMultiCriterionHandlerBuilder(foreignTable, joinTable, foreignFK string, addJoinsFunc func(f *filterBuilder)) multiCriterionHandlerBuilder {
@@ -1043,9 +1116,9 @@ func (qb *ImageStore) filesRepository() *filesRepository {
 	}
 }
 
-func (qb *ImageStore) AddFileID(ctx context.Context, id int, fileID file.ID) error {
+func (qb *ImageStore) AddFileID(ctx context.Context, id int, fileID models.FileID) error {
 	const firstPrimary = false
-	return imagesFilesTableMgr.insertJoins(ctx, id, firstPrimary, []file.ID{fileID})
+	return imagesFilesTableMgr.insertJoins(ctx, id, firstPrimary, []models.FileID{fileID})
 }
 
 func (qb *ImageStore) GetGalleryIDs(ctx context.Context, imageID int) ([]int, error) {
@@ -1097,4 +1170,8 @@ func (qb *ImageStore) GetTagIDs(ctx context.Context, imageID int) ([]int, error)
 func (qb *ImageStore) UpdateTags(ctx context.Context, imageID int, tagIDs []int) error {
 	// Delete the existing joins and then create new ones
 	return qb.tagsRepository().replace(ctx, imageID, tagIDs)
+}
+
+func (qb *ImageStore) GetURLs(ctx context.Context, imageID int) ([]string, error) {
+	return imagesURLsTableMgr.get(ctx, imageID)
 }

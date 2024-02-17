@@ -8,26 +8,26 @@ import (
 	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scene"
-	"github.com/stashapp/stash/pkg/sliceutil/intslice"
+	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/txn"
 )
 
 type SceneQueryTagUpdater interface {
-	scene.Queryer
+	models.SceneQueryer
 	models.TagIDLoader
-	scene.PartialUpdater
+	models.SceneUpdater
 }
 
 type ImageQueryTagUpdater interface {
-	image.Queryer
+	models.ImageQueryer
 	models.TagIDLoader
-	image.PartialUpdater
+	models.ImageUpdater
 }
 
 type GalleryQueryTagUpdater interface {
-	gallery.Queryer
+	models.GalleryQueryer
 	models.TagIDLoader
-	gallery.PartialUpdater
+	models.GalleryUpdater
 }
 
 func getTagTaggers(p *models.Tag, aliases []string, cache *match.Cache) []tagger {
@@ -61,7 +61,7 @@ func (tagger *Tagger) TagScenes(ctx context.Context, p *models.Tag, paths []stri
 			}
 			existing := o.TagIDs.List()
 
-			if intslice.IntInclude(existing, p.ID) {
+			if sliceutil.Contains(existing, p.ID) {
 				return false, nil
 			}
 
@@ -90,7 +90,7 @@ func (tagger *Tagger) TagImages(ctx context.Context, p *models.Tag, paths []stri
 			}
 			existing := o.TagIDs.List()
 
-			if intslice.IntInclude(existing, p.ID) {
+			if sliceutil.Contains(existing, p.ID) {
 				return false, nil
 			}
 
@@ -119,7 +119,7 @@ func (tagger *Tagger) TagGalleries(ctx context.Context, p *models.Tag, paths []s
 			}
 			existing := o.TagIDs.List()
 
-			if intslice.IntInclude(existing, p.ID) {
+			if sliceutil.Contains(existing, p.ID) {
 				return false, nil
 			}
 

@@ -21,7 +21,6 @@ RUN apt update && apt install -y build-essential golang
 WORKDIR /stash
 COPY ./go* ./*.go Makefile gqlgen.yml .gqlgenc.yml /stash/
 COPY ./scripts /stash/scripts/
-COPY ./vendor /stash/vendor/
 COPY ./pkg /stash/pkg/
 COPY ./cmd /stash/cmd
 COPY ./internal /stash/internal
@@ -29,7 +28,7 @@ COPY --from=frontend /stash /stash/
 RUN make generate-backend
 ARG GITHASH
 ARG STASH_VERSION
-RUN make stash-release
+RUN make flags-release flags-pie stash
 
 # Final Runnable Image
 FROM nvidia/cuda:12.0.1-base-ubuntu22.04
@@ -49,3 +48,5 @@ ENV NVIDIA_DRIVER_CAPABILITIES=video,utility
 ENV STASH_CONFIG_FILE=/root/.stash/config.yml
 EXPOSE 9999
 ENTRYPOINT ["docker-entrypoint.sh", "stash"]
+
+# vim: ft=dockerfile

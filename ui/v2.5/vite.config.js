@@ -34,11 +34,6 @@ export default defineConfig(() => {
       outDir: "build",
       sourcemap: sourcemap,
       reportCompressedSize: false,
-      rollupOptions: {
-        output: {
-          experimentalDeepDynamicChunkOptimization: true,
-        },
-      },
     },
     optimizeDeps: {
       entries: "src/index.tsx",

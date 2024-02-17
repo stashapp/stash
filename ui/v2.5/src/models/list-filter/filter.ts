@@ -2,11 +2,21 @@ import {
   ConfigDataFragment,
   FilterMode,
   FindFilterType,
+  SavedFilterDataFragment,
   SortDirectionEnum,
 } from "src/core/generated-graphql";
-import { Criterion, CriterionValue } from "./criteria/criterion";
-import { makeCriteria } from "./criteria/factory";
-import { DisplayMode } from "./types";
+import {
+  Criterion,
+  CriterionValue,
+  ISavedCriterion,
+} from "./criteria/criterion";
+import { getFilterOptions } from "./factory";
+import {
+  CriterionType,
+  DisplayMode,
+  SavedObjectFilter,
+  SavedUIOptions,
+} from "./types";
 
 interface IDecodedParams {
   perPage?: number;
@@ -126,13 +136,13 @@ export class ListFilterModel {
     if (params.c !== undefined) {
       for (const jsonString of params.c) {
         try {
-          const encodedCriterion = JSON.parse(jsonString);
-          const criterion = makeCriteria(this.config, encodedCriterion.type);
-          // it's possible that we have unsupported criteria. Just skip if so.
-          if (criterion) {
-            criterion.setFromEncodedCriterion(encodedCriterion);
-            this.criteria.push(criterion);
-          }
+          const { type: criterionType, ...savedCriterion } =
+            JSON.parse(jsonString);
+
+          const criterion = this.makeCriterion(criterionType);
+          criterion.setFromSavedCriterion(savedCriterion);
+
+          this.criteria.push(criterion);
         } catch (err) {
           // eslint-disable-next-line no-console
           console.error("Failed to parse encoded criterion:", err);
@@ -248,8 +258,37 @@ export class ListFilterModel {
     this.configureFromDecodedParams(decoded);
   }
 
-  public configureFromJSON(json: string) {
-    this.configureFromDecodedParams(JSON.parse(json));
+  public configureFromSavedFilter(savedFilter: SavedFilterDataFragment) {
+    const {
+      find_filter: findFilter,
+      object_filter: objectFilter,
+      ui_options: uiOptions,
+    } = savedFilter;
+
+    this.itemsPerPage = findFilter?.per_page ?? this.itemsPerPage;
+    this.sortBy = findFilter?.sort ?? this.sortBy;
+    // parse the random seed if provided
+    const match = this.sortBy?.match(/^random_(\d+)$/);
+    if (match) {
+      this.sortBy = "random";
+      this.randomSeed = Number.parseInt(match[1], 10);
+    }
+    this.sortDirection = findFilter?.direction ?? this.sortDirection;
+    this.searchTerm = findFilter?.q ?? this.searchTerm;
+
+    this.displayMode = uiOptions?.display_mode ?? this.displayMode;
+    this.zoomIndex = uiOptions?.zoom_index ?? this.zoomIndex;
+
+    this.currentPage = 1;
+
+    this.criteria = [];
+    if (objectFilter) {
+      for (const [k, v] of Object.entries(objectFilter)) {
+        const criterion = this.makeCriterion(k as CriterionType);
+        criterion.setFromSavedCriterion(v as ISavedCriterion<CriterionValue>);
+        this.criteria.push(criterion);
+      }
+    }
   }
 
   private setRandomSeed() {
@@ -325,31 +364,6 @@ export class ListFilterModel {
     };
   }
 
-  public makeSavedFilterJSON() {
-    const encodedCriteria: string[] = this.criteria.map((criterion) =>
-      criterion.toJSON()
-    );
-
-    const result = {
-      perPage: this.itemsPerPage,
-      sortby: this.getSortBy(),
-      sortdir:
-        this.sortBy === "date"
-          ? this.sortDirection === SortDirectionEnum.Asc
-            ? "asc"
-            : undefined
-          : this.sortDirection === SortDirectionEnum.Desc
-          ? "desc"
-          : undefined,
-      disp: this.displayMode,
-      q: this.searchTerm || undefined,
-      z: this.zoomIndex,
-      c: encodedCriteria,
-    };
-
-    return JSON.stringify(result);
-  }
-
   public makeQueryParameters(): string {
     const query: string[] = [];
     const params = this.getEncodedParams();
@@ -384,7 +398,17 @@ export class ListFilterModel {
     return query.join("&");
   }
 
-  // TODO: These don't support multiple of the same criteria, only the last one set is used.
+  public makeCriterion(type: CriterionType) {
+    const { criterionOptions } = getFilterOptions(this.mode);
+
+    const option = criterionOptions.find((o) => o.type === type);
+
+    if (!option) {
+      throw new Error(`Unknown criterion parameter name: ${type}`);
+    }
+
+    return option.makeCriterion(this.config);
+  }
 
   public makeFindFilter(): FindFilterType {
     return {
@@ -397,12 +421,25 @@ export class ListFilterModel {
   }
 
   public makeFilter() {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const output: Record<string, any> = {};
-    this.criteria.forEach((criterion) => {
-      criterion.apply(output);
-    });
-
+    const output: Record<string, unknown> = {};
+    for (const c of this.criteria) {
+      output[c.criterionOption.type] = c.toCriterionInput();
+    }
     return output;
+  }
+
+  public makeSavedFilter() {
+    const output: SavedObjectFilter = {};
+    for (const c of this.criteria) {
+      output[c.criterionOption.type] = c.toSavedCriterion();
+    }
+    return output;
+  }
+
+  public makeSavedUIOptions(): SavedUIOptions {
+    return {
+      display_mode: this.displayMode,
+      zoom_index: this.zoomIndex,
+    };
   }
 }

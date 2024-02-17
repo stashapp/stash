@@ -1,17 +1,17 @@
-import { Button, ButtonGroup } from "react-bootstrap";
-import React from "react";
+import { ButtonGroup } from "react-bootstrap";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 import NavUtils from "src/utils/navigation";
 import { FormattedMessage } from "react-intl";
-import { Icon } from "../Shared/Icon";
 import { TruncatedText } from "../Shared/TruncatedText";
-import { GridCard } from "../Shared/GridCard";
+import { GridCard, calculateCardWidth } from "../Shared/GridCard/GridCard";
 import { PopoverCountButton } from "../Shared/PopoverCountButton";
-import { faMapMarkerAlt, faUser } from "@fortawesome/free-solid-svg-icons";
+import ScreenUtils from "src/utils/screen";
 
 interface IProps {
   tag: GQL.TagDataFragment;
+  containerWidth?: number;
   zoomIndex: number;
   selecting?: boolean;
   selected?: boolean;
@@ -20,11 +20,40 @@ interface IProps {
 
 export const TagCard: React.FC<IProps> = ({
   tag,
+  containerWidth,
   zoomIndex,
   selecting,
   selected,
   onSelectedChanged,
 }) => {
+  const [cardWidth, setCardWidth] = useState<number>();
+
+  useEffect(() => {
+    if (!containerWidth || zoomIndex === undefined || ScreenUtils.isMobile())
+      return;
+
+    let zoomValue = zoomIndex;
+    let preferredCardWidth: number;
+    switch (zoomValue) {
+      case 0:
+        preferredCardWidth = 240;
+        break;
+      case 1:
+        preferredCardWidth = 340;
+        break;
+      case 2:
+        preferredCardWidth = 480;
+        break;
+      case 3:
+        preferredCardWidth = 640;
+    }
+    let fittedCardWidth = calculateCardWidth(
+      containerWidth,
+      preferredCardWidth!
+    );
+    setCardWidth(fittedCardWidth);
+  }, [containerWidth, zoomIndex]);
+
   function maybeRenderDescription() {
     if (tag.description) {
       return (
@@ -114,12 +143,12 @@ export const TagCard: React.FC<IProps> = ({
     if (!tag.scene_marker_count) return;
 
     return (
-      <Link className="marker-count" to={NavUtils.makeTagSceneMarkersUrl(tag)}>
-        <Button className="minimal">
-          <Icon icon={faMapMarkerAlt} />
-          <span>{tag.scene_marker_count}</span>
-        </Button>
-      </Link>
+      <PopoverCountButton
+        className="marker-count"
+        type="marker"
+        count={tag.scene_marker_count}
+        url={NavUtils.makeTagSceneMarkersUrl(tag)}
+      />
     );
   }
 
@@ -153,12 +182,12 @@ export const TagCard: React.FC<IProps> = ({
     if (!tag.performer_count) return;
 
     return (
-      <Link className="performer-count" to={NavUtils.makeTagPerformersUrl(tag)}>
-        <Button className="minimal">
-          <Icon icon={faUser} />
-          <span>{tag.performer_count}</span>
-        </Button>
-      </Link>
+      <PopoverCountButton
+        className="performer-count"
+        type="performer"
+        count={tag.performer_count}
+        url={NavUtils.makeTagPerformersUrl(tag)}
+      />
     );
   }
 
@@ -183,10 +212,12 @@ export const TagCard: React.FC<IProps> = ({
     <GridCard
       className={`tag-card zoom-${zoomIndex}`}
       url={`/tags/${tag.id}`}
+      width={cardWidth}
       title={tag.name ?? ""}
       linkClassName="tag-card-header"
       image={
         <img
+          loading="lazy"
           className="tag-card-image"
           alt={tag.name}
           src={tag.image_path ?? ""}

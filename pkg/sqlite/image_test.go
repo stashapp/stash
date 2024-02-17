@@ -10,12 +10,16 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stretchr/testify/assert"
 )
 
 func loadImageRelationships(ctx context.Context, expected models.Image, actual *models.Image) error {
+	if expected.URLs.Loaded() {
+		if err := actual.LoadURLs(ctx, db.Image); err != nil {
+			return err
+		}
+	}
 	if expected.GalleryIDs.Loaded() {
 		if err := actual.LoadGalleryIDs(ctx, db.Image); err != nil {
 			return err
@@ -53,13 +57,16 @@ func loadImageRelationships(ctx context.Context, expected models.Image, actual *
 
 func Test_imageQueryBuilder_Create(t *testing.T) {
 	var (
-		title     = "title"
-		rating    = 60
-		ocounter  = 5
-		url       = "url"
-		date, _   = models.ParseDate("2003-02-01")
-		createdAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
-		updatedAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		title        = "title"
+		code         = "code"
+		rating       = 60
+		details      = "details"
+		photographer = "photographer"
+		ocounter     = 5
+		url          = "url"
+		date, _      = models.ParseDate("2003-02-01")
+		createdAt    = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		updatedAt    = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 
 		imageFile = makeFileWithID(fileIdxStartImageFiles)
 	)
@@ -73,9 +80,12 @@ func Test_imageQueryBuilder_Create(t *testing.T) {
 			"full",
 			models.Image{
 				Title:        title,
+				Code:         code,
 				Rating:       &rating,
 				Date:         &date,
-				URL:          url,
+				Details:      details,
+				Photographer: photographer,
+				URLs:         models.NewRelatedStrings([]string{url}),
 				Organized:    true,
 				OCounter:     ocounter,
 				StudioID:     &studioIDs[studioIdxWithImage],
@@ -90,15 +100,18 @@ func Test_imageQueryBuilder_Create(t *testing.T) {
 		{
 			"with file",
 			models.Image{
-				Title:     title,
-				Rating:    &rating,
-				Date:      &date,
-				URL:       url,
-				Organized: true,
-				OCounter:  ocounter,
-				StudioID:  &studioIDs[studioIdxWithImage],
-				Files: models.NewRelatedFiles([]file.File{
-					imageFile.(*file.ImageFile),
+				Title:        title,
+				Code:         code,
+				Rating:       &rating,
+				Date:         &date,
+				Details:      details,
+				Photographer: photographer,
+				URLs:         models.NewRelatedStrings([]string{url}),
+				Organized:    true,
+				OCounter:     ocounter,
+				StudioID:     &studioIDs[studioIdxWithImage],
+				Files: models.NewRelatedFiles([]models.File{
+					imageFile.(*models.ImageFile),
 				}),
 				PrimaryFileID: &imageFile.Base().ID,
 				Path:          imageFile.Base().Path,
@@ -146,17 +159,14 @@ func Test_imageQueryBuilder_Create(t *testing.T) {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
 
-			var fileIDs []file.ID
+			var fileIDs []models.FileID
 			if tt.newObject.Files.Loaded() {
 				for _, f := range tt.newObject.Files.List() {
 					fileIDs = append(fileIDs, f.Base().ID)
 				}
 			}
 			s := tt.newObject
-			if err := qb.Create(ctx, &models.ImageCreateInput{
-				Image:   &s,
-				FileIDs: fileIDs,
-			}); (err != nil) != tt.wantErr {
+			if err := qb.Create(ctx, &s, fileIDs); (err != nil) != tt.wantErr {
 				t.Errorf("imageQueryBuilder.Create() error = %v, wantErr = %v", err, tt.wantErr)
 			}
 
@@ -205,7 +215,7 @@ func clearImageFileIDs(image *models.Image) {
 	}
 }
 
-func makeImageFileWithID(i int) *file.ImageFile {
+func makeImageFileWithID(i int) *models.ImageFile {
 	ret := makeImageFile(i)
 	ret.ID = imageFileIDs[i]
 	return ret
@@ -213,13 +223,16 @@ func makeImageFileWithID(i int) *file.ImageFile {
 
 func Test_imageQueryBuilder_Update(t *testing.T) {
 	var (
-		title     = "title"
-		rating    = 60
-		url       = "url"
-		date, _   = models.ParseDate("2003-02-01")
-		ocounter  = 5
-		createdAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
-		updatedAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		title        = "title"
+		code         = "code"
+		rating       = 60
+		url          = "url"
+		details      = "details"
+		photographer = "photographer"
+		date, _      = models.ParseDate("2003-02-01")
+		ocounter     = 5
+		createdAt    = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		updatedAt    = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 	)
 
 	tests := []struct {
@@ -232,9 +245,12 @@ func Test_imageQueryBuilder_Update(t *testing.T) {
 			&models.Image{
 				ID:           imageIDs[imageIdxWithGallery],
 				Title:        title,
+				Code:         code,
 				Rating:       &rating,
-				URL:          url,
+				URLs:         models.NewRelatedStrings([]string{url}),
 				Date:         &date,
+				Details:      details,
+				Photographer: photographer,
 				Organized:    true,
 				OCounter:     ocounter,
 				StudioID:     &studioIDs[studioIdxWithImage],
@@ -381,8 +397,11 @@ func clearImagePartial() models.ImagePartial {
 	// leave mandatory fields
 	return models.ImagePartial{
 		Title:        models.OptionalString{Set: true, Null: true},
+		Code:         models.OptionalString{Set: true, Null: true},
+		Details:      models.OptionalString{Set: true, Null: true},
+		Photographer: models.OptionalString{Set: true, Null: true},
 		Rating:       models.OptionalInt{Set: true, Null: true},
-		URL:          models.OptionalString{Set: true, Null: true},
+		URLs:         &models.UpdateStrings{Mode: models.RelationshipUpdateModeSet},
 		Date:         models.OptionalDate{Set: true, Null: true},
 		StudioID:     models.OptionalInt{Set: true, Null: true},
 		GalleryIDs:   &models.UpdateIDs{Mode: models.RelationshipUpdateModeSet},
@@ -393,13 +412,16 @@ func clearImagePartial() models.ImagePartial {
 
 func Test_imageQueryBuilder_UpdatePartial(t *testing.T) {
 	var (
-		title     = "title"
-		rating    = 60
-		url       = "url"
-		date, _   = models.ParseDate("2003-02-01")
-		ocounter  = 5
-		createdAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
-		updatedAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		title        = "title"
+		code         = "code"
+		details      = "details"
+		photographer = "photographer"
+		rating       = 60
+		url          = "url"
+		date, _      = models.ParseDate("2003-02-01")
+		ocounter     = 5
+		createdAt    = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		updatedAt    = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 	)
 
 	tests := []struct {
@@ -413,9 +435,15 @@ func Test_imageQueryBuilder_UpdatePartial(t *testing.T) {
 			"full",
 			imageIDs[imageIdx1WithGallery],
 			models.ImagePartial{
-				Title:     models.NewOptionalString(title),
-				Rating:    models.NewOptionalInt(rating),
-				URL:       models.NewOptionalString(url),
+				Title:        models.NewOptionalString(title),
+				Code:         models.NewOptionalString(code),
+				Details:      models.NewOptionalString(details),
+				Photographer: models.NewOptionalString(photographer),
+				Rating:       models.NewOptionalInt(rating),
+				URLs: &models.UpdateStrings{
+					Values: []string{url},
+					Mode:   models.RelationshipUpdateModeSet,
+				},
 				Date:      models.NewOptionalDate(date),
 				Organized: models.NewOptionalBool(true),
 				OCounter:  models.NewOptionalInt(ocounter),
@@ -436,15 +464,18 @@ func Test_imageQueryBuilder_UpdatePartial(t *testing.T) {
 				},
 			},
 			models.Image{
-				ID:        imageIDs[imageIdx1WithGallery],
-				Title:     title,
-				Rating:    &rating,
-				URL:       url,
-				Date:      &date,
-				Organized: true,
-				OCounter:  ocounter,
-				StudioID:  &studioIDs[studioIdxWithImage],
-				Files: models.NewRelatedFiles([]file.File{
+				ID:           imageIDs[imageIdx1WithGallery],
+				Title:        title,
+				Code:         code,
+				Details:      details,
+				Photographer: photographer,
+				Rating:       &rating,
+				URLs:         models.NewRelatedStrings([]string{url}),
+				Date:         &date,
+				Organized:    true,
+				OCounter:     ocounter,
+				StudioID:     &studioIDs[studioIdxWithImage],
+				Files: models.NewRelatedFiles([]models.File{
 					makeImageFile(imageIdx1WithGallery),
 				}),
 				CreatedAt:    createdAt,
@@ -462,7 +493,7 @@ func Test_imageQueryBuilder_UpdatePartial(t *testing.T) {
 			models.Image{
 				ID:       imageIDs[imageIdx1WithGallery],
 				OCounter: getOCounter(imageIdx1WithGallery),
-				Files: models.NewRelatedFiles([]file.File{
+				Files: models.NewRelatedFiles([]models.File{
 					makeImageFile(imageIdx1WithGallery),
 				}),
 				GalleryIDs:   models.NewRelatedIDs([]int{}),
@@ -965,7 +996,7 @@ func makeImageWithID(index int) *models.Image {
 	ret := makeImage(index)
 	ret.ID = imageIDs[index]
 
-	ret.Files = models.NewRelatedFiles([]file.File{makeImageFile(index)})
+	ret.Files = models.NewRelatedFiles([]models.File{makeImageFile(index)})
 
 	return ret
 }
@@ -1153,15 +1184,15 @@ func Test_imageQueryBuilder_FindByFingerprints(t *testing.T) {
 
 	tests := []struct {
 		name         string
-		fingerprints []file.Fingerprint
+		fingerprints []models.Fingerprint
 		want         []*models.Image
 		wantErr      bool
 	}{
 		{
 			"valid",
-			[]file.Fingerprint{
+			[]models.Fingerprint{
 				{
-					Type:        file.FingerprintTypeMD5,
+					Type:        models.FingerprintTypeMD5,
 					Fingerprint: getChecksum(imageIdxWithGallery),
 				},
 			},
@@ -1170,9 +1201,9 @@ func Test_imageQueryBuilder_FindByFingerprints(t *testing.T) {
 		},
 		{
 			"invalid",
-			[]file.Fingerprint{
+			[]models.Fingerprint{
 				{
-					Type:        file.FingerprintTypeMD5,
+					Type:        models.FingerprintTypeMD5,
 					Fingerprint: "invalid checksum",
 				},
 			},
@@ -1181,9 +1212,9 @@ func Test_imageQueryBuilder_FindByFingerprints(t *testing.T) {
 		},
 		{
 			"with performers",
-			[]file.Fingerprint{
+			[]models.Fingerprint{
 				{
-					Type:        file.FingerprintTypeMD5,
+					Type:        models.FingerprintTypeMD5,
 					Fingerprint: getChecksum(imageIdxWithTwoPerformers),
 				},
 			},
@@ -1192,9 +1223,9 @@ func Test_imageQueryBuilder_FindByFingerprints(t *testing.T) {
 		},
 		{
 			"with tags",
-			[]file.Fingerprint{
+			[]models.Fingerprint{
 				{
-					Type:        file.FingerprintTypeMD5,
+					Type:        models.FingerprintTypeMD5,
 					Fingerprint: getChecksum(imageIdxWithTwoTags),
 				},
 			},
@@ -1316,7 +1347,7 @@ func imagesToIDs(i []*models.Image) []int {
 func Test_imageStore_FindByFileID(t *testing.T) {
 	tests := []struct {
 		name    string
-		fileID  file.ID
+		fileID  models.FileID
 		include []int
 		exclude []int
 	}{
@@ -1365,7 +1396,7 @@ func Test_imageStore_FindByFileID(t *testing.T) {
 func Test_imageStore_FindByFolderID(t *testing.T) {
 	tests := []struct {
 		name     string
-		folderID file.FolderID
+		folderID models.FolderID
 		include  []int
 		exclude  []int
 	}{
@@ -1420,7 +1451,7 @@ func Test_imageStore_FindByFolderID(t *testing.T) {
 func Test_imageStore_FindByZipFileID(t *testing.T) {
 	tests := []struct {
 		name      string
-		zipFileID file.ID
+		zipFileID models.FileID
 		include   []int
 		exclude   []int
 	}{
@@ -1521,6 +1552,67 @@ func imageQueryQ(ctx context.Context, t *testing.T, sqb models.ImageReader, q st
 	images = queryImages(ctx, t, sqb, nil, &filter)
 
 	assert.Len(t, images, totalImages)
+}
+
+func verifyImageQuery(t *testing.T, filter models.ImageFilterType, verifyFn func(ctx context.Context, s *models.Image)) {
+	t.Helper()
+	withTxn(func(ctx context.Context) error {
+		t.Helper()
+		sqb := db.Image
+
+		images := queryImages(ctx, t, sqb, &filter, nil)
+
+		// assume it should find at least one
+		assert.Greater(t, len(images), 0)
+
+		for _, image := range images {
+			verifyFn(ctx, image)
+		}
+
+		return nil
+	})
+}
+
+func TestImageQueryURL(t *testing.T) {
+	const imageIdx = 1
+	imageURL := getImageStringValue(imageIdx, urlField)
+	urlCriterion := models.StringCriterionInput{
+		Value:    imageURL,
+		Modifier: models.CriterionModifierEquals,
+	}
+	filter := models.ImageFilterType{
+		URL: &urlCriterion,
+	}
+
+	verifyFn := func(ctx context.Context, o *models.Image) {
+		t.Helper()
+
+		if err := o.LoadURLs(ctx, db.Image); err != nil {
+			t.Errorf("Error loading scene URLs: %v", err)
+		}
+
+		urls := o.URLs.List()
+		var url string
+		if len(urls) > 0 {
+			url = urls[0]
+		}
+
+		verifyString(t, url, urlCriterion)
+	}
+
+	verifyImageQuery(t, filter, verifyFn)
+	urlCriterion.Modifier = models.CriterionModifierNotEquals
+	verifyImageQuery(t, filter, verifyFn)
+	urlCriterion.Modifier = models.CriterionModifierMatchesRegex
+	urlCriterion.Value = "image_.*1_URL"
+	verifyImageQuery(t, filter, verifyFn)
+	urlCriterion.Modifier = models.CriterionModifierNotMatchesRegex
+	verifyImageQuery(t, filter, verifyFn)
+	urlCriterion.Modifier = models.CriterionModifierIsNull
+	urlCriterion.Value = ""
+	verifyImageQuery(t, filter, verifyFn)
+	urlCriterion.Modifier = models.CriterionModifierNotNull
+	verifyImageQuery(t, filter, verifyFn)
 }
 
 func TestImageQueryPath(t *testing.T) {
@@ -1707,54 +1799,6 @@ func TestImageIllegalQuery(t *testing.T) {
 	})
 }
 
-func TestImageQueryLegacyRating(t *testing.T) {
-	const rating = 3
-	ratingCriterion := models.IntCriterionInput{
-		Value:    rating,
-		Modifier: models.CriterionModifierEquals,
-	}
-
-	verifyImagesLegacyRating(t, ratingCriterion)
-
-	ratingCriterion.Modifier = models.CriterionModifierNotEquals
-	verifyImagesLegacyRating(t, ratingCriterion)
-
-	ratingCriterion.Modifier = models.CriterionModifierGreaterThan
-	verifyImagesLegacyRating(t, ratingCriterion)
-
-	ratingCriterion.Modifier = models.CriterionModifierLessThan
-	verifyImagesLegacyRating(t, ratingCriterion)
-
-	ratingCriterion.Modifier = models.CriterionModifierIsNull
-	verifyImagesLegacyRating(t, ratingCriterion)
-
-	ratingCriterion.Modifier = models.CriterionModifierNotNull
-	verifyImagesLegacyRating(t, ratingCriterion)
-}
-
-func verifyImagesLegacyRating(t *testing.T, ratingCriterion models.IntCriterionInput) {
-	withTxn(func(ctx context.Context) error {
-		sqb := db.Image
-		imageFilter := models.ImageFilterType{
-			Rating: &ratingCriterion,
-		}
-
-		images, _, err := queryImagesWithCount(ctx, sqb, &imageFilter, nil)
-		if err != nil {
-			t.Errorf("Error querying image: %s", err.Error())
-		}
-
-		// convert criterion value to the 100 value
-		ratingCriterion.Value = models.Rating5To100(ratingCriterion.Value)
-
-		for _, image := range images {
-			verifyIntPtr(t, image.Rating, ratingCriterion)
-		}
-
-		return nil
-	})
-}
-
 func TestImageQueryRating100(t *testing.T) {
 	const rating = 60
 	ratingCriterion := models.IntCriterionInput{
@@ -1868,11 +1912,12 @@ func verifyImagesResolution(t *testing.T, resolution models.ResolutionEnum) {
 				t.Errorf("Error loading primary file: %s", err.Error())
 				return nil
 			}
-			asFrame, ok := image.Files.Primary().(file.VisualFile)
+			f := image.Files.Primary()
+			vf, ok := f.(models.VisualFile)
 			if !ok {
-				t.Errorf("Error: Associated primary file of image is not of type VisualFile")
+				t.Errorf("Error: image primary file is not a visual file (is type %T)", f)
 			}
-			verifyImageResolution(t, asFrame.GetHeight(), resolution)
+			verifyImageResolution(t, vf.GetHeight(), resolution)
 		}
 
 		return nil

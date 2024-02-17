@@ -1,0 +1,14 @@
+fragment SavedFilterData on SavedFilter {
+  id
+  mode
+  name
+  find_filter {
+    q
+    page
+    per_page
+    sort
+    direction
+  }
+  object_filter
+  ui_options
+}

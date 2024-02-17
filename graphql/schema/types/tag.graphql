@@ -15,6 +15,9 @@ type Tag {
   performer_count(depth: Int): Int! # Resolver
   parents: [Tag!]!
   children: [Tag!]!
+
+  parent_count: Int! # Resolver
+  child_count: Int! # Resolver
 }
 
 input TagCreateInput {

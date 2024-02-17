@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 
 	"github.com/99designs/gqlgen/graphql"
+	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/image"
@@ -24,8 +25,13 @@ import (
 	"github.com/stashapp/stash/pkg/tag"
 )
 
+type Resetter interface {
+	Reset() error
+}
+
 type ImportTask struct {
-	txnManager Repository
+	repository models.Repository
+	resetter   Resetter
 	json       jsonUtils
 
 	BaseDir             string
@@ -46,7 +52,7 @@ type ImportObjectsInput struct {
 func CreateImportTask(a models.HashAlgorithm, input ImportObjectsInput) (*ImportTask, error) {
 	baseDir, err := instance.Paths.Generated.TempDir("import")
 	if err != nil {
-		logger.Errorf("error creating temporary directory for import: %s", err.Error())
+		logger.Errorf("error creating temporary directory for import: %v", err)
 		return nil, err
 	}
 
@@ -65,8 +71,10 @@ func CreateImportTask(a models.HashAlgorithm, input ImportObjectsInput) (*Import
 		}
 	}
 
+	mgr := GetInstance()
 	return &ImportTask{
-		txnManager:          GetInstance().Repository,
+		repository:          mgr.Repository,
+		resetter:            mgr.Database,
 		BaseDir:             baseDir,
 		TmpZip:              tmpZip,
 		Reset:               false,
@@ -85,12 +93,12 @@ func (t *ImportTask) Start(ctx context.Context) {
 		defer func() {
 			err := fsutil.RemoveDir(t.BaseDir)
 			if err != nil {
-				logger.Errorf("error removing directory %s: %s", t.BaseDir, err.Error())
+				logger.Errorf("error removing directory %s: %v", t.BaseDir, err)
 			}
 		}()
 
 		if err := t.unzipFile(); err != nil {
-			logger.Errorf("error unzipping provided file for import: %s", err.Error())
+			logger.Errorf("error unzipping provided file for import: %v", err)
 			return
 		}
 	}
@@ -108,10 +116,10 @@ func (t *ImportTask) Start(ctx context.Context) {
 	}
 
 	if t.Reset {
-		err := t.txnManager.Reset()
+		err := t.resetter.Reset()
 
 		if err != nil {
-			logger.Errorf("Error resetting database: %s", err.Error())
+			logger.Errorf("Error resetting database: %v", err)
 			return
 		}
 	}
@@ -131,7 +139,7 @@ func (t *ImportTask) unzipFile() error {
 	defer func() {
 		err := os.Remove(t.TmpZip)
 		if err != nil {
-			logger.Errorf("error removing temporary zip file %s: %s", t.TmpZip, err.Error())
+			logger.Errorf("error removing temporary zip file %s: %v", t.TmpZip, err)
 		}
 	}()
 
@@ -193,28 +201,28 @@ func (t *ImportTask) ImportPerformers(ctx context.Context) {
 		return
 	}
 
+	r := t.repository
+
 	for i, fi := range files {
 		index := i + 1
 		performerJSON, err := jsonschema.LoadPerformerFile(filepath.Join(path, fi.Name()))
 		if err != nil {
-			logger.Errorf("[performers] failed to read json: %s", err.Error())
+			logger.Errorf("[performers] failed to read json: %v", err)
 			continue
 		}
 
 		logger.Progressf("[performers] %d of %d", index, len(files))
 
-		if err := t.txnManager.WithTxn(ctx, func(ctx context.Context) error {
-			r := t.txnManager
-			readerWriter := r.Performer
+		if err := r.WithTxn(ctx, func(ctx context.Context) error {
 			importer := &performer.Importer{
-				ReaderWriter: readerWriter,
+				ReaderWriter: r.Performer,
 				TagWriter:    r.Tag,
 				Input:        *performerJSON,
 			}
 
 			return performImport(ctx, importer, t.DuplicateBehaviour)
 		}); err != nil {
-			logger.Errorf("[performers] <%s> import failed: %s", fi.Name(), err.Error())
+			logger.Errorf("[performers] <%s> import failed: %v", fi.Name(), err)
 		}
 	}
 
@@ -236,18 +244,20 @@ func (t *ImportTask) ImportStudios(ctx context.Context) {
 		return
 	}
 
+	r := t.repository
+
 	for i, fi := range files {
 		index := i + 1
 		studioJSON, err := jsonschema.LoadStudioFile(filepath.Join(path, fi.Name()))
 		if err != nil {
-			logger.Errorf("[studios] failed to read json: %s", err.Error())
+			logger.Errorf("[studios] failed to read json: %v", err)
 			continue
 		}
 
 		logger.Progressf("[studios] %d of %d", index, len(files))
 
-		if err := t.txnManager.WithTxn(ctx, func(ctx context.Context) error {
-			return t.ImportStudio(ctx, studioJSON, pendingParent, t.txnManager.Studio)
+		if err := r.WithTxn(ctx, func(ctx context.Context) error {
+			return t.importStudio(ctx, studioJSON, pendingParent)
 		}); err != nil {
 			if errors.Is(err, studio.ErrParentStudioNotExist) {
 				// add to the pending parent list so that it is created after the parent
@@ -257,7 +267,7 @@ func (t *ImportTask) ImportStudios(ctx context.Context) {
 				continue
 			}
 
-			logger.Errorf("[studios] <%s> failed to create: %s", fi.Name(), err.Error())
+			logger.Errorf("[studios] <%s> failed to create: %v", fi.Name(), err)
 			continue
 		}
 	}
@@ -268,10 +278,10 @@ func (t *ImportTask) ImportStudios(ctx context.Context) {
 
 		for _, s := range pendingParent {
 			for _, orphanStudioJSON := range s {
-				if err := t.txnManager.WithTxn(ctx, func(ctx context.Context) error {
-					return t.ImportStudio(ctx, orphanStudioJSON, nil, t.txnManager.Studio)
+				if err := r.WithTxn(ctx, func(ctx context.Context) error {
+					return t.importStudio(ctx, orphanStudioJSON, nil)
 				}); err != nil {
-					logger.Errorf("[studios] <%s> failed to create: %s", orphanStudioJSON.Name, err.Error())
+					logger.Errorf("[studios] <%s> failed to create: %v", orphanStudioJSON.Name, err)
 					continue
 				}
 			}
@@ -281,9 +291,9 @@ func (t *ImportTask) ImportStudios(ctx context.Context) {
 	logger.Info("[studios] import complete")
 }
 
-func (t *ImportTask) ImportStudio(ctx context.Context, studioJSON *jsonschema.Studio, pendingParent map[string][]*jsonschema.Studio, readerWriter studio.NameFinderCreatorUpdater) error {
+func (t *ImportTask) importStudio(ctx context.Context, studioJSON *jsonschema.Studio, pendingParent map[string][]*jsonschema.Studio) error {
 	importer := &studio.Importer{
-		ReaderWriter:        readerWriter,
+		ReaderWriter:        t.repository.Studio,
 		Input:               *studioJSON,
 		MissingRefBehaviour: t.MissingRefBehaviour,
 	}
@@ -301,8 +311,8 @@ func (t *ImportTask) ImportStudio(ctx context.Context, studioJSON *jsonschema.St
 	s := pendingParent[studioJSON.Name]
 	for _, childStudioJSON := range s {
 		// map is nil since we're not checking parent studios at this point
-		if err := t.ImportStudio(ctx, childStudioJSON, nil, readerWriter); err != nil {
-			return fmt.Errorf("failed to create child studio <%s>: %s", childStudioJSON.Name, err.Error())
+		if err := t.importStudio(ctx, childStudioJSON, nil); err != nil {
+			return fmt.Errorf("failed to create child studio <%s>: %v", childStudioJSON.Name, err)
 		}
 	}
 
@@ -325,31 +335,29 @@ func (t *ImportTask) ImportMovies(ctx context.Context) {
 		return
 	}
 
+	r := t.repository
+
 	for i, fi := range files {
 		index := i + 1
 		movieJSON, err := jsonschema.LoadMovieFile(filepath.Join(path, fi.Name()))
 		if err != nil {
-			logger.Errorf("[movies] failed to read json: %s", err.Error())
+			logger.Errorf("[movies] failed to read json: %v", err)
 			continue
 		}
 
 		logger.Progressf("[movies] %d of %d", index, len(files))
 
-		if err := t.txnManager.WithTxn(ctx, func(ctx context.Context) error {
-			r := t.txnManager
-			readerWriter := r.Movie
-			studioReaderWriter := r.Studio
-
+		if err := r.WithTxn(ctx, func(ctx context.Context) error {
 			movieImporter := &movie.Importer{
-				ReaderWriter:        readerWriter,
-				StudioWriter:        studioReaderWriter,
+				ReaderWriter:        r.Movie,
+				StudioWriter:        r.Studio,
 				Input:               *movieJSON,
 				MissingRefBehaviour: t.MissingRefBehaviour,
 			}
 
 			return performImport(ctx, movieImporter, t.DuplicateBehaviour)
 		}); err != nil {
-			logger.Errorf("[movies] <%s> import failed: %s", fi.Name(), err.Error())
+			logger.Errorf("[movies] <%s> import failed: %v", fi.Name(), err)
 			continue
 		}
 	}
@@ -370,22 +378,24 @@ func (t *ImportTask) ImportFiles(ctx context.Context) {
 		return
 	}
 
+	r := t.repository
+
 	pendingParent := make(map[string][]jsonschema.DirEntry)
 
 	for i, fi := range files {
 		index := i + 1
 		fileJSON, err := jsonschema.LoadFileFile(filepath.Join(path, fi.Name()))
 		if err != nil {
-			logger.Errorf("[files] failed to read json: %s", err.Error())
+			logger.Errorf("[files] failed to read json: %v", err)
 			continue
 		}
 
 		logger.Progressf("[files] %d of %d", index, len(files))
 
-		if err := t.txnManager.WithTxn(ctx, func(ctx context.Context) error {
-			return t.ImportFile(ctx, fileJSON, pendingParent)
+		if err := r.WithTxn(ctx, func(ctx context.Context) error {
+			return t.importFile(ctx, fileJSON, pendingParent)
 		}); err != nil {
-			if errors.Is(err, errZipFileNotExist) {
+			if errors.Is(err, file.ErrZipFileNotExist) {
 				// add to the pending parent list so that it is created after the parent
 				s := pendingParent[fileJSON.DirEntry().ZipFile]
 				s = append(s, fileJSON)
@@ -393,7 +403,7 @@ func (t *ImportTask) ImportFiles(ctx context.Context) {
 				continue
 			}
 
-			logger.Errorf("[files] <%s> failed to create: %s", fi.Name(), err.Error())
+			logger.Errorf("[files] <%s> failed to create: %v", fi.Name(), err)
 			continue
 		}
 	}
@@ -404,10 +414,10 @@ func (t *ImportTask) ImportFiles(ctx context.Context) {
 
 		for _, s := range pendingParent {
 			for _, orphanFileJSON := range s {
-				if err := t.txnManager.WithTxn(ctx, func(ctx context.Context) error {
-					return t.ImportFile(ctx, orphanFileJSON, nil)
+				if err := r.WithTxn(ctx, func(ctx context.Context) error {
+					return t.importFile(ctx, orphanFileJSON, nil)
 				}); err != nil {
-					logger.Errorf("[files] <%s> failed to create: %s", orphanFileJSON.DirEntry().Path, err.Error())
+					logger.Errorf("[files] <%s> failed to create: %v", orphanFileJSON.DirEntry().Path, err)
 					continue
 				}
 			}
@@ -417,12 +427,11 @@ func (t *ImportTask) ImportFiles(ctx context.Context) {
 	logger.Info("[files] import complete")
 }
 
-func (t *ImportTask) ImportFile(ctx context.Context, fileJSON jsonschema.DirEntry, pendingParent map[string][]jsonschema.DirEntry) error {
-	r := t.txnManager
-	readerWriter := r.File
+func (t *ImportTask) importFile(ctx context.Context, fileJSON jsonschema.DirEntry, pendingParent map[string][]jsonschema.DirEntry) error {
+	r := t.repository
 
-	fileImporter := &fileFolderImporter{
-		ReaderWriter: readerWriter,
+	fileImporter := &file.Importer{
+		ReaderWriter: r.File,
 		FolderStore:  r.Folder,
 		Input:        fileJSON,
 	}
@@ -436,8 +445,8 @@ func (t *ImportTask) ImportFile(ctx context.Context, fileJSON jsonschema.DirEntr
 	s := pendingParent[fileJSON.DirEntry().Path]
 	for _, childFileJSON := range s {
 		// map is nil since we're not checking parent studios at this point
-		if err := t.ImportFile(ctx, childFileJSON, nil); err != nil {
-			return fmt.Errorf("failed to create child file <%s>: %s", childFileJSON.DirEntry().Path, err.Error())
+		if err := t.importFile(ctx, childFileJSON, nil); err != nil {
+			return fmt.Errorf("failed to create child file <%s>: %v", childFileJSON.DirEntry().Path, err)
 		}
 	}
 
@@ -460,31 +469,26 @@ func (t *ImportTask) ImportGalleries(ctx context.Context) {
 		return
 	}
 
+	r := t.repository
+
 	for i, fi := range files {
 		index := i + 1
 		galleryJSON, err := jsonschema.LoadGalleryFile(filepath.Join(path, fi.Name()))
 		if err != nil {
-			logger.Errorf("[galleries] failed to read json: %s", err.Error())
+			logger.Errorf("[galleries] failed to read json: %v", err)
 			continue
 		}
 
 		logger.Progressf("[galleries] %d of %d", index, len(files))
 
-		if err := t.txnManager.WithTxn(ctx, func(ctx context.Context) error {
-			r := t.txnManager
-			readerWriter := r.Gallery
-			tagWriter := r.Tag
-			performerWriter := r.Performer
-			studioWriter := r.Studio
-			chapterWriter := r.GalleryChapter
-
+		if err := r.WithTxn(ctx, func(ctx context.Context) error {
 			galleryImporter := &gallery.Importer{
-				ReaderWriter:        readerWriter,
+				ReaderWriter:        r.Gallery,
 				FolderFinder:        r.Folder,
 				FileFinder:          r.File,
-				PerformerWriter:     performerWriter,
-				StudioWriter:        studioWriter,
-				TagWriter:           tagWriter,
+				PerformerWriter:     r.Performer,
+				StudioWriter:        r.Studio,
+				TagWriter:           r.Tag,
 				Input:               *galleryJSON,
 				MissingRefBehaviour: t.MissingRefBehaviour,
 			}
@@ -499,7 +503,7 @@ func (t *ImportTask) ImportGalleries(ctx context.Context) {
 					GalleryID:           galleryImporter.ID,
 					Input:               m,
 					MissingRefBehaviour: t.MissingRefBehaviour,
-					ReaderWriter:        chapterWriter,
+					ReaderWriter:        r.GalleryChapter,
 				}
 
 				if err := performImport(ctx, chapterImporter, t.DuplicateBehaviour); err != nil {
@@ -509,7 +513,7 @@ func (t *ImportTask) ImportGalleries(ctx context.Context) {
 
 			return nil
 		}); err != nil {
-			logger.Errorf("[galleries] <%s> import failed to commit: %s", fi.Name(), err.Error())
+			logger.Errorf("[galleries] <%s> import failed to commit: %v", fi.Name(), err)
 			continue
 		}
 	}
@@ -531,18 +535,20 @@ func (t *ImportTask) ImportTags(ctx context.Context) {
 		return
 	}
 
+	r := t.repository
+
 	for i, fi := range files {
 		index := i + 1
 		tagJSON, err := jsonschema.LoadTagFile(filepath.Join(path, fi.Name()))
 		if err != nil {
-			logger.Errorf("[tags] failed to read json: %s", err.Error())
+			logger.Errorf("[tags] failed to read json: %v", err)
 			continue
 		}
 
 		logger.Progressf("[tags] %d of %d", index, len(files))
 
-		if err := t.txnManager.WithTxn(ctx, func(ctx context.Context) error {
-			return t.ImportTag(ctx, tagJSON, pendingParent, false, t.txnManager.Tag)
+		if err := r.WithTxn(ctx, func(ctx context.Context) error {
+			return t.importTag(ctx, tagJSON, pendingParent, false)
 		}); err != nil {
 			var parentError tag.ParentTagNotExistError
 			if errors.As(err, &parentError) {
@@ -550,17 +556,17 @@ func (t *ImportTask) ImportTags(ctx context.Context) {
 				continue
 			}
 
-			logger.Errorf("[tags] <%s> failed to import: %s", fi.Name(), err.Error())
+			logger.Errorf("[tags] <%s> failed to import: %v", fi.Name(), err)
 			continue
 		}
 	}
 
 	for _, s := range pendingParent {
 		for _, orphanTagJSON := range s {
-			if err := t.txnManager.WithTxn(ctx, func(ctx context.Context) error {
-				return t.ImportTag(ctx, orphanTagJSON, nil, true, t.txnManager.Tag)
+			if err := r.WithTxn(ctx, func(ctx context.Context) error {
+				return t.importTag(ctx, orphanTagJSON, nil, true)
 			}); err != nil {
-				logger.Errorf("[tags] <%s> failed to create: %s", orphanTagJSON.Name, err.Error())
+				logger.Errorf("[tags] <%s> failed to create: %v", orphanTagJSON.Name, err)
 				continue
 			}
 		}
@@ -569,9 +575,9 @@ func (t *ImportTask) ImportTags(ctx context.Context) {
 	logger.Info("[tags] import complete")
 }
 
-func (t *ImportTask) ImportTag(ctx context.Context, tagJSON *jsonschema.Tag, pendingParent map[string][]*jsonschema.Tag, fail bool, readerWriter tag.NameFinderCreatorUpdater) error {
+func (t *ImportTask) importTag(ctx context.Context, tagJSON *jsonschema.Tag, pendingParent map[string][]*jsonschema.Tag, fail bool) error {
 	importer := &tag.Importer{
-		ReaderWriter:        readerWriter,
+		ReaderWriter:        t.repository.Tag,
 		Input:               *tagJSON,
 		MissingRefBehaviour: t.MissingRefBehaviour,
 	}
@@ -586,14 +592,14 @@ func (t *ImportTask) ImportTag(ctx context.Context, tagJSON *jsonschema.Tag, pen
 	}
 
 	for _, childTagJSON := range pendingParent[tagJSON.Name] {
-		if err := t.ImportTag(ctx, childTagJSON, pendingParent, fail, readerWriter); err != nil {
+		if err := t.importTag(ctx, childTagJSON, pendingParent, fail); err != nil {
 			var parentError tag.ParentTagNotExistError
 			if errors.As(err, &parentError) {
 				pendingParent[parentError.MissingParent()] = append(pendingParent[parentError.MissingParent()], childTagJSON)
 				continue
 			}
 
-			return fmt.Errorf("failed to create child tag <%s>: %s", childTagJSON.Name, err.Error())
+			return fmt.Errorf("failed to create child tag <%s>: %v", childTagJSON.Name, err)
 		}
 	}
 
@@ -615,6 +621,8 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 		return
 	}
 
+	r := t.repository
+
 	for i, fi := range files {
 		index := i + 1
 
@@ -622,33 +630,24 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 
 		sceneJSON, err := jsonschema.LoadSceneFile(filepath.Join(path, fi.Name()))
 		if err != nil {
-			logger.Infof("[scenes] <%s> json parse failure: %s", fi.Name(), err.Error())
+			logger.Infof("[scenes] <%s> json parse failure: %v", fi.Name(), err)
 			continue
 		}
 
-		if err := t.txnManager.WithTxn(ctx, func(ctx context.Context) error {
-			r := t.txnManager
-			readerWriter := r.Scene
-			tagWriter := r.Tag
-			galleryWriter := r.Gallery
-			movieWriter := r.Movie
-			performerWriter := r.Performer
-			studioWriter := r.Studio
-			markerWriter := r.SceneMarker
-
+		if err := r.WithTxn(ctx, func(ctx context.Context) error {
 			sceneImporter := &scene.Importer{
-				ReaderWriter: readerWriter,
+				ReaderWriter: r.Scene,
 				Input:        *sceneJSON,
 				FileFinder:   r.File,
 
 				FileNamingAlgorithm: t.fileNamingAlgorithm,
 				MissingRefBehaviour: t.MissingRefBehaviour,
 
-				GalleryFinder:   galleryWriter,
-				MovieWriter:     movieWriter,
-				PerformerWriter: performerWriter,
-				StudioWriter:    studioWriter,
-				TagWriter:       tagWriter,
+				GalleryFinder:   r.Gallery,
+				MovieWriter:     r.Movie,
+				PerformerWriter: r.Performer,
+				StudioWriter:    r.Studio,
+				TagWriter:       r.Tag,
 			}
 
 			if err := performImport(ctx, sceneImporter, t.DuplicateBehaviour); err != nil {
@@ -661,8 +660,8 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 					SceneID:             sceneImporter.ID,
 					Input:               m,
 					MissingRefBehaviour: t.MissingRefBehaviour,
-					ReaderWriter:        markerWriter,
-					TagWriter:           tagWriter,
+					ReaderWriter:        r.SceneMarker,
+					TagWriter:           r.Tag,
 				}
 
 				if err := performImport(ctx, markerImporter, t.DuplicateBehaviour); err != nil {
@@ -672,7 +671,7 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 
 			return nil
 		}); err != nil {
-			logger.Errorf("[scenes] <%s> import failed: %s", fi.Name(), err.Error())
+			logger.Errorf("[scenes] <%s> import failed: %v", fi.Name(), err)
 		}
 	}
 
@@ -692,6 +691,8 @@ func (t *ImportTask) ImportImages(ctx context.Context) {
 		return
 	}
 
+	r := t.repository
+
 	for i, fi := range files {
 		index := i + 1
 
@@ -699,34 +700,27 @@ func (t *ImportTask) ImportImages(ctx context.Context) {
 
 		imageJSON, err := jsonschema.LoadImageFile(filepath.Join(path, fi.Name()))
 		if err != nil {
-			logger.Infof("[images] <%s> json parse failure: %s", fi.Name(), err.Error())
+			logger.Infof("[images] <%s> json parse failure: %v", fi.Name(), err)
 			continue
 		}
 
-		if err := t.txnManager.WithTxn(ctx, func(ctx context.Context) error {
-			r := t.txnManager
-			readerWriter := r.Image
-			tagWriter := r.Tag
-			galleryWriter := r.Gallery
-			performerWriter := r.Performer
-			studioWriter := r.Studio
-
+		if err := r.WithTxn(ctx, func(ctx context.Context) error {
 			imageImporter := &image.Importer{
-				ReaderWriter: readerWriter,
+				ReaderWriter: r.Image,
 				FileFinder:   r.File,
 				Input:        *imageJSON,
 
 				MissingRefBehaviour: t.MissingRefBehaviour,
 
-				GalleryFinder:   galleryWriter,
-				PerformerWriter: performerWriter,
-				StudioWriter:    studioWriter,
-				TagWriter:       tagWriter,
+				GalleryFinder:   r.Gallery,
+				PerformerWriter: r.Performer,
+				StudioWriter:    r.Studio,
+				TagWriter:       r.Tag,
 			}
 
 			return performImport(ctx, imageImporter, t.DuplicateBehaviour)
 		}); err != nil {
-			logger.Errorf("[images] <%s> import failed: %s", fi.Name(), err.Error())
+			logger.Errorf("[images] <%s> import failed: %v", fi.Name(), err)
 		}
 	}
 

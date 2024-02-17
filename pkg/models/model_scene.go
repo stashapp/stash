@@ -6,8 +6,6 @@ import (
 	"path/filepath"
 	"strconv"
 	"time"
-
-	"github.com/stashapp/stash/pkg/file"
 )
 
 // Scene stores the metadata for a single video scene.
@@ -26,7 +24,7 @@ type Scene struct {
 
 	// transient - not persisted
 	Files         RelatedVideoFiles
-	PrimaryFileID *file.ID
+	PrimaryFileID *FileID
 	// transient - path of primary file - empty if no files
 	Path string
 	// transient - oshash of primary file - empty if no files
@@ -50,6 +48,50 @@ type Scene struct {
 	StashIDs     RelatedStashIDs `json:"stash_ids"`
 }
 
+func NewScene() Scene {
+	currentTime := time.Now()
+	return Scene{
+		CreatedAt: currentTime,
+		UpdatedAt: currentTime,
+	}
+}
+
+// ScenePartial represents part of a Scene object. It is used to update
+// the database entry.
+type ScenePartial struct {
+	Title    OptionalString
+	Code     OptionalString
+	Details  OptionalString
+	Director OptionalString
+	Date     OptionalDate
+	// Rating expressed in 1-100 scale
+	Rating       OptionalInt
+	Organized    OptionalBool
+	OCounter     OptionalInt
+	StudioID     OptionalInt
+	CreatedAt    OptionalTime
+	UpdatedAt    OptionalTime
+	ResumeTime   OptionalFloat64
+	PlayDuration OptionalFloat64
+	PlayCount    OptionalInt
+	LastPlayedAt OptionalTime
+
+	URLs          *UpdateStrings
+	GalleryIDs    *UpdateIDs
+	TagIDs        *UpdateIDs
+	PerformerIDs  *UpdateIDs
+	MovieIDs      *UpdateMovieIDs
+	StashIDs      *UpdateStashIDs
+	PrimaryFileID *FileID
+}
+
+func NewScenePartial() ScenePartial {
+	currentTime := time.Now()
+	return ScenePartial{
+		UpdatedAt: NewOptionalTime(currentTime),
+	}
+}
+
 func (s *Scene) LoadURLs(ctx context.Context, l URLLoader) error {
 	return s.URLs.load(func() ([]string, error) {
 		return l.GetURLs(ctx, s.ID)
@@ -57,13 +99,13 @@ func (s *Scene) LoadURLs(ctx context.Context, l URLLoader) error {
 }
 
 func (s *Scene) LoadFiles(ctx context.Context, l VideoFileLoader) error {
-	return s.Files.load(func() ([]*file.VideoFile, error) {
+	return s.Files.load(func() ([]*VideoFile, error) {
 		return l.GetFiles(ctx, s.ID)
 	})
 }
 
-func (s *Scene) LoadPrimaryFile(ctx context.Context, l file.Finder) error {
-	return s.Files.loadPrimary(func() (*file.VideoFile, error) {
+func (s *Scene) LoadPrimaryFile(ctx context.Context, l FileGetter) error {
+	return s.Files.loadPrimary(func() (*VideoFile, error) {
 		if s.PrimaryFileID == nil {
 			return nil, nil
 		}
@@ -73,10 +115,10 @@ func (s *Scene) LoadPrimaryFile(ctx context.Context, l file.Finder) error {
 			return nil, err
 		}
 
-		var vf *file.VideoFile
+		var vf *VideoFile
 		if len(f) > 0 {
 			var ok bool
-			vf, ok = f[0].(*file.VideoFile)
+			vf, ok = f[0].(*VideoFile)
 			if !ok {
 				return nil, errors.New("not a video file")
 			}
@@ -147,77 +189,6 @@ func (s *Scene) LoadRelationships(ctx context.Context, l SceneReader) error {
 	return nil
 }
 
-// ScenePartial represents part of a Scene object. It is used to update
-// the database entry.
-type ScenePartial struct {
-	Title    OptionalString
-	Code     OptionalString
-	Details  OptionalString
-	Director OptionalString
-	Date     OptionalDate
-	// Rating expressed in 1-100 scale
-	Rating       OptionalInt
-	Organized    OptionalBool
-	OCounter     OptionalInt
-	StudioID     OptionalInt
-	CreatedAt    OptionalTime
-	UpdatedAt    OptionalTime
-	ResumeTime   OptionalFloat64
-	PlayDuration OptionalFloat64
-	PlayCount    OptionalInt
-	LastPlayedAt OptionalTime
-
-	URLs          *UpdateStrings
-	GalleryIDs    *UpdateIDs
-	TagIDs        *UpdateIDs
-	PerformerIDs  *UpdateIDs
-	MovieIDs      *UpdateMovieIDs
-	StashIDs      *UpdateStashIDs
-	PrimaryFileID *file.ID
-}
-
-func NewScenePartial() ScenePartial {
-	updatedTime := time.Now()
-	return ScenePartial{
-		UpdatedAt: NewOptionalTime(updatedTime),
-	}
-}
-
-type SceneMovieInput struct {
-	MovieID    string `json:"movie_id"`
-	SceneIndex *int   `json:"scene_index"`
-}
-
-type SceneUpdateInput struct {
-	ClientMutationID *string `json:"clientMutationId"`
-	ID               string  `json:"id"`
-	Title            *string `json:"title"`
-	Code             *string `json:"code"`
-	Details          *string `json:"details"`
-	Director         *string `json:"director"`
-	URL              *string `json:"url"`
-	Date             *string `json:"date"`
-	// Rating expressed in 1-5 scale
-	Rating *int `json:"rating"`
-	// Rating expressed in 1-100 scale
-	Rating100    *int               `json:"rating100"`
-	OCounter     *int               `json:"o_counter"`
-	Organized    *bool              `json:"organized"`
-	Urls         []string           `json:"urls"`
-	StudioID     *string            `json:"studio_id"`
-	GalleryIds   []string           `json:"gallery_ids"`
-	PerformerIds []string           `json:"performer_ids"`
-	Movies       []*SceneMovieInput `json:"movies"`
-	TagIds       []string           `json:"tag_ids"`
-	// This should be a URL or a base64 encoded data URL
-	CoverImage    *string   `json:"cover_image"`
-	StashIds      []StashID `json:"stash_ids"`
-	ResumeTime    *float64  `json:"resume_time"`
-	PlayDuration  *float64  `json:"play_duration"`
-	PlayCount     *int      `json:"play_count"`
-	PrimaryFileID *string   `json:"primary_file_id"`
-}
-
 // UpdateInput constructs a SceneUpdateInput using the populated fields in the ScenePartial object.
 func (s ScenePartial) UpdateInput(id int) SceneUpdateInput {
 	var dateStr *string
@@ -248,12 +219,6 @@ func (s ScenePartial) UpdateInput(id int) SceneUpdateInput {
 		Movies:       s.MovieIDs.SceneMovieInputs(),
 		TagIds:       s.TagIDs.IDStrings(),
 		StashIds:     stashIDs,
-	}
-
-	if s.Rating.Set && !s.Rating.Null {
-		// convert to 1-100 scale
-		rating := Rating100To5(s.Rating.Value)
-		ret.Rating = &rating
 	}
 
 	return ret
@@ -302,16 +267,6 @@ type SceneFileType struct {
 	Height     *int     `graphql:"height" json:"height"`
 	Framerate  *float64 `graphql:"framerate" json:"framerate"`
 	Bitrate    *int     `graphql:"bitrate" json:"bitrate"`
-}
-
-type Scenes []*Scene
-
-func (s *Scenes) Append(o interface{}) {
-	*s = append(*s, o.(*Scene))
-}
-
-func (s *Scenes) New() interface{} {
-	return &Scene{}
 }
 
 type VideoCaption struct {

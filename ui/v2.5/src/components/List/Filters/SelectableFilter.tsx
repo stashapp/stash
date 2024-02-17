@@ -22,7 +22,7 @@ import {
 import { defineMessages, MessageDescriptor, useIntl } from "react-intl";
 import { CriterionModifier } from "src/core/generated-graphql";
 import { keyboardClickHandler } from "src/utils/keyboard";
-import { useDebouncedSetState } from "src/hooks/debounce";
+import { useDebounce } from "src/hooks/debounce";
 import useFocus from "src/utils/focus";
 
 interface ISelectedItem {
@@ -102,6 +102,7 @@ const SelectableFilter: React.FC<ISelectableFilter> = ({
   onSelect,
   onUnselect,
 }) => {
+  const intl = useIntl();
   const objects = useMemo(() => {
     return queryResults.filter(
       (p) =>
@@ -124,6 +125,7 @@ const SelectableFilter: React.FC<ISelectableFilter> = ({
         focus={inputFocus}
         value={query}
         setValue={(v) => onQueryChange(v)}
+        placeholder={`${intl.formatMessage({ id: "actions.search" })}…`}
       />
       <ul>
         {selected.map((p) => (
@@ -192,7 +194,7 @@ export const ObjectsFilter = <
   const [query, setQuery] = useState("");
   const [displayQuery, setDisplayQuery] = useState(query);
 
-  const debouncedSetQuery = useDebouncedSetState(setQuery, 250);
+  const debouncedSetQuery = useDebounce(setQuery, 250);
   const onQueryChange = useCallback(
     (input: string) => {
       setDisplayQuery(input);
@@ -320,7 +322,7 @@ export const HierarchicalObjectsFilter = <
     if (criterion.criterionOption.type === "studios") {
       return "include-sub-studios";
     }
-    if (criterion.criterionOption.type === "childTags") {
+    if (criterion.criterionOption.type === "children") {
       return "include-parent-tags";
     }
     return "include-sub-tags";
@@ -330,7 +332,7 @@ export const HierarchicalObjectsFilter = <
     const optionType =
       criterion.criterionOption.type === "studios"
         ? "include_sub_studios"
-        : criterion.criterionOption.type === "childTags"
+        : criterion.criterionOption.type === "children"
         ? "include_parent_tags"
         : "include_sub_tags";
     return {

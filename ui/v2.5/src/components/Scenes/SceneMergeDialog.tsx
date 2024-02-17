@@ -1,10 +1,10 @@
 import { Form, Col, Row, Button, FormControl } from "react-bootstrap";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import * as GQL from "src/core/generated-graphql";
 import { Icon } from "../Shared/Icon";
 import { LoadingIndicator } from "../Shared/LoadingIndicator";
 import { StringListSelect, GallerySelect, SceneSelect } from "../Shared/Select";
-import FormUtils from "src/utils/form";
+import * as FormUtils from "src/utils/form";
 import ImageUtils from "src/utils/image";
 import TextUtils from "src/utils/text";
 import { mutateSceneMerge, queryFindScenesByID } from "src/core/StashService";
@@ -12,26 +12,29 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { useToast } from "src/hooks/Toast";
 import { faExchangeAlt, faSignInAlt } from "@fortawesome/free-solid-svg-icons";
 import {
-  hasScrapedValues,
   ScrapeDialog,
   ScrapeDialogRow,
   ScrapedImageRow,
   ScrapedInputGroupRow,
   ScrapedStringListRow,
   ScrapedTextAreaRow,
+} from "../Shared/ScrapeDialog/ScrapeDialog";
+import { clone, uniq } from "lodash-es";
+import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
+import { ModalComponent } from "../Shared/Modal";
+import { IHasStoredID, sortStoredIdObjects } from "src/utils/data";
+import {
+  ObjectListScrapeResult,
   ScrapeResult,
   ZeroableScrapeResult,
-} from "../Shared/ScrapeDialog";
-import { clone, uniq } from "lodash-es";
+  hasScrapedValues,
+} from "../Shared/ScrapeDialog/scrapeResult";
 import {
   ScrapedMoviesRow,
   ScrapedPerformersRow,
   ScrapedStudioRow,
   ScrapedTagsRow,
-} from "./SceneDetails/SceneScrapeDialog";
-import { galleryTitle } from "src/core/galleries";
-import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
-import { ModalComponent } from "../Shared/Modal";
+} from "../Shared/ScrapeDialog/ScrapedObjectsRow";
 
 interface IStashIDsField {
   values: GQL.StashId[];
@@ -83,8 +86,17 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
     new ScrapeResult<number>(dest.play_duration)
   );
 
-  const [studio, setStudio] = useState<ScrapeResult<string>>(
-    new ScrapeResult<string>(dest.studio?.id)
+  function idToStoredID(o: { id: string; name: string }) {
+    return {
+      stored_id: o.id,
+      name: o.name,
+    };
+  }
+
+  const [studio, setStudio] = useState<ScrapeResult<GQL.ScrapedStudio>>(
+    new ScrapeResult<GQL.ScrapedStudio>(
+      dest.studio ? idToStoredID(dest.studio) : undefined
+    )
   );
 
   function sortIdList(idList?: string[] | null) {
@@ -101,16 +113,28 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
     return ret;
   }
 
-  const [performers, setPerformers] = useState<ScrapeResult<string[]>>(
-    new ScrapeResult<string[]>(sortIdList(dest.performers.map((p) => p.id)))
+  function uniqIDStoredIDs<T extends IHasStoredID>(objs: T[]) {
+    return objs.filter((o, i) => {
+      return objs.findIndex((oo) => oo.stored_id === o.stored_id) === i;
+    });
+  }
+
+  const [performers, setPerformers] = useState<
+    ObjectListScrapeResult<GQL.ScrapedPerformer>
+  >(
+    new ObjectListScrapeResult<GQL.ScrapedPerformer>(
+      sortStoredIdObjects(dest.performers.map(idToStoredID))
+    )
   );
 
   const [movies, setMovies] = useState<ScrapeResult<string[]>>(
     new ScrapeResult<string[]>(sortIdList(dest.movies.map((p) => p.movie.id)))
   );
 
-  const [tags, setTags] = useState<ScrapeResult<string[]>>(
-    new ScrapeResult<string[]>(sortIdList(dest.tags.map((t) => t.id)))
+  const [tags, setTags] = useState<ObjectListScrapeResult<GQL.ScrapedTag>>(
+    new ObjectListScrapeResult<GQL.ScrapedTag>(
+      sortStoredIdObjects(dest.tags.map(idToStoredID))
+    )
   );
 
   const [details, setDetails] = useState<ScrapeResult<string>>(
@@ -174,24 +198,32 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
     setDate(
       new ScrapeResult(dest.date, sources.find((s) => s.date)?.date, !dest.date)
     );
+
+    const foundStudio = sources.find((s) => s.studio)?.studio;
+
     setStudio(
-      new ScrapeResult(
-        dest.studio?.id,
-        sources.find((s) => s.studio)?.studio?.id,
+      new ScrapeResult<GQL.ScrapedStudio>(
+        dest.studio ? idToStoredID(dest.studio) : undefined,
+        foundStudio
+          ? {
+              stored_id: foundStudio.id,
+              name: foundStudio.name,
+            }
+          : undefined,
         !dest.studio
       )
     );
 
     setPerformers(
-      new ScrapeResult(
-        dest.performers.map((p) => p.id),
-        uniq(all.map((s) => s.performers.map((p) => p.id)).flat())
+      new ObjectListScrapeResult<GQL.ScrapedPerformer>(
+        sortStoredIdObjects(dest.performers.map(idToStoredID)),
+        uniqIDStoredIDs(all.map((s) => s.performers.map(idToStoredID)).flat())
       )
     );
     setTags(
-      new ScrapeResult(
-        dest.tags.map((p) => p.id),
-        uniq(all.map((s) => s.tags.map((p) => p.id)).flat())
+      new ObjectListScrapeResult<GQL.ScrapedTag>(
+        sortStoredIdObjects(dest.tags.map(idToStoredID)),
+        uniqIDStoredIDs(all.map((s) => s.tags.map(idToStoredID)).flat())
       )
     );
     setDetails(
@@ -268,34 +300,6 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
 
     loadImages();
   }, [sources, dest]);
-
-  const convertGalleries = useCallback(
-    (ids?: string[]) => {
-      const all = [dest, ...sources];
-      return ids
-        ?.map((g) =>
-          all
-            .map((s) => s.galleries)
-            .flat()
-            .find((gg) => g === gg.id)
-        )
-        .map((g) => {
-          return {
-            id: g!.id,
-            title: galleryTitle(g!),
-          };
-        });
-    },
-    [dest, sources]
-  );
-
-  const originalGalleries = useMemo(() => {
-    return convertGalleries(galleries.originalValue);
-  }, [galleries, convertGalleries]);
-
-  const newGalleries = useMemo(() => {
-    return convertGalleries(galleries.newValue);
-  }, [galleries, convertGalleries]);
 
   // ensure this is updated if fields are changed
   const hasValues = useMemo(() => {
@@ -459,17 +463,19 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
           renderOriginalField={() => (
             <GallerySelect
               className="form-control react-select"
-              selected={originalGalleries ?? []}
+              ids={galleries.originalValue ?? []}
               onSelect={() => {}}
-              disabled
+              isMulti
+              isDisabled
             />
           )}
           renderNewField={() => (
             <GallerySelect
               className="form-control react-select"
-              selected={newGalleries ?? []}
+              ids={galleries.newValue ?? []}
               onSelect={() => {}}
-              disabled
+              isMulti
+              isDisabled
             />
           )}
           onChange={(value) => setGalleries(value)}
@@ -558,8 +564,8 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
       play_count: playCount.getNewValue(),
       play_duration: playDuration.getNewValue(),
       gallery_ids: galleries.getNewValue(),
-      studio_id: studio.getNewValue(),
-      performer_ids: performers.getNewValue(),
+      studio_id: studio.getNewValue()?.stored_id,
+      performer_ids: performers.getNewValue()?.map((p) => p.stored_id!),
       movies: movies.getNewValue()?.map((m) => {
         // find the equivalent movie in the original scenes
         const found = all
@@ -571,7 +577,7 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
           scene_index: found!.scene_index,
         };
       }),
-      tag_ids: tags.getNewValue(),
+      tag_ids: tags.getNewValue()?.map((t) => t.stored_id!),
       details: details.getNewValue(),
       organized: organized.getNewValue(),
       stash_ids: stashIDs.getNewValue(),
@@ -671,9 +677,7 @@ export const SceneMergeModal: React.FC<ISceneMergeModalProps> = ({
         values
       );
       if (result.data?.sceneMerge) {
-        Toast.success({
-          content: intl.formatMessage({ id: "toast.merged_scenes" }),
-        });
+        Toast.success(intl.formatMessage({ id: "toast.merged_scenes" }));
         // refetch the scene
         await queryFindScenesByID([parseInt(destScene[0].id)]);
         onClose(destScene[0].id);

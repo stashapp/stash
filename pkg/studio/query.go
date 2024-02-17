@@ -6,21 +6,7 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
-type Finder interface {
-	Find(ctx context.Context, id int) (*models.Studio, error)
-}
-
-type Queryer interface {
-	Query(ctx context.Context, studioFilter *models.StudioFilterType, findFilter *models.FindFilterType) ([]*models.Studio, int, error)
-}
-
-type FinderQueryer interface {
-	Finder
-	Queryer
-	models.AliasLoader
-}
-
-func ByName(ctx context.Context, qb Queryer, name string) (*models.Studio, error) {
+func ByName(ctx context.Context, qb models.StudioQueryer, name string) (*models.Studio, error) {
 	f := &models.StudioFilterType{
 		Name: &models.StringCriterionInput{
 			Value:    name,
@@ -44,7 +30,7 @@ func ByName(ctx context.Context, qb Queryer, name string) (*models.Studio, error
 	return nil, nil
 }
 
-func ByAlias(ctx context.Context, qb Queryer, alias string) (*models.Studio, error) {
+func ByAlias(ctx context.Context, qb models.StudioQueryer, alias string) (*models.Studio, error) {
 	f := &models.StudioFilterType{
 		Aliases: &models.StringCriterionInput{
 			Value:    alias,

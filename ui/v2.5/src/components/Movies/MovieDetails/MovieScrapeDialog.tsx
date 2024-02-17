@@ -3,16 +3,16 @@ import { useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import {
   ScrapeDialog,
-  ScrapeResult,
   ScrapedInputGroupRow,
   ScrapedImageRow,
   ScrapeDialogRow,
   ScrapedTextAreaRow,
-} from "src/components/Shared/ScrapeDialog";
+} from "src/components/Shared/ScrapeDialog/ScrapeDialog";
 import { StudioSelect } from "src/components/Shared/Select";
-import DurationUtils from "src/utils/duration";
+import TextUtils from "src/utils/text";
 import { useStudioCreate } from "src/core/StashService";
 import { useToast } from "src/hooks/Toast";
+import { ScrapeResult } from "src/components/Shared/ScrapeDialog/scrapeResult";
 
 function renderScrapedStudio(
   result: ScrapeResult<string>,
@@ -83,8 +83,11 @@ export const MovieScrapeDialog: React.FC<IMovieScrapeDialogProps> = (
   );
   const [duration, setDuration] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(
-      DurationUtils.secondsToString(props.movie.duration || 0),
-      props.scraped.duration
+      TextUtils.secondsToTimestamp(props.movie.duration || 0),
+      // convert seconds to string if it's a number
+      props.scraped.duration && !isNaN(+props.scraped.duration)
+        ? TextUtils.secondsToTimestamp(parseInt(props.scraped.duration, 10))
+        : props.scraped.duration
     )
   );
   const [date, setDate] = useState<ScrapeResult<string>>(
@@ -137,13 +140,11 @@ export const MovieScrapeDialog: React.FC<IMovieScrapeDialogProps> = (
       setStudio(studio.cloneWithValue(result.data!.studioCreate!.id));
       setNewStudio(undefined);
 
-      Toast.success({
-        content: (
-          <span>
-            Created studio: <b>{toCreate.name}</b>
-          </span>
-        ),
-      });
+      Toast.success(
+        <span>
+          Created studio: <b>{toCreate.name}</b>
+        </span>
+      );
     } catch (e) {
       Toast.error(e);
     }

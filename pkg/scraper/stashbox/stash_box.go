@@ -14,66 +14,80 @@ import (
 	"strings"
 
 	"github.com/Yamashou/gqlgenc/client"
+	"github.com/Yamashou/gqlgenc/graphqljson"
+	"github.com/gofrs/uuid/v5"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 
-	"github.com/Yamashou/gqlgenc/graphqljson"
-	"github.com/gofrs/uuid"
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scraper"
 	"github.com/stashapp/stash/pkg/scraper/stashbox/graphql"
+	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
-	"github.com/stashapp/stash/pkg/studio"
-	"github.com/stashapp/stash/pkg/tag"
 	"github.com/stashapp/stash/pkg/txn"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
 type SceneReader interface {
-	Find(ctx context.Context, id int) (*models.Scene, error)
+	models.SceneGetter
 	models.StashIDLoader
 	models.VideoFileLoader
 }
 
 type PerformerReader interface {
+	models.PerformerGetter
 	match.PerformerFinder
-	Find(ctx context.Context, id int) (*models.Performer, error)
-	FindBySceneID(ctx context.Context, sceneID int) ([]*models.Performer, error)
 	models.AliasLoader
 	models.StashIDLoader
+	FindBySceneID(ctx context.Context, sceneID int) ([]*models.Performer, error)
 	GetImage(ctx context.Context, performerID int) ([]byte, error)
 }
 
 type StudioReader interface {
+	models.StudioGetter
 	match.StudioFinder
-	studio.Finder
 	models.StashIDLoader
 }
+
 type TagFinder interface {
-	tag.Queryer
+	models.TagQueryer
 	FindBySceneID(ctx context.Context, sceneID int) ([]*models.Tag, error)
 }
 
 type Repository struct {
+	TxnManager models.TxnManager
+
 	Scene     SceneReader
 	Performer PerformerReader
 	Tag       TagFinder
 	Studio    StudioReader
 }
 
+func NewRepository(repo models.Repository) Repository {
+	return Repository{
+		TxnManager: repo.TxnManager,
+		Scene:      repo.Scene,
+		Performer:  repo.Performer,
+		Tag:        repo.Tag,
+		Studio:     repo.Studio,
+	}
+}
+
+func (r *Repository) WithReadTxn(ctx context.Context, fn txn.TxnFunc) error {
+	return txn.WithReadTxn(ctx, r.TxnManager, fn)
+}
+
 // Client represents the client interface to a stash-box server instance.
 type Client struct {
 	client     *graphql.Client
-	txnManager txn.Manager
 	repository Repository
 	box        models.StashBox
 }
 
 // NewClient returns a new instance of a stash-box client.
-func NewClient(box models.StashBox, txnManager txn.Manager, repo Repository) *Client {
+func NewClient(box models.StashBox, repo Repository) *Client {
 	authHeader := func(req *http.Request) {
 		req.Header.Set("ApiKey", box.APIKey)
 	}
@@ -84,7 +98,6 @@ func NewClient(box models.StashBox, txnManager txn.Manager, repo Repository) *Cl
 
 	return &Client{
 		client:     client,
-		txnManager: txnManager,
 		repository: repo,
 		box:        box,
 	}
@@ -131,8 +144,9 @@ func (c Client) FindStashBoxSceneByFingerprints(ctx context.Context, sceneID int
 func (c Client) FindStashBoxScenesByFingerprints(ctx context.Context, ids []int) ([][]*scraper.ScrapedScene, error) {
 	var fingerprints [][]*graphql.FingerprintQueryInput
 
-	if err := txn.WithReadTxn(ctx, c.txnManager, func(ctx context.Context) error {
-		qb := c.repository.Scene
+	r := c.repository
+	if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
+		qb := r.Scene
 
 		for _, sceneID := range ids {
 			scene, err := qb.Find(ctx, sceneID)
@@ -144,14 +158,14 @@ func (c Client) FindStashBoxScenesByFingerprints(ctx context.Context, ids []int)
 				return fmt.Errorf("scene with id %d not found", sceneID)
 			}
 
-			if err := scene.LoadFiles(ctx, c.repository.Scene); err != nil {
+			if err := scene.LoadFiles(ctx, r.Scene); err != nil {
 				return err
 			}
 
 			var sceneFPs []*graphql.FingerprintQueryInput
 
 			for _, f := range scene.Files.List() {
-				checksum := f.Fingerprints.GetString(file.FingerprintTypeMD5)
+				checksum := f.Fingerprints.GetString(models.FingerprintTypeMD5)
 				if checksum != "" {
 					sceneFPs = append(sceneFPs, &graphql.FingerprintQueryInput{
 						Hash:      checksum,
@@ -159,7 +173,7 @@ func (c Client) FindStashBoxScenesByFingerprints(ctx context.Context, ids []int)
 					})
 				}
 
-				oshash := f.Fingerprints.GetString(file.FingerprintTypeOshash)
+				oshash := f.Fingerprints.GetString(models.FingerprintTypeOshash)
 				if oshash != "" {
 					sceneFPs = append(sceneFPs, &graphql.FingerprintQueryInput{
 						Hash:      oshash,
@@ -167,7 +181,7 @@ func (c Client) FindStashBoxScenesByFingerprints(ctx context.Context, ids []int)
 					})
 				}
 
-				phash := f.Fingerprints.GetInt64(file.FingerprintTypePhash)
+				phash := f.Fingerprints.GetInt64(models.FingerprintTypePhash)
 				if phash != 0 {
 					phashStr := utils.PhashToString(phash)
 					sceneFPs = append(sceneFPs, &graphql.FingerprintQueryInput{
@@ -245,8 +259,9 @@ func (c Client) SubmitStashBoxFingerprints(ctx context.Context, sceneIDs []strin
 
 	var fingerprints []graphql.FingerprintSubmission
 
-	if err := txn.WithReadTxn(ctx, c.txnManager, func(ctx context.Context) error {
-		qb := c.repository.Scene
+	r := c.repository
+	if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
+		qb := r.Scene
 
 		for _, sceneID := range ids {
 			scene, err := qb.Find(ctx, sceneID)
@@ -279,7 +294,7 @@ func (c Client) SubmitStashBoxFingerprints(ctx context.Context, sceneIDs []strin
 					duration := f.Duration
 
 					if duration != 0 {
-						if checksum := f.Fingerprints.GetString(file.FingerprintTypeMD5); checksum != "" {
+						if checksum := f.Fingerprints.GetString(models.FingerprintTypeMD5); checksum != "" {
 							fingerprint := graphql.FingerprintInput{
 								Hash:      checksum,
 								Algorithm: graphql.FingerprintAlgorithmMd5,
@@ -291,7 +306,7 @@ func (c Client) SubmitStashBoxFingerprints(ctx context.Context, sceneIDs []strin
 							})
 						}
 
-						if oshash := f.Fingerprints.GetString(file.FingerprintTypeOshash); oshash != "" {
+						if oshash := f.Fingerprints.GetString(models.FingerprintTypeOshash); oshash != "" {
 							fingerprint := graphql.FingerprintInput{
 								Hash:      oshash,
 								Algorithm: graphql.FingerprintAlgorithmOshash,
@@ -303,7 +318,7 @@ func (c Client) SubmitStashBoxFingerprints(ctx context.Context, sceneIDs []strin
 							})
 						}
 
-						if phash := f.Fingerprints.GetInt64(file.FingerprintTypePhash); phash != 0 {
+						if phash := f.Fingerprints.GetInt64(models.FingerprintTypePhash); phash != 0 {
 							fingerprint := graphql.FingerprintInput{
 								Hash:      utils.PhashToString(phash),
 								Algorithm: graphql.FingerprintAlgorithmPhash,
@@ -384,9 +399,9 @@ func (c Client) FindStashBoxPerformersByNames(ctx context.Context, performerIDs 
 	}
 
 	var performers []*models.Performer
-
-	if err := txn.WithReadTxn(ctx, c.txnManager, func(ctx context.Context) error {
-		qb := c.repository.Performer
+	r := c.repository
+	if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
+		qb := r.Performer
 
 		for _, performerID := range ids {
 			performer, err := qb.Find(ctx, performerID)
@@ -419,8 +434,9 @@ func (c Client) FindStashBoxPerformersByPerformerNames(ctx context.Context, perf
 
 	var performers []*models.Performer
 
-	if err := txn.WithReadTxn(ctx, c.txnManager, func(ctx context.Context) error {
-		qb := c.repository.Performer
+	r := c.repository
+	if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
+		qb := r.Performer
 
 		for _, performerID := range ids {
 			performer, err := qb.Find(ctx, performerID)
@@ -654,6 +670,12 @@ func performerFragmentToScrapedPerformer(p graphql.PerformerFragment) *models.Sc
 	}
 
 	if len(p.Aliases) > 0 {
+		// #4437 - stash-box may return aliases that are equal to the performer name
+		// filter these out
+		p.Aliases = sliceutil.Filter(p.Aliases, func(s string) bool {
+			return !strings.EqualFold(s, p.Name)
+		})
+
 		alias := strings.Join(p.Aliases, ", ")
 		sp.Aliases = &alias
 	}
@@ -741,14 +763,15 @@ func (c Client) sceneFragmentToScrapedScene(ctx context.Context, s *graphql.Scen
 		ss.URL = &s.Urls[0].URL
 	}
 
-	if err := txn.WithReadTxn(ctx, c.txnManager, func(ctx context.Context) error {
-		pqb := c.repository.Performer
-		tqb := c.repository.Tag
+	r := c.repository
+	if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
+		pqb := r.Performer
+		tqb := r.Tag
 
 		if s.Studio != nil {
 			ss.Studio = studioFragmentToScrapedStudio(*s.Studio)
 
-			err := match.ScrapedStudio(ctx, c.repository.Studio, ss.Studio, &c.box.Endpoint)
+			err := match.ScrapedStudio(ctx, r.Studio, ss.Studio, &c.box.Endpoint)
 			if err != nil {
 				return err
 			}
@@ -763,7 +786,7 @@ func (c Client) sceneFragmentToScrapedScene(ctx context.Context, s *graphql.Scen
 				if parentStudio.FindStudio != nil {
 					ss.Studio.Parent = studioFragmentToScrapedStudio(*parentStudio.FindStudio)
 
-					err = match.ScrapedStudio(ctx, c.repository.Studio, ss.Studio.Parent, &c.box.Endpoint)
+					err = match.ScrapedStudio(ctx, r.Studio, ss.Studio.Parent, &c.box.Endpoint)
 					if err != nil {
 						return err
 					}
@@ -809,10 +832,15 @@ func (c Client) FindStashBoxPerformerByID(ctx context.Context, id string) (*mode
 		return nil, err
 	}
 
+	if performer.FindPerformer == nil {
+		return nil, nil
+	}
+
 	ret := performerFragmentToScrapedPerformer(*performer.FindPerformer)
 
-	if err := txn.WithReadTxn(ctx, c.txnManager, func(ctx context.Context) error {
-		err := match.ScrapedPerformer(ctx, c.repository.Performer, ret, &c.box.Endpoint)
+	r := c.repository
+	if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
+		err := match.ScrapedPerformer(ctx, r.Performer, ret, &c.box.Endpoint)
 		return err
 	}); err != nil {
 		return nil, err
@@ -838,8 +866,9 @@ func (c Client) FindStashBoxPerformerByName(ctx context.Context, name string) (*
 		return nil, nil
 	}
 
-	if err := txn.WithReadTxn(ctx, c.txnManager, func(ctx context.Context) error {
-		err := match.ScrapedPerformer(ctx, c.repository.Performer, ret, &c.box.Endpoint)
+	r := c.repository
+	if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
+		err := match.ScrapedPerformer(ctx, r.Performer, ret, &c.box.Endpoint)
 		return err
 	}); err != nil {
 		return nil, err
@@ -866,10 +895,11 @@ func (c Client) FindStashBoxStudio(ctx context.Context, query string) (*models.S
 
 	var ret *models.ScrapedStudio
 	if studio.FindStudio != nil {
-		if err := txn.WithReadTxn(ctx, c.txnManager, func(ctx context.Context) error {
+		r := c.repository
+		if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
 			ret = studioFragmentToScrapedStudio(*studio.FindStudio)
 
-			err = match.ScrapedStudio(ctx, c.repository.Studio, ret, &c.box.Endpoint)
+			err = match.ScrapedStudio(ctx, r.Studio, ret, &c.box.Endpoint)
 			if err != nil {
 				return err
 			}
@@ -883,7 +913,7 @@ func (c Client) FindStashBoxStudio(ctx context.Context, query string) (*models.S
 				if parentStudio.FindStudio != nil {
 					ret.Parent = studioFragmentToScrapedStudio(*parentStudio.FindStudio)
 
-					err = match.ScrapedStudio(ctx, c.repository.Studio, ret.Parent, &c.box.Endpoint)
+					err = match.ScrapedStudio(ctx, r.Studio, ret.Parent, &c.box.Endpoint)
 					if err != nil {
 						return err
 					}
@@ -979,7 +1009,7 @@ func (c Client) SubmitSceneDraft(ctx context.Context, scene *models.Scene, endpo
 		duration := f.Duration
 
 		if duration != 0 {
-			if oshash := f.Fingerprints.GetString(file.FingerprintTypeOshash); oshash != "" {
+			if oshash := f.Fingerprints.GetString(models.FingerprintTypeOshash); oshash != "" {
 				fingerprint := graphql.FingerprintInput{
 					Hash:      oshash,
 					Algorithm: graphql.FingerprintAlgorithmOshash,
@@ -988,7 +1018,7 @@ func (c Client) SubmitSceneDraft(ctx context.Context, scene *models.Scene, endpo
 				fingerprints = appendFingerprintUnique(fingerprints, &fingerprint)
 			}
 
-			if checksum := f.Fingerprints.GetString(file.FingerprintTypeMD5); checksum != "" {
+			if checksum := f.Fingerprints.GetString(models.FingerprintTypeMD5); checksum != "" {
 				fingerprint := graphql.FingerprintInput{
 					Hash:      checksum,
 					Algorithm: graphql.FingerprintAlgorithmMd5,
@@ -997,7 +1027,7 @@ func (c Client) SubmitSceneDraft(ctx context.Context, scene *models.Scene, endpo
 				fingerprints = appendFingerprintUnique(fingerprints, &fingerprint)
 			}
 
-			if phash := f.Fingerprints.GetInt64(file.FingerprintTypePhash); phash != 0 {
+			if phash := f.Fingerprints.GetInt64(models.FingerprintTypePhash); phash != 0 {
 				fingerprint := graphql.FingerprintInput{
 					Hash:      utils.PhashToString(phash),
 					Algorithm: graphql.FingerprintAlgorithmPhash,

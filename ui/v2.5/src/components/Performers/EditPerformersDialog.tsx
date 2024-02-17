@@ -25,7 +25,8 @@ import {
 import { IndeterminateCheckbox } from "../Shared/IndeterminateCheckbox";
 import { BulkUpdateTextInput } from "../Shared/BulkUpdateTextInput";
 import { faPencilAlt } from "@fortawesome/free-solid-svg-icons";
-import FormUtils from "src/utils/form";
+import * as FormUtils from "src/utils/form";
+import { CountrySelect } from "../Shared/CountrySelect";
 
 interface IListOperationProps {
   selected: GQL.SlimPerformerDataFragment[];
@@ -46,7 +47,7 @@ const performerFields = [
   "country",
   "ethnicity",
   "eye_color",
-  "height",
+  // "height",
   // "weight",
   "measurements",
   "fake_tits",
@@ -69,7 +70,8 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
   const [existingTagIds, setExistingTagIds] = useState<string[]>();
   const [aggregateState, setAggregateState] =
     useState<GQL.BulkPerformerUpdateInput>({});
-  // weight needs conversion to/from number
+  // height and weight needs conversion to/from number
+  const [height, setHeight] = useState<string | undefined>();
   const [weight, setWeight] = useState<string | undefined>();
   const [penis_length, setPenisLength] = useState<string | undefined>();
   const [updateInput, setUpdateInput] = useState<GQL.BulkPerformerUpdateInput>(
@@ -114,6 +116,9 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
       aggregateState.circumcised
     );
 
+    if (height !== undefined) {
+      performerInput.height_cm = parseFloat(height);
+    }
     if (weight !== undefined) {
       performerInput.weight = parseFloat(weight);
     }
@@ -129,16 +134,16 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
     setIsUpdating(true);
     try {
       await updatePerformers();
-      Toast.success({
-        content: intl.formatMessage(
+      Toast.success(
+        intl.formatMessage(
           { id: "toast.updated_entity" },
           {
             entity: intl
               .formatMessage({ id: "performers" })
               .toLocaleLowerCase(),
           }
-        ),
-      });
+        )
+      );
       props.onClose(true);
     } catch (e) {
       Toast.error(e);
@@ -151,6 +156,7 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
 
     const state = props.selected;
     let updateTagIds: string[] = [];
+    let updateHeight: string | undefined | null = undefined;
     let updateWeight: string | undefined | null = undefined;
     let updatePenisLength: string | undefined | null = undefined;
     let first = true;
@@ -162,6 +168,12 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
 
       updateTagIds =
         getAggregateState(updateTagIds, performerTagIDs, first) ?? [];
+
+      const thisHeight =
+        performer.height_cm !== undefined && performer.height_cm !== null
+          ? performer.height_cm.toString()
+          : performer.height_cm;
+      updateHeight = getAggregateState(updateHeight, thisHeight, first);
 
       const thisWeight =
         performer.weight !== undefined && performer.weight !== null
@@ -183,6 +195,7 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
     });
 
     setExistingTagIds(updateTagIds);
+    setHeight(updateHeight);
     setWeight(updateWeight);
     setAggregateState(updateState);
     setUpdateInput(updateState);
@@ -210,6 +223,7 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
   function render() {
     return (
       <ModalComponent
+        dialogClassName="edit-performers-dialog"
         show
         icon={faPencilAlt}
         header={intl.formatMessage(
@@ -233,8 +247,10 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
           })}
           <Col xs={9}>
             <RatingSystem
-              value={updateInput.rating100 ?? undefined}
-              onSetRating={(value) => setUpdateField({ rating100: value })}
+              value={updateInput.rating100}
+              onSetRating={(value) =>
+                setUpdateField({ rating100: value ?? undefined })
+              }
               disabled={isUpdating}
             />
           </Col>
@@ -279,9 +295,18 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
           {renderTextField("death_date", updateInput.death_date, (v) =>
             setUpdateField({ death_date: v })
           )}
-          {renderTextField("country", updateInput.country, (v) =>
-            setUpdateField({ country: v })
-          )}
+
+          <Form.Group>
+            <Form.Label>
+              <FormattedMessage id="country" />
+            </Form.Label>
+            <CountrySelect
+              value={updateInput.country ?? ""}
+              onChange={(v) => setUpdateField({ country: v })}
+              showFlag
+            />
+          </Form.Group>
+
           {renderTextField("ethnicity", updateInput.ethnicity, (v) =>
             setUpdateField({ ethnicity: v })
           )}
@@ -291,9 +316,7 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
           {renderTextField("eye_color", updateInput.eye_color, (v) =>
             setUpdateField({ eye_color: v })
           )}
-          {renderTextField("height", updateInput.height, (v) =>
-            setUpdateField({ height: v })
-          )}
+          {renderTextField("height", height, (v) => setHeight(v))}
           {renderTextField("weight", weight, (v) => setWeight(v))}
           {renderTextField("measurements", updateInput.measurements, (v) =>
             setUpdateField({ measurements: v })

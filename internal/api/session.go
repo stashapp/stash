@@ -14,12 +14,13 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/session"
 	"github.com/stashapp/stash/pkg/utils"
+	"github.com/stashapp/stash/ui"
 )
 
 const returnURLParam = "returnURL"
 
-func getLoginPage(loginUIBox fs.FS) []byte {
-	data, err := fs.ReadFile(loginUIBox, "login.html")
+func getLoginPage() []byte {
+	data, err := fs.ReadFile(ui.LoginUIBox, "login.html")
 	if err != nil {
 		panic(err)
 	}
@@ -31,8 +32,8 @@ type loginTemplateData struct {
 	Error string
 }
 
-func serveLoginPage(loginUIBox fs.FS, w http.ResponseWriter, r *http.Request, returnURL string, loginError string) {
-	loginPage := string(getLoginPage(loginUIBox))
+func serveLoginPage(w http.ResponseWriter, r *http.Request, returnURL string, loginError string) {
+	loginPage := string(getLoginPage())
 	prefix := getProxyPrefix(r)
 	loginPage = strings.ReplaceAll(loginPage, "/%BASE_URL%", prefix)
 
@@ -50,12 +51,14 @@ func serveLoginPage(loginUIBox fs.FS, w http.ResponseWriter, r *http.Request, re
 	}
 
 	w.Header().Set("Content-Type", "text/html")
-	setPageSecurityHeaders(w, r)
+
+	// we shouldn't need to set plugin exceptions here
+	setPageSecurityHeaders(w, r, nil)
 
 	utils.ServeStaticContent(w, r, buffer.Bytes())
 }
 
-func handleLogin(loginUIBox fs.FS) http.HandlerFunc {
+func handleLogin() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		returnURL := r.URL.Query().Get(returnURLParam)
 
@@ -69,11 +72,11 @@ func handleLogin(loginUIBox fs.FS) http.HandlerFunc {
 			return
 		}
 
-		serveLoginPage(loginUIBox, w, r, returnURL, "")
+		serveLoginPage(w, r, returnURL, "")
 	}
 }
 
-func handleLoginPost(loginUIBox fs.FS) http.HandlerFunc {
+func handleLoginPost() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		url := r.FormValue(returnURLParam)
 		if url == "" {
@@ -90,7 +93,7 @@ func handleLoginPost(loginUIBox fs.FS) http.HandlerFunc {
 
 		if errors.As(err, &invalidCredentialsError) {
 			// serve login page with an error
-			serveLoginPage(loginUIBox, w, r, url, "Username or password is invalid")
+			serveLoginPage(w, r, url, "Username or password is invalid")
 			return
 		}
 

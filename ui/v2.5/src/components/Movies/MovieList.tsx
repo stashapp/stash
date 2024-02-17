@@ -18,7 +18,7 @@ import {
 } from "../List/ItemList";
 import { ExportDialog } from "../Shared/ExportDialog";
 import { DeleteEntityDialog } from "../Shared/DeleteEntityDialog";
-import { MovieCard } from "./MovieCard";
+import { MovieCardGrid } from "./MovieCardGrid";
 import { EditMoviesDialog } from "./EditMoviesDialog";
 
 const MovieItemList = makeItemList({
@@ -130,19 +130,11 @@ export const MovieList: React.FC<IMovieList> = ({ filterHook, alterQuery }) => {
 
       if (filter.displayMode === DisplayMode.Grid) {
         return (
-          <div className="row justify-content-center">
-            {result.data.findMovies.movies.map((p) => (
-              <MovieCard
-                key={p.id}
-                movie={p}
-                selecting={selectedIds.size > 0}
-                selected={selectedIds.has(p.id)}
-                onSelectedChanged={(selected: boolean, shiftKey: boolean) =>
-                  onSelectChange(p.id, selected, shiftKey)
-                }
-              />
-            ))}
-          </div>
+          <MovieCardGrid
+            movies={result.data.findMovies.movies}
+            selectedIds={selectedIds}
+            onSelectChange={onSelectChange}
+          />
         );
       }
       if (filter.displayMode === DisplayMode.List) {

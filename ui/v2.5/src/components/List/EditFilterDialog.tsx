@@ -14,7 +14,6 @@ import {
   Criterion,
   CriterionOption,
 } from "src/models/list-filter/criteria/criterion";
-import { makeCriteria } from "src/models/list-filter/criteria/factory";
 import { FormattedMessage, useIntl } from "react-intl";
 import { ConfigurationContext } from "src/hooks/Config";
 import { ListFilterModel } from "src/models/list-filter/filter";
@@ -32,7 +31,6 @@ import { useCompare, usePrevious } from "src/hooks/state";
 import { CriterionType } from "src/models/list-filter/types";
 import { useToast } from "src/hooks/Toast";
 import { useConfigureUI } from "src/core/StashService";
-import { IUIConfig } from "src/core/config";
 import { FilterMode } from "src/core/generated-graphql";
 import { useFocusOnce } from "src/utils/focus";
 import Mousetrap from "mousetrap";
@@ -243,17 +241,11 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
   }, [currentFilter.mode]);
 
   const criterionOptions = useMemo(() => {
-    const filteredOptions = filterOptions.criterionOptions.filter((o) => {
-      return o.type !== "none";
-    });
-
-    filteredOptions.sort((a, b) => {
+    return [...filterOptions.criterionOptions].sort((a, b) => {
       return intl
         .formatMessage({ id: a.messageID })
         .localeCompare(intl.formatMessage({ id: b.messageID }));
     });
-
-    return filteredOptions;
   }, [intl, filterOptions.criterionOptions]);
 
   const optionSelected = useCallback(
@@ -270,14 +262,14 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
       if (existing) {
         setCriterion(existing);
       } else {
-        const newCriterion = makeCriteria(configuration, option.type);
+        const newCriterion = filter.makeCriterion(option.type);
         setCriterion(newCriterion);
       }
     },
-    [criteria, configuration]
+    [filter, criteria]
   );
 
-  const ui = (configuration?.ui ?? {}) as IUIConfig;
+  const ui = configuration?.ui ?? {};
   const [saveUI] = useConfigureUI();
 
   const filteredOptions = useMemo(() => {

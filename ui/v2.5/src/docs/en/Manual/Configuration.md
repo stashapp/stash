@@ -81,7 +81,7 @@ These instructions are for existing users whose systems will be defaulted to use
 
 This setting controls how many sub-tasks will be run in parallel during scanning and generation tasks. (See Tasks)
 
-Auto-detection can be enabled by setting this to zero. This will calculate the number of parallel tasks to be cpu_cores/4 + 1.
+Auto-detection can be enabled by setting this to zero. This will calculate the number of parallel tasks to be logical cores/4 + 1.
 
 This setting can be used to increase/decrease overall CPU utilisation in two scenarios:
 1) High performance 4+ core cpus.
@@ -147,6 +147,7 @@ These options are typically not exposed in the UI and must be changed manually i
 |-------|---------|
 | `custom_served_folders` | A map of URLs to file system folders. See below. |
 | `custom_ui_location` | The file system folder where the UI files will be served from, instead of using the embedded UI. Empty to disable. Stash must be restarted to take effect. |
+| `developer_options.extra_blob_paths` | A list of alternative blob paths. These paths will be read for blob files. Blobs will not be written or deleted from these paths. Intended for developer use only. |
 | `max_upload_size` | Maximum file upload size for import files. Defaults to 1GB. |
 | `theme_color` | Sets the `theme-color` property in the UI. |
 | `gallery_cover_regex` | The regex responsible for selecting images as gallery covers |

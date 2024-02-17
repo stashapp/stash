@@ -33,7 +33,7 @@ const (
 	dbConnTimeout = 30
 )
 
-var appSchemaVersion uint = 48
+var appSchemaVersion uint = 54
 
 //go:embed migrations/*.sql
 var migrationsBox embed.FS
@@ -74,10 +74,10 @@ type Database struct {
 	Scene          *SceneStore
 	SceneMarker    *SceneMarkerStore
 	Performer      *PerformerStore
+	SavedFilter    *SavedFilterStore
 	Studio         *StudioStore
 	Tag            *TagStore
 	Movie          *MovieStore
-	SavedFilter    *SavedFilterStore
 
 	db     *sqlx.DB
 	dbPath string
@@ -145,7 +145,7 @@ func (db *Database) Open(dbPath string) error {
 	if databaseSchemaVersion == 0 {
 		// new database, just run the migrations
 		if err := db.RunMigrations(); err != nil {
-			return fmt.Errorf("error running initial schema migrations: %v", err)
+			return fmt.Errorf("error running initial schema migrations: %w", err)
 		}
 	} else {
 		if databaseSchemaVersion > appSchemaVersion {
@@ -241,12 +241,12 @@ func (db *Database) Remove() error {
 	err := db.Close()
 
 	if err != nil {
-		return errors.New("Error closing database: " + err.Error())
+		return fmt.Errorf("error closing database: %w", err)
 	}
 
 	err = os.Remove(databasePath)
 	if err != nil {
-		return errors.New("Error removing database: " + err.Error())
+		return fmt.Errorf("error removing database: %w", err)
 	}
 
 	// remove the -shm, -wal files ( if they exist )
@@ -255,7 +255,7 @@ func (db *Database) Remove() error {
 		if exists, _ := fsutil.FileExists(wf); exists {
 			err = os.Remove(wf)
 			if err != nil {
-				return errors.New("Error removing database: " + err.Error())
+				return fmt.Errorf("error removing database: %w", err)
 			}
 		}
 	}
@@ -278,21 +278,20 @@ func (db *Database) Reset() error {
 
 // Backup the database. If db is nil, then uses the existing database
 // connection.
-func (db *Database) Backup(backupPath string) error {
+func (db *Database) Backup(backupPath string) (err error) {
 	thisDB := db.db
 	if thisDB == nil {
-		var err error
 		thisDB, err = sqlx.Connect(sqlite3Driver, "file:"+db.dbPath+"?_fk=true")
 		if err != nil {
-			return fmt.Errorf("open database %s failed: %v", db.dbPath, err)
+			return fmt.Errorf("open database %s failed: %w", db.dbPath, err)
 		}
 		defer thisDB.Close()
 	}
 
 	logger.Infof("Backing up database into: %s", backupPath)
-	_, err := thisDB.Exec(`VACUUM INTO "` + backupPath + `"`)
+	_, err = thisDB.Exec(`VACUUM INTO "` + backupPath + `"`)
 	if err != nil {
-		return fmt.Errorf("vacuum failed: %v", err)
+		return fmt.Errorf("vacuum failed: %w", err)
 	}
 
 	return nil

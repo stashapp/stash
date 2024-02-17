@@ -1,22 +1,19 @@
 type Image {
   id: ID!
-  checksum: String @deprecated(reason: "Use files.fingerprints")
   title: String
-  # rating expressed as 1-5
-  rating: Int @deprecated(reason: "Use 1-100 range with rating100")
+  code: String
   # rating expressed as 1-100
   rating100: Int
-  url: String
+  url: String @deprecated(reason: "Use urls")
+  urls: [String!]!
   date: String
+  details: String
+  photographer: String
   o_counter: Int
   organized: Boolean!
-  path: String! @deprecated(reason: "Use files.path")
   created_at: Time!
   updated_at: Time!
 
-  file_mod_time: Time @deprecated(reason: "Use files.mod_time")
-
-  file: ImageFileType! @deprecated(reason: "Use visual_files")
   files: [ImageFile!]! @deprecated(reason: "Use visual_files")
   visual_files: [VisualFile!]!
   paths: ImagePathsType! # Resolver
@@ -43,13 +40,15 @@ input ImageUpdateInput {
   clientMutationId: String
   id: ID!
   title: String
-  # rating expressed as 1-5
-  rating: Int @deprecated(reason: "Use 1-100 range with rating100")
+  code: String
   # rating expressed as 1-100
   rating100: Int
   organized: Boolean
-  url: String
+  url: String @deprecated(reason: "Use urls")
+  urls: [String!]
   date: String
+  details: String
+  photographer: String
 
   studio_id: ID
   performer_ids: [ID!]
@@ -63,13 +62,15 @@ input BulkImageUpdateInput {
   clientMutationId: String
   ids: [ID!]
   title: String
-  # rating expressed as 1-5
-  rating: Int @deprecated(reason: "Use 1-100 range with rating100")
+  code: String
   # rating expressed as 1-100
   rating100: Int
   organized: Boolean
-  url: String
+  url: String @deprecated(reason: "Use urls")
+  urls: BulkUpdateStrings
   date: String
+  details: String
+  photographer: String
 
   studio_id: ID
   performer_ids: BulkUpdateIds

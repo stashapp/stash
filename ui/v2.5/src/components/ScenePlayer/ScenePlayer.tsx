@@ -8,7 +8,6 @@ import React, {
   useState,
 } from "react";
 import videojs, { VideoJsPlayer, VideoJsPlayerOptions } from "video.js";
-import abLoopPlugin from "videojs-abloop";
 import useScript from "src/hooks/useScript";
 import "videojs-contrib-dash";
 import "videojs-mobile-ui";
@@ -24,12 +23,6 @@ import "./big-buttons";
 import "./track-activity";
 import "./vrmode";
 import cx from "classnames";
-// @ts-ignore
-import airplay from "@silvermine/videojs-airplay";
-// @ts-ignore
-import chromecast from "@silvermine/videojs-chromecast";
-airplay(videojs);
-chromecast(videojs);
 import {
   useSceneSaveActivity,
   useSceneIncrementPlayCount,
@@ -45,7 +38,18 @@ import {
 import { SceneInteractiveStatus } from "src/hooks/Interactive/status";
 import { languageMap } from "src/utils/caption";
 import { VIDEO_PLAYER_ID } from "./util";
-import { IUIConfig } from "src/core/config";
+
+// @ts-ignore
+import airplay from "@silvermine/videojs-airplay";
+// @ts-ignore
+import chromecast from "@silvermine/videojs-chromecast";
+import abLoopPlugin from "videojs-abloop";
+import ScreenUtils from "src/utils/screen";
+
+// register videojs plugins
+airplay(videojs);
+chromecast(videojs);
+abLoopPlugin(window, videojs);
 
 function handleHotkeys(player: VideoJsPlayer, event: videojs.KeyboardEvent) {
   function seekStep(step: number) {
@@ -218,7 +222,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 }) => {
   const { configuration } = useContext(ConfigurationContext);
   const interfaceConfig = configuration?.interface;
-  const uiConfig = configuration?.ui as IUIConfig | undefined;
+  const uiConfig = configuration?.ui;
   const videoRef = useRef<HTMLDivElement>(null);
   const [_player, setPlayer] = useState<VideoJsPlayer>();
   const sceneId = useRef<string>();
@@ -280,7 +284,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     }
 
     const onResize = () => {
-      const show = window.innerHeight >= 450 && window.innerWidth >= 576;
+      const show = window.innerHeight >= 450 && !ScreenUtils.isMobile();
       setShowScrubber(show);
     };
     onResize();
@@ -377,8 +381,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     videoEl.setAttribute("crossorigin", "anonymous");
     videoEl.classList.add("vjs-big-play-centered");
     videoRef.current!.appendChild(videoEl);
-
-    abLoopPlugin(window, videojs);
 
     const vjs = videojs(videoEl, options);
 
@@ -489,7 +491,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     if (!player) return;
 
     function onplay(this: VideoJsPlayer) {
-      this.persistVolume().enabled = true;
       if (scene.interactive && interactiveReady.current) {
         interactiveClient.play(this.currentTime());
       }
@@ -552,7 +553,9 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         enterOnRotate: true,
         exitOnRotate: true,
         lockOnRotate: true,
-        lockToLandscapeOnEnter: isLandscape,
+        lockToLandscapeOnEnter: uiConfig?.disableMobileMediaAutoRotateEnabled
+          ? false
+          : isLandscape,
       },
       touchControls: {
         disabled: true,
@@ -678,6 +681,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     autoplay,
     interfaceConfig?.autostartVideo,
     uiConfig?.alwaysStartFromBeginning,
+    uiConfig?.disableMobileMediaAutoRotateEnabled,
     _initialTimestamp,
   ]);
 
@@ -765,13 +769,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       return;
     }
 
-    player.play()?.catch(() => {
-      // Browser probably blocking non-muted autoplay, so mute and try again
-      player.persistVolume().enabled = false;
-      player.muted(true);
-
-      player.play();
-    });
+    player.play();
     auto.current = false;
   }, [getPlayer, scene, ready, interactiveClient, currentScript]);
 

@@ -2,6 +2,9 @@
 # Go
 ####
 
+# Vendored dependencies
+vendor
+
 # Binaries for programs and plugins
 *.exe
 *.exe~
@@ -17,11 +20,6 @@
 
 # GraphQL generated output
 internal/api/generated_*.go
-
-####
-# Jetbrains
-####
-
 
 ####
 # Visual Studio
@@ -49,9 +47,6 @@ internal/api/generated_*.go
 .idea/**/uiDesigner.xml
 .idea/**/dbnavigator.xml
 
-# Goland Junk
-pkg/pkg
-
 ####
 # Random
 ####
@@ -61,6 +56,7 @@ node_modules
 *.db
 
 /stash
+/Stash.app
 /phasher
 dist
 .DS_Store

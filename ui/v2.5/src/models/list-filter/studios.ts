@@ -3,10 +3,10 @@ import {
   createMandatoryNumberCriterionOption,
   createMandatoryStringCriterionOption,
   createStringCriterionOption,
-  NullNumberCriterionOption,
   createMandatoryTimestampCriterionOption,
 } from "./criteria/criterion";
 import { StudioIsMissingCriterionOption } from "./criteria/is-missing";
+import { RatingCriterionOption } from "./criteria/rating";
 import { StashIDCriterionOption } from "./criteria/stash-ids";
 import { ParentStudiosCriterionOption } from "./criteria/studios";
 import { ListFilterOptions } from "./filter-options";
@@ -28,6 +28,10 @@ const sortByOptions = ["name", "random", "rating"]
       messageID: "scene_count",
       value: "scenes_count",
     },
+    {
+      messageID: "subsidiary_studio_count",
+      value: "child_count",
+    },
   ]);
 
 const displayModeOptions = [DisplayMode.Grid, DisplayMode.Tagger];
@@ -36,7 +40,7 @@ const criterionOptions = [
   createStringCriterionOption("details"),
   ParentStudiosCriterionOption,
   StudioIsMissingCriterionOption,
-  new NullNumberCriterionOption("rating", "rating100"),
+  RatingCriterionOption,
   createBooleanCriterionOption("ignore_auto_tag"),
   createMandatoryNumberCriterionOption("scene_count"),
   createMandatoryNumberCriterionOption("image_count"),
@@ -44,6 +48,10 @@ const criterionOptions = [
   createStringCriterionOption("url"),
   StashIDCriterionOption,
   createStringCriterionOption("aliases"),
+  createMandatoryNumberCriterionOption(
+    "child_count",
+    "subsidiary_studio_count"
+  ),
   createMandatoryTimestampCriterionOption("created_at"),
   createMandatoryTimestampCriterionOption("updated_at"),
 ];

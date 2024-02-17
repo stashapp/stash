@@ -11,9 +11,8 @@ import (
 	"github.com/doug-martin/goqu/v9"
 	"github.com/doug-martin/goqu/v9/exp"
 	"github.com/jmoiron/sqlx"
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sliceutil/intslice"
+	"github.com/stashapp/stash/pkg/sliceutil"
 	"gopkg.in/guregu/null.v4"
 	"gopkg.in/guregu/null.v4/zero"
 )
@@ -27,14 +26,17 @@ const (
 	galleriesImagesTable     = "galleries_images"
 	galleriesScenesTable     = "scenes_galleries"
 	galleryIDColumn          = "gallery_id"
+	galleriesURLsTable       = "gallery_urls"
+	galleriesURLColumn       = "url"
 )
 
 type galleryRow struct {
-	ID      int         `db:"id" goqu:"skipinsert"`
-	Title   zero.String `db:"title"`
-	URL     zero.String `db:"url"`
-	Date    NullDate    `db:"date"`
-	Details zero.String `db:"details"`
+	ID           int         `db:"id" goqu:"skipinsert"`
+	Title        zero.String `db:"title"`
+	Code         zero.String `db:"code"`
+	Date         NullDate    `db:"date"`
+	Details      zero.String `db:"details"`
+	Photographer zero.String `db:"photographer"`
 	// expressed as 1-100
 	Rating    null.Int  `db:"rating"`
 	Organized bool      `db:"organized"`
@@ -47,9 +49,10 @@ type galleryRow struct {
 func (r *galleryRow) fromGallery(o models.Gallery) {
 	r.ID = o.ID
 	r.Title = zero.StringFrom(o.Title)
-	r.URL = zero.StringFrom(o.URL)
+	r.Code = zero.StringFrom(o.Code)
 	r.Date = NullDateFromDatePtr(o.Date)
 	r.Details = zero.StringFrom(o.Details)
+	r.Photographer = zero.StringFrom(o.Photographer)
 	r.Rating = intFromPtr(o.Rating)
 	r.Organized = o.Organized
 	r.StudioID = intFromPtr(o.StudioID)
@@ -71,9 +74,10 @@ func (r *galleryQueryRow) resolve() *models.Gallery {
 	ret := &models.Gallery{
 		ID:            r.ID,
 		Title:         r.Title.String,
-		URL:           r.URL.String,
+		Code:          r.Code.String,
 		Date:          r.Date.DatePtr(),
 		Details:       r.Details.String,
+		Photographer:  r.Photographer.String,
 		Rating:        nullIntPtr(r.Rating),
 		Organized:     r.Organized,
 		StudioID:      nullIntPtr(r.StudioID),
@@ -98,9 +102,10 @@ type galleryRowRecord struct {
 
 func (r *galleryRowRecord) fromPartial(o models.GalleryPartial) {
 	r.setNullString("title", o.Title)
-	r.setNullString("url", o.URL)
+	r.setNullString("code", o.Code)
 	r.setNullDate("date", o.Date)
 	r.setNullString("details", o.Details)
+	r.setNullString("photographer", o.Photographer)
 	r.setNullInt("rating", o.Rating)
 	r.setBool("organized", o.Organized)
 	r.setNullInt("studio_id", o.StudioID)
@@ -163,7 +168,7 @@ func (qb *GalleryStore) selectDataset() *goqu.SelectDataset {
 	)
 }
 
-func (qb *GalleryStore) Create(ctx context.Context, newObject *models.Gallery, fileIDs []file.ID) error {
+func (qb *GalleryStore) Create(ctx context.Context, newObject *models.Gallery, fileIDs []models.FileID) error {
 	var r galleryRow
 	r.fromGallery(*newObject)
 
@@ -179,6 +184,12 @@ func (qb *GalleryStore) Create(ctx context.Context, newObject *models.Gallery, f
 		}
 	}
 
+	if newObject.URLs.Loaded() {
+		const startPos = 0
+		if err := galleriesURLsTableMgr.insertJoins(ctx, id, startPos, newObject.URLs.List()); err != nil {
+			return err
+		}
+	}
 	if newObject.PerformerIDs.Loaded() {
 		if err := galleriesPerformersTableMgr.insertJoins(ctx, id, newObject.PerformerIDs.List()); err != nil {
 			return err
@@ -213,6 +224,11 @@ func (qb *GalleryStore) Update(ctx context.Context, updatedObject *models.Galler
 		return err
 	}
 
+	if updatedObject.URLs.Loaded() {
+		if err := galleriesURLsTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.URLs.List()); err != nil {
+			return err
+		}
+	}
 	if updatedObject.PerformerIDs.Loaded() {
 		if err := galleriesPerformersTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.PerformerIDs.List()); err != nil {
 			return err
@@ -230,7 +246,7 @@ func (qb *GalleryStore) Update(ctx context.Context, updatedObject *models.Galler
 	}
 
 	if updatedObject.Files.Loaded() {
-		fileIDs := make([]file.ID, len(updatedObject.Files.List()))
+		fileIDs := make([]models.FileID, len(updatedObject.Files.List()))
 		for i, f := range updatedObject.Files.List() {
 			fileIDs[i] = f.Base().ID
 		}
@@ -258,6 +274,11 @@ func (qb *GalleryStore) UpdatePartial(ctx context.Context, id int, partial model
 		}
 	}
 
+	if partial.URLs != nil {
+		if err := galleriesURLsTableMgr.modifyJoins(ctx, id, partial.URLs.Values, partial.URLs.Mode); err != nil {
+			return nil, err
+		}
+	}
 	if partial.PerformerIDs != nil {
 		if err := galleriesPerformersTableMgr.modifyJoins(ctx, id, partial.PerformerIDs.IDs, partial.PerformerIDs.Mode); err != nil {
 			return nil, err
@@ -287,7 +308,7 @@ func (qb *GalleryStore) Destroy(ctx context.Context, id int) error {
 	return qb.tableMgr.destroyExisting(ctx, []int{id})
 }
 
-func (qb *GalleryStore) GetFiles(ctx context.Context, id int) ([]file.File, error) {
+func (qb *GalleryStore) GetFiles(ctx context.Context, id int) ([]models.File, error) {
 	fileIDs, err := qb.filesRepository().get(ctx, id)
 	if err != nil {
 		return nil, err
@@ -299,13 +320,13 @@ func (qb *GalleryStore) GetFiles(ctx context.Context, id int) ([]file.File, erro
 		return nil, err
 	}
 
-	ret := make([]file.File, len(files))
+	ret := make([]models.File, len(files))
 	copy(ret, files)
 
 	return ret, nil
 }
 
-func (qb *GalleryStore) GetManyFileIDs(ctx context.Context, ids []int) ([][]file.ID, error) {
+func (qb *GalleryStore) GetManyFileIDs(ctx context.Context, ids []int) ([][]models.FileID, error) {
 	const primaryOnly = false
 	return qb.filesRepository().getMany(ctx, ids, primaryOnly)
 }
@@ -330,7 +351,7 @@ func (qb *GalleryStore) FindMany(ctx context.Context, ids []int) ([]*models.Gall
 		}
 
 		for _, s := range unsorted {
-			i := intslice.IntIndex(ids, s.ID)
+			i := sliceutil.Index(ids, s.ID)
 			galleries[i] = s
 		}
 
@@ -412,7 +433,7 @@ func (qb *GalleryStore) getMany(ctx context.Context, q *goqu.SelectDataset) ([]*
 	return ret, nil
 }
 
-func (qb *GalleryStore) FindByFileID(ctx context.Context, fileID file.ID) ([]*models.Gallery, error) {
+func (qb *GalleryStore) FindByFileID(ctx context.Context, fileID models.FileID) ([]*models.Gallery, error) {
 	sq := dialect.From(galleriesFilesJoinTable).Select(galleriesFilesJoinTable.Col(galleryIDColumn)).Where(
 		galleriesFilesJoinTable.Col(fileIDColumn).Eq(fileID),
 	)
@@ -425,14 +446,14 @@ func (qb *GalleryStore) FindByFileID(ctx context.Context, fileID file.ID) ([]*mo
 	return ret, nil
 }
 
-func (qb *GalleryStore) CountByFileID(ctx context.Context, fileID file.ID) (int, error) {
+func (qb *GalleryStore) CountByFileID(ctx context.Context, fileID models.FileID) (int, error) {
 	joinTable := galleriesFilesJoinTable
 
 	q := dialect.Select(goqu.COUNT("*")).From(joinTable).Where(joinTable.Col(fileIDColumn).Eq(fileID))
 	return count(ctx, q)
 }
 
-func (qb *GalleryStore) FindByFingerprints(ctx context.Context, fp []file.Fingerprint) ([]*models.Gallery, error) {
+func (qb *GalleryStore) FindByFingerprints(ctx context.Context, fp []models.Fingerprint) ([]*models.Gallery, error) {
 	fingerprintTable := fingerprintTableMgr.table
 
 	var ex []exp.Expression
@@ -460,20 +481,20 @@ func (qb *GalleryStore) FindByFingerprints(ctx context.Context, fp []file.Finger
 }
 
 func (qb *GalleryStore) FindByChecksum(ctx context.Context, checksum string) ([]*models.Gallery, error) {
-	return qb.FindByFingerprints(ctx, []file.Fingerprint{
+	return qb.FindByFingerprints(ctx, []models.Fingerprint{
 		{
-			Type:        file.FingerprintTypeMD5,
+			Type:        models.FingerprintTypeMD5,
 			Fingerprint: checksum,
 		},
 	})
 }
 
 func (qb *GalleryStore) FindByChecksums(ctx context.Context, checksums []string) ([]*models.Gallery, error) {
-	fingerprints := make([]file.Fingerprint, len(checksums))
+	fingerprints := make([]models.Fingerprint, len(checksums))
 
 	for i, c := range checksums {
-		fingerprints[i] = file.Fingerprint{
-			Type:        file.FingerprintTypeMD5,
+		fingerprints[i] = models.Fingerprint{
+			Type:        models.FingerprintTypeMD5,
 			Fingerprint: c,
 		}
 	}
@@ -519,7 +540,7 @@ func (qb *GalleryStore) FindByPath(ctx context.Context, p string) ([]*models.Gal
 	return ret, nil
 }
 
-func (qb *GalleryStore) FindByFolderID(ctx context.Context, folderID file.FolderID) ([]*models.Gallery, error) {
+func (qb *GalleryStore) FindByFolderID(ctx context.Context, folderID models.FolderID) ([]*models.Gallery, error) {
 	table := qb.table()
 
 	sq := dialect.From(table).Select(table.Col(idColumn)).Where(
@@ -642,7 +663,9 @@ func (qb *GalleryStore) makeFilter(ctx context.Context, galleryFilter *models.Ga
 
 	query.handleCriterion(ctx, intCriterionHandler(galleryFilter.ID, "galleries.id", nil))
 	query.handleCriterion(ctx, stringCriterionHandler(galleryFilter.Title, "galleries.title"))
+	query.handleCriterion(ctx, stringCriterionHandler(galleryFilter.Code, "galleries.code"))
 	query.handleCriterion(ctx, stringCriterionHandler(galleryFilter.Details, "galleries.details"))
+	query.handleCriterion(ctx, stringCriterionHandler(galleryFilter.Photographer, "galleries.photographer"))
 
 	query.handleCriterion(ctx, criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
 		if galleryFilter.Checksum != nil {
@@ -668,9 +691,7 @@ func (qb *GalleryStore) makeFilter(ctx context.Context, galleryFilter *models.Ga
 	query.handleCriterion(ctx, qb.galleryPathCriterionHandler(galleryFilter.Path))
 	query.handleCriterion(ctx, galleryFileCountCriterionHandler(qb, galleryFilter.FileCount))
 	query.handleCriterion(ctx, intCriterionHandler(galleryFilter.Rating100, "galleries.rating", nil))
-	// legacy rating handler
-	query.handleCriterion(ctx, rating5CriterionHandler(galleryFilter.Rating, "galleries.rating", nil))
-	query.handleCriterion(ctx, stringCriterionHandler(galleryFilter.URL, "galleries.url"))
+	query.handleCriterion(ctx, galleryURLsCriterionHandler(galleryFilter.URL))
 	query.handleCriterion(ctx, boolCriterionHandler(galleryFilter.Organized, "galleries.organized", nil))
 	query.handleCriterion(ctx, galleryIsMissingCriterionHandler(qb, galleryFilter.IsMissing))
 	query.handleCriterion(ctx, galleryTagsCriterionHandler(qb, galleryFilter.Tags))
@@ -794,6 +815,18 @@ func (qb *GalleryStore) QueryCount(ctx context.Context, galleryFilter *models.Ga
 	return query.executeCount(ctx)
 }
 
+func galleryURLsCriterionHandler(url *models.StringCriterionInput) criterionHandlerFunc {
+	h := stringListCriterionHandlerBuilder{
+		joinTable:    galleriesURLsTable,
+		stringColumn: galleriesURLColumn,
+		addJoinTable: func(f *filterBuilder) {
+			galleriesURLsTableMgr.join(f, "", "galleries.id")
+		},
+	}
+
+	return h.handler(url)
+}
+
 func (qb *GalleryStore) galleryPathCriterionHandler(c *models.StringCriterionInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if c != nil {
@@ -875,6 +908,9 @@ func galleryIsMissingCriterionHandler(qb *GalleryStore, isMissing *string) crite
 	return func(ctx context.Context, f *filterBuilder) {
 		if isMissing != nil && *isMissing != "" {
 			switch *isMissing {
+			case "url":
+				galleriesURLsTableMgr.join(f, "", "galleries.id")
+				f.addWhere("gallery_urls.url IS NULL")
 			case "scenes":
 				f.addLeftJoin("scenes_galleries", "scenes_join", "scenes_join.gallery_id = galleries.id")
 				f.addWhere("scenes_join.gallery_id IS NULL")
@@ -1108,6 +1144,10 @@ func (qb *GalleryStore) setGallerySort(query *queryBuilder, findFilter *models.F
 	query.sortAndPagination += ", COALESCE(galleries.title, galleries.id) COLLATE NATURAL_CI ASC"
 }
 
+func (qb *GalleryStore) GetURLs(ctx context.Context, galleryID int) ([]string, error) {
+	return galleriesURLsTableMgr.get(ctx, galleryID)
+}
+
 func (qb *GalleryStore) filesRepository() *filesRepository {
 	return &filesRepository{
 		repository: repository{
@@ -1118,9 +1158,9 @@ func (qb *GalleryStore) filesRepository() *filesRepository {
 	}
 }
 
-func (qb *GalleryStore) AddFileID(ctx context.Context, id int, fileID file.ID) error {
+func (qb *GalleryStore) AddFileID(ctx context.Context, id int, fileID models.FileID) error {
 	const firstPrimary = false
-	return galleriesFilesTableMgr.insertJoins(ctx, id, firstPrimary, []file.ID{fileID})
+	return galleriesFilesTableMgr.insertJoins(ctx, id, firstPrimary, []models.FileID{fileID})
 }
 
 func (qb *GalleryStore) performersRepository() *joinRepository {

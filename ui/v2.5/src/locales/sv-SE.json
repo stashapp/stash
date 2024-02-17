@@ -673,13 +673,14 @@
                         "description": "Spela nästa scen i kö efter scenens slut",
                         "heading": "Fortsätt spellista som standard"
                     },
+                    "disable_mobile_media_auto_rotate": "Inaktivera automatisk rotering av helskärmsmedia på mobil",
+                    "enable_chromecast": "Aktivera Chromecast",
                     "show_scrubber": "Visa skrubbaren",
                     "track_activity": "Spåra Aktivitet",
                     "vr_tag": {
                         "description": "VR-knappen kommer endast visas för scener med denna tagg.",
                         "heading": "VR Tagg"
                     },
-                    "enable_chromecast": "Aktivera Chromecast",
                     "show_ab_loop_controls": "Visa AB-loop plugin kontroller"
                 }
             },
@@ -1072,7 +1073,7 @@
     "penis_length_cm": "Penislängd (cm)",
     "perceptual_similarity": "Perceptuell likhet (phash)",
     "performer": "Stjärna",
-    "performerTags": "Stjärntagg",
+    "performer_tags": "Stjärntagg",
     "performer_age": "Ålder på stjärna",
     "performer_count": "Antal stjärnor",
     "performer_favorite": "Favoritiserad stjärna",
@@ -1127,7 +1128,7 @@
     "resume_time": "Återupptagningstid",
     "scene": "Scen",
     "sceneTagger": "Scentaggaren",
-    "sceneTags": "Scentaggar",
+    "scene_tags": "Scentaggar",
     "scene_code": "Studiokod",
     "scene_count": "Antal scener",
     "scene_created_at": "Scenen Skapad",
@@ -1149,6 +1150,7 @@
         "confirm": {
             "almost_ready": "Vi är nästan redo att slutfärdiga konfigurationen. Bekräfta följande inställningar. Du kan trycka bakåt för att ändra något inkorrekt. Tryck på Bekräfta om allting ser korrekt ut.",
             "blobs_directory": "Binär data mappsökväg",
+            "blobs_use_database": "<använd databas>",
             "cache_directory": "Cache mappsökväg",
             "configuration_file_location": "Konfiguration filsökväg:",
             "database_file_path": "Databas filsökväg",
@@ -1158,8 +1160,7 @@
             "default_generated_content_location": "<sökväg innehållande konfigurationsfil>/generated",
             "generated_directory": "Genererat sökväg",
             "nearly_there": "Nästan framme!",
-            "stash_library_directories": "Stash bibliotekssökväg",
-            "blobs_use_database": "<använd databas>"
+            "stash_library_directories": "Stash bibliotekssökväg"
         },
         "creating": {
             "creating_your_system": "Skapa ditt system",

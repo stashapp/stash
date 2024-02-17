@@ -1,5 +1,5 @@
 import { Button, Tabs, Tab } from "react-bootstrap";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useHistory, Redirect, RouteComponentProps } from "react-router-dom";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Helmet } from "react-helmet";
@@ -38,17 +38,17 @@ import {
   faChevronDown,
   faChevronUp,
 } from "@fortawesome/free-solid-svg-icons";
-import { IUIConfig } from "src/core/config";
 import TextUtils from "src/utils/text";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { DetailImage } from "src/components/Shared/DetailImage";
 import { useRatingKeybinds } from "src/hooks/keybinds";
 import { useLoadStickyHeader } from "src/hooks/detailsPanel";
 import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
+import { ExternalLink } from "src/components/Shared/ExternalLink";
 
 interface IProps {
   studio: GQL.StudioDataFragment;
-  tabKey: TabKey;
+  tabKey?: TabKey;
 }
 
 interface IStudioParams {
@@ -80,7 +80,7 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
 
   // Configuration settings
   const { configuration } = React.useContext(ConfigurationContext);
-  const uiConfig = configuration?.ui as IUIConfig | undefined;
+  const uiConfig = configuration?.ui;
   const abbreviateCounter = uiConfig?.abbreviateCounters ?? false;
   const enableBackgroundImage = uiConfig?.enableStudioBackgroundImage ?? false;
   const showAllDetails = uiConfig?.showAllDetails ?? true;
@@ -100,8 +100,7 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
   const [updateStudio] = useStudioUpdate();
   const [deleteStudio] = useStudioDestroy({ id: studio.id });
 
-  const showAllCounts = (configuration?.ui as IUIConfig)
-    ?.showChildStudioContent;
+  const showAllCounts = uiConfig?.showChildStudioContent;
   const sceneCount =
     (showAllCounts ? studio.scene_count_all : studio.scene_count) ?? 0;
   const galleryCount =
@@ -139,15 +138,29 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
     studio,
   ]);
 
-  if (tabKey === defaultTab) {
-    tabKey = populatedDefaultTab;
-  }
+  const setTabKey = useCallback(
+    (newTabKey: string | null) => {
+      if (!newTabKey) newTabKey = populatedDefaultTab;
+      if (newTabKey === tabKey) return;
+
+      if (isTabKey(newTabKey)) {
+        history.replace(`/studios/${studio.id}/${newTabKey}`);
+      }
+    },
+    [populatedDefaultTab, tabKey, history, studio.id]
+  );
+
+  useEffect(() => {
+    if (tabKey === defaultTab) {
+      setTabKey(populatedDefaultTab);
+    }
+  }, [setTabKey, populatedDefaultTab, tabKey]);
 
   // set up hotkeys
   useEffect(() => {
     Mousetrap.bind("e", () => toggleEditing());
     Mousetrap.bind("d d", () => {
-      onDelete();
+      setIsDeleteAlertOpen(true);
     });
     Mousetrap.bind(",", () => setCollapsed(!collapsed));
 
@@ -160,7 +173,7 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
 
   useRatingKeybinds(
     true,
-    configuration?.ui?.ratingSystemOptions?.type,
+    configuration?.ui.ratingSystemOptions?.type,
     setRating
   );
 
@@ -174,21 +187,19 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
       },
     });
     toggleEditing(false);
-    Toast.success({
-      content: intl.formatMessage(
+    Toast.success(
+      intl.formatMessage(
         { id: "toast.updated_entity" },
         { entity: intl.formatMessage({ id: "studio" }).toLocaleLowerCase() }
-      ),
-    });
+      )
+    );
   }
 
   async function onAutoTag() {
     if (!studio.id) return;
     try {
       await mutateMetadataAutoTag({ studios: [studio.id] });
-      Toast.success({
-        content: intl.formatMessage({ id: "toast.started_auto_tagging" }),
-      });
+      Toast.success(intl.formatMessage({ id: "toast.started_auto_tagging" }));
     } catch (e) {
       Toast.error(e);
     }
@@ -273,29 +284,16 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
     }
   }
 
-  function setTabKey(newTabKey: string | null) {
-    if (!newTabKey || newTabKey === defaultTab) newTabKey = populatedDefaultTab;
-    if (newTabKey === tabKey) return;
-
-    if (newTabKey === populatedDefaultTab) {
-      history.replace(`/studios/${studio.id}`);
-    } else if (isTabKey(newTabKey)) {
-      history.replace(`/studios/${studio.id}/${newTabKey}`);
-    }
-  }
-
   const renderClickableIcons = () => (
     <span className="name-icons">
       {studio.url && (
-        <Button className="minimal icon-link" title={studio.url}>
-          <a
-            href={TextUtils.sanitiseURL(studio.url)}
-            className="link"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Icon icon={faLink} />
-          </a>
+        <Button
+          as={ExternalLink}
+          href={TextUtils.sanitiseURL(studio.url)}
+          className="minimal link"
+          title={studio.url}
+        >
+          <Icon icon={faLink} />
         </Button>
       )}
     </span>
@@ -457,18 +455,22 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
   function maybeRenderHeaderBackgroundImage() {
     let studioImage = studio.image_path;
     if (enableBackgroundImage && !isEditing && studioImage) {
-      return (
-        <div className="background-image-container">
-          <picture>
-            <source src={studioImage} />
-            <img
-              className="background-image"
-              src={studioImage}
-              alt={`${studio.name} background`}
-            />
-          </picture>
-        </div>
-      );
+      const studioImageURL = new URL(studioImage);
+      let isDefaultImage = studioImageURL.searchParams.get("default");
+      if (!isDefaultImage) {
+        return (
+          <div className="background-image-container">
+            <picture>
+              <source src={studioImage} />
+              <img
+                className="background-image"
+                src={studioImage}
+                alt={`${studio.name} background`}
+              />
+            </picture>
+          </div>
+        );
+      }
     }
   }
 
@@ -526,7 +528,7 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
           <div className="detail-header-image">
             {encodingImage ? (
               <LoadingIndicator
-                message={`${intl.formatMessage({ id: "encoding_image" })}...`}
+                message={intl.formatMessage({ id: "actions.encoding_image" })}
               />
             ) : (
               renderImage()
@@ -541,8 +543,8 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
               </h2>
               {maybeRenderAliases()}
               <RatingSystem
-                value={studio.rating100 ?? undefined}
-                onSetRating={(value) => setRating(value ?? null)}
+                value={studio.rating100}
+                onSetRating={(value) => setRating(value)}
               />
               {maybeRenderDetails()}
               {maybeRenderEditPanel()}
@@ -575,11 +577,7 @@ const StudioLoader: React.FC<RouteComponentProps<IStudioParams>> = ({
   if (!data?.findStudio)
     return <ErrorMessage error={`No studio found with id ${id}.`} />;
 
-  if (!tab) {
-    return <StudioPage studio={data.findStudio} tabKey={defaultTab} />;
-  }
-
-  if (!isTabKey(tab)) {
+  if (tab && !isTabKey(tab)) {
     return (
       <Redirect
         to={{
@@ -590,7 +588,9 @@ const StudioLoader: React.FC<RouteComponentProps<IStudioParams>> = ({
     );
   }
 
-  return <StudioPage studio={data.findStudio} tabKey={tab} />;
+  return (
+    <StudioPage studio={data.findStudio} tabKey={tab as TabKey | undefined} />
+  );
 };
 
 export default StudioLoader;

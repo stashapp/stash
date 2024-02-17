@@ -21,6 +21,7 @@ import { GalleriesCriterion } from "src/models/list-filter/criteria/galleries";
 import { PhashCriterion } from "src/models/list-filter/criteria/phash";
 import { ILabeledId } from "src/models/list-filter/types";
 import { IntlShape } from "react-intl";
+import { galleryTitle } from "src/core/galleries";
 
 function addExtraCriteria(
   dest: Criterion<CriterionValue>[],
@@ -73,8 +74,13 @@ const makePerformerImagesUrl = (
   return `/images?${filter.makeQueryParameters()}`;
 };
 
+export interface INamedObject {
+  id?: string;
+  name?: string;
+}
+
 const makePerformerGalleriesUrl = (
-  performer: Partial<GQL.PerformerDataFragment>,
+  performer: INamedObject,
   extraPerformer?: ILabeledId,
   extraCriteria?: Criterion<CriterionValue>[]
 ) => {
@@ -343,9 +349,7 @@ const makeGalleryImagesUrl = (
   if (!gallery.id) return "#";
   const filter = new ListFilterModel(GQL.FilterMode.Images, undefined);
   const criterion = new GalleriesCriterion();
-  criterion.value = [
-    { id: gallery.id, label: gallery.title || `Gallery ${gallery.id}` },
-  ];
+  criterion.value = [{ id: gallery.id, label: galleryTitle(gallery) }];
   filter.criteria.push(criterion);
   addExtraCriteria(filter.criteria, extraCriteria);
   return `/images?${filter.makeQueryParameters()}`;

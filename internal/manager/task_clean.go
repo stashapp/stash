@@ -16,7 +16,6 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/scene"
-	"github.com/stashapp/stash/pkg/txn"
 )
 
 type cleaner interface {
@@ -25,7 +24,7 @@ type cleaner interface {
 
 type cleanJob struct {
 	cleaner      cleaner
-	txnManager   Repository
+	repository   models.Repository
 	input        CleanMetadataInput
 	sceneService SceneService
 	imageService ImageService
@@ -61,10 +60,11 @@ func (j *cleanJob) cleanEmptyGalleries(ctx context.Context) {
 	const batchSize = 1000
 	var toClean []int
 	findFilter := models.BatchFindFilter(batchSize)
-	if err := txn.WithTxn(ctx, j.txnManager, func(ctx context.Context) error {
+	r := j.repository
+	if err := r.WithTxn(ctx, func(ctx context.Context) error {
 		found := true
 		for found {
-			emptyGalleries, _, err := j.txnManager.Gallery.Query(ctx, &models.GalleryFilterType{
+			emptyGalleries, _, err := r.Gallery.Query(ctx, &models.GalleryFilterType{
 				ImageCount: &models.IntCriterionInput{
 					Value:    0,
 					Modifier: models.CriterionModifierEquals,
@@ -108,9 +108,10 @@ func (j *cleanJob) cleanEmptyGalleries(ctx context.Context) {
 
 func (j *cleanJob) deleteGallery(ctx context.Context, id int) {
 	pluginCache := GetInstance().PluginCache
-	qb := j.txnManager.Gallery
 
-	if err := txn.WithTxn(ctx, j.txnManager, func(ctx context.Context) error {
+	r := j.repository
+	if err := r.WithTxn(ctx, func(ctx context.Context) error {
+		qb := r.Gallery
 		g, err := qb.Find(ctx, id)
 		if err != nil {
 			return err
@@ -120,7 +121,7 @@ func (j *cleanJob) deleteGallery(ctx context.Context, id int) {
 			return fmt.Errorf("gallery with id %d not found", id)
 		}
 
-		if err := g.LoadPrimaryFile(ctx, j.txnManager.File); err != nil {
+		if err := g.LoadPrimaryFile(ctx, r.File); err != nil {
 			return err
 		}
 
@@ -143,7 +144,7 @@ type cleanFilter struct {
 	scanFilter
 }
 
-func newCleanFilter(c *config.Instance) *cleanFilter {
+func newCleanFilter(c *config.Config) *cleanFilter {
 	return &cleanFilter{
 		scanFilter: scanFilter{
 			extensionConfig:   newExtensionConfig(c),
@@ -253,11 +254,9 @@ func (f *cleanFilter) shouldCleanImage(path string, stash *config.StashConfig) b
 	return false
 }
 
-type cleanHandler struct {
-	PluginCache *plugin.Cache
-}
+type cleanHandler struct{}
 
-func (h *cleanHandler) HandleFile(ctx context.Context, fileDeleter *file.Deleter, fileID file.ID) error {
+func (h *cleanHandler) HandleFile(ctx context.Context, fileDeleter *file.Deleter, fileID models.FileID) error {
 	if err := h.handleRelatedScenes(ctx, fileDeleter, fileID); err != nil {
 		return err
 	}
@@ -271,13 +270,13 @@ func (h *cleanHandler) HandleFile(ctx context.Context, fileDeleter *file.Deleter
 	return nil
 }
 
-func (h *cleanHandler) HandleFolder(ctx context.Context, fileDeleter *file.Deleter, folderID file.FolderID) error {
+func (h *cleanHandler) HandleFolder(ctx context.Context, fileDeleter *file.Deleter, folderID models.FolderID) error {
 	return h.deleteRelatedFolderGalleries(ctx, folderID)
 }
 
-func (h *cleanHandler) handleRelatedScenes(ctx context.Context, fileDeleter *file.Deleter, fileID file.ID) error {
+func (h *cleanHandler) handleRelatedScenes(ctx context.Context, fileDeleter *file.Deleter, fileID models.FileID) error {
 	mgr := GetInstance()
-	sceneQB := mgr.Database.Scene
+	sceneQB := mgr.Repository.Scene
 	scenes, err := sceneQB.FindByFileID(ctx, fileID)
 	if err != nil {
 		return err
@@ -303,17 +302,14 @@ func (h *cleanHandler) handleRelatedScenes(ctx context.Context, fileDeleter *fil
 				return err
 			}
 
-			checksum := scene.Checksum
-			oshash := scene.OSHash
-
 			mgr.PluginCache.RegisterPostHooks(ctx, scene.ID, plugin.SceneDestroyPost, plugin.SceneDestroyInput{
-				Checksum: checksum,
-				OSHash:   oshash,
+				Checksum: scene.Checksum,
+				OSHash:   scene.OSHash,
 				Path:     scene.Path,
 			}, nil)
 		} else {
 			// set the primary file to a remaining file
-			var newPrimaryID file.ID
+			var newPrimaryID models.FileID
 			for _, f := range scene.Files.List() {
 				if f.ID != fileID {
 					newPrimaryID = f.ID
@@ -321,9 +317,10 @@ func (h *cleanHandler) handleRelatedScenes(ctx context.Context, fileDeleter *fil
 				}
 			}
 
-			if _, err := mgr.Repository.Scene.UpdatePartial(ctx, scene.ID, models.ScenePartial{
-				PrimaryFileID: &newPrimaryID,
-			}); err != nil {
+			scenePartial := models.NewScenePartial()
+			scenePartial.PrimaryFileID = &newPrimaryID
+
+			if _, err := mgr.Repository.Scene.UpdatePartial(ctx, scene.ID, scenePartial); err != nil {
 				return err
 			}
 		}
@@ -332,9 +329,9 @@ func (h *cleanHandler) handleRelatedScenes(ctx context.Context, fileDeleter *fil
 	return nil
 }
 
-func (h *cleanHandler) handleRelatedGalleries(ctx context.Context, fileID file.ID) error {
+func (h *cleanHandler) handleRelatedGalleries(ctx context.Context, fileID models.FileID) error {
 	mgr := GetInstance()
-	qb := mgr.Database.Gallery
+	qb := mgr.Repository.Gallery
 	galleries, err := qb.FindByFileID(ctx, fileID)
 	if err != nil {
 		return err
@@ -358,7 +355,7 @@ func (h *cleanHandler) handleRelatedGalleries(ctx context.Context, fileID file.I
 			}, nil)
 		} else {
 			// set the primary file to a remaining file
-			var newPrimaryID file.ID
+			var newPrimaryID models.FileID
 			for _, f := range g.Files.List() {
 				if f.Base().ID != fileID {
 					newPrimaryID = f.Base().ID
@@ -366,9 +363,10 @@ func (h *cleanHandler) handleRelatedGalleries(ctx context.Context, fileID file.I
 				}
 			}
 
-			if _, err := mgr.Repository.Gallery.UpdatePartial(ctx, g.ID, models.GalleryPartial{
-				PrimaryFileID: &newPrimaryID,
-			}); err != nil {
+			galleryPartial := models.NewGalleryPartial()
+			galleryPartial.PrimaryFileID = &newPrimaryID
+
+			if _, err := mgr.Repository.Gallery.UpdatePartial(ctx, g.ID, galleryPartial); err != nil {
 				return err
 			}
 		}
@@ -377,9 +375,9 @@ func (h *cleanHandler) handleRelatedGalleries(ctx context.Context, fileID file.I
 	return nil
 }
 
-func (h *cleanHandler) deleteRelatedFolderGalleries(ctx context.Context, folderID file.FolderID) error {
+func (h *cleanHandler) deleteRelatedFolderGalleries(ctx context.Context, folderID models.FolderID) error {
 	mgr := GetInstance()
-	qb := mgr.Database.Gallery
+	qb := mgr.Repository.Gallery
 	galleries, err := qb.FindByFolderID(ctx, folderID)
 	if err != nil {
 		return err
@@ -401,9 +399,9 @@ func (h *cleanHandler) deleteRelatedFolderGalleries(ctx context.Context, folderI
 	return nil
 }
 
-func (h *cleanHandler) handleRelatedImages(ctx context.Context, fileDeleter *file.Deleter, fileID file.ID) error {
+func (h *cleanHandler) handleRelatedImages(ctx context.Context, fileDeleter *file.Deleter, fileID models.FileID) error {
 	mgr := GetInstance()
-	imageQB := mgr.Database.Image
+	imageQB := mgr.Repository.Image
 	images, err := imageQB.FindByFileID(ctx, fileID)
 	if err != nil {
 		return err
@@ -411,7 +409,7 @@ func (h *cleanHandler) handleRelatedImages(ctx context.Context, fileDeleter *fil
 
 	imageFileDeleter := &image.FileDeleter{
 		Deleter: fileDeleter,
-		Paths:   GetInstance().Paths,
+		Paths:   mgr.Paths,
 	}
 
 	for _, i := range images {
@@ -431,7 +429,7 @@ func (h *cleanHandler) handleRelatedImages(ctx context.Context, fileDeleter *fil
 			}, nil)
 		} else {
 			// set the primary file to a remaining file
-			var newPrimaryID file.ID
+			var newPrimaryID models.FileID
 			for _, f := range i.Files.List() {
 				if f.Base().ID != fileID {
 					newPrimaryID = f.Base().ID
@@ -439,9 +437,10 @@ func (h *cleanHandler) handleRelatedImages(ctx context.Context, fileDeleter *fil
 				}
 			}
 
-			if _, err := mgr.Repository.Image.UpdatePartial(ctx, i.ID, models.ImagePartial{
-				PrimaryFileID: &newPrimaryID,
-			}); err != nil {
+			imagePartial := models.NewImagePartial()
+			imagePartial.PrimaryFileID = &newPrimaryID
+
+			if _, err := mgr.Repository.Image.UpdatePartial(ctx, i.ID, imagePartial); err != nil {
 				return err
 			}
 		}

@@ -3,13 +3,12 @@ import { useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import {
   ScrapeDialog,
-  ScrapeResult,
   ScrapedInputGroupRow,
   ScrapedImagesRow,
   ScrapeDialogRow,
   ScrapedTextAreaRow,
   ScrapedCountryRow,
-} from "src/components/Shared/ScrapeDialog";
+} from "src/components/Shared/ScrapeDialog/ScrapeDialog";
 import { useTagCreate } from "src/core/StashService";
 import { Form } from "react-bootstrap";
 import { TagSelect } from "src/components/Shared/Select";
@@ -26,6 +25,7 @@ import {
   stringToCircumcised,
 } from "src/utils/circumcised";
 import { IStashBox } from "./PerformerStashBoxModal";
+import { ScrapeResult } from "src/components/Shared/ScrapeDialog/scrapeResult";
 
 function renderScrapedGender(
   result: ScrapeResult<string>,
@@ -477,13 +477,11 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
 
       setNewTags(newTagsClone);
 
-      Toast.success({
-        content: (
-          <span>
-            Created tag: <b>{toCreate.name}</b>
-          </span>
-        ),
-      });
+      Toast.success(
+        <span>
+          Created tag: <b>{toCreate.name}</b>
+        </span>
+      );
     } catch (e) {
       Toast.error(e);
     }

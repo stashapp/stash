@@ -203,17 +203,17 @@ func initTestTable() {
 func TestToJSON(t *testing.T) {
 	initTestTable()
 
-	mockPerformerReader := &mocks.PerformerReaderWriter{}
+	db := mocks.NewDatabase()
 
 	imageErr := errors.New("error getting image")
 
-	mockPerformerReader.On("GetImage", testCtx, performerID).Return(imageBytes, nil).Once()
-	mockPerformerReader.On("GetImage", testCtx, noImageID).Return(nil, nil).Once()
-	mockPerformerReader.On("GetImage", testCtx, errImageID).Return(nil, imageErr).Once()
+	db.Performer.On("GetImage", testCtx, performerID).Return(imageBytes, nil).Once()
+	db.Performer.On("GetImage", testCtx, noImageID).Return(nil, nil).Once()
+	db.Performer.On("GetImage", testCtx, errImageID).Return(nil, imageErr).Once()
 
 	for i, s := range scenarios {
 		tag := s.input
-		json, err := ToJSON(testCtx, mockPerformerReader, &tag)
+		json, err := ToJSON(testCtx, db.Performer, &tag)
 
 		switch {
 		case !s.err && err != nil:
@@ -225,5 +225,5 @@ func TestToJSON(t *testing.T) {
 		}
 	}
 
-	mockPerformerReader.AssertExpectations(t)
+	db.AssertExpectations(t)
 }

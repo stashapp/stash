@@ -25,7 +25,9 @@ import StudioConfig from "./Config";
 import { LOCAL_FORAGE_KEY, ITaggerConfig, initialConfig } from "../constants";
 import StudioModal from "../scenes/StudioModal";
 import { useUpdateStudio } from "../queries";
+import { apolloError } from "src/utils";
 import { faStar, faTags } from "@fortawesome/free-solid-svg-icons";
+import { ExternalLink } from "src/components/Shared/ExternalLink";
 
 type JobFragment = Pick<
   GQL.Job,
@@ -431,9 +433,8 @@ const StudioTaggerList: React.FC<IStudioTaggerListProps> = ({
             });
             input.parent_id = parentRes.data?.studioCreate?.id;
           }
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } catch (e: any) {
-          handleSaveError(studioID, parentInput.name, e.message ?? "");
+        } catch (e) {
+          handleSaveError(studioID, parentInput.name, apolloError(e));
         }
       }
 
@@ -515,14 +516,12 @@ const StudioTaggerList: React.FC<IStudioTaggerListProps> = ({
       if (stashID !== undefined) {
         const base = stashID.endpoint.match(/https?:\/\/.*?\//)?.[0];
         const link = base ? (
-          <a
+          <ExternalLink
             className="small d-block"
             href={`${base}studios/${stashID.stash_id}`}
-            target="_blank"
-            rel="noopener noreferrer"
           >
             {stashID.stash_id}
-          </a>
+          </ExternalLink>
         ) : (
           <div className="small">{stashID.stash_id}</div>
         );
@@ -611,7 +610,7 @@ const StudioTaggerList: React.FC<IStudioTaggerListProps> = ({
             <div></div>
             <div>
               <Card className="studio-card">
-                <img src={studio.image_path ?? ""} alt="" />
+                <img loading="lazy" src={studio.image_path ?? ""} alt="" />
               </Card>
             </div>
             <div className={`${CLASSNAME}-details-text`}>

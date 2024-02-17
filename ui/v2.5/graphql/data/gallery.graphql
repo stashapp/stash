@@ -1,0 +1,51 @@
+fragment GalleryData on Gallery {
+  id
+  created_at
+  updated_at
+  title
+  code
+  date
+  urls
+  details
+  photographer
+  rating100
+  organized
+
+  files {
+    ...GalleryFileData
+  }
+  folder {
+    ...FolderData
+  }
+
+  chapters {
+    ...GalleryChapterData
+  }
+  cover {
+    ...SlimImageData
+  }
+  studio {
+    ...SlimStudioData
+  }
+  tags {
+    ...SlimTagData
+  }
+
+  performers {
+    ...PerformerData
+  }
+  scenes {
+    ...SlimSceneData
+  }
+}
+
+fragment SelectGalleryData on Gallery {
+  id
+  title
+  files {
+    path
+  }
+  folder {
+    path
+  }
+}

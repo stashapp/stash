@@ -104,6 +104,7 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 	}
 
 	refreshScraperCache := false
+	refreshScraperSource := false
 	existingScrapersPath := c.GetScrapersPath()
 	if input.ScrapersPath != nil && existingScrapersPath != *input.ScrapersPath {
 		if err := validateDir(config.ScrapersPath, *input.ScrapersPath, false); err != nil {
@@ -111,7 +112,21 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 		}
 
 		refreshScraperCache = true
+		refreshScraperSource = true
 		c.Set(config.ScrapersPath, input.ScrapersPath)
+	}
+
+	refreshPluginCache := false
+	refreshPluginSource := false
+	existingPluginsPath := c.GetPluginsPath()
+	if input.PluginsPath != nil && existingPluginsPath != *input.PluginsPath {
+		if err := validateDir(config.PluginsPath, *input.PluginsPath, false); err != nil {
+			return makeConfigGeneralResult(), err
+		}
+
+		refreshPluginCache = true
+		refreshPluginSource = true
+		c.Set(config.PluginsPath, input.PluginsPath)
 	}
 
 	existingMetadataPath := c.GetMetadataPath()
@@ -316,21 +331,7 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 
 	if input.CustomPerformerImageLocation != nil {
 		c.Set(config.CustomPerformerImageLocation, *input.CustomPerformerImageLocation)
-		initialiseCustomImages()
-	}
-
-	if input.ScraperUserAgent != nil {
-		c.Set(config.ScraperUserAgent, input.ScraperUserAgent)
-		refreshScraperCache = true
-	}
-
-	if input.ScraperCDPPath != nil {
-		c.Set(config.ScraperCDPPath, input.ScraperCDPPath)
-		refreshScraperCache = true
-	}
-
-	if input.ScraperCertCheck != nil {
-		c.Set(config.ScraperCertCheck, input.ScraperCertCheck)
+		initCustomPerformerImages(*input.CustomPerformerImageLocation)
 	}
 
 	if input.StashBoxes != nil {
@@ -361,6 +362,16 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 		c.Set(config.DrawFunscriptHeatmapRange, input.DrawFunscriptHeatmapRange)
 	}
 
+	if input.ScraperPackageSources != nil {
+		c.Set(config.ScraperPackageSources, input.ScraperPackageSources)
+		refreshScraperSource = true
+	}
+
+	if input.PluginPackageSources != nil {
+		c.Set(config.PluginPackageSources, input.PluginPackageSources)
+		refreshPluginSource = true
+	}
+
 	if err := c.Write(); err != nil {
 		return makeConfigGeneralResult(), err
 	}
@@ -369,11 +380,20 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 	if refreshScraperCache {
 		manager.GetInstance().RefreshScraperCache()
 	}
+	if refreshPluginCache {
+		manager.GetInstance().RefreshPluginCache()
+	}
 	if refreshStreamManager {
 		manager.GetInstance().RefreshStreamManager()
 	}
 	if refreshBlobStorage {
 		manager.GetInstance().SetBlobStoreOptions()
+	}
+	if refreshScraperSource {
+		manager.GetInstance().RefreshScraperSourceManager()
+	}
+	if refreshPluginSource {
+		manager.GetInstance().RefreshPluginSourceManager()
 	}
 
 	return makeConfigGeneralResult(), nil
@@ -422,11 +442,6 @@ func (r *mutationResolver) ConfigureInterface(ctx context.Context, input ConfigI
 
 	if input.Language != nil {
 		c.Set(config.Language, *input.Language)
-	}
-
-	// deprecated field
-	if input.SlideshowDelay != nil {
-		c.Set(config.ImageLightboxSlideshowDelay, *input.SlideshowDelay)
 	}
 
 	if input.ImageLightbox != nil {
@@ -506,19 +521,10 @@ func (r *mutationResolver) ConfigureDlna(ctx context.Context, input ConfigDLNAIn
 		c.Set(config.DLNAVideoSortOrder, input.VideoSortOrder)
 	}
 
-	currentDLNAEnabled := c.GetDLNADefaultEnabled()
-	if input.Enabled != nil && *input.Enabled != currentDLNAEnabled {
+	refresh := false
+	if input.Enabled != nil {
 		c.Set(config.DLNADefaultEnabled, *input.Enabled)
-
-		// start/stop the DLNA service as needed
-		dlnaService := manager.GetInstance().DLNAService
-		if !*input.Enabled && dlnaService.IsRunning() {
-			dlnaService.Stop(nil)
-		} else if *input.Enabled && !dlnaService.IsRunning() {
-			if err := dlnaService.Start(nil); err != nil {
-				logger.Warnf("error starting DLNA service: %v", err)
-			}
-		}
+		refresh = true
 	}
 
 	if input.Interfaces != nil {
@@ -527,6 +533,10 @@ func (r *mutationResolver) ConfigureDlna(ctx context.Context, input ConfigDLNAIn
 
 	if err := c.Write(); err != nil {
 		return makeConfigDLNAResult(), err
+	}
+
+	if refresh {
+		manager.GetInstance().RefreshDLNA()
 	}
 
 	return makeConfigDLNAResult(), nil
@@ -647,4 +657,15 @@ func (r *mutationResolver) ConfigureUISetting(ctx context.Context, key string, v
 	cfg[key] = value
 
 	return r.ConfigureUI(ctx, cfg)
+}
+
+func (r *mutationResolver) ConfigurePlugin(ctx context.Context, pluginID string, input map[string]interface{}) (map[string]interface{}, error) {
+	c := config.GetInstance()
+	c.SetPluginConfiguration(pluginID, input)
+
+	if err := c.Write(); err != nil {
+		return c.GetPluginConfiguration(pluginID), err
+	}
+
+	return c.GetPluginConfiguration(pluginID), nil
 }

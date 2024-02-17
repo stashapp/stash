@@ -5,21 +5,27 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sliceutil/intslice"
+	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/txn"
 )
 
-func (s *Service) Merge(ctx context.Context, sourceIDs []int, destinationID int, scenePartial models.ScenePartial) error {
+func (s *Service) Merge(
+	ctx context.Context,
+	sourceIDs []int,
+	destinationID int,
+	scenePartial models.ScenePartial,
+	fileDeleter *FileDeleter,
+) error {
 	// ensure source ids are unique
-	sourceIDs = intslice.IntAppendUniques(nil, sourceIDs)
+	sourceIDs = sliceutil.AppendUniques(nil, sourceIDs)
 
 	// ensure destination is not in source list
-	if intslice.IntInclude(sourceIDs, destinationID) {
+	if sliceutil.Contains(sourceIDs, destinationID) {
 		return errors.New("destination scene cannot be in source list")
 	}
 
@@ -33,11 +39,9 @@ func (s *Service) Merge(ctx context.Context, sourceIDs []int, destinationID int,
 		return fmt.Errorf("finding source scenes: %w", err)
 	}
 
-	var fileIDs []file.ID
+	var fileIDs []models.FileID
 
 	for _, src := range sources {
-		// TODO - delete generated files as needed
-
 		if err := src.LoadRelationships(ctx, s.Repository); err != nil {
 			return fmt.Errorf("loading scene relationships from %d: %w", src.ID, err)
 		}
@@ -71,9 +75,11 @@ func (s *Service) Merge(ctx context.Context, sourceIDs []int, destinationID int,
 	}
 
 	// delete old scenes
-	for _, srcID := range sourceIDs {
-		if err := s.Repository.Destroy(ctx, srcID); err != nil {
-			return fmt.Errorf("deleting scene %d: %w", srcID, err)
+	for _, src := range sources {
+		const deleteGenerated = true
+		const deleteFile = false
+		if err := s.Destroy(ctx, src, fileDeleter, deleteGenerated, deleteFile); err != nil {
+			return fmt.Errorf("deleting scene %d: %w", src.ID, err)
 		}
 	}
 
@@ -130,6 +136,12 @@ func (s *Service) mergeSceneMarkers(ctx context.Context, dest *models.Scene, src
 				destExists, _ := fsutil.FileExists(e.dest)
 
 				if srcExists && !destExists {
+					destDir := filepath.Dir(e.dest)
+					if err := fsutil.EnsureDir(destDir); err != nil {
+						logger.Errorf("Error creating generated marker folder %s: %v", destDir, err)
+						continue
+					}
+
 					if err := os.Rename(e.src, e.dest); err != nil {
 						logger.Errorf("Error renaming generated marker file from %s to %s: %v", e.src, e.dest, err)
 					}

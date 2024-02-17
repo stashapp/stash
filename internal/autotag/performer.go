@@ -8,26 +8,26 @@ import (
 	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scene"
-	"github.com/stashapp/stash/pkg/sliceutil/intslice"
+	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/txn"
 )
 
 type SceneQueryPerformerUpdater interface {
-	scene.Queryer
+	models.SceneQueryer
 	models.PerformerIDLoader
-	scene.PartialUpdater
+	models.SceneUpdater
 }
 
 type ImageQueryPerformerUpdater interface {
-	image.Queryer
+	models.ImageQueryer
 	models.PerformerIDLoader
-	image.PartialUpdater
+	models.ImageUpdater
 }
 
 type GalleryQueryPerformerUpdater interface {
-	gallery.Queryer
+	models.GalleryQueryer
 	models.PerformerIDLoader
-	gallery.PartialUpdater
+	models.GalleryUpdater
 }
 
 func getPerformerTaggers(p *models.Performer, cache *match.Cache) []tagger {
@@ -63,7 +63,7 @@ func (tagger *Tagger) PerformerScenes(ctx context.Context, p *models.Performer, 
 			}
 			existing := o.PerformerIDs.List()
 
-			if intslice.IntInclude(existing, p.ID) {
+			if sliceutil.Contains(existing, p.ID) {
 				return false, nil
 			}
 
@@ -92,7 +92,7 @@ func (tagger *Tagger) PerformerImages(ctx context.Context, p *models.Performer, 
 			}
 			existing := o.PerformerIDs.List()
 
-			if intslice.IntInclude(existing, p.ID) {
+			if sliceutil.Contains(existing, p.ID) {
 				return false, nil
 			}
 
@@ -121,7 +121,7 @@ func (tagger *Tagger) PerformerGalleries(ctx context.Context, p *models.Performe
 			}
 			existing := o.PerformerIDs.List()
 
-			if intslice.IntInclude(existing, p.ID) {
+			if sliceutil.Contains(existing, p.ID) {
 				return false, nil
 			}
 

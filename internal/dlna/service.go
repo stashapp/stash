@@ -1,6 +1,7 @@
 package dlna
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"net/http"
@@ -8,19 +9,36 @@ import (
 	"sync"
 	"time"
 
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/txn"
 )
 
 type Repository struct {
+	TxnManager models.TxnManager
+
 	SceneFinder     SceneFinder
-	FileFinder      file.Finder
+	FileGetter      models.FileGetter
 	StudioFinder    StudioFinder
 	TagFinder       TagFinder
 	PerformerFinder PerformerFinder
 	MovieFinder     MovieFinder
+}
+
+func NewRepository(repo models.Repository) Repository {
+	return Repository{
+		TxnManager:      repo.TxnManager,
+		FileGetter:      repo.File,
+		SceneFinder:     repo.Scene,
+		StudioFinder:    repo.Studio,
+		TagFinder:       repo.Tag,
+		PerformerFinder: repo.Performer,
+		MovieFinder:     repo.Movie,
+	}
+}
+
+func (r *Repository) WithReadTxn(ctx context.Context, fn txn.TxnFunc) error {
+	return txn.WithReadTxn(ctx, r.TxnManager, fn)
 }
 
 type Status struct {
@@ -61,7 +79,6 @@ type Config interface {
 }
 
 type Service struct {
-	txnManager     txn.Manager
 	repository     Repository
 	config         Config
 	sceneServer    sceneServer
@@ -134,9 +151,8 @@ func (s *Service) init() error {
 	}
 
 	s.server = &Server{
-		txnManager:         s.txnManager,
-		sceneServer:        s.sceneServer,
 		repository:         s.repository,
+		sceneServer:        s.sceneServer,
 		ipWhitelistManager: s.ipWhitelistMgr,
 		Interfaces:         interfaces,
 		HTTPConn: func() net.Listener {
@@ -198,9 +214,8 @@ func (s *Service) init() error {
 // }
 
 // NewService initialises and returns a new DLNA service.
-func NewService(txnManager txn.Manager, repo Repository, cfg Config, sceneServer sceneServer) *Service {
+func NewService(repo Repository, cfg Config, sceneServer sceneServer) *Service {
 	ret := &Service{
-		txnManager:  txnManager,
 		repository:  repo,
 		sceneServer: sceneServer,
 		config:      cfg,

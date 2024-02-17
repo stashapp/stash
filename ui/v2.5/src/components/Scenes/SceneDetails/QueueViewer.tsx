@@ -15,7 +15,7 @@ import { objectTitle } from "src/core/files";
 import { QueuedScene } from "src/models/sceneQueue";
 
 export interface IPlaylistViewer {
-  scenes?: QueuedScene[];
+  scenes: QueuedScene[];
   currentID?: string;
   start?: number;
   continue?: boolean;
@@ -32,7 +32,7 @@ export interface IPlaylistViewer {
 export const QueueViewer: React.FC<IPlaylistViewer> = ({
   scenes,
   currentID,
-  start,
+  start = 0,
   continue: continuePlaylist = false,
   hasMoreScenes,
   setContinue,
@@ -47,7 +47,7 @@ export const QueueViewer: React.FC<IPlaylistViewer> = ({
   const [lessLoading, setLessLoading] = useState(false);
   const [moreLoading, setMoreLoading] = useState(false);
 
-  const currentIndex = scenes?.findIndex((s) => s.id === currentID);
+  const currentIndex = scenes.findIndex((s) => s.id === currentID);
 
   useEffect(() => {
     setLessLoading(false);
@@ -88,12 +88,23 @@ export const QueueViewer: React.FC<IPlaylistViewer> = ({
         >
           <div className="ml-1 d-flex align-items-center">
             <div className="thumbnail-container">
-              <img alt={scene.title ?? ""} src={scene.paths.screenshot ?? ""} />
+              <img
+                loading="lazy"
+                alt={scene.title ?? ""}
+                src={scene.paths.screenshot ?? ""}
+              />
             </div>
-            <div>
-              <span className="align-middle text-break">
-                {objectTitle(scene)}
+            <div className="queue-scene-details">
+              <span className="queue-scene-title">{objectTitle(scene)}</span>
+              <span className="queue-scene-studio">{scene?.studio?.name}</span>
+              <span className="queue-scene-performers">
+                {scene?.performers
+                  ?.map(function (performer) {
+                    return performer.name;
+                  })
+                  .join(", ")}
               </span>
+              <span className="queue-scene-date">{scene?.date}</span>
             </div>
           </div>
         </Link>
@@ -115,7 +126,7 @@ export const QueueViewer: React.FC<IPlaylistViewer> = ({
           />
         </div>
         <div>
-          {(currentIndex ?? 0) > 0 ? (
+          {currentIndex > 0 || start > 1 ? (
             <Button
               className="minimal"
               variant="secondary"
@@ -126,7 +137,7 @@ export const QueueViewer: React.FC<IPlaylistViewer> = ({
           ) : (
             ""
           )}
-          {(currentIndex ?? 0) < (scenes ?? []).length - 1 ? (
+          {currentIndex < scenes.length - 1 || hasMoreScenes ? (
             <Button
               className="minimal"
               variant="secondary"
@@ -147,7 +158,7 @@ export const QueueViewer: React.FC<IPlaylistViewer> = ({
         </div>
       </div>
       <div id="queue-content">
-        {(start ?? 0) > 1 ? (
+        {start > 1 ? (
           <div className="d-flex justify-content-center">
             <Button onClick={() => lessClicked()} disabled={lessLoading}>
               {!lessLoading ? (
@@ -158,7 +169,7 @@ export const QueueViewer: React.FC<IPlaylistViewer> = ({
             </Button>
           </div>
         ) : undefined}
-        <ol start={start}>{(scenes ?? []).map(renderPlaylistEntry)}</ol>
+        <ol start={start}>{scenes.map(renderPlaylistEntry)}</ol>
         {hasMoreScenes ? (
           <div className="d-flex justify-content-center">
             <Button onClick={() => moreClicked()} disabled={moreLoading}>
