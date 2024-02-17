@@ -47,7 +47,7 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
               <Icon className="fa-fw" icon={getCollapseButtonIcon()} />
             </Button>
           </h5>
-          <p className={`pre details-description ${collapsed ? 'collapsed' : ''}`}>{props.scene.details}</p>
+          <p className={`pre ${collapsed ? 'collapsed' : ''}`}>{props.scene.details}</p>
         </div>
       </div>
     );
