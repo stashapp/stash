@@ -821,7 +821,6 @@
   "path": "Pad",
   "perceptual_similarity": "Perceptuele gelijkenis (phash)",
   "performer": "Performer",
-  "performer_tags": "Peformer Labels",
   "performer_age": "Leeftijd artiest",
   "performer_count": "Performer Aantal",
   "performer_favorite": "Artiest favoriet",
@@ -847,6 +846,7 @@
     "number_of_performers_will_be_processed": "{performer_count} artiest(en) word(en) verwerkt",
     "performer_already_tagged": "Artiest al getagd"
   },
+  "performer_tags": "Peformer Labels",
   "performers": "Performers",
   "piercings": "Piercings",
   "queue": "Wachtrij",
@@ -855,9 +855,9 @@
   "resolution": "Resolutie",
   "scene": "Scène",
   "sceneTagger": "Scene Labelen",
-  "scene_tags": "Scene Labels",
   "scene_count": "Scene Aantal",
   "scene_id": "Scene ID",
+  "scene_tags": "Scene Labels",
   "scenes": "Scènes",
   "scenes_updated_at": "Scène geüpdatet op",
   "search_filter": {

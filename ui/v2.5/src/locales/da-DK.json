@@ -877,7 +877,6 @@
   "path": "Sti",
   "perceptual_similarity": "Perceptuel lighed (phash)",
   "performer": "Kunstner",
-  "performer_tags": "Kunstner Tags",
   "performer_age": "kunstnere Alder",
   "performer_count": "Kunstner Antal",
   "performer_favorite": "Foretrukken optrædende",
@@ -917,6 +916,7 @@
     "update_performers": "Opdater Kunstnere",
     "updating_untagged_performers_description": "Opdatering af ikke-taggede kunstnere vil forsøge at matche alle kunstnere, der mangler en stashid, og opdatere metadataene."
   },
+  "performer_tags": "Kunstner Tags",
   "performers": "Kunstnere",
   "piercings": "Piercinger",
   "queue": "Kø",
@@ -927,9 +927,9 @@
   "resolution": "Opløsning",
   "scene": "Scene",
   "sceneTagger": "Scenetagger",
-  "scene_tags": "Scene-etiketter",
   "scene_count": "Scene antal",
   "scene_id": "Scene-id",
+  "scene_tags": "Scene-etiketter",
   "scenes": "Scener",
   "scenes_updated_at": "Scene opdateret den",
   "search_filter": {

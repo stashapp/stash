@@ -2,10 +2,6 @@
   "actions": {
     "customise": "Customize"
   },
-  "eye_color": "Eye Color",
-  "favourite": "Favorite",
-  "hair_color": "Hair Color",
-  "organized": "Organized",
   "config": {
     "tools": {
       "scene_filename_parser": {
@@ -19,5 +15,9 @@
       }
     }
   },
+  "eye_color": "Eye Color",
+  "favourite": "Favorite",
+  "hair_color": "Hair Color",
+  "organized": "Organized",
   "performer_favorite": "Performer Favorited"
 }
