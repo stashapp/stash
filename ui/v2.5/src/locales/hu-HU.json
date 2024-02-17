@@ -84,9 +84,49 @@
         "submit_stash_box": "Stash-Box-ba Beküldés",
         "tasks": {
             "clean_confirm_message": "Biztos vagy benne hogy el akarod végezni a Tisztítást? Ez a művelet le fogja törölni a fáljrendszerben már nem megtalálható összes jelenet és galéria adatbázis információit és generált tartalmait.",
-            "import_warning": "Biztos vagy benne, hogy importálni akarsz? Ez a művelet le fogja törölni az adatbázist és újraimportálja az kiexportált metaadatok alapján."
+            "import_warning": "Biztos vagy benne, hogy importálni akarsz? Ez a művelet le fogja törölni az adatbázist és újraimportálja az kiexportált metaadatok alapján.",
+            "dry_mode_selected": "\"Száraz mód\" került kiválasztásra. Valós törlés nem fog történni, csak naplózás."
         },
-        "use_default": "Alapértelmezett használata"
+        "use_default": "Alapértelmezett használata",
+        "disable": "Letiltás",
+        "assign_stashid_to_parent_studio": "Stash azonosító hozzárendelése a meglévő szülő stúdióhoz és a metaadatok frissítése",
+        "create_chapters": "Fejezet hozzáadása",
+        "create_marker": "Jelölő létrehozása",
+        "create_parent_studio": "Szülő stúdió létrehozása",
+        "created_entity": "Létrehozott {entity_type}: {entity_name}",
+        "customise": "Testreszabás",
+        "delete_file_and_funscript": "Fájl törlése (és funscript)",
+        "download_anonymised": "Letöltés névtelenül",
+        "encoding_image": "Kép kódolása…",
+        "hash_migration": "hash-migráció",
+        "make_primary": "Beállítás elsődlegesnek",
+        "merge_into": "Összefűzés a",
+        "migrate_blobs": "Blobok migrálása",
+        "migrate_scene_screenshots": "Jelenet képernyőképek migrálása",
+        "merge_from": "Összefűzés innen",
+        "optimise_database": "Adatbázis optimalizálása",
+        "reassign": "Átcsoportosítás",
+        "remove_from_gallery": "Eltávolítás a galériából",
+        "save_delete_settings": "Törléskor alapértelmezés szerint ezeket a beállításokat használja",
+        "scrape": "Kinyerés",
+        "scrape_query": "Lekérés kinyerése",
+        "scrape_scene_fragment": "Kinyerés egység szerint",
+        "scrape_with": "Kinyerés…",
+        "selective_auto_tag": "Automatikus címkézés",
+        "selective_clean": "Szelektív tisztítás",
+        "selective_scan": "Szelektív szkennelés",
+        "set_back_image": "Hátlapi kép…",
+        "set_front_image": "Borítókép…",
+        "split": "Darabolás",
+        "submit_update": "Frissítés elfogadása",
+        "swap": "Csere",
+        "temp_disable": "Letiltás ideiglenesen…",
+        "temp_enable": "Engedélyezés ideiglenesen…",
+        "unset": "Visszavon",
+        "view_random": "Véletlenszerű megtekintés",
+        "enable": "Engedélyezés",
+        "open_in_external_player": "Megnyitás külső lejátszóban",
+        "reload": "Újratöltés"
     },
     "age": "Kor",
     "aliases": "Álnevek",
@@ -105,18 +145,46 @@
             "query_mode_filename": "Fájlnév",
             "query_mode_metadata": "Metaadat",
             "query_mode_path": "Elérési út",
-            "source": "Forrás"
+            "source": "Forrás",
+            "show_male_label": "Férfi előadók mutatása",
+            "active_instance": "Aktív stash-box példány:",
+            "blacklist_desc": "A tiltólistás elemek nem látszódnak a lekérésekben. Fontos tudni, hogy a regex kifejezések érzékenyek a kis-és nagybetűkre. Bizonyos karakterek után kötelező a \\ : {chars_require_escape}",
+            "mark_organized_desc": "Azonnal megjelöli a jelenetet \"Rendezettnek\", amint a \"Mentés\" gomb lenyomásra került.",
+            "mark_organized_label": "Mentéskor jelölje rendezettnek",
+            "query_mode_auto_desc": "Ha léteznek metaadatok, használja azokat vagy a fájlnevet",
+            "query_mode_dir_desc": "Csak a videó szülőkönyvtárának használata",
+            "query_mode_filename_desc": "Csak a fájlnév használata",
+            "query_mode_label": "Lekérő mód",
+            "query_mode_metadata_desc": "Csak metaadatok használata",
+            "query_mode_path_desc": "A teljes elérési út használata",
+            "set_cover_desc": "Kicseréli a jelenet borítóképét ha talál egyet.",
+            "set_cover_label": "A borítókép cseréje",
+            "set_tag_desc": "Tagek hozzáadása a jelenethez, felülírva vagy egybeolvasztva a már meglévőekkel.",
+            "set_tag_label": "Tagek beállítása"
         },
         "results": {
             "duration_unknown": "Ismeretlen hossz",
-            "unnamed": "Névtelen"
+            "unnamed": "Névtelen",
+            "fp_matches": "Az időhossz stimmel",
+            "hash_matches": "{hash_type} egyezik",
+            "match_failed_already_tagged": "A jelenet már tartalmaz tageket",
+            "match_failed_no_result": "Nincsenek találatok",
+            "match_success": "A jelenet tagelése sikeres"
         },
-        "verb_matched": "Egyezik"
+        "verb_matched": "Egyezik",
+        "noun_query": "Lekérés",
+        "verb_toggle_config": "{toggle} {configuration}",
+        "verb_toggle_unmatched": "{toggle} nem egyező jelenetek"
     },
     "config": {
         "about": {
             "latest_version": "Legfrissebb Verzió",
-            "version": "Verzió"
+            "version": "Verzió",
+            "latest_version_build_hash": "Legújabb verzió build hash-e:",
+            "check_for_new_version": "Új verzió keresése",
+            "new_version_notice": "[ÚJ]",
+            "release_date": "Megjelenés dátuma:",
+            "stash_discord": "Csatlakozz a csatornához {url}"
         },
         "categories": {
             "logs": "Logok",
@@ -535,5 +603,11 @@
     "videos": "Videók",
     "view_all": "Mindegyik Megjelenítése",
     "weight": "Súly",
-    "years_old": "éves"
+    "years_old": "éves",
+    "actions_name": "Tevékenységek",
+    "audio_codec": "Audió kodek",
+    "circumcised_types": {
+        "CUT": "Körülmetélt",
+        "UNCUT": "Nem körülmetélt"
+    }
 }
