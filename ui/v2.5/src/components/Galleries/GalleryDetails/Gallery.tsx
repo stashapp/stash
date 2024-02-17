@@ -1,11 +1,6 @@
 import { Button, Tab, Nav, Dropdown } from "react-bootstrap";
 import React, { useEffect, useMemo, useState } from "react";
-import {
-  useHistory,
-  Link,
-  RouteComponentProps,
-  Redirect,
-} from "react-router-dom";
+import { useHistory, RouteComponentProps, Redirect } from "react-router-dom";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Helmet } from "react-helmet";
 import * as GQL from "src/core/generated-graphql";

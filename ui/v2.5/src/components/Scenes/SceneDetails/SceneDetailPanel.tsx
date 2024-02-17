@@ -11,10 +11,7 @@ import { PerformerCard } from "src/components/Performers/PerformerCard";
 import { sortPerformers } from "src/core/performers";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { objectTitle } from "src/core/files";
-import {
-  faChevronDown,
-  faChevronUp
-} from "@fortawesome/free-solid-svg-icons";
+import { faChevronDown, faChevronUp } from "@fortawesome/free-solid-svg-icons";
 import { ConfigurationContext } from "src/hooks/Config";
 import { IUIConfig } from "src/core/config";
 
@@ -53,7 +50,9 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
               <Icon className="fa-fw" icon={getCollapseButtonIcon()} />
             </Button>
           </h5>
-          <p className={`pre ${collapsed ? 'collapsed' : ''}`}>{props.scene.details}</p>
+          <p className={`pre ${collapsed ? "collapsed" : ""}`}>
+            {props.scene.details}
+          </p>
         </div>
       </div>
     );
@@ -93,9 +92,7 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
           <h5>
             <FormattedMessage id="performers" />
           </h5>
-          <div className="row scene-performers">
-            {cards}
-          </div>
+          <div className="row scene-performers">{cards}</div>
         </div>
       </div>
     );
@@ -122,7 +119,9 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
                   <TruncatedText text={props.scene.studio?.name} />
                 </Link>
               </h6>
-            ) : (<h6>&nbsp;</h6>)}
+            ) : (
+              <h6>&nbsp;</h6>
+            )}
           </div>
           <div className="col-6">
             <h5>
@@ -136,7 +135,9 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
                   timeZone="utc"
                 />
               </h6>
-            ) : (<h6>&nbsp;</h6>)}
+            ) : (
+              <h6>&nbsp;</h6>
+            )}
           </div>
         </div>
         <div className="row">
@@ -144,11 +145,7 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
             <h5>
               <FormattedMessage id="scene_code" />
             </h5>
-            {props.scene.code ? (
-              <h6>
-                {props.scene.code}{" "}
-              </h6>
-            ) : (<h6>&nbsp;</h6>)}
+            {props.scene.code ? <h6>{props.scene.code} </h6> : <h6>&nbsp;</h6>}
           </div>
           <div className="col-6">
             <h5>
@@ -166,17 +163,17 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
               <h6>
                 <TruncatedText text={props.scene.director} />
               </h6>
-            ) : (<h6>&nbsp;</h6>)}
+            ) : (
+              <h6>&nbsp;</h6>
+            )}
           </div>
           <div className="col-6">
             <h5>
               <FormattedMessage id="resolution" />
             </h5>
-            {file?.width && file?.height && (
-              <h6>
-                {TextUtils.resolution(file.width, file.height)}
-              </h6>
-            ) || (<h6>&nbsp;</h6>)}
+            {(file?.width && file?.height && (
+              <h6>{TextUtils.resolution(file.width, file.height)}</h6>
+            )) || <h6>&nbsp;</h6>}
           </div>
         </div>
       </div>

@@ -44,7 +44,10 @@
   }
 
   .tag-item {
-    margin: 0em 0.5em 0.5em 0em;
+    margin-bottom: 0.5em;
+    margin-left: unset;
+    margin-right: 0.5em;
+    margin-top: unset;
   }
 
   .details-basic {
@@ -63,9 +66,9 @@
     order: 3;
 
     .collapsed {
+      -webkit-box-orient: vertical;
       display: -webkit-box;
       -webkit-line-clamp: 3;
-      -webkit-box-orient: vertical;  
       overflow: hidden;
     }
   }
@@ -80,8 +83,8 @@
   }
 
   .details-extra {
-    order: 5;
     color: gray;
+    order: 5;
 
     h6 {
       font-size: 0.8rem;

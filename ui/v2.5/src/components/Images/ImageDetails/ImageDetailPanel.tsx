@@ -11,10 +11,7 @@ import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { sortPerformers } from "src/core/performers";
 import { FormattedDate, FormattedMessage, useIntl } from "react-intl";
 import { objectTitle } from "src/core/files";
-import {
-  faChevronDown,
-  faChevronUp
-} from "@fortawesome/free-solid-svg-icons";
+import { faChevronDown, faChevronUp } from "@fortawesome/free-solid-svg-icons";
 import { ConfigurationContext } from "src/hooks/Config";
 import { IUIConfig } from "src/core/config";
 
@@ -24,7 +21,7 @@ interface IImageDetailProps {
 
 export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
   const intl = useIntl();
-  
+
   const { configuration } = React.useContext(ConfigurationContext);
   const uiConfig = configuration?.ui as IUIConfig | undefined;
   const showAllDetails = uiConfig?.showAllDetails ?? true;
@@ -53,7 +50,9 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
               <Icon className="fa-fw" icon={getCollapseButtonIcon()} />
             </Button>
           </h5>
-          <p className={`pre ${collapsed ? 'collapsed' : ''}`}>{props.image.details}</p>
+          <p className={`pre ${collapsed ? "collapsed" : ""}`}>
+            {props.image.details}
+          </p>
         </div>
       </div>
     );
@@ -93,9 +92,7 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
           <h5>
             <FormattedMessage id="performers" />
           </h5>
-          <div className="row image-performers">
-            {cards}
-          </div>
+          <div className="row image-performers">{cards}</div>
         </div>
       </div>
     );
@@ -120,7 +117,7 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
       </div>
     );
   }
-  
+
   return (
     <div className="col-xl-12 details-display">
       <div className="details-basic">
@@ -142,7 +139,9 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
                   <TruncatedText text={props.image.studio.name} />
                 </Link>
               </h6>
-            ) : (<h6>&nbsp;</h6>)}
+            ) : (
+              <h6>&nbsp;</h6>
+            )}
           </div>
           <div className="col-6">
             <h5>
@@ -156,7 +155,9 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
                   timeZone="utc"
                 />
               </h6>
-            ) : (<h6>&nbsp;</h6>)}
+            ) : (
+              <h6>&nbsp;</h6>
+            )}
           </div>
         </div>
         <div className="row">
@@ -164,11 +165,7 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
             <h5>
               <FormattedMessage id="scene_code" />
             </h5>
-            {props.image.code ? (
-              <h6>
-                {props.image.code}
-              </h6>
-            ) : (<h6>&nbsp;</h6>)}
+            {props.image.code ? <h6>{props.image.code}</h6> : <h6>&nbsp;</h6>}
           </div>
           <div className="col-6">
             <h5>
@@ -183,10 +180,10 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
               <FormattedMessage id="photographer" />
             </h5>
             {props.image.photographer ? (
-              <h6>
-                {props.image.photographer}
-              </h6>
-            ) : (<h6>&nbsp;</h6>)}
+              <h6>{props.image.photographer}</h6>
+            ) : (
+              <h6>&nbsp;</h6>
+            )}
           </div>
           <div className="col-6">
             <h5>
@@ -196,7 +193,9 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
               <h6>
                 {file.width}x{file.height}
               </h6>
-            ) : (<h6>&nbsp</h6>)}
+            ) : (
+              <h6>&nbsp</h6>
+            )}
           </div>
         </div>
       </div>
