@@ -854,10 +854,11 @@ div.dropdown-menu {
 }
 
 .toast-container {
-  left: 45%;
   max-width: 350px;
+  opacity: 0.9;
   position: fixed;
-  top: 2rem;
+  right: 2rem;
+  top: 4rem;
   z-index: 1051;
 
   .success {
@@ -880,15 +881,13 @@ div.dropdown-menu {
     background-color: transparent;
     border: none;
     color: $text-color;
+    padding: 1rem;
+    white-space: pre-wrap;
 
     .close {
       color: $text-color;
       text-shadow: none;
     }
-  }
-
-  .toast-body {
-    white-space: pre-wrap;
   }
 }
 

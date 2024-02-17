@@ -9,7 +9,6 @@ import { Toast } from "react-bootstrap";
 import { errorToString } from "src/utils";
 
 export interface IToast {
-  header?: string;
   content: React.ReactNode | string;
   delay?: number;
   variant?: "success" | "danger" | "warning";
@@ -38,9 +37,8 @@ export const ToastProvider: React.FC = ({ children }) => {
       delay={toast.delay ?? 3000}
     >
       <Toast.Header>
-        <span className="mr-auto">{toast.header}</span>
+        <span className="mr-auto">{toast.content}</span>
       </Toast.Header>
-      <Toast.Body>{toast.content}</Toast.Body>
     </Toast>
   ));
 
@@ -73,7 +71,6 @@ export const useToast = () => {
         console.error(error);
         addToast({
           variant: "danger",
-          header: "Error",
           content: message,
         });
       },
