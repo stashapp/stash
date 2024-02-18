@@ -27,7 +27,7 @@ import { useCompare } from "src/hooks/state";
 import { Placement } from "react-bootstrap/esm/Overlay";
 import { sortByRelevance } from "src/utils/query";
 import { galleryTitle } from "src/core/galleries";
-import { PatchComponent } from "src/pluginApi";
+import { PatchComponent } from "src/patch";
 
 export type Gallery = Pick<GQL.Gallery, "id" | "title"> & {
   files: Pick<GQL.GalleryFile, "path">[];

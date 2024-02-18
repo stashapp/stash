@@ -7,7 +7,7 @@ import { Icon } from "./Icon";
 
 import "react-datepicker/dist/react-datepicker.css";
 import { useIntl } from "react-intl";
-import { PatchComponent } from "src/pluginApi";
+import { PatchComponent } from "src/patch";
 
 interface IProps {
   disabled?: boolean;

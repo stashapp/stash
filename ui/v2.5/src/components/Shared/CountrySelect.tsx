@@ -3,7 +3,7 @@ import Creatable from "react-select/creatable";
 import { useIntl } from "react-intl";
 import { getCountries } from "src/utils/country";
 import { CountryLabel } from "./CountryLabel";
-import { PatchComponent } from "src/pluginApi";
+import { PatchComponent } from "src/patch";
 
 interface IProps {
   value?: string;

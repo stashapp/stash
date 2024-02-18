@@ -27,7 +27,7 @@ import {
 import { useCompare } from "src/hooks/state";
 import { Link } from "react-router-dom";
 import { sortByRelevance } from "src/utils/query";
-import { PatchComponent } from "src/pluginApi";
+import { PatchComponent } from "src/patch";
 
 export type SelectObject = {
   id: string;
