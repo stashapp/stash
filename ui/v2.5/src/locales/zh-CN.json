@@ -1191,7 +1191,9 @@
     "stats": {
         "image_size": "图片大小",
         "scenes_duration": "短片长度",
-        "scenes_size": "短片大小"
+        "scenes_size": "短片大小",
+        "total_play_count": "总播放次数",
+        "total_play_duration": "总播放时长"
     },
     "status": "状态：{statusText}",
     "studio": "工作室",
@@ -1234,12 +1236,36 @@
     "url": "链接",
     "validation": {
         "date_invalid_form": "${path} 的格式必须为 YYYY-MM-DD",
-        "required": "${path} 是必填字段"
+        "required": "${path} 是必填字段",
+        "blank": "${path}不能为空",
+        "unique": "${path}不能相同"
     },
     "videos": "视频",
     "view_all": "查看全部",
     "weight": "体重",
     "weight_kg": "体重 (kg)",
     "years_old": "岁",
-    "zip_file_count": "压缩文件数量"
+    "zip_file_count": "压缩文件数量",
+    "studio_tagger": {
+        "update_studios": "更新工作室",
+        "add_new_studios": "添加工作室",
+        "updating_untagged_studios_description": "更新未标记的工作室将尝试匹配缺少Stash ID的工作室，并更新元数据。",
+        "config": {
+            "edit_excluded_fields": "编辑排除字段",
+            "create_parent_desc": "对于已存在且名称完全匹配的父工作室创建缺失的父工作室，或者标记并更新数据/图片",
+            "excluded_fields": "排除字段：",
+            "no_fields_are_excluded": "无已排除字段",
+            "create_parent_label": "添加父工作室"
+        },
+        "batch_add_studios": "批量添加工作室",
+        "batch_update_studios": "批量更新工作室",
+        "studio_names_separated_by_comma": "工作室名称，用逗号分隔",
+        "update_studio": "更新工作室",
+        "current_page": "当前页",
+        "no_results_found": "未查询到结果。",
+        "network_error": "网络错误"
+    },
+    "subsidiary_studio_count": "子工作室数量",
+    "urls": "链接",
+    "video_codec": "视频编码"
 }
