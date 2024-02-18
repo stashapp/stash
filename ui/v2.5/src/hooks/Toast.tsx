@@ -1,57 +1,119 @@
-import React, {
-  useState,
-  useContext,
-  createContext,
-  useCallback,
-  useMemo,
-} from "react";
-import { Toast } from "react-bootstrap";
+import {
+  faArrowUpRightFromSquare,
+  faTriangleExclamation,
+} from "@fortawesome/free-solid-svg-icons";
+import React, { useState, useContext, createContext, useMemo } from "react";
+import { Button, Toast } from "react-bootstrap";
+import { FormattedMessage } from "react-intl";
+import { Icon } from "src/components/Shared/Icon";
+import { ModalComponent } from "src/components/Shared/Modal";
 import { errorToString } from "src/utils";
+import cx from "classnames";
 
 export interface IToast {
-  header?: string;
-  content: React.ReactNode | string;
+  content: JSX.Element | string;
   delay?: number;
   variant?: "success" | "danger" | "warning";
+  priority?: number; // higher is more important
 }
 
 interface IActiveToast extends IToast {
   id: number;
 }
 
+// errors are always more important than regular toasts
+const errorPriority = 100;
+// errors should stay on screen longer
+const errorDelay = 5000;
+
 let toastID = 0;
 
 const ToastContext = createContext<(item: IToast) => void>(() => {});
 
 export const ToastProvider: React.FC = ({ children }) => {
-  const [toasts, setToasts] = useState<IActiveToast[]>([]);
+  const [toast, setToast] = useState<IActiveToast>();
+  const [hiding, setHiding] = useState(false);
+  const [expanded, setExpanded] = useState(false);
 
-  const removeToast = (id: number) =>
-    setToasts((prev) => prev.filter((item) => item.id !== id));
+  function expand() {
+    setExpanded(true);
+  }
 
-  const toastItems = toasts.map((toast) => (
-    <Toast
-      autohide
-      key={toast.id}
-      onClose={() => removeToast(toast.id)}
-      className={toast.variant ?? "success"}
-      delay={toast.delay ?? 3000}
-    >
-      <Toast.Header>
-        <span className="mr-auto">{toast.header}</span>
-      </Toast.Header>
-      <Toast.Body>{toast.content}</Toast.Body>
-    </Toast>
-  ));
+  const toastItem = useMemo(() => {
+    if (!toast || expanded) return null;
 
-  const addToast = useCallback((toast: IToast) => {
-    setToasts((prev) => [...prev, { ...toast, id: toastID++ }]);
-  }, []);
+    return (
+      <Toast
+        autohide
+        key={toast.id}
+        onClose={() => setHiding(true)}
+        className={toast.variant ?? "success"}
+        delay={toast.delay ?? 3000}
+      >
+        <Toast.Header>
+          <span className="mr-auto" onClick={() => expand()}>
+            {toast.content}
+          </span>
+          {toast.variant === "danger" && (
+            <Button
+              variant="minimal"
+              className="expand-error-button"
+              onClick={() => expand()}
+            >
+              <Icon icon={faArrowUpRightFromSquare} />
+            </Button>
+          )}
+        </Toast.Header>
+      </Toast>
+    );
+  }, [toast, expanded]);
+
+  function addToast(item: IToast) {
+    if (hiding || !toast || (item.priority ?? 0) >= (toast.priority ?? 0)) {
+      setHiding(false);
+      setToast({ ...item, id: toastID++ });
+    }
+  }
+
+  function copyToClipboard() {
+    const { content } = toast ?? {};
+
+    if (!!content && typeof content === "string" && navigator.clipboard) {
+      navigator.clipboard.writeText(content);
+    }
+  }
 
   return (
     <ToastContext.Provider value={addToast}>
       {children}
-      <div className="toast-container row">{toastItems}</div>
+      {expanded && (
+        <ModalComponent
+          dialogClassName="toast-expanded-dialog"
+          show={expanded}
+          accept={{
+            onClick: () => {
+              setToast(undefined);
+              setExpanded(false);
+            },
+          }}
+          header={<FormattedMessage id="errors.header" />}
+          icon={faTriangleExclamation}
+          footerButtons={
+            <>
+              {!!navigator.clipboard && (
+                <Button variant="secondary" onClick={() => copyToClipboard()}>
+                  <FormattedMessage id="actions.copy_to_clipboard" />
+                </Button>
+              )}
+            </>
+          }
+        >
+          {toast?.content}
+        </ModalComponent>
+      )}
+      <div className={cx("toast-container row", { hidden: !toast || hiding })}>
+        {toastItem}
+      </div>
     </ToastContext.Provider>
   );
 };
@@ -62,7 +124,7 @@ export const useToast = () => {
   return useMemo(
     () => ({
       toast: addToast,
-      success(message: React.ReactNode | string) {
+      success(message: JSX.Element | string) {
         addToast({
           content: message,
         });
@@ -73,8 +135,9 @@ export const useToast = () => {
         console.error(error);
         addToast({
           variant: "danger",
-          header: "Error",
           content: message,
+          priority: errorPriority,
+          delay: errorDelay,
         });
       },
     }),
