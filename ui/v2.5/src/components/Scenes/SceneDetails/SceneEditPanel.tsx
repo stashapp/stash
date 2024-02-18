@@ -19,12 +19,7 @@ import {
   mutateReloadScrapers,
   queryScrapeSceneQueryFragment,
 } from "src/core/StashService";
-import {
-  TagSelect,
-  StudioSelect,
-  GallerySelect,
-  MovieSelect,
-} from "src/components/Shared/Select";
+import { MovieSelect } from "src/components/Shared/Select";
 import { Icon } from "src/components/Shared/Icon";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { ImageInput } from "src/components/Shared/ImageInput";
@@ -52,6 +47,9 @@ import {
   PerformerSelect,
 } from "src/components/Performers/PerformerSelect";
 import { formikUtils } from "src/utils/form";
+import { Tag, TagSelect } from "src/components/Tags/TagSelect";
+import { Studio, StudioSelect } from "src/components/Studios/StudioSelect";
+import { Gallery, GallerySelect } from "src/components/Galleries/GallerySelect";
 
 const SceneScrapeDialog = lazyComponent(() => import("./SceneScrapeDialog"));
 const SceneQueryModal = lazyComponent(() => import("./SceneQueryModal"));
@@ -76,10 +74,10 @@ export const SceneEditPanel: React.FC<IProps> = ({
   const intl = useIntl();
   const Toast = useToast();
 
-  const [galleries, setGalleries] = useState<{ id: string; title: string }[]>(
-    []
-  );
+  const [galleries, setGalleries] = useState<Gallery[]>([]);
   const [performers, setPerformers] = useState<Performer[]>([]);
+  const [tags, setTags] = useState<Tag[]>([]);
+  const [studio, setStudio] = useState<Studio | null>(null);
 
   const Scrapers = useListSceneScrapers();
   const [fragmentScrapers, setFragmentScrapers] = useState<GQL.Scraper[]>([]);
@@ -96,6 +94,8 @@ export const SceneEditPanel: React.FC<IProps> = ({
       scene.galleries?.map((g) => ({
         id: g.id,
         title: galleryTitle(g),
+        files: g.files,
+        folder: g.folder,
       })) ?? []
     );
   }, [scene.galleries]);
@@ -103,6 +103,14 @@ export const SceneEditPanel: React.FC<IProps> = ({
   useEffect(() => {
     setPerformers(scene.performers ?? []);
   }, [scene.performers]);
+
+  useEffect(() => {
+    setTags(scene.tags ?? []);
+  }, [scene.tags]);
+
+  useEffect(() => {
+    setStudio(scene.studio ?? null);
+  }, [scene.studio]);
 
   const { configuration: stashConfig } = React.useContext(ConfigurationContext);
 
@@ -181,12 +189,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
     formik.setFieldValue("rating100", v);
   }
 
-  interface IGallerySelectValue {
-    id: string;
-    title: string;
-  }
-
-  function onSetGalleries(items: IGallerySelectValue[]) {
+  function onSetGalleries(items: Gallery[]) {
     setGalleries(items);
     formik.setFieldValue(
       "gallery_ids",
@@ -202,9 +205,22 @@ export const SceneEditPanel: React.FC<IProps> = ({
     );
   }
 
+  function onSetTags(items: Tag[]) {
+    setTags(items);
+    formik.setFieldValue(
+      "tag_ids",
+      items.map((item) => item.id)
+    );
+  }
+
+  function onSetStudio(item: Studio | null) {
+    setStudio(item);
+    formik.setFieldValue("studio_id", item ? item.id : null);
+  }
+
   useRatingKeybinds(
     isVisible,
-    stashConfig?.ui?.ratingSystemOptions?.type,
+    stashConfig?.ui.ratingSystemOptions?.type,
     setRating
   );
 
@@ -381,6 +397,8 @@ export const SceneEditPanel: React.FC<IProps> = ({
     return (
       <SceneScrapeDialog
         scene={currentScene}
+        sceneStudio={studio}
+        sceneTags={tags}
         scenePerformers={performers}
         scraped={scrapedScene}
         endpoint={endpoint}
@@ -540,7 +558,11 @@ export const SceneEditPanel: React.FC<IProps> = ({
     }
 
     if (updatedScene.studio && updatedScene.studio.stored_id) {
-      formik.setFieldValue("studio_id", updatedScene.studio.stored_id);
+      onSetStudio({
+        id: updatedScene.studio.stored_id,
+        name: updatedScene.studio.name ?? "",
+        aliases: [],
+      });
     }
 
     if (updatedScene.performers && updatedScene.performers.length > 0) {
@@ -578,8 +600,15 @@ export const SceneEditPanel: React.FC<IProps> = ({
       });
 
       if (idTags.length > 0) {
-        const newIds = idTags.map((p) => p.stored_id);
-        formik.setFieldValue("tag_ids", newIds as string[]);
+        onSetTags(
+          idTags.map((p) => {
+            return {
+              id: p.stored_id!,
+              name: p.name ?? "",
+              aliases: [],
+            };
+          })
+        );
       }
     }
 
@@ -692,7 +721,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
     const title = intl.formatMessage({ id: "galleries" });
     const control = (
       <GallerySelect
-        selected={galleries}
+        values={galleries}
         onSelect={(items) => onSetGalleries(items)}
         isMulti
       />
@@ -705,13 +734,8 @@ export const SceneEditPanel: React.FC<IProps> = ({
     const title = intl.formatMessage({ id: "studio" });
     const control = (
       <StudioSelect
-        onSelect={(items) =>
-          formik.setFieldValue(
-            "studio_id",
-            items.length > 0 ? items[0]?.id : null
-          )
-        }
-        ids={formik.values.studio_id ? [formik.values.studio_id] : []}
+        onSelect={(items) => onSetStudio(items.length > 0 ? items[0] : null)}
+        values={studio ? [studio] : []}
       />
     );
 
@@ -748,13 +772,8 @@ export const SceneEditPanel: React.FC<IProps> = ({
     const control = (
       <TagSelect
         isMulti
-        onSelect={(items) =>
-          formik.setFieldValue(
-            "tag_ids",
-            items.map((item) => item.id)
-          )
-        }
-        ids={formik.values.tag_ids}
+        onSelect={onSetTags}
+        values={tags}
         hoverPlacement="right"
       />
     );

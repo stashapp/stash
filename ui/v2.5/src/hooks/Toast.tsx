@@ -6,8 +6,9 @@ import React, {
   useMemo,
 } from "react";
 import { Toast } from "react-bootstrap";
+import { errorToString } from "src/utils";
 
-interface IToast {
+export interface IToast {
   header?: string;
   content: React.ReactNode | string;
   delay?: number;
@@ -67,16 +68,7 @@ export const useToast = () => {
         });
       },
       error(error: unknown) {
-        let message;
-        if (error instanceof Error) {
-          message = error.message;
-        }
-        if (!message) {
-          message = String(error);
-        }
-        if (!message) {
-          message = "Unknown error";
-        }
+        const message = errorToString(error);
 
         console.error(error);
         addToast({

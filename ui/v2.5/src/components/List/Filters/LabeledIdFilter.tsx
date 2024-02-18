@@ -1,6 +1,7 @@
 import React from "react";
 import { Form } from "react-bootstrap";
 import { FilterSelect, SelectObject } from "src/components/Shared/Select";
+import { galleryTitle } from "src/core/galleries";
 import { Criterion } from "src/models/list-filter/criteria/criterion";
 import { ILabeledId } from "src/models/list-filter/types";
 
@@ -22,16 +23,25 @@ export const LabeledIdFilter: React.FC<ILabeledIdFilterProps> = ({
     inputType !== "scene_tags" &&
     inputType !== "performer_tags" &&
     inputType !== "tags" &&
-    inputType !== "movies"
+    inputType !== "movies" &&
+    inputType !== "galleries"
   ) {
     return null;
+  }
+
+  function getLabel(i: SelectObject) {
+    if (inputType === "galleries") {
+      return galleryTitle(i);
+    }
+
+    return i.name ?? i.title ?? "";
   }
 
   function onSelectionChanged(items: SelectObject[]) {
     onValueChanged(
       items.map((i) => ({
         id: i.id,
-        label: i.name ?? i.title ?? "",
+        label: getLabel(i),
       }))
     );
   }

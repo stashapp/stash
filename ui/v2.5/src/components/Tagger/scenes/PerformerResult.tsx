@@ -12,6 +12,7 @@ import {
   PerformerSelect,
 } from "src/components/Performers/PerformerSelect";
 import { getStashboxBase } from "src/utils/stashbox";
+import { ExternalLink } from "src/components/Shared/ExternalLink";
 
 interface IPerformerName {
   performer: GQL.ScrapedPerformer | Performer;
@@ -26,9 +27,7 @@ const PerformerName: React.FC<IPerformerName> = ({
 }) => {
   const name =
     baseURL && id ? (
-      <a href={`${baseURL}${id}`} target="_blank" rel="noreferrer">
-        {performer.name}
-      </a>
+      <ExternalLink href={`${baseURL}${id}`}>{performer.name}</ExternalLink>
     ) : (
       performer.name
     );

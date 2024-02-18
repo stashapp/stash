@@ -22,7 +22,8 @@ import { useToast } from "src/hooks/Toast";
 import { withoutTypename } from "src/utils/data";
 import { Icon } from "../Shared/Icon";
 
-type PluginSettings = Record<string, Record<string, unknown>>;
+type PluginConfigs = Record<string, Record<string, unknown>>;
+
 export interface ISettingsContextState {
   loading: boolean;
   error: ApolloError | undefined;
@@ -32,7 +33,9 @@ export interface ISettingsContextState {
   scraping: GQL.ConfigScrapingInput;
   dlna: GQL.ConfigDlnaInput;
   ui: IUIConfig;
-  plugins: PluginSettings;
+  plugins: PluginConfigs;
+
+  advancedMode: boolean;
 
   // apikey isn't directly settable, so expose it here
   apiKey: string;
@@ -44,9 +47,39 @@ export interface ISettingsContextState {
   saveDLNA: (input: Partial<GQL.ConfigDlnaInput>) => void;
   saveUI: (input: Partial<IUIConfig>) => void;
   savePluginSettings: (pluginID: string, input: {}) => void;
+  setAdvancedMode: (value: boolean) => void;
 
   refetch: () => void;
 }
+
+function noop() {}
+
+const emptyState: ISettingsContextState = {
+  loading: false,
+  error: undefined,
+  general: {},
+  interface: {},
+  defaults: {},
+  scraping: {},
+  dlna: {},
+  ui: {},
+  plugins: {},
+
+  advancedMode: false,
+
+  apiKey: "",
+
+  saveGeneral: noop,
+  saveInterface: noop,
+  saveDefaults: noop,
+  saveScraping: noop,
+  saveDLNA: noop,
+  saveUI: noop,
+  savePluginSettings: noop,
+  setAdvancedMode: noop,
+
+  refetch: noop,
+};
 
 export const SettingStateContext =
   React.createContext<ISettingsContextState | null>(null);
@@ -60,6 +93,16 @@ export const useSettings = () => {
 
   return context;
 };
+
+export function useSettingsOptional(): ISettingsContextState {
+  const context = React.useContext(SettingStateContext);
+
+  if (context === null) {
+    return emptyState;
+  }
+
+  return context;
+}
 
 export const SettingsContext: React.FC = ({ children }) => {
   const Toast = useToast();
@@ -91,12 +134,12 @@ export const SettingsContext: React.FC = ({ children }) => {
   const [pendingDLNA, setPendingDLNA] = useState<GQL.ConfigDlnaInput>();
   const [updateDLNAConfig] = useConfigureDLNA();
 
-  const [ui, setUI] = useState({});
+  const [ui, setUI] = useState<IUIConfig>({});
   const [pendingUI, setPendingUI] = useState<{}>();
   const [updateUIConfig] = useConfigureUI();
 
-  const [plugins, setPlugins] = useState<PluginSettings>({});
-  const [pendingPlugins, setPendingPlugins] = useState<PluginSettings>();
+  const [plugins, setPlugins] = useState<PluginConfigs>({});
+  const [pendingPlugins, setPendingPlugins] = useState<PluginConfigs>();
   const [updatePluginConfig] = useConfigurePlugin();
 
   const [updateSuccess, setUpdateSuccess] = useState<boolean>();
@@ -380,13 +423,15 @@ export const SettingsContext: React.FC = ({ children }) => {
     });
   }
 
+  type UIConfigInput = GQL.Scalars["Map"]["input"];
+
   // saves the configuration if no further changes are made after a half second
   const saveUIConfig = useDebounce(async (input: IUIConfig) => {
     try {
       setUpdateSuccess(undefined);
       await updateUIConfig({
         variables: {
-          input,
+          input: input as UIConfigInput,
         },
       });
 
@@ -430,8 +475,14 @@ export const SettingsContext: React.FC = ({ children }) => {
     });
   }
 
+  function setAdvancedMode(value: boolean) {
+    saveUI({
+      advancedMode: value,
+    });
+  }
+
   // saves the configuration if no further changes are made after a half second
-  const savePluginConfig = useDebounce(async (input: PluginSettings) => {
+  const savePluginConfig = useDebounce(async (input: PluginConfigs) => {
     try {
       setUpdateSuccess(undefined);
 
@@ -536,6 +587,7 @@ export const SettingsContext: React.FC = ({ children }) => {
         dlna,
         ui,
         plugins,
+        advancedMode: ui.advancedMode ?? false,
         saveGeneral,
         saveInterface,
         saveDefaults,
@@ -544,6 +596,7 @@ export const SettingsContext: React.FC = ({ children }) => {
         saveUI,
         refetch,
         savePluginSettings,
+        setAdvancedMode,
       }}
     >
       {maybeRenderLoadingIndicator()}

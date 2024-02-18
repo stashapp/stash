@@ -29,6 +29,10 @@
   .package-manager-table-container {
     max-height: 300px;
     overflow-y: auto;
+
+    th {
+      border: none;
+    }
   }
 
   table thead {

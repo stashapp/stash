@@ -36,7 +36,7 @@ export type CriterionValue =
   | ITimestampValue
   | IPhashDistanceValue;
 
-export interface IEncodedCriterion<T extends CriterionValue> {
+export interface ISavedCriterion<T extends CriterionValue> {
   modifier: CriterionModifier;
   value: T | undefined;
 }
@@ -142,29 +142,22 @@ export abstract class Criterion<V extends CriterionValue> {
     return JSON.stringify(encodedCriterion);
   }
 
-  public setFromEncodedCriterion(encodedCriterion: IEncodedCriterion<V>) {
-    if (
-      encodedCriterion.value !== undefined &&
-      encodedCriterion.value !== null
-    ) {
-      this.value = encodedCriterion.value;
+  public setFromSavedCriterion(criterion: ISavedCriterion<V>) {
+    if (criterion.value !== undefined && criterion.value !== null) {
+      this.value = criterion.value;
     }
-    this.modifier = encodedCriterion.modifier;
+    this.modifier = criterion.modifier;
   }
 
-  public apply(outputFilter: Record<string, unknown>) {
-    outputFilter[this.criterionOption.type] = this.toCriterionInput();
-  }
-
-  protected toCriterionInput(): unknown {
+  public toCriterionInput(): unknown {
     return {
       value: this.value,
       modifier: this.modifier,
     };
   }
 
-  public toSavedFilter(outputFilter: Record<string, unknown>) {
-    outputFilter[this.criterionOption.type] = {
+  public toSavedCriterion(): ISavedCriterion<V> {
+    return {
       value: this.value,
       modifier: this.modifier,
     };
@@ -261,7 +254,7 @@ export class ILabeledIdCriterion extends Criterion<ILabeledId[]> {
     return this.value.map((v) => v.label).join(", ");
   }
 
-  protected toCriterionInput(): MultiCriterionInput {
+  public toCriterionInput(): MultiCriterionInput {
     return {
       value: this.value.map((v) => v.id),
       modifier: this.modifier,
@@ -311,10 +304,10 @@ export class IHierarchicalLabeledIdCriterion extends Criterion<IHierarchicalLabe
     }
   }
 
-  public setFromEncodedCriterion(
-    encodedCriterion: IEncodedCriterion<IHierarchicalLabelValue>
+  public setFromSavedCriterion(
+    criterion: ISavedCriterion<IHierarchicalLabelValue>
   ) {
-    const { modifier, value } = encodedCriterion;
+    const { modifier, value } = criterion;
 
     if (value !== undefined) {
       this.value = {
@@ -351,7 +344,7 @@ export class IHierarchicalLabeledIdCriterion extends Criterion<IHierarchicalLabe
     return `${labels} (+${this.value.depth > 0 ? this.value.depth : "all"})`;
   }
 
-  protected toCriterionInput(): HierarchicalMultiCriterionInput {
+  public toCriterionInput(): HierarchicalMultiCriterionInput {
     let excludes: string[] = [];
 
     // if modifier is equals, depth must be 0
@@ -551,7 +544,7 @@ export function createBooleanCriterionOption(
 }
 
 export class BooleanCriterion extends StringCriterion {
-  protected toCriterionInput(): boolean {
+  public toCriterionInput(): boolean {
     return this.value === "true";
   }
 
@@ -578,7 +571,7 @@ export class StringBooleanCriterionOption extends CriterionOption {
 }
 
 export class StringBooleanCriterion extends StringCriterion {
-  protected toCriterionInput(): string {
+  public toCriterionInput(): string {
     return this.value;
   }
 
@@ -694,7 +687,7 @@ export class NumberCriterion extends Criterion<INumberValue> {
     }
   }
 
-  protected toCriterionInput(): IntCriterionInput {
+  public toCriterionInput(): IntCriterionInput {
     return {
       modifier: this.modifier,
       value: this.value?.value ?? 0,
@@ -761,7 +754,7 @@ export class DurationCriterion extends Criterion<INumberValue> {
     super(type, { value: undefined, value2: undefined });
   }
 
-  protected toCriterionInput(): IntCriterionInput {
+  public toCriterionInput(): IntCriterionInput {
     return {
       modifier: this.modifier,
       value: this.value?.value ?? 0,
@@ -841,7 +834,7 @@ export class DateCriterion extends Criterion<IDateValue> {
     };
   }
 
-  protected toCriterionInput(): DateCriterionInput {
+  public toCriterionInput(): DateCriterionInput {
     return {
       modifier: this.modifier,
       value: this.value?.value,
@@ -940,7 +933,7 @@ export class TimestampCriterion extends Criterion<ITimestampValue> {
     };
   }
 
-  protected toCriterionInput(): TimestampCriterionInput {
+  public toCriterionInput(): TimestampCriterionInput {
     return {
       modifier: this.modifier,
       value: this.transformValueToInput(this.value.value),

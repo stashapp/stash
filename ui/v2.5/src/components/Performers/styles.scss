@@ -27,21 +27,8 @@
         color: #ff7373;
       }
 
-      .link {
-        color: rgb(191, 204, 214);
-      }
-
       .instagram {
         color: pink;
-      }
-
-      .icon-link {
-        padding: 0;
-
-        a {
-          display: inline-block;
-          padding: $btn-padding-y $btn-padding-x;
-        }
       }
     }
 
@@ -76,7 +63,7 @@
   }
 
   &-image {
-    height: 30rem;
+    aspect-ratio: 2/3;
     min-width: 11.25rem;
     object-fit: cover;
     object-position: top;
@@ -206,9 +193,20 @@
   }
 }
 
+.favourite-data .favorite {
+  color: #ff7373;
+}
+
+.performer-table .height-imperial,
+.performer-table .weight-imperial,
+.performer-table .penis-length-imperial,
 .performer-disambiguation {
   color: $text-muted;
   font-size: 0.875em;
+}
+
+.performer-table .age-data span {
+  border-bottom: 1px dotted #f5f8fa;
 }
 
 .performer-result .performer-details > span {
@@ -222,8 +220,14 @@
 }
 
 .performer-select {
+  .performer-disambiguation {
+    color: initial;
+    white-space: pre;
+  }
+
   .alias {
     font-weight: bold;
+    white-space: pre;
   }
 
   .performer-select-image {
@@ -231,4 +235,10 @@
     max-height: 50px;
     max-width: 50px;
   }
+}
+
+.edit-performers-dialog .modal-body {
+  max-height: calc(100vh - 12rem);
+  overflow-y: auto;
+  padding-right: 1.5rem;
 }

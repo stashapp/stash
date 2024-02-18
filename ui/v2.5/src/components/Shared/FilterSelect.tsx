@@ -89,6 +89,7 @@ const SelectComponent = <T, IsMulti extends boolean>(
     ...props,
     styles,
     defaultOptions: true,
+    isClearable: true,
     value: selectedOptions ?? null,
     className: cx("react-select", props.className),
     classNamePrefix: "react-select",
@@ -133,8 +134,8 @@ export interface IFilterComponentProps<T> extends IFilterProps {
   onCreate?: (
     name: string
   ) => Promise<{ value: string; item: T; message: string }>;
-  getNamedObject: (id: string, name: string) => T;
-  isValidNewOption: (inputValue: string, options: T[]) => boolean;
+  getNamedObject?: (id: string, name: string) => T;
+  isValidNewOption?: (inputValue: string, options: T[]) => boolean;
 }
 
 export const FilterSelectComponent = <
@@ -149,6 +150,7 @@ export const FilterSelectComponent = <
     values,
     isMulti,
     onSelect,
+    creatable = false,
     isValidNewOption,
     getNamedObject,
     loadOptions,
@@ -181,52 +183,62 @@ export const FilterSelectComponent = <
     onSelect?.(selected.map((item) => item.object));
   };
 
-  const onCreate = async (name: string) => {
-    try {
-      setLoading(true);
-      const { value, item: newItem, message } = await props.onCreate!(name);
-      const newItemOption = {
-        object: newItem,
-        value,
-      } as Option<T>;
-      if (!isMulti) {
-        onChange(newItemOption);
-      } else {
-        const o = (selectedOptions ?? []) as Option<T>[];
-        onChange([...o, newItemOption]);
-      }
+  const onCreate =
+    creatable && props.onCreate
+      ? async (name: string) => {
+          try {
+            setLoading(true);
+            const {
+              value,
+              item: newItem,
+              message,
+            } = await props.onCreate!(name);
+            const newItemOption = {
+              object: newItem,
+              value,
+            } as Option<T>;
+            if (!isMulti) {
+              onChange(newItemOption);
+            } else {
+              const o = (selectedOptions ?? []) as Option<T>[];
+              onChange([...o, newItemOption]);
+            }
 
-      setLoading(false);
-      Toast.success(
-        <span>
-          {message}: <b>{name}</b>
-        </span>
-      );
-    } catch (e) {
-      Toast.error(e);
-    }
-  };
+            setLoading(false);
+            Toast.success(
+              <span>
+                {message}: <b>{name}</b>
+              </span>
+            );
+          } catch (e) {
+            Toast.error(e);
+          }
+        }
+      : undefined;
 
-  const getNewOptionData = (
-    inputValue: string,
-    optionLabel: React.ReactNode
-  ) => {
-    return {
-      value: "",
-      object: getNamedObject("", optionLabel as string),
-    };
-  };
+  const getNewOptionData =
+    creatable && getNamedObject
+      ? (inputValue: string, optionLabel: React.ReactNode) => {
+          return {
+            value: "",
+            object: getNamedObject("", optionLabel as string),
+          };
+        }
+      : undefined;
 
-  const validNewOption = (
-    inputValue: string,
-    value: Options<Option<T>>,
-    options: OptionsOrGroups<Option<T>, GroupBase<Option<T>>>
-  ) => {
-    return isValidNewOption(
-      inputValue,
-      (options as Options<Option<T>>).map((o) => o.object)
-    );
-  };
+  const validNewOption =
+    creatable && isValidNewOption
+      ? (
+          inputValue: string,
+          value: Options<Option<T>>,
+          options: OptionsOrGroups<Option<T>, GroupBase<Option<T>>>
+        ) => {
+          return isValidNewOption(
+            inputValue,
+            (options as Options<Option<T>>).map((o) => o.object)
+          );
+        }
+      : undefined;
 
   const debounceDelay = 100;
   const debounceLoadOptions = useDebounce((inputValue, callback) => {
@@ -240,7 +252,7 @@ export const FilterSelectComponent = <
       isLoading={props.isLoading || loading}
       onChange={onChange}
       selectedOptions={selectedOptions}
-      onCreateOption={props.creatable ? onCreate : undefined}
+      onCreateOption={onCreate}
       getNewOptionData={getNewOptionData}
       isValidNewOption={validNewOption}
     />

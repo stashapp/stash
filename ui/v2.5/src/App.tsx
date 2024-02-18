@@ -36,7 +36,6 @@ import { ConfigurationProvider } from "./hooks/Config";
 import { ManualProvider } from "./components/Help/context";
 import { InteractiveProvider } from "./hooks/Interactive/context";
 import { ReleaseNotesDialog } from "./components/Dialogs/ReleaseNotesDialog";
-import { IUIConfig } from "./core/config";
 import { releaseNotes } from "./docs/en/ReleaseNotes";
 import { getPlatformURL } from "./core/createClient";
 import { lazyComponent } from "./utils/lazyComponent";
@@ -324,8 +323,7 @@ export const App: React.FC = () => {
       return;
     }
 
-    const lastNoteSeen = (config.data?.configuration.ui as IUIConfig)
-      ?.lastNoteSeen;
+    const lastNoteSeen = config.data?.configuration.ui.lastNoteSeen;
     const notes = releaseNotes.filter((n) => {
       return !lastNoteSeen || n.date > lastNoteSeen;
     });

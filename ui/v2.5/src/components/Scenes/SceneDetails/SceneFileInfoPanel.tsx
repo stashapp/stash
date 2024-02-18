@@ -85,7 +85,7 @@ const FileInfoPanel: React.FC<IFileInfoPanelProps> = (
           url={NavUtils.makeScenesPHashMatchUrl(phash?.value)}
           target="_self"
           truncate
-          trusted
+          internal
         />
         <URLField
           id="path"

@@ -42,7 +42,7 @@ export class PhashCriterion extends Criterion<IPhashDistanceValue> {
     }
   }
 
-  protected toCriterionInput(): PhashDistanceCriterionInput {
+  public toCriterionInput(): PhashDistanceCriterionInput {
     return {
       value: this.value.value,
       modifier: this.modifier,
@@ -62,7 +62,7 @@ export class DuplicatedCriterion extends StringCriterion {
     super(DuplicatedCriterionOption);
   }
 
-  protected toCriterionInput(): PHashDuplicationCriterionInput {
+  public toCriterionInput(): PHashDuplicationCriterionInput {
     return {
       duplicated: this.value === "true",
     };

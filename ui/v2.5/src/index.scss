@@ -17,6 +17,7 @@
 @import "src/components/Setup/styles.scss";
 @import "src/components/Studios/styles.scss";
 @import "src/components/Shared/styles.scss";
+@import "src/components/Shared/GridCard/styles.scss";
 @import "src/components/Shared/Rating/styles.scss";
 @import "src/components/Shared/PackageManager/styles.scss";
 @import "src/components/Tags/styles.scss";
@@ -202,6 +203,15 @@ dd {
   .detail-expand-collapse,
   .name-icons {
     margin-left: 10px;
+  }
+}
+
+.btn.link {
+  color: $link-color;
+
+  &:hover:not(:disabled),
+  &:active:not(:disabled) {
+    color: $link-color;
   }
 }
 
@@ -462,34 +472,13 @@ textarea.text-input {
   overflow-y: scroll;
 }
 
-.table-list {
-  min-width: min-content;
+/* stylelint-disable declaration-no-important */
+.border-row {
+  background-color: #414c53;
+  height: 1px;
+  padding: 0 !important;
 }
-
-.table-list a {
-  color: $text-color;
-}
-
-.table-list table {
-  width: inherit;
-}
-
-.table-list td,
-.table-list th {
-  border-left: 1px solid #414c53;
-  font-size: 1rem;
-  text-align: center;
-  vertical-align: middle;
-
-  h5,
-  h6 {
-    font-size: 1rem;
-  }
-
-  &:first-child {
-    border-left: none;
-  }
-}
+/* stylelint-enable declaration-no-important */
 
 @media (max-width: 576px) {
   .row.justify-content-center {
@@ -499,16 +488,6 @@ textarea.text-input {
 }
 
 .zoom-0 {
-  width: 240px;
-
-  .scene-card-preview {
-    height: 135px;
-  }
-
-  .portrait {
-    height: 180px;
-  }
-
   .gallery-card-image,
   .tag-card-image {
     max-height: 180px;
@@ -517,14 +496,6 @@ textarea.text-input {
 
 .zoom-1 {
   width: 320px;
-
-  .scene-card-preview {
-    height: 180px;
-  }
-
-  .portrait {
-    height: 240px;
-  }
 
   .gallery-card-image,
   .tag-card-image {
@@ -537,16 +508,6 @@ textarea.text-input {
 }
 
 .zoom-2 {
-  width: 480px;
-
-  .scene-card-preview {
-    height: 270px;
-  }
-
-  .portrait {
-    height: 360px;
-  }
-
   .gallery-card-image,
   .tag-card-image {
     max-height: 360px;
@@ -558,16 +519,6 @@ textarea.text-input {
 }
 
 .zoom-3 {
-  width: 640px;
-
-  .scene-card-preview {
-    height: 360px;
-  }
-
-  .portrait {
-    height: 480px;
-  }
-
   .tag-card-image,
   .gallery-card-image {
     max-height: 480px;
@@ -712,12 +663,11 @@ div.dropdown-menu {
   flex-wrap: wrap;
   row-gap: 10px;
 
-  /* stylelint-disable */
   .badge {
-    white-space: normal !important;
     margin: unset;
+    // stylelint-disable declaration-no-important
+    white-space: normal !important;
   }
-  /* stylelint-enable */
 }
 
 .tag-item {

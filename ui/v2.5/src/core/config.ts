@@ -25,9 +25,6 @@ export interface ICustomFilter extends ITypename {
   direction: SortDirectionEnum;
 }
 
-// NOTE: This value cannot be more defined, because the generated enum it depends upon is UpperCase, which leads to errors on saving
-export type PinnedFilters = Record<string, Array<string>>;
-
 export type FrontPageContent = ISavedFilterRow | ICustomFilter;
 
 export const defaultMaxOptionsShown = 200;
@@ -60,6 +57,9 @@ export interface IUIConfig {
   // if true the chromecast option will enabled
   enableChromecast?: boolean;
 
+  // if true the fullscreen mobile media auto-rotate option will be disabled
+  disableMobileMediaAutoRotateEnabled?: boolean;
+
   // if true continue scene will always play from the beginning
   alwaysStartFromBeginning?: boolean;
   // if true enable activity tracking
@@ -79,7 +79,11 @@ export interface IUIConfig {
   lastNoteSeen?: number;
 
   vrTag?: string;
-  pinnedFilters?: PinnedFilters;
+
+  pinnedFilters?: Record<string, string[]>;
+  tableColumns?: Record<string, string[]>;
+
+  advancedMode?: boolean;
 }
 
 interface ISavedFilterRowBroken extends ISavedFilterRow {
@@ -94,9 +98,9 @@ type FrontPageContentBroken = ISavedFilterRowBroken | ICustomFilterBroken;
 
 // #4128: deal with incorrectly insensitivised keys (sortBy and savedFilterId)
 export function getFrontPageContent(
-  ui: IUIConfig
+  ui: IUIConfig | undefined
 ): FrontPageContent[] | undefined {
-  return (ui.frontPageContent as FrontPageContentBroken[] | undefined)?.map(
+  return (ui?.frontPageContent as FrontPageContentBroken[] | undefined)?.map(
     (content) => {
       switch (content.__typename) {
         case "SavedFilter":

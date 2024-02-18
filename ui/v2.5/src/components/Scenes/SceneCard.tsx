@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Button, ButtonGroup, OverlayTrigger, Tooltip } from "react-bootstrap";
 import { Link, useHistory } from "react-router-dom";
 import cx from "classnames";
@@ -18,7 +18,7 @@ import TextUtils from "src/utils/text";
 import { SceneQueue } from "src/models/sceneQueue";
 import { ConfigurationContext } from "src/hooks/Config";
 import { PerformerPopoverButton } from "../Shared/PerformerPopoverButton";
-import { GridCard } from "../Shared/GridCard";
+import { GridCard, calculateCardWidth } from "../Shared/GridCard/GridCard";
 import { RatingBanner } from "../Shared/RatingBanner";
 import { FormattedNumber } from "react-intl";
 import {
@@ -32,6 +32,8 @@ import {
 import { objectPath, objectTitle } from "src/core/files";
 import { PreviewScrubber } from "./PreviewScrubber";
 import { PatchComponent } from "src/pluginApi";
+import ScreenUtils from "src/utils/screen";
+import { StudioOverlay } from "../Shared/GridCard/StudioOverlay";
 
 interface IScenePreviewProps {
   isPortrait: boolean;
@@ -95,6 +97,8 @@ export const ScenePreview: React.FC<IScenePreviewProps> = ({
 
 interface ISceneCardProps {
   scene: GQL.SlimSceneDataFragment;
+  containerWidth?: number;
+  previewHeight?: number;
   index?: number;
   queue?: SceneQueue;
   compact?: boolean;
@@ -325,44 +329,7 @@ const SceneCardDetails = PatchComponent(
 const SceneCardOverlays = PatchComponent(
   "SceneCard.Overlays",
   (props: ISceneCardProps) => {
-    const { configuration } = React.useContext(ConfigurationContext);
-
-    function renderStudioThumbnail() {
-      const studioImage = props.scene.studio?.image_path;
-      const studioName = props.scene.studio?.name;
-
-      if (configuration?.interface.showStudioAsText || !studioImage) {
-        return studioName;
-      }
-
-      const studioImageURL = new URL(studioImage);
-      if (studioImageURL.searchParams.get("default") === "true") {
-        return studioName;
-      }
-
-      return (
-        <img
-          className="image-thumbnail"
-          loading="lazy"
-          alt={studioName}
-          src={studioImage}
-        />
-      );
-    }
-
-    function maybeRenderSceneStudioOverlay() {
-      if (!props.scene.studio) return;
-
-      return (
-        <div className="scene-studio-overlay">
-          <Link to={`/studios/${props.scene.studio.id}`}>
-            {renderStudioThumbnail()}
-          </Link>
-        </div>
-      );
-    }
-
-    return <>{maybeRenderSceneStudioOverlay()}</>;
+    return <StudioOverlay studio={props.scene.studio} />;
   }
 );
 
@@ -461,6 +428,7 @@ export const SceneCard = PatchComponent(
   "SceneCard",
   (props: ISceneCardProps) => {
     const { configuration } = React.useContext(ConfigurationContext);
+    const [cardWidth, setCardWidth] = useState<number>();
 
     const file = useMemo(
       () => (props.scene.files.length > 0 ? props.scene.files[0] : undefined),
@@ -483,6 +451,36 @@ export const SceneCard = PatchComponent(
       return "";
     }
 
+    useEffect(() => {
+      if (
+        !props.containerWidth ||
+        props.zoomIndex === undefined ||
+        ScreenUtils.isMobile()
+      )
+        return;
+
+      let zoomValue = props.zoomIndex;
+      let preferredCardWidth: number;
+      switch (zoomValue) {
+        case 0:
+          preferredCardWidth = 240;
+          break;
+        case 1:
+          preferredCardWidth = 340; // this value is intentionally higher than 320
+          break;
+        case 2:
+          preferredCardWidth = 480;
+          break;
+        case 3:
+          preferredCardWidth = 640;
+      }
+      let fittedCardWidth = calculateCardWidth(
+        props.containerWidth,
+        preferredCardWidth!
+      );
+      setCardWidth(fittedCardWidth);
+    }, [props, props.containerWidth, props.zoomIndex]);
+
     const cont = configuration?.interface.continuePlaylistDefault ?? false;
 
     const sceneLink = props.queue
@@ -497,6 +495,7 @@ export const SceneCard = PatchComponent(
         className={`scene-card ${zoomIndex()} ${filelessClass()}`}
         url={sceneLink}
         title={objectTitle(props.scene)}
+        width={cardWidth}
         linkClassName="scene-card-link"
         thumbnailSectionClassName="video-section"
         resumeTime={props.scene.resume_time ?? undefined}

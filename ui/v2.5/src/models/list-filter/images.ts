@@ -12,6 +12,7 @@ import { PathCriterionOption } from "./criteria/path";
 import { PerformersCriterionOption } from "./criteria/performers";
 import { RatingCriterionOption } from "./criteria/rating";
 import { ResolutionCriterionOption } from "./criteria/resolution";
+import { OrientationCriterionOption } from "./criteria/orientation";
 import { StudiosCriterionOption } from "./criteria/studios";
 import {
   PerformerTagsCriterionOption,
@@ -19,6 +20,7 @@ import {
 } from "./criteria/tags";
 import { ListFilterOptions, MediaSortByOptions } from "./filter-options";
 import { DisplayMode } from "./types";
+import { GalleriesCriterionOption } from "./criteria/galleries";
 
 const defaultSortBy = "path";
 
@@ -38,9 +40,11 @@ const criterionOptions = [
   createStringCriterionOption("photographer"),
   createMandatoryStringCriterionOption("checksum", "media_info.checksum"),
   PathCriterionOption,
+  GalleriesCriterionOption,
   OrganizedCriterionOption,
   createMandatoryNumberCriterionOption("o_counter"),
   ResolutionCriterionOption,
+  OrientationCriterionOption,
   ImageIsMissingCriterionOption,
   TagsCriterionOption,
   RatingCriterionOption,

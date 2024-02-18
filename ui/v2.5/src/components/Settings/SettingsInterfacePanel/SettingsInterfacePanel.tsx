@@ -240,6 +240,7 @@ export const SettingsInterfacePanel: React.FC = () => {
         />
 
         <SelectSetting
+          advanced
           id="wall-preview"
           headingID="config.ui.preview_type.heading"
           subHeadingID="config.ui.preview_type.description"
@@ -277,6 +278,12 @@ export const SettingsInterfacePanel: React.FC = () => {
           headingID="config.ui.scene_player.options.enable_chromecast"
           checked={ui.enableChromecast ?? undefined}
           onChange={(v) => saveUI({ enableChromecast: v })}
+        />
+        <BooleanSetting
+          id="disable-mobile-media-auto-rotate"
+          headingID="config.ui.scene_player.options.disable_mobile_media_auto_rotate"
+          checked={ui.disableMobileMediaAutoRotateEnabled ?? undefined}
+          onChange={(v) => saveUI({ disableMobileMediaAutoRotateEnabled: v })}
         />
         <BooleanSetting
           id="show-scrubber"

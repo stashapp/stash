@@ -653,6 +653,7 @@ func (s *scanJob) handleFile(ctx context.Context, f scanFile) error {
 		}
 
 		if ff == nil {
+			// returns a file only if it is actually new
 			ff, err = s.onNewFile(ctx, f)
 			return err
 		}
@@ -740,7 +741,10 @@ func (s *scanJob) onNewFile(ctx context.Context, f scanFile) (models.File, error
 	}
 
 	if renamed != nil {
-		return renamed, nil
+		// handle rename should have already handled the contents of the zip file
+		// so shouldn't need to scan it again
+		// return nil so it doesn't
+		return nil, nil
 	}
 
 	// if not renamed, queue file for creation
@@ -901,8 +905,8 @@ func (s *scanJob) handleRename(ctx context.Context, f models.File, fp []models.F
 		}
 
 		if s.isZipFile(fBase.Basename) {
-			if err := TransferZipFolderHierarchy(ctx, s.Repository.Folder, fBase.ID, otherBase.Path, fBase.Path); err != nil {
-				return fmt.Errorf("moving folder hierarchy for renamed zip file %q: %w", fBase.Path, err)
+			if err := transferZipHierarchy(ctx, s.Repository.Folder, s.Repository.File, fBase.ID, otherBase.Path, fBase.Path); err != nil {
+				return fmt.Errorf("moving zip hierarchy for renamed zip file %q: %w", fBase.Path, err)
 			}
 		}
 
