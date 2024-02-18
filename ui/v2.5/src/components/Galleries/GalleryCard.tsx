@@ -1,8 +1,7 @@
 import { Button, ButtonGroup, OverlayTrigger, Tooltip } from "react-bootstrap";
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
-import { GridCard, calculateCardWidth } from "../Shared/GridCard";
+import { GridCard, calculateCardWidth } from "../Shared/GridCard/GridCard";
 import { HoverPopover } from "../Shared/HoverPopover";
 import { Icon } from "../Shared/Icon";
 import { SceneLink, TagLink } from "../Shared/TagLink";
@@ -10,11 +9,11 @@ import { TruncatedText } from "../Shared/TruncatedText";
 import { PerformerPopoverButton } from "../Shared/PerformerPopoverButton";
 import { PopoverCountButton } from "../Shared/PopoverCountButton";
 import NavUtils from "src/utils/navigation";
-import { ConfigurationContext } from "src/hooks/Config";
 import { RatingBanner } from "../Shared/RatingBanner";
 import { faBox, faPlayCircle, faTag } from "@fortawesome/free-solid-svg-icons";
 import { galleryTitle } from "src/core/galleries";
 import ScreenUtils from "src/utils/screen";
+import { StudioOverlay } from "../Shared/GridCard/StudioOverlay";
 
 interface IProps {
   gallery: GQL.SlimGalleryDataFragment;
@@ -26,8 +25,6 @@ interface IProps {
 }
 
 export const GalleryCard: React.FC<IProps> = (props) => {
-  const { configuration } = React.useContext(ConfigurationContext);
-  const showStudioAsText = configuration?.interface.showStudioAsText ?? false;
   const [cardWidth, setCardWidth] = useState<number>();
 
   useEffect(() => {
@@ -121,27 +118,6 @@ export const GalleryCard: React.FC<IProps> = (props) => {
     );
   }
 
-  function maybeRenderSceneStudioOverlay() {
-    if (!props.gallery.studio) return;
-
-    return (
-      <div className="scene-studio-overlay">
-        <Link to={`/studios/${props.gallery.studio.id}`}>
-          {showStudioAsText ? (
-            props.gallery.studio.name
-          ) : (
-            <img
-              className="image-thumbnail"
-              loading="lazy"
-              alt={props.gallery.studio.name}
-              src={props.gallery.studio.image_path ?? ""}
-            />
-          )}
-        </Link>
-      </div>
-    );
-  }
-
   function maybeRenderOrganized() {
     if (props.gallery.organized) {
       return (
@@ -202,7 +178,7 @@ export const GalleryCard: React.FC<IProps> = (props) => {
           <RatingBanner rating={props.gallery.rating100} />
         </>
       }
-      overlays={maybeRenderSceneStudioOverlay()}
+      overlays={<StudioOverlay studio={props.gallery.studio} />}
       details={
         <div className="gallery-card__details">
           <span className="gallery-card__date">{props.gallery.date}</span>

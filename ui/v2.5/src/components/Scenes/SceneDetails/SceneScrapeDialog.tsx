@@ -14,6 +14,7 @@ import { Performer } from "src/components/Performers/PerformerSelect";
 import { IHasStoredID, sortStoredIdObjects } from "src/utils/data";
 import {
   ObjectListScrapeResult,
+  ObjectScrapeResult,
   ScrapeResult,
 } from "src/components/Shared/ScrapeDialog/scrapeResult";
 import {
@@ -73,8 +74,8 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
   const [director, setDirector] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(scene.director, scraped.director)
   );
-  const [studio, setStudio] = useState<ScrapeResult<GQL.ScrapedStudio>>(
-    new ScrapeResult<GQL.ScrapedStudio>(
+  const [studio, setStudio] = useState<ObjectScrapeResult<GQL.ScrapedStudio>>(
+    new ObjectScrapeResult<GQL.ScrapedStudio>(
       sceneStudio
         ? {
             stored_id: sceneStudio.id,

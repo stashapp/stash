@@ -1,1150 +1,1144 @@
 {
-  "actions": {
-    "add": "Добавить",
-    "add_directory": "Добавить Папку",
-    "add_entity": "Добавить {entityType}",
-    "add_to_entity": "Добавить к {entityType}",
-    "allow": "Разрешить",
-    "allow_temporarily": "Временно разрешить",
-    "anonymise": "Анонимизировать",
-    "apply": "Применить",
-    "auto_tag": "Автоматически пометить тегом",
-    "backup": "Резервная копия",
-    "browse_for_image": "Открыть изображение…",
-    "cancel": "Отмена",
-    "clean": "Очистить",
-    "clear": "Очистить",
-    "clear_back_image": "Очистить заднее изображение",
-    "clear_front_image": "Убрать переднее изображение",
-    "clear_image": "Удалить изображение",
-    "close": "Закрыть",
-    "confirm": "Подтвердить",
-    "continue": "Продолжить",
-    "create": "Создать",
-    "create_chapters": "Создать раздел",
-    "create_entity": "Создать {entityType}",
-    "create_marker": "Создать Маркер",
-    "created_entity": "Создано {entity_type}: {entity_name}",
-    "customise": "Настроить",
-    "delete": "Удалить",
-    "delete_entity": "Удалить {entityType}",
-    "delete_file": "Удалить файл",
-    "delete_file_and_funscript": "Удалить файл (вместе с funscript)",
-    "delete_generated_supporting_files": "Удалить сгенерированные вспомогательные файлы",
-    "delete_stashid": "Удалить StashID",
-    "disallow": "Запретить",
-    "download": "Скачать",
-    "download_anonymised": "Скачать анонимно",
-    "download_backup": "Скачать резервную копию",
-    "edit": "Изменить",
-    "edit_entity": "Изменить {entityType}",
-    "export": "Экспортировать",
-    "export_all": "Экспортировать все…",
-    "find": "Найти",
-    "finish": "Завершить",
-    "from_file": "Из файла…",
-    "from_url": "Из ссылки…",
-    "full_export": "Полный экспорт",
-    "full_import": "Полный импорт",
-    "generate": "Сгенерировать",
-    "generate_thumb_default": "Сгенерировать миниатюру по умолчанию",
-    "generate_thumb_from_current": "Сгенерировать миниатюру из текущей",
-    "hash_migration": "миграция хэшей",
-    "hide": "Скрыть",
-    "hide_configuration": "Скрыть конфигурацию",
-    "identify": "Идентифицировать",
-    "ignore": "Игнорировать",
-    "import": "Импорт…",
-    "import_from_file": "Импорт из файла",
-    "logout": "Выйти",
-    "make_primary": "Сделать основным",
-    "merge": "Слияние",
-    "merge_from": "Слияние из",
-    "merge_into": "Слияние в",
-    "migrate_blobs": "Перенос блоков",
-    "migrate_scene_screenshots": "Перенос скриншотов сцены",
-    "next_action": "Вперёд",
-    "not_running": "не запущен",
-    "open_in_external_player": "Открыть во внешнем проигрывателе",
-    "open_random": "Открыть Случайный",
-    "overwrite": "Перезаписать",
-    "play_random": "Воспроизвести случайный файл",
-    "play_selected": "Воспроизвести выбранные файлы",
-    "preview": "Предпросмотр",
-    "previous_action": "Назад",
-    "reassign": "Переназначить",
-    "refresh": "Обновить",
-    "reload_plugins": "Перезагрузить плагины",
-    "reload_scrapers": "Перезагрузить скрейперы",
-    "remove": "Удалить",
-    "remove_from_gallery": "Удалить из галереи",
-    "rename_gen_files": "Переименовать сгенерированные файлы",
-    "rescan": "Сканировать заново",
-    "reshuffle": "Перемешать",
-    "running": "выполняется",
-    "save": "Сохранить",
-    "save_delete_settings": "Использовать эти настройки по умолчанию во время удаления",
-    "save_filter": "Сохранить фильтр",
-    "scan": "Сканировать",
-    "scrape": "Скрейпить",
-    "scrape_query": "Запрос скрейпера",
-    "scrape_scene_fragment": "Скрейпить по фрагменту",
-    "scrape_with": "Скрейпить используя…",
-    "search": "Поиск",
-    "select_all": "Выбрать все",
-    "select_entity": "Выбрать {entityType}",
-    "select_folders": "Выбрать папки",
-    "select_none": "Отменить выделение",
-    "selective_auto_tag": "Выборочная автоматическая метка тегами",
-    "selective_clean": "Выборочная чистка",
-    "selective_scan": "Выборочнное сканирование",
-    "set_as_default": "Установить по умолчанию",
-    "set_back_image": "Заднее изображение…",
-    "set_front_image": "Лицевое изображение…",
-    "set_image": "Выбрать изображение…",
-    "show": "Показать",
-    "show_configuration": "Показать конфигурацию",
-    "skip": "Пропустить",
-    "split": "Разделить",
-    "stop": "Остановить",
-    "submit": "Отправить",
-    "submit_stash_box": "Отправить в Stash-Box",
-    "submit_update": "Отправить изменение",
-    "swap": "Заменить",
-    "tasks": {
-      "clean_confirm_message": "Вы уверены что хотите провести очистку? Это удалит информацию из базы данных, вместе с созданным содержимым о всех сценах и галереях, которые больше не находятся в файловой системе.",
-      "dry_mode_selected": "Выбран режим симуляции. Фактического удаления не будет, только запись в журнал.",
-      "import_warning": "Вы уверены, что хотите импортировать? Это приведет к удалению базы данных и повторному импорту из экспортированных метаданных."
+    "actions": {
+        "add": "Добавить",
+        "add_directory": "Добавить Папку",
+        "add_entity": "Добавить {entityType}",
+        "add_to_entity": "Добавить к {entityType}",
+        "allow": "Разрешить",
+        "allow_temporarily": "Временно разрешить",
+        "anonymise": "Анонимизировать",
+        "apply": "Применить",
+        "auto_tag": "Автоматически пометить тегом",
+        "backup": "Резервная копия",
+        "browse_for_image": "Открыть изображение…",
+        "cancel": "Отмена",
+        "clean": "Очистить",
+        "clear": "Очистить",
+        "clear_back_image": "Очистить заднее изображение",
+        "clear_front_image": "Убрать переднее изображение",
+        "clear_image": "Удалить изображение",
+        "close": "Закрыть",
+        "confirm": "Подтвердить",
+        "continue": "Продолжить",
+        "create": "Создать",
+        "create_chapters": "Создать раздел",
+        "create_entity": "Создать {entityType}",
+        "create_marker": "Создать Маркер",
+        "created_entity": "Создано {entity_type}: {entity_name}",
+        "customise": "Настроить",
+        "delete": "Удалить",
+        "delete_entity": "Удалить {entityType}",
+        "delete_file": "Удалить файл",
+        "delete_file_and_funscript": "Удалить файл (вместе с funscript)",
+        "delete_generated_supporting_files": "Удалить сгенерированные вспомогательные файлы",
+        "disallow": "Запретить",
+        "download": "Скачать",
+        "download_anonymised": "Скачать анонимно",
+        "download_backup": "Скачать резервную копию",
+        "edit": "Изменить",
+        "edit_entity": "Изменить {entityType}",
+        "export": "Экспортировать",
+        "export_all": "Экспортировать все…",
+        "find": "Найти",
+        "finish": "Завершить",
+        "from_file": "Из файла…",
+        "from_url": "Из ссылки…",
+        "full_export": "Полный экспорт",
+        "full_import": "Полный импорт",
+        "generate": "Сгенерировать",
+        "generate_thumb_default": "Сгенерировать миниатюру по умолчанию",
+        "generate_thumb_from_current": "Сгенерировать миниатюру из текущей",
+        "hash_migration": "миграция хэшей",
+        "hide": "Скрыть",
+        "hide_configuration": "Скрыть конфигурацию",
+        "identify": "Идентифицировать",
+        "ignore": "Игнорировать",
+        "import": "Импорт…",
+        "import_from_file": "Импорт из файла",
+        "logout": "Выйти",
+        "make_primary": "Сделать основным",
+        "merge": "Слияние",
+        "merge_from": "Слияние из",
+        "merge_into": "Слияние в",
+        "migrate_blobs": "Перенос блоков",
+        "migrate_scene_screenshots": "Перенос скриншотов сцены",
+        "next_action": "Вперёд",
+        "not_running": "не запущен",
+        "open_in_external_player": "Открыть во внешнем проигрывателе",
+        "open_random": "Открыть Случайный",
+        "overwrite": "Перезаписать",
+        "play_random": "Воспроизвести случайный файл",
+        "play_selected": "Воспроизвести выбранные файлы",
+        "preview": "Предпросмотр",
+        "previous_action": "Назад",
+        "reassign": "Переназначить",
+        "refresh": "Обновить",
+        "reload_plugins": "Перезагрузить плагины",
+        "reload_scrapers": "Перезагрузить скрейперы",
+        "remove": "Удалить",
+        "remove_from_gallery": "Удалить из галереи",
+        "rename_gen_files": "Переименовать сгенерированные файлы",
+        "rescan": "Сканировать заново",
+        "reshuffle": "Перемешать",
+        "running": "выполняется",
+        "save": "Сохранить",
+        "save_delete_settings": "Использовать эти настройки по умолчанию во время удаления",
+        "save_filter": "Сохранить фильтр",
+        "scan": "Сканировать",
+        "scrape": "Скрейпить",
+        "scrape_query": "Запрос скрейпера",
+        "scrape_scene_fragment": "Скрейпить по фрагменту",
+        "scrape_with": "Скрейпить используя…",
+        "search": "Поиск",
+        "select_all": "Выбрать все",
+        "select_entity": "Выбрать {entityType}",
+        "select_folders": "Выбрать папки",
+        "select_none": "Отменить выделение",
+        "selective_auto_tag": "Выборочная автоматическая метка тегами",
+        "selective_clean": "Выборочная чистка",
+        "selective_scan": "Выборочнное сканирование",
+        "set_as_default": "Установить по умолчанию",
+        "set_back_image": "Заднее изображение…",
+        "set_front_image": "Лицевое изображение…",
+        "set_image": "Выбрать изображение…",
+        "show": "Показать",
+        "show_configuration": "Показать конфигурацию",
+        "skip": "Пропустить",
+        "split": "Разделить",
+        "stop": "Остановить",
+        "submit": "Отправить",
+        "submit_stash_box": "Отправить в Stash-Box",
+        "submit_update": "Отправить изменение",
+        "swap": "Заменить",
+        "tasks": {
+            "clean_confirm_message": "Вы уверены что хотите провести очистку? Это удалит информацию из базы данных, вместе с созданным содержимым о всех сценах и галереях, которые больше не находятся в файловой системе.",
+            "dry_mode_selected": "Выбран режим симуляции. Фактического удаления не будет, только запись в журнал.",
+            "import_warning": "Вы уверены, что хотите импортировать? Это приведет к удалению базы данных и повторному импорту из экспортированных метаданных."
+        },
+        "temp_disable": "Временно отключить…",
+        "temp_enable": "Временно включить…",
+        "unset": "Отменить",
+        "use_default": "Использовать по умолчанию",
+        "view_random": "Смотреть случайный"
     },
-    "temp_disable": "Временно отключить…",
-    "temp_enable": "Временно включить…",
-    "unset": "Отменить",
-    "use_default": "Использовать по умолчанию",
-    "view_random": "Смотреть случайный"
-  },
-  "actions_name": "Действия",
-  "age": "Возраст",
-  "aliases": "Псевдонимы",
-  "all": "все",
-  "also_known_as": "Также известна/-ен как",
-  "ascending": "По возрастанию",
-  "average_resolution": "Среднее разрешение",
-  "between_and": "и",
-  "birth_year": "Год рождения",
-  "birthdate": "Дата рождения",
-  "bitrate": "Битрейт",
-  "blobs_storage_type": {
-    "database": "База данных",
-    "filesystem": "Файловая система"
-  },
-  "captions": "Субтитры",
-  "career_length": "Продолжительность карьеры",
-  "chapters": "Разделы",
-  "component_tagger": {
+    "actions_name": "Действия",
+    "age": "Возраст",
+    "aliases": "Псевдонимы",
+    "all": "все",
+    "also_known_as": "Также известна/-ен как",
+    "ascending": "По возрастанию",
+    "average_resolution": "Среднее разрешение",
+    "between_and": "и",
+    "birth_year": "Год рождения",
+    "birthdate": "Дата рождения",
+    "bitrate": "Битрейт",
+    "blobs_storage_type": {
+        "database": "База данных",
+        "filesystem": "Файловая система"
+    },
+    "captions": "Субтитры",
+    "career_length": "Продолжительность карьеры",
+    "chapters": "Разделы",
+    "component_tagger": {
+        "config": {
+            "active_instance": "Активная инстанция Stash-устройства:",
+            "blacklist_desc": "Элементы черного списка исключаются из запросов. Обратите внимание, что они являются регулярными выражениями и нечувствительны к регистру. Некоторые символы должны быть экранированы обратной косой чертой: {chars_require_escape}",
+            "blacklist_label": "Черный список",
+            "query_mode_auto": "Автоматически",
+            "query_mode_auto_desc": "Использует метаданные, если они есть, или имя файла",
+            "query_mode_dir": "Директория",
+            "query_mode_dir_desc": "Использует только родительский каталог видеофайла",
+            "query_mode_filename": "Имя файла",
+            "query_mode_filename_desc": "Использует только название файла",
+            "query_mode_label": "Режим Очереди",
+            "query_mode_metadata": "Метаданные",
+            "query_mode_metadata_desc": "Только используя метадату",
+            "query_mode_path": "Путь",
+            "query_mode_path_desc": "Используя полный путь до файла",
+            "set_cover_desc": "Заменить обложку сцены, если она будет найдена.",
+            "set_cover_label": "Выставить обложку для данной сцены",
+            "set_tag_desc": "Прикрепить теги к сцене, перезаписав или соединив с существующими тегами на сцене.",
+            "set_tag_label": "Установить теги",
+            "show_male_desc": "Включить или выключить доступность пометки тегами мужских актёров.",
+            "show_male_label": "Показывать актеров мужского пола",
+            "source": "Источник"
+        },
+        "noun_query": "Запрос",
+        "results": {
+            "duration_off": "Продолжительность отличается не менее чем на {number} сек",
+            "duration_unknown": "Продолжительность неизвестна",
+            "fp_found": "{fpCount, plural, =0 {Новых совпадений не найдено} other {# новых совпадений найдено}}",
+            "fp_matches": "Продолжительность совпадает",
+            "fp_matches_multi": "Продолжительность совпадает с {matchCount}/{durationsLength} отпечатками файла(-ов)",
+            "hash_matches": "{hash_type} совпадает",
+            "match_failed_already_tagged": "Сцена уже помечена",
+            "match_failed_no_result": "Ничего не найдено",
+            "match_success": "Сцена успешно помечена",
+            "phash_matches": "{count} PHashes совпадают",
+            "unnamed": "Безымянный"
+        },
+        "verb_match_fp": "Сопоставить отпечатки файла",
+        "verb_matched": "Совпавший",
+        "verb_scrape_all": "Убрать всё",
+        "verb_submit_fp": "Отправить {fpCount, plural, one{# Совпадение} other{# совпадения}}",
+        "verb_toggle_config": "{toggle} {configuration}",
+        "verb_toggle_unmatched": "{toggle} не назначенные сцены"
+    },
     "config": {
-      "active_instance": "Активная инстанция Stash-устройства:",
-      "blacklist_desc": "Элементы черного списка исключаются из запросов. Обратите внимание, что они являются регулярными выражениями и нечувствительны к регистру. Некоторые символы должны быть экранированы обратной косой чертой: {chars_require_escape}",
-      "blacklist_label": "Черный список",
-      "query_mode_auto": "Автоматически",
-      "query_mode_auto_desc": "Использует метаданные, если они есть, или имя файла",
-      "query_mode_dir": "Директория",
-      "query_mode_dir_desc": "Использует только родительский каталог видеофайла",
-      "query_mode_filename": "Имя файла",
-      "query_mode_filename_desc": "Использует только название файла",
-      "query_mode_label": "Режим Очереди",
-      "query_mode_metadata": "Метаданные",
-      "query_mode_metadata_desc": "Только используя метадату",
-      "query_mode_path": "Путь",
-      "query_mode_path_desc": "Используя полный путь до файла",
-      "set_cover_desc": "Заменить обложку сцены, если она будет найдена.",
-      "set_cover_label": "Выставить обложку для данной сцены",
-      "set_tag_desc": "Прикрепить теги к сцене, перезаписав или соединив с существующими тегами на сцене.",
-      "set_tag_label": "Установить теги",
-      "show_male_desc": "Включить или выключить доступность пометки тегами мужских актёров.",
-      "show_male_label": "Показывать актеров мужского пола",
-      "source": "Источник"
-    },
-    "noun_query": "Запрос",
-    "results": {
-      "duration_off": "Продолжительность отличается не менее чем на {number} сек",
-      "duration_unknown": "Продолжительность неизвестна",
-      "fp_found": "{fpCount, plural, =0 {Новых совпадений не найдено} other {# новых совпадений найдено}}",
-      "fp_matches": "Продолжительность совпадает",
-      "fp_matches_multi": "Продолжительность совпадает с {matchCount}/{durationsLength} отпечатками файла(-ов)",
-      "hash_matches": "{hash_type} совпадает",
-      "match_failed_already_tagged": "Сцена уже помечена",
-      "match_failed_no_result": "Ничего не найдено",
-      "match_success": "Сцена успешно помечена",
-      "phash_matches": "{count} PHashes совпадают",
-      "unnamed": "Безымянный"
-    },
-    "verb_match_fp": "Сопоставить отпечатки файла",
-    "verb_matched": "Совпавший",
-    "verb_scrape_all": "Убрать всё",
-    "verb_submit_fp": "Отправить {fpCount, plural, one{# Совпадение} other{# совпадения}}",
-    "verb_toggle_config": "{toggle} {configuration}",
-    "verb_toggle_unmatched": "{toggle} не назначенные сцены"
-  },
-  "config": {
-    "about": {
-      "build_hash": "Контрольная сумма сборки:",
-      "build_time": "Дата сборки:",
-      "check_for_new_version": "Проверить наличие обновления",
-      "latest_version": "Последняя версия",
-      "latest_version_build_hash": "Контрольная сумма последний версии сборки:",
-      "new_version_notice": "[НОВЫЙ]",
-      "stash_discord": "Присоединяйтесь к нашему {url} серверу",
-      "stash_home": "Stash страница на {url}",
-      "stash_open_collective": "Поддержи нас через {url}",
-      "stash_wiki": "Stash {url} страница",
-      "version": "Версия"
-    },
-    "application_paths": {
-      "heading": "Пути программы и приложений"
-    },
-    "categories": {
-      "about": "О программе",
-      "changelog": "Список изменений",
-      "interface": "Интерфейс",
-      "logs": "Журнал",
-      "metadata_providers": "Поставщик метаданных",
-      "plugins": "Плагины",
-      "scraping": "Скрейпинг",
-      "security": "Безопасность",
-      "services": "Сервисы",
-      "system": "Система",
-      "tasks": "Задачи",
-      "tools": "Инструменты"
-    },
-    "dlna": {
-      "allow_temp_ip": "Разрешить {tempIP}",
-      "allowed_ip_addresses": "Разрешенные IP-адреса",
-      "allowed_ip_temporarily": "Временно разрешенные IP-адреса",
-      "default_ip_whitelist": "Белый список IP по умолчанию",
-      "default_ip_whitelist_desc": "Разрешенные IP адреса для доступа к DLNA. Используйте {wildcard}, чтобы разрешить все IP-адреса.",
-      "disabled_dlna_temporarily": "DLNA временно отключен",
-      "disallowed_ip": "Запрещенные IP",
-      "enabled_by_default": "Включено по умолчанию",
-      "enabled_dlna_temporarily": "DLNA временно включен",
-      "network_interfaces": "Интерфейсы",
-      "network_interfaces_desc": "Сетевые интерфейсы на которых сервер DLNA будет доступен. Пустой список приведёт к запуску на всех интерфейсах. Требуется перезапуск DLNA после изменения.",
-      "recent_ip_addresses": "Последние IP адреса",
-      "server_display_name": "Отображаемое имя сервера",
-      "server_display_name_desc": "Отображаемое название сервера DLNA. По умолчанию {server_name}, если не задано.",
-      "successfully_cancelled_temporary_behaviour": "Временно запущенный сервис DLNA, успешно отключен",
-      "until_restart": "до перезагрузки"
-    },
-    "general": {
-      "auth": {
-        "api_key": "API ключ",
-        "api_key_desc": "API ключ для внешних систем. Необходимо только когда настроены логин и пароль. Логин должен быть сохранён перед генерацией ключа API.",
-        "authentication": "Аутентификация",
-        "clear_api_key": "Стереть ключ API",
-        "credentials": {
-          "description": "Учетные данные для ограничения доступа к программе.",
-          "heading": "Учетные данные пользователя для входа"
+        "about": {
+            "build_hash": "Контрольная сумма сборки:",
+            "build_time": "Дата сборки:",
+            "check_for_new_version": "Проверить наличие обновления",
+            "latest_version": "Последняя версия",
+            "latest_version_build_hash": "Контрольная сумма последний версии сборки:",
+            "new_version_notice": "[НОВЫЙ]",
+            "stash_discord": "Присоединяйтесь к нашему {url} серверу",
+            "stash_home": "Stash страница на {url}",
+            "stash_open_collective": "Поддержи нас через {url}",
+            "stash_wiki": "Stash {url} страница",
+            "version": "Версия"
         },
-        "generate_api_key": "Сгенерировать ключ API",
-        "log_file": "Файл журнала",
-        "log_file_desc": "Путь к файлу журнала. Оставьте пустым, чтобы отключить ведение журнала. Требуется перезапуск.",
-        "log_http": "Вести учет http доступа",
-        "log_http_desc": "Ведет учет http запросов в окне командной строки. Необходим перезапуск.",
-        "log_to_terminal": "Вести журнал в командной строке",
-        "log_to_terminal_desc": "Вывод журнала событий в командную строку помимо сохранения в файл. Всегда включено если ведение журнала в файл отключено. Необходим перезапуск.",
-        "maximum_session_age": "Максимальное время активной сессии",
-        "maximum_session_age_desc": "Максимальное время ожидания, в секундах, до истечения срока действия сессии.",
-        "password": "Пароль",
-        "password_desc": "Пароль для доступа к Stash. Оставьте пустым для отключения аутентификации",
-        "stash-box_integration": "Stash-box интеграция",
-        "username": "Имя пользователя",
-        "username_desc": "Имя для доступа к Stash. Оставьте пустым для отключения аутентификации"
-      },
-      "backup_directory_path": {
-        "description": "Местоположение каталога для резервных копий базы данных SQLite",
-        "heading": "Путь к каталогу резервного копирования"
-      },
-      "cache_location": "Папка для расположения кэша",
-      "cache_path_head": "Путь кэша",
-      "calculate_md5_and_ohash_desc": "Рассчитать контрольные суммы MD5 в дополнение к oshash. Включение опции приведет к замедлению изначальных сканирований. Для хеширования названий файлов должно быть выбрано - oshash, чтобы выключить расчёт MD5.",
-      "calculate_md5_and_ohash_label": "Просчитать MD5 для видеофайлов",
-      "check_for_insecure_certificates": "Проверить на незащищённость сертификата",
-      "check_for_insecure_certificates_desc": "Некоторые сайты используют небезопасные ssl-сертификаты. Если флажок снят, скрейпер пропускает проверку небезопасных сертификатов и разрешает сбор данных с этих сайтов. Если вы получаете ошибку сертификата при сборе, снимите этот флажок.",
-      "chrome_cdp_path": "Chrome CDP путь",
-      "chrome_cdp_path_desc": "Путь к исполняемому файлу Chrome, или удаленный адрес (начинающийся с http:// или https://, к примеру http://localhost:9222/json/version) к экземпляру Chrome.",
-      "create_galleries_from_folders_desc": "Если включено, генерирует галлереи из папок с картинками.",
-      "create_galleries_from_folders_label": "Генерация галлереи из папок с картинками",
-      "db_path_head": "Путь к базе данных",
-      "directory_locations_to_your_content": "Адреса папок с вашим контентом",
-      "excluded_image_gallery_patterns_desc": "Регулярные выражения файлов изображений и галерей/путей которые будут исключены при Сканировании, и добавлены в Очистку",
-      "excluded_image_gallery_patterns_head": "Шаблоны исключений изображений/галерей",
-      "excluded_video_patterns_desc": "Регулярные выражения видеофайлов/путей которые будут исключены при Сканировании, и добавлены в Очистку",
-      "excluded_video_patterns_head": "Шаблоны исключенные видео",
-      "ffmpeg": {
-        "transcode": {
-          "input_args": {
-            "desc": "Расширенные настройки: Дополнительные параметры для генерации видео при помощи ffmpeg.",
-            "heading": "Входные параметры транскодирования FFmpeg"
-          },
-          "output_args": {
-            "heading": "Выходные параметры транскодирования FFmpeg"
-          }
-        }
-      },
-      "gallery_ext_desc": "Список расширений через запятую, которые будут распознаны как архивы с картинками.",
-      "gallery_ext_head": "Расширения архивов галерей",
-      "generated_file_naming_hash_desc": "Использовать MD5 или oshash для имен сгенерированных файлов. Меняя это, необходимо чтобы у всех сцен имелись соответствующие MD5/oshash значение. После изменения значения, существующие сгенерированные файлы нужно будет перенести или сгенерировать повторно. Подробнее о переносе на странице Задач.",
-      "generated_file_naming_hash_head": "Хеш значения для имен сгенерированных файлов",
-      "generated_files_location": "Директория для сгенерированных файлов (маркеры сцен, превью сцен, спрайты, и т. п.)",
-      "generated_path_head": "Путь к сгенерированному контенту",
-      "hashing": "Хэширование",
-      "image_ext_desc": "Список расширений через запятую, которые будут распознаны как картинки.",
-      "image_ext_head": "Расширения изображений",
-      "include_audio_desc": "Добавляет аудио дорожку для сгенерированных превью файлов.",
-      "include_audio_head": "Включать аудио",
-      "logging": "Ведение журнала",
-      "maximum_streaming_transcode_size_desc": "Максимальный размер транскодируемых потоков",
-      "maximum_streaming_transcode_size_head": "Максимальное разрешение потокового транскодирования",
-      "maximum_transcode_size_desc": "Максимальный размер генерируемых транскодов",
-      "maximum_transcode_size_head": "Максимальное разрешение транскодирования",
-      "metadata_path": {
-        "description": "Местоположение каталога, используемое при выполнении полного экспорта или импорта",
-        "heading": "Путь к метаданным"
-      },
-      "number_of_parallel_task_for_scan_generation_desc": "Установите 0 для автоматического определения. Предупреждение: запуск большего количества задач, чем требуется для достижения 100% загрузки процессора, снизит производительность и может вызвать другие проблемы.",
-      "number_of_parallel_task_for_scan_generation_head": "Количество параллельных задач сканирования/генерации",
-      "parallel_scan_head": "Параллельное сканирование/генерация",
-      "preview_generation": "Создание превью",
-      "python_path": {
-        "description": "Путь исполняемого файл Python. Используется для скриптов скрейперов и плагиов. Если оставить пустым, python путь будет взят из переменной окружения",
-        "heading": "Путь Python"
-      },
-      "scraper_user_agent": "User Agent скрейпера",
-      "scraper_user_agent_desc": "User-Agent используемый во время сбора через http запросы",
-      "scrapers_path": {
-        "description": "Путь к директории, где находятся файлы конфигураций скрейперов",
-        "heading": "Путь скрейперов"
-      },
-      "scraping": "Скрейпинг",
-      "sqlite_location": "Путь к файлу базы данных SQLite (требуется перезапуск)",
-      "video_ext_desc": "Список расширений через запятую, которые будут распознаны как видео.",
-      "video_ext_head": "Расширения видео",
-      "video_head": "Видео"
-    },
-    "library": {
-      "exclusions": "Исключения",
-      "gallery_and_image_options": "Параметры галереи и изображений",
-      "media_content_extensions": "Расширения мультимедиа-содержимого"
-    },
-    "logs": {
-      "log_level": "Уровень ведения журнала"
-    },
-    "plugins": {
-      "hooks": "Триггеры",
-      "triggers_on": "Срабатывает при"
-    },
-    "scraping": {
-      "entity_metadata": "{entityType} метаданные",
-      "entity_scrapers": "{entityType} Scraper",
-      "excluded_tag_patterns_desc": "Регулярные выражения для исключения тегов при сборе информации",
-      "excluded_tag_patterns_head": "Шаблон исключаемых тегов",
-      "scraper": "Скрейпер",
-      "scrapers": "Скрейперы",
-      "search_by_name": "Поиск по названию",
-      "supported_types": "Поддерживаемые типы",
-      "supported_urls": "Ссылки"
-    },
-    "stashbox": {
-      "add_instance": "Добавить stash-box instance экземпляр",
-      "api_key": "API ключ",
-      "description": "Stash-box обеспечивает автоматическую расстановку тегов для сцен и актеров используя данные о файле и его название.\nКонечная точка и API ключ может быть найдены на странице вашего профиля в stash-box. Название необходимо, если добавляется более одного экземпляра.",
-      "endpoint": "Конечная точка",
-      "graphql_endpoint": "Конечная точка GraphQL",
-      "name": "Имя",
-      "title": "Конечные точки Stash-box"
-    },
-    "system": {
-      "transcoding": "Транскодирование"
-    },
-    "tasks": {
-      "added_job_to_queue": "Добавлено {operation_name} в очередь задач",
-      "auto_tag": {
-        "auto_tagging_all_paths": "Автоматическая расстановка тегов для всех путей",
-        "auto_tagging_paths": "Автоматическая расстановка тегов для следующих путей"
-      },
-      "auto_tag_based_on_filenames": "Автоматически помечать тегами контент на основе имен файлов.",
-      "auto_tagging": "Автоматическая расстановка тегов",
-      "backing_up_database": "Резервное копирование базы данных",
-      "backup_and_download": "Создает резервную копию базы данных, и скачивает файл.",
-      "backup_database": "Выполняет резервное копирование базы данных в каталог резервных копий , в формате {filename_format}",
-      "cleanup_desc": "Проверить наличие отсутствующих файлов и удалить их из базы данных. Данное действие безвозвратно.",
-      "data_management": "Управление данными",
-      "defaults_set": "Значения по умолчанию установлены и будут использоваться при нажатии кнопки {action} на странице Задач.",
-      "dont_include_file_extension_as_part_of_the_title": "Не включать расширение файла в название",
-      "empty_queue": "В настоящее время задачи не выполняются.",
-      "export_to_json": "Экспортировать содержимое базы данных в JSON формате в директорию метаданных.",
-      "generate": {
-        "generating_from_paths": "Генерация для сцен из следующих путей",
-        "generating_scenes": "Генерация для {num} {scene}"
-      },
-      "generate_desc": "Создавать вспомогательные изображения, спрайты, видео, vtt и другие файлы.",
-      "generate_phashes_during_scan": "Генерировать воспринимаемые хэши (phash)",
-      "generate_phashes_during_scan_tooltip": "Для дедупликации и идентификации сцен.",
-      "generate_previews_during_scan": "Создавать превью в виде анимированных изображений",
-      "generate_previews_during_scan_tooltip": "Создавать анимированные WebP превью, необходимы если тип предпросмотра выбран - Анимированные изображения.",
-      "generate_sprites_during_scan": "Генерировать спрайты для полосы перемотки видео",
-      "generate_thumbnails_during_scan": "Создать миниатюры для изображений",
-      "generate_video_previews_during_scan": "Создавать превью",
-      "generate_video_previews_during_scan_tooltip": "Создавать превью видео, которые воспроизводятся при наведении курсора на сцену",
-      "generated_content": "Сгенерированный контент",
-      "identify": {
-        "and_create_missing": "и создать недостающие",
-        "create_missing": "Создать недостающие",
-        "default_options": "Настройки по умолчанию",
-        "description": "Автоматически добавлять метаданные к сценам используя stash-box и источники скрейперов.",
-        "explicit_set_description": "Следующие параметры будут использоваться там, где они не переопределены в параметрах источника.",
-        "field": "Поле",
-        "field_behaviour": "{strategy} {field}",
-        "field_options": "Параметры поля",
-        "heading": "Идентифицировать",
-        "identifying_from_paths": "Определение сцен по следующим путям",
-        "identifying_scenes": "Определение {num} {scene}",
-        "include_male_performers": "Включать мужских участников",
-        "set_cover_images": "Установить изображения обложки",
-        "set_organized": "Установить флаг \"Упорядочен\"",
-        "source": "Источник",
-        "source_options": "{source} Опции",
-        "sources": "Источники",
-        "strategy": "Стратегия"
-      },
-      "import_from_exported_json": "Импортировать экспортированный JSON в каталог метаданных. Сотрет существующую базу данных.",
-      "incremental_import": "Инкрементальный импорт из предоставленного ZIP-файла экспорта.",
-      "job_queue": "Очередь задач",
-      "maintenance": "Техническое обслуживание",
-      "migrate_hash_files": "Используется после изменения параметра \"Хеш значения для имен сгенерированных файлов\" для изменения названий уже сгенерированных файлов в новый хеш формат.",
-      "migrations": "Миграции",
-      "only_dry_run": "Выполнить только пробный прогон. Пользовательские файлы останутся нетронутыми, ничего не будет удалено",
-      "plugin_tasks": "Задачи плагинов",
-      "scan": {
-        "scanning_all_paths": "Сканирование всех путей",
-        "scanning_paths": "Сканирование следующих путей"
-      },
-      "scan_for_content_desc": "Поиск нового контента и добавление его в базу данных.",
-      "set_name_date_details_from_metadata_if_present": "Задать имя, дату, детали из встроенных метаданных файла"
-    },
-    "tools": {
-      "scene_duplicate_checker": "Проверка сцен на дубликаты",
-      "scene_filename_parser": {
-        "add_field": "Добавить поле",
-        "capitalize_title": "Название с заглавной буквы",
-        "display_fields": "Отобразить поля",
-        "escape_chars": "Используйте \\ для экранирования буквенных символов",
-        "filename": "Имя файла",
-        "filename_pattern": "Шаблон имени файла",
-        "ignore_organized": "Игнорировать уже упорядоченные сцены",
-        "ignored_words": "Игнорируемые слова",
-        "matches_with": "Совпадает с {i}",
-        "select_parser_recipe": "Выбрать \"рецепт\" анализатора",
-        "title": "Анализатор названий файлов для сцен",
-        "whitespace_chars": "Символы пробелов",
-        "whitespace_chars_desc": "Эти символы будут заменены пробелами в названии"
-      },
-      "scene_tools": "Инструменты видео"
-    },
-    "ui": {
-      "abbreviate_counters": {
-        "description": "Сократить счетчики на страницах карточек и детального просмотра, например, «1831» сокращенно будет отображено как «1,8K».",
-        "heading": "Сокращенные счетчиков количества"
-      },
-      "basic_settings": "Основные настройки",
-      "custom_css": {
-        "description": "Чтобы изменения вступили в силу, необходимо перезагрузить страницу.",
-        "heading": "Пользовательский CSS",
-        "option_label": "Пользовательский CSS включен"
-      },
-      "custom_javascript": {
-        "description": "Страница должна быть перезагружена для применений изменений.",
-        "heading": "Пользовательский Javascript",
-        "option_label": "Пользовательский Javascript включен"
-      },
-      "custom_locales": {
-        "description": "Замена отдельных строк локализации. Смотрите https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/locales/en-GB.json для основного списка. Чтобы изменения вступили в силу, необходимо перезагрузить страницу.",
-        "heading": "Пользовательская локализация",
-        "option_label": "Пользовательская локализация включена"
-      },
-      "delete_options": {
-        "description": "Настройки по умолчанию при удалении изображений, галерей и сцен.",
-        "heading": "Опции удаления",
-        "options": {
-          "delete_file": "По умолчанию удалить файлы",
-          "delete_generated_supporting_files": "По умолчанию удалять сгенерированные вспомогательные файлы"
-        }
-      },
-      "desktop_integration": {
-        "desktop_integration": "Интеграция с рабочим столом",
-        "notifications_enabled": "Включить уведомления",
-        "send_desktop_notifications_for_events": "Отправка уведомлений на рабочий стол о событиях",
-        "skip_opening_browser": "Не открывать страницу в браузере",
-        "skip_opening_browser_on_startup": "Пропустить автоматическое открытие страницы в браузере при запуске"
-      },
-      "editing": {
-        "disable_dropdown_create": {
-          "description": "Убрать возможность создавать новые объекты из выпадающих селекторов",
-          "heading": "Отключить создание из раскрывающегося списка"
+        "application_paths": {
+            "heading": "Пути программы и приложений"
         },
-        "heading": "Редактирование",
-        "rating_system": {
-          "star_precision": {
-            "label": "Точность системы оценок",
-            "options": {
-              "full": "Полный",
-              "half": "Половина",
-              "quarter": "Четверть"
+        "categories": {
+            "about": "О программе",
+            "changelog": "Список изменений",
+            "interface": "Интерфейс",
+            "logs": "Журнал",
+            "metadata_providers": "Поставщик метаданных",
+            "plugins": "Плагины",
+            "scraping": "Скрейпинг",
+            "security": "Безопасность",
+            "services": "Сервисы",
+            "system": "Система",
+            "tasks": "Задачи",
+            "tools": "Инструменты"
+        },
+        "dlna": {
+            "allow_temp_ip": "Разрешить {tempIP}",
+            "allowed_ip_addresses": "Разрешенные IP-адреса",
+            "allowed_ip_temporarily": "Временно разрешенные IP-адреса",
+            "default_ip_whitelist": "Белый список IP по умолчанию",
+            "default_ip_whitelist_desc": "Разрешенные IP адреса для доступа к DLNA. Используйте {wildcard}, чтобы разрешить все IP-адреса.",
+            "disabled_dlna_temporarily": "DLNA временно отключен",
+            "disallowed_ip": "Запрещенные IP",
+            "enabled_by_default": "Включено по умолчанию",
+            "enabled_dlna_temporarily": "DLNA временно включен",
+            "network_interfaces": "Интерфейсы",
+            "network_interfaces_desc": "Сетевые интерфейсы на которых сервер DLNA будет доступен. Пустой список приведёт к запуску на всех интерфейсах. Требуется перезапуск DLNA после изменения.",
+            "recent_ip_addresses": "Последние IP адреса",
+            "server_display_name": "Отображаемое имя сервера",
+            "server_display_name_desc": "Отображаемое название сервера DLNA. По умолчанию {server_name}, если не задано.",
+            "successfully_cancelled_temporary_behaviour": "Временно запущенный сервис DLNA, успешно отключен",
+            "until_restart": "до перезагрузки"
+        },
+        "general": {
+            "auth": {
+                "api_key": "API ключ",
+                "api_key_desc": "API ключ для внешних систем. Необходимо только когда настроены логин и пароль. Логин должен быть сохранён перед генерацией ключа API.",
+                "authentication": "Аутентификация",
+                "clear_api_key": "Стереть ключ API",
+                "credentials": {
+                    "description": "Учетные данные для ограничения доступа к программе.",
+                    "heading": "Учетные данные пользователя для входа"
+                },
+                "generate_api_key": "Сгенерировать ключ API",
+                "log_file": "Файл журнала",
+                "log_file_desc": "Путь к файлу журнала. Оставьте пустым, чтобы отключить ведение журнала. Требуется перезапуск.",
+                "log_http": "Вести учет http доступа",
+                "log_http_desc": "Ведет учет http запросов в окне командной строки. Необходим перезапуск.",
+                "log_to_terminal": "Вести журнал в командной строке",
+                "log_to_terminal_desc": "Вывод журнала событий в командную строку помимо сохранения в файл. Всегда включено если ведение журнала в файл отключено. Необходим перезапуск.",
+                "maximum_session_age": "Максимальное время активной сессии",
+                "maximum_session_age_desc": "Максимальное время ожидания, в секундах, до истечения срока действия сессии.",
+                "password": "Пароль",
+                "password_desc": "Пароль для доступа к Stash. Оставьте пустым для отключения аутентификации",
+                "stash-box_integration": "Stash-box интеграция",
+                "username": "Имя пользователя",
+                "username_desc": "Имя для доступа к Stash. Оставьте пустым для отключения аутентификации"
+            },
+            "backup_directory_path": {
+                "description": "Местоположение каталога для резервных копий базы данных SQLite",
+                "heading": "Путь к каталогу резервного копирования"
+            },
+            "cache_location": "Папка для расположения кэша",
+            "cache_path_head": "Путь кэша",
+            "calculate_md5_and_ohash_desc": "Рассчитать контрольные суммы MD5 в дополнение к oshash. Включение опции приведет к замедлению изначальных сканирований. Для хеширования названий файлов должно быть выбрано - oshash, чтобы выключить расчёт MD5.",
+            "calculate_md5_and_ohash_label": "Просчитать MD5 для видеофайлов",
+            "check_for_insecure_certificates": "Проверить на незащищённость сертификата",
+            "check_for_insecure_certificates_desc": "Некоторые сайты используют небезопасные ssl-сертификаты. Если флажок снят, скрейпер пропускает проверку небезопасных сертификатов и разрешает сбор данных с этих сайтов. Если вы получаете ошибку сертификата при сборе, снимите этот флажок.",
+            "chrome_cdp_path": "Chrome CDP путь",
+            "chrome_cdp_path_desc": "Путь к исполняемому файлу Chrome, или удаленный адрес (начинающийся с http:// или https://, к примеру http://localhost:9222/json/version) к экземпляру Chrome.",
+            "create_galleries_from_folders_desc": "Если включено, генерирует галлереи из папок с картинками.",
+            "create_galleries_from_folders_label": "Генерация галлереи из папок с картинками",
+            "db_path_head": "Путь к базе данных",
+            "directory_locations_to_your_content": "Адреса папок с вашим контентом",
+            "excluded_image_gallery_patterns_desc": "Регулярные выражения файлов изображений и галерей/путей которые будут исключены при Сканировании, и добавлены в Очистку",
+            "excluded_image_gallery_patterns_head": "Шаблоны исключений изображений/галерей",
+            "excluded_video_patterns_desc": "Регулярные выражения видеофайлов/путей которые будут исключены при Сканировании, и добавлены в Очистку",
+            "excluded_video_patterns_head": "Шаблоны исключенные видео",
+            "ffmpeg": {
+                "transcode": {
+                    "input_args": {
+                        "desc": "Расширенные настройки: Дополнительные параметры для генерации видео при помощи ffmpeg.",
+                        "heading": "Входные параметры транскодирования FFmpeg"
+                    },
+                    "output_args": {
+                        "heading": "Выходные параметры транскодирования FFmpeg"
+                    }
+                }
+            },
+            "gallery_ext_desc": "Список расширений через запятую, которые будут распознаны как архивы с картинками.",
+            "gallery_ext_head": "Расширения архивов галерей",
+            "generated_file_naming_hash_desc": "Использовать MD5 или oshash для имен сгенерированных файлов. Меняя это, необходимо чтобы у всех сцен имелись соответствующие MD5/oshash значение. После изменения значения, существующие сгенерированные файлы нужно будет перенести или сгенерировать повторно. Подробнее о переносе на странице Задач.",
+            "generated_file_naming_hash_head": "Хеш значения для имен сгенерированных файлов",
+            "generated_files_location": "Директория для сгенерированных файлов (маркеры сцен, превью сцен, спрайты, и т. п.)",
+            "generated_path_head": "Путь к сгенерированному контенту",
+            "hashing": "Хэширование",
+            "image_ext_desc": "Список расширений через запятую, которые будут распознаны как картинки.",
+            "image_ext_head": "Расширения изображений",
+            "include_audio_desc": "Добавляет аудио дорожку для сгенерированных превью файлов.",
+            "include_audio_head": "Включать аудио",
+            "logging": "Ведение журнала",
+            "maximum_streaming_transcode_size_desc": "Максимальный размер транскодируемых потоков",
+            "maximum_streaming_transcode_size_head": "Максимальное разрешение потокового транскодирования",
+            "maximum_transcode_size_desc": "Максимальный размер генерируемых транскодов",
+            "maximum_transcode_size_head": "Максимальное разрешение транскодирования",
+            "metadata_path": {
+                "description": "Местоположение каталога, используемое при выполнении полного экспорта или импорта",
+                "heading": "Путь к метаданным"
+            },
+            "number_of_parallel_task_for_scan_generation_desc": "Установите 0 для автоматического определения. Предупреждение: запуск большего количества задач, чем требуется для достижения 100% загрузки процессора, снизит производительность и может вызвать другие проблемы.",
+            "number_of_parallel_task_for_scan_generation_head": "Количество параллельных задач сканирования/генерации",
+            "parallel_scan_head": "Параллельное сканирование/генерация",
+            "preview_generation": "Создание превью",
+            "python_path": {
+                "description": "Путь исполняемого файл Python. Используется для скриптов скрейперов и плагиов. Если оставить пустым, python путь будет взят из переменной окружения",
+                "heading": "Путь Python"
+            },
+            "scraper_user_agent": "User Agent скрейпера",
+            "scraper_user_agent_desc": "User-Agent используемый во время сбора через http запросы",
+            "scrapers_path": {
+                "description": "Путь к директории, где находятся файлы конфигураций скрейперов",
+                "heading": "Путь скрейперов"
+            },
+            "scraping": "Скрейпинг",
+            "sqlite_location": "Путь к файлу базы данных SQLite (требуется перезапуск)",
+            "video_ext_desc": "Список расширений через запятую, которые будут распознаны как видео.",
+            "video_ext_head": "Расширения видео",
+            "video_head": "Видео"
+        },
+        "library": {
+            "exclusions": "Исключения",
+            "gallery_and_image_options": "Параметры галереи и изображений",
+            "media_content_extensions": "Расширения мультимедиа-содержимого"
+        },
+        "logs": {
+            "log_level": "Уровень ведения журнала"
+        },
+        "plugins": {
+            "hooks": "Триггеры",
+            "triggers_on": "Срабатывает при"
+        },
+        "scraping": {
+            "entity_metadata": "{entityType} метаданные",
+            "entity_scrapers": "{entityType} Scraper",
+            "excluded_tag_patterns_desc": "Регулярные выражения для исключения тегов при сборе информации",
+            "excluded_tag_patterns_head": "Шаблон исключаемых тегов",
+            "scraper": "Скрейпер",
+            "scrapers": "Скрейперы",
+            "search_by_name": "Поиск по названию",
+            "supported_types": "Поддерживаемые типы",
+            "supported_urls": "Ссылки"
+        },
+        "stashbox": {
+            "add_instance": "Добавить stash-box instance экземпляр",
+            "api_key": "API ключ",
+            "description": "Stash-box обеспечивает автоматическую расстановку тегов для сцен и актеров используя данные о файле и его название.\nКонечная точка и API ключ может быть найдены на странице вашего профиля в stash-box. Название необходимо, если добавляется более одного экземпляра.",
+            "endpoint": "Конечная точка",
+            "graphql_endpoint": "Конечная точка GraphQL",
+            "name": "Имя",
+            "title": "Конечные точки Stash-box"
+        },
+        "system": {
+            "transcoding": "Транскодирование"
+        },
+        "tasks": {
+            "added_job_to_queue": "Добавлено {operation_name} в очередь задач",
+            "auto_tag": {
+                "auto_tagging_all_paths": "Автоматическая расстановка тегов для всех путей",
+                "auto_tagging_paths": "Автоматическая расстановка тегов для следующих путей"
+            },
+            "auto_tag_based_on_filenames": "Автоматически помечать тегами контент на основе имен файлов.",
+            "auto_tagging": "Автоматическая расстановка тегов",
+            "backing_up_database": "Резервное копирование базы данных",
+            "backup_and_download": "Создает резервную копию базы данных, и скачивает файл.",
+            "backup_database": "Выполняет резервное копирование базы данных в каталог резервных копий , в формате {filename_format}",
+            "cleanup_desc": "Проверить наличие отсутствующих файлов и удалить их из базы данных. Данное действие безвозвратно.",
+            "data_management": "Управление данными",
+            "defaults_set": "Значения по умолчанию установлены и будут использоваться при нажатии кнопки {action} на странице Задач.",
+            "dont_include_file_extension_as_part_of_the_title": "Не включать расширение файла в название",
+            "empty_queue": "В настоящее время задачи не выполняются.",
+            "export_to_json": "Экспортировать содержимое базы данных в JSON формате в директорию метаданных.",
+            "generate": {
+                "generating_from_paths": "Генерация для сцен из следующих путей",
+                "generating_scenes": "Генерация для {num} {scene}"
+            },
+            "generate_desc": "Создавать вспомогательные изображения, спрайты, видео, vtt и другие файлы.",
+            "generate_phashes_during_scan": "Генерировать воспринимаемые хэши (phash)",
+            "generate_phashes_during_scan_tooltip": "Для дедупликации и идентификации сцен.",
+            "generate_previews_during_scan": "Создавать превью в виде анимированных изображений",
+            "generate_previews_during_scan_tooltip": "Создавать анимированные WebP превью, необходимы если тип предпросмотра выбран - Анимированные изображения.",
+            "generate_sprites_during_scan": "Генерировать спрайты для полосы перемотки видео",
+            "generate_thumbnails_during_scan": "Создать миниатюры для изображений",
+            "generate_video_previews_during_scan": "Создавать превью",
+            "generate_video_previews_during_scan_tooltip": "Создавать превью видео, которые воспроизводятся при наведении курсора на сцену",
+            "generated_content": "Сгенерированный контент",
+            "identify": {
+                "and_create_missing": "и создать недостающие",
+                "create_missing": "Создать недостающие",
+                "default_options": "Настройки по умолчанию",
+                "description": "Автоматически добавлять метаданные к сценам используя stash-box и источники скрейперов.",
+                "explicit_set_description": "Следующие параметры будут использоваться там, где они не переопределены в параметрах источника.",
+                "field": "Поле",
+                "field_behaviour": "{strategy} {field}",
+                "field_options": "Параметры поля",
+                "heading": "Идентифицировать",
+                "identifying_from_paths": "Определение сцен по следующим путям",
+                "identifying_scenes": "Определение {num} {scene}",
+                "include_male_performers": "Включать мужских участников",
+                "set_cover_images": "Установить изображения обложки",
+                "set_organized": "Установить флаг \"Упорядочен\"",
+                "source": "Источник",
+                "source_options": "{source} Опции",
+                "sources": "Источники",
+                "strategy": "Стратегия"
+            },
+            "import_from_exported_json": "Импортировать экспортированный JSON в каталог метаданных. Сотрет существующую базу данных.",
+            "incremental_import": "Инкрементальный импорт из предоставленного ZIP-файла экспорта.",
+            "job_queue": "Очередь задач",
+            "maintenance": "Техническое обслуживание",
+            "migrate_hash_files": "Используется после изменения параметра \"Хеш значения для имен сгенерированных файлов\" для изменения названий уже сгенерированных файлов в новый хеш формат.",
+            "migrations": "Миграции",
+            "only_dry_run": "Выполнить только пробный прогон. Пользовательские файлы останутся нетронутыми, ничего не будет удалено",
+            "plugin_tasks": "Задачи плагинов",
+            "scan": {
+                "scanning_all_paths": "Сканирование всех путей",
+                "scanning_paths": "Сканирование следующих путей"
+            },
+            "scan_for_content_desc": "Поиск нового контента и добавление его в базу данных.",
+            "set_name_date_details_from_metadata_if_present": "Задать имя, дату, детали из встроенных метаданных файла"
+        },
+        "tools": {
+            "scene_duplicate_checker": "Проверка сцен на дубликаты",
+            "scene_filename_parser": {
+                "add_field": "Добавить поле",
+                "capitalize_title": "Название с заглавной буквы",
+                "display_fields": "Отобразить поля",
+                "escape_chars": "Используйте \\ для экранирования буквенных символов",
+                "filename": "Имя файла",
+                "filename_pattern": "Шаблон имени файла",
+                "ignore_organized": "Игнорировать уже упорядоченные сцены",
+                "ignored_words": "Игнорируемые слова",
+                "matches_with": "Совпадает с {i}",
+                "select_parser_recipe": "Выбрать \"рецепт\" анализатора",
+                "title": "Анализатор названий файлов для сцен",
+                "whitespace_chars": "Символы пробелов",
+                "whitespace_chars_desc": "Эти символы будут заменены пробелами в названии"
+            },
+            "scene_tools": "Инструменты видео"
+        },
+        "ui": {
+            "abbreviate_counters": {
+                "description": "Сократить счетчики на страницах карточек и детального просмотра, например, «1831» сокращенно будет отображено как «1,8K».",
+                "heading": "Сокращенные счетчиков количества"
+            },
+            "basic_settings": "Основные настройки",
+            "custom_css": {
+                "description": "Чтобы изменения вступили в силу, необходимо перезагрузить страницу.",
+                "heading": "Пользовательский CSS",
+                "option_label": "Пользовательский CSS включен"
+            },
+            "custom_javascript": {
+                "description": "Страница должна быть перезагружена для применений изменений.",
+                "heading": "Пользовательский Javascript",
+                "option_label": "Пользовательский Javascript включен"
+            },
+            "custom_locales": {
+                "description": "Замена отдельных строк локализации. Смотрите https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/locales/en-GB.json для основного списка. Чтобы изменения вступили в силу, необходимо перезагрузить страницу.",
+                "heading": "Пользовательская локализация",
+                "option_label": "Пользовательская локализация включена"
+            },
+            "delete_options": {
+                "description": "Настройки по умолчанию при удалении изображений, галерей и сцен.",
+                "heading": "Опции удаления",
+                "options": {
+                    "delete_file": "По умолчанию удалить файлы",
+                    "delete_generated_supporting_files": "По умолчанию удалять сгенерированные вспомогательные файлы"
+                }
+            },
+            "desktop_integration": {
+                "desktop_integration": "Интеграция с рабочим столом",
+                "notifications_enabled": "Включить уведомления",
+                "send_desktop_notifications_for_events": "Отправка уведомлений на рабочий стол о событиях",
+                "skip_opening_browser": "Не открывать страницу в браузере",
+                "skip_opening_browser_on_startup": "Пропустить автоматическое открытие страницы в браузере при запуске"
+            },
+            "editing": {
+                "disable_dropdown_create": {
+                    "description": "Убрать возможность создавать новые объекты из выпадающих селекторов",
+                    "heading": "Отключить создание из раскрывающегося списка"
+                },
+                "heading": "Редактирование",
+                "rating_system": {
+                    "star_precision": {
+                        "label": "Точность системы оценок",
+                        "options": {
+                            "full": "Полный",
+                            "half": "Половина",
+                            "quarter": "Четверть"
+                        }
+                    },
+                    "type": {
+                        "label": "Тип рейтинговой системы",
+                        "options": {
+                            "decimal": "Десятичный",
+                            "stars": "Звезды"
+                        }
+                    }
+                }
+            },
+            "funscript_offset": {
+                "description": "Смещение времени в миллисекундах для воспроизведения интерактивных скриптов.",
+                "heading": "Funscript смещение (миллисекунды)"
+            },
+            "handy_connection": {
+                "connect": "Подключить",
+                "server_offset": {
+                    "heading": "Серверная компенсация"
+                },
+                "status": {
+                    "heading": "Статус соединения Handy"
+                },
+                "sync": "Синхронизировать"
+            },
+            "handy_connection_key": {
+                "description": "Ключ соединения с сервисом Handy используемый для интерактивных сцен. Установка этого ключа позволит Stash делится информацией о вашей текущий сценой с сайтом handyfeeling.com",
+                "heading": "Ключ подключения Handy"
+            },
+            "image_lightbox": {
+                "heading": "Окно просмотра изображений"
+            },
+            "images": {
+                "heading": "Изображения",
+                "options": {
+                    "write_image_thumbnails": {
+                        "description": "Записывать эскизы изображений на диск сразу при создании на лету",
+                        "heading": "Сохранить миниатюры изображений"
+                    }
+                }
+            },
+            "interactive_options": "Интерактивные опции",
+            "language": {
+                "heading": "Язык"
+            },
+            "max_loop_duration": {
+                "description": "Максимальная продолжительность сцены, при которой проигрыватель сцен будет зацикливать видео - 0 для отключения",
+                "heading": "Максимальная продолжительность повторяющегося сегмента"
+            },
+            "menu_items": {
+                "description": "Показать или скрыть различные типы контента на панели навигации",
+                "heading": "Пункты меню"
+            },
+            "minimum_play_percent": {
+                "description": "Процентная часть сцены, после которой счетчик воспроизведения будет увеличен.",
+                "heading": "Минимальный процент проигрывания"
+            },
+            "performers": {
+                "options": {
+                    "image_location": {
+                        "description": "Пользовательский путь к изображениям актеров. Оставьте пустым, чтобы использовать стандартные значения",
+                        "heading": "Пользовательский путь к изображениям актеров"
+                    }
+                }
+            },
+            "preview_type": {
+                "description": "Конфигурация отображения для элементов для вида \"Стена\"",
+                "heading": "Тип предварительного просмотра",
+                "options": {
+                    "animated": "Анимированное изображение",
+                    "static": "Статичное изображение",
+                    "video": "Видео"
+                }
+            },
+            "scene_list": {
+                "heading": "Список сцен",
+                "options": {
+                    "show_studio_as_text": "Отображать названия студии только в виде текста"
+                }
+            },
+            "scene_player": {
+                "heading": "Проигрыватель видео",
+                "options": {
+                    "always_start_from_beginning": "Всегда начинать воспроизведение видео сначало",
+                    "auto_start_video": "Автозапуск видео",
+                    "auto_start_video_on_play_selected": {
+                        "description": "Автоматически запускать видео из очереди или при воспроизведении выбранных или случайных видео со страницы \"Сцены\"",
+                        "heading": "Автоматическое воспроизведение выбранных видео"
+                    },
+                    "continue_playlist_default": {
+                        "description": "Запускать следующую сцену в очереди после окончания видео",
+                        "heading": "Продолжить плейлист по умолчанию"
+                    },
+                    "show_scrubber": "Показывать полосу перемотки видео с превью (Show Scrubber)",
+                    "track_activity": "Отслеживать активность"
+                }
+            },
+            "scene_wall": {
+                "heading": "Стена сцен / маркеров",
+                "options": {
+                    "display_title": "Отображать названия и теги",
+                    "toggle_sound": "Включить звук"
+                }
+            },
+            "scroll_attempts_before_change": {
+                "description": "Количество попыток прокрутки перед переходом к следующему/предыдущему элементу. Применяется только для режима прокрутки наклона Y.",
+                "heading": "Количество попыток прокрутки до перехода"
+            },
+            "show_tag_card_on_hover": {
+                "description": "Показывать карточку тега, при наведении курсора на значок тега",
+                "heading": "Подсказки к карточкам тегов"
+            },
+            "slideshow_delay": {
+                "description": "Слайд-шоу доступно в галереях, в режиме просмотра стены",
+                "heading": "Задержка показа слайдов (сек.)"
+            },
+            "studio_panel": {
+                "heading": "Просмотр Студий",
+                "options": {
+                    "show_child_studio_content": {
+                        "description": "В режиме просмотра студий, показывать контент и из под-студий",
+                        "heading": "Показывать контент под-студий"
+                    }
+                }
+            },
+            "tag_panel": {
+                "heading": "Вид тегов",
+                "options": {
+                    "show_child_tagged_content": {
+                        "description": "В режиме тегов, также будет показан контент и от подтегов",
+                        "heading": "Отображать контент под-тегов"
+                    }
+                }
+            },
+            "title": "Пользовательский интерфейс"
+        }
+    },
+    "configuration": "Настройки",
+    "countables": {
+        "files": "{count, plural, one {Файл} other {Файлы}}",
+        "galleries": "{count, plural, one {Галерея} other {Галереи}}",
+        "images": "{count, plural, one {Изображение} other {Изображения}}",
+        "markers": "{count, plural, one {Маркер} other {Маркеры}}",
+        "movies": "{count, plural, one {Фильм} other {Фильмы}}",
+        "performers": "{count, plural, one {Актер} other {Актеры}}",
+        "scenes": "{count, plural, one {Сцена} other {Сцены}}",
+        "studios": "{count, plural, one {Студия} other {Студии}}",
+        "tags": "{count, plural, one {Тег} other {Теги}}"
+    },
+    "country": "Страна",
+    "cover_image": "Изображение обложки",
+    "created_at": "Создано",
+    "criterion": {
+        "greater_than": "Больше чем",
+        "less_than": "Меньше чем",
+        "value": "Значение"
+    },
+    "criterion_modifier": {
+        "between": "между",
+        "equals": "есть",
+        "excludes": "исключает",
+        "format_string": "{criterion} {modifierString} {valueString}",
+        "greater_than": "больше, чем",
+        "includes": "включает",
+        "includes_all": "включает все",
+        "is_null": "is null",
+        "less_than": "меньше чем",
+        "matches_regex": "соответствует регулярному выражению",
+        "not_between": "не между",
+        "not_equals": "является не",
+        "not_matches_regex": "не соответствует регулярному выражению",
+        "not_null": "не пуст"
+    },
+    "custom": "Пользовательский",
+    "date": "Дата",
+    "death_date": "Дата смерти",
+    "death_year": "Год смерти",
+    "descending": "По убыванию",
+    "description": "Описание",
+    "detail": "Дополнительная информация",
+    "details": "Подробности",
+    "developmentVersion": "Версия разработки",
+    "dialogs": {
+        "create_new_entity": "Создать новую запись в {entity}",
+        "delete_alert": "Следующие {count, plural, one {{singularEntity}} other {{pluralEntity}}} будут удалены безвозвратно:",
+        "delete_confirm": "Вы уверены что хотите удалить {entityName}?",
+        "delete_entity_desc": "{count, plural, one {Вы уверены, что хотите удалить этот {singularEntity}? Если файл также не будет удален, этот {singularEntity} будет повторно добавлен при сканировании.} other {Вы уверены, что хотите удалить эти {pluralEntity}? Если файлы также не будут удалены, эти {pluralEntity} будут повторно добавлены при выполнении сканирования.}}",
+        "delete_entity_simple_desc": "{count, plural, one {Вы уверены, что хотите удалить {singularEntity}?} other {Вы уверены, что хотите удалить эти {pluralEntity}?}}",
+        "delete_entity_title": "{count, plural, one {Удалить {singularEntity}} other {Удалить {pluralEntity}}}",
+        "delete_galleries_extra": "…плюс любые файлы изображений, не прикрепленные ни к какой другой галерее.",
+        "delete_gallery_files": "Удалите папку/архив галереи и любые изображения, не прикрепленные к какой-либо другой галерее.",
+        "delete_object_desc": "Вы уверены что хотите удалить {count, plural, one {эту {singularEntity}} other {эти{pluralEntity}}}?",
+        "delete_object_overflow": "…и {count} other {count, plural, one {{singularEntity}} other {{pluralEntity}}}.",
+        "delete_object_title": "Удалить {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
+        "dont_show_until_updated": "Не показывать до следующего обновления",
+        "edit_entity_title": "Редактировать {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
+        "export_include_related_objects": "Включить связанные объекты в экспорт",
+        "export_title": "Экспорт",
+        "lightbox": {
+            "delay": "Задержка (сек)",
+            "display_mode": {
+                "fit_horizontally": "Выровнять по горизонтали",
+                "fit_to_screen": "По размеру экрана",
+                "label": "Режим отображения",
+                "original": "Оригинал"
+            },
+            "options": "Параметры",
+            "reset_zoom_on_nav": "Сбросить масштабирование при смене изображения",
+            "scale_up": {
+                "description": "Масштабировать небольшие изображения до заполнения экрана",
+                "label": "Масштабировать, чтобы уместить"
+            },
+            "scroll_mode": {
+                "description": "Зажмите shift чтобы временно использовать другой режим.",
+                "label": "Режим прокрутки",
+                "pan_y": "Наклон по Y",
+                "zoom": "Увеличить"
             }
-          },
-          "type": {
-            "label": "Тип рейтинговой системы",
-            "options": {
-              "decimal": "Десятичный",
-              "stars": "Звезды"
-            }
-          }
-        }
-      },
-      "funscript_offset": {
-        "description": "Смещение времени в миллисекундах для воспроизведения интерактивных скриптов.",
-        "heading": "Funscript смещение (миллисекунды)"
-      },
-      "handy_connection": {
-        "connect": "Подключить",
-        "server_offset": {
-          "heading": "Серверная компенсация"
         },
-        "status": {
-          "heading": "Статус соединения Handy"
+        "merge": {
+            "destination": "Цель",
+            "empty_results": "Значения в полях целевого файла останутся без изменений.",
+            "source": "Источник"
         },
-        "sync": "Синхронизировать"
-      },
-      "handy_connection_key": {
-        "description": "Ключ соединения с сервисом Handy используемый для интерактивных сцен. Установка этого ключа позволит Stash делится информацией о вашей текущий сценой с сайтом handyfeeling.com",
-        "heading": "Ключ подключения Handy"
-      },
-      "image_lightbox": {
-        "heading": "Окно просмотра изображений"
-      },
-      "images": {
-        "heading": "Изображения",
-        "options": {
-          "write_image_thumbnails": {
-            "description": "Записывать эскизы изображений на диск сразу при создании на лету",
-            "heading": "Сохранить миниатюры изображений"
-          }
-        }
-      },
-      "interactive_options": "Интерактивные опции",
-      "language": {
-        "heading": "Язык"
-      },
-      "max_loop_duration": {
-        "description": "Максимальная продолжительность сцены, при которой проигрыватель сцен будет зацикливать видео - 0 для отключения",
-        "heading": "Максимальная продолжительность повторяющегося сегмента"
-      },
-      "menu_items": {
-        "description": "Показать или скрыть различные типы контента на панели навигации",
-        "heading": "Пункты меню"
-      },
-      "minimum_play_percent": {
-        "description": "Процентная часть сцены, после которой счетчик воспроизведения будет увеличен.",
-        "heading": "Минимальный процент проигрывания"
-      },
-      "performers": {
-        "options": {
-          "image_location": {
-            "description": "Пользовательский путь к изображениям актеров. Оставьте пустым, чтобы использовать стандартные значения",
-            "heading": "Пользовательский путь к изображениям актеров"
-          }
-        }
-      },
-      "preview_type": {
-        "description": "Конфигурация отображения для элементов для вида \"Стена\"",
-        "heading": "Тип предварительного просмотра",
-        "options": {
-          "animated": "Анимированное изображение",
-          "static": "Статичное изображение",
-          "video": "Видео"
-        }
-      },
-      "scene_list": {
-        "heading": "Список сцен",
-        "options": {
-          "show_studio_as_text": "Отображать названия студии только в виде текста"
-        }
-      },
-      "scene_player": {
-        "heading": "Проигрыватель видео",
-        "options": {
-          "always_start_from_beginning": "Всегда начинать воспроизведение видео сначало",
-          "auto_start_video": "Автозапуск видео",
-          "auto_start_video_on_play_selected": {
-            "description": "Автоматически запускать видео из очереди или при воспроизведении выбранных или случайных видео со страницы \"Сцены\"",
-            "heading": "Автоматическое воспроизведение выбранных видео"
-          },
-          "continue_playlist_default": {
-            "description": "Запускать следующую сцену в очереди после окончания видео",
-            "heading": "Продолжить плейлист по умолчанию"
-          },
-          "show_scrubber": "Показывать полосу перемотки видео с превью (Show Scrubber)",
-          "track_activity": "Отслеживать активность"
-        }
-      },
-      "scene_wall": {
-        "heading": "Стена сцен / маркеров",
-        "options": {
-          "display_title": "Отображать названия и теги",
-          "toggle_sound": "Включить звук"
-        }
-      },
-      "scroll_attempts_before_change": {
-        "description": "Количество попыток прокрутки перед переходом к следующему/предыдущему элементу. Применяется только для режима прокрутки наклона Y.",
-        "heading": "Количество попыток прокрутки до перехода"
-      },
-      "show_tag_card_on_hover": {
-        "description": "Показывать карточку тега, при наведении курсора на значок тега",
-        "heading": "Подсказки к карточкам тегов"
-      },
-      "slideshow_delay": {
-        "description": "Слайд-шоу доступно в галереях, в режиме просмотра стены",
-        "heading": "Задержка показа слайдов (сек.)"
-      },
-      "studio_panel": {
-        "heading": "Просмотр Студий",
-        "options": {
-          "show_child_studio_content": {
-            "description": "В режиме просмотра студий, показывать контент и из под-студий",
-            "heading": "Показывать контент под-студий"
-          }
-        }
-      },
-      "tag_panel": {
-        "heading": "Вид тегов",
-        "options": {
-          "show_child_tagged_content": {
-            "description": "В режиме тегов, также будет показан контент и от подтегов",
-            "heading": "Отображать контент под-тегов"
-          }
-        }
-      },
-      "title": "Пользовательский интерфейс"
-    }
-  },
-  "configuration": "Настройки",
-  "countables": {
-    "files": "{count, plural, one {Файл} other {Файлы}}",
-    "galleries": "{count, plural, one {Галерея} other {Галереи}}",
-    "images": "{count, plural, one {Изображение} other {Изображения}}",
-    "markers": "{count, plural, one {Маркер} other {Маркеры}}",
-    "movies": "{count, plural, one {Фильм} other {Фильмы}}",
-    "performers": "{count, plural, one {Актер} other {Актеры}}",
-    "scenes": "{count, plural, one {Сцена} other {Сцены}}",
-    "studios": "{count, plural, one {Студия} other {Студии}}",
-    "tags": "{count, plural, one {Тег} other {Теги}}"
-  },
-  "country": "Страна",
-  "cover_image": "Изображение обложки",
-  "created_at": "Создано",
-  "criterion": {
-    "greater_than": "Больше чем",
-    "less_than": "Меньше чем",
-    "value": "Значение"
-  },
-  "criterion_modifier": {
-    "between": "между",
-    "equals": "есть",
-    "excludes": "исключает",
-    "format_string": "{criterion} {modifierString} {valueString}",
-    "greater_than": "больше, чем",
-    "includes": "включает",
-    "includes_all": "включает все",
-    "is_null": "is null",
-    "less_than": "меньше чем",
-    "matches_regex": "соответствует регулярному выражению",
-    "not_between": "не между",
-    "not_equals": "является не",
-    "not_matches_regex": "не соответствует регулярному выражению",
-    "not_null": "не пуст"
-  },
-  "custom": "Пользовательский",
-  "date": "Дата",
-  "death_date": "Дата смерти",
-  "death_year": "Год смерти",
-  "descending": "По убыванию",
-  "description": "Описание",
-  "detail": "Дополнительная информация",
-  "details": "Подробности",
-  "developmentVersion": "Версия разработки",
-  "dialogs": {
-    "create_new_entity": "Создать новую запись в {entity}",
-    "delete_alert": "Следующие {count, plural, one {{singularEntity}} other {{pluralEntity}}} будут удалены безвозвратно:",
-    "delete_confirm": "Вы уверены что хотите удалить {entityName}?",
-    "delete_entity_desc": "{count, plural, one {Вы уверены, что хотите удалить этот {singularEntity}? Если файл также не будет удален, этот {singularEntity} будет повторно добавлен при сканировании.} other {Вы уверены, что хотите удалить эти {pluralEntity}? Если файлы также не будут удалены, эти {pluralEntity} будут повторно добавлены при выполнении сканирования.}}",
-    "delete_entity_simple_desc": "{count, plural, one {Вы уверены, что хотите удалить {singularEntity}?} other {Вы уверены, что хотите удалить эти {pluralEntity}?}}",
-    "delete_entity_title": "{count, plural, one {Удалить {singularEntity}} other {Удалить {pluralEntity}}}",
-    "delete_galleries_extra": "…плюс любые файлы изображений, не прикрепленные ни к какой другой галерее.",
-    "delete_gallery_files": "Удалите папку/архив галереи и любые изображения, не прикрепленные к какой-либо другой галерее.",
-    "delete_object_desc": "Вы уверены что хотите удалить {count, plural, one {эту {singularEntity}} other {эти{pluralEntity}}}?",
-    "delete_object_overflow": "…и {count} other {count, plural, one {{singularEntity}} other {{pluralEntity}}}.",
-    "delete_object_title": "Удалить {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
-    "dont_show_until_updated": "Не показывать до следующего обновления",
-    "edit_entity_title": "Редактировать {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
-    "export_include_related_objects": "Включить связанные объекты в экспорт",
-    "export_title": "Экспорт",
-    "lightbox": {
-      "delay": "Задержка (сек)",
-      "display_mode": {
-        "fit_horizontally": "Выровнять по горизонтали",
-        "fit_to_screen": "По размеру экрана",
-        "label": "Режим отображения",
-        "original": "Оригинал"
-      },
-      "options": "Параметры",
-      "reset_zoom_on_nav": "Сбросить масштабирование при смене изображения",
-      "scale_up": {
-        "description": "Масштабировать небольшие изображения до заполнения экрана",
-        "label": "Масштабировать, чтобы уместить"
-      },
-      "scroll_mode": {
-        "description": "Зажмите shift чтобы временно использовать другой режим.",
-        "label": "Режим прокрутки",
-        "pan_y": "Наклон по Y",
-        "zoom": "Увеличить"
-      }
+        "merge_tags": {
+            "destination": "Назначение",
+            "source": "Источник"
+        },
+        "overwrite_filter_confirm": "Вы уверены, что хотите перезаписать существующий сохраненный запрос {entityName}?",
+        "reassign_entity_title": "{count, plural, one {Переназначить {singularEntity}} other {Переназначить {pluralEntity}}}",
+        "reassign_files": {
+            "destination": "Переназначить на"
+        },
+        "scene_gen": {
+            "force_transcodes": "Принудительно создавать перекодированные файлы",
+            "force_transcodes_tooltip": "По умолчанию перекодированные файлы генерируется только в том случае, если видеофайл не поддерживается браузером. Если этот параметр включен, перекодирование будет генерироваться, даже если видеофайл поддерживается браузером.",
+            "image_previews": "Анимированные изображения как превью",
+            "image_previews_tooltip": "Анимированные WebP превью, необходимы если тип предпросмотра выбран - Анимированные изображения.",
+            "interactive_heatmap_speed": "Создание тепловых карт и скоростей скриптов (funscript) для интерактивных сцен",
+            "marker_image_previews": "Анимированный предварительный просмотр для маркеров",
+            "marker_image_previews_tooltip": "Анимированные WebP превью для маркеров, необходимы если тип предпросмотра выбран - Анимированные изображения.",
+            "marker_screenshots": "Скриншоты для маркеров",
+            "marker_screenshots_tooltip": "Статические JPG изображения маркеров, необходимы если тип предпросмотра выбран - Статичное изображение.",
+            "markers": "Превью маркера",
+            "markers_tooltip": "20-секундные видео, которые начинаются с заданного тайм-кода.",
+            "override_preview_generation_options": "Пользовательские параметры превью видео файлов",
+            "override_preview_generation_options_desc": "Пользовательские параметры для создания превью. Значения по умолчанию находятся в Система -> Создание Превью.",
+            "overwrite": "Перезаписать существующие сгенерированные файлы",
+            "phash": "Воспринимаемые хэши (для дедупликации файлов)",
+            "preview_exclude_end_time_desc": "Исключить последние x секунд из предварительного просмотра сцен. Это может быть значение в секундах или процент (например, 2%) от общей продолжительности сцены.",
+            "preview_exclude_end_time_head": "Исключенное время с конца файла",
+            "preview_exclude_start_time_desc": "Исключить первые x секунд из предварительного просмотра сцен. Это может быть значение в секундах или процент (например, 2%) от общей продолжительности сцены.",
+            "preview_exclude_start_time_head": "Исключенное время с начала файла",
+            "preview_generation_options": "Параметры создания\\генерации превью",
+            "preview_options": "Параметры превью",
+            "preview_preset_desc": "Предустановка влияет на размер, качество и время кодирования для создания файлов предварительного просмотра. Предустановки с значением выше «slow» имеют незначительные преимущества и не рекомендуются.",
+            "preview_preset_head": "Настройка кодировки предварительного просмотра",
+            "preview_seg_count_desc": "Количество сегментов в файлах предварительного просмотра.",
+            "preview_seg_count_head": "Количество сегментов в предварительном просмотре",
+            "preview_seg_duration_desc": "Продолжительность каждого сегмента в файлах предварительного просмотра, в секундах.",
+            "preview_seg_duration_head": "Продолжительность сегмента предварительного просмотра",
+            "sprites": "Спрайты сцен для полосы перемотки видео",
+            "sprites_tooltip": "Небольшие изображения предварительного просмотра для временной шкалы видео (для scrubber'а сцен)",
+            "transcodes": "Перекодированные файлы",
+            "transcodes_tooltip": "Конвертация в MP4 формат, всех неподдерживаемых видео форматов",
+            "video_previews": "Превью",
+            "video_previews_tooltip": "Видео превью которые проигрываются при наведении курсора на сцену"
+        },
+        "scenes_found": "{count} сцен найдено",
+        "scrape_entity_query": "{entity_type} Scrape запрос",
+        "scrape_entity_title": "{entity_type} Scrape результаты",
+        "scrape_results_existing": "Существующий",
+        "scrape_results_scraped": "Собрано",
+        "set_image_url_title": "Ссылка изображения",
+        "unsaved_changes": "Имеются несохраненные изменений. Вы действительно хотите выйти?"
     },
-    "merge": {
-      "destination": "Цель",
-      "empty_results": "Значения в полях целевого файла останутся без изменений.",
-      "source": "Источник"
+    "dimensions": "Размер",
+    "director": "Режиссер",
+    "disambiguation": "Многозначность",
+    "display_mode": {
+        "grid": "Сетка",
+        "list": "Список",
+        "tagger": "Теггер",
+        "unknown": "Неизвестный",
+        "wall": "Стена"
     },
-    "merge_tags": {
-      "destination": "Назначение",
-      "source": "Источник"
+    "donate": "Пожертвование",
+    "dupe_check": {
+        "description": "Расчет уровней ниже «Exact» может занять больше времени. Ложные срабатывания возможны при более низких уровнях точности.",
+        "found_sets": "{setCount, plural, one{# набор дубликатов найден.} other {# наборы дубликатов найдены.}}",
+        "options": {
+            "exact": "Точный",
+            "high": "Высокий",
+            "low": "Нижний",
+            "medium": "Средний"
+        },
+        "search_accuracy_label": "Точность поиска",
+        "title": "Дубликаты сцен"
     },
-    "overwrite_filter_confirm": "Вы уверены, что хотите перезаписать существующий сохраненный запрос {entityName}?",
-    "reassign_entity_title": "{count, plural, one {Переназначить {singularEntity}} other {Переназначить {pluralEntity}}}",
-    "reassign_files": {
-      "destination": "Переназначить на"
+    "duplicated_phash": "Дублированный (phash)",
+    "duration": "Продолжительность",
+    "effect_filters": {
+        "aspect": "Аспект",
+        "blue": "Синий",
+        "blur": "Размытие",
+        "brightness": "Яркость",
+        "contrast": "Контраст",
+        "gamma": "Гамма",
+        "green": "Зеленый",
+        "hue": "Оттенок",
+        "name": "Фильтры",
+        "name_transforms": "Трансформация",
+        "red": "Красный",
+        "reset_filters": "Сбросить фильтры",
+        "reset_transforms": "Сбросить трансформации",
+        "rotate": "Поворот",
+        "rotate_left_and_scale": "Повернуть влево и масштабировать",
+        "rotate_right_and_scale": "Повернуть вправо и масштабировать",
+        "saturation": "Насыщенность",
+        "scale": "Масштаб",
+        "warmth": "Тепло"
     },
-    "scene_gen": {
-      "force_transcodes": "Принудительно создавать перекодированные файлы",
-      "force_transcodes_tooltip": "По умолчанию перекодированные файлы генерируется только в том случае, если видеофайл не поддерживается браузером. Если этот параметр включен, перекодирование будет генерироваться, даже если видеофайл поддерживается браузером.",
-      "image_previews": "Анимированные изображения как превью",
-      "image_previews_tooltip": "Анимированные WebP превью, необходимы если тип предпросмотра выбран - Анимированные изображения.",
-      "interactive_heatmap_speed": "Создание тепловых карт и скоростей скриптов (funscript) для интерактивных сцен",
-      "marker_image_previews": "Анимированный предварительный просмотр для маркеров",
-      "marker_image_previews_tooltip": "Анимированные WebP превью для маркеров, необходимы если тип предпросмотра выбран - Анимированные изображения.",
-      "marker_screenshots": "Скриншоты для маркеров",
-      "marker_screenshots_tooltip": "Статические JPG изображения маркеров, необходимы если тип предпросмотра выбран - Статичное изображение.",
-      "markers": "Превью маркера",
-      "markers_tooltip": "20-секундные видео, которые начинаются с заданного тайм-кода.",
-      "override_preview_generation_options": "Пользовательские параметры превью видео файлов",
-      "override_preview_generation_options_desc": "Пользовательские параметры для создания превью. Значения по умолчанию находятся в Система -> Создание Превью.",
-      "overwrite": "Перезаписать существующие сгенерированные файлы",
-      "phash": "Воспринимаемые хэши (для дедупликации файлов)",
-      "preview_exclude_end_time_desc": "Исключить последние x секунд из предварительного просмотра сцен. Это может быть значение в секундах или процент (например, 2%) от общей продолжительности сцены.",
-      "preview_exclude_end_time_head": "Исключенное время с конца файла",
-      "preview_exclude_start_time_desc": "Исключить первые x секунд из предварительного просмотра сцен. Это может быть значение в секундах или процент (например, 2%) от общей продолжительности сцены.",
-      "preview_exclude_start_time_head": "Исключенное время с начала файла",
-      "preview_generation_options": "Параметры создания\\генерации превью",
-      "preview_options": "Параметры превью",
-      "preview_preset_desc": "Предустановка влияет на размер, качество и время кодирования для создания файлов предварительного просмотра. Предустановки с значением выше «slow» имеют незначительные преимущества и не рекомендуются.",
-      "preview_preset_head": "Настройка кодировки предварительного просмотра",
-      "preview_seg_count_desc": "Количество сегментов в файлах предварительного просмотра.",
-      "preview_seg_count_head": "Количество сегментов в предварительном просмотре",
-      "preview_seg_duration_desc": "Продолжительность каждого сегмента в файлах предварительного просмотра, в секундах.",
-      "preview_seg_duration_head": "Продолжительность сегмента предварительного просмотра",
-      "sprites": "Спрайты сцен для полосы перемотки видео",
-      "sprites_tooltip": "Небольшие изображения предварительного просмотра для временной шкалы видео (для scrubber'а сцен)",
-      "transcodes": "Перекодированные файлы",
-      "transcodes_tooltip": "Конвертация в MP4 формат, всех неподдерживаемых видео форматов",
-      "video_previews": "Превью",
-      "video_previews_tooltip": "Видео превью которые проигрываются при наведении курсора на сцену"
+    "empty_server": "Добавьте несколько сцен на свой сервер, чтобы просмотреть рекомендации на этой странице.",
+    "ethnicity": "Этническая принадлежность",
+    "existing_value": "существующее значение",
+    "eye_color": "Цвет глаз",
+    "fake_tits": "Искусственная грудь",
+    "false": "Нет",
+    "favourite": "Избранный",
+    "file": "файл",
+    "file_count": "Количество файлов",
+    "file_info": "Информация о файле",
+    "file_mod_time": "Время модификации файла",
+    "files": "файлы",
+    "files_amount": "{value} файлов",
+    "filesize": "Размер файла",
+    "filter": "Фильтр",
+    "filter_name": "Название фильтра",
+    "filters": "Фильтры",
+    "folder": "Папка",
+    "framerate": "Частота кадров",
+    "frames_per_second": "{value} кадров в секунду",
+    "front_page": {
+        "types": {
+            "premade_filter": "Заготовленный фильтр",
+            "saved_filter": "Сохраненный фильтр"
+        }
     },
-    "scenes_found": "{count} сцен найдено",
-    "scrape_entity_query": "{entity_type} Scrape запрос",
-    "scrape_entity_title": "{entity_type} Scrape результаты",
-    "scrape_results_existing": "Существующий",
-    "scrape_results_scraped": "Собрано",
-    "set_image_url_title": "Ссылка изображения",
-    "unsaved_changes": "Имеются несохраненные изменений. Вы действительно хотите выйти?"
-  },
-  "dimensions": "Размер",
-  "director": "Режиссер",
-  "disambiguation": "Многозначность",
-  "display_mode": {
-    "grid": "Сетка",
-    "list": "Список",
-    "tagger": "Теггер",
-    "unknown": "Неизвестный",
-    "wall": "Стена"
-  },
-  "donate": "Пожертвование",
-  "dupe_check": {
-    "description": "Расчет уровней ниже «Exact» может занять больше времени. Ложные срабатывания возможны при более низких уровнях точности.",
-    "found_sets": "{setCount, plural, one{# набор дубликатов найден.} other {# наборы дубликатов найдены.}}",
-    "options": {
-      "exact": "Точный",
-      "high": "Высокий",
-      "low": "Нижний",
-      "medium": "Средний"
+    "galleries": "Галереи",
+    "gallery": "Галерея",
+    "gallery_count": "Количество галерей",
+    "gender": "Пол",
+    "gender_types": {
+        "FEMALE": "Женщина",
+        "INTERSEX": "Интерсекс",
+        "MALE": "Мужчина",
+        "NON_BINARY": "Не бинарный",
+        "TRANSGENDER_FEMALE": "Женщина трансгендер",
+        "TRANSGENDER_MALE": "Мужчина трансгендер"
     },
-    "search_accuracy_label": "Точность поиска",
-    "title": "Дубликаты сцен"
-  },
-  "duplicated_phash": "Дублированный (phash)",
-  "duration": "Продолжительность",
-  "effect_filters": {
-    "aspect": "Аспект",
-    "blue": "Синий",
-    "blur": "Размытие",
-    "brightness": "Яркость",
-    "contrast": "Контраст",
-    "gamma": "Гамма",
-    "green": "Зеленый",
-    "hue": "Оттенок",
-    "name": "Фильтры",
-    "name_transforms": "Трансформация",
-    "red": "Красный",
-    "reset_filters": "Сбросить фильтры",
-    "reset_transforms": "Сбросить трансформации",
-    "rotate": "Поворот",
-    "rotate_left_and_scale": "Повернуть влево и масштабировать",
-    "rotate_right_and_scale": "Повернуть вправо и масштабировать",
-    "saturation": "Насыщенность",
-    "scale": "Масштаб",
-    "warmth": "Тепло"
-  },
-  "empty_server": "Добавьте несколько сцен на свой сервер, чтобы просмотреть рекомендации на этой странице.",
-  "ethnicity": "Этническая принадлежность",
-  "existing_value": "существующее значение",
-  "eye_color": "Цвет глаз",
-  "fake_tits": "Искусственная грудь",
-  "false": "Нет",
-  "favourite": "Избранный",
-  "file": "файл",
-  "file_count": "Количество файлов",
-  "file_info": "Информация о файле",
-  "file_mod_time": "Время модификации файла",
-  "files": "файлы",
-  "files_amount": "{value} файлов",
-  "filesize": "Размер файла",
-  "filter": "Фильтр",
-  "filter_name": "Название фильтра",
-  "filters": "Фильтры",
-  "folder": "Папка",
-  "framerate": "Частота кадров",
-  "frames_per_second": "{value} кадров в секунду",
-  "front_page": {
-    "types": {
-      "premade_filter": "Заготовленный фильтр",
-      "saved_filter": "Сохраненный фильтр"
-    }
-  },
-  "galleries": "Галереи",
-  "gallery": "Галерея",
-  "gallery_count": "Количество галерей",
-  "gender": "Пол",
-  "gender_types": {
-    "FEMALE": "Женщина",
-    "INTERSEX": "Интерсекс",
-    "MALE": "Мужчина",
-    "NON_BINARY": "Не бинарный",
-    "TRANSGENDER_FEMALE": "Женщина трансгендер",
-    "TRANSGENDER_MALE": "Мужчина трансгендер"
-  },
-  "hair_color": "Цвет волос",
-  "handy_connection_status": {
-    "connecting": "Подключение",
-    "disconnected": "Отключен",
-    "error": "Ошибка при подключении к телефону",
-    "missing": "Отсутствует",
-    "ready": "Готов",
-    "syncing": "Синхронизация с сервером",
-    "uploading": "Отправка скрипта"
-  },
-  "hasMarkers": "Имеет маркеры",
-  "height": "Рост",
-  "height_cm": "Рост (см)",
-  "help": "Помощь",
-  "ignore_auto_tag": "Игнорировать автоматическую пометку тегами",
-  "image": "Изображение",
-  "image_count": "Количество изображений",
-  "images": "Изображения",
-  "include_parent_tags": "Включить родительские теги",
-  "include_sub_studios": "Включая дочерние студии",
-  "include_sub_tags": "Включить вложенные теги",
-  "instagram": "Instagram",
-  "interactive": "Интерактивно",
-  "interactive_speed": "Интерактивная скорость",
-  "isMissing": "Отсутствует",
-  "last_played_at": "Воспроизводился в последний раз",
-  "library": "Библиотека",
-  "loading": {
-    "generic": "Загрузка…"
-  },
-  "marker_count": "Количество маркеров",
-  "markers": "Маркеры",
-  "measurements": "Размеры",
-  "media_info": {
-    "audio_codec": "Аудио кодек",
-    "checksum": "Контрольная сумма",
-    "downloaded_from": "Скачан с",
-    "hash": "Хэш",
+    "hair_color": "Цвет волос",
+    "handy_connection_status": {
+        "connecting": "Подключение",
+        "disconnected": "Отключен",
+        "error": "Ошибка при подключении к телефону",
+        "missing": "Отсутствует",
+        "ready": "Готов",
+        "syncing": "Синхронизация с сервером",
+        "uploading": "Отправка скрипта"
+    },
+    "hasMarkers": "Имеет маркеры",
+    "height": "Рост",
+    "height_cm": "Рост (см)",
+    "help": "Помощь",
+    "ignore_auto_tag": "Игнорировать автоматическую пометку тегами",
+    "image": "Изображение",
+    "image_count": "Количество изображений",
+    "images": "Изображения",
+    "include_parent_tags": "Включить родительские теги",
+    "include_sub_studios": "Включая дочерние студии",
+    "include_sub_tags": "Включить вложенные теги",
+    "instagram": "Instagram",
+    "interactive": "Интерактивно",
     "interactive_speed": "Интерактивная скорость",
-    "performer_card": {
-      "age": "{age} {years_old}",
-      "age_context": "{age} {years_old} в этой сцене"
+    "isMissing": "Отсутствует",
+    "last_played_at": "Воспроизводился в последний раз",
+    "library": "Библиотека",
+    "loading": {
+        "generic": "Загрузка…"
     },
-    "phash": "PHash значение",
+    "marker_count": "Количество маркеров",
+    "markers": "Маркеры",
+    "measurements": "Размеры",
+    "media_info": {
+        "audio_codec": "Аудио кодек",
+        "checksum": "Контрольная сумма",
+        "downloaded_from": "Скачан с",
+        "hash": "Хэш",
+        "interactive_speed": "Интерактивная скорость",
+        "performer_card": {
+            "age": "{age} {years_old}",
+            "age_context": "{age} {years_old} в этой сцене"
+        },
+        "phash": "PHash значение",
+        "play_count": "Счетчик воспроизведений",
+        "play_duration": "Продолжительность",
+        "stream": "Стрим",
+        "video_codec": "Видео кодек"
+    },
+    "megabits_per_second": "{value} мегабит в секунду",
+    "metadata": "Метаданные",
+    "movie": "Фильм",
+    "movie_scene_number": "Количество сцен в фильме",
+    "movies": "Фильмы",
+    "name": "Имя",
+    "new": "Новый",
+    "none": "Отсутствует",
+    "o_counter": "О-Счетчик",
+    "operations": "Операции",
+    "organized": "Организован",
+    "pagination": {
+        "first": "Первая",
+        "last": "Последняя",
+        "next": "Следующая",
+        "previous": "Предыдущий"
+    },
+    "parent_of": "Родитель {children}",
+    "parent_studios": "Родительские студии",
+    "parent_tag_count": "Количество родительских тегов",
+    "parent_tags": "Родительские теги",
+    "part_of": "Является частью {parent}",
+    "path": "Путь",
+    "perceptual_similarity": "Воспринимаемое сходство (phash)",
+    "performer": "Актер",
+    "performer_age": "Возраст актера",
+    "performer_count": "Количество актеров",
+    "performer_favorite": "Участник добавлен в избранное",
+    "performer_image": "Изображение актера",
+    "performer_tagger": {
+        "add_new_performers": "Добавить новых актеров",
+        "any_names_entered_will_be_queried": "Любые введенные имена будут проверены при помощи Stash-Box и позже добавлены, если они будут найдены точные совпадения.",
+        "batch_add_performers": "Пакетное добавление участников",
+        "batch_update_performers": "Пакетное обновление участников",
+        "config": {
+            "active_stash-box_instance": "Активный stash-box экземпляр:",
+            "edit_excluded_fields": "Редактировать исключенные поля",
+            "excluded_fields": "Исключенные поля:",
+            "no_fields_are_excluded": "Нет исключенных полей",
+            "no_instances_found": "Экземпляры не обнаружены",
+            "these_fields_will_not_be_changed_when_updating_performers": "Эти поля не будут изменены при обновлении актеров."
+        },
+        "current_page": "Текущая страница",
+        "failed_to_save_performer": "Ошибка сохранения актера \"{performer}\"",
+        "name_already_exists": "Такое имя уже существует",
+        "network_error": "Ошибка сети",
+        "no_results_found": "Ничего не найдено.",
+        "number_of_performers_will_be_processed": "{performer_count} актер(-ы) будут обработаны",
+        "performer_already_tagged": "Актер уже помечен тегом",
+        "performer_names_separated_by_comma": "Имена актеров, разделенные запятой",
+        "performer_selection": "Выбор актеров",
+        "performer_successfully_tagged": "Актер успешно помечен тегом:",
+        "query_all_performers_in_the_database": "Все актеры в базе данных",
+        "refresh_tagged_performers": "Обновить помеченных тегами актеров",
+        "refreshing_will_update_the_data": "Обновление обновит данные у всех помеченных тегами актеров, используя stash-box.",
+        "status_tagging_job_queued": "Статус: Пометка тегами добавлена в очередь",
+        "status_tagging_performers": "Статус: Пометка тегами актеров",
+        "tag_status": "Статус тега",
+        "to_use_the_performer_tagger": "Для пометки актеров тэгами, stash-box должен быть настроен.",
+        "untagged_performers": "Не помеченные актеры",
+        "update_performer": "Обновить актера",
+        "update_performers": "Обновить актеров",
+        "updating_untagged_performers_description": "При обновлении непомеченных актеров, будет предпринята попытка обновить метаданные всех участников, у которых нет StashID."
+    },
+    "performer_tags": "Теги актера",
+    "performers": "Исполнители",
+    "piercings": "Пирсинг",
     "play_count": "Счетчик воспроизведений",
-    "play_duration": "Продолжительность",
-    "stream": "Стрим",
-    "video_codec": "Видео кодек"
-  },
-  "megabits_per_second": "{value} мегабит в секунду",
-  "metadata": "Метаданные",
-  "movie": "Фильм",
-  "movie_scene_number": "Количество сцен в фильме",
-  "movies": "Фильмы",
-  "name": "Имя",
-  "new": "Новый",
-  "none": "Отсутствует",
-  "o_counter": "О-Счетчик",
-  "operations": "Операции",
-  "organized": "Организован",
-  "pagination": {
-    "first": "Первая",
-    "last": "Последняя",
-    "next": "Следующая",
-    "previous": "Предыдущий"
-  },
-  "parent_of": "Родитель {children}",
-  "parent_studios": "Родительские студии",
-  "parent_tag_count": "Количество родительских тегов",
-  "parent_tags": "Родительские теги",
-  "part_of": "Является частью {parent}",
-  "path": "Путь",
-  "perceptual_similarity": "Воспринимаемое сходство (phash)",
-  "performer": "Актер",
-  "performer_tags": "Теги актера",
-  "performer_age": "Возраст актера",
-  "performer_count": "Количество актеров",
-  "performer_favorite": "Участник добавлен в избранное",
-  "performer_image": "Изображение актера",
-  "performer_tagger": {
-    "add_new_performers": "Добавить новых актеров",
-    "any_names_entered_will_be_queried": "Любые введенные имена будут проверены при помощи Stash-Box и позже добавлены, если они будут найдены точные совпадения.",
-    "batch_add_performers": "Пакетное добавление участников",
-    "batch_update_performers": "Пакетное обновление участников",
-    "config": {
-      "active_stash-box_instance": "Активный stash-box экземпляр:",
-      "edit_excluded_fields": "Редактировать исключенные поля",
-      "excluded_fields": "Исключенные поля:",
-      "no_fields_are_excluded": "Нет исключенных полей",
-      "no_instances_found": "Экземпляры не обнаружены",
-      "these_fields_will_not_be_changed_when_updating_performers": "Эти поля не будут изменены при обновлении актеров."
+    "play_duration": "Продолжительность воспроизведения",
+    "primary_file": "Первичный файл",
+    "queue": "Очередь",
+    "random": "Случайный",
+    "rating": "Рейтинг",
+    "recently_added_objects": "Недавно добавленные {objects}",
+    "recently_released_objects": "Недавно выпущенные {objects}",
+    "release_notes": "Информация о сборке",
+    "resolution": "Разрешение",
+    "resume_time": "Таймкод воспроизведения",
+    "scene": "Сцена",
+    "sceneTagger": "Пометка сцен тэгами",
+    "scene_code": "Идентификатор сцены",
+    "scene_count": "Количество сцен",
+    "scene_created_at": "Сцена создана",
+    "scene_date": "Дата сцены",
+    "scene_id": "ID сцены",
+    "scene_tags": "Тэги сцен",
+    "scene_updated_at": "Сцена обновлена",
+    "scenes": "Сцены",
+    "scenes_updated_at": "Сцена обновлена в",
+    "search_filter": {
+        "name": "Фильтр",
+        "saved_filters": "Сохраненные фильтры",
+        "update_filter": "Обновить фильтр"
     },
-    "current_page": "Текущая страница",
-    "failed_to_save_performer": "Ошибка сохранения актера \"{performer}\"",
-    "name_already_exists": "Такое имя уже существует",
-    "network_error": "Ошибка сети",
-    "no_results_found": "Ничего не найдено.",
-    "number_of_performers_will_be_processed": "{performer_count} актер(-ы) будут обработаны",
-    "performer_already_tagged": "Актер уже помечен тегом",
-    "performer_names_separated_by_comma": "Имена актеров, разделенные запятой",
-    "performer_selection": "Выбор актеров",
-    "performer_successfully_tagged": "Актер успешно помечен тегом:",
-    "query_all_performers_in_the_database": "Все актеры в базе данных",
-    "refresh_tagged_performers": "Обновить помеченных тегами актеров",
-    "refreshing_will_update_the_data": "Обновление обновит данные у всех помеченных тегами актеров, используя stash-box.",
-    "status_tagging_job_queued": "Статус: Пометка тегами добавлена в очередь",
-    "status_tagging_performers": "Статус: Пометка тегами актеров",
-    "tag_status": "Статус тега",
-    "to_use_the_performer_tagger": "Для пометки актеров тэгами, stash-box должен быть настроен.",
-    "untagged_performers": "Не помеченные актеры",
-    "update_performer": "Обновить актера",
-    "update_performers": "Обновить актеров",
-    "updating_untagged_performers_description": "При обновлении непомеченных актеров, будет предпринята попытка обновить метаданные всех участников, у которых нет StashID."
-  },
-  "performers": "Исполнители",
-  "piercings": "Пирсинг",
-  "play_count": "Счетчик воспроизведений",
-  "play_duration": "Продолжительность воспроизведения",
-  "primary_file": "Первичный файл",
-  "queue": "Очередь",
-  "random": "Случайный",
-  "rating": "Рейтинг",
-  "recently_added_objects": "Недавно добавленные {objects}",
-  "recently_released_objects": "Недавно выпущенные {objects}",
-  "release_notes": "Информация о сборке",
-  "resolution": "Разрешение",
-  "resume_time": "Таймкод воспроизведения",
-  "scene": "Сцена",
-  "sceneTagger": "Пометка сцен тэгами",
-  "scene_tags": "Тэги сцен",
-  "scene_code": "Идентификатор сцены",
-  "scene_count": "Количество сцен",
-  "scene_created_at": "Сцена создана",
-  "scene_date": "Дата сцены",
-  "scene_id": "ID сцены",
-  "scene_updated_at": "Сцена обновлена",
-  "scenes": "Сцены",
-  "scenes_updated_at": "Сцена обновлена в",
-  "search_filter": {
-    "name": "Фильтр",
-    "saved_filters": "Сохраненные фильтры",
-    "update_filter": "Обновить фильтр"
-  },
-  "seconds": "Секунды",
-  "settings": "Настройки",
-  "setup": {
-    "confirm": {
-      "almost_ready": "Мы почти завершили настройку. Подтвердите следующие настройки. Вы можете щелкнуть назад, чтобы изменить что-либо неправильное. Если все выглядит хорошо, нажмите «Подтвердить», чтобы создать свою систему.",
-      "configuration_file_location": "Путь к файлу конфигурации:",
-      "database_file_path": "Путь файла базы данных",
-      "default_db_location": "<путь, содержащий файл конфигурации>/stash-go.sqlite",
-      "default_generated_content_location": "<путь, содержащий файл конфигурации>/generated",
-      "generated_directory": "Папка сгенерированных вспомогательных файлов",
-      "nearly_there": "Почти готово!",
-      "stash_library_directories": "Библиотека каталогов Stash"
+    "seconds": "Секунды",
+    "settings": "Настройки",
+    "setup": {
+        "confirm": {
+            "almost_ready": "Мы почти завершили настройку. Подтвердите следующие настройки. Вы можете щелкнуть назад, чтобы изменить что-либо неправильное. Если все выглядит хорошо, нажмите «Подтвердить», чтобы создать свою систему.",
+            "configuration_file_location": "Путь к файлу конфигурации:",
+            "database_file_path": "Путь файла базы данных",
+            "generated_directory": "Папка сгенерированных вспомогательных файлов",
+            "nearly_there": "Почти готово!",
+            "stash_library_directories": "Библиотека каталогов Stash"
+        },
+        "creating": {
+            "creating_your_system": "Создаем вашу систему",
+            "ffmpeg_notice": "Если <code>ffmpeg</code> еще не указан в ваших путях, наберитесь терпения, пока stash загрузит его. Чтобы проследить за ходом загрузки, проверьте консоль."
+        },
+        "errors": {
+            "something_went_wrong": "О, нет! Что-то пошло не так!",
+            "something_went_wrong_description": "Если это похоже на проблему с вашими входными данными, нажмите «Назад», чтобы исправить их. В противном случае сообщите об ошибке на {githubLink} или обратитесь за помощью в {discordLink}.",
+            "something_went_wrong_while_setting_up_your_system": "Что-то пошло не так при настройке вашей системы. Мы получили следующую ошибку: {error}"
+        },
+        "folder": {
+            "file_path": "Путь файла",
+            "up_dir": "Каталогом выше"
+        },
+        "github_repository": "Репозиторий Github",
+        "migrate": {
+            "backup_database_path_leave_empty_to_disable_backup": "Путь к резервной копии базы данных (оставьте пустым чтобы отключить резервное копирование):",
+            "backup_recommended": "Рекомендуется создать резервную копию перед тем как выполнять перенос. Мы может сделать это за вас, создав копию базы данных по пути <code>{defaultBackupPath}</code>.",
+            "migrating_database": "Перенос базы данных",
+            "migration_failed": "Ошибка переноса",
+            "migration_failed_error": "При переносе базы данных возникла следующая ошибка:",
+            "migration_failed_help": "Внесите необходимые исправления и повторите попытку. В противном случае сообщите об ошибке в {githubLink} или обратитесь за помощью в {discordLink}.",
+            "migration_irreversible_warning": "Процесс переноса схемы необратим. После выполнения ваша база данных будет несовместима с предыдущими версиями stash.",
+            "migration_notes": "Заметки переноса",
+            "migration_required": "Перенос необходим",
+            "perform_schema_migration": "Выполнить миграцию схемы",
+            "schema_too_old": "Ваша текущая Stash база данных имеет версию схемы <strong>{databaseSchema}</strong>, и ее необходимо перенести на версию <strong>{appSchema}</strong>. Текущая версия Stash не будет работать без переноса базы данных."
+        },
+        "paths": {
+            "database_filename_empty_for_default": "название файла базы данных (пусто по умолчанию)",
+            "description": "Дальше нам нужно определить где сможем найти вашу коллекцию порно, где хранить базу данных Stash и генерированные файлы. Эти настройки при необходимости позже возможно будет изменить.",
+            "path_to_generated_directory_empty_for_default": "путь к сгенерированному каталогу (не указан по умолчанию)",
+            "set_up_your_paths": "Задайте ваши пути",
+            "stash_alert": "Пути к файлам не выбраны. Для Stash никакие медиа файлы не будут отсканированы и добавлены. Вы уверены?",
+            "where_can_stash_store_its_database": "Где Stash может хранить свою базу данных?",
+            "where_can_stash_store_its_database_description": "Stash использует sqlite базу данных для хранения метаданных вашего порно. По умолчанию, она будет создана как <code>stash-go.sqlite</code> в директории где находится ваш файл конфигурации. Если хотите изменить это, пожалуйста введите абсолютный или относительный путь к файлу.",
+            "where_can_stash_store_its_generated_content": "Где Stash сможет хранить сгенерированный контент?",
+            "where_can_stash_store_its_generated_content_description": "Чтобы предоставить эскизы, превью и спрайты, Stash генерирует изображения и видео. Сюда также входят перекодированные файлы для неподдерживаемых форматов файлов. По умолчанию Stash создает каталог <code>generated</code> в каталоге, содержащем ваш файл конфигурации. Если вы хотите изменить место хранения сгенерированного мультимедиа, введите абсолютный или относительный (по отношению к текущему рабочему каталогу) путь. Stash создаст этот каталог, если он еще не существует.",
+            "where_is_your_porn_located": "Где находится ваше порно?",
+            "where_is_your_porn_located_description": "Добавьте каталоги, содержащие ваши порно видео и изображения. Stash будет использовать эти каталоги для поиска видео и изображений во время сканирования."
+        },
+        "stash_setup_wizard": "Мастер установки Stash",
+        "success": {
+            "getting_help": "Помощь",
+            "help_links": "Если у вас возникнут проблемы, какие-либо вопросы или предложения, не стесняйтесь добавить описание проблемы в {githubLink} или задать вопрос сообществу в {discordLink}.",
+            "in_app_manual_explained": "Вам рекомендуется ознакомиться с руководством в приложении, доступ к которому можно получить с помощью значка в правом верхнем углу экрана, который выглядит следующим образом: {icon}",
+            "next_config_step_one": "Дальше вы будете направлены на страницу Конфигурации. Эта страница позволит вам настроить какие файлы включать, какие - исключить, задать имя пользователя и пароль для защиты системы, а также уйму других пунктов.",
+            "next_config_step_two": "Если вас устраивают эти настройки, вы можете начать сканировать содержимое в Stash, нажав <code>{localized_task}</code>, а затем <code>{localized_scan}</code>.",
+            "open_collective": "Посетите {open_collective_link}, чтобы узнать, как вы можете внести свой вклад в дальнейшее развитие Stash.",
+            "support_us": "Поддержите нас",
+            "thanks_for_trying_stash": "Спасибо, что попробовали Stash!",
+            "welcome_contrib": "Кроме того, всегда приветствуются привносимый вклад в виде кода (исправления ошибок, улучшения и новые функции), тестирование, отчетов об ошибках, идей для функций и улучшений, а также поддержка пользователей. Подробности об этом в соответствующем разделе встроенного в приложение руководства пользователя.",
+            "your_system_has_been_created": "Готово! Ваша система создана!"
+        },
+        "welcome": {
+            "config_path_logic_explained": "Stash сначала пытается найти свой файл конфигурации (<code>config.yml</code>) в текущем рабочем каталоге, и, если он не находит его там, возвращается к <code>$HOME/.stash/config.yml</code> (в Windows это будет <code>%USERPROFILE%\\.stash\\config.yml</code>). Вы также можете заставить Stash читать из определенного файла конфигурации, запустив его с параметрами <code>-c '<путь к файлу конфигурации>'</code> или <code>--config '<путь к файлу конфигурации>'</code>.",
+            "in_current_stash_directory": "В <code>$HOME/.stash</code> каталоге",
+            "in_the_current_working_directory": "В текущем рабочем каталоге",
+            "next_step": "После всего этого, если вы готовы приступить к настройке новой системы, выберите, где вы хотите сохранить файл конфигурации, и нажмите «Далее».",
+            "store_stash_config": "Где вы хотите хранить конфигурацию Stash?",
+            "unable_to_locate_config": "Если вы читаете это, значит Stash не смог найти существующую конфигурацию. Этот мастер проведет вас через процесс настройки новой конфигурации.",
+            "unexpected_explained": "Если вы неожиданно видите этот экран, попробуйте перезапустить Stash в правильном рабочем каталоге или с флагом <code>-c</code>."
+        },
+        "welcome_specific_config": {
+            "config_path": "Stash будет использовать следующий путь к файлу конфигурации: <code>{path}</code>",
+            "next_step": "Когда вы будете готовы приступить к настройке новой системы, нажмите «Далее».",
+            "unable_to_locate_specified_config": "Если вы читаете это, значит Stash не смог найти файл конфигурации, указанный в командной строке или в среде. Этот мастер проведет вас через процесс настройки новой конфигурации."
+        },
+        "welcome_to_stash": "Добро пожаловать в Stash"
     },
-    "creating": {
-      "creating_your_system": "Создаем вашу систему",
-      "ffmpeg_notice": "Если <code>ffmpeg</code> еще не указан в ваших путях, наберитесь терпения, пока stash загрузит его. Чтобы проследить за ходом загрузки, проверьте консоль."
+    "stash_id": "Stash ID",
+    "stash_id_endpoint": "Конечная точка Stash ID",
+    "stash_ids": "Stash ID-ы",
+    "stashbox": {
+        "go_review_draft": "Перейдите к {endpoint_name}, чтобы просмотреть черновик.",
+        "selected_stash_box": "Выбранный Stash-Box экземпляр",
+        "submission_failed": "Отправка не удалась",
+        "submission_successful": "Отправка прошла успешно",
+        "submit_update": "Уже существует в {endpoint_name}"
     },
-    "errors": {
-      "something_went_wrong": "О, нет! Что-то пошло не так!",
-      "something_went_wrong_description": "Если это похоже на проблему с вашими входными данными, нажмите «Назад», чтобы исправить их. В противном случае сообщите об ошибке на {githubLink} или обратитесь за помощью в {discordLink}.",
-      "something_went_wrong_while_setting_up_your_system": "Что-то пошло не так при настройке вашей системы. Мы получили следующую ошибку: {error}"
+    "statistics": "Статистика",
+    "stats": {
+        "image_size": "Объем изображений",
+        "scenes_duration": "Продолжительность сцен",
+        "scenes_size": "Объем сцен"
     },
-    "folder": {
-      "file_path": "Путь файла",
-      "up_dir": "Каталогом выше"
+    "status": "Статус: {statusText}",
+    "studio": "Студия",
+    "studio_depth": "Уровни (пусто для всех)",
+    "studios": "Студии",
+    "sub_tag_count": "Количество под-тегов",
+    "sub_tag_of": "Под-тег от {parent}",
+    "sub_tags": "Под-Теги",
+    "subsidiary_studios": "Дочерние студии",
+    "synopsis": "Резюме",
+    "tag": "Тег",
+    "tag_count": "Количество тегов",
+    "tags": "Теги",
+    "tattoos": "Татуировки",
+    "title": "Заголовок",
+    "toast": {
+        "added_entity": "Добавлен {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
+        "added_generation_job_to_queue": "Задание генерации добавлено в очередь",
+        "created_entity": "Создан {entity}",
+        "default_filter_set": "Стандартный набор фильтров",
+        "delete_past_tense": "Удален {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
+        "generating_screenshot": "Создание скриншота…",
+        "merged_scenes": "Объединенные сцены",
+        "merged_tags": "Объединенные тэги",
+        "reassign_past_tense": "Файл переназначен",
+        "removed_entity": "Удален {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
+        "rescanning_entity": "Повторное сканирование {count, plural, one {{singularEntity}} other {{pluralEntity}}}…",
+        "saved_entity": "Сохранено {entity}",
+        "started_auto_tagging": "Автоматическая пометка тэгами запущена",
+        "started_generating": "Генерация запущена",
+        "started_importing": "Импортирование начато",
+        "updated_entity": "Обновлен {entity}"
     },
-    "github_repository": "Репозиторий Github",
-    "migrate": {
-      "backup_database_path_leave_empty_to_disable_backup": "Путь к резервной копии базы данных (оставьте пустым чтобы отключить резервное копирование):",
-      "backup_recommended": "Рекомендуется создать резервную копию перед тем как выполнять перенос. Мы может сделать это за вас, создав копию базы данных по пути <code>{defaultBackupPath}</code>.",
-      "migrating_database": "Перенос базы данных",
-      "migration_failed": "Ошибка переноса",
-      "migration_failed_error": "При переносе базы данных возникла следующая ошибка:",
-      "migration_failed_help": "Внесите необходимые исправления и повторите попытку. В противном случае сообщите об ошибке в {githubLink} или обратитесь за помощью в {discordLink}.",
-      "migration_irreversible_warning": "Процесс переноса схемы необратим. После выполнения ваша база данных будет несовместима с предыдущими версиями stash.",
-      "migration_notes": "Заметки переноса",
-      "migration_required": "Перенос необходим",
-      "perform_schema_migration": "Выполнить миграцию схемы",
-      "schema_too_old": "Ваша текущая Stash база данных имеет версию схемы <strong>{databaseSchema}</strong>, и ее необходимо перенести на версию <strong>{appSchema}</strong>. Текущая версия Stash не будет работать без переноса базы данных."
-    },
-    "paths": {
-      "database_filename_empty_for_default": "название файла базы данных (пусто по умолчанию)",
-      "description": "Дальше нам нужно определить где сможем найти вашу коллекцию порно, где хранить базу данных Stash и генерированные файлы. Эти настройки при необходимости позже возможно будет изменить.",
-      "path_to_generated_directory_empty_for_default": "путь к сгенерированному каталогу (не указан по умолчанию)",
-      "set_up_your_paths": "Задайте ваши пути",
-      "stash_alert": "Пути к файлам не выбраны. Для Stash никакие медиа файлы не будут отсканированы и добавлены. Вы уверены?",
-      "where_can_stash_store_its_database": "Где Stash может хранить свою базу данных?",
-      "where_can_stash_store_its_database_description": "Stash использует sqlite базу данных для хранения метаданных вашего порно. По умолчанию, она будет создана как <code>stash-go.sqlite</code> в директории где находится ваш файл конфигурации. Если хотите изменить это, пожалуйста введите абсолютный или относительный путь к файлу.",
-      "where_can_stash_store_its_generated_content": "Где Stash сможет хранить сгенерированный контент?",
-      "where_can_stash_store_its_generated_content_description": "Чтобы предоставить эскизы, превью и спрайты, Stash генерирует изображения и видео. Сюда также входят перекодированные файлы для неподдерживаемых форматов файлов. По умолчанию Stash создает каталог <code>generated</code> в каталоге, содержащем ваш файл конфигурации. Если вы хотите изменить место хранения сгенерированного мультимедиа, введите абсолютный или относительный (по отношению к текущему рабочему каталогу) путь. Stash создаст этот каталог, если он еще не существует.",
-      "where_is_your_porn_located": "Где находится ваше порно?",
-      "where_is_your_porn_located_description": "Добавьте каталоги, содержащие ваши порно видео и изображения. Stash будет использовать эти каталоги для поиска видео и изображений во время сканирования."
-    },
-    "stash_setup_wizard": "Мастер установки Stash",
-    "success": {
-      "getting_help": "Помощь",
-      "help_links": "Если у вас возникнут проблемы, какие-либо вопросы или предложения, не стесняйтесь добавить описание проблемы в {githubLink} или задать вопрос сообществу в {discordLink}.",
-      "in_app_manual_explained": "Вам рекомендуется ознакомиться с руководством в приложении, доступ к которому можно получить с помощью значка в правом верхнем углу экрана, который выглядит следующим образом: {icon}",
-      "next_config_step_one": "Дальше вы будете направлены на страницу Конфигурации. Эта страница позволит вам настроить какие файлы включать, какие - исключить, задать имя пользователя и пароль для защиты системы, а также уйму других пунктов.",
-      "next_config_step_two": "Если вас устраивают эти настройки, вы можете начать сканировать содержимое в Stash, нажав <code>{localized_task}</code>, а затем <code>{localized_scan}</code>.",
-      "open_collective": "Посетите {open_collective_link}, чтобы узнать, как вы можете внести свой вклад в дальнейшее развитие Stash.",
-      "support_us": "Поддержите нас",
-      "thanks_for_trying_stash": "Спасибо, что попробовали Stash!",
-      "welcome_contrib": "Кроме того, всегда приветствуются привносимый вклад в виде кода (исправления ошибок, улучшения и новые функции), тестирование, отчетов об ошибках, идей для функций и улучшений, а также поддержка пользователей. Подробности об этом в соответствующем разделе встроенного в приложение руководства пользователя.",
-      "your_system_has_been_created": "Готово! Ваша система создана!"
-    },
-    "welcome": {
-      "config_path_logic_explained": "Stash сначала пытается найти свой файл конфигурации (<code>config.yml</code>) в текущем рабочем каталоге, и, если он не находит его там, возвращается к <code>$HOME/.stash/config.yml</code> (в Windows это будет <code>%USERPROFILE%\\.stash\\config.yml</code>). Вы также можете заставить Stash читать из определенного файла конфигурации, запустив его с параметрами <code>-c '<путь к файлу конфигурации>'</code> или <code>--config '<путь к файлу конфигурации>'</code>.",
-      "in_current_stash_directory": "В <code>$HOME/.stash</code> каталоге",
-      "in_the_current_working_directory": "В текущем рабочем каталоге",
-      "next_step": "После всего этого, если вы готовы приступить к настройке новой системы, выберите, где вы хотите сохранить файл конфигурации, и нажмите «Далее».",
-      "store_stash_config": "Где вы хотите хранить конфигурацию Stash?",
-      "unable_to_locate_config": "Если вы читаете это, значит Stash не смог найти существующую конфигурацию. Этот мастер проведет вас через процесс настройки новой конфигурации.",
-      "unexpected_explained": "Если вы неожиданно видите этот экран, попробуйте перезапустить Stash в правильном рабочем каталоге или с флагом <code>-c</code>."
-    },
-    "welcome_specific_config": {
-      "config_path": "Stash будет использовать следующий путь к файлу конфигурации: <code>{path}</code>",
-      "next_step": "Когда вы будете готовы приступить к настройке новой системы, нажмите «Далее».",
-      "unable_to_locate_specified_config": "Если вы читаете это, значит Stash не смог найти файл конфигурации, указанный в командной строке или в среде. Этот мастер проведет вас через процесс настройки новой конфигурации."
-    },
-    "welcome_to_stash": "Добро пожаловать в Stash"
-  },
-  "stash_id": "Stash ID",
-  "stash_id_endpoint": "Конечная точка Stash ID",
-  "stash_ids": "Stash ID-ы",
-  "stashbox": {
-    "go_review_draft": "Перейдите к {endpoint_name}, чтобы просмотреть черновик.",
-    "selected_stash_box": "Выбранный Stash-Box экземпляр",
-    "submission_failed": "Отправка не удалась",
-    "submission_successful": "Отправка прошла успешно",
-    "submit_update": "Уже существует в {endpoint_name}"
-  },
-  "statistics": "Статистика",
-  "stats": {
-    "image_size": "Объем изображений",
-    "scenes_duration": "Продолжительность сцен",
-    "scenes_size": "Объем сцен"
-  },
-  "status": "Статус: {statusText}",
-  "studio": "Студия",
-  "studio_depth": "Уровни (пусто для всех)",
-  "studios": "Студии",
-  "sub_tag_count": "Количество под-тегов",
-  "sub_tag_of": "Под-тег от {parent}",
-  "sub_tags": "Под-Теги",
-  "subsidiary_studios": "Дочерние студии",
-  "synopsis": "Резюме",
-  "tag": "Тег",
-  "tag_count": "Количество тегов",
-  "tags": "Теги",
-  "tattoos": "Татуировки",
-  "title": "Заголовок",
-  "toast": {
-    "added_entity": "Добавлен {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
-    "added_generation_job_to_queue": "Задание генерации добавлено в очередь",
-    "created_entity": "Создан {entity}",
-    "default_filter_set": "Стандартный набор фильтров",
-    "delete_past_tense": "Удален {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
-    "generating_screenshot": "Создание скриншота…",
-    "merged_scenes": "Объединенные сцены",
-    "merged_tags": "Объединенные тэги",
-    "reassign_past_tense": "Файл переназначен",
-    "removed_entity": "Удален {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
-    "rescanning_entity": "Повторное сканирование {count, plural, one {{singularEntity}} other {{pluralEntity}}}…",
-    "saved_entity": "Сохранено {entity}",
-    "started_auto_tagging": "Автоматическая пометка тэгами запущена",
-    "started_generating": "Генерация запущена",
-    "started_importing": "Импортирование начато",
-    "updated_entity": "Обновлен {entity}"
-  },
-  "total": "Всего",
-  "true": "Да",
-  "twitter": "Twitter",
-  "type": "Тип",
-  "updated_at": "Обновлено",
-  "url": "Ссылка",
-  "validation": {
-    "aliases_must_be_unique": "псевдонимы должны быть уникальными"
-  },
-  "videos": "Видео",
-  "view_all": "Показать все",
-  "weight": "Вес",
-  "weight_kg": "Вес (кг)",
-  "years_old": "Возраст",
-  "zip_file_count": "Количество zip-файлов"
+    "total": "Всего",
+    "true": "Да",
+    "twitter": "Twitter",
+    "type": "Тип",
+    "updated_at": "Обновлено",
+    "url": "Ссылка",
+    "videos": "Видео",
+    "view_all": "Показать все",
+    "weight": "Вес",
+    "weight_kg": "Вес (кг)",
+    "years_old": "Возраст",
+    "zip_file_count": "Количество zip-файлов"
 }

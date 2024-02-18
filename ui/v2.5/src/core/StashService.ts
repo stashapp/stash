@@ -87,7 +87,7 @@ function appendObject(
   cache.modify({
     fields: {
       [keyName]: (value, { toReference }) => {
-        return [...value, toReference(obj)];
+        return [...(value as unknown[]), toReference(obj)];
       },
     },
   });
@@ -241,6 +241,14 @@ export const queryFindGalleries = (filter: ListFilterModel) =>
     variables: {
       filter: filter.makeFindFilter(),
       gallery_filter: filter.makeFilter(),
+    },
+  });
+
+export const queryFindGalleriesByIDForSelect = (galleryIDs: number[]) =>
+  client.query<GQL.FindGalleriesForSelectQuery>({
+    query: GQL.FindGalleriesForSelectDocument,
+    variables: {
+      ids: galleryIDs,
     },
   });
 

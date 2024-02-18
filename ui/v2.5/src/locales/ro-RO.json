@@ -1,465 +1,463 @@
 {
-  "actions": {
-    "add": "Adaugă",
-    "add_directory": "Adaugă directorul",
-    "add_entity": "Adaugă {entityType}",
-    "add_to_entity": "Adaugă la {entityType}",
-    "allow": "Permite",
-    "allow_temporarily": "Permite temporar",
-    "apply": "Aplică",
-    "auto_tag": "Etichetă automată",
-    "backup": "Backup",
-    "browse_for_image": "Răsfoiți pentru imagine…",
-    "cancel": "Anulați",
-    "clean": "Curăță",
-    "clear": "Elimină",
-    "clear_image": "Curăță Imaginea",
-    "close": "Închide",
-    "confirm": "Confirmare",
-    "continue": "Continuă",
-    "create": "Creați",
-    "create_entity": "Creați {entityType}",
-    "create_marker": "Creați marcator",
-    "created_entity": "S-a creat {entity_type}: {entity_name}",
-    "customise": "Personalizați",
-    "delete": "Șterge",
-    "delete_entity": "Șterge {entityType}",
-    "delete_file": "Șterge fişier",
-    "delete_file_and_funscript": "Șterge fişier (şi funscript)",
-    "delete_stashid": "Șterge StashID",
-    "disallow": "Nu se permite",
-    "download": "Descărcare",
-    "download_backup": "Descarcă Backup",
-    "edit": "Editare",
-    "edit_entity": "Editați {entityType}",
-    "export": "Export",
-    "export_all": "Exportați tot…",
-    "find": "Găsire",
-    "finish": "Terminare",
-    "from_file": "Din fișier…",
-    "from_url": "Din URL…",
-    "full_export": "Export Total",
-    "full_import": "Importă Tot",
-    "generate": "Generare",
-    "generate_thumb_default": "Genereaza miniatură implicită",
-    "generate_thumb_from_current": "Generează miniatura de la momentul curent",
-    "hide": "Ascundere",
-    "hide_configuration": "Ascunde Configurația",
-    "identify": "Identificare",
-    "ignore": "Ignorare",
-    "import": "Import…",
-    "import_from_file": "Importă din Fișier",
-    "logout": "Deconectare",
-    "merge": "Îmbinare",
-    "next_action": "Următorul",
-    "not_running": "nu rulează",
-    "open_in_external_player": "Deschide in player extern",
-    "open_random": "Deschide Aleatoriu",
-    "overwrite": "Suprascriere",
-    "play_random": "Redă Aleatoriu",
-    "play_selected": "Redă selecția",
-    "preview": "Previzualizare",
-    "previous_action": "Înapoi",
-    "refresh": "Reîmprospătare",
-    "reload_plugins": "Reîncărcați plugin-urile",
-    "reload_scrapers": "Reîncărcați scraperele",
-    "remove": "Eliminare",
-    "remove_from_gallery": "Șterge din Galerie",
-    "rename_gen_files": "Redenumiți fișierele generate",
-    "rescan": "Rescanare",
-    "running": "rulează",
-    "save": "Salvare",
-    "save_delete_settings": "Folosiți aceste opțiuni în mod implicit atunci cănd ștergeți",
-    "save_filter": "Salvați filtru",
-    "scan": "Scanare",
-    "scrape": "Extrage",
-    "search": "Căutare",
-    "select_all": "Selectare totală",
-    "select_entity": "Selectează {entityType}",
-    "select_folders": "Selectare foldere",
-    "select_none": "Selectare niciuna",
-    "set_as_default": "Stabilire ca implicit",
-    "set_image": "Setează imaginea…",
-    "show": "Afișare",
-    "show_configuration": "Arată Configurația",
-    "skip": "Ignorare",
-    "stop": "Oprire",
-    "submit": "Trimite",
-    "submit_stash_box": "Trimite către Stash-Box",
-    "submit_update": "Trimite actualizare",
-    "tasks": {
-      "clean_confirm_message": "Ești sigur că vrei să cureți? Acest lucru va șterge informațiile din baza de date și conținutul generat pentru toate scenele și galeriile care nu se mai găsesc în sistemul de fișiere.",
-      "import_warning": "Ești sigur că vrei să imporți? Asta va șterge baza de date si va reimporta din metadatele tale exporatate."
-    },
-    "temp_disable": "Dezactivează temporar…",
-    "temp_enable": "Activează temporar…",
-    "use_default": "Folosește implicit",
-    "view_random": "Vezi Aleatoriu"
-  },
-  "actions_name": "Acțiuni",
-  "age": "Vârstă",
-  "all": "toate",
-  "also_known_as": "Cunoscut/ă și ca",
-  "ascending": "Ascendent",
-  "average_resolution": "Rezoluție medie",
-  "birth_year": "Anul Nașterii",
-  "birthdate": "Data nașterii",
-  "bitrate": "Bit Rate",
-  "career_length": "Durata carierei",
-  "component_tagger": {
-    "config": {
-      "active_instance": "Instanță stash-box activă:",
-      "blacklist_label": "Lista neagră",
-      "query_mode_auto": "Automat",
-      "query_mode_auto_desc": "Folosește metadatele, dacă sunt prezente, sau numele fișierului",
-      "query_mode_dir": "Director",
-      "query_mode_dir_desc": "Folosește numai directorul părinte al fișierului video",
-      "query_mode_filename": "Numele fișierului",
-      "query_mode_filename_desc": "Folosește numai numele fișierului",
-      "query_mode_metadata_desc": "Folosește numai metadate",
-      "query_mode_path": "Cale",
-      "query_mode_path_desc": "Utilizează întreaga cale a fișierului",
-      "set_cover_desc": "Înlocuiți coperta scenei, dacă se găsește una.",
-      "set_cover_label": "Setează imaginea de copertă a scenei",
-      "set_tag_desc": "Atașați etichete scenei, fie prin suprascriere, fie prin fuziune cu etichetele existente pe scenă.",
-      "set_tag_label": "Setați etichete",
-      "show_male_desc": "Comutați dacă interpreții de sex masculin vor fi disponibili pentru etichetare.",
-      "show_male_label": "Arată interpreți de sex masculin",
-      "source": "Sursă"
-    },
-    "results": {
-      "duration_unknown": "Durată necunoscută",
-      "match_failed_already_tagged": "Scena este deja etichetată",
-      "match_failed_no_result": "Nu s-au găsit rezultate",
-      "match_success": "Scena a fost etichetată cu succes",
-      "unnamed": "Fără denumire"
-    },
-    "verb_toggle_config": "{toggle} {configuration}"
-  },
-  "config": {
-    "about": {
-      "check_for_new_version": "Verifică pentru o versiune nouă",
-      "latest_version": "Ultima Versiune",
-      "new_version_notice": "[NOU]",
-      "stash_discord": "Alăturați-vă {url} canalului nostru",
-      "stash_open_collective": "Susține-ne prin {url}",
-      "version": "Versiune"
-    },
-    "application_paths": {
-      "heading": "Cale Aplicație"
-    },
-    "categories": {
-      "about": "Despre",
-      "interface": "Interfață",
-      "metadata_providers": "Furnizori Metadate",
-      "plugins": "Plugin-uri",
-      "security": "Securitate",
-      "services": "Servicii",
-      "system": "Sistem",
-      "tasks": "Sarcini",
-      "tools": "Unelte"
-    },
-    "dlna": {
-      "allow_temp_ip": "Permite {tempIP}",
-      "allowed_ip_addresses": "Adrese IP permise",
-      "allowed_ip_temporarily": "IP permis temporar",
-      "default_ip_whitelist_desc": "Adresele IP implicite permit accesul la DLNA. Utilizați {wildcard} pentru a permite toate adresele IP.",
-      "disabled_dlna_temporarily": "Dezactivat temporar DLNA",
-      "disallowed_ip": "IP nepermis",
-      "enabled_by_default": "Activat în mod implicit",
-      "enabled_dlna_temporarily": "Activat DLNA temporar",
-      "network_interfaces": "Intefețe",
-      "network_interfaces_desc": "Interfețe pentru a expune serverul DLNA. O listă goală are ca rezultat rularea pe toate interfețele. Necesită repornirea DLNA după modificare.",
-      "recent_ip_addresses": "Adrese IP recente",
-      "successfully_cancelled_temporary_behaviour": "S-a anulat cu succes comportamentul temporar",
-      "until_restart": "până la repornire"
-    },
-    "general": {
-      "auth": {
-        "api_key": "Cheie API",
-        "api_key_desc": "Cheia API pentru sistemele externe. Necesară numai atunci când este configurat numele de utilizator/parola. Numele de utilizator trebuie salvat înainte de a genera cheia API.",
-        "authentication": "Autentificare",
-        "clear_api_key": "Ștergeți cheia API",
-        "credentials": {
-          "description": "Credențiale pentru a restricționa accesul la Stash.",
-          "heading": "Credențiale"
+    "actions": {
+        "add": "Adaugă",
+        "add_directory": "Adaugă directorul",
+        "add_entity": "Adaugă {entityType}",
+        "add_to_entity": "Adaugă la {entityType}",
+        "allow": "Permite",
+        "allow_temporarily": "Permite temporar",
+        "apply": "Aplică",
+        "auto_tag": "Etichetă automată",
+        "backup": "Backup",
+        "browse_for_image": "Răsfoiți pentru imagine…",
+        "cancel": "Anulați",
+        "clean": "Curăță",
+        "clear": "Elimină",
+        "clear_image": "Curăță Imaginea",
+        "close": "Închide",
+        "confirm": "Confirmare",
+        "continue": "Continuă",
+        "create": "Creați",
+        "create_entity": "Creați {entityType}",
+        "create_marker": "Creați marcator",
+        "created_entity": "S-a creat {entity_type}: {entity_name}",
+        "customise": "Personalizați",
+        "delete": "Șterge",
+        "delete_entity": "Șterge {entityType}",
+        "delete_file": "Șterge fişier",
+        "delete_file_and_funscript": "Șterge fişier (şi funscript)",
+        "disallow": "Nu se permite",
+        "download": "Descărcare",
+        "download_backup": "Descarcă Backup",
+        "edit": "Editare",
+        "edit_entity": "Editați {entityType}",
+        "export": "Export",
+        "export_all": "Exportați tot…",
+        "find": "Găsire",
+        "finish": "Terminare",
+        "from_file": "Din fișier…",
+        "from_url": "Din URL…",
+        "full_export": "Export Total",
+        "full_import": "Importă Tot",
+        "generate": "Generare",
+        "generate_thumb_default": "Genereaza miniatură implicită",
+        "generate_thumb_from_current": "Generează miniatura de la momentul curent",
+        "hide": "Ascundere",
+        "hide_configuration": "Ascunde Configurația",
+        "identify": "Identificare",
+        "ignore": "Ignorare",
+        "import": "Import…",
+        "import_from_file": "Importă din Fișier",
+        "logout": "Deconectare",
+        "merge": "Îmbinare",
+        "next_action": "Următorul",
+        "not_running": "nu rulează",
+        "open_in_external_player": "Deschide in player extern",
+        "open_random": "Deschide Aleatoriu",
+        "overwrite": "Suprascriere",
+        "play_random": "Redă Aleatoriu",
+        "play_selected": "Redă selecția",
+        "preview": "Previzualizare",
+        "previous_action": "Înapoi",
+        "refresh": "Reîmprospătare",
+        "reload_plugins": "Reîncărcați plugin-urile",
+        "reload_scrapers": "Reîncărcați scraperele",
+        "remove": "Eliminare",
+        "remove_from_gallery": "Șterge din Galerie",
+        "rename_gen_files": "Redenumiți fișierele generate",
+        "rescan": "Rescanare",
+        "running": "rulează",
+        "save": "Salvare",
+        "save_delete_settings": "Folosiți aceste opțiuni în mod implicit atunci cănd ștergeți",
+        "save_filter": "Salvați filtru",
+        "scan": "Scanare",
+        "scrape": "Extrage",
+        "search": "Căutare",
+        "select_all": "Selectare totală",
+        "select_entity": "Selectează {entityType}",
+        "select_folders": "Selectare foldere",
+        "select_none": "Selectare niciuna",
+        "set_as_default": "Stabilire ca implicit",
+        "set_image": "Setează imaginea…",
+        "show": "Afișare",
+        "show_configuration": "Arată Configurația",
+        "skip": "Ignorare",
+        "stop": "Oprire",
+        "submit": "Trimite",
+        "submit_stash_box": "Trimite către Stash-Box",
+        "submit_update": "Trimite actualizare",
+        "tasks": {
+            "clean_confirm_message": "Ești sigur că vrei să cureți? Acest lucru va șterge informațiile din baza de date și conținutul generat pentru toate scenele și galeriile care nu se mai găsesc în sistemul de fișiere.",
+            "import_warning": "Ești sigur că vrei să imporți? Asta va șterge baza de date si va reimporta din metadatele tale exporatate."
         },
-        "generate_api_key": "Generează cheie API"
-      },
-      "cache_path_head": "Cale Cache",
-      "calculate_md5_and_ohash_label": "Calculați MD5 pentru videouri"
+        "temp_disable": "Dezactivează temporar…",
+        "temp_enable": "Activează temporar…",
+        "use_default": "Folosește implicit",
+        "view_random": "Vezi Aleatoriu"
     },
-    "tasks": {
-      "auto_tagging": "Etichetare Automată",
-      "cleanup_desc": "Verifică dacă există fișiere lipsă și le elimină din baza de date. Aceasta este o acțiune distructivă."
+    "actions_name": "Acțiuni",
+    "age": "Vârstă",
+    "all": "toate",
+    "also_known_as": "Cunoscut/ă și ca",
+    "ascending": "Ascendent",
+    "average_resolution": "Rezoluție medie",
+    "birth_year": "Anul Nașterii",
+    "birthdate": "Data nașterii",
+    "bitrate": "Bit Rate",
+    "career_length": "Durata carierei",
+    "component_tagger": {
+        "config": {
+            "active_instance": "Instanță stash-box activă:",
+            "blacklist_label": "Lista neagră",
+            "query_mode_auto": "Automat",
+            "query_mode_auto_desc": "Folosește metadatele, dacă sunt prezente, sau numele fișierului",
+            "query_mode_dir": "Director",
+            "query_mode_dir_desc": "Folosește numai directorul părinte al fișierului video",
+            "query_mode_filename": "Numele fișierului",
+            "query_mode_filename_desc": "Folosește numai numele fișierului",
+            "query_mode_metadata_desc": "Folosește numai metadate",
+            "query_mode_path": "Cale",
+            "query_mode_path_desc": "Utilizează întreaga cale a fișierului",
+            "set_cover_desc": "Înlocuiți coperta scenei, dacă se găsește una.",
+            "set_cover_label": "Setează imaginea de copertă a scenei",
+            "set_tag_desc": "Atașați etichete scenei, fie prin suprascriere, fie prin fuziune cu etichetele existente pe scenă.",
+            "set_tag_label": "Setați etichete",
+            "show_male_desc": "Comutați dacă interpreții de sex masculin vor fi disponibili pentru etichetare.",
+            "show_male_label": "Arată interpreți de sex masculin",
+            "source": "Sursă"
+        },
+        "results": {
+            "duration_unknown": "Durată necunoscută",
+            "match_failed_already_tagged": "Scena este deja etichetată",
+            "match_failed_no_result": "Nu s-au găsit rezultate",
+            "match_success": "Scena a fost etichetată cu succes",
+            "unnamed": "Fără denumire"
+        },
+        "verb_toggle_config": "{toggle} {configuration}"
     },
-    "tools": {
-      "scene_filename_parser": {
-        "capitalize_title": "Capitalizați titlul"
-      }
-    },
-    "ui": {
-      "basic_settings": "Setări de bază",
-      "handy_connection": {
-        "connect": "Conectare"
-      },
-      "preview_type": {
-        "options": {
-          "animated": "Imagine Animată"
-        }
-      }
-    }
-  },
-  "configuration": "Configurație",
-  "country": "Țară",
-  "cover_image": "Imagine de Copertă",
-  "created_at": "Creat La",
-  "dialogs": {
-    "delete_confirm": "Ești sigur ca vrei să ștergi {entityName}?",
-    "overwrite_filter_confirm": "Sunteți sigur că doriți să suprascrieți interogarea salvată existentă {entityName}?",
-    "scene_gen": {
-      "force_transcodes_tooltip": "În mod implicit, transcodurile sunt generate numai atunci când fișierul video nu este acceptat în browser. Atunci când este activată, transcodurile vor fi generate chiar și atunci când fișierul video pare a fi acceptat în browser.",
-      "image_previews": "Imagini animate de previzualizare",
-      "image_previews_tooltip": "Previzualizări WebP animate, necesare numai dacă tipul de previzualizare este setat pe Imagine animată."
-    }
-  },
-  "director": "Director",
-  "display_mode": {
-    "grid": "Grilă",
-    "list": "Listă",
-    "unknown": "Necunoscut",
-    "wall": "Perete"
-  },
-  "donate": "Donează",
-  "dupe_check": {
-    "options": {
-      "exact": "Precis",
-      "high": "Sus",
-      "low": "Jos",
-      "medium": "Mediu"
-    },
-    "search_accuracy_label": "Precizia căutării",
-    "title": "Scene Duplicate"
-  },
-  "duration": "Durată",
-  "effect_filters": {
-    "aspect": "Aspect",
-    "blue": "Albastru",
-    "blur": "Blur",
-    "brightness": "Luminozitate",
-    "contrast": "Contrast",
-    "gamma": "Gamma",
-    "green": "Verde",
-    "hue": "Nuanța culorii",
-    "name": "Filtre",
-    "name_transforms": "Transformări",
-    "red": "Roșu",
-    "reset_filters": "Resetează Filtre",
-    "reset_transforms": "Resetează Transformări",
-    "rotate": "Rotire",
-    "saturation": "Saturație",
-    "scale": "Scală",
-    "warmth": "Căldură"
-  },
-  "empty_server": "Adăugați câteva scene pe serverul dvs. pentru a vedea recomandările de pe această pagină.",
-  "ethnicity": "Etnie",
-  "existing_value": "valoare existentă",
-  "eye_color": "Culoarea Ochilor",
-  "fake_tits": "Sâni falși",
-  "false": "Fals",
-  "favourite": "Favorit",
-  "file": "fișier",
-  "file_info": "Informații Fișier",
-  "files": "fișiere",
-  "filesize": "Dimensiune Fișier",
-  "filter": "Filtru",
-  "filter_name": "Nume Filtru",
-  "filters": "Filtre",
-  "framerate": "Rata de cadre",
-  "frames_per_second": "{value} cadre pe secundă",
-  "front_page": {
-    "types": {
-      "saved_filter": "Filtru Salvat"
-    }
-  },
-  "galleries": "Galerii",
-  "gallery": "Galerie",
-  "gallery_count": "Numărul de galerii",
-  "gender": "Gen",
-  "gender_types": {
-    "FEMALE": "Feminin",
-    "INTERSEX": "Intersex",
-    "MALE": "Masculin",
-    "NON_BINARY": "Non-Binar",
-    "TRANSGENDER_FEMALE": "Femeie Transgender",
-    "TRANSGENDER_MALE": "Bărbat Transgender"
-  },
-  "hair_color": "Culoarea Părului",
-  "handy_connection_status": {
-    "connecting": "Se conectează",
-    "disconnected": "Deconectat",
-    "missing": "Lipsă",
-    "ready": "Pregătit",
-    "syncing": "Se sincronizează cu serverul"
-  },
-  "height": "Inălțime",
-  "help": "Ajutor",
-  "ignore_auto_tag": "Ignoră Etichetele Automate",
-  "image": "Imagine",
-  "image_count": "Număr Imagine",
-  "images": "Imagini",
-  "instagram": "Instagram",
-  "interactive": "Interactiv",
-  "interactive_speed": "Viteză interactivă",
-  "isMissing": "Lipsește",
-  "library": "Librărie",
-  "loading": {
-    "generic": "Se încarcă…"
-  },
-  "markers": "Marcatori",
-  "measurements": "Măsurători",
-  "media_info": {
-    "audio_codec": "Codec Audio",
-    "checksum": "Sumă de control",
-    "hash": "Hash",
-    "interactive_speed": "Viteză Interactivă",
-    "performer_card": {
-      "age": "{age} {years_old}",
-      "age_context": "{age} {years_old} în această scenă"
-    },
-    "phash": "PHash",
-    "stream": "Flux",
-    "video_codec": "Codec Video"
-  },
-  "megabits_per_second": "{value} megabiți pe secundă",
-  "metadata": "Metadate",
-  "movie": "Film",
-  "movies": "Filme",
-  "name": "Nume",
-  "new": "Nou",
-  "o_counter": "O-Contor",
-  "operations": "Operațiuni",
-  "organized": "Organizat",
-  "pagination": {
-    "first": "Primul",
-    "last": "Ultimul",
-    "next": "Următorul",
-    "previous": "Anterior"
-  },
-  "parent_of": "Părintele {children}",
-  "path": "Cale",
-  "performer": "Interpret",
-  "performerTags": "Eticheta Interpret",
-  "performer_age": "Vârstă Interpret",
-  "performer_image": "Imagine Interpret",
-  "performer_tagger": {
-    "add_new_performers": "Adaugă Interpreți Noi",
     "config": {
-      "active_stash-box_instance": "Instață stash-box activă:",
-      "edit_excluded_fields": "Editați câmpurile excluse",
-      "no_fields_are_excluded": "Nu se exclude niciun câmp",
-      "no_instances_found": "Nicio instanță găsită",
-      "these_fields_will_not_be_changed_when_updating_performers": "Aceste câmpuri nu vor fi modificate la actualizarea artiștilor interpreți sau executanți."
+        "about": {
+            "check_for_new_version": "Verifică pentru o versiune nouă",
+            "latest_version": "Ultima Versiune",
+            "new_version_notice": "[NOU]",
+            "stash_discord": "Alăturați-vă {url} canalului nostru",
+            "stash_open_collective": "Susține-ne prin {url}",
+            "version": "Versiune"
+        },
+        "application_paths": {
+            "heading": "Cale Aplicație"
+        },
+        "categories": {
+            "about": "Despre",
+            "interface": "Interfață",
+            "metadata_providers": "Furnizori Metadate",
+            "plugins": "Plugin-uri",
+            "security": "Securitate",
+            "services": "Servicii",
+            "system": "Sistem",
+            "tasks": "Sarcini",
+            "tools": "Unelte"
+        },
+        "dlna": {
+            "allow_temp_ip": "Permite {tempIP}",
+            "allowed_ip_addresses": "Adrese IP permise",
+            "allowed_ip_temporarily": "IP permis temporar",
+            "default_ip_whitelist_desc": "Adresele IP implicite permit accesul la DLNA. Utilizați {wildcard} pentru a permite toate adresele IP.",
+            "disabled_dlna_temporarily": "Dezactivat temporar DLNA",
+            "disallowed_ip": "IP nepermis",
+            "enabled_by_default": "Activat în mod implicit",
+            "enabled_dlna_temporarily": "Activat DLNA temporar",
+            "network_interfaces": "Intefețe",
+            "network_interfaces_desc": "Interfețe pentru a expune serverul DLNA. O listă goală are ca rezultat rularea pe toate interfețele. Necesită repornirea DLNA după modificare.",
+            "recent_ip_addresses": "Adrese IP recente",
+            "successfully_cancelled_temporary_behaviour": "S-a anulat cu succes comportamentul temporar",
+            "until_restart": "până la repornire"
+        },
+        "general": {
+            "auth": {
+                "api_key": "Cheie API",
+                "api_key_desc": "Cheia API pentru sistemele externe. Necesară numai atunci când este configurat numele de utilizator/parola. Numele de utilizator trebuie salvat înainte de a genera cheia API.",
+                "authentication": "Autentificare",
+                "clear_api_key": "Ștergeți cheia API",
+                "credentials": {
+                    "description": "Credențiale pentru a restricționa accesul la Stash.",
+                    "heading": "Credențiale"
+                },
+                "generate_api_key": "Generează cheie API"
+            },
+            "cache_path_head": "Cale Cache",
+            "calculate_md5_and_ohash_label": "Calculați MD5 pentru videouri"
+        },
+        "tasks": {
+            "auto_tagging": "Etichetare Automată",
+            "cleanup_desc": "Verifică dacă există fișiere lipsă și le elimină din baza de date. Aceasta este o acțiune distructivă."
+        },
+        "tools": {
+            "scene_filename_parser": {
+                "capitalize_title": "Capitalizați titlul"
+            }
+        },
+        "ui": {
+            "basic_settings": "Setări de bază",
+            "handy_connection": {
+                "connect": "Conectare"
+            },
+            "preview_type": {
+                "options": {
+                    "animated": "Imagine Animată"
+                }
+            }
+        }
     },
-    "current_page": "Pagina curentă",
-    "failed_to_save_performer": "Nu s-a reușit salvarea interpretului \"{performer}\"",
-    "name_already_exists": "Numele există deja",
-    "network_error": "Eroare Rețea",
-    "no_results_found": "Nu s-a găsit niciun rezultat.",
-    "performer_already_tagged": "Interpret deja etichetat",
-    "performer_successfully_tagged": "Interpretul a fost etichetat cu succes:",
-    "query_all_performers_in_the_database": "Toti interpreții din baza de date",
-    "refresh_tagged_performers": "Reîmprospătați interpeții etichetați",
-    "tag_status": "Stare Etichetă",
-    "untagged_performers": "Interpreți neetichetați",
-    "update_performer": "Actualizați Interpret",
-    "update_performers": "Actualizați Interpreți"
-  },
-  "performers": "Interpreți",
-  "piercings": "Piercing-uri",
-  "queue": "Coadă",
-  "random": "Aleatoriu",
-  "rating": "Evaluare",
-  "recently_added_objects": "Recent Adăugat {objects}",
-  "recently_released_objects": "Recent lansate {obiecte}",
-  "resolution": "Rezoluție",
-  "scene": "Scenă",
-  "scene_id": "ID Scenă",
-  "scenes": "Scene",
-  "scenes_updated_at": "Scenă Actualizată La",
-  "search_filter": {
-    "name": "Filtru",
-    "saved_filters": "Filtre Salvate",
-    "update_filter": "Actualizează Filtru"
-  },
-  "seconds": "Secunde",
-  "settings": "Setări",
-  "setup": {
-    "confirm": {
-      "almost_ready": "Suntem aproape gata să finalizăm configurația. Vă rugăm să confirmați următoarele setări. Puteți face clic înapoi pentru a modifica orice lucru incorect. Dacă totul pare în regulă, faceți clic pe Confirm (Confirmare) pentru a vă crea sistemul.",
-      "configuration_file_location": "Locația fișierului de configurare:",
-      "database_file_path": "Cale fișier bază de date",
-      "default_generated_content_location": "<calea care conține fișierul de configurare>/generated",
-      "generated_directory": "Director generat",
-      "nearly_there": "Aproape de final!"
+    "configuration": "Configurație",
+    "country": "Țară",
+    "cover_image": "Imagine de Copertă",
+    "created_at": "Creat La",
+    "dialogs": {
+        "delete_confirm": "Ești sigur ca vrei să ștergi {entityName}?",
+        "overwrite_filter_confirm": "Sunteți sigur că doriți să suprascrieți interogarea salvată existentă {entityName}?",
+        "scene_gen": {
+            "force_transcodes_tooltip": "În mod implicit, transcodurile sunt generate numai atunci când fișierul video nu este acceptat în browser. Atunci când este activată, transcodurile vor fi generate chiar și atunci când fișierul video pare a fi acceptat în browser.",
+            "image_previews": "Imagini animate de previzualizare",
+            "image_previews_tooltip": "Previzualizări WebP animate, necesare numai dacă tipul de previzualizare este setat pe Imagine animată."
+        }
     },
-    "creating": {
-      "creating_your_system": "Crearea sistemului dvs",
-      "ffmpeg_notice": "Dacă <code>ffmpeg</code> nu se află încă în căile dvs. de acces, vă rugăm să aveți răbdare în timp ce stash îl descarcă. Vizualizați consola pentru a vedea progresul descărcării."
+    "director": "Director",
+    "display_mode": {
+        "grid": "Grilă",
+        "list": "Listă",
+        "unknown": "Necunoscut",
+        "wall": "Perete"
     },
-    "errors": {
-      "something_went_wrong": "O nu! Ceva nu a mers bine!",
-      "something_went_wrong_description": "Dacă aceasta pare a fi o problemă cu intrările dvs., dați click înapoi pentru a le repara. În caz contrar, creați un bug pe {githubLink} sau căutați ajutor în {discordLink}.",
-      "something_went_wrong_while_setting_up_your_system": "Ceva nu a mers bine in timp ce configuram sistemul tău. Aceasta e eroarea: {error}"
+    "donate": "Donează",
+    "dupe_check": {
+        "options": {
+            "exact": "Precis",
+            "high": "Sus",
+            "low": "Jos",
+            "medium": "Mediu"
+        },
+        "search_accuracy_label": "Precizia căutării",
+        "title": "Scene Duplicate"
     },
-    "github_repository": "Repozitoriu Github",
-    "success": {
-      "open_collective": "Consultați {open_collective_link} pentru a vedea cum puteți contribui la dezvoltarea continuă a Stash."
-    }
-  },
-  "stash_id": "ID Stash",
-  "stash_ids": "ID-uri Stash",
-  "stashbox": {
-    "go_review_draft": "Mergi la {endpoint_name} pentru a revizui schița.",
-    "submission_failed": "Trimiterea a eșuat",
-    "submission_successful": "Depunere reușită",
-    "submit_update": "Deja există în {endpoint_name}"
-  },
-  "statistics": "Statistici",
-  "stats": {
-    "scenes_duration": "Durată scene",
-    "scenes_size": "Dimensiuni scene"
-  },
-  "status": "Stare: {statusText}",
-  "studio": "Studio",
-  "studio_depth": "Niveluri (lasați liber pentru toate)",
-  "studios": "Studiouri",
-  "synopsis": "Sinopsis",
-  "tag": "Etichetă",
-  "tag_count": "Număr Etichete",
-  "tags": "Etichete",
-  "tattoos": "Tatuaje",
-  "title": "Titlu",
-  "toast": {
-    "added_entity": "Adăugat {entity}",
-    "added_generation_job_to_queue": "S-a adăugat sarcina de generare la coadă",
-    "created_entity": "S-a creat {entity}",
-    "generating_screenshot": "Se genereaza captura de ecran…",
-    "merged_tags": "Etichete fuzionate",
-    "saved_entity": "Salvat {entity}",
-    "started_auto_tagging": "A început etichetarea automată",
-    "started_generating": "A început generarea",
-    "started_importing": "A început importarea",
-    "updated_entity": "Actualizat {entity}"
-  },
-  "total": "Total",
-  "true": "Adevărat",
-  "twitter": "Twitter",
-  "type": "Tip",
-  "updated_at": "Actualizat La",
-  "url": "URL",
-  "videos": "Videouri",
-  "view_all": "Vezi Toate",
-  "weight": "Greutate",
-  "years_old": "ani"
+    "duration": "Durată",
+    "effect_filters": {
+        "aspect": "Aspect",
+        "blue": "Albastru",
+        "blur": "Blur",
+        "brightness": "Luminozitate",
+        "contrast": "Contrast",
+        "gamma": "Gamma",
+        "green": "Verde",
+        "hue": "Nuanța culorii",
+        "name": "Filtre",
+        "name_transforms": "Transformări",
+        "red": "Roșu",
+        "reset_filters": "Resetează Filtre",
+        "reset_transforms": "Resetează Transformări",
+        "rotate": "Rotire",
+        "saturation": "Saturație",
+        "scale": "Scală",
+        "warmth": "Căldură"
+    },
+    "empty_server": "Adăugați câteva scene pe serverul dvs. pentru a vedea recomandările de pe această pagină.",
+    "ethnicity": "Etnie",
+    "existing_value": "valoare existentă",
+    "eye_color": "Culoarea Ochilor",
+    "fake_tits": "Sâni falși",
+    "false": "Fals",
+    "favourite": "Favorit",
+    "file": "fișier",
+    "file_info": "Informații Fișier",
+    "files": "fișiere",
+    "filesize": "Dimensiune Fișier",
+    "filter": "Filtru",
+    "filter_name": "Nume Filtru",
+    "filters": "Filtre",
+    "framerate": "Rata de cadre",
+    "frames_per_second": "{value} cadre pe secundă",
+    "front_page": {
+        "types": {
+            "saved_filter": "Filtru Salvat"
+        }
+    },
+    "galleries": "Galerii",
+    "gallery": "Galerie",
+    "gallery_count": "Numărul de galerii",
+    "gender": "Gen",
+    "gender_types": {
+        "FEMALE": "Feminin",
+        "INTERSEX": "Intersex",
+        "MALE": "Masculin",
+        "NON_BINARY": "Non-Binar",
+        "TRANSGENDER_FEMALE": "Femeie Transgender",
+        "TRANSGENDER_MALE": "Bărbat Transgender"
+    },
+    "hair_color": "Culoarea Părului",
+    "handy_connection_status": {
+        "connecting": "Se conectează",
+        "disconnected": "Deconectat",
+        "missing": "Lipsă",
+        "ready": "Pregătit",
+        "syncing": "Se sincronizează cu serverul"
+    },
+    "height": "Inălțime",
+    "help": "Ajutor",
+    "ignore_auto_tag": "Ignoră Etichetele Automate",
+    "image": "Imagine",
+    "image_count": "Număr Imagine",
+    "images": "Imagini",
+    "instagram": "Instagram",
+    "interactive": "Interactiv",
+    "interactive_speed": "Viteză interactivă",
+    "isMissing": "Lipsește",
+    "library": "Librărie",
+    "loading": {
+        "generic": "Se încarcă…"
+    },
+    "markers": "Marcatori",
+    "measurements": "Măsurători",
+    "media_info": {
+        "audio_codec": "Codec Audio",
+        "checksum": "Sumă de control",
+        "hash": "Hash",
+        "interactive_speed": "Viteză Interactivă",
+        "performer_card": {
+            "age": "{age} {years_old}",
+            "age_context": "{age} {years_old} în această scenă"
+        },
+        "phash": "PHash",
+        "stream": "Flux",
+        "video_codec": "Codec Video"
+    },
+    "megabits_per_second": "{value} megabiți pe secundă",
+    "metadata": "Metadate",
+    "movie": "Film",
+    "movies": "Filme",
+    "name": "Nume",
+    "new": "Nou",
+    "o_counter": "O-Contor",
+    "operations": "Operațiuni",
+    "organized": "Organizat",
+    "pagination": {
+        "first": "Primul",
+        "last": "Ultimul",
+        "next": "Următorul",
+        "previous": "Anterior"
+    },
+    "parent_of": "Părintele {children}",
+    "path": "Cale",
+    "performer": "Interpret",
+    "performer_age": "Vârstă Interpret",
+    "performer_image": "Imagine Interpret",
+    "performer_tagger": {
+        "add_new_performers": "Adaugă Interpreți Noi",
+        "config": {
+            "active_stash-box_instance": "Instață stash-box activă:",
+            "edit_excluded_fields": "Editați câmpurile excluse",
+            "no_fields_are_excluded": "Nu se exclude niciun câmp",
+            "no_instances_found": "Nicio instanță găsită",
+            "these_fields_will_not_be_changed_when_updating_performers": "Aceste câmpuri nu vor fi modificate la actualizarea artiștilor interpreți sau executanți."
+        },
+        "current_page": "Pagina curentă",
+        "failed_to_save_performer": "Nu s-a reușit salvarea interpretului \"{performer}\"",
+        "name_already_exists": "Numele există deja",
+        "network_error": "Eroare Rețea",
+        "no_results_found": "Nu s-a găsit niciun rezultat.",
+        "performer_already_tagged": "Interpret deja etichetat",
+        "performer_successfully_tagged": "Interpretul a fost etichetat cu succes:",
+        "query_all_performers_in_the_database": "Toti interpreții din baza de date",
+        "refresh_tagged_performers": "Reîmprospătați interpeții etichetați",
+        "tag_status": "Stare Etichetă",
+        "untagged_performers": "Interpreți neetichetați",
+        "update_performer": "Actualizați Interpret",
+        "update_performers": "Actualizați Interpreți"
+    },
+    "performer_tags": "Eticheta Interpret",
+    "performers": "Interpreți",
+    "piercings": "Piercing-uri",
+    "queue": "Coadă",
+    "random": "Aleatoriu",
+    "rating": "Evaluare",
+    "recently_added_objects": "Recent Adăugat {objects}",
+    "recently_released_objects": "Recent lansate {obiecte}",
+    "resolution": "Rezoluție",
+    "scene": "Scenă",
+    "scene_id": "ID Scenă",
+    "scenes": "Scene",
+    "scenes_updated_at": "Scenă Actualizată La",
+    "search_filter": {
+        "name": "Filtru",
+        "saved_filters": "Filtre Salvate",
+        "update_filter": "Actualizează Filtru"
+    },
+    "seconds": "Secunde",
+    "settings": "Setări",
+    "setup": {
+        "confirm": {
+            "almost_ready": "Suntem aproape gata să finalizăm configurația. Vă rugăm să confirmați următoarele setări. Puteți face clic înapoi pentru a modifica orice lucru incorect. Dacă totul pare în regulă, faceți clic pe Confirm (Confirmare) pentru a vă crea sistemul.",
+            "configuration_file_location": "Locația fișierului de configurare:",
+            "database_file_path": "Cale fișier bază de date",
+            "generated_directory": "Director generat",
+            "nearly_there": "Aproape de final!"
+        },
+        "creating": {
+            "creating_your_system": "Crearea sistemului dvs",
+            "ffmpeg_notice": "Dacă <code>ffmpeg</code> nu se află încă în căile dvs. de acces, vă rugăm să aveți răbdare în timp ce stash îl descarcă. Vizualizați consola pentru a vedea progresul descărcării."
+        },
+        "errors": {
+            "something_went_wrong": "O nu! Ceva nu a mers bine!",
+            "something_went_wrong_description": "Dacă aceasta pare a fi o problemă cu intrările dvs., dați click înapoi pentru a le repara. În caz contrar, creați un bug pe {githubLink} sau căutați ajutor în {discordLink}.",
+            "something_went_wrong_while_setting_up_your_system": "Ceva nu a mers bine in timp ce configuram sistemul tău. Aceasta e eroarea: {error}"
+        },
+        "github_repository": "Repozitoriu Github",
+        "success": {
+            "open_collective": "Consultați {open_collective_link} pentru a vedea cum puteți contribui la dezvoltarea continuă a Stash."
+        }
+    },
+    "stash_id": "ID Stash",
+    "stash_ids": "ID-uri Stash",
+    "stashbox": {
+        "go_review_draft": "Mergi la {endpoint_name} pentru a revizui schița.",
+        "submission_failed": "Trimiterea a eșuat",
+        "submission_successful": "Depunere reușită",
+        "submit_update": "Deja există în {endpoint_name}"
+    },
+    "statistics": "Statistici",
+    "stats": {
+        "scenes_duration": "Durată scene",
+        "scenes_size": "Dimensiuni scene"
+    },
+    "status": "Stare: {statusText}",
+    "studio": "Studio",
+    "studio_depth": "Niveluri (lasați liber pentru toate)",
+    "studios": "Studiouri",
+    "synopsis": "Sinopsis",
+    "tag": "Etichetă",
+    "tag_count": "Număr Etichete",
+    "tags": "Etichete",
+    "tattoos": "Tatuaje",
+    "title": "Titlu",
+    "toast": {
+        "added_entity": "Adăugat {entity}",
+        "added_generation_job_to_queue": "S-a adăugat sarcina de generare la coadă",
+        "created_entity": "S-a creat {entity}",
+        "generating_screenshot": "Se genereaza captura de ecran…",
+        "merged_tags": "Etichete fuzionate",
+        "saved_entity": "Salvat {entity}",
+        "started_auto_tagging": "A început etichetarea automată",
+        "started_generating": "A început generarea",
+        "started_importing": "A început importarea",
+        "updated_entity": "Actualizat {entity}"
+    },
+    "total": "Total",
+    "true": "Adevărat",
+    "twitter": "Twitter",
+    "type": "Tip",
+    "updated_at": "Actualizat La",
+    "url": "URL",
+    "videos": "Videouri",
+    "view_all": "Vezi Toate",
+    "weight": "Greutate",
+    "years_old": "ani"
 }

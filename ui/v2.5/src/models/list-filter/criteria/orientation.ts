@@ -7,7 +7,7 @@ import {
 } from "src/core/generated-graphql";
 
 export class OrientationCriterion extends MultiStringCriterion {
-  protected toCriterionInput(): OrientationCriterionInput {
+  public toCriterionInput(): OrientationCriterionInput {
     return {
       value: this.value
         .map((v) => stringToOrientation(v))

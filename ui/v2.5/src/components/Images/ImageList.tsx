@@ -32,8 +32,7 @@ import { ExportDialog } from "../Shared/ExportDialog";
 import { objectTitle } from "src/core/files";
 import TextUtils from "src/utils/text";
 import { ConfigurationContext } from "src/hooks/Config";
-import { IUIConfig } from "src/core/config";
-import { useContainerDimensions } from "../Shared/GridCard";
+import { useContainerDimensions } from "../Shared/GridCard/GridCard";
 
 interface IImageWallProps {
   images: GQL.SlimImageDataFragment[];
@@ -45,7 +44,7 @@ interface IImageWallProps {
 
 const ImageWall: React.FC<IImageWallProps> = ({ images, handleImageOpen }) => {
   const { configuration } = useContext(ConfigurationContext);
-  const uiConfig = configuration?.ui as IUIConfig | undefined;
+  const uiConfig = configuration?.ui;
 
   let photos: {
     src: string;

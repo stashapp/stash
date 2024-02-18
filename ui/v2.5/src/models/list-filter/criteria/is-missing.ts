@@ -3,7 +3,7 @@ import { CriterionType } from "../types";
 import { CriterionOption, StringCriterion, Option } from "./criterion";
 
 export class IsMissingCriterion extends StringCriterion {
-  protected toCriterionInput(): string {
+  public toCriterionInput(): string {
     return this.value;
   }
 }

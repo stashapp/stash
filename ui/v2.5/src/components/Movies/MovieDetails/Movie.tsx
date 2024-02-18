@@ -33,7 +33,6 @@ import TextUtils from "src/utils/text";
 import { Icon } from "src/components/Shared/Icon";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { ConfigurationContext } from "src/hooks/Config";
-import { IUIConfig } from "src/core/config";
 import { DetailImage } from "src/components/Shared/DetailImage";
 import { useRatingKeybinds } from "src/hooks/keybinds";
 import { useLoadStickyHeader } from "src/hooks/detailsPanel";
@@ -55,7 +54,7 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
 
   // Configuration settings
   const { configuration } = React.useContext(ConfigurationContext);
-  const uiConfig = configuration?.ui as IUIConfig | undefined;
+  const uiConfig = configuration?.ui;
   const enableBackgroundImage = uiConfig?.enableMovieBackgroundImage ?? false;
   const compactExpandedDetails = uiConfig?.compactExpandedDetails ?? false;
   const showAllDetails = uiConfig?.showAllDetails ?? true;
@@ -130,7 +129,7 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
 
   useRatingKeybinds(
     true,
-    configuration?.ui?.ratingSystemOptions?.type,
+    configuration?.ui.ratingSystemOptions?.type,
     setRating
   );
 

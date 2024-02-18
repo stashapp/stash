@@ -33,7 +33,6 @@
         "delete_file": "Supprimer le fichier",
         "delete_file_and_funscript": "Supprimer le fichier (et script interactif)",
         "delete_generated_supporting_files": "Supprimer les fichiers générés associés",
-        "delete_stashid": "Supprimer l'identifiant Stash",
         "disallow": "Refuser",
         "download": "Télécharger",
         "download_anonymised": "Téléchargement anonymisé",
@@ -144,7 +143,7 @@
         "filesystem": "Système de fichier"
     },
     "captions": "Sous-titres",
-    "career_length": "Durée de la carrière",
+    "career_length": "Durée de carrière",
     "chapters": "Chapitres",
     "circumcised": "Circoncis",
     "circumcised_types": {
@@ -156,6 +155,8 @@
             "active_instance": "Instance Stash-Box active :",
             "blacklist_desc": "Les éléments de la liste noire sont exclus des requêtes. Notez que ce sont des expressions régulières insensibles à la casse. Certains caractères doivent être échappés par une barre oblique inversée : {chars_require_escape}",
             "blacklist_label": "Liste noire",
+            "mark_organized_desc": "Marquer immédiatement la scène comme Organisée après avoir cliqué sur le bouton Enregistrer.",
+            "mark_organized_label": "Marquer comme Organisé lors de l'enregistrement",
             "query_mode_auto": "Automatique",
             "query_mode_auto_desc": "Utilise les métadonnées si présentes, ou le nom de fichier",
             "query_mode_dir": "Répertoire",
@@ -173,9 +174,7 @@
             "set_tag_label": "Définir les étiquettes",
             "show_male_desc": "Cocher si les performeurs masculins seront disponibles pour le marquage.",
             "show_male_label": "Montrer les performeurs masculins",
-            "source": "Source",
-            "mark_organized_label": "Marquer comme Organisé lors de l'enregistrement",
-            "mark_organized_desc": "Marquer immédiatement la scène comme Organisée après avoir cliqué sur le bouton Enregistrer."
+            "source": "Source"
         },
         "noun_query": "Requête",
         "results": {
@@ -689,15 +688,15 @@
                         "description": "Lire la scène suivante de la file d'attente lorsque une vidéo se termine",
                         "heading": "Continuer la liste de lecture par défaut"
                     },
-                    "enable_chromecast": "Activer Chromecast",
                     "disable_mobile_media_auto_rotate": "Désactiver la rotation automatique des médias en plein écran sur mobile",
+                    "enable_chromecast": "Activer Chromecast",
+                    "show_ab_loop_controls": "Afficher les commandes du plugin AB Loop",
                     "show_scrubber": "Montrer la barre de progression",
                     "track_activity": "Suivre l'activité",
                     "vr_tag": {
                         "description": "Le bouton VR est uniquement affiché pour les scènes comportant cette étiquette.",
                         "heading": "Étiquette VR"
-                    },
-                    "show_ab_loop_controls": "Afficher les commandes du plugin AB Loop"
+                    }
                 }
             },
             "scene_wall": {
@@ -1076,7 +1075,6 @@
     "penis_length_cm": "Longueur du pénis (cm)",
     "perceptual_similarity": "Similitude perceptuelle (empreinte)",
     "performer": "Performeurs",
-    "performer_tags": "Étiquettes de performeur",
     "performer_age": "Âge du performeur",
     "performer_count": "Nombre de performeurs",
     "performer_favorite": "Performeur favori",
@@ -1116,6 +1114,7 @@
         "update_performers": "Mise à jour des performeurs",
         "updating_untagged_performers_description": "Une mise à jour des performeurs non étiquetés essaiera de faire correspondre tous les performeurs qui n'ont pas d'identifiant Stash et actualisera les métadonnées."
     },
+    "performer_tags": "Étiquettes de performeur",
     "performers": "Performeurs",
     "piercings": "Piercings",
     "play_count": "Compteur de lecture",
@@ -1131,12 +1130,12 @@
     "resume_time": "Reprendre le temps",
     "scene": "Scène",
     "sceneTagger": "Étiqueteuse de scènes",
-    "scene_tags": "Étiquettes de la scène",
     "scene_code": "Code studio",
     "scene_count": "Nombre de scènes",
     "scene_created_at": "Scène créée le",
     "scene_date": "Date de la scène",
     "scene_id": "ID de scène",
+    "scene_tags": "Étiquettes de la scène",
     "scene_updated_at": "Scène mise à jour le",
     "scenes": "Scènes",
     "scenes_updated_at": "Scène actualisée le",
@@ -1153,17 +1152,13 @@
         "confirm": {
             "almost_ready": "Nous sommes presque prêts à terminer la configuration. Confirmez les paramètres suivants. Vous pouvez revenir en arrière pour modifier toute erreur. Si tout semble correct, cliquez sur Confirmer pour créer votre système.",
             "blobs_directory": "Répertoire de données binaires",
+            "blobs_use_database": "<utiliser la base de données>",
             "cache_directory": "Répertoire du cache",
             "configuration_file_location": "Emplacement du fichier de configuration :",
             "database_file_path": "Chemin du fichier de base de données",
-            "default_blobs_location": "<utiliser la base de données>",
-            "default_cache_location": "<chemin contenant le fichier de configuration>/cache",
-            "default_db_location": "<chemin contenant le fichier de configuration>/stash-go.sqlite",
-            "default_generated_content_location": "<chemin contenant le fichier de configuration>/generated",
             "generated_directory": "Répertoire généré",
             "nearly_there": "Nous y sommes presque !",
-            "stash_library_directories": "Répertoire de la bibliothèque Stash",
-            "blobs_use_database": "<utiliser la base de données>"
+            "stash_library_directories": "Répertoire de la bibliothèque Stash"
         },
         "creating": {
             "creating_your_system": "Création de votre système",
@@ -1195,10 +1190,12 @@
         "paths": {
             "database_filename_empty_for_default": "Nom de fichier de la base de données (vide par défaut)",
             "description": "Ensuite, nous devons déterminer où trouver votre collection pornographique, et où stocker la base de données Stash, les fichiers générés et les fichiers cache. Ces paramètres peuvent être modifiés ultérieurement si nécessaire.",
+            "path_to_blobs_directory_empty_for_default": "chemin vers le répertoire des blobs (vide par défaut)",
             "path_to_cache_directory_empty_for_default": "chemin du répertoire du cache (vide par défaut)",
             "path_to_generated_directory_empty_for_default": "Chemin vers le répertoire généré (vide par défaut)",
             "set_up_your_paths": "Configurez vos chemins",
             "stash_alert": "Aucun chemin de bibliothèque n'a été sélectionné. Aucun média ne pourra être analysé dans Stash. En êtes-vous sûr ?",
+            "store_blobs_in_database": "Stocker les blobs dans la base de données",
             "where_can_stash_store_blobs": "Où Stash peut-il stocker les données binaires de la base de données ?",
             "where_can_stash_store_blobs_description": "Stash peut stocker des données binaires telles que les vignettes de scènes, les images de performeurs, de studios et de tags, soit dans la base de données, soit dans le système de fichiers. Par défaut, ces données sont stockées dans le système de fichiers, dans le sous-répertoire <code>blobs</code>. Si vous souhaitez modifier cela, veuillez saisir un chemin absolu ou relatif (par rapport au répertoire de travail actuel). Stash créera ce sous-répertoire s'il n'existe pas déjà.",
             "where_can_stash_store_blobs_description_addendum": "Alternativement, si vous souhaitez stocker ces données dans la base de données, vous pouvez laisser ce champ vide. <strong>Remarque :</strong> cela augmentera la taille de votre base de données et son temps de migration.",
@@ -1210,9 +1207,7 @@
             "where_can_stash_store_its_generated_content": "Où Stash peut-il stocker son contenu généré ?",
             "where_can_stash_store_its_generated_content_description": "Afin de produire les vignettes, aperçus et sprites, Stash génère des images et des vidéos. Cela inclut également les transcodes pour les formats de fichiers non pris en charge. Par défaut, Stash crée un répertoire <code>generated</code> dans le répertoire contenant votre fichier de configuration. Si vous souhaitez modifier l'emplacement où seront stockés les médias générés, veuillez saisir un chemin absolu ou relatif ( vers le répertoire de travail actuel). Stash créera ce répertoire s'il n'existe pas déjà.",
             "where_is_your_porn_located": "Où se trouve votre porno ?",
-            "where_is_your_porn_located_description": "Ajoutez des répertoires contenant vos vidéos et images pornographiques. Stash utilisera ces répertoires pour rechercher les vidéos et les images lors de l'analyse.",
-            "path_to_blobs_directory_empty_for_default": "chemin vers le répertoire des blobs (vide par défaut)",
-            "store_blobs_in_database": "Stocker les blobs dans la base de données"
+            "where_is_your_porn_located_description": "Ajoutez des répertoires contenant vos vidéos et images pornographiques. Stash utilisera ces répertoires pour rechercher les vidéos et les images lors de l'analyse."
         },
         "stash_setup_wizard": "Assistant de configuration de Stash",
         "success": {
@@ -1344,10 +1339,8 @@
     "url": "URL",
     "urls": "URLs",
     "validation": {
-        "aliases_must_be_unique": "Les alias doivent être uniques",
         "date_invalid_form": "${path} doit être du format AAAA-MM-JJ",
-        "required": "${path} est un champ requis",
-        "urls_must_be_unique": "Les URLs doivent être uniques"
+        "required": "${path} est un champ requis"
     },
     "video_codec": "Codec vidéo",
     "videos": "Vidéos",

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Button, Tabs, Tab, Col, Row } from "react-bootstrap";
 import { useIntl } from "react-intl";
 import { useHistory, Redirect, RouteComponentProps } from "react-router-dom";
@@ -40,7 +40,6 @@ import {
   faLink,
 } from "@fortawesome/free-solid-svg-icons";
 import { faInstagram, faTwitter } from "@fortawesome/free-brands-svg-icons";
-import { IUIConfig } from "src/core/config";
 import { useRatingKeybinds } from "src/hooks/keybinds";
 import { DetailImage } from "src/components/Shared/DetailImage";
 import { useLoadStickyHeader } from "src/hooks/detailsPanel";
@@ -49,7 +48,7 @@ import { ExternalLink } from "src/components/Shared/ExternalLink";
 
 interface IProps {
   performer: GQL.PerformerDataFragment;
-  tabKey: TabKey;
+  tabKey?: TabKey;
 }
 
 interface IPerformerParams {
@@ -67,8 +66,6 @@ const validTabs = [
 ] as const;
 type TabKey = (typeof validTabs)[number];
 
-const defaultTab: TabKey = "default";
-
 function isTabKey(tab: string): tab is TabKey {
   return validTabs.includes(tab as TabKey);
 }
@@ -80,7 +77,7 @@ const PerformerPage: React.FC<IProps> = ({ performer, tabKey }) => {
 
   // Configuration settings
   const { configuration } = React.useContext(ConfigurationContext);
-  const uiConfig = configuration?.ui as IUIConfig | undefined;
+  const uiConfig = configuration?.ui;
   const abbreviateCounter = uiConfig?.abbreviateCounters ?? false;
   const enableBackgroundImage =
     uiConfig?.enablePerformerBackgroundImage ?? false;
@@ -134,20 +131,23 @@ const PerformerPage: React.FC<IProps> = ({ performer, tabKey }) => {
     return ret;
   }, [performer]);
 
-  if (tabKey === defaultTab) {
-    tabKey = populatedDefaultTab;
-  }
+  const setTabKey = useCallback(
+    (newTabKey: string | null) => {
+      if (!newTabKey) newTabKey = populatedDefaultTab;
+      if (newTabKey === tabKey) return;
 
-  function setTabKey(newTabKey: string | null) {
-    if (!newTabKey || newTabKey === defaultTab) newTabKey = populatedDefaultTab;
-    if (newTabKey === tabKey) return;
+      if (isTabKey(newTabKey)) {
+        history.replace(`/performers/${performer.id}/${newTabKey}`);
+      }
+    },
+    [populatedDefaultTab, tabKey, history, performer.id]
+  );
 
-    if (newTabKey === populatedDefaultTab) {
-      history.replace(`/performers/${performer.id}`);
-    } else if (isTabKey(newTabKey)) {
-      history.replace(`/performers/${performer.id}/${newTabKey}`);
+  useEffect(() => {
+    if (!tabKey) {
+      setTabKey(populatedDefaultTab);
     }
-  }
+  }, [setTabKey, populatedDefaultTab, tabKey]);
 
   async function onAutoTag() {
     try {
@@ -160,7 +160,7 @@ const PerformerPage: React.FC<IProps> = ({ performer, tabKey }) => {
 
   useRatingKeybinds(
     true,
-    configuration?.ui?.ratingSystemOptions?.type,
+    configuration?.ui.ratingSystemOptions?.type,
     setRating
   );
 
@@ -622,11 +622,7 @@ const PerformerLoader: React.FC<RouteComponentProps<IPerformerParams>> = ({
   if (!data?.findPerformer)
     return <ErrorMessage error={`No performer found with id ${id}.`} />;
 
-  if (!tab) {
-    return <PerformerPage performer={data.findPerformer} tabKey={defaultTab} />;
-  }
-
-  if (!isTabKey(tab)) {
+  if (tab && !isTabKey(tab)) {
     return (
       <Redirect
         to={{
@@ -637,7 +633,12 @@ const PerformerLoader: React.FC<RouteComponentProps<IPerformerParams>> = ({
     );
   }
 
-  return <PerformerPage performer={data.findPerformer} tabKey={tab} />;
+  return (
+    <PerformerPage
+      performer={data.findPerformer}
+      tabKey={tab as TabKey | undefined}
+    />
+  );
 };
 
 export default PerformerLoader;

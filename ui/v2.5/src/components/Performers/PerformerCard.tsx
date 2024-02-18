@@ -4,7 +4,7 @@ import { useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import NavUtils from "src/utils/navigation";
 import TextUtils from "src/utils/text";
-import { GridCard, calculateCardWidth } from "../Shared/GridCard";
+import { GridCard, calculateCardWidth } from "../Shared/GridCard/GridCard";
 import { CountryFlag } from "../Shared/CountryFlag";
 import { SweatDrops } from "../Shared/SweatDrops";
 import { HoverPopover } from "../Shared/HoverPopover";

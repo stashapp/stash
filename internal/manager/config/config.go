@@ -260,6 +260,9 @@ const (
 
 	// File upload options
 	MaxUploadSize = "max_upload_size"
+
+	// Developer options
+	ExtraBlobsPaths = "developer_options.extra_blob_paths"
 )
 
 // slice default values
@@ -561,6 +564,12 @@ func (i *Config) GetBlobsPath() string {
 	return i.getString(BlobsPath)
 }
 
+// GetExtraBlobsPaths returns extra blobs paths.
+// For developer/advanced use only.
+func (i *Config) GetExtraBlobsPaths() []string {
+	return i.getStringSlice(ExtraBlobsPaths)
+}
+
 func (i *Config) GetBlobsStorage() BlobsStorageType {
 	ret := BlobsStorageType(i.getString(BlobsStorage))
 
@@ -735,11 +744,11 @@ func (i *Config) GetPluginsPath() string {
 	return i.getString(PluginsPath)
 }
 
-func (i *Config) GetAllPluginConfiguration() map[string]interface{} {
+func (i *Config) GetAllPluginConfiguration() map[string]map[string]interface{} {
 	i.RLock()
 	defer i.RUnlock()
 
-	ret := make(map[string]interface{})
+	ret := make(map[string]map[string]interface{})
 
 	sub := i.viper(PluginsSetting).GetStringMap(PluginsSetting)
 	if sub == nil {

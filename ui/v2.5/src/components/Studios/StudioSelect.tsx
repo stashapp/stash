@@ -26,6 +26,8 @@ import {
 } from "../Shared/FilterSelect";
 import { useCompare } from "src/hooks/state";
 import { Placement } from "react-bootstrap/esm/Overlay";
+import { sortByRelevance } from "src/utils/query";
+import { PatchComponent } from "src/pluginApi";
 
 export type SelectObject = {
   id: string;
@@ -36,7 +38,7 @@ export type SelectObject = {
 export type Studio = Pick<GQL.Studio, "id" | "name" | "aliases" | "image_path">;
 type Option = SelectOption<Studio>;
 
-export const StudioSelect: React.FC<
+const _StudioSelect: React.FC<
   IFilterProps &
     IFilterValueProps<Studio> & {
       hoverPlacement?: Placement;
@@ -62,16 +64,21 @@ export const StudioSelect: React.FC<
     filter.sortBy = "name";
     filter.sortDirection = GQL.SortDirectionEnum.Asc;
     const query = await queryFindStudiosForSelect(filter);
-    return query.data.findStudios.studios
-      .filter((studio) => {
-        // HACK - we should probably exclude these in the backend query, but
-        // this will do in the short-term
-        return !exclude.includes(studio.id.toString());
-      })
-      .map((studio) => ({
-        value: studio.id,
-        object: studio,
-      }));
+    let ret = query.data.findStudios.studios.filter((studio) => {
+      // HACK - we should probably exclude these in the backend query, but
+      // this will do in the short-term
+      return !exclude.includes(studio.id.toString());
+    });
+
+    return sortByRelevance(
+      input,
+      ret,
+      (s) => s.name,
+      (s) => s.aliases
+    ).map((studio) => ({
+      value: studio.id,
+      object: studio,
+    }));
   }
 
   const StudioOption: React.FC<OptionProps<Option, boolean>> = (
@@ -210,7 +217,9 @@ export const StudioSelect: React.FC<
   );
 };
 
-export const StudioIDSelect: React.FC<IFilterProps & IFilterIDProps<Studio>> = (
+export const StudioSelect = PatchComponent("StudioSelect", _StudioSelect);
+
+const _StudioIDSelect: React.FC<IFilterProps & IFilterIDProps<Studio>> = (
   props
 ) => {
   const { ids, onSelect: onSelectValues } = props;
@@ -257,3 +266,5 @@ export const StudioIDSelect: React.FC<IFilterProps & IFilterIDProps<Studio>> = (
 
   return <StudioSelect {...props} values={values} onSelect={onSelect} />;
 };
+
+export const StudioIDSelect = PatchComponent("StudioIDSelect", _StudioIDSelect);

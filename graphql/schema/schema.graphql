@@ -84,6 +84,7 @@ type Query {
   findGalleries(
     gallery_filter: GalleryFilterType
     filter: FindFilterType
+    ids: [ID!]
   ): FindGalleriesResultType!
 
   findTag(id: ID!): Tag

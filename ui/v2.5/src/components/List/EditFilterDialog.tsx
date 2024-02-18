@@ -31,7 +31,6 @@ import { useCompare, usePrevious } from "src/hooks/state";
 import { CriterionType } from "src/models/list-filter/types";
 import { useToast } from "src/hooks/Toast";
 import { useConfigureUI } from "src/core/StashService";
-import { IUIConfig } from "src/core/config";
 import { FilterMode } from "src/core/generated-graphql";
 import { useFocusOnce } from "src/utils/focus";
 import Mousetrap from "mousetrap";
@@ -270,7 +269,7 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
     [filter, criteria]
   );
 
-  const ui = (configuration?.ui ?? {}) as IUIConfig;
+  const ui = configuration?.ui ?? {};
   const [saveUI] = useConfigureUI();
 
   const filteredOptions = useMemo(() => {
