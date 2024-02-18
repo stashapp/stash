@@ -2,7 +2,6 @@ import React, {
   useState,
   useContext,
   createContext,
-  useCallback,
   useMemo,
 } from "react";
 import { Toast } from "react-bootstrap";
@@ -12,44 +11,53 @@ export interface IToast {
   content: React.ReactNode | string;
   delay?: number;
   variant?: "success" | "danger" | "warning";
+  priority?: number; // higher is more important
 }
 
 interface IActiveToast extends IToast {
   id: number;
 }
 
+// errors are always more important than regular toasts
+const errorPriority = 100;
+// errors should stay on screen longer
+const errorDelay = 5000;
+
 let toastID = 0;
 
 const ToastContext = createContext<(item: IToast) => void>(() => {});
 
 export const ToastProvider: React.FC = ({ children }) => {
-  const [toasts, setToasts] = useState<IActiveToast[]>([]);
+  const [toast, setToast] = useState<IActiveToast>();
 
-  const removeToast = (id: number) =>
-    setToasts((prev) => prev.filter((item) => item.id !== id));
+  const toastItem = useMemo(() => {
+    if (!toast) return null;
 
-  const toastItems = toasts.map((toast) => (
-    <Toast
-      autohide
-      key={toast.id}
-      onClose={() => removeToast(toast.id)}
-      className={toast.variant ?? "success"}
-      delay={toast.delay ?? 3000}
-    >
-      <Toast.Header>
-        <span className="mr-auto">{toast.content}</span>
-      </Toast.Header>
-    </Toast>
-  ));
+    return (
+      <Toast
+        autohide
+        key={toast.id}
+        onClose={() => setToast(undefined)}
+        className={toast.variant ?? "success"}
+        delay={toast.delay ?? 3000}
+      >
+        <Toast.Header>
+          <span className="mr-auto">{toast.content}</span>
+        </Toast.Header>
+      </Toast>
+    );
+  }, [toast]);
 
-  const addToast = useCallback((toast: IToast) => {
-    setToasts((prev) => [...prev, { ...toast, id: toastID++ }]);
-  }, []);
+  function addToast(item: IToast) {
+    if (!toast || (item.priority ?? 0) >= (toast.priority ?? 0)) {
+      setToast({ ...item, id: toastID++ });
+    }
+  }
 
   return (
     <ToastContext.Provider value={addToast}>
       {children}
-      <div className="toast-container row">{toastItems}</div>
+      <div className="toast-container row">{toastItem}</div>
     </ToastContext.Provider>
   );
 };
@@ -72,6 +80,8 @@ export const useToast = () => {
         addToast({
           variant: "danger",
           content: message,
+          priority: errorPriority,
+          delay: errorDelay,
         });
       },
     }),
