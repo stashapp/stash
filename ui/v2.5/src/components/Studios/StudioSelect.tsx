@@ -233,8 +233,7 @@ const _StudioIDSelect: React.FC<IFilterProps & IFilterIDProps<Studio>> = (
   }
 
   async function loadObjectsByID(idsToLoad: string[]): Promise<Studio[]> {
-    const studioIDs = idsToLoad.map((id) => parseInt(id));
-    const query = await queryFindStudiosByIDForSelect(studioIDs);
+    const query = await queryFindStudiosByIDForSelect(idsToLoad);
     const { studios: loadedStudios } = query.data.findStudios;
 
     return loadedStudios;

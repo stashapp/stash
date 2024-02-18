@@ -237,9 +237,21 @@ textarea.scene-description {
 .movie-table {
   width: 100%;
 
-  td {
-    vertical-align: middle;
+  .movie-row {
+    align-items: center;
+    margin-bottom: 0.25rem;
   }
+
+  .movie-scene-number-header {
+    color: $text-muted;
+    font-size: 0.8em;
+    padding-bottom: 0;
+    padding-top: 0;
+  }
+}
+
+.movie-table.no-movies .movie-table-header {
+  display: none;
 }
 
 .scene-tabs {

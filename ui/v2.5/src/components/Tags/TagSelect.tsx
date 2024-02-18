@@ -251,8 +251,7 @@ const _TagIDSelect: React.FC<IFilterProps & IFilterIDProps<Tag>> = (props) => {
   }
 
   async function loadObjectsByID(idsToLoad: string[]): Promise<Tag[]> {
-    const tagIDs = idsToLoad.map((id) => parseInt(id));
-    const query = await queryFindTagsByIDForSelect(tagIDs);
+    const query = await queryFindTagsByIDForSelect(idsToLoad);
     const { tags: loadedTags } = query.data.findTags;
 
     return loadedTags;

@@ -9,8 +9,9 @@ import cx from "classnames";
 
 import * as GQL from "src/core/generated-graphql";
 import {
-  queryFindGalleriesForSelect,
-  queryFindGalleriesByIDForSelect,
+  queryFindMoviesForSelect,
+  queryFindMoviesByIDForSelect,
+  useMovieCreate,
 } from "src/core/StashService";
 import { ConfigurationContext } from "src/hooks/Config";
 import { useIntl } from "react-intl";
@@ -26,92 +27,65 @@ import {
 import { useCompare } from "src/hooks/state";
 import { Placement } from "react-bootstrap/esm/Overlay";
 import { sortByRelevance } from "src/utils/query";
-import { galleryTitle } from "src/core/galleries";
-import { PatchComponent } from "src/patch";
+import { PatchComponent } from "src/pluginApi";
 
-export type Gallery = Pick<GQL.Gallery, "id" | "title"> & {
-  files: Pick<GQL.GalleryFile, "path">[];
-  folder?: Pick<GQL.Folder, "path"> | null;
-};
-type Option = SelectOption<Gallery>;
+export type Movie = Pick<GQL.Movie, "id" | "name">;
+type Option = SelectOption<Movie>;
 
-const _GallerySelect: React.FC<
+const _MovieSelect: React.FC<
   IFilterProps &
-    IFilterValueProps<Gallery> & {
+    IFilterValueProps<Movie> & {
       hoverPlacement?: Placement;
       excludeIds?: string[];
     }
 > = (props) => {
+  const [createMovie] = useMovieCreate();
+
   const { configuration } = React.useContext(ConfigurationContext);
   const intl = useIntl();
   const maxOptionsShown =
     configuration?.ui.maxOptionsShown ?? defaultMaxOptionsShown;
+  const defaultCreatable =
+    !configuration?.interface.disableDropdownCreate.movie ?? true;
 
   const exclude = useMemo(() => props.excludeIds ?? [], [props.excludeIds]);
 
-  async function loadGalleries(input: string): Promise<Option[]> {
-    const filter = new ListFilterModel(GQL.FilterMode.Galleries);
+  async function loadMovies(input: string): Promise<Option[]> {
+    const filter = new ListFilterModel(GQL.FilterMode.Movies);
     filter.searchTerm = input;
     filter.currentPage = 1;
     filter.itemsPerPage = maxOptionsShown;
-    filter.sortBy = "title";
+    filter.sortBy = "name";
     filter.sortDirection = GQL.SortDirectionEnum.Asc;
-    const query = await queryFindGalleriesForSelect(filter);
-    let ret = query.data.findGalleries.galleries.filter((gallery) => {
+    const query = await queryFindMoviesForSelect(filter);
+    let ret = query.data.findMovies.movies.filter((movie) => {
       // HACK - we should probably exclude these in the backend query, but
       // this will do in the short-term
-      return !exclude.includes(gallery.id.toString());
+      return !exclude.includes(movie.id.toString());
     });
 
-    return sortByRelevance(input, ret, galleryTitle, (g) => {
-      return g.files.map((f) => f.path).concat(g.folder?.path ?? []);
-    }).map((gallery) => ({
-      value: gallery.id,
-      object: gallery,
+    return sortByRelevance(input, ret, (m) => m.name).map((movie) => ({
+      value: movie.id,
+      object: movie,
     }));
   }
 
-  const GalleryOption: React.FC<OptionProps<Option, boolean>> = (
-    optionProps
-  ) => {
+  const MovieOption: React.FC<OptionProps<Option, boolean>> = (optionProps) => {
     let thisOptionProps = optionProps;
 
     const { object } = optionProps.data;
 
-    const title = galleryTitle(object);
-
-    // if title does not match the input value but the path does, show the path
-    const { inputValue } = optionProps.selectProps;
-    let matchedPath: string | undefined = "";
-    if (!title.toLowerCase().includes(inputValue.toLowerCase())) {
-      matchedPath = object.files?.find((a) =>
-        a.path.toLowerCase().includes(inputValue.toLowerCase())
-      )?.path;
-
-      if (
-        !matchedPath &&
-        object.folder?.path.toLowerCase().includes(inputValue.toLowerCase())
-      ) {
-        matchedPath = object.folder?.path;
-      }
-    }
+    const title = object.name;
 
     thisOptionProps = {
       ...optionProps,
-      children: (
-        <span>
-          <span>{title}</span>
-          {matchedPath && (
-            <span className="gallery-select-alias">{` (${matchedPath})`}</span>
-          )}
-        </span>
-      ),
+      children: <span>{title}</span>,
     };
 
     return <reactSelectComponents.Option {...thisOptionProps} />;
   };
 
-  const GalleryMultiValueLabel: React.FC<
+  const MovieMultiValueLabel: React.FC<
     MultiValueGenericProps<Option, boolean>
   > = (optionProps) => {
     let thisOptionProps = optionProps;
@@ -120,13 +94,13 @@ const _GallerySelect: React.FC<
 
     thisOptionProps = {
       ...optionProps,
-      children: galleryTitle(object),
+      children: object.name,
     };
 
     return <reactSelectComponents.MultiValueLabel {...thisOptionProps} />;
   };
 
-  const GalleryValueLabel: React.FC<SingleValueProps<Option, boolean>> = (
+  const MovieValueLabel: React.FC<SingleValueProps<Option, boolean>> = (
     optionProps
   ) => {
     let thisOptionProps = optionProps;
@@ -135,36 +109,74 @@ const _GallerySelect: React.FC<
 
     thisOptionProps = {
       ...optionProps,
-      children: <>{galleryTitle(object)}</>,
+      children: <>{object.name}</>,
     };
 
     return <reactSelectComponents.SingleValue {...thisOptionProps} />;
   };
 
+  const onCreate = async (name: string) => {
+    const result = await createMovie({
+      variables: { input: { name } },
+    });
+    return {
+      value: result.data!.movieCreate!.id,
+      item: result.data!.movieCreate!,
+      message: "Created movie",
+    };
+  };
+
+  const getNamedObject = (id: string, name: string) => {
+    return {
+      id,
+      name,
+    };
+  };
+
+  const isValidNewOption = (inputValue: string, options: Movie[]) => {
+    if (!inputValue) {
+      return false;
+    }
+
+    if (
+      options.some((o) => {
+        return o.name.toLowerCase() === inputValue.toLowerCase();
+      })
+    ) {
+      return false;
+    }
+
+    return true;
+  };
+
   return (
-    <FilterSelectComponent<Gallery, boolean>
+    <FilterSelectComponent<Movie, boolean>
       {...props}
       className={cx(
-        "gallery-select",
+        "movie-select",
         {
-          "gallery-select-active": props.active,
+          "movie-select-active": props.active,
         },
         props.className
       )}
-      loadOptions={loadGalleries}
+      loadOptions={loadMovies}
+      getNamedObject={getNamedObject}
+      isValidNewOption={isValidNewOption}
       components={{
-        Option: GalleryOption,
-        MultiValueLabel: GalleryMultiValueLabel,
-        SingleValue: GalleryValueLabel,
+        Option: MovieOption,
+        MultiValueLabel: MovieMultiValueLabel,
+        SingleValue: MovieValueLabel,
       }}
       isMulti={props.isMulti ?? false}
+      creatable={props.creatable ?? defaultCreatable}
+      onCreate={onCreate}
       placeholder={
         props.noSelectionString ??
         intl.formatMessage(
           { id: "actions.select_entity" },
           {
             entityType: intl.formatMessage({
-              id: props.isMulti ? "galleries" : "gallery",
+              id: props.isMulti ? "movies" : "movie",
             }),
           }
         )
@@ -174,26 +186,26 @@ const _GallerySelect: React.FC<
   );
 };
 
-export const GallerySelect = PatchComponent("GallerySelect", _GallerySelect);
+export const MovieSelect = PatchComponent("MovieSelect", _MovieSelect);
 
-const _GalleryIDSelect: React.FC<IFilterProps & IFilterIDProps<Gallery>> = (
+const _MovieIDSelect: React.FC<IFilterProps & IFilterIDProps<Movie>> = (
   props
 ) => {
   const { ids, onSelect: onSelectValues } = props;
 
-  const [values, setValues] = useState<Gallery[]>([]);
+  const [values, setValues] = useState<Movie[]>([]);
   const idsChanged = useCompare(ids);
 
-  function onSelect(items: Gallery[]) {
+  function onSelect(items: Movie[]) {
     setValues(items);
     onSelectValues?.(items);
   }
 
-  async function loadObjectsByID(idsToLoad: string[]): Promise<Gallery[]> {
-    const query = await queryFindGalleriesByIDForSelect(idsToLoad);
-    const { galleries: loadedGalleries } = query.data.findGalleries;
+  async function loadObjectsByID(idsToLoad: string[]): Promise<Movie[]> {
+    const query = await queryFindMoviesByIDForSelect(idsToLoad);
+    const { movies: loadedMovies } = query.data.findMovies;
 
-    return loadedGalleries;
+    return loadedMovies;
   }
 
   useEffect(() => {
@@ -220,10 +232,7 @@ const _GalleryIDSelect: React.FC<IFilterProps & IFilterIDProps<Gallery>> = (
     load();
   }, [ids, idsChanged, values]);
 
-  return <GallerySelect {...props} values={values} onSelect={onSelect} />;
+  return <MovieSelect {...props} values={values} onSelect={onSelect} />;
 };
 
-export const GalleryIDSelect = PatchComponent(
-  "GalleryIDSelect",
-  _GalleryIDSelect
-);
+export const MovieIDSelect = PatchComponent("MovieIDSelect", _MovieIDSelect);

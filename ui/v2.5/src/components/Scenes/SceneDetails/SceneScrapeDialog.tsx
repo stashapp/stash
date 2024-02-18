@@ -7,11 +7,10 @@ import {
   ScrapedImageRow,
   ScrapedStringListRow,
 } from "src/components/Shared/ScrapeDialog/ScrapeDialog";
-import clone from "lodash-es/clone";
 import { useIntl } from "react-intl";
 import { uniq } from "lodash-es";
 import { Performer } from "src/components/Performers/PerformerSelect";
-import { IHasStoredID, sortStoredIdObjects } from "src/utils/data";
+import { sortStoredIdObjects } from "src/utils/data";
 import {
   ObjectListScrapeResult,
   ObjectScrapeResult,
@@ -31,12 +30,14 @@ import {
 } from "src/components/Shared/ScrapeDialog/createObjects";
 import { Tag } from "src/components/Tags/TagSelect";
 import { Studio } from "src/components/Studios/StudioSelect";
+import { Movie } from "src/components/Movies/MovieSelect";
 
 interface ISceneScrapeDialogProps {
   scene: Partial<GQL.SceneUpdateInput>;
   sceneStudio: Studio | null;
   scenePerformers: Performer[];
   sceneTags: Tag[];
+  sceneMovies: Movie[];
   scraped: GQL.ScrapedScene;
   endpoint?: string;
 
@@ -48,6 +49,7 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
   sceneStudio,
   scenePerformers,
   sceneTags,
+  sceneMovies,
   scraped,
   onClose,
   endpoint,
@@ -96,44 +98,6 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
     )
   );
 
-  function mapStoredIdObjects(
-    scrapedObjects?: IHasStoredID[]
-  ): string[] | undefined {
-    if (!scrapedObjects) {
-      return undefined;
-    }
-    const ret = scrapedObjects
-      .map((p) => p.stored_id)
-      .filter((p) => {
-        return p !== undefined && p !== null;
-      }) as string[];
-
-    if (ret.length === 0) {
-      return undefined;
-    }
-
-    // sort by id numerically
-    ret.sort((a, b) => {
-      return parseInt(a, 10) - parseInt(b, 10);
-    });
-
-    return ret;
-  }
-
-  function sortIdList(idList?: string[] | null) {
-    if (!idList) {
-      return;
-    }
-
-    const ret = clone(idList);
-    // sort by id numerically
-    ret.sort((a, b) => {
-      return parseInt(a, 10) - parseInt(b, 10);
-    });
-
-    return ret;
-  }
-
   const [performers, setPerformers] = useState<
     ObjectListScrapeResult<GQL.ScrapedPerformer>
   >(
@@ -151,10 +115,17 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
     scraped.performers?.filter((t) => !t.stored_id) ?? []
   );
 
-  const [movies, setMovies] = useState<ScrapeResult<string[]>>(
-    new ScrapeResult<string[]>(
-      sortIdList(scene.movies?.map((p) => p.movie_id)),
-      mapStoredIdObjects(scraped.movies ?? undefined)
+  const [movies, setMovies] = useState<
+    ObjectListScrapeResult<GQL.ScrapedMovie>
+  >(
+    new ObjectListScrapeResult<GQL.ScrapedMovie>(
+      sortStoredIdObjects(
+        sceneMovies.map((p) => ({
+          stored_id: p.id,
+          name: p.name,
+        }))
+      ),
+      sortStoredIdObjects(scraped.movies ?? undefined)
     )
   );
   const [newMovies, setNewMovies] = useState<GQL.ScrapedMovie[]>(
@@ -249,12 +220,7 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
       director: director.getNewValue(),
       studio: newStudioValue,
       performers: performers.getNewValue(),
-      movies: movies.getNewValue()?.map((m) => {
-        return {
-          stored_id: m,
-          name: "",
-        };
-      }),
+      movies: movies.getNewValue(),
       tags: tags.getNewValue(),
       details: details.getNewValue(),
       image: image.getNewValue(),
