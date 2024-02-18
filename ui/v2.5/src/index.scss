@@ -884,9 +884,36 @@ div.dropdown-menu {
     padding: 1rem;
     white-space: pre-wrap;
 
-    .close {
+    .close,
+    .expand-error-button {
       color: $text-color;
       text-shadow: none;
+    }
+
+    .expand-error-button {
+      opacity: 0.5;
+      padding-left: 0.25rem;
+      padding-right: 0.25rem;
+
+      &:hover {
+        opacity: 0.75;
+      }
+    }
+  }
+
+  .toast.danger .toast-header > span {
+    cursor: pointer;
+  }
+}
+
+.toast-expanded-dialog {
+  .modal-header {
+    align-items: center;
+    justify-content: start;
+
+    .fa-icon {
+      color: $danger;
+      margin-right: 0.5rem;
     }
   }
 }
@@ -950,7 +977,6 @@ div.dropdown-menu {
 .top-nav {
   justify-content: start;
   padding: 0.25rem 1rem;
-  z-index: 1052;
 
   @include media-breakpoint-down(xs) {
     padding: 0.25rem 2rem;

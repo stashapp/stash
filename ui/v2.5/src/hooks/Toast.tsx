@@ -1,14 +1,16 @@
-import React, {
-  useState,
-  useContext,
-  createContext,
-  useMemo,
-} from "react";
-import { Toast } from "react-bootstrap";
+import {
+  faArrowUpRightFromSquare,
+  faTriangleExclamation,
+} from "@fortawesome/free-solid-svg-icons";
+import React, { useState, useContext, createContext, useMemo } from "react";
+import { Button, Toast } from "react-bootstrap";
+import { FormattedMessage } from "react-intl";
+import { Icon } from "src/components/Shared/Icon";
+import { ModalComponent } from "src/components/Shared/Modal";
 import { errorToString } from "src/utils";
 
 export interface IToast {
-  content: React.ReactNode | string;
+  content: JSX.Element | string;
   delay?: number;
   variant?: "success" | "danger" | "warning";
   priority?: number; // higher is more important
@@ -29,9 +31,14 @@ const ToastContext = createContext<(item: IToast) => void>(() => {});
 
 export const ToastProvider: React.FC = ({ children }) => {
   const [toast, setToast] = useState<IActiveToast>();
+  const [expanded, setExpanded] = useState(false);
+
+  function expand() {
+    setExpanded(true);
+  }
 
   const toastItem = useMemo(() => {
-    if (!toast) return null;
+    if (!toast || expanded) return null;
 
     return (
       <Toast
@@ -42,11 +49,22 @@ export const ToastProvider: React.FC = ({ children }) => {
         delay={toast.delay ?? 3000}
       >
         <Toast.Header>
-          <span className="mr-auto">{toast.content}</span>
+          <span className="mr-auto" onClick={() => expand()}>
+            {toast.content}
+          </span>
+          {toast.variant === "danger" && (
+            <Button
+              variant="minimal"
+              className="expand-error-button"
+              onClick={() => expand()}
+            >
+              <Icon icon={faArrowUpRightFromSquare} />
+            </Button>
+          )}
         </Toast.Header>
       </Toast>
     );
-  }, [toast]);
+  }, [toast, expanded]);
 
   function addToast(item: IToast) {
     if (!toast || (item.priority ?? 0) >= (toast.priority ?? 0)) {
@@ -54,9 +72,42 @@ export const ToastProvider: React.FC = ({ children }) => {
     }
   }
 
+  function copyToClipboard() {
+    const { content } = toast ?? {};
+
+    if (!!content && typeof content === "string" && navigator.clipboard) {
+      navigator.clipboard.writeText(content);
+    }
+  }
+
   return (
     <ToastContext.Provider value={addToast}>
       {children}
+      {expanded && (
+        <ModalComponent
+          dialogClassName="toast-expanded-dialog"
+          show={expanded}
+          accept={{
+            onClick: () => {
+              setToast(undefined);
+              setExpanded(false);
+            },
+          }}
+          header={<FormattedMessage id="errors.header" />}
+          icon={faTriangleExclamation}
+          footerButtons={
+            <>
+              {!!navigator.clipboard && (
+                <Button variant="secondary" onClick={() => copyToClipboard()}>
+                  <FormattedMessage id="actions.copy_to_clipboard" />
+                </Button>
+              )}
+            </>
+          }
+        >
+          {toast?.content}
+        </ModalComponent>
+      )}
       <div className="toast-container row">{toastItem}</div>
     </ToastContext.Provider>
   );
@@ -68,7 +119,7 @@ export const useToast = () => {
   return useMemo(
     () => ({
       toast: addToast,
-      success(message: React.ReactNode | string) {
+      success(message: JSX.Element | string) {
         addToast({
           content: message,
         });

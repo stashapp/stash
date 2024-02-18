@@ -21,6 +21,7 @@
     "close": "Close",
     "confirm": "Confirm",
     "continue": "Continue",
+    "copy_to_clipboard": "Copy to clipboard",
     "create": "Create",
     "create_chapters": "Create Chapter",
     "create_entity": "Create {entityType}",
@@ -974,6 +975,7 @@
   },
   "empty_server": "Add some scenes to your server to view recommendations on this page.",
   "errors": {
+    "header": "Error",
     "image_index_greater_than_zero": "Image index must be greater than 0",
     "lazy_component_error_help": "If you recently upgraded Stash, please reload the page or clear your browser cache.",
     "loading_type": "Error loading {type}",
