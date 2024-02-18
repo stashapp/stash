@@ -859,7 +859,12 @@ div.dropdown-menu {
   position: fixed;
   right: 2rem;
   top: 4rem;
+  transition: right 0.5s;
   z-index: 1051;
+
+  &.hidden {
+    right: -350px;
+  }
 
   .success {
     background-color: $success;
@@ -925,6 +930,12 @@ div.dropdown-menu {
     margin-left: -175px;
     right: unset;
     top: unset;
+
+    transition: left 0.5s;
+
+    &.hidden {
+      left: -350px;
+    }
   }
 }
 

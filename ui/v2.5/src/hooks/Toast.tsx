@@ -8,6 +8,7 @@ import { FormattedMessage } from "react-intl";
 import { Icon } from "src/components/Shared/Icon";
 import { ModalComponent } from "src/components/Shared/Modal";
 import { errorToString } from "src/utils";
+import cx from "classnames";
 
 export interface IToast {
   content: JSX.Element | string;
@@ -31,6 +32,7 @@ const ToastContext = createContext<(item: IToast) => void>(() => {});
 
 export const ToastProvider: React.FC = ({ children }) => {
   const [toast, setToast] = useState<IActiveToast>();
+  const [hiding, setHiding] = useState(false);
   const [expanded, setExpanded] = useState(false);
 
   function expand() {
@@ -44,7 +46,7 @@ export const ToastProvider: React.FC = ({ children }) => {
       <Toast
         autohide
         key={toast.id}
-        onClose={() => setToast(undefined)}
+        onClose={() => setHiding(true)}
         className={toast.variant ?? "success"}
         delay={toast.delay ?? 3000}
       >
@@ -67,7 +69,8 @@ export const ToastProvider: React.FC = ({ children }) => {
   }, [toast, expanded]);
 
   function addToast(item: IToast) {
-    if (!toast || (item.priority ?? 0) >= (toast.priority ?? 0)) {
+    if (hiding || !toast || (item.priority ?? 0) >= (toast.priority ?? 0)) {
+      setHiding(false);
       setToast({ ...item, id: toastID++ });
     }
   }
@@ -108,7 +111,9 @@ export const ToastProvider: React.FC = ({ children }) => {
           {toast?.content}
         </ModalComponent>
       )}
-      <div className="toast-container row">{toastItem}</div>
+      <div className={cx("toast-container row", { hidden: !toast || hiding })}>
+        {toastItem}
+      </div>
     </ToastContext.Provider>
   );
 };
