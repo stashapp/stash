@@ -48,6 +48,10 @@ func Compile(path string) (*goja.Program, error) {
 	return goja.Compile(path, string(js), true)
 }
 
+func CompileScript(name, script string) (*goja.Program, error) {
+	return goja.Compile(name, string(script), true)
+}
+
 func SetAll(s setter, defs ...ObjectValueDef) error {
 	for _, def := range defs {
 		if err := s.Set(def.Name, def.Value); err != nil {
