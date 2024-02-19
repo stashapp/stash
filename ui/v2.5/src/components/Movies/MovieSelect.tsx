@@ -27,7 +27,7 @@ import {
 import { useCompare } from "src/hooks/state";
 import { Placement } from "react-bootstrap/esm/Overlay";
 import { sortByRelevance } from "src/utils/query";
-import { PatchComponent } from "src/pluginApi";
+import { PatchComponent } from "src/patch";
 
 export type Movie = Pick<GQL.Movie, "id" | "name">;
 type Option = SelectOption<Movie>;
