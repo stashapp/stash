@@ -854,11 +854,17 @@ div.dropdown-menu {
 }
 
 .toast-container {
-  left: 45%;
   max-width: 350px;
+  opacity: 0.9;
   position: fixed;
-  top: 2rem;
+  right: 2rem;
+  top: 4rem;
+  transition: right 0.5s;
   z-index: 1051;
+
+  &.hidden {
+    right: -350px;
+  }
 
   .success {
     background-color: $success;
@@ -880,15 +886,56 @@ div.dropdown-menu {
     background-color: transparent;
     border: none;
     color: $text-color;
+    padding: 1rem;
+    white-space: pre-wrap;
 
-    .close {
+    .close,
+    .expand-error-button {
       color: $text-color;
       text-shadow: none;
     }
+
+    .expand-error-button {
+      opacity: 0.5;
+      padding-left: 0.25rem;
+      padding-right: 0.25rem;
+
+      &:hover {
+        opacity: 0.75;
+      }
+    }
   }
 
-  .toast-body {
-    white-space: pre-wrap;
+  .toast.danger .toast-header > span {
+    cursor: pointer;
+  }
+}
+
+.toast-expanded-dialog {
+  .modal-header {
+    align-items: center;
+    justify-content: start;
+
+    .fa-icon {
+      color: $danger;
+      margin-right: 0.5rem;
+    }
+  }
+}
+
+@include media-breakpoint-down(xs) {
+  .toast-container {
+    bottom: 4rem;
+    left: 50%;
+    margin-left: -175px;
+    right: unset;
+    top: unset;
+
+    transition: left 0.5s;
+
+    &.hidden {
+      left: -350px;
+    }
   }
 }
 

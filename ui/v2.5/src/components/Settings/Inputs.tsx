@@ -4,7 +4,7 @@ import { Button, Collapse, Form, Modal, ModalProps } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Icon } from "../Shared/Icon";
 import { StringListInput } from "../Shared/StringListInput";
-import { PatchComponent } from "src/pluginApi";
+import { PatchComponent } from "src/patch";
 import { useSettings, useSettingsOptional } from "./context";
 
 interface ISetting {
