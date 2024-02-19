@@ -734,7 +734,7 @@
                 },
                 "compact_expanded_details": {
                     "heading": "紧凑型扩展详情",
-                    "description": "启用后，该选项将显示更多细节，同时保持紧凑的显示效果"
+                    "description": "启用后，该选项将显示扩展的详情，同时保持紧凑的显示效果"
                 },
                 "enable_background_image": {
                     "heading": "启用背景图像",
