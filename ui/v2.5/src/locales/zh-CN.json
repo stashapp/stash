@@ -733,7 +733,8 @@
                     "description": "启用后，默认情况下将显示所有详情，每个详情项目都将显示在一栏中"
                 },
                 "compact_expanded_details": {
-                    "heading": "紧凑型扩展详情"
+                    "heading": "紧凑型扩展详情",
+                    "description": "启用后，该选项将显示更多细节，同时保持紧凑的显示效果"
                 },
                 "enable_background_image": {
                     "heading": "启用背景图像",
