@@ -33,7 +33,7 @@ import {
   faVideo,
 } from "@fortawesome/free-solid-svg-icons";
 import { baseURL } from "src/core/createClient";
-import { PatchComponent } from "src/pluginApi";
+import { PatchComponent } from "src/patch";
 
 interface IMenuItem {
   name: string;

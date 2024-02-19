@@ -6,13 +6,6 @@ query MarkerStrings($q: String, $sort: String) {
   }
 }
 
-query AllMoviesForFilter {
-  allMovies {
-    id
-    name
-  }
-}
-
 query Stats {
   stats {
     scene_count

@@ -123,62 +123,41 @@ export function useCreateScrapedPerformer(
   return useCreateObject("performer", createNewPerformer);
 }
 
-interface IUseCreateNewObjectIDListProps<
-  T extends { name?: string | undefined | null }
-> {
-  scrapeResult: ScrapeResult<string[]>;
-  setScrapeResult: (scrapeResult: ScrapeResult<string[]>) => void;
-  newObjects: T[];
-  setNewObjects: (newObject: T[]) => void;
-}
-
-function useCreateNewObjectIDList<
-  T extends { name?: string | undefined | null }
->(
-  entityTypeID: string,
-  props: IUseCreateNewObjectIDListProps<T>,
-  createObject: (toCreate: T) => Promise<string>
+export function useCreateScrapedMovie(
+  props: IUseCreateNewObjectProps<GQL.ScrapedMovie>
 ) {
   const { scrapeResult, setScrapeResult, newObjects, setNewObjects } = props;
+  const [createMovie] = useMovieCreate();
 
-  async function createNewObject(toCreate: T) {
-    const newID = await createObject(toCreate);
+  async function createNewMovie(toCreate: GQL.ScrapedMovie) {
+    const input = scrapedMovieToCreateInput(toCreate);
 
-    // add the new object to the new objects value
-    const newResult = scrapeResult.cloneWithValue(scrapeResult.newValue);
-    if (!newResult.newValue) {
-      newResult.newValue = [];
-    }
-    newResult.newValue.push(newID);
-    setScrapeResult(newResult);
+    const result = await createMovie({
+      variables: { input: input },
+    });
+
+    const newValue = [...(scrapeResult.newValue ?? [])];
+    if (result.data?.movieCreate)
+      newValue.push({
+        stored_id: result.data.movieCreate.id,
+        name: result.data.movieCreate.name,
+      });
+
+    // add the new object to the new object value
+    const resultClone = scrapeResult.cloneWithValue(newValue);
+    setScrapeResult(resultClone);
 
     // remove the object from the list
     const newObjectsClone = newObjects.concat();
     const pIndex = newObjectsClone.findIndex((p) => p.name === toCreate.name);
-    if (pIndex === -1) throw new Error("Could not find object to remove");
+    if (pIndex === -1) throw new Error("Could not find movie to remove");
+
     newObjectsClone.splice(pIndex, 1);
 
     setNewObjects(newObjectsClone);
   }
 
-  return useCreateObject(entityTypeID, createNewObject);
-}
-
-export function useCreateScrapedMovie(
-  props: IUseCreateNewObjectIDListProps<GQL.ScrapedMovie>
-) {
-  const [createMovie] = useMovieCreate();
-
-  async function createNewMovie(toCreate: GQL.ScrapedMovie) {
-    const movieInput = scrapedMovieToCreateInput(toCreate);
-    const result = await createMovie({
-      variables: { input: movieInput },
-    });
-
-    return result.data?.movieCreate?.id ?? "";
-  }
-
-  return useCreateNewObjectIDList("movie", props, createNewMovie);
+  return useCreateObject("movie", createNewMovie);
 }
 
 export function useCreateScrapedTag(

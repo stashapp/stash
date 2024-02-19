@@ -4,3 +4,9 @@ fragment SlimMovieData on Movie {
   front_image_path
   rating100
 }
+
+fragment SelectMovieData on Movie {
+  id
+  name
+  front_image_path
+}

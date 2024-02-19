@@ -21,6 +21,7 @@
     "close": "Close",
     "confirm": "Confirm",
     "continue": "Continue",
+    "copy_to_clipboard": "Copy to clipboard",
     "create": "Create",
     "create_chapters": "Create Chapter",
     "create_entity": "Create {entityType}",
@@ -483,8 +484,8 @@
         "strategy": "Strategy",
         "tag_skipped_matches": "Tag skipped matches with",
         "tag_skipped_matches_tooltip": "Create a tag like 'Identify: Multiple Matches' that you can filter for in the Scene Tagger view and choose the correct match by hand",
-        "tag_skipped_performers": "Tag skipped performers with",
-        "tag_skipped_performer_tooltip": "Create a tag like 'Identify: Single Name Performer' that you can filter for in the Scene Tagger view and choose how you want to handle these performers"
+        "tag_skipped_performer_tooltip": "Create a tag like 'Identify: Single Name Performer' that you can filter for in the Scene Tagger view and choose how you want to handle these performers",
+        "tag_skipped_performers": "Tag skipped performers with"
       },
       "import_from_exported_json": "Import from exported JSON in the metadata directory. Wipes the existing database.",
       "incremental_import": "Incremental import from a supplied export zip file.",
@@ -567,6 +568,21 @@
         "skip_opening_browser": "Skip Opening Browser",
         "skip_opening_browser_on_startup": "Skip auto-opening browser during startup"
       },
+      "detail": {
+        "compact_expanded_details": {
+          "description": "When enabled, this option will present expanded details while maintaining a compact presentation",
+          "heading": "Compact expanded details"
+        },
+        "enable_background_image": {
+          "description": "Display background image on detail page.",
+          "heading": "Enable background image"
+        },
+        "heading": "Detail Page",
+        "show_all_details": {
+          "description": "When enabled, all content details will be shown by default and each detail item will fit under a single column",
+          "heading": "Show all details"
+        }
+      },
       "editing": {
         "disable_dropdown_create": {
           "description": "Remove the ability to create new objects from the dropdown selectors",
@@ -593,21 +609,6 @@
               "stars": "Stars"
             }
           }
-        }
-      },
-      "detail": {
-        "enable_background_image": {
-          "description": "Display background image on detail page.",
-          "heading": "Enable background image"
-        },
-        "heading": "Detail Page",
-        "compact_expanded_details": {
-          "description": "When enabled, this option will present expanded details while maintaining a compact presentation",
-          "heading": "Compact expanded details"
-        },
-        "show_all_details": {
-          "description": "When enabled, all content details will be shown by default and each detail item will fit under a single column",
-          "heading": "Show all details"
         }
       },
       "funscript_offset": {
@@ -701,8 +702,8 @@
             "description": "Play next scene in queue when video finishes",
             "heading": "Continue playlist by default"
           },
-          "enable_chromecast": "Enable Chromecast",
           "disable_mobile_media_auto_rotate": "Disable auto-rotate of fullscreen media on Mobile",
+          "enable_chromecast": "Enable Chromecast",
           "show_ab_loop_controls": "Show AB Loop plugin controls",
           "show_scrubber": "Show Scrubber",
           "track_activity": "Track Activity",
@@ -862,6 +863,7 @@
       "source": "Source"
     },
     "overwrite_filter_confirm": "Are you sure you want to overwrite existing saved query {entityName}?",
+    "performers_found": "{count} performers found",
     "reassign_entity_title": "{count, plural, one {Reassign {singularEntity}} other {Reassign {pluralEntity}}}",
     "reassign_files": {
       "destination": "Reassign to"
@@ -905,7 +907,6 @@
       "video_previews_tooltip": "Video previews which play when hovering over a scene"
     },
     "scenes_found": "{count} scenes found",
-    "performers_found": "{count} performers found",
     "scrape_entity_query": "{entity_type} Scrape Query",
     "scrape_entity_title": "{entity_type} Scrape Results",
     "scrape_results_existing": "Existing",
@@ -941,11 +942,11 @@
       "medium": "Medium"
     },
     "search_accuracy_label": "Search Accuracy",
-    "select_options": "Select Options…",
     "select_all_but_largest_file": "Select every file in each duplicated group, except the largest file",
     "select_all_but_largest_resolution": "Select every file in each duplicated group, except the file with highest resolution",
     "select_none": "Select None",
     "select_oldest": "Select the oldest file in the duplicate group",
+    "select_options": "Select Options…",
     "select_youngest": "Select the youngest file in the duplicate group",
     "title": "Duplicate Scenes"
   },
@@ -974,9 +975,10 @@
   },
   "empty_server": "Add some scenes to your server to view recommendations on this page.",
   "errors": {
-    "loading_type": "Error loading {type}",
+    "header": "Error",
     "image_index_greater_than_zero": "Image index must be greater than 0",
     "lazy_component_error_help": "If you recently upgraded Stash, please reload the page or clear your browser cache.",
+    "loading_type": "Error loading {type}",
     "something_went_wrong": "Something went wrong."
   },
   "ethnicity": "Ethnicity",
@@ -1071,40 +1073,40 @@
   "megabits_per_second": "{value} mbps",
   "metadata": "Metadata",
   "movie": "Movie",
-  "movie_scene_number": "Movie Scene Number",
+  "movie_scene_number": "Scene Number",
   "movies": "Movies",
   "name": "Name",
   "new": "New",
   "none": "None",
   "o_counter": "O-Counter",
   "operations": "Operations",
-  "orientation": "Orientation",
   "organized": "Organised",
+  "orientation": "Orientation",
   "package_manager": {
     "add_source": "Add Source",
-    "edit_source": "Edit Source",
     "check_for_updates": "Check for Updates",
     "confirm_delete_source": "Are you sure you want to delete source {name} ({url})?",
     "confirm_uninstall": "Are you sure you want to uninstall {number} packages?",
     "description": "Description",
+    "edit_source": "Edit Source",
     "hide_unselected": "Hide unselected",
     "install": "Install",
     "installed_version": "Installed Version",
     "latest_version": "Latest Version",
-    "no_sources": "No sources configured",
     "no_packages": "No packages found",
-    "required_by": "Required by {packages}",
-    "source": {
-      "name": "Name",
-      "url": "Source URL",
-      "local_path": {
-        "heading": "Local Path",
-        "description": "Relative path to store packages for this source. Note that changing this requires the packages to be moved manually."
-      }
-    },
+    "no_sources": "No sources configured",
     "package": "Package",
+    "required_by": "Required by {packages}",
     "selected_only": "Selected only",
     "show_all": "Show all",
+    "source": {
+      "local_path": {
+        "description": "Relative path to store packages for this source. Note that changing this requires the packages to be moved manually.",
+        "heading": "Local Path"
+      },
+      "name": "Name",
+      "url": "Source URL"
+    },
     "uninstall": "Uninstall",
     "unknown": "<unknown>",
     "update": "Update",
@@ -1128,7 +1130,6 @@
   "penis_length_cm": "Penis Length (cm)",
   "perceptual_similarity": "Perceptual Similarity (phash)",
   "performer": "Performer",
-  "performer_tags": "Performer Tags",
   "performer_age": "Performer Age",
   "performer_count": "Performer Count",
   "performer_favorite": "Performer Favourited",
@@ -1168,12 +1169,13 @@
     "update_performers": "Update Performers",
     "updating_untagged_performers_description": "Updating untagged performers will try to match any performers that lack a stashid and update the metadata."
   },
+  "performer_tags": "Performer Tags",
   "performers": "Performers",
   "photographer": "Photographer",
   "piercings": "Piercings",
-  "plays": "{value} plays",
   "play_count": "Play Count",
   "play_duration": "Play Duration",
+  "plays": "{value} plays",
   "primary_file": "Primary file",
   "primary_tag": "Primary Tag",
   "queue": "Queue",
@@ -1186,12 +1188,12 @@
   "resume_time": "Resume Time",
   "scene": "Scene",
   "sceneTagger": "Scene Tagger",
-  "scene_tags": "Scene Tags",
   "scene_code": "Studio Code",
   "scene_count": "Scene Count",
   "scene_created_at": "Scene Created At",
   "scene_date": "Date of Scene",
   "scene_id": "Scene ID",
+  "scene_tags": "Scene Tags",
   "scene_updated_at": "Scene Updated At",
   "scenes": "Scenes",
   "scenes_updated_at": "Scene Updated At",
@@ -1311,11 +1313,11 @@
   "stats": {
     "image_size": "Images size",
     "scenes_duration": "Scenes duration",
-    "scenes_size": "Scenes size",
     "scenes_played": "Scenes Played",
-    "total_play_duration": "Total Play Duration",
+    "scenes_size": "Scenes size",
+    "total_o_count": "Total O-Count",
     "total_play_count": "Total Play Count",
-    "total_o_count": "Total O-Count"
+    "total_play_duration": "Total Play Duration"
   },
   "status": "Status: {statusText}",
   "studio": "Studio",
@@ -1343,15 +1345,15 @@
     "network_error": "Network Error",
     "no_results_found": "No results found.",
     "number_of_studios_will_be_processed": "{studio_count} studios will be processed",
-    "studio_already_tagged": "Studio already tagged",
-    "studio_names_separated_by_comma": "Studio names separated by comma",
-    "studio_selection": "Studio selection",
-    "studio_successfully_tagged": "Studio successfully tagged",
     "query_all_studios_in_the_database": "All studios in the database",
     "refresh_tagged_studios": "Refresh tagged studios",
     "refreshing_will_update_the_data": "Refreshing will update the data of any tagged studios from the stash-box instance.",
     "status_tagging_job_queued": "Status: Tagging job queued",
     "status_tagging_studios": "Status: Tagging studios",
+    "studio_already_tagged": "Studio already tagged",
+    "studio_names_separated_by_comma": "Studio names separated by comma",
+    "studio_selection": "Studio selection",
+    "studio_successfully_tagged": "Studio successfully tagged",
     "tag_status": "Tag Status",
     "to_use_the_studio_tagger": "To use the studio tagger a stash-box instance needs to be configured.",
     "untagged_studios": "Untagged studios",
@@ -1406,8 +1408,8 @@
     "required": "${path} is a required field",
     "unique": "${path} must be unique"
   },
-  "videos": "Videos",
   "video_codec": "Video Codec",
+  "videos": "Videos",
   "view_all": "View All",
   "weight": "Weight",
   "weight_kg": "Weight (kg)",
