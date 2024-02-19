@@ -736,7 +736,7 @@
                 },
                 "enable_background_image": {
                     "heading": "启用背景图像",
-                    "description": "在详细页面上显示背景图片。"
+                    "description": "在详情页面上显示背景图片。"
                 }
             }
         },
