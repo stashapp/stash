@@ -14,6 +14,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
@@ -137,14 +138,16 @@ func (c *Cache) ReloadPlugins() {
 	err := fsutil.SymWalk(path, func(fp string, f os.FileInfo, err error) error {
 		if filepath.Ext(fp) == ".yml" {
 			plugin, err := loadPluginFromYAMLFile(fp)
+			// use case insensitive plugin IDs
+			pluginID := strings.ToLower(plugin.id)
 			if err != nil {
 				logger.Errorf("Error loading plugin %s: %v", fp, err)
 			} else {
-				if _, exists := pluginIDs[plugin.id]; exists {
+				if _, exists := pluginIDs[pluginID]; exists {
 					logger.Errorf("Error loading plugin %s: plugin ID %s already exists", fp, plugin.id)
 					return nil
 				}
-				pluginIDs[plugin.id] = true
+				pluginIDs[pluginID] = true
 				plugins = append(plugins, *plugin)
 			}
 		}
