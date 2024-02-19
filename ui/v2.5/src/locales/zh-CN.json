@@ -730,7 +730,7 @@
                 "heading": "详情页面",
                 "show_all_details": {
                     "heading": "显示所有详情",
-                    "description": "启用后，默认情况下将显示所有内容细节，每个细节项目都将显示在一列中"
+                    "description": "启用后，默认情况下将显示所有详情，每个详情项目都将显示在一栏中"
                 },
                 "compact_expanded_details": {
                     "heading": "紧凑型扩展详情"
