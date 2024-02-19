@@ -122,14 +122,18 @@
         "view_random": "随机查看",
         "create_parent_studio": "创建父工作室",
         "optimise_database": "优化数据库",
-        "assign_stashid_to_parent_studio": "将Stash ID分配给现有的父工作室并更新元数据"
+        "assign_stashid_to_parent_studio": "将Stash ID分配给现有的父工作室并更新元数据",
+        "encoding_image": "编码图片中…",
+        "reload": "重新加载",
+        "disable": "禁用",
+        "enable": "启用"
     },
     "actions_name": "操作",
     "age": "年龄",
     "aliases": "别名",
     "all": "所有",
     "also_known_as": "又称作",
-    "appears_with": "显示方式",
+    "appears_with": "合作者",
     "ascending": "升序",
     "average_resolution": "平均分辨率",
     "between_and": "以及",
@@ -370,7 +374,10 @@
             "sqlite_location": "SQLite 数据库的位置(需要重启)。警告：不支持将数据库放在与 Stash 服务器以外的系统上(即通过网络)！",
             "video_ext_desc": "逗号(半角)分隔的文件扩展名列表，将被标识为视频。",
             "video_ext_head": "视频扩展名",
-            "video_head": "视频设置"
+            "video_head": "视频设置",
+            "plugins_path": {
+                "heading": "插件文件路径"
+            }
         },
         "library": {
             "exclusions": "不包括",
@@ -382,7 +389,9 @@
         },
         "plugins": {
             "hooks": "回调",
-            "triggers_on": "触发于"
+            "triggers_on": "触发于",
+            "installed_plugins": "已安装插件",
+            "available_plugins": "可用插件"
         },
         "scraping": {
             "entity_metadata": "{entityType}元数据",
@@ -393,7 +402,9 @@
             "scrapers": "刮削器",
             "search_by_name": "按名称搜索",
             "supported_types": "支持类型",
-            "supported_urls": "支持链接"
+            "supported_urls": "支持链接",
+            "available_scrapers": "可用刮削器",
+            "installed_scrapers": "已安装刮削器"
         },
         "stashbox": {
             "add_instance": "新增 Stash-Box 入口",
@@ -436,7 +447,7 @@
             "generate_phashes_during_scan": "生成感知识别码",
             "generate_phashes_during_scan_tooltip": "为了防止重复和短片甄别.",
             "generate_previews_during_scan": "生成动态图片预览",
-            "generate_previews_during_scan_tooltip": "生成WebP动画预览，仅适用于预览类型设为动图的情况.",
+            "generate_previews_during_scan_tooltip": "生成webp动画预览，仅适用于预览类型设为动图的情况. 浏览时将更少CPU占用，但生成的是额外的且更大的文件。",
             "generate_sprites_during_scan": "生成时间轴预览小图",
             "generate_thumbnails_during_scan": "生成图片的缩略图",
             "generate_video_covers_during_scan": "生成短片封面",
@@ -488,7 +499,8 @@
                 "scanning_paths": "正在扫描以下路径"
             },
             "scan_for_content_desc": "扫描新内容并添加至数据库中。",
-            "set_name_date_details_from_metadata_if_present": "使用文件内含的元数据的标题、日期、详情"
+            "set_name_date_details_from_metadata_if_present": "使用文件内含的元数据的标题、日期、详情",
+            "generate_sprites_during_scan_tooltip": "视频播放器下方用于快速导航的缩略图集。"
         },
         "tools": {
             "scene_duplicate_checker": "短片重复性检查工具",
@@ -633,7 +645,7 @@
                 }
             },
             "preview_type": {
-                "description": "影片预览设置",
+                "description": "默认选项是视频（mp4）预览。为了减少浏览时的CPU使用率，您可以使用动图（webp）预览。但是，它们必须在视频预览之外生成，并且是更大的文件。",
                 "heading": "预览类型",
                 "options": {
                     "animated": "动图",
@@ -642,9 +654,9 @@
                 }
             },
             "scene_list": {
-                "heading": "短片列表",
+                "heading": "网格视图",
                 "options": {
-                    "show_studio_as_text": "以名称展示工作室"
+                    "show_studio_as_text": "文本形式展示工作室名称覆层"
                 }
             },
             "scene_player": {
@@ -661,7 +673,10 @@
                         "heading": "默认继续播放清单"
                     },
                     "show_scrubber": "显示预览轴",
-                    "track_activity": "监测播放动作"
+                    "track_activity": "监测播放动作",
+                    "vr_tag": {
+                        "description": "VR按钮仅在场景存在此标签时显示。"
+                    }
                 }
             },
             "scene_wall": {
@@ -702,7 +717,8 @@
                 }
             },
             "title": "用户界面"
-        }
+        },
+        "advanced_mode": "高级模式"
     },
     "configuration": "设置",
     "countables": {
@@ -816,10 +832,10 @@
             "force_transcodes": "强制生成转码文件",
             "force_transcodes_tooltip": "默认情况下，转码文件只会在浏览器不支持的情况下生成。如果开启此选项，即使浏览器支持该视频，也会生成转码文件。",
             "image_previews": "动图预览",
-            "image_previews_tooltip": "动态 WebP 预览, 当预览类型设置为[动图]时才需要.",
+            "image_previews_tooltip": "同时生成动图（webp）预览，仅当场景/标记墙预览类型设置为动图时才需要。浏览时，它们使用的CPU比视频预览少，但会额外生成更大的文件。",
             "interactive_heatmap_speed": "产生热图和速度资料给有互动的短片",
             "marker_image_previews": "标记动图预览",
-            "marker_image_previews_tooltip": "动态标记WebP预览，仅用于当预览类型设为【动图】时。",
+            "marker_image_previews_tooltip": "同时生成动图（webp）预览，仅当场景/标记墙预览类型设置为动图时才需要。浏览时，它们使用的CPU比视频预览少，但会额外生成更大的文件。",
             "marker_screenshots": "标记的屏幕截图",
             "marker_screenshots_tooltip": "标记使用静态JPG图，仅用于预览类型设为【静图】时。",
             "markers": "标记预览",
@@ -827,7 +843,7 @@
             "override_preview_generation_options": "凌驾预览生成选项",
             "override_preview_generation_options_desc": "在本次操作中凌驾于预览生成设定的选项。默认的选项在 系统 -> 预览生成。",
             "overwrite": "覆盖现有文件",
-            "phash": "感知识别码PHash（用于检测短片是否重复）",
+            "phash": "感知识别码PHash",
             "preview_exclude_end_time_desc": "从短片预览中排除最后 x 秒。可以是一个以秒为单位的值，也可以是百分比（比如2%）。",
             "preview_exclude_end_time_head": "排除结束时间",
             "preview_exclude_start_time_desc": "从短片预览中排除最开始 x 秒。可以是一个以秒为单位的值，也可以是百分比（比如2%）。",
@@ -841,9 +857,9 @@
             "preview_seg_duration_desc": "每个预览片段的长度，以秒为单位。",
             "preview_seg_duration_head": "预览片段长度",
             "sprites": "短视频时间轴预览的小图",
-            "sprites_tooltip": "小图（用于时间轴预览）",
+            "sprites_tooltip": "视频播放器下方用于快速导航的缩略图集。",
             "transcodes": "转码",
-            "transcodes_tooltip": "将不支持的视频格式转换为MP4",
+            "transcodes_tooltip": "将为所有内容提前生成MP4转码文件；对慢速CPU有用，但需要更多磁盘空间",
             "video_previews": "预览",
             "video_previews_tooltip": "鼠标悬停在短片上时播放的预览短片"
         },
@@ -853,7 +869,8 @@
         "scrape_results_existing": "现有信息",
         "scrape_results_scraped": "挖取信息",
         "set_image_url_title": "图片链接",
-        "unsaved_changes": "更改未保存，确定离开吗？"
+        "unsaved_changes": "更改未保存，确定离开吗？",
+        "performers_found": "找到{count} 个演员"
     },
     "dimensions": "大小",
     "director": "导演",
@@ -1000,7 +1017,7 @@
         "stream": "视频流地址",
         "video_codec": "视频编码"
     },
-    "megabits_per_second": "{value} Mbps/s",
+    "megabits_per_second": "{value} Mbps",
     "metadata": "元数据",
     "movie": "电影",
     "movie_scene_number": "电影短片编码",
@@ -1171,9 +1188,9 @@
         },
         "welcome": {
             "config_path_logic_explained": "Stash首先尝试从当前工作目录中找配置文件 (<code>config.yml</code>)，如果没找到，会退回到 <code>$HOME/.stash/config.yml</code> (在微软视窗里，目录是<code>%USERPROFILE%\\.stash\\config.yml</code>). 你也可以让Stash读特定的配置文件，只要运行它时加上<code>-c '<配置文件目录>'</code>或者<code>--config '<配置文件目录>'</code>的选项。",
-            "in_current_stash_directory": "在 <code>$HOMT/.stash</code>目录里",
-            "in_the_current_working_directory": "在当前工作目录里",
-            "next_step": "之前的问题都解决了，如果你准备好建立一个新的系统，选择你想在哪里存放你的配置文件，然后点击“下一个”。",
+            "in_current_stash_directory": "在 <code>{path}</code>目录里",
+            "in_the_current_working_directory": "在当前工作目录 <code>{path}</code>里：",
+            "next_step": "之前的问题都解决了，如果你准备好建立一个新的系统，请选择你想在哪里存放你的配置文件。",
             "store_stash_config": "你想在哪里存放你的Stash配置？",
             "unable_to_locate_config": "如果你看到这，就意味着Stash无法找到一个现有的配置。这个向导会指引你建立一个新的配置。",
             "unexpected_explained": "如果你意外地看到这个屏幕显示，请在正确的工作目录下重新启动Stash，或者使用<code>-c</code>参数。"
@@ -1276,5 +1293,22 @@
     "subsidiary_studio_count": "子工作室数量",
     "urls": "链接",
     "video_codec": "视频编码",
-    "audio_codec": "音频编解码器"
+    "audio_codec": "音频编解码器",
+    "package_manager": {
+        "installed_version": "已安装版本",
+        "uninstall": "卸载",
+        "update": "更新",
+        "install": "安装",
+        "latest_version": "最新版本",
+        "source": {
+            "local_path": {
+                "description": "相对路径，用于存储来源于此处的包文件。请注意，改变此设置需要手动移动包文件"
+            },
+            "url": "数据源 URL"
+        },
+        "version": "版本"
+    },
+    "distance": "距离",
+    "photographer": "摄影师",
+    "primary_tag": "主要标签"
 }
