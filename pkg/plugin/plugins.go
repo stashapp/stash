@@ -139,10 +139,10 @@ func (c *Cache) ReloadPlugins() {
 		if filepath.Ext(fp) == ".yml" {
 			plugin, err := loadPluginFromYAMLFile(fp)
 			// use case insensitive plugin IDs
-			pluginID := strings.ToLower(plugin.id)
 			if err != nil {
 				logger.Errorf("Error loading plugin %s: %v", fp, err)
 			} else {
+				pluginID := strings.ToLower(plugin.id)
 				if _, exists := pluginIDs[pluginID]; exists {
 					logger.Errorf("Error loading plugin %s: plugin ID %s already exists", fp, plugin.id)
 					return nil
