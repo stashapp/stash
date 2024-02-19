@@ -20,7 +20,11 @@
       "version": "detect"
     }
   },
-  "ignorePatterns": ["node_modules/", "src/core/generated-graphql.ts"],
+  "ignorePatterns": [
+    "node_modules/",
+    "src/core/generated-graphql.ts",
+    "src/pluginApi.d.ts"
+  ],
   "rules": {
     "@typescript-eslint/lines-between-class-members": "off",
     "@typescript-eslint/naming-convention": [
