@@ -119,7 +119,10 @@
         "temp_enable": "暂时启用…",
         "unset": "重设",
         "use_default": "使用默认",
-        "view_random": "随机查看"
+        "view_random": "随机查看",
+        "create_parent_studio": "创建父工作室",
+        "optimise_database": "优化数据库",
+        "assign_stashid_to_parent_studio": "将Stash ID分配给现有的父工作室并更新元数据"
     },
     "actions_name": "操作",
     "age": "年龄",
