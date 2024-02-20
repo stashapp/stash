@@ -17,11 +17,13 @@ import { SettingsContext } from "../Settings/context";
 interface ISceneGenerateDialog {
   selectedIds?: string[];
   onClose: () => void;
+  type: "scene"; // TODO - add image generate
 }
 
 export const GenerateDialog: React.FC<ISceneGenerateDialog> = ({
   selectedIds,
   onClose,
+  type,
 }) => {
   const { configuration } = React.useContext(ConfigurationContext);
 
@@ -200,6 +202,7 @@ export const GenerateDialog: React.FC<ISceneGenerateDialog> = ({
         <SettingsContext>
           <SettingSection>
             <GenerateOptions
+              type={type}
               options={options}
               setOptions={setOptions}
               selection

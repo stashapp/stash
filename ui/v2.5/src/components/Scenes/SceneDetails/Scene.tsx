@@ -278,6 +278,7 @@ const ScenePage: React.FC<IProps> = ({
           onClose={() => {
             setIsGenerateDialogOpen(false);
           }}
+          type="scene"
         />
       );
     }
