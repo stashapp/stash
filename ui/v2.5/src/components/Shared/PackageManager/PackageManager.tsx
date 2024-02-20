@@ -128,6 +128,7 @@ const InstalledPackagesList: React.FC<{
   packages: InstalledPackage[];
   checkedPackages: InstalledPackage[];
   setCheckedPackages: React.Dispatch<React.SetStateAction<InstalledPackage[]>>;
+  upgradableOnly: boolean;
 }> = ({
   filter,
   packages,
@@ -136,6 +137,7 @@ const InstalledPackagesList: React.FC<{
   updatesLoaded,
   loading,
   error,
+  upgradableOnly,
 }) => {
   const checkedMap = useMemo(() => {
     const map: Record<string, boolean> = {};
@@ -150,8 +152,10 @@ const InstalledPackagesList: React.FC<{
   }, [checkedPackages, packages]);
 
   const filteredPackages = useMemo(() => {
-    return filterPackages(packages, filter);
-  }, [filter, packages]);
+    return filterPackages(packages, filter).filter((pkg) => {
+      return !updatesLoaded || !upgradableOnly || hasUpgrade(pkg);
+    });
+  }, [packages, filter, updatesLoaded, upgradableOnly]);
 
   function toggleAllChecked() {
     setCheckedPackages(allChecked ? [] : packages.slice());
@@ -183,10 +187,13 @@ const InstalledPackagesList: React.FC<{
     }
 
     if (filteredPackages.length === 0) {
+      const id = upgradableOnly
+        ? "package_manager.no_upgradable"
+        : "package_manager.no_packages";
       return (
         <tr className="package-manager-no-results">
           <td colSpan={1000}>
-            <FormattedMessage id="package_manager.no_packages" />
+            <FormattedMessage id={id} />
           </td>
         </tr>
       );
@@ -246,6 +253,9 @@ const InstalledPackagesToolbar: React.FC<{
   onCheckForUpdates: () => void;
   onUpdatePackages: () => void;
   onUninstallPackages: () => void;
+
+  upgradableOnly: boolean;
+  setUpgradableOnly: (v: boolean) => void;
 }> = ({
   loading,
   checkedPackages,
@@ -254,8 +264,11 @@ const InstalledPackagesToolbar: React.FC<{
   onUninstallPackages,
   filter,
   setFilter,
+  upgradableOnly,
+  setUpgradableOnly,
 }) => {
   const intl = useIntl();
+
   return (
     <div className="package-manager-toolbar">
       <ClearableInput
@@ -263,6 +276,15 @@ const InstalledPackagesToolbar: React.FC<{
         value={filter}
         setValue={(v) => setFilter(v)}
       />
+      {upgradableOnly && (
+        <Button
+          size="sm"
+          variant="primary"
+          onClick={() => setUpgradableOnly(!upgradableOnly)}
+        >
+          <FormattedMessage id="package_manager.show_all" />
+        </Button>
+      )}
       <div className="flex-grow-1" />
       <Button
         variant="primary"
@@ -310,6 +332,7 @@ export const InstalledPackages: React.FC<{
     []
   );
   const [filter, setFilter] = useState("");
+  const [upgradableOnly, setUpgradableOnly] = useState(true);
   const [uninstalling, setUninstalling] = useState(false);
 
   // sort packages so that those with updates are at the top
@@ -327,8 +350,10 @@ export const InstalledPackages: React.FC<{
   }, [packages]);
 
   const filteredPackages = useMemo(() => {
-    return filterPackages(checkedPackages, filter);
-  }, [checkedPackages, filter]);
+    return filterPackages(checkedPackages, filter).filter((pkg) => {
+      return !updatesLoaded || !upgradableOnly || hasUpgrade(pkg);
+    });
+  }, [checkedPackages, filter, updatesLoaded, upgradableOnly]);
 
   useEffect(() => {
     setCheckedPackages((prev) => {
@@ -346,6 +371,12 @@ export const InstalledPackages: React.FC<{
   function confirmUninstall() {
     onUninstallPackages(filteredPackages);
     setUninstalling(false);
+  }
+
+  function checkForUpdates() {
+    // reset to only show upgradable packages
+    setUpgradableOnly(true);
+    onCheckForUpdates();
   }
 
   return (
@@ -367,9 +398,11 @@ export const InstalledPackages: React.FC<{
           setFilter={(f) => setFilter(f)}
           loading={loading}
           checkedPackages={filteredPackages}
-          onCheckForUpdates={onCheckForUpdates}
+          onCheckForUpdates={() => checkForUpdates()}
           onUpdatePackages={() => onUpdatePackages(filteredPackages)}
           onUninstallPackages={() => setUninstalling(true)}
+          upgradableOnly={updatesLoaded && upgradableOnly}
+          setUpgradableOnly={(v) => setUpgradableOnly(v)}
         />
         <InstalledPackagesList
           filter={filter}
@@ -380,6 +413,7 @@ export const InstalledPackages: React.FC<{
           checkedPackages={checkedPackages}
           setCheckedPackages={setCheckedPackages}
           updatesLoaded={updatesLoaded}
+          upgradableOnly={upgradableOnly}
         />
       </div>
     </>

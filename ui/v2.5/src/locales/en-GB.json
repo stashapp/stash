@@ -1095,6 +1095,7 @@
     "latest_version": "Latest Version",
     "no_packages": "No packages found",
     "no_sources": "No sources configured",
+    "no_upgradable": "No upgradable packages found",
     "package": "Package",
     "required_by": "Required by {packages}",
     "selected_only": "Selected only",
