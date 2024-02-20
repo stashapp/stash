@@ -64,6 +64,14 @@ function filterPackages<T extends IPackage>(packages: T[], filter: string) {
 
 export type InstalledPackage = Omit<GQL.Package, "requires">;
 
+function hasUpgrade(pkg: InstalledPackage) {
+  if (!pkg.date || !pkg.source_package?.date) return false;
+
+  const pkgDate = new Date(pkg.date);
+  const upgradeDate = new Date(pkg.source_package.date);
+  return upgradeDate > pkgDate;
+}
+
 const InstalledPackageRow: React.FC<{
   loading?: boolean;
   pkg: InstalledPackage;
@@ -75,11 +83,7 @@ const InstalledPackageRow: React.FC<{
 
   const updateAvailable = useMemo(() => {
     if (!updatesLoaded) return false;
-    if (!pkg.date || !pkg.source_package?.date) return false;
-
-    const pkgDate = new Date(pkg.date);
-    const upgradeDate = new Date(pkg.source_package.date);
-    return upgradeDate > pkgDate;
+    return hasUpgrade(pkg);
   }, [updatesLoaded, pkg]);
 
   return (
@@ -308,6 +312,20 @@ export const InstalledPackages: React.FC<{
   const [filter, setFilter] = useState("");
   const [uninstalling, setUninstalling] = useState(false);
 
+  // sort packages so that those with updates are at the top
+  const sortedPackages = useMemo(() => {
+    return packages.slice().sort((a, b) => {
+      const aHasUpdate = hasUpgrade(a);
+      const bHasUpdate = hasUpgrade(b);
+
+      if (aHasUpdate && !bHasUpdate) return -1;
+      if (!aHasUpdate && bHasUpdate) return 1;
+
+      // sort by name
+      return a.package_id.localeCompare(b.package_id);
+    });
+  }, [packages]);
+
   const filteredPackages = useMemo(() => {
     return filterPackages(checkedPackages, filter);
   }, [checkedPackages, filter]);
@@ -357,7 +375,7 @@ export const InstalledPackages: React.FC<{
           filter={filter}
           loading={loading}
           error={error}
-          packages={packages}
+          packages={sortedPackages}
           // use original checked packages so that check boxes are not affected by filter
           checkedPackages={checkedPackages}
           setCheckedPackages={setCheckedPackages}
