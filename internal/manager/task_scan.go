@@ -264,6 +264,12 @@ func (f *scanFilter) Accept(ctx context.Context, path string, info fs.FileInfo) 
 		return false
 	}
 
+	s := f.stashPaths.GetStashFromDirPath(path)
+	if s == nil {
+		logger.Debugf("Skipping %s as it is not in the stash library", path)
+		return false
+	}
+
 	isVideoFile := useAsVideo(path)
 	isImageFile := useAsImage(path)
 	isZipFile := fsutil.MatchExtension(path, f.zipExt)
@@ -285,13 +291,6 @@ func (f *scanFilter) Accept(ctx context.Context, path string, info fs.FileInfo) 
 	// #1756 - skip zero length files
 	if !info.IsDir() && info.Size() == 0 {
 		logger.Infof("Skipping zero-length file: %s", path)
-		return false
-	}
-
-	s := f.stashPaths.GetStashFromDirPath(path)
-
-	if s == nil {
-		logger.Debugf("Skipping %s as it is not in the stash library", path)
 		return false
 	}
 
