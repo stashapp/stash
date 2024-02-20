@@ -2,6 +2,7 @@ import {
   ApolloCache,
   DocumentNode,
   FetchResult,
+  NetworkStatus,
   useQuery,
 } from "@apollo/client";
 import { Modifiers } from "@apollo/client/cache";
@@ -91,6 +92,16 @@ function deleteObject(
     data: { [keyName]: null },
   });
   cache.evict({ id: cache.identify(obj) });
+}
+
+export function isLoading(networkStatus: NetworkStatus) {
+  // useQuery hook loading field only returns true when initially loading the query
+  // and not during subsequent fetches
+  return (
+    networkStatus === NetworkStatus.loading ||
+    networkStatus === NetworkStatus.fetchMore ||
+    networkStatus === NetworkStatus.refetch
+  );
 }
 
 /// Object queries
