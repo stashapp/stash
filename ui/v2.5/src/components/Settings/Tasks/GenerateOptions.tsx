@@ -159,18 +159,18 @@ export const GenerateOptions: React.FC<IGenerateOptions> = ({
       )}
       {showImageOptions && (
         <>
-        <BooleanSetting
-          id="clip-previews"
-          checked={options.clipPreviews ?? false}
-          headingID="dialogs.scene_gen.clip_previews"
-          onChange={(v) => setOptions({ clipPreviews: v })}
-        />
-        <BooleanSetting
-          id="image-thumbnails"
-          checked={options.imageThumbnails ?? false}
-          headingID="dialogs.scene_gen.image_thumbnails"
-          onChange={(v) => setOptions({ imageThumbnails: v })}
-        />
+          <BooleanSetting
+            id="clip-previews"
+            checked={options.clipPreviews ?? false}
+            headingID="dialogs.scene_gen.clip_previews"
+            onChange={(v) => setOptions({ clipPreviews: v })}
+          />
+          <BooleanSetting
+            id="image-thumbnails"
+            checked={options.imageThumbnails ?? false}
+            headingID="dialogs.scene_gen.image_thumbnails"
+            onChange={(v) => setOptions({ imageThumbnails: v })}
+          />
         </>
       )}
       <BooleanSetting
