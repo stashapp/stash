@@ -127,12 +127,12 @@ As an example, for a plugin with id `foo` with the following `assets` value:
 ```
 assets:
   foo: bar
-  root: .
+  /: .
 ```
 The following URLs will be mapped to these locations:
 `/plugin/foo/assets/foo/file.txt` -> `{pluginDir}/bar/file.txt`
 `/plugin/foo/assets/file.txt` -> `{pluginDir}/file.txt`
-`/plugin/foo/assets/bar/file.txt` -> `{pluginDir}/bar/file.txt` (via the `root` entry)
+`/plugin/foo/assets/bar/file.txt` -> `{pluginDir}/bar/file.txt` (via the `/` entry)
 
 Mappings that try to go outside of the directory containing the plugin configuration file will be
 ignored.
