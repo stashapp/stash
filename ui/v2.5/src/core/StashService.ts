@@ -2360,7 +2360,7 @@ export const mutateMetadataClean = (input: GQL.CleanMetadataInput) =>
 export const mutateRunPluginTask = (
   pluginId: string,
   taskName: string,
-  args?: GQL.PluginArgInput[]
+  args?: GQL.Scalars["Map"]["input"]
 ) =>
   client.mutate<GQL.RunPluginTaskMutation>({
     mutation: GQL.RunPluginTaskDocument,
