@@ -45,7 +45,9 @@ func (t *jsPluginTask) makeOutput(o otto.Value) {
 		return
 	}
 
-	t.result.Output, _ = asObj.Get("Output")
+	output, _ := asObj.Get("Output")
+	t.result.Output, _ = output.Export()
+
 	err, _ := asObj.Get("Error")
 	if !err.IsUndefined() {
 		errStr := err.String()

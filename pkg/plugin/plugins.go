@@ -9,6 +9,7 @@ package plugin
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -290,6 +291,68 @@ func (c Cache) CreateTask(ctx context.Context, pluginID string, operationName *s
 	return task.createTask(), nil
 }
 
+func (c Cache) RunPlugin(ctx context.Context, pluginID string, args OperationInput) (interface{}, error) {
+	serverConnection := c.makeServerConnection(ctx)
+
+	if c.pluginDisabled(pluginID) {
+		return nil, fmt.Errorf("plugin %s is disabled", pluginID)
+	}
+
+	// find the plugin
+	plugin := c.getPlugin(pluginID)
+
+	pluginInput := buildPluginInput(plugin, nil, serverConnection, args)
+
+	pt := pluginTask{
+		plugin:       plugin,
+		input:        pluginInput,
+		gqlHandler:   c.gqlHandler,
+		serverConfig: c.config,
+	}
+
+	task := pt.createTask()
+	if err := task.Start(); err != nil {
+		return nil, err
+	}
+
+	if err := waitForTask(ctx, task); err != nil {
+		return nil, err
+	}
+
+	output := task.GetResult()
+	if output == nil {
+		logger.Debugf("%s: returned no result", pluginID)
+		return nil, nil
+	} else {
+		if output.Error != nil {
+			return nil, errors.New(*output.Error)
+		}
+
+		return output.Output, nil
+	}
+}
+
+func waitForTask(ctx context.Context, task Task) error {
+	// handle cancel from context
+	c := make(chan struct{})
+	go func() {
+		task.Wait()
+		close(c)
+	}()
+
+	select {
+	case <-ctx.Done():
+		if err := task.Stop(); err != nil {
+			logger.Warnf("could not stop task: %v", err)
+		}
+		return fmt.Errorf("operation cancelled")
+	case <-c:
+		// task finished normally
+	}
+
+	return nil
+}
+
 func (c Cache) ExecutePostHooks(ctx context.Context, id int, hookType HookTriggerEnum, input interface{}, inputFields []string) {
 	if err := c.executePostHooks(ctx, hookType, common.HookContext{
 		ID:          id,
@@ -348,21 +411,8 @@ func (c Cache) executePostHooks(ctx context.Context, hookType HookTriggerEnum, h
 				return err
 			}
 
-			// handle cancel from context
-			c := make(chan struct{})
-			go func() {
-				task.Wait()
-				close(c)
-			}()
-
-			select {
-			case <-ctx.Done():
-				if err := task.Stop(); err != nil {
-					logger.Warnf("could not stop task: %v", err)
-				}
-				return fmt.Errorf("operation cancelled")
-			case <-c:
-				// task finished normally
+			if err := waitForTask(ctx, task); err != nil {
+				return err
 			}
 
 			output := task.GetResult()

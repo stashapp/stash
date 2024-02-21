@@ -65,6 +65,19 @@ func (r *mutationResolver) RunPluginTask(
 	return strconv.Itoa(jobID), nil
 }
 
+func (r *mutationResolver) RunPluginOperation(
+	ctx context.Context,
+	pluginID string,
+	args map[string]interface{},
+) (interface{}, error) {
+	if args == nil {
+		args = make(map[string]interface{})
+	}
+
+	m := manager.GetInstance()
+	return m.PluginCache.RunPlugin(ctx, pluginID, args)
+}
+
 func (r *mutationResolver) ReloadPlugins(ctx context.Context) (bool, error) {
 	manager.GetInstance().RefreshPluginCache()
 	return true, nil
