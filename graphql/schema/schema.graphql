@@ -393,7 +393,8 @@ type Mutation {
   runPluginTask(
     plugin_id: ID!
     task_name: String!
-    args: [PluginArgInput!]
+    args: [PluginArgInput!] @deprecated(reason: "Use args_map instead")
+    args_map: Map
   ): ID!
   reloadPlugins: Boolean!
 

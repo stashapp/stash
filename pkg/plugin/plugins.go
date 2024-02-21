@@ -225,8 +225,8 @@ func (c Cache) ListPluginTasks() []*PluginTask {
 	return ret
 }
 
-func buildPluginInput(plugin *Config, operation *OperationConfig, serverConnection common.StashServerConnection, args []*PluginArgInput) common.PluginInput {
-	args = applyDefaultArgs(args, operation.DefaultArgs)
+func buildPluginInput(plugin *Config, operation *OperationConfig, serverConnection common.StashServerConnection, args OperationInput) common.PluginInput {
+	applyDefaultArgs(args, operation.DefaultArgs)
 	serverConnection.PluginDir = plugin.getConfigPath()
 	return common.PluginInput{
 		ServerConnection: serverConnection,
@@ -255,7 +255,7 @@ func (c Cache) makeServerConnection(ctx context.Context) common.StashServerConne
 // CreateTask runs the plugin operation for the pluginID and operation
 // name provided. Returns an error if the plugin or the operation could not be
 // resolved.
-func (c Cache) CreateTask(ctx context.Context, pluginID string, operationName string, args []*PluginArgInput, progress chan float64) (Task, error) {
+func (c Cache) CreateTask(ctx context.Context, pluginID string, operationName string, args OperationInput, progress chan float64) (Task, error) {
 	serverConnection := c.makeServerConnection(ctx)
 
 	if c.pluginDisabled(pluginID) {

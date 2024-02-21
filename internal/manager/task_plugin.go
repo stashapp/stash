@@ -9,7 +9,7 @@ import (
 	"github.com/stashapp/stash/pkg/plugin"
 )
 
-func (s *Manager) RunPluginTask(ctx context.Context, pluginID string, taskName string, args []*plugin.PluginArgInput) int {
+func (s *Manager) RunPluginTask(ctx context.Context, pluginID string, taskName string, args plugin.OperationInput) int {
 	j := job.MakeJobExec(func(jobCtx context.Context, progress *job.Progress) {
 		pluginProgress := make(chan float64)
 		task, err := s.PluginCache.CreateTask(ctx, pluginID, taskName, args, pluginProgress)
