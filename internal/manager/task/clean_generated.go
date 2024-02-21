@@ -2,6 +2,7 @@ package task
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io/fs"
 	"os"
@@ -100,6 +101,12 @@ func (j *CleanGeneratedJob) taskComplete(progress *job.Progress) {
 	progress.SetPercent(float64(j.tasksComplete) / float64(j.totalTasks))
 }
 
+func (j *CleanGeneratedJob) logError(err error) {
+	if !errors.Is(err, context.Canceled) {
+		logger.Error(err)
+	}
+}
+
 func (j *CleanGeneratedJob) Execute(ctx context.Context, progress *job.Progress) {
 	j.tasksComplete = 0
 
@@ -124,7 +131,7 @@ func (j *CleanGeneratedJob) Execute(ctx context.Context, progress *job.Progress)
 	if j.Options.BlobFiles {
 		progress.ExecuteTask("Cleaning blob files", func() {
 			if err := j.cleanBlobFiles(ctx, progress); err != nil {
-				logger.Errorf("error cleaning blob files: %v", err)
+				j.logError(fmt.Errorf("error cleaning blob files: %w", err))
 			}
 		})
 		j.taskComplete(progress)
@@ -133,7 +140,7 @@ func (j *CleanGeneratedJob) Execute(ctx context.Context, progress *job.Progress)
 	if j.Options.Sprites {
 		progress.ExecuteTask("Cleaning sprite files", func() {
 			if err := j.cleanSpriteFiles(ctx, progress); err != nil {
-				logger.Errorf("error cleaning sprite files: %v", err)
+				j.logError(fmt.Errorf("error cleaning sprite files: %w", err))
 			}
 		})
 		j.taskComplete(progress)
@@ -142,7 +149,7 @@ func (j *CleanGeneratedJob) Execute(ctx context.Context, progress *job.Progress)
 	if j.Options.Screenshots {
 		progress.ExecuteTask("Cleaning screenshot files", func() {
 			if err := j.cleanScreenshotFiles(ctx, progress); err != nil {
-				logger.Errorf("error cleaning screenshot files: %v", err)
+				j.logError(fmt.Errorf("error cleaning screenshot files: %w", err))
 			}
 		})
 		j.taskComplete(progress)
@@ -151,7 +158,7 @@ func (j *CleanGeneratedJob) Execute(ctx context.Context, progress *job.Progress)
 	if j.Options.Transcodes {
 		progress.ExecuteTask("Cleaning transcode files", func() {
 			if err := j.cleanTranscodeFiles(ctx, progress); err != nil {
-				logger.Errorf("error cleaning transcode files: %v", err)
+				j.logError(fmt.Errorf("error cleaning transcode files: %w", err))
 			}
 		})
 		j.taskComplete(progress)
@@ -160,7 +167,7 @@ func (j *CleanGeneratedJob) Execute(ctx context.Context, progress *job.Progress)
 	if j.Options.Markers {
 		progress.ExecuteTask("Cleaning marker files", func() {
 			if err := j.cleanMarkerFiles(ctx, progress); err != nil {
-				logger.Errorf("error cleaning marker files: %v", err)
+				j.logError(fmt.Errorf("error cleaning marker files: %w", err))
 			}
 		})
 		j.taskComplete(progress)
@@ -169,10 +176,15 @@ func (j *CleanGeneratedJob) Execute(ctx context.Context, progress *job.Progress)
 	if j.Options.ImageThumbnails {
 		progress.ExecuteTask("Cleaning thumbnail files", func() {
 			if err := j.cleanThumbnailFiles(ctx, progress); err != nil {
-				logger.Errorf("error cleaning thumbnail files: %v", err)
+				j.logError(fmt.Errorf("error cleaning thumbnail files: %w", err))
 			}
 		})
 		j.taskComplete(progress)
+	}
+
+	if job.IsCancelled(ctx) {
+		logger.Info("Stopping due to user request")
+		return
 	}
 
 	logger.Infof("Finished cleaning generated files")
@@ -209,14 +221,24 @@ func (j *CleanGeneratedJob) setProgressFromFilename(prefix string, progress *job
 }
 
 func (j *CleanGeneratedJob) cleanBlobFiles(ctx context.Context, progress *job.Progress) error {
+	if job.IsCancelled(ctx) {
+		return nil
+	}
+
 	if j.BlobsStorageType != config.BlobStorageTypeFilesystem {
 		logger.Debugf("skipping blob file cleanup, storage type is not filesystem")
 		return nil
 	}
 
+	logger.Infof("Cleaning blob files")
+
 	// walk through the blob directory
 	if err := filepath.Walk(j.Paths.Blobs, func(path string, info fs.FileInfo, err error) error {
 		if err != nil {
+			return err
+		}
+
+		if err = ctx.Err(); err != nil {
 			return err
 		}
 
@@ -273,9 +295,19 @@ func (j *CleanGeneratedJob) getScenesWithHash(ctx context.Context, hash string) 
 }
 
 func (j *CleanGeneratedJob) cleanSpriteFiles(ctx context.Context, progress *job.Progress) error {
+	if job.IsCancelled(ctx) {
+		return nil
+	}
+
+	logger.Infof("Cleaning sprite files")
+
 	// walk through the sprite directory
 	if err := filepath.Walk(j.Paths.Generated.Vtt, func(path string, info fs.FileInfo, err error) error {
 		if err != nil {
+			return err
+		}
+
+		if err = ctx.Err(); err != nil {
 			return err
 		}
 
@@ -319,6 +351,12 @@ func (j *CleanGeneratedJob) cleanSpriteFiles(ctx context.Context, progress *job.
 }
 
 func (j *CleanGeneratedJob) cleanSceneFiles(ctx context.Context, path string, typ string, progress *job.Progress) error {
+	if job.IsCancelled(ctx) {
+		return nil
+	}
+
+	logger.Infof("Cleaning %s files", typ)
+
 	// walk through the sprite directory
 	if err := filepath.Walk(path, func(path string, info fs.FileInfo, err error) error {
 		if err != nil {
@@ -327,6 +365,10 @@ func (j *CleanGeneratedJob) cleanSceneFiles(ctx context.Context, path string, ty
 
 		if info.IsDir() {
 			return nil
+		}
+
+		if err = ctx.Err(); err != nil {
+			return err
 		}
 
 		filename := info.Name()
@@ -373,6 +415,12 @@ func (j *CleanGeneratedJob) cleanTranscodeFiles(ctx context.Context, progress *j
 }
 
 func (j *CleanGeneratedJob) cleanMarkerFiles(ctx context.Context, progress *job.Progress) error {
+	if job.IsCancelled(ctx) {
+		return nil
+	}
+
+	logger.Infof("Cleaning marker files")
+
 	var scenes []*models.Scene
 	var sceneHash string
 	var markers []*models.SceneMarker
@@ -380,6 +428,10 @@ func (j *CleanGeneratedJob) cleanMarkerFiles(ctx context.Context, progress *job.
 	// walk through the markers directory
 	if err := filepath.Walk(j.Paths.Generated.Markers, func(path string, info fs.FileInfo, err error) error {
 		if err != nil {
+			return err
+		}
+
+		if err = ctx.Err(); err != nil {
 			return err
 		}
 
@@ -491,9 +543,19 @@ func (j *CleanGeneratedJob) getImagesWithHash(ctx context.Context, checksum stri
 }
 
 func (j *CleanGeneratedJob) cleanThumbnailFiles(ctx context.Context, progress *job.Progress) error {
+	if job.IsCancelled(ctx) {
+		return nil
+	}
+
+	logger.Infof("Cleaning image thumbnail files")
+
 	// walk through the sprite directory
 	if err := filepath.Walk(j.Paths.Generated.Thumbnails, func(path string, info fs.FileInfo, err error) error {
 		if err != nil {
+			return err
+		}
+
+		if err = ctx.Err(); err != nil {
 			return err
 		}
 
