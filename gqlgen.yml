@@ -70,6 +70,8 @@ models:
     model: github.com/stashapp/stash/internal/manager/config.ConfigDisableDropdownCreate
   ScanMetadataOptions:
     model:  github.com/stashapp/stash/internal/manager/config.ScanMetadataOptions
+  CleanGeneratedInput:
+    model: github.com/stashapp/stash/internal/manager/task.CleanGeneratedOptions
   AutoTagMetadataOptions:
     model: github.com/stashapp/stash/internal/manager/config.AutoTagMetadataOptions
   SystemStatus:

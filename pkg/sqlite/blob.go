@@ -235,6 +235,17 @@ func (qb *BlobStore) readFromFilesystem(ctx context.Context, checksum string) ([
 	}
 }
 
+func (qb *BlobStore) EntryExists(ctx context.Context, checksum string) (bool, error) {
+	q := dialect.From(qb.table()).Select(goqu.COUNT("*")).Where(qb.tableMgr.byID(checksum))
+
+	var found int
+	if err := querySimple(ctx, q, &found); err != nil {
+		return false, fmt.Errorf("querying %s: %w", qb.table(), err)
+	}
+
+	return found != 0, nil
+}
+
 // Read reads the data from the database or filesystem, depending on which is enabled.
 func (qb *BlobStore) Read(ctx context.Context, checksum string) ([]byte, error) {
 	if !qb.options.UseDatabase && !qb.options.UseFilesystem {
