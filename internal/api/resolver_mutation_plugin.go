@@ -49,7 +49,8 @@ func toPluginArgValue(arg *plugin.PluginValueInput) interface{} {
 func (r *mutationResolver) RunPluginTask(
 	ctx context.Context,
 	pluginID string,
-	taskName string,
+	taskName *string,
+	description *string,
 	args []*plugin.PluginArgInput,
 	argsMap map[string]interface{},
 ) (string, error) {
@@ -60,7 +61,7 @@ func (r *mutationResolver) RunPluginTask(
 	}
 
 	m := manager.GetInstance()
-	jobID := m.RunPluginTask(ctx, pluginID, taskName, argsMap)
+	jobID := m.RunPluginTask(ctx, pluginID, taskName, description, argsMap)
 	return strconv.Itoa(jobID), nil
 }
 

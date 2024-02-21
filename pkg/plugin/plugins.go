@@ -226,7 +226,9 @@ func (c Cache) ListPluginTasks() []*PluginTask {
 }
 
 func buildPluginInput(plugin *Config, operation *OperationConfig, serverConnection common.StashServerConnection, args OperationInput) common.PluginInput {
-	applyDefaultArgs(args, operation.DefaultArgs)
+	if operation != nil {
+		applyDefaultArgs(args, operation.DefaultArgs)
+	}
 	serverConnection.PluginDir = plugin.getConfigPath()
 	return common.PluginInput{
 		ServerConnection: serverConnection,
@@ -255,7 +257,7 @@ func (c Cache) makeServerConnection(ctx context.Context) common.StashServerConne
 // CreateTask runs the plugin operation for the pluginID and operation
 // name provided. Returns an error if the plugin or the operation could not be
 // resolved.
-func (c Cache) CreateTask(ctx context.Context, pluginID string, operationName string, args OperationInput, progress chan float64) (Task, error) {
+func (c Cache) CreateTask(ctx context.Context, pluginID string, operationName *string, args OperationInput, progress chan float64) (Task, error) {
 	serverConnection := c.makeServerConnection(ctx)
 
 	if c.pluginDisabled(pluginID) {
@@ -269,9 +271,12 @@ func (c Cache) CreateTask(ctx context.Context, pluginID string, operationName st
 		return nil, fmt.Errorf("no plugin with ID %s", pluginID)
 	}
 
-	operation := plugin.getTask(operationName)
-	if operation == nil {
-		return nil, fmt.Errorf("no task with name %s in plugin %s", operationName, plugin.getName())
+	var operation *OperationConfig
+	if operationName != nil {
+		operation = plugin.getTask(*operationName)
+		if operation == nil {
+			return nil, fmt.Errorf("no task with name %s in plugin %s", *operationName, plugin.getName())
+		}
 	}
 
 	task := pluginTask{
