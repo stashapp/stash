@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { ModalComponent } from "src/components/Shared/Modal";
 import * as GQL from "src/core/generated-graphql";
 import { BooleanSetting } from "../Inputs";
 import { faTrashAlt } from "@fortawesome/free-solid-svg-icons";
 import { SettingSection } from "../SettingSection";
+import { useSettings } from "../context";
+import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 
 const CleanGeneratedOptions: React.FC<{
   options: GQL.CleanGeneratedInput;
@@ -69,6 +71,8 @@ export const CleanGeneratedDialog: React.FC<{
 }> = ({ onClose }) => {
   const intl = useIntl();
 
+  const { ui, saveUI, loading } = useSettings();
+
   const [options, setOptions] = useState<GQL.CleanGeneratedInput>({
     blobFiles: true,
     imageThumbnails: true,
@@ -79,6 +83,25 @@ export const CleanGeneratedDialog: React.FC<{
     dryRun: false,
   });
 
+  useEffect(() => {
+    const defaults = ui.taskDefaults?.cleanGenerated;
+    if (defaults) {
+      setOptions(defaults);
+    }
+  }, [ui?.taskDefaults?.cleanGenerated]);
+
+  function confirm() {
+    saveUI({
+      taskDefaults: {
+        ...ui.taskDefaults,
+        cleanGenerated: options,
+      },
+    });
+    onClose(options);
+  }
+
+  if (loading) return <LoadingIndicator />;
+
   return (
     <ModalComponent
       show
@@ -87,7 +110,7 @@ export const CleanGeneratedDialog: React.FC<{
       accept={{
         text: intl.formatMessage({ id: "actions.clean_generated" }),
         variant: "danger",
-        onClick: () => onClose(options),
+        onClick: () => confirm(),
       }}
       cancel={{ onClick: () => onClose() }}
     >
