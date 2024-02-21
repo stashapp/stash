@@ -982,7 +982,8 @@ func (t *viewHistoryTable) addDates(ctx context.Context, id int, dates []time.Ti
 
 	for _, d := range dates {
 		q := dialect.Insert(table).Cols(t.idColumn.GetCol(), t.dateColumn.GetCol()).Vals(
-			goqu.Vals{id, Timestamp{d}},
+			// convert all dates to UTC
+			goqu.Vals{id, UTCTimestamp{Timestamp{d}}},
 		)
 
 		if _, err := exec(ctx, q); err != nil {
@@ -1012,7 +1013,7 @@ func (t *viewHistoryTable) deleteDates(ctx context.Context, id int, dates []time
 		} else {
 			subquery = dialect.Select("rowid").From(table).Where(
 				t.idColumn.Eq(id),
-				t.dateColumn.Eq(Timestamp{date}),
+				t.dateColumn.Eq(UTCTimestamp{Timestamp{date}}),
 			).Limit(1)
 		}
 

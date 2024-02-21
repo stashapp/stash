@@ -23,6 +23,17 @@ func (t Timestamp) Value() (driver.Value, error) {
 	return t.Timestamp.Format(TimestampFormat), nil
 }
 
+// UTCTimestamp stores a time in UTC.
+// TODO - Timestamp should use UTC by default
+type UTCTimestamp struct {
+	Timestamp
+}
+
+// Value implements the driver Valuer interface.
+func (t UTCTimestamp) Value() (driver.Value, error) {
+	return t.Timestamp.Timestamp.UTC().Format(TimestampFormat), nil
+}
+
 // NullTimestamp represents a nullable time stored in RFC3339 format.
 type NullTimestamp struct {
 	Timestamp time.Time

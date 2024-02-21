@@ -48,8 +48,12 @@ func (m *schema55Migrator) migrate(ctx context.Context) error {
 				return err
 			}
 
+			utcTimestamp := sqlite.UTCTimestamp{
+				Timestamp: viewDate,
+			}
+
 			// convert the timestamp to the correct format
-			if _, err := m.db.Exec("UPDATE scenes_view_dates SET view_date = ? WHERE view_date = ?", viewDate, viewDate.Timestamp); err != nil {
+			if _, err := m.db.Exec("UPDATE scenes_view_dates SET view_date = ? WHERE view_date = ?", utcTimestamp, viewDate.Timestamp); err != nil {
 				return fmt.Errorf("error correcting view date %s to %s: %w", viewDate.Timestamp, viewDate, err)
 			}
 		}
