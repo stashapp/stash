@@ -390,7 +390,7 @@ type Mutation {
   setPluginsEnabled(enabledMap: BoolMap!): Boolean!
 
   """
-  Run a plugin task. 
+  Run a plugin task.
   If task_name is provided, then the task must exist in the plugin config and the tasks configuration
   will be used to run the plugin.
   If no task_name is provided, then the plugin will be executed with the arguments provided only.
@@ -410,10 +410,7 @@ type Mutation {
   Runs a plugin operation. The operation is run immediately and does not use the job queue.
   Returns a map of the result.
   """
-  runPluginOperation(
-    plugin_id: ID!
-    args: Map
-  ): Any
+  runPluginOperation(plugin_id: ID!, args: Map): Any
 
   reloadPlugins: Boolean!
 
