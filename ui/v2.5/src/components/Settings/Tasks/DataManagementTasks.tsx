@@ -11,6 +11,7 @@ import {
   mutateMigrateSceneScreenshots,
   mutateMigrateBlobs,
   mutateOptimiseDatabase,
+  mutateCleanGenerated,
 } from "src/core/StashService";
 import { useToast } from "src/hooks/Toast";
 import downloadFile from "src/utils/download";
@@ -29,6 +30,7 @@ import {
   faQuestionCircle,
   faTrashAlt,
 } from "@fortawesome/free-solid-svg-icons";
+import { CleanGeneratedDialog } from "./CleanGeneratedDialog";
 
 interface ICleanDialog {
   pathSelection?: boolean;
@@ -167,6 +169,7 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
     import: false,
     clean: false,
     cleanAlert: false,
+    cleanGenerated: false,
   });
 
   const [cleanOptions, setCleanOptions] = useState<GQL.CleanMetadataInput>({
@@ -249,6 +252,27 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
       Toast.error(e);
     } finally {
       setDialogOpen({ clean: false });
+    }
+  }
+
+  async function onCleanGenerated(options: GQL.CleanGeneratedInput) {
+    try {
+      await mutateCleanGenerated({
+        ...options,
+      });
+
+      Toast.success(
+        intl.formatMessage(
+          { id: "config.tasks.added_job_to_queue" },
+          {
+            operation_name: intl.formatMessage({
+              id: "actions.clean_generated",
+            }),
+          }
+        )
+      );
+    } catch (e) {
+      Toast.error(e);
     }
   }
 
@@ -404,6 +428,17 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
       ) : (
         dialogOpen.clean
       )}
+      {dialogOpen.cleanGenerated && (
+        <CleanGeneratedDialog
+          onClose={(options) => {
+            if (options) {
+              onCleanGenerated(options);
+            }
+
+            setDialogOpen({ cleanGenerated: false });
+          }}
+        />
+      )}
 
       <SettingSection headingID="config.tasks.maintenance">
         <div className="setting-group">
@@ -437,6 +472,21 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
             options={cleanOptions}
             setOptions={(o) => setCleanOptions(o)}
           />
+        </div>
+
+        <div className="setting-group">
+          <Setting
+            heading={<FormattedMessage id="actions.clean_generated" />}
+            subHeadingID="config.tasks.clean_generated.description"
+          >
+            <Button
+              variant="danger"
+              type="submit"
+              onClick={() => setDialogOpen({ cleanGenerated: true })}
+            >
+              <FormattedMessage id="actions.clean_generated" />…
+            </Button>
+          </Setting>
         </div>
 
         <Setting

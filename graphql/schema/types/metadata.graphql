@@ -120,20 +120,20 @@ input CleanGeneratedInput {
   "Clean blob files without blob entries"
   blobFiles: Boolean
   "Clean sprite and vtt files without scene entries"
-	sprites:     Boolean
+  sprites: Boolean
   "Clean preview files without scene entries"
-	screenshots: Boolean
+  screenshots: Boolean
   "Clean scene transcodes without scene entries"
-	transcodes:  Boolean
+  transcodes: Boolean
 
   "Clean marker files without marker entries"
-	markers: Boolean
+  markers: Boolean
 
   "Clean image thumbnails/clips without image entries"
-	imageThumbnails: Boolean
+  imageThumbnails: Boolean
 
   "Do a dry run. Don't delete any files"
-	dryRun: Boolean
+  dryRun: Boolean
 }
 
 input AutoTagMetadataInput {

@@ -2357,6 +2357,12 @@ export const mutateMetadataClean = (input: GQL.CleanMetadataInput) =>
     variables: { input },
   });
 
+export const mutateCleanGenerated = (input: GQL.CleanGeneratedInput) =>
+  client.mutate<GQL.MetadataCleanGeneratedMutation>({
+    mutation: GQL.MetadataCleanGeneratedDocument,
+    variables: { input },
+  });
+
 export const mutateRunPluginTask = (
   pluginId: string,
   taskName: string,
