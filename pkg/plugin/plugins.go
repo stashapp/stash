@@ -14,6 +14,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
@@ -128,16 +129,25 @@ func (c *Cache) RegisterSessionStore(sessionStore *session.Store) {
 // If a plugin cannot be loaded, an error is logged and the plugin is skipped.
 func (c *Cache) ReloadPlugins() {
 	path := c.config.GetPluginsPath()
+	// # 4484 - ensure plugin ids are unique
 	plugins := make([]Config, 0)
+	pluginIDs := make(map[string]bool)
 
 	logger.Debugf("Reading plugin configs from %s", path)
 
 	err := fsutil.SymWalk(path, func(fp string, f os.FileInfo, err error) error {
 		if filepath.Ext(fp) == ".yml" {
 			plugin, err := loadPluginFromYAMLFile(fp)
+			// use case insensitive plugin IDs
 			if err != nil {
 				logger.Errorf("Error loading plugin %s: %v", fp, err)
 			} else {
+				pluginID := strings.ToLower(plugin.id)
+				if _, exists := pluginIDs[pluginID]; exists {
+					logger.Errorf("Error loading plugin %s: plugin ID %s already exists", fp, plugin.id)
+					return nil
+				}
+				pluginIDs[pluginID] = true
 				plugins = append(plugins, *plugin)
 			}
 		}

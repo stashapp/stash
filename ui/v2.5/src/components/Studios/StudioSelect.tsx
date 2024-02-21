@@ -27,7 +27,7 @@ import {
 import { useCompare } from "src/hooks/state";
 import { Placement } from "react-bootstrap/esm/Overlay";
 import { sortByRelevance } from "src/utils/query";
-import { PatchComponent } from "src/pluginApi";
+import { PatchComponent } from "src/patch";
 
 export type SelectObject = {
   id: string;
@@ -233,8 +233,7 @@ const _StudioIDSelect: React.FC<IFilterProps & IFilterIDProps<Studio>> = (
   }
 
   async function loadObjectsByID(idsToLoad: string[]): Promise<Studio[]> {
-    const studioIDs = idsToLoad.map((id) => parseInt(id));
-    const query = await queryFindStudiosByIDForSelect(studioIDs);
+    const query = await queryFindStudiosByIDForSelect(idsToLoad);
     const { studios: loadedStudios } = query.data.findStudios;
 
     return loadedStudios;

@@ -25,16 +25,11 @@ import { StringListInput } from "../StringListInput";
 import { ImageSelector } from "../ImageSelector";
 import { ScrapeResult } from "./scrapeResult";
 
-export interface IHasName {
-  name: string | undefined;
-}
-
 interface IScrapedFieldProps<T> {
   result: ScrapeResult<T>;
 }
 
-interface IScrapedRowProps<T, V extends IHasName>
-  extends IScrapedFieldProps<T> {
+interface IScrapedRowProps<T, V> extends IScrapedFieldProps<T> {
   className?: string;
   title: string;
   renderOriginalField: (result: ScrapeResult<T>) => JSX.Element | undefined;
@@ -42,6 +37,7 @@ interface IScrapedRowProps<T, V extends IHasName>
   onChange: (value: ScrapeResult<T>) => void;
   newValues?: V[];
   onCreateNew?: (index: number) => void;
+  getName?: (value: V) => string;
 }
 
 function renderButtonIcon(selected: boolean) {
@@ -55,9 +51,9 @@ function renderButtonIcon(selected: boolean) {
   );
 }
 
-export const ScrapeDialogRow = <T, V extends IHasName>(
-  props: IScrapedRowProps<T, V>
-) => {
+export const ScrapeDialogRow = <T, V>(props: IScrapedRowProps<T, V>) => {
+  const { getName = () => "" } = props;
+
   function handleSelectClick(isNew: boolean) {
     const ret = clone(props.result);
     ret.useNewValue = isNew;
@@ -83,10 +79,10 @@ export const ScrapeDialogRow = <T, V extends IHasName>(
           <Badge
             className="tag-item"
             variant="secondary"
-            key={t.name}
+            key={getName(t)}
             onClick={() => props.onCreateNew!(i)}
           >
-            {t.name}
+            {getName(t)}
             <Button className="minimal ml-2">
               <Icon className="fa-fw" icon={faPlus} />
             </Button>
@@ -173,6 +169,10 @@ const ScrapedInputGroup: React.FC<IScrapedInputGroupProps> = (props) => {
   );
 };
 
+function getNameString(value: string) {
+  return value;
+}
+
 interface IScrapedInputGroupRowProps {
   title: string;
   placeholder?: string;
@@ -206,6 +206,7 @@ export const ScrapedInputGroupRow: React.FC<IScrapedInputGroupRowProps> = (
         />
       )}
       onChange={props.onChange}
+      getName={getNameString}
     />
   );
 };
@@ -271,6 +272,7 @@ export const ScrapedStringListRow: React.FC<IScrapedStringListRowProps> = (
         />
       )}
       onChange={props.onChange}
+      getName={getNameString}
     />
   );
 };
@@ -316,6 +318,7 @@ export const ScrapedTextAreaRow: React.FC<IScrapedInputGroupRowProps> = (
         />
       )}
       onChange={props.onChange}
+      getName={getNameString}
     />
   );
 };
@@ -369,6 +372,7 @@ export const ScrapedImageRow: React.FC<IScrapedImageRowProps> = (props) => {
         />
       )}
       onChange={props.onChange}
+      getName={getNameString}
     />
   );
 };
@@ -412,6 +416,7 @@ export const ScrapedImagesRow: React.FC<IScrapedImagesRowProps> = (props) => {
         </div>
       )}
       onChange={props.onChange}
+      getName={getNameString}
     />
   );
 };
@@ -514,5 +519,6 @@ export const ScrapedCountryRow: React.FC<IScrapedCountryRowProps> = ({
       />
     )}
     onChange={onChange}
+    getName={getNameString}
   />
 );

@@ -1,1059 +1,1053 @@
 {
-  "actions": {
-    "add": "Lisää",
-    "add_directory": "Lisää hakemisto",
-    "add_entity": "Lisää {entityType}",
-    "add_to_entity": "Lisää kohteeseen {entityType}",
-    "allow": "Salli",
-    "allow_temporarily": "Salli väliaikaisesti",
-    "anonymise": "Anonymisoi",
-    "apply": "Käytä",
-    "auto_tag": "Lisää tunnisteet automaattisesti",
-    "backup": "Varmuuskopioi",
-    "browse_for_image": "Lisää kuva…",
-    "cancel": "Peruuta",
-    "clean": "Puhdista",
-    "clear": "Tyhjennä",
-    "clear_back_image": "Tyhjennä takakannen kuva",
-    "clear_front_image": "Tyhjennä etukannen kuva",
-    "clear_image": "Tyhjennä kuva",
-    "close": "Sulje",
-    "confirm": "Vahvista",
-    "continue": "Jatka",
-    "create": "Luo",
-    "create_chapters": "Luo kappale",
-    "create_entity": "Luo {entityType}",
-    "create_marker": "Luo Merkkaus",
-    "created_entity": "Luotu: {entityType}: {entity_name}",
-    "customise": "Kustomoi",
-    "delete": "Poista",
-    "delete_entity": "Poista {entityType}",
-    "delete_file": "Poista tiedosto",
-    "delete_file_and_funscript": "Poista tiedosto (ja funscript)",
-    "delete_generated_supporting_files": "Poista generoidut lisätiedostot",
-    "delete_stashid": "Poista StashID",
-    "disallow": "Kiellä",
-    "download": "Lataa",
-    "download_anonymised": "Lataa anonymisoitu",
-    "download_backup": "Lataa varmuuskopio",
-    "edit": "Muokkaa",
-    "edit_entity": "Muokkaa {entityType}",
-    "export": "Vie",
-    "export_all": "Vie kaikki…",
-    "find": "Etsi",
-    "finish": "Valmis",
-    "from_file": "Tiedostosta…",
-    "from_url": "URL -osoitteesta…",
-    "full_export": "Täysi vienti",
-    "full_import": "Täysi tuonti",
-    "generate": "Generoi",
-    "generate_thumb_default": "Generoi oletusesikatselukuva",
-    "generate_thumb_from_current": "Generoi esikatselukuva nykyisestä",
-    "hash_migration": "Tiivisteen yhdistäminen",
-    "hide": "Piilota",
-    "hide_configuration": "Piilota Asetus",
-    "identify": "Tunnista",
-    "ignore": "Jätä huomiotta",
-    "import": "Tuo…",
-    "import_from_file": "Tuo tiedostosta",
-    "logout": "Kirjaudu ulos",
-    "make_primary": "Tee ensisijaikseksi",
-    "merge": "Yhdistä",
-    "merge_from": "Yhdistä kohteesta",
-    "merge_into": "Yhdistä kohteeseen",
-    "next_action": "Seuraava",
-    "not_running": "ei käynnissä",
-    "open_in_external_player": "Avaa ulkoisessa soittimessa",
-    "open_random": "Avaa satunnainen",
-    "overwrite": "Ylikirjoita",
-    "play_random": "Toista satunnainen",
-    "play_selected": "Toista valittu",
-    "preview": "Esikatselu",
-    "previous_action": "Takaisin",
-    "reassign": "Määritä uudelleen",
-    "refresh": "Päivitä",
-    "reload_plugins": "Lataa lisäosat uudelleen",
-    "reload_scrapers": "Lataa kaapija uudelleen",
-    "remove": "Poista",
-    "remove_from_gallery": "Poista galleriasta",
-    "rename_gen_files": "Nimeä generoidut tiedostot uudelleen",
-    "rescan": "Skannaa uudelleen",
-    "reshuffle": "Sekoita uudelleen",
-    "running": "käynnissä",
-    "save": "Tallenna",
-    "save_delete_settings": "Käytä näitä asetuksia oletuksena kun poistat sisältöä",
-    "save_filter": "Tallenna suodatin",
-    "scan": "Skannaa",
-    "scrape": "Kaavi",
-    "scrape_query": "Kaavintajono",
-    "scrape_scene_fragment": "Kaavi osan perusteella",
-    "scrape_with": "Kaavi…",
-    "search": "Hae",
-    "select_all": "Valitse Kaikki",
-    "select_entity": "Valitse {entityType}",
-    "select_folders": "Valitse kansiot",
-    "select_none": "Peruuta Valinta",
-    "selective_auto_tag": "Valikoiva automaattinen tunnisteiden asetus",
-    "selective_clean": "Valikoiva Puhdistus",
-    "selective_scan": "Valikoiva skannaus",
-    "set_as_default": "Aseta oletukseksi",
-    "set_back_image": "Takakansi…",
-    "set_front_image": "Etukansi…",
-    "set_image": "Aseta kuva…",
-    "show": "Näytä",
-    "show_configuration": "Näytä Asetus",
-    "skip": "Ohita",
-    "split": "Jaa osiin",
-    "stop": "Pysäytä",
-    "submit": "Lähetä",
-    "submit_stash_box": "Lähetä Stash-Boxiin",
-    "submit_update": "Lähetä päivitys",
-    "swap": "Vaihda",
-    "tasks": {
-      "clean_confirm_message": "Haluatko varmasti puhdistaa? Tämä poistaa tietokannan tiedot ja poistaa kaikki generoidut tukitiedostot kaikista kohtauksista ja gallerioista, eikä niitä enää ole löydettävissä levyltä.",
-      "dry_mode_selected": "Kuivatila käytössä. Poistoa ei oikeasti tehdä, vain lokikirjaus.",
-      "import_warning": "Oletko varma että haluat tuoda? Tämä poistaa tietokannan ja tuo sen uudelleen aiemmin viedyistä tiedoista."
+    "actions": {
+        "add": "Lisää",
+        "add_directory": "Lisää hakemisto",
+        "add_entity": "Lisää {entityType}",
+        "add_to_entity": "Lisää kohteeseen {entityType}",
+        "allow": "Salli",
+        "allow_temporarily": "Salli väliaikaisesti",
+        "anonymise": "Anonymisoi",
+        "apply": "Käytä",
+        "auto_tag": "Lisää tunnisteet automaattisesti",
+        "backup": "Varmuuskopioi",
+        "browse_for_image": "Lisää kuva…",
+        "cancel": "Peruuta",
+        "clean": "Puhdista",
+        "clear": "Tyhjennä",
+        "clear_back_image": "Tyhjennä takakannen kuva",
+        "clear_front_image": "Tyhjennä etukannen kuva",
+        "clear_image": "Tyhjennä kuva",
+        "close": "Sulje",
+        "confirm": "Vahvista",
+        "continue": "Jatka",
+        "create": "Luo",
+        "create_chapters": "Luo kappale",
+        "create_entity": "Luo {entityType}",
+        "create_marker": "Luo Merkkaus",
+        "created_entity": "Luotu: {entityType}: {entity_name}",
+        "customise": "Kustomoi",
+        "delete": "Poista",
+        "delete_entity": "Poista {entityType}",
+        "delete_file": "Poista tiedosto",
+        "delete_file_and_funscript": "Poista tiedosto (ja funscript)",
+        "delete_generated_supporting_files": "Poista generoidut lisätiedostot",
+        "disallow": "Kiellä",
+        "download": "Lataa",
+        "download_anonymised": "Lataa anonymisoitu",
+        "download_backup": "Lataa varmuuskopio",
+        "edit": "Muokkaa",
+        "edit_entity": "Muokkaa {entityType}",
+        "export": "Vie",
+        "export_all": "Vie kaikki…",
+        "find": "Etsi",
+        "finish": "Valmis",
+        "from_file": "Tiedostosta…",
+        "from_url": "URL -osoitteesta…",
+        "full_export": "Täysi vienti",
+        "full_import": "Täysi tuonti",
+        "generate": "Generoi",
+        "generate_thumb_default": "Generoi oletusesikatselukuva",
+        "generate_thumb_from_current": "Generoi esikatselukuva nykyisestä",
+        "hash_migration": "Tiivisteen yhdistäminen",
+        "hide": "Piilota",
+        "hide_configuration": "Piilota Asetus",
+        "identify": "Tunnista",
+        "ignore": "Jätä huomiotta",
+        "import": "Tuo…",
+        "import_from_file": "Tuo tiedostosta",
+        "logout": "Kirjaudu ulos",
+        "make_primary": "Tee ensisijaikseksi",
+        "merge": "Yhdistä",
+        "merge_from": "Yhdistä kohteesta",
+        "merge_into": "Yhdistä kohteeseen",
+        "next_action": "Seuraava",
+        "not_running": "ei käynnissä",
+        "open_in_external_player": "Avaa ulkoisessa soittimessa",
+        "open_random": "Avaa satunnainen",
+        "overwrite": "Ylikirjoita",
+        "play_random": "Toista satunnainen",
+        "play_selected": "Toista valittu",
+        "preview": "Esikatselu",
+        "previous_action": "Takaisin",
+        "reassign": "Määritä uudelleen",
+        "refresh": "Päivitä",
+        "reload_plugins": "Lataa lisäosat uudelleen",
+        "reload_scrapers": "Lataa kaapija uudelleen",
+        "remove": "Poista",
+        "remove_from_gallery": "Poista galleriasta",
+        "rename_gen_files": "Nimeä generoidut tiedostot uudelleen",
+        "rescan": "Skannaa uudelleen",
+        "reshuffle": "Sekoita uudelleen",
+        "running": "käynnissä",
+        "save": "Tallenna",
+        "save_delete_settings": "Käytä näitä asetuksia oletuksena kun poistat sisältöä",
+        "save_filter": "Tallenna suodatin",
+        "scan": "Skannaa",
+        "scrape": "Kaavi",
+        "scrape_query": "Kaavintajono",
+        "scrape_scene_fragment": "Kaavi osan perusteella",
+        "scrape_with": "Kaavi…",
+        "search": "Hae",
+        "select_all": "Valitse Kaikki",
+        "select_entity": "Valitse {entityType}",
+        "select_folders": "Valitse kansiot",
+        "select_none": "Peruuta Valinta",
+        "selective_auto_tag": "Valikoiva automaattinen tunnisteiden asetus",
+        "selective_clean": "Valikoiva Puhdistus",
+        "selective_scan": "Valikoiva skannaus",
+        "set_as_default": "Aseta oletukseksi",
+        "set_back_image": "Takakansi…",
+        "set_front_image": "Etukansi…",
+        "set_image": "Aseta kuva…",
+        "show": "Näytä",
+        "show_configuration": "Näytä Asetus",
+        "skip": "Ohita",
+        "split": "Jaa osiin",
+        "stop": "Pysäytä",
+        "submit": "Lähetä",
+        "submit_stash_box": "Lähetä Stash-Boxiin",
+        "submit_update": "Lähetä päivitys",
+        "swap": "Vaihda",
+        "tasks": {
+            "clean_confirm_message": "Haluatko varmasti puhdistaa? Tämä poistaa tietokannan tiedot ja poistaa kaikki generoidut tukitiedostot kaikista kohtauksista ja gallerioista, eikä niitä enää ole löydettävissä levyltä.",
+            "dry_mode_selected": "Kuivatila käytössä. Poistoa ei oikeasti tehdä, vain lokikirjaus.",
+            "import_warning": "Oletko varma että haluat tuoda? Tämä poistaa tietokannan ja tuo sen uudelleen aiemmin viedyistä tiedoista."
+        },
+        "temp_disable": "Poista käytöstä väliaikaisesti…",
+        "temp_enable": "Ota käyttöön väliaikaisesti…",
+        "unset": "Poista valinta",
+        "use_default": "Käytä oletusta",
+        "view_random": "Näytä satunnainen"
     },
-    "temp_disable": "Poista käytöstä väliaikaisesti…",
-    "temp_enable": "Ota käyttöön väliaikaisesti…",
-    "unset": "Poista valinta",
-    "use_default": "Käytä oletusta",
-    "view_random": "Näytä satunnainen"
-  },
-  "actions_name": "Toiminnot",
-  "age": "Ikä",
-  "aliases": "Aliakset",
-  "all": "kaikki",
-  "also_known_as": "Esiintyy myös nimillä",
-  "appears_with": "Esiintyy yhdessä",
-  "ascending": "Nouseva",
-  "average_resolution": "Keskimääräinen resoluutio",
-  "between_and": "ja",
-  "birth_year": "Syntymävuosi",
-  "birthdate": "Syntymäpäivä",
-  "bitrate": "Bittinopeus",
-  "blobs_storage_type": {
-    "database": "Tietokanta",
-    "filesystem": "Tiedostojärjestelmä"
-  },
-  "captions": "Tekstitykset",
-  "career_length": "Uran pituus",
-  "chapters": "Kappaleet",
-  "circumcised": "Ympärileikattu",
-  "circumcised_types": {
-    "CUT": "Leikattu",
-    "UNCUT": "Ympäreileikkaamaton"
-  },
-  "component_tagger": {
+    "actions_name": "Toiminnot",
+    "age": "Ikä",
+    "aliases": "Aliakset",
+    "all": "kaikki",
+    "also_known_as": "Esiintyy myös nimillä",
+    "appears_with": "Esiintyy yhdessä",
+    "ascending": "Nouseva",
+    "average_resolution": "Keskimääräinen resoluutio",
+    "between_and": "ja",
+    "birth_year": "Syntymävuosi",
+    "birthdate": "Syntymäpäivä",
+    "bitrate": "Bittinopeus",
+    "blobs_storage_type": {
+        "database": "Tietokanta",
+        "filesystem": "Tiedostojärjestelmä"
+    },
+    "captions": "Tekstitykset",
+    "career_length": "Uran pituus",
+    "chapters": "Kappaleet",
+    "circumcised": "Ympärileikattu",
+    "circumcised_types": {
+        "CUT": "Leikattu",
+        "UNCUT": "Ympäreileikkaamaton"
+    },
+    "component_tagger": {
+        "config": {
+            "active_instance": "Aktiivinen stash-box -instanssi:",
+            "blacklist_desc": "Mustalle listalle laitettuja kohteita ei sisällytetä kirjastoihin. Huomaathan, että kohteet ovat säännöllisiä lausekkeita ja niiden kirjainkoko on merkitsevä. Jotkin merkit täytyy päättää kenoviivalla: {chars_require_escape}",
+            "blacklist_label": "Musta lista",
+            "query_mode_auto": "Automaattinen",
+            "query_mode_auto_desc": "Käyttää metadataa jos saatavilla tai tiedoston nimeä",
+            "query_mode_dir": "Hakemisto",
+            "query_mode_dir_desc": "Käyttää vain kasiota jossa videotiedosto sijaitsee",
+            "query_mode_filename": "Tiedoston nimi",
+            "query_mode_filename_desc": "Käyttää vain tiedoston nimeä",
+            "query_mode_label": "Hakutila",
+            "query_mode_metadata": "Metadata",
+            "query_mode_metadata_desc": "Käyttää vain metadataa",
+            "query_mode_path": "Polku",
+            "query_mode_path_desc": "Käyttää koko polkua",
+            "set_cover_desc": "Korvaa kohtauksen kansi jos sellainen löydetään.",
+            "set_cover_label": "Aseta kohtauksen kansikuva",
+            "set_tag_desc": "Liitä tunnisteet kohtaukseen, joko ylikirjoittamalla nykyiset tai yhdistämällä ne jo olemassa oleviin tunnisteihin.",
+            "set_tag_label": "Aseta tunnisteet",
+            "show_male_desc": "Valitse käytetäänkö miesesiintyjiä automaattisessa tunnisteiden asettamisessa.",
+            "show_male_label": "Näytä miesesiintyjät",
+            "source": "Lähde"
+        },
+        "noun_query": "Haku",
+        "results": {
+            "duration_off": "Kesto eroaa vähintään {number}s",
+            "duration_unknown": "Tuntematon kesto",
+            "fp_found": "{fpCount, plural, =0 {Uusia sormenjälkiä ei löytynyt} other {Löytyi # uutta sormenjälkeä}}",
+            "fp_matches": "Kesto täsmää",
+            "fp_matches_multi": "Kesto täsmää {matchCount}/{durationsLength} sormenjälkiin",
+            "hash_matches": "{hash_type} täsmää",
+            "match_failed_already_tagged": "Kohtaukselle on jo asetettu tunnisteet",
+            "match_failed_no_result": "Ei tuloksia",
+            "match_success": "Kohtaukselle on nyt asetettu tunnisteet",
+            "phash_matches": "{count} PHashia täsmää",
+            "unnamed": "Nimetön"
+        },
+        "verb_match_fp": "Sormenjäljet täsmäävät",
+        "verb_matched": "Täsmätty",
+        "verb_scrape_all": "Kaavi kaikki",
+        "verb_submit_fp": "Lähetä {fpCount, plural, one{# sormenjäki} other{# sormenjälkeä}}",
+        "verb_toggle_config": "{toggle} {configuration}",
+        "verb_toggle_unmatched": "{toggle} täsmäämättömät kohtaukset"
+    },
     "config": {
-      "active_instance": "Aktiivinen stash-box -instanssi:",
-      "blacklist_desc": "Mustalle listalle laitettuja kohteita ei sisällytetä kirjastoihin. Huomaathan, että kohteet ovat säännöllisiä lausekkeita ja niiden kirjainkoko on merkitsevä. Jotkin merkit täytyy päättää kenoviivalla: {chars_require_escape}",
-      "blacklist_label": "Musta lista",
-      "query_mode_auto": "Automaattinen",
-      "query_mode_auto_desc": "Käyttää metadataa jos saatavilla tai tiedoston nimeä",
-      "query_mode_dir": "Hakemisto",
-      "query_mode_dir_desc": "Käyttää vain kasiota jossa videotiedosto sijaitsee",
-      "query_mode_filename": "Tiedoston nimi",
-      "query_mode_filename_desc": "Käyttää vain tiedoston nimeä",
-      "query_mode_label": "Hakutila",
-      "query_mode_metadata": "Metadata",
-      "query_mode_metadata_desc": "Käyttää vain metadataa",
-      "query_mode_path": "Polku",
-      "query_mode_path_desc": "Käyttää koko polkua",
-      "set_cover_desc": "Korvaa kohtauksen kansi jos sellainen löydetään.",
-      "set_cover_label": "Aseta kohtauksen kansikuva",
-      "set_tag_desc": "Liitä tunnisteet kohtaukseen, joko ylikirjoittamalla nykyiset tai yhdistämällä ne jo olemassa oleviin tunnisteihin.",
-      "set_tag_label": "Aseta tunnisteet",
-      "show_male_desc": "Valitse käytetäänkö miesesiintyjiä automaattisessa tunnisteiden asettamisessa.",
-      "show_male_label": "Näytä miesesiintyjät",
-      "source": "Lähde"
-    },
-    "noun_query": "Haku",
-    "results": {
-      "duration_off": "Kesto eroaa vähintään {number}s",
-      "duration_unknown": "Tuntematon kesto",
-      "fp_found": "{fpCount, plural, =0 {Uusia sormenjälkiä ei löytynyt} other {Löytyi # uutta sormenjälkeä}}",
-      "fp_matches": "Kesto täsmää",
-      "fp_matches_multi": "Kesto täsmää {matchCount}/{durationsLength} sormenjälkiin",
-      "hash_matches": "{hash_type} täsmää",
-      "match_failed_already_tagged": "Kohtaukselle on jo asetettu tunnisteet",
-      "match_failed_no_result": "Ei tuloksia",
-      "match_success": "Kohtaukselle on nyt asetettu tunnisteet",
-      "phash_matches": "{count} PHashia täsmää",
-      "unnamed": "Nimetön"
-    },
-    "verb_match_fp": "Sormenjäljet täsmäävät",
-    "verb_matched": "Täsmätty",
-    "verb_scrape_all": "Kaavi kaikki",
-    "verb_submit_fp": "Lähetä {fpCount, plural, one{# sormenjäki} other{# sormenjälkeä}}",
-    "verb_toggle_config": "{toggle} {configuration}",
-    "verb_toggle_unmatched": "{toggle} täsmäämättömät kohtaukset"
-  },
-  "config": {
-    "about": {
-      "build_hash": "Version tiiviste:",
-      "build_time": "Version päiväys:",
-      "check_for_new_version": "Tarkista onko uutta versiota saatavilla",
-      "latest_version": "Viimeisin Versio",
-      "latest_version_build_hash": "Uusimman version tiiviste:",
-      "new_version_notice": "[UUSI]",
-      "release_date": "Julkaisupäivä:",
-      "stash_discord": "Liity {url} kanavallemme",
-      "stash_home": "Stashin kotisivut {url}",
-      "stash_open_collective": "Tue meitä {url}",
-      "stash_wiki": "Stashin {url} -sivu",
-      "version": "Versio"
-    },
-    "application_paths": {
-      "heading": "Sovellukset Polut"
-    },
-    "categories": {
-      "about": "Tietoja",
-      "changelog": "Muutosloki",
-      "interface": "Käyttöliittymä",
-      "logs": "Lokit",
-      "metadata_providers": "Metadatan tarjoajat",
-      "plugins": "Lisäosat",
-      "scraping": "Kaavinta",
-      "security": "Turvallisuus",
-      "services": "Palvelut",
-      "system": "Järjestelmä",
-      "tasks": "Tehtävät",
-      "tools": "Työkalut"
-    },
-    "dlna": {
-      "allow_temp_ip": "Salli {tempIP}",
-      "allowed_ip_addresses": "Sallitut IP -osoitteet",
-      "allowed_ip_temporarily": "Väliaikaisesti sallittu IP",
-      "default_ip_whitelist": "Oletus IP Whitelist",
-      "default_ip_whitelist_desc": "Oletus IP -osoitteet, joilla on DLNA -pääsy. Käytä {wildcard} salliaksesi kaikki IP -osoitteet.",
-      "disabled_dlna_temporarily": "DLNA poistettu käytöstä väliaikaisesti",
-      "disallowed_ip": "Estetty IP",
-      "enabled_by_default": "Sallittu oletuksena",
-      "enabled_dlna_temporarily": "DNLA päällä väliaikaisesti",
-      "network_interfaces": "Rajapinnat",
-      "network_interfaces_desc": "Rajapinnat, joille DLNA palvelin näytetään. Tyhjä lista sallii kaikki rajapinnat. Vaatii DLNA -palvelimen uudelleenkäynnistyksen, mikäli asetusta muokataan.",
-      "recent_ip_addresses": "Viimeisimmät IP -osoitteet",
-      "server_display_name": "Palvelimen näyttönimi",
-      "server_display_name_desc": "DLNA -palvelimen nimi. Oletuksena {server_name}, jos tyhjä.",
-      "until_restart": "uudelleenkäynnistykseen asti"
-    },
-    "general": {
-      "auth": {
-        "api_key": "API -avain",
-        "api_key_desc": "API -avain ulkoisille järjestelmille. Tarvitaan vain jos käyttäjätunnus ja salasana on määritelty. Käyttäjätunnus taytyy tallentaa ennen API -avaimen luomista.",
-        "authentication": "Autentikointi",
-        "clear_api_key": "Puhdista API -avain",
-        "credentials": {
-          "description": "Tunnukset, joiden pääsyä stashiin rajoitetaan.",
-          "heading": "Tunnukset"
+        "about": {
+            "build_hash": "Version tiiviste:",
+            "build_time": "Version päiväys:",
+            "check_for_new_version": "Tarkista onko uutta versiota saatavilla",
+            "latest_version": "Viimeisin Versio",
+            "latest_version_build_hash": "Uusimman version tiiviste:",
+            "new_version_notice": "[UUSI]",
+            "release_date": "Julkaisupäivä:",
+            "stash_discord": "Liity {url} kanavallemme",
+            "stash_home": "Stashin kotisivut {url}",
+            "stash_open_collective": "Tue meitä {url}",
+            "stash_wiki": "Stashin {url} -sivu",
+            "version": "Versio"
         },
-        "generate_api_key": "Luo API -avain",
-        "log_file": "Lokitiedosto",
-        "log_file_desc": "Polku lokitiedostoon. Jos jätetty tyhjäksi, ei lokitiedostoa tehdä. Vaatii uudelleenkäynnistyksen.",
-        "log_http": "Kirjaa http käyttö",
-        "log_http_desc": "Kirjaa http -pyynnöt komentoriville. Vaatii uudelleenkäynnistyksen.",
-        "log_to_terminal": "Kirjoita loki komentoriville",
-        "log_to_terminal_desc": "Kirjaa lokin komentoriville lokitiedoston sijaan. Aina päällä jos lokitiedosto ei ole käytössä. Vaatii uudelleenkäynnistyksen.",
-        "maximum_session_age": "Istunnon keston yläraja",
-        "maximum_session_age_desc": "Yläraja toimettomalle ajalle sekunneissa ennen kuin kirjautuminen vanhenee.",
-        "password": "Salasana",
-        "password_desc": "Salasana Stashiin. Jätä tyhjäksi, mikäli et halua autentikointia",
-        "stash-box_integration": "Stash-box integraatio",
-        "username": "Käyttäjätunnus",
-        "username_desc": "Käyttäjätunnus Stashiin. Jätä tyhjäksi, mikäli et halua autentikointia"
-      },
-      "backup_directory_path": {
-        "description": "SQLite -tietokannan varmuuskopiokansion sijainti",
-        "heading": "Varmuuskopiokansion polku"
-      },
-      "cache_location": "Välimuistin kansion sijainti. Vaadittu kun suoratoistossa käytetään HLS:ää (kuten Apple -laitteissa) tai DASH:iä.",
-      "cache_path_head": "Välimuistin polku",
-      "calculate_md5_and_ohash_desc": "Laske MD5 -tarkistussumma oshashin lisäksi. Jos laitat tämän päälle, se tekee skannauksista hitaampia. Tiedostojen nimien tiivisteeksi pitää valita oshash MD5:n laskemisen laittamiseksi pois päältä.",
-      "calculate_md5_and_ohash_label": "Laske MD5 videoille",
-      "check_for_insecure_certificates": "Tarkista turvattomien varmenteiden varalta",
-      "check_for_insecure_certificates_desc": "Jotkin sivut käyttävät turvattomia ssl -sertifikaatteja. Jos ei valittu, kaapija ohittaa turvattomien varmenteiden tarkistuksen ja sallii näiden sivujen kaapimisen. Jos saat sertifikaattivirheen kaavinnan aikana, ota valinta pois tästä.",
-      "chrome_cdp_path": "Chrome CDP -polku",
-      "chrome_cdp_path_desc": "Tiedostopolku Chromeen, tai etäpolku (alkaa http:// tai https://, esimerkiksi http://localhost:9222/json/version) Chrome -instanssiin.",
-      "create_galleries_from_folders_desc": "Jos valittu, luodaan galleria kansion sisältämistä kuvista.",
-      "create_galleries_from_folders_label": "Luo galleria kansion kuvista",
-      "database": "Tietokanta",
-      "db_path_head": "Tietokannan polku",
-      "directory_locations_to_your_content": "Kansiot, joissa sisältösi sijaitsee",
-      "excluded_image_gallery_patterns_desc": "Säännöllinen lauseke kuvien ja gallerioiden nimille/poluille, jotka jätetään huomioimatta skannauksessa",
-      "excluded_image_gallery_patterns_head": "Poisjätetyt kuvien ja gallerioiden merkkijonot",
-      "excluded_video_patterns_desc": "Säännöllinen lauseke videoiden nimille/poluille, jotka jätetään huomioimatta skannauksessa",
-      "excluded_video_patterns_head": "Poisjätetyt videoiden merkkijonot",
-      "gallery_ext_desc": "Pilkuilla erotettu lista tiedostopäätteistä, mitkä tulkitaan pakatuksi zip -galleriatiedostoksi.",
-      "gallery_ext_head": "Gallerian zip -päätteet",
-      "generated_file_naming_hash_desc": "Käytä MD5:ttä tai oshashia tiedostojen nimien generoimiseen. Tämän muuttaminen vaatii, että kaikilla kohtauksilla on MD5 tai oshash. Tämän valinnan muuttamisen jälkeen kaikki generoidut tukitiedostot täytyy joko migraatioida tai generoida uudelleen. Katso lisää migraatiosta tehtävät -sivulta.",
-      "generated_file_naming_hash_head": "Generoitu tiiviste tiedoston nimeämistä varten",
-      "generated_files_location": "Kansion polku generoiduille tiedostoille (kohtauksen merkit, kohtauksien esikatselut, tms)",
-      "generated_path_head": "Generoitujen tiedostojen polku",
-      "hashing": "Tiivisteen luominen",
-      "image_ext_desc": "Pilkuilla erotettu lista tiedostopäätteistä, jotka tulkitaan kuviksi.",
-      "image_ext_head": "Kuvien tiedostopäätteet",
-      "include_audio_desc": "Sisällyttää äänen generoituihin esikatseluihin.",
-      "include_audio_head": "SIsällytä ääni",
-      "logging": "Kirjaus",
-      "maximum_streaming_transcode_size_desc": "Suurin koko transkoodatulle suoratoistolle",
-      "maximum_streaming_transcode_size_head": "Transkoodatun suoratoiston suurin koko",
-      "maximum_transcode_size_desc": "Suurin koko generoiduille transkoodauksille",
-      "maximum_transcode_size_head": "Suurin koko transkoodaukselle",
-      "metadata_path": {
-        "description": "Kansion sijainti kun tehdään täydellinen vienti tai tuonti",
-        "heading": "Metadatan polku"
-      },
-      "number_of_parallel_task_for_scan_generation_desc": "Automaattinen tunnistus on käytössä jos asetat 0. Varoitus: jos sallit enemmän tehtäviä kuin mitä suoritimesi kykenee suorittamaan voi järjestelmän suorituskyky laskea tai se voi aiheuttaa muita ongelmia.",
-      "number_of_parallel_task_for_scan_generation_head": "Rinnakkaisten skannaus- ja generointitehtävien määrä",
-      "parallel_scan_head": "Rinnakkainen skannaus ja generointi",
-      "preview_generation": "Esikatselun generointi",
-      "python_path": {
-        "heading": "Pythonin polku"
-      },
-      "scraper_user_agent": "Kaapijan käyttäjäagentti",
-      "scraper_user_agent_desc": "Käyttäjäagenttikenttä, jota kaavittaessa käytetään http pyynnöissä",
-      "scrapers_path": {
-        "description": "Kaapijan konfiguraatiotiedostojen kansion sijainti",
-        "heading": "Kaapijoiden polku"
-      },
-      "scraping": "Kaapiminen",
-      "sqlite_location": "SQLite -tietokannan tiedostosijainti (vaatii uudelleenkäynnistyksen) VAROITUS: tietokannan tallentaminen eri järjestelmään kuin missä Stash on käynnissä (kuten verkon yli) ei ole tuettu!",
-      "video_ext_desc": "Pilkuilla erotettu lista tiedostopäätteistä, jotka tulkitaan videoiksi.",
-      "video_ext_head": "Videoiden päätteet",
-      "video_head": "Video"
-    },
-    "library": {
-      "exclusions": "Poisjättäminen",
-      "gallery_and_image_options": "Galleria- ja kuva-asetukset",
-      "media_content_extensions": "Mediasisällön tiedostopäätteet"
-    },
-    "logs": {
-      "log_level": "Lokin taso"
-    },
-    "scraping": {
-      "entity_metadata": "{entityType} metadata",
-      "entity_scrapers": "{entityType} kaapijat",
-      "excluded_tag_patterns_desc": "Säännöllinen lauseke tunnisteista, jotka jätetään pois kaapijan tuloksista",
-      "excluded_tag_patterns_head": "Poisjätetyt tunnisteet",
-      "scraper": "Kaapija",
-      "scrapers": "Kaapijat",
-      "search_by_name": "Etsi nimellä",
-      "supported_types": "Tuetut tyypit",
-      "supported_urls": "URL -osoitteet"
-    },
-    "stashbox": {
-      "add_instance": "Lisää stash-box instanssi",
-      "api_key": "API -avain",
-      "description": "Stash-box helpottaa kohtauksien ja esiintyjien tunnistamista sormenjälkien ja tiedostonimien perusteella.\nPäätepiste ja API -avain löytyy stash-boxin tilisi tiedoista. Nimiä vaaditaan jos yhdistät useampaan kuin yhteen stash-box -instanssiin.",
-      "endpoint": "Päätepiste",
-      "graphql_endpoint": "GraphQL päätepiste",
-      "name": "Nimi",
-      "title": "Stash-box päätepisteet"
-    },
-    "system": {
-      "transcoding": "Transkoodaus"
-    },
-    "tasks": {
-      "added_job_to_queue": "Lisättiin {operation_name} tehtäväjonoon",
-      "anonymise_and_download": "Tekee anonymisoidun kopion tietokannasta ja lataa sen.",
-      "auto_tag": {
-        "auto_tagging_all_paths": "Asetetaan tunnisteet automaattisesti kaikkiin polkuihin",
-        "auto_tagging_paths": "Asetetaan tunnisteet automaattisesti seuraaviin polkuihin"
-      },
-      "auto_tag_based_on_filenames": "Aseta tunnisteet automaattisesti tiedostopolkujen perusteella.",
-      "auto_tagging": "Automaattinen tunnisteiden asetus",
-      "backing_up_database": "Varmuuskopioidaan tietokantaa",
-      "backup_and_download": "Suorittaa tietokannan varmuuskopioinnin ja lataa luodun tiedoston.",
-      "backup_database": "Suorittaa tietokannan varmuuskopioinnin ja tallentaa {filename_format} -tiedoston varmuuskopiokansioon",
-      "cleanup_desc": "Tarkistaa puuttuvat tiedostot ja poistaa ne tietokannasta. Tämä on tuhoava toimi.",
-      "data_management": "Datan hallinta",
-      "defaults_set": "Oletukset on asetettu ja niitä käytetään kun painat {action} -painiketta Tehtävät -sivulla.",
-      "dont_include_file_extension_as_part_of_the_title": "Elä sisällytä tiedostopäätettä tiedoston nimeen",
-      "empty_queue": "Tehtäviä ei ole menossa.",
-      "export_to_json": "Vie tietokannan sisällön JSON -formaatissa samaan kansioon kuin missä tietokanta on.",
-      "generate": {
-        "generating_from_paths": "Generoidaan kohtauksille seuraavista poluista",
-        "generating_scenes": "Generoidaan {num} {scene}"
-      },
-      "generate_desc": "Generoi kuvat, esikatselut ja muut tukitiedostot.",
-      "generate_phashes_during_scan": "Generoi phash -tiivisteet",
-      "generate_phashes_during_scan_tooltip": "Kaksoiskappaleiden löytämiseen ja kohtauksien tunnistamiseen.",
-      "generate_previews_during_scan": "Generoi animoidut esikatselukuvat",
-      "generate_previews_during_scan_tooltip": "Generoi animoidun WebP -esikatselun, vaaditaan vain jos esikatselun tyypiksi on valittu animoitu kuva.",
-      "generate_thumbnails_during_scan": "Generoi esikatselukuva skannauksen aikana",
-      "generate_video_previews_during_scan": "Generoi esikatselu",
-      "generate_video_previews_during_scan_tooltip": "Generoi videoesikatselun, joka näytetään kun osoitin menee kohtauksen päälle",
-      "generated_content": "Generoitu sisältö",
-      "identify": {
-        "and_create_missing": "ja luo puuttuvat",
-        "create_missing": "Luo puuttuvat",
-        "default_options": "Oletusasetukset",
-        "description": "Aseta kohtauksen metadata automaattisesti käyttäen apuna stash-boxia ja kaapimia.",
-        "explicit_set_description": "Seuraavia asetuksia käytetään, mikäli lähdekohtaisia asetuksia ei ole.",
-        "field": "Kenttä",
-        "field_behaviour": "{strategy} {field}",
-        "field_options": "Kentän asetukset",
-        "heading": "Tunnista",
-        "identifying_from_paths": "Tunnistetaan kohtauksia seuraavista poluista",
-        "identifying_scenes": "Tunnistetaan {num} {scene}",
-        "include_male_performers": "Sisällytä miesesiintyjät",
-        "set_cover_images": "Aseta kansikuvat",
-        "set_organized": "Aseta järjestelty -tunniste",
-        "source": "Lähde",
-        "source_options": "{source} asetukset",
-        "sources": "Lähteet",
-        "strategy": "Strategia"
-      },
-      "import_from_exported_json": "Tuo viedystä JSON -tiedoista, jotka ovat samassa kansiossa kuin metadata. Pyyhkii olemassaolevan tietokannan.",
-      "incremental_import": "Lisäävä tuonti valitusta zip -tiedostosta.",
-      "job_queue": "Tehtäväjono",
-      "maintenance": "Ylläpito",
-      "migrate_blobs": {
-        "delete_old": "Poista vanhat tiedot"
-      },
-      "migrate_hash_files": "Käytetään kun muutetaan generoitua tiedoston nimeämistiivistettä jo generoitujen tiedostojen uudelleennimeämiseen uuteen muotoon.",
-      "migrations": "Migraatiot",
-      "only_dry_run": "Suorita kuivaharjoittelu. Elä poista mitään",
-      "plugin_tasks": "Lisäosien tehtävät",
-      "scan": {
-        "scanning_all_paths": "Skannataan kaikki polut",
-        "scanning_paths": "Skannataan seuraavia polkuja"
-      },
-      "scan_for_content_desc": "Skannaa uusi sisältö ja lisää se tietokantaan.",
-      "set_name_date_details_from_metadata_if_present": "Aseta nimi, päivä ja tiedot metadatasta"
-    },
-    "tools": {
-      "scene_duplicate_checker": "Kohtauksien kaksoiskappaleiden tarkistus",
-      "scene_filename_parser": {
-        "add_field": "Lisää kenttä",
-        "capitalize_title": "Otsikko kapiteelein",
-        "display_fields": "Näytä kentät",
-        "filename": "Tiedostonimi",
-        "ignore_organized": "Jätä järjestellyt kohtaukset huomiotta",
-        "ignored_words": "Huomiotta jätetyt sanat",
-        "matches_with": "Täsmää seuraavan kanssa {i}",
-        "whitespace_chars_desc": "Nämä merkit korvataan välilyönnillä otsikossa"
-      },
-      "scene_tools": "Kohtauksen työkalut"
-    },
-    "ui": {
-      "basic_settings": "Perusasetukset",
-      "custom_css": {
-        "description": "Sivu täytyy ladata uudelleen, jotta muutokset tulevat voimaan. Yhteensopivuutta muokatun CSS:n ja tulevien Stash -versioiden kanssa ei voida taata.",
-        "heading": "Mukautettu CSS",
-        "option_label": "Mukautettu CSS käytössä"
-      },
-      "custom_javascript": {
-        "description": "Sivu täytyy ladata uudelleen, jotta muutokset astuvat voimaan. Yhteensopivuutta muokatun JavaScriptin ja tulevien Stash -versioiden kanssa ei voida taata.",
-        "heading": "Mukautettu Javascript",
-        "option_label": "Mukautettu Javascript käytössä"
-      },
-      "custom_locales": {
-        "heading": "Mukautettu lokalisointi",
-        "option_label": "Mukautettu lokalisointi käytössä"
-      },
-      "delete_options": {
-        "description": "Oletusasetukset kun poistetaan kuvia, gallerioita ja kohtauksia.",
-        "heading": "Poistovalinnat",
-        "options": {
-          "delete_file": "Poista tiedosto oletuksena",
-          "delete_generated_supporting_files": "Poista generoidut tukitiedostot oletuksena"
-        }
-      },
-      "desktop_integration": {
-        "desktop_integration": "Työpöytäintegraatio",
-        "notifications_enabled": "Laita ilmoitukset päälle",
-        "send_desktop_notifications_for_events": "Lähetä työpöytäilmoituksia tapahtumista",
-        "skip_opening_browser": "Ohita selaimen avaus",
-        "skip_opening_browser_on_startup": "Ohita selaimen automaattinen avaus käynnistäessä"
-      },
-      "editing": {
-        "disable_dropdown_create": {
-          "description": "Poistaa mahdollisuuden luoda uusia kohteita alasvetovalikoista",
-          "heading": "Poista luominen alasvetovalikoista"
+        "application_paths": {
+            "heading": "Sovellukset Polut"
         },
-        "heading": "Muokkaaminen",
-        "rating_system": {
-          "star_precision": {
-            "label": "Arvostelutähtien tarkkuus",
-            "options": {
-              "full": "Kokonainen",
-              "half": "Puolikas",
-              "quarter": "Neljäsosa"
+        "categories": {
+            "about": "Tietoja",
+            "changelog": "Muutosloki",
+            "interface": "Käyttöliittymä",
+            "logs": "Lokit",
+            "metadata_providers": "Metadatan tarjoajat",
+            "plugins": "Lisäosat",
+            "scraping": "Kaavinta",
+            "security": "Turvallisuus",
+            "services": "Palvelut",
+            "system": "Järjestelmä",
+            "tasks": "Tehtävät",
+            "tools": "Työkalut"
+        },
+        "dlna": {
+            "allow_temp_ip": "Salli {tempIP}",
+            "allowed_ip_addresses": "Sallitut IP -osoitteet",
+            "allowed_ip_temporarily": "Väliaikaisesti sallittu IP",
+            "default_ip_whitelist": "Oletus IP Whitelist",
+            "default_ip_whitelist_desc": "Oletus IP -osoitteet, joilla on DLNA -pääsy. Käytä {wildcard} salliaksesi kaikki IP -osoitteet.",
+            "disabled_dlna_temporarily": "DLNA poistettu käytöstä väliaikaisesti",
+            "disallowed_ip": "Estetty IP",
+            "enabled_by_default": "Sallittu oletuksena",
+            "enabled_dlna_temporarily": "DNLA päällä väliaikaisesti",
+            "network_interfaces": "Rajapinnat",
+            "network_interfaces_desc": "Rajapinnat, joille DLNA palvelin näytetään. Tyhjä lista sallii kaikki rajapinnat. Vaatii DLNA -palvelimen uudelleenkäynnistyksen, mikäli asetusta muokataan.",
+            "recent_ip_addresses": "Viimeisimmät IP -osoitteet",
+            "server_display_name": "Palvelimen näyttönimi",
+            "server_display_name_desc": "DLNA -palvelimen nimi. Oletuksena {server_name}, jos tyhjä.",
+            "until_restart": "uudelleenkäynnistykseen asti"
+        },
+        "general": {
+            "auth": {
+                "api_key": "API -avain",
+                "api_key_desc": "API -avain ulkoisille järjestelmille. Tarvitaan vain jos käyttäjätunnus ja salasana on määritelty. Käyttäjätunnus taytyy tallentaa ennen API -avaimen luomista.",
+                "authentication": "Autentikointi",
+                "clear_api_key": "Puhdista API -avain",
+                "credentials": {
+                    "description": "Tunnukset, joiden pääsyä stashiin rajoitetaan.",
+                    "heading": "Tunnukset"
+                },
+                "generate_api_key": "Luo API -avain",
+                "log_file": "Lokitiedosto",
+                "log_file_desc": "Polku lokitiedostoon. Jos jätetty tyhjäksi, ei lokitiedostoa tehdä. Vaatii uudelleenkäynnistyksen.",
+                "log_http": "Kirjaa http käyttö",
+                "log_http_desc": "Kirjaa http -pyynnöt komentoriville. Vaatii uudelleenkäynnistyksen.",
+                "log_to_terminal": "Kirjoita loki komentoriville",
+                "log_to_terminal_desc": "Kirjaa lokin komentoriville lokitiedoston sijaan. Aina päällä jos lokitiedosto ei ole käytössä. Vaatii uudelleenkäynnistyksen.",
+                "maximum_session_age": "Istunnon keston yläraja",
+                "maximum_session_age_desc": "Yläraja toimettomalle ajalle sekunneissa ennen kuin kirjautuminen vanhenee.",
+                "password": "Salasana",
+                "password_desc": "Salasana Stashiin. Jätä tyhjäksi, mikäli et halua autentikointia",
+                "stash-box_integration": "Stash-box integraatio",
+                "username": "Käyttäjätunnus",
+                "username_desc": "Käyttäjätunnus Stashiin. Jätä tyhjäksi, mikäli et halua autentikointia"
+            },
+            "backup_directory_path": {
+                "description": "SQLite -tietokannan varmuuskopiokansion sijainti",
+                "heading": "Varmuuskopiokansion polku"
+            },
+            "cache_location": "Välimuistin kansion sijainti. Vaadittu kun suoratoistossa käytetään HLS:ää (kuten Apple -laitteissa) tai DASH:iä.",
+            "cache_path_head": "Välimuistin polku",
+            "calculate_md5_and_ohash_desc": "Laske MD5 -tarkistussumma oshashin lisäksi. Jos laitat tämän päälle, se tekee skannauksista hitaampia. Tiedostojen nimien tiivisteeksi pitää valita oshash MD5:n laskemisen laittamiseksi pois päältä.",
+            "calculate_md5_and_ohash_label": "Laske MD5 videoille",
+            "check_for_insecure_certificates": "Tarkista turvattomien varmenteiden varalta",
+            "check_for_insecure_certificates_desc": "Jotkin sivut käyttävät turvattomia ssl -sertifikaatteja. Jos ei valittu, kaapija ohittaa turvattomien varmenteiden tarkistuksen ja sallii näiden sivujen kaapimisen. Jos saat sertifikaattivirheen kaavinnan aikana, ota valinta pois tästä.",
+            "chrome_cdp_path": "Chrome CDP -polku",
+            "chrome_cdp_path_desc": "Tiedostopolku Chromeen, tai etäpolku (alkaa http:// tai https://, esimerkiksi http://localhost:9222/json/version) Chrome -instanssiin.",
+            "create_galleries_from_folders_desc": "Jos valittu, luodaan galleria kansion sisältämistä kuvista.",
+            "create_galleries_from_folders_label": "Luo galleria kansion kuvista",
+            "database": "Tietokanta",
+            "db_path_head": "Tietokannan polku",
+            "directory_locations_to_your_content": "Kansiot, joissa sisältösi sijaitsee",
+            "excluded_image_gallery_patterns_desc": "Säännöllinen lauseke kuvien ja gallerioiden nimille/poluille, jotka jätetään huomioimatta skannauksessa",
+            "excluded_image_gallery_patterns_head": "Poisjätetyt kuvien ja gallerioiden merkkijonot",
+            "excluded_video_patterns_desc": "Säännöllinen lauseke videoiden nimille/poluille, jotka jätetään huomioimatta skannauksessa",
+            "excluded_video_patterns_head": "Poisjätetyt videoiden merkkijonot",
+            "gallery_ext_desc": "Pilkuilla erotettu lista tiedostopäätteistä, mitkä tulkitaan pakatuksi zip -galleriatiedostoksi.",
+            "gallery_ext_head": "Gallerian zip -päätteet",
+            "generated_file_naming_hash_desc": "Käytä MD5:ttä tai oshashia tiedostojen nimien generoimiseen. Tämän muuttaminen vaatii, että kaikilla kohtauksilla on MD5 tai oshash. Tämän valinnan muuttamisen jälkeen kaikki generoidut tukitiedostot täytyy joko migraatioida tai generoida uudelleen. Katso lisää migraatiosta tehtävät -sivulta.",
+            "generated_file_naming_hash_head": "Generoitu tiiviste tiedoston nimeämistä varten",
+            "generated_files_location": "Kansion polku generoiduille tiedostoille (kohtauksen merkit, kohtauksien esikatselut, tms)",
+            "generated_path_head": "Generoitujen tiedostojen polku",
+            "hashing": "Tiivisteen luominen",
+            "image_ext_desc": "Pilkuilla erotettu lista tiedostopäätteistä, jotka tulkitaan kuviksi.",
+            "image_ext_head": "Kuvien tiedostopäätteet",
+            "include_audio_desc": "Sisällyttää äänen generoituihin esikatseluihin.",
+            "include_audio_head": "SIsällytä ääni",
+            "logging": "Kirjaus",
+            "maximum_streaming_transcode_size_desc": "Suurin koko transkoodatulle suoratoistolle",
+            "maximum_streaming_transcode_size_head": "Transkoodatun suoratoiston suurin koko",
+            "maximum_transcode_size_desc": "Suurin koko generoiduille transkoodauksille",
+            "maximum_transcode_size_head": "Suurin koko transkoodaukselle",
+            "metadata_path": {
+                "description": "Kansion sijainti kun tehdään täydellinen vienti tai tuonti",
+                "heading": "Metadatan polku"
+            },
+            "number_of_parallel_task_for_scan_generation_desc": "Automaattinen tunnistus on käytössä jos asetat 0. Varoitus: jos sallit enemmän tehtäviä kuin mitä suoritimesi kykenee suorittamaan voi järjestelmän suorituskyky laskea tai se voi aiheuttaa muita ongelmia.",
+            "number_of_parallel_task_for_scan_generation_head": "Rinnakkaisten skannaus- ja generointitehtävien määrä",
+            "parallel_scan_head": "Rinnakkainen skannaus ja generointi",
+            "preview_generation": "Esikatselun generointi",
+            "python_path": {
+                "heading": "Pythonin polku"
+            },
+            "scraper_user_agent": "Kaapijan käyttäjäagentti",
+            "scraper_user_agent_desc": "Käyttäjäagenttikenttä, jota kaavittaessa käytetään http pyynnöissä",
+            "scrapers_path": {
+                "description": "Kaapijan konfiguraatiotiedostojen kansion sijainti",
+                "heading": "Kaapijoiden polku"
+            },
+            "scraping": "Kaapiminen",
+            "sqlite_location": "SQLite -tietokannan tiedostosijainti (vaatii uudelleenkäynnistyksen) VAROITUS: tietokannan tallentaminen eri järjestelmään kuin missä Stash on käynnissä (kuten verkon yli) ei ole tuettu!",
+            "video_ext_desc": "Pilkuilla erotettu lista tiedostopäätteistä, jotka tulkitaan videoiksi.",
+            "video_ext_head": "Videoiden päätteet",
+            "video_head": "Video"
+        },
+        "library": {
+            "exclusions": "Poisjättäminen",
+            "gallery_and_image_options": "Galleria- ja kuva-asetukset",
+            "media_content_extensions": "Mediasisällön tiedostopäätteet"
+        },
+        "logs": {
+            "log_level": "Lokin taso"
+        },
+        "scraping": {
+            "entity_metadata": "{entityType} metadata",
+            "entity_scrapers": "{entityType} kaapijat",
+            "excluded_tag_patterns_desc": "Säännöllinen lauseke tunnisteista, jotka jätetään pois kaapijan tuloksista",
+            "excluded_tag_patterns_head": "Poisjätetyt tunnisteet",
+            "scraper": "Kaapija",
+            "scrapers": "Kaapijat",
+            "search_by_name": "Etsi nimellä",
+            "supported_types": "Tuetut tyypit",
+            "supported_urls": "URL -osoitteet"
+        },
+        "stashbox": {
+            "add_instance": "Lisää stash-box instanssi",
+            "api_key": "API -avain",
+            "description": "Stash-box helpottaa kohtauksien ja esiintyjien tunnistamista sormenjälkien ja tiedostonimien perusteella.\nPäätepiste ja API -avain löytyy stash-boxin tilisi tiedoista. Nimiä vaaditaan jos yhdistät useampaan kuin yhteen stash-box -instanssiin.",
+            "endpoint": "Päätepiste",
+            "graphql_endpoint": "GraphQL päätepiste",
+            "name": "Nimi",
+            "title": "Stash-box päätepisteet"
+        },
+        "system": {
+            "transcoding": "Transkoodaus"
+        },
+        "tasks": {
+            "added_job_to_queue": "Lisättiin {operation_name} tehtäväjonoon",
+            "anonymise_and_download": "Tekee anonymisoidun kopion tietokannasta ja lataa sen.",
+            "auto_tag": {
+                "auto_tagging_all_paths": "Asetetaan tunnisteet automaattisesti kaikkiin polkuihin",
+                "auto_tagging_paths": "Asetetaan tunnisteet automaattisesti seuraaviin polkuihin"
+            },
+            "auto_tag_based_on_filenames": "Aseta tunnisteet automaattisesti tiedostopolkujen perusteella.",
+            "auto_tagging": "Automaattinen tunnisteiden asetus",
+            "backing_up_database": "Varmuuskopioidaan tietokantaa",
+            "backup_and_download": "Suorittaa tietokannan varmuuskopioinnin ja lataa luodun tiedoston.",
+            "backup_database": "Suorittaa tietokannan varmuuskopioinnin ja tallentaa {filename_format} -tiedoston varmuuskopiokansioon",
+            "cleanup_desc": "Tarkistaa puuttuvat tiedostot ja poistaa ne tietokannasta. Tämä on tuhoava toimi.",
+            "data_management": "Datan hallinta",
+            "defaults_set": "Oletukset on asetettu ja niitä käytetään kun painat {action} -painiketta Tehtävät -sivulla.",
+            "dont_include_file_extension_as_part_of_the_title": "Elä sisällytä tiedostopäätettä tiedoston nimeen",
+            "empty_queue": "Tehtäviä ei ole menossa.",
+            "export_to_json": "Vie tietokannan sisällön JSON -formaatissa samaan kansioon kuin missä tietokanta on.",
+            "generate": {
+                "generating_from_paths": "Generoidaan kohtauksille seuraavista poluista",
+                "generating_scenes": "Generoidaan {num} {scene}"
+            },
+            "generate_desc": "Generoi kuvat, esikatselut ja muut tukitiedostot.",
+            "generate_phashes_during_scan": "Generoi phash -tiivisteet",
+            "generate_phashes_during_scan_tooltip": "Kaksoiskappaleiden löytämiseen ja kohtauksien tunnistamiseen.",
+            "generate_previews_during_scan": "Generoi animoidut esikatselukuvat",
+            "generate_previews_during_scan_tooltip": "Generoi animoidun WebP -esikatselun, vaaditaan vain jos esikatselun tyypiksi on valittu animoitu kuva.",
+            "generate_thumbnails_during_scan": "Generoi esikatselukuva skannauksen aikana",
+            "generate_video_previews_during_scan": "Generoi esikatselu",
+            "generate_video_previews_during_scan_tooltip": "Generoi videoesikatselun, joka näytetään kun osoitin menee kohtauksen päälle",
+            "generated_content": "Generoitu sisältö",
+            "identify": {
+                "and_create_missing": "ja luo puuttuvat",
+                "create_missing": "Luo puuttuvat",
+                "default_options": "Oletusasetukset",
+                "description": "Aseta kohtauksen metadata automaattisesti käyttäen apuna stash-boxia ja kaapimia.",
+                "explicit_set_description": "Seuraavia asetuksia käytetään, mikäli lähdekohtaisia asetuksia ei ole.",
+                "field": "Kenttä",
+                "field_behaviour": "{strategy} {field}",
+                "field_options": "Kentän asetukset",
+                "heading": "Tunnista",
+                "identifying_from_paths": "Tunnistetaan kohtauksia seuraavista poluista",
+                "identifying_scenes": "Tunnistetaan {num} {scene}",
+                "include_male_performers": "Sisällytä miesesiintyjät",
+                "set_cover_images": "Aseta kansikuvat",
+                "set_organized": "Aseta järjestelty -tunniste",
+                "source": "Lähde",
+                "source_options": "{source} asetukset",
+                "sources": "Lähteet",
+                "strategy": "Strategia"
+            },
+            "import_from_exported_json": "Tuo viedystä JSON -tiedoista, jotka ovat samassa kansiossa kuin metadata. Pyyhkii olemassaolevan tietokannan.",
+            "incremental_import": "Lisäävä tuonti valitusta zip -tiedostosta.",
+            "job_queue": "Tehtäväjono",
+            "maintenance": "Ylläpito",
+            "migrate_blobs": {
+                "delete_old": "Poista vanhat tiedot"
+            },
+            "migrate_hash_files": "Käytetään kun muutetaan generoitua tiedoston nimeämistiivistettä jo generoitujen tiedostojen uudelleennimeämiseen uuteen muotoon.",
+            "migrations": "Migraatiot",
+            "only_dry_run": "Suorita kuivaharjoittelu. Elä poista mitään",
+            "plugin_tasks": "Lisäosien tehtävät",
+            "scan": {
+                "scanning_all_paths": "Skannataan kaikki polut",
+                "scanning_paths": "Skannataan seuraavia polkuja"
+            },
+            "scan_for_content_desc": "Skannaa uusi sisältö ja lisää se tietokantaan.",
+            "set_name_date_details_from_metadata_if_present": "Aseta nimi, päivä ja tiedot metadatasta"
+        },
+        "tools": {
+            "scene_duplicate_checker": "Kohtauksien kaksoiskappaleiden tarkistus",
+            "scene_filename_parser": {
+                "add_field": "Lisää kenttä",
+                "capitalize_title": "Otsikko kapiteelein",
+                "display_fields": "Näytä kentät",
+                "filename": "Tiedostonimi",
+                "ignore_organized": "Jätä järjestellyt kohtaukset huomiotta",
+                "ignored_words": "Huomiotta jätetyt sanat",
+                "matches_with": "Täsmää seuraavan kanssa {i}",
+                "whitespace_chars_desc": "Nämä merkit korvataan välilyönnillä otsikossa"
+            },
+            "scene_tools": "Kohtauksen työkalut"
+        },
+        "ui": {
+            "basic_settings": "Perusasetukset",
+            "custom_css": {
+                "description": "Sivu täytyy ladata uudelleen, jotta muutokset tulevat voimaan. Yhteensopivuutta muokatun CSS:n ja tulevien Stash -versioiden kanssa ei voida taata.",
+                "heading": "Mukautettu CSS",
+                "option_label": "Mukautettu CSS käytössä"
+            },
+            "custom_javascript": {
+                "description": "Sivu täytyy ladata uudelleen, jotta muutokset astuvat voimaan. Yhteensopivuutta muokatun JavaScriptin ja tulevien Stash -versioiden kanssa ei voida taata.",
+                "heading": "Mukautettu Javascript",
+                "option_label": "Mukautettu Javascript käytössä"
+            },
+            "custom_locales": {
+                "heading": "Mukautettu lokalisointi",
+                "option_label": "Mukautettu lokalisointi käytössä"
+            },
+            "delete_options": {
+                "description": "Oletusasetukset kun poistetaan kuvia, gallerioita ja kohtauksia.",
+                "heading": "Poistovalinnat",
+                "options": {
+                    "delete_file": "Poista tiedosto oletuksena",
+                    "delete_generated_supporting_files": "Poista generoidut tukitiedostot oletuksena"
+                }
+            },
+            "desktop_integration": {
+                "desktop_integration": "Työpöytäintegraatio",
+                "notifications_enabled": "Laita ilmoitukset päälle",
+                "send_desktop_notifications_for_events": "Lähetä työpöytäilmoituksia tapahtumista",
+                "skip_opening_browser": "Ohita selaimen avaus",
+                "skip_opening_browser_on_startup": "Ohita selaimen automaattinen avaus käynnistäessä"
+            },
+            "editing": {
+                "disable_dropdown_create": {
+                    "description": "Poistaa mahdollisuuden luoda uusia kohteita alasvetovalikoista",
+                    "heading": "Poista luominen alasvetovalikoista"
+                },
+                "heading": "Muokkaaminen",
+                "rating_system": {
+                    "star_precision": {
+                        "label": "Arvostelutähtien tarkkuus",
+                        "options": {
+                            "full": "Kokonainen",
+                            "half": "Puolikas",
+                            "quarter": "Neljäsosa"
+                        }
+                    },
+                    "type": {
+                        "label": "Arvostelujärjestelmä",
+                        "options": {
+                            "decimal": "Desimaalit",
+                            "stars": "Tähdet"
+                        }
+                    }
+                }
+            },
+            "funscript_offset": {
+                "description": "Viive millisekunneissa interaktiivisille skripteille kun toistetaan."
+            },
+            "handy_connection": {
+                "connect": "Yhdistä",
+                "sync": "Synkronoi"
+            },
+            "image_wall": {
+                "direction": "Suunta",
+                "heading": "Kuvaseinä"
+            },
+            "images": {
+                "heading": "Kuvat",
+                "options": {
+                    "write_image_thumbnails": {
+                        "description": "Kirjoita kuvien esikatselut levylle kun generoidaan",
+                        "heading": "Kirjoita kuvien esikatselut"
+                    }
+                }
+            },
+            "interactive_options": "Interaktiivisuuden asetukset",
+            "language": {
+                "heading": "Kieli"
+            },
+            "menu_items": {
+                "description": "Näytä tai piilota sisältötyypit päävalikosta",
+                "heading": "Päävalikon kohteet"
+            },
+            "performers": {
+                "options": {
+                    "image_location": {
+                        "description": "Mukautettu polku esiintyjien kuville. Jätä tyhjäksi käyttääksesi oletusasetuksia",
+                        "heading": "Mukautettu esiintyjien kuvien polku"
+                    }
+                }
+            },
+            "preview_type": {
+                "description": "Seinän kohteiden asetukset",
+                "heading": "Esikatselun tyyppi",
+                "options": {
+                    "animated": "Animoitu kuva",
+                    "static": "Staattinen kuva",
+                    "video": "Video"
+                }
+            },
+            "scene_list": {
+                "heading": "Kohtauslista",
+                "options": {
+                    "show_studio_as_text": "Näytä studiot tekstinä"
+                }
+            },
+            "scene_player": {
+                "heading": "Kohtauksien soitin",
+                "options": {
+                    "always_start_from_beginning": "Aloita video aina alusta",
+                    "auto_start_video": "Aloita video automaattisesti",
+                    "auto_start_video_on_play_selected": {
+                        "description": "Aloita video automaattisesti kun kohtaus valitaan tai käytetään satunnainen kohtaus -sivua",
+                        "heading": "Aloita video automaattisesti kun valittu"
+                    },
+                    "continue_playlist_default": {
+                        "description": "Toista seuraava kohtaus jonossa kun video loppuu",
+                        "heading": "Jatka soittolistaa automaattisesti"
+                    }
+                }
+            },
+            "scene_wall": {
+                "heading": "Kohtaus- ja merkkiseinä",
+                "options": {
+                    "display_title": "Näytä otsikko ja tunnisteet",
+                    "toggle_sound": "Käytä ääntä"
+                }
+            },
+            "slideshow_delay": {
+                "description": "Kuvaesitys käytössä gallerioissa seinätilassa",
+                "heading": "Kuvaesityksen viive (sekunteina)"
+            },
+            "studio_panel": {
+                "heading": "Studionäkymä",
+                "options": {
+                    "show_child_studio_content": {
+                        "description": "Näytä alistudiot studionäkymässä",
+                        "heading": "Näytä alistudioiden sisältö"
+                    }
+                }
+            },
+            "tag_panel": {
+                "heading": "Tunnistenäkymä",
+                "options": {
+                    "show_child_tagged_content": {
+                        "description": "Näytä tunnistenäkymässä myös alitunnisteiden sisältö",
+                        "heading": "Näytä alitunnisteiden sisältö"
+                    }
+                }
+            },
+            "title": "Käyttöliittymä"
+        }
+    },
+    "configuration": "Konfiguraatio",
+    "countables": {
+        "files": "{count, plural, one {Tiedosto} other {Tiedostoa}}",
+        "galleries": "{count, plural, one {Galleria} other {Galleriaa}}",
+        "images": "{count, plural, one {Kuva} other {Kuvaa}}",
+        "markers": "{count, plural, one {Merkki} other {Merkkiä}}",
+        "movies": "{count, plural, one {Elokuva} other {Elokuvaa}}",
+        "performers": "{count, plural, one {Esiintyjä} other {Esiintyjää}}",
+        "scenes": "{count, plural, one {Kohtaus} other {Kohtausta}}",
+        "studios": "{count, plural, one {Studio} other {Studiota}}",
+        "tags": "{count, plural, one {Tunniste} other {Tunnistetta}}"
+    },
+    "country": "Maa",
+    "cover_image": "Kansikuva",
+    "created_at": "Luotu",
+    "criterion": {
+        "greater_than": "Suurempi kuin",
+        "less_than": "Pienempi kuin",
+        "value": "Arvo"
+    },
+    "criterion_modifier": {
+        "between": "väliltä",
+        "equals": "on",
+        "excludes": "poisluettuna",
+        "format_string": "{criterion} {modifierString} {valueString}",
+        "greater_than": "on suurempi kuin",
+        "includes": "sisältää",
+        "includes_all": "sisältää kaikki",
+        "is_null": "on tyhjä",
+        "less_than": "on vähemmän kuin",
+        "matches_regex": "täsmää säännölliseen lausekkeeseen",
+        "not_between": "ei väliltä",
+        "not_equals": "ei ole",
+        "not_matches_regex": "ei täsmää säännölliseen lausekkeeseen",
+        "not_null": "ei ole tyhjä"
+    },
+    "custom": "Mukautettu",
+    "date": "Päivä",
+    "death_date": "Kuolinpäivä",
+    "death_year": "Kuolinvuosi",
+    "descending": "Laskeva",
+    "description": "Kuvaus",
+    "detail": "Lisätiedot",
+    "details": "Lisätiedot",
+    "developmentVersion": "Kehitysversio",
+    "dialogs": {
+        "create_new_entity": "Luo uus {entity}",
+        "delete_alert": "{count, plural, one {{singularEntity}} other {{pluralEntity}}} poistetaan pysyvästi:",
+        "delete_confirm": "Haluatko varmasti poistaa {entityName}?",
+        "delete_entity_desc": "{count, plural, one {Haluatko varmasti, että {singularEntity} poistetaan? Jos tiedostoa ei poisteta {singularEntity} lisätään uudelleen heti kun uusi skannaus suoritetaan.} other {Haluatko varmasti, että {pluralEntity} poistetaan? Jos tiedostoja ei poisteta, {pluralEntity} lisätään uudelleen heti kun uusi skannaus suoritetaan.}}",
+        "delete_entity_simple_desc": "{count, plural, one {Haluatko varmasti poistaa tämän {singularEntity}?} other {Haluatko varmasti poistaa nämä {pluralEntity}?}}",
+        "delete_entity_title": "{count, plural, one {Poista {singularEntity}} other {Poista {pluralEntity}}}",
+        "delete_galleries_extra": "...ja kaikki kuvatiedostot, jotka eivät kuulu mihinkään galleriaan.",
+        "delete_gallery_files": "Poista gallerian kansio/zip -tiedosto ja kaikki kuvat, jotka eivät kuulu mihinkään muuhun galleriaan.",
+        "delete_object_desc": "Halutatko varmasti poistaa {count, plural, one {{singularEntity}} other {{pluralEntity}}}?",
+        "delete_object_overflow": "…ja {count} muuta {count, plural, one {{singularEntity}} other {{pluralEntity}}}.",
+        "delete_object_title": "Poista {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
+        "dont_show_until_updated": "Elä näytä ennen seuraavaa päivitystä",
+        "edit_entity_title": "Muokkaa {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
+        "export_include_related_objects": "Sisällytä liittyvät objektit vientiin",
+        "export_title": "Vie",
+        "lightbox": {
+            "delay": "Viive (sek)",
+            "display_mode": {
+                "fit_horizontally": "Sovita sivusuunnassa",
+                "fit_to_screen": "Sovita ruudulle",
+                "label": "Näyttötila",
+                "original": "Alkuperäinen"
+            },
+            "options": "Asetukset",
+            "reset_zoom_on_nav": "Resetoi zoomaus kun kuvaa vaihdetaan",
+            "scale_up": {
+                "description": "Skaalaa pienempiä kuvia, jotta ne täyttävät ruudun",
+                "label": "Sovita skaalaamalla"
+            },
+            "scroll_mode": {
+                "label": "Vieritystila",
+                "pan_y": "Panoroi Y",
+                "zoom": "Zoomaus"
             }
-          },
-          "type": {
-            "label": "Arvostelujärjestelmä",
-            "options": {
-              "decimal": "Desimaalit",
-              "stars": "Tähdet"
-            }
-          }
-        }
-      },
-      "funscript_offset": {
-        "description": "Viive millisekunneissa interaktiivisille skripteille kun toistetaan."
-      },
-      "handy_connection": {
-        "connect": "Yhdistä",
-        "sync": "Synkronoi"
-      },
-      "image_wall": {
-        "direction": "Suunta",
-        "heading": "Kuvaseinä"
-      },
-      "images": {
-        "heading": "Kuvat",
-        "options": {
-          "write_image_thumbnails": {
-            "description": "Kirjoita kuvien esikatselut levylle kun generoidaan",
-            "heading": "Kirjoita kuvien esikatselut"
-          }
-        }
-      },
-      "interactive_options": "Interaktiivisuuden asetukset",
-      "language": {
-        "heading": "Kieli"
-      },
-      "menu_items": {
-        "description": "Näytä tai piilota sisältötyypit päävalikosta",
-        "heading": "Päävalikon kohteet"
-      },
-      "performers": {
-        "options": {
-          "image_location": {
-            "description": "Mukautettu polku esiintyjien kuville. Jätä tyhjäksi käyttääksesi oletusasetuksia",
-            "heading": "Mukautettu esiintyjien kuvien polku"
-          }
-        }
-      },
-      "preview_type": {
-        "description": "Seinän kohteiden asetukset",
-        "heading": "Esikatselun tyyppi",
-        "options": {
-          "animated": "Animoitu kuva",
-          "static": "Staattinen kuva",
-          "video": "Video"
-        }
-      },
-      "scene_list": {
-        "heading": "Kohtauslista",
-        "options": {
-          "show_studio_as_text": "Näytä studiot tekstinä"
-        }
-      },
-      "scene_player": {
-        "heading": "Kohtauksien soitin",
-        "options": {
-          "always_start_from_beginning": "Aloita video aina alusta",
-          "auto_start_video": "Aloita video automaattisesti",
-          "auto_start_video_on_play_selected": {
-            "description": "Aloita video automaattisesti kun kohtaus valitaan tai käytetään satunnainen kohtaus -sivua",
-            "heading": "Aloita video automaattisesti kun valittu"
-          },
-          "continue_playlist_default": {
-            "description": "Toista seuraava kohtaus jonossa kun video loppuu",
-            "heading": "Jatka soittolistaa automaattisesti"
-          }
-        }
-      },
-      "scene_wall": {
-        "heading": "Kohtaus- ja merkkiseinä",
-        "options": {
-          "display_title": "Näytä otsikko ja tunnisteet",
-          "toggle_sound": "Käytä ääntä"
-        }
-      },
-      "slideshow_delay": {
-        "description": "Kuvaesitys käytössä gallerioissa seinätilassa",
-        "heading": "Kuvaesityksen viive (sekunteina)"
-      },
-      "studio_panel": {
-        "heading": "Studionäkymä",
-        "options": {
-          "show_child_studio_content": {
-            "description": "Näytä alistudiot studionäkymässä",
-            "heading": "Näytä alistudioiden sisältö"
-          }
-        }
-      },
-      "tag_panel": {
-        "heading": "Tunnistenäkymä",
-        "options": {
-          "show_child_tagged_content": {
-            "description": "Näytä tunnistenäkymässä myös alitunnisteiden sisältö",
-            "heading": "Näytä alitunnisteiden sisältö"
-          }
-        }
-      },
-      "title": "Käyttöliittymä"
-    }
-  },
-  "configuration": "Konfiguraatio",
-  "countables": {
-    "files": "{count, plural, one {Tiedosto} other {Tiedostoa}}",
-    "galleries": "{count, plural, one {Galleria} other {Galleriaa}}",
-    "images": "{count, plural, one {Kuva} other {Kuvaa}}",
-    "markers": "{count, plural, one {Merkki} other {Merkkiä}}",
-    "movies": "{count, plural, one {Elokuva} other {Elokuvaa}}",
-    "performers": "{count, plural, one {Esiintyjä} other {Esiintyjää}}",
-    "scenes": "{count, plural, one {Kohtaus} other {Kohtausta}}",
-    "studios": "{count, plural, one {Studio} other {Studiota}}",
-    "tags": "{count, plural, one {Tunniste} other {Tunnistetta}}"
-  },
-  "country": "Maa",
-  "cover_image": "Kansikuva",
-  "created_at": "Luotu",
-  "criterion": {
-    "greater_than": "Suurempi kuin",
-    "less_than": "Pienempi kuin",
-    "value": "Arvo"
-  },
-  "criterion_modifier": {
-    "between": "väliltä",
-    "equals": "on",
-    "excludes": "poisluettuna",
-    "format_string": "{criterion} {modifierString} {valueString}",
-    "greater_than": "on suurempi kuin",
-    "includes": "sisältää",
-    "includes_all": "sisältää kaikki",
-    "is_null": "on tyhjä",
-    "less_than": "on vähemmän kuin",
-    "matches_regex": "täsmää säännölliseen lausekkeeseen",
-    "not_between": "ei väliltä",
-    "not_equals": "ei ole",
-    "not_matches_regex": "ei täsmää säännölliseen lausekkeeseen",
-    "not_null": "ei ole tyhjä"
-  },
-  "custom": "Mukautettu",
-  "date": "Päivä",
-  "death_date": "Kuolinpäivä",
-  "death_year": "Kuolinvuosi",
-  "descending": "Laskeva",
-  "description": "Kuvaus",
-  "detail": "Lisätiedot",
-  "details": "Lisätiedot",
-  "developmentVersion": "Kehitysversio",
-  "dialogs": {
-    "create_new_entity": "Luo uus {entity}",
-    "delete_alert": "{count, plural, one {{singularEntity}} other {{pluralEntity}}} poistetaan pysyvästi:",
-    "delete_confirm": "Haluatko varmasti poistaa {entityName}?",
-    "delete_entity_desc": "{count, plural, one {Haluatko varmasti, että {singularEntity} poistetaan? Jos tiedostoa ei poisteta {singularEntity} lisätään uudelleen heti kun uusi skannaus suoritetaan.} other {Haluatko varmasti, että {pluralEntity} poistetaan? Jos tiedostoja ei poisteta, {pluralEntity} lisätään uudelleen heti kun uusi skannaus suoritetaan.}}",
-    "delete_entity_simple_desc": "{count, plural, one {Haluatko varmasti poistaa tämän {singularEntity}?} other {Haluatko varmasti poistaa nämä {pluralEntity}?}}",
-    "delete_entity_title": "{count, plural, one {Poista {singularEntity}} other {Poista {pluralEntity}}}",
-    "delete_galleries_extra": "...ja kaikki kuvatiedostot, jotka eivät kuulu mihinkään galleriaan.",
-    "delete_gallery_files": "Poista gallerian kansio/zip -tiedosto ja kaikki kuvat, jotka eivät kuulu mihinkään muuhun galleriaan.",
-    "delete_object_desc": "Halutatko varmasti poistaa {count, plural, one {{singularEntity}} other {{pluralEntity}}}?",
-    "delete_object_overflow": "…ja {count} muuta {count, plural, one {{singularEntity}} other {{pluralEntity}}}.",
-    "delete_object_title": "Poista {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
-    "dont_show_until_updated": "Elä näytä ennen seuraavaa päivitystä",
-    "edit_entity_title": "Muokkaa {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
-    "export_include_related_objects": "Sisällytä liittyvät objektit vientiin",
-    "export_title": "Vie",
-    "lightbox": {
-      "delay": "Viive (sek)",
-      "display_mode": {
-        "fit_horizontally": "Sovita sivusuunnassa",
-        "fit_to_screen": "Sovita ruudulle",
-        "label": "Näyttötila",
-        "original": "Alkuperäinen"
-      },
-      "options": "Asetukset",
-      "reset_zoom_on_nav": "Resetoi zoomaus kun kuvaa vaihdetaan",
-      "scale_up": {
-        "description": "Skaalaa pienempiä kuvia, jotta ne täyttävät ruudun",
-        "label": "Sovita skaalaamalla"
-      },
-      "scroll_mode": {
-        "label": "Vieritystila",
-        "pan_y": "Panoroi Y",
-        "zoom": "Zoomaus"
-      }
+        },
+        "merge": {
+            "destination": "Kohde",
+            "source": "Lähde"
+        },
+        "merge_tags": {
+            "destination": "Kohde",
+            "source": "Lähde"
+        },
+        "overwrite_filter_confirm": "Haluatko varmasti ylikirjoittaa jo olemassaolevan {entityName}?",
+        "scene_gen": {
+            "force_transcodes": "Pakota transkoodaus",
+            "force_transcodes_tooltip": "Oletuksena transkoodaus tehdään vain, mikäli selain ei tue videotiedostoa. Jos tämä valinta on päällä, transkoodaus tehdään vaikka selain näyttäisi tukevan videotiedostoa.",
+            "image_previews": "Animoidut esikatselukuvat",
+            "image_previews_tooltip": "Animoidut WebP esikatselut, vaaditaan vain jos esikatselun tyyppi on Animoitu kuva.",
+            "marker_image_previews": "Animoidut merkkien esikatselukuvat",
+            "marker_image_previews_tooltip": "Animoidut merkkien WebP esikatselut, vaaditaan vain jos esikatselun tyypiksi on valittu Animoitu kuva.",
+            "marker_screenshots": "Merkkien esikatselukuvat",
+            "marker_screenshots_tooltip": "Merkkien staattinen JPG -kuva, vaadittu vain jos esikatselutyypiksi on asetettu staattinen kuva.",
+            "markers": "Merkkien esikatselut",
+            "markers_tooltip": "20 sekunnin video jokaisen aikakoodin alusta.",
+            "override_preview_generation_options": "Ohita Esikatselun generoinnin asetukset",
+            "override_preview_generation_options_desc": "Ohita Esikatselun generoinnin asetukset tälle tehtävälle. Oletukset voi asettaa Järjestelmä -> Esikatselun generointi.",
+            "overwrite": "Ylikirjoita olemassaolevat tiedostot",
+            "phash": "Tiiviste (kaksoiskappaileiden tunnistamiseen)",
+            "preview_exclude_end_time_desc": "Jätä viimeiset x sekuntia pois esikatseluista. Arvo voi olla sekunneissa tai prosenteissa (esim. 2%) kohtauksen kestosta.",
+            "preview_exclude_end_time_head": "Lopusta poisjätettävä aika",
+            "preview_exclude_start_time_desc": "Jätä ensimmäiset x sekuntia pois esikatseluista. Arvo voi olla sekunneissa tai prosenteissa (esim. 2%) kohtauksen kestosta.",
+            "preview_exclude_start_time_head": "Alusta poisjätettävä aika",
+            "preview_generation_options": "Esikatselun generoinnin asetukset",
+            "preview_options": "Esikatseluasetukset",
+            "preview_preset_head": "Esikatseluidun enkoodaus",
+            "transcodes": "Transkoodaus",
+            "transcodes_tooltip": "MP4 muunto niille tiedostomuodoille, joita ei tueta",
+            "video_previews": "Esikatselu",
+            "video_previews_tooltip": "Esikatseluviedo, joka näytetään kun hiiri on kohtauksen päällä"
+        },
+        "scenes_found": "{count} kohtausta löydetty",
+        "scrape_entity_query": "{entity_type}kaavintajono",
+        "scrape_entity_title": "{entity_type}kaavinnan tulokset",
+        "scrape_results_existing": "Olemassaoleva",
+        "scrape_results_scraped": "Kaavittu",
+        "set_image_url_title": "Kuvan URL",
+        "unsaved_changes": "Tallentamattomia muutoksia. Haluatko varmasti poistua?"
     },
-    "merge": {
-      "destination": "Kohde",
-      "source": "Lähde"
+    "dimensions": "Mitat",
+    "director": "Ohjaaja",
+    "display_mode": {
+        "grid": "Ruudukko",
+        "list": "Lista",
+        "tagger": "Tunnistetila",
+        "unknown": "Tuntematon",
+        "wall": "Seinä"
     },
-    "merge_tags": {
-      "destination": "Kohde",
-      "source": "Lähde"
+    "donate": "Lahjoita",
+    "dupe_check": {
+        "description": "Muiden kuin 'Täsmälleen sama' laskeminen vie enemmän aikaa. Väärät tulokset voivat olla myös mahdollisia kun käytetään pienempää tarkkuutta.",
+        "found_sets": "{setCount, plural, one{# kaksoiskappale löydetty.} other {# kaksoiskappaletta löydetty.}}",
+        "options": {
+            "exact": "Täsmälleen sama",
+            "high": "Korkea",
+            "low": "Matala",
+            "medium": "Keskitaso"
+        },
+        "search_accuracy_label": "Haun tarkkuus",
+        "title": "Kohtauksien kaksoiskappaleet"
     },
-    "overwrite_filter_confirm": "Haluatko varmasti ylikirjoittaa jo olemassaolevan {entityName}?",
-    "scene_gen": {
-      "force_transcodes": "Pakota transkoodaus",
-      "force_transcodes_tooltip": "Oletuksena transkoodaus tehdään vain, mikäli selain ei tue videotiedostoa. Jos tämä valinta on päällä, transkoodaus tehdään vaikka selain näyttäisi tukevan videotiedostoa.",
-      "image_previews": "Animoidut esikatselukuvat",
-      "image_previews_tooltip": "Animoidut WebP esikatselut, vaaditaan vain jos esikatselun tyyppi on Animoitu kuva.",
-      "marker_image_previews": "Animoidut merkkien esikatselukuvat",
-      "marker_image_previews_tooltip": "Animoidut merkkien WebP esikatselut, vaaditaan vain jos esikatselun tyypiksi on valittu Animoitu kuva.",
-      "marker_screenshots": "Merkkien esikatselukuvat",
-      "marker_screenshots_tooltip": "Merkkien staattinen JPG -kuva, vaadittu vain jos esikatselutyypiksi on asetettu staattinen kuva.",
-      "markers": "Merkkien esikatselut",
-      "markers_tooltip": "20 sekunnin video jokaisen aikakoodin alusta.",
-      "override_preview_generation_options": "Ohita Esikatselun generoinnin asetukset",
-      "override_preview_generation_options_desc": "Ohita Esikatselun generoinnin asetukset tälle tehtävälle. Oletukset voi asettaa Järjestelmä -> Esikatselun generointi.",
-      "overwrite": "Ylikirjoita olemassaolevat tiedostot",
-      "phash": "Tiiviste (kaksoiskappaileiden tunnistamiseen)",
-      "preview_exclude_end_time_desc": "Jätä viimeiset x sekuntia pois esikatseluista. Arvo voi olla sekunneissa tai prosenteissa (esim. 2%) kohtauksen kestosta.",
-      "preview_exclude_end_time_head": "Lopusta poisjätettävä aika",
-      "preview_exclude_start_time_desc": "Jätä ensimmäiset x sekuntia pois esikatseluista. Arvo voi olla sekunneissa tai prosenteissa (esim. 2%) kohtauksen kestosta.",
-      "preview_exclude_start_time_head": "Alusta poisjätettävä aika",
-      "preview_generation_options": "Esikatselun generoinnin asetukset",
-      "preview_options": "Esikatseluasetukset",
-      "preview_preset_head": "Esikatseluidun enkoodaus",
-      "transcodes": "Transkoodaus",
-      "transcodes_tooltip": "MP4 muunto niille tiedostomuodoille, joita ei tueta",
-      "video_previews": "Esikatselu",
-      "video_previews_tooltip": "Esikatseluviedo, joka näytetään kun hiiri on kohtauksen päällä"
+    "duplicated_phash": "Kaksoiskappale (phash)",
+    "duration": "Kesto",
+    "effect_filters": {
+        "aspect": "Kuvasuhde",
+        "blue": "Sininen",
+        "blur": "Sumennus",
+        "brightness": "Kirkkaus",
+        "contrast": "Kontrasti",
+        "gamma": "Gamma",
+        "green": "Vihreä",
+        "hue": "Sävy",
+        "name": "Suodin",
+        "name_transforms": "Kuvamuutokset",
+        "red": "Punainen",
+        "reset_filters": "Nollaa suotimet",
+        "reset_transforms": "Nollaa kuvamuutokset",
+        "rotate": "Kierrä",
+        "rotate_left_and_scale": "Kierrä vasemmalle ja skaalaa",
+        "rotate_right_and_scale": "Kierrä oikealle ja skaalaa",
+        "saturation": "Värikylläisyys",
+        "scale": "Skaalaa",
+        "warmth": "Lämpötila"
     },
-    "scenes_found": "{count} kohtausta löydetty",
-    "scrape_entity_query": "{entity_type}kaavintajono",
-    "scrape_entity_title": "{entity_type}kaavinnan tulokset",
-    "scrape_results_existing": "Olemassaoleva",
-    "scrape_results_scraped": "Kaavittu",
-    "set_image_url_title": "Kuvan URL",
-    "unsaved_changes": "Tallentamattomia muutoksia. Haluatko varmasti poistua?"
-  },
-  "dimensions": "Mitat",
-  "director": "Ohjaaja",
-  "display_mode": {
-    "grid": "Ruudukko",
-    "list": "Lista",
-    "tagger": "Tunnistetila",
-    "unknown": "Tuntematon",
-    "wall": "Seinä"
-  },
-  "donate": "Lahjoita",
-  "dupe_check": {
-    "description": "Muiden kuin 'Täsmälleen sama' laskeminen vie enemmän aikaa. Väärät tulokset voivat olla myös mahdollisia kun käytetään pienempää tarkkuutta.",
-    "found_sets": "{setCount, plural, one{# kaksoiskappale löydetty.} other {# kaksoiskappaletta löydetty.}}",
-    "options": {
-      "exact": "Täsmälleen sama",
-      "high": "Korkea",
-      "low": "Matala",
-      "medium": "Keskitaso"
+    "empty_server": "Lisää kohtauksia palvelimeesi niin näet suosituksia tällä sivulla.",
+    "ethnicity": "Etninen tausta",
+    "existing_value": "nykyinen arvo",
+    "eye_color": "Silmien väri",
+    "fake_tits": "Tekorinnat",
+    "false": "Ei",
+    "favourite": "Suosikki",
+    "file": "tiedosto",
+    "file_count": "Tiedostojen määrä",
+    "file_info": "Tiedoston tiedot",
+    "file_mod_time": "Tiedostoa muokattu",
+    "files": "tiedostoa",
+    "files_amount": "{value} tiedostoa",
+    "filesize": "Tiedoston koko",
+    "filter": "Suodatin",
+    "filter_name": "Suodattimen nimi",
+    "filters": "Suodattimet",
+    "folder": "Kansio",
+    "framerate": "Kuvataajuus",
+    "frames_per_second": "{value} kuvaa sekunnissa",
+    "front_page": {
+        "types": {
+            "saved_filter": "Tallennettu suodatin"
+        }
     },
-    "search_accuracy_label": "Haun tarkkuus",
-    "title": "Kohtauksien kaksoiskappaleet"
-  },
-  "duplicated_phash": "Kaksoiskappale (phash)",
-  "duration": "Kesto",
-  "effect_filters": {
-    "aspect": "Kuvasuhde",
-    "blue": "Sininen",
-    "blur": "Sumennus",
-    "brightness": "Kirkkaus",
-    "contrast": "Kontrasti",
-    "gamma": "Gamma",
-    "green": "Vihreä",
-    "hue": "Sävy",
-    "name": "Suodin",
-    "name_transforms": "Kuvamuutokset",
-    "red": "Punainen",
-    "reset_filters": "Nollaa suotimet",
-    "reset_transforms": "Nollaa kuvamuutokset",
-    "rotate": "Kierrä",
-    "rotate_left_and_scale": "Kierrä vasemmalle ja skaalaa",
-    "rotate_right_and_scale": "Kierrä oikealle ja skaalaa",
-    "saturation": "Värikylläisyys",
-    "scale": "Skaalaa",
-    "warmth": "Lämpötila"
-  },
-  "empty_server": "Lisää kohtauksia palvelimeesi niin näet suosituksia tällä sivulla.",
-  "ethnicity": "Etninen tausta",
-  "existing_value": "nykyinen arvo",
-  "eye_color": "Silmien väri",
-  "fake_tits": "Tekorinnat",
-  "false": "Ei",
-  "favourite": "Suosikki",
-  "file": "tiedosto",
-  "file_count": "Tiedostojen määrä",
-  "file_info": "Tiedoston tiedot",
-  "file_mod_time": "Tiedostoa muokattu",
-  "files": "tiedostoa",
-  "files_amount": "{value} tiedostoa",
-  "filesize": "Tiedoston koko",
-  "filter": "Suodatin",
-  "filter_name": "Suodattimen nimi",
-  "filters": "Suodattimet",
-  "folder": "Kansio",
-  "framerate": "Kuvataajuus",
-  "frames_per_second": "{value} kuvaa sekunnissa",
-  "front_page": {
-    "types": {
-      "saved_filter": "Tallennettu suodatin"
-    }
-  },
-  "galleries": "Galleriat",
-  "gallery": "Galleria",
-  "gallery_count": "Gallerioiden määrä",
-  "gender": "Sukupuoli",
-  "gender_types": {
-    "FEMALE": "Nainen",
-    "INTERSEX": "Intersukupuolinen",
-    "MALE": "Mies",
-    "NON_BINARY": "Ei-Binäärinen",
-    "TRANSGENDER_FEMALE": "Transnainen",
-    "TRANSGENDER_MALE": "Transmies"
-  },
-  "hair_color": "Hiusten väri",
-  "handy_connection_status": {
-    "connecting": "Yhdistetään",
-    "disconnected": "Ei yhdistetty",
-    "error": "Virhe yhdistettäessä Handyyn",
-    "missing": "Puuttuu",
-    "ready": "Valmis",
-    "syncing": "Synkronoidaan palvelimelle",
-    "uploading": "Ladataan skriptiä"
-  },
-  "hasMarkers": "On merkki",
-  "height": "Pituus",
-  "height_cm": "Pituus (cm)",
-  "help": "Apua",
-  "image": "Kuva",
-  "image_count": "Kuvien määrä",
-  "images": "Kuvat",
-  "include_parent_tags": "Sisällytä tunnisteiden ylitunnisteet",
-  "include_sub_studios": "Sisällytä alistudiot",
-  "include_sub_tags": "Sisällytä alitunnisteet",
-  "instagram": "Instagram",
-  "interactive": "Interaktiivinen",
-  "interactive_speed": "Interaktiivinen nopeus",
-  "isMissing": "Puuttuu",
-  "last_played_at": "Viimeksi toistettu",
-  "library": "Kirjasto",
-  "loading": {
-    "generic": "Ladataan…"
-  },
-  "marker_count": "Merkkien määrä",
-  "markers": "Merkit",
-  "measurements": "Mitat",
-  "media_info": {
-    "audio_codec": "Audiokodekki",
-    "checksum": "Tarkistussumma",
-    "downloaded_from": "Ladattu kohteesta",
-    "hash": "Tiiviste",
+    "galleries": "Galleriat",
+    "gallery": "Galleria",
+    "gallery_count": "Gallerioiden määrä",
+    "gender": "Sukupuoli",
+    "gender_types": {
+        "FEMALE": "Nainen",
+        "INTERSEX": "Intersukupuolinen",
+        "MALE": "Mies",
+        "NON_BINARY": "Ei-Binäärinen",
+        "TRANSGENDER_FEMALE": "Transnainen",
+        "TRANSGENDER_MALE": "Transmies"
+    },
+    "hair_color": "Hiusten väri",
+    "handy_connection_status": {
+        "connecting": "Yhdistetään",
+        "disconnected": "Ei yhdistetty",
+        "error": "Virhe yhdistettäessä Handyyn",
+        "missing": "Puuttuu",
+        "ready": "Valmis",
+        "syncing": "Synkronoidaan palvelimelle",
+        "uploading": "Ladataan skriptiä"
+    },
+    "hasMarkers": "On merkki",
+    "height": "Pituus",
+    "height_cm": "Pituus (cm)",
+    "help": "Apua",
+    "image": "Kuva",
+    "image_count": "Kuvien määrä",
+    "images": "Kuvat",
+    "include_parent_tags": "Sisällytä tunnisteiden ylitunnisteet",
+    "include_sub_studios": "Sisällytä alistudiot",
+    "include_sub_tags": "Sisällytä alitunnisteet",
+    "instagram": "Instagram",
+    "interactive": "Interaktiivinen",
     "interactive_speed": "Interaktiivinen nopeus",
-    "performer_card": {
-      "age": "{age} {years_old}",
-      "age_context": "{age} {years_old} tässä kohtauksessa"
+    "isMissing": "Puuttuu",
+    "last_played_at": "Viimeksi toistettu",
+    "library": "Kirjasto",
+    "loading": {
+        "generic": "Ladataan…"
     },
-    "phash": "PHash",
-    "play_count": "Toistokerrat",
-    "play_duration": "Toistettu aika",
-    "stream": "Suoratoisto",
-    "video_codec": "Videokodekki"
-  },
-  "megabits_per_second": "{value} megabittiä sekunnissa",
-  "metadata": "Metadata",
-  "movie": "Elokuva",
-  "movie_scene_number": "Elokuvan kohtauksien määrä",
-  "movies": "Elokuvat",
-  "name": "Nimi",
-  "new": "Uusi",
-  "none": "Ei mitään",
-  "o_counter": "O-Laskuri",
-  "operations": "Operaatiot",
-  "organized": "Järjestelty",
-  "pagination": {
-    "first": "Ensimmäinen",
-    "last": "Viimeinen",
-    "next": "Seuraava",
-    "previous": "Edellinen"
-  },
-  "parent_of": "Emostudio seuraaville: {children}",
-  "parent_studios": "Emostudiot",
-  "parent_tag_count": "Ylätunnisteiden määrä",
-  "parent_tags": "Ylätunnisteet",
-  "part_of": "Osa {parent}",
-  "path": "Polku",
-  "perceptual_similarity": "Aistinvarainen samankaltaisuus (phash)",
-  "performer": "Esiintyjä",
-  "performer_tags": "Esiintyjien tunnisteet",
-  "performer_age": "Esiintyjän ikä",
-  "performer_count": "Esiintyjien määrä",
-  "performer_favorite": "Esiintyjä suosikeissa",
-  "performer_image": "Esiintyjän kuva",
-  "performer_tagger": {
-    "add_new_performers": "Lisää uusia esiintyjiä",
-    "batch_add_performers": "Lisää joukko esiintyjiä",
-    "batch_update_performers": "Päivitä joukko esiintyjiä",
-    "config": {
-      "active_stash-box_instance": "Aktiivinen stash-box instanssi:",
-      "edit_excluded_fields": "Muokkaa poisjätettyjä kenttiä",
-      "excluded_fields": "Poisjätetyt kentät:",
-      "no_fields_are_excluded": "Ei poisjätettyjä kenttiä",
-      "these_fields_will_not_be_changed_when_updating_performers": "Näitä kenttiä ei muokata kun päivitetään esiintyjiä."
+    "marker_count": "Merkkien määrä",
+    "markers": "Merkit",
+    "measurements": "Mitat",
+    "media_info": {
+        "audio_codec": "Audiokodekki",
+        "checksum": "Tarkistussumma",
+        "downloaded_from": "Ladattu kohteesta",
+        "hash": "Tiiviste",
+        "interactive_speed": "Interaktiivinen nopeus",
+        "performer_card": {
+            "age": "{age} {years_old}",
+            "age_context": "{age} {years_old} tässä kohtauksessa"
+        },
+        "phash": "PHash",
+        "play_count": "Toistokerrat",
+        "play_duration": "Toistettu aika",
+        "stream": "Suoratoisto",
+        "video_codec": "Videokodekki"
     },
-    "current_page": "Nykyinen sivu",
-    "failed_to_save_performer": "Esiintyjän \"{performer}\" tallentaminen ei onnistunut",
-    "name_already_exists": "Nimi on jo olemassa",
-    "network_error": "Verkkovirhe",
-    "no_results_found": "Ei tuloksia.",
-    "number_of_performers_will_be_processed": "{performer_count} esintyjää prosessoidaan",
-    "performer_already_tagged": "Esiintyjälle on jo asetettu tunnisteet",
-    "performer_names_separated_by_comma": "Erota esiintyjien nimet pilkulla",
-    "performer_selection": "Esiintyjän valinta",
-    "performer_successfully_tagged": "Esiintyjälle on asetettu tunnisteet:",
-    "query_all_performers_in_the_database": "Kaikki esiintyjät tietokannassa",
-    "refresh_tagged_performers": "Päivitä tunnistetut esiintyjät",
-    "status_tagging_job_queued": "Tila: Tunnisteiden asettaminen laitettu jonoon",
-    "status_tagging_performers": "Tila: Asetetaan esiintyjien tunnisteita",
-    "untagged_performers": "Esiintyjät joille ei ole asetettu tunnisteita",
-    "update_performer": "Päivitä esiintyjä",
-    "update_performers": "Päivitä esiintyjät"
-  },
-  "performers": "Esiintyjät",
-  "piercings": "Lävistykset",
-  "queue": "Jono",
-  "random": "Satunnainen",
-  "rating": "Arvio",
-  "recently_added_objects": "Viimeksi lisätyt {objects}",
-  "recently_released_objects": "Viimeksi julkaistut {objects}",
-  "resolution": "Resoluutio",
-  "scene": "Kohtaus",
-  "sceneTagger": "Kohtauksien tunnistetila",
-  "scene_tags": "Kohtauksen tunnisteet",
-  "scene_code": "Studiokoodi",
-  "scene_count": "Kohtauksien määrä",
-  "scene_created_at": "Kohtaus luotu",
-  "scene_date": "Kohtauksen päiväys",
-  "scene_id": "Kohtauksen ID",
-  "scene_updated_at": "Kohtaus päivitetty",
-  "scenes": "Kohtaukset",
-  "scenes_updated_at": "Kohtaus päivitetty",
-  "search_filter": {
-    "name": "Suodatin",
-    "saved_filters": "Tallennetut suodattimet",
-    "update_filter": "Päivitä suodatin"
-  },
-  "seconds": "sekuntia",
-  "settings": "Asetukset",
-  "setup": {
-    "confirm": {
-      "almost_ready": "Olemme melkein valmiita. Tarkista vielä asetukset. Voit palata takaisin jos haluat muuttaa jotain, mikä on väärin. Jos kaikki näyttää hyvältä, vahvista ja järjestelmä luodaan.",
-      "configuration_file_location": "Konfiguraatiotiedoston sijainti:",
-      "database_file_path": "Tietokannan polku",
-      "default_db_location": "<konfiguraatiotiedoston polku>/stash-go.sqlite",
-      "default_generated_content_location": "<konfiguraatiotiedoston polku>/generated",
-      "generated_directory": "Generoitujen tiedostojen kansio",
-      "nearly_there": "Melkein perillä!",
-      "stash_library_directories": "Stash -kirjaston kansiot"
+    "megabits_per_second": "{value} megabittiä sekunnissa",
+    "metadata": "Metadata",
+    "movie": "Elokuva",
+    "movie_scene_number": "Elokuvan kohtauksien määrä",
+    "movies": "Elokuvat",
+    "name": "Nimi",
+    "new": "Uusi",
+    "none": "Ei mitään",
+    "o_counter": "O-Laskuri",
+    "operations": "Operaatiot",
+    "organized": "Järjestelty",
+    "pagination": {
+        "first": "Ensimmäinen",
+        "last": "Viimeinen",
+        "next": "Seuraava",
+        "previous": "Edellinen"
     },
-    "creating": {
-      "creating_your_system": "Luodaan järjestelmää",
-      "ffmpeg_notice": "Jos <code>ffmpeg</code> ei ole valmiina polussa, odota kärsivällisesti kun stash lataa sen. Näet latauksen tilan konsolista."
+    "parent_of": "Emostudio seuraaville: {children}",
+    "parent_studios": "Emostudiot",
+    "parent_tag_count": "Ylätunnisteiden määrä",
+    "parent_tags": "Ylätunnisteet",
+    "part_of": "Osa {parent}",
+    "path": "Polku",
+    "perceptual_similarity": "Aistinvarainen samankaltaisuus (phash)",
+    "performer": "Esiintyjä",
+    "performer_age": "Esiintyjän ikä",
+    "performer_count": "Esiintyjien määrä",
+    "performer_favorite": "Esiintyjä suosikeissa",
+    "performer_image": "Esiintyjän kuva",
+    "performer_tagger": {
+        "add_new_performers": "Lisää uusia esiintyjiä",
+        "batch_add_performers": "Lisää joukko esiintyjiä",
+        "batch_update_performers": "Päivitä joukko esiintyjiä",
+        "config": {
+            "active_stash-box_instance": "Aktiivinen stash-box instanssi:",
+            "edit_excluded_fields": "Muokkaa poisjätettyjä kenttiä",
+            "excluded_fields": "Poisjätetyt kentät:",
+            "no_fields_are_excluded": "Ei poisjätettyjä kenttiä",
+            "these_fields_will_not_be_changed_when_updating_performers": "Näitä kenttiä ei muokata kun päivitetään esiintyjiä."
+        },
+        "current_page": "Nykyinen sivu",
+        "failed_to_save_performer": "Esiintyjän \"{performer}\" tallentaminen ei onnistunut",
+        "name_already_exists": "Nimi on jo olemassa",
+        "network_error": "Verkkovirhe",
+        "no_results_found": "Ei tuloksia.",
+        "number_of_performers_will_be_processed": "{performer_count} esintyjää prosessoidaan",
+        "performer_already_tagged": "Esiintyjälle on jo asetettu tunnisteet",
+        "performer_names_separated_by_comma": "Erota esiintyjien nimet pilkulla",
+        "performer_selection": "Esiintyjän valinta",
+        "performer_successfully_tagged": "Esiintyjälle on asetettu tunnisteet:",
+        "query_all_performers_in_the_database": "Kaikki esiintyjät tietokannassa",
+        "refresh_tagged_performers": "Päivitä tunnistetut esiintyjät",
+        "status_tagging_job_queued": "Tila: Tunnisteiden asettaminen laitettu jonoon",
+        "status_tagging_performers": "Tila: Asetetaan esiintyjien tunnisteita",
+        "untagged_performers": "Esiintyjät joille ei ole asetettu tunnisteita",
+        "update_performer": "Päivitä esiintyjä",
+        "update_performers": "Päivitä esiintyjät"
     },
-    "errors": {
-      "something_went_wrong": "Voi ei! Jotain meni vikaan!",
-      "something_went_wrong_description": "Näyttää siltä, että olet syöttänyt jotain omituista. Palaa takaisin korjataksesi ne. Muussa tapauksessa tee ilmoitus bugista {githubLink} tai pyydä apua {discordLink}.",
-      "something_went_wrong_while_setting_up_your_system": "Järjestelmän asettamisessa meni jotain vikaan. Tässä on virhe jonka saimme: {error}"
+    "performer_tags": "Esiintyjien tunnisteet",
+    "performers": "Esiintyjät",
+    "piercings": "Lävistykset",
+    "queue": "Jono",
+    "random": "Satunnainen",
+    "rating": "Arvio",
+    "recently_added_objects": "Viimeksi lisätyt {objects}",
+    "recently_released_objects": "Viimeksi julkaistut {objects}",
+    "resolution": "Resoluutio",
+    "scene": "Kohtaus",
+    "sceneTagger": "Kohtauksien tunnistetila",
+    "scene_code": "Studiokoodi",
+    "scene_count": "Kohtauksien määrä",
+    "scene_created_at": "Kohtaus luotu",
+    "scene_date": "Kohtauksen päiväys",
+    "scene_id": "Kohtauksen ID",
+    "scene_tags": "Kohtauksen tunnisteet",
+    "scene_updated_at": "Kohtaus päivitetty",
+    "scenes": "Kohtaukset",
+    "scenes_updated_at": "Kohtaus päivitetty",
+    "search_filter": {
+        "name": "Suodatin",
+        "saved_filters": "Tallennetut suodattimet",
+        "update_filter": "Päivitä suodatin"
     },
-    "folder": {
-      "file_path": "Tiedostopolku",
-      "up_dir": "Ylös"
+    "seconds": "sekuntia",
+    "settings": "Asetukset",
+    "setup": {
+        "confirm": {
+            "almost_ready": "Olemme melkein valmiita. Tarkista vielä asetukset. Voit palata takaisin jos haluat muuttaa jotain, mikä on väärin. Jos kaikki näyttää hyvältä, vahvista ja järjestelmä luodaan.",
+            "configuration_file_location": "Konfiguraatiotiedoston sijainti:",
+            "database_file_path": "Tietokannan polku",
+            "generated_directory": "Generoitujen tiedostojen kansio",
+            "nearly_there": "Melkein perillä!",
+            "stash_library_directories": "Stash -kirjaston kansiot"
+        },
+        "creating": {
+            "creating_your_system": "Luodaan järjestelmää",
+            "ffmpeg_notice": "Jos <code>ffmpeg</code> ei ole valmiina polussa, odota kärsivällisesti kun stash lataa sen. Näet latauksen tilan konsolista."
+        },
+        "errors": {
+            "something_went_wrong": "Voi ei! Jotain meni vikaan!",
+            "something_went_wrong_description": "Näyttää siltä, että olet syöttänyt jotain omituista. Palaa takaisin korjataksesi ne. Muussa tapauksessa tee ilmoitus bugista {githubLink} tai pyydä apua {discordLink}.",
+            "something_went_wrong_while_setting_up_your_system": "Järjestelmän asettamisessa meni jotain vikaan. Tässä on virhe jonka saimme: {error}"
+        },
+        "folder": {
+            "file_path": "Tiedostopolku",
+            "up_dir": "Ylös"
+        },
+        "github_repository": "Github repository",
+        "migrate": {
+            "backup_database_path_leave_empty_to_disable_backup": "Tietokannan varmuuskopion polku (jätä tyhjäksi jos et halua varmuuskopiointia):",
+            "backup_recommended": "On suositeltavaa, että varmuuskopioit nykyisen tietokannan ennen kuin teet migraation. Voimme tehdä tämän puolestasi. Kopioimme tietokantasi tänne: <code>{defaultBackupPath}</code>.",
+            "migrating_database": "Tietokannan migraatio",
+            "migration_failed": "Migraatio ei onnistunut",
+            "migration_failed_error": "Seuraava virhe tuli tietokannan migraatiossa:",
+            "migration_failed_help": "Tee tarvittavat korjaukset. Muussa tapauksessa tee ilmoitus bugista {githubLink} tai pyydä apua {discordLink}.",
+            "migration_irreversible_warning": "Migraatio ei ole peruutettavissa. Kun migraatio on suoritettu, tietokanta ei ole enää yhteensopiva stashin vanhempien versioiden kanssa.",
+            "migration_required": "Migraatio vaaditaan",
+            "perform_schema_migration": "Suorita migraatio",
+            "schema_too_old": "Tämänhetkinen stash -tietokannan muodon versio on <strong>{databaseSchema}</strong> ja se pitää muuttaa versioon <strong>{appSchema}</strong>. Tämä versio Stashista ei toimi ilman tietokannan migraatiota. Jos et halua tehdä tätä, sinun pitää palata aikaisempaan versioon stashista."
+        },
+        "paths": {
+            "database_filename_empty_for_default": "tietokannan tiedostonimi (oletus jos tyhjä)",
+            "description": "Seuraavaksi meidän pitää tietää mistä etsiä pornokokoelmaasi ja mihin tallennetaan tietokanta, välimuisti ja generoidut tiedostot. Nämä asetukset ovat muutettavissa myöhemmin.",
+            "path_to_generated_directory_empty_for_default": "polku generated -kansioon (käytetään oletussijaintia jos tyhjä)",
+            "set_up_your_paths": "Aseta polut",
+            "stash_alert": "Et ole valinnut yhtään polkua kirjastoon. Mediaa ei voida skannata Stashiin. Oletko aivan varma?",
+            "where_can_stash_store_its_database": "Mihin Stash voi tallentaa tietokantansa?",
+            "where_can_stash_store_its_database_description": "Stash käyttää SQLite -tietokantaa tallentaaksesi pornosi metadatan. Oletuksena <code>stash-go.sqlite</code> luodaan samaan kansioon konfiguraatiotiedoston kanssa. Jos haluat muuttaa tätä, anna absoluuttinen tai relatiivinen tiedostonimi.",
+            "where_can_stash_store_its_generated_content": "Mihin Stash voi tallentaa generoimansa sisällön?",
+            "where_is_your_porn_located": "Missä pornosi on?",
+            "where_is_your_porn_located_description": "Lisää hakemistoja jotka sisältävät pornovideosi ja -kuvasi. Stash käyttää näitä hakemistoja etsiessään videoita ja kuvia."
+        },
+        "stash_setup_wizard": "Stashin asetusvelho",
+        "success": {
+            "getting_help": "Apua",
+            "help_links": "Jos kohtaat ongelmia tai sinulla on kysymyksiä tai ehdotuksia, avaa toki ongelma {githubLink}, tai kysy yhteisöltä {discordLink}.",
+            "open_collective": "Tutustu {open_collective_link} nähdäksesi miten voit osallistua Stashin jatkuvaan kehittämiseen.",
+            "support_us": "Tue meitä",
+            "thanks_for_trying_stash": "Kiitos kun kokeilit Stashia!",
+            "your_system_has_been_created": "Kaikki hyvin! Järjestelmä on nyt luotu!"
+        },
+        "welcome": {
+            "in_current_stash_directory": "<code>HOME/.stash</code> kansioon",
+            "store_stash_config": "Minne haluat tallentaa Stash -konfiguraation?",
+            "unable_to_locate_config": "Mikäli luet tätä, Stash ei löydä olemassaolevaa konfiguraatiota. Tämä velho auttaa sinua uuden konfiguraation luomisessa."
+        },
+        "welcome_specific_config": {
+            "config_path": "Stash käyttää seuraavaa polkua konfiguraatiotiedostolle: <code>{path}</code>",
+            "next_step": "Kun olet valmis etenemään järjestelmän luontiin, paina Seuraava.",
+            "unable_to_locate_specified_config": "Mikäli luet tätä, Stash ei löydä konfiguraatiotiedostoa, joka on määritelty joko komentorivillä tai muualla. Tämä velho auttaa sinua uuden konfiguraation luomisessa."
+        },
+        "welcome_to_stash": "Tervetuloa Stashiin"
     },
-    "github_repository": "Github repository",
-    "migrate": {
-      "backup_database_path_leave_empty_to_disable_backup": "Tietokannan varmuuskopion polku (jätä tyhjäksi jos et halua varmuuskopiointia):",
-      "backup_recommended": "On suositeltavaa, että varmuuskopioit nykyisen tietokannan ennen kuin teet migraation. Voimme tehdä tämän puolestasi. Kopioimme tietokantasi tänne: <code>{defaultBackupPath}</code>.",
-      "migrating_database": "Tietokannan migraatio",
-      "migration_failed": "Migraatio ei onnistunut",
-      "migration_failed_error": "Seuraava virhe tuli tietokannan migraatiossa:",
-      "migration_failed_help": "Tee tarvittavat korjaukset. Muussa tapauksessa tee ilmoitus bugista {githubLink} tai pyydä apua {discordLink}.",
-      "migration_irreversible_warning": "Migraatio ei ole peruutettavissa. Kun migraatio on suoritettu, tietokanta ei ole enää yhteensopiva stashin vanhempien versioiden kanssa.",
-      "migration_required": "Migraatio vaaditaan",
-      "perform_schema_migration": "Suorita migraatio",
-      "schema_too_old": "Tämänhetkinen stash -tietokannan muodon versio on <strong>{databaseSchema}</strong> ja se pitää muuttaa versioon <strong>{appSchema}</strong>. Tämä versio Stashista ei toimi ilman tietokannan migraatiota. Jos et halua tehdä tätä, sinun pitää palata aikaisempaan versioon stashista."
+    "stash_id": "Stash ID",
+    "stash_ids": "Stash ID:t",
+    "stashbox": {
+        "go_review_draft": "Mene {endpoint_name} katsoaksesi luonnosta.",
+        "submission_failed": "Lähettäminen ei onnistunut",
+        "submission_successful": "Lähettäminen onnistui",
+        "submit_update": "On jo kohteessa {endpoint_name}"
     },
-    "paths": {
-      "database_filename_empty_for_default": "tietokannan tiedostonimi (oletus jos tyhjä)",
-      "description": "Seuraavaksi meidän pitää tietää mistä etsiä pornokokoelmaasi ja mihin tallennetaan tietokanta, välimuisti ja generoidut tiedostot. Nämä asetukset ovat muutettavissa myöhemmin.",
-      "path_to_generated_directory_empty_for_default": "polku generated -kansioon (käytetään oletussijaintia jos tyhjä)",
-      "set_up_your_paths": "Aseta polut",
-      "stash_alert": "Et ole valinnut yhtään polkua kirjastoon. Mediaa ei voida skannata Stashiin. Oletko aivan varma?",
-      "where_can_stash_store_its_database": "Mihin Stash voi tallentaa tietokantansa?",
-      "where_can_stash_store_its_database_description": "Stash käyttää SQLite -tietokantaa tallentaaksesi pornosi metadatan. Oletuksena <code>stash-go.sqlite</code> luodaan samaan kansioon konfiguraatiotiedoston kanssa. Jos haluat muuttaa tätä, anna absoluuttinen tai relatiivinen tiedostonimi.",
-      "where_can_stash_store_its_generated_content": "Mihin Stash voi tallentaa generoimansa sisällön?",
-      "where_is_your_porn_located": "Missä pornosi on?",
-      "where_is_your_porn_located_description": "Lisää hakemistoja jotka sisältävät pornovideosi ja -kuvasi. Stash käyttää näitä hakemistoja etsiessään videoita ja kuvia."
+    "statistics": "Tilastot",
+    "stats": {
+        "image_size": "Kuvien koko",
+        "scenes_duration": "Kohtausten kesto",
+        "scenes_size": "Kohtausten koko"
     },
-    "stash_setup_wizard": "Stashin asetusvelho",
-    "success": {
-      "getting_help": "Apua",
-      "help_links": "Jos kohtaat ongelmia tai sinulla on kysymyksiä tai ehdotuksia, avaa toki ongelma {githubLink}, tai kysy yhteisöltä {discordLink}.",
-      "open_collective": "Tutustu {open_collective_link} nähdäksesi miten voit osallistua Stashin jatkuvaan kehittämiseen.",
-      "support_us": "Tue meitä",
-      "thanks_for_trying_stash": "Kiitos kun kokeilit Stashia!",
-      "your_system_has_been_created": "Kaikki hyvin! Järjestelmä on nyt luotu!"
+    "status": "Tila: {statusText}",
+    "studio": "Studio",
+    "studio_depth": "Tasot (kaikki: jätä tyhjäksi)",
+    "studios": "Studiot",
+    "sub_tag_count": "Alitunnisteiden määrä",
+    "sub_tag_of": "Tunnisteen {parent} alitunniste",
+    "sub_tags": "Alitunnisteet",
+    "subsidiary_studios": "Alistudiot",
+    "synopsis": "Tiivistelmä",
+    "tag": "Tunniste",
+    "tag_count": "Tunnisteiden määrä",
+    "tags": "Tunnisteet",
+    "tattoos": "Tatuoinnit",
+    "title": "Otsikko",
+    "toast": {
+        "added_entity": "Lisätty {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
+        "added_generation_job_to_queue": "Lisätty generointi työjonoon",
+        "created_entity": "Luotiin {entity}",
+        "default_filter_set": "Oletussuodattimet",
+        "delete_past_tense": "Poistettu {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
+        "generating_screenshot": "Generoidaan näyttökuvaa…",
+        "merged_tags": "Yhdistetyt tunnisteet",
+        "rescanning_entity": "Skannataan {count, plural, one {{singularEntity}} other {{pluralEntity}}} uudelleen…",
+        "saved_entity": "Tallennettu {entity}",
+        "started_auto_tagging": "Aloiteettin automaattinen tunnisteiden asetus",
+        "started_generating": "Aloitettiin generointi",
+        "started_importing": "Aloitettiin tuonti",
+        "updated_entity": "{entity} päivitetty"
     },
-    "welcome": {
-      "in_current_stash_directory": "<code>HOME/.stash</code> kansioon",
-      "store_stash_config": "Minne haluat tallentaa Stash -konfiguraation?",
-      "unable_to_locate_config": "Mikäli luet tätä, Stash ei löydä olemassaolevaa konfiguraatiota. Tämä velho auttaa sinua uuden konfiguraation luomisessa."
-    },
-    "welcome_specific_config": {
-      "config_path": "Stash käyttää seuraavaa polkua konfiguraatiotiedostolle: <code>{path}</code>",
-      "next_step": "Kun olet valmis etenemään järjestelmän luontiin, paina Seuraava.",
-      "unable_to_locate_specified_config": "Mikäli luet tätä, Stash ei löydä konfiguraatiotiedostoa, joka on määritelty joko komentorivillä tai muualla. Tämä velho auttaa sinua uuden konfiguraation luomisessa."
-    },
-    "welcome_to_stash": "Tervetuloa Stashiin"
-  },
-  "stash_id": "Stash ID",
-  "stash_ids": "Stash ID:t",
-  "stashbox": {
-    "go_review_draft": "Mene {endpoint_name} katsoaksesi luonnosta.",
-    "submission_failed": "Lähettäminen ei onnistunut",
-    "submission_successful": "Lähettäminen onnistui",
-    "submit_update": "On jo kohteessa {endpoint_name}"
-  },
-  "statistics": "Tilastot",
-  "stats": {
-    "image_size": "Kuvien koko",
-    "scenes_duration": "Kohtausten kesto",
-    "scenes_size": "Kohtausten koko"
-  },
-  "status": "Tila: {statusText}",
-  "studio": "Studio",
-  "studio_depth": "Tasot (kaikki: jätä tyhjäksi)",
-  "studios": "Studiot",
-  "sub_tag_count": "Alitunnisteiden määrä",
-  "sub_tag_of": "Tunnisteen {parent} alitunniste",
-  "sub_tags": "Alitunnisteet",
-  "subsidiary_studios": "Alistudiot",
-  "synopsis": "Tiivistelmä",
-  "tag": "Tunniste",
-  "tag_count": "Tunnisteiden määrä",
-  "tags": "Tunnisteet",
-  "tattoos": "Tatuoinnit",
-  "title": "Otsikko",
-  "toast": {
-    "added_entity": "Lisätty {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
-    "added_generation_job_to_queue": "Lisätty generointi työjonoon",
-    "created_entity": "Luotiin {entity}",
-    "default_filter_set": "Oletussuodattimet",
-    "delete_past_tense": "Poistettu {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
-    "generating_screenshot": "Generoidaan näyttökuvaa…",
-    "merged_tags": "Yhdistetyt tunnisteet",
-    "rescanning_entity": "Skannataan {count, plural, one {{singularEntity}} other {{pluralEntity}}} uudelleen…",
-    "saved_entity": "Tallennettu {entity}",
-    "started_auto_tagging": "Aloiteettin automaattinen tunnisteiden asetus",
-    "started_generating": "Aloitettiin generointi",
-    "started_importing": "Aloitettiin tuonti",
-    "updated_entity": "{entity} päivitetty"
-  },
-  "total": "Yhteensä",
-  "true": "On",
-  "twitter": "Twitter",
-  "updated_at": "Päivitetty",
-  "url": "URL",
-  "validation": {
-    "aliases_must_be_unique": "Aliaksien pitää olla uniikkeja"
-  },
-  "videos": "Videot",
-  "view_all": "Näytä kaikki",
-  "weight": "Paino",
-  "weight_kg": "Paino (kg)",
-  "years_old": "-vuotias"
+    "total": "Yhteensä",
+    "true": "On",
+    "twitter": "Twitter",
+    "updated_at": "Päivitetty",
+    "url": "URL",
+    "videos": "Videot",
+    "view_all": "Näytä kaikki",
+    "weight": "Paino",
+    "weight_kg": "Paino (kg)",
+    "years_old": "-vuotias"
 }

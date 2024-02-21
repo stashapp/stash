@@ -27,7 +27,7 @@ import {
 import { useCompare } from "src/hooks/state";
 import { Link } from "react-router-dom";
 import { sortByRelevance } from "src/utils/query";
-import { PatchComponent } from "src/pluginApi";
+import { PatchComponent } from "src/patch";
 
 export type SelectObject = {
   id: string;
@@ -256,8 +256,7 @@ const _PerformerIDSelect: React.FC<IFilterProps & IFilterIDProps<Performer>> = (
   }
 
   async function loadObjectsByID(idsToLoad: string[]): Promise<Performer[]> {
-    const performerIDs = idsToLoad.map((id) => parseInt(id));
-    const query = await queryFindPerformersByIDForSelect(performerIDs);
+    const query = await queryFindPerformersByIDForSelect(idsToLoad);
     const { performers: loadedPerformers } = query.data.findPerformers;
 
     return loadedPerformers;

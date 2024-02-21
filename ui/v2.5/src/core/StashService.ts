@@ -2,6 +2,7 @@ import {
   ApolloCache,
   DocumentNode,
   FetchResult,
+  NetworkStatus,
   useQuery,
 } from "@apollo/client";
 import { Modifiers } from "@apollo/client/cache";
@@ -73,26 +74,6 @@ function evictTypeFields(
   }
 }
 
-// Appends obj to the cached result of the given query.
-// Use to append objects to "All*" queries in "Create" mutations.
-function appendObject(
-  cache: ApolloCache<unknown>,
-  obj: StoreObject,
-  query: DocumentNode
-) {
-  const field = getQueryDefinition(query).selectionSet.selections[0];
-  if (!isField(field)) return;
-  const keyName = field.name.value;
-
-  cache.modify({
-    fields: {
-      [keyName]: (value, { toReference }) => {
-        return [...(value as unknown[]), toReference(obj)];
-      },
-    },
-  });
-}
-
 // Deletes obj from the cache, and sets the
 // cached result of the given query to null.
 // Use with "Destroy" mutations.
@@ -111,6 +92,16 @@ function deleteObject(
     data: { [keyName]: null },
   });
   cache.evict({ id: cache.identify(obj) });
+}
+
+export function isLoading(networkStatus: NetworkStatus) {
+  // useQuery hook loading field only returns true when initially loading the query
+  // and not during subsequent fetches
+  return (
+    networkStatus === NetworkStatus.loading ||
+    networkStatus === NetworkStatus.fetchMore ||
+    networkStatus === NetworkStatus.refetch
+  );
 }
 
 /// Object queries
@@ -199,7 +190,22 @@ export const queryFindMovies = (filter: ListFilterModel) =>
     },
   });
 
-export const useAllMoviesForFilter = () => GQL.useAllMoviesForFilterQuery();
+export const queryFindMoviesByIDForSelect = (movieIDs: string[]) =>
+  client.query<GQL.FindMoviesForSelectQuery>({
+    query: GQL.FindMoviesForSelectDocument,
+    variables: {
+      ids: movieIDs,
+    },
+  });
+
+export const queryFindMoviesForSelect = (filter: ListFilterModel) =>
+  client.query<GQL.FindMoviesForSelectQuery>({
+    query: GQL.FindMoviesForSelectDocument,
+    variables: {
+      filter: filter.makeFindFilter(),
+      movie_filter: filter.makeFilter(),
+    },
+  });
 
 export const useFindSceneMarkers = (filter?: ListFilterModel) =>
   GQL.useFindSceneMarkersQuery({
@@ -244,7 +250,16 @@ export const queryFindGalleries = (filter: ListFilterModel) =>
     },
   });
 
-export const queryFindGalleriesByIDForSelect = (galleryIDs: number[]) =>
+export const queryFindGalleriesForSelect = (filter: ListFilterModel) =>
+  client.query<GQL.FindGalleriesForSelectQuery>({
+    query: GQL.FindGalleriesForSelectDocument,
+    variables: {
+      filter: filter.makeFindFilter(),
+      gallery_filter: filter.makeFilter(),
+    },
+  });
+
+export const queryFindGalleriesByIDForSelect = (galleryIDs: string[]) =>
   client.query<GQL.FindGalleriesForSelectQuery>({
     query: GQL.FindGalleriesForSelectDocument,
     variables: {
@@ -281,11 +296,11 @@ export const queryFindPerformers = (filter: ListFilterModel) =>
     },
   });
 
-export const queryFindPerformersByIDForSelect = (performerIDs: number[]) =>
+export const queryFindPerformersByIDForSelect = (performerIDs: string[]) =>
   client.query<GQL.FindPerformersForSelectQuery>({
     query: GQL.FindPerformersForSelectDocument,
     variables: {
-      performer_ids: performerIDs,
+      ids: performerIDs,
     },
   });
 
@@ -327,7 +342,7 @@ export const queryFindStudios = (filter: ListFilterModel) =>
     },
   });
 
-export const queryFindStudiosByIDForSelect = (studioIDs: number[]) =>
+export const queryFindStudiosByIDForSelect = (studioIDs: string[]) =>
   client.query<GQL.FindStudiosForSelectQuery>({
     query: GQL.FindStudiosForSelectDocument,
     variables: {
@@ -367,7 +382,7 @@ export const queryFindTags = (filter: ListFilterModel) =>
     },
   });
 
-export const queryFindTagsByIDForSelect = (tagIDs: number[]) =>
+export const queryFindTagsByIDForSelect = (tagIDs: string[]) =>
   client.query<GQL.FindTagsForSelectQuery>({
     query: GQL.FindTagsForSelectDocument,
     variables: {
@@ -1221,6 +1236,7 @@ export const mutateImageSetPrimaryFile = (id: string, fileID: string) =>
   });
 
 const movieMutationImpactedTypeFields = {
+  Performer: ["movie_count"],
   Studio: ["movie_count"],
 };
 
@@ -1234,10 +1250,8 @@ export const useMovieCreate = () =>
       const movie = result.data?.movieCreate;
       if (!movie) return;
 
-      appendObject(cache, movie, GQL.AllMoviesForFilterDocument);
-
       // update stats
-      updateStats(cache, "studio_count", 1);
+      updateStats(cache, "movie_count", 1);
 
       evictTypeFields(cache, movieMutationImpactedTypeFields);
       evictQueries(cache, movieMutationImpactedQueries);

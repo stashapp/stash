@@ -99,6 +99,13 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
     };
   }
 
+  function movieToStoredID(o: { movie: { id: string; name: string } }) {
+    return {
+      stored_id: o.movie.id,
+      name: o.movie.name,
+    };
+  }
+
   const [studio, setStudio] = useState<ScrapeResult<GQL.ScrapedStudio>>(
     new ScrapeResult<GQL.ScrapedStudio>(
       dest.studio ? idToStoredID(dest.studio) : undefined
@@ -133,8 +140,12 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
     )
   );
 
-  const [movies, setMovies] = useState<ScrapeResult<string[]>>(
-    new ScrapeResult<string[]>(sortIdList(dest.movies.map((p) => p.movie.id)))
+  const [movies, setMovies] = useState<
+    ObjectListScrapeResult<GQL.ScrapedMovie>
+  >(
+    new ObjectListScrapeResult<GQL.ScrapedMovie>(
+      sortStoredIdObjects(dest.movies.map(movieToStoredID))
+    )
   );
 
   const [tags, setTags] = useState<ObjectListScrapeResult<GQL.ScrapedTag>>(
@@ -241,9 +252,9 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
     );
 
     setMovies(
-      new ScrapeResult(
-        dest.movies.map((m) => m.movie.id),
-        uniq(all.map((s) => s.movies.map((m) => m.movie.id)).flat())
+      new ObjectListScrapeResult<GQL.ScrapedMovie>(
+        sortStoredIdObjects(dest.movies.map(movieToStoredID)),
+        uniqIDStoredIDs(all.map((s) => s.movies.map(movieToStoredID)).flat())
       )
     );
 
@@ -567,6 +578,8 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
         urls: url.getNewValue(),
         date: date.getNewValue(),
         rating100: rating.getNewValue(),
+        o_counter: oCounter.getNewValue(),
+        play_count: playCount.getNewValue(),
         play_duration: playDuration.getNewValue(),
         gallery_ids: galleries.getNewValue(),
         studio_id: studio.getNewValue()?.stored_id,
@@ -576,9 +589,9 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
           const found = all
             .map((s) => s.movies)
             .flat()
-            .find((mm) => mm.movie.id === m);
+            .find((mm) => mm.movie.id === m.stored_id);
           return {
-            movie_id: m,
+            movie_id: m.stored_id!,
             scene_index: found!.scene_index,
           };
         }),

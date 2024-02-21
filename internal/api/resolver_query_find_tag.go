@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 )
 
 func (r *queryResolver) FindTag(ctx context.Context, id string) (ret *models.Tag, err error) {
@@ -23,14 +24,19 @@ func (r *queryResolver) FindTag(ctx context.Context, id string) (ret *models.Tag
 	return ret, nil
 }
 
-func (r *queryResolver) FindTags(ctx context.Context, tagFilter *models.TagFilterType, filter *models.FindFilterType, ids []int) (ret *FindTagsResultType, err error) {
+func (r *queryResolver) FindTags(ctx context.Context, tagFilter *models.TagFilterType, filter *models.FindFilterType, ids []string) (ret *FindTagsResultType, err error) {
+	idInts, err := stringslice.StringSliceToIntSlice(ids)
+	if err != nil {
+		return nil, err
+	}
+
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		var tags []*models.Tag
 		var err error
 		var total int
 
-		if len(ids) > 0 {
-			tags, err = r.repository.Tag.FindMany(ctx, ids)
+		if len(idInts) > 0 {
+			tags, err = r.repository.Tag.FindMany(ctx, idInts)
 			total = len(tags)
 		} else {
 			tags, total, err = r.repository.Tag.Query(ctx, tagFilter, filter)

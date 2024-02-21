@@ -7,7 +7,7 @@ import { faEllipsis, faTimes } from "@fortawesome/free-solid-svg-icons";
 import { useDebounce } from "src/hooks/debounce";
 import TextUtils from "src/utils/text";
 import { useDirectoryPaths } from "./useDirectoryPaths";
-import { PatchComponent } from "src/pluginApi";
+import { PatchComponent } from "src/patch";
 
 interface IProps {
   currentDirectory: string;

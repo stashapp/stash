@@ -12,7 +12,8 @@ type Query {
   "A function which queries Scene objects"
   findScenes(
     scene_filter: SceneFilterType
-    scene_ids: [Int!]
+    scene_ids: [Int!] @deprecated(reason: "use ids")
+    ids: [ID!]
     filter: FindFilterType
   ): FindScenesResultType!
 
@@ -50,7 +51,8 @@ type Query {
   "A function which queries Scene objects"
   findImages(
     image_filter: ImageFilterType
-    image_ids: [Int!]
+    image_ids: [Int!] @deprecated(reason: "use ids")
+    ids: [ID!]
     filter: FindFilterType
   ): FindImagesResultType!
 
@@ -60,7 +62,8 @@ type Query {
   findPerformers(
     performer_filter: PerformerFilterType
     filter: FindFilterType
-    performer_ids: [Int!]
+    performer_ids: [Int!] @deprecated(reason: "use ids")
+    ids: [ID!]
   ): FindPerformersResultType!
 
   "Find a studio by ID"
@@ -78,6 +81,7 @@ type Query {
   findMovies(
     movie_filter: MovieFilterType
     filter: FindFilterType
+    ids: [ID!]
   ): FindMoviesResultType!
 
   findGallery(id: ID!): Gallery
@@ -91,7 +95,7 @@ type Query {
   findTags(
     tag_filter: TagFilterType
     filter: FindFilterType
-    ids: [Int!]
+    ids: [ID!]
   ): FindTagsResultType!
 
   "Retrieve random scene markers for the wall"
@@ -200,15 +204,16 @@ type Query {
 
   # Get everything
 
-  allScenes: [Scene!]!
+  allScenes: [Scene!]! @deprecated(reason: "Use findScenes instead")
   allSceneMarkers: [SceneMarker!]!
-  allImages: [Image!]!
-  allGalleries: [Gallery!]!
-  allMovies: [Movie!]!
+    @deprecated(reason: "Use findSceneMarkers instead")
+  allImages: [Image!]! @deprecated(reason: "Use findImages instead")
+  allGalleries: [Gallery!]! @deprecated(reason: "Use findGalleries instead")
 
-  allPerformers: [Performer!]! @deprecated(reason: "Use findPerformers instead")
+  allPerformers: [Performer!]!
   allTags: [Tag!]! @deprecated(reason: "Use findTags instead")
   allStudios: [Studio!]! @deprecated(reason: "Use findStudios instead")
+  allMovies: [Movie!]! @deprecated(reason: "Use findMovies instead")
 
   # Get everything with minimal metadata
 

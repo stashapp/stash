@@ -9,9 +9,9 @@ import cx from "classnames";
 
 import * as GQL from "src/core/generated-graphql";
 import {
-  useTagCreate,
-  queryFindTagsByIDForSelect,
-  queryFindTagsForSelect,
+  queryFindMoviesForSelect,
+  queryFindMoviesByIDForSelect,
+  useMovieCreate,
 } from "src/core/StashService";
 import { ConfigurationContext } from "src/hooks/Config";
 import { useIntl } from "react-intl";
@@ -25,114 +25,67 @@ import {
   Option as SelectOption,
 } from "../Shared/FilterSelect";
 import { useCompare } from "src/hooks/state";
-import { TagPopover } from "./TagPopover";
 import { Placement } from "react-bootstrap/esm/Overlay";
 import { sortByRelevance } from "src/utils/query";
 import { PatchComponent } from "src/patch";
 
-export type SelectObject = {
-  id: string;
-  name?: string | null;
-  title?: string | null;
-};
+export type Movie = Pick<GQL.Movie, "id" | "name">;
+type Option = SelectOption<Movie>;
 
-export type Tag = Pick<GQL.Tag, "id" | "name" | "aliases" | "image_path">;
-type Option = SelectOption<Tag>;
-
-const _TagSelect: React.FC<
+const _MovieSelect: React.FC<
   IFilterProps &
-    IFilterValueProps<Tag> & {
+    IFilterValueProps<Movie> & {
       hoverPlacement?: Placement;
       excludeIds?: string[];
     }
 > = (props) => {
-  const [createTag] = useTagCreate();
+  const [createMovie] = useMovieCreate();
 
   const { configuration } = React.useContext(ConfigurationContext);
   const intl = useIntl();
   const maxOptionsShown =
     configuration?.ui.maxOptionsShown ?? defaultMaxOptionsShown;
   const defaultCreatable =
-    !configuration?.interface.disableDropdownCreate.tag ?? true;
+    !configuration?.interface.disableDropdownCreate.movie ?? true;
 
   const exclude = useMemo(() => props.excludeIds ?? [], [props.excludeIds]);
 
-  async function loadTags(input: string): Promise<Option[]> {
-    const filter = new ListFilterModel(GQL.FilterMode.Tags);
+  async function loadMovies(input: string): Promise<Option[]> {
+    const filter = new ListFilterModel(GQL.FilterMode.Movies);
     filter.searchTerm = input;
     filter.currentPage = 1;
     filter.itemsPerPage = maxOptionsShown;
     filter.sortBy = "name";
     filter.sortDirection = GQL.SortDirectionEnum.Asc;
-    const query = await queryFindTagsForSelect(filter);
-    let ret = query.data.findTags.tags.filter((tag) => {
+    const query = await queryFindMoviesForSelect(filter);
+    let ret = query.data.findMovies.movies.filter((movie) => {
       // HACK - we should probably exclude these in the backend query, but
       // this will do in the short-term
-      return !exclude.includes(tag.id.toString());
+      return !exclude.includes(movie.id.toString());
     });
 
-    return sortByRelevance(
-      input,
-      ret,
-      (t) => t.name,
-      (t) => t.aliases
-    ).map((tag) => ({
-      value: tag.id,
-      object: tag,
+    return sortByRelevance(input, ret, (m) => m.name).map((movie) => ({
+      value: movie.id,
+      object: movie,
     }));
   }
 
-  const TagOption: React.FC<OptionProps<Option, boolean>> = (optionProps) => {
+  const MovieOption: React.FC<OptionProps<Option, boolean>> = (optionProps) => {
     let thisOptionProps = optionProps;
 
     const { object } = optionProps.data;
 
-    let { name } = object;
-
-    // if name does not match the input value but an alias does, show the alias
-    const { inputValue } = optionProps.selectProps;
-    let alias: string | undefined = "";
-    if (!name.toLowerCase().includes(inputValue.toLowerCase())) {
-      alias = object.aliases?.find((a) =>
-        a.toLowerCase().includes(inputValue.toLowerCase())
-      );
-    }
+    const title = object.name;
 
     thisOptionProps = {
       ...optionProps,
-      children: (
-        <TagPopover id={object.id} placement={props.hoverPlacement ?? "right"}>
-          <span className="react-select-image-option">
-            {/* the following code causes re-rendering issues when selecting tags */}
-            {/* <TagPopover
-              id={object.id}
-              placement={props.hoverPlacement}
-              target={targetRef}
-            >
-              <a
-                href={`/tags/${object.id}`}
-                target="_blank"
-                rel="noreferrer"
-                className="tag-select-image-link"
-              >
-                <img
-                  className="tag-select-image"
-                  src={object.image_path ?? ""}
-                  loading="lazy"
-                />
-              </a>
-            </TagPopover> */}
-            <span>{name}</span>
-            {alias && <span className="alias">{` (${alias})`}</span>}
-          </span>
-        </TagPopover>
-      ),
+      children: <span>{title}</span>,
     };
 
     return <reactSelectComponents.Option {...thisOptionProps} />;
   };
 
-  const TagMultiValueLabel: React.FC<
+  const MovieMultiValueLabel: React.FC<
     MultiValueGenericProps<Option, boolean>
   > = (optionProps) => {
     let thisOptionProps = optionProps;
@@ -147,7 +100,7 @@ const _TagSelect: React.FC<
     return <reactSelectComponents.MultiValueLabel {...thisOptionProps} />;
   };
 
-  const TagValueLabel: React.FC<SingleValueProps<Option, boolean>> = (
+  const MovieValueLabel: React.FC<SingleValueProps<Option, boolean>> = (
     optionProps
   ) => {
     let thisOptionProps = optionProps;
@@ -163,13 +116,13 @@ const _TagSelect: React.FC<
   };
 
   const onCreate = async (name: string) => {
-    const result = await createTag({
+    const result = await createMovie({
       variables: { input: { name } },
     });
     return {
-      value: result.data!.tagCreate!.id,
-      item: result.data!.tagCreate!,
-      message: "Created tag",
+      value: result.data!.movieCreate!.id,
+      item: result.data!.movieCreate!,
+      message: "Created movie",
     };
   };
 
@@ -177,21 +130,17 @@ const _TagSelect: React.FC<
     return {
       id,
       name,
-      aliases: [],
     };
   };
 
-  const isValidNewOption = (inputValue: string, options: Tag[]) => {
+  const isValidNewOption = (inputValue: string, options: Movie[]) => {
     if (!inputValue) {
       return false;
     }
 
     if (
       options.some((o) => {
-        return (
-          o.name.toLowerCase() === inputValue.toLowerCase() ||
-          o.aliases?.some((a) => a.toLowerCase() === inputValue.toLowerCase())
-        );
+        return o.name.toLowerCase() === inputValue.toLowerCase();
       })
     ) {
       return false;
@@ -201,22 +150,22 @@ const _TagSelect: React.FC<
   };
 
   return (
-    <FilterSelectComponent<Tag, boolean>
+    <FilterSelectComponent<Movie, boolean>
       {...props}
       className={cx(
-        "tag-select",
+        "movie-select",
         {
-          "tag-select-active": props.active,
+          "movie-select-active": props.active,
         },
         props.className
       )}
-      loadOptions={loadTags}
+      loadOptions={loadMovies}
       getNamedObject={getNamedObject}
       isValidNewOption={isValidNewOption}
       components={{
-        Option: TagOption,
-        MultiValueLabel: TagMultiValueLabel,
-        SingleValue: TagValueLabel,
+        Option: MovieOption,
+        MultiValueLabel: MovieMultiValueLabel,
+        SingleValue: MovieValueLabel,
       }}
       isMulti={props.isMulti ?? false}
       creatable={props.creatable ?? defaultCreatable}
@@ -227,7 +176,7 @@ const _TagSelect: React.FC<
           { id: "actions.select_entity" },
           {
             entityType: intl.formatMessage({
-              id: props.isMulti ? "tags" : "tag",
+              id: props.isMulti ? "movies" : "movie",
             }),
           }
         )
@@ -237,24 +186,26 @@ const _TagSelect: React.FC<
   );
 };
 
-export const TagSelect = PatchComponent("TagSelect", _TagSelect);
+export const MovieSelect = PatchComponent("MovieSelect", _MovieSelect);
 
-const _TagIDSelect: React.FC<IFilterProps & IFilterIDProps<Tag>> = (props) => {
+const _MovieIDSelect: React.FC<IFilterProps & IFilterIDProps<Movie>> = (
+  props
+) => {
   const { ids, onSelect: onSelectValues } = props;
 
-  const [values, setValues] = useState<Tag[]>([]);
+  const [values, setValues] = useState<Movie[]>([]);
   const idsChanged = useCompare(ids);
 
-  function onSelect(items: Tag[]) {
+  function onSelect(items: Movie[]) {
     setValues(items);
     onSelectValues?.(items);
   }
 
-  async function loadObjectsByID(idsToLoad: string[]): Promise<Tag[]> {
-    const query = await queryFindTagsByIDForSelect(idsToLoad);
-    const { tags: loadedTags } = query.data.findTags;
+  async function loadObjectsByID(idsToLoad: string[]): Promise<Movie[]> {
+    const query = await queryFindMoviesByIDForSelect(idsToLoad);
+    const { movies: loadedMovies } = query.data.findMovies;
 
-    return loadedTags;
+    return loadedMovies;
   }
 
   useEffect(() => {
@@ -281,7 +232,7 @@ const _TagIDSelect: React.FC<IFilterProps & IFilterIDProps<Tag>> = (props) => {
     load();
   }, [ids, idsChanged, values]);
 
-  return <TagSelect {...props} values={values} onSelect={onSelect} />;
+  return <MovieSelect {...props} values={values} onSelect={onSelect} />;
 };
 
-export const TagIDSelect = PatchComponent("TagIDSelect", _TagIDSelect);
+export const MovieIDSelect = PatchComponent("MovieIDSelect", _MovieIDSelect);
