@@ -48,22 +48,16 @@ export function getAggregateStudioId(state: IHasStudio[]) {
   return ret;
 }
 
-interface IHasPerformers {
-  performers: IHasID[];
-}
-
-export function getAggregatePerformerIds(state: IHasPerformers[]) {
+export function getAggregateIds(sortedLists: string[][]) {
   let ret: string[] = [];
   let first = true;
 
-  state.forEach((o) => {
+  sortedLists.forEach((l) => {
     if (first) {
-      ret = o.performers ? o.performers.map((p) => p.id).sort() : [];
+      ret = l;
       first = false;
     } else {
-      const perfIds = o.performers ? o.performers.map((p) => p.id).sort() : [];
-
-      if (!isEqual(ret, perfIds)) {
+      if (!isEqual(ret, l)) {
         ret = [];
       }
     }
@@ -72,56 +66,30 @@ export function getAggregatePerformerIds(state: IHasPerformers[]) {
   return ret;
 }
 
-interface IHasTags {
-  tags: IHasID[];
+export function getAggregateGalleryIds(state: { galleries: IHasID[] }[]) {
+  const sortedLists = state.map((o) => o.galleries.map((oo) => oo.id).sort());
+  return getAggregateIds(sortedLists);
 }
 
-export function getAggregateTagIds(state: IHasTags[]) {
-  let ret: string[] = [];
-  let first = true;
+export function getAggregatePerformerIds(state: { performers: IHasID[] }[]) {
+  const sortedLists = state.map((o) => o.performers.map((oo) => oo.id).sort());
+  return getAggregateIds(sortedLists);
+}
 
-  state.forEach((o) => {
-    if (first) {
-      ret = o.tags ? o.tags.map((t) => t.id).sort() : [];
-      first = false;
-    } else {
-      const tIds = o.tags ? o.tags.map((t) => t.id).sort() : [];
-
-      if (!isEqual(ret, tIds)) {
-        ret = [];
-      }
-    }
-  });
-
-  return ret;
+export function getAggregateTagIds(state: { tags: IHasID[] }[]) {
+  const sortedLists = state.map((o) => o.tags.map((oo) => oo.id).sort());
+  return getAggregateIds(sortedLists);
 }
 
 interface IMovie {
   movie: IHasID;
 }
 
-interface IHasMovies {
-  movies: IMovie[];
-}
-
-export function getAggregateMovieIds(state: IHasMovies[]) {
-  let ret: string[] = [];
-  let first = true;
-
-  state.forEach((o) => {
-    if (first) {
-      ret = o.movies ? o.movies.map((m) => m.movie.id).sort() : [];
-      first = false;
-    } else {
-      const mIds = o.movies ? o.movies.map((m) => m.movie.id).sort() : [];
-
-      if (!isEqual(ret, mIds)) {
-        ret = [];
-      }
-    }
-  });
-
-  return ret;
+export function getAggregateMovieIds(state: { movies: IMovie[] }[]) {
+  const sortedLists = state.map((o) =>
+    o.movies.map((oo) => oo.movie.id).sort()
+  );
+  return getAggregateIds(sortedLists);
 }
 
 export function makeBulkUpdateIds(
