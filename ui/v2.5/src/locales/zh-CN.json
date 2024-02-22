@@ -126,7 +126,14 @@
         "encoding_image": "编码图片中…",
         "reload": "重新加载",
         "disable": "禁用",
-        "enable": "启用"
+        "enable": "启用",
+        "clear_date_data": "清除日期数据",
+        "choose_date": "选择一个日期",
+        "add_play": "添加播放",
+        "add_manual_date": "添加手动日期",
+        "copy_to_clipboard": "复制到剪切板",
+        "remove_date": "去除日期",
+        "add_o": "添加“O”"
     },
     "actions_name": "操作",
     "age": "年龄",
@@ -361,7 +368,7 @@
             "parallel_scan_head": "并行扫描/生成",
             "preview_generation": "生成预览",
             "python_path": {
-                "description": "Python 执行程序的位置。给网页挖掘器和插件的源文件使用。如果没有，python会从环境变量找到",
+                "description": "Python 执行程序的路径。（不限于文件夹）给网页挖掘器和插件的源文件使用。如果没有，python会从环境变量找到",
                 "heading": "Python 路径"
             },
             "scraper_user_agent": "刮削器用户代理 (User Agent)",
@@ -744,6 +751,9 @@
                     "heading": "启用背景图像",
                     "description": "在详情页面上显示背景图片。"
                 }
+            },
+            "use_stash_hosted_funscript": {
+                "description": "启用后，funscript将直接从Stash提供到您的Handy设备，而无需使用第三方Handy服务器。要求可以从您的Handy设备访问Stash。"
             }
         },
         "advanced_mode": "高级模式"
@@ -890,7 +900,8 @@
             "transcodes_tooltip": "将为所有内容提前生成MP4转码文件；对慢速CPU有用，但需要更多磁盘空间",
             "video_previews": "预览",
             "video_previews_tooltip": "鼠标悬停在短片上时播放的预览短片",
-            "phash_tooltip": "针对去重和场景鉴定"
+            "phash_tooltip": "针对去重和场景鉴定",
+            "image_thumbnails": "图像缩略图"
         },
         "scenes_found": "找到 {count} 个短片",
         "scrape_entity_query": "{entity_type} 挖掘 查询指令",
@@ -899,7 +910,9 @@
         "scrape_results_scraped": "挖取信息",
         "set_image_url_title": "图片链接",
         "unsaved_changes": "更改未保存，确定离开吗？",
-        "performers_found": "找到{count} 个演员"
+        "performers_found": "找到{count} 个演员",
+        "clear_o_history_confirm": "真的确定要清空 O 历史?",
+        "clear_play_history_confirm": "真的确定要清空播放历史?"
     },
     "dimensions": "大小",
     "director": "导演",
@@ -960,7 +973,8 @@
     "errors": {
         "image_index_greater_than_zero": "图像索引必须大于 0",
         "lazy_component_error_help": "如果您最近升级了 Stash，请重新加载页面或清除浏览器缓存。",
-        "something_went_wrong": "出了些问题。"
+        "something_went_wrong": "出了些问题。",
+        "header": "错误"
     },
     "ethnicity": "人种",
     "existing_value": "现值",
@@ -1048,7 +1062,8 @@
         "play_count": "播放量",
         "play_duration": "播放长度",
         "stream": "视频流地址",
-        "video_codec": "视频编码"
+        "video_codec": "视频编码",
+        "o_count": "O 次数"
     },
     "megabits_per_second": "{value} Mbps",
     "metadata": "元数据",
@@ -1374,7 +1389,8 @@
         "hide_unselected": "隐藏未选",
         "edit_source": "编辑源",
         "show_all": "显示全部",
-        "selected_only": "仅已选择"
+        "selected_only": "仅已选择",
+        "no_upgradable": "未找到可升级的包"
     },
     "distance": "距离",
     "photographer": "摄影师",
@@ -1387,5 +1403,11 @@
     "studio_and_parent": "工作室和父工作室",
     "penis": "阴茎",
     "orientation": "方向",
-    "plays": "已播放{value}次"
+    "plays": "已播放{value}次",
+    "unknown_date": "未知日期",
+    "playdate_recorded_no": "没有播放日期记录",
+    "play_history": "播放历史",
+    "odate_recorded_no": "未记录 O 日期",
+    "o_history": "O 历史",
+    "history": "历史记录"
 }
