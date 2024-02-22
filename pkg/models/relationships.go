@@ -1,6 +1,8 @@
 package models
 
-import "context"
+import (
+	"context"
+)
 
 type SceneIDLoader interface {
 	GetSceneIDs(ctx context.Context, relatedID int) ([]int, error)

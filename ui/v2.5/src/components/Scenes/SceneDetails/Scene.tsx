@@ -61,6 +61,7 @@ const QueueViewer = lazyComponent(() => import("./QueueViewer"));
 const SceneMarkersPanel = lazyComponent(() => import("./SceneMarkersPanel"));
 const SceneFileInfoPanel = lazyComponent(() => import("./SceneFileInfoPanel"));
 const SceneDetailPanel = lazyComponent(() => import("./SceneDetailPanel"));
+const SceneHistoryPanel = lazyComponent(() => import("./SceneHistoryPanel"));
 const SceneMoviePanel = lazyComponent(() => import("./SceneMoviePanel"));
 const SceneGalleriesPanel = lazyComponent(
   () => import("./SceneGalleriesPanel")
@@ -158,6 +159,7 @@ const ScenePage: React.FC<IProps> = ({
     Mousetrap.bind("e", () => setActiveTabKey("scene-edit-panel"));
     Mousetrap.bind("k", () => setActiveTabKey("scene-markers-panel"));
     Mousetrap.bind("i", () => setActiveTabKey("scene-file-info-panel"));
+    Mousetrap.bind("h", () => setActiveTabKey("scene-history-panel"));
     Mousetrap.bind("o", () => {
       onIncrementClick();
     });
@@ -172,6 +174,7 @@ const ScenePage: React.FC<IProps> = ({
       Mousetrap.unbind("e");
       Mousetrap.unbind("k");
       Mousetrap.unbind("i");
+      Mousetrap.unbind("h");
       Mousetrap.unbind("o");
       Mousetrap.unbind("p n");
       Mousetrap.unbind("p p");
@@ -408,6 +411,11 @@ const ScenePage: React.FC<IProps> = ({
             </Nav.Link>
           </Nav.Item>
           <Nav.Item>
+            <Nav.Link eventKey="scene-history-panel">
+              <FormattedMessage id="history" />
+            </Nav.Link>
+          </Nav.Item>
+          <Nav.Item>
             <Nav.Link eventKey="scene-edit-panel">
               <FormattedMessage id="actions.edit" />
             </Nav.Link>
@@ -487,6 +495,9 @@ const ScenePage: React.FC<IProps> = ({
             onSubmit={onSave}
             onDelete={() => setIsDeleteAlertOpen(true)}
           />
+        </Tab.Pane>
+        <Tab.Pane eventKey="scene-history-panel">
+          <SceneHistoryPanel scene={scene} />
         </Tab.Pane>
       </Tab.Content>
     </Tab.Container>
