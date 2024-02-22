@@ -196,6 +196,7 @@ fragment ConfigDefaultSettingsData on ConfigDefaultSettingsResult {
     phashes
     interactiveHeatmapsSpeeds
     clipPreviews
+    imageThumbnails
   }
 
   deleteFile

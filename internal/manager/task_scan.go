@@ -2,7 +2,6 @@ package manager
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io/fs"
 	"path/filepath"
@@ -412,9 +411,12 @@ func (g *imageGenerators) Generate(ctx context.Context, i *models.Image, f model
 
 	if t.ScanGenerateThumbnails {
 		// this should be quick, so always generate sequentially
-		if err := g.generateThumbnail(ctx, i, f); err != nil {
-			logger.Errorf("Error generating thumbnail for %s: %v", path, err)
+		taskThumbnail := GenerateImageThumbnailTask{
+			Image:     *i,
+			Overwrite: overwrite,
 		}
+
+		taskThumbnail.Start(ctx)
 	}
 
 	// avoid adding a task if the file isn't a video file
@@ -441,54 +443,6 @@ func (g *imageGenerators) Generate(ctx context.Context, i *models.Image, f model
 		} else {
 			g.taskQueue.Add(fmt.Sprintf("Generating preview for %s", path), previewsFn)
 		}
-	}
-
-	return nil
-}
-
-func (g *imageGenerators) generateThumbnail(ctx context.Context, i *models.Image, f models.File) error {
-	thumbPath := g.paths.Generated.GetThumbnailPath(i.Checksum, models.DefaultGthumbWidth)
-	exists, _ := fsutil.FileExists(thumbPath)
-	if exists {
-		return nil
-	}
-
-	path := f.Base().Path
-
-	vf, ok := f.(models.VisualFile)
-	if !ok {
-		return fmt.Errorf("file %s is not a visual file", path)
-	}
-
-	if vf.GetHeight() <= models.DefaultGthumbWidth && vf.GetWidth() <= models.DefaultGthumbWidth {
-		return nil
-	}
-
-	logger.Debugf("Generating thumbnail for %s", path)
-
-	mgr := GetInstance()
-	c := mgr.Config
-
-	clipPreviewOptions := image.ClipPreviewOptions{
-		InputArgs:  c.GetTranscodeInputArgs(),
-		OutputArgs: c.GetTranscodeOutputArgs(),
-		Preset:     c.GetPreviewPreset().String(),
-	}
-
-	encoder := image.NewThumbnailEncoder(mgr.FFMpeg, mgr.FFProbe, clipPreviewOptions)
-	data, err := encoder.GetThumbnail(f, models.DefaultGthumbWidth)
-
-	if err != nil {
-		// don't log for animated images
-		if !errors.Is(err, image.ErrNotSupportedForThumbnail) {
-			return fmt.Errorf("getting thumbnail for image %s: %w", path, err)
-		}
-		return nil
-	}
-
-	err = fsutil.WriteFile(thumbPath, data)
-	if err != nil {
-		return fmt.Errorf("writing thumbnail for image %s: %w", path, err)
 	}
 
 	return nil

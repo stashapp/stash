@@ -875,6 +875,7 @@
       "force_transcodes_tooltip": "By default, transcodes are only generated when the video file is not supported in the browser. When enabled, transcodes will be generated even when the video file appears to be supported in the browser.",
       "image_previews": "Animated Image Previews",
       "image_previews_tooltip": "Also generate animated (webp) previews, only required when Scene/Marker Wall Preview Type is set to Animated Image. When browsing they use less CPU than the video previews, but are generated in addition to them and are larger files.",
+      "image_thumbnails": "Image Thumbnails",
       "interactive_heatmap_speed": "Generate heatmaps and speeds for interactive scenes",
       "marker_image_previews": "Marker Animated Image Previews",
       "marker_image_previews_tooltip": "Also generate animated (webp) previews, only required when Scene/Marker Wall Preview Type is set to Animated Image. When browsing they use less CPU than the video previews, but are generated in addition to them and are larger files.",
