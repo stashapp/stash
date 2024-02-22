@@ -126,7 +126,8 @@
         "view_random": "Visa slumpad",
         "disable": "Avaktivera",
         "enable": "Aktivera",
-        "reload": "Ladda om"
+        "reload": "Ladda om",
+        "copy_to_clipboard": "Kopiera till urklipp"
     },
     "actions_name": "Handlingar",
     "age": "Ålder",
@@ -976,7 +977,8 @@
         "image_index_greater_than_zero": "Bildindex måste vara större än 0",
         "lazy_component_error_help": "Om du nyligen uppdaterade Stash ladda om sidan eller rensa din webbläsares cache.",
         "loading_type": "Fel vid laddning av {type}",
-        "something_went_wrong": "Något gick fel."
+        "something_went_wrong": "Något gick fel.",
+        "header": "Fel"
     },
     "ethnicity": "Etnicitet",
     "existing_value": "existerande värde",
@@ -1070,7 +1072,7 @@
     "megabits_per_second": "{value} mbps",
     "metadata": "Metadata",
     "movie": "Film",
-    "movie_scene_number": "Filmscennummer",
+    "movie_scene_number": "Scennummer",
     "movies": "Filmer",
     "name": "Namn",
     "new": "Ny",
