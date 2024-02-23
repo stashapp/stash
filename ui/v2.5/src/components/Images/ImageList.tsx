@@ -4,7 +4,6 @@ import React, {
   useMemo,
   MouseEvent,
   useContext,
-  useRef,
 } from "react";
 import { FormattedNumber, useIntl } from "react-intl";
 import cloneDeep from "lodash-es/cloneDeep";
@@ -22,7 +21,6 @@ import { useLightbox } from "src/hooks/Lightbox/hooks";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 
-import { ImageCard } from "./ImageCard";
 import { ImageWallItem } from "./ImageWallItem";
 import { EditImagesDialog } from "./EditImagesDialog";
 import { DeleteImagesDialog } from "./DeleteImagesDialog";
@@ -32,7 +30,6 @@ import { ExportDialog } from "../Shared/ExportDialog";
 import { objectTitle } from "src/core/files";
 import TextUtils from "src/utils/text";
 import { ConfigurationContext } from "src/hooks/Config";
-import { useContainerDimensions } from "../Shared/GridCard";
 import { ImageGridCard } from "./ImageGridCard";
 
 interface IImageWallProps {
