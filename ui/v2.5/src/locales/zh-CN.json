@@ -133,7 +133,8 @@
         "add_manual_date": "添加手动日期",
         "copy_to_clipboard": "复制到剪切板",
         "remove_date": "去除日期",
-        "add_o": "添加“O”"
+        "add_o": "添加“O”",
+        "clean_generated": "清除已生成的文件"
     },
     "actions_name": "操作",
     "age": "年龄",
@@ -512,7 +513,18 @@
             "set_name_date_details_from_metadata_if_present": "使用文件内含的元数据的标题、日期、详情",
             "generate_sprites_during_scan_tooltip": "视频播放器下方用于快速导航的缩略图集。",
             "optimise_database": "尝试通过分析然后重建整个数据库文件来提高性能。",
-            "optimise_database_warning": "警告：当此任务运行时，任何修改数据库的操作都将失败，而且根据数据库的大小，可能需要几分钟才能完成。此外，它至少需要与数据库大小相当的可用磁盘空间，但建议使用 1.5 倍的空间。"
+            "optimise_database_warning": "警告：当此任务运行时，任何修改数据库的操作都将失败，而且根据数据库的大小，可能需要几分钟才能完成。此外，它至少需要与数据库大小相当的可用磁盘空间，但建议使用 1.5 倍的空间。",
+            "clean_generated": {
+                "blob_files": "Blob文件",
+                "description": "移除没有相应数据库条目的已生成文件。",
+                "image_thumbnails": "图像缩略图",
+                "image_thumbnails_desc": "图像缩略图和片段",
+                "markers": "标记预览",
+                "previews": "短片预览",
+                "previews_desc": "短片预览和缩略图",
+                "sprites": "短片精灵",
+                "transcodes": "短片转码"
+            }
         },
         "tools": {
             "scene_duplicate_checker": "短片重复性检查工具",
