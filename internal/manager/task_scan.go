@@ -409,10 +409,15 @@ func (g *imageGenerators) Generate(ctx context.Context, i *models.Image, f model
 	t := g.input
 	path := f.Base().Path
 
+	// this is a bit of a hack: the task requires files to be loaded, but
+	// we don't really need to since we already have the file
+	ii := *i
+	ii.Files = models.NewRelatedFiles([]models.File{f})
+
 	if t.ScanGenerateThumbnails {
 		// this should be quick, so always generate sequentially
 		taskThumbnail := GenerateImageThumbnailTask{
-			Image:     *i,
+			Image:     ii,
 			Overwrite: overwrite,
 		}
 
@@ -422,11 +427,6 @@ func (g *imageGenerators) Generate(ctx context.Context, i *models.Image, f model
 	// avoid adding a task if the file isn't a video file
 	_, isVideo := f.(*models.VideoFile)
 	if isVideo && t.ScanGenerateClipPreviews {
-		// this is a bit of a hack: the task requires files to be loaded, but
-		// we don't really need to since we already have the file
-		ii := *i
-		ii.Files = models.NewRelatedFiles([]models.File{f})
-
 		progress.AddTotal(1)
 		previewsFn := func(ctx context.Context) {
 			taskPreview := GenerateClipPreviewTask{
