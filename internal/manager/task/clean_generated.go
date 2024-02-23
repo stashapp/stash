@@ -8,7 +8,6 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
-	"strings"
 
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/job"
@@ -220,6 +219,26 @@ func (j *CleanGeneratedJob) setProgressFromFilename(prefix string, progress *job
 	j.setTaskProgress(p, progress)
 }
 
+func (j *CleanGeneratedJob) getIntraFolderPrefix(basename string) (string, error) {
+	var hash string
+	_, err := fmt.Sscanf(basename, "%2x", &hash)
+	if err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf("%x", hash), nil
+}
+
+func (j *CleanGeneratedJob) getBlobFileHash(basename string) (string, error) {
+	var hash string
+	_, err := fmt.Sscanf(basename, "%32x", &hash)
+	if err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf("%x", hash), nil
+}
+
 func (j *CleanGeneratedJob) cleanBlobFiles(ctx context.Context, progress *job.Progress) error {
 	if job.IsCancelled(ctx) {
 		return nil
@@ -243,6 +262,17 @@ func (j *CleanGeneratedJob) cleanBlobFiles(ctx context.Context, progress *job.Pr
 		}
 
 		if info.IsDir() {
+			if path == j.Paths.Blobs {
+				return nil
+			}
+
+			// ignore any directory that isn't a two character hash prefix
+			_, err := j.getIntraFolderPrefix(info.Name())
+			if err != nil {
+				logger.Warnf("Ignoring unknown directory: %s", path)
+				return fs.SkipDir
+			}
+
 			// estimate progress by the hash prefix
 			if filepath.Dir(path) == j.Paths.Blobs {
 				hashPrefix := filepath.Base(path)
@@ -253,6 +283,13 @@ func (j *CleanGeneratedJob) cleanBlobFiles(ctx context.Context, progress *job.Pr
 		}
 
 		blobname := info.Name()
+
+		// ignore any files that aren't a 32 character hash
+		_, err = j.getBlobFileHash(blobname)
+		if err != nil {
+			logger.Warnf("ignoring unknown blob file: %s", blobname)
+			return nil
+		}
 
 		// if blob entry does not exist, delete the file
 		if err := j.Repository.WithReadTxn(ctx, func(ctx context.Context) error {
@@ -294,6 +331,39 @@ func (j *CleanGeneratedJob) getScenesWithHash(ctx context.Context, hash string) 
 	return j.Repository.Scene.FindByFingerprints(ctx, []models.Fingerprint{fp})
 }
 
+const (
+	md5Length    = 32
+	oshashLength = 16
+)
+
+func (j *CleanGeneratedJob) hashPatternPrefix() string {
+	hashLen := oshashLength
+	if j.VideoFileNamingAlgorithm == models.HashAlgorithmMd5 {
+		hashLen = md5Length
+	}
+
+	return fmt.Sprintf("%%%dx", hashLen)
+}
+
+func (j *CleanGeneratedJob) getSpriteFileHash(basename string) (string, error) {
+	patternPrefix := j.hashPatternPrefix()
+	spritePattern := patternPrefix + "_sprite.jpg"
+
+	var hash string
+	_, err := fmt.Sscanf(basename, spritePattern, &hash)
+	if err != nil {
+		// also try thumbs
+		thumbPattern := patternPrefix + "_thumbs.vtt"
+		_, err = fmt.Sscanf(basename, thumbPattern, &hash)
+
+		if err != nil {
+			return "", err
+		}
+	}
+
+	return fmt.Sprintf("%x", hash), nil
+}
+
 func (j *CleanGeneratedJob) cleanSpriteFiles(ctx context.Context, progress *job.Progress) error {
 	if job.IsCancelled(ctx) {
 		return nil
@@ -316,16 +386,14 @@ func (j *CleanGeneratedJob) cleanSpriteFiles(ctx context.Context, progress *job.
 		}
 
 		filename := info.Name()
-		split := strings.Split(filename, "_")
-		if len(split) != 2 {
-			logger.Errorf("unexpected sprite filename: %s", filename)
+
+		hash, err := j.getSpriteFileHash(filename)
+		if err != nil {
+			logger.Warnf("Ignoring unknown sprite file: %s", filename)
 			return nil
 		}
 
-		hash := split[0]
-		if len(hash) >= 2 {
-			j.setProgressFromFilename(hash[0:2], progress)
-		}
+		j.setProgressFromFilename(hash[0:2], progress)
 
 		var exists []*models.Scene
 
@@ -350,7 +418,7 @@ func (j *CleanGeneratedJob) cleanSpriteFiles(ctx context.Context, progress *job.
 	return nil
 }
 
-func (j *CleanGeneratedJob) cleanSceneFiles(ctx context.Context, path string, typ string, progress *job.Progress) error {
+func (j *CleanGeneratedJob) cleanSceneFiles(ctx context.Context, path string, typ string, getSceneFileHash func(filename string) (string, error), progress *job.Progress) error {
 	if job.IsCancelled(ctx) {
 		return nil
 	}
@@ -372,16 +440,13 @@ func (j *CleanGeneratedJob) cleanSceneFiles(ctx context.Context, path string, ty
 		}
 
 		filename := info.Name()
-		split := strings.Split(filename, ".")
-		if len(split) < 2 {
-			logger.Errorf("unexpected %s filename: %s", typ, filename)
+		hash, err := getSceneFileHash(filename)
+		if err != nil {
+			logger.Warnf("Ignoring unknown %s file: %s", typ, filename)
 			return nil
 		}
 
-		hash := split[0]
-		if len(hash) >= 2 {
-			j.setProgressFromFilename(hash[0:2], progress)
-		}
+		j.setProgressFromFilename(hash[0:2], progress)
 
 		var exists []*models.Scene
 
@@ -406,12 +471,56 @@ func (j *CleanGeneratedJob) cleanSceneFiles(ctx context.Context, path string, ty
 	return nil
 }
 
+func (j *CleanGeneratedJob) getScreenshotFileHash(basename string) (string, error) {
+	var hash string
+	var ext string
+	// include the extension - which could be mp4/jpg/webp
+	_, err := fmt.Sscanf(basename, j.hashPatternPrefix()+".%s", &hash, &ext)
+	if err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf("%x", hash), nil
+}
+
 func (j *CleanGeneratedJob) cleanScreenshotFiles(ctx context.Context, progress *job.Progress) error {
-	return j.cleanSceneFiles(ctx, j.Paths.Generated.Screenshots, "screenshot", progress)
+	return j.cleanSceneFiles(ctx, j.Paths.Generated.Screenshots, "screenshot", j.getScreenshotFileHash, progress)
+}
+
+func (j *CleanGeneratedJob) getTranscodeFileHash(basename string) (string, error) {
+	var hash string
+	_, err := fmt.Sscanf(basename, j.hashPatternPrefix()+".mp4", &hash)
+	if err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf("%x", hash), nil
 }
 
 func (j *CleanGeneratedJob) cleanTranscodeFiles(ctx context.Context, progress *job.Progress) error {
-	return j.cleanSceneFiles(ctx, j.Paths.Generated.Transcodes, "transcode", progress)
+	return j.cleanSceneFiles(ctx, j.Paths.Generated.Transcodes, "transcode", j.getTranscodeFileHash, progress)
+}
+
+func (j *CleanGeneratedJob) getMarkerSceneFileHash(basename string) (string, error) {
+	var hash string
+	_, err := fmt.Sscanf(basename, j.hashPatternPrefix(), &hash)
+	if err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf("%x", hash), nil
+}
+
+func (j *CleanGeneratedJob) getMarkerFileSeconds(basename string) (int, error) {
+	var ret int
+	var ext string
+	// include the extension - which could be mp4/jpg/webp
+	_, err := fmt.Sscanf(basename, "%d.%s", &ret, &ext)
+	if err != nil {
+		return 0, err
+	}
+
+	return ret, nil
 }
 
 func (j *CleanGeneratedJob) cleanMarkerFiles(ctx context.Context, progress *job.Progress) error {
@@ -443,13 +552,20 @@ func (j *CleanGeneratedJob) cleanMarkerFiles(ctx context.Context, progress *job.
 
 			markers = nil
 
-			// check if the scene exists
-			sceneHash = info.Name()
-
-			if filepath.Dir(path) == j.Paths.Generated.Markers && len(sceneHash) >= 2 {
-				j.setProgressFromFilename(sceneHash[0:2], progress)
+			if filepath.Dir(path) != j.Paths.Generated.Markers {
+				logger.Warnf("Ignoring unknown marker directory: %s", path)
+				return nil
 			}
 
+			sceneHash, err = j.getMarkerSceneFileHash(info.Name())
+			if err != nil {
+				logger.Warnf("Ignoring unknown marker directory: %s", path)
+				return nil
+			}
+
+			j.setProgressFromFilename(sceneHash[0:2], progress)
+
+			// check if the scene exists
 			if err := j.Repository.WithReadTxn(ctx, func(ctx context.Context) error {
 				var err error
 				scenes, err = j.getScenesWithHash(ctx, sceneHash)
@@ -480,9 +596,9 @@ func (j *CleanGeneratedJob) cleanMarkerFiles(ctx context.Context, progress *job.
 		}
 
 		filename := info.Name()
-		split := strings.Split(filename, ".")
-		if len(split) != 2 {
-			logger.Errorf("unexpected marker filename: %s", filename)
+		seconds, err := j.getMarkerFileSeconds(filename)
+		if err != nil {
+			logger.Warnf("Ignoring unknown marker file: %s", filename)
 			return nil
 		}
 
@@ -498,17 +614,10 @@ func (j *CleanGeneratedJob) cleanMarkerFiles(ctx context.Context, progress *job.
 			return nil
 		}
 
-		seconds := split[0]
-		secondsInt, err := strconv.Atoi(seconds)
-		if err != nil {
-			logger.Errorf("unexpected marker filename: %s", filename)
-			return nil
-		}
-
 		// find the marker
 		var marker *models.SceneMarker
 		for _, m := range markers {
-			if int(m.Seconds) == secondsInt {
+			if int(m.Seconds) == seconds {
 				marker = m
 				break
 			}
@@ -542,6 +651,17 @@ func (j *CleanGeneratedJob) getImagesWithHash(ctx context.Context, checksum stri
 	return exists, nil
 }
 
+func (j *CleanGeneratedJob) getThumbnailFileHash(basename string) (string, error) {
+	var hash string
+	var width int
+	_, err := fmt.Sscanf(basename, "%32x_%d.jpg", &hash, &width)
+	if err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf("%x", hash), nil
+}
+
 func (j *CleanGeneratedJob) cleanThumbnailFiles(ctx context.Context, progress *job.Progress) error {
 	if job.IsCancelled(ctx) {
 		return nil
@@ -560,6 +680,17 @@ func (j *CleanGeneratedJob) cleanThumbnailFiles(ctx context.Context, progress *j
 		}
 
 		if info.IsDir() {
+			if path == j.Paths.Generated.Thumbnails {
+				return nil
+			}
+
+			// ensure the directory is a hash prefix
+			_, err := j.getIntraFolderPrefix(info.Name())
+			if err != nil {
+				logger.Warnf("Ignoring unknown thumbnail directory: %s", path)
+				return nil
+			}
+
 			// estimate progress by the hash prefix
 			if filepath.Dir(path) == j.Paths.Generated.Thumbnails {
 				hashPrefix := filepath.Base(path)
@@ -570,13 +701,11 @@ func (j *CleanGeneratedJob) cleanThumbnailFiles(ctx context.Context, progress *j
 		}
 
 		filename := info.Name()
-		split := strings.Split(filename, "_")
-		if len(split) != 2 {
-			logger.Errorf("unexpected thumbnail filename: %s", filename)
+		checksum, err := j.getThumbnailFileHash(filename)
+		if err != nil {
+			logger.Warnf("Ignoring unknown thumbnail file: %s", filename)
 			return nil
 		}
-
-		checksum := split[0]
 
 		exists, err := j.getImagesWithHash(ctx, checksum)
 		if err != nil {
