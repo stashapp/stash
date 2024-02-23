@@ -33,6 +33,7 @@ import { objectTitle } from "src/core/files";
 import TextUtils from "src/utils/text";
 import { ConfigurationContext } from "src/hooks/Config";
 import { useContainerDimensions } from "../Shared/GridCard";
+import { ImageGridCard } from "./ImageGridCard";
 
 interface IImageWallProps {
   images: GQL.SlimImageDataFragment[];
@@ -197,39 +198,15 @@ const ImageListImages: React.FC<IImageListImages> = ({
     ev.preventDefault();
   }
 
-  const componentRef = useRef<HTMLDivElement>(null);
-  const { width } = useContainerDimensions(componentRef);
-
-  function renderImageCard(
-    index: number,
-    image: GQL.SlimImageDataFragment,
-    zoomIndex: number
-  ) {
-    return (
-      <ImageCard
-        key={image.id}
-        containerWidth={width}
-        image={image}
-        zoomIndex={zoomIndex}
-        selecting={selectedIds.size > 0}
-        selected={selectedIds.has(image.id)}
-        onSelectedChanged={(selected: boolean, shiftKey: boolean) =>
-          onSelectChange(image.id, selected, shiftKey)
-        }
-        onPreview={
-          selectedIds.size < 1 ? (ev) => onPreview(index, ev) : undefined
-        }
-      />
-    );
-  }
-
   if (filter.displayMode === DisplayMode.Grid) {
     return (
-      <div className="row justify-content-center" ref={componentRef}>
-        {images.map((image, index) =>
-          renderImageCard(index, image, filter.zoomIndex)
-        )}
-      </div>
+      <ImageGridCard
+        images={images}
+        selectedIds={selectedIds}
+        zoomIndex={filter.zoomIndex}
+        onSelectChange={onSelectChange}
+        onPreview={onPreview}
+      />
     );
   }
   if (filter.displayMode === DisplayMode.Wall) {

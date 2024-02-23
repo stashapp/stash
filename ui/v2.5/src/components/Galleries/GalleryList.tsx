@@ -19,6 +19,7 @@ import { DeleteGalleriesDialog } from "./DeleteGalleriesDialog";
 import { ExportDialog } from "../Shared/ExportDialog";
 import { GalleryListTable } from "./GalleryListTable";
 import { useContainerDimensions } from "../Shared/GridCard";
+import { GalleryCardGrid } from "./GalleryGridCard";
 
 const GalleryItemList = makeItemList({
   filterMode: GQL.FilterMode.Galleries,
@@ -107,9 +108,6 @@ export const GalleryList: React.FC<IGalleryList> = ({
     setIsExportDialogOpen(true);
   }
 
-  const componentRef = useRef<HTMLDivElement>(null);
-  const { width } = useContainerDimensions(componentRef);
-
   function renderContent(
     result: GQL.FindGalleriesQueryResult,
     filter: ListFilterModel,
@@ -137,21 +135,12 @@ export const GalleryList: React.FC<IGalleryList> = ({
 
       if (filter.displayMode === DisplayMode.Grid) {
         return (
-          <div className="row justify-content-center" ref={componentRef}>
-            {result.data.findGalleries.galleries.map((gallery) => (
-              <GalleryCard
-                key={gallery.id}
-                containerWidth={width}
-                gallery={gallery}
-                zoomIndex={filter.zoomIndex}
-                selecting={selectedIds.size > 0}
-                selected={selectedIds.has(gallery.id)}
-                onSelectedChanged={(selected: boolean, shiftKey: boolean) =>
-                  onSelectChange(gallery.id, selected, shiftKey)
-                }
-              />
-            ))}
-          </div>
+          <GalleryCardGrid
+            galleries={result.data.findGalleries.galleries}
+            selectedIds={selectedIds}
+            zoomIndex={filter.zoomIndex}
+            onSelectChange={onSelectChange}
+          />
         );
       }
       if (filter.displayMode === DisplayMode.List) {
