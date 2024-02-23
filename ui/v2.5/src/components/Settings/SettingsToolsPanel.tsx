@@ -4,7 +4,7 @@ import { FormattedMessage } from "react-intl";
 import { Link } from "react-router-dom";
 import { Setting } from "./Inputs";
 import { SettingSection } from "./SettingSection";
-import { PatchContainerComponent } from "src/pluginApi";
+import { PatchContainerComponent } from "src/patch";
 
 const SettingsToolsSection = PatchContainerComponent("SettingsToolsSection");
 

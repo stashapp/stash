@@ -47,6 +47,8 @@ type ImageFilterType struct {
 	PerformerCount *IntCriterionInput `json:"performer_count"`
 	// Filter images that have performers that have been favorited
 	PerformerFavorite *bool `json:"performer_favorite"`
+	// Filter images by performer age at time of image
+	PerformerAge *IntCriterionInput `json:"performer_age"`
 	// Filter to only include images with these galleries
 	Galleries *MultiCriterionInput `json:"galleries"`
 	// Filter by created at

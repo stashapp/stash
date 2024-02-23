@@ -31,6 +31,9 @@ type BlobStoreOptions struct {
 	UseDatabase bool
 	// Path is the filesystem path to use for storing blobs
 	Path string
+	// SupplementaryPaths are alternative filesystem paths that will be used to find blobs
+	// No changes will be made to these filesystems
+	SupplementaryPaths []string
 }
 
 type BlobStore struct {
@@ -39,11 +42,15 @@ type BlobStore struct {
 	tableMgr *table
 
 	fsStore *blob.FilesystemStore
-	options BlobStoreOptions
+	// supplementary stores
+	otherStores []blob.FilesystemReader
+	options     BlobStoreOptions
 }
 
 func NewBlobStore(options BlobStoreOptions) *BlobStore {
-	return &BlobStore{
+	fs := &file.OsFS{}
+
+	ret := &BlobStore{
 		repository: repository{
 			tableName: blobTable,
 			idColumn:  blobChecksumColumn,
@@ -51,9 +58,15 @@ func NewBlobStore(options BlobStoreOptions) *BlobStore {
 
 		tableMgr: blobTableMgr,
 
-		fsStore: blob.NewFilesystemStore(options.Path, &file.OsFS{}),
+		fsStore: blob.NewFilesystemStore(options.Path, fs),
 		options: options,
 	}
+
+	for _, otherPath := range options.SupplementaryPaths {
+		ret.otherStores = append(ret.otherStores, *blob.NewReadonlyFilesystemStore(otherPath, fs))
+	}
+
+	return ret
 }
 
 type blobRow struct {
@@ -188,19 +201,49 @@ func (qb *BlobStore) readSQL(ctx context.Context, querySQL string, args ...inter
 
 	// don't use the filesystem if not configured to do so
 	if qb.options.UseFilesystem {
-		ret, err := qb.fsStore.Read(ctx, checksum)
-		if err == nil {
-			return ret, checksum, nil
+		ret, err := qb.readFromFilesystem(ctx, checksum)
+		if err != nil {
+			return nil, checksum, err
 		}
 
-		if !errors.Is(err, fs.ErrNotExist) {
-			return nil, checksum, fmt.Errorf("reading from filesystem: %w", err)
-		}
+		return ret, checksum, nil
 	}
 
 	return nil, checksum, &ChecksumBlobNotExistError{
 		Checksum: checksum,
 	}
+}
+
+func (qb *BlobStore) readFromFilesystem(ctx context.Context, checksum string) ([]byte, error) {
+	// try to read from primary store first, then supplementaries
+	fsStores := append([]blob.FilesystemReader{qb.fsStore.FilesystemReader}, qb.otherStores...)
+
+	for _, fsStore := range fsStores {
+		ret, err := fsStore.Read(ctx, checksum)
+		if err == nil {
+			return ret, nil
+		}
+
+		if !errors.Is(err, fs.ErrNotExist) {
+			return nil, fmt.Errorf("reading from filesystem: %w", err)
+		}
+	}
+
+	// blob not found - should not happen
+	return nil, &ChecksumBlobNotExistError{
+		Checksum: checksum,
+	}
+}
+
+func (qb *BlobStore) EntryExists(ctx context.Context, checksum string) (bool, error) {
+	q := dialect.From(qb.table()).Select(goqu.COUNT("*")).Where(qb.tableMgr.byID(checksum))
+
+	var found int
+	if err := querySimple(ctx, q, &found); err != nil {
+		return false, fmt.Errorf("querying %s: %w", qb.table(), err)
+	}
+
+	return found != 0, nil
 }
 
 // Read reads the data from the database or filesystem, depending on which is enabled.
@@ -228,14 +271,7 @@ func (qb *BlobStore) Read(ctx context.Context, checksum string) ([]byte, error) 
 
 	// don't use the filesystem if not configured to do so
 	if qb.options.UseFilesystem {
-		ret, err := qb.fsStore.Read(ctx, checksum)
-		if err == nil {
-			return ret, nil
-		}
-
-		if !errors.Is(err, fs.ErrNotExist) {
-			return nil, fmt.Errorf("reading from filesystem: %w", err)
-		}
+		return qb.readFromFilesystem(ctx, checksum)
 	}
 
 	// blob not found - should not happen

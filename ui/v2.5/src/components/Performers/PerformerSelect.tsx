@@ -27,6 +27,7 @@ import {
 import { useCompare } from "src/hooks/state";
 import { Link } from "react-router-dom";
 import { sortByRelevance } from "src/utils/query";
+import { PatchComponent } from "src/patch";
 
 export type SelectObject = {
   id: string;
@@ -40,7 +41,7 @@ export type Performer = Pick<
 >;
 type Option = SelectOption<Performer>;
 
-export const PerformerSelect: React.FC<
+const _PerformerSelect: React.FC<
   IFilterProps & IFilterValueProps<Performer>
 > = (props) => {
   const [createPerformer] = usePerformerCreate();
@@ -63,6 +64,7 @@ export const PerformerSelect: React.FC<
     return sortByRelevance(
       input,
       query.data.findPerformers.performers,
+      (p) => p.name,
       (p) => p.alias_list
     ).map((performer) => ({
       value: performer.id,
@@ -124,7 +126,14 @@ export const PerformerSelect: React.FC<
 
     thisOptionProps = {
       ...optionProps,
-      children: object.name,
+      children: (
+        <>
+          <span>{object.name}</span>
+          {object.disambiguation && (
+            <span className="performer-disambiguation">{` (${object.disambiguation})`}</span>
+          )}
+        </>
+      ),
     };
 
     return <reactSelectComponents.MultiValueLabel {...thisOptionProps} />;
@@ -228,9 +237,14 @@ export const PerformerSelect: React.FC<
   );
 };
 
-export const PerformerIDSelect: React.FC<
-  IFilterProps & IFilterIDProps<Performer>
-> = (props) => {
+export const PerformerSelect = PatchComponent(
+  "PerformerSelect",
+  _PerformerSelect
+);
+
+const _PerformerIDSelect: React.FC<IFilterProps & IFilterIDProps<Performer>> = (
+  props
+) => {
   const { ids, onSelect: onSelectValues } = props;
 
   const [values, setValues] = useState<Performer[]>([]);
@@ -242,8 +256,7 @@ export const PerformerIDSelect: React.FC<
   }
 
   async function loadObjectsByID(idsToLoad: string[]): Promise<Performer[]> {
-    const performerIDs = idsToLoad.map((id) => parseInt(id));
-    const query = await queryFindPerformersByIDForSelect(performerIDs);
+    const query = await queryFindPerformersByIDForSelect(idsToLoad);
     const { performers: loadedPerformers } = query.data.findPerformers;
 
     return loadedPerformers;
@@ -275,3 +288,8 @@ export const PerformerIDSelect: React.FC<
 
   return <PerformerSelect {...props} values={values} onSelect={onSelect} />;
 };
+
+export const PerformerIDSelect = PatchComponent(
+  "PerformerIDSelect",
+  _PerformerIDSelect
+);

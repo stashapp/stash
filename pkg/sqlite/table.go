@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/doug-martin/goqu/v9"
 	"github.com/doug-martin/goqu/v9/exp"
@@ -771,6 +772,270 @@ func (t *relatedFilesTable) setPrimary(ctx context.Context, id int, fileID model
 	}
 
 	return nil
+}
+
+type viewHistoryTable struct {
+	table
+	dateColumn exp.IdentifierExpression
+}
+
+func (t *viewHistoryTable) getDates(ctx context.Context, id int) ([]time.Time, error) {
+	table := t.table.table
+
+	q := dialect.Select(
+		t.dateColumn,
+	).From(table).Where(
+		t.idColumn.Eq(id),
+	).Order(t.dateColumn.Desc())
+
+	const single = false
+	var ret []time.Time
+	if err := queryFunc(ctx, q, single, func(rows *sqlx.Rows) error {
+		var date Timestamp
+		if err := rows.Scan(&date); err != nil {
+			return err
+		}
+		ret = append(ret, date.Timestamp)
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+}
+
+func (t *viewHistoryTable) getManyDates(ctx context.Context, ids []int) ([][]time.Time, error) {
+	table := t.table.table
+
+	q := dialect.Select(
+		t.idColumn,
+		t.dateColumn,
+	).From(table).Where(
+		t.idColumn.In(ids),
+	).Order(t.dateColumn.Desc())
+
+	ret := make([][]time.Time, len(ids))
+	idToIndex := idToIndexMap(ids)
+
+	const single = false
+	if err := queryFunc(ctx, q, single, func(rows *sqlx.Rows) error {
+		var id int
+		var date Timestamp
+		if err := rows.Scan(&id, &date); err != nil {
+			return err
+		}
+
+		idx := idToIndex[id]
+		ret[idx] = append(ret[idx], date.Timestamp)
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+}
+
+func (t *viewHistoryTable) getLastDate(ctx context.Context, id int) (*time.Time, error) {
+	table := t.table.table
+	q := dialect.Select(t.dateColumn).From(table).Where(
+		t.idColumn.Eq(id),
+	).Order(t.dateColumn.Desc()).Limit(1)
+
+	var date NullTimestamp
+	if err := querySimple(ctx, q, &date); err != nil {
+		return nil, err
+	}
+
+	return date.TimePtr(), nil
+}
+
+func (t *viewHistoryTable) getManyLastDate(ctx context.Context, ids []int) ([]*time.Time, error) {
+	table := t.table.table
+
+	q := dialect.Select(
+		t.idColumn,
+		goqu.MAX(t.dateColumn),
+	).From(table).Where(
+		t.idColumn.In(ids),
+	).GroupBy(t.idColumn)
+
+	ret := make([]*time.Time, len(ids))
+	idToIndex := idToIndexMap(ids)
+
+	const single = false
+	if err := queryFunc(ctx, q, single, func(rows *sqlx.Rows) error {
+		var id int
+
+		// MAX appears to return a string, so handle it manually
+		var dateString string
+
+		if err := rows.Scan(&id, &dateString); err != nil {
+			return err
+		}
+
+		t, err := time.Parse(TimestampFormat, dateString)
+		if err != nil {
+			return fmt.Errorf("parsing date %v: %w", dateString, err)
+		}
+
+		idx := idToIndex[id]
+		ret[idx] = &t
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+}
+
+func (t *viewHistoryTable) getCount(ctx context.Context, id int) (int, error) {
+	table := t.table.table
+	q := dialect.Select(goqu.COUNT("*")).From(table).Where(t.idColumn.Eq(id))
+
+	const single = true
+	var ret int
+	if err := queryFunc(ctx, q, single, func(rows *sqlx.Rows) error {
+		if err := rows.Scan(&ret); err != nil {
+			return err
+		}
+		return nil
+	}); err != nil {
+		return 0, err
+	}
+
+	return ret, nil
+}
+
+func (t *viewHistoryTable) getManyCount(ctx context.Context, ids []int) ([]int, error) {
+	table := t.table.table
+
+	q := dialect.Select(
+		t.idColumn,
+		goqu.COUNT(t.dateColumn),
+	).From(table).Where(
+		t.idColumn.In(ids),
+	).GroupBy(t.idColumn)
+
+	ret := make([]int, len(ids))
+	idToIndex := idToIndexMap(ids)
+
+	const single = false
+	if err := queryFunc(ctx, q, single, func(rows *sqlx.Rows) error {
+		var id int
+		var count int
+		if err := rows.Scan(&id, &count); err != nil {
+			return err
+		}
+
+		idx := idToIndex[id]
+		ret[idx] = count
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+}
+
+func (t *viewHistoryTable) getAllCount(ctx context.Context) (int, error) {
+	table := t.table.table
+	q := dialect.Select(goqu.COUNT("*")).From(table)
+
+	const single = true
+	var ret int
+	if err := queryFunc(ctx, q, single, func(rows *sqlx.Rows) error {
+		if err := rows.Scan(&ret); err != nil {
+			return err
+		}
+		return nil
+	}); err != nil {
+		return 0, err
+	}
+
+	return ret, nil
+}
+
+func (t *viewHistoryTable) getUniqueCount(ctx context.Context) (int, error) {
+	table := t.table.table
+	q := dialect.Select(goqu.COUNT(goqu.DISTINCT(t.idColumn))).From(table)
+
+	const single = true
+	var ret int
+	if err := queryFunc(ctx, q, single, func(rows *sqlx.Rows) error {
+		if err := rows.Scan(&ret); err != nil {
+			return err
+		}
+		return nil
+	}); err != nil {
+		return 0, err
+	}
+
+	return ret, nil
+}
+
+func (t *viewHistoryTable) addDates(ctx context.Context, id int, dates []time.Time) ([]time.Time, error) {
+	table := t.table.table
+
+	if len(dates) == 0 {
+		dates = []time.Time{time.Now()}
+	}
+
+	for _, d := range dates {
+		q := dialect.Insert(table).Cols(t.idColumn.GetCol(), t.dateColumn.GetCol()).Vals(
+			// convert all dates to UTC
+			goqu.Vals{id, UTCTimestamp{Timestamp{d}}},
+		)
+
+		if _, err := exec(ctx, q); err != nil {
+			return nil, fmt.Errorf("inserting into %s: %w", table.GetTable(), err)
+		}
+	}
+
+	return t.getDates(ctx, id)
+}
+
+func (t *viewHistoryTable) deleteDates(ctx context.Context, id int, dates []time.Time) ([]time.Time, error) {
+	table := t.table.table
+
+	mostRecent := false
+	if len(dates) == 0 {
+		mostRecent = true
+		dates = []time.Time{time.Now()}
+	}
+
+	for _, date := range dates {
+		var subquery *goqu.SelectDataset
+		if mostRecent {
+			// delete the most recent
+			subquery = dialect.Select("rowid").From(table).Where(
+				t.idColumn.Eq(id),
+			).Order(t.dateColumn.Desc()).Limit(1)
+		} else {
+			subquery = dialect.Select("rowid").From(table).Where(
+				t.idColumn.Eq(id),
+				t.dateColumn.Eq(UTCTimestamp{Timestamp{date}}),
+			).Limit(1)
+		}
+
+		q := dialect.Delete(table).Where(goqu.I("rowid").Eq(subquery))
+
+		if _, err := exec(ctx, q); err != nil {
+			return nil, fmt.Errorf("deleting from %s: %w", table.GetTable(), err)
+		}
+	}
+
+	return t.getDates(ctx, id)
+}
+
+func (t *viewHistoryTable) deleteAllDates(ctx context.Context, id int) (int, error) {
+	table := t.table.table
+	q := dialect.Delete(table).Where(t.idColumn.Eq(id))
+
+	if _, err := exec(ctx, q); err != nil {
+		return 0, fmt.Errorf("resetting dates for id %v: %w", id, err)
+	}
+
+	return t.getCount(ctx, id)
 }
 
 type sqler interface {

@@ -5,9 +5,11 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/pkg/file"
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/scene"
@@ -169,8 +171,15 @@ func scenePartialFromInput(input models.SceneUpdateInput, translator changesetTr
 	updatedScene.Details = translator.optionalString(input.Details, "details")
 	updatedScene.Director = translator.optionalString(input.Director, "director")
 	updatedScene.Rating = translator.optionalInt(input.Rating100, "rating100")
-	updatedScene.OCounter = translator.optionalInt(input.OCounter, "o_counter")
-	updatedScene.PlayCount = translator.optionalInt(input.PlayCount, "play_count")
+
+	if input.OCounter != nil {
+		logger.Warnf("o_counter is deprecated and no longer supported, use sceneIncrementO/sceneDecrementO instead")
+	}
+
+	if input.PlayCount != nil {
+		logger.Warnf("play_count is deprecated and no longer supported, use sceneIncrementPlayCount/sceneDecrementPlayCount instead")
+	}
+
 	updatedScene.PlayDuration = translator.optionalFloat64(input.PlayDuration, "play_duration")
 	updatedScene.Organized = translator.optionalBool(input.Organized, "organized")
 	updatedScene.StashIDs = translator.updateStashIDs(input.StashIds, "stash_ids")
@@ -560,9 +569,20 @@ func (r *mutationResolver) SceneMerge(ctx context.Context, input SceneMergeInput
 		values = &v
 	}
 
+	mgr := manager.GetInstance()
+	fileDeleter := &scene.FileDeleter{
+		Deleter:        file.NewDeleter(),
+		FileNamingAlgo: mgr.Config.GetVideoFileNamingAlgorithm(),
+		Paths:          mgr.Paths,
+	}
+
 	var ret *models.Scene
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		if err := r.Resolver.sceneService.Merge(ctx, srcIDs, destID, *values); err != nil {
+		if err := r.Resolver.sceneService.Merge(ctx, srcIDs, destID, fileDeleter, scene.MergeOptions{
+			ScenePartial:       *values,
+			IncludePlayHistory: utils.IsTrue(input.PlayHistory),
+			IncludeOHistory:    utils.IsTrue(input.OHistory),
+		}); err != nil {
 			return err
 		}
 
@@ -804,16 +824,96 @@ func (r *mutationResolver) SceneSaveActivity(ctx context.Context, id string, res
 	return ret, nil
 }
 
+// deprecated
 func (r *mutationResolver) SceneIncrementPlayCount(ctx context.Context, id string) (ret int, err error) {
 	sceneID, err := strconv.Atoi(id)
 	if err != nil {
 		return 0, fmt.Errorf("converting id: %w", err)
 	}
 
+	var updatedTimes []time.Time
+
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Scene
 
-		ret, err = qb.IncrementWatchCount(ctx, sceneID)
+		updatedTimes, err = qb.AddViews(ctx, sceneID, nil)
+		return err
+	}); err != nil {
+		return 0, err
+	}
+
+	return len(updatedTimes), nil
+}
+
+func (r *mutationResolver) SceneAddPlay(ctx context.Context, id string, t []*time.Time) (*HistoryMutationResult, error) {
+	sceneID, err := strconv.Atoi(id)
+	if err != nil {
+		return nil, fmt.Errorf("converting id: %w", err)
+	}
+
+	var times []time.Time
+
+	// convert time to local time, so that sorting is consistent
+	for _, tt := range t {
+		times = append(times, tt.Local())
+	}
+
+	var updatedTimes []time.Time
+
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		qb := r.repository.Scene
+
+		updatedTimes, err = qb.AddViews(ctx, sceneID, times)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return &HistoryMutationResult{
+		Count:   len(updatedTimes),
+		History: sliceutil.ValuesToPtrs(updatedTimes),
+	}, nil
+}
+
+func (r *mutationResolver) SceneDeletePlay(ctx context.Context, id string, t []*time.Time) (*HistoryMutationResult, error) {
+	sceneID, err := strconv.Atoi(id)
+	if err != nil {
+		return nil, err
+	}
+
+	var times []time.Time
+
+	for _, tt := range t {
+		times = append(times, *tt)
+	}
+
+	var updatedTimes []time.Time
+
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		qb := r.repository.Scene
+
+		updatedTimes, err = qb.DeleteViews(ctx, sceneID, times)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return &HistoryMutationResult{
+		Count:   len(updatedTimes),
+		History: sliceutil.ValuesToPtrs(updatedTimes),
+	}, nil
+}
+
+func (r *mutationResolver) SceneResetPlayCount(ctx context.Context, id string) (ret int, err error) {
+	sceneID, err := strconv.Atoi(id)
+	if err != nil {
+		return 0, err
+	}
+
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		qb := r.repository.Scene
+
+		ret, err = qb.DeleteAllViews(ctx, sceneID)
 		return err
 	}); err != nil {
 		return 0, err
@@ -822,40 +922,46 @@ func (r *mutationResolver) SceneIncrementPlayCount(ctx context.Context, id strin
 	return ret, nil
 }
 
+// deprecated
 func (r *mutationResolver) SceneIncrementO(ctx context.Context, id string) (ret int, err error) {
 	sceneID, err := strconv.Atoi(id)
 	if err != nil {
 		return 0, fmt.Errorf("converting id: %w", err)
 	}
 
+	var updatedTimes []time.Time
+
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Scene
 
-		ret, err = qb.IncrementOCounter(ctx, sceneID)
+		updatedTimes, err = qb.AddO(ctx, sceneID, nil)
 		return err
 	}); err != nil {
 		return 0, err
 	}
 
-	return ret, nil
+	return len(updatedTimes), nil
 }
 
+// deprecated
 func (r *mutationResolver) SceneDecrementO(ctx context.Context, id string) (ret int, err error) {
 	sceneID, err := strconv.Atoi(id)
 	if err != nil {
 		return 0, fmt.Errorf("converting id: %w", err)
 	}
 
+	var updatedTimes []time.Time
+
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Scene
 
-		ret, err = qb.DecrementOCounter(ctx, sceneID)
+		updatedTimes, err = qb.DeleteO(ctx, sceneID, nil)
 		return err
 	}); err != nil {
 		return 0, err
 	}
 
-	return ret, nil
+	return len(updatedTimes), nil
 }
 
 func (r *mutationResolver) SceneResetO(ctx context.Context, id string) (ret int, err error) {
@@ -867,13 +973,72 @@ func (r *mutationResolver) SceneResetO(ctx context.Context, id string) (ret int,
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Scene
 
-		ret, err = qb.ResetOCounter(ctx, sceneID)
+		ret, err = qb.ResetO(ctx, sceneID)
 		return err
 	}); err != nil {
 		return 0, err
 	}
 
 	return ret, nil
+}
+
+func (r *mutationResolver) SceneAddO(ctx context.Context, id string, t []*time.Time) (*HistoryMutationResult, error) {
+	sceneID, err := strconv.Atoi(id)
+	if err != nil {
+		return nil, fmt.Errorf("converting id: %w", err)
+	}
+
+	var times []time.Time
+
+	// convert time to local time, so that sorting is consistent
+	for _, tt := range t {
+		times = append(times, tt.Local())
+	}
+
+	var updatedTimes []time.Time
+
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		qb := r.repository.Scene
+
+		updatedTimes, err = qb.AddO(ctx, sceneID, times)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return &HistoryMutationResult{
+		Count:   len(updatedTimes),
+		History: sliceutil.ValuesToPtrs(updatedTimes),
+	}, nil
+}
+
+func (r *mutationResolver) SceneDeleteO(ctx context.Context, id string, t []*time.Time) (*HistoryMutationResult, error) {
+	sceneID, err := strconv.Atoi(id)
+	if err != nil {
+		return nil, fmt.Errorf("converting id: %w", err)
+	}
+
+	var times []time.Time
+
+	for _, tt := range t {
+		times = append(times, *tt)
+	}
+
+	var updatedTimes []time.Time
+
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		qb := r.repository.Scene
+
+		updatedTimes, err = qb.DeleteO(ctx, sceneID, times)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return &HistoryMutationResult{
+		Count:   len(updatedTimes),
+		History: sliceutil.ValuesToPtrs(updatedTimes),
+	}, nil
 }
 
 func (r *mutationResolver) SceneGenerateScreenshot(ctx context.Context, id string, at *float64) (string, error) {

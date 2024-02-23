@@ -8,6 +8,7 @@ import { faTags } from "@fortawesome/free-solid-svg-icons";
 import { useStudioCreate } from "src/core/StashService";
 import { useIntl } from "react-intl";
 import { apolloError } from "src/utils";
+import { mergeStudioStashIDs } from "../utils";
 
 interface IStashSearchResultProps {
   studio: GQL.SlimStudioDataFragment;
@@ -69,6 +70,12 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
             ...parentInput,
             id: input.parent_id,
           };
+
+          parentUpdateData.stash_ids = await mergeStudioStashIDs(
+            input.parent_id,
+            parentInput.stash_ids ?? []
+          );
+
           await updateStudio(parentUpdateData);
         } else {
           const parentRes = await createStudio({
@@ -86,6 +93,11 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
       ...input,
       id: studio.id,
     };
+
+    updateData.stash_ids = await mergeStudioStashIDs(
+      studio.id,
+      input.stash_ids ?? []
+    );
 
     const res = await updateStudio(updateData);
 

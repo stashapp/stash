@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Button, ButtonGroup } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
-import { GridCard, calculateCardWidth } from "../Shared/GridCard";
+import { GridCard, calculateCardWidth } from "../Shared/GridCard/GridCard";
 import { HoverPopover } from "../Shared/HoverPopover";
 import { Icon } from "../Shared/Icon";
 import { SceneLink } from "../Shared/TagLink";

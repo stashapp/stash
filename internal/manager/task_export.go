@@ -527,7 +527,6 @@ func (t *ExportTask) exportScene(ctx context.Context, wg *sync.WaitGroup, jobCha
 		newSceneJSON.Galleries = gallery.GetRefs(galleries)
 
 		newSceneJSON.ResumeTime = s.ResumeTime
-		newSceneJSON.PlayCount = s.PlayCount
 		newSceneJSON.PlayDuration = s.PlayDuration
 
 		performers, err := performerReader.FindBySceneID(ctx, s.ID)

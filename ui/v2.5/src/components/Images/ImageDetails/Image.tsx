@@ -234,7 +234,7 @@ const ImagePage: React.FC<IProps> = ({ image }) => {
           >
             <ImageFileInfoPanel image={image} />
           </Tab.Pane>
-          <Tab.Pane eventKey="image-edit-panel">
+          <Tab.Pane eventKey="image-edit-panel" mountOnEnter>
             <ImageEditPanel
               isVisible={activeTabKey === "image-edit-panel"}
               image={image}

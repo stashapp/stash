@@ -1,538 +1,623 @@
 {
-  "actions": {
-    "add": "Hozzáadás",
-    "add_directory": "Mappa Hozzáadása",
-    "add_entity": "{entityType} Hozzáadása",
-    "add_to_entity": "{entityType}hoz Adás",
-    "allow": "Engedélyez",
-    "allow_temporarily": "Időszakosan Engedélyez",
-    "apply": "Alkalmaz",
-    "auto_tag": "Automatikus Címkézés",
-    "backup": "Biztonsági Mentés",
-    "browse_for_image": "Kép tallózása…",
-    "cancel": "Mégsem",
-    "clean": "Tisztítás",
-    "clear": "Törlés",
-    "clear_back_image": "Hátsó kép törlése",
-    "clear_front_image": "Első kép törlése",
-    "clear_image": "Kép Törlése",
-    "close": "Bezár",
-    "confirm": "Jóváhagyás",
-    "continue": "Folytatás",
-    "create": "Létrehoz",
-    "create_entity": "{entityType} Létrehozása",
-    "delete": "Törlés",
-    "delete_entity": "{entityType} Törlése",
-    "delete_file": "Fájl Törlése",
-    "delete_generated_supporting_files": "Létrehozott kiegészítő fájlok törlése",
-    "disallow": "Tiltás",
-    "download": "Letöltés",
-    "download_backup": "Biztonsági Mentés Letöltése",
-    "edit": "Módosít",
-    "edit_entity": "{entityType} Módosítása",
-    "export": "Exportálás",
-    "export_all": "Összes exportálása…",
-    "find": "Keresés",
-    "finish": "Befejez",
-    "from_file": "Fáljból…",
-    "from_url": "URL-ből…",
-    "full_export": "Teljes Export",
-    "full_import": "Teljes Import",
-    "generate": "Generálás",
-    "generate_thumb_default": "Alapértelmezett bélyegkép generálása",
-    "generate_thumb_from_current": "Bélyegkép generálása a jelenlegiből",
-    "hide": "Elrejtés",
-    "hide_configuration": "Beállítások Elrejtése",
-    "identify": "Beazonosítás",
-    "ignore": "Mellőz",
-    "import": "Importálás…",
-    "import_from_file": "Importálás fájlból",
-    "logout": "Kijelentkezés",
-    "merge": "Egyesítés",
-    "next_action": "Következő",
-    "not_running": "nem fut",
-    "open_random": "Véletlenszerű Megnyitása",
-    "overwrite": "Felülír",
-    "play_random": "Véletlenszerű Lejátszása",
-    "play_selected": "Kiválasztott Lejátszása",
-    "preview": "Előnézet",
-    "previous_action": "Vissza",
-    "refresh": "Frissítés",
-    "reload_plugins": "Pluginek újratöltése",
-    "reload_scrapers": "Scrapperek újratöltése",
-    "remove": "Eltávolítás",
-    "rename_gen_files": "Generált fájlok átnevezése",
-    "rescan": "Újra Szkennelés",
-    "reshuffle": "Újrakeverés",
-    "running": "fut",
-    "save": "Mentés",
-    "save_filter": "Szűrő mentése",
-    "scan": "Szkennelés",
-    "search": "Keresés",
-    "select_all": "Mind Kijelölése",
-    "select_entity": "{entityType} Kijelölése",
-    "select_folders": "Mappák kijelölése",
-    "select_none": "Kijelölés Törlése",
-    "set_as_default": "Beállítás alapértelmezettként",
-    "set_image": "Kép beállítása…",
-    "show": "Megjelenít",
-    "show_configuration": "Beállítások Megjelenítése",
-    "skip": "Kihagyás",
-    "stop": "Megállít",
-    "submit": "Beküldés",
-    "submit_stash_box": "Stash-Box-ba Beküldés",
-    "tasks": {
-      "clean_confirm_message": "Biztos vagy benne hogy el akarod végezni a Tisztítást? Ez a művelet le fogja törölni a fáljrendszerben már nem megtalálható összes jelenet és galéria adatbázis információit és generált tartalmait.",
-      "import_warning": "Biztos vagy benne, hogy importálni akarsz? Ez a művelet le fogja törölni az adatbázist és újraimportálja az kiexportált metaadatok alapján."
+    "actions": {
+        "add": "Hozzáadás",
+        "add_directory": "Mappa Hozzáadása",
+        "add_entity": "{entityType} Hozzáadása",
+        "add_to_entity": "{entityType}hoz Adás",
+        "allow": "Engedélyez",
+        "allow_temporarily": "Időszakosan Engedélyez",
+        "anonymise": "Anonimizálás",
+        "apply": "Alkalmaz",
+        "auto_tag": "Automatikus Címkézés",
+        "backup": "Biztonsági Mentés",
+        "browse_for_image": "Kép tallózása…",
+        "cancel": "Mégsem",
+        "clean": "Tisztítás",
+        "clear": "Törlés",
+        "clear_back_image": "Hátsó kép törlése",
+        "clear_front_image": "Első kép törlése",
+        "clear_image": "Kép Törlése",
+        "close": "Bezár",
+        "confirm": "Jóváhagyás",
+        "continue": "Folytatás",
+        "create": "Létrehoz",
+        "create_entity": "{entityType} Létrehozása",
+        "delete": "Törlés",
+        "delete_entity": "{entityType} Törlése",
+        "delete_file": "Fájl Törlése",
+        "delete_generated_supporting_files": "Létrehozott kiegészítő fájlok törlése",
+        "disallow": "Tiltás",
+        "download": "Letöltés",
+        "download_backup": "Biztonsági Mentés Letöltése",
+        "edit": "Módosít",
+        "edit_entity": "{entityType} Módosítása",
+        "export": "Exportálás",
+        "export_all": "Összes exportálása…",
+        "find": "Keresés",
+        "finish": "Befejez",
+        "from_file": "Fáljból…",
+        "from_url": "URL-ből…",
+        "full_export": "Teljes Export",
+        "full_import": "Teljes Import",
+        "generate": "Generálás",
+        "generate_thumb_default": "Alapértelmezett bélyegkép generálása",
+        "generate_thumb_from_current": "Bélyegkép generálása a jelenlegiből",
+        "hide": "Elrejtés",
+        "hide_configuration": "Beállítások Elrejtése",
+        "identify": "Beazonosítás",
+        "ignore": "Mellőz",
+        "import": "Importálás…",
+        "import_from_file": "Importálás fájlból",
+        "logout": "Kijelentkezés",
+        "merge": "Egyesítés",
+        "next_action": "Következő",
+        "not_running": "nem fut",
+        "open_random": "Véletlenszerű Megnyitása",
+        "overwrite": "Felülír",
+        "play_random": "Véletlenszerű Lejátszása",
+        "play_selected": "Kiválasztott Lejátszása",
+        "preview": "Előnézet",
+        "previous_action": "Vissza",
+        "refresh": "Frissítés",
+        "reload_plugins": "Pluginek újratöltése",
+        "reload_scrapers": "Scrapperek újratöltése",
+        "remove": "Eltávolítás",
+        "rename_gen_files": "Generált fájlok átnevezése",
+        "rescan": "Újra Szkennelés",
+        "reshuffle": "Újrakeverés",
+        "running": "fut",
+        "save": "Mentés",
+        "save_filter": "Szűrő mentése",
+        "scan": "Szkennelés",
+        "search": "Keresés",
+        "select_all": "Mind Kijelölése",
+        "select_entity": "{entityType} Kijelölése",
+        "select_folders": "Mappák kijelölése",
+        "select_none": "Kijelölés Törlése",
+        "set_as_default": "Beállítás alapértelmezettként",
+        "set_image": "Kép beállítása…",
+        "show": "Megjelenít",
+        "show_configuration": "Beállítások Megjelenítése",
+        "skip": "Kihagyás",
+        "stop": "Megállít",
+        "submit": "Beküldés",
+        "submit_stash_box": "Stash-Box-ba Beküldés",
+        "tasks": {
+            "clean_confirm_message": "Biztos vagy benne hogy el akarod végezni a Tisztítást? Ez a művelet le fogja törölni a fáljrendszerben már nem megtalálható összes jelenet és galéria adatbázis információit és generált tartalmait.",
+            "import_warning": "Biztos vagy benne, hogy importálni akarsz? Ez a művelet le fogja törölni az adatbázist és újraimportálja az kiexportált metaadatok alapján.",
+            "dry_mode_selected": "\"Száraz mód\" került kiválasztásra. Valós törlés nem fog történni, csak naplózás."
+        },
+        "use_default": "Alapértelmezett használata",
+        "disable": "Letiltás",
+        "assign_stashid_to_parent_studio": "Stash azonosító hozzárendelése a meglévő szülő stúdióhoz és a metaadatok frissítése",
+        "create_chapters": "Fejezet hozzáadása",
+        "create_marker": "Jelölő létrehozása",
+        "create_parent_studio": "Szülő stúdió létrehozása",
+        "created_entity": "Létrehozott {entity_type}: {entity_name}",
+        "customise": "Testreszabás",
+        "delete_file_and_funscript": "Fájl törlése (és funscript)",
+        "download_anonymised": "Letöltés névtelenül",
+        "encoding_image": "Kép kódolása…",
+        "hash_migration": "hash-migráció",
+        "make_primary": "Beállítás elsődlegesnek",
+        "merge_into": "Összefűzés a",
+        "migrate_blobs": "Blobok migrálása",
+        "migrate_scene_screenshots": "Jelenet képernyőképek migrálása",
+        "merge_from": "Összefűzés innen",
+        "optimise_database": "Adatbázis optimalizálása",
+        "reassign": "Átcsoportosítás",
+        "remove_from_gallery": "Eltávolítás a galériából",
+        "save_delete_settings": "Törléskor alapértelmezés szerint ezeket a beállításokat használja",
+        "scrape": "Kinyerés",
+        "scrape_query": "Lekérés kinyerése",
+        "scrape_scene_fragment": "Kinyerés egység szerint",
+        "scrape_with": "Kinyerés…",
+        "selective_auto_tag": "Automatikus címkézés",
+        "selective_clean": "Szelektív tisztítás",
+        "selective_scan": "Szelektív szkennelés",
+        "set_back_image": "Hátlapi kép…",
+        "set_front_image": "Borítókép…",
+        "split": "Darabolás",
+        "submit_update": "Frissítés elfogadása",
+        "swap": "Csere",
+        "temp_disable": "Letiltás ideiglenesen…",
+        "temp_enable": "Engedélyezés ideiglenesen…",
+        "unset": "Visszavon",
+        "view_random": "Véletlenszerű megtekintés",
+        "enable": "Engedélyezés",
+        "open_in_external_player": "Megnyitás külső lejátszóban",
+        "reload": "Újratöltés"
     },
-    "use_default": "Alapértelmezett használata"
-  },
-  "age": "Kor",
-  "aliases": "Álnevek",
-  "all": "mind",
-  "ascending": "Növekvő",
-  "average_resolution": "Átlagos Felbontás",
-  "birth_year": "Születési Év",
-  "birthdate": "Születési Dátum",
-  "bitrate": "Bitráta",
-  "career_length": "Karier Hossza",
-  "component_tagger": {
+    "age": "Kor",
+    "aliases": "Álnevek",
+    "all": "mind",
+    "ascending": "Növekvő",
+    "average_resolution": "Átlagos Felbontás",
+    "birth_year": "Születési Év",
+    "birthdate": "Születési Dátum",
+    "bitrate": "Bitráta",
+    "career_length": "Karier Hossza",
+    "component_tagger": {
+        "config": {
+            "blacklist_label": "Tiltólista",
+            "query_mode_auto": "Automatikus",
+            "query_mode_dir": "Mappa",
+            "query_mode_filename": "Fájlnév",
+            "query_mode_metadata": "Metaadat",
+            "query_mode_path": "Elérési út",
+            "source": "Forrás",
+            "show_male_label": "Férfi előadók mutatása",
+            "active_instance": "Aktív stash-box példány:",
+            "blacklist_desc": "A tiltólistás elemek nem látszódnak a lekérésekben. Fontos tudni, hogy a regex kifejezések érzékenyek a kis-és nagybetűkre. Bizonyos karakterek után kötelező a \\ : {chars_require_escape}",
+            "mark_organized_desc": "Azonnal megjelöli a jelenetet \"Rendezettnek\", amint a \"Mentés\" gomb lenyomásra került.",
+            "mark_organized_label": "Mentéskor jelölje rendezettnek",
+            "query_mode_auto_desc": "Ha léteznek metaadatok, használja azokat vagy a fájlnevet",
+            "query_mode_dir_desc": "Csak a videó szülőkönyvtárának használata",
+            "query_mode_filename_desc": "Csak a fájlnév használata",
+            "query_mode_label": "Lekérő mód",
+            "query_mode_metadata_desc": "Csak metaadatok használata",
+            "query_mode_path_desc": "A teljes elérési út használata",
+            "set_cover_desc": "Kicseréli a jelenet borítóképét ha talál egyet.",
+            "set_cover_label": "A borítókép cseréje",
+            "set_tag_desc": "Tagek hozzáadása a jelenethez, felülírva vagy egybeolvasztva a már meglévőekkel.",
+            "set_tag_label": "Tagek beállítása"
+        },
+        "results": {
+            "duration_unknown": "Ismeretlen hossz",
+            "unnamed": "Névtelen",
+            "fp_matches": "Az időhossz stimmel",
+            "hash_matches": "{hash_type} egyezik",
+            "match_failed_already_tagged": "A jelenet már tartalmaz tageket",
+            "match_failed_no_result": "Nincsenek találatok",
+            "match_success": "A jelenet tagelése sikeres"
+        },
+        "verb_matched": "Egyezik",
+        "noun_query": "Lekérés",
+        "verb_toggle_config": "{toggle} {configuration}",
+        "verb_toggle_unmatched": "{toggle} nem egyező jelenetek"
+    },
     "config": {
-      "blacklist_label": "Tiltólista",
-      "query_mode_auto": "Automatikus",
-      "query_mode_dir": "Mappa",
-      "query_mode_filename": "Fájlnév",
-      "query_mode_metadata": "Metaadat",
-      "query_mode_path": "Elérési út",
-      "source": "Forrás"
+        "about": {
+            "latest_version": "Legfrissebb Verzió",
+            "version": "Verzió",
+            "latest_version_build_hash": "Legújabb verzió build hash-e:",
+            "check_for_new_version": "Új verzió keresése",
+            "new_version_notice": "[ÚJ]",
+            "release_date": "Megjelenés dátuma:",
+            "stash_discord": "Csatlakozz a csatornához {url}"
+        },
+        "categories": {
+            "logs": "Logok",
+            "metadata_providers": "Metaadat Szolgáltatók",
+            "plugins": "Pluginek",
+            "security": "Biztonság",
+            "services": "Szolgáltatások",
+            "system": "Rendszer",
+            "tasks": "Feladatok",
+            "tools": "Eszközök"
+        },
+        "dlna": {
+            "allow_temp_ip": "{tempIP} Engedélyezése",
+            "allowed_ip_addresses": "Engedélyezett IP-címek",
+            "default_ip_whitelist": "Alapértelmezett IP Engedélyezőlista",
+            "disallowed_ip": "Letiltott IP",
+            "enabled_by_default": "Alapértelmezetten Engedélyezve",
+            "network_interfaces": "Kezelőfelületek",
+            "recent_ip_addresses": "Legutóbbi IP-címek",
+            "server_display_name": "Szerver Megjelenített Neve",
+            "until_restart": "újraindításig"
+        },
+        "general": {
+            "auth": {
+                "api_key": "API Kulcs",
+                "authentication": "Hitelesítés",
+                "clear_api_key": "API kulcs törlése",
+                "generate_api_key": "API kulcs generálása",
+                "log_file": "Log fájl",
+                "password": "Jelszó",
+                "username": "Felhasználónév"
+            },
+            "calculate_md5_and_ohash_label": "MD5 kiszámítása a videókhoz",
+            "chrome_cdp_path": "Chrome CDP elérési út",
+            "create_galleries_from_folders_desc": "Igaz esetén galériákat készít a képeket tartalmazó mappákból.",
+            "create_galleries_from_folders_label": "Galériák készítése a képeket tartalmazó mappákból",
+            "db_path_head": "Adatbázis Elérési Út",
+            "image_ext_desc": "Képként értelmezendő fájlkiterjesztések vesszővel elválasztott listája.",
+            "include_audio_desc": "Hozzáadja a hangsávot a generált bemutatókhoz.",
+            "include_audio_head": "Hangsáv hozzáadása",
+            "logging": "Logolás",
+            "metadata_path": {
+                "heading": "Metaadatok Elérési Útja"
+            },
+            "preview_generation": "Bemutató Generálás",
+            "python_path": {
+                "heading": "Python Elérési Út"
+            },
+            "sqlite_location": "SQLite adatbázis-fájl elérési útja (újraindítás szükséges)",
+            "video_ext_desc": "Videóként értelmezendő fájlkiterjesztések vesszővel elválasztott listája.",
+            "video_head": "Videó"
+        },
+        "library": {
+            "exclusions": "Kivételek",
+            "gallery_and_image_options": "Galéria és Kép beállítások"
+        },
+        "logs": {
+            "log_level": "Logolás Szintje"
+        },
+        "scraping": {
+            "entity_metadata": "{entityType} Metaadatok",
+            "search_by_name": "Keresés név szerint",
+            "supported_types": "Támogatott típusok",
+            "supported_urls": "URL-ek"
+        },
+        "stashbox": {
+            "api_key": "API kulcs",
+            "name": "Név"
+        },
+        "tasks": {
+            "added_job_to_queue": "{operation_name} hozzáadva a feladatlistához",
+            "backing_up_database": "Adatbázis biztonsági mentése folyamatban",
+            "backup_and_download": "Biztonsági mentést hajt végre az adatbázison és letölti a fájlt.",
+            "cleanup_desc": "Ellenőrzi hogy hiányoznak-e fájlok, és eltávolítja őket az adatbázisból. Ez egy visszavonhatatlan művelet.",
+            "data_management": "Adatkezelés",
+            "defaults_set": "Az alapértelmezett értékek be lettek állítva, és ezek lesznek használva a Feladatok oldalon a {action} gomb megnyomásakor.",
+            "dont_include_file_extension_as_part_of_the_title": "Ne csatolja a fájlkiterjesztést a címhez",
+            "empty_queue": "Jelenleg nem fut feladat.",
+            "generate_thumbnails_during_scan": "Bélyegképek generálása a képekhez",
+            "generate_video_previews_during_scan": "Bemutatók generálása",
+            "generated_content": "Legenerált Tartalom",
+            "identify": {
+                "default_options": "Alapértelmezett Beállítások",
+                "field": "Mező",
+                "field_behaviour": "{strategy} {field}",
+                "field_options": "Mező Beállítások",
+                "heading": "Azonosítás",
+                "identifying_scenes": "{num} {scene} azonosítása",
+                "set_cover_images": "Borítoképek beállítása",
+                "source": "Forrás",
+                "source_options": "{source} Beállítás",
+                "sources": "Források",
+                "strategy": "Stratégia"
+            },
+            "job_queue": "Feladatlista",
+            "maintenance": "Karbantartás",
+            "scan": {
+                "scanning_all_paths": "Összes elérési út szkennelése"
+            }
+        },
+        "tools": {
+            "scene_duplicate_checker": "Dupla Jelenet Ellenőrző",
+            "scene_filename_parser": {
+                "add_field": "Mező Hozzáadása",
+                "capitalize_title": "Nagybetűs cím",
+                "display_fields": "Megjelenített mezők",
+                "filename": "Fájlnév",
+                "filename_pattern": "Fájlnév Minta",
+                "ignored_words": "Figyelmen kívül hagyott szavak"
+            },
+            "scene_tools": "Jelenet Eszközök"
+        },
+        "ui": {
+            "basic_settings": "Alapvető Beállítások",
+            "custom_css": {
+                "description": "Az oldalt újra be kell tölteni hogy a változtatások életbe lépjenek.",
+                "heading": "Egyéni CSS",
+                "option_label": "Egyéni CSS engedélyezve"
+            },
+            "delete_options": {
+                "description": "Alapértelmezett beállítások képek, galériák és jelenetek törlése esetén.",
+                "heading": "Törlési Beállítások",
+                "options": {
+                    "delete_file": "Fájl törlése alapértelmezettként",
+                    "delete_generated_supporting_files": "Generált kiegészítő fájlok törlése alapértelmezettként"
+                }
+            },
+            "desktop_integration": {
+                "notifications_enabled": "Értesítések Engedélyezése"
+            },
+            "editing": {
+                "heading": "Szerkesztés"
+            },
+            "handy_connection": {
+                "connect": "Csatlakozás"
+            },
+            "images": {
+                "heading": "Képek"
+            },
+            "interactive_options": "Interaktív Beállítások",
+            "language": {
+                "heading": "Nyelv"
+            },
+            "preview_type": {
+                "options": {
+                    "animated": "Mozgókép",
+                    "static": "Állókép",
+                    "video": "Videó"
+                }
+            },
+            "scene_list": {
+                "heading": "Jelenetlista"
+            },
+            "scene_player": {
+                "heading": "Jelenet-lejátszó",
+                "options": {
+                    "auto_start_video": "Automatikus videóindítás"
+                }
+            },
+            "scene_wall": {
+                "options": {
+                    "toggle_sound": "Hang engedélyezése"
+                }
+            },
+            "title": "Felhasználói Felület"
+        }
     },
-    "results": {
-      "duration_unknown": "Ismeretlen hossz",
-      "unnamed": "Névtelen"
+    "configuration": "Beállítások",
+    "country": "Ország",
+    "cover_image": "Borítókép",
+    "created_at": "Létrehozva",
+    "criterion": {
+        "greater_than": "Nagyobb mint",
+        "less_than": "Kisebb mint",
+        "value": "Érték"
     },
-    "verb_matched": "Egyezik"
-  },
-  "config": {
-    "about": {
-      "latest_version": "Legfrissebb Verzió",
-      "version": "Verzió"
+    "criterion_modifier": {
+        "between": "között",
+        "equals": "egyenlő",
+        "excludes": "kivéve",
+        "includes": "beleértve",
+        "includes_all": "mindet belevéve",
+        "is_null": "egyenlő null",
+        "matches_regex": "megfelel regex-nek",
+        "not_between": "nincs közte",
+        "not_equals": "nem egyenlő"
     },
-    "categories": {
-      "logs": "Logok",
-      "metadata_providers": "Metaadat Szolgáltatók",
-      "plugins": "Pluginek",
-      "security": "Biztonság",
-      "services": "Szolgáltatások",
-      "system": "Rendszer",
-      "tasks": "Feladatok",
-      "tools": "Eszközök"
+    "custom": "Egyéni",
+    "date": "Dátum",
+    "death_date": "Halál Dátuma",
+    "death_year": "Halál Éve",
+    "descending": "Csökkenő",
+    "detail": "Részlet",
+    "details": "Részletek",
+    "developmentVersion": "Fejlesztői Verzió",
+    "dialogs": {
+        "delete_object_desc": "Biztos hogy törölni akarod {count, plural, one {ezt a {singularEntity}} ezeket a {these {pluralEntity}}}?",
+        "export_title": "Exportálás",
+        "lightbox": {
+            "display_mode": {
+                "original": "Eredeti"
+            },
+            "options": "Beállítások",
+            "scroll_mode": {
+                "zoom": "Nagyítás"
+            }
+        },
+        "merge_tags": {
+            "destination": "Cél",
+            "source": "Forrás"
+        },
+        "scene_gen": {
+            "preview_exclude_end_time_desc": "Az utolsó x másodperc kihagyása a jelenetek bemutatóiból. Ez az érték lehet másodpercben, vagy a jelenet teljes hosszának százalékában (pl. 2%) is megadva.",
+            "preview_exclude_start_time_desc": "Az első x másodperc kihagyása a jelenetek bemutatóiból. Ez az érték lehet másodpercben, vagy a jelenet teljes hosszának százalékában (pl. 2%) is megadva."
+        },
+        "scrape_results_existing": "Létező",
+        "set_image_url_title": "Kép URL"
     },
-    "dlna": {
-      "allow_temp_ip": "{tempIP} Engedélyezése",
-      "allowed_ip_addresses": "Engedélyezett IP-címek",
-      "default_ip_whitelist": "Alapértelmezett IP Engedélyezőlista",
-      "disallowed_ip": "Letiltott IP",
-      "enabled_by_default": "Alapértelmezetten Engedélyezve",
-      "network_interfaces": "Kezelőfelületek",
-      "recent_ip_addresses": "Legutóbbi IP-címek",
-      "server_display_name": "Szerver Megjelenített Neve",
-      "until_restart": "újraindításig"
+    "director": "Rendező",
+    "display_mode": {
+        "grid": "Háló",
+        "list": "Lista",
+        "unknown": "Ismeretlen",
+        "wall": "Fal"
     },
-    "general": {
-      "auth": {
-        "api_key": "API Kulcs",
-        "authentication": "Hitelesítés",
-        "clear_api_key": "API kulcs törlése",
-        "generate_api_key": "API kulcs generálása",
-        "log_file": "Log fájl",
-        "password": "Jelszó",
-        "username": "Felhasználónév"
-      },
-      "calculate_md5_and_ohash_label": "MD5 kiszámítása a videókhoz",
-      "chrome_cdp_path": "Chrome CDP elérési út",
-      "create_galleries_from_folders_desc": "Igaz esetén galériákat készít a képeket tartalmazó mappákból.",
-      "create_galleries_from_folders_label": "Galériák készítése a képeket tartalmazó mappákból",
-      "db_path_head": "Adatbázis Elérési Út",
-      "image_ext_desc": "Képként értelmezendő fájlkiterjesztések vesszővel elválasztott listája.",
-      "include_audio_desc": "Hozzáadja a hangsávot a generált bemutatókhoz.",
-      "include_audio_head": "Hangsáv hozzáadása",
-      "logging": "Logolás",
-      "metadata_path": {
-        "heading": "Metaadatok Elérési Útja"
-      },
-      "preview_generation": "Bemutató Generálás",
-      "python_path": {
-        "heading": "Python Elérési Út"
-      },
-      "sqlite_location": "SQLite adatbázis-fájl elérési útja (újraindítás szükséges)",
-      "video_ext_desc": "Videóként értelmezendő fájlkiterjesztések vesszővel elválasztott listája.",
-      "video_head": "Videó"
+    "donate": "Adomány",
+    "dupe_check": {
+        "description": "'Pontos' alatti szintek kiszámítása tovább tarthat. Hibás találatok is megjelenhetnek alacsonyabb pontossági szinteken.",
+        "options": {
+            "exact": "Pontos",
+            "high": "Magas",
+            "low": "Alacsony",
+            "medium": "Közepes"
+        },
+        "search_accuracy_label": "Keresési Pontosság",
+        "title": "Megkettőzött Jelenetek"
     },
-    "library": {
-      "exclusions": "Kivételek",
-      "gallery_and_image_options": "Galéria és Kép beállítások"
+    "duplicated_phash": "Megkettőzőtt (phash)",
+    "duration": "Hossz",
+    "effect_filters": {
+        "blue": "Kék",
+        "blur": "Elmosás",
+        "brightness": "Fényerő",
+        "contrast": "Kontraszt",
+        "gamma": "Gamma",
+        "green": "Zöld",
+        "hue": "Árnyalat",
+        "name": "Szűrők",
+        "red": "Piros",
+        "reset_filters": "Szűrők Törlése",
+        "rotate": "Forgat",
+        "saturation": "Szaturáció",
+        "scale": "Méretarány",
+        "warmth": "Melegség"
     },
-    "logs": {
-      "log_level": "Logolás Szintje"
+    "ethnicity": "Etnikum",
+    "eye_color": "Szemszín",
+    "fake_tits": "Szilikonmellek",
+    "false": "Hamis",
+    "favourite": "Kedvenc",
+    "file": "fájl",
+    "file_info": "Fájl Információ",
+    "files": "fájlok",
+    "filesize": "Fájl Méret",
+    "filter": "Szűrő",
+    "filters": "Szűrők",
+    "galleries": "Galériák",
+    "gallery": "Galéria",
+    "gallery_count": "Galéria Száma",
+    "gender": "Nem",
+    "gender_types": {
+        "FEMALE": "Nő",
+        "INTERSEX": "Nemek közti",
+        "MALE": "Férfi"
     },
-    "scraping": {
-      "entity_metadata": "{entityType} Metaadatok",
-      "search_by_name": "Keresés név szerint",
-      "supported_types": "Támogatott típusok",
-      "supported_urls": "URL-ek"
+    "hair_color": "Hajszín",
+    "handy_connection_status": {
+        "connecting": "Kapcsolódás",
+        "disconnected": "Szétkapcsolt",
+        "missing": "Hiányzó",
+        "ready": "Kész",
+        "uploading": "Szkript feltöltése"
+    },
+    "height": "Magasság",
+    "help": "Segítség",
+    "image": "Kép",
+    "image_count": "Képek Száma",
+    "images": "Képek",
+    "instagram": "Instagram",
+    "interactive": "Interaktív",
+    "interactive_speed": "Interaktív sebesség",
+    "isMissing": "Hiányzik",
+    "library": "Könyvtár",
+    "loading": {
+        "generic": "Betöltés…"
+    },
+    "media_info": {
+        "downloaded_from": "Letöltés Forrása",
+        "interactive_speed": "Interaktív sebesség",
+        "performer_card": {
+            "age": "{age} {years_old}"
+        }
+    },
+    "metadata": "Metaadatok",
+    "movie": "Film",
+    "movies": "Filmek",
+    "name": "Név",
+    "new": "Új",
+    "none": "Nincs",
+    "o_counter": "O-Számláló",
+    "operations": "Műveletek",
+    "organized": "Rendezve",
+    "pagination": {
+        "first": "Első",
+        "last": "Utolsó",
+        "next": "Következő",
+        "previous": "Előző"
+    },
+    "parent_tags": "Szülő-címkék",
+    "path": "Elérési Út",
+    "performer": "Szereplő",
+    "performer_age": "Szereplő Kora",
+    "performer_count": "Szereplők Száma",
+    "performer_favorite": "Szereplő Kedvencek Közt",
+    "performer_image": "Szereplő Képe",
+    "performer_tagger": {
+        "config": {
+            "excluded_fields": "Kihagyott mezők:"
+        },
+        "current_page": "Jelenlegi oldal",
+        "network_error": "Hálózati Hiba",
+        "tag_status": "Címke Státusza",
+        "update_performer": "Szereplő Frissítése",
+        "update_performers": "Szereplők Frissítése"
+    },
+    "performer_tags": "Szereplő Címkék",
+    "performers": "Szereplők",
+    "piercings": "Piercingek",
+    "queue": "Sor",
+    "random": "Véletlenszerű",
+    "rating": "Értékelés",
+    "resolution": "Felbontás",
+    "scene": "Jelenet",
+    "sceneTagger": "Jelenetcímkéző",
+    "scene_count": "Jelenetszám",
+    "scene_id": "Jelenet ID",
+    "scene_tags": "Jelenetcímkék",
+    "scenes": "Jelenetek",
+    "search_filter": {
+        "name": "Szűrő",
+        "saved_filters": "Mentett szűrők",
+        "update_filter": "Szűrő Frissítése"
+    },
+    "seconds": "Másodperc",
+    "settings": "Beállítások",
+    "setup": {
+        "confirm": {
+            "nearly_there": "Már majdnem kész!"
+        },
+        "errors": {
+            "something_went_wrong_while_setting_up_your_system": "Valami hiba történt a rendszer beállításakor. Itt a hibaüzenet: {error}"
+        },
+        "folder": {
+            "file_path": "Fájl elérési út"
+        },
+        "migrate": {
+            "backup_recommended": "Ajánlott az adatbázis biztonsági mentése az áttelepítés előtt.Meg tudjuk ezt tenni neked az adatbázis átmásolásával a <code>{defaultBackupPath}</code> címre.",
+            "migrating_database": "Adatbázis áttelepítése",
+            "migration_failed": "Sikertelen áttelepítés",
+            "migration_irreversible_warning": "A séma áttelepítése nem visszafordítható folyamat. Amint az áttelepítés elkezdődik, az adatbázis összeegyeztethetetlen lesz a Stash előző verzióival.",
+            "migration_required": "Áttelepítés szükséges",
+            "schema_too_old": "A jelenlegi Stash adatbázis verziója <strong>{databaseSchema}</strong> , amit át kell telepíteni <strong>{appSchema}</strong> verzióra. A Stash ezen verziója nem fog működni az adatbázis áttelepítése nélkül."
+        },
+        "success": {
+            "help_links": "Ha problémába ütközöl, kérdésed, vagy javaslatod van, nyugodtan jelezd {githubLink}, vagy kérdezd meg a közösségtől {discordLink}.",
+            "support_us": "Támogatás"
+        },
+        "welcome": {
+            "config_path_logic_explained": "A Stash elöszőr a jelenlegi munkakönyvtárban próbálja a konfigurációs fájlját (<code>config.yml</code>) megkeresni. Ha ott nem találja, akkor a következő helyen próbálkozik: <code>$HOME/.stash/config.yml</code> (Windows rendszeren: <code>%USERPROFILE%\\.stash\\config.yml</code>). Meghatározhatja hogy a Stash egy bizonyos konfigurációs fájlt használjon, ammennyiben a <code>-c '<path to config file>'</code> or <code>--config '<path to config file>'</code> paraméterekkel indítja.",
+            "unexpected_explained": "Amennyiben ez a képernyő váratlanul bukkant fel, próbáld újraindítani a Stasht a megfelelő munkakönyvtárban, vagy a <code>-c</code> flag-gel."
+        },
+        "welcome_specific_config": {
+            "unable_to_locate_specified_config": "Ha ezt olvasod, akkor a Stash nem találta meg a konfigurációs fájlt, amit megadtál a parancssorban. Ez a varázsló végigvezet a lépéseken, hogy új konfigurációs fájlt tudj beállítani."
+        }
     },
     "stashbox": {
-      "api_key": "API kulcs",
-      "name": "Név"
+        "submission_failed": "Beküldés sikertelen",
+        "submission_successful": "Beküldés sikeres"
     },
-    "tasks": {
-      "added_job_to_queue": "{operation_name} hozzáadva a feladatlistához",
-      "backing_up_database": "Adatbázis biztonsági mentése folyamatban",
-      "backup_and_download": "Biztonsági mentést hajt végre az adatbázison és letölti a fájlt.",
-      "cleanup_desc": "Ellenőrzi hogy hiányoznak-e fájlok, és eltávolítja őket az adatbázisból. Ez egy visszavonhatatlan művelet.",
-      "data_management": "Adatkezelés",
-      "defaults_set": "Az alapértelmezett értékek be lettek állítva, és ezek lesznek használva a Feladatok oldalon a {action} gomb megnyomásakor.",
-      "dont_include_file_extension_as_part_of_the_title": "Ne csatolja a fájlkiterjesztést a címhez",
-      "empty_queue": "Jelenleg nem fut feladat.",
-      "generate_thumbnails_during_scan": "Bélyegképek generálása a képekhez",
-      "generate_video_previews_during_scan": "Bemutatók generálása",
-      "generated_content": "Legenerált Tartalom",
-      "identify": {
-        "default_options": "Alapértelmezett Beállítások",
-        "field": "Mező",
-        "field_behaviour": "{strategy} {field}",
-        "field_options": "Mező Beállítások",
-        "heading": "Azonosítás",
-        "identifying_scenes": "{num} {scene} azonosítása",
-        "set_cover_images": "Borítoképek beállítása",
-        "source": "Forrás",
-        "source_options": "{source} Beállítás",
-        "sources": "Források",
-        "strategy": "Stratégia"
-      },
-      "job_queue": "Feladatlista",
-      "maintenance": "Karbantartás",
-      "scan": {
-        "scanning_all_paths": "Összes elérési út szkennelése"
-      }
+    "statistics": "Statisztikák",
+    "stats": {
+        "image_size": "Képek mérete",
+        "scenes_duration": "Jelenetek hossza",
+        "scenes_size": "Jelenetek mérete"
     },
-    "tools": {
-      "scene_duplicate_checker": "Dupla Jelenet Ellenőrző",
-      "scene_filename_parser": {
-        "add_field": "Mező Hozzáadása",
-        "capitalize_title": "Nagybetűs cím",
-        "display_fields": "Megjelenített mezők",
-        "filename": "Fájlnév",
-        "filename_pattern": "Fájlnév Minta",
-        "ignored_words": "Figyelmen kívül hagyott szavak"
-      },
-      "scene_tools": "Jelenet Eszközök"
+    "status": "Státusz: {statusText}",
+    "studio": "Stúdió",
+    "studios": "Stúdiók",
+    "tag": "Címke",
+    "tag_count": "Címkék Száma",
+    "tags": "Címkék",
+    "tattoos": "Tetoválások",
+    "title": "Cím",
+    "toast": {
+        "added_entity": "{entity} Hozzáadva",
+        "created_entity": "{entity} Létrehozva",
+        "merged_tags": "Összevont címkék",
+        "saved_entity": "{entity} Mentve",
+        "updated_entity": "{entity} Frissítve"
     },
-    "ui": {
-      "basic_settings": "Alapvető Beállítások",
-      "custom_css": {
-        "description": "Az oldalt újra be kell tölteni hogy a változtatások életbe lépjenek.",
-        "heading": "Egyéni CSS",
-        "option_label": "Egyéni CSS engedélyezve"
-      },
-      "delete_options": {
-        "description": "Alapértelmezett beállítások képek, galériák és jelenetek törlése esetén.",
-        "heading": "Törlési Beállítások",
-        "options": {
-          "delete_file": "Fájl törlése alapértelmezettként",
-          "delete_generated_supporting_files": "Generált kiegészítő fájlok törlése alapértelmezettként"
-        }
-      },
-      "desktop_integration": {
-        "notifications_enabled": "Értesítések Engedélyezése"
-      },
-      "editing": {
-        "heading": "Szerkesztés"
-      },
-      "handy_connection": {
-        "connect": "Csatlakozás"
-      },
-      "images": {
-        "heading": "Képek"
-      },
-      "interactive_options": "Interaktív Beállítások",
-      "language": {
-        "heading": "Nyelv"
-      },
-      "preview_type": {
-        "options": {
-          "animated": "Mozgókép",
-          "static": "Állókép",
-          "video": "Videó"
-        }
-      },
-      "scene_list": {
-        "heading": "Jelenetlista"
-      },
-      "scene_player": {
-        "heading": "Jelenet-lejátszó",
-        "options": {
-          "auto_start_video": "Automatikus videóindítás"
-        }
-      },
-      "scene_wall": {
-        "options": {
-          "toggle_sound": "Hang engedélyezése"
-        }
-      },
-      "title": "Felhasználói Felület"
-    }
-  },
-  "configuration": "Beállítások",
-  "country": "Ország",
-  "cover_image": "Borítókép",
-  "created_at": "Létrehozva",
-  "criterion": {
-    "greater_than": "Nagyobb mint",
-    "less_than": "Kisebb mint",
-    "value": "Érték"
-  },
-  "criterion_modifier": {
-    "between": "között",
-    "equals": "egyenlő",
-    "excludes": "kivéve",
-    "includes": "beleértve",
-    "includes_all": "mindet belevéve",
-    "is_null": "egyenlő null",
-    "matches_regex": "megfelel regex-nek",
-    "not_between": "nincs közte",
-    "not_equals": "nem egyenlő"
-  },
-  "custom": "Egyéni",
-  "date": "Dátum",
-  "death_date": "Halál Dátuma",
-  "death_year": "Halál Éve",
-  "descending": "Csökkenő",
-  "detail": "Részlet",
-  "details": "Részletek",
-  "developmentVersion": "Fejlesztői Verzió",
-  "dialogs": {
-    "delete_object_desc": "Biztos hogy törölni akarod {count, plural, one {ezt a {singularEntity}} ezeket a {these {pluralEntity}}}?",
-    "export_title": "Exportálás",
-    "lightbox": {
-      "display_mode": {
-        "original": "Eredeti"
-      },
-      "options": "Beállítások",
-      "scroll_mode": {
-        "zoom": "Nagyítás"
-      }
+    "total": "Összesen",
+    "true": "Igaz",
+    "twitter": "Twitter",
+    "updated_at": "Frissítés Ideje",
+    "url": "URL",
+    "videos": "Videók",
+    "view_all": "Mindegyik Megjelenítése",
+    "weight": "Súly",
+    "years_old": "éves",
+    "actions_name": "Tevékenységek",
+    "audio_codec": "Audió kodek",
+    "circumcised_types": {
+        "CUT": "Körülmetélt",
+        "UNCUT": "Nem körülmetélt"
     },
-    "merge_tags": {
-      "destination": "Cél",
-      "source": "Forrás"
+    "also_known_as": "Más néven ismert",
+    "appears_with": "Megjelenik a következővel",
+    "between_and": "és",
+    "blobs_storage_type": {
+        "database": "Adatbázis",
+        "filesystem": "Fájlrendszer"
     },
-    "scene_gen": {
-      "preview_exclude_end_time_desc": "Az utolsó x másodperc kihagyása a jelenetek bemutatóiból. Ez az érték lehet másodpercben, vagy a jelenet teljes hosszának százalékában (pl. 2%) is megadva.",
-      "preview_exclude_start_time_desc": "Az első x másodperc kihagyása a jelenetek bemutatóiból. Ez az érték lehet másodpercben, vagy a jelenet teljes hosszának százalékában (pl. 2%) is megadva."
-    },
-    "scrape_results_existing": "Létező",
-    "set_image_url_title": "Kép URL"
-  },
-  "director": "Rendező",
-  "display_mode": {
-    "grid": "Háló",
-    "list": "Lista",
-    "unknown": "Ismeretlen",
-    "wall": "Fal"
-  },
-  "donate": "Adomány",
-  "dupe_check": {
-    "description": "'Pontos' alatti szintek kiszámítása tovább tarthat. Hibás találatok is megjelenhetnek alacsonyabb pontossági szinteken.",
-    "options": {
-      "exact": "Pontos",
-      "high": "Magas",
-      "low": "Alacsony",
-      "medium": "Közepes"
-    },
-    "search_accuracy_label": "Keresési Pontosság",
-    "title": "Megkettőzött Jelenetek"
-  },
-  "duplicated_phash": "Megkettőzőtt (phash)",
-  "duration": "Hossz",
-  "effect_filters": {
-    "blue": "Kék",
-    "blur": "Elmosás",
-    "brightness": "Fényerő",
-    "contrast": "Kontraszt",
-    "gamma": "Gamma",
-    "green": "Zöld",
-    "hue": "Árnyalat",
-    "name": "Szűrők",
-    "red": "Piros",
-    "reset_filters": "Szűrők Törlése",
-    "rotate": "Forgat",
-    "saturation": "Szaturáció",
-    "scale": "Méretarány",
-    "warmth": "Melegség"
-  },
-  "ethnicity": "Etnikum",
-  "eye_color": "Szemszín",
-  "fake_tits": "Szilikonmellek",
-  "false": "Hamis",
-  "favourite": "Kedvenc",
-  "file": "fájl",
-  "file_info": "Fájl Információ",
-  "files": "fájlok",
-  "filesize": "Fájl Méret",
-  "filter": "Szűrő",
-  "filters": "Szűrők",
-  "galleries": "Galériák",
-  "gallery": "Galéria",
-  "gallery_count": "Galéria Száma",
-  "gender": "Nem",
-  "gender_types": {
-    "FEMALE": "Nő",
-    "INTERSEX": "Nemek közti",
-    "MALE": "Férfi"
-  },
-  "hair_color": "Hajszín",
-  "handy_connection_status": {
-    "connecting": "Kapcsolódás",
-    "disconnected": "Szétkapcsolt",
-    "missing": "Hiányzó",
-    "ready": "Kész",
-    "uploading": "Szkript feltöltése"
-  },
-  "height": "Magasság",
-  "help": "Segítség",
-  "image": "Kép",
-  "image_count": "Képek Száma",
-  "images": "Képek",
-  "instagram": "Instagram",
-  "interactive": "Interaktív",
-  "interactive_speed": "Interaktív sebesség",
-  "isMissing": "Hiányzik",
-  "library": "Könyvtár",
-  "loading": {
-    "generic": "Betöltés…"
-  },
-  "media_info": {
-    "downloaded_from": "Letöltés Forrása",
-    "interactive_speed": "Interaktív sebesség",
-    "performer_card": {
-      "age": "{age} {years_old}"
-    }
-  },
-  "metadata": "Metaadatok",
-  "movie": "Film",
-  "movies": "Filmek",
-  "name": "Név",
-  "new": "Új",
-  "none": "Nincs",
-  "o_counter": "O-Számláló",
-  "operations": "Műveletek",
-  "organized": "Rendezve",
-  "pagination": {
-    "first": "Első",
-    "last": "Utolsó",
-    "next": "Következő",
-    "previous": "Előző"
-  },
-  "parent_tags": "Szülő-címkék",
-  "path": "Elérési Út",
-  "performer": "Szereplő",
-  "performer_tags": "Szereplő Címkék",
-  "performer_age": "Szereplő Kora",
-  "performer_count": "Szereplők Száma",
-  "performer_favorite": "Szereplő Kedvencek Közt",
-  "performer_image": "Szereplő Képe",
-  "performer_tagger": {
-    "config": {
-      "excluded_fields": "Kihagyott mezők:"
-    },
-    "current_page": "Jelenlegi oldal",
-    "network_error": "Hálózati Hiba",
-    "tag_status": "Címke Státusza",
-    "update_performer": "Szereplő Frissítése",
-    "update_performers": "Szereplők Frissítése"
-  },
-  "performers": "Szereplők",
-  "piercings": "Piercingek",
-  "queue": "Sor",
-  "random": "Véletlenszerű",
-  "rating": "Értékelés",
-  "resolution": "Felbontás",
-  "scene": "Jelenet",
-  "sceneTagger": "Jelenetcímkéző",
-  "scene_tags": "Jelenetcímkék",
-  "scene_count": "Jelenetszám",
-  "scene_id": "Jelenet ID",
-  "scenes": "Jelenetek",
-  "search_filter": {
-    "name": "Szűrő",
-    "saved_filters": "Mentett szűrők",
-    "update_filter": "Szűrő Frissítése"
-  },
-  "seconds": "Másodperc",
-  "settings": "Beállítások",
-  "setup": {
-    "confirm": {
-      "nearly_there": "Már majdnem kész!"
-    },
-    "errors": {
-      "something_went_wrong_while_setting_up_your_system": "Valami hiba történt a rendszer beállításakor. Itt a hibaüzenet: {error}"
-    },
-    "folder": {
-      "file_path": "Fájl elérési út"
-    },
-    "migrate": {
-      "backup_recommended": "Ajánlott az adatbázis biztonsági mentése az áttelepítés előtt.Meg tudjuk ezt tenni neked az adatbázis átmásolásával a <code>{defaultBackupPath}</code> címre.",
-      "migrating_database": "Adatbázis áttelepítése",
-      "migration_failed": "Sikertelen áttelepítés",
-      "migration_irreversible_warning": "A séma áttelepítése nem visszafordítható folyamat. Amint az áttelepítés elkezdődik, az adatbázis összeegyeztethetetlen lesz a Stash előző verzióival.",
-      "migration_required": "Áttelepítés szükséges",
-      "schema_too_old": "A jelenlegi Stash adatbázis verziója <strong>{databaseSchema}</strong> , amit át kell telepíteni <strong>{appSchema}</strong> verzióra. A Stash ezen verziója nem fog működni az adatbázis áttelepítése nélkül."
-    },
-    "success": {
-      "help_links": "Ha problémába ütközöl, kérdésed, vagy javaslatod van, nyugodtan jelezd {githubLink}, vagy kérdezd meg a közösségtől {discordLink}.",
-      "support_us": "Támogatás"
-    },
-    "welcome": {
-      "config_path_logic_explained": "A Stash elöszőr a jelenlegi munkakönyvtárban próbálja a konfigurációs fájlját (<code>config.yml</code>) megkeresni. Ha ott nem találja, akkor a következő helyen próbálkozik: <code>$HOME/.stash/config.yml</code> (Windows rendszeren: <code>%USERPROFILE%\\.stash\\config.yml</code>). Meghatározhatja hogy a Stash egy bizonyos konfigurációs fájlt használjon, ammennyiben a <code>-c '<path to config file>'</code> or <code>--config '<path to config file>'</code> paraméterekkel indítja.",
-      "unexpected_explained": "Amennyiben ez a képernyő váratlanul bukkant fel, próbáld újraindítani a Stasht a megfelelő munkakönyvtárban, vagy a <code>-c</code> flag-gel."
-    },
-    "welcome_specific_config": {
-      "unable_to_locate_specified_config": "Ha ezt olvasod, akkor a Stash nem találta meg a konfigurációs fájlt, amit megadtál a parancssorban. Ez a varázsló végigvezet a lépéseken, hogy új konfigurációs fájlt tudj beállítani."
-    }
-  },
-  "stashbox": {
-    "submission_failed": "Beküldés sikertelen",
-    "submission_successful": "Beküldés sikeres"
-  },
-  "statistics": "Statisztikák",
-  "stats": {
-    "image_size": "Képek mérete",
-    "scenes_duration": "Jelenetek hossza",
-    "scenes_size": "Jelenetek mérete"
-  },
-  "status": "Státusz: {statusText}",
-  "studio": "Stúdió",
-  "studios": "Stúdiók",
-  "tag": "Címke",
-  "tag_count": "Címkék Száma",
-  "tags": "Címkék",
-  "tattoos": "Tetoválások",
-  "title": "Cím",
-  "toast": {
-    "added_entity": "{entity} Hozzáadva",
-    "created_entity": "{entity} Létrehozva",
-    "merged_tags": "Összevont címkék",
-    "saved_entity": "{entity} Mentve",
-    "updated_entity": "{entity} Frissítve"
-  },
-  "total": "Összesen",
-  "true": "Igaz",
-  "twitter": "Twitter",
-  "updated_at": "Frissítés Ideje",
-  "url": "URL",
-  "videos": "Videók",
-  "view_all": "Mindegyik Megjelenítése",
-  "weight": "Súly",
-  "years_old": "éves"
+    "captions": "Feliratok",
+    "chapters": "Fejezetek",
+    "circumcised": "Körülmetélt"
 }

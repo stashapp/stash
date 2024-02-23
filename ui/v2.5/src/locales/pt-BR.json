@@ -8,6 +8,7 @@
         "allow_temporarily": "Permitir temporariamente",
         "anonymise": "Anonimizar",
         "apply": "Aplicar",
+        "assign_stashid_to_parent_studio": "Atribua o Stash ID ao estúdio principal existente e atualize os metadados",
         "auto_tag": "Etiquetamento automático",
         "backup": "Backup",
         "browse_for_image": "Procurar por imagem…",
@@ -24,6 +25,7 @@
         "create_chapters": "Criar Capítulo",
         "create_entity": "Criar {entityType}",
         "create_marker": "Criar marcador",
+        "create_parent_studio": "Criar estúdio principal",
         "created_entity": "Criar {entity_type}: {entity_name}",
         "customise": "Customizar",
         "delete": "Apagar",
@@ -31,7 +33,6 @@
         "delete_file": "Apagar arquivo",
         "delete_file_and_funscript": "Deletar arquivo (e funscript)",
         "delete_generated_supporting_files": "Apagar arquivos gerados de suporte",
-        "delete_stashid": "Deletar StashID",
         "disallow": "Não permitir",
         "download": "Download",
         "download_anonymised": "Download Anonimizado",
@@ -67,6 +68,7 @@
         "not_running": "não realizado",
         "open_in_external_player": "Abrir em um reprodutor externo",
         "open_random": "Abrir aleatório",
+        "optimise_database": "Otimizar banco de dados",
         "overwrite": "Sobrescrever",
         "play_random": "Tocar aleatório",
         "play_selected": "Tocar selecionado",
@@ -120,17 +122,16 @@
         "temp_enable": "Habilitar temporariamente…",
         "unset": "Desaplicar",
         "use_default": "Usar padrão",
-        "view_random": "Mostrar aleatoriamente",
-        "assign_stashid_to_parent_studio": "Atribua o Stash ID ao estúdio principal existente e atualize os metadados",
-        "optimise_database": "Otimizar banco de dados",
-        "create_parent_studio": "Criar estúdio principal"
+        "view_random": "Mostrar aleatoriamente"
     },
     "actions_name": "Ações",
     "age": "Idade",
     "aliases": "Apelidos",
     "all": "todos",
     "also_known_as": "Também conhecido(a) como",
+    "appears_with": "Aparece com",
     "ascending": "Ascendente",
+    "audio_codec": "Codec de áudio",
     "average_resolution": "Resolução média",
     "between_and": "e",
     "birth_year": "Ano de nascimento",
@@ -143,11 +144,18 @@
     "captions": "Legendas",
     "career_length": "Duração da carreira",
     "chapters": "Capítulos",
+    "circumcised": "Circuncidado",
+    "circumcised_types": {
+        "CUT": "Cortado",
+        "UNCUT": "Não cortado"
+    },
     "component_tagger": {
         "config": {
             "active_instance": "Instância do stash-box ativa:",
             "blacklist_desc": "Os itens da lista negra são excluídos das consultas. Observe que são expressões regulares e também não fazem distinção entre maiúsculas e minúsculas. Certos caracteres devem ser escritos com uma barra invertida: {chars_require_escape}",
             "blacklist_label": "Lista negra",
+            "mark_organized_desc": "Marque imediatamente a cena como Organizada depois que o botão Salvar for clicado.",
+            "mark_organized_label": "Marcar como Organizado ao salvar",
             "query_mode_auto": "Automático",
             "query_mode_auto_desc": "Usa metadados se existentes, ou nome do arquivo",
             "query_mode_dir": "Diretório",
@@ -165,9 +173,7 @@
             "set_tag_label": "Definir etiquetas",
             "show_male_desc": "Define se artistas masculinos estarão disponíveis para etiquetar.",
             "show_male_label": "Mostrar artistas masculinos",
-            "source": "Fonte",
-            "mark_organized_desc": "Marque imediatamente a cena como Organizada depois que o botão Salvar for clicado.",
-            "mark_organized_label": "Marcar como Organizado ao salvar"
+            "source": "Fonte"
         },
         "noun_query": "Query",
         "results": {
@@ -271,6 +277,14 @@
                 "description": "Ditetório para aquivos de backup do banco de dados SQLite",
                 "heading": "Diretório de Backup"
             },
+            "blobs_path": {
+                "description": "Onde no sistema de arquivos para armazenar dados binários. Aplicável somente ao usar o tipo de armazenamento blob do sistema de arquivos. AVISO: para alterar isso, é necessário mover manualmente os dados existentes.",
+                "heading": "Caminho do sistema de arquivos de dados binários"
+            },
+            "blobs_storage": {
+                "description": "Onde armazenar dados binários, como capas de cenas, artista, estúdio e imagens de tags. Após alterar esse valor, os dados existentes devem ser migrados usando as tarefas Migração de blobs. Consulte a página Tarefas para migração.",
+                "heading": "Tipo de armazenamento de dados binários"
+            },
             "cache_location": "Localização do diretório do cache",
             "cache_path_head": "Caminho do cache",
             "calculate_md5_and_ohash_desc": "Calcular MD5 checksum além do oshash. A ativação fará com que as escaneamentos iniciais sejam mais lentos. Nomeação de arquivo Hash deve ser definido para oshash para desabilitar o cálculo MD5.",
@@ -288,6 +302,17 @@
             "excluded_image_gallery_patterns_head": "Padrões de imagem/galeria excluidos",
             "excluded_video_patterns_desc": "Regexps de video arquivos/caminhos para excluir do escaneamento e adicionar para limpar",
             "excluded_video_patterns_head": "Padrões de vídeo excluidos",
+            "ffmpeg": {
+                "hardware_acceleration": {
+                    "desc": "Usa o hardware disponível para codificar vídeo para transcodificação ao vivo.",
+                    "heading": "Codificação de hardware do FFmpeg"
+                },
+                "live_transcode": {
+                    "input_args": {
+                        "desc": "Avançado: Argumentos adicionais para passar para o ffmpeg antes do campo de entrada ao transcodificar vídeo ao vivo."
+                    }
+                }
+            },
             "gallery_ext_desc": "Lista delimitada por vírgulas de extensões de arquivo que serão identificadas como arquivos ZIP da galeria.",
             "gallery_ext_head": "Extensões zip da galeria",
             "generated_file_naming_hash_desc": "Use MD5 ou oshash para nomeação de arquivos gerados. Mudando isso requer que todas as cenas tenham o valor MD5/oshash populado. Depois de alterar este valor, arquivos gerados existentes precisarão ser migrados ou regenerados. Veja a página de tarefas para migração.",
@@ -326,26 +351,7 @@
             "sqlite_location": "Localização do arquivo para o banco de dados SQLite (requer reinicialização)",
             "video_ext_desc": "Lista delimitada por vírgulas de extensões de arquivo que serão identificadas como vídeos.",
             "video_ext_head": "Extensões de vídeo",
-            "video_head": "Vídeo",
-            "blobs_path": {
-                "description": "Onde no sistema de arquivos para armazenar dados binários. Aplicável somente ao usar o tipo de armazenamento blob do sistema de arquivos. AVISO: para alterar isso, é necessário mover manualmente os dados existentes.",
-                "heading": "Caminho do sistema de arquivos de dados binários"
-            },
-            "blobs_storage": {
-                "heading": "Tipo de armazenamento de dados binários",
-                "description": "Onde armazenar dados binários, como capas de cenas, artista, estúdio e imagens de tags. Após alterar esse valor, os dados existentes devem ser migrados usando as tarefas Migração de blobs. Consulte a página Tarefas para migração."
-            },
-            "ffmpeg": {
-                "hardware_acceleration": {
-                    "heading": "Codificação de hardware do FFmpeg",
-                    "desc": "Usa o hardware disponível para codificar vídeo para transcodificação ao vivo."
-                },
-                "live_transcode": {
-                    "input_args": {
-                        "desc": "Avançado: Argumentos adicionais para passar para o ffmpeg antes do campo de entrada ao transcodificar vídeo ao vivo."
-                    }
-                }
-            }
+            "video_head": "Vídeo"
         },
         "library": {
             "exclusions": "Exclusões",
@@ -873,7 +879,6 @@
     "path": "Caminho",
     "perceptual_similarity": "Semelhança Perceptiva (phash)",
     "performer": "Artista",
-    "performer_tags": "Etiquetas de artistas",
     "performer_age": "Idade do Artista",
     "performer_count": "Contagem de artistas",
     "performer_favorite": "Artista Favoritado",
@@ -913,6 +918,7 @@
         "update_performers": "Atualizar Artistas",
         "updating_untagged_performers_description": "A atualização de artistas sem etiqueta tentará corresponder a qualquer artista sem um stashid e atualizar os metadados."
     },
+    "performer_tags": "Etiquetas de artistas",
     "performers": "Artistas",
     "piercings": "Piercings",
     "queue": "Fila",
@@ -924,9 +930,9 @@
     "resolution": "Resolução",
     "scene": "Cena",
     "sceneTagger": "Etiquetador de cena",
-    "scene_tags": "Etiquetas da cena",
     "scene_count": "Contagem de cena",
     "scene_id": "Cena ID",
+    "scene_tags": "Etiquetas da cena",
     "scenes": "Cenas",
     "scenes_updated_at": "Cena atualizada em",
     "search_filter": {
@@ -941,8 +947,6 @@
             "almost_ready": "Estamos quase prontos para concluis a configuração. Por favor confirme as configurações a seguir. Você pode clicar em voltar para alterar qualquer dado incorreto. Se tudo parece certo, clique Confirmar para criar seu novo sistema.",
             "configuration_file_location": "Caminho para o arquivo de configuração:",
             "database_file_path": "Caminho para o banco de dados",
-            "default_db_location": "<caminho contendo o arquivo de configuração>/stash-go.sqlite",
-            "default_generated_content_location": "<caminho contendo o arquivo de configuração>/generated",
             "generated_directory": "Diretório contendo arquivos de mídia de suporte gerados pelo Stash",
             "nearly_there": "Quase lá!",
             "stash_library_directories": "Diretórios de biblioteca do Stash"
@@ -1066,18 +1070,8 @@
     "type": "Tipo",
     "updated_at": "Atualizado em",
     "url": "URL",
-    "validation": {
-        "aliases_must_be_unique": "apelidos devem ser únicos"
-    },
     "videos": "Vídeos",
     "view_all": "Ver todos",
     "weight": "Peso",
-    "years_old": "anos",
-    "circumcised_types": {
-        "UNCUT": "Não cortado",
-        "CUT": "Cortado"
-    },
-    "audio_codec": "Codec de áudio",
-    "appears_with": "Aparece com",
-    "circumcised": "Circuncidado"
+    "years_old": "anos"
 }

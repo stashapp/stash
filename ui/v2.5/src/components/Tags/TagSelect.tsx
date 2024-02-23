@@ -28,6 +28,7 @@ import { useCompare } from "src/hooks/state";
 import { TagPopover } from "./TagPopover";
 import { Placement } from "react-bootstrap/esm/Overlay";
 import { sortByRelevance } from "src/utils/query";
+import { PatchComponent } from "src/patch";
 
 export type SelectObject = {
   id: string;
@@ -38,7 +39,7 @@ export type SelectObject = {
 export type Tag = Pick<GQL.Tag, "id" | "name" | "aliases" | "image_path">;
 type Option = SelectOption<Tag>;
 
-export const TagSelect: React.FC<
+const _TagSelect: React.FC<
   IFilterProps &
     IFilterValueProps<Tag> & {
       hoverPlacement?: Placement;
@@ -70,7 +71,12 @@ export const TagSelect: React.FC<
       return !exclude.includes(tag.id.toString());
     });
 
-    return sortByRelevance(input, ret, (o) => o.aliases).map((tag) => ({
+    return sortByRelevance(
+      input,
+      ret,
+      (t) => t.name,
+      (t) => t.aliases
+    ).map((tag) => ({
       value: tag.id,
       object: tag,
     }));
@@ -95,7 +101,7 @@ export const TagSelect: React.FC<
     thisOptionProps = {
       ...optionProps,
       children: (
-        <TagPopover id={object.id} placement={props.hoverPlacement}>
+        <TagPopover id={object.id} placement={props.hoverPlacement ?? "right"}>
           <span className="react-select-image-option">
             {/* the following code causes re-rendering issues when selecting tags */}
             {/* <TagPopover
@@ -231,9 +237,9 @@ export const TagSelect: React.FC<
   );
 };
 
-export const TagIDSelect: React.FC<IFilterProps & IFilterIDProps<Tag>> = (
-  props
-) => {
+export const TagSelect = PatchComponent("TagSelect", _TagSelect);
+
+const _TagIDSelect: React.FC<IFilterProps & IFilterIDProps<Tag>> = (props) => {
   const { ids, onSelect: onSelectValues } = props;
 
   const [values, setValues] = useState<Tag[]>([]);
@@ -245,8 +251,7 @@ export const TagIDSelect: React.FC<IFilterProps & IFilterIDProps<Tag>> = (
   }
 
   async function loadObjectsByID(idsToLoad: string[]): Promise<Tag[]> {
-    const tagIDs = idsToLoad.map((id) => parseInt(id));
-    const query = await queryFindTagsByIDForSelect(tagIDs);
+    const query = await queryFindTagsByIDForSelect(idsToLoad);
     const { tags: loadedTags } = query.data.findTags;
 
     return loadedTags;
@@ -278,3 +283,5 @@ export const TagIDSelect: React.FC<IFilterProps & IFilterIDProps<Tag>> = (
 
   return <TagSelect {...props} values={values} onSelect={onSelect} />;
 };
+
+export const TagIDSelect = PatchComponent("TagIDSelect", _TagIDSelect);

@@ -1,5 +1,5 @@
 import { Form, Col, Row, Button, FormControl } from "react-bootstrap";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import * as GQL from "src/core/generated-graphql";
 import { Icon } from "../Shared/Icon";
 import { LoadingIndicator } from "../Shared/LoadingIndicator";
@@ -20,7 +20,6 @@ import {
   ScrapedTextAreaRow,
 } from "../Shared/ScrapeDialog/ScrapeDialog";
 import { clone, uniq } from "lodash-es";
-import { galleryTitle } from "src/core/galleries";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { ModalComponent } from "../Shared/Modal";
 import { IHasStoredID, sortStoredIdObjects } from "src/utils/data";
@@ -45,10 +44,16 @@ const StashIDsField: React.FC<IStashIDsField> = ({ values }) => {
   return <StringListSelect value={values.map((v) => v.stash_id)} />;
 };
 
+type MergeOptions = {
+  values: GQL.SceneUpdateInput;
+  includeViewHistory: boolean;
+  includeOHistory: boolean;
+};
+
 interface ISceneMergeDetailsProps {
   sources: GQL.SlimSceneDataFragment[];
   dest: GQL.SlimSceneDataFragment;
-  onClose: (values?: GQL.SceneUpdateInput) => void;
+  onClose: (options?: MergeOptions) => void;
 }
 
 const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
@@ -94,6 +99,13 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
     };
   }
 
+  function movieToStoredID(o: { movie: { id: string; name: string } }) {
+    return {
+      stored_id: o.movie.id,
+      name: o.movie.name,
+    };
+  }
+
   const [studio, setStudio] = useState<ScrapeResult<GQL.ScrapedStudio>>(
     new ScrapeResult<GQL.ScrapedStudio>(
       dest.studio ? idToStoredID(dest.studio) : undefined
@@ -128,8 +140,12 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
     )
   );
 
-  const [movies, setMovies] = useState<ScrapeResult<string[]>>(
-    new ScrapeResult<string[]>(sortIdList(dest.movies.map((p) => p.movie.id)))
+  const [movies, setMovies] = useState<
+    ObjectListScrapeResult<GQL.ScrapedMovie>
+  >(
+    new ObjectListScrapeResult<GQL.ScrapedMovie>(
+      sortStoredIdObjects(dest.movies.map(movieToStoredID))
+    )
   );
 
   const [tags, setTags] = useState<ObjectListScrapeResult<GQL.ScrapedTag>>(
@@ -236,9 +252,9 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
     );
 
     setMovies(
-      new ScrapeResult(
-        dest.movies.map((m) => m.movie.id),
-        uniq(all.map((s) => s.movies.map((m) => m.movie.id)).flat())
+      new ObjectListScrapeResult<GQL.ScrapedMovie>(
+        sortStoredIdObjects(dest.movies.map(movieToStoredID)),
+        uniqIDStoredIDs(all.map((s) => s.movies.map(movieToStoredID)).flat())
       )
     );
 
@@ -301,34 +317,6 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
 
     loadImages();
   }, [sources, dest]);
-
-  const convertGalleries = useCallback(
-    (ids?: string[]) => {
-      const all = [dest, ...sources];
-      return ids
-        ?.map((g) =>
-          all
-            .map((s) => s.galleries)
-            .flat()
-            .find((gg) => g === gg.id)
-        )
-        .map((g) => {
-          return {
-            id: g!.id,
-            title: galleryTitle(g!),
-          };
-        });
-    },
-    [dest, sources]
-  );
-
-  const originalGalleries = useMemo(() => {
-    return convertGalleries(galleries.originalValue);
-  }, [galleries, convertGalleries]);
-
-  const newGalleries = useMemo(() => {
-    return convertGalleries(galleries.newValue);
-  }, [galleries, convertGalleries]);
 
   // ensure this is updated if fields are changed
   const hasValues = useMemo(() => {
@@ -492,17 +480,19 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
           renderOriginalField={() => (
             <GallerySelect
               className="form-control react-select"
-              selected={originalGalleries ?? []}
+              ids={galleries.originalValue ?? []}
               onSelect={() => {}}
-              disabled
+              isMulti
+              isDisabled
             />
           )}
           renderNewField={() => (
             <GallerySelect
               className="form-control react-select"
-              selected={newGalleries ?? []}
+              ids={galleries.newValue ?? []}
               onSelect={() => {}}
-              disabled
+              isMulti
+              isDisabled
             />
           )}
           onChange={(value) => setGalleries(value)}
@@ -574,41 +564,45 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
     );
   }
 
-  function createValues(): GQL.SceneUpdateInput {
+  function createValues(): MergeOptions {
     const all = [dest, ...sources];
 
     // only set the cover image if it's different from the existing cover image
     const coverImage = image.useNewValue ? image.getNewValue() : undefined;
 
     return {
-      id: dest.id,
-      title: title.getNewValue(),
-      code: code.getNewValue(),
-      urls: url.getNewValue(),
-      date: date.getNewValue(),
-      rating100: rating.getNewValue(),
-      o_counter: oCounter.getNewValue(),
-      play_count: playCount.getNewValue(),
-      play_duration: playDuration.getNewValue(),
-      gallery_ids: galleries.getNewValue(),
-      studio_id: studio.getNewValue()?.stored_id,
-      performer_ids: performers.getNewValue()?.map((p) => p.stored_id!),
-      movies: movies.getNewValue()?.map((m) => {
-        // find the equivalent movie in the original scenes
-        const found = all
-          .map((s) => s.movies)
-          .flat()
-          .find((mm) => mm.movie.id === m);
-        return {
-          movie_id: m,
-          scene_index: found!.scene_index,
-        };
-      }),
-      tag_ids: tags.getNewValue()?.map((t) => t.stored_id!),
-      details: details.getNewValue(),
-      organized: organized.getNewValue(),
-      stash_ids: stashIDs.getNewValue(),
-      cover_image: coverImage,
+      values: {
+        id: dest.id,
+        title: title.getNewValue(),
+        code: code.getNewValue(),
+        urls: url.getNewValue(),
+        date: date.getNewValue(),
+        rating100: rating.getNewValue(),
+        o_counter: oCounter.getNewValue(),
+        play_count: playCount.getNewValue(),
+        play_duration: playDuration.getNewValue(),
+        gallery_ids: galleries.getNewValue(),
+        studio_id: studio.getNewValue()?.stored_id,
+        performer_ids: performers.getNewValue()?.map((p) => p.stored_id!),
+        movies: movies.getNewValue()?.map((m) => {
+          // find the equivalent movie in the original scenes
+          const found = all
+            .map((s) => s.movies)
+            .flat()
+            .find((mm) => mm.movie.id === m.stored_id);
+          return {
+            movie_id: m.stored_id!,
+            scene_index: found!.scene_index,
+          };
+        }),
+        tag_ids: tags.getNewValue()?.map((t) => t.stored_id!),
+        details: details.getNewValue(),
+        organized: organized.getNewValue(),
+        stash_ids: stashIDs.getNewValue(),
+        cover_image: coverImage,
+      },
+      includeViewHistory: playCount.getNewValue() !== undefined,
+      includeOHistory: oCounter.getNewValue() !== undefined,
     };
   }
 
@@ -695,13 +689,16 @@ export const SceneMergeModal: React.FC<ISceneMergeModalProps> = ({
     setSecondStep(true);
   }
 
-  async function onMerge(values: GQL.SceneUpdateInput) {
+  async function onMerge(options: MergeOptions) {
+    const { values, includeViewHistory, includeOHistory } = options;
     try {
       setRunning(true);
       const result = await mutateSceneMerge(
         destScene[0].id,
         sourceScenes.map((s) => s.id),
-        values
+        values,
+        includeViewHistory,
+        includeOHistory
       );
       if (result.data?.sceneMerge) {
         Toast.success(intl.formatMessage({ id: "toast.merged_scenes" }));

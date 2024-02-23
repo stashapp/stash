@@ -22,5 +22,5 @@ extend input SetDefaultFilterInput {
 }
 
 extend type Mutation {
-  configureUI(input: UIConfig!): UIConfig!
+  configureUI(input: Map!): UIConfig!
 }

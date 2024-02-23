@@ -10,6 +10,7 @@ import (
 	"runtime"
 	"time"
 
+	"github.com/remeh/sizedwaitgroup"
 	"github.com/stashapp/stash/internal/dlna"
 	"github.com/stashapp/stash/internal/log"
 	"github.com/stashapp/stash/internal/manager/config"
@@ -32,6 +33,10 @@ import (
 type Manager struct {
 	Config *config.Config
 	Logger *log.Logger
+
+	// ImageThumbnailGenerateWaitGroup is the global wait group image thumbnail generation
+	// It uses the parallel tasks setting from the configuration.
+	ImageThumbnailGenerateWaitGroup sizedwaitgroup.SizedWaitGroup
 
 	Paths *paths.Paths
 
@@ -75,11 +80,13 @@ func GetInstance() *Manager {
 func (s *Manager) SetBlobStoreOptions() {
 	storageType := s.Config.GetBlobsStorage()
 	blobsPath := s.Config.GetBlobsPath()
+	extraBlobsPaths := s.Config.GetExtraBlobsPaths()
 
 	s.Database.SetBlobStoreOptions(sqlite.BlobStoreOptions{
-		UseFilesystem: storageType == config.BlobStorageTypeFilesystem,
-		UseDatabase:   storageType == config.BlobStorageTypeDatabase,
-		Path:          blobsPath,
+		UseFilesystem:      storageType == config.BlobStorageTypeFilesystem,
+		UseDatabase:        storageType == config.BlobStorageTypeDatabase,
+		Path:               blobsPath,
+		SupplementaryPaths: extraBlobsPaths,
 	})
 }
 
@@ -105,6 +112,8 @@ func (s *Manager) RefreshConfig() {
 		if err := fsutil.EnsureDir(s.Paths.Generated.InteractiveHeatmap); err != nil {
 			logger.Warnf("could not create interactive heatmaps directory: %v", err)
 		}
+
+		s.ImageThumbnailGenerateWaitGroup.Size = cfg.GetParallelTasksWithAutoDetection()
 	}
 }
 

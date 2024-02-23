@@ -12,6 +12,7 @@ input GenerateMetadataInput {
   forceTranscodes: Boolean
   phashes: Boolean
   interactiveHeatmapsSpeeds: Boolean
+  imageThumbnails: Boolean
   clipPreviews: Boolean
 
   "scene ids to generate for"
@@ -48,6 +49,7 @@ type GenerateMetadataOptions {
   transcodes: Boolean
   phashes: Boolean
   interactiveHeatmapsSpeeds: Boolean
+  imageThumbnails: Boolean
   clipPreviews: Boolean
 }
 
@@ -114,6 +116,26 @@ input CleanMetadataInput {
 
   "Do a dry run. Don't delete any files"
   dryRun: Boolean!
+}
+
+input CleanGeneratedInput {
+  "Clean blob files without blob entries"
+  blobFiles: Boolean
+  "Clean sprite and vtt files without scene entries"
+  sprites: Boolean
+  "Clean preview files without scene entries"
+  screenshots: Boolean
+  "Clean scene transcodes without scene entries"
+  transcodes: Boolean
+
+  "Clean marker files without marker entries"
+  markers: Boolean
+
+  "Clean image thumbnails/clips without image entries"
+  imageThumbnails: Boolean
+
+  "Do a dry run. Don't delete any files"
+  dryRun: Boolean
 }
 
 input AutoTagMetadataInput {

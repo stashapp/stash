@@ -447,6 +447,14 @@ type relatedFileRow struct {
 	Primary bool          `db:"primary"`
 }
 
+func idToIndexMap(ids []int) map[int]int {
+	ret := make(map[int]int)
+	for i, id := range ids {
+		ret[id] = i
+	}
+	return ret
+}
+
 func (r *filesRepository) getMany(ctx context.Context, ids []int, primaryOnly bool) ([][]models.FileID, error) {
 	var primaryClause string
 	if primaryOnly {
@@ -476,10 +484,7 @@ func (r *filesRepository) getMany(ctx context.Context, ids []int, primaryOnly bo
 	}
 
 	ret := make([][]models.FileID, len(ids))
-	idToIndex := make(map[int]int)
-	for i, id := range ids {
-		idToIndex[id] = i
-	}
+	idToIndex := idToIndexMap(ids)
 
 	for _, row := range fileRows {
 		id := row.ID

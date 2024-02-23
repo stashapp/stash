@@ -13,17 +13,10 @@ import Select, {
 import CreatableSelect from "react-select/creatable";
 
 import * as GQL from "src/core/generated-graphql";
-import {
-  useAllMoviesForFilter,
-  useMarkerStrings,
-  useMovieCreate,
-} from "src/core/StashService";
-import { useToast } from "src/hooks/Toast";
+import { useMarkerStrings } from "src/core/StashService";
 import { SelectComponents } from "react-select/dist/declarations/src/components";
 import { ConfigurationContext } from "src/hooks/Config";
-import { useIntl } from "react-intl";
 import { objectTitle } from "src/core/files";
-import { galleryTitle } from "src/core/galleries";
 import { defaultMaxOptionsShown } from "src/core/config";
 import { useDebounce } from "src/hooks/debounce";
 import { Placement } from "react-bootstrap/esm/Overlay";
@@ -32,6 +25,8 @@ import { Icon } from "./Icon";
 import { faTableColumns } from "@fortawesome/free-solid-svg-icons";
 import { TagIDSelect } from "../Tags/TagSelect";
 import { StudioIDSelect } from "../Studios/StudioSelect";
+import { GalleryIDSelect } from "../Galleries/GallerySelect";
+import { MovieIDSelect } from "../Movies/MovieSelect";
 
 export type SelectObject = {
   id: string;
@@ -47,7 +42,8 @@ interface ITypeProps {
     | "tags"
     | "scene_tags"
     | "performer_tags"
-    | "movies";
+    | "movies"
+    | "galleries";
 }
 interface IFilterProps {
   ids?: string[];
@@ -88,23 +84,6 @@ interface ISelectProps<T extends boolean> {
   closeMenuOnSelect?: boolean;
   noOptionsMessage?: string | null;
 }
-interface IFilterComponentProps extends IFilterProps {
-  items: SelectObject[];
-  toOption?: (item: SelectObject) => Option;
-  onCreate?: (name: string) => Promise<{ item: SelectObject; message: string }>;
-}
-interface IFilterSelectProps<T extends boolean>
-  extends Pick<
-    ISelectProps<T>,
-    | "isLoading"
-    | "isMulti"
-    | "components"
-    | "filterOption"
-    | "isValidNewOption"
-    | "placeholder"
-    | "closeMenuOnSelect"
-  > {}
-
 type TitledObject = { id: string; title: string };
 interface ITitledSelect {
   className?: string;
@@ -123,9 +102,6 @@ const getSelectedItems = (selectedItems: OnChangeValue<Option, boolean>) => {
     return [];
   }
 };
-
-const getSelectedValues = (selectedItems: OnChangeValue<Option, boolean>) =>
-  getSelectedItems(selectedItems).map((item) => item.value);
 
 const LimitedSelectMenu = <T extends boolean>(
   props: MenuListProps<Option, T, GroupBase<Option>>
@@ -272,116 +248,10 @@ const SelectComponent = <T extends boolean>({
   );
 };
 
-const FilterSelectComponent = <T extends boolean>(
-  props: IFilterComponentProps & ITypeProps & IFilterSelectProps<T>
-) => {
-  const { items, ids, isMulti, onSelect } = props;
-  const [loading, setLoading] = useState(false);
-  const selectedIds = ids ?? [];
-  const Toast = useToast();
-
-  const options = items.map((i) => {
-    if (props.toOption) {
-      return props.toOption(i);
-    }
-    return {
-      value: i.id,
-      label: i.name ?? i.title ?? "",
-    };
-  });
-
-  const selected = options.filter((option) =>
-    selectedIds.includes(option.value)
-  );
-  const selectedOptions = (
-    isMulti ? selected : selected[0] ?? null
-  ) as OnChangeValue<Option, T>;
-
-  const onChange = (selectedItems: OnChangeValue<Option, boolean>) => {
-    const selectedValues = getSelectedValues(selectedItems);
-    onSelect?.(items.filter((item) => selectedValues.includes(item.id)));
-  };
-
-  const onCreate = async (name: string) => {
-    try {
-      setLoading(true);
-      const { item: newItem, message } = await props.onCreate!(name);
-      props.onSelect?.([
-        ...items.filter((item) => selectedIds.includes(item.id)),
-        newItem,
-      ]);
-      setLoading(false);
-      Toast.success(
-        <span>
-          {message}: <b>{name}</b>
-        </span>
-      );
-    } catch (e) {
-      Toast.error(e);
-    }
-  };
-
-  return (
-    <SelectComponent<T>
-      {...props}
-      isLoading={props.isLoading || loading}
-      onChange={onChange}
-      items={options}
-      selectedOptions={selectedOptions}
-      onCreateOption={props.creatable ? onCreate : undefined}
-    />
-  );
-};
-
-export const GallerySelect: React.FC<ITitledSelect> = (props) => {
-  const [query, setQuery] = useState<string>("");
-  const { data, loading } = GQL.useFindGalleriesQuery({
-    skip: query === "",
-    variables: {
-      filter: {
-        q: query,
-      },
-    },
-  });
-
-  const galleries = data?.findGalleries.galleries ?? [];
-  const items = galleries.map((g) => ({
-    label: galleryTitle(g),
-    value: g.id,
-  }));
-
-  const onInputChange = useDebounce(setQuery, 500);
-
-  const onChange = (selectedItems: OnChangeValue<Option, boolean>) => {
-    const selected = getSelectedItems(selectedItems);
-    props.onSelect(
-      selected.map((s) => ({
-        id: s.value,
-        title: s.label,
-      }))
-    );
-  };
-
-  const options = props.selected.map((g) => ({
-    value: g.id,
-    label: g.title ?? "Unknown",
-  }));
-
-  return (
-    <SelectComponent
-      className={props.className}
-      onChange={onChange}
-      onInputChange={onInputChange}
-      isLoading={loading}
-      items={items}
-      selectedOptions={options}
-      isMulti
-      placeholder="Search for gallery..."
-      noOptionsMessage={query === "" ? null : "No galleries found."}
-      showDropdown={false}
-      isDisabled={props.disabled}
-    />
-  );
+export const GallerySelect: React.FC<
+  IFilterProps & { excludeIds?: string[] }
+> = (props) => {
+  return <GalleryIDSelect {...props} />;
 };
 
 export const SceneSelect: React.FC<ITitledSelect> = (props) => {
@@ -537,50 +407,7 @@ export const StudioSelect: React.FC<
 };
 
 export const MovieSelect: React.FC<IFilterProps> = (props) => {
-  const { data, loading } = useAllMoviesForFilter();
-  const [createMovie] = useMovieCreate();
-  const items = data?.allMovies ?? [];
-  const intl = useIntl();
-
-  const { configuration } = React.useContext(ConfigurationContext);
-  const defaultCreatable =
-    !configuration?.interface.disableDropdownCreate.movie ?? true;
-
-  const onCreate = async (name: string) => {
-    const result = await createMovie({
-      variables: { input: { name } },
-    });
-    return {
-      item: result.data!.movieCreate!,
-      message: intl.formatMessage(
-        { id: "toast.created_entity" },
-        { entity: intl.formatMessage({ id: "movie" }).toLocaleLowerCase() }
-      ),
-    };
-  };
-
-  return (
-    <FilterSelectComponent
-      {...props}
-      isMulti={props.isMulti ?? false}
-      type="movies"
-      isLoading={loading}
-      items={items}
-      placeholder={
-        props.noSelectionString ??
-        intl.formatMessage(
-          { id: "actions.select_entity" },
-          {
-            entityType: intl.formatMessage({
-              id: props.isMulti ? "movies" : "movie",
-            }),
-          }
-        )
-      }
-      creatable={props.creatable ?? defaultCreatable}
-      onCreate={onCreate}
-    />
-  );
+  return <MovieIDSelect {...props} />;
 };
 
 export const TagSelect: React.FC<
@@ -590,14 +417,17 @@ export const TagSelect: React.FC<
 };
 
 export const FilterSelect: React.FC<IFilterProps & ITypeProps> = (props) => {
-  if (props.type === "performers") {
-    return <PerformerSelect {...props} creatable={false} />;
-  } else if (props.type === "studios") {
-    return <StudioSelect {...props} creatable={false} />;
-  } else if (props.type === "movies") {
-    return <MovieSelect {...props} creatable={false} />;
-  } else {
-    return <TagSelect {...props} creatable={false} />;
+  switch (props.type) {
+    case "performers":
+      return <PerformerSelect {...props} creatable={false} />;
+    case "studios":
+      return <StudioSelect {...props} creatable={false} />;
+    case "movies":
+      return <MovieSelect {...props} creatable={false} />;
+    case "galleries":
+      return <GallerySelect {...props} />;
+    default:
+      return <TagSelect {...props} creatable={false} />;
   }
 };
 

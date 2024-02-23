@@ -14,7 +14,9 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
-type CoverGetter interface {
+type ExportGetter interface {
+	models.ViewDateReader
+	models.ODateReader
 	GetCover(ctx context.Context, sceneID int) ([]byte, error)
 }
 
@@ -27,7 +29,7 @@ type TagFinder interface {
 // ToBasicJSON converts a scene object into its JSON object equivalent. It
 // does not convert the relationships to other objects, with the exception
 // of cover image.
-func ToBasicJSON(ctx context.Context, reader CoverGetter, scene *models.Scene) (*jsonschema.Scene, error) {
+func ToBasicJSON(ctx context.Context, reader ExportGetter, scene *models.Scene) (*jsonschema.Scene, error) {
 	newSceneJSON := jsonschema.Scene{
 		Title:     scene.Title,
 		Code:      scene.Code,
@@ -47,7 +49,6 @@ func ToBasicJSON(ctx context.Context, reader CoverGetter, scene *models.Scene) (
 	}
 
 	newSceneJSON.Organized = scene.Organized
-	newSceneJSON.OCounter = scene.OCounter
 
 	for _, f := range scene.Files.List() {
 		newSceneJSON.Files = append(newSceneJSON.Files, f.Base().Path)
@@ -72,6 +73,24 @@ func ToBasicJSON(ctx context.Context, reader CoverGetter, scene *models.Scene) (
 	}
 
 	newSceneJSON.StashIDs = ret
+
+	dates, err := reader.GetViewDates(ctx, scene.ID)
+	if err != nil {
+		return nil, fmt.Errorf("error getting view dates: %v", err)
+	}
+
+	for _, date := range dates {
+		newSceneJSON.PlayHistory = append(newSceneJSON.PlayHistory, json.JSONTime{Time: date})
+	}
+
+	odates, err := reader.GetODates(ctx, scene.ID)
+	if err != nil {
+		return nil, fmt.Errorf("error getting o dates: %v", err)
+	}
+
+	for _, date := range odates {
+		newSceneJSON.OHistory = append(newSceneJSON.OHistory, json.JSONTime{Time: date})
+	}
 
 	return &newSceneJSON, nil
 }

@@ -2,7 +2,6 @@ package manager
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io/fs"
 	"path/filepath"
@@ -264,6 +263,12 @@ func (f *scanFilter) Accept(ctx context.Context, path string, info fs.FileInfo) 
 		return false
 	}
 
+	s := f.stashPaths.GetStashFromDirPath(path)
+	if s == nil {
+		logger.Debugf("Skipping %s as it is not in the stash library", path)
+		return false
+	}
+
 	isVideoFile := useAsVideo(path)
 	isImageFile := useAsImage(path)
 	isZipFile := fsutil.MatchExtension(path, f.zipExt)
@@ -285,13 +290,6 @@ func (f *scanFilter) Accept(ctx context.Context, path string, info fs.FileInfo) 
 	// #1756 - skip zero length files
 	if !info.IsDir() && info.Size() == 0 {
 		logger.Infof("Skipping zero-length file: %s", path)
-		return false
-	}
-
-	s := f.stashPaths.GetStashFromDirPath(path)
-
-	if s == nil {
-		logger.Debugf("Skipping %s as it is not in the stash library", path)
 		return false
 	}
 
@@ -411,21 +409,24 @@ func (g *imageGenerators) Generate(ctx context.Context, i *models.Image, f model
 	t := g.input
 	path := f.Base().Path
 
+	// this is a bit of a hack: the task requires files to be loaded, but
+	// we don't really need to since we already have the file
+	ii := *i
+	ii.Files = models.NewRelatedFiles([]models.File{f})
+
 	if t.ScanGenerateThumbnails {
 		// this should be quick, so always generate sequentially
-		if err := g.generateThumbnail(ctx, i, f); err != nil {
-			logger.Errorf("Error generating thumbnail for %s: %v", path, err)
+		taskThumbnail := GenerateImageThumbnailTask{
+			Image:     ii,
+			Overwrite: overwrite,
 		}
+
+		taskThumbnail.Start(ctx)
 	}
 
 	// avoid adding a task if the file isn't a video file
 	_, isVideo := f.(*models.VideoFile)
 	if isVideo && t.ScanGenerateClipPreviews {
-		// this is a bit of a hack: the task requires files to be loaded, but
-		// we don't really need to since we already have the file
-		ii := *i
-		ii.Files = models.NewRelatedFiles([]models.File{f})
-
 		progress.AddTotal(1)
 		previewsFn := func(ctx context.Context) {
 			taskPreview := GenerateClipPreviewTask{
@@ -442,54 +443,6 @@ func (g *imageGenerators) Generate(ctx context.Context, i *models.Image, f model
 		} else {
 			g.taskQueue.Add(fmt.Sprintf("Generating preview for %s", path), previewsFn)
 		}
-	}
-
-	return nil
-}
-
-func (g *imageGenerators) generateThumbnail(ctx context.Context, i *models.Image, f models.File) error {
-	thumbPath := g.paths.Generated.GetThumbnailPath(i.Checksum, models.DefaultGthumbWidth)
-	exists, _ := fsutil.FileExists(thumbPath)
-	if exists {
-		return nil
-	}
-
-	path := f.Base().Path
-
-	vf, ok := f.(models.VisualFile)
-	if !ok {
-		return fmt.Errorf("file %s is not a visual file", path)
-	}
-
-	if vf.GetHeight() <= models.DefaultGthumbWidth && vf.GetWidth() <= models.DefaultGthumbWidth {
-		return nil
-	}
-
-	logger.Debugf("Generating thumbnail for %s", path)
-
-	mgr := GetInstance()
-	c := mgr.Config
-
-	clipPreviewOptions := image.ClipPreviewOptions{
-		InputArgs:  c.GetTranscodeInputArgs(),
-		OutputArgs: c.GetTranscodeOutputArgs(),
-		Preset:     c.GetPreviewPreset().String(),
-	}
-
-	encoder := image.NewThumbnailEncoder(mgr.FFMpeg, mgr.FFProbe, clipPreviewOptions)
-	data, err := encoder.GetThumbnail(f, models.DefaultGthumbWidth)
-
-	if err != nil {
-		// don't log for animated images
-		if !errors.Is(err, image.ErrNotSupportedForThumbnail) {
-			return fmt.Errorf("getting thumbnail for image %s: %w", path, err)
-		}
-		return nil
-	}
-
-	err = fsutil.WriteFile(thumbPath, data)
-	if err != nil {
-		return fmt.Errorf("writing thumbnail for image %s: %w", path, err)
 	}
 
 	return nil

@@ -11,6 +11,7 @@ import * as FormUtils from "src/utils/form";
 import { MultiSet } from "../Shared/MultiSet";
 import { RatingSystem } from "../Shared/Rating/RatingSystem";
 import {
+  getAggregateGalleryIds,
   getAggregateInputIDs,
   getAggregateInputValue,
   getAggregatePerformerIds,
@@ -36,11 +37,19 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
     React.useState<GQL.BulkUpdateIdMode>(GQL.BulkUpdateIdMode.Add);
   const [performerIds, setPerformerIds] = useState<string[]>();
   const [existingPerformerIds, setExistingPerformerIds] = useState<string[]>();
+
   const [tagMode, setTagMode] = React.useState<GQL.BulkUpdateIdMode>(
     GQL.BulkUpdateIdMode.Add
   );
   const [tagIds, setTagIds] = useState<string[]>();
   const [existingTagIds, setExistingTagIds] = useState<string[]>();
+
+  const [galleryMode, setGalleryMode] = React.useState<GQL.BulkUpdateIdMode>(
+    GQL.BulkUpdateIdMode.Add
+  );
+  const [galleryIds, setGalleryIds] = useState<string[]>();
+  const [existingGalleryIds, setExistingGalleryIds] = useState<string[]>();
+
   const [organized, setOrganized] = useState<boolean | undefined>();
 
   const [updateImages] = useBulkImageUpdate();
@@ -56,6 +65,7 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
     const aggregateStudioId = getAggregateStudioId(props.selected);
     const aggregatePerformerIds = getAggregatePerformerIds(props.selected);
     const aggregateTagIds = getAggregateTagIds(props.selected);
+    const aggregateGalleryIds = getAggregateGalleryIds(props.selected);
 
     const imageInput: GQL.BulkImageUpdateInput = {
       ids: props.selected.map((image) => {
@@ -72,6 +82,11 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
       aggregatePerformerIds
     );
     imageInput.tag_ids = getAggregateInputIDs(tagMode, tagIds, aggregateTagIds);
+    imageInput.gallery_ids = getAggregateInputIDs(
+      galleryMode,
+      galleryIds,
+      aggregateGalleryIds
+    );
 
     if (organized !== undefined) {
       imageInput.organized = organized;
@@ -107,6 +122,7 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
     let updateStudioID: string | undefined;
     let updatePerformerIds: string[] = [];
     let updateTagIds: string[] = [];
+    let updateGalleryIds: string[] = [];
     let updateOrganized: boolean | undefined;
     let first = true;
 
@@ -117,12 +133,14 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
         .map((p) => p.id)
         .sort();
       const imageTagIDs = (image.tags ?? []).map((p) => p.id).sort();
+      const imageGalleryIDs = (image.galleries ?? []).map((p) => p.id).sort();
 
       if (first) {
         updateRating = imageRating ?? undefined;
         updateStudioID = imageStudioID;
         updatePerformerIds = imagePerformerIDs;
         updateTagIds = imageTagIDs;
+        updateGalleryIds = imageGalleryIDs;
         updateOrganized = image.organized;
         first = false;
       } else {
@@ -138,6 +156,9 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
         if (!isEqual(imageTagIDs, updateTagIds)) {
           updateTagIds = [];
         }
+        if (!isEqual(imageGalleryIDs, updateGalleryIds)) {
+          updateGalleryIds = [];
+        }
         if (image.organized !== updateOrganized) {
           updateOrganized = undefined;
         }
@@ -148,6 +169,7 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
     setStudioId(updateStudioID);
     setExistingPerformerIds(updatePerformerIds);
     setExistingTagIds(updateTagIds);
+    setExistingGalleryIds(updateGalleryIds);
     setOrganized(updateOrganized);
   }, [props.selected, performerMode, tagMode]);
 
@@ -156,54 +178,6 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
       checkboxRef.current.indeterminate = organized === undefined;
     }
   }, [organized, checkboxRef]);
-
-  function renderMultiSelect(
-    type: "performers" | "tags",
-    ids: string[] | undefined
-  ) {
-    let mode = GQL.BulkUpdateIdMode.Add;
-    let existingIds: string[] | undefined = [];
-    switch (type) {
-      case "performers":
-        mode = performerMode;
-        existingIds = existingPerformerIds;
-        break;
-      case "tags":
-        mode = tagMode;
-        existingIds = existingTagIds;
-        break;
-    }
-
-    return (
-      <MultiSet
-        type={type}
-        disabled={isUpdating}
-        onUpdate={(itemIDs) => {
-          switch (type) {
-            case "performers":
-              setPerformerIds(itemIDs);
-              break;
-            case "tags":
-              setTagIds(itemIDs);
-              break;
-          }
-        }}
-        onSetMode={(newMode) => {
-          switch (type) {
-            case "performers":
-              setPerformerMode(newMode);
-              break;
-            case "tags":
-              setTagMode(newMode);
-              break;
-          }
-        }}
-        existingIds={existingIds ?? []}
-        ids={ids ?? []}
-        mode={mode}
-      />
-    );
-  }
 
   function cycleOrganized() {
     if (organized) {
@@ -271,14 +245,45 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
             <Form.Label>
               <FormattedMessage id="performers" />
             </Form.Label>
-            {renderMultiSelect("performers", performerIds)}
+            <MultiSet
+              type="performers"
+              disabled={isUpdating}
+              onUpdate={(itemIDs) => setPerformerIds(itemIDs)}
+              onSetMode={(newMode) => setPerformerMode(newMode)}
+              existingIds={existingPerformerIds ?? []}
+              ids={performerIds ?? []}
+              mode={performerMode}
+            />
           </Form.Group>
 
           <Form.Group controlId="tags">
             <Form.Label>
               <FormattedMessage id="tags" />
             </Form.Label>
-            {renderMultiSelect("tags", tagIds)}
+            <MultiSet
+              type="tags"
+              disabled={isUpdating}
+              onUpdate={(itemIDs) => setTagIds(itemIDs)}
+              onSetMode={(newMode) => setTagMode(newMode)}
+              existingIds={existingTagIds ?? []}
+              ids={tagIds ?? []}
+              mode={tagMode}
+            />
+          </Form.Group>
+
+          <Form.Group controlId="galleries">
+            <Form.Label>
+              <FormattedMessage id="galleries" />
+            </Form.Label>
+            <MultiSet
+              type="galleries"
+              disabled={isUpdating}
+              onUpdate={(itemIDs) => setGalleryIds(itemIDs)}
+              onSetMode={(newMode) => setGalleryMode(newMode)}
+              existingIds={existingGalleryIds ?? []}
+              ids={galleryIds ?? []}
+              mode={galleryMode}
+            />
           </Form.Group>
 
           <Form.Group controlId="organized">

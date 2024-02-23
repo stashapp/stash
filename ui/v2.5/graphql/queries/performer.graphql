@@ -24,12 +24,12 @@ query FindPerformer($id: ID!) {
 query FindPerformersForSelect(
   $filter: FindFilterType
   $performer_filter: PerformerFilterType
-  $performer_ids: [Int!]
+  $ids: [ID!]
 ) {
   findPerformers(
     filter: $filter
     performer_filter: $performer_filter
-    performer_ids: $performer_ids
+    ids: $ids
   ) {
     count
     performers {

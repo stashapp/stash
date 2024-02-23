@@ -847,20 +847,44 @@ func performerGalleryCountCriterionHandler(qb *PerformerStore, count *models.Int
 	return h.handler(count)
 }
 
-func performerOCounterCriterionHandler(qb *PerformerStore, count *models.IntCriterionInput) criterionHandlerFunc {
-	h := joinedMultiSumCriterionHandlerBuilder{
-		primaryTable:  performerTable,
-		foreignTable1: sceneTable,
-		joinTable1:    performersScenesTable,
-		foreignTable2: imageTable,
-		joinTable2:    performersImagesTable,
-		primaryFK:     performerIDColumn,
-		foreignFK1:    sceneIDColumn,
-		foreignFK2:    imageIDColumn,
-		sum:           "o_counter",
-	}
+// used for sorting and filtering on performer o-count
+var selectPerformerOCountSQL = utils.StrFormat(
+	"SELECT SUM(o_counter) "+
+		"FROM ("+
+		"SELECT SUM(o_counter) as o_counter from {performers_images} s "+
+		"LEFT JOIN {images} ON {images}.id = s.{images_id} "+
+		"WHERE s.{performer_id} = {performers}.id "+
+		"UNION ALL "+
+		"SELECT COUNT({scenes_o_dates}.{o_date}) as o_counter from {performers_scenes} s "+
+		"LEFT JOIN {scenes} ON {scenes}.id = s.{scene_id} "+
+		"LEFT JOIN {scenes_o_dates} ON {scenes_o_dates}.{scene_id} = {scenes}.id "+
+		"WHERE s.{performer_id} = {performers}.id "+
+		")",
+	map[string]interface{}{
+		"performers_images": performersImagesTable,
+		"images":            imageTable,
+		"performer_id":      performerIDColumn,
+		"images_id":         imageIDColumn,
+		"performers":        performerTable,
+		"performers_scenes": performersScenesTable,
+		"scenes":            sceneTable,
+		"scene_id":          sceneIDColumn,
+		"scenes_o_dates":    scenesODatesTable,
+		"o_date":            sceneODateColumn,
+	},
+)
 
-	return h.handler(count)
+func performerOCounterCriterionHandler(qb *PerformerStore, count *models.IntCriterionInput) criterionHandlerFunc {
+	return func(ctx context.Context, f *filterBuilder) {
+		if count == nil {
+			return
+		}
+
+		lhs := "(" + selectPerformerOCountSQL + ")"
+		clause, args := getIntCriterionWhereClause(lhs, *count)
+
+		f.addWhere(clause, args...)
+	}
 }
 
 func performerStudiosCriterionHandler(qb *PerformerStore, studios *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
@@ -998,6 +1022,11 @@ func performerAppearsWithCriterionHandler(qb *PerformerStore, performers *models
 	}
 }
 
+func (qb *PerformerStore) sortByOCounter(direction string) string {
+	// need to sum the o_counter from scenes and images
+	return " ORDER BY (" + selectPerformerOCountSQL + ") " + direction
+}
+
 func (qb *PerformerStore) getPerformerSort(findFilter *models.FindFilterType) string {
 	var sort string
 	var direction string
@@ -1019,11 +1048,10 @@ func (qb *PerformerStore) getPerformerSort(findFilter *models.FindFilterType) st
 		sortQuery += getCountSort(performerTable, performersImagesTable, performerIDColumn, direction)
 	case "galleries_count":
 		sortQuery += getCountSort(performerTable, performersGalleriesTable, performerIDColumn, direction)
+	case "o_counter":
+		sortQuery += qb.sortByOCounter(direction)
 	default:
 		sortQuery += getSort(sort, direction, "performers")
-	}
-	if sort == "o_counter" {
-		return getMultiSumSort("o_counter", performerTable, sceneTable, performersScenesTable, imageTable, performersImagesTable, performerIDColumn, sceneIDColumn, imageIDColumn, direction)
 	}
 
 	// Whatever the sorting, always use name/id as a final sort

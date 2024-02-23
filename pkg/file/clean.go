@@ -318,11 +318,22 @@ func (j *cleanJob) flagFolderForDelete(ctx context.Context, toDelete *deleteSet,
 	return nil
 }
 
+func isNotFound(err error) bool {
+	// ErrInvalid can occur in zip files where the zip file path changed
+	// and the underlying folder did not
+	// #3877 - fs.PathError can occur if the network share no longer exists
+	var pathErr *fs.PathError
+	return err != nil &&
+		(errors.Is(err, fs.ErrNotExist) ||
+			!errors.Is(err, fs.ErrInvalid) ||
+			!errors.As(err, &pathErr))
+}
+
 func (j *cleanJob) shouldClean(ctx context.Context, f models.File) bool {
 	path := f.Base().Path
 
 	info, err := f.Base().Info(j.FS)
-	if err != nil && !errors.Is(err, fs.ErrNotExist) {
+	if err != nil && !isNotFound(err) {
 		logger.Errorf("error getting file info for %q, not cleaning: %v", path, err)
 		return false
 	}
@@ -344,9 +355,8 @@ func (j *cleanJob) shouldCleanFolder(ctx context.Context, f *models.Folder) bool
 	path := f.Path
 
 	info, err := f.Info(j.FS)
-	// ErrInvalid can occur in zip files where the zip file path changed
-	// and the underlying folder did not
-	if err != nil && !errors.Is(err, fs.ErrNotExist) && !errors.Is(err, fs.ErrInvalid) {
+
+	if err != nil && !isNotFound(err) {
 		logger.Errorf("error getting folder info for %q, not cleaning: %v", path, err)
 		return false
 	}
@@ -367,7 +377,7 @@ func (j *cleanJob) shouldCleanFolder(ctx context.Context, f *models.Folder) bool
 		}
 
 		info, err = j.FS.Lstat(finalPath)
-		if err != nil {
+		if err != nil && !isNotFound(err) {
 			logger.Errorf("error getting file info for %q (-> %s), not cleaning: %v", path, finalPath, err)
 			return false
 		}

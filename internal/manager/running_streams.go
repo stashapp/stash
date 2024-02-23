@@ -59,8 +59,9 @@ func (s *SceneServer) StreamSceneDirect(scene *models.Scene, w http.ResponseWrit
 func (s *SceneServer) ServeScreenshot(scene *models.Scene, w http.ResponseWriter, r *http.Request) {
 	var cover []byte
 	readTxnErr := txn.WithReadTxn(r.Context(), s.TxnManager, func(ctx context.Context) error {
-		cover, _ = s.SceneCoverGetter.GetCover(ctx, scene.ID)
-		return nil
+		var err error
+		cover, err = s.SceneCoverGetter.GetCover(ctx, scene.ID)
+		return err
 	})
 	if errors.Is(readTxnErr, context.Canceled) {
 		return

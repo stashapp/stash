@@ -1,6 +1,5 @@
 interface ISortable {
   id: string;
-  name: string;
 }
 
 // sortByRelevance is a function that sorts an array of objects by relevance to a query string.
@@ -15,6 +14,7 @@ interface ISortable {
 export function sortByRelevance<T extends ISortable>(
   query: string,
   value: T[],
+  getName: (o: T) => string,
   getAliases?: (o: T) => string[] | undefined
 ) {
   if (!query) {
@@ -89,7 +89,7 @@ export function sortByRelevance<T extends ISortable>(
   }
 
   function getWords(o: T) {
-    return o.name.toLowerCase().split(" ");
+    return getName(o).toLowerCase().split(" ");
   }
 
   function getAliasWords(tag: T) {
@@ -170,8 +170,8 @@ export function sortByRelevance<T extends ISortable>(
   }
 
   function compare(a: T, b: T) {
-    const aName = a.name.toLowerCase();
-    const bName = b.name.toLowerCase();
+    const aName = getName(a).toLowerCase();
+    const bName = getName(b).toLowerCase();
 
     const aAlias = aliasMatches(a);
     const bAlias = aliasMatches(b);

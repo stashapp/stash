@@ -31,7 +31,6 @@
         "delete_file": "删除文件",
         "delete_file_and_funscript": "删除文件 (和 funscript)",
         "delete_generated_supporting_files": "删除已生成的附加文件",
-        "delete_stashid": "删除 StashID",
         "disallow": "不允许",
         "download": "下载",
         "download_anonymised": "匿名下载",
@@ -120,14 +119,28 @@
         "temp_enable": "暂时启用…",
         "unset": "重设",
         "use_default": "使用默认",
-        "view_random": "随机查看"
+        "view_random": "随机查看",
+        "create_parent_studio": "创建父工作室",
+        "optimise_database": "优化数据库",
+        "assign_stashid_to_parent_studio": "将Stash ID分配给现有的父工作室并更新元数据",
+        "encoding_image": "编码图片中…",
+        "reload": "重新加载",
+        "disable": "禁用",
+        "enable": "启用",
+        "clear_date_data": "清除日期数据",
+        "choose_date": "选择一个日期",
+        "add_play": "添加播放",
+        "add_manual_date": "添加手动日期",
+        "copy_to_clipboard": "复制到剪切板",
+        "remove_date": "去除日期",
+        "add_o": "添加“O”"
     },
     "actions_name": "操作",
     "age": "年龄",
     "aliases": "别名",
     "all": "所有",
     "also_known_as": "又称作",
-    "appears_with": "显示方式",
+    "appears_with": "合作者",
     "ascending": "升序",
     "average_resolution": "平均分辨率",
     "between_and": "以及",
@@ -168,7 +181,9 @@
             "set_tag_label": "设置标签",
             "show_male_desc": "选择搜索时是否获取男演员信息.",
             "show_male_label": "展示男演员标签",
-            "source": "源"
+            "source": "源",
+            "mark_organized_label": "保存时标记为已整理",
+            "mark_organized_desc": "点击保存按钮后，立即将短片标记为 \"已整理\"。"
         },
         "noun_query": "查询",
         "results": {
@@ -261,7 +276,7 @@
                 "log_to_terminal": "输出日志到终端",
                 "log_to_terminal_desc": "日志除了输出到文件外还输出到终端，如果关闭日志记录则始终开启。更改之后需要重启。",
                 "maximum_session_age": "最大会话有效期",
-                "maximum_session_age_desc": "无操作多久后登出, 单位为秒。",
+                "maximum_session_age_desc": "无操作多久后登出, 单位为秒。重启生效。",
                 "password": "密码",
                 "password_desc": "登录 Stash 时所需的密码.留空表示关闭身份验证",
                 "stash-box_integration": "整合 Stash-box",
@@ -277,7 +292,7 @@
                 "heading": "二进制数据文件储存路径"
             },
             "blobs_storage": {
-                "description": "存储二进制数据（如场景封面、表演者、工作室和标签图像）的地方。在改变这个值之后，必须使用迁移数据任务来迁移现有数据。参见迁移数据任务页面。",
+                "description": "存储二进制数据（如短片封面、表演者、工作室和标签图像）的地方。在改变这个值之后，必须使用迁移数据任务来迁移现有数据。参见迁移数据任务页面。",
                 "heading": "二进制数据存储类型"
             },
             "cache_location": "缓存的目录位置。如果使用 HLS（例如在 Apple 设备上）或 DASH 进行流传输，则需要该位置。",
@@ -353,8 +368,8 @@
             "parallel_scan_head": "并行扫描/生成",
             "preview_generation": "生成预览",
             "python_path": {
-                "description": "Python 执行程序的位置。给网页挖掘器和插件的源文件使用。如果没有，python会从环境变量找到",
-                "heading": "Python 路径"
+                "description": "Python 执行程序的路径。（不限于文件夹）给网页挖掘器和插件的源文件使用。如果没有，python会从环境变量找到",
+                "heading": "Python 可执行文件路径"
             },
             "scraper_user_agent": "刮削器用户代理 (User Agent)",
             "scraper_user_agent_desc": "刮削器运行时的用户代理 (User Agent)",
@@ -366,7 +381,11 @@
             "sqlite_location": "SQLite 数据库的位置(需要重启)。警告：不支持将数据库放在与 Stash 服务器以外的系统上(即通过网络)！",
             "video_ext_desc": "逗号(半角)分隔的文件扩展名列表，将被标识为视频。",
             "video_ext_head": "视频扩展名",
-            "video_head": "视频设置"
+            "video_head": "视频设置",
+            "plugins_path": {
+                "heading": "插件文件路径",
+                "description": "插件配置文件目录"
+            }
         },
         "library": {
             "exclusions": "不包括",
@@ -378,7 +397,9 @@
         },
         "plugins": {
             "hooks": "回调",
-            "triggers_on": "触发于"
+            "triggers_on": "触发于",
+            "installed_plugins": "已安装插件",
+            "available_plugins": "可用插件"
         },
         "scraping": {
             "entity_metadata": "{entityType}元数据",
@@ -389,7 +410,9 @@
             "scrapers": "刮削器",
             "search_by_name": "按名称搜索",
             "supported_types": "支持类型",
-            "supported_urls": "支持链接"
+            "supported_urls": "支持链接",
+            "available_scrapers": "可用刮削器",
+            "installed_scrapers": "已安装刮削器"
         },
         "stashbox": {
             "add_instance": "新增 Stash-Box 入口",
@@ -432,7 +455,7 @@
             "generate_phashes_during_scan": "生成感知识别码",
             "generate_phashes_during_scan_tooltip": "为了防止重复和短片甄别.",
             "generate_previews_during_scan": "生成动态图片预览",
-            "generate_previews_during_scan_tooltip": "生成WebP动画预览，仅适用于预览类型设为动图的情况.",
+            "generate_previews_during_scan_tooltip": "生成webp动画预览，仅适用于预览类型设为动图的情况. 浏览时将更少CPU占用，但生成的是额外的且更大的文件。",
             "generate_sprites_during_scan": "生成时间轴预览小图",
             "generate_thumbnails_during_scan": "生成图片的缩略图",
             "generate_video_covers_during_scan": "生成短片封面",
@@ -457,7 +480,12 @@
                 "source": "源",
                 "source_options": "{source} 选项",
                 "sources": "源",
-                "strategy": "策略"
+                "strategy": "策略",
+                "skip_multiple_matches": "跳过有多个结果的匹配",
+                "skip_single_name_performers": "跳过无消歧的单名表演者",
+                "skip_multiple_matches_tooltip": "如果未启用此功能，并且返回多个结果，则将随机选择一个结果进行匹配",
+                "tag_skipped_performers": "跳过以下匹配的演员",
+                "tag_skipped_matches": "跳过以下匹配的标签"
             },
             "import_from_exported_json": "导入之前导出的json格式元数据。 删除现有数据库内容。",
             "incremental_import": "从导出的 zip 文件增量导入。",
@@ -481,7 +509,10 @@
                 "scanning_paths": "正在扫描以下路径"
             },
             "scan_for_content_desc": "扫描新内容并添加至数据库中。",
-            "set_name_date_details_from_metadata_if_present": "使用文件内含的元数据的标题、日期、详情"
+            "set_name_date_details_from_metadata_if_present": "使用文件内含的元数据的标题、日期、详情",
+            "generate_sprites_during_scan_tooltip": "视频播放器下方用于快速导航的缩略图集。",
+            "optimise_database": "尝试通过分析然后重建整个数据库文件来提高性能。",
+            "optimise_database_warning": "警告：当此任务运行时，任何修改数据库的操作都将失败，而且根据数据库的大小，可能需要几分钟才能完成。此外，它至少需要与数据库大小相当的可用磁盘空间，但建议使用 1.5 倍的空间。"
         },
         "tools": {
             "scene_duplicate_checker": "短片重复性检查工具",
@@ -598,6 +629,10 @@
                     "write_image_thumbnails": {
                         "description": "即时生成时把图片缩略写入硬盘",
                         "heading": "写图片缩略"
+                    },
+                    "create_image_clips_from_videos": {
+                        "heading": "将视频格式扫描为图像片段",
+                        "description": "当某个库中存在不可用视频，视频文件（扩展名为视频格式）将被扫描为图像片段。"
                     }
                 }
             },
@@ -626,7 +661,7 @@
                 }
             },
             "preview_type": {
-                "description": "影片预览设置",
+                "description": "默认选项是视频（mp4）预览。为了减少浏览时的CPU使用率，您可以使用动图（webp）预览。但是，它们必须在视频预览之外生成，并且是更大的文件。",
                 "heading": "预览类型",
                 "options": {
                     "animated": "动图",
@@ -635,9 +670,9 @@
                 }
             },
             "scene_list": {
-                "heading": "短片列表",
+                "heading": "网格视图",
                 "options": {
-                    "show_studio_as_text": "以名称展示工作室"
+                    "show_studio_as_text": "文本形式展示工作室名称覆层"
                 }
             },
             "scene_player": {
@@ -654,7 +689,14 @@
                         "heading": "默认继续播放清单"
                     },
                     "show_scrubber": "显示预览轴",
-                    "track_activity": "监测播放动作"
+                    "track_activity": "监测播放动作",
+                    "vr_tag": {
+                        "description": "VR按钮仅在短片存在此标签时显示。",
+                        "heading": "VR标签"
+                    },
+                    "show_ab_loop_controls": "显示 AB 循环控制组件",
+                    "disable_mobile_media_auto_rotate": "在移动设备中针对全屏幕媒体禁用自动旋转",
+                    "enable_chromecast": "启用Chromecast"
                 }
             },
             "scene_wall": {
@@ -694,8 +736,28 @@
                     }
                 }
             },
-            "title": "用户界面"
-        }
+            "title": "用户界面",
+            "detail": {
+                "heading": "详情页面",
+                "show_all_details": {
+                    "heading": "显示所有详情",
+                    "description": "启用后，默认情况下将显示所有详情，每个详情项目都将显示在一栏中"
+                },
+                "compact_expanded_details": {
+                    "heading": "紧凑型扩展详情",
+                    "description": "启用后，该选项将显示扩展的详情，同时保持紧凑的显示效果"
+                },
+                "enable_background_image": {
+                    "heading": "启用背景图像",
+                    "description": "在详情页面上显示背景图片。"
+                }
+            },
+            "use_stash_hosted_funscript": {
+                "description": "启用后，funscript将直接从Stash提供到您的Handy设备，而无需使用第三方Handy服务器。要求您的Handy设备可以访问Stash。",
+                "heading": "直接提供funscripts服务"
+            }
+        },
+        "advanced_mode": "高级模式"
     },
     "configuration": "设置",
     "countables": {
@@ -809,10 +871,10 @@
             "force_transcodes": "强制生成转码文件",
             "force_transcodes_tooltip": "默认情况下，转码文件只会在浏览器不支持的情况下生成。如果开启此选项，即使浏览器支持该视频，也会生成转码文件。",
             "image_previews": "动图预览",
-            "image_previews_tooltip": "动态 WebP 预览, 当预览类型设置为[动图]时才需要.",
+            "image_previews_tooltip": "同时生成动图（webp）预览，仅当短片/标记墙预览类型设置为动图时才需要。浏览时，它们使用的CPU比视频预览少，但会额外生成更大的文件。",
             "interactive_heatmap_speed": "产生热图和速度资料给有互动的短片",
             "marker_image_previews": "标记动图预览",
-            "marker_image_previews_tooltip": "动态标记WebP预览，仅用于当预览类型设为【动图】时。",
+            "marker_image_previews_tooltip": "同时生成动图（webp）预览，仅当短片/标记墙预览类型设置为动图时才需要。浏览时，它们使用的CPU比视频预览少，但会额外生成更大的文件。",
             "marker_screenshots": "标记的屏幕截图",
             "marker_screenshots_tooltip": "标记使用静态JPG图，仅用于预览类型设为【静图】时。",
             "markers": "标记预览",
@@ -820,7 +882,7 @@
             "override_preview_generation_options": "凌驾预览生成选项",
             "override_preview_generation_options_desc": "在本次操作中凌驾于预览生成设定的选项。默认的选项在 系统 -> 预览生成。",
             "overwrite": "覆盖现有文件",
-            "phash": "感知识别码PHash（用于检测短片是否重复）",
+            "phash": "感知识别码PHash",
             "preview_exclude_end_time_desc": "从短片预览中排除最后 x 秒。可以是一个以秒为单位的值，也可以是百分比（比如2%）。",
             "preview_exclude_end_time_head": "排除结束时间",
             "preview_exclude_start_time_desc": "从短片预览中排除最开始 x 秒。可以是一个以秒为单位的值，也可以是百分比（比如2%）。",
@@ -834,11 +896,14 @@
             "preview_seg_duration_desc": "每个预览片段的长度，以秒为单位。",
             "preview_seg_duration_head": "预览片段长度",
             "sprites": "短视频时间轴预览的小图",
-            "sprites_tooltip": "小图（用于时间轴预览）",
+            "sprites_tooltip": "视频播放器下方用于快速导航的缩略图集。",
             "transcodes": "转码",
-            "transcodes_tooltip": "将不支持的视频格式转换为MP4",
+            "transcodes_tooltip": "将为所有内容提前生成MP4转码文件；对慢速CPU有用，但需要更多磁盘空间",
             "video_previews": "预览",
-            "video_previews_tooltip": "鼠标悬停在短片上时播放的预览短片"
+            "video_previews_tooltip": "鼠标悬停在短片上时播放的预览短片",
+            "phash_tooltip": "针对去重和场景鉴定",
+            "image_thumbnails": "图像缩略图",
+            "clip_previews": "图像片段预览"
         },
         "scenes_found": "找到 {count} 个短片",
         "scrape_entity_query": "{entity_type} 挖掘 查询指令",
@@ -846,7 +911,10 @@
         "scrape_results_existing": "现有信息",
         "scrape_results_scraped": "挖取信息",
         "set_image_url_title": "图片链接",
-        "unsaved_changes": "更改未保存，确定离开吗？"
+        "unsaved_changes": "更改未保存，确定离开吗？",
+        "performers_found": "找到{count} 个演员",
+        "clear_o_history_confirm": "真的确定要清空 社保历史?",
+        "clear_play_history_confirm": "真的确定要清空播放历史?"
     },
     "dimensions": "大小",
     "director": "导演",
@@ -874,7 +942,13 @@
             "medium": "中"
         },
         "search_accuracy_label": "搜索准确度",
-        "title": "重复短片"
+        "title": "重复短片",
+        "select_all_but_largest_file": "选择重复组中除最大文件外的每个文件",
+        "select_none": "清除选择",
+        "select_all_but_largest_resolution": "选择重复组中除最高分辨率文件外的每个文件",
+        "select_options": "选择选项…",
+        "select_oldest": "选择重复组中最旧文件",
+        "select_youngest": "选择重复组中最新文件"
     },
     "duplicated_phash": "重复的（感知码）",
     "duration": "时长",
@@ -903,7 +977,9 @@
     "errors": {
         "image_index_greater_than_zero": "图像索引必须大于 0",
         "lazy_component_error_help": "如果您最近升级了 Stash，请重新加载页面或清除浏览器缓存。",
-        "something_went_wrong": "出了些问题。"
+        "something_went_wrong": "出了些问题。",
+        "header": "错误",
+        "loading_type": "加载 {type} 出错"
     },
     "ethnicity": "人种",
     "existing_value": "现值",
@@ -991,9 +1067,10 @@
         "play_count": "播放量",
         "play_duration": "播放长度",
         "stream": "视频流地址",
-        "video_codec": "视频编码"
+        "video_codec": "视频编码",
+        "o_count": "O 次数"
     },
-    "megabits_per_second": "{value} Mbps/s",
+    "megabits_per_second": "{value} Mbps",
     "metadata": "元数据",
     "movie": "电影",
     "movie_scene_number": "电影短片编码",
@@ -1018,7 +1095,6 @@
     "path": "路径",
     "perceptual_similarity": "感知的类似程度（感知码）",
     "performer": "演员",
-    "performer_tags": "演员标签",
     "performer_age": "演员年龄",
     "performer_count": "演员数量",
     "performer_favorite": "演员已收藏",
@@ -1058,6 +1134,7 @@
         "update_performers": "更新演员们资料",
         "updating_untagged_performers_description": "更新尚未标记的演员，会尝试搜寻没有stashid的演员并更新其元数据。"
     },
+    "performer_tags": "演员标签",
     "performers": "演员",
     "piercings": "穿洞",
     "play_count": "播放量",
@@ -1073,12 +1150,12 @@
     "resume_time": "恢复时间",
     "scene": "短片",
     "sceneTagger": "短片标记器",
-    "scene_tags": "短片标记",
     "scene_code": "工作室代码",
     "scene_count": "短片数量",
     "scene_created_at": "短片建立在",
     "scene_date": "短片日期",
     "scene_id": "短片ID",
+    "scene_tags": "短片标记",
     "scene_updated_at": "短片修改在",
     "scenes": "短片",
     "scenes_updated_at": "短片更新时间",
@@ -1098,10 +1175,6 @@
             "cache_directory": "缓存目录",
             "configuration_file_location": "配置文件的路径:",
             "database_file_path": "数据库文件的路径",
-            "default_blobs_location": "<用户数据库>",
-            "default_cache_location": "<包含配置文件的路径>/cache",
-            "default_db_location": "<含有设置文件的路径>/stash-go.sqlite",
-            "default_generated_content_location": "<含有设置文件的路径>/generated",
             "generated_directory": "生成资料的路径",
             "nearly_there": "就快好了！",
             "stash_library_directories": "Stash库的路径"
@@ -1141,7 +1214,7 @@
             "set_up_your_paths": "设立你的路径",
             "stash_alert": "没有选择任何影像库的路径。Stash将不会扫描到任何媒体文件。你确认吗？",
             "where_can_stash_store_blobs": "Stash 在哪里可以存储数据库二进制数据？",
-            "where_can_stash_store_blobs_description": "Stash 可以在数据库或文件系统中存储二进制数据，如场景封面、表演者、工作室和标签图像。默认情况下，它会将这些数据存储在子目录 <code>blobs</code> 中的文件系统中。如果要更改此路径，请输入绝对或相对（相对于当前工作目录）路径。如果该目录不存在，Stash将创建该目录。",
+            "where_can_stash_store_blobs_description": "Stash 可以在数据库或文件系统中存储二进制数据，如短片封面、表演者、工作室和标签图像。默认情况下，它会将这些数据存储在子目录 <code>blobs</code> 中的文件系统中。如果要更改此路径，请输入绝对或相对（相对于当前工作目录）路径。如果该目录不存在，Stash将创建该目录。",
             "where_can_stash_store_blobs_description_addendum": "或者，如果要将此数据存储在数据库中，可以将此字段留空<strong>注意：</strong>这将增加数据库文件的大小，并增加数据库迁移时间。",
             "where_can_stash_store_cache_files": "Stash可以在哪里存储缓存文件？",
             "where_can_stash_store_cache_files_description": "为了使 HLS/DASH 实时转码等功能发挥作用，Stash 需要一个临时文件的缓存目录。默认情况下，Stash将在包含配置文件的目录中创建一个<code>缓存</code>目录。如果要更改此路径，请输入绝对或相对（相对于当前工作目录）路径。如果该目录不存在，Stash 将创建该目录。",
@@ -1151,11 +1224,13 @@
             "where_can_stash_store_its_generated_content": "哪里可以存放Stash产生的资料？",
             "where_can_stash_store_its_generated_content_description": "为了可以提供缩图，预览和浏览图，Stash生成图片和视频。同时也包括将不支持的文件转码后的视频。默认情况下，Stash会建立一个<code>generated</code>文件夹在含有你配置文件的目录中。如果你要修改生成媒体的地方，请输入一个绝对，或者相对(对于当前工作目录)的路径。如果此目录不存在，Stash会自动建立它。",
             "where_is_your_porn_located": "你的收藏在哪里？",
-            "where_is_your_porn_located_description": "加入含有你收藏的视频和图片的目录。Stash会在扫描时使用这些目录去寻找视频和图片。"
+            "where_is_your_porn_located_description": "加入含有你收藏的视频和图片的目录。Stash会在扫描时使用这些目录去寻找视频和图片。",
+            "path_to_blobs_directory_empty_for_default": "blobs目录的路径（默认为空）",
+            "store_blobs_in_database": "将 blobs存储到数据库"
         },
         "stash_setup_wizard": "Stash 设定向导",
         "success": {
-            "getting_help": "得到帮助",
+            "getting_help": "获取帮助",
             "help_links": "如果你遇到麻烦或者有任何的问题或者建议，请在{githubLink}新开一个“问题”，或者寻求社群{discordLink}的帮助。",
             "in_app_manual_explained": "鼓励你看看内置的手册，你可以通过屏幕右上方的图标:{icon}来使用它",
             "next_config_step_one": "接下来你会被带到配置页面。此页面会让你设定哪些文件被包括或者不包括，设定用户名和密码来保护你的系统，以及其它的一些选项。",
@@ -1168,9 +1243,9 @@
         },
         "welcome": {
             "config_path_logic_explained": "Stash首先尝试从当前工作目录中找配置文件 (<code>config.yml</code>)，如果没找到，会退回到 <code>$HOME/.stash/config.yml</code> (在微软视窗里，目录是<code>%USERPROFILE%\\.stash\\config.yml</code>). 你也可以让Stash读特定的配置文件，只要运行它时加上<code>-c '<配置文件目录>'</code>或者<code>--config '<配置文件目录>'</code>的选项。",
-            "in_current_stash_directory": "在 <code>$HOMT/.stash</code>目录里",
-            "in_the_current_working_directory": "在当前工作目录里",
-            "next_step": "之前的问题都解决了，如果你准备好建立一个新的系统，选择你想在哪里存放你的配置文件，然后点击“下一个”。",
+            "in_current_stash_directory": "在 <code>{path}</code>目录里",
+            "in_the_current_working_directory": "在当前工作目录 <code>{path}</code>里：",
+            "next_step": "之前的问题都解决了，如果你准备好建立一个新的系统，请选择你想在哪里存放你的配置文件。",
             "store_stash_config": "你想在哪里存放你的Stash配置？",
             "unable_to_locate_config": "如果你看到这，就意味着Stash无法找到一个现有的配置。这个向导会指引你建立一个新的配置。",
             "unexpected_explained": "如果你意外地看到这个屏幕显示，请在正确的工作目录下重新启动Stash，或者使用<code>-c</code>参数。"
@@ -1190,13 +1265,17 @@
         "selected_stash_box": "已选择的 Stash-Box 端点",
         "submission_failed": "提交失败",
         "submission_successful": "提交成功",
-        "submit_update": "已存在于 {endpoint_name}"
+        "submit_update": "已存在于 {endpoint_name}",
+        "source": "Stash-Box 源"
     },
     "statistics": "统计",
     "stats": {
         "image_size": "图片大小",
         "scenes_duration": "短片长度",
-        "scenes_size": "短片大小"
+        "scenes_size": "短片大小",
+        "total_play_count": "总播放次数",
+        "total_play_duration": "总播放时长",
+        "scenes_played": "已播放的短片"
     },
     "status": "状态：{statusText}",
     "studio": "工作室",
@@ -1238,14 +1317,104 @@
     "updated_at": "更新于",
     "url": "链接",
     "validation": {
-        "aliases_must_be_unique": "别名必须是唯一的",
         "date_invalid_form": "${path} 的格式必须为 YYYY-MM-DD",
-        "required": "${path} 是必填字段"
+        "required": "${path} 是必填字段",
+        "blank": "${path}不能为空",
+        "unique": "${path}不能相同"
     },
     "videos": "视频",
     "view_all": "查看全部",
     "weight": "体重",
     "weight_kg": "体重 (kg)",
     "years_old": "岁",
-    "zip_file_count": "压缩文件数量"
+    "zip_file_count": "压缩文件数量",
+    "studio_tagger": {
+        "update_studios": "更新工作室",
+        "add_new_studios": "添加工作室",
+        "updating_untagged_studios_description": "更新未标记的工作室将尝试匹配缺少Stash ID的工作室，并更新元数据。",
+        "config": {
+            "edit_excluded_fields": "编辑排除字段",
+            "create_parent_desc": "对于已存在且名称完全匹配的父工作室创建缺失的父工作室，或者标记并更新数据/图片",
+            "excluded_fields": "排除字段：",
+            "no_fields_are_excluded": "无已排除字段",
+            "create_parent_label": "添加父工作室",
+            "active_stash-box_instance": "目前使用的 Stash-box 实例：",
+            "no_instances_found": "未找到实例",
+            "these_fields_will_not_be_changed_when_updating_studios": "更新工作室时不改变这些字段。"
+        },
+        "batch_add_studios": "批量添加工作室",
+        "batch_update_studios": "批量更新工作室",
+        "studio_names_separated_by_comma": "工作室名称，用逗号分隔",
+        "update_studio": "更新工作室",
+        "current_page": "当前页",
+        "no_results_found": "未查询到结果。",
+        "network_error": "网络错误",
+        "status_tagging_job_queued": "状态：标签设置任务排队中",
+        "tag_status": "标签状态",
+        "studio_successfully_tagged": "已成功标记工作室",
+        "to_use_the_studio_tagger": "使用工作室标记器需要配置一个stash-box实例",
+        "untagged_studios": "未设置标签的工作室",
+        "number_of_studios_will_be_processed": "{studio_count} 个工作室将被修改",
+        "query_all_studios_in_the_database": "数据库中所有工作室",
+        "status_tagging_studios": "状态：正在给工作室设置标签",
+        "refresh_tagged_studios": "刷新已标记的工作室",
+        "studio_already_tagged": "已标记工作室",
+        "name_already_exists": "名称已存在",
+        "failed_to_save_studio": "保存工作室\"{studio}\"失败",
+        "refreshing_will_update_the_data": "刷新后将更新所有已在此stash-box实例被标记的工作室。",
+        "create_or_tag_parent_studios": "创建缺失的父工作室或标记已存在的父工作室"
+    },
+    "subsidiary_studio_count": "子工作室数量",
+    "urls": "链接",
+    "video_codec": "视频编码",
+    "audio_codec": "音频编码",
+    "package_manager": {
+        "installed_version": "已安装版本",
+        "uninstall": "卸载",
+        "update": "更新",
+        "install": "安装",
+        "latest_version": "最新版本",
+        "source": {
+            "local_path": {
+                "description": "相对路径，用于存储来源于此处的包文件。请注意，改变此设置需要手动移动包文件。",
+                "heading": "本地路径"
+            },
+            "url": "来源 URL",
+            "name": "名称"
+        },
+        "version": "版本",
+        "check_for_updates": "检查更新",
+        "add_source": "添加源",
+        "required_by": "{packages} 所需要",
+        "description": "描述",
+        "confirm_uninstall": "确定删除  {number}  个包？",
+        "package": "包",
+        "no_sources": "未配置源",
+        "no_packages": "未找到包",
+        "hide_unselected": "隐藏未选",
+        "edit_source": "编辑源",
+        "show_all": "显示全部",
+        "selected_only": "仅已选择",
+        "no_upgradable": "未找到可升级的包",
+        "unknown": "<未知>"
+    },
+    "distance": "距离",
+    "photographer": "摄影师",
+    "primary_tag": "主要标签",
+    "tag_sub_tag_tooltip": "具有子标签",
+    "tag_parent_tooltip": "具有父标签",
+    "parent_studio": "父工作室",
+    "penis_length_cm": "阴茎长度（厘米）",
+    "penis_length": "阴茎长度",
+    "studio_and_parent": "工作室和父工作室",
+    "penis": "阴茎",
+    "orientation": "方向",
+    "plays": "已播放{value}次",
+    "unknown_date": "未知日期",
+    "playdate_recorded_no": "没有播放日期记录",
+    "play_history": "播放历史",
+    "odate_recorded_no": "未记录 O 日期",
+    "o_history": "社保历史",
+    "history": "历史记录",
+    "index_of_total": "第{index}项，共 {total}项"
 }
