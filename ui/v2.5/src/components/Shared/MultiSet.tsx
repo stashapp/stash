@@ -4,9 +4,13 @@ import { useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import { Button, ButtonGroup } from "react-bootstrap";
 import { FilterSelect, SelectObject } from "./Select";
+import {
+  GalleryIDSelect,
+  excludeFileBasedGalleries,
+} from "../Galleries/GallerySelect";
 
 interface IMultiSetProps {
-  type: "performers" | "studios" | "tags" | "movies";
+  type: "performers" | "studios" | "tags" | "movies" | "galleries";
   existingIds?: string[];
   ids?: string[];
   mode: GQL.BulkUpdateIdMode;
@@ -15,6 +19,39 @@ interface IMultiSetProps {
   onSetMode: (mode: GQL.BulkUpdateIdMode) => void;
 }
 
+const Select: React.FC<IMultiSetProps> = (props) => {
+  const { type, disabled } = props;
+
+  function onUpdate(items: SelectObject[]) {
+    props.onUpdate(items.map((i) => i.id));
+  }
+
+  if (type === "galleries") {
+    return (
+      <GalleryIDSelect
+        isDisabled={disabled}
+        isMulti
+        isClearable={false}
+        onSelect={onUpdate}
+        ids={props.ids ?? []}
+        // exclude file-based galleries when setting galleries
+        extraCriteria={excludeFileBasedGalleries}
+      />
+    );
+  }
+
+  return (
+    <FilterSelect
+      type={type}
+      isDisabled={disabled}
+      isMulti
+      isClearable={false}
+      onSelect={onUpdate}
+      ids={props.ids ?? []}
+    />
+  );
+};
+
 export const MultiSet: React.FC<IMultiSetProps> = (props) => {
   const intl = useIntl();
   const modes = [
@@ -22,10 +59,6 @@ export const MultiSet: React.FC<IMultiSetProps> = (props) => {
     GQL.BulkUpdateIdMode.Add,
     GQL.BulkUpdateIdMode.Remove,
   ];
-
-  function onUpdate(items: SelectObject[]) {
-    props.onUpdate(items.map((i) => i.id));
-  }
 
   function getModeText(mode: GQL.BulkUpdateIdMode) {
     switch (mode) {
@@ -83,14 +116,7 @@ export const MultiSet: React.FC<IMultiSetProps> = (props) => {
       <ButtonGroup className="button-group-above">
         {modes.map((m) => renderModeButton(m))}
       </ButtonGroup>
-      <FilterSelect
-        type={props.type}
-        isDisabled={props.disabled}
-        isMulti
-        isClearable={false}
-        onSelect={onUpdate}
-        ids={props.ids ?? []}
-      />
+      <Select {...props} />
     </div>
   );
 };
