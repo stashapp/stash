@@ -474,9 +474,9 @@
                 "source_options": "{source} 选项",
                 "sources": "源",
                 "strategy": "策略",
-                "skip_multiple_matches": "跳过有一个以上结果的匹配项",
+                "skip_multiple_matches": "跳过有多个结果的匹配",
                 "skip_single_name_performers": "跳过无消歧的单名表演者",
-                "skip_multiple_matches_tooltip": "如果未启用此选项，且返回的结果不止一个，则将随机选择一个结果与之匹配。"
+                "skip_multiple_matches_tooltip": "如果未启用此功能，并且返回多个结果，则将随机选择一个结果进行匹配"
             },
             "import_from_exported_json": "导入之前导出的json格式元数据。 删除现有数据库内容。",
             "incremental_import": "从导出的 zip 文件增量导入。",
@@ -1343,7 +1343,7 @@
     "subsidiary_studio_count": "子工作室数量",
     "urls": "链接",
     "video_codec": "视频编码",
-    "audio_codec": "音频编解码器",
+    "audio_codec": "音频编码",
     "package_manager": {
         "installed_version": "已安装版本",
         "uninstall": "卸载",
