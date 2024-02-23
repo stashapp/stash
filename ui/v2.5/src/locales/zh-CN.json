@@ -753,7 +753,8 @@
                 }
             },
             "use_stash_hosted_funscript": {
-                "description": "启用后，funscript将直接从Stash提供到您的Handy设备，而无需使用第三方Handy服务器。要求您的Handy设备可以访问Stash。"
+                "description": "启用后，funscript将直接从Stash提供到您的Handy设备，而无需使用第三方Handy服务器。要求您的Handy设备可以访问Stash。",
+                "heading": "直接提供funscripts服务"
             }
         },
         "advanced_mode": "高级模式"
@@ -901,7 +902,8 @@
             "video_previews": "预览",
             "video_previews_tooltip": "鼠标悬停在短片上时播放的预览短片",
             "phash_tooltip": "针对去重和场景鉴定",
-            "image_thumbnails": "图像缩略图"
+            "image_thumbnails": "图像缩略图",
+            "clip_previews": "图像片段预览"
         },
         "scenes_found": "找到 {count} 个短片",
         "scrape_entity_query": "{entity_type} 挖掘 查询指令",
@@ -944,7 +946,9 @@
         "select_all_but_largest_file": "选择重复组中除最大文件外的每个文件",
         "select_none": "清除选择",
         "select_all_but_largest_resolution": "选择重复组中除最高分辨率文件外的每个文件",
-        "select_options": "选择选项…"
+        "select_options": "选择选项…",
+        "select_oldest": "选择重复组中最旧文件",
+        "select_youngest": "选择重复组中最新文件"
     },
     "duplicated_phash": "重复的（感知码）",
     "duration": "时长",
@@ -974,7 +978,8 @@
         "image_index_greater_than_zero": "图像索引必须大于 0",
         "lazy_component_error_help": "如果您最近升级了 Stash，请重新加载页面或清除浏览器缓存。",
         "something_went_wrong": "出了些问题。",
-        "header": "错误"
+        "header": "错误",
+        "loading_type": "错误加载 {type}"
     },
     "ethnicity": "人种",
     "existing_value": "现值",
