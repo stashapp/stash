@@ -369,7 +369,7 @@
             "preview_generation": "生成预览",
             "python_path": {
                 "description": "Python 执行程序的路径。（不限于文件夹）给网页挖掘器和插件的源文件使用。如果没有，python会从环境变量找到",
-                "heading": "Python 路径"
+                "heading": "Python 可执行文件路径"
             },
             "scraper_user_agent": "刮削器用户代理 (User Agent)",
             "scraper_user_agent_desc": "刮削器运行时的用户代理 (User Agent)",
@@ -1379,7 +1379,7 @@
                 "description": "相对路径，用于存储来源于此处的包文件。请注意，改变此设置需要手动移动包文件。",
                 "heading": "本地路径"
             },
-            "url": "数据源 URL",
+            "url": "来源 URL",
             "name": "名称"
         },
         "version": "版本",
@@ -1395,7 +1395,8 @@
         "edit_source": "编辑源",
         "show_all": "显示全部",
         "selected_only": "仅已选择",
-        "no_upgradable": "未找到可升级的包"
+        "no_upgradable": "未找到可升级的包",
+        "unknown": "<未知>"
     },
     "distance": "距离",
     "photographer": "摄影师",
@@ -1414,5 +1415,6 @@
     "play_history": "播放历史",
     "odate_recorded_no": "未记录 O 日期",
     "o_history": "社保历史",
-    "history": "历史记录"
+    "history": "历史记录",
+    "index_of_total": "第{index}项，共 {total}项"
 }
