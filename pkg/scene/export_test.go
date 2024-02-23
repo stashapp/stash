@@ -8,6 +8,7 @@ import (
 	"github.com/stashapp/stash/pkg/models/jsonschema"
 	"github.com/stashapp/stash/pkg/models/mocks"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"testing"
 	"time"
@@ -40,7 +41,6 @@ var (
 	date       = "2001-01-01"
 	dateObj, _ = models.ParseDate(date)
 	rating     = 5
-	ocounter   = 2
 	organized  = true
 	details    = "details"
 )
@@ -88,7 +88,6 @@ func createFullScene(id int) models.Scene {
 		Title:     title,
 		Date:      &dateObj,
 		Details:   details,
-		OCounter:  ocounter,
 		Rating:    &rating,
 		Organized: organized,
 		URLs:      models.NewRelatedStrings([]string{url}),
@@ -130,7 +129,6 @@ func createFullJSONScene(image string) *jsonschema.Scene {
 		Files:     []string{path},
 		Date:      date,
 		Details:   details,
-		OCounter:  ocounter,
 		Rating:    rating,
 		Organized: organized,
 		URLs:      []string{url},
@@ -193,6 +191,8 @@ func TestToJSON(t *testing.T) {
 	db.Scene.On("GetCover", testCtx, sceneID).Return(imageBytes, nil).Once()
 	db.Scene.On("GetCover", testCtx, noImageID).Return(nil, nil).Once()
 	db.Scene.On("GetCover", testCtx, errImageID).Return(nil, imageErr).Once()
+	db.Scene.On("GetViewDates", testCtx, mock.Anything).Return(nil, nil)
+	db.Scene.On("GetODates", testCtx, mock.Anything).Return(nil, nil)
 
 	for i, s := range scenarios {
 		scene := s.input

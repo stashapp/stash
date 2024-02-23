@@ -9,6 +9,7 @@ package plugin
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -225,8 +226,10 @@ func (c Cache) ListPluginTasks() []*PluginTask {
 	return ret
 }
 
-func buildPluginInput(plugin *Config, operation *OperationConfig, serverConnection common.StashServerConnection, args []*PluginArgInput) common.PluginInput {
-	args = applyDefaultArgs(args, operation.DefaultArgs)
+func buildPluginInput(plugin *Config, operation *OperationConfig, serverConnection common.StashServerConnection, args OperationInput) common.PluginInput {
+	if operation != nil {
+		applyDefaultArgs(args, operation.DefaultArgs)
+	}
 	serverConnection.PluginDir = plugin.getConfigPath()
 	return common.PluginInput{
 		ServerConnection: serverConnection,
@@ -255,7 +258,7 @@ func (c Cache) makeServerConnection(ctx context.Context) common.StashServerConne
 // CreateTask runs the plugin operation for the pluginID and operation
 // name provided. Returns an error if the plugin or the operation could not be
 // resolved.
-func (c Cache) CreateTask(ctx context.Context, pluginID string, operationName string, args []*PluginArgInput, progress chan float64) (Task, error) {
+func (c Cache) CreateTask(ctx context.Context, pluginID string, operationName *string, args OperationInput, progress chan float64) (Task, error) {
 	serverConnection := c.makeServerConnection(ctx)
 
 	if c.pluginDisabled(pluginID) {
@@ -269,9 +272,12 @@ func (c Cache) CreateTask(ctx context.Context, pluginID string, operationName st
 		return nil, fmt.Errorf("no plugin with ID %s", pluginID)
 	}
 
-	operation := plugin.getTask(operationName)
-	if operation == nil {
-		return nil, fmt.Errorf("no task with name %s in plugin %s", operationName, plugin.getName())
+	var operation *OperationConfig
+	if operationName != nil {
+		operation = plugin.getTask(*operationName)
+		if operation == nil {
+			return nil, fmt.Errorf("no task with name %s in plugin %s", *operationName, plugin.getName())
+		}
 	}
 
 	task := pluginTask{
@@ -283,6 +289,68 @@ func (c Cache) CreateTask(ctx context.Context, pluginID string, operationName st
 		serverConfig: c.config,
 	}
 	return task.createTask(), nil
+}
+
+func (c Cache) RunPlugin(ctx context.Context, pluginID string, args OperationInput) (interface{}, error) {
+	serverConnection := c.makeServerConnection(ctx)
+
+	if c.pluginDisabled(pluginID) {
+		return nil, fmt.Errorf("plugin %s is disabled", pluginID)
+	}
+
+	// find the plugin
+	plugin := c.getPlugin(pluginID)
+
+	pluginInput := buildPluginInput(plugin, nil, serverConnection, args)
+
+	pt := pluginTask{
+		plugin:       plugin,
+		input:        pluginInput,
+		gqlHandler:   c.gqlHandler,
+		serverConfig: c.config,
+	}
+
+	task := pt.createTask()
+	if err := task.Start(); err != nil {
+		return nil, err
+	}
+
+	if err := waitForTask(ctx, task); err != nil {
+		return nil, err
+	}
+
+	output := task.GetResult()
+	if output == nil {
+		logger.Debugf("%s: returned no result", pluginID)
+		return nil, nil
+	} else {
+		if output.Error != nil {
+			return nil, errors.New(*output.Error)
+		}
+
+		return output.Output, nil
+	}
+}
+
+func waitForTask(ctx context.Context, task Task) error {
+	// handle cancel from context
+	c := make(chan struct{})
+	go func() {
+		task.Wait()
+		close(c)
+	}()
+
+	select {
+	case <-ctx.Done():
+		if err := task.Stop(); err != nil {
+			logger.Warnf("could not stop task: %v", err)
+		}
+		return fmt.Errorf("operation cancelled")
+	case <-c:
+		// task finished normally
+	}
+
+	return nil
 }
 
 func (c Cache) ExecutePostHooks(ctx context.Context, id int, hookType HookTriggerEnum, input interface{}, inputFields []string) {
@@ -343,21 +411,8 @@ func (c Cache) executePostHooks(ctx context.Context, hookType HookTriggerEnum, h
 				return err
 			}
 
-			// handle cancel from context
-			c := make(chan struct{})
-			go func() {
-				task.Wait()
-				close(c)
-			}()
-
-			select {
-			case <-ctx.Done():
-				if err := task.Stop(); err != nil {
-					logger.Warnf("could not stop task: %v", err)
-				}
-				return fmt.Errorf("operation cancelled")
-			case <-c:
-				// task finished normally
+			if err := waitForTask(ctx, task); err != nil {
+				return err
 			}
 
 			output := task.GetResult()

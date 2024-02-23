@@ -24,8 +24,11 @@ import { formikUtils } from "src/utils/form";
 import { Tag, TagSelect } from "src/components/Tags/TagSelect";
 import { Studio, StudioSelect } from "src/components/Studios/StudioSelect";
 import { galleryTitle } from "src/core/galleries";
-import { Gallery, GallerySelect } from "src/components/Galleries/GallerySelect";
-import { PathCriterion } from "src/models/list-filter/criteria/path";
+import {
+  Gallery,
+  GallerySelect,
+  excludeFileBasedGalleries,
+} from "src/components/Galleries/GallerySelect";
 
 interface IProps {
   image: GQL.ImageDataFragment;
@@ -33,14 +36,6 @@ interface IProps {
   onSubmit: (input: GQL.ImageUpdateInput) => Promise<void>;
   onDelete: () => void;
 }
-
-function getExcludeFilebaseGalleriesFilter() {
-  const ret = new PathCriterion();
-  ret.modifier = GQL.CriterionModifier.IsNull;
-  return ret;
-}
-
-const excludeFileBasedGalleries = [getExcludeFilebaseGalleriesFilter()];
 
 export const ImageEditPanel: React.FC<IProps> = ({
   image,

@@ -570,11 +570,19 @@ export const useScenesDestroy = (input: GQL.ScenesDestroyInput) =>
   });
 
 export const useSceneIncrementO = (id: string) =>
-  GQL.useSceneIncrementOMutation({
+  GQL.useSceneAddOMutation({
     variables: { id },
-    update(cache, result) {
-      const updatedOCount = result.data?.sceneIncrementO;
-      if (updatedOCount === undefined) return;
+    update(cache, result, { variables }) {
+      // this is not perfectly accurate, the time is set server-side
+      // it isn't even displayed anywhere in the UI anyway
+      const at = new Date().toISOString();
+
+      const mutationResult = result.data?.sceneAddO;
+      if (!mutationResult || !variables) return;
+
+      const { history } = mutationResult;
+      const { times } = variables;
+      const timeArray = !times ? [at] : Array.isArray(times) ? times : [times];
 
       const scene = cache.readFragment<GQL.SlimSceneDataFragment>({
         id: cache.identify({ __typename: "Scene", id }),
@@ -589,7 +597,7 @@ export const useSceneIncrementO = (id: string) =>
             id: cache.identify(performer),
             fields: {
               o_counter(value) {
-                return value + 1;
+                return value + timeArray.length;
               },
             },
           });
@@ -601,8 +609,18 @@ export const useSceneIncrementO = (id: string) =>
         });
       }
 
-      updateStats(cache, "total_o_count", 1);
-      updateO(cache, "Scene", id, updatedOCount);
+      updateStats(cache, "total_o_count", timeArray.length);
+
+      cache.modify({
+        id: cache.identify({ __typename: "Scene", id }),
+        fields: {
+          o_history() {
+            return history;
+          },
+        },
+      });
+
+      updateO(cache, "Scene", id, history.length);
       evictQueries(cache, [
         GQL.FindScenesDocument, // filter by o_counter
         GQL.FindPerformersDocument, // filter by o_counter
@@ -611,11 +629,15 @@ export const useSceneIncrementO = (id: string) =>
   });
 
 export const useSceneDecrementO = (id: string) =>
-  GQL.useSceneDecrementOMutation({
+  GQL.useSceneDeleteOMutation({
     variables: { id },
-    update(cache, result) {
-      const updatedOCount = result.data?.sceneDecrementO;
-      if (updatedOCount === undefined) return;
+    update(cache, result, { variables }) {
+      const mutationResult = result.data?.sceneDeleteO;
+      if (!mutationResult || !variables) return;
+
+      const { history } = mutationResult;
+      const { times } = variables;
+      const timeArray = !times ? null : Array.isArray(times) ? times : [times];
 
       const scene = cache.readFragment<GQL.SlimSceneDataFragment>({
         id: cache.identify({ __typename: "Scene", id }),
@@ -630,7 +652,7 @@ export const useSceneDecrementO = (id: string) =>
             id: cache.identify(performer),
             fields: {
               o_counter(value) {
-                return value - 1;
+                return value - (timeArray?.length ?? 1);
               },
             },
           });
@@ -642,8 +664,18 @@ export const useSceneDecrementO = (id: string) =>
         });
       }
 
-      updateStats(cache, "total_o_count", -1);
-      updateO(cache, "Scene", id, updatedOCount);
+      updateStats(cache, "total_o_count", -(timeArray?.length ?? 1));
+
+      cache.modify({
+        id: cache.identify({ __typename: "Scene", id }),
+        fields: {
+          o_history() {
+            return history;
+          },
+        },
+      });
+
+      updateO(cache, "Scene", id, history.length);
       evictQueries(cache, [
         GQL.FindScenesDocument, // filter by o_counter
         GQL.FindPerformersDocument, // filter by o_counter
@@ -693,6 +725,16 @@ export const useSceneResetO = (id: string) =>
           },
         });
       }
+
+      cache.modify({
+        id: cache.identify({ __typename: "Scene", id }),
+        fields: {
+          o_history() {
+            const ret: string[] = [];
+            return ret;
+          },
+        },
+      });
 
       updateO(cache, "Scene", id, updatedOCount);
       evictQueries(cache, [
@@ -752,7 +794,9 @@ export const mutateSceneAssignFile = (sceneID: string, fileID: string) =>
 export const mutateSceneMerge = (
   destination: string,
   source: string[],
-  values: GQL.SceneUpdateInput
+  values: GQL.SceneUpdateInput,
+  includeViewHistory: boolean,
+  includeOHistory: boolean
 ) =>
   client.mutate<GQL.SceneMergeMutation>({
     mutation: GQL.SceneMergeDocument,
@@ -761,6 +805,8 @@ export const mutateSceneMerge = (
         source,
         destination,
         values,
+        play_history: includeViewHistory,
+        o_history: includeOHistory,
       },
     },
     update(cache, result) {
@@ -790,7 +836,7 @@ export const useSceneSaveActivity = () =>
         id: cache.identify({ __typename: "Scene", id }),
         fields: {
           resume_time() {
-            return resumeTime;
+            return resumeTime ?? null;
           },
           play_duration(value) {
             return value + playDuration;
@@ -809,9 +855,108 @@ export const useSceneSaveActivity = () =>
   });
 
 export const useSceneIncrementPlayCount = () =>
-  GQL.useSceneIncrementPlayCountMutation({
+  GQL.useSceneAddPlayMutation({
     update(cache, result, { variables }) {
-      if (!result.data?.sceneIncrementPlayCount || !variables) return;
+      const mutationResult = result.data?.sceneAddPlay;
+
+      if (!mutationResult || !variables) return;
+
+      const { history } = mutationResult;
+      const { id } = variables;
+
+      let lastPlayCount = 0;
+      const playCount = history.length;
+
+      cache.modify({
+        id: cache.identify({ __typename: "Scene", id }),
+        fields: {
+          play_count(value) {
+            lastPlayCount = value;
+            return history.length;
+          },
+          last_played_at() {
+            // assume only one entry - or the first is the most recent
+            return history[0];
+          },
+          play_history() {
+            return history;
+          },
+        },
+      });
+
+      updateStats(cache, "total_play_count", playCount - lastPlayCount);
+      if (lastPlayCount === 0) {
+        updateStats(cache, "scenes_played", 1);
+      }
+
+      evictQueries(cache, [
+        GQL.FindScenesDocument, // filter by play count
+      ]);
+    },
+  });
+
+export const useSceneDecrementPlayCount = () =>
+  GQL.useSceneDeletePlayMutation({
+    update(cache, result, { variables }) {
+      const mutationResult = result.data?.sceneDeletePlay;
+
+      if (!mutationResult || !variables) return;
+
+      const { history } = mutationResult;
+      const { id, times } = variables;
+      const timeArray = !times ? null : Array.isArray(times) ? times : [times];
+      const nRemoved = timeArray?.length ?? 1;
+
+      let lastPlayCount = 0;
+      let lastPlayedAt: string | null = null;
+      const playCount = history.length;
+
+      cache.modify({
+        id: cache.identify({ __typename: "Scene", id }),
+        fields: {
+          play_count(value) {
+            lastPlayCount = value;
+            return playCount;
+          },
+          play_history() {
+            if (history.length > 0) {
+              lastPlayedAt = history[0];
+            }
+            return history;
+          },
+        },
+      });
+
+      cache.modify({
+        id: cache.identify({ __typename: "Scene", id }),
+        fields: {
+          last_played_at() {
+            return lastPlayedAt;
+          },
+        },
+      });
+
+      if (lastPlayCount > 0) {
+        updateStats(
+          cache,
+          "total_play_count",
+          nRemoved > lastPlayCount ? -lastPlayCount : -nRemoved
+        );
+      }
+      if (lastPlayCount - nRemoved <= 0) {
+        updateStats(cache, "scenes_played", -1);
+      }
+
+      evictQueries(cache, [
+        GQL.FindScenesDocument, // filter by play count
+      ]);
+    },
+  });
+
+export const useSceneResetPlayCount = () =>
+  GQL.useSceneResetPlayCountMutation({
+    update(cache, result, { variables }) {
+      if (!variables) return;
 
       let lastPlayCount = 0;
       cache.modify({
@@ -819,19 +964,23 @@ export const useSceneIncrementPlayCount = () =>
         fields: {
           play_count(value) {
             lastPlayCount = value;
-            return value + 1;
+            return 0;
+          },
+          play_history() {
+            const ret: string[] = [];
+            return ret;
           },
           last_played_at() {
-            // this is not perfectly accurate, the time is set server-side
-            // it isn't even displayed anywhere in the UI anyway
-            return new Date().toISOString();
+            return null;
           },
         },
       });
 
-      updateStats(cache, "total_play_count", 1);
-      if (lastPlayCount === 0) {
-        updateStats(cache, "scenes_played", 1);
+      if (lastPlayCount > 0) {
+        updateStats(cache, "total_play_count", -lastPlayCount);
+      }
+      if (lastPlayCount > 0) {
+        updateStats(cache, "scenes_played", -1);
       }
 
       evictQueries(cache, [
@@ -2366,7 +2515,7 @@ export const mutateCleanGenerated = (input: GQL.CleanGeneratedInput) =>
 export const mutateRunPluginTask = (
   pluginId: string,
   taskName: string,
-  args?: GQL.PluginArgInput[]
+  args?: GQL.Scalars["Map"]["input"]
 ) =>
   client.mutate<GQL.RunPluginTaskMutation>({
     mutation: GQL.RunPluginTaskDocument,

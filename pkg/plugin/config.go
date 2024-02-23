@@ -295,7 +295,9 @@ func (c Config) getConfigPath() string {
 func (c Config) getExecCommand(task *OperationConfig) []string {
 	ret := c.Exec
 
-	ret = append(ret, task.ExecArgs...)
+	if task != nil {
+		ret = append(ret, task.ExecArgs...)
+	}
 
 	if len(ret) > 0 {
 		_, err := exec.LookPath(ret[0])

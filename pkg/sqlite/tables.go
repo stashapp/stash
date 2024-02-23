@@ -190,6 +190,22 @@ var (
 		},
 		valueColumn: scenesURLsJoinTable.Col(sceneURLColumn),
 	}
+
+	scenesViewTableMgr = &viewHistoryTable{
+		table: table{
+			table:    goqu.T(scenesViewDatesTable),
+			idColumn: goqu.T(scenesViewDatesTable).Col(sceneIDColumn),
+		},
+		dateColumn: goqu.T(scenesViewDatesTable).Col(sceneViewDateColumn),
+	}
+
+	scenesOTableMgr = &viewHistoryTable{
+		table: table{
+			table:    goqu.T(scenesODatesTable),
+			idColumn: goqu.T(scenesODatesTable).Col(sceneIDColumn),
+		},
+		dateColumn: goqu.T(scenesODatesTable).Col(sceneODateColumn),
+	}
 )
 
 var (

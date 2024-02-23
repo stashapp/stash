@@ -56,7 +56,7 @@ const _DateInput: React.FC<IProps> = (props: IProps) => {
           onChange={(v) => {
             props.onValueChange(v ? dateToString(v) : "");
           }}
-          customInput={React.createElement(ShowPickerButton)}
+          customInput={<ShowPickerButton onClick={() => {}} />}
           showMonthDropdown
           showYearDropdown
           scrollableMonthYearDropdown

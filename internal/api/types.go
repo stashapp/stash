@@ -2,14 +2,9 @@ package api
 
 import (
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sliceutil"
 )
 
 func stashIDsSliceToPtrSlice(v []models.StashID) []*models.StashID {
-	ret := make([]*models.StashID, len(v))
-	for i, vv := range v {
-		c := vv
-		ret[i] = &c
-	}
-
-	return ret
+	return sliceutil.ValuesToPtrs(v)
 }

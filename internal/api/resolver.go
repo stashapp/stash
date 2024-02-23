@@ -228,7 +228,7 @@ func (r *queryResolver) Stats(ctx context.Context) (*StatsResultType, error) {
 			return err
 		}
 
-		scenesTotalOCount, err := sceneQB.OCount(ctx)
+		scenesTotalOCount, err := sceneQB.GetAllOCount(ctx)
 		if err != nil {
 			return err
 		}
@@ -243,12 +243,12 @@ func (r *queryResolver) Stats(ctx context.Context) (*StatsResultType, error) {
 			return err
 		}
 
-		totalPlayCount, err := sceneQB.PlayCount(ctx)
+		totalPlayCount, err := sceneQB.CountAllViews(ctx)
 		if err != nil {
 			return err
 		}
 
-		uniqueScenePlayCount, err := sceneQB.UniqueScenePlayCount(ctx)
+		uniqueScenePlayCount, err := sceneQB.CountUniqueViews(ctx)
 		if err != nil {
 			return err
 		}

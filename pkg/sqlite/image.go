@@ -17,7 +17,7 @@ import (
 	"github.com/doug-martin/goqu/v9/exp"
 )
 
-var imageTable = "images"
+const imageTable = "images"
 
 const (
 	imageIDColumn         = "image_id"

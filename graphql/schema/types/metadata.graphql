@@ -12,6 +12,7 @@ input GenerateMetadataInput {
   forceTranscodes: Boolean
   phashes: Boolean
   interactiveHeatmapsSpeeds: Boolean
+  imageThumbnails: Boolean
   clipPreviews: Boolean
 
   "scene ids to generate for"
@@ -48,6 +49,7 @@ type GenerateMetadataOptions {
   transcodes: Boolean
   phashes: Boolean
   interactiveHeatmapsSpeeds: Boolean
+  imageThumbnails: Boolean
   clipPreviews: Boolean
 }
 

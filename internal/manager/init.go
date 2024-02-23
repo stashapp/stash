@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/remeh/sizedwaitgroup"
 	"github.com/stashapp/stash/internal/desktop"
 	"github.com/stashapp/stash/internal/dlna"
 	"github.com/stashapp/stash/internal/log"
@@ -79,6 +80,8 @@ func Initialize(cfg *config.Config, l *log.Logger) (*Manager, error) {
 		Logger: l,
 
 		Paths: mgrPaths,
+
+		ImageThumbnailGenerateWaitGroup: sizedwaitgroup.New(1),
 
 		JobManager:      initJobManager(cfg),
 		ReadLockManager: fsutil.NewReadLockManager(),

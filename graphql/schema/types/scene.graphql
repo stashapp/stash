@@ -58,6 +58,11 @@ type Scene {
   "The number ot times a scene has been played"
   play_count: Int
 
+  "Times a scene was played"
+  play_history: [Time!]!
+  "Times the o counter was incremented"
+  o_history: [Time!]!
+
   files: [VideoFile!]!
   paths: ScenePathsType! # Resolver
   scene_markers: [SceneMarker!]!
@@ -118,6 +123,7 @@ input SceneUpdateInput {
   # rating expressed as 1-100
   rating100: Int
   o_counter: Int
+    @deprecated(reason: "Unsupported - Use sceneIncrementO/sceneDecrementO")
   organized: Boolean
   studio_id: ID
   gallery_ids: [ID!]
@@ -134,6 +140,9 @@ input SceneUpdateInput {
   play_duration: Float
   "The number ot times a scene has been played"
   play_count: Int
+    @deprecated(
+      reason: "Unsupported - Use sceneIncrementPlayCount/sceneDecrementPlayCount"
+    )
 
   primary_file_id: ID
 }
@@ -251,4 +260,13 @@ input SceneMergeInput {
   destination: ID!
   # values defined here will override values in the destination
   values: SceneUpdateInput
+
+  # if true, the source history will be combined with the destination
+  play_history: Boolean
+  o_history: Boolean
+}
+
+type HistoryMutationResult {
+  count: Int!
+  history: [Time!]!
 }

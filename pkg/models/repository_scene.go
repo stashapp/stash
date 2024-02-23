@@ -1,6 +1,9 @@
 package models
 
-import "context"
+import (
+	"context"
+	"time"
+)
 
 // SceneGetter provides methods to get scenes by ID.
 type SceneGetter interface {
@@ -40,10 +43,7 @@ type SceneCounter interface {
 	CountByTagID(ctx context.Context, tagID int) (int, error)
 	CountMissingChecksum(ctx context.Context) (int, error)
 	CountMissingOSHash(ctx context.Context) (int, error)
-	OCount(ctx context.Context) (int, error)
 	OCountByPerformerID(ctx context.Context, performerID int) (int, error)
-	PlayCount(ctx context.Context) (int, error)
-	UniqueScenePlayCount(ctx context.Context) (int, error)
 }
 
 // SceneCreator provides methods to create scenes.
@@ -68,6 +68,24 @@ type SceneCreatorUpdater interface {
 	SceneUpdater
 }
 
+type ViewDateReader interface {
+	CountViews(ctx context.Context, id int) (int, error)
+	CountAllViews(ctx context.Context) (int, error)
+	CountUniqueViews(ctx context.Context) (int, error)
+	GetManyViewCount(ctx context.Context, ids []int) ([]int, error)
+	GetViewDates(ctx context.Context, relatedID int) ([]time.Time, error)
+	GetManyViewDates(ctx context.Context, ids []int) ([][]time.Time, error)
+	GetManyLastViewed(ctx context.Context, ids []int) ([]*time.Time, error)
+}
+
+type ODateReader interface {
+	GetOCount(ctx context.Context, id int) (int, error)
+	GetManyOCount(ctx context.Context, ids []int) ([]int, error)
+	GetAllOCount(ctx context.Context) (int, error)
+	GetODates(ctx context.Context, relatedID int) ([]time.Time, error)
+	GetManyODates(ctx context.Context, ids []int) ([][]time.Time, error)
+}
+
 // SceneReader provides all methods to read scenes.
 type SceneReader interface {
 	SceneFinder
@@ -75,6 +93,8 @@ type SceneReader interface {
 	SceneCounter
 
 	URLLoader
+	ViewDateReader
+	ODateReader
 	FileIDLoader
 	GalleryIDLoader
 	PerformerIDLoader
@@ -92,6 +112,18 @@ type SceneReader interface {
 	HasCover(ctx context.Context, sceneID int) (bool, error)
 }
 
+type OHistoryWriter interface {
+	AddO(ctx context.Context, id int, dates []time.Time) ([]time.Time, error)
+	DeleteO(ctx context.Context, id int, dates []time.Time) ([]time.Time, error)
+	ResetO(ctx context.Context, id int) (int, error)
+}
+
+type ViewHistoryWriter interface {
+	AddViews(ctx context.Context, sceneID int, dates []time.Time) ([]time.Time, error)
+	DeleteViews(ctx context.Context, id int, dates []time.Time) ([]time.Time, error)
+	DeleteAllViews(ctx context.Context, id int) (int, error)
+}
+
 // SceneWriter provides all methods to modify scenes.
 type SceneWriter interface {
 	SceneCreator
@@ -101,11 +133,10 @@ type SceneWriter interface {
 	AddFileID(ctx context.Context, id int, fileID FileID) error
 	AddGalleryIDs(ctx context.Context, sceneID int, galleryIDs []int) error
 	AssignFiles(ctx context.Context, sceneID int, fileID []FileID) error
-	IncrementOCounter(ctx context.Context, id int) (int, error)
-	DecrementOCounter(ctx context.Context, id int) (int, error)
-	ResetOCounter(ctx context.Context, id int) (int, error)
+
+	OHistoryWriter
+	ViewHistoryWriter
 	SaveActivity(ctx context.Context, sceneID int, resumeTime *float64, playDuration *float64) (bool, error)
-	IncrementWatchCount(ctx context.Context, sceneID int) (int, error)
 }
 
 // SceneReaderWriter provides all scene methods.
