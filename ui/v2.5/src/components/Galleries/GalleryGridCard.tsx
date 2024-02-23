@@ -1,7 +1,7 @@
 import React, { useRef } from "react";
 import * as GQL from "src/core/generated-graphql";
 import { GalleryCard } from "./GalleryCard";
-import { useContainerDimensions } from "../Shared/GridCard";
+import { useContainerDimensions } from "../Shared/GridCard/GridCard";
 
 interface IGalleryCardGrid {
   galleries: GQL.SlimGalleryDataFragment[];
