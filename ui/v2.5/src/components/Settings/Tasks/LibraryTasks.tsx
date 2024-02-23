@@ -74,7 +74,6 @@ export const LibraryTasks: React.FC = () => {
   const [configureDefaults] = useConfigureDefaults();
 
   const [dialogOpen, setDialogOpenState] = useState({
-    clean: false,
     scan: false,
     autoTag: false,
     identify: false,
