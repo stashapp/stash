@@ -753,7 +753,7 @@
                 }
             },
             "use_stash_hosted_funscript": {
-                "description": "启用后，funscript将直接从Stash提供到您的Handy设备，而无需使用第三方Handy服务器。要求可以从您的Handy设备访问Stash。"
+                "description": "启用后，funscript将直接从Stash提供到您的Handy设备，而无需使用第三方Handy服务器。要求您的Handy设备可以访问Stash。"
             }
         },
         "advanced_mode": "高级模式"
