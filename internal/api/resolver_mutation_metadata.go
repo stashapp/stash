@@ -10,6 +10,7 @@ import (
 	"github.com/stashapp/stash/internal/identify"
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/internal/manager/config"
+	"github.com/stashapp/stash/internal/manager/task"
 	"github.com/stashapp/stash/pkg/logger"
 )
 
@@ -95,6 +96,21 @@ func (r *mutationResolver) MetadataIdentify(ctx context.Context, input identify.
 
 func (r *mutationResolver) MetadataClean(ctx context.Context, input manager.CleanMetadataInput) (string, error) {
 	jobID := manager.GetInstance().Clean(ctx, input)
+	return strconv.Itoa(jobID), nil
+}
+
+func (r *mutationResolver) MetadataCleanGenerated(ctx context.Context, input task.CleanGeneratedOptions) (string, error) {
+	mgr := manager.GetInstance()
+	t := &task.CleanGeneratedJob{
+		Options:                  input,
+		Paths:                    mgr.Paths,
+		BlobsStorageType:         mgr.Config.GetBlobsStorage(),
+		VideoFileNamingAlgorithm: mgr.Config.GetVideoFileNamingAlgorithm(),
+		Repository:               mgr.Repository,
+		BlobCleaner:              mgr.Repository.Blob,
+	}
+	jobID := mgr.JobManager.Add(ctx, "Cleaning generated files...", t)
+
 	return strconv.Itoa(jobID), nil
 }
 

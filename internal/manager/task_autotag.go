@@ -162,6 +162,11 @@ func (j *autoTagJob) autoTagPerformers(ctx context.Context, progress *job.Progre
 					return fmt.Errorf("performer with id %s not found", performerId)
 				}
 
+				if performer.IgnoreAutoTag {
+					logger.Infof("Skipping performer %s because auto-tag is disabled", performer.Name)
+					return nil
+				}
+
 				if err := performer.LoadAliases(ctx, r.Performer); err != nil {
 					return fmt.Errorf("loading aliases for performer %d: %w", performer.ID, err)
 				}
@@ -251,6 +256,11 @@ func (j *autoTagJob) autoTagStudios(ctx context.Context, progress *job.Progress,
 
 				if studio == nil {
 					return fmt.Errorf("studio with id %s not found", studioId)
+				}
+
+				if studio.IgnoreAutoTag {
+					logger.Infof("Skipping studio %s because auto-tag is disabled", studio.Name)
+					return nil
 				}
 
 				studios = append(studios, studio)
@@ -343,6 +353,11 @@ func (j *autoTagJob) autoTagTags(ctx context.Context, progress *job.Progress, pa
 
 				if tag == nil {
 					return fmt.Errorf("tag with id %s not found", tagId)
+				}
+
+				if tag.IgnoreAutoTag {
+					logger.Infof("Skipping tag %s because auto-tag is disabled", tag.Name)
+					return nil
 				}
 
 				tags = append(tags, tag)

@@ -32,6 +32,7 @@ import {
   Criterion,
   CriterionValue,
 } from "src/models/list-filter/criteria/criterion";
+import { PathCriterion } from "src/models/list-filter/criteria/path";
 
 export type Gallery = Pick<GQL.Gallery, "id" | "title"> & {
   files: Pick<GQL.GalleryFile, "path">[];
@@ -39,14 +40,14 @@ export type Gallery = Pick<GQL.Gallery, "id" | "title"> & {
 };
 type Option = SelectOption<Gallery>;
 
+type ExtraGalleryProps = {
+  hoverPlacement?: Placement;
+  excludeIds?: string[];
+  extraCriteria?: Array<Criterion<CriterionValue>>;
+};
+
 const _GallerySelect: React.FC<
-  IFilterProps &
-    IFilterValueProps<Gallery> & {
-      hoverPlacement?: Placement;
-      excludeIds?: string[];
-    } & {
-      extraCriteria?: Array<Criterion<CriterionValue>>;
-    }
+  IFilterProps & IFilterValueProps<Gallery> & ExtraGalleryProps
 > = (props) => {
   const { configuration } = React.useContext(ConfigurationContext);
   const intl = useIntl();
@@ -187,9 +188,9 @@ const _GallerySelect: React.FC<
 
 export const GallerySelect = PatchComponent("GallerySelect", _GallerySelect);
 
-const _GalleryIDSelect: React.FC<IFilterProps & IFilterIDProps<Gallery>> = (
-  props
-) => {
+const _GalleryIDSelect: React.FC<
+  IFilterProps & IFilterIDProps<Gallery> & ExtraGalleryProps
+> = (props) => {
   const { ids, onSelect: onSelectValues } = props;
 
   const [values, setValues] = useState<Gallery[]>([]);
@@ -238,3 +239,11 @@ export const GalleryIDSelect = PatchComponent(
   "GalleryIDSelect",
   _GalleryIDSelect
 );
+
+function getExcludeFilebaseGalleriesFilter() {
+  const ret = new PathCriterion();
+  ret.modifier = GQL.CriterionModifier.IsNull;
+  return ret;
+}
+
+export const excludeFileBasedGalleries = [getExcludeFilebaseGalleriesFilter()];

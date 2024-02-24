@@ -67,8 +67,6 @@ const validTabs = [
 ] as const;
 type TabKey = (typeof validTabs)[number];
 
-const defaultTab: TabKey = "default";
-
 function isTabKey(tab: string): tab is TabKey {
   return validTabs.includes(tab as TabKey);
 }
@@ -151,7 +149,7 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
   );
 
   useEffect(() => {
-    if (tabKey === defaultTab) {
+    if (!tabKey) {
       setTabKey(populatedDefaultTab);
     }
   }, [setTabKey, populatedDefaultTab, tabKey]);
@@ -504,6 +502,7 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
           onImageChange={() => {}}
           onClearImage={() => {}}
           onAutoTag={onAutoTag}
+          autoTagDisabled={studio.ignore_auto_tag}
           onDelete={onDelete}
         />
       );

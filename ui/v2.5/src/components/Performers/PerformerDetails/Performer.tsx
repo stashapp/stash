@@ -380,6 +380,7 @@ const PerformerPage: React.FC<IProps> = ({ performer, tabKey }) => {
               onToggleEdit={() => toggleEditing()}
               onDelete={onDelete}
               onAutoTag={onAutoTag}
+              autoTagDisabled={performer.ignore_auto_tag}
               isNew={false}
               isEditing={false}
               onSave={() => {}}

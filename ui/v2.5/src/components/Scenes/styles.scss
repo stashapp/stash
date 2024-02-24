@@ -750,3 +750,37 @@ input[type="range"].blue-slider {
     bottom: 0;
   }
 }
+
+.play-history dl {
+  margin-top: 0.5rem;
+}
+
+.play-history,
+.o-history {
+  .history-header h5 {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .history-operations-dropdown {
+    display: inline-block;
+  }
+
+  .add-date-button {
+    color: $success;
+  }
+
+  .remove-date-button {
+    color: $danger;
+  }
+
+  ul {
+    padding-inline-start: 1rem;
+
+    li {
+      display: flex;
+      justify-content: space-between;
+    }
+  }
+}

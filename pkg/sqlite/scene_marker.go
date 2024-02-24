@@ -299,7 +299,8 @@ func (qb *SceneMarkerStore) makeQuery(ctx context.Context, sceneMarkerFilter *mo
 	distinctIDs(&query, sceneMarkerTable)
 
 	if q := findFilter.Q; q != nil && *q != "" {
-		searchColumns := []string{"scene_markers.title", "scenes.title"}
+		query.join(tagTable, "", "scene_markers.primary_tag_id = tags.id")
+		searchColumns := []string{"scene_markers.title", "scenes.title", "tags.name"}
 		query.parseQueryString(searchColumns, *q)
 	}
 
@@ -309,7 +310,8 @@ func (qb *SceneMarkerStore) makeQuery(ctx context.Context, sceneMarkerFilter *mo
 		return nil, err
 	}
 
-	query.sortAndPagination = qb.getSceneMarkerSort(&query, findFilter) + getPagination(findFilter)
+	qb.setSceneMarkerSort(&query, findFilter)
+	query.sortAndPagination += getPagination(findFilter)
 
 	return &query, nil
 }
@@ -471,19 +473,23 @@ func sceneMarkerPerformersCriterionHandler(qb *SceneMarkerStore, performers *mod
 	}
 }
 
-func (qb *SceneMarkerStore) getSceneMarkerSort(query *queryBuilder, findFilter *models.FindFilterType) string {
+func (qb *SceneMarkerStore) setSceneMarkerSort(query *queryBuilder, findFilter *models.FindFilterType) {
 	sort := findFilter.GetSort("title")
 	direction := findFilter.GetDirection()
-	tableName := "scene_markers"
-	if sort == "scenes_updated_at" {
-		// ensure scene table is joined
-		query.join(sceneTable, "", "scenes.id = scene_markers.scene_id")
+
+	switch sort {
+	case "scenes_updated_at":
 		sort = "updated_at"
-		tableName = "scenes"
+		query.join(sceneTable, "", "scenes.id = scene_markers.scene_id")
+		query.sortAndPagination += getSort(sort, direction, sceneTable)
+	case "title":
+		query.join(tagTable, "", "scene_markers.primary_tag_id = tags.id")
+		query.sortAndPagination += " ORDER BY COALESCE(NULLIF(scene_markers.title,''), tags.name) COLLATE NATURAL_CI " + direction
+	default:
+		query.sortAndPagination += getSort(sort, direction, sceneMarkerTable)
 	}
 
-	additional := ", scene_markers.scene_id ASC, scene_markers.seconds ASC"
-	return getSort(sort, direction, tableName) + additional
+	query.sortAndPagination += ", scene_markers.scene_id ASC, scene_markers.seconds ASC"
 }
 
 func (qb *SceneMarkerStore) querySceneMarkers(ctx context.Context, query string, args []interface{}) ([]*models.SceneMarker, error) {

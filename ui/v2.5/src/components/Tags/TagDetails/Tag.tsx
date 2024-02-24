@@ -374,6 +374,7 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
           onImageChange={() => {}}
           onClearImage={() => {}}
           onAutoTag={onAutoTag}
+          autoTagDisabled={tag.ignore_auto_tag}
           onDelete={onDelete}
           classNames="mb-2"
           customButtons={renderMergeButton()}

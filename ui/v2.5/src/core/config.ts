@@ -84,6 +84,8 @@ export interface IUIConfig {
   tableColumns?: Record<string, string[]>;
 
   advancedMode?: boolean;
+
+  taskDefaults?: Record<string, {}>;
 }
 
 interface ISavedFilterRowBroken extends ISavedFilterRow {

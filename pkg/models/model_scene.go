@@ -19,7 +19,6 @@ type Scene struct {
 	// Rating expressed in 1-100 scale
 	Rating    *int `json:"rating"`
 	Organized bool `json:"organized"`
-	OCounter  int  `json:"o_counter"`
 	StudioID  *int `json:"studio_id"`
 
 	// transient - not persisted
@@ -35,10 +34,8 @@ type Scene struct {
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 
-	LastPlayedAt *time.Time `json:"last_played_at"`
-	ResumeTime   float64    `json:"resume_time"`
-	PlayDuration float64    `json:"play_duration"`
-	PlayCount    int        `json:"play_count"`
+	ResumeTime   float64 `json:"resume_time"`
+	PlayDuration float64 `json:"play_duration"`
 
 	URLs         RelatedStrings  `json:"urls"`
 	GalleryIDs   RelatedIDs      `json:"gallery_ids"`
@@ -67,14 +64,11 @@ type ScenePartial struct {
 	// Rating expressed in 1-100 scale
 	Rating       OptionalInt
 	Organized    OptionalBool
-	OCounter     OptionalInt
 	StudioID     OptionalInt
 	CreatedAt    OptionalTime
 	UpdatedAt    OptionalTime
 	ResumeTime   OptionalFloat64
 	PlayDuration OptionalFloat64
-	PlayCount    OptionalInt
-	LastPlayedAt OptionalTime
 
 	URLs          *UpdateStrings
 	GalleryIDs    *UpdateIDs

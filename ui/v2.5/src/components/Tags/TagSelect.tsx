@@ -101,7 +101,7 @@ const _TagSelect: React.FC<
     thisOptionProps = {
       ...optionProps,
       children: (
-        <TagPopover id={object.id} placement={props.hoverPlacement}>
+        <TagPopover id={object.id} placement={props.hoverPlacement ?? "right"}>
           <span className="react-select-image-option">
             {/* the following code causes re-rendering issues when selecting tags */}
             {/* <TagPopover

@@ -9,7 +9,6 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/doug-martin/goqu/v9"
 	"github.com/doug-martin/goqu/v9/exp"
@@ -32,6 +31,10 @@ const (
 	moviesScenesTable     = "movies_scenes"
 	scenesURLsTable       = "scene_urls"
 	sceneURLColumn        = "url"
+	scenesViewDatesTable  = "scenes_view_dates"
+	sceneViewDateColumn   = "view_date"
+	scenesODatesTable     = "scenes_o_dates"
+	sceneODateColumn      = "o_date"
 
 	sceneCoverBlobColumn = "cover_blob"
 )
@@ -79,16 +82,13 @@ type sceneRow struct {
 	Director zero.String `db:"director"`
 	Date     NullDate    `db:"date"`
 	// expressed as 1-100
-	Rating       null.Int      `db:"rating"`
-	Organized    bool          `db:"organized"`
-	OCounter     int           `db:"o_counter"`
-	StudioID     null.Int      `db:"studio_id,omitempty"`
-	CreatedAt    Timestamp     `db:"created_at"`
-	UpdatedAt    Timestamp     `db:"updated_at"`
-	LastPlayedAt NullTimestamp `db:"last_played_at"`
-	ResumeTime   float64       `db:"resume_time"`
-	PlayDuration float64       `db:"play_duration"`
-	PlayCount    int           `db:"play_count"`
+	Rating       null.Int  `db:"rating"`
+	Organized    bool      `db:"organized"`
+	StudioID     null.Int  `db:"studio_id,omitempty"`
+	CreatedAt    Timestamp `db:"created_at"`
+	UpdatedAt    Timestamp `db:"updated_at"`
+	ResumeTime   float64   `db:"resume_time"`
+	PlayDuration float64   `db:"play_duration"`
 
 	// not used in resolutions or updates
 	CoverBlob zero.String `db:"cover_blob"`
@@ -103,14 +103,11 @@ func (r *sceneRow) fromScene(o models.Scene) {
 	r.Date = NullDateFromDatePtr(o.Date)
 	r.Rating = intFromPtr(o.Rating)
 	r.Organized = o.Organized
-	r.OCounter = o.OCounter
 	r.StudioID = intFromPtr(o.StudioID)
 	r.CreatedAt = Timestamp{Timestamp: o.CreatedAt}
 	r.UpdatedAt = Timestamp{Timestamp: o.UpdatedAt}
-	r.LastPlayedAt = NullTimestampFromTimePtr(o.LastPlayedAt)
 	r.ResumeTime = o.ResumeTime
 	r.PlayDuration = o.PlayDuration
-	r.PlayCount = o.PlayCount
 }
 
 type sceneQueryRow struct {
@@ -132,7 +129,6 @@ func (r *sceneQueryRow) resolve() *models.Scene {
 		Date:      r.Date.DatePtr(),
 		Rating:    nullIntPtr(r.Rating),
 		Organized: r.Organized,
-		OCounter:  r.OCounter,
 		StudioID:  nullIntPtr(r.StudioID),
 
 		PrimaryFileID: nullIntFileIDPtr(r.PrimaryFileID),
@@ -142,10 +138,8 @@ func (r *sceneQueryRow) resolve() *models.Scene {
 		CreatedAt: r.CreatedAt.Timestamp,
 		UpdatedAt: r.UpdatedAt.Timestamp,
 
-		LastPlayedAt: r.LastPlayedAt.TimePtr(),
 		ResumeTime:   r.ResumeTime,
 		PlayDuration: r.PlayDuration,
-		PlayCount:    r.PlayCount,
 	}
 
 	if r.PrimaryFileFolderPath.Valid && r.PrimaryFileBasename.Valid {
@@ -167,14 +161,11 @@ func (r *sceneRowRecord) fromPartial(o models.ScenePartial) {
 	r.setNullDate("date", o.Date)
 	r.setNullInt("rating", o.Rating)
 	r.setBool("organized", o.Organized)
-	r.setInt("o_counter", o.OCounter)
 	r.setNullInt("studio_id", o.StudioID)
 	r.setTimestamp("created_at", o.CreatedAt)
 	r.setTimestamp("updated_at", o.UpdatedAt)
-	r.setNullTimestamp("last_played_at", o.LastPlayedAt)
 	r.setFloat64("resume_time", o.ResumeTime)
 	r.setFloat64("play_duration", o.PlayDuration)
-	r.setInt("play_count", o.PlayCount)
 }
 
 type SceneStore struct {
@@ -182,7 +173,8 @@ type SceneStore struct {
 	blobJoinQueryBuilder
 
 	tableMgr *table
-	oCounterManager
+	oDateManager
+	viewDateManager
 
 	fileStore *FileStore
 }
@@ -199,7 +191,8 @@ func NewSceneStore(fileStore *FileStore, blobStore *BlobStore) *SceneStore {
 		},
 
 		tableMgr:        sceneTableMgr,
-		oCounterManager: oCounterManager{sceneTableMgr},
+		viewDateManager: viewDateManager{scenesViewTableMgr},
+		oDateManager:    oDateManager{scenesOTableMgr},
 		fileStore:       fileStore,
 	}
 }
@@ -710,20 +703,18 @@ func (qb *SceneStore) CountByPerformerID(ctx context.Context, performerID int) (
 func (qb *SceneStore) OCountByPerformerID(ctx context.Context, performerID int) (int, error) {
 	table := qb.table()
 	joinTable := scenesPerformersJoinTable
+	oHistoryTable := goqu.T(scenesODatesTable)
 
-	q := dialect.Select(goqu.COALESCE(goqu.SUM("o_counter"), 0)).From(table).InnerJoin(joinTable, goqu.On(table.Col(idColumn).Eq(joinTable.Col(sceneIDColumn)))).Where(joinTable.Col(performerIDColumn).Eq(performerID))
-	var ret int
-	if err := querySimple(ctx, q, &ret); err != nil {
-		return 0, err
-	}
+	q := dialect.Select(goqu.COUNT("*")).From(table).InnerJoin(
+		oHistoryTable,
+		goqu.On(table.Col(idColumn).Eq(oHistoryTable.Col(sceneIDColumn))),
+	).InnerJoin(
+		joinTable,
+		goqu.On(
+			table.Col(idColumn).Eq(joinTable.Col(sceneIDColumn)),
+		),
+	).Where(joinTable.Col(performerIDColumn).Eq(performerID))
 
-	return ret, nil
-}
-
-func (qb *SceneStore) OCount(ctx context.Context) (int, error) {
-	table := qb.table()
-
-	q := dialect.Select(goqu.COALESCE(goqu.SUM("o_counter"), 0)).From(table)
 	var ret int
 	if err := querySimple(ctx, q, &ret); err != nil {
 		return 0, err
@@ -754,24 +745,6 @@ func (qb *SceneStore) CountByMovieID(ctx context.Context, movieID int) (int, err
 
 func (qb *SceneStore) Count(ctx context.Context) (int, error) {
 	q := dialect.Select(goqu.COUNT("*")).From(qb.table())
-	return count(ctx, q)
-}
-
-func (qb *SceneStore) PlayCount(ctx context.Context) (int, error) {
-	q := dialect.Select(goqu.COALESCE(goqu.SUM("play_count"), 0)).From(qb.table())
-
-	var ret int
-	if err := querySimple(ctx, q, &ret); err != nil {
-		return 0, err
-	}
-
-	return ret, nil
-}
-
-func (qb *SceneStore) UniqueScenePlayCount(ctx context.Context) (int, error) {
-	table := qb.table()
-	q := dialect.Select(goqu.COUNT("*")).From(table).Where(table.Col("play_count").Gt(0))
-
 	return count(ctx, q)
 }
 
@@ -977,7 +950,7 @@ func (qb *SceneStore) makeFilter(ctx context.Context, sceneFilter *models.SceneF
 	query.handleCriterion(ctx, scenePhashDistanceCriterionHandler(qb, sceneFilter.PhashDistance))
 
 	query.handleCriterion(ctx, intCriterionHandler(sceneFilter.Rating100, "scenes.rating", nil))
-	query.handleCriterion(ctx, intCriterionHandler(sceneFilter.OCounter, "scenes.o_counter", nil))
+	query.handleCriterion(ctx, sceneOCountCriterionHandler(sceneFilter.OCounter))
 	query.handleCriterion(ctx, boolCriterionHandler(sceneFilter.Organized, "scenes.organized", nil))
 
 	query.handleCriterion(ctx, floatIntCriterionHandler(sceneFilter.Duration, "video_files.duration", qb.addVideoFilesTable))
@@ -1011,7 +984,7 @@ func (qb *SceneStore) makeFilter(ctx context.Context, sceneFilter *models.SceneF
 
 	query.handleCriterion(ctx, floatIntCriterionHandler(sceneFilter.ResumeTime, "scenes.resume_time", nil))
 	query.handleCriterion(ctx, floatIntCriterionHandler(sceneFilter.PlayDuration, "scenes.play_duration", nil))
-	query.handleCriterion(ctx, intCriterionHandler(sceneFilter.PlayCount, "scenes.play_count", nil))
+	query.handleCriterion(ctx, scenePlayCountCriterionHandler(sceneFilter.PlayCount))
 
 	query.handleCriterion(ctx, sceneTagsCriterionHandler(qb, sceneFilter.Tags))
 	query.handleCriterion(ctx, sceneTagCountCriterionHandler(qb, sceneFilter.TagCount))
@@ -1192,6 +1165,26 @@ func (qb *SceneStore) QueryCount(ctx context.Context, sceneFilter *models.SceneF
 	}
 
 	return query.executeCount(ctx)
+}
+
+func scenePlayCountCriterionHandler(count *models.IntCriterionInput) criterionHandlerFunc {
+	h := countCriterionHandlerBuilder{
+		primaryTable: sceneTable,
+		joinTable:    scenesViewDatesTable,
+		primaryFK:    sceneIDColumn,
+	}
+
+	return h.handler(count)
+}
+
+func sceneOCountCriterionHandler(count *models.IntCriterionInput) criterionHandlerFunc {
+	h := countCriterionHandlerBuilder{
+		primaryTable: sceneTable,
+		joinTable:    scenesODatesTable,
+		primaryFK:    sceneIDColumn,
+	}
+
+	return h.handler(count)
 }
 
 func sceneFileCountCriterionHandler(qb *SceneStore, fileCount *models.IntCriterionInput) criterionHandlerFunc {
@@ -1549,8 +1542,8 @@ func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindF
 	direction := findFilter.GetDirection()
 	switch sort {
 	case "movie_scene_number":
-		query.join(moviesScenesTable, "movies_join", "scenes.id = movies_join.scene_id")
-		query.sortAndPagination += fmt.Sprintf(" ORDER BY movies_join.scene_index %s", getSortDirection(direction))
+		query.join(moviesScenesTable, "", "scenes.id = movies_scenes.scene_id")
+		query.sortAndPagination += getSort("scene_index", direction, moviesScenesTable)
 	case "tag_count":
 		query.sortAndPagination += getCountSort(sceneTable, scenesTagsTable, sceneIDColumn, direction)
 	case "performer_count":
@@ -1600,31 +1593,17 @@ func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindF
 		addFolderTable()
 		query.sortAndPagination += " ORDER BY COALESCE(scenes.title, files.basename) COLLATE NATURAL_CI " + direction + ", folders.path COLLATE NATURAL_CI " + direction
 	case "play_count":
-		// handle here since getSort has special handling for _count suffix
-		query.sortAndPagination += " ORDER BY scenes.play_count " + direction
+		query.sortAndPagination += getCountSort(sceneTable, scenesViewDatesTable, sceneIDColumn, direction)
+	case "last_played_at":
+		query.sortAndPagination += fmt.Sprintf(" ORDER BY (SELECT MAX(view_date) FROM %s AS sort WHERE sort.%s = %s.id) %s", scenesViewDatesTable, sceneIDColumn, sceneTable, getSortDirection(direction))
+	case "o_counter":
+		query.sortAndPagination += getCountSort(sceneTable, scenesODatesTable, sceneIDColumn, direction)
 	default:
 		query.sortAndPagination += getSort(sort, direction, "scenes")
 	}
 
 	// Whatever the sorting, always use title/id as a final sort
 	query.sortAndPagination += ", COALESCE(scenes.title, scenes.id) COLLATE NATURAL_CI ASC"
-}
-
-func (qb *SceneStore) getPlayCount(ctx context.Context, id int) (int, error) {
-	q := dialect.From(qb.tableMgr.table).Select("play_count").Where(goqu.Ex{"id": id})
-
-	const single = true
-	var ret int
-	if err := queryFunc(ctx, q, single, func(rows *sqlx.Rows) error {
-		if err := rows.Scan(&ret); err != nil {
-			return err
-		}
-		return nil
-	}); err != nil {
-		return 0, err
-	}
-
-	return ret, nil
 }
 
 func (qb *SceneStore) SaveActivity(ctx context.Context, id int, resumeTime *float64, playDuration *float64) (bool, error) {
@@ -1649,21 +1628,6 @@ func (qb *SceneStore) SaveActivity(ctx context.Context, id int, resumeTime *floa
 	}
 
 	return true, nil
-}
-
-func (qb *SceneStore) IncrementWatchCount(ctx context.Context, id int) (int, error) {
-	if err := qb.tableMgr.checkIDExists(ctx, id); err != nil {
-		return 0, err
-	}
-
-	if err := qb.tableMgr.updateByID(ctx, id, goqu.Record{
-		"play_count":     goqu.L("play_count + 1"),
-		"last_played_at": time.Now(),
-	}); err != nil {
-		return 0, err
-	}
-
-	return qb.getPlayCount(ctx, id)
 }
 
 func (qb *SceneStore) GetURLs(ctx context.Context, sceneID int) ([]string, error) {

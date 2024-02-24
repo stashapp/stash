@@ -153,3 +153,20 @@ func Map[T any, V any](vs []T, f func(T) V) []V {
 	}
 	return ret
 }
+
+func PtrsToValues[T any](vs []*T) []T {
+	ret := make([]T, len(vs))
+	for i, v := range vs {
+		ret[i] = *v
+	}
+	return ret
+}
+
+func ValuesToPtrs[T any](vs []T) []*T {
+	ret := make([]*T, len(vs))
+	for i, v := range vs {
+		vv := v
+		ret[i] = &vv
+	}
+	return ret
+}
