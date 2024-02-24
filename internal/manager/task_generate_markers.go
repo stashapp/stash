@@ -65,7 +65,7 @@ func (t *GenerateMarkersTask) Start(ctx context.Context) {
 			return
 		}
 
-		t.generateMarker(videoFile, scene, t.Marker)
+		t.generateMarker(ctx, videoFile, scene, t.Marker)
 	}
 }
 
@@ -99,25 +99,31 @@ func (t *GenerateMarkersTask) generateSceneMarkers(ctx context.Context) {
 		index := i + 1
 		logger.Progressf("[generator] <%s> scene marker %d of %d", sceneHash, index, len(sceneMarkers))
 
-		t.generateMarker(videoFile, t.Scene, sceneMarker)
+		t.generateMarker(ctx, videoFile, t.Scene, sceneMarker)
 	}
 }
 
-func (t *GenerateMarkersTask) generateMarker(videoFile *models.VideoFile, scene *models.Scene, sceneMarker *models.SceneMarker) {
+func (t *GenerateMarkersTask) generateMarker(ctx context.Context, videoFile *models.VideoFile, scene *models.Scene, sceneMarker *models.SceneMarker) {
 	sceneHash := scene.GetHash(t.fileNamingAlgorithm)
 	seconds := int(sceneMarker.Seconds)
 
 	g := t.generator
 
+	updated := false
+
 	if err := g.MarkerPreviewVideo(context.TODO(), videoFile.Path, sceneHash, seconds, instance.Config.GetPreviewAudio()); err != nil {
 		logger.Errorf("[generator] failed to generate marker video: %v", err)
 		logErrorOutput(err)
+	} else {
+		updated = true
 	}
 
 	if t.ImagePreview {
 		if err := g.SceneMarkerWebp(context.TODO(), videoFile.Path, sceneHash, seconds); err != nil {
 			logger.Errorf("[generator] failed to generate marker image: %v", err)
 			logErrorOutput(err)
+		} else {
+			updated = true
 		}
 	}
 
@@ -125,6 +131,22 @@ func (t *GenerateMarkersTask) generateMarker(videoFile *models.VideoFile, scene 
 		if err := g.SceneMarkerScreenshot(context.TODO(), videoFile.Path, sceneHash, seconds, videoFile.Width); err != nil {
 			logger.Errorf("[generator] failed to generate marker screenshot: %v", err)
 			logErrorOutput(err)
+		} else {
+			updated = true
+		}
+	}
+	if updated {
+		// At least one of the tasks generated something, so update marker's updated time
+		r := t.repository
+		if err := r.WithTxn(ctx, func(ctx context.Context) error {
+			sceneMarkerPartial := models.NewSceneMarkerPartial()
+			qb := r.SceneMarker
+			if _, err := qb.UpdatePartial(ctx, sceneMarker.ID, sceneMarkerPartial); err != nil {
+				return fmt.Errorf("error updating sceneMarker: %v", err)
+			}
+			return nil
+		}); err != nil && ctx.Err() == nil {
+			logger.Error(err.Error())
 		}
 	}
 }
