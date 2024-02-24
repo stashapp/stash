@@ -190,7 +190,7 @@
         "results": {
             "duration_off": "Czas trwania przesunięty o co najmniej {number}s",
             "duration_unknown": "Czas trwania nieznany",
-            "fp_found": "{fpCount, plural, =0 {Nie znaleziono nowych dopasowań odcisków palców} other {# znaleziono nowe dopasowania odcisków palców}}",
+            "fp_found": "{fpCount, plural, =0 {Nie znaleziono nowych dopasowań odcisków palców} one {Znaleziono # nowe dopasowanie odcisków palców} few {Znaleziono # nowe dopasowania odcisków palców} other {Znaleziono # nowych dopasowań odcisków palców}}",
             "fp_matches": "Czas trwania jest zgodny",
             "fp_matches_multi": "Pasujące czasy trwania dla odcisków palców {matchCount}/{durationsLength}",
             "hash_matches": "{hash_type} jest zgodny",
@@ -203,7 +203,7 @@
         "verb_match_fp": "Dopasuj odciski palców",
         "verb_matched": "Dopasowane",
         "verb_scrape_all": "Zbierz wszystko",
-        "verb_submit_fp": "Wyślij {fpCount, plural, one{# odcisk palca} other{# odciski palców}}",
+        "verb_submit_fp": "Wyślij {fpCount, plural, one{# odcisk palca} few{# odciski palców} other{# odcisków palców}}",
         "verb_toggle_config": "{toggle} {configuration}",
         "verb_toggle_unmatched": "{toggle} niedopasowane sceny"
     },
@@ -719,7 +719,8 @@
                 }
             },
             "title": "Interfejs użytkownika"
-        }
+        },
+        "advanced_mode": "Tryb zaawansowany"
     },
     "configuration": "Konfiguracja",
     "countables": {
