@@ -127,7 +127,14 @@
         "disable": "Avaktivera",
         "enable": "Aktivera",
         "reload": "Ladda om",
-        "copy_to_clipboard": "Kopiera till urklipp"
+        "copy_to_clipboard": "Kopiera till urklipp",
+        "add_manual_date": "Lägg till manuellt datum",
+        "add_o": "Lägg till O",
+        "add_play": "Lägg till spelning",
+        "choose_date": "Välj ett datum",
+        "clear_date_data": "Rensa datumdata",
+        "clean_generated": "Rensa genererade filer",
+        "remove_date": "Ta bort datum"
     },
     "actions_name": "Handlingar",
     "age": "Ålder",
@@ -510,7 +517,18 @@
             },
             "scan_for_content_desc": "Skannar för nytt innehåll och lägger till det i databasen.",
             "set_name_date_details_from_metadata_if_present": "Sätt namn, datum, beskrivning från medföljande metadata",
-            "generate_sprites_during_scan_tooltip": "Bilderna som visas under videospelaren för enkel navigation."
+            "generate_sprites_during_scan_tooltip": "Bilderna som visas under videospelaren för enkel navigation.",
+            "clean_generated": {
+                "blob_files": "Blobbfiler",
+                "description": "Tar bort genererade filer som saknar en matchande databasfil.",
+                "image_thumbnails": "Bildförhandsvisningar",
+                "image_thumbnails_desc": "Bildförhandsvisningar och korta videor",
+                "markers": "Markörförhandsvisningar",
+                "previews": "Scenförhandsvisningar",
+                "previews_desc": "Scenförhandsvisningar och omslagsbilder",
+                "sprites": "Scensprites",
+                "transcodes": "Scenomkodningar"
+            }
         },
         "tools": {
             "scene_duplicate_checker": "Scen Duplikat Kontroll",
@@ -904,7 +922,8 @@
             "transcodes_tooltip": "MP4 omkodningar för-genereras för allt innehåll; användbart för långsamma CPU:er men kräver mycket mer lagringsutrymme",
             "video_previews": "Förhandsvisning",
             "video_previews_tooltip": "Videoförhandsvisning som visas när man håller över en scen",
-            "phash_tooltip": "För deduplicering och scenidentifiering"
+            "phash_tooltip": "För deduplicering och scenidentifiering",
+            "image_thumbnails": "Bildomslagsbilder"
         },
         "scenes_found": "{count} scener hittades",
         "scrape_entity_query": "{entity_type} Skrapa text",
@@ -912,7 +931,9 @@
         "scrape_results_existing": "Existerande",
         "scrape_results_scraped": "Skrapade",
         "set_image_url_title": "URL till bild",
-        "unsaved_changes": "Osparade ändringar. Är du säker att du vill lämna?"
+        "unsaved_changes": "Osparade ändringar. Är du säker att du vill lämna?",
+        "clear_o_history_confirm": "Är du säker på att du vill radera O-historiken?",
+        "clear_play_history_confirm": "Är du säker på att du vill radera uppspelningshistoriken?"
     },
     "dimensions": "Mått",
     "director": "Regissör",
@@ -1067,7 +1088,8 @@
         "play_count": "Visningar",
         "play_duration": "Uppspelad Tid",
         "stream": "Ström",
-        "video_codec": "Videokodek"
+        "video_codec": "Videokodek",
+        "o_count": "Antal O"
     },
     "megabits_per_second": "{value} mbps",
     "metadata": "Metadata",
@@ -1404,7 +1426,8 @@
         "uninstall": "Avinstallera",
         "update": "Uppdatera",
         "version": "Version",
-        "unknown": "<okänd>"
+        "unknown": "<okänd>",
+        "no_upgradable": "Inga paket kan uppdateras"
     },
     "distance": "Avstånd",
     "orientation": "Orientering",
@@ -1414,5 +1437,11 @@
     "studio_and_parent": "Studio & Överordnad",
     "subsidiary_studio_count": "Antal Underordnade Studior",
     "tag_sub_tag_tooltip": "Har underordnade taggar",
-    "time": "Tid"
+    "time": "Tid",
+    "history": "Historik",
+    "o_history": "O Historik",
+    "odate_recorded_no": "Inga Registrerade O-datum",
+    "playdate_recorded_no": "Inga Registrerade Uppspelningsdatum",
+    "unknown_date": "Okänt datum",
+    "play_history": "Uppspelningshistorik"
 }
