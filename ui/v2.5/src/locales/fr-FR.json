@@ -123,7 +123,18 @@
         "temp_enable": "Activer temporairement…",
         "unset": "Désactiver",
         "use_default": "Utiliser par défaut",
-        "view_random": "Visionner au hasard"
+        "view_random": "Visionner au hasard",
+        "add_manual_date": "Ajouter une date manuellement",
+        "add_o": "Ajouter O",
+        "add_play": "Ajouter Lecture",
+        "choose_date": "Choisir une date",
+        "clear_date_data": "Supprimer les données de date",
+        "copy_to_clipboard": "Copier dans le presse-papier",
+        "disable": "Désactiver",
+        "enable": "Activer",
+        "reload": "Recharger",
+        "remove_date": "Supprimer date",
+        "clean_generated": "Nettoyer les fichiers générés"
     },
     "actions_name": "Actions",
     "age": "Âge",
@@ -761,7 +772,8 @@
                 "description": "Activée, les funscripts sont transmis directement de Stash à votre dispositif Handy sans recourir au serveur Handy de tierce partie. Nécessite que Stash soit accessible depuis votre dispositif Handy.",
                 "heading": "Transmettre directement les funscripts"
             }
-        }
+        },
+        "advanced_mode": "Mode Avancé"
     },
     "configuration": "Configuration",
     "countables": {
