@@ -4,6 +4,8 @@ import * as GQL from "src/core/generated-graphql";
 import TextUtils from "src/utils/text";
 import { DetailItem } from "src/components/Shared/DetailItem";
 import { Link } from "react-router-dom";
+import { DirectorLink } from "src/components/Shared/TagLink";
+import NavUtils from "src/utils/navigation";
 
 interface IMovieDetailsPanel {
   movie: GQL.MovieDataFragment;
@@ -45,7 +47,18 @@ export const MovieDetailsPanel: React.FC<IMovieDetailsPanel> = ({
         fullWidth={fullWidth}
       />
 
-      <DetailItem id="director" value={movie.director} fullWidth={fullWidth} />
+      <DetailItem id="director"
+        value={
+          movie.director ? (
+            <Link to={NavUtils.makeDirectorMoviesUrl(movie.director)}>
+              {movie.director}
+            </Link> 
+          ) : (
+            ""
+          )
+        }
+        fullWidth={fullWidth}
+      />
       <DetailItem id="synopsis" value={movie.synopsis} fullWidth={fullWidth} />
     </div>
   );

@@ -389,6 +389,16 @@ const makeDirectorImagesUrl = (director: string) => {
   return `/images?${filter.makeQueryParameters()}`;
 };
 
+const makeDirectorMoviesUrl = (director: string) => {
+  if (director.length == 0) return "#";
+  const filter = new ListFilterModel(GQL.FilterMode.Movies, undefined);
+  const criterion = new StringCriterion(createStringCriterionOption("director"));
+  criterion.modifier = GQL.CriterionModifier.Equals;
+  criterion.value = director;
+  filter.criteria.push(criterion);
+  return `/movies?${filter.makeQueryParameters()}`;
+};
+
 
 
 export function handleUnsavedChanges(
@@ -433,6 +443,7 @@ const NavUtils = {
   makeDirectorScenesUrl,
   makeDirectorGalleriesUrl,
   makeDirectorImagesUrl,
+  makeDirectorMoviesUrl,
 };
 
 export default NavUtils;

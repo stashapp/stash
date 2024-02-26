@@ -254,7 +254,7 @@ export const TagLink: React.FC<ITagLinkProps> = ({
 
 interface IDirectorLinkProps {
   director: string;
-  linkType?: "scene" | "gallery" | "image";
+  linkType?: "scene" | "gallery" | "image" | "movie";
   className?: string;
 }
 
@@ -270,6 +270,8 @@ export const DirectorLink: React.FC<IDirectorLinkProps> = ({
         return NavUtils.makeDirectorGalleriesUrl(director);
       case "image":
         return NavUtils.makeDirectorImagesUrl(director);
+      case "movie":
+        return NavUtils.makeDirectorMoviesUrl(director);
     }
   }, [director, linkType]);
 
