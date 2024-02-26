@@ -227,6 +227,9 @@ func (c Cache) ListPluginTasks() []*PluginTask {
 }
 
 func buildPluginInput(plugin *Config, operation *OperationConfig, serverConnection common.StashServerConnection, args OperationInput) common.PluginInput {
+	if args == nil {
+		args = make(OperationInput)
+	}
 	if operation != nil {
 		applyDefaultArgs(args, operation.DefaultArgs)
 	}
