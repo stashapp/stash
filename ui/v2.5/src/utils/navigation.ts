@@ -15,7 +15,11 @@ import { ListFilterModel } from "src/models/list-filter/filter";
 import { MoviesCriterion } from "src/models/list-filter/criteria/movies";
 import {
   Criterion,
+  CriterionOption,
   CriterionValue,
+  StringCriterion,
+  StringCriterionOption,
+  createStringCriterionOption,
 } from "src/models/list-filter/criteria/criterion";
 import { GalleriesCriterion } from "src/models/list-filter/criteria/galleries";
 import { PhashCriterion } from "src/models/list-filter/criteria/phash";
@@ -355,6 +359,38 @@ const makeGalleryImagesUrl = (
   return `/images?${filter.makeQueryParameters()}`;
 };
 
+const makeDirectorScenesUrl = (director: string) => {
+  if (director.length == 0) return "#";
+  const filter = new ListFilterModel(GQL.FilterMode.Scenes, undefined);
+  const criterion = new StringCriterion(createStringCriterionOption("director"));
+  criterion.modifier = GQL.CriterionModifier.Equals;
+  criterion.value = director;
+  filter.criteria.push(criterion);
+  return `/scenes?${filter.makeQueryParameters()}`;
+};
+
+const makeDirectorGalleriesUrl = (director: string) => {
+  if (director.length == 0) return "#";
+  const filter = new ListFilterModel(GQL.FilterMode.Galleries, undefined);
+  const criterion = new StringCriterion(createStringCriterionOption("photographer"));
+  criterion.modifier = GQL.CriterionModifier.Equals;
+  criterion.value = director;
+  filter.criteria.push(criterion);
+  return `/galleries?${filter.makeQueryParameters()}`;
+};
+
+const makeDirectorImagesUrl = (director: string) => {
+  if (director.length == 0) return "#";
+  const filter = new ListFilterModel(GQL.FilterMode.Images, undefined);
+  const criterion = new StringCriterion(createStringCriterionOption("photographer"));
+  criterion.modifier = GQL.CriterionModifier.Equals;
+  criterion.value = director;
+  filter.criteria.push(criterion);
+  return `/images?${filter.makeQueryParameters()}`;
+};
+
+
+
 export function handleUnsavedChanges(
   intl: IntlShape,
   basepath: string,
@@ -394,6 +430,9 @@ const NavUtils = {
   makeMovieScenesUrl,
   makeChildStudiosUrl,
   makeGalleryImagesUrl,
+  makeDirectorScenesUrl,
+  makeDirectorGalleriesUrl,
+  makeDirectorImagesUrl,
 };
 
 export default NavUtils;

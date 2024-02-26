@@ -2,7 +2,7 @@ import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 import TextUtils from "src/utils/text";
-import { GalleryLink, TagLink } from "src/components/Shared/TagLink";
+import { DirectorLink, GalleryLink, TagLink } from "src/components/Shared/TagLink";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
 import { PerformerCard } from "src/components/Performers/PerformerCard";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
@@ -154,7 +154,7 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
           )}
           {props.image.photographer && (
             <h6>
-              <FormattedMessage id="photographer" />: {props.image.photographer}{" "}
+              <FormattedMessage id="photographer" />: <DirectorLink director={props.image.photographer} linkType="image"></DirectorLink>
             </h6>
           )}
         </div>
