@@ -114,7 +114,25 @@
         "temp_enable": "Povolit dočasně…",
         "unset": "Odnastavit",
         "use_default": "Použít výchozí",
-        "view_random": "Zobrazit náhodný"
+        "view_random": "Zobrazit náhodný",
+        "create_parent_studio": "Vytvořit mateřské studio",
+        "encoding_image": "Enkóduji obrázek…",
+        "optimise_database": "Optimalizovat databázi",
+        "copy_to_clipboard": "Zkopírovat do schránky",
+        "disable": "Zakázat",
+        "download_anonymised": "Stáhnout anonymizovaně",
+        "enable": "Povolit",
+        "migrate_blobs": "Zmigrovat bloby",
+        "migrate_scene_screenshots": "Migrace snímků obrazovky scén",
+        "add_o": "Přidat O",
+        "anonymise": "Anonymizovat",
+        "assign_stashid_to_parent_studio": "Přiřaď Stash ID k existujícímu mateřskému studiu a aktualizuj metadata",
+        "choose_date": "Vyberte datum",
+        "create_chapters": "Vytvořit kapitolu",
+        "clear_date_data": "Vymazat data datumu",
+        "reload": "Načíst znovu",
+        "clean_generated": "Vyčistěte vygenerované soubory",
+        "remove_date": "Odstranit datum"
     },
     "actions_name": "Akce",
     "age": "Věk",
@@ -151,7 +169,9 @@
             "set_tag_label": "Nastavit tagy",
             "show_male_desc": "Zapnout / vypnout, zda mají být mužští umělci tagováni.",
             "show_male_label": "Ukázat mužské umělce",
-            "source": "Zdroj"
+            "source": "Zdroj",
+            "mark_organized_desc": "Po kliknutí na tlačítko Uložit okamžitě označte scénu jako Uspořádanou.",
+            "mark_organized_label": "Označit jako Uspořádané při uložení."
         },
         "noun_query": "Dotaz",
         "results": {
@@ -186,7 +206,8 @@
             "stash_home": "Stash domovská stránka na {url}",
             "stash_open_collective": "Podpořte nás skrze {url}",
             "stash_wiki": "Stash {url} stránka",
-            "version": "Verze"
+            "version": "Verze",
+            "release_date": "Datum vydání:"
         },
         "application_paths": {
             "heading": "Cesta k aplikaci"
@@ -221,7 +242,8 @@
             "server_display_name": "Jméno serveru",
             "server_display_name_desc": "Název DLNA serveru. Výchozí hodnota {} pokud je pole prázdné.",
             "successfully_cancelled_temporary_behaviour": "Úspěšně zrušeno dočasné chování",
-            "until_restart": "pouze do restartu"
+            "until_restart": "pouze do restartu",
+            "video_sort_order": "Výchozí pořadí řazení videa"
         },
         "general": {
             "auth": {
@@ -241,7 +263,7 @@
                 "log_to_terminal": "Logovat do příkazové řádky",
                 "log_to_terminal_desc": "Logovat do příkazové řádky kromě logování do terminálu. Vždy zapnuto pokud logování do souboru je zakázané. Vyžaduje restart.",
                 "maximum_session_age": "Maximální věk relace",
-                "maximum_session_age_desc": "Maximální doba nečinnosti před vypršením relace přihlášení v sekundách.",
+                "maximum_session_age_desc": "Maximální doba nečinnosti před vypršením relace přihlášení, v sekundách. Vyžaduje restart.",
                 "password": "Heslo",
                 "password_desc": "Heslo pro přístup do aplikace. Ponechte prázdné pro vypnutí autentizace",
                 "stash-box_integration": "Stash-box integrace",
@@ -306,7 +328,13 @@
             "sqlite_location": "Umístění souboru se SQLite databází (vyžaduje restart)",
             "video_ext_desc": "Seznam koncovek souborů, oddělený čárkou, které budou identifikovány jako videa.",
             "video_ext_head": "Koncovky video souborů",
-            "video_head": "Video"
+            "video_head": "Video",
+            "database": "Databáze",
+            "ffmpeg": {
+                "hardware_acceleration": {
+                    "heading": "Hardwarové kódování FFmpeg"
+                }
+            }
         },
         "library": {
             "exclusions": "Výjimky",
@@ -318,7 +346,9 @@
         },
         "plugins": {
             "hooks": "Triggery",
-            "triggers_on": "Spuštěno při"
+            "triggers_on": "Spuštěno při",
+            "installed_plugins": "Nainstalované Pluginy",
+            "available_plugins": "Dostupné pluginy"
         },
         "scraping": {
             "entity_metadata": "{entityType} Metadata",
@@ -329,7 +359,9 @@
             "scrapers": "Scrapery",
             "search_by_name": "Hledat dle názvu",
             "supported_types": "Podporované typy",
-            "supported_urls": "URLs"
+            "supported_urls": "URLs",
+            "installed_scrapers": "Nainstalované Scrappery",
+            "available_scrapers": "Dostupné Scrappery"
         },
         "stashbox": {
             "add_instance": "Přidat stash-box instanci",
@@ -392,7 +424,8 @@
                 "source": "Zdroj",
                 "source_options": "Možnosti {source}",
                 "sources": "Zdroje",
-                "strategy": "Strategie"
+                "strategy": "Strategie",
+                "skip_multiple_matches": "Přeskočte shody, které mají více než jeden výsledek"
             },
             "import_from_exported_json": "Importovat z exportovaného JSONu z metadata složky. Přemaže existující databázi.",
             "incremental_import": "Inkrementální import z dodaného exportního zip souboru.",
@@ -407,7 +440,26 @@
                 "scanning_paths": "Skenovat následující cesty"
             },
             "scan_for_content_desc": "Skenovat na nový obsah a přidat ho do databáze.",
-            "set_name_date_details_from_metadata_if_present": "Nastavit jméno, datum a detaily z metadat souboru"
+            "set_name_date_details_from_metadata_if_present": "Nastavit jméno, datum a detaily z metadat souboru",
+            "anonymise_and_download": "Vytvoří anonymizovanou kopii databáze a stáhne výsledný soubor.",
+            "anonymising_database": "Anonymizování databáze",
+            "migrate_blobs": {
+                "delete_old": "Vymaž stará data"
+            },
+            "migrate_scene_screenshots": {
+                "delete_files": "Odstraňte soubory snímků obrazovky"
+            },
+            "clean_generated": {
+                "blob_files": "Soubory Blobů",
+                "description": "Odstraní vygenerované soubory bez odpovídající položky databáze.",
+                "image_thumbnails": "Náhledy obrázků",
+                "image_thumbnails_desc": "Náhledy obrázků a klipy",
+                "markers": "Náhledy Značek",
+                "previews": "Náhledy Scén"
+            },
+            "generate_sprites_during_scan_tooltip": "Sada obrázků zobrazená pod videopřehrávačem pro snadnou navigaci.",
+            "generate_video_covers_during_scan": "Generuj obaly scén",
+            "anonymise_database": "Vytvoří kopii databáze do adresáře záloh, anonymizuje všechna citlivá data. To pak může být poskytnuto ostatním pro účely odstraňování problémů a debuggování. Původní databáze se nemění. Anonymizovaná databáze používá formát názvu souboru {filename_format}."
         },
         "tools": {
             "scene_duplicate_checker": "Kontrola na duplikaci scén",
@@ -596,8 +648,16 @@
             "studio_panel": {
                 "heading": "Pohled studií"
             },
-            "title": "Uživatelské rozhraní"
-        }
+            "title": "Uživatelské rozhraní",
+            "detail": {
+                "enable_background_image": {
+                    "description": "Zobrazit obrázek na pozadí na stránce s podrobnostmi.",
+                    "heading": "Povolí obrázek na pozadí"
+                },
+                "heading": "Stránka s podrobnostmi"
+            }
+        },
+        "advanced_mode": "Pokročilý mód"
     },
     "configuration": "Konfigurace",
     "countables": {
@@ -694,5 +754,56 @@
             "marker_image_previews_tooltip": "Animované WebP náhledy markerů, nezbytné pouze tehdy, pokud je Typ náhledu nastaven na \"Animovaný obrázek\".",
             "marker_screenshots": "Screenshoty markerů"
         }
-    }
+    },
+    "chapters": "Kapitoly",
+    "circumcised": "Obřezán",
+    "tag_count": "Počet tagů",
+    "tag": "Tag",
+    "toast": {
+        "updated_entity": "Aktualizováno {entity}",
+        "merged_scenes": "Sloučené scény",
+        "generating_screenshot": "Generuji snímek obrazovky…",
+        "default_filter_set": "Výchozí set filtrů",
+        "merged_tags": "Sloučené tagy",
+        "created_entity": "Vytvořeno {entity}",
+        "added_generation_job_to_queue": "Do fronty přidána generační úloha",
+        "started_auto_tagging": "Zahájeno automatické tagování",
+        "saved_entity": "Uloženo {entity}",
+        "started_importing": "Zahájeno importování",
+        "started_generating": "Zahájeno generování"
+    },
+    "urls": "Odkazy",
+    "url": "Odkaz",
+    "audio_codec": "Audio kodek",
+    "blobs_storage_type": {
+        "database": "Databáze",
+        "filesystem": "Souborový systém"
+    },
+    "circumcised_types": {
+        "CUT": "Obřezaný",
+        "UNCUT": "Neobřezaný"
+    },
+    "title": "Název",
+    "time": "Čas",
+    "tattoos": "Tetování",
+    "tags": "Tagy",
+    "view_all": "Zobrazit všechny",
+    "validation": {
+        "required": "${path} je vyžadované pole",
+        "unique": "${path} musí být jedinečná",
+        "blank": "${path} nesmí být prázdná",
+        "date_invalid_form": "${path} musí být ve formátu YYYY-MM-DD (Rok-Měsíc-Den)"
+    },
+    "type": "Typ",
+    "twitter": "Twitter",
+    "true": "Pravda",
+    "total": "Celkem",
+    "tag_parent_tooltip": "Má mateřské tagy",
+    "weight_kg": "Váha (kg)",
+    "weight": "Váha",
+    "appears_with": "Objevuje se s",
+    "zip_file_count": "Počet souborů zip",
+    "videos": "Videa",
+    "video_codec": "Video kodeky",
+    "unknown_date": "Neznámý datum"
 }
