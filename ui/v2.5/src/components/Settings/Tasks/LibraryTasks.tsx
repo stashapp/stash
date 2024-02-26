@@ -72,7 +72,6 @@ export const LibraryTasks: React.FC = () => {
   const intl = useIntl();
   const Toast = useToast();
   const { ui, saveUI, loading } = useSettings();
-  // const [configureDefaults] = useConfigureDefaults();
 
   const { taskDefaults } = ui;
 
@@ -176,7 +175,7 @@ export const LibraryTasks: React.FC = () => {
   }, [configuration, configRead, taskDefaults, loading]);
 
   function configureDefaults(partial: Record<string, {}>) {
-    saveUI({ taskDefaults: { ...taskDefaults, ...partial } });
+    saveUI({ taskDefaults: { ...partial } });
   }
 
   function onSetScanOptions(s: GQL.ScanMetadataInput) {
