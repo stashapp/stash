@@ -42,6 +42,7 @@ import { lazyComponent } from "./utils/lazyComponent";
 import { isPlatformUniquelyRenderedByApple } from "./utils/apple";
 import useScript, { useCSS } from "./hooks/useScript";
 import { useMemoOnce } from "./hooks/state";
+import Event from "./hooks/event";
 import { uniq } from "lodash-es";
 
 import { PluginRoutes } from "./plugins";
@@ -248,6 +249,11 @@ export const App: React.FC = () => {
   const location = useLocation();
   const history = useHistory();
   const setupMatch = useRouteMatch(["/setup", "/migrate"]);
+
+  // dispatch event when location changes
+  useEffect(() => {
+    Event.dispatch("location", "", { location });
+  }, [location]);
 
   // redirect to setup or migrate as needed
   useEffect(() => {
