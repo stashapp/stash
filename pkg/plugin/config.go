@@ -9,6 +9,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/stashapp/stash/pkg/plugin/hook"
 	"github.com/stashapp/stash/pkg/utils"
 	"gopkg.in/yaml.v2"
 )
@@ -195,7 +196,7 @@ func (c Config) getPluginHooks(includePlugin bool) []*PluginHook {
 	return ret
 }
 
-func convertHooks(hooks []HookTriggerEnum) []string {
+func convertHooks(hooks []hook.TriggerEnum) []string {
 	var ret []string
 	for _, h := range hooks {
 		ret = append(ret, h.String())
@@ -275,7 +276,7 @@ func (c Config) getTask(name string) *OperationConfig {
 	return nil
 }
 
-func (c Config) getHooks(hookType HookTriggerEnum) []*HookConfig {
+func (c Config) getHooks(hookType hook.TriggerEnum) []*HookConfig {
 	var ret []*HookConfig
 	for _, h := range c.Hooks {
 		for _, t := range h.TriggeredBy {
@@ -399,7 +400,7 @@ type HookConfig struct {
 	OperationConfig `yaml:",inline"`
 
 	// A list of stash operations that will be used to trigger this hook operation.
-	TriggeredBy []HookTriggerEnum `yaml:"triggeredBy"`
+	TriggeredBy []hook.TriggerEnum `yaml:"triggeredBy"`
 }
 
 func loadPluginFromYAML(reader io.Reader) (*Config, error) {

@@ -7,7 +7,7 @@ import (
 
 	"github.com/stashapp/stash/internal/static"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/plugin"
+	"github.com/stashapp/stash/pkg/plugin/hook"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -102,7 +102,7 @@ func (r *mutationResolver) MovieCreate(ctx context.Context, input MovieCreateInp
 		return nil, err
 	}
 
-	r.hookExecutor.ExecutePostHooks(ctx, newMovie.ID, plugin.MovieCreatePost, input, nil)
+	r.hookExecutor.ExecutePostHooks(ctx, newMovie.ID, hook.MovieCreatePost, input, nil)
 	return r.getMovie(ctx, newMovie.ID)
 }
 
@@ -181,7 +181,7 @@ func (r *mutationResolver) MovieUpdate(ctx context.Context, input MovieUpdateInp
 		return nil, err
 	}
 
-	r.hookExecutor.ExecutePostHooks(ctx, movie.ID, plugin.MovieUpdatePost, input, translator.getFields())
+	r.hookExecutor.ExecutePostHooks(ctx, movie.ID, hook.MovieUpdatePost, input, translator.getFields())
 	return r.getMovie(ctx, movie.ID)
 }
 
@@ -227,7 +227,7 @@ func (r *mutationResolver) BulkMovieUpdate(ctx context.Context, input BulkMovieU
 
 	var newRet []*models.Movie
 	for _, movie := range ret {
-		r.hookExecutor.ExecutePostHooks(ctx, movie.ID, plugin.MovieUpdatePost, input, translator.getFields())
+		r.hookExecutor.ExecutePostHooks(ctx, movie.ID, hook.MovieUpdatePost, input, translator.getFields())
 
 		movie, err = r.getMovie(ctx, movie.ID)
 		if err != nil {
@@ -252,7 +252,7 @@ func (r *mutationResolver) MovieDestroy(ctx context.Context, input MovieDestroyI
 		return false, err
 	}
 
-	r.hookExecutor.ExecutePostHooks(ctx, id, plugin.MovieDestroyPost, input, nil)
+	r.hookExecutor.ExecutePostHooks(ctx, id, hook.MovieDestroyPost, input, nil)
 
 	return true, nil
 }
@@ -277,7 +277,7 @@ func (r *mutationResolver) MoviesDestroy(ctx context.Context, movieIDs []string)
 	}
 
 	for _, id := range ids {
-		r.hookExecutor.ExecutePostHooks(ctx, id, plugin.MovieDestroyPost, movieIDs, nil)
+		r.hookExecutor.ExecutePostHooks(ctx, id, hook.MovieDestroyPost, movieIDs, nil)
 	}
 
 	return true, nil

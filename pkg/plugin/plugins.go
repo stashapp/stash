@@ -21,6 +21,7 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin/common"
+	"github.com/stashapp/stash/pkg/plugin/hook"
 	"github.com/stashapp/stash/pkg/session"
 	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/txn"
@@ -356,7 +357,7 @@ func waitForTask(ctx context.Context, task Task) error {
 	return nil
 }
 
-func (c Cache) ExecutePostHooks(ctx context.Context, id int, hookType HookTriggerEnum, input interface{}, inputFields []string) {
+func (c Cache) ExecutePostHooks(ctx context.Context, id int, hookType hook.TriggerEnum, input interface{}, inputFields []string) {
 	if err := c.executePostHooks(ctx, hookType, common.HookContext{
 		ID:          id,
 		Type:        hookType.String(),
@@ -367,7 +368,7 @@ func (c Cache) ExecutePostHooks(ctx context.Context, id int, hookType HookTrigge
 	}
 }
 
-func (c Cache) RegisterPostHooks(ctx context.Context, id int, hookType HookTriggerEnum, input interface{}, inputFields []string) {
+func (c Cache) RegisterPostHooks(ctx context.Context, id int, hookType hook.TriggerEnum, input interface{}, inputFields []string) {
 	txn.AddPostCommitHook(ctx, func(ctx context.Context) {
 		c.ExecutePostHooks(ctx, id, hookType, input, inputFields)
 	})
@@ -379,10 +380,10 @@ func (c Cache) ExecuteSceneUpdatePostHooks(ctx context.Context, input models.Sce
 		logger.Errorf("error converting id in SceneUpdatePostHooks: %v", err)
 		return
 	}
-	c.ExecutePostHooks(ctx, id, SceneUpdatePost, input, inputFields)
+	c.ExecutePostHooks(ctx, id, hook.SceneUpdatePost, input, inputFields)
 }
 
-func (c Cache) executePostHooks(ctx context.Context, hookType HookTriggerEnum, hookContext common.HookContext) error {
+func (c Cache) executePostHooks(ctx context.Context, hookType hook.TriggerEnum, hookContext common.HookContext) error {
 	visitedPlugins := session.GetVisitedPlugins(ctx)
 
 	for _, p := range c.enabledPlugins() {
