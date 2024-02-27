@@ -110,7 +110,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     weight: yupInputNumber().positive().truncate().nullable().defined(),
     measurements: yup.string().ensure(),
     fake_tits: yup.string().ensure(),
-    penis_length: yupInputNumber().positive().truncate().nullable().defined(),
+    penis_length: yupInputNumber().positive().nullable().defined(),
     circumcised: yupInputEnum(GQL.CircumisedEnum).nullable().defined(),
     tattoos: yup.string().ensure(),
     piercings: yup.string().ensure(),
