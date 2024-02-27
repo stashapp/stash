@@ -188,11 +188,20 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes, queue }) => {
     const [nbPhashMatchSceneB, ratioPhashMatchSceneB] =
       calculatePhashComparisonScore(stashScene, sceneB);
 
-    if (nbPhashMatchSceneA != nbPhashMatchSceneB) {
+    // If only one scene has matching phash, prefer that scene
+    if (
+      (nbPhashMatchSceneA != nbPhashMatchSceneB && nbPhashMatchSceneA === 0) ||
+      nbPhashMatchSceneB === 0
+    ) {
       return nbPhashMatchSceneB - nbPhashMatchSceneA;
     }
 
-    // Same number of phash matches, check duration
+    // Prefer scene with highest ratio of phash matches
+    if (ratioPhashMatchSceneA !== ratioPhashMatchSceneB) {
+      return ratioPhashMatchSceneB - ratioPhashMatchSceneA;
+    }
+
+    // Same ratio of phash matches, check duration
     const [
       nbDurationMatchSceneA,
       ratioDurationMatchSceneA,
@@ -211,11 +220,6 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes, queue }) => {
     // Same number of phash & duration, check duration ratio
     if (ratioDurationMatchSceneA != ratioDurationMatchSceneB) {
       return ratioDurationMatchSceneB - ratioDurationMatchSceneA;
-    }
-
-    // Damn this is close... Check phash ratio
-    if (ratioPhashMatchSceneA !== ratioPhashMatchSceneB) {
-      return ratioPhashMatchSceneB - ratioPhashMatchSceneA;
     }
 
     // fall back to duration difference - less is better
