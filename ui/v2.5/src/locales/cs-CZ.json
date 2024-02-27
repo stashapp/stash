@@ -132,7 +132,8 @@
         "clear_date_data": "Vymazat data datumu",
         "reload": "Načíst znovu",
         "clean_generated": "Vyčistěte vygenerované soubory",
-        "remove_date": "Odstranit datum"
+        "remove_date": "Odstranit datum",
+        "add_manual_date": "Přidat datum ručně"
     },
     "actions_name": "Akce",
     "age": "Věk",
@@ -243,7 +244,7 @@
             "server_display_name_desc": "Název DLNA serveru. Výchozí hodnota {} pokud je pole prázdné.",
             "successfully_cancelled_temporary_behaviour": "Úspěšně zrušeno dočasné chování",
             "until_restart": "pouze do restartu",
-            "video_sort_order": "Výchozí pořadí řazení videa"
+            "video_sort_order": "Výchozí řazení videa"
         },
         "general": {
             "auth": {
@@ -805,5 +806,44 @@
     "zip_file_count": "Počet souborů zip",
     "videos": "Videa",
     "video_codec": "Video kodeky",
-    "unknown_date": "Neznámý datum"
+    "unknown_date": "Neznámý datum",
+    "director": "Režisér(ka)",
+    "display_mode": {
+        "list": "Seznam",
+        "grid": "Mřížka",
+        "tagger": "Tagger",
+        "wall": "Stěna",
+        "unknown": "Neznámý"
+    },
+    "effect_filters": {
+        "aspect": "Aspekt",
+        "blue": "Modrá"
+    },
+    "dupe_check": {
+        "select_youngest": "Vyberte nejnovější soubor ve skupině duplicit",
+        "title": "Duplicitní scény",
+        "duration_diff": "Maximální rozdíl trvání",
+        "only_select_matching_codecs": "Vyberte pouze v případě, že se všechny kodeky shodují v duplicitní skupině",
+        "options": {
+            "medium": "Střední",
+            "exact": "Přesné",
+            "high": "Vysoké",
+            "low": "Nízké"
+        },
+        "search_accuracy_label": "Přesnost vyhledávání",
+        "select_all_but_largest_resolution": "Vyber každý soubor v každé duplikované skupině kromě souboru s nejvyšším rozlišením",
+        "description": "Výpočet úrovní pod 'Přesné' může trvat déle. Falešně pozitivní mohou být vráceny také na nižších úrovních přesnosti.",
+        "duration_options": {
+            "any": "Jakýkoli",
+            "equal": "Rovná se"
+        },
+        "select_all_but_largest_file": "Vyber každý soubor v každé duplikované skupině kromě největšího souboru",
+        "select_none": "Nevybírat",
+        "select_oldest": "Vyber nejstarší soubor v duplicitní skupině",
+        "select_options": "Vyberte možnosti…"
+    },
+    "duplicated_phash": "Duplicitní (phash)",
+    "duration": "Doba trvání",
+    "distance": "Vzdálenost",
+    "donate": "Darovat"
 }
