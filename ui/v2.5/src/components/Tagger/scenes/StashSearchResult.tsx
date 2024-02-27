@@ -6,7 +6,11 @@ import uniq from "lodash-es/uniq";
 import { blobToBase64 } from "base64-blob";
 import { distance } from "src/utils/hamming";
 import { faCheckCircle } from "@fortawesome/free-regular-svg-icons";
-import { faPlus, faTriangleExclamation, faXmark} from "@fortawesome/free-solid-svg-icons";
+import {
+  faPlus,
+  faTriangleExclamation,
+  faXmark,
+} from "@fortawesome/free-solid-svg-icons";
 
 import * as GQL from "src/core/generated-graphql";
 import { HoverPopover } from "src/components/Shared/HoverPopover";
@@ -29,12 +33,19 @@ import { ExternalLink } from "src/components/Shared/ExternalLink";
 
 const getDurationIcon = (matchPercentage: number) => {
   if (matchPercentage > 65)
-    return <Icon className="SceneTaggerIcon text-success" icon={faCheckCircle} />;
+    return (
+      <Icon className="SceneTaggerIcon text-success" icon={faCheckCircle} />
+    );
   if (matchPercentage > 35)
-    return <Icon className="SceneTaggerIcon text-warn" icon={faTriangleExclamation} />;
+    return (
+      <Icon
+        className="SceneTaggerIcon text-warn"
+        icon={faTriangleExclamation}
+      />
+    );
 
   return <Icon className="SceneTaggerIcon text-danger" icon={faXmark} />;
-}
+};
 
 const getDurationStatus = (
   scene: IScrapedScene,
@@ -67,7 +78,7 @@ const getDurationStatus = (
   if (match)
     return (
       <div className="font-weight-bold">
-        { getDurationIcon(matchPercentage) }
+        {getDurationIcon(matchPercentage)}
         {match}
       </div>
     );

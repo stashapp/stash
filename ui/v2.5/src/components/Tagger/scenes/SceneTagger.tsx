@@ -189,7 +189,10 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes, queue }) => {
       calculatePhashComparisonScore(stashScene, sceneB);
 
     // If only one scene has matching phash, prefer that scene
-    if (nbPhashMatchSceneA != nbPhashMatchSceneB && nbPhashMatchSceneA === 0 || nbPhashMatchSceneB === 0) {
+    if (
+      (nbPhashMatchSceneA != nbPhashMatchSceneB && nbPhashMatchSceneA === 0) ||
+      nbPhashMatchSceneB === 0
+    ) {
       return nbPhashMatchSceneB - nbPhashMatchSceneA;
     }
 
