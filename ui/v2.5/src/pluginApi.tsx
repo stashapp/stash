@@ -13,6 +13,7 @@ import * as FontAwesomeSolid from "@fortawesome/free-solid-svg-icons";
 import * as FontAwesomeRegular from "@fortawesome/free-regular-svg-icons";
 import { useSpriteInfo } from "./hooks/sprite";
 import { useToast } from "./hooks/Toast";
+import Event from "./hooks/event";
 import { before, instead, after, components, RegisterComponent } from "./patch";
 
 // due to code splitting, some components may not have been loaded when a plugin
@@ -106,6 +107,7 @@ export const PluginApi = {
     // and the result of the original function
     after,
   },
+  Event: Event,
 };
 
 export default PluginApi;

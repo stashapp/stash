@@ -136,3 +136,11 @@ Registers an after function. An after function is called after the render functi
 | `fn` | `Function` | The after function. It accepts the same arguments as the original render function, plus the result of the original render function, and is expected to return the rendered component. |
 
 Returns `void`.
+
+#### `PluginApi.Event`
+
+Allows plugins to listen for Stash's events.
+
+```js
+PluginApi.Event.addEventListener("stash:location", (e) => console.log("Page Changed", e.detail.data.location.pathname))
+```
