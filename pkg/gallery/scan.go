@@ -9,6 +9,7 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
+	"github.com/stashapp/stash/pkg/plugin/hook"
 )
 
 type ScanCreatorUpdater interface {
@@ -83,7 +84,7 @@ func (h *ScanHandler) Handle(ctx context.Context, f models.File, oldFile models.
 			return fmt.Errorf("creating new gallery: %w", err)
 		}
 
-		h.PluginCache.RegisterPostHooks(ctx, newGallery.ID, plugin.GalleryCreatePost, nil, nil)
+		h.PluginCache.RegisterPostHooks(ctx, newGallery.ID, hook.GalleryCreatePost, nil, nil)
 
 		// associate all the images in the zip file with the gallery
 		for _, i := range images {
@@ -138,7 +139,7 @@ func (h *ScanHandler) associateExisting(ctx context.Context, existing []*models.
 		}
 
 		if !found || updateExisting {
-			h.PluginCache.RegisterPostHooks(ctx, i.ID, plugin.GalleryUpdatePost, nil, nil)
+			h.PluginCache.RegisterPostHooks(ctx, i.ID, hook.GalleryUpdatePost, nil, nil)
 		}
 	}
 

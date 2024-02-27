@@ -7,7 +7,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/plugin"
+	"github.com/stashapp/stash/pkg/plugin/hook"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 	"github.com/stashapp/stash/pkg/tag"
 	"github.com/stashapp/stash/pkg/utils"
@@ -119,7 +119,7 @@ func (r *mutationResolver) TagCreate(ctx context.Context, input TagCreateInput) 
 		return nil, err
 	}
 
-	r.hookExecutor.ExecutePostHooks(ctx, newTag.ID, plugin.TagCreatePost, input, nil)
+	r.hookExecutor.ExecutePostHooks(ctx, newTag.ID, hook.TagCreatePost, input, nil)
 	return r.getTag(ctx, newTag.ID)
 }
 
@@ -235,7 +235,7 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input TagUpdateInput) 
 		return nil, err
 	}
 
-	r.hookExecutor.ExecutePostHooks(ctx, t.ID, plugin.TagUpdatePost, input, translator.getFields())
+	r.hookExecutor.ExecutePostHooks(ctx, t.ID, hook.TagUpdatePost, input, translator.getFields())
 	return r.getTag(ctx, t.ID)
 }
 
@@ -251,7 +251,7 @@ func (r *mutationResolver) TagDestroy(ctx context.Context, input TagDestroyInput
 		return false, err
 	}
 
-	r.hookExecutor.ExecutePostHooks(ctx, tagID, plugin.TagDestroyPost, input, nil)
+	r.hookExecutor.ExecutePostHooks(ctx, tagID, hook.TagDestroyPost, input, nil)
 
 	return true, nil
 }
@@ -276,7 +276,7 @@ func (r *mutationResolver) TagsDestroy(ctx context.Context, tagIDs []string) (bo
 	}
 
 	for _, id := range ids {
-		r.hookExecutor.ExecutePostHooks(ctx, id, plugin.TagDestroyPost, tagIDs, nil)
+		r.hookExecutor.ExecutePostHooks(ctx, id, hook.TagDestroyPost, tagIDs, nil)
 	}
 
 	return true, nil
@@ -340,7 +340,7 @@ func (r *mutationResolver) TagsMerge(ctx context.Context, input TagsMergeInput) 
 		return nil, err
 	}
 
-	r.hookExecutor.ExecutePostHooks(ctx, t.ID, plugin.TagMergePost, input, nil)
+	r.hookExecutor.ExecutePostHooks(ctx, t.ID, hook.TagMergePost, input, nil)
 
 	return t, nil
 }
