@@ -8,13 +8,6 @@ import (
 	"github.com/dop251/goja"
 )
 
-// const (
-// 	UnsetValueError      = "UnsetValueError"
-// 	MissingArgumentError = "MissingArgumentError"
-// 	GraphQLRequestError  = "GraphQLRequestError"
-// 	InternalError        = "InternalError"
-// )
-
 type VM struct {
 	*goja.Runtime
 
@@ -60,11 +53,6 @@ func SetAll(s setter, defs ...ObjectValueDef) error {
 	}
 	return nil
 }
-
-// func throw(vm *otto.Otto, str string) {
-// 	value, _ := vm.Call("new Error", nil, str)
-// 	panic(value)
-// }
 
 func (v *VM) Throw(err error) {
 	e, newErr := v.New(v.Get("Error"), v.ToValue(err))
