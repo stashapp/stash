@@ -313,7 +313,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       controlBar: {
         pictureInPictureToggle: false,
         volumePanel: {
-          inline: false,
+          inline: true,
         },
         chaptersButton: false,
       },
