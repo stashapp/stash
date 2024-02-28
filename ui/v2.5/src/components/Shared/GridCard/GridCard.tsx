@@ -66,6 +66,7 @@ export const useContainerDimensions = (
 };
 
 export const GridCard: React.FC<ICardProps> = (props: ICardProps) => {
+  const cardID = props.url.substring(1).split("?")[0].replace("/", "-");
   function handleImageClick(event: React.MouseEvent<HTMLElement, MouseEvent>) {
     const { shiftKey } = event;
 
@@ -107,17 +108,25 @@ export const GridCard: React.FC<ICardProps> = (props: ICardProps) => {
   function maybeRenderCheckbox() {
     if (props.onSelectedChanged) {
       return (
-        <Form.Control
-          type="checkbox"
-          // #2750 - add mousetrap class to ensure keyboard shortcuts work
-          className="card-check mousetrap"
-          checked={props.selected}
-          onChange={() => props.onSelectedChanged!(!props.selected, shiftKey)}
-          onClick={(event: React.MouseEvent<HTMLInputElement, MouseEvent>) => {
-            shiftKey = event.shiftKey;
-            event.stopPropagation();
-          }}
-        />
+        <div className="checkbox-wrapper">
+          <Form.Control
+            type="checkbox"
+            id={cardID}
+            // #2750 - add mousetrap class to ensure keyboard shortcuts work
+            className="card-check mousetrap"
+            checked={props.selected}
+            onChange={() => props.onSelectedChanged!(!props.selected, shiftKey)}
+            onClick={(
+              event: React.MouseEvent<HTMLInputElement, MouseEvent>
+            ) => {
+              shiftKey = event.shiftKey;
+              event.stopPropagation();
+            }}
+          />
+          <label htmlFor={cardID}>
+            <span />
+          </label>
+        </div>
       );
     }
   }

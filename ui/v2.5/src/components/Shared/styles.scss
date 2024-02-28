@@ -484,6 +484,140 @@ div.react-datepicker {
   }
 }
 
+/* stylelint-disable */
+.card:has(input:checked) label,
+.card:hover label {
+  opacity: 1;
+}
+
+.checkbox-wrapper {
+  left: 0.5rem;
+  position: absolute;
+  top: 0.5rem;
+  z-index: 100;
+
+  .checkbox {
+    display: table-cell;
+    height: 100%;
+    text-align: center;
+    vertical-align: middle;
+    width: 100%;
+  }
+
+  input[type="checkbox"] {
+    display: none;
+  }
+
+  input[type="checkbox"]:checked + label {
+    span {
+      background-color: #e5a00d;
+      border: none;
+      opacity: 1;
+      transform: scale(1.2);
+    }
+
+    span:after {
+      background: #392803;
+      transition: width 150ms ease 100ms;
+      width: 10px;
+    }
+
+    span:before {
+      background: #392803;
+      transition: width 150ms ease 100ms;
+      width: 5px;
+    }
+  }
+
+  input[type="checkbox"]:checked + label:hover {
+    span {
+      background-color: #333;
+      transform: scale(1.2);
+    }
+
+    span:after {
+      background: #fff;
+      transition: width 150ms ease 100ms;
+      width: 10px;
+    }
+
+    span:before {
+      background: #fff;
+      transition: width 150ms ease 100ms;
+      width: 5px;
+    }
+  }
+
+  label {
+    color: #333;
+    cursor: pointer;
+    display: inline-block;
+    margin-bottom: 0;
+    margin-left: 0.3rem;
+    margin-top: 0.3rem;
+    opacity: 0;
+    position: relative;
+
+    span {
+      background-color: transparent;
+      border: 2px solid #fff;
+      border-radius: 50%;
+      display: inline-block;
+      height: 25px;
+      margin-right: 10px;
+      position: relative;
+      transition: background-color 150ms 200ms,
+        transform 350ms cubic-bezier(0.78, -1.22, 0.17, 1.89);
+      transform-origin: center;
+      vertical-align: middle;
+      width: 25px;
+    }
+
+    span:before {
+      background: #fff0;
+      border-radius: 2px;
+      box-sizing: unset;
+      content: "";
+      height: 2px;
+      left: 9px;
+      position: absolute;
+      top: 13px;
+      transform: rotate(45deg);
+      transform-origin: 0% 0%;
+      transition: width 50ms ease 50ms;
+      width: 0px;
+    }
+
+    span:after {
+      background: #fff0;
+      border-radius: 2px;
+      box-sizing: unset;
+      content: "";
+      height: 2px;
+      left: 10px;
+      position: absolute;
+      transform: rotate(305deg);
+      top: 16px;
+      transform-origin: 0% 0%;
+      transition: width 50ms ease;
+      width: 0;
+    }
+  }
+
+  label:hover {
+    span:before {
+      transition: width 100ms ease;
+      width: 5px;
+    }
+
+    span:after {
+      transition: width 150ms ease 100ms;
+      width: 10px;
+    }
+  }
+}
+/* stylelint-enable */
+
 .string-list-row .input-group {
   flex-wrap: nowrap;
 }

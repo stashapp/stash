@@ -132,8 +132,95 @@ textarea.scene-description {
   right: 0.7rem;
 }
 
+.table-list {
+  tr:hover {
+    .title-data {
+      button {
+        opacity: 1;
+      }
+    }
+  }
+
+  .title-data {
+    padding-left: 3.5rem;
+
+    button {
+      background-color: unset;
+      border: none;
+      color: unset;
+      height: -webkit-fill-available;
+      left: 0;
+      margin: auto;
+      opacity: 0;
+      position: absolute;
+      top: 0;
+
+      .circular-playbutton {
+        border: 2px solid hsla(0, 0%, 100%, 0.7);
+        border-radius: 50%;
+        display: inline-block;
+        font-size: 10px;
+        height: 24px;
+        line-height: 24px;
+        position: relative;
+        text-align: center;
+        transition: all 0.2s;
+        width: 24px;
+
+        path {
+          fill: #fff;
+        }
+      }
+    }
+
+    button:hover {
+      .circular-playbutton {
+        background-color: #e5a00d;
+        border: 2px solid hsla(0, 0%, 100%, 0.7);
+        border-color: #e5a00d;
+
+        path {
+          fill: #1f2326;
+        }
+      }
+    }
+
+    td {
+      padding: 0.75rem;
+    }
+  }
+}
+
 .scene-interactive-speed-overlay {
   left: 0.7rem;
+}
+
+
+.scene-studio-overlay {
+  display: block;
+  font-weight: 900;
+  height: 10%;
+  max-width: 40%;
+  opacity: 0.75;
+  position: absolute;
+  right: 0.7rem;
+  top: 0.7rem;
+  z-index: 8;
+
+  .image-thumbnail {
+    height: 50px;
+    object-fit: contain;
+    width: 100%;
+  }
+
+  a {
+    color: $text-color;
+    display: inline-block;
+    letter-spacing: -0.03rem;
+    text-align: right;
+    text-decoration: none;
+    text-shadow: 0 0 3px #000;
+  }
 }
 
 .extra-scene-info {
@@ -672,6 +759,48 @@ input[type="range"].blue-slider {
   dl {
     margin-bottom: 0;
   }
+}
+
+.scene-table {
+  td:first-child {
+    padding: 0;
+  }
+
+  label {
+    margin: 0;
+    padding: 0.5rem;
+  }
+}
+
+.select-col {
+  width: 20px;
+
+  /* stylelint-disable */
+  .checkbox-wrapper {
+    left: auto;
+    position: relative;
+    top: auto;
+    z-index: 0;
+
+    input[type="checkbox"]:checked + label span {
+      transform: scale(0.8);
+    }
+
+    input[type="checkbox"]:checked + label:hover span {
+      transform: scale(0.8);
+    }
+
+    label {
+      margin: 0;
+      opacity: 1;
+      padding: 0;
+
+      span {
+        transform: scale(0.6);
+      }
+    }
+  }
+  /* stylelint-enable */
 }
 
 .scrape-dialog .rating-number.disabled {

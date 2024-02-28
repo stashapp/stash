@@ -75,9 +75,11 @@ export const ListTable = <T extends { id: string }>(
     return (
       <tr key={item.id}>
         <td className="select-col">
-          <label>
+          <div className="checkbox-wrapper">
             <Form.Control
               type="checkbox"
+              id={item.id}
+              // #2750 - add mousetrap class to ensure keyboard shortcuts work
               checked={selectedIds.has(item.id)}
               onChange={() =>
                 onSelectChange(item.id, !selectedIds.has(item.id), shiftKey)
@@ -89,7 +91,10 @@ export const ListTable = <T extends { id: string }>(
                 event.stopPropagation();
               }}
             />
-          </label>
+            <label htmlFor={item.id}>
+              <span />
+            </label>
+          </div>
         </td>
 
         {visibleColumns.map((column) => (
