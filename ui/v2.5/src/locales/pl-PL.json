@@ -8,7 +8,7 @@
         "allow_temporarily": "Zezwól tymczasowo",
         "anonymise": "Zanonimizuj",
         "apply": "Zastosuj",
-        "auto_tag": "Automatyczne oznaczanie",
+        "auto_tag": "Automatyczne tagowanie",
         "backup": "Kopia zapasowa",
         "browse_for_image": "Przeglądaj w poszukiwaniu obrazu…",
         "cancel": "Anuluj",
@@ -29,7 +29,7 @@
         "delete": "Usuń",
         "delete_entity": "Usuń {entityType}",
         "delete_file": "Usuń plik",
-        "delete_file_and_funscript": "Usuń plik (i skrypt funkcyjny)",
+        "delete_file_and_funscript": "Usuń plik (i skrypt funscript)",
         "delete_generated_supporting_files": "Usuń wygenerowane pliki pomocnicze",
         "disallow": "Nie zezwalaj",
         "download": "Pobierz",
@@ -73,13 +73,13 @@
         "previous_action": "Wstecz",
         "reassign": "Przypisz ponownie",
         "refresh": "Odśwież",
-        "reload_plugins": "Załaduj wtyczki ponownie",
-        "reload_scrapers": "Załaduj zbieracze ponownie",
+        "reload_plugins": "Przeładuj wtyczki",
+        "reload_scrapers": "Przeładuj zbieracze",
         "remove": "Usuń",
         "remove_from_gallery": "Usuń z galerii",
         "rename_gen_files": "Zmień nazwy wygenerowanych plików",
         "rescan": "Skanuj ponownie",
-        "reshuffle": "Wylosuj porządek",
+        "reshuffle": "Przetasuj",
         "running": "uruchomiony",
         "save": "Zapisz",
         "save_delete_settings": "Użyj tych opcji jako domyślnych podczas usuwania",
@@ -111,7 +111,7 @@
         "submit_update": "Prześlij aktualizację",
         "swap": "Zamień",
         "tasks": {
-            "clean_confirm_message": "Czy na pewno chcesz przeprowadzić oczyszczanie? Spowoduje to usunięcie informacji o bazie danych i wygenerowanej zawartości dla wszystkich scen i galerii, które nie znajdują się już w systemie plików.",
+            "clean_confirm_message": "Czy na pewno chcesz przeprowadzić oczyszczanie? Spowoduje to usunięcie informacji z bazy danych i wygenerowanej zawartości dla wszystkich scen i galerii, które nie znajdują się już w systemie plików.",
             "dry_mode_selected": "Wybrano tryb próby na sucho. Nie nastąpi faktyczne usunięcie, a jedynie zapisanie w dzienniku.",
             "import_warning": "Czy na pewno chcesz zaimportować? Spowoduje to usunięcie bazy danych i ponowne zaimportowanie wyeksportowanych metadanych."
         },
@@ -119,7 +119,22 @@
         "temp_enable": "Włącz tymczasowo…",
         "unset": "Nieustawiony",
         "use_default": "Użyj domyślnych",
-        "view_random": "Pokaż losowe"
+        "view_random": "Pokaż losowe",
+        "optimise_database": "Optymalizuj bazę danych",
+        "copy_to_clipboard": "Kopiuj do schowka",
+        "disable": "Wyłącz",
+        "encoding_image": "Kodowanie obrazu…",
+        "reload": "Przeładuj",
+        "enable": "Włącz",
+        "add_o": "Dodaj O",
+        "add_manual_date": "Dodaj datę ręcznie",
+        "add_play": "Dodaj odtworzenie",
+        "assign_stashid_to_parent_studio": "Przypisz Stash ID do istniejącego studia nadrzędnego i zaktualizuj metadane",
+        "choose_date": "Wybierz datę",
+        "clean_generated": "Wyczyść wygenerowane pliki",
+        "clear_date_data": "Wyczyść dane daty",
+        "create_parent_studio": "Utwórz studio nadrzędne",
+        "remove_date": "Usuń datę"
     },
     "actions_name": "Działania",
     "age": "Wiek",
@@ -167,13 +182,15 @@
             "set_tag_label": "Ustaw tagi",
             "show_male_desc": "Włączenie opcji tagowania wykonawców płci męskiej.",
             "show_male_label": "Pokaż męskich aktorów",
-            "source": "Źródło"
+            "source": "Źródło",
+            "mark_organized_desc": "Po kliknięciu przycisku Zapisz scena zostaje natychmiast oznaczona jako zorganizowana.",
+            "mark_organized_label": "Oznacz jako zorganizowane przy zapisywaniu"
         },
         "noun_query": "Zapytanie",
         "results": {
             "duration_off": "Czas trwania przesunięty o co najmniej {number}s",
             "duration_unknown": "Czas trwania nieznany",
-            "fp_found": "{fpCount, plural, =0 {Nie znaleziono nowych dopasowań odcisków palców} other {# znaleziono nowe dopasowania odcisków palców}}",
+            "fp_found": "{fpCount, plural, =0 {Nie znaleziono nowych dopasowań odcisków palców} one {Znaleziono # nowe dopasowanie odcisków palców} few {Znaleziono # nowe dopasowania odcisków palców} other {Znaleziono # nowych dopasowań odcisków palców}}",
             "fp_matches": "Czas trwania jest zgodny",
             "fp_matches_multi": "Pasujące czasy trwania dla odcisków palców {matchCount}/{durationsLength}",
             "hash_matches": "{hash_type} jest zgodny",
@@ -186,7 +203,7 @@
         "verb_match_fp": "Dopasuj odciski palców",
         "verb_matched": "Dopasowane",
         "verb_scrape_all": "Zbierz wszystko",
-        "verb_submit_fp": "Wyślij {fpCount, plural, one{# odcisk palca} other{# odciski palców}}",
+        "verb_submit_fp": "Wyślij {fpCount, plural, one{# odcisk palca} few{# odciski palców} other{# odcisków palców}}",
         "verb_toggle_config": "{toggle} {configuration}",
         "verb_toggle_unmatched": "{toggle} niedopasowane sceny"
     },
@@ -702,7 +719,8 @@
                 }
             },
             "title": "Interfejs użytkownika"
-        }
+        },
+        "advanced_mode": "Tryb zaawansowany"
     },
     "configuration": "Konfiguracja",
     "countables": {
@@ -1253,5 +1271,6 @@
     "weight": "Waga",
     "weight_kg": "Waga (kg)",
     "years_old": "lat(a)",
-    "zip_file_count": "Liczba plików zip"
+    "zip_file_count": "Liczba plików zip",
+    "audio_codec": "Kodek audio"
 }

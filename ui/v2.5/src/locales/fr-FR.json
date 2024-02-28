@@ -39,7 +39,7 @@
         "download_backup": "Télécharger une sauvegarde",
         "edit": "Éditer",
         "edit_entity": "Éditer {entityType}",
-        "encoding_image": "Encodage de l'image",
+        "encoding_image": "Encodage de l'image…",
         "export": "Exporter",
         "export_all": "Tout exporter…",
         "find": "Rechercher",
@@ -123,7 +123,18 @@
         "temp_enable": "Activer temporairement…",
         "unset": "Désactiver",
         "use_default": "Utiliser par défaut",
-        "view_random": "Visionner au hasard"
+        "view_random": "Visionner au hasard",
+        "add_manual_date": "Ajouter une date manuellement",
+        "add_o": "Ajouter O",
+        "add_play": "Ajouter Lecture",
+        "choose_date": "Choisir une date",
+        "clear_date_data": "Supprimer les données de date",
+        "copy_to_clipboard": "Copier dans le presse-papier",
+        "disable": "Désactiver",
+        "enable": "Activer",
+        "reload": "Recharger",
+        "remove_date": "Supprimer date",
+        "clean_generated": "Nettoyer les fichiers générés"
     },
     "actions_name": "Actions",
     "age": "Âge",
@@ -267,7 +278,7 @@
                 "log_to_terminal": "Journaliser dans le terminal",
                 "log_to_terminal_desc": "Journalise dans le terminal en complément d'un fichier. Toujours valide si la journalisation des fichiers est désactivée. Nécessite un redémarrage.",
                 "maximum_session_age": "Durée maximum de session",
-                "maximum_session_age_desc": "Temps d'inactivité maximal avant expiration d'une session de connexion, en secondes.",
+                "maximum_session_age_desc": "Temps d'inactivité maximal avant expiration d'une session de connexion, en secondes. Nécessite un redémarrage.",
                 "password": "Mot de passe",
                 "password_desc": "Mot de passe pour accéder à Stash. Laisser vide pour désactiver l'authentification utilisateur",
                 "stash-box_integration": "Intégration de Stash-Box",
@@ -359,8 +370,8 @@
             "parallel_scan_head": "Analyse ou génération en parallèle",
             "preview_generation": "Génération d'aperçu",
             "python_path": {
-                "description": "Emplacement de l'exécutable python. Utilisé par les extracteurs de contenu et les plugins. Si vide, python sera résolu à partir de l'environnement",
-                "heading": "Chemin de Python"
+                "description": "Chemin de l'exécutable python (pas uniquement le répertoire). Utilisé par les extracteurs de contenu et les plugins. Si vide, python sera résolu à partir de l'environnement",
+                "heading": "Chemin de l'exécutable Python"
             },
             "scraper_user_agent": "Agent utilisateur de l'extracteur",
             "scraper_user_agent_desc": "Chaîne agent utilisateur utilisée par les requêtes http lors de l'extraction de contenu",
@@ -372,7 +383,11 @@
             "sqlite_location": "Emplacement du fichier de base de données SQLite (nécessite un redémarrage). AVERTISSEMENT : Le stockage de la base de données sur un système différent de celui qui exécute le serveur Stash (c'est-à-dire sur le réseau) n'est pas pris en charge !",
             "video_ext_desc": "Liste d'extensions de fichiers séparées par des virgules qui seront reconnues comme des vidéos.",
             "video_ext_head": "Extensions de fichiers vidéo",
-            "video_head": "Vidéo"
+            "video_head": "Vidéo",
+            "plugins_path": {
+                "description": "Emplacement du répertoire des fichiers de configuration des plugins",
+                "heading": "Chemin des plugins"
+            }
         },
         "library": {
             "exclusions": "Exclusions",
@@ -384,7 +399,9 @@
         },
         "plugins": {
             "hooks": "Accroches",
-            "triggers_on": "Déclenche sur"
+            "triggers_on": "Déclenche sur",
+            "installed_plugins": "Plugins installés",
+            "available_plugins": "Plugins disponibles"
         },
         "scraping": {
             "entity_metadata": "Métadonnées {entityType}",
@@ -395,7 +412,9 @@
             "scrapers": "Extracteurs",
             "search_by_name": "Recherche par nom",
             "supported_types": "Types supportés",
-            "supported_urls": "Adresses Web"
+            "supported_urls": "Adresses Web",
+            "installed_scrapers": "Extracteurs de contenu installés",
+            "available_scrapers": "Extracteurs de contenu disponibles"
         },
         "stashbox": {
             "add_instance": "Ajouter une instance Stash-Box",
@@ -438,7 +457,7 @@
             "generate_phashes_during_scan": "Générer des empreintes perceptuelles",
             "generate_phashes_during_scan_tooltip": "Pour la déduplication et l'identification des scènes.",
             "generate_previews_during_scan": "Générer des aperçus d'images animées",
-            "generate_previews_during_scan_tooltip": "Générer des aperçus WebP animés, requis uniquement si le mode d'aperçu est défini sur Image animée.",
+            "generate_previews_during_scan_tooltip": "Génère également des aperçus animés (webp), uniquement requis lorsque le mode de prévisualisation Scène/Mur de marqueurs est défini sur Image animée. Lors de la navigation, ils utilisent moins de ressources CPU que les aperçus vidéo, mais sont générés en complément de ceux-ci et constituent des fichiers plus volumineux.",
             "generate_sprites_during_scan": "Générer les sprites de progression",
             "generate_thumbnails_during_scan": "Générer des vignettes pour les images",
             "generate_video_covers_during_scan": "Générer les vignettes de scène",
@@ -497,7 +516,19 @@
                 "scanning_paths": "Analyse les chemins suivants"
             },
             "scan_for_content_desc": "Analyser le nouveau contenu et l'ajouter à la base de données.",
-            "set_name_date_details_from_metadata_if_present": "Définir le nom, date, détails à partir des métadonnées intégrées au fichier"
+            "set_name_date_details_from_metadata_if_present": "Définir le nom, date, détails à partir des métadonnées intégrées au fichier",
+            "clean_generated": {
+                "blob_files": "Fichiers Blob",
+                "description": "Supprime les fichiers générés sans entrée correspondante dans la base de données.",
+                "image_thumbnails_desc": "Vignettes et séquences d'images",
+                "markers": "Aperçu des marqueurs",
+                "image_thumbnails": "Vignettes d'images",
+                "previews": "Aperçu des scènes",
+                "previews_desc": "Aperçu des scènes et vignettes",
+                "sprites": "Sprites de scène",
+                "transcodes": "Transcodes de scènes"
+            },
+            "generate_sprites_during_scan_tooltip": "L'ensemble des images affichées en dessous du lecteur vidéo pour une navigation aisée."
         },
         "tools": {
             "scene_duplicate_checker": "Vérificateur de doublons de scènes",
@@ -661,7 +692,7 @@
                 }
             },
             "preview_type": {
-                "description": "Configuration des éléments du mur",
+                "description": "L'option par défaut est l'aperçu vidéo (mp4). Pour réduire la charge du CPU lors de la navigation, vous pouvez utiliser les aperçus d'images animées (webp). Cependant, elles doivent être générées en complément des aperçus vidéo et sont des fichiers plus volumineux.",
                 "heading": "Mode d'aperçu",
                 "options": {
                     "animated": "Image animée",
@@ -670,9 +701,9 @@
                 }
             },
             "scene_list": {
-                "heading": "Liste de scènes",
+                "heading": "Vue en grille",
                 "options": {
-                    "show_studio_as_text": "Afficher les studios sous format texte"
+                    "show_studio_as_text": "Afficher en texte la superposition du studio"
                 }
             },
             "scene_player": {
@@ -741,7 +772,8 @@
                 "description": "Activée, les funscripts sont transmis directement de Stash à votre dispositif Handy sans recourir au serveur Handy de tierce partie. Nécessite que Stash soit accessible depuis votre dispositif Handy.",
                 "heading": "Transmettre directement les funscripts"
             }
-        }
+        },
+        "advanced_mode": "Mode Avancé"
     },
     "configuration": "Configuration",
     "countables": {
@@ -860,10 +892,10 @@
             "force_transcodes": "Forcer la génération du transcodage",
             "force_transcodes_tooltip": "Par défaut, les transcodes ne sont générés que lorsque le fichier vidéo n'est pas pris en charge par le navigateur. Activé, les transcodes seront générés même si le fichier vidéo semble être pris en charge par le navigateur.",
             "image_previews": "Aperçus d'images animées",
-            "image_previews_tooltip": "Aperçu WebP animé, requis uniquement si le mode d'aperçu est défini sur Image animée.",
+            "image_previews_tooltip": "Génère également des aperçus animés (webp), uniquement requis lorsque le mode de prévisualisation Scène/Mur de marqueurs est défini sur Image animée. Lors de la navigation, ils utilisent moins de ressources CPU que les aperçus vidéo, mais sont générés en complément de ceux-ci et constituent des fichiers plus volumineux.",
             "interactive_heatmap_speed": "Générer des cartes thermiques et vitesses pour les scènes interactives",
             "marker_image_previews": "Aperçus animés des marqueurs",
-            "marker_image_previews_tooltip": "Aperçus WebP animés de marqueurs, requis uniquement si le mode d'aperçu est défini sur Image animée.",
+            "marker_image_previews_tooltip": "Génère également des aperçus animés (webp), uniquement requis lorsque le mode de prévisualisation Scène/Mur de marqueurs est défini sur Image animée. Lors de la navigation, ils utilisent moins de ressources CPU que les aperçus vidéo, mais sont générés en complément de ceux-ci et constituent des fichiers plus volumineux.",
             "marker_screenshots": "Captures d'écran des marqueurs",
             "marker_screenshots_tooltip": "Images JPG statiques des marqueurs, requis uniquement si le mode d'aperçu est défini sur Image statique.",
             "markers": "Aperçus des marqueurs",
@@ -871,7 +903,7 @@
             "override_preview_generation_options": "Remplacer les options de génération d'aperçu",
             "override_preview_generation_options_desc": "Remplacer les options de génération d'aperçu pour cette opération. Les valeurs par défaut sont définies dans Système -> Génération d'aperçus.",
             "overwrite": "Remplacer les fichiers existants",
-            "phash": "Empreintes perceptuelles (pour la déduplication)",
+            "phash": "Empreintes perceptuelles",
             "preview_exclude_end_time_desc": "Exclure les x dernières secondes des aperçus de la scène. Cela peut être une valeur en secondes, ou un pourcentage (par exemple 2%) de la durée totale de la scène.",
             "preview_exclude_end_time_head": "Exclure le temps de fin",
             "preview_exclude_start_time_desc": "Exclure les x premières secondes des aperçus de la scène. Cela peut être une valeur en secondes, ou un pourcentage (par exemple 2%) de la durée totale de la scène.",
@@ -885,11 +917,13 @@
             "preview_seg_duration_desc": "Durée de chaque segment d'aperçu, en secondes.",
             "preview_seg_duration_head": "Durée du segment d'aperçu",
             "sprites": "Sprites de progression de scène",
-            "sprites_tooltip": "Sprites (pour la progression de scène)",
+            "sprites_tooltip": "L'ensemble des images affichées en dessous du lecteur vidéo pour une navigation aisée.",
             "transcodes": "Transcoder",
-            "transcodes_tooltip": "Conversion en MP4 des formats vidéo non pris en charge",
+            "transcodes_tooltip": "Les transcodes MP4 seront générés à l'avance pour tous les contenus ; utile pour les processeurs lents, mais nécessite beaucoup plus d'espace disque",
             "video_previews": "Aperçus",
-            "video_previews_tooltip": "Prévisualisation de la vidéo lors du survol d'une scène"
+            "video_previews_tooltip": "Prévisualisation de la vidéo lors du survol d'une scène",
+            "phash_tooltip": "Pour la déduplication et l'identification des scènes",
+            "image_thumbnails": "Vignettes d'images"
         },
         "scenes_found": "{count} scènes trouvées",
         "scrape_entity_query": "Requête d'extraction {entity_type}",
@@ -897,7 +931,9 @@
         "scrape_results_existing": "Existant",
         "scrape_results_scraped": "Extraits",
         "set_image_url_title": "URL de l'image",
-        "unsaved_changes": "Modifications non sauvegardées. Vous êtes sûr de vouloir quitter ?"
+        "unsaved_changes": "Modifications non sauvegardées. Vous êtes sûr de vouloir quitter ?",
+        "clear_o_history_confirm": "Êtes-vous sûr de vouloir effacer l'historique des O ?",
+        "clear_play_history_confirm": "Êtes-vous sûr de vouloir effacer l'historique de lecture ?"
     },
     "dimensions": "Dimensions",
     "director": "Réalisateur",
@@ -925,7 +961,8 @@
             "medium": "Moyenne"
         },
         "search_accuracy_label": "Pertinence de recherche",
-        "title": "Scènes dupliquées"
+        "title": "Scènes dupliquées",
+        "only_select_matching_codecs": "Sélectionner uniquement si tous les codecs correspondent dans le groupe des doublons"
     },
     "duplicated_phash": "Empreinte dupliquée",
     "duration": "Durée",
@@ -975,7 +1012,7 @@
     "filters": "Filtres",
     "folder": "Répertoire",
     "framerate": "Fréquence",
-    "frames_per_second": "{value} images par seconde",
+    "frames_per_second": "{value} fps",
     "front_page": {
         "types": {
             "premade_filter": "Filtre prédéfini",
@@ -1046,7 +1083,7 @@
         "stream": "Flux",
         "video_codec": "Codec vidéo"
     },
-    "megabits_per_second": "{value} mégabits par seconde",
+    "megabits_per_second": "{value} mbps",
     "metadata": "Métadonnées",
     "movie": "Film",
     "movie_scene_number": "Numéro de scène",
@@ -1223,10 +1260,10 @@
             "your_system_has_been_created": "Bravo ! Votre système a été créé !"
         },
         "welcome": {
-            "config_path_logic_explained": "Stash essaie d'abord de trouver son fichier de configuration (<code>config.yml</code>) dans le répertoire de travail courant, et s'il ne le trouve pas, il se reporte sur <code>$HOME/.stash/config. yml</code> (sous Windows, ce sera <code>%USERPROFILE%\\.stash\\config.yml</code>). Vous pouvez également faire en sorte que Stash lise un fichier de configuration spécifique en le lançant avec les options <code>-c '<path to config file>'</code> ou <code>--config '<path to config file>'</code>.",
-            "in_current_stash_directory": "Dans le répertoire <code>$HOME/.stash</code>",
+            "config_path_logic_explained": "Stash essaie d'abord de trouver son fichier de configuration (<code>config.yml</code>) dans le répertoire de travail courant, et s'il ne le trouve pas, il se reporte sur <code>{fallback_path}</code>. Vous pouvez également faire en sorte que Stash lise un fichier de configuration spécifique en le lançant avec les options <code>-c '<path to config file>'</code> ou <code>--config '<path to config file>'</code>.",
+            "in_current_stash_directory": "Dans le répertoire <code>{path}</code>:",
             "in_the_current_working_directory": "Dans le répertoire de travail courant",
-            "next_step": "Une fois que tout est réglé, si vous êtes prêt à procéder à la configuration d'un nouveau système, choisissez l'emplacement où vous souhaitez stocker votre fichier de configuration et cliquez sur Suivant.",
+            "next_step": "Une fois que tout est réglé, si vous êtes prêt à procéder à la configuration d'un nouveau système, s'il vous plaît choisissez l'emplacement où vous souhaitez stocker votre fichier de configuration.",
             "store_stash_config": "Où voulez-vous stocker votre configuration de Stash ?",
             "unable_to_locate_config": "Si vous lisez ceci, Stash n'a pas pu trouver de configuration existante. Cet assistant vous guidera dans le processus de paramétrage d'une nouvelle configuration.",
             "unexpected_explained": "Si vous obtenez cet écran de manière inattendue, essayez de redémarrer Stash dans le bon répertoire de travail ou avec le drapeau <code>-c</code>."
@@ -1348,5 +1385,10 @@
     "weight": "Poids",
     "weight_kg": "Poids (kg)",
     "years_old": "ans",
-    "zip_file_count": "Nombre de fichiers Zip"
+    "zip_file_count": "Nombre de fichiers Zip",
+    "orientation": "Orientation",
+    "distance": "Distance",
+    "package_manager": {
+        "description": "Description"
+    }
 }

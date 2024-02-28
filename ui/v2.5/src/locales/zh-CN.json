@@ -120,9 +120,9 @@
         "unset": "重设",
         "use_default": "使用默认",
         "view_random": "随机查看",
-        "create_parent_studio": "创建父工作室",
+        "create_parent_studio": "创建父母工作室",
         "optimise_database": "优化数据库",
-        "assign_stashid_to_parent_studio": "将Stash ID分配给现有的父工作室并更新元数据",
+        "assign_stashid_to_parent_studio": "将Stash ID分配给现有的父母工作室并更新元数据",
         "encoding_image": "编码图片中…",
         "reload": "重新加载",
         "disable": "禁用",
@@ -133,7 +133,8 @@
         "add_manual_date": "添加手动日期",
         "copy_to_clipboard": "复制到剪切板",
         "remove_date": "去除日期",
-        "add_o": "添加“O”"
+        "add_o": "添加“O”",
+        "clean_generated": "清除已生成的文件"
     },
     "actions_name": "操作",
     "age": "年龄",
@@ -466,15 +467,15 @@
                 "and_create_missing": "和生成暂无的",
                 "create_missing": "生成暂无的",
                 "default_options": "默认选项",
-                "description": "使用stash-box和挖掘器自动设立短片的元数据.",
+                "description": "使用stash-box和刮削器自动设立短片的元数据.",
                 "explicit_set_description": "如果源没有特别设定，下列选项将被使用。",
                 "field": "数据字段",
                 "field_behaviour": "{strategy}{field}",
                 "field_options": "数据选项",
-                "heading": "鉴定",
-                "identifying_from_paths": "鉴定以下路径的短片",
-                "identifying_scenes": "正在鉴定{num}{scene}",
-                "include_male_performers": "包括男演员",
+                "heading": "识别",
+                "identifying_from_paths": "正在识别以下路径的短片",
+                "identifying_scenes": "正在识别{num}{scene}",
+                "include_male_performers": "包括男性表演者",
                 "set_cover_images": "设立封面图",
                 "set_organized": "设定“已整理”标志",
                 "source": "源",
@@ -483,9 +484,12 @@
                 "strategy": "策略",
                 "skip_multiple_matches": "跳过有多个结果的匹配",
                 "skip_single_name_performers": "跳过无消歧的单名表演者",
-                "skip_multiple_matches_tooltip": "如果未启用此功能，并且返回多个结果，则将随机选择一个结果进行匹配",
+                "skip_multiple_matches_tooltip": "如果未启用此选项，且返回多个结果，则将随机选择一个结果与之进行匹配",
                 "tag_skipped_performers": "跳过以下匹配的演员",
-                "tag_skipped_matches": "跳过以下匹配的标签"
+                "tag_skipped_matches": "跳过以下匹配的标签",
+                "skip_single_name_performers_tooltip": "如果未启用此选项，通常是通用的表演者（如Samantha或Olga）将被匹配",
+                "tag_skipped_performer_tooltip": "创建一个标签，如“识别：单名表演者”，您可以在短片标签设置视图中过滤它，并选择如何处理这些表演者",
+                "tag_skipped_matches_tooltip": "创建一个标签，如“识别：多个匹配项”，您可以在短片标签设置视图中过滤并手动选择正确的匹配项"
             },
             "import_from_exported_json": "导入之前导出的json格式元数据。 删除现有数据库内容。",
             "incremental_import": "从导出的 zip 文件增量导入。",
@@ -512,7 +516,18 @@
             "set_name_date_details_from_metadata_if_present": "使用文件内含的元数据的标题、日期、详情",
             "generate_sprites_during_scan_tooltip": "视频播放器下方用于快速导航的缩略图集。",
             "optimise_database": "尝试通过分析然后重建整个数据库文件来提高性能。",
-            "optimise_database_warning": "警告：当此任务运行时，任何修改数据库的操作都将失败，而且根据数据库的大小，可能需要几分钟才能完成。此外，它至少需要与数据库大小相当的可用磁盘空间，但建议使用 1.5 倍的空间。"
+            "optimise_database_warning": "警告：当此任务运行时，任何修改数据库的操作都将失败，而且根据数据库的大小，可能需要几分钟才能完成。此外，它至少需要与数据库大小相当的可用磁盘空间，但建议使用 1.5 倍的空间。",
+            "clean_generated": {
+                "blob_files": "Blob文件",
+                "description": "移除没有相应数据库条目的已生成文件。",
+                "image_thumbnails": "图像缩略图",
+                "image_thumbnails_desc": "图像缩略图和片段",
+                "markers": "标记预览",
+                "previews": "短片预览",
+                "previews_desc": "短片预览和缩略图",
+                "sprites": "短片精灵",
+                "transcodes": "短片转码"
+            }
         },
         "tools": {
             "scene_duplicate_checker": "短片重复性检查工具",
@@ -793,7 +808,10 @@
         "not_between": "不在…之间",
         "not_equals": "不是",
         "not_matches_regex": "不符合正则表达式",
-        "not_null": "不为空"
+        "not_null": "不为空",
+        "format_string_depth": "{criterion}{modifierString}{valueString}(+{depth, plural, =-1 {all} other {{depth}}})",
+        "format_string_excludes": "{criterion} {modifierString} {valueString} (包括 {excludedString})",
+        "format_string_excludes_depth": "{criterion} {modifierString} {valueString} (包括 {excludedString}) (+{depth, plural, =-1 {全部} other {{depth}}})"
     },
     "custom": "自定义",
     "date": "日期",
@@ -948,7 +966,8 @@
         "select_all_but_largest_resolution": "选择重复组中除最高分辨率文件外的每个文件",
         "select_options": "选择选项…",
         "select_oldest": "选择重复组中最旧文件",
-        "select_youngest": "选择重复组中最新文件"
+        "select_youngest": "选择重复组中最新文件",
+        "only_select_matching_codecs": "在重复组中仅当所有编解码器匹配时选中"
     },
     "duplicated_phash": "重复的（感知码）",
     "duration": "时长",
@@ -1038,7 +1057,7 @@
     "image_count": "图片数量",
     "image_index": "图像 #",
     "images": "图片",
-    "include_parent_tags": "包含母标签",
+    "include_parent_tags": "包含父母标签",
     "include_sub_studios": "包含子工作室",
     "include_sub_tags": "包含子标签",
     "instagram": "Instagram",
@@ -1073,7 +1092,7 @@
     "megabits_per_second": "{value} Mbps",
     "metadata": "元数据",
     "movie": "电影",
-    "movie_scene_number": "电影短片编码",
+    "movie_scene_number": "短片编码",
     "movies": "电影",
     "name": "名称",
     "new": "新增",
@@ -1088,9 +1107,9 @@
         "previous": "上一页"
     },
     "parent_of": "{children}的父母",
-    "parent_studios": "上级工作室",
-    "parent_tag_count": "母标签数量",
-    "parent_tags": "母标签",
+    "parent_studios": "父母工作室",
+    "parent_tag_count": "父（母）标签数量",
+    "parent_tags": "父母标签",
     "part_of": "{parent} 的部分",
     "path": "路径",
     "perceptual_similarity": "感知的类似程度（感知码）",
@@ -1177,7 +1196,8 @@
             "database_file_path": "数据库文件的路径",
             "generated_directory": "生成资料的路径",
             "nearly_there": "就快好了！",
-            "stash_library_directories": "Stash库的路径"
+            "stash_library_directories": "Stash库的路径",
+            "blobs_use_database": "<使用中的数据库>"
         },
         "creating": {
             "creating_your_system": "建立你的系统当中",
@@ -1242,13 +1262,15 @@
             "your_system_has_been_created": "成功！你的系统建立了！"
         },
         "welcome": {
-            "config_path_logic_explained": "Stash首先尝试从当前工作目录中找配置文件 (<code>config.yml</code>)，如果没找到，会退回到 <code>$HOME/.stash/config.yml</code> (在微软视窗里，目录是<code>%USERPROFILE%\\.stash\\config.yml</code>). 你也可以让Stash读特定的配置文件，只要运行它时加上<code>-c '<配置文件目录>'</code>或者<code>--config '<配置文件目录>'</code>的选项。",
-            "in_current_stash_directory": "在 <code>{path}</code>目录里",
+            "config_path_logic_explained": "Stash首先尝试从当前工作目录中找配置文件 (<code>config.yml</code>)，如果没找到，会退回到 <code>{fallback_path}</code。 你也可以让Stash读特定的配置文件，只要运行它时加上<code>-c '<配置文件目录>'</code>或者<code>--config '<配置文件目录>'</code>的选项。",
+            "in_current_stash_directory": "在 <code>{path}</code>目录里：",
             "in_the_current_working_directory": "在当前工作目录 <code>{path}</code>里：",
             "next_step": "之前的问题都解决了，如果你准备好建立一个新的系统，请选择你想在哪里存放你的配置文件。",
             "store_stash_config": "你想在哪里存放你的Stash配置？",
             "unable_to_locate_config": "如果你看到这，就意味着Stash无法找到一个现有的配置。这个向导会指引你建立一个新的配置。",
-            "unexpected_explained": "如果你意外地看到这个屏幕显示，请在正确的工作目录下重新启动Stash，或者使用<code>-c</code>参数。"
+            "unexpected_explained": "如果你意外地看到这个屏幕显示，请在正确的工作目录下重新启动Stash，或者使用<code>-c</code>参数。",
+            "in_the_current_working_directory_disabled": "在<code>{path}</code>中, 工作目录:",
+            "in_the_current_working_directory_disabled_macos": "当正在运行 <code>Stash.app</code>时不支持,<br></br>在工作目录中运行 <code>stash-macos</code>来设置"
         },
         "welcome_specific_config": {
             "config_path": "Stash会使用以下配置文件的路径:<code>{path}</code>",
@@ -1275,7 +1297,8 @@
         "scenes_size": "短片大小",
         "total_play_count": "总播放次数",
         "total_play_duration": "总播放时长",
-        "scenes_played": "已播放的短片"
+        "scenes_played": "已播放的短片",
+        "total_o_count": "O-Count总计"
     },
     "status": "状态：{statusText}",
     "studio": "工作室",
@@ -1334,10 +1357,10 @@
         "updating_untagged_studios_description": "更新未标记的工作室将尝试匹配缺少Stash ID的工作室，并更新元数据。",
         "config": {
             "edit_excluded_fields": "编辑排除字段",
-            "create_parent_desc": "对于已存在且名称完全匹配的父工作室创建缺失的父工作室，或者标记并更新数据/图片",
+            "create_parent_desc": "对于已存在且名称完全匹配的父（母）工作室创建缺失的父（母）工作室，或者标记并更新数据/图片",
             "excluded_fields": "排除字段：",
             "no_fields_are_excluded": "无已排除字段",
-            "create_parent_label": "添加父工作室",
+            "create_parent_label": "添加父（母）工作室",
             "active_stash-box_instance": "目前使用的 Stash-box 实例：",
             "no_instances_found": "未找到实例",
             "these_fields_will_not_be_changed_when_updating_studios": "更新工作室时不改变这些字段。"
@@ -1352,7 +1375,7 @@
         "status_tagging_job_queued": "状态：标签设置任务排队中",
         "tag_status": "标签状态",
         "studio_successfully_tagged": "已成功标记工作室",
-        "to_use_the_studio_tagger": "使用工作室标记器需要配置一个stash-box实例",
+        "to_use_the_studio_tagger": "使用工作室标记器需要配置一个stash-box实例。",
         "untagged_studios": "未设置标签的工作室",
         "number_of_studios_will_be_processed": "{studio_count} 个工作室将被修改",
         "query_all_studios_in_the_database": "数据库中所有工作室",
@@ -1362,7 +1385,9 @@
         "name_already_exists": "名称已存在",
         "failed_to_save_studio": "保存工作室\"{studio}\"失败",
         "refreshing_will_update_the_data": "刷新后将更新所有已在此stash-box实例被标记的工作室。",
-        "create_or_tag_parent_studios": "创建缺失的父工作室或标记已存在的父工作室"
+        "create_or_tag_parent_studios": "创建缺失的父（母）工作室或标记已存在的父（母）工作室",
+        "any_names_entered_will_be_queried": "任何输入的名字将会从远程的Stash-Box实例查询并且加入（如果找到）。只有完全符合的名字才会视为匹配。",
+        "studio_selection": "工作室选择"
     },
     "subsidiary_studio_count": "子工作室数量",
     "urls": "链接",
@@ -1387,7 +1412,7 @@
         "add_source": "添加源",
         "required_by": "{packages} 所需要",
         "description": "描述",
-        "confirm_uninstall": "确定删除  {number}  个包？",
+        "confirm_uninstall": "确定删除 {number} 个包？",
         "package": "包",
         "no_sources": "未配置源",
         "no_packages": "未找到包",
@@ -1396,17 +1421,18 @@
         "show_all": "显示全部",
         "selected_only": "仅已选择",
         "no_upgradable": "未找到可升级的包",
-        "unknown": "<未知>"
+        "unknown": "<未知>",
+        "confirm_delete_source": "真的确定要删除源{name} ({url})?"
     },
     "distance": "距离",
     "photographer": "摄影师",
     "primary_tag": "主要标签",
     "tag_sub_tag_tooltip": "具有子标签",
-    "tag_parent_tooltip": "具有父标签",
-    "parent_studio": "父工作室",
+    "tag_parent_tooltip": "具有父母标签",
+    "parent_studio": "父（母）工作室",
     "penis_length_cm": "阴茎长度（厘米）",
     "penis_length": "阴茎长度",
-    "studio_and_parent": "工作室和父工作室",
+    "studio_and_parent": "工作室和父（母）工作室",
     "penis": "阴茎",
     "orientation": "方向",
     "plays": "已播放{value}次",
@@ -1416,5 +1442,6 @@
     "odate_recorded_no": "未记录 O 日期",
     "o_history": "社保历史",
     "history": "历史记录",
-    "index_of_total": "第{index}项，共 {total}项"
+    "index_of_total": "第{index}项，共 {total}项",
+    "time": "时间"
 }
