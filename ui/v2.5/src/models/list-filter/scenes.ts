@@ -9,6 +9,7 @@ import {
 import { HasMarkersCriterionOption } from "./criteria/has-markers";
 import { SceneIsMissingCriterionOption } from "./criteria/is-missing";
 import { MoviesCriterionOption } from "./criteria/movies";
+import { GalleriesCriterionOption } from "./criteria/galleries";
 import { OrganizedCriterionOption } from "./criteria/organized";
 import { PerformersCriterionOption } from "./criteria/performers";
 import { ResolutionCriterionOption } from "./criteria/resolution";
@@ -93,6 +94,7 @@ const criterionOptions = [
   PerformerFavoriteCriterionOption,
   StudiosCriterionOption,
   MoviesCriterionOption,
+  GalleriesCriterionOption,
   createStringCriterionOption("url"),
   StashIDCriterionOption,
   InteractiveCriterionOption,
