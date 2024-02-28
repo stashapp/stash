@@ -221,8 +221,11 @@
 
 .performer-select {
   .performer-disambiguation {
-    color: initial;
     white-space: pre;
+  }
+
+  .performer-select-value .performer-disambiguation {
+    color: initial;
   }
 
   .alias {

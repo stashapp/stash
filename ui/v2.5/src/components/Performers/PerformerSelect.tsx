@@ -93,7 +93,7 @@ const _PerformerSelect: React.FC<
     thisOptionProps = {
       ...optionProps,
       children: (
-        <span className="react-select-image-option">
+        <span className="react-select-image-option performer-select-option">
           <Link
             to={`/performers/${object.id}`}
             target="_blank"
@@ -127,12 +127,12 @@ const _PerformerSelect: React.FC<
     thisOptionProps = {
       ...optionProps,
       children: (
-        <>
+        <span className="performer-select-value">
           <span>{object.name}</span>
           {object.disambiguation && (
             <span className="performer-disambiguation">{` (${object.disambiguation})`}</span>
           )}
-        </>
+        </span>
       ),
     };
 
@@ -149,12 +149,12 @@ const _PerformerSelect: React.FC<
     thisOptionProps = {
       ...optionProps,
       children: (
-        <>
+        <span className="performer-select-value">
           {object.name}
           {object.disambiguation && (
             <span className="performer-disambiguation">{` (${object.disambiguation})`}</span>
           )}
-        </>
+        </span>
       ),
     };
 
