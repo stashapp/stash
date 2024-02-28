@@ -4,7 +4,6 @@ import * as GQL from "src/core/generated-graphql";
 import TextUtils from "src/utils/text";
 import { DetailItem } from "src/components/Shared/DetailItem";
 import { Link } from "react-router-dom";
-import { DirectorLink } from "src/components/Shared/TagLink";
 import NavUtils from "src/utils/navigation";
 
 interface IMovieDetailsPanel {

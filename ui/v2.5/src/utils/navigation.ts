@@ -15,10 +15,8 @@ import { ListFilterModel } from "src/models/list-filter/filter";
 import { MoviesCriterion } from "src/models/list-filter/criteria/movies";
 import {
   Criterion,
-  CriterionOption,
   CriterionValue,
   StringCriterion,
-  StringCriterionOption,
   createStringCriterionOption,
 } from "src/models/list-filter/criteria/criterion";
 import { GalleriesCriterion } from "src/models/list-filter/criteria/galleries";
