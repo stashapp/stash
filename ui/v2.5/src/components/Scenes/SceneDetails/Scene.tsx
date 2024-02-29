@@ -23,6 +23,7 @@ import {
   queryFindScenesByID,
 } from "src/core/StashService";
 
+import { SceneEditPanel } from "./SceneEditPanel";
 import { ErrorMessage } from "src/components/Shared/ErrorMessage";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { Icon } from "src/components/Shared/Icon";
@@ -59,8 +60,8 @@ const ExternalPlayerButton = lazyComponent(
 const QueueViewer = lazyComponent(() => import("./QueueViewer"));
 const SceneMarkersPanel = lazyComponent(() => import("./SceneMarkersPanel"));
 const SceneFileInfoPanel = lazyComponent(() => import("./SceneFileInfoPanel"));
-const SceneEditPanel = lazyComponent(() => import("./SceneEditPanel"));
 const SceneDetailPanel = lazyComponent(() => import("./SceneDetailPanel"));
+const SceneHistoryPanel = lazyComponent(() => import("./SceneHistoryPanel"));
 const SceneMoviePanel = lazyComponent(() => import("./SceneMoviePanel"));
 const SceneGalleriesPanel = lazyComponent(
   () => import("./SceneGalleriesPanel")
@@ -158,6 +159,7 @@ const ScenePage: React.FC<IProps> = ({
     Mousetrap.bind("e", () => setActiveTabKey("scene-edit-panel"));
     Mousetrap.bind("k", () => setActiveTabKey("scene-markers-panel"));
     Mousetrap.bind("i", () => setActiveTabKey("scene-file-info-panel"));
+    Mousetrap.bind("h", () => setActiveTabKey("scene-history-panel"));
     Mousetrap.bind("o", () => {
       onIncrementClick();
     });
@@ -172,6 +174,7 @@ const ScenePage: React.FC<IProps> = ({
       Mousetrap.unbind("e");
       Mousetrap.unbind("k");
       Mousetrap.unbind("i");
+      Mousetrap.unbind("h");
       Mousetrap.unbind("o");
       Mousetrap.unbind("p n");
       Mousetrap.unbind("p p");
@@ -278,6 +281,7 @@ const ScenePage: React.FC<IProps> = ({
           onClose={() => {
             setIsGenerateDialogOpen(false);
           }}
+          type="scene"
         />
       );
     }
@@ -407,6 +411,11 @@ const ScenePage: React.FC<IProps> = ({
             </Nav.Link>
           </Nav.Item>
           <Nav.Item>
+            <Nav.Link eventKey="scene-history-panel">
+              <FormattedMessage id="history" />
+            </Nav.Link>
+          </Nav.Item>
+          <Nav.Item>
             <Nav.Link eventKey="scene-edit-panel">
               <FormattedMessage id="actions.edit" />
             </Nav.Link>
@@ -479,13 +488,16 @@ const ScenePage: React.FC<IProps> = ({
         <Tab.Pane className="file-info-panel" eventKey="scene-file-info-panel">
           <SceneFileInfoPanel scene={scene} />
         </Tab.Pane>
-        <Tab.Pane eventKey="scene-edit-panel">
+        <Tab.Pane eventKey="scene-edit-panel" mountOnEnter>
           <SceneEditPanel
             isVisible={activeTabKey === "scene-edit-panel"}
             scene={scene}
             onSubmit={onSave}
             onDelete={() => setIsDeleteAlertOpen(true)}
           />
+        </Tab.Pane>
+        <Tab.Pane eventKey="scene-history-panel">
+          <SceneHistoryPanel scene={scene} />
         </Tab.Pane>
       </Tab.Content>
     </Tab.Container>

@@ -9,6 +9,7 @@ import {
   mutateUninstallPluginPackages,
   mutateUpdatePluginPackages,
   pluginMutationImpactedQueries,
+  isLoading,
 } from "src/core/StashService";
 import { useMonitorJob } from "src/utils/job";
 import {
@@ -25,8 +26,10 @@ export const InstalledPluginPackages: React.FC = () => {
   const [jobID, setJobID] = useState<string>();
   const { job } = useMonitorJob(jobID, () => onPackageChanges());
 
-  const { data, previousData, refetch, loading, error } =
+  const { data, previousData, refetch, networkStatus, error } =
     useInstalledPluginPackages(loadUpgrades);
+
+  const loading = isLoading(networkStatus);
 
   async function onUpdatePackages(packages: GQL.PackageSpecInput[]) {
     const r = await mutateUpdatePluginPackages(packages);

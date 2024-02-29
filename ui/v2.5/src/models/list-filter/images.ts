@@ -56,6 +56,7 @@ const defaultHiddenCriterionOptions = [
   createMandatoryNumberCriterionOption("tag_count"),
   PerformerTagsCriterionOption,
   createMandatoryNumberCriterionOption("performer_count"),
+  createMandatoryNumberCriterionOption("performer_age"),
   PerformerFavoriteCriterionOption,
   createStringCriterionOption("url"),
   createDateCriterionOption("date"),

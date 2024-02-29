@@ -1,5 +1,7 @@
 package plugin
 
+type OperationInput map[string]interface{}
+
 type PluginArgInput struct {
 	Key   string            `json:"key"`
 	Value *PluginValueInput `json:"value"`
@@ -14,28 +16,11 @@ type PluginValueInput struct {
 	A   []*PluginValueInput `json:"a"`
 }
 
-func findArg(args []*PluginArgInput, name string) *PluginArgInput {
-	for _, v := range args {
-		if v.Key == name {
-			return v
-		}
-	}
-
-	return nil
-}
-
-func applyDefaultArgs(args []*PluginArgInput, defaultArgs map[string]string) []*PluginArgInput {
+func applyDefaultArgs(args OperationInput, defaultArgs map[string]string) {
 	for k, v := range defaultArgs {
-		if arg := findArg(args, k); arg == nil {
-			v := v // Copy v, because it's being exported out of the loop
-			args = append(args, &PluginArgInput{
-				Key: k,
-				Value: &PluginValueInput{
-					Str: &v,
-				},
-			})
+		_, found := args[k]
+		if !found {
+			args[k] = v
 		}
 	}
-
-	return args
 }

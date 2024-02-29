@@ -1,1124 +1,1118 @@
 {
-  "actions": {
-    "add": "Añadir",
-    "add_directory": "Añadir directorio",
-    "add_entity": "Añadir {entityType}",
-    "add_to_entity": "Añadir a {entityType}",
-    "allow": "Permitir",
-    "allow_temporarily": "Permitir temporalmente",
-    "anonymise": "Anonimizar",
-    "apply": "Aplicar",
-    "auto_tag": "Etiquetado automático",
-    "backup": "Copia de seguridad",
-    "browse_for_image": "Explorar imagen…",
-    "cancel": "Cancelar",
-    "clean": "Limpiar",
-    "clear": "Eliminar",
-    "clear_back_image": "Eliminar contraportada",
-    "clear_front_image": "Eliminar portada",
-    "clear_image": "Eliminar imagen",
-    "close": "Cerrar",
-    "confirm": "Confirmar",
-    "continue": "Continuar",
-    "create": "Crear",
-    "create_chapters": "Crear capítulo",
-    "create_entity": "Crear {entityType}",
-    "create_marker": "Crear marcador",
-    "created_entity": "{entity_type} creado: {entity_name}",
-    "customise": "Personalizar",
-    "delete": "Eliminar",
-    "delete_entity": "Eliminar {entityType}",
-    "delete_file": "Eliminar archivo",
-    "delete_file_and_funscript": "Eliminar archivo (y funscript)",
-    "delete_generated_supporting_files": "Eliminar ficheros de soporte generados",
-    "delete_stashid": "Eliminar StashID",
-    "disallow": "No permitir/Denegar",
-    "download": "Descargar",
-    "download_anonymised": "Descargar anonimizado",
-    "download_backup": "Descargar copia de seguridad",
-    "edit": "Editar",
-    "edit_entity": "Editar {entityType}",
-    "export": "Exportar",
-    "export_all": "Exportar todo…",
-    "find": "Buscar",
-    "finish": "Terminar",
-    "from_file": "Desde archivo…",
-    "from_url": "Desde dirección web…",
-    "full_export": "Exportación completa",
-    "full_import": "Importación completa",
-    "generate": "Generar",
-    "generate_thumb_default": "Generar miniatura por defecto",
-    "generate_thumb_from_current": "Generar miniatura del frame actual",
-    "hash_migration": "Migración hash",
-    "hide": "Ocultar",
-    "hide_configuration": "Ocultar configuración",
-    "identify": "Identificar",
-    "ignore": "Ignorar",
-    "import": "Importar…",
-    "import_from_file": "Importar desde archivo",
-    "logout": "Cerrar sesión",
-    "make_primary": "Establecer como primario",
-    "merge": "Unir",
-    "merge_from": "Fusionar desde (origen)",
-    "merge_into": "Fusionar en (destino)",
-    "migrate_blobs": "Migrar blobs",
-    "migrate_scene_screenshots": "Migrar capturas de pantalla",
-    "next_action": "Próximo",
-    "not_running": "Apagado",
-    "open_in_external_player": "Abrir en reproductor externo",
-    "open_random": "Abrir aleatoria",
-    "overwrite": "Sobreescribir",
-    "play_random": "Reproducir aleatoria",
-    "play_selected": "Reproducir seleccionada",
-    "preview": "Vista previa",
-    "previous_action": "Atrás",
-    "reassign": "Reasignar",
-    "refresh": "Actualizar",
-    "reload_plugins": "Recargar plugins",
-    "reload_scrapers": "Recargar rastreadores",
-    "remove": "Borrar",
-    "remove_from_gallery": "Eliminar de la galería",
-    "rename_gen_files": "Renombrar archivos generados",
-    "rescan": "Volver a escanear",
-    "reshuffle": "Reorganizar",
-    "running": "En funcionamiento",
-    "save": "Guardar",
-    "save_delete_settings": "Usar estas opciones por defecto durante la eliminación",
-    "save_filter": "Guardar filtro",
-    "scan": "Escanear",
-    "scrape": "Rastrear",
-    "scrape_query": "Cadena de consulta para el rastreo",
-    "scrape_scene_fragment": "Rastrear por fragmento de vídeo",
-    "scrape_with": "Rastrear con…",
-    "search": "Buscar",
-    "select_all": "Seleccionar todo",
-    "select_entity": "Seleccionar {entityType}",
-    "select_folders": "Seleccionar carpetas",
-    "select_none": "Deseleccionar todo",
-    "selective_auto_tag": "Etiquetado automático selectivo",
-    "selective_clean": "Limpieza Selectiva",
-    "selective_scan": "Búsqueda selectiva",
-    "set_as_default": "Establecer por defecto",
-    "set_back_image": "Contraportada…",
-    "set_front_image": "Portada…",
-    "set_image": "Subir imagen…",
-    "show": "Mostrar",
-    "show_configuration": "Mostrar configuración",
-    "skip": "Saltar",
-    "split": "Dividir",
-    "stop": "Parar",
-    "submit": "Enviar",
-    "submit_stash_box": "Enviar a Stash-Box",
-    "submit_update": "Enviar Actualización",
-    "swap": "Intercambia",
-    "tasks": {
-      "clean_confirm_message": "¿Estás seguro que quieres iniciar la limpieza? Esto eliminará la información en la base de datos, y el contenido generado para todas las escenas y galerías que ya no estén disponibles en el sistema de ficheros.",
-      "dry_mode_selected": "Modo de simulación seleccionado. No se eliminará información, solo se guardarán registros de las acciones a realizar.",
-      "import_warning": "¿Estás seguro que quieres llevar a cabo la importación? Esta acción eliminará la base de datos e importará la información desde los metadatos previamente exportados."
+    "actions": {
+        "add": "Añadir",
+        "add_directory": "Añadir directorio",
+        "add_entity": "Añadir {entityType}",
+        "add_to_entity": "Añadir a {entityType}",
+        "allow": "Permitir",
+        "allow_temporarily": "Permitir temporalmente",
+        "anonymise": "Anonimizar",
+        "apply": "Aplicar",
+        "auto_tag": "Etiquetado automático",
+        "backup": "Copia de seguridad",
+        "browse_for_image": "Explorar imagen…",
+        "cancel": "Cancelar",
+        "clean": "Limpiar",
+        "clear": "Eliminar",
+        "clear_back_image": "Eliminar contraportada",
+        "clear_front_image": "Eliminar portada",
+        "clear_image": "Eliminar imagen",
+        "close": "Cerrar",
+        "confirm": "Confirmar",
+        "continue": "Continuar",
+        "create": "Crear",
+        "create_chapters": "Crear capítulo",
+        "create_entity": "Crear {entityType}",
+        "create_marker": "Crear marcador",
+        "created_entity": "{entity_type} creado: {entity_name}",
+        "customise": "Personalizar",
+        "delete": "Eliminar",
+        "delete_entity": "Eliminar {entityType}",
+        "delete_file": "Eliminar archivo",
+        "delete_file_and_funscript": "Eliminar archivo (y funscript)",
+        "delete_generated_supporting_files": "Eliminar ficheros de soporte generados",
+        "disallow": "No permitir/Denegar",
+        "download": "Descargar",
+        "download_anonymised": "Descargar anonimizado",
+        "download_backup": "Descargar copia de seguridad",
+        "edit": "Editar",
+        "edit_entity": "Editar {entityType}",
+        "export": "Exportar",
+        "export_all": "Exportar todo…",
+        "find": "Buscar",
+        "finish": "Terminar",
+        "from_file": "Desde archivo…",
+        "from_url": "Desde dirección web…",
+        "full_export": "Exportación completa",
+        "full_import": "Importación completa",
+        "generate": "Generar",
+        "generate_thumb_default": "Generar miniatura por defecto",
+        "generate_thumb_from_current": "Generar miniatura del frame actual",
+        "hash_migration": "Migración hash",
+        "hide": "Ocultar",
+        "hide_configuration": "Ocultar configuración",
+        "identify": "Identificar",
+        "ignore": "Ignorar",
+        "import": "Importar…",
+        "import_from_file": "Importar desde archivo",
+        "logout": "Cerrar sesión",
+        "make_primary": "Establecer como primario",
+        "merge": "Unir",
+        "merge_from": "Fusionar desde (origen)",
+        "merge_into": "Fusionar en (destino)",
+        "migrate_blobs": "Migrar blobs",
+        "migrate_scene_screenshots": "Migrar capturas de pantalla",
+        "next_action": "Próximo",
+        "not_running": "Apagado",
+        "open_in_external_player": "Abrir en reproductor externo",
+        "open_random": "Abrir aleatoria",
+        "overwrite": "Sobreescribir",
+        "play_random": "Reproducir aleatoria",
+        "play_selected": "Reproducir seleccionada",
+        "preview": "Vista previa",
+        "previous_action": "Atrás",
+        "reassign": "Reasignar",
+        "refresh": "Actualizar",
+        "reload_plugins": "Recargar plugins",
+        "reload_scrapers": "Recargar rastreadores",
+        "remove": "Borrar",
+        "remove_from_gallery": "Eliminar de la galería",
+        "rename_gen_files": "Renombrar archivos generados",
+        "rescan": "Volver a escanear",
+        "reshuffle": "Reorganizar",
+        "running": "En funcionamiento",
+        "save": "Guardar",
+        "save_delete_settings": "Usar estas opciones por defecto durante la eliminación",
+        "save_filter": "Guardar filtro",
+        "scan": "Escanear",
+        "scrape": "Rastrear",
+        "scrape_query": "Cadena de consulta para el rastreo",
+        "scrape_scene_fragment": "Rastrear por fragmento de vídeo",
+        "scrape_with": "Rastrear con…",
+        "search": "Buscar",
+        "select_all": "Seleccionar todo",
+        "select_entity": "Seleccionar {entityType}",
+        "select_folders": "Seleccionar carpetas",
+        "select_none": "Deseleccionar todo",
+        "selective_auto_tag": "Etiquetado automático selectivo",
+        "selective_clean": "Limpieza Selectiva",
+        "selective_scan": "Búsqueda selectiva",
+        "set_as_default": "Establecer por defecto",
+        "set_back_image": "Contraportada…",
+        "set_front_image": "Portada…",
+        "set_image": "Subir imagen…",
+        "show": "Mostrar",
+        "show_configuration": "Mostrar configuración",
+        "skip": "Saltar",
+        "split": "Dividir",
+        "stop": "Parar",
+        "submit": "Enviar",
+        "submit_stash_box": "Enviar a Stash-Box",
+        "submit_update": "Enviar Actualización",
+        "swap": "Intercambia",
+        "tasks": {
+            "clean_confirm_message": "¿Estás seguro que quieres iniciar la limpieza? Esto eliminará la información en la base de datos, y el contenido generado para todas las escenas y galerías que ya no estén disponibles en el sistema de ficheros.",
+            "dry_mode_selected": "Modo de simulación seleccionado. No se eliminará información, solo se guardarán registros de las acciones a realizar.",
+            "import_warning": "¿Estás seguro que quieres llevar a cabo la importación? Esta acción eliminará la base de datos e importará la información desde los metadatos previamente exportados."
+        },
+        "temp_disable": "Deshabilitar temporalmente…",
+        "temp_enable": "Habilitar temporalmente…",
+        "unset": "Desactivar",
+        "use_default": "Predeterminada",
+        "view_random": "Ver aleatoria"
     },
-    "temp_disable": "Deshabilitar temporalmente…",
-    "temp_enable": "Habilitar temporalmente…",
-    "unset": "Desactivar",
-    "use_default": "Predeterminada",
-    "view_random": "Ver aleatoria"
-  },
-  "actions_name": "Acciones",
-  "age": "Edad",
-  "aliases": "Pseudónimos",
-  "all": "todos",
-  "also_known_as": "También conocida como",
-  "ascending": "Ascendente",
-  "average_resolution": "Resolución media",
-  "between_and": "y",
-  "birth_year": "Año de nacimiento",
-  "birthdate": "Cumpleaños",
-  "bitrate": "Tasa de bits",
-  "blobs_storage_type": {
-    "database": "Base de datos",
-    "filesystem": "Sistema de ficheros"
-  },
-  "captions": "Subtítulos",
-  "career_length": "Años en activo",
-  "chapters": "Capítulos",
-  "component_tagger": {
+    "actions_name": "Acciones",
+    "age": "Edad",
+    "aliases": "Pseudónimos",
+    "all": "todos",
+    "also_known_as": "También conocida como",
+    "ascending": "Ascendente",
+    "average_resolution": "Resolución media",
+    "between_and": "y",
+    "birth_year": "Año de nacimiento",
+    "birthdate": "Cumpleaños",
+    "bitrate": "Tasa de bits",
+    "blobs_storage_type": {
+        "database": "Base de datos",
+        "filesystem": "Sistema de ficheros"
+    },
+    "captions": "Subtítulos",
+    "career_length": "Años en activo",
+    "chapters": "Capítulos",
+    "component_tagger": {
+        "config": {
+            "active_instance": "Instancia activa de stash-box:",
+            "blacklist_desc": "Los elementos de la lista negra son excluidos de las consultas. Nota: los elementos son expresiones regulares y son insensitivos a las mayúsculas. Ciertos caracteres deben ser denotados con una barra invertida: {chars_require_escape}",
+            "blacklist_label": "Lista de exclusiones",
+            "query_mode_auto": "Auto",
+            "query_mode_auto_desc": "Usa metadatos, si están presentes, o el nombre del archivo",
+            "query_mode_dir": "Directorio",
+            "query_mode_dir_desc": "Solo usa el directorio que contiene el archivo de vídeo",
+            "query_mode_filename": "Nombre de archivo",
+            "query_mode_filename_desc": "Solo usa el nombre del fichero",
+            "query_mode_label": "Modo de consulta",
+            "query_mode_metadata": "Metadatos",
+            "query_mode_metadata_desc": "Solo usa metadatos",
+            "query_mode_path": "Ruta",
+            "query_mode_path_desc": "Emplea la ruta completa del archivo",
+            "set_cover_desc": "Reemplazar la carátula de la escena si alguna es encontrada.",
+            "set_cover_label": "Seleccionar carátula de la escena",
+            "set_tag_desc": "Adjuntar etiquetas a la escena, ya sea sobreescribiéndolas (elimina las que existieran previamente) o fusionando las nuevas con las que ya existían previamente.",
+            "set_tag_label": "Seleccionar etiquetas",
+            "show_male_desc": "Marcar esta opción hará que los actores masculinos estén disponibles para su etiquetado.",
+            "show_male_label": "Mostrar actores",
+            "source": "Fuente"
+        },
+        "noun_query": "Consulta",
+        "results": {
+            "duration_off": "La duración se diferencia en, al menos, {number} segundos",
+            "duration_unknown": "Duración desconocida",
+            "fp_found": "{fpCount, plural, =0 {No se han encontrado nuevas huellas dactilares} other {# resultados de huellas dactilares encontrados}}",
+            "fp_matches": "La duración coincide",
+            "fp_matches_multi": "{matchCount}/{durationsLength} cincidencias de fingerprint(s)",
+            "hash_matches": "{hash_type} coincide",
+            "match_failed_already_tagged": "Escena ya etiquetada",
+            "match_failed_no_result": "No se han encontrado resultados",
+            "match_success": "Escena etiquetada correctamente",
+            "phash_matches": "{count} PHash(es) coincide(n)",
+            "unnamed": "Sin nombre"
+        },
+        "verb_match_fp": "huellas dactilares",
+        "verb_matched": "Coincidencia",
+        "verb_scrape_all": "Rastrear todo",
+        "verb_submit_fp": "Enviar {fpCount, plural, one{# huella dactilar} other{# huellas dactilares}}",
+        "verb_toggle_config": "{toggle} {configuration}",
+        "verb_toggle_unmatched": "{toggle} escenas sin coincidencia"
+    },
     "config": {
-      "active_instance": "Instancia activa de stash-box:",
-      "blacklist_desc": "Los elementos de la lista negra son excluidos de las consultas. Nota: los elementos son expresiones regulares y son insensitivos a las mayúsculas. Ciertos caracteres deben ser denotados con una barra invertida: {chars_require_escape}",
-      "blacklist_label": "Lista de exclusiones",
-      "query_mode_auto": "Auto",
-      "query_mode_auto_desc": "Usa metadatos, si están presentes, o el nombre del archivo",
-      "query_mode_dir": "Directorio",
-      "query_mode_dir_desc": "Solo usa el directorio que contiene el archivo de vídeo",
-      "query_mode_filename": "Nombre de archivo",
-      "query_mode_filename_desc": "Solo usa el nombre del fichero",
-      "query_mode_label": "Modo de consulta",
-      "query_mode_metadata": "Metadatos",
-      "query_mode_metadata_desc": "Solo usa metadatos",
-      "query_mode_path": "Ruta",
-      "query_mode_path_desc": "Emplea la ruta completa del archivo",
-      "set_cover_desc": "Reemplazar la carátula de la escena si alguna es encontrada.",
-      "set_cover_label": "Seleccionar carátula de la escena",
-      "set_tag_desc": "Adjuntar etiquetas a la escena, ya sea sobreescribiéndolas (elimina las que existieran previamente) o fusionando las nuevas con las que ya existían previamente.",
-      "set_tag_label": "Seleccionar etiquetas",
-      "show_male_desc": "Marcar esta opción hará que los actores masculinos estén disponibles para su etiquetado.",
-      "show_male_label": "Mostrar actores",
-      "source": "Fuente"
-    },
-    "noun_query": "Consulta",
-    "results": {
-      "duration_off": "La duración se diferencia en, al menos, {number} segundos",
-      "duration_unknown": "Duración desconocida",
-      "fp_found": "{fpCount, plural, =0 {No se han encontrado nuevas huellas dactilares} other {# resultados de huellas dactilares encontrados}}",
-      "fp_matches": "La duración coincide",
-      "fp_matches_multi": "{matchCount}/{durationsLength} cincidencias de fingerprint(s)",
-      "hash_matches": "{hash_type} coincide",
-      "match_failed_already_tagged": "Escena ya etiquetada",
-      "match_failed_no_result": "No se han encontrado resultados",
-      "match_success": "Escena etiquetada correctamente",
-      "phash_matches": "{count} PHash(es) coincide(n)",
-      "unnamed": "Sin nombre"
-    },
-    "verb_match_fp": "huellas dactilares",
-    "verb_matched": "Coincidencia",
-    "verb_scrape_all": "Rastrear todo",
-    "verb_submit_fp": "Enviar {fpCount, plural, one{# huella dactilar} other{# huellas dactilares}}",
-    "verb_toggle_config": "{toggle} {configuration}",
-    "verb_toggle_unmatched": "{toggle} escenas sin coincidencia"
-  },
-  "config": {
-    "about": {
-      "build_hash": "Hash de la versión instalada:",
-      "build_time": "Fecha de la versión instalada:",
-      "check_for_new_version": "Buscar versión actualizada",
-      "latest_version": "Última Versión",
-      "latest_version_build_hash": "Hash de la última versión:",
-      "new_version_notice": "[NUEVA]",
-      "release_date": "Fecha de publicación:",
-      "stash_discord": "Únete a nuestro canal {url}",
-      "stash_home": "Página principal del proyecto en {url}",
-      "stash_open_collective": "Donaciones al proyecto a través de {url}",
-      "stash_wiki": "Documentación del proyecto en nuestro {url}",
-      "version": "Versión"
-    },
-    "application_paths": {
-      "heading": "Rutas de la Aplicación"
-    },
-    "categories": {
-      "about": "Acerca de",
-      "changelog": "Registro de cambios",
-      "interface": "Diseño",
-      "logs": "Registros",
-      "metadata_providers": "Proveedores de Metadatos",
-      "plugins": "Plugins",
-      "scraping": "Rastreo",
-      "security": "Seguridad",
-      "services": "Servicios",
-      "system": "Sistema",
-      "tasks": "Tareas",
-      "tools": "Herramientas"
-    },
-    "dlna": {
-      "allow_temp_ip": "Permitir {tempIP}",
-      "allowed_ip_addresses": "Direcciones IP permitidas",
-      "allowed_ip_temporarily": "IP permitida temporalmente",
-      "default_ip_whitelist": "Lista de direcciones IP permitidas",
-      "default_ip_whitelist_desc": "Direcciones IP que tienen acceso al servidor DLNA por defecto. Escribe {wildcard} para permitir todas las direcciones IP.",
-      "disabled_dlna_temporarily": "Deshabilitar DLNA temporalmente",
-      "disallowed_ip": "IP no permitida",
-      "enabled_by_default": "Activado por defecto",
-      "enabled_dlna_temporarily": "Habilitar DLNA temporalmente",
-      "network_interfaces": "Interfaces",
-      "network_interfaces_desc": "Interfaces en las que transmitirá el servidor DLNA. Si no se selecciona ninguna se mostrará para todas las interfaces disponibles. Los cambios se guardarán tras reiniciar el servidor DLNA.",
-      "recent_ip_addresses": "Direcciones IP recientes",
-      "server_display_name": "Nombre del servidor",
-      "server_display_name_desc": "Nombre del servidor DLNA. Si no se indica un valor se usará {server_name} por defecto.",
-      "successfully_cancelled_temporary_behaviour": "Comportamiento temporal eliminado correctamente",
-      "until_restart": "hasta reinicio"
-    },
-    "general": {
-      "auth": {
-        "api_key": "Clave API",
-        "api_key_desc": "Clave API para sistemas externos. Requiere la configuración de usuario y contraseña. El nombre de usuario debe ser guardado antes de generar una clave API.",
-        "authentication": "Autentificación",
-        "clear_api_key": "Borrar clave API",
-        "credentials": {
-          "description": "Credenciales para restringir acceso a Stash.",
-          "heading": "Credenciales"
+        "about": {
+            "build_hash": "Hash de la versión instalada:",
+            "build_time": "Fecha de la versión instalada:",
+            "check_for_new_version": "Buscar versión actualizada",
+            "latest_version": "Última Versión",
+            "latest_version_build_hash": "Hash de la última versión:",
+            "new_version_notice": "[NUEVA]",
+            "release_date": "Fecha de publicación:",
+            "stash_discord": "Únete a nuestro canal {url}",
+            "stash_home": "Página principal del proyecto en {url}",
+            "stash_open_collective": "Donaciones al proyecto a través de {url}",
+            "stash_wiki": "Documentación del proyecto en nuestro {url}",
+            "version": "Versión"
         },
-        "generate_api_key": "Generar clave API",
-        "log_file": "Archivo de registro",
-        "log_file_desc": "Ruta del archivo en el que se volcarán los registros de eventos. En blanco deshabilita el fichero de registro. Los cambios se guardarán tras reiniciar la aplicación.",
-        "log_http": "Registro de accesos http",
-        "log_http_desc": "Registro de accesos http en consola. Requiere reinicio de la aplicación.",
-        "log_to_terminal": "Registro de eventos en consola",
-        "log_to_terminal_desc": "Registro de eventos en la consola de Stash además del respaldo en fichero. Habilitado si el registro a fichero está deshabilitado. Requiere reinicio de la aplicación.",
-        "maximum_session_age": "Tiempo máximo de sesión",
-        "maximum_session_age_desc": "Tiempo máximo en segundos para que la sesión de autentificación de usuario expire.",
-        "password": "Contraseña",
-        "password_desc": "Contraseña para acceder a Stash. Dejar en blanco para deshabilitar la exigencia de identificación para acceder a la aplicación",
-        "stash-box_integration": "Integración Stash-box",
-        "username": "Usuario",
-        "username_desc": "Usuario para acceder a Stash. Dejar en blanco para deshabilitar la exigencia de identificación para acceder a la aplicación"
-      },
-      "backup_directory_path": {
-        "description": "Ubicación del directorio para copias de seguridad de archivos de bases de datos SQLite",
-        "heading": "Ruta del directorio de la copia de seguridad"
-      },
-      "blobs_path": {
-        "description": "Donde almacenar ficheros binarios. Solo aplicable cuando el sistema de archivos es del tipo \"blob\". AVISO: Cambiar este parámetro requiere mover manualmente los ficheros.",
-        "heading": "Ruta de sistema de archivos binario"
-      },
-      "blobs_storage": {
-        "description": "Donde almacenar información binaria como por ejemplo imágenes de escenas, actores, estudios y etiquetas. Tras cambiar este valor, los datos existentes tienen que ser migrados usando la tarea \"Migrar blobs\". Ver la página \"Tareas\" para la migración.",
-        "heading": "Almacenamiento de datos binario"
-      },
-      "cache_location": "Ruta de la caché. Requerido para utilizar streaming mediante HLS (por ejemplo dispositivos Apple) o DASH.",
-      "cache_path_head": "Ruta relative para la caché",
-      "calculate_md5_and_ohash_desc": "Calcular comprobación MD5 en adición a oshash. Habilitar esta opción puede provocar que los escaneos iniciales resulten más lentos. El cálculo de hash del nombre del fichero debe establecerse en oshash para deshabilitar el cálculo MD5.",
-      "calculate_md5_and_ohash_label": "Calcular MD5 para los vídeos",
-      "check_for_insecure_certificates": "Comprobación para certificados no seguros",
-      "check_for_insecure_certificates_desc": "Algunos sitios utilizan certificados SSL inseguros. Cuando la casilla esté desmarcada el rastreador se saltará la comprobación de certificados inseguros y permitirá el rastreo de esos sitios web. Si el resultado es un error de certificado al rastrear entonces desmarca esta opción.",
-      "chrome_cdp_path": "Ruta Chrome CDP",
-      "chrome_cdp_path_desc": "Ruta del archivo del ejecutable Chrome o una dirección remota (comenzando por http:// o https://, por ejemplo, http://localhost:9222/json/version) para una instancia Chrome.",
-      "create_galleries_from_folders_desc": "Si esta opción está marcada se crearán automáticamente galerías de aquellos directorios que contienen imágenes.",
-      "create_galleries_from_folders_label": "Crear galerías desde directorios con imágenes",
-      "database": "Base de datos",
-      "db_path_head": "Ruta de la base de datos",
-      "directory_locations_to_your_content": "Ruta relativa de los directorios que almacenan el contenido",
-      "excluded_image_gallery_patterns_desc": "Expresiones regulares de archivos/rutas de imágenes que serán excluidos del escaneo y que serán añadidos a la tarea de depuración/limpieza",
-      "excluded_image_gallery_patterns_head": "Patrones de imágenes/galerías excluidos",
-      "excluded_video_patterns_desc": "Expresiones regulares de archivos/rutas de vídeos que serán excluidos del escaneo y que serán añadidos a la tarea de depuración/limpieza",
-      "excluded_video_patterns_head": "Patrones de vídeo excluidos",
-      "ffmpeg": {
-        "hardware_acceleration": {
-          "desc": "Utiliza el hardware disponible para encodificar el video en tiempo real.",
-          "heading": "Encodificación hardware FFmpeg"
+        "application_paths": {
+            "heading": "Rutas de la Aplicación"
         },
-        "live_transcode": {
-          "input_args": {
-            "desc": "Avanzado: Argumentos adicionales para ffmpeg antes del campo de entrada al transcodificar vídeos en tiempo real.",
-            "heading": "Argumentos entrada transcodificación FFmpeg en tiempo real"
-          },
-          "output_args": {
-            "desc": "Avanzado: Argumentos adicionales para ffmpeg antes del campo de salida al transcodificar vídeos en tiempo real.",
-            "heading": "Argumentos salida transcodificación FFmpeg en tiempo real"
-          }
+        "categories": {
+            "about": "Acerca de",
+            "changelog": "Registro de cambios",
+            "interface": "Diseño",
+            "logs": "Registros",
+            "metadata_providers": "Proveedores de Metadatos",
+            "plugins": "Plugins",
+            "scraping": "Rastreo",
+            "security": "Seguridad",
+            "services": "Servicios",
+            "system": "Sistema",
+            "tasks": "Tareas",
+            "tools": "Herramientas"
         },
-        "transcode": {
-          "input_args": {
-            "desc": "Avanzado: Argumentos adicionales para ffmpeg antes del campo de entrada al generar vídeos.",
-            "heading": "Argumentos entrada transcodificación FFmpeg"
-          },
-          "output_args": {
-            "desc": "Avanzado: Argumentos adicionales para ffmpeg antes del campo de salida al generar vídeos.",
-            "heading": "Argumentos salida transcodificación FFmpeg"
-          }
+        "dlna": {
+            "allow_temp_ip": "Permitir {tempIP}",
+            "allowed_ip_addresses": "Direcciones IP permitidas",
+            "allowed_ip_temporarily": "IP permitida temporalmente",
+            "default_ip_whitelist": "Lista de direcciones IP permitidas",
+            "default_ip_whitelist_desc": "Direcciones IP que tienen acceso al servidor DLNA por defecto. Escribe {wildcard} para permitir todas las direcciones IP.",
+            "disabled_dlna_temporarily": "Deshabilitar DLNA temporalmente",
+            "disallowed_ip": "IP no permitida",
+            "enabled_by_default": "Activado por defecto",
+            "enabled_dlna_temporarily": "Habilitar DLNA temporalmente",
+            "network_interfaces": "Interfaces",
+            "network_interfaces_desc": "Interfaces en las que transmitirá el servidor DLNA. Si no se selecciona ninguna se mostrará para todas las interfaces disponibles. Los cambios se guardarán tras reiniciar el servidor DLNA.",
+            "recent_ip_addresses": "Direcciones IP recientes",
+            "server_display_name": "Nombre del servidor",
+            "server_display_name_desc": "Nombre del servidor DLNA. Si no se indica un valor se usará {server_name} por defecto.",
+            "successfully_cancelled_temporary_behaviour": "Comportamiento temporal eliminado correctamente",
+            "until_restart": "hasta reinicio"
+        },
+        "general": {
+            "auth": {
+                "api_key": "Clave API",
+                "api_key_desc": "Clave API para sistemas externos. Requiere la configuración de usuario y contraseña. El nombre de usuario debe ser guardado antes de generar una clave API.",
+                "authentication": "Autentificación",
+                "clear_api_key": "Borrar clave API",
+                "credentials": {
+                    "description": "Credenciales para restringir acceso a Stash.",
+                    "heading": "Credenciales"
+                },
+                "generate_api_key": "Generar clave API",
+                "log_file": "Archivo de registro",
+                "log_file_desc": "Ruta del archivo en el que se volcarán los registros de eventos. En blanco deshabilita el fichero de registro. Los cambios se guardarán tras reiniciar la aplicación.",
+                "log_http": "Registro de accesos http",
+                "log_http_desc": "Registro de accesos http en consola. Requiere reinicio de la aplicación.",
+                "log_to_terminal": "Registro de eventos en consola",
+                "log_to_terminal_desc": "Registro de eventos en la consola de Stash además del respaldo en fichero. Habilitado si el registro a fichero está deshabilitado. Requiere reinicio de la aplicación.",
+                "maximum_session_age": "Tiempo máximo de sesión",
+                "maximum_session_age_desc": "Tiempo máximo en segundos para que la sesión de autentificación de usuario expire.",
+                "password": "Contraseña",
+                "password_desc": "Contraseña para acceder a Stash. Dejar en blanco para deshabilitar la exigencia de identificación para acceder a la aplicación",
+                "stash-box_integration": "Integración Stash-box",
+                "username": "Usuario",
+                "username_desc": "Usuario para acceder a Stash. Dejar en blanco para deshabilitar la exigencia de identificación para acceder a la aplicación"
+            },
+            "backup_directory_path": {
+                "description": "Ubicación del directorio para copias de seguridad de archivos de bases de datos SQLite",
+                "heading": "Ruta del directorio de la copia de seguridad"
+            },
+            "blobs_path": {
+                "description": "Donde almacenar ficheros binarios. Solo aplicable cuando el sistema de archivos es del tipo \"blob\". AVISO: Cambiar este parámetro requiere mover manualmente los ficheros.",
+                "heading": "Ruta de sistema de archivos binario"
+            },
+            "blobs_storage": {
+                "description": "Donde almacenar información binaria como por ejemplo imágenes de escenas, actores, estudios y etiquetas. Tras cambiar este valor, los datos existentes tienen que ser migrados usando la tarea \"Migrar blobs\". Ver la página \"Tareas\" para la migración.",
+                "heading": "Almacenamiento de datos binario"
+            },
+            "cache_location": "Ruta de la caché. Requerido para utilizar streaming mediante HLS (por ejemplo dispositivos Apple) o DASH.",
+            "cache_path_head": "Ruta relative para la caché",
+            "calculate_md5_and_ohash_desc": "Calcular comprobación MD5 en adición a oshash. Habilitar esta opción puede provocar que los escaneos iniciales resulten más lentos. El cálculo de hash del nombre del fichero debe establecerse en oshash para deshabilitar el cálculo MD5.",
+            "calculate_md5_and_ohash_label": "Calcular MD5 para los vídeos",
+            "check_for_insecure_certificates": "Comprobación para certificados no seguros",
+            "check_for_insecure_certificates_desc": "Algunos sitios utilizan certificados SSL inseguros. Cuando la casilla esté desmarcada el rastreador se saltará la comprobación de certificados inseguros y permitirá el rastreo de esos sitios web. Si el resultado es un error de certificado al rastrear entonces desmarca esta opción.",
+            "chrome_cdp_path": "Ruta Chrome CDP",
+            "chrome_cdp_path_desc": "Ruta del archivo del ejecutable Chrome o una dirección remota (comenzando por http:// o https://, por ejemplo, http://localhost:9222/json/version) para una instancia Chrome.",
+            "create_galleries_from_folders_desc": "Si esta opción está marcada se crearán automáticamente galerías de aquellos directorios que contienen imágenes.",
+            "create_galleries_from_folders_label": "Crear galerías desde directorios con imágenes",
+            "database": "Base de datos",
+            "db_path_head": "Ruta de la base de datos",
+            "directory_locations_to_your_content": "Ruta relativa de los directorios que almacenan el contenido",
+            "excluded_image_gallery_patterns_desc": "Expresiones regulares de archivos/rutas de imágenes que serán excluidos del escaneo y que serán añadidos a la tarea de depuración/limpieza",
+            "excluded_image_gallery_patterns_head": "Patrones de imágenes/galerías excluidos",
+            "excluded_video_patterns_desc": "Expresiones regulares de archivos/rutas de vídeos que serán excluidos del escaneo y que serán añadidos a la tarea de depuración/limpieza",
+            "excluded_video_patterns_head": "Patrones de vídeo excluidos",
+            "ffmpeg": {
+                "hardware_acceleration": {
+                    "desc": "Utiliza el hardware disponible para encodificar el video en tiempo real.",
+                    "heading": "Encodificación hardware FFmpeg"
+                },
+                "live_transcode": {
+                    "input_args": {
+                        "desc": "Avanzado: Argumentos adicionales para ffmpeg antes del campo de entrada al transcodificar vídeos en tiempo real.",
+                        "heading": "Argumentos entrada transcodificación FFmpeg en tiempo real"
+                    },
+                    "output_args": {
+                        "desc": "Avanzado: Argumentos adicionales para ffmpeg antes del campo de salida al transcodificar vídeos en tiempo real.",
+                        "heading": "Argumentos salida transcodificación FFmpeg en tiempo real"
+                    }
+                },
+                "transcode": {
+                    "input_args": {
+                        "desc": "Avanzado: Argumentos adicionales para ffmpeg antes del campo de entrada al generar vídeos.",
+                        "heading": "Argumentos entrada transcodificación FFmpeg"
+                    },
+                    "output_args": {
+                        "desc": "Avanzado: Argumentos adicionales para ffmpeg antes del campo de salida al generar vídeos.",
+                        "heading": "Argumentos salida transcodificación FFmpeg"
+                    }
+                }
+            },
+            "funscript_heatmap_draw_range": "Inluir rango en los mapas de calor generados",
+            "funscript_heatmap_draw_range_desc": "Dibujar rango de movimiento en el eje \"y\" del mapa de calor generado. Los mapas de calor existentes tendrán que ser generados de nuevo tras el cambio.",
+            "gallery_cover_regex_desc": "Expresión regular utilizada para identificar una imagen como carátula de una galería",
+            "gallery_cover_regex_label": "Patrón carátula galería",
+            "gallery_ext_desc": "Lista delimitada por comas de extensiones de archivo que serán identificados como archivos de galería en formato zip.",
+            "gallery_ext_head": "Extensiones de galería zip",
+            "generated_file_naming_hash_desc": "Usar MD5 o oshash para la los nombres de archivo generados. Cambiar esta opción requiere que todas las escenas tengan relleno el correspondiente valor MD5/oshash. Después de cambiar este valor los ficheros generados existentes tendrán que ser migrados o regenerados. Ver la página de tareas para llevar a cabo la migración.",
+            "generated_file_naming_hash_head": "Hash de nombre de archivo generado",
+            "generated_files_location": "Ruta relativa del directorio para los ficheros generados (marcadores de escena, vistas previas de escena, conjuntos de imágenes o “sprites”, etc)",
+            "generated_path_head": "Ruta relativa para el directorio de arvhivos generados",
+            "hashing": "Hashing",
+            "heatmap_generation": "Generación mapa de calor Funscript",
+            "image_ext_desc": "Lista delimitada por comas de las extensiones de archivo que serán identificadas como imágenes.",
+            "image_ext_head": "Extensiones de imagen",
+            "include_audio_desc": "Incluye flujo de audio cuando se generen vistas previas.",
+            "include_audio_head": "Incluir audio",
+            "logging": "Registros",
+            "maximum_streaming_transcode_size_desc": "Tamaño máximo para la transcodificación de archivos de vídeo en streaming",
+            "maximum_streaming_transcode_size_head": "Tamaño máximo de transcodificación en streaming",
+            "maximum_transcode_size_desc": "Tamaño máximo para las transcodificaciones generadas y almacenadas en el sistema de archivos donde se encuentra la aplicación Stash instalada",
+            "maximum_transcode_size_head": "Tamaño máximo de transcodificación",
+            "metadata_path": {
+                "description": "Ruta relativa del directorio usado durante la exportación o importación completa de los metadatos",
+                "heading": "Ruta de metadatos"
+            },
+            "number_of_parallel_task_for_scan_generation_desc": "Seleccionar 0 para detección automática. Advertencia: lanzar más tareas de las requeridas puede provocar una elevada utilización de la CPU pudiendo provocar lentitud en el sistema y otros problemas.",
+            "number_of_parallel_task_for_scan_generation_head": "Número de tareas en paralelo para escaneo/generación de ficheros",
+            "parallel_scan_head": "Escaneo/Generación en paralelo",
+            "preview_generation": "Previsualizar generación de ficheros",
+            "python_path": {
+                "description": "Ruta del ejecutable python. Se usa para los scripts de rastreo y plugins. Si está en blanco, python se resolverá desde la ruta por defecto del entorno",
+                "heading": "Ruta de Python"
+            },
+            "scraper_user_agent": "Identificador del agente de usuario del navegador para rastreo",
+            "scraper_user_agent_desc": "Identificador del agente de usuario del navegador web (USER-AGENT) usado durante el rastreo mediante peticiones http",
+            "scrapers_path": {
+                "description": "Ruta del directorio de rastreadores",
+                "heading": "Ruta de Rastreadores"
+            },
+            "scraping": "Rastreo",
+            "sqlite_location": "Ruta relativa para la base de datos SQLite (requiere reinicio). AVISO: Almacenar la base de datos en un sistema distinto al servidor Stash (por ejemplo a través de la red) no está soportado!",
+            "video_ext_desc": "Lista delimitada por comas de las extensiones de archivo que serán identificadas como vídeos.",
+            "video_ext_head": "Extensiones de vídeo",
+            "video_head": "Vídeo"
+        },
+        "library": {
+            "exclusions": "Exclusiones",
+            "gallery_and_image_options": "Opciones para Imágenes y Galerías",
+            "media_content_extensions": "Extensiónes de Archivo Multimedia"
+        },
+        "logs": {
+            "log_level": "Nivel de registro"
+        },
+        "plugins": {
+            "hooks": "Hooks",
+            "triggers_on": "Se lleva a cabo durante"
+        },
+        "scraping": {
+            "entity_metadata": "Metadatos de {entityType}",
+            "entity_scrapers": "Rastreadores de {entityType}",
+            "excluded_tag_patterns_desc": "Expresiones regulares de nombres de etiquetas para excluir de los resultados del rastreo",
+            "excluded_tag_patterns_head": "Patrones de etiquetas excluidos",
+            "scraper": "Rastreador",
+            "scrapers": "Rastreadores",
+            "search_by_name": "Búsqueda por nombre",
+            "supported_types": "Tipos soportados",
+            "supported_urls": "Direcciones web"
+        },
+        "stashbox": {
+            "add_instance": "Añadir instancia stash-box",
+            "api_key": "Clave API",
+            "description": "Stash-box permite automatizar el etiquetado de escenas, actores y actrices, basado en huellas dactilares y nombres de archivo.\nEl terminal de red y la clave API pueden ser encontrados en tu página de usuario de la instancia stash-box. Los nombres son requeridos cuando se agregue más de una instancia stash-box.",
+            "endpoint": "Terminal de red",
+            "graphql_endpoint": "Terminal de red GraphQL",
+            "name": "Nombre",
+            "title": "Terminal de red Stash-box"
+        },
+        "system": {
+            "transcoding": "Transcodificación"
+        },
+        "tasks": {
+            "added_job_to_queue": "Añadido/a {operation_name} a la cola de trabajo",
+            "anonymise_and_download": "Realiza una copia aninimizada de la base de datos y descarga el fichero resultante.",
+            "anonymise_database": "Hace una copia de la base de datos al directorio de copias de seguridad anonimizando toda la información sensible. Esta copia se puede proveer a terceros para solucionar y depurar problemas. La base de datos original no es modificada. La base de datos anonimizada se almacena con el formato {filename_format}.",
+            "anonymising_database": "Aninimizando base de datos",
+            "auto_tag": {
+                "auto_tagging_all_paths": "Etiquetar automáticamente todas las rutas",
+                "auto_tagging_paths": "Etiquetar automáticamente las siguientes rutas"
+            },
+            "auto_tag_based_on_filenames": "Etiquetado automatizado del contenido basado en nombres de archivo.",
+            "auto_tagging": "Auto-Etiquetado",
+            "backing_up_database": "Guardando respaldo de la base de datos",
+            "backup_and_download": "Lleva a cabo una copia de seguridad de la base de datos y la guarda en un fichero de respaldo.",
+            "backup_database": "Realiza una copia de seguridad de la base de datos en el directorio de copias de seguridad. La copia se almacena con el formato {filename_format}.",
+            "cleanup_desc": "Buscar ficheros eliminados del sistema de archivos y eliminarlos de la base de datos. PRECAUCIÓN: esta es una acción destructiva.",
+            "data_management": "Gestión de datos",
+            "defaults_set": "Las opciones por defecto se han guardado y serán usadas cada vez que pulses el botoón de {action} en la página de Tareas.",
+            "dont_include_file_extension_as_part_of_the_title": "No incluir la extensión del archivo como parte del título",
+            "empty_queue": "Actualmente no hay tareas en ejecución.",
+            "export_to_json": "Exporta el contenido de la base de datos en formato JSON en el directorio de metadatos.",
+            "generate": {
+                "generating_from_paths": "Generando multimedia de soporte para las escenas en las siguientes rutas",
+                "generating_scenes": "Generando multimedia de soporte para {num} {scene}"
+            },
+            "generate_desc": "Generar imagen de soporte, conjuntos de imágenes, vídeo, vtt y resto de archivos.",
+            "generate_phashes_during_scan": "Generar hashes de percepción (Phashes)",
+            "generate_phashes_during_scan_tooltip": "Para búsqueda de duplicados e identificación de escenas.",
+            "generate_previews_during_scan": "Generar imágenes previas animadas",
+            "generate_previews_during_scan_tooltip": "Generar vistas previas animadas WebP, solo requerido si Tipo de Vista Previa es Imagen Animada.",
+            "generate_sprites_during_scan": "Generar conjunto de imágenes o “sprites” de depuración",
+            "generate_thumbnails_during_scan": "Generar miniaturas de las imágenes",
+            "generate_video_covers_during_scan": "Generar carátulas de escenas",
+            "generate_video_previews_during_scan": "Generar vistas previas",
+            "generate_video_previews_during_scan_tooltip": "Generar vistas previas en vídeo que se reproducen al pasar el ratón por encima de una escena",
+            "generated_content": "Contenido generado",
+            "identify": {
+                "and_create_missing": "y crear no existentes",
+                "create_missing": "Crear no existentes",
+                "default_options": "Opciones por defecto",
+                "description": "Obtener automáticamente metadatos para las escenas utilizando una instancia stash-box y los rastreadores instalados.",
+                "explicit_set_description": "Estas opciones se usarán predeterminadamente si no se sobreescriben en las opciones específicas para cada fuente.",
+                "field": "Campo",
+                "field_behaviour": "{strategy} {field}",
+                "field_options": "Opciones de campo",
+                "heading": "Identificar",
+                "identifying_from_paths": "Identificación de las escenas que se encuentren en las siguientes rutas",
+                "identifying_scenes": "Identificando {num} {scene}",
+                "include_male_performers": "Incluir actores (varones)",
+                "set_cover_images": "Selección automática de carátula de escena",
+                "set_organized": "Marcar escena como \"clasificada\"",
+                "source": "Fuente",
+                "source_options": "Opciones de {source}",
+                "sources": "Fuentes",
+                "strategy": "Estrategia"
+            },
+            "import_from_exported_json": "Importar desde el fichero JSON exportado en el directorio de metadatos. Borrará la base de datos existente.",
+            "incremental_import": "Importación gradual o progresiva desde un archivo zip de exportación aportado por el usuario.",
+            "job_queue": "Cola de tareas",
+            "maintenance": "Mantenimiento",
+            "migrate_blobs": {
+                "delete_old": "Borrar datos antiguos",
+                "description": "Migrar blobs al sistema de almacenamiento de blobs actual. Esta migración debería ejecutarse tras cambiar el sistema de almacenamiento de blobs. Opcionalmente se pueden borrar los datos antiguos tras la migración."
+            },
+            "migrate_hash_files": "Se ejecutará tras realizar un cambio de tipo de hash para renombrar los ficheros generados al nuevo formato hash.",
+            "migrate_scene_screenshots": {
+                "delete_files": "Borrar ficheros de capturas de pantalla",
+                "description": "Migrar capturas de pantalla de escenas al nuevo sistema de almacenamiento blob. Esta migración debería ejecutarse migrar un sistema existente a la versión 0.20. Opcionalmente se pueden borrar las capturas de pantalla antiguas tras la migración.",
+                "overwrite_existing": "Sobreescribir blobs existentes con datos de capturas de pantalla"
+            },
+            "migrations": "Migraciones",
+            "only_dry_run": "Marca esta casilla para ejecutar en MODO DE SIMULACIÓN. No se eliminará información alguna, solo se mostrarán en el registro las acciones a realizar",
+            "plugin_tasks": "Tareas de plugins",
+            "scan": {
+                "scanning_all_paths": "Escaneando todas las rutas",
+                "scanning_paths": "Escaneando las siguientes rutas"
+            },
+            "scan_for_content_desc": "Buscar contenido nuevo y añadirlo a la base de datos.",
+            "set_name_date_details_from_metadata_if_present": "Establecer el nombre, fecha y detalles desde los metadatos embebidos en el archivo"
+        },
+        "tools": {
+            "scene_duplicate_checker": "Comprobación de escenas duplicadas",
+            "scene_filename_parser": {
+                "add_field": "Añadir campo",
+                "capitalize_title": "Capitalizar título (todas las palabras comienzan por mayúscula)",
+                "display_fields": "Mostrar campos",
+                "escape_chars": "Usar \\ para evitar caracteres literales",
+                "filename": "Nombre de archivo",
+                "filename_pattern": "Patrón de nombres de ficheros",
+                "ignore_organized": "Ignorar escenas ya clasificadas",
+                "ignored_words": "Palabras ignoradas",
+                "matches_with": "Coincide con {i}",
+                "select_parser_recipe": "Seleccionar fórmula para el analizador sintáctico",
+                "title": "Analizador sintáctico del título de escena",
+                "whitespace_chars": "Espacios en blanco",
+                "whitespace_chars_desc": "Estos caracteres se reemplazarán en el título por espacios en blanco"
+            },
+            "scene_tools": "Herramientas de escenas"
+        },
+        "ui": {
+            "abbreviate_counters": {
+                "description": "Abrevie los contadores en las tarjetas y en las páginas de vista de detalles, por ejemplo, \"1831\" tendrá el formato \"1.8K\".",
+                "heading": "Abreviar contadores"
+            },
+            "basic_settings": "Ajustes básicos",
+            "custom_css": {
+                "description": "La página debe ser recargada para que se lleven a cabo los cambios realizados. Futuras versiones de Stash pueden no ser compatibles con CSS personalizados.",
+                "heading": "CSS personalizado",
+                "option_label": "Habilitar CSS personalizado"
+            },
+            "custom_javascript": {
+                "description": "La página debe ser refrescada para que los cambios tomen efecto. Futuras versiones de Stash pueden no ser compatibles con Javascripts personalizados.",
+                "heading": "JavaScript personalizada",
+                "option_label": "JavaScript personalizada activada"
+            },
+            "custom_locales": {
+                "description": "Sobreescribir traducciones individuales. El listado original se puede encontrar aquí: https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/locales/en-GB.json. La página debe ser refrescada para reflejar los cambios realizados.",
+                "heading": "Traducciones personalizadas",
+                "option_label": "Traducción personalizada activada"
+            },
+            "delete_options": {
+                "description": "Opciones por defecto al borrar escenas, imágenes y galerías.",
+                "heading": "Opciones de eliminación",
+                "options": {
+                    "delete_file": "Eliminar fichero por defecto",
+                    "delete_generated_supporting_files": "Eliminar por defecto ficheros generados"
+                }
+            },
+            "desktop_integration": {
+                "desktop_integration": "Integración de escritorio",
+                "notifications_enabled": "Habilitar notificaciones",
+                "send_desktop_notifications_for_events": "Enviar notificaciones de escritorio de eventos",
+                "skip_opening_browser": "Saltar apertura del navegador",
+                "skip_opening_browser_on_startup": "Saltar auto-apertura del navegador durante el inicio"
+            },
+            "editing": {
+                "disable_dropdown_create": {
+                    "description": "Eliminar la capacidad de crear nuevos recursos desde los selectores de formulario desplegables",
+                    "heading": "Deshabilitar creación en menú desplegable"
+                },
+                "heading": "Edición",
+                "max_options_shown": {
+                    "label": "Número máximo de elementos a mostrar en menús desplegables"
+                },
+                "rating_system": {
+                    "star_precision": {
+                        "label": "Precisión estrellas valoraciones",
+                        "options": {
+                            "full": "Lleno",
+                            "half": "Medias",
+                            "quarter": "Cuartos",
+                            "tenth": "Décimas"
+                        }
+                    },
+                    "type": {
+                        "label": "Sistema de valoración",
+                        "options": {
+                            "decimal": "Decimal",
+                            "stars": "Estrellas"
+                        }
+                    }
+                }
+            },
+            "funscript_offset": {
+                "description": "Tiempo de compensación en milisegundos para la reproducción de scripts interactivos.",
+                "heading": "Tiempo de compensación Funscript (mseg)"
+            },
+            "handy_connection": {
+                "connect": "Conectar",
+                "server_offset": {
+                    "heading": "Tiempo compensación servidor"
+                },
+                "status": {
+                    "heading": "Estado conexión móvil"
+                },
+                "sync": "Sincronizar"
+            },
+            "handy_connection_key": {
+                "description": "Clave para conexión práctica que se usará en las escenas interactivas. Configurar esta clave permitirá a Stash compartir la información actual de las escenas con handyfeeling.com",
+                "heading": "Clave para conexión práctica"
+            },
+            "image_lightbox": {
+                "heading": "Lightbox para imágenes"
+            },
+            "image_wall": {
+                "direction": "Dirección",
+                "heading": "Imagen de fondo",
+                "margin": "Margen (píxeles)"
+            },
+            "images": {
+                "heading": "Imágenes",
+                "options": {
+                    "write_image_thumbnails": {
+                        "description": "Guardar miniaturas de imagen en el sistema de archivos cuando son generadas al vuelo",
+                        "heading": "Guardar miniaturas de imágenes"
+                    }
+                }
+            },
+            "interactive_options": "Opciones Interactivas",
+            "language": {
+                "heading": "Lenguaje"
+            },
+            "max_loop_duration": {
+                "description": "Duración máxima de la escena para la que el reproductor de vídeo reproducirá en bucle el vídeo - “0” para deshabilitar",
+                "heading": "Máxima duración del bucle"
+            },
+            "menu_items": {
+                "description": "Mostrar u ocultar los diferentes tipos de contenido del menú de navegación",
+                "heading": "Elementos del menú"
+            },
+            "minimum_play_percent": {
+                "description": "Porcentaje de tiempo a reproducir una escena antes de incrementar su contador de visionados.",
+                "heading": "Porcentaje mínimo de reproducción"
+            },
+            "performers": {
+                "options": {
+                    "image_location": {
+                        "description": "Ruta personalizada para las imágenes de perfil de actrices/actores. Dejar en blanco para usar la ruta por defecto de la aplicación",
+                        "heading": "Ruta para las imágenes personalizadas de actrices/actores"
+                    }
+                }
+            },
+            "preview_type": {
+                "description": "Configuración para los elementos al seleccionar el muro como modo de visualización",
+                "heading": "Tipo de previsualización",
+                "options": {
+                    "animated": "Imagen animada",
+                    "static": "Imagen estática",
+                    "video": "Vídeo"
+                }
+            },
+            "scene_list": {
+                "heading": "Listado de escenas",
+                "options": {
+                    "show_studio_as_text": "Mostrar nombres de estudio como texto"
+                }
+            },
+            "scene_player": {
+                "heading": "Reproductor de vídeo",
+                "options": {
+                    "always_start_from_beginning": "Siempre iniciar vídeo desde el inicio",
+                    "auto_start_video": "Iniciar vídeo automáticamente",
+                    "auto_start_video_on_play_selected": {
+                        "description": "Comenzar automáticamente la reproducción del vídeo de la escena cuando \"reproducir\" esté seleccionado o se seleccione una escena aleatoria desde la página de escenas",
+                        "heading": "Comenzar automáticamente el vídeo cuando \"reproducir\" esté seleccionado"
+                    },
+                    "continue_playlist_default": {
+                        "description": "Reproducir la siguiente escena cuando el fichero en reproducción finalice",
+                        "heading": "(Por defecto) Continuar lista de reproducción"
+                    },
+                    "show_scrubber": "Mostrar depurador",
+                    "track_activity": "Registrar actividad"
+                }
+            },
+            "scene_wall": {
+                "heading": "Muro de escenas/Marcadores",
+                "options": {
+                    "display_title": "Mostrar título y etiquetas",
+                    "toggle_sound": "Habilitar sonido"
+                }
+            },
+            "slideshow_delay": {
+                "description": "La presentación de diapositivas estará disponible en las galerías al seleccionar el muro como modo de visualización",
+                "heading": "Retardo en la presentación de diapositivas (segundos)"
+            },
+            "title": "Interfaz de usuario"
         }
-      },
-      "funscript_heatmap_draw_range": "Inluir rango en los mapas de calor generados",
-      "funscript_heatmap_draw_range_desc": "Dibujar rango de movimiento en el eje \"y\" del mapa de calor generado. Los mapas de calor existentes tendrán que ser generados de nuevo tras el cambio.",
-      "gallery_cover_regex_desc": "Expresión regular utilizada para identificar una imagen como carátula de una galería",
-      "gallery_cover_regex_label": "Patrón carátula galería",
-      "gallery_ext_desc": "Lista delimitada por comas de extensiones de archivo que serán identificados como archivos de galería en formato zip.",
-      "gallery_ext_head": "Extensiones de galería zip",
-      "generated_file_naming_hash_desc": "Usar MD5 o oshash para la los nombres de archivo generados. Cambiar esta opción requiere que todas las escenas tengan relleno el correspondiente valor MD5/oshash. Después de cambiar este valor los ficheros generados existentes tendrán que ser migrados o regenerados. Ver la página de tareas para llevar a cabo la migración.",
-      "generated_file_naming_hash_head": "Hash de nombre de archivo generado",
-      "generated_files_location": "Ruta relativa del directorio para los ficheros generados (marcadores de escena, vistas previas de escena, conjuntos de imágenes o “sprites”, etc)",
-      "generated_path_head": "Ruta relativa para el directorio de arvhivos generados",
-      "hashing": "Hashing",
-      "heatmap_generation": "Generación mapa de calor Funscript",
-      "image_ext_desc": "Lista delimitada por comas de las extensiones de archivo que serán identificadas como imágenes.",
-      "image_ext_head": "Extensiones de imagen",
-      "include_audio_desc": "Incluye flujo de audio cuando se generen vistas previas.",
-      "include_audio_head": "Incluir audio",
-      "logging": "Registros",
-      "maximum_streaming_transcode_size_desc": "Tamaño máximo para la transcodificación de archivos de vídeo en streaming",
-      "maximum_streaming_transcode_size_head": "Tamaño máximo de transcodificación en streaming",
-      "maximum_transcode_size_desc": "Tamaño máximo para las transcodificaciones generadas y almacenadas en el sistema de archivos donde se encuentra la aplicación Stash instalada",
-      "maximum_transcode_size_head": "Tamaño máximo de transcodificación",
-      "metadata_path": {
-        "description": "Ruta relativa del directorio usado durante la exportación o importación completa de los metadatos",
-        "heading": "Ruta de metadatos"
-      },
-      "number_of_parallel_task_for_scan_generation_desc": "Seleccionar 0 para detección automática. Advertencia: lanzar más tareas de las requeridas puede provocar una elevada utilización de la CPU pudiendo provocar lentitud en el sistema y otros problemas.",
-      "number_of_parallel_task_for_scan_generation_head": "Número de tareas en paralelo para escaneo/generación de ficheros",
-      "parallel_scan_head": "Escaneo/Generación en paralelo",
-      "preview_generation": "Previsualizar generación de ficheros",
-      "python_path": {
-        "description": "Ruta del ejecutable python. Se usa para los scripts de rastreo y plugins. Si está en blanco, python se resolverá desde la ruta por defecto del entorno",
-        "heading": "Ruta de Python"
-      },
-      "scraper_user_agent": "Identificador del agente de usuario del navegador para rastreo",
-      "scraper_user_agent_desc": "Identificador del agente de usuario del navegador web (USER-AGENT) usado durante el rastreo mediante peticiones http",
-      "scrapers_path": {
-        "description": "Ruta del directorio de rastreadores",
-        "heading": "Ruta de Rastreadores"
-      },
-      "scraping": "Rastreo",
-      "sqlite_location": "Ruta relativa para la base de datos SQLite (requiere reinicio). AVISO: Almacenar la base de datos en un sistema distinto al servidor Stash (por ejemplo a través de la red) no está soportado!",
-      "video_ext_desc": "Lista delimitada por comas de las extensiones de archivo que serán identificadas como vídeos.",
-      "video_ext_head": "Extensiones de vídeo",
-      "video_head": "Vídeo"
     },
-    "library": {
-      "exclusions": "Exclusiones",
-      "gallery_and_image_options": "Opciones para Imágenes y Galerías",
-      "media_content_extensions": "Extensiónes de Archivo Multimedia"
+    "configuration": "Configuración",
+    "countables": {
+        "files": "{count, plural, one {Archivo} other {Archivos}}",
+        "galleries": "{count, plural, one {Galería} other {Galerías}}",
+        "images": "{count, plural, one {Imagen} other {Imágenes}}",
+        "markers": "{count, plural, one {Marcador} other {Marcadores}}",
+        "movies": "{count, plural, one {Película} other {Películas}}",
+        "performers": "{count, plural, one {Actriz/Actor} other {Actrices/Actores}}",
+        "scenes": "{count, plural, one {Escena} other {Escenas}}",
+        "studios": "{count, plural, one {Estudio} other {Estudios}}",
+        "tags": "{count, plural, one {Etiqueta} other {Etiquetas}}"
     },
-    "logs": {
-      "log_level": "Nivel de registro"
+    "country": "País",
+    "cover_image": "Carátula",
+    "created_at": "Fecha de creación",
+    "criterion": {
+        "greater_than": "Mayor que",
+        "less_than": "Menor que",
+        "value": "Valor"
     },
-    "plugins": {
-      "hooks": "Hooks",
-      "triggers_on": "Se lleva a cabo durante"
+    "criterion_modifier": {
+        "between": "está entre",
+        "equals": "es",
+        "excludes": "no incluye",
+        "format_string": "{criterion} {modifierString} {valueString}",
+        "greater_than": "es mayor que",
+        "includes": "incluye",
+        "includes_all": "incluye todas",
+        "is_null": "es nulo",
+        "less_than": "es menor que",
+        "matches_regex": "coincide con la expresión regular",
+        "not_between": "no está entre",
+        "not_equals": "no es",
+        "not_matches_regex": "no coincide con la expresión regular",
+        "not_null": "no es nulo"
     },
-    "scraping": {
-      "entity_metadata": "Metadatos de {entityType}",
-      "entity_scrapers": "Rastreadores de {entityType}",
-      "excluded_tag_patterns_desc": "Expresiones regulares de nombres de etiquetas para excluir de los resultados del rastreo",
-      "excluded_tag_patterns_head": "Patrones de etiquetas excluidos",
-      "scraper": "Rastreador",
-      "scrapers": "Rastreadores",
-      "search_by_name": "Búsqueda por nombre",
-      "supported_types": "Tipos soportados",
-      "supported_urls": "Direcciones web"
-    },
-    "stashbox": {
-      "add_instance": "Añadir instancia stash-box",
-      "api_key": "Clave API",
-      "description": "Stash-box permite automatizar el etiquetado de escenas, actores y actrices, basado en huellas dactilares y nombres de archivo.\nEl terminal de red y la clave API pueden ser encontrados en tu página de usuario de la instancia stash-box. Los nombres son requeridos cuando se agregue más de una instancia stash-box.",
-      "endpoint": "Terminal de red",
-      "graphql_endpoint": "Terminal de red GraphQL",
-      "name": "Nombre",
-      "title": "Terminal de red Stash-box"
-    },
-    "system": {
-      "transcoding": "Transcodificación"
-    },
-    "tasks": {
-      "added_job_to_queue": "Añadido/a {operation_name} a la cola de trabajo",
-      "anonymise_and_download": "Realiza una copia aninimizada de la base de datos y descarga el fichero resultante.",
-      "anonymise_database": "Hace una copia de la base de datos al directorio de copias de seguridad anonimizando toda la información sensible. Esta copia se puede proveer a terceros para solucionar y depurar problemas. La base de datos original no es modificada. La base de datos anonimizada se almacena con el formato {filename_format}.",
-      "anonymising_database": "Aninimizando base de datos",
-      "auto_tag": {
-        "auto_tagging_all_paths": "Etiquetar automáticamente todas las rutas",
-        "auto_tagging_paths": "Etiquetar automáticamente las siguientes rutas"
-      },
-      "auto_tag_based_on_filenames": "Etiquetado automatizado del contenido basado en nombres de archivo.",
-      "auto_tagging": "Auto-Etiquetado",
-      "backing_up_database": "Guardando respaldo de la base de datos",
-      "backup_and_download": "Lleva a cabo una copia de seguridad de la base de datos y la guarda en un fichero de respaldo.",
-      "backup_database": "Realiza una copia de seguridad de la base de datos en el directorio de copias de seguridad. La copia se almacena con el formato {filename_format}.",
-      "cleanup_desc": "Buscar ficheros eliminados del sistema de archivos y eliminarlos de la base de datos. PRECAUCIÓN: esta es una acción destructiva.",
-      "data_management": "Gestión de datos",
-      "defaults_set": "Las opciones por defecto se han guardado y serán usadas cada vez que pulses el botoón de {action} en la página de Tareas.",
-      "dont_include_file_extension_as_part_of_the_title": "No incluir la extensión del archivo como parte del título",
-      "empty_queue": "Actualmente no hay tareas en ejecución.",
-      "export_to_json": "Exporta el contenido de la base de datos en formato JSON en el directorio de metadatos.",
-      "generate": {
-        "generating_from_paths": "Generando multimedia de soporte para las escenas en las siguientes rutas",
-        "generating_scenes": "Generando multimedia de soporte para {num} {scene}"
-      },
-      "generate_desc": "Generar imagen de soporte, conjuntos de imágenes, vídeo, vtt y resto de archivos.",
-      "generate_phashes_during_scan": "Generar hashes de percepción (Phashes)",
-      "generate_phashes_during_scan_tooltip": "Para búsqueda de duplicados e identificación de escenas.",
-      "generate_previews_during_scan": "Generar imágenes previas animadas",
-      "generate_previews_during_scan_tooltip": "Generar vistas previas animadas WebP, solo requerido si Tipo de Vista Previa es Imagen Animada.",
-      "generate_sprites_during_scan": "Generar conjunto de imágenes o “sprites” de depuración",
-      "generate_thumbnails_during_scan": "Generar miniaturas de las imágenes",
-      "generate_video_covers_during_scan": "Generar carátulas de escenas",
-      "generate_video_previews_during_scan": "Generar vistas previas",
-      "generate_video_previews_during_scan_tooltip": "Generar vistas previas en vídeo que se reproducen al pasar el ratón por encima de una escena",
-      "generated_content": "Contenido generado",
-      "identify": {
-        "and_create_missing": "y crear no existentes",
-        "create_missing": "Crear no existentes",
-        "default_options": "Opciones por defecto",
-        "description": "Obtener automáticamente metadatos para las escenas utilizando una instancia stash-box y los rastreadores instalados.",
-        "explicit_set_description": "Estas opciones se usarán predeterminadamente si no se sobreescriben en las opciones específicas para cada fuente.",
-        "field": "Campo",
-        "field_behaviour": "{strategy} {field}",
-        "field_options": "Opciones de campo",
-        "heading": "Identificar",
-        "identifying_from_paths": "Identificación de las escenas que se encuentren en las siguientes rutas",
-        "identifying_scenes": "Identificando {num} {scene}",
-        "include_male_performers": "Incluir actores (varones)",
-        "set_cover_images": "Selección automática de carátula de escena",
-        "set_organized": "Marcar escena como \"clasificada\"",
-        "source": "Fuente",
-        "source_options": "Opciones de {source}",
-        "sources": "Fuentes",
-        "strategy": "Estrategia"
-      },
-      "import_from_exported_json": "Importar desde el fichero JSON exportado en el directorio de metadatos. Borrará la base de datos existente.",
-      "incremental_import": "Importación gradual o progresiva desde un archivo zip de exportación aportado por el usuario.",
-      "job_queue": "Cola de tareas",
-      "maintenance": "Mantenimiento",
-      "migrate_blobs": {
-        "delete_old": "Borrar datos antiguos",
-        "description": "Migrar blobs al sistema de almacenamiento de blobs actual. Esta migración debería ejecutarse tras cambiar el sistema de almacenamiento de blobs. Opcionalmente se pueden borrar los datos antiguos tras la migración."
-      },
-      "migrate_hash_files": "Se ejecutará tras realizar un cambio de tipo de hash para renombrar los ficheros generados al nuevo formato hash.",
-      "migrate_scene_screenshots": {
-        "delete_files": "Borrar ficheros de capturas de pantalla",
-        "description": "Migrar capturas de pantalla de escenas al nuevo sistema de almacenamiento blob. Esta migración debería ejecutarse migrar un sistema existente a la versión 0.20. Opcionalmente se pueden borrar las capturas de pantalla antiguas tras la migración.",
-        "overwrite_existing": "Sobreescribir blobs existentes con datos de capturas de pantalla"
-      },
-      "migrations": "Migraciones",
-      "only_dry_run": "Marca esta casilla para ejecutar en MODO DE SIMULACIÓN. No se eliminará información alguna, solo se mostrarán en el registro las acciones a realizar",
-      "plugin_tasks": "Tareas de plugins",
-      "scan": {
-        "scanning_all_paths": "Escaneando todas las rutas",
-        "scanning_paths": "Escaneando las siguientes rutas"
-      },
-      "scan_for_content_desc": "Buscar contenido nuevo y añadirlo a la base de datos.",
-      "set_name_date_details_from_metadata_if_present": "Establecer el nombre, fecha y detalles desde los metadatos embebidos en el archivo"
-    },
-    "tools": {
-      "scene_duplicate_checker": "Comprobación de escenas duplicadas",
-      "scene_filename_parser": {
-        "add_field": "Añadir campo",
-        "capitalize_title": "Capitalizar título (todas las palabras comienzan por mayúscula)",
-        "display_fields": "Mostrar campos",
-        "escape_chars": "Usar \\ para evitar caracteres literales",
-        "filename": "Nombre de archivo",
-        "filename_pattern": "Patrón de nombres de ficheros",
-        "ignore_organized": "Ignorar escenas ya clasificadas",
-        "ignored_words": "Palabras ignoradas",
-        "matches_with": "Coincide con {i}",
-        "select_parser_recipe": "Seleccionar fórmula para el analizador sintáctico",
-        "title": "Analizador sintáctico del título de escena",
-        "whitespace_chars": "Espacios en blanco",
-        "whitespace_chars_desc": "Estos caracteres se reemplazarán en el título por espacios en blanco"
-      },
-      "scene_tools": "Herramientas de escenas"
-    },
-    "ui": {
-      "abbreviate_counters": {
-        "description": "Abrevie los contadores en las tarjetas y en las páginas de vista de detalles, por ejemplo, \"1831\" tendrá el formato \"1.8K\".",
-        "heading": "Abreviar contadores"
-      },
-      "basic_settings": "Ajustes básicos",
-      "custom_css": {
-        "description": "La página debe ser recargada para que se lleven a cabo los cambios realizados. Futuras versiones de Stash pueden no ser compatibles con CSS personalizados.",
-        "heading": "CSS personalizado",
-        "option_label": "Habilitar CSS personalizado"
-      },
-      "custom_javascript": {
-        "description": "La página debe ser refrescada para que los cambios tomen efecto. Futuras versiones de Stash pueden no ser compatibles con Javascripts personalizados.",
-        "heading": "JavaScript personalizada",
-        "option_label": "JavaScript personalizada activada"
-      },
-      "custom_locales": {
-        "description": "Sobreescribir traducciones individuales. El listado original se puede encontrar aquí: https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/locales/en-GB.json. La página debe ser refrescada para reflejar los cambios realizados.",
-        "heading": "Traducciones personalizadas",
-        "option_label": "Traducción personalizada activada"
-      },
-      "delete_options": {
-        "description": "Opciones por defecto al borrar escenas, imágenes y galerías.",
-        "heading": "Opciones de eliminación",
-        "options": {
-          "delete_file": "Eliminar fichero por defecto",
-          "delete_generated_supporting_files": "Eliminar por defecto ficheros generados"
-        }
-      },
-      "desktop_integration": {
-        "desktop_integration": "Integración de escritorio",
-        "notifications_enabled": "Habilitar notificaciones",
-        "send_desktop_notifications_for_events": "Enviar notificaciones de escritorio de eventos",
-        "skip_opening_browser": "Saltar apertura del navegador",
-        "skip_opening_browser_on_startup": "Saltar auto-apertura del navegador durante el inicio"
-      },
-      "editing": {
-        "disable_dropdown_create": {
-          "description": "Eliminar la capacidad de crear nuevos recursos desde los selectores de formulario desplegables",
-          "heading": "Deshabilitar creación en menú desplegable"
-        },
-        "heading": "Edición",
-        "max_options_shown": {
-          "label": "Número máximo de elementos a mostrar en menús desplegables"
-        },
-        "rating_system": {
-          "star_precision": {
-            "label": "Precisión estrellas valoraciones",
-            "options": {
-              "full": "Lleno",
-              "half": "Medias",
-              "quarter": "Cuartos",
-              "tenth": "Décimas"
+    "custom": "Personalizado",
+    "date": "Fecha",
+    "death_date": "Fallecimiento",
+    "death_year": "Año de fallecimiento",
+    "descending": "Descendente",
+    "detail": "Detalle",
+    "details": "Detalles",
+    "developmentVersion": "Versión de desarrollo",
+    "dialogs": {
+        "delete_alert": "El/los siguiente/s {count, plural, one {{singularEntity}} other {{pluralEntity}}} se eliminará/n de forma permanente:",
+        "delete_confirm": "¿Estás seguro que deseas eliminar {entityName}?",
+        "delete_entity_desc": "{count, plural, one {¿Estás seguro que deseas eliminar esta {singularEntity}? Hasta que el archivo sea eliminado también, esta {singularEntity} se volverá a añadir cuando se lleve a cabo un escaneo.} other {¿Estás seguro que deseas eliminar {pluralEntity}? Hasta que los archivos sean eliminados del sistema de ficheros también, estas {pluralEntity} se volverán a añadir cuando se lleve a cabo un escaneo.}}",
+        "delete_entity_title": "{count, plural, one {Eliminar {singularEntity}} other {Eliminar {pluralEntity}}}",
+        "delete_galleries_extra": "...y cualquier imagen no adjunta a alguna otra galería.",
+        "delete_gallery_files": "Eliminar directorio, fichero zip y cualquier imagen que no hayan sido adjuntadas a alguna galería.",
+        "delete_object_desc": "¿Estás seguro que deseas eliminar {count, plural, one {esta {singularEntity}} other {estas {pluralEntity}}}?",
+        "delete_object_overflow": "…y {count} other {count, plural, one {{singularEntity}} other {{pluralEntity}}}.",
+        "delete_object_title": "Eliminar {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
+        "edit_entity_title": "Editar {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
+        "export_include_related_objects": "Incluir objetos relacionados en la exportación",
+        "export_title": "Exportar",
+        "lightbox": {
+            "delay": "Retardo (seg)",
+            "display_mode": {
+                "fit_horizontally": "Ajustar horizontalmente",
+                "fit_to_screen": "Ajustar a pantalla",
+                "label": "Modo de visualización",
+                "original": "Original"
+            },
+            "options": "Opciones",
+            "reset_zoom_on_nav": "Restaurar nivel de zoom al cambiar de imagen",
+            "scale_up": {
+                "description": "Aumentar imágenes pequeñas hasta rellenar la pantalla",
+                "label": "Ampliación hasta ajuste"
+            },
+            "scroll_mode": {
+                "description": "Mantener pulsado la tecla shift para cambiar de modo temporalmente.",
+                "label": "Modo scroll",
+                "pan_y": "Panorámica eje Y",
+                "zoom": "Zoom"
             }
-          },
-          "type": {
-            "label": "Sistema de valoración",
-            "options": {
-              "decimal": "Decimal",
-              "stars": "Estrellas"
-            }
-          }
-        }
-      },
-      "funscript_offset": {
-        "description": "Tiempo de compensación en milisegundos para la reproducción de scripts interactivos.",
-        "heading": "Tiempo de compensación Funscript (mseg)"
-      },
-      "handy_connection": {
-        "connect": "Conectar",
-        "server_offset": {
-          "heading": "Tiempo compensación servidor"
         },
-        "status": {
-          "heading": "Estado conexión móvil"
+        "merge_tags": {
+            "destination": "Destino",
+            "source": "Fuente"
         },
-        "sync": "Sincronizar"
-      },
-      "handy_connection_key": {
-        "description": "Clave para conexión práctica que se usará en las escenas interactivas. Configurar esta clave permitirá a Stash compartir la información actual de las escenas con handyfeeling.com",
-        "heading": "Clave para conexión práctica"
-      },
-      "image_lightbox": {
-        "heading": "Lightbox para imágenes"
-      },
-      "image_wall": {
-        "direction": "Dirección",
-        "heading": "Imagen de fondo",
-        "margin": "Margen (píxeles)"
-      },
-      "images": {
-        "heading": "Imágenes",
-        "options": {
-          "write_image_thumbnails": {
-            "description": "Guardar miniaturas de imagen en el sistema de archivos cuando son generadas al vuelo",
-            "heading": "Guardar miniaturas de imágenes"
-          }
-        }
-      },
-      "interactive_options": "Opciones Interactivas",
-      "language": {
-        "heading": "Lenguaje"
-      },
-      "max_loop_duration": {
-        "description": "Duración máxima de la escena para la que el reproductor de vídeo reproducirá en bucle el vídeo - “0” para deshabilitar",
-        "heading": "Máxima duración del bucle"
-      },
-      "menu_items": {
-        "description": "Mostrar u ocultar los diferentes tipos de contenido del menú de navegación",
-        "heading": "Elementos del menú"
-      },
-      "minimum_play_percent": {
-        "description": "Porcentaje de tiempo a reproducir una escena antes de incrementar su contador de visionados.",
-        "heading": "Porcentaje mínimo de reproducción"
-      },
-      "performers": {
-        "options": {
-          "image_location": {
-            "description": "Ruta personalizada para las imágenes de perfil de actrices/actores. Dejar en blanco para usar la ruta por defecto de la aplicación",
-            "heading": "Ruta para las imágenes personalizadas de actrices/actores"
-          }
-        }
-      },
-      "preview_type": {
-        "description": "Configuración para los elementos al seleccionar el muro como modo de visualización",
-        "heading": "Tipo de previsualización",
-        "options": {
-          "animated": "Imagen animada",
-          "static": "Imagen estática",
-          "video": "Vídeo"
-        }
-      },
-      "scene_list": {
-        "heading": "Listado de escenas",
-        "options": {
-          "show_studio_as_text": "Mostrar nombres de estudio como texto"
-        }
-      },
-      "scene_player": {
-        "heading": "Reproductor de vídeo",
-        "options": {
-          "always_start_from_beginning": "Siempre iniciar vídeo desde el inicio",
-          "auto_start_video": "Iniciar vídeo automáticamente",
-          "auto_start_video_on_play_selected": {
-            "description": "Comenzar automáticamente la reproducción del vídeo de la escena cuando \"reproducir\" esté seleccionado o se seleccione una escena aleatoria desde la página de escenas",
-            "heading": "Comenzar automáticamente el vídeo cuando \"reproducir\" esté seleccionado"
-          },
-          "continue_playlist_default": {
-            "description": "Reproducir la siguiente escena cuando el fichero en reproducción finalice",
-            "heading": "(Por defecto) Continuar lista de reproducción"
-          },
-          "show_scrubber": "Mostrar depurador",
-          "track_activity": "Registrar actividad"
-        }
-      },
-      "scene_wall": {
-        "heading": "Muro de escenas/Marcadores",
-        "options": {
-          "display_title": "Mostrar título y etiquetas",
-          "toggle_sound": "Habilitar sonido"
-        }
-      },
-      "slideshow_delay": {
-        "description": "La presentación de diapositivas estará disponible en las galerías al seleccionar el muro como modo de visualización",
-        "heading": "Retardo en la presentación de diapositivas (segundos)"
-      },
-      "title": "Interfaz de usuario"
-    }
-  },
-  "configuration": "Configuración",
-  "countables": {
-    "files": "{count, plural, one {Archivo} other {Archivos}}",
-    "galleries": "{count, plural, one {Galería} other {Galerías}}",
-    "images": "{count, plural, one {Imagen} other {Imágenes}}",
-    "markers": "{count, plural, one {Marcador} other {Marcadores}}",
-    "movies": "{count, plural, one {Película} other {Películas}}",
-    "performers": "{count, plural, one {Actriz/Actor} other {Actrices/Actores}}",
-    "scenes": "{count, plural, one {Escena} other {Escenas}}",
-    "studios": "{count, plural, one {Estudio} other {Estudios}}",
-    "tags": "{count, plural, one {Etiqueta} other {Etiquetas}}"
-  },
-  "country": "País",
-  "cover_image": "Carátula",
-  "created_at": "Fecha de creación",
-  "criterion": {
-    "greater_than": "Mayor que",
-    "less_than": "Menor que",
-    "value": "Valor"
-  },
-  "criterion_modifier": {
-    "between": "está entre",
-    "equals": "es",
-    "excludes": "no incluye",
-    "format_string": "{criterion} {modifierString} {valueString}",
-    "greater_than": "es mayor que",
-    "includes": "incluye",
-    "includes_all": "incluye todas",
-    "is_null": "es nulo",
-    "less_than": "es menor que",
-    "matches_regex": "coincide con la expresión regular",
-    "not_between": "no está entre",
-    "not_equals": "no es",
-    "not_matches_regex": "no coincide con la expresión regular",
-    "not_null": "no es nulo"
-  },
-  "custom": "Personalizado",
-  "date": "Fecha",
-  "death_date": "Fallecimiento",
-  "death_year": "Año de fallecimiento",
-  "descending": "Descendente",
-  "detail": "Detalle",
-  "details": "Detalles",
-  "developmentVersion": "Versión de desarrollo",
-  "dialogs": {
-    "delete_alert": "El/los siguiente/s {count, plural, one {{singularEntity}} other {{pluralEntity}}} se eliminará/n de forma permanente:",
-    "delete_confirm": "¿Estás seguro que deseas eliminar {entityName}?",
-    "delete_entity_desc": "{count, plural, one {¿Estás seguro que deseas eliminar esta {singularEntity}? Hasta que el archivo sea eliminado también, esta {singularEntity} se volverá a añadir cuando se lleve a cabo un escaneo.} other {¿Estás seguro que deseas eliminar {pluralEntity}? Hasta que los archivos sean eliminados del sistema de ficheros también, estas {pluralEntity} se volverán a añadir cuando se lleve a cabo un escaneo.}}",
-    "delete_entity_title": "{count, plural, one {Eliminar {singularEntity}} other {Eliminar {pluralEntity}}}",
-    "delete_galleries_extra": "...y cualquier imagen no adjunta a alguna otra galería.",
-    "delete_gallery_files": "Eliminar directorio, fichero zip y cualquier imagen que no hayan sido adjuntadas a alguna galería.",
-    "delete_object_desc": "¿Estás seguro que deseas eliminar {count, plural, one {esta {singularEntity}} other {estas {pluralEntity}}}?",
-    "delete_object_overflow": "…y {count} other {count, plural, one {{singularEntity}} other {{pluralEntity}}}.",
-    "delete_object_title": "Eliminar {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
-    "edit_entity_title": "Editar {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
-    "export_include_related_objects": "Incluir objetos relacionados en la exportación",
-    "export_title": "Exportar",
-    "lightbox": {
-      "delay": "Retardo (seg)",
-      "display_mode": {
-        "fit_horizontally": "Ajustar horizontalmente",
-        "fit_to_screen": "Ajustar a pantalla",
-        "label": "Modo de visualización",
-        "original": "Original"
-      },
-      "options": "Opciones",
-      "reset_zoom_on_nav": "Restaurar nivel de zoom al cambiar de imagen",
-      "scale_up": {
-        "description": "Aumentar imágenes pequeñas hasta rellenar la pantalla",
-        "label": "Ampliación hasta ajuste"
-      },
-      "scroll_mode": {
-        "description": "Mantener pulsado la tecla shift para cambiar de modo temporalmente.",
-        "label": "Modo scroll",
-        "pan_y": "Panorámica eje Y",
-        "zoom": "Zoom"
-      }
+        "overwrite_filter_confirm": "¿Estás seguro de sobreescribir la consulta guardada {entityName}?",
+        "scene_gen": {
+            "force_transcodes": "Forzar generación de transcodificación",
+            "force_transcodes_tooltip": "Por defecto las transcodificaciones son solo generadas cuando el archivo de vídeo no es soportado por el navegador. Cuando están habilitadas, las transcodificaciones se generarán incluso cuando el fichero de vídeo sea soportado por el navegador.",
+            "image_previews": "Vistas previas en formato de imagen animada",
+            "image_previews_tooltip": "Vistas previas WebP animadas, solo requeridas si el tipo de vista previa seleccionada por defecto es \"Imagen animada\".",
+            "interactive_heatmap_speed": "Generar mapas de calor y velocidades para escenas interactivas",
+            "marker_image_previews": "Vistas previas de marcadores en formato de imagen animada",
+            "marker_image_previews_tooltip": "Vistas previas WebP animadas de marcadores, solo requeridas si el tipo de vista previa seleccionada por defecto es \"Imagen animada\".",
+            "marker_screenshots": "Capturas de pantalla de marcadores",
+            "marker_screenshots_tooltip": "Imágenes estáticas JPG de marcadores, solo requeridas si el tipo de vista previa seleccionada por defecto es \"Imagen estática\".",
+            "markers": "Vistas previas de marcadores",
+            "markers_tooltip": "Vídeos de 20 segundos de duración que comienzan a partir del tiempo seleccionado.",
+            "override_preview_generation_options": "Sobrescribir opciones para la generación de vistas previas",
+            "override_preview_generation_options_desc": "Sobrescribir opciones de generación de vistas previas para esta operación. Las opciones por defecto se configuran en Sistema -> Generación de vistas previas.",
+            "overwrite": "Sobreescribir archivos generados ya existentes",
+            "phash": "PHases o Hashes perceptivos (para búsqueda de archivos duplicados)",
+            "preview_exclude_end_time_desc": "Excluir los últimos X segundos de la vista previa de la escena. Puede ser un valor en segundos o un porcentaje (p.ej. 2%) de la duración total de la escena.",
+            "preview_exclude_end_time_head": "Excluir desde el final del vídeo",
+            "preview_exclude_start_time_desc": "Excluir los primeros X segundos de la vista previa de la escena. Puede ser un valor en segundos o un porcentaje (p.ej. 2%) de la duración total de la escena.",
+            "preview_exclude_start_time_head": "Excluir desde el inicio del vídeo",
+            "preview_generation_options": "Opciones de generación de vistas previas",
+            "preview_options": "Opciones de previsualización",
+            "preview_preset_desc": "La configuración predeterminada regula el tamaño, calidad y tiempo de codificación de las generación de vistas previas. Ajustes por encima de “lento” pueden ralentizar el proceso y no son recomendables.",
+            "preview_preset_head": "Codificación predeterminada de vistas previas",
+            "preview_seg_count_desc": "Número de segmentos en la vista previa de los ficheros.",
+            "preview_seg_count_head": "Número de segmentos en la previsualización",
+            "preview_seg_duration_desc": "Duración en segundos de cada segmento de la vista previa.",
+            "preview_seg_duration_head": "Duración del segmento en la vista previa",
+            "sprites": "Conjunto de imágenes o “sprites” del depurador de escenas",
+            "sprites_tooltip": "Conjunto de imágenes o “sprites” (para el depurador de escenas)",
+            "transcodes": "Transcodificaciones",
+            "transcodes_tooltip": "Conversiones MP4 de formatos de vídeo no soportados",
+            "video_previews": "Vistas previas",
+            "video_previews_tooltip": "Vistas previas en vídeo que se reproducen al pasar el puntero del ratón sobre una escena"
+        },
+        "scenes_found": "{count} escenas encontradas",
+        "scrape_entity_query": "Consulta de rastreo de {entity_type}",
+        "scrape_entity_title": "Resultados de rastreo de {entity_type}",
+        "scrape_results_existing": "Existente",
+        "scrape_results_scraped": "Rastreado",
+        "set_image_url_title": "Dirección web de la imagen",
+        "unsaved_changes": "Los cambios no han sido guardados. ¿Estás seguro que quieres salir?"
     },
-    "merge_tags": {
-      "destination": "Destino",
-      "source": "Fuente"
+    "dimensions": "Dimensiones",
+    "director": "Director",
+    "display_mode": {
+        "grid": "Cuadrícula",
+        "list": "Lista",
+        "tagger": "Etiquetadora",
+        "unknown": "Desconocido/a",
+        "wall": "Muro"
     },
-    "overwrite_filter_confirm": "¿Estás seguro de sobreescribir la consulta guardada {entityName}?",
-    "scene_gen": {
-      "force_transcodes": "Forzar generación de transcodificación",
-      "force_transcodes_tooltip": "Por defecto las transcodificaciones son solo generadas cuando el archivo de vídeo no es soportado por el navegador. Cuando están habilitadas, las transcodificaciones se generarán incluso cuando el fichero de vídeo sea soportado por el navegador.",
-      "image_previews": "Vistas previas en formato de imagen animada",
-      "image_previews_tooltip": "Vistas previas WebP animadas, solo requeridas si el tipo de vista previa seleccionada por defecto es \"Imagen animada\".",
-      "interactive_heatmap_speed": "Generar mapas de calor y velocidades para escenas interactivas",
-      "marker_image_previews": "Vistas previas de marcadores en formato de imagen animada",
-      "marker_image_previews_tooltip": "Vistas previas WebP animadas de marcadores, solo requeridas si el tipo de vista previa seleccionada por defecto es \"Imagen animada\".",
-      "marker_screenshots": "Capturas de pantalla de marcadores",
-      "marker_screenshots_tooltip": "Imágenes estáticas JPG de marcadores, solo requeridas si el tipo de vista previa seleccionada por defecto es \"Imagen estática\".",
-      "markers": "Vistas previas de marcadores",
-      "markers_tooltip": "Vídeos de 20 segundos de duración que comienzan a partir del tiempo seleccionado.",
-      "override_preview_generation_options": "Sobrescribir opciones para la generación de vistas previas",
-      "override_preview_generation_options_desc": "Sobrescribir opciones de generación de vistas previas para esta operación. Las opciones por defecto se configuran en Sistema -> Generación de vistas previas.",
-      "overwrite": "Sobreescribir archivos generados ya existentes",
-      "phash": "PHases o Hashes perceptivos (para búsqueda de archivos duplicados)",
-      "preview_exclude_end_time_desc": "Excluir los últimos X segundos de la vista previa de la escena. Puede ser un valor en segundos o un porcentaje (p.ej. 2%) de la duración total de la escena.",
-      "preview_exclude_end_time_head": "Excluir desde el final del vídeo",
-      "preview_exclude_start_time_desc": "Excluir los primeros X segundos de la vista previa de la escena. Puede ser un valor en segundos o un porcentaje (p.ej. 2%) de la duración total de la escena.",
-      "preview_exclude_start_time_head": "Excluir desde el inicio del vídeo",
-      "preview_generation_options": "Opciones de generación de vistas previas",
-      "preview_options": "Opciones de previsualización",
-      "preview_preset_desc": "La configuración predeterminada regula el tamaño, calidad y tiempo de codificación de las generación de vistas previas. Ajustes por encima de “lento” pueden ralentizar el proceso y no son recomendables.",
-      "preview_preset_head": "Codificación predeterminada de vistas previas",
-      "preview_seg_count_desc": "Número de segmentos en la vista previa de los ficheros.",
-      "preview_seg_count_head": "Número de segmentos en la previsualización",
-      "preview_seg_duration_desc": "Duración en segundos de cada segmento de la vista previa.",
-      "preview_seg_duration_head": "Duración del segmento en la vista previa",
-      "sprites": "Conjunto de imágenes o “sprites” del depurador de escenas",
-      "sprites_tooltip": "Conjunto de imágenes o “sprites” (para el depurador de escenas)",
-      "transcodes": "Transcodificaciones",
-      "transcodes_tooltip": "Conversiones MP4 de formatos de vídeo no soportados",
-      "video_previews": "Vistas previas",
-      "video_previews_tooltip": "Vistas previas en vídeo que se reproducen al pasar el puntero del ratón sobre una escena"
+    "donate": "Donar",
+    "dupe_check": {
+        "description": "El cálculo en los niveles por debajo de “Exacto” puede llevar más tiempo. En los niveles de menor exactitud además pueden aparecer mayor número de falsos positivos en las coincidencias.",
+        "found_sets": "{setCount, plural, one{# conjunto de duplicados encontrado.} other {# conjuntos de duplicados encontrados.}}",
+        "options": {
+            "exact": "Exacto",
+            "high": "Alto",
+            "low": "Bajo",
+            "medium": "Medio"
+        },
+        "search_accuracy_label": "Precisión de búsqueda",
+        "title": "Escenas duplicadas"
     },
-    "scenes_found": "{count} escenas encontradas",
-    "scrape_entity_query": "Consulta de rastreo de {entity_type}",
-    "scrape_entity_title": "Resultados de rastreo de {entity_type}",
-    "scrape_results_existing": "Existente",
-    "scrape_results_scraped": "Rastreado",
-    "set_image_url_title": "Dirección web de la imagen",
-    "unsaved_changes": "Los cambios no han sido guardados. ¿Estás seguro que quieres salir?"
-  },
-  "dimensions": "Dimensiones",
-  "director": "Director",
-  "display_mode": {
-    "grid": "Cuadrícula",
-    "list": "Lista",
-    "tagger": "Etiquetadora",
-    "unknown": "Desconocido/a",
-    "wall": "Muro"
-  },
-  "donate": "Donar",
-  "dupe_check": {
-    "description": "El cálculo en los niveles por debajo de “Exacto” puede llevar más tiempo. En los niveles de menor exactitud además pueden aparecer mayor número de falsos positivos en las coincidencias.",
-    "found_sets": "{setCount, plural, one{# conjunto de duplicados encontrado.} other {# conjuntos de duplicados encontrados.}}",
-    "options": {
-      "exact": "Exacto",
-      "high": "Alto",
-      "low": "Bajo",
-      "medium": "Medio"
+    "duplicated_phash": "Duplicados (phash)",
+    "duration": "Duración",
+    "effect_filters": {
+        "aspect": "Relación aspecto",
+        "blue": "Azul",
+        "blur": "Desenfoque",
+        "brightness": "Brillo",
+        "contrast": "Contraste",
+        "gamma": "Exposición",
+        "green": "Verde",
+        "hue": "Color",
+        "name": "Filtro",
+        "name_transforms": "Transformaciones de vídeo",
+        "red": "Rojo",
+        "reset_filters": "Restablecer filtros",
+        "reset_transforms": "Restablecer transformaciones",
+        "rotate": "Rotación",
+        "rotate_left_and_scale": "Rotar a la izquierda y escalar",
+        "rotate_right_and_scale": "Rotar a la derecha y escalar",
+        "saturation": "Saturación",
+        "scale": "Escala",
+        "warmth": "Calidez"
     },
-    "search_accuracy_label": "Precisión de búsqueda",
-    "title": "Escenas duplicadas"
-  },
-  "duplicated_phash": "Duplicados (phash)",
-  "duration": "Duración",
-  "effect_filters": {
-    "aspect": "Relación aspecto",
-    "blue": "Azul",
-    "blur": "Desenfoque",
-    "brightness": "Brillo",
-    "contrast": "Contraste",
-    "gamma": "Exposición",
-    "green": "Verde",
-    "hue": "Color",
-    "name": "Filtro",
-    "name_transforms": "Transformaciones de vídeo",
-    "red": "Rojo",
-    "reset_filters": "Restablecer filtros",
-    "reset_transforms": "Restablecer transformaciones",
-    "rotate": "Rotación",
-    "rotate_left_and_scale": "Rotar a la izquierda y escalar",
-    "rotate_right_and_scale": "Rotar a la derecha y escalar",
-    "saturation": "Saturación",
-    "scale": "Escala",
-    "warmth": "Calidez"
-  },
-  "ethnicity": "Origen étnico",
-  "existing_value": "valor existente",
-  "eye_color": "Color de ojos",
-  "fake_tits": "Pecho operado",
-  "false": "No",
-  "favourite": "Favorita",
-  "file": "fichero",
-  "file_info": "Info",
-  "file_mod_time": "Fecha de modificación del fichero",
-  "files": "ficheros",
-  "filesize": "Tamaño de archivo",
-  "filter": "Filtro",
-  "filter_name": "Filtrar por nombre",
-  "filters": "Filtros",
-  "framerate": "Tasa de frames",
-  "frames_per_second": "{value} frames por segundo (fps)",
-  "galleries": "Galerías",
-  "gallery": "Galería",
-  "gallery_count": "Número de galerías",
-  "gender": "Género",
-  "gender_types": {
-    "FEMALE": "Mujer",
-    "INTERSEX": "Intersexual",
-    "MALE": "Varón",
-    "NON_BINARY": "No binario",
-    "TRANSGENDER_FEMALE": "Mujer transgénero",
-    "TRANSGENDER_MALE": "Varón transgénero"
-  },
-  "hair_color": "Color de pelo",
-  "handy_connection_status": {
-    "connecting": "Conectando",
-    "disconnected": "Desconectado",
-    "missing": "El archivo no esta disponsible",
-    "ready": "Conexion Preparada",
-    "syncing": "Sincronizando con el servidor"
-  },
-  "hasMarkers": "Tiene marcadores",
-  "height": "Estatura",
-  "help": "Ayuda",
-  "ignore_auto_tag": "Ignorar Etiquetado Automático",
-  "image": "Imagen",
-  "image_count": "Número de imágenes",
-  "images": "Imágenes",
-  "include_parent_tags": "Incluir etiquetas de la matriz",
-  "include_sub_studios": "Incluir estudios filiales",
-  "include_sub_tags": "Incluir sub-etiquetas",
-  "instagram": "Instagram",
-  "interactive": "Interactivo",
-  "interactive_speed": "Velocidad interactiva",
-  "isMissing": "Falta",
-  "library": "Biblioteca",
-  "loading": {
-    "generic": "Cargando…"
-  },
-  "marker_count": "Número de marcadores",
-  "markers": "Marcadores",
-  "measurements": "Medidas",
-  "media_info": {
-    "audio_codec": "Códec de audio",
-    "checksum": "Checksum",
-    "downloaded_from": "Descargado de",
-    "hash": "Hash",
+    "ethnicity": "Origen étnico",
+    "existing_value": "valor existente",
+    "eye_color": "Color de ojos",
+    "fake_tits": "Pecho operado",
+    "false": "No",
+    "favourite": "Favorita",
+    "file": "fichero",
+    "file_info": "Info",
+    "file_mod_time": "Fecha de modificación del fichero",
+    "files": "ficheros",
+    "filesize": "Tamaño de archivo",
+    "filter": "Filtro",
+    "filter_name": "Filtrar por nombre",
+    "filters": "Filtros",
+    "framerate": "Tasa de frames",
+    "frames_per_second": "{value} frames por segundo (fps)",
+    "galleries": "Galerías",
+    "gallery": "Galería",
+    "gallery_count": "Número de galerías",
+    "gender": "Género",
+    "gender_types": {
+        "FEMALE": "Mujer",
+        "INTERSEX": "Intersexual",
+        "MALE": "Varón",
+        "NON_BINARY": "No binario",
+        "TRANSGENDER_FEMALE": "Mujer transgénero",
+        "TRANSGENDER_MALE": "Varón transgénero"
+    },
+    "hair_color": "Color de pelo",
+    "handy_connection_status": {
+        "connecting": "Conectando",
+        "disconnected": "Desconectado",
+        "missing": "El archivo no esta disponsible",
+        "ready": "Conexion Preparada",
+        "syncing": "Sincronizando con el servidor"
+    },
+    "hasMarkers": "Tiene marcadores",
+    "height": "Estatura",
+    "help": "Ayuda",
+    "ignore_auto_tag": "Ignorar Etiquetado Automático",
+    "image": "Imagen",
+    "image_count": "Número de imágenes",
+    "images": "Imágenes",
+    "include_parent_tags": "Incluir etiquetas de la matriz",
+    "include_sub_studios": "Incluir estudios filiales",
+    "include_sub_tags": "Incluir sub-etiquetas",
+    "instagram": "Instagram",
+    "interactive": "Interactivo",
     "interactive_speed": "Velocidad interactiva",
-    "performer_card": {
-      "age": "{age} {years_old}",
-      "age_context": "{age} {years_old} en esta escena"
+    "isMissing": "Falta",
+    "library": "Biblioteca",
+    "loading": {
+        "generic": "Cargando…"
     },
-    "phash": "PHash",
-    "stream": "Stream",
-    "video_codec": "Códec de vídeo"
-  },
-  "megabits_per_second": "{value} megabits por segundo (mbps)",
-  "metadata": "Metadatos",
-  "movie": "Película",
-  "movie_scene_number": "Número de escena",
-  "movies": "Películas",
-  "name": "Nombre",
-  "new": "Añadir",
-  "none": "Ninguno/a",
-  "o_counter": "Contador “P”",
-  "operations": "Acciones",
-  "organized": "Clasificadas",
-  "pagination": {
-    "first": "Primera",
-    "last": "Última",
-    "next": "Siguiente",
-    "previous": "Anterior"
-  },
-  "parent_of": "Matriz de {children}",
-  "parent_studios": "Estudio matriz",
-  "parent_tag_count": "Contador de etiqueta matriz",
-  "parent_tags": "Etiqueta matriz",
-  "part_of": "Parte de {parent}",
-  "path": "Ruta",
-  "perceptual_similarity": "Similaridad perceptiva (phash)",
-  "performer": "Actriz/Actor",
-  "performer_tags": "Etiquetas de actriz/actor",
-  "performer_age": "Edad de la actriz/actor",
-  "performer_count": "Número de actrices/actores",
-  "performer_favorite": "Actriz/actor favorita/o",
-  "performer_image": "Imagen de actriz/actor",
-  "performer_tagger": {
-    "add_new_performers": "Añadir nuevas/os actrices/actores",
-    "any_names_entered_will_be_queried": "Cualquier nombre introducido será consultado desde una instancia Stash-Box remota y añadido si es encontrado. Solo se aceptan coincidencias exactas.",
-    "batch_add_performers": "Adición automatizada de actrices/actores",
-    "batch_update_performers": "Actualización automatizada de actrices/actores",
-    "config": {
-      "active_stash-box_instance": "Instancia Stash-Box activa:",
-      "edit_excluded_fields": "Editar campos excluidos",
-      "excluded_fields": "Campos excluidos:",
-      "no_fields_are_excluded": "No hay campos excluidos",
-      "no_instances_found": "No se han encontrado instancias",
-      "these_fields_will_not_be_changed_when_updating_performers": "Estos campos permanecerán inalterados al actualizar actrices/actores."
+    "marker_count": "Número de marcadores",
+    "markers": "Marcadores",
+    "measurements": "Medidas",
+    "media_info": {
+        "audio_codec": "Códec de audio",
+        "checksum": "Checksum",
+        "downloaded_from": "Descargado de",
+        "hash": "Hash",
+        "interactive_speed": "Velocidad interactiva",
+        "performer_card": {
+            "age": "{age} {years_old}",
+            "age_context": "{age} {years_old} en esta escena"
+        },
+        "phash": "PHash",
+        "stream": "Stream",
+        "video_codec": "Códec de vídeo"
     },
-    "current_page": "Página actual",
-    "failed_to_save_performer": "Error al guardar \"{performer}\"",
-    "name_already_exists": "El nombre ya existe",
-    "network_error": "Error de red",
-    "no_results_found": "No se han encontrado resultados.",
-    "number_of_performers_will_be_processed": "{performer_count} actrices/actores serán procesados",
-    "performer_already_tagged": "Actriz/actor ya etiquetada/o",
-    "performer_names_separated_by_comma": "Nombres de actrices/actores separados por comas",
-    "performer_selection": "Selección de actriz/actor",
-    "performer_successfully_tagged": "Actriz/actor etiquetada/o correctamente:",
-    "query_all_performers_in_the_database": "Todas las actrices/actores en la base de datos",
-    "refresh_tagged_performers": "Recargar actrices/actores etiquetadas/os",
-    "refreshing_will_update_the_data": "Recargar actualizará los datos de cualquier actriz/actor desde la instancia stash-box.",
-    "status_tagging_job_queued": "Estado: trabajo de etiquetado añadido a la cola",
-    "status_tagging_performers": "Estado: etiquetando actrices/actores",
-    "tag_status": "Estado de etiquetado",
-    "to_use_the_performer_tagger": "Para usar el etiquetador de actrices/actores se requiere configurar una instancia stash-box.",
-    "untagged_performers": "Actrices/actores no etiquetadas/os",
-    "update_performer": "Actualizar actriz/actor",
-    "update_performers": "Actualizar actrices/actores",
-    "updating_untagged_performers_description": "Actualizar las actrices/actores no etiquetados intentará seleccionar cualquier actriz/actor que carecen de un StashID y actualizará los metadatos."
-  },
-  "performers": "Actrices/Actores",
-  "piercings": "Piercings",
-  "queue": "Cola",
-  "random": "Aleatoria",
-  "rating": "Puntuación",
-  "resolution": "Resolución",
-  "scene": "Escena",
-  "sceneTagger": "Etiquetador de escenas",
-  "scene_tags": "Etiquetas de escena",
-  "scene_count": "Número de escenas",
-  "scene_id": "Indentificador de escena",
-  "scenes": "Escenas",
-  "scenes_updated_at": "Fecha de actualización de la escena",
-  "search_filter": {
-    "name": "Filtro",
-    "saved_filters": "Filtros guardados",
-    "update_filter": "Actualizar filtro"
-  },
-  "seconds": "Segundos",
-  "settings": "Preferencias",
-  "setup": {
-    "confirm": {
-      "almost_ready": "Casi estamos listos para completar la configuración. Por favor, confirma las siguientes opciones. Puedes hacer clic en volver para cambiar cualquier dato incorrecto. Si todo parece estar bien pulsa en Confirmar para crear tu nuevo entorno.",
-      "configuration_file_location": "Ruta relativa para el fichero de configuración:",
-      "database_file_path": "Ruta para la base de datos",
-      "default_db_location": "<ruta donde se encuentra el fichero de configuración>/stash-go.sqlite",
-      "default_generated_content_location": "<ruta donde se encuentra el fichero de configuración>/generated",
-      "generated_directory": "Directorio donde se almacenan los ficheros multimedia de soporte generados por Stash",
-      "nearly_there": "¡Casi estamos!",
-      "stash_library_directories": "Directorio/s que contiene/n la librería de archivos de Stash"
+    "megabits_per_second": "{value} megabits por segundo (mbps)",
+    "metadata": "Metadatos",
+    "movie": "Película",
+    "movie_scene_number": "Número de escena",
+    "movies": "Películas",
+    "name": "Nombre",
+    "new": "Añadir",
+    "none": "Ninguno/a",
+    "o_counter": "Contador “P”",
+    "operations": "Acciones",
+    "organized": "Clasificadas",
+    "pagination": {
+        "first": "Primera",
+        "last": "Última",
+        "next": "Siguiente",
+        "previous": "Anterior"
     },
-    "creating": {
-      "creating_your_system": "Creando tu nuevo entorno",
-      "ffmpeg_notice": "Si <code>ffmpeg</code> no está presente, por favor, ten paciencia mientras Stash lo descarga. Puede ver el progreso de la descarga en la consola de la sección de registros."
+    "parent_of": "Matriz de {children}",
+    "parent_studios": "Estudio matriz",
+    "parent_tag_count": "Contador de etiqueta matriz",
+    "parent_tags": "Etiqueta matriz",
+    "part_of": "Parte de {parent}",
+    "path": "Ruta",
+    "perceptual_similarity": "Similaridad perceptiva (phash)",
+    "performer": "Actriz/Actor",
+    "performer_age": "Edad de la actriz/actor",
+    "performer_count": "Número de actrices/actores",
+    "performer_favorite": "Actriz/actor favorita/o",
+    "performer_image": "Imagen de actriz/actor",
+    "performer_tagger": {
+        "add_new_performers": "Añadir nuevas/os actrices/actores",
+        "any_names_entered_will_be_queried": "Cualquier nombre introducido será consultado desde una instancia Stash-Box remota y añadido si es encontrado. Solo se aceptan coincidencias exactas.",
+        "batch_add_performers": "Adición automatizada de actrices/actores",
+        "batch_update_performers": "Actualización automatizada de actrices/actores",
+        "config": {
+            "active_stash-box_instance": "Instancia Stash-Box activa:",
+            "edit_excluded_fields": "Editar campos excluidos",
+            "excluded_fields": "Campos excluidos:",
+            "no_fields_are_excluded": "No hay campos excluidos",
+            "no_instances_found": "No se han encontrado instancias",
+            "these_fields_will_not_be_changed_when_updating_performers": "Estos campos permanecerán inalterados al actualizar actrices/actores."
+        },
+        "current_page": "Página actual",
+        "failed_to_save_performer": "Error al guardar \"{performer}\"",
+        "name_already_exists": "El nombre ya existe",
+        "network_error": "Error de red",
+        "no_results_found": "No se han encontrado resultados.",
+        "number_of_performers_will_be_processed": "{performer_count} actrices/actores serán procesados",
+        "performer_already_tagged": "Actriz/actor ya etiquetada/o",
+        "performer_names_separated_by_comma": "Nombres de actrices/actores separados por comas",
+        "performer_selection": "Selección de actriz/actor",
+        "performer_successfully_tagged": "Actriz/actor etiquetada/o correctamente:",
+        "query_all_performers_in_the_database": "Todas las actrices/actores en la base de datos",
+        "refresh_tagged_performers": "Recargar actrices/actores etiquetadas/os",
+        "refreshing_will_update_the_data": "Recargar actualizará los datos de cualquier actriz/actor desde la instancia stash-box.",
+        "status_tagging_job_queued": "Estado: trabajo de etiquetado añadido a la cola",
+        "status_tagging_performers": "Estado: etiquetando actrices/actores",
+        "tag_status": "Estado de etiquetado",
+        "to_use_the_performer_tagger": "Para usar el etiquetador de actrices/actores se requiere configurar una instancia stash-box.",
+        "untagged_performers": "Actrices/actores no etiquetadas/os",
+        "update_performer": "Actualizar actriz/actor",
+        "update_performers": "Actualizar actrices/actores",
+        "updating_untagged_performers_description": "Actualizar las actrices/actores no etiquetados intentará seleccionar cualquier actriz/actor que carecen de un StashID y actualizará los metadatos."
     },
-    "errors": {
-      "something_went_wrong": "¡OH NO! ¡Algo ha ido mal!",
-      "something_went_wrong_description": "Si sospechas que puede haber un error con los datos aportados, por favor, haz clic en volver para arreglarlos. De lo contrario, abre una incidencia en {githubLink} o busca ayuda en {discordLink}.",
-      "something_went_wrong_while_setting_up_your_system": "Algo ha salido mal mientras configurábamos tu entorno. Éste es el mensaje de error recibido: {error}"
+    "performer_tags": "Etiquetas de actriz/actor",
+    "performers": "Actrices/Actores",
+    "piercings": "Piercings",
+    "queue": "Cola",
+    "random": "Aleatoria",
+    "rating": "Puntuación",
+    "resolution": "Resolución",
+    "scene": "Escena",
+    "sceneTagger": "Etiquetador de escenas",
+    "scene_count": "Número de escenas",
+    "scene_id": "Indentificador de escena",
+    "scene_tags": "Etiquetas de escena",
+    "scenes": "Escenas",
+    "scenes_updated_at": "Fecha de actualización de la escena",
+    "search_filter": {
+        "name": "Filtro",
+        "saved_filters": "Filtros guardados",
+        "update_filter": "Actualizar filtro"
     },
-    "folder": {
-      "file_path": "Ruta relativa del fichero",
-      "up_dir": "Ascender en el árbol de directorios"
+    "seconds": "Segundos",
+    "settings": "Preferencias",
+    "setup": {
+        "confirm": {
+            "almost_ready": "Casi estamos listos para completar la configuración. Por favor, confirma las siguientes opciones. Puedes hacer clic en volver para cambiar cualquier dato incorrecto. Si todo parece estar bien pulsa en Confirmar para crear tu nuevo entorno.",
+            "configuration_file_location": "Ruta relativa para el fichero de configuración:",
+            "database_file_path": "Ruta para la base de datos",
+            "generated_directory": "Directorio donde se almacenan los ficheros multimedia de soporte generados por Stash",
+            "nearly_there": "¡Casi estamos!",
+            "stash_library_directories": "Directorio/s que contiene/n la librería de archivos de Stash"
+        },
+        "creating": {
+            "creating_your_system": "Creando tu nuevo entorno",
+            "ffmpeg_notice": "Si <code>ffmpeg</code> no está presente, por favor, ten paciencia mientras Stash lo descarga. Puede ver el progreso de la descarga en la consola de la sección de registros."
+        },
+        "errors": {
+            "something_went_wrong": "¡OH NO! ¡Algo ha ido mal!",
+            "something_went_wrong_description": "Si sospechas que puede haber un error con los datos aportados, por favor, haz clic en volver para arreglarlos. De lo contrario, abre una incidencia en {githubLink} o busca ayuda en {discordLink}.",
+            "something_went_wrong_while_setting_up_your_system": "Algo ha salido mal mientras configurábamos tu entorno. Éste es el mensaje de error recibido: {error}"
+        },
+        "folder": {
+            "file_path": "Ruta relativa del fichero",
+            "up_dir": "Ascender en el árbol de directorios"
+        },
+        "github_repository": "Repositorio en Github",
+        "migrate": {
+            "backup_database_path_leave_empty_to_disable_backup": "Ruta para las copias de seguridad (dejar en blanco para deshabilitar las copias de seguridad):",
+            "backup_recommended": "Es recomendable que realices una copia de seguridad de tu base de datos existente antes de la migración. Podemos encargarnos nosotros en tu lugar haciendo una copia de seguridad de tu base de datos en <code>{defaultBackupPath}</code>.",
+            "migrating_database": "Migrando base de datos",
+            "migration_failed": "Migración fallida",
+            "migration_failed_error": "Se ha producido el siguiente error mientras se migraba la base de datos:",
+            "migration_failed_help": "Por favor, haz las correcciones oportunas y vuelve a intentarlo. Si no, puedes avisarnos del error en {githubLink} o pedir ayuda en {discordLink}.",
+            "migration_irreversible_warning": "El proceso de migración no es reversible. Una vez se lleve a cabo la migración tu base de datos será incompatible con las versiones previas de Stash.",
+            "migration_required": "Migración requerida",
+            "perform_schema_migration": "Realizar migración",
+            "schema_too_old": "La versión de la base de datos es <strong>{databaseSchema}</strong> y necesita ser actualizada a la <strong>{appSchema}</strong>. Esta versión de Stash no funcionará sin la migración de la base de datos."
+        },
+        "paths": {
+            "database_filename_empty_for_default": "nombre para el archivo de la base de datos (en blanco para usar opción por defecto)",
+            "description": "A continuación necesitamos saber dónde se encuentra tu colección de porno, y dónde guardar la base de datos de Stash y los ficheros multimedia de soporte generados. Estos ajustes se pueden modificar posteriormente.",
+            "path_to_generated_directory_empty_for_default": "ruta al directorio de ficheros multimedia generados (dejar en blanco para usar opción por defecto)",
+            "set_up_your_paths": "Selecciona tus rutas",
+            "stash_alert": "No se han seleccionado rutas para tu biblioteca. Ningún fichero multimedia podrá ser seleccionado para su inclusión en Stash. ¿Estás seguro?",
+            "where_can_stash_store_its_database": "¿Dónde guarda Stash su base de datos?",
+            "where_can_stash_store_its_database_description": "Stash emplea una base de datos SQLite para almacenar los metadatos de tu colección. Por defecto será creada como <code>stash-go.sqlite</code> en el directorio en el que se encuentra tu archivo de configuración. Si quieres cambiar esto, por favor, introduce un nombre de archivo con ruta absoluta o relativa al directorio de trabajo actual.",
+            "where_can_stash_store_its_generated_content": "¿Dónde guarda Stash los ficheros multimedia de soporte generados?",
+            "where_can_stash_store_its_generated_content_description": "Para poder ofrecerte miniaturas, vistas previas y conjuntos de imágenes animadas, Stash genera imágenes y vídeos. Esto incluye también transcodificaciones para formatos de vídeo no soportados. Por defecto, Stash creará el directorio <code>generated</code> en el directorio que contiene tu archivo de configuración. Si quieres cambiar dónde se almacenarán estos archivos generados, por favor, introduce una ruta absoluta o relativa (al directorio de trabajo actual). Stash creará este directorio si no existe.",
+            "where_is_your_porn_located": "¿Dónde guardas el porno?",
+            "where_is_your_porn_located_description": "Añade los directorios que contienen tus imágenes y vídeos porno. Stash usará estos directorios para buscar imágenes y vídeos durante el escaneo."
+        },
+        "stash_setup_wizard": "Asistente de configuración de Stash",
+        "success": {
+            "getting_help": "Obtener ayuda",
+            "help_links": "Si tienes algún problema, pregunta o sugerencia puedes abrir una inicidencia en {githubLink} o preguntar a nuestra comunidad de usuarios en {discordLink}.",
+            "in_app_manual_explained": "Te recomendamos que consultes el manual integrado en la aplicación, al que se puede acceder desde el icono en la esquina superior derecha de la pantalla y que tiene este aspecto: {icon}",
+            "next_config_step_one": "A continuación serás dirigido a la página de Configuración donde podrás seleccionar qué archivos se incluirán o se excluirán, proteger tu sistema con un usuario y contraseña, y un montón de opciones más.",
+            "next_config_step_two": "Cuando estés satisfecho con estas opciones puedes empezar a escanear tu contenido para su adición en Stash haciendo clic en <code>{localized_task}</code> - <code>{localized_scan}</code>.",
+            "open_collective": "Visite {open_collective_link} para ver cómo puede contribuir al desarrollo de Stash.",
+            "support_us": "Apóyanos",
+            "thanks_for_trying_stash": "¡Gracias por usar Stash!",
+            "welcome_contrib": "También agradecemos las contribuciones en forma de código de Stash (corrección de errores, mejoras y nuevas funcionalidades), prueba de versiones beta, informe de errores, solicitud de mejoras y nuevas funciones, y asistencia al usuario. Puedes ver más detalles en el apartado Contribución del manual de ayuda de la aplicación.",
+            "your_system_has_been_created": "¡Todo correcto! ¡Tu entorno ha sido creado!"
+        },
+        "welcome": {
+            "config_path_logic_explained": "Stash intenta encontrar primero su archivo de configuración (<code>config.yml</code>) en el directorio actual de trabajo y, en caso de no encontrarlo, lo intenta en <code>$HOME/.stash/config.yml</code> (en Windows será <code>%USERPROFILE%\\.stash\\config.yml</code>). También puedes hacer que Stash obtenga su configuración de un archivo de configuración lanzando la aplicación con las opciones <code>-c '<ruta personalizada al archivo de configuración>'</code> o <code>--config '<ruta personalizada al archivo de configuración>'</code>.",
+            "in_current_stash_directory": "En el directorio <code>$HOME/.stash</code>",
+            "in_the_current_working_directory": "En el directorio de trabajo actual",
+            "next_step": "Si estás listo para crear un nuevo entorno, por favor, selecciona donde quieres guardar tu archivo de configuración y haz clic en siguiente.",
+            "store_stash_config": "¿Dónde quieres guardar el fichero de configuración de Stash?",
+            "unable_to_locate_config": "Si estás leyendo esto es que Stash no ha podido encontrar una configuración existente. Este asistente te guiará durante el proceso de creación de una nueva configuración.",
+            "unexpected_explained": "Si has llegado hasta esta ventana de forma inesperada, por favor, intenta reiniciar Stash en el directorio de trabajo correcto o con la opción <code>-c</code> ."
+        },
+        "welcome_specific_config": {
+            "config_path": "Stash usará la siguiente ruta para el fichero de configuración: <code>{path}</code>",
+            "next_step": "Cuando estés preparado para la creación de un nuevo entorno pulsa Siguiente.",
+            "unable_to_locate_specified_config": "Si estás leyendo esto es que Stash no ha podido encontrar el fichero de configuración especificado en la línea de comandos o en el entorno en el que está instalado. Este asistente te guiará durante el proceso de creación de una nueva configuración."
+        },
+        "welcome_to_stash": "Bienvenido a Stash"
     },
-    "github_repository": "Repositorio en Github",
-    "migrate": {
-      "backup_database_path_leave_empty_to_disable_backup": "Ruta para las copias de seguridad (dejar en blanco para deshabilitar las copias de seguridad):",
-      "backup_recommended": "Es recomendable que realices una copia de seguridad de tu base de datos existente antes de la migración. Podemos encargarnos nosotros en tu lugar haciendo una copia de seguridad de tu base de datos en <code>{defaultBackupPath}</code>.",
-      "migrating_database": "Migrando base de datos",
-      "migration_failed": "Migración fallida",
-      "migration_failed_error": "Se ha producido el siguiente error mientras se migraba la base de datos:",
-      "migration_failed_help": "Por favor, haz las correcciones oportunas y vuelve a intentarlo. Si no, puedes avisarnos del error en {githubLink} o pedir ayuda en {discordLink}.",
-      "migration_irreversible_warning": "El proceso de migración no es reversible. Una vez se lleve a cabo la migración tu base de datos será incompatible con las versiones previas de Stash.",
-      "migration_required": "Migración requerida",
-      "perform_schema_migration": "Realizar migración",
-      "schema_too_old": "La versión de la base de datos es <strong>{databaseSchema}</strong> y necesita ser actualizada a la <strong>{appSchema}</strong>. Esta versión de Stash no funcionará sin la migración de la base de datos."
+    "stash_id": "Identificador único Stash",
+    "stash_ids": "Stash IDs",
+    "stashbox": {
+        "go_review_draft": "Ir a {endpoint_name} para revisar el borrador.",
+        "selected_stash_box": "URL de la entidad Stash-Box seleccionada",
+        "submission_failed": "Envío fallido",
+        "submission_successful": "Enviado correctamente"
     },
-    "paths": {
-      "database_filename_empty_for_default": "nombre para el archivo de la base de datos (en blanco para usar opción por defecto)",
-      "description": "A continuación necesitamos saber dónde se encuentra tu colección de porno, y dónde guardar la base de datos de Stash y los ficheros multimedia de soporte generados. Estos ajustes se pueden modificar posteriormente.",
-      "path_to_generated_directory_empty_for_default": "ruta al directorio de ficheros multimedia generados (dejar en blanco para usar opción por defecto)",
-      "set_up_your_paths": "Selecciona tus rutas",
-      "stash_alert": "No se han seleccionado rutas para tu biblioteca. Ningún fichero multimedia podrá ser seleccionado para su inclusión en Stash. ¿Estás seguro?",
-      "where_can_stash_store_its_database": "¿Dónde guarda Stash su base de datos?",
-      "where_can_stash_store_its_database_description": "Stash emplea una base de datos SQLite para almacenar los metadatos de tu colección. Por defecto será creada como <code>stash-go.sqlite</code> en el directorio en el que se encuentra tu archivo de configuración. Si quieres cambiar esto, por favor, introduce un nombre de archivo con ruta absoluta o relativa al directorio de trabajo actual.",
-      "where_can_stash_store_its_generated_content": "¿Dónde guarda Stash los ficheros multimedia de soporte generados?",
-      "where_can_stash_store_its_generated_content_description": "Para poder ofrecerte miniaturas, vistas previas y conjuntos de imágenes animadas, Stash genera imágenes y vídeos. Esto incluye también transcodificaciones para formatos de vídeo no soportados. Por defecto, Stash creará el directorio <code>generated</code> en el directorio que contiene tu archivo de configuración. Si quieres cambiar dónde se almacenarán estos archivos generados, por favor, introduce una ruta absoluta o relativa (al directorio de trabajo actual). Stash creará este directorio si no existe.",
-      "where_is_your_porn_located": "¿Dónde guardas el porno?",
-      "where_is_your_porn_located_description": "Añade los directorios que contienen tus imágenes y vídeos porno. Stash usará estos directorios para buscar imágenes y vídeos durante el escaneo."
+    "stats": {
+        "image_size": "Tamaño de las imágenes",
+        "scenes_duration": "Duración de las escenas",
+        "scenes_size": "Tamaño de las escenas"
     },
-    "stash_setup_wizard": "Asistente de configuración de Stash",
-    "success": {
-      "getting_help": "Obtener ayuda",
-      "help_links": "Si tienes algún problema, pregunta o sugerencia puedes abrir una inicidencia en {githubLink} o preguntar a nuestra comunidad de usuarios en {discordLink}.",
-      "in_app_manual_explained": "Te recomendamos que consultes el manual integrado en la aplicación, al que se puede acceder desde el icono en la esquina superior derecha de la pantalla y que tiene este aspecto: {icon}",
-      "next_config_step_one": "A continuación serás dirigido a la página de Configuración donde podrás seleccionar qué archivos se incluirán o se excluirán, proteger tu sistema con un usuario y contraseña, y un montón de opciones más.",
-      "next_config_step_two": "Cuando estés satisfecho con estas opciones puedes empezar a escanear tu contenido para su adición en Stash haciendo clic en <code>{localized_task}</code> - <code>{localized_scan}</code>.",
-      "open_collective": "Visite {open_collective_link} para ver cómo puede contribuir al desarrollo de Stash.",
-      "support_us": "Apóyanos",
-      "thanks_for_trying_stash": "¡Gracias por usar Stash!",
-      "welcome_contrib": "También agradecemos las contribuciones en forma de código de Stash (corrección de errores, mejoras y nuevas funcionalidades), prueba de versiones beta, informe de errores, solicitud de mejoras y nuevas funciones, y asistencia al usuario. Puedes ver más detalles en el apartado Contribución del manual de ayuda de la aplicación.",
-      "your_system_has_been_created": "¡Todo correcto! ¡Tu entorno ha sido creado!"
+    "status": "Estado: {statusText}",
+    "studio": "Estudio",
+    "studio_depth": "Niveles (en blanco para mostrar todos)",
+    "studios": "Estudios",
+    "sub_tag_count": "Número de etiquetas secundarias",
+    "sub_tag_of": "Sub-etiquetas de {parent}",
+    "sub_tags": "Etiquetas secundarias",
+    "subsidiary_studios": "Estudios afiliados/filiales",
+    "synopsis": "Sinopsis",
+    "tag": "Etiqueta",
+    "tag_count": "Número de etiquetas",
+    "tags": "Etiquetas",
+    "tattoos": "Tatuajes",
+    "title": "Título",
+    "toast": {
+        "added_entity": "{entity} añadida",
+        "added_generation_job_to_queue": "Tarea de generación añadida a la cola",
+        "created_entity": "{entity} creada",
+        "default_filter_set": "Establecer como filtro por defecto",
+        "delete_past_tense": "Eliminado {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
+        "generating_screenshot": "Generando captura…",
+        "merged_tags": "Etiquetas combinadas",
+        "rescanning_entity": "Reescanear {count, plural, one {{singularEntity}} other {{pluralEntity}}}…",
+        "saved_entity": "{entity} guardada",
+        "started_auto_tagging": "Auto-etiquetado iniciado",
+        "started_generating": "Generación de ficheros multimedia iniciada",
+        "started_importing": "Importación iniciada",
+        "updated_entity": "{entity} actualizada"
     },
-    "welcome": {
-      "config_path_logic_explained": "Stash intenta encontrar primero su archivo de configuración (<code>config.yml</code>) en el directorio actual de trabajo y, en caso de no encontrarlo, lo intenta en <code>$HOME/.stash/config.yml</code> (en Windows será <code>%USERPROFILE%\\.stash\\config.yml</code>). También puedes hacer que Stash obtenga su configuración de un archivo de configuración lanzando la aplicación con las opciones <code>-c '<ruta personalizada al archivo de configuración>'</code> o <code>--config '<ruta personalizada al archivo de configuración>'</code>.",
-      "in_current_stash_directory": "En el directorio <code>$HOME/.stash</code>",
-      "in_the_current_working_directory": "En el directorio de trabajo actual",
-      "next_step": "Si estás listo para crear un nuevo entorno, por favor, selecciona donde quieres guardar tu archivo de configuración y haz clic en siguiente.",
-      "store_stash_config": "¿Dónde quieres guardar el fichero de configuración de Stash?",
-      "unable_to_locate_config": "Si estás leyendo esto es que Stash no ha podido encontrar una configuración existente. Este asistente te guiará durante el proceso de creación de una nueva configuración.",
-      "unexpected_explained": "Si has llegado hasta esta ventana de forma inesperada, por favor, intenta reiniciar Stash en el directorio de trabajo correcto o con la opción <code>-c</code> ."
-    },
-    "welcome_specific_config": {
-      "config_path": "Stash usará la siguiente ruta para el fichero de configuración: <code>{path}</code>",
-      "next_step": "Cuando estés preparado para la creación de un nuevo entorno pulsa Siguiente.",
-      "unable_to_locate_specified_config": "Si estás leyendo esto es que Stash no ha podido encontrar el fichero de configuración especificado en la línea de comandos o en el entorno en el que está instalado. Este asistente te guiará durante el proceso de creación de una nueva configuración."
-    },
-    "welcome_to_stash": "Bienvenido a Stash"
-  },
-  "stash_id": "Identificador único Stash",
-  "stash_ids": "Stash IDs",
-  "stashbox": {
-    "go_review_draft": "Ir a {endpoint_name} para revisar el borrador.",
-    "selected_stash_box": "URL de la entidad Stash-Box seleccionada",
-    "submission_failed": "Envío fallido",
-    "submission_successful": "Enviado correctamente"
-  },
-  "stats": {
-    "image_size": "Tamaño de las imágenes",
-    "scenes_duration": "Duración de las escenas",
-    "scenes_size": "Tamaño de las escenas"
-  },
-  "status": "Estado: {statusText}",
-  "studio": "Estudio",
-  "studio_depth": "Niveles (en blanco para mostrar todos)",
-  "studios": "Estudios",
-  "sub_tag_count": "Número de etiquetas secundarias",
-  "sub_tag_of": "Sub-etiquetas de {parent}",
-  "sub_tags": "Etiquetas secundarias",
-  "subsidiary_studios": "Estudios afiliados/filiales",
-  "synopsis": "Sinopsis",
-  "tag": "Etiqueta",
-  "tag_count": "Número de etiquetas",
-  "tags": "Etiquetas",
-  "tattoos": "Tatuajes",
-  "title": "Título",
-  "toast": {
-    "added_entity": "{entity} añadida",
-    "added_generation_job_to_queue": "Tarea de generación añadida a la cola",
-    "created_entity": "{entity} creada",
-    "default_filter_set": "Establecer como filtro por defecto",
-    "delete_past_tense": "Eliminado {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
-    "generating_screenshot": "Generando captura…",
-    "merged_tags": "Etiquetas combinadas",
-    "rescanning_entity": "Reescanear {count, plural, one {{singularEntity}} other {{pluralEntity}}}…",
-    "saved_entity": "{entity} guardada",
-    "started_auto_tagging": "Auto-etiquetado iniciado",
-    "started_generating": "Generación de ficheros multimedia iniciada",
-    "started_importing": "Importación iniciada",
-    "updated_entity": "{entity} actualizada"
-  },
-  "total": "Total",
-  "true": "Sí",
-  "twitter": "Twitter",
-  "updated_at": "Fecha de modificación",
-  "url": "URL",
-  "validation": {
-    "aliases_must_be_unique": "Los alias deben ser únicos"
-  },
-  "videos": "Vídeos",
-  "weight": "Peso",
-  "years_old": "años"
+    "total": "Total",
+    "true": "Sí",
+    "twitter": "Twitter",
+    "updated_at": "Fecha de modificación",
+    "url": "URL",
+    "videos": "Vídeos",
+    "weight": "Peso",
+    "years_old": "años"
 }

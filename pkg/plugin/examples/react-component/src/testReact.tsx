@@ -1,6 +1,9 @@
 interface IPluginApi {
   React: typeof React;
   GQL: any;
+  Event: {
+    addEventListener: (event: string, callback: (e: CustomEvent) => void) => void;
+  };
   libraries: {
     ReactRouterDOM: {
       Link: React.FC<any>;
@@ -52,6 +55,8 @@ interface IPluginApi {
   const {
     NavUtils
   } = PluginApi.utils;
+
+  PluginApi.Event.addEventListener("stash:location", (e) => console.log("Page Changed", e.detail.data.location.pathname, e.detail.data.location.search))
 
   const ScenePerformer: React.FC<{
     performer: any;

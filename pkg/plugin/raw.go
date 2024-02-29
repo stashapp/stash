@@ -41,7 +41,7 @@ func (t *rawPluginTask) Start() error {
 
 	command := t.plugin.getExecCommand(t.operation)
 	if len(command) == 0 {
-		return fmt.Errorf("empty exec value in operation %s", t.operation.Name)
+		return fmt.Errorf("empty exec value")
 	}
 
 	var cmd *exec.Cmd

@@ -5,10 +5,8 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/gorilla/securecookie"
 	"github.com/gorilla/sessions"
 	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/sliceutil"
 )
 
 type key int
@@ -19,8 +17,8 @@ const (
 )
 
 const (
-	userIDKey         = "userID"
-	visitedPluginsKey = "visitedPlugins"
+	userIDKey             = "userID"
+	visitedPluginHooksKey = "visitedPluginsHooks"
 )
 
 const (
@@ -145,67 +143,6 @@ func GetCurrentUserID(ctx context.Context) *string {
 	}
 
 	return nil
-}
-
-func (s *Store) VisitedPluginHandler() func(http.Handler) http.Handler {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			// get the visited plugins from the cookie and set in the context
-			session, err := s.sessionStore.Get(r, cookieName)
-
-			// ignore errors
-			if err == nil {
-				val := session.Values[visitedPluginsKey]
-
-				visitedPlugins, _ := val.([]string)
-
-				ctx := setVisitedPlugins(r.Context(), visitedPlugins)
-				r = r.WithContext(ctx)
-			}
-
-			next.ServeHTTP(w, r)
-		})
-	}
-}
-
-func GetVisitedPlugins(ctx context.Context) []string {
-	ctxVal := ctx.Value(contextVisitedPlugins)
-	if ctxVal != nil {
-		return ctxVal.([]string)
-	}
-
-	return nil
-}
-
-func AddVisitedPlugin(ctx context.Context, pluginID string) context.Context {
-	curVal := GetVisitedPlugins(ctx)
-	curVal = sliceutil.AppendUnique(curVal, pluginID)
-	return setVisitedPlugins(ctx, curVal)
-}
-
-func setVisitedPlugins(ctx context.Context, visitedPlugins []string) context.Context {
-	return context.WithValue(ctx, contextVisitedPlugins, visitedPlugins)
-}
-
-func (s *Store) MakePluginCookie(ctx context.Context) *http.Cookie {
-	currentUser := GetCurrentUserID(ctx)
-	visitedPlugins := GetVisitedPlugins(ctx)
-
-	session := sessions.NewSession(s.sessionStore, cookieName)
-	if currentUser != nil {
-		session.Values[userIDKey] = *currentUser
-	}
-
-	session.Values[visitedPluginsKey] = visitedPlugins
-
-	encoded, err := securecookie.EncodeMulti(session.Name(), session.Values,
-		s.sessionStore.Codecs...)
-	if err != nil {
-		logger.Errorf("error creating session cookie: %s", err.Error())
-		return nil
-	}
-
-	return sessions.NewCookie(session.Name(), encoded, session.Options)
 }
 
 func (s *Store) Authenticate(w http.ResponseWriter, r *http.Request) (userID string, err error) {

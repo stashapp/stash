@@ -12,7 +12,8 @@ type Query {
   "A function which queries Scene objects"
   findScenes(
     scene_filter: SceneFilterType
-    scene_ids: [Int!]
+    scene_ids: [Int!] @deprecated(reason: "use ids")
+    ids: [ID!]
     filter: FindFilterType
   ): FindScenesResultType!
 
@@ -50,7 +51,8 @@ type Query {
   "A function which queries Scene objects"
   findImages(
     image_filter: ImageFilterType
-    image_ids: [Int!]
+    image_ids: [Int!] @deprecated(reason: "use ids")
+    ids: [ID!]
     filter: FindFilterType
   ): FindImagesResultType!
 
@@ -60,7 +62,8 @@ type Query {
   findPerformers(
     performer_filter: PerformerFilterType
     filter: FindFilterType
-    performer_ids: [Int!]
+    performer_ids: [Int!] @deprecated(reason: "use ids")
+    ids: [ID!]
   ): FindPerformersResultType!
 
   "Find a studio by ID"
@@ -78,6 +81,7 @@ type Query {
   findMovies(
     movie_filter: MovieFilterType
     filter: FindFilterType
+    ids: [ID!]
   ): FindMoviesResultType!
 
   findGallery(id: ID!): Gallery
@@ -91,7 +95,7 @@ type Query {
   findTags(
     tag_filter: TagFilterType
     filter: FindFilterType
-    ids: [Int!]
+    ids: [ID!]
   ): FindTagsResultType!
 
   "Retrieve random scene markers for the wall"
@@ -200,15 +204,16 @@ type Query {
 
   # Get everything
 
-  allScenes: [Scene!]!
+  allScenes: [Scene!]! @deprecated(reason: "Use findScenes instead")
   allSceneMarkers: [SceneMarker!]!
-  allImages: [Image!]!
-  allGalleries: [Gallery!]!
-  allMovies: [Movie!]!
+    @deprecated(reason: "Use findSceneMarkers instead")
+  allImages: [Image!]! @deprecated(reason: "Use findImages instead")
+  allGalleries: [Gallery!]! @deprecated(reason: "Use findGalleries instead")
 
-  allPerformers: [Performer!]! @deprecated(reason: "Use findPerformers instead")
+  allPerformers: [Performer!]!
   allTags: [Tag!]! @deprecated(reason: "Use findTags instead")
   allStudios: [Studio!]! @deprecated(reason: "Use findStudios instead")
+  allMovies: [Movie!]! @deprecated(reason: "Use findMovies instead")
 
   # Get everything with minimal metadata
 
@@ -232,9 +237,15 @@ type Mutation {
   scenesUpdate(input: [SceneUpdateInput!]!): [Scene]
 
   "Increments the o-counter for a scene. Returns the new value"
-  sceneIncrementO(id: ID!): Int!
+  sceneIncrementO(id: ID!): Int! @deprecated(reason: "Use sceneAddO instead")
   "Decrements the o-counter for a scene. Returns the new value"
-  sceneDecrementO(id: ID!): Int!
+  sceneDecrementO(id: ID!): Int! @deprecated(reason: "Use sceneRemoveO instead")
+
+  "Increments the o-counter for a scene. Uses the current time if none provided."
+  sceneAddO(id: ID!, times: [Timestamp!]): HistoryMutationResult!
+  "Decrements the o-counter for a scene, removing the last recorded time if specific time not provided. Returns the new value"
+  sceneDeleteO(id: ID!, times: [Timestamp!]): HistoryMutationResult!
+
   "Resets the o-counter for a scene to 0. Returns the new value"
   sceneResetO(id: ID!): Int!
 
@@ -243,6 +254,14 @@ type Mutation {
 
   "Increments the play count for the scene. Returns the new play count value."
   sceneIncrementPlayCount(id: ID!): Int!
+    @deprecated(reason: "Use sceneAddPlay instead")
+
+  "Increments the play count for the scene. Uses the current time if none provided."
+  sceneAddPlay(id: ID!, times: [Timestamp!]): HistoryMutationResult!
+  "Decrements the play count for the scene, removing the specific times or the last recorded time if not provided."
+  sceneDeletePlay(id: ID!, times: [Timestamp!]): HistoryMutationResult!
+  "Resets the play count for a scene to 0. Returns the new play count value."
+  sceneResetPlayCount(id: ID!): Int!
 
   "Generates screenshot at specified time in seconds. Leave empty to generate default screenshot"
   sceneGenerateScreenshot(id: ID!, at: Float): String!
@@ -362,6 +381,8 @@ type Mutation {
   metadataAutoTag(input: AutoTagMetadataInput!): ID!
   "Clean metadata. Returns the job ID"
   metadataClean(input: CleanMetadataInput!): ID!
+  "Clean generated files. Returns the job ID"
+  metadataCleanGenerated(input: CleanGeneratedInput!): ID!
   "Identifies scenes using scrapers. Returns the job ID"
   metadataIdentify(input: IdentifyMetadataInput!): ID!
 
@@ -387,12 +408,29 @@ type Mutation {
   """
   setPluginsEnabled(enabledMap: BoolMap!): Boolean!
 
-  "Run plugin task. Returns the job ID"
+  """
+  Run a plugin task.
+  If task_name is provided, then the task must exist in the plugin config and the tasks configuration
+  will be used to run the plugin.
+  If no task_name is provided, then the plugin will be executed with the arguments provided only.
+  Returns the job ID
+  """
   runPluginTask(
     plugin_id: ID!
-    task_name: String!
-    args: [PluginArgInput!]
+    "if provided, then the default args will be applied"
+    task_name: String
+    "displayed in the task queue"
+    description: String
+    args: [PluginArgInput!] @deprecated(reason: "Use args_map instead")
+    args_map: Map
   ): ID!
+
+  """
+  Runs a plugin operation. The operation is run immediately and does not use the job queue.
+  Returns a map of the result.
+  """
+  runPluginOperation(plugin_id: ID!, args: Map): Any
+
   reloadPlugins: Boolean!
 
   """

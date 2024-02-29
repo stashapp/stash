@@ -9,7 +9,10 @@ import { Icon } from "./Icon";
 import { PerformerLink } from "./TagLink";
 
 interface IProps {
-  performers: Partial<GQL.PerformerDataFragment>[];
+  performers: Pick<
+    GQL.Performer,
+    "id" | "name" | "image_path" | "disambiguation" | "gender"
+  >[];
 }
 
 export const PerformerPopoverButton: React.FC<IProps> = ({ performers }) => {

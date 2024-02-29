@@ -19,14 +19,17 @@ import (
 )
 
 func useAsVideo(pathname string) bool {
-	if instance.Config.IsCreateImageClipsFromVideos() && config.StashConfigs.GetStashFromDirPath(instance.Config.GetStashPaths(), pathname).ExcludeVideo {
+	stash := config.StashConfigs.GetStashFromDirPath(instance.Config.GetStashPaths(), pathname)
+
+	if instance.Config.IsCreateImageClipsFromVideos() && stash != nil && stash.ExcludeVideo {
 		return false
 	}
 	return isVideo(pathname)
 }
 
 func useAsImage(pathname string) bool {
-	if instance.Config.IsCreateImageClipsFromVideos() && config.StashConfigs.GetStashFromDirPath(instance.Config.GetStashPaths(), pathname).ExcludeVideo {
+	stash := config.StashConfigs.GetStashFromDirPath(instance.Config.GetStashPaths(), pathname)
+	if instance.Config.IsCreateImageClipsFromVideos() && stash != nil && stash.ExcludeVideo {
 		return isImage(pathname) || isVideo(pathname)
 	}
 	return isImage(pathname)

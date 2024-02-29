@@ -17,7 +17,7 @@ import (
 	"github.com/doug-martin/goqu/v9/exp"
 )
 
-var imageTable = "images"
+const imageTable = "images"
 
 const (
 	imageIDColumn         = "image_id"
@@ -720,6 +720,7 @@ func (qb *ImageStore) makeFilter(ctx context.Context, imageFilter *models.ImageF
 	query.handleCriterion(ctx, studioCriterionHandler(imageTable, imageFilter.Studios))
 	query.handleCriterion(ctx, imagePerformerTagsCriterionHandler(qb, imageFilter.PerformerTags))
 	query.handleCriterion(ctx, imagePerformerFavoriteCriterionHandler(imageFilter.PerformerFavorite))
+	query.handleCriterion(ctx, imagePerformerAgeCriterionHandler(imageFilter.PerformerAge))
 	query.handleCriterion(ctx, timestampCriterionHandler(imageFilter.CreatedAt, "images.created_at"))
 	query.handleCriterion(ctx, timestampCriterionHandler(imageFilter.UpdatedAt, "images.updated_at"))
 
@@ -1021,6 +1022,22 @@ JOIN performers ON performers.id = performers_images.performer_id
 GROUP BY performers_images.image_id HAVING SUM(performers.favorite) = 0)`, "nofaves", "images.id = nofaves.id")
 				f.addWhere("performers_images.image_id IS NULL OR nofaves.id IS NOT NULL")
 			}
+		}
+	}
+}
+
+func imagePerformerAgeCriterionHandler(performerAge *models.IntCriterionInput) criterionHandlerFunc {
+	return func(ctx context.Context, f *filterBuilder) {
+		if performerAge != nil {
+			f.addInnerJoin("performers_images", "", "images.id = performers_images.image_id")
+			f.addInnerJoin("performers", "", "performers_images.performer_id = performers.id")
+
+			f.addWhere("images.date != '' AND performers.birthdate != ''")
+			f.addWhere("images.date IS NOT NULL AND performers.birthdate IS NOT NULL")
+
+			ageCalc := "cast(strftime('%Y.%m%d', images.date) - strftime('%Y.%m%d', performers.birthdate) as int)"
+			whereClause, args := getIntWhereClause(ageCalc, performerAge.Modifier, performerAge.Value, performerAge.Value2)
+			f.addWhere(whereClause, args...)
 		}
 	}
 }

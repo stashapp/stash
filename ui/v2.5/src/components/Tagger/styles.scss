@@ -76,6 +76,12 @@
       background-color: #137cbd;
     }
   }
+
+  .SceneTaggerIcon {
+    margin-left: 0.25em;
+    margin-right: 10px;
+    width: var(--fa-fw-width, 1.25em);
+  }
 }
 
 .selected-result {

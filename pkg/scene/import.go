@@ -4,8 +4,10 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/models/json"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
 	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/utils"
@@ -13,6 +15,8 @@ import (
 
 type ImporterReaderWriter interface {
 	models.SceneCreatorUpdater
+	models.ViewHistoryWriter
+	models.OHistoryWriter
 	FindByFileID(ctx context.Context, fileID models.FileID) ([]*models.Scene, error)
 }
 
@@ -31,6 +35,8 @@ type Importer struct {
 	ID             int
 	scene          models.Scene
 	coverImageData []byte
+	viewHistory    []time.Time
+	oHistory       []time.Time
 }
 
 func (i *Importer) PreImport(ctx context.Context) error {
@@ -68,6 +74,9 @@ func (i *Importer) PreImport(ctx context.Context) error {
 		}
 	}
 
+	i.populateViewHistory()
+	i.populateOHistory()
+
 	return nil
 }
 
@@ -101,18 +110,52 @@ func (i *Importer) sceneJSONToScene(sceneJSON jsonschema.Scene) models.Scene {
 	}
 
 	newScene.Organized = sceneJSON.Organized
-	newScene.OCounter = sceneJSON.OCounter
 	newScene.CreatedAt = sceneJSON.CreatedAt.GetTime()
 	newScene.UpdatedAt = sceneJSON.UpdatedAt.GetTime()
-	if !sceneJSON.LastPlayedAt.IsZero() {
-		t := sceneJSON.LastPlayedAt.GetTime()
-		newScene.LastPlayedAt = &t
-	}
 	newScene.ResumeTime = sceneJSON.ResumeTime
 	newScene.PlayDuration = sceneJSON.PlayDuration
-	newScene.PlayCount = sceneJSON.PlayCount
 
 	return newScene
+}
+
+func getHistory(historyJSON []json.JSONTime, count int, last json.JSONTime, createdAt json.JSONTime) []time.Time {
+	var ret []time.Time
+
+	if len(historyJSON) > 0 {
+		for _, d := range historyJSON {
+			ret = append(ret, d.GetTime())
+		}
+	} else if count > 0 {
+		createdAt := createdAt.GetTime()
+		for j := 0; j < count; j++ {
+			t := createdAt
+			if j+1 == count && !last.IsZero() {
+				// last one, use last play date
+				t = last.GetTime()
+			}
+			ret = append(ret, t)
+		}
+	}
+
+	return ret
+}
+
+func (i *Importer) populateViewHistory() {
+	i.viewHistory = getHistory(
+		i.Input.PlayHistory,
+		i.Input.PlayCount,
+		i.Input.LastPlayedAt,
+		i.Input.CreatedAt,
+	)
+}
+
+func (i *Importer) populateOHistory() {
+	i.viewHistory = getHistory(
+		i.Input.OHistory,
+		i.Input.OCounter,
+		i.Input.CreatedAt, // no last o count date
+		i.Input.CreatedAt,
+	)
 }
 
 func (i *Importer) populateFiles(ctx context.Context) error {
@@ -365,11 +408,42 @@ func (i *Importer) populateTags(ctx context.Context) error {
 	return nil
 }
 
+func (i *Importer) addViewHistory(ctx context.Context) error {
+	if len(i.viewHistory) > 0 {
+		_, err := i.ReaderWriter.AddViews(ctx, i.ID, i.viewHistory)
+		if err != nil {
+			return fmt.Errorf("error adding view date: %v", err)
+		}
+	}
+
+	return nil
+}
+
+func (i *Importer) addOHistory(ctx context.Context) error {
+	if len(i.oHistory) > 0 {
+		_, err := i.ReaderWriter.AddO(ctx, i.ID, i.oHistory)
+		if err != nil {
+			return fmt.Errorf("error adding o date: %v", err)
+		}
+	}
+
+	return nil
+}
+
 func (i *Importer) PostImport(ctx context.Context, id int) error {
 	if len(i.coverImageData) > 0 {
 		if err := i.ReaderWriter.UpdateCover(ctx, id, i.coverImageData); err != nil {
 			return fmt.Errorf("error setting scene images: %v", err)
 		}
+	}
+
+	// add histories
+	if err := i.addViewHistory(ctx); err != nil {
+		return err
+	}
+
+	if err := i.addOHistory(ctx); err != nil {
+		return err
 	}
 
 	return nil

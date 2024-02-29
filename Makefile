@@ -48,6 +48,11 @@ GO_BUILD_TAGS += sqlite_stat4 sqlite_math_functions
 
 export CGO_ENABLED := 1
 
+# define COMPILER_IMAGE for cross-compilation docker container
+ifndef COMPILER_IMAGE
+  COMPILER_IMAGE := stashapp/compiler:latest
+endif
+
 .PHONY: release
 release: pre-ui generate ui build-release
 
@@ -378,3 +383,16 @@ docker-build: build-info
 .PHONY: docker-cuda-build
 docker-cuda-build: build-info
 	docker build --build-arg GITHASH=$(GITHASH) --build-arg STASH_VERSION=$(STASH_VERSION) -t stash/cuda-build -f docker/build/x86_64/Dockerfile-CUDA .
+
+# start the build container - for cross compilation
+# this is adapted from the github actions build.yml file
+.PHONY: start-compiler-container
+start-compiler-container:
+	docker run -d --name build --mount type=bind,source="$(PWD)",target=/stash,consistency=delegated $(EXTRA_CONTAINER_ARGS) -w /stash $(COMPILER_IMAGE) tail -f /dev/null
+
+# run the cross-compilation using
+# docker exec -t build /bin/bash -c "make build-cc-<platform>"
+
+.PHONY: remove-compiler-container
+remove-compiler-container:
+	docker rm -f -v build

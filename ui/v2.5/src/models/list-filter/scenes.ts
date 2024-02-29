@@ -42,6 +42,7 @@ const sortByOptions = [
   "framerate",
   "bitrate",
   "last_played_at",
+  "last_o_at",
   "resume_time",
   "play_duration",
   "play_count",

@@ -23,6 +23,12 @@ import {
 import { formikUtils } from "src/utils/form";
 import { Tag, TagSelect } from "src/components/Tags/TagSelect";
 import { Studio, StudioSelect } from "src/components/Studios/StudioSelect";
+import { galleryTitle } from "src/core/galleries";
+import {
+  Gallery,
+  GallerySelect,
+  excludeFileBasedGalleries,
+} from "src/components/Galleries/GallerySelect";
 
 interface IProps {
   image: GQL.ImageDataFragment;
@@ -45,9 +51,21 @@ export const ImageEditPanel: React.FC<IProps> = ({
 
   const { configuration } = React.useContext(ConfigurationContext);
 
+  const [galleries, setGalleries] = useState<Gallery[]>([]);
   const [performers, setPerformers] = useState<Performer[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
   const [studio, setStudio] = useState<Studio | null>(null);
+
+  useEffect(() => {
+    setGalleries(
+      image.galleries?.map((g) => ({
+        id: g.id,
+        title: galleryTitle(g),
+        files: g.files,
+        folder: g.folder,
+      })) ?? []
+    );
+  }, [image.galleries]);
 
   const schema = yup.object({
     title: yup.string().ensure(),
@@ -57,6 +75,7 @@ export const ImageEditPanel: React.FC<IProps> = ({
     details: yup.string().ensure(),
     photographer: yup.string().ensure(),
     rating100: yup.number().integer().nullable().defined(),
+    gallery_ids: yup.array(yup.string().required()).defined(),
     studio_id: yup.string().required().nullable(),
     performer_ids: yup.array(yup.string().required()).defined(),
     tag_ids: yup.array(yup.string().required()).defined(),
@@ -70,6 +89,7 @@ export const ImageEditPanel: React.FC<IProps> = ({
     details: image.details ?? "",
     photographer: image.photographer ?? "",
     rating100: image.rating100 ?? null,
+    gallery_ids: (image.galleries ?? []).map((g) => g.id),
     studio_id: image.studio?.id ?? null,
     performer_ids: (image.performers ?? []).map((p) => p.id),
     tag_ids: (image.tags ?? []).map((t) => t.id),
@@ -86,6 +106,14 @@ export const ImageEditPanel: React.FC<IProps> = ({
 
   function setRating(v: number) {
     formik.setFieldValue("rating100", v);
+  }
+
+  function onSetGalleries(items: Gallery[]) {
+    setGalleries(items);
+    formik.setFieldValue(
+      "gallery_ids",
+      items.map((i) => i.id)
+    );
   }
 
   function onSetPerformers(items: Performer[]) {
@@ -189,6 +217,20 @@ export const ImageEditPanel: React.FC<IProps> = ({
     renderURLListField,
   } = formikUtils(intl, formik, splitProps);
 
+  function renderGalleriesField() {
+    const title = intl.formatMessage({ id: "galleries" });
+    const control = (
+      <GallerySelect
+        values={galleries}
+        onSelect={(items) => onSetGalleries(items)}
+        isMulti
+        extraCriteria={excludeFileBasedGalleries}
+      />
+    );
+
+    return renderField("gallery_ids", title, control);
+  }
+
   function renderStudioField() {
     const title = intl.formatMessage({ id: "studio" });
     const control = (
@@ -278,6 +320,7 @@ export const ImageEditPanel: React.FC<IProps> = ({
             {renderInputField("photographer")}
             {renderRatingField("rating100", "rating")}
 
+            {renderGalleriesField()}
             {renderStudioField()}
             {renderPerformersField()}
             {renderTagsField()}

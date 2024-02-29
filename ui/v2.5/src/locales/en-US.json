@@ -1,23 +1,23 @@
 {
-    "actions": {
-        "customise": "Customize"
+  "actions": {
+    "customise": "Customize"
+  },
+  "config": {
+    "tools": {
+      "scene_filename_parser": {
+        "ignore_organized": "Ignore organized scenes"
+      }
     },
-    "eye_color": "Eye Color",
-    "favourite": "Favorite",
-    "hair_color": "Hair Color",
-    "organized": "Organized",
-    "config": {
-        "tools": {
-            "scene_filename_parser": {
-                "ignore_organized": "Ignore organized scenes"
-            }
-        },
-        "ui": {
-            "custom_locales": {
-                "heading": "Custom localization",
-                "option_label": "Custom localization enabled"
-            }
-        }
-    },
-    "performer_favorite": "Performer Favorited"
+    "ui": {
+      "custom_locales": {
+        "heading": "Custom localization",
+        "option_label": "Custom localization enabled"
+      }
+    }
+  },
+  "eye_color": "Eye Color",
+  "favourite": "Favorite",
+  "hair_color": "Hair Color",
+  "organized": "Organized",
+  "performer_favorite": "Performer Favorited"
 }

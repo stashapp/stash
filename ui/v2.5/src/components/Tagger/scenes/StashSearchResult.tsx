@@ -5,12 +5,18 @@ import { FormattedMessage, useIntl } from "react-intl";
 import uniq from "lodash-es/uniq";
 import { blobToBase64 } from "base64-blob";
 import { distance } from "src/utils/hamming";
+import { faCheckCircle } from "@fortawesome/free-regular-svg-icons";
+import {
+  faPlus,
+  faTriangleExclamation,
+  faXmark,
+} from "@fortawesome/free-solid-svg-icons";
 
 import * as GQL from "src/core/generated-graphql";
 import { HoverPopover } from "src/components/Shared/HoverPopover";
 import { Icon } from "src/components/Shared/Icon";
-import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { SuccessIcon } from "src/components/Shared/SuccessIcon";
+import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { TagSelect } from "src/components/Shared/Select";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
 import { OperationButton } from "src/components/Shared/OperationButton";
@@ -22,9 +28,24 @@ import { SceneTaggerModalsState } from "./sceneTaggerModals";
 import PerformerResult from "./PerformerResult";
 import StudioResult from "./StudioResult";
 import { useInitialState } from "src/hooks/state";
-import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { getStashboxBase } from "src/utils/stashbox";
 import { ExternalLink } from "src/components/Shared/ExternalLink";
+
+const getDurationIcon = (matchPercentage: number) => {
+  if (matchPercentage > 65)
+    return (
+      <Icon className="SceneTaggerIcon text-success" icon={faCheckCircle} />
+    );
+  if (matchPercentage > 35)
+    return (
+      <Icon
+        className="SceneTaggerIcon text-warn"
+        icon={faTriangleExclamation}
+      />
+    );
+
+  return <Icon className="SceneTaggerIcon text-danger" icon={faXmark} />;
+};
 
 const getDurationStatus = (
   scene: IScrapedScene,
@@ -52,10 +73,12 @@ const getDurationStatus = (
   else if (scene.duration && Math.abs(scene.duration - stashDuration) < 5)
     match = <FormattedMessage id="component_tagger.results.fp_matches" />;
 
+  const matchPercentage = (matchCount / durations.length) * 100;
+
   if (match)
     return (
       <div className="font-weight-bold">
-        <SuccessIcon className="mr-2" />
+        {getDurationIcon(matchPercentage)}
         {match}
       </div>
     );
@@ -146,7 +169,7 @@ const getFingerprintStatus = (
       <div>
         {phashMatches.length > 0 && (
           <div className="font-weight-bold">
-            <SuccessIcon className="mr-2" />
+            <SuccessIcon className="SceneTaggerIcon" />
             <HoverPopover
               placement="bottom"
               content={phashList}

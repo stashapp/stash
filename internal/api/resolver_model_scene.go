@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/stashapp/stash/internal/api/loaders"
 	"github.com/stashapp/stash/internal/api/urlbuilders"
@@ -318,4 +319,63 @@ func (r *sceneResolver) Urls(ctx context.Context, obj *models.Scene) ([]string, 
 	}
 
 	return obj.URLs.List(), nil
+}
+
+func (r *sceneResolver) OCounter(ctx context.Context, obj *models.Scene) (*int, error) {
+	ret, err := loaders.From(ctx).SceneOCount.Load(obj.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &ret, nil
+}
+
+func (r *sceneResolver) LastPlayedAt(ctx context.Context, obj *models.Scene) (*time.Time, error) {
+	ret, err := loaders.From(ctx).SceneLastPlayed.Load(obj.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+}
+
+func (r *sceneResolver) PlayCount(ctx context.Context, obj *models.Scene) (*int, error) {
+	ret, err := loaders.From(ctx).ScenePlayCount.Load(obj.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &ret, nil
+}
+
+func (r *sceneResolver) PlayHistory(ctx context.Context, obj *models.Scene) ([]*time.Time, error) {
+	ret, err := loaders.From(ctx).ScenePlayHistory.Load(obj.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	// convert to pointer slice
+	ptrRet := make([]*time.Time, len(ret))
+	for i, t := range ret {
+		tt := t
+		ptrRet[i] = &tt
+	}
+
+	return ptrRet, nil
+}
+
+func (r *sceneResolver) OHistory(ctx context.Context, obj *models.Scene) ([]*time.Time, error) {
+	ret, err := loaders.From(ctx).SceneOHistory.Load(obj.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	// convert to pointer slice
+	ptrRet := make([]*time.Time, len(ret))
+	for i, t := range ret {
+		tt := t
+		ptrRet[i] = &tt
+	}
+
+	return ptrRet, nil
 }

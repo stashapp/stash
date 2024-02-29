@@ -86,6 +86,8 @@ export interface IUIConfig {
   sidebarCriteria?: Record<string, string[]>;
 
   advancedMode?: boolean;
+
+  taskDefaults?: Record<string, {}>;
 }
 
 interface ISavedFilterRowBroken extends ISavedFilterRow {

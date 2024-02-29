@@ -99,6 +99,16 @@ ui:
     connect-src:
       - http://alloweddomain.com
 
+  # map of setting names to be displayed in the plugins page in the UI
+  settings:
+    # internal name
+    foo:
+      # name to display in the UI
+      displayName: Foo
+      # type of the attribute to show in the UI
+      # can be BOOLEAN, NUMBER, or STRING
+      type: BOOLEAN
+
 # the following are used for plugin tasks only
 exec:
   - ...
@@ -111,6 +121,8 @@ tasks:
 The `name`, `description`, `version` and `url` fields are displayed on the plugins page.
 
 The `exec`, `interface`, `errLog` and `tasks` fields are used only for plugins with tasks.
+
+The `settings` field is used to display plugin settings on the plugins page. Plugin settings can also be set using the graphql mutation `configurePlugin` - the settings set this way do _not_ need to be specified in the `settings` field unless they are to be displayed in the stock plugin settings UI.
 
 ## UI Configuration
 
@@ -127,12 +139,12 @@ As an example, for a plugin with id `foo` with the following `assets` value:
 ```
 assets:
   foo: bar
-  root: .
+  /: .
 ```
 The following URLs will be mapped to these locations:
 `/plugin/foo/assets/foo/file.txt` -> `{pluginDir}/bar/file.txt`
 `/plugin/foo/assets/file.txt` -> `{pluginDir}/file.txt`
-`/plugin/foo/assets/bar/file.txt` -> `{pluginDir}/bar/file.txt` (via the `root` entry)
+`/plugin/foo/assets/bar/file.txt` -> `{pluginDir}/bar/file.txt` (via the `/` entry)
 
 Mappings that try to go outside of the directory containing the plugin configuration file will be
 ignored.
