@@ -246,6 +246,7 @@ const ScenesPageImpl: React.FC<{
       onClick: async () => {
         showModal(
           <GenerateDialog
+            type="scene"
             selectedIds={Array.from(selectedIds.values())}
             onClose={closeModal}
           />
