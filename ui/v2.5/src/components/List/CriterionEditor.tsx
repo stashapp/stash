@@ -70,8 +70,12 @@ const GenericCriterionEditor: React.FC<IGenericCriterionEditor> = ({
     (c: Criterion<CriterionValue>) => {
       setCriterionState(c);
 
-      const toSet = c.isValid() ? c : emptyCriterion;
-      setInputCriterion(toSet);
+      if (c.isValid()) {
+        setInputCriterion(c);
+      } else if (c.equals(emptyCriterion)) {
+        // remove the criterion
+        setInputCriterion(emptyCriterion);
+      }
     },
     [setInputCriterion, emptyCriterion]
   );

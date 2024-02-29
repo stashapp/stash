@@ -22,6 +22,7 @@ import {
   ILabeledValueListValue,
   IPhashDistanceValue,
 } from "../types";
+import { isEqual } from "lodash-es";
 
 export type Option = string | number | IOptionType;
 export type CriterionValue =
@@ -79,6 +80,14 @@ export abstract class Criterion<V extends CriterionValue> {
 
   public isValid(): boolean {
     return true;
+  }
+
+  public equals(criterion: Criterion<V>): boolean {
+    return (
+      this.criterionOption.type === criterion.criterionOption.type &&
+      this.modifier === criterion.modifier &&
+      isEqual(this.value, criterion.value)
+    );
   }
 
   protected abstract getLabelValue(intl: IntlShape): string;
