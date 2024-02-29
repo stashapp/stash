@@ -202,7 +202,7 @@ func (f *BaseFile) Serve(fs FS, w http.ResponseWriter, r *http.Request) error {
 
 	// Set filename if not previously set
 	if w.Header().Get("Content-Disposition") == "" {
-		w.Header().Set("Content-Disposition", fmt.Sprintf("filename=%s", f.Basename))
+		w.Header().Set("Content-Disposition", fmt.Sprintf(`filename="%s"`, f.Basename))
 	}
 
 	http.ServeContent(w, r, f.Basename, f.ModTime, content)
