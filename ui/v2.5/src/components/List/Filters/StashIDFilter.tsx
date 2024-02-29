@@ -4,6 +4,7 @@ import { useIntl } from "react-intl";
 import { IStashIDValue } from "../../../models/list-filter/types";
 import { Criterion } from "../../../models/list-filter/criteria/criterion";
 import { CriterionModifier } from "src/core/generated-graphql";
+import { useDebouncedState } from "src/hooks/debounce";
 
 interface IStashIDFilterProps {
   criterion: Criterion<IStashIDValue>;
@@ -15,17 +16,17 @@ export const StashIDFilter: React.FC<IStashIDFilterProps> = ({
   onValueChanged,
 }) => {
   const intl = useIntl();
-  const { value } = criterion;
+  const [value, setValue] = useDebouncedState(criterion.value, onValueChanged);
 
   function onEndpointChanged(event: React.ChangeEvent<HTMLInputElement>) {
-    onValueChanged({
+    setValue({
       endpoint: event.target.value,
       stashID: criterion.value.stashID,
     });
   }
 
   function onStashIDChanged(event: React.ChangeEvent<HTMLInputElement>) {
-    onValueChanged({
+    setValue({
       stashID: event.target.value,
       endpoint: criterion.value.endpoint,
     });

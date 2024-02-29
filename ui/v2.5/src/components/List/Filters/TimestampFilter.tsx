@@ -5,6 +5,7 @@ import { CriterionModifier } from "../../../core/generated-graphql";
 import { ITimestampValue } from "../../../models/list-filter/types";
 import { Criterion } from "../../../models/list-filter/criteria/criterion";
 import { DateInput } from "src/components/Shared/DateInput";
+import { useDebouncedState } from "src/hooks/debounce";
 
 interface ITimestampFilterProps {
   criterion: Criterion<ITimestampValue>;
@@ -17,13 +18,13 @@ export const TimestampFilter: React.FC<ITimestampFilterProps> = ({
 }) => {
   const intl = useIntl();
 
-  const { value } = criterion;
+  const [value, setValue] = useDebouncedState(criterion.value, onValueChanged);
 
   function onChanged(newValue: string, property: "value" | "value2") {
     const valueCopy = { ...value };
 
     valueCopy[property] = newValue;
-    onValueChanged(valueCopy);
+    setValue(valueCopy);
   }
 
   let equalsControl: JSX.Element | null = null;

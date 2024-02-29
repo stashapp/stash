@@ -4,6 +4,7 @@ import { useIntl } from "react-intl";
 import { CriterionModifier } from "../../../core/generated-graphql";
 import { INumberValue } from "../../../models/list-filter/types";
 import { NumberCriterion } from "../../../models/list-filter/criteria/criterion";
+import { useDebouncedState } from "src/hooks/debounce";
 
 interface IDurationFilterProps {
   criterion: NumberCriterion;
@@ -16,17 +17,24 @@ export const NumberFilter: React.FC<IDurationFilterProps> = ({
 }) => {
   const intl = useIntl();
 
-  const { value } = criterion;
+  // TODO - weird debounce issue here
+  const [value, setValue] = useDebouncedState(criterion.value, onValueChanged);
 
   function onChanged(
     event: React.ChangeEvent<HTMLInputElement>,
     property: "value" | "value2"
   ) {
-    const numericValue = parseInt(event.target.value, 10);
     const valueCopy = { ...value };
 
-    valueCopy[property] = !Number.isNaN(numericValue) ? numericValue : 0;
-    onValueChanged(valueCopy);
+    const strVal = event.target.value;
+    if (strVal === "") {
+      valueCopy[property] = undefined;
+    } else {
+      const numericValue = parseInt(event.target.value, 10);
+      valueCopy[property] = !Number.isNaN(numericValue) ? numericValue : 0;
+    }
+
+    setValue(valueCopy);
   }
 
   let equalsControl: JSX.Element | null = null;

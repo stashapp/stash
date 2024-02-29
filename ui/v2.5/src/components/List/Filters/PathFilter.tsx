@@ -7,6 +7,7 @@ import {
   Criterion,
   CriterionValue,
 } from "../../../models/list-filter/criteria/criterion";
+import { useDebouncedState } from "src/hooks/debounce";
 
 interface IInputFilterProps {
   criterion: Criterion<CriterionValue>;
@@ -20,6 +21,11 @@ export const PathFilter: React.FC<IInputFilterProps> = ({
   const { configuration } = React.useContext(ConfigurationContext);
   const libraryPaths = configuration?.general.stashes.map((s) => s.path);
 
+  const [value, setValue] = useDebouncedState<string>(
+    criterion.value ? criterion.value.toString() : "",
+    onValueChanged
+  );
+
   // don't show folder select for regex
   const regex =
     criterion.modifier === CriterionModifier.MatchesRegex ||
@@ -31,13 +37,13 @@ export const PathFilter: React.FC<IInputFilterProps> = ({
         <Form.Control
           className="btn-secondary"
           type={criterion.criterionOption.inputType}
-          onChange={(v) => onValueChanged(v.target.value)}
-          value={criterion.value ? criterion.value.toString() : ""}
+          onChange={(e) => setValue(e.target.value)}
+          value={value}
         />
       ) : (
         <FolderSelect
-          currentDirectory={criterion.value ? criterion.value.toString() : ""}
-          onChangeDirectory={onValueChanged}
+          currentDirectory={value}
+          onChangeDirectory={setValue}
           collapsible
           quotePath
           hideError

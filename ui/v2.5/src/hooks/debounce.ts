@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable react-hooks/exhaustive-deps */
 import { debounce, DebouncedFunc, DebounceSettings } from "lodash-es";
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export function useDebounce<T extends (...args: any) => any>(
   fn: T,
@@ -20,4 +20,32 @@ export function useDebounce<T extends (...args: any) => any>(
     ),
     [wait, options?.leading, options?.trailing, options?.maxWait]
   );
+}
+
+export function useDebouncedState<T>(
+  value: T,
+  setValue: (value: T) => void,
+  wait: number = 250,
+  options?: DebounceSettings
+) {
+  const [stageValue, setStageValue] = useState<T>(value);
+
+  useEffect(() => {
+    setStageValue(value);
+  }, [value]);
+
+  const setValueCallback = useDebounce(
+    () => {
+      setValue(stageValue);
+    },
+    wait,
+    options
+  );
+
+  function onSetStageValue(v: T) {
+    setStageValue(v);
+    setValueCallback();
+  }
+
+  return [stageValue, onSetStageValue] as [T, (value: T) => void];
 }
