@@ -1133,10 +1133,9 @@ func (c Client) SubmitPerformerDraft(ctx context.Context, performer *models.Perf
 	if performer.Name != "" {
 		draft.Name = performer.Name
 	}
-	// stash-box does not support Disambiguation currently
-	// if performer.Disambiguation != "" {
-	// 	draft.Disambiguation = performer.Disambiguation
-	// }
+	if performer.Disambiguation != "" {
+		draft.Disambiguation = &performer.Disambiguation
+	}
 	if performer.Birthdate != nil {
 		d := performer.Birthdate.String()
 		draft.Birthdate = &d
