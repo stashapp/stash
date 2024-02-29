@@ -1,5 +1,6 @@
 import React, {
   useCallback,
+  useContext,
   useEffect,
   useMemo,
   useRef,
@@ -31,6 +32,7 @@ import { ICriterionOption } from "./util";
 import { useModal } from "src/hooks/modal";
 import { mutateSaveFilter, useSetDefaultFilter } from "src/core/StashService";
 import { useToast } from "src/hooks/Toast";
+import { ConfigurationContext } from "src/hooks/Config";
 
 interface ICriterionList {
   filter: ListFilterModel;
@@ -47,6 +49,7 @@ const CriterionOptionList: React.FC<ICriterionList> = ({
   criterionOptions,
   onRemoveCriterion,
 }) => {
+  const { configuration: config } = useContext(ConfigurationContext);
   const intl = useIntl();
 
   const scrolled = useRef(false);
@@ -60,6 +63,14 @@ const CriterionOptionList: React.FC<ICriterionList> = ({
     });
     return refs;
   }, [criterionOptions]);
+
+  const emptyCriteria = useMemo(() => {
+    const ret: Record<string, Criterion<CriterionValue>> = {};
+    criterionOptions.forEach((c) => {
+      ret[c.type] = c.makeCriterion(config);
+    });
+    return ret;
+  }, [config, criterionOptions]);
 
   useEffect(() => {
     // scrolling to the current criterion doesn't work well when the
@@ -117,6 +128,7 @@ const CriterionOptionList: React.FC<ICriterionList> = ({
         }
       >
         <CriterionEditor
+          emptyCriterion={emptyCriteria[c.type]}
           criterion={getReleventCriterion(c.type)!}
           setCriterion={setCriterion}
         />

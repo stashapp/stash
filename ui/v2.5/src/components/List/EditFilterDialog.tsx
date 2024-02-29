@@ -1,6 +1,7 @@
 import cloneDeep from "lodash-es/cloneDeep";
 import React, {
   useCallback,
+  useContext,
   useEffect,
   useMemo,
   useRef,
@@ -30,6 +31,7 @@ import { CriterionType } from "src/models/list-filter/types";
 import { useFocusOnce } from "src/utils/focus";
 import Mousetrap from "mousetrap";
 import { useDragReorder } from "src/hooks/dragReorder";
+import { ConfigurationContext } from "src/hooks/Config";
 
 export interface ICriterionOption {
   option: CriterionOption;
@@ -57,6 +59,8 @@ const CriterionOptionList: React.FC<ICriterionList> = ({
   optionSelected,
   onRemoveCriterion,
 }) => {
+  const { configuration: config } = useContext(ConfigurationContext);
+
   const prevCriterion = usePrevious(currentCriterion);
 
   const scrolled = useRef(false);
@@ -70,6 +74,14 @@ const CriterionOptionList: React.FC<ICriterionList> = ({
   const criterionOptions = useMemo(() => {
     return stageList.map((c) => c.option);
   }, [stageList]);
+
+  const emptyCriteria = useMemo(() => {
+    const ret: Record<string, Criterion<CriterionValue>> = {};
+    criterionOptions.forEach((c) => {
+      ret[c.type] = c.makeCriterion(config);
+    });
+    return ret;
+  }, [config, criterionOptions]);
 
   const criteriaRefs = useMemo(() => {
     const refs: Record<string, React.RefObject<HTMLDivElement>> = {};
@@ -186,6 +198,7 @@ const CriterionOptionList: React.FC<ICriterionList> = ({
           (prevType === c.type && prevCriterion) ? (
             <Card.Body>
               <CriterionEditor
+                emptyCriterion={emptyCriteria[c.type]}
                 criterion={getReleventCriterion(c.type)!}
                 setCriterion={setCriterion}
               />

@@ -49,41 +49,44 @@ import cx from "classnames";
 import { PathCriterion } from "src/models/list-filter/criteria/path";
 
 interface IGenericCriterionEditor {
-  criterion: Criterion<CriterionValue>;
+  emptyCriterion: Criterion<CriterionValue>;
+  criterion?: Criterion<CriterionValue>;
   setCriterion: (c: Criterion<CriterionValue>) => void;
 }
 
 const GenericCriterionEditor: React.FC<IGenericCriterionEditor> = ({
+  emptyCriterion,
   criterion: inputCriterion,
   setCriterion: setInputCriterion,
 }) => {
   const intl = useIntl();
 
-  const [criterion, setCriterionState] = React.useState(inputCriterion);
-  const { options, modifierOptions } = criterion.criterionOption;
+  const [criterionState, setCriterionState] = React.useState(
+    inputCriterion ?? emptyCriterion
+  );
+  const { options, modifierOptions } = emptyCriterion.criterionOption;
 
   const setCriterion = useCallback(
     (c: Criterion<CriterionValue>) => {
       setCriterionState(c);
 
-      if (c.isValid()) {
-        setInputCriterion(c);
-      }
+      const toSet = c.isValid() ? c : emptyCriterion;
+      setInputCriterion(toSet);
     },
-    [setInputCriterion]
+    [setInputCriterion, emptyCriterion]
   );
 
   useEffect(() => {
-    setCriterionState(criterion);
-  }, [criterion]);
+    setCriterionState(inputCriterion ?? emptyCriterion);
+  }, [inputCriterion, emptyCriterion]);
 
   const onChangedModifierSelect = useCallback(
     (m: CriterionModifier) => {
-      const newCriterion = cloneDeep(criterion);
+      const newCriterion = cloneDeep(criterionState);
       newCriterion.modifier = m;
       setCriterion(newCriterion);
     },
-    [criterion, setCriterion]
+    [criterionState, setCriterion]
   );
 
   const modifierSelector = useMemo(() => {
@@ -96,7 +99,7 @@ const GenericCriterionEditor: React.FC<IGenericCriterionEditor> = ({
         {modifierOptions.map((m) => (
           <Button
             className={cx("modifier-option", {
-              selected: criterion.modifier === m,
+              selected: criterionState.modifier === m,
             })}
             key={m}
             onClick={() => onChangedModifierSelect(m)}
@@ -106,146 +109,173 @@ const GenericCriterionEditor: React.FC<IGenericCriterionEditor> = ({
         ))}
       </Form.Group>
     );
-  }, [modifierOptions, onChangedModifierSelect, criterion.modifier, intl]);
+  }, [modifierOptions, onChangedModifierSelect, criterionState.modifier, intl]);
 
   const valueControl = useMemo(() => {
     function onValueChanged(value: CriterionValue) {
-      const newCriterion = cloneDeep(criterion);
+      const newCriterion = cloneDeep(criterionState);
       newCriterion.value = value;
       setCriterion(newCriterion);
     }
 
     // always show stashID filter
-    if (criterion instanceof StashIDCriterion) {
+    if (criterionState instanceof StashIDCriterion) {
       return (
-        <StashIDFilter criterion={criterion} onValueChanged={onValueChanged} />
+        <StashIDFilter
+          criterion={criterionState}
+          onValueChanged={onValueChanged}
+        />
       );
     }
 
     // Hide the value select if the modifier is "IsNull" or "NotNull"
     if (
-      criterion.modifier === CriterionModifier.IsNull ||
-      criterion.modifier === CriterionModifier.NotNull
+      criterionState.modifier === CriterionModifier.IsNull ||
+      criterionState.modifier === CriterionModifier.NotNull
     ) {
       return;
     }
 
-    if (criterion instanceof PerformersCriterion) {
+    if (criterionState instanceof PerformersCriterion) {
       return (
         <PerformersFilter
-          criterion={criterion}
+          criterion={criterionState}
           setCriterion={(c) => setCriterion(c)}
         />
       );
     }
 
-    if (criterion instanceof StudiosCriterion) {
+    if (criterionState instanceof StudiosCriterion) {
       return (
         <StudiosFilter
-          criterion={criterion}
+          criterion={criterionState}
           setCriterion={(c) => setCriterion(c)}
         />
       );
     }
 
-    if (criterion instanceof TagsCriterion) {
+    if (criterionState instanceof TagsCriterion) {
       return (
         <TagsFilter
-          criterion={criterion}
+          criterion={criterionState}
           setCriterion={(c) => setCriterion(c)}
         />
       );
     }
 
-    if (criterion instanceof ILabeledIdCriterion) {
+    if (criterionState instanceof ILabeledIdCriterion) {
       return (
         <LabeledIdFilter
-          criterion={criterion}
+          criterion={criterionState}
           onValueChanged={onValueChanged}
         />
       );
     }
-    if (criterion instanceof IHierarchicalLabeledIdCriterion) {
+    if (criterionState instanceof IHierarchicalLabeledIdCriterion) {
       return (
         <HierarchicalLabelValueFilter
-          criterion={criterion}
+          criterion={criterionState}
           onValueChanged={onValueChanged}
         />
       );
     }
     if (
       options &&
-      !criterionIsHierarchicalLabelValue(criterion.value) &&
-      !criterionIsNumberValue(criterion.value) &&
-      !criterionIsStashIDValue(criterion.value) &&
-      !criterionIsDateValue(criterion.value) &&
-      !criterionIsTimestampValue(criterion.value)
+      !criterionIsHierarchicalLabelValue(criterionState.value) &&
+      !criterionIsNumberValue(criterionState.value) &&
+      !criterionIsStashIDValue(criterionState.value) &&
+      !criterionIsDateValue(criterionState.value) &&
+      !criterionIsTimestampValue(criterionState.value)
     ) {
-      if (!Array.isArray(criterion.value)) {
+      if (!Array.isArray(criterionState.value)) {
         return (
-          <OptionFilter criterion={criterion} setCriterion={setCriterion} />
+          <OptionFilter
+            criterion={criterionState}
+            setCriterion={setCriterion}
+          />
         );
       } else {
         return (
-          <OptionListFilter criterion={criterion} setCriterion={setCriterion} />
+          <OptionListFilter
+            criterion={criterionState}
+            setCriterion={setCriterion}
+          />
         );
       }
     }
-    if (criterion instanceof PathCriterion) {
+    if (criterionState instanceof PathCriterion) {
       return (
-        <PathFilter criterion={criterion} onValueChanged={onValueChanged} />
-      );
-    }
-    if (criterion instanceof DurationCriterion) {
-      return (
-        <DurationFilter criterion={criterion} onValueChanged={onValueChanged} />
-      );
-    }
-    if (criterion instanceof DateCriterion) {
-      return (
-        <DateFilter criterion={criterion} onValueChanged={onValueChanged} />
-      );
-    }
-    if (criterion instanceof TimestampCriterion) {
-      return (
-        <TimestampFilter
-          criterion={criterion}
+        <PathFilter
+          criterion={criterionState}
           onValueChanged={onValueChanged}
         />
       );
     }
-    if (criterion instanceof NumberCriterion) {
+    if (criterionState instanceof DurationCriterion) {
       return (
-        <NumberFilter criterion={criterion} onValueChanged={onValueChanged} />
+        <DurationFilter
+          criterion={criterionState}
+          onValueChanged={onValueChanged}
+        />
       );
     }
-    if (criterion instanceof RatingCriterion) {
+    if (criterionState instanceof DateCriterion) {
       return (
-        <RatingFilter criterion={criterion} onValueChanged={onValueChanged} />
+        <DateFilter
+          criterion={criterionState}
+          onValueChanged={onValueChanged}
+        />
       );
     }
-    if (criterion instanceof PhashCriterion) {
+    if (criterionState instanceof TimestampCriterion) {
       return (
-        <PhashFilter criterion={criterion} onValueChanged={onValueChanged} />
+        <TimestampFilter
+          criterion={criterionState}
+          onValueChanged={onValueChanged}
+        />
+      );
+    }
+    if (criterionState instanceof NumberCriterion) {
+      return (
+        <NumberFilter
+          criterion={criterionState}
+          onValueChanged={onValueChanged}
+        />
+      );
+    }
+    if (criterionState instanceof RatingCriterion) {
+      return (
+        <RatingFilter
+          criterion={criterionState}
+          onValueChanged={onValueChanged}
+        />
+      );
+    }
+    if (criterionState instanceof PhashCriterion) {
+      return (
+        <PhashFilter
+          criterion={criterionState}
+          onValueChanged={onValueChanged}
+        />
       );
     }
     if (
-      criterion instanceof CountryCriterion &&
-      (criterion.modifier === CriterionModifier.Equals ||
-        criterion.modifier === CriterionModifier.NotEquals)
+      criterionState instanceof CountryCriterion &&
+      (criterionState.modifier === CriterionModifier.Equals ||
+        criterionState.modifier === CriterionModifier.NotEquals)
     ) {
       return (
         <CountrySelect
-          value={criterion.value}
+          value={criterionState.value}
           onChange={(v) => onValueChanged(v)}
           menuPortalTarget={document.body}
         />
       );
     }
     return (
-      <InputFilter criterion={criterion} onValueChanged={onValueChanged} />
+      <InputFilter criterion={criterionState} onValueChanged={onValueChanged} />
     );
-  }, [criterion, setCriterion, options]);
+  }, [criterionState, setCriterion, options]);
 
   return (
     <div>
@@ -256,28 +286,37 @@ const GenericCriterionEditor: React.FC<IGenericCriterionEditor> = ({
 };
 
 interface ICriterionEditor {
-  criterion: Criterion<CriterionValue>;
+  emptyCriterion: Criterion<CriterionValue>;
+  criterion?: Criterion<CriterionValue>;
   setCriterion: (c: Criterion<CriterionValue>) => void;
 }
 
 export const CriterionEditor: React.FC<ICriterionEditor> = ({
+  emptyCriterion,
   criterion,
   setCriterion,
 }) => {
   const filterControl = useMemo(() => {
-    if (criterion instanceof BooleanCriterion) {
+    if (
+      emptyCriterion instanceof BooleanCriterion &&
+      criterion instanceof BooleanCriterion
+    ) {
       return (
-        <BooleanFilter criterion={criterion} setCriterion={setCriterion} />
+        <BooleanFilter
+          criterion={criterion ?? emptyCriterion}
+          setCriterion={setCriterion}
+        />
       );
     }
 
     return (
       <GenericCriterionEditor
+        emptyCriterion={emptyCriterion}
         criterion={criterion}
         setCriterion={setCriterion}
       />
     );
-  }, [criterion, setCriterion]);
+  }, [emptyCriterion, criterion, setCriterion]);
 
   return <div className="criterion-editor">{filterControl}</div>;
 };
