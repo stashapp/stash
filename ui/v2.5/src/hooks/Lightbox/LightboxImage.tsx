@@ -159,7 +159,7 @@ export const LightboxImage: React.FC<IProps> = ({
     return () => {
       mounted = false;
     };
-  }, [src]);
+  }, [src, dimensionsProvided]);
 
   const minMaxY = useCallback(
     (appliedZoom: number) => {
