@@ -208,7 +208,15 @@ export const LightboxImage: React.FC<IProps> = ({
 
       return [newPositionX, newPositionY];
     },
-    [displayMode, boxWidth, imageWidth, boxHeight, imageHeight, alignBottom, minMaxY]
+    [
+      displayMode,
+      boxWidth,
+      imageWidth,
+      boxHeight,
+      imageHeight,
+      alignBottom,
+      minMaxY,
+    ]
   );
 
   useEffect(() => {
