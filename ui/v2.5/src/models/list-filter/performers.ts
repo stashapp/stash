@@ -46,7 +46,7 @@ const sortByOptions = [
       value: "galleries_count",
     },
     {
-      messageID: "o_counter",
+      messageID: "o_count",
       value: "o_counter",
     },
   ]);
@@ -95,7 +95,7 @@ const criterionOptions = [
   createMandatoryNumberCriterionOption("image_count"),
   createMandatoryNumberCriterionOption("gallery_count"),
   createMandatoryNumberCriterionOption("play_count"),
-  createMandatoryNumberCriterionOption("o_counter"),
+  createMandatoryNumberCriterionOption("o_counter", "o_count"),
   createBooleanCriterionOption("ignore_auto_tag"),
   CountryCriterionOption,
   createNumberCriterionOption("height_cm", "height"),
