@@ -98,11 +98,11 @@ export const LightboxImage: React.FC<IProps> = ({
   const [moving, setMoving] = useState(false);
   const [positionX, setPositionX] = useState(0);
   const [positionY, setPositionY] = useState(0);
-  const [imageWidth, setWidth] = useState(width);
-  const [imageHeight, setHeight] = useState(height);
+  const [imageWidth, setImageWidth] = useState(width);
+  const [imageHeight, setImageHeight] = useState(height);
   const [boxWidth, setBoxWidth] = useState(0);
   const [boxHeight, setBoxHeight] = useState(0);
-  const dimensionsProvided = width && height;
+  const dimensionsProvided = width > 0 && height > 0;
 
   const mouseDownEvent = useRef<MouseEvent>();
   const resetPositionRef = useRef(resetPosition);
@@ -148,8 +148,8 @@ export const LightboxImage: React.FC<IProps> = ({
     const img = new Image();
     function onLoad() {
       if (mounted) {
-        setWidth(img.width);
-        setHeight(img.height);
+        setImageWidth(img.width);
+        setImageHeight(img.height);
       }
     }
 
