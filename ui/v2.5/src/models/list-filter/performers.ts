@@ -27,6 +27,7 @@ const sortByOptions = [
   "random",
   "rating",
   "penis_length",
+  "play_count",
   "last_played_at",
   "last_o_at",
 ]
@@ -43,10 +44,6 @@ const sortByOptions = [
     {
       messageID: "gallery_count",
       value: "galleries_count",
-    },
-    {
-      messageID: "play_count",
-      value: "play_count",
     },
     {
       messageID: "o_counter",

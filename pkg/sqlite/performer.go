@@ -875,6 +875,25 @@ var selectPerformerOCountSQL = utils.StrFormat(
 	},
 )
 
+// used for sorting and filtering play count on performer view count
+var selectPerformerPlayCountSQL = utils.StrFormat(
+	"SELECT COUNT(DISTINCT {view_date}) FROM ("+
+		"SELECT {view_date} FROM {performers_scenes} s "+
+		"LEFT JOIN {scenes} ON {scenes}.id = s.{scene_id} "+
+		"LEFT JOIN {scenes_view_dates} ON {scenes_view_dates}.{scene_id} = {scenes}.id "+
+		"WHERE s.{performer_id} = {performers}.id"+
+		")",
+	map[string]interface{}{
+		"performer_id":      performerIDColumn,
+		"performers":        performerTable,
+		"performers_scenes": performersScenesTable,
+		"scenes":            sceneTable,
+		"scene_id":          sceneIDColumn,
+		"scenes_view_dates": scenesViewDatesTable,
+		"view_date":         sceneViewDateColumn,
+	},
+)
+
 // used for sorting on performer last o_date
 var selectPerformerLastOAtSQL = utils.StrFormat(
 	"SELECT MAX(o_date) FROM ("+
@@ -897,25 +916,6 @@ var selectPerformerLastOAtSQL = utils.StrFormat(
 // used for sorting on performer last view_date
 var selectPerformerLastPlayedAtSQL = utils.StrFormat(
 	"SELECT MAX(view_date) FROM ("+
-		"SELECT {view_date} FROM {performers_scenes} s "+
-		"LEFT JOIN {scenes} ON {scenes}.id = s.{scene_id} "+
-		"LEFT JOIN {scenes_view_dates} ON {scenes_view_dates}.{scene_id} = {scenes}.id "+
-		"WHERE s.{performer_id} = {performers}.id"+
-		")",
-	map[string]interface{}{
-		"performer_id":      performerIDColumn,
-		"performers":        performerTable,
-		"performers_scenes": performersScenesTable,
-		"scenes":            sceneTable,
-		"scene_id":          sceneIDColumn,
-		"scenes_view_dates": scenesViewDatesTable,
-		"view_date":         sceneViewDateColumn,
-	},
-)
-
-// used for filtering play count by counting unique views
-var selectPerformerPlayCountSQL = utils.StrFormat(
-	"SELECT COUNT(DISTINCT {view_date}) FROM ("+
 		"SELECT {view_date} FROM {performers_scenes} s "+
 		"LEFT JOIN {scenes} ON {scenes}.id = s.{scene_id} "+
 		"LEFT JOIN {scenes_view_dates} ON {scenes_view_dates}.{scene_id} = {scenes}.id "+
@@ -1098,6 +1098,11 @@ func (qb *PerformerStore) sortByOCounter(direction string) string {
 	return " ORDER BY (" + selectPerformerOCountSQL + ") " + direction
 }
 
+func (qb *PerformerStore) sortByPlayCount(direction string) string {
+	// need to sum the o_counter from scenes and images
+	return " ORDER BY (" + selectPerformerPlayCountSQL + ") " + direction
+}
+
 func (qb *PerformerStore) sortByLastOAt(direction string) string {
 	// need to get the o_dates from scenes
 	return " ORDER BY (" + selectPerformerLastOAtSQL + ") " + direction
@@ -1129,6 +1134,8 @@ func (qb *PerformerStore) getPerformerSort(findFilter *models.FindFilterType) st
 		sortQuery += getCountSort(performerTable, performersImagesTable, performerIDColumn, direction)
 	case "galleries_count":
 		sortQuery += getCountSort(performerTable, performersGalleriesTable, performerIDColumn, direction)
+	case "play_count":
+		sortQuery += qb.sortByPlayCount(direction)
 	case "o_counter":
 		sortQuery += qb.sortByOCounter(direction)
 	case "last_played_at":
