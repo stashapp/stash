@@ -24,18 +24,14 @@ import { GalleriesCriterionOption } from "./criteria/galleries";
 
 const defaultSortBy = "path";
 
-const sortByOptions = [
-  "filesize",
-  "file_count",
-  "date",
-  ...MediaSortByOptions,
-].map(ListFilterOptions.createSortBy)
-.concat([
-  {
-    messageID: "o_count",
-    value: "o_counter",
-  },
-]);
+const sortByOptions = ["filesize", "file_count", "date", ...MediaSortByOptions]
+  .map(ListFilterOptions.createSortBy)
+  .concat([
+    {
+      messageID: "o_count",
+      value: "o_counter",
+    },
+  ]);
 const displayModeOptions = [DisplayMode.Grid, DisplayMode.Wall];
 const criterionOptions = [
   createStringCriterionOption("title"),

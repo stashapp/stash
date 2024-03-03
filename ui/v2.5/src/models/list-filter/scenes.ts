@@ -50,13 +50,14 @@ const sortByOptions = [
   "interactive_speed",
   "perceptual_similarity",
   ...MediaSortByOptions,
-].map(ListFilterOptions.createSortBy)
-.concat([
-  {
-    messageID: "o_count",
-    value: "o_counter",
-  },
-]);
+]
+  .map(ListFilterOptions.createSortBy)
+  .concat([
+    {
+      messageID: "o_count",
+      value: "o_counter",
+    },
+  ]);
 const displayModeOptions = [
   DisplayMode.Grid,
   DisplayMode.List,
