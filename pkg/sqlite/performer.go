@@ -874,6 +874,44 @@ var selectPerformerOCountSQL = utils.StrFormat(
 	},
 )
 
+// used for sorting on performer last o_date
+var selectPerformerLastOAtSQL = utils.StrFormat(
+	"SELECT MAX(o_date) FROM ("+
+		"SELECT {o_date} FROM {performers_scenes} s "+
+		"LEFT JOIN {scenes} ON {scenes}.id = s.{scene_id} "+
+		"LEFT JOIN {scenes_o_dates} ON {scenes_o_dates}.{scene_id} = {scenes}.id "+
+		"WHERE s.{performer_id} = {performers}.id"+
+		")",
+	map[string]interface{}{
+		"performer_id":      performerIDColumn,
+		"performers":        performerTable,
+		"performers_scenes": performersScenesTable,
+		"scenes":            sceneTable,
+		"scene_id":          sceneIDColumn,
+		"scenes_o_dates":    scenesODatesTable,
+		"o_date":            sceneODateColumn,
+	},
+)
+
+// used for sorting on performer last view_date
+var selectPerformerLastPlayedAtSQL = utils.StrFormat(
+	"SELECT MAX(view_date) FROM ("+
+		"SELECT {view_date} FROM {performers_scenes} s "+
+		"LEFT JOIN {scenes} ON {scenes}.id = s.{scene_id} "+
+		"LEFT JOIN {scenes_view_dates} ON {scenes_view_dates}.{scene_id} = {scenes}.id "+
+		"WHERE s.{performer_id} = {performers}.id"+
+		")",
+	map[string]interface{}{
+		"performer_id":      performerIDColumn,
+		"performers":        performerTable,
+		"performers_scenes": performersScenesTable,
+		"scenes":            sceneTable,
+		"scene_id":          sceneIDColumn,
+		"scenes_view_dates": scenesViewDatesTable,
+		"view_date":         sceneViewDateColumn,
+	},
+)
+
 func performerOCounterCriterionHandler(qb *PerformerStore, count *models.IntCriterionInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if count == nil {
@@ -1027,6 +1065,16 @@ func (qb *PerformerStore) sortByOCounter(direction string) string {
 	return " ORDER BY (" + selectPerformerOCountSQL + ") " + direction
 }
 
+func (qb *PerformerStore) sortByLastOAt(direction string) string {
+	// need to get the o_dates from scenes
+	return " ORDER BY (" + selectPerformerLastOAtSQL + ") " + direction
+}
+
+func (qb *PerformerStore) sortByLastPlayedAt(direction string) string {
+	// need to get the view_dates from scenes
+	return " ORDER BY (" + selectPerformerLastPlayedAtSQL + ") " + direction
+}
+
 func (qb *PerformerStore) getPerformerSort(findFilter *models.FindFilterType) string {
 	var sort string
 	var direction string
@@ -1050,6 +1098,10 @@ func (qb *PerformerStore) getPerformerSort(findFilter *models.FindFilterType) st
 		sortQuery += getCountSort(performerTable, performersGalleriesTable, performerIDColumn, direction)
 	case "o_counter":
 		sortQuery += qb.sortByOCounter(direction)
+	case "last_played_at":
+		sortQuery += qb.sortByLastPlayedAt(direction)
+	case "last_o_at":
+		sortQuery += qb.sortByLastOAt(direction)
 	default:
 		sortQuery += getSort(sort, direction, "performers")
 	}
