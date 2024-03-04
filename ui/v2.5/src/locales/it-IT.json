@@ -15,7 +15,7 @@
         "clean": "Pulisci",
         "clear": "Elimina",
         "clear_back_image": "Elimina immagine retro",
-        "clear_front_image": "Elimina immagine frontale",
+        "clear_front_image": "Elimina immagine fronte",
         "clear_image": "Elimina Immagine",
         "close": "Chiudi",
         "confirm": "Conferma",
@@ -40,7 +40,7 @@
         "export": "Esporta",
         "export_all": "Esporta tutto…",
         "find": "Trova",
-        "finish": "Finire",
+        "finish": "Finito",
         "from_file": "Dal file…",
         "from_url": "Dall'URL…",
         "full_export": "Esporta Completo",
@@ -117,7 +117,15 @@
         "temp_enable": "Abilita temporaneamente…",
         "unset": "Rimuovere Impostazione",
         "use_default": "Usa predefinito",
-        "view_random": "Guarda Casuale"
+        "view_random": "Guarda Casuale",
+        "add_o": "Aggiungi O",
+        "choose_date": "Scegli una data",
+        "add_play": "Aggiungi riproduzione",
+        "disable": "Disabilita",
+        "encoding_image": "Conversione immagine…",
+        "clean_generated": "Rimuovi file generati",
+        "copy_to_clipboard": "Copia negli appunti",
+        "enable": "Abilita"
     },
     "actions_name": "Azioni",
     "age": "Età",
@@ -666,7 +674,7 @@
         "matches_regex": "regex uguale",
         "not_between": "non tra",
         "not_equals": "non è",
-        "not_matches_regex": "regex non uguale",
+        "not_matches_regex": "non soddisfa la regex",
         "not_null": "non è nullo"
     },
     "custom": "Personalizzato",
@@ -682,12 +690,12 @@
         "create_new_entity": "Crea nuovo/a {entity}",
         "delete_alert": "Il seguente/I seguenti {count, plural, one {{singularEntity}} other {{pluralEntity}}} sarà/saranno cancellati permanentemente:",
         "delete_confirm": "Sei sicuro di voler cancellare {entityName}?",
-        "delete_entity_desc": "{count, plural, one {Sei sicuro di voler cancellare questo/a {singularEntity}? A meno che anche il file venga cancellato, questo/a {singularEntity} sarà riaggiunto quando la scansione verrà effettuata.} other {Sei sicuro di voler cancellare questi/e {pluralEntity}? A meno che anche i file vengano cancellati, questi/e {pluralEntity} verranno riaggiunti quando la scansione verrà effettuata.}}",
+        "delete_entity_desc": "{count, plural, one {Sei sicuro/a di voler cancellare questo/a {singularEntity}? A meno che anche il file venga cancellato, questo/a {singularEntity} sarà riaggiunto quando la scansione verrà effettuata.} other {Sei sicuro/a di voler cancellare questi/e {pluralEntity}? A meno che anche i file vengano cancellati, questi/e {pluralEntity} verranno riaggiunti quando la scansione verrà effettuata.}}",
         "delete_entity_simple_desc": "{count, plural, one {Sei sicuro di voler cancellare questa/o {singularEntity}?} other {Sei sicuro di voler cancellare questi/e {pluralEntity}?}}",
         "delete_entity_title": "{count, plural, one {Cancellazione {singularEntity}} other {Cancellazione {pluralEntity}}}",
         "delete_galleries_extra": "...in più qualsiasi immagine non inclusa in nessun'altra galleria.",
         "delete_gallery_files": "Cancella gallerie cartella/zip e qualsiasi immagino non inclusa in altre gallerie.",
-        "delete_object_desc": "Sei sicuro di voler cancellare {count, plural, one {questo/a {singularEntity}} other {questi/e {pluralEntity}}}?",
+        "delete_object_desc": "Sei sicuro/a di voler cancellare {count, plural, one {questo/a {singularEntity}} other {questi/e {pluralEntity}}}?",
         "delete_object_overflow": "…e {count} other {count, plural, one {{singularEntity}} other {{pluralEntity}}}.",
         "delete_object_title": "Cancellazione {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
         "dont_show_until_updated": "Non mostrare fino al prossimo aggiornamento",
@@ -770,7 +778,14 @@
         "scrape_results_existing": "Esistenti",
         "scrape_results_scraped": "Scrape Effettuato",
         "set_image_url_title": "URL Immagine",
-        "unsaved_changes": "Modifiche non salvate. Sei sicuro di voler lasciare la pagina?"
+        "unsaved_changes": "Modifiche non salvate. Sei sicuro di voler lasciare la pagina?",
+        "clear_play_history_confirm": "Sei sicuro/a di voler resettare la cronologia delle riproduzioni?",
+        "clear_o_history_confirm": "Sei sicuro/a di voler resettare la cronologia di O?",
+        "imagewall": {
+            "direction": {
+                "column": "Colonna"
+            }
+        }
     },
     "dimensions": "Dimensioni",
     "director": "Regista",
@@ -1138,5 +1153,14 @@
     "weight": "Peso",
     "weight_kg": "Peso (kg)",
     "years_old": "anni",
-    "zip_file_count": "Numero File Zip"
+    "zip_file_count": "Numero File Zip",
+    "video_codec": "Codec Video",
+    "unknown_date": "Data sconosciuta",
+    "urls": "URL",
+    "validation": {
+        "blank": "${path} non può essere vuoto",
+        "date_invalid_form": "${path} deve essere nel formato AAAA-MM-GG"
+    },
+    "datetime_format": "AAAA-MM-GG OO:MM",
+    "date_format": "AAAA-MM-GG"
 }
