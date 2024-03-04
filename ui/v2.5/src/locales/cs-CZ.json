@@ -335,7 +335,16 @@
                 "hardware_acceleration": {
                     "heading": "Hardwarové kódování FFmpeg"
                 }
-            }
+            },
+            "gallery_cover_regex_desc": "Regexp používaný k identifikaci obrázku jako obalu galerie",
+            "plugins_path": {
+                "heading": "Cesty pluginů",
+                "description": "Umístění adresáře konfiguračních souborů pluginu"
+            },
+            "funscript_heatmap_draw_range": "Zahrnout rozsah do vygenerovaných heatmap",
+            "funscript_heatmap_draw_range_desc": "Nakreslete rozsah pohybu na ose y vygenerované heatmapy. Stávající heatmapy bude nutné po změně zregenerovat.",
+            "gallery_cover_regex_label": "Vzor obálky galerie",
+            "heatmap_generation": "Generace heatmapy funscriptu"
         },
         "library": {
             "exclusions": "Výjimky",
@@ -426,7 +435,14 @@
                 "source_options": "Možnosti {source}",
                 "sources": "Zdroje",
                 "strategy": "Strategie",
-                "skip_multiple_matches": "Přeskočte shody, které mají více než jeden výsledek"
+                "skip_multiple_matches": "Přeskočte shody, které mají více než jeden výsledek",
+                "skip_single_name_performers": "Přeskočte umělce/umělkyně s jedním jménem bez jednoznačného označení",
+                "tag_skipped_performers": "Označte přeskočené umělce/umělkyně pomocí",
+                "tag_skipped_performer_tooltip": "Vytvořte štítek jako „Identifikuj: Umělec/umělkyně s jedním jménem“, který můžete filtrovat v taggeru scén a zvolit, jak chcete s těmito účinkujícími zacházet",
+                "skip_multiple_matches_tooltip": "Pokud toto není povoleno a vrátí se více než jeden výsledek, bude náhodně jeden vybrán ke shodě",
+                "tag_skipped_matches": "Označte přeskočené shody pomocí",
+                "skip_single_name_performers_tooltip": "Pokud toto není povoleno, budou přiřazeni umělci, kteří jsou často generičtí jako Samantha nebo Olga",
+                "tag_skipped_matches_tooltip": "Vytvořte značku jako „Identifikuj: Více shod“, kterou můžete filtrovat taggeru scén a ručně vybrat správnou shodu"
             },
             "import_from_exported_json": "Importovat z exportovaného JSONu z metadata složky. Přemaže existující databázi.",
             "incremental_import": "Inkrementální import z dodaného exportního zip souboru.",
@@ -445,10 +461,13 @@
             "anonymise_and_download": "Vytvoří anonymizovanou kopii databáze a stáhne výsledný soubor.",
             "anonymising_database": "Anonymizování databáze",
             "migrate_blobs": {
-                "delete_old": "Vymaž stará data"
+                "delete_old": "Vymaž stará data",
+                "description": "Migrujte bloby do aktuálního systému úložiště blobů. Tato migrace by měla být spuštěna po změně systému úložiště blobů. Po migraci lze volitelně odstranit stará data."
             },
             "migrate_scene_screenshots": {
-                "delete_files": "Odstraňte soubory snímků obrazovky"
+                "delete_files": "Odstraňte soubory snímků obrazovky",
+                "description": "Migrujte snímky obrazovky scén do nového systému úložiště blobů. Tato migrace by měla být spuštěna po migraci stávajícího systému na verzi 0.20. Po migraci lze volitelně odstranit staré snímky obrazovky.",
+                "overwrite_existing": "Přepište existující bloby daty snímku obrazovky"
             },
             "clean_generated": {
                 "blob_files": "Soubory Blobů",
@@ -456,11 +475,17 @@
                 "image_thumbnails": "Náhledy obrázků",
                 "image_thumbnails_desc": "Náhledy obrázků a klipy",
                 "markers": "Náhledy Značek",
-                "previews": "Náhledy Scén"
+                "previews": "Náhledy Scén",
+                "previews_desc": "Náhledy scén a miniatury",
+                "sprites": "Sprity scén",
+                "transcodes": "Transkódy scén"
             },
             "generate_sprites_during_scan_tooltip": "Sada obrázků zobrazená pod videopřehrávačem pro snadnou navigaci.",
             "generate_video_covers_during_scan": "Generuj obaly scén",
-            "anonymise_database": "Vytvoří kopii databáze do adresáře záloh, anonymizuje všechna citlivá data. To pak může být poskytnuto ostatním pro účely odstraňování problémů a debuggování. Původní databáze se nemění. Anonymizovaná databáze používá formát názvu souboru {filename_format}."
+            "anonymise_database": "Vytvoří kopii databáze do adresáře záloh, anonymizuje všechna citlivá data. To pak může být poskytnuto ostatním pro účely odstraňování problémů a debuggování. Původní databáze se nemění. Anonymizovaná databáze používá formát názvu souboru {filename_format}.",
+            "optimise_database": "Pokusit se zlepšit výkon analyzováním a opětovným sestavením celého databázového souboru.",
+            "generate_clip_previews_during_scan": "Generování náhledů pro obrázkové klipy",
+            "optimise_database_warning": "Varování: Pokud je tato úloha spuštěna, všechny operace, které upravují databázi, selžou a v závislosti na velikosti databáze může její dokončení trvat několik minut. Vyžaduje také minimálně tolik volného místa na disku, jak je vaše databáze velká, ale doporučuje se 1,5x."
         },
         "tools": {
             "scene_duplicate_checker": "Kontrola na duplikaci scén",
@@ -529,7 +554,8 @@
                         "options": {
                             "full": "Plná",
                             "half": "Poloviční",
-                            "quarter": "Čtvrtinová"
+                            "quarter": "Čtvrtinová",
+                            "tenth": "Desetina"
                         }
                     },
                     "type": {
@@ -539,6 +565,9 @@
                             "stars": "Hvězdy"
                         }
                     }
+                },
+                "max_options_shown": {
+                    "label": "Maximální počet položek k zobrazení ve vybíracích rozbalovacích seznamech"
                 }
             },
             "funscript_offset": {
@@ -568,6 +597,10 @@
                     "write_image_thumbnails": {
                         "description": "Zapsat miniatury obrázků na disk, když jsou generovány za běhu",
                         "heading": "Zapsat miniatury obrázků"
+                    },
+                    "create_image_clips_from_videos": {
+                        "description": "Když má knihovna vypnutá videa, soubory videa (soubory končící s video příponou) budou naskenovány jako obrázkový klip.",
+                        "heading": "Skenujte rozšíření videa jako obrázkový klip"
                     }
                 }
             },
@@ -624,7 +657,14 @@
                         "heading": "(Výchozí nastavení) Pokračovat v playlistu"
                     },
                     "show_scrubber": "Zobrazit Scrubber",
-                    "track_activity": "Sledování činností"
+                    "track_activity": "Sledování činností",
+                    "disable_mobile_media_auto_rotate": "Zakázat automatické otáčení médií na celou obrazovku v mobilu",
+                    "enable_chromecast": "Povolit Chromecast",
+                    "show_ab_loop_controls": "Zobrazit ovládací prvky pluginu AB Loop",
+                    "vr_tag": {
+                        "description": "Tlačítko VR se zobrazí pouze u scén s tímto tagem.",
+                        "heading": "VR Tag"
+                    }
                 }
             },
             "scene_wall": {
@@ -647,7 +687,13 @@
                 "heading": "Zpoždění prezentace (sekundy)"
             },
             "studio_panel": {
-                "heading": "Pohled studií"
+                "heading": "Pohled studií",
+                "options": {
+                    "show_child_studio_content": {
+                        "heading": "Zobrazit obsah dílčích studií",
+                        "description": "V zobrazení studia zobrazte také obsah z dílčích studií"
+                    }
+                }
             },
             "title": "Uživatelské rozhraní",
             "detail": {
@@ -655,7 +701,33 @@
                     "description": "Zobrazit obrázek na pozadí na stránce s podrobnostmi.",
                     "heading": "Povolí obrázek na pozadí"
                 },
-                "heading": "Stránka s podrobnostmi"
+                "heading": "Stránka s podrobnostmi",
+                "compact_expanded_details": {
+                    "heading": "Rozšířené kompaktní detaily",
+                    "description": "Pokud je tato možnost povolena, zobrazí rozšířené detaily a přitom zachovává kompaktní prezentaci"
+                },
+                "show_all_details": {
+                    "description": "Když je tato možnost povolena, všechny detaily obsahu budou zobrazeny s výchozím nastavením a detail každé položky bude pod jedním sloupcem",
+                    "heading": "Zobrazit všechny detaily"
+                }
+            },
+            "image_wall": {
+                "direction": "Směr",
+                "heading": "Stěna obrázků",
+                "margin": "Okraj (v pixelech)"
+            },
+            "tag_panel": {
+                "options": {
+                    "show_child_tagged_content": {
+                        "heading": "Zobrazit obsah dílčích tagů",
+                        "description": "V zobrazení tagů, zobraz obsah také obsah z dílčích tagů"
+                    }
+                },
+                "heading": "Zobrazení tagů"
+            },
+            "use_stash_hosted_funscript": {
+                "description": "Je-li povoleno, budou funscripty poskytovány přímo ze Stash do vašeho zařízení Handy bez použití serveru Handy třetí strany. Vyžaduje, aby byl Stash dostupný z vašeho zařízení Handy.",
+                "heading": "Funscripty podávejte přímo"
             }
         },
         "advanced_mode": "Pokročilý mód"
@@ -694,7 +766,10 @@
         "not_between": "není mezi",
         "not_equals": "není",
         "not_matches_regex": "nevyhovuje regulárnímu výrazu",
-        "not_null": "není null"
+        "not_null": "není null",
+        "format_string_excludes_depth": "{criterion} {modifierString} {valueString} (vylučuje {excludedString}) (+{depth, plural, =-1 {all} other {{depth}}})",
+        "format_string_depth": "{criterion} {modifierString} {valueString} (+{depth, plural, =-1 {all} other {{depth}}})",
+        "format_string_excludes": "{criterion} {modifierString} {valueString} (excludes {excludedString})"
     },
     "custom": "Vlastní",
     "date": "Datum",
@@ -738,7 +813,8 @@
                 "label": "Rolovací mód",
                 "pan_y": "Náklon Y",
                 "zoom": "Zvětšit"
-            }
+            },
+            "page_header": "Stránka {page} / {total}"
         },
         "merge_tags": {
             "destination": "Cíl",
@@ -771,7 +847,18 @@
             "preview_options": "Nastavení náhledů",
             "preview_preset_desc": "Předvolba reguluje velikost, kvalitu a čas enkódování generování náhledu. Předvolby větší než „pomalý“ mají snižjicí se účinek a nedoporučují se.",
             "preview_seg_count_head": "Počet segmentů v náhledech",
-            "preview_seg_duration_head": "Doba trvání segmentu náhledu"
+            "preview_seg_duration_head": "Doba trvání segmentu náhledu",
+            "covers": "Obálky scén",
+            "sprites": "Sprity scrubberu scén",
+            "markers": "Náhledy značek",
+            "markers_tooltip": "20sekundová videa, která začínají v daném časovém kódu.",
+            "transcodes": "Transkódované",
+            "image_thumbnails": "Miniatury obrázků",
+            "override_preview_generation_options": "Přepsat možnosti generování náhledu",
+            "override_preview_generation_options_desc": "Přepsat možnosti generování náhledu pro tuto operaci. Výchozí nastavení se nastavuje: Systém -> Generování náhledu.",
+            "clip_previews": "Náhledy obrázkových klipů",
+            "marker_screenshots_tooltip": "Označte statické obrázky JPG, je vyžadováno pouze v případě, že je Typ náhledu nastaven na Statický obrázek.",
+            "overwrite": "Přepsat existující soubory"
         },
         "unsaved_changes": "Neuložené změny. Opravdu chcete odejít?",
         "scenes_found": "{count} nalezené scény",
@@ -779,7 +866,29 @@
         "scrape_entity_title": "{entity_type} Scrapovací výsledky",
         "scrape_results_existing": "Existujicí",
         "scrape_results_scraped": "Scrapováno",
-        "set_image_url_title": "URL obrázku"
+        "set_image_url_title": "URL obrázku",
+        "merge": {
+            "destination": "Destinace",
+            "source": "Zdroj",
+            "empty_results": "Hodnoty cílového pole zůstanou nezměněny."
+        },
+        "create_new_entity": "Vytvořit novou {entity}",
+        "imagewall": {
+            "direction": {
+                "column": "Sloupec",
+                "description": "Rozvržení založené na sloupcích nebo řádcích.",
+                "row": "Řádek"
+            },
+            "margin_desc": "Počet pixelů kolem každého celého obrázku."
+        },
+        "reassign_entity_title": "{count, plural, one {Změnit přiřazení {singularEntity}} other {Změnit přiřazení {pluralEntity}}}",
+        "reassign_files": {
+            "destination": "Změnit přiřazení na"
+        },
+        "clear_o_history_confirm": "Opravdu chcete vymazat historii O?",
+        "clear_play_history_confirm": "Opravdu chcete vymazat historii přehrávání?",
+        "delete_entity_simple_desc": "{count, plural, one {Opravdu chcete smazat tuto {singularEntity}?} other {Opravdu chcete smazat tyto {pluralEntity}?}}",
+        "performers_found": "{count} nalezených umělců/umělkyň"
     },
     "chapters": "Kapitoly",
     "circumcised": "Obřezán",
@@ -949,7 +1058,10 @@
         "performer_names_separated_by_comma": "Jména účinkujících oddělená čárkou",
         "refreshing_will_update_the_data": "Obnovení aktualizuje data všech označených umělců z instance stash-boxu.",
         "status_tagging_job_queued": "Stav: Úloha tagování ve frontě",
-        "name_already_exists": "Název již existuje"
+        "name_already_exists": "Název již existuje",
+        "update_performers": "Aktualizovat umělce/umělkyně",
+        "updating_untagged_performers_description": "Aktualizování nepřiřazených umělců/umělkyň se pokusí nalézt všechny umělce/umělkyně, kteří postrádají StashID, a aktualizovat metadata.",
+        "update_performer": "Aktualizovat umělce/umělkyni"
     },
     "setup": {
         "paths": {
@@ -1196,6 +1308,13 @@
     "image_index": "Obrázek #",
     "images": "Obrázky",
     "include_parent_tags": "Zahrnout nadřazené tagy",
-    "include_sub_tags": "Zahrnout sub-tagy",
-    "path": "Cesta"
+    "include_sub_tags": "Zahrnout dílčí tagy",
+    "path": "Cesta",
+    "datetime_format": "YYYY-MM-DD HH:MM (rok-měsíc-den hodina:minuta)",
+    "operations": "Operace",
+    "performers": "Účinkujicí",
+    "index_of_total": "{index} z {total}",
+    "performer_tags": "Tagy umělců/umělkyň",
+    "tag_sub_tag_tooltip": "Má dílčí tagy",
+    "date_format": "YYYY-MM-DD (rok-měsíc-den)"
 }
