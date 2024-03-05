@@ -98,8 +98,11 @@ export const LightboxImage: React.FC<IProps> = ({
   const [moving, setMoving] = useState(false);
   const [positionX, setPositionX] = useState(0);
   const [positionY, setPositionY] = useState(0);
+  const [imageWidth, setImageWidth] = useState(width);
+  const [imageHeight, setImageHeight] = useState(height);
   const [boxWidth, setBoxWidth] = useState(0);
   const [boxHeight, setBoxHeight] = useState(0);
+  const dimensionsProvided = width > 0 && height > 0;
 
   const mouseDownEvent = useRef<MouseEvent>();
   const resetPositionRef = useRef(resetPosition);
@@ -137,41 +140,62 @@ export const LightboxImage: React.FC<IProps> = ({
     }, 250);
   }, [container]);
 
+  useEffect(() => {
+    if (dimensionsProvided) {
+      return;
+    }
+    let mounted = true;
+    const img = new Image();
+    function onLoad() {
+      if (mounted) {
+        setImageWidth(img.width);
+        setImageHeight(img.height);
+      }
+    }
+
+    img.onload = onLoad;
+    img.src = src;
+
+    return () => {
+      mounted = false;
+    };
+  }, [src, dimensionsProvided]);
+
   const minMaxY = useCallback(
     (appliedZoom: number) => {
       let minY, maxY: number;
-      const inBounds = appliedZoom * height <= boxHeight;
+      const inBounds = appliedZoom * imageHeight <= boxHeight;
 
       // NOTE: I don't even know how these work, but they do
       if (!inBounds) {
-        if (height > boxHeight) {
+        if (imageHeight > boxHeight) {
           minY =
-            (appliedZoom * height - height) / 2 -
-            appliedZoom * height +
+            (appliedZoom * imageHeight - imageHeight) / 2 -
+            appliedZoom * imageHeight +
             boxHeight;
-          maxY = (appliedZoom * height - height) / 2;
+          maxY = (appliedZoom * imageHeight - imageHeight) / 2;
         } else {
-          minY = (boxHeight - appliedZoom * height) / 2;
-          maxY = (appliedZoom * height - boxHeight) / 2;
+          minY = (boxHeight - appliedZoom * imageHeight) / 2;
+          maxY = (appliedZoom * imageHeight - boxHeight) / 2;
         }
       } else {
-        minY = Math.min((boxHeight - height) / 2, 0);
+        minY = Math.min((boxHeight - imageHeight) / 2, 0);
         maxY = minY;
       }
 
       return [minY, maxY];
     },
-    [height, boxHeight]
+    [imageHeight, boxHeight]
   );
 
   const calculateInitialPosition = useCallback(
     (appliedZoom: number) => {
       // Center image from container's center
-      const newPositionX = Math.min((boxWidth - width) / 2, 0);
+      const newPositionX = Math.min((boxWidth - imageWidth) / 2, 0);
       let newPositionY: number;
 
       if (displayMode === GQL.ImageLightboxDisplayMode.FitXy) {
-        newPositionY = Math.min((boxHeight - height) / 2, 0);
+        newPositionY = Math.min((boxHeight - imageHeight) / 2, 0);
       } else {
         // otherwise, align image with container
         const [minY, maxY] = minMaxY(appliedZoom);
@@ -184,16 +208,24 @@ export const LightboxImage: React.FC<IProps> = ({
 
       return [newPositionX, newPositionY];
     },
-    [displayMode, boxWidth, width, boxHeight, height, alignBottom, minMaxY]
+    [
+      displayMode,
+      boxWidth,
+      imageWidth,
+      boxHeight,
+      imageHeight,
+      alignBottom,
+      minMaxY,
+    ]
   );
 
   useEffect(() => {
     // don't set anything until we have the dimensions
-    if (!width || !height || !boxWidth || !boxHeight) {
+    if (!imageWidth || !imageHeight || !boxWidth || !boxHeight) {
       return;
     }
 
-    if (!scaleUp && width < boxWidth && height < boxHeight) {
+    if (!scaleUp && imageWidth < boxWidth && imageHeight < boxHeight) {
       setDefaultZoom(1);
       setPositionX(0);
       setPositionY(0);
@@ -202,8 +234,8 @@ export const LightboxImage: React.FC<IProps> = ({
 
     // set initial zoom level based on options
     const newZoom = calculateDefaultZoom(
-      width,
-      height,
+      imageWidth,
+      imageHeight,
       boxWidth,
       boxHeight,
       displayMode,
@@ -223,8 +255,8 @@ export const LightboxImage: React.FC<IProps> = ({
       scrollAttempts.current = -scrollAttemptsBeforeChange;
     }
   }, [
-    width,
-    height,
+    imageWidth,
+    imageHeight,
     boxWidth,
     boxHeight,
     displayMode,
