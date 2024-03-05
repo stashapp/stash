@@ -219,38 +219,137 @@
             "query_mode_path_desc": "Menggunakan seluruh jalur berkas",
             "set_cover_desc": "Ganti gambar adegan jika cover ditemukan.",
             "set_cover_label": "Tetapkan gambar cover adegan",
-            "set_tag_label": "Tetapkan tag"
+            "set_tag_label": "Tetapkan tag",
+            "set_tag_desc": "Lampirkan tag ke adegan, baik dengan menimpa atau menggabungkan dengan tag yang sudah ada.",
+            "show_male_desc": "Baeralih apakah pemain pria dapat diberi tag.",
+            "show_male_label": "Tampilkan pemain pria",
+            "source": "Sumber"
         },
         "results": {
-            "duration_unknown": "Durasi tidak diketahui"
+            "duration_unknown": "Durasi tidak diketahui",
+            "duration_off": "Durasi berkurang setidaknya {number} dtk",
+            "fp_matches": "Durasinya cocok",
+            "hash_matches": "{hash_type} cocok",
+            "match_failed_already_tagged": "Adegan sudah ditag",
+            "match_failed_no_result": "Tidak menemukan hasil",
+            "match_success": "Adegan berhasil ditag",
+            "phash_matches": "{count} PHash cocok",
+            "unnamed": "Belum dinamai"
         },
-        "verb_scrape_all": "Gali Semua"
+        "verb_scrape_all": "Gali Semua",
+        "noun_query": "Kueri",
+        "verb_matched": "Dicocokkan",
+        "verb_toggle_unmatched": "{toggle} adegan yang tidak cocok"
     },
     "config": {
         "categories": {
             "tasks": "Tugas",
             "tools": "Alat",
             "system": "Sistem",
-            "metadata_providers": "Penyedia Metadata"
+            "metadata_providers": "Penyedia Metadata",
+            "logs": "Catatan",
+            "about": "Tentang",
+            "changelog": "Catatan Perubahan",
+            "interface": "Antarmuka",
+            "plugins": "Pengaya",
+            "scraping": "Menggali Data",
+            "security": "Sekuriti",
+            "services": "Layanan"
         },
         "dlna": {
             "network_interfaces": "Antarmuka",
-            "allow_temp_ip": "Izinkan {tempIP}"
+            "allow_temp_ip": "Izinkan {tempIP}",
+            "server_display_name_desc": "Nama tampilan untuk server DLNA. Bawaannya adalah {server_name} jika kosong.",
+            "successfully_cancelled_temporary_behaviour": "Berhasil membatalkan perilaku sementara",
+            "until_restart": "sampai dimulai ulang",
+            "video_sort_order": "Urutan Pengurutan Video Bawaan",
+            "video_sort_order_desc": "Urutan untuk mengurutkan video secara bawaan.",
+            "allowed_ip_addresses": "Alamat IP yang diizinkan",
+            "allowed_ip_temporarily": "IP yang diizinkan sementara",
+            "default_ip_whitelist": "Daftar Putih IP Bawaan",
+            "default_ip_whitelist_desc": "Alamat IP bawaan yang diizinkan untuk akses DLNA. Gunakan {wildcard} untuk mengizinkan semua alamat IP.",
+            "disabled_dlna_temporarily": "DLNA yang dinonaktifkan sementara",
+            "disallowed_ip": "IP yang tidak diizinkan",
+            "enabled_by_default": "Diaktifkan secara bawaan",
+            "enabled_dlna_temporarily": "DLNA yang diaktifkan sementara",
+            "network_interfaces_desc": "Antarmuka untuk mengekspos server DLNA. Daftar kosong menghasilkan berjalannya di semua antarmuka. Dibutuhkan mulai ulang DLNA setelah perubahan.",
+            "recent_ip_addresses": "Alamat IP terbaru",
+            "server_display_name": "Nama Tampilan Server"
         },
         "general": {
             "logging": "Pencatatan",
             "auth": {
                 "authentication": "Autentikasi",
                 "credentials": {
-                    "heading": "Kredensial"
+                    "heading": "Kredensial",
+                    "description": "Kredensial untuk membatasi akses ke stash."
                 },
                 "password": "Kata sandi",
-                "username": "Nama pengguna"
+                "username": "Nama pengguna",
+                "api_key": "Kunci API",
+                "api_key_desc": "Kunci API untuk sistem eksternal. Hanya diperlukan ketika nama pengguna/kata sandi dikonfigurasi. Nama pengguna harus disimpan sebelum membuat kunci API.",
+                "clear_api_key": "Hapus kunci API",
+                "log_file": "Berkas catatan",
+                "generate_api_key": "Hasilkan kunci API",
+                "log_file_desc": "Jalur ke berkas tujuan keluaran pencatatan. Kosong untuk menonaktifkan pencatatan berkas. Perlu dimulai ulang.",
+                "log_http": "Catat akses http",
+                "log_http_desc": "Mencatat akses http ke terminal. Perlu dimulai ulang.",
+                "log_to_terminal": "Catat ke terminal",
+                "log_to_terminal_desc": "Catat ke terminal selain berkas. Selalu benar jika pencatatan berkas dinonaktifkan. Perlu dimulai ulang.",
+                "maximum_session_age": "Usia Sesi Maksimum",
+                "maximum_session_age_desc": "Waktu diam maksimum sebelum sesi login berakhir, dalam hitungan detik. Perlu dimulai ulang.",
+                "password_desc": "Kata sandi untuk mengakses Stash. Biarkan kosong untuk menonaktifkan otentikasi pengguna",
+                "stash-box_integration": "Integrasi Stash-box",
+                "username_desc": "Nama pengguna untuk mengakses Stash. Biarkan kosong untuk menonaktifkan otentikasi pengguna"
             },
             "database": "Pangkalan data",
             "hashing": "Hashing",
             "scraping": "Penggalian Data",
-            "video_head": "Video"
+            "video_head": "Video",
+            "blobs_storage": {
+                "description": "Tempat menyimpan data biner seperti gambar sampul adegan, pemain, studio, dan tag. Setelah mengubah nilai ini, data yang ada harus dimigrasikan menggunakan tugas Migrate Blobs. Lihat halaman Tugas untuk migrasi.",
+                "heading": "Tipe penyimpanan data biner"
+            },
+            "funscript_heatmap_draw_range_desc": "Gambarkan rentang gerak pada sumbu y dari peta panas yang dihasilkan. Peta panas yang ada perlu dibuat ulang setelah diubah.",
+            "gallery_cover_regex_desc": "Regexp digunakan untuk mengidentifikasi gambar sebagai sampul galeri",
+            "gallery_cover_regex_label": "Pola sampul galeri",
+            "gallery_ext_desc": "Daftar ekstensi berkas yang dibatasi koma yang akan diidentifikasi sebagai berkas zip galeri.",
+            "gallery_ext_head": "Ekstensi zip galeri",
+            "python_path": {
+                "heading": "Jalur Eksekusi Python"
+            },
+            "scraper_user_agent": "Agen Pengguna Penggali",
+            "db_path_head": "Jalur Pangkalan Data",
+            "backup_directory_path": {
+                "description": "Lokasi direktori untuk cadangan berkas pangkalan data SQLite",
+                "heading": "Jalur Direktori Cadangan"
+            },
+            "funscript_heatmap_draw_range": "Sertakan rentang dalam peta panas yang dihasilkan",
+            "generated_file_naming_hash_head": "Hash penamaan berkas yang dihasilkan",
+            "generated_files_location": "Lokasi direktori untuk berkas yang dihasilkan (penanda adegan, pratinjau adegan, sprite, dll.)",
+            "generated_path_head": "Jalur yang Dihasilkan",
+            "heatmap_generation": "Pembuatan Peta Panas Funscript",
+            "image_ext_head": "Ekstensi Gambar",
+            "include_audio_desc": "Termasuk aliran audio saat membuat pratinjau.",
+            "include_audio_head": "Sertakan audio",
+            "maximum_streaming_transcode_size_desc": "Ukuran maksimum untuk aliran yang ditranskode",
+            "maximum_streaming_transcode_size_head": "Ukuran maksimum transkode aliran",
+            "maximum_transcode_size_desc": "Ukuran maksimum untuk transkode yang dihasilkan",
+            "maximum_transcode_size_head": "Ukuran transkode maksimum",
+            "metadata_path": {
+                "description": "Lokasi direktori yang digunakan saat melakukan ekspor atau impor penuh",
+                "heading": "Jalur Metadata"
+            },
+            "number_of_parallel_task_for_scan_generation_desc": "Set ke 0 untuk deteksi otomatis. Peringatan menjalankan lebih banyak tugas daripada yang diperlukan untuk mencapai penggunaan CPU 100% akan menurunkan kinerja dan berpotensi menyebabkan masalah lain.",
+            "number_of_parallel_task_for_scan_generation_head": "Jumlah tugas paralel untuk pemindaian/penghasilan",
+            "parallel_scan_head": "Pemindaian/Penghasilan Paralel",
+            "preview_generation": "Penghasilan Pratinjau",
+            "scrapers_path": {
+                "description": "Lokasi direktori berkas konfigurasi penggali data",
+                "heading": "Jalur Penggali"
+            },
+            "scraper_user_agent_desc": "String Agen-Pengguna yang digunakan selama permintaan http penggalian data",
+            "video_ext_head": "Ekstensi Video"
         },
         "library": {
             "exclusions": "Pengecualian"
@@ -264,7 +363,16 @@
                 "strategy": "Strategi"
             },
             "maintenance": "Pemeliharaan",
-            "migrations": "Migrasi"
+            "migrations": "Migrasi",
+            "backing_up_database": "Mencadangkan pangkalan data",
+            "anonymise_and_download": "Membuat salinan pangkalan data yang dianonimkan dan mengunduh berkas yang dihasilkan.",
+            "anonymising_database": "Menganonimkan pangkalan data",
+            "auto_tag": {
+                "auto_tagging_all_paths": "Memberi Tag Otomatis pada semua jalur",
+                "auto_tagging_paths": "Memberi Tag Otomatis pada jalur berikut"
+            },
+            "auto_tag_based_on_filenames": "Memberi tag otomatis pada konten berdasarkan jalur berkas.",
+            "auto_tagging": "Pemberian Tag Otomatis"
         },
         "ui": {
             "editing": {
@@ -311,16 +419,30 @@
         },
         "about": {
             "latest_version": "Versi Mutakhir",
-            "release_date": "Tanggal rilis:"
+            "release_date": "Tanggal rilis:",
+            "new_version_notice": "[BARU]",
+            "stash_discord": "Gabung ke saluran {url} kami",
+            "stash_home": "Beranda Stash di {url}",
+            "stash_open_collective": "Dukung kami melalui {url}",
+            "version": "Versi",
+            "check_for_new_version": "Periksa versi terbaru"
         },
         "scraping": {
             "scraper": "Penggali data",
             "scrapers": "Penggali data",
-            "supported_urls": "URL"
+            "supported_urls": "URL",
+            "installed_scrapers": "Penggali Terpasang",
+            "supported_types": "Tipe yang didukung",
+            "search_by_name": "Cari berdasarkan nama",
+            "available_scrapers": "Penggali Tersedia",
+            "entity_scrapers": "Penggali {entityType}"
         },
         "stashbox": {
             "endpoint": "Titik akhir",
-            "name": "Nama"
+            "name": "Nama",
+            "graphql_endpoint": "Titik akhir GraphQL",
+            "title": "Titik Akhir Stash-box",
+            "api_key": "Kunci API"
         },
         "system": {
             "transcoding": "Transkode"
@@ -463,7 +585,7 @@
     "country": "Negara",
     "custom": "Kustom",
     "date": "Tanggal",
-    "descending": "Kecil ke Besar",
+    "descending": "Urut turun",
     "description": "Deskripsi",
     "detail": "Detail",
     "details": "Detail",
@@ -518,5 +640,6 @@
     "operations": "Operasi",
     "organized": "Terorganisir",
     "orientation": "Orientasi",
-    "all": "semua"
+    "all": "semua",
+    "ascending": "Urut naik"
 }

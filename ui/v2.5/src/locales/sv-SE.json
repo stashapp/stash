@@ -1443,5 +1443,6 @@
     "odate_recorded_no": "Inga Registrerade O-datum",
     "playdate_recorded_no": "Inga Registrerade Uppspelningsdatum",
     "unknown_date": "Okänt datum",
-    "play_history": "Uppspelningshistorik"
+    "play_history": "Uppspelningshistorik",
+    "last_o_at": "Senaste O Vid"
 }
