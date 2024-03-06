@@ -1443,5 +1443,6 @@
     "o_history": "社保历史",
     "history": "历史记录",
     "index_of_total": "第{index}项，共 {total}项",
-    "time": "时间"
+    "time": "时间",
+    "last_o_at": "最近一次O在"
 }

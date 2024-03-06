@@ -1,6 +1,6 @@
 import React from "react";
 import { Tab, Nav, Row, Col, Form } from "react-bootstrap";
-import { Redirect } from "react-router-dom";
+import { Redirect, useLocation } from "react-router-dom";
 import { LinkContainer } from "react-router-bootstrap";
 import { FormattedMessage } from "react-intl";
 import { Helmet } from "react-helmet";
@@ -41,23 +41,10 @@ function isTabKey(tab: string | null): tab is TabKey {
   return validTabs.includes(tab as TabKey);
 }
 
-const SettingTabs: React.FC = () => {
-  const tab = new URLSearchParams(location.search).get("tab");
-
+const SettingTabs: React.FC<{ tab: TabKey }> = ({ tab }) => {
   const { advancedMode, setAdvancedMode } = useSettings();
 
   const titleProps = useTitleProps({ id: "settings" });
-
-  if (!isTabKey(tab)) {
-    return (
-      <Redirect
-        to={{
-          ...location,
-          search: `tab=${defaultTab}`,
-        }}
-      />
-    );
-  }
 
   return (
     <Tab.Container activeKey={tab} id="configuration-tabs">
@@ -215,9 +202,23 @@ const SettingTabs: React.FC = () => {
 };
 
 export const Settings: React.FC = () => {
+  const location = useLocation();
+  const tab = new URLSearchParams(location.search).get("tab");
+
+  if (!isTabKey(tab)) {
+    return (
+      <Redirect
+        to={{
+          ...location,
+          search: `tab=${defaultTab}`,
+        }}
+      />
+    );
+  }
+
   return (
     <SettingsContext>
-      <SettingTabs />
+      <SettingTabs tab={tab} />
     </SettingsContext>
   );
 };
