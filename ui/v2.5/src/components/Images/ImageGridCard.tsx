@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React from "react";
 import * as GQL from "src/core/generated-graphql";
 import { ImageCard } from "./ImageCard";
 import { useContainerDimensions } from "../Shared/GridCard/GridCard";
@@ -18,8 +18,7 @@ export const ImageGridCard: React.FC<IImageCardGrid> = ({
   onSelectChange,
   onPreview,
 }) => {
-  const componentRef = useRef<HTMLDivElement>(null);
-  const { width } = useContainerDimensions(componentRef);
+  const [componentRef, { width }] = useContainerDimensions();
   return (
     <div className="row justify-content-center" ref={componentRef}>
       {images.map((image, index) => (
