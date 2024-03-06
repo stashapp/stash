@@ -325,7 +325,7 @@ func (s *Manager) Migrate(ctx context.Context, input MigrateInput) error {
 		return fmt.Errorf("error backing up database: %s", err)
 	}
 
-	if err := database.RunMigrations(); err != nil {
+	if err := database.RunAllMigrations(); err != nil {
 		errStr := fmt.Sprintf("error performing migration: %s", err)
 
 		// roll back to the backed up version
