@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { MutableRefObject, useRef, useState } from "react";
 import { Card, Form } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import cx from "classnames";
 import { TruncatedText } from "../TruncatedText";
 import ScreenUtils from "src/utils/screen";
+import useResizeObserver from "@react-hook/resize-observer";
 
 interface ICardProps {
   className?: string;
@@ -36,33 +37,26 @@ export const calculateCardWidth = (
   return maxUsableWidth / maxElementsOnRow - cardMargin;
 };
 
-export const useContainerDimensions = (
-  myRef: React.RefObject<HTMLDivElement>
-) => {
-  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+interface IDimension {
+  width: number;
+  height: number;
+}
 
-  useEffect(() => {
-    const getDimensions = () => ({
-      width: myRef.current!.offsetWidth,
-      height: myRef.current!.offsetHeight,
-    });
+export const useContainerDimensions = <
+  T extends HTMLElement = HTMLDivElement
+>(): [MutableRefObject<T | null>, IDimension] => {
+  const target = useRef<T | null>(null);
+  const [dimension, setDimension] = useState<IDimension>({
+    width: 0,
+    height: 0,
+  });
 
-    const handleResize = () => {
-      setDimensions(getDimensions());
-    };
+  useResizeObserver(target, (entry) => {
+    const { inlineSize: width, blockSize: height } = entry.contentBoxSize[0];
+    setDimension({ width, height });
+  });
 
-    if (myRef.current) {
-      setDimensions(getDimensions());
-    }
-
-    window.addEventListener("resize", handleResize);
-
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
-  }, [myRef]);
-
-  return dimensions;
+  return [target, dimension];
 };
 
 export const GridCard: React.FC<ICardProps> = (props: ICardProps) => {

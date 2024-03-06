@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React from "react";
 import * as GQL from "src/core/generated-graphql";
 import { MovieCard } from "./MovieCard";
 import { useContainerDimensions } from "../Shared/GridCard/GridCard";
@@ -14,8 +14,7 @@ export const MovieCardGrid: React.FC<IMovieCardGrid> = ({
   selectedIds,
   onSelectChange,
 }) => {
-  const componentRef = useRef<HTMLDivElement>(null);
-  const { width } = useContainerDimensions(componentRef);
+  const [componentRef, { width }] = useContainerDimensions();
   return (
     <div className="row justify-content-center" ref={componentRef}>
       {movies.map((p) => (

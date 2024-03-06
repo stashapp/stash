@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React from "react";
 import * as GQL from "src/core/generated-graphql";
 import { GalleryCard } from "./GalleryCard";
 import { useContainerDimensions } from "../Shared/GridCard/GridCard";
@@ -16,8 +16,7 @@ export const GalleryCardGrid: React.FC<IGalleryCardGrid> = ({
   zoomIndex,
   onSelectChange,
 }) => {
-  const componentRef = useRef<HTMLDivElement>(null);
-  const { width } = useContainerDimensions(componentRef);
+  const [componentRef, { width }] = useContainerDimensions();
   return (
     <div className="row justify-content-center" ref={componentRef}>
       {galleries.map((gallery) => (

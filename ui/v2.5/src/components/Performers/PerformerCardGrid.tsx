@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React from "react";
 import * as GQL from "src/core/generated-graphql";
 import { IPerformerCardExtraCriteria, PerformerCard } from "./PerformerCard";
 import { useContainerDimensions } from "../Shared/GridCard/GridCard";
@@ -17,8 +17,7 @@ export const PerformerCardGrid: React.FC<IPerformerCardGrid> = ({
   onSelectChange,
   extraCriteria,
 }) => {
-  const componentRef = useRef<HTMLDivElement>(null);
-  const { width } = useContainerDimensions(componentRef);
+  const [componentRef, { width }] = useContainerDimensions();
   return (
     <div className="row justify-content-center" ref={componentRef}>
       {performers.map((p) => (
