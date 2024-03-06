@@ -34,12 +34,12 @@ type ScanJob struct {
 	subscriptions *subscriptionManager
 }
 
-func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
+func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) error {
 	input := j.input
 
 	if job.IsCancelled(ctx) {
 		logger.Info("Stopping due to user request")
-		return
+		return nil
 	}
 
 	sp := getScanPaths(input.Paths)
@@ -74,13 +74,14 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 
 	if job.IsCancelled(ctx) {
 		logger.Info("Stopping due to user request")
-		return
+		return nil
 	}
 
 	elapsed := time.Since(start)
 	logger.Info(fmt.Sprintf("Scan finished (%s)", elapsed))
 
 	j.subscriptions.notify()
+	return nil
 }
 
 type extensionConfig struct {

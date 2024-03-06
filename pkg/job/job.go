@@ -5,22 +5,24 @@ import (
 	"time"
 )
 
+type JobExecFn func(ctx context.Context, progress *Progress) error
+
 // JobExec represents the implementation of a Job to be executed.
 type JobExec interface {
-	Execute(ctx context.Context, progress *Progress)
+	Execute(ctx context.Context, progress *Progress) error
 }
 
 type jobExecImpl struct {
-	fn func(ctx context.Context, progress *Progress)
+	fn JobExecFn
 }
 
-func (j *jobExecImpl) Execute(ctx context.Context, progress *Progress) {
-	j.fn(ctx, progress)
+func (j *jobExecImpl) Execute(ctx context.Context, progress *Progress) error {
+	return j.fn(ctx, progress)
 }
 
 // MakeJobExec returns a simple JobExec implementation using the provided
 // function.
-func MakeJobExec(fn func(ctx context.Context, progress *Progress)) JobExec {
+func MakeJobExec(fn JobExecFn) JobExec {
 	return &jobExecImpl{
 		fn: fn,
 	}
@@ -56,6 +58,7 @@ type Job struct {
 	StartTime *time.Time
 	EndTime   *time.Time
 	AddTime   time.Time
+	Error     *string
 
 	outerCtx   context.Context
 	exec       JobExec
@@ -85,6 +88,12 @@ func (j *Job) cancel() {
 	if j.cancelFunc != nil {
 		j.cancelFunc()
 	}
+}
+
+func (j *Job) error(err error) {
+	errStr := err.Error()
+	j.Error = &errStr
+	j.Status = StatusFailed
 }
 
 // IsCancelled returns true if cancel has been called on the context.

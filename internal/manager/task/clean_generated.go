@@ -106,17 +106,15 @@ func (j *CleanGeneratedJob) logError(err error) {
 	}
 }
 
-func (j *CleanGeneratedJob) Execute(ctx context.Context, progress *job.Progress) {
+func (j *CleanGeneratedJob) Execute(ctx context.Context, progress *job.Progress) error {
 	j.tasksComplete = 0
 
 	if !j.BlobsStorageType.IsValid() {
-		logger.Errorf("invalid blobs storage type: %s", j.BlobsStorageType)
-		return
+		return fmt.Errorf("invalid blobs storage type: %s", j.BlobsStorageType)
 	}
 
 	if !j.VideoFileNamingAlgorithm.IsValid() {
-		logger.Errorf("invalid video file naming algorithm: %s", j.VideoFileNamingAlgorithm)
-		return
+		return fmt.Errorf("invalid video file naming algorithm: %s", j.VideoFileNamingAlgorithm)
 	}
 
 	if j.Options.DryRun {
@@ -183,10 +181,11 @@ func (j *CleanGeneratedJob) Execute(ctx context.Context, progress *job.Progress)
 
 	if job.IsCancelled(ctx) {
 		logger.Info("Stopping due to user request")
-		return
+		return nil
 	}
 
 	logger.Infof("Finished cleaning generated files")
+	return nil
 }
 
 func (j *CleanGeneratedJob) setTaskProgress(taskProgress float64, progress *job.Progress) {

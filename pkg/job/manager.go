@@ -206,7 +206,10 @@ func (m *Manager) executeJob(ctx context.Context, j *Job, done chan struct{}) {
 	}()
 
 	progress := m.newProgress(j)
-	j.exec.Execute(ctx, progress)
+	if err := j.exec.Execute(ctx, progress); err != nil {
+		logger.Errorf("task failed due to error: %v", err)
+		j.error(err)
+	}
 }
 
 func (m *Manager) onJobFinish(job *Job) {

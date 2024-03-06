@@ -3,6 +3,7 @@ package task
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -21,7 +22,7 @@ type MigrateSceneScreenshotsJob struct {
 	TxnManager      txn.Manager
 }
 
-func (j *MigrateSceneScreenshotsJob) Execute(ctx context.Context, progress *job.Progress) {
+func (j *MigrateSceneScreenshotsJob) Execute(ctx context.Context, progress *job.Progress) error {
 	var err error
 	progress.ExecuteTask("Counting files", func() {
 		var count int
@@ -30,8 +31,7 @@ func (j *MigrateSceneScreenshotsJob) Execute(ctx context.Context, progress *job.
 	})
 
 	if err != nil {
-		logger.Errorf("Error counting files: %s", err.Error())
-		return
+		return fmt.Errorf("error counting files: %w", err)
 	}
 
 	progress.ExecuteTask("Migrating files", func() {
@@ -40,15 +40,15 @@ func (j *MigrateSceneScreenshotsJob) Execute(ctx context.Context, progress *job.
 
 	if job.IsCancelled(ctx) {
 		logger.Info("Cancelled migrating scene screenshots")
-		return
+		return nil
 	}
 
 	if err != nil {
-		logger.Errorf("Error migrating scene screenshots: %v", err)
-		return
+		return fmt.Errorf("error migrating scene screenshots: %w", err)
 	}
 
 	logger.Infof("Finished migrating scene screenshots")
+	return nil
 }
 
 func (j *MigrateSceneScreenshotsJob) countFiles(ctx context.Context) (int, error) {

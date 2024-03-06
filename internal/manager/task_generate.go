@@ -80,7 +80,7 @@ type totalsGenerate struct {
 	tasks int
 }
 
-func (j *GenerateJob) Execute(ctx context.Context, progress *job.Progress) {
+func (j *GenerateJob) Execute(ctx context.Context, progress *job.Progress) error {
 	var scenes []*models.Scene
 	var err error
 	var markers []*models.SceneMarker
@@ -223,11 +223,12 @@ func (j *GenerateJob) Execute(ctx context.Context, progress *job.Progress) {
 
 	if job.IsCancelled(ctx) {
 		logger.Info("Stopping due to user request")
-		return
+		return nil
 	}
 
 	elapsed := time.Since(start)
 	logger.Info(fmt.Sprintf("Generate finished (%s)", elapsed))
+	return nil
 }
 
 func (j *GenerateJob) queueTasks(ctx context.Context, g *generate.Generator, queue chan<- Task) {
