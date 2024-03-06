@@ -117,7 +117,17 @@
         "temp_enable": "Ota käyttöön väliaikaisesti…",
         "unset": "Poista valinta",
         "use_default": "Käytä oletusta",
-        "view_random": "Näytä satunnainen"
+        "view_random": "Näytä satunnainen",
+        "assign_stashid_to_parent_studio": "Liitä Stash ID nykyiseen emostudioon ja päivitä metadata",
+        "copy_to_clipboard": "Kopioi leikepöydälle",
+        "create_parent_studio": "Luo emostudio",
+        "optimise_database": "Optimoi tietokanta",
+        "reload": "Lataa uudelleen",
+        "choose_date": "Valitse päivä",
+        "disable": "Poista käytöstä",
+        "clean_generated": "Puhdista generoidut tiedostot",
+        "enable": "Ota käyttöön",
+        "remove_date": "Poista päivä"
     },
     "actions_name": "Toiminnot",
     "age": "Ikä",
@@ -165,7 +175,8 @@
             "set_tag_label": "Aseta tunnisteet",
             "show_male_desc": "Valitse käytetäänkö miesesiintyjiä automaattisessa tunnisteiden asettamisessa.",
             "show_male_label": "Näytä miesesiintyjät",
-            "source": "Lähde"
+            "source": "Lähde",
+            "mark_organized_label": "Merkitse järjestetyksi kun tallennetaan"
         },
         "noun_query": "Haku",
         "results": {
@@ -235,7 +246,8 @@
             "recent_ip_addresses": "Viimeisimmät IP -osoitteet",
             "server_display_name": "Palvelimen näyttönimi",
             "server_display_name_desc": "DLNA -palvelimen nimi. Oletuksena {server_name}, jos tyhjä.",
-            "until_restart": "uudelleenkäynnistykseen asti"
+            "until_restart": "uudelleenkäynnistykseen asti",
+            "video_sort_order": "Videoiden oletusjärjestys"
         },
         "general": {
             "auth": {
@@ -255,7 +267,7 @@
                 "log_to_terminal": "Kirjoita loki komentoriville",
                 "log_to_terminal_desc": "Kirjaa lokin komentoriville lokitiedoston sijaan. Aina päällä jos lokitiedosto ei ole käytössä. Vaatii uudelleenkäynnistyksen.",
                 "maximum_session_age": "Istunnon keston yläraja",
-                "maximum_session_age_desc": "Yläraja toimettomalle ajalle sekunneissa ennen kuin kirjautuminen vanhenee.",
+                "maximum_session_age_desc": "Yläraja toimettomalle ajalle sekunneissa ennen kuin kirjautuminen vanhenee. Vaatii udelleenkäynnistyksen.",
                 "password": "Salasana",
                 "password_desc": "Salasana Stashiin. Jätä tyhjäksi, mikäli et halua autentikointia",
                 "stash-box_integration": "Stash-box integraatio",
@@ -320,7 +332,12 @@
             "sqlite_location": "SQLite -tietokannan tiedostosijainti (vaatii uudelleenkäynnistyksen) VAROITUS: tietokannan tallentaminen eri järjestelmään kuin missä Stash on käynnissä (kuten verkon yli) ei ole tuettu!",
             "video_ext_desc": "Pilkuilla erotettu lista tiedostopäätteistä, jotka tulkitaan videoiksi.",
             "video_ext_head": "Videoiden päätteet",
-            "video_head": "Video"
+            "video_head": "Video",
+            "ffmpeg": {
+                "hardware_acceleration": {
+                    "heading": "FFmpeg laitteistokoodaus"
+                }
+            }
         },
         "library": {
             "exclusions": "Poisjättäminen",
@@ -379,7 +396,7 @@
             "generate_phashes_during_scan": "Generoi phash -tiivisteet",
             "generate_phashes_during_scan_tooltip": "Kaksoiskappaleiden löytämiseen ja kohtauksien tunnistamiseen.",
             "generate_previews_during_scan": "Generoi animoidut esikatselukuvat",
-            "generate_previews_during_scan_tooltip": "Generoi animoidun WebP -esikatselun, vaaditaan vain jos esikatselun tyypiksi on valittu animoitu kuva.",
+            "generate_previews_during_scan_tooltip": "Generoi myös animoidun (webp) esikatselun, vaaditaan vain jos kohtausseinän esikatselun tyypiksi on valittu animoitu kuva. Ne käyttävät selatessa vähemmän suoritintehoa kuin videoesikatselut, mutta ne luodaan videoesikatselun lisäksi ja ne ovat isoja tiedostoja.",
             "generate_thumbnails_during_scan": "Generoi esikatselukuva skannauksen aikana",
             "generate_video_previews_during_scan": "Generoi esikatselu",
             "generate_video_previews_during_scan_tooltip": "Generoi videoesikatselun, joka näytetään kun osoitin menee kohtauksen päälle",
@@ -537,7 +554,7 @@
                 }
             },
             "scene_list": {
-                "heading": "Kohtauslista",
+                "heading": "Ruudukkonäkymä",
                 "options": {
                     "show_studio_as_text": "Näytä studiot tekstinä"
                 }
@@ -587,7 +604,8 @@
                 }
             },
             "title": "Käyttöliittymä"
-        }
+        },
+        "advanced_mode": "Edistynyt tila"
     },
     "configuration": "Konfiguraatio",
     "countables": {
@@ -847,7 +865,7 @@
     "megabits_per_second": "{value} megabittiä sekunnissa",
     "metadata": "Metadata",
     "movie": "Elokuva",
-    "movie_scene_number": "Elokuvan kohtauksien määrä",
+    "movie_scene_number": "Kohtauksen numero",
     "movies": "Elokuvat",
     "name": "Nimi",
     "new": "Uusi",
@@ -986,7 +1004,7 @@
             "your_system_has_been_created": "Kaikki hyvin! Järjestelmä on nyt luotu!"
         },
         "welcome": {
-            "in_current_stash_directory": "<code>HOME/.stash</code> kansioon",
+            "in_current_stash_directory": "<code>{path}</code> kansioon:",
             "store_stash_config": "Minne haluat tallentaa Stash -konfiguraation?",
             "unable_to_locate_config": "Mikäli luet tätä, Stash ei löydä olemassaolevaa konfiguraatiota. Tämä velho auttaa sinua uuden konfiguraation luomisessa."
         },
@@ -1049,5 +1067,9 @@
     "view_all": "Näytä kaikki",
     "weight": "Paino",
     "weight_kg": "Paino (kg)",
-    "years_old": "-vuotias"
+    "years_old": "-vuotias",
+    "audio_codec": "Audiokodekki",
+    "play_count": "Toistomäärä",
+    "play_duration": "Toistettu aika",
+    "primary_file": "Ensisijainen tiedosto"
 }

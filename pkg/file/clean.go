@@ -325,8 +325,8 @@ func isNotFound(err error) bool {
 	var pathErr *fs.PathError
 	return err != nil &&
 		(errors.Is(err, fs.ErrNotExist) ||
-			!errors.Is(err, fs.ErrInvalid) ||
-			!errors.As(err, &pathErr))
+			errors.Is(err, fs.ErrInvalid) ||
+			errors.As(err, &pathErr))
 }
 
 func (j *cleanJob) shouldClean(ctx context.Context, f models.File) bool {

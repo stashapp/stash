@@ -159,6 +159,7 @@ export const SettingsInterfacePanel: React.FC = () => {
           <option value="fi-FI">Suomi</option>
           <option value="fr-FR">Français (France)</option>
           <option value="hr-HR">Hrvatski (Preview)</option>
+          <option value="id-ID">Indonesian (Preview)</option>
           <option value="hu-HU">Magyar (Preview)</option>
           <option value="it-IT">Italiano</option>
           <option value="ja-JP">日本語 (日本)</option>
