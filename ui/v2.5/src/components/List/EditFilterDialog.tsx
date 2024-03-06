@@ -39,6 +39,7 @@ export interface ICriterionOption {
 }
 
 interface ICriterionList {
+  searchValue: string;
   criteria: string[];
   currentCriterion?: Criterion<CriterionValue>;
   setCriterion: (c: Criterion<CriterionValue>) => void;
@@ -50,6 +51,7 @@ interface ICriterionList {
 }
 
 const CriterionOptionList: React.FC<ICriterionList> = ({
+  searchValue,
   criteria,
   currentCriterion,
   setCriterion,
@@ -59,6 +61,7 @@ const CriterionOptionList: React.FC<ICriterionList> = ({
   optionSelected,
   onRemoveCriterion,
 }) => {
+  const intl = useIntl();
   const { configuration: config } = useContext(ConfigurationContext);
 
   const prevCriterion = usePrevious(currentCriterion);
@@ -70,6 +73,21 @@ const CriterionOptionList: React.FC<ICriterionList> = ({
 
   const { stageList, onDragStart, onDragOver, onDrop, onDragOverDefault } =
     useDragReorder(icriterionOptions, setCriterionOptions ?? (() => {}));
+
+  const filteredList = useMemo(() => {
+    const trimmedSearch = searchValue.trim().toLowerCase();
+    const mapped = stageList.map((c, i) => ({ option: c, index: i }));
+    if (!trimmedSearch) {
+      return mapped;
+    }
+
+    return mapped.filter((c) => {
+      return intl
+        .formatMessage({ id: c.option.option.messageID })
+        .toLowerCase()
+        .includes(trimmedSearch);
+    });
+  }, [intl, searchValue, stageList]);
 
   const criterionOptions = useMemo(() => {
     return stageList.map((c) => c.option);
@@ -218,7 +236,7 @@ const CriterionOptionList: React.FC<ICriterionList> = ({
       onSelect={onSelect}
       onDragOver={onDragOverDefault}
     >
-      {stageList.map((c, i) => renderCard(c, i))}
+      {filteredList.map((c) => renderCard(c.option, c.index))}
     </Accordion>
   );
 };
@@ -274,20 +292,6 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
     },
     [filter, criteria]
   );
-
-  const filteredOptions = useMemo(() => {
-    const trimmedSearch = searchValue.trim().toLowerCase();
-    if (!trimmedSearch) {
-      return icriterionOptions;
-    }
-
-    return icriterionOptions.filter((c) => {
-      return intl
-        .formatMessage({ id: c.option.messageID })
-        .toLowerCase()
-        .includes(trimmedSearch);
-    });
-  }, [intl, searchValue, icriterionOptions]);
 
   const editingCriterionChanged = useCompare(editingCriterion);
 
@@ -404,7 +408,8 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
               criteria={criteriaList}
               currentCriterion={criterion}
               setCriterion={replaceCriterion}
-              criterionOptions={filteredOptions}
+              searchValue={searchValue}
+              criterionOptions={icriterionOptions}
               setCriterionOptions={setCriterionOptions}
               optionSelected={optionSelected}
               selected={criterion?.criterionOption}
