@@ -352,34 +352,32 @@ const ScenesPageImpl: React.FC<{
         pageView={pageView}
         initialSidebarCollapsed={defaultSidebarCollapsed}
         actionButtons={
-          <>
-            {/* <DropdownItem href="/scenes/new">
+          items.length !== 0 && (
+            <>
+              {/* <DropdownItem href="/scenes/new">
               <Icon icon={faPlus} />
               <FormattedMessage id="new" defaultMessage="New" />
             </DropdownItem> */}
-            {items.length !== 0 && (
-              <>
-                <DropdownItem
-                  className="play-scenes-button"
-                  onClick={() => playAll()}
-                >
-                  <Icon icon={faPlay} />
-                  <span>
-                    <FormattedMessage id="actions.play" />
-                  </span>
-                </DropdownItem>
-                <DropdownItem
-                  className="shuffle-scenes-button"
-                  onClick={() => playRandom()}
-                >
-                  <Icon icon={faShuffle} />
-                  <span>
-                    <FormattedMessage id="actions.shuffle" />
-                  </span>
-                </DropdownItem>
-              </>
-            )}
-          </>
+              <DropdownItem
+                className="play-scenes-button"
+                onClick={() => playAll()}
+              >
+                <Icon icon={faPlay} />
+                <span>
+                  <FormattedMessage id="actions.play" />
+                </span>
+              </DropdownItem>
+              <DropdownItem
+                className="shuffle-scenes-button"
+                onClick={() => playRandom()}
+              >
+                <Icon icon={faShuffle} />
+                <span>
+                  <FormattedMessage id="actions.shuffle" />
+                </span>
+              </DropdownItem>
+            </>
+          )
         }
         selectedButtons={renderButtons}
         metadataByline={metadataByline}

@@ -219,28 +219,26 @@ export const GalleriesPageImpl: React.FC<{
         pageView={pageView}
         initialSidebarCollapsed={defaultSidebarCollapsed}
         actionButtons={
-          <>
-            {/* <div>
+          items.length > 0 && (
+            <>
+              {/* <div>
               <Link to="/galleries/new">
                 <Button variant="primary">
                   <FormattedMessage id="new" defaultMessage="New" />
                 </Button>
               </Link>
             </div> */}
-            {items.length > 0 && (
-              <>
-                <DropdownItem
-                  className="shuffle-galleries-button"
-                  onClick={() => viewRandom()}
-                >
-                  <Icon icon={faShuffle} />
-                  <span>
-                    <FormattedMessage id="actions.shuffle" />
-                  </span>
-                </DropdownItem>
-              </>
-            )}
-          </>
+              <DropdownItem
+                className="shuffle-galleries-button"
+                onClick={() => viewRandom()}
+              >
+                <Icon icon={faShuffle} />
+                <span>
+                  <FormattedMessage id="actions.shuffle" />
+                </span>
+              </DropdownItem>
+            </>
+          )
         }
         selectedButtons={renderButtons}
         totalCount={totalCount}
