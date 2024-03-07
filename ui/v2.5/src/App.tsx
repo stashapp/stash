@@ -49,6 +49,7 @@ import { PluginRoutes } from "./plugins";
 
 // import plugin_api to run code
 import "./pluginApi";
+import { ConnectionMonitor } from "./ConnectionMonitor";
 
 const Performers = lazyComponent(
   () => import("./components/Performers/Performers")
@@ -369,6 +370,7 @@ export const App: React.FC = () => {
           >
             {maybeRenderReleaseNotes()}
             <ToastProvider>
+              <ConnectionMonitor />
               <Suspense fallback={<LoadingIndicator />}>
                 <LightboxProvider>
                   <ManualProvider>

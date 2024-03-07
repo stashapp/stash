@@ -776,6 +776,10 @@
     }
   },
   "configuration": "Configuration",
+  "connection_monitor": {
+    "websocket_connection_failed": "Unable to make websocket connection: see browser console for details",
+    "websocket_connection_reestablished": "Websocket connection re-established"
+  },
   "countables": {
     "files": "{count, plural, one {File} other {Files}}",
     "galleries": "{count, plural, one {Gallery} other {Galleries}}",
