@@ -25,8 +25,16 @@ class TrackActivityPlugin extends videojs.getPlugin("plugin") {
   constructor(player: VideoJsPlayer) {
     super(player);
 
-    player.on("play", () => {
+    player.on("playing", () => {
       this.start();
+    });
+
+    player.on("waiting", () => {
+      this.stop();
+    });
+
+    player.on("stalled", () => {
+      this.stop();
     });
 
     player.on("pause", () => {
