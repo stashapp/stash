@@ -326,6 +326,8 @@ type SystemStatus {
   os: String!
   workingDir: String!
   homeDir: String!
+  ffmpegPath: String
+  ffprobePath: String
 }
 
 input MigrateInput {

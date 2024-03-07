@@ -89,3 +89,7 @@ func NewEncoder(ffmpegPath string) *FFMpeg {
 func (f *FFMpeg) Command(ctx context.Context, args []string) *exec.Cmd {
 	return stashExec.CommandContext(ctx, string(f.ffmpeg), args...)
 }
+
+func (f *FFMpeg) Path() string {
+	return f.ffmpeg
+}

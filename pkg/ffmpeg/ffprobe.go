@@ -118,6 +118,10 @@ func (v *VideoFile) TranscodeScale(maxSize int) (int, int) {
 // FFProbe provides an interface to the ffprobe executable.
 type FFProbe string
 
+func (f *FFProbe) Path() string {
+	return string(*f)
+}
+
 // NewVideoFile runs ffprobe on the given path and returns a VideoFile.
 func (f *FFProbe) NewVideoFile(videoPath string) (*VideoFile, error) {
 	args := []string{"-v", "quiet", "-print_format", "json", "-show_format", "-show_streams", "-show_error", videoPath}
