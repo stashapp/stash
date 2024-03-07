@@ -36,6 +36,15 @@ func (m *Migrator) Close() {
 	}
 }
 
+func (m *Migrator) CurrentSchemaVersion() uint {
+	databaseSchemaVersion, _, _ := m.m.Version()
+	return databaseSchemaVersion
+}
+
+func (m *Migrator) RequiredSchemaVersion() uint {
+	return appSchemaVersion
+}
+
 func (m *Migrator) getMigrate() (*migrate.Migrate, error) {
 	migrations, err := iofs.New(migrationsBox, "migrations")
 	if err != nil {

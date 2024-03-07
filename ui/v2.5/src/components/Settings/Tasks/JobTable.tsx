@@ -96,12 +96,12 @@ const Task: React.FC<IJob> = ({ job }) => {
       case GQL.JobStatus.Finished:
         icon = faCheck;
         break;
-        case GQL.JobStatus.Cancelled:
-          icon = faBan;
-          break;
-        case GQL.JobStatus.Failed:
-          icon = faCircleExclamation;
-          break;
+      case GQL.JobStatus.Cancelled:
+        icon = faBan;
+        break;
+      case GQL.JobStatus.Failed:
+        icon = faCircleExclamation;
+        break;
     }
 
     return <Icon icon={icon} className={`fa-fw ${iconClass}`} />;
@@ -143,11 +143,7 @@ const Task: React.FC<IJob> = ({ job }) => {
     }
 
     if (job.status === GQL.JobStatus.Failed && job.error) {
-      return (
-        <div className="job-error">
-          {job.error}
-        </div>
-      )
+      return <div className="job-error">{job.error}</div>;
     }
   }
 

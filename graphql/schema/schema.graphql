@@ -226,7 +226,9 @@ type Query {
 
 type Mutation {
   setup(input: SetupInput!): Boolean!
-  migrate(input: MigrateInput!): Boolean!
+
+  "Migrates the schema to the required version. Returns the job ID"
+  migrate(input: MigrateInput!): ID!
 
   sceneCreate(input: SceneCreateInput!): Scene
   sceneUpdate(input: SceneUpdateInput!): Scene

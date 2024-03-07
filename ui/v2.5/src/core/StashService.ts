@@ -18,7 +18,7 @@ import { createClient } from "./createClient";
 import { Client } from "graphql-ws";
 import { useEffect, useState } from "react";
 
-const { client, wsClient } = createClient();
+const { client, wsClient, cache: clientCache } = createClient();
 
 export const getClient = () => client;
 export const getWSClient = () => wsClient;
@@ -2381,12 +2381,13 @@ export const mutateMigrate = (input: GQL.MigrateInput) =>
   client.mutate<GQL.MigrateMutation>({
     mutation: GQL.MigrateDocument,
     variables: { input },
-    update(cache, result) {
-      if (!result.data?.migrate) return;
-
-      evictQueries(cache, setupMutationImpactedQueries);
-    },
   });
+
+// migrate now runs asynchronously, so we need to evict queries
+// once it successfully completes
+export function postMigrate() {
+  evictQueries(clientCache, setupMutationImpactedQueries);
+}
 
 /// Packages
 
