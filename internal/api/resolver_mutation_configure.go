@@ -9,6 +9,7 @@ import (
 
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/internal/manager/config"
+	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
@@ -161,10 +162,32 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 			return makeConfigGeneralResult(), fmt.Errorf("blobs path must be set when using filesystem storage")
 		}
 
-		// TODO - migrate between systems
 		c.Set(config.BlobsStorage, input.BlobsStorage)
 
 		refreshBlobStorage = true
+	}
+
+	refreshFfmpeg := false
+	if input.FfmpegPath != nil && *input.FfmpegPath != c.GetFFMpegPath() {
+		if *input.FfmpegPath != "" {
+			if err := ffmpeg.ValidateFFMpeg(*input.FfmpegPath); err != nil {
+				return makeConfigGeneralResult(), fmt.Errorf("invalid ffmpeg path: %w", err)
+			}
+		}
+
+		c.Set(config.FFMpegPath, input.FfmpegPath)
+		refreshFfmpeg = true
+	}
+
+	if input.FfprobePath != nil && *input.FfprobePath != c.GetFFProbePath() {
+		if *input.FfprobePath != "" {
+			if err := ffmpeg.ValidateFFProbe(*input.FfprobePath); err != nil {
+				return makeConfigGeneralResult(), fmt.Errorf("invalid ffprobe path: %w", err)
+			}
+		}
+
+		c.Set(config.FFProbePath, input.FfprobePath)
+		refreshFfmpeg = true
 	}
 
 	if input.VideoFileNamingAlgorithm != nil && *input.VideoFileNamingAlgorithm != c.GetVideoFileNamingAlgorithm() {
@@ -378,6 +401,12 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 	}
 	if refreshPluginCache {
 		manager.GetInstance().RefreshPluginCache()
+	}
+	if refreshFfmpeg {
+		manager.GetInstance().RefreshFFMpeg(ctx)
+
+		// refresh stream manager is required since ffmpeg changed
+		refreshStreamManager = true
 	}
 	if refreshStreamManager {
 		manager.GetInstance().RefreshStreamManager()

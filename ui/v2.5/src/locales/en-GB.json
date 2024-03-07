@@ -316,6 +316,14 @@
       "excluded_video_patterns_desc": "Regexps of video files/paths to exclude from Scan and add to Clean",
       "excluded_video_patterns_head": "Excluded Video Patterns",
       "ffmpeg": {
+        "ffmpeg_path": {
+          "description": "Path to the ffmpeg executable (not just the folder). If empty, ffmpeg will be resolved from the environment via $PATH, the configuration directory, or from $HOME/.stash",
+          "heading": "FFmpeg Executable Path"
+        },
+        "ffprobe_path": {
+          "description": "Path to the ffprobe executable (not just the folder). If empty, ffprobe will be resolved from the environment via $PATH, the configuration directory, or from $HOME/.stash",
+          "heading": "FFprobe Executable Path"
+        },
         "hardware_acceleration": {
           "desc": "Uses available hardware to encode video for live transcoding.",
           "heading": "FFmpeg hardware encoding"

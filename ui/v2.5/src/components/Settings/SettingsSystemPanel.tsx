@@ -162,6 +162,22 @@ export const SettingsConfigurationPanel: React.FC = () => {
         />
 
         <StringSetting
+          id="ffmpeg-path"
+          headingID="config.general.ffmpeg.ffmpeg_path.heading"
+          subHeadingID="config.general.ffmpeg.ffmpeg_path.description"
+          value={general.ffmpegPath ?? undefined}
+          onChange={(v) => saveGeneral({ ffmpegPath: v })}
+        />
+
+        <StringSetting
+          id="ffmpeg-path"
+          headingID="config.general.ffmpeg.ffprobe_path.heading"
+          subHeadingID="config.general.ffmpeg.ffprobe_path.description"
+          value={general.ffprobePath ?? undefined}
+          onChange={(v) => saveGeneral({ ffprobePath: v })}
+        />
+
+        <StringSetting
           id="python-path"
           headingID="config.general.python_path.heading"
           subHeadingID="config.general.python_path.description"
