@@ -44,7 +44,7 @@ func ValidateFFMpeg(ffmpegPath string) error {
 	return nil
 }
 
-func FindFFMpeg(paths []string) string {
+func LookPathFFMpeg() string {
 	ret, _ := exec.LookPath(getFFMpegFilename())
 
 	if ret != "" {
@@ -55,18 +55,41 @@ func FindFFMpeg(paths []string) string {
 		}
 	}
 
-	if ret == "" {
-		ret = fsutil.FindInPaths(paths, getFFMpegFilename())
+	return ret
+}
 
-		if ret != "" {
-			// ensure ffmpeg has the correct flags
-			if err := ValidateFFMpeg(ret); err != nil {
-				logger.Warnf("ffmpeg found (%s), but it is missing required flags: %v", ret, err)
-				ret = ""
-			}
+func FindFFMpeg(path string) string {
+	ret := fsutil.FindInPaths([]string{path}, getFFMpegFilename())
+
+	if ret != "" {
+		// ensure ffmpeg has the correct flags
+		if err := ValidateFFMpeg(ret); err != nil {
+			logger.Warnf("ffmpeg found (%s), but it is missing required flags: %v", ret, err)
+			ret = ""
 		}
 	}
 
+	return ret
+}
+
+// ResolveFFMpeg attempts to resolve the path to the ffmpeg executable.
+// It first looks in the provided path, then resolves from the environment, and finally looks in the fallback path.
+// Returns an empty string if a valid ffmpeg cannot be found.
+func ResolveFFMpeg(path string, fallbackPath string) string {
+	// look in the provided path first
+	ret := FindFFMpeg(path)
+	if ret != "" {
+		return ret
+	}
+
+	// then resolve from the environment
+	ret = LookPathFFMpeg()
+	if ret != "" {
+		return ret
+	}
+
+	// finally, look in the fallback path
+	ret = FindFFMpeg(fallbackPath)
 	return ret
 }
 

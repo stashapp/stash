@@ -261,11 +261,9 @@ func (s *Manager) writeStashIcon() {
 func (s *Manager) RefreshFFMpeg(ctx context.Context) {
 	// use same directory as config path
 	configDirectory := s.Config.GetConfigPath()
-	paths := []string{
-		configDirectory,
-		paths.GetStashHomeDirectory(),
-	}
+	stashHomeDir := paths.GetStashHomeDirectory()
 
+	// prefer the configured paths
 	ffmpegPath := s.Config.GetFFMpegPath()
 	ffprobePath := s.Config.GetFFProbePath()
 
@@ -276,7 +274,7 @@ func (s *Manager) RefreshFFMpeg(ctx context.Context) {
 			return
 		}
 	} else {
-		ffmpegPath = ffmpeg.FindFFMpeg(paths)
+		ffmpegPath = ffmpeg.ResolveFFMpeg(configDirectory, stashHomeDir)
 	}
 
 	if ffprobePath != "" {
@@ -285,7 +283,7 @@ func (s *Manager) RefreshFFMpeg(ctx context.Context) {
 			return
 		}
 	} else {
-		ffprobePath = ffmpeg.FindFFProbe(paths)
+		ffprobePath = ffmpeg.ResolveFFProbe(configDirectory, stashHomeDir)
 	}
 
 	if ffmpegPath == "" {

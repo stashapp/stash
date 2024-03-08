@@ -6,9 +6,11 @@ import (
 	"fmt"
 	"path/filepath"
 	"regexp"
+	"strconv"
 
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/internal/manager/config"
+	"github.com/stashapp/stash/internal/manager/task"
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
@@ -21,6 +23,34 @@ var ErrOverriddenConfig = errors.New("cannot set overridden value")
 func (r *mutationResolver) Setup(ctx context.Context, input manager.SetupInput) (bool, error) {
 	err := manager.GetInstance().Setup(ctx, input)
 	return err == nil, err
+}
+
+func (r *mutationResolver) DownloadFFMpeg(ctx context.Context) (string, error) {
+	mgr := manager.GetInstance()
+	configDir := mgr.Config.GetConfigPath()
+
+	// don't run if ffmpeg is already installed
+	ffmpegPath := ffmpeg.FindFFMpeg(configDir)
+	ffprobePath := ffmpeg.FindFFProbe(configDir)
+	if ffmpegPath != "" && ffprobePath != "" {
+		return "", fmt.Errorf("ffmpeg and ffprobe already installed at %s and %s", ffmpegPath, ffprobePath)
+	}
+
+	t := &task.DownloadFFmpegJob{
+		ConfigDirectory: configDir,
+		OnComplete: func() {
+			// clear the ffmpeg and ffprobe paths
+			logger.Infof("Clearing ffmpeg and ffprobe config paths so they are resolved from the config directory")
+			mgr.Config.Set(config.FFMpegPath, "")
+			mgr.Config.Set(config.FFProbePath, "")
+			mgr.RefreshFFMpeg(ctx)
+			mgr.RefreshStreamManager()
+		},
+	}
+
+	jobID := mgr.JobManager.Add(ctx, "Downloading ffmpeg...", t)
+
+	return strconv.Itoa(jobID), nil
 }
 
 func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGeneralInput) (*ConfigGeneralResult, error) {

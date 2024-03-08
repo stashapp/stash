@@ -32,27 +32,50 @@ func ValidateFFProbe(ffprobePath string) error {
 	return nil
 }
 
-func FindFFProbe(paths []string) string {
+func LookPathFFProbe() string {
 	ret, _ := exec.LookPath(getFFProbeFilename())
 
 	if ret != "" {
 		if err := ValidateFFProbe(ret); err != nil {
-			logger.Warnf("ffprobe found in PATH (%s), but it is invalid: %v", ret, err)
+			logger.Warnf("ffprobe found in PATH (%s), but it is missing required flags: %v", ret, err)
 			ret = ""
 		}
 	}
 
-	if ret == "" {
-		ret = fsutil.FindInPaths(paths, getFFProbeFilename())
+	return ret
+}
 
-		if ret != "" {
-			if err := ValidateFFProbe(ret); err != nil {
-				logger.Warnf("ffprobe found (%s), but it is invalid: %v", ret, err)
-				ret = ""
-			}
+func FindFFProbe(path string) string {
+	ret := fsutil.FindInPaths([]string{path}, getFFProbeFilename())
+
+	if ret != "" {
+		if err := ValidateFFProbe(ret); err != nil {
+			logger.Warnf("ffprobe found (%s), but it is missing required flags: %v", ret, err)
+			ret = ""
 		}
 	}
 
+	return ret
+}
+
+// ResolveFFMpeg attempts to resolve the path to the ffmpeg executable.
+// It first looks in the provided path, then resolves from the environment, and finally looks in the fallback path.
+// Returns an empty string if a valid ffmpeg cannot be found.
+func ResolveFFProbe(path string, fallbackPath string) string {
+	// look in the provided path first
+	ret := FindFFProbe(path)
+	if ret != "" {
+		return ret
+	}
+
+	// then resolve from the environment
+	ret = LookPathFFProbe()
+	if ret != "" {
+		return ret
+	}
+
+	// finally, look in the fallback path
+	ret = FindFFProbe(fallbackPath)
 	return ret
 }
 
