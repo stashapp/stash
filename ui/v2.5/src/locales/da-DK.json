@@ -910,7 +910,18 @@
         },
         "search_accuracy_label": "Søgenøjagtighed",
         "title": "Duplikatscener",
-        "duration_diff": "Maksimal varighedsforskel"
+        "duration_diff": "Maksimal varighedsforskel",
+        "duration_options": {
+            "any": "Enhver",
+            "equal": "Lige"
+        },
+        "only_select_matching_codecs": "Vælg kun, hvis alle codecs matcher i dubletgruppen",
+        "select_all_but_largest_file": "Vælg hver fil i hver duplikeret gruppe, undtagen den største fil",
+        "select_all_but_largest_resolution": "Vælg hver fil i hver duplikeret gruppe, undtagen filen med højeste opløsning",
+        "select_oldest": "Vælg den ældste fil i dubletgruppen",
+        "select_options": "Valgmuligheder…",
+        "select_youngest": "Vælg den yngste fil i dubletgruppen",
+        "select_none": "Vælg Ingen"
     },
     "duplicated_phash": "Duplikeret (phash)",
     "duration": "Varighed",
@@ -951,7 +962,7 @@
     "filter_name": "Filternavn",
     "filters": "Filtre",
     "framerate": "Billedhastighed",
-    "frames_per_second": "{value} billeder i sekundet",
+    "frames_per_second": "{value} fps",
     "front_page": {
         "types": {
             "premade_filter": "Forhåndslavet Filter",
@@ -1013,12 +1024,15 @@
         },
         "phash": "PHash",
         "stream": "Stream",
-        "video_codec": "Video Codec"
+        "video_codec": "Video Codec",
+        "play_duration": "Spillevarighed",
+        "o_count": "O tælning",
+        "play_count": "Afspilninger"
     },
-    "megabits_per_second": "{value} megabit pr. sekund",
+    "megabits_per_second": "{value} mbps",
     "metadata": "Metadata",
     "movie": "Film",
-    "movie_scene_number": "Film Scene Nummer",
+    "movie_scene_number": "Scene Nummer",
     "movies": "Film",
     "name": "Navn",
     "new": "Ny",
@@ -1098,7 +1112,8 @@
     "search_filter": {
         "name": "Filter",
         "saved_filters": "Gemte filtre",
-        "update_filter": "Opdater filter"
+        "update_filter": "Opdater filter",
+        "edit_filter": "Rediger Filter"
     },
     "seconds": "Sekunder",
     "settings": "Indstillinger",
@@ -1109,7 +1124,10 @@
             "database_file_path": "Sti til databasefil",
             "generated_directory": "Genereret mappe",
             "nearly_there": "Næsten færdig!",
-            "stash_library_directories": "Stash biblioteksmapper"
+            "stash_library_directories": "Stash biblioteksmapper",
+            "blobs_use_database": "<bruger database>",
+            "blobs_directory": "Binær datamappe",
+            "cache_directory": "Cache bibliotek"
         },
         "creating": {
             "creating_your_system": "Oprettelse af dit system",
@@ -1135,7 +1153,8 @@
             "migration_irreversible_warning": "Skemamigreringsprocessen er ikke reversibel. Når migreringen er udført, vil din database være inkompatibel med tidligere versioner af stash.",
             "migration_required": "Migration påkrævet",
             "perform_schema_migration": "Udfør skemamigrering",
-            "schema_too_old": "Din nuværende stash-database er skemaversion <strong>{databaseSchema}</strong> og skal migreres til version <strong>{appSchema}</strong>. Denne version af Stash fungerer ikke uden migrering af databasen."
+            "schema_too_old": "Din nuværende stash-database er skemaversion <strong>{databaseSchema}</strong> og skal migreres til version <strong>{appSchema}</strong>. Denne version af Stash fungerer ikke uden migrering af databasen.",
+            "migration_notes": "Migrationsnotater"
         },
         "paths": {
             "database_filename_empty_for_default": "database filnavn (tomt som standard)",
@@ -1148,7 +1167,16 @@
             "where_can_stash_store_its_generated_content": "Hvor kan Stash gemme dets genererede indhold?",
             "where_can_stash_store_its_generated_content_description": "For at give thumbnails, forhåndsvisninger og sprites genererer Stash billeder og videoer. Dette inkluderer også omkoder for ikke-understøttede filformater. Som standard vil Stash oprette en <code>genereret</code> mappe i den mappe, der indeholder din konfigurationsfil. Hvis du vil ændre, hvor dette genererede medie vil blive gemt, skal du indtaste en absolut eller relativ (til den aktuelle arbejdsmappe) sti. Stash vil oprette denne mappe, hvis den ikke allerede eksisterer.",
             "where_is_your_porn_located": "Hvor er din porno placeret?",
-            "where_is_your_porn_located_description": "Tilføj mapper, der indeholder dine pornovideoer og billeder. Stash vil bruge disse mapper til at finde videoer og billeder under scanning."
+            "where_is_your_porn_located_description": "Tilføj mapper, der indeholder dine pornovideoer og billeder. Stash vil bruge disse mapper til at finde videoer og billeder under scanning.",
+            "where_can_stash_store_cache_files": "Hvor kan Stash gemme cache-filer?",
+            "store_blobs_in_database": "Gem blobs i databasen",
+            "where_can_stash_store_cache_files_description": "For nogle funktionaliteter som HLS/DASH live-omkodning kan fungere, kræver Stash en cache-mappe til midlertidige filer. Som standard vil Stash oprette en <code>cache</code>-mappe i den mappe, der indeholder din konfigurationsfil. Hvis du vil ændre dette, skal du indtaste en absolut eller relativ (til den aktuelle mappe) sti. Stash vil oprette denne mappe, hvis den ikke allerede eksisterer.",
+            "path_to_blobs_directory_empty_for_default": "sti til blobs-bibliotek (tom for standard)",
+            "where_can_stash_store_blobs": "Hvor kan Stash gemme binære database data?",
+            "where_can_stash_store_blobs_description": "Stash kan gemme binære data såsom sceneomslag, kunstnere, studie og mærkebilleder enten i databasen eller i filsystemet. Som standard gemmer den disse data i filsystemet i undermappen <code>blobs</code> i den mappe, der indeholder din konfigurationsfil. Hvis du vil ændre dette, skal du indtaste en absolut eller relativ (til den aktuelle mappe) sti. Stash vil oprette denne mappe, hvis den ikke allerede eksisterer.",
+            "where_can_stash_store_blobs_description_addendum": "Alternativt kan du gemme disse data i databasen. <strong>Bemærk:</strong> Dette vil øge størrelsen på din databasefil og øge databasens migreringstider.",
+            "where_can_stash_store_its_database_warning": "ADVARSEL: lagring af databasen på et andet system end det sted, hvor Stash køres fra (f.eks. lagring af databasen på en NAS, mens du kører Stash-serveren på en anden computer) er <strong>ikke-understøttet</strong>! SQLite er ikke beregnet til brug på tværs af et netværk, og forsøg på at gøre dette kan meget nemt få hele din database til at blive ødelagt.",
+            "path_to_cache_directory_empty_for_default": "sti til cache-bibliotek (tom for standard)"
         },
         "stash_setup_wizard": "Stash Opsætningsguide",
         "success": {
@@ -1241,5 +1269,75 @@
     "disambiguation": "Fjernelse af flertydighed",
     "distance": "Afstand",
     "audio_codec": "Lyd Codec",
-    "description": "Beskrivelse"
+    "description": "Beskrivelse",
+    "errors": {
+        "lazy_component_error_help": "Hvis du for nylig har opgraderet Stash, skal du genindlæse siden eller rydde din browsers cache.",
+        "header": "Fejl",
+        "image_index_greater_than_zero": "Billedindeks skal være større end 0",
+        "loading_type": "Fejl ved indlæsning af {type}",
+        "something_went_wrong": "Noget gik galt."
+    },
+    "file_count": "Filantal",
+    "files_amount": "{value} filer",
+    "last_played_at": "Sidst afspillet",
+    "scene_updated_at": "Scene opdateret kl",
+    "second": "Anden",
+    "folder": "Mappe",
+    "image_index": "Billede #",
+    "package_manager": {
+        "selected_only": "Kun valgte",
+        "show_all": "Vis alle",
+        "source": {
+            "local_path": {
+                "heading": "Lokal Sti",
+                "description": "Relativ sti til at gemme pakker for denne kilde. Bemærk, at ændring af dette kræver, at pakkerne flyttes manuelt."
+            },
+            "name": "Navn",
+            "url": "Kilde URL"
+        },
+        "required_by": "Påkrævet af {packages}",
+        "uninstall": "Afinstallér",
+        "confirm_delete_source": "Er du sikker på du vil slette kilden {name} ({url})?",
+        "confirm_uninstall": "Er du sikker på du vil afinstallere {number} pakker?",
+        "installed_version": "Installeret Version",
+        "latest_version": "Nyeste version",
+        "add_source": "Tilføj Kilde",
+        "check_for_updates": "Tjek for Opdateringer",
+        "no_packages": "Ingen pakker fundet",
+        "no_sources": "Ingen kilder konfiguret",
+        "no_upgradable": "Ingen opgraderbare pakker fundet",
+        "package": "Pakke",
+        "unknown": "<ukendt>",
+        "update": "Opdater",
+        "version": "Version",
+        "edit_source": "Rediger Kilde",
+        "hide_unselected": "Skjul umarkeret",
+        "description": "Beskrivelse",
+        "install": "Installer"
+    },
+    "parent_studio": "Forældrestudie",
+    "penis": "Penis",
+    "release_notes": "Udgivelses noter",
+    "resume_time": "Genoptag tid",
+    "last_o_at": "Sidste O Var",
+    "o_history": "O Historik",
+    "odate_recorded_no": "Ingen O Dato Optaget",
+    "orientation": "Orientering",
+    "penis_length_cm": "Penis Længde (cm)",
+    "penis_length": "Penis længde",
+    "photographer": "Fotograf",
+    "play_count": "Afspilninger",
+    "play_duration": "Afspilningsvarighed",
+    "play_history": "Afspilningshistorik",
+    "playdate_recorded_no": "Ingen Afspilnings Dato Optaget",
+    "plays": "{value} afspilninger",
+    "scene_code": "Studiekode",
+    "scene_created_at": "Scene oprettet kl",
+    "scene_date": "Dato af Scene",
+    "hasChapters": "Har Kapitler",
+    "height_cm": "Højde (cm)",
+    "history": "Historie",
+    "index_of_total": "{index} af {total}",
+    "primary_file": "Primær fil",
+    "primary_tag": "Primær Mærke"
 }
