@@ -26,6 +26,9 @@ type DownloadFFmpegJob struct {
 
 func (s *DownloadFFmpegJob) Execute(ctx context.Context, progress *job.Progress) error {
 	if err := s.download(ctx, progress); err != nil {
+		if job.IsCancelled(ctx) {
+			return nil
+		}
 		return err
 	}
 
