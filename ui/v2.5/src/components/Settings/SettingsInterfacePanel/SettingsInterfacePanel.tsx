@@ -301,7 +301,7 @@ export const SettingsInterfacePanel: React.FC = () => {
         <BooleanSetting
           id="track-activity"
           headingID="config.ui.scene_player.options.track_activity"
-          checked={ui.trackActivity ?? true}
+          checked={ui.trackActivity ?? undefined}
           onChange={(v) => saveUI({ trackActivity: v })}
         />
         <StringSetting

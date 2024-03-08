@@ -248,7 +248,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   const auto = useRef(false);
   const interactiveReady = useRef(false);
   const minimumPlayPercent = uiConfig?.minimumPlayPercent ?? 0;
-  const trackActivity = uiConfig?.trackActivity ?? true;
+  const trackActivity = uiConfig?.trackActivity ?? false;
   const vrTag = uiConfig?.vrTag ?? undefined;
 
   useScript(
