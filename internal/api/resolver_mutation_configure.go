@@ -38,7 +38,7 @@ func (r *mutationResolver) DownloadFFMpeg(ctx context.Context) (string, error) {
 
 	t := &task.DownloadFFmpegJob{
 		ConfigDirectory: configDir,
-		OnComplete: func() {
+		OnComplete: func(ctx context.Context) {
 			// clear the ffmpeg and ffprobe paths
 			logger.Infof("Clearing ffmpeg and ffprobe config paths so they are resolved from the config directory")
 			mgr.Config.Set(config.FFMpegPath, "")
