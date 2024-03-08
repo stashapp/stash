@@ -316,6 +316,10 @@
       "excluded_video_patterns_desc": "Regexps of video files/paths to exclude from Scan and add to Clean",
       "excluded_video_patterns_head": "Excluded Video Patterns",
       "ffmpeg": {
+        "download_ffmpeg": {
+          "description": "Downloads FFmpeg into the configuration directory and clears the ffmpeg and ffprobe paths to resolve from the configuration directory.",
+          "heading": "Download FFmpeg"
+        },
         "ffmpeg_path": {
           "description": "Path to the ffmpeg executable (not just the folder). If empty, ffmpeg will be resolved from the environment via $PATH, the configuration directory, or from $HOME/.stash",
           "heading": "FFmpeg Executable Path"
