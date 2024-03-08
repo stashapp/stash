@@ -58,6 +58,8 @@ export const Setup: React.FC = () => {
   const { data: systemStatus, loading: statusLoading } = useSystemStatus();
   const status = systemStatus?.systemStatus;
 
+  const [mutateDownloadFFMpeg] = GQL.useDownloadFfMpegMutation();
+
   const windows = status?.os === "windows";
   const pathSep = windows ? "\\" : "/";
   const homeDir = windows ? "%USERPROFILE%" : "$HOME";
@@ -774,7 +776,7 @@ export const Setup: React.FC = () => {
 
   function onFinishClick() {
     if ((!status?.ffmpegPath || !status?.ffprobePath) && downloadFFmpeg) {
-      // TODO - download ffmpeg
+      mutateDownloadFFMpeg();
     }
 
     history.push("/settings?tab=library");
