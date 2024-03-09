@@ -7,6 +7,7 @@ interface IStudioCardGrid {
   studios: GQL.StudioDataFragment[];
   fromParent: boolean | undefined;
   selectedIds: Set<string>;
+  zoomIndex: number;
   onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void;
 }
 
@@ -14,6 +15,7 @@ export const StudioCardGrid: React.FC<IStudioCardGrid> = ({
   studios,
   fromParent,
   selectedIds,
+  zoomIndex,
   onSelectChange,
 }) => {
   const [componentRef, { width }] = useContainerDimensions();
@@ -24,6 +26,7 @@ export const StudioCardGrid: React.FC<IStudioCardGrid> = ({
           key={studio.id}
           containerWidth={width}
           studio={studio}
+          zoomIndex={zoomIndex}
           hideParent={fromParent}
           selecting={selectedIds.size > 0}
           selected={selectedIds.has(studio.id)}

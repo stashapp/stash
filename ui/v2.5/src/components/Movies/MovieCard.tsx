@@ -17,6 +17,7 @@ interface IProps {
   sceneIndex?: number;
   selecting?: boolean;
   selected?: boolean;
+  zoomIndex?: number;
   onSelectedChanged?: (selected: boolean, shiftKey: boolean) => void;
 }
 
@@ -24,15 +25,34 @@ export const MovieCard: React.FC<IProps> = (props: IProps) => {
   const [cardWidth, setCardWidth] = useState<number>();
 
   useEffect(() => {
-    if (!props.containerWidth || ScreenUtils.isMobile()) return;
+    if (
+      !props.containerWidth ||
+      props.zoomIndex === undefined ||
+      ScreenUtils.isMobile()
+    )
+      return;
 
-    let preferredCardWidth = 250;
+    let zoomValue = props.zoomIndex;
+    let preferredCardWidth: number;
+    switch (zoomValue) {
+      case 0:
+        preferredCardWidth = 210;
+        break;
+      case 1:
+        preferredCardWidth = 250;
+        break;
+      case 2:
+        preferredCardWidth = 300;
+        break;
+      case 3:
+        preferredCardWidth = 375;
+    }
     let fittedCardWidth = calculateCardWidth(
       props.containerWidth,
       preferredCardWidth!
     );
     setCardWidth(fittedCardWidth);
-  }, [props, props.containerWidth]);
+  }, [props.containerWidth, props.zoomIndex]);
 
   function maybeRenderSceneNumber() {
     if (!props.sceneIndex) return;
@@ -84,7 +104,7 @@ export const MovieCard: React.FC<IProps> = (props: IProps) => {
 
   return (
     <GridCard
-      className="movie-card"
+      className={`movie-card zoom-${props.zoomIndex}`}
       url={`/movies/${props.movie.id}`}
       width={cardWidth}
       title={props.movie.name}

@@ -132,6 +132,7 @@ export const MovieList: React.FC<IMovieList> = ({ filterHook, alterQuery }) => {
         return (
           <MovieCardGrid
             movies={result.data.findMovies.movies}
+            zoomIndex={filter.zoomIndex}
             selectedIds={selectedIds}
             onSelectChange={onSelectChange}
           />
@@ -173,6 +174,7 @@ export const MovieList: React.FC<IMovieList> = ({ filterHook, alterQuery }) => {
 
   return (
     <MovieItemList
+      zoomable
       selectable
       filterHook={filterHook}
       persistState={PersistanceLevel.ALL}

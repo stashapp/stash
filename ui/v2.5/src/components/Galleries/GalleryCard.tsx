@@ -39,7 +39,7 @@ export const GalleryCard: React.FC<IProps> = (props) => {
     let preferredCardWidth: number;
     switch (zoomValue) {
       case 0:
-        preferredCardWidth = 240;
+        preferredCardWidth = 280;
         break;
       case 1:
         preferredCardWidth = 340;
@@ -55,7 +55,7 @@ export const GalleryCard: React.FC<IProps> = (props) => {
       preferredCardWidth!
     );
     setCardWidth(fittedCardWidth);
-  }, [props, props.containerWidth, props.zoomIndex]);
+  }, [props.containerWidth, props.zoomIndex]);
 
   function maybeRenderScenePopoverButton() {
     if (props.gallery.scenes.length === 0) return;

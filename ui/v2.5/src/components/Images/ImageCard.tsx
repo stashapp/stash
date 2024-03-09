@@ -50,7 +50,7 @@ export const ImageCard: React.FC<IImageCardProps> = (
     let preferredCardWidth: number;
     switch (zoomValue) {
       case 0:
-        preferredCardWidth = 240;
+        preferredCardWidth = 280;
         break;
       case 1:
         preferredCardWidth = 340;
@@ -66,7 +66,7 @@ export const ImageCard: React.FC<IImageCardProps> = (
       preferredCardWidth!
     );
     setCardWidth(fittedCardWidth);
-  }, [props, props.containerWidth, props.zoomIndex]);
+  }, [props.containerWidth, props.zoomIndex]);
 
   const file = useMemo(
     () =>
