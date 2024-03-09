@@ -16,6 +16,7 @@ type Studio {
   stash_ids: [StashID!]!
   # rating expressed as 1-100
   rating100: Int
+  favorite: Boolean!
   details: String
   created_at: Time!
   updated_at: Time!
@@ -31,6 +32,7 @@ input StudioCreateInput {
   stash_ids: [StashIDInput!]
   # rating expressed as 1-100
   rating100: Int
+  favorite: Boolean
   details: String
   aliases: [String!]
   ignore_auto_tag: Boolean
@@ -46,6 +48,7 @@ input StudioUpdateInput {
   stash_ids: [StashIDInput!]
   # rating expressed as 1-100
   rating100: Int
+  favorite: Boolean
   details: String
   aliases: [String!]
   ignore_auto_tag: Boolean
