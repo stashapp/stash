@@ -23,3 +23,17 @@
     opacity: 1;
   }
 }
+
+#studio-page {
+  .studio-head {
+    .name-icons {
+      .not-favorite {
+        color: rgba(191, 204, 214, 0.5);
+      }
+
+      .favorite {
+        color: #ff7373;
+      }
+    }
+  }
+}
