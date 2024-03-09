@@ -33,7 +33,7 @@ export const TagCard: React.FC<IProps> = (props: IProps) => {
     let preferredCardWidth: number;
     switch (zoomValue) {
       case 0:
-        preferredCardWidth = 240;
+        preferredCardWidth = 280;
         break;
       case 1:
         preferredCardWidth = 340;

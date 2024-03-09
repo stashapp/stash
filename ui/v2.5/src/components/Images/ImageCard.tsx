@@ -50,7 +50,7 @@ export const ImageCard: React.FC<IImageCardProps> = (
     let preferredCardWidth: number;
     switch (zoomValue) {
       case 0:
-        preferredCardWidth = 240;
+        preferredCardWidth = 280;
         break;
       case 1:
         preferredCardWidth = 340;
