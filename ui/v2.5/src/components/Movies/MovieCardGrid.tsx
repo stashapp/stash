@@ -6,12 +6,14 @@ import { useContainerDimensions } from "../Shared/GridCard/GridCard";
 interface IMovieCardGrid {
   movies: GQL.MovieDataFragment[];
   selectedIds: Set<string>;
+  zoomIndex: number;
   onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void;
 }
 
 export const MovieCardGrid: React.FC<IMovieCardGrid> = ({
   movies,
   selectedIds,
+  zoomIndex,
   onSelectChange,
 }) => {
   const [componentRef, { width }] = useContainerDimensions();
@@ -22,6 +24,7 @@ export const MovieCardGrid: React.FC<IMovieCardGrid> = ({
           key={p.id}
           containerWidth={width}
           movie={p}
+          zoomIndex={zoomIndex}
           selecting={selectedIds.size > 0}
           selected={selectedIds.has(p.id)}
           onSelectedChanged={(selected: boolean, shiftKey: boolean) =>

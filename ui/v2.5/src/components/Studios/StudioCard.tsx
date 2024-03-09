@@ -18,6 +18,7 @@ interface IProps {
   hideParent?: boolean;
   selecting?: boolean;
   selected?: boolean;
+  zoomIndex?: number;
   onSelectedChanged?: (selected: boolean, shiftKey: boolean) => void;
 }
 
@@ -62,99 +63,112 @@ function maybeRenderChildren(studio: GQL.StudioDataFragment) {
   }
 }
 
-export const StudioCard: React.FC<IProps> = ({
-  studio,
-  containerWidth,
-  hideParent,
-  selecting,
-  selected,
-  onSelectedChanged,
-}) => {
+export const StudioCard: React.FC<IProps> = (props: IProps) => {
   const [cardWidth, setCardWidth] = useState<number>();
 
   useEffect(() => {
-    if (!containerWidth || ScreenUtils.isMobile()) return;
+    if (
+      !props.containerWidth ||
+      props.zoomIndex === undefined ||
+      ScreenUtils.isMobile()
+    )
+      return;
 
-    let preferredCardWidth = 340;
+    let zoomValue = props.zoomIndex;
+    console.log(zoomValue);
+    let preferredCardWidth: number;
+    switch (zoomValue) {
+      case 0:
+        preferredCardWidth = 280;
+        break;
+      case 1:
+        preferredCardWidth = 340;
+        break;
+      case 2:
+        preferredCardWidth = 420;
+        break;
+      case 3:
+        preferredCardWidth = 560;
+    }
     let fittedCardWidth = calculateCardWidth(
-      containerWidth,
+      props.containerWidth,
       preferredCardWidth!
     );
     setCardWidth(fittedCardWidth);
-  }, [containerWidth]);
+  }, [props.containerWidth, props.zoomIndex]);
 
   function maybeRenderScenesPopoverButton() {
-    if (!studio.scene_count) return;
+    if (!props.studio.scene_count) return;
 
     return (
       <PopoverCountButton
         className="scene-count"
         type="scene"
-        count={studio.scene_count}
-        url={NavUtils.makeStudioScenesUrl(studio)}
+        count={props.studio.scene_count}
+        url={NavUtils.makeStudioScenesUrl(props.studio)}
       />
     );
   }
 
   function maybeRenderImagesPopoverButton() {
-    if (!studio.image_count) return;
+    if (!props.studio.image_count) return;
 
     return (
       <PopoverCountButton
         className="image-count"
         type="image"
-        count={studio.image_count}
-        url={NavUtils.makeStudioImagesUrl(studio)}
+        count={props.studio.image_count}
+        url={NavUtils.makeStudioImagesUrl(props.studio)}
       />
     );
   }
 
   function maybeRenderGalleriesPopoverButton() {
-    if (!studio.gallery_count) return;
+    if (!props.studio.gallery_count) return;
 
     return (
       <PopoverCountButton
         className="gallery-count"
         type="gallery"
-        count={studio.gallery_count}
-        url={NavUtils.makeStudioGalleriesUrl(studio)}
+        count={props.studio.gallery_count}
+        url={NavUtils.makeStudioGalleriesUrl(props.studio)}
       />
     );
   }
 
   function maybeRenderMoviesPopoverButton() {
-    if (!studio.movie_count) return;
+    if (!props.studio.movie_count) return;
 
     return (
       <PopoverCountButton
         className="movie-count"
         type="movie"
-        count={studio.movie_count}
-        url={NavUtils.makeStudioMoviesUrl(studio)}
+        count={props.studio.movie_count}
+        url={NavUtils.makeStudioMoviesUrl(props.studio)}
       />
     );
   }
 
   function maybeRenderPerformersPopoverButton() {
-    if (!studio.performer_count) return;
+    if (!props.studio.performer_count) return;
 
     return (
       <PopoverCountButton
         className="performer-count"
         type="performer"
-        count={studio.performer_count}
-        url={NavUtils.makeStudioPerformersUrl(studio)}
+        count={props.studio.performer_count}
+        url={NavUtils.makeStudioPerformersUrl(props.studio)}
       />
     );
   }
 
   function maybeRenderPopoverButtonGroup() {
     if (
-      studio.scene_count ||
-      studio.image_count ||
-      studio.gallery_count ||
-      studio.movie_count ||
-      studio.performer_count
+      props.studio.scene_count ||
+      props.studio.image_count ||
+      props.studio.gallery_count ||
+      props.studio.movie_count ||
+      props.studio.performer_count
     ) {
       return (
         <>
@@ -173,30 +187,30 @@ export const StudioCard: React.FC<IProps> = ({
 
   return (
     <GridCard
-      className="studio-card"
-      url={`/studios/${studio.id}`}
+      className={`studio-card zoom-${props.zoomIndex}`}
+      url={`/studios/${props.studio.id}`}
       width={cardWidth}
-      title={studio.name}
+      title={props.studio.name}
       linkClassName="studio-card-header"
       image={
         <img
           loading="lazy"
           className="studio-card-image"
-          alt={studio.name}
-          src={studio.image_path ?? ""}
+          alt={props.studio.name}
+          src={props.studio.image_path ?? ""}
         />
       }
       details={
         <div className="studio-card__details">
-          {maybeRenderParent(studio, hideParent)}
-          {maybeRenderChildren(studio)}
-          <RatingBanner rating={studio.rating100} />
+          {maybeRenderParent(props.studio, props.hideParent)}
+          {maybeRenderChildren(props.studio)}
+          <RatingBanner rating={props.studio.rating100} />
         </div>
       }
       popovers={maybeRenderPopoverButtonGroup()}
-      selected={selected}
-      selecting={selecting}
-      onSelectedChanged={onSelectedChanged}
+      selected={props.selected}
+      selecting={props.selecting}
+      onSelectedChanged={props.onSelectedChanged}
     />
   );
 };

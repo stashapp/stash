@@ -323,6 +323,7 @@ export const PerformerList: React.FC<IPerformerList> = ({
 
   return (
     <PerformerItemList
+      zoomable
       selectable
       filterHook={filterHook}
       persistState={persistState}

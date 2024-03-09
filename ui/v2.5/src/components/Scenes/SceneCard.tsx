@@ -479,7 +479,7 @@ export const SceneCard = PatchComponent(
         preferredCardWidth!
       );
       setCardWidth(fittedCardWidth);
-    }, [props, props.containerWidth, props.zoomIndex]);
+    }, [props.containerWidth, props.zoomIndex]);
 
     const cont = configuration?.interface.continuePlaylistDefault ?? false;
 

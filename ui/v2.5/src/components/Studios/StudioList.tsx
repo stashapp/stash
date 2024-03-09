@@ -137,6 +137,7 @@ export const StudioList: React.FC<IStudioList> = ({
         return (
           <StudioCardGrid
             studios={result.data.findStudios.studios}
+            zoomIndex={filter.zoomIndex}
             fromParent={fromParent}
             selectedIds={selectedIds}
             onSelectChange={onSelectChange}
@@ -179,6 +180,7 @@ export const StudioList: React.FC<IStudioList> = ({
 
   return (
     <StudioItemList
+      zoomable
       selectable
       filterHook={filterHook}
       persistState={fromParent ? PersistanceLevel.NONE : PersistanceLevel.ALL}

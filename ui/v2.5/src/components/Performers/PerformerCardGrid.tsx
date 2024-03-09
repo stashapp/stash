@@ -14,6 +14,7 @@ interface IPerformerCardGrid {
 export const PerformerCardGrid: React.FC<IPerformerCardGrid> = ({
   performers,
   selectedIds,
+  zoomIndex,
   onSelectChange,
   extraCriteria,
 }) => {
@@ -25,6 +26,7 @@ export const PerformerCardGrid: React.FC<IPerformerCardGrid> = ({
           key={p.id}
           containerWidth={width}
           performer={p}
+          zoomIndex={zoomIndex}
           selecting={selectedIds.size > 0}
           selected={selectedIds.has(p.id)}
           onSelectedChanged={(selected: boolean, shiftKey: boolean) =>
