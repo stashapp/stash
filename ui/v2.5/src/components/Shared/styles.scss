@@ -521,3 +521,27 @@ div.react-datepicker {
   align-items: baseline;
   display: flex;
 }
+
+button.btn.favorite-button {
+  opacity: 1;
+  transition: opacity 0.5s;
+
+  &.not-favorite {
+    color: rgba(191, 204, 214, 0.5);
+    filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.9));
+    opacity: 0;
+  }
+
+  &.favorite {
+    color: #ff7373;
+    filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.9));
+  }
+
+  &:hover,
+  &:active,
+  &:focus,
+  &:active:focus {
+    background: none;
+    box-shadow: none;
+  }
+}

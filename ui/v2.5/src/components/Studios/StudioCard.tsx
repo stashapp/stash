@@ -11,6 +11,8 @@ import { FormattedMessage } from "react-intl";
 import { PopoverCountButton } from "../Shared/PopoverCountButton";
 import { RatingBanner } from "../Shared/RatingBanner";
 import ScreenUtils from "src/utils/screen";
+import { FavoriteIcon } from "../Shared/FavoriteIcon";
+import { useStudioUpdate } from "src/core/StashService";
 
 interface IProps {
   studio: GQL.StudioDataFragment;
@@ -70,6 +72,7 @@ export const StudioCard: React.FC<IProps> = ({
   selected,
   onSelectedChanged,
 }) => {
+  const [updateStudio] = useStudioUpdate();
   const [cardWidth, setCardWidth] = useState<number>();
 
   useEffect(() => {
@@ -82,6 +85,19 @@ export const StudioCard: React.FC<IProps> = ({
     );
     setCardWidth(fittedCardWidth);
   }, [containerWidth]);
+
+  function onToggleFavorite(v: boolean) {
+    if (studio.id) {
+      updateStudio({
+        variables: {
+          input: {
+            id: studio.id,
+            favorite: v,
+          },
+        },
+      });
+    }
+  }
 
   function maybeRenderScenesPopoverButton() {
     if (!studio.scene_count) return;
@@ -192,6 +208,12 @@ export const StudioCard: React.FC<IProps> = ({
           {maybeRenderChildren(studio)}
           <RatingBanner rating={studio.rating100} />
         </div>
+      }
+      overlays={
+        <FavoriteIcon
+          favorite={studio.favorite}
+          onToggleFavorite={(v) => onToggleFavorite(v)}
+        />
       }
       popovers={maybeRenderPopoverButtonGroup()}
       selected={selected}
