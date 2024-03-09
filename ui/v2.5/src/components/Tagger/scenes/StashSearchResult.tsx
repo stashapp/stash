@@ -39,7 +39,7 @@ const getDurationIcon = (matchPercentage: number) => {
   if (matchPercentage > 35)
     return (
       <Icon
-        className="SceneTaggerIcon text-warn"
+        className="SceneTaggerIcon text-warning"
         icon={faTriangleExclamation}
       />
     );

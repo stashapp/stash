@@ -26,7 +26,7 @@ func (t *GenerateTranscodeTask) GetDescription() string {
 	return fmt.Sprintf("Generating transcode for %s", t.Scene.Path)
 }
 
-func (t *GenerateTranscodeTask) Start(ctc context.Context) {
+func (t *GenerateTranscodeTask) Start(ctx context.Context) {
 	hasTranscode := HasTranscode(&t.Scene, t.fileNamingAlgorithm)
 	if !t.Overwrite && hasTranscode {
 		return
@@ -72,23 +72,26 @@ func (t *GenerateTranscodeTask) Start(ctc context.Context) {
 
 	w, h := videoFile.TranscodeScale(transcodeSize.GetMaxResolution())
 
-	options := generate.TranscodeOptions{
-		Width:  w,
-		Height: h,
-	}
+	// if scale is being set, then we can't use stream copy
+	scaleSet := w == 0 && h == 0
 
-	if videoCodec == ffmpeg.H264 { // for non supported h264 files stream copy the video part
+	if scaleSet && videoCodec == ffmpeg.H264 { // for non supported h264 files stream copy the video part
 		if audioCodec == ffmpeg.MissingUnsupported {
-			err = t.g.TranscodeCopyVideo(context.TODO(), videoFile.Path, sceneHash, options)
+			err = t.g.TranscodeCopyVideo(ctx, videoFile.Path, sceneHash)
 		} else {
-			err = t.g.TranscodeAudio(context.TODO(), videoFile.Path, sceneHash, options)
+			err = t.g.TranscodeAudio(ctx, videoFile.Path, sceneHash)
 		}
 	} else {
+		options := generate.TranscodeOptions{
+			Width:  w,
+			Height: h,
+		}
+
 		if audioCodec == ffmpeg.MissingUnsupported {
 			// ffmpeg fails if it tries to transcode an unsupported audio codec
-			err = t.g.TranscodeVideo(context.TODO(), videoFile.Path, sceneHash, options)
+			err = t.g.TranscodeVideo(ctx, videoFile.Path, sceneHash, options)
 		} else {
-			err = t.g.Transcode(context.TODO(), videoFile.Path, sceneHash, options)
+			err = t.g.Transcode(ctx, videoFile.Path, sceneHash, options)
 		}
 	}
 
