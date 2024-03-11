@@ -132,7 +132,9 @@
         "remove_date": "移除播放日期",
         "assign_stashid_to_parent_studio": "將 Stash ID 指派到工作室並更新 Metadata",
         "create_parent_studio": "新增母工作室",
-        "optimise_database": "最佳化資料庫"
+        "optimise_database": "最佳化資料庫",
+        "choose_date": "選擇日期",
+        "clean_generated": "清除已生成的文件"
     },
     "actions_name": "動作",
     "age": "年齡",
