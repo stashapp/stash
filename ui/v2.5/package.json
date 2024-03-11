@@ -29,6 +29,7 @@
     "@fortawesome/free-regular-svg-icons": "^6.3.0",
     "@fortawesome/free-solid-svg-icons": "^6.3.0",
     "@fortawesome/react-fontawesome": "^0.2.0",
+    "@react-hook/resize-observer": "^1.2.6",
     "@silvermine/videojs-airplay": "^1.2.0",
     "@silvermine/videojs-chromecast": "^1.4.1",
     "apollo-upload-client": "^18.0.1",

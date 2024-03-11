@@ -652,9 +652,13 @@ func (j *CleanGeneratedJob) getImagesWithHash(ctx context.Context, checksum stri
 }
 
 func (j *CleanGeneratedJob) getThumbnailFileHash(basename string) (string, error) {
-	var hash string
-	var width int
-	_, err := fmt.Sscanf(basename, "%32x_%d.jpg", &hash, &width)
+	var (
+		hash  string
+		width int
+		ext   string
+	)
+	// include the extension - which could be jpg/webp
+	_, err := fmt.Sscanf(basename, "%32x_%d.%s", &hash, &width, &ext)
 	if err != nil {
 		return "", err
 	}
