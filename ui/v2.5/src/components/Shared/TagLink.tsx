@@ -251,34 +251,3 @@ export const TagLink: React.FC<ITagLinkProps> = ({
     </CommonLinkComponent>
   );
 };
-
-interface IDirectorLinkProps {
-  director: string;
-  linkType?: "scene" | "gallery" | "image" | "movie";
-  className?: string;
-}
-
-export const DirectorLink: React.FC<IDirectorLinkProps> = ({
-  director: director,
-  linkType = "scene",
-}) => {
-  const link = useMemo(() => {
-    switch (linkType) {
-      case "scene":
-        return NavUtils.makeDirectorScenesUrl(director);
-      case "gallery":
-        return NavUtils.makeDirectorGalleriesUrl(director);
-      case "image":
-        return NavUtils.makeDirectorImagesUrl(director);
-      case "movie":
-        return NavUtils.makeDirectorMoviesUrl(director);
-    }
-  }, [director, linkType]);
-
-
-  return (
-    <CommonLinkComponent link={link}>
-      {director}
-    </CommonLinkComponent>
-  );
-};

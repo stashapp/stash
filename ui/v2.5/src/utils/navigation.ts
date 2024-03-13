@@ -15,6 +15,7 @@ import { ListFilterModel } from "src/models/list-filter/filter";
 import { MoviesCriterion } from "src/models/list-filter/criteria/movies";
 import {
   Criterion,
+  CriterionOption,
   CriterionValue,
   StringCriterion,
   createStringCriterionOption,
@@ -357,47 +358,54 @@ const makeGalleryImagesUrl = (
   return `/images?${filter.makeQueryParameters()}`;
 };
 
+function stringEqualsCriterion(option: CriterionOption, value: string) {
+  const criterion = new StringCriterion(option);
+  criterion.modifier = GQL.CriterionModifier.Equals;
+  criterion.value = value;
+  return criterion;
+}
+
 const makeDirectorScenesUrl = (director: string) => {
   if (director.length == 0) return "#";
   const filter = new ListFilterModel(GQL.FilterMode.Scenes, undefined);
-  const criterion = new StringCriterion(createStringCriterionOption("director"));
-  criterion.modifier = GQL.CriterionModifier.Equals;
-  criterion.value = director;
-  filter.criteria.push(criterion);
+  filter.criteria.push(
+    stringEqualsCriterion(createStringCriterionOption("director"), director)
+  );
   return `/scenes?${filter.makeQueryParameters()}`;
-};
-
-const makeDirectorGalleriesUrl = (director: string) => {
-  if (director.length == 0) return "#";
-  const filter = new ListFilterModel(GQL.FilterMode.Galleries, undefined);
-  const criterion = new StringCriterion(createStringCriterionOption("photographer"));
-  criterion.modifier = GQL.CriterionModifier.Equals;
-  criterion.value = director;
-  filter.criteria.push(criterion);
-  return `/galleries?${filter.makeQueryParameters()}`;
-};
-
-const makeDirectorImagesUrl = (director: string) => {
-  if (director.length == 0) return "#";
-  const filter = new ListFilterModel(GQL.FilterMode.Images, undefined);
-  const criterion = new StringCriterion(createStringCriterionOption("photographer"));
-  criterion.modifier = GQL.CriterionModifier.Equals;
-  criterion.value = director;
-  filter.criteria.push(criterion);
-  return `/images?${filter.makeQueryParameters()}`;
 };
 
 const makeDirectorMoviesUrl = (director: string) => {
   if (director.length == 0) return "#";
   const filter = new ListFilterModel(GQL.FilterMode.Movies, undefined);
-  const criterion = new StringCriterion(createStringCriterionOption("director"));
-  criterion.modifier = GQL.CriterionModifier.Equals;
-  criterion.value = director;
-  filter.criteria.push(criterion);
+  filter.criteria.push(
+    stringEqualsCriterion(createStringCriterionOption("director"), director)
+  );
   return `/movies?${filter.makeQueryParameters()}`;
 };
 
+const makePhotographerGalleriesUrl = (photographer: string) => {
+  if (photographer.length == 0) return "#";
+  const filter = new ListFilterModel(GQL.FilterMode.Galleries, undefined);
+  filter.criteria.push(
+    stringEqualsCriterion(
+      createStringCriterionOption("photographer"),
+      photographer
+    )
+  );
+  return `/galleries?${filter.makeQueryParameters()}`;
+};
 
+const makePhotographerImagesUrl = (photographer: string) => {
+  if (photographer.length == 0) return "#";
+  const filter = new ListFilterModel(GQL.FilterMode.Images, undefined);
+  filter.criteria.push(
+    stringEqualsCriterion(
+      createStringCriterionOption("photographer"),
+      photographer
+    )
+  );
+  return `/images?${filter.makeQueryParameters()}`;
+};
 
 export function handleUnsavedChanges(
   intl: IntlShape,
@@ -439,8 +447,8 @@ const NavUtils = {
   makeChildStudiosUrl,
   makeGalleryImagesUrl,
   makeDirectorScenesUrl,
-  makeDirectorGalleriesUrl,
-  makeDirectorImagesUrl,
+  makePhotographerGalleriesUrl,
+  makePhotographerImagesUrl,
   makeDirectorMoviesUrl,
 };
 

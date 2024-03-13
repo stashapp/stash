@@ -3,12 +3,13 @@ import { Link } from "react-router-dom";
 import { FormattedDate, FormattedMessage, useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import TextUtils from "src/utils/text";
-import { DirectorLink, TagLink } from "src/components/Shared/TagLink";
+import { TagLink } from "src/components/Shared/TagLink";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
 import { PerformerCard } from "src/components/Performers/PerformerCard";
 import { sortPerformers } from "src/core/performers";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { objectTitle } from "src/core/files";
+import { DirectorLink } from "src/components/Shared/Link";
 
 interface ISceneDetailProps {
   scene: GQL.SceneDataFragment;
@@ -128,7 +129,8 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
           )}
           {props.scene.director && (
             <h6>
-              <FormattedMessage id="director" />: <DirectorLink director={props.scene.director} linkType="scene"></DirectorLink>
+              <FormattedMessage id="director" />:{" "}
+              <DirectorLink director={props.scene.director} linkType="scene" />
             </h6>
           )}
         </div>

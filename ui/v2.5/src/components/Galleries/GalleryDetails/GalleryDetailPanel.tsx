@@ -3,12 +3,13 @@ import { Link } from "react-router-dom";
 import { FormattedDate, FormattedMessage, useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import TextUtils from "src/utils/text";
-import { DirectorLink, TagLink } from "src/components/Shared/TagLink";
+import { TagLink } from "src/components/Shared/TagLink";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
 import { PerformerCard } from "src/components/Performers/PerformerCard";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { sortPerformers } from "src/core/performers";
 import { galleryTitle } from "src/core/galleries";
+import { PhotographerLink } from "src/components/Shared/Link";
 
 interface IGalleryDetailProps {
   gallery: GQL.GalleryDataFragment;
@@ -117,9 +118,12 @@ export const GalleryDetailPanel: React.FC<IGalleryDetailProps> = ({
             </h6>
           )}
           {gallery.photographer && (
-            
             <h6>
-              <FormattedMessage id="photographer" />: <DirectorLink director={gallery.photographer} linkType="gallery"></DirectorLink>
+              <FormattedMessage id="photographer" />:{" "}
+              <PhotographerLink
+                photographer={gallery.photographer}
+                linkType="gallery"
+              />
             </h6>
           )}
         </div>
