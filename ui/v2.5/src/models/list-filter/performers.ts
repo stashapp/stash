@@ -27,6 +27,9 @@ const sortByOptions = [
   "random",
   "rating",
   "penis_length",
+  "play_count",
+  "last_played_at",
+  "last_o_at",
 ]
   .map(ListFilterOptions.createSortBy)
   .concat([
@@ -43,7 +46,7 @@ const sortByOptions = [
       value: "galleries_count",
     },
     {
-      messageID: "o_counter",
+      messageID: "o_count",
       value: "o_counter",
     },
   ]);
@@ -91,7 +94,8 @@ const criterionOptions = [
   createMandatoryNumberCriterionOption("scene_count"),
   createMandatoryNumberCriterionOption("image_count"),
   createMandatoryNumberCriterionOption("gallery_count"),
-  createMandatoryNumberCriterionOption("o_counter"),
+  createMandatoryNumberCriterionOption("play_count"),
+  createMandatoryNumberCriterionOption("o_counter", "o_count"),
   createBooleanCriterionOption("ignore_auto_tag"),
   CountryCriterionOption,
   createNumberCriterionOption("height_cm", "height"),

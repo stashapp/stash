@@ -143,6 +143,8 @@ input PerformerFilterType {
   image_count: IntCriterionInput
   "Filter by gallery count"
   gallery_count: IntCriterionInput
+  "Filter by play count"
+  play_count: IntCriterionInput
   "Filter by o count"
   o_counter: IntCriterionInput
   "Filter by StashID"

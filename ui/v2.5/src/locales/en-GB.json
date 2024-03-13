@@ -971,7 +971,7 @@
     "select_youngest": "Select the youngest file in the duplicate group",
     "title": "Duplicate Scenes"
   },
-  "duplicated_phash": "Duplicated (phash)",
+  "duplicated_phash": "Duplicated (pHash)",
   "duration": "Duration",
   "effect_filters": {
     "aspect": "Aspect",
@@ -1066,7 +1066,7 @@
   "index_of_total": "{index} of {total}",
   "instagram": "Instagram",
   "interactive": "Interactive",
-  "interactive_speed": "Interactive speed",
+  "interactive_speed": "Interactive Speed",
   "isMissing": "Is Missing",
   "last_o_at": "Last O At",
   "last_played_at": "Last Played At",
@@ -1082,7 +1082,7 @@
     "checksum": "Checksum",
     "downloaded_from": "Downloaded From",
     "hash": "Hash",
-    "interactive_speed": "Interactive speed",
+    "interactive_speed": "Interactive Speed",
     "o_count": "O Count",
     "performer_card": {
       "age": "{age} {years_old}",
@@ -1102,6 +1102,7 @@
   "name": "Name",
   "new": "New",
   "none": "None",
+  "o_count": "O Count",
   "o_counter": "O-Counter",
   "o_history": "O History",
   "odate_recorded_no": "No O Date Recorded",
@@ -1155,7 +1156,7 @@
   "penis": "Penis",
   "penis_length": "Penis Length",
   "penis_length_cm": "Penis Length (cm)",
-  "perceptual_similarity": "Perceptual Similarity (phash)",
+  "perceptual_similarity": "Perceptual Similarity (pHash)",
   "performer": "Performer",
   "performer_age": "Performer Age",
   "performer_count": "Performer Count",
