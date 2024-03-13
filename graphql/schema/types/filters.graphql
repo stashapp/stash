@@ -243,6 +243,8 @@ input SceneFilterType {
   studios: HierarchicalMultiCriterionInput
   "Filter to only include scenes with this movie"
   movies: MultiCriterionInput
+  "Filter to only include scenes with this gallery"
+  galleries: MultiCriterionInput
   "Filter to only include scenes with these tags"
   tags: HierarchicalMultiCriterionInput
   "Filter by tag count"
