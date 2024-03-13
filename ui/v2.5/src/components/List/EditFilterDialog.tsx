@@ -34,6 +34,7 @@ import { useConfigureUI } from "src/core/StashService";
 import { FilterMode } from "src/core/generated-graphql";
 import { useFocusOnce } from "src/utils/focus";
 import Mousetrap from "mousetrap";
+import ScreenUtils from "src/utils/screen";
 
 interface ICriterionList {
   criteria: string[];
@@ -228,7 +229,7 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
   );
   const [criterion, setCriterion] = useState<Criterion<CriterionValue>>();
 
-  const [searchRef, setSearchFocus] = useFocusOnce();
+  const [searchRef, setSearchFocus] = useFocusOnce(!ScreenUtils.isTouch());
 
   const { criteria } = currentFilter;
 
