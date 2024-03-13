@@ -9,6 +9,7 @@ import { PerformerCard } from "src/components/Performers/PerformerCard";
 import { sortPerformers } from "src/core/performers";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { objectTitle } from "src/core/files";
+import { DirectorLink } from "src/components/Shared/Link";
 
 interface ISceneDetailProps {
   scene: GQL.SceneDataFragment;
@@ -128,7 +129,8 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
           )}
           {props.scene.director && (
             <h6>
-              <FormattedMessage id="director" />: {props.scene.director}{" "}
+              <FormattedMessage id="director" />:{" "}
+              <DirectorLink director={props.scene.director} linkType="scene" />
             </h6>
           )}
         </div>
