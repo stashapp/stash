@@ -2301,9 +2301,36 @@ export const useConfigureDefaults = () =>
     update: updateConfiguration,
   });
 
+function updateUIConfig(
+  cache: ApolloCache<Record<string, StoreObject>>,
+  result: GQL.ConfigureUiMutation["configureUI"] | undefined
+) {
+  if (!result) return;
+
+  const existing = cache.readQuery<GQL.ConfigurationQuery>({
+    query: GQL.ConfigurationDocument,
+  });
+
+  cache.writeQuery({
+    query: GQL.ConfigurationDocument,
+    data: {
+      configuration: {
+        ...existing?.configuration,
+        ui: result,
+      },
+    },
+  });
+}
+
 export const useConfigureUI = () =>
   GQL.useConfigureUiMutation({
-    update: updateConfiguration,
+    update: (cache, result) => updateUIConfig(cache, result.data?.configureUI),
+  });
+
+export const useConfigureUISetting = () =>
+  GQL.useConfigureUiSettingMutation({
+    update: (cache, result) =>
+      updateUIConfig(cache, result.data?.configureUISetting),
   });
 
 export const useConfigureScraping = () =>

@@ -12,6 +12,7 @@ import (
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 var ErrOverriddenConfig = errors.New("cannot set overridden value")
@@ -639,9 +640,19 @@ func (r *mutationResolver) GenerateAPIKey(ctx context.Context, input GenerateAPI
 	return newAPIKey, nil
 }
 
-func (r *mutationResolver) ConfigureUI(ctx context.Context, input map[string]interface{}) (map[string]interface{}, error) {
+func (r *mutationResolver) ConfigureUI(ctx context.Context, input map[string]interface{}, partial map[string]interface{}) (map[string]interface{}, error) {
 	c := config.GetInstance()
-	c.SetUIConfiguration(input)
+
+	if input != nil {
+		c.SetUIConfiguration(input)
+	}
+
+	if partial != nil {
+		// merge partial into existing config
+		existing := c.GetUIConfiguration()
+		utils.MergeMaps(existing, partial)
+		c.SetUIConfiguration(existing)
+	}
 
 	if err := c.Write(); err != nil {
 		return c.GetUIConfiguration(), err
@@ -653,10 +664,10 @@ func (r *mutationResolver) ConfigureUI(ctx context.Context, input map[string]int
 func (r *mutationResolver) ConfigureUISetting(ctx context.Context, key string, value interface{}) (map[string]interface{}, error) {
 	c := config.GetInstance()
 
-	cfg := c.GetUIConfiguration()
-	cfg[key] = value
+	cfg := utils.NestedMap(c.GetUIConfiguration())
+	cfg.Set(key, value)
 
-	return r.ConfigureUI(ctx, cfg)
+	return r.ConfigureUI(ctx, cfg, nil)
 }
 
 func (r *mutationResolver) ConfigurePlugin(ctx context.Context, pluginID string, input map[string]interface{}) (map[string]interface{}, error) {

@@ -426,12 +426,12 @@ export const SettingsContext: React.FC = ({ children }) => {
   type UIConfigInput = GQL.Scalars["Map"]["input"];
 
   // saves the configuration if no further changes are made after a half second
-  const saveUIConfig = useDebounce(async (input: IUIConfig) => {
+  const saveUIConfig = useDebounce(async (input: Partial<IUIConfig>) => {
     try {
       setUpdateSuccess(undefined);
       await updateUIConfig({
         variables: {
-          input: input as UIConfigInput,
+          partial: input as UIConfigInput,
         },
       });
 
@@ -461,13 +461,6 @@ export const SettingsContext: React.FC = ({ children }) => {
     });
 
     setPendingUI((current) => {
-      if (!current) {
-        // use full UI object to ensure nothing is wiped
-        return {
-          ...ui,
-          ...input,
-        };
-      }
       return {
         ...current,
         ...input,
