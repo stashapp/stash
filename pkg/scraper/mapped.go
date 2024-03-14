@@ -11,9 +11,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/robertkrimen/otto"
 	"gopkg.in/yaml.v2"
 
+	"github.com/stashapp/stash/pkg/javascript"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/sliceutil"
@@ -528,19 +528,19 @@ func (p *postProcessLbToKg) Apply(ctx context.Context, value string, q mappedQue
 type postProcessJavascript string
 
 func (p *postProcessJavascript) Apply(ctx context.Context, value string, q mappedQuery) string {
-	vm := otto.New()
+	vm := javascript.NewVM()
 	if err := vm.Set("value", value); err != nil {
 		logger.Warnf("javascript failed to set value: %v", err)
 		return value
 	}
 
-	script, err := vm.Compile("", "(function() { "+string(*p)+"})()")
+	script, err := javascript.CompileScript("", "(function() { "+string(*p)+"})()")
 	if err != nil {
 		logger.Warnf("javascript failed to compile: %v", err)
 		return value
 	}
 
-	output, err := vm.Run(script)
+	output, err := vm.RunProgram(script)
 	if err != nil {
 		logger.Warnf("javascript failed to run: %v", err)
 		return value
