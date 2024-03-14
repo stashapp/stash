@@ -7,4 +7,5 @@ fragment JobData on Job {
   startTime
   endTime
   addTime
+  error
 }

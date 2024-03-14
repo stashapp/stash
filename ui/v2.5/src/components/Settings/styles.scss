@@ -296,6 +296,10 @@
     color: $success;
   }
 
+  .failed .fa-icon {
+    color: $danger;
+  }
+
   .ready .fa-icon {
     color: $warning;
   }
@@ -303,6 +307,10 @@
   .cancelled,
   .finished {
     color: $text-muted;
+  }
+
+  .job-error {
+    color: $danger;
   }
 }
 

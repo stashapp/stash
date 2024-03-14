@@ -15,10 +15,36 @@ import { ListFilterModel } from "../models/list-filter/filter";
 import * as GQL from "./generated-graphql";
 
 import { createClient } from "./createClient";
+import { Client } from "graphql-ws";
+import { useEffect, useState } from "react";
 
-const { client } = createClient();
+const { client, wsClient, cache: clientCache } = createClient();
 
 export const getClient = () => client;
+export const getWSClient = () => wsClient;
+
+export function useWSState(ws: Client) {
+  const [state, setState] = useState<"connecting" | "connected" | "error">(
+    "connecting"
+  );
+
+  useEffect(() => {
+    const disposeConnected = ws.on("connected", () => {
+      setState("connected");
+    });
+
+    const disposeError = ws.on("error", () => {
+      setState("error");
+    });
+
+    return () => {
+      disposeConnected();
+      disposeError();
+    };
+  }, [ws]);
+
+  return { state };
+}
 
 // Evicts cached results for the given queries.
 // Will also call a cache GC afterwards.
@@ -2382,12 +2408,13 @@ export const mutateMigrate = (input: GQL.MigrateInput) =>
   client.mutate<GQL.MigrateMutation>({
     mutation: GQL.MigrateDocument,
     variables: { input },
-    update(cache, result) {
-      if (!result.data?.migrate) return;
-
-      evictQueries(cache, setupMutationImpactedQueries);
-    },
   });
+
+// migrate now runs asynchronously, so we need to evict queries
+// once it successfully completes
+export function postMigrate() {
+  evictQueries(clientCache, setupMutationImpactedQueries);
+}
 
 /// Packages
 

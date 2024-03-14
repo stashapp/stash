@@ -303,52 +303,6 @@ func (s *Manager) validateFFmpeg() error {
 	return nil
 }
 
-func (s *Manager) Migrate(ctx context.Context, input MigrateInput) error {
-	database := s.Database
-
-	// always backup so that we can roll back to the previous version if
-	// migration fails
-	backupPath := input.BackupPath
-	if backupPath == "" {
-		backupPath = database.DatabaseBackupPath(s.Config.GetBackupDirectoryPath())
-	} else {
-		// check if backup path is a filename or path
-		// filename goes into backup directory, path is kept as is
-		filename := filepath.Base(backupPath)
-		if backupPath == filename {
-			backupPath = filepath.Join(s.Config.GetBackupDirectoryPathOrDefault(), filename)
-		}
-	}
-
-	// perform database backup
-	if err := database.Backup(backupPath); err != nil {
-		return fmt.Errorf("error backing up database: %s", err)
-	}
-
-	if err := database.RunMigrations(); err != nil {
-		errStr := fmt.Sprintf("error performing migration: %s", err)
-
-		// roll back to the backed up version
-		restoreErr := database.RestoreFromBackup(backupPath)
-		if restoreErr != nil {
-			errStr = fmt.Sprintf("ERROR: unable to restore database from backup after migration failure: %s\n%s", restoreErr.Error(), errStr)
-		} else {
-			errStr = "An error occurred migrating the database to the latest schema version. The backup database file was automatically renamed to restore the database.\n" + errStr
-		}
-
-		return errors.New(errStr)
-	}
-
-	// if no backup path was provided, then delete the created backup
-	if input.BackupPath == "" {
-		if err := os.Remove(backupPath); err != nil {
-			logger.Warnf("error removing unwanted database backup (%s): %s", backupPath, err.Error())
-		}
-	}
-
-	return nil
-}
-
 func (s *Manager) BackupDatabase(download bool) (string, string, error) {
 	var backupPath string
 	var backupName string
