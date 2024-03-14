@@ -254,6 +254,11 @@
     .toggle-criterion-sidebar-button {
       color: $text_color;
       visibility: hidden;
+
+      // show on touch devices
+      @media (hover: none), (pointer: coarse) {
+        visibility: visible;
+      }
     }
 
     .filter-item-header:hover .toggle-criterion-sidebar-button {
