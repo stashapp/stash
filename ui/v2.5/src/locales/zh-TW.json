@@ -23,7 +23,7 @@
         "create": "建立",
         "create_chapters": "建立章節",
         "create_entity": "建立{entityType}",
-        "create_marker": "建立章節標記",
+        "create_marker": "建立標記",
         "created_entity": "已建立{entity_type}：{entity_name}",
         "customise": "自訂",
         "delete": "刪除",
@@ -119,7 +119,22 @@
         "temp_enable": "暫時啟用…",
         "unset": "重設",
         "use_default": "使用預設選項",
-        "view_random": "隨機開啟"
+        "view_random": "隨機開啟",
+        "encoding_image": "圖片編碼中…",
+        "add_manual_date": "手動新增日期",
+        "add_o": "新增尻尻紀錄",
+        "add_play": "新增播放紀錄",
+        "reload": "重新整理",
+        "clear_date_data": "清除播放日期紀錄",
+        "copy_to_clipboard": "複製到剪貼簿",
+        "disable": "關閉",
+        "enable": "開啟",
+        "remove_date": "移除播放日期",
+        "assign_stashid_to_parent_studio": "將 Stash ID 指派到工作室並更新 Metadata",
+        "create_parent_studio": "新增母工作室",
+        "optimise_database": "最佳化資料庫",
+        "choose_date": "選擇日期",
+        "clean_generated": "清除已生成的文件"
     },
     "actions_name": "動作",
     "age": "年齡",
@@ -161,7 +176,9 @@
             "set_tag_label": "標籤設定",
             "show_male_desc": "選擇搜尋時，是否要取得男優資訊。",
             "show_male_label": "顯示男優",
-            "source": "來源"
+            "source": "來源",
+            "mark_organized_desc": "點選儲存後立即將短片標為已整理。",
+            "mark_organized_label": "儲存時標記為已整理"
         },
         "noun_query": "關鍵字",
         "results": {
@@ -232,7 +249,9 @@
             "server_display_name": "伺服器顯示名稱",
             "server_display_name_desc": "DLNA 伺服器的顯示名稱。如果為空，則預設為 {server_name}。",
             "successfully_cancelled_temporary_behaviour": "已關閉暫時啟用伺服器的功能",
-            "until_restart": "直到重啟"
+            "until_restart": "直到重啟",
+            "video_sort_order": "預設的影片排序",
+            "video_sort_order_desc": "依照預設方式排序影片。"
         },
         "general": {
             "auth": {
@@ -252,7 +271,7 @@
                 "log_to_terminal": "紀錄日誌至終端機內",
                 "log_to_terminal_desc": "除了記錄至檔案外，也記錄到終端機內；如果關閉日誌檔案記錄，則該選項始終為真。需重啟。",
                 "maximum_session_age": "有效驗證時間",
-                "maximum_session_age_desc": "使用者閒置多久後登出，以秒為單位。",
+                "maximum_session_age_desc": "使用者閒置多久後登出，以秒為單位。套用後需重啟。",
                 "password": "密碼",
                 "password_desc": "使用 Stash 時所需的密碼，留空以關閉身份驗證",
                 "stash-box_integration": "整合 Stash-box",
@@ -290,22 +309,27 @@
             "excluded_video_patterns_head": "影片排除規則",
             "ffmpeg": {
                 "hardware_acceleration": {
-                    "heading": "FFMpeg 硬體編碼"
+                    "heading": "FFMpeg 硬體編碼",
+                    "desc": "使用可用的硬體進行即時串流轉碼。"
                 },
                 "live_transcode": {
                     "input_args": {
-                        "heading": "FFMpeg 即時串流輸入選項"
+                        "heading": "FFMpeg 即時串流輸入選項",
+                        "desc": "進階：即時轉碼時在 \"input\" 欄位之前傳遞給 ffmpeg 的附加參數。"
                     },
                     "output_args": {
-                        "heading": "FFMpeg 即時串流輸出選項"
+                        "heading": "FFMpeg 即時串流輸出選項",
+                        "desc": "進階：即時轉碼時在 \"output\" 欄位之前傳遞給 ffmpeg 的附加參數。"
                     }
                 },
                 "transcode": {
                     "input_args": {
-                        "heading": "FFMpeg 即時串流輸入選項"
+                        "heading": "FFMpeg 即時串流輸入選項",
+                        "desc": "進階：產生影片時在 \"input\" 欄位之前傳遞給 ffmpeg 的附加參數。"
                     },
                     "output_args": {
-                        "heading": "FFMpeg 即時串流輸出選項"
+                        "heading": "FFMpeg 即時串流輸出選項",
+                        "desc": "進階：產生影片時在 \"output\" 欄位之前傳遞給 ffmpeg 的附加參數。"
                     }
                 }
             },
@@ -369,7 +393,8 @@
         "plugins": {
             "hooks": "Hooks",
             "triggers_on": "觸發於",
-            "available_plugins": "可使用的插件"
+            "available_plugins": "可使用的插件",
+            "installed_plugins": "已安裝的插件"
         },
         "scraping": {
             "entity_metadata": "{entityType}資訊",
@@ -380,7 +405,9 @@
             "scrapers": "爬蟲",
             "search_by_name": "透過名稱搜尋",
             "supported_types": "支援類型",
-            "supported_urls": "支援網址"
+            "supported_urls": "支援網址",
+            "available_scrapers": "可用的爬蟲",
+            "installed_scrapers": "已安裝的爬蟲"
         },
         "stashbox": {
             "add_instance": "新增 Stash-box 端點",
@@ -422,7 +449,7 @@
             "generate_phashes_during_scan": "產生 PHash",
             "generate_phashes_during_scan_tooltip": "可用於辨認短片或偵測重複的短片。",
             "generate_previews_during_scan": "產生動態預覽圖",
-            "generate_previews_during_scan_tooltip": "產生 WebP 動圖作為預覽，僅適用於設定為『動圖』的預覽類型。",
+            "generate_previews_during_scan_tooltip": "同時產生動圖 (webp) 作為預覽，只有在短片/標記預覽牆設定為『動圖』時才需使用此選項。當瀏覽這些多媒體時，相較影片預覽將會使用較低的 CPU 資源，但是，它們必須在影片預覽之外生成，並且是較大的檔案。",
             "generate_sprites_during_scan": "產生時間軸預覽",
             "generate_thumbnails_during_scan": "替圖片產生縮圖",
             "generate_video_previews_during_scan": "產生影片預覽",
@@ -446,7 +473,11 @@
                 "source": "來源",
                 "source_options": "{source} 選項",
                 "sources": "來源",
-                "strategy": "方法"
+                "strategy": "方法",
+                "skip_multiple_matches": "跳過具有多個結果的匹配結果",
+                "skip_single_name_performers": "跳過單名且沒有歧義的演員",
+                "skip_multiple_matches_tooltip": "如果未啟用此功能且搜尋回傳多個結果，則會隨機選擇一個其中一個進行匹配",
+                "skip_single_name_performers_tooltip": "如果未啟用此功能，則會自動匹配 Samantha 或者 Olga 這種常見名稱的演員"
             },
             "import_from_exported_json": "匯入先前從 Metadata 資料夾中匯出的 JSON 檔。此動作將清除現有資料庫中的內容。",
             "incremental_import": "從匯出 ZIP 檔進行增量匯入。",
@@ -461,7 +492,27 @@
                 "scanning_paths": "掃描以下路徑中"
             },
             "scan_for_content_desc": "掃描新內容，並將其新增到資料庫中。",
-            "set_name_date_details_from_metadata_if_present": "使用多媒體檔案中內建的標題、日期、詳細資訊（如果適用的話）"
+            "set_name_date_details_from_metadata_if_present": "使用多媒體檔案中內建的標題、日期、詳細資訊（如果適用的話）",
+            "generate_clip_previews_during_scan": "替圖像短片建立預覽",
+            "generate_sprites_during_scan_tooltip": "便於瀏覽顯示在影片播放器下方的一組預覽圖。",
+            "generate_video_covers_during_scan": "產生短片封面",
+            "migrate_scene_screenshots": {
+                "delete_files": "刪除截圖檔案"
+            },
+            "clean_generated": {
+                "blob_files": "Blob 檔案",
+                "image_thumbnails": "圖片縮圖",
+                "image_thumbnails_desc": "圖片縮圖及短片",
+                "description": "刪除無對應檔案的資料庫條目。",
+                "markers": "章節預覽",
+                "previews": "短片預覽",
+                "previews_desc": "短片預覽及縮圖",
+                "sprites": "短片拼合圖像",
+                "transcodes": "短片轉碼"
+            },
+            "migrate_blobs": {
+                "description": "將 Blob 遷移到當前的 Blob 儲存系統。 此遷移應在更改 Blob 儲存系統後執行。 遷移後可以選擇性的刪除舊資料。"
+            }
         },
         "tools": {
             "scene_duplicate_checker": "短片相近性檢查工具",
@@ -530,7 +581,8 @@
                         "options": {
                             "full": "完整",
                             "half": "一半",
-                            "quarter": "四分之一"
+                            "quarter": "四分之一",
+                            "tenth": "十分之一"
                         }
                     },
                     "type": {
@@ -597,7 +649,7 @@
                 }
             },
             "preview_type": {
-                "description": "影片預覽設定",
+                "description": "預設選項是影片 (mp4) 預覽。 為了在瀏覽時減少 CPU 資源，您可以使用動畫影像 (webp) 預覽。 但是，它們必須在影片預覽之外生成，並且是較大的檔案。",
                 "heading": "預覽種類",
                 "options": {
                     "animated": "動圖",
@@ -606,9 +658,9 @@
                 }
             },
             "scene_list": {
-                "heading": "短片列表",
+                "heading": "網格視圖",
                 "options": {
-                    "show_studio_as_text": "顯示短片所屬工作室名稱"
+                    "show_studio_as_text": "疊加顯示短片所屬工作室名稱"
                 }
             },
             "scene_player": {
@@ -625,7 +677,11 @@
                         "heading": "持續播放播放清單"
                     },
                     "show_scrubber": "顯示預覽軸",
-                    "track_activity": "追蹤使用活動"
+                    "track_activity": "追蹤使用活動",
+                    "vr_tag": {
+                        "heading": "VR 標籤"
+                    },
+                    "enable_chromecast": "啟用 Chromecast"
                 }
             },
             "scene_wall": {
@@ -665,8 +721,20 @@
                     }
                 }
             },
-            "title": "使用者介面"
-        }
+            "title": "使用者介面",
+            "image_wall": {
+                "heading": "圖片預覽牆",
+                "direction": "方向"
+            },
+            "detail": {
+                "heading": "細節頁面",
+                "show_all_details": {
+                    "heading": "顯示所有細節",
+                    "description": "啟用後，預設將顯示所有內容的細節內容，並且每個詳細資訊項目將以單列呈現"
+                }
+            }
+        },
+        "advanced_mode": "進階模式"
     },
     "configuration": "設定",
     "countables": {
@@ -805,7 +873,14 @@
         "scrape_results_existing": "現有資訊",
         "scrape_results_scraped": "爬取資訊",
         "set_image_url_title": "圖片連結",
-        "unsaved_changes": "尚有未儲存的更改。你確定要離開嗎？"
+        "unsaved_changes": "尚有未儲存的更改。你確定要離開嗎？",
+        "imagewall": {
+            "direction": {
+                "row": "行"
+            }
+        },
+        "clear_o_history_confirm": "您確定要清除尻尻紀錄嗎？",
+        "clear_play_history_confirm": "您確定要清除播放紀錄嗎？"
     },
     "dimensions": "解析度",
     "director": "導演",
@@ -1173,5 +1248,14 @@
     "weight": "體重",
     "weight_kg": "體重 (kg)",
     "years_old": "歲",
-    "zip_file_count": "壓縮檔內容數量"
+    "zip_file_count": "壓縮檔內容數量",
+    "circumcised_types": {
+        "UNCUT": "未割",
+        "CUT": "已割"
+    },
+    "datetime_format": "YYYY-MM-DD HH:MM",
+    "appears_with": "共同演出",
+    "audio_codec": "音訊編碼",
+    "circumcised": "已切除包皮",
+    "date_format": "YYYY-MM-DD"
 }

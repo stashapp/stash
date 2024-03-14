@@ -5,7 +5,6 @@ import {
   mutateMetadataScan,
   mutateMetadataAutoTag,
   mutateMetadataGenerate,
-  useConfigureDefaults,
 } from "src/core/StashService";
 import { withoutTypename } from "src/utils/data";
 import { ConfigurationContext } from "src/hooks/Config";
@@ -20,6 +19,7 @@ import { BooleanSetting, Setting, SettingGroup } from "../Inputs";
 import { ManualLink } from "src/components/Help/context";
 import { Icon } from "src/components/Shared/Icon";
 import { faQuestionCircle } from "@fortawesome/free-solid-svg-icons";
+import { useSettings } from "../context";
 
 interface IAutoTagOptions {
   options: GQL.AutoTagMetadataInput;
@@ -71,7 +71,9 @@ const AutoTagOptions: React.FC<IAutoTagOptions> = ({
 export const LibraryTasks: React.FC = () => {
   const intl = useIntl();
   const Toast = useToast();
-  const [configureDefaults] = useConfigureDefaults();
+  const { ui, saveUI, loading } = useSettings();
+
+  const { taskDefaults } = ui;
 
   const [dialogOpen, setDialogOpenState] = useState({
     scan: false,
@@ -111,22 +113,34 @@ export const LibraryTasks: React.FC = () => {
   const [configRead, setConfigRead] = useState(false);
 
   useEffect(() => {
-    if (!configuration?.defaults) {
+    if (!configuration?.defaults || loading) {
       return;
     }
 
     const { scan, autoTag } = configuration.defaults;
 
-    if (scan) {
+    // prefer UI defaults over system defaults
+    // other defaults should be deprecated
+    if (taskDefaults?.scan) {
+      setScanOptions(taskDefaults.scan);
+    } else if (scan) {
       setScanOptions(withoutTypename(scan));
     }
-    if (autoTag) {
+
+    if (taskDefaults?.autoTag) {
+      setAutoTagOptions(taskDefaults.autoTag);
+    } else if (autoTag) {
       setAutoTagOptions(withoutTypename(autoTag));
+    }
+
+    if (taskDefaults?.generate) {
+      setGenerateOptions(taskDefaults.generate);
     }
 
     // combine the defaults with the system preview generation settings
     // only do this once
-    if (!configRead) {
+    // don't do this if UI had a default
+    if (!configRead && !taskDefaults?.generate) {
       if (configuration?.defaults.generate) {
         const { generate } = configuration.defaults;
         setGenerateOptions(withoutTypename(generate));
@@ -158,7 +172,26 @@ export const LibraryTasks: React.FC = () => {
 
       setConfigRead(true);
     }
-  }, [configuration, configRead]);
+  }, [configuration, configRead, taskDefaults, loading]);
+
+  function configureDefaults(partial: Record<string, {}>) {
+    saveUI({ taskDefaults: { ...partial } });
+  }
+
+  function onSetScanOptions(s: GQL.ScanMetadataInput) {
+    configureDefaults({ scan: s });
+    setScanOptions(s);
+  }
+
+  function onSetGenerateOptions(s: GQL.GenerateMetadataInput) {
+    configureDefaults({ generate: s });
+    setGenerateOptions(s);
+  }
+
+  function onSetAutoTagOptions(s: GQL.AutoTagMetadataInput) {
+    configureDefaults({ autoTag: s });
+    setAutoTagOptions(s);
+  }
 
   function setDialogOpen(s: Partial<DialogOpenState>) {
     setDialogOpenState((v) => {
@@ -184,14 +217,6 @@ export const LibraryTasks: React.FC = () => {
 
   async function runScan(paths?: string[]) {
     try {
-      configureDefaults({
-        variables: {
-          input: {
-            scan: scanOptions,
-          },
-        },
-      });
-
       await mutateMetadataScan({
         ...scanOptions,
         paths,
@@ -226,14 +251,6 @@ export const LibraryTasks: React.FC = () => {
 
   async function runAutoTag(paths?: string[]) {
     try {
-      configureDefaults({
-        variables: {
-          input: {
-            autoTag: autoTagOptions,
-          },
-        },
-      });
-
       await mutateMetadataAutoTag({
         ...autoTagOptions,
         paths,
@@ -260,14 +277,6 @@ export const LibraryTasks: React.FC = () => {
 
   async function onGenerateClicked() {
     try {
-      configureDefaults({
-        variables: {
-          input: {
-            generate: generateOptions,
-          },
-        },
-      });
-
       await mutateMetadataGenerate(generateOptions);
       Toast.success(
         intl.formatMessage(
@@ -322,7 +331,7 @@ export const LibraryTasks: React.FC = () => {
           }
           collapsible
         >
-          <ScanOptions options={scanOptions} setOptions={setScanOptions} />
+          <ScanOptions options={scanOptions} setOptions={onSetScanOptions} />
         </SettingGroup>
       </SettingSection>
 
@@ -384,7 +393,7 @@ export const LibraryTasks: React.FC = () => {
         >
           <AutoTagOptions
             options={autoTagOptions}
-            setOptions={(o) => setAutoTagOptions(o)}
+            setOptions={onSetAutoTagOptions}
           />
         </SettingGroup>
       </SettingSection>
@@ -415,7 +424,7 @@ export const LibraryTasks: React.FC = () => {
         >
           <GenerateOptions
             options={generateOptions}
-            setOptions={setGenerateOptions}
+            setOptions={onSetGenerateOptions}
           />
         </SettingGroup>
       </SettingSection>

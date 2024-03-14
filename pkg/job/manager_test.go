@@ -24,7 +24,7 @@ func newTestExec(finish chan struct{}) *testExec {
 	}
 }
 
-func (e *testExec) Execute(ctx context.Context, p *Progress) {
+func (e *testExec) Execute(ctx context.Context, p *Progress) error {
 	e.progress = p
 	close(e.started)
 
@@ -38,6 +38,8 @@ func (e *testExec) Execute(ctx context.Context, p *Progress) {
 			// fall through
 		}
 	}
+
+	return nil
 }
 
 func TestAdd(t *testing.T) {

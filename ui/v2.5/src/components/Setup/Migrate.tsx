@@ -1,22 +1,42 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Button, Card, Container, Form } from "react-bootstrap";
+import { Button, Card, Container, Form, ProgressBar } from "react-bootstrap";
 import { useIntl, FormattedMessage } from "react-intl";
 import { useHistory } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
-import { useSystemStatus, mutateMigrate } from "src/core/StashService";
+import {
+  useSystemStatus,
+  mutateMigrate,
+  postMigrate,
+} from "src/core/StashService";
 import { migrationNotes } from "src/docs/en/MigrationNotes";
 import { ExternalLink } from "../Shared/ExternalLink";
 import { LoadingIndicator } from "../Shared/LoadingIndicator";
 import { MarkdownPage } from "../Shared/MarkdownPage";
+import { useMonitorJob } from "src/utils/job";
 
 export const Migrate: React.FC = () => {
+  const intl = useIntl();
+  const history = useHistory();
+
   const { data: systemStatus, loading } = useSystemStatus();
+
   const [backupPath, setBackupPath] = useState<string | undefined>();
   const [migrateLoading, setMigrateLoading] = useState(false);
   const [migrateError, setMigrateError] = useState("");
 
-  const intl = useIntl();
-  const history = useHistory();
+  const [jobID, setJobID] = useState<string | undefined>();
+
+  const { job } = useMonitorJob(jobID, (finishedJob) => {
+    setJobID(undefined);
+    setMigrateLoading(false);
+
+    if (finishedJob?.error) {
+      setMigrateError(finishedJob.error);
+    } else {
+      postMigrate();
+      history.push("/");
+    }
+  });
 
   // if database path includes path separators, then this is passed through
   // to the migration path. Extract the base name of the database file.
@@ -94,10 +114,32 @@ export const Migrate: React.FC = () => {
   }
 
   if (migrateLoading) {
+    const progress =
+      job && job.progress !== undefined && job.progress !== null
+        ? job.progress * 100
+        : undefined;
+
     return (
-      <LoadingIndicator
-        message={intl.formatMessage({ id: "setup.migrate.migrating_database" })}
-      />
+      <div className="migrate-loading-status">
+        <h4>
+          <LoadingIndicator inline small message="" />
+          <span>
+            <FormattedMessage id="setup.migrate.migrating_database" />
+          </span>
+        </h4>
+        {progress !== undefined && (
+          <ProgressBar
+            animated
+            now={progress}
+            label={`${progress.toFixed(0)}%`}
+          />
+        )}
+        {job?.subTasks?.map((subTask, i) => (
+          <div key={i}>
+            <p>{subTask}</p>
+          </div>
+        ))}
+      </div>
     );
   }
 
@@ -113,11 +155,13 @@ export const Migrate: React.FC = () => {
     try {
       setMigrateLoading(true);
       setMigrateError("");
-      await mutateMigrate({
+
+      // migrate now uses the job manager
+      const ret = await mutateMigrate({
         backupPath: backupPath ?? "",
       });
 
-      history.push("/");
+      setJobID(ret.data?.migrate);
     } catch (e) {
       if (e instanceof Error) setMigrateError(e.message ?? e.toString());
       setMigrateLoading(false);

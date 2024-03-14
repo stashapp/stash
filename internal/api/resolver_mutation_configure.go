@@ -22,11 +22,6 @@ func (r *mutationResolver) Setup(ctx context.Context, input manager.SetupInput) 
 	return err == nil, err
 }
 
-func (r *mutationResolver) Migrate(ctx context.Context, input manager.MigrateInput) (bool, error) {
-	err := manager.GetInstance().Migrate(ctx, input)
-	return err == nil, err
-}
-
 func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGeneralInput) (*ConfigGeneralResult, error) {
 	c := config.GetInstance()
 

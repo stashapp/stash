@@ -410,7 +410,7 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
           onChange={(value) => setRating(value)}
         />
         <ScrapeDialogRow
-          title={intl.formatMessage({ id: "o_counter" })}
+          title={intl.formatMessage({ id: "o_count" })}
           result={oCounter}
           renderOriginalField={() => (
             <FormControl

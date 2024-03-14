@@ -37,6 +37,7 @@ export interface ICriterionOption {
   option: CriterionOption;
   showInSidebar: boolean;
 }
+import ScreenUtils from "src/utils/screen";
 
 interface ICriterionList {
   searchValue: string;
@@ -264,7 +265,7 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
   );
   const [criterion, setCriterion] = useState<Criterion<CriterionValue>>();
 
-  const [searchRef, setSearchFocus] = useFocusOnce();
+  const [searchRef, setSearchFocus] = useFocusOnce(!ScreenUtils.isTouch());
 
   const { criteria } = currentFilter;
 

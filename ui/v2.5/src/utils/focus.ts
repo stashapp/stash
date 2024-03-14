@@ -14,16 +14,16 @@ const useFocus = () => {
 };
 
 // focuses on the element only once on mount
-export const useFocusOnce = () => {
+export const useFocusOnce = (active?: boolean) => {
   const [htmlElRef, setFocus] = useFocus();
   const focused = useRef(false);
 
   useEffect(() => {
-    if (!focused.current) {
+    if (!focused.current && active) {
       setFocus();
       focused.current = true;
     }
-  }, [setFocus]);
+  }, [setFocus, active]);
 
   return [htmlElRef, setFocus] as const;
 };

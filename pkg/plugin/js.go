@@ -7,9 +7,9 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/robertkrimen/otto"
+	"github.com/dop251/goja"
+	"github.com/stashapp/stash/pkg/javascript"
 	"github.com/stashapp/stash/pkg/plugin/common"
-	"github.com/stashapp/stash/pkg/plugin/js"
 )
 
 var errStop = errors.New("stop")
@@ -27,7 +27,7 @@ type jsPluginTask struct {
 
 	started   bool
 	waitGroup sync.WaitGroup
-	vm        *otto.Otto
+	vm        *javascript.VM
 }
 
 func (t *jsPluginTask) onError(err error) {
@@ -37,22 +37,65 @@ func (t *jsPluginTask) onError(err error) {
 	}
 }
 
-func (t *jsPluginTask) makeOutput(o otto.Value) {
+func (t *jsPluginTask) makeOutput(o goja.Value) {
 	t.result = &common.PluginOutput{}
 
-	asObj := o.Object()
+	asObj := o.ToObject(t.vm.Runtime)
 	if asObj == nil {
 		return
 	}
 
-	output, _ := asObj.Get("Output")
-	t.result.Output, _ = output.Export()
-
-	err, _ := asObj.Get("Error")
-	if !err.IsUndefined() {
+	t.result.Output = asObj.Get("Output")
+	err := asObj.Get("Error")
+	if !goja.IsNull(err) && !goja.IsUndefined(err) {
 		errStr := err.String()
 		t.result.Error = &errStr
 	}
+}
+
+func (t *jsPluginTask) initVM() error {
+	// converting the Args field to map[string]interface{} is required, otherwise
+	// it gets converted to an empty object
+	type pluginInput struct {
+		// Server details to connect to the stash server.
+		ServerConnection common.StashServerConnection
+
+		// Arguments to the plugin operation.
+		Args map[string]interface{}
+	}
+
+	input := pluginInput{
+		ServerConnection: t.input.ServerConnection,
+		Args:             t.input.Args.ToMap(),
+	}
+
+	if err := t.vm.Set("input", input); err != nil {
+		return fmt.Errorf("error setting input: %w", err)
+	}
+
+	log := &javascript.Log{
+		Progress: t.progress,
+	}
+
+	if err := log.AddToVM("log", t.vm); err != nil {
+		return fmt.Errorf("error adding log API: %w", err)
+	}
+
+	util := &javascript.Util{}
+	if err := util.AddToVM("util", t.vm); err != nil {
+		return fmt.Errorf("error adding util API: %w", err)
+	}
+
+	gql := &javascript.GQL{
+		Context:    context.TODO(),
+		Cookie:     t.input.ServerConnection.SessionCookie,
+		GQLHandler: t.gqlHandler,
+	}
+	if err := gql.AddToVM("gql", t.vm); err != nil {
+		return fmt.Errorf("error adding GraphQL API: %w", err)
+	}
+
+	return nil
 }
 
 func (t *jsPluginTask) Start() error {
@@ -68,30 +111,16 @@ func (t *jsPluginTask) Start() error {
 
 	scriptFile := t.plugin.Exec[0]
 
-	t.vm = otto.New()
+	t.vm = javascript.NewVM()
 	pluginPath := t.plugin.getConfigPath()
-	script, err := t.vm.Compile(filepath.Join(pluginPath, scriptFile), nil)
+	script, err := javascript.Compile(filepath.Join(pluginPath, scriptFile))
 	if err != nil {
 		return err
 	}
 
-	if err := t.vm.Set("input", t.input); err != nil {
-		return fmt.Errorf("error setting input: %w", err)
+	if err := t.initVM(); err != nil {
+		return err
 	}
-
-	if err := js.AddLogAPI(t.vm, t.progress); err != nil {
-		return fmt.Errorf("error adding log API: %w", err)
-	}
-
-	if err := js.AddUtilAPI(t.vm); err != nil {
-		return fmt.Errorf("error adding util API: %w", err)
-	}
-
-	if err := js.AddGQLAPI(context.TODO(), t.vm, t.input.ServerConnection.SessionCookie, t.gqlHandler); err != nil {
-		return fmt.Errorf("error adding GraphQL API: %w", err)
-	}
-
-	t.vm.Interrupt = make(chan func(), 1)
 
 	t.waitGroup.Add(1)
 
@@ -107,7 +136,7 @@ func (t *jsPluginTask) Start() error {
 			}
 		}()
 
-		output, err := t.vm.Run(script)
+		output, err := t.vm.RunProgram(script)
 
 		if err != nil {
 			t.onError(err)
@@ -124,9 +153,6 @@ func (t *jsPluginTask) Wait() {
 }
 
 func (t *jsPluginTask) Stop() error {
-	// TODO - need another way of doing this that doesn't require panic
-	t.vm.Interrupt <- func() {
-		panic(errStop)
-	}
+	t.vm.Interrupt(errStop)
 	return nil
 }

@@ -9,6 +9,7 @@ import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { sortPerformers } from "src/core/performers";
 import { FormattedDate, FormattedMessage, useIntl } from "react-intl";
 import { objectTitle } from "src/core/files";
+import { PhotographerLink } from "src/components/Shared/Link";
 interface IImageDetailProps {
   image: GQL.ImageDataFragment;
 }
@@ -154,7 +155,11 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
           )}
           {props.image.photographer && (
             <h6>
-              <FormattedMessage id="photographer" />: {props.image.photographer}{" "}
+              <FormattedMessage id="photographer" />:{" "}
+              <PhotographerLink
+                photographer={props.image.photographer}
+                linkType="image"
+              />
             </h6>
           )}
         </div>

@@ -5,32 +5,6 @@ import (
 	"testing"
 )
 
-// func TestNestedMap_Get(t *testing.T) {
-// 	type args struct {
-// 		key string
-// 	}
-// 	tests := []struct {
-// 		name  string
-// 		m     NestedMap
-// 		args  args
-// 		want  interface{}
-// 		want1 bool
-// 	}{
-
-// 	}
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			got, got1 := tt.m.Get(tt.args.key)
-// 			if !reflect.DeepEqual(got, tt.want) {
-// 				t.Errorf("NestedMap.Get() got = %v, want %v", got, tt.want)
-// 			}
-// 			if got1 != tt.want1 {
-// 				t.Errorf("NestedMap.Get() got1 = %v, want %v", got1, tt.want1)
-// 			}
-// 		})
-// 	}
-// }
-
 func TestNestedMapGet(t *testing.T) {
 	m := NestedMap{
 		"foo": map[string]interface{}{

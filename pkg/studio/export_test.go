@@ -62,6 +62,7 @@ func createFullStudio(id int, parentID int) models.Studio {
 		Name:          studioName,
 		URL:           url,
 		Details:       details,
+		Favorite:      true,
 		CreatedAt:     createTime,
 		UpdatedAt:     updateTime,
 		Rating:        &rating,
@@ -89,9 +90,10 @@ func createEmptyStudio(id int) models.Studio {
 
 func createFullJSONStudio(parentStudio, image string, aliases []string) *jsonschema.Studio {
 	return &jsonschema.Studio{
-		Name:    studioName,
-		URL:     url,
-		Details: details,
+		Name:     studioName,
+		URL:      url,
+		Details:  details,
+		Favorite: true,
 		CreatedAt: json.JSONTime{
 			Time: createTime,
 		},
