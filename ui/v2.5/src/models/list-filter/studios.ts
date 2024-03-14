@@ -5,6 +5,7 @@ import {
   createStringCriterionOption,
   createMandatoryTimestampCriterionOption,
 } from "./criteria/criterion";
+import { FavoriteStudioCriterionOption } from "./criteria/favorite";
 import { StudioIsMissingCriterionOption } from "./criteria/is-missing";
 import { RatingCriterionOption } from "./criteria/rating";
 import { StashIDCriterionOption } from "./criteria/stash-ids";
@@ -36,6 +37,7 @@ const sortByOptions = ["name", "random", "rating"]
 
 const displayModeOptions = [DisplayMode.Grid, DisplayMode.Tagger];
 const criterionOptions = [
+  FavoriteStudioCriterionOption,
   createMandatoryStringCriterionOption("name"),
   createStringCriterionOption("details"),
   ParentStudiosCriterionOption,

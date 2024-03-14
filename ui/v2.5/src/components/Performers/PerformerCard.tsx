@@ -17,12 +17,12 @@ import {
 } from "src/models/list-filter/criteria/criterion";
 import { PopoverCountButton } from "../Shared/PopoverCountButton";
 import GenderIcon from "./GenderIcon";
-import { faHeart, faTag } from "@fortawesome/free-solid-svg-icons";
+import { faTag } from "@fortawesome/free-solid-svg-icons";
 import { RatingBanner } from "../Shared/RatingBanner";
-import cx from "classnames";
 import { usePerformerUpdate } from "src/core/StashService";
 import { ILabeledId } from "src/models/list-filter/types";
 import ScreenUtils from "src/utils/screen";
+import { FavoriteIcon } from "../Shared/FavoriteIcon";
 
 export interface IPerformerCardExtraCriteria {
   scenes?: Criterion<CriterionValue>[];
@@ -81,24 +81,6 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
     );
     setCardWidth(fittedCardWidth);
   }, [containerWidth]);
-
-  function renderFavoriteIcon() {
-    return (
-      <Link to="" onClick={(e) => e.preventDefault()}>
-        <Button
-          className={cx(
-            "minimal",
-            "mousetrap",
-            "favorite-button",
-            performer.favorite ? "favorite" : "not-favorite"
-          )}
-          onClick={() => onToggleFavorite!(!performer.favorite)}
-        >
-          <Icon icon={faHeart} size="2x" />
-        </Button>
-      </Link>
-    );
-  }
 
   function onToggleFavorite(v: boolean) {
     if (performer.id) {
@@ -292,7 +274,10 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
       }
       overlays={
         <>
-          {renderFavoriteIcon()}
+          <FavoriteIcon
+            favorite={performer.favorite}
+            onToggleFavorite={onToggleFavorite}
+          />
           {maybeRenderRatingBanner()}
           {maybeRenderFlag()}
         </>

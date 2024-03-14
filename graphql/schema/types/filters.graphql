@@ -325,6 +325,8 @@ input StudioFilterType {
   is_missing: String
   # rating expressed as 1-100
   rating100: IntCriterionInput
+  "Filter by favorite"
+  favorite: Boolean
   "Filter by scene count"
   scene_count: IntCriterionInput
   "Filter by image count"

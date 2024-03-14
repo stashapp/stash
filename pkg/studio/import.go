@@ -144,6 +144,7 @@ func studioJSONtoStudio(studioJSON jsonschema.Studio) models.Studio {
 		URL:           studioJSON.URL,
 		Aliases:       models.NewRelatedStrings(studioJSON.Aliases),
 		Details:       studioJSON.Details,
+		Favorite:      studioJSON.Favorite,
 		IgnoreAutoTag: studioJSON.IgnoreAutoTag,
 		CreatedAt:     studioJSON.CreatedAt.GetTime(),
 		UpdatedAt:     studioJSON.UpdatedAt.GetTime(),

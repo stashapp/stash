@@ -36,6 +36,7 @@ type studioRow struct {
 	UpdatedAt Timestamp   `db:"updated_at"`
 	// expressed as 1-100
 	Rating        null.Int    `db:"rating"`
+	Favorite      bool        `db:"favorite"`
 	Details       zero.String `db:"details"`
 	IgnoreAutoTag bool        `db:"ignore_auto_tag"`
 
@@ -51,6 +52,7 @@ func (r *studioRow) fromStudio(o models.Studio) {
 	r.CreatedAt = Timestamp{Timestamp: o.CreatedAt}
 	r.UpdatedAt = Timestamp{Timestamp: o.UpdatedAt}
 	r.Rating = intFromPtr(o.Rating)
+	r.Favorite = o.Favorite
 	r.Details = zero.StringFrom(o.Details)
 	r.IgnoreAutoTag = o.IgnoreAutoTag
 }
@@ -64,6 +66,7 @@ func (r *studioRow) resolve() *models.Studio {
 		CreatedAt:     r.CreatedAt.Timestamp,
 		UpdatedAt:     r.UpdatedAt.Timestamp,
 		Rating:        nullIntPtr(r.Rating),
+		Favorite:      r.Favorite,
 		Details:       r.Details.String,
 		IgnoreAutoTag: r.IgnoreAutoTag,
 	}
@@ -82,6 +85,7 @@ func (r *studioRowRecord) fromPartial(o models.StudioPartial) {
 	r.setTimestamp("created_at", o.CreatedAt)
 	r.setTimestamp("updated_at", o.UpdatedAt)
 	r.setNullInt("rating", o.Rating)
+	r.setBool("favorite", o.Favorite)
 	r.setNullString("details", o.Details)
 	r.setBool("ignore_auto_tag", o.IgnoreAutoTag)
 }
@@ -496,6 +500,7 @@ func (qb *StudioStore) makeFilter(ctx context.Context, studioFilter *models.Stud
 	query.handleCriterion(ctx, stringCriterionHandler(studioFilter.Details, studioTable+".details"))
 	query.handleCriterion(ctx, stringCriterionHandler(studioFilter.URL, studioTable+".url"))
 	query.handleCriterion(ctx, intCriterionHandler(studioFilter.Rating100, studioTable+".rating", nil))
+	query.handleCriterion(ctx, boolCriterionHandler(studioFilter.Favorite, studioTable+".favorite", nil))
 	query.handleCriterion(ctx, boolCriterionHandler(studioFilter.IgnoreAutoTag, studioTable+".ignore_auto_tag", nil))
 
 	query.handleCriterion(ctx, criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {

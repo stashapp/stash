@@ -6,7 +6,7 @@ import {
   createDateCriterionOption,
   createMandatoryTimestampCriterionOption,
 } from "./criteria/criterion";
-import { FavoriteCriterionOption } from "./criteria/favorite";
+import { FavoritePerformerCriterionOption } from "./criteria/favorite";
 import { GenderCriterionOption } from "./criteria/gender";
 import { CircumcisedCriterionOption } from "./criteria/circumcised";
 import { PerformerIsMissingCriterionOption } from "./criteria/is-missing";
@@ -81,7 +81,7 @@ const stringCriteria: CriterionType[] = [
 ];
 
 const criterionOptions = [
-  FavoriteCriterionOption,
+  FavoritePerformerCriterionOption,
   GenderCriterionOption,
   CircumcisedCriterionOption,
   PerformerIsMissingCriterionOption,

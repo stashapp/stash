@@ -16,6 +16,8 @@ type StudioFilterType struct {
 	IsMissing *string `json:"is_missing"`
 	// Filter by rating expressed as 1-100
 	Rating100 *IntCriterionInput `json:"rating100"`
+	// Filter by favorite
+	Favorite *bool `json:"favorite"`
 	// Filter by scene count
 	SceneCount *IntCriterionInput `json:"scene_count"`
 	// Filter by image count
@@ -44,6 +46,7 @@ type StudioCreateInput struct {
 	Image         *string   `json:"image"`
 	StashIds      []StashID `json:"stash_ids"`
 	Rating100     *int      `json:"rating100"`
+	Favorite      *bool     `json:"favorite"`
 	Details       *string   `json:"details"`
 	Aliases       []string  `json:"aliases"`
 	IgnoreAutoTag *bool     `json:"ignore_auto_tag"`
@@ -58,6 +61,7 @@ type StudioUpdateInput struct {
 	Image         *string   `json:"image"`
 	StashIds      []StashID `json:"stash_ids"`
 	Rating100     *int      `json:"rating100"`
+	Favorite      *bool     `json:"favorite"`
 	Details       *string   `json:"details"`
 	Aliases       []string  `json:"aliases"`
 	IgnoreAutoTag *bool     `json:"ignore_auto_tag"`
