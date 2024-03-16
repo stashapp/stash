@@ -7,7 +7,7 @@ import React, {
   useRef,
   useLayoutEffect,
 } from "react";
-import { FormattedMessage, useIntl } from "react-intl";
+import { FormattedDate, FormattedMessage, useIntl } from "react-intl";
 import { Link, RouteComponentProps } from "react-router-dom";
 import { Helmet } from "react-helmet";
 import * as GQL from "src/core/generated-graphql";
@@ -74,6 +74,8 @@ const SceneVideoFilterPanel = lazyComponent(
   () => import("./SceneVideoFilterPanel")
 );
 import { objectPath, objectTitle } from "src/core/files";
+import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
+import TextUtils from "src/utils/text";
 
 interface IProps {
   scene: GQL.SceneDataFragment;
@@ -420,7 +422,7 @@ const ScenePage: React.FC<IProps> = ({
               <FormattedMessage id="actions.edit" />
             </Nav.Link>
           </Nav.Item>
-          <ButtonGroup className="ml-auto">
+          {/* <ButtonGroup className="ml-auto">
             <Nav.Item className="ml-auto">
               <ExternalPlayerButton scene={scene} />
             </Nav.Item>
@@ -440,7 +442,7 @@ const ScenePage: React.FC<IProps> = ({
               />
             </Nav.Item>
             <Nav.Item>{renderOperations()}</Nav.Item>
-          </ButtonGroup>
+          </ButtonGroup> */}
         </Nav>
       </div>
 
@@ -509,6 +511,11 @@ const ScenePage: React.FC<IProps> = ({
 
   const title = objectTitle(scene);
 
+  const file = useMemo(
+    () => (scene.files.length > 0 ? scene.files[0] : undefined),
+    [scene]
+  );
+
   return (
     <>
       <Helmet>
@@ -534,6 +541,50 @@ const ScenePage: React.FC<IProps> = ({
             </h1>
           )}
           <h3 className="scene-header">{title}</h3>
+
+          <div className="scene-subheader">
+            <span className="date">
+              {!!scene.date && (
+                <FormattedDate
+                  value={scene.date}
+                  format="long"
+                  timeZone="utc"
+                />
+              )}
+            </span>
+            {file?.width && file.height ? (
+              <span className="resolution">
+                {TextUtils.resolution(file.width, file.height)}
+              </span>
+            ) : undefined}
+          </div>
+
+          <div className="scene-toolbar">
+            <span>
+              <RatingSystem value={scene.rating100} disabled />
+            </span>
+            <ButtonGroup>
+              <span>
+                <ExternalPlayerButton scene={scene} />
+              </span>
+              <span>
+                <OCounterButton
+                  value={scene.o_counter || 0}
+                  onIncrement={onIncrementClick}
+                  onDecrement={onDecrementClick}
+                  onReset={onResetClick}
+                />
+              </span>
+              <span>
+                <OrganizedButton
+                  loading={organizedLoading}
+                  organized={scene.organized}
+                  onClick={onOrganizedClick}
+                />
+              </span>
+              <span>{renderOperations()}</span>
+            </ButtonGroup>
+          </div>
         </div>
         {renderTabs()}
       </div>

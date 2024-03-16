@@ -7,7 +7,6 @@ import { TagLink } from "src/components/Shared/TagLink";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
 import { PerformerCard } from "src/components/Performers/PerformerCard";
 import { sortPerformers } from "src/core/performers";
-import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { objectTitle } from "src/core/files";
 import { DirectorLink } from "src/components/Shared/Link";
 import { DetailItem } from "src/components/Shared/DetailItem";
@@ -18,11 +17,6 @@ interface ISceneDetailProps {
 
 export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
   const intl = useIntl();
-
-  const file = useMemo(
-    () => (props.scene.files.length > 0 ? props.scene.files[0] : undefined),
-    [props.scene]
-  );
 
   // filename should use entire row if there is no studio
   const sceneDetailsWidth = props.scene.studio ? "col-9" : "col-12";
@@ -60,13 +54,7 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
           </div>
 
           <div className="detail-group">
-            <DetailItem id="date" value={props.scene.date} fullWidth />
             <DetailItem id="studio-code" value={props.scene.code} fullWidth />
-            <DetailItem
-              id="rating"
-              value={<RatingSystem value={props.scene.rating100} disabled />}
-              fullWidth
-            />
             <DetailItem
               id="director"
               value={
@@ -76,15 +64,6 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
                     linkType="scene"
                   />
                 ) : undefined
-              }
-              fullWidth
-            />
-            <DetailItem
-              id="resolution"
-              value={
-                file?.width && file.height
-                  ? TextUtils.resolution(file.width, file.height)
-                  : undefined
               }
               fullWidth
             />
