@@ -4,6 +4,7 @@ import cx from "classnames";
 
 interface IDetailItem {
   id?: string | null;
+  heading?: React.ReactNode;
   value?: React.ReactNode;
   title?: string;
   fullWidth?: boolean;
@@ -11,6 +12,7 @@ interface IDetailItem {
 
 export const DetailItem: React.FC<IDetailItem> = ({
   id,
+  heading,
   value,
   title,
   fullWidth,
@@ -27,8 +29,14 @@ export const DetailItem: React.FC<IDetailItem> = ({
   return (
     <div className={cx(`detail-item ${cssId}`, { "full-width": fullWidth })}>
       <span className={`detail-item-title ${cssId}`}>
-        {message}
-        {fullWidth ? ":" : ""}
+        {heading ? (
+          heading
+        ) : (
+          <>
+            {message}
+            {fullWidth ? ":" : ""}
+          </>
+        )}
       </span>
       <span className={`detail-item-value ${cssId}`} title={title}>
         {value}

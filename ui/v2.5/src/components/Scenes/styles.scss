@@ -828,4 +828,39 @@ input[type="range"].blue-slider {
       margin-bottom: 0.25em;
     }
   }
+
+  .performer-card {
+    max-width: 50%;
+    padding-bottom: 0;
+
+    .rating-banner,
+    .favorite-button,
+    .performer-card__country-flag,
+    .card-popovers {
+      display: none;
+    }
+
+    .card-section-title {
+      font-size: 1rem;
+    }
+  }
+
+  .movie-card {
+    padding-bottom: 0;
+    width: 10rem;
+
+    .card-section-title,
+    .movie-scene-number {
+      font-size: 1rem;
+    }
+
+    .movie-scene-number {
+      color: $text-muted;
+    }
+
+    .movie-card__details,
+    .card-popovers {
+      display: none;
+    }
+  }
 }

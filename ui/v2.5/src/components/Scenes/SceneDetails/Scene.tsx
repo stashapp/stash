@@ -62,7 +62,6 @@ const SceneMarkersPanel = lazyComponent(() => import("./SceneMarkersPanel"));
 const SceneFileInfoPanel = lazyComponent(() => import("./SceneFileInfoPanel"));
 const SceneDetailPanel = lazyComponent(() => import("./SceneDetailPanel"));
 const SceneHistoryPanel = lazyComponent(() => import("./SceneHistoryPanel"));
-const SceneMoviePanel = lazyComponent(() => import("./SceneMoviePanel"));
 const SceneGalleriesPanel = lazyComponent(
   () => import("./SceneGalleriesPanel")
 );
@@ -379,18 +378,6 @@ const ScenePage: React.FC<IProps> = ({
               <FormattedMessage id="markers" />
             </Nav.Link>
           </Nav.Item>
-          {scene.movies.length > 0 ? (
-            <Nav.Item>
-              <Nav.Link eventKey="scene-movie-panel">
-                <FormattedMessage
-                  id="countables.movies"
-                  values={{ count: scene.movies.length }}
-                />
-              </Nav.Link>
-            </Nav.Item>
-          ) : (
-            ""
-          )}
           {scene.galleries.length >= 1 ? (
             <Nav.Item>
               <Nav.Link eventKey="scene-galleries-panel">
@@ -422,27 +409,6 @@ const ScenePage: React.FC<IProps> = ({
               <FormattedMessage id="actions.edit" />
             </Nav.Link>
           </Nav.Item>
-          {/* <ButtonGroup className="ml-auto">
-            <Nav.Item className="ml-auto">
-              <ExternalPlayerButton scene={scene} />
-            </Nav.Item>
-            <Nav.Item className="ml-auto">
-              <OCounterButton
-                value={scene.o_counter || 0}
-                onIncrement={onIncrementClick}
-                onDecrement={onDecrementClick}
-                onReset={onResetClick}
-              />
-            </Nav.Item>
-            <Nav.Item>
-              <OrganizedButton
-                loading={organizedLoading}
-                organized={scene.organized}
-                onClick={onOrganizedClick}
-              />
-            </Nav.Item>
-            <Nav.Item>{renderOperations()}</Nav.Item>
-          </ButtonGroup> */}
         </Nav>
       </div>
 
@@ -472,9 +438,6 @@ const ScenePage: React.FC<IProps> = ({
             onClickMarker={onClickMarker}
             isVisible={activeTabKey === "scene-markers-panel"}
           />
-        </Tab.Pane>
-        <Tab.Pane eventKey="scene-movie-panel">
-          <SceneMoviePanel scene={scene} />
         </Tab.Pane>
         {scene.galleries.length >= 1 && (
           <Tab.Pane eventKey="scene-galleries-panel">

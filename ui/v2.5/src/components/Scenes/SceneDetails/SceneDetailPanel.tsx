@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
-import { useIntl } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import TextUtils from "src/utils/text";
 import { TagLink } from "src/components/Shared/TagLink";
@@ -10,6 +10,8 @@ import { sortPerformers } from "src/core/performers";
 import { objectTitle } from "src/core/files";
 import { DirectorLink } from "src/components/Shared/Link";
 import { DetailItem } from "src/components/Shared/DetailItem";
+import { Button } from "react-bootstrap";
+import { MovieCard } from "src/components/Movies/MovieCard";
 
 interface ISceneDetailProps {
   scene: GQL.SceneDataFragment;
@@ -26,13 +28,25 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
     [props.scene.tags]
   );
 
+  const movies = useMemo(
+    () =>
+      props.scene.movies.map((sceneMovie) => (
+        <MovieCard
+          key={sceneMovie.movie.id}
+          movie={sceneMovie.movie}
+          sceneIndex={sceneMovie.scene_index ?? undefined}
+        />
+      )),
+    [props.scene.movies]
+  );
+
   const performers = useMemo(() => {
     const sorted = sortPerformers(props.scene.performers);
     return sorted.map((performer) => (
       <PerformerCard
         key={performer.id}
         performer={performer}
-        ageFromDate={props.scene.date ?? undefined}
+        ageFromDate={props.scene.date ?? null}
       />
     ));
   }, [props.scene.performers, props.scene.date]);
@@ -67,10 +81,37 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
               }
               fullWidth
             />
-            <DetailItem id="tags" value={tags.length ? tags : undefined} />
             <DetailItem id="details" value={details} />
             <DetailItem
+              id="movies"
+              value={movies.length ? movies : undefined}
+            />
+            <DetailItem
+              id="tags"
+              heading={
+                <>
+                  <FormattedMessage id="tags" />
+                  <Button variant="link" size="sm" className="add-tag-button">
+                    <FormattedMessage id="actions.add" />
+                  </Button>
+                </>
+              }
+              value={tags.length ? tags : undefined}
+            />
+            <DetailItem
               id="performers"
+              heading={
+                <>
+                  <FormattedMessage id="performers" />
+                  <Button
+                    variant="link"
+                    size="sm"
+                    className="add-performer-button"
+                  >
+                    <FormattedMessage id="actions.add" />
+                  </Button>
+                </>
+              }
               value={performers.length ? performers : undefined}
             />
             <DetailItem
