@@ -15,47 +15,70 @@ import { MovieCard } from "src/components/Movies/MovieCard";
 
 interface ISceneDetailProps {
   scene: GQL.SceneDataFragment;
+  onClickFileDetails?: (fileID?: string) => void;
 }
 
-export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
+export const SceneDetailPanel: React.FC<ISceneDetailProps> = ({
+  scene,
+  onClickFileDetails,
+}) => {
   const intl = useIntl();
 
   // filename should use entire row if there is no studio
-  const sceneDetailsWidth = props.scene.studio ? "col-9" : "col-12";
+  const sceneDetailsWidth = scene.studio ? "col-9" : "col-12";
 
   const tags = useMemo(
-    () => props.scene.tags.map((tag) => <TagLink key={tag.id} tag={tag} />),
-    [props.scene.tags]
+    () => scene.tags.map((tag) => <TagLink key={tag.id} tag={tag} />),
+    [scene.tags]
   );
 
   const movies = useMemo(
     () =>
-      props.scene.movies.map((sceneMovie) => (
+      scene.movies.map((sceneMovie) => (
         <MovieCard
           key={sceneMovie.movie.id}
           movie={sceneMovie.movie}
           sceneIndex={sceneMovie.scene_index ?? undefined}
         />
       )),
-    [props.scene.movies]
+    [scene.movies]
   );
 
   const performers = useMemo(() => {
-    const sorted = sortPerformers(props.scene.performers);
+    const sorted = sortPerformers(scene.performers);
     return sorted.map((performer) => (
       <PerformerCard
         key={performer.id}
         performer={performer}
-        ageFromDate={props.scene.date ?? null}
+        ageFromDate={scene.date ?? null}
       />
     ));
-  }, [props.scene.performers, props.scene.date]);
+  }, [scene.performers, scene.date]);
 
   const details = useMemo(() => {
-    return props.scene.details?.length ? (
-      <p className="pre">{props.scene.details}</p>
+    return scene.details?.length ? (
+      <p className="pre">{scene.details}</p>
     ) : undefined;
-  }, [props.scene.details]);
+  }, [scene.details]);
+
+  const files = useMemo(() => {
+    return (
+      <ul>
+        {scene.files.map((file) => (
+          <li key={file.id}>
+            <Button
+              variant="link"
+              size="sm"
+              className="file-info-button"
+              onClick={() => onClickFileDetails?.(file.id)}
+            >
+              <TruncatedText text={file.basename} />
+            </Button>
+          </li>
+        ))}
+      </ul>
+    );
+  }, [scene.files, onClickFileDetails]);
 
   return (
     <>
@@ -63,20 +86,17 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
         <div className={`${sceneDetailsWidth} col-xl-12 scene-details`}>
           <div className="scene-header d-xl-none">
             <h3>
-              <TruncatedText text={objectTitle(props.scene)} />
+              <TruncatedText text={objectTitle(scene)} />
             </h3>
           </div>
 
           <div className="detail-group">
-            <DetailItem id="studio-code" value={props.scene.code} fullWidth />
+            <DetailItem id="studio-code" value={scene.code} fullWidth />
             <DetailItem
               id="director"
               value={
-                props.scene.director ? (
-                  <DirectorLink
-                    director={props.scene.director}
-                    linkType="scene"
-                  />
+                scene.director ? (
+                  <DirectorLink director={scene.director} linkType="scene" />
                 ) : undefined
               }
               fullWidth
@@ -115,23 +135,28 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
               value={performers.length ? performers : undefined}
             />
             <DetailItem
+              id="files"
+              value={scene.files.length ? files : undefined}
+              fullWidth
+            />
+            <DetailItem
               id="created_at"
-              value={TextUtils.formatDateTime(intl, props.scene.created_at)}
+              value={TextUtils.formatDateTime(intl, scene.created_at)}
               fullWidth
             />
             <DetailItem
               id="updated_at"
-              value={TextUtils.formatDateTime(intl, props.scene.updated_at)}
+              value={TextUtils.formatDateTime(intl, scene.updated_at)}
               fullWidth
             />
           </div>
         </div>
-        {props.scene.studio && (
+        {scene.studio && (
           <div className="col-3 d-xl-none">
-            <Link to={`/studios/${props.scene.studio.id}`}>
+            <Link to={`/studios/${scene.studio.id}`}>
               <img
-                src={props.scene.studio.image_path ?? ""}
-                alt={`${props.scene.studio.name} logo`}
+                src={scene.studio.image_path ?? ""}
+                alt={`${scene.studio.name} logo`}
                 className="studio-logo float-right"
               />
             </Link>

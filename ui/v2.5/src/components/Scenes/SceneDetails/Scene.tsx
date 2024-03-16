@@ -6,6 +6,7 @@ import React, {
   useContext,
   useRef,
   useLayoutEffect,
+  PropsWithChildren,
 } from "react";
 import { FormattedDate, FormattedMessage, useIntl } from "react-intl";
 import { Link, RouteComponentProps } from "react-router-dom";
@@ -27,7 +28,6 @@ import { SceneEditPanel } from "./SceneEditPanel";
 import { ErrorMessage } from "src/components/Shared/ErrorMessage";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { Icon } from "src/components/Shared/Icon";
-import { Counter } from "src/components/Shared/Counter";
 import { useToast } from "src/hooks/Toast";
 import SceneQueue, { QueuedScene } from "src/models/sceneQueue";
 import { ListFilterModel } from "src/models/list-filter/filter";
@@ -40,6 +40,7 @@ import {
   faEllipsisV,
   faChevronRight,
   faChevronLeft,
+  faTimes,
 } from "@fortawesome/free-solid-svg-icons";
 import { lazyComponent } from "src/utils/lazyComponent";
 
@@ -133,6 +134,7 @@ const ScenePage: React.FC<IProps> = ({
   const [organizedLoading, setOrganizedLoading] = useState(false);
 
   const [activeTabKey, setActiveTabKey] = useState("scene-details-panel");
+  const [activePane, setActivePane] = useState<string>();
 
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
   const [isGenerateDialogOpen, setIsGenerateDialogOpen] = useState(false);
@@ -352,69 +354,89 @@ const ScenePage: React.FC<IProps> = ({
     </Dropdown>
   );
 
+  function TabLink(
+    props: PropsWithChildren<{
+      className?: string;
+      eventKey: string;
+      pane?: boolean;
+      messageId?: string;
+    }>
+  ) {
+    if (
+      (activePane !== undefined && activePane !== props.eventKey) ||
+      (props.pane && activePane === undefined)
+    ) {
+      return null;
+    }
+
+    return (
+      <Nav.Item className={props.className}>
+        <Nav.Link eventKey={props.eventKey}>
+          {props.messageId ? (
+            <FormattedMessage id={props.messageId} />
+          ) : undefined}
+          {props.children}
+        </Nav.Link>
+      </Nav.Item>
+    );
+  }
+
   const renderTabs = () => (
     <Tab.Container
-      activeKey={activeTabKey}
+      activeKey={activePane ?? activeTabKey}
       onSelect={(k) => k && setActiveTabKey(k)}
     >
       <div>
         <Nav variant="tabs" className="mr-auto">
-          <Nav.Item>
-            <Nav.Link eventKey="scene-details-panel">
-              <FormattedMessage id="details" />
-            </Nav.Link>
-          </Nav.Item>
+          <TabLink eventKey="scene-details-panel" messageId="details" />
           {queueScenes.length > 0 ? (
-            <Nav.Item>
-              <Nav.Link eventKey="scene-queue-panel">
-                <FormattedMessage id="queue" />
-              </Nav.Link>
-            </Nav.Item>
+            <TabLink eventKey="scene-queue-panel" messageId="queue" />
           ) : (
             ""
           )}
-          <Nav.Item>
-            <Nav.Link eventKey="scene-markers-panel">
-              <FormattedMessage id="markers" />
-            </Nav.Link>
-          </Nav.Item>
+          <TabLink eventKey="scene-markers-panel" messageId="markers" />
           {scene.galleries.length >= 1 ? (
-            <Nav.Item>
-              <Nav.Link eventKey="scene-galleries-panel">
-                <FormattedMessage
-                  id="countables.galleries"
-                  values={{ count: scene.galleries.length }}
-                />
+            <TabLink eventKey="scene-galleries-panel">
+              <FormattedMessage
+                id="countables.galleries"
+                values={{ count: scene.galleries.length }}
+              />
+            </TabLink>
+          ) : undefined}
+          <TabLink
+            eventKey="scene-video-filter-panel"
+            messageId="effect_filters.name"
+          />
+          <TabLink
+            eventKey="scene-file-info-panel"
+            messageId="file_info"
+            pane
+          />
+          <TabLink eventKey="scene-history-panel" messageId="history" />
+          <TabLink
+            className="ml-auto"
+            eventKey="scene-edit-panel"
+            messageId="actions.edit"
+          />
+          {activePane !== undefined && (
+            <Nav.Item className="ml-auto">
+              <Nav.Link
+                title={intl.formatMessage({ id: "actions.close" })}
+                onClick={() => setActivePane(undefined)}
+              >
+                <Icon icon={faTimes} />
               </Nav.Link>
             </Nav.Item>
-          ) : undefined}
-          <Nav.Item>
-            <Nav.Link eventKey="scene-video-filter-panel">
-              <FormattedMessage id="effect_filters.name" />
-            </Nav.Link>
-          </Nav.Item>
-          <Nav.Item>
-            <Nav.Link eventKey="scene-file-info-panel">
-              <FormattedMessage id="file_info" />
-              <Counter count={scene.files.length} hideZero hideOne />
-            </Nav.Link>
-          </Nav.Item>
-          <Nav.Item>
-            <Nav.Link eventKey="scene-history-panel">
-              <FormattedMessage id="history" />
-            </Nav.Link>
-          </Nav.Item>
-          <Nav.Item>
-            <Nav.Link eventKey="scene-edit-panel">
-              <FormattedMessage id="actions.edit" />
-            </Nav.Link>
-          </Nav.Item>
+          )}
         </Nav>
       </div>
 
       <Tab.Content>
         <Tab.Pane eventKey="scene-details-panel">
-          <SceneDetailPanel scene={scene} />
+          <SceneDetailPanel
+            scene={scene}
+            onClickFileDetails={() => setActivePane("scene-file-info-panel")}
+          />
         </Tab.Pane>
         <Tab.Pane eventKey="scene-queue-panel">
           <QueueViewer

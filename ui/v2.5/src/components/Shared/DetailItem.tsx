@@ -4,6 +4,7 @@ import cx from "classnames";
 
 interface IDetailItem {
   id?: string | null;
+  messageId?: string;
   heading?: React.ReactNode;
   value?: React.ReactNode;
   title?: string;
@@ -12,6 +13,7 @@ interface IDetailItem {
 
 export const DetailItem: React.FC<IDetailItem> = ({
   id,
+  messageId,
   heading,
   value,
   title,
@@ -21,7 +23,7 @@ export const DetailItem: React.FC<IDetailItem> = ({
     return <></>;
   }
 
-  const message = <FormattedMessage id={id} />;
+  const message = <FormattedMessage id={messageId ?? id} />;
 
   // according to linter rule CSS classes shouldn't use underscores
   const cssId = id?.replace("_", "-");

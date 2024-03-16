@@ -812,9 +812,22 @@ input[type="range"].blue-slider {
   .detail-item {
     font-size: 1.25em;
 
+    &.files,
     &.created-at,
     &.updated-at {
       font-size: 1em;
+    }
+
+    &.files ul {
+      font-size: 0.9em;
+      list-style-type: none;
+      padding-inline-start: 0;
+
+      .file-info-button {
+        padding-left: 0;
+        padding-right: 0;
+        text-align: left;
+      }
     }
 
     &.rating,
