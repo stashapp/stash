@@ -1,5 +1,6 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
+import cx from "classnames";
 
 interface IDetailItem {
   id?: string | null;
@@ -20,17 +21,16 @@ export const DetailItem: React.FC<IDetailItem> = ({
 
   const message = <FormattedMessage id={id} />;
 
+  // according to linter rule CSS classes shouldn't use underscores
+  const cssId = id?.replace("_", "-");
+
   return (
-    // according to linter rule CSS classes shouldn't use underscores
-    <div className={`detail-item ${id}`}>
-      <span className={`detail-item-title ${id.replace("_", "-")}`}>
+    <div className={cx(`detail-item ${cssId}`, { "full-width": fullWidth })}>
+      <span className={`detail-item-title ${cssId}`}>
         {message}
         {fullWidth ? ":" : ""}
       </span>
-      <span
-        className={`detail-item-value ${id.replace("_", "-")}`}
-        title={title}
-      >
+      <span className={`detail-item-value ${cssId}`} title={title}>
         {value}
       </span>
     </div>

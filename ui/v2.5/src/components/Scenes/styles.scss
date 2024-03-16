@@ -784,3 +784,25 @@ input[type="range"].blue-slider {
     }
   }
 }
+
+.scene-details {
+  .detail-item {
+    font-size: 1.25em;
+
+    &.created-at,
+    &.updated-at {
+      font-size: 1em;
+    }
+
+    &.rating,
+    &.tags,
+    &.performers,
+    &.details {
+      flex-basis: 100%;
+    }
+
+    &:not(.full-width) .detail-item-title {
+      margin-bottom: 0.25em;
+    }
+  }
+}

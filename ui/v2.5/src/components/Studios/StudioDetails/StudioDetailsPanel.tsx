@@ -47,7 +47,7 @@ export const StudioDetailsPanel: React.FC<IStudioDetailsPanel> = ({
 
   return (
     <div className="detail-group">
-      <DetailItem id="details" value={studio.details} fullWidth={fullWidth} />
+      <DetailItem id="details" value={studio.details} />
       <DetailItem
         id="parent_studios"
         value={

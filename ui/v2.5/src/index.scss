@@ -283,26 +283,26 @@ dd {
     }
   }
 
-  .detail-item {
-    display: table;
-    padding-right: 0;
-    width: 100%;
-
-    .detail-item-title {
-      display: table-cell;
-      width: 130px;
-    }
-
-    .detail-item-value.age {
-      border-bottom: unset;
-      width: fit-content;
-    }
-  }
-
   .detail-item-title.tags,
   .detail-item-title.parent-tags,
   .detail-item-title.sub-tags {
     padding-top: 4px;
+  }
+}
+
+.detail-item.full-width {
+  display: table;
+  padding-right: 0;
+  width: 100%;
+
+  .detail-item-title {
+    display: table-cell;
+    width: 130px;
+  }
+
+  .detail-item-value.age {
+    border-bottom: unset;
+    width: fit-content;
   }
 }
 

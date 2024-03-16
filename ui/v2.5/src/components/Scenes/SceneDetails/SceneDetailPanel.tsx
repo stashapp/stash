@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
-import { FormattedDate, FormattedMessage, useIntl } from "react-intl";
+import { useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import TextUtils from "src/utils/text";
 import { TagLink } from "src/components/Shared/TagLink";
@@ -10,6 +10,7 @@ import { sortPerformers } from "src/core/performers";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { objectTitle } from "src/core/files";
 import { DirectorLink } from "src/components/Shared/Link";
+import { DetailItem } from "src/components/Shared/DetailItem";
 
 interface ISceneDetailProps {
   scene: GQL.SceneDataFragment;
@@ -23,64 +24,30 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
     [props.scene]
   );
 
-  function renderDetails() {
-    if (!props.scene.details || props.scene.details === "") return;
-    return (
-      <>
-        <h6>
-          <FormattedMessage id="details" />:{" "}
-        </h6>
-        <p className="pre">{props.scene.details}</p>
-      </>
-    );
-  }
+  // filename should use entire row if there is no studio
+  const sceneDetailsWidth = props.scene.studio ? "col-9" : "col-12";
 
-  function renderTags() {
-    if (props.scene.tags.length === 0) return;
-    const tags = props.scene.tags.map((tag) => (
-      <TagLink key={tag.id} tag={tag} />
-    ));
-    return (
-      <>
-        <h6>
-          <FormattedMessage
-            id="countables.tags"
-            values={{ count: props.scene.tags.length }}
-          />
-        </h6>
-        {tags}
-      </>
-    );
-  }
+  const tags = useMemo(
+    () => props.scene.tags.map((tag) => <TagLink key={tag.id} tag={tag} />),
+    [props.scene.tags]
+  );
 
-  function renderPerformers() {
-    if (props.scene.performers.length === 0) return;
-    const performers = sortPerformers(props.scene.performers);
-    const cards = performers.map((performer) => (
+  const performers = useMemo(() => {
+    const sorted = sortPerformers(props.scene.performers);
+    return sorted.map((performer) => (
       <PerformerCard
         key={performer.id}
         performer={performer}
         ageFromDate={props.scene.date ?? undefined}
       />
     ));
+  }, [props.scene.performers, props.scene.date]);
 
-    return (
-      <>
-        <h6>
-          <FormattedMessage
-            id="countables.performers"
-            values={{ count: props.scene.performers.length }}
-          />
-        </h6>
-        <div className="row justify-content-center scene-performers">
-          {cards}
-        </div>
-      </>
-    );
-  }
-
-  // filename should use entire row if there is no studio
-  const sceneDetailsWidth = props.scene.studio ? "col-9" : "col-12";
+  const details = useMemo(() => {
+    return props.scene.details?.length ? (
+      <p className="pre">{props.scene.details}</p>
+    ) : undefined;
+  }, [props.scene.details]);
 
   return (
     <>
@@ -91,48 +58,53 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
               <TruncatedText text={objectTitle(props.scene)} />
             </h3>
           </div>
-          {props.scene.date ? (
-            <h5>
-              <FormattedDate
-                value={props.scene.date}
-                format="long"
-                timeZone="utc"
-              />
-            </h5>
-          ) : undefined}
-          {props.scene.rating100 ? (
-            <h6>
-              <FormattedMessage id="rating" />:{" "}
-              <RatingSystem value={props.scene.rating100} disabled />
-            </h6>
-          ) : (
-            ""
-          )}
-          {file?.width && file?.height && (
-            <h6>
-              <FormattedMessage id="resolution" />:{" "}
-              {TextUtils.resolution(file.width, file.height)}
-            </h6>
-          )}
-          <h6>
-            <FormattedMessage id="created_at" />:{" "}
-            {TextUtils.formatDateTime(intl, props.scene.created_at)}{" "}
-          </h6>
-          <h6>
-            <FormattedMessage id="updated_at" />:{" "}
-            {TextUtils.formatDateTime(intl, props.scene.updated_at)}{" "}
-          </h6>
-          {props.scene.code && (
-            <h6>
-              <FormattedMessage id="scene_code" />: {props.scene.code}{" "}
-            </h6>
-          )}
-          {props.scene.director && (
-            <h6>
-              <FormattedMessage id="director" />:{" "}
-              <DirectorLink director={props.scene.director} linkType="scene" />
-            </h6>
-          )}
+
+          <div className="detail-group">
+            <DetailItem id="date" value={props.scene.date} fullWidth />
+            <DetailItem id="studio-code" value={props.scene.code} fullWidth />
+            <DetailItem
+              id="rating"
+              value={<RatingSystem value={props.scene.rating100} disabled />}
+              fullWidth
+            />
+            <DetailItem
+              id="director"
+              value={
+                props.scene.director ? (
+                  <DirectorLink
+                    director={props.scene.director}
+                    linkType="scene"
+                  />
+                ) : undefined
+              }
+              fullWidth
+            />
+            <DetailItem
+              id="resolution"
+              value={
+                file?.width && file.height
+                  ? TextUtils.resolution(file.width, file.height)
+                  : undefined
+              }
+              fullWidth
+            />
+            <DetailItem id="tags" value={tags.length ? tags : undefined} />
+            <DetailItem id="details" value={details} />
+            <DetailItem
+              id="performers"
+              value={performers.length ? performers : undefined}
+            />
+            <DetailItem
+              id="created_at"
+              value={TextUtils.formatDateTime(intl, props.scene.created_at)}
+              fullWidth
+            />
+            <DetailItem
+              id="updated_at"
+              value={TextUtils.formatDateTime(intl, props.scene.updated_at)}
+              fullWidth
+            />
+          </div>
         </div>
         {props.scene.studio && (
           <div className="col-3 d-xl-none">
@@ -145,13 +117,6 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
             </Link>
           </div>
         )}
-      </div>
-      <div className="row">
-        <div className="col-12">
-          {renderDetails()}
-          {renderTags()}
-          {renderPerformers()}
-        </div>
       </div>
     </>
   );
