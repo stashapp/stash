@@ -16,12 +16,11 @@ import {
   mutateMetadataScan,
   useFindScene,
   useSceneIncrementO,
-  useSceneDecrementO,
-  useSceneResetO,
   useSceneGenerateScreenshot,
   useSceneUpdate,
   queryFindScenes,
   queryFindScenesByID,
+  useSceneIncrementPlayCount,
 } from "src/core/StashService";
 
 import { SceneEditPanel } from "./SceneEditPanel";
@@ -32,7 +31,6 @@ import { useToast } from "src/hooks/Toast";
 import SceneQueue, { QueuedScene } from "src/models/sceneQueue";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import Mousetrap from "mousetrap";
-import { OCounterButton } from "./OCounterButton";
 import { OrganizedButton } from "./OrganizedButton";
 import { ConfigurationContext } from "src/hooks/Config";
 import { getPlayerPosition } from "src/components/ScenePlayer/util";
@@ -76,6 +74,10 @@ const SceneVideoFilterPanel = lazyComponent(
 import { objectPath, objectTitle } from "src/core/files";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import TextUtils from "src/utils/text";
+import {
+  OCounterButton,
+  ViewCountButton,
+} from "src/components/Shared/CountButton";
 
 interface IProps {
   scene: GQL.SceneDataFragment;
@@ -128,8 +130,16 @@ const ScenePage: React.FC<IProps> = ({
   const boxes = configuration?.general?.stashBoxes ?? [];
 
   const [incrementO] = useSceneIncrementO(scene.id);
-  const [decrementO] = useSceneDecrementO(scene.id);
-  const [resetO] = useSceneResetO(scene.id);
+
+  const [incrementPlay] = useSceneIncrementPlayCount();
+
+  function incrementPlayCount() {
+    incrementPlay({
+      variables: {
+        id: scene.id,
+      },
+    });
+  }
 
   const [organizedLoading, setOrganizedLoading] = useState(false);
 
@@ -139,17 +149,9 @@ const ScenePage: React.FC<IProps> = ({
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
   const [isGenerateDialogOpen, setIsGenerateDialogOpen] = useState(false);
 
-  const onIncrementClick = async () => {
+  const onIncrementOClick = async () => {
     try {
       await incrementO();
-    } catch (e) {
-      Toast.error(e);
-    }
-  };
-
-  const onDecrementClick = async () => {
-    try {
-      await decrementO();
     } catch (e) {
       Toast.error(e);
     }
@@ -164,7 +166,7 @@ const ScenePage: React.FC<IProps> = ({
     Mousetrap.bind("i", () => setActiveTabKey("scene-file-info-panel"));
     Mousetrap.bind("h", () => setActiveTabKey("scene-history-panel"));
     Mousetrap.bind("o", () => {
-      onIncrementClick();
+      onIncrementOClick();
     });
     Mousetrap.bind("p n", () => onQueueNext());
     Mousetrap.bind("p p", () => onQueuePrevious());
@@ -218,14 +220,6 @@ const ScenePage: React.FC<IProps> = ({
       Toast.error(e);
     } finally {
       setOrganizedLoading(false);
-    }
-  };
-
-  const onResetClick = async () => {
-    try {
-      await resetO();
-    } catch (e) {
-      Toast.error(e);
     }
   };
 
@@ -412,7 +406,7 @@ const ScenePage: React.FC<IProps> = ({
             messageId="file_info"
             pane
           />
-          <TabLink eventKey="scene-history-panel" messageId="history" />
+          <TabLink eventKey="scene-history-panel" messageId="history" pane />
           <TabLink
             className="ml-auto"
             eventKey="scene-edit-panel"
@@ -553,11 +547,17 @@ const ScenePage: React.FC<IProps> = ({
                 <ExternalPlayerButton scene={scene} />
               </span>
               <span>
+                <ViewCountButton
+                  value={scene.play_count ?? 0}
+                  onIncrement={() => incrementPlayCount()}
+                  onValueClicked={() => setActivePane("scene-history-panel")}
+                />
+              </span>
+              <span>
                 <OCounterButton
-                  value={scene.o_counter || 0}
-                  onIncrement={onIncrementClick}
-                  onDecrement={onDecrementClick}
-                  onReset={onResetClick}
+                  value={scene.o_counter ?? 0}
+                  onIncrement={() => onIncrementOClick()}
+                  onValueClicked={() => setActivePane("scene-history-panel")}
                 />
               </span>
               <span>
