@@ -7,7 +7,6 @@ import { TagLink } from "src/components/Shared/TagLink";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
 import { PerformerCard } from "src/components/Performers/PerformerCard";
 import { sortPerformers } from "src/core/performers";
-import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { objectTitle } from "src/core/files";
 import { DirectorLink } from "src/components/Shared/Link";
 
@@ -17,11 +16,6 @@ interface ISceneDetailProps {
 
 export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
   const intl = useIntl();
-
-  const file = useMemo(
-    () => (props.scene.files.length > 0 ? props.scene.files[0] : undefined),
-    [props.scene]
-  );
 
   function renderDetails() {
     if (!props.scene.details || props.scene.details === "") return;
@@ -91,29 +85,6 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
               <TruncatedText text={objectTitle(props.scene)} />
             </h3>
           </div>
-          {props.scene.date ? (
-            <h5>
-              <FormattedDate
-                value={props.scene.date}
-                format="long"
-                timeZone="utc"
-              />
-            </h5>
-          ) : undefined}
-          {props.scene.rating100 ? (
-            <h6>
-              <FormattedMessage id="rating" />:{" "}
-              <RatingSystem value={props.scene.rating100} disabled />
-            </h6>
-          ) : (
-            ""
-          )}
-          {file?.width && file?.height && (
-            <h6>
-              <FormattedMessage id="resolution" />:{" "}
-              {TextUtils.resolution(file.width, file.height)}
-            </h6>
-          )}
           <h6>
             <FormattedMessage id="created_at" />:{" "}
             {TextUtils.formatDateTime(intl, props.scene.created_at)}{" "}

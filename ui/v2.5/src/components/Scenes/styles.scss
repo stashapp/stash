@@ -65,7 +65,30 @@
 
 .scene-header {
   flex-basis: auto;
+  font-size: 1.5rem;
   margin-top: 30px;
+}
+
+.scene-subheader {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.5rem;
+
+  .date {
+    color: $text-muted;
+  }
+
+  .resolution {
+    font-weight: bold;
+  }
+}
+
+.scene-toolbar {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.25rem;
+  margin-top: 0.5rem;
+  width: 100%;
 }
 
 #scene-details-container {
