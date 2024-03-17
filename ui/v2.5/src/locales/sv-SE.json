@@ -970,7 +970,7 @@
         "select_youngest": "Välj den yngsta filen i duplikatgruppen",
         "select_oldest": "Välj den äldsta filen i duplikatgruppen"
     },
-    "duplicated_phash": "Duplikat (phash)",
+    "duplicated_phash": "Duplikat (pHash)",
     "duration": "Varaktighet",
     "effect_filters": {
         "aspect": "Bildförhållande",
@@ -1064,7 +1064,7 @@
     "index_of_total": "{index} av {total}",
     "instagram": "Instagram",
     "interactive": "Interaktiv",
-    "interactive_speed": "Interaktiv hastighet",
+    "interactive_speed": "Interaktiv Hastighet",
     "isMissing": "Saknas",
     "last_played_at": "Senast spelad",
     "library": "Bibliotek",
@@ -1079,7 +1079,7 @@
         "checksum": "Checksumma",
         "downloaded_from": "Nedladdad från",
         "hash": "Hash",
-        "interactive_speed": "Interaktiv hastighet",
+        "interactive_speed": "Interaktiv Hastighet",
         "performer_card": {
             "age": "{age} {years_old}",
             "age_context": "{age} {years_old} i den här scenen"
@@ -1118,7 +1118,7 @@
     "penis": "Penis",
     "penis_length": "Penislängd",
     "penis_length_cm": "Penislängd (cm)",
-    "perceptual_similarity": "Perceptuell likhet (phash)",
+    "perceptual_similarity": "Perceptuell likhet (pHash)",
     "performer": "Stjärna",
     "performer_age": "Ålder på stjärna",
     "performer_count": "Antal Stjärnor",
@@ -1448,5 +1448,6 @@
     "connection_monitor": {
         "websocket_connection_failed": "Kan ej etablera en websocket-uppkoppling: se webbläsarkonsolen för mer info",
         "websocket_connection_reestablished": "Websocket-uppkoppling återetablerad"
-    }
+    },
+    "o_count": "Antal O"
 }
