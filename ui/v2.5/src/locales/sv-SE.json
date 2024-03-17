@@ -1444,5 +1444,9 @@
     "playdate_recorded_no": "Inga Registrerade Uppspelningsdatum",
     "unknown_date": "Okänt datum",
     "play_history": "Uppspelningshistorik",
-    "last_o_at": "Senaste O Vid"
+    "last_o_at": "Senaste O Vid",
+    "connection_monitor": {
+        "websocket_connection_failed": "Kan ej etablera en websocket-uppkoppling: se webbläsarkonsolen för mer info",
+        "websocket_connection_reestablished": "Websocket-uppkoppling återetablerad"
+    }
 }
