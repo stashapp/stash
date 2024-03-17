@@ -111,7 +111,25 @@
         "temp_enable": "সাময়িক কার্যকর করুন…",
         "unset": "আনসেট",
         "use_default": "ডিফল্ট ব্যাবহার করুন",
-        "view_random": "অনির্ধারিত দেখুন"
+        "view_random": "অনির্ধারিত দেখুন",
+        "optimise_database": "ডাটাবেস অপ্টিমাইজ করুন",
+        "reassign": "পুনরায় বরাদ্দ করুন",
+        "split": "বিভক্ত করুন",
+        "swap": "অদলবদল",
+        "choose_date": "তারিখ নির্ধারন করুন",
+        "add_manual_date": "ম্যানুয়াল তারিখ যোগ করুন",
+        "reload": "পুনরায় লোড করুন",
+        "add_play": "প্লে যুক্ত করুন",
+        "clear_date_data": "তারিখ ডেটা পরিষ্কার করুন",
+        "copy_to_clipboard": "ক্লিপবোর্ডে কপি করুন",
+        "create_chapters": "অধ্যায় তৈরি করুন",
+        "clean_generated": "তৈরি ফাইলগুলি পরিষ্কার করুন",
+        "create_parent_studio": "প্যারেন্ট স্টুডিও তৈরি করুন",
+        "download_anonymised": "বেনামে ডাউনলোড করুন",
+        "enable": "চালু করুন",
+        "encoding_image": "ছবি এনকোডিং…",
+        "disable": "নিষ্ক্রিয় করুন",
+        "remove_date": "তারিখ বাতিল করুন"
     },
     "actions_name": "ক্রিয়াসমুহ",
     "age": "বয়স",
@@ -182,7 +200,8 @@
             "stash_home": "স্টাস এর হোম {url} তে",
             "stash_open_collective": "{url} এর মাধ্যমে আমাদের সাহায্য করুন",
             "stash_wiki": "স্টাস {url} এর পাতা",
-            "version": "সংস্করণ"
+            "version": "সংস্করণ",
+            "release_date": "মুক্তির তারিখ:"
         },
         "application_paths": {
             "heading": "অ্যাপ্লিকেশন এর পথ"
@@ -217,7 +236,8 @@
             "server_display_name": "সার্ভার প্রদর্শনের নাম",
             "server_display_name_desc": "DLNA সার্ভারটার প্রদর্শিত নাম। প্রাথমিকভাবে {server_name} যদি ফাঁকা থাকে।",
             "successfully_cancelled_temporary_behaviour": "অস্থায়ী আচার সফলভাবে বাতিল করা হয়েছে",
-            "until_restart": "পুনরায় শুরুর করা পর্যন্ত"
+            "until_restart": "পুনরায় শুরুর করা পর্যন্ত",
+            "video_sort_order": "ডিফল্ট ভিডিও সাজানোর অর্ডার"
         },
         "general": {
             "auth": {
@@ -251,5 +271,25 @@
             "cache_location": "ক্যাশে ডিরেক্টরির অবস্থান",
             "cache_path_head": "ক্যাশের পথ"
         }
-    }
+    },
+    "true": "সত্য",
+    "view_all": "সবগুলো দেখুন",
+    "appears_with": "উপস্থিত হয়",
+    "between_and": "এবং",
+    "blobs_storage_type": {
+        "database": "ডেটাবেস"
+    },
+    "chapters": "অধ্যায়",
+    "years_old": "বছর পুরান",
+    "weight_kg": "ওজন (কেজি)",
+    "validation": {
+        "date_invalid_form": "${path} অবশ্যই YYYY-MM-DD এ হতে হবে",
+        "blank": "${path} শুন্য হওয়া যাবে না",
+        "required": "${path} অবশ্য পুরনীয়",
+        "unique": "${path} অনন্য হতে হবে"
+    },
+    "type": "ধরন",
+    "total": "মোট",
+    "unknown_date": "আজানা তারিখ",
+    "weight": "ওজন"
 }
