@@ -1326,7 +1326,7 @@
         "merged_tags": "已合并的标签",
         "reassign_past_tense": "已重新指定文件",
         "removed_entity": "已删除{count, plural, one {{singularEntity}} other {{pluralEntity}}}",
-        "rescanning_entity": "重新扫描 {count, plural, one {{singularEntity}} other {{pluralEntity}}}中…",
+        "rescanning_entity": "正在重新扫描{singularEntity}…",
         "saved_entity": "已保存{entity}",
         "started_auto_tagging": "自动生成标签中",
         "started_generating": "生成资料中",
