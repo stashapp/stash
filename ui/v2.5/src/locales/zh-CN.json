@@ -969,7 +969,7 @@
         "select_youngest": "选择重复组中最新文件",
         "only_select_matching_codecs": "在重复组中仅当所有编解码器匹配时选中"
     },
-    "duplicated_phash": "重复的（感知码）",
+    "duplicated_phash": "重复的（pHash）",
     "duration": "时长",
     "effect_filters": {
         "aspect": "比例",
@@ -1112,7 +1112,7 @@
     "parent_tags": "上级标签",
     "part_of": "{parent} 的部分",
     "path": "路径",
-    "perceptual_similarity": "感知的类似程度（感知码）",
+    "perceptual_similarity": "感知相似度（pHash码）",
     "performer": "演员",
     "performer_age": "演员年龄",
     "performer_count": "演员数量",
@@ -1326,7 +1326,7 @@
         "merged_tags": "已合并的标签",
         "reassign_past_tense": "已重新指定文件",
         "removed_entity": "已删除{count, plural, one {{singularEntity}} other {{pluralEntity}}}",
-        "rescanning_entity": "重新扫描{count, plural, one {{singularEntity}} other {{pluralEntity}}}中…",
+        "rescanning_entity": "重新扫描 {count, plural, one {{singularEntity}} other {{pluralEntity}}}中…",
         "saved_entity": "已保存{entity}",
         "started_auto_tagging": "自动生成标签中",
         "started_generating": "生成资料中",
@@ -1444,5 +1444,10 @@
     "history": "历史记录",
     "index_of_total": "第{index}项，共 {total}项",
     "time": "时间",
-    "last_o_at": "最近一次O在"
+    "last_o_at": "最近一次O在",
+    "connection_monitor": {
+        "websocket_connection_reestablished": "Websocket连接已重新建立",
+        "websocket_connection_failed": "无法建立websocket连接：有关详细信息，请参阅浏览器控制台"
+    },
+    "o_count": "'O' 次数"
 }
