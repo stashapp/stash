@@ -111,9 +111,9 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = ({
               heading={
                 <>
                   <FormattedMessage id="tags" />
-                  <Button variant="link" size="sm" className="add-tag-button">
+                  {/* <Button variant="link" size="sm" className="add-tag-button">
                     <FormattedMessage id="actions.add" />
-                  </Button>
+                  </Button> */}
                 </>
               }
               value={tags.length ? tags : undefined}
@@ -123,13 +123,13 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = ({
               heading={
                 <>
                   <FormattedMessage id="performers" />
-                  <Button
+                  {/* <Button
                     variant="link"
                     size="sm"
                     className="add-performer-button"
                   >
                     <FormattedMessage id="actions.add" />
-                  </Button>
+                  </Button> */}
                 </>
               }
               value={performers.length ? performers : undefined}
