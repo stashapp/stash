@@ -48,6 +48,7 @@ import {
 } from "src/components/Shared/CountButton";
 import { useRatingKeybinds } from "src/hooks/keybinds";
 import { lazyComponent } from "src/utils/lazyComponent";
+import cx from "classnames";
 
 const SubmitStashBoxDraft = lazyComponent(
   () => import("src/components/Dialogs/SubmitDraft")
@@ -519,19 +520,23 @@ const ScenePage: React.FC<IProps> = ({
           collapsed ? "collapsed" : ""
         }`}
       >
-        <div className="d-none d-xl-block">
-          {scene.studio && (
-            <h1 className="mt-3 text-center">
-              <Link to={`/studios/${scene.studio.id}`}>
-                <img
-                  src={scene.studio.image_path ?? ""}
-                  alt={`${scene.studio.name} logo`}
-                  className="studio-logo"
-                />
-              </Link>
-            </h1>
-          )}
-          <h3 className="scene-header">{title}</h3>
+        <div>
+          <div className="scene-header-container">
+            {scene.studio && (
+              <h1 className="mt-3 text-center scene-studio-image">
+                <Link to={`/studios/${scene.studio.id}`}>
+                  <img
+                    src={scene.studio.image_path ?? ""}
+                    alt={`${scene.studio.name} logo`}
+                    className="studio-logo"
+                  />
+                </Link>
+              </h1>
+            )}
+            <h3 className={cx("scene-header", { "no-studio": !scene.studio })}>
+              {title}
+            </h3>
+          </div>
 
           <div className="scene-subheader">
             <span className="date">

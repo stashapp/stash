@@ -7,8 +7,8 @@ import { TagLink } from "src/components/Shared/TagLink";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
 import { PerformerCard } from "src/components/Performers/PerformerCard";
 import { sortPerformers } from "src/core/performers";
-import { objectTitle } from "src/core/files";
 import { DirectorLink } from "src/components/Shared/Link";
+import { objectTitle } from "src/core/files";
 
 interface ISceneDetailProps {
   scene: GQL.SceneDataFragment;
