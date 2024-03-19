@@ -1,5 +1,4 @@
 import React, { useMemo } from "react";
-import { Link } from "react-router-dom";
 import { FormattedMessage, useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import TextUtils from "src/utils/text";
@@ -7,7 +6,6 @@ import { TagLink } from "src/components/Shared/TagLink";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
 import { PerformerCard } from "src/components/Performers/PerformerCard";
 import { sortPerformers } from "src/core/performers";
-import { objectTitle } from "src/core/files";
 import { DirectorLink } from "src/components/Shared/Link";
 import { DetailItem } from "src/components/Shared/DetailItem";
 import { Button } from "react-bootstrap";
@@ -23,9 +21,6 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = ({
   onClickFileDetails,
 }) => {
   const intl = useIntl();
-
-  // filename should use entire row if there is no studio
-  const sceneDetailsWidth = scene.studio ? "col-9" : "col-12";
 
   const tags = useMemo(
     () => scene.tags.map((tag) => <TagLink key={tag.id} tag={tag} />),
@@ -83,13 +78,7 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = ({
   return (
     <>
       <div className="row">
-        <div className={`${sceneDetailsWidth} col-xl-12 scene-details`}>
-          <div className="scene-header d-xl-none">
-            <h3>
-              <TruncatedText text={objectTitle(scene)} />
-            </h3>
-          </div>
-
+        <div className={`col-12 scene-details`}>
           <div className="detail-group">
             <DetailItem id="studio-code" value={scene.code} fullWidth />
             <DetailItem
@@ -151,17 +140,6 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = ({
             />
           </div>
         </div>
-        {scene.studio && (
-          <div className="col-3 d-xl-none">
-            <Link to={`/studios/${scene.studio.id}`}>
-              <img
-                src={scene.studio.image_path ?? ""}
-                alt={`${scene.studio.name} logo`}
-                className="studio-logo float-right"
-              />
-            </Link>
-          </div>
-        )}
       </div>
     </>
   );
