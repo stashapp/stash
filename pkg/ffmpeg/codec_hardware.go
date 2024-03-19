@@ -46,7 +46,7 @@ func (f *FFMpeg) InitHWSupport(ctx context.Context) {
 
 		videoFilter := f.hwFilterInit(codec)
 		// Test scaling
-		videoFilter = videoFilter.ScaleDimensions(-2, 160)
+		videoFilter = videoFilter.ScaleDimensions(256, 160)
 		videoFilter = f.hwCodecFilter(videoFilter, codec)
 		args = append(args, CodecInit(codec)...)
 		args = args.VideoFilter(videoFilter)
