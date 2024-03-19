@@ -4,6 +4,7 @@ import { useIntl } from "react-intl";
 import { IPhashDistanceValue } from "../../../models/list-filter/types";
 import { Criterion } from "../../../models/list-filter/criteria/criterion";
 import { CriterionModifier } from "src/core/generated-graphql";
+import { useDebouncedState } from "src/hooks/debounce";
 
 interface IPhashFilterProps {
   criterion: Criterion<IPhashDistanceValue>;
@@ -15,22 +16,32 @@ export const PhashFilter: React.FC<IPhashFilterProps> = ({
   onValueChanged,
 }) => {
   const intl = useIntl();
-  const { value } = criterion;
+  const [value, setValue] = useDebouncedState(criterion.value, onValueChanged);
 
   function valueChanged(event: React.ChangeEvent<HTMLInputElement>) {
-    onValueChanged({
+    setValue({
       value: event.target.value,
       distance: criterion.value.distance,
     });
   }
 
   function distanceChanged(event: React.ChangeEvent<HTMLInputElement>) {
+    const distanceStr = event.target.value;
+
+    if (distanceStr === "") {
+      setValue({
+        value: criterion.value.value,
+        distance: undefined,
+      });
+      return;
+    }
+
     let distance = parseInt(event.target.value);
     if (distance < 0 || isNaN(distance)) {
       distance = 0;
     }
 
-    onValueChanged({
+    setValue({
       distance,
       value: criterion.value.value,
     });

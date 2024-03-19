@@ -1,13 +1,11 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   Button,
   ButtonGroup,
   Dropdown,
+  Form,
   FormControl,
-  InputGroup,
   Modal,
-  OverlayTrigger,
-  Tooltip,
 } from "react-bootstrap";
 import {
   useFindSavedFilters,
@@ -17,12 +15,118 @@ import {
 } from "src/core/StashService";
 import { useToast } from "src/hooks/Toast";
 import { ListFilterModel } from "src/models/list-filter/filter";
-import { SavedFilterDataFragment } from "src/core/generated-graphql";
+import {
+  FilterMode,
+  SavedFilterDataFragment,
+} from "src/core/generated-graphql";
 import { PersistanceLevel } from "./ItemList";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Icon } from "../Shared/Icon";
 import { LoadingIndicator } from "../Shared/LoadingIndicator";
 import { faSave, faTimes } from "@fortawesome/free-solid-svg-icons";
+
+const ExistingSavedFilterList: React.FC<{
+  name: string;
+  setName: (name: string) => void;
+  existing: { name: string; id: string }[];
+}> = ({ name, setName, existing }) => {
+  const filtered = useMemo(() => {
+    if (!name) return existing;
+
+    return existing.filter((f) =>
+      f.name.toLowerCase().includes(name.toLowerCase())
+    );
+  }, [existing, name]);
+
+  return (
+    <ul className="existing-filter-list">
+      {filtered.map((f) => (
+        <li key={f.id}>
+          <Button
+            className="minimal"
+            variant="link"
+            onClick={() => setName(f.name)}
+          >
+            {f.name}
+          </Button>
+        </li>
+      ))}
+    </ul>
+  );
+};
+
+export const SaveFilterDialog: React.FC<{
+  mode: FilterMode;
+  onClose: (name?: string, id?: string) => void;
+  onSaveAsDefault?: () => void;
+}> = ({ mode, onClose, onSaveAsDefault }) => {
+  const intl = useIntl();
+  const [filterName, setFilterName] = useState("");
+
+  const { data } = useFindSavedFilters(mode);
+
+  const overwritingFilter = useMemo(() => {
+    const savedFilters = data?.findSavedFilters ?? [];
+    return savedFilters.find(
+      (f) => f.name.toLowerCase() === filterName.toLowerCase()
+    );
+  }, [data?.findSavedFilters, filterName]);
+
+  return (
+    <Modal show className="save-filter-dialog">
+      <Modal.Body>
+        <Form.Group>
+          <Form.Label>
+            <FormattedMessage id="filter_name" />
+          </Form.Label>
+          <FormControl
+            className="bg-secondary text-white border-secondary"
+            placeholder={`${intl.formatMessage({ id: "filter_name" })}…`}
+            value={filterName}
+            onChange={(e) => setFilterName(e.target.value)}
+          />
+        </Form.Group>
+
+        <ExistingSavedFilterList
+          name={filterName}
+          setName={setFilterName}
+          existing={data?.findSavedFilters ?? []}
+        />
+
+        {!!overwritingFilter && (
+          <span className="saved-filter-overwrite-warning">
+            <FormattedMessage
+              id="dialogs.overwrite_filter_warning"
+              values={{
+                entityName: overwritingFilter.name,
+              }}
+            />
+          </span>
+        )}
+      </Modal.Body>
+      <Modal.Footer>
+        <div>
+          {onSaveAsDefault && (
+            <Button variant="secondary" onClick={() => onSaveAsDefault()}>
+              {intl.formatMessage({ id: "actions.set_as_default" })}
+            </Button>
+          )}
+        </div>
+        <div>
+          <Button
+            variant="primary"
+            onClick={() => onClose(filterName, overwritingFilter?.id)}
+          >
+            {intl.formatMessage({ id: "actions.save" })}
+          </Button>
+          <Button variant="secondary" onClick={() => onClose()}>
+            {intl.formatMessage({ id: "actions.cancel" })}
+          </Button>
+        </div>
+      </Modal.Footer>
+    </Modal>
+  );
+};
 
 interface ISavedFilterListProps {
   filter: ListFilterModel;
@@ -45,9 +149,7 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
   const [deletingFilter, setDeletingFilter] = useState<
     SavedFilterDataFragment | undefined
   >();
-  const [overwritingFilter, setOverwritingFilter] = useState<
-    SavedFilterDataFragment | undefined
-  >();
+  const [showSaveDialog, setShowSaveDialog] = useState(false);
 
   const [saveFilter] = useSaveFilter();
   const [destroyFilter] = useSavedFilterDestroy();
@@ -84,7 +186,7 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
         )
       );
       setFilterName("");
-      setOverwritingFilter(undefined);
+      setShowSaveDialog(false);
       refetch();
     } catch (err) {
       Toast.error(err);
@@ -179,20 +281,8 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
         </Dropdown.Item>
         <ButtonGroup>
           <Button
-            className="save-button"
-            variant="secondary"
-            size="sm"
-            title={intl.formatMessage({ id: "actions.overwrite" })}
-            onClick={(e) => {
-              setOverwritingFilter(item);
-              e.stopPropagation();
-            }}
-          >
-            <Icon icon={faSave} />
-          </Button>
-          <Button
             className="delete-button"
-            variant="secondary"
+            variant="minimal"
             size="sm"
             title={intl.formatMessage({ id: "actions.delete" })}
             onClick={(e) => {
@@ -240,38 +330,25 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
     );
   }
 
-  function maybeRenderOverwriteAlert() {
-    if (!overwritingFilter) {
+  function maybeRenderSaveDialog() {
+    if (!showSaveDialog) {
       return;
     }
 
     return (
-      <Modal show>
-        <Modal.Body>
-          <FormattedMessage
-            id="dialogs.overwrite_filter_confirm"
-            values={{
-              entityName: overwritingFilter.name,
-            }}
-          />
-        </Modal.Body>
-        <Modal.Footer>
-          <Button
-            variant="primary"
-            onClick={() =>
-              onSaveFilter(overwritingFilter.name, overwritingFilter.id)
-            }
-          >
-            {intl.formatMessage({ id: "actions.overwrite" })}
-          </Button>
-          <Button
-            variant="secondary"
-            onClick={() => setOverwritingFilter(undefined)}
-          >
-            {intl.formatMessage({ id: "actions.cancel" })}
-          </Button>
-        </Modal.Footer>
-      </Modal>
+      <SaveFilterDialog
+        mode={filter.mode}
+        onClose={(name, id) => {
+          setShowSaveDialog(false);
+          if (name) {
+            onSaveFilter(name, id);
+          }
+        }}
+        onSaveAsDefault={() => {
+          setShowSaveDialog(false);
+          onSetDefaultFilter();
+        }}
+      />
     );
   }
 
@@ -319,41 +396,26 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
   }
 
   return (
-    <>
+    <div className="saved-filter-list-container">
       {maybeRenderDeleteAlert()}
-      {maybeRenderOverwriteAlert()}
-      <InputGroup>
-        <FormControl
-          className="bg-secondary text-white border-secondary"
-          placeholder={`${intl.formatMessage({ id: "filter_name" })}…`}
-          value={filterName}
-          onChange={(e) => setFilterName(e.target.value)}
-        />
-        <InputGroup.Append>
-          <OverlayTrigger
-            placement="top"
-            overlay={
-              <Tooltip id="filter-tooltip">
-                <FormattedMessage id="actions.save_filter" />
-              </Tooltip>
-            }
-          >
-            <Button
-              disabled={
-                !filterName || !!savedFilters.find((f) => f.name === filterName)
-              }
-              variant="secondary"
-              onClick={() => {
-                onSaveFilter(filterName);
-              }}
-            >
-              <Icon icon={faSave} />
-            </Button>
-          </OverlayTrigger>
-        </InputGroup.Append>
-      </InputGroup>
+      {maybeRenderSaveDialog()}
+      <Button
+        className="minimal save-filter-button"
+        onClick={() => setShowSaveDialog(true)}
+      >
+        <Icon icon={faSave} />
+        <span>
+          <FormattedMessage id="actions.save_filter" />
+        </span>
+      </Button>
+      <FormControl
+        className="bg-secondary text-white border-secondary"
+        placeholder={`${intl.formatMessage({ id: "filter_name" })}…`}
+        value={filterName}
+        onChange={(e) => setFilterName(e.target.value)}
+      />
       {renderSavedFilters()}
       {maybeRenderSetDefaultButton()}
-    </>
+    </div>
   );
 };

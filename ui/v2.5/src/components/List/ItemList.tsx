@@ -7,7 +7,6 @@ import React, {
   useRef,
   useState,
 } from "react";
-import clone from "lodash-es/clone";
 import cloneDeep from "lodash-es/cloneDeep";
 import isEqual from "lodash-es/isEqual";
 import Mousetrap from "mousetrap";
@@ -28,11 +27,13 @@ import { Pagination, PaginationIndex } from "./Pagination";
 import { EditFilterDialog } from "src/components/List/EditFilterDialog";
 import { ListFilter } from "./ListFilter";
 import { FilterTags } from "./FilterTags";
-import { ListViewOptions } from "./ListViewOptions";
+import { DisplayModeSelect, ZoomSelect } from "./ListViewOptions";
 import { ListOperationButtons } from "./ListOperationButtons";
 import { LoadingIndicator } from "../Shared/LoadingIndicator";
 import { DisplayMode } from "src/models/list-filter/types";
 import { ButtonToolbar } from "react-bootstrap";
+import { useListSelect } from "src/hooks/listSelect";
+import { useFilterConfig } from "./util";
 
 export enum PersistanceLevel {
   // do not load default query or persist display mode
@@ -150,16 +151,21 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
   }) => {
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-    const [lastClickedId, setLastClickedId] = useState<string>();
 
     const [editingCriterion, setEditingCriterion] = useState<string>();
     const [showEditFilter, setShowEditFilter] = useState(false);
+
+    const { criterionOptions, setCriterionOptions } = useFilterConfig(
+      filter.mode
+    );
 
     const result = useResult(filter);
     const [totalCount, setTotalCount] = useState(0);
     const [metadataByline, setMetadataByline] = useState<React.ReactNode>();
     const items = useMemo(() => getItems(result), [result]);
+
+    const { selectedIds, onSelectChange, onSelectAll, onSelectNone } =
+      useListSelect(items);
 
     const [arePaging, setArePaging] = useState(false);
     const hidePagination = !arePaging && result.loading;
@@ -246,79 +252,6 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
       }
     }, [addKeybinds, result, filter, selectedIds]);
 
-    function singleSelect(id: string, selected: boolean) {
-      setLastClickedId(id);
-
-      const newSelectedIds = clone(selectedIds);
-      if (selected) {
-        newSelectedIds.add(id);
-      } else {
-        newSelectedIds.delete(id);
-      }
-
-      setSelectedIds(newSelectedIds);
-    }
-
-    function selectRange(startIndex: number, endIndex: number) {
-      let start = startIndex;
-      let end = endIndex;
-      if (start > end) {
-        const tmp = start;
-        start = end;
-        end = tmp;
-      }
-
-      const subset = items.slice(start, end + 1);
-      const newSelectedIds = new Set<string>();
-
-      subset.forEach((item) => {
-        newSelectedIds.add(item.id);
-      });
-
-      setSelectedIds(newSelectedIds);
-    }
-
-    function multiSelect(id: string) {
-      let startIndex = 0;
-      let thisIndex = -1;
-
-      if (lastClickedId) {
-        startIndex = items.findIndex((item) => {
-          return item.id === lastClickedId;
-        });
-      }
-
-      thisIndex = items.findIndex((item) => {
-        return item.id === id;
-      });
-
-      selectRange(startIndex, thisIndex);
-    }
-
-    function onSelectChange(id: string, selected: boolean, shiftKey: boolean) {
-      if (shiftKey) {
-        multiSelect(id);
-      } else {
-        singleSelect(id, selected);
-      }
-    }
-
-    function onSelectAll() {
-      const newSelectedIds = new Set<string>();
-      items.forEach((item) => {
-        newSelectedIds.add(item.id);
-      });
-
-      setSelectedIds(newSelectedIds);
-      setLastClickedId(undefined);
-    }
-
-    function onSelectNone() {
-      const newSelectedIds = new Set<string>();
-      setSelectedIds(newSelectedIds);
-      setLastClickedId(undefined);
-    }
-
     function onChangeZoom(newZoomIndex: number) {
       const newFilter = cloneDeep(filter);
       newFilter.zoomIndex = newZoomIndex;
@@ -379,13 +312,15 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
     function renderPagination() {
       if (hidePagination) return;
       return (
-        <Pagination
-          itemsPerPage={filter.itemsPerPage}
-          currentPage={filter.currentPage}
-          totalItems={totalCount}
-          metadataByline={metadataByline}
-          onChangePage={onChangePage}
-        />
+        <div className="filter-container">
+          <Pagination
+            itemsPerPage={filter.itemsPerPage}
+            currentPage={filter.currentPage}
+            totalItems={totalCount}
+            metadataByline={metadataByline}
+            onChangePage={onChangePage}
+          />
+        </div>
       );
     }
 
@@ -452,16 +387,16 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
       updateFilter(newFilter);
     }
 
-    function onApplyEditFilter(f: ListFilterModel) {
+    function onApplyEditFilter(f?: ListFilterModel) {
       setShowEditFilter(false);
       setEditingCriterion(undefined);
+
+      if (!f) return;
       updateFilter(f);
     }
 
-    function onCancelEditFilter() {
-      setShowEditFilter(false);
-      setEditingCriterion(undefined);
-    }
+    const minZoom = 0;
+    const maxZoom = 3;
 
     return (
       <div className="item-list-container">
@@ -473,21 +408,33 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
             openFilterDialog={() => setShowEditFilter(true)}
             persistState={persistState}
           />
-          <ListOperationButtons
-            onSelectAll={selectable ? onSelectAll : undefined}
-            onSelectNone={selectable ? onSelectNone : undefined}
-            otherOperations={operations}
-            itemsSelected={selectedIds.size > 0}
-            onEdit={renderEditDialog ? onEdit : undefined}
-            onDelete={renderDeleteDialog ? onDelete : undefined}
-          />
-          <ListViewOptions
-            displayMode={filter.displayMode}
-            displayModeOptions={filterOptions.displayModeOptions}
-            onSetDisplayMode={onChangeDisplayMode}
-            zoomIndex={zoomable ? filter.zoomIndex : undefined}
-            onSetZoom={zoomable ? onChangeZoom : undefined}
-          />
+          <div className="ml-2 mb-2">
+            <ListOperationButtons
+              onSelectAll={selectable ? onSelectAll : undefined}
+              onSelectNone={selectable ? onSelectNone : undefined}
+              otherOperations={operations}
+              itemsSelected={selectedIds.size > 0}
+              onEdit={renderEditDialog ? onEdit : undefined}
+              onDelete={renderDeleteDialog ? onDelete : undefined}
+            />
+          </div>
+          <div className="mb-2 d-inline-flex">
+            <DisplayModeSelect
+              displayMode={filter.displayMode}
+              displayModeOptions={filterOptions.displayModeOptions}
+              onSetDisplayMode={onChangeDisplayMode}
+            />
+            {!!zoomable && filter.displayMode === DisplayMode.Grid && (
+              <div className="ml-2 d-none d-sm-inline-flex">
+                <ZoomSelect
+                  minZoom={minZoom}
+                  maxZoom={maxZoom}
+                  zoomIndex={filter.zoomIndex ?? minZoom}
+                  onChangeZoom={onChangeZoom}
+                />
+              </div>
+            )}
+          </div>
         </ButtonToolbar>
         <FilterTags
           criteria={filter.criteria}
@@ -498,8 +445,9 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
         {(showEditFilter || editingCriterion) && (
           <EditFilterDialog
             filter={filter}
-            onApply={onApplyEditFilter}
-            onCancel={onCancelEditFilter}
+            criterionOptions={criterionOptions}
+            setCriterionOptions={setCriterionOptions}
+            onClose={onApplyEditFilter}
             editingCriterion={editingCriterion}
           />
         )}
@@ -597,13 +545,7 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
       // Only run once
       if (filterInitialised) return;
 
-      let newFilter = new ListFilterModel(
-        filterMode,
-        config,
-        defaultSort,
-        defaultDisplayMode,
-        defaultZoomIndex
-      );
+      let newFilter = new ListFilterModel(filterMode, config, defaultZoomIndex);
       let loadDefault = true;
       if (alterQuery && location.search) {
         loadDefault = false;

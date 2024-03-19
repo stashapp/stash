@@ -1928,6 +1928,31 @@ export const useSaveFilter = () =>
     },
   });
 
+export const mutateSaveFilter = (
+  name: string,
+  id: string | undefined,
+  filter: ListFilterModel
+) => {
+  client.mutate<GQL.SaveFilterMutation>({
+    mutation: GQL.SaveFilterDocument,
+    variables: {
+      input: {
+        id,
+        mode: filter.mode,
+        name,
+        find_filter: filter.makeFindFilter(),
+        object_filter: filter.makeSavedFilter(),
+        ui_options: filter.makeSavedUIOptions(),
+      },
+    },
+    update(cache, result) {
+      if (!result.data?.saveFilter) return;
+
+      evictQueries(cache, [GQL.FindSavedFiltersDocument]);
+    },
+  });
+};
+
 export const useSetDefaultFilter = () =>
   GQL.useSetDefaultFilterMutation({
     update(cache, result) {

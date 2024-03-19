@@ -80,6 +80,7 @@
     "open_random": "Open Random",
     "optimise_database": "Optimise Database",
     "overwrite": "Overwrite",
+    "play": "Play",
     "play_random": "Play Random",
     "play_selected": "Play selected",
     "preview": "Preview",
@@ -118,6 +119,9 @@
     "set_image": "Set image…",
     "show": "Show",
     "show_configuration": "Show Configuration",
+    "show_results": "Show results",
+    "show_count_results": "Show {count} results",
+    "shuffle": "Shuffle",
     "skip": "Skip",
     "split": "Split",
     "stop": "Stop",
@@ -886,7 +890,7 @@
       "destination": "Destination",
       "source": "Source"
     },
-    "overwrite_filter_confirm": "Are you sure you want to overwrite existing saved query {entityName}?",
+    "overwrite_filter_warning": "Saved filter \"{entityName}\" will be overwritten.",
     "performers_found": "{count} performers found",
     "reassign_entity_title": "{count, plural, one {Reassign {singularEntity}} other {Reassign {pluralEntity}}}",
     "reassign_files": {
@@ -1145,6 +1149,7 @@
     "version": "Version"
   },
   "pagination": {
+    "current_total": "{current} of {total}",
     "first": "First",
     "last": "Last",
     "next": "Next",

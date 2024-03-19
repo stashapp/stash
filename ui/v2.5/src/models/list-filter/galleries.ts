@@ -42,26 +42,29 @@ const displayModeOptions = [
 ];
 
 const criterionOptions = [
+  RatingCriterionOption,
+  StudiosCriterionOption,
+  PerformersCriterionOption,
+  TagsCriterionOption,
+  OrganizedCriterionOption,
+];
+
+const defaultHiddenCriterionOptions = [
   createStringCriterionOption("title"),
   createStringCriterionOption("code", "scene_code"),
   createStringCriterionOption("details"),
   createStringCriterionOption("photographer"),
   PathCriterionOption,
   createStringCriterionOption("checksum", "media_info.checksum"),
-  RatingCriterionOption,
-  OrganizedCriterionOption,
   AverageResolutionCriterionOption,
   GalleryIsMissingCriterionOption,
-  TagsCriterionOption,
   HasChaptersCriterionOption,
   createMandatoryNumberCriterionOption("tag_count"),
   PerformerTagsCriterionOption,
-  PerformersCriterionOption,
   createMandatoryNumberCriterionOption("performer_count"),
   createMandatoryNumberCriterionOption("performer_age"),
   PerformerFavoriteCriterionOption,
   createMandatoryNumberCriterionOption("image_count"),
-  StudiosCriterionOption,
   createStringCriterionOption("url"),
   createMandatoryNumberCriterionOption("file_count", "zip_file_count"),
   createDateCriterionOption("date"),
@@ -73,5 +76,6 @@ export const GalleryListFilterOptions = new ListFilterOptions(
   defaultSortBy,
   sortByOptions,
   displayModeOptions,
-  criterionOptions
+  criterionOptions.concat(defaultHiddenCriterionOptions),
+  defaultHiddenCriterionOptions
 );

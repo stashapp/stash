@@ -65,19 +65,17 @@ export class ListFilterModel {
   public constructor(
     mode: FilterMode,
     config?: ConfigDataFragment,
-    defaultSort?: string,
-    defaultDisplayMode?: DisplayMode,
     defaultZoomIndex?: number
   ) {
     this.mode = mode;
+    const { defaultSortBy, displayModeOptions } = getFilterOptions(mode);
+
     this.config = config;
-    this.sortBy = defaultSort;
+    this.sortBy = defaultSortBy;
     if (this.sortBy === "date") {
       this.sortDirection = SortDirectionEnum.Desc;
     }
-    if (defaultDisplayMode !== undefined) {
-      this.displayMode = defaultDisplayMode;
-    }
+    this.displayMode = displayModeOptions[0];
     if (defaultZoomIndex !== undefined) {
       this.defaultZoomIndex = defaultZoomIndex;
       this.zoomIndex = defaultZoomIndex;
@@ -86,6 +84,10 @@ export class ListFilterModel {
 
   public clone() {
     return Object.assign(new ListFilterModel(this.mode, this.config), this);
+  }
+
+  public empty() {
+    return new ListFilterModel(this.mode, this.config, this.defaultZoomIndex);
   }
 
   // returns the number of filters applied
@@ -399,9 +401,13 @@ export class ListFilterModel {
   }
 
   public makeCriterion(type: CriterionType) {
-    const { criterionOptions } = getFilterOptions(this.mode);
+    const { criterionOptions, defaultHiddenOptions } = getFilterOptions(
+      this.mode
+    );
 
-    const option = criterionOptions.find((o) => o.type === type);
+    const option = criterionOptions
+      .concat(defaultHiddenOptions)
+      .find((o) => o.type === type);
 
     if (!option) {
       throw new Error(`Unknown criterion parameter name: ${type}`);
@@ -441,5 +447,40 @@ export class ListFilterModel {
       display_mode: this.displayMode,
       zoom_index: this.zoomIndex,
     };
+  }
+
+  public clearCriteria() {
+    const ret = this.clone();
+    ret.criteria = [];
+    return ret;
+  }
+
+  public removeCriterion(type: CriterionType) {
+    const ret = this.clone();
+    const c = ret.criteria.find((cc) => cc.criterionOption.type === type);
+
+    if (!c) return ret;
+
+    const newCriteria = ret.criteria.filter((cc) => {
+      return cc.getId() !== c.getId();
+    });
+
+    ret.criteria = newCriteria;
+    return ret;
+  }
+
+  public changePage(page: number) {
+    const ret = this.clone();
+    ret.currentPage = page;
+    return ret;
+  }
+
+  public randomSingle(totalCount: number) {
+    const index = Math.floor(Math.random() * totalCount);
+
+    const ret = this.clone();
+    ret.itemsPerPage = 1;
+    ret.currentPage = index + 1;
+    return ret;
   }
 }

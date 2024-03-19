@@ -82,6 +82,8 @@ export interface IUIConfig {
 
   pinnedFilters?: Record<string, string[]>;
   tableColumns?: Record<string, string[]>;
+  criterionOrder?: Record<string, string[]>;
+  sidebarCriteria?: Record<string, string[]>;
 
   advancedMode?: boolean;
 

@@ -390,13 +390,15 @@ export const SceneFilenameParser: React.FC = () => {
             </tbody>
           </Table>
         </div>
-        <Pagination
-          currentPage={parserInput.page}
-          itemsPerPage={parserInput.pageSize}
-          totalItems={totalItems}
-          metadataByline={[]}
-          onChangePage={(page) => onPageChanged(page)}
-        />
+        <div className="filter-container">
+          <Pagination
+            currentPage={parserInput.page}
+            itemsPerPage={parserInput.pageSize}
+            totalItems={totalItems}
+            metadataByline={[]}
+            onChangePage={(page) => onPageChanged(page)}
+          />
+        </div>
         <Button variant="primary" onClick={onApply}>
           <FormattedMessage id="actions.apply" />
         </Button>

@@ -170,6 +170,12 @@
   }
 }
 
+button.collapse-button {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
 button.collapse-button.btn-primary:not(:disabled):not(.disabled):hover,
 button.collapse-button.btn-primary:not(:disabled):not(.disabled):focus,
 button.collapse-button.btn-primary:not(:disabled):not(.disabled):active {
@@ -524,9 +530,72 @@ div.react-datepicker {
   }
 }
 
+.collapse-divider {
+  flex: 0 0 30px;
+  max-width: 30px;
+  z-index: 1;
+
+  button {
+    background-color: transparent;
+    border: 0;
+    color: $link-color;
+    cursor: pointer;
+    display: flex;
+    font-size: 10px;
+    font-weight: 800;
+    height: 100%;
+    line-height: 100%;
+    padding: 0;
+    text-align: center;
+    width: 100%;
+
+    &:active:not(:hover),
+    &:focus:not(:hover) {
+      background-color: transparent;
+      border: 0;
+      box-shadow: none;
+    }
+
+    div {
+      height: 100%;
+    }
+
+    div:first-child {
+      align-items: center;
+      border-right: 1px solid $secondary;
+      display: flex;
+      height: 100%;
+    }
+  }
+
+  &.collapsed {
+    margin-right: -15px;
+    z-index: 0;
+
+    button div:first-child {
+      border-right: 0;
+    }
+  }
+
+  &.collapsed:hover {
+    z-index: 101;
+  }
+}
+
 .react-select-image-option {
   align-items: baseline;
   display: flex;
+}
+
+.scroll-to-top-button {
+  border-radius: 50%;
+  display: none;
+  opacity: 75%;
+  z-index: 1000;
+
+  &.show {
+    display: block;
+  }
 }
 
 button.btn.favorite-button {

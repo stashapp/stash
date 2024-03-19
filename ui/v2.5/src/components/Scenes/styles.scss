@@ -751,6 +751,30 @@ input[type="range"].blue-slider {
   }
 }
 
+#scenes-page {
+  display: flex;
+  flex-direction: row;
+
+  .scenes-page-results {
+    flex: 0 0 calc(100% - 20rem);
+    max-height: calc(100vh - 4rem);
+    max-width: calc(100% - 20rem);
+    overflow-x: auto;
+    overflow-y: hidden;
+
+    &.expanded {
+      flex-basis: 100%;
+      max-width: 100%;
+    }
+
+    .scenes-page-items {
+      max-height: 100%;
+      overflow-x: hidden;
+      overflow-y: auto;
+    }
+  }
+}
+
 .play-history dl {
   margin-top: 0.5rem;
 }

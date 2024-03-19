@@ -34,6 +34,14 @@ const sortByOptions = ["filesize", "file_count", "date", ...MediaSortByOptions]
   ]);
 const displayModeOptions = [DisplayMode.Grid, DisplayMode.Wall];
 const criterionOptions = [
+  RatingCriterionOption,
+  StudiosCriterionOption,
+  PerformersCriterionOption,
+  TagsCriterionOption,
+  OrganizedCriterionOption,
+];
+
+const defaultHiddenCriterionOptions = [
   createStringCriterionOption("title"),
   createStringCriterionOption("code", "scene_code"),
   createStringCriterionOption("details"),
@@ -41,29 +49,26 @@ const criterionOptions = [
   createMandatoryStringCriterionOption("checksum", "media_info.checksum"),
   PathCriterionOption,
   GalleriesCriterionOption,
-  OrganizedCriterionOption,
   createMandatoryNumberCriterionOption("o_counter", "o_count"),
   ResolutionCriterionOption,
   OrientationCriterionOption,
   ImageIsMissingCriterionOption,
-  TagsCriterionOption,
-  RatingCriterionOption,
   createMandatoryNumberCriterionOption("tag_count"),
   PerformerTagsCriterionOption,
-  PerformersCriterionOption,
   createMandatoryNumberCriterionOption("performer_count"),
   createMandatoryNumberCriterionOption("performer_age"),
   PerformerFavoriteCriterionOption,
-  StudiosCriterionOption,
   createStringCriterionOption("url"),
   createDateCriterionOption("date"),
   createMandatoryNumberCriterionOption("file_count"),
   createMandatoryTimestampCriterionOption("created_at"),
   createMandatoryTimestampCriterionOption("updated_at"),
 ];
+
 export const ImageListFilterOptions = new ListFilterOptions(
   defaultSortBy,
   sortByOptions,
   displayModeOptions,
-  criterionOptions
+  criterionOptions.concat(defaultHiddenCriterionOptions),
+  defaultHiddenCriterionOptions
 );

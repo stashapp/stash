@@ -4,6 +4,7 @@ import {
   Criterion,
   CriterionValue,
 } from "../../../models/list-filter/criteria/criterion";
+import { useDebouncedState } from "src/hooks/debounce";
 
 interface IInputFilterProps {
   criterion: Criterion<CriterionValue>;
@@ -14,9 +15,10 @@ export const InputFilter: React.FC<IInputFilterProps> = ({
   criterion,
   onValueChanged,
 }) => {
-  function onChanged(event: React.ChangeEvent<HTMLInputElement>) {
-    onValueChanged(event.target.value);
-  }
+  const [value, setValue] = useDebouncedState<string>(
+    criterion.value ? criterion.value.toString() : "",
+    onValueChanged
+  );
 
   return (
     <>
@@ -24,8 +26,8 @@ export const InputFilter: React.FC<IInputFilterProps> = ({
         <Form.Control
           className="btn-secondary"
           type={criterion.criterionOption.inputType}
-          onChange={onChanged}
-          value={criterion.value ? criterion.value.toString() : ""}
+          onChange={(e) => setValue(e.target.value)}
+          value={value}
         />
       </Form.Group>
     </>

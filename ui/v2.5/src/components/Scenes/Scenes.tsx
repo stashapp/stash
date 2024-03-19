@@ -6,6 +6,7 @@ import { PersistanceLevel } from "../List/ItemList";
 import { lazyComponent } from "src/utils/lazyComponent";
 import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
 
+const ScenesPage = lazyComponent(() => import("./ScenesPage"));
 const SceneList = lazyComponent(() => import("./SceneList"));
 const SceneMarkerList = lazyComponent(() => import("./SceneMarkerList"));
 const Scene = lazyComponent(() => import("./SceneDetails/Scene"));
@@ -35,7 +36,8 @@ const SceneRoutes: React.FC = () => {
     <>
       <Helmet {...titleProps} />
       <Switch>
-        <Route exact path="/scenes" component={Scenes} />
+        <Route exact path="/scenes" component={ScenesPage} />
+        <Route exact path="/scenes/old" component={Scenes} />
         <Route exact path="/scenes/markers" component={SceneMarkers} />
         <Route exact path="/scenes/new" component={SceneCreate} />
         <Route path="/scenes/:id" component={Scene} />

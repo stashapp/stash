@@ -6,6 +6,7 @@ import { PersistanceLevel } from "../List/ItemList";
 import Image from "./ImageDetails/Image";
 import { ImageList } from "./ImageList";
 import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
+import { ImagesPage } from "./ImagesPage";
 
 const Images: React.FC = () => {
   useScrollToTopOnMount();
@@ -19,7 +20,8 @@ const ImageRoutes: React.FC = () => {
     <>
       <Helmet {...titleProps} />
       <Switch>
-        <Route exact path="/images" component={Images} />
+        <Route exact path="/images" component={ImagesPage} />
+        <Route exact path="/images/old" component={Images} />
         <Route path="/images/:id" component={Image} />
       </Switch>
     </>

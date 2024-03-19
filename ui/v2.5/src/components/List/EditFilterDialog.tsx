@@ -15,9 +15,7 @@ import {
   CriterionOption,
 } from "src/models/list-filter/criteria/criterion";
 import { FormattedMessage, useIntl } from "react-intl";
-import { ConfigurationContext } from "src/hooks/Config";
 import { ListFilterModel } from "src/models/list-filter/filter";
-import { getFilterOptions } from "src/models/list-filter/factory";
 import { FilterTags } from "./FilterTags";
 import { CriterionEditor } from "./CriterionEditor";
 import { Icon } from "../Shared/Icon";
@@ -25,40 +23,48 @@ import {
   faChevronDown,
   faChevronRight,
   faTimes,
-  faThumbtack,
+  faEye,
+  faEyeSlash,
 } from "@fortawesome/free-solid-svg-icons";
 import { useCompare, usePrevious } from "src/hooks/state";
 import { CriterionType } from "src/models/list-filter/types";
-import { useToast } from "src/hooks/Toast";
-import { useConfigureUI } from "src/core/StashService";
-import { FilterMode } from "src/core/generated-graphql";
 import { useFocusOnce } from "src/utils/focus";
 import Mousetrap from "mousetrap";
+import { useDragReorder } from "src/hooks/dragReorder";
+import { ConfigurationContext } from "src/hooks/Config";
+
+export interface ICriterionOption {
+  option: CriterionOption;
+  showInSidebar: boolean;
+}
 import ScreenUtils from "src/utils/screen";
 
 interface ICriterionList {
+  searchValue: string;
   criteria: string[];
   currentCriterion?: Criterion<CriterionValue>;
   setCriterion: (c: Criterion<CriterionValue>) => void;
-  criterionOptions: CriterionOption[];
-  pinnedCriterionOptions: CriterionOption[];
+  criterionOptions: ICriterionOption[];
+  setCriterionOptions?: (c: ICriterionOption[]) => void;
   selected?: CriterionOption;
   optionSelected: (o?: CriterionOption) => void;
   onRemoveCriterion: (c: string) => void;
-  onTogglePin: (c: CriterionOption) => void;
 }
 
 const CriterionOptionList: React.FC<ICriterionList> = ({
+  searchValue,
   criteria,
   currentCriterion,
   setCriterion,
-  criterionOptions,
-  pinnedCriterionOptions,
+  criterionOptions: icriterionOptions,
+  setCriterionOptions,
   selected,
   optionSelected,
   onRemoveCriterion,
-  onTogglePin,
 }) => {
+  const intl = useIntl();
+  const { configuration: config } = useContext(ConfigurationContext);
+
   const prevCriterion = usePrevious(currentCriterion);
 
   const scrolled = useRef(false);
@@ -66,16 +72,43 @@ const CriterionOptionList: React.FC<ICriterionList> = ({
   const type = currentCriterion?.criterionOption.type;
   const prevType = prevCriterion?.criterionOption.type;
 
+  const { stageList, onDragStart, onDragOver, onDrop, onDragOverDefault } =
+    useDragReorder(icriterionOptions, setCriterionOptions ?? (() => {}));
+
+  const filteredList = useMemo(() => {
+    const trimmedSearch = searchValue.trim().toLowerCase();
+    const mapped = stageList.map((c, i) => ({ option: c, index: i }));
+    if (!trimmedSearch) {
+      return mapped;
+    }
+
+    return mapped.filter((c) => {
+      return intl
+        .formatMessage({ id: c.option.option.messageID })
+        .toLowerCase()
+        .includes(trimmedSearch);
+    });
+  }, [intl, searchValue, stageList]);
+
+  const criterionOptions = useMemo(() => {
+    return stageList.map((c) => c.option);
+  }, [stageList]);
+
+  const emptyCriteria = useMemo(() => {
+    const ret: Record<string, Criterion<CriterionValue>> = {};
+    criterionOptions.forEach((c) => {
+      ret[c.type] = c.makeCriterion(config);
+    });
+    return ret;
+  }, [config, criterionOptions]);
+
   const criteriaRefs = useMemo(() => {
     const refs: Record<string, React.RefObject<HTMLDivElement>> = {};
     criterionOptions.forEach((c) => {
       refs[c.type] = React.createRef();
     });
-    pinnedCriterionOptions.forEach((c) => {
-      refs[c.type] = React.createRef();
-    });
     return refs;
-  }, [criterionOptions, pinnedCriterionOptions]);
+  }, [criterionOptions]);
 
   function onSelect(k: string | null) {
     if (!k) {
@@ -83,11 +116,7 @@ const CriterionOptionList: React.FC<ICriterionList> = ({
       return;
     }
 
-    let option = criterionOptions.find((c) => c.type === k);
-    if (!option) {
-      option = pinnedCriterionOptions.find((c) => c.type === k);
-    }
-
+    const option = criterionOptions.find((c) => c.type === k);
     if (option) {
       optionSelected(option);
     }
@@ -121,17 +150,42 @@ const CriterionOptionList: React.FC<ICriterionList> = ({
     onRemoveCriterion(t);
   }
 
-  function togglePin(ev: React.MouseEvent, c: CriterionOption) {
+  function toggleShowInSidebar(ev: React.MouseEvent, o: CriterionOption) {
     // needed to prevent the nav item from being selected
     ev.stopPropagation();
     ev.preventDefault();
-    onTogglePin(c);
+
+    if (!setCriterionOptions) return;
+
+    const newOptions = icriterionOptions.map((c) => {
+      if (c.option.type === o.type) {
+        return {
+          ...c,
+          showInSidebar: !c.showInSidebar,
+        } as ICriterionOption;
+      }
+      return c;
+    });
+
+    setCriterionOptions(newOptions);
   }
 
-  function renderCard(c: CriterionOption, isPin: boolean) {
+  function renderCard(o: ICriterionOption, index: number) {
+    const c = o.option;
     return (
       <Card key={c.type} data-type={c.type} ref={criteriaRefs[c.type]!}>
-        <Accordion.Toggle className="filter-item-header" eventKey={c.type}>
+        <Accordion.Toggle
+          className="filter-item-header"
+          eventKey={c.type}
+          draggable={!!setCriterionOptions}
+          onDragStart={(e: React.DragEvent<HTMLElement>) =>
+            onDragStart(e, index)
+          }
+          onDragEnter={(e: React.DragEvent<HTMLElement>) =>
+            onDragOver(e, index)
+          }
+          onDrop={() => onDrop()}
+        >
           <span className="mr-auto">
             <Icon
               className="collapse-icon fa-fw"
@@ -148,19 +202,22 @@ const CriterionOptionList: React.FC<ICriterionList> = ({
               <Icon icon={faTimes} />
             </Button>
           )}
-          <Button
-            className="pin-criterion-button"
-            variant="minimal"
-            onClick={(e) => togglePin(e, c)}
-          >
-            <Icon icon={faThumbtack} className={isPin ? "" : "tilted"} />
-          </Button>
+          {!!setCriterionOptions && (
+            <Button
+              className="toggle-criterion-sidebar-button"
+              variant="minimal"
+              onClick={(e) => toggleShowInSidebar(e, c)}
+            >
+              <Icon icon={!o.showInSidebar ? faEye : faEyeSlash} />
+            </Button>
+          )}
         </Accordion.Toggle>
         <Accordion.Collapse eventKey={c.type}>
           {(type === c.type && currentCriterion) ||
           (prevType === c.type && prevCriterion) ? (
             <Card.Body>
               <CriterionEditor
+                emptyCriterion={emptyCriteria[c.type]}
                 criterion={getReleventCriterion(c.type)!}
                 setCriterion={setCriterion}
               />
@@ -178,50 +235,29 @@ const CriterionOptionList: React.FC<ICriterionList> = ({
       className="criterion-list"
       activeKey={selected?.type}
       onSelect={onSelect}
+      onDragOver={onDragOverDefault}
     >
-      {pinnedCriterionOptions.length !== 0 && (
-        <>
-          {pinnedCriterionOptions.map((c) => renderCard(c, true))}
-          <div className="pinned-criterion-divider" />
-        </>
-      )}
-      {criterionOptions.map((c) => renderCard(c, false))}
+      {filteredList.map((c) => renderCard(c.option, c.index))}
     </Accordion>
   );
 };
 
-const FilterModeToConfigKey = {
-  [FilterMode.Galleries]: "galleries",
-  [FilterMode.Images]: "images",
-  [FilterMode.Movies]: "movies",
-  [FilterMode.Performers]: "performers",
-  [FilterMode.SceneMarkers]: "sceneMarkers",
-  [FilterMode.Scenes]: "scenes",
-  [FilterMode.Studios]: "studios",
-  [FilterMode.Tags]: "tags",
-};
-
-function filterModeToConfigKey(filterMode: FilterMode) {
-  return FilterModeToConfigKey[filterMode];
-}
-
 interface IEditFilterProps {
   filter: ListFilterModel;
+  criterionOptions: ICriterionOption[];
+  setCriterionOptions?: (c: ICriterionOption[]) => void;
   editingCriterion?: string;
-  onApply: (filter: ListFilterModel) => void;
-  onCancel: () => void;
+  onClose: (filter?: ListFilterModel) => void;
 }
 
 export const EditFilterDialog: React.FC<IEditFilterProps> = ({
   filter,
+  criterionOptions: icriterionOptions,
+  setCriterionOptions,
   editingCriterion,
-  onApply,
-  onCancel,
+  onClose,
 }) => {
-  const Toast = useToast();
   const intl = useIntl();
-
-  const { configuration } = useContext(ConfigurationContext);
 
   const [searchValue, setSearchValue] = useState("");
   const [currentFilter, setCurrentFilter] = useState<ListFilterModel>(
@@ -236,18 +272,6 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
   const criteriaList = useMemo(() => {
     return criteria.map((c) => c.criterionOption.type);
   }, [criteria]);
-
-  const filterOptions = useMemo(() => {
-    return getFilterOptions(currentFilter.mode);
-  }, [currentFilter.mode]);
-
-  const criterionOptions = useMemo(() => {
-    return [...filterOptions.criterionOptions].sort((a, b) => {
-      return intl
-        .formatMessage({ id: a.messageID })
-        .localeCompare(intl.formatMessage({ id: b.messageID }));
-    });
-  }, [intl, filterOptions.criterionOptions]);
 
   const optionSelected = useCallback(
     (option?: CriterionOption) => {
@@ -270,48 +294,20 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
     [filter, criteria]
   );
 
-  const ui = configuration?.ui ?? {};
-  const [saveUI] = useConfigureUI();
-
-  const filteredOptions = useMemo(() => {
-    const trimmedSearch = searchValue.trim().toLowerCase();
-    if (!trimmedSearch) {
-      return criterionOptions;
-    }
-
-    return criterionOptions.filter((c) => {
-      return intl
-        .formatMessage({ id: c.messageID })
-        .toLowerCase()
-        .includes(trimmedSearch);
-    });
-  }, [intl, searchValue, criterionOptions]);
-
-  const pinnedFilters = useMemo(
-    () => ui.pinnedFilters?.[filterModeToConfigKey(currentFilter.mode)] ?? [],
-    [currentFilter.mode, ui.pinnedFilters]
-  );
-  const pinnedElements = useMemo(
-    () => filteredOptions.filter((c) => pinnedFilters.includes(c.messageID)),
-    [pinnedFilters, filteredOptions]
-  );
-  const unpinnedElements = useMemo(
-    () => filteredOptions.filter((c) => !pinnedFilters.includes(c.messageID)),
-    [pinnedFilters, filteredOptions]
-  );
-
   const editingCriterionChanged = useCompare(editingCriterion);
 
   useEffect(() => {
     if (editingCriterionChanged && editingCriterion) {
-      const option = criterionOptions.find((c) => c.type === editingCriterion);
+      const option = icriterionOptions.find(
+        (c) => c.option.type === editingCriterion
+      );
       if (option) {
-        optionSelected(option);
+        optionSelected(option.option);
       }
     }
   }, [
     editingCriterion,
-    criterionOptions,
+    icriterionOptions,
     optionSelected,
     editingCriterionChanged,
   ]);
@@ -326,40 +322,6 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
       Mousetrap.unbind("/");
     };
   });
-
-  async function updatePinnedFilters(filters: string[]) {
-    const configKey = filterModeToConfigKey(currentFilter.mode);
-    try {
-      await saveUI({
-        variables: {
-          input: {
-            ...configuration?.ui,
-            pinnedFilters: {
-              ...ui.pinnedFilters,
-              [configKey]: filters,
-            },
-          },
-        },
-      });
-    } catch (e) {
-      Toast.error(e);
-    }
-  }
-
-  async function onTogglePinFilter(f: CriterionOption) {
-    try {
-      const existing = pinnedFilters.find((name) => name === f.messageID);
-      if (existing) {
-        await updatePinnedFilters(
-          pinnedFilters.filter((name) => name !== f.messageID)
-        );
-      } else {
-        await updatePinnedFilters([...pinnedFilters, f.messageID]);
-      }
-    } catch (err) {
-      Toast.error(err);
-    }
-  }
 
   function replaceCriterion(c: Criterion<CriterionValue>) {
     const newFilter = cloneDeep(currentFilter);
@@ -424,7 +386,7 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
 
   return (
     <>
-      <Modal show onHide={() => onCancel()} className="edit-filter-dialog">
+      <Modal show onHide={() => onClose()} className="edit-filter-dialog">
         <Modal.Header>
           <div>
             <FormattedMessage id="search_filter.edit_filter" />
@@ -447,12 +409,12 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
               criteria={criteriaList}
               currentCriterion={criterion}
               setCriterion={replaceCriterion}
-              criterionOptions={unpinnedElements}
-              pinnedCriterionOptions={pinnedElements}
+              searchValue={searchValue}
+              criterionOptions={icriterionOptions}
+              setCriterionOptions={setCriterionOptions}
               optionSelected={optionSelected}
               selected={criterion?.criterionOption}
               onRemoveCriterion={(c) => removeCriterionString(c)}
-              onTogglePin={(c) => onTogglePinFilter(c)}
             />
             {criteria.length > 0 && (
               <div>
@@ -467,10 +429,10 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
           </div>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => onCancel()}>
+          <Button variant="secondary" onClick={() => onClose()}>
             <FormattedMessage id="actions.cancel" />
           </Button>
-          <Button onClick={() => onApply(currentFilter)}>
+          <Button onClick={() => onClose(currentFilter)}>
             <FormattedMessage id="actions.apply" />
           </Button>
         </Modal.Footer>

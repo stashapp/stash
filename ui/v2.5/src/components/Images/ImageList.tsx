@@ -40,7 +40,10 @@ interface IImageWallProps {
   handleImageOpen: (index: number) => void;
 }
 
-const ImageWall: React.FC<IImageWallProps> = ({ images, handleImageOpen }) => {
+export const ImageWall: React.FC<IImageWallProps> = ({
+  images,
+  handleImageOpen,
+}) => {
   const { configuration } = useContext(ConfigurationContext);
   const uiConfig = configuration?.ui;
 

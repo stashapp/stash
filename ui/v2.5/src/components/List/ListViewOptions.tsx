@@ -1,41 +1,82 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Mousetrap from "mousetrap";
-import {
-  Button,
-  ButtonGroup,
-  Form,
-  OverlayTrigger,
-  Tooltip,
-} from "react-bootstrap";
+import { Button, Dropdown, Form, Overlay, Popover } from "react-bootstrap";
 import { DisplayMode } from "src/models/list-filter/types";
 import { useIntl } from "react-intl";
 import { Icon } from "../Shared/Icon";
 import {
+  faChevronDown,
   faList,
   faSquare,
   faTags,
   faThLarge,
 } from "@fortawesome/free-solid-svg-icons";
 
-interface IListViewOptionsProps {
-  zoomIndex?: number;
-  onSetZoom?: (zoomIndex: number) => void;
+interface IZoomSelectProps {
+  minZoom: number;
+  maxZoom: number;
+  zoomIndex: number;
+  onChangeZoom: (v: number) => void;
+}
+
+export const ZoomSelect: React.FC<{
+  minZoom: number;
+  maxZoom: number;
+  zoomIndex: number;
+  onChangeZoom: (v: number) => void;
+}> = ({ minZoom, maxZoom, zoomIndex, onChangeZoom }) => {
+  useEffect(() => {
+    Mousetrap.bind("+", () => {
+      if (zoomIndex !== undefined && zoomIndex < maxZoom) {
+        onChangeZoom(zoomIndex + 1);
+      }
+    });
+    Mousetrap.bind("-", () => {
+      if (zoomIndex !== undefined && zoomIndex > minZoom) {
+        onChangeZoom(zoomIndex - 1);
+      }
+    });
+
+    return () => {
+      Mousetrap.unbind("+");
+      Mousetrap.unbind("-");
+    };
+  });
+
+  return (
+    <Form.Control
+      className="zoom-slider"
+      type="range"
+      min={minZoom}
+      max={maxZoom}
+      value={zoomIndex}
+      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+        onChangeZoom(Number.parseInt(e.currentTarget.value, 10));
+        e.preventDefault();
+        e.stopPropagation();
+      }}
+    />
+  );
+};
+
+interface IDisplayModeSelectProps {
   displayMode: DisplayMode;
   onSetDisplayMode: (m: DisplayMode) => void;
   displayModeOptions: DisplayMode[];
+  zoomSelectProps?: IZoomSelectProps;
 }
 
-export const ListViewOptions: React.FC<IListViewOptionsProps> = ({
-  zoomIndex,
-  onSetZoom,
+export const DisplayModeSelect: React.FC<IDisplayModeSelectProps> = ({
   displayMode,
   onSetDisplayMode,
   displayModeOptions,
+  zoomSelectProps,
 }) => {
-  const minZoom = 0;
-  const maxZoom = 3;
-
   const intl = useIntl();
+
+  const overlayTarget = useRef(null);
+
+  const [showOptions, setShowOptions] = useState(false);
 
   useEffect(() => {
     Mousetrap.bind("v g", () => {
@@ -53,23 +94,11 @@ export const ListViewOptions: React.FC<IListViewOptionsProps> = ({
         onSetDisplayMode(DisplayMode.Wall);
       }
     });
-    Mousetrap.bind("+", () => {
-      if (onSetZoom && zoomIndex !== undefined && zoomIndex < maxZoom) {
-        onSetZoom(zoomIndex + 1);
-      }
-    });
-    Mousetrap.bind("-", () => {
-      if (onSetZoom && zoomIndex !== undefined && zoomIndex > minZoom) {
-        onSetZoom(zoomIndex - 1);
-      }
-    });
 
     return () => {
       Mousetrap.unbind("v g");
       Mousetrap.unbind("v l");
       Mousetrap.unbind("v w");
-      Mousetrap.unbind("+");
-      Mousetrap.unbind("-");
     };
   });
 
@@ -110,56 +139,56 @@ export const ListViewOptions: React.FC<IListViewOptionsProps> = ({
     }
 
     return (
-      <ButtonGroup className="mb-2">
-        {displayModeOptions.map((option) => (
-          <OverlayTrigger
-            key={option}
-            overlay={
-              <Tooltip id="display-mode-tooltip">{getLabel(option)}</Tooltip>
-            }
-          >
-            <Button
-              variant="secondary"
-              active={displayMode === option}
-              onClick={() => onSetDisplayMode(option)}
-            >
-              <Icon icon={getIcon(option)} />
-            </Button>
-          </OverlayTrigger>
-        ))}
-      </ButtonGroup>
+      <>
+        <Button
+          className="display-mode-select"
+          ref={overlayTarget}
+          variant="secondary"
+          title={getLabel(displayMode)}
+          onClick={() => setShowOptions(!showOptions)}
+        >
+          <Icon icon={getIcon(displayMode)} />
+          <Icon size="xs" icon={faChevronDown} />
+        </Button>
+        <Overlay
+          target={overlayTarget.current}
+          show={showOptions}
+          placement="bottom"
+          rootClose
+          onHide={() => setShowOptions(false)}
+        >
+          {({ placement, arrowProps, show: _show, ...props }) => (
+            <div className="popover" {...props} style={{ ...props.style }}>
+              <Popover.Content className="display-mode-popover">
+                <div className="display-mode-menu">
+                  {zoomSelectProps && (
+                    <div className="zoom-slider-container">
+                      <ZoomSelect {...zoomSelectProps} />
+                    </div>
+                  )}
+
+                  {displayModeOptions.map((option) => (
+                    <Dropdown.Item
+                      key={option}
+                      active={displayMode === option}
+                      onClick={() => {
+                        setShowOptions(false);
+                        // HACK - this is to prevent the zoom slider from being show/hidden
+                        // before the popover is closed
+                        setTimeout(() => onSetDisplayMode(option), 0);
+                      }}
+                    >
+                      <Icon icon={getIcon(option)} /> {getLabel(option)}
+                    </Dropdown.Item>
+                  ))}
+                </div>
+              </Popover.Content>
+            </div>
+          )}
+        </Overlay>
+      </>
     );
   }
 
-  function onChangeZoom(v: number) {
-    if (onSetZoom) {
-      onSetZoom(v);
-    }
-  }
-
-  function maybeRenderZoom() {
-    if (onSetZoom && displayMode === DisplayMode.Grid) {
-      return (
-        <div className="ml-2 mb-2 d-none d-sm-inline-flex">
-          <Form.Control
-            className="zoom-slider ml-1"
-            type="range"
-            min={minZoom}
-            max={maxZoom}
-            value={zoomIndex}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              onChangeZoom(Number.parseInt(e.currentTarget.value, 10))
-            }
-          />
-        </div>
-      );
-    }
-  }
-
-  return (
-    <>
-      {maybeRenderDisplayModeOptions()}
-      {maybeRenderZoom()}
-    </>
-  );
+  return <>{maybeRenderDisplayModeOptions()}</>;
 };
