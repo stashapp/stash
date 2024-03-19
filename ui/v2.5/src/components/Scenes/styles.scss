@@ -65,14 +65,17 @@
 
 @include media-breakpoint-only(lg) {
   .scene-header-container {
+    align-items: center;
     display: flex;
     justify-content: space-between;
 
     .scene-header {
+      flex: 0 0 75%;
       order: 1;
     }
 
     .scene-studio-image {
+      flex: 0 0 25%;
       order: 2;
     }
   }
