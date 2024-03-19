@@ -80,21 +80,7 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = ({
       <div className="row">
         <div className={`col-12 scene-details`}>
           <div className="detail-group">
-            <DetailItem id="studio-code" value={scene.code} fullWidth />
-            <DetailItem
-              id="director"
-              value={
-                scene.director ? (
-                  <DirectorLink director={scene.director} linkType="scene" />
-                ) : undefined
-              }
-              fullWidth
-            />
             <DetailItem id="details" value={details} />
-            <DetailItem
-              id="movies"
-              value={movies.length ? movies : undefined}
-            />
             <DetailItem
               id="tags"
               heading={
@@ -122,6 +108,20 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = ({
                 </>
               }
               value={performers.length ? performers : undefined}
+            />
+            <DetailItem
+              id="movies"
+              value={movies.length ? movies : undefined}
+            />
+            <DetailItem id="studio-code" value={scene.code} fullWidth />
+            <DetailItem
+              id="director"
+              value={
+                scene.director ? (
+                  <DirectorLink director={scene.director} linkType="scene" />
+                ) : undefined
+              }
+              fullWidth
             />
             <DetailItem
               id="files"

@@ -836,6 +836,8 @@ input[type="range"].blue-slider {
     font-size: 1.25em;
     padding-right: 1rem;
 
+    &.studio-code,
+    &.director,
     &.files,
     &.created-at,
     &.updated-at,
