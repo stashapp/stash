@@ -4,6 +4,7 @@ import { Button, ButtonGroup } from "react-bootstrap";
 import { Icon } from "src/components/Shared/Icon";
 import { SweatDrops } from "./SweatDrops";
 import cx from "classnames";
+import { useIntl } from "react-intl";
 
 interface ICountButtonProps {
   value: number;
@@ -11,6 +12,7 @@ interface ICountButtonProps {
   onIncrement?: () => void;
   onValueClicked?: () => void;
   title?: string;
+  countTitle?: string;
 }
 
 export const CountButton: React.FC<ICountButtonProps> = ({
@@ -19,6 +21,7 @@ export const CountButton: React.FC<ICountButtonProps> = ({
   onIncrement,
   onValueClicked,
   title,
+  countTitle,
 }) => {
   return (
     <ButtonGroup
@@ -36,6 +39,7 @@ export const CountButton: React.FC<ICountButtonProps> = ({
         className="minimal count-value"
         variant="secondary"
         onClick={() => (onValueClicked ?? onIncrement)?.()}
+        title={!!onValueClicked ? countTitle : undefined}
       >
         <span>{value}</span>
       </Button>
@@ -45,10 +49,26 @@ export const CountButton: React.FC<ICountButtonProps> = ({
 
 type CountButtonPropsNoIcon = Omit<ICountButtonProps, "icon">;
 
-export const ViewCountButton: React.FC<CountButtonPropsNoIcon> = (props) => (
-  <CountButton {...props} icon={<Icon icon={faEye} />} />
-);
+export const ViewCountButton: React.FC<CountButtonPropsNoIcon> = (props) => {
+  const intl = useIntl();
+  return (
+    <CountButton
+      {...props}
+      icon={<Icon icon={faEye} />}
+      title={intl.formatMessage({ id: "media_info.play_count" })}
+      countTitle={intl.formatMessage({ id: "actions.view_history" })}
+    />
+  );
+};
 
-export const OCounterButton: React.FC<CountButtonPropsNoIcon> = (props) => (
-  <CountButton {...props} icon={<SweatDrops />} />
-);
+export const OCounterButton: React.FC<CountButtonPropsNoIcon> = (props) => {
+  const intl = useIntl();
+  return (
+    <CountButton
+      {...props}
+      icon={<SweatDrops />}
+      title={intl.formatMessage({ id: "o_count" })}
+      countTitle={intl.formatMessage({ id: "actions.view_history" })}
+    />
+  );
+};
