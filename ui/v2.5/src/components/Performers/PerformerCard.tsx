@@ -253,13 +253,20 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
         <GenderIcon className="gender-icon" gender={performer.gender} />
       }
       title={
-        <div>
-          <span className="performer-name">{performer.name}</span>
-          {performer.disambiguation && (
-            <span className="performer-disambiguation">
-              {` (${performer.disambiguation})`}
-            </span>
-          )}
+        <div className="performer-card-title">
+          <span>
+            <span className="performer-name">{performer.name}</span>
+            {performer.disambiguation && (
+              <span className="performer-disambiguation">
+                {` (${performer.disambiguation})`}
+              </span>
+            )}
+            {ageFromDate && (
+              <span className="performer-age" title={ageString}>
+                {age}
+              </span>
+            )}
+          </span>
         </div>
       }
       image={
@@ -284,7 +291,7 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
       }
       details={
         <>
-          {age !== 0 ? (
+          {!ageFromDate && age !== 0 ? (
             <div className="performer-card__age">{ageString}</div>
           ) : (
             ""
