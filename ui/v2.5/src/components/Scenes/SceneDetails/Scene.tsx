@@ -78,6 +78,7 @@ import {
   OCounterButton,
   ViewCountButton,
 } from "src/components/Shared/CountButton";
+import { useRatingKeybinds } from "src/hooks/keybinds";
 
 interface IProps {
   scene: GQL.SceneDataFragment;
@@ -157,14 +158,36 @@ const ScenePage: React.FC<IProps> = ({
     }
   };
 
+  function setRating(v: number | null) {
+    updateScene({
+      variables: {
+        input: {
+          id: scene.id,
+          rating100: v,
+        },
+      },
+    });
+  }
+
+  useRatingKeybinds(
+    true,
+    configuration?.ui.ratingSystemOptions?.type,
+    setRating
+  );
+
+  function onSetActiveTabKey(key: string) {
+    setActiveTabKey(key);
+    setActivePane(undefined);
+  }
+
   // set up hotkeys
   useEffect(() => {
-    Mousetrap.bind("a", () => setActiveTabKey("scene-details-panel"));
-    Mousetrap.bind("q", () => setActiveTabKey("scene-queue-panel"));
-    Mousetrap.bind("e", () => setActiveTabKey("scene-edit-panel"));
-    Mousetrap.bind("k", () => setActiveTabKey("scene-markers-panel"));
-    Mousetrap.bind("i", () => setActiveTabKey("scene-file-info-panel"));
-    Mousetrap.bind("h", () => setActiveTabKey("scene-history-panel"));
+    Mousetrap.bind("a", () => onSetActiveTabKey("scene-details-panel"));
+    Mousetrap.bind("q", () => onSetActiveTabKey("scene-queue-panel"));
+    Mousetrap.bind("e", () => onSetActiveTabKey("scene-edit-panel"));
+    Mousetrap.bind("k", () => onSetActiveTabKey("scene-markers-panel"));
+    Mousetrap.bind("i", () => setActivePane("scene-file-info-panel"));
+    Mousetrap.bind("h", () => setActivePane("scene-history-panel"));
     Mousetrap.bind("o", () => {
       onIncrementOClick();
     });
@@ -540,7 +563,7 @@ const ScenePage: React.FC<IProps> = ({
 
           <div className="scene-toolbar">
             <span>
-              <RatingSystem value={scene.rating100} disabled />
+              <RatingSystem value={scene.rating100} onSetRating={setRating} />
             </span>
             <ButtonGroup>
               <span>

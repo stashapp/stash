@@ -809,6 +809,10 @@ input[type="range"].blue-slider {
 }
 
 .scene-details {
+  .detail-group {
+    padding-top: 0;
+  }
+
   .detail-item {
     font-size: 1.25em;
     padding-right: 1rem;
