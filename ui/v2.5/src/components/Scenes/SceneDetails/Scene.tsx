@@ -46,6 +46,7 @@ import {
   OCounterButton,
   ViewCountButton,
 } from "src/components/Shared/CountButton";
+import { useRatingKeybinds } from "src/hooks/keybinds";
 import { lazyComponent } from "src/utils/lazyComponent";
 
 const SubmitStashBoxDraft = lazyComponent(
@@ -155,6 +156,23 @@ const ScenePage: React.FC<IProps> = ({
       Toast.error(e);
     }
   };
+
+  function setRating(v: number | null) {
+    updateScene({
+      variables: {
+        input: {
+          id: scene.id,
+          rating100: v,
+        },
+      },
+    });
+  }
+
+  useRatingKeybinds(
+    true,
+    configuration?.ui.ratingSystemOptions?.type,
+    setRating
+  );
 
   // set up hotkeys
   useEffect(() => {
@@ -534,7 +552,7 @@ const ScenePage: React.FC<IProps> = ({
 
           <div className="scene-toolbar">
             <span className="scene-toolbar-group">
-              <RatingSystem value={scene.rating100} disabled />
+              <RatingSystem value={scene.rating100} onSetRating={setRating} />
             </span>
             <span className="scene-toolbar-group">
               <span>
