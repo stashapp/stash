@@ -81,6 +81,53 @@ const SceneVideoFilterPanel = lazyComponent(
   () => import("./SceneVideoFilterPanel")
 );
 
+const VideoFrameRateResolution: React.FC<{
+  width?: number;
+  height?: number;
+  frameRate?: number;
+}> = ({ width, height, frameRate }) => {
+  const intl = useIntl();
+
+  const resolution = useMemo(() => {
+    if (width && height) {
+      return (
+        <span className="resolution">
+          {TextUtils.resolution(width, height)}
+        </span>
+      );
+    }
+    return undefined;
+  }, [width, height]);
+
+  const frameRateDisplay = useMemo(() => {
+    if (frameRate) {
+      return (
+        <span className="frame-rate">
+          <FormattedMessage
+            id="frames_per_second"
+            values={{ value: intl.formatNumber(frameRate ?? 0) }}
+          />
+        </span>
+      );
+    }
+    return undefined;
+  }, [intl, frameRate]);
+
+  const divider = useMemo(() => {
+    return resolution && frameRateDisplay ? (
+      <span className="divider"> | </span>
+    ) : undefined;
+  }, [resolution, frameRateDisplay]);
+
+  return (
+    <span>
+      {frameRateDisplay}
+      {divider}
+      {resolution}
+    </span>
+  );
+};
+
 interface IProps {
   scene: GQL.SceneDataFragment;
   setTimestamp: (num: number) => void;
@@ -548,11 +595,11 @@ const ScenePage: React.FC<IProps> = ({
                 />
               )}
             </span>
-            {file?.width && file.height ? (
-              <span className="resolution">
-                {TextUtils.resolution(file.width, file.height)}
-              </span>
-            ) : undefined}
+            <VideoFrameRateResolution
+              width={file?.width}
+              height={file?.height}
+              frameRate={file?.frame_rate}
+            />
           </div>
 
           <div className="scene-toolbar">
