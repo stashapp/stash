@@ -1,14 +1,11 @@
-import React, { useMemo } from "react";
-import { Link } from "react-router-dom";
-import { FormattedDate, FormattedMessage, useIntl } from "react-intl";
+import React from "react";
+import { FormattedMessage, useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import TextUtils from "src/utils/text";
 import { TagLink } from "src/components/Shared/TagLink";
-import { TruncatedText } from "src/components/Shared/TruncatedText";
 import { PerformerCard } from "src/components/Performers/PerformerCard";
 import { sortPerformers } from "src/core/performers";
 import { DirectorLink } from "src/components/Shared/Link";
-import { objectTitle } from "src/core/files";
 
 interface ISceneDetailProps {
   scene: GQL.SceneDataFragment;
@@ -79,12 +76,7 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
   return (
     <>
       <div className="row">
-        <div className={`${sceneDetailsWidth} col-xl-12 scene-details`}>
-          <div className="scene-header d-xl-none">
-            <h3>
-              <TruncatedText text={objectTitle(props.scene)} />
-            </h3>
-          </div>
+        <div className={`${sceneDetailsWidth} col-12 scene-details`}>
           <h6>
             <FormattedMessage id="created_at" />:{" "}
             {TextUtils.formatDateTime(intl, props.scene.created_at)}{" "}
@@ -105,17 +97,6 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
             </h6>
           )}
         </div>
-        {props.scene.studio && (
-          <div className="col-3 d-xl-none">
-            <Link to={`/studios/${props.scene.studio.id}`}>
-              <img
-                src={props.scene.studio.image_path ?? ""}
-                alt={`${props.scene.studio.name} logo`}
-                className="studio-logo float-right"
-              />
-            </Link>
-          </div>
-        )}
       </div>
       <div className="row">
         <div className="col-12">
