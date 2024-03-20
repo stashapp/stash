@@ -1,4 +1,4 @@
-import { Tab, Nav, Dropdown, Button, ButtonGroup } from "react-bootstrap";
+import { Tab, Nav, Dropdown, Button } from "react-bootstrap";
 import React, {
   useEffect,
   useState,
@@ -15,12 +15,11 @@ import {
   mutateMetadataScan,
   useFindScene,
   useSceneIncrementO,
-  useSceneDecrementO,
-  useSceneResetO,
   useSceneGenerateScreenshot,
   useSceneUpdate,
   queryFindScenes,
   queryFindScenesByID,
+  useSceneIncrementPlayCount,
 } from "src/core/StashService";
 
 import { SceneEditPanel } from "./SceneEditPanel";
@@ -32,7 +31,6 @@ import { useToast } from "src/hooks/Toast";
 import SceneQueue, { QueuedScene } from "src/models/sceneQueue";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import Mousetrap from "mousetrap";
-import { OCounterButton } from "./OCounterButton";
 import { OrganizedButton } from "./OrganizedButton";
 import { ConfigurationContext } from "src/hooks/Config";
 import { getPlayerPosition } from "src/components/ScenePlayer/util";
@@ -41,6 +39,13 @@ import {
   faChevronRight,
   faChevronLeft,
 } from "@fortawesome/free-solid-svg-icons";
+import { objectPath, objectTitle } from "src/core/files";
+import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
+import TextUtils from "src/utils/text";
+import {
+  OCounterButton,
+  ViewCountButton,
+} from "src/components/Shared/CountButton";
 import { lazyComponent } from "src/utils/lazyComponent";
 
 const SubmitStashBoxDraft = lazyComponent(
@@ -73,9 +78,6 @@ const GenerateDialog = lazyComponent(
 const SceneVideoFilterPanel = lazyComponent(
   () => import("./SceneVideoFilterPanel")
 );
-import { objectPath, objectTitle } from "src/core/files";
-import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
-import TextUtils from "src/utils/text";
 
 interface IProps {
   scene: GQL.SceneDataFragment;
@@ -128,8 +130,16 @@ const ScenePage: React.FC<IProps> = ({
   const boxes = configuration?.general?.stashBoxes ?? [];
 
   const [incrementO] = useSceneIncrementO(scene.id);
-  const [decrementO] = useSceneDecrementO(scene.id);
-  const [resetO] = useSceneResetO(scene.id);
+
+  const [incrementPlay] = useSceneIncrementPlayCount();
+
+  function incrementPlayCount() {
+    incrementPlay({
+      variables: {
+        id: scene.id,
+      },
+    });
+  }
 
   const [organizedLoading, setOrganizedLoading] = useState(false);
 
@@ -138,17 +148,9 @@ const ScenePage: React.FC<IProps> = ({
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
   const [isGenerateDialogOpen, setIsGenerateDialogOpen] = useState(false);
 
-  const onIncrementClick = async () => {
+  const onIncrementOClick = async () => {
     try {
       await incrementO();
-    } catch (e) {
-      Toast.error(e);
-    }
-  };
-
-  const onDecrementClick = async () => {
-    try {
-      await decrementO();
     } catch (e) {
       Toast.error(e);
     }
@@ -163,7 +165,7 @@ const ScenePage: React.FC<IProps> = ({
     Mousetrap.bind("i", () => setActiveTabKey("scene-file-info-panel"));
     Mousetrap.bind("h", () => setActiveTabKey("scene-history-panel"));
     Mousetrap.bind("o", () => {
-      onIncrementClick();
+      onIncrementOClick();
     });
     Mousetrap.bind("p n", () => onQueueNext());
     Mousetrap.bind("p p", () => onQueuePrevious());
@@ -217,14 +219,6 @@ const ScenePage: React.FC<IProps> = ({
       Toast.error(e);
     } finally {
       setOrganizedLoading(false);
-    }
-  };
-
-  const onResetClick = async () => {
-    try {
-      await resetO();
-    } catch (e) {
-      Toast.error(e);
     }
   };
 
@@ -539,19 +533,23 @@ const ScenePage: React.FC<IProps> = ({
           </div>
 
           <div className="scene-toolbar">
-            <span>
+            <span className="scene-toolbar-group">
               <RatingSystem value={scene.rating100} disabled />
             </span>
-            <ButtonGroup>
+            <span className="scene-toolbar-group">
               <span>
                 <ExternalPlayerButton scene={scene} />
               </span>
               <span>
+                <ViewCountButton
+                  value={scene.play_count ?? 0}
+                  onIncrement={() => incrementPlayCount()}
+                />
+              </span>
+              <span>
                 <OCounterButton
-                  value={scene.o_counter || 0}
-                  onIncrement={onIncrementClick}
-                  onDecrement={onDecrementClick}
-                  onReset={onResetClick}
+                  value={scene.o_counter ?? 0}
+                  onIncrement={() => onIncrementOClick()}
                 />
               </span>
               <span>
@@ -562,7 +560,7 @@ const ScenePage: React.FC<IProps> = ({
                 />
               </span>
               <span>{renderOperations()}</span>
-            </ButtonGroup>
+            </span>
           </div>
         </div>
         {renderTabs()}

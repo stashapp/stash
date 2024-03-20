@@ -84,11 +84,23 @@
 }
 
 .scene-toolbar {
+  align-items: center;
   display: flex;
   justify-content: space-between;
   margin-bottom: 0.25rem;
   margin-top: 0.5rem;
   width: 100%;
+
+  .scene-toolbar-group {
+    align-items: center;
+    column-gap: 0.25rem;
+    display: flex;
+    width: 100%;
+
+    &:last-child {
+      justify-content: flex-end;
+    }
+  }
 }
 
 #scene-details-container {
