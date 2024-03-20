@@ -214,6 +214,8 @@ input SceneFilterType {
   resolution: ResolutionCriterionInput
   "Filter by frame rate"
   framerate: IntCriterionInput
+  "Filter by bit rate"
+  bitrate: IntCriterionInput
   "Filter by video codec"
   video_codec: StringCriterionInput
   "Filter by audio codec"

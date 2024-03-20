@@ -73,6 +73,7 @@ const criterionOptions = [
   createMandatoryNumberCriterionOption("o_counter"),
   ResolutionCriterionOption,
   createMandatoryNumberCriterionOption("framerate"),
+  createMandatoryNumberCriterionOption("bitrate"),
   createStringCriterionOption("video_codec"),
   createStringCriterionOption("audio_codec"),
   createDurationCriterionOption("duration"),

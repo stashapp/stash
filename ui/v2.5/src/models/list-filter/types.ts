@@ -121,6 +121,7 @@ export type CriterionType =
   | "resolution"
   | "average_resolution"
   | "framerate"
+  | "bitrate"
   | "video_codec"
   | "audio_codec"
   | "duration"
