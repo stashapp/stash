@@ -1,7 +1,7 @@
 import React, { useRef, useState } from "react";
 import { Button } from "react-bootstrap";
 import { Icon } from "../Icon";
-import { faPencil } from "@fortawesome/free-solid-svg-icons";
+import { faPencil, faStar } from "@fortawesome/free-solid-svg-icons";
 import { useFocusOnce } from "src/utils/focus";
 
 export interface IRatingNumberProps {
@@ -9,6 +9,8 @@ export interface IRatingNumberProps {
   onSetRating?: (value: number | null) => void;
   disabled?: boolean;
   clickToRate?: boolean;
+  // true if we should indicate that this is a rating
+  withoutContext?: boolean;
 }
 
 export const RatingNumber: React.FC<IRatingNumberProps> = (
@@ -108,6 +110,7 @@ export const RatingNumber: React.FC<IRatingNumberProps> = (
   if (!showTextField) {
     return (
       <div className="rating-number disabled">
+        {props.withoutContext && <Icon icon={faStar} />}
         <span>{Number((props.value ?? 0) / 10).toFixed(1)}</span>
         {!props.disabled && props.clickToRate && (
           <Button

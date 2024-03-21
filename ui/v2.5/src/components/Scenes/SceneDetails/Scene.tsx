@@ -608,6 +608,7 @@ const ScenePage: React.FC<IProps> = ({
                 value={scene.rating100}
                 onSetRating={setRating}
                 clickToRate
+                withoutContext
               />
             </span>
             <span className="scene-toolbar-group">
