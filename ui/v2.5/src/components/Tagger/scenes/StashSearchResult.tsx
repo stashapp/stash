@@ -30,6 +30,7 @@ import StudioResult from "./StudioResult";
 import { useInitialState } from "src/hooks/state";
 import { getStashboxBase } from "src/utils/stashbox";
 import { ExternalLink } from "src/components/Shared/ExternalLink";
+import { compareScenesForSort } from "./utils";
 
 const getDurationIcon = (matchPercentage: number) => {
   if (matchPercentage > 65)
@@ -810,9 +811,19 @@ export interface ISceneSearchResults {
 
 export const SceneSearchResults: React.FC<ISceneSearchResults> = ({
   target,
-  scenes,
+  scenes: unsortedScenes,
 }) => {
   const [selectedResult, setSelectedResult] = useState<number | undefined>();
+
+  const scenes = useMemo(
+    () =>
+      unsortedScenes
+        .slice()
+        .sort((scrapedSceneA, scrapedSceneB) =>
+          compareScenesForSort(target, scrapedSceneA, scrapedSceneB)
+        ),
+    [unsortedScenes, target]
+  );
 
   useEffect(() => {
     if (!scenes) {

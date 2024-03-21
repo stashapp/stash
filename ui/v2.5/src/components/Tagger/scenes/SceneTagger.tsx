@@ -7,7 +7,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { Icon } from "src/components/Shared/Icon";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { OperationButton } from "src/components/Shared/OperationButton";
-import { TaggerStateContext } from "../context";
+import { ISceneQueryResult, TaggerStateContext } from "../context";
 import Config from "./Config";
 import { TaggerScene } from "./TaggerScene";
 import { SceneTaggerModals } from "./sceneTaggerModals";
@@ -15,7 +15,67 @@ import { SceneSearchResults } from "./StashSearchResult";
 import { ConfigurationContext } from "src/hooks/Config";
 import { faCog } from "@fortawesome/free-solid-svg-icons";
 import { useLightbox } from "src/hooks/Lightbox/hooks";
-import { compareScenesForSort } from "./utils";
+
+const Scene: React.FC<{
+  scene: GQL.SlimSceneDataFragment;
+  searchResult?: ISceneQueryResult;
+  queue?: SceneQueue;
+  index: number;
+  showLightboxImage: (imagePath: string) => void;
+}> = ({ scene, searchResult, queue, index, showLightboxImage }) => {
+  const intl = useIntl();
+  const { currentSource, doSceneQuery, doSceneFragmentScrape, loading } =
+    useContext(TaggerStateContext);
+  const { configuration } = React.useContext(ConfigurationContext);
+
+  const cont = configuration?.interface.continuePlaylistDefault ?? false;
+
+  const sceneLink = useMemo(
+    () =>
+      queue
+        ? queue.makeLink(scene.id, { sceneIndex: index, continue: cont })
+        : `/scenes/${scene.id}`,
+    [queue, scene.id, index, cont]
+  );
+
+  const errorMessage = useMemo(() => {
+    if (searchResult?.error) {
+      return searchResult.error;
+    } else if (searchResult && searchResult.results?.length === 0) {
+      return intl.formatMessage({
+        id: "component_tagger.results.match_failed_no_result",
+      });
+    }
+  }, [intl, searchResult]);
+
+  return (
+    <TaggerScene
+      loading={loading}
+      scene={scene}
+      url={sceneLink}
+      errorMessage={errorMessage}
+      doSceneQuery={
+        currentSource?.supportSceneQuery
+          ? async (v) => {
+              await doSceneQuery(scene.id, v);
+            }
+          : undefined
+      }
+      scrapeSceneFragment={
+        currentSource?.supportSceneFragment
+          ? async () => {
+              await doSceneFragmentScrape(scene.id);
+            }
+          : undefined
+      }
+      showLightboxImage={showLightboxImage}
+    >
+      {searchResult && searchResult.results?.length ? (
+        <SceneSearchResults scenes={searchResult.results} target={scene} />
+      ) : undefined}
+    </TaggerScene>
+  );
+};
 
 interface ITaggerProps {
   scenes: GQL.SlimSceneDataFragment[];
@@ -27,8 +87,6 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes, queue }) => {
     sources,
     setCurrentSource,
     currentSource,
-    doSceneQuery,
-    doSceneFragmentScrape,
     doMultiSceneFragmentScrape,
     stopMultiScrape,
     searchResults,
@@ -38,20 +96,10 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes, queue }) => {
     submitFingerprints,
     pendingFingerprints,
   } = useContext(TaggerStateContext);
-  const { configuration } = React.useContext(ConfigurationContext);
-
   const [showConfig, setShowConfig] = useState(false);
   const [hideUnmatched, setHideUnmatched] = useState(false);
 
   const intl = useIntl();
-
-  const cont = configuration?.interface.continuePlaylistDefault ?? false;
-
-  function generateSceneLink(scene: GQL.SlimSceneDataFragment, index: number) {
-    return queue
-      ? queue.makeLink(scene.id, { sceneIndex: index, continue: cont })
-      : `/scenes/${scene.id}`;
-  }
 
   function handleSourceSelect(e: React.ChangeEvent<HTMLSelectElement>) {
     setCurrentSource(sources!.find((s) => s.id === e.currentTarget.value));
@@ -106,61 +154,13 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes, queue }) => {
     showLightbox();
   }
 
-  function renderScenes() {
-    const filteredScenes = !hideUnmatched
-      ? scenes
-      : scenes.filter((s) => searchResults[s.id]?.results?.length);
-
-    return filteredScenes.map((scene, index) => {
-      const sceneLink = generateSceneLink(scene, index);
-      let errorMessage: string | undefined;
-      const searchResult = searchResults[scene.id];
-      if (searchResult?.error) {
-        errorMessage = searchResult.error;
-      } else if (searchResult && searchResult.results?.length === 0) {
-        errorMessage = intl.formatMessage({
-          id: "component_tagger.results.match_failed_no_result",
-        });
-      } else if (
-        searchResult &&
-        searchResult.results &&
-        searchResult.results?.length >= 2
-      ) {
-        searchResult.results?.sort((scrapedSceneA, scrapedSceneB) =>
-          compareScenesForSort(scene, scrapedSceneA, scrapedSceneB)
-        );
-      }
-
-      return (
-        <TaggerScene
-          key={scene.id}
-          loading={loading}
-          scene={scene}
-          url={sceneLink}
-          errorMessage={errorMessage}
-          doSceneQuery={
-            currentSource?.supportSceneQuery
-              ? async (v) => {
-                  await doSceneQuery(scene.id, v);
-                }
-              : undefined
-          }
-          scrapeSceneFragment={
-            currentSource?.supportSceneFragment
-              ? async () => {
-                  await doSceneFragmentScrape(scene.id);
-                }
-              : undefined
-          }
-          showLightboxImage={showLightboxImage}
-        >
-          {searchResult && searchResult.results?.length ? (
-            <SceneSearchResults scenes={searchResult.results} target={scene} />
-          ) : undefined}
-        </TaggerScene>
-      );
-    });
-  }
+  const filteredScenes = useMemo(
+    () =>
+      !hideUnmatched
+        ? scenes
+        : scenes.filter((s) => searchResults[s.id]?.results?.length),
+    [scenes, searchResults, hideUnmatched]
+  );
 
   const toggleHideUnmatchedScenes = () => {
     setHideUnmatched(!hideUnmatched);
@@ -261,7 +261,18 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes, queue }) => {
           </div>
           <Config show={showConfig} />
         </div>
-        <div>{renderScenes()}</div>
+        <div>
+          {filteredScenes.map((s, i) => (
+            <Scene
+              key={i}
+              scene={s}
+              searchResult={searchResults[s.id]}
+              index={i}
+              showLightboxImage={showLightboxImage}
+              queue={queue}
+            />
+          ))}
+        </div>
       </div>
     </SceneTaggerModals>
   );
