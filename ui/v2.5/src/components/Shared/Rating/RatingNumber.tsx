@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Button } from "react-bootstrap";
 import { Icon } from "../Icon";
 import { faPencil, faStar } from "@fortawesome/free-solid-svg-icons";
@@ -17,12 +17,19 @@ export const RatingNumber: React.FC<IRatingNumberProps> = (
   props: IRatingNumberProps
 ) => {
   const [editing, setEditing] = useState(false);
+  const [valueStage, setValueStage] = useState<number | null>(props.value);
+
+  useEffect(() => {
+    setValueStage(props.value);
+  }, [props.value]);
 
   const showTextField = !props.disabled && (editing || !props.clickToRate);
 
   const [ratingRef] = useFocusOnce(editing, true);
 
-  const text = ((props.value ?? 0) / 10).toFixed(1);
+  const effectiveValue = editing ? valueStage : props.value;
+
+  const text = ((effectiveValue ?? 0) / 10).toFixed(1);
   const useValidation = useRef(true);
 
   function stepChange() {
@@ -51,11 +58,13 @@ export const RatingNumber: React.FC<IRatingNumberProps> = (
       return;
     }
 
+    const setRating = editing ? setValueStage : props.onSetRating;
+
     let val = e.target.value;
     if (!useValidation.current) {
       e.target.value = Number(val).toFixed(1);
       const tempVal = Number(val) * 10;
-      props.onSetRating(tempVal || null);
+      setRating(tempVal || null);
       useValidation.current = true;
       return;
     }
@@ -63,7 +72,7 @@ export const RatingNumber: React.FC<IRatingNumberProps> = (
     const match = /(\d?)(\d?)(.?)((\d)?)/g.exec(val);
     const matchOld = /(\d?)(\d?)(.?)((\d{0,2})?)/g.exec(text ?? "");
 
-    if (match == null || props.onSetRating == null) {
+    if (match == null) {
       return;
     }
 
@@ -83,7 +92,7 @@ export const RatingNumber: React.FC<IRatingNumberProps> = (
       }
       e.target.value = Number(value).toFixed(1);
       let tempVal = Number(value) * 10;
-      props.onSetRating(tempVal || null);
+      setRating(tempVal || null);
 
       let cursorPosition = 0;
       if (match[2] && !match[4]) {
@@ -104,14 +113,19 @@ export const RatingNumber: React.FC<IRatingNumberProps> = (
   }
 
   function onBlur() {
-    setEditing(false);
+    if (editing) {
+      setEditing(false);
+      if (props.onSetRating) {
+        props.onSetRating(valueStage);
+      }
+    }
   }
 
   if (!showTextField) {
     return (
       <div className="rating-number disabled">
         {props.withoutContext && <Icon icon={faStar} />}
-        <span>{Number((props.value ?? 0) / 10).toFixed(1)}</span>
+        <span>{Number((effectiveValue ?? 0) / 10).toFixed(1)}</span>
         {!props.disabled && props.clickToRate && (
           <Button
             variant="minimal"
