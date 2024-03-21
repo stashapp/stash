@@ -1,14 +1,25 @@
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
+import { Button } from "react-bootstrap";
+import { Icon } from "../Icon";
+import { faPencil } from "@fortawesome/free-solid-svg-icons";
+import { useFocusOnce } from "src/utils/focus";
 
 export interface IRatingNumberProps {
   value: number | null;
   onSetRating?: (value: number | null) => void;
   disabled?: boolean;
+  clickToRate?: boolean;
 }
 
 export const RatingNumber: React.FC<IRatingNumberProps> = (
   props: IRatingNumberProps
 ) => {
+  const [editing, setEditing] = useState(false);
+
+  const showTextField = !props.disabled && (editing || !props.clickToRate);
+
+  const [ratingRef] = useFocusOnce(editing, true);
+
   const text = ((props.value ?? 0) / 10).toFixed(1);
   const useValidation = useRef(true);
 
@@ -90,22 +101,38 @@ export const RatingNumber: React.FC<IRatingNumberProps> = (
     }
   }
 
-  if (props.disabled) {
+  function onBlur() {
+    setEditing(false);
+  }
+
+  if (!showTextField) {
     return (
       <div className="rating-number disabled">
         <span>{Number((props.value ?? 0) / 10).toFixed(1)}</span>
+        {!props.disabled && props.clickToRate && (
+          <Button
+            variant="minimal"
+            size="sm"
+            className="edit-rating-button"
+            onClick={() => setEditing(true)}
+          >
+            <Icon className="text-primary" icon={faPencil} />
+          </Button>
+        )}
       </div>
     );
   } else {
     return (
       <div className="rating-number">
         <input
+          ref={ratingRef}
           className="text-input form-control"
           name="ratingnumber"
           type="number"
           onMouseDown={stepChange}
           onKeyDown={nonStepChange}
           onChange={handleChange}
+          onBlur={onBlur}
           value={text}
           min="0.0"
           step="0.1"

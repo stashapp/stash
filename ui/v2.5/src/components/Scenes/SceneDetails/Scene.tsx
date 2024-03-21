@@ -604,7 +604,11 @@ const ScenePage: React.FC<IProps> = ({
 
           <div className="scene-toolbar">
             <span className="scene-toolbar-group">
-              <RatingSystem value={scene.rating100} onSetRating={setRating} />
+              <RatingSystem
+                value={scene.rating100}
+                onSetRating={setRating}
+                clickToRate
+              />
             </span>
             <span className="scene-toolbar-group">
               <span>

@@ -13,6 +13,8 @@ export interface IRatingSystemProps {
   onSetRating?: (value: number | null) => void;
   disabled?: boolean;
   valueRequired?: boolean;
+  // if true, requires a click first to edit the rating
+  clickToRate?: boolean;
 }
 
 export const RatingSystem: React.FC<IRatingSystemProps> = (
@@ -40,6 +42,7 @@ export const RatingSystem: React.FC<IRatingSystemProps> = (
         value={props.value ?? null}
         onSetRating={props.onSetRating}
         disabled={props.disabled}
+        clickToRate={props.clickToRate}
       />
     );
   }
