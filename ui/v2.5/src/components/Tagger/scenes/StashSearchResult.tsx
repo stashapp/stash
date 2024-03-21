@@ -826,12 +826,15 @@ export const SceneSearchResults: React.FC<ISceneSearchResults> = ({
   );
 
   useEffect(() => {
-    if (!scenes) {
-      setSelectedResult(undefined);
-    } else if (scenes.length > 0 && scenes[0].resolved) {
-      setSelectedResult(0);
+    // #3198 - if the selected result is no longer in the list, reset it
+    if (selectedResult && scenes?.length <= selectedResult) {
+      if (!scenes) {
+        setSelectedResult(undefined);
+      } else if (scenes.length > 0 && scenes[0].resolved) {
+        setSelectedResult(0);
+      }
     }
-  }, [scenes]);
+  }, [scenes, selectedResult]);
 
   function getClassName(i: number) {
     return cx("row mx-0 mt-2 search-result", {
