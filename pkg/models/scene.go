@@ -43,6 +43,8 @@ type SceneFilterType struct {
 	Orientation *OrientationCriterionInput `json:"orientation"`
 	// Filter by framerate
 	Framerate *IntCriterionInput `json:"framerate"`
+	// Filter by bitrate
+	Bitrate *IntCriterionInput `json:"bitrate"`
 	// Filter by video codec
 	VideoCodec *StringCriterionInput `json:"video_codec"`
 	// Filter by audio codec

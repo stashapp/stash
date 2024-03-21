@@ -82,6 +82,7 @@ const criterionOptions = [
   ResolutionCriterionOption,
   OrientationCriterionOption,
   createMandatoryNumberCriterionOption("framerate"),
+  createMandatoryNumberCriterionOption("bitrate"),
   createStringCriterionOption("video_codec"),
   createStringCriterionOption("audio_codec"),
   createDurationCriterionOption("duration"),
