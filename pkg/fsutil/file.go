@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"strings"
 
 	"github.com/stashapp/stash/pkg/logger"
@@ -162,4 +163,13 @@ func SanitiseBasename(v string) string {
 	v = multiHyphenRE.ReplaceAllString(v, "-")
 
 	return strings.TrimSpace(v)
+}
+
+// GetExeName returns the name of the given executable for the current platform.
+// One windows it returns the name with the .exe extension.
+func GetExeName(base string) string {
+	if runtime.GOOS == "windows" {
+		return base + ".exe"
+	}
+	return base
 }

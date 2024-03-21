@@ -13,6 +13,8 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   cachePath
   blobsPath
   blobsStorage
+  ffmpegPath
+  ffprobePath
   calculateMD5
   videoFileNamingAlgorithm
   parallelTasks

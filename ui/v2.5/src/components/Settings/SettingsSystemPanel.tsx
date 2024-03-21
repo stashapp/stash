@@ -7,6 +7,7 @@ import {
   ModalSetting,
   NumberSetting,
   SelectSetting,
+  Setting,
   StringListSetting,
   StringSetting,
 } from "./Inputs";
@@ -15,12 +16,18 @@ import {
   VideoPreviewInput,
   VideoPreviewSettingsInput,
 } from "./GeneratePreviewOptions";
-import { useIntl } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
+import { Button } from "react-bootstrap";
+import { useToast } from "src/hooks/Toast";
+import { useHistory } from "react-router-dom";
 
 export const SettingsConfigurationPanel: React.FC = () => {
   const intl = useIntl();
+  const Toast = useToast();
+  const history = useHistory();
 
   const { general, loading, error, saveGeneral } = useSettings();
+  const [mutateDownloadFFMpeg] = GQL.useDownloadFfMpegMutation();
 
   const transcodeQualities = [
     GQL.StreamingResolutionEnum.Low,
@@ -107,6 +114,16 @@ export const SettingsConfigurationPanel: React.FC = () => {
     return "blobs_storage_type.database";
   }
 
+  async function onDownloadFFMpeg() {
+    try {
+      await mutateDownloadFFMpeg();
+      // navigate to tasks page to see the progress
+      history.push("/settings?tab=tasks");
+    } catch (e) {
+      Toast.error(e);
+    }
+  }
+
   if (error) return <h1>{error.message}</h1>;
   if (loading) return <LoadingIndicator />;
 
@@ -160,6 +177,35 @@ export const SettingsConfigurationPanel: React.FC = () => {
           value={general.customPerformerImageLocation ?? undefined}
           onChange={(v) => saveGeneral({ customPerformerImageLocation: v })}
         />
+
+        <StringSetting
+          id="ffmpeg-path"
+          headingID="config.general.ffmpeg.ffmpeg_path.heading"
+          subHeadingID="config.general.ffmpeg.ffmpeg_path.description"
+          value={general.ffmpegPath ?? undefined}
+          onChange={(v) => saveGeneral({ ffmpegPath: v })}
+        />
+
+        <StringSetting
+          id="ffprobe-path"
+          headingID="config.general.ffmpeg.ffprobe_path.heading"
+          subHeadingID="config.general.ffmpeg.ffprobe_path.description"
+          value={general.ffprobePath ?? undefined}
+          onChange={(v) => saveGeneral({ ffprobePath: v })}
+        />
+
+        <Setting
+          heading={
+            <>
+              <FormattedMessage id="config.general.ffmpeg.download_ffmpeg.heading" />
+            </>
+          }
+          subHeadingID="config.general.ffmpeg.download_ffmpeg.description"
+        >
+          <Button variant="secondary" onClick={() => onDownloadFFMpeg()}>
+            <FormattedMessage id="config.general.ffmpeg.download_ffmpeg.heading" />
+          </Button>
+        </Setting>
 
         <StringSetting
           id="python-path"

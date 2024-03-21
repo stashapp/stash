@@ -60,7 +60,7 @@ func (f *FFMpeg) InitHWSupport(ctx context.Context) {
 		cmd.Stderr = &stderr
 
 		if err := cmd.Start(); err != nil {
-			logger.Debugf("[InitHWSupport] error starting command: %w", err)
+			logger.Debugf("[InitHWSupport] error starting command: %v", err)
 			continue
 		}
 

@@ -81,6 +81,10 @@ input ConfigGeneralInput {
   blobsPath: String
   "Where to store blobs"
   blobsStorage: BlobsStorageType
+  "Path to the ffmpeg binary. If empty, stash will attempt to find it in the path or config directory"
+  ffmpegPath: String
+  "Path to the ffprobe binary. If empty, stash will attempt to find it in the path or config directory"
+  ffprobePath: String
   "Whether to calculate MD5 checksums for scene video files"
   calculateMD5: Boolean
   "Hash algorithm to use for generated file naming"
@@ -199,6 +203,10 @@ type ConfigGeneralResult {
   blobsPath: String!
   "Where to store blobs"
   blobsStorage: BlobsStorageType!
+  "Path to the ffmpeg binary. If empty, stash will attempt to find it in the path or config directory"
+  ffmpegPath: String!
+  "Path to the ffprobe binary. If empty, stash will attempt to find it in the path or config directory"
+  ffprobePath: String!
   "Whether to calculate MD5 checksums for scene video files"
   calculateMD5: Boolean!
   "Hash algorithm to use for generated file naming"
