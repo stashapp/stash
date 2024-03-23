@@ -780,8 +780,7 @@
             "stash_library_directories": "Stash kitaplık dizinleri"
         },
         "creating": {
-            "creating_your_system": "Sisteminiz oluşturuluyor",
-            "ffmpeg_notice": "<code>ffmpeg</code> sisteminizde yüklü değilse lütfen otomatik olarak indirilip yüklenmesini bekleyin. Konsol detayları bölümünden indirme sürecini görebilirsiniz."
+            "creating_your_system": "Sisteminiz oluşturuluyor"
         },
         "errors": {
             "something_went_wrong": "Hata! Birşeyler yanlış gitti!",

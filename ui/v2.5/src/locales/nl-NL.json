@@ -876,8 +876,7 @@
             "stash_library_directories": "Stash bibliotheekmappen"
         },
         "creating": {
-            "creating_your_system": "Uw systeem aanmaken",
-            "ffmpeg_notice": "Als <code>ffmpeg</code> nog niet in je pad staat, heb dan even geduld terwijl stash het downloadt. Bekijk de console-uitvoer om de downloadvoortgang te zien."
+            "creating_your_system": "Uw systeem aanmaken"
         },
         "errors": {
             "something_went_wrong": "Oh nee! Er is iets fout gegaan!",

@@ -1106,8 +1106,7 @@
             "stash_library_directories": "Stash 라이브러리 폴더"
         },
         "creating": {
-            "creating_your_system": "시스템 생성 중",
-            "ffmpeg_notice": "설정한 경로에 <code>ffmpeg</code>가 아직 없다면, 다운로드될 때까지 기다려 주세요. 다운로드 진행 과정을 보려면 콘솔 출력을 확인하세요."
+            "creating_your_system": "시스템 생성 중"
         },
         "errors": {
             "something_went_wrong": "오류가 발생했습니다!",

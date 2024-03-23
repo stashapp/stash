@@ -1171,8 +1171,7 @@
             "blobs_use_database": "<kasutades andmebaasi>"
         },
         "creating": {
-            "creating_your_system": "Loon sulle süsteemi",
-            "ffmpeg_notice": "Kui <code>ffmpeg</code>-i pole veel olemas, ole kannatlik, kuni stash selle alla laadib. Allalaadimise edenemise vaatamiseks vaata konsooli väljundit."
+            "creating_your_system": "Loon sulle süsteemi"
         },
         "errors": {
             "something_went_wrong": "Oi ei! Midagi läks valesti!",

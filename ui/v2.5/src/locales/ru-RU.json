@@ -1182,8 +1182,7 @@
             "cache_directory": "Каталог кэша"
         },
         "creating": {
-            "creating_your_system": "Создаем вашу систему",
-            "ffmpeg_notice": "Если <code>ffmpeg</code> еще не указан в ваших путях, наберитесь терпения, пока stash загрузит его. Чтобы проследить за ходом загрузки, проверьте консоль."
+            "creating_your_system": "Создаем вашу систему"
         },
         "errors": {
             "something_went_wrong": "О, нет! Что-то пошло не так!",
