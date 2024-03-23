@@ -164,12 +164,12 @@
             "query_mode_metadata_desc": "Používá pouze metadata",
             "query_mode_path": "Cesta",
             "query_mode_path_desc": "Používá úplnou cestu k souboru",
-            "set_cover_desc": "Nahradit obálku scény, pokud je nalezena.",
-            "set_cover_label": "Nastavit obrázek obálky scény",
+            "set_cover_desc": "Nahradit obal scény, pokud je nějaký nalezen.",
+            "set_cover_label": "Nastavit obrázek obalu scény",
             "set_tag_desc": "Přidat tagy ke scéně, buď přepsáním nebo sloučením existujících tagů na scéně.",
             "set_tag_label": "Nastavit tagy",
             "show_male_desc": "Zapnout / vypnout, zda mají být mužští umělci tagováni.",
-            "show_male_label": "Ukázat mužské umělce",
+            "show_male_label": "Ukázat mužské účinkující",
             "source": "Zdroj",
             "mark_organized_desc": "Po kliknutí na tlačítko Uložit okamžitě označte scénu jako Uspořádanou.",
             "mark_organized_label": "Označit jako Uspořádané při uložení."
@@ -343,8 +343,11 @@
             },
             "funscript_heatmap_draw_range": "Zahrnout rozsah do vygenerovaných heatmap",
             "funscript_heatmap_draw_range_desc": "Nakreslete rozsah pohybu na ose y vygenerované heatmapy. Stávající heatmapy bude nutné po změně zregenerovat.",
-            "gallery_cover_regex_label": "Vzor obálky galerie",
-            "heatmap_generation": "Generace heatmapy funscriptu"
+            "gallery_cover_regex_label": "Vzor obalu galerií",
+            "heatmap_generation": "Generace heatmapy funscriptu",
+            "blobs_storage": {
+                "description": "Kde ukládat binární data, jako jsou obaly scén, účinkující, studia a obrázky tagů. Po změně této hodnoty musí být stávající data zmigrována pomocí úlohy Zmigrování blobů. Podívej se na stránku Úloh pro migraci."
+            }
         },
         "library": {
             "exclusions": "Výjimky",
@@ -376,7 +379,7 @@
         "stashbox": {
             "add_instance": "Přidat stash-box instanci",
             "api_key": "API klíč",
-            "description": "Stash-box zjednodušuje automatizované tagování scén a herců na základě otisků a názvu souborů\nEndpoint a API klíč naleznete na stránce Vašeho účtu stash-box instance. Pojmenování je požadováno, pokud je přidáno vícero instancí.",
+            "description": "Stash-box zjednodušuje automatizované tagování scén a účinkujicích na základě otisků a názvu souborů.\nEndpoint a API klíč naleznete na stránce Vašeho účtu stash-box instance. Pojmenování je požadováno, pokud je přidáno vícero instancí.",
             "endpoint": "Endpoint",
             "graphql_endpoint": "GraphQL endpoint",
             "name": "Název",
@@ -428,20 +431,20 @@
                 "heading": "Identifikovat",
                 "identifying_from_paths": "Identifikovat scény z následujících cest",
                 "identifying_scenes": "Identifikuji {num} {scene}",
-                "include_male_performers": "Zahrnout mužské umělce",
-                "set_cover_images": "Nastavit titulní obrázky",
+                "include_male_performers": "Zahrnout mužské účinkující",
+                "set_cover_images": "Nastav obrázky obalů",
                 "set_organized": "Nastavit příznak \"organizovaný\"",
                 "source": "Zdroj",
                 "source_options": "Možnosti {source}",
                 "sources": "Zdroje",
                 "strategy": "Strategie",
                 "skip_multiple_matches": "Přeskočte shody, které mají více než jeden výsledek",
-                "skip_single_name_performers": "Přeskočte umělce/umělkyně s jedním jménem bez jednoznačného označení",
+                "skip_single_name_performers": "Přeskočte účinkující s jedním jménem bez jednoznačného označení",
                 "tag_skipped_performers": "Označte přeskočené umělce/umělkyně pomocí",
                 "tag_skipped_performer_tooltip": "Vytvořte štítek jako „Identifikuj: Umělec/umělkyně s jedním jménem“, který můžete filtrovat v taggeru scén a zvolit, jak chcete s těmito účinkujícími zacházet",
                 "skip_multiple_matches_tooltip": "Pokud toto není povoleno a vrátí se více než jeden výsledek, bude náhodně jeden vybrán ke shodě",
                 "tag_skipped_matches": "Označte přeskočené shody pomocí",
-                "skip_single_name_performers_tooltip": "Pokud toto není povoleno, budou přiřazeni umělci, kteří jsou často generičtí jako Samantha nebo Olga",
+                "skip_single_name_performers_tooltip": "Pokud toto není povoleno, budou přiřazeni účinkující, kteří jsou často generičtí jako Samantha nebo Olga",
                 "tag_skipped_matches_tooltip": "Vytvořte značku jako „Identifikuj: Více shod“, kterou můžete filtrovat taggeru scén a ručně vybrat správnou shodu"
             },
             "import_from_exported_json": "Importovat z exportovaného JSONu z metadata složky. Přemaže existující databázi.",
@@ -745,7 +748,7 @@
         "tags": "{count, plural, one {Tag} other {Tagy}}"
     },
     "country": "Země",
-    "cover_image": "Titulní obrázek",
+    "cover_image": "Obrázek obalu",
     "created_at": "Vytvořeno",
     "criterion": {
         "greater_than": "Větší než",
@@ -848,7 +851,7 @@
             "preview_preset_desc": "Předvolba reguluje velikost, kvalitu a čas enkódování generování náhledu. Předvolby větší než „pomalý“ mají snižjicí se účinek a nedoporučují se.",
             "preview_seg_count_head": "Počet segmentů v náhledech",
             "preview_seg_duration_head": "Doba trvání segmentu náhledu",
-            "covers": "Obálky scén",
+            "covers": "Obaly scén",
             "sprites": "Sprity scrubberu scén",
             "markers": "Náhledy značek",
             "markers_tooltip": "20sekundová videa, která začínají v daném časovém kódu.",
