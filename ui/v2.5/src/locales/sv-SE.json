@@ -338,6 +338,18 @@
                         "desc": "Avancerat: Ytterligare argument att skicka till ffmpeg innan output-fältet vid videogenerering.",
                         "heading": "FFmpeg Omkodning Output Argument"
                     }
+                },
+                "ffmpeg_path": {
+                    "heading": "FFmpeg Program Sökväg",
+                    "description": "Sökväg till ffmpeg-programmet (inte bara mappen). Om tom kommer ffmpeg att hittas från miljön via $PATH, konfigurationsmappen, eller från $HOME/.stash"
+                },
+                "ffprobe_path": {
+                    "description": "Sökväg till ffprobe-programmet (inte bara mappen). Om tom kommer ffprobe att hittas från miljön via $PATH, konfigurationsmappen, eller från $HOME/.stash",
+                    "heading": "FFprobe Program Sökväg"
+                },
+                "download_ffmpeg": {
+                    "description": "Laddar ner FFmpeg till konfigurationsmappen och nollställer ffmpeg- och ffprobe-sökvägarna för att istället använda konfigurationsmappen.",
+                    "heading": "Ladda ner FFmpeg"
                 }
             },
             "funscript_heatmap_draw_range": "Inkludera räckvidd i genererade värmekartor",
@@ -1264,7 +1276,9 @@
             "support_us": "Stötta oss",
             "thanks_for_trying_stash": "Tack för att du testar Stash!",
             "welcome_contrib": "Vi välkomnar också starkt bidrag i form av kod (buggfixar, förbättringar och nya funktioner), testande, buggrapportering, förslag på förbättringar och funktioner, översättningar,och användarstöd. Mer detaljer kan hittas i Bidragsfliken i manualen.",
-            "your_system_has_been_created": "Framgång! Ditt system har skapats!"
+            "your_system_has_been_created": "Framgång! Ditt system har skapats!",
+            "download_ffmpeg": "Ladda ner ffmpeg",
+            "missing_ffmpeg": "Du saknar den obligatoriska <code>ffmpeg</code>-programmet. Du kan automatiskt ladda ner den till konfigurationsmappen genom att bocka i rutan under. Alternativt, kan du skriva sökvägarna till <code>ffmpeg</code>- och <code>ffprobe</code>-programmen i Systeminställningarna. Dessa program måste finnas för att Stash ska fungera."
         },
         "welcome": {
             "config_path_logic_explained": "Stash försöker att hitta sin konfigurationsfil (<code>config.yml</code>) från den nuvarande arbetsmappen först, och om den inte finns där, letar den i <code>{fallback_path}</code>. Du kan också låta Stash läsa en specifik konfigurationsfil genom att starta med flaggan <code>-c '<path to config file>'</code> eller <code>--config '<path to config file>'</code>.",
