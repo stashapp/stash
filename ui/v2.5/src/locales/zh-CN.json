@@ -337,6 +337,18 @@
                         "desc": "高级：当生成视频时，在输出视频参数前要传给ffmpeg的附加参数。",
                         "heading": "FFmpeg转码输出参数"
                     }
+                },
+                "ffmpeg_path": {
+                    "heading": "FFmpeg可执行路径",
+                    "description": "ffmpeg可执行文件（不仅仅是文件夹）的路径。如果为空，ffmpeg将通过$PATH、配置目录或$HOME/. stash从环境中解析"
+                },
+                "ffprobe_path": {
+                    "heading": "FFprobe 可执行路径",
+                    "description": "ffprobe可执行文件的路径（不仅仅是文件夹）。如果为空，ffprobe将通过$PATH、配置目录或$HOME/. stash从环境中解析"
+                },
+                "download_ffmpeg": {
+                    "heading": "下载FFmpeg",
+                    "description": "将FFmpeg下载到配置目录并清除要从配置目录解析的ffmpeg和ffprobe路径。"
                 }
             },
             "funscript_heatmap_draw_range": "在生成的热图中包括范围",
@@ -1258,7 +1270,9 @@
             "support_us": "支持我们",
             "thanks_for_trying_stash": "感激你尝试Stash!",
             "welcome_contrib": "我们也欢迎以代码的方式来做出贡献(修正毛病，改善和新功能)，测试，毛病报告，改善和请求功能，以及用户支持。详情请看内置手册的“贡献”区。",
-            "your_system_has_been_created": "成功！你的系统建立了！"
+            "your_system_has_been_created": "成功！你的系统建立了！",
+            "download_ffmpeg": "下载ffmpeg",
+            "missing_ffmpeg": "您缺少所需的<code>ffmpeg</code>二进制文件。您可以通过选中下面的框自动将其下载到您的配置目录中。或者，您可以在系统设置中提供<code>ffmpeg</code>和<code>ffprobe</code>二进制文件的路径。 这些二进制文件必须存在，Stash才能起作用。"
         },
         "welcome": {
             "config_path_logic_explained": "Stash首先尝试从当前工作目录中找配置文件 (<code>config.yml</code>)，如果没找到，会退回到 <code>{fallback_path}</code。 你也可以让Stash读特定的配置文件，只要运行它时加上<code>-c '<配置文件目录>'</code>或者<code>--config '<配置文件目录>'</code>的选项。",
