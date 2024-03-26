@@ -33,7 +33,6 @@ import { IMovieEntry, SceneMovieTable } from "./SceneMovieTable";
 import { faSearch, faSyncAlt } from "@fortawesome/free-solid-svg-icons";
 import { objectTitle } from "src/core/files";
 import { galleryTitle } from "src/core/galleries";
-import { useRatingKeybinds } from "src/hooks/keybinds";
 import { lazyComponent } from "src/utils/lazyComponent";
 import isEqual from "lodash-es/isEqual";
 import {
@@ -128,7 +127,6 @@ export const SceneEditPanel: React.FC<IProps> = ({
     urls: yupUniqueStringList(intl),
     date: yupDateString(intl),
     director: yup.string().ensure(),
-    rating100: yup.number().integer().nullable().defined(),
     gallery_ids: yup.array(yup.string().required()).defined(),
     studio_id: yup.string().required().nullable(),
     performer_ids: yup.array(yup.string().required()).defined(),
@@ -153,7 +151,6 @@ export const SceneEditPanel: React.FC<IProps> = ({
       urls: scene.urls ?? [],
       date: scene.date ?? "",
       director: scene.director ?? "",
-      rating100: scene.rating100 ?? null,
       gallery_ids: (scene.galleries ?? []).map((g) => g.id),
       studio_id: scene.studio?.id ?? null,
       performer_ids: (scene.performers ?? []).map((p) => p.id),
@@ -201,10 +198,6 @@ export const SceneEditPanel: React.FC<IProps> = ({
       .filter((m) => m.movie !== undefined) as IMovieEntry[];
   }, [formik.values.movies, movies]);
 
-  function setRating(v: number) {
-    formik.setFieldValue("rating100", v);
-  }
-
   function onSetGalleries(items: Gallery[]) {
     setGalleries(items);
     formik.setFieldValue(
@@ -233,12 +226,6 @@ export const SceneEditPanel: React.FC<IProps> = ({
     setStudio(item);
     formik.setFieldValue("studio_id", item ? item.id : null);
   }
-
-  useRatingKeybinds(
-    isVisible,
-    stashConfig?.ui.ratingSystemOptions?.type,
-    setRating
-  );
 
   useEffect(() => {
     if (isVisible) {
@@ -726,7 +713,6 @@ export const SceneEditPanel: React.FC<IProps> = ({
     renderField,
     renderInputField,
     renderDateField,
-    renderRatingField,
     renderURLListField,
     renderStashIDsField,
   } = formikUtils(intl, formik, splitProps);
@@ -865,7 +851,6 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
             {renderDateField("date")}
             {renderInputField("director")}
-            {renderRatingField("rating100", "rating")}
 
             {renderGalleriesField()}
             {renderStudioField()}

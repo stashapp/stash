@@ -552,3 +552,43 @@ button.btn.favorite-button {
     box-shadow: none;
   }
 }
+
+.count-button {
+  border-radius: 5px;
+
+  &:hover {
+    background: rgba(138, 155, 168, 0.15);
+    color: #f5f8fa;
+  }
+
+  .count-icon {
+    padding-left: 0.5rem;
+    padding-right: 0.25rem;
+  }
+
+  .count-value {
+    padding-left: 0.25rem;
+    padding-right: 0.5rem;
+  }
+
+  button.count-icon,
+  &.increment-only button.count-value {
+    &:hover {
+      background: none;
+      color: #f5f8fa;
+    }
+  }
+
+  button.btn-secondary.count-icon,
+  button.btn-secondary.count-value {
+    &:focus {
+      border: none;
+      box-shadow: none;
+      color: #f5f8fa;
+
+      &:not(:hover) {
+        background: none;
+      }
+    }
+  }
+}

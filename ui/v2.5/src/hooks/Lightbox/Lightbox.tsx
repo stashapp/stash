@@ -925,6 +925,8 @@ export const LightboxComponent: React.FC<IProps> = ({
                 <RatingSystem
                   value={currentImage?.rating100}
                   onSetRating={(v) => setRating(v)}
+                  clickToRate
+                  withoutContext
                 />
               </>
             )}

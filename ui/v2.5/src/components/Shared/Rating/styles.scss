@@ -93,7 +93,18 @@
   margin: auto 0.5rem;
 }
 
-.rating-number.disabled {
-  align-items: center;
-  display: inline-flex;
+.rating-number {
+  .fa-icon {
+    color: gold;
+    margin-left: 0;
+  }
+
+  .edit-rating-button {
+    font-size: 0.75rem;
+  }
+
+  &.disabled {
+    align-items: center;
+    display: inline-flex;
+  }
 }
