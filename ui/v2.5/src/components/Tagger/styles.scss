@@ -47,6 +47,7 @@
   .scene-details {
     display: flex;
     flex-direction: column;
+    overflow-wrap: anywhere;
     width: 100%;
   }
 
