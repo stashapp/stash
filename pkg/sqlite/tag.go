@@ -502,7 +502,7 @@ func (qb *TagStore) makeFilter(ctx context.Context, tagFilter *models.TagFilterT
 	query.handleCriterion(ctx, stringCriterionHandler(tagFilter.Name, tagTable+".name"))
 	query.handleCriterion(ctx, tagAliasCriterionHandler(qb, tagFilter.Aliases))
 
-	query.handleCriterion(ctx, boolCriterionHandler(tagFilter.Favorite, tagTable+"favorite", nil))
+	query.handleCriterion(ctx, boolCriterionHandler(tagFilter.Favorite, tagTable+".favorite", nil))
 	query.handleCriterion(ctx, stringCriterionHandler(tagFilter.Description, tagTable+".description"))
 	query.handleCriterion(ctx, boolCriterionHandler(tagFilter.IgnoreAutoTag, tagTable+".ignore_auto_tag", nil))
 
