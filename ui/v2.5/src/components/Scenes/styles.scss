@@ -63,9 +63,54 @@
   max-width: 100%;
 }
 
+@include media-breakpoint-only(lg) {
+  .scene-header-container {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+
+    .scene-header {
+      flex: 0 0 75%;
+      order: 1;
+    }
+
+    .scene-studio-image {
+      flex: 0 0 25%;
+      order: 2;
+    }
+  }
+}
+
 .scene-header {
   flex-basis: auto;
+  font-size: 1.5rem;
   margin-top: 30px;
+
+  @include media-breakpoint-down(xl) {
+    font-size: 1.75rem;
+  }
+}
+
+.scene-subheader {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.5rem;
+
+  .date {
+    color: $text-muted;
+  }
+
+  .resolution {
+    font-weight: bold;
+  }
+}
+
+.scene-toolbar {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.25rem;
+  margin-top: 0.5rem;
+  width: 100%;
 }
 
 #scene-details-container {
@@ -781,6 +826,106 @@ input[type="range"].blue-slider {
     li {
       display: flex;
       justify-content: space-between;
+    }
+  }
+}
+
+.scene-details {
+  .detail-group {
+    padding-top: 0;
+  }
+
+  .detail-item {
+    font-size: 1.25em;
+    padding-right: 1rem;
+
+    &.studio-code,
+    &.director,
+    &.files,
+    &.created-at,
+    &.updated-at,
+    &.details .detail-item-value {
+      font-size: 1rem;
+    }
+
+    &.files ul {
+      font-size: 0.9em;
+      list-style-type: none;
+      padding-inline-start: 0;
+
+      .file-info-button {
+        padding-left: 0;
+        padding-right: 0;
+        text-align: left;
+      }
+    }
+
+    &.rating,
+    &.tags,
+    &.performers,
+    &.details {
+      flex-basis: 100%;
+    }
+
+    &:not(.full-width) .detail-item-title {
+      margin-bottom: 0.25em;
+    }
+  }
+
+  .detail-item-value.performers {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+
+  .performer-card {
+    max-width: 12rem;
+    padding-bottom: 0;
+
+    .rating-banner,
+    .favorite-button,
+    .performer-card__country-flag {
+      // .card-popovers {
+      display: none;
+    }
+
+    .card-popovers {
+      margin-bottom: 0.25rem;
+    }
+
+    .card-section-title {
+      font-size: 1rem;
+      justify-content: center;
+    }
+
+    .performer-age {
+      color: $text-muted;
+      font-size: 0.9em;
+      margin-bottom: 0;
+      margin-left: 0.5rem;
+    }
+
+    hr {
+      margin-bottom: 0;
+    }
+  }
+
+  .movie-card {
+    padding-bottom: 0;
+    width: 10rem;
+
+    .card-section-title,
+    .movie-scene-number {
+      font-size: 1rem;
+    }
+
+    .movie-scene-number {
+      color: $text-muted;
+    }
+
+    .movie-card__details,
+    .card-popovers {
+      display: none;
     }
   }
 }

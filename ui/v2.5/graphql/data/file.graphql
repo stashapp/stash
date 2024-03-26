@@ -6,6 +6,7 @@ fragment FolderData on Folder {
 fragment VideoFileData on VideoFile {
   id
   path
+  basename
   size
   mod_time
   duration
@@ -24,6 +25,7 @@ fragment VideoFileData on VideoFile {
 fragment ImageFileData on ImageFile {
   id
   path
+  basename
   size
   mod_time
   width
@@ -37,6 +39,7 @@ fragment ImageFileData on ImageFile {
 fragment GalleryFileData on GalleryFile {
   id
   path
+  basename
   size
   mod_time
   fingerprints {
@@ -49,6 +52,7 @@ fragment VisualFileData on VisualFile {
   ... on BaseFile {
     id
     path
+    basename
     size
     mod_time
     fingerprints {
@@ -59,6 +63,7 @@ fragment VisualFileData on VisualFile {
   ... on ImageFile {
     id
     path
+    basename
     size
     mod_time
     width
@@ -71,6 +76,7 @@ fragment VisualFileData on VisualFile {
   ... on VideoFile {
     id
     path
+    basename
     size
     mod_time
     duration

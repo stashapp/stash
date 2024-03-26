@@ -35,7 +35,7 @@ export interface IPerformerCardExtraCriteria {
 interface IPerformerCardProps {
   performer: GQL.PerformerDataFragment;
   containerWidth?: number;
-  ageFromDate?: string;
+  ageFromDate?: string | null;
   selecting?: boolean;
   selected?: boolean;
   onSelectedChanged?: (selected: boolean, shiftKey: boolean) => void;
@@ -52,10 +52,10 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
   extraCriteria,
 }) => {
   const intl = useIntl();
-  const age = TextUtils.age(
-    performer.birthdate,
-    ageFromDate ?? performer.death_date
-  );
+  const age =
+    ageFromDate === null
+      ? 0
+      : TextUtils.age(performer.birthdate, ageFromDate ?? performer.death_date);
   const ageL10nId = ageFromDate
     ? "media_info.performer_card.age_context"
     : "media_info.performer_card.age";
@@ -253,13 +253,20 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
         <GenderIcon className="gender-icon" gender={performer.gender} />
       }
       title={
-        <div>
-          <span className="performer-name">{performer.name}</span>
-          {performer.disambiguation && (
-            <span className="performer-disambiguation">
-              {` (${performer.disambiguation})`}
-            </span>
-          )}
+        <div className="performer-card-title">
+          <span>
+            <span className="performer-name">{performer.name}</span>
+            {performer.disambiguation && (
+              <span className="performer-disambiguation">
+                {` (${performer.disambiguation})`}
+              </span>
+            )}
+            {ageFromDate && (
+              <span className="performer-age" title={ageString}>
+                {age}
+              </span>
+            )}
+          </span>
         </div>
       }
       image={
@@ -284,7 +291,7 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
       }
       details={
         <>
-          {age !== 0 ? (
+          {!ageFromDate && age !== 0 ? (
             <div className="performer-card__age">{ageString}</div>
           ) : (
             ""

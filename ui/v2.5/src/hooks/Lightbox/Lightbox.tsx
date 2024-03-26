@@ -21,13 +21,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { LightboxImage } from "./LightboxImage";
 import { ConfigurationContext } from "../Config";
 import { Link } from "react-router-dom";
-import { OCounterButton } from "src/components/Scenes/SceneDetails/OCounterButton";
-import {
-  mutateImageIncrementO,
-  mutateImageDecrementO,
-  mutateImageResetO,
-  useImageUpdate,
-} from "src/core/StashService";
+import { mutateImageIncrementO, useImageUpdate } from "src/core/StashService";
 import * as GQL from "src/core/generated-graphql";
 import { useInterfaceLocalForage } from "../LocalForage";
 import { imageLightboxDisplayModeIntlMap } from "src/core/enums";
@@ -48,6 +42,7 @@ import {
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { useDebounce } from "../debounce";
 import { isVideo } from "src/utils/visualFile";
+import { OCounterButton } from "src/components/Shared/CountButton";
 
 const CLASSNAME = "Lightbox";
 const CLASSNAME_HEADER = `${CLASSNAME}-header`;
@@ -712,24 +707,6 @@ export const LightboxComponent: React.FC<IProps> = ({
       }
     }
 
-    async function onDecrementClick() {
-      if (currentImage?.id === undefined) return;
-      try {
-        await mutateImageDecrementO(currentImage.id);
-      } catch (e) {
-        Toast.error(e);
-      }
-    }
-
-    async function onResetClick() {
-      if (currentImage?.id === undefined) return;
-      try {
-        await mutateImageResetO(currentImage?.id);
-      } catch (e) {
-        Toast.error(e);
-      }
-    }
-
     const pageHeader =
       page && pages
         ? intl.formatMessage(
@@ -916,9 +893,7 @@ export const LightboxComponent: React.FC<IProps> = ({
               <>
                 <div>
                   <OCounterButton
-                    onDecrement={onDecrementClick}
                     onIncrement={onIncrementClick}
-                    onReset={onResetClick}
                     value={currentImage?.o_counter ?? 0}
                   />
                 </div>
