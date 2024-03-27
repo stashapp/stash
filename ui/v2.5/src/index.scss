@@ -423,6 +423,7 @@ dd {
   display: flex;
   flex-direction: row;
   white-space: pre-line;
+  flex-wrap: wrap;
 
   .birthdate,
   .height-imperial,
