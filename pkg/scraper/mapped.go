@@ -11,9 +11,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/robertkrimen/otto"
 	"gopkg.in/yaml.v2"
 
-	"github.com/stashapp/stash/pkg/javascript"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/sliceutil"
@@ -230,13 +230,16 @@ func (s *mappedGalleryScraperConfig) UnmarshalYAML(unmarshal func(interface{}) e
 
 type mappedPerformerScraperConfig struct {
 	mappedConfig
-
-	Tags mappedConfig `yaml:"Tags"`
+	Images mappedConfig `yaml:"Images"`
+	Tags   mappedConfig `yaml:"Tags"`
 }
 type _mappedPerformerScraperConfig mappedPerformerScraperConfig
 
 const (
 	mappedScraperConfigPerformerTags = "Tags"
+)
+const (
+	mappedScraperConfigPerformerImages = "Images"
 )
 
 func (s *mappedPerformerScraperConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
@@ -251,8 +254,10 @@ func (s *mappedPerformerScraperConfig) UnmarshalYAML(unmarshal func(interface{})
 	thisMap := make(map[string]interface{})
 
 	thisMap[mappedScraperConfigPerformerTags] = parentMap[mappedScraperConfigPerformerTags]
+	thisMap[mappedScraperConfigPerformerImages] = parentMap[mappedScraperConfigPerformerImages]
 
 	delete(parentMap, mappedScraperConfigPerformerTags)
+	delete(parentMap, mappedScraperConfigPerformerImages)
 
 	// re-unmarshal the sub-fields
 	yml, err := yaml.Marshal(thisMap)
@@ -528,19 +533,19 @@ func (p *postProcessLbToKg) Apply(ctx context.Context, value string, q mappedQue
 type postProcessJavascript string
 
 func (p *postProcessJavascript) Apply(ctx context.Context, value string, q mappedQuery) string {
-	vm := javascript.NewVM()
+	vm := otto.New()
 	if err := vm.Set("value", value); err != nil {
 		logger.Warnf("javascript failed to set value: %v", err)
 		return value
 	}
 
-	script, err := javascript.CompileScript("", "(function() { "+string(*p)+"})()")
+	script, err := vm.Compile("", "(function() { "+string(*p)+"})()")
 	if err != nil {
 		logger.Warnf("javascript failed to compile: %v", err)
 		return value
 	}
 
-	output, err := vm.RunProgram(script)
+	output, err := vm.Run(script)
 	if err != nil {
 		logger.Warnf("javascript failed to run: %v", err)
 		return value
@@ -819,6 +824,7 @@ func (s mappedScraper) scrapePerformer(ctx context.Context, q mappedQuery) (*mod
 	}
 
 	performerTagsMap := performerMap.Tags
+	performerImagesMap := performerMap.Images
 
 	results := performerMap.process(ctx, q, s.Common)
 
@@ -831,6 +837,13 @@ func (s mappedScraper) scrapePerformer(ctx context.Context, q mappedQuery) (*mod
 			tag := &models.ScrapedTag{}
 			p.apply(tag)
 			ret.Tags = append(ret.Tags, tag)
+		}
+	}
+
+	if performerImagesMap != nil {
+		imageResults := performerImagesMap.process(ctx, q, s.Common)
+		for _, p := range imageResults {
+			ret.Images = append(ret.Images, p["URL"])
 		}
 	}
 
