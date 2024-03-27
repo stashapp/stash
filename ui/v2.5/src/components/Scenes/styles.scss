@@ -14,11 +14,13 @@
   }
 }
 
-.scroll-container {
+.discover-filter-container {
+  background-color: #202b33;
+  height: 45px;
+  padding: 0 20px;
   position: sticky;
   top: 0;
   z-index: 100;
-  margin: 0 1.5rem;
 
   .slick-prev:before {
     content: "<";
@@ -53,6 +55,10 @@
     display: inline-block;
     background-color: #394b59;
     border-radius: 5px;
+
+    svg {
+      padding-right: 5px;
+    }
   }
 
   .rec.active {
@@ -610,6 +616,8 @@ input[type="range"].blue-slider {
 }
 
 #queue-viewer {
+  margin-right: 5px;
+
   .queue-controls {
     align-items: center;
     background-color: $body-bg;
@@ -618,7 +626,7 @@ input[type="range"].blue-slider {
     height: 30px;
     justify-content: space-between;
     position: sticky;
-    top: 50px;
+    top: 45px;
     z-index: 100;
   }
 

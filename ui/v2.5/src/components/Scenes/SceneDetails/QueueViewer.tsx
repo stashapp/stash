@@ -10,15 +10,19 @@ import {
   faRandom,
   faStepBackward,
   faStepForward,
+  faUser,
+  faVideo,
 } from "@fortawesome/free-solid-svg-icons";
 import { objectTitle } from "src/core/files";
 import SceneQueue, { QueuedScene } from "src/models/sceneQueue";
 import { INamedObject } from "src/utils/navigation";
-import { queryFindScenes, queryFindScenesByID } from "src/core/StashService";
+import { queryFindScenes } from "src/core/StashService";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { CriterionModifier, FilterMode } from "src/core/generated-graphql";
 import Slider from "@ant-design/react-slick";
 import { PerformersCriterion } from "src/models/list-filter/criteria/performers";
+import { StudiosCriterion } from "src/models/list-filter/criteria/studios";
+import { Criterion, CriterionValue } from "src/models/list-filter/criteria/criterion";
 
 export interface IPlaylistViewer {
   scenes: QueuedScene[];
@@ -55,15 +59,21 @@ export const QueueViewer: React.FC<IPlaylistViewer> = ({
   const [lessLoading, setLessLoading] = useState(false);
   const [moreLoading, setMoreLoading] = useState(false);
 
-  // TODO rename this
-  interface IFilterOption {
+  enum DiscoverFilterType {
+    Performer = 'PERFORMER',
+    Queue = 'QUEUE',
+    Studio = 'STUDIO',
+  }
+
+  interface IDiscoverFilterOption {
     id: number;
     label: string;
+    type: DiscoverFilterType
     value?: INamedObject;
   }
 
   const currentIndex = scenes.findIndex((s) => s.id === currentID);
-  const [filterOptions, setFilterOptions] = useState<IFilterOption[]>([]);
+  const [discoverFilterOptions, setDiscoverFilterOptions] = useState<IDiscoverFilterOption[]>([]);
 
   const [showQueue, setShowQueue] = useState(true);
   const [discoverScenes, setDiscoverScenes] = useState<QueuedScene[]>();
@@ -110,31 +120,36 @@ export const QueueViewer: React.FC<IPlaylistViewer> = ({
   }
 
   // TODO Clean up method to use proper query builder
-  function buildPerformerQuery(item: INamedObject) {
+  function buildPerformerQuery(option: IDiscoverFilterOption) {
     const scenefilter = new ListFilterModel(FilterMode.Scenes);
     scenefilter.sortBy = "date";
-    // scenefilter.getEncodedParams();
-    const newCriterion = new PerformersCriterion();
+    let newCriterion: Criterion<CriterionValue>;
+    if(option.type === DiscoverFilterType.Performer) {
+      newCriterion = new PerformersCriterion();
+    } else if(option.type === DiscoverFilterType.Studio) {
+      newCriterion = new StudiosCriterion();
+    } else {
+      return SceneQueue.fromListFilterModel(scenefilter); // shouldn't happen
+    }
+
     newCriterion.modifier = CriterionModifier.Includes;
+    const item = option.value!;
     newCriterion.value = {
       items: [{ id: item.id!, label: item.name! }],
       excluded: [],
     };
     console.log(newCriterion);
     scenefilter.criteria = [newCriterion];
-    const query = "?" + scenefilter.makeQueryParameters();
-    console.log("new query: " + query);
-    // return new URLSearchParams(query);
     return SceneQueue.fromListFilterModel(scenefilter);
   }
 
-  async function generateScene(option: IFilterOption) {
+  async function generateScene(option: IDiscoverFilterOption) {
     console.log("Changing showQueue to false");
     console.log(option);
     setShowQueue(false);
     setCurrentOption(option.id);
     // const scene = scenes[currentIndex];
-    const sceneQueue = buildPerformerQuery(option.value!);
+    const sceneQueue = buildPerformerQuery(option);
     setNewQueue(sceneQueue);
     console.log(sceneQueue);
     console.log("sceneQueue.query: " + sceneQueue.query);
@@ -144,7 +159,7 @@ export const QueueViewer: React.FC<IPlaylistViewer> = ({
     setDiscoverScenes(newa);
   }
 
-  async function handleQueueClick(option: IFilterOption) {
+  async function handleQueueClick(option: IDiscoverFilterOption) {
     if (option.id === 1) {
       setCurrentOption(1);
       setShowQueue(true);
@@ -162,34 +177,33 @@ export const QueueViewer: React.FC<IPlaylistViewer> = ({
     }
 
     let position = 1;
-    let options = [{ id: position++, label: "Queue", value: {} }];
+    let options = [{ id: position++, label: "Queue", type: DiscoverFilterType.Queue, value: {}}];
     console.log("added queue");
     const scene = scenes[currentIndex];
+
+    // Studio based recommendations
+    if(scene.studio) {
+      options.push({
+        id: position++,
+        label: scene.studio.name!,
+        type: DiscoverFilterType.Studio,
+        value: scene.studio,
+      });
+    }
+
+    // Performer based recommendations
     scene.performers?.map((performer: INamedObject) => {
       options.push({
         id: position++,
         label: performer.name!,
+        type: DiscoverFilterType.Performer,
         value: performer,
       });
       console.log("added " + performer.name);
     });
-    setFilterOptions(options);
+    setDiscoverFilterOptions(options);
     console.log("set filter options");
   }, [currentIndex, scenes]);
-
-  // const sceneQueue = useMemo(
-  //   () => SceneQueue.fromQueryParameters(queryParams),
-  //   [queryParams]
-  // );
-  // const queryContinue = useMemo(() => {
-  //   console.log("location.search: "+location.search)
-  //   let cont = queryParams.get("continue");
-  //   if (cont) {
-  //     return cont === "true";
-  //   } else {
-  //     return !!configuration?.interface.continuePlaylistDefault;
-  //   }
-  // }, [configuration?.interface.continuePlaylistDefault, queryParams]);
 
   function maybeRenderSceneRec() {
     if (showQueue || discoverScenes === undefined) {
@@ -380,29 +394,40 @@ export const QueueViewer: React.FC<IPlaylistViewer> = ({
     );
   }
 
+  function maybeRenderSVG(option: IDiscoverFilterOption) {
+    if (option.type === DiscoverFilterType.Performer) {
+      return (<Icon icon={faUser} />)
+    } else if (option.type === DiscoverFilterType.Studio) {
+      return (<Icon icon={faVideo} />)
+    }
+  }
+
   var settings = {
     dots: false,
     arrows: true,
     infinite: false,
-    speed: 500,
+    speed: 300,
     variableWidth: true,
     slidesToShow: 1,
   };
 
   return (
     <div id="queue-viewer">
-      <Slider className="scroll-container" {...settings}>
-        {filterOptions.map((option: IFilterOption, i) => (
+      <div className="discover-filter-container">
+      <Slider {...settings}>
+        {discoverFilterOptions.map((option: IDiscoverFilterOption, i) => (
           <span
             className={`rec ${currentOption === option.id ? "active" : ""}`}
             key={i}
           >
             <a className="rec-value" onClick={() => handleQueueClick(option)}>
+              {maybeRenderSVG(option)}
               {option.label}
             </a>
           </span>
         ))}
       </Slider>
+      </div>
       {maybeRenderQueue()}
       {maybeRenderSceneRec()}
     </div>
