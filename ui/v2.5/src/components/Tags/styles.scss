@@ -1,4 +1,3 @@
-
 .tag-list {
   &-row {
     margin: 0.5rem 0;
@@ -19,12 +18,9 @@
     min-width: 6rem;
   }
 }
-.thumbnail-section {
-  width: auto;
-}
+
 .tag-card {
-  padding: 0!important;
-  width: auto!important;
+  padding: 0.5rem;
 
   @media (max-width: 576px) {
     width: 100%;
