@@ -59,7 +59,7 @@ const DiscoverSlider: React.FC<IDiscoverOptions> = ({
   >([]);
   const [currentOption, setCurrentOption] = useState(1);
 
-  let sliderRef = useRef<Slider | null>(null);(null);
+  let sliderRef = useRef<Slider | null>(null);
   var settings = {
     dots: false,
     arrows: true,
@@ -89,15 +89,15 @@ const DiscoverSlider: React.FC<IDiscoverOptions> = ({
 
   useEffect(() => {
     // reset index after queue is replaced
-    if(sliderRef.current === null) {
+    if (sliderRef.current === null) {
       return;
     }
 
-    if(showQueue) {
+    if (showQueue) {
       setCurrentOption(1);
-      sliderRef.current.slickGoTo(0)
+      sliderRef.current.slickGoTo(0);
     }
-  }, [showQueue])
+  }, [showQueue]);
 
   useEffect(() => {
     if (currentScene == undefined) {
