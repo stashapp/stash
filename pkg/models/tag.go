@@ -8,6 +8,8 @@ type TagFilterType struct {
 	Name *StringCriterionInput `json:"name"`
 	// Filter by tag aliases
 	Aliases *StringCriterionInput `json:"aliases"`
+	// Filter by tag favorites
+	Favorite *bool `json:"favorite"`
 	// Filter by tag description
 	Description *StringCriterionInput `json:"description"`
 	// Filter to only include tags missing this property

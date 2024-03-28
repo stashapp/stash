@@ -37,6 +37,7 @@ func createTag(id int) models.Tag {
 	return models.Tag{
 		ID:            id,
 		Name:          tagName,
+		Favorite:      true,
 		Description:   description,
 		IgnoreAutoTag: autoTagIgnored,
 		CreatedAt:     createTime,
@@ -47,6 +48,7 @@ func createTag(id int) models.Tag {
 func createJSONTag(aliases []string, image string, parents []string) *jsonschema.Tag {
 	return &jsonschema.Tag{
 		Name:          tagName,
+		Favorite:      true,
 		Description:   description,
 		Aliases:       aliases,
 		IgnoreAutoTag: autoTagIgnored,

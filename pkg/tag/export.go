@@ -22,6 +22,7 @@ func ToJSON(ctx context.Context, reader FinderAliasImageGetter, tag *models.Tag)
 	newTagJSON := jsonschema.Tag{
 		Name:          tag.Name,
 		Description:   tag.Description,
+		Favorite:      tag.Favorite,
 		IgnoreAutoTag: tag.IgnoreAutoTag,
 		CreatedAt:     json.JSONTime{Time: tag.CreatedAt},
 		UpdatedAt:     json.JSONTime{Time: tag.UpdatedAt},

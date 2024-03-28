@@ -13,6 +13,7 @@ import {
   ChildTagsCriterionOption,
   ParentTagsCriterionOption,
 } from "./criteria/tags";
+import { FavoriteTagCriterionOption } from "./criteria/favorite";
 
 const defaultSortBy = "name";
 const sortByOptions = ["name", "random"]
@@ -42,6 +43,7 @@ const sortByOptions = ["name", "random"]
 
 const displayModeOptions = [DisplayMode.Grid, DisplayMode.List];
 const criterionOptions = [
+  FavoriteTagCriterionOption,
   createMandatoryStringCriterionOption("name"),
   TagIsMissingCriterionOption,
   createStringCriterionOption("aliases"),

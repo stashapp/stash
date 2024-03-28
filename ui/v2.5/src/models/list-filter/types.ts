@@ -191,6 +191,7 @@ export type CriterionType =
   | "parent_count"
   | "child_count"
   | "performer_favorite"
+  | "favorite"
   | "performer_age"
   | "duplicated"
   | "ignore_auto_tag"
