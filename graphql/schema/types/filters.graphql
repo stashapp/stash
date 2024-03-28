@@ -143,7 +143,7 @@ input PerformerFilterType {
   image_count: IntCriterionInput
   "Filter by gallery count"
   gallery_count: IntCriterionInput
-"Filter by play count"
+  "Filter by play count"
   play_count: IntCriterionInput
   "Filter by o count"
   o_counter: IntCriterionInput
@@ -231,7 +231,7 @@ input SceneFilterType {
   orientation: OrientationCriterionInput
   "Filter by frame rate"
   framerate: IntCriterionInput
-"Filter by bit rate"
+  "Filter by bit rate"
   bitrate: IntCriterionInput
   "Filter by video codec"
   video_codec: StringCriterionInput
@@ -247,7 +247,7 @@ input SceneFilterType {
   studios: HierarchicalMultiCriterionInput
   "Filter to only include scenes with this movie"
   movies: MultiCriterionInput
-"Filter to only include scenes with this gallery"
+  "Filter to only include scenes with this gallery"
   galleries: MultiCriterionInput
   "Filter to only include scenes with these tags"
   tags: HierarchicalMultiCriterionInput
