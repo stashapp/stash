@@ -1130,8 +1130,7 @@
             "cache_directory": "Cache bibliotek"
         },
         "creating": {
-            "creating_your_system": "Oprettelse af dit system",
-            "ffmpeg_notice": "Hvis <code>ffmpeg</code> endnu ikke er på dine stier, så vær tålmodig, mens stash downloader det. Se konsoloutputtet for at se downloadfremskridt."
+            "creating_your_system": "Oprettelse af dit system"
         },
         "errors": {
             "something_went_wrong": "Åh nej! Noget gik galt!",
