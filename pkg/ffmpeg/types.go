@@ -86,12 +86,20 @@ type FFProbeStream struct {
 		Language     string        `json:"language"`
 		Rotate       string        `json:"rotate"`
 	} `json:"tags"`
-	TimeBase      string `json:"time_base"`
-	Width         int    `json:"width,omitempty"`
-	BitsPerSample int    `json:"bits_per_sample,omitempty"`
-	ChannelLayout string `json:"channel_layout,omitempty"`
-	Channels      int    `json:"channels,omitempty"`
-	MaxBitRate    string `json:"max_bit_rate,omitempty"`
-	SampleFmt     string `json:"sample_fmt,omitempty"`
-	SampleRate    string `json:"sample_rate,omitempty"`
+	SideDataList  []FFProbeSideData `json:"side_data_list"`
+	TimeBase      string            `json:"time_base"`
+	Width         int               `json:"width,omitempty"`
+	BitsPerSample int               `json:"bits_per_sample,omitempty"`
+	ChannelLayout string            `json:"channel_layout,omitempty"`
+	Channels      int               `json:"channels,omitempty"`
+	MaxBitRate    string            `json:"max_bit_rate,omitempty"`
+	SampleFmt     string            `json:"sample_fmt,omitempty"`
+	SampleRate    string            `json:"sample_rate,omitempty"`
+}
+
+// FFProbeSideData is a JSON representation of an item in the side_data_list array of ffprobe output.
+type FFProbeSideData struct {
+	SideDataType  string `json:"side_data_type"`
+	DisplayMatrix string `json:"displaymatrix"`
+	Rotation      int64  `json:"rotation"`
 }
