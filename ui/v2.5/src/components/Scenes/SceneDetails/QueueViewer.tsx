@@ -54,6 +54,7 @@ const DiscoverSlider: React.FC<IDiscoverOptions> = ({
   showQueue,
   setShowQueue,
 }) => {
+  const intl = useIntl();
   const [discoverFilterOptions, setDiscoverFilterOptions] = useState<
     IDiscoverFilterOption[]
   >([]);
@@ -66,7 +67,7 @@ const DiscoverSlider: React.FC<IDiscoverOptions> = ({
     infinite: false,
     speed: 300,
     variableWidth: true,
-    slidesToShow: 1,
+    slidesToShow: 2,
   };
 
   function maybeRenderSVG(option: IDiscoverFilterOption) {
@@ -107,7 +108,9 @@ const DiscoverSlider: React.FC<IDiscoverOptions> = ({
     let options = [
       {
         id: position++,
-        label: "Queue",
+        label: intl.formatMessage({
+          id: "queue",
+        }),
         type: DiscoverFilterType.Queue,
         value: {},
       },

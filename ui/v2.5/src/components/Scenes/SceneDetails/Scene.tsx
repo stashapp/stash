@@ -368,7 +368,7 @@ const ScenePage: React.FC<IProps> = ({
           {queueScenes.length > 0 ? (
             <Nav.Item>
               <Nav.Link eventKey="scene-queue-panel">
-                <FormattedMessage id="Discover" />
+                <FormattedMessage id="discover" />
               </Nav.Link>
             </Nav.Item>
           ) : (
