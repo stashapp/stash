@@ -106,6 +106,10 @@ func (r *queryResolver) FindImages(
 			}
 		}
 
+		if err != nil {
+			return err
+		}
+
 		ret = &FindImagesResultType{
 			Count:      result.Count,
 			Images:     images,

@@ -18,6 +18,7 @@ type Studio struct {
 	CreatedAt     json.JSONTime    `json:"created_at,omitempty"`
 	UpdatedAt     json.JSONTime    `json:"updated_at,omitempty"`
 	Rating        int              `json:"rating,omitempty"`
+	Favorite      bool             `json:"favorite,omitempty"`
 	Details       string           `json:"details,omitempty"`
 	Aliases       []string         `json:"aliases,omitempty"`
 	StashIDs      []models.StashID `json:"stash_ids,omitempty"`

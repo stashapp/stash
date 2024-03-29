@@ -32,7 +32,7 @@ type cleanJob struct {
 	scanSubs     *subscriptionManager
 }
 
-func (j *cleanJob) Execute(ctx context.Context, progress *job.Progress) {
+func (j *cleanJob) Execute(ctx context.Context, progress *job.Progress) error {
 	logger.Infof("Starting cleaning of tracked files")
 	start := time.Now()
 	if j.input.DryRun {
@@ -47,7 +47,7 @@ func (j *cleanJob) Execute(ctx context.Context, progress *job.Progress) {
 
 	if job.IsCancelled(ctx) {
 		logger.Info("Stopping due to user request")
-		return
+		return nil
 	}
 
 	j.cleanEmptyGalleries(ctx)
@@ -55,6 +55,7 @@ func (j *cleanJob) Execute(ctx context.Context, progress *job.Progress) {
 	j.scanSubs.notify()
 	elapsed := time.Since(start)
 	logger.Info(fmt.Sprintf("Finished Cleaning (%s)", elapsed))
+	return nil
 }
 
 func (j *cleanJob) cleanEmptyGalleries(ctx context.Context) {

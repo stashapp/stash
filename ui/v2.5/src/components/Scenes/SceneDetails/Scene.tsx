@@ -91,6 +91,7 @@ interface IProps {
   queueStart: number;
   collapsed: boolean;
   setCollapsed: (state: boolean) => void;
+  setDiscoverQueue: (discoverQueue: SceneQueue) => void;
   setContinuePlaylist: (value: boolean) => void;
 }
 
@@ -114,6 +115,7 @@ const ScenePage: React.FC<IProps> = ({
   queueStart,
   collapsed,
   setCollapsed,
+  setDiscoverQueue,
   setContinuePlaylist,
 }) => {
   const Toast = useToast();
@@ -366,7 +368,7 @@ const ScenePage: React.FC<IProps> = ({
           {queueScenes.length > 0 ? (
             <Nav.Item>
               <Nav.Link eventKey="scene-queue-panel">
-                <FormattedMessage id="queue" />
+                <FormattedMessage id="discover" />
               </Nav.Link>
             </Nav.Item>
           ) : (
@@ -462,6 +464,7 @@ const ScenePage: React.FC<IProps> = ({
             hasMoreScenes={queueHasMoreScenes}
             onLessScenes={onQueueLessScenes}
             onMoreScenes={onQueueMoreScenes}
+            setDiscoverQueue={setDiscoverQueue}
           />
         </Tab.Pane>
         <Tab.Pane eventKey="scene-markers-panel">
@@ -563,6 +566,7 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
   const { data, loading, error } = useFindScene(id);
 
   const [scene, setScene] = useState<GQL.SceneDataFragment>();
+  const [discoverQueue, setDiscoverQueue] = useState<SceneQueue>();
 
   // useLayoutEffect to update before paint
   useLayoutEffect(() => {
@@ -576,10 +580,13 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
     () => new URLSearchParams(location.search),
     [location.search]
   );
-  const sceneQueue = useMemo(
-    () => SceneQueue.fromQueryParameters(queryParams),
-    [queryParams]
-  );
+  const sceneQueue = useMemo(() => {
+    if (discoverQueue === undefined) {
+      return SceneQueue.fromQueryParameters(queryParams);
+    } else {
+      return discoverQueue;
+    }
+  }, [queryParams, discoverQueue]);
   const queryContinue = useMemo(() => {
     let cont = queryParams.get("continue");
     if (cont) {
@@ -827,6 +834,7 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
         onQueueMoreScenes={onQueueMoreScenes}
         collapsed={collapsed}
         setCollapsed={setCollapsed}
+        setDiscoverQueue={setDiscoverQueue}
         setContinuePlaylist={setContinuePlaylist}
       />
       <div className={`scene-player-container ${collapsed ? "expanded" : ""}`}>

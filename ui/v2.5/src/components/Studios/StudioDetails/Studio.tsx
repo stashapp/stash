@@ -37,6 +37,7 @@ import {
   faLink,
   faChevronDown,
   faChevronUp,
+  faHeart,
 } from "@fortawesome/free-solid-svg-icons";
 import TextUtils from "src/utils/text";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
@@ -154,6 +155,19 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
     }
   }, [setTabKey, populatedDefaultTab, tabKey]);
 
+  function setFavorite(v: boolean) {
+    if (studio.id) {
+      updateStudio({
+        variables: {
+          input: {
+            id: studio.id,
+            favorite: v,
+          },
+        },
+      });
+    }
+  }
+
   // set up hotkeys
   useEffect(() => {
     Mousetrap.bind("e", () => toggleEditing());
@@ -161,6 +175,7 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
       setIsDeleteAlertOpen(true);
     });
     Mousetrap.bind(",", () => setCollapsed(!collapsed));
+    Mousetrap.bind("f", () => setFavorite(!studio.favorite));
 
     return () => {
       Mousetrap.unbind("e");
@@ -284,6 +299,12 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
 
   const renderClickableIcons = () => (
     <span className="name-icons">
+      <Button
+        className={cx("minimal", studio.favorite ? "favorite" : "not-favorite")}
+        onClick={() => setFavorite(!studio.favorite)}
+      >
+        <Icon icon={faHeart} />
+      </Button>
       {studio.url && (
         <Button
           as={ExternalLink}

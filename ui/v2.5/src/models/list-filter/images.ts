@@ -24,14 +24,14 @@ import { GalleriesCriterionOption } from "./criteria/galleries";
 
 const defaultSortBy = "path";
 
-const sortByOptions = [
-  "o_counter",
-  "filesize",
-  "file_count",
-  "date",
-  ...MediaSortByOptions,
-].map(ListFilterOptions.createSortBy);
-
+const sortByOptions = ["filesize", "file_count", "date", ...MediaSortByOptions]
+  .map(ListFilterOptions.createSortBy)
+  .concat([
+    {
+      messageID: "o_count",
+      value: "o_counter",
+    },
+  ]);
 const displayModeOptions = [DisplayMode.Grid, DisplayMode.Wall];
 const criterionOptions = [
   createStringCriterionOption("title"),
@@ -42,7 +42,7 @@ const criterionOptions = [
   PathCriterionOption,
   GalleriesCriterionOption,
   OrganizedCriterionOption,
-  createMandatoryNumberCriterionOption("o_counter"),
+  createMandatoryNumberCriterionOption("o_counter", "o_count"),
   ResolutionCriterionOption,
   OrientationCriterionOption,
   ImageIsMissingCriterionOption,

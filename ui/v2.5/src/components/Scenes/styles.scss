@@ -14,6 +14,81 @@
   }
 }
 
+.discover-filter-container {
+  background-color: #202b33;
+  height: 45px;
+  padding: 0 20px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+
+  /* stylelint-disable declaration-no-important */
+  .slick-disabled {
+    display: none !important; // important is necesary here due to slick slider inlining display: block;
+  }
+  /* stylelint-enable declaration-no-important */
+
+  .slick-arrow {
+    z-index: 1;
+  }
+
+  .slick-arrow:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 5px;
+  }
+
+  .slick-prev {
+    box-shadow: 12px 0 6px 0 rgb(32 43 51 / 90%);
+  }
+
+  .slick-prev::before {
+    content: "<";
+    display: block;
+    font-family: cursive;
+    font-size: 2rem;
+    height: 100%;
+    line-height: normal;
+  }
+
+  .slick-next {
+    box-shadow: -20px 0 6px 0 rgb(32 43 51 / 90%);
+  }
+
+  .slick-next::before {
+    content: ">";
+    display: block;
+    font-family: cursive;
+    font-size: 2rem;
+    height: 100%;
+    line-height: normal;
+  }
+
+  .slick-slide {
+    margin: 8px;
+    margin-left: 0;
+  }
+
+  .discover-filter {
+    background-color: #394b59;
+    border-radius: 5px;
+    font-weight: 500;
+    height: fit-content;
+    padding: 4px 12px;
+
+    svg {
+      padding-right: 5px;
+    }
+  }
+
+  .discover-filter.active {
+    background-color: #137cbd;
+  }
+
+  .discover-filter:hover {
+    cursor: pointer;
+  }
+}
+
 .video-section {
   position: relative;
 }
@@ -646,7 +721,14 @@ input[type="range"].blue-slider {
   }
 }
 
+.tab-pane #discover-content ol {
+  list-style: none;
+  padding-left: 0;
+}
+
 #queue-viewer {
+  margin-right: 5px;
+
   .queue-controls {
     align-items: center;
     background-color: $body-bg;
@@ -655,7 +737,7 @@ input[type="range"].blue-slider {
     height: 30px;
     justify-content: space-between;
     position: sticky;
-    top: 0;
+    top: 45px;
     z-index: 100;
   }
 
@@ -696,6 +778,14 @@ input[type="range"].blue-slider {
     margin-top: 5px;
     min-width: 142px;
     width: 142px;
+
+    &:hover,
+    &:active {
+      .scene-card-preview-video {
+        top: 0;
+        transition-delay: 0.2s;
+      }
+    }
   }
 
   ol {
@@ -711,8 +801,10 @@ input[type="range"].blue-slider {
 
   a {
     color: $text-color;
+    display: inline-block;
     font-weight: 500;
     text-decoration: none;
+    vertical-align: middle;
   }
 
   .current {

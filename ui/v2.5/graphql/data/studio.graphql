@@ -31,6 +31,7 @@ fragment StudioData on Studio {
   }
   details
   rating100
+  favorite
   aliases
 }
 

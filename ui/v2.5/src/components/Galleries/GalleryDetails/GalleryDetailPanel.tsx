@@ -9,6 +9,7 @@ import { PerformerCard } from "src/components/Performers/PerformerCard";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { sortPerformers } from "src/core/performers";
 import { galleryTitle } from "src/core/galleries";
+import { PhotographerLink } from "src/components/Shared/Link";
 
 interface IGalleryDetailProps {
   gallery: GQL.GalleryDataFragment;
@@ -118,7 +119,11 @@ export const GalleryDetailPanel: React.FC<IGalleryDetailProps> = ({
           )}
           {gallery.photographer && (
             <h6>
-              <FormattedMessage id="photographer" />: {gallery.photographer}{" "}
+              <FormattedMessage id="photographer" />:{" "}
+              <PhotographerLink
+                photographer={gallery.photographer}
+                linkType="gallery"
+              />
             </h6>
           )}
         </div>

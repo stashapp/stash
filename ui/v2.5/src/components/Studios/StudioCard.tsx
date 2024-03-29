@@ -11,6 +11,8 @@ import { FormattedMessage } from "react-intl";
 import { PopoverCountButton } from "../Shared/PopoverCountButton";
 import { RatingBanner } from "../Shared/RatingBanner";
 import ScreenUtils from "src/utils/screen";
+import { FavoriteIcon } from "../Shared/FavoriteIcon";
+import { useStudioUpdate } from "src/core/StashService";
 
 interface IProps {
   studio: GQL.StudioDataFragment;
@@ -63,7 +65,15 @@ function maybeRenderChildren(studio: GQL.StudioDataFragment) {
   }
 }
 
-export const StudioCard: React.FC<IProps> = (props: IProps) => {
+export const StudioCard: React.FC<IProps> = ({
+  studio,
+  containerWidth,
+  hideParent,
+  selecting,
+  selected,
+  onSelectedChanged,
+}) => {
+  const [updateStudio] = useStudioUpdate();
   const [cardWidth, setCardWidth] = useState<number>();
 
   useEffect(() => {
@@ -96,6 +106,19 @@ export const StudioCard: React.FC<IProps> = (props: IProps) => {
     );
     setCardWidth(fittedCardWidth);
   }, [props.containerWidth, props.zoomIndex]);
+
+  function onToggleFavorite(v: boolean) {
+    if (studio.id) {
+      updateStudio({
+        variables: {
+          input: {
+            id: studio.id,
+            favorite: v,
+          },
+        },
+      });
+    }
+  }
 
   function maybeRenderScenesPopoverButton() {
     if (!props.studio.scene_count) return;
@@ -206,6 +229,12 @@ export const StudioCard: React.FC<IProps> = (props: IProps) => {
           {maybeRenderChildren(props.studio)}
           <RatingBanner rating={props.studio.rating100} />
         </div>
+      }
+      overlays={
+        <FavoriteIcon
+          favorite={studio.favorite}
+          onToggleFavorite={(v) => onToggleFavorite(v)}
+        />
       }
       popovers={maybeRenderPopoverButtonGroup()}
       selected={props.selected}

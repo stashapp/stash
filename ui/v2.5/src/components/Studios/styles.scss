@@ -5,3 +5,35 @@
     max-width: 100%;
   }
 }
+
+.studio-card {
+  button.btn.favorite-button {
+    padding: 0;
+    position: absolute;
+    right: 5px;
+    top: 10px;
+
+    svg.fa-icon {
+      margin-left: 0.4rem;
+      margin-right: 0.4rem;
+    }
+  }
+
+  &:hover button.btn.favorite-button.not-favorite {
+    opacity: 1;
+  }
+}
+
+#studio-page {
+  .studio-head {
+    .name-icons {
+      .not-favorite {
+        color: rgba(191, 204, 214, 0.5);
+      }
+
+      .favorite {
+        color: #ff7373;
+      }
+    }
+  }
+}

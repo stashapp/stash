@@ -9,6 +9,7 @@ import {
 import { HasMarkersCriterionOption } from "./criteria/has-markers";
 import { SceneIsMissingCriterionOption } from "./criteria/is-missing";
 import { MoviesCriterionOption } from "./criteria/movies";
+import { GalleriesCriterionOption } from "./criteria/galleries";
 import { OrganizedCriterionOption } from "./criteria/organized";
 import { PerformersCriterionOption } from "./criteria/performers";
 import { ResolutionCriterionOption } from "./criteria/resolution";
@@ -34,7 +35,6 @@ import { OrientationCriterionOption } from "./criteria/orientation";
 const defaultSortBy = "date";
 const sortByOptions = [
   "organized",
-  "o_counter",
   "date",
   "file_count",
   "filesize",
@@ -51,8 +51,14 @@ const sortByOptions = [
   "interactive_speed",
   "perceptual_similarity",
   ...MediaSortByOptions,
-].map(ListFilterOptions.createSortBy);
-
+]
+  .map(ListFilterOptions.createSortBy)
+  .concat([
+    {
+      messageID: "o_count",
+      value: "o_counter",
+    },
+  ]);
 const displayModeOptions = [
   DisplayMode.Grid,
   DisplayMode.List,
@@ -72,7 +78,7 @@ const criterionOptions = [
   DuplicatedCriterionOption,
   OrganizedCriterionOption,
   RatingCriterionOption,
-  createMandatoryNumberCriterionOption("o_counter"),
+  createMandatoryNumberCriterionOption("o_counter", "o_count"),
   ResolutionCriterionOption,
   OrientationCriterionOption,
   createMandatoryNumberCriterionOption("framerate"),
@@ -93,6 +99,7 @@ const criterionOptions = [
   PerformerFavoriteCriterionOption,
   StudiosCriterionOption,
   MoviesCriterionOption,
+  GalleriesCriterionOption,
   createStringCriterionOption("url"),
   StashIDCriterionOption,
   InteractiveCriterionOption,

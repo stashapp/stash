@@ -143,6 +143,8 @@ input PerformerFilterType {
   image_count: IntCriterionInput
   "Filter by gallery count"
   gallery_count: IntCriterionInput
+  "Filter by play count"
+  play_count: IntCriterionInput
   "Filter by o count"
   o_counter: IntCriterionInput
   "Filter by StashID"
@@ -243,6 +245,8 @@ input SceneFilterType {
   studios: HierarchicalMultiCriterionInput
   "Filter to only include scenes with this movie"
   movies: MultiCriterionInput
+  "Filter to only include scenes with this gallery"
+  galleries: MultiCriterionInput
   "Filter to only include scenes with these tags"
   tags: HierarchicalMultiCriterionInput
   "Filter by tag count"
@@ -321,6 +325,8 @@ input StudioFilterType {
   is_missing: String
   # rating expressed as 1-100
   rating100: IntCriterionInput
+  "Filter by favorite"
+  favorite: Boolean
   "Filter by scene count"
   scene_count: IntCriterionInput
   "Filter by image count"

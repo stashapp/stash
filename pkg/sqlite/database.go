@@ -10,9 +10,6 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/golang-migrate/migrate/v4"
-	sqlite3mig "github.com/golang-migrate/migrate/v4/database/sqlite3"
-	"github.com/golang-migrate/migrate/v4/source/iofs"
 	"github.com/jmoiron/sqlx"
 
 	"github.com/stashapp/stash/pkg/fsutil"
@@ -33,7 +30,7 @@ const (
 	dbConnTimeout = 30
 )
 
-var appSchemaVersion uint = 55
+var appSchemaVersion uint = 56
 
 //go:embed migrations/*.sql
 var migrationsBox embed.FS
@@ -144,7 +141,7 @@ func (db *Database) Open(dbPath string) error {
 
 	if databaseSchemaVersion == 0 {
 		// new database, just run the migrations
-		if err := db.RunMigrations(); err != nil {
+		if err := db.RunAllMigrations(); err != nil {
 			return fmt.Errorf("error running initial schema migrations: %w", err)
 		}
 	} else {
@@ -312,11 +309,6 @@ func (db *Database) RestoreFromBackup(backupPath string) error {
 	return os.Rename(backupPath, db.dbPath)
 }
 
-// Migrate the database
-func (db *Database) needsMigration() bool {
-	return db.schemaVersion != appSchemaVersion
-}
-
 func (db *Database) AppSchemaVersion() uint {
 	return appSchemaVersion
 }
@@ -347,100 +339,6 @@ func (db *Database) AnonymousDatabasePath(backupDirectoryPath string) string {
 
 func (db *Database) Version() uint {
 	return db.schemaVersion
-}
-
-func (db *Database) getMigrate() (*migrate.Migrate, error) {
-	migrations, err := iofs.New(migrationsBox, "migrations")
-	if err != nil {
-		return nil, err
-	}
-
-	const disableForeignKeys = true
-	conn, err := db.open(disableForeignKeys)
-	if err != nil {
-		return nil, err
-	}
-
-	driver, err := sqlite3mig.WithInstance(conn.DB, &sqlite3mig.Config{})
-	if err != nil {
-		return nil, err
-	}
-
-	// use sqlite3Driver so that migration has access to durationToTinyInt
-	return migrate.NewWithInstance(
-		"iofs",
-		migrations,
-		db.dbPath,
-		driver,
-	)
-}
-
-func (db *Database) getDatabaseSchemaVersion() (uint, error) {
-	m, err := db.getMigrate()
-	if err != nil {
-		return 0, err
-	}
-	defer m.Close()
-
-	ret, _, _ := m.Version()
-	return ret, nil
-}
-
-// Migrate the database
-func (db *Database) RunMigrations() error {
-	ctx := context.Background()
-
-	m, err := db.getMigrate()
-	if err != nil {
-		return err
-	}
-	defer m.Close()
-
-	databaseSchemaVersion, _, _ := m.Version()
-	stepNumber := appSchemaVersion - databaseSchemaVersion
-	if stepNumber != 0 {
-		logger.Infof("Migrating database from version %d to %d", databaseSchemaVersion, appSchemaVersion)
-
-		// run each migration individually, and run custom migrations as needed
-		var i uint = 1
-		for ; i <= stepNumber; i++ {
-			newVersion := databaseSchemaVersion + i
-
-			// run pre migrations as needed
-			if err := db.runCustomMigrations(ctx, preMigrations[newVersion]); err != nil {
-				return fmt.Errorf("running pre migrations for schema version %d: %w", newVersion, err)
-			}
-
-			err = m.Steps(1)
-			if err != nil {
-				// migration failed
-				return err
-			}
-
-			// run post migrations as needed
-			if err := db.runCustomMigrations(ctx, postMigrations[newVersion]); err != nil {
-				return fmt.Errorf("running post migrations for schema version %d: %w", newVersion, err)
-			}
-		}
-	}
-
-	// update the schema version
-	db.schemaVersion, _, _ = m.Version()
-
-	// re-initialise the database
-	const disableForeignKeys = false
-	db.db, err = db.open(disableForeignKeys)
-	if err != nil {
-		return fmt.Errorf("re-initializing the database: %w", err)
-	}
-
-	// optimize database after migration
-	err = db.Optimise(ctx)
-	if err != nil {
-		logger.Warnf("error while performing post-migration optimisation: %v", err)
-	}
-
-	return nil
 }
 
 func (db *Database) Optimise(ctx context.Context) error {
@@ -523,29 +421,4 @@ func (db *Database) QuerySQL(ctx context.Context, query string, args []interface
 	}
 
 	return cols, ret, nil
-}
-
-func (db *Database) runCustomMigrations(ctx context.Context, fns []customMigrationFunc) error {
-	for _, fn := range fns {
-		if err := db.runCustomMigration(ctx, fn); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (db *Database) runCustomMigration(ctx context.Context, fn customMigrationFunc) error {
-	const disableForeignKeys = false
-	d, err := db.open(disableForeignKeys)
-	if err != nil {
-		return err
-	}
-
-	defer d.Close()
-	if err := fn(ctx, d); err != nil {
-		return err
-	}
-
-	return nil
 }

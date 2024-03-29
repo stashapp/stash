@@ -24,6 +24,7 @@ func ToJSON(ctx context.Context, reader FinderImageStashIDGetter, studio *models
 		Name:          studio.Name,
 		URL:           studio.URL,
 		Details:       studio.Details,
+		Favorite:      studio.Favorite,
 		IgnoreAutoTag: studio.IgnoreAutoTag,
 		CreatedAt:     json.JSONTime{Time: studio.CreatedAt},
 		UpdatedAt:     json.JSONTime{Time: studio.UpdatedAt},

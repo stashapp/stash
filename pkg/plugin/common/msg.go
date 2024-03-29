@@ -77,6 +77,14 @@ func (m ArgsMap) Float(key string) float64 {
 	return ret
 }
 
+func (m ArgsMap) ToMap() map[string]interface{} {
+	ret := make(map[string]interface{})
+	for k, v := range m {
+		ret[k] = v
+	}
+	return ret
+}
+
 // PluginInput is the data structure that is sent to plugin instances when they
 // are spawned.
 type PluginInput struct {
