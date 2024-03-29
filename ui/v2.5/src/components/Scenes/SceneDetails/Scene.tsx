@@ -588,7 +588,6 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
     }
   }, [queryParams, discoverQueue]);
   const queryContinue = useMemo(() => {
-    console.log("location.search: " + location.search);
     let cont = queryParams.get("continue");
     if (cont) {
       return cont === "true";

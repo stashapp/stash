@@ -54,7 +54,6 @@ const DiscoverSlider: React.FC<IDiscoverOptions> = ({
   showQueue,
   setShowQueue,
 }) => {
-  console.log(currentScene);
   const [discoverFilterOptions, setDiscoverFilterOptions] = useState<
     IDiscoverFilterOption[]
   >([]);
@@ -85,7 +84,6 @@ const DiscoverSlider: React.FC<IDiscoverOptions> = ({
     } else {
       generateScene(option);
     }
-    console.log("currentOption: " + currentOption);
   }
 
   useEffect(() => {
@@ -114,7 +112,6 @@ const DiscoverSlider: React.FC<IDiscoverOptions> = ({
         value: {},
       },
     ];
-    console.log("added queue");
 
     // Studio based recommendations
     if (currentScene.studio) {
@@ -134,10 +131,8 @@ const DiscoverSlider: React.FC<IDiscoverOptions> = ({
         type: DiscoverFilterType.Performer,
         value: performer,
       });
-      console.log("added " + performer.name);
     });
     setDiscoverFilterOptions(options);
-    console.log("set filter options");
   }, [currentScene]);
 
   return (
@@ -145,13 +140,14 @@ const DiscoverSlider: React.FC<IDiscoverOptions> = ({
       <Slider ref={sliderRef} {...settings}>
         {discoverFilterOptions.map((option: IDiscoverFilterOption, i) => (
           <span
-            className={`rec ${currentOption === option.id ? "active" : ""}`}
+            className={`discover-filter ${
+              currentOption === option.id ? "active" : ""
+            }`}
             key={i}
+            onClick={() => handleOptionClick(option)}
           >
-            <a className="rec-value" onClick={() => handleOptionClick(option)}>
-              {maybeRenderSVG(option)}
-              {option.label}
-            </a>
+            {maybeRenderSVG(option)}
+            {option.label}
           </span>
         ))}
       </Slider>
@@ -243,10 +239,8 @@ export const QueueViewer: React.FC<IPlaylistViewer> = ({
     let newCriterion: Criterion<CriterionValue>;
     if (option.type === DiscoverFilterType.Performer) {
       newCriterion = new PerformersCriterion();
-    } else if (option.type === DiscoverFilterType.Studio) {
-      newCriterion = new StudiosCriterion();
     } else {
-      return SceneQueue.fromListFilterModel(scenefilter); // shouldn't happen
+      newCriterion = new StudiosCriterion();
     }
 
     newCriterion.modifier = CriterionModifier.Includes;
@@ -255,19 +249,14 @@ export const QueueViewer: React.FC<IPlaylistViewer> = ({
       items: [{ id: item.id!, label: item.name! }],
       excluded: [],
     };
-    console.log(newCriterion);
     scenefilter.criteria = [newCriterion];
     return SceneQueue.fromListFilterModel(scenefilter);
   }
 
   async function generateScene(option: IDiscoverFilterOption) {
-    console.log("Changing showQueue to false");
-    console.log(option);
     setShowQueue(false);
     const sceneQueue = buildPerformerQuery(option);
     setNewQueue(sceneQueue);
-    console.log(sceneQueue);
-    console.log("sceneQueue.query: " + sceneQueue.query);
     const query = await queryFindScenes(sceneQueue.query!);
     const { scenes: newa } = query.data.findScenes;
     setDiscoverScenes(newa);
@@ -280,54 +269,12 @@ export const QueueViewer: React.FC<IPlaylistViewer> = ({
 
     return (
       <div id="discover-content">
-        <ol start={start}>
-          {discoverScenes.map((scene: QueuedScene) => (
-            <li
-              className={cx("my-2", { current: isCurrentScene(scene) })}
-              key={scene.id}
-            >
-              <Link
-                to={`/scenes/${scene.id}`}
-                onClick={(e) => handleDiscoverSceneClick(e, scene.id)}
-              >
-                <div className="ml-1 d-flex align-items-center">
-                  <div className="thumbnail-container">
-                    <ScenePreview
-                      image={scene.paths.screenshot ?? undefined}
-                      video={scene.paths.preview ?? undefined}
-                      isPortrait={false}
-                      soundActive={false}
-                      vttPath={scene.paths.vtt ?? undefined}
-                    />
-                  </div>
-                  <div className="queue-scene-details">
-                    <span className="queue-scene-title">
-                      {objectTitle(scene)}
-                    </span>
-                    <span className="queue-scene-studio">
-                      {scene?.studio?.name}
-                    </span>
-                    <span className="queue-scene-performers">
-                      {scene?.performers
-                        ?.map(function (performer) {
-                          return performer.name;
-                        })
-                        .join(", ")}
-                    </span>
-                    <span className="queue-scene-date">{scene?.date}</span>
-                  </div>
-                </div>
-              </Link>
-            </li>
-          ))}
-          {/* <ol start={start}>{discoverScenes.map(renderPlaylistEntry)}</ol> */}
-        </ol>
+        <ol start={start}>{discoverScenes.map(renderPlaylistEntry)}</ol>
       </div>
     );
   }
 
   function maybeRenderQueue() {
-    console.log(showQueue);
     if (!showQueue) {
       return;
     }
@@ -414,7 +361,11 @@ export const QueueViewer: React.FC<IPlaylistViewer> = ({
       >
         <Link
           to={`/scenes/${scene.id}`}
-          onClick={(e) => handleSceneClick(e, scene.id)}
+          onClick={(e) =>
+            showQueue
+              ? handleSceneClick(e, scene.id)
+              : handleDiscoverSceneClick(e, scene.id)
+          }
         >
           <div className="ml-1 d-flex align-items-center">
             <div className="thumbnail-container">

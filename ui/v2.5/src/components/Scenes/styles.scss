@@ -22,24 +22,31 @@
   top: 0;
   z-index: 100;
 
-  .slick-prev:before {
+  /* stylelint-disable declaration-no-important */
+  .slick-disabled {
+    display: none !important; // important is necesary here due to slick slider inlining display: block;
+  }
+  /* stylelint-enable declaration-no-important */
+
+  .slick-arrow:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 5px;
+  }
+
+  .slick-prev::before {
     content: "<";
     display: block;
     font-family: cursive;
     font-size: 2rem;
-    border: solid 1px;
-    border-radius: 3px;
     height: 100%;
     line-height: normal;
   }
 
-  .slick-next:before {
+  .slick-next::before {
     content: ">";
     display: block;
     font-family: cursive;
     font-size: 2rem;
-    border: solid 1px;
-    border-radius: 3px;
     height: 100%;
     line-height: normal;
   }
@@ -49,23 +56,23 @@
     margin-left: 0;
   }
 
-  .rec {
-    padding: 4px 12px;
-    height: fit-content;
-    display: inline-block;
+  .discover-filter {
     background-color: #394b59;
     border-radius: 5px;
+    font-weight: 500;
+    height: fit-content;
+    padding: 4px 12px;
 
     svg {
       padding-right: 5px;
     }
   }
 
-  .rec.active {
+  .discover-filter.active {
     background-color: #137cbd;
   }
 
-  .rec:hover {
+  .discover-filter:hover {
     cursor: pointer;
   }
 }
@@ -616,6 +623,11 @@ input[type="range"].blue-slider {
   }
 }
 
+#discover-content ol {
+  list-style: none;
+  padding-left: 0;
+}
+
 #queue-viewer {
   margin-right: 5px;
 
@@ -680,11 +692,6 @@ input[type="range"].blue-slider {
 
   ol {
     padding-left: 20px;
-  }
-
-  #discover-content ol {
-    list-style: none;
-    padding-left: 0;
   }
 
   img {
