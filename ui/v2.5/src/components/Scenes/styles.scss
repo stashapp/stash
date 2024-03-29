@@ -657,6 +657,7 @@ input[type="range"].blue-slider {
   .queue-scene-details {
     display: grid;
     overflow: hidden;
+    padding-left: 10px;
     position: relative;
   }
 
@@ -685,12 +686,12 @@ input[type="range"].blue-slider {
   }
 
   .thumbnail-container {
-    height: 80px;
-    margin-bottom: 5px;
-    margin-right: 0.75rem;
-    margin-top: 5px;
-    min-width: 142px;
-    width: 142px;
+    aspect-ratio: 16 / 9;
+    width: 40%;
+
+    .scene-card-preview {
+      margin: 2.5px 0;
+    }
 
     &:hover,
     &:active {
