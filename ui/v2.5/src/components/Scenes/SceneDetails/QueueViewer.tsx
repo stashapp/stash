@@ -43,14 +43,14 @@ interface IDiscoverFilterOption {
 
 export interface IDiscoverOptions {
   currentScene?: QueuedScene;
-  generateScene: (option: IDiscoverFilterOption) => void;
+  generateDiscoverQueue: (option: IDiscoverFilterOption) => void;
   showQueue: boolean;
   setShowQueue: (showQueue: boolean) => void;
 }
 
 const DiscoverSlider: React.FC<IDiscoverOptions> = ({
   currentScene,
-  generateScene,
+  generateDiscoverQueue,
   showQueue,
   setShowQueue,
 }) => {
@@ -68,6 +68,7 @@ const DiscoverSlider: React.FC<IDiscoverOptions> = ({
     arrows: true,
     infinite: false,
     speed: 300,
+    swipeToSlide: true,
     variableWidth: true,
     slidesToShow: 2,
   };
@@ -85,7 +86,7 @@ const DiscoverSlider: React.FC<IDiscoverOptions> = ({
     if (option.id === 1) {
       setShowQueue(true);
     } else {
-      generateScene(option);
+      generateDiscoverQueue(option);
     }
   }
 
@@ -236,7 +237,7 @@ export const QueueViewer: React.FC<IPlaylistViewer> = ({
     onMoreScenes();
   }
 
-  function buildPerformerQuery(option: IDiscoverFilterOption) {
+  function buildDiscoverQueueFilter(option: IDiscoverFilterOption) {
     const scenefilter = new ListFilterModel(FilterMode.Scenes);
     scenefilter.sortBy = "random";
     let newCriterion: Criterion<CriterionValue>;
@@ -256,16 +257,16 @@ export const QueueViewer: React.FC<IPlaylistViewer> = ({
     return SceneQueue.fromListFilterModel(scenefilter);
   }
 
-  async function generateScene(option: IDiscoverFilterOption) {
+  async function generateDiscoverQueue(option: IDiscoverFilterOption) {
     setShowQueue(false);
-    const sceneQueue = buildPerformerQuery(option);
+    const sceneQueue = buildDiscoverQueueFilter(option);
     setNewQueue(sceneQueue);
     const query = await queryFindScenes(sceneQueue.query!);
     const { scenes: newa } = query.data.findScenes;
     setDiscoverScenes(newa);
   }
 
-  function maybeRenderSceneRec() {
+  function maybeRenderDiscoverQueue() {
     if (showQueue || discoverScenes === undefined) {
       return;
     }
@@ -402,12 +403,12 @@ export const QueueViewer: React.FC<IPlaylistViewer> = ({
     <div id="queue-viewer">
       <DiscoverSlider
         currentScene={currentIndex >= 0 ? scenes[currentIndex] : undefined}
-        generateScene={generateScene}
+        generateDiscoverQueue={generateDiscoverQueue}
         showQueue={showQueue}
         setShowQueue={setShowQueue}
       />
       {maybeRenderQueue()}
-      {maybeRenderSceneRec()}
+      {maybeRenderDiscoverQueue()}
     </div>
   );
 };
