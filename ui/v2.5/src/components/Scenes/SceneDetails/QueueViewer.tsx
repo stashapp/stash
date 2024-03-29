@@ -43,14 +43,14 @@ interface IDiscoverFilterOption {
 
 export interface IDiscoverOptions {
   currentScene?: QueuedScene;
-  generateScene: (option: IDiscoverFilterOption) => void;
+  generateDiscoverQueue: (option: IDiscoverFilterOption) => void;
   showQueue: boolean;
   setShowQueue: (showQueue: boolean) => void;
 }
 
 const DiscoverSlider: React.FC<IDiscoverOptions> = ({
   currentScene,
-  generateScene,
+  generateDiscoverQueue,
   showQueue,
   setShowQueue,
 }) => {
@@ -85,7 +85,7 @@ const DiscoverSlider: React.FC<IDiscoverOptions> = ({
     if (option.id === 1) {
       setShowQueue(true);
     } else {
-      generateScene(option);
+      generateDiscoverQueue(option);
     }
   }
 
@@ -402,7 +402,7 @@ export const QueueViewer: React.FC<IPlaylistViewer> = ({
     <div id="queue-viewer">
       <DiscoverSlider
         currentScene={currentIndex >= 0 ? scenes[currentIndex] : undefined}
-        generateScene={generateDiscoverQueue}
+        generateDiscoverQueue={generateDiscoverQueue}
         showQueue={showQueue}
         setShowQueue={setShowQueue}
       />
