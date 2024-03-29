@@ -238,7 +238,7 @@ export const QueueViewer: React.FC<IPlaylistViewer> = ({
 
   function buildPerformerQuery(option: IDiscoverFilterOption) {
     const scenefilter = new ListFilterModel(FilterMode.Scenes);
-    scenefilter.sortBy = "date";
+    scenefilter.sortBy = "random";
     let newCriterion: Criterion<CriterionValue>;
     if (option.type === DiscoverFilterType.Performer) {
       newCriterion = new PerformersCriterion();
