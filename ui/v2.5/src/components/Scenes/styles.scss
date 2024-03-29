@@ -208,6 +208,7 @@ textarea.scene-description {
   }
 }
 
+.queue-viewer .thumbnail-container,
 .scene-card,
 .gallery-card {
   .scene-specs-overlay {
@@ -667,6 +668,14 @@ input[type="range"].blue-slider {
     margin-top: 5px;
     min-width: 142px;
     width: 142px;
+
+    &:hover,
+    &:active {
+      .scene-card-preview-video {
+        top: 0;
+        transition-delay: 0.2s;
+      }
+    }
   }
 
   ol {

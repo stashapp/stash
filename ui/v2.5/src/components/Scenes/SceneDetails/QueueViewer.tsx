@@ -26,6 +26,7 @@ import {
   Criterion,
   CriterionValue,
 } from "src/models/list-filter/criteria/criterion";
+import { ScenePreview } from "../SceneCard";
 
 enum DiscoverFilterType {
   Performer = "PERFORMER",
@@ -291,10 +292,12 @@ export const QueueViewer: React.FC<IPlaylistViewer> = ({
               >
                 <div className="ml-1 d-flex align-items-center">
                   <div className="thumbnail-container">
-                    <img
-                      loading="lazy"
-                      alt={scene.title ?? ""}
-                      src={scene.paths.screenshot ?? ""}
+                    <ScenePreview
+                      image={scene.paths.screenshot ?? undefined}
+                      video={scene.paths.preview ?? undefined}
+                      isPortrait={false}
+                      soundActive={false}
+                      vttPath={scene.paths.vtt ?? undefined}
                     />
                   </div>
                   <div className="queue-scene-details">
@@ -415,10 +418,12 @@ export const QueueViewer: React.FC<IPlaylistViewer> = ({
         >
           <div className="ml-1 d-flex align-items-center">
             <div className="thumbnail-container">
-              <img
-                loading="lazy"
-                alt={scene.title ?? ""}
-                src={scene.paths.screenshot ?? ""}
+              <ScenePreview
+                image={scene.paths.screenshot ?? undefined}
+                video={scene.paths.preview ?? undefined}
+                isPortrait={false}
+                soundActive={false}
+                vttPath={scene.paths.vtt ?? undefined}
               />
             </div>
             <div className="queue-scene-details">
