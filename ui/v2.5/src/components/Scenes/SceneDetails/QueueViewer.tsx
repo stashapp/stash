@@ -55,6 +55,8 @@ const DiscoverSlider: React.FC<IDiscoverOptions> = ({
   setShowQueue,
 }) => {
   const intl = useIntl();
+  const queueLabel = intl.formatMessage({ id: "queue" });
+
   const [discoverFilterOptions, setDiscoverFilterOptions] = useState<
     IDiscoverFilterOption[]
   >([]);
@@ -108,9 +110,7 @@ const DiscoverSlider: React.FC<IDiscoverOptions> = ({
     let options = [
       {
         id: position++,
-        label: intl.formatMessage({
-          id: "queue",
-        }),
+        label: queueLabel,
         type: DiscoverFilterType.Queue,
         value: {},
       },
@@ -136,7 +136,7 @@ const DiscoverSlider: React.FC<IDiscoverOptions> = ({
       });
     });
     setDiscoverFilterOptions(options);
-  }, [currentScene]);
+  }, [currentScene, queueLabel]);
 
   return (
     <div className="discover-filter-container">
