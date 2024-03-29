@@ -71,6 +71,7 @@ const DiscoverSlider: React.FC<IDiscoverOptions> = ({
     swipeToSlide: true,
     variableWidth: true,
     slidesToShow: 2,
+    slidesToScroll: 2,
   };
 
   function maybeRenderSVG(option: IDiscoverFilterOption) {
