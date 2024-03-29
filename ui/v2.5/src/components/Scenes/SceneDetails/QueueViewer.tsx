@@ -68,6 +68,7 @@ const DiscoverSlider: React.FC<IDiscoverOptions> = ({
     arrows: true,
     infinite: false,
     speed: 300,
+    swipeToSlide: true,
     variableWidth: true,
     slidesToShow: 2,
   };
