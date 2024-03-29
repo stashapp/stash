@@ -65,14 +65,7 @@ function maybeRenderChildren(studio: GQL.StudioDataFragment) {
   }
 }
 
-export const StudioCard: React.FC<IProps> = ({
-  studio,
-  containerWidth,
-  hideParent,
-  selecting,
-  selected,
-  onSelectedChanged,
-}) => {
+export const StudioCard: React.FC<IProps> = (props: IProps) => {
   const [updateStudio] = useStudioUpdate();
   const [cardWidth, setCardWidth] = useState<number>();
 
@@ -108,11 +101,11 @@ export const StudioCard: React.FC<IProps> = ({
   }, [props.containerWidth, props.zoomIndex]);
 
   function onToggleFavorite(v: boolean) {
-    if (studio.id) {
+    if (props.studio.id) {
       updateStudio({
         variables: {
           input: {
-            id: studio.id,
+            id: props.studio.id,
             favorite: v,
           },
         },
@@ -232,7 +225,7 @@ export const StudioCard: React.FC<IProps> = ({
       }
       overlays={
         <FavoriteIcon
-          favorite={studio.favorite}
+          favorite={props.studio.favorite}
           onToggleFavorite={(v) => onToggleFavorite(v)}
         />
       }
