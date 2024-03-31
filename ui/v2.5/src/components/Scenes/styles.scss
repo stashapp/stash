@@ -617,7 +617,6 @@ input[type="range"].blue-slider {
       overflow: hidden;
       position: relative;
       transform: translateX(0);
-      transition: 2s;
       white-space: nowrap;
     }
 
@@ -702,6 +701,11 @@ input[type="range"].blue-slider {
         top: 0;
         transition-delay: 0.2s;
       }
+    }
+
+    .scene-card-preview-video {
+      background-size: cover;
+      object-fit: contain;
     }
   }
 

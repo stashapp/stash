@@ -359,6 +359,14 @@ export const QueueViewer: React.FC<IPlaylistViewer> = ({
   }
 
   function renderPlaylistEntry(scene: QueuedScene) {
+    const title = objectTitle(scene);
+    const studio = scene?.studio?.name;
+    const performersStr = scene?.performers
+      ?.map(function (performer) {
+        return performer.name;
+      })
+      .join(", ");
+    const transitionOffset = 20;
     return (
       <li
         className={cx("my-2", { current: isCurrentScene(scene) })}
@@ -383,14 +391,36 @@ export const QueueViewer: React.FC<IPlaylistViewer> = ({
               />
             </div>
             <div className="queue-scene-details">
-              <span className="queue-scene-title">{objectTitle(scene)}</span>
-              <span className="queue-scene-studio">{scene?.studio?.name}</span>
-              <span className="queue-scene-performers">
-                {scene?.performers
-                  ?.map(function (performer) {
-                    return performer.name;
-                  })
-                  .join(", ")}
+              <span
+                className="queue-scene-title"
+                style={{
+                  transition: `${
+                    (title ? title.length : 0) / transitionOffset
+                  }s`,
+                }}
+              >
+                {title}
+              </span>
+              <span
+                className="queue-scene-studio"
+                style={{
+                  transition: `${
+                    (studio ? studio.length : 0) / transitionOffset
+                  }s`,
+                }}
+              >
+                {studio}
+              </span>
+              <span
+                className="queue-scene-performers"
+                style={{
+                  transition: `${
+                    (performersStr ? performersStr.length : 0) /
+                    transitionOffset
+                  }s`,
+                }}
+              >
+                {performersStr}
               </span>
               <span className="queue-scene-date">{scene?.date}</span>
             </div>
