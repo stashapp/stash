@@ -366,7 +366,6 @@ export const QueueViewer: React.FC<IPlaylistViewer> = ({
         return performer.name;
       })
       .join(", ");
-    const transitionOffset = 20;
     return (
       <li
         className={cx("my-2", { current: isCurrentScene(scene) })}
@@ -391,35 +390,13 @@ export const QueueViewer: React.FC<IPlaylistViewer> = ({
               />
             </div>
             <div className="queue-scene-details">
-              <span
-                className="queue-scene-title"
-                style={{
-                  transition: `${
-                    (title ? title.length : 0) / transitionOffset
-                  }s`,
-                }}
-              >
+              <span className="queue-scene-title" title={title}>
                 {title}
               </span>
-              <span
-                className="queue-scene-studio"
-                style={{
-                  transition: `${
-                    (studio ? studio.length : 0) / transitionOffset
-                  }s`,
-                }}
-              >
+              <span className="queue-scene-studio" title={studio}>
                 {studio}
               </span>
-              <span
-                className="queue-scene-performers"
-                style={{
-                  transition: `${
-                    (performersStr ? performersStr.length : 0) /
-                    transitionOffset
-                  }s`,
-                }}
-              >
+              <span className="queue-scene-performers" title={performersStr}>
                 {performersStr}
               </span>
               <span className="queue-scene-date">{scene?.date}</span>
