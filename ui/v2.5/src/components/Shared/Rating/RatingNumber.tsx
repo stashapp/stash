@@ -115,7 +115,7 @@ export const RatingNumber: React.FC<IRatingNumberProps> = (
   function onBlur() {
     if (editing) {
       setEditing(false);
-      if (props.onSetRating) {
+      if (props.onSetRating && valueStage !== props.value) {
         props.onSetRating(valueStage);
       }
     }
