@@ -422,6 +422,7 @@ dd {
   align-items: center;
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
   white-space: pre-line;
 
   .birthdate,
