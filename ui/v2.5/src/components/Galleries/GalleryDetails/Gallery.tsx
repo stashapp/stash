@@ -41,6 +41,7 @@ import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import cx from "classnames";
 import { useRatingKeybinds } from "src/hooks/keybinds";
 import { ConfigurationContext } from "src/hooks/Config";
+import { TruncatedText } from "src/components/Shared/TruncatedText";
 
 interface IProps {
   gallery: GQL.GalleryDataFragment;
@@ -363,7 +364,7 @@ export const GalleryPage: React.FC<IProps> = ({ gallery, add }) => {
         <div>
           <div className="gallery-header-container">
             {gallery.studio && (
-              <h1 className="mt-3 text-center gallery-studio-image">
+              <h1 className="text-center gallery-studio-image">
                 <Link to={`/studios/${gallery.studio.id}`}>
                   <img
                     src={gallery.studio.image_path ?? ""}
@@ -376,7 +377,7 @@ export const GalleryPage: React.FC<IProps> = ({ gallery, add }) => {
             <h3
               className={cx("gallery-header", { "no-studio": !gallery.studio })}
             >
-              {title}
+              <TruncatedText lineCount={2} text={title} />
             </h3>
           </div>
 

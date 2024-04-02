@@ -33,6 +33,7 @@ import { ConfigurationContext } from "src/hooks/Config";
 import TextUtils from "src/utils/text";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import cx from "classnames";
+import { TruncatedText } from "src/components/Shared/TruncatedText";
 
 interface IProps {
   image: GQL.ImageDataFragment;
@@ -290,7 +291,7 @@ const ImagePage: React.FC<IProps> = ({ image }) => {
         <div>
           <div className="image-header-container">
             {image.studio && (
-              <h1 className="mt-3 text-center image-studio-image">
+              <h1 className="text-center image-studio-image">
                 <Link to={`/studios/${image.studio.id}`}>
                   <img
                     src={image.studio.image_path ?? ""}
@@ -301,7 +302,7 @@ const ImagePage: React.FC<IProps> = ({ image }) => {
               </h1>
             )}
             <h3 className={cx("image-header", { "no-studio": !image.studio })}>
-              {title}
+              <TruncatedText lineCount={2} text={title} />
             </h3>
           </div>
 
