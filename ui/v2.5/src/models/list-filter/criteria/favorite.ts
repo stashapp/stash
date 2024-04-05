@@ -19,7 +19,7 @@ export const FavoriteTagCriterionOption = new BooleanCriterionOption(
 
 export class FavoriteTagCriterion extends BooleanCriterion {
   constructor() {
-    super(FavoriteTagCriterionOption)
+    super(FavoriteTagCriterionOption);
   }
 }
 
