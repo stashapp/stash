@@ -341,7 +341,9 @@ export const SettingsConfigurationPanel: React.FC = () => {
           headingID="config.general.ffmpeg.full_hardware_acceleration.heading"
           subHeadingID="config.general.ffmpeg.full_hardware_acceleration.desc"
           checked={general.transcodeFullHardwareAcceleration ?? false}
-          onChange={(v) => saveGeneral({ transcodeFullHardwareAcceleration: v })}
+          onChange={(v) =>
+            saveGeneral({ transcodeFullHardwareAcceleration: v })
+          }
         />
 
         <StringListSetting
