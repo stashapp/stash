@@ -6,8 +6,9 @@ import React, {
   useContext,
   useRef,
   useLayoutEffect,
+  PropsWithChildren,
 } from "react";
-import { FormattedMessage, useIntl } from "react-intl";
+import { FormattedDate, FormattedMessage, useIntl } from "react-intl";
 import { Link, RouteComponentProps } from "react-router-dom";
 import { Helmet } from "react-helmet";
 import * as GQL from "src/core/generated-graphql";
@@ -15,24 +16,21 @@ import {
   mutateMetadataScan,
   useFindScene,
   useSceneIncrementO,
-  useSceneDecrementO,
-  useSceneResetO,
   useSceneGenerateScreenshot,
   useSceneUpdate,
   queryFindScenes,
   queryFindScenesByID,
+  useSceneIncrementPlayCount,
 } from "src/core/StashService";
 
 import { SceneEditPanel } from "./SceneEditPanel";
 import { ErrorMessage } from "src/components/Shared/ErrorMessage";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { Icon } from "src/components/Shared/Icon";
-import { Counter } from "src/components/Shared/Counter";
 import { useToast } from "src/hooks/Toast";
 import SceneQueue, { QueuedScene } from "src/models/sceneQueue";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import Mousetrap from "mousetrap";
-import { OCounterButton } from "./OCounterButton";
 import { OrganizedButton } from "./OrganizedButton";
 import { ConfigurationContext } from "src/hooks/Config";
 import { getPlayerPosition } from "src/components/ScenePlayer/util";
@@ -40,8 +38,18 @@ import {
   faEllipsisV,
   faChevronRight,
   faChevronLeft,
+  faTimes,
 } from "@fortawesome/free-solid-svg-icons";
 import { lazyComponent } from "src/utils/lazyComponent";
+import { objectPath, objectTitle } from "src/core/files";
+import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
+import TextUtils from "src/utils/text";
+import {
+  OCounterButton,
+  ViewCountButton,
+} from "src/components/Shared/CountButton";
+import { useRatingKeybinds } from "src/hooks/keybinds";
+import cx from "classnames";
 
 const SubmitStashBoxDraft = lazyComponent(
   () => import("src/components/Dialogs/SubmitDraft")
@@ -62,7 +70,6 @@ const SceneMarkersPanel = lazyComponent(() => import("./SceneMarkersPanel"));
 const SceneFileInfoPanel = lazyComponent(() => import("./SceneFileInfoPanel"));
 const SceneDetailPanel = lazyComponent(() => import("./SceneDetailPanel"));
 const SceneHistoryPanel = lazyComponent(() => import("./SceneHistoryPanel"));
-const SceneMoviePanel = lazyComponent(() => import("./SceneMoviePanel"));
 const SceneGalleriesPanel = lazyComponent(
   () => import("./SceneGalleriesPanel")
 );
@@ -73,7 +80,6 @@ const GenerateDialog = lazyComponent(
 const SceneVideoFilterPanel = lazyComponent(
   () => import("./SceneVideoFilterPanel")
 );
-import { objectPath, objectTitle } from "src/core/files";
 
 interface IProps {
   scene: GQL.SceneDataFragment;
@@ -126,17 +132,26 @@ const ScenePage: React.FC<IProps> = ({
   const boxes = configuration?.general?.stashBoxes ?? [];
 
   const [incrementO] = useSceneIncrementO(scene.id);
-  const [decrementO] = useSceneDecrementO(scene.id);
-  const [resetO] = useSceneResetO(scene.id);
+
+  const [incrementPlay] = useSceneIncrementPlayCount();
+
+  function incrementPlayCount() {
+    incrementPlay({
+      variables: {
+        id: scene.id,
+      },
+    });
+  }
 
   const [organizedLoading, setOrganizedLoading] = useState(false);
 
   const [activeTabKey, setActiveTabKey] = useState("scene-details-panel");
+  const [activePane, setActivePane] = useState<string>();
 
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
   const [isGenerateDialogOpen, setIsGenerateDialogOpen] = useState(false);
 
-  const onIncrementClick = async () => {
+  const onIncrementOClick = async () => {
     try {
       await incrementO();
     } catch (e) {
@@ -144,24 +159,38 @@ const ScenePage: React.FC<IProps> = ({
     }
   };
 
-  const onDecrementClick = async () => {
-    try {
-      await decrementO();
-    } catch (e) {
-      Toast.error(e);
-    }
-  };
+  function setRating(v: number | null) {
+    updateScene({
+      variables: {
+        input: {
+          id: scene.id,
+          rating100: v,
+        },
+      },
+    });
+  }
+
+  useRatingKeybinds(
+    true,
+    configuration?.ui.ratingSystemOptions?.type,
+    setRating
+  );
+
+  function onSetActiveTabKey(key: string) {
+    setActiveTabKey(key);
+    setActivePane(undefined);
+  }
 
   // set up hotkeys
   useEffect(() => {
-    Mousetrap.bind("a", () => setActiveTabKey("scene-details-panel"));
-    Mousetrap.bind("q", () => setActiveTabKey("scene-queue-panel"));
-    Mousetrap.bind("e", () => setActiveTabKey("scene-edit-panel"));
-    Mousetrap.bind("k", () => setActiveTabKey("scene-markers-panel"));
-    Mousetrap.bind("i", () => setActiveTabKey("scene-file-info-panel"));
-    Mousetrap.bind("h", () => setActiveTabKey("scene-history-panel"));
+    Mousetrap.bind("a", () => onSetActiveTabKey("scene-details-panel"));
+    Mousetrap.bind("q", () => onSetActiveTabKey("scene-queue-panel"));
+    Mousetrap.bind("e", () => onSetActiveTabKey("scene-edit-panel"));
+    Mousetrap.bind("k", () => onSetActiveTabKey("scene-markers-panel"));
+    Mousetrap.bind("i", () => setActivePane("scene-file-info-panel"));
+    Mousetrap.bind("h", () => setActivePane("scene-history-panel"));
     Mousetrap.bind("o", () => {
-      onIncrementClick();
+      onIncrementOClick();
     });
     Mousetrap.bind("p n", () => onQueueNext());
     Mousetrap.bind("p p", () => onQueuePrevious());
@@ -215,14 +244,6 @@ const ScenePage: React.FC<IProps> = ({
       Toast.error(e);
     } finally {
       setOrganizedLoading(false);
-    }
-  };
-
-  const onResetClick = async () => {
-    try {
-      await resetO();
-    } catch (e) {
-      Toast.error(e);
     }
   };
 
@@ -351,102 +372,89 @@ const ScenePage: React.FC<IProps> = ({
     </Dropdown>
   );
 
+  function TabLink(
+    props: PropsWithChildren<{
+      className?: string;
+      eventKey: string;
+      pane?: boolean;
+      messageId?: string;
+    }>
+  ) {
+    if (
+      (activePane !== undefined && activePane !== props.eventKey) ||
+      (props.pane && activePane === undefined)
+    ) {
+      return null;
+    }
+
+    return (
+      <Nav.Item className={props.className}>
+        <Nav.Link eventKey={props.eventKey}>
+          {props.messageId ? (
+            <FormattedMessage id={props.messageId} />
+          ) : undefined}
+          {props.children}
+        </Nav.Link>
+      </Nav.Item>
+    );
+  }
+
   const renderTabs = () => (
     <Tab.Container
-      activeKey={activeTabKey}
+      activeKey={activePane ?? activeTabKey}
       onSelect={(k) => k && setActiveTabKey(k)}
     >
       <div>
         <Nav variant="tabs" className="mr-auto">
-          <Nav.Item>
-            <Nav.Link eventKey="scene-details-panel">
-              <FormattedMessage id="details" />
-            </Nav.Link>
-          </Nav.Item>
+          <TabLink eventKey="scene-details-panel" messageId="details" />
           {queueScenes.length > 0 ? (
-            <Nav.Item>
-              <Nav.Link eventKey="scene-queue-panel">
-                <FormattedMessage id="queue" />
-              </Nav.Link>
-            </Nav.Item>
+            <TabLink eventKey="scene-queue-panel" messageId="queue" />
           ) : (
             ""
           )}
-          <Nav.Item>
-            <Nav.Link eventKey="scene-markers-panel">
-              <FormattedMessage id="markers" />
-            </Nav.Link>
-          </Nav.Item>
-          {scene.movies.length > 0 ? (
-            <Nav.Item>
-              <Nav.Link eventKey="scene-movie-panel">
-                <FormattedMessage
-                  id="countables.movies"
-                  values={{ count: scene.movies.length }}
-                />
-              </Nav.Link>
-            </Nav.Item>
-          ) : (
-            ""
-          )}
+          <TabLink eventKey="scene-markers-panel" messageId="markers" />
           {scene.galleries.length >= 1 ? (
-            <Nav.Item>
-              <Nav.Link eventKey="scene-galleries-panel">
-                <FormattedMessage
-                  id="countables.galleries"
-                  values={{ count: scene.galleries.length }}
-                />
+            <TabLink eventKey="scene-galleries-panel">
+              <FormattedMessage
+                id="countables.galleries"
+                values={{ count: scene.galleries.length }}
+              />
+            </TabLink>
+          ) : undefined}
+          <TabLink
+            eventKey="scene-video-filter-panel"
+            messageId="effect_filters.name"
+          />
+          <TabLink
+            eventKey="scene-file-info-panel"
+            messageId="file_info"
+            pane
+          />
+          <TabLink eventKey="scene-history-panel" messageId="history" pane />
+          <TabLink
+            className="ml-auto"
+            eventKey="scene-edit-panel"
+            messageId="actions.edit"
+          />
+          {activePane !== undefined && (
+            <Nav.Item className="ml-auto">
+              <Nav.Link
+                title={intl.formatMessage({ id: "actions.close" })}
+                onClick={() => setActivePane(undefined)}
+              >
+                <Icon icon={faTimes} />
               </Nav.Link>
             </Nav.Item>
-          ) : undefined}
-          <Nav.Item>
-            <Nav.Link eventKey="scene-video-filter-panel">
-              <FormattedMessage id="effect_filters.name" />
-            </Nav.Link>
-          </Nav.Item>
-          <Nav.Item>
-            <Nav.Link eventKey="scene-file-info-panel">
-              <FormattedMessage id="file_info" />
-              <Counter count={scene.files.length} hideZero hideOne />
-            </Nav.Link>
-          </Nav.Item>
-          <Nav.Item>
-            <Nav.Link eventKey="scene-history-panel">
-              <FormattedMessage id="history" />
-            </Nav.Link>
-          </Nav.Item>
-          <Nav.Item>
-            <Nav.Link eventKey="scene-edit-panel">
-              <FormattedMessage id="actions.edit" />
-            </Nav.Link>
-          </Nav.Item>
-          <ButtonGroup className="ml-auto">
-            <Nav.Item className="ml-auto">
-              <ExternalPlayerButton scene={scene} />
-            </Nav.Item>
-            <Nav.Item className="ml-auto">
-              <OCounterButton
-                value={scene.o_counter || 0}
-                onIncrement={onIncrementClick}
-                onDecrement={onDecrementClick}
-                onReset={onResetClick}
-              />
-            </Nav.Item>
-            <Nav.Item>
-              <OrganizedButton
-                loading={organizedLoading}
-                organized={scene.organized}
-                onClick={onOrganizedClick}
-              />
-            </Nav.Item>
-            <Nav.Item>{renderOperations()}</Nav.Item>
-          </ButtonGroup>
+          )}
         </Nav>
       </div>
 
       <Tab.Content>
         <Tab.Pane eventKey="scene-details-panel">
-          <SceneDetailPanel scene={scene} />
+          <SceneDetailPanel
+            scene={scene}
+            onClickFileDetails={() => setActivePane("scene-file-info-panel")}
+          />
         </Tab.Pane>
         <Tab.Pane eventKey="scene-queue-panel">
           <QueueViewer
@@ -470,9 +478,6 @@ const ScenePage: React.FC<IProps> = ({
             onClickMarker={onClickMarker}
             isVisible={activeTabKey === "scene-markers-panel"}
           />
-        </Tab.Pane>
-        <Tab.Pane eventKey="scene-movie-panel">
-          <SceneMoviePanel scene={scene} />
         </Tab.Pane>
         {scene.galleries.length >= 1 && (
           <Tab.Pane eventKey="scene-galleries-panel">
@@ -509,6 +514,11 @@ const ScenePage: React.FC<IProps> = ({
 
   const title = objectTitle(scene);
 
+  const file = useMemo(
+    () => (scene.files.length > 0 ? scene.files[0] : undefined),
+    [scene]
+  );
+
   return (
     <>
       <Helmet>
@@ -521,19 +531,73 @@ const ScenePage: React.FC<IProps> = ({
           collapsed ? "collapsed" : ""
         }`}
       >
-        <div className="d-none d-xl-block">
-          {scene.studio && (
-            <h1 className="mt-3 text-center">
-              <Link to={`/studios/${scene.studio.id}`}>
-                <img
-                  src={scene.studio.image_path ?? ""}
-                  alt={`${scene.studio.name} logo`}
-                  className="studio-logo"
+        <div>
+          <div className="scene-header-container">
+            {scene.studio && (
+              <h1 className="mt-3 text-center scene-studio-image">
+                <Link to={`/studios/${scene.studio.id}`}>
+                  <img
+                    src={scene.studio.image_path ?? ""}
+                    alt={`${scene.studio.name} logo`}
+                    className="studio-logo"
+                  />
+                </Link>
+              </h1>
+            )}
+            <h3 className={cx("scene-header", { "no-studio": !scene.studio })}>
+              {title}
+            </h3>
+          </div>
+
+          <div className="scene-subheader">
+            <span className="date">
+              {!!scene.date && (
+                <FormattedDate
+                  value={scene.date}
+                  format="long"
+                  timeZone="utc"
                 />
-              </Link>
-            </h1>
-          )}
-          <h3 className="scene-header">{title}</h3>
+              )}
+            </span>
+            {file?.width && file.height ? (
+              <span className="resolution">
+                {TextUtils.resolution(file.width, file.height)}
+              </span>
+            ) : undefined}
+          </div>
+
+          <div className="scene-toolbar">
+            <span>
+              <RatingSystem value={scene.rating100} onSetRating={setRating} />
+            </span>
+            <ButtonGroup>
+              <span>
+                <ExternalPlayerButton scene={scene} />
+              </span>
+              <span>
+                <ViewCountButton
+                  value={scene.play_count ?? 0}
+                  onIncrement={() => incrementPlayCount()}
+                  onValueClicked={() => setActivePane("scene-history-panel")}
+                />
+              </span>
+              <span>
+                <OCounterButton
+                  value={scene.o_counter ?? 0}
+                  onIncrement={() => onIncrementOClick()}
+                  onValueClicked={() => setActivePane("scene-history-panel")}
+                />
+              </span>
+              <span>
+                <OrganizedButton
+                  loading={organizedLoading}
+                  organized={scene.organized}
+                  onClick={onOrganizedClick}
+                />
+              </span>
+              <span>{renderOperations()}</span>
+            </ButtonGroup>
+          </div>
         </div>
         {renderTabs()}
       </div>

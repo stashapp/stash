@@ -1,156 +1,144 @@
 import React, { useMemo } from "react";
-import { Link } from "react-router-dom";
-import { FormattedDate, FormattedMessage, useIntl } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import TextUtils from "src/utils/text";
 import { TagLink } from "src/components/Shared/TagLink";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
 import { PerformerCard } from "src/components/Performers/PerformerCard";
 import { sortPerformers } from "src/core/performers";
-import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
-import { objectTitle } from "src/core/files";
 import { DirectorLink } from "src/components/Shared/Link";
+import { DetailItem } from "src/components/Shared/DetailItem";
+import { Button } from "react-bootstrap";
+import { MovieCard } from "src/components/Movies/MovieCard";
 
 interface ISceneDetailProps {
   scene: GQL.SceneDataFragment;
+  onClickFileDetails?: (fileID?: string) => void;
 }
 
-export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
+export const SceneDetailPanel: React.FC<ISceneDetailProps> = ({
+  scene,
+  onClickFileDetails,
+}) => {
   const intl = useIntl();
 
-  const file = useMemo(
-    () => (props.scene.files.length > 0 ? props.scene.files[0] : undefined),
-    [props.scene]
+  const tags = useMemo(
+    () => scene.tags.map((tag) => <TagLink key={tag.id} tag={tag} />),
+    [scene.tags]
   );
 
-  function renderDetails() {
-    if (!props.scene.details || props.scene.details === "") return;
-    return (
-      <>
-        <h6>
-          <FormattedMessage id="details" />:{" "}
-        </h6>
-        <p className="pre">{props.scene.details}</p>
-      </>
-    );
-  }
+  const movies = useMemo(
+    () =>
+      scene.movies.map((sceneMovie) => (
+        <MovieCard
+          key={sceneMovie.movie.id}
+          movie={sceneMovie.movie}
+          sceneIndex={sceneMovie.scene_index ?? undefined}
+        />
+      )),
+    [scene.movies]
+  );
 
-  function renderTags() {
-    if (props.scene.tags.length === 0) return;
-    const tags = props.scene.tags.map((tag) => (
-      <TagLink key={tag.id} tag={tag} />
-    ));
-    return (
-      <>
-        <h6>
-          <FormattedMessage
-            id="countables.tags"
-            values={{ count: props.scene.tags.length }}
-          />
-        </h6>
-        {tags}
-      </>
-    );
-  }
-
-  function renderPerformers() {
-    if (props.scene.performers.length === 0) return;
-    const performers = sortPerformers(props.scene.performers);
-    const cards = performers.map((performer) => (
+  const performers = useMemo(() => {
+    const sorted = sortPerformers(scene.performers);
+    return sorted.map((performer) => (
       <PerformerCard
         key={performer.id}
         performer={performer}
-        ageFromDate={props.scene.date ?? undefined}
+        ageFromDate={scene.date ?? null}
       />
     ));
+  }, [scene.performers, scene.date]);
 
+  const details = useMemo(() => {
+    return scene.details?.length ? (
+      <p className="pre">{scene.details}</p>
+    ) : undefined;
+  }, [scene.details]);
+
+  const files = useMemo(() => {
     return (
-      <>
-        <h6>
-          <FormattedMessage
-            id="countables.performers"
-            values={{ count: props.scene.performers.length }}
-          />
-        </h6>
-        <div className="row justify-content-center scene-performers">
-          {cards}
-        </div>
-      </>
+      <ul>
+        {scene.files.map((file) => (
+          <li key={file.id}>
+            <Button
+              variant="link"
+              size="sm"
+              className="file-info-button"
+              onClick={() => onClickFileDetails?.(file.id)}
+            >
+              <TruncatedText text={file.basename} />
+            </Button>
+          </li>
+        ))}
+      </ul>
     );
-  }
-
-  // filename should use entire row if there is no studio
-  const sceneDetailsWidth = props.scene.studio ? "col-9" : "col-12";
+  }, [scene.files, onClickFileDetails]);
 
   return (
     <>
       <div className="row">
-        <div className={`${sceneDetailsWidth} col-xl-12 scene-details`}>
-          <div className="scene-header d-xl-none">
-            <h3>
-              <TruncatedText text={objectTitle(props.scene)} />
-            </h3>
+        <div className={`col-12 scene-details`}>
+          <div className="detail-group">
+            <DetailItem id="details" value={details} />
+            <DetailItem
+              id="tags"
+              heading={
+                <>
+                  <FormattedMessage id="tags" />
+                  {/* <Button variant="link" size="sm" className="add-tag-button">
+                    <FormattedMessage id="actions.add" />
+                  </Button> */}
+                </>
+              }
+              value={tags.length ? tags : undefined}
+            />
+            <DetailItem
+              id="performers"
+              heading={
+                <>
+                  <FormattedMessage id="performers" />
+                  {/* <Button
+                    variant="link"
+                    size="sm"
+                    className="add-performer-button"
+                  >
+                    <FormattedMessage id="actions.add" />
+                  </Button> */}
+                </>
+              }
+              value={performers.length ? performers : undefined}
+            />
+            <DetailItem
+              id="movies"
+              value={movies.length ? movies : undefined}
+            />
+            <DetailItem id="studio-code" value={scene.code} fullWidth />
+            <DetailItem
+              id="director"
+              value={
+                scene.director ? (
+                  <DirectorLink director={scene.director} linkType="scene" />
+                ) : undefined
+              }
+              fullWidth
+            />
+            <DetailItem
+              id="files"
+              value={scene.files.length ? files : undefined}
+              fullWidth
+            />
+            <DetailItem
+              id="created_at"
+              value={TextUtils.formatDateTime(intl, scene.created_at)}
+              fullWidth
+            />
+            <DetailItem
+              id="updated_at"
+              value={TextUtils.formatDateTime(intl, scene.updated_at)}
+              fullWidth
+            />
           </div>
-          {props.scene.date ? (
-            <h5>
-              <FormattedDate
-                value={props.scene.date}
-                format="long"
-                timeZone="utc"
-              />
-            </h5>
-          ) : undefined}
-          {props.scene.rating100 ? (
-            <h6>
-              <FormattedMessage id="rating" />:{" "}
-              <RatingSystem value={props.scene.rating100} disabled />
-            </h6>
-          ) : (
-            ""
-          )}
-          {file?.width && file?.height && (
-            <h6>
-              <FormattedMessage id="resolution" />:{" "}
-              {TextUtils.resolution(file.width, file.height)}
-            </h6>
-          )}
-          <h6>
-            <FormattedMessage id="created_at" />:{" "}
-            {TextUtils.formatDateTime(intl, props.scene.created_at)}{" "}
-          </h6>
-          <h6>
-            <FormattedMessage id="updated_at" />:{" "}
-            {TextUtils.formatDateTime(intl, props.scene.updated_at)}{" "}
-          </h6>
-          {props.scene.code && (
-            <h6>
-              <FormattedMessage id="scene_code" />: {props.scene.code}{" "}
-            </h6>
-          )}
-          {props.scene.director && (
-            <h6>
-              <FormattedMessage id="director" />:{" "}
-              <DirectorLink director={props.scene.director} linkType="scene" />
-            </h6>
-          )}
-        </div>
-        {props.scene.studio && (
-          <div className="col-3 d-xl-none">
-            <Link to={`/studios/${props.scene.studio.id}`}>
-              <img
-                src={props.scene.studio.image_path ?? ""}
-                alt={`${props.scene.studio.name} logo`}
-                className="studio-logo float-right"
-              />
-            </Link>
-          </div>
-        )}
-      </div>
-      <div className="row">
-        <div className="col-12">
-          {renderDetails()}
-          {renderTags()}
-          {renderPerformers()}
         </div>
       </div>
     </>
