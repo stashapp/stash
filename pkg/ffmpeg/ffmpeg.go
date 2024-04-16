@@ -152,7 +152,9 @@ func NewEncoder(ffmpegPath string) *FFMpeg {
 	ret := &FFMpeg{
 		ffmpeg: ffmpegPath,
 	}
-	ret.getVersion()
+	if err := ret.getVersion(); err != nil {
+		logger.Warnf("FFMpeg version not detected %v", err)
+	}
 
 	return ret
 }
