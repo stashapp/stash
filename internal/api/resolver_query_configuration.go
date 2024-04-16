@@ -104,6 +104,7 @@ func makeConfigGeneralResult() *ConfigGeneralResult {
 		PreviewPreset:                     config.GetPreviewPreset(),
 		TranscodeHardwareAcceleration:     config.GetTranscodeHardwareAcceleration(),
 		TranscodeFullHardwareAcceleration: config.GetTranscodeFullHardwareAcceleration(),
+		AlwaysAddHardwareDecoding:         config.GetAlwaysAddHardwareDecoding(),
 		MaxTranscodeSize:                  &maxTranscodeSize,
 		MaxStreamingTranscodeSize:         &maxStreamingTranscodeSize,
 		WriteImageThumbnails:              config.IsWriteImageThumbnails(),

@@ -107,6 +107,8 @@ input ConfigGeneralInput {
   transcodeHardwareAcceleration: Boolean
   "Transcode Full Hardware Acceleration"
   transcodeFullHardwareAcceleration: Boolean
+  "Always attempt Hardware Accelerated decoding"
+  alwaysAddHardwareDecoding: Boolean
   "Max generated transcode size"
   maxTranscodeSize: StreamingResolutionEnum
   "Max streaming transcode size"
@@ -231,6 +233,8 @@ type ConfigGeneralResult {
   transcodeHardwareAcceleration: Boolean!
   "Transcode Full Hardware Acceleration"
   transcodeFullHardwareAcceleration: Boolean!
+  "Always attempt Hardware Accelerated decoding"
+  alwaysAddHardwareDecoding: Boolean!
   "Max generated transcode size"
   maxTranscodeSize: StreamingResolutionEnum
   "Max streaming transcode size"

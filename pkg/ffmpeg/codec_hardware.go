@@ -42,7 +42,7 @@ func (f *FFMpeg) InitHWSupport(ctx context.Context) {
 		var args Args
 		args = append(args, "-hide_banner")
 		args = args.LogLevel(LogLevelWarning)
-		args = f.hwDeviceInit(args, codec, false)
+		args = f.hwDeviceInit(args, codec, false, false)
 		args = args.Format("lavfi")
 		args = args.Input(fmt.Sprintf("color=c=red:s=%dx%d", 1280, 720))
 		args = args.Duration(0.1)
@@ -92,7 +92,7 @@ func (f *FFMpeg) hwCanFullHWTranscode(ctx context.Context, vf *models.VideoFile,
 	args = append(args, "-hide_banner")
 	args = args.LogLevel(LogLevelWarning)
 	args = args.XError()
-	args = f.hwDeviceInit(args, codec, true)
+	args = f.hwDeviceInit(args, codec, true, true)
 	args = args.Input(vf.Path)
 	args = args.Duration(0.1)
 
@@ -123,7 +123,7 @@ func (f *FFMpeg) hwCanFullHWTranscode(ctx context.Context, vf *models.VideoFile,
 }
 
 // Prepend input for hardware encoding only
-func (f *FFMpeg) hwDeviceInit(args Args, toCodec VideoCodec, fullhw bool) Args {
+func (f *FFMpeg) hwDeviceInit(args Args, toCodec VideoCodec, decode bool, fullhw bool) Args {
 	switch toCodec {
 	case VideoCodecN264:
 		args = append(args, "-hwaccel_device")
@@ -134,8 +134,8 @@ func (f *FFMpeg) hwDeviceInit(args Args, toCodec VideoCodec, fullhw bool) Args {
 			args = append(args, "-hwaccel_output_format")
 			args = append(args, "cuda")
 			args = append(args, "-extra_hw_frames")
-			args = append(args, "5")
-		} else {
+			args = append(args, "5") // TODO: Investigate this
+		} else if decode {
 			args = append(args, "-hwaccel")
 			args = append(args, "auto")
 		}
@@ -148,7 +148,7 @@ func (f *FFMpeg) hwDeviceInit(args Args, toCodec VideoCodec, fullhw bool) Args {
 			args = append(args, "vaapi")
 			args = append(args, "-hwaccel_output_format")
 			args = append(args, "vaapi")
-		} else {
+		} else if decode {
 			args = append(args, "-hwaccel")
 			args = append(args, "auto")
 		}
@@ -164,12 +164,16 @@ func (f *FFMpeg) hwDeviceInit(args Args, toCodec VideoCodec, fullhw bool) Args {
 			args = append(args, "qsv=hw")
 			args = append(args, "-filter_hw_device")
 			args = append(args, "hw")
+			if decode {
+				args = append(args, "-hwaccel")
+				args = append(args, "auto")
+			}
+		}
+	default:
+		if decode {
 			args = append(args, "-hwaccel")
 			args = append(args, "auto")
 		}
-	default: // TODO: Optional
-		args = append(args, "-hwaccel")
-		args = append(args, "auto")
 	}
 
 	return args
