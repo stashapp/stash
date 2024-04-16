@@ -332,6 +332,10 @@
           "desc": "Uses available hardware to encode video for live transcoding.",
           "heading": "FFmpeg hardware encoding"
         },
+        "full_hardware_acceleration": {
+          "desc": "In addition to hardware encoding, attempts to apply full hardware transcoding",
+          "heading": "FFmpeg full hardware transcoding"
+        },
         "live_transcode": {
           "input_args": {
             "desc": "Advanced: Additional arguments to pass to ffmpeg before the input field when live transcoding video.",

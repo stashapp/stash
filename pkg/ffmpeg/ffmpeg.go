@@ -2,10 +2,13 @@
 package ffmpeg
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
 	"os/exec"
+	"regexp"
+	"strconv"
 	"strings"
 
 	stashExec "github.com/stashapp/stash/pkg/exec"
@@ -93,9 +96,54 @@ func ResolveFFMpeg(path string, fallbackPath string) string {
 	return ret
 }
 
+func (f *FFMpeg) getVersion() error {
+	var args Args
+	args = append(args, "-version")
+	cmd := f.Command(context.Background(), args)
+
+	var stdout bytes.Buffer
+	cmd.Stdout = &stdout
+
+	var err error
+	if err = cmd.Run(); err != nil {
+		return err
+	}
+
+	version_re := regexp.MustCompile(`ffmpeg version ((\d+)\.(\d+)\.(\d+))`)
+	stdoutStr := stdout.String()
+	match := version_re.FindStringSubmatchIndex(stdoutStr)
+	if match == nil {
+		return errors.New("version string malformed")
+	}
+
+	majorS := stdoutStr[match[4]:match[5]]
+	minorS := stdoutStr[match[6]:match[7]]
+	patchS := stdoutStr[match[8]:match[9]]
+	if i, err := strconv.Atoi(majorS); err == nil {
+		f.version.major = i
+	}
+	if i, err := strconv.Atoi(minorS); err == nil {
+		f.version.minor = i
+	}
+	if i, err := strconv.Atoi(patchS); err == nil {
+		f.version.patch = i
+	}
+	logger.Debugf("FFMpeg version %d.%d.%d detected", f.version.major, f.version.minor, f.version.patch)
+
+	return nil
+}
+
+// FFMpeg version params
+type FFMpegVersion struct {
+	major int
+	minor int
+	patch int
+}
+
 // FFMpeg provides an interface to ffmpeg.
 type FFMpeg struct {
 	ffmpeg         string
+	version        FFMpegVersion
 	hwCodecSupport []VideoCodec
 }
 
@@ -104,6 +152,7 @@ func NewEncoder(ffmpegPath string) *FFMpeg {
 	ret := &FFMpeg{
 		ffmpeg: ffmpegPath,
 	}
+	ret.getVersion()
 
 	return ret
 }
