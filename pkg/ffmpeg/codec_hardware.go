@@ -134,7 +134,7 @@ func (f *FFMpeg) hwDeviceInit(args Args, toCodec VideoCodec, decode bool, fullhw
 			args = append(args, "-hwaccel_output_format")
 			args = append(args, "cuda")
 			args = append(args, "-extra_hw_frames")
-			args = append(args, "5") // TODO: Investigate this
+			args = append(args, "5")
 		} else if decode {
 			args = append(args, "-hwaccel")
 			args = append(args, "auto")
