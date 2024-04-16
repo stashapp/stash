@@ -382,15 +382,15 @@ export const GalleryPage: React.FC<IProps> = ({ gallery, add }) => {
           </div>
 
           <div className="gallery-subheader">
-            <span className="date">
-              {!!gallery.date && (
+            {!!gallery.date && (
+              <span className="date" data-value={gallery.date}>
                 <FormattedDate
                   value={gallery.date}
                   format="long"
                   timeZone="utc"
                 />
-              )}
-            </span>
+              </span>
+            )}
           </div>
 
           <div className="gallery-toolbar">

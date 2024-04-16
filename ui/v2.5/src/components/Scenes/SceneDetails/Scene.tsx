@@ -91,9 +91,10 @@ const VideoFrameRateResolution: React.FC<{
 
   const resolution = useMemo(() => {
     if (width && height) {
+      const r = TextUtils.resolution(width, height);
       return (
-        <span className="resolution">
-          {TextUtils.resolution(width, height)}
+        <span className="resolution" data-value={r}>
+          {r}
         </span>
       );
     }
@@ -103,7 +104,7 @@ const VideoFrameRateResolution: React.FC<{
   const frameRateDisplay = useMemo(() => {
     if (frameRate) {
       return (
-        <span className="frame-rate">
+        <span className="frame-rate" data-value={frameRate}>
           <FormattedMessage
             id="frames_per_second"
             values={{ value: intl.formatNumber(frameRate ?? 0) }}
@@ -587,7 +588,7 @@ const ScenePage: React.FC<IProps> = ({
           </div>
 
           <div className="scene-subheader">
-            <span className="date">
+            <span className="date" data-value={scene.date}>
               {!!scene.date && (
                 <FormattedDate
                   value={scene.date}

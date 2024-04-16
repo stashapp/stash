@@ -280,6 +280,12 @@ const ImagePage: React.FC<IProps> = ({ image }) => {
   const title = objectTitle(image);
   const ImageView = isVideo(image.visual_files[0]) ? "video" : "img";
 
+  const resolution = useMemo(() => {
+    return file?.width && file?.height
+      ? TextUtils.resolution(file?.width, file?.height)
+      : undefined;
+  }, [file?.width, file?.height]);
+
   return (
     <div className="row">
       <Helmet>
@@ -307,7 +313,7 @@ const ImagePage: React.FC<IProps> = ({ image }) => {
           </div>
 
           <div className="image-subheader">
-            <span className="date">
+            <span className="date" data-value={image.date}>
               {!!image.date && (
                 <FormattedDate
                   value={image.date}
@@ -316,9 +322,9 @@ const ImagePage: React.FC<IProps> = ({ image }) => {
                 />
               )}
             </span>
-            {file?.width && file?.height ? (
-              <span className="resolution">
-                {TextUtils.resolution(file?.width, file?.height)}
+            {resolution ? (
+              <span className="resolution" data-value={resolution}>
+                {resolution}
               </span>
             ) : undefined}
           </div>
