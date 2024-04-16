@@ -47,10 +47,8 @@ func (f *FFMpeg) InitHWSupport(ctx context.Context) {
 		args = args.Input(fmt.Sprintf("color=c=red:s=%dx%d", 1280, 720))
 		args = args.Duration(0.1)
 
-		videoFilter := f.hwFilterInit(codec, false)
 		// Test scaling
-		videoFilter = videoFilter.ScaleDimensions(-2, minHeight)
-		videoFilter = f.hwCodecFilter(videoFilter, codec, false)
+		videoFilter := f.hwMaxResFilter(codec, 1280, 720, minHeight, false)
 		args = append(args, CodecInit(codec)...)
 		args = args.VideoFilter(videoFilter)
 
@@ -169,7 +167,7 @@ func (f *FFMpeg) hwDeviceInit(args Args, toCodec VideoCodec, fullhw bool) Args {
 			args = append(args, "-hwaccel")
 			args = append(args, "auto")
 		}
-	default: // TODO: Ugly, dont do this
+	default: // TODO: Optional
 		args = append(args, "-hwaccel")
 		args = append(args, "auto")
 	}
@@ -254,7 +252,9 @@ func (f *FFMpeg) hwCodecFilter(args VideoFilter, codec VideoCodec, fullhw bool) 
 
 // Returns the max resolution for a given codec, or a default
 func (f *FFMpeg) hwCodecMaxRes(codec VideoCodec, dW int, dH int) (int, int) {
-	if codec == VideoCodecN264 {
+	switch codec {
+	case VideoCodecN264,
+		VideoCodecI264:
 		return 4096, 4096
 	}
 
