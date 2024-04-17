@@ -1365,3 +1365,8 @@ select {
 .primary-file {
   font-weight: bold;
 }
+
+// ensure rating number editing doesn't resize column
+.table-list .rating-number {
+  width: 6rem;
+}
