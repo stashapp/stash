@@ -331,7 +331,7 @@ func (s *runningStream) makeStreamArgs(sm *StreamManager, segment int) Args {
 
 	fullhw := false
 	if sm.config.GetTranscodeHardwareAcceleration() && sm.config.GetTranscodeFullHardwareAcceleration() {
-		fullhw = sm.encoder.hwCanFullHWTranscode(sm.context, o.VideoFile, codec)
+		fullhw = sm.encoder.hwCanFullHWTranscode(sm.context, s.vf, codec)
 	}
 	args = sm.encoder.hwDeviceInit(args, codec, sm.config.GetAlwaysAddHardwareDecoding(), fullhw)
 	args = append(args, extraInputArgs...)
