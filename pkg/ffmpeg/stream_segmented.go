@@ -111,6 +111,7 @@ var (
 				"-f", "hls",
 				"-start_number", fmt.Sprint(segment),
 				"-hls_time", fmt.Sprint(segmentLength),
+				"-hls_flags", "split_by_time",
 				"-hls_segment_type", "mpegts",
 				"-hls_playlist_type", "vod",
 				"-hls_segment_filename", filepath.Join(outputDir, ".%d.ts"),
