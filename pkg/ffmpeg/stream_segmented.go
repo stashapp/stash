@@ -81,6 +81,7 @@ var (
 				"-f", "hls",
 				"-start_number", fmt.Sprint(segment),
 				"-hls_time", fmt.Sprint(segmentLength),
+				"-hls_flags", "split_by_time",
 				"-hls_segment_type", "mpegts",
 				"-hls_playlist_type", "vod",
 				"-hls_segment_filename", filepath.Join(outputDir, ".%d.ts"),
@@ -329,6 +330,9 @@ func (s *runningStream) makeStreamArgs(sm *StreamManager, segment int) Args {
 	codec := HLSGetCodec(sm, s.streamType.Name)
 
 	fullhw := false
+	if sm.config.GetTranscodeHardwareAcceleration() && sm.config.GetTranscodeFullHardwareAcceleration() {
+		fullhw = sm.encoder.hwCanFullHWTranscode(sm.context, o.VideoFile, codec)
+	}
 	args = sm.encoder.hwDeviceInit(args, codec, sm.config.GetAlwaysAddHardwareDecoding(), fullhw)
 	args = append(args, extraInputArgs...)
 
