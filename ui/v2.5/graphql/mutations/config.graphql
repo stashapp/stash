@@ -6,6 +6,10 @@ mutation Migrate($input: MigrateInput!) {
   migrate(input: $input)
 }
 
+mutation DownloadFFMpeg {
+  downloadFFMpeg
+}
+
 mutation ConfigureGeneral($input: ConfigGeneralInput!) {
   configureGeneral(input: $input) {
     ...ConfigGeneralData

@@ -267,11 +267,42 @@ dd {
   }
 }
 
-.collapsed .detail-item-value {
-  -webkit-box-orient: vertical;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  overflow: hidden;
+.gallery-tabs,
+.image-tabs,
+.scene-tabs {
+  .detail-item {
+    padding-right: 1rem;
+    width: 100%;
+  }
+
+  .collapsed .detail-item-value {
+    -webkit-box-orient: vertical;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    overflow: hidden;
+  }
+
+  .details .collapsed-detail p.pre {
+    -webkit-box-orient: vertical;
+    display: -webkit-box;
+    -webkit-line-clamp: 8;
+    max-height: 175px;
+    overflow: hidden;
+  }
+
+  .gallery-tags.collapsed-detail,
+  .image-tags.collapsed-detail,
+  .scene-tags.collapsed-detail {
+    max-height: 180px;
+    overflow: hidden;
+  }
+
+  .gallery-performers.collapsed-detail,
+  .image-performers.collapsed-detail,
+  .scene-performers.collapsed-detail {
+    max-height: 460px;
+    overflow: hidden;
+  }
 }
 
 .full-width {
@@ -303,6 +334,22 @@ dd {
   .detail-item-title.parent-tags,
   .detail-item-title.sub-tags {
     padding-top: 4px;
+  }
+}
+
+.detail-item.full-width {
+  display: table;
+  padding-right: 0;
+  width: 100%;
+
+  .detail-item-title {
+    display: table-cell;
+    width: 130px;
+  }
+
+  .detail-item-value.age {
+    border-bottom: unset;
+    width: fit-content;
   }
 }
 
@@ -339,6 +386,25 @@ dd {
     @media (max-width: 576px) {
       max-width: 100%;
     }
+  }
+}
+
+.gallery-tabs,
+.image-tabs,
+.scene-tabs {
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 4rem);
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+
+  > div {
+    flex: 0 1 auto;
+  }
+
+  .detail-header {
+    min-height: unset;
+    overflow: unset;
   }
 }
 
@@ -422,6 +488,7 @@ dd {
   align-items: center;
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
   white-space: pre-line;
 
   .birthdate,
@@ -1143,6 +1210,133 @@ $detailTabWidth: calc(100% / 3);
   width: 100%;
 }
 
+.gallery-details,
+.image-details,
+.scene-details {
+  .detail-group {
+    flex-direction: column;
+    padding-top: 0;
+  }
+
+  .details p.pre {
+    margin-bottom: 0;
+  }
+
+  .detail-item-title {
+    color: #f5f8fa;
+  }
+
+  span.detail-item-value {
+    color: #d3d0d0;
+  }
+
+  .detail-item {
+    &.studio-code,
+    &.director,
+    &.files,
+    &.created-at,
+    &.updated-at,
+    &.details .detail-item-value {
+      font-size: 1rem;
+    }
+
+    &.rating,
+    &.tags,
+    &.performers,
+    &.details {
+      flex-basis: 100%;
+    }
+
+    &:not(.full-width) .detail-item-title {
+      margin-bottom: 0.25em;
+    }
+  }
+
+  .gallery-scenes,
+  .image-galleries,
+  .scene-galleries,
+  .scene-movies {
+    width: 100%;
+
+    span {
+      width: 100%;
+    }
+
+    span div {
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+}
+
+@media (max-width: 1200px) {
+  .row .gallery-tabs,
+  .row .image-tabs {
+    height: calc(100vh - 4rem);
+  }
+
+  .row .gallery-tabs,
+  .row .gallery-container {
+    padding-left: 0;
+  }
+
+  .gallery-container,
+  .gallery-tabs.collapsed {
+    display: none;
+  }
+
+  .gallery-container.expanded {
+    display: block;
+  }
+
+  .gallery-header-container,
+  .image-header-container {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+
+    .gallery-header,
+    .image-header {
+      flex: 0 0 75%;
+      order: 1;
+    }
+
+    .gallery-studio-image,
+    .image-studio-image {
+      flex: 0 0 25%;
+      order: 2;
+    }
+  }
+
+  .gallery-tabs,
+  .image-tabs {
+    overflow: auto;
+    width: 100%;
+
+    .nav-tabs {
+      padding: 0 15px;
+    }
+  }
+
+  .gallery-tabs > .tab-content,
+  .image-tabs > .tab-content {
+    padding: 0 15px;
+  }
+
+  .gallery-tabs > div,
+  .row .gallery-container {
+    overflow-x: hidden;
+  }
+
+  .floating-gallery-divider {
+    bottom: 3rem;
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.6);
+    display: unset !important;
+    position: absolute;
+    right: 3rem;
+    z-index: 100;
+  }
+}
 @media (min-width: 768px) {
   .details-tab {
     flex: 0 0 $detailTabWidth;
@@ -1363,4 +1557,9 @@ select {
 
 .primary-file {
   font-weight: bold;
+}
+
+// ensure rating number editing doesn't resize column
+.table-list .rating-number {
+  width: 6rem;
 }

@@ -47,6 +47,7 @@
   .scene-details {
     display: flex;
     flex-direction: column;
+    overflow-wrap: anywhere;
     width: 100%;
   }
 
@@ -402,12 +403,14 @@ li.active .optional-field.excluded .scene-link {
 //   margin-left: 1rem;
 // }
 
-.scene-details,
-.original-scene-details {
-  margin-top: 0.5rem;
+.tagger-container {
+  .scene-details,
+  .original-scene-details {
+    margin-top: 0.5rem;
 
-  > .row {
-    width: 100%;
+    > .row {
+      width: 100%;
+    }
   }
 }
 

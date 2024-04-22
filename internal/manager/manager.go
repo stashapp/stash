@@ -391,6 +391,16 @@ func (s *Manager) GetSystemStatus() *SystemStatus {
 
 	configFile := s.Config.GetConfigFile()
 
+	ffmpegPath := ""
+	if s.FFMpeg != nil {
+		ffmpegPath = s.FFMpeg.Path()
+	}
+
+	ffprobePath := ""
+	if s.FFProbe != "" {
+		ffprobePath = s.FFProbe.Path()
+	}
+
 	return &SystemStatus{
 		Os:             runtime.GOOS,
 		WorkingDir:     workingDir,
@@ -400,6 +410,8 @@ func (s *Manager) GetSystemStatus() *SystemStatus {
 		AppSchema:      appSchema,
 		Status:         status,
 		ConfigPath:     &configFile,
+		FfmpegPath:     &ffmpegPath,
+		FfprobePath:    &ffprobePath,
 	}
 }
 

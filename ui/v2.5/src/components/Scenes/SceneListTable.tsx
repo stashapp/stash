@@ -106,6 +106,7 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
     <RatingSystem
       value={scene.rating100}
       onSetRating={(value) => setRating(value, scene.id)}
+      clickToRate
     />
   );
 

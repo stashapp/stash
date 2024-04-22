@@ -14,7 +14,7 @@ import {
   useConfigureUI,
   useSystemStatus,
 } from "src/core/StashService";
-import { Link, useHistory } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 import { ConfigurationContext } from "src/hooks/Config";
 import StashConfiguration from "../Settings/StashConfiguration";
 import { Icon } from "../Shared/Icon";
@@ -45,6 +45,7 @@ export const Setup: React.FC = () => {
   const [blobsLocation, setBlobsLocation] = useState("");
   const [loading, setLoading] = useState(false);
   const [setupError, setSetupError] = useState<string>();
+  const [downloadFFmpeg, setDownloadFFmpeg] = useState(true);
 
   const intl = useIntl();
   const history = useHistory();
@@ -56,6 +57,8 @@ export const Setup: React.FC = () => {
 
   const { data: systemStatus, loading: statusLoading } = useSystemStatus();
   const status = systemStatus?.systemStatus;
+
+  const [mutateDownloadFFMpeg] = GQL.useDownloadFfMpegMutation();
 
   const windows = status?.os === "windows";
   const pathSep = windows ? "\\" : "/";
@@ -164,7 +167,7 @@ export const Setup: React.FC = () => {
     );
   }
 
-  function renderWelcomeSpecificConfig() {
+  const WelcomeSpecificConfig = () => {
     return (
       <>
         <section>
@@ -197,9 +200,9 @@ export const Setup: React.FC = () => {
         </section>
       </>
     );
-  }
+  };
 
-  function renderWelcome() {
+  function DefaultWelcomeStep() {
     const homeDirPath = pathJoin(status?.homeDir ?? homeDir, ".stash");
 
     return (
@@ -523,7 +526,7 @@ export const Setup: React.FC = () => {
     );
   }
 
-  function renderSetPaths() {
+  function SetPathsStep() {
     return (
       <>
         {maybeRenderStashAlert()}
@@ -623,7 +626,7 @@ export const Setup: React.FC = () => {
     }
   }
 
-  function renderConfirm() {
+  function ConfirmStep() {
     let cfgDir: string;
     let config: string;
     if (overrideConfig) {
@@ -735,7 +738,7 @@ export const Setup: React.FC = () => {
     );
   }
 
-  function renderError() {
+  function ErrorStep() {
     function onBackClick() {
       setSetupError(undefined);
       goBack(2);
@@ -771,7 +774,15 @@ export const Setup: React.FC = () => {
     );
   }
 
-  function renderSuccess() {
+  function onFinishClick() {
+    if ((!status?.ffmpegPath || !status?.ffprobePath) && downloadFFmpeg) {
+      mutateDownloadFFMpeg();
+    }
+
+    history.push("/settings?tab=library");
+  }
+
+  function SuccessStep() {
     return (
       <>
         <section>
@@ -793,6 +804,28 @@ export const Setup: React.FC = () => {
               }}
             />
           </p>
+          {!status?.ffmpegPath || !status?.ffprobePath ? (
+            <>
+              <Alert variant="warning text-center">
+                <FormattedMessage
+                  id="setup.success.missing_ffmpeg"
+                  values={{
+                    code: (chunks: string) => <code>{chunks}</code>,
+                  }}
+                />
+              </Alert>
+              <p>
+                <Form.Check
+                  id="download-ffmpeg"
+                  checked={downloadFFmpeg}
+                  label={intl.formatMessage({
+                    id: "setup.success.download_ffmpeg",
+                  })}
+                  onChange={() => setDownloadFFmpeg(!downloadFFmpeg)}
+                />
+              </p>
+            </>
+          ) : null}
         </section>
         <section>
           <h3>
@@ -838,23 +871,21 @@ export const Setup: React.FC = () => {
         </section>
         <section className="mt-5">
           <div className="d-flex justify-content-center">
-            <Link to="/settings?tab=library">
-              <Button variant="success mx-2 p-5">
-                <FormattedMessage id="actions.finish" />
-              </Button>
-            </Link>
+            <Button variant="success mx-2 p-5" onClick={() => onFinishClick()}>
+              <FormattedMessage id="actions.finish" />
+            </Button>
           </div>
         </section>
       </>
     );
   }
 
-  function renderFinish() {
+  function FinishStep() {
     if (setupError !== undefined) {
-      return renderError();
+      return <ErrorStep />;
     }
 
-    return renderSuccess();
+    return <SuccessStep />;
   }
 
   // only display setup wizard if system is not setup
@@ -868,10 +899,11 @@ export const Setup: React.FC = () => {
     return <LoadingIndicator />;
   }
 
-  const welcomeStep = overrideConfig
-    ? renderWelcomeSpecificConfig
-    : renderWelcome;
-  const steps = [welcomeStep, renderSetPaths, renderConfirm, renderFinish];
+  const WelcomeStep = overrideConfig
+    ? WelcomeSpecificConfig
+    : DefaultWelcomeStep;
+  const steps = [WelcomeStep, SetPathsStep, ConfirmStep, FinishStep];
+  const Step = steps[step];
 
   function renderCreating() {
     return (
@@ -881,14 +913,6 @@ export const Setup: React.FC = () => {
             id: "setup.creating.creating_your_system",
           })}
         />
-        <Alert variant="info text-center">
-          <FormattedMessage
-            id="setup.creating.ffmpeg_notice"
-            values={{
-              code: (chunks: string) => <code>{chunks}</code>,
-            }}
-          />
-        </Alert>
       </Card>
     );
   }
@@ -901,7 +925,13 @@ export const Setup: React.FC = () => {
       <h1 className="text-center">
         <FormattedMessage id="setup.stash_setup_wizard" />
       </h1>
-      {loading ? renderCreating() : <Card>{steps[step]()}</Card>}
+      {loading ? (
+        renderCreating()
+      ) : (
+        <Card>
+          <Step />
+        </Card>
+      )}
     </Container>
   );
 };

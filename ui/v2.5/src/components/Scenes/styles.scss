@@ -138,9 +138,71 @@
   max-width: 100%;
 }
 
+@media (max-width: 1200px) {
+  .primary.detail-header {
+    display: none;
+  }
+
+  .scene-header-container {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+
+    .scene-header {
+      flex: 0 0 75%;
+      order: 1;
+    }
+
+    .scene-studio-image {
+      flex: 0 0 25%;
+      order: 2;
+    }
+  }
+}
+
 .scene-header {
   flex-basis: auto;
+  font-size: 1.5rem;
   margin-top: 30px;
+
+  @include media-breakpoint-down(xl) {
+    font-size: 1.75rem;
+  }
+}
+
+.scene-subheader {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.5rem;
+
+  .date {
+    color: $text-muted;
+  }
+
+  .resolution {
+    font-weight: bold;
+  }
+}
+
+.scene-toolbar {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.25rem;
+  margin-top: 0.5rem;
+  padding-bottom: 0.25rem;
+  width: 100%;
+
+  .scene-toolbar-group {
+    align-items: center;
+    column-gap: 0.25rem;
+    display: flex;
+    width: 100%;
+
+    &:last-child {
+      justify-content: flex-end;
+    }
+  }
 }
 
 #scene-details-container {
@@ -416,18 +478,6 @@ textarea.scene-description {
   display: none;
 }
 
-.scene-tabs {
-  display: flex;
-  flex-direction: column;
-  max-height: calc(100vh - 4rem);
-  overflow-wrap: break-word;
-  word-wrap: break-word;
-
-  > div {
-    flex: 0 1 auto;
-  }
-}
-
 /* stylelint-disable selector-class-pattern */
 .table .cover_image-head,
 .table .cover_image-data {
@@ -694,6 +744,10 @@ input[type="range"].blue-slider {
 }
 
 @media (min-width: 1200px) {
+  .secondary.detail-header {
+    display: none;
+  }
+
   #queue-viewer {
     .queue-scene-details {
       width: 245px;
@@ -1004,6 +1058,45 @@ input[type="range"].blue-slider {
     li {
       display: flex;
       justify-content: space-between;
+    }
+  }
+}
+
+.show-more,
+.show-less {
+  color: #b3b3b3;
+  cursor: pointer;
+  padding-right: 15px;
+  text-align: -webkit-center;
+  width: 100%;
+}
+
+.secondary.detail-header {
+  background-color: unset;
+  border-bottom: solid 1px;
+  margin-bottom: 1rem;
+  padding: 0;
+}
+
+.scene-details {
+  .movie-card {
+    padding-bottom: 0;
+    width: 10rem;
+
+    .card-section-title,
+    .movie-scene-number {
+      font-size: 1rem;
+    }
+
+    .movie-scene-number {
+      color: $text-muted;
+    }
+
+    .movie-card__details,
+    .card-section,
+    .card-popovers,
+    hr {
+      display: none;
     }
   }
 }

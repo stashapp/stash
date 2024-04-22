@@ -1,15 +1,15 @@
 import { Tab, Nav, Dropdown } from "react-bootstrap";
-import React, { useEffect, useState } from "react";
-import { FormattedMessage, useIntl } from "react-intl";
+import React, { useContext, useEffect, useMemo, useState } from "react";
+import { FormattedDate, FormattedMessage, useIntl } from "react-intl";
 import { useHistory, Link, RouteComponentProps } from "react-router-dom";
 import { Helmet } from "react-helmet";
 import {
   useFindImage,
   useImageIncrementO,
-  useImageDecrementO,
-  useImageResetO,
   useImageUpdate,
   mutateMetadataScan,
+  useImageDecrementO,
+  useImageResetO,
 } from "src/core/StashService";
 import { ErrorMessage } from "src/components/Shared/ErrorMessage";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
@@ -28,6 +28,12 @@ import { faEllipsisV } from "@fortawesome/free-solid-svg-icons";
 import { objectPath, objectTitle } from "src/core/files";
 import { isVideo } from "src/utils/visualFile";
 import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
+import { useRatingKeybinds } from "src/hooks/keybinds";
+import { ConfigurationContext } from "src/hooks/Config";
+import TextUtils from "src/utils/text";
+import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
+import cx from "classnames";
+import { TruncatedText } from "src/components/Shared/TruncatedText";
 
 interface IProps {
   image: GQL.ImageDataFragment;
@@ -41,6 +47,9 @@ const ImagePage: React.FC<IProps> = ({ image }) => {
   const history = useHistory();
   const Toast = useToast();
   const intl = useIntl();
+  const { configuration } = useContext(ConfigurationContext);
+  const uiConfig = configuration?.ui;
+  const enableBackgroundImage = uiConfig?.enableImageBackgroundImage ?? false;
 
   const [incrementO] = useImageIncrementO(image.id);
   const [decrementO] = useImageDecrementO(image.id);
@@ -64,6 +73,30 @@ const ImagePage: React.FC<IProps> = ({ image }) => {
         { entity: intl.formatMessage({ id: "image" }).toLocaleLowerCase() }
       )
     );
+  }
+
+  function maybeRenderHeaderBackgroundImage() {
+    if (enableBackgroundImage && image != null && image.studio != null) {
+      let imageSrc = image.studio.image_path;
+      if (imageSrc) {
+        const imageURL = new URL(imageSrc);
+        let isDefaultImage = imageURL.searchParams.get("default");
+        if (!isDefaultImage) {
+          return (
+            <div className="background-image-container">
+              <picture>
+                <source src={imageSrc} />
+                <img
+                  className="background-image"
+                  src={imageSrc}
+                  alt={`${image.studio.name} background`}
+                />
+              </picture>
+            </div>
+          );
+        }
+      }
+    }
   }
 
   async function onRescan() {
@@ -127,6 +160,23 @@ const ImagePage: React.FC<IProps> = ({ image }) => {
       Toast.error(e);
     }
   };
+
+  function setRating(v: number | null) {
+    updateImage({
+      variables: {
+        input: {
+          id: image.id,
+          rating100: v,
+        },
+      },
+    });
+  }
+
+  useRatingKeybinds(
+    true,
+    configuration?.ui.ratingSystemOptions?.type,
+    setRating
+  );
 
   function onDeleteDialogClosed(deleted: boolean) {
     setIsDeleteAlertOpen(false);
@@ -205,22 +255,6 @@ const ImagePage: React.FC<IProps> = ({ image }) => {
                 <FormattedMessage id="actions.edit" />
               </Nav.Link>
             </Nav.Item>
-            <Nav.Item className="ml-auto">
-              <OCounterButton
-                value={image.o_counter || 0}
-                onIncrement={onIncrementClick}
-                onDecrement={onDecrementClick}
-                onReset={onResetClick}
-              />
-            </Nav.Item>
-            <Nav.Item>
-              <OrganizedButton
-                loading={organizedLoading}
-                organized={image.organized}
-                onClick={onOrganizedClick}
-              />
-            </Nav.Item>
-            <Nav.Item>{renderOperations()}</Nav.Item>
           </Nav>
         </div>
 
@@ -264,8 +298,19 @@ const ImagePage: React.FC<IProps> = ({ image }) => {
     };
   });
 
+  const file = useMemo(
+    () => (image.files.length > 0 ? image.files[0] : undefined),
+    [image]
+  );
+
   const title = objectTitle(image);
   const ImageView = isVideo(image.visual_files[0]) ? "video" : "img";
+
+  const resolution = useMemo(() => {
+    return file?.width && file?.height
+      ? TextUtils.resolution(file?.width, file?.height)
+      : undefined;
+  }, [file?.width, file?.height]);
 
   return (
     <div className="row">
@@ -275,19 +320,74 @@ const ImagePage: React.FC<IProps> = ({ image }) => {
 
       {maybeRenderDeleteDialog()}
       <div className="image-tabs order-xl-first order-last">
-        <div className="d-none d-xl-block">
-          {image.studio && (
-            <h1 className="text-center">
-              <Link to={`/studios/${image.studio.id}`}>
-                <img
-                  src={image.studio.image_path ?? ""}
-                  alt={`${image.studio.name} logo`}
-                  className="studio-logo"
+        <div className="detail-header">
+          {maybeRenderHeaderBackgroundImage()}
+          <div className="detail-container">
+            <div className="image-header-container">
+              {image.studio && (
+                <h1 className="text-center image-studio-image">
+                  <Link to={`/studios/${image.studio.id}`}>
+                    <img
+                      src={image.studio.image_path ?? ""}
+                      alt={`${image.studio.name} logo`}
+                      className="studio-logo"
+                    />
+                  </Link>
+                </h1>
+              )}
+              <h3
+                className={cx("image-header", { "no-studio": !image.studio })}
+              >
+                <TruncatedText lineCount={2} text={title} />
+              </h3>
+            </div>
+
+            <div className="image-subheader">
+              <span className="date" data-value={image.date}>
+                {!!image.date && (
+                  <FormattedDate
+                    value={image.date}
+                    format="long"
+                    timeZone="utc"
+                  />
+                )}
+              </span>
+              {resolution ? (
+                <span className="resolution" data-value={resolution}>
+                  {resolution}
+                </span>
+              ) : undefined}
+            </div>
+
+            <div className="image-toolbar">
+              <span className="image-toolbar-group">
+                <RatingSystem
+                  value={image.rating100}
+                  onSetRating={setRating}
+                  clickToRate
+                  withoutContext
                 />
-              </Link>
-            </h1>
-          )}
-          <h3 className="image-header">{title}</h3>
+              </span>
+              <span className="image-toolbar-group">
+                <span>
+                  <OCounterButton
+                    value={image.o_counter || 0}
+                    onIncrement={onIncrementClick}
+                    onDecrement={onDecrementClick}
+                    onReset={onResetClick}
+                  />
+                </span>
+                <span>
+                  <OrganizedButton
+                    loading={organizedLoading}
+                    organized={image.organized}
+                    onClick={onOrganizedClick}
+                  />
+                </span>
+                <span>{renderOperations()}</span>
+              </span>
+            </div>
+          </div>
         </div>
         {renderTabs()}
       </div>
