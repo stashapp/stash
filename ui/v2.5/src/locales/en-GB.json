@@ -1102,8 +1102,8 @@
     "interactive_speed": "Interactive Speed",
     "o_count": "O Count",
     "performer_card": {
-      "age": "{age} {years_old}",
-      "age_context": "{age} {years_old} in this scene"
+      "age": "{age}",
+      "age_context": "{age} in this scene"
     },
     "phash": "PHash",
     "play_count": "Play Count",

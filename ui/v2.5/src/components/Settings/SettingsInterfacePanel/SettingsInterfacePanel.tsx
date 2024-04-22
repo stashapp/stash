@@ -526,6 +526,18 @@ export const SettingsInterfacePanel: React.FC = () => {
             <div />
           </div>
           <BooleanSetting
+            id="enableGalleryBackgroundImage"
+            headingID="gallery"
+            checked={ui.enableGalleryBackgroundImage ?? undefined}
+            onChange={(v) => saveUI({ enableGalleryBackgroundImage: v })}
+          />
+          <BooleanSetting
+            id="enableImageBackgroundImage"
+            headingID="movie"
+            checked={ui.enableImageBackgroundImage ?? undefined}
+            onChange={(v) => saveUI({ enableImageBackgroundImage: v })}
+          />
+          <BooleanSetting
             id="enableMovieBackgroundImage"
             headingID="movie"
             checked={ui.enableMovieBackgroundImage ?? undefined}
@@ -536,6 +548,12 @@ export const SettingsInterfacePanel: React.FC = () => {
             headingID="performer"
             checked={ui.enablePerformerBackgroundImage ?? undefined}
             onChange={(v) => saveUI({ enablePerformerBackgroundImage: v })}
+          />
+          <BooleanSetting
+            id="enableSceneBackgroundImage"
+            headingID="scene"
+            checked={ui.enableSceneBackgroundImage ?? undefined}
+            onChange={(v) => saveUI({ enableSceneBackgroundImage: v })}
           />
           <BooleanSetting
             id="enableStudioBackgroundImage"

@@ -42,6 +42,7 @@ import cx from "classnames";
 import { useRatingKeybinds } from "src/hooks/keybinds";
 import { ConfigurationContext } from "src/hooks/Config";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
+import ScreenUtils from "src/utils/screen";
 
 interface IProps {
   gallery: GQL.GalleryDataFragment;
@@ -58,9 +59,11 @@ export const GalleryPage: React.FC<IProps> = ({ gallery, add }) => {
   const Toast = useToast();
   const intl = useIntl();
   const { configuration } = useContext(ConfigurationContext);
+  const uiConfig = configuration?.ui;
+  const enableBackgroundImage = uiConfig?.enableGalleryBackgroundImage ?? false;
   const showLightbox = useGalleryLightbox(gallery.id, gallery.chapters);
 
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(ScreenUtils.isSmallScreen());
 
   const [activeTabKey, setActiveTabKey] = useState("gallery-details-panel");
 
@@ -115,6 +118,30 @@ export const GalleryPage: React.FC<IProps> = ({ gallery, add }) => {
 
   function getCollapseButtonIcon() {
     return collapsed ? faChevronRight : faChevronLeft;
+  }
+
+  function maybeRenderHeaderBackgroundImage() {
+    if (enableBackgroundImage && gallery != null && gallery.studio != null) {
+      let image = gallery.studio.image_path;
+      if (image) {
+        const imageURL = new URL(image);
+        let isDefaultImage = imageURL.searchParams.get("default");
+        if (!isDefaultImage) {
+          return (
+            <div className="background-image-container">
+              <picture>
+                <source src={image} />
+                <img
+                  className="background-image"
+                  src={image}
+                  alt={`${gallery.studio.name} background`}
+                />
+              </picture>
+            </div>
+          );
+        }
+      }
+    }
   }
 
   async function onRescan() {
@@ -360,58 +387,67 @@ export const GalleryPage: React.FC<IProps> = ({ gallery, add }) => {
         <title>{title}</title>
       </Helmet>
       {maybeRenderDeleteDialog()}
-      <div className={`gallery-tabs ${collapsed ? "collapsed" : ""}`}>
-        <div>
-          <div className="gallery-header-container">
-            {gallery.studio && (
-              <h1 className="text-center gallery-studio-image">
-                <Link to={`/studios/${gallery.studio.id}`}>
-                  <img
-                    src={gallery.studio.image_path ?? ""}
-                    alt={`${gallery.studio.name} logo`}
-                    className="studio-logo"
+      <div
+        className={`gallery-tabs order-xl-first order-last ${
+          collapsed ? "collapsed" : ""
+        }`}
+      >
+        <div className="detail-header">
+          {maybeRenderHeaderBackgroundImage()}
+          <div className="detail-container">
+            <div className="gallery-header-container">
+              {gallery.studio && (
+                <h1 className="text-center gallery-studio-image">
+                  <Link to={`/studios/${gallery.studio.id}`}>
+                    <img
+                      src={gallery.studio.image_path ?? ""}
+                      alt={`${gallery.studio.name} logo`}
+                      className="studio-logo"
+                    />
+                  </Link>
+                </h1>
+              )}
+              <h3
+                className={cx("gallery-header", {
+                  "no-studio": !gallery.studio,
+                })}
+              >
+                <TruncatedText lineCount={2} text={title} />
+              </h3>
+            </div>
+
+            <div className="gallery-subheader">
+              {!!gallery.date && (
+                <span className="date" data-value={gallery.date}>
+                  <FormattedDate
+                    value={gallery.date}
+                    format="long"
+                    timeZone="utc"
                   />
-                </Link>
-              </h1>
-            )}
-            <h3
-              className={cx("gallery-header", { "no-studio": !gallery.studio })}
-            >
-              <TruncatedText lineCount={2} text={title} />
-            </h3>
-          </div>
+                </span>
+              )}
+            </div>
 
-          <div className="gallery-subheader">
-            {!!gallery.date && (
-              <span className="date" data-value={gallery.date}>
-                <FormattedDate
-                  value={gallery.date}
-                  format="long"
-                  timeZone="utc"
+            <div className="gallery-toolbar">
+              <span className="gallery-toolbar-group">
+                <RatingSystem
+                  value={gallery.rating100}
+                  onSetRating={setRating}
+                  clickToRate
+                  withoutContext
                 />
               </span>
-            )}
-          </div>
-
-          <div className="gallery-toolbar">
-            <span className="gallery-toolbar-group">
-              <RatingSystem
-                value={gallery.rating100}
-                onSetRating={setRating}
-                clickToRate
-                withoutContext
-              />
-            </span>
-            <span className="gallery-toolbar-group">
-              <span>
-                <OrganizedButton
-                  loading={organizedLoading}
-                  organized={gallery.organized}
-                  onClick={onOrganizedClick}
-                />
+              <span className="gallery-toolbar-group">
+                <span>
+                  <OrganizedButton
+                    loading={organizedLoading}
+                    organized={gallery.organized}
+                    onClick={onOrganizedClick}
+                  />
+                </span>
+                <span>{renderOperations()}</span>
               </span>
-              <span>{renderOperations()}</span>
-            </span>
+            </div>
           </div>
         </div>
         {renderTabs()}
@@ -419,6 +455,11 @@ export const GalleryPage: React.FC<IProps> = ({ gallery, add }) => {
       <div className="gallery-divider d-none d-xl-block">
         <Button onClick={() => setCollapsed(!collapsed)}>
           <Icon className="fa-fw" icon={getCollapseButtonIcon()} />
+        </Button>
+      </div>
+      <div className="floating-gallery-divider">
+        <Button onClick={() => setCollapsed(!collapsed)}>
+          {collapsed ? "Show Details" : "Hide Details"}
         </Button>
       </div>
       <div className={`gallery-container ${collapsed ? "expanded" : ""}`}>

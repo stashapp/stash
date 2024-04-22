@@ -48,6 +48,8 @@ const ImagePage: React.FC<IProps> = ({ image }) => {
   const Toast = useToast();
   const intl = useIntl();
   const { configuration } = useContext(ConfigurationContext);
+  const uiConfig = configuration?.ui;
+  const enableBackgroundImage = uiConfig?.enableImageBackgroundImage ?? false;
 
   const [incrementO] = useImageIncrementO(image.id);
   const [decrementO] = useImageDecrementO(image.id);
@@ -71,6 +73,30 @@ const ImagePage: React.FC<IProps> = ({ image }) => {
         { entity: intl.formatMessage({ id: "image" }).toLocaleLowerCase() }
       )
     );
+  }
+
+  function maybeRenderHeaderBackgroundImage() {
+    if (enableBackgroundImage && image != null && image.studio != null) {
+      let imageSrc = image.studio.image_path;
+      if (imageSrc) {
+        const imageURL = new URL(imageSrc);
+        let isDefaultImage = imageURL.searchParams.get("default");
+        if (!isDefaultImage) {
+          return (
+            <div className="background-image-container">
+              <picture>
+                <source src={imageSrc} />
+                <img
+                  className="background-image"
+                  src={imageSrc}
+                  alt={`${image.studio.name} background`}
+                />
+              </picture>
+            </div>
+          );
+        }
+      }
+    }
   }
 
   async function onRescan() {
@@ -294,69 +320,74 @@ const ImagePage: React.FC<IProps> = ({ image }) => {
 
       {maybeRenderDeleteDialog()}
       <div className="image-tabs order-xl-first order-last">
-        <div>
-          <div className="image-header-container">
-            {image.studio && (
-              <h1 className="text-center image-studio-image">
-                <Link to={`/studios/${image.studio.id}`}>
-                  <img
-                    src={image.studio.image_path ?? ""}
-                    alt={`${image.studio.name} logo`}
-                    className="studio-logo"
-                  />
-                </Link>
-              </h1>
-            )}
-            <h3 className={cx("image-header", { "no-studio": !image.studio })}>
-              <TruncatedText lineCount={2} text={title} />
-            </h3>
-          </div>
-
-          <div className="image-subheader">
-            <span className="date" data-value={image.date}>
-              {!!image.date && (
-                <FormattedDate
-                  value={image.date}
-                  format="long"
-                  timeZone="utc"
-                />
+        <div className="detail-header">
+          {maybeRenderHeaderBackgroundImage()}
+          <div className="detail-container">
+            <div className="image-header-container">
+              {image.studio && (
+                <h1 className="text-center image-studio-image">
+                  <Link to={`/studios/${image.studio.id}`}>
+                    <img
+                      src={image.studio.image_path ?? ""}
+                      alt={`${image.studio.name} logo`}
+                      className="studio-logo"
+                    />
+                  </Link>
+                </h1>
               )}
-            </span>
-            {resolution ? (
-              <span className="resolution" data-value={resolution}>
-                {resolution}
-              </span>
-            ) : undefined}
-          </div>
-        </div>
+              <h3
+                className={cx("image-header", { "no-studio": !image.studio })}
+              >
+                <TruncatedText lineCount={2} text={title} />
+              </h3>
+            </div>
 
-        <div className="image-toolbar">
-          <span className="image-toolbar-group">
-            <RatingSystem
-              value={image.rating100}
-              onSetRating={setRating}
-              clickToRate
-              withoutContext
-            />
-          </span>
-          <span className="image-toolbar-group">
-            <span>
-              <OCounterButton
-                value={image.o_counter || 0}
-                onIncrement={onIncrementClick}
-                onDecrement={onDecrementClick}
-                onReset={onResetClick}
-              />
-            </span>
-            <span>
-              <OrganizedButton
-                loading={organizedLoading}
-                organized={image.organized}
-                onClick={onOrganizedClick}
-              />
-            </span>
-            <span>{renderOperations()}</span>
-          </span>
+            <div className="image-subheader">
+              <span className="date" data-value={image.date}>
+                {!!image.date && (
+                  <FormattedDate
+                    value={image.date}
+                    format="long"
+                    timeZone="utc"
+                  />
+                )}
+              </span>
+              {resolution ? (
+                <span className="resolution" data-value={resolution}>
+                  {resolution}
+                </span>
+              ) : undefined}
+            </div>
+
+            <div className="image-toolbar">
+              <span className="image-toolbar-group">
+                <RatingSystem
+                  value={image.rating100}
+                  onSetRating={setRating}
+                  clickToRate
+                  withoutContext
+                />
+              </span>
+              <span className="image-toolbar-group">
+                <span>
+                  <OCounterButton
+                    value={image.o_counter || 0}
+                    onIncrement={onIncrementClick}
+                    onDecrement={onDecrementClick}
+                    onReset={onResetClick}
+                  />
+                </span>
+                <span>
+                  <OrganizedButton
+                    loading={organizedLoading}
+                    organized={image.organized}
+                    onClick={onOrganizedClick}
+                  />
+                </span>
+                <span>{renderOperations()}</span>
+              </span>
+            </div>
+          </div>
         </div>
         {renderTabs()}
       </div>
