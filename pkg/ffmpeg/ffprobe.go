@@ -147,7 +147,7 @@ func (f *FFProbe) Path() string {
 
 // NewVideoFile runs ffprobe on the given path and returns a VideoFile.
 func (f *FFProbe) NewVideoFile(videoPath string) (*VideoFile, error) {
-	args := []string{"-v", "quiet", "-print_format", "json", "-show_format", "-show_streams", "-show_error", videoPath}
+	args := []string{"-v", "quiet", "-print_format", "json", "-count_frames", "-show_format", "-show_streams", "-show_entries", "side_data=rotation", "-show_error", videoPath}
 	cmd := stashExec.Command(string(*f), args...)
 	out, err := cmd.Output()
 
@@ -166,7 +166,7 @@ func (f *FFProbe) NewVideoFile(videoPath string) (*VideoFile, error) {
 // GetReadFrameCount counts the actual frames of the video file.
 // Used when the frame count is missing or incorrect.
 func (f *FFProbe) GetReadFrameCount(path string) (int64, error) {
-	args := []string{"-v", "quiet", "-print_format", "json", "-count_frames", "-show_format", "-show_streams", "-show_error", path}
+	args := []string{"-v", "quiet", "-print_format", "json", "-count_frames", "-show_format", "-show_streams", "-show_entries", "side_data=rotation", "-show_error", path}
 	out, err := stashExec.Command(string(*f), args...).Output()
 
 	if err != nil {
