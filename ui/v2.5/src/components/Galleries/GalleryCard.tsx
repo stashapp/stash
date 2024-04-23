@@ -158,6 +158,9 @@ export const GalleryCard: React.FC<IProps> = (props) => {
     }
   }
 
+  console.log("image height: " + props.gallery.cover?.files[0].height);
+  console.log("image width: " + props.gallery.cover?.files[0].width);
+
   return (
     <GridCard
       className={`gallery-card zoom-${props.zoomIndex}`}
@@ -170,7 +173,12 @@ export const GalleryCard: React.FC<IProps> = (props) => {
           {props.gallery.cover ? (
             <img
               loading="lazy"
-              className="gallery-card-image"
+              className={`gallery-card-image ${
+                props.gallery.cover.files[0].height >
+                props.gallery.cover.files[0].width
+                  ? "portrait-image"
+                  : ""
+              }`}
               alt={props.gallery.title ?? ""}
               src={`${props.gallery.cover.paths.thumbnail}`}
             />

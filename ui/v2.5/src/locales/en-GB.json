@@ -955,6 +955,7 @@
   "dimensions": "Dimensions",
   "director": "Director",
   "disambiguation": "Disambiguation",
+  "discover": "Discover",
   "display_mode": {
     "grid": "Grid",
     "list": "List",
@@ -1102,7 +1103,7 @@
     "interactive_speed": "Interactive Speed",
     "o_count": "O Count",
     "performer_card": {
-      "age": "{age}",
+      "age": "{age} {years_old}",
       "age_context": "{age} in this scene"
     },
     "phash": "PHash",

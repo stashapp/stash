@@ -2,7 +2,7 @@ import React, { useMemo, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import TextUtils from "src/utils/text";
-import { GalleryDetailedLink, TagLink } from "src/components/Shared/TagLink";
+import { TagLink } from "src/components/Shared/TagLink";
 import { PerformerCard } from "src/components/Performers/PerformerCard";
 import { sortPerformers } from "src/core/performers";
 import { DirectorLink } from "src/components/Shared/Link";
@@ -11,6 +11,7 @@ import { faCaretDown, faCaretUp } from "@fortawesome/free-solid-svg-icons";
 import { Icon } from "src/components/Shared/Icon";
 import { useContainerDimensions } from "src/components/Shared/GridCard/GridCard";
 import { MovieCard } from "src/components/Movies/MovieCard";
+import { GalleryCard } from "src/components/Galleries/GalleryCard";
 
 interface ISceneDetailProps {
   scene: GQL.SceneDataFragment;
@@ -20,10 +21,12 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
   const intl = useIntl();
 
   const [collapsedDetails, setCollapsedDetails] = useState<boolean>(true);
+  const [collapsedGalleries, setCollapsedGalleries] = useState<boolean>(true);
   const [collapsedPerformers, setCollapsedPerformers] = useState<boolean>(true);
   const [collapsedTags, setCollapsedTags] = useState<boolean>(true);
 
   const [detailsRef, { height: detailsHeight }] = useContainerDimensions();
+  const [galleriesRef, { height: galleriesHeight }] = useContainerDimensions();
   const [perfRef, { height: perfHeight }] = useContainerDimensions();
   const [tagRef, { height: tagHeight }] = useContainerDimensions();
 
@@ -91,17 +94,35 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
     );
   }, [props.scene.tags, tagRef, tagHeight, setCollapsedTags, collapsedTags]);
 
-  const galleries = useMemo(() => {
-    if (props.scene.galleries.length === 0) return;
+  const galleries_v2 = useMemo(() => {
     const sceneGalleries = props.scene.galleries.map((gallery) => (
-      <GalleryDetailedLink key={gallery.id} gallery={gallery} />
+      <GalleryCard key={gallery.id} gallery={gallery} />
     ));
     return (
       <>
-        <div className={`scene-galleries`}>{sceneGalleries}</div>
+        <div
+          className={`scene-galleries ${
+            collapsedGalleries ? "collapsed-detail" : "expanded-detail"
+          }`}
+          ref={galleriesRef}
+        >
+          {sceneGalleries}
+        </div>
+        {maybeRenderShowMoreLess(
+          galleriesHeight,
+          160,
+          setCollapsedGalleries,
+          collapsedGalleries
+        )}
       </>
     );
-  }, [props.scene.galleries]);
+  }, [
+    props.scene.galleries,
+    galleriesRef,
+    galleriesHeight,
+    setCollapsedGalleries,
+    collapsedGalleries,
+  ]);
 
   function maybeRenderShowMoreLess(
     height: number,
@@ -199,7 +220,7 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
             <DetailItem
               id="galleries"
               heading={<FormattedMessage id="galleries" />}
-              value={props.scene.galleries.length ? galleries : undefined}
+              value={props.scene.galleries.length ? galleries_v2 : undefined}
             />
             <DetailItem
               id="created_at"

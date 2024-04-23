@@ -303,6 +303,13 @@ dd {
     max-height: 460px;
     overflow: hidden;
   }
+
+  .gallery-performers.collapsed-detail,
+  .image-performers.collapsed-detail,
+  .scene-performers.collapsed-detail {
+    max-height: 160px;
+    overflow: hidden;
+  }
 }
 
 .full-width {
@@ -1250,21 +1257,61 @@ $detailTabWidth: calc(100% / 3);
     &:not(.full-width) .detail-item-title {
       margin-bottom: 0.25em;
     }
-  }
 
-  .gallery-scenes,
-  .image-galleries,
-  .scene-galleries,
-  .scene-movies {
-    width: 100%;
+    .gallery-card {
+      overflow: unset;
+      padding-bottom: 0;
+      transition: ease 0.5s;
 
-    span {
+      .thumbnail-section {
+        background-color: white;
+        border: solid 1px black;
+        height: auto;
+        padding: 3px;
+        z-index: 10;
+      }
+
+      .card-section,
+      .performer-count,
+      .scene-count,
+      .studio-overlay,
+      hr {
+        display: none;
+      }
+
+      .image-count {
+        background-color: #00000059;
+        border-radius: 5px;
+        bottom: 0.5rem;
+        padding-bottom: 3px;
+        padding-right: 3px;
+        position: absolute;
+        right: 10px;
+        z-index: 100;
+      }
+
+      .image-count > button {
+        padding: 0;
+      }
+    }
+
+    .gallery-card:hover {
+      transform: rotate(2deg);
+    }
+
+    .gallery-card::before {
+      background-color: white;
+      border: solid 1px black;
+      content: "";
+      height: 100%;
+      position: absolute;
+      transform: rotate(-3deg);
+      transition: ease 0.5s;
       width: 100%;
     }
 
-    span div {
-      overflow: hidden;
-      text-overflow: ellipsis;
+    .gallery-card:hover::before {
+      transform: rotate(3deg);
     }
   }
 }
