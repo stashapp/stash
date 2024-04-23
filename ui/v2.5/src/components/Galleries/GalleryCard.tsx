@@ -21,6 +21,7 @@ interface IProps {
   selecting?: boolean;
   selected?: boolean | undefined;
   zoomIndex?: number;
+  titleOnImage?: boolean;
   onSelectedChanged?: (selected: boolean, shiftKey: boolean) => void;
 }
 
@@ -201,6 +202,7 @@ export const GalleryCard: React.FC<IProps> = (props) => {
       selected={props.selected}
       selecting={props.selecting}
       onSelectedChanged={props.onSelectedChanged}
+      titleOnImage={props.titleOnImage}
     />
   );
 };

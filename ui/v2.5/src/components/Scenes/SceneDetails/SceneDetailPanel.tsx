@@ -64,6 +64,7 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
           key={sceneMovie.movie.id}
           movie={sceneMovie.movie}
           sceneIndex={sceneMovie.scene_index ?? undefined}
+          titleOnImage={true}
         />
       )),
     [props.scene.movies]
@@ -96,7 +97,7 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
 
   const galleries_v2 = useMemo(() => {
     const sceneGalleries = props.scene.galleries.map((gallery) => (
-      <GalleryCard key={gallery.id} gallery={gallery} />
+      <GalleryCard key={gallery.id} gallery={gallery} titleOnImage={true} />
     ));
     return (
       <>

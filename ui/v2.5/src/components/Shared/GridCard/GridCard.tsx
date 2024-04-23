@@ -24,6 +24,7 @@ interface ICardProps {
   resumeTime?: number;
   duration?: number;
   interactiveHeatmap?: string;
+  titleOnImage?: boolean;
 }
 
 export const calculateCardWidth = (
@@ -162,6 +163,7 @@ export const GridCard: React.FC<ICardProps> = (props: ICardProps) => {
 
       <div className={cx(props.thumbnailSectionClassName, "thumbnail-section")}>
         <Link
+          title={props.titleOnImage ? props.title.toString() : ""}
           to={props.url}
           className={props.linkClassName}
           onClick={handleImageClick}
