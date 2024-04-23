@@ -249,7 +249,6 @@ func parse(filePath string, probeJSON *FFProbeJSON) (*VideoFile, error) {
 
 		// define "rotate" to true when either the video stream tag or the side data has a rotation
 		rotate := false
-		fmt.Print("videoStream.Tags.Rotate: ", videoStream.Tags.Rotate, " videoStream.Frames: ", probeJSON.PacketsAndFrames)
 		if rotationFromTag, err := strconv.ParseInt(videoStream.Tags.Rotate, 10, 64); err == nil && rotationFromTag != 180 {
 			rotate = true
 		}
