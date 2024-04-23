@@ -27,8 +27,14 @@ type FFProbeJSON struct {
 			Comment          string        `json:"comment"`
 		} `json:"tags"`
 	} `json:"format"`
-	Streams []FFProbeStream `json:"streams"`
-	Error   struct {
+	Streams          []FFProbeStream `json:"streams"`
+	PacketsAndFrames []struct {
+		Type         string `json:"type"`
+		SideDataList []struct {
+			Rotation int `json:"rotation"`
+		} `json:"side_data_list"`
+	} `json:"packets_and_frames"`
+	Error struct {
 		Code   int    `json:"code"`
 		String string `json:"string"`
 	} `json:"error"`
