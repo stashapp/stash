@@ -110,7 +110,7 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
         </div>
         {maybeRenderShowMoreLess(
           galleriesHeight,
-          160,
+          240,
           setCollapsedGalleries,
           collapsedGalleries
         )}

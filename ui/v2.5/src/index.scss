@@ -304,10 +304,8 @@ dd {
     overflow: hidden;
   }
 
-  .gallery-performers.collapsed-detail,
-  .image-performers.collapsed-detail,
-  .scene-performers.collapsed-detail {
-    max-height: 160px;
+  .scene-galleries.collapsed-detail {
+    max-height: 240px;
     overflow: hidden;
   }
 }
@@ -1271,9 +1269,14 @@ $detailTabWidth: calc(100% / 3);
         z-index: 10;
       }
 
+      .gallery-card-image {
+        height: 15rem;
+      }
+
       .card-section,
       .performer-count,
       .scene-count,
+      .tag-count,
       .studio-overlay,
       hr {
         display: none;
