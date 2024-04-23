@@ -246,7 +246,26 @@ func parse(filePath string, probeJSON *FFProbeJSON) (*VideoFile, error) {
 			framerate = 0
 		}
 		result.FrameRate = math.Round(framerate*100) / 100
-		if rotate, err := strconv.ParseInt(videoStream.Tags.Rotate, 10, 64); err == nil && rotate != 180 {
+
+		// define "rotate" to true when either the video stream tag or the side data has a rotation
+		rotate := false
+		fmt.Print("videoStream.Tags.Rotate: ", videoStream.Tags.Rotate, " videoStream.Frames: ", probeJSON.PacketsAndFrames)
+		if rotationFromTag, err := strconv.ParseInt(videoStream.Tags.Rotate, 10, 64); err == nil && rotationFromTag != 180 {
+			rotate = true
+		}
+		if !rotate && len(probeJSON.PacketsAndFrames) > 0 {
+		rotationSet:
+			for _, packet := range probeJSON.PacketsAndFrames {
+				for _, sideData := range packet.SideDataList {
+					if sideData.Rotation != 0 && sideData.Rotation != 180 {
+						rotate = true
+						break rotationSet
+					}
+				}
+			}
+		}
+
+		if rotate {
 			result.Width = videoStream.Height
 			result.Height = videoStream.Width
 		} else {
