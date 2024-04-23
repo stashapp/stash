@@ -173,7 +173,7 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
         </div>
         {maybeRenderShowMoreLess(
           perfHeight,
-          370,
+          365,
           setCollapsedPerformers,
           collapsedPerformers
         )}

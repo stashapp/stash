@@ -131,7 +131,7 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
         </div>
         {maybeRenderShowMoreLess(
           perfHeight,
-          370,
+          365,
           setCollapsedPerformers,
           collapsedPerformers
         )}
