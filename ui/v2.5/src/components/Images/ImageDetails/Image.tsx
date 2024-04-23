@@ -313,7 +313,7 @@ const ImagePage: React.FC<IProps> = ({ image }) => {
   }, [file?.width, file?.height]);
 
   return (
-    <div className="row">
+    <div id="image-page" className="row">
       <Helmet>
         <title>{title}</title>
       </Helmet>

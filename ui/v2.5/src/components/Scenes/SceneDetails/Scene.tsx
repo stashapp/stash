@@ -917,7 +917,7 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
   }
 
   return (
-    <div className="row">
+    <div id="scene-page" className="row">
       <ScenePage
         scene={scene}
         setTimestamp={setTimestamp}

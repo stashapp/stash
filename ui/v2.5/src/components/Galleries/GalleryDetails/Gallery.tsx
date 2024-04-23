@@ -382,7 +382,7 @@ export const GalleryPage: React.FC<IProps> = ({ gallery, add }) => {
   const title = galleryTitle(gallery);
 
   return (
-    <div className="row">
+    <div id="gallery-page" className="row">
       <Helmet>
         <title>{title}</title>
       </Helmet>

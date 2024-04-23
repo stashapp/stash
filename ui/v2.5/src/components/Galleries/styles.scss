@@ -218,9 +218,12 @@ $galleryTabWidth: 450px;
 
 .gallery-tabs,
 .gallery-container {
-  padding-left: 15px;
   position: relative;
   width: 100%;
+}
+
+.gallery-container {
+  padding-left: 15px;
 }
 
 .gallery-container {
@@ -228,19 +231,17 @@ $galleryTabWidth: 450px;
   overflow: auto;
 }
 
-@media (min-width: 1200px), (max-width: 575px) {
-  .gallery-performers {
-    .performer-card {
-      width: 15rem;
+.gallery-performers {
+  .performer-card {
+    width: 13.5rem;
 
-      &-gallery {
-        height: 22.5rem;
-      }
+    &-gallery {
+      height: 22.5rem;
+    }
 
-      &-image {
-        height: 22.5rem;
-        width: 15rem;
-      }
+    .card-popovers,
+    hr {
+      display: none;
     }
   }
 }

@@ -54,8 +54,11 @@ body {
   }
 }
 
+#gallery-page,
+#image-page,
 #movie-page,
 #performer-page,
+#scene-page,
 #studio-page,
 #tag-page {
   margin-top: -0.5rem;
@@ -275,6 +278,18 @@ dd {
     width: 100%;
   }
 
+  .gallery-performers,
+  .image-performers,
+  .scene-performers {
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .tab-content,
+  .nav-tabs {
+    padding-left: 15px;
+  }
+
   .collapsed .detail-item-value {
     -webkit-box-orient: vertical;
     display: -webkit-box;
@@ -307,6 +322,10 @@ dd {
   .scene-galleries.collapsed-detail {
     max-height: 240px;
     overflow: hidden;
+  }
+
+  .scene-galleries .tag-item {
+    display: none;
   }
 }
 
@@ -1257,6 +1276,7 @@ $detailTabWidth: calc(100% / 3);
     }
 
     .gallery-card {
+      margin: 8px;
       overflow: unset;
       padding-bottom: 0;
       transition: ease 0.5s;

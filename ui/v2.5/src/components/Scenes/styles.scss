@@ -507,20 +507,21 @@ input[type="range"].blue-slider {
   }
 }
 
+.scene-performers {
+  .performer-card {
+    width: 13.5rem;
+
+    .card-popovers,
+    hr {
+      display: none;
+    }
+  }
+}
+
 @media (min-width: 1200px), (max-width: 575px) {
   .performer-card .fi {
     height: 1.33rem;
     width: 2rem;
-  }
-
-  .scene-performers {
-    .performer-card {
-      width: 15rem;
-
-      &-image {
-        height: 22.5rem;
-      }
-    }
   }
 }
 
@@ -850,9 +851,14 @@ input[type="range"].blue-slider {
 
 .secondary.detail-header {
   background-color: unset;
-  border-bottom: solid 1px;
+  border-bottom: solid 1px #ffffff2b;
   margin-bottom: 1rem;
+  overflow: hidden;
   padding: 0;
+
+  .background-image-container {
+    display: none;
+  }
 }
 
 .scene-details {

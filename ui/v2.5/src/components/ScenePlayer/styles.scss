@@ -361,9 +361,12 @@ $sceneTabWidth: 450px;
 
 .scene-tabs,
 .scene-player-container {
-  padding-left: 15px;
   position: relative;
   width: 100%;
+}
+
+.scene-player-container {
+  padding-left: 15px;
 }
 
 .scene-player-container {

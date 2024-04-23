@@ -135,7 +135,7 @@ export const GalleryDetailPanel: React.FC<IGalleryDetailProps> = ({
         </div>
         {maybeRenderShowMoreLess(
           perfHeight,
-          165,
+          370,
           setCollapsedPerformers,
           collapsedPerformers
         )}

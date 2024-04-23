@@ -2,7 +2,7 @@ import React, { useMemo, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import TextUtils from "src/utils/text";
-import { TagLink } from "src/components/Shared/TagLink";
+import { GalleryDetailedLink, TagLink } from "src/components/Shared/TagLink";
 import { PerformerCard } from "src/components/Performers/PerformerCard";
 import { sortPerformers } from "src/core/performers";
 import { DirectorLink } from "src/components/Shared/Link";
@@ -95,9 +95,13 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
     );
   }, [props.scene.tags, tagRef, tagHeight, setCollapsedTags, collapsedTags]);
 
-  const galleries_v2 = useMemo(() => {
+  const galleries = useMemo(() => {
     const sceneGalleries = props.scene.galleries.map((gallery) => (
       <GalleryCard key={gallery.id} gallery={gallery} titleOnImage={true} />
+    ));
+    /* provides a slimmer options users can swap to via CSS to reduce tab height */
+    const slimSceneGalleries = props.scene.galleries.map((gallery) => (
+      <GalleryDetailedLink key={gallery.id} gallery={gallery} />
     ));
     return (
       <>
@@ -108,6 +112,8 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
           ref={galleriesRef}
         >
           {sceneGalleries}
+          {slimSceneGalleries}
+          {}
         </div>
         {maybeRenderShowMoreLess(
           galleriesHeight,
@@ -167,7 +173,7 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
         </div>
         {maybeRenderShowMoreLess(
           perfHeight,
-          165,
+          370,
           setCollapsedPerformers,
           collapsedPerformers
         )}
@@ -221,7 +227,7 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
             <DetailItem
               id="galleries"
               heading={<FormattedMessage id="galleries" />}
-              value={props.scene.galleries.length ? galleries_v2 : undefined}
+              value={props.scene.galleries.length ? galleries : undefined}
             />
             <DetailItem
               id="created_at"
