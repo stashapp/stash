@@ -138,10 +138,20 @@ type TranscodeOptions struct {
 	StartTime  float64
 }
 
-func FileGetCodec(sm *StreamManager, mimetype string, originalCodec string) (codec VideoCodec) {
-	switch mimetype {
+func (o TranscodeOptions) FileGetCodec(sm *StreamManager, maxTranscodeSize int) (codec VideoCodec) {
+	needsResize := false
+
+	if maxTranscodeSize != 0 {
+		if o.VideoFile.Width > o.VideoFile.Height {
+			needsResize = o.VideoFile.Width > maxTranscodeSize
+		} else {
+			needsResize = o.VideoFile.Height > maxTranscodeSize
+		}
+	}
+
+	switch o.StreamType.MimeType {
 	case MimeMp4Video:
-		if originalCodec == H264 {
+		if !needsResize && o.VideoFile.VideoCodec == H264 {
 			return VideoCodecCopy
 		}
 		codec = VideoCodecLibX264
@@ -149,7 +159,7 @@ func FileGetCodec(sm *StreamManager, mimetype string, originalCodec string) (cod
 			codec = *hwcodec
 		}
 	case MimeWebmVideo:
-		if originalCodec == Vp8 || originalCodec == Vp9 {
+		if !needsResize && (o.VideoFile.VideoCodec == Vp8 || o.VideoFile.VideoCodec == Vp9) {
 			return VideoCodecCopy
 		}
 		codec = VideoCodecVP9
@@ -163,7 +173,7 @@ func FileGetCodec(sm *StreamManager, mimetype string, originalCodec string) (cod
 	return codec
 }
 
-func (o TranscodeOptions) makeStreamArgs(sm *StreamManager, options TranscodeOptions) Args {
+func (o TranscodeOptions) makeStreamArgs(sm *StreamManager) Args {
 	maxTranscodeSize := sm.config.GetMaxStreamingTranscodeSize().GetMaxResolution()
 	if o.Resolution != "" {
 		maxTranscodeSize = models.StreamingResolutionEnum(o.Resolution).GetMaxResolution()
@@ -174,7 +184,7 @@ func (o TranscodeOptions) makeStreamArgs(sm *StreamManager, options TranscodeOpt
 	args := Args{"-hide_banner"}
 	args = args.LogLevel(LogLevelError)
 
-	codec := FileGetCodec(sm, o.StreamType.MimeType, options.VideoFile.VideoCodec)
+	codec := o.FileGetCodec(sm, maxTranscodeSize)
 
 	args = sm.encoder.hwDeviceInit(args, codec)
 	args = append(args, extraInputArgs...)
@@ -221,7 +231,7 @@ func (sm *StreamManager) ServeTranscode(w http.ResponseWriter, r *http.Request, 
 }
 
 func (sm *StreamManager) getTranscodeStream(ctx *fsutil.LockContext, options TranscodeOptions) (http.HandlerFunc, error) {
-	args := options.makeStreamArgs(sm, options)
+	args := options.makeStreamArgs(sm)
 	cmd := sm.encoder.Command(ctx, args)
 
 	stdout, err := cmd.StdoutPipe()
