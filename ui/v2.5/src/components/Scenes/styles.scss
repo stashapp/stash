@@ -842,10 +842,11 @@ input[type="range"].blue-slider {
 
 .show-more,
 .show-less {
+  align-items: center;
   color: #b3b3b3;
   cursor: pointer;
-  padding-right: 15px;
-  text-align: -webkit-center;
+  display: flex;
+  justify-content: center;
   width: 100%;
 }
 
