@@ -138,14 +138,20 @@ type TranscodeOptions struct {
 	StartTime  float64
 }
 
-func FileGetCodec(sm *StreamManager, mimetype string) (codec VideoCodec) {
+func FileGetCodec(sm *StreamManager, mimetype string, originalCodec string) (codec VideoCodec) {
 	switch mimetype {
 	case MimeMp4Video:
+		if originalCodec == H264 {
+			return VideoCodecCopy
+		}
 		codec = VideoCodecLibX264
 		if hwcodec := sm.encoder.hwCodecMP4Compatible(); hwcodec != nil && sm.config.GetTranscodeHardwareAcceleration() {
 			codec = *hwcodec
 		}
 	case MimeWebmVideo:
+		if originalCodec == Vp8 || originalCodec == Vp9 {
+			return VideoCodecCopy
+		}
 		codec = VideoCodecVP9
 		if hwcodec := sm.encoder.hwCodecWEBMCompatible(); hwcodec != nil && sm.config.GetTranscodeHardwareAcceleration() {
 			codec = *hwcodec
@@ -157,7 +163,7 @@ func FileGetCodec(sm *StreamManager, mimetype string) (codec VideoCodec) {
 	return codec
 }
 
-func (o TranscodeOptions) makeStreamArgs(sm *StreamManager) Args {
+func (o TranscodeOptions) makeStreamArgs(sm *StreamManager, options TranscodeOptions) Args {
 	maxTranscodeSize := sm.config.GetMaxStreamingTranscodeSize().GetMaxResolution()
 	if o.Resolution != "" {
 		maxTranscodeSize = models.StreamingResolutionEnum(o.Resolution).GetMaxResolution()
@@ -168,7 +174,7 @@ func (o TranscodeOptions) makeStreamArgs(sm *StreamManager) Args {
 	args := Args{"-hide_banner"}
 	args = args.LogLevel(LogLevelError)
 
-	codec := FileGetCodec(sm, o.StreamType.MimeType)
+	codec := FileGetCodec(sm, o.StreamType.MimeType, options.VideoFile.VideoCodec)
 
 	args = sm.encoder.hwDeviceInit(args, codec)
 	args = append(args, extraInputArgs...)
@@ -215,7 +221,7 @@ func (sm *StreamManager) ServeTranscode(w http.ResponseWriter, r *http.Request, 
 }
 
 func (sm *StreamManager) getTranscodeStream(ctx *fsutil.LockContext, options TranscodeOptions) (http.HandlerFunc, error) {
-	args := options.makeStreamArgs(sm)
+	args := options.makeStreamArgs(sm, options)
 	cmd := sm.encoder.Command(ctx, args)
 
 	stdout, err := cmd.StdoutPipe()
