@@ -319,8 +319,15 @@ dd {
     overflow: hidden;
   }
 
+  .scene-galleries {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: start;
+  }
+
   .scene-galleries.collapsed-detail {
-    max-height: 240px;
+    max-height: 210px;
     overflow: hidden;
   }
 
@@ -1290,7 +1297,13 @@ $detailTabWidth: calc(100% / 3);
       }
 
       .gallery-card-image {
-        height: 15rem;
+        height: auto;
+        width: 12.9rem;
+      }
+
+      .gallery-card-image.portrait-image {
+        height: 12.9rem;
+        width: auto;
       }
 
       .card-section,

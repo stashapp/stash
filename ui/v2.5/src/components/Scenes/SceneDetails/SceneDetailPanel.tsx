@@ -31,11 +31,14 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
   const [tagRef, { height: tagHeight }] = useContainerDimensions();
 
   const details = useMemo(() => {
+    const limit = 160;
     return props.scene.details?.length ? (
       <>
         <div
           className={`details ${
-            collapsedDetails ? "collapsed-detail" : "expanded-detail"
+            collapsedDetails && detailsHeight >= limit
+              ? "collapsed-detail"
+              : "expanded-detail"
           }`}
           ref={detailsRef}
         >
@@ -43,7 +46,7 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
         </div>
         {maybeRenderShowMoreLess(
           detailsHeight,
-          160,
+          limit,
           setCollapsedDetails,
           collapsedDetails
         )}
@@ -71,6 +74,7 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
   );
 
   const tags = useMemo(() => {
+    const limit = 160;
     if (props.scene.tags.length === 0) return;
     const sceneTags = props.scene.tags.map((tag) => (
       <TagLink key={tag.id} tag={tag} />
@@ -79,7 +83,9 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
       <>
         <div
           className={`scene-tags ${
-            collapsedTags ? "collapsed-detail" : "expanded-detail"
+            collapsedTags && tagHeight >= limit
+              ? "collapsed-detail"
+              : "expanded-detail"
           }`}
           ref={tagRef}
         >
@@ -87,7 +93,7 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
         </div>
         {maybeRenderShowMoreLess(
           tagHeight,
-          160,
+          limit,
           setCollapsedTags,
           collapsedTags
         )}
@@ -96,6 +102,7 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
   }, [props.scene.tags, tagRef, tagHeight, setCollapsedTags, collapsedTags]);
 
   const galleries = useMemo(() => {
+    const limit = 210;
     const sceneGalleries = props.scene.galleries.map((gallery) => (
       <GalleryCard key={gallery.id} gallery={gallery} titleOnImage={true} />
     ));
@@ -107,7 +114,9 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
       <>
         <div
           className={`scene-galleries ${
-            collapsedGalleries ? "collapsed-detail" : "expanded-detail"
+            collapsedGalleries && galleriesHeight >= limit
+              ? "collapsed-detail"
+              : "expanded-detail"
           }`}
           ref={galleriesRef}
         >
@@ -117,7 +126,7 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
         </div>
         {maybeRenderShowMoreLess(
           galleriesHeight,
-          240,
+          limit,
           setCollapsedGalleries,
           collapsedGalleries
         )}
@@ -152,6 +161,7 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
   }
 
   const performers = useMemo(() => {
+    const limit = 365;
     const sorted = sortPerformers(props.scene.performers);
     const cards = sorted.map((performer) => (
       <PerformerCard
@@ -165,7 +175,9 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
       <>
         <div
           className={`row justify-content-center scene-performers ${
-            collapsedPerformers ? "collapsed-detail" : "expanded-detail"
+            collapsedPerformers && perfHeight >= limit
+              ? "collapsed-detail"
+              : "expanded-detail"
           }`}
           ref={perfRef}
         >
@@ -173,7 +185,7 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
         </div>
         {maybeRenderShowMoreLess(
           perfHeight,
-          365,
+          limit,
           setCollapsedPerformers,
           collapsedPerformers
         )}

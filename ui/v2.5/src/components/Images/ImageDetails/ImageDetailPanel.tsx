@@ -26,11 +26,14 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
   const [tagRef, { height: tagHeight }] = useContainerDimensions();
 
   const details = useMemo(() => {
+    const limit = 160;
     return props.image.details?.length ? (
       <>
         <div
           className={`details ${
-            collapsedDetails ? "collapsed-detail" : "expanded-detail"
+            collapsedDetails && detailsHeight >= limit
+              ? "collapsed-detail"
+              : "expanded-detail"
           }`}
           ref={detailsRef}
         >
@@ -38,7 +41,7 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
         </div>
         {maybeRenderShowMoreLess(
           detailsHeight,
-          160,
+          limit,
           setCollapsedDetails,
           collapsedDetails
         )}
@@ -53,6 +56,7 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
   ]);
 
   const tags = useMemo(() => {
+    const limit = 160;
     if (props.image.tags.length === 0) return;
     const imageTags = props.image.tags.map((tag) => (
       <TagLink key={tag.id} tag={tag} />
@@ -61,7 +65,9 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
       <>
         <div
           className={`image-tags ${
-            collapsedTags ? "collapsed-detail" : "expanded-detail"
+            collapsedTags && tagHeight >= limit
+              ? "collapsed-detail"
+              : "expanded-detail"
           }`}
           ref={tagRef}
         >
@@ -69,7 +75,7 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
         </div>
         {maybeRenderShowMoreLess(
           tagHeight,
-          160,
+          limit,
           setCollapsedTags,
           collapsedTags
         )}
@@ -110,6 +116,7 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
   }
 
   const performers = useMemo(() => {
+    const limit = 365;
     const sorted = sortPerformers(props.image.performers);
     const cards = sorted.map((performer) => (
       <PerformerCard
@@ -123,7 +130,9 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
       <>
         <div
           className={`row justify-content-center image-performers ${
-            collapsedPerformers ? "collapsed-detail" : "expanded-detail"
+            collapsedPerformers && perfHeight >= limit
+              ? "collapsed-detail"
+              : "expanded-detail"
           }`}
           ref={perfRef}
         >
@@ -131,7 +140,7 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
         </div>
         {maybeRenderShowMoreLess(
           perfHeight,
-          365,
+          limit,
           setCollapsedPerformers,
           collapsedPerformers
         )}
