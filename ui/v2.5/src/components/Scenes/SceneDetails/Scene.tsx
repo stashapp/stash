@@ -450,15 +450,18 @@ const ScenePage: React.FC<IProps> = ({
         <div className="detail-container">
           <div className="scene-header-container">
             {scene.studio && (
-              <h1 className="text-center scene-studio-image">
-                <Link to={`/studios/${scene.studio.id}`}>
-                  <img
-                    src={scene.studio.image_path ?? ""}
-                    alt={`${scene.studio.name} logo`}
-                    className="studio-logo"
-                  />
-                </Link>
-              </h1>
+              <>
+                <div className="scene-studio-text">{scene.studio.name}</div>
+                <h1 className="text-center scene-studio-image">
+                  <Link to={`/studios/${scene.studio.id}`}>
+                    <img
+                      src={scene.studio.image_path ?? ""}
+                      alt={`${scene.studio.name} logo`}
+                      className="studio-logo"
+                    />
+                  </Link>
+                </h1>
+              </>
             )}
             <h3 className={cx("scene-header", { "no-studio": !scene.studio })}>
               <TruncatedText lineCount={2} text={title} />
