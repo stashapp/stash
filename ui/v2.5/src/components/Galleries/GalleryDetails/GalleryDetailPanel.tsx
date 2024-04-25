@@ -38,13 +38,15 @@ export const GalleryDetailPanel: React.FC<IGalleryDetailProps> = ({
               ? "collapsed-detail"
               : "expanded-detail"
           }`}
-          ref={detailsRef}
         >
-          <p className="pre">{gallery.details}</p>
+          <p className="pre" ref={detailsRef}>
+            {gallery.details}
+          </p>
         </div>
         {maybeRenderShowMoreLess(
           detailsHeight,
           limit,
+          detailsRef,
           setCollapsedDetails,
           collapsedDetails
         )}
@@ -79,6 +81,7 @@ export const GalleryDetailPanel: React.FC<IGalleryDetailProps> = ({
         {maybeRenderShowMoreLess(
           tagHeight,
           limit,
+          tagRef,
           setCollapsedTags,
           collapsedTags
         )}
@@ -86,22 +89,10 @@ export const GalleryDetailPanel: React.FC<IGalleryDetailProps> = ({
     );
   }, [gallery.tags, tagRef, tagHeight, setCollapsedTags, collapsedTags]);
 
-  // const scenes = useMemo(() => {
-  //   if (gallery.scenes.length === 0) return;
-  //   const scenes = gallery.scenes.map((scene) => (
-  //     <GalleryDetailedLink key={scene.id} gallery={scene} />
-  //     <div />
-  //   ));
-  //   return (
-  //     <>
-  //       <div className={`gallery-scene`}>{scenes}</div>
-  //     </>
-  //   );
-  // }, [gallery.scenes]);
-
   function maybeRenderShowMoreLess(
     height: number,
     limit: number,
+    ref: React.MutableRefObject<HTMLDivElement | null>,
     setCollapsed: React.Dispatch<React.SetStateAction<boolean>>,
     collapsed: boolean
   ) {
@@ -111,7 +102,18 @@ export const GalleryDetailPanel: React.FC<IGalleryDetailProps> = ({
     return (
       <span
         className={`show-${collapsed ? "more" : "less"}`}
-        onClick={() => setCollapsed(!collapsed)}
+        onClick={() => {
+          const container = ref.current;
+          if (container == null) {
+            return;
+          }
+          if (container.style.maxHeight) {
+            container.style.maxHeight = "";
+          } else {
+            container.style.maxHeight = container.scrollHeight + "px";
+          }
+          setCollapsed(!collapsed);
+        }}
       >
         {collapsed ? "Show more" : "Show less"}
         <Icon className="fa-solid" icon={collapsed ? faCaretDown : faCaretUp} />
@@ -145,6 +147,7 @@ export const GalleryDetailPanel: React.FC<IGalleryDetailProps> = ({
         {maybeRenderShowMoreLess(
           perfHeight,
           limit,
+          perfRef,
           setCollapsedPerformers,
           collapsedPerformers
         )}

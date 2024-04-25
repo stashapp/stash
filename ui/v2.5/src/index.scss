@@ -274,8 +274,15 @@ dd {
 .image-tabs,
 .scene-tabs {
   .detail-item {
+    background-color: #202b33;
     padding-right: 1rem;
     width: 100%;
+  }
+
+  .gallery-studio-text,
+  .image-studio-text,
+  .scene-studio-text {
+    display: none;
   }
 
   .gallery-performers,
@@ -297,26 +304,38 @@ dd {
     overflow: hidden;
   }
 
+  .gallery-tags,
+  .image-tags,
+  .scene-tags,
+  .gallery-performers,
+  .image-performers,
+  .scene-performers,
+  .scene-galleries,
+  .details p.pre {
+    height: auto;
+    transition: max-height 0.3s linear;
+  }
+
   .details .collapsed-detail p.pre {
     -webkit-box-orient: vertical;
     display: -webkit-box;
     -webkit-line-clamp: 8;
     max-height: 175px;
-    overflow: hidden;
+    overflow-y: hidden;
   }
 
   .gallery-tags.collapsed-detail,
   .image-tags.collapsed-detail,
   .scene-tags.collapsed-detail {
     max-height: 180px;
-    overflow: hidden;
+    overflow-y: hidden;
   }
 
   .gallery-performers.collapsed-detail,
   .image-performers.collapsed-detail,
   .scene-performers.collapsed-detail {
     max-height: 365px;
-    overflow: hidden;
+    overflow-y: hidden;
   }
 
   .scene-galleries {
@@ -328,7 +347,7 @@ dd {
 
   .scene-galleries.collapsed-detail {
     max-height: 210px;
-    overflow: hidden;
+    overflow-y: hidden;
   }
 
   .scene-galleries .tag-item {

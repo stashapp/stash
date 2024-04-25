@@ -35,13 +35,15 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
               ? "collapsed-detail"
               : "expanded-detail"
           }`}
-          ref={detailsRef}
         >
-          <p className="pre">{props.image.details}</p>
+          <p className="pre" ref={detailsRef}>
+            {props.image.details}
+          </p>
         </div>
         {maybeRenderShowMoreLess(
           detailsHeight,
           limit,
+          detailsRef,
           setCollapsedDetails,
           collapsedDetails
         )}
@@ -76,6 +78,7 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
         {maybeRenderShowMoreLess(
           tagHeight,
           limit,
+          tagRef,
           setCollapsedTags,
           collapsedTags
         )}
@@ -98,6 +101,7 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
   function maybeRenderShowMoreLess(
     height: number,
     limit: number,
+    ref: React.MutableRefObject<HTMLDivElement | null>,
     setCollapsed: React.Dispatch<React.SetStateAction<boolean>>,
     collapsed: boolean
   ) {
@@ -107,7 +111,18 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
     return (
       <span
         className={`show-${collapsed ? "more" : "less"}`}
-        onClick={() => setCollapsed(!collapsed)}
+        onClick={() => {
+          const container = ref.current;
+          if (container == null) {
+            return;
+          }
+          if (container.style.maxHeight) {
+            container.style.maxHeight = "";
+          } else {
+            container.style.maxHeight = container.scrollHeight + "px";
+          }
+          setCollapsed(!collapsed);
+        }}
       >
         {collapsed ? "Show more" : "Show less"}
         <Icon className="fa-solid" icon={collapsed ? faCaretDown : faCaretUp} />
@@ -141,6 +156,7 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
         {maybeRenderShowMoreLess(
           perfHeight,
           limit,
+          perfRef,
           setCollapsedPerformers,
           collapsedPerformers
         )}

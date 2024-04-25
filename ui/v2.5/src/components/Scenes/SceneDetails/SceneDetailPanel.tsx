@@ -40,13 +40,15 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
               ? "collapsed-detail"
               : "expanded-detail"
           }`}
-          ref={detailsRef}
         >
-          <p className="pre">{props.scene.details}</p>
+          <p className="pre" ref={detailsRef}>
+            {props.scene.details}
+          </p>
         </div>
         {maybeRenderShowMoreLess(
           detailsHeight,
           limit,
+          detailsRef,
           setCollapsedDetails,
           collapsedDetails
         )}
@@ -94,6 +96,7 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
         {maybeRenderShowMoreLess(
           tagHeight,
           limit,
+          tagRef,
           setCollapsedTags,
           collapsedTags
         )}
@@ -127,6 +130,7 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
         {maybeRenderShowMoreLess(
           galleriesHeight,
           limit,
+          galleriesRef,
           setCollapsedGalleries,
           collapsedGalleries
         )}
@@ -143,6 +147,7 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
   function maybeRenderShowMoreLess(
     height: number,
     limit: number,
+    ref: React.MutableRefObject<HTMLDivElement | null>,
     setCollapsed: React.Dispatch<React.SetStateAction<boolean>>,
     collapsed: boolean
   ) {
@@ -152,7 +157,18 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
     return (
       <span
         className={`show-${collapsed ? "more" : "less"}`}
-        onClick={() => setCollapsed(!collapsed)}
+        onClick={() => {
+          const container = ref.current;
+          if (container == null) {
+            return;
+          }
+          if (container.style.maxHeight) {
+            container.style.maxHeight = "";
+          } else {
+            container.style.maxHeight = container.scrollHeight + "px";
+          }
+          setCollapsed(!collapsed);
+        }}
       >
         {collapsed ? "Show more" : "Show less"}
         <Icon className="fa-solid" icon={collapsed ? faCaretDown : faCaretUp} />
@@ -186,6 +202,7 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
         {maybeRenderShowMoreLess(
           perfHeight,
           limit,
+          perfRef,
           setCollapsedPerformers,
           collapsedPerformers
         )}
