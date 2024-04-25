@@ -6,9 +6,10 @@ import { GalleryDetailedLink, TagLink } from "src/components/Shared/TagLink";
 import { PerformerCard } from "src/components/Performers/PerformerCard";
 import { sortPerformers } from "src/core/performers";
 import { DirectorLink } from "src/components/Shared/Link";
-import { DetailItem } from "src/components/Shared/DetailItem";
-import { faCaretDown, faCaretUp } from "@fortawesome/free-solid-svg-icons";
-import { Icon } from "src/components/Shared/Icon";
+import {
+  DetailItem,
+  maybeRenderShowMoreLess,
+} from "src/components/Shared/DetailItem";
 import { useContainerDimensions } from "src/components/Shared/GridCard/GridCard";
 import { MovieCard } from "src/components/Movies/MovieCard";
 import { GalleryCard } from "src/components/Galleries/GalleryCard";
@@ -143,38 +144,6 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
     setCollapsedGalleries,
     collapsedGalleries,
   ]);
-
-  function maybeRenderShowMoreLess(
-    height: number,
-    limit: number,
-    ref: React.MutableRefObject<HTMLDivElement | null>,
-    setCollapsed: React.Dispatch<React.SetStateAction<boolean>>,
-    collapsed: boolean
-  ) {
-    if (height < limit) {
-      return;
-    }
-    return (
-      <span
-        className={`show-${collapsed ? "more" : "less"}`}
-        onClick={() => {
-          const container = ref.current;
-          if (container == null) {
-            return;
-          }
-          if (container.style.maxHeight) {
-            container.style.maxHeight = "";
-          } else {
-            container.style.maxHeight = container.scrollHeight + "px";
-          }
-          setCollapsed(!collapsed);
-        }}
-      >
-        {collapsed ? "Show more" : "Show less"}
-        <Icon className="fa-solid" icon={collapsed ? faCaretDown : faCaretUp} />
-      </span>
-    );
-  }
 
   const performers = useMemo(() => {
     const limit = 365;

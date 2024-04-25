@@ -7,9 +7,10 @@ import { sortPerformers } from "src/core/performers";
 import { FormattedMessage, useIntl } from "react-intl";
 import { PhotographerLink } from "src/components/Shared/Link";
 import { useContainerDimensions } from "src/components/Shared/GridCard/GridCard";
-import { faCaretDown, faCaretUp } from "@fortawesome/free-solid-svg-icons";
-import { Icon } from "src/components/Shared/Icon";
-import { DetailItem } from "src/components/Shared/DetailItem";
+import {
+  DetailItem,
+  maybeRenderShowMoreLess,
+} from "src/components/Shared/DetailItem";
 interface IImageDetailProps {
   image: GQL.ImageDataFragment;
 }
@@ -97,38 +98,6 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
       </>
     );
   }, [props.image.galleries]);
-
-  function maybeRenderShowMoreLess(
-    height: number,
-    limit: number,
-    ref: React.MutableRefObject<HTMLDivElement | null>,
-    setCollapsed: React.Dispatch<React.SetStateAction<boolean>>,
-    collapsed: boolean
-  ) {
-    if (height < limit) {
-      return;
-    }
-    return (
-      <span
-        className={`show-${collapsed ? "more" : "less"}`}
-        onClick={() => {
-          const container = ref.current;
-          if (container == null) {
-            return;
-          }
-          if (container.style.maxHeight) {
-            container.style.maxHeight = "";
-          } else {
-            container.style.maxHeight = container.scrollHeight + "px";
-          }
-          setCollapsed(!collapsed);
-        }}
-      >
-        {collapsed ? "Show more" : "Show less"}
-        <Icon className="fa-solid" icon={collapsed ? faCaretDown : faCaretUp} />
-      </span>
-    );
-  }
 
   const performers = useMemo(() => {
     const limit = 365;
