@@ -159,9 +159,6 @@ export const GalleryCard: React.FC<IProps> = (props) => {
     }
   }
 
-  console.log("image height: " + props.gallery.cover?.files[0].height);
-  console.log("image width: " + props.gallery.cover?.files[0].width);
-
   return (
     <GridCard
       className={`gallery-card zoom-${props.zoomIndex}`}
