@@ -136,7 +136,7 @@ export const GalleryDetailPanel: React.FC<IGalleryDetailProps> = ({
 
   return (
     <>
-      <div className="row">
+      <div id="gallery-details-panel" className="row">
         <div className={`${galleryDetailsWidth} col-12 gallery-details`}>
           <div className="detail-group">
             <DetailItem id="scene_code" value={gallery.code} fullWidth />

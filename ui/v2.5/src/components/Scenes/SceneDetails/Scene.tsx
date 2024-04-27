@@ -207,10 +207,8 @@ const ScenePage: React.FC<IProps> = ({
       return;
     }
 
-    // setUpdatingNav(true);
     let height = nav.clientHeight;
     const dropdownTabs = dropdown.children[1];
-    // console.log("height: "+height);
 
     const maxHeight = 40;
     let navChildren = nav.children;
@@ -220,7 +218,6 @@ const ScenePage: React.FC<IProps> = ({
 
       while (height >= maxHeight) {
         let { length } = navChildren;
-        // console.log("adding width to array: "+navChildren[length - 2].clientWidth);
         dropdownWidths.push(navChildren[length - 2].clientWidth);
         setDropdownWidths(dropdownWidths);
         dropdownTabs.prepend(navChildren[length - 2]);
@@ -230,13 +227,9 @@ const ScenePage: React.FC<IProps> = ({
       const padding = 15;
       const buttonWidth = 25;
       let width = 0;
-      // let itemCount = "";
       for (let i = 0; i < navChildren.length - 1; i++) {
         width += navChildren[i].clientWidth;
-        // itemCount += "+" + navChildren[i].clientWidth;
       }
-      // console.log(`Max nav width: ${nav.clientWidth}; nav with (without padding): ${width}; count from: ${itemCount}`);
-      // console.log(dropdownWidths);
       width += padding;
 
       while (
@@ -245,8 +238,6 @@ const ScenePage: React.FC<IProps> = ({
         dropdownChildren.length > 0 &&
         dropdownWidths[0] + width + buttonWidth < nav.clientWidth
       ) {
-        // console.log("dropdownChildren[0].clientWidth: "+dropdownWidths[0]);
-        // console.log("adding to nav");
         nav.insertBefore(dropdownChildren[0], dropdown);
         dropdownWidths.shift();
         height = nav.clientHeight;
@@ -256,7 +247,6 @@ const ScenePage: React.FC<IProps> = ({
         dropdown.classList.add("d-none");
       }
     }
-    // setUpdatingNav(false);
   }, [dropdownWidths]);
 
   const onIncrementOClick = async () => {
@@ -614,7 +604,9 @@ const ScenePage: React.FC<IProps> = ({
           </Nav.Item>
           {queueScenes.length > 0 ? (
             <Nav.Item>
-              <Nav.Link eventKey="scene-queue-panel">Long Queues</Nav.Link>
+              <Nav.Link eventKey="scene-queue-panel">
+                <FormattedMessage id="queue" />
+              </Nav.Link>
             </Nav.Item>
           ) : (
             ""

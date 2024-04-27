@@ -9,7 +9,7 @@ interface IGalleryScenesPanelProps {
 export const GalleryScenesPanel: React.FC<IGalleryScenesPanelProps> = ({
   scenes,
 }) => (
-  <div className="container gallery-scenes">
+  <div id="gallery-scenes-panel" className="container gallery-scenes">
     {scenes.map((scene) => (
       <SceneCard scene={scene} key={scene.id} />
     ))}

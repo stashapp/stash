@@ -302,6 +302,10 @@ dd {
   .tab-content,
   .nav-tabs {
     padding-left: 15px;
+
+    .dropdown {
+      display: flex;
+    }
   }
 
   .collapsed .detail-item-value {
