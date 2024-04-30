@@ -246,7 +246,7 @@
             "successfully_cancelled_temporary_behaviour": "一時的な挙動のキャンセルに成功しました",
             "until_restart": "再起動まで",
             "video_sort_order": "デフォルトの動画ソート順序",
-            "video_sort_order_desc": "動画をデフォルト順でソート"
+            "video_sort_order_desc": "動画をデフォルト順でソートします。"
         },
         "general": {
             "auth": {
@@ -266,7 +266,7 @@
                 "log_to_terminal": "ターミナルへログ出力",
                 "log_to_terminal_desc": "ファイルに加えて、ターミナルへログ出力します。ファイルへのログ出力が無効であっても有効になります。設定後は再起動が必要です。",
                 "maximum_session_age": "最大セッション期限",
-                "maximum_session_age_desc": "ログインセッションが無効になるまでの最大待機時間を”秒”単位で指定できます。",
+                "maximum_session_age_desc": "ログインセッションが無効になるまでの最大待機時間を”秒”単位で指定できます。再起動が必要です。",
                 "password": "パスワード",
                 "password_desc": "Stashにアクセスするためのパスワードです。空白にすると、ユーザー認証を無効にします",
                 "stash-box_integration": "Stash-boxの連携",
@@ -353,7 +353,11 @@
             "sqlite_location": "SQLiteデータベースファイルの保存場所(再起動が必要です)",
             "video_ext_desc": "動画として認識させるファイル拡張子のコンマ区切りリストです。",
             "video_ext_head": "動画の拡張子",
-            "video_head": "動画"
+            "video_head": "動画",
+            "blobs_path": {
+                "heading": "バイナリデータのファイルシステムパス",
+                "description": "バイナリデータを保存するファイルシステムを指定できます。blobストレージタイプを使用したファイルシステムの場合にのみ適用されます。警告: この設定を変更した場合、既に存在するデータは手動で移動する必要があります。"
+            }
         },
         "library": {
             "exclusions": "除外",
