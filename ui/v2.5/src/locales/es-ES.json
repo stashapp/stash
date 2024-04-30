@@ -122,7 +122,19 @@
         "view_random": "Ver aleatoria",
         "add_manual_date": "Añadir fecha manualmente",
         "add_o": "Añadir O",
-        "add_play": "Agregar reproducir"
+        "add_play": "Agregar reproducir",
+        "reload": "Recargar",
+        "disable": "Desactivar",
+        "optimise_database": "Optimizar base de datos",
+        "encoding_image": "Codificando imagen…",
+        "assign_stashid_to_parent_studio": "Asignar Stash ID al estudio matriz existente y actualizar metadatos",
+        "choose_date": "Elige una fecha",
+        "clean_generated": "Limpiar archivos generados",
+        "clear_date_data": "Eliminar datos de fecha",
+        "copy_to_clipboard": "Copiar al portapapeles",
+        "create_parent_studio": "Crear estudio matriz",
+        "enable": "Activar",
+        "remove_date": "Eliminar fecha"
     },
     "actions_name": "Acciones",
     "age": "Edad",
@@ -164,7 +176,9 @@
             "set_tag_label": "Seleccionar etiquetas",
             "show_male_desc": "Marcar esta opción hará que los actores masculinos estén disponibles para su etiquetado.",
             "show_male_label": "Mostrar actores",
-            "source": "Fuente"
+            "source": "Fuente",
+            "mark_organized_desc": "Marcar la escena como organizada tras pulsar el botón de Guardar.",
+            "mark_organized_label": "Marcar como organizado al guardar"
         },
         "noun_query": "Consulta",
         "results": {
@@ -235,7 +249,9 @@
             "server_display_name": "Nombre del servidor",
             "server_display_name_desc": "Nombre del servidor DLNA. Si no se indica un valor se usará {server_name} por defecto.",
             "successfully_cancelled_temporary_behaviour": "Comportamiento temporal eliminado correctamente",
-            "until_restart": "hasta reinicio"
+            "until_restart": "hasta reinicio",
+            "video_sort_order": "Forma de org. de vídeos por def.",
+            "video_sort_order_desc": "Forma de organizar videos por defecto."
         },
         "general": {
             "auth": {
@@ -315,6 +331,18 @@
                         "desc": "Avanzado: Argumentos adicionales para ffmpeg antes del campo de salida al generar vídeos.",
                         "heading": "Argumentos salida transcodificación FFmpeg"
                     }
+                },
+                "download_ffmpeg": {
+                    "heading": "Descargar FFmpeg",
+                    "description": "Descarga FFmpeg en el directorio de configuración y borra las rutas de ffmpeg y ffprobe para resolverlas desde el directorio de configuración."
+                },
+                "ffmpeg_path": {
+                    "heading": "Ruta del ejecutable FFmpeg",
+                    "description": "Ruta al ejecutable ffmpeg (no solo la carpeta). Si está vacía, ffmpeg se resolverá desde el entorno a través de $PATH, el directorio de configuración o $HOME/.stash"
+                },
+                "ffprobe_path": {
+                    "description": "Ruta al ejecutable ffprobe (no solo la carpeta). Si está vacía, ffprobe se resolverá desde el entorno a través de $PATH, el directorio de configuración o $HOME/.stash",
+                    "heading": "Ruta del ejecutable FFprobe"
                 }
             },
             "funscript_heatmap_draw_range": "Inluir rango en los mapas de calor generados",
@@ -360,7 +388,11 @@
             "sqlite_location": "Ruta relativa para la base de datos SQLite (requiere reinicio). AVISO: Almacenar la base de datos en un sistema distinto al servidor Stash (por ejemplo a través de la red) no está soportado!",
             "video_ext_desc": "Lista delimitada por comas de las extensiones de archivo que serán identificadas como vídeos.",
             "video_ext_head": "Extensiones de vídeo",
-            "video_head": "Vídeo"
+            "video_head": "Vídeo",
+            "plugins_path": {
+                "description": "Ubicación del directorio de los archivos de configuración de plugins.",
+                "heading": "Ruta de plugins"
+            }
         },
         "library": {
             "exclusions": "Exclusiones",
@@ -372,7 +404,9 @@
         },
         "plugins": {
             "hooks": "Hooks",
-            "triggers_on": "Se lleva a cabo durante"
+            "triggers_on": "Se lleva a cabo durante",
+            "installed_plugins": "Plugins instalados",
+            "available_plugins": "Plugins disponibles"
         },
         "scraping": {
             "entity_metadata": "Metadatos de {entityType}",
@@ -383,7 +417,9 @@
             "scrapers": "Rastreadores",
             "search_by_name": "Búsqueda por nombre",
             "supported_types": "Tipos soportados",
-            "supported_urls": "Direcciones web"
+            "supported_urls": "Direcciones web",
+            "available_scrapers": "Rastreadores disponibles",
+            "installed_scrapers": "Rastreadores instalados"
         },
         "stashbox": {
             "add_instance": "Añadir instancia stash-box",
@@ -450,7 +486,9 @@
                 "source": "Fuente",
                 "source_options": "Opciones de {source}",
                 "sources": "Fuentes",
-                "strategy": "Estrategia"
+                "strategy": "Estrategia",
+                "skip_multiple_matches": "Omitir coincidencias con más de un resultado",
+                "skip_multiple_matches_tooltip": "Si está desactivado y se obtiene más de un resultado, se elegirá una coincidencia al azar"
             },
             "import_from_exported_json": "Importar desde el fichero JSON exportado en el directorio de metadatos. Borrará la base de datos existente.",
             "incremental_import": "Importación gradual o progresiva desde un archivo zip de exportación aportado por el usuario.",
@@ -474,7 +512,20 @@
                 "scanning_paths": "Escaneando las siguientes rutas"
             },
             "scan_for_content_desc": "Buscar contenido nuevo y añadirlo a la base de datos.",
-            "set_name_date_details_from_metadata_if_present": "Establecer el nombre, fecha y detalles desde los metadatos embebidos en el archivo"
+            "set_name_date_details_from_metadata_if_present": "Establecer el nombre, fecha y detalles desde los metadatos embebidos en el archivo",
+            "generate_clip_previews_during_scan": "Generar vistas previas para clips de imágenes",
+            "clean_generated": {
+                "image_thumbnails": "Miniaturas de imágenes",
+                "image_thumbnails_desc": "Miniaturas de imágenes y clips",
+                "markers": "Vista previa de marcadores",
+                "previews": "Vista previa de escenas",
+                "previews_desc": "Vista previa de escenas y miniaturas",
+                "sprites": "Sprites de escenas",
+                "transcodes": "Transcodificaciones de escenas",
+                "description": "Elimina los archivos generados sin una entrada correspondiente en la base de datos.",
+                "blob_files": "Archivos Blob"
+            },
+            "generate_sprites_during_scan_tooltip": "El conjunto de imágenes que se muestra bajo el reproductor de vídeo para facilitar la navegación."
         },
         "tools": {
             "scene_duplicate_checker": "Comprobación de escenas duplicadas",
@@ -662,7 +713,8 @@
                 "heading": "Retardo en la presentación de diapositivas (segundos)"
             },
             "title": "Interfaz de usuario"
-        }
+        },
+        "advanced_mode": "Modo avanzado"
     },
     "configuration": "Configuración",
     "countables": {
@@ -1116,5 +1168,12 @@
     "url": "URL",
     "videos": "Vídeos",
     "weight": "Peso",
-    "years_old": "años"
+    "years_old": "años",
+    "appears_with": "Aparece con",
+    "circumcised_types": {
+        "UNCUT": "No",
+        "CUT": "Sí"
+    },
+    "audio_codec": "Códec de sonido",
+    "circumcised": "Circuncidado"
 }
