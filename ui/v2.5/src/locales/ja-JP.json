@@ -597,7 +597,8 @@
                         "options": {
                             "full": "全て",
                             "half": "半分",
-                            "quarter": "4分の1"
+                            "quarter": "4分の1",
+                            "tenth": "10番目"
                         }
                     },
                     "type": {
@@ -607,6 +608,9 @@
                             "stars": "星"
                         }
                     }
+                },
+                "max_options_shown": {
+                    "label": "選択ドロップダウンメニューに表示するアイテムの最大数"
                 }
             },
             "funscript_offset": {
@@ -735,16 +739,23 @@
             "title": "ユーザーインターフェース",
             "detail": {
                 "enable_background_image": {
-                    "description": "詳細ページに背景画像を表示"
+                    "description": "詳細ページに背景画像を表示します。",
+                    "heading": "背景画像を有効にする"
                 },
                 "compact_expanded_details": {
                     "description": "この設定を有効にすると、コンパクトな表示を維持しながらより高度な詳細が表示されます",
                     "heading": "コンパクトな高度な詳細"
                 },
                 "show_all_details": {
-                    "heading": "全ての詳細情報を表示"
+                    "heading": "全ての詳細情報を表示",
+                    "description": "この設定を有効にすると、デフォルトで全てのコンテンツの詳細が表示され、各詳細項目が 1 つのカラムに収まり、コンパクトな表示を維持しながらより高度な詳細が表示されます"
                 },
                 "heading": "詳細ページ"
+            },
+            "image_wall": {
+                "direction": "方向",
+                "heading": "画像ウォール",
+                "margin": "マージン (px単位)"
             }
         },
         "advanced_mode": "高度なモード"
