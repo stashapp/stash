@@ -355,9 +355,10 @@
             "video_ext_head": "動画の拡張子",
             "video_head": "動画",
             "blobs_path": {
-                "heading": "バイナリデータのファイルシステムパス",
+                "heading": "バイナリデータのパス",
                 "description": "バイナリデータを保存するファイルシステムを指定できます。blobストレージタイプを使用したファイルシステムの場合にのみ適用されます。警告: この設定を変更した場合、既に存在するデータは手動で移動する必要があります。"
-            }
+            },
+            "database": "データベース"
         },
         "library": {
             "exclusions": "除外",
@@ -461,7 +462,10 @@
                 "scanning_paths": "次のパスをスキャン中"
             },
             "scan_for_content_desc": "新しいコンテンツをスキャンし、データベースに追加します。",
-            "set_name_date_details_from_metadata_if_present": "ファイルのメタデータに埋め込まれている情報から名前、日付、詳細を設定する"
+            "set_name_date_details_from_metadata_if_present": "ファイルのメタデータに埋め込まれている情報から名前、日付、詳細を設定する",
+            "migrate_blobs": {
+                "delete_old": "古いデータを削除"
+            }
         },
         "tools": {
             "scene_duplicate_checker": "シーン重複チェッカー",
@@ -665,7 +669,12 @@
                     }
                 }
             },
-            "title": "ユーザーインターフェース"
+            "title": "ユーザーインターフェース",
+            "detail": {
+                "enable_background_image": {
+                    "description": "詳細ページに背景画像を表示"
+                }
+            }
         },
         "advanced_mode": "高度なモード"
     },
