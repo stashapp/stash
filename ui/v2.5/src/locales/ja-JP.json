@@ -116,7 +116,23 @@
         "temp_enable": "一時的に有効…",
         "unset": "未設定",
         "use_default": "デフォルトを使用",
-        "view_random": "ランダムで表示"
+        "view_random": "ランダムで表示",
+        "assign_stashid_to_parent_studio": "存在する親スタジオにStash IDを割り当ててメタデータを更新する",
+        "encoding_image": "画像をエンコード中…",
+        "disable": "無効",
+        "reload": "再読み込み",
+        "clear_date_data": "日付データを削除",
+        "migrate_blobs": "Blobsを移行",
+        "migrate_scene_screenshots": "シーンのスクリーンショットを移行",
+        "add_manual_date": "手動で日付を追加",
+        "add_o": "Oを追加",
+        "add_play": "再生を追加",
+        "choose_date": "日付を選択",
+        "clean_generated": "生成済みのファイルを削除",
+        "copy_to_clipboard": "クリップボードにコピー",
+        "create_chapters": "チャプターを生成",
+        "enable": "有効",
+        "remove_date": "日付を削除"
     },
     "actions_name": "操作",
     "age": "年齢",
@@ -153,7 +169,8 @@
             "set_tag_label": "タグを設定",
             "show_male_desc": "男優をタグ付けできるかを切り替えます。",
             "show_male_label": "男優を表示",
-            "source": "ソース"
+            "source": "ソース",
+            "mark_organized_desc": "保存ボタンをクリック後に、すぐにシーンが「分類済み」になります。"
         },
         "noun_query": "クエリ",
         "results": {
@@ -640,7 +657,8 @@
                 }
             },
             "title": "ユーザーインターフェース"
-        }
+        },
+        "advanced_mode": "高度なモード"
     },
     "configuration": "設定",
     "countables": {
@@ -1146,5 +1164,8 @@
     "weight": "幅",
     "weight_kg": "体重(kg)",
     "years_old": "歳",
-    "zip_file_count": "zipファイルカウント"
+    "zip_file_count": "zipファイルカウント",
+    "appears_with": "次で登場:",
+    "audio_codec": "音声コーデック",
+    "circumcised": "割礼"
 }
