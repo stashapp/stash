@@ -957,8 +957,7 @@
             "stash_library_directories": "Stash -kirjaston kansiot"
         },
         "creating": {
-            "creating_your_system": "Luodaan järjestelmää",
-            "ffmpeg_notice": "Jos <code>ffmpeg</code> ei ole valmiina polussa, odota kärsivällisesti kun stash lataa sen. Näet latauksen tilan konsolista."
+            "creating_your_system": "Luodaan järjestelmää"
         },
         "errors": {
             "something_went_wrong": "Voi ei! Jotain meni vikaan!",

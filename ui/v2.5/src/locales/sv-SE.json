@@ -1219,8 +1219,7 @@
             "stash_library_directories": "Stash bibliotekssökväg"
         },
         "creating": {
-            "creating_your_system": "Skapar ditt system",
-            "ffmpeg_notice": "Om <code>ffmpeg</code> inte är i dina sökvägar, vänta medan stash laddar ner den. Se konsolens output för att se hur nedladdningen går."
+            "creating_your_system": "Skapar ditt system"
         },
         "errors": {
             "something_went_wrong": "Nej! Något gick fel!",

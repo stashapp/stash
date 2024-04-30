@@ -1117,8 +1117,7 @@
             "stash_library_directories": "Stash Bibliotheks-Ordner"
         },
         "creating": {
-            "creating_your_system": "Erstelle dein System",
-            "ffmpeg_notice": "Wenn <code>ffmpeg</code> nicht in deinen Pfaden existiert, warte bitte während Stash es für dich herunterlädt. Der Downloadfortschritt wird im Konsolen-Output ausgegeben."
+            "creating_your_system": "Erstelle dein System"
         },
         "errors": {
             "something_went_wrong": "Oh nein! Etwas ist schief gelaufen!",

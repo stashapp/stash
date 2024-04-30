@@ -1185,8 +1185,7 @@
             "cache_directory": "Adresář mezipaměti"
         },
         "creating": {
-            "creating_your_system": "Vytváření vašeho systému",
-            "ffmpeg_notice": "Pokud <code>ffmpeg</code> ještě není ve vašem adresáři, buďte prosím trpěliví, než si ho stash stáhne. Prohlédněte si výstup konzole, abyste viděli průběh stahování."
+            "creating_your_system": "Vytváření vašeho systému"
         },
         "github_repository": "Github repozitář",
         "welcome": {

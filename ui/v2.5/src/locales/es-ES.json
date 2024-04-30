@@ -998,8 +998,7 @@
             "stash_library_directories": "Directorio/s que contiene/n la librería de archivos de Stash"
         },
         "creating": {
-            "creating_your_system": "Creando tu nuevo entorno",
-            "ffmpeg_notice": "Si <code>ffmpeg</code> no está presente, por favor, ten paciencia mientras Stash lo descarga. Puede ver el progreso de la descarga en la consola de la sección de registros."
+            "creating_your_system": "Creando tu nuevo entorno"
         },
         "errors": {
             "something_went_wrong": "¡OH NO! ¡Algo ha ido mal!",

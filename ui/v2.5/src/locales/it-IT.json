@@ -1026,8 +1026,7 @@
             "stash_library_directories": "Cartelle libreria di Stash"
         },
         "creating": {
-            "creating_your_system": "Creando il tuo sistema",
-            "ffmpeg_notice": "Se <code>ffmpeg</code> non è già presente nei tuoi percorsi, sii paziente mentre Stash lo scarica. Controllate la console per seguire il progresso."
+            "creating_your_system": "Creando il tuo sistema"
         },
         "errors": {
             "something_went_wrong": "Oh no! Qualcosa è andato storto!",

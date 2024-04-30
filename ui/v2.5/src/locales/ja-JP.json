@@ -1020,8 +1020,7 @@
             "stash_library_directories": "Stashライブラリーのディレクトリ"
         },
         "creating": {
-            "creating_your_system": "システムを構築中",
-            "ffmpeg_notice": "<code>ffmpeg</code>がインストールされていない、パスが通っていない場合はStashがダウンロードしますので、完了するまでお待ちください。ダウンロードの進捗状況はコンソール出力をご確認ください。"
+            "creating_your_system": "システムを構築中"
         },
         "errors": {
             "something_went_wrong": "問題が発生したようです！",

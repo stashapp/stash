@@ -1213,8 +1213,7 @@
             "blobs_use_database": "<数据库使用中>"
         },
         "creating": {
-            "creating_your_system": "建立你的系统当中",
-            "ffmpeg_notice": "如果<code>ffmpeg</code>不在你的搜索路径当中，请稍候，让stash下载它。参看控制窗口的输出文字了解下载进度。"
+            "creating_your_system": "建立你的系统当中"
         },
         "errors": {
             "something_went_wrong": "天啊！出错啦！",
