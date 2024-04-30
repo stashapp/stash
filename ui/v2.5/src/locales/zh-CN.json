@@ -500,7 +500,7 @@
                 "skip_multiple_matches_tooltip": "如果未启用此选项，且返回的结果不止一个，则将随机选择一个结果与之匹配",
                 "tag_skipped_performers": "跳过以下匹配的演员",
                 "tag_skipped_matches": "跳过以下匹配的标签",
-                "skip_single_name_performers_tooltip": "如果未启用此选项，通常是通用的表演者（如Samantha或Olga）将被匹配",
+                "skip_single_name_performers_tooltip": "如果未启用此选项，则将匹配 Samantha 或 Olga 等经常被通用的表演者",
                 "tag_skipped_performer_tooltip": "创建类似“识别：单名表演者”的标签，您可以在短片标签视图中进行筛选，并选择如何处理这些表演者",
                 "tag_skipped_matches_tooltip": "创建类似“识别：多个匹配项”的标签，您可以在短片标签视图中进行筛选，并手动选择正确的匹配项"
             },
