@@ -740,7 +740,11 @@
                 "compact_expanded_details": {
                     "description": "この設定を有効にすると、コンパクトな表示を維持しながらより高度な詳細が表示されます",
                     "heading": "コンパクトな高度な詳細"
-                }
+                },
+                "show_all_details": {
+                    "heading": "全ての詳細情報を表示"
+                },
+                "heading": "詳細ページ"
             }
         },
         "advanced_mode": "高度なモード"
