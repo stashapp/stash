@@ -123,7 +123,7 @@
         "create_parent_studio": "创建上级工作室",
         "optimise_database": "优化数据库",
         "assign_stashid_to_parent_studio": "将Stash ID分配给现有的上级工作室并更新元数据",
-        "encoding_image": "编码图片中…",
+        "encoding_image": "图片转码中…",
         "reload": "重新加载",
         "disable": "禁用",
         "enable": "启用",
@@ -501,8 +501,8 @@
                 "tag_skipped_performers": "跳过以下匹配的演员",
                 "tag_skipped_matches": "跳过以下匹配的标签",
                 "skip_single_name_performers_tooltip": "如果未启用此选项，通常是通用的表演者（如Samantha或Olga）将被匹配",
-                "tag_skipped_performer_tooltip": "创建一个标签，如“识别：单名表演者”，您可以在短片标签设置视图中过滤它，并选择如何处理这些表演者",
-                "tag_skipped_matches_tooltip": "创建一个标签，如“识别：多个匹配项”，您可以在短片标签设置视图中过滤并手动选择正确的匹配项"
+                "tag_skipped_performer_tooltip": "创建类似“识别：单名表演者”的标签，您可以在短片标签视图中进行筛选，并选择如何处理这些表演者",
+                "tag_skipped_matches_tooltip": "创建类似“识别：多个匹配项”的标签，您可以在短片标签视图中进行筛选，并手动选择正确的匹配项"
             },
             "import_from_exported_json": "导入之前导出的json格式元数据。 删除现有数据库内容。",
             "incremental_import": "从导出的 zip 文件增量导入。",
