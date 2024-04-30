@@ -119,7 +119,9 @@
         "temp_enable": "임시 활성화…",
         "unset": "설정 해제",
         "use_default": "기본값 사용",
-        "view_random": "랜덤 보기"
+        "view_random": "랜덤 보기",
+        "add_manual_date": "메뉴얼 데이터 추가",
+        "choose_date": "데이터 선택"
     },
     "actions_name": "액션",
     "age": "나이",
