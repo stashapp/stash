@@ -80,7 +80,7 @@
         "save_delete_settings": "Použít tyto možnosti defaultně při mazání",
         "save_filter": "Uložit filtr",
         "scan": "Skenovat",
-        "scrape": "Scrape",
+        "scrape": "Stáhnout informace",
         "scrape_query": "Scrape dotaz",
         "scrape_scene_fragment": "Scrape dle fragmentu",
         "scrape_with": "Scrape pomocí…",
@@ -106,7 +106,7 @@
         "submit_update": "Publikovat aktualizaci",
         "swap": "Prohodit",
         "tasks": {
-            "clean_confirm_message": "Jste si jistý, že chcete čistit? Tato operace vymaže informace z databáze a generovaný obsah pro všechny scény a galerie, které nejsou nalezeny v souborovém systému.",
+            "clean_confirm_message": "Jste si jistý, že chcete vyčistit databázi? Tato operace vymaže informace z databáze a generovaný obsah pro všechny scény a galerie, které se již nenacházejí v souborovém systému.",
             "dry_mode_selected": "Vybrán \"Dry Mode\". Nic nebude smazáno, pouze logováno.",
             "import_warning": "Jste si jisti, že chcete importovat? Tato operace smaže databázi a znovu importuje z Vašich exportovaných metadat."
         },
@@ -134,7 +134,8 @@
         "clean_generated": "Vyčistěte vygenerované soubory",
         "remove_date": "Odstranit datum",
         "add_manual_date": "Přidat datum ručně",
-        "add_play": "Přidat přehrávání"
+        "add_play": "Přidat přehrávání",
+        "view_history": "Zobrazit historii"
     },
     "actions_name": "Akce",
     "age": "Věk",
@@ -412,7 +413,7 @@
             "scrapers": "Scrapery",
             "search_by_name": "Hledat dle názvu",
             "supported_types": "Podporované typy",
-            "supported_urls": "URLs",
+            "supported_urls": "URL odkazy",
             "installed_scrapers": "Nainstalované Scrappery",
             "available_scrapers": "Dostupné Scrappery"
         },
@@ -812,7 +813,7 @@
         "not_null": "není null",
         "format_string_excludes_depth": "{criterion} {modifierString} {valueString} (vylučuje {excludedString}) (+{depth, plural, =-1 {all} other {{depth}}})",
         "format_string_depth": "{criterion} {modifierString} {valueString} (+{depth, plural, =-1 {all} other {{depth}}})",
-        "format_string_excludes": "{criterion} {modifierString} {valueString} (excludes {excludedString})"
+        "format_string_excludes": "{criterion} {modifierString} {valueString} (vyřazeno: {excludedString})"
     },
     "custom": "Vlastní",
     "date": "Datum",
