@@ -271,7 +271,7 @@
                 "log_to_terminal": "Registro de eventos en consola",
                 "log_to_terminal_desc": "Registro de eventos en la consola de Stash además del respaldo en fichero. Habilitado si el registro a fichero está deshabilitado. Requiere reinicio de la aplicación.",
                 "maximum_session_age": "Tiempo máximo de sesión",
-                "maximum_session_age_desc": "Tiempo máximo en segundos para que la sesión de autentificación de usuario expire.",
+                "maximum_session_age_desc": "Tiempo máximo de inactividad antes de que expire una sesión de inicio de sesión, en segundos. Requiere reinicio.",
                 "password": "Contraseña",
                 "password_desc": "Contraseña para acceder a Stash. Dejar en blanco para deshabilitar la exigencia de identificación para acceder a la aplicación",
                 "stash-box_integration": "Integración Stash-box",
@@ -375,7 +375,7 @@
             "parallel_scan_head": "Escaneo/Generación en paralelo",
             "preview_generation": "Previsualizar generación de ficheros",
             "python_path": {
-                "description": "Ruta del ejecutable python. Se usa para los scripts de rastreo y plugins. Si está en blanco, python se resolverá desde la ruta por defecto del entorno",
+                "description": "Ruta al ejecutable python (no sólo la carpeta). Usado para script scrapers y plugins. Si está en blanco, python se resolverá desde el entorno",
                 "heading": "Ruta de Python"
             },
             "scraper_user_agent": "Identificador del agente de usuario del navegador para rastreo",
@@ -461,7 +461,7 @@
             "generate_phashes_during_scan": "Generar hashes de percepción (Phashes)",
             "generate_phashes_during_scan_tooltip": "Para búsqueda de duplicados e identificación de escenas.",
             "generate_previews_during_scan": "Generar imágenes previas animadas",
-            "generate_previews_during_scan_tooltip": "Generar vistas previas animadas WebP, solo requerido si Tipo de Vista Previa es Imagen Animada.",
+            "generate_previews_during_scan_tooltip": "También genere vistas previas animadas (webp), que solo son necesarias cuando el Tipo de vista previa de pared de escena/marcador está configurado en Imagen animada. Al navegar utilizan menos CPU que las vistas previas de vídeo, pero se generan además de ellos y son archivos de mayor tamaño.",
             "generate_sprites_during_scan": "Generar conjunto de imágenes o “sprites” de depuración",
             "generate_thumbnails_during_scan": "Generar miniaturas de las imágenes",
             "generate_video_covers_during_scan": "Generar carátulas de escenas",
@@ -488,7 +488,13 @@
                 "sources": "Fuentes",
                 "strategy": "Estrategia",
                 "skip_multiple_matches": "Omitir coincidencias con más de un resultado",
-                "skip_multiple_matches_tooltip": "Si está desactivado y se obtiene más de un resultado, se elegirá una coincidencia al azar"
+                "skip_multiple_matches_tooltip": "Si está desactivado y se obtiene más de un resultado, se elegirá una coincidencia al azar",
+                "skip_single_name_performers": "Saltar intérpretes con un solo nombre sin desambiguación",
+                "skip_single_name_performers_tooltip": "Si esto no está habilitado, se emparejarán artistas que a menudo son genéricos como Samantha u Olga",
+                "tag_skipped_performer_tooltip": "Crea una etiqueta como \"Identificar: Artista con un nombre\" que puedes filtrar en el etiquetador de escenas y elegir cómo quieres tratar a estos artistas",
+                "tag_skipped_matches": "Etiquetar coincidencias omitidas con",
+                "tag_skipped_matches_tooltip": "Cree una etiqueta como 'Identificar: coincidencias múltiples' que pueda filtrar en la vista Etiquetador de escenas y elija la coincidencia correcta manualmente",
+                "tag_skipped_performers": "Etiqueta a los artistas omitidos con"
             },
             "import_from_exported_json": "Importar desde el fichero JSON exportado en el directorio de metadatos. Borrará la base de datos existente.",
             "incremental_import": "Importación gradual o progresiva desde un archivo zip de exportación aportado por el usuario.",
@@ -1171,8 +1177,8 @@
     "years_old": "años",
     "appears_with": "Aparece con",
     "circumcised_types": {
-        "UNCUT": "No",
-        "CUT": "Sí"
+        "UNCUT": "Sin cortar",
+        "CUT": "Cortar"
     },
     "audio_codec": "Códec de sonido",
     "circumcised": "Circuncidado"
