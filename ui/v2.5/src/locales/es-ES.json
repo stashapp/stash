@@ -134,7 +134,8 @@
         "copy_to_clipboard": "Copiar al portapapeles",
         "create_parent_studio": "Crear estudio matriz",
         "enable": "Activar",
-        "remove_date": "Eliminar fecha"
+        "remove_date": "Eliminar fecha",
+        "view_history": "Ver historial"
     },
     "actions_name": "Acciones",
     "age": "Edad",
@@ -376,7 +377,7 @@
             "preview_generation": "Previsualizar generación de ficheros",
             "python_path": {
                 "description": "Ruta al ejecutable python (no sólo la carpeta). Usado para script scrapers y plugins. Si está en blanco, python se resolverá desde el entorno",
-                "heading": "Ruta de Python"
+                "heading": "Ruta del ejecutable Python"
             },
             "scraper_user_agent": "Identificador del agente de usuario del navegador para rastreo",
             "scraper_user_agent_desc": "Identificador del agente de usuario del navegador web (USER-AGENT) usado durante el rastreo mediante peticiones http",
