@@ -119,7 +119,10 @@
         "temp_enable": "Habilitar temporalmente…",
         "unset": "Desactivar",
         "use_default": "Predeterminada",
-        "view_random": "Ver aleatoria"
+        "view_random": "Ver aleatoria",
+        "add_manual_date": "Añadir fecha manualmente",
+        "add_o": "Añadir O",
+        "add_play": "Agregar reproducir"
     },
     "actions_name": "Acciones",
     "age": "Edad",
