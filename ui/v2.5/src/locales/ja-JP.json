@@ -132,7 +132,9 @@
         "copy_to_clipboard": "クリップボードにコピー",
         "create_chapters": "チャプターを生成",
         "enable": "有効",
-        "remove_date": "日付を削除"
+        "remove_date": "日付を削除",
+        "create_parent_studio": "親スタジオを作成",
+        "optimise_database": "データベースを最適化"
     },
     "actions_name": "操作",
     "age": "年齢",
@@ -170,7 +172,8 @@
             "show_male_desc": "男優をタグ付けできるかを切り替えます。",
             "show_male_label": "男優を表示",
             "source": "ソース",
-            "mark_organized_desc": "保存ボタンをクリック後に、すぐにシーンが「分類済み」になります。"
+            "mark_organized_desc": "保存ボタンをクリック後に、すぐにシーンが「分類済み」になります。",
+            "mark_organized_label": "分類済みにして保存"
         },
         "noun_query": "クエリ",
         "results": {
@@ -241,7 +244,9 @@
             "server_display_name": "サーバー表示名",
             "server_display_name_desc": "DLNAサーバーの表示名を設定できます。空欄の場合は、デフォルトの{server_name}が設定されます。",
             "successfully_cancelled_temporary_behaviour": "一時的な挙動のキャンセルに成功しました",
-            "until_restart": "再起動まで"
+            "until_restart": "再起動まで",
+            "video_sort_order": "デフォルトの動画ソート順序",
+            "video_sort_order_desc": "動画をデフォルト順でソート"
         },
         "general": {
             "auth": {
@@ -1167,5 +1172,14 @@
     "zip_file_count": "zipファイルカウント",
     "appears_with": "次で登場:",
     "audio_codec": "音声コーデック",
-    "circumcised": "割礼"
+    "circumcised": "割礼",
+    "blobs_storage_type": {
+        "database": "データベース",
+        "filesystem": "ファイルシステム"
+    },
+    "chapters": "チャプター",
+    "circumcised_types": {
+        "CUT": "切除",
+        "UNCUT": "未切除"
+    }
 }
