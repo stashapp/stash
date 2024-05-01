@@ -13,6 +13,10 @@ import {
 import { useContainerDimensions } from "src/components/Shared/GridCard/GridCard";
 import { MovieCard } from "src/components/Movies/MovieCard";
 import { GalleryCard } from "src/components/Galleries/GalleryCard";
+import { faCompress, faExpand } from "@fortawesome/free-solid-svg-icons";
+import { Icon } from "src/components/Shared/Icon";
+import { Button } from "react-bootstrap";
+import GalleryViewer from "src/components/Galleries/GalleryViewer";
 
 interface ISceneDetailProps {
   scene: GQL.SceneDataFragment;
@@ -25,6 +29,8 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
   const [collapsedGalleries, setCollapsedGalleries] = useState<boolean>(true);
   const [collapsedPerformers, setCollapsedPerformers] = useState<boolean>(true);
   const [collapsedTags, setCollapsedTags] = useState<boolean>(true);
+
+  const [viewingGallery, setViewingGallery] = useState<number>(-1);
 
   const [detailsRef, { height: detailsHeight }] = useContainerDimensions();
   const [galleriesRef, { height: galleriesHeight }] = useContainerDimensions();
@@ -107,8 +113,16 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
 
   const galleries = useMemo(() => {
     const limit = 210;
-    const sceneGalleries = props.scene.galleries.map((gallery) => (
-      <GalleryCard key={gallery.id} gallery={gallery} titleOnImage={true} />
+    const sceneGalleries = props.scene.galleries.map((gallery, i) => (
+      <div key={i} className="gallery-card-container">
+        <Button
+          className="minimal viewer-button"
+          onClick={() => setViewingGallery(i)}
+        >
+          <Icon icon={faExpand} />
+        </Button>
+        <GalleryCard key={gallery.id} gallery={gallery} titleOnImage={true} />
+      </div>
     ));
     /* provides a slimmer options users can swap to via CSS to reduce tab height */
     const slimSceneGalleries = props.scene.galleries.map((gallery) => (
@@ -188,6 +202,20 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
 
   // filename should use entire row if there is no studio
   const sceneDetailsWidth = props.scene.studio ? "col-9" : "col-12";
+
+  if (viewingGallery >= 0) {
+    return (
+      <div className="gallery-card-container">
+        <Button
+          className="minimal viewer-button"
+          onClick={() => setViewingGallery(-1)}
+        >
+          <Icon icon={faCompress} />
+        </Button>
+        <GalleryViewer galleryId={props.scene.galleries[viewingGallery].id} />
+      </div>
+    );
+  }
 
   return (
     <>

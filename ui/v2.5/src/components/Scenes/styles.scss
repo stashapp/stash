@@ -214,6 +214,19 @@ textarea.scene-description {
   }
 }
 
+.gallery-card-container {
+  position: relative;
+
+  .viewer-button {
+    background-color: rgb(0 0 0 / 28%);
+    padding: 1px 5px;
+    position: absolute;
+    right: 15px;
+    top: 15px;
+    z-index: 11;
+  }
+}
+
 .scene-card,
 .gallery-card {
   .scene-specs-overlay {
