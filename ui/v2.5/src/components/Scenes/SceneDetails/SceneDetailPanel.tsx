@@ -200,26 +200,29 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
     setCollapsedPerformers,
   ]);
 
+  function maybeRenderGalleryViewer() {
+    if (viewingGallery >= 0) {
+      return (
+        <div className="gallery-viewer-container">
+          <Button
+            className="minimal viewer-button"
+            onClick={() => setViewingGallery(-1)}
+          >
+            <Icon icon={faCompress} />
+          </Button>
+          <GalleryViewer galleryId={props.scene.galleries[viewingGallery].id} />
+        </div>
+      );
+    }
+  }
+
   // filename should use entire row if there is no studio
   const sceneDetailsWidth = props.scene.studio ? "col-9" : "col-12";
 
-  if (viewingGallery >= 0) {
-    return (
-      <div className="gallery-card-container">
-        <Button
-          className="minimal viewer-button"
-          onClick={() => setViewingGallery(-1)}
-        >
-          <Icon icon={faCompress} />
-        </Button>
-        <GalleryViewer galleryId={props.scene.galleries[viewingGallery].id} />
-      </div>
-    );
-  }
-
   return (
     <>
-      <div id="scene-details-panel" className="row">
+      {maybeRenderGalleryViewer()}
+      <div id="scene-details-panel" className={`row ${viewingGallery >= 0 ? "d-none" : ""}`}>
         <div className={`${sceneDetailsWidth} col-12 scene-details`}>
           <div className="detail-group">
             <DetailItem id="scene_code" value={props.scene.code} fullWidth />

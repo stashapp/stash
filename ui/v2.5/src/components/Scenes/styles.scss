@@ -214,6 +214,11 @@ textarea.scene-description {
   }
 }
 
+.gallery-card-container,
+.gallery-viewer-container {
+  position: relative;
+}
+
 .gallery-card-container {
   position: relative;
 
@@ -224,6 +229,24 @@ textarea.scene-description {
     right: 15px;
     top: 15px;
     z-index: 11;
+  }
+}
+
+.gallery-viewer-container {
+  position: relative;
+
+  .viewer-button {
+    background-color: $primary;
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.6);
+    padding: 1px 5px;
+    position: sticky;
+    left: calc(100% - 40px);
+    top: 15px;
+    z-index: 11;
+  }
+
+  .gallery {
+    margin-top: -20px;
   }
 }
 
