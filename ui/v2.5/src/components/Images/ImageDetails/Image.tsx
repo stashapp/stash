@@ -326,7 +326,6 @@ const ImagePage: React.FC<IProps> = ({ image }) => {
             <div className="image-header-container">
               {image.studio && (
                 <>
-                  <div className="image-studio-text">{image.studio.name}</div>
                   <h1 className="text-center image-studio-image">
                     <Link to={`/studios/${image.studio.id}`}>
                       <img

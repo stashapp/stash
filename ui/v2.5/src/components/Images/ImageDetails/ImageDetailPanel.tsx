@@ -148,6 +148,11 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
       <div className="row">
         <div className={`${imageDetailsWidth} col-12 image-details`}>
           <div className="detail-group">
+            <DetailItem
+              id="studio"
+              value={props.image.studio?.name}
+              fullWidth
+            />
             <DetailItem id="scene_code" value={props.image.code} fullWidth />
             <DetailItem
               id="director"

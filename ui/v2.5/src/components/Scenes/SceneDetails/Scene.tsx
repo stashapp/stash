@@ -514,7 +514,6 @@ const ScenePage: React.FC<IProps> = ({
           <div className="scene-header-container">
             {scene.studio && (
               <>
-                <div className="scene-studio-text">{scene.studio.name}</div>
                 <h1 className="text-center scene-studio-image">
                   <Link to={`/studios/${scene.studio.id}`}>
                     <img

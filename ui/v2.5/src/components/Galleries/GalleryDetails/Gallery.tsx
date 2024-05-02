@@ -398,9 +398,6 @@ export const GalleryPage: React.FC<IProps> = ({ gallery, add }) => {
             <div className="gallery-header-container">
               {gallery.studio && (
                 <>
-                  <div className="gallery-studio-text">
-                    {gallery.studio.name}
-                  </div>
                   <h1 className="text-center gallery-studio-image">
                     <Link to={`/studios/${gallery.studio.id}`}>
                       <img

@@ -228,6 +228,11 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
       >
         <div className={`${sceneDetailsWidth} col-12 scene-details`}>
           <div className="detail-group">
+            <DetailItem
+              id="studio"
+              value={props.scene.studio?.name}
+              fullWidth
+            />
             <DetailItem id="scene_code" value={props.scene.code} fullWidth />
             <DetailItem
               id="director"
