@@ -22,7 +22,10 @@ interface IStashSearchResultProps {
 function cleanAliases(currentName: string, aliases: string[]) {
   const ret: string[] = [];
   aliases.forEach((alias) => {
-    if (alias !== currentName && !ret.includes(alias)) {
+    if (
+      alias.toLowerCase() !== currentName.toLowerCase() &&
+      !ret.find((r) => r.toLowerCase() === alias.toLowerCase())
+    ) {
       ret.push(alias);
     }
   });
