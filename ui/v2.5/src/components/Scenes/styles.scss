@@ -238,9 +238,9 @@ textarea.scene-description {
   .viewer-button {
     background-color: $primary;
     box-shadow: 0 5px 10px rgba(0, 0, 0, 0.6);
+    left: calc(100% - 40px);
     padding: 1px 5px;
     position: sticky;
-    left: calc(100% - 40px);
     top: 15px;
     z-index: 11;
   }
