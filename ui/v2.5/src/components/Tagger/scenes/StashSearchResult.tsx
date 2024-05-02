@@ -827,7 +827,7 @@ export const SceneSearchResults: React.FC<ISceneSearchResults> = ({
 
   useEffect(() => {
     // #3198 - if the selected result is no longer in the list, reset it
-    if (selectedResult && scenes?.length <= selectedResult) {
+    if (!selectedResult || scenes?.length <= selectedResult) {
       if (!scenes) {
         setSelectedResult(undefined);
       } else if (scenes.length > 0 && scenes[0].resolved) {
