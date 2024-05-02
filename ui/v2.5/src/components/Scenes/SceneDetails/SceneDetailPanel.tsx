@@ -222,7 +222,10 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
   return (
     <>
       {maybeRenderGalleryViewer()}
-      <div id="scene-details-panel" className={`row ${viewingGallery >= 0 ? "d-none" : ""}`}>
+      <div
+        id="scene-details-panel"
+        className={`row ${viewingGallery >= 0 ? "d-none" : ""}`}
+      >
         <div className={`${sceneDetailsWidth} col-12 scene-details`}>
           <div className="detail-group">
             <DetailItem id="scene_code" value={props.scene.code} fullWidth />
