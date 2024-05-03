@@ -422,7 +422,8 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
         <>
           {renderContent(
             result,
-            filter,
+            // #4780 - use effectiveFilter to ensure filterHook is applied
+            effectiveFilter,
             selectedIds,
             onSelectChange,
             onChangePage,
