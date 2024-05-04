@@ -388,7 +388,7 @@
             "scraping": "Rastreo",
             "sqlite_location": "Ruta relativa para la base de datos SQLite (requiere reinicio). AVISO: Almacenar la base de datos en un sistema distinto al servidor Stash (por ejemplo a través de la red) no está soportado!",
             "video_ext_desc": "Lista delimitada por comas de las extensiones de archivo que serán identificadas como vídeos.",
-            "video_ext_head": "Extensiones de vídeo",
+            "video_ext_head": "Extensions de vídeo",
             "video_head": "Vídeo",
             "plugins_path": {
                 "description": "Ubicación del directorio de los archivos de configuración de plugins.",
