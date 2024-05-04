@@ -130,7 +130,12 @@
         "temp_enable": "Activa temporalment…",
         "unset": "Desactivat",
         "use_default": "Utilitza el valor per defecte",
-        "view_history": "Mostra l'historial"
+        "view_history": "Mostra l'historial",
+        "add_entity": "Afegeix {entityType}",
+        "add_o": "Afageix O",
+        "add_play": "Agregar reproduir",
+        "add_to_entity": "Afegir a {entityType}",
+        "create_entity": "Crear {entityType}"
     },
     "appears_with": "Apareix amb",
     "career_length": "Durada de la carrera",
@@ -242,8 +247,118 @@
                 "username": "Usuari"
             },
             "backup_directory_path": {
-                "description": "Ubicació del directori per a copies de seguretat d'arxius de bases de dades SQLite"
-            }
+                "description": "Ubicació del directori per a copies de seguretat d'arxius de bases de dades SQLite",
+                "heading": "Ruta del directori de la còpia de seguretat"
+            },
+            "generated_file_naming_hash_desc": "Usa MD5 o oshash per al nom de fitxer generat. Canviar això requereix que totes les escenes tinguin el valor MD5/oshash aplicable poblat. Després de canviar aquest valor, els fitxers generats existents hauran de ser migrats o regenerats. Vegeu la pàgina Tasques per a la migració.",
+            "blobs_storage": {
+                "description": "On emmagatzemar informació binària com per exemple imatges d'escenes, actors, estudis i etiquetes. Després de canviar aquest valor, les dades existents han de ser migrats usant la tasca \"Migrar blobs\". Veure la pàgina \"Tasques\" per a la migració.",
+                "heading": "Emmagatzematge de dades binari"
+            },
+            "check_for_insecure_certificates_desc": "Alguns llocs utilitzen certificats ssl insegurs. Quan es desmarca, el raspador salta la comprovació dels certificats insegurs i permet fer el raspatge d'aquests llocs. Si obteniu un error de certificat en desfer-ho.",
+            "excluded_image_gallery_patterns_desc": "Expressions regulars d'arxius/rutes d'imatges que seran exclosos de l'escaneig i que seran afegits a la tasca de depuració/neteja",
+            "ffmpeg": {
+                "ffprobe_path": {
+                    "description": "Ruta a l'executable ffprobe (no sols la carpeta). Si està buida, ffprobe es resoldrà des de l'entorn a través de $PATH, el directori de configuració o $HOME/.stash",
+                    "heading": "Ruta de l'executable FFprobe"
+                },
+                "live_transcode": {
+                    "input_args": {
+                        "desc": "Avançat: Arguments addicionals per a ffmpeg abans del camp d'entrada al transcodificador de vídeos en temps real.",
+                        "heading": "Arguments entrada transcodificación FFmpeg en temps real"
+                    },
+                    "output_args": {
+                        "desc": "Avançat: Arguments addicionals per a ffmpeg abans del camp de sortida al transcodificador de vídeos en temps real.",
+                        "heading": "Arguments sortida transcodificación FFmpeg en temps real"
+                    }
+                },
+                "download_ffmpeg": {
+                    "description": "Descàrrega FFmpeg en el directori de configuració i esborra les rutes de ffmpeg i ffprobe per a resoldre-les des del directori de configuració.",
+                    "heading": "Baixa FFmpeg"
+                },
+                "ffmpeg_path": {
+                    "description": "Ruta a l'executable ffmpeg (no sols la carpeta). Si està buida, ffmpeg es resoldrà des de l'entorn a través de $PATH, el directori de configuració o $HOME/.stash",
+                    "heading": "Ruta de l'executable FFmpeg"
+                },
+                "hardware_acceleration": {
+                    "desc": "Utilitza el maquinari disponible per a encodificar el vídeo en temps real.",
+                    "heading": "Encodificació maquinari FFmpeg"
+                },
+                "transcode": {
+                    "input_args": {
+                        "desc": "Avançat: Arguments addicionals per a ffmpeg abans del camp d'entrada en generar vídeos.",
+                        "heading": "Arguments entrada transcodificació FFmpeg"
+                    },
+                    "output_args": {
+                        "desc": "Avançat: Arguments addicionals per a ffmpeg abans del camp de sortida en generar vídeos.",
+                        "heading": "Arguments sortida transcodificació FFmpeg"
+                    }
+                }
+            },
+            "funscript_heatmap_draw_range_desc": "Dibuixar rang de moviment en l'eix \"i\" del mapa de calor generada. Els mapes de calor existents hauran de ser generats de nou després del canvi.",
+            "include_audio_head": "Incloure àudio",
+            "maximum_transcode_size_desc": "Mida màxima per als transcodificats generats",
+            "number_of_parallel_task_for_scan_generation_desc": "Estableix a 0 per a la detecció automàtica. L'avís d'executar més tasques de les necessàries per aconseguir una utilització del 100% de la CPU disminuirà el rendiment i potencialment causarà altres problemes.",
+            "parallel_scan_head": "Escaneig/Generació en paral·lel",
+            "python_path": {
+                "description": "Ruta a l'executable python (no sols la carpeta). Usat per a script scrapers i plugins. Si està en blanc, python es resoldrà des de l'entorn",
+                "heading": "Ruta de l'executable Python"
+            },
+            "scraper_user_agent": "Identificador de l'agent d'usuari del navegador per a rastreig",
+            "scraper_user_agent_desc": "Identificador de l'agent d'usuari del navegador web (USER-AGENT) usat durant el rastreig mitjançant peticions http",
+            "scrapers_path": {
+                "description": "Ruta del directori de rastrejadors",
+                "heading": "Ruta de Rastrejadors"
+            },
+            "blobs_path": {
+                "description": "On emmagatzemar fitxers binaris. Només aplicable quan el sistema d'arxius és del tipus \"blob\". AVÍS: Canviar aquest paràmetre requereix moure manualment els fitxers.",
+                "heading": "Ruta de sistema d'arxius binari"
+            },
+            "cache_location": "Ruta de la cache. Requerit per a utilitzar streaming mitjançant HLS (per exemple dispositius Apple) o DASH.",
+            "cache_path_head": "Camí de la cache",
+            "calculate_md5_and_ohash_desc": "Calcula la suma de verificació MD5 a més de l'oshash. L'activació farà que les exploracions inicials siguin més lentes. El hash de nomenclatura de fitxers s'ha d'establir a oshash per desactivar el càlcul MD5.",
+            "calculate_md5_and_ohash_label": "Calcula MD5 per als vídeos",
+            "check_for_insecure_certificates": "Comprova si hi ha certificats insegurs",
+            "chrome_cdp_path": "Camí Chrome CDP",
+            "chrome_cdp_path_desc": "Ruta de l'arxiu de l'executable Chrome o una adreça remota (començant per http:// o https://, per exemple, http://localhost:9222/json/version) per a una instància Chrome.",
+            "create_galleries_from_folders_desc": "Si aquesta opció està marcada es crearan automàticament galeries d'aquells directoris que contenen imatges.",
+            "create_galleries_from_folders_label": "Crear galeries des de directoris amb imatges",
+            "database": "Base de dades",
+            "db_path_head": "Camí de la base de dades",
+            "directory_locations_to_your_content": "Ubicacions dels directoris al vostre contingut",
+            "excluded_image_gallery_patterns_head": "Patrons d'imatges/galeries exclosos",
+            "excluded_video_patterns_desc": "Expressions regulars d'arxius/rutes de vídeos que seran exclosos de l'escaneig i que seran afegits a la tasca de depuració/neteja",
+            "excluded_video_patterns_head": "Patrons de vídeo exclosos",
+            "funscript_heatmap_draw_range": "Incloure rang en els mapes de calor generats",
+            "gallery_cover_regex_desc": "Expressió regular utilitzada per a identificar una imatge com a caràtula d'una galeria",
+            "gallery_cover_regex_label": "Patró de la portada de la galeria",
+            "gallery_ext_desc": "Llista delimitada per comes d'extensions de fitxers que s'identificaran com a fitxers zip de galeria.",
+            "gallery_ext_head": "Extensions zip de la galeria",
+            "generated_file_naming_hash_head": "Hash de nom d'arxiu generat",
+            "generated_files_location": "Ruta relativa del directori per als fitxers generats (marcadors d'escena, vistes prèvies d'escena, conjunts d'imatges o “sprites”, etc)",
+            "generated_path_head": "Ruta relativa per al directori d'arxius generats",
+            "hashing": "Hashing",
+            "heatmap_generation": "Generació mapa de calor Funscript",
+            "image_ext_desc": "Llista delimitada per comes de les extensions d'arxiu que seran identificades com a imatges.",
+            "image_ext_head": "Extensions d'imatge",
+            "include_audio_desc": "Inclou flux d'àudio quan es generin vistes prèvies.",
+            "logging": "Registre",
+            "maximum_streaming_transcode_size_desc": "Grandària màxima per a la transcodificació d'arxius de vídeo en directe",
+            "maximum_streaming_transcode_size_head": "Mida màxima de transcodificació de transmissió",
+            "maximum_transcode_size_head": "Mida màxima de transcodificació",
+            "metadata_path": {
+                "description": "Ubicació del directori utilitzada en realitzar una exportació o importació completa",
+                "heading": "Camí de les metadades"
+            },
+            "number_of_parallel_task_for_scan_generation_head": "Nombre de tasques paral·leles per a l'escaneig/generació",
+            "plugins_path": {
+                "description": "Ubicació del directori dels fitxers de configuració dels plugins",
+                "heading": "Camí dels plugins"
+            },
+            "preview_generation": "Previsualitzar generació de fitxers",
+            "scraping": "Rastreig",
+            "sqlite_location": "Ruta relativa per a la base de dades SQLite (requereix reinici). AVÍS: Emmagatzemar la base de dades en un sistema diferent al servidor Stash (per exemple a través de la xarxa) no està suportat!",
+            "video_ext_desc": "Llista delimitada per comes de les extensions d'arxiu que seran identificades com a vídeos."
         },
         "about": {
             "build_hash": "Build hash:",
