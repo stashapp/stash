@@ -111,6 +111,7 @@ type File interface {
 	Base() *BaseFile
 	SetFingerprints(fp Fingerprints)
 	Open(fs FS) (io.ReadCloser, error)
+	Clone() File
 }
 
 // BaseFile represents a file in the file system.
@@ -171,6 +172,12 @@ func (f *BaseFile) Open(fs FS) (io.ReadCloser, error) {
 	}
 
 	return fs.Open(f.Path)
+}
+
+func (f *BaseFile) Clone() (ret File) {
+	clone := *f
+	ret = &clone
+	return
 }
 
 func (f *BaseFile) Info(fs FS) (fs.FileInfo, error) {
@@ -249,6 +256,13 @@ func (f ImageFile) GetFormat() string {
 	return f.Format
 }
 
+func (f ImageFile) Clone() (ret File) {
+	clone := f
+	clone.BaseFile = f.BaseFile.Clone().(*BaseFile)
+	ret = &clone
+	return
+}
+
 // VideoFile is an extension of BaseFile to represent video files.
 type VideoFile struct {
 	*BaseFile
@@ -275,6 +289,13 @@ func (f VideoFile) GetHeight() int {
 
 func (f VideoFile) GetFormat() string {
 	return f.Format
+}
+
+func (f VideoFile) Clone() (ret File) {
+	clone := f
+	clone.BaseFile = f.BaseFile.Clone().(*BaseFile)
+	ret = &clone
+	return
 }
 
 // #1572 - Inf and NaN values cause the JSON marshaller to fail
