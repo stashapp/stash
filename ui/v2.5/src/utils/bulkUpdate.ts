@@ -25,6 +25,10 @@ interface IHasID {
   id: string;
 }
 
+interface IHasString {
+  value: string;
+}
+
 interface IHasStudio {
   studio?: GQL.Maybe<IHasID> | undefined;
 }
@@ -102,6 +106,16 @@ export function makeBulkUpdateIds(
   };
 }
 
+export function makeBulkUpdateStrings(
+  values: string[],
+  mode: GQL.BulkUpdateIdMode
+): GQL.BulkUpdateStrings {
+  return {
+    mode,
+    values,
+  };
+}
+
 export function getAggregateInputValue<V>(
   inputValue: V | null | undefined,
   aggregateValue: V | null | undefined
@@ -138,6 +152,29 @@ export function getAggregateInputIDs(
   } else {
     // if performerIds non-empty, then we are setting them
     return makeBulkUpdateIds(inputIds || [], mode);
+  }
+
+  return undefined;
+}
+
+// If the above is incorrect, this is too.
+export function getAggregateInputStrings(
+  mode: GQL.BulkUpdateIdMode,
+  inputStrings: string[] | undefined,
+  aggregateStrings: string[]
+) {
+  if (
+    mode === GQL.BulkUpdateIdMode.Set &&
+    (!inputStrings || inputStrings.length === 0)
+  ) {
+    // and all scenes have the same strings,
+    if (aggregateStrings.length > 0) {
+      // then unset the inputStrings, otherwise ignore
+      return makeBulkUpdateStrings(inputStrings || [], mode);
+    }
+  } else {
+    // if inputStrings non-empty, then we are setting them
+    return makeBulkUpdateStrings(inputStrings || [], mode);
   }
 
   return undefined;

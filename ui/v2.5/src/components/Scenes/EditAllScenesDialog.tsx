@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Button, Form, Col, Row } from "react-bootstrap";
+import { Form, Col, Row } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import isEqual from "lodash-es/isEqual";
 import { useBulkSceneUpdate } from "src/core/StashService";
@@ -20,14 +20,13 @@ import {
   getAggregateTagIds,
 } from "src/utils/bulkUpdate";
 import { faPencilAlt } from "@fortawesome/free-solid-svg-icons";
-import { EditAllScenesDialog } from "./EditAllScenesDialog";
 
 interface IListOperationProps {
   selected: GQL.SlimSceneDataFragment[];
   onClose: (applied: boolean) => void;
 }
 
-export const EditScenesDialog: React.FC<IListOperationProps> = (
+export const EditAllScenesDialog: React.FC<IListOperationProps> = (
   props: IListOperationProps
 ) => {
   const intl = useIntl();
@@ -51,8 +50,6 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
   const [organized, setOrganized] = useState<boolean | undefined>();
 
   const [updateScenes] = useBulkSceneUpdate(getSceneInput());
-
-  const [showEditAllDialog, setShowEditAllDialog] = useState(false);
 
   // Network state
   const [isUpdating, setIsUpdating] = useState(false);
@@ -243,22 +240,6 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
     }
   }
 
-  function onShowEditAll() {
-    //props.onClose(false);
-    setShowEditAllDialog(true);
-  }
-
-  if (showEditAllDialog) {
-    return (
-      <EditAllScenesDialog
-        //show={showEditAllDialog}
-        onClose={() => setShowEditAllDialog(false)}
-        selected={props.selected}
-      />
-      
-    );
-  }
-  
   function render() {
     return (
       <ModalComponent
@@ -282,11 +263,6 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
           variant: "secondary",
         }}
         isRunning={isUpdating}
-        leftFooterButtons={
-          <Button onClick={onShowEditAll}>
-            {intl.formatMessage({ id: "actions.all_fields" })}
-          </Button>
-        }
       >
         <Form>
           <Form.Group controlId="rating" as={Row}>

@@ -8,18 +8,22 @@ import {
   GalleryIDSelect,
   excludeFileBasedGalleries,
 } from "../Galleries/GallerySelect";
+import { StringListInput } from "./StringListInput";
 
 interface IMultiSetProps {
-  type: "performers" | "studios" | "tags" | "movies" | "galleries";
   existingIds?: string[];
-  ids?: string[];
   mode: GQL.BulkUpdateIdMode;
   disabled?: boolean;
   onUpdate: (ids: string[]) => void;
   onSetMode: (mode: GQL.BulkUpdateIdMode) => void;
 }
 
-const Select: React.FC<IMultiSetProps> = (props) => {
+interface IMultiSelectProps extends IMultiSetProps {
+  type: "performers" | "studios" | "tags" | "movies" | "galleries";
+  ids?: string[];
+}
+
+const Select: React.FC<IMultiSelectProps> = (props) => {
   const { type, disabled } = props;
 
   function onUpdate(items: SelectObject[]) {
@@ -52,7 +56,7 @@ const Select: React.FC<IMultiSetProps> = (props) => {
   );
 };
 
-export const MultiSet: React.FC<IMultiSetProps> = (props) => {
+const MultiSetSelector: React.FC<IMultiSetProps> = (props) => {
   const intl = useIntl();
   const modes = [
     GQL.BulkUpdateIdMode.Set,
@@ -116,6 +120,44 @@ export const MultiSet: React.FC<IMultiSetProps> = (props) => {
       <ButtonGroup className="button-group-above">
         {modes.map((m) => renderModeButton(m))}
       </ButtonGroup>
+    </div>
+  );
+};
+
+interface IMultiStringProps extends IMultiSetProps {
+  strings?: string[];
+}
+
+export const MultiString: React.FC<IMultiStringProps> = (props) => {
+    return (
+    <div className="multi-string">
+      <MultiSetSelector
+        mode={props.mode}
+        existingIds={props.existingIds}
+        onUpdate={props.onUpdate}
+        onSetMode={props.onSetMode}
+        disabled={props.disabled}
+      />
+      <StringListInput
+        value={props.strings ?? []}
+        setValue={props.onUpdate}
+        readOnly={props.disabled}
+        className={"input-control"}
+      />
+    </div>
+  );
+};
+
+export const MultiSet: React.FC<IMultiSelectProps> = (props) => {
+  return (
+    <div className="multi-set">
+      <MultiSetSelector
+        mode={props.mode}
+        existingIds={props.existingIds}
+        onUpdate={props.onUpdate}
+        onSetMode={props.onSetMode}
+        disabled={props.disabled}
+      />
       <Select {...props} />
     </div>
   );
