@@ -70,6 +70,11 @@ export function getAggregateIds(sortedLists: string[][]) {
   return ret;
 }
 
+export function getAggregateUrls(state: { urls: IHasString[] }[]) {
+  const sortedLists = state.map((o) => o.urls.map((oo) => oo.value).sort());
+  return getAggregateIds(sortedLists);
+}
+
 export function getAggregateGalleryIds(state: { galleries: IHasID[] }[]) {
   const sortedLists = state.map((o) => o.galleries.map((oo) => oo.id).sort());
   return getAggregateIds(sortedLists);
