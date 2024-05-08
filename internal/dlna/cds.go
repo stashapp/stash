@@ -85,7 +85,6 @@ func sceneToContainer(scene *models.Scene, parent string, host string) interface
 		Path:   iconPath,
 		RawQuery: url.Values{
 			"scene": {strconv.Itoa(scene.ID)},
-			"c":     {"jpeg"},
 		}.Encode(),
 	}).String()
 

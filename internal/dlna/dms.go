@@ -595,6 +595,8 @@ func (me *Server) initMux(mux *http.ServeMux) {
 			return
 		}
 
+		w.Header().Set("transferMode.dlna.org", "Streaming")
+		w.Header().Set("contentFeatures.dlna.org", "DLNA.ORG_OP=01;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=01500000000000000000000000000000")
 		me.sceneServer.StreamSceneDirect(scene, w, r)
 	})
 	mux.HandleFunc(rootDescPath, func(w http.ResponseWriter, r *http.Request) {
