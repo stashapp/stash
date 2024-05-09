@@ -170,11 +170,8 @@ func (o TranscodeOptions) makeStreamArgs(sm *StreamManager) Args {
 
 	codec := FileGetCodec(sm, o.StreamType.MimeType)
 
-	fullhw := false
-	if sm.config.GetTranscodeHardwareAcceleration() && sm.config.GetTranscodeFullHardwareAcceleration() {
-		fullhw = sm.encoder.hwCanFullHWTranscode(sm.context, o.VideoFile, codec)
-	}
-	args = sm.encoder.hwDeviceInit(args, codec, sm.config.GetAlwaysAddHardwareDecoding(), fullhw)
+	fullhw := sm.config.GetTranscodeHardwareAcceleration() && sm.encoder.hwCanFullHWTranscode(sm.context, o.VideoFile, codec)
+	args = sm.encoder.hwDeviceInit(args, codec, fullhw)
 	args = append(args, extraInputArgs...)
 
 	if o.StartTime != 0 {
