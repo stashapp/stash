@@ -31,6 +31,57 @@
     margin: 0 auto;
     object-fit: contain;
   }
+
+  button.btn.favorite-button {
+    opacity: 1;
+    padding: 0;
+    position: absolute;
+    right: 5px;
+    top: 10px;
+    transition: opacity 0.5s;
+
+    svg.fa-icon {
+      margin-left: 0.4rem;
+      margin-right: 0.4rem;
+    }
+
+    &.not-favorite {
+      color: rgba(191, 204, 214, 0.5);
+      filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.9));
+      opacity: 0;
+    }
+
+    &.favorite {
+      color: #ff7373;
+      filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.9));
+    }
+
+    &:hover,
+    &:active,
+    &:focus,
+    &:active:focus {
+      background: none;
+      box-shadow: none;
+    }
+  }
+
+  &:hover button.btn.favorite-button.not-favorite {
+    opacity: 1;
+  }
+}
+
+#tag-page {
+  .tag-head {
+    .name-icons {
+      .not-favorite {
+        color: rgba(191, 204, 214, 0.5);
+      }
+
+      .favorite {
+        color: #ff7373;
+      }
+    }
+  }
 }
 
 .tag-details {
