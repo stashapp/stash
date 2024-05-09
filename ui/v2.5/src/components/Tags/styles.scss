@@ -70,6 +70,20 @@
   }
 }
 
+#tag-page {
+  .tag-head {
+    .name-icons {
+      .not-favorite {
+        color: rgba(191, 204, 214, 0.5);
+      }
+
+      .favorite {
+        color: #ff7373;
+      }
+    }
+  }
+}
+
 .tag-details {
   .logo {
     max-height: 50vh;
