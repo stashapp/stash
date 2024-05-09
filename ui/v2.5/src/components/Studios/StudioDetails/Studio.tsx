@@ -565,6 +565,8 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
               <RatingSystem
                 value={studio.rating100}
                 onSetRating={(value) => setRating(value)}
+                clickToRate
+                withoutContext
               />
               {maybeRenderDetails()}
               {maybeRenderEditPanel()}

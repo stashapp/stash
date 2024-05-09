@@ -422,6 +422,7 @@ dd {
   align-items: center;
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
   white-space: pre-line;
 
   .birthdate,
@@ -1363,4 +1364,9 @@ select {
 
 .primary-file {
   font-weight: bold;
+}
+
+// ensure rating number editing doesn't resize column
+.table-list .rating-number {
+  width: 6rem;
 }

@@ -28,7 +28,7 @@ type cleanJob struct {
 	options  CleanOptions
 }
 
-// ScanOptions provides options for scanning files.
+// CleanOptions provides options for scanning files.
 type CleanOptions struct {
 	Paths []string
 

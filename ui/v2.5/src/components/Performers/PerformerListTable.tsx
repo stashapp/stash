@@ -108,6 +108,7 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
     <RatingSystem
       value={performer.rating100}
       onSetRating={(value) => setRating(value, performer.id)}
+      clickToRate
     />
   );
 
