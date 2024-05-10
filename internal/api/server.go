@@ -61,7 +61,8 @@ func (dir osFS) ReadDir(name string) ([]os.DirEntry, error) {
 	fullname := string(dir) + "/" + name
 	entries, err := os.ReadDir(fullname)
 	if err != nil {
-		if e, ok := err.(*os.PathError); ok {
+		var e *os.PathError
+		if errors.As(err, &e) {
 			// See comment in dirFS.Open.
 			e.Path = name
 		}
