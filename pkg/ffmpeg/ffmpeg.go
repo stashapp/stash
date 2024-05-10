@@ -109,7 +109,7 @@ func (f *FFMpeg) getVersion() error {
 		return err
 	}
 
-	version_re := regexp.MustCompile(`ffmpeg version ((\d+)\.(\d+)\.(\d+))`)
+	version_re := regexp.MustCompile(`ffmpeg version ((\d+)\.(\d+)(?:\.(\d+))?)`)
 	stdoutStr := stdout.String()
 	match := version_re.FindStringSubmatchIndex(stdoutStr)
 	if match == nil {
@@ -118,7 +118,13 @@ func (f *FFMpeg) getVersion() error {
 
 	majorS := stdoutStr[match[4]:match[5]]
 	minorS := stdoutStr[match[6]:match[7]]
-	patchS := stdoutStr[match[8]:match[9]]
+
+	// patch is optional
+	var patchS string
+	if match[8] != -1 && match[9] != -1 {
+		patchS = stdoutStr[match[8]:match[9]]
+	}
+
 	if i, err := strconv.Atoi(majorS); err == nil {
 		f.version.major = i
 	}
