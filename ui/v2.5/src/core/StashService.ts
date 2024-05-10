@@ -2229,6 +2229,11 @@ export const queryLogs = () =>
   });
 
 export const useSystemStatus = () => GQL.useSystemStatusQuery();
+export const refetchSystemStatus = () => {
+  client.refetchQueries({
+    include: [GQL.SystemStatusDocument],
+  });
+};
 
 export const useJobsSubscribe = () => GQL.useJobsSubscribeSubscription();
 

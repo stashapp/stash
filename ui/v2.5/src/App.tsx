@@ -277,7 +277,7 @@ export const App: React.FC = () => {
       status === GQL.SystemStatusEnum.NeedsMigration
     ) {
       // redirect to migrate page
-      history.push("/migrate");
+      history.replace("/migrate");
     }
   }, [systemStatusData, setupMatch, history, location]);
 
