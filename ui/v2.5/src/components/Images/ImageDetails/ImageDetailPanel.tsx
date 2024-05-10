@@ -1,14 +1,10 @@
-import React, { useMemo } from "react";
-import { Link } from "react-router-dom";
+import React from "react";
 import * as GQL from "src/core/generated-graphql";
 import TextUtils from "src/utils/text";
 import { GalleryLink, TagLink } from "src/components/Shared/TagLink";
-import { TruncatedText } from "src/components/Shared/TruncatedText";
 import { PerformerCard } from "src/components/Performers/PerformerCard";
-import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { sortPerformers } from "src/core/performers";
-import { FormattedDate, FormattedMessage, useIntl } from "react-intl";
-import { objectTitle } from "src/core/files";
+import { FormattedMessage, useIntl } from "react-intl";
 import { PhotographerLink } from "src/components/Shared/Link";
 interface IImageDetailProps {
   image: GQL.ImageDataFragment;
@@ -16,11 +12,6 @@ interface IImageDetailProps {
 
 export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
   const intl = useIntl();
-
-  const file = useMemo(
-    () => (props.image.files.length > 0 ? props.image.files[0] : undefined),
-    [props.image]
-  );
 
   function renderDetails() {
     if (!props.image.details) return;
@@ -102,39 +93,8 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
   return (
     <>
       <div className="row">
-        <div className={`${imageDetailsWidth} col-xl-12 image-details`}>
-          <div className="image-header d-xl-none">
-            <h3>
-              <TruncatedText text={objectTitle(props.image)} />
-            </h3>
-          </div>
-          {props.image.date ? (
-            <h5>
-              <FormattedDate
-                value={props.image.date}
-                format="long"
-                timeZone="utc"
-              />
-            </h5>
-          ) : undefined}
-          {props.image.rating100 ? (
-            <h6>
-              <FormattedMessage id="rating" />:{" "}
-              <RatingSystem value={props.image.rating100} disabled />
-            </h6>
-          ) : (
-            ""
-          )}
-
+        <div className={`${imageDetailsWidth} col-12 image-details`}>
           {renderGalleries()}
-          {file?.width && file?.height ? (
-            <h6>
-              <FormattedMessage id="resolution" />:{" "}
-              {TextUtils.resolution(file.width, file.height)}
-            </h6>
-          ) : (
-            ""
-          )}
           {
             <h6>
               {" "}
@@ -163,17 +123,6 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
             </h6>
           )}
         </div>
-        {props.image.studio && (
-          <div className="col-3 d-xl-none">
-            <Link to={`/studios/${props.image.studio.id}`}>
-              <img
-                src={props.image.studio.image_path ?? ""}
-                alt={`${props.image.studio.name} logo`}
-                className="studio-logo float-right"
-              />
-            </Link>
-          </div>
-        )}
       </div>
       <div className="row">
         <div className="col-12">

@@ -1,15 +1,35 @@
-import React, { useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import { Button } from "react-bootstrap";
+import { Icon } from "../Icon";
+import { faPencil, faStar } from "@fortawesome/free-solid-svg-icons";
+import { useFocusOnce } from "src/utils/focus";
 
 export interface IRatingNumberProps {
   value: number | null;
   onSetRating?: (value: number | null) => void;
   disabled?: boolean;
+  clickToRate?: boolean;
+  // true if we should indicate that this is a rating
+  withoutContext?: boolean;
 }
 
 export const RatingNumber: React.FC<IRatingNumberProps> = (
   props: IRatingNumberProps
 ) => {
-  const text = ((props.value ?? 0) / 10).toFixed(1);
+  const [editing, setEditing] = useState(false);
+  const [valueStage, setValueStage] = useState<number | null>(props.value);
+
+  useEffect(() => {
+    setValueStage(props.value);
+  }, [props.value]);
+
+  const showTextField = !props.disabled && (editing || !props.clickToRate);
+
+  const [ratingRef] = useFocusOnce(editing, true);
+
+  const effectiveValue = editing ? valueStage : props.value;
+
+  const text = ((effectiveValue ?? 0) / 10).toFixed(1);
   const useValidation = useRef(true);
 
   function stepChange() {
@@ -38,11 +58,13 @@ export const RatingNumber: React.FC<IRatingNumberProps> = (
       return;
     }
 
+    const setRating = editing ? setValueStage : props.onSetRating;
+
     let val = e.target.value;
     if (!useValidation.current) {
       e.target.value = Number(val).toFixed(1);
       const tempVal = Number(val) * 10;
-      props.onSetRating(tempVal || null);
+      setRating(tempVal || null);
       useValidation.current = true;
       return;
     }
@@ -50,7 +72,7 @@ export const RatingNumber: React.FC<IRatingNumberProps> = (
     const match = /(\d?)(\d?)(.?)((\d)?)/g.exec(val);
     const matchOld = /(\d?)(\d?)(.?)((\d{0,2})?)/g.exec(text ?? "");
 
-    if (match == null || props.onSetRating == null) {
+    if (match == null) {
       return;
     }
 
@@ -70,7 +92,7 @@ export const RatingNumber: React.FC<IRatingNumberProps> = (
       }
       e.target.value = Number(value).toFixed(1);
       let tempVal = Number(value) * 10;
-      props.onSetRating(tempVal || null);
+      setRating(tempVal || null);
 
       let cursorPosition = 0;
       if (match[2] && !match[4]) {
@@ -90,22 +112,44 @@ export const RatingNumber: React.FC<IRatingNumberProps> = (
     }
   }
 
-  if (props.disabled) {
+  function onBlur() {
+    if (editing) {
+      setEditing(false);
+      if (props.onSetRating && valueStage !== props.value) {
+        props.onSetRating(valueStage);
+      }
+    }
+  }
+
+  if (!showTextField) {
     return (
       <div className="rating-number disabled">
-        <span>{Number((props.value ?? 0) / 10).toFixed(1)}</span>
+        {props.withoutContext && <Icon icon={faStar} />}
+        <span>{Number((effectiveValue ?? 0) / 10).toFixed(1)}</span>
+        {!props.disabled && props.clickToRate && (
+          <Button
+            variant="minimal"
+            size="sm"
+            className="edit-rating-button"
+            onClick={() => setEditing(true)}
+          >
+            <Icon className="text-primary" icon={faPencil} />
+          </Button>
+        )}
       </div>
     );
   } else {
     return (
       <div className="rating-number">
         <input
+          ref={ratingRef}
           className="text-input form-control"
           name="ratingnumber"
           type="number"
           onMouseDown={stepChange}
           onKeyDown={nonStepChange}
           onChange={handleChange}
+          onBlur={onBlur}
           value={text}
           min="0.0"
           step="0.1"

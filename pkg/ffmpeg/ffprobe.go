@@ -2,16 +2,82 @@ package ffmpeg
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"math"
 	"os"
+	"os/exec"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/stashapp/stash/pkg/exec"
+	stashExec "github.com/stashapp/stash/pkg/exec"
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 )
+
+func ValidateFFProbe(ffprobePath string) error {
+	cmd := stashExec.Command(ffprobePath, "-h")
+	bytes, err := cmd.CombinedOutput()
+	output := string(bytes)
+	if err != nil {
+		var exitErr *exec.ExitError
+		if errors.As(err, &exitErr) {
+			return fmt.Errorf("error running ffprobe: %v", output)
+		}
+
+		return fmt.Errorf("error running ffprobe: %v", err)
+	}
+
+	return nil
+}
+
+func LookPathFFProbe() string {
+	ret, _ := exec.LookPath(getFFProbeFilename())
+
+	if ret != "" {
+		if err := ValidateFFProbe(ret); err != nil {
+			logger.Warnf("ffprobe found in PATH (%s), but it is missing required flags: %v", ret, err)
+			ret = ""
+		}
+	}
+
+	return ret
+}
+
+func FindFFProbe(path string) string {
+	ret := fsutil.FindInPaths([]string{path}, getFFProbeFilename())
+
+	if ret != "" {
+		if err := ValidateFFProbe(ret); err != nil {
+			logger.Warnf("ffprobe found (%s), but it is missing required flags: %v", ret, err)
+			ret = ""
+		}
+	}
+
+	return ret
+}
+
+// ResolveFFMpeg attempts to resolve the path to the ffmpeg executable.
+// It first looks in the provided path, then resolves from the environment, and finally looks in the fallback path.
+// Returns an empty string if a valid ffmpeg cannot be found.
+func ResolveFFProbe(path string, fallbackPath string) string {
+	// look in the provided path first
+	ret := FindFFProbe(path)
+	if ret != "" {
+		return ret
+	}
+
+	// then resolve from the environment
+	ret = LookPathFFProbe()
+	if ret != "" {
+		return ret
+	}
+
+	// finally, look in the fallback path
+	ret = FindFFProbe(fallbackPath)
+	return ret
+}
 
 // VideoFile represents the ffprobe output for a video file.
 type VideoFile struct {
@@ -75,10 +141,14 @@ func (v *VideoFile) TranscodeScale(maxSize int) (int, int) {
 // FFProbe provides an interface to the ffprobe executable.
 type FFProbe string
 
+func (f *FFProbe) Path() string {
+	return string(*f)
+}
+
 // NewVideoFile runs ffprobe on the given path and returns a VideoFile.
 func (f *FFProbe) NewVideoFile(videoPath string) (*VideoFile, error) {
 	args := []string{"-v", "quiet", "-print_format", "json", "-show_format", "-show_streams", "-show_error", videoPath}
-	cmd := exec.Command(string(*f), args...)
+	cmd := stashExec.Command(string(*f), args...)
 	out, err := cmd.Output()
 
 	if err != nil {
@@ -97,7 +167,7 @@ func (f *FFProbe) NewVideoFile(videoPath string) (*VideoFile, error) {
 // Used when the frame count is missing or incorrect.
 func (f *FFProbe) GetReadFrameCount(path string) (int64, error) {
 	args := []string{"-v", "quiet", "-print_format", "json", "-count_frames", "-show_format", "-show_streams", "-show_error", path}
-	out, err := exec.Command(string(*f), args...).Output()
+	out, err := stashExec.Command(string(*f), args...).Output()
 
 	if err != nil {
 		return 0, fmt.Errorf("FFProbe encountered an error with <%s>.\nError JSON:\n%s\nError: %s", path, string(out), err.Error())

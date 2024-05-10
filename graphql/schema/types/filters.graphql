@@ -231,6 +231,8 @@ input SceneFilterType {
   orientation: OrientationCriterionInput
   "Filter by frame rate"
   framerate: IntCriterionInput
+  "Filter by bit rate"
+  bitrate: IntCriterionInput
   "Filter by video codec"
   video_codec: StringCriterionInput
   "Filter by audio codec"
@@ -416,6 +418,9 @@ input TagFilterType {
 
   "Filter by tag aliases"
   aliases: StringCriterionInput
+
+  "Filter by favorite"
+  favorite: Boolean
 
   "Filter by tag description"
   description: StringCriterionInput

@@ -427,6 +427,8 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
               <RatingSystem
                 value={movie.rating100}
                 onSetRating={(value) => setRating(value)}
+                clickToRate
+                withoutContext
               />
               {maybeRenderDetails()}
               {maybeRenderEditPanel()}

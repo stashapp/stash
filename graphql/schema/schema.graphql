@@ -230,6 +230,9 @@ type Mutation {
   "Migrates the schema to the required version. Returns the job ID"
   migrate(input: MigrateInput!): ID!
 
+  "Downloads and installs ffmpeg and ffprobe binaries into the configuration directory. Returns the job ID."
+  downloadFFMpeg: ID!
+
   sceneCreate(input: SceneCreateInput!): Scene
   sceneUpdate(input: SceneUpdateInput!): Scene
   sceneMerge(input: SceneMergeInput!): Scene

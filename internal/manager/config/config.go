@@ -38,6 +38,9 @@ const (
 	Password            = "password"
 	MaxSessionAge       = "max_session_age"
 
+	FFMpegPath  = "ffmpeg_path"
+	FFProbePath = "ffprobe_path"
+
 	BlobsStorage = "blobs_storage"
 
 	DefaultMaxSessionAge = 60 * 60 * 1 // 1 hours
@@ -601,6 +604,18 @@ func (i *Config) GetBackupDirectoryPathOrDefault() string {
 	}
 
 	return ret
+}
+
+// GetFFMpegPath returns the path to the FFMpeg executable.
+// If empty, stash will attempt to resolve it from the path.
+func (i *Config) GetFFMpegPath() string {
+	return i.getString(FFMpegPath)
+}
+
+// GetFFProbePath returns the path to the FFProbe executable.
+// If empty, stash will attempt to resolve it from the path.
+func (i *Config) GetFFProbePath() string {
+	return i.getString(FFProbePath)
 }
 
 func (i *Config) GetJWTSignKey() []byte {
