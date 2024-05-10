@@ -81,6 +81,7 @@ var (
 				"-f", "hls",
 				"-start_number", fmt.Sprint(segment),
 				"-hls_time", fmt.Sprint(segmentLength),
+				"-hls_flags", "split_by_time",
 				"-hls_segment_type", "mpegts",
 				"-hls_playlist_type", "vod",
 				"-hls_segment_filename", filepath.Join(outputDir, ".%d.ts"),
@@ -110,6 +111,7 @@ var (
 				"-f", "hls",
 				"-start_number", fmt.Sprint(segment),
 				"-hls_time", fmt.Sprint(segmentLength),
+				"-hls_flags", "split_by_time",
 				"-hls_segment_type", "mpegts",
 				"-hls_playlist_type", "vod",
 				"-hls_segment_filename", filepath.Join(outputDir, ".%d.ts"),
@@ -328,7 +330,8 @@ func (s *runningStream) makeStreamArgs(sm *StreamManager, segment int) Args {
 
 	codec := HLSGetCodec(sm, s.streamType.Name)
 
-	args = sm.encoder.hwDeviceInit(args, codec)
+	fullhw := sm.config.GetTranscodeHardwareAcceleration() && sm.encoder.hwCanFullHWTranscode(sm.context, s.vf, codec)
+	args = sm.encoder.hwDeviceInit(args, codec, fullhw)
 	args = append(args, extraInputArgs...)
 
 	if segment > 0 {
@@ -339,7 +342,7 @@ func (s *runningStream) makeStreamArgs(sm *StreamManager, segment int) Args {
 
 	videoOnly := ProbeAudioCodec(s.vf.AudioCodec) == MissingUnsupported
 
-	videoFilter := sm.encoder.hwMaxResFilter(codec, s.vf.Width, s.vf.Height, s.maxTranscodeSize)
+	videoFilter := sm.encoder.hwMaxResFilter(codec, s.vf.Width, s.vf.Height, s.maxTranscodeSize, fullhw)
 
 	args = append(args, s.streamType.Args(codec, segment, videoFilter, videoOnly, s.outputDir)...)
 
