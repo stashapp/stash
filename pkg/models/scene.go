@@ -93,6 +93,8 @@ type SceneFilterType struct {
 	PlayCount *IntCriterionInput `json:"play_count"`
 	// Filter by play duration (in seconds)
 	PlayDuration *IntCriterionInput `json:"play_duration"`
+	// Filter by last played at
+	LastPlayedAt *TimestampCriterionInput `json:"last_played_at"`
 	// Filter by date
 	Date *DateCriterionInput `json:"date"`
 	// Filter by created at
