@@ -993,7 +993,7 @@ func (qb *SceneStore) makeFilter(ctx context.Context, sceneFilter *models.SceneF
 				"scene_last_view",
 				fmt.Sprintf("scene_last_view.%s = scenes.id", sceneIDColumn),
 			)
-			timestampCriterionHandler(sceneFilter.LastPlayedAt, "last_played_at")(ctx, f)
+			timestampCriterionHandler(sceneFilter.LastPlayedAt, "IFNULL(last_played_at, datetime(0))")(ctx, f)
 		}
 	}))
 

@@ -206,7 +206,6 @@ export type CriterionType =
   | "scene_date"
   | "scene_created_at"
   | "scene_updated_at"
-  | "scene_last_played_at"
   | "description"
   | "code"
   | "photographer"
