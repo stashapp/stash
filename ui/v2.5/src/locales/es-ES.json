@@ -817,7 +817,8 @@
         "not_matches_regex": "no coincide con la expresión regular",
         "not_null": "no es nulo",
         "format_string_excludes": "{criterion} {modifierString} {valueString} (excluyendo {excludedString})",
-        "format_string_excludes_depth": "{criterion} {modifierString} {valueString} (excluyendo {excludedString}) (+{depth, plural, =-1 {all} otro {{depth}}})"
+        "format_string_excludes_depth": "{criterion} {modifierString} {valueString} (excluyendo {excludedString}) (+{depth, plural, =-1 {all} otro {{depth}}})",
+        "format_string_depth": "{criterion} {modifierString} {valueString} (+{depth, plural, =-1 {all} other {{depth}}})"
     },
     "custom": "Personalizado",
     "date": "Fecha",
@@ -933,7 +934,9 @@
         "dont_show_until_updated": "No mostrar hasta la próxima actualización",
         "reassign_files": {
             "destination": "Reasignar a"
-        }
+        },
+        "delete_entity_simple_desc": "{count, plural, one {¿Estás seguro de que quieres eliminar esta {singularEntity}?} other {¿Estás seguro de que quieres eliminar estas {pluralEntity}?}}",
+        "reassign_entity_title": "{count, plural, one {Reasignar {singularEntity}} other {Reasignar {pluralEntity}}}"
     },
     "dimensions": "Dimensiones",
     "director": "Director",
@@ -1027,7 +1030,8 @@
         "missing": "El archivo no esta disponsible",
         "ready": "Conexion Preparada",
         "syncing": "Sincronizando con el servidor",
-        "uploading": "Subiendo script"
+        "uploading": "Subiendo script",
+        "error": "Error al conectar con Handy"
     },
     "hasMarkers": "Tiene marcadores",
     "height": "Estatura",
@@ -1205,7 +1209,13 @@
             "where_is_your_porn_located_description": "Añade los directorios que contienen tus imágenes y vídeos porno. Stash usará estos directorios para buscar imágenes y vídeos durante el escaneo.",
             "path_to_cache_directory_empty_for_default": "ruta al directorio de la caché (dejar en blanco para usar el directorio por defecto)",
             "store_blobs_in_database": "Almacenar blobs en la base de datos",
-            "path_to_blobs_directory_empty_for_default": "ruta al directorio con los blobs (dejar en blanco para el valor por defecto)"
+            "path_to_blobs_directory_empty_for_default": "ruta al directorio con los blobs (dejar en blanco para el valor por defecto)",
+            "where_can_stash_store_blobs_description_addendum": "Alternativamente, puedes almacenar estos datos en la base de datos. <strong>Nota:</strong> esto aumentará el tamaño de tu archivo de base de datos y los tiempos de migración de la base de datos.",
+            "where_can_stash_store_cache_files": "¿Dónde puede Stash almacenar los archivos de caché?",
+            "where_can_stash_store_its_database_warning": "ADVERTENCIA: ¡almacenar la base de datos en un sistema diferente al que Stash se ejecuta (por ejemplo, almacenar la base de datos en un NAS mientras se ejecuta el servidor Stash en otro equipo) no es <strong>compatible</strong>! SQLite no está diseñado para su uso a través de una red e intentar hacerlo puede corromper fácilmente toda tu base de datos.",
+            "where_can_stash_store_blobs": "¿Dónde puede Stash guardar los datos binarios de la base de datos?",
+            "where_can_stash_store_blobs_description": "Stash puede almacenar datos binarios como portadas de escenas, imágenes de intérpretes, estudios y etiquetas ya sea en la base de datos o en el sistema de archivos. Por defecto, almacenará estos datos en el sistema de archivos en el subdirectorio <code>blobs</code> dentro del directorio que contiene tu archivo de configuración. Si deseas cambiar esto, por favor ingresa una ruta absoluta o relativa (respecto al directorio de trabajo actual). Stash creará este directorio si aún no existe.",
+            "where_can_stash_store_cache_files_description": "Para que algunas funciones como la transcodificación en vivo de HLS/DASH funcionen, Stash requiere un directorio de caché para archivos temporales. Por defecto, Stash creará un directorio <code>cache</code> dentro del directorio que contiene tu archivo de configuración. Si deseas cambiar esto, por favor ingresa una ruta absoluta o relativa (respecto al directorio de trabajo actual). Stash creará este directorio si aún no existe."
         },
         "stash_setup_wizard": "Asistente de configuración de Stash",
         "success": {
@@ -1218,16 +1228,20 @@
             "support_us": "Apóyanos",
             "thanks_for_trying_stash": "¡Gracias por usar Stash!",
             "welcome_contrib": "También agradecemos las contribuciones en forma de código de Stash (corrección de errores, mejoras y nuevas funcionalidades), prueba de versiones beta, informe de errores, solicitud de mejoras y nuevas funciones, y asistencia al usuario. Puedes ver más detalles en el apartado Contribución del manual de ayuda de la aplicación.",
-            "your_system_has_been_created": "¡Todo correcto! ¡Tu entorno ha sido creado!"
+            "your_system_has_been_created": "¡Todo correcto! ¡Tu entorno ha sido creado!",
+            "download_ffmpeg": "Descargar ffmpeg",
+            "missing_ffmpeg": "Te falta el binario <code>ffmpeg</code> necesario. Puedes descargarlo automáticamente en tu directorio de configuración marcando la casilla a continuación. Alternativamente, puedes proporcionar rutas a los binarios <code>ffmpeg</code> y <code>ffprobe</code> en la Configuración del Sistema. Estos binarios deben estar presentes para que Stash funcione."
         },
         "welcome": {
-            "config_path_logic_explained": "Stash intenta encontrar primero su archivo de configuración (<code>config.yml</code>) en el directorio actual de trabajo y, en caso de no encontrarlo, lo intenta en <code>$HOME/.stash/config.yml</code> (en Windows será <code>%USERPROFILE%\\.stash\\config.yml</code>). También puedes hacer que Stash obtenga su configuración de un archivo de configuración lanzando la aplicación con las opciones <code>-c '<ruta personalizada al archivo de configuración>'</code> o <code>--config '<ruta personalizada al archivo de configuración>'</code>.",
+            "config_path_logic_explained": "Stash intenta encontrar primero su archivo de configuración (<code>config.yml</code>) en el directorio actual de trabajo y, en caso de no encontrarlo, lo intenta en <code>{fallback_path}</code>. También puedes hacer que Stash obtenga su configuración de un archivo de configuración lanzando la aplicación con las opciones <code>-c '<ruta personalizada al archivo de configuración>'</code> o <code>--config '<ruta personalizada al archivo de configuración>'</code>.",
             "in_current_stash_directory": "En el directorio <code>{path}</code>:",
             "in_the_current_working_directory": "En <code>{path}</code>, el directorio de trabajo actual, actualmente:",
-            "next_step": "Si estás listo para crear un nuevo entorno, por favor, selecciona donde quieres guardar tu archivo de configuración y haz clic en siguiente.",
+            "next_step": "Si estás listo para crear un nuevo entorno, por favor, selecciona donde quieres guardar tu archivo de configuración.",
             "store_stash_config": "¿Dónde quieres guardar el fichero de configuración de Stash?",
             "unable_to_locate_config": "Si estás leyendo esto es que Stash no ha podido encontrar una configuración existente. Este asistente te guiará durante el proceso de creación de una nueva configuración.",
-            "unexpected_explained": "Si has llegado hasta esta ventana de forma inesperada, por favor, intenta reiniciar Stash en el directorio de trabajo correcto o con la opción <code>-c</code> ."
+            "unexpected_explained": "Si has llegado hasta esta ventana de forma inesperada, por favor, intenta reiniciar Stash en el directorio de trabajo correcto o con la opción <code>-c</code> .",
+            "in_the_current_working_directory_disabled": "En <code>{path}</code>, el directorio de trabajo:",
+            "in_the_current_working_directory_disabled_macos": "No es compatible al ejecutar <code>Stash.app</code>,<br></br>ejecuta <code>stash-macos</code> para configurar en el directorio de trabajo"
         },
         "welcome_specific_config": {
             "config_path": "Stash usará la siguiente ruta para el fichero de configuración: <code>{path}</code>",
@@ -1282,7 +1296,11 @@
         "started_auto_tagging": "Auto-etiquetado iniciado",
         "started_generating": "Generación de ficheros multimedia iniciada",
         "started_importing": "Importación iniciada",
-        "updated_entity": "{entity} actualizada"
+        "updated_entity": "{entity} actualizada",
+        "image_index_too_large": "Error: El índice de imagen es mayor que el número de imágenes en la galería",
+        "removed_entity": "Eliminada {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
+        "reassign_past_tense": "Archivo reasignado",
+        "merged_scenes": "Escenas fusionadas"
     },
     "total": "Total",
     "true": "Sí",
@@ -1357,7 +1375,42 @@
     "play_count": "Contador de reproducciones",
     "release_notes": "Notas de la versión",
     "studio_tagger": {
-        "add_new_studios": "Añadir nuevos estudios"
+        "add_new_studios": "Añadir nuevos estudios",
+        "query_all_studios_in_the_database": "Todos los estudios en la base de datos",
+        "create_or_tag_parent_studios": "Crear estudios principales faltantes o etiquetar los existentes",
+        "current_page": "Página actual",
+        "failed_to_save_studio": "Error al guardar el estudio \"{studio}\"",
+        "name_already_exists": "Ya existe ese nombre",
+        "no_results_found": "No se han encontrado resultados.",
+        "any_names_entered_will_be_queried": "Cualquier nombre ingresado será consultado desde la instancia remota de Stash-Box y se agregará si se encuentra. Solo se considerarán coincidencias exactas como una coincidencia.",
+        "batch_add_studios": "Agregar estudios en lote",
+        "config": {
+            "active_stash-box_instance": "Activar instancia stash-box:",
+            "create_parent_desc": "Crear estudios padres faltantes, o etiquetar y actualizar datos/imagen para estudios padres existentes con coincidencias exactas de nombre",
+            "create_parent_label": "Crear estudios principales",
+            "edit_excluded_fields": "Editar campos excluidos",
+            "no_fields_are_excluded": "Ningún campo ha sido excluido",
+            "no_instances_found": "No se han encontrado instancias",
+            "excluded_fields": "Campos excluidos:",
+            "these_fields_will_not_be_changed_when_updating_studios": "Estos campos no serán cambiados cuando se actualicen estudios."
+        },
+        "number_of_studios_will_be_processed": "{studio_count} estudios serán procesados",
+        "refreshing_will_update_the_data": "Recargar actualizará los datos de cualquier estudio etiquetado desde la instancia de stash-box.",
+        "status_tagging_job_queued": "Estado: trabajo de etiquetado en cola",
+        "status_tagging_studios": "Estado: etiquetando estudios",
+        "studio_already_tagged": "Estudio ya etiquetado",
+        "untagged_studios": "Estudios no etiquetados",
+        "studio_names_separated_by_comma": "Nombres de estudios separados por coma",
+        "studio_successfully_tagged": "Estudio etiquetado correctamente",
+        "tag_status": "Estado de etiquetado",
+        "to_use_the_studio_tagger": "Para usar el etiquetador de estudios una instancia de stash-box debe ser configurada.",
+        "update_studio": "Actualizar estudio",
+        "update_studios": "Actualizar estudios",
+        "updating_untagged_studios_description": "Actualizar los estudios sin etiquetar intentará hacer coincidir cualquier estudio que carezca de un stashid y actualizará los metadatos.",
+        "refresh_tagged_studios": "Recargar estudios etiquetados",
+        "studio_selection": "Selección de estudio",
+        "batch_update_studios": "Actualizar estudios en lote",
+        "network_error": "Error de red"
     },
     "weight_kg": "Peso (kg)",
     "penis_length": "Longitud del pene",
@@ -1393,5 +1446,22 @@
     "image_index": "Imagen #",
     "scene_code": "Código de estudio",
     "scene_updated_at": "Escena actualizada el",
-    "second": "Segundo"
+    "second": "Segundo",
+    "validation": {
+        "blank": "${path} no puede estar vacío",
+        "date_invalid_form": "${path} tiene que tener el formato YYYY-MM-DD",
+        "required": "${path} es un campo requerido",
+        "unique": "${path} tiene que ser único"
+    },
+    "subsidiary_studio_count": "Número de estudios secundarios",
+    "tag_parent_tooltip": "Tiene etiquetas primarias",
+    "tag_sub_tag_tooltip": "Tiene sub-etiquetas",
+    "time": "Hora",
+    "type": "Tipo",
+    "odate_recorded_no": "No hay registro de pajas grabado",
+    "urls": "URLs",
+    "zip_file_count": "Números de archivos zip",
+    "unknown_date": "Fecha desconocida",
+    "stash_id_endpoint": "Punto final de identificador (ID) de Stash",
+    "studio_and_parent": "Estudio y ancestro"
 }
