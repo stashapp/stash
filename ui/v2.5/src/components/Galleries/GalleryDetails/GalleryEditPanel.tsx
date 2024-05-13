@@ -18,14 +18,12 @@ import {
   useListGalleryScrapers,
   mutateReloadScrapers,
 } from "src/core/StashService";
-import { SceneSelect } from "src/components/Shared/Select";
 import { Icon } from "src/components/Shared/Icon";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { useToast } from "src/hooks/Toast";
 import { useFormik } from "formik";
 import { GalleryScrapeDialog } from "./GalleryScrapeDialog";
 import { faSyncAlt } from "@fortawesome/free-solid-svg-icons";
-import { galleryTitle } from "src/core/galleries";
 import isEqual from "lodash-es/isEqual";
 import { handleUnsavedChanges } from "src/utils/navigation";
 import {
@@ -40,6 +38,7 @@ import {
 import { formikUtils } from "src/utils/form";
 import { Tag, TagSelect } from "src/components/Tags/TagSelect";
 import { Studio, StudioSelect } from "src/components/Studios/StudioSelect";
+import { Scene, SceneSelect } from "src/components/Scenes/SceneSelect";
 
 interface IProps {
   gallery: Partial<GQL.GalleryDataFragment>;
@@ -56,12 +55,7 @@ export const GalleryEditPanel: React.FC<IProps> = ({
 }) => {
   const intl = useIntl();
   const Toast = useToast();
-  const [scenes, setScenes] = useState<{ id: string; title: string }[]>(
-    (gallery?.scenes ?? []).map((s) => ({
-      id: s.id,
-      title: galleryTitle(s),
-    }))
-  );
+  const [scenes, setScenes] = useState<Scene[]>([]);
 
   const [performers, setPerformers] = useState<Performer[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
@@ -116,12 +110,7 @@ export const GalleryEditPanel: React.FC<IProps> = ({
     onSubmit: (values) => onSave(schema.cast(values)),
   });
 
-  interface ISceneSelectValue {
-    id: string;
-    title: string;
-  }
-
-  function onSetScenes(items: ISceneSelectValue[]) {
+  function onSetScenes(items: Scene[]) {
     setScenes(items);
     formik.setFieldValue(
       "scene_ids",
@@ -161,6 +150,10 @@ export const GalleryEditPanel: React.FC<IProps> = ({
   useEffect(() => {
     setStudio(gallery.studio ?? null);
   }, [gallery.studio]);
+
+  useEffect(() => {
+    setScenes(gallery.scenes ?? []);
+  }, [gallery.scenes]);
 
   useEffect(() => {
     if (isVisible) {
@@ -412,7 +405,7 @@ export const GalleryEditPanel: React.FC<IProps> = ({
     const title = intl.formatMessage({ id: "scenes" });
     const control = (
       <SceneSelect
-        selected={scenes}
+        values={scenes}
         onSelect={(items) => onSetScenes(items)}
         isMulti
       />
