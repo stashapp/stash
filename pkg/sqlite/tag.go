@@ -29,6 +29,7 @@ const (
 type tagRow struct {
 	ID            int         `db:"id" goqu:"skipinsert"`
 	Name          null.String `db:"name"` // TODO: make schema non-nullable
+	Favorite      bool        `db:"favorite"`
 	Description   zero.String `db:"description"`
 	IgnoreAutoTag bool        `db:"ignore_auto_tag"`
 	CreatedAt     Timestamp   `db:"created_at"`
@@ -41,6 +42,7 @@ type tagRow struct {
 func (r *tagRow) fromTag(o models.Tag) {
 	r.ID = o.ID
 	r.Name = null.StringFrom(o.Name)
+	r.Favorite = o.Favorite
 	r.Description = zero.StringFrom(o.Description)
 	r.IgnoreAutoTag = o.IgnoreAutoTag
 	r.CreatedAt = Timestamp{Timestamp: o.CreatedAt}
@@ -51,6 +53,7 @@ func (r *tagRow) resolve() *models.Tag {
 	ret := &models.Tag{
 		ID:            r.ID,
 		Name:          r.Name.String,
+		Favorite:      r.Favorite,
 		Description:   r.Description.String,
 		IgnoreAutoTag: r.IgnoreAutoTag,
 		CreatedAt:     r.CreatedAt.Timestamp,
@@ -81,6 +84,7 @@ type tagRowRecord struct {
 func (r *tagRowRecord) fromPartial(o models.TagPartial) {
 	r.setString("name", o.Name)
 	r.setNullString("description", o.Description)
+	r.setBool("favorite", o.Favorite)
 	r.setBool("ignore_auto_tag", o.IgnoreAutoTag)
 	r.setTimestamp("created_at", o.CreatedAt)
 	r.setTimestamp("updated_at", o.UpdatedAt)
@@ -498,6 +502,7 @@ func (qb *TagStore) makeFilter(ctx context.Context, tagFilter *models.TagFilterT
 	query.handleCriterion(ctx, stringCriterionHandler(tagFilter.Name, tagTable+".name"))
 	query.handleCriterion(ctx, tagAliasCriterionHandler(qb, tagFilter.Aliases))
 
+	query.handleCriterion(ctx, boolCriterionHandler(tagFilter.Favorite, tagTable+".favorite", nil))
 	query.handleCriterion(ctx, stringCriterionHandler(tagFilter.Description, tagTable+".description"))
 	query.handleCriterion(ctx, boolCriterionHandler(tagFilter.IgnoreAutoTag, tagTable+".ignore_auto_tag", nil))
 
