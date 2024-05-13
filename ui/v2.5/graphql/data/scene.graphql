@@ -91,7 +91,7 @@ fragment SelectSceneData on Scene {
   files {
     path
   }
-  paths{
+  paths {
     screenshot
   }
 }
