@@ -8,23 +8,37 @@ import { StudioSelect } from "src/components/Shared/Select";
 import { ModalComponent } from "src/components/Shared/Modal";
 import { useToast } from "src/hooks/Toast";
 import * as FormUtils from "src/utils/form";
-import { MultiSet } from "../Shared/MultiSet";
+import { MultiSelect, MultiString } from "../Shared/MultiSet";
 import { RatingSystem } from "../Shared/Rating/RatingSystem";
 import {
   getAggregateGalleryIds,
   getAggregateInputIDs,
+  getAggregateInputStrings,
   getAggregateInputValue,
+  getAggregateStateObject,
   getAggregatePerformerIds,
   getAggregateRating,
   getAggregateStudioId,
   getAggregateTagIds,
+  getAggregateUrls,
 } from "src/utils/bulkUpdate";
+import { BulkUpdateTextInput } from "../Shared/BulkUpdateTextInput";
 import { faPencilAlt } from "@fortawesome/free-solid-svg-icons";
 
 interface IListOperationProps {
   selected: GQL.SlimImageDataFragment[];
   onClose: (applied: boolean) => void;
+  showAllFields?: boolean;
 }
+
+const imageFields = [
+  "title",
+  "scene_code",
+  "details",
+  "photographer",
+  "date",
+  "urls",
+];
 
 export const EditImagesDialog: React.FC<IListOperationProps> = (
   props: IListOperationProps
@@ -33,6 +47,13 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
   const Toast = useToast();
   const [rating100, setRating] = useState<number>();
   const [studioId, setStudioId] = useState<string>();
+  const [urlsMode, setUrlsMode] =
+  React.useState<GQL.BulkUpdateIdMode>(GQL.BulkUpdateIdMode.Add);
+  const [urls, setUrls] = useState<string[]>();
+  const [existingUrls, setExistingUrls] = useState<string[]>();
+  const selectedUrls = props.selected.map((image) => ({
+    urls: image.urls.map((url) => ({ value: url }))
+  }));
   const [performerMode, setPerformerMode] =
     React.useState<GQL.BulkUpdateIdMode>(GQL.BulkUpdateIdMode.Add);
   const [performerIds, setPerformerIds] = useState<string[]>();
@@ -52,12 +73,22 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
 
   const [organized, setOrganized] = useState<boolean | undefined>();
 
+  const [updateInput, setUpdateInput] = useState<GQL.BulkImageUpdateInput>(
+    {}
+  );
+
+  const [showAllFields, setShowAllFields] = useState(props.showAllFields ?? false);
+
   const [updateImages] = useBulkImageUpdate();
 
   // Network state
   const [isUpdating, setIsUpdating] = useState(false);
 
   const checkboxRef = React.createRef<HTMLInputElement>();
+
+  function setUpdateField(input: Partial<GQL.BulkImageUpdateInput>) {
+    setUpdateInput({ ...updateInput, ...input });
+  }
 
   function getImageInput(): GQL.BulkImageUpdateInput {
     // need to determine what we are actually setting on each image
@@ -66,15 +97,23 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
     const aggregatePerformerIds = getAggregatePerformerIds(props.selected);
     const aggregateTagIds = getAggregateTagIds(props.selected);
     const aggregateGalleryIds = getAggregateGalleryIds(props.selected);
+    const aggregateUrls = getAggregateUrls(selectedUrls);
 
     const imageInput: GQL.BulkImageUpdateInput = {
       ids: props.selected.map((image) => {
         return image.id;
       }),
+      ...updateInput,
     };
 
     imageInput.rating100 = getAggregateInputValue(rating100, aggregateRating);
     imageInput.studio_id = getAggregateInputValue(studioId, aggregateStudioId);
+
+    imageInput.urls = getAggregateInputStrings(
+      urlsMode,
+      urls,
+      aggregateUrls
+    );
 
     imageInput.performer_ids = getAggregateInputIDs(
       performerMode,
@@ -123,10 +162,12 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
     let updatePerformerIds: string[] = [];
     let updateTagIds: string[] = [];
     let updateGalleryIds: string[] = [];
+    let updateUrls: string[] = [];
     let updateOrganized: boolean | undefined;
     let first = true;
 
     state.forEach((image: GQL.SlimImageDataFragment) => {
+      getAggregateStateObject(state, image, imageFields, first);
       const imageRating = image.rating100;
       const imageStudioID = image?.studio?.id;
       const imagePerformerIDs = (image.performers ?? [])
@@ -134,6 +175,7 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
         .sort();
       const imageTagIDs = (image.tags ?? []).map((p) => p.id).sort();
       const imageGalleryIDs = (image.galleries ?? []).map((p) => p.id).sort();
+      const imageUrls = (image.urls ?? []);
 
       if (first) {
         updateRating = imageRating ?? undefined;
@@ -141,6 +183,7 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
         updatePerformerIds = imagePerformerIDs;
         updateTagIds = imageTagIDs;
         updateGalleryIds = imageGalleryIDs;
+        updateUrls = imageUrls;
         updateOrganized = image.organized;
         first = false;
       } else {
@@ -152,6 +195,9 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
         }
         if (!isEqual(imagePerformerIDs, updatePerformerIds)) {
           updatePerformerIds = [];
+        }
+        if (!isEqual(imageUrls, updateUrls)) {
+          updateUrls = [];
         }
         if (!isEqual(imageTagIDs, updateTagIds)) {
           updateTagIds = [];
@@ -170,6 +216,7 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
     setExistingPerformerIds(updatePerformerIds);
     setExistingTagIds(updateTagIds);
     setExistingGalleryIds(updateGalleryIds);
+    setExistingUrls(updateUrls);
     setOrganized(updateOrganized);
   }, [props.selected, performerMode, tagMode]);
 
@@ -187,6 +234,42 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
     } else {
       setOrganized(true);
     }
+  }
+
+  function renderURLMultiSelect(
+    urls: string[] | undefined
+  ) {
+    return (
+      <MultiString
+        disabled={isUpdating}
+        onUpdate={(itemIDs) => {setUrls(itemIDs)}}
+        onSetMode={(newMode) => {setUrlsMode(newMode)}}
+        strings={urls ?? []}
+        existing={existingUrls ?? []}
+        mode={urlsMode}
+      />
+    );
+  }
+
+  function renderTextField(
+    name: string,
+    value: string | undefined | null,
+    setter: (newValue: string | undefined) => void,
+    isDetails: Boolean = false
+  ) {
+    return (
+      <Form.Group controlId={name}>
+        <Form.Label>
+          <FormattedMessage id={name} />
+        </Form.Label>
+        <BulkUpdateTextInput
+          as={isDetails ? 'textarea' : undefined}
+          value={value === null ? "" : value ?? undefined}
+          valueChanged={(newValue) => setter(newValue)}
+          unsetDisabled={props.selected.length < 2}
+        />
+      </Form.Group>
+    );
   }
 
   function render() {
@@ -211,6 +294,15 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
           text: intl.formatMessage({ id: "actions.cancel" }),
           variant: "secondary",
         }}
+        leftFooterButtons={
+          <Form.Group controlId="toggle-all">
+            <Form.Switch
+              label={intl.formatMessage({ id: "actions.all_fields" })}
+              checked={showAllFields}
+              onChange={() => setShowAllFields(!showAllFields)}
+            />
+          </Form.Group>
+        }
         isRunning={isUpdating}
       >
         <Form>
@@ -226,6 +318,27 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
               />
             </Col>
           </Form.Group>
+
+          {showAllFields && renderTextField("title", updateInput.title, (v) =>
+            setUpdateField({ title: v })
+          )}
+          {showAllFields && renderTextField("scene_code", updateInput.code, (v) =>
+            setUpdateField({ code: v })
+          )}
+          {showAllFields && 
+          <Form.Group controlId="urls">
+            <Form.Label>
+              <FormattedMessage id="urls" />
+            </Form.Label>
+            {renderURLMultiSelect(urls)}
+          </Form.Group>}
+          {showAllFields && renderTextField("photographer", updateInput.photographer, (v) =>
+            setUpdateField({ photographer: v })
+          )}
+          {showAllFields && renderTextField("date", updateInput.date, (v) =>
+            setUpdateField({ date: v })
+          )}
+
           <Form.Group controlId="studio" as={Row}>
             {FormUtils.renderLabel({
               title: intl.formatMessage({ id: "studio" }),
@@ -245,12 +358,12 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
             <Form.Label>
               <FormattedMessage id="performers" />
             </Form.Label>
-            <MultiSet
+            <MultiSelect
               type="performers"
               disabled={isUpdating}
               onUpdate={(itemIDs) => setPerformerIds(itemIDs)}
               onSetMode={(newMode) => setPerformerMode(newMode)}
-              existingIds={existingPerformerIds ?? []}
+              existing={existingPerformerIds ?? []}
               ids={performerIds ?? []}
               mode={performerMode}
             />
@@ -260,12 +373,12 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
             <Form.Label>
               <FormattedMessage id="tags" />
             </Form.Label>
-            <MultiSet
+            <MultiSelect
               type="tags"
               disabled={isUpdating}
               onUpdate={(itemIDs) => setTagIds(itemIDs)}
               onSetMode={(newMode) => setTagMode(newMode)}
-              existingIds={existingTagIds ?? []}
+              existing={existingTagIds ?? []}
               ids={tagIds ?? []}
               mode={tagMode}
             />
@@ -275,16 +388,20 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
             <Form.Label>
               <FormattedMessage id="galleries" />
             </Form.Label>
-            <MultiSet
+            <MultiSelect
               type="galleries"
               disabled={isUpdating}
               onUpdate={(itemIDs) => setGalleryIds(itemIDs)}
               onSetMode={(newMode) => setGalleryMode(newMode)}
-              existingIds={existingGalleryIds ?? []}
+              existing={existingGalleryIds ?? []}
               ids={galleryIds ?? []}
               mode={galleryMode}
             />
           </Form.Group>
+
+          {showAllFields && renderTextField("details", updateInput.details, (v) =>
+            setUpdateField({ details: v }), true
+          )}
 
           <Form.Group controlId="organized">
             <Form.Check

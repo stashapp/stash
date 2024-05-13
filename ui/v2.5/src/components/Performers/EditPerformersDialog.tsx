@@ -5,12 +5,14 @@ import { useBulkPerformerUpdate } from "src/core/StashService";
 import * as GQL from "src/core/generated-graphql";
 import { ModalComponent } from "../Shared/Modal";
 import { useToast } from "src/hooks/Toast";
-import { MultiSet } from "../Shared/MultiSet";
+import { MultiSelect, MultiString } from "../Shared/MultiSet";
 import { RatingSystem } from "../Shared/Rating/RatingSystem";
 import {
   getAggregateInputValue,
   getAggregateState,
   getAggregateStateObject,
+  getAggregateInputStrings,
+  getAggregateAliases
 } from "src/utils/bulkUpdate";
 import {
   genderStrings,
@@ -31,6 +33,7 @@ import { CountrySelect } from "../Shared/CountrySelect";
 interface IListOperationProps {
   selected: GQL.SlimPerformerDataFragment[];
   onClose: (applied: boolean) => void;
+  showAllFields?: boolean;
 }
 
 const performerFields = [
@@ -64,6 +67,13 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
 ) => {
   const intl = useIntl();
   const Toast = useToast();
+  const [aliasesMode, setAliasesMode] =
+  React.useState<GQL.BulkUpdateIdMode>(GQL.BulkUpdateIdMode.Add);
+  const [aliases, setAliases] = useState<string[]>();
+  const [existingAliases, setExistingAliases] = useState<string[]>();
+  const selectedAliases = props.selected.map((performer) => ({
+    aliases: performer.alias_list.map((alias) => ({ value: alias }))
+  }));
   const [tagIds, setTagIds] = useState<GQL.BulkUpdateIds>({
     mode: GQL.BulkUpdateIdMode.Add,
   });
@@ -80,6 +90,8 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
   const genderOptions = [""].concat(genderStrings);
   const circumcisedOptions = [""].concat(circumcisedStrings);
 
+  const [showAllFields, setShowAllFields] = useState(props.showAllFields ?? false);
+
   const [updatePerformers] = useBulkPerformerUpdate(getPerformerInput());
 
   // Network state
@@ -90,6 +102,8 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
   }
 
   function getPerformerInput(): GQL.BulkPerformerUpdateInput {
+    const aggregateAliases = getAggregateAliases(selectedAliases);
+    
     const performerInput: GQL.BulkPerformerUpdateInput = {
       ids: props.selected.map((performer) => {
         return performer.id;
@@ -97,6 +111,12 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
       ...updateInput,
       tag_ids: tagIds,
     };
+
+    performerInput.alias_list = getAggregateInputStrings(
+      aliasesMode,
+      aliases,
+      aggregateAliases
+    );
 
     // we don't have unset functionality for the rating star control
     // so need to determine if we are setting a rating or not
@@ -159,15 +179,20 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
     let updateHeight: string | undefined | null = undefined;
     let updateWeight: string | undefined | null = undefined;
     let updatePenisLength: string | undefined | null = undefined;
+    let updateAliases: string[] = [];
     let first = true;
 
     state.forEach((performer: GQL.SlimPerformerDataFragment) => {
       getAggregateStateObject(updateState, performer, performerFields, first);
 
       const performerTagIDs = (performer.tags ?? []).map((p) => p.id).sort();
+      const performerAliases = (performer.alias_list ?? []);
 
       updateTagIds =
         getAggregateState(updateTagIds, performerTagIDs, first) ?? [];
+
+      updateAliases = 
+        getAggregateState(updateAliases, performerAliases, first) ?? [];
 
       const thisHeight =
         performer.height_cm !== undefined && performer.height_cm !== null
@@ -197,14 +222,31 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
     setExistingTagIds(updateTagIds);
     setHeight(updateHeight);
     setWeight(updateWeight);
+    setExistingAliases(updateAliases);
     setAggregateState(updateState);
     setUpdateInput(updateState);
   }, [props.selected]);
 
+  function renderAliasMultiSelect(
+    aliases: string[] | undefined
+  ) {
+    return (
+      <MultiString
+        disabled={isUpdating}
+        onUpdate={(itemIDs) => {setAliases(itemIDs)}}
+        onSetMode={(newMode) => {setAliasesMode(newMode)}}
+        strings={aliases ?? []}
+        existing={existingAliases ?? []}
+        mode={aliasesMode}
+      />
+    );
+  }
+
   function renderTextField(
     name: string,
     value: string | undefined | null,
-    setter: (newValue: string | undefined) => void
+    setter: (newValue: string | undefined) => void,
+    isDetails: Boolean = false
   ) {
     return (
       <Form.Group controlId={name}>
@@ -212,6 +254,7 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
           <FormattedMessage id={name} />
         </Form.Label>
         <BulkUpdateTextInput
+          as={isDetails ? 'textarea' : undefined}
           value={value === null ? "" : value ?? undefined}
           valueChanged={(newValue) => setter(newValue)}
           unsetDisabled={props.selected.length < 2}
@@ -239,6 +282,15 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
           text: intl.formatMessage({ id: "actions.cancel" }),
           variant: "secondary",
         }}
+        leftFooterButtons={
+          <Form.Group controlId="toggle-all">
+            <Form.Switch
+              label={intl.formatMessage({ id: "actions.all_fields" })}
+              checked={showAllFields}
+              onChange={() => setShowAllFields(!showAllFields)}
+            />
+          </Form.Group>
+        }
         isRunning={isUpdating}
       >
         <Form.Group controlId="rating" as={Row}>
@@ -286,13 +338,20 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
             </Form.Control>
           </Form.Group>
 
-          {renderTextField("disambiguation", updateInput.disambiguation, (v) =>
+          {showAllFields && renderTextField("disambiguation", updateInput.disambiguation, (v) =>
             setUpdateField({ disambiguation: v })
           )}
-          {renderTextField("birthdate", updateInput.birthdate, (v) =>
+          {showAllFields && 
+          <Form.Group controlId="aliases">
+            <Form.Label>
+              <FormattedMessage id="aliases" />
+            </Form.Label>
+            {renderAliasMultiSelect(aliases)}
+          </Form.Group>}
+          {showAllFields && renderTextField("birthdate", updateInput.birthdate, (v) =>
             setUpdateField({ birthdate: v })
           )}
-          {renderTextField("death_date", updateInput.death_date, (v) =>
+          {showAllFields && renderTextField("death_date", updateInput.death_date, (v) =>
             setUpdateField({ death_date: v })
           )}
 
@@ -307,24 +366,25 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
             />
           </Form.Group>
 
-          {renderTextField("ethnicity", updateInput.ethnicity, (v) =>
+          {showAllFields && renderTextField("ethnicity", updateInput.ethnicity, (v) =>
             setUpdateField({ ethnicity: v })
           )}
-          {renderTextField("hair_color", updateInput.hair_color, (v) =>
+          {showAllFields && renderTextField("hair_color", updateInput.hair_color, (v) =>
             setUpdateField({ hair_color: v })
           )}
-          {renderTextField("eye_color", updateInput.eye_color, (v) =>
+          {showAllFields && renderTextField("eye_color", updateInput.eye_color, (v) =>
             setUpdateField({ eye_color: v })
           )}
-          {renderTextField("height", height, (v) => setHeight(v))}
-          {renderTextField("weight", weight, (v) => setWeight(v))}
-          {renderTextField("measurements", updateInput.measurements, (v) =>
+          {showAllFields && renderTextField("height", height, (v) => setHeight(v))}
+          {showAllFields && renderTextField("weight", weight, (v) => setWeight(v))}
+          {showAllFields && renderTextField("measurements", updateInput.measurements, (v) =>
             setUpdateField({ measurements: v })
           )}
-          {renderTextField("penis_length", penis_length, (v) =>
+          {showAllFields && renderTextField("penis_length", penis_length, (v) =>
             setPenisLength(v)
           )}
 
+          {showAllFields && 
           <Form.Group>
             <Form.Label>
               <FormattedMessage id="circumcised" />
@@ -346,26 +406,27 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
               ))}
             </Form.Control>
           </Form.Group>
+          }
 
-          {renderTextField("fake_tits", updateInput.fake_tits, (v) =>
+          {showAllFields && renderTextField("fake_tits", updateInput.fake_tits, (v) =>
             setUpdateField({ fake_tits: v })
           )}
-          {renderTextField("tattoos", updateInput.tattoos, (v) =>
-            setUpdateField({ tattoos: v })
+          {showAllFields && renderTextField("tattoos", updateInput.tattoos, (v) =>
+            setUpdateField({ tattoos: v }), true
           )}
-          {renderTextField("piercings", updateInput.piercings, (v) =>
-            setUpdateField({ piercings: v })
+          {showAllFields && renderTextField("piercings", updateInput.piercings, (v) =>
+            setUpdateField({ piercings: v }), true
           )}
-          {renderTextField("career_length", updateInput.career_length, (v) =>
+          {showAllFields && renderTextField("career_length", updateInput.career_length, (v) =>
             setUpdateField({ career_length: v })
           )}
-          {renderTextField("url", updateInput.url, (v) =>
+          {showAllFields && renderTextField("url", updateInput.url, (v) =>
             setUpdateField({ url: v })
           )}
-          {renderTextField("twitter", updateInput.twitter, (v) =>
+          {showAllFields && renderTextField("twitter", updateInput.twitter, (v) =>
             setUpdateField({ twitter: v })
           )}
-          {renderTextField("instagram", updateInput.instagram, (v) =>
+          {showAllFields && renderTextField("instagram", updateInput.instagram, (v) =>
             setUpdateField({ instagram: v })
           )}
 
@@ -373,16 +434,20 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
             <Form.Label>
               <FormattedMessage id="tags" />
             </Form.Label>
-            <MultiSet
+            <MultiSelect
               type="tags"
               disabled={isUpdating}
               onUpdate={(itemIDs) => setTagIds({ ...tagIds, ids: itemIDs })}
               onSetMode={(newMode) => setTagIds({ ...tagIds, mode: newMode })}
-              existingIds={existingTagIds ?? []}
+              existing={existingTagIds ?? []}
               ids={tagIds.ids ?? []}
               mode={tagIds.mode}
             />
           </Form.Group>
+
+          {showAllFields && renderTextField("details", updateInput.details, (v) =>
+            setUpdateField({ details: v }), true
+          )}
 
           <Form.Group controlId="ignore-auto-tags">
             <IndeterminateCheckbox

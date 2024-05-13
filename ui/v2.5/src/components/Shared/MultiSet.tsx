@@ -11,7 +11,7 @@ import {
 import { StringListInput } from "./StringListInput";
 
 interface IMultiSetProps {
-  existingIds?: string[];
+  existing?: string[];
   mode: GQL.BulkUpdateIdMode;
   disabled?: boolean;
   onUpdate: (ids: string[]) => void;
@@ -56,7 +56,7 @@ const Select: React.FC<IMultiSelectProps> = (props) => {
   );
 };
 
-const MultiSetSelector: React.FC<IMultiSetProps> = (props) => {
+const MultiSet: React.FC<IMultiSetProps> = (props) => {
   const intl = useIntl();
   const modes = [
     GQL.BulkUpdateIdMode.Set,
@@ -87,8 +87,8 @@ const MultiSetSelector: React.FC<IMultiSetProps> = (props) => {
     }
 
     // if going to Set, set the existing ids
-    if (mode === GQL.BulkUpdateIdMode.Set && props.existingIds) {
-      props.onUpdate(props.existingIds);
+    if (mode === GQL.BulkUpdateIdMode.Set && props.existing) {
+      props.onUpdate(props.existing);
       // if going from Set, wipe the ids
     } else if (
       mode !== GQL.BulkUpdateIdMode.Set &&
@@ -131,9 +131,9 @@ interface IMultiStringProps extends IMultiSetProps {
 export const MultiString: React.FC<IMultiStringProps> = (props) => {
     return (
     <div className="multi-string">
-      <MultiSetSelector
+      <MultiSet
         mode={props.mode}
-        existingIds={props.existingIds}
+        existing={props.existing}
         onUpdate={props.onUpdate}
         onSetMode={props.onSetMode}
         disabled={props.disabled}
@@ -148,12 +148,12 @@ export const MultiString: React.FC<IMultiStringProps> = (props) => {
   );
 };
 
-export const MultiSet: React.FC<IMultiSelectProps> = (props) => {
+export const MultiSelect: React.FC<IMultiSelectProps> = (props) => {
   return (
     <div className="multi-set">
-      <MultiSetSelector
+      <MultiSet
         mode={props.mode}
-        existingIds={props.existingIds}
+        existing={props.existing}
         onUpdate={props.onUpdate}
         onSetMode={props.onSetMode}
         disabled={props.disabled}

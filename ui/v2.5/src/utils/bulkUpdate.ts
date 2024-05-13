@@ -75,6 +75,11 @@ export function getAggregateUrls(state: { urls: IHasString[] }[]) {
   return getAggregateIds(sortedLists);
 }
 
+export function getAggregateAliases(state: { aliases: IHasString[] }[]) {
+  const sortedLists = state.map((o) => o.aliases.map((oo) => oo.value).sort());
+  return getAggregateIds(sortedLists);
+}
+
 export function getAggregateGalleryIds(state: { galleries: IHasID[] }[]) {
   const sortedLists = state.map((o) => o.galleries.map((oo) => oo.id).sort());
   return getAggregateIds(sortedLists);

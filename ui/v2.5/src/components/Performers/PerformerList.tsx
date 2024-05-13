@@ -306,6 +306,13 @@ export const PerformerList: React.FC<IPerformerList> = ({
     );
   }
 
+  function renderEditDialogAllFields(
+    selectedPerformers: GQL.SlimPerformerDataFragment[],
+    onClose: (applied: boolean) => void
+  ) {
+    return <EditPerformersDialog selected={selectedPerformers} onClose={onClose} showAllFields={true} />;
+  }
+
   function renderDeleteDialog(
     selectedPerformers: GQL.SlimPerformerDataFragment[],
     onClose: (confirmed: boolean) => void
@@ -331,6 +338,7 @@ export const PerformerList: React.FC<IPerformerList> = ({
       addKeybinds={addKeybinds}
       renderContent={renderContent}
       renderEditDialog={renderEditDialog}
+      renderEditDialogAllFields={renderEditDialogAllFields}
       renderDeleteDialog={renderDeleteDialog}
     />
   );

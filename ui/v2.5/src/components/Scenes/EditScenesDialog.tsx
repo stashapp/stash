@@ -6,7 +6,7 @@ import { useBulkSceneUpdate } from "src/core/StashService";
 import * as GQL from "src/core/generated-graphql";
 import { StudioSelect } from "../Shared/Select";
 import { ModalComponent } from "../Shared/Modal";
-import { MultiSet, MultiString } from "../Shared/MultiSet";
+import { MultiSelect, MultiString } from "../Shared/MultiSet";
 import { useToast } from "src/hooks/Toast";
 import * as FormUtils from "src/utils/form";
 import { RatingSystem } from "../Shared/Rating/RatingSystem";
@@ -160,8 +160,6 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
   }
 
   useEffect(() => {
-    const updateState: GQL.BulkSceneUpdateInput = {};
-
     const state = props.selected;
     let updateRating: number | undefined;
     let updateStudioID: string | undefined;
@@ -174,7 +172,7 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
     let first = true;
 
     state.forEach((scene: GQL.SlimSceneDataFragment) => {
-      getAggregateStateObject(updateState, scene, sceneFields, first);
+      getAggregateStateObject(state, scene, sceneFields, first);
       const sceneRating = scene.rating100;
       const sceneStudioID = scene?.studio?.id;
       const scenePerformerIDs = (scene.performers ?? [])
@@ -242,15 +240,14 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
   function renderURLMultiSelect(
     urls: string[] | undefined
   ) {
-    let mode = urlsMode;
     return (
       <MultiString
         disabled={isUpdating}
         onUpdate={(itemIDs) => {setUrls(itemIDs)}}
         onSetMode={(newMode) => {setUrlsMode(newMode)}}
         strings={urls ?? []}
-        existingIds={existingUrls ?? []}
-        mode={mode}
+        existing={existingUrls ?? []}
+        mode={urlsMode}
       />
     );
   }
@@ -281,7 +278,7 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
     }
 
     return (
-      <MultiSet
+      <MultiSelect
         type={type}
         disabled={isUpdating}
         onUpdate={(itemIDs) => {
@@ -317,7 +314,7 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
           }
         }}
         ids={ids ?? []}
-        existingIds={existingIds ?? []}
+        existing={existingIds ?? []}
         mode={mode}
       />
     );

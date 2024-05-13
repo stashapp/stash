@@ -409,6 +409,13 @@ export const ImageList: React.FC<IImageList> = ({
     return <EditImagesDialog selected={selectedImages} onClose={onClose} />;
   }
 
+  function renderEditDialogAllFields(
+    selectedImages: GQL.SlimImageDataFragment[],
+    onClose: (applied: boolean) => void
+  ) {
+    return <EditImagesDialog selected={selectedImages} onClose={onClose} showAllFields={true} />;
+  }
+
   function renderDeleteDialog(
     selectedImages: GQL.SlimImageDataFragment[],
     onClose: (confirmed: boolean) => void
@@ -428,6 +435,7 @@ export const ImageList: React.FC<IImageList> = ({
       addKeybinds={addKeybinds}
       renderContent={renderContent}
       renderEditDialog={renderEditDialog}
+      renderEditDialogAllFields={renderEditDialogAllFields}
       renderDeleteDialog={renderDeleteDialog}
     />
   );
