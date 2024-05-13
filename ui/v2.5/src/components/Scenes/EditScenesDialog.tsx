@@ -1,31 +1,45 @@
 import React, { useEffect, useState } from "react";
-import { Button, Form, Col, Row } from "react-bootstrap";
+import { Form, Col, Row } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import isEqual from "lodash-es/isEqual";
 import { useBulkSceneUpdate } from "src/core/StashService";
 import * as GQL from "src/core/generated-graphql";
 import { StudioSelect } from "../Shared/Select";
 import { ModalComponent } from "../Shared/Modal";
-import { MultiSet } from "../Shared/MultiSet";
+import { MultiSet, MultiString } from "../Shared/MultiSet";
 import { useToast } from "src/hooks/Toast";
 import * as FormUtils from "src/utils/form";
 import { RatingSystem } from "../Shared/Rating/RatingSystem";
 import {
   getAggregateInputIDs,
+  getAggregateInputStrings,
   getAggregateInputValue,
+  getAggregateStateObject,
   getAggregateMovieIds,
   getAggregatePerformerIds,
   getAggregateRating,
   getAggregateStudioId,
   getAggregateTagIds,
+  getAggregateGalleryIds,
+  getAggregateUrls,
 } from "src/utils/bulkUpdate";
+import { BulkUpdateTextInput } from "../Shared/BulkUpdateTextInput";
 import { faPencilAlt } from "@fortawesome/free-solid-svg-icons";
-import { EditAllScenesDialog } from "./EditAllScenesDialog";
 
 interface IListOperationProps {
   selected: GQL.SlimSceneDataFragment[];
   onClose: (applied: boolean) => void;
+  showAllFields?: boolean;
 }
+
+const sceneFields = [
+  "title",
+  "scene_code",
+  "details",
+  "director",
+  "date",
+  "urls",
+];
 
 export const EditScenesDialog: React.FC<IListOperationProps> = (
   props: IListOperationProps
@@ -34,6 +48,13 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
   const Toast = useToast();
   const [rating100, setRating] = useState<number>();
   const [studioId, setStudioId] = useState<string>();
+  const [urlsMode, setUrlsMode] =
+    React.useState<GQL.BulkUpdateIdMode>(GQL.BulkUpdateIdMode.Add);
+  const [urls, setUrls] = useState<string[]>();
+  const [existingUrls, setExistingUrls] = useState<string[]>();
+  const selectedUrls = props.selected.map((scene) => ({
+    urls: scene.urls.map((url) => ({ value: url }))
+  }));
   const [performerMode, setPerformerMode] =
     React.useState<GQL.BulkUpdateIdMode>(GQL.BulkUpdateIdMode.Add);
   const [performerIds, setPerformerIds] = useState<string[]>();
@@ -48,16 +69,28 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
   );
   const [movieIds, setMovieIds] = useState<string[]>();
   const [existingMovieIds, setExistingMovieIds] = useState<string[]>();
+  const [galleryMode, setGalleryMode] = React.useState<GQL.BulkUpdateIdMode>(
+    GQL.BulkUpdateIdMode.Add
+  );
+  const [galleryIds, setGalleryIds] = useState<string[]>();
+  const [existingGalleryIds, setExistingGalleryIds] = useState<string[]>();
   const [organized, setOrganized] = useState<boolean | undefined>();
+  const [updateInput, setUpdateInput] = useState<GQL.BulkSceneUpdateInput>(
+    {}
+  );
+
+  const [showAllFields, setShowAllFields] = useState(props.showAllFields ?? false);
 
   const [updateScenes] = useBulkSceneUpdate(getSceneInput());
-
-  const [showEditAllDialog, setShowEditAllDialog] = useState(false);
 
   // Network state
   const [isUpdating, setIsUpdating] = useState(false);
 
   const checkboxRef = React.createRef<HTMLInputElement>();
+
+  function setUpdateField(input: Partial<GQL.BulkSceneUpdateInput>) {
+    setUpdateInput({ ...updateInput, ...input });
+  }
 
   function getSceneInput(): GQL.BulkSceneUpdateInput {
     // need to determine what we are actually setting on each scene
@@ -66,15 +99,24 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
     const aggregatePerformerIds = getAggregatePerformerIds(props.selected);
     const aggregateTagIds = getAggregateTagIds(props.selected);
     const aggregateMovieIds = getAggregateMovieIds(props.selected);
+    const aggregateGalleryIds = getAggregateGalleryIds(props.selected);
+    const aggregateUrls = getAggregateUrls(selectedUrls);
 
     const sceneInput: GQL.BulkSceneUpdateInput = {
       ids: props.selected.map((scene) => {
         return scene.id;
       }),
+      ...updateInput,
     };
 
     sceneInput.rating100 = getAggregateInputValue(rating100, aggregateRating);
     sceneInput.studio_id = getAggregateInputValue(studioId, aggregateStudioId);
+
+    sceneInput.urls = getAggregateInputStrings(
+      urlsMode,
+      urls,
+      aggregateUrls
+    );
 
     sceneInput.performer_ids = getAggregateInputIDs(
       performerMode,
@@ -86,6 +128,11 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
       movieMode,
       movieIds,
       aggregateMovieIds
+    );
+    sceneInput.gallery_ids = getAggregateInputIDs(
+      galleryMode, 
+      galleryIds, 
+      aggregateGalleryIds
     );
 
     if (organized !== undefined) {
@@ -113,16 +160,21 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
   }
 
   useEffect(() => {
+    const updateState: GQL.BulkSceneUpdateInput = {};
+
     const state = props.selected;
     let updateRating: number | undefined;
     let updateStudioID: string | undefined;
     let updatePerformerIds: string[] = [];
     let updateTagIds: string[] = [];
     let updateMovieIds: string[] = [];
+    let updateGalleryIds: string[] = [];
+    let updateUrls: string[] = [];
     let updateOrganized: boolean | undefined;
     let first = true;
 
     state.forEach((scene: GQL.SlimSceneDataFragment) => {
+      getAggregateStateObject(updateState, scene, sceneFields, first);
       const sceneRating = scene.rating100;
       const sceneStudioID = scene?.studio?.id;
       const scenePerformerIDs = (scene.performers ?? [])
@@ -130,6 +182,8 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
         .sort();
       const sceneTagIDs = (scene.tags ?? []).map((p) => p.id).sort();
       const sceneMovieIDs = (scene.movies ?? []).map((m) => m.movie.id).sort();
+      const sceneGalleryIDs = (scene.galleries ?? []).map((g) => g.id).sort();
+      const sceneUrls = (scene.urls ?? []);
 
       if (first) {
         updateRating = sceneRating ?? undefined;
@@ -137,6 +191,8 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
         updatePerformerIds = scenePerformerIDs;
         updateTagIds = sceneTagIDs;
         updateMovieIds = sceneMovieIDs;
+        updateGalleryIds = sceneGalleryIDs;
+        updateUrls = sceneUrls;
         first = false;
         updateOrganized = scene.organized;
       } else {
@@ -155,6 +211,12 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
         if (!isEqual(sceneMovieIDs, updateMovieIds)) {
           updateMovieIds = [];
         }
+        if (!isEqual(sceneGalleryIDs, updateGalleryIds)) {
+          updateGalleryIds = [];
+        }
+        if (!isEqual(sceneUrls, updateUrls)) {
+          updateUrls = [];
+        }
         if (scene.organized !== updateOrganized) {
           updateOrganized = undefined;
         }
@@ -166,8 +228,10 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
     setExistingPerformerIds(updatePerformerIds);
     setExistingTagIds(updateTagIds);
     setExistingMovieIds(updateMovieIds);
+    setExistingGalleryIds(updateGalleryIds);
+    setExistingUrls(updateUrls)
     setOrganized(updateOrganized);
-  }, [props.selected, performerMode, tagMode, movieMode]);
+  }, [props.selected, performerMode, tagMode, movieMode, urlsMode]);
 
   useEffect(() => {
     if (checkboxRef.current) {
@@ -175,8 +239,24 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
     }
   }, [organized, checkboxRef]);
 
+  function renderURLMultiSelect(
+    urls: string[] | undefined
+  ) {
+    let mode = urlsMode;
+    return (
+      <MultiString
+        disabled={isUpdating}
+        onUpdate={(itemIDs) => {setUrls(itemIDs)}}
+        onSetMode={(newMode) => {setUrlsMode(newMode)}}
+        strings={urls ?? []}
+        existingIds={existingUrls ?? []}
+        mode={mode}
+      />
+    );
+  }
+
   function renderMultiSelect(
-    type: "performers" | "tags" | "movies",
+    type: "performers" | "tags" | "movies" | "galleries",
     ids: string[] | undefined
   ) {
     let mode = GQL.BulkUpdateIdMode.Add;
@@ -193,6 +273,10 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
       case "movies":
         mode = movieMode;
         existingIds = existingMovieIds;
+        break;
+      case "galleries":
+        mode = galleryMode;
+        existingIds = existingGalleryIds;
         break;
     }
 
@@ -211,6 +295,9 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
             case "movies":
               setMovieIds(itemIDs);
               break;
+            case "galleries":
+              setGalleryIds(itemIDs);
+              break;
           }
         }}
         onSetMode={(newMode) => {
@@ -223,6 +310,9 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
               break;
             case "movies":
               setMovieMode(newMode);
+              break;
+            case "galleries":
+              setGalleryMode(newMode);
               break;
           }
         }}
@@ -243,22 +333,27 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
     }
   }
 
-  function onShowEditAll() {
-    //props.onClose(false);
-    setShowEditAllDialog(true);
-  }
-
-  if (showEditAllDialog) {
+  function renderTextField(
+    name: string,
+    value: string | undefined | null,
+    setter: (newValue: string | undefined) => void,
+    isDetails: Boolean = false
+  ) {
     return (
-      <EditAllScenesDialog
-        //show={showEditAllDialog}
-        onClose={() => setShowEditAllDialog(false)}
-        selected={props.selected}
-      />
-      
+      <Form.Group controlId={name}>
+        <Form.Label>
+          <FormattedMessage id={name} />
+        </Form.Label>
+        <BulkUpdateTextInput
+          as={isDetails ? 'textarea' : undefined}
+          value={value === null ? "" : value ?? undefined}
+          valueChanged={(newValue) => setter(newValue)}
+          unsetDisabled={props.selected.length < 2}
+        />
+      </Form.Group>
     );
   }
-  
+
   function render() {
     return (
       <ModalComponent
@@ -281,12 +376,16 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
           text: intl.formatMessage({ id: "actions.cancel" }),
           variant: "secondary",
         }}
-        isRunning={isUpdating}
         leftFooterButtons={
-          <Button onClick={onShowEditAll}>
-            {intl.formatMessage({ id: "actions.all_fields" })}
-          </Button>
+          <Form.Group controlId="toggle-all">
+            <Form.Switch
+              label={intl.formatMessage({ id: "actions.all_fields" })}
+              checked={showAllFields}
+              onChange={() => setShowAllFields(!showAllFields)}
+            />
+          </Form.Group>
         }
+        isRunning={isUpdating}
       >
         <Form>
           <Form.Group controlId="rating" as={Row}>
@@ -301,6 +400,27 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
               />
             </Col>
           </Form.Group>
+          
+          {showAllFields && renderTextField("title", updateInput.title, (v) =>
+            setUpdateField({ title: v })
+          )}
+          {showAllFields && renderTextField("scene_code", updateInput.code, (v) =>
+            setUpdateField({ code: v })
+          )}
+          {showAllFields && 
+          <Form.Group controlId="urls">
+            <Form.Label>
+              <FormattedMessage id="urls" />
+            </Form.Label>
+            {renderURLMultiSelect(urls)}
+          </Form.Group>}
+          {showAllFields && renderTextField("director", updateInput.director, (v) =>
+            setUpdateField({ director: v })
+          )}
+          {showAllFields && renderTextField("date", updateInput.date, (v) =>
+            setUpdateField({ date: v })
+          )}
+
           <Form.Group controlId="studio" as={Row}>
             {FormUtils.renderLabel({
               title: intl.formatMessage({ id: "studio" }),
@@ -323,19 +443,30 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
             {renderMultiSelect("performers", performerIds)}
           </Form.Group>
 
-          <Form.Group controlId="tags">
-            <Form.Label>
-              <FormattedMessage id="tags" />
-            </Form.Label>
-            {renderMultiSelect("tags", tagIds)}
-          </Form.Group>
-
           <Form.Group controlId="movies">
             <Form.Label>
               <FormattedMessage id="movies" />
             </Form.Label>
             {renderMultiSelect("movies", movieIds)}
           </Form.Group>
+
+          {showAllFields && <Form.Group controlId="galleries">
+            <Form.Label>
+              <FormattedMessage id="galleries" />
+            </Form.Label>
+            {renderMultiSelect("galleries", galleryIds)}
+          </Form.Group>}
+
+          <Form.Group controlId="tags">
+            <Form.Label>
+              <FormattedMessage id="tags" />
+            </Form.Label>
+            {renderMultiSelect("tags", tagIds)}
+          </Form.Group>
+          
+          {showAllFields && renderTextField("details", updateInput.details, (v) =>
+            setUpdateField({ details: v }), true
+          )}
 
           <Form.Group controlId="organized">
             <Form.Check

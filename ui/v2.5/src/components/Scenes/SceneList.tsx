@@ -17,7 +17,6 @@ import { IPlaySceneOptions, SceneQueue } from "src/models/sceneQueue";
 import { SceneWallPanel } from "../Wall/WallPanel";
 import { SceneListTable } from "./SceneListTable";
 import { EditScenesDialog } from "./EditScenesDialog";
-import { EditAllScenesDialog } from "./EditAllScenesDialog";
 import { DeleteScenesDialog } from "./DeleteScenesDialog";
 import { GenerateDialog } from "../Dialogs/GenerateDialog";
 import { ExportDialog } from "../Shared/ExportDialog";
@@ -345,11 +344,11 @@ export const SceneList: React.FC<ISceneList> = ({
     return <EditScenesDialog selected={selectedScenes} onClose={onClose} />;
   }
 
-  function renderEditAllDialog(
+  function renderEditDialogAllFields(
     selectedScenes: GQL.SlimSceneDataFragment[],
     onClose: (applied: boolean) => void
   ) {
-    return <EditAllScenesDialog selected={selectedScenes} onClose={onClose} />;
+    return <EditScenesDialog selected={selectedScenes} onClose={onClose} showAllFields={true} />;
   }
 
   function renderDeleteDialog(
@@ -372,7 +371,7 @@ export const SceneList: React.FC<ISceneList> = ({
         defaultSort={defaultSort}
         renderContent={renderContent}
         renderEditDialog={renderEditDialog}
-        renderEditAllDialog={renderEditAllDialog}
+        renderEditDialogAllFields={renderEditDialogAllFields}
         renderDeleteDialog={renderDeleteDialog}
       />
     </TaggerContext>

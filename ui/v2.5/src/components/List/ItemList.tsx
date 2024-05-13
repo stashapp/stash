@@ -104,7 +104,7 @@ interface IItemListProps<T extends QueryResult, E extends IDataItem> {
     selected: E[],
     onClose: (applied: boolean) => void
   ) => React.ReactNode;
-  renderEditAllDialog?: (
+  renderEditDialogAllFields?: (
     selected: E[],
     onClose: (applied: boolean) => void
   ) => React.ReactNode;
@@ -150,12 +150,12 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
     otherOperations,
     renderContent,
     renderEditDialog,
-    renderEditAllDialog,
+    renderEditDialogAllFields: renderEditDialogAllFields,
     renderDeleteDialog,
     addKeybinds,
   }) => {
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-    const [isEditAllDialogOpen, setIsEditAllDialogOpen] = useState(false);
+    const [isEditDialogAllOpen, setIsEditDialogAllFieldsOpen] = useState(false);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
     const [lastClickedId, setLastClickedId] = useState<string>();
@@ -375,16 +375,16 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
       // refetch
       result.refetch();
     }
-
-    function onEditAll() {
-      setIsEditAllDialogOpen(true);
+    
+    function onEditAllFields() {
+      setIsEditDialogAllFieldsOpen(true);
     }
 
-    function onEditAllDialogClosed(applied: boolean) {
+    function onEditDialogAllFieldsClosed(applied: boolean) {
       if (applied) {
         onSelectNone();
       }
-      setIsEditAllDialogOpen(false);
+      setIsEditDialogAllFieldsOpen(false);
 
       // refetch
       result.refetch();
@@ -508,7 +508,7 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
             otherOperations={operations}
             itemsSelected={selectedIds.size > 0}
             onEdit={renderEditDialog ? onEdit : undefined}
-            onEditAll={renderEditAllDialog ? onEditAll : undefined}
+            onEditAllFields={renderEditDialogAllFields ? onEditAllFields : undefined}
             onDelete={renderDeleteDialog ? onDelete : undefined}
           />
           <ListViewOptions
@@ -538,10 +538,10 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
           renderEditDialog(getSelectedData(items, selectedIds), (applied) =>
             onEditDialogClosed(applied)
           )}
-        {isEditAllDialogOpen &&
-          renderEditAllDialog &&
-          renderEditAllDialog(getSelectedData(items, selectedIds), (applied) =>
-            onEditAllDialogClosed(applied)
+        {isEditDialogAllOpen &&
+          renderEditDialogAllFields &&
+          renderEditDialogAllFields(getSelectedData(items, selectedIds), (applied) =>
+            onEditDialogAllFieldsClosed(applied)
           )}
         {isDeleteDialogOpen &&
           renderDeleteDialog &&

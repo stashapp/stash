@@ -28,7 +28,7 @@ interface IListOperationButtonsProps {
   onSelectAll?: () => void;
   onSelectNone?: () => void;
   onEdit?: () => void;
-  onEditAll?: () => void;
+  onEditAllFields?: () => void;
   onDelete?: () => void;
   itemsSelected?: boolean;
   otherOperations?: IListFilterOperation[];
@@ -38,7 +38,7 @@ export const ListOperationButtons: React.FC<IListOperationButtonsProps> = ({
   onSelectAll,
   onSelectNone,
   onEdit,
-  onEditAll,
+  onEditAllFields: onEditAllFields,
   onDelete,
   itemsSelected,
   otherOperations,
@@ -57,7 +57,7 @@ export const ListOperationButtons: React.FC<IListOperationButtonsProps> = ({
 
     Mousetrap.bind("q", () => {
       if (itemsSelected) {
-        onEditAll?.();
+        onEditAllFields?.();
       }
     });
 
