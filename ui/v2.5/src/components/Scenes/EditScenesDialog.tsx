@@ -48,12 +48,13 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
   const Toast = useToast();
   const [rating100, setRating] = useState<number>();
   const [studioId, setStudioId] = useState<string>();
-  const [urlsMode, setUrlsMode] =
-    React.useState<GQL.BulkUpdateIdMode>(GQL.BulkUpdateIdMode.Add);
+  const [urlsMode, setUrlsMode] = React.useState<GQL.BulkUpdateIdMode>(
+    GQL.BulkUpdateIdMode.Add
+  );
   const [urls, setUrls] = useState<string[]>();
   const [existingUrls, setExistingUrls] = useState<string[]>();
   const selectedUrls = props.selected.map((scene) => ({
-    urls: scene.urls.map((url) => ({ value: url }))
+    urls: scene.urls.map((url) => ({ value: url })),
   }));
   const [performerMode, setPerformerMode] =
     React.useState<GQL.BulkUpdateIdMode>(GQL.BulkUpdateIdMode.Add);
@@ -75,11 +76,11 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
   const [galleryIds, setGalleryIds] = useState<string[]>();
   const [existingGalleryIds, setExistingGalleryIds] = useState<string[]>();
   const [organized, setOrganized] = useState<boolean | undefined>();
-  const [updateInput, setUpdateInput] = useState<GQL.BulkSceneUpdateInput>(
-    {}
-  );
+  const [updateInput, setUpdateInput] = useState<GQL.BulkSceneUpdateInput>({});
 
-  const [showAllFields, setShowAllFields] = useState(props.showAllFields ?? false);
+  const [showAllFields, setShowAllFields] = useState(
+    props.showAllFields ?? false
+  );
 
   const [updateScenes] = useBulkSceneUpdate(getSceneInput());
 
@@ -112,11 +113,7 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
     sceneInput.rating100 = getAggregateInputValue(rating100, aggregateRating);
     sceneInput.studio_id = getAggregateInputValue(studioId, aggregateStudioId);
 
-    sceneInput.urls = getAggregateInputStrings(
-      urlsMode,
-      urls,
-      aggregateUrls
-    );
+    sceneInput.urls = getAggregateInputStrings(urlsMode, urls, aggregateUrls);
 
     sceneInput.performer_ids = getAggregateInputIDs(
       performerMode,
@@ -130,8 +127,8 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
       aggregateMovieIds
     );
     sceneInput.gallery_ids = getAggregateInputIDs(
-      galleryMode, 
-      galleryIds, 
+      galleryMode,
+      galleryIds,
       aggregateGalleryIds
     );
 
@@ -181,7 +178,7 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
       const sceneTagIDs = (scene.tags ?? []).map((p) => p.id).sort();
       const sceneMovieIDs = (scene.movies ?? []).map((m) => m.movie.id).sort();
       const sceneGalleryIDs = (scene.galleries ?? []).map((g) => g.id).sort();
-      const sceneUrls = (scene.urls ?? []);
+      const sceneUrls = scene.urls ?? [];
 
       if (first) {
         updateRating = sceneRating ?? undefined;
@@ -227,7 +224,7 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
     setExistingTagIds(updateTagIds);
     setExistingMovieIds(updateMovieIds);
     setExistingGalleryIds(updateGalleryIds);
-    setExistingUrls(updateUrls)
+    setExistingUrls(updateUrls);
     setOrganized(updateOrganized);
   }, [props.selected]);
 
@@ -237,15 +234,17 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
     }
   }, [organized, checkboxRef]);
 
-  function renderURLMultiSelect(
-    urls: string[] | undefined
-  ) {
+  function renderURLMultiSelect(strings: string[] | undefined) {
     return (
       <MultiString
         disabled={isUpdating}
-        onUpdate={(itemIDs) => {setUrls(itemIDs)}}
-        onSetMode={(newMode) => {setUrlsMode(newMode)}}
-        strings={urls ?? []}
+        onUpdate={(itemIDs) => {
+          setUrls(itemIDs);
+        }}
+        onSetMode={(newMode) => {
+          setUrlsMode(newMode);
+        }}
+        strings={strings ?? []}
         existing={existingUrls ?? []}
         mode={urlsMode}
       />
@@ -338,7 +337,7 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
     return (
       <Form.Group>
         <BulkUpdateTextInput
-          as={isDetails ? 'textarea' : undefined}
+          as={isDetails ? "textarea" : undefined}
           value={value === null ? "" : value ?? undefined}
           valueChanged={(newValue) => setter(newValue)}
           unsetDisabled={props.selected.length < 2}
@@ -393,31 +392,47 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
               />
             </Col>
           </Form.Group>
-          
-          {showAllFields && 
-          <Form.Group controlId="text-input" as={Row}>
-            {FormUtils.renderLabel({title: intl.formatMessage({ id: "title" })})}
-            <Col xs={9}>
-              {renderTextField(updateInput.title, (v) => setUpdateField({ title: v }))}
-            </Col>
-            {FormUtils.renderLabel({title: intl.formatMessage({ id: "scene_code" })})}
-            <Col xs={9}>
-              {renderTextField(updateInput.code, (v) => setUpdateField({ code: v }))}
-            </Col>
-            {FormUtils.renderLabel({title: intl.formatMessage({ id: "urls" })})}
-            <Col xs={9}>
-              {renderURLMultiSelect(urls)}
-            </Col>
-            {FormUtils.renderLabel({title: intl.formatMessage({ id: "date" })})}
-            <Col xs={9}>
-              {renderTextField(updateInput.date, (v) => setUpdateField({ date: v }))}
-            </Col>
-            {FormUtils.renderLabel({title: intl.formatMessage({ id: "director" })})}
-            <Col xs={9}>
-              {renderTextField(updateInput.director, (v) => setUpdateField({ director: v }))}
-            </Col>
-          </Form.Group>
-          }
+
+          {showAllFields && (
+            <Form.Group controlId="text-input" as={Row}>
+              {FormUtils.renderLabel({
+                title: intl.formatMessage({ id: "title" }),
+              })}
+              <Col xs={9}>
+                {renderTextField(updateInput.title, (v) =>
+                  setUpdateField({ title: v })
+                )}
+              </Col>
+              {FormUtils.renderLabel({
+                title: intl.formatMessage({ id: "scene_code" }),
+              })}
+              <Col xs={9}>
+                {renderTextField(updateInput.code, (v) =>
+                  setUpdateField({ code: v })
+                )}
+              </Col>
+              {FormUtils.renderLabel({
+                title: intl.formatMessage({ id: "urls" }),
+              })}
+              <Col xs={9}>{renderURLMultiSelect(urls)}</Col>
+              {FormUtils.renderLabel({
+                title: intl.formatMessage({ id: "date" }),
+              })}
+              <Col xs={9}>
+                {renderTextField(updateInput.date, (v) =>
+                  setUpdateField({ date: v })
+                )}
+              </Col>
+              {FormUtils.renderLabel({
+                title: intl.formatMessage({ id: "director" }),
+              })}
+              <Col xs={9}>
+                {renderTextField(updateInput.director, (v) =>
+                  setUpdateField({ director: v })
+                )}
+              </Col>
+            </Form.Group>
+          )}
 
           <Form.Group controlId="studio" as={Row}>
             {FormUtils.renderLabel({
@@ -448,12 +463,14 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
             {renderMultiSelect("movies", movieIds)}
           </Form.Group>
 
-          {showAllFields && <Form.Group controlId="galleries">
-            <Form.Label>
-              <FormattedMessage id="galleries" />
-            </Form.Label>
-            {renderMultiSelect("galleries", galleryIds)}
-          </Form.Group>}
+          {showAllFields && (
+            <Form.Group controlId="galleries">
+              <Form.Label>
+                <FormattedMessage id="galleries" />
+              </Form.Label>
+              {renderMultiSelect("galleries", galleryIds)}
+            </Form.Group>
+          )}
 
           <Form.Group controlId="tags">
             <Form.Label>
@@ -462,14 +479,18 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
             {renderMultiSelect("tags", tagIds)}
           </Form.Group>
 
-          {showAllFields && 
-          <Form.Group controlId="details">
-            <Form.Label>
-              <FormattedMessage id="details" />
-            </Form.Label>
-            {renderTextField(updateInput.details, (v) => setUpdateField({ details: v }), true)}
-          </Form.Group>
-          }
+          {showAllFields && (
+            <Form.Group controlId="details">
+              <Form.Label>
+                <FormattedMessage id="details" />
+              </Form.Label>
+              {renderTextField(
+                updateInput.details,
+                (v) => setUpdateField({ details: v }),
+                true
+              )}
+            </Form.Group>
+          )}
 
           <Form.Group controlId="organized">
             <Form.Check

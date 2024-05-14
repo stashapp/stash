@@ -175,14 +175,22 @@ export const GalleryList: React.FC<IGalleryList> = ({
     selectedGalleries: GQL.SlimGalleryDataFragment[],
     onClose: (applied: boolean) => void
   ) {
-    return <EditGalleriesDialog selected={selectedGalleries} onClose={onClose} />;
+    return (
+      <EditGalleriesDialog selected={selectedGalleries} onClose={onClose} />
+    );
   }
 
   function renderEditDialogAllFields(
     selectedGalleries: GQL.SlimGalleryDataFragment[],
     onClose: (applied: boolean) => void
   ) {
-    return <EditGalleriesDialog selected={selectedGalleries} onClose={onClose} showAllFields={true} />;
+    return (
+      <EditGalleriesDialog
+        selected={selectedGalleries}
+        onClose={onClose}
+        showAllFields={true}
+      />
+    );
   }
 
   function renderDeleteDialog(

@@ -129,7 +129,7 @@ interface IMultiStringProps extends IMultiSetProps {
 }
 
 export const MultiString: React.FC<IMultiStringProps> = (props) => {
-    return (
+  return (
     <div className="multi-string">
       <MultiSet
         mode={props.mode}

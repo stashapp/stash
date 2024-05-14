@@ -348,7 +348,13 @@ export const SceneList: React.FC<ISceneList> = ({
     selectedScenes: GQL.SlimSceneDataFragment[],
     onClose: (applied: boolean) => void
   ) {
-    return <EditScenesDialog selected={selectedScenes} onClose={onClose} showAllFields={true} />;
+    return (
+      <EditScenesDialog
+        selected={selectedScenes}
+        onClose={onClose}
+        showAllFields={true}
+      />
+    );
   }
 
   function renderDeleteDialog(

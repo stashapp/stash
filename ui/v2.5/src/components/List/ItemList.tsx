@@ -375,7 +375,7 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
       // refetch
       result.refetch();
     }
-    
+
     function onEditAllFields() {
       setIsEditDialogAllFieldsOpen(true);
     }
@@ -508,7 +508,9 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
             otherOperations={operations}
             itemsSelected={selectedIds.size > 0}
             onEdit={renderEditDialog ? onEdit : undefined}
-            onEditAllFields={renderEditDialogAllFields ? onEditAllFields : undefined}
+            onEditAllFields={
+              renderEditDialogAllFields ? onEditAllFields : undefined
+            }
             onDelete={renderDeleteDialog ? onDelete : undefined}
           />
           <ListViewOptions
@@ -540,8 +542,9 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
           )}
         {isEditDialogAllOpen &&
           renderEditDialogAllFields &&
-          renderEditDialogAllFields(getSelectedData(items, selectedIds), (applied) =>
-            onEditDialogAllFieldsClosed(applied)
+          renderEditDialogAllFields(
+            getSelectedData(items, selectedIds),
+            (applied) => onEditDialogAllFieldsClosed(applied)
           )}
         {isDeleteDialogOpen &&
           renderDeleteDialog &&

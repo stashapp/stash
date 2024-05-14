@@ -413,7 +413,13 @@ export const ImageList: React.FC<IImageList> = ({
     selectedImages: GQL.SlimImageDataFragment[],
     onClose: (applied: boolean) => void
   ) {
-    return <EditImagesDialog selected={selectedImages} onClose={onClose} showAllFields={true} />;
+    return (
+      <EditImagesDialog
+        selected={selectedImages}
+        onClose={onClose}
+        showAllFields={true}
+      />
+    );
   }
 
   function renderDeleteDialog(

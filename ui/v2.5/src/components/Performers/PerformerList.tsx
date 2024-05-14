@@ -310,7 +310,13 @@ export const PerformerList: React.FC<IPerformerList> = ({
     selectedPerformers: GQL.SlimPerformerDataFragment[],
     onClose: (applied: boolean) => void
   ) {
-    return <EditPerformersDialog selected={selectedPerformers} onClose={onClose} showAllFields={true} />;
+    return (
+      <EditPerformersDialog
+        selected={selectedPerformers}
+        onClose={onClose}
+        showAllFields={true}
+      />
+    );
   }
 
   function renderDeleteDialog(

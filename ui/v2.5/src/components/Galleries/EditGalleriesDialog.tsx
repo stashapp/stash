@@ -31,13 +31,7 @@ interface IListOperationProps {
   showAllFields?: boolean;
 }
 
-const galleryFields = [
-  "scene_code",
-  "details",
-  "photographer",
-  "date",
-  "urls",
-];
+const galleryFields = ["scene_code", "details", "photographer", "date", "urls"];
 
 export const EditGalleriesDialog: React.FC<IListOperationProps> = (
   props: IListOperationProps
@@ -46,12 +40,13 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
   const Toast = useToast();
   const [rating100, setRating] = useState<number>();
   const [studioId, setStudioId] = useState<string>();
-  const [urlsMode, setUrlsMode] =
-  React.useState<GQL.BulkUpdateIdMode>(GQL.BulkUpdateIdMode.Add);
+  const [urlsMode, setUrlsMode] = React.useState<GQL.BulkUpdateIdMode>(
+    GQL.BulkUpdateIdMode.Add
+  );
   const [urls, setUrls] = useState<string[]>();
   const [existingUrls, setExistingUrls] = useState<string[]>();
   const selectedUrls = props.selected.map((gallery) => ({
-    urls: gallery.urls.map((url) => ({ value: url }))
+    urls: gallery.urls.map((url) => ({ value: url })),
   }));
   const [performerMode, setPerformerMode] =
     React.useState<GQL.BulkUpdateIdMode>(GQL.BulkUpdateIdMode.Add);
@@ -72,7 +67,9 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
     {}
   );
 
-  const [showAllFields, setShowAllFields] = useState(props.showAllFields ?? false);
+  const [showAllFields, setShowAllFields] = useState(
+    props.showAllFields ?? false
+  );
 
   const [updateGalleries] = useBulkGalleryUpdate();
 
@@ -106,18 +103,14 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
       studioId,
       aggregateStudioId
     );
-    
+
     galleryInput.scene_ids = getAggregateInputIDs(
       sceneMode,
       sceneIds,
       aggregateSceneIds
     );
 
-    galleryInput.urls = getAggregateInputStrings(
-      urlsMode,
-      urls,
-      aggregateUrls
-    );
+    galleryInput.urls = getAggregateInputStrings(urlsMode, urls, aggregateUrls);
 
     galleryInput.performer_ids = getAggregateInputIDs(
       performerMode,
@@ -180,7 +173,7 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
         .sort();
       const galleryTagIDs = (gallery.tags ?? []).map((p) => p.id).sort();
       const gallerySceneIDs = (gallery.scenes ?? []).map((s) => s.id).sort();
-      const galleryUrls = (gallery.urls ?? []);
+      const galleryUrls = gallery.urls ?? [];
 
       if (first) {
         updateRating = galleryRating ?? undefined;
@@ -232,15 +225,17 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
     }
   }, [organized, checkboxRef]);
 
-  function renderURLMultiSelect(
-    urls: string[] | undefined
-  ) {
+  function renderURLMultiSelect(strings: string[] | undefined) {
     return (
       <MultiString
         disabled={isUpdating}
-        onUpdate={(itemIDs) => {setUrls(itemIDs)}}
-        onSetMode={(newMode) => {setUrlsMode(newMode)}}
-        strings={urls ?? []}
+        onUpdate={(itemIDs) => {
+          setUrls(itemIDs);
+        }}
+        onSetMode={(newMode) => {
+          setUrlsMode(newMode);
+        }}
+        strings={strings ?? []}
         existing={existingUrls ?? []}
         mode={urlsMode}
       />
@@ -258,7 +253,7 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
         mode = performerMode;
         existingIds = existingPerformerIds;
         break;
-        case "scenes":
+      case "scenes":
         mode = sceneMode;
         existingIds = existingSceneIds;
         break;
@@ -313,7 +308,7 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
     return (
       <Form.Group>
         <BulkUpdateTextInput
-          as={isDetails ? 'textarea' : undefined}
+          as={isDetails ? "textarea" : undefined}
           value={value === null ? "" : value ?? undefined}
           valueChanged={(newValue) => setter(newValue)}
           unsetDisabled={props.selected.length < 2}
@@ -379,26 +374,38 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
             </Col>
           </Form.Group>
 
-          {showAllFields && 
-          <Form.Group controlId="text-input" as={Row}>
-            {FormUtils.renderLabel({title: intl.formatMessage({ id: "scene_code" })})}
-            <Col xs={9}>
-              {renderTextField(updateInput.code, (v) => setUpdateField({ code: v }))}
-            </Col>
-            {FormUtils.renderLabel({title: intl.formatMessage({ id: "urls" })})}
-            <Col xs={9}>
-              {renderURLMultiSelect(urls)}
-            </Col>
-            {FormUtils.renderLabel({title: intl.formatMessage({ id: "date" })})}
-            <Col xs={9}>
-              {renderTextField(updateInput.date, (v) => setUpdateField({ date: v }))}
-            </Col>
-            {FormUtils.renderLabel({title: intl.formatMessage({ id: "photographer" })})}
-            <Col xs={9}>
-              {renderTextField(updateInput.photographer, (v) => setUpdateField({ photographer: v }))}
-            </Col>
-          </Form.Group>
-          }
+          {showAllFields && (
+            <Form.Group controlId="text-input" as={Row}>
+              {FormUtils.renderLabel({
+                title: intl.formatMessage({ id: "scene_code" }),
+              })}
+              <Col xs={9}>
+                {renderTextField(updateInput.code, (v) =>
+                  setUpdateField({ code: v })
+                )}
+              </Col>
+              {FormUtils.renderLabel({
+                title: intl.formatMessage({ id: "urls" }),
+              })}
+              <Col xs={9}>{renderURLMultiSelect(urls)}</Col>
+              {FormUtils.renderLabel({
+                title: intl.formatMessage({ id: "date" }),
+              })}
+              <Col xs={9}>
+                {renderTextField(updateInput.date, (v) =>
+                  setUpdateField({ date: v })
+                )}
+              </Col>
+              {FormUtils.renderLabel({
+                title: intl.formatMessage({ id: "photographer" }),
+              })}
+              <Col xs={9}>
+                {renderTextField(updateInput.photographer, (v) =>
+                  setUpdateField({ photographer: v })
+                )}
+              </Col>
+            </Form.Group>
+          )}
 
           <Form.Group controlId="studio" as={Row}>
             {FormUtils.renderLabel({
@@ -436,14 +443,18 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
             {renderMultiSelect("tags", tagIds)}
           </Form.Group>
 
-          {showAllFields && 
-          <Form.Group controlId="details">
-            <Form.Label>
-              <FormattedMessage id="details" />
-            </Form.Label>
-            {renderTextField(updateInput.details, (v) => setUpdateField({ details: v }), true)}
-          </Form.Group>
-          }
+          {showAllFields && (
+            <Form.Group controlId="details">
+              <Form.Label>
+                <FormattedMessage id="details" />
+              </Form.Label>
+              {renderTextField(
+                updateInput.details,
+                (v) => setUpdateField({ details: v }),
+                true
+              )}
+            </Form.Group>
+          )}
 
           <Form.Group controlId="organized">
             <Form.Check
