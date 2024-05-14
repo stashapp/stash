@@ -85,6 +85,11 @@ export function getAggregateGalleryIds(state: { galleries: IHasID[] }[]) {
   return getAggregateIds(sortedLists);
 }
 
+export function getAggregateSceneIds(state: { scenes: IHasID[] }[]) {
+  const sortedLists = state.map((o) => o.scenes.map((oo) => oo.id).sort());
+  return getAggregateIds(sortedLists);
+}
+
 export function getAggregatePerformerIds(state: { performers: IHasID[] }[]) {
   const sortedLists = state.map((o) => o.performers.map((oo) => oo.id).sort());
   return getAggregateIds(sortedLists);

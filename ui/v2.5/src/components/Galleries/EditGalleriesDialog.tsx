@@ -15,6 +15,7 @@ import {
   getAggregateInputStrings,
   getAggregateInputValue,
   getAggregateStateObject,
+  getAggregateSceneIds,
   getAggregatePerformerIds,
   getAggregateRating,
   getAggregateStudioId,
@@ -90,7 +91,7 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
     const aggregateStudioId = getAggregateStudioId(props.selected);
     const aggregatePerformerIds = getAggregatePerformerIds(props.selected);
     const aggregateTagIds = getAggregateTagIds(props.selected);
-    //const aggregateSceneIds = getAggregateSceneIds(props.selected);
+    const aggregateSceneIds = getAggregateSceneIds(props.selected);
     const aggregateUrls = getAggregateUrls(selectedUrls);
 
     const galleryInput: GQL.BulkGalleryUpdateInput = {
@@ -106,11 +107,11 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
       aggregateStudioId
     );
     
-    // galleryInput.scene_ids = getAggregateInputIDs(
-    //   sceneMode,
-    //   sceneIds,
-    //   //aggregateSceneIds
-    // );
+    galleryInput.scene_ids = getAggregateInputIDs(
+      sceneMode,
+      sceneIds,
+      aggregateSceneIds
+    );
 
     galleryInput.urls = getAggregateInputStrings(
       urlsMode,
@@ -247,7 +248,7 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
   }
 
   function renderMultiSelect(
-    type: "performers" | "tags",
+    type: "performers" | "scenes" | "tags",
     ids: string[] | undefined
   ) {
     let mode = GQL.BulkUpdateIdMode.Add;
@@ -256,6 +257,10 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
       case "performers":
         mode = performerMode;
         existingIds = existingPerformerIds;
+        break;
+        case "scenes":
+        mode = sceneMode;
+        existingIds = existingSceneIds;
         break;
       case "tags":
         mode = tagMode;
@@ -272,6 +277,9 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
             case "performers":
               setPerformerIds(itemIDs);
               break;
+            case "scenes":
+              setSceneIds(itemIDs);
+              break;
             case "tags":
               setTagIds(itemIDs);
               break;
@@ -281,6 +289,9 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
           switch (type) {
             case "performers":
               setPerformerMode(newMode);
+              break;
+            case "scenes":
+              setSceneMode(newMode);
               break;
             case "tags":
               setTagMode(newMode);
@@ -409,6 +420,13 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
               <FormattedMessage id="performers" />
             </Form.Label>
             {renderMultiSelect("performers", performerIds)}
+          </Form.Group>
+
+          <Form.Group controlId="scenes">
+            <Form.Label>
+              <FormattedMessage id="scenes" />
+            </Form.Label>
+            {renderMultiSelect("scenes", sceneIds)}
           </Form.Group>
 
           <Form.Group controlId="tags">

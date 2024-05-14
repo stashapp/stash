@@ -19,7 +19,7 @@ interface IMultiSetProps {
 }
 
 interface IMultiSelectProps extends IMultiSetProps {
-  type: "performers" | "studios" | "tags" | "movies" | "galleries";
+  type: "performers" | "studios" | "tags" | "movies" | "galleries" | "scenes";
   ids?: string[];
 }
 
