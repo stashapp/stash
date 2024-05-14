@@ -738,7 +738,7 @@
           "enable_chromecast": "Enable Chromecast",
           "show_ab_loop_controls": "Show AB Loop plugin controls",
           "show_scrubber": "Show Scrubber",
-          "track_activity": "Track Activity",
+          "track_activity": "Enable Scene Play history",
           "vr_tag": {
             "description": "The VR button will only be displayed for scenes with this tag.",
             "heading": "VR Tag"

@@ -6,6 +6,7 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
@@ -26,6 +27,7 @@ func init() {
 	pflag.Int("port", 9999, "port to serve from")
 	pflag.StringVarP(&flags.configFilePath, "config", "c", "", "config file to use")
 	pflag.BoolVar(&flags.nobrowser, "nobrowser", false, "Don't open a browser window after launch")
+	pflag.StringP("ui-location", "u", "", "path to the webui")
 }
 
 // Called at startup
@@ -82,8 +84,8 @@ func InitializeEmpty() *Config {
 	return instance
 }
 
-func bindEnv(v *viper.Viper, key string) {
-	if err := v.BindEnv(key); err != nil {
+func bindEnv(v *viper.Viper, key ...string) {
+	if err := v.BindEnv(key...); err != nil {
 		panic(fmt.Sprintf("unable to set environment key (%v): %v", key, err))
 	}
 }
@@ -91,18 +93,27 @@ func bindEnv(v *viper.Viper, key string) {
 func (i *Config) initOverrides() {
 	v := i.overrides
 
+	// replace dashes with underscores in the flag names
+	normalizeFn := pflag.CommandLine.GetNormalizeFunc()
+	pflag.CommandLine.SetNormalizeFunc(func(f *pflag.FlagSet, name string) pflag.NormalizedName {
+		result := normalizeFn(f, name)
+		name = strings.ReplaceAll(string(result), "-", "_")
+		return pflag.NormalizedName(name)
+	})
+
 	if err := v.BindPFlags(pflag.CommandLine); err != nil {
 		logger.Infof("failed to bind flags: %v", err)
 	}
 
-	v.SetEnvPrefix("stash")     // will be uppercased automatically
-	bindEnv(v, "host")          // STASH_HOST
-	bindEnv(v, "port")          // STASH_PORT
-	bindEnv(v, "external_host") // STASH_EXTERNAL_HOST
-	bindEnv(v, "generated")     // STASH_GENERATED
-	bindEnv(v, "metadata")      // STASH_METADATA
-	bindEnv(v, "cache")         // STASH_CACHE
-	bindEnv(v, "stash")         // STASH_STASH
+	v.SetEnvPrefix("stash")               // will be uppercased automatically
+	bindEnv(v, "host")                    // STASH_HOST
+	bindEnv(v, "port")                    // STASH_PORT
+	bindEnv(v, "external_host")           // STASH_EXTERNAL_HOST
+	bindEnv(v, "generated")               // STASH_GENERATED
+	bindEnv(v, "metadata")                // STASH_METADATA
+	bindEnv(v, "cache")                   // STASH_CACHE
+	bindEnv(v, "stash")                   // STASH_STASH
+	bindEnv(v, "ui_location", "STASH_UI") // STASH_UI
 }
 
 func (i *Config) initConfig() error {

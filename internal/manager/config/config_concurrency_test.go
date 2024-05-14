@@ -72,7 +72,7 @@ func TestConcurrentConfigAccess(t *testing.T) {
 				i.GetCredentials()
 				i.Set(MaxSessionAge, i.GetMaxSessionAge())
 				i.Set(CustomServedFolders, i.GetCustomServedFolders())
-				i.Set(CustomUILocation, i.GetCustomUILocation())
+				i.Set(LegacyCustomUILocation, i.GetUILocation())
 				i.Set(MenuItems, i.GetMenuItems())
 				i.Set(SoundOnPreview, i.GetSoundOnPreview())
 				i.Set(WallShowTitle, i.GetWallShowTitle())
