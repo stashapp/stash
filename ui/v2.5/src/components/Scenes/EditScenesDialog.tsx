@@ -229,7 +229,7 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
     setExistingGalleryIds(updateGalleryIds);
     setExistingUrls(updateUrls)
     setOrganized(updateOrganized);
-  }, [props.selected, performerMode, tagMode, movieMode, urlsMode]);
+  }, [props.selected]);
 
   useEffect(() => {
     if (checkboxRef.current) {
