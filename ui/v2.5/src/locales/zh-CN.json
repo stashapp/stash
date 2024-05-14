@@ -717,7 +717,7 @@
                         "heading": "默认继续播放清单"
                     },
                     "show_scrubber": "显示预览轴",
-                    "track_activity": "监测播放动作",
+                    "track_activity": "启用短片播放历史记录",
                     "vr_tag": {
                         "description": "VR按钮仅在短片存在此标签时显示。",
                         "heading": "VR标签"
