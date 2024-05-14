@@ -672,6 +672,8 @@ declare namespace PluginApi {
     GalleryIDSelect: React.FC<any>;
     MovieSelect: React.FC<any>;
     MovieIDSelect: React.FC<any>;
+    SceneSelect: React.FC<any>;
+    SceneIDSelect: React.FC<any>;
     DateInput: React.FC<any>;
     CountrySelect: React.FC<any>;
     FolderSelect: React.FC<any>;

@@ -842,3 +842,52 @@ input[type="range"].blue-slider {
     }
   }
 }
+
+.scene-select-option {
+  .scene-select-row {
+    align-items: center;
+    display: flex;
+    width: 100%;
+
+    .scene-select-image {
+      background-color: $body-bg;
+      margin-right: 0.4em;
+      max-height: 50px;
+      max-width: 89px;
+      object-fit: contain;
+      object-position: center;
+    }
+
+    .scene-select-details {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      max-height: 4.1rem;
+      overflow: hidden;
+
+      .scene-select-title {
+        flex-shrink: 0;
+        white-space: pre-wrap;
+        word-break: break-all;
+      }
+
+      .scene-select-date,
+      .scene-select-studio,
+      .scene-select-code {
+        color: $text-muted;
+        flex-shrink: 0;
+        font-size: 0.9rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+    }
+  }
+
+  .scene-select-alias {
+    font-size: 0.8rem;
+    font-weight: bold;
+    width: 100%;
+    word-break: break-all;
+  }
+}
