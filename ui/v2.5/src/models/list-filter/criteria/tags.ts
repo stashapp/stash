@@ -55,6 +55,21 @@ export const PerformerTagsCriterionOption = new BaseTagsCriterionOption(
   withoutEqualsModifierOptions
 );
 
+export const MarkerTagsCriterionOption = new BaseTagsCriterionOption(
+  "marker_tags",
+  "marker_tags",
+  withoutEqualsModifierOptions
+);
+
+export const PrimaryMarkerTagsCriterionOption = new BaseTagsCriterionOption(
+  "primary_marker_tags",
+  "primary_marker_tags",
+  [
+    CriterionModifier.IncludesAll,
+    CriterionModifier.Includes
+  ]
+);
+
 export const ParentTagsCriterionOption = new BaseTagsCriterionOption(
   "parent_tags",
   "parents",

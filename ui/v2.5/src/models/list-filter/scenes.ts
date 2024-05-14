@@ -15,6 +15,8 @@ import { ResolutionCriterionOption } from "./criteria/resolution";
 import { StudiosCriterionOption } from "./criteria/studios";
 import { InteractiveCriterionOption } from "./criteria/interactive";
 import {
+  MarkerTagsCriterionOption,
+  PrimaryMarkerTagsCriterionOption,
   PerformerTagsCriterionOption,
   TagsCriterionOption,
 } from "./criteria/tags";
@@ -83,6 +85,8 @@ const criterionOptions = [
   createDurationCriterionOption("play_duration"),
   createMandatoryNumberCriterionOption("play_count"),
   HasMarkersCriterionOption,
+  MarkerTagsCriterionOption,
+  PrimaryMarkerTagsCriterionOption,
   SceneIsMissingCriterionOption,
   TagsCriterionOption,
   createMandatoryNumberCriterionOption("tag_count"),

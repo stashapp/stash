@@ -1075,6 +1075,8 @@
     "generic": "Loading…"
   },
   "marker_count": "Marker Count",
+  "primary_marker_tag": "Marker Primary Tag",
+  "marker_tags": "Marker Tags",
   "markers": "Markers",
   "measurements": "Measurements",
   "media_info": {
