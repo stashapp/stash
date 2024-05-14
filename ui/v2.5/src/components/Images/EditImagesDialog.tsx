@@ -252,21 +252,17 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
   }
 
   function renderTextField(
-    name: string,
     value: string | undefined | null,
     setter: (newValue: string | undefined) => void,
     isDetails: Boolean = false
   ) {
     return (
-      <Form.Group controlId={name}>
-        <Form.Label>
-          <FormattedMessage id={name} />
-        </Form.Label>
+      <Form.Group>
         <BulkUpdateTextInput
-          as={isDetails ? 'textarea' : undefined}
-          value={value === null ? "" : value ?? undefined}
-          valueChanged={(newValue) => setter(newValue)}
-          unsetDisabled={props.selected.length < 2}
+        as={isDetails ? 'textarea' : undefined}
+        value={value === null ? "" : value ?? undefined}
+        valueChanged={(newValue) => setter(newValue)}
+        unsetDisabled={props.selected.length < 2}
         />
       </Form.Group>
     );
@@ -319,25 +315,30 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
             </Col>
           </Form.Group>
 
-          {showAllFields && renderTextField("title", updateInput.title, (v) =>
-            setUpdateField({ title: v })
-          )}
-          {showAllFields && renderTextField("scene_code", updateInput.code, (v) =>
-            setUpdateField({ code: v })
-          )}
           {showAllFields && 
-          <Form.Group controlId="urls">
-            <Form.Label>
-              <FormattedMessage id="urls" />
-            </Form.Label>
-            {renderURLMultiSelect(urls)}
-          </Form.Group>}
-          {showAllFields && renderTextField("photographer", updateInput.photographer, (v) =>
-            setUpdateField({ photographer: v })
-          )}
-          {showAllFields && renderTextField("date", updateInput.date, (v) =>
-            setUpdateField({ date: v })
-          )}
+          <Form.Group controlId="text-input" as={Row}>
+            {FormUtils.renderLabel({title: intl.formatMessage({ id: "title" })})}
+            <Col xs={9}>
+              {renderTextField(updateInput.title, (v) => setUpdateField({ title: v }))}
+            </Col>
+            {FormUtils.renderLabel({title: intl.formatMessage({ id: "scene_code" })})}
+            <Col xs={9}>
+              {renderTextField(updateInput.code, (v) => setUpdateField({ code: v }))}
+            </Col>
+            {FormUtils.renderLabel({title: intl.formatMessage({ id: "urls" })})}
+            <Col xs={9}>
+              {renderURLMultiSelect(urls)}
+            </Col>
+            {FormUtils.renderLabel({title: intl.formatMessage({ id: "date" })})}
+            <Col xs={9}>
+              {renderTextField(updateInput.date, (v) => setUpdateField({ date: v }))}
+            </Col>
+            {FormUtils.renderLabel({title: intl.formatMessage({ id: "photographer" })})}
+            <Col xs={9}>
+              {renderTextField(updateInput.photographer, (v) => setUpdateField({ photographer: v }))}
+            </Col>
+          </Form.Group>
+          }
 
           <Form.Group controlId="studio" as={Row}>
             {FormUtils.renderLabel({
@@ -369,21 +370,6 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
             />
           </Form.Group>
 
-          <Form.Group controlId="tags">
-            <Form.Label>
-              <FormattedMessage id="tags" />
-            </Form.Label>
-            <MultiSelect
-              type="tags"
-              disabled={isUpdating}
-              onUpdate={(itemIDs) => setTagIds(itemIDs)}
-              onSetMode={(newMode) => setTagMode(newMode)}
-              existing={existingTagIds ?? []}
-              ids={tagIds ?? []}
-              mode={tagMode}
-            />
-          </Form.Group>
-
           <Form.Group controlId="galleries">
             <Form.Label>
               <FormattedMessage id="galleries" />
@@ -399,9 +385,29 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
             />
           </Form.Group>
 
-          {showAllFields && renderTextField("details", updateInput.details, (v) =>
-            setUpdateField({ details: v }), true
-          )}
+          <Form.Group controlId="tags">
+            <Form.Label>
+              <FormattedMessage id="tags" />
+            </Form.Label>
+            <MultiSelect
+              type="tags"
+              disabled={isUpdating}
+              onUpdate={(itemIDs) => setTagIds(itemIDs)}
+              onSetMode={(newMode) => setTagMode(newMode)}
+              existing={existingTagIds ?? []}
+              ids={tagIds ?? []}
+              mode={tagMode}
+            />
+          </Form.Group>
+
+          {showAllFields && 
+          <Form.Group controlId="details">
+            <Form.Label>
+              <FormattedMessage id="details" />
+            </Form.Label>
+            {renderTextField(updateInput.details, (v) => setUpdateField({ details: v }), true)}
+          </Form.Group>
+          }
 
           <Form.Group controlId="organized">
             <Form.Check
