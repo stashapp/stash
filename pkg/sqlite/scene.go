@@ -986,6 +986,16 @@ func (qb *SceneStore) makeFilter(ctx context.Context, sceneFilter *models.SceneF
 	query.handleCriterion(ctx, floatIntCriterionHandler(sceneFilter.ResumeTime, "scenes.resume_time", nil))
 	query.handleCriterion(ctx, floatIntCriterionHandler(sceneFilter.PlayDuration, "scenes.play_duration", nil))
 	query.handleCriterion(ctx, scenePlayCountCriterionHandler(sceneFilter.PlayCount))
+	query.handleCriterion(ctx, criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
+		if sceneFilter.LastPlayedAt != nil {
+			f.addLeftJoin(
+				fmt.Sprintf("(SELECT %s, MAX(%s) as last_played_at FROM %s GROUP BY %s)", sceneIDColumn, sceneViewDateColumn, scenesViewDatesTable, sceneIDColumn),
+				"scene_last_view",
+				fmt.Sprintf("scene_last_view.%s = scenes.id", sceneIDColumn),
+			)
+			timestampCriterionHandler(sceneFilter.LastPlayedAt, "IFNULL(last_played_at, datetime(0))")(ctx, f)
+		}
+	}))
 
 	query.handleCriterion(ctx, sceneTagsCriterionHandler(qb, sceneFilter.Tags))
 	query.handleCriterion(ctx, sceneTagCountCriterionHandler(qb, sceneFilter.TagCount))

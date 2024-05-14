@@ -179,6 +179,7 @@ export type CriterionType =
   | "resume_time"
   | "play_count"
   | "play_duration"
+  | "last_played_at"
   | "name"
   | "details"
   | "title"
