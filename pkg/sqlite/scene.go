@@ -1287,25 +1287,20 @@ func sceneRelatedMarkerTagsCriterionHandler(qb *SceneStore, criterion *models.Hi
 		if criterion != nil {
 			tags := criterion.CombineExcludes()
 
-			if tags.Modifier == models.CriterionModifierIsNull || tags.Modifier == models.CriterionModifierNotNull {
-				var notClause string
-				if tags.Modifier == models.CriterionModifierNotNull {
-					notClause = "NOT"
-				}
-
+			switch tags.Modifier {
+			case models.CriterionModifierEquals:
+				f.setError(fmt.Errorf("equals modifier is not supported for scene marker tags"))
+				return
+			case models.CriterionModifierNotEquals:
+				f.setError(fmt.Errorf("not equals modifier is not supported for scene marker tags"))
+				return
+			case models.CriterionModifierIsNull:
 				f.addLeftJoin("scene_markers", "", "scene_markers.scene_id = scenes.id")
-				f.addLeftJoin("scene_markers_tags", "", "scene_markers.id = scene_markers_tags.scene_marker_id")
-
-				f.addWhere(fmt.Sprintf("%s scene_markers_tags.tag_id IS NULL", notClause))
+				f.addWhere("scene_markers.id IS NULL")
 				return
-			}
-
-			if tags.Modifier == models.CriterionModifierEquals && tags.Depth != nil && *tags.Depth != 0 {
-				f.setError(fmt.Errorf("depth is not supported for equals modifier for marker tag filtering"))
-				return
-			}
-
-			if len(tags.Value) == 0 && len(tags.Excludes) == 0 {
+			case models.CriterionModifierNotNull:
+				f.addLeftJoin("scene_markers", "", "scene_markers.scene_id = scenes.id")
+				f.addHaving("count(scene_markers.scene_id) > 0")
 				return
 			}
 
@@ -1316,45 +1311,58 @@ func sceneRelatedMarkerTagsCriterionHandler(qb *SceneStore, criterion *models.Hi
 					return
 				}
 
-				f.addWith(`marker_tags AS (
-	SELECT mt.scene_marker_id, t.column1 AS root_tag_id FROM scene_markers_tags mt
-	INNER JOIN (` + valuesClause + `) t ON t.column2 = mt.tag_id
-	UNION
-	SELECT m.id, t.column1 FROM scene_markers m
-	INNER JOIN (` + valuesClause + `) t ON t.column2 = m.primary_tag_id
-	)`)
-
-				f.addLeftJoin("scene_markers", "", "scene_markers.scene_id = scenes.id")
-				f.addLeftJoin("marker_tags", "", "marker_tags.scene_marker_id = scene_markers.id")
+				f.addWith(`include_values(root_tag_id, tag_id) AS (` + valuesClause + `)`)
+				f.addWith(`include_marker_tags AS (
+					SELECT mt.scene_marker_id, t.root_tag_id FROM scene_markers_tags mt
+					INNER JOIN include_values t ON t.tag_id = mt.tag_id
+					UNION
+					SELECT m.id, t.root_tag_id FROM scene_markers m
+					INNER JOIN include_values t ON t.tag_id = m.primary_tag_id
+				)`)
+				f.addWith(`include_scenes AS (
+					SELECT s.id AS scene_id, COUNT(DISTINCT t.root_tag_id) AS tag_count
+					FROM scenes s
+					INNER JOIN scene_markers m ON m.scene_id = s.id
+					INNER JOIN include_marker_tags t ON t.scene_marker_id = m.id
+					GROUP BY s.id
+				)`)
+				f.addLeftJoin("include_scenes", "", "include_scenes.scene_id = scenes.id")
 
 				switch tags.Modifier {
 				case models.CriterionModifierEquals:
-					// includes only the provided ids
-					f.addWhere("marker_tags.root_tag_id IS NOT NULL")
-					tagsLen := len(tags.Value)
-					f.addHaving(fmt.Sprintf("count(distinct marker_tags.root_tag_id) IS %d", tagsLen))
-					// decrement by one to account for primary tag id
-					f.addWhere("(SELECT COUNT(*) FROM scene_markers_tags s WHERE s.scene_marker_id = scene_markers.id) = ?", tagsLen-1)
+					f.setError(fmt.Errorf("equals modifier is not supported for scene marker tags"))
 				case models.CriterionModifierNotEquals:
 					f.setError(fmt.Errorf("not equals modifier is not supported for scene marker tags"))
+				case models.CriterionModifierIncludesAll:
+					f.addWhere("include_scenes.tag_count == ?", len(tags.Value))
 				default:
-					addHierarchicalConditionClauses(f, tags, "marker_tags", "root_tag_id")
+					addHierarchicalConditionClauses(f, tags, "include_scenes", "scene_id")
 				}
 			}
 
-			if len(criterion.Excludes) > 0 {
-				valuesClause, err := getHierarchicalValues(ctx, dbWrapper{}, tags.Excludes, tagTable, "tags_relations", "parent_id", "child_id", tags.Depth)
+			if len(tags.Excludes) > 0 {
+				valuesClause, err := getHierarchicalValues(ctx, qb.tx, tags.Excludes, tagTable, "tags_relations", "parent_id", "child_id", tags.Depth)
 				if err != nil {
 					f.setError(err)
 					return
 				}
 
-				f.addLeftJoin("scene_markers", "", "scene_markers.scene_id = scenes.id")
-
-				clause := "scene_markers.id NOT IN (SELECT scene_markers_tags.scene_marker_id FROM scene_markers_tags WHERE scene_markers_tags.tag_id IN (SELECT column2 FROM (%s)))"
-				f.addWhere(fmt.Sprintf(clause, valuesClause))
-
-				f.addWhere(fmt.Sprintf("scene_markers.primary_tag_id NOT IN (SELECT column2 FROM (%s))", valuesClause))
+				f.addWith(`exclude_values(root_tag_id, tag_id) AS (` + valuesClause + `)`)
+				f.addWith(`exclude_marker_tags AS (
+					SELECT mt.scene_marker_id, t.root_tag_id FROM scene_markers_tags mt
+					INNER JOIN exclude_values t ON t.tag_id = mt.tag_id
+					UNION
+					SELECT m.id, t.root_tag_id FROM scene_markers m
+					INNER JOIN exclude_values t ON t.tag_id = m.primary_tag_id
+				)`)
+				f.addWith(`exclude_scenes AS (
+					SELECT DISTINCT s.id AS scene_id
+					FROM scenes s
+					INNER JOIN scene_markers m ON m.scene_id = s.id
+					INNER JOIN exclude_marker_tags t ON t.scene_marker_id = m.id
+				)`)
+				f.addLeftJoin("exclude_scenes", "", "exclude_scenes.scene_id = scenes.id")
+				f.addWhere("exclude_scenes.scene_id IS NULL")
 			}
 		}
 	}
@@ -1367,14 +1375,18 @@ func sceneRelatedPrimaryMarkerTagsCriterionHandler(qb *SceneStore, criterion *mo
 
 			switch tags.Modifier {
 			case models.CriterionModifierEquals:
-				f.setError(fmt.Errorf("equals modifier is not supported for scene marker primary tags"))
+				f.setError(fmt.Errorf("equals modifier is not supported for scene primary marker tags"))
 				return
 			case models.CriterionModifierNotEquals:
-				f.setError(fmt.Errorf("not equals modifier is not supported for scene marker primary tags"))
+				f.setError(fmt.Errorf("not equals modifier is not supported for scene primary marker tags"))
 				return
-			}
-
-			if len(tags.Value) == 0 && len(tags.Excludes) == 0 {
+			case models.CriterionModifierIsNull:
+				f.addLeftJoin("scene_markers", "", "scene_markers.scene_id = scenes.id")
+				f.addWhere("scene_markers.id IS NULL")
+				return
+			case models.CriterionModifierNotNull:
+				f.addLeftJoin("scene_markers", "", "scene_markers.scene_id = scenes.id")
+				f.addHaving("count(scene_markers.scene_id) > 0")
 				return
 			}
 
@@ -1385,26 +1397,49 @@ func sceneRelatedPrimaryMarkerTagsCriterionHandler(qb *SceneStore, criterion *mo
 					return
 				}
 
-				f.addWith(`primary_marker_tags AS (
-	SELECT m.id as scene_marker_id, t.column1 as root_tag_id FROM scene_markers m
-	INNER JOIN (` + valuesClause + `) t ON t.column2 = m.primary_tag_id
-	)`)
+				f.addWith(`include_primary_marker_tags_values(root_tag_id, tag_id) AS (` + valuesClause + `)`)
+				f.addWith(`include_primary_marker_tags AS (
+					SELECT m.id as scene_marker_id, t.root_tag_id as root_tag_id FROM scene_markers m
+					INNER JOIN include_primary_marker_tags_values t ON t.tag_id = m.primary_tag_id
+				)`)
+				f.addWith(`include_primary_marker_tags_scenes AS (
+					SELECT s.id AS scene_id, COUNT(DISTINCT t.root_tag_id) AS tag_count
+					FROM scenes s
+					INNER JOIN scene_markers m ON m.scene_id = s.id
+					INNER JOIN include_primary_marker_tags t ON t.scene_marker_id = m.id
+					GROUP BY s.id
+				)`)
+				f.addLeftJoin("include_primary_marker_tags_scenes", "", "include_primary_marker_tags_scenes.scene_id = scenes.id")
 
-				f.addLeftJoin("scene_markers", "", "scene_markers.scene_id = scenes.id")
-				f.addLeftJoin("primary_marker_tags", "", "primary_marker_tags.scene_marker_id = scene_markers.id")
-
-				addHierarchicalConditionClauses(f, tags, "primary_marker_tags", "root_tag_id")
+				switch tags.Modifier {
+				case models.CriterionModifierIncludesAll:
+					f.addWhere("include_primary_marker_tags_scenes.tag_count == ?", len(tags.Value))
+				default:
+					addHierarchicalConditionClauses(f, tags, "include_primary_marker_tags_scenes", "scene_id")
+				}
 			}
 
-			if len(criterion.Excludes) > 0 {
+			if len(tags.Excludes) > 0 {
 				valuesClause, err := getHierarchicalValues(ctx, dbWrapper{}, tags.Excludes, tagTable, "tags_relations", "parent_id", "child_id", tags.Depth)
 				if err != nil {
 					f.setError(err)
 					return
 				}
 
-				f.addLeftJoin("scene_markers", "", "scene_markers.scene_id = scenes.id")
-				f.addWhere(fmt.Sprintf("scene_markers.primary_tag_id NOT IN (SELECT column2 FROM (%s))", valuesClause))
+				f.addWith(`exclude_primary_marker_tags_values(root_tag_id, tag_id) AS (` + valuesClause + `)`)
+				f.addWith(`exclude_primary_marker_tags AS (
+					SELECT m.id as scene_marker_id, t.root_tag_id as root_tag_id FROM scene_markers m
+					INNER JOIN exclude_primary_marker_tags_values t ON t.tag_id = m.primary_tag_id
+				)`)
+				f.addWith(`exclude_primary_marker_tags_scenes AS (
+					SELECT s.id AS scene_id, COUNT(DISTINCT t.root_tag_id) AS tag_count
+					FROM scenes s
+					INNER JOIN scene_markers m ON m.scene_id = s.id
+					INNER JOIN exclude_primary_marker_tags t ON t.scene_marker_id = m.id
+					GROUP BY s.id
+				)`)
+				f.addLeftJoin("exclude_primary_marker_tags_scenes", "", "exclude_primary_marker_tags_scenes.scene_id = scenes.id")
+				f.addWhere("exclude_primary_marker_tags_scenes.scene_id IS NULL")
 			}
 		}
 	}

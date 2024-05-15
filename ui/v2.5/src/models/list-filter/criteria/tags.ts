@@ -64,9 +64,7 @@ export const MarkerTagsCriterionOption = new BaseTagsCriterionOption(
 export const PrimaryMarkerTagsCriterionOption = new BaseTagsCriterionOption(
   "primary_marker_tags",
   "primary_marker_tags",
-  [
-    CriterionModifier.Includes
-  ]
+  withoutEqualsModifierOptions
 );
 
 export const ParentTagsCriterionOption = new BaseTagsCriterionOption(
