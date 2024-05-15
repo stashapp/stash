@@ -1075,7 +1075,7 @@
     "generic": "Loading…"
   },
   "marker_count": "Marker Count",
-  "primary_marker_tag": "Marker Primary Tag",
+  "primary_marker_tags": "Primary Marker Tag",
   "marker_tags": "Marker Tags",
   "markers": "Markers",
   "measurements": "Measurements",

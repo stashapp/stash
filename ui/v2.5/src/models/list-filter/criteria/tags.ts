@@ -65,7 +65,6 @@ export const PrimaryMarkerTagsCriterionOption = new BaseTagsCriterionOption(
   "primary_marker_tags",
   "primary_marker_tags",
   [
-    CriterionModifier.IncludesAll,
     CriterionModifier.Includes
   ]
 );
