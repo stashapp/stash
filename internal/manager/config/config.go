@@ -15,7 +15,6 @@ import (
 
 	"github.com/knadh/koanf"
 	"github.com/knadh/koanf/parsers/yaml"
-	"github.com/knadh/koanf/providers/confmap"
 	"github.com/knadh/koanf/providers/file"
 
 	"github.com/stashapp/stash/internal/identify"
@@ -396,9 +395,11 @@ func (i *Config) Set(key string, value interface{}) {
 
 func (i *Config) set(key string, value interface{}) {
 	// assumes lock held
-	i.main.Load(confmap.Provider(map[string]interface{}{
-		key: value,
-	}, "."), nil)
+
+	// default behaviour for Set is to merge the value
+	// we want to replace it
+	i.main.Delete(key)
+	i.main.Set(key, value)
 }
 
 func (i *Config) SetDefault(key string, value interface{}) {
@@ -427,16 +428,23 @@ func (i *Config) Write() error {
 	i.Lock()
 	defer i.Unlock()
 
-	return i.write()
-}
-
-func (i *Config) write() error {
-	data, err := i.main.Marshal(yaml.Parser())
+	data, err := i.marshal()
 	if err != nil {
 		return err
 	}
 
 	return os.WriteFile(i.filePath, data, 0644)
+}
+
+func (i *Config) Marshal() ([]byte, error) {
+	i.RLock()
+	defer i.RUnlock()
+
+	return i.marshal()
+}
+
+func (i *Config) marshal() ([]byte, error) {
+	return i.main.Marshal(yaml.Parser())
 }
 
 // FileEnvSet returns true if the configuration file environment parameter
