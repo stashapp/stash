@@ -699,6 +699,7 @@ func (qb *GalleryStore) makeFilter(ctx context.Context, galleryFilter *models.Ga
 	query.handleCriterion(ctx, galleryPerformersCriterionHandler(qb, galleryFilter.Performers))
 	query.handleCriterion(ctx, galleryPerformerCountCriterionHandler(qb, galleryFilter.PerformerCount))
 	query.handleCriterion(ctx, hasChaptersCriterionHandler(galleryFilter.HasChapters))
+	query.handleCriterion(ctx, galleryScenesCriterionHandler(qb, galleryFilter.Scenes))
 	query.handleCriterion(ctx, studioCriterionHandler(galleryTable, galleryFilter.Studios))
 	query.handleCriterion(ctx, galleryPerformerTagsCriterionHandler(qb, galleryFilter.PerformerTags))
 	query.handleCriterion(ctx, galleryAverageResolutionCriterionHandler(qb, galleryFilter.AverageResolution))
@@ -825,6 +826,17 @@ func galleryURLsCriterionHandler(url *models.StringCriterionInput) criterionHand
 	}
 
 	return h.handler(url)
+}
+
+func (qb *GalleryStore) getMultiCriterionHandlerBuilder(foreignTable, joinTable, foreignFK string, addJoinsFunc func(f *filterBuilder)) multiCriterionHandlerBuilder {
+	return multiCriterionHandlerBuilder{
+		primaryTable: galleryTable,
+		foreignTable: foreignTable,
+		joinTable:    joinTable,
+		primaryFK:    galleryIDColumn,
+		foreignFK:    foreignFK,
+		addJoinsFunc: addJoinsFunc,
+	}
 }
 
 func (qb *GalleryStore) galleryPathCriterionHandler(c *models.StringCriterionInput) criterionHandlerFunc {
@@ -956,6 +968,15 @@ func galleryTagCountCriterionHandler(qb *GalleryStore, tagCount *models.IntCrite
 	}
 
 	return h.handler(tagCount)
+}
+
+func galleryScenesCriterionHandler(qb *GalleryStore, scenes *models.MultiCriterionInput) criterionHandlerFunc {
+	addJoinsFunc := func(f *filterBuilder) {
+		qb.scenesRepository().join(f, "", "galleries.id")
+		f.addLeftJoin("scenes", "", "scenes_galleries.scene_id = scenes.id")
+	}
+	h := qb.getMultiCriterionHandlerBuilder(sceneTable, galleriesScenesTable, "scene_id", addJoinsFunc)
+	return h.handler(scenes)
 }
 
 func galleryPerformersCriterionHandler(qb *GalleryStore, performers *models.MultiCriterionInput) criterionHandlerFunc {
