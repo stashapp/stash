@@ -43,6 +43,7 @@ interface ITypeProps {
     | "tags"
     | "scene_tags"
     | "performer_tags"
+    | "studio_tags"
     | "movies"
     | "galleries";
 }

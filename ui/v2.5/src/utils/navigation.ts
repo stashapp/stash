@@ -288,6 +288,19 @@ const makeTagPerformersUrl = (tag: Partial<GQL.TagDataFragment>) => {
   return `/performers?${filter.makeQueryParameters()}`;
 };
 
+const makeTagStudiosUrl = (tag: Partial<GQL.TagDataFragment>) => {
+  if (!tag.id) return "#";
+  const filter = new ListFilterModel(GQL.FilterMode.Studios, undefined);
+  const criterion = new TagsCriterion(TagsCriterionOption);
+  criterion.value = {
+    items: [{ id: tag.id, label: tag.name || `Tag ${tag.id}` }],
+    excluded: [],
+    depth: 0,
+  };
+  filter.criteria.push(criterion);
+  return `/studios?${filter.makeQueryParameters()}`;
+};
+
 const makeTagSceneMarkersUrl = (tag: Partial<GQL.TagDataFragment>) => {
   if (!tag.id) return "#";
   const filter = new ListFilterModel(GQL.FilterMode.SceneMarkers, undefined);
@@ -439,6 +452,7 @@ const NavUtils = {
   makeTagSceneMarkersUrl,
   makeTagScenesUrl,
   makeTagPerformersUrl,
+  makeTagStudiosUrl,
   makeTagGalleriesUrl,
   makeTagImagesUrl,
   makeScenesPHashMatchUrl,

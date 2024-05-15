@@ -55,6 +55,12 @@ export const PerformerTagsCriterionOption = new BaseTagsCriterionOption(
   withoutEqualsModifierOptions
 );
 
+export const StudioTagsCriterionOption = new BaseTagsCriterionOption(
+  "studio_tags",
+  "studio_tags",
+  withoutEqualsModifierOptions
+);
+
 export const ParentTagsCriterionOption = new BaseTagsCriterionOption(
   "parent_tags",
   "parents",

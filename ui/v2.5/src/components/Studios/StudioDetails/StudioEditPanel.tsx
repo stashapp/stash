@@ -3,9 +3,13 @@ import { useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import * as yup from "yup";
 import Mousetrap from "mousetrap";
+import { useTagCreate } from "src/core/StashService";
+import { faPlus, faSyncAlt } from "@fortawesome/free-solid-svg-icons";
+import { Icon } from "src/components/Shared/Icon";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
+import { CollapseButton } from "src/components/Shared/CollapseButton";
 import { DetailsEditNavbar } from "src/components/Shared/DetailsEditNavbar";
-import { Form } from "react-bootstrap";
+import { Button, Form, Badge, Dropdown } from "react-bootstrap";
 import ImageUtils from "src/utils/image";
 import { getStashIDs } from "src/utils/stashIds";
 import { useFormik } from "formik";
@@ -16,6 +20,7 @@ import { handleUnsavedChanges } from "src/utils/navigation";
 import { formikUtils } from "src/utils/form";
 import { yupFormikValidate, yupUniqueAliases } from "src/utils/yup";
 import { Studio, StudioSelect } from "../StudioSelect";
+import { Tag, TagSelect } from "src/components/Tags/TagSelect";
 
 interface IStudioEditPanel {
   studio: Partial<GQL.StudioDataFragment>;
@@ -39,6 +44,10 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
 
   const isNew = studio.id === undefined;
 
+  const [tags, setTags] = useState<Tag[]>([]);
+  const [newTags, setNewTags] = useState<GQL.ScrapedTag[]>();
+  const [createTag] = useTagCreate();
+
   // Network state
   const [isLoading, setIsLoading] = useState(false);
 
@@ -50,6 +59,7 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
     details: yup.string().ensure(),
     parent_id: yup.string().required().nullable(),
     aliases: yupUniqueAliases(intl, "name"),
+    tag_ids: yup.array(yup.string().required()).defined(),
     ignore_auto_tag: yup.boolean().defined(),
     stash_ids: yup.mixed<GQL.StashIdInput[]>().defined(),
     image: yup.string().nullable().optional(),
@@ -62,6 +72,7 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
     details: studio.details ?? "",
     parent_id: studio.parent_studio?.id ?? null,
     aliases: studio.aliases ?? [],
+    tag_ids: (studio.tags ?? []).map((t) => t.id),
     ignore_auto_tag: studio.ignore_auto_tag ?? false,
     stash_ids: getStashIDs(studio.stash_ids),
   };
@@ -75,9 +86,58 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
     onSubmit: (values) => onSave(schema.cast(values)),
   });
 
+  function onSetTags(items: Tag[]) {
+    setTags(items);
+    formik.setFieldValue(
+      "tag_ids",
+      items.map((item) => item.id)
+    );
+  }
+
+  useEffect(() => {
+    setTags(studio.tags ?? []);
+  }, [studio.tags]);
+
   function onSetParentStudio(item: Studio | null) {
     setParentStudio(item);
     formik.setFieldValue("parent_id", item ? item.id : null);
+  }
+
+  async function createNewTag(toCreate: GQL.ScrapedTag) {
+    const tagInput: GQL.TagCreateInput = { name: toCreate.name ?? "" };
+    try {
+      const result = await createTag({
+        variables: {
+          input: tagInput,
+        },
+      });
+
+      if (!result.data?.tagCreate) {
+        Toast.error(new Error("Failed to create tag"));
+        return;
+      }
+
+      // add the new tag to the new tags value
+      const newTagIds = formik.values.tag_ids.concat([
+        result.data.tagCreate.id,
+      ]);
+      formik.setFieldValue("tag_ids", newTagIds);
+
+      // remove the tag from the list
+      const newTagsClone = newTags!.concat();
+      const pIndex = newTagsClone.indexOf(toCreate);
+      newTagsClone.splice(pIndex, 1);
+
+      setNewTags(newTagsClone);
+
+      Toast.success(
+        <span>
+          Created tag: <b>{toCreate.name}</b>
+        </span>
+      );
+    } catch (e) {
+      Toast.error(e);
+    }
   }
 
   const encodingImage = ImageUtils.usePasteImage((imageData) =>
@@ -157,6 +217,60 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
     return renderField("parent_id", title, control);
   }
 
+  function renderNewTags() {
+    if (!newTags || newTags.length === 0) {
+      return;
+    }
+
+    const ret = (
+      <>
+        {newTags.map((t) => (
+          <Badge
+            className="tag-item"
+            variant="secondary"
+            key={t.name}
+            onClick={() => createNewTag(t)}
+          >
+            {t.name}
+            <Button className="minimal ml-2">
+              <Icon className="fa-fw" icon={faPlus} />
+            </Button>
+          </Badge>
+        ))}
+      </>
+    );
+
+    const minCollapseLength = 10;
+
+    if (newTags.length >= minCollapseLength) {
+      return (
+        <CollapseButton text={`Missing (${newTags.length})`}>
+          {ret}
+        </CollapseButton>
+      );
+    }
+
+    return ret;
+  }
+
+  function renderTagsField() {
+    const title = intl.formatMessage({ id: "tags" });
+
+    const control = (
+      <>
+        <TagSelect
+          menuPortalTarget={document.body}
+          isMulti
+          onSelect={onSetTags}
+          values={tags}
+        />
+        {renderNewTags()}
+      </>
+    );
+
+    return renderField("tag_ids", title, control);
+  }
+
   if (isLoading) return <LoadingIndicator />;
 
   return (
@@ -178,6 +292,7 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
         {renderInputField("url")}
         {renderInputField("details", "textarea")}
         {renderParentStudioField()}
+        {renderTagsField()}
         {renderStashIDsField("stash_ids", "studios")}
         <hr />
         {renderInputField("ignore_auto_tag", "checkbox")}

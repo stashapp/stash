@@ -1368,6 +1368,7 @@
     "total_play_duration": "Total Play Duration"
   },
   "status": "Status: {statusText}",
+  "studio_tags": "Studio Tags",
   "studio": "Studio",
   "studio_and_parent": "Studio & Parent",
   "studio_depth": "Levels (empty for all)",

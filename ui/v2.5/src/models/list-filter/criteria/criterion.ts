@@ -172,6 +172,7 @@ export type InputType =
   | "tags"
   | "performer_tags"
   | "scene_tags"
+  | "studio_tags"
   | "movies"
   | "galleries"
   | undefined;

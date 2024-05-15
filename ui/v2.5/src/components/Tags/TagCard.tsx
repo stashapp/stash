@@ -223,6 +223,19 @@ export const TagCard: React.FC<IProps> = ({
     );
   }
 
+  function maybeRenderStudiosPopoverButton() {
+    if (!tag.studio_count) return;
+
+    return (
+      <PopoverCountButton
+        className="studio-count"
+        type="studio"
+        count={tag.studio_count}
+        url={NavUtils.makeTagStudiosUrl(tag)}
+      />
+    );
+  }
+
   function maybeRenderPopoverButtonGroup() {
     if (tag) {
       return (
@@ -234,6 +247,7 @@ export const TagCard: React.FC<IProps> = ({
             {maybeRenderGalleriesPopoverButton()}
             {maybeRenderSceneMarkersPopoverButton()}
             {maybeRenderPerformersPopoverButton()}
+            {maybeRenderStudiosPopoverButton()}
           </ButtonGroup>
         </>
       );

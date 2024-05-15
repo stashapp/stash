@@ -71,6 +71,40 @@ export const PerformerLink: React.FC<IPerformerLinkProps> = ({
   );
 };
 
+interface IStudioLinkProps {
+  studio: INamedObject;
+  linkType?: "scene" | "movie" | "gallery" | "image";
+  className?: string;
+}
+
+export const StudioLink: React.FC<IStudioLinkProps> = ({
+  studio,
+  linkType = "scene",
+  className,
+}) => {
+  const link = useMemo(() => {
+    switch (linkType) {
+      case "movie":
+        return NavUtils.makeStudioGalleriesUrl(studio);
+      case "gallery":
+        return NavUtils.makeStudioGalleriesUrl(studio);
+      case "image":
+        return NavUtils.makeStudioImagesUrl(studio);
+      case "scene":
+      default:
+        return NavUtils.makeStudioScenesUrl(studio);
+    }
+  }, [studio, linkType]);
+
+  const title = studio.name || "";
+
+  return (
+    <CommonLinkComponent link={link} className={className}>
+      {title}
+    </CommonLinkComponent>
+  );
+};
+
 interface IMovieLinkProps {
   movie: INamedObject;
   linkType?: "scene";
@@ -191,7 +225,7 @@ export const GalleryLink: React.FC<IGalleryLinkProps> = ({
 
 interface ITagLinkProps {
   tag: INamedObject;
-  linkType?: "scene" | "gallery" | "image" | "details" | "performer";
+  linkType?: "scene" | "gallery" | "image" | "details" | "performer" | "studio";
   className?: string;
   hoverPlacement?: Placement;
   showHierarchyIcon?: boolean;
@@ -212,6 +246,8 @@ export const TagLink: React.FC<ITagLinkProps> = ({
         return NavUtils.makeTagScenesUrl(tag);
       case "performer":
         return NavUtils.makeTagPerformersUrl(tag);
+      case "studio":
+        return NavUtils.makeTagStudiosUrl(tag);
       case "gallery":
         return NavUtils.makeTagGalleriesUrl(tag);
       case "image":
