@@ -806,16 +806,15 @@ func (i *Config) GetAllPluginConfiguration() map[string]map[string]interface{} {
 
 	ret := make(map[string]map[string]interface{})
 
-	sub := i.viper(PluginsSetting).Cut(PluginsSetting).Raw()
+	v := i.viper(PluginsSetting)
+
+	sub := v.Cut(PluginsSetting)
 	if sub == nil {
 		return ret
 	}
 
-	for plugin := range sub {
-		// HACK: viper changes map keys to case insensitive values, so the workaround is to
-		// convert map keys to snake case for storage
-		name := fromSnakeCase(plugin)
-		ret[name] = fromSnakeCaseMap(i.viper(PluginsSetting).Cut(PluginsSettingPrefix + plugin).Raw())
+	for plugin := range sub.Raw() {
+		ret[plugin] = sub.Cut(plugin).Raw()
 	}
 
 	return ret
@@ -825,13 +824,9 @@ func (i *Config) GetPluginConfiguration(pluginID string) map[string]interface{} 
 	i.RLock()
 	defer i.RUnlock()
 
-	key := PluginsSettingPrefix + toSnakeCase(pluginID)
+	key := PluginsSettingPrefix + pluginID
 
-	// HACK: viper changes map keys to case insensitive values, so the workaround is to
-	// convert map keys to snake case for storage
-	v := i.viper(key).Cut(key).Raw()
-
-	return fromSnakeCaseMap(v)
+	return i.viper(key).Cut(key).Raw()
 }
 
 // SetPluginConfiguration sets the configuration for a plugin.
@@ -840,13 +835,9 @@ func (i *Config) SetPluginConfiguration(pluginID string, v map[string]interface{
 	i.Lock()
 	defer i.Unlock()
 
-	pluginID = toSnakeCase(pluginID)
-
 	key := PluginsSettingPrefix + pluginID
 
-	// HACK: viper changes map keys to case insensitive values, so the workaround is to
-	// convert map keys to snake case for storage
-	i.set(key, toSnakeCaseMap(v))
+	i.set(key, v)
 }
 
 func (i *Config) GetDisabledPlugins() []string {
@@ -1240,20 +1231,14 @@ func (i *Config) GetUIConfiguration() map[string]interface{} {
 	i.RLock()
 	defer i.RUnlock()
 
-	// HACK: viper changes map keys to case insensitive values, so the workaround is to
-	// convert map keys to snake case for storage
-	v := i.viper(UI).Cut(UI).Raw()
-
-	return fromSnakeCaseMap(v)
+	return i.viper(UI).Cut(UI).Raw()
 }
 
 func (i *Config) SetUIConfiguration(v map[string]interface{}) {
 	i.Lock()
 	defer i.Unlock()
 
-	// HACK: viper changes map keys to case insensitive values, so the workaround is to
-	// convert map keys to snake case for storage
-	i.set(UI, toSnakeCaseMap(v))
+	i.set(UI, v)
 }
 
 func (i *Config) GetCSSPath() string {
