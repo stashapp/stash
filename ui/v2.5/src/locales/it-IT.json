@@ -134,7 +134,8 @@
         "migrate_scene_screenshots": "Migra gli Screenshot delle scene",
         "optimise_database": "Ottimizza il Database",
         "reload": "Ricarica",
-        "remove_date": "Rimuovi la data"
+        "remove_date": "Rimuovi la data",
+        "view_history": "Visualizza cronologia"
     },
     "actions_name": "Azioni",
     "age": "Età",
