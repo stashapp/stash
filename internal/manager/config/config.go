@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"reflect"
 	"regexp"
 	"runtime"
 	"strings"
@@ -281,6 +282,10 @@ var (
 	defaultMenuItems         = []string{"scenes", "images", "movies", "markers", "galleries", "performers", "studios", "tags"}
 )
 
+var jsonUnmarshalConf = koanf.UnmarshalConf{
+	Tag: "json",
+}
+
 type MissingConfigError struct {
 	missingFields []string
 }
@@ -399,7 +404,18 @@ func (i *Config) set(key string, value interface{}) {
 	// default behaviour for Set is to merge the value
 	// we want to replace it
 	i.main.Delete(key)
-	i.main.Set(key, value)
+
+	if value == nil {
+		return
+	}
+
+	// test for nil interface as well
+	refVal := reflect.ValueOf(value)
+	if refVal.Kind() == reflect.Ptr && refVal.IsNil() {
+		return
+	}
+
+	_ = i.main.Set(key, value)
 }
 
 func (i *Config) SetDefault(key string, value interface{}) {
@@ -692,7 +708,7 @@ func (i *Config) GetImageExcludes() []string {
 
 func (i *Config) GetVideoExtensions() []string {
 	ret := i.getStringSlice(VideoExtensions)
-	if ret == nil {
+	if len(ret) == 0 {
 		ret = defaultVideoExtensions
 	}
 	return ret
@@ -700,7 +716,7 @@ func (i *Config) GetVideoExtensions() []string {
 
 func (i *Config) GetImageExtensions() []string {
 	ret := i.getStringSlice(ImageExtensions)
-	if ret == nil {
+	if len(ret) == 0 {
 		ret = defaultImageExtensions
 	}
 	return ret
@@ -708,7 +724,7 @@ func (i *Config) GetImageExtensions() []string {
 
 func (i *Config) GetGalleryExtensions() []string {
 	ret := i.getStringSlice(GalleryExtensions)
-	if ret == nil {
+	if len(ret) == 0 {
 		ret = defaultGalleryExtensions
 	}
 	return ret
@@ -1406,9 +1422,9 @@ func (i *Config) GetDefaultIdentifySettings() *identify.Options {
 	defer i.RUnlock()
 	v := i.viper(DefaultIdentifySettings)
 
-	if v.Exists(DefaultIdentifySettings) {
+	if v.Exists(DefaultIdentifySettings) && v.Get(DefaultIdentifySettings) != nil {
 		var ret identify.Options
-		if err := v.Unmarshal(DefaultIdentifySettings, &ret); err != nil {
+		if err := v.UnmarshalWithConf(DefaultIdentifySettings, &ret, jsonUnmarshalConf); err != nil {
 			return nil
 		}
 		return &ret
@@ -1425,9 +1441,9 @@ func (i *Config) GetDefaultScanSettings() *ScanMetadataOptions {
 	defer i.RUnlock()
 	v := i.viper(DefaultScanSettings)
 
-	if v.Exists(DefaultScanSettings) {
+	if v.Exists(DefaultScanSettings) && v.Get(DefaultScanSettings) != nil {
 		var ret ScanMetadataOptions
-		if err := v.Unmarshal(DefaultScanSettings, &ret); err != nil {
+		if err := v.UnmarshalWithConf(DefaultScanSettings, &ret, jsonUnmarshalConf); err != nil {
 			return nil
 		}
 		return &ret

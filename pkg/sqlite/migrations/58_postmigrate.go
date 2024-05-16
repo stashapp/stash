@@ -98,6 +98,11 @@ func (m *schema58Migrator) migrateConfig() error {
 
 	orgPath := c.GetConfigFile()
 
+	if orgPath == "" {
+		// no config file to migrate (usually in a test)
+		return nil
+	}
+
 	// save a backup of the original config file
 	backupPath := fmt.Sprintf("%s.57.%s", orgPath, time.Now().Format("20060102_150405"))
 

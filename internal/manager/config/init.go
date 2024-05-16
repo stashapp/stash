@@ -176,7 +176,7 @@ func (i *Config) initConfig() error {
 		// load from default locations
 		if err := i.loadFirstFromFiles(defaultConfigLocations); err != nil {
 			if errors.Is(err, errConfigNotFound) {
-				instance.isNewSystem = true
+				i.isNewSystem = true
 				return nil
 			}
 
