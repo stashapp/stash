@@ -52,7 +52,7 @@ func TestMarkerCountByTagID(t *testing.T) {
 			t.Errorf("error calling CountByTagID: %s", err.Error())
 		}
 
-		assert.Equal(t, 6, markerCount)
+		assert.Equal(t, 8, markerCount)
 
 		markerCount, err = mqb.CountByTagID(ctx, tagIDs[tagIdxWithMarkers])
 
@@ -60,7 +60,7 @@ func TestMarkerCountByTagID(t *testing.T) {
 			t.Errorf("error calling CountByTagID: %s", err.Error())
 		}
 
-		assert.Equal(t, 2, markerCount)
+		assert.Equal(t, 4, markerCount)
 
 		markerCount, err = mqb.CountByTagID(ctx, 0)
 
