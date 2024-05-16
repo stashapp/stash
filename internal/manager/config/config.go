@@ -488,10 +488,10 @@ func (i *Config) GetDefaultDatabaseFilePath() string {
 	return filepath.Join(i.GetConfigPath(), "stash-go.sqlite")
 }
 
-// viper returns the viper instance that should be used to get the provided
+// forKey returns the Koanf instance that should be used to get the provided
 // key. Returns the overrides instance if the key exists there, otherwise it
 // returns the main instance. Assumes read lock held.
-func (i *Config) viper(key string) *koanf.Koanf {
+func (i *Config) forKey(key string) *koanf.Koanf {
 	v := i.main
 	if i.overrides.Exists(key) {
 		v = i.overrides
@@ -502,8 +502,8 @@ func (i *Config) viper(key string) *koanf.Koanf {
 
 // viper returns the viper instance that has the key set. Returns nil
 // if no instance has the key. Assumes read lock held.
-func (i *Config) viperWith(key string) *koanf.Koanf {
-	v := i.viper(key)
+func (i *Config) with(key string) *koanf.Koanf {
+	v := i.forKey(key)
 
 	if v.Exists(key) {
 		return v
@@ -526,28 +526,28 @@ func (i *Config) unmarshalKey(key string, rawVal interface{}) error {
 	i.RLock()
 	defer i.RUnlock()
 
-	return i.viper(key).Unmarshal(key, rawVal)
+	return i.forKey(key).Unmarshal(key, rawVal)
 }
 
 func (i *Config) getStringSlice(key string) []string {
 	i.RLock()
 	defer i.RUnlock()
 
-	return i.viper(key).Strings(key)
+	return i.forKey(key).Strings(key)
 }
 
 func (i *Config) getString(key string) string {
 	i.RLock()
 	defer i.RUnlock()
 
-	return i.viper(key).String(key)
+	return i.forKey(key).String(key)
 }
 
 func (i *Config) getBool(key string) bool {
 	i.RLock()
 	defer i.RUnlock()
 
-	return i.viper(key).Bool(key)
+	return i.forKey(key).Bool(key)
 }
 
 func (i *Config) getBoolDefault(key string, def bool) bool {
@@ -555,7 +555,7 @@ func (i *Config) getBoolDefault(key string, def bool) bool {
 	defer i.RUnlock()
 
 	ret := def
-	v := i.viper(key)
+	v := i.forKey(key)
 	if v.Exists(key) {
 		ret = v.Bool(key)
 	}
@@ -566,21 +566,21 @@ func (i *Config) getInt(key string) int {
 	i.RLock()
 	defer i.RUnlock()
 
-	return i.viper(key).Int(key)
+	return i.forKey(key).Int(key)
 }
 
 func (i *Config) getFloat64(key string) float64 {
 	i.RLock()
 	defer i.RUnlock()
 
-	return i.viper(key).Float64(key)
+	return i.forKey(key).Float64(key)
 }
 
 func (i *Config) getStringMapString(key string) map[string]string {
 	i.RLock()
 	defer i.RUnlock()
 
-	ret := i.viper(key).StringMap(key)
+	ret := i.forKey(key).StringMap(key)
 
 	// GetStringMapString returns an empty map regardless of whether the
 	// key exists or not.
@@ -830,7 +830,7 @@ func (i *Config) GetAllPluginConfiguration() map[string]map[string]interface{} {
 
 	ret := make(map[string]map[string]interface{})
 
-	v := i.viper(PluginsSetting)
+	v := i.forKey(PluginsSetting)
 
 	sub := v.Cut(PluginsSetting)
 	if sub == nil {
@@ -850,7 +850,7 @@ func (i *Config) GetPluginConfiguration(pluginID string) map[string]interface{} 
 
 	key := PluginsSettingPrefix + pluginID
 
-	return i.viper(key).Cut(key).Raw()
+	return i.forKey(key).Cut(key).Raw()
 }
 
 // SetPluginConfiguration sets the configuration for a plugin.
@@ -1101,7 +1101,7 @@ func (i *Config) GetMaxSessionAge() int {
 	defer i.RUnlock()
 
 	ret := DefaultMaxSessionAge
-	v := i.viper(MaxSessionAge)
+	v := i.forKey(MaxSessionAge)
 	if v.Exists(MaxSessionAge) {
 		ret = v.Int(MaxSessionAge)
 	}
@@ -1127,7 +1127,7 @@ func (i *Config) GetUILocation() string {
 func (i *Config) GetMenuItems() []string {
 	i.RLock()
 	defer i.RUnlock()
-	v := i.viper(MenuItems)
+	v := i.forKey(MenuItems)
 	if v.Exists(MenuItems) {
 		return v.Strings(MenuItems)
 	}
@@ -1143,7 +1143,7 @@ func (i *Config) GetWallShowTitle() bool {
 	defer i.RUnlock()
 
 	ret := defaultWallShowTitle
-	v := i.viper(WallShowTitle)
+	v := i.forKey(WallShowTitle)
 	if v.Exists(WallShowTitle) {
 		ret = v.Bool(WallShowTitle)
 	}
@@ -1159,7 +1159,7 @@ func (i *Config) GetWallPlayback() string {
 	defer i.RUnlock()
 
 	ret := defaultWallPlayback
-	v := i.viper(WallPlayback)
+	v := i.forKey(WallPlayback)
 	if v.Exists(WallPlayback) {
 		ret = v.String(WallPlayback)
 	}
@@ -1195,12 +1195,12 @@ func (i *Config) getSlideshowDelay() int {
 	// assume have lock
 
 	ret := defaultImageLightboxSlideshowDelay
-	v := i.viper(ImageLightboxSlideshowDelay)
+	v := i.forKey(ImageLightboxSlideshowDelay)
 	if v.Exists(ImageLightboxSlideshowDelay) {
 		ret = v.Int(ImageLightboxSlideshowDelay)
 	} else {
 		// fallback to old location
-		v := i.viper(legacyImageLightboxSlideshowDelay)
+		v := i.forKey(legacyImageLightboxSlideshowDelay)
 		if v.Exists(legacyImageLightboxSlideshowDelay) {
 			ret = v.Int(legacyImageLightboxSlideshowDelay)
 		}
@@ -1219,23 +1219,23 @@ func (i *Config) GetImageLightboxOptions() ConfigImageLightboxResult {
 		SlideshowDelay: &delay,
 	}
 
-	if v := i.viperWith(ImageLightboxDisplayModeKey); v != nil {
+	if v := i.with(ImageLightboxDisplayModeKey); v != nil {
 		mode := ImageLightboxDisplayMode(v.String(ImageLightboxDisplayModeKey))
 		ret.DisplayMode = &mode
 	}
-	if v := i.viperWith(ImageLightboxScaleUp); v != nil {
+	if v := i.with(ImageLightboxScaleUp); v != nil {
 		value := v.Bool(ImageLightboxScaleUp)
 		ret.ScaleUp = &value
 	}
-	if v := i.viperWith(ImageLightboxResetZoomOnNav); v != nil {
+	if v := i.with(ImageLightboxResetZoomOnNav); v != nil {
 		value := v.Bool(ImageLightboxResetZoomOnNav)
 		ret.ResetZoomOnNav = &value
 	}
-	if v := i.viperWith(ImageLightboxScrollModeKey); v != nil {
+	if v := i.with(ImageLightboxScrollModeKey); v != nil {
 		mode := ImageLightboxScrollMode(v.String(ImageLightboxScrollModeKey))
 		ret.ScrollMode = &mode
 	}
-	if v := i.viperWith(ImageLightboxScrollAttemptsBeforeChange); v != nil {
+	if v := i.with(ImageLightboxScrollAttemptsBeforeChange); v != nil {
 		ret.ScrollAttemptsBeforeChange = v.Int(ImageLightboxScrollAttemptsBeforeChange)
 	}
 
@@ -1255,7 +1255,7 @@ func (i *Config) GetUIConfiguration() map[string]interface{} {
 	i.RLock()
 	defer i.RUnlock()
 
-	return i.viper(UI).Cut(UI).Raw()
+	return i.forKey(UI).Cut(UI).Raw()
 }
 
 func (i *Config) SetUIConfiguration(v map[string]interface{}) {
@@ -1420,7 +1420,7 @@ func (i *Config) GetDeleteGeneratedDefault() bool {
 func (i *Config) GetDefaultIdentifySettings() *identify.Options {
 	i.RLock()
 	defer i.RUnlock()
-	v := i.viper(DefaultIdentifySettings)
+	v := i.forKey(DefaultIdentifySettings)
 
 	if v.Exists(DefaultIdentifySettings) && v.Get(DefaultIdentifySettings) != nil {
 		var ret identify.Options
@@ -1439,7 +1439,7 @@ func (i *Config) GetDefaultIdentifySettings() *identify.Options {
 func (i *Config) GetDefaultScanSettings() *ScanMetadataOptions {
 	i.RLock()
 	defer i.RUnlock()
-	v := i.viper(DefaultScanSettings)
+	v := i.forKey(DefaultScanSettings)
 
 	if v.Exists(DefaultScanSettings) && v.Get(DefaultScanSettings) != nil {
 		var ret ScanMetadataOptions
@@ -1458,7 +1458,7 @@ func (i *Config) GetDefaultScanSettings() *ScanMetadataOptions {
 func (i *Config) GetDefaultAutoTagSettings() *AutoTagMetadataOptions {
 	i.RLock()
 	defer i.RUnlock()
-	v := i.viper(DefaultAutoTagSettings)
+	v := i.forKey(DefaultAutoTagSettings)
 
 	if v.Exists(DefaultAutoTagSettings) {
 		var ret AutoTagMetadataOptions
@@ -1477,7 +1477,7 @@ func (i *Config) GetDefaultAutoTagSettings() *AutoTagMetadataOptions {
 func (i *Config) GetDefaultGenerateSettings() *models.GenerateMetadataOptions {
 	i.RLock()
 	defer i.RUnlock()
-	v := i.viper(DefaultGenerateSettings)
+	v := i.forKey(DefaultGenerateSettings)
 
 	if v.Exists(DefaultGenerateSettings) {
 		var ret models.GenerateMetadataOptions
@@ -1573,7 +1573,7 @@ func (i *Config) GetMaxUploadSize() int64 {
 	defer i.RUnlock()
 	ret := int64(1024)
 
-	v := i.viper(MaxUploadSize)
+	v := i.forKey(MaxUploadSize)
 	if v.Exists(MaxUploadSize) {
 		ret = v.Int64(MaxUploadSize)
 	}
@@ -1675,7 +1675,7 @@ func (i *Config) Validate() error {
 	var missingFields []string
 
 	for _, p := range mandatoryPaths {
-		if !i.viper(p).Exists(p) || i.viper(p).String(p) == "" {
+		if !i.forKey(p).Exists(p) || i.forKey(p).String(p) == "" {
 			missingFields = append(missingFields, p)
 		}
 	}
@@ -1686,7 +1686,7 @@ func (i *Config) Validate() error {
 		}
 	}
 
-	if i.GetBlobsStorage() == BlobStorageTypeFilesystem && i.viper(BlobsPath).String(BlobsPath) == "" {
+	if i.GetBlobsStorage() == BlobStorageTypeFilesystem && i.forKey(BlobsPath).String(BlobsPath) == "" {
 		return MissingConfigError{
 			missingFields: []string{BlobsPath},
 		}
