@@ -469,6 +469,8 @@ input ConfigDLNAInput {
   serverName: String
   "True if DLNA service should be enabled by default"
   enabled: Boolean
+  "Defaults to 1338"
+  port: Int
   "List of IPs whitelisted for DLNA service"
   whitelistedIPs: [String!]
   "List of interfaces to run DLNA on. Empty for all"
@@ -481,6 +483,8 @@ type ConfigDLNAResult {
   serverName: String!
   "True if DLNA service should be enabled by default"
   enabled: Boolean!
+  "Defaults to 1338"
+  port: Int!
   "List of IPs whitelisted for DLNA service"
   whitelistedIPs: [String!]!
   "List of interfaces to run DLNA on. Empty for all"

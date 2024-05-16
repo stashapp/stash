@@ -111,6 +111,7 @@ fragment ConfigInterfaceData on ConfigInterfaceResult {
 fragment ConfigDLNAData on ConfigDLNAResult {
   serverName
   enabled
+  port
   whitelistedIPs
   interfaces
   videoSortOrder
