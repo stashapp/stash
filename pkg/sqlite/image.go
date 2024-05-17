@@ -118,10 +118,14 @@ type ImageStore struct {
 	tableMgr *table
 	oCounterManager
 
-	fileStore *FileStore
+	fileStore      *FileStore
+	galleryStore   *GalleryStore
+	performerStore *PerformerStore
+	tagStore       *TagStore
+	studioStore    *StudioStore
 }
 
-func NewImageStore(fileStore *FileStore) *ImageStore {
+func NewImageStore(fileStore *FileStore, galleryStore *GalleryStore, performerStore *PerformerStore, tagStore *TagStore, studioStore *StudioStore) *ImageStore {
 	return &ImageStore{
 		repository: repository{
 			tableName: imageTable,
@@ -129,7 +133,11 @@ func NewImageStore(fileStore *FileStore) *ImageStore {
 		},
 		tableMgr:        imageTableMgr,
 		oCounterManager: oCounterManager{imageTableMgr},
+		galleryStore:    galleryStore,
 		fileStore:       fileStore,
+		performerStore:  performerStore,
+		tagStore:        tagStore,
+		studioStore:     studioStore,
 	}
 }
 

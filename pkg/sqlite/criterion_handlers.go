@@ -985,3 +985,34 @@ func (h *stashIDCriterionHandler) handle(ctx context.Context, f *filterBuilder) 
 		Modifier: h.c.Modifier,
 	}, t+".stash_id")(ctx, f)
 }
+
+type relatedStore interface {
+	newQuery() queryBuilder
+}
+
+type relatedFilterHandler struct {
+	relatedIDCol string
+	relatedStore relatedStore
+	makeFilterFn func(ctx context.Context) *filterBuilder
+	joinFn       func(f *filterBuilder)
+}
+
+func (h *relatedFilterHandler) handle(ctx context.Context, f *filterBuilder) {
+	subFilter := h.makeFilterFn(ctx)
+	if subFilter == nil {
+		return
+	}
+
+	subQuery := h.relatedStore.newQuery()
+	selectIDs(&subQuery, subQuery.repository.tableName)
+	if err := subQuery.addFilter(subFilter); err != nil {
+		f.setError(err)
+		return
+	}
+
+	if h.joinFn != nil {
+		h.joinFn(f)
+	}
+
+	f.addWhere(fmt.Sprintf("%s IN ("+subQuery.toSQL(false)+")", h.relatedIDCol), subQuery.args...)
+}

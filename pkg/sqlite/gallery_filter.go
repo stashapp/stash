@@ -10,6 +10,10 @@ import (
 )
 
 func (qb *GalleryStore) validateFilter(galleryFilter *models.GalleryFilterType) error {
+	if galleryFilter == nil {
+		return nil
+	}
+
 	const and = "AND"
 	const or = "OR"
 	const not = "NOT"
@@ -41,6 +45,10 @@ func (qb *GalleryStore) validateFilter(galleryFilter *models.GalleryFilterType) 
 }
 
 func (qb *GalleryStore) makeFilter(ctx context.Context, galleryFilter *models.GalleryFilterType) *filterBuilder {
+	if galleryFilter == nil {
+		return nil
+	}
+
 	query := &filterBuilder{}
 
 	if galleryFilter.And != nil {

@@ -528,6 +528,15 @@ input ImageFilterType {
   code: StringCriterionInput
   "Filter by photographer"
   photographer: StringCriterionInput
+
+  "Filter by related galleries that meet this criteria"
+  galleries_filter: GalleryFilterType
+  "Filter by related performers that meet this criteria"
+  performers_filter: PerformerFilterType
+  "Filter by related studios that meet this criteria"
+  studios_filter: StudioFilterType
+  "Filter by related tags that meet this criteria"
+  tags_filter: TagFilterType
 }
 
 enum CriterionModifier {

@@ -11,6 +11,10 @@ import (
 )
 
 func (qb *PerformerStore) validateFilter(filter *models.PerformerFilterType) error {
+	if filter == nil {
+		return nil
+	}
+
 	const and = "AND"
 	const or = "OR"
 	const not = "NOT"
@@ -58,6 +62,10 @@ func (qb *PerformerStore) validateFilter(filter *models.PerformerFilterType) err
 }
 
 func (qb *PerformerStore) makeFilter(ctx context.Context, filter *models.PerformerFilterType) *filterBuilder {
+	if filter == nil {
+		return nil
+	}
+
 	query := &filterBuilder{}
 
 	if filter.And != nil {

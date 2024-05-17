@@ -34,6 +34,19 @@ func (qb *ImageStore) validateFilter(imageFilter *models.ImageFilterType) error 
 		return qb.validateFilter(imageFilter.Not)
 	}
 
+	if err := qb.galleryStore.validateFilter(imageFilter.GalleriesFilter); err != nil {
+		return err
+	}
+	if err := qb.performerStore.validateFilter(imageFilter.PerformersFilter); err != nil {
+		return err
+	}
+	if err := qb.studioStore.validateFilter(imageFilter.StudiosFilter); err != nil {
+		return err
+	}
+	if err := qb.tagStore.validateFilter(imageFilter.TagsFilter); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -94,6 +107,47 @@ func (qb *ImageStore) criterionHandler(imageFilter *models.ImageFilterType) crit
 		qb.performerAgeCriterionHandler(imageFilter.PerformerAge),
 		timestampCriterionHandler(imageFilter.CreatedAt, "images.created_at"),
 		timestampCriterionHandler(imageFilter.UpdatedAt, "images.updated_at"),
+
+		&relatedFilterHandler{
+			relatedIDCol: "galleries_images.gallery_id",
+			relatedStore: qb.galleryStore,
+			makeFilterFn: func(ctx context.Context) *filterBuilder {
+				return qb.galleryStore.makeFilter(ctx, imageFilter.GalleriesFilter)
+			},
+			joinFn: func(f *filterBuilder) {
+				f.addInnerJoin(galleriesImagesTable, "", "galleries_images.image_id = images.id")
+			},
+		},
+
+		&relatedFilterHandler{
+			relatedIDCol: "performers_join.performer_id",
+			relatedStore: qb.performerStore,
+			makeFilterFn: func(ctx context.Context) *filterBuilder {
+				return qb.performerStore.makeFilter(ctx, imageFilter.PerformersFilter)
+			},
+			joinFn: func(f *filterBuilder) {
+				qb.performersRepository().join(f, "performers_join", "images.id")
+			},
+		},
+
+		&relatedFilterHandler{
+			relatedIDCol: "images.studio_id",
+			relatedStore: qb.studioStore,
+			makeFilterFn: func(ctx context.Context) *filterBuilder {
+				return qb.studioStore.makeFilter(ctx, imageFilter.StudiosFilter)
+			},
+		},
+
+		&relatedFilterHandler{
+			relatedIDCol: "image_tag.tag_id",
+			relatedStore: qb.tagStore,
+			makeFilterFn: func(ctx context.Context) *filterBuilder {
+				return qb.tagStore.makeFilter(ctx, imageFilter.TagsFilter)
+			},
+			joinFn: func(f *filterBuilder) {
+				f.addInnerJoin(imagesTagsTable, "image_tag", "image_tag.image_id = images.id")
+			},
+		},
 	}
 }
 

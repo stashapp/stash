@@ -7,6 +7,10 @@ import (
 )
 
 func (qb *StudioStore) validateFilter(filter *models.StudioFilterType) error {
+	if filter == nil {
+		return nil
+	}
+
 	const and = "AND"
 	const or = "OR"
 	const not = "NOT"
@@ -38,6 +42,10 @@ func (qb *StudioStore) validateFilter(filter *models.StudioFilterType) error {
 }
 
 func (qb *StudioStore) makeFilter(ctx context.Context, studioFilter *models.StudioFilterType) *filterBuilder {
+	if studioFilter == nil {
+		return nil
+	}
+
 	query := &filterBuilder{}
 
 	if studioFilter.And != nil {

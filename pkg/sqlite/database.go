@@ -87,7 +87,11 @@ type Database struct {
 func NewDatabase() *Database {
 	fileStore := NewFileStore()
 	folderStore := NewFolderStore()
+	galleryStore := NewGalleryStore(fileStore, folderStore)
 	blobStore := NewBlobStore(BlobStoreOptions{})
+	performerStore := NewPerformerStore(blobStore)
+	studioStore := NewStudioStore(blobStore)
+	tagStore := NewTagStore(blobStore)
 
 	ret := &Database{
 		Blobs:          blobStore,
@@ -95,12 +99,12 @@ func NewDatabase() *Database {
 		Folder:         folderStore,
 		Scene:          NewSceneStore(fileStore, blobStore),
 		SceneMarker:    NewSceneMarkerStore(),
-		Image:          NewImageStore(fileStore),
-		Gallery:        NewGalleryStore(fileStore, folderStore),
+		Image:          NewImageStore(fileStore, galleryStore, performerStore, tagStore, studioStore),
+		Gallery:        galleryStore,
 		GalleryChapter: NewGalleryChapterStore(),
-		Performer:      NewPerformerStore(blobStore),
-		Studio:         NewStudioStore(blobStore),
-		Tag:            NewTagStore(blobStore),
+		Performer:      performerStore,
+		Studio:         studioStore,
+		Tag:            tagStore,
 		Movie:          NewMovieStore(blobStore),
 		SavedFilter:    NewSavedFilterStore(),
 		lockChan:       make(chan struct{}, 1),

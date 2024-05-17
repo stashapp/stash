@@ -8,6 +8,10 @@ import (
 )
 
 func (qb *TagStore) validateFilter(tagFilter *models.TagFilterType) error {
+	if tagFilter == nil {
+		return nil
+	}
+
 	const and = "AND"
 	const or = "OR"
 	const not = "NOT"
@@ -39,6 +43,10 @@ func (qb *TagStore) validateFilter(tagFilter *models.TagFilterType) error {
 }
 
 func (qb *TagStore) makeFilter(ctx context.Context, tagFilter *models.TagFilterType) *filterBuilder {
+	if tagFilter == nil {
+		return nil
+	}
+
 	query := &filterBuilder{}
 
 	if tagFilter.And != nil {
