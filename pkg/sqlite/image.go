@@ -718,6 +718,7 @@ func (qb *ImageStore) makeFilter(ctx context.Context, imageFilter *models.ImageF
 	query.handleCriterion(ctx, imagePerformersCriterionHandler(qb, imageFilter.Performers))
 	query.handleCriterion(ctx, imagePerformerCountCriterionHandler(qb, imageFilter.PerformerCount))
 	query.handleCriterion(ctx, studioCriterionHandler(imageTable, imageFilter.Studios))
+	query.handleCriterion(ctx, imageStudioTagsCriterionHandler(qb, imageFilter.StudioTags))
 	query.handleCriterion(ctx, imagePerformerTagsCriterionHandler(qb, imageFilter.PerformerTags))
 	query.handleCriterion(ctx, imagePerformerFavoriteCriterionHandler(imageFilter.PerformerFavorite))
 	query.handleCriterion(ctx, imagePerformerAgeCriterionHandler(imageFilter.PerformerAge))
@@ -978,6 +979,13 @@ func imageGalleriesCriterionHandler(qb *ImageStore, galleries *models.MultiCrite
 	h := qb.getMultiCriterionHandlerBuilder(galleryTable, galleriesImagesTable, galleryIDColumn, addJoinsFunc)
 
 	return h.handler(galleries)
+}
+
+func imageStudioTagsCriterionHandler(qb *ImageStore, tags *models.HierarchicalMultiCriterionInput) criterionHandler {
+	return &joinedStudioTagsHandler{
+		criterion:    tags,
+		primaryTable: imageTable,
+	}
 }
 
 func imagePerformersCriterionHandler(qb *ImageStore, performers *models.MultiCriterionInput) criterionHandlerFunc {

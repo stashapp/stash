@@ -701,6 +701,7 @@ func (qb *GalleryStore) makeFilter(ctx context.Context, galleryFilter *models.Ga
 	query.handleCriterion(ctx, hasChaptersCriterionHandler(galleryFilter.HasChapters))
 	query.handleCriterion(ctx, studioCriterionHandler(galleryTable, galleryFilter.Studios))
 	query.handleCriterion(ctx, galleryPerformerTagsCriterionHandler(qb, galleryFilter.PerformerTags))
+	query.handleCriterion(ctx, galleryStudioTagsCriterionHandler(qb, galleryFilter.StudioTags))
 	query.handleCriterion(ctx, galleryAverageResolutionCriterionHandler(qb, galleryFilter.AverageResolution))
 	query.handleCriterion(ctx, galleryImageCountCriterionHandler(qb, galleryFilter.ImageCount))
 	query.handleCriterion(ctx, galleryPerformerFavoriteCriterionHandler(galleryFilter.PerformerFavorite))
@@ -1004,6 +1005,13 @@ func hasChaptersCriterionHandler(hasChapters *string) criterionHandlerFunc {
 				f.addWhere("galleries_chapters.id IS NULL")
 			}
 		}
+	}
+}
+
+func galleryStudioTagsCriterionHandler(qb *GalleryStore, tags *models.HierarchicalMultiCriterionInput) criterionHandler {
+	return &joinedStudioTagsHandler{
+		criterion:    tags,
+		primaryTable: galleryTable,
 	}
 }
 

@@ -57,6 +57,8 @@ type SceneFilterType struct {
 	IsMissing *string `json:"is_missing"`
 	// Filter to only include scenes with this studio
 	Studios *HierarchicalMultiCriterionInput `json:"studios"`
+	// Filter to only include scenes with studios with these tags
+	StudioTags *HierarchicalMultiCriterionInput `json:"studio_tags"`
 	// Filter to only include scenes with this movie
 	Movies *MultiCriterionInput `json:"movies"`
 	// Filter to only include scenes with this gallery

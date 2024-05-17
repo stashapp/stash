@@ -1226,6 +1226,78 @@ INNER JOIN (`+valuesClause+`) t ON t.column2 = pt.tag_id
 	}
 }
 
+type joinedStudioTagsHandler struct {
+	criterion *models.HierarchicalMultiCriterionInput
+
+	primaryTable string // eg scenes
+}
+
+func (h *joinedStudioTagsHandler) handle(ctx context.Context, f *filterBuilder) {
+	tags := h.criterion
+
+	if tags != nil {
+		criterion := tags.CombineExcludes()
+
+		// validate the modifier
+		switch criterion.Modifier {
+		case models.CriterionModifierIncludesAll, models.CriterionModifierIncludes, models.CriterionModifierExcludes, models.CriterionModifierIsNull, models.CriterionModifierNotNull:
+			// valid
+		default:
+			f.setError(fmt.Errorf("invalid modifier %s for studio tags", criterion.Modifier))
+		}
+
+		strFormatMap := utils.StrFormatMap{
+			"primaryTable": h.primaryTable,
+			"inBinding":    getInBinding(len(criterion.Value)),
+		}
+
+		if criterion.Modifier == models.CriterionModifierIsNull || criterion.Modifier == models.CriterionModifierNotNull {
+			var notClause string
+			if criterion.Modifier == models.CriterionModifierNotNull {
+				notClause = "NOT"
+			}
+
+			f.addLeftJoin("studios_tags", "", utils.StrFormat("{primaryTable}.studio_id = studios_tags.studio_id", strFormatMap))
+
+			f.addWhere(fmt.Sprintf("studios_tags.tag_id IS %s NULL", notClause))
+			return
+		}
+
+		if len(criterion.Value) == 0 && len(criterion.Excludes) == 0 {
+			return
+		}
+
+		if len(criterion.Value) > 0 {
+			valuesClause, err := getHierarchicalValues(ctx, dbWrapper{}, criterion.Value, tagTable, "tags_relations", "", "", criterion.Depth)
+			if err != nil {
+				f.setError(err)
+				return
+			}
+
+			f.addWith(utils.StrFormat(`studio_tags AS (
+SELECT ps.id as primaryID, t.column1 AS root_tag_id FROM {primaryTable} ps
+INNER JOIN studios_tags pt ON pt.studio_id = ps.studio_id
+INNER JOIN (`+valuesClause+`) t ON t.column2 = pt.tag_id
+)`, strFormatMap))
+
+			f.addLeftJoin("studio_tags", "", utils.StrFormat("studio_tags.primaryID = {primaryTable}.id", strFormatMap))
+
+			addHierarchicalConditionClauses(f, criterion, "studio_tags", "root_tag_id")
+		}
+
+		if len(criterion.Excludes) > 0 {
+			valuesClause, err := getHierarchicalValues(ctx, dbWrapper{}, criterion.Excludes, tagTable, "tags_relations", "", "", criterion.Depth)
+			if err != nil {
+				f.setError(err)
+				return
+			}
+
+			clause := utils.StrFormat("{primaryTable}.id NOT IN (SELECT {primaryTable}.id FROM {primaryTable} INNER JOIN studios_tags ON {primaryTable}.studio_id = studios_tags.studio_id WHERE studios_tags.tag_id IN (SELECT column2 FROM (%s)))", strFormatMap)
+			f.addWhere(fmt.Sprintf(clause, valuesClause))
+		}
+	}
+}
+
 type stashIDCriterionHandler struct {
 	c                 *models.StashIDCriterionInput
 	stashIDRepository *stashIDRepository

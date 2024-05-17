@@ -25,6 +25,7 @@ const (
 	studioParentIDColumn  = "parent_id"
 	studioNameColumn      = "name"
 	studioImageBlobColumn = "image_blob"
+	studiosTagsTable      = "studios_tags"
 )
 
 type studioRow struct {
@@ -141,6 +142,12 @@ func (qb *StudioStore) Create(ctx context.Context, newObject *models.Studio) err
 		}
 	}
 
+	if newObject.TagIDs.Loaded() {
+		if err := studiosTagsTableMgr.insertJoins(ctx, id, newObject.TagIDs.List()); err != nil {
+			return err
+		}
+	}
+
 	if newObject.StashIDs.Loaded() {
 		if err := studiosStashIDsTableMgr.insertJoins(ctx, id, newObject.StashIDs.List()); err != nil {
 			return err
@@ -181,6 +188,12 @@ func (qb *StudioStore) UpdatePartial(ctx context.Context, input models.StudioPar
 		}
 	}
 
+	if input.TagIDs != nil {
+		if err := studiosTagsTableMgr.modifyJoins(ctx, input.ID, input.TagIDs.IDs, input.TagIDs.Mode); err != nil {
+			return nil, err
+		}
+	}
+
 	if input.StashIDs != nil {
 		if err := studiosStashIDsTableMgr.modifyJoins(ctx, input.ID, input.StashIDs.StashIDs, input.StashIDs.Mode); err != nil {
 			return nil, err
@@ -201,6 +214,12 @@ func (qb *StudioStore) Update(ctx context.Context, updatedObject *models.Studio)
 
 	if updatedObject.Aliases.Loaded() {
 		if err := studiosAliasesTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.Aliases.List()); err != nil {
+			return err
+		}
+	}
+
+	if updatedObject.TagIDs.Loaded() {
+		if err := studiosTagsTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.TagIDs.List()); err != nil {
 			return err
 		}
 	}
@@ -412,6 +431,13 @@ func (qb *StudioStore) FindByStashIDStatus(ctx context.Context, hasStashID bool,
 	return ret, nil
 }
 
+func (qb *StudioStore) CountByTagID(ctx context.Context, tagID int) (int, error) {
+	joinTable := studiosTagsJoinTable
+
+	q := dialect.Select(goqu.COUNT("*")).From(joinTable).Where(joinTable.Col(tagIDColumn).Eq(tagID))
+	return count(ctx, q)
+}
+
 func (qb *StudioStore) Count(ctx context.Context) (int, error) {
 	q := dialect.Select(goqu.COUNT("*")).From(qb.table())
 	return count(ctx, q)
@@ -517,11 +543,13 @@ func (qb *StudioStore) makeFilter(ctx context.Context, studioFilter *models.Stud
 	})
 
 	query.handleCriterion(ctx, studioIsMissingCriterionHandler(qb, studioFilter.IsMissing))
+	query.handleCriterion(ctx, studioTagCountCriterionHandler(qb, studioFilter.TagCount))
 	query.handleCriterion(ctx, studioSceneCountCriterionHandler(qb, studioFilter.SceneCount))
 	query.handleCriterion(ctx, studioImageCountCriterionHandler(qb, studioFilter.ImageCount))
 	query.handleCriterion(ctx, studioGalleryCountCriterionHandler(qb, studioFilter.GalleryCount))
 	query.handleCriterion(ctx, studioParentCriterionHandler(qb, studioFilter.Parents))
 	query.handleCriterion(ctx, studioAliasCriterionHandler(qb, studioFilter.Aliases))
+	query.handleCriterion(ctx, studioTagsCriterionHandler(qb, studioFilter.Tags))
 	query.handleCriterion(ctx, studioChildCountCriterionHandler(qb, studioFilter.ChildCount))
 	query.handleCriterion(ctx, timestampCriterionHandler(studioFilter.CreatedAt, studioTable+".created_at"))
 	query.handleCriterion(ctx, timestampCriterionHandler(studioFilter.UpdatedAt, studioTable+".updated_at"))
@@ -579,6 +607,15 @@ func (qb *StudioStore) Query(ctx context.Context, studioFilter *models.StudioFil
 	return studios, countResult, nil
 }
 
+func (qb *StudioStore) QueryCount(ctx context.Context, studioFilter *models.StudioFilterType, findFilter *models.FindFilterType) (int, error) {
+	query, err := qb.makeQuery(ctx, studioFilter, findFilter)
+	if err != nil {
+		return 0, err
+	}
+
+	return query.executeCount(ctx)
+}
+
 func studioIsMissingCriterionHandler(qb *StudioStore, isMissing *string) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if isMissing != nil && *isMissing != "" {
@@ -628,6 +665,16 @@ func studioGalleryCountCriterionHandler(qb *StudioStore, galleryCount *models.In
 	}
 }
 
+func studioTagCountCriterionHandler(qb *StudioStore, tagCount *models.IntCriterionInput) criterionHandlerFunc {
+	h := countCriterionHandlerBuilder{
+		primaryTable: studioTable,
+		joinTable:    studiosTagsTable,
+		primaryFK:    studioIDColumn,
+	}
+
+	return h.handler(tagCount)
+}
+
 func studioParentCriterionHandler(qb *StudioStore, parents *models.MultiCriterionInput) criterionHandlerFunc {
 	addJoinsFunc := func(f *filterBuilder) {
 		f.addLeftJoin("studios", "parent_studio", "parent_studio.id = studios.parent_id")
@@ -666,6 +713,23 @@ func studioChildCountCriterionHandler(qb *StudioStore, childCount *models.IntCri
 	}
 }
 
+func studioTagsCriterionHandler(qb *StudioStore, tags *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
+	h := joinedHierarchicalMultiCriterionHandlerBuilder{
+		tx: qb.tx,
+
+		primaryTable: studioTable,
+		foreignTable: tagTable,
+		foreignFK:    "tag_id",
+
+		relationsTable: "tags_relations",
+		joinAs:         "image_tag",
+		joinTable:      studiosTagsTable,
+		primaryFK:      studioIDColumn,
+	}
+
+	return h.handler(tags)
+}
+
 func (qb *StudioStore) getStudioSort(findFilter *models.FindFilterType) string {
 	var sort string
 	var direction string
@@ -679,6 +743,8 @@ func (qb *StudioStore) getStudioSort(findFilter *models.FindFilterType) string {
 
 	sortQuery := ""
 	switch sort {
+	case "tag_count":
+		sortQuery += getCountSort(studioTable, studiosTagsTable, studioIDColumn, direction)
 	case "scenes_count":
 		sortQuery += getCountSort(studioTable, sceneTable, studioIDColumn, direction)
 	case "images_count":
@@ -694,6 +760,19 @@ func (qb *StudioStore) getStudioSort(findFilter *models.FindFilterType) string {
 	// Whatever the sorting, always use name/id as a final sort
 	sortQuery += ", COALESCE(studios.name, studios.id) COLLATE NATURAL_CI ASC"
 	return sortQuery
+}
+
+func (qb *StudioStore) tagsRepository() *joinRepository {
+	return &joinRepository{
+		repository: repository{
+			tx:        qb.tx,
+			tableName: studiosTagsTable,
+			idColumn:  studioIDColumn,
+		},
+		fkColumn:     tagIDColumn,
+		foreignTable: tagTable,
+		orderBy:      "tags.name ASC",
+	}
 }
 
 func (qb *StudioStore) GetImage(ctx context.Context, studioID int) ([]byte, error) {
@@ -720,6 +799,10 @@ func (qb *StudioStore) stashIDRepository() *stashIDRepository {
 			idColumn:  studioIDColumn,
 		},
 	}
+}
+
+func (qb *StudioStore) GetTagIDs(ctx context.Context, id int) ([]int, error) {
+	return qb.tagsRepository().getIDs(ctx, id)
 }
 
 func (qb *StudioStore) GetStashIDs(ctx context.Context, studioID int) ([]models.StashID, error) {

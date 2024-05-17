@@ -338,6 +338,7 @@ func (qb *MovieStore) makeFilter(ctx context.Context, movieFilter *models.MovieF
 	query.handleCriterion(ctx, movieIsMissingCriterionHandler(qb, movieFilter.IsMissing))
 	query.handleCriterion(ctx, stringCriterionHandler(movieFilter.URL, "movies.url"))
 	query.handleCriterion(ctx, studioCriterionHandler(movieTable, movieFilter.Studios))
+	query.handleCriterion(ctx, movieStudioTagsCriterionHandler(qb, movieFilter.StudioTags))
 	query.handleCriterion(ctx, moviePerformersCriterionHandler(qb, movieFilter.Performers))
 	query.handleCriterion(ctx, dateCriterionHandler(movieFilter.Date, "movies.date"))
 	query.handleCriterion(ctx, timestampCriterionHandler(movieFilter.CreatedAt, "movies.created_at"))
@@ -463,6 +464,13 @@ func moviePerformersCriterionHandler(qb *MovieStore, performers *models.MultiCri
 				f.addWhere("movies_performers.performer_id IS NULL")
 			}
 		}
+	}
+}
+
+func movieStudioTagsCriterionHandler(qb *MovieStore, tags *models.HierarchicalMultiCriterionInput) criterionHandler {
+	return &joinedStudioTagsHandler{
+		criterion:    tags,
+		primaryTable: movieTable,
 	}
 }
 

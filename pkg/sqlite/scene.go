@@ -1002,6 +1002,7 @@ func (qb *SceneStore) makeFilter(ctx context.Context, sceneFilter *models.SceneF
 	query.handleCriterion(ctx, scenePerformersCriterionHandler(qb, sceneFilter.Performers))
 	query.handleCriterion(ctx, scenePerformerCountCriterionHandler(qb, sceneFilter.PerformerCount))
 	query.handleCriterion(ctx, studioCriterionHandler(sceneTable, sceneFilter.Studios))
+	query.handleCriterion(ctx, sceneStudioTagsCriterionHandler(qb, sceneFilter.StudioTags))
 	query.handleCriterion(ctx, sceneMoviesCriterionHandler(qb, sceneFilter.Movies))
 	query.handleCriterion(ctx, sceneGalleriesCriterionHandler(qb, sceneFilter.Galleries))
 	query.handleCriterion(ctx, scenePerformerTagsCriterionHandler(qb, sceneFilter.PerformerTags))
@@ -1480,6 +1481,13 @@ func scenePerformerTagsCriterionHandler(qb *SceneStore, tags *models.Hierarchica
 		primaryTable:   sceneTable,
 		joinTable:      performersScenesTable,
 		joinPrimaryKey: sceneIDColumn,
+	}
+}
+
+func sceneStudioTagsCriterionHandler(qb *SceneStore, tags *models.HierarchicalMultiCriterionInput) criterionHandler {
+	return &joinedStudioTagsHandler{
+		criterion:    tags,
+		primaryTable: sceneTable,
 	}
 }
 

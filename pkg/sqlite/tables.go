@@ -33,6 +33,7 @@ var (
 	performersStashIDsJoinTable = goqu.T("performer_stash_ids")
 
 	studiosAliasesJoinTable  = goqu.T(studioAliasesTable)
+	studiosTagsJoinTable     = goqu.T(studiosTagsTable)
 	studiosStashIDsJoinTable = goqu.T("studio_stash_ids")
 )
 
@@ -277,6 +278,14 @@ var (
 			idColumn: studiosAliasesJoinTable.Col(studioIDColumn),
 		},
 		stringColumn: studiosAliasesJoinTable.Col(studioAliasColumn),
+	}
+
+	studiosTagsTableMgr = &joinTable{
+		table: table{
+			table:    studiosTagsJoinTable,
+			idColumn: studiosTagsJoinTable.Col(studioIDColumn),
+		},
+		fkColumn: studiosTagsJoinTable.Col(tagIDColumn),
 	}
 
 	studiosStashIDsTableMgr = &stashIDTable{

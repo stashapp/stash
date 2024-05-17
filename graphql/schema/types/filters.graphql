@@ -343,6 +343,8 @@ input StudioFilterType {
   image_count: IntCriterionInput
   "Filter by gallery count"
   gallery_count: IntCriterionInput
+  "Filter by tag count"
+  tag_count: IntCriterionInput
   "Filter by url"
   url: StringCriterionInput
   "Filter by studio aliases"
@@ -449,6 +451,9 @@ input TagFilterType {
 
   "Filter by number of performers with this tag"
   performer_count: IntCriterionInput
+
+  "Filter by number of studios with this tag"
+  studio_count: IntCriterionInput
 
   "Filter by number of markers with this tag"
   marker_count: IntCriterionInput

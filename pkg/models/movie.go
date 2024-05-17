@@ -10,6 +10,8 @@ type MovieFilterType struct {
 	Rating100 *IntCriterionInput `json:"rating100"`
 	// Filter to only include movies with this studio
 	Studios *HierarchicalMultiCriterionInput `json:"studios"`
+	// Filter to only include movies with studios with these tags
+	StudioTags *HierarchicalMultiCriterionInput `json:"studio_tags"`
 	// Filter to only include movies missing this property
 	IsMissing *string `json:"is_missing"`
 	// Filter by url

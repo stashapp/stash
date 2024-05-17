@@ -29,6 +29,8 @@ type GalleryFilterType struct {
 	HasChapters *string `json:"has_chapters"`
 	// Filter to only include galleries with this studio
 	Studios *HierarchicalMultiCriterionInput `json:"studios"`
+	// Filter to only include galleries with studios with these tags
+	StudioTags *HierarchicalMultiCriterionInput `json:"studio_tags"`
 	// Filter to only include galleries with these tags
 	Tags *HierarchicalMultiCriterionInput `json:"tags"`
 	// Filter by tag count

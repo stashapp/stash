@@ -35,6 +35,8 @@ type ImageFilterType struct {
 	IsMissing *string `json:"is_missing"`
 	// Filter to only include images with this studio
 	Studios *HierarchicalMultiCriterionInput `json:"studios"`
+	// Filter to only include images with studios with these tags
+	StudioTags *HierarchicalMultiCriterionInput `json:"studio_tags"`
 	// Filter to only include images with these tags
 	Tags *HierarchicalMultiCriterionInput `json:"tags"`
 	// Filter by tag count

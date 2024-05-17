@@ -39,6 +39,10 @@ const sortByOptions = ["name", "random"]
       messageID: "marker_count",
       value: "scene_markers_count",
     },
+    {
+      messageID: "studio_count",
+      value: "studios_count",
+    },
   ]);
 
 const displayModeOptions = [DisplayMode.Grid, DisplayMode.List];
@@ -53,6 +57,7 @@ const criterionOptions = [
   createMandatoryNumberCriterionOption("image_count"),
   createMandatoryNumberCriterionOption("gallery_count"),
   createMandatoryNumberCriterionOption("performer_count"),
+  createMandatoryNumberCriterionOption("studio_count"),
   createMandatoryNumberCriterionOption("marker_count"),
   ParentTagsCriterionOption,
   new MandatoryNumberCriterionOption("parent_tag_count", "parent_count"),
