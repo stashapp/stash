@@ -23,6 +23,14 @@ func (h criterionHandlerFunc) handle(ctx context.Context, f *filterBuilder) {
 	h(ctx, f)
 }
 
+type compoundHandler []criterionHandler
+
+func (h compoundHandler) handle(ctx context.Context, f *filterBuilder) {
+	for _, h := range h {
+		h.handle(ctx, f)
+	}
+}
+
 // shared criterion handlers go here
 
 func stringCriterionHandler(c *models.StringCriterionInput, column string) criterionHandlerFunc {
@@ -199,6 +207,18 @@ func floatCriterionHandler(c *models.FloatCriterionInput, column string, addJoin
 	}
 }
 
+func floatIntCriterionHandler(durationFilter *models.IntCriterionInput, column string, addJoinFn func(f *filterBuilder)) criterionHandlerFunc {
+	return func(ctx context.Context, f *filterBuilder) {
+		if durationFilter != nil {
+			if addJoinFn != nil {
+				addJoinFn(f)
+			}
+			clause, args := getIntCriterionWhereClause("cast("+column+" as int)", *durationFilter)
+			f.addWhere(clause, args...)
+		}
+	}
+}
+
 func boolCriterionHandler(c *bool, column string, addJoinFn func(f *filterBuilder)) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if c != nil {
@@ -231,6 +251,41 @@ func timestampCriterionHandler(c *models.TimestampCriterionInput, column string)
 		if c != nil {
 			clause, args := getTimestampCriterionWhereClause(column, *c)
 			f.addWhere(clause, args...)
+		}
+	}
+}
+
+func yearFilterCriterionHandler(year *models.IntCriterionInput, col string) criterionHandlerFunc {
+	return func(ctx context.Context, f *filterBuilder) {
+		if year != nil && year.Modifier.IsValid() {
+			clause, args := getIntCriterionWhereClause("cast(strftime('%Y', "+col+") as int)", *year)
+			f.addWhere(clause, args...)
+		}
+	}
+}
+
+func resolutionCriterionHandler(resolution *models.ResolutionCriterionInput, heightColumn string, widthColumn string, addJoinFn func(f *filterBuilder)) criterionHandlerFunc {
+	return func(ctx context.Context, f *filterBuilder) {
+		if resolution != nil && resolution.Value.IsValid() {
+			if addJoinFn != nil {
+				addJoinFn(f)
+			}
+
+			min := resolution.Value.GetMinResolution()
+			max := resolution.Value.GetMaxResolution()
+
+			widthHeight := fmt.Sprintf("MIN(%s, %s)", widthColumn, heightColumn)
+
+			switch resolution.Modifier {
+			case models.CriterionModifierEquals:
+				f.addWhere(fmt.Sprintf("%s BETWEEN %d AND %d", widthHeight, min, max))
+			case models.CriterionModifierNotEquals:
+				f.addWhere(fmt.Sprintf("%s NOT BETWEEN %d AND %d", widthHeight, min, max))
+			case models.CriterionModifierLessThan:
+				f.addWhere(fmt.Sprintf("%s < %d", widthHeight, min))
+			case models.CriterionModifierGreaterThan:
+				f.addWhere(fmt.Sprintf("%s > %d", widthHeight, max))
+			}
 		}
 	}
 }

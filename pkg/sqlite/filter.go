@@ -7,6 +7,10 @@ import (
 	"strings"
 )
 
+func illegalFilterCombination(type1, type2 string) error {
+	return fmt.Errorf("cannot have %s and %s in the same filter", type1, type2)
+}
+
 type sqlClause struct {
 	sql  string
 	args []interface{}
