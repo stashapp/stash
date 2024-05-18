@@ -73,6 +73,9 @@ const (
 	sceneIdxWithPerformerTag
 	sceneIdxWithTwoPerformerTag
 	sceneIdxWithPerformerTwoTags
+	sceneIdxWithStudioTag
+	sceneIdxWithTwoStudioTag
+	sceneIdxWithStudioTwoTags
 	sceneIdxWithSpacedName
 	sceneIdxWithStudioPerformer
 	sceneIdxWithGrandChildStudio
@@ -107,6 +110,9 @@ const (
 	imageIdxWithPerformerTag
 	imageIdxWithTwoPerformerTag
 	imageIdxWithPerformerTwoTags
+	imageIdxWithStudioTag
+	imageIdxWithTwoStudioTag
+	imageIdxWithStudioTwoTags
 	imageIdxWithGrandChildStudio
 	imageIdxWithPerformerParentTag
 	// new indexes above
@@ -180,6 +186,9 @@ const (
 	galleryIdxWithTwoPerformerTag
 	galleryIdxWithPerformerTwoTags
 	galleryIdxWithStudioPerformer
+	galleryIdxWithStudioTag
+	galleryIdxWithTwoStudioTag
+	galleryIdxWithStudioTwoTags
 	galleryIdxWithGrandChildStudio
 	galleryIdxWithoutFile
 	galleryIdxWithPerformerParentTag
@@ -204,6 +213,9 @@ const (
 	tagIdxWithPerformer
 	tagIdx1WithPerformer
 	tagIdx2WithPerformer
+	tagIdxWithStudio
+	tagIdx1WithStudio
+	tagIdx2WithStudio
 	tagIdxWithGallery
 	tagIdx1WithGallery
 	tagIdx2WithGallery
@@ -238,6 +250,10 @@ const (
 	studioIdxWithScenePerformer
 	studioIdxWithImagePerformer
 	studioIdxWithGalleryPerformer
+	studioIdxWithTag
+	studioIdx2WithTag
+	studioIdxWithTwoTags
+	studioIdxWithParentTag:
 	studioIdxWithGrandChild
 	studioIdxWithParentAndChild
 	studioIdxWithGrandParent
@@ -385,6 +401,9 @@ var (
 		sceneIdxWithStudio:           studioIdxWithScene,
 		sceneIdx1WithStudio:          studioIdxWithTwoScenes,
 		sceneIdx2WithStudio:          studioIdxWithTwoScenes,
+		sceneIdxWithStudioTag:        studioIdxWithTag,
+		sceneIdxWithTwoStudioTag:     {studioIdxWithTag, studioIdx2WithTag},
+		sceneIdxWithStudioTwoTags:    studioIdxWithTwoTags,
 		sceneIdxWithStudioPerformer:  studioIdxWithScenePerformer,
 		sceneIdxWithGrandChildStudio: studioIdxWithGrandParent,
 	}
@@ -432,6 +451,9 @@ var (
 		imageIdxWithStudio:           studioIdxWithImage,
 		imageIdx1WithStudio:          studioIdxWithTwoImages,
 		imageIdx2WithStudio:          studioIdxWithTwoImages,
+		imageIdxWithStudioTag:        studioIdxWithTag,
+		imageIdxWithTwoStudioTag:     {studioIdxWithTag, studioIdx2WithTag},
+		imageIdxWithStudioTwoTags:    studioIdxWithTwoTags,
 		imageIdxWithStudioPerformer:  studioIdxWithImagePerformer,
 		imageIdxWithGrandChildStudio: studioIdxWithGrandParent,
 	}
@@ -472,6 +494,9 @@ var (
 		galleryIdxWithStudio:           studioIdxWithGallery,
 		galleryIdx1WithStudio:          studioIdxWithTwoGalleries,
 		galleryIdx2WithStudio:          studioIdxWithTwoGalleries,
+		galleryIdxWithStudioTag:        studioIdxWithTag,
+		galleryIdxWithTwoStudioTag:     {studioIdxWithTag, studioIdx2WithTag},
+		galleryIdxWithStudioTwoTags:    studioIdxWithTwoTags,
 		galleryIdxWithStudioPerformer:  studioIdxWithGalleryPerformer,
 		galleryIdxWithGrandChildStudio: studioIdxWithGrandParent,
 	}
@@ -494,6 +519,15 @@ var (
 		{studioIdxWithChildStudio, studioIdxWithParentStudio},
 		{studioIdxWithGrandChild, studioIdxWithParentAndChild},
 		{studioIdxWithParentAndChild, studioIdxWithGrandParent},
+	}
+)
+
+var (
+	studioTags = linkMap{
+		studioIdxWithTag:       {tagIdxWithStudio},
+		studioIdx2WithTag:      {tagIdx2WithStudio},
+		studioIdxWithTwoTags:   {tagIdx1WithStudio, tagIdx2WithStudio},
+		studioIdxWithParentTag: {tagIdxWithParentAndChild},
 	}
 )
 
@@ -1520,6 +1554,11 @@ func getTagPerformerCount(id int) int {
 	return len(performerTags.reverseLookup(idx))
 }
 
+func getTagStudioCount(id int) int {
+	idx := indexFromID(tagIDs, id)
+	return len(studioTags.reverseLookup(idx))
+}
+
 func getTagParentCount(id int) int {
 	if id == tagIDs[tagIdxWithParentTag] || id == tagIDs[tagIdxWithGrandParent] || id == tagIDs[tagIdxWithParentAndChild] {
 		return 1
@@ -1640,6 +1679,7 @@ func createStudios(ctx context.Context, n int, o int) error {
 			URL:           getStudioStringValue(index, urlField),
 			Favorite:      getStudioBoolValue(index),
 			IgnoreAutoTag: getIgnoreAutoTag(i),
+			TagIDs:        models.NewRelatedIDs(tids),
 		}
 		// only add aliases for some scenes
 		if i == studioIdxWithMovie || i%5 == 0 {
