@@ -711,7 +711,7 @@
                         "heading": "(Por defecto) Continuar lista de reproducción"
                     },
                     "show_scrubber": "Mostrar depurador",
-                    "track_activity": "Registrar actividad",
+                    "track_activity": "Habilitar el historial de reproducción de video",
                     "disable_mobile_media_auto_rotate": "Desactivar la rotación automática de medios en pantalla completa en dispositivos móviles",
                     "vr_tag": {
                         "description": "El botón de VR solo se mostrará para escenas con esta etiqueta.",
@@ -1288,7 +1288,7 @@
         "added_generation_job_to_queue": "Tarea de generación añadida a la cola",
         "created_entity": "{entity} creada",
         "default_filter_set": "Establecer como filtro por defecto",
-        "delete_past_tense": "Eliminado {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
+        "delete_past_tense": "Borrado {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
         "generating_screenshot": "Generando captura…",
         "merged_tags": "Etiquetas combinadas",
         "rescanning_entity": "Reescanear {count, plural, one {{singularEntity}} other {{pluralEntity}}}…",
@@ -1298,7 +1298,7 @@
         "started_importing": "Importación iniciada",
         "updated_entity": "{entity} actualizada",
         "image_index_too_large": "Error: El índice de imagen es mayor que el número de imágenes en la galería",
-        "removed_entity": "Eliminada {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
+        "removed_entity": "Eliminado {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
         "reassign_past_tense": "Archivo reasignado",
         "merged_scenes": "Escenas fusionadas"
     },
