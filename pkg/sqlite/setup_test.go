@@ -253,7 +253,7 @@ const (
 	studioIdxWithTag
 	studioIdx2WithTag
 	studioIdxWithTwoTags
-	studioIdxWithParentTag:
+	studioIdxWithParentTag
 	studioIdxWithGrandChild
 	studioIdxWithParentAndChild
 	studioIdxWithGrandParent
