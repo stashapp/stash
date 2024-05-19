@@ -358,7 +358,7 @@ func (qb *MovieStore) makeQuery(ctx context.Context, movieFilter *models.MovieFi
 	distinctIDs(&query, movieTable)
 
 	if q := findFilter.Q; q != nil && *q != "" {
-		searchColumns := []string{"movies.name"}
+		searchColumns := []string{"movies.name", "movies.aliases"}
 		query.parseQueryString(searchColumns, *q)
 	}
 
