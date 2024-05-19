@@ -61,7 +61,7 @@ func (e *MismatchedSchemaVersionError) Error() string {
 	return fmt.Sprintf("schema version %d is incompatible with required schema version %d", e.CurrentSchemaVersion, e.RequiredSchemaVersion)
 }
 
-type Database struct {
+type storeRepository struct {
 	Blobs          *BlobStore
 	File           *FileStore
 	Folder         *FolderStore
@@ -75,6 +75,10 @@ type Database struct {
 	Studio         *StudioStore
 	Tag            *TagStore
 	Movie          *MovieStore
+}
+
+type Database struct {
+	*storeRepository
 
 	db     *sqlx.DB
 	dbPath string
@@ -93,13 +97,14 @@ func NewDatabase() *Database {
 	studioStore := NewStudioStore(blobStore)
 	tagStore := NewTagStore(blobStore)
 
-	ret := &Database{
+	r := &storeRepository{}
+	*r = storeRepository{
 		Blobs:          blobStore,
 		File:           fileStore,
 		Folder:         folderStore,
-		Scene:          NewSceneStore(fileStore, blobStore),
+		Scene:          NewSceneStore(r, blobStore),
 		SceneMarker:    NewSceneMarkerStore(),
-		Image:          NewImageStore(fileStore, galleryStore, performerStore, tagStore, studioStore),
+		Image:          NewImageStore(r),
 		Gallery:        galleryStore,
 		GalleryChapter: NewGalleryChapterStore(),
 		Performer:      performerStore,
@@ -107,7 +112,11 @@ func NewDatabase() *Database {
 		Tag:            tagStore,
 		Movie:          NewMovieStore(blobStore),
 		SavedFilter:    NewSavedFilterStore(),
-		lockChan:       make(chan struct{}, 1),
+	}
+
+	ret := &Database{
+		storeRepository: r,
+		lockChan:        make(chan struct{}, 1),
 	}
 
 	return ret

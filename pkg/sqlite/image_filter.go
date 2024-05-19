@@ -7,6 +7,10 @@ import (
 )
 
 func (qb *ImageStore) validateFilter(imageFilter *models.ImageFilterType) error {
+	if imageFilter == nil {
+		return nil
+	}
+
 	const and = "AND"
 	const or = "OR"
 	const not = "NOT"
@@ -34,16 +38,22 @@ func (qb *ImageStore) validateFilter(imageFilter *models.ImageFilterType) error 
 		return qb.validateFilter(imageFilter.Not)
 	}
 
-	if err := qb.galleryStore.validateFilter(imageFilter.GalleriesFilter); err != nil {
+	repo := qb.repo
+	galleryStore := repo.Gallery
+	performerStore := repo.Performer
+	studioStore := repo.Studio
+	tagStore := repo.Tag
+
+	if err := galleryStore.validateFilter(imageFilter.GalleriesFilter); err != nil {
 		return err
 	}
-	if err := qb.performerStore.validateFilter(imageFilter.PerformersFilter); err != nil {
+	if err := performerStore.validateFilter(imageFilter.PerformersFilter); err != nil {
 		return err
 	}
-	if err := qb.studioStore.validateFilter(imageFilter.StudiosFilter); err != nil {
+	if err := studioStore.validateFilter(imageFilter.StudiosFilter); err != nil {
 		return err
 	}
-	if err := qb.tagStore.validateFilter(imageFilter.TagsFilter); err != nil {
+	if err := tagStore.validateFilter(imageFilter.TagsFilter); err != nil {
 		return err
 	}
 
@@ -51,6 +61,10 @@ func (qb *ImageStore) validateFilter(imageFilter *models.ImageFilterType) error 
 }
 
 func (qb *ImageStore) makeFilter(ctx context.Context, imageFilter *models.ImageFilterType) *filterBuilder {
+	if imageFilter == nil {
+		return nil
+	}
+
 	query := &filterBuilder{}
 
 	if imageFilter.And != nil {
@@ -69,6 +83,12 @@ func (qb *ImageStore) makeFilter(ctx context.Context, imageFilter *models.ImageF
 }
 
 func (qb *ImageStore) criterionHandler(imageFilter *models.ImageFilterType) criterionHandler {
+	repo := qb.repo
+	galleryStore := repo.Gallery
+	performerStore := repo.Performer
+	studioStore := repo.Studio
+	tagStore := repo.Tag
+
 	return compoundHandler{
 		intCriterionHandler(imageFilter.ID, "images.id", nil),
 		criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
@@ -110,9 +130,9 @@ func (qb *ImageStore) criterionHandler(imageFilter *models.ImageFilterType) crit
 
 		&relatedFilterHandler{
 			relatedIDCol: "galleries_images.gallery_id",
-			relatedStore: qb.galleryStore,
+			relatedStore: galleryStore,
 			makeFilterFn: func(ctx context.Context) *filterBuilder {
-				return qb.galleryStore.makeFilter(ctx, imageFilter.GalleriesFilter)
+				return galleryStore.makeFilter(ctx, imageFilter.GalleriesFilter)
 			},
 			joinFn: func(f *filterBuilder) {
 				f.addInnerJoin(galleriesImagesTable, "", "galleries_images.image_id = images.id")
@@ -121,9 +141,9 @@ func (qb *ImageStore) criterionHandler(imageFilter *models.ImageFilterType) crit
 
 		&relatedFilterHandler{
 			relatedIDCol: "performers_join.performer_id",
-			relatedStore: qb.performerStore,
+			relatedStore: performerStore,
 			makeFilterFn: func(ctx context.Context) *filterBuilder {
-				return qb.performerStore.makeFilter(ctx, imageFilter.PerformersFilter)
+				return performerStore.makeFilter(ctx, imageFilter.PerformersFilter)
 			},
 			joinFn: func(f *filterBuilder) {
 				qb.performersRepository().join(f, "performers_join", "images.id")
@@ -132,17 +152,17 @@ func (qb *ImageStore) criterionHandler(imageFilter *models.ImageFilterType) crit
 
 		&relatedFilterHandler{
 			relatedIDCol: "images.studio_id",
-			relatedStore: qb.studioStore,
+			relatedStore: studioStore,
 			makeFilterFn: func(ctx context.Context) *filterBuilder {
-				return qb.studioStore.makeFilter(ctx, imageFilter.StudiosFilter)
+				return studioStore.makeFilter(ctx, imageFilter.StudiosFilter)
 			},
 		},
 
 		&relatedFilterHandler{
 			relatedIDCol: "image_tag.tag_id",
-			relatedStore: qb.tagStore,
+			relatedStore: tagStore,
 			makeFilterFn: func(ctx context.Context) *filterBuilder {
-				return qb.tagStore.makeFilter(ctx, imageFilter.TagsFilter)
+				return tagStore.makeFilter(ctx, imageFilter.TagsFilter)
 			},
 			joinFn: func(f *filterBuilder) {
 				f.addInnerJoin(imagesTagsTable, "image_tag", "image_tag.image_id = images.id")

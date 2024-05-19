@@ -176,10 +176,10 @@ type SceneStore struct {
 	oDateManager
 	viewDateManager
 
-	fileStore *FileStore
+	repo *storeRepository
 }
 
-func NewSceneStore(fileStore *FileStore, blobStore *BlobStore) *SceneStore {
+func NewSceneStore(r *storeRepository, blobStore *BlobStore) *SceneStore {
 	return &SceneStore{
 		repository: repository{
 			tableName: sceneTable,
@@ -193,7 +193,7 @@ func NewSceneStore(fileStore *FileStore, blobStore *BlobStore) *SceneStore {
 		tableMgr:        sceneTableMgr,
 		viewDateManager: viewDateManager{scenesViewTableMgr},
 		oDateManager:    oDateManager{scenesOTableMgr},
-		fileStore:       fileStore,
+		repo:            r,
 	}
 }
 
@@ -537,7 +537,7 @@ func (qb *SceneStore) GetFiles(ctx context.Context, id int) ([]*models.VideoFile
 	}
 
 	// use fileStore to load files
-	files, err := qb.fileStore.Find(ctx, fileIDs...)
+	files, err := qb.repo.File.Find(ctx, fileIDs...)
 	if err != nil {
 		return nil, err
 	}

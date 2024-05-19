@@ -8,6 +8,10 @@ import (
 )
 
 func (qb *SceneMarkerStore) makeFilter(ctx context.Context, sceneMarkerFilter *models.SceneMarkerFilterType) *filterBuilder {
+	if sceneMarkerFilter == nil {
+		return nil
+	}
+
 	query := &filterBuilder{}
 
 	query.handleCriterion(ctx, qb.criterionHandler(sceneMarkerFilter))

@@ -118,14 +118,10 @@ type ImageStore struct {
 	tableMgr *table
 	oCounterManager
 
-	fileStore      *FileStore
-	galleryStore   *GalleryStore
-	performerStore *PerformerStore
-	tagStore       *TagStore
-	studioStore    *StudioStore
+	repo *storeRepository
 }
 
-func NewImageStore(fileStore *FileStore, galleryStore *GalleryStore, performerStore *PerformerStore, tagStore *TagStore, studioStore *StudioStore) *ImageStore {
+func NewImageStore(r *storeRepository) *ImageStore {
 	return &ImageStore{
 		repository: repository{
 			tableName: imageTable,
@@ -133,11 +129,7 @@ func NewImageStore(fileStore *FileStore, galleryStore *GalleryStore, performerSt
 		},
 		tableMgr:        imageTableMgr,
 		oCounterManager: oCounterManager{imageTableMgr},
-		galleryStore:    galleryStore,
-		fileStore:       fileStore,
-		performerStore:  performerStore,
-		tagStore:        tagStore,
-		studioStore:     studioStore,
+		repo:            r,
 	}
 }
 
@@ -432,7 +424,7 @@ func (qb *ImageStore) GetFiles(ctx context.Context, id int) ([]models.File, erro
 	}
 
 	// use fileStore to load files
-	files, err := qb.fileStore.Find(ctx, fileIDs...)
+	files, err := qb.repo.File.Find(ctx, fileIDs...)
 	if err != nil {
 		return nil, err
 	}

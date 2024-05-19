@@ -8,6 +8,10 @@ import (
 )
 
 func (qb *MovieStore) makeFilter(ctx context.Context, movieFilter *models.MovieFilterType) *filterBuilder {
+	if movieFilter == nil {
+		return nil
+	}
+
 	query := &filterBuilder{}
 
 	query.handleCriterion(ctx, stringCriterionHandler(movieFilter.Name, "movies.name"))
