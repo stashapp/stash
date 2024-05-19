@@ -736,7 +736,7 @@
                     "enable_chromecast": "Aktivera Chromecast",
                     "show_ab_loop_controls": "Visa AB-loop plugin kontroller",
                     "show_scrubber": "Visa skrubbaren",
-                    "track_activity": "Spåra Aktivitet",
+                    "track_activity": "Spåra Scenvisningshistorik",
                     "vr_tag": {
                         "description": "VR-knappen kommer endast visas för scener med denna tagg.",
                         "heading": "VR Tagg"
