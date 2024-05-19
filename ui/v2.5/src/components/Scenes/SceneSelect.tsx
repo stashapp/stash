@@ -36,9 +36,7 @@ import { TruncatedText } from "../Shared/TruncatedText";
 
 export type Scene = Pick<GQL.Scene, "id" | "title" | "date" | "code"> & {
   studio?: Pick<GQL.Studio, "name"> | null;
-} & {
   files?: Pick<GQL.VideoFile, "path">[];
-} & {
   paths?: Pick<GQL.ScenePathsType, "screenshot">;
 };
 
