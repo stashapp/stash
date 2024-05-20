@@ -3,14 +3,12 @@ package api
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"time"
 
 	"github.com/stashapp/stash/internal/api/loaders"
 	"github.com/stashapp/stash/internal/api/urlbuilders"
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/utils"
 )
 
 func convertVideoFile(f models.File) (*models.VideoFile, error) {
@@ -68,18 +66,6 @@ func (r *sceneResolver) getFiles(ctx context.Context, obj *models.Scene) ([]*mod
 	return ret, nil
 }
 
-func (r *sceneResolver) FileModTime(ctx context.Context, obj *models.Scene) (*time.Time, error) {
-	f, err := r.getPrimaryFile(ctx, obj)
-	if err != nil {
-		return nil, err
-	}
-
-	if f != nil {
-		return &f.ModTime, nil
-	}
-	return nil, nil
-}
-
 func (r *sceneResolver) Date(ctx context.Context, obj *models.Scene) (*string, error) {
 	if obj.Date != nil {
 		result := obj.Date.String()
@@ -88,38 +74,21 @@ func (r *sceneResolver) Date(ctx context.Context, obj *models.Scene) (*string, e
 	return nil, nil
 }
 
-// File is deprecated
-func (r *sceneResolver) File(ctx context.Context, obj *models.Scene) (*models.SceneFileType, error) {
-	f, err := r.getPrimaryFile(ctx, obj)
-	if err != nil {
-		return nil, err
-	}
-	if f == nil {
-		return nil, nil
-	}
-
-	bitrate := int(f.BitRate)
-	size := strconv.FormatInt(f.Size, 10)
-
-	return &models.SceneFileType{
-		Size:       &size,
-		Duration:   handleFloat64(f.Duration),
-		VideoCodec: &f.VideoCodec,
-		AudioCodec: &f.AudioCodec,
-		Width:      &f.Width,
-		Height:     &f.Height,
-		Framerate:  handleFloat64(f.FrameRate),
-		Bitrate:    &bitrate,
-	}, nil
-}
-
-func (r *sceneResolver) Files(ctx context.Context, obj *models.Scene) ([]*models.VideoFile, error) {
+func (r *sceneResolver) Files(ctx context.Context, obj *models.Scene) ([]*VideoFile, error) {
 	files, err := r.getFiles(ctx, obj)
 	if err != nil {
 		return nil, err
 	}
 
-	return files, nil
+	ret := make([]*VideoFile, len(files))
+
+	for i, f := range files {
+		ret[i] = &VideoFile{
+			VideoFile: f,
+		}
+	}
+
+	return ret, nil
 }
 
 func (r *sceneResolver) Rating(ctx context.Context, obj *models.Scene) (*int, error) {
@@ -145,7 +114,6 @@ func (r *sceneResolver) Paths(ctx context.Context, obj *models.Scene) (*ScenePat
 	objHash := obj.GetHash(config.GetVideoFileNamingAlgorithm())
 	vttPath := builder.GetSpriteVTTURL(objHash)
 	spritePath := builder.GetSpriteURL(objHash)
-	chaptersVttPath := builder.GetChaptersVTTURL()
 	funscriptPath := builder.GetFunscriptURL()
 	captionBasePath := builder.GetCaptionURL()
 	interactiveHeatmap := builder.GetInteractiveHeatmapURL()
@@ -156,7 +124,6 @@ func (r *sceneResolver) Paths(ctx context.Context, obj *models.Scene) (*ScenePat
 		Stream:             &streamPath,
 		Webp:               &webpPath,
 		Vtt:                &vttPath,
-		ChaptersVtt:        &chaptersVttPath,
 		Sprite:             &spritePath,
 		Funscript:          &funscriptPath,
 		InteractiveHeatmap: &interactiveHeatmap,
@@ -285,30 +252,6 @@ func (r *sceneResolver) StashIds(ctx context.Context, obj *models.Scene) (ret []
 	return stashIDsSliceToPtrSlice(obj.StashIDs.List()), nil
 }
 
-func (r *sceneResolver) Phash(ctx context.Context, obj *models.Scene) (*string, error) {
-	f, err := r.getPrimaryFile(ctx, obj)
-	if err != nil {
-		return nil, err
-	}
-
-	if f == nil {
-		return nil, nil
-	}
-
-	val := f.Fingerprints.Get(models.FingerprintTypePhash)
-	if val == nil {
-		return nil, nil
-	}
-
-	phash, _ := val.(int64)
-
-	if phash != 0 {
-		hexval := utils.PhashToString(phash)
-		return &hexval, nil
-	}
-	return nil, nil
-}
-
 func (r *sceneResolver) SceneStreams(ctx context.Context, obj *models.Scene) ([]*manager.SceneStreamEndpoint, error) {
 	// load the primary file into the scene
 	_, err := r.getPrimaryFile(ctx, obj)
@@ -376,4 +319,63 @@ func (r *sceneResolver) Urls(ctx context.Context, obj *models.Scene) ([]string, 
 	}
 
 	return obj.URLs.List(), nil
+}
+
+func (r *sceneResolver) OCounter(ctx context.Context, obj *models.Scene) (*int, error) {
+	ret, err := loaders.From(ctx).SceneOCount.Load(obj.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &ret, nil
+}
+
+func (r *sceneResolver) LastPlayedAt(ctx context.Context, obj *models.Scene) (*time.Time, error) {
+	ret, err := loaders.From(ctx).SceneLastPlayed.Load(obj.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+}
+
+func (r *sceneResolver) PlayCount(ctx context.Context, obj *models.Scene) (*int, error) {
+	ret, err := loaders.From(ctx).ScenePlayCount.Load(obj.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &ret, nil
+}
+
+func (r *sceneResolver) PlayHistory(ctx context.Context, obj *models.Scene) ([]*time.Time, error) {
+	ret, err := loaders.From(ctx).ScenePlayHistory.Load(obj.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	// convert to pointer slice
+	ptrRet := make([]*time.Time, len(ret))
+	for i, t := range ret {
+		tt := t
+		ptrRet[i] = &tt
+	}
+
+	return ptrRet, nil
+}
+
+func (r *sceneResolver) OHistory(ctx context.Context, obj *models.Scene) ([]*time.Time, error) {
+	ret, err := loaders.From(ctx).SceneOHistory.Load(obj.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	// convert to pointer slice
+	ptrRet := make([]*time.Time, len(ret))
+	for i, t := range ret {
+		tt := t
+		ptrRet[i] = &tt
+	}
+
+	return ptrRet, nil
 }

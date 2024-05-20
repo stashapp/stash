@@ -1,5 +1,5 @@
 import { Tabs, Tab, Dropdown, Button } from "react-bootstrap";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useHistory, Redirect, RouteComponentProps } from "react-router-dom";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Helmet } from "react-helmet";
@@ -33,18 +33,18 @@ import { TagMergeModal } from "./TagMergeDialog";
 import {
   faChevronDown,
   faChevronUp,
+  faHeart,
   faSignInAlt,
   faSignOutAlt,
   faTrashAlt,
 } from "@fortawesome/free-solid-svg-icons";
-import { IUIConfig } from "src/core/config";
 import { DetailImage } from "src/components/Shared/DetailImage";
 import { useLoadStickyHeader } from "src/hooks/detailsPanel";
 import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
 
 interface IProps {
   tag: GQL.TagDataFragment;
-  tabKey: TabKey;
+  tabKey?: TabKey;
 }
 
 interface ITagParams {
@@ -62,8 +62,6 @@ const validTabs = [
 ] as const;
 type TabKey = (typeof validTabs)[number];
 
-const defaultTab: TabKey = "default";
-
 function isTabKey(tab: string): tab is TabKey {
   return validTabs.includes(tab as TabKey);
 }
@@ -75,7 +73,7 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
 
   // Configuration settings
   const { configuration } = React.useContext(ConfigurationContext);
-  const uiConfig = configuration?.ui as IUIConfig | undefined;
+  const uiConfig = configuration?.ui;
   const abbreviateCounter = uiConfig?.abbreviateCounters ?? false;
   const enableBackgroundImage = uiConfig?.enableTagBackgroundImage ?? false;
   const showAllDetails = uiConfig?.showAllDetails ?? true;
@@ -96,7 +94,7 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
   const [updateTag] = useTagUpdate();
   const [deleteTag] = useTagDestroy({ id: tag.id });
 
-  const showAllCounts = (configuration?.ui as IUIConfig)?.showChildTagContent;
+  const showAllCounts = uiConfig?.showChildTagContent;
   const sceneCount =
     (showAllCounts ? tag.scene_count_all : tag.scene_count) ?? 0;
   const imageCount =
@@ -125,18 +123,34 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
     return ret;
   }, [sceneCount, imageCount, galleryCount, sceneMarkerCount, performerCount]);
 
-  if (tabKey === defaultTab) {
-    tabKey = populatedDefaultTab;
-  }
+  const setTabKey = useCallback(
+    (newTabKey: string | null) => {
+      if (!newTabKey) newTabKey = populatedDefaultTab;
+      if (newTabKey === tabKey) return;
 
-  function setTabKey(newTabKey: string | null) {
-    if (!newTabKey || newTabKey === defaultTab) newTabKey = populatedDefaultTab;
-    if (newTabKey === tabKey) return;
+      if (isTabKey(newTabKey)) {
+        history.replace(`/tags/${tag.id}/${newTabKey}`);
+      }
+    },
+    [populatedDefaultTab, tabKey, history, tag.id]
+  );
 
-    if (newTabKey === populatedDefaultTab) {
-      history.replace(`/tags/${tag.id}`);
-    } else if (isTabKey(newTabKey)) {
-      history.replace(`/tags/${tag.id}/${newTabKey}`);
+  useEffect(() => {
+    if (!tabKey) {
+      setTabKey(populatedDefaultTab);
+    }
+  }, [setTabKey, populatedDefaultTab, tabKey]);
+
+  function setFavorite(v: boolean) {
+    if (tag.id) {
+      updateTag({
+        variables: {
+          input: {
+            id: tag.id,
+            favorite: v,
+          },
+        },
+      });
     }
   }
 
@@ -144,9 +158,10 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
   useEffect(() => {
     Mousetrap.bind("e", () => toggleEditing());
     Mousetrap.bind("d d", () => {
-      onDelete();
+      setIsDeleteAlertOpen(true);
     });
     Mousetrap.bind(",", () => setCollapsed(!collapsed));
+    Mousetrap.bind("f", () => setFavorite(!tag.favorite));
 
     return () => {
       if (isEditing) {
@@ -156,6 +171,7 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
       Mousetrap.unbind("e");
       Mousetrap.unbind("d d");
       Mousetrap.unbind(",");
+      Mousetrap.unbind("f");
     };
   });
 
@@ -179,12 +195,12 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
         parents: updated.parents,
         children: updated.children,
       });
-      Toast.success({
-        content: intl.formatMessage(
+      Toast.success(
+        intl.formatMessage(
           { id: "toast.updated_entity" },
           { entity: intl.formatMessage({ id: "tag" }).toLocaleLowerCase() }
-        ),
-      });
+        )
+      );
     }
   }
 
@@ -192,9 +208,7 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
     if (!tag.id) return;
     try {
       await mutateMetadataAutoTag({ tags: [tag.id] });
-      Toast.success({
-        content: intl.formatMessage({ id: "toast.started_auto_tagging" }),
-      });
+      Toast.success(intl.formatMessage({ id: "toast.started_auto_tagging" }));
     } catch (e) {
       Toast.error(e);
     }
@@ -300,6 +314,17 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
     }
   }
 
+  const renderClickableIcons = () => (
+    <span className="name-icons">
+      <Button
+        className={cx("minimal", tag.favorite ? "favorite" : "not-favorite")}
+        onClick={() => setFavorite(!tag.favorite)}
+      >
+        <Icon icon={faHeart} />
+      </Button>
+    </span>
+  );
+
   function renderMergeButton() {
     return (
       <Dropdown>
@@ -376,6 +401,7 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
           onImageChange={() => {}}
           onClearImage={() => {}}
           onAutoTag={onAutoTag}
+          autoTagDisabled={tag.ignore_auto_tag}
           onDelete={onDelete}
           classNames="mb-2"
           customButtons={renderMergeButton()}
@@ -473,18 +499,22 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
   function maybeRenderHeaderBackgroundImage() {
     let tagImage = tag.image_path;
     if (enableBackgroundImage && !isEditing && tagImage) {
-      return (
-        <div className="background-image-container">
-          <picture>
-            <source src={tagImage} />
-            <img
-              className="background-image"
-              src={tagImage}
-              alt={`${tag.name} background`}
-            />
-          </picture>
-        </div>
-      );
+      const tagImageURL = new URL(tagImage);
+      let isDefaultImage = tagImageURL.searchParams.get("default");
+      if (!isDefaultImage) {
+        return (
+          <div className="background-image-container">
+            <picture>
+              <source src={tagImage} />
+              <img
+                className="background-image"
+                src={tagImage}
+                alt={`${tag.name} background`}
+              />
+            </picture>
+          </div>
+        );
+      }
     }
   }
 
@@ -518,17 +548,18 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
           <div className="detail-header-image">
             {encodingImage ? (
               <LoadingIndicator
-                message={`${intl.formatMessage({ id: "encoding_image" })}...`}
+                message={intl.formatMessage({ id: "actions.encoding_image" })}
               />
             ) : (
               renderImage()
             )}
           </div>
           <div className="row">
-            <div className="studio-head col">
+            <div className="tag-head col">
               <h2>
                 <span className="tag-name">{tag.name}</span>
                 {maybeRenderShowCollapseButton()}
+                {renderClickableIcons()}
               </h2>
               {maybeRenderAliases()}
               {maybeRenderDetails()}
@@ -563,11 +594,7 @@ const TagLoader: React.FC<RouteComponentProps<ITagParams>> = ({
   if (!data?.findTag)
     return <ErrorMessage error={`No tag found with id ${id}.`} />;
 
-  if (!tab) {
-    return <TagPage tag={data.findTag} tabKey={defaultTab} />;
-  }
-
-  if (!isTabKey(tab)) {
+  if (tab && !isTabKey(tab)) {
     return (
       <Redirect
         to={{
@@ -578,7 +605,7 @@ const TagLoader: React.FC<RouteComponentProps<ITagParams>> = ({
     );
   }
 
-  return <TagPage tag={data.findTag} tabKey={tab} />;
+  return <TagPage tag={data.findTag} tabKey={tab as TabKey | undefined} />;
 };
 
 export default TagLoader;

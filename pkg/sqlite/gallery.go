@@ -12,7 +12,7 @@ import (
 	"github.com/doug-martin/goqu/v9/exp"
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sliceutil/intslice"
+	"github.com/stashapp/stash/pkg/sliceutil"
 	"gopkg.in/guregu/null.v4"
 	"gopkg.in/guregu/null.v4/zero"
 )
@@ -26,14 +26,17 @@ const (
 	galleriesImagesTable     = "galleries_images"
 	galleriesScenesTable     = "scenes_galleries"
 	galleryIDColumn          = "gallery_id"
+	galleriesURLsTable       = "gallery_urls"
+	galleriesURLColumn       = "url"
 )
 
 type galleryRow struct {
-	ID      int         `db:"id" goqu:"skipinsert"`
-	Title   zero.String `db:"title"`
-	URL     zero.String `db:"url"`
-	Date    NullDate    `db:"date"`
-	Details zero.String `db:"details"`
+	ID           int         `db:"id" goqu:"skipinsert"`
+	Title        zero.String `db:"title"`
+	Code         zero.String `db:"code"`
+	Date         NullDate    `db:"date"`
+	Details      zero.String `db:"details"`
+	Photographer zero.String `db:"photographer"`
 	// expressed as 1-100
 	Rating    null.Int  `db:"rating"`
 	Organized bool      `db:"organized"`
@@ -46,9 +49,10 @@ type galleryRow struct {
 func (r *galleryRow) fromGallery(o models.Gallery) {
 	r.ID = o.ID
 	r.Title = zero.StringFrom(o.Title)
-	r.URL = zero.StringFrom(o.URL)
+	r.Code = zero.StringFrom(o.Code)
 	r.Date = NullDateFromDatePtr(o.Date)
 	r.Details = zero.StringFrom(o.Details)
+	r.Photographer = zero.StringFrom(o.Photographer)
 	r.Rating = intFromPtr(o.Rating)
 	r.Organized = o.Organized
 	r.StudioID = intFromPtr(o.StudioID)
@@ -70,9 +74,10 @@ func (r *galleryQueryRow) resolve() *models.Gallery {
 	ret := &models.Gallery{
 		ID:            r.ID,
 		Title:         r.Title.String,
-		URL:           r.URL.String,
+		Code:          r.Code.String,
 		Date:          r.Date.DatePtr(),
 		Details:       r.Details.String,
+		Photographer:  r.Photographer.String,
 		Rating:        nullIntPtr(r.Rating),
 		Organized:     r.Organized,
 		StudioID:      nullIntPtr(r.StudioID),
@@ -97,9 +102,10 @@ type galleryRowRecord struct {
 
 func (r *galleryRowRecord) fromPartial(o models.GalleryPartial) {
 	r.setNullString("title", o.Title)
-	r.setNullString("url", o.URL)
+	r.setNullString("code", o.Code)
 	r.setNullDate("date", o.Date)
 	r.setNullString("details", o.Details)
+	r.setNullString("photographer", o.Photographer)
 	r.setNullInt("rating", o.Rating)
 	r.setBool("organized", o.Organized)
 	r.setNullInt("studio_id", o.StudioID)
@@ -178,6 +184,12 @@ func (qb *GalleryStore) Create(ctx context.Context, newObject *models.Gallery, f
 		}
 	}
 
+	if newObject.URLs.Loaded() {
+		const startPos = 0
+		if err := galleriesURLsTableMgr.insertJoins(ctx, id, startPos, newObject.URLs.List()); err != nil {
+			return err
+		}
+	}
 	if newObject.PerformerIDs.Loaded() {
 		if err := galleriesPerformersTableMgr.insertJoins(ctx, id, newObject.PerformerIDs.List()); err != nil {
 			return err
@@ -212,6 +224,11 @@ func (qb *GalleryStore) Update(ctx context.Context, updatedObject *models.Galler
 		return err
 	}
 
+	if updatedObject.URLs.Loaded() {
+		if err := galleriesURLsTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.URLs.List()); err != nil {
+			return err
+		}
+	}
 	if updatedObject.PerformerIDs.Loaded() {
 		if err := galleriesPerformersTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.PerformerIDs.List()); err != nil {
 			return err
@@ -257,6 +274,11 @@ func (qb *GalleryStore) UpdatePartial(ctx context.Context, id int, partial model
 		}
 	}
 
+	if partial.URLs != nil {
+		if err := galleriesURLsTableMgr.modifyJoins(ctx, id, partial.URLs.Values, partial.URLs.Mode); err != nil {
+			return nil, err
+		}
+	}
 	if partial.PerformerIDs != nil {
 		if err := galleriesPerformersTableMgr.modifyJoins(ctx, id, partial.PerformerIDs.IDs, partial.PerformerIDs.Mode); err != nil {
 			return nil, err
@@ -329,7 +351,7 @@ func (qb *GalleryStore) FindMany(ctx context.Context, ids []int) ([]*models.Gall
 		}
 
 		for _, s := range unsorted {
-			i := intslice.IntIndex(ids, s.ID)
+			i := sliceutil.Index(ids, s.ID)
 			galleries[i] = s
 		}
 
@@ -641,7 +663,9 @@ func (qb *GalleryStore) makeFilter(ctx context.Context, galleryFilter *models.Ga
 
 	query.handleCriterion(ctx, intCriterionHandler(galleryFilter.ID, "galleries.id", nil))
 	query.handleCriterion(ctx, stringCriterionHandler(galleryFilter.Title, "galleries.title"))
+	query.handleCriterion(ctx, stringCriterionHandler(galleryFilter.Code, "galleries.code"))
 	query.handleCriterion(ctx, stringCriterionHandler(galleryFilter.Details, "galleries.details"))
+	query.handleCriterion(ctx, stringCriterionHandler(galleryFilter.Photographer, "galleries.photographer"))
 
 	query.handleCriterion(ctx, criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
 		if galleryFilter.Checksum != nil {
@@ -667,9 +691,7 @@ func (qb *GalleryStore) makeFilter(ctx context.Context, galleryFilter *models.Ga
 	query.handleCriterion(ctx, qb.galleryPathCriterionHandler(galleryFilter.Path))
 	query.handleCriterion(ctx, galleryFileCountCriterionHandler(qb, galleryFilter.FileCount))
 	query.handleCriterion(ctx, intCriterionHandler(galleryFilter.Rating100, "galleries.rating", nil))
-	// legacy rating handler
-	query.handleCriterion(ctx, rating5CriterionHandler(galleryFilter.Rating, "galleries.rating", nil))
-	query.handleCriterion(ctx, stringCriterionHandler(galleryFilter.URL, "galleries.url"))
+	query.handleCriterion(ctx, galleryURLsCriterionHandler(galleryFilter.URL))
 	query.handleCriterion(ctx, boolCriterionHandler(galleryFilter.Organized, "galleries.organized", nil))
 	query.handleCriterion(ctx, galleryIsMissingCriterionHandler(qb, galleryFilter.IsMissing))
 	query.handleCriterion(ctx, galleryTagsCriterionHandler(qb, galleryFilter.Tags))
@@ -677,6 +699,7 @@ func (qb *GalleryStore) makeFilter(ctx context.Context, galleryFilter *models.Ga
 	query.handleCriterion(ctx, galleryPerformersCriterionHandler(qb, galleryFilter.Performers))
 	query.handleCriterion(ctx, galleryPerformerCountCriterionHandler(qb, galleryFilter.PerformerCount))
 	query.handleCriterion(ctx, hasChaptersCriterionHandler(galleryFilter.HasChapters))
+	query.handleCriterion(ctx, galleryScenesCriterionHandler(qb, galleryFilter.Scenes))
 	query.handleCriterion(ctx, studioCriterionHandler(galleryTable, galleryFilter.Studios))
 	query.handleCriterion(ctx, galleryPerformerTagsCriterionHandler(qb, galleryFilter.PerformerTags))
 	query.handleCriterion(ctx, galleryAverageResolutionCriterionHandler(qb, galleryFilter.AverageResolution))
@@ -793,6 +816,29 @@ func (qb *GalleryStore) QueryCount(ctx context.Context, galleryFilter *models.Ga
 	return query.executeCount(ctx)
 }
 
+func galleryURLsCriterionHandler(url *models.StringCriterionInput) criterionHandlerFunc {
+	h := stringListCriterionHandlerBuilder{
+		joinTable:    galleriesURLsTable,
+		stringColumn: galleriesURLColumn,
+		addJoinTable: func(f *filterBuilder) {
+			galleriesURLsTableMgr.join(f, "", "galleries.id")
+		},
+	}
+
+	return h.handler(url)
+}
+
+func (qb *GalleryStore) getMultiCriterionHandlerBuilder(foreignTable, joinTable, foreignFK string, addJoinsFunc func(f *filterBuilder)) multiCriterionHandlerBuilder {
+	return multiCriterionHandlerBuilder{
+		primaryTable: galleryTable,
+		foreignTable: foreignTable,
+		joinTable:    joinTable,
+		primaryFK:    galleryIDColumn,
+		foreignFK:    foreignFK,
+		addJoinsFunc: addJoinsFunc,
+	}
+}
+
 func (qb *GalleryStore) galleryPathCriterionHandler(c *models.StringCriterionInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if c != nil {
@@ -874,6 +920,9 @@ func galleryIsMissingCriterionHandler(qb *GalleryStore, isMissing *string) crite
 	return func(ctx context.Context, f *filterBuilder) {
 		if isMissing != nil && *isMissing != "" {
 			switch *isMissing {
+			case "url":
+				galleriesURLsTableMgr.join(f, "", "galleries.id")
+				f.addWhere("gallery_urls.url IS NULL")
 			case "scenes":
 				f.addLeftJoin("scenes_galleries", "scenes_join", "scenes_join.gallery_id = galleries.id")
 				f.addWhere("scenes_join.gallery_id IS NULL")
@@ -919,6 +968,15 @@ func galleryTagCountCriterionHandler(qb *GalleryStore, tagCount *models.IntCrite
 	}
 
 	return h.handler(tagCount)
+}
+
+func galleryScenesCriterionHandler(qb *GalleryStore, scenes *models.MultiCriterionInput) criterionHandlerFunc {
+	addJoinsFunc := func(f *filterBuilder) {
+		qb.scenesRepository().join(f, "", "galleries.id")
+		f.addLeftJoin("scenes", "", "scenes_galleries.scene_id = scenes.id")
+	}
+	h := qb.getMultiCriterionHandlerBuilder(sceneTable, galleriesScenesTable, "scene_id", addJoinsFunc)
+	return h.handler(scenes)
 }
 
 func galleryPerformersCriterionHandler(qb *GalleryStore, performers *models.MultiCriterionInput) criterionHandlerFunc {
@@ -1105,6 +1163,10 @@ func (qb *GalleryStore) setGallerySort(query *queryBuilder, findFilter *models.F
 
 	// Whatever the sorting, always use title/id as a final sort
 	query.sortAndPagination += ", COALESCE(galleries.title, galleries.id) COLLATE NATURAL_CI ASC"
+}
+
+func (qb *GalleryStore) GetURLs(ctx context.Context, galleryID int) ([]string, error) {
+	return galleriesURLsTableMgr.get(ctx, galleryID)
 }
 
 func (qb *GalleryStore) filesRepository() *filesRepository {

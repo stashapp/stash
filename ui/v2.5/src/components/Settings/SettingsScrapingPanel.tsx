@@ -16,9 +16,14 @@ import { LoadingIndicator } from "../Shared/LoadingIndicator";
 import { ScrapeType } from "src/core/generated-graphql";
 import { SettingSection } from "./SettingSection";
 import { BooleanSetting, StringListSetting, StringSetting } from "./Inputs";
-import { SettingStateContext } from "./context";
+import { useSettings } from "./context";
 import { StashBoxSetting } from "./StashBoxConfiguration";
 import { faSyncAlt } from "@fortawesome/free-solid-svg-icons";
+import {
+  AvailableScraperPackages,
+  InstalledScraperPackages,
+} from "./ScraperPackageManager";
+import { ExternalLink } from "../Shared/ExternalLink";
 
 interface IURLList {
   urls: string[];
@@ -38,16 +43,7 @@ const URLList: React.FC<IURLList> = ({ urls }) => {
       const sanitised = TextUtils.sanitiseURL(url);
       const siteURL = linkSite(sanitised!);
 
-      return (
-        <a
-          href={siteURL}
-          className="link"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          {sanitised}
-        </a>
-      );
+      return <ExternalLink href={siteURL}>{sanitised}</ExternalLink>;
     }
   }
 
@@ -87,10 +83,14 @@ export const SettingsScrapingPanel: React.FC = () => {
     useListMovieScrapers();
 
   const { general, scraping, loading, error, saveGeneral, saveScraping } =
-    React.useContext(SettingStateContext);
+    useSettings();
 
   async function onReloadScrapers() {
-    await mutateReloadScrapers().catch((e) => Toast.error(e));
+    try {
+      await mutateReloadScrapers();
+    } catch (e) {
+      Toast.error(e);
+    }
   }
 
   function renderPerformerScrapeTypes(types: ScrapeType[]) {
@@ -185,7 +185,7 @@ export const SettingsScrapingPanel: React.FC = () => {
   }
 
   function renderSceneScrapers() {
-    const elements = (sceneScrapers?.listSceneScrapers ?? []).map((scraper) => (
+    const elements = (sceneScrapers?.listScrapers ?? []).map((scraper) => (
       <tr key={scraper.id}>
         <td>{scraper.name}</td>
         <td>
@@ -205,17 +205,15 @@ export const SettingsScrapingPanel: React.FC = () => {
   }
 
   function renderGalleryScrapers() {
-    const elements = (galleryScrapers?.listGalleryScrapers ?? []).map(
-      (scraper) => (
-        <tr key={scraper.id}>
-          <td>{scraper.name}</td>
-          <td>
-            {renderGalleryScrapeTypes(scraper.gallery?.supported_scrapes ?? [])}
-          </td>
-          <td>{renderURLs(scraper.gallery?.urls ?? [])}</td>
-        </tr>
-      )
-    );
+    const elements = (galleryScrapers?.listScrapers ?? []).map((scraper) => (
+      <tr key={scraper.id}>
+        <td>{scraper.name}</td>
+        <td>
+          {renderGalleryScrapeTypes(scraper.gallery?.supported_scrapes ?? [])}
+        </td>
+        <td>{renderURLs(scraper.gallery?.urls ?? [])}</td>
+      </tr>
+    ));
 
     return renderTable(
       intl.formatMessage(
@@ -227,19 +225,17 @@ export const SettingsScrapingPanel: React.FC = () => {
   }
 
   function renderPerformerScrapers() {
-    const elements = (performerScrapers?.listPerformerScrapers ?? []).map(
-      (scraper) => (
-        <tr key={scraper.id}>
-          <td>{scraper.name}</td>
-          <td>
-            {renderPerformerScrapeTypes(
-              scraper.performer?.supported_scrapes ?? []
-            )}
-          </td>
-          <td>{renderURLs(scraper.performer?.urls ?? [])}</td>
-        </tr>
-      )
-    );
+    const elements = (performerScrapers?.listScrapers ?? []).map((scraper) => (
+      <tr key={scraper.id}>
+        <td>{scraper.name}</td>
+        <td>
+          {renderPerformerScrapeTypes(
+            scraper.performer?.supported_scrapes ?? []
+          )}
+        </td>
+        <td>{renderURLs(scraper.performer?.urls ?? [])}</td>
+      </tr>
+    ));
 
     return renderTable(
       intl.formatMessage(
@@ -251,7 +247,7 @@ export const SettingsScrapingPanel: React.FC = () => {
   }
 
   function renderMovieScrapers() {
-    const elements = (movieScrapers?.listMovieScrapers ?? []).map((scraper) => (
+    const elements = (movieScrapers?.listScrapers ?? []).map((scraper) => (
       <tr key={scraper.id}>
         <td>{scraper.name}</td>
         <td>
@@ -345,6 +341,9 @@ export const SettingsScrapingPanel: React.FC = () => {
           onChange={(v) => saveScraping({ excludeTagPatterns: v })}
         />
       </SettingSection>
+
+      <InstalledScraperPackages />
+      <AvailableScraperPackages />
 
       <SettingSection headingID="config.scraping.scrapers">
         <div className="content">

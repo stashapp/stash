@@ -7,7 +7,7 @@ import { FormattedMessage } from "react-intl";
 import { sortPerformers } from "src/core/performers";
 import { Icon } from "src/components/Shared/Icon";
 import { OperationButton } from "src/components/Shared/OperationButton";
-import { TagLink } from "src/components/Shared/TagLink";
+import { PerformerLink, TagLink } from "src/components/Shared/TagLink";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
 import { parsePath, prepareQueryString } from "src/components/Tagger/utils";
 import { ScenePreview } from "src/components/Scenes/SceneCard";
@@ -18,6 +18,7 @@ import {
   faImage,
 } from "@fortawesome/free-solid-svg-icons";
 import { objectPath, objectTitle } from "src/core/files";
+import { ExternalLink } from "src/components/Shared/ExternalLink";
 
 interface ITaggerSceneDetails {
   scene: GQL.SlimSceneDataFragment;
@@ -49,12 +50,13 @@ const TaggerSceneDetails: React.FC<ITaggerSceneDetails> = ({ scene }) => {
                     className="performer-tag col m-auto zoom-2"
                   >
                     <img
+                      loading="lazy"
                       className="image-thumbnail"
                       alt={performer.name ?? ""}
                       src={performer.image_path ?? ""}
                     />
                   </Link>
-                  <TagLink
+                  <PerformerLink
                     key={performer.id}
                     performer={performer}
                     className="d-block"
@@ -173,15 +175,13 @@ export const TaggerScene: React.FC<PropsWithChildren<ITaggerScene>> = ({
       const stashLinks = scene.stash_ids.map((stashID) => {
         const base = stashID.endpoint.match(/https?:\/\/.*?\//)?.[0];
         const link = base ? (
-          <a
+          <ExternalLink
             key={`${stashID.endpoint}${stashID.stash_id}`}
             className="small d-block"
             href={`${base}scenes/${stashID.stash_id}`}
-            target="_blank"
-            rel="noopener noreferrer"
           >
             {stashID.stash_id}
-          </a>
+          </ExternalLink>
         ) : (
           <div className="small">{stashID.stash_id}</div>
         );

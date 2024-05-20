@@ -10,7 +10,8 @@ import (
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
-	"github.com/stashapp/stash/pkg/sliceutil/intslice"
+	"github.com/stashapp/stash/pkg/plugin/hook"
+	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -41,7 +42,7 @@ func (r *mutationResolver) ImageUpdate(ctx context.Context, input ImageUpdateInp
 	}
 
 	// execute post hooks outside txn
-	r.hookExecutor.ExecutePostHooks(ctx, ret.ID, plugin.ImageUpdatePost, input, translator.getFields())
+	r.hookExecutor.ExecutePostHooks(ctx, ret.ID, hook.ImageUpdatePost, input, translator.getFields())
 	return r.getImage(ctx, ret.ID)
 }
 
@@ -75,7 +76,7 @@ func (r *mutationResolver) ImagesUpdate(ctx context.Context, input []*ImageUpdat
 			inputMap: inputMaps[i],
 		}
 
-		r.hookExecutor.ExecutePostHooks(ctx, image.ID, plugin.ImageUpdatePost, input, translator.getFields())
+		r.hookExecutor.ExecutePostHooks(ctx, image.ID, hook.ImageUpdatePost, input, translator.getFields())
 
 		image, err = r.getImage(ctx, image.ID)
 		if err != nil {
@@ -107,8 +108,10 @@ func (r *mutationResolver) imageUpdate(ctx context.Context, input ImageUpdateInp
 	updatedImage := models.NewImagePartial()
 
 	updatedImage.Title = translator.optionalString(input.Title, "title")
-	updatedImage.Rating = translator.optionalRatingConversion(input.Rating, input.Rating100)
-	updatedImage.URL = translator.optionalString(input.URL, "url")
+	updatedImage.Code = translator.optionalString(input.Code, "code")
+	updatedImage.Details = translator.optionalString(input.Details, "details")
+	updatedImage.Photographer = translator.optionalString(input.Photographer, "photographer")
+	updatedImage.Rating = translator.optionalInt(input.Rating100, "rating100")
 	updatedImage.Organized = translator.optionalBool(input.Organized, "organized")
 
 	updatedImage.Date, err = translator.optionalDate(input.Date, "date")
@@ -119,6 +122,8 @@ func (r *mutationResolver) imageUpdate(ctx context.Context, input ImageUpdateInp
 	if err != nil {
 		return nil, fmt.Errorf("converting studio id: %w", err)
 	}
+
+	updatedImage.URLs = translator.optionalURLs(input.Urls, input.URL)
 
 	updatedImage.PrimaryFileID, err = translator.fileIDPtrFromString(input.PrimaryFileID)
 	if err != nil {
@@ -202,8 +207,10 @@ func (r *mutationResolver) BulkImageUpdate(ctx context.Context, input BulkImageU
 	updatedImage := models.NewImagePartial()
 
 	updatedImage.Title = translator.optionalString(input.Title, "title")
-	updatedImage.Rating = translator.optionalRatingConversion(input.Rating, input.Rating100)
-	updatedImage.URL = translator.optionalString(input.URL, "url")
+	updatedImage.Code = translator.optionalString(input.Code, "code")
+	updatedImage.Details = translator.optionalString(input.Details, "details")
+	updatedImage.Photographer = translator.optionalString(input.Photographer, "photographer")
+	updatedImage.Rating = translator.optionalInt(input.Rating100, "rating100")
 	updatedImage.Organized = translator.optionalBool(input.Organized, "organized")
 
 	updatedImage.Date, err = translator.optionalDate(input.Date, "date")
@@ -214,6 +221,8 @@ func (r *mutationResolver) BulkImageUpdate(ctx context.Context, input BulkImageU
 	if err != nil {
 		return nil, fmt.Errorf("converting studio id: %w", err)
 	}
+
+	updatedImage.URLs = translator.optionalURLsBulk(input.Urls, input.URL)
 
 	updatedImage.GalleryIDs, err = translator.updateIdsBulk(input.GalleryIds, "gallery_ids")
 	if err != nil {
@@ -254,7 +263,7 @@ func (r *mutationResolver) BulkImageUpdate(ctx context.Context, input BulkImageU
 				}
 
 				thisUpdatedGalleryIDs := updatedImage.GalleryIDs.ImpactedIDs(i.GalleryIDs.List())
-				updatedGalleryIDs = intslice.IntAppendUniques(updatedGalleryIDs, thisUpdatedGalleryIDs)
+				updatedGalleryIDs = sliceutil.AppendUniques(updatedGalleryIDs, thisUpdatedGalleryIDs)
 			}
 
 			image, err := qb.UpdatePartial(ctx, imageID, updatedImage)
@@ -280,7 +289,7 @@ func (r *mutationResolver) BulkImageUpdate(ctx context.Context, input BulkImageU
 	// execute post hooks outside of txn
 	var newRet []*models.Image
 	for _, image := range ret {
-		r.hookExecutor.ExecutePostHooks(ctx, image.ID, plugin.ImageUpdatePost, input, translator.getFields())
+		r.hookExecutor.ExecutePostHooks(ctx, image.ID, hook.ImageUpdatePost, input, translator.getFields())
 
 		image, err = r.getImage(ctx, image.ID)
 		if err != nil {
@@ -324,7 +333,7 @@ func (r *mutationResolver) ImageDestroy(ctx context.Context, input models.ImageD
 	fileDeleter.Commit()
 
 	// call post hook after performing the other actions
-	r.hookExecutor.ExecutePostHooks(ctx, i.ID, plugin.ImageDestroyPost, plugin.ImageDestroyInput{
+	r.hookExecutor.ExecutePostHooks(ctx, i.ID, hook.ImageDestroyPost, plugin.ImageDestroyInput{
 		ImageDestroyInput: input,
 		Checksum:          i.Checksum,
 		Path:              i.Path,
@@ -375,7 +384,7 @@ func (r *mutationResolver) ImagesDestroy(ctx context.Context, input models.Image
 
 	for _, image := range images {
 		// call post hook after performing the other actions
-		r.hookExecutor.ExecutePostHooks(ctx, image.ID, plugin.ImageDestroyPost, plugin.ImagesDestroyInput{
+		r.hookExecutor.ExecutePostHooks(ctx, image.ID, hook.ImageDestroyPost, plugin.ImagesDestroyInput{
 			ImagesDestroyInput: input,
 			Checksum:           image.Checksum,
 			Path:               image.Path,

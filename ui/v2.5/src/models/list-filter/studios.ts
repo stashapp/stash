@@ -5,6 +5,7 @@ import {
   createStringCriterionOption,
   createMandatoryTimestampCriterionOption,
 } from "./criteria/criterion";
+import { FavoriteStudioCriterionOption } from "./criteria/favorite";
 import { StudioIsMissingCriterionOption } from "./criteria/is-missing";
 import { RatingCriterionOption } from "./criteria/rating";
 import { StashIDCriterionOption } from "./criteria/stash-ids";
@@ -28,10 +29,15 @@ const sortByOptions = ["name", "random", "rating"]
       messageID: "scene_count",
       value: "scenes_count",
     },
+    {
+      messageID: "subsidiary_studio_count",
+      value: "child_count",
+    },
   ]);
 
 const displayModeOptions = [DisplayMode.Grid, DisplayMode.Tagger];
 const criterionOptions = [
+  FavoriteStudioCriterionOption,
   createMandatoryStringCriterionOption("name"),
   createStringCriterionOption("details"),
   ParentStudiosCriterionOption,
@@ -44,6 +50,10 @@ const criterionOptions = [
   createStringCriterionOption("url"),
   StashIDCriterionOption,
   createStringCriterionOption("aliases"),
+  createMandatoryNumberCriterionOption(
+    "child_count",
+    "subsidiary_studio_count"
+  ),
   createMandatoryTimestampCriterionOption("created_at"),
   createMandatoryTimestampCriterionOption("updated_at"),
 ];

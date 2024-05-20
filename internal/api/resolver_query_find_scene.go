@@ -8,6 +8,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scene"
+	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 )
 
@@ -74,7 +75,20 @@ func (r *queryResolver) FindSceneByHash(ctx context.Context, input SceneHashInpu
 	return scene, nil
 }
 
-func (r *queryResolver) FindScenes(ctx context.Context, sceneFilter *models.SceneFilterType, sceneIDs []int, filter *models.FindFilterType) (ret *FindScenesResultType, err error) {
+func (r *queryResolver) FindScenes(
+	ctx context.Context,
+	sceneFilter *models.SceneFilterType,
+	sceneIDs []int,
+	ids []string,
+	filter *models.FindFilterType,
+) (ret *FindScenesResultType, err error) {
+	if len(ids) > 0 {
+		sceneIDs, err = stringslice.StringSliceToIntSlice(ids)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		var scenes []*models.Scene
 		var err error
@@ -105,11 +119,11 @@ func (r *queryResolver) FindScenes(ctx context.Context, sceneFilter *models.Scen
 			result, err = r.repository.Scene.Query(ctx, models.SceneQueryOptions{
 				QueryOptions: models.QueryOptions{
 					FindFilter: filter,
-					Count:      stringslice.StrInclude(fields, "count"),
+					Count:      sliceutil.Contains(fields, "count"),
 				},
 				SceneFilter:   sceneFilter,
-				TotalDuration: stringslice.StrInclude(fields, "duration"),
-				TotalSize:     stringslice.StrInclude(fields, "filesize"),
+				TotalDuration: sliceutil.Contains(fields, "duration"),
+				TotalSize:     sliceutil.Contains(fields, "filesize"),
 			})
 			if err == nil {
 				scenes, err = result.Resolve(ctx)
@@ -160,11 +174,11 @@ func (r *queryResolver) FindScenesByPathRegex(ctx context.Context, filter *model
 		result, err := r.repository.Scene.Query(ctx, models.SceneQueryOptions{
 			QueryOptions: models.QueryOptions{
 				FindFilter: queryFilter,
-				Count:      stringslice.StrInclude(fields, "count"),
+				Count:      sliceutil.Contains(fields, "count"),
 			},
 			SceneFilter:   sceneFilter,
-			TotalDuration: stringslice.StrInclude(fields, "duration"),
-			TotalSize:     stringslice.StrInclude(fields, "filesize"),
+			TotalDuration: sliceutil.Contains(fields, "duration"),
+			TotalSize:     sliceutil.Contains(fields, "filesize"),
 		})
 		if err != nil {
 			return err
@@ -191,16 +205,11 @@ func (r *queryResolver) FindScenesByPathRegex(ctx context.Context, filter *model
 }
 
 func (r *queryResolver) ParseSceneFilenames(ctx context.Context, filter *models.FindFilterType, config models.SceneParserInput) (ret *SceneParserResultType, err error) {
-	parser := scene.NewFilenameParser(filter, config)
+	repo := scene.NewFilenameParserRepository(r.repository)
+	parser := scene.NewFilenameParser(filter, config, repo)
 
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		result, count, err := parser.Parse(ctx, scene.FilenameParserRepository{
-			Scene:     r.repository.Scene,
-			Performer: r.repository.Performer,
-			Studio:    r.repository.Studio,
-			Movie:     r.repository.Movie,
-			Tag:       r.repository.Tag,
-		})
+		result, count, err := parser.Parse(ctx)
 
 		if err != nil {
 			return err

@@ -9,7 +9,7 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sliceutil/intslice"
+	"github.com/stashapp/stash/pkg/sliceutil"
 	"gopkg.in/guregu/null.v4"
 	"gopkg.in/guregu/null.v4/zero"
 
@@ -17,35 +17,41 @@ import (
 	"github.com/doug-martin/goqu/v9/exp"
 )
 
-var imageTable = "images"
+const imageTable = "images"
 
 const (
 	imageIDColumn         = "image_id"
 	performersImagesTable = "performers_images"
 	imagesTagsTable       = "images_tags"
 	imagesFilesTable      = "images_files"
+	imagesURLsTable       = "image_urls"
+	imageURLColumn        = "url"
 )
 
 type imageRow struct {
 	ID    int         `db:"id" goqu:"skipinsert"`
 	Title zero.String `db:"title"`
+	Code  zero.String `db:"code"`
 	// expressed as 1-100
-	Rating    null.Int    `db:"rating"`
-	URL       zero.String `db:"url"`
-	Date      NullDate    `db:"date"`
-	Organized bool        `db:"organized"`
-	OCounter  int         `db:"o_counter"`
-	StudioID  null.Int    `db:"studio_id,omitempty"`
-	CreatedAt Timestamp   `db:"created_at"`
-	UpdatedAt Timestamp   `db:"updated_at"`
+	Rating       null.Int    `db:"rating"`
+	Date         NullDate    `db:"date"`
+	Details      zero.String `db:"details"`
+	Photographer zero.String `db:"photographer"`
+	Organized    bool        `db:"organized"`
+	OCounter     int         `db:"o_counter"`
+	StudioID     null.Int    `db:"studio_id,omitempty"`
+	CreatedAt    Timestamp   `db:"created_at"`
+	UpdatedAt    Timestamp   `db:"updated_at"`
 }
 
 func (r *imageRow) fromImage(i models.Image) {
 	r.ID = i.ID
 	r.Title = zero.StringFrom(i.Title)
+	r.Code = zero.StringFrom(i.Code)
 	r.Rating = intFromPtr(i.Rating)
-	r.URL = zero.StringFrom(i.URL)
 	r.Date = NullDateFromDatePtr(i.Date)
+	r.Details = zero.StringFrom(i.Details)
+	r.Photographer = zero.StringFrom(i.Photographer)
 	r.Organized = i.Organized
 	r.OCounter = i.OCounter
 	r.StudioID = intFromPtr(i.StudioID)
@@ -63,14 +69,16 @@ type imageQueryRow struct {
 
 func (r *imageQueryRow) resolve() *models.Image {
 	ret := &models.Image{
-		ID:        r.ID,
-		Title:     r.Title.String,
-		Rating:    nullIntPtr(r.Rating),
-		URL:       r.URL.String,
-		Date:      r.Date.DatePtr(),
-		Organized: r.Organized,
-		OCounter:  r.OCounter,
-		StudioID:  nullIntPtr(r.StudioID),
+		ID:           r.ID,
+		Title:        r.Title.String,
+		Code:         r.Code.String,
+		Rating:       nullIntPtr(r.Rating),
+		Date:         r.Date.DatePtr(),
+		Details:      r.Details.String,
+		Photographer: r.Photographer.String,
+		Organized:    r.Organized,
+		OCounter:     r.OCounter,
+		StudioID:     nullIntPtr(r.StudioID),
 
 		PrimaryFileID: nullIntFileIDPtr(r.PrimaryFileID),
 		Checksum:      r.PrimaryFileChecksum.String,
@@ -92,9 +100,11 @@ type imageRowRecord struct {
 
 func (r *imageRowRecord) fromPartial(i models.ImagePartial) {
 	r.setNullString("title", i.Title)
+	r.setNullString("code", i.Code)
 	r.setNullInt("rating", i.Rating)
-	r.setNullString("url", i.URL)
 	r.setNullDate("date", i.Date)
+	r.setNullString("details", i.Details)
+	r.setNullString("photographer", i.Photographer)
 	r.setBool("organized", i.Organized)
 	r.setInt("o_counter", i.OCounter)
 	r.setNullInt("studio_id", i.StudioID)
@@ -176,6 +186,13 @@ func (qb *ImageStore) Create(ctx context.Context, newObject *models.Image, fileI
 		}
 	}
 
+	if newObject.URLs.Loaded() {
+		const startPos = 0
+		if err := imagesURLsTableMgr.insertJoins(ctx, id, startPos, newObject.URLs.List()); err != nil {
+			return err
+		}
+	}
+
 	if newObject.PerformerIDs.Loaded() {
 		if err := imagesPerformersTableMgr.insertJoins(ctx, id, newObject.PerformerIDs.List()); err != nil {
 			return err
@@ -223,6 +240,12 @@ func (qb *ImageStore) UpdatePartial(ctx context.Context, id int, partial models.
 			return nil, err
 		}
 	}
+
+	if partial.URLs != nil {
+		if err := imagesURLsTableMgr.modifyJoins(ctx, id, partial.URLs.Values, partial.URLs.Mode); err != nil {
+			return nil, err
+		}
+	}
 	if partial.PerformerIDs != nil {
 		if err := imagesPerformersTableMgr.modifyJoins(ctx, id, partial.PerformerIDs.IDs, partial.PerformerIDs.Mode); err != nil {
 			return nil, err
@@ -249,6 +272,12 @@ func (qb *ImageStore) Update(ctx context.Context, updatedObject *models.Image) e
 
 	if err := qb.tableMgr.updateByID(ctx, updatedObject.ID, r); err != nil {
 		return err
+	}
+
+	if updatedObject.URLs.Loaded() {
+		if err := imagesURLsTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.URLs.List()); err != nil {
+			return err
+		}
 	}
 
 	if updatedObject.PerformerIDs.Loaded() {
@@ -306,7 +335,7 @@ func (qb *ImageStore) FindMany(ctx context.Context, ids []int) ([]*models.Image,
 		}
 
 		for _, s := range unsorted {
-			i := intslice.IntIndex(ids, s.ID)
+			i := sliceutil.Index(ids, s.ID)
 			images[i] = s
 		}
 
@@ -522,6 +551,18 @@ func (qb *ImageStore) OCountByPerformerID(ctx context.Context, performerID int) 
 	return ret, nil
 }
 
+func (qb *ImageStore) OCount(ctx context.Context) (int, error) {
+	table := qb.table()
+
+	q := dialect.Select(goqu.COALESCE(goqu.SUM("o_counter"), 0)).From(table)
+	var ret int
+	if err := querySimple(ctx, q, &ret); err != nil {
+		return 0, err
+	}
+
+	return ret, nil
+}
+
 func (qb *ImageStore) FindByFolderID(ctx context.Context, folderID models.FolderID) ([]*models.Image, error) {
 	table := qb.table()
 	fileTable := goqu.T(fileTable)
@@ -581,7 +622,7 @@ func (qb *ImageStore) Size(ctx context.Context) (float64, error) {
 	table := qb.table()
 	fileTable := fileTableMgr.table
 	q := dialect.Select(
-		goqu.SUM(fileTableMgr.table.Col("size")),
+		goqu.COALESCE(goqu.SUM(fileTableMgr.table.Col("size")), 0),
 	).From(table).InnerJoin(
 		imagesFilesJoinTable,
 		goqu.On(table.Col(idColumn).Eq(imagesFilesJoinTable.Col(imageIDColumn))),
@@ -655,18 +696,20 @@ func (qb *ImageStore) makeFilter(ctx context.Context, imageFilter *models.ImageF
 		stringCriterionHandler(imageFilter.Checksum, "fingerprints_md5.fingerprint")(ctx, f)
 	}))
 	query.handleCriterion(ctx, stringCriterionHandler(imageFilter.Title, "images.title"))
+	query.handleCriterion(ctx, stringCriterionHandler(imageFilter.Code, "images.code"))
+	query.handleCriterion(ctx, stringCriterionHandler(imageFilter.Details, "images.details"))
+	query.handleCriterion(ctx, stringCriterionHandler(imageFilter.Photographer, "images.photographer"))
 
 	query.handleCriterion(ctx, pathCriterionHandler(imageFilter.Path, "folders.path", "files.basename", qb.addFoldersTable))
 	query.handleCriterion(ctx, imageFileCountCriterionHandler(qb, imageFilter.FileCount))
 	query.handleCriterion(ctx, intCriterionHandler(imageFilter.Rating100, "images.rating", nil))
-	// legacy rating handler
-	query.handleCriterion(ctx, rating5CriterionHandler(imageFilter.Rating, "images.rating", nil))
 	query.handleCriterion(ctx, intCriterionHandler(imageFilter.OCounter, "images.o_counter", nil))
 	query.handleCriterion(ctx, boolCriterionHandler(imageFilter.Organized, "images.organized", nil))
 	query.handleCriterion(ctx, dateCriterionHandler(imageFilter.Date, "images.date"))
-	query.handleCriterion(ctx, stringCriterionHandler(imageFilter.URL, "images.url"))
+	query.handleCriterion(ctx, imageURLsCriterionHandler(imageFilter.URL))
 
 	query.handleCriterion(ctx, resolutionCriterionHandler(imageFilter.Resolution, "image_files.height", "image_files.width", qb.addImageFilesTable))
+	query.handleCriterion(ctx, orientationCriterionHandler(imageFilter.Orientation, "image_files.height", "image_files.width", qb.addImageFilesTable))
 	query.handleCriterion(ctx, imageIsMissingCriterionHandler(qb, imageFilter.IsMissing))
 
 	query.handleCriterion(ctx, imageTagsCriterionHandler(qb, imageFilter.Tags))
@@ -677,6 +720,7 @@ func (qb *ImageStore) makeFilter(ctx context.Context, imageFilter *models.ImageF
 	query.handleCriterion(ctx, studioCriterionHandler(imageTable, imageFilter.Studios))
 	query.handleCriterion(ctx, imagePerformerTagsCriterionHandler(qb, imageFilter.PerformerTags))
 	query.handleCriterion(ctx, imagePerformerFavoriteCriterionHandler(imageFilter.PerformerFavorite))
+	query.handleCriterion(ctx, imagePerformerAgeCriterionHandler(imageFilter.PerformerAge))
 	query.handleCriterion(ctx, timestampCriterionHandler(imageFilter.CreatedAt, "images.created_at"))
 	query.handleCriterion(ctx, timestampCriterionHandler(imageFilter.UpdatedAt, "images.updated_at"))
 
@@ -784,24 +828,43 @@ func (qb *ImageStore) queryGroupedFields(ctx context.Context, options models.Ima
 		aggregateQuery.addColumn("COUNT(DISTINCT temp.id) as total")
 	}
 
-	// TODO - this doesn't work yet
-	// if options.Megapixels {
-	// 	query.addColumn("COALESCE(images.width, 0) * COALESCE(images.height, 0) / 1000000 as megapixels")
-	// 	aggregateQuery.addColumn("COALESCE(SUM(temp.megapixels), 0) as megapixels")
-	// }
+	if options.Megapixels {
+		query.addJoins(
+			join{
+				table:    imagesFilesTable,
+				onClause: "images_files.image_id = images.id",
+			},
+			join{
+				table:    imageFileTable,
+				onClause: "images_files.file_id = image_files.file_id",
+			},
+		)
+		query.addColumn("COALESCE(image_files.width, 0) * COALESCE(image_files.height, 0) as megapixels")
+		aggregateQuery.addColumn("COALESCE(SUM(temp.megapixels), 0) / 1000000 as megapixels")
+	}
 
-	// if options.TotalSize {
-	// 	query.addColumn("COALESCE(images.size, 0) as size")
-	// 	aggregateQuery.addColumn("COALESCE(SUM(temp.size), 0) as size")
-	// }
+	if options.TotalSize {
+		query.addJoins(
+			join{
+				table:    imagesFilesTable,
+				onClause: "images_files.image_id = images.id",
+			},
+			join{
+				table:    fileTable,
+				onClause: "images_files.file_id = files.id",
+			},
+		)
+		query.addColumn("COALESCE(files.size, 0) as size")
+		aggregateQuery.addColumn("SUM(temp.size) as size")
+	}
 
 	const includeSortPagination = false
 	aggregateQuery.from = fmt.Sprintf("(%s) as temp", query.toSQL(includeSortPagination))
 
 	out := struct {
 		Total      int
-		Megapixels float64
-		Size       float64
+		Megapixels null.Float
+		Size       null.Float
 	}{}
 	if err := qb.repository.queryStruct(ctx, aggregateQuery.toSQL(includeSortPagination), query.args, &out); err != nil {
 		return nil, err
@@ -809,8 +872,8 @@ func (qb *ImageStore) queryGroupedFields(ctx context.Context, options models.Ima
 
 	ret := models.NewImageQueryResult(qb)
 	ret.Count = out.Total
-	ret.Megapixels = out.Megapixels
-	ret.TotalSize = out.Size
+	ret.Megapixels = out.Megapixels.Float64
+	ret.TotalSize = out.Size.Float64
 	return ret, nil
 }
 
@@ -853,6 +916,18 @@ func imageIsMissingCriterionHandler(qb *ImageStore, isMissing *string) criterion
 			}
 		}
 	}
+}
+
+func imageURLsCriterionHandler(url *models.StringCriterionInput) criterionHandlerFunc {
+	h := stringListCriterionHandlerBuilder{
+		joinTable:    imagesURLsTable,
+		stringColumn: imageURLColumn,
+		addJoinTable: func(f *filterBuilder) {
+			imagesURLsTableMgr.join(f, "", "images.id")
+		},
+	}
+
+	return h.handler(url)
 }
 
 func (qb *ImageStore) getMultiCriterionHandlerBuilder(foreignTable, joinTable, foreignFK string, addJoinsFunc func(f *filterBuilder)) multiCriterionHandlerBuilder {
@@ -947,6 +1022,22 @@ JOIN performers ON performers.id = performers_images.performer_id
 GROUP BY performers_images.image_id HAVING SUM(performers.favorite) = 0)`, "nofaves", "images.id = nofaves.id")
 				f.addWhere("performers_images.image_id IS NULL OR nofaves.id IS NOT NULL")
 			}
+		}
+	}
+}
+
+func imagePerformerAgeCriterionHandler(performerAge *models.IntCriterionInput) criterionHandlerFunc {
+	return func(ctx context.Context, f *filterBuilder) {
+		if performerAge != nil {
+			f.addInnerJoin("performers_images", "", "images.id = performers_images.image_id")
+			f.addInnerJoin("performers", "", "performers_images.performer_id = performers.id")
+
+			f.addWhere("images.date != '' AND performers.birthdate != ''")
+			f.addWhere("images.date IS NOT NULL AND performers.birthdate IS NOT NULL")
+
+			ageCalc := "cast(strftime('%Y.%m%d', images.date) - strftime('%Y.%m%d', performers.birthdate) as int)"
+			whereClause, args := getIntWhereClause(ageCalc, performerAge.Modifier, performerAge.Value, performerAge.Value2)
+			f.addWhere(whereClause, args...)
 		}
 	}
 }
@@ -1096,4 +1187,8 @@ func (qb *ImageStore) GetTagIDs(ctx context.Context, imageID int) ([]int, error)
 func (qb *ImageStore) UpdateTags(ctx context.Context, imageID int, tagIDs []int) error {
 	// Delete the existing joins and then create new ones
 	return qb.tagsRepository().replace(ctx, imageID, tagIDs)
+}
+
+func (qb *ImageStore) GetURLs(ctx context.Context, imageID int) ([]string, error) {
+	return imagesURLsTableMgr.get(ctx, imageID)
 }

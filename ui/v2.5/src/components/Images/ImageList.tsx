@@ -21,7 +21,6 @@ import { useLightbox } from "src/hooks/Lightbox/hooks";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 
-import { ImageCard } from "./ImageCard";
 import { ImageWallItem } from "./ImageWallItem";
 import { EditImagesDialog } from "./EditImagesDialog";
 import { DeleteImagesDialog } from "./DeleteImagesDialog";
@@ -31,7 +30,7 @@ import { ExportDialog } from "../Shared/ExportDialog";
 import { objectTitle } from "src/core/files";
 import TextUtils from "src/utils/text";
 import { ConfigurationContext } from "src/hooks/Config";
-import { IUIConfig } from "src/core/config";
+import { ImageGridCard } from "./ImageGridCard";
 
 interface IImageWallProps {
   images: GQL.SlimImageDataFragment[];
@@ -43,7 +42,7 @@ interface IImageWallProps {
 
 const ImageWall: React.FC<IImageWallProps> = ({ images, handleImageOpen }) => {
   const { configuration } = useContext(ConfigurationContext);
-  const uiConfig = configuration?.ui as IUIConfig | undefined;
+  const uiConfig = configuration?.ui;
 
   let photos: {
     src: string;
@@ -196,35 +195,15 @@ const ImageListImages: React.FC<IImageListImages> = ({
     ev.preventDefault();
   }
 
-  function renderImageCard(
-    index: number,
-    image: GQL.SlimImageDataFragment,
-    zoomIndex: number
-  ) {
-    return (
-      <ImageCard
-        key={image.id}
-        image={image}
-        zoomIndex={zoomIndex}
-        selecting={selectedIds.size > 0}
-        selected={selectedIds.has(image.id)}
-        onSelectedChanged={(selected: boolean, shiftKey: boolean) =>
-          onSelectChange(image.id, selected, shiftKey)
-        }
-        onPreview={
-          selectedIds.size < 1 ? (ev) => onPreview(index, ev) : undefined
-        }
-      />
-    );
-  }
-
   if (filter.displayMode === DisplayMode.Grid) {
     return (
-      <div className="row justify-content-center">
-        {images.map((image, index) =>
-          renderImageCard(index, image, filter.zoomIndex)
-        )}
-      </div>
+      <ImageGridCard
+        images={images}
+        selectedIds={selectedIds}
+        zoomIndex={filter.zoomIndex}
+        onSelectChange={onSelectChange}
+        onPreview={onPreview}
+      />
     );
   }
   if (filter.displayMode === DisplayMode.Wall) {

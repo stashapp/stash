@@ -11,8 +11,6 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
-var randomSortFloat = rand.Float64()
-
 func selectAll(tableName string) string {
 	idColumn := getColumn(tableName, "*")
 	return "SELECT " + idColumn + " FROM " + tableName + " "
@@ -66,16 +64,15 @@ func getSort(sort string, direction string, tableName string) string {
 		return " ORDER BY " + colName + " " + direction
 	case strings.HasPrefix(sort, randomSeedPrefix):
 		// seed as a parameter from the UI
-		// turn the provided seed into a float
-		seedStr := "0." + sort[len(randomSeedPrefix):]
-		seed, err := strconv.ParseFloat(seedStr, 32)
+		seedStr := sort[len(randomSeedPrefix):]
+		seed, err := strconv.ParseUint(seedStr, 10, 64)
 		if err != nil {
-			// fallback to default seed
-			seed = randomSortFloat
+			// fallback to a random seed
+			seed = rand.Uint64()
 		}
 		return getRandomSort(tableName, direction, seed)
 	case strings.Compare(sort, "random") == 0:
-		return getRandomSort(tableName, direction, randomSortFloat)
+		return getRandomSort(tableName, direction, rand.Uint64())
 	default:
 		colName := getColumn(tableName, sort)
 		if strings.Contains(sort, ".") {
@@ -92,36 +89,25 @@ func getSort(sort string, direction string, tableName string) string {
 	}
 }
 
-func getRandomSort(tableName string, direction string, seed float64) string {
-	// https://stackoverflow.com/a/24511461
+func getRandomSort(tableName string, direction string, seed uint64) string {
+	// cap seed at 10^8
+	seed %= 1e8
+
 	colName := getColumn(tableName, "id")
-	randomSortString := strconv.FormatFloat(seed, 'f', 16, 32)
-	return " ORDER BY " + "(substr(" + colName + " * " + randomSortString + ", length(" + colName + ") + 2))" + " " + direction
+
+	// https://stackoverflow.com/questions/21949795#comment33255354_21949859
+	// p1 := 52959209
+	// p2 := 1047483763
+	// p3 := 2147483647
+	// n := <colName>
+	// ORDER BY ((n+seed)*(n+seed)*p1 + (n+seed)*p2) % p3
+	// since sqlite converts overflowing numbers to reals, a custom db function that uses uints with overflow should be faster,
+	// however in practice the overhead of calling a custom function vastly outweighs the benefits
+	return fmt.Sprintf(" ORDER BY mod((%[1]s + %[2]d) * (%[1]s + %[2]d) * 52959209 + (%[1]s + %[2]d) * 1047483763, 2147483647) %[3]s", colName, seed, direction)
 }
 
 func getCountSort(primaryTable, joinTable, primaryFK, direction string) string {
-	return fmt.Sprintf(" ORDER BY (SELECT COUNT(*) FROM %s WHERE %s = %s.id) %s", joinTable, primaryFK, primaryTable, getSortDirection(direction))
-}
-
-func getMultiSumSort(sum string, primaryTable, foreignTable1, joinTable1, foreignTable2, joinTable2, primaryFK, foreignFK1, foreignFK2, direction string) string {
-	return fmt.Sprintf(" ORDER BY (SELECT SUM(%s) "+
-		"FROM ("+
-		"SELECT SUM(%s) as %s from %s s "+
-		"LEFT JOIN %s ON %s.id = s.%s "+
-		"WHERE s.%s = %s.id "+
-		"UNION ALL "+
-		"SELECT SUM(%s) as %s from %s s "+
-		"LEFT JOIN %s ON %s.id = s.%s "+
-		"WHERE s.%s = %s.id "+
-		")) %s",
-		sum,
-		sum, sum, joinTable1,
-		foreignTable1, foreignTable1, foreignFK1,
-		primaryFK, primaryTable,
-		sum, sum, joinTable2,
-		foreignTable2, foreignTable2, foreignFK2,
-		primaryFK, primaryTable,
-		getSortDirection(direction))
+	return fmt.Sprintf(" ORDER BY (SELECT COUNT(*) FROM %s AS sort WHERE sort.%s = %s.id) %s", joinTable, primaryFK, primaryTable, getSortDirection(direction))
 }
 
 func getStringSearchClause(columns []string, q string, not bool) sqlClause {
@@ -339,28 +325,6 @@ func getMultiCriterionClause(primaryTable, foreignTable, joinTable, primaryFK, f
 
 func getCountCriterionClause(primaryTable, joinTable, primaryFK string, criterion models.IntCriterionInput) (string, []interface{}) {
 	lhs := fmt.Sprintf("(SELECT COUNT(*) FROM %s s WHERE s.%s = %s.id)", joinTable, primaryFK, primaryTable)
-	return getIntCriterionWhereClause(lhs, criterion)
-}
-
-func getJoinedMultiSumCriterionClause(primaryTable, foreignTable1, joinTable1, foreignTable2, joinTable2, primaryFK string, foreignFK1 string, foreignFK2 string, sum string, criterion models.IntCriterionInput) (string, []interface{}) {
-	lhs := fmt.Sprintf("(SELECT SUM(%s) "+
-		"FROM ("+
-		"SELECT SUM(%s) as %s from %s s "+
-		"LEFT JOIN %s ON %s.id = s.%s "+
-		"WHERE s.%s = %s.id "+
-		"UNION ALL "+
-		"SELECT SUM(%s) as %s from %s s "+
-		"LEFT JOIN %s ON %s.id = s.%s "+
-		"WHERE s.%s = %s.id "+
-		"))",
-		sum,
-		sum, sum, joinTable1,
-		foreignTable1, foreignTable1, foreignFK1,
-		primaryFK, primaryTable,
-		sum, sum, joinTable2,
-		foreignTable2, foreignTable2, foreignFK2,
-		primaryFK, primaryTable,
-	)
 	return getIntCriterionWhereClause(lhs, criterion)
 }
 

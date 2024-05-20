@@ -5,8 +5,6 @@ import (
 	"time"
 )
 
-const railsTimeLayout = "2006-01-02 15:04:05 MST"
-
 func ParseDateStringAsTime(dateString string) (time.Time, error) {
 	// https://stackoverflow.com/a/20234207 WTF?
 
@@ -21,11 +19,6 @@ func ParseDateStringAsTime(dateString string) (time.Time, error) {
 	}
 
 	t, e = time.Parse("2006-01-02 15:04:05", dateString)
-	if e == nil {
-		return t, nil
-	}
-
-	t, e = time.Parse(railsTimeLayout, dateString)
 	if e == nil {
 		return t, nil
 	}

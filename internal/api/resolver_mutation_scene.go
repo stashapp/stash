@@ -5,13 +5,16 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/pkg/file"
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
+	"github.com/stashapp/stash/pkg/plugin/hook"
 	"github.com/stashapp/stash/pkg/scene"
-	"github.com/stashapp/stash/pkg/sliceutil/intslice"
+	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -45,7 +48,7 @@ func (r *mutationResolver) SceneCreate(ctx context.Context, input models.SceneCr
 	newScene.Code = translator.string(input.Code)
 	newScene.Details = translator.string(input.Details)
 	newScene.Director = translator.string(input.Director)
-	newScene.Rating = translator.ratingConversion(input.Rating, input.Rating100)
+	newScene.Rating = input.Rating100
 	newScene.Organized = translator.bool(input.Organized)
 	newScene.StashIDs = models.NewRelatedStashIDs(input.StashIds)
 
@@ -114,7 +117,7 @@ func (r *mutationResolver) SceneUpdate(ctx context.Context, input models.SceneUp
 		return nil, err
 	}
 
-	r.hookExecutor.ExecutePostHooks(ctx, ret.ID, plugin.SceneUpdatePost, input, translator.getFields())
+	r.hookExecutor.ExecutePostHooks(ctx, ret.ID, hook.SceneUpdatePost, input, translator.getFields())
 	return r.getScene(ctx, ret.ID)
 }
 
@@ -148,7 +151,7 @@ func (r *mutationResolver) ScenesUpdate(ctx context.Context, input []*models.Sce
 			inputMap: inputMaps[i],
 		}
 
-		r.hookExecutor.ExecutePostHooks(ctx, scene.ID, plugin.SceneUpdatePost, input, translator.getFields())
+		r.hookExecutor.ExecutePostHooks(ctx, scene.ID, hook.SceneUpdatePost, input, translator.getFields())
 
 		scene, err = r.getScene(ctx, scene.ID)
 		if err != nil {
@@ -168,9 +171,16 @@ func scenePartialFromInput(input models.SceneUpdateInput, translator changesetTr
 	updatedScene.Code = translator.optionalString(input.Code, "code")
 	updatedScene.Details = translator.optionalString(input.Details, "details")
 	updatedScene.Director = translator.optionalString(input.Director, "director")
-	updatedScene.Rating = translator.optionalRatingConversion(input.Rating, input.Rating100)
-	updatedScene.OCounter = translator.optionalInt(input.OCounter, "o_counter")
-	updatedScene.PlayCount = translator.optionalInt(input.PlayCount, "play_count")
+	updatedScene.Rating = translator.optionalInt(input.Rating100, "rating100")
+
+	if input.OCounter != nil {
+		logger.Warnf("o_counter is deprecated and no longer supported, use sceneIncrementO/sceneDecrementO instead")
+	}
+
+	if input.PlayCount != nil {
+		logger.Warnf("play_count is deprecated and no longer supported, use sceneIncrementPlayCount/sceneDecrementPlayCount instead")
+	}
+
 	updatedScene.PlayDuration = translator.optionalFloat64(input.PlayDuration, "play_duration")
 	updatedScene.Organized = translator.optionalBool(input.Organized, "organized")
 	updatedScene.StashIDs = translator.updateStashIDs(input.StashIds, "stash_ids")
@@ -186,16 +196,7 @@ func scenePartialFromInput(input models.SceneUpdateInput, translator changesetTr
 		return nil, fmt.Errorf("converting studio id: %w", err)
 	}
 
-	// prefer urls over url
-	if translator.hasField("urls") {
-		updatedScene.URLs = translator.updateStrings(input.Urls, "urls")
-	} else if translator.hasField("url") {
-		var urls []string
-		if input.URL != nil {
-			urls = []string{*input.URL}
-		}
-		updatedScene.URLs = translator.updateStrings(urls, "url")
-	}
+	updatedScene.URLs = translator.optionalURLs(input.Urls, input.URL)
 
 	updatedScene.PrimaryFileID, err = translator.fileIDPtrFromString(input.PrimaryFileID)
 	if err != nil {
@@ -330,7 +331,7 @@ func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input BulkSceneU
 	updatedScene.Code = translator.optionalString(input.Code, "code")
 	updatedScene.Details = translator.optionalString(input.Details, "details")
 	updatedScene.Director = translator.optionalString(input.Director, "director")
-	updatedScene.Rating = translator.optionalRatingConversion(input.Rating, input.Rating100)
+	updatedScene.Rating = translator.optionalInt(input.Rating100, "rating100")
 	updatedScene.Organized = translator.optionalBool(input.Organized, "organized")
 
 	updatedScene.Date, err = translator.optionalDate(input.Date, "date")
@@ -342,16 +343,7 @@ func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input BulkSceneU
 		return nil, fmt.Errorf("converting studio id: %w", err)
 	}
 
-	// prefer urls over url
-	if translator.hasField("urls") {
-		updatedScene.URLs = translator.updateStringsBulk(input.Urls, "urls")
-	} else if translator.hasField("url") {
-		var urls []string
-		if input.URL != nil {
-			urls = []string{*input.URL}
-		}
-		updatedScene.URLs = translator.updateStrings(urls, "url")
-	}
+	updatedScene.URLs = translator.optionalURLsBulk(input.Urls, input.URL)
 
 	updatedScene.PerformerIDs, err = translator.updateIdsBulk(input.PerformerIds, "performer_ids")
 	if err != nil {
@@ -394,7 +386,7 @@ func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input BulkSceneU
 	// execute post hooks outside of txn
 	var newRet []*models.Scene
 	for _, scene := range ret {
-		r.hookExecutor.ExecutePostHooks(ctx, scene.ID, plugin.SceneUpdatePost, input, translator.getFields())
+		r.hookExecutor.ExecutePostHooks(ctx, scene.ID, hook.SceneUpdatePost, input, translator.getFields())
 
 		scene, err = r.getScene(ctx, scene.ID)
 		if err != nil {
@@ -450,7 +442,7 @@ func (r *mutationResolver) SceneDestroy(ctx context.Context, input models.SceneD
 	fileDeleter.Commit()
 
 	// call post hook after performing the other actions
-	r.hookExecutor.ExecutePostHooks(ctx, s.ID, plugin.SceneDestroyPost, plugin.SceneDestroyInput{
+	r.hookExecutor.ExecutePostHooks(ctx, s.ID, hook.SceneDestroyPost, plugin.SceneDestroyInput{
 		SceneDestroyInput: input,
 		Checksum:          s.Checksum,
 		OSHash:            s.OSHash,
@@ -511,7 +503,7 @@ func (r *mutationResolver) ScenesDestroy(ctx context.Context, input models.Scene
 
 	for _, scene := range scenes {
 		// call post hook after performing the other actions
-		r.hookExecutor.ExecutePostHooks(ctx, scene.ID, plugin.SceneDestroyPost, plugin.ScenesDestroyInput{
+		r.hookExecutor.ExecutePostHooks(ctx, scene.ID, hook.SceneDestroyPost, plugin.ScenesDestroyInput{
 			ScenesDestroyInput: input,
 			Checksum:           scene.Checksum,
 			OSHash:             scene.OSHash,
@@ -554,6 +546,8 @@ func (r *mutationResolver) SceneMerge(ctx context.Context, input SceneMergeInput
 	}
 
 	var values *models.ScenePartial
+	var coverImageData []byte
+
 	if input.Values != nil {
 		translator := changesetTranslator{
 			inputMap: getNamedUpdateInputMap(ctx, "input.values"),
@@ -563,23 +557,33 @@ func (r *mutationResolver) SceneMerge(ctx context.Context, input SceneMergeInput
 		if err != nil {
 			return nil, err
 		}
+
+		if input.Values.CoverImage != nil {
+			var err error
+			coverImageData, err = utils.ProcessImageInput(ctx, *input.Values.CoverImage)
+			if err != nil {
+				return nil, fmt.Errorf("processing cover image: %w", err)
+			}
+		}
 	} else {
 		v := models.NewScenePartial()
 		values = &v
 	}
 
-	var coverImageData []byte
-	if input.Values.CoverImage != nil {
-		var err error
-		coverImageData, err = utils.ProcessImageInput(ctx, *input.Values.CoverImage)
-		if err != nil {
-			return nil, fmt.Errorf("processing cover image: %w", err)
-		}
+	mgr := manager.GetInstance()
+	fileDeleter := &scene.FileDeleter{
+		Deleter:        file.NewDeleter(),
+		FileNamingAlgo: mgr.Config.GetVideoFileNamingAlgorithm(),
+		Paths:          mgr.Paths,
 	}
 
 	var ret *models.Scene
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		if err := r.Resolver.sceneService.Merge(ctx, srcIDs, destID, *values); err != nil {
+		if err := r.Resolver.sceneService.Merge(ctx, srcIDs, destID, fileDeleter, scene.MergeOptions{
+			ScenePartial:       *values,
+			IncludePlayHistory: utils.IsTrue(input.PlayHistory),
+			IncludeOHistory:    utils.IsTrue(input.OHistory),
+		}); err != nil {
 			return err
 		}
 
@@ -644,13 +648,13 @@ func (r *mutationResolver) SceneMarkerCreate(ctx context.Context, input SceneMar
 
 		// Save the marker tags
 		// If this tag is the primary tag, then let's not add it.
-		tagIDs = intslice.IntExclude(tagIDs, []int{newMarker.PrimaryTagID})
+		tagIDs = sliceutil.Exclude(tagIDs, []int{newMarker.PrimaryTagID})
 		return qb.UpdateTags(ctx, newMarker.ID, tagIDs)
 	}); err != nil {
 		return nil, err
 	}
 
-	r.hookExecutor.ExecutePostHooks(ctx, newMarker.ID, plugin.SceneMarkerCreatePost, input, nil)
+	r.hookExecutor.ExecutePostHooks(ctx, newMarker.ID, hook.SceneMarkerCreatePost, input, nil)
 	return r.getSceneMarker(ctx, newMarker.ID)
 }
 
@@ -733,7 +737,7 @@ func (r *mutationResolver) SceneMarkerUpdate(ctx context.Context, input SceneMar
 		if tagIdsIncluded {
 			// Save the marker tags
 			// If this tag is the primary tag, then let's not add it.
-			tagIDs = intslice.IntExclude(tagIDs, []int{newMarker.PrimaryTagID})
+			tagIDs = sliceutil.Exclude(tagIDs, []int{newMarker.PrimaryTagID})
 			if err := qb.UpdateTags(ctx, markerID, tagIDs); err != nil {
 				return err
 			}
@@ -748,7 +752,7 @@ func (r *mutationResolver) SceneMarkerUpdate(ctx context.Context, input SceneMar
 	// perform the post-commit actions
 	fileDeleter.Commit()
 
-	r.hookExecutor.ExecutePostHooks(ctx, markerID, plugin.SceneMarkerUpdatePost, input, translator.getFields())
+	r.hookExecutor.ExecutePostHooks(ctx, markerID, hook.SceneMarkerUpdatePost, input, translator.getFields())
 	return r.getSceneMarker(ctx, markerID)
 }
 
@@ -798,7 +802,7 @@ func (r *mutationResolver) SceneMarkerDestroy(ctx context.Context, id string) (b
 	// perform the post-commit actions
 	fileDeleter.Commit()
 
-	r.hookExecutor.ExecutePostHooks(ctx, markerID, plugin.SceneMarkerDestroyPost, id, nil)
+	r.hookExecutor.ExecutePostHooks(ctx, markerID, hook.SceneMarkerDestroyPost, id, nil)
 
 	return true, nil
 }
@@ -821,16 +825,96 @@ func (r *mutationResolver) SceneSaveActivity(ctx context.Context, id string, res
 	return ret, nil
 }
 
+// deprecated
 func (r *mutationResolver) SceneIncrementPlayCount(ctx context.Context, id string) (ret int, err error) {
 	sceneID, err := strconv.Atoi(id)
 	if err != nil {
 		return 0, fmt.Errorf("converting id: %w", err)
 	}
 
+	var updatedTimes []time.Time
+
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Scene
 
-		ret, err = qb.IncrementWatchCount(ctx, sceneID)
+		updatedTimes, err = qb.AddViews(ctx, sceneID, nil)
+		return err
+	}); err != nil {
+		return 0, err
+	}
+
+	return len(updatedTimes), nil
+}
+
+func (r *mutationResolver) SceneAddPlay(ctx context.Context, id string, t []*time.Time) (*HistoryMutationResult, error) {
+	sceneID, err := strconv.Atoi(id)
+	if err != nil {
+		return nil, fmt.Errorf("converting id: %w", err)
+	}
+
+	var times []time.Time
+
+	// convert time to local time, so that sorting is consistent
+	for _, tt := range t {
+		times = append(times, tt.Local())
+	}
+
+	var updatedTimes []time.Time
+
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		qb := r.repository.Scene
+
+		updatedTimes, err = qb.AddViews(ctx, sceneID, times)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return &HistoryMutationResult{
+		Count:   len(updatedTimes),
+		History: sliceutil.ValuesToPtrs(updatedTimes),
+	}, nil
+}
+
+func (r *mutationResolver) SceneDeletePlay(ctx context.Context, id string, t []*time.Time) (*HistoryMutationResult, error) {
+	sceneID, err := strconv.Atoi(id)
+	if err != nil {
+		return nil, err
+	}
+
+	var times []time.Time
+
+	for _, tt := range t {
+		times = append(times, *tt)
+	}
+
+	var updatedTimes []time.Time
+
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		qb := r.repository.Scene
+
+		updatedTimes, err = qb.DeleteViews(ctx, sceneID, times)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return &HistoryMutationResult{
+		Count:   len(updatedTimes),
+		History: sliceutil.ValuesToPtrs(updatedTimes),
+	}, nil
+}
+
+func (r *mutationResolver) SceneResetPlayCount(ctx context.Context, id string) (ret int, err error) {
+	sceneID, err := strconv.Atoi(id)
+	if err != nil {
+		return 0, err
+	}
+
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		qb := r.repository.Scene
+
+		ret, err = qb.DeleteAllViews(ctx, sceneID)
 		return err
 	}); err != nil {
 		return 0, err
@@ -839,40 +923,46 @@ func (r *mutationResolver) SceneIncrementPlayCount(ctx context.Context, id strin
 	return ret, nil
 }
 
+// deprecated
 func (r *mutationResolver) SceneIncrementO(ctx context.Context, id string) (ret int, err error) {
 	sceneID, err := strconv.Atoi(id)
 	if err != nil {
 		return 0, fmt.Errorf("converting id: %w", err)
 	}
 
+	var updatedTimes []time.Time
+
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Scene
 
-		ret, err = qb.IncrementOCounter(ctx, sceneID)
+		updatedTimes, err = qb.AddO(ctx, sceneID, nil)
 		return err
 	}); err != nil {
 		return 0, err
 	}
 
-	return ret, nil
+	return len(updatedTimes), nil
 }
 
+// deprecated
 func (r *mutationResolver) SceneDecrementO(ctx context.Context, id string) (ret int, err error) {
 	sceneID, err := strconv.Atoi(id)
 	if err != nil {
 		return 0, fmt.Errorf("converting id: %w", err)
 	}
 
+	var updatedTimes []time.Time
+
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Scene
 
-		ret, err = qb.DecrementOCounter(ctx, sceneID)
+		updatedTimes, err = qb.DeleteO(ctx, sceneID, nil)
 		return err
 	}); err != nil {
 		return 0, err
 	}
 
-	return ret, nil
+	return len(updatedTimes), nil
 }
 
 func (r *mutationResolver) SceneResetO(ctx context.Context, id string) (ret int, err error) {
@@ -884,13 +974,72 @@ func (r *mutationResolver) SceneResetO(ctx context.Context, id string) (ret int,
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Scene
 
-		ret, err = qb.ResetOCounter(ctx, sceneID)
+		ret, err = qb.ResetO(ctx, sceneID)
 		return err
 	}); err != nil {
 		return 0, err
 	}
 
 	return ret, nil
+}
+
+func (r *mutationResolver) SceneAddO(ctx context.Context, id string, t []*time.Time) (*HistoryMutationResult, error) {
+	sceneID, err := strconv.Atoi(id)
+	if err != nil {
+		return nil, fmt.Errorf("converting id: %w", err)
+	}
+
+	var times []time.Time
+
+	// convert time to local time, so that sorting is consistent
+	for _, tt := range t {
+		times = append(times, tt.Local())
+	}
+
+	var updatedTimes []time.Time
+
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		qb := r.repository.Scene
+
+		updatedTimes, err = qb.AddO(ctx, sceneID, times)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return &HistoryMutationResult{
+		Count:   len(updatedTimes),
+		History: sliceutil.ValuesToPtrs(updatedTimes),
+	}, nil
+}
+
+func (r *mutationResolver) SceneDeleteO(ctx context.Context, id string, t []*time.Time) (*HistoryMutationResult, error) {
+	sceneID, err := strconv.Atoi(id)
+	if err != nil {
+		return nil, fmt.Errorf("converting id: %w", err)
+	}
+
+	var times []time.Time
+
+	for _, tt := range t {
+		times = append(times, *tt)
+	}
+
+	var updatedTimes []time.Time
+
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		qb := r.repository.Scene
+
+		updatedTimes, err = qb.DeleteO(ctx, sceneID, times)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return &HistoryMutationResult{
+		Count:   len(updatedTimes),
+		History: sliceutil.ValuesToPtrs(updatedTimes),
+	}, nil
 }
 
 func (r *mutationResolver) SceneGenerateScreenshot(ctx context.Context, id string, at *float64) (string, error) {

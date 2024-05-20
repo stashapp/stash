@@ -7,21 +7,27 @@ import {
   ModalSetting,
   NumberSetting,
   SelectSetting,
+  Setting,
   StringListSetting,
   StringSetting,
 } from "./Inputs";
-import { SettingStateContext } from "./context";
+import { useSettings } from "./context";
 import {
   VideoPreviewInput,
   VideoPreviewSettingsInput,
 } from "./GeneratePreviewOptions";
-import { useIntl } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
+import { Button } from "react-bootstrap";
+import { useToast } from "src/hooks/Toast";
+import { useHistory } from "react-router-dom";
 
 export const SettingsConfigurationPanel: React.FC = () => {
   const intl = useIntl();
+  const Toast = useToast();
+  const history = useHistory();
 
-  const { general, loading, error, saveGeneral } =
-    React.useContext(SettingStateContext);
+  const { general, loading, error, saveGeneral } = useSettings();
+  const [mutateDownloadFFMpeg] = GQL.useDownloadFfMpegMutation();
 
   const transcodeQualities = [
     GQL.StreamingResolutionEnum.Low,
@@ -108,6 +114,16 @@ export const SettingsConfigurationPanel: React.FC = () => {
     return "blobs_storage_type.database";
   }
 
+  async function onDownloadFFMpeg() {
+    try {
+      await mutateDownloadFFMpeg();
+      // navigate to tasks page to see the progress
+      history.push("/settings?tab=tasks");
+    } catch (e) {
+      Toast.error(e);
+    }
+  }
+
   if (error) return <h1>{error.message}</h1>;
   if (loading) return <LoadingIndicator />;
 
@@ -139,6 +155,14 @@ export const SettingsConfigurationPanel: React.FC = () => {
         />
 
         <StringSetting
+          id="plugins-path"
+          headingID="config.general.plugins_path.heading"
+          subHeadingID="config.general.plugins_path.description"
+          value={general.pluginsPath ?? undefined}
+          onChange={(v) => saveGeneral({ pluginsPath: v })}
+        />
+
+        <StringSetting
           id="metadata-path"
           headingID="config.general.metadata_path.heading"
           subHeadingID="config.general.metadata_path.description"
@@ -153,6 +177,35 @@ export const SettingsConfigurationPanel: React.FC = () => {
           value={general.customPerformerImageLocation ?? undefined}
           onChange={(v) => saveGeneral({ customPerformerImageLocation: v })}
         />
+
+        <StringSetting
+          id="ffmpeg-path"
+          headingID="config.general.ffmpeg.ffmpeg_path.heading"
+          subHeadingID="config.general.ffmpeg.ffmpeg_path.description"
+          value={general.ffmpegPath ?? undefined}
+          onChange={(v) => saveGeneral({ ffmpegPath: v })}
+        />
+
+        <StringSetting
+          id="ffprobe-path"
+          headingID="config.general.ffmpeg.ffprobe_path.heading"
+          subHeadingID="config.general.ffmpeg.ffprobe_path.description"
+          value={general.ffprobePath ?? undefined}
+          onChange={(v) => saveGeneral({ ffprobePath: v })}
+        />
+
+        <Setting
+          heading={
+            <>
+              <FormattedMessage id="config.general.ffmpeg.download_ffmpeg.heading" />
+            </>
+          }
+          subHeadingID="config.general.ffmpeg.download_ffmpeg.description"
+        >
+          <Button variant="secondary" onClick={() => onDownloadFFMpeg()}>
+            <FormattedMessage id="config.general.ffmpeg.download_ffmpeg.heading" />
+          </Button>
+        </Setting>
 
         <StringSetting
           id="python-path"
@@ -203,7 +256,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
         />
       </SettingSection>
 
-      <SettingSection headingID="config.general.hashing">
+      <SettingSection advanced headingID="config.general.hashing">
         <BooleanSetting
           id="calculate-md5-and-ohash"
           headingID="config.general.calculate_md5_and_ohash_label"
@@ -233,6 +286,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
 
       <SettingSection headingID="config.system.transcoding">
         <SelectSetting
+          advanced
           id="transcode-size"
           headingID="config.general.maximum_transcode_size_head"
           subHeadingID="config.general.maximum_transcode_size_desc"
@@ -275,6 +329,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
         />
 
         <StringListSetting
+          advanced
           id="transcode-input-args"
           headingID="config.general.ffmpeg.transcode.input_args.heading"
           subHeadingID="config.general.ffmpeg.transcode.input_args.desc"
@@ -282,6 +337,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
           value={general.transcodeInputArgs ?? []}
         />
         <StringListSetting
+          advanced
           id="transcode-output-args"
           headingID="config.general.ffmpeg.transcode.output_args.heading"
           subHeadingID="config.general.ffmpeg.transcode.output_args.desc"
@@ -290,6 +346,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
         />
 
         <StringListSetting
+          advanced
           id="live-transcode-input-args"
           headingID="config.general.ffmpeg.live_transcode.input_args.heading"
           subHeadingID="config.general.ffmpeg.live_transcode.input_args.desc"
@@ -297,6 +354,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
           value={general.liveTranscodeInputArgs ?? []}
         />
         <StringListSetting
+          advanced
           id="live-transcode-output-args"
           headingID="config.general.ffmpeg.live_transcode.output_args.heading"
           subHeadingID="config.general.ffmpeg.live_transcode.output_args.desc"

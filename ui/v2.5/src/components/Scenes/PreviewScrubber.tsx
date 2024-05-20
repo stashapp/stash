@@ -1,7 +1,14 @@
-import React, { useRef, useMemo, useState, useLayoutEffect } from "react";
+import React, {
+  useRef,
+  useMemo,
+  useState,
+  useLayoutEffect,
+  useEffect,
+} from "react";
 import { useSpriteInfo } from "src/hooks/sprite";
 import { useThrottle } from "src/hooks/throttle";
 import TextUtils from "src/utils/text";
+import cx from "classnames";
 
 interface IHoverScrubber {
   totalSprites: number;
@@ -62,7 +69,11 @@ const HoverScrubber: React.FC<IHoverScrubber> = ({
   }, [activeIndex, totalSprites]);
 
   return (
-    <div className="hover-scrubber">
+    <div
+      className={cx("hover-scrubber", {
+        "hover-scrubber-inactive": !totalSprites,
+      })}
+    >
       <div
         className="hover-scrubber-area"
         onMouseMove={onMouseMove}
@@ -109,7 +120,9 @@ export const PreviewScrubber: React.FC<IScenePreviewProps> = ({
 
   const debounceSetActiveIndex = useThrottle(setActiveIndex, 50);
 
-  const spriteInfo = useSpriteInfo(vttPath);
+  // hold off on loading vtt until first mouse over
+  const [hasLoaded, setHasLoaded] = useState(false);
+  const spriteInfo = useSpriteInfo(hasLoaded ? vttPath : undefined);
 
   const sprite = useMemo(() => {
     if (!spriteInfo || activeIndex === undefined) {
@@ -117,6 +130,13 @@ export const PreviewScrubber: React.FC<IScenePreviewProps> = ({
     }
     return spriteInfo[activeIndex];
   }, [activeIndex, spriteInfo]);
+
+  // mark as loaded on the first hover
+  useEffect(() => {
+    if (activeIndex !== undefined) {
+      setHasLoaded(true);
+    }
+  }, [activeIndex]);
 
   useLayoutEffect(() => {
     const imageParent = imageParentRef.current;
@@ -153,7 +173,7 @@ export const PreviewScrubber: React.FC<IScenePreviewProps> = ({
     onClick(sprite.start);
   }
 
-  if (!spriteInfo) return null;
+  if (!spriteInfo && hasLoaded) return null;
 
   return (
     <div className="preview-scrubber">
@@ -166,7 +186,7 @@ export const PreviewScrubber: React.FC<IScenePreviewProps> = ({
         </div>
       )}
       <HoverScrubber
-        totalSprites={spriteInfo.length}
+        totalSprites={spriteInfo?.length ?? 0}
         activeIndex={activeIndex}
         setActiveIndex={(i) => debounceSetActiveIndex(i)}
         onClick={onScrubberClick}

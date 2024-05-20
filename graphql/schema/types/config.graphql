@@ -73,12 +73,18 @@ input ConfigGeneralInput {
   metadataPath: String
   "Path to scrapers"
   scrapersPath: String
+  "Path to plugins"
+  pluginsPath: String
   "Path to cache"
   cachePath: String
   "Path to blobs - required for filesystem blob storage"
   blobsPath: String
   "Where to store blobs"
   blobsStorage: BlobsStorageType
+  "Path to the ffmpeg binary. If empty, stash will attempt to find it in the path or config directory"
+  ffmpegPath: String
+  "Path to the ffprobe binary. If empty, stash will attempt to find it in the path or config directory"
+  ffprobePath: String
   "Whether to calculate MD5 checksums for scene video files"
   calculateMD5: Boolean
   "Hash algorithm to use for generated file naming"
@@ -139,8 +145,6 @@ input ConfigGeneralInput {
   password: String
   "Maximum session cookie age"
   maxSessionAge: Int
-  "Comma separated list of proxies to allow traffic from"
-  trustedProxies: [String!] @deprecated(reason: "no longer supported")
   "Name of the log file"
   logFile: String
   "Whether to also output to stderr"
@@ -165,25 +169,15 @@ input ConfigGeneralInput {
   imageExcludes: [String!]
   "Custom Performer Image Location"
   customPerformerImageLocation: String
-  "Scraper user agent string"
-  scraperUserAgent: String
-    @deprecated(
-      reason: "use mutation ConfigureScraping(input: ConfigScrapingInput) instead"
-    )
-  "Scraper CDP path. Path to chrome executable or remote address"
-  scraperCDPPath: String
-    @deprecated(
-      reason: "use mutation ConfigureScraping(input: ConfigScrapingInput) instead"
-    )
-  "Whether the scraper should check for invalid certificates"
-  scraperCertCheck: Boolean
-    @deprecated(
-      reason: "use mutation ConfigureScraping(input: ConfigScrapingInput) instead"
-    )
   "Stash-box instances used for tagging"
   stashBoxes: [StashBoxInput!]
   "Python path - resolved using path if unset"
   pythonPath: String
+
+  "Source of scraper packages"
+  scraperPackageSources: [PackageSourceInput!]
+  "Source of plugin packages"
+  pluginPackageSources: [PackageSourceInput!]
 }
 
 type ConfigGeneralResult {
@@ -201,12 +195,18 @@ type ConfigGeneralResult {
   configFilePath: String!
   "Path to scrapers"
   scrapersPath: String!
+  "Path to plugins"
+  pluginsPath: String!
   "Path to cache"
   cachePath: String!
   "Path to blobs - required for filesystem blob storage"
   blobsPath: String!
   "Where to store blobs"
   blobsStorage: BlobsStorageType!
+  "Path to the ffmpeg binary. If empty, stash will attempt to find it in the path or config directory"
+  ffmpegPath: String!
+  "Path to the ffprobe binary. If empty, stash will attempt to find it in the path or config directory"
+  ffprobePath: String!
   "Whether to calculate MD5 checksums for scene video files"
   calculateMD5: Boolean!
   "Hash algorithm to use for generated file naming"
@@ -269,8 +269,6 @@ type ConfigGeneralResult {
   password: String!
   "Maximum session cookie age"
   maxSessionAge: Int!
-  "Comma separated list of proxies to allow traffic from"
-  trustedProxies: [String!] @deprecated(reason: "no longer supported")
   "Name of the log file"
   logFile: String
   "Whether to also output to stderr"
@@ -295,19 +293,15 @@ type ConfigGeneralResult {
   imageExcludes: [String!]!
   "Custom Performer Image Location"
   customPerformerImageLocation: String
-  "Scraper user agent string"
-  scraperUserAgent: String
-    @deprecated(reason: "use ConfigResult.scraping instead")
-  "Scraper CDP path. Path to chrome executable or remote address"
-  scraperCDPPath: String
-    @deprecated(reason: "use ConfigResult.scraping instead")
-  "Whether the scraper should check for invalid certificates"
-  scraperCertCheck: Boolean!
-    @deprecated(reason: "use ConfigResult.scraping instead")
   "Stash-box instances used for tagging"
   stashBoxes: [StashBox!]!
   "Python path - resolved using path if unset"
   pythonPath: String!
+
+  "Source of scraper packages"
+  scraperPackageSources: [PackageSource!]!
+  "Source of plugin packages"
+  pluginPackageSources: [PackageSource!]!
 }
 
 input ConfigDisableDropdownCreateInput {
@@ -388,9 +382,6 @@ input ConfigInterfaceInput {
   "Interface language"
   language: String
 
-  "Slideshow Delay"
-  slideshowDelay: Int @deprecated(reason: "Use imageLightbox.slideshowDelay")
-
   imageLightbox: ConfigImageLightboxInput
 
   "Set to true to disable creating new objects via the dropdown menus"
@@ -461,15 +452,10 @@ type ConfigInterfaceResult {
   "Interface language"
   language: String
 
-  "Slideshow Delay"
-  slideshowDelay: Int @deprecated(reason: "Use imageLightbox.slideshowDelay")
-
   imageLightbox: ConfigImageLightboxResult!
 
   "Fields are true if creating via dropdown menus are disabled"
   disableDropdownCreate: ConfigDisableDropdownCreate!
-  disabledDropdownCreate: ConfigDisableDropdownCreate!
-    @deprecated(reason: "Use disableDropdownCreate")
 
   "Handy Connection Key"
   handyKey: String
@@ -483,6 +469,8 @@ input ConfigDLNAInput {
   serverName: String
   "True if DLNA service should be enabled by default"
   enabled: Boolean
+  "Defaults to 1338"
+  port: Int
   "List of IPs whitelisted for DLNA service"
   whitelistedIPs: [String!]
   "List of interfaces to run DLNA on. Empty for all"
@@ -495,6 +483,8 @@ type ConfigDLNAResult {
   serverName: String!
   "True if DLNA service should be enabled by default"
   enabled: Boolean!
+  "Defaults to 1338"
+  port: Int!
   "List of IPs whitelisted for DLNA service"
   whitelistedIPs: [String!]!
   "List of interfaces to run DLNA on. Empty for all"
@@ -557,6 +547,7 @@ type ConfigResult {
   scraping: ConfigScrapingResult!
   defaults: ConfigDefaultSettingsResult!
   ui: Map!
+  plugins(include: [ID!]): PluginConfigMap!
 }
 
 "Directory structure of a path"

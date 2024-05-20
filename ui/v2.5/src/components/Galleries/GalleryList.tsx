@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import { useIntl } from "react-intl";
 import cloneDeep from "lodash-es/cloneDeep";
-import { Table } from "react-bootstrap";
-import { Link, useHistory } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
 import {
@@ -13,12 +12,12 @@ import {
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 import { queryFindGalleries, useFindGalleries } from "src/core/StashService";
-import { GalleryCard } from "./GalleryCard";
 import GalleryWallCard from "./GalleryWallCard";
 import { EditGalleriesDialog } from "./EditGalleriesDialog";
 import { DeleteGalleriesDialog } from "./DeleteGalleriesDialog";
 import { ExportDialog } from "../Shared/ExportDialog";
-import { galleryTitle } from "src/core/galleries";
+import { GalleryListTable } from "./GalleryListTable";
+import { GalleryCardGrid } from "./GalleryGridCard";
 
 const GalleryItemList = makeItemList({
   filterMode: GQL.FilterMode.Galleries,
@@ -134,57 +133,21 @@ export const GalleryList: React.FC<IGalleryList> = ({
 
       if (filter.displayMode === DisplayMode.Grid) {
         return (
-          <div className="row justify-content-center">
-            {result.data.findGalleries.galleries.map((gallery) => (
-              <GalleryCard
-                key={gallery.id}
-                gallery={gallery}
-                zoomIndex={filter.zoomIndex}
-                selecting={selectedIds.size > 0}
-                selected={selectedIds.has(gallery.id)}
-                onSelectedChanged={(selected: boolean, shiftKey: boolean) =>
-                  onSelectChange(gallery.id, selected, shiftKey)
-                }
-              />
-            ))}
-          </div>
+          <GalleryCardGrid
+            galleries={result.data.findGalleries.galleries}
+            selectedIds={selectedIds}
+            zoomIndex={filter.zoomIndex}
+            onSelectChange={onSelectChange}
+          />
         );
       }
       if (filter.displayMode === DisplayMode.List) {
         return (
-          <Table className="col col-sm-6 mx-auto">
-            <thead>
-              <tr>
-                <th>{intl.formatMessage({ id: "actions.preview" })}</th>
-                <th className="d-none d-sm-none">
-                  {intl.formatMessage({ id: "title" })}
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {result.data.findGalleries.galleries.map((gallery) => (
-                <tr key={gallery.id}>
-                  <td>
-                    <Link to={`/galleries/${gallery.id}`}>
-                      {gallery.cover ? (
-                        <img
-                          alt={gallery.title ?? ""}
-                          className="w-100 w-sm-auto"
-                          src={`${gallery.cover.paths.thumbnail}`}
-                        />
-                      ) : undefined}
-                    </Link>
-                  </td>
-                  <td className="d-none d-sm-block">
-                    <Link to={`/galleries/${gallery.id}`}>
-                      {galleryTitle(gallery)} ({gallery.image_count}{" "}
-                      {gallery.image_count === 1 ? "image" : "images"})
-                    </Link>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </Table>
+          <GalleryListTable
+            galleries={result.data.findGalleries.galleries}
+            selectedIds={selectedIds}
+            onSelectChange={onSelectChange}
+          />
         );
       }
       if (filter.displayMode === DisplayMode.Wall) {

@@ -15,12 +15,16 @@ import { ListFilterModel } from "src/models/list-filter/filter";
 import { MoviesCriterion } from "src/models/list-filter/criteria/movies";
 import {
   Criterion,
+  CriterionOption,
   CriterionValue,
+  StringCriterion,
+  createStringCriterionOption,
 } from "src/models/list-filter/criteria/criterion";
 import { GalleriesCriterion } from "src/models/list-filter/criteria/galleries";
 import { PhashCriterion } from "src/models/list-filter/criteria/phash";
 import { ILabeledId } from "src/models/list-filter/types";
 import { IntlShape } from "react-intl";
+import { galleryTitle } from "src/core/galleries";
 
 function addExtraCriteria(
   dest: Criterion<CriterionValue>[],
@@ -73,8 +77,13 @@ const makePerformerImagesUrl = (
   return `/images?${filter.makeQueryParameters()}`;
 };
 
+export interface INamedObject {
+  id?: string;
+  name?: string;
+}
+
 const makePerformerGalleriesUrl = (
-  performer: Partial<GQL.PerformerDataFragment>,
+  performer: INamedObject,
   extraPerformer?: ILabeledId,
   extraCriteria?: Criterion<CriterionValue>[]
 ) => {
@@ -343,11 +352,58 @@ const makeGalleryImagesUrl = (
   if (!gallery.id) return "#";
   const filter = new ListFilterModel(GQL.FilterMode.Images, undefined);
   const criterion = new GalleriesCriterion();
-  criterion.value = [
-    { id: gallery.id, label: gallery.title || `Gallery ${gallery.id}` },
-  ];
+  criterion.value = [{ id: gallery.id, label: galleryTitle(gallery) }];
   filter.criteria.push(criterion);
   addExtraCriteria(filter.criteria, extraCriteria);
+  return `/images?${filter.makeQueryParameters()}`;
+};
+
+function stringEqualsCriterion(option: CriterionOption, value: string) {
+  const criterion = new StringCriterion(option);
+  criterion.modifier = GQL.CriterionModifier.Equals;
+  criterion.value = value;
+  return criterion;
+}
+
+const makeDirectorScenesUrl = (director: string) => {
+  if (director.length == 0) return "#";
+  const filter = new ListFilterModel(GQL.FilterMode.Scenes, undefined);
+  filter.criteria.push(
+    stringEqualsCriterion(createStringCriterionOption("director"), director)
+  );
+  return `/scenes?${filter.makeQueryParameters()}`;
+};
+
+const makeDirectorMoviesUrl = (director: string) => {
+  if (director.length == 0) return "#";
+  const filter = new ListFilterModel(GQL.FilterMode.Movies, undefined);
+  filter.criteria.push(
+    stringEqualsCriterion(createStringCriterionOption("director"), director)
+  );
+  return `/movies?${filter.makeQueryParameters()}`;
+};
+
+const makePhotographerGalleriesUrl = (photographer: string) => {
+  if (photographer.length == 0) return "#";
+  const filter = new ListFilterModel(GQL.FilterMode.Galleries, undefined);
+  filter.criteria.push(
+    stringEqualsCriterion(
+      createStringCriterionOption("photographer"),
+      photographer
+    )
+  );
+  return `/galleries?${filter.makeQueryParameters()}`;
+};
+
+const makePhotographerImagesUrl = (photographer: string) => {
+  if (photographer.length == 0) return "#";
+  const filter = new ListFilterModel(GQL.FilterMode.Images, undefined);
+  filter.criteria.push(
+    stringEqualsCriterion(
+      createStringCriterionOption("photographer"),
+      photographer
+    )
+  );
   return `/images?${filter.makeQueryParameters()}`;
 };
 
@@ -390,6 +446,10 @@ const NavUtils = {
   makeMovieScenesUrl,
   makeChildStudiosUrl,
   makeGalleryImagesUrl,
+  makeDirectorScenesUrl,
+  makePhotographerGalleriesUrl,
+  makePhotographerImagesUrl,
+  makeDirectorMoviesUrl,
 };
 
 export default NavUtils;

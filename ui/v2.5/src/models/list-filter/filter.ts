@@ -5,9 +5,18 @@ import {
   SavedFilterDataFragment,
   SortDirectionEnum,
 } from "src/core/generated-graphql";
-import { Criterion, CriterionValue } from "./criteria/criterion";
+import {
+  Criterion,
+  CriterionValue,
+  ISavedCriterion,
+} from "./criteria/criterion";
 import { getFilterOptions } from "./factory";
-import { CriterionType, DisplayMode } from "./types";
+import {
+  CriterionType,
+  DisplayMode,
+  SavedObjectFilter,
+  SavedUIOptions,
+} from "./types";
 
 interface IDecodedParams {
   perPage?: number;
@@ -127,9 +136,12 @@ export class ListFilterModel {
     if (params.c !== undefined) {
       for (const jsonString of params.c) {
         try {
-          const encodedCriterion = JSON.parse(jsonString);
-          const criterion = this.makeCriterion(encodedCriterion.type);
-          criterion.setFromEncodedCriterion(encodedCriterion);
+          const { type: criterionType, ...savedCriterion } =
+            JSON.parse(jsonString);
+
+          const criterion = this.makeCriterion(criterionType);
+          criterion.setFromSavedCriterion(savedCriterion);
+
           this.criteria.push(criterion);
         } catch (err) {
           // eslint-disable-next-line no-console
@@ -261,8 +273,7 @@ export class ListFilterModel {
       this.sortBy = "random";
       this.randomSeed = Number.parseInt(match[1], 10);
     }
-    this.sortDirection =
-      (findFilter?.direction as SortDirectionEnum) ?? this.sortDirection;
+    this.sortDirection = findFilter?.direction ?? this.sortDirection;
     this.searchTerm = findFilter?.q ?? this.searchTerm;
 
     this.displayMode = uiOptions?.display_mode ?? this.displayMode;
@@ -272,11 +283,11 @@ export class ListFilterModel {
 
     this.criteria = [];
     if (objectFilter) {
-      Object.keys(objectFilter).forEach((key) => {
-        const criterion = this.makeCriterion(key as CriterionType);
-        criterion.setFromEncodedCriterion(objectFilter[key]);
+      for (const [k, v] of Object.entries(objectFilter)) {
+        const criterion = this.makeCriterion(k as CriterionType);
+        criterion.setFromSavedCriterion(v as ISavedCriterion<CriterionValue>);
         this.criteria.push(criterion);
-      });
+      }
     }
   }
 
@@ -353,31 +364,6 @@ export class ListFilterModel {
     };
   }
 
-  public makeSavedFilterJSON() {
-    const encodedCriteria: string[] = this.criteria.map((criterion) =>
-      criterion.toJSON()
-    );
-
-    const result = {
-      perPage: this.itemsPerPage,
-      sortby: this.getSortBy(),
-      sortdir:
-        this.sortBy === "date"
-          ? this.sortDirection === SortDirectionEnum.Asc
-            ? "asc"
-            : undefined
-          : this.sortDirection === SortDirectionEnum.Desc
-          ? "desc"
-          : undefined,
-      disp: this.displayMode,
-      q: this.searchTerm || undefined,
-      z: this.zoomIndex,
-      c: encodedCriteria,
-    };
-
-    return JSON.stringify(result);
-  }
-
   public makeQueryParameters(): string {
     const query: string[] = [];
     const params = this.getEncodedParams();
@@ -424,8 +410,6 @@ export class ListFilterModel {
     return option.makeCriterion(this.config);
   }
 
-  // TODO: These don't support multiple of the same criteria, only the last one set is used.
-
   public makeFindFilter(): FindFilterType {
     return {
       q: this.searchTerm,
@@ -438,23 +422,21 @@ export class ListFilterModel {
 
   public makeFilter() {
     const output: Record<string, unknown> = {};
-    this.criteria.forEach((criterion) => {
-      criterion.apply(output);
-    });
-
+    for (const c of this.criteria) {
+      output[c.criterionOption.type] = c.toCriterionInput();
+    }
     return output;
   }
 
-  public makeSavedFindFilter() {
-    const output: Record<string, unknown> = {};
-    this.criteria.forEach((criterion) => {
-      criterion.toSavedFilter(output);
-    });
-
+  public makeSavedFilter() {
+    const output: SavedObjectFilter = {};
+    for (const c of this.criteria) {
+      output[c.criterionOption.type] = c.toSavedCriterion();
+    }
     return output;
   }
 
-  public makeUIOptions(): Record<string, unknown> {
+  public makeSavedUIOptions(): SavedUIOptions {
     return {
       display_mode: this.displayMode,
       zoom_index: this.zoomIndex,

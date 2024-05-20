@@ -1,9 +1,10 @@
 import React from "react";
 import { useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
-import DurationUtils from "src/utils/duration";
 import TextUtils from "src/utils/text";
 import { DetailItem } from "src/components/Shared/DetailItem";
+import { Link } from "react-router-dom";
+import { DirectorLink } from "src/components/Shared/Link";
 
 interface IMovieDetailsPanel {
   movie: GQL.MovieDataFragment;
@@ -22,7 +23,7 @@ export const MovieDetailsPanel: React.FC<IMovieDetailsPanel> = ({
       <DetailItem
         id="duration"
         value={
-          movie.duration ? DurationUtils.secondsToString(movie.duration) : ""
+          movie.duration ? TextUtils.secondsToTimestamp(movie.duration) : ""
         }
         fullWidth={fullWidth}
       />
@@ -35,9 +36,9 @@ export const MovieDetailsPanel: React.FC<IMovieDetailsPanel> = ({
         id="studio"
         value={
           movie.studio?.id ? (
-            <a href={`/studios/${movie.studio?.id}`} target="_self">
+            <Link to={`/studios/${movie.studio?.id}`}>
               {movie.studio?.name}
-            </a>
+            </Link>
           ) : (
             ""
           )
@@ -45,7 +46,17 @@ export const MovieDetailsPanel: React.FC<IMovieDetailsPanel> = ({
         fullWidth={fullWidth}
       />
 
-      <DetailItem id="director" value={movie.director} fullWidth={fullWidth} />
+      <DetailItem
+        id="director"
+        value={
+          movie.director ? (
+            <DirectorLink director={movie.director} linkType="movie" />
+          ) : (
+            ""
+          )
+        }
+        fullWidth={fullWidth}
+      />
       <DetailItem id="synopsis" value={movie.synopsis} fullWidth={fullWidth} />
     </div>
   );

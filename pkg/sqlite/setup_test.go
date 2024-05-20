@@ -14,8 +14,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sliceutil/intslice"
+	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/txn"
 
@@ -535,6 +536,9 @@ func indexFromID(ids []int, id int) int {
 var db *sqlite.Database
 
 func TestMain(m *testing.M) {
+	// initialise empty config - needed by some migrations
+	_ = config.InitializeEmpty()
+
 	ret := runTests(m)
 	os.Exit(ret)
 }
@@ -600,10 +604,10 @@ func runTests(m *testing.M) int {
 	err = populateDB()
 	if err != nil {
 		panic(fmt.Sprintf("Could not populate database: %s", err.Error()))
-	} else {
-		// run the tests
-		return m.Run()
 	}
+
+	// run the tests
+	return m.Run()
 }
 
 func populateDB() error {
@@ -1008,10 +1012,6 @@ func makeSceneFile(i int) *models.VideoFile {
 	}
 }
 
-func getScenePlayCount(index int) int {
-	return index % 5
-}
-
 func getScenePlayDuration(index int) float64 {
 	if index%5 == 0 {
 		return 0
@@ -1026,15 +1026,6 @@ func getSceneResumeTime(index int) float64 {
 	}
 
 	return float64(index%5) * 1.2
-}
-
-func getSceneLastPlayed(index int) *time.Time {
-	if index%5 == 0 {
-		return nil
-	}
-
-	t := time.Date(2020, 1, index%5, 1, 2, 3, 0, time.UTC)
-	return &t
 }
 
 func makeScene(i int) *models.Scene {
@@ -1069,7 +1060,6 @@ func makeScene(i int) *models.Scene {
 			getSceneEmptyString(i, urlField),
 		}),
 		Rating:       getIntPtr(rating),
-		OCounter:     getOCounter(i),
 		Date:         getObjectDate(i),
 		StudioID:     studioID,
 		GalleryIDs:   models.NewRelatedIDs(gids),
@@ -1079,9 +1069,7 @@ func makeScene(i int) *models.Scene {
 		StashIDs: models.NewRelatedStashIDs([]models.StashID{
 			sceneStashID(i),
 		}),
-		PlayCount:    getScenePlayCount(i),
 		PlayDuration: getScenePlayDuration(i),
-		LastPlayedAt: getSceneLastPlayed(i),
 		ResumeTime:   getSceneResumeTime(i),
 	}
 }
@@ -1111,6 +1099,19 @@ func createScenes(ctx context.Context, n int) error {
 
 func getImageStringValue(index int, field string) string {
 	return fmt.Sprintf("image_%04d_%s", index, field)
+}
+
+func getImageNullStringPtr(index int, field string) *string {
+	return getStringPtrFromNullString(getPrefixedNullStringValue("image", index, field))
+}
+
+func getImageEmptyString(index int, field string) string {
+	v := getImageNullStringPtr(index, field)
+	if v == nil {
+		return ""
+	}
+
+	return *v
 }
 
 func getImageBasename(index int) string {
@@ -1148,10 +1149,12 @@ func makeImage(i int) *models.Image {
 	tids := indexesToIDs(tagIDs, imageTags[i])
 
 	return &models.Image{
-		Title:        title,
-		Rating:       getIntPtr(getRating(i)),
-		Date:         getObjectDate(i),
-		URL:          getImageStringValue(i, urlField),
+		Title:  title,
+		Rating: getIntPtr(getRating(i)),
+		Date:   getObjectDate(i),
+		URLs: models.NewRelatedStrings([]string{
+			getImageEmptyString(i, urlField),
+		}),
 		OCounter:     getOCounter(i),
 		StudioID:     studioID,
 		GalleryIDs:   models.NewRelatedIDs(gids),
@@ -1161,7 +1164,7 @@ func makeImage(i int) *models.Image {
 }
 
 func createImages(ctx context.Context, n int) error {
-	qb := db.TxnRepository().Image
+	qb := db.Image
 	fqb := db.File
 
 	for i := 0; i < n; i++ {
@@ -1198,7 +1201,16 @@ func getGalleryNullStringValue(index int, field string) sql.NullString {
 }
 
 func getGalleryNullStringPtr(index int, field string) *string {
-	return getStringPtr(getPrefixedStringValue("gallery", index, field))
+	return getStringPtrFromNullString(getPrefixedNullStringValue("gallery", index, field))
+}
+
+func getGalleryEmptyString(index int, field string) string {
+	v := getGalleryNullStringPtr(index, field)
+	if v == nil {
+		return ""
+	}
+
+	return *v
 }
 
 func getGalleryBasename(index int) string {
@@ -1230,8 +1242,10 @@ func makeGallery(i int, includeScenes bool) *models.Gallery {
 	tids := indexesToIDs(tagIDs, galleryTags[i])
 
 	ret := &models.Gallery{
-		Title:        getGalleryStringValue(i, titleField),
-		URL:          getGalleryNullStringValue(i, urlField).String,
+		Title: getGalleryStringValue(i, titleField),
+		URLs: models.NewRelatedStrings([]string{
+			getGalleryEmptyString(i, urlField),
+		}),
 		Rating:       getIntPtr(getRating(i)),
 		Date:         getObjectDate(i),
 		StudioID:     studioID,
@@ -1247,7 +1261,7 @@ func makeGallery(i int, includeScenes bool) *models.Gallery {
 }
 
 func createGalleries(ctx context.Context, n int) error {
-	gqb := db.TxnRepository().Gallery
+	gqb := db.Gallery
 	fqb := db.File
 
 	for i := 0; i < n; i++ {
@@ -1466,7 +1480,10 @@ func createPerformers(ctx context.Context, n int, o int) error {
 
 	return nil
 }
-
+func getTagBoolValue(index int) bool {
+	index = index % 2
+	return index == 1
+}
 func getTagStringValue(index int, field string) string {
 	return "tag_" + strconv.FormatInt(int64(index), 10) + "_" + field
 }
@@ -1480,7 +1497,7 @@ func getTagMarkerCount(id int) int {
 	count := 0
 	idx := indexFromID(tagIDs, id)
 	for _, s := range markerSpecs {
-		if s.primaryTagIdx == idx || intslice.IntInclude(s.tagIdxs, idx) {
+		if s.primaryTagIdx == idx || sliceutil.Contains(s.tagIdxs, idx) {
 			count++
 		}
 	}
@@ -1596,6 +1613,11 @@ func createStudioFromModel(ctx context.Context, sqb *sqlite.StudioStore, studio 
 	return nil
 }
 
+func getStudioBoolValue(index int) bool {
+	index = index % 2
+	return index == 1
+}
+
 // createStudios creates n studios with plain Name and o studios with camel cased NaMe included
 func createStudios(ctx context.Context, n int, o int) error {
 	sqb := db.Studio
@@ -1616,6 +1638,7 @@ func createStudios(ctx context.Context, n int, o int) error {
 		studio := models.Studio{
 			Name:          name,
 			URL:           getStudioStringValue(index, urlField),
+			Favorite:      getStudioBoolValue(index),
 			IgnoreAutoTag: getIgnoreAutoTag(i),
 		}
 		// only add aliases for some scenes

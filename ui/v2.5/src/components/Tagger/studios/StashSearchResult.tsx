@@ -7,6 +7,8 @@ import StudioModal from "../scenes/StudioModal";
 import { faTags } from "@fortawesome/free-solid-svg-icons";
 import { useStudioCreate } from "src/core/StashService";
 import { useIntl } from "react-intl";
+import { apolloError } from "src/utils";
+import { mergeStudioStashIDs } from "../utils";
 
 interface IStashSearchResultProps {
   studio: GQL.SlimStudioDataFragment;
@@ -68,6 +70,12 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
             ...parentInput,
             id: input.parent_id,
           };
+
+          parentUpdateData.stash_ids = await mergeStudioStashIDs(
+            input.parent_id,
+            parentInput.stash_ids ?? []
+          );
+
           await updateStudio(parentUpdateData);
         } else {
           const parentRes = await createStudio({
@@ -75,9 +83,8 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
           });
           input.parent_id = parentRes.data?.studioCreate?.id;
         }
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } catch (e: any) {
-        handleSaveError(parentInput.name, e.message ?? "");
+      } catch (e) {
+        handleSaveError(parentInput.name, apolloError(e));
       }
     }
 
@@ -86,6 +93,11 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
       ...input,
       id: studio.id,
     };
+
+    updateData.stash_ids = await mergeStudioStashIDs(
+      studio.id,
+      input.stash_ids ?? []
+    );
 
     const res = await updateStudio(updateData);
 
@@ -102,7 +114,12 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
       key={p.remote_site_id}
       onClick={() => setModalStudio(p)}
     >
-      <img src={(p.image ?? [])[0]} alt="" className="StudioTagger-thumb" />
+      <img
+        loading="lazy"
+        src={(p.image ?? [])[0]}
+        alt=""
+        className="StudioTagger-thumb"
+      />
       <span>{p.name}</span>
     </Button>
   ));

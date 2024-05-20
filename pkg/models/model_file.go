@@ -111,6 +111,7 @@ type File interface {
 	Base() *BaseFile
 	SetFingerprints(fp Fingerprints)
 	Open(fs FS) (io.ReadCloser, error)
+	Clone() File
 }
 
 // BaseFile represents a file in the file system.
@@ -131,10 +132,6 @@ type BaseFile struct {
 
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
-}
-
-func (f *BaseFile) FingerprintSlice() []Fingerprint {
-	return f.Fingerprints
 }
 
 // SetFingerprints sets the fingerprints of the file.
@@ -177,6 +174,12 @@ func (f *BaseFile) Open(fs FS) (io.ReadCloser, error) {
 	return fs.Open(f.Path)
 }
 
+func (f *BaseFile) Clone() (ret File) {
+	clone := *f
+	ret = &clone
+	return
+}
+
 func (f *BaseFile) Info(fs FS) (fs.FileInfo, error) {
 	return f.info(fs, f.Path)
 }
@@ -203,6 +206,12 @@ func (f *BaseFile) Serve(fs FS, w http.ResponseWriter, r *http.Request) error {
 	} else {
 		w.Header().Set("Cache-Control", "no-cache")
 	}
+
+	// Set filename if not previously set
+	if w.Header().Get("Content-Disposition") == "" {
+		w.Header().Set("Content-Disposition", fmt.Sprintf(`filename="%s"`, f.Basename))
+	}
+
 	http.ServeContent(w, r, f.Basename, f.ModTime, content)
 
 	return nil
@@ -247,6 +256,13 @@ func (f ImageFile) GetFormat() string {
 	return f.Format
 }
 
+func (f ImageFile) Clone() (ret File) {
+	clone := f
+	clone.BaseFile = f.BaseFile.Clone().(*BaseFile)
+	ret = &clone
+	return
+}
+
 // VideoFile is an extension of BaseFile to represent video files.
 type VideoFile struct {
 	*BaseFile
@@ -273,6 +289,13 @@ func (f VideoFile) GetHeight() int {
 
 func (f VideoFile) GetFormat() string {
 	return f.Format
+}
+
+func (f VideoFile) Clone() (ret File) {
+	clone := f
+	clone.BaseFile = f.BaseFile.Clone().(*BaseFile)
+	ret = &clone
+	return
 }
 
 // #1572 - Inf and NaN values cause the JSON marshaller to fail

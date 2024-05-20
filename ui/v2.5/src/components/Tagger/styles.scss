@@ -47,6 +47,7 @@
   .scene-details {
     display: flex;
     flex-direction: column;
+    overflow-wrap: anywhere;
     width: 100%;
   }
 
@@ -65,6 +66,22 @@
   &:hover {
     background-color: hsl(204, 20%, 30%);
     cursor: pointer;
+  }
+
+  .performer-select,
+  .studio-select {
+    width: 14rem;
+
+    // stylelint-disable-next-line selector-class-pattern
+    &-active .react-select__control {
+      background-color: #137cbd;
+    }
+  }
+
+  .SceneTaggerIcon {
+    margin-left: 0.25em;
+    margin-right: 10px;
+    width: var(--fa-fw-width, 1.25em);
   }
 }
 
@@ -96,16 +113,6 @@
 
 .select-existing {
   width: 2rem;
-}
-
-.performer-select,
-.studio-select {
-  width: 14rem;
-
-  // stylelint-disable-next-line selector-class-pattern
-  &-active .react-select__control {
-    background-color: #137cbd;
-  }
 }
 
 .entity-name {
@@ -396,12 +403,14 @@ li.active .optional-field.excluded .scene-link {
 //   margin-left: 1rem;
 // }
 
-.scene-details,
-.original-scene-details {
-  margin-top: 0.5rem;
+.tagger-container {
+  .scene-details,
+  .original-scene-details {
+    margin-top: 0.5rem;
 
-  > .row {
-    width: 100%;
+    > .row {
+      width: 100%;
+    }
   }
 }
 

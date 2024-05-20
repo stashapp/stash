@@ -3,6 +3,9 @@
     "add": "Add",
     "add_directory": "Add Directory",
     "add_entity": "Add {entityType}",
+    "add_manual_date": "Add manual date",
+    "add_o": "Add O",
+    "add_play": "Add play",
     "add_to_entity": "Add to {entityType}",
     "allow": "Allow",
     "allow_temporarily": "Allow temporarily",
@@ -13,14 +16,18 @@
     "backup": "Backup",
     "browse_for_image": "Browse for image…",
     "cancel": "Cancel",
+    "choose_date": "Choose a date",
     "clean": "Clean",
+    "clean_generated": "Clean generated files",
     "clear": "Clear",
     "clear_back_image": "Clear back image",
+    "clear_date_data": "Clear date data",
     "clear_front_image": "Clear front image",
     "clear_image": "Clear Image",
     "close": "Close",
     "confirm": "Confirm",
     "continue": "Continue",
+    "copy_to_clipboard": "Copy to clipboard",
     "create": "Create",
     "create_chapters": "Create Chapter",
     "create_entity": "Create {entityType}",
@@ -33,14 +40,15 @@
     "delete_file": "Delete file",
     "delete_file_and_funscript": "Delete file (and funscript)",
     "delete_generated_supporting_files": "Delete generated supporting files",
-    "delete_stashid": "Delete StashID",
+    "disable": "Disable",
     "disallow": "Disallow",
     "download": "Download",
     "download_anonymised": "Download anonymised",
     "download_backup": "Download Backup",
     "edit": "Edit",
     "edit_entity": "Edit {entityType}",
-    "encoding_image": "Encoding image",
+    "enable": "Enable",
+    "encoding_image": "Encoding image…",
     "export": "Export",
     "export_all": "Export all…",
     "find": "Find",
@@ -78,9 +86,11 @@
     "previous_action": "Back",
     "reassign": "Reassign",
     "refresh": "Refresh",
+    "reload": "Reload",
     "reload_plugins": "Reload plugins",
     "reload_scrapers": "Reload scrapers",
     "remove": "Remove",
+    "remove_date": "Remove date",
     "remove_from_gallery": "Remove from Gallery",
     "rename_gen_files": "Rename generated files",
     "rescan": "Rescan",
@@ -124,6 +134,7 @@
     "temp_enable": "Enable temporarily…",
     "unset": "Unset",
     "use_default": "Use default",
+    "view_history": "View history",
     "view_random": "View Random"
   },
   "actions_name": "Actions",
@@ -213,6 +224,7 @@
       "stash_wiki": "Stash {url} page",
       "version": "Version"
     },
+    "advanced_mode": "Advanced Mode",
     "application_paths": {
       "heading": "Application Paths"
     },
@@ -245,6 +257,8 @@
       "recent_ip_addresses": "Recent IP addresses",
       "server_display_name": "Server Display Name",
       "server_display_name_desc": "Display name for the DLNA server. Defaults to {server_name} if empty.",
+      "server_port": "Server Port",
+      "server_port_desc": "Port to run the DLNA server on. Requires DLNA restart after changing.",
       "successfully_cancelled_temporary_behaviour": "Successfully cancelled temporary behaviour",
       "until_restart": "until restart",
       "video_sort_order": "Default Video Sort Order",
@@ -268,7 +282,7 @@
         "log_to_terminal": "Log to terminal",
         "log_to_terminal_desc": "Logs to the terminal in addition to a file. Always true if file logging is disabled. Requires restart.",
         "maximum_session_age": "Maximum Session Age",
-        "maximum_session_age_desc": "Maximum idle time before a login session is expired, in seconds.",
+        "maximum_session_age_desc": "Maximum idle time before a login session is expired, in seconds. Requires restart.",
         "password": "Password",
         "password_desc": "Password to access Stash. Leave blank to disable user authentication",
         "stash-box_integration": "Stash-box integration",
@@ -305,6 +319,18 @@
       "excluded_video_patterns_desc": "Regexps of video files/paths to exclude from Scan and add to Clean",
       "excluded_video_patterns_head": "Excluded Video Patterns",
       "ffmpeg": {
+        "download_ffmpeg": {
+          "description": "Downloads FFmpeg into the configuration directory and clears the ffmpeg and ffprobe paths to resolve from the configuration directory.",
+          "heading": "Download FFmpeg"
+        },
+        "ffmpeg_path": {
+          "description": "Path to the ffmpeg executable (not just the folder). If empty, ffmpeg will be resolved from the environment via $PATH, the configuration directory, or from $HOME/.stash",
+          "heading": "FFmpeg Executable Path"
+        },
+        "ffprobe_path": {
+          "description": "Path to the ffprobe executable (not just the folder). If empty, ffprobe will be resolved from the environment via $PATH, the configuration directory, or from $HOME/.stash",
+          "heading": "FFprobe Executable Path"
+        },
         "hardware_acceleration": {
           "desc": "Uses available hardware to encode video for live transcoding.",
           "heading": "FFmpeg hardware encoding"
@@ -358,10 +384,14 @@
       "number_of_parallel_task_for_scan_generation_desc": "Set to 0 for auto-detection. Warning running more tasks than is required to achieve 100% cpu utilisation will decrease performance and potentially cause other issues.",
       "number_of_parallel_task_for_scan_generation_head": "Number of parallel task for scan/generation",
       "parallel_scan_head": "Parallel Scan/Generation",
+      "plugins_path": {
+        "description": "Directory location of plugin configuration files",
+        "heading": "Plugins Path"
+      },
       "preview_generation": "Preview Generation",
       "python_path": {
-        "description": "Location of python executable. Used for script scrapers and plugins. If blank, python will be resolved from the environment",
-        "heading": "Python Path"
+        "description": "Path to the python executable (not just the folder). Used for script scrapers and plugins. If blank, python will be resolved from the environment",
+        "heading": "Python Executable Path"
       },
       "scraper_user_agent": "Scraper User Agent",
       "scraper_user_agent_desc": "User-Agent string used during scrape http requests",
@@ -384,14 +414,18 @@
       "log_level": "Log Level"
     },
     "plugins": {
+      "available_plugins": "Available Plugins",
       "hooks": "Hooks",
+      "installed_plugins": "Installed Plugins",
       "triggers_on": "Triggers on"
     },
     "scraping": {
+      "available_scrapers": "Available Scrapers",
       "entity_metadata": "{entityType} Metadata",
       "entity_scrapers": "{entityType} scrapers",
       "excluded_tag_patterns_desc": "Regexps of tag names to exclude from scraping results",
       "excluded_tag_patterns_head": "Excluded Tag Patterns",
+      "installed_scrapers": "Installed Scrapers",
       "scraper": "Scraper",
       "scrapers": "Scrapers",
       "search_by_name": "Search by name",
@@ -425,6 +459,17 @@
       "backup_and_download": "Performs a backup of the database and downloads the resulting file.",
       "backup_database": "Performs a backup of the database to the backups directory, with the filename format {filename_format}",
       "cleanup_desc": "Check for missing files and remove them from the database. This is a destructive action.",
+      "clean_generated": {
+        "blob_files": "Blob files",
+        "description": "Removes generated files without a corresponding database entry.",
+        "image_thumbnails": "Image Thumbnails",
+        "image_thumbnails_desc": "Image thumbnails and clips",
+        "markers": "Marker Previews",
+        "previews": "Scene Previews",
+        "previews_desc": "Scene previews and thumbnails",
+        "sprites": "Scene Sprites",
+        "transcodes": "Scene Transcodes"
+      },
       "data_management": "Data management",
       "defaults_set": "Defaults have been set and will be used when clicking the {action} button on the Tasks page.",
       "dont_include_file_extension_as_part_of_the_title": "Don't include file extension as part of the title",
@@ -441,8 +486,9 @@
       "generate_phashes_during_scan": "Generate perceptual hashes",
       "generate_phashes_during_scan_tooltip": "For deduplication and scene identification.",
       "generate_previews_during_scan": "Generate animated image previews",
-      "generate_previews_during_scan_tooltip": "Generate animated WebP previews, only required if Preview Type is set to Animated Image.",
+      "generate_previews_during_scan_tooltip": "Also generate animated (webp) previews, only required when Scene/Marker Wall Preview Type is set to Animated Image. When browsing they use less CPU than the video previews, but are generated in addition to them and are larger files.",
       "generate_sprites_during_scan": "Generate scrubber sprites",
+      "generate_sprites_during_scan_tooltip": "The set of images displayed below the video player for easy navigation.",
       "generate_thumbnails_during_scan": "Generate thumbnails for images",
       "generate_video_covers_during_scan": "Generate scene covers",
       "generate_video_previews_during_scan": "Generate previews",
@@ -473,8 +519,8 @@
         "strategy": "Strategy",
         "tag_skipped_matches": "Tag skipped matches with",
         "tag_skipped_matches_tooltip": "Create a tag like 'Identify: Multiple Matches' that you can filter for in the Scene Tagger view and choose the correct match by hand",
-        "tag_skipped_performers": "Tag skipped performers with",
-        "tag_skipped_performer_tooltip": "Create a tag like 'Identify: Single Name Performer' that you can filter for in the Scene Tagger view and choose how you want to handle these performers"
+        "tag_skipped_performer_tooltip": "Create a tag like 'Identify: Single Name Performer' that you can filter for in the Scene Tagger view and choose how you want to handle these performers",
+        "tag_skipped_performers": "Tag skipped performers with"
       },
       "import_from_exported_json": "Import from exported JSON in the metadata directory. Wipes the existing database.",
       "incremental_import": "Incremental import from a supplied export zip file.",
@@ -557,6 +603,21 @@
         "skip_opening_browser": "Skip Opening Browser",
         "skip_opening_browser_on_startup": "Skip auto-opening browser during startup"
       },
+      "detail": {
+        "compact_expanded_details": {
+          "description": "When enabled, this option will present expanded details while maintaining a compact presentation",
+          "heading": "Compact expanded details"
+        },
+        "enable_background_image": {
+          "description": "Display background image on detail page.",
+          "heading": "Enable background image"
+        },
+        "heading": "Detail Page",
+        "show_all_details": {
+          "description": "When enabled, all content details will be shown by default and each detail item will fit under a single column",
+          "heading": "Show all details"
+        }
+      },
       "editing": {
         "disable_dropdown_create": {
           "description": "Remove the ability to create new objects from the dropdown selectors",
@@ -583,21 +644,6 @@
               "stars": "Stars"
             }
           }
-        }
-      },
-      "detail": {
-        "enable_background_image": {
-          "description": "Display background image on detail page.",
-          "heading": "Enable background image"
-        },
-        "heading": "Detail Page",
-        "compact_expanded_details": {
-          "description": "When enabled, this option will present expanded details while maintaining a compact presentation",
-          "heading": "Compact expanded details"
-        },
-        "show_all_details": {
-          "description": "When enabled, all content details will be shown by default and each detail item will fit under a single column",
-          "heading": "Show all details"
         }
       },
       "funscript_offset": {
@@ -664,7 +710,7 @@
         }
       },
       "preview_type": {
-        "description": "Configuration for wall items",
+        "description": "The default option is video (mp4) previews. For less CPU usage when browsing, you can use the animated image (webp) previews. However they must be generated in addition to the video previews and are larger files.",
         "heading": "Preview Type",
         "options": {
           "animated": "Animated Image",
@@ -673,9 +719,9 @@
         }
       },
       "scene_list": {
-        "heading": "Scene List",
+        "heading": "Grid View",
         "options": {
-          "show_studio_as_text": "Show Studios as text"
+          "show_studio_as_text": "Display studio overlay as text"
         }
       },
       "scene_player": {
@@ -691,10 +737,11 @@
             "description": "Play next scene in queue when video finishes",
             "heading": "Continue playlist by default"
           },
+          "disable_mobile_media_auto_rotate": "Disable auto-rotate of fullscreen media on Mobile",
           "enable_chromecast": "Enable Chromecast",
           "show_ab_loop_controls": "Show AB Loop plugin controls",
           "show_scrubber": "Show Scrubber",
-          "track_activity": "Track Activity",
+          "track_activity": "Enable Scene Play history",
           "vr_tag": {
             "description": "The VR button will only be displayed for scenes with this tag.",
             "heading": "VR Tag"
@@ -746,6 +793,10 @@
     }
   },
   "configuration": "Configuration",
+  "connection_monitor": {
+    "websocket_connection_failed": "Unable to make websocket connection: see browser console for details",
+    "websocket_connection_reestablished": "Websocket connection re-established"
+  },
   "countables": {
     "files": "{count, plural, one {File} other {Files}}",
     "galleries": "{count, plural, one {Gallery} other {Galleries}}",
@@ -796,6 +847,8 @@
   "details": "Details",
   "developmentVersion": "Development Version",
   "dialogs": {
+    "clear_o_history_confirm": "Are you sure you want to clear the O history?",
+    "clear_play_history_confirm": "Are you sure you want to clear the play history?",
     "create_new_entity": "Create new {entity}",
     "delete_alert": "The following {count, plural, one {{singularEntity}} other {{pluralEntity}}} will be deleted permanently:",
     "delete_confirm": "Are you sure you want to delete {entityName}?",
@@ -851,6 +904,7 @@
       "source": "Source"
     },
     "overwrite_filter_confirm": "Are you sure you want to overwrite existing saved query {entityName}?",
+    "performers_found": "{count} performers found",
     "reassign_entity_title": "{count, plural, one {Reassign {singularEntity}} other {Reassign {pluralEntity}}}",
     "reassign_files": {
       "destination": "Reassign to"
@@ -861,10 +915,11 @@
       "force_transcodes": "Force Transcode generation",
       "force_transcodes_tooltip": "By default, transcodes are only generated when the video file is not supported in the browser. When enabled, transcodes will be generated even when the video file appears to be supported in the browser.",
       "image_previews": "Animated Image Previews",
-      "image_previews_tooltip": "Animated WebP previews, only required if Preview Type is set to Animated Image.",
+      "image_previews_tooltip": "Also generate animated (webp) previews, only required when Scene/Marker Wall Preview Type is set to Animated Image. When browsing they use less CPU than the video previews, but are generated in addition to them and are larger files.",
+      "image_thumbnails": "Image Thumbnails",
       "interactive_heatmap_speed": "Generate heatmaps and speeds for interactive scenes",
       "marker_image_previews": "Marker Animated Image Previews",
-      "marker_image_previews_tooltip": "Animated marker WebP previews, only required if Preview Type is set to Animated Image.",
+      "marker_image_previews_tooltip": "Also generate animated (webp) previews, only required when Scene/Marker Wall Preview Type is set to Animated Image. When browsing they use less CPU than the video previews, but are generated in addition to them and are larger files.",
       "marker_screenshots": "Marker Screenshots",
       "marker_screenshots_tooltip": "Marker static JPG images, only required if Preview Type is set to Static Image.",
       "markers": "Marker Previews",
@@ -872,7 +927,8 @@
       "override_preview_generation_options": "Override Preview Generation Options",
       "override_preview_generation_options_desc": "Override Preview Generation Options for this operation. Defaults are set in System -> Preview Generation.",
       "overwrite": "Overwrite existing files",
-      "phash": "Perceptual hashes (for deduplication)",
+      "phash": "Perceptual hashes",
+      "phash_tooltip": "For deduplication and scene identification",
       "preview_exclude_end_time_desc": "Exclude the last x seconds from scene previews. This can be a value in seconds, or a percentage (eg 2%) of the total scene duration.",
       "preview_exclude_end_time_head": "Exclude end time",
       "preview_exclude_start_time_desc": "Exclude the first x seconds from scene previews. This can be a value in seconds, or a percentage (eg 2%) of the total scene duration.",
@@ -886,14 +942,13 @@
       "preview_seg_duration_desc": "Duration of each preview segment, in seconds.",
       "preview_seg_duration_head": "Preview segment duration",
       "sprites": "Scene Scrubber Sprites",
-      "sprites_tooltip": "Sprites (for the scene scrubber)",
+      "sprites_tooltip": "The set of images displayed below the video player for easy navigation.",
       "transcodes": "Transcodes",
-      "transcodes_tooltip": "MP4 conversions of unsupported video formats",
+      "transcodes_tooltip": "MP4 transcodes will be pre-generated for all content; useful for slow CPUs but requires much more disk space",
       "video_previews": "Previews",
       "video_previews_tooltip": "Video previews which play when hovering over a scene"
     },
     "scenes_found": "{count} scenes found",
-    "performers_found": "{count} performers found",
     "scrape_entity_query": "{entity_type} Scrape Query",
     "scrape_entity_title": "{entity_type} Scrape Results",
     "scrape_results_existing": "Existing",
@@ -911,6 +966,7 @@
     "unknown": "Unknown",
     "wall": "Wall"
   },
+  "distance": "Distance",
   "donate": "Donate",
   "dupe_check": {
     "description": "Levels below 'Exact' can take longer to calculate. False positives might also be returned on lower accuracy levels.",
@@ -920,6 +976,7 @@
       "equal": "Equal"
     },
     "found_sets": "{setCount, plural, one{# set of duplicates found.} other {# sets of duplicates found.}}",
+    "only_select_matching_codecs": "Only select if all codecs match in the duplicate group",
     "options": {
       "exact": "Exact",
       "high": "High",
@@ -927,9 +984,15 @@
       "medium": "Medium"
     },
     "search_accuracy_label": "Search Accuracy",
+    "select_all_but_largest_file": "Select every file in each duplicated group, except the largest file",
+    "select_all_but_largest_resolution": "Select every file in each duplicated group, except the file with highest resolution",
+    "select_none": "Select None",
+    "select_oldest": "Select the oldest file in the duplicate group",
+    "select_options": "Select Options…",
+    "select_youngest": "Select the youngest file in the duplicate group",
     "title": "Duplicate Scenes"
   },
-  "duplicated_phash": "Duplicated (phash)",
+  "duplicated_phash": "Duplicated (pHash)",
   "duration": "Duration",
   "effect_filters": {
     "aspect": "Aspect",
@@ -954,9 +1017,10 @@
   },
   "empty_server": "Add some scenes to your server to view recommendations on this page.",
   "errors": {
-    "loading_type": "Error loading {type}",
+    "header": "Error",
     "image_index_greater_than_zero": "Image index must be greater than 0",
     "lazy_component_error_help": "If you recently upgraded Stash, please reload the page or clear your browser cache.",
+    "loading_type": "Error loading {type}",
     "something_went_wrong": "Something went wrong."
   },
   "ethnicity": "Ethnicity",
@@ -977,7 +1041,7 @@
   "filters": "Filters",
   "folder": "Folder",
   "framerate": "Frame Rate",
-  "frames_per_second": "{value} frames per second",
+  "frames_per_second": "{value} fps",
   "front_page": {
     "types": {
       "premade_filter": "Premade Filter",
@@ -1011,6 +1075,7 @@
   "height": "Height",
   "height_cm": "Height (cm)",
   "help": "Help",
+  "history": "History",
   "ignore_auto_tag": "Ignore Auto Tag",
   "image": "Image",
   "image_count": "Image Count",
@@ -1022,8 +1087,9 @@
   "index_of_total": "{index} of {total}",
   "instagram": "Instagram",
   "interactive": "Interactive",
-  "interactive_speed": "Interactive speed",
+  "interactive_speed": "Interactive Speed",
   "isMissing": "Is Missing",
+  "last_o_at": "Last O At",
   "last_played_at": "Last Played At",
   "library": "Library",
   "loading": {
@@ -1037,7 +1103,8 @@
     "checksum": "Checksum",
     "downloaded_from": "Downloaded From",
     "hash": "Hash",
-    "interactive_speed": "Interactive speed",
+    "interactive_speed": "Interactive Speed",
+    "o_count": "O Count",
     "performer_card": {
       "age": "{age} {years_old}",
       "age_context": "{age} {years_old} in this scene"
@@ -1048,17 +1115,52 @@
     "stream": "Stream",
     "video_codec": "Video Codec"
   },
-  "megabits_per_second": "{value} megabits per second",
+  "megabits_per_second": "{value} mbps",
   "metadata": "Metadata",
   "movie": "Movie",
-  "movie_scene_number": "Movie Scene Number",
+  "movie_scene_number": "Scene Number",
   "movies": "Movies",
   "name": "Name",
   "new": "New",
   "none": "None",
+  "o_count": "O Count",
   "o_counter": "O-Counter",
+  "o_history": "O History",
+  "odate_recorded_no": "No O Date Recorded",
   "operations": "Operations",
   "organized": "Organised",
+  "orientation": "Orientation",
+  "package_manager": {
+    "add_source": "Add Source",
+    "check_for_updates": "Check for Updates",
+    "confirm_delete_source": "Are you sure you want to delete source {name} ({url})?",
+    "confirm_uninstall": "Are you sure you want to uninstall {number} packages?",
+    "description": "Description",
+    "edit_source": "Edit Source",
+    "hide_unselected": "Hide unselected",
+    "install": "Install",
+    "installed_version": "Installed Version",
+    "latest_version": "Latest Version",
+    "no_packages": "No packages found",
+    "no_sources": "No sources configured",
+    "no_upgradable": "No upgradable packages found",
+    "package": "Package",
+    "required_by": "Required by {packages}",
+    "selected_only": "Selected only",
+    "show_all": "Show all",
+    "source": {
+      "local_path": {
+        "description": "Relative path to store packages for this source. Note that changing this requires the packages to be moved manually.",
+        "heading": "Local Path"
+      },
+      "name": "Name",
+      "url": "Source URL"
+    },
+    "uninstall": "Uninstall",
+    "unknown": "<unknown>",
+    "update": "Update",
+    "version": "Version"
+  },
   "pagination": {
     "first": "First",
     "last": "Last",
@@ -1075,9 +1177,8 @@
   "penis": "Penis",
   "penis_length": "Penis Length",
   "penis_length_cm": "Penis Length (cm)",
-  "perceptual_similarity": "Perceptual Similarity (phash)",
+  "perceptual_similarity": "Perceptual Similarity (pHash)",
   "performer": "Performer",
-  "performer_tags": "Performer Tags",
   "performer_age": "Performer Age",
   "performer_count": "Performer Count",
   "performer_favorite": "Performer Favourited",
@@ -1117,11 +1218,17 @@
     "update_performers": "Update Performers",
     "updating_untagged_performers_description": "Updating untagged performers will try to match any performers that lack a stashid and update the metadata."
   },
+  "performer_tags": "Performer Tags",
   "performers": "Performers",
+  "photographer": "Photographer",
   "piercings": "Piercings",
   "play_count": "Play Count",
   "play_duration": "Play Duration",
+  "play_history": "Play History",
+  "playdate_recorded_no": "No Play Date Recorded",
+  "plays": "{value} plays",
   "primary_file": "Primary file",
+  "primary_tag": "Primary Tag",
   "queue": "Queue",
   "random": "Random",
   "rating": "Rating",
@@ -1132,12 +1239,12 @@
   "resume_time": "Resume Time",
   "scene": "Scene",
   "sceneTagger": "Scene Tagger",
-  "scene_tags": "Scene Tags",
   "scene_code": "Studio Code",
   "scene_count": "Scene Count",
   "scene_created_at": "Scene Created At",
   "scene_date": "Date of Scene",
   "scene_id": "Scene ID",
+  "scene_tags": "Scene Tags",
   "scene_updated_at": "Scene Updated At",
   "scenes": "Scenes",
   "scenes_updated_at": "Scene Updated At",
@@ -1154,21 +1261,16 @@
     "confirm": {
       "almost_ready": "We're almost ready to complete the configuration. Please confirm the following settings. You can click back to change anything incorrect. If everything looks good, click Confirm to create your system.",
       "blobs_directory": "Binary data directory",
-      "blobs_use_database": "<use database>",
+      "blobs_use_database": "<using database>",
       "cache_directory": "Cache directory",
       "configuration_file_location": "Configuration file location:",
       "database_file_path": "Database file path",
-      "default_blobs_location": "<path containing configuration file>/blobs",
-      "default_cache_location": "<path containing configuration file>/cache",
-      "default_db_location": "<path containing configuration file>/stash-go.sqlite",
-      "default_generated_content_location": "<path containing configuration file>/generated",
       "generated_directory": "Generated directory",
       "nearly_there": "Nearly there!",
       "stash_library_directories": "Stash library directories"
     },
     "creating": {
-      "creating_your_system": "Creating your system",
-      "ffmpeg_notice": "If <code>ffmpeg</code> is not yet in your paths, please be patient while stash downloads it. View the console output to see download progress."
+      "creating_your_system": "Creating your system"
     },
     "errors": {
       "something_went_wrong": "Oh no! Something went wrong!",
@@ -1217,9 +1319,11 @@
     },
     "stash_setup_wizard": "Stash Setup Wizard",
     "success": {
+      "download_ffmpeg": "Download ffmpeg",
       "getting_help": "Getting help",
       "help_links": "If you run into issues or have any questions or suggestions, feel free to open an issue in the {githubLink}, or ask the community in the {discordLink}.",
       "in_app_manual_explained": "You are encouraged to check out the in-app manual which can be accessed from the icon in the top-right corner of the screen that looks like this: {icon}",
+      "missing_ffmpeg": "You are missing the required <code>ffmpeg</code> binary. You can automatically download it into your configuration directory by checking the box below. Alternatively, you can supply paths to the <code>ffmpeg</code> and <code>ffprobe</code> binaries in the System Settings. These binaries must be present for Stash to function.",
       "next_config_step_one": "You will be taken to the Configuration page next. This page will allow you to customize what files to include and exclude, set a username and password to protect your system, and a whole bunch of other options.",
       "next_config_step_two": "When you are satisfied with these settings, you can begin scanning your content into Stash by clicking on <code>{localized_task}</code>, then <code>{localized_scan}</code>.",
       "open_collective": "Check out our {open_collective_link} to see how you can contribute to the continued development of Stash.",
@@ -1229,10 +1333,12 @@
       "your_system_has_been_created": "Success! Your system has been created!"
     },
     "welcome": {
-      "config_path_logic_explained": "Stash tries to find its configuration file (<code>config.yml</code>) from the current working directory first, and if it does not find it there, it falls back to <code>$HOME/.stash/config.yml</code> (on Windows, this will be <code>%USERPROFILE%\\.stash\\config.yml</code>). You can also make Stash read from a specific configuration file by running it with the <code>-c '<path to config file>'</code> or <code>--config '<path to config file>'</code> options.",
-      "in_current_stash_directory": "In the <code>$HOME/.stash</code> directory",
-      "in_the_current_working_directory": "In the current working directory",
-      "next_step": "With all of that out of the way, if you're ready to proceed with setting up a new system, choose where you'd like to store your configuration file and click Next.",
+      "config_path_logic_explained": "Stash tries to find its configuration file (<code>config.yml</code>) from the current working directory first, and if it does not find it there, it falls back to <code>{fallback_path}</code>. You can also make Stash read from a specific configuration file by running it with the <code>-c '<path to config file>'</code> or <code>--config '<path to config file>'</code> options.",
+      "in_current_stash_directory": "In the <code>{path}</code> directory:",
+      "in_the_current_working_directory": "In <code>{path}</code>, the working directory, currently:",
+      "in_the_current_working_directory_disabled": "In <code>{path}</code>, the working directory:",
+      "in_the_current_working_directory_disabled_macos": "Unsupported when running <code>Stash.app</code>,<br></br>run <code>stash-macos</code> to set up in the working directory",
+      "next_step": "With all of that out of the way, if you're ready to proceed with setting up a new system, please choose where you'd like to store your configuration file.",
       "store_stash_config": "Where do you want to store your Stash configuration?",
       "unable_to_locate_config": "If you're reading this, then Stash couldn't find an existing configuration. This wizard will guide you through the process of setting up a new configuration.",
       "unexpected_explained": "If you're getting this screen unexpectedly, please try restarting Stash in the correct working directory or with the <code>-c</code> flag."
@@ -1259,11 +1365,11 @@
   "stats": {
     "image_size": "Images size",
     "scenes_duration": "Scenes duration",
-    "scenes_size": "Scenes size",
     "scenes_played": "Scenes Played",
-    "total_play_duration": "Total Play Duration",
+    "scenes_size": "Scenes size",
+    "total_o_count": "Total O-Count",
     "total_play_count": "Total Play Count",
-    "total_o_count": "Total O-Count"
+    "total_play_duration": "Total Play Duration"
   },
   "status": "Status: {statusText}",
   "studio": "Studio",
@@ -1291,15 +1397,15 @@
     "network_error": "Network Error",
     "no_results_found": "No results found.",
     "number_of_studios_will_be_processed": "{studio_count} studios will be processed",
-    "studio_already_tagged": "Studio already tagged",
-    "studio_names_separated_by_comma": "Studio names separated by comma",
-    "studio_selection": "Studio selection",
-    "studio_successfully_tagged": "Studio successfully tagged",
     "query_all_studios_in_the_database": "All studios in the database",
     "refresh_tagged_studios": "Refresh tagged studios",
     "refreshing_will_update_the_data": "Refreshing will update the data of any tagged studios from the stash-box instance.",
     "status_tagging_job_queued": "Status: Tagging job queued",
     "status_tagging_studios": "Status: Tagging studios",
+    "studio_already_tagged": "Studio already tagged",
+    "studio_names_separated_by_comma": "Studio names separated by comma",
+    "studio_selection": "Studio selection",
+    "studio_successfully_tagged": "Studio successfully tagged",
     "tag_status": "Tag Status",
     "to_use_the_studio_tagger": "To use the studio tagger a stash-box instance needs to be configured.",
     "untagged_studios": "Untagged studios",
@@ -1311,12 +1417,16 @@
   "sub_tag_count": "Sub-Tag Count",
   "sub_tag_of": "Sub-tag of {parent}",
   "sub_tags": "Sub-Tags",
+  "subsidiary_studio_count": "Subsidiary Studio Count",
   "subsidiary_studios": "Subsidiary Studios",
   "synopsis": "Synopsis",
   "tag": "Tag",
   "tag_count": "Tag Count",
+  "tag_parent_tooltip": "Has parent tags",
+  "tag_sub_tag_tooltip": "Has sub-tags",
   "tags": "Tags",
   "tattoos": "Tattoos",
+  "time": "Time",
   "title": "Title",
   "toast": {
     "added_entity": "Added {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
@@ -1341,17 +1451,18 @@
   "true": "True",
   "twitter": "Twitter",
   "type": "Type",
+  "unknown_date": "Unknown date",
   "updated_at": "Updated At",
   "url": "URL",
   "urls": "URLs",
   "validation": {
-    "aliases_must_be_unique": "aliases must be unique",
+    "blank": "${path} must not be blank",
     "date_invalid_form": "${path} must be in YYYY-MM-DD form",
     "required": "${path} is a required field",
-    "urls_must_be_unique": "URLs must be unique"
+    "unique": "${path} must be unique"
   },
-  "videos": "Videos",
   "video_codec": "Video Codec",
+  "videos": "Videos",
   "view_all": "View All",
   "weight": "Weight",
   "weight_kg": "Weight (kg)",

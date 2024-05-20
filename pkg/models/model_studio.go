@@ -14,6 +14,7 @@ type Studio struct {
 	UpdatedAt time.Time `json:"updated_at"`
 	// Rating expressed in 1-100 scale
 	Rating        *int   `json:"rating"`
+	Favorite      bool   `json:"favorite"`
 	Details       string `json:"details"`
 	IgnoreAutoTag bool   `json:"ignore_auto_tag"`
 
@@ -37,6 +38,7 @@ type StudioPartial struct {
 	ParentID OptionalInt
 	// Rating expressed in 1-100 scale
 	Rating        OptionalInt
+	Favorite      OptionalBool
 	Details       OptionalString
 	CreatedAt     OptionalTime
 	UpdatedAt     OptionalTime

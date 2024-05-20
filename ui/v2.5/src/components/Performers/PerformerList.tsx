@@ -19,9 +19,12 @@ import { DisplayMode } from "src/models/list-filter/types";
 import { PerformerTagger } from "../Tagger/performers/PerformerTagger";
 import { ExportDialog } from "../Shared/ExportDialog";
 import { DeleteEntityDialog } from "../Shared/DeleteEntityDialog";
-import { IPerformerCardExtraCriteria, PerformerCard } from "./PerformerCard";
+import { IPerformerCardExtraCriteria } from "./PerformerCard";
 import { PerformerListTable } from "./PerformerListTable";
 import { EditPerformersDialog } from "./EditPerformersDialog";
+import { cmToImperial, cmToInches, kgToLbs } from "src/utils/units";
+import TextUtils from "src/utils/text";
+import { PerformerCardGrid } from "./PerformerCardGrid";
 
 const PerformerItemList = makeItemList({
   filterMode: GQL.FilterMode.Performers,
@@ -33,6 +36,129 @@ const PerformerItemList = makeItemList({
     return result?.data?.findPerformers?.count ?? 0;
   },
 });
+
+export const FormatHeight = (height?: number | null) => {
+  const intl = useIntl();
+  if (!height) {
+    return "";
+  }
+
+  const [feet, inches] = cmToImperial(height);
+
+  return (
+    <span className="performer-height">
+      <span className="height-metric">
+        {intl.formatNumber(height, {
+          style: "unit",
+          unit: "centimeter",
+          unitDisplay: "short",
+        })}
+      </span>
+      <span className="height-imperial">
+        {intl.formatNumber(feet, {
+          style: "unit",
+          unit: "foot",
+          unitDisplay: "narrow",
+        })}
+        {intl.formatNumber(inches, {
+          style: "unit",
+          unit: "inch",
+          unitDisplay: "narrow",
+        })}
+      </span>
+    </span>
+  );
+};
+
+export const FormatAge = (
+  birthdate?: string | null,
+  deathdate?: string | null
+) => {
+  if (!birthdate) {
+    return "";
+  }
+  const age = TextUtils.age(birthdate, deathdate);
+
+  return (
+    <span className="performer-age">
+      <span className="age">{age}</span>
+      <span className="birthdate"> ({birthdate})</span>
+    </span>
+  );
+};
+
+export const FormatWeight = (weight?: number | null) => {
+  const intl = useIntl();
+  if (!weight) {
+    return "";
+  }
+
+  const lbs = kgToLbs(weight);
+
+  return (
+    <span className="performer-weight">
+      <span className="weight-metric">
+        {intl.formatNumber(weight, {
+          style: "unit",
+          unit: "kilogram",
+          unitDisplay: "short",
+        })}
+      </span>
+      <span className="weight-imperial">
+        {intl.formatNumber(lbs, {
+          style: "unit",
+          unit: "pound",
+          unitDisplay: "short",
+        })}
+      </span>
+    </span>
+  );
+};
+
+export const FormatCircumcised = (circumcised?: GQL.CircumisedEnum | null) => {
+  const intl = useIntl();
+  if (!circumcised) {
+    return "";
+  }
+
+  return (
+    <span className="penis-circumcised">
+      {intl.formatMessage({
+        id: "circumcised_types." + circumcised,
+      })}
+    </span>
+  );
+};
+
+export const FormatPenisLength = (penis_length?: number | null) => {
+  const intl = useIntl();
+  if (!penis_length) {
+    return "";
+  }
+
+  const inches = cmToInches(penis_length);
+
+  return (
+    <span className="performer-penis-length">
+      <span className="penis-length-metric">
+        {intl.formatNumber(penis_length, {
+          style: "unit",
+          unit: "centimeter",
+          unitDisplay: "short",
+          maximumFractionDigits: 2,
+        })}
+      </span>
+      <span className="penis-length-imperial">
+        {intl.formatNumber(inches, {
+          style: "unit",
+          unit: "inch",
+          unitDisplay: "narrow",
+          maximumFractionDigits: 2,
+        })}
+      </span>
+    </span>
+  );
+};
 
 interface IPerformerList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
@@ -138,26 +264,21 @@ export const PerformerList: React.FC<IPerformerList> = ({
 
       if (filter.displayMode === DisplayMode.Grid) {
         return (
-          <div className="row justify-content-center">
-            {result.data.findPerformers.performers.map((p) => (
-              <PerformerCard
-                key={p.id}
-                performer={p}
-                selecting={selectedIds.size > 0}
-                selected={selectedIds.has(p.id)}
-                onSelectedChanged={(selected: boolean, shiftKey: boolean) =>
-                  onSelectChange(p.id, selected, shiftKey)
-                }
-                extraCriteria={extraCriteria}
-              />
-            ))}
-          </div>
+          <PerformerCardGrid
+            performers={result.data.findPerformers.performers}
+            zoomIndex={filter.zoomIndex}
+            selectedIds={selectedIds}
+            onSelectChange={onSelectChange}
+            extraCriteria={extraCriteria}
+          />
         );
       }
       if (filter.displayMode === DisplayMode.List) {
         return (
           <PerformerListTable
             performers={result.data.findPerformers.performers}
+            selectedIds={selectedIds}
+            onSelectChange={onSelectChange}
           />
         );
       }

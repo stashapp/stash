@@ -9,6 +9,9 @@ import (
 	"time"
 
 	"github.com/stashapp/stash/internal/manager/config"
+	"github.com/stashapp/stash/pkg/file"
+	file_image "github.com/stashapp/stash/pkg/file/image"
+	"github.com/stashapp/stash/pkg/file/video"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/logger"
@@ -16,14 +19,17 @@ import (
 )
 
 func useAsVideo(pathname string) bool {
-	if instance.Config.IsCreateImageClipsFromVideos() && config.StashConfigs.GetStashFromDirPath(instance.Config.GetStashPaths(), pathname).ExcludeVideo {
+	stash := config.StashConfigs.GetStashFromDirPath(instance.Config.GetStashPaths(), pathname)
+
+	if instance.Config.IsCreateImageClipsFromVideos() && stash != nil && stash.ExcludeVideo {
 		return false
 	}
 	return isVideo(pathname)
 }
 
 func useAsImage(pathname string) bool {
-	if instance.Config.IsCreateImageClipsFromVideos() && config.StashConfigs.GetStashFromDirPath(instance.Config.GetStashPaths(), pathname).ExcludeVideo {
+	stash := config.StashConfigs.GetStashFromDirPath(instance.Config.GetStashPaths(), pathname)
+	if instance.Config.IsCreateImageClipsFromVideos() && stash != nil && stash.ExcludeVideo {
 		return isImage(pathname) || isVideo(pathname)
 	}
 	return isImage(pathname)
@@ -90,12 +96,32 @@ type ScanMetaDataFilterInput struct {
 }
 
 func (s *Manager) Scan(ctx context.Context, input ScanMetadataInput) (int, error) {
-	if err := s.validateFFMPEG(); err != nil {
+	if err := s.validateFFmpeg(); err != nil {
 		return 0, err
 	}
 
+	scanner := &file.Scanner{
+		Repository: file.NewRepository(s.Repository),
+		FileDecorators: []file.Decorator{
+			&file.FilteredDecorator{
+				Decorator: &video.Decorator{
+					FFProbe: s.FFProbe,
+				},
+				Filter: file.FilterFunc(videoFileFilter),
+			},
+			&file.FilteredDecorator{
+				Decorator: &file_image.Decorator{
+					FFProbe: s.FFProbe,
+				},
+				Filter: file.FilterFunc(imageFileFilter),
+			},
+		},
+		FingerprintCalculator: &fingerprintCalculator{s.Config},
+		FS:                    &file.OsFS{},
+	}
+
 	scanJob := ScanJob{
-		scanner:       s.Scanner,
+		scanner:       scanner,
 		input:         input,
 		subscriptions: s.scanSubs,
 	}
@@ -110,9 +136,10 @@ func (s *Manager) Import(ctx context.Context) (int, error) {
 		return 0, errors.New("metadata path must be set in config")
 	}
 
-	j := job.MakeJobExec(func(ctx context.Context, progress *job.Progress) {
+	j := job.MakeJobExec(func(ctx context.Context, progress *job.Progress) error {
 		task := ImportTask{
-			txnManager:          s.Repository,
+			repository:          s.Repository,
+			resetter:            s.Database,
 			BaseDir:             metadataPath,
 			Reset:               true,
 			DuplicateBehaviour:  ImportDuplicateEnumFail,
@@ -120,6 +147,9 @@ func (s *Manager) Import(ctx context.Context) (int, error) {
 			fileNamingAlgorithm: config.GetVideoFileNamingAlgorithm(),
 		}
 		task.Start(ctx)
+
+		// TODO - return error from task
+		return nil
 	})
 
 	return s.JobManager.Add(ctx, "Importing...", j), nil
@@ -132,15 +162,17 @@ func (s *Manager) Export(ctx context.Context) (int, error) {
 		return 0, errors.New("metadata path must be set in config")
 	}
 
-	j := job.MakeJobExec(func(ctx context.Context, progress *job.Progress) {
+	j := job.MakeJobExec(func(ctx context.Context, progress *job.Progress) error {
 		var wg sync.WaitGroup
 		wg.Add(1)
 		task := ExportTask{
-			txnManager:          s.Repository,
+			repository:          s.Repository,
 			full:                true,
 			fileNamingAlgorithm: config.GetVideoFileNamingAlgorithm(),
 		}
 		task.Start(ctx, &wg)
+		// TODO - return error from task
+		return nil
 	})
 
 	return s.JobManager.Add(ctx, "Exporting...", j), nil
@@ -150,16 +182,18 @@ func (s *Manager) RunSingleTask(ctx context.Context, t Task) int {
 	var wg sync.WaitGroup
 	wg.Add(1)
 
-	j := job.MakeJobExec(func(ctx context.Context, progress *job.Progress) {
+	j := job.MakeJobExec(func(ctx context.Context, progress *job.Progress) error {
 		t.Start(ctx)
-		wg.Done()
+		defer wg.Done()
+		// TODO - return error from task
+		return nil
 	})
 
 	return s.JobManager.Add(ctx, t.GetDescription(), j)
 }
 
 func (s *Manager) Generate(ctx context.Context, input GenerateMetadataInput) (int, error) {
-	if err := s.validateFFMPEG(); err != nil {
+	if err := s.validateFFmpeg(); err != nil {
 		return 0, err
 	}
 	if err := instance.Paths.Generated.EnsureTmpDir(); err != nil {
@@ -167,7 +201,7 @@ func (s *Manager) Generate(ctx context.Context, input GenerateMetadataInput) (in
 	}
 
 	j := &GenerateJob{
-		txnManager: s.Repository,
+		repository: s.Repository,
 		input:      input,
 	}
 
@@ -188,11 +222,10 @@ func (s *Manager) generateScreenshot(ctx context.Context, sceneId string, at *fl
 		logger.Warnf("failure generating screenshot: %v", err)
 	}
 
-	j := job.MakeJobExec(func(ctx context.Context, progress *job.Progress) {
+	j := job.MakeJobExec(func(ctx context.Context, progress *job.Progress) error {
 		sceneIdInt, err := strconv.Atoi(sceneId)
 		if err != nil {
-			logger.Errorf("Error parsing scene id %s: %v", sceneId, err)
-			return
+			return fmt.Errorf("error parsing scene id %s: %w", sceneId, err)
 		}
 
 		var scene *models.Scene
@@ -207,12 +240,11 @@ func (s *Manager) generateScreenshot(ctx context.Context, sceneId string, at *fl
 
 			return scene.LoadPrimaryFile(ctx, s.Repository.File)
 		}); err != nil {
-			logger.Errorf("error finding scene for screenshot generation: %v", err)
-			return
+			return fmt.Errorf("error finding scene for screenshot generation: %w", err)
 		}
 
 		task := GenerateCoverTask{
-			txnManager:   s.Repository,
+			repository:   s.Repository,
 			Scene:        *scene,
 			ScreenshotAt: at,
 			Overwrite:    true,
@@ -221,6 +253,9 @@ func (s *Manager) generateScreenshot(ctx context.Context, sceneId string, at *fl
 		task.Start(ctx)
 
 		logger.Infof("Generate screenshot finished")
+
+		// TODO - return error from task
+		return nil
 	})
 
 	return s.JobManager.Add(ctx, fmt.Sprintf("Generating screenshot for scene id %s", sceneId), j)
@@ -239,7 +274,7 @@ type AutoTagMetadataInput struct {
 
 func (s *Manager) AutoTag(ctx context.Context, input AutoTagMetadataInput) int {
 	j := autoTagJob{
-		txnManager: s.Repository,
+		repository: s.Repository,
 		input:      input,
 	}
 
@@ -253,9 +288,17 @@ type CleanMetadataInput struct {
 }
 
 func (s *Manager) Clean(ctx context.Context, input CleanMetadataInput) int {
+	cleaner := &file.Cleaner{
+		FS:         &file.OsFS{},
+		Repository: file.NewRepository(s.Repository),
+		Handlers: []file.CleanHandler{
+			&cleanHandler{},
+		},
+	}
+
 	j := cleanJob{
-		cleaner:      s.Cleaner,
-		txnManager:   s.Repository,
+		cleaner:      cleaner,
+		repository:   s.Repository,
 		sceneService: s.SceneService,
 		imageService: s.ImageService,
 		input:        input,
@@ -274,7 +317,7 @@ func (s *Manager) OptimiseDatabase(ctx context.Context) int {
 }
 
 func (s *Manager) MigrateHash(ctx context.Context) int {
-	j := job.MakeJobExec(func(ctx context.Context, progress *job.Progress) {
+	j := job.MakeJobExec(func(ctx context.Context, progress *job.Progress) error {
 		fileNamingAlgo := config.GetInstance().GetVideoFileNamingAlgorithm()
 		logger.Infof("Migrating generated files for %s naming hash", fileNamingAlgo.String())
 
@@ -284,8 +327,7 @@ func (s *Manager) MigrateHash(ctx context.Context) int {
 			scenes, err = s.Repository.Scene.All(ctx)
 			return err
 		}); err != nil {
-			logger.Errorf("failed to fetch list of scenes for migration: %s", err.Error())
-			return
+			return fmt.Errorf("failed to fetch list of scenes for migration: %w", err)
 		}
 
 		var wg sync.WaitGroup
@@ -296,7 +338,7 @@ func (s *Manager) MigrateHash(ctx context.Context) int {
 			progress.Increment()
 			if job.IsCancelled(ctx) {
 				logger.Info("Stopping due to user request")
-				return
+				return nil
 			}
 
 			if scene == nil {
@@ -316,6 +358,7 @@ func (s *Manager) MigrateHash(ctx context.Context) int {
 		}
 
 		logger.Info("Finished migrating")
+		return nil
 	})
 
 	return s.JobManager.Add(ctx, "Migrating scene hashes...", j)
@@ -346,13 +389,12 @@ type StashBoxBatchTagInput struct {
 }
 
 func (s *Manager) StashBoxBatchPerformerTag(ctx context.Context, input StashBoxBatchTagInput) int {
-	j := job.MakeJobExec(func(ctx context.Context, progress *job.Progress) {
+	j := job.MakeJobExec(func(ctx context.Context, progress *job.Progress) error {
 		logger.Infof("Initiating stash-box batch performer tag")
 
 		boxes := config.GetInstance().GetStashBoxes()
 		if input.Endpoint < 0 || input.Endpoint >= len(boxes) {
-			logger.Error(fmt.Errorf("invalid stash_box_index %d", input.Endpoint))
-			return
+			return fmt.Errorf("invalid stash_box_index %d", input.Endpoint)
 		}
 		box := boxes[input.Endpoint]
 
@@ -383,8 +425,8 @@ func (s *Manager) StashBoxBatchPerformerTag(ctx context.Context, input StashBoxB
 							}
 
 							// Check if the user wants to refresh existing or new items
-							if (input.Refresh && len(performer.StashIDs.List()) > 0) ||
-								(!input.Refresh && len(performer.StashIDs.List()) == 0) {
+							hasStashID := performer.StashIDs.ForEndpoint(box.Endpoint) != nil
+							if (input.Refresh && hasStashID) || (!input.Refresh && !hasStashID) {
 								tasks = append(tasks, StashBoxBatchTagTask{
 									performer:      performer,
 									refresh:        input.Refresh,
@@ -400,7 +442,7 @@ func (s *Manager) StashBoxBatchPerformerTag(ctx context.Context, input StashBoxB
 				}
 				return nil
 			}); err != nil {
-				logger.Error(err.Error())
+				return err
 			}
 		} else if len(input.Names) > 0 || len(input.PerformerNames) > 0 {
 			// The user is batch adding performers
@@ -458,13 +500,12 @@ func (s *Manager) StashBoxBatchPerformerTag(ctx context.Context, input StashBoxB
 				}
 				return nil
 			}); err != nil {
-				logger.Error(err.Error())
-				return
+				return err
 			}
 		}
 
 		if len(tasks) == 0 {
-			return
+			return nil
 		}
 
 		progress.SetTotal(len(tasks))
@@ -478,19 +519,20 @@ func (s *Manager) StashBoxBatchPerformerTag(ctx context.Context, input StashBoxB
 
 			progress.Increment()
 		}
+
+		return nil
 	})
 
 	return s.JobManager.Add(ctx, "Batch stash-box performer tag...", j)
 }
 
 func (s *Manager) StashBoxBatchStudioTag(ctx context.Context, input StashBoxBatchTagInput) int {
-	j := job.MakeJobExec(func(ctx context.Context, progress *job.Progress) {
+	j := job.MakeJobExec(func(ctx context.Context, progress *job.Progress) error {
 		logger.Infof("Initiating stash-box batch studio tag")
 
 		boxes := config.GetInstance().GetStashBoxes()
 		if input.Endpoint < 0 || input.Endpoint >= len(boxes) {
-			logger.Error(fmt.Errorf("invalid stash_box_index %d", input.Endpoint))
-			return
+			return fmt.Errorf("invalid stash_box_index %d", input.Endpoint)
 		}
 		box := boxes[input.Endpoint]
 
@@ -516,8 +558,8 @@ func (s *Manager) StashBoxBatchStudioTag(ctx context.Context, input StashBoxBatc
 							}
 
 							// Check if the user wants to refresh existing or new items
-							if (input.Refresh && len(studio.StashIDs.List()) > 0) ||
-								(!input.Refresh && len(studio.StashIDs.List()) == 0) {
+							hasStashID := studio.StashIDs.ForEndpoint(box.Endpoint) != nil
+							if (input.Refresh && hasStashID) || (!input.Refresh && !hasStashID) {
 								tasks = append(tasks, StashBoxBatchTagTask{
 									studio:         studio,
 									refresh:        input.Refresh,
@@ -585,13 +627,12 @@ func (s *Manager) StashBoxBatchStudioTag(ctx context.Context, input StashBoxBatc
 				}
 				return nil
 			}); err != nil {
-				logger.Error(err.Error())
-				return
+				return err
 			}
 		}
 
 		if len(tasks) == 0 {
-			return
+			return nil
 		}
 
 		progress.SetTotal(len(tasks))
@@ -605,6 +646,8 @@ func (s *Manager) StashBoxBatchStudioTag(ctx context.Context, input StashBoxBatc
 
 			progress.Increment()
 		}
+
+		return nil
 	})
 
 	return s.JobManager.Add(ctx, "Batch stash-box studio tag...", j)

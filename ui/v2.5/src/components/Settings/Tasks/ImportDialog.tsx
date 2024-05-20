@@ -95,6 +95,8 @@ export const ImportDialog: React.FC<IImportDialogProps> = (
   }
 
   async function onImport() {
+    if (!file) return;
+
     try {
       setIsRunning(true);
       await mutateImportObjects({
@@ -103,9 +105,7 @@ export const ImportDialog: React.FC<IImportDialogProps> = (
         file,
       });
       setIsRunning(false);
-      Toast.success({
-        content: intl.formatMessage({ id: "toast.started_importing" }),
-      });
+      Toast.success(intl.formatMessage({ id: "toast.started_importing" }));
     } catch (e) {
       Toast.error(e);
     } finally {

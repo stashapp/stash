@@ -4,11 +4,12 @@ import * as GQL from "src/core/generated-graphql";
 import {
   ScrapeDialog,
   ScrapedInputGroupRow,
+  ScrapedStringListRow,
   ScrapedTextAreaRow,
 } from "src/components/Shared/ScrapeDialog/ScrapeDialog";
-import clone from "lodash-es/clone";
 import {
   ObjectListScrapeResult,
+  ObjectScrapeResult,
   ScrapeResult,
 } from "src/components/Shared/ScrapeDialog/scrapeResult";
 import {
@@ -23,111 +24,98 @@ import {
   useCreateScrapedStudio,
   useCreateScrapedTag,
 } from "src/components/Shared/ScrapeDialog/createObjects";
+import { uniq } from "lodash-es";
+import { Tag } from "src/components/Tags/TagSelect";
+import { Studio } from "src/components/Studios/StudioSelect";
 
 interface IGalleryScrapeDialogProps {
   gallery: Partial<GQL.GalleryUpdateInput>;
+  galleryStudio: Studio | null;
+  galleryTags: Tag[];
   galleryPerformers: Performer[];
   scraped: GQL.ScrapedGallery;
 
   onClose: (scrapedGallery?: GQL.ScrapedGallery) => void;
 }
 
-interface IHasStoredID {
-  stored_id?: string | null;
-}
-
-export const GalleryScrapeDialog: React.FC<IGalleryScrapeDialogProps> = (
-  props: IGalleryScrapeDialogProps
-) => {
+export const GalleryScrapeDialog: React.FC<IGalleryScrapeDialogProps> = ({
+  gallery,
+  galleryStudio,
+  galleryTags,
+  galleryPerformers,
+  scraped,
+  onClose,
+}) => {
   const intl = useIntl();
   const [title, setTitle] = useState<ScrapeResult<string>>(
-    new ScrapeResult<string>(props.gallery.title, props.scraped.title)
+    new ScrapeResult<string>(gallery.title, scraped.title)
   );
-  const [url, setURL] = useState<ScrapeResult<string>>(
-    new ScrapeResult<string>(props.gallery.url, props.scraped.url)
+  const [code, setCode] = useState<ScrapeResult<string>>(
+    new ScrapeResult<string>(gallery.code, scraped.code)
+  );
+  const [urls, setURLs] = useState<ScrapeResult<string[]>>(
+    new ScrapeResult<string[]>(
+      gallery.urls,
+      scraped.urls
+        ? uniq((gallery.urls ?? []).concat(scraped.urls ?? []))
+        : undefined
+    )
   );
   const [date, setDate] = useState<ScrapeResult<string>>(
-    new ScrapeResult<string>(props.gallery.date, props.scraped.date)
+    new ScrapeResult<string>(gallery.date, scraped.date)
   );
-  const [studio, setStudio] = useState<ScrapeResult<string>>(
-    new ScrapeResult<string>(
-      props.gallery.studio_id,
-      props.scraped.studio?.stored_id
+  const [photographer, setPhotographer] = useState<ScrapeResult<string>>(
+    new ScrapeResult<string>(gallery.photographer, scraped.photographer)
+  );
+  const [studio, setStudio] = useState<ObjectScrapeResult<GQL.ScrapedStudio>>(
+    new ObjectScrapeResult<GQL.ScrapedStudio>(
+      galleryStudio
+        ? {
+            stored_id: galleryStudio.id,
+            name: galleryStudio.name,
+          }
+        : undefined,
+      scraped.studio
     )
   );
   const [newStudio, setNewStudio] = useState<GQL.ScrapedStudio | undefined>(
-    props.scraped.studio && !props.scraped.studio.stored_id
-      ? props.scraped.studio
-      : undefined
+    scraped.studio && !scraped.studio.stored_id ? scraped.studio : undefined
   );
-
-  function mapStoredIdObjects(
-    scrapedObjects?: IHasStoredID[]
-  ): string[] | undefined {
-    if (!scrapedObjects) {
-      return undefined;
-    }
-    const ret = scrapedObjects
-      .map((p) => p.stored_id)
-      .filter((p) => {
-        return p !== undefined && p !== null;
-      }) as string[];
-
-    if (ret.length === 0) {
-      return undefined;
-    }
-
-    // sort by id numerically
-    ret.sort((a, b) => {
-      return parseInt(a, 10) - parseInt(b, 10);
-    });
-
-    return ret;
-  }
-
-  function sortIdList(idList?: string[] | null) {
-    if (!idList) {
-      return;
-    }
-
-    const ret = clone(idList);
-    // sort by id numerically
-    ret.sort((a, b) => {
-      return parseInt(a, 10) - parseInt(b, 10);
-    });
-
-    return ret;
-  }
 
   const [performers, setPerformers] = useState<
     ObjectListScrapeResult<GQL.ScrapedPerformer>
   >(
     new ObjectListScrapeResult<GQL.ScrapedPerformer>(
       sortStoredIdObjects(
-        props.galleryPerformers.map((p) => ({
+        galleryPerformers.map((p) => ({
           stored_id: p.id,
           name: p.name,
         }))
       ),
-      sortStoredIdObjects(props.scraped.performers ?? undefined)
+      sortStoredIdObjects(scraped.performers ?? undefined)
     )
   );
   const [newPerformers, setNewPerformers] = useState<GQL.ScrapedPerformer[]>(
-    props.scraped.performers?.filter((t) => !t.stored_id) ?? []
+    scraped.performers?.filter((t) => !t.stored_id) ?? []
   );
 
-  const [tags, setTags] = useState<ScrapeResult<string[]>>(
-    new ScrapeResult<string[]>(
-      sortIdList(props.gallery.tag_ids),
-      mapStoredIdObjects(props.scraped.tags ?? undefined)
+  const [tags, setTags] = useState<ObjectListScrapeResult<GQL.ScrapedTag>>(
+    new ObjectListScrapeResult<GQL.ScrapedTag>(
+      sortStoredIdObjects(
+        galleryTags.map((t) => ({
+          stored_id: t.id,
+          name: t.name,
+        }))
+      ),
+      sortStoredIdObjects(scraped.tags ?? undefined)
     )
   );
   const [newTags, setNewTags] = useState<GQL.ScrapedTag[]>(
-    props.scraped.tags?.filter((t) => !t.stored_id) ?? []
+    scraped.tags?.filter((t) => !t.stored_id) ?? []
   );
 
   const [details, setDetails] = useState<ScrapeResult<string>>(
-    new ScrapeResult<string>(props.gallery.details, props.scraped.details)
+    new ScrapeResult<string>(gallery.details, scraped.details)
   );
 
   const createNewStudio = useCreateScrapedStudio({
@@ -152,14 +140,22 @@ export const GalleryScrapeDialog: React.FC<IGalleryScrapeDialogProps> = (
 
   // don't show the dialog if nothing was scraped
   if (
-    [title, url, date, studio, performers, tags, details].every(
-      (r) => !r.scraped
-    ) &&
+    [
+      title,
+      code,
+      urls,
+      date,
+      photographer,
+      studio,
+      performers,
+      tags,
+      details,
+    ].every((r) => !r.scraped) &&
     !newStudio &&
     newPerformers.length === 0 &&
     newTags.length === 0
   ) {
-    props.onClose();
+    onClose();
     return <></>;
   }
 
@@ -168,21 +164,13 @@ export const GalleryScrapeDialog: React.FC<IGalleryScrapeDialogProps> = (
 
     return {
       title: title.getNewValue(),
-      url: url.getNewValue(),
+      code: code.getNewValue(),
+      urls: urls.getNewValue(),
       date: date.getNewValue(),
-      studio: newStudioValue
-        ? {
-            stored_id: newStudioValue,
-            name: "",
-          }
-        : undefined,
+      photographer: photographer.getNewValue(),
+      studio: newStudioValue,
       performers: performers.getNewValue(),
-      tags: tags.getNewValue()?.map((m) => {
-        return {
-          stored_id: m,
-          name: "",
-        };
-      }),
+      tags: tags.getNewValue(),
       details: details.getNewValue(),
     };
   }
@@ -196,15 +184,25 @@ export const GalleryScrapeDialog: React.FC<IGalleryScrapeDialogProps> = (
           onChange={(value) => setTitle(value)}
         />
         <ScrapedInputGroupRow
-          title={intl.formatMessage({ id: "url" })}
-          result={url}
-          onChange={(value) => setURL(value)}
+          title={intl.formatMessage({ id: "scene_code" })}
+          result={code}
+          onChange={(value) => setCode(value)}
+        />
+        <ScrapedStringListRow
+          title={intl.formatMessage({ id: "urls" })}
+          result={urls}
+          onChange={(value) => setURLs(value)}
         />
         <ScrapedInputGroupRow
           title={intl.formatMessage({ id: "date" })}
           placeholder="YYYY-MM-DD"
           result={date}
           onChange={(value) => setDate(value)}
+        />
+        <ScrapedInputGroupRow
+          title={intl.formatMessage({ id: "photographer" })}
+          result={photographer}
+          onChange={(value) => setPhotographer(value)}
         />
         <ScrapedStudioRow
           title={intl.formatMessage({ id: "studios" })}
@@ -244,7 +242,7 @@ export const GalleryScrapeDialog: React.FC<IGalleryScrapeDialogProps> = (
       )}
       renderScrapeRows={renderScrapeRows}
       onClose={(apply) => {
-        props.onClose(apply ? makeNewScrapedItem() : undefined);
+        onClose(apply ? makeNewScrapedItem() : undefined);
       }}
     />
   );

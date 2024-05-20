@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/plugin"
+	"github.com/stashapp/stash/pkg/plugin/hook"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 	"github.com/stashapp/stash/pkg/studio"
 	"github.com/stashapp/stash/pkg/utils"
@@ -34,7 +34,8 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input models.Studio
 
 	newStudio.Name = input.Name
 	newStudio.URL = translator.string(input.URL)
-	newStudio.Rating = translator.ratingConversion(input.Rating, input.Rating100)
+	newStudio.Rating = input.Rating100
+	newStudio.Favorite = translator.bool(input.Favorite)
 	newStudio.Details = translator.string(input.Details)
 	newStudio.IgnoreAutoTag = translator.bool(input.IgnoreAutoTag)
 	newStudio.Aliases = models.NewRelatedStrings(input.Aliases)
@@ -61,10 +62,8 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input models.Studio
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Studio
 
-		if len(input.Aliases) > 0 {
-			if err := studio.EnsureAliasesUnique(ctx, 0, input.Aliases, qb); err != nil {
-				return err
-			}
+		if err := studio.ValidateCreate(ctx, newStudio, qb); err != nil {
+			return err
 		}
 
 		err = qb.Create(ctx, &newStudio)
@@ -83,7 +82,7 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input models.Studio
 		return nil, err
 	}
 
-	r.hookExecutor.ExecutePostHooks(ctx, newStudio.ID, plugin.StudioCreatePost, input, nil)
+	r.hookExecutor.ExecutePostHooks(ctx, newStudio.ID, hook.StudioCreatePost, input, nil)
 	return r.getStudio(ctx, newStudio.ID)
 }
 
@@ -104,7 +103,8 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 	updatedStudio.Name = translator.optionalString(input.Name, "name")
 	updatedStudio.URL = translator.optionalString(input.URL, "url")
 	updatedStudio.Details = translator.optionalString(input.Details, "details")
-	updatedStudio.Rating = translator.optionalRatingConversion(input.Rating, input.Rating100)
+	updatedStudio.Rating = translator.optionalInt(input.Rating100, "rating100")
+	updatedStudio.Favorite = translator.optionalBool(input.Favorite, "favorite")
 	updatedStudio.IgnoreAutoTag = translator.optionalBool(input.IgnoreAutoTag, "ignore_auto_tag")
 	updatedStudio.Aliases = translator.updateStrings(input.Aliases, "aliases")
 	updatedStudio.StashIDs = translator.updateStashIDs(input.StashIds, "stash_ids")
@@ -149,7 +149,7 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 		return nil, err
 	}
 
-	r.hookExecutor.ExecutePostHooks(ctx, studioID, plugin.StudioUpdatePost, input, translator.getFields())
+	r.hookExecutor.ExecutePostHooks(ctx, studioID, hook.StudioUpdatePost, input, translator.getFields())
 	return r.getStudio(ctx, studioID)
 }
 
@@ -165,7 +165,7 @@ func (r *mutationResolver) StudioDestroy(ctx context.Context, input StudioDestro
 		return false, err
 	}
 
-	r.hookExecutor.ExecutePostHooks(ctx, id, plugin.StudioDestroyPost, input, nil)
+	r.hookExecutor.ExecutePostHooks(ctx, id, hook.StudioDestroyPost, input, nil)
 
 	return true, nil
 }
@@ -190,7 +190,7 @@ func (r *mutationResolver) StudiosDestroy(ctx context.Context, studioIDs []strin
 	}
 
 	for _, id := range ids {
-		r.hookExecutor.ExecutePostHooks(ctx, id, plugin.StudioDestroyPost, studioIDs, nil)
+		r.hookExecutor.ExecutePostHooks(ctx, id, hook.StudioDestroyPost, studioIDs, nil)
 	}
 
 	return true, nil

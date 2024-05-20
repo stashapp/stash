@@ -14,6 +14,7 @@ resolver:
 struct_tag: gqlgen
 
 autobind:
+  - github.com/stashapp/stash/internal/api
   - github.com/stashapp/stash/pkg/models
   - github.com/stashapp/stash/pkg/plugin
   - github.com/stashapp/stash/pkg/scraper
@@ -33,36 +34,23 @@ models:
     model: github.com/99designs/gqlgen/graphql.Int64
   Timestamp:
     model: github.com/stashapp/stash/internal/api.Timestamp
+  BoolMap:
+    model: github.com/stashapp/stash/internal/api.BoolMap
+  PluginConfigMap:
+    model: github.com/stashapp/stash/internal/api.PluginConfigMap
   # define to force resolvers
   Image:
     model: github.com/stashapp/stash/pkg/models.Image
     fields:
       title:
         resolver: true
-  # override models, from internal/api/models.go
-  BaseFile:
-    model: github.com/stashapp/stash/internal/api.BaseFile
-  GalleryFile:
-    model: github.com/stashapp/stash/internal/api.GalleryFile
-    fields:
-      # override fingerprint field
-      fingerprints:
-        fieldName: FingerprintSlice
   VideoFile:
     fields:
-      # override fingerprint field
-      fingerprints:
-        fieldName: FingerprintSlice
       # override float fields - #1572
       duration:
         fieldName: DurationFinite
       frame_rate:
         fieldName: FrameRateFinite
-  ImageFile:
-    fields:
-      # override fingerprint field
-      fingerprints:
-        fieldName: FingerprintSlice
   # autobind on config causes generation issues
   BlobsStorageType:
     model: github.com/stashapp/stash/internal/manager/config.BlobsStorageType
@@ -82,6 +70,8 @@ models:
     model: github.com/stashapp/stash/internal/manager/config.ConfigDisableDropdownCreate
   ScanMetadataOptions:
     model:  github.com/stashapp/stash/internal/manager/config.ScanMetadataOptions
+  CleanGeneratedInput:
+    model: github.com/stashapp/stash/internal/manager/task.CleanGeneratedOptions
   AutoTagMetadataOptions:
     model: github.com/stashapp/stash/internal/manager/config.AutoTagMetadataOptions
   SystemStatus:
@@ -150,4 +140,9 @@ models:
     model: github.com/stashapp/stash/pkg/scraper.Source
   SavedFindFilterType:
     model: github.com/stashapp/stash/pkg/models.FindFilterType
+  # force resolvers
+  ConfigResult:
+    fields:
+      plugins:
+        resolver: true
   

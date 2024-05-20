@@ -14,7 +14,7 @@ import (
 	"gopkg.in/guregu/null.v4/zero"
 
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sliceutil/intslice"
+	"github.com/stashapp/stash/pkg/sliceutil"
 )
 
 const (
@@ -29,6 +29,7 @@ const (
 type tagRow struct {
 	ID            int         `db:"id" goqu:"skipinsert"`
 	Name          null.String `db:"name"` // TODO: make schema non-nullable
+	Favorite      bool        `db:"favorite"`
 	Description   zero.String `db:"description"`
 	IgnoreAutoTag bool        `db:"ignore_auto_tag"`
 	CreatedAt     Timestamp   `db:"created_at"`
@@ -41,6 +42,7 @@ type tagRow struct {
 func (r *tagRow) fromTag(o models.Tag) {
 	r.ID = o.ID
 	r.Name = null.StringFrom(o.Name)
+	r.Favorite = o.Favorite
 	r.Description = zero.StringFrom(o.Description)
 	r.IgnoreAutoTag = o.IgnoreAutoTag
 	r.CreatedAt = Timestamp{Timestamp: o.CreatedAt}
@@ -51,6 +53,7 @@ func (r *tagRow) resolve() *models.Tag {
 	ret := &models.Tag{
 		ID:            r.ID,
 		Name:          r.Name.String,
+		Favorite:      r.Favorite,
 		Description:   r.Description.String,
 		IgnoreAutoTag: r.IgnoreAutoTag,
 		CreatedAt:     r.CreatedAt.Timestamp,
@@ -81,6 +84,7 @@ type tagRowRecord struct {
 func (r *tagRowRecord) fromPartial(o models.TagPartial) {
 	r.setString("name", o.Name)
 	r.setNullString("description", o.Description)
+	r.setBool("favorite", o.Favorite)
 	r.setBool("ignore_auto_tag", o.IgnoreAutoTag)
 	r.setTimestamp("created_at", o.CreatedAt)
 	r.setTimestamp("updated_at", o.UpdatedAt)
@@ -205,7 +209,7 @@ func (qb *TagStore) FindMany(ctx context.Context, ids []int) ([]*models.Tag, err
 		}
 
 		for _, s := range unsorted {
-			i := intslice.IntIndex(ids, s.ID)
+			i := sliceutil.Index(ids, s.ID)
 			ret[i] = s
 		}
 
@@ -396,6 +400,20 @@ func (qb *TagStore) FindByChildTagID(ctx context.Context, parentID int) ([]*mode
 	return qb.queryTags(ctx, query, args)
 }
 
+func (qb *TagStore) CountByParentTagID(ctx context.Context, parentID int) (int, error) {
+	q := dialect.Select(goqu.COUNT("*")).From(goqu.T("tags")).
+		InnerJoin(goqu.T("tags_relations"), goqu.On(goqu.I("tags_relations.parent_id").Eq(goqu.I("tags.id")))).
+		Where(goqu.I("tags_relations.child_id").Eq(goqu.V(parentID))) // Pass the parentID here
+	return count(ctx, q)
+}
+
+func (qb *TagStore) CountByChildTagID(ctx context.Context, childID int) (int, error) {
+	q := dialect.Select(goqu.COUNT("*")).From(goqu.T("tags")).
+		InnerJoin(goqu.T("tags_relations"), goqu.On(goqu.I("tags_relations.child_id").Eq(goqu.I("tags.id")))).
+		Where(goqu.I("tags_relations.parent_id").Eq(goqu.V(childID))) // Pass the childID here
+	return count(ctx, q)
+}
+
 func (qb *TagStore) Count(ctx context.Context) (int, error) {
 	q := dialect.Select(goqu.COUNT("*")).From(qb.table())
 	return count(ctx, q)
@@ -484,6 +502,7 @@ func (qb *TagStore) makeFilter(ctx context.Context, tagFilter *models.TagFilterT
 	query.handleCriterion(ctx, stringCriterionHandler(tagFilter.Name, tagTable+".name"))
 	query.handleCriterion(ctx, tagAliasCriterionHandler(qb, tagFilter.Aliases))
 
+	query.handleCriterion(ctx, boolCriterionHandler(tagFilter.Favorite, tagTable+".favorite", nil))
 	query.handleCriterion(ctx, stringCriterionHandler(tagFilter.Description, tagTable+".description"))
 	query.handleCriterion(ctx, boolCriterionHandler(tagFilter.IgnoreAutoTag, tagTable+".ignore_auto_tag", nil))
 

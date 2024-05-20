@@ -1,17 +1,20 @@
 import { Button, ButtonGroup } from "react-bootstrap";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 import NavUtils from "src/utils/navigation";
 import { FormattedMessage } from "react-intl";
-import { Icon } from "../Shared/Icon";
 import { TruncatedText } from "../Shared/TruncatedText";
-import { GridCard } from "../Shared/GridCard";
+import { GridCard, calculateCardWidth } from "../Shared/GridCard/GridCard";
 import { PopoverCountButton } from "../Shared/PopoverCountButton";
-import { faMapMarkerAlt, faUser } from "@fortawesome/free-solid-svg-icons";
-
+import ScreenUtils from "src/utils/screen";
+import { Icon } from "../Shared/Icon";
+import { faHeart } from "@fortawesome/free-solid-svg-icons";
+import cx from "classnames";
+import { useTagUpdate } from "src/core/StashService";
 interface IProps {
   tag: GQL.TagDataFragment;
+  containerWidth?: number;
   zoomIndex: number;
   selecting?: boolean;
   selected?: boolean;
@@ -20,11 +23,40 @@ interface IProps {
 
 export const TagCard: React.FC<IProps> = ({
   tag,
+  containerWidth,
   zoomIndex,
   selecting,
   selected,
   onSelectedChanged,
 }) => {
+  const [cardWidth, setCardWidth] = useState<number>();
+  const [updateTag] = useTagUpdate();
+  useEffect(() => {
+    if (!containerWidth || zoomIndex === undefined || ScreenUtils.isMobile())
+      return;
+
+    let zoomValue = zoomIndex;
+    let preferredCardWidth: number;
+    switch (zoomValue) {
+      case 0:
+        preferredCardWidth = 240;
+        break;
+      case 1:
+        preferredCardWidth = 340;
+        break;
+      case 2:
+        preferredCardWidth = 480;
+        break;
+      case 3:
+        preferredCardWidth = 640;
+    }
+    let fittedCardWidth = calculateCardWidth(
+      containerWidth,
+      preferredCardWidth!
+    );
+    setCardWidth(fittedCardWidth);
+  }, [containerWidth, zoomIndex]);
+
   function maybeRenderDescription() {
     if (tag.description) {
       return (
@@ -36,7 +68,36 @@ export const TagCard: React.FC<IProps> = ({
       );
     }
   }
+  function renderFavoriteIcon() {
+    return (
+      <Link to="" onClick={(e) => e.preventDefault()}>
+        <Button
+          className={cx(
+            "minimal",
+            "mousetrap",
+            "favorite-button",
+            tag.favorite ? "favorite" : "not-favorite"
+          )}
+          onClick={() => onToggleFavorite!(!tag.favorite)}
+        >
+          <Icon icon={faHeart} size="2x" />
+        </Button>
+      </Link>
+    );
+  }
 
+  function onToggleFavorite(v: boolean) {
+    if (tag.id) {
+      updateTag({
+        variables: {
+          input: {
+            id: tag.id,
+            favorite: v,
+          },
+        },
+      });
+    }
+  }
   function maybeRenderParents() {
     if (tag.parents.length === 1) {
       const parent = tag.parents[0];
@@ -114,12 +175,12 @@ export const TagCard: React.FC<IProps> = ({
     if (!tag.scene_marker_count) return;
 
     return (
-      <Link className="marker-count" to={NavUtils.makeTagSceneMarkersUrl(tag)}>
-        <Button className="minimal">
-          <Icon icon={faMapMarkerAlt} />
-          <span>{tag.scene_marker_count}</span>
-        </Button>
-      </Link>
+      <PopoverCountButton
+        className="marker-count"
+        type="marker"
+        count={tag.scene_marker_count}
+        url={NavUtils.makeTagSceneMarkersUrl(tag)}
+      />
     );
   }
 
@@ -153,12 +214,12 @@ export const TagCard: React.FC<IProps> = ({
     if (!tag.performer_count) return;
 
     return (
-      <Link className="performer-count" to={NavUtils.makeTagPerformersUrl(tag)}>
-        <Button className="minimal">
-          <Icon icon={faUser} />
-          <span>{tag.performer_count}</span>
-        </Button>
-      </Link>
+      <PopoverCountButton
+        className="performer-count"
+        type="performer"
+        count={tag.performer_count}
+        url={NavUtils.makeTagPerformersUrl(tag)}
+      />
     );
   }
 
@@ -183,10 +244,12 @@ export const TagCard: React.FC<IProps> = ({
     <GridCard
       className={`tag-card zoom-${zoomIndex}`}
       url={`/tags/${tag.id}`}
+      width={cardWidth}
       title={tag.name ?? ""}
       linkClassName="tag-card-header"
       image={
         <img
+          loading="lazy"
           className="tag-card-image"
           alt={tag.name}
           src={tag.image_path ?? ""}
@@ -199,6 +262,7 @@ export const TagCard: React.FC<IProps> = ({
           {maybeRenderChildren()}
         </>
       }
+      overlays={<>{renderFavoriteIcon()}</>}
       popovers={maybeRenderPopoverButtonGroup()}
       selected={selected}
       selecting={selecting}

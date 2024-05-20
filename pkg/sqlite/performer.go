@@ -12,7 +12,7 @@ import (
 	"github.com/doug-martin/goqu/v9/exp"
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sliceutil/intslice"
+	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/utils"
 	"gopkg.in/guregu/null.v4"
 	"gopkg.in/guregu/null.v4/zero"
@@ -336,7 +336,7 @@ func (qb *PerformerStore) FindMany(ctx context.Context, ids []int) ([]*models.Pe
 		}
 
 		for _, s := range unsorted {
-			i := intslice.IntIndex(ids, s.ID)
+			i := sliceutil.Index(ids, s.ID)
 			ret[i] = s
 		}
 
@@ -600,7 +600,13 @@ func (qb *PerformerStore) makeFilter(ctx context.Context, filter *models.Perform
 
 	query.handleCriterion(ctx, criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
 		if gender := filter.Gender; gender != nil {
-			f.addWhere(tableName+".gender = ?", gender.Value.String())
+			genderCopy := *gender
+			if genderCopy.Value.IsValid() && len(genderCopy.ValueList) == 0 {
+				genderCopy.ValueList = []models.GenderEnum{genderCopy.Value}
+			}
+
+			v := utils.StringerSliceToStringSlice(genderCopy.ValueList)
+			enumCriterionHandler(genderCopy.Modifier, v, tableName+".gender")(ctx, f)
 		}
 	}))
 
@@ -636,8 +642,6 @@ func (qb *PerformerStore) makeFilter(ctx context.Context, filter *models.Perform
 	query.handleCriterion(ctx, stringCriterionHandler(filter.Tattoos, tableName+".tattoos"))
 	query.handleCriterion(ctx, stringCriterionHandler(filter.Piercings, tableName+".piercings"))
 	query.handleCriterion(ctx, intCriterionHandler(filter.Rating100, tableName+".rating", nil))
-	// legacy rating handler
-	query.handleCriterion(ctx, rating5CriterionHandler(filter.Rating, tableName+".rating", nil))
 	query.handleCriterion(ctx, stringCriterionHandler(filter.HairColor, tableName+".hair_color"))
 	query.handleCriterion(ctx, stringCriterionHandler(filter.URL, tableName+".url"))
 	query.handleCriterion(ctx, intCriterionHandler(filter.Weight, tableName+".weight", nil))
@@ -666,6 +670,7 @@ func (qb *PerformerStore) makeFilter(ctx context.Context, filter *models.Perform
 	query.handleCriterion(ctx, performerSceneCountCriterionHandler(qb, filter.SceneCount))
 	query.handleCriterion(ctx, performerImageCountCriterionHandler(qb, filter.ImageCount))
 	query.handleCriterion(ctx, performerGalleryCountCriterionHandler(qb, filter.GalleryCount))
+	query.handleCriterion(ctx, performerPlayCounterCriterionHandler(qb, filter.PlayCount))
 	query.handleCriterion(ctx, performerOCounterCriterionHandler(qb, filter.OCounter))
 	query.handleCriterion(ctx, dateCriterionHandler(filter.Birthdate, tableName+".birthdate"))
 	query.handleCriterion(ctx, dateCriterionHandler(filter.DeathDate, tableName+".death_date"))
@@ -843,20 +848,114 @@ func performerGalleryCountCriterionHandler(qb *PerformerStore, count *models.Int
 	return h.handler(count)
 }
 
-func performerOCounterCriterionHandler(qb *PerformerStore, count *models.IntCriterionInput) criterionHandlerFunc {
-	h := joinedMultiSumCriterionHandlerBuilder{
-		primaryTable:  performerTable,
-		foreignTable1: sceneTable,
-		joinTable1:    performersScenesTable,
-		foreignTable2: imageTable,
-		joinTable2:    performersImagesTable,
-		primaryFK:     performerIDColumn,
-		foreignFK1:    sceneIDColumn,
-		foreignFK2:    imageIDColumn,
-		sum:           "o_counter",
-	}
+// used for sorting and filtering on performer o-count
+var selectPerformerOCountSQL = utils.StrFormat(
+	"SELECT SUM(o_counter) "+
+		"FROM ("+
+		"SELECT SUM(o_counter) as o_counter from {performers_images} s "+
+		"LEFT JOIN {images} ON {images}.id = s.{images_id} "+
+		"WHERE s.{performer_id} = {performers}.id "+
+		"UNION ALL "+
+		"SELECT COUNT({scenes_o_dates}.{o_date}) as o_counter from {performers_scenes} s "+
+		"LEFT JOIN {scenes} ON {scenes}.id = s.{scene_id} "+
+		"LEFT JOIN {scenes_o_dates} ON {scenes_o_dates}.{scene_id} = {scenes}.id "+
+		"WHERE s.{performer_id} = {performers}.id "+
+		")",
+	map[string]interface{}{
+		"performers_images": performersImagesTable,
+		"images":            imageTable,
+		"performer_id":      performerIDColumn,
+		"images_id":         imageIDColumn,
+		"performers":        performerTable,
+		"performers_scenes": performersScenesTable,
+		"scenes":            sceneTable,
+		"scene_id":          sceneIDColumn,
+		"scenes_o_dates":    scenesODatesTable,
+		"o_date":            sceneODateColumn,
+	},
+)
 
-	return h.handler(count)
+// used for sorting and filtering play count on performer view count
+var selectPerformerPlayCountSQL = utils.StrFormat(
+	"SELECT COUNT(DISTINCT {view_date}) FROM ("+
+		"SELECT {view_date} FROM {performers_scenes} s "+
+		"LEFT JOIN {scenes} ON {scenes}.id = s.{scene_id} "+
+		"LEFT JOIN {scenes_view_dates} ON {scenes_view_dates}.{scene_id} = {scenes}.id "+
+		"WHERE s.{performer_id} = {performers}.id"+
+		")",
+	map[string]interface{}{
+		"performer_id":      performerIDColumn,
+		"performers":        performerTable,
+		"performers_scenes": performersScenesTable,
+		"scenes":            sceneTable,
+		"scene_id":          sceneIDColumn,
+		"scenes_view_dates": scenesViewDatesTable,
+		"view_date":         sceneViewDateColumn,
+	},
+)
+
+// used for sorting on performer last o_date
+var selectPerformerLastOAtSQL = utils.StrFormat(
+	"SELECT MAX(o_date) FROM ("+
+		"SELECT {o_date} FROM {performers_scenes} s "+
+		"LEFT JOIN {scenes} ON {scenes}.id = s.{scene_id} "+
+		"LEFT JOIN {scenes_o_dates} ON {scenes_o_dates}.{scene_id} = {scenes}.id "+
+		"WHERE s.{performer_id} = {performers}.id"+
+		")",
+	map[string]interface{}{
+		"performer_id":      performerIDColumn,
+		"performers":        performerTable,
+		"performers_scenes": performersScenesTable,
+		"scenes":            sceneTable,
+		"scene_id":          sceneIDColumn,
+		"scenes_o_dates":    scenesODatesTable,
+		"o_date":            sceneODateColumn,
+	},
+)
+
+// used for sorting on performer last view_date
+var selectPerformerLastPlayedAtSQL = utils.StrFormat(
+	"SELECT MAX(view_date) FROM ("+
+		"SELECT {view_date} FROM {performers_scenes} s "+
+		"LEFT JOIN {scenes} ON {scenes}.id = s.{scene_id} "+
+		"LEFT JOIN {scenes_view_dates} ON {scenes_view_dates}.{scene_id} = {scenes}.id "+
+		"WHERE s.{performer_id} = {performers}.id"+
+		")",
+	map[string]interface{}{
+		"performer_id":      performerIDColumn,
+		"performers":        performerTable,
+		"performers_scenes": performersScenesTable,
+		"scenes":            sceneTable,
+		"scene_id":          sceneIDColumn,
+		"scenes_view_dates": scenesViewDatesTable,
+		"view_date":         sceneViewDateColumn,
+	},
+)
+
+func performerOCounterCriterionHandler(qb *PerformerStore, count *models.IntCriterionInput) criterionHandlerFunc {
+	return func(ctx context.Context, f *filterBuilder) {
+		if count == nil {
+			return
+		}
+
+		lhs := "(" + selectPerformerOCountSQL + ")"
+		clause, args := getIntCriterionWhereClause(lhs, *count)
+
+		f.addWhere(clause, args...)
+	}
+}
+
+func performerPlayCounterCriterionHandler(qb *PerformerStore, count *models.IntCriterionInput) criterionHandlerFunc {
+	return func(ctx context.Context, f *filterBuilder) {
+		if count == nil {
+			return
+		}
+
+		lhs := "(" + selectPerformerPlayCountSQL + ")"
+		clause, args := getIntCriterionWhereClause(lhs, *count)
+
+		f.addWhere(clause, args...)
+	}
 }
 
 func performerStudiosCriterionHandler(qb *PerformerStore, studios *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
@@ -994,6 +1093,26 @@ func performerAppearsWithCriterionHandler(qb *PerformerStore, performers *models
 	}
 }
 
+func (qb *PerformerStore) sortByOCounter(direction string) string {
+	// need to sum the o_counter from scenes and images
+	return " ORDER BY (" + selectPerformerOCountSQL + ") " + direction
+}
+
+func (qb *PerformerStore) sortByPlayCount(direction string) string {
+	// need to sum the o_counter from scenes and images
+	return " ORDER BY (" + selectPerformerPlayCountSQL + ") " + direction
+}
+
+func (qb *PerformerStore) sortByLastOAt(direction string) string {
+	// need to get the o_dates from scenes
+	return " ORDER BY (" + selectPerformerLastOAtSQL + ") " + direction
+}
+
+func (qb *PerformerStore) sortByLastPlayedAt(direction string) string {
+	// need to get the view_dates from scenes
+	return " ORDER BY (" + selectPerformerLastPlayedAtSQL + ") " + direction
+}
+
 func (qb *PerformerStore) getPerformerSort(findFilter *models.FindFilterType) string {
 	var sort string
 	var direction string
@@ -1015,11 +1134,16 @@ func (qb *PerformerStore) getPerformerSort(findFilter *models.FindFilterType) st
 		sortQuery += getCountSort(performerTable, performersImagesTable, performerIDColumn, direction)
 	case "galleries_count":
 		sortQuery += getCountSort(performerTable, performersGalleriesTable, performerIDColumn, direction)
+	case "play_count":
+		sortQuery += qb.sortByPlayCount(direction)
+	case "o_counter":
+		sortQuery += qb.sortByOCounter(direction)
+	case "last_played_at":
+		sortQuery += qb.sortByLastPlayedAt(direction)
+	case "last_o_at":
+		sortQuery += qb.sortByLastOAt(direction)
 	default:
 		sortQuery += getSort(sort, direction, "performers")
-	}
-	if sort == "o_counter" {
-		return getMultiSumSort("o_counter", performerTable, sceneTable, performersScenesTable, imageTable, performersImagesTable, performerIDColumn, sceneIDColumn, imageIDColumn, direction)
 	}
 
 	// Whatever the sorting, always use name/id as a final sort

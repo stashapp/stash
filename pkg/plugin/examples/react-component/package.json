@@ -1,0 +1,21 @@
+{
+  "name": "react-component",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "WithoutPants",
+  "license": "AGPL-3.0",
+  "scripts": {
+    "compile:ts": "yarn tsc",
+    "compile:sass": "yarn sass src/testReact.scss dist/testReact.css",
+    "copy:yml": "cpx \"src/testReact.yml\" \"dist\"",
+    "compile": "yarn run compile:ts && yarn run compile:sass",
+    "build": "yarn run compile && yarn run copy:yml"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.31",
+    "@types/react-dom": "^18.2.14",
+    "cpx": "^1.5.0",
+    "sass": "^1.69.4",
+    "typescript": "^5.2.2"
+  }
+}

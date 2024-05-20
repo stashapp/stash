@@ -1,20 +1,18 @@
 "Gallery type"
 type Gallery {
   id: ID!
-  checksum: String! @deprecated(reason: "Use files.fingerprints")
-  path: String @deprecated(reason: "Use files.path")
   title: String
-  url: String
+  code: String
+  url: String @deprecated(reason: "Use urls")
+  urls: [String!]!
   date: String
   details: String
-  # rating expressed as 1-5
-  rating: Int @deprecated(reason: "Use 1-100 range with rating100")
+  photographer: String
   # rating expressed as 1-100
   rating100: Int
   organized: Boolean!
   created_at: Time!
   updated_at: Time!
-  file_mod_time: Time @deprecated(reason: "Use files.mod_time")
 
   files: [GalleryFile!]!
   folder: Folder
@@ -26,18 +24,17 @@ type Gallery {
   tags: [Tag!]!
   performers: [Performer!]!
 
-  "The images in the gallery"
-  images: [Image!]! @deprecated(reason: "Use findImages")
   cover: Image
 }
 
 input GalleryCreateInput {
   title: String!
-  url: String
+  code: String
+  url: String @deprecated(reason: "Use urls")
+  urls: [String!]
   date: String
   details: String
-  # rating expressed as 1-5
-  rating: Int @deprecated(reason: "Use 1-100 range with rating100")
+  photographer: String
   # rating expressed as 1-100
   rating100: Int
   organized: Boolean
@@ -51,11 +48,12 @@ input GalleryUpdateInput {
   clientMutationId: String
   id: ID!
   title: String
-  url: String
+  code: String
+  url: String @deprecated(reason: "Use urls")
+  urls: [String!]
   date: String
   details: String
-  # rating expressed as 1-5
-  rating: Int @deprecated(reason: "Use 1-100 range with rating100")
+  photographer: String
   # rating expressed as 1-100
   rating100: Int
   organized: Boolean
@@ -70,11 +68,12 @@ input GalleryUpdateInput {
 input BulkGalleryUpdateInput {
   clientMutationId: String
   ids: [ID!]
-  url: String
+  code: String
+  url: String @deprecated(reason: "Use urls")
+  urls: BulkUpdateStrings
   date: String
   details: String
-  # rating expressed as 1-5
-  rating: Int @deprecated(reason: "Use 1-100 range with rating100")
+  photographer: String
   # rating expressed as 1-100
   rating100: Int
   organized: Boolean

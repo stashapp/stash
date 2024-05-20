@@ -38,7 +38,7 @@ func post45(ctx context.Context, db *sqlx.DB) error {
 			},
 		},
 	}); err != nil {
-		return err
+		return fmt.Errorf("failed to migrate images table for tags: %w", err)
 	}
 
 	if err := m.migrateImagesTable(ctx, migrateImagesTableOptions{
@@ -52,7 +52,7 @@ func post45(ctx context.Context, db *sqlx.DB) error {
 			},
 		},
 	}); err != nil {
-		return err
+		return fmt.Errorf("failed to migrate images table for studios: %w", err)
 	}
 
 	if err := m.migrateImagesTable(ctx, migrateImagesTableOptions{
@@ -66,7 +66,7 @@ func post45(ctx context.Context, db *sqlx.DB) error {
 			},
 		},
 	}); err != nil {
-		return err
+		return fmt.Errorf("failed to migrate images table for performers: %w", err)
 	}
 
 	if err := m.migrateImagesTable(ctx, migrateImagesTableOptions{
@@ -80,7 +80,7 @@ func post45(ctx context.Context, db *sqlx.DB) error {
 			},
 		},
 	}); err != nil {
-		return err
+		return fmt.Errorf("failed to migrate images table for scenes: %w", err)
 	}
 
 	if err := m.migrateImagesTable(ctx, migrateImagesTableOptions{
@@ -98,7 +98,7 @@ func post45(ctx context.Context, db *sqlx.DB) error {
 			},
 		},
 	}); err != nil {
-		return err
+		return fmt.Errorf("failed to migrate images table for movies: %w", err)
 	}
 
 	tablesToDrop := []string{
@@ -111,12 +111,12 @@ func post45(ctx context.Context, db *sqlx.DB) error {
 
 	for _, table := range tablesToDrop {
 		if err := m.dropTable(ctx, table); err != nil {
-			return err
+			return fmt.Errorf("failed to drop table %s: %w", table, err)
 		}
 	}
 
 	if err := m.migrateConfig(ctx); err != nil {
-		return err
+		return fmt.Errorf("failed to migrate config: %w", err)
 	}
 
 	return nil

@@ -1,8 +1,7 @@
 import { useRef, useEffect } from "react";
 
 const useFocus = () => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const htmlElRef = useRef<any>();
+  const htmlElRef = useRef<HTMLInputElement | null>(null);
   const setFocus = () => {
     const currentEl = htmlElRef.current;
     if (currentEl) {
@@ -15,16 +14,16 @@ const useFocus = () => {
 };
 
 // focuses on the element only once on mount
-export const useFocusOnce = () => {
+export const useFocusOnce = (active?: boolean, override?: boolean) => {
   const [htmlElRef, setFocus] = useFocus();
   const focused = useRef(false);
 
   useEffect(() => {
-    if (!focused.current) {
+    if ((!focused.current || override) && active) {
       setFocus();
       focused.current = true;
     }
-  }, [setFocus]);
+  }, [setFocus, active, override]);
 
   return [htmlElRef, setFocus] as const;
 };

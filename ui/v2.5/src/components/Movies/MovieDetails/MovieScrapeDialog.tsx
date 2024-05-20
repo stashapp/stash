@@ -5,66 +5,20 @@ import {
   ScrapeDialog,
   ScrapedInputGroupRow,
   ScrapedImageRow,
-  ScrapeDialogRow,
   ScrapedTextAreaRow,
 } from "src/components/Shared/ScrapeDialog/ScrapeDialog";
-import { StudioSelect } from "src/components/Shared/Select";
-import DurationUtils from "src/utils/duration";
-import { useStudioCreate } from "src/core/StashService";
-import { useToast } from "src/hooks/Toast";
-import { ScrapeResult } from "src/components/Shared/ScrapeDialog/scrapeResult";
-
-function renderScrapedStudio(
-  result: ScrapeResult<string>,
-  isNew?: boolean,
-  onChange?: (value: string) => void
-) {
-  const resultValue = isNew ? result.newValue : result.originalValue;
-  const value = resultValue ? [resultValue] : [];
-
-  return (
-    <StudioSelect
-      className="form-control react-select"
-      isDisabled={!isNew}
-      onSelect={(items) => {
-        if (onChange) {
-          onChange(items[0]?.id);
-        }
-      }}
-      ids={value}
-    />
-  );
-}
-
-function renderScrapedStudioRow(
-  result: ScrapeResult<string>,
-  onChange: (value: ScrapeResult<string>) => void,
-  newStudio?: GQL.ScrapedStudio,
-  onCreateNew?: (value: GQL.ScrapedStudio) => void
-) {
-  return (
-    <ScrapeDialogRow
-      title="Studio"
-      result={result}
-      renderOriginalField={() => renderScrapedStudio(result)}
-      renderNewField={() =>
-        renderScrapedStudio(result, true, (value) =>
-          onChange(result.cloneWithValue(value))
-        )
-      }
-      onChange={onChange}
-      newValues={newStudio ? [newStudio] : undefined}
-      onCreateNew={() => {
-        if (onCreateNew && newStudio) {
-          onCreateNew(newStudio);
-        }
-      }}
-    />
-  );
-}
+import TextUtils from "src/utils/text";
+import {
+  ObjectScrapeResult,
+  ScrapeResult,
+} from "src/components/Shared/ScrapeDialog/scrapeResult";
+import { Studio } from "src/components/Studios/StudioSelect";
+import { useCreateScrapedStudio } from "src/components/Shared/ScrapeDialog/createObjects";
+import { ScrapedStudioRow } from "src/components/Shared/ScrapeDialog/ScrapedObjectsRow";
 
 interface IMovieScrapeDialogProps {
   movie: Partial<GQL.MovieUpdateInput>;
+  movieStudio: Studio | null;
   scraped: GQL.ScrapedMovie;
 
   onClose: (scrapedMovie?: GQL.ScrapedMovie) => void;
@@ -83,8 +37,11 @@ export const MovieScrapeDialog: React.FC<IMovieScrapeDialogProps> = (
   );
   const [duration, setDuration] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(
-      DurationUtils.secondsToString(props.movie.duration || 0),
-      props.scraped.duration
+      TextUtils.secondsToTimestamp(props.movie.duration || 0),
+      // convert seconds to string if it's a number
+      props.scraped.duration && !isNaN(+props.scraped.duration)
+        ? TextUtils.secondsToTimestamp(parseInt(props.scraped.duration, 10))
+        : props.scraped.duration
     )
   );
   const [date, setDate] = useState<ScrapeResult<string>>(
@@ -96,10 +53,15 @@ export const MovieScrapeDialog: React.FC<IMovieScrapeDialogProps> = (
   const [synopsis, setSynopsis] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(props.movie.synopsis, props.scraped.synopsis)
   );
-  const [studio, setStudio] = useState<ScrapeResult<string>>(
-    new ScrapeResult<string>(
-      props.movie.studio_id,
-      props.scraped.studio?.stored_id
+  const [studio, setStudio] = useState<ObjectScrapeResult<GQL.ScrapedStudio>>(
+    new ObjectScrapeResult<GQL.ScrapedStudio>(
+      props.movieStudio
+        ? {
+            stored_id: props.movieStudio.id,
+            name: props.movieStudio.name,
+          }
+        : undefined,
+      props.scraped.studio?.stored_id ? props.scraped.studio : undefined
     )
   );
   const [url, setURL] = useState<ScrapeResult<string>>(
@@ -118,36 +80,11 @@ export const MovieScrapeDialog: React.FC<IMovieScrapeDialogProps> = (
       : undefined
   );
 
-  const [createStudio] = useStudioCreate();
-
-  const Toast = useToast();
-
-  async function createNewStudio(toCreate: GQL.ScrapedStudio) {
-    try {
-      const result = await createStudio({
-        variables: {
-          input: {
-            name: toCreate.name,
-            url: toCreate.url,
-          },
-        },
-      });
-
-      // set the new studio as the value
-      setStudio(studio.cloneWithValue(result.data!.studioCreate!.id));
-      setNewStudio(undefined);
-
-      Toast.success({
-        content: (
-          <span>
-            Created studio: <b>{toCreate.name}</b>
-          </span>
-        ),
-      });
-    } catch (e) {
-      Toast.error(e);
-    }
-  }
+  const createNewStudio = useCreateScrapedStudio({
+    scrapeResult: studio,
+    setScrapeResult: setStudio,
+    setNewObject: setNewStudio,
+  });
 
   const allFields = [
     name,
@@ -169,7 +106,7 @@ export const MovieScrapeDialog: React.FC<IMovieScrapeDialogProps> = (
 
   // todo: reenable
   function makeNewScrapedItem(): GQL.ScrapedMovie {
-    const newVal = studio.getNewValue();
+    const newStudioValue = studio.getNewValue();
     const durationString = duration.getNewValue();
 
     return {
@@ -179,12 +116,7 @@ export const MovieScrapeDialog: React.FC<IMovieScrapeDialogProps> = (
       date: date.getNewValue(),
       director: director.getNewValue(),
       synopsis: synopsis.getNewValue(),
-      studio: newVal
-        ? {
-            stored_id: newVal,
-            name: "",
-          }
-        : undefined,
+      studio: newStudioValue,
       url: url.getNewValue(),
       front_image: frontImage.getNewValue(),
       back_image: backImage.getNewValue(),
@@ -225,12 +157,13 @@ export const MovieScrapeDialog: React.FC<IMovieScrapeDialogProps> = (
           result={synopsis}
           onChange={(value) => setSynopsis(value)}
         />
-        {renderScrapedStudioRow(
-          studio,
-          (value) => setStudio(value),
-          newStudio,
-          createNewStudio
-        )}
+        <ScrapedStudioRow
+          title={intl.formatMessage({ id: "studios" })}
+          result={studio}
+          onChange={(value) => setStudio(value)}
+          newStudio={newStudio}
+          onCreateNew={createNewStudio}
+        />
         <ScrapedInputGroupRow
           title="URL"
           result={url}

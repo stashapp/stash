@@ -9,7 +9,11 @@
 //go:generate go run github.com/vektah/dataloaden SceneFileIDsLoader int []github.com/stashapp/stash/pkg/models.FileID
 //go:generate go run github.com/vektah/dataloaden ImageFileIDsLoader int []github.com/stashapp/stash/pkg/models.FileID
 //go:generate go run github.com/vektah/dataloaden GalleryFileIDsLoader int []github.com/stashapp/stash/pkg/models.FileID
-
+//go:generate go run github.com/vektah/dataloaden SceneOCountLoader int int
+//go:generate go run github.com/vektah/dataloaden ScenePlayCountLoader int int
+//go:generate go run github.com/vektah/dataloaden SceneOHistoryLoader int []time.Time
+//go:generate go run github.com/vektah/dataloaden ScenePlayHistoryLoader int []time.Time
+//go:generate go run github.com/vektah/dataloaden SceneLastPlayedLoader int *time.Time
 package loaders
 
 import (
@@ -17,9 +21,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/txn"
 )
 
 type contextKey struct{ name string }
@@ -34,8 +36,14 @@ const (
 )
 
 type Loaders struct {
-	SceneByID    *SceneLoader
-	SceneFiles   *SceneFileIDsLoader
+	SceneByID        *SceneLoader
+	SceneFiles       *SceneFileIDsLoader
+	ScenePlayCount   *ScenePlayCountLoader
+	SceneOCount      *SceneOCountLoader
+	ScenePlayHistory *ScenePlayHistoryLoader
+	SceneOHistory    *SceneOHistoryLoader
+	SceneLastPlayed  *SceneLastPlayedLoader
+
 	ImageFiles   *ImageFileIDsLoader
 	GalleryFiles *GalleryFileIDsLoader
 
@@ -49,8 +57,7 @@ type Loaders struct {
 }
 
 type Middleware struct {
-	DatabaseProvider txn.DatabaseProvider
-	Repository       manager.Repository
+	Repository models.Repository
 }
 
 func (m Middleware) Middleware(next http.Handler) http.Handler {
@@ -112,6 +119,31 @@ func (m Middleware) Middleware(next http.Handler) http.Handler {
 				maxBatch: maxBatch,
 				fetch:    m.fetchGalleriesFileIDs(ctx),
 			},
+			ScenePlayCount: &ScenePlayCountLoader{
+				wait:     wait,
+				maxBatch: maxBatch,
+				fetch:    m.fetchScenesPlayCount(ctx),
+			},
+			SceneOCount: &SceneOCountLoader{
+				wait:     wait,
+				maxBatch: maxBatch,
+				fetch:    m.fetchScenesOCount(ctx),
+			},
+			ScenePlayHistory: &ScenePlayHistoryLoader{
+				wait:     wait,
+				maxBatch: maxBatch,
+				fetch:    m.fetchScenesPlayHistory(ctx),
+			},
+			SceneLastPlayed: &SceneLastPlayedLoader{
+				wait:     wait,
+				maxBatch: maxBatch,
+				fetch:    m.fetchScenesLastPlayed(ctx),
+			},
+			SceneOHistory: &SceneOHistoryLoader{
+				wait:     wait,
+				maxBatch: maxBatch,
+				fetch:    m.fetchScenesOHistory(ctx),
+			},
 		}
 
 		newCtx := context.WithValue(r.Context(), loadersCtxKey, ldrs)
@@ -131,13 +163,9 @@ func toErrorSlice(err error) []error {
 	return nil
 }
 
-func (m Middleware) withTxn(ctx context.Context, fn func(ctx context.Context) error) error {
-	return txn.WithDatabase(ctx, m.DatabaseProvider, fn)
-}
-
 func (m Middleware) fetchScenes(ctx context.Context) func(keys []int) ([]*models.Scene, []error) {
 	return func(keys []int) (ret []*models.Scene, errs []error) {
-		err := m.withTxn(ctx, func(ctx context.Context) error {
+		err := m.Repository.WithDB(ctx, func(ctx context.Context) error {
 			var err error
 			ret, err = m.Repository.Scene.FindMany(ctx, keys)
 			return err
@@ -148,7 +176,7 @@ func (m Middleware) fetchScenes(ctx context.Context) func(keys []int) ([]*models
 
 func (m Middleware) fetchImages(ctx context.Context) func(keys []int) ([]*models.Image, []error) {
 	return func(keys []int) (ret []*models.Image, errs []error) {
-		err := m.withTxn(ctx, func(ctx context.Context) error {
+		err := m.Repository.WithDB(ctx, func(ctx context.Context) error {
 			var err error
 			ret, err = m.Repository.Image.FindMany(ctx, keys)
 			return err
@@ -160,7 +188,7 @@ func (m Middleware) fetchImages(ctx context.Context) func(keys []int) ([]*models
 
 func (m Middleware) fetchGalleries(ctx context.Context) func(keys []int) ([]*models.Gallery, []error) {
 	return func(keys []int) (ret []*models.Gallery, errs []error) {
-		err := m.withTxn(ctx, func(ctx context.Context) error {
+		err := m.Repository.WithDB(ctx, func(ctx context.Context) error {
 			var err error
 			ret, err = m.Repository.Gallery.FindMany(ctx, keys)
 			return err
@@ -172,7 +200,7 @@ func (m Middleware) fetchGalleries(ctx context.Context) func(keys []int) ([]*mod
 
 func (m Middleware) fetchPerformers(ctx context.Context) func(keys []int) ([]*models.Performer, []error) {
 	return func(keys []int) (ret []*models.Performer, errs []error) {
-		err := m.withTxn(ctx, func(ctx context.Context) error {
+		err := m.Repository.WithDB(ctx, func(ctx context.Context) error {
 			var err error
 			ret, err = m.Repository.Performer.FindMany(ctx, keys)
 			return err
@@ -184,7 +212,7 @@ func (m Middleware) fetchPerformers(ctx context.Context) func(keys []int) ([]*mo
 
 func (m Middleware) fetchStudios(ctx context.Context) func(keys []int) ([]*models.Studio, []error) {
 	return func(keys []int) (ret []*models.Studio, errs []error) {
-		err := m.withTxn(ctx, func(ctx context.Context) error {
+		err := m.Repository.WithDB(ctx, func(ctx context.Context) error {
 			var err error
 			ret, err = m.Repository.Studio.FindMany(ctx, keys)
 			return err
@@ -195,7 +223,7 @@ func (m Middleware) fetchStudios(ctx context.Context) func(keys []int) ([]*model
 
 func (m Middleware) fetchTags(ctx context.Context) func(keys []int) ([]*models.Tag, []error) {
 	return func(keys []int) (ret []*models.Tag, errs []error) {
-		err := m.withTxn(ctx, func(ctx context.Context) error {
+		err := m.Repository.WithDB(ctx, func(ctx context.Context) error {
 			var err error
 			ret, err = m.Repository.Tag.FindMany(ctx, keys)
 			return err
@@ -206,7 +234,7 @@ func (m Middleware) fetchTags(ctx context.Context) func(keys []int) ([]*models.T
 
 func (m Middleware) fetchMovies(ctx context.Context) func(keys []int) ([]*models.Movie, []error) {
 	return func(keys []int) (ret []*models.Movie, errs []error) {
-		err := m.withTxn(ctx, func(ctx context.Context) error {
+		err := m.Repository.WithDB(ctx, func(ctx context.Context) error {
 			var err error
 			ret, err = m.Repository.Movie.FindMany(ctx, keys)
 			return err
@@ -217,7 +245,7 @@ func (m Middleware) fetchMovies(ctx context.Context) func(keys []int) ([]*models
 
 func (m Middleware) fetchFiles(ctx context.Context) func(keys []models.FileID) ([]models.File, []error) {
 	return func(keys []models.FileID) (ret []models.File, errs []error) {
-		err := m.withTxn(ctx, func(ctx context.Context) error {
+		err := m.Repository.WithDB(ctx, func(ctx context.Context) error {
 			var err error
 			ret, err = m.Repository.File.Find(ctx, keys...)
 			return err
@@ -228,7 +256,7 @@ func (m Middleware) fetchFiles(ctx context.Context) func(keys []models.FileID) (
 
 func (m Middleware) fetchScenesFileIDs(ctx context.Context) func(keys []int) ([][]models.FileID, []error) {
 	return func(keys []int) (ret [][]models.FileID, errs []error) {
-		err := m.withTxn(ctx, func(ctx context.Context) error {
+		err := m.Repository.WithDB(ctx, func(ctx context.Context) error {
 			var err error
 			ret, err = m.Repository.Scene.GetManyFileIDs(ctx, keys)
 			return err
@@ -239,7 +267,7 @@ func (m Middleware) fetchScenesFileIDs(ctx context.Context) func(keys []int) ([]
 
 func (m Middleware) fetchImagesFileIDs(ctx context.Context) func(keys []int) ([][]models.FileID, []error) {
 	return func(keys []int) (ret [][]models.FileID, errs []error) {
-		err := m.withTxn(ctx, func(ctx context.Context) error {
+		err := m.Repository.WithDB(ctx, func(ctx context.Context) error {
 			var err error
 			ret, err = m.Repository.Image.GetManyFileIDs(ctx, keys)
 			return err
@@ -250,9 +278,64 @@ func (m Middleware) fetchImagesFileIDs(ctx context.Context) func(keys []int) ([]
 
 func (m Middleware) fetchGalleriesFileIDs(ctx context.Context) func(keys []int) ([][]models.FileID, []error) {
 	return func(keys []int) (ret [][]models.FileID, errs []error) {
-		err := m.withTxn(ctx, func(ctx context.Context) error {
+		err := m.Repository.WithDB(ctx, func(ctx context.Context) error {
 			var err error
 			ret, err = m.Repository.Gallery.GetManyFileIDs(ctx, keys)
+			return err
+		})
+		return ret, toErrorSlice(err)
+	}
+}
+
+func (m Middleware) fetchScenesOCount(ctx context.Context) func(keys []int) ([]int, []error) {
+	return func(keys []int) (ret []int, errs []error) {
+		err := m.Repository.WithDB(ctx, func(ctx context.Context) error {
+			var err error
+			ret, err = m.Repository.Scene.GetManyOCount(ctx, keys)
+			return err
+		})
+		return ret, toErrorSlice(err)
+	}
+}
+
+func (m Middleware) fetchScenesPlayCount(ctx context.Context) func(keys []int) ([]int, []error) {
+	return func(keys []int) (ret []int, errs []error) {
+		err := m.Repository.WithDB(ctx, func(ctx context.Context) error {
+			var err error
+			ret, err = m.Repository.Scene.GetManyViewCount(ctx, keys)
+			return err
+		})
+		return ret, toErrorSlice(err)
+	}
+}
+
+func (m Middleware) fetchScenesOHistory(ctx context.Context) func(keys []int) ([][]time.Time, []error) {
+	return func(keys []int) (ret [][]time.Time, errs []error) {
+		err := m.Repository.WithDB(ctx, func(ctx context.Context) error {
+			var err error
+			ret, err = m.Repository.Scene.GetManyODates(ctx, keys)
+			return err
+		})
+		return ret, toErrorSlice(err)
+	}
+}
+
+func (m Middleware) fetchScenesPlayHistory(ctx context.Context) func(keys []int) ([][]time.Time, []error) {
+	return func(keys []int) (ret [][]time.Time, errs []error) {
+		err := m.Repository.WithDB(ctx, func(ctx context.Context) error {
+			var err error
+			ret, err = m.Repository.Scene.GetManyViewDates(ctx, keys)
+			return err
+		})
+		return ret, toErrorSlice(err)
+	}
+}
+
+func (m Middleware) fetchScenesLastPlayed(ctx context.Context) func(keys []int) ([]*time.Time, []error) {
+	return func(keys []int) (ret []*time.Time, errs []error) {
+		err := m.Repository.WithDB(ctx, func(ctx context.Context) error {
+			var err error
+			ret, err = m.Repository.Scene.GetManyLastViewed(ctx, keys)
 			return err
 		})
 		return ret, toErrorSlice(err)

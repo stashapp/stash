@@ -42,6 +42,7 @@ export const ScanOptions: React.FC<IScanOptions> = ({
         onChange={(v) => setOptions({ scanGeneratePreviews: v })}
       />
       <BooleanSetting
+        advanced
         id="scan-generate-image-previews"
         className="sub-setting"
         headingID="config.tasks.generate_previews_during_scan"
@@ -54,6 +55,7 @@ export const ScanOptions: React.FC<IScanOptions> = ({
       <BooleanSetting
         id="scan-generate-sprites"
         headingID="config.tasks.generate_sprites_during_scan"
+        tooltipID="config.tasks.generate_sprites_during_scan_tooltip"
         checked={scanGenerateSprites ?? false}
         onChange={(v) => setOptions({ scanGenerateSprites: v })}
       />

@@ -18,6 +18,7 @@ import locales, { registerCountry } from "src/locales";
 import {
   useConfiguration,
   useConfigureUI,
+  usePlugins,
   useSystemStatus,
 } from "src/core/StashService";
 import flattenMessages from "./utils/flattenMessages";
@@ -35,11 +36,20 @@ import { ConfigurationProvider } from "./hooks/Config";
 import { ManualProvider } from "./components/Help/context";
 import { InteractiveProvider } from "./hooks/Interactive/context";
 import { ReleaseNotesDialog } from "./components/Dialogs/ReleaseNotesDialog";
-import { IUIConfig } from "./core/config";
 import { releaseNotes } from "./docs/en/ReleaseNotes";
 import { getPlatformURL } from "./core/createClient";
 import { lazyComponent } from "./utils/lazyComponent";
 import { isPlatformUniquelyRenderedByApple } from "./utils/apple";
+import useScript, { useCSS } from "./hooks/useScript";
+import { useMemoOnce } from "./hooks/state";
+import Event from "./hooks/event";
+import { uniq } from "lodash-es";
+
+import { PluginRoutes } from "./plugins";
+
+// import plugin_api to run code
+import "./pluginApi";
+import { ConnectionMonitor } from "./ConnectionMonitor";
 
 const Performers = lazyComponent(
   () => import("./components/Performers/Performers")
@@ -86,6 +96,54 @@ function languageMessageString(language: string) {
   return language.replace(/-/, "");
 }
 
+type PluginList = NonNullable<Required<GQL.PluginsQuery["plugins"]>>;
+
+// sort plugins by their dependencies
+function sortPlugins(plugins: PluginList) {
+  type Node = { id: string; afters: string[] };
+
+  let nodes: Record<string, Node> = {};
+  let sorted: PluginList = [];
+  let visited: Record<string, boolean> = {};
+
+  plugins.forEach((v) => {
+    let from = v.id;
+
+    if (!nodes[from]) nodes[from] = { id: from, afters: [] };
+
+    v.requires?.forEach((to) => {
+      if (!nodes[to]) nodes[to] = { id: to, afters: [] };
+      if (!nodes[to].afters.includes(from)) nodes[to].afters.push(from);
+    });
+  });
+
+  function visit(idstr: string, ancestors: string[] = []) {
+    let node = nodes[idstr];
+    const { id } = node;
+
+    if (visited[idstr]) return;
+
+    ancestors.push(id);
+    visited[idstr] = true;
+    node.afters.forEach(function (afterID) {
+      if (ancestors.indexOf(afterID) >= 0)
+        throw new Error("closed chain : " + afterID + " is in " + id);
+      visit(afterID.toString(), ancestors.slice());
+    });
+
+    const plugin = plugins.find((v) => v.id === id);
+    if (plugin) {
+      sorted.unshift(plugin);
+    }
+  }
+
+  Object.keys(nodes).forEach((n) => {
+    visit(n);
+  });
+
+  return sorted;
+}
+
 export const App: React.FC = () => {
   const config = useConfiguration();
   const [saveUI] = useConfigureUI();
@@ -102,7 +160,7 @@ export const App: React.FC = () => {
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch(getPlatformURL() + "customlocales");
+        const res = await fetch(getPlatformURL("customlocales"));
         if (res.ok) {
           setCustomMessages(await res.json());
         }
@@ -135,10 +193,7 @@ export const App: React.FC = () => {
         }
       );
 
-      const newMessages = flattenMessages(mergedMessages) as Record<
-        string,
-        string
-      >;
+      const newMessages = flattenMessages(mergedMessages);
 
       yup.setLocale({
         mixed: {
@@ -152,9 +207,54 @@ export const App: React.FC = () => {
     setLocale();
   }, [customMessages, language]);
 
+  const {
+    data: plugins,
+    loading: pluginsLoading,
+    error: pluginsError,
+  } = usePlugins();
+
+  const sortedPlugins = useMemoOnce(() => {
+    return [
+      sortPlugins(plugins?.plugins ?? []),
+      !pluginsLoading && !pluginsError,
+    ];
+  }, [plugins?.plugins, pluginsLoading, pluginsError]);
+
+  const pluginJavascripts = useMemoOnce(() => {
+    return [
+      uniq(
+        sortedPlugins
+          ?.filter((plugin) => plugin.enabled && plugin.paths.javascript)
+          .map((plugin) => plugin.paths.javascript!)
+          .flat() ?? []
+      ),
+      !!sortedPlugins && !pluginsLoading && !pluginsError,
+    ];
+  }, [sortedPlugins, pluginsLoading, pluginsError]);
+
+  const pluginCSS = useMemoOnce(() => {
+    return [
+      uniq(
+        sortedPlugins
+          ?.filter((plugin) => plugin.enabled && plugin.paths.css)
+          .map((plugin) => plugin.paths.css!)
+          .flat() ?? []
+      ),
+      !!sortedPlugins && !pluginsLoading && !pluginsError,
+    ];
+  }, [sortedPlugins, pluginsLoading, pluginsError]);
+
+  useScript(pluginJavascripts ?? [], !pluginsLoading && !pluginsError);
+  useCSS(pluginCSS ?? [], !pluginsLoading && !pluginsError);
+
   const location = useLocation();
   const history = useHistory();
   const setupMatch = useRouteMatch(["/setup", "/migrate"]);
+
+  // dispatch event when location changes
+  useEffect(() => {
+    Event.dispatch("location", "", { location });
+  }, [location]);
 
   // redirect to setup or migrate as needed
   useEffect(() => {
@@ -177,7 +277,7 @@ export const App: React.FC = () => {
       status === GQL.SystemStatusEnum.NeedsMigration
     ) {
       // redirect to migrate page
-      history.push("/migrate");
+      history.replace("/migrate");
     }
   }, [systemStatusData, setupMatch, history, location]);
 
@@ -217,6 +317,7 @@ export const App: React.FC = () => {
             />
             <Route path="/setup" component={Setup} />
             <Route path="/migrate" component={Migrate} />
+            <PluginRoutes />
             <Route component={PageNotFound} />
           </Switch>
         </Suspense>
@@ -229,8 +330,7 @@ export const App: React.FC = () => {
       return;
     }
 
-    const lastNoteSeen = (config.data?.configuration.ui as IUIConfig)
-      ?.lastNoteSeen;
+    const lastNoteSeen = config.data?.configuration.ui.lastNoteSeen;
     const notes = releaseNotes.filter((n) => {
       return !lastNoteSeen || n.date > lastNoteSeen;
     });
@@ -270,6 +370,7 @@ export const App: React.FC = () => {
           >
             {maybeRenderReleaseNotes()}
             <ToastProvider>
+              <ConnectionMonitor />
               <Suspense fallback={<LoadingIndicator />}>
                 <LightboxProvider>
                   <ManualProvider>

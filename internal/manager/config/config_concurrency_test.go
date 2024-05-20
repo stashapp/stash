@@ -7,7 +7,7 @@ import (
 
 // should be run with -race
 func TestConcurrentConfigAccess(t *testing.T) {
-	i := GetInstance()
+	i := InitializeEmpty()
 
 	const workers = 8
 	const loops = 200
@@ -16,13 +16,12 @@ func TestConcurrentConfigAccess(t *testing.T) {
 		wg.Add(1)
 		go func(wk int) {
 			for l := 0; l < loops; l++ {
-				if err := i.SetInitialMemoryConfig(); err != nil {
+				if err := i.SetInitialConfig(); err != nil {
 					t.Errorf("Failure setting initial configuration in worker %v iteration %v: %v", wk, l, err)
 				}
 
 				i.HasCredentials()
 				i.ValidateCredentials("", "")
-				i.GetCPUProfilePath()
 				i.GetConfigFile()
 				i.GetConfigPath()
 				i.GetDefaultDatabaseFilePath()
@@ -73,7 +72,7 @@ func TestConcurrentConfigAccess(t *testing.T) {
 				i.GetCredentials()
 				i.Set(MaxSessionAge, i.GetMaxSessionAge())
 				i.Set(CustomServedFolders, i.GetCustomServedFolders())
-				i.Set(CustomUILocation, i.GetCustomUILocation())
+				i.Set(LegacyCustomUILocation, i.GetUILocation())
 				i.Set(MenuItems, i.GetMenuItems())
 				i.Set(SoundOnPreview, i.GetSoundOnPreview())
 				i.Set(WallShowTitle, i.GetWallShowTitle())
@@ -98,6 +97,7 @@ func TestConcurrentConfigAccess(t *testing.T) {
 				i.Set(DLNADefaultEnabled, i.GetDLNADefaultEnabled())
 				i.Set(DLNADefaultIPWhitelist, i.GetDLNADefaultIPWhitelist())
 				i.Set(DLNAInterfaces, i.GetDLNAInterfaces())
+				i.Set(DLNAPort, i.GetDLNAPort())
 				i.Set(LogFile, i.GetLogFile())
 				i.Set(LogOut, i.GetLogOut())
 				i.Set(LogLevel, i.GetLogLevel())

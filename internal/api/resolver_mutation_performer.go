@@ -7,7 +7,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/performer"
-	"github.com/stashapp/stash/pkg/plugin"
+	"github.com/stashapp/stash/pkg/plugin/hook"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -34,6 +34,7 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 
 	newPerformer.Name = input.Name
 	newPerformer.Disambiguation = translator.string(input.Disambiguation)
+	newPerformer.Aliases = models.NewRelatedStrings(input.AliasList)
 	newPerformer.URL = translator.string(input.URL)
 	newPerformer.Gender = input.Gender
 	newPerformer.Ethnicity = translator.string(input.Ethnicity)
@@ -49,9 +50,10 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 	newPerformer.Twitter = translator.string(input.Twitter)
 	newPerformer.Instagram = translator.string(input.Instagram)
 	newPerformer.Favorite = translator.bool(input.Favorite)
-	newPerformer.Rating = translator.ratingConversion(input.Rating, input.Rating100)
+	newPerformer.Rating = input.Rating100
 	newPerformer.Details = translator.string(input.Details)
 	newPerformer.HairColor = translator.string(input.HairColor)
+	newPerformer.Height = input.HeightCm
 	newPerformer.Weight = input.Weight
 	newPerformer.IgnoreAutoTag = translator.bool(input.IgnoreAutoTag)
 	newPerformer.StashIDs = models.NewRelatedStashIDs(input.StashIds)
@@ -67,32 +69,9 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 		return nil, fmt.Errorf("converting death date: %w", err)
 	}
 
-	// prefer height_cm over height
-	if input.HeightCm != nil {
-		newPerformer.Height = input.HeightCm
-	} else {
-		newPerformer.Height, err = translator.intPtrFromString(input.Height)
-		if err != nil {
-			return nil, fmt.Errorf("converting height: %w", err)
-		}
-	}
-
-	// prefer alias_list over aliases
-	if input.AliasList != nil {
-		newPerformer.Aliases = models.NewRelatedStrings(input.AliasList)
-	} else if input.Aliases != nil {
-		newPerformer.Aliases = models.NewRelatedStrings(stringslice.FromString(*input.Aliases, ","))
-	}
-
 	newPerformer.TagIDs, err = translator.relatedIds(input.TagIds)
 	if err != nil {
 		return nil, fmt.Errorf("converting tag ids: %w", err)
-	}
-
-	if err := performer.ValidateDeathDate(nil, input.Birthdate, input.DeathDate); err != nil {
-		if err != nil {
-			return nil, err
-		}
 	}
 
 	// Process the base 64 encoded image string
@@ -107,6 +86,10 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 	// Start the transaction and save the performer
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Performer
+
+		if err := performer.ValidateCreate(ctx, newPerformer, qb); err != nil {
+			return err
+		}
 
 		err = qb.Create(ctx, &newPerformer)
 		if err != nil {
@@ -125,7 +108,7 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 		return nil, err
 	}
 
-	r.hookExecutor.ExecutePostHooks(ctx, newPerformer.ID, plugin.PerformerCreatePost, input, nil)
+	r.hookExecutor.ExecutePostHooks(ctx, newPerformer.ID, hook.PerformerCreatePost, input, nil)
 	return r.getPerformer(ctx, newPerformer.ID)
 }
 
@@ -159,7 +142,7 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 	updatedPerformer.Twitter = translator.optionalString(input.Twitter, "twitter")
 	updatedPerformer.Instagram = translator.optionalString(input.Instagram, "instagram")
 	updatedPerformer.Favorite = translator.optionalBool(input.Favorite, "favorite")
-	updatedPerformer.Rating = translator.optionalRatingConversion(input.Rating, input.Rating100)
+	updatedPerformer.Rating = translator.optionalInt(input.Rating100, "rating100")
 	updatedPerformer.Details = translator.optionalString(input.Details, "details")
 	updatedPerformer.HairColor = translator.optionalString(input.HairColor, "hair_color")
 	updatedPerformer.Weight = translator.optionalInt(input.Weight, "weight")
@@ -178,22 +161,11 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 	// prefer height_cm over height
 	if translator.hasField("height_cm") {
 		updatedPerformer.Height = translator.optionalInt(input.HeightCm, "height_cm")
-	} else if translator.hasField("height") {
-		updatedPerformer.Height, err = translator.optionalIntFromString(input.Height, "height")
-		if err != nil {
-			return nil, fmt.Errorf("converting height: %w", err)
-		}
 	}
 
 	// prefer alias_list over aliases
 	if translator.hasField("alias_list") {
 		updatedPerformer.Aliases = translator.updateStrings(input.AliasList, "alias_list")
-	} else if translator.hasField("aliases") {
-		var aliasList []string
-		if input.Aliases != nil {
-			aliasList = stringslice.FromString(*input.Aliases, ",")
-		}
-		updatedPerformer.Aliases = translator.updateStrings(aliasList, "aliases")
 	}
 
 	updatedPerformer.TagIDs, err = translator.updateIds(input.TagIds, "tag_ids")
@@ -214,17 +186,7 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Performer
 
-		// need to get existing performer
-		existing, err := qb.Find(ctx, performerID)
-		if err != nil {
-			return err
-		}
-
-		if existing == nil {
-			return fmt.Errorf("performer with id %d not found", performerID)
-		}
-
-		if err := performer.ValidateDeathDate(existing, input.Birthdate, input.DeathDate); err != nil {
+		if err := performer.ValidateUpdate(ctx, performerID, updatedPerformer, qb); err != nil {
 			return err
 		}
 
@@ -245,7 +207,7 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 		return nil, err
 	}
 
-	r.hookExecutor.ExecutePostHooks(ctx, performerID, plugin.PerformerUpdatePost, input, translator.getFields())
+	r.hookExecutor.ExecutePostHooks(ctx, performerID, hook.PerformerUpdatePost, input, translator.getFields())
 	return r.getPerformer(ctx, performerID)
 }
 
@@ -278,7 +240,7 @@ func (r *mutationResolver) BulkPerformerUpdate(ctx context.Context, input BulkPe
 	updatedPerformer.Twitter = translator.optionalString(input.Twitter, "twitter")
 	updatedPerformer.Instagram = translator.optionalString(input.Instagram, "instagram")
 	updatedPerformer.Favorite = translator.optionalBool(input.Favorite, "favorite")
-	updatedPerformer.Rating = translator.optionalRatingConversion(input.Rating, input.Rating100)
+	updatedPerformer.Rating = translator.optionalInt(input.Rating100, "rating100")
 	updatedPerformer.Details = translator.optionalString(input.Details, "details")
 	updatedPerformer.HairColor = translator.optionalString(input.HairColor, "hair_color")
 	updatedPerformer.Weight = translator.optionalInt(input.Weight, "weight")
@@ -296,22 +258,11 @@ func (r *mutationResolver) BulkPerformerUpdate(ctx context.Context, input BulkPe
 	// prefer height_cm over height
 	if translator.hasField("height_cm") {
 		updatedPerformer.Height = translator.optionalInt(input.HeightCm, "height_cm")
-	} else if translator.hasField("height") {
-		updatedPerformer.Height, err = translator.optionalIntFromString(input.Height, "height")
-		if err != nil {
-			return nil, fmt.Errorf("converting height: %w", err)
-		}
 	}
 
 	// prefer alias_list over aliases
 	if translator.hasField("alias_list") {
 		updatedPerformer.Aliases = translator.updateStringsBulk(input.AliasList, "alias_list")
-	} else if translator.hasField("aliases") {
-		var aliasList []string
-		if input.Aliases != nil {
-			aliasList = stringslice.FromString(*input.Aliases, ",")
-		}
-		updatedPerformer.Aliases = translator.updateStrings(aliasList, "aliases")
 	}
 
 	updatedPerformer.TagIDs, err = translator.updateIdsBulk(input.TagIds, "tag_ids")
@@ -326,18 +277,7 @@ func (r *mutationResolver) BulkPerformerUpdate(ctx context.Context, input BulkPe
 		qb := r.repository.Performer
 
 		for _, performerID := range performerIDs {
-			// need to get existing performer
-			existing, err := qb.Find(ctx, performerID)
-			if err != nil {
-				return err
-			}
-
-			if existing == nil {
-				return fmt.Errorf("performer with id %d not found", performerID)
-			}
-
-			err = performer.ValidateDeathDate(existing, input.Birthdate, input.DeathDate)
-			if err != nil {
+			if err := performer.ValidateUpdate(ctx, performerID, updatedPerformer, qb); err != nil {
 				return err
 			}
 
@@ -357,7 +297,7 @@ func (r *mutationResolver) BulkPerformerUpdate(ctx context.Context, input BulkPe
 	// execute post hooks outside of txn
 	var newRet []*models.Performer
 	for _, performer := range ret {
-		r.hookExecutor.ExecutePostHooks(ctx, performer.ID, plugin.PerformerUpdatePost, input, translator.getFields())
+		r.hookExecutor.ExecutePostHooks(ctx, performer.ID, hook.PerformerUpdatePost, input, translator.getFields())
 
 		performer, err = r.getPerformer(ctx, performer.ID)
 		if err != nil {
@@ -382,7 +322,7 @@ func (r *mutationResolver) PerformerDestroy(ctx context.Context, input Performer
 		return false, err
 	}
 
-	r.hookExecutor.ExecutePostHooks(ctx, id, plugin.PerformerDestroyPost, input, nil)
+	r.hookExecutor.ExecutePostHooks(ctx, id, hook.PerformerDestroyPost, input, nil)
 
 	return true, nil
 }
@@ -407,7 +347,7 @@ func (r *mutationResolver) PerformersDestroy(ctx context.Context, performerIDs [
 	}
 
 	for _, id := range ids {
-		r.hookExecutor.ExecutePostHooks(ctx, id, plugin.PerformerDestroyPost, performerIDs, nil)
+		r.hookExecutor.ExecutePostHooks(ctx, id, hook.PerformerDestroyPost, performerIDs, nil)
 	}
 
 	return true, nil

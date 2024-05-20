@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Button, Form, Col, Row, Badge, Dropdown } from "react-bootstrap";
+import { Button, Form, Badge, Dropdown } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
@@ -15,7 +15,6 @@ import { Icon } from "src/components/Shared/Icon";
 import { ImageInput } from "src/components/Shared/ImageInput";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { CollapseButton } from "src/components/Shared/CollapseButton";
-import { TagSelect } from "src/components/Shared/Select";
 import { CountrySelect } from "src/components/Shared/CountrySelect";
 import { URLField } from "src/components/Shared/URLField";
 import ImageUtils from "src/utils/image";
@@ -39,14 +38,17 @@ import { PerformerScrapeDialog } from "./PerformerScrapeDialog";
 import PerformerScrapeModal from "./PerformerScrapeModal";
 import PerformerStashBoxModal, { IStashBox } from "./PerformerStashBoxModal";
 import cx from "classnames";
-import {
-  faPlus,
-  faSyncAlt,
-  faTrashAlt,
-} from "@fortawesome/free-solid-svg-icons";
-import { StringListInput } from "src/components/Shared/StringListInput";
+import { faPlus, faSyncAlt } from "@fortawesome/free-solid-svg-icons";
 import isEqual from "lodash-es/isEqual";
-import { DateInput } from "src/components/Shared/DateInput";
+import { formikUtils } from "src/utils/form";
+import {
+  yupFormikValidate,
+  yupInputNumber,
+  yupInputEnum,
+  yupDateString,
+  yupUniqueAliases,
+} from "src/utils/yup";
+import { Tag, TagSelect } from "src/components/Tags/TagSelect";
 
 const isScraper = (
   scraper: GQL.Scraper | GQL.StashBox
@@ -81,6 +83,8 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   // Network state
   const [isLoading, setIsLoading] = useState(false);
 
+  const [tags, setTags] = useState<Tag[]>([]);
+
   const Scrapers = useListPerformerScrapers();
   const [queryableScrapers, setQueryableScrapers] = useState<GQL.Scraper[]>([]);
 
@@ -91,71 +95,23 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   const [createTag] = useTagCreate();
   const intl = useIntl();
 
-  const labelXS = 3;
-  const labelXL = 2;
-  const fieldXS = 9;
-  const fieldXL = 7;
-
   const schema = yup.object({
     name: yup.string().required(),
     disambiguation: yup.string().ensure(),
-    alias_list: yup
-      .array(yup.string().required())
-      .defined()
-      .test({
-        name: "unique",
-        test: (value, context) => {
-          const aliases = [context.parent.name, ...value];
-          const dupes = aliases
-            .map((e, i, a) => {
-              if (a.indexOf(e) !== i) {
-                return String(i - 1);
-              } else {
-                return null;
-              }
-            })
-            .filter((e) => e !== null) as string[];
-          if (dupes.length === 0) return true;
-          return new yup.ValidationError(dupes.join(" "), value, "alias_list");
-        },
-      }),
-    gender: yup.string<GQL.GenderEnum | "">().ensure(),
-    birthdate: yup
-      .string()
-      .ensure()
-      .test({
-        name: "date",
-        test: (value) => {
-          if (!value) return true;
-          if (!value.match(/^\d{4}-\d{2}-\d{2}$/)) return false;
-          if (Number.isNaN(Date.parse(value))) return false;
-          return true;
-        },
-        message: intl.formatMessage({ id: "validation.date_invalid_form" }),
-      }),
-    death_date: yup
-      .string()
-      .ensure()
-      .test({
-        name: "date",
-        test: (value) => {
-          if (!value) return true;
-          if (!value.match(/^\d{4}-\d{2}-\d{2}$/)) return false;
-          if (Number.isNaN(Date.parse(value))) return false;
-          return true;
-        },
-        message: intl.formatMessage({ id: "validation.date_invalid_form" }),
-      }),
+    alias_list: yupUniqueAliases(intl, "name"),
+    gender: yupInputEnum(GQL.GenderEnum).nullable().defined(),
+    birthdate: yupDateString(intl),
+    death_date: yupDateString(intl),
     country: yup.string().ensure(),
     ethnicity: yup.string().ensure(),
     hair_color: yup.string().ensure(),
     eye_color: yup.string().ensure(),
-    height_cm: yup.number().nullable().defined().default(null),
-    weight: yup.number().nullable().defined().default(null),
+    height_cm: yupInputNumber().positive().truncate().nullable().defined(),
+    weight: yupInputNumber().positive().truncate().nullable().defined(),
     measurements: yup.string().ensure(),
     fake_tits: yup.string().ensure(),
-    penis_length: yup.number().nullable().defined().default(null),
-    circumcised: yup.string<GQL.CircumisedEnum | "">().ensure(),
+    penis_length: yupInputNumber().positive().nullable().defined(),
+    circumcised: yupInputEnum(GQL.CircumisedEnum).nullable().defined(),
     tattoos: yup.string().ensure(),
     piercings: yup.string().ensure(),
     career_length: yup.string().ensure(),
@@ -173,7 +129,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     name: performer.name ?? "",
     disambiguation: performer.disambiguation ?? "",
     alias_list: performer.alias_list ?? [],
-    gender: (performer.gender as GQL.GenderEnum) ?? "",
+    gender: performer.gender ?? null,
     birthdate: performer.birthdate ?? "",
     death_date: performer.death_date ?? "",
     country: performer.country ?? "",
@@ -185,7 +141,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     measurements: performer.measurements ?? "",
     fake_tits: performer.fake_tits ?? "",
     penis_length: performer.penis_length ?? null,
-    circumcised: (performer.circumcised as GQL.CircumisedEnum) ?? "",
+    circumcised: performer.circumcised ?? null,
     tattoos: performer.tattoos ?? "",
     piercings: performer.piercings ?? "",
     career_length: performer.career_length ?? "",
@@ -203,9 +159,21 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   const formik = useFormik<InputValues>({
     initialValues,
     enableReinitialize: true,
-    validationSchema: schema,
-    onSubmit: (values) => onSave(values),
+    validate: yupFormikValidate(schema),
+    onSubmit: (values) => onSave(schema.cast(values)),
   });
+
+  function onSetTags(items: Tag[]) {
+    setTags(items);
+    formik.setFieldValue(
+      "tag_ids",
+      items.map((item) => item.id)
+    );
+  }
+
+  useEffect(() => {
+    setTags(performer.tags ?? []);
+  }, [performer.tags]);
 
   function translateScrapedGender(scrapedGender?: string) {
     if (!scrapedGender) {
@@ -239,42 +207,6 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     }
   }
 
-  function renderNewTags() {
-    if (!newTags || newTags.length === 0) {
-      return;
-    }
-
-    const ret = (
-      <>
-        {newTags.map((t) => (
-          <Badge
-            className="tag-item"
-            variant="secondary"
-            key={t.name}
-            onClick={() => createNewTag(t)}
-          >
-            {t.name}
-            <Button className="minimal ml-2">
-              <Icon className="fa-fw" icon={faPlus} />
-            </Button>
-          </Badge>
-        ))}
-      </>
-    );
-
-    const minCollapseLength = 10;
-
-    if (newTags.length >= minCollapseLength) {
-      return (
-        <CollapseButton text={`Missing (${newTags.length})`}>
-          {ret}
-        </CollapseButton>
-      );
-    }
-
-    return ret;
-  }
-
   async function createNewTag(toCreate: GQL.ScrapedTag) {
     const tagInput: GQL.TagCreateInput = { name: toCreate.name ?? "" };
     try {
@@ -302,13 +234,11 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
       setNewTags(newTagsClone);
 
-      Toast.success({
-        content: (
-          <span>
-            Created tag: <b>{toCreate.name}</b>
-          </span>
-        ),
-      });
+      Toast.success(
+        <span>
+          Created tag: <b>{toCreate.name}</b>
+        </span>
+      );
     } catch (e) {
       Toast.error(e);
     }
@@ -384,8 +314,15 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     }
     if (state.tags) {
       // map tags to their ids and filter out those not found
-      const newTagIds = state.tags.map((t) => t.stored_id).filter((t) => t);
-      formik.setFieldValue("tag_ids", newTagIds);
+      onSetTags(
+        state.tags.map((p) => {
+          return {
+            id: p.stored_id!,
+            name: p.name ?? "",
+            aliases: [],
+          };
+        })
+      );
 
       setNewTags(state.tags.filter((t) => !t.stored_id));
     }
@@ -450,21 +387,10 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     ImageUtils.onImageChange(event, onImageLoad);
   }
 
-  function valuesToInput(input: InputValues): GQL.PerformerCreateInput {
-    return {
-      ...input,
-      gender: input.gender || null,
-      height_cm: input.height_cm || null,
-      weight: input.weight || null,
-      penis_length: input.penis_length || null,
-      circumcised: input.circumcised || null,
-    };
-  }
-
   async function onSave(input: InputValues) {
     setIsLoading(true);
     try {
-      await onSubmit(valuesToInput(input));
+      await onSubmit(input);
       formik.resetForm();
     } catch (e) {
       Toast.error(e);
@@ -492,10 +418,8 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   });
 
   useEffect(() => {
-    const newQueryableScrapers = (
-      Scrapers?.data?.listPerformerScrapers ?? []
-    ).filter((s) =>
-      s.performer?.supported_scrapes.includes(GQL.ScrapeType.Name)
+    const newQueryableScrapers = (Scrapers?.data?.listScrapers ?? []).filter(
+      (s) => s.performer?.supported_scrapes.includes(GQL.ScrapeType.Name)
     );
 
     setQueryableScrapers(newQueryableScrapers);
@@ -507,9 +431,6 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     setIsLoading(true);
     try {
       await mutateReloadScrapers();
-
-      // reload the performer scrapers
-      await Scrapers.refetch();
     } catch (e) {
       Toast.error(e);
     } finally {
@@ -657,7 +578,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   function urlScrapable(scrapedUrl?: string) {
     return (
       !!scrapedUrl &&
-      (Scrapers?.data?.listPerformerScrapers ?? []).some((s) =>
+      (Scrapers?.data?.listScrapers ?? []).some((s) =>
         (s?.performer?.urls ?? []).some((u) => scrapedUrl.includes(u))
       )
     );
@@ -669,7 +590,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     }
 
     const currentPerformer = {
-      ...valuesToInput(formik.values),
+      ...formik.values,
       image: formik.values.image ?? performer.image_path,
     };
 
@@ -747,123 +668,93 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     ) : undefined;
   };
 
-  function renderTagsField() {
-    return (
-      <Form.Group controlId="tags" as={Row}>
-        <Form.Label column sm={labelXS} xl={labelXL}>
-          <FormattedMessage id="tags" defaultMessage="Tags" />
-        </Form.Label>
-        <Col xs={fieldXS} xl={fieldXL}>
-          <TagSelect
-            menuPortalTarget={document.body}
-            isMulti
-            onSelect={(items) =>
-              formik.setFieldValue(
-                "tag_ids",
-                items.map((item) => item.id)
-              )
-            }
-            ids={formik.values.tag_ids}
-          />
-          {renderNewTags()}
-        </Col>
-      </Form.Group>
+  const {
+    renderField,
+    renderInputField,
+    renderSelectField,
+    renderDateField,
+    renderStringListField,
+    renderStashIDsField,
+  } = formikUtils(intl, formik);
+
+  function renderCountryField() {
+    const title = intl.formatMessage({ id: "country" });
+    const control = (
+      <CountrySelect
+        value={formik.values.country}
+        onChange={(v) => formik.setFieldValue("country", v)}
+      />
     );
+
+    return renderField("country", title, control);
   }
 
-  const removeStashID = (stashID: GQL.StashIdInput) => {
-    formik.setFieldValue(
-      "stash_ids",
-      (formik.values.stash_ids ?? []).filter(
-        (s) =>
-          !(s.endpoint === stashID.endpoint && s.stash_id === stashID.stash_id)
-      )
+  function renderUrlField() {
+    const title = intl.formatMessage({ id: "url" });
+    const control = (
+      <URLField
+        {...formik.getFieldProps("url")}
+        onScrapeClick={onScrapePerformerURL}
+        urlScrapable={urlScrapable}
+      />
     );
-  };
 
-  function renderStashIDs() {
-    if (!formik.values.stash_ids?.length) {
+    return renderField("url", title, control);
+  }
+
+  function renderNewTags() {
+    if (!newTags || newTags.length === 0) {
       return;
     }
 
-    return (
-      <Row>
-        <Form.Label column sm={labelXS} xl={labelXL}>
-          {intl.formatMessage({ id: "stash_ids" })}
-        </Form.Label>
-        <Col sm={fieldXS} xl={fieldXL}>
-          <ul className="pl-0">
-            {formik.values.stash_ids.map((stashID) => {
-              const base = stashID.endpoint.match(/https?:\/\/.*?\//)?.[0];
-              const link = base ? (
-                <a
-                  href={`${base}performers/${stashID.stash_id}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {stashID.stash_id}
-                </a>
-              ) : (
-                stashID.stash_id
-              );
-              return (
-                <li key={stashID.stash_id} className="row no-gutters mb-1">
-                  <Button
-                    variant="danger"
-                    className="mr-2 py-0"
-                    title={intl.formatMessage({ id: "actions.delete_stashid" })}
-                    onClick={() => removeStashID(stashID)}
-                  >
-                    <Icon icon={faTrashAlt} />
-                  </Button>
-                  {link}
-                </li>
-              );
-            })}
-          </ul>
-        </Col>
-      </Row>
+    const ret = (
+      <>
+        {newTags.map((t) => (
+          <Badge
+            className="tag-item"
+            variant="secondary"
+            key={t.name}
+            onClick={() => createNewTag(t)}
+          >
+            {t.name}
+            <Button className="minimal ml-2">
+              <Icon className="fa-fw" icon={faPlus} />
+            </Button>
+          </Badge>
+        ))}
+      </>
     );
-  }
 
-  function renderField(
-    field: string,
-    props?: {
-      messageID?: string;
-      placeholder?: string;
-      type?: string;
+    const minCollapseLength = 10;
+
+    if (newTags.length >= minCollapseLength) {
+      return (
+        <CollapseButton text={`Missing (${newTags.length})`}>
+          {ret}
+        </CollapseButton>
+      );
     }
-  ) {
-    const title = intl.formatMessage({ id: props?.messageID ?? field });
 
-    return (
-      <Form.Group controlId={field} as={Row}>
-        <Form.Label column xs={labelXS} xl={labelXL}>
-          {title}
-        </Form.Label>
-        <Col xs={fieldXS} xl={fieldXL}>
-          <Form.Control
-            type={props?.type ?? "text"}
-            className="text-input"
-            placeholder={props?.placeholder ?? title}
-            {...formik.getFieldProps(field)}
-            isInvalid={!!formik.getFieldMeta(field).error}
-          />
-          <Form.Control.Feedback type="invalid">
-            {formik.getFieldMeta(field).error}
-          </Form.Control.Feedback>
-        </Col>
-      </Form.Group>
-    );
+    return ret;
   }
 
-  const aliasErrors = Array.isArray(formik.errors.alias_list)
-    ? formik.errors.alias_list[0]
-    : formik.errors.alias_list;
-  const aliasErrorMsg = aliasErrors
-    ? intl.formatMessage({ id: "validation.aliases_must_be_unique" })
-    : undefined;
-  const aliasErrorIdx = aliasErrors?.split(" ").map((e) => parseInt(e));
+  function renderTagsField() {
+    const title = intl.formatMessage({ id: "tags" });
+
+    const control = (
+      <>
+        <TagSelect
+          menuPortalTarget={document.body}
+          isMulti
+          onSelect={onSetTags}
+          values={tags}
+        />
+        {renderNewTags()}
+      </>
+    );
+
+    return renderField("tag_ids", title, control);
+  }
 
   return (
     <>
@@ -877,231 +768,47 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
       {renderButtons("mb-3")}
 
       <Form noValidate onSubmit={formik.handleSubmit} id="performer-edit">
-        <Form.Group controlId="name" as={Row}>
-          <Form.Label column xs={labelXS} xl={labelXL}>
-            <FormattedMessage id="name" />
-          </Form.Label>
-          <Col xs={fieldXS} xl={fieldXL}>
-            <Form.Control
-              className="text-input"
-              placeholder={intl.formatMessage({ id: "name" })}
-              {...formik.getFieldProps("name")}
-              isInvalid={!!formik.errors.name}
-            />
-            <Form.Control.Feedback type="invalid">
-              {formik.errors.name}
-            </Form.Control.Feedback>
-          </Col>
-        </Form.Group>
+        {renderInputField("name")}
+        {renderInputField("disambiguation")}
 
-        <Form.Group controlId="disambiguation" as={Row}>
-          <Form.Label column xs={labelXS} xl={labelXL}>
-            <FormattedMessage id="disambiguation" />
-          </Form.Label>
-          <Col xs={fieldXS} xl={fieldXL}>
-            <Form.Control
-              className="text-input"
-              placeholder={intl.formatMessage({ id: "disambiguation" })}
-              {...formik.getFieldProps("disambiguation")}
-              isInvalid={!!formik.errors.disambiguation}
-            />
-            <Form.Control.Feedback type="invalid">
-              {formik.errors.disambiguation}
-            </Form.Control.Feedback>
-          </Col>
-        </Form.Group>
+        {renderStringListField("alias_list", "aliases")}
 
-        <Form.Group controlId="aliases" as={Row}>
-          <Form.Label column xs={labelXS} xl={labelXL}>
-            <FormattedMessage id="aliases" />
-          </Form.Label>
-          <Col xs={fieldXS} xl={fieldXL}>
-            <StringListInput
-              value={formik.values.alias_list ?? []}
-              setValue={(value) => formik.setFieldValue("alias_list", value)}
-              errors={aliasErrorMsg}
-              errorIdx={aliasErrorIdx}
-            />
-          </Col>
-        </Form.Group>
+        {renderSelectField("gender", stringGenderMap)}
 
-        <Form.Group as={Row}>
-          <Form.Label column xs={labelXS} xl={labelXL}>
-            <FormattedMessage id="gender" />
-          </Form.Label>
-          <Col xs="auto">
-            <Form.Control
-              as="select"
-              className="input-control"
-              {...formik.getFieldProps("gender")}
-            >
-              <option value="" key=""></option>
-              {Array.from(stringGenderMap.entries()).map(([name, value]) => (
-                <option value={value} key={value}>
-                  {name}
-                </option>
-              ))}
-            </Form.Control>
-          </Col>
-        </Form.Group>
+        {renderDateField("birthdate")}
+        {renderDateField("death_date")}
 
-        <Form.Group controlId="birthdate" as={Row}>
-          <Form.Label column xs={labelXS} xl={labelXL}>
-            <FormattedMessage id="birthdate" />
-          </Form.Label>
-          <Col xs={fieldXS} xl={fieldXL}>
-            <DateInput
-              value={formik.values.birthdate}
-              onValueChange={(value) =>
-                formik.setFieldValue("birthdate", value)
-              }
-              error={formik.errors.birthdate}
-            />
-          </Col>
-        </Form.Group>
+        {renderCountryField()}
 
-        <Form.Group controlId="death_date" as={Row}>
-          <Form.Label column xs={labelXS} xl={labelXL}>
-            <FormattedMessage id="death_date" />
-          </Form.Label>
-          <Col xs={fieldXS} xl={fieldXL}>
-            <DateInput
-              value={formik.values.death_date}
-              onValueChange={(value) =>
-                formik.setFieldValue("death_date", value)
-              }
-              error={formik.errors.death_date}
-            />
-          </Col>
-        </Form.Group>
+        {renderInputField("ethnicity")}
+        {renderInputField("hair_color")}
+        {renderInputField("eye_color")}
+        {renderInputField("height_cm", "number")}
+        {renderInputField("weight", "number", "weight_kg")}
+        {renderInputField("penis_length", "number", "penis_length_cm")}
 
-        <Form.Group as={Row}>
-          <Form.Label column xs={labelXS} xl={labelXL}>
-            <FormattedMessage id="country" />
-          </Form.Label>
-          <Col xs={fieldXS} xl={fieldXL}>
-            <CountrySelect
-              value={formik.getFieldProps("country").value}
-              onChange={(value) => formik.setFieldValue("country", value)}
-            />
-          </Col>
-        </Form.Group>
+        {renderSelectField("circumcised", stringCircumMap)}
 
-        {renderField("ethnicity")}
-        {renderField("hair_color")}
-        {renderField("eye_color")}
-        {renderField("height_cm", {
-          type: "number",
-        })}
-        {renderField("weight", {
-          type: "number",
-          messageID: "weight_kg",
-        })}
-        {renderField("penis_length", {
-          type: "number",
-          messageID: "penis_length_cm",
-        })}
+        {renderInputField("measurements")}
+        {renderInputField("fake_tits")}
 
-        <Form.Group as={Row}>
-          <Form.Label column xs={labelXS} xl={labelXL}>
-            <FormattedMessage id="circumcised" />
-          </Form.Label>
-          <Col xs="auto">
-            <Form.Control
-              as="select"
-              className="input-control"
-              {...formik.getFieldProps("circumcised")}
-            >
-              <option value="" key=""></option>
-              {Array.from(stringCircumMap.entries()).map(([name, value]) => (
-                <option value={value} key={value}>
-                  {name}
-                </option>
-              ))}
-            </Form.Control>
-          </Col>
-        </Form.Group>
+        {renderInputField("tattoos", "textarea")}
+        {renderInputField("piercings", "textarea")}
 
-        {renderField("measurements")}
-        {renderField("fake_tits")}
+        {renderInputField("career_length")}
 
-        <Form.Group controlId="tattoos" as={Row}>
-          <Form.Label column sm={labelXS} xl={labelXL}>
-            <FormattedMessage id="tattoos" />
-          </Form.Label>
-          <Col sm={fieldXS} xl={fieldXL}>
-            <Form.Control
-              as="textarea"
-              className="text-input"
-              placeholder={intl.formatMessage({ id: "tattoos" })}
-              {...formik.getFieldProps("tattoos")}
-            />
-          </Col>
-        </Form.Group>
+        {renderUrlField()}
 
-        <Form.Group controlId="piercings" as={Row}>
-          <Form.Label column sm={labelXS} xl={labelXL}>
-            <FormattedMessage id="piercings" />
-          </Form.Label>
-          <Col sm={fieldXS} xl={fieldXL}>
-            <Form.Control
-              as="textarea"
-              className="text-input"
-              placeholder={intl.formatMessage({ id: "piercings" })}
-              {...formik.getFieldProps("piercings")}
-            />
-          </Col>
-        </Form.Group>
-
-        {renderField("career_length")}
-
-        <Form.Group controlId="url" as={Row}>
-          <Form.Label column xs={labelXS} xl={labelXL}>
-            <FormattedMessage id="url" />
-          </Form.Label>
-          <Col xs={fieldXS} xl={fieldXL}>
-            <URLField
-              {...formik.getFieldProps("url")}
-              onScrapeClick={onScrapePerformerURL}
-              urlScrapable={urlScrapable}
-            />
-          </Col>
-        </Form.Group>
-
-        {renderField("twitter")}
-        {renderField("instagram")}
-        <Form.Group controlId="details" as={Row}>
-          <Form.Label column sm={labelXS} xl={labelXL}>
-            <FormattedMessage id="details" />
-          </Form.Label>
-          <Col sm={fieldXS} xl={fieldXL}>
-            <Form.Control
-              as="textarea"
-              className="text-input"
-              placeholder={intl.formatMessage({ id: "details" })}
-              {...formik.getFieldProps("details")}
-            />
-          </Col>
-        </Form.Group>
+        {renderInputField("twitter")}
+        {renderInputField("instagram")}
+        {renderInputField("details", "textarea")}
         {renderTagsField()}
 
-        {renderStashIDs()}
+        {renderStashIDsField("stash_ids", "performers")}
 
         <hr />
 
-        <Form.Group controlId="ignore-auto-tag" as={Row}>
-          <Form.Label column sm={labelXS} xl={labelXL}>
-            <FormattedMessage id="ignore_auto_tag" />
-          </Form.Label>
-          <Col sm={fieldXS} xl={fieldXL}>
-            <Form.Check
-              {...formik.getFieldProps({
-                name: "ignore_auto_tag",
-                type: "checkbox",
-              })}
-            />
-          </Col>
-        </Form.Group>
+        {renderInputField("ignore_auto_tag", "checkbox")}
 
         {renderButtons("mt-3")}
       </Form>

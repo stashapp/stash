@@ -9,17 +9,19 @@ interface IHoverPopover {
   placement?: OverlayProps["placement"];
   onOpen?: () => void;
   onClose?: () => void;
+  target?: React.RefObject<HTMLElement>;
 }
 
 export const HoverPopover: React.FC<IHoverPopover> = ({
-  enterDelay = 0,
-  leaveDelay = 400,
+  enterDelay = 200,
+  leaveDelay = 200,
   content,
   children,
   className,
   placement = "top",
   onOpen,
   onClose,
+  target,
 }) => {
   const [show, setShow] = useState(false);
   const triggerRef = useRef<HTMLDivElement>(null);
@@ -61,7 +63,11 @@ export const HoverPopover: React.FC<IHoverPopover> = ({
         {children}
       </div>
       {triggerRef.current && (
-        <Overlay show={show} placement={placement} target={triggerRef.current}>
+        <Overlay
+          show={show}
+          placement={placement}
+          target={target?.current ?? triggerRef.current}
+        >
           <Popover
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}

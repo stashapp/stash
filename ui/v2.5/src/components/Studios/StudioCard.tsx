@@ -1,15 +1,22 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 import NavUtils from "src/utils/navigation";
-import { GridCard } from "src/components/Shared/GridCard";
+import {
+  GridCard,
+  calculateCardWidth,
+} from "src/components/Shared/GridCard/GridCard";
 import { ButtonGroup } from "react-bootstrap";
 import { FormattedMessage } from "react-intl";
 import { PopoverCountButton } from "../Shared/PopoverCountButton";
 import { RatingBanner } from "../Shared/RatingBanner";
+import ScreenUtils from "src/utils/screen";
+import { FavoriteIcon } from "../Shared/FavoriteIcon";
+import { useStudioUpdate } from "src/core/StashService";
 
 interface IProps {
   studio: GQL.StudioDataFragment;
+  containerWidth?: number;
   hideParent?: boolean;
   selecting?: boolean;
   selected?: boolean;
@@ -59,11 +66,39 @@ function maybeRenderChildren(studio: GQL.StudioDataFragment) {
 
 export const StudioCard: React.FC<IProps> = ({
   studio,
+  containerWidth,
   hideParent,
   selecting,
   selected,
   onSelectedChanged,
 }) => {
+  const [updateStudio] = useStudioUpdate();
+  const [cardWidth, setCardWidth] = useState<number>();
+
+  useEffect(() => {
+    if (!containerWidth || ScreenUtils.isMobile()) return;
+
+    let preferredCardWidth = 340;
+    let fittedCardWidth = calculateCardWidth(
+      containerWidth,
+      preferredCardWidth!
+    );
+    setCardWidth(fittedCardWidth);
+  }, [containerWidth]);
+
+  function onToggleFavorite(v: boolean) {
+    if (studio.id) {
+      updateStudio({
+        variables: {
+          input: {
+            id: studio.id,
+            favorite: v,
+          },
+        },
+      });
+    }
+  }
+
   function maybeRenderScenesPopoverButton() {
     if (!studio.scene_count) return;
 
@@ -156,10 +191,12 @@ export const StudioCard: React.FC<IProps> = ({
     <GridCard
       className="studio-card"
       url={`/studios/${studio.id}`}
+      width={cardWidth}
       title={studio.name}
       linkClassName="studio-card-header"
       image={
         <img
+          loading="lazy"
           className="studio-card-image"
           alt={studio.name}
           src={studio.image_path ?? ""}
@@ -171,6 +208,12 @@ export const StudioCard: React.FC<IProps> = ({
           {maybeRenderChildren(studio)}
           <RatingBanner rating={studio.rating100} />
         </div>
+      }
+      overlays={
+        <FavoriteIcon
+          favorite={studio.favorite}
+          onToggleFavorite={(v) => onToggleFavorite(v)}
+        />
       }
       popovers={maybeRenderPopoverButtonGroup()}
       selected={selected}

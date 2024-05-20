@@ -1,6 +1,8 @@
 package models
 
-import "context"
+import (
+	"context"
+)
 
 type SceneIDLoader interface {
 	GetSceneIDs(ctx context.Context, relatedID int) ([]int, error)
@@ -206,6 +208,19 @@ func (r RelatedStashIDs) List() []StashID {
 	r.mustLoaded()
 
 	return r.list
+}
+
+// ForID returns the StashID object for the given endpoint. Returns nil if not found.
+func (r *RelatedStashIDs) ForEndpoint(endpoint string) *StashID {
+	r.mustLoaded()
+
+	for _, v := range r.list {
+		if v.Endpoint == endpoint {
+			return &v
+		}
+	}
+
+	return nil
 }
 
 func (r *RelatedStashIDs) load(fn func() ([]StashID, error)) error {

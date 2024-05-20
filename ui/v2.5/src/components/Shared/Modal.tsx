@@ -1,19 +1,20 @@
 import React from "react";
 import { Button, Modal, Spinner, ModalProps } from "react-bootstrap";
+import { ButtonVariant } from "react-bootstrap/types";
 import { Icon } from "./Icon";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { FormattedMessage } from "react-intl";
 
 interface IButton {
   text?: string;
-  variant?: "danger" | "primary" | "secondary";
+  variant?: ButtonVariant;
   onClick?: () => void;
 }
 
 interface IModal {
   show: boolean;
   onHide?: () => void;
-  header?: string;
+  header?: JSX.Element | string;
   icon?: IconDefinition;
   cancel?: IButton;
   accept?: IButton;

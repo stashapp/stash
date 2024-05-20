@@ -63,6 +63,7 @@ type GalleryReader interface {
 	GalleryQueryer
 	GalleryCounter
 
+	URLLoader
 	FileIDLoader
 	ImageIDLoader
 	SceneIDLoader

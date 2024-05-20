@@ -19,12 +19,21 @@ export interface IState {
   onClose?: () => void;
 }
 interface IContext {
+  lightboxState: IState;
   setLightboxState: (state: Partial<IState>) => void;
 }
 
-export const LightboxContext = React.createContext<IContext>({
-  setLightboxState: () => {},
-});
+export const LightboxContext = React.createContext<IContext | null>(null);
+
+export function useLightboxContext() {
+  const context = React.useContext(LightboxContext);
+  if (!context) {
+    throw new Error(
+      "useLightboxContext must be used within a LightboxProvider"
+    );
+  }
+  return context;
+}
 
 export const LightboxProvider: React.FC = ({ children }) => {
   const [lightboxState, setLightboxState] = useState<IState>({
@@ -53,7 +62,9 @@ export const LightboxProvider: React.FC = ({ children }) => {
   };
 
   return (
-    <LightboxContext.Provider value={{ setLightboxState: setPartialState }}>
+    <LightboxContext.Provider
+      value={{ lightboxState, setLightboxState: setPartialState }}
+    >
       {children}
       <Suspense fallback={<></>}>
         {lightboxState.isVisible && (

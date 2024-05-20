@@ -1,0 +1,645 @@
+{
+    "setup": {
+        "welcome_to_stash": "Selamat datang di Stash",
+        "paths": {
+            "where_is_your_porn_located": "Di mana lokasi porno Anda?",
+            "description": "Selanjutnya, kita perlu menentukan di mana lokasi koleksi porno Anda, dan di mana menyimpan pangkalan data Stash, berkas yang dihasilkan, dan berkas tembolok. Pengaturan ini dapat diubah nanti jika diperlukan."
+        },
+        "success": {
+            "thanks_for_trying_stash": "Terima kasih sudah mencoba Stash!",
+            "support_us": "Dukung kami"
+        }
+    },
+    "type": "Tipe",
+    "actions": {
+        "add": "Tambah",
+        "apply": "Terapkan",
+        "add_o": "Tambah Crot",
+        "add_play": "Tambah pemutaran",
+        "backup": "Cadangan",
+        "add_manual_date": "Tambah manual tanggal",
+        "assign_stashid_to_parent_studio": "Tetapkan Stash ID ke studio induk yang ada dan perbarui metadata",
+        "auto_tag": "Tag Otomatis",
+        "browse_for_image": "Telusuri gambar…",
+        "clean": "Bersihkan",
+        "clear": "Kosongkan",
+        "clear_front_image": "Kosongkan gambar depan",
+        "close": "Tutup",
+        "confirm": "Konfirmasi",
+        "continue": "Lanjutkan",
+        "copy_to_clipboard": "Salin ke papan klip",
+        "create": "Buat",
+        "create_chapters": "Buat Bab",
+        "create_entity": "Buat {entityType}",
+        "create_marker": "Buat Tanda",
+        "create_parent_studio": "Buat studio induk",
+        "created_entity": "Telah dibuat {entity_type}: {entity_name}",
+        "customise": "Sesuaikan",
+        "delete": "Hapus",
+        "delete_entity": "Hapus {entityType}",
+        "delete_file": "Hapus berkas",
+        "delete_file_and_funscript": "Hapus berkas (dan funscript)",
+        "delete_generated_supporting_files": "Hapus file pendukung yang dihasilkan",
+        "disable": "Matikan",
+        "disallow": "Larang",
+        "download_anonymised": "Unduh sebagai anonim",
+        "download_backup": "Unduh Cadangan",
+        "edit_entity": "Sunting {entityType}",
+        "enable": "Nyalakan",
+        "find": "Cari",
+        "finish": "Selesai",
+        "from_file": "Dari berkas…",
+        "from_url": "Dari URL…",
+        "full_export": "Ekspor Penuh",
+        "full_import": "Impor Penuh",
+        "generate": "Hasilkan",
+        "allow_temporarily": "Izinkan sementara",
+        "anonymise": "Buat anonim",
+        "clear_back_image": "Kosongkan gambar belakang",
+        "clear_image": "Kosongkan Gambar",
+        "cancel": "Batal",
+        "download": "Unduh",
+        "edit": "Sunting",
+        "export": "Ekspor",
+        "export_all": "Ekspor semua…",
+        "choose_date": "Pilih tanggal",
+        "clear_date_data": "Bersihkan data tanggal",
+        "encoding_image": "Mengodekan gambar…",
+        "generate_thumb_default": "Hasilkan keluku bawaan",
+        "generate_thumb_from_current": "Hasilkan keluku dari saat ini",
+        "hash_migration": "Migrasi hash",
+        "hide": "Sembunyikan",
+        "import": "Impor…",
+        "logout": "Keluar",
+        "make_primary": "Jadikan Utama",
+        "merge": "Gabung",
+        "merge_from": "Gabung dari",
+        "merge_into": "Gabung ke",
+        "migrate_blobs": "Migrasi Blob",
+        "next_action": "Selanjutnya",
+        "not_running": "tidak berjalan",
+        "open_in_external_player": "Buka di pemutar eksternal",
+        "open_random": "Buka Acak",
+        "optimise_database": "Optimisasi Pangakalan Data",
+        "overwrite": "Timpa",
+        "play_random": "Putar Acak",
+        "play_selected": "Putar dipilih",
+        "preview": "Pratinjau",
+        "previous_action": "Kembali",
+        "reassign": "Tetapkan ulang",
+        "remove": "Hapus",
+        "remove_date": "Hapus tanggal",
+        "remove_from_gallery": "Hapus dari Galeri",
+        "rename_gen_files": "Ubah nama berkas yang dihasilkan",
+        "select_none": "Pilih Tak Satupun",
+        "selective_auto_tag": "Tag Otomatis Selektif",
+        "selective_clean": "Pembersihan Selektif",
+        "selective_scan": "Pemindaian Selektif",
+        "set_as_default": "Set sebagai bawaan",
+        "set_back_image": "Gambar belakang…",
+        "set_front_image": "Gambar depan…",
+        "show": "Tampilkan",
+        "show_configuration": "Tampilkan Konfigurasi",
+        "skip": "Lewati",
+        "split": "Pisah",
+        "stop": "Stop",
+        "submit": "Kirim",
+        "submit_stash_box": "Kirim ke Stash-Box",
+        "submit_update": "Kirim pembaruan",
+        "swap": "Tukar",
+        "clean_generated": "Bersihkan berkas yang dihasilkan",
+        "identify": "Identifikasi",
+        "import_from_file": "Impor dari berkas",
+        "hide_configuration": "Sembunyikan Konfigurasi",
+        "ignore": "Abaikan",
+        "refresh": "Segarkan",
+        "reload": "Muat ulang",
+        "reload_plugins": "Muat ulang plugin",
+        "rescan": "Pindai ulang",
+        "reshuffle": "Kocok",
+        "running": "berjalan",
+        "save": "Simpan",
+        "save_delete_settings": "Gunakan opsi ini secara bawaan saat menghapus",
+        "save_filter": "Simpan filter",
+        "scan": "Pindai",
+        "search": "Cari",
+        "select_all": "Pilih Semua",
+        "select_entity": "Pilih {entityType}",
+        "select_folders": "Pilih folder",
+        "add_directory": "Tambah Direktori",
+        "add_to_entity": "Tambah ke {entityType}",
+        "add_entity": "Tambah {entityType}",
+        "allow": "Izinkan",
+        "migrate_scene_screenshots": "Migrasi Tangkapan Layar Adegan",
+        "reload_scrapers": "Muat ulang penggali data",
+        "scrape": "Gali Data",
+        "scrape_query": "Kueri penggali data",
+        "scrape_scene_fragment": "Gali data dengan fragmen",
+        "scrape_with": "Gali data dengan…",
+        "set_image": "Tetapkan gambar…",
+        "tasks": {
+            "dry_mode_selected": "Mode Kering dipilih. Tidak ada penghapusan riil yang akan dilakukan, hanya pencatatan.",
+            "clean_confirm_message": "Apakah Anda yakin ingin Membersihkan? Ini akan menghapus informasi pangkalan data dan konten yang dihasilkan untuk semua adegan dan galeri yang tidak lagi ditemukan di berkas sistem.",
+            "import_warning": "Apakah Anda yakin ingin mengimpor? Ini akan menghapus pangkalan data dan mengimpor ulang metadata yang Anda ekspor."
+        },
+        "temp_disable": "Nonaktifkan sementara…",
+        "temp_enable": "Aktifkan sementara…",
+        "use_default": "Gunakan bawaan",
+        "view_random": "Lihat Acak",
+        "unset": "Tidak disetel"
+    },
+    "circumcised_types": {
+        "CUT": "Disunat",
+        "UNCUT": "Belum Disunat"
+    },
+    "hair_color": "Warna Rambut",
+    "gender_types": {
+        "TRANSGENDER_FEMALE": "Transpuan",
+        "TRANSGENDER_MALE": "Transpria",
+        "MALE": "Pria",
+        "NON_BINARY": "Non-biner",
+        "FEMALE": "Wanita",
+        "INTERSEX": "Interseks"
+    },
+    "measurements": "Ukuran",
+    "penis": "Kontol",
+    "penis_length": "Panjang Kontol",
+    "statistics": "Statistik",
+    "stats": {
+        "image_size": "Ukuran gambar",
+        "scenes_duration": "Durasi adegan",
+        "scenes_played": "Adegan diputar",
+        "total_play_count": "Total Jumlah Pemutaran",
+        "scenes_size": "Ukuran adegan",
+        "total_play_duration": "Total Durasi Pemutaran",
+        "total_o_count": "Total Jumlah Crot"
+    },
+    "studio": "Studio",
+    "studio_tagger": {
+        "add_new_studios": "Tambah Studio Baru"
+    },
+    "title": "Judul",
+    "twitter": "Twitter",
+    "studios": "Studio",
+    "fake_tits": "Toket Palsu",
+    "circumcised": "Disunat",
+    "penis_length_cm": "Panjang Kontol (cm)",
+    "gender": "Jenis Kelamin",
+    "height": "Tinggi Badan",
+    "height_cm": "Tinggi Badan (cm)",
+    "history": "Histori",
+    "help": "Bantuan",
+    "eye_color": "Warna Mata",
+    "true": "Benar",
+    "total": "Total",
+    "toast": {
+        "started_importing": "Memulai pengimporan",
+        "started_generating": "Mulai menghasilkan",
+        "merged_scenes": "Adegan yang digabungkan"
+    },
+    "also_known_as": "Juga dikenal sebagai",
+    "appears_with": "Muncul Bersama",
+    "component_tagger": {
+        "config": {
+            "query_mode_metadata": "Metadata",
+            "active_instance": "Instansi aktif stash-box:",
+            "blacklist_desc": "Butir daftar hitam dikecualikan dari kueri. Perhatikan bahwa ini adalah ekspresi reguler dan juga tidak peka huruf besar-kecil. Karakter tertentu harus di-escape dengan garis miring terbalik: {chars_require_escape}",
+            "blacklist_label": "Daftar hitam",
+            "mark_organized_desc": "Segera tandai adegan sebagai Terorganisir setelah tombol Simpan diklik.",
+            "mark_organized_label": "Tandai sebagai Terorganisir saat disimpan",
+            "query_mode_auto": "Otomatis",
+            "query_mode_auto_desc": "Menggunakan metadata jika ada, atau nama berkas",
+            "query_mode_dir": "Dir.",
+            "query_mode_dir_desc": "Hanya menggunakan direktori induk berkas video",
+            "query_mode_filename": "Nama berkas",
+            "query_mode_filename_desc": "Hanya menggunakan nama berkas",
+            "query_mode_label": "Mode Kueri",
+            "query_mode_metadata_desc": "Hanya menggunakan metadata",
+            "query_mode_path": "Jalur",
+            "query_mode_path_desc": "Menggunakan seluruh jalur berkas",
+            "set_cover_desc": "Ganti gambar adegan jika cover ditemukan.",
+            "set_cover_label": "Tetapkan gambar cover adegan",
+            "set_tag_label": "Tetapkan tag",
+            "set_tag_desc": "Lampirkan tag ke adegan, baik dengan menimpa atau menggabungkan dengan tag yang sudah ada.",
+            "show_male_desc": "Baeralih apakah pemain pria dapat diberi tag.",
+            "show_male_label": "Tampilkan pemain pria",
+            "source": "Sumber"
+        },
+        "results": {
+            "duration_unknown": "Durasi tidak diketahui",
+            "duration_off": "Durasi berkurang setidaknya {number} dtk",
+            "fp_matches": "Durasinya cocok",
+            "hash_matches": "{hash_type} cocok",
+            "match_failed_already_tagged": "Adegan sudah ditag",
+            "match_failed_no_result": "Tidak menemukan hasil",
+            "match_success": "Adegan berhasil ditag",
+            "phash_matches": "{count} PHash cocok",
+            "unnamed": "Belum dinamai"
+        },
+        "verb_scrape_all": "Gali Semua",
+        "noun_query": "Kueri",
+        "verb_matched": "Dicocokkan",
+        "verb_toggle_unmatched": "{toggle} adegan yang tidak cocok"
+    },
+    "config": {
+        "categories": {
+            "tasks": "Tugas",
+            "tools": "Alat",
+            "system": "Sistem",
+            "metadata_providers": "Penyedia Metadata",
+            "logs": "Catatan",
+            "about": "Tentang",
+            "changelog": "Catatan Perubahan",
+            "interface": "Antarmuka",
+            "plugins": "Pengaya",
+            "scraping": "Menggali Data",
+            "security": "Sekuriti",
+            "services": "Layanan"
+        },
+        "dlna": {
+            "network_interfaces": "Antarmuka",
+            "allow_temp_ip": "Izinkan {tempIP}",
+            "server_display_name_desc": "Nama tampilan untuk server DLNA. Bawaannya adalah {server_name} jika kosong.",
+            "successfully_cancelled_temporary_behaviour": "Berhasil membatalkan perilaku sementara",
+            "until_restart": "sampai dimulai ulang",
+            "video_sort_order": "Urutan Pengurutan Video Bawaan",
+            "video_sort_order_desc": "Urutan untuk mengurutkan video secara bawaan.",
+            "allowed_ip_addresses": "Alamat IP yang diizinkan",
+            "allowed_ip_temporarily": "IP yang diizinkan sementara",
+            "default_ip_whitelist": "Daftar Putih IP Bawaan",
+            "default_ip_whitelist_desc": "Alamat IP bawaan yang diizinkan untuk akses DLNA. Gunakan {wildcard} untuk mengizinkan semua alamat IP.",
+            "disabled_dlna_temporarily": "DLNA yang dinonaktifkan sementara",
+            "disallowed_ip": "IP yang tidak diizinkan",
+            "enabled_by_default": "Diaktifkan secara bawaan",
+            "enabled_dlna_temporarily": "DLNA yang diaktifkan sementara",
+            "network_interfaces_desc": "Antarmuka untuk mengekspos server DLNA. Daftar kosong menghasilkan berjalannya di semua antarmuka. Dibutuhkan mulai ulang DLNA setelah perubahan.",
+            "recent_ip_addresses": "Alamat IP terbaru",
+            "server_display_name": "Nama Tampilan Server"
+        },
+        "general": {
+            "logging": "Pencatatan",
+            "auth": {
+                "authentication": "Autentikasi",
+                "credentials": {
+                    "heading": "Kredensial",
+                    "description": "Kredensial untuk membatasi akses ke stash."
+                },
+                "password": "Kata sandi",
+                "username": "Nama pengguna",
+                "api_key": "Kunci API",
+                "api_key_desc": "Kunci API untuk sistem eksternal. Hanya diperlukan ketika nama pengguna/kata sandi dikonfigurasi. Nama pengguna harus disimpan sebelum membuat kunci API.",
+                "clear_api_key": "Hapus kunci API",
+                "log_file": "Berkas catatan",
+                "generate_api_key": "Hasilkan kunci API",
+                "log_file_desc": "Jalur ke berkas tujuan keluaran pencatatan. Kosong untuk menonaktifkan pencatatan berkas. Perlu dimulai ulang.",
+                "log_http": "Catat akses http",
+                "log_http_desc": "Mencatat akses http ke terminal. Perlu dimulai ulang.",
+                "log_to_terminal": "Catat ke terminal",
+                "log_to_terminal_desc": "Catat ke terminal selain berkas. Selalu benar jika pencatatan berkas dinonaktifkan. Perlu dimulai ulang.",
+                "maximum_session_age": "Usia Sesi Maksimum",
+                "maximum_session_age_desc": "Waktu diam maksimum sebelum sesi login berakhir, dalam hitungan detik. Perlu dimulai ulang.",
+                "password_desc": "Kata sandi untuk mengakses Stash. Biarkan kosong untuk menonaktifkan otentikasi pengguna",
+                "stash-box_integration": "Integrasi Stash-box",
+                "username_desc": "Nama pengguna untuk mengakses Stash. Biarkan kosong untuk menonaktifkan otentikasi pengguna"
+            },
+            "database": "Pangkalan data",
+            "hashing": "Hashing",
+            "scraping": "Penggalian Data",
+            "video_head": "Video",
+            "blobs_storage": {
+                "description": "Tempat menyimpan data biner seperti gambar sampul adegan, pemain, studio, dan tag. Setelah mengubah nilai ini, data yang ada harus dimigrasikan menggunakan tugas Migrate Blobs. Lihat halaman Tugas untuk migrasi.",
+                "heading": "Tipe penyimpanan data biner"
+            },
+            "funscript_heatmap_draw_range_desc": "Gambarkan rentang gerak pada sumbu y dari peta panas yang dihasilkan. Peta panas yang ada perlu dibuat ulang setelah diubah.",
+            "gallery_cover_regex_desc": "Regexp digunakan untuk mengidentifikasi gambar sebagai sampul galeri",
+            "gallery_cover_regex_label": "Pola sampul galeri",
+            "gallery_ext_desc": "Daftar ekstensi berkas yang dibatasi koma yang akan diidentifikasi sebagai berkas zip galeri.",
+            "gallery_ext_head": "Ekstensi zip galeri",
+            "python_path": {
+                "heading": "Jalur Eksekusi Python"
+            },
+            "scraper_user_agent": "Agen Pengguna Penggali",
+            "db_path_head": "Jalur Pangkalan Data",
+            "backup_directory_path": {
+                "description": "Lokasi direktori untuk cadangan berkas pangkalan data SQLite",
+                "heading": "Jalur Direktori Cadangan"
+            },
+            "funscript_heatmap_draw_range": "Sertakan rentang dalam peta panas yang dihasilkan",
+            "generated_file_naming_hash_head": "Hash penamaan berkas yang dihasilkan",
+            "generated_files_location": "Lokasi direktori untuk berkas yang dihasilkan (penanda adegan, pratinjau adegan, sprite, dll.)",
+            "generated_path_head": "Jalur yang Dihasilkan",
+            "heatmap_generation": "Pembuatan Peta Panas Funscript",
+            "image_ext_head": "Ekstensi Gambar",
+            "include_audio_desc": "Termasuk aliran audio saat membuat pratinjau.",
+            "include_audio_head": "Sertakan audio",
+            "maximum_streaming_transcode_size_desc": "Ukuran maksimum untuk aliran yang ditranskode",
+            "maximum_streaming_transcode_size_head": "Ukuran maksimum transkode aliran",
+            "maximum_transcode_size_desc": "Ukuran maksimum untuk transkode yang dihasilkan",
+            "maximum_transcode_size_head": "Ukuran transkode maksimum",
+            "metadata_path": {
+                "description": "Lokasi direktori yang digunakan saat melakukan ekspor atau impor penuh",
+                "heading": "Jalur Metadata"
+            },
+            "number_of_parallel_task_for_scan_generation_desc": "Set ke 0 untuk deteksi otomatis. Peringatan menjalankan lebih banyak tugas daripada yang diperlukan untuk mencapai penggunaan CPU 100% akan menurunkan kinerja dan berpotensi menyebabkan masalah lain.",
+            "number_of_parallel_task_for_scan_generation_head": "Jumlah tugas paralel untuk pemindaian/penghasilan",
+            "parallel_scan_head": "Pemindaian/Penghasilan Paralel",
+            "preview_generation": "Penghasilan Pratinjau",
+            "scrapers_path": {
+                "description": "Lokasi direktori berkas konfigurasi penggali data",
+                "heading": "Jalur Penggali"
+            },
+            "scraper_user_agent_desc": "String Agen-Pengguna yang digunakan selama permintaan http penggalian data",
+            "video_ext_head": "Ekstensi Video"
+        },
+        "library": {
+            "exclusions": "Pengecualian"
+        },
+        "tasks": {
+            "identify": {
+                "sources": "Sumber",
+                "field": "Bidang",
+                "heading": "Identifikasi",
+                "source": "Sumber",
+                "strategy": "Strategi"
+            },
+            "maintenance": "Pemeliharaan",
+            "migrations": "Migrasi",
+            "backing_up_database": "Mencadangkan pangkalan data",
+            "anonymise_and_download": "Membuat salinan pangkalan data yang dianonimkan dan mengunduh berkas yang dihasilkan.",
+            "anonymising_database": "Menganonimkan pangkalan data",
+            "auto_tag": {
+                "auto_tagging_all_paths": "Memberi Tag Otomatis pada semua jalur",
+                "auto_tagging_paths": "Memberi Tag Otomatis pada jalur berikut"
+            },
+            "auto_tag_based_on_filenames": "Memberi tag otomatis pada konten berdasarkan jalur berkas.",
+            "auto_tagging": "Pemberian Tag Otomatis"
+        },
+        "ui": {
+            "editing": {
+                "heading": "Pengeditan",
+                "rating_system": {
+                    "star_precision": {
+                        "options": {
+                            "tenth": "Persepuluh",
+                            "full": "Penuh",
+                            "half": "Setengah",
+                            "quarter": "Seperempat"
+                        }
+                    },
+                    "type": {
+                        "options": {
+                            "decimal": "Desimal",
+                            "stars": "Bintang"
+                        }
+                    }
+                }
+            },
+            "handy_connection": {
+                "connect": "Sambung",
+                "sync": "Singkronisasi"
+            },
+            "image_wall": {
+                "direction": "Arah"
+            },
+            "images": {
+                "heading": "Gambar"
+            },
+            "language": {
+                "heading": "Bahasa"
+            },
+            "preview_type": {
+                "options": {
+                    "video": "Video"
+                }
+            }
+        },
+        "advanced_mode": "Mode Tingkat Lanjut",
+        "application_paths": {
+            "heading": "Jalur Aplikasi"
+        },
+        "about": {
+            "latest_version": "Versi Mutakhir",
+            "release_date": "Tanggal rilis:",
+            "new_version_notice": "[BARU]",
+            "stash_discord": "Gabung ke saluran {url} kami",
+            "stash_home": "Beranda Stash di {url}",
+            "stash_open_collective": "Dukung kami melalui {url}",
+            "version": "Versi",
+            "check_for_new_version": "Periksa versi terbaru"
+        },
+        "scraping": {
+            "scraper": "Penggali data",
+            "scrapers": "Penggali data",
+            "supported_urls": "URL",
+            "installed_scrapers": "Penggali Terpasang",
+            "supported_types": "Tipe yang didukung",
+            "search_by_name": "Cari berdasarkan nama",
+            "available_scrapers": "Penggali Tersedia",
+            "entity_scrapers": "Penggali {entityType}"
+        },
+        "stashbox": {
+            "endpoint": "Titik akhir",
+            "name": "Nama",
+            "graphql_endpoint": "Titik akhir GraphQL",
+            "title": "Titik Akhir Stash-box",
+            "api_key": "Kunci API"
+        },
+        "system": {
+            "transcoding": "Transkode"
+        },
+        "tools": {
+            "scene_filename_parser": {
+                "filename": "Nama berkas"
+            }
+        }
+    },
+    "criterion": {
+        "value": "Nilai"
+    },
+    "criterion_modifier": {
+        "between": "antara",
+        "equals": "adalah",
+        "excludes": "tidak termasuk",
+        "includes": "termasuk"
+    },
+    "date_format": "YYYY-MM-DD",
+    "dialogs": {
+        "imagewall": {
+            "direction": {
+                "column": "Kolom",
+                "row": "Baris"
+            }
+        },
+        "export_title": "Ekspor",
+        "lightbox": {
+            "display_mode": {
+                "original": "Asli"
+            },
+            "options": "Opsi",
+            "scroll_mode": {
+                "zoom": "Perbesar"
+            }
+        },
+        "merge": {
+            "destination": "Destinasi",
+            "source": "Sumber"
+        },
+        "merge_tags": {
+            "destination": "Destinasi",
+            "source": "Sumber"
+        },
+        "scene_gen": {
+            "transcodes": "Transkode",
+            "video_previews": "Pratinjau"
+        },
+        "scrape_results_existing": "Yang sudah ada",
+        "scrape_results_scraped": "Digali"
+    },
+    "effect_filters": {
+        "brightness": "Kecerahan",
+        "contrast": "Kontras",
+        "green": "Hijau",
+        "warmth": "Kehangatan",
+        "aspect": "Aspek",
+        "blue": "Biru",
+        "blur": "Buram",
+        "gamma": "Gamma",
+        "name": "Filter",
+        "name_transforms": "Ubah",
+        "red": "Merah",
+        "rotate": "Putar",
+        "saturation": "Saturasi",
+        "scale": "Skala"
+    },
+    "filter": "Filter",
+    "images": "Gambar",
+    "markers": "Penanda",
+    "name": "Nama",
+    "new": "Baru",
+    "none": "Tidak ada",
+    "package_manager": {
+        "description": "Deskripsi",
+        "install": "Pasang",
+        "package": "Paket",
+        "source": {
+            "name": "Nama"
+        },
+        "uninstall": "Copot pemasangan",
+        "update": "Perbarui",
+        "version": "Versi",
+        "unknown": "<tidak diketahui>"
+    },
+    "pagination": {
+        "next": "Berikutnya",
+        "previous": "Sebelumnya",
+        "last": "Terakhir",
+        "first": "Pertama"
+    },
+    "performer": "Pemain",
+    "performers": "Pemain",
+    "photographer": "Fotografer",
+    "queue": "Antrean",
+    "random": "Acak",
+    "scenes": "Adegan",
+    "rating": "Rating",
+    "resolution": "Resolusi",
+    "scene": "Adegan",
+    "search_filter": {
+        "name": "Filter"
+    },
+    "second": "Detik",
+    "settings": "Pengaturan",
+    "seconds": "Detik",
+    "synopsis": "Sinopsis",
+    "tags": "Tag",
+    "tattoos": "Tato",
+    "path": "Jalur",
+    "piercings": "Tindik",
+    "time": "Waktu",
+    "videos": "Video",
+    "weight": "Berat",
+    "url": "URL",
+    "urls": "URL",
+    "errors": {
+        "header": "Galat"
+    },
+    "ethnicity": "Etnis",
+    "image": "Gambar",
+    "actions_name": "Aksi",
+    "age": "Umur",
+    "aliases": "Alias",
+    "audio_codec": "Kodek Audio",
+    "average_resolution": "Resolusi Rata-rata",
+    "between_and": "dan",
+    "birth_year": "Tahun Lahir",
+    "birthdate": "Tanggal Lahir",
+    "bitrate": "Kecepatan Bit",
+    "blobs_storage_type": {
+        "database": "Pangkalan data",
+        "filesystem": "Berkas sistem"
+    },
+    "career_length": "Panjang Karir",
+    "chapters": "Bab",
+    "captions": "Keterangan",
+    "configuration": "Konfigurasi",
+    "country": "Negara",
+    "custom": "Kustom",
+    "date": "Tanggal",
+    "descending": "Urut turun",
+    "description": "Deskripsi",
+    "detail": "Detail",
+    "details": "Detail",
+    "dimensions": "Dimensi",
+    "director": "Sutradara",
+    "disambiguation": "Disambiguasi",
+    "display_mode": {
+        "grid": "Kisi",
+        "list": "Daftar",
+        "tagger": "Penanda",
+        "unknown": "Tidak diketahui",
+        "wall": "Tembok"
+    },
+    "distance": "Jarak",
+    "donate": "Donasi",
+    "dupe_check": {
+        "duration_options": {
+            "any": "Apapun",
+            "equal": "Setara"
+        },
+        "options": {
+            "exact": "Persis",
+            "high": "Tinggi",
+            "low": "Rendah",
+            "medium": "Sedang"
+        }
+    },
+    "duration": "Durasi",
+    "favourite": "Favorit",
+    "file": "berkas",
+    "files": "berkas",
+    "filters": "Filter",
+    "folder": "Folder",
+    "galleries": "Galeri",
+    "gallery": "Galeri",
+    "handy_connection_status": {
+        "connecting": "Menghubungkan",
+        "disconnected": "Terputus",
+        "missing": "Hilang",
+        "ready": "Siap"
+    },
+    "instagram": "Instagram",
+    "interactive": "Interaktif",
+    "library": "Pustaka",
+    "loading": {
+        "generic": "Memuat…"
+    },
+    "tag": "Tag",
+    "movie": "Film",
+    "movies": "Film",
+    "o_counter": "Penghitung Crot",
+    "operations": "Operasi",
+    "organized": "Terorganisir",
+    "orientation": "Orientasi",
+    "all": "semua",
+    "ascending": "Urut naik"
+}

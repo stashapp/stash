@@ -58,6 +58,7 @@
 | `k` | Markers tab |
 | `i` | File info tab |
 | `e` | Edit tab |
+| `h` | History tab |
 | `,` | Hide/Show sidebar |
 | `.` | Hide/Show scene scrubber |
 | `o` | Increment O-Counter |

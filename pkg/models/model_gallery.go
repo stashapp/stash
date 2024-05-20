@@ -10,10 +10,11 @@ import (
 type Gallery struct {
 	ID int `json:"id"`
 
-	Title   string `json:"title"`
-	URL     string `json:"url"`
-	Date    *Date  `json:"date"`
-	Details string `json:"details"`
+	Title        string `json:"title"`
+	Code         string `json:"code"`
+	Date         *Date  `json:"date"`
+	Details      string `json:"details"`
+	Photographer string `json:"photographer"`
 	// Rating expressed in 1-100 scale
 	Rating    *int `json:"rating"`
 	Organized bool `json:"organized"`
@@ -31,9 +32,10 @@ type Gallery struct {
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 
-	SceneIDs     RelatedIDs `json:"scene_ids"`
-	TagIDs       RelatedIDs `json:"tag_ids"`
-	PerformerIDs RelatedIDs `json:"performer_ids"`
+	URLs         RelatedStrings `json:"urls"`
+	SceneIDs     RelatedIDs     `json:"scene_ids"`
+	TagIDs       RelatedIDs     `json:"tag_ids"`
+	PerformerIDs RelatedIDs     `json:"performer_ids"`
 }
 
 func NewGallery() Gallery {
@@ -50,10 +52,12 @@ type GalleryPartial struct {
 	// Path        OptionalString
 	// Checksum    OptionalString
 	// Zip         OptionalBool
-	Title   OptionalString
-	URL     OptionalString
-	Date    OptionalDate
-	Details OptionalString
+	Title        OptionalString
+	Code         OptionalString
+	URLs         *UpdateStrings
+	Date         OptionalDate
+	Details      OptionalString
+	Photographer OptionalString
 	// Rating expressed in 1-100 scale
 	Rating    OptionalInt
 	Organized OptionalBool
@@ -79,6 +83,12 @@ func NewGalleryPartial() GalleryPartial {
 // This is determined by whether the gallery has a primary file or folder.
 func (g *Gallery) IsUserCreated() bool {
 	return g.PrimaryFileID == nil && g.FolderID == nil
+}
+
+func (g *Gallery) LoadURLs(ctx context.Context, l URLLoader) error {
+	return g.URLs.load(func() ([]string, error) {
+		return l.GetURLs(ctx, g.ID)
+	})
 }
 
 func (g *Gallery) LoadFiles(ctx context.Context, l FileLoader) error {

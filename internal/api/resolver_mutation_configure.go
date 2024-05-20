@@ -6,12 +6,16 @@ import (
 	"fmt"
 	"path/filepath"
 	"regexp"
+	"strconv"
 
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/internal/manager/config"
+	"github.com/stashapp/stash/internal/manager/task"
+	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 var ErrOverriddenConfig = errors.New("cannot set overridden value")
@@ -21,9 +25,32 @@ func (r *mutationResolver) Setup(ctx context.Context, input manager.SetupInput) 
 	return err == nil, err
 }
 
-func (r *mutationResolver) Migrate(ctx context.Context, input manager.MigrateInput) (bool, error) {
-	err := manager.GetInstance().Migrate(ctx, input)
-	return err == nil, err
+func (r *mutationResolver) DownloadFFMpeg(ctx context.Context) (string, error) {
+	mgr := manager.GetInstance()
+	configDir := mgr.Config.GetConfigPath()
+
+	// don't run if ffmpeg is already installed
+	ffmpegPath := ffmpeg.FindFFMpeg(configDir)
+	ffprobePath := ffmpeg.FindFFProbe(configDir)
+	if ffmpegPath != "" && ffprobePath != "" {
+		return "", fmt.Errorf("ffmpeg and ffprobe already installed at %s and %s", ffmpegPath, ffprobePath)
+	}
+
+	t := &task.DownloadFFmpegJob{
+		ConfigDirectory: configDir,
+		OnComplete: func(ctx context.Context) {
+			// clear the ffmpeg and ffprobe paths
+			logger.Infof("Clearing ffmpeg and ffprobe config paths so they are resolved from the config directory")
+			mgr.Config.Set(config.FFMpegPath, "")
+			mgr.Config.Set(config.FFProbePath, "")
+			mgr.RefreshFFMpeg(ctx)
+			mgr.RefreshStreamManager()
+		},
+	}
+
+	jobID := mgr.JobManager.Add(ctx, "Downloading ffmpeg...", t)
+
+	return strconv.Itoa(jobID), nil
 }
 
 func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGeneralInput) (*ConfigGeneralResult, error) {
@@ -104,6 +131,7 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 	}
 
 	refreshScraperCache := false
+	refreshScraperSource := false
 	existingScrapersPath := c.GetScrapersPath()
 	if input.ScrapersPath != nil && existingScrapersPath != *input.ScrapersPath {
 		if err := validateDir(config.ScrapersPath, *input.ScrapersPath, false); err != nil {
@@ -111,7 +139,21 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 		}
 
 		refreshScraperCache = true
+		refreshScraperSource = true
 		c.Set(config.ScrapersPath, input.ScrapersPath)
+	}
+
+	refreshPluginCache := false
+	refreshPluginSource := false
+	existingPluginsPath := c.GetPluginsPath()
+	if input.PluginsPath != nil && existingPluginsPath != *input.PluginsPath {
+		if err := validateDir(config.PluginsPath, *input.PluginsPath, false); err != nil {
+			return makeConfigGeneralResult(), err
+		}
+
+		refreshPluginCache = true
+		refreshPluginSource = true
+		c.Set(config.PluginsPath, input.PluginsPath)
 	}
 
 	existingMetadataPath := c.GetMetadataPath()
@@ -150,10 +192,32 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 			return makeConfigGeneralResult(), fmt.Errorf("blobs path must be set when using filesystem storage")
 		}
 
-		// TODO - migrate between systems
 		c.Set(config.BlobsStorage, input.BlobsStorage)
 
 		refreshBlobStorage = true
+	}
+
+	refreshFfmpeg := false
+	if input.FfmpegPath != nil && *input.FfmpegPath != c.GetFFMpegPath() {
+		if *input.FfmpegPath != "" {
+			if err := ffmpeg.ValidateFFMpeg(*input.FfmpegPath); err != nil {
+				return makeConfigGeneralResult(), fmt.Errorf("invalid ffmpeg path: %w", err)
+			}
+		}
+
+		c.Set(config.FFMpegPath, input.FfmpegPath)
+		refreshFfmpeg = true
+	}
+
+	if input.FfprobePath != nil && *input.FfprobePath != c.GetFFProbePath() {
+		if *input.FfprobePath != "" {
+			if err := ffmpeg.ValidateFFProbe(*input.FfprobePath); err != nil {
+				return makeConfigGeneralResult(), fmt.Errorf("invalid ffprobe path: %w", err)
+			}
+		}
+
+		c.Set(config.FFProbePath, input.FfprobePath)
+		refreshFfmpeg = true
 	}
 
 	if input.VideoFileNamingAlgorithm != nil && *input.VideoFileNamingAlgorithm != c.GetVideoFileNamingAlgorithm() {
@@ -316,21 +380,7 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 
 	if input.CustomPerformerImageLocation != nil {
 		c.Set(config.CustomPerformerImageLocation, *input.CustomPerformerImageLocation)
-		initialiseCustomImages()
-	}
-
-	if input.ScraperUserAgent != nil {
-		c.Set(config.ScraperUserAgent, input.ScraperUserAgent)
-		refreshScraperCache = true
-	}
-
-	if input.ScraperCDPPath != nil {
-		c.Set(config.ScraperCDPPath, input.ScraperCDPPath)
-		refreshScraperCache = true
-	}
-
-	if input.ScraperCertCheck != nil {
-		c.Set(config.ScraperCertCheck, input.ScraperCertCheck)
+		initCustomPerformerImages(*input.CustomPerformerImageLocation)
 	}
 
 	if input.StashBoxes != nil {
@@ -361,6 +411,16 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 		c.Set(config.DrawFunscriptHeatmapRange, input.DrawFunscriptHeatmapRange)
 	}
 
+	if input.ScraperPackageSources != nil {
+		c.Set(config.ScraperPackageSources, input.ScraperPackageSources)
+		refreshScraperSource = true
+	}
+
+	if input.PluginPackageSources != nil {
+		c.Set(config.PluginPackageSources, input.PluginPackageSources)
+		refreshPluginSource = true
+	}
+
 	if err := c.Write(); err != nil {
 		return makeConfigGeneralResult(), err
 	}
@@ -369,11 +429,26 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 	if refreshScraperCache {
 		manager.GetInstance().RefreshScraperCache()
 	}
+	if refreshPluginCache {
+		manager.GetInstance().RefreshPluginCache()
+	}
+	if refreshFfmpeg {
+		manager.GetInstance().RefreshFFMpeg(ctx)
+
+		// refresh stream manager is required since ffmpeg changed
+		refreshStreamManager = true
+	}
 	if refreshStreamManager {
 		manager.GetInstance().RefreshStreamManager()
 	}
 	if refreshBlobStorage {
 		manager.GetInstance().SetBlobStoreOptions()
+	}
+	if refreshScraperSource {
+		manager.GetInstance().RefreshScraperSourceManager()
+	}
+	if refreshPluginSource {
+		manager.GetInstance().RefreshPluginSourceManager()
 	}
 
 	return makeConfigGeneralResult(), nil
@@ -422,11 +497,6 @@ func (r *mutationResolver) ConfigureInterface(ctx context.Context, input ConfigI
 
 	if input.Language != nil {
 		c.Set(config.Language, *input.Language)
-	}
-
-	// deprecated field
-	if input.SlideshowDelay != nil {
-		c.Set(config.ImageLightboxSlideshowDelay, *input.SlideshowDelay)
 	}
 
 	if input.ImageLightbox != nil {
@@ -506,19 +576,14 @@ func (r *mutationResolver) ConfigureDlna(ctx context.Context, input ConfigDLNAIn
 		c.Set(config.DLNAVideoSortOrder, input.VideoSortOrder)
 	}
 
-	currentDLNAEnabled := c.GetDLNADefaultEnabled()
-	if input.Enabled != nil && *input.Enabled != currentDLNAEnabled {
-		c.Set(config.DLNADefaultEnabled, *input.Enabled)
+	if input.Port != nil {
+		c.Set(config.DLNAPort, *input.Port)
+	}
 
-		// start/stop the DLNA service as needed
-		dlnaService := manager.GetInstance().DLNAService
-		if !*input.Enabled && dlnaService.IsRunning() {
-			dlnaService.Stop(nil)
-		} else if *input.Enabled && !dlnaService.IsRunning() {
-			if err := dlnaService.Start(nil); err != nil {
-				logger.Warnf("error starting DLNA service: %v", err)
-			}
-		}
+	refresh := false
+	if input.Enabled != nil {
+		c.Set(config.DLNADefaultEnabled, *input.Enabled)
+		refresh = true
 	}
 
 	if input.Interfaces != nil {
@@ -527,6 +592,10 @@ func (r *mutationResolver) ConfigureDlna(ctx context.Context, input ConfigDLNAIn
 
 	if err := c.Write(); err != nil {
 		return makeConfigDLNAResult(), err
+	}
+
+	if refresh {
+		manager.GetInstance().RefreshDLNA()
 	}
 
 	return makeConfigDLNAResult(), nil
@@ -629,9 +698,19 @@ func (r *mutationResolver) GenerateAPIKey(ctx context.Context, input GenerateAPI
 	return newAPIKey, nil
 }
 
-func (r *mutationResolver) ConfigureUI(ctx context.Context, input map[string]interface{}) (map[string]interface{}, error) {
+func (r *mutationResolver) ConfigureUI(ctx context.Context, input map[string]interface{}, partial map[string]interface{}) (map[string]interface{}, error) {
 	c := config.GetInstance()
-	c.SetUIConfiguration(input)
+
+	if input != nil {
+		c.SetUIConfiguration(input)
+	}
+
+	if partial != nil {
+		// merge partial into existing config
+		existing := c.GetUIConfiguration()
+		utils.MergeMaps(existing, partial)
+		c.SetUIConfiguration(existing)
+	}
 
 	if err := c.Write(); err != nil {
 		return c.GetUIConfiguration(), err
@@ -643,8 +722,19 @@ func (r *mutationResolver) ConfigureUI(ctx context.Context, input map[string]int
 func (r *mutationResolver) ConfigureUISetting(ctx context.Context, key string, value interface{}) (map[string]interface{}, error) {
 	c := config.GetInstance()
 
-	cfg := c.GetUIConfiguration()
-	cfg[key] = value
+	cfg := utils.NestedMap(c.GetUIConfiguration())
+	cfg.Set(key, value)
 
-	return r.ConfigureUI(ctx, cfg)
+	return r.ConfigureUI(ctx, cfg, nil)
+}
+
+func (r *mutationResolver) ConfigurePlugin(ctx context.Context, pluginID string, input map[string]interface{}) (map[string]interface{}, error) {
+	c := config.GetInstance()
+	c.SetPluginConfiguration(pluginID, input)
+
+	if err := c.Write(); err != nil {
+		return c.GetPluginConfiguration(pluginID), err
+	}
+
+	return c.GetPluginConfiguration(pluginID), nil
 }

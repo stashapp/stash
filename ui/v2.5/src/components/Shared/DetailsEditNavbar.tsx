@@ -13,6 +13,7 @@ interface IProps {
   saveDisabled?: boolean;
   onDelete: () => void;
   onAutoTag?: () => void;
+  autoTagDisabled?: boolean;
   onImageChange: (event: React.FormEvent<HTMLInputElement>) => void;
   onBackImageChange?: (event: React.FormEvent<HTMLInputElement>) => void;
   onImageChangeURL?: (url: string) => void;
@@ -94,6 +95,7 @@ export const DetailsEditNavbar: React.FC<IProps> = (props: IProps) => {
         <div>
           <Button
             variant="secondary"
+            disabled={props.autoTagDisabled}
             onClick={() => {
               if (props.onAutoTag) {
                 props.onAutoTag();

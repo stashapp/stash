@@ -1,7 +1,6 @@
 package studio
 
 import (
-	"context"
 	"errors"
 
 	"github.com/stashapp/stash/pkg/models"
@@ -63,6 +62,7 @@ func createFullStudio(id int, parentID int) models.Studio {
 		Name:          studioName,
 		URL:           url,
 		Details:       details,
+		Favorite:      true,
 		CreatedAt:     createTime,
 		UpdatedAt:     updateTime,
 		Rating:        &rating,
@@ -90,9 +90,10 @@ func createEmptyStudio(id int) models.Studio {
 
 func createFullJSONStudio(parentStudio, image string, aliases []string) *jsonschema.Studio {
 	return &jsonschema.Studio{
-		Name:    studioName,
-		URL:     url,
-		Details: details,
+		Name:     studioName,
+		URL:      url,
+		Details:  details,
+		Favorite: true,
 		CreatedAt: json.JSONTime{
 			Time: createTime,
 		},
@@ -162,27 +163,26 @@ func initTestTable() {
 
 func TestToJSON(t *testing.T) {
 	initTestTable()
-	ctx := context.Background()
 
-	mockStudioReader := &mocks.StudioReaderWriter{}
+	db := mocks.NewDatabase()
 
 	imageErr := errors.New("error getting image")
 
-	mockStudioReader.On("GetImage", ctx, studioID).Return(imageBytes, nil).Once()
-	mockStudioReader.On("GetImage", ctx, noImageID).Return(nil, nil).Once()
-	mockStudioReader.On("GetImage", ctx, errImageID).Return(nil, imageErr).Once()
-	mockStudioReader.On("GetImage", ctx, missingParentStudioID).Return(imageBytes, nil).Maybe()
-	mockStudioReader.On("GetImage", ctx, errStudioID).Return(imageBytes, nil).Maybe()
+	db.Studio.On("GetImage", testCtx, studioID).Return(imageBytes, nil).Once()
+	db.Studio.On("GetImage", testCtx, noImageID).Return(nil, nil).Once()
+	db.Studio.On("GetImage", testCtx, errImageID).Return(nil, imageErr).Once()
+	db.Studio.On("GetImage", testCtx, missingParentStudioID).Return(imageBytes, nil).Maybe()
+	db.Studio.On("GetImage", testCtx, errStudioID).Return(imageBytes, nil).Maybe()
 
 	parentStudioErr := errors.New("error getting parent studio")
 
-	mockStudioReader.On("Find", ctx, parentStudioID).Return(&parentStudio, nil)
-	mockStudioReader.On("Find", ctx, missingStudioID).Return(nil, nil)
-	mockStudioReader.On("Find", ctx, errParentStudioID).Return(nil, parentStudioErr)
+	db.Studio.On("Find", testCtx, parentStudioID).Return(&parentStudio, nil)
+	db.Studio.On("Find", testCtx, missingStudioID).Return(nil, nil)
+	db.Studio.On("Find", testCtx, errParentStudioID).Return(nil, parentStudioErr)
 
 	for i, s := range scenarios {
 		studio := s.input
-		json, err := ToJSON(ctx, mockStudioReader, &studio)
+		json, err := ToJSON(testCtx, db.Studio, &studio)
 
 		switch {
 		case !s.err && err != nil:
@@ -194,5 +194,5 @@ func TestToJSON(t *testing.T) {
 		}
 	}
 
-	mockStudioReader.AssertExpectations(t)
+	db.AssertExpectations(t)
 }

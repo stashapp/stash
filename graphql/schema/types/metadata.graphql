@@ -1,5 +1,3 @@
-scalar Upload
-
 input GenerateMetadataInput {
   covers: Boolean
   sprites: Boolean
@@ -14,6 +12,7 @@ input GenerateMetadataInput {
   forceTranscodes: Boolean
   phashes: Boolean
   interactiveHeatmapsSpeeds: Boolean
+  imageThumbnails: Boolean
   clipPreviews: Boolean
 
   "scene ids to generate for"
@@ -50,6 +49,7 @@ type GenerateMetadataOptions {
   transcodes: Boolean
   phashes: Boolean
   interactiveHeatmapsSpeeds: Boolean
+  imageThumbnails: Boolean
   clipPreviews: Boolean
 }
 
@@ -75,19 +75,6 @@ input ScanMetaDataFilterInput {
 input ScanMetadataInput {
   paths: [String!]
 
-  # useFileMetadata is deprecated with the new file management system
-  # if this functionality is desired, then we can make a built in scraper instead.
-
-  "Set name, date, details from metadata (if present)"
-  useFileMetadata: Boolean @deprecated(reason: "Not implemented")
-
-  # stripFileExtension is deprecated since we no longer set the title from the
-  # filename - it is automatically returned if the object has no title. If this
-  # functionality is desired, then we could make this an option to not include
-  # the extension in the auto-generated title.
-
-  "Strip file extension from title"
-  stripFileExtension: Boolean @deprecated(reason: "Not implemented")
   "Forces a rescan on files"
   forceRescan: Boolean
   "Generate covers during scan"
@@ -110,10 +97,6 @@ input ScanMetadataInput {
 }
 
 type ScanMetadataOptions {
-  "Set name, date, details from metadata (if present)"
-  useFileMetadata: Boolean! @deprecated(reason: "Not implemented")
-  "Strip file extension from title"
-  stripFileExtension: Boolean! @deprecated(reason: "Not implemented")
   "Forces a rescan on files"
   forceRescan: Boolean!
   "Generate covers during scan"
@@ -137,6 +120,26 @@ input CleanMetadataInput {
 
   "Do a dry run. Don't delete any files"
   dryRun: Boolean!
+}
+
+input CleanGeneratedInput {
+  "Clean blob files without blob entries"
+  blobFiles: Boolean
+  "Clean sprite and vtt files without scene entries"
+  sprites: Boolean
+  "Clean preview files without scene entries"
+  screenshots: Boolean
+  "Clean scene transcodes without scene entries"
+  transcodes: Boolean
+
+  "Clean marker files without marker entries"
+  markers: Boolean
+
+  "Clean image thumbnails/clips without image entries"
+  imageThumbnails: Boolean
+
+  "Do a dry run. Don't delete any files"
+  dryRun: Boolean
 }
 
 input AutoTagMetadataInput {
@@ -324,6 +327,11 @@ type SystemStatus {
   configPath: String
   appSchema: Int!
   status: SystemStatusEnum!
+  os: String!
+  workingDir: String!
+  homeDir: String!
+  ffmpegPath: String
+  ffprobePath: String
 }
 
 input MigrateInput {

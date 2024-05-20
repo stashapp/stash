@@ -12,6 +12,7 @@ import {
   faBan,
   faCheck,
   faCircle,
+  faCircleExclamation,
   faCog,
   faHourglassStart,
   faTimes,
@@ -19,7 +20,7 @@ import {
 
 type JobFragment = Pick<
   GQL.Job,
-  "id" | "status" | "subTasks" | "description" | "progress"
+  "id" | "status" | "subTasks" | "description" | "progress" | "error"
 >;
 
 interface IJob {
@@ -37,6 +38,7 @@ const Task: React.FC<IJob> = ({ job }) => {
   useEffect(() => {
     if (
       job.status === GQL.JobStatus.Cancelled ||
+      job.status === GQL.JobStatus.Failed ||
       job.status === GQL.JobStatus.Finished
     ) {
       // fade out around 10 seconds
@@ -71,6 +73,8 @@ const Task: React.FC<IJob> = ({ job }) => {
         return "finished";
       case GQL.JobStatus.Cancelled:
         return "cancelled";
+      case GQL.JobStatus.Failed:
+        return "failed";
     }
   }
 
@@ -94,6 +98,9 @@ const Task: React.FC<IJob> = ({ job }) => {
         break;
       case GQL.JobStatus.Cancelled:
         icon = faBan;
+        break;
+      case GQL.JobStatus.Failed:
+        icon = faCircleExclamation;
         break;
     }
 
@@ -133,6 +140,10 @@ const Task: React.FC<IJob> = ({ job }) => {
           {/* eslint-enable react/no-array-index-key */}
         </div>
       );
+    }
+
+    if (job.status === GQL.JobStatus.Failed && job.error) {
+      return <div className="job-error">{job.error}</div>;
     }
   }
 

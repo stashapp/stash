@@ -15,8 +15,8 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
+	"github.com/stashapp/stash/pkg/plugin/hook"
 	"github.com/stashapp/stash/pkg/scene"
-	"github.com/stashapp/stash/pkg/txn"
 )
 
 type cleaner interface {
@@ -25,14 +25,14 @@ type cleaner interface {
 
 type cleanJob struct {
 	cleaner      cleaner
-	txnManager   Repository
+	repository   models.Repository
 	input        CleanMetadataInput
 	sceneService SceneService
 	imageService ImageService
 	scanSubs     *subscriptionManager
 }
 
-func (j *cleanJob) Execute(ctx context.Context, progress *job.Progress) {
+func (j *cleanJob) Execute(ctx context.Context, progress *job.Progress) error {
 	logger.Infof("Starting cleaning of tracked files")
 	start := time.Now()
 	if j.input.DryRun {
@@ -47,7 +47,7 @@ func (j *cleanJob) Execute(ctx context.Context, progress *job.Progress) {
 
 	if job.IsCancelled(ctx) {
 		logger.Info("Stopping due to user request")
-		return
+		return nil
 	}
 
 	j.cleanEmptyGalleries(ctx)
@@ -55,16 +55,18 @@ func (j *cleanJob) Execute(ctx context.Context, progress *job.Progress) {
 	j.scanSubs.notify()
 	elapsed := time.Since(start)
 	logger.Info(fmt.Sprintf("Finished Cleaning (%s)", elapsed))
+	return nil
 }
 
 func (j *cleanJob) cleanEmptyGalleries(ctx context.Context) {
 	const batchSize = 1000
 	var toClean []int
 	findFilter := models.BatchFindFilter(batchSize)
-	if err := txn.WithTxn(ctx, j.txnManager, func(ctx context.Context) error {
+	r := j.repository
+	if err := r.WithTxn(ctx, func(ctx context.Context) error {
 		found := true
 		for found {
-			emptyGalleries, _, err := j.txnManager.Gallery.Query(ctx, &models.GalleryFilterType{
+			emptyGalleries, _, err := r.Gallery.Query(ctx, &models.GalleryFilterType{
 				ImageCount: &models.IntCriterionInput{
 					Value:    0,
 					Modifier: models.CriterionModifierEquals,
@@ -108,9 +110,10 @@ func (j *cleanJob) cleanEmptyGalleries(ctx context.Context) {
 
 func (j *cleanJob) deleteGallery(ctx context.Context, id int) {
 	pluginCache := GetInstance().PluginCache
-	qb := j.txnManager.Gallery
 
-	if err := txn.WithTxn(ctx, j.txnManager, func(ctx context.Context) error {
+	r := j.repository
+	if err := r.WithTxn(ctx, func(ctx context.Context) error {
+		qb := r.Gallery
 		g, err := qb.Find(ctx, id)
 		if err != nil {
 			return err
@@ -120,7 +123,7 @@ func (j *cleanJob) deleteGallery(ctx context.Context, id int) {
 			return fmt.Errorf("gallery with id %d not found", id)
 		}
 
-		if err := g.LoadPrimaryFile(ctx, j.txnManager.File); err != nil {
+		if err := g.LoadPrimaryFile(ctx, r.File); err != nil {
 			return err
 		}
 
@@ -128,7 +131,7 @@ func (j *cleanJob) deleteGallery(ctx context.Context, id int) {
 			return err
 		}
 
-		pluginCache.RegisterPostHooks(ctx, id, plugin.GalleryDestroyPost, plugin.GalleryDestroyInput{
+		pluginCache.RegisterPostHooks(ctx, id, hook.GalleryDestroyPost, plugin.GalleryDestroyInput{
 			Checksum: g.PrimaryChecksum(),
 			Path:     g.Path,
 		}, nil)
@@ -143,7 +146,7 @@ type cleanFilter struct {
 	scanFilter
 }
 
-func newCleanFilter(c *config.Instance) *cleanFilter {
+func newCleanFilter(c *config.Config) *cleanFilter {
 	return &cleanFilter{
 		scanFilter: scanFilter{
 			extensionConfig:   newExtensionConfig(c),
@@ -253,9 +256,7 @@ func (f *cleanFilter) shouldCleanImage(path string, stash *config.StashConfig) b
 	return false
 }
 
-type cleanHandler struct {
-	PluginCache *plugin.Cache
-}
+type cleanHandler struct{}
 
 func (h *cleanHandler) HandleFile(ctx context.Context, fileDeleter *file.Deleter, fileID models.FileID) error {
 	if err := h.handleRelatedScenes(ctx, fileDeleter, fileID); err != nil {
@@ -277,7 +278,7 @@ func (h *cleanHandler) HandleFolder(ctx context.Context, fileDeleter *file.Delet
 
 func (h *cleanHandler) handleRelatedScenes(ctx context.Context, fileDeleter *file.Deleter, fileID models.FileID) error {
 	mgr := GetInstance()
-	sceneQB := mgr.Database.Scene
+	sceneQB := mgr.Repository.Scene
 	scenes, err := sceneQB.FindByFileID(ctx, fileID)
 	if err != nil {
 		return err
@@ -303,12 +304,9 @@ func (h *cleanHandler) handleRelatedScenes(ctx context.Context, fileDeleter *fil
 				return err
 			}
 
-			checksum := scene.Checksum
-			oshash := scene.OSHash
-
-			mgr.PluginCache.RegisterPostHooks(ctx, scene.ID, plugin.SceneDestroyPost, plugin.SceneDestroyInput{
-				Checksum: checksum,
-				OSHash:   oshash,
+			mgr.PluginCache.RegisterPostHooks(ctx, scene.ID, hook.SceneDestroyPost, plugin.SceneDestroyInput{
+				Checksum: scene.Checksum,
+				OSHash:   scene.OSHash,
 				Path:     scene.Path,
 			}, nil)
 		} else {
@@ -335,7 +333,7 @@ func (h *cleanHandler) handleRelatedScenes(ctx context.Context, fileDeleter *fil
 
 func (h *cleanHandler) handleRelatedGalleries(ctx context.Context, fileID models.FileID) error {
 	mgr := GetInstance()
-	qb := mgr.Database.Gallery
+	qb := mgr.Repository.Gallery
 	galleries, err := qb.FindByFileID(ctx, fileID)
 	if err != nil {
 		return err
@@ -353,7 +351,7 @@ func (h *cleanHandler) handleRelatedGalleries(ctx context.Context, fileID models
 				return err
 			}
 
-			mgr.PluginCache.RegisterPostHooks(ctx, g.ID, plugin.GalleryDestroyPost, plugin.GalleryDestroyInput{
+			mgr.PluginCache.RegisterPostHooks(ctx, g.ID, hook.GalleryDestroyPost, plugin.GalleryDestroyInput{
 				Checksum: g.PrimaryChecksum(),
 				Path:     g.Path,
 			}, nil)
@@ -381,7 +379,7 @@ func (h *cleanHandler) handleRelatedGalleries(ctx context.Context, fileID models
 
 func (h *cleanHandler) deleteRelatedFolderGalleries(ctx context.Context, folderID models.FolderID) error {
 	mgr := GetInstance()
-	qb := mgr.Database.Gallery
+	qb := mgr.Repository.Gallery
 	galleries, err := qb.FindByFolderID(ctx, folderID)
 	if err != nil {
 		return err
@@ -393,7 +391,7 @@ func (h *cleanHandler) deleteRelatedFolderGalleries(ctx context.Context, folderI
 			return err
 		}
 
-		mgr.PluginCache.RegisterPostHooks(ctx, g.ID, plugin.GalleryDestroyPost, plugin.GalleryDestroyInput{
+		mgr.PluginCache.RegisterPostHooks(ctx, g.ID, hook.GalleryDestroyPost, plugin.GalleryDestroyInput{
 			// No checksum for folders
 			// Checksum: g.Checksum(),
 			Path: g.Path,
@@ -405,7 +403,7 @@ func (h *cleanHandler) deleteRelatedFolderGalleries(ctx context.Context, folderI
 
 func (h *cleanHandler) handleRelatedImages(ctx context.Context, fileDeleter *file.Deleter, fileID models.FileID) error {
 	mgr := GetInstance()
-	imageQB := mgr.Database.Image
+	imageQB := mgr.Repository.Image
 	images, err := imageQB.FindByFileID(ctx, fileID)
 	if err != nil {
 		return err
@@ -413,7 +411,7 @@ func (h *cleanHandler) handleRelatedImages(ctx context.Context, fileDeleter *fil
 
 	imageFileDeleter := &image.FileDeleter{
 		Deleter: fileDeleter,
-		Paths:   GetInstance().Paths,
+		Paths:   mgr.Paths,
 	}
 
 	for _, i := range images {
@@ -427,7 +425,7 @@ func (h *cleanHandler) handleRelatedImages(ctx context.Context, fileDeleter *fil
 				return err
 			}
 
-			mgr.PluginCache.RegisterPostHooks(ctx, i.ID, plugin.ImageDestroyPost, plugin.ImageDestroyInput{
+			mgr.PluginCache.RegisterPostHooks(ctx, i.ID, hook.ImageDestroyPost, plugin.ImageDestroyInput{
 				Checksum: i.Checksum,
 				Path:     i.Path,
 			}, nil)

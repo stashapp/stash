@@ -23,7 +23,7 @@ export class CaptionCriterion extends StringCriterion {
     super(CaptionsCriterionOption);
   }
 
-  protected toCriterionInput() {
+  public toCriterionInput() {
     const value = valueToCode(this.value) ?? "";
 
     return {

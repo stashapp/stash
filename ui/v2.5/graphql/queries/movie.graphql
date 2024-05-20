@@ -1,0 +1,27 @@
+query FindMovies($filter: FindFilterType, $movie_filter: MovieFilterType) {
+  findMovies(filter: $filter, movie_filter: $movie_filter) {
+    count
+    movies {
+      ...MovieData
+    }
+  }
+}
+
+query FindMovie($id: ID!) {
+  findMovie(id: $id) {
+    ...MovieData
+  }
+}
+
+query FindMoviesForSelect(
+  $filter: FindFilterType
+  $movie_filter: MovieFilterType
+  $ids: [ID!]
+) {
+  findMovies(filter: $filter, movie_filter: $movie_filter, ids: $ids) {
+    count
+    movies {
+      ...SelectMovieData
+    }
+  }
+}

@@ -9,11 +9,11 @@ https://docs.docker.com/engine/install/
 
 ### Get the docker-compose.yml file
 
-Now you can either navigate to the [docker-compose.yml](https://raw.githubusercontent.com/stashapp/stash/master/docker/production/docker-compose.yml) in the repository, or if you have curl, you can make your Linux console do it for you:
+Now you can either navigate to the [docker-compose.yml](https://raw.githubusercontent.com/stashapp/stash/develop/docker/production/docker-compose.yml) in the repository, or if you have curl, you can make your Linux console do it for you:
 
 ```
 mkdir stashapp && cd stashapp
-curl -o docker-compose.yml https://raw.githubusercontent.com/stashapp/stash/master/docker/production/docker-compose.yml
+curl -o docker-compose.yml https://raw.githubusercontent.com/stashapp/stash/develop/docker/production/docker-compose.yml
 ```
 
 Once you have that file where you want it, modify the settings as you please, and then run:

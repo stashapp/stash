@@ -1,0 +1,49 @@
+fragment StudioData on Studio {
+  id
+  name
+  url
+  parent_studio {
+    id
+    name
+    url
+    image_path
+  }
+  child_studios {
+    id
+    name
+    image_path
+  }
+  ignore_auto_tag
+  image_path
+  scene_count
+  scene_count_all: scene_count(depth: -1)
+  image_count
+  image_count_all: image_count(depth: -1)
+  gallery_count
+  gallery_count_all: gallery_count(depth: -1)
+  performer_count
+  performer_count_all: performer_count(depth: -1)
+  movie_count
+  movie_count_all: movie_count(depth: -1)
+  stash_ids {
+    stash_id
+    endpoint
+  }
+  details
+  rating100
+  favorite
+  aliases
+}
+
+fragment SelectStudioData on Studio {
+  id
+  name
+  aliases
+  details
+  image_path
+
+  parent_studio {
+    id
+    name
+  }
+}

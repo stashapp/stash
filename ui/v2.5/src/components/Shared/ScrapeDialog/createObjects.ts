@@ -6,7 +6,7 @@ import {
   useStudioCreate,
   useTagCreate,
 } from "src/core/StashService";
-import { ScrapeResult } from "./scrapeResult";
+import { ObjectScrapeResult, ScrapeResult } from "./scrapeResult";
 import { useIntl } from "react-intl";
 import { scrapedPerformerToCreateInput } from "src/core/performers";
 import { scrapedMovieToCreateInput } from "src/core/movies";
@@ -22,16 +22,16 @@ function useCreateObject<T>(
     try {
       await createFunc(o);
 
-      Toast.success({
-        content: intl.formatMessage(
+      Toast.success(
+        intl.formatMessage(
           { id: "toast.created_entity" },
           {
             entity: intl
               .formatMessage({ id: entityTypeID })
               .toLocaleLowerCase(),
           }
-        ),
-      });
+        )
+      );
     } catch (e) {
       Toast.error(e);
     }
@@ -41,8 +41,10 @@ function useCreateObject<T>(
 }
 
 interface IUseCreateNewStudioProps {
-  scrapeResult: ScrapeResult<string>;
-  setScrapeResult: (scrapeResult: ScrapeResult<string>) => void;
+  scrapeResult: ObjectScrapeResult<GQL.ScrapedStudio>;
+  setScrapeResult: (
+    scrapeResult: ObjectScrapeResult<GQL.ScrapedStudio>
+  ) => void;
   setNewObject: (newObject: GQL.ScrapedStudio | undefined) => void;
 }
 
@@ -62,21 +64,28 @@ export function useCreateScrapedStudio(props: IUseCreateNewStudioProps) {
     });
 
     // set the new studio as the value
-    setScrapeResult(scrapeResult.cloneWithValue(result.data!.studioCreate!.id));
+    setScrapeResult(
+      scrapeResult.cloneWithValue({
+        stored_id: result.data!.studioCreate!.id,
+        name: toCreate.name,
+      })
+    );
     setNewObject(undefined);
   }
 
   return useCreateObject("studio", createNewStudio);
 }
 
-interface IUseCreateNewPerformerProps {
-  scrapeResult: ScrapeResult<GQL.ScrapedPerformer[]>;
-  setScrapeResult: (scrapeResult: ScrapeResult<GQL.ScrapedPerformer[]>) => void;
-  newObjects: GQL.ScrapedPerformer[];
-  setNewObjects: (newObject: GQL.ScrapedPerformer[]) => void;
+interface IUseCreateNewObjectProps<T> {
+  scrapeResult: ScrapeResult<T[]>;
+  setScrapeResult: (scrapeResult: ScrapeResult<T[]>) => void;
+  newObjects: T[];
+  setNewObjects: (newObject: T[]) => void;
 }
 
-export function useCreateScrapedPerformer(props: IUseCreateNewPerformerProps) {
+export function useCreateScrapedPerformer(
+  props: IUseCreateNewObjectProps<GQL.ScrapedPerformer>
+) {
   const [createPerformer] = usePerformerCreate();
 
   const { scrapeResult, setScrapeResult, newObjects, setNewObjects } = props;
@@ -114,79 +123,77 @@ export function useCreateScrapedPerformer(props: IUseCreateNewPerformerProps) {
   return useCreateObject("performer", createNewPerformer);
 }
 
-interface IUseCreateNewObjectIDListProps<
-  T extends { name?: string | undefined | null }
-> {
-  scrapeResult: ScrapeResult<string[]>;
-  setScrapeResult: (scrapeResult: ScrapeResult<string[]>) => void;
-  newObjects: T[];
-  setNewObjects: (newObject: T[]) => void;
-}
-
-function useCreateNewObjectIDList<
-  T extends { name?: string | undefined | null }
->(
-  entityTypeID: string,
-  props: IUseCreateNewObjectIDListProps<T>,
-  createObject: (toCreate: T) => Promise<string>
+export function useCreateScrapedMovie(
+  props: IUseCreateNewObjectProps<GQL.ScrapedMovie>
 ) {
   const { scrapeResult, setScrapeResult, newObjects, setNewObjects } = props;
+  const [createMovie] = useMovieCreate();
 
-  async function createNewObject(toCreate: T) {
-    const newID = await createObject(toCreate);
+  async function createNewMovie(toCreate: GQL.ScrapedMovie) {
+    const input = scrapedMovieToCreateInput(toCreate);
 
-    // add the new object to the new objects value
-    const newResult = scrapeResult.cloneWithValue(scrapeResult.newValue);
-    if (!newResult.newValue) {
-      newResult.newValue = [];
-    }
-    newResult.newValue.push(newID);
-    setScrapeResult(newResult);
+    const result = await createMovie({
+      variables: { input: input },
+    });
+
+    const newValue = [...(scrapeResult.newValue ?? [])];
+    if (result.data?.movieCreate)
+      newValue.push({
+        stored_id: result.data.movieCreate.id,
+        name: result.data.movieCreate.name,
+      });
+
+    // add the new object to the new object value
+    const resultClone = scrapeResult.cloneWithValue(newValue);
+    setScrapeResult(resultClone);
 
     // remove the object from the list
     const newObjectsClone = newObjects.concat();
     const pIndex = newObjectsClone.findIndex((p) => p.name === toCreate.name);
-    if (pIndex === -1) throw new Error("Could not find object to remove");
+    if (pIndex === -1) throw new Error("Could not find movie to remove");
+
     newObjectsClone.splice(pIndex, 1);
 
     setNewObjects(newObjectsClone);
   }
 
-  return useCreateObject(entityTypeID, createNewObject);
-}
-
-export function useCreateScrapedMovie(
-  props: IUseCreateNewObjectIDListProps<GQL.ScrapedMovie>
-) {
-  const [createMovie] = useMovieCreate();
-
-  async function createNewMovie(toCreate: GQL.ScrapedMovie) {
-    const movieInput = scrapedMovieToCreateInput(toCreate);
-    const result = await createMovie({
-      variables: { input: movieInput },
-    });
-
-    return result.data?.movieCreate?.id ?? "";
-  }
-
-  return useCreateNewObjectIDList("movie", props, createNewMovie);
+  return useCreateObject("movie", createNewMovie);
 }
 
 export function useCreateScrapedTag(
-  props: IUseCreateNewObjectIDListProps<GQL.ScrapedTag>
+  props: IUseCreateNewObjectProps<GQL.ScrapedTag>
 ) {
   const [createTag] = useTagCreate();
 
+  const { scrapeResult, setScrapeResult, newObjects, setNewObjects } = props;
+
   async function createNewTag(toCreate: GQL.ScrapedTag) {
-    const tagInput: GQL.TagCreateInput = { name: toCreate.name ?? "" };
+    const input: GQL.TagCreateInput = { name: toCreate.name ?? "" };
+
     const result = await createTag({
-      variables: {
-        input: tagInput,
-      },
+      variables: { input },
     });
 
-    return result.data?.tagCreate?.id ?? "";
+    const newValue = [...(scrapeResult.newValue ?? [])];
+    if (result.data?.tagCreate)
+      newValue.push({
+        stored_id: result.data.tagCreate.id,
+        name: result.data.tagCreate.name,
+      });
+
+    // add the new tag to the new tags value
+    const tagClone = scrapeResult.cloneWithValue(newValue);
+    setScrapeResult(tagClone);
+
+    // remove the tag from the list
+    const newTagsClone = newObjects.concat();
+    const pIndex = newTagsClone.findIndex((p) => p.name === toCreate.name);
+    if (pIndex === -1) throw new Error("Could not find tag to remove");
+
+    newTagsClone.splice(pIndex, 1);
+
+    setNewObjects(newTagsClone);
   }
 
-  return useCreateNewObjectIDList("tag", props, createNewTag);
+  return useCreateObject("tag", createNewTag);
 }

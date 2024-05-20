@@ -7,7 +7,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
-	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
+	"github.com/stashapp/stash/pkg/sliceutil"
 )
 
 type GalleryFinder interface {
@@ -62,8 +62,6 @@ func (i *Importer) PreImport(ctx context.Context) error {
 
 func (i *Importer) imageJSONToImage(imageJSON jsonschema.Image) models.Image {
 	newImage := models.Image{
-		// Checksum: imageJSON.Checksum,
-		// Path:     i.Path,
 		PerformerIDs: models.NewRelatedIDs([]int{}),
 		TagIDs:       models.NewRelatedIDs([]int{}),
 		GalleryIDs:   models.NewRelatedIDs([]int{}),
@@ -78,12 +76,24 @@ func (i *Importer) imageJSONToImage(imageJSON jsonschema.Image) models.Image {
 	if imageJSON.Title != "" {
 		newImage.Title = imageJSON.Title
 	}
+	if imageJSON.Code != "" {
+		newImage.Code = imageJSON.Code
+	}
+	if imageJSON.Details != "" {
+		newImage.Details = imageJSON.Details
+	}
+	if imageJSON.Photographer != "" {
+		newImage.Photographer = imageJSON.Photographer
+	}
 	if imageJSON.Rating != 0 {
 		newImage.Rating = &imageJSON.Rating
 	}
-	if imageJSON.URL != "" {
-		newImage.URL = imageJSON.URL
+	if len(imageJSON.URLs) > 0 {
+		newImage.URLs = models.NewRelatedStrings(imageJSON.URLs)
+	} else if imageJSON.URL != "" {
+		newImage.URLs = models.NewRelatedStrings([]string{imageJSON.URL})
 	}
+
 	if imageJSON.Date != "" {
 		d, err := models.ParseDate(imageJSON.Date)
 		if err == nil {
@@ -228,8 +238,8 @@ func (i *Importer) populatePerformers(ctx context.Context) error {
 			pluckedNames = append(pluckedNames, performer.Name)
 		}
 
-		missingPerformers := stringslice.StrFilter(names, func(name string) bool {
-			return !stringslice.StrInclude(pluckedNames, name)
+		missingPerformers := sliceutil.Filter(names, func(name string) bool {
+			return !sliceutil.Contains(pluckedNames, name)
 		})
 
 		if len(missingPerformers) > 0 {
@@ -364,8 +374,8 @@ func importTags(ctx context.Context, tagWriter models.TagFinderCreator, names []
 		pluckedNames = append(pluckedNames, tag.Name)
 	}
 
-	missingTags := stringslice.StrFilter(names, func(name string) bool {
-		return !stringslice.StrInclude(pluckedNames, name)
+	missingTags := sliceutil.Filter(names, func(name string) bool {
+		return !sliceutil.Contains(pluckedNames, name)
 	})
 
 	if len(missingTags) > 0 {

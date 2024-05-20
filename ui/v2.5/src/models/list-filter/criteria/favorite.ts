@@ -1,14 +1,37 @@
 import { BooleanCriterion, BooleanCriterionOption } from "./criterion";
 
-export const FavoriteCriterionOption = new BooleanCriterionOption(
+export const FavoritePerformerCriterionOption = new BooleanCriterionOption(
   "favourite",
   "filter_favorites",
-  () => new FavoriteCriterion()
+  () => new FavoritePerformerCriterion()
 );
 
-export class FavoriteCriterion extends BooleanCriterion {
+export class FavoritePerformerCriterion extends BooleanCriterion {
   constructor() {
-    super(FavoriteCriterionOption);
+    super(FavoritePerformerCriterionOption);
+  }
+}
+export const FavoriteTagCriterionOption = new BooleanCriterionOption(
+  "favourite",
+  "favorite",
+  () => new FavoriteTagCriterion()
+);
+
+export class FavoriteTagCriterion extends BooleanCriterion {
+  constructor() {
+    super(FavoriteTagCriterionOption);
+  }
+}
+
+export const FavoriteStudioCriterionOption = new BooleanCriterionOption(
+  "favourite",
+  "favorite",
+  () => new FavoriteStudioCriterion()
+);
+
+export class FavoriteStudioCriterion extends BooleanCriterion {
+  constructor() {
+    super(FavoriteStudioCriterionOption);
   }
 }
 

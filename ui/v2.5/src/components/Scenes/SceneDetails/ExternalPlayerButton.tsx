@@ -32,15 +32,21 @@ export const ExternalPlayerButton: React.FC<IExternalPlayerButtonProps> = ({
     streamURL.hash = `Intent;action=android.intent.action.VIEW;scheme=${scheme};type=video/mp4;S.title=${encodeURI(
       title
     )};end`;
-    streamURL.protocol = "intent";
-    url = streamURL.toString();
+
+    // #4401 - not allowed to set the protocol from a "special" protocol to a non-special protocol
+    url = streamURL
+      .toString()
+      .replace(new RegExp(`^${streamURL.protocol}`), "intent:");
   } else if (isAppleDevice) {
     streamURL.host = "x-callback-url";
     streamURL.port = "";
     streamURL.pathname = "stream";
     streamURL.search = `url=${encodeURIComponent(stream)}`;
-    streamURL.protocol = "vlc-x-callback";
-    url = streamURL.toString();
+
+    // #4401 - not allowed to set the protocol from a "special" protocol to a non-special protocol
+    url = streamURL
+      .toString()
+      .replace(new RegExp(`^${streamURL.protocol}`), "vlc-x-callback:");
   }
 
   return (

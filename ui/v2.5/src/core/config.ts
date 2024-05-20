@@ -25,15 +25,13 @@ export interface ICustomFilter extends ITypename {
   direction: SortDirectionEnum;
 }
 
-// NOTE: This value cannot be more defined, because the generated enum it depends upon is UpperCase, which leads to errors on saving
-export type PinnedFilters = Record<string, Array<string>>;
-
 export type FrontPageContent = ISavedFilterRow | ICustomFilter;
 
 export const defaultMaxOptionsShown = 200;
 
 export interface IUIConfig {
-  frontPageContent?: FrontPageContent[];
+  // unknown to prevent direct access - use getFrontPageContent
+  frontPageContent?: unknown;
 
   showChildTagContent?: boolean;
   showChildStudioContent?: boolean;
@@ -59,6 +57,9 @@ export interface IUIConfig {
   // if true the chromecast option will enabled
   enableChromecast?: boolean;
 
+  // if true the fullscreen mobile media auto-rotate option will be disabled
+  disableMobileMediaAutoRotateEnabled?: boolean;
+
   // if true continue scene will always play from the beginning
   alwaysStartFromBeginning?: boolean;
   // if true enable activity tracking
@@ -78,7 +79,55 @@ export interface IUIConfig {
   lastNoteSeen?: number;
 
   vrTag?: string;
-  pinnedFilters?: PinnedFilters;
+
+  pinnedFilters?: Record<string, string[]>;
+  tableColumns?: Record<string, string[]>;
+
+  advancedMode?: boolean;
+
+  taskDefaults?: Record<string, {}>;
+}
+
+interface ISavedFilterRowBroken extends ISavedFilterRow {
+  savedfilterid?: number;
+}
+
+interface ICustomFilterBroken extends ICustomFilter {
+  sortby?: string;
+}
+
+type FrontPageContentBroken = ISavedFilterRowBroken | ICustomFilterBroken;
+
+// #4128: deal with incorrectly insensitivised keys (sortBy and savedFilterId)
+export function getFrontPageContent(
+  ui: IUIConfig | undefined
+): FrontPageContent[] | undefined {
+  return (ui?.frontPageContent as FrontPageContentBroken[] | undefined)?.map(
+    (content) => {
+      switch (content.__typename) {
+        case "SavedFilter":
+          if (content.savedfilterid) {
+            return {
+              ...content,
+              savedFilterId: content.savedFilterId ?? content.savedfilterid,
+              savedfilterid: undefined,
+            };
+          }
+          return content;
+        case "CustomFilter":
+          if (content.sortby) {
+            return {
+              ...content,
+              sortBy: content.sortBy ?? content.sortby,
+              sortby: undefined,
+            };
+          }
+          return content;
+        default:
+          return content;
+      }
+    }
+  );
 }
 
 function recentlyReleased(

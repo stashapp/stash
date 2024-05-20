@@ -11,14 +11,17 @@ import (
 type Image struct {
 	ID int `json:"id"`
 
-	Title string `json:"title"`
+	Title        string `json:"title"`
+	Code         string `json:"code"`
+	Details      string `json:"details"`
+	Photographer string `json:"photographer"`
 	// Rating expressed in 1-100 scale
-	Rating    *int   `json:"rating"`
-	Organized bool   `json:"organized"`
-	OCounter  int    `json:"o_counter"`
-	StudioID  *int   `json:"studio_id"`
-	URL       string `json:"url"`
-	Date      *Date  `json:"date"`
+	Rating    *int           `json:"rating"`
+	Organized bool           `json:"organized"`
+	OCounter  int            `json:"o_counter"`
+	StudioID  *int           `json:"studio_id"`
+	URLs      RelatedStrings `json:"urls"`
+	Date      *Date          `json:"date"`
 
 	// transient - not persisted
 	Files         RelatedFiles
@@ -46,15 +49,18 @@ func NewImage() Image {
 
 type ImagePartial struct {
 	Title OptionalString
+	Code  OptionalString
 	// Rating expressed in 1-100 scale
-	Rating    OptionalInt
-	URL       OptionalString
-	Date      OptionalDate
-	Organized OptionalBool
-	OCounter  OptionalInt
-	StudioID  OptionalInt
-	CreatedAt OptionalTime
-	UpdatedAt OptionalTime
+	Rating       OptionalInt
+	URLs         *UpdateStrings
+	Date         OptionalDate
+	Details      OptionalString
+	Photographer OptionalString
+	Organized    OptionalBool
+	OCounter     OptionalInt
+	StudioID     OptionalInt
+	CreatedAt    OptionalTime
+	UpdatedAt    OptionalTime
 
 	GalleryIDs    *UpdateIDs
 	TagIDs        *UpdateIDs
@@ -67,6 +73,12 @@ func NewImagePartial() ImagePartial {
 	return ImagePartial{
 		UpdatedAt: NewOptionalTime(currentTime),
 	}
+}
+
+func (i *Image) LoadURLs(ctx context.Context, l URLLoader) error {
+	return i.URLs.load(func() ([]string, error) {
+		return l.GetURLs(ctx, i.ID)
+	})
 }
 
 func (i *Image) LoadFiles(ctx context.Context, l FileLoader) error {

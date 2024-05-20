@@ -10,7 +10,43 @@ Plugin tasks can be implemented using embedded Javascript, or by calling an exte
 
 > **⚠️ Note:** Plugin support is still experimental and is likely to change.
 
-# Adding plugins
+## Managing Plugins
+
+Plugins can be installed and managed from the `Settings > Plugins` page. 
+
+Scrapers are installed using the `Available Plugins` section. This section allows configuring sources from which to install plugins. The `Community (stable)` source is configured by default. This source contains plugins for the current _stable_ version of stash.
+
+These are the plugin sources maintained by the stashapp organisation:
+
+| Name | Source URL | Recommended Local Path | Notes |
+|------|-----------|------------------------|-------|
+| Community (stable) | `https://stashapp.github.io/CommunityScripts/stable/index.yml` | `stable` | For the current stable version of stash. |
+| Community (develop) | `https://stashapp.github.io/CommunityScripts/develop/index.yml` | `develop` | For the develop version of stash. |
+
+Installed plugins can be updated or uninstalled from the `Installed Plugins` section.
+
+### Source URLs
+
+The source URL must return a yaml file containing all the available packages for the source. An example source yaml file looks like the following:
+
+```
+- id: <package id>
+  name: <package name>
+  version: <version>
+  date: <date>
+  requires:
+  - <ids of packages required by this package (optional)>
+  - ...
+  path: <path to package zip file>
+  sha256: <sha256 of zip>
+  metadata:
+    <optional key/value pairs for extra information>
+- ...
+```
+
+Path can be a relative path to the zip file or an external URL.
+
+# Adding plugins manually
 
 By default, Stash looks for plugin configurations in the `plugins` sub-directory of the directory where the stash `config.yml` is read. This will either be the `$HOME/.stash` directory or the current working directory.
 
@@ -43,6 +79,36 @@ ui:
   javascript:
     - <path to javascript file>
 
+  # optional list of plugin IDs to load prior to this plugin
+  requires:
+    - <plugin ID>
+
+  # optional list of assets 
+  assets:
+    urlPrefix: fsLocation
+    ...
+
+  # content-security policy overrides
+  csp:
+    script-src:
+      - http://alloweddomain.com
+    
+    style-src:
+      - http://alloweddomain.com
+    
+    connect-src:
+      - http://alloweddomain.com
+
+  # map of setting names to be displayed in the plugins page in the UI
+  settings:
+    # internal name
+    foo:
+      # name to display in the UI
+      displayName: Foo
+      # type of the attribute to show in the UI
+      # can be BOOLEAN, NUMBER, or STRING
+      type: BOOLEAN
+
 # the following are used for plugin tasks only
 exec:
   - ...
@@ -55,6 +121,36 @@ tasks:
 The `name`, `description`, `version` and `url` fields are displayed on the plugins page.
 
 The `exec`, `interface`, `errLog` and `tasks` fields are used only for plugins with tasks.
+
+The `settings` field is used to display plugin settings on the plugins page. Plugin settings can also be set using the graphql mutation `configurePlugin` - the settings set this way do _not_ need to be specified in the `settings` field unless they are to be displayed in the stock plugin settings UI.
+
+## UI Configuration
+
+The `css` and `javascript` field values may be relative paths to the plugin configuration file, or
+may be full external URLs.
+
+The `requires` field is a list of plugin IDs which must have their javascript/css files loaded
+before this plugins javascript/css files.
+
+The `assets` field is a map of URL prefixes to filesystem paths relative to the plugin configuration file.
+Assets are mounted to the `/plugin/{pluginID}/assets` path. 
+
+As an example, for a plugin with id `foo` with the following `assets` value:
+```
+assets:
+  foo: bar
+  /: .
+```
+The following URLs will be mapped to these locations:
+`/plugin/foo/assets/foo/file.txt` -> `{pluginDir}/bar/file.txt`
+`/plugin/foo/assets/file.txt` -> `{pluginDir}/file.txt`
+`/plugin/foo/assets/bar/file.txt` -> `{pluginDir}/bar/file.txt` (via the `/` entry)
+
+Mappings that try to go outside of the directory containing the plugin configuration file will be
+ignored.
+
+The `csp` field contains overrides to the content security policies. The URLs in `script-src`,
+`style-src` and `connect-src` will be added to the applicable content security policy.
 
 See [External Plugins](/help/ExternalPlugins.md) for details for making plugins with external tasks.
 

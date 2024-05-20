@@ -11,7 +11,8 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/paths"
 	"github.com/stashapp/stash/pkg/plugin"
-	"github.com/stashapp/stash/pkg/sliceutil/intslice"
+	"github.com/stashapp/stash/pkg/plugin/hook"
+	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/txn"
 )
 
@@ -137,7 +138,7 @@ func (h *ScanHandler) Handle(ctx context.Context, f models.File, oldFile models.
 			}
 		}
 
-		h.PluginCache.RegisterPostHooks(ctx, newImage.ID, plugin.ImageCreatePost, nil, nil)
+		h.PluginCache.RegisterPostHooks(ctx, newImage.ID, hook.ImageCreatePost, nil, nil)
 
 		existing = []*models.Image{&newImage}
 	}
@@ -228,7 +229,7 @@ func (h *ScanHandler) associateExisting(ctx context.Context, existing []*models.
 		}
 
 		if changed || updateExisting {
-			h.PluginCache.RegisterPostHooks(ctx, i.ID, plugin.ImageUpdatePost, nil, nil)
+			h.PluginCache.RegisterPostHooks(ctx, i.ID, hook.ImageUpdatePost, nil, nil)
 		}
 	}
 
@@ -257,7 +258,7 @@ func (h *ScanHandler) getOrCreateFolderBasedGallery(ctx context.Context, f model
 		return nil, fmt.Errorf("creating folder based gallery: %w", err)
 	}
 
-	h.PluginCache.RegisterPostHooks(ctx, newGallery.ID, plugin.GalleryCreatePost, nil, nil)
+	h.PluginCache.RegisterPostHooks(ctx, newGallery.ID, hook.GalleryCreatePost, nil, nil)
 
 	// it's possible that there are other images in the folder that
 	// need to be added to the new gallery. Find and add them now.
@@ -311,7 +312,7 @@ func (h *ScanHandler) getOrCreateZipBasedGallery(ctx context.Context, zipFile mo
 		return nil, fmt.Errorf("creating zip-based gallery: %w", err)
 	}
 
-	h.PluginCache.RegisterPostHooks(ctx, newGallery.ID, plugin.GalleryCreatePost, nil, nil)
+	h.PluginCache.RegisterPostHooks(ctx, newGallery.ID, hook.GalleryCreatePost, nil, nil)
 
 	return &newGallery, nil
 }
@@ -355,7 +356,7 @@ func (h *ScanHandler) getGalleryToAssociate(ctx context.Context, newImage *model
 		return nil, err
 	}
 
-	if g != nil && !intslice.IntInclude(newImage.GalleryIDs.List(), g.ID) {
+	if g != nil && !sliceutil.Contains(newImage.GalleryIDs.List(), g.ID) {
 		return g, nil
 	}
 

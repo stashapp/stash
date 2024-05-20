@@ -1,5 +1,4 @@
 import React from "react";
-import { IUIConfig } from "src/core/config";
 import { ConfigurationContext } from "src/hooks/Config";
 import {
   defaultRatingStarPrecision,
@@ -10,10 +9,14 @@ import { RatingNumber } from "./RatingNumber";
 import { RatingStars } from "./RatingStars";
 
 export interface IRatingSystemProps {
-  value?: number;
-  onSetRating?: (value?: number) => void;
+  value: number | null | undefined;
+  onSetRating?: (value: number | null) => void;
   disabled?: boolean;
   valueRequired?: boolean;
+  // if true, requires a click first to edit the rating
+  clickToRate?: boolean;
+  // true if we should indicate that this is a rating
+  withoutContext?: boolean;
 }
 
 export const RatingSystem: React.FC<IRatingSystemProps> = (
@@ -21,13 +24,12 @@ export const RatingSystem: React.FC<IRatingSystemProps> = (
 ) => {
   const { configuration: config } = React.useContext(ConfigurationContext);
   const ratingSystemOptions =
-    (config?.ui as IUIConfig)?.ratingSystemOptions ??
-    defaultRatingSystemOptions;
+    config?.ui.ratingSystemOptions ?? defaultRatingSystemOptions;
 
-  function getRatingStars() {
+  if (ratingSystemOptions.type === RatingSystemType.Stars) {
     return (
       <RatingStars
-        value={props.value}
+        value={props.value ?? null}
         onSetRating={props.onSetRating}
         disabled={props.disabled}
         precision={
@@ -36,16 +38,14 @@ export const RatingSystem: React.FC<IRatingSystemProps> = (
         valueRequired={props.valueRequired}
       />
     );
-  }
-
-  if (ratingSystemOptions.type === RatingSystemType.Stars) {
-    return getRatingStars();
   } else {
     return (
       <RatingNumber
-        value={props.value}
+        value={props.value ?? null}
         onSetRating={props.onSetRating}
         disabled={props.disabled}
+        clickToRate={props.clickToRate}
+        withoutContext={props.withoutContext}
       />
     );
   }

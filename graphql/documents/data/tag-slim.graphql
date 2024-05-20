@@ -1,6 +1,0 @@
-fragment SlimTagData on Tag {
-  id
-  name
-  aliases
-  image_path
-}

@@ -1,12 +1,14 @@
 package models
 
 type GalleryFilterType struct {
-	And     *GalleryFilterType    `json:"AND"`
-	Or      *GalleryFilterType    `json:"OR"`
-	Not     *GalleryFilterType    `json:"NOT"`
-	ID      *IntCriterionInput    `json:"id"`
-	Title   *StringCriterionInput `json:"title"`
-	Details *StringCriterionInput `json:"details"`
+	And          *GalleryFilterType    `json:"AND"`
+	Or           *GalleryFilterType    `json:"OR"`
+	Not          *GalleryFilterType    `json:"NOT"`
+	ID           *IntCriterionInput    `json:"id"`
+	Title        *StringCriterionInput `json:"title"`
+	Code         *StringCriterionInput `json:"code"`
+	Details      *StringCriterionInput `json:"details"`
+	Photographer *StringCriterionInput `json:"photographer"`
 	// Filter by file checksum
 	Checksum *StringCriterionInput `json:"checksum"`
 	// Filter by path
@@ -17,8 +19,6 @@ type GalleryFilterType struct {
 	IsMissing *string `json:"is_missing"`
 	// Filter to include/exclude galleries that were created from zip
 	IsZip *bool `json:"is_zip"`
-	// Filter by rating expressed as 1-5
-	Rating *IntCriterionInput `json:"rating"`
 	// Filter by rating expressed as 1-100
 	Rating100 *IntCriterionInput `json:"rating100"`
 	// Filter by organized
@@ -27,6 +27,8 @@ type GalleryFilterType struct {
 	AverageResolution *ResolutionCriterionInput `json:"average_resolution"`
 	// Filter to only include scenes which have chapters. `true` or `false`
 	HasChapters *string `json:"has_chapters"`
+	// Filter to only include galleries with these scenes
+	Scenes *MultiCriterionInput `json:"scenes"`
 	// Filter to only include galleries with this studio
 	Studios *HierarchicalMultiCriterionInput `json:"studios"`
 	// Filter to only include galleries with these tags
@@ -59,10 +61,11 @@ type GalleryUpdateInput struct {
 	ClientMutationID *string  `json:"clientMutationId"`
 	ID               string   `json:"id"`
 	Title            *string  `json:"title"`
-	URL              *string  `json:"url"`
+	Code             *string  `json:"code"`
+	Urls             []string `json:"urls"`
 	Date             *string  `json:"date"`
 	Details          *string  `json:"details"`
-	Rating           *int     `json:"rating"`
+	Photographer     *string  `json:"photographer"`
 	Rating100        *int     `json:"rating100"`
 	Organized        *bool    `json:"organized"`
 	SceneIds         []string `json:"scene_ids"`
@@ -70,6 +73,9 @@ type GalleryUpdateInput struct {
 	TagIds           []string `json:"tag_ids"`
 	PerformerIds     []string `json:"performer_ids"`
 	PrimaryFileID    *string  `json:"primary_file_id"`
+
+	// deprecated
+	URL *string `json:"url"`
 }
 
 type GalleryDestroyInput struct {
