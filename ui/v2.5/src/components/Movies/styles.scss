@@ -43,3 +43,49 @@
 #movie-page .rating-number .text-input {
   width: auto;
 }
+
+.movie-select-option {
+  .movie-select-row {
+    align-items: center;
+    display: flex;
+    width: 100%;
+
+    .movie-select-image {
+      background-color: $body-bg;
+      margin-right: 0.4em;
+      max-height: 50px;
+      max-width: 89px;
+      object-fit: contain;
+      object-position: center;
+    }
+
+    .movie-select-details {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      max-height: 4.1rem;
+      overflow: hidden;
+
+      .movie-select-title {
+        flex-shrink: 0;
+        white-space: pre-wrap;
+        word-break: break-all;
+
+        .movie-select-alias {
+          font-size: 0.8rem;
+          font-weight: bold;
+        }
+      }
+
+      .movie-select-date,
+      .movie-select-studio {
+        color: $text-muted;
+        flex-shrink: 0;
+        font-size: 0.9rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+    }
+  }
+}

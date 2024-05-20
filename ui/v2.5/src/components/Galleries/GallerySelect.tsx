@@ -33,10 +33,13 @@ import {
   CriterionValue,
 } from "src/models/list-filter/criteria/criterion";
 import { PathCriterion } from "src/models/list-filter/criteria/path";
+import { TruncatedText } from "../Shared/TruncatedText";
 
-export type Gallery = Pick<GQL.Gallery, "id" | "title"> & {
+export type Gallery = Pick<GQL.Gallery, "id" | "title" | "date" | "code"> & {
+  studio?: Pick<GQL.Studio, "name"> | null;
   files: Pick<GQL.GalleryFile, "path">[];
   folder?: Pick<GQL.Folder, "path"> | null;
+  cover?: Pick<GQL.Image, "paths"> | null;
 };
 type Option = SelectOption<Gallery>;
 
@@ -111,10 +114,41 @@ const _GallerySelect: React.FC<
     thisOptionProps = {
       ...optionProps,
       children: (
-        <span>
-          <span>{title}</span>
+        <span className="gallery-select-option">
+          <span className="gallery-select-row">
+            {object.cover?.paths?.thumbnail && (
+              <img
+                className="gallery-select-image"
+                src={object.cover.paths.thumbnail}
+                loading="lazy"
+              />
+            )}
+
+            <span className="gallery-select-details">
+              <TruncatedText
+                className="gallery-select-title"
+                text={title}
+                lineCount={1}
+              />
+
+              {object.studio?.name && (
+                <span className="gallery-select-studio">
+                  {object.studio?.name}
+                </span>
+              )}
+
+              {object.date && (
+                <span className="gallery-select-date">{object.date}</span>
+              )}
+
+              {object.code && (
+                <span className="gallery-select-code">{object.code}</span>
+              )}
+            </span>
+          </span>
+
           {matchedPath && (
-            <span className="gallery-select-alias">{` (${matchedPath})`}</span>
+            <span className="gallery-select-alias">{`(${matchedPath})`}</span>
           )}
         </span>
       ),
