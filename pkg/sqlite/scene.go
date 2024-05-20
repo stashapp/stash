@@ -168,8 +168,20 @@ func (r *sceneRowRecord) fromPartial(o models.ScenePartial) {
 	r.setFloat64("play_duration", o.PlayDuration)
 }
 
-type SceneStore struct {
+type sceneRepositoryType struct {
 	repository
+}
+
+var (
+	sceneRepository = sceneRepositoryType{
+		repository: repository{
+			tableName: sceneTable,
+			idColumn:  idColumn,
+		},
+	}
+)
+
+type SceneStore struct {
 	blobJoinQueryBuilder
 
 	tableMgr *table
@@ -181,10 +193,6 @@ type SceneStore struct {
 
 func NewSceneStore(r *storeRepository, blobStore *BlobStore) *SceneStore {
 	return &SceneStore{
-		repository: repository{
-			tableName: sceneTable,
-			idColumn:  idColumn,
-		},
 		blobJoinQueryBuilder: blobJoinQueryBuilder{
 			blobStore: blobStore,
 			joinTable: sceneTable,
@@ -872,7 +880,7 @@ func (qb *SceneStore) makeQuery(ctx context.Context, sceneFilter *models.SceneFi
 		findFilter = &models.FindFilterType{}
 	}
 
-	query := qb.newQuery()
+	query := sceneRepository.newQuery()
 	distinctIDs(&query, sceneTable)
 
 	if q := findFilter.Q; q != nil && *q != "" {
@@ -947,7 +955,7 @@ func (qb *SceneStore) queryGroupedFields(ctx context.Context, options models.Sce
 		return models.NewSceneQueryResult(qb), nil
 	}
 
-	aggregateQuery := qb.newQuery()
+	aggregateQuery := sceneRepository.newQuery()
 
 	if options.Count {
 		aggregateQuery.addColumn("COUNT(DISTINCT temp.id) as total")
@@ -991,7 +999,7 @@ func (qb *SceneStore) queryGroupedFields(ctx context.Context, options models.Sce
 		Duration null.Float
 		Size     null.Float
 	}{}
-	if err := qb.repository.queryStruct(ctx, aggregateQuery.toSQL(includeSortPagination), query.args, &out); err != nil {
+	if err := sceneRepository.queryStruct(ctx, aggregateQuery.toSQL(includeSortPagination), query.args, &out); err != nil {
 		return nil, err
 	}
 
@@ -1217,7 +1225,6 @@ func (qb *SceneStore) AssignFiles(ctx context.Context, sceneID int, fileIDs []mo
 
 func (qb *SceneStore) moviesRepository() *repository {
 	return &repository{
-		tx:        qb.tx,
 		tableName: moviesScenesTable,
 		idColumn:  sceneIDColumn,
 	}
@@ -1244,7 +1251,6 @@ func (qb *SceneStore) GetMovies(ctx context.Context, id int) (ret []models.Movie
 func (qb *SceneStore) filesRepository() *filesRepository {
 	return &filesRepository{
 		repository: repository{
-			tx:        qb.tx,
 			tableName: scenesFilesTable,
 			idColumn:  sceneIDColumn,
 		},
@@ -1259,7 +1265,6 @@ func (qb *SceneStore) AddFileID(ctx context.Context, id int, fileID models.FileI
 func (qb *SceneStore) performersRepository() *joinRepository {
 	return &joinRepository{
 		repository: repository{
-			tx:        qb.tx,
 			tableName: performersScenesTable,
 			idColumn:  sceneIDColumn,
 		},
@@ -1274,7 +1279,6 @@ func (qb *SceneStore) GetPerformerIDs(ctx context.Context, id int) ([]int, error
 func (qb *SceneStore) tagsRepository() *joinRepository {
 	return &joinRepository{
 		repository: repository{
-			tx:        qb.tx,
 			tableName: scenesTagsTable,
 			idColumn:  sceneIDColumn,
 		},
@@ -1291,7 +1295,6 @@ func (qb *SceneStore) GetTagIDs(ctx context.Context, id int) ([]int, error) {
 func (qb *SceneStore) galleriesRepository() *joinRepository {
 	return &joinRepository{
 		repository: repository{
-			tx:        qb.tx,
 			tableName: scenesGalleriesTable,
 			idColumn:  sceneIDColumn,
 		},
@@ -1310,7 +1313,6 @@ func (qb *SceneStore) AddGalleryIDs(ctx context.Context, sceneID int, galleryIDs
 func (qb *SceneStore) stashIDRepository() *stashIDRepository {
 	return &stashIDRepository{
 		repository{
-			tx:        qb.tx,
 			tableName: "scene_stash_ids",
 			idColumn:  sceneIDColumn,
 		},
@@ -1325,7 +1327,7 @@ func (qb *SceneStore) FindDuplicates(ctx context.Context, distance int, duration
 	var dupeIds [][]int
 	if distance == 0 {
 		var ids []string
-		if err := qb.tx.Select(ctx, &ids, findExactDuplicateQuery, durationDiff); err != nil {
+		if err := sceneRepository.tx.Select(ctx, &ids, findExactDuplicateQuery, durationDiff); err != nil {
 			return nil, err
 		}
 
@@ -1345,7 +1347,7 @@ func (qb *SceneStore) FindDuplicates(ctx context.Context, distance int, duration
 	} else {
 		var hashes []*utils.Phash
 
-		if err := qb.queryFunc(ctx, findAllPhashesQuery, nil, false, func(rows *sqlx.Rows) error {
+		if err := sceneRepository.queryFunc(ctx, findAllPhashesQuery, nil, false, func(rows *sqlx.Rows) error {
 			phash := utils.Phash{
 				Bucket:   -1,
 				Duration: -1,

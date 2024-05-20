@@ -112,9 +112,76 @@ func (r *imageRowRecord) fromPartial(i models.ImagePartial) {
 	r.setTimestamp("updated_at", i.UpdatedAt)
 }
 
-type ImageStore struct {
+type imageRepositoryType struct {
 	repository
+	performers *joinRepository
+	galleries  *joinRepository
+	tags       *joinRepository
+	files      *filesRepository
+}
 
+func (r *imageRepositoryType) addImagesFilesTable(f *filterBuilder) {
+	f.addLeftJoin(imagesFilesTable, "", "images_files.image_id = images.id")
+}
+
+func (r *imageRepositoryType) addFilesTable(f *filterBuilder) {
+	r.addImagesFilesTable(f)
+	f.addLeftJoin(fileTable, "", "images_files.file_id = files.id")
+}
+
+func (r *imageRepositoryType) addFoldersTable(f *filterBuilder) {
+	r.addFilesTable(f)
+	f.addLeftJoin(folderTable, "", "files.parent_folder_id = folders.id")
+}
+
+func (r *imageRepositoryType) addImageFilesTable(f *filterBuilder) {
+	r.addImagesFilesTable(f)
+	f.addLeftJoin(imageFileTable, "", "image_files.file_id = images_files.file_id")
+}
+
+var (
+	imageRepository = imageRepositoryType{
+		repository: repository{
+			tableName: imageTable,
+			idColumn:  idColumn,
+		},
+
+		performers: &joinRepository{
+			repository: repository{
+				tableName: performersImagesTable,
+				idColumn:  imageIDColumn,
+			},
+			fkColumn: performerIDColumn,
+		},
+
+		galleries: &joinRepository{
+			repository: repository{
+				tableName: galleriesImagesTable,
+				idColumn:  imageIDColumn,
+			},
+			fkColumn: galleryIDColumn,
+		},
+
+		files: &filesRepository{
+			repository: repository{
+				tableName: imagesFilesTable,
+				idColumn:  imageIDColumn,
+			},
+		},
+
+		tags: &joinRepository{
+			repository: repository{
+				tableName: imagesTagsTable,
+				idColumn:  imageIDColumn,
+			},
+			fkColumn:     tagIDColumn,
+			foreignTable: tagTable,
+			orderBy:      "tags.name ASC",
+		},
+	}
+)
+
+type ImageStore struct {
 	tableMgr *table
 	oCounterManager
 
@@ -123,10 +190,6 @@ type ImageStore struct {
 
 func NewImageStore(r *storeRepository) *ImageStore {
 	return &ImageStore{
-		repository: repository{
-			tableName: imageTable,
-			idColumn:  idColumn,
-		},
 		tableMgr:        imageTableMgr,
 		oCounterManager: oCounterManager{imageTableMgr},
 		repo:            r,
@@ -418,7 +481,7 @@ func (qb *ImageStore) getMany(ctx context.Context, q *goqu.SelectDataset) ([]*mo
 }
 
 func (qb *ImageStore) GetFiles(ctx context.Context, id int) ([]models.File, error) {
-	fileIDs, err := qb.filesRepository().get(ctx, id)
+	fileIDs, err := imageRepository.files.get(ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -434,7 +497,7 @@ func (qb *ImageStore) GetFiles(ctx context.Context, id int) ([]models.File, erro
 
 func (qb *ImageStore) GetManyFileIDs(ctx context.Context, ids []int) ([][]models.FileID, error) {
 	const primaryOnly = false
-	return qb.filesRepository().getMany(ctx, ids, primaryOnly)
+	return imageRepository.files.getMany(ctx, ids, primaryOnly)
 }
 
 func (qb *ImageStore) FindByFileID(ctx context.Context, fileID models.FileID) ([]*models.Image, error) {
@@ -642,25 +705,6 @@ func (qb *ImageStore) All(ctx context.Context) ([]*models.Image, error) {
 	return qb.getMany(ctx, qb.selectDataset())
 }
 
-func (qb *ImageStore) addImagesFilesTable(f *filterBuilder) {
-	f.addLeftJoin(imagesFilesTable, "", "images_files.image_id = images.id")
-}
-
-func (qb *ImageStore) addFilesTable(f *filterBuilder) {
-	qb.addImagesFilesTable(f)
-	f.addLeftJoin(fileTable, "", "images_files.file_id = files.id")
-}
-
-func (qb *ImageStore) addFoldersTable(f *filterBuilder) {
-	qb.addFilesTable(f)
-	f.addLeftJoin(folderTable, "", "files.parent_folder_id = folders.id")
-}
-
-func (qb *ImageStore) addImageFilesTable(f *filterBuilder) {
-	qb.addImagesFilesTable(f)
-	f.addLeftJoin(imageFileTable, "", "image_files.file_id = images_files.file_id")
-}
-
 func (qb *ImageStore) makeQuery(ctx context.Context, imageFilter *models.ImageFilterType, findFilter *models.FindFilterType) (*queryBuilder, error) {
 	if imageFilter == nil {
 		imageFilter = &models.ImageFilterType{}
@@ -669,7 +713,7 @@ func (qb *ImageStore) makeQuery(ctx context.Context, imageFilter *models.ImageFi
 		findFilter = &models.FindFilterType{}
 	}
 
-	query := qb.newQuery()
+	query := imageRepository.newQuery()
 	distinctIDs(&query, imageTable)
 
 	if q := findFilter.Q; q != nil && *q != "" {
@@ -697,10 +741,14 @@ func (qb *ImageStore) makeQuery(ctx context.Context, imageFilter *models.ImageFi
 		query.parseQueryString(searchColumns, *q)
 	}
 
-	if err := qb.validateFilter(imageFilter); err != nil {
+	b := imageQueryBuilder{
+		imageFilter: imageFilter,
+	}
+
+	if err := b.validateFilter(imageFilter); err != nil {
 		return nil, err
 	}
-	filter := qb.makeFilter(ctx, imageFilter)
+	filter := b.makeFilter(ctx, imageFilter)
 
 	if err := query.addFilter(filter); err != nil {
 		return nil, err
@@ -739,7 +787,7 @@ func (qb *ImageStore) queryGroupedFields(ctx context.Context, options models.Ima
 		return models.NewImageQueryResult(qb), nil
 	}
 
-	aggregateQuery := qb.newQuery()
+	aggregateQuery := imageRepository.newQuery()
 
 	if options.Count {
 		aggregateQuery.addColumn("COUNT(DISTINCT temp.id) as total")
@@ -783,7 +831,7 @@ func (qb *ImageStore) queryGroupedFields(ctx context.Context, options models.Ima
 		Megapixels null.Float
 		Size       null.Float
 	}{}
-	if err := qb.repository.queryStruct(ctx, aggregateQuery.toSQL(includeSortPagination), query.args, &out); err != nil {
+	if err := imageRepository.queryStruct(ctx, aggregateQuery.toSQL(includeSortPagination), query.args, &out); err != nil {
 		return nil, err
 	}
 
@@ -888,34 +936,13 @@ func (qb *ImageStore) setImageSortAndPagination(q *queryBuilder, findFilter *mod
 	return nil
 }
 
-func (qb *ImageStore) galleriesRepository() *joinRepository {
-	return &joinRepository{
-		repository: repository{
-			tx:        qb.tx,
-			tableName: galleriesImagesTable,
-			idColumn:  imageIDColumn,
-		},
-		fkColumn: galleryIDColumn,
-	}
-}
-
-func (qb *ImageStore) filesRepository() *filesRepository {
-	return &filesRepository{
-		repository: repository{
-			tx:        qb.tx,
-			tableName: imagesFilesTable,
-			idColumn:  imageIDColumn,
-		},
-	}
-}
-
 func (qb *ImageStore) AddFileID(ctx context.Context, id int, fileID models.FileID) error {
 	const firstPrimary = false
 	return imagesFilesTableMgr.insertJoins(ctx, id, firstPrimary, []models.FileID{fileID})
 }
 
 func (qb *ImageStore) GetGalleryIDs(ctx context.Context, imageID int) ([]int, error) {
-	return qb.galleriesRepository().getIDs(ctx, imageID)
+	return imageRepository.galleries.getIDs(ctx, imageID)
 }
 
 // func (qb *imageQueryBuilder) UpdateGalleries(ctx context.Context, imageID int, galleryIDs []int) error {
@@ -923,46 +950,22 @@ func (qb *ImageStore) GetGalleryIDs(ctx context.Context, imageID int) ([]int, er
 // 	return qb.galleriesRepository().replace(ctx, imageID, galleryIDs)
 // }
 
-func (qb *ImageStore) performersRepository() *joinRepository {
-	return &joinRepository{
-		repository: repository{
-			tx:        qb.tx,
-			tableName: performersImagesTable,
-			idColumn:  imageIDColumn,
-		},
-		fkColumn: performerIDColumn,
-	}
-}
-
 func (qb *ImageStore) GetPerformerIDs(ctx context.Context, imageID int) ([]int, error) {
-	return qb.performersRepository().getIDs(ctx, imageID)
+	return imageRepository.performers.getIDs(ctx, imageID)
 }
 
 func (qb *ImageStore) UpdatePerformers(ctx context.Context, imageID int, performerIDs []int) error {
 	// Delete the existing joins and then create new ones
-	return qb.performersRepository().replace(ctx, imageID, performerIDs)
-}
-
-func (qb *ImageStore) tagsRepository() *joinRepository {
-	return &joinRepository{
-		repository: repository{
-			tx:        qb.tx,
-			tableName: imagesTagsTable,
-			idColumn:  imageIDColumn,
-		},
-		fkColumn:     tagIDColumn,
-		foreignTable: tagTable,
-		orderBy:      "tags.name ASC",
-	}
+	return imageRepository.performers.replace(ctx, imageID, performerIDs)
 }
 
 func (qb *ImageStore) GetTagIDs(ctx context.Context, imageID int) ([]int, error) {
-	return qb.tagsRepository().getIDs(ctx, imageID)
+	return imageRepository.tags.getIDs(ctx, imageID)
 }
 
 func (qb *ImageStore) UpdateTags(ctx context.Context, imageID int, tagIDs []int) error {
 	// Delete the existing joins and then create new ones
-	return qb.tagsRepository().replace(ctx, imageID, tagIDs)
+	return imageRepository.tags.replace(ctx, imageID, tagIDs)
 }
 
 func (qb *ImageStore) GetURLs(ctx context.Context, imageID int) ([]string, error) {

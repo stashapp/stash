@@ -112,6 +112,13 @@ func (r *galleryRowRecord) fromPartial(o models.GalleryPartial) {
 	r.setTimestamp("updated_at", o.UpdatedAt)
 }
 
+var (
+	galleryRepository = repository{
+		tableName: galleryTable,
+		idColumn:  idColumn,
+	}
+)
+
 type GalleryStore struct {
 	repository
 
@@ -123,10 +130,7 @@ type GalleryStore struct {
 
 func NewGalleryStore(fileStore *FileStore, folderStore *FolderStore) *GalleryStore {
 	return &GalleryStore{
-		repository: repository{
-			tableName: galleryTable,
-			idColumn:  idColumn,
-		},
+		repository:  galleryRepository,
 		tableMgr:    galleryTableMgr,
 		fileStore:   fileStore,
 		folderStore: folderStore,

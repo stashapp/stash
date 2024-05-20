@@ -9,31 +9,18 @@ import (
 )
 
 func (qb *SceneStore) validateFilter(sceneFilter *models.SceneFilterType) error {
-	const and = "AND"
-	const or = "OR"
-	const not = "NOT"
-
-	if sceneFilter.And != nil {
-		if sceneFilter.Or != nil {
-			return illegalFilterCombination(and, or)
-		}
-		if sceneFilter.Not != nil {
-			return illegalFilterCombination(and, not)
-		}
-
-		return qb.validateFilter(sceneFilter.And)
+	if sceneFilter == nil {
+		return nil
 	}
 
-	if sceneFilter.Or != nil {
-		if sceneFilter.Not != nil {
-			return illegalFilterCombination(or, not)
-		}
-
-		return qb.validateFilter(sceneFilter.Or)
+	if err := validateFilterCombination(sceneFilter.And, sceneFilter.Or, sceneFilter.Not); err != nil {
+		return err
 	}
 
-	if sceneFilter.Not != nil {
-		return qb.validateFilter(sceneFilter.Not)
+	if subFilter := utils.FirstNotNil(sceneFilter.And, sceneFilter.Or, sceneFilter.Not); subFilter != nil {
+		if err := qb.validateFilter(subFilter); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -58,14 +45,6 @@ func (qb *SceneStore) makeFilter(ctx context.Context, sceneFilter *models.SceneF
 }
 
 func (qb *SceneStore) criterionHandler(sceneFilter *models.SceneFilterType) criterionHandler {
-	repo := qb.repo
-	galleryStore := repo.Gallery
-	performerStore := repo.Performer
-	studioStore := repo.Studio
-	tagStore := repo.Tag
-	movieStore := repo.Movie
-	markerStore := repo.SceneMarker
-
 	return compoundHandler{
 		intCriterionHandler(sceneFilter.ID, "scenes.id", nil),
 		pathCriterionHandler(sceneFilter.Path, "folders.path", "files.basename", qb.addFoldersTable),
@@ -168,68 +147,68 @@ func (qb *SceneStore) criterionHandler(sceneFilter *models.SceneFilterType) crit
 		timestampCriterionHandler(sceneFilter.CreatedAt, "scenes.created_at"),
 		timestampCriterionHandler(sceneFilter.UpdatedAt, "scenes.updated_at"),
 
-		&relatedFilterHandler{
-			relatedIDCol: "scenes_galleries.gallery_id",
-			relatedStore: galleryStore,
-			makeFilterFn: func(ctx context.Context) *filterBuilder {
-				return galleryStore.makeFilter(ctx, sceneFilter.GalleriesFilter)
-			},
-			joinFn: func(f *filterBuilder) {
-				qb.galleriesRepository().join(f, "", "scenes.id")
-			},
-		},
+		// &relatedFilterHandler{
+		// 	relatedIDCol: "scenes_galleries.gallery_id",
+		// 	relatedStore: galleryStore,
+		// 	makeFilterFn: func(ctx context.Context) *filterBuilder {
+		// 		return galleryStore.makeFilter(ctx, sceneFilter.GalleriesFilter)
+		// 	},
+		// 	joinFn: func(f *filterBuilder) {
+		// 		qb.galleriesRepository().join(f, "", "scenes.id")
+		// 	},
+		// },
 
-		&relatedFilterHandler{
-			relatedIDCol: "performers_join.performer_id",
-			relatedStore: performerStore,
-			makeFilterFn: func(ctx context.Context) *filterBuilder {
-				return performerStore.makeFilter(ctx, sceneFilter.PerformersFilter)
-			},
-			joinFn: func(f *filterBuilder) {
-				qb.performersRepository().join(f, "performers_join", "scenes.id")
-			},
-		},
+		// &relatedFilterHandler{
+		// 	relatedIDCol: "performers_join.performer_id",
+		// 	relatedStore: performerStore,
+		// 	makeFilterFn: func(ctx context.Context) *filterBuilder {
+		// 		return performerStore.makeFilter(ctx, sceneFilter.PerformersFilter)
+		// 	},
+		// 	joinFn: func(f *filterBuilder) {
+		// 		qb.performersRepository().join(f, "performers_join", "scenes.id")
+		// 	},
+		// },
 
-		&relatedFilterHandler{
-			relatedIDCol: "scenes.studio_id",
-			relatedStore: studioStore,
-			makeFilterFn: func(ctx context.Context) *filterBuilder {
-				return studioStore.makeFilter(ctx, sceneFilter.StudiosFilter)
-			},
-		},
+		// &relatedFilterHandler{
+		// 	relatedIDCol: "scenes.studio_id",
+		// 	relatedStore: studioStore,
+		// 	makeFilterFn: func(ctx context.Context) *filterBuilder {
+		// 		return studioStore.makeFilter(ctx, sceneFilter.StudiosFilter)
+		// 	},
+		// },
 
-		&relatedFilterHandler{
-			relatedIDCol: "scene_tag.tag_id",
-			relatedStore: tagStore,
-			makeFilterFn: func(ctx context.Context) *filterBuilder {
-				return tagStore.makeFilter(ctx, sceneFilter.TagsFilter)
-			},
-			joinFn: func(f *filterBuilder) {
-				f.addInnerJoin(scenesTagsTable, "scene_tag", "scene_tag.scene_id = scenes.id")
-			},
-		},
+		// &relatedFilterHandler{
+		// 	relatedIDCol: "scene_tag.tag_id",
+		// 	relatedStore: tagStore,
+		// 	makeFilterFn: func(ctx context.Context) *filterBuilder {
+		// 		return tagStore.makeFilter(ctx, sceneFilter.TagsFilter)
+		// 	},
+		// 	joinFn: func(f *filterBuilder) {
+		// 		f.addInnerJoin(scenesTagsTable, "scene_tag", "scene_tag.scene_id = scenes.id")
+		// 	},
+		// },
 
-		&relatedFilterHandler{
-			relatedIDCol: "movies_scenes.movie_id",
-			relatedStore: movieStore,
-			makeFilterFn: func(ctx context.Context) *filterBuilder {
-				return movieStore.makeFilter(ctx, sceneFilter.MoviesFilter)
-			},
-			joinFn: func(f *filterBuilder) {
-				qb.moviesRepository().join(f, "", "scenes.id")
-			},
-		},
+		// &relatedFilterHandler{
+		// 	relatedIDCol: "movies_scenes.movie_id",
+		// 	relatedStore: movieStore,
+		// 	makeFilterFn: func(ctx context.Context) *filterBuilder {
+		// 		return movieStore.makeFilter(ctx, sceneFilter.MoviesFilter)
+		// 	},
+		// 	joinFn: func(f *filterBuilder) {
+		// 		qb.moviesRepository().join(f, "", "scenes.id")
+		// 	},
+		// },
 
-		&relatedFilterHandler{
-			relatedIDCol: "scene_markers.id",
-			relatedStore: markerStore,
-			makeFilterFn: func(ctx context.Context) *filterBuilder {
-				return markerStore.makeFilter(ctx, sceneFilter.MarkersFilter)
-			},
-			joinFn: func(f *filterBuilder) {
-				f.addLeftJoin("scene_markers", "", "scene_markers.scene_id = scenes.id")
-			},
-		},
+		// &relatedFilterHandler{
+		// 	relatedIDCol: "scene_markers.id",
+		// 	relatedStore: markerStore,
+		// 	makeFilterFn: func(ctx context.Context) *filterBuilder {
+		// 		return markerStore.makeFilter(ctx, sceneFilter.MarkersFilter)
+		// 	},
+		// 	joinFn: func(f *filterBuilder) {
+		// 		f.addLeftJoin("scene_markers", "", "scene_markers.scene_id = scenes.id")
+		// 	},
+		// },
 	}
 }
 

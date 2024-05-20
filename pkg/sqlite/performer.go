@@ -174,6 +174,13 @@ func (r *performerRowRecord) fromPartial(o models.PerformerPartial) {
 	r.setBool("ignore_auto_tag", o.IgnoreAutoTag)
 }
 
+var (
+	performerRepository = repository{
+		tableName: performerTable,
+		idColumn:  idColumn,
+	}
+)
+
 type PerformerStore struct {
 	repository
 	blobJoinQueryBuilder
@@ -183,10 +190,7 @@ type PerformerStore struct {
 
 func NewPerformerStore(blobStore *BlobStore) *PerformerStore {
 	return &PerformerStore{
-		repository: repository{
-			tableName: performerTable,
-			idColumn:  idColumn,
-		},
+		repository: performerRepository,
 		blobJoinQueryBuilder: blobJoinQueryBuilder{
 			blobStore: blobStore,
 			joinTable: performerTable,

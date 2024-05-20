@@ -11,6 +11,29 @@ func illegalFilterCombination(type1, type2 string) error {
 	return fmt.Errorf("cannot have %s and %s in the same filter", type1, type2)
 }
 
+func validateFilterCombination[T any](a, o, n *T) error {
+	const and = "AND"
+	const or = "OR"
+	const not = "NOT"
+
+	if a != nil {
+		if o != nil {
+			return illegalFilterCombination(and, or)
+		}
+		if n != nil {
+			return illegalFilterCombination(and, not)
+		}
+	}
+
+	if o != nil {
+		if n != nil {
+			return illegalFilterCombination(or, not)
+		}
+	}
+
+	return nil
+}
+
 type sqlClause struct {
 	sql  string
 	args []interface{}

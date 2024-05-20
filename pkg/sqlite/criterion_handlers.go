@@ -990,15 +990,19 @@ type relatedStore interface {
 	newQuery() queryBuilder
 }
 
+type filterMaker interface {
+	makeFilter(ctx context.Context) *filterBuilder
+}
+
 type relatedFilterHandler struct {
 	relatedIDCol string
 	relatedStore relatedStore
-	makeFilterFn func(ctx context.Context) *filterBuilder
+	filterMaker  filterMaker
 	joinFn       func(f *filterBuilder)
 }
 
 func (h *relatedFilterHandler) handle(ctx context.Context, f *filterBuilder) {
-	subFilter := h.makeFilterFn(ctx)
+	subFilter := h.filterMaker.makeFilter(ctx)
 	if subFilter == nil {
 		return
 	}
