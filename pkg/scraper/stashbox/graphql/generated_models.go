@@ -1034,7 +1034,7 @@ type TagQueryInput struct {
 	// Filter to search name - assumes like query unless quoted
 	Name *string `json:"name,omitempty"`
 	// Filter to category ID
-	IsFavorite *bool `json:"is_favorite,omitempty"`
+	IsFavorite *bool             `json:"is_favorite,omitempty"`
 	CategoryID *string           `json:"category_id,omitempty"`
 	Page       int               `json:"page"`
 	PerPage    int               `json:"per_page"`

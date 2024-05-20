@@ -192,7 +192,7 @@ export const StudioCard: React.FC<IProps> = ({
       studio.gallery_count ||
       studio.movie_count ||
       studio.performer_count ||
-      studio.tags.length > 0 
+      studio.tags.length > 0
     ) {
       return (
         <>

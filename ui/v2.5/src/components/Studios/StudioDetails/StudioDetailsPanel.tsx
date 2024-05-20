@@ -50,18 +50,18 @@ export const StudioDetailsPanel: React.FC<IStudioDetailsPanel> = ({
   function maybeRenderExtraDetails() {
     if (!collapsed) {
       return (
-      <>
-        <DetailItem
-          id="tags"
-          value={renderTagsField()}
-          fullWidth={fullWidth}
-        />
-        <DetailItem
-          id="stash_ids"
-          value={renderStashIDs()}
-          fullWidth={fullWidth}
-        />
-      </>
+        <>
+          <DetailItem
+            id="tags"
+            value={renderTagsField()}
+            fullWidth={fullWidth}
+          />
+          <DetailItem
+            id="stash_ids"
+            value={renderStashIDs()}
+            fullWidth={fullWidth}
+          />
+        </>
       );
     }
   }

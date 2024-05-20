@@ -127,7 +127,14 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
     }
 
     return ret;
-  }, [sceneCount, imageCount, galleryCount, sceneMarkerCount, performerCount, studioCount]);
+  }, [
+    sceneCount,
+    imageCount,
+    galleryCount,
+    sceneMarkerCount,
+    performerCount,
+    studioCount,
+  ]);
 
   const setTabKey = useCallback(
     (newTabKey: string | null) => {
