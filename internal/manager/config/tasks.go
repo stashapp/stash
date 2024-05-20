@@ -1,8 +1,8 @@
 package config
 
 type ScanMetadataOptions struct {
-	// Forces a rescan on files
-	ForceRescan bool `json:"forceRescan"`
+	// Forces a rescan on files even if they have not changed
+	Rescan bool `json:"rescan"`
 	// Generate scene covers during scan
 	ScanGenerateCovers bool `json:"scanGenerateCovers"`
 	// Generate previews during scan

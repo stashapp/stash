@@ -135,8 +135,8 @@ type ScanOptions struct {
 
 	ParallelTasks int
 
-	// When true files in path will be rescanned
-	ForceRescan bool
+	// When true files in path will be rescanned even if they haven't changed
+	Rescan bool
 }
 
 // Scan starts the scanning process.
@@ -1026,7 +1026,7 @@ func (s *scanJob) onExistingFile(ctx context.Context, f scanFile, existing model
 
 	fileModTime := f.ModTime
 	updated := !fileModTime.Equal(base.ModTime)
-	forceRescan := s.options.ForceRescan
+	forceRescan := s.options.Rescan
 
 	if !updated && !forceRescan {
 		return s.onUnchangedFile(ctx, f, existing)
@@ -1034,7 +1034,12 @@ func (s *scanJob) onExistingFile(ctx context.Context, f scanFile, existing model
 
 	oldBase := *base
 
-	logger.Infof("%s has been updated: rescanning", path)
+	if !updated && forceRescan {
+		logger.Infof("rescanning %s", path)
+	} else {
+		logger.Infof("%s has been updated: rescanning", path)
+	}
+
 	base.ModTime = fileModTime
 	base.Size = f.Size
 	base.UpdatedAt = time.Now()

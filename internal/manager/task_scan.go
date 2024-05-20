@@ -69,7 +69,7 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) error {
 		ZipFileExtensions:      cfg.GetGalleryExtensions(),
 		ParallelTasks:          cfg.GetParallelTasksWithAutoDetection(),
 		HandlerRequiredFilters: []file.Filter{newHandlerRequiredFilter(cfg, repo)},
-		ForceRescan:            j.input.ForceRescan,
+		Rescan:                 j.input.Rescan,
 	}, progress)
 
 	taskQueue.Close()
