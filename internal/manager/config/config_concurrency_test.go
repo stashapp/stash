@@ -97,6 +97,7 @@ func TestConcurrentConfigAccess(t *testing.T) {
 				i.Set(DLNADefaultEnabled, i.GetDLNADefaultEnabled())
 				i.Set(DLNADefaultIPWhitelist, i.GetDLNADefaultIPWhitelist())
 				i.Set(DLNAInterfaces, i.GetDLNAInterfaces())
+				i.Set(DLNAPort, i.GetDLNAPort())
 				i.Set(LogFile, i.GetLogFile())
 				i.Set(LogOut, i.GetLogOut())
 				i.Set(LogLevel, i.GetLogLevel())

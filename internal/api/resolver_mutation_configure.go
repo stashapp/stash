@@ -576,6 +576,10 @@ func (r *mutationResolver) ConfigureDlna(ctx context.Context, input ConfigDLNAIn
 		c.Set(config.DLNAVideoSortOrder, input.VideoSortOrder)
 	}
 
+	if input.Port != nil {
+		c.Set(config.DLNAPort, *input.Port)
+	}
+
 	refresh := false
 	if input.Enabled != nil {
 		c.Set(config.DLNADefaultEnabled, *input.Enabled)

@@ -146,6 +146,7 @@ export type CriterionType =
   | "tag_count"
   | "performers"
   | "studios"
+  | "scenes"
   | "movies"
   | "galleries"
   | "birth_year"

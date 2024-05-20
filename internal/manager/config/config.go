@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"runtime"
+	"strconv"
 	"strings"
 
 	"sync"
@@ -236,6 +237,9 @@ const (
 
 	DLNAVideoSortOrder        = "dlna.video_sort_order"
 	dlnaVideoSortOrderDefault = "title"
+
+	DLNAPort        = "dlna.port"
+	DLNAPortDefault = 1338
 
 	// Logging options
 	LogFile          = "logFile"
@@ -1475,6 +1479,21 @@ func (i *Config) GetDLNADefaultIPWhitelist() []string {
 // empty, runs on all interfaces.
 func (i *Config) GetDLNAInterfaces() []string {
 	return i.getStringSlice(DLNAInterfaces)
+}
+
+// GetDLNAPort returns the port to run the DLNA server on. If empty, 1338
+// will be used.
+func (i *Config) GetDLNAPort() int {
+	ret := i.getInt(DLNAPort)
+	if ret == 0 {
+		ret = DLNAPortDefault
+	}
+	return ret
+}
+
+// GetDLNAPortAsString returns the port to run the DLNA server on as a string.
+func (i *Config) GetDLNAPortAsString() string {
+	return ":" + strconv.Itoa(i.GetDLNAPort())
 }
 
 // GetVideoSortOrder returns the sort order to display videos. If

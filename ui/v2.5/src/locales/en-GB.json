@@ -257,6 +257,8 @@
       "recent_ip_addresses": "Recent IP addresses",
       "server_display_name": "Server Display Name",
       "server_display_name_desc": "Display name for the DLNA server. Defaults to {server_name} if empty.",
+      "server_port": "Server Port",
+      "server_port_desc": "Port to run the DLNA server on. Requires DLNA restart after changing.",
       "successfully_cancelled_temporary_behaviour": "Successfully cancelled temporary behaviour",
       "until_restart": "until restart",
       "video_sort_order": "Default Video Sort Order",

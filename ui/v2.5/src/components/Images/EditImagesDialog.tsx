@@ -171,7 +171,7 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
     setExistingTagIds(updateTagIds);
     setExistingGalleryIds(updateGalleryIds);
     setOrganized(updateOrganized);
-  }, [props.selected, performerMode, tagMode]);
+  }, [props.selected]);
 
   useEffect(() => {
     if (checkboxRef.current) {

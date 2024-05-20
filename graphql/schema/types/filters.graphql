@@ -386,6 +386,8 @@ input GalleryFilterType {
   average_resolution: ResolutionCriterionInput
   "Filter to only include galleries that have chapters. `true` or `false`"
   has_chapters: String
+  "Filter to only include galleries with these scenes"
+  scenes: MultiCriterionInput
   "Filter to only include galleries with this studio"
   studios: HierarchicalMultiCriterionInput
   "Filter to only include galleries with studios with these tags"
