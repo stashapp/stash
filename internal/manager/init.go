@@ -269,9 +269,14 @@ func (s *Manager) RefreshFFMpeg(ctx context.Context) {
 
 	// ensure the paths are valid
 	if ffmpegPath != "" {
+		// path was set explicitly
 		if err := ffmpeg.ValidateFFMpeg(ffmpegPath); err != nil {
 			logger.Errorf("invalid ffmpeg path: %v", err)
 			return
+		}
+
+		if err := ffmpeg.ValidateFFMpegCodecSupport(ffmpegPath); err != nil {
+			logger.Warn(err)
 		}
 	} else {
 		ffmpegPath = ffmpeg.ResolveFFMpeg(configDirectory, stashHomeDir)
