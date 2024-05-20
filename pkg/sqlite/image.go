@@ -741,14 +741,9 @@ func (qb *ImageStore) makeQuery(ctx context.Context, imageFilter *models.ImageFi
 		query.parseQueryString(searchColumns, *q)
 	}
 
-	b := imageQueryBuilder{
+	filter := filterBuilderFromHandler(ctx, &imageFilterHandler{
 		imageFilter: imageFilter,
-	}
-
-	if err := b.validateFilter(imageFilter); err != nil {
-		return nil, err
-	}
-	filter := b.makeFilter(ctx, imageFilter)
+	})
 
 	if err := query.addFilter(filter); err != nil {
 		return nil, err

@@ -7,11 +7,12 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
-type imageQueryBuilder struct {
+type imageFilterHandler struct {
 	imageFilter *models.ImageFilterType
 }
 
-func (qb *imageQueryBuilder) validateFilter(imageFilter *models.ImageFilterType) error {
+func (qb *imageFilterHandler) validate() error {
+	imageFilter := qb.imageFilter
 	if imageFilter == nil {
 		return nil
 	}
@@ -21,7 +22,8 @@ func (qb *imageQueryBuilder) validateFilter(imageFilter *models.ImageFilterType)
 	}
 
 	if subFilter := utils.FirstNotNil(imageFilter.And, imageFilter.Or, imageFilter.Not); subFilter != nil {
-		if err := qb.validateFilter(subFilter); err != nil {
+		sqb := &imageFilterHandler{imageFilter: subFilter}
+		if err := sqb.validate(); err != nil {
 			return err
 		}
 	}
@@ -42,29 +44,38 @@ func (qb *imageQueryBuilder) validateFilter(imageFilter *models.ImageFilterType)
 	return nil
 }
 
-func (qb *imageQueryBuilder) makeFilter(ctx context.Context, imageFilter *models.ImageFilterType) *filterBuilder {
+func (qb *imageFilterHandler) handle(ctx context.Context, f *filterBuilder) {
+	imageFilter := qb.imageFilter
 	if imageFilter == nil {
-		return nil
+		return
 	}
 
-	query := &filterBuilder{}
-
-	if imageFilter.And != nil {
-		query.and(qb.makeFilter(ctx, imageFilter.And))
-	}
-	if imageFilter.Or != nil {
-		query.or(qb.makeFilter(ctx, imageFilter.Or))
-	}
-	if imageFilter.Not != nil {
-		query.not(qb.makeFilter(ctx, imageFilter.Not))
+	if err := qb.validate(); err != nil {
+		f.setError(err)
+		return
 	}
 
-	query.handleCriterion(ctx, qb.criterionHandler(imageFilter))
+	sub := &imageFilterHandler{utils.FirstNotNil(imageFilter.And, imageFilter.Or, imageFilter.Not)}
+	if sub.imageFilter != nil {
+		subQuery := &filterBuilder{}
+		sub.handle(ctx, subQuery)
 
-	return query
+		if imageFilter.And != nil {
+			f.and(subQuery)
+		}
+		if imageFilter.Or != nil {
+			f.or(subQuery)
+		}
+		if imageFilter.Not != nil {
+			f.not(subQuery)
+		}
+	}
+
+	f.handleCriterion(ctx, qb.criterionHandler())
 }
 
-func (qb *imageQueryBuilder) criterionHandler(imageFilter *models.ImageFilterType) criterionHandler {
+func (qb *imageFilterHandler) criterionHandler() criterionHandler {
+	imageFilter := qb.imageFilter
 	return compoundHandler{
 		intCriterionHandler(imageFilter.ID, "images.id", nil),
 		criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
@@ -147,7 +158,7 @@ func (qb *imageQueryBuilder) criterionHandler(imageFilter *models.ImageFilterTyp
 	}
 }
 
-func (qb *imageQueryBuilder) fileCountCriterionHandler(fileCount *models.IntCriterionInput) criterionHandlerFunc {
+func (qb *imageFilterHandler) fileCountCriterionHandler(fileCount *models.IntCriterionInput) criterionHandlerFunc {
 	h := countCriterionHandlerBuilder{
 		primaryTable: imageTable,
 		joinTable:    imagesFilesTable,
@@ -157,7 +168,7 @@ func (qb *imageQueryBuilder) fileCountCriterionHandler(fileCount *models.IntCrit
 	return h.handler(fileCount)
 }
 
-func (qb *imageQueryBuilder) missingCriterionHandler(isMissing *string) criterionHandlerFunc {
+func (qb *imageFilterHandler) missingCriterionHandler(isMissing *string) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if isMissing != nil && *isMissing != "" {
 			switch *isMissing {
@@ -179,7 +190,7 @@ func (qb *imageQueryBuilder) missingCriterionHandler(isMissing *string) criterio
 	}
 }
 
-func (qb *imageQueryBuilder) urlsCriterionHandler(url *models.StringCriterionInput) criterionHandlerFunc {
+func (qb *imageFilterHandler) urlsCriterionHandler(url *models.StringCriterionInput) criterionHandlerFunc {
 	h := stringListCriterionHandlerBuilder{
 		joinTable:    imagesURLsTable,
 		stringColumn: imageURLColumn,
@@ -191,7 +202,7 @@ func (qb *imageQueryBuilder) urlsCriterionHandler(url *models.StringCriterionInp
 	return h.handler(url)
 }
 
-func (qb *imageQueryBuilder) getMultiCriterionHandlerBuilder(foreignTable, joinTable, foreignFK string, addJoinsFunc func(f *filterBuilder)) multiCriterionHandlerBuilder {
+func (qb *imageFilterHandler) getMultiCriterionHandlerBuilder(foreignTable, joinTable, foreignFK string, addJoinsFunc func(f *filterBuilder)) multiCriterionHandlerBuilder {
 	return multiCriterionHandlerBuilder{
 		primaryTable: imageTable,
 		foreignTable: foreignTable,
@@ -202,7 +213,7 @@ func (qb *imageQueryBuilder) getMultiCriterionHandlerBuilder(foreignTable, joinT
 	}
 }
 
-func (qb *imageQueryBuilder) tagsCriterionHandler(tags *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
+func (qb *imageFilterHandler) tagsCriterionHandler(tags *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
 	h := joinedHierarchicalMultiCriterionHandlerBuilder{
 		primaryTable: imageTable,
 		foreignTable: tagTable,
@@ -217,7 +228,7 @@ func (qb *imageQueryBuilder) tagsCriterionHandler(tags *models.HierarchicalMulti
 	return h.handler(tags)
 }
 
-func (qb *imageQueryBuilder) tagCountCriterionHandler(tagCount *models.IntCriterionInput) criterionHandlerFunc {
+func (qb *imageFilterHandler) tagCountCriterionHandler(tagCount *models.IntCriterionInput) criterionHandlerFunc {
 	h := countCriterionHandlerBuilder{
 		primaryTable: imageTable,
 		joinTable:    imagesTagsTable,
@@ -227,7 +238,7 @@ func (qb *imageQueryBuilder) tagCountCriterionHandler(tagCount *models.IntCriter
 	return h.handler(tagCount)
 }
 
-func (qb *imageQueryBuilder) galleriesCriterionHandler(galleries *models.MultiCriterionInput) criterionHandlerFunc {
+func (qb *imageFilterHandler) galleriesCriterionHandler(galleries *models.MultiCriterionInput) criterionHandlerFunc {
 	addJoinsFunc := func(f *filterBuilder) {
 		if galleries.Modifier == models.CriterionModifierIncludes || galleries.Modifier == models.CriterionModifierIncludesAll {
 			f.addInnerJoin(galleriesImagesTable, "", "galleries_images.image_id = images.id")
@@ -239,7 +250,7 @@ func (qb *imageQueryBuilder) galleriesCriterionHandler(galleries *models.MultiCr
 	return h.handler(galleries)
 }
 
-func (qb *imageQueryBuilder) performersCriterionHandler(performers *models.MultiCriterionInput) criterionHandlerFunc {
+func (qb *imageFilterHandler) performersCriterionHandler(performers *models.MultiCriterionInput) criterionHandlerFunc {
 	h := joinedMultiCriterionHandlerBuilder{
 		primaryTable: imageTable,
 		joinTable:    performersImagesTable,
@@ -255,7 +266,7 @@ func (qb *imageQueryBuilder) performersCriterionHandler(performers *models.Multi
 	return h.handler(performers)
 }
 
-func (qb *imageQueryBuilder) performerCountCriterionHandler(performerCount *models.IntCriterionInput) criterionHandlerFunc {
+func (qb *imageFilterHandler) performerCountCriterionHandler(performerCount *models.IntCriterionInput) criterionHandlerFunc {
 	h := countCriterionHandlerBuilder{
 		primaryTable: imageTable,
 		joinTable:    performersImagesTable,
@@ -265,7 +276,7 @@ func (qb *imageQueryBuilder) performerCountCriterionHandler(performerCount *mode
 	return h.handler(performerCount)
 }
 
-func (qb *imageQueryBuilder) performerFavoriteCriterionHandler(performerfavorite *bool) criterionHandlerFunc {
+func (qb *imageFilterHandler) performerFavoriteCriterionHandler(performerfavorite *bool) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if performerfavorite != nil {
 			f.addLeftJoin("performers_images", "", "images.id = performers_images.image_id")
@@ -285,7 +296,7 @@ GROUP BY performers_images.image_id HAVING SUM(performers.favorite) = 0)`, "nofa
 	}
 }
 
-func (qb *imageQueryBuilder) performerAgeCriterionHandler(performerAge *models.IntCriterionInput) criterionHandlerFunc {
+func (qb *imageFilterHandler) performerAgeCriterionHandler(performerAge *models.IntCriterionInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if performerAge != nil {
 			f.addInnerJoin("performers_images", "", "images.id = performers_images.image_id")
@@ -301,7 +312,7 @@ func (qb *imageQueryBuilder) performerAgeCriterionHandler(performerAge *models.I
 	}
 }
 
-func (qb *imageQueryBuilder) performerTagsCriterionHandler(tags *models.HierarchicalMultiCriterionInput) criterionHandler {
+func (qb *imageFilterHandler) performerTagsCriterionHandler(tags *models.HierarchicalMultiCriterionInput) criterionHandler {
 	return &joinedPerformerTagsHandler{
 		criterion:      tags,
 		primaryTable:   imageTable,

@@ -152,6 +152,12 @@ type filterBuilder struct {
 	err error
 }
 
+func filterBuilderFromHandler(ctx context.Context, handler criterionHandler) *filterBuilder {
+	f := &filterBuilder{}
+	handler.handle(ctx, f)
+	return f
+}
+
 var errSubFilterAlreadySet = errors.New(`sub-filter already set`)
 
 // sub-filter operator values
