@@ -252,7 +252,9 @@
             "successfully_cancelled_temporary_behaviour": "Comportamiento temporal eliminado correctamente",
             "until_restart": "hasta reinicio",
             "video_sort_order": "Orden predeterminado de clasificación de vídeos",
-            "video_sort_order_desc": "Forma de organizar videos por defecto."
+            "video_sort_order_desc": "Forma de organizar videos por defecto.",
+            "server_port": "Puerto del servidor",
+            "server_port_desc": "Puerto para ejecutar el servidor DLNA. Requiere reinicio de DLNA después del cambio."
         },
         "general": {
             "auth": {
