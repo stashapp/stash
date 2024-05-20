@@ -52,7 +52,7 @@ const FieldOptionsEditor: React.FC<IFieldOptionsEditor> = ({
       toSet = {
         field,
         strategy: undefined,
-        createMissing: undefined,
+        createMissing: true,
       };
     } else {
       toSet = {

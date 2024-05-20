@@ -26,7 +26,7 @@ type Options struct {
 }
 
 type MetadataOptions struct {
-	// any fields missing from here are defaulted to MERGE and createMissing false
+	// any fields missing from here are defaulted to MERGE and createMissing true
 	FieldOptions []*FieldOptions `json:"fieldOptions"`
 	// defaults to true if not provided
 	SetCoverImage *bool `json:"setCoverImage"`

@@ -41,7 +41,10 @@ type sceneRelationships struct {
 func (g sceneRelationships) studio(ctx context.Context) (*int, error) {
 	existingID := g.scene.StudioID
 	fieldStrategy := g.fieldOptions["studio"]
-	createMissing := fieldStrategy != nil && utils.IsTrue(fieldStrategy.CreateMissing)
+	createMissing := true
+	if fieldStrategy != nil {
+		createMissing = utils.IsTrue(fieldStrategy.CreateMissing)
+	}
 
 	scraped := g.result.result.Studio
 	endpoint := g.result.source.RemoteSite
@@ -77,10 +80,11 @@ func (g sceneRelationships) performers(ctx context.Context, ignoreMale bool) ([]
 		return nil, nil
 	}
 
-	createMissing := fieldStrategy != nil && utils.IsTrue(fieldStrategy.CreateMissing)
+	createMissing := true
 	strategy := FieldStrategyMerge
 	if fieldStrategy != nil {
 		strategy = fieldStrategy.Strategy
+		createMissing = utils.IsTrue(fieldStrategy.CreateMissing)
 	}
 
 	endpoint := g.result.source.RemoteSite
@@ -138,10 +142,11 @@ func (g sceneRelationships) tags(ctx context.Context) ([]int, error) {
 		return nil, nil
 	}
 
-	createMissing := fieldStrategy != nil && utils.IsTrue(fieldStrategy.CreateMissing)
+	createMissing := true
 	strategy := FieldStrategyMerge
 	if fieldStrategy != nil {
 		strategy = fieldStrategy.Strategy
+		createMissing = utils.IsTrue(fieldStrategy.CreateMissing)
 	}
 
 	var tagIDs []int
