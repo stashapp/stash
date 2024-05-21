@@ -127,7 +127,9 @@
         "disable": "Poista käytöstä",
         "clean_generated": "Puhdista generoidut tiedostot",
         "enable": "Ota käyttöön",
-        "remove_date": "Poista päivä"
+        "remove_date": "Poista päivä",
+        "encoding_image": "Enkoodataan kuvaa…",
+        "clear_date_data": "Tyhjennä päivämäärä"
     },
     "actions_name": "Toiminnot",
     "age": "Ikä",
@@ -247,7 +249,8 @@
             "server_display_name": "Palvelimen näyttönimi",
             "server_display_name_desc": "DLNA -palvelimen nimi. Oletuksena {server_name}, jos tyhjä.",
             "until_restart": "uudelleenkäynnistykseen asti",
-            "video_sort_order": "Videoiden oletusjärjestys"
+            "video_sort_order": "Videoiden oletusjärjestys",
+            "video_sort_order_desc": "Videoiden oletusjärjestys."
         },
         "general": {
             "auth": {
@@ -356,7 +359,8 @@
             "scrapers": "Kaapijat",
             "search_by_name": "Etsi nimellä",
             "supported_types": "Tuetut tyypit",
-            "supported_urls": "URL -osoitteet"
+            "supported_urls": "URL -osoitteet",
+            "installed_scrapers": "Asennetut kaapijat"
         },
         "stashbox": {
             "add_instance": "Lisää stash-box instanssi",
@@ -437,7 +441,12 @@
                 "scanning_paths": "Skannataan seuraavia polkuja"
             },
             "scan_for_content_desc": "Skannaa uusi sisältö ja lisää se tietokantaan.",
-            "set_name_date_details_from_metadata_if_present": "Aseta nimi, päivä ja tiedot metadatasta"
+            "set_name_date_details_from_metadata_if_present": "Aseta nimi, päivä ja tiedot metadatasta",
+            "clean_generated": {
+                "markers": "Merkkien esikatselut",
+                "previews": "Kohtauksien esikatselut",
+                "previews_desc": "Kohtauksien esikatselut ja pienoiskuvat"
+            }
         },
         "tools": {
             "scene_duplicate_checker": "Kohtauksien kaksoiskappaleiden tarkistus",
@@ -605,7 +614,10 @@
             },
             "title": "Käyttöliittymä"
         },
-        "advanced_mode": "Edistynyt tila"
+        "advanced_mode": "Edistynyt tila",
+        "plugins": {
+            "installed_plugins": "Asennetut lisäosat"
+        }
     },
     "configuration": "Konfiguraatio",
     "countables": {
@@ -613,7 +625,7 @@
         "galleries": "{count, plural, one {Galleria} other {Galleriaa}}",
         "images": "{count, plural, one {Kuva} other {Kuvaa}}",
         "markers": "{count, plural, one {Merkki} other {Merkkiä}}",
-        "movies": "{count, plural, one {Elokuva} other {Elokuvaa}}",
+        "movies": "{count, plural, one {Elokuva} other {Elokuvat}}",
         "performers": "{count, plural, one {Esiintyjä} other {Esiintyjää}}",
         "scenes": "{count, plural, one {Kohtaus} other {Kohtausta}}",
         "studios": "{count, plural, one {Studio} other {Studiota}}",
@@ -957,8 +969,7 @@
             "stash_library_directories": "Stash -kirjaston kansiot"
         },
         "creating": {
-            "creating_your_system": "Luodaan järjestelmää",
-            "ffmpeg_notice": "Jos <code>ffmpeg</code> ei ole valmiina polussa, odota kärsivällisesti kun stash lataa sen. Näet latauksen tilan konsolista."
+            "creating_your_system": "Luodaan järjestelmää"
         },
         "errors": {
             "something_went_wrong": "Voi ei! Jotain meni vikaan!",
