@@ -7,19 +7,30 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
-func (qb *SceneMarkerStore) makeFilter(ctx context.Context, sceneMarkerFilter *models.SceneMarkerFilterType) *filterBuilder {
-	if sceneMarkerFilter == nil {
-		return nil
-	}
-
-	query := &filterBuilder{}
-
-	query.handleCriterion(ctx, qb.criterionHandler(sceneMarkerFilter))
-
-	return query
+type sceneMarkerFilterHandler struct {
+	sceneMarkerFilter *models.SceneMarkerFilterType
 }
 
-func (qb *SceneMarkerStore) criterionHandler(sceneMarkerFilter *models.SceneMarkerFilterType) criterionHandler {
+func (qb *sceneMarkerFilterHandler) validate() error {
+	return nil
+}
+
+func (qb *sceneMarkerFilterHandler) handle(ctx context.Context, f *filterBuilder) {
+	sceneMarkerFilter := qb.sceneMarkerFilter
+	if sceneMarkerFilter == nil {
+		return
+	}
+
+	if err := qb.validate(); err != nil {
+		f.setError(err)
+		return
+	}
+
+	f.handleCriterion(ctx, qb.criterionHandler())
+}
+
+func (qb *sceneMarkerFilterHandler) criterionHandler() criterionHandler {
+	sceneMarkerFilter := qb.sceneMarkerFilter
 	return compoundHandler{
 		qb.tagIDCriterionHandler(sceneMarkerFilter.TagID),
 		qb.tagsCriterionHandler(sceneMarkerFilter.Tags),
@@ -33,7 +44,7 @@ func (qb *SceneMarkerStore) criterionHandler(sceneMarkerFilter *models.SceneMark
 	}
 }
 
-func (qb *SceneMarkerStore) tagIDCriterionHandler(tagID *string) criterionHandlerFunc {
+func (qb *sceneMarkerFilterHandler) tagIDCriterionHandler(tagID *string) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if tagID != nil {
 			f.addLeftJoin("scene_markers_tags", "", "scene_markers_tags.scene_marker_id = scene_markers.id")
@@ -43,7 +54,7 @@ func (qb *SceneMarkerStore) tagIDCriterionHandler(tagID *string) criterionHandle
 	}
 }
 
-func (qb *SceneMarkerStore) tagsCriterionHandler(criterion *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
+func (qb *sceneMarkerFilterHandler) tagsCriterionHandler(criterion *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if criterion != nil {
 			tags := criterion.CombineExcludes()
@@ -70,7 +81,7 @@ func (qb *SceneMarkerStore) tagsCriterionHandler(criterion *models.HierarchicalM
 			}
 
 			if len(tags.Value) > 0 {
-				valuesClause, err := getHierarchicalValues(ctx, qb.tx, tags.Value, tagTable, "tags_relations", "parent_id", "child_id", tags.Depth)
+				valuesClause, err := getHierarchicalValues(ctx, dbWrapper{}, tags.Value, tagTable, "tags_relations", "parent_id", "child_id", tags.Depth)
 				if err != nil {
 					f.setError(err)
 					return
@@ -117,14 +128,12 @@ func (qb *SceneMarkerStore) tagsCriterionHandler(criterion *models.HierarchicalM
 	}
 }
 
-func (qb *SceneMarkerStore) sceneTagsCriterionHandler(tags *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
+func (qb *sceneMarkerFilterHandler) sceneTagsCriterionHandler(tags *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if tags != nil {
 			f.addLeftJoin("scenes_tags", "", "scene_markers.scene_id = scenes_tags.scene_id")
 
 			h := joinedHierarchicalMultiCriterionHandlerBuilder{
-				tx: qb.tx,
-
 				primaryTable: "scene_markers",
 				primaryKey:   sceneIDColumn,
 				foreignTable: tagTable,
@@ -141,7 +150,7 @@ func (qb *SceneMarkerStore) sceneTagsCriterionHandler(tags *models.HierarchicalM
 	}
 }
 
-func (qb *SceneMarkerStore) performersCriterionHandler(performers *models.MultiCriterionInput) criterionHandlerFunc {
+func (qb *sceneMarkerFilterHandler) performersCriterionHandler(performers *models.MultiCriterionInput) criterionHandlerFunc {
 	h := joinedMultiCriterionHandlerBuilder{
 		primaryTable: sceneTable,
 		joinTable:    performersScenesTable,

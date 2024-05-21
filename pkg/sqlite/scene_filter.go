@@ -198,16 +198,14 @@ func (qb *sceneFilterHandler) criterionHandler() criterionHandler {
 			},
 		},
 
-		// &relatedFilterHandler{
-		// 	relatedIDCol: "scene_markers.id",
-		// 	relatedStore: markerStore,
-		// 	makeFilterFn: func(ctx context.Context) *filterBuilder {
-		// 		return markerStore.makeFilter(ctx, sceneFilter.MarkersFilter)
-		// 	},
-		// 	joinFn: func(f *filterBuilder) {
-		// 		f.addLeftJoin("scene_markers", "", "scene_markers.scene_id = scenes.id")
-		// 	},
-		// },
+		&relatedFilterHandler{
+			relatedIDCol:   "scene_markers.id",
+			relatedRepo:    sceneMarkerRepository.repository,
+			relatedHandler: &sceneMarkerFilterHandler{sceneFilter.MarkersFilter},
+			joinFn: func(f *filterBuilder) {
+				f.addInnerJoin("scene_markers", "", "scene_markers.scene_id = scenes.id")
+			},
+		},
 	}
 }
 

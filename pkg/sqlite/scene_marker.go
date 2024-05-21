@@ -75,24 +75,36 @@ func (r *sceneMarkerRowRecord) fromPartial(o models.SceneMarkerPartial) {
 	r.setTimestamp("updated_at", o.UpdatedAt)
 }
 
-type SceneMarkerStore struct {
+type sceneMarkerRepositoryType struct {
 	repository
 
-	tableMgr *table
+	tags joinRepository
 }
 
-func NewSceneMarkerStore() *SceneMarkerStore {
-	return &SceneMarkerStore{
+var (
+	sceneMarkerRepository = sceneMarkerRepositoryType{
 		repository: repository{
 			tableName: sceneMarkerTable,
 			idColumn:  idColumn,
 		},
-		tableMgr: sceneMarkerTableMgr,
+		tags: joinRepository{
+			repository: repository{
+				tableName: "scene_markers_tags",
+				idColumn:  "scene_marker_id",
+			},
+			fkColumn: tagIDColumn,
+		},
 	}
+)
+
+type SceneMarkerStore struct{}
+
+func NewSceneMarkerStore() *SceneMarkerStore {
+	return &SceneMarkerStore{}
 }
 
 func (qb *SceneMarkerStore) table() exp.IdentifierExpression {
-	return qb.tableMgr.table
+	return sceneMarkerTableMgr.table
 }
 
 func (qb *SceneMarkerStore) selectDataset() *goqu.SelectDataset {
@@ -103,7 +115,7 @@ func (qb *SceneMarkerStore) Create(ctx context.Context, newObject *models.SceneM
 	var r sceneMarkerRow
 	r.fromSceneMarker(*newObject)
 
-	id, err := qb.tableMgr.insertID(ctx, r)
+	id, err := sceneMarkerTableMgr.insertID(ctx, r)
 	if err != nil {
 		return err
 	}
@@ -128,7 +140,7 @@ func (qb *SceneMarkerStore) UpdatePartial(ctx context.Context, id int, partial m
 	r.fromPartial(partial)
 
 	if len(r.Record) > 0 {
-		if err := qb.tableMgr.updateByID(ctx, id, r.Record); err != nil {
+		if err := sceneMarkerTableMgr.updateByID(ctx, id, r.Record); err != nil {
 			return nil, err
 		}
 	}
@@ -140,7 +152,7 @@ func (qb *SceneMarkerStore) Update(ctx context.Context, updatedObject *models.Sc
 	var r sceneMarkerRow
 	r.fromSceneMarker(*updatedObject)
 
-	if err := qb.tableMgr.updateByID(ctx, updatedObject.ID, r); err != nil {
+	if err := sceneMarkerTableMgr.updateByID(ctx, updatedObject.ID, r); err != nil {
 		return err
 	}
 
@@ -148,7 +160,7 @@ func (qb *SceneMarkerStore) Update(ctx context.Context, updatedObject *models.Sc
 }
 
 func (qb *SceneMarkerStore) Destroy(ctx context.Context, id int) error {
-	return qb.destroyExisting(ctx, []int{id})
+	return sceneMarkerRepository.destroyExisting(ctx, []int{id})
 }
 
 // returns nil, nil if not found
@@ -186,7 +198,7 @@ func (qb *SceneMarkerStore) FindMany(ctx context.Context, ids []int) ([]*models.
 
 // returns nil, sql.ErrNoRows if not found
 func (qb *SceneMarkerStore) find(ctx context.Context, id int) (*models.SceneMarker, error) {
-	q := qb.selectDataset().Where(qb.tableMgr.byID(id))
+	q := qb.selectDataset().Where(sceneMarkerTableMgr.byID(id))
 
 	ret, err := qb.get(ctx, q)
 	if err != nil {
@@ -243,7 +255,7 @@ func (qb *SceneMarkerStore) FindBySceneID(ctx context.Context, sceneID int) ([]*
 
 func (qb *SceneMarkerStore) CountByTagID(ctx context.Context, tagID int) (int, error) {
 	args := []interface{}{tagID, tagID}
-	return qb.runCountQuery(ctx, qb.buildCountQuery(countSceneMarkersForTagQuery), args)
+	return sceneMarkerRepository.runCountQuery(ctx, sceneMarkerRepository.buildCountQuery(countSceneMarkersForTagQuery), args)
 }
 
 func (qb *SceneMarkerStore) GetMarkerStrings(ctx context.Context, q *string, sort *string) ([]*models.MarkerStringsResultType, error) {
@@ -280,7 +292,7 @@ func (qb *SceneMarkerStore) makeQuery(ctx context.Context, sceneMarkerFilter *mo
 		findFilter = &models.FindFilterType{}
 	}
 
-	query := qb.newQuery()
+	query := sceneMarkerRepository.newQuery()
 	distinctIDs(&query, sceneMarkerTable)
 
 	if q := findFilter.Q; q != nil && *q != "" {
@@ -289,7 +301,9 @@ func (qb *SceneMarkerStore) makeQuery(ctx context.Context, sceneMarkerFilter *mo
 		query.parseQueryString(searchColumns, *q)
 	}
 
-	filter := qb.makeFilter(ctx, sceneMarkerFilter)
+	filter := filterBuilderFromHandler(ctx, &sceneMarkerFilterHandler{
+		sceneMarkerFilter: sceneMarkerFilter,
+	})
 
 	if err := query.addFilter(filter); err != nil {
 		return nil, err
@@ -370,7 +384,7 @@ func (qb *SceneMarkerStore) setSceneMarkerSort(query *queryBuilder, findFilter *
 func (qb *SceneMarkerStore) querySceneMarkers(ctx context.Context, query string, args []interface{}) ([]*models.SceneMarker, error) {
 	const single = false
 	var ret []*models.SceneMarker
-	if err := qb.queryFunc(ctx, query, args, single, func(r *sqlx.Rows) error {
+	if err := sceneMarkerRepository.queryFunc(ctx, query, args, single, func(r *sqlx.Rows) error {
 		var f sceneMarkerRow
 		if err := r.StructScan(&f); err != nil {
 			return err
@@ -388,7 +402,7 @@ func (qb *SceneMarkerStore) querySceneMarkers(ctx context.Context, query string,
 }
 
 func (qb *SceneMarkerStore) queryMarkerStringsResultType(ctx context.Context, query string, args []interface{}) ([]*models.MarkerStringsResultType, error) {
-	rows, err := qb.tx.Queryx(ctx, query, args...)
+	rows, err := sceneMarkerRepository.tx.Queryx(ctx, query, args...)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return nil, err
 	}
@@ -410,24 +424,13 @@ func (qb *SceneMarkerStore) queryMarkerStringsResultType(ctx context.Context, qu
 	return markerStrings, nil
 }
 
-func (qb *SceneMarkerStore) tagsRepository() *joinRepository {
-	return &joinRepository{
-		repository: repository{
-			tx:        qb.tx,
-			tableName: "scene_markers_tags",
-			idColumn:  "scene_marker_id",
-		},
-		fkColumn: tagIDColumn,
-	}
-}
-
 func (qb *SceneMarkerStore) GetTagIDs(ctx context.Context, id int) ([]int, error) {
-	return qb.tagsRepository().getIDs(ctx, id)
+	return sceneMarkerRepository.tags.getIDs(ctx, id)
 }
 
 func (qb *SceneMarkerStore) UpdateTags(ctx context.Context, id int, tagIDs []int) error {
 	// Delete the existing joins and then create new ones
-	return qb.tagsRepository().replace(ctx, id, tagIDs)
+	return sceneMarkerRepository.tags.replace(ctx, id, tagIDs)
 }
 
 func (qb *SceneMarkerStore) Count(ctx context.Context) (int, error) {
