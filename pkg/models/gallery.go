@@ -1,9 +1,7 @@
 package models
 
 type GalleryFilterType struct {
-	And          *GalleryFilterType    `json:"AND"`
-	Or           *GalleryFilterType    `json:"OR"`
-	Not          *GalleryFilterType    `json:"NOT"`
+	OperatorFilter[GalleryFilterType]
 	ID           *IntCriterionInput    `json:"id"`
 	Title        *StringCriterionInput `json:"title"`
 	Code         *StringCriterionInput `json:"code"`

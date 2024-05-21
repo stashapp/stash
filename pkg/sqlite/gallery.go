@@ -112,16 +112,75 @@ func (r *galleryRowRecord) fromPartial(o models.GalleryPartial) {
 	r.setTimestamp("updated_at", o.UpdatedAt)
 }
 
+type galleryRepositoryType struct {
+	repository
+	performers joinRepository
+	images     joinRepository
+	tags       joinRepository
+	scenes     joinRepository
+	files      filesRepository
+}
+
+func (r *galleryRepositoryType) addGalleriesFilesTable(f *filterBuilder) {
+	f.addLeftJoin(galleriesFilesTable, "", "galleries_files.gallery_id = galleries.id")
+}
+
+func (r *galleryRepositoryType) addFilesTable(f *filterBuilder) {
+	r.addGalleriesFilesTable(f)
+	f.addLeftJoin(fileTable, "", "galleries_files.file_id = files.id")
+}
+
+func (r *galleryRepositoryType) addFoldersTable(f *filterBuilder) {
+	r.addFilesTable(f)
+	f.addLeftJoin(folderTable, "", "files.parent_folder_id = folders.id")
+}
+
 var (
-	galleryRepository = repository{
-		tableName: galleryTable,
-		idColumn:  idColumn,
+	galleryRepository = galleryRepositoryType{
+		repository: repository{
+			tableName: galleryTable,
+			idColumn:  idColumn,
+		},
+		performers: joinRepository{
+			repository: repository{
+				tableName: performersGalleriesTable,
+				idColumn:  galleryIDColumn,
+			},
+			fkColumn: "performer_id",
+		},
+		tags: joinRepository{
+			repository: repository{
+				tableName: galleriesTagsTable,
+				idColumn:  galleryIDColumn,
+			},
+			fkColumn:     "tag_id",
+			foreignTable: tagTable,
+			orderBy:      "tags.name ASC",
+		},
+		images: joinRepository{
+			repository: repository{
+				tableName: galleriesImagesTable,
+				idColumn:  galleryIDColumn,
+			},
+			fkColumn: "image_id",
+		},
+		scenes: joinRepository{
+			repository: repository{
+				tableName: galleriesScenesTable,
+				idColumn:  galleryIDColumn,
+			},
+			fkColumn: sceneIDColumn,
+		},
+		files: filesRepository{
+			repository: repository{
+				tableName: galleriesFilesTable,
+				idColumn:  galleryIDColumn,
+			},
+		},
 	}
 )
 
 type GalleryStore struct {
-	repository
-
 	tableMgr *table
 
 	fileStore   *FileStore
@@ -130,7 +189,6 @@ type GalleryStore struct {
 
 func NewGalleryStore(fileStore *FileStore, folderStore *FolderStore) *GalleryStore {
 	return &GalleryStore{
-		repository:  galleryRepository,
 		tableMgr:    galleryTableMgr,
 		fileStore:   fileStore,
 		folderStore: folderStore,
@@ -312,7 +370,7 @@ func (qb *GalleryStore) Destroy(ctx context.Context, id int) error {
 }
 
 func (qb *GalleryStore) GetFiles(ctx context.Context, id int) ([]models.File, error) {
-	fileIDs, err := qb.filesRepository().get(ctx, id)
+	fileIDs, err := galleryRepository.files.get(ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -331,7 +389,7 @@ func (qb *GalleryStore) GetFiles(ctx context.Context, id int) ([]models.File, er
 
 func (qb *GalleryStore) GetManyFileIDs(ctx context.Context, ids []int) ([][]models.FileID, error) {
 	const primaryOnly = false
-	return qb.filesRepository().getMany(ctx, ids, primaryOnly)
+	return galleryRepository.files.getMany(ctx, ids, primaryOnly)
 }
 
 // returns nil, nil if not found
@@ -620,20 +678,6 @@ func (qb *GalleryStore) All(ctx context.Context) ([]*models.Gallery, error) {
 	return qb.getMany(ctx, qb.selectDataset())
 }
 
-func (qb *GalleryStore) addGalleriesFilesTable(f *filterBuilder) {
-	f.addLeftJoin(galleriesFilesTable, "", "galleries_files.gallery_id = galleries.id")
-}
-
-func (qb *GalleryStore) addFilesTable(f *filterBuilder) {
-	qb.addGalleriesFilesTable(f)
-	f.addLeftJoin(fileTable, "", "galleries_files.file_id = files.id")
-}
-
-func (qb *GalleryStore) addFoldersTable(f *filterBuilder) {
-	qb.addFilesTable(f)
-	f.addLeftJoin(folderTable, "", "files.parent_folder_id = folders.id")
-}
-
 func (qb *GalleryStore) makeQuery(ctx context.Context, galleryFilter *models.GalleryFilterType, findFilter *models.FindFilterType) (*queryBuilder, error) {
 	if galleryFilter == nil {
 		galleryFilter = &models.GalleryFilterType{}
@@ -642,7 +686,7 @@ func (qb *GalleryStore) makeQuery(ctx context.Context, galleryFilter *models.Gal
 		findFilter = &models.FindFilterType{}
 	}
 
-	query := qb.newQuery()
+	query := galleryRepository.newQuery()
 	distinctIDs(&query, galleryTable)
 
 	if q := findFilter.Q; q != nil && *q != "" {
@@ -680,10 +724,9 @@ func (qb *GalleryStore) makeQuery(ctx context.Context, galleryFilter *models.Gal
 		query.parseQueryString(searchColumns, *q)
 	}
 
-	if err := qb.validateFilter(galleryFilter); err != nil {
-		return nil, err
-	}
-	filter := qb.makeFilter(ctx, galleryFilter)
+	filter := filterBuilderFromHandler(ctx, &galleryFilterHandler{
+		galleryFilter: galleryFilter,
+	})
 
 	if err := query.addFilter(filter); err != nil {
 		return nil, err
@@ -817,92 +860,36 @@ func (qb *GalleryStore) GetURLs(ctx context.Context, galleryID int) ([]string, e
 	return galleriesURLsTableMgr.get(ctx, galleryID)
 }
 
-func (qb *GalleryStore) filesRepository() *filesRepository {
-	return &filesRepository{
-		repository: repository{
-			tx:        qb.tx,
-			tableName: galleriesFilesTable,
-			idColumn:  galleryIDColumn,
-		},
-	}
-}
-
 func (qb *GalleryStore) AddFileID(ctx context.Context, id int, fileID models.FileID) error {
 	const firstPrimary = false
 	return galleriesFilesTableMgr.insertJoins(ctx, id, firstPrimary, []models.FileID{fileID})
 }
 
-func (qb *GalleryStore) performersRepository() *joinRepository {
-	return &joinRepository{
-		repository: repository{
-			tx:        qb.tx,
-			tableName: performersGalleriesTable,
-			idColumn:  galleryIDColumn,
-		},
-		fkColumn: "performer_id",
-	}
-}
-
 func (qb *GalleryStore) GetPerformerIDs(ctx context.Context, id int) ([]int, error) {
-	return qb.performersRepository().getIDs(ctx, id)
-}
-
-func (qb *GalleryStore) tagsRepository() *joinRepository {
-	return &joinRepository{
-		repository: repository{
-			tx:        qb.tx,
-			tableName: galleriesTagsTable,
-			idColumn:  galleryIDColumn,
-		},
-		fkColumn:     "tag_id",
-		foreignTable: tagTable,
-		orderBy:      "tags.name ASC",
-	}
+	return galleryRepository.performers.getIDs(ctx, id)
 }
 
 func (qb *GalleryStore) GetTagIDs(ctx context.Context, id int) ([]int, error) {
-	return qb.tagsRepository().getIDs(ctx, id)
-}
-
-func (qb *GalleryStore) imagesRepository() *joinRepository {
-	return &joinRepository{
-		repository: repository{
-			tx:        qb.tx,
-			tableName: galleriesImagesTable,
-			idColumn:  galleryIDColumn,
-		},
-		fkColumn: "image_id",
-	}
+	return galleryRepository.tags.getIDs(ctx, id)
 }
 
 func (qb *GalleryStore) GetImageIDs(ctx context.Context, galleryID int) ([]int, error) {
-	return qb.imagesRepository().getIDs(ctx, galleryID)
+	return galleryRepository.images.getIDs(ctx, galleryID)
 }
 
 func (qb *GalleryStore) AddImages(ctx context.Context, galleryID int, imageIDs ...int) error {
-	return qb.imagesRepository().insertOrIgnore(ctx, galleryID, imageIDs...)
+	return galleryRepository.images.insertOrIgnore(ctx, galleryID, imageIDs...)
 }
 
 func (qb *GalleryStore) RemoveImages(ctx context.Context, galleryID int, imageIDs ...int) error {
-	return qb.imagesRepository().destroyJoins(ctx, galleryID, imageIDs...)
+	return galleryRepository.images.destroyJoins(ctx, galleryID, imageIDs...)
 }
 
 func (qb *GalleryStore) UpdateImages(ctx context.Context, galleryID int, imageIDs []int) error {
 	// Delete the existing joins and then create new ones
-	return qb.imagesRepository().replace(ctx, galleryID, imageIDs)
-}
-
-func (qb *GalleryStore) scenesRepository() *joinRepository {
-	return &joinRepository{
-		repository: repository{
-			tx:        qb.tx,
-			tableName: galleriesScenesTable,
-			idColumn:  galleryIDColumn,
-		},
-		fkColumn: sceneIDColumn,
-	}
+	return galleryRepository.images.replace(ctx, galleryID, imageIDs)
 }
 
 func (qb *GalleryStore) GetSceneIDs(ctx context.Context, id int) ([]int, error) {
-	return qb.scenesRepository().getIDs(ctx, id)
+	return galleryRepository.scenes.getIDs(ctx, id)
 }

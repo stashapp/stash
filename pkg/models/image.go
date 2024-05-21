@@ -3,9 +3,7 @@ package models
 import "context"
 
 type ImageFilterType struct {
-	And          *ImageFilterType      `json:"AND"`
-	Or           *ImageFilterType      `json:"OR"`
-	Not          *ImageFilterType      `json:"NOT"`
+	OperatorFilter[ImageFilterType]
 	ID           *IntCriterionInput    `json:"id"`
 	Title        *StringCriterionInput `json:"title"`
 	Code         *StringCriterionInput `json:"code"`

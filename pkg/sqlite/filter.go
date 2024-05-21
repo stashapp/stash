@@ -5,33 +5,50 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+
+	"github.com/stashapp/stash/pkg/models"
 )
 
 func illegalFilterCombination(type1, type2 string) error {
 	return fmt.Errorf("cannot have %s and %s in the same filter", type1, type2)
 }
 
-func validateFilterCombination[T any](a, o, n *T) error {
+func validateFilterCombination[T any](sf models.OperatorFilter[T]) error {
 	const and = "AND"
 	const or = "OR"
 	const not = "NOT"
 
-	if a != nil {
-		if o != nil {
+	if sf.And != nil {
+		if sf.Or != nil {
 			return illegalFilterCombination(and, or)
 		}
-		if n != nil {
+		if sf.Not != nil {
 			return illegalFilterCombination(and, not)
 		}
 	}
 
-	if o != nil {
-		if n != nil {
+	if sf.Or != nil {
+		if sf.Not != nil {
 			return illegalFilterCombination(or, not)
 		}
 	}
 
 	return nil
+}
+
+func handleSubFilter[T any](ctx context.Context, handler criterionHandler, f *filterBuilder, subFilter models.OperatorFilter[T]) {
+	subQuery := &filterBuilder{}
+	handler.handle(ctx, subQuery)
+
+	if subFilter.And != nil {
+		f.and(subQuery)
+	}
+	if subFilter.Or != nil {
+		f.or(subQuery)
+	}
+	if subFilter.Not != nil {
+		f.not(subQuery)
+	}
 }
 
 type sqlClause struct {

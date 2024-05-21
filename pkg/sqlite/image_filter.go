@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/utils"
 )
 
 type imageFilterHandler struct {
@@ -17,11 +16,11 @@ func (qb *imageFilterHandler) validate() error {
 		return nil
 	}
 
-	if err := validateFilterCombination(imageFilter.And, imageFilter.Or, imageFilter.Not); err != nil {
+	if err := validateFilterCombination(imageFilter.OperatorFilter); err != nil {
 		return err
 	}
 
-	if subFilter := utils.FirstNotNil(imageFilter.And, imageFilter.Or, imageFilter.Not); subFilter != nil {
+	if subFilter := imageFilter.SubFilter(); subFilter != nil {
 		sqb := &imageFilterHandler{imageFilter: subFilter}
 		if err := sqb.validate(); err != nil {
 			return err
@@ -55,20 +54,10 @@ func (qb *imageFilterHandler) handle(ctx context.Context, f *filterBuilder) {
 		return
 	}
 
-	sub := &imageFilterHandler{utils.FirstNotNil(imageFilter.And, imageFilter.Or, imageFilter.Not)}
-	if sub.imageFilter != nil {
-		subQuery := &filterBuilder{}
-		sub.handle(ctx, subQuery)
-
-		if imageFilter.And != nil {
-			f.and(subQuery)
-		}
-		if imageFilter.Or != nil {
-			f.or(subQuery)
-		}
-		if imageFilter.Not != nil {
-			f.not(subQuery)
-		}
+	sf := imageFilter.SubFilter()
+	if sf != nil {
+		sub := &imageFilterHandler{sf}
+		handleSubFilter(ctx, sub, f, imageFilter.OperatorFilter)
 	}
 
 	f.handleCriterion(ctx, qb.criterionHandler())

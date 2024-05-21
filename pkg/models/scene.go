@@ -9,9 +9,7 @@ type PHashDuplicationCriterionInput struct {
 }
 
 type SceneFilterType struct {
-	And      *SceneFilterType      `json:"AND"`
-	Or       *SceneFilterType      `json:"OR"`
-	Not      *SceneFilterType      `json:"NOT"`
+	OperatorFilter[SceneFilterType]
 	ID       *IntCriterionInput    `json:"id"`
 	Title    *StringCriterionInput `json:"title"`
 	Code     *StringCriterionInput `json:"code"`

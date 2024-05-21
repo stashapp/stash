@@ -170,6 +170,14 @@ func (r *sceneRowRecord) fromPartial(o models.ScenePartial) {
 
 type sceneRepositoryType struct {
 	repository
+	galleries  joinRepository
+	tags       joinRepository
+	performers joinRepository
+	movies     repository
+
+	files filesRepository
+
+	stashIDs stashIDRepository
 }
 
 var (
@@ -177,6 +185,45 @@ var (
 		repository: repository{
 			tableName: sceneTable,
 			idColumn:  idColumn,
+		},
+		galleries: joinRepository{
+			repository: repository{
+				tableName: scenesGalleriesTable,
+				idColumn:  sceneIDColumn,
+			},
+			fkColumn: galleryIDColumn,
+		},
+		tags: joinRepository{
+			repository: repository{
+				tableName: scenesTagsTable,
+				idColumn:  sceneIDColumn,
+			},
+			fkColumn:     tagIDColumn,
+			foreignTable: tagTable,
+			orderBy:      "tags.name ASC",
+		},
+		performers: joinRepository{
+			repository: repository{
+				tableName: performersScenesTable,
+				idColumn:  sceneIDColumn,
+			},
+			fkColumn: performerIDColumn,
+		},
+		movies: repository{
+			tableName: moviesScenesTable,
+			idColumn:  sceneIDColumn,
+		},
+		files: filesRepository{
+			repository: repository{
+				tableName: scenesFilesTable,
+				idColumn:  sceneIDColumn,
+			},
+		},
+		stashIDs: stashIDRepository{
+			repository{
+				tableName: "scene_stash_ids",
+				idColumn:  sceneIDColumn,
+			},
 		},
 	}
 )
@@ -539,7 +586,7 @@ func (qb *SceneStore) getMany(ctx context.Context, q *goqu.SelectDataset) ([]*mo
 }
 
 func (qb *SceneStore) GetFiles(ctx context.Context, id int) ([]*models.VideoFile, error) {
-	fileIDs, err := qb.filesRepository().get(ctx, id)
+	fileIDs, err := sceneRepository.files.get(ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -564,7 +611,7 @@ func (qb *SceneStore) GetFiles(ctx context.Context, id int) ([]*models.VideoFile
 
 func (qb *SceneStore) GetManyFileIDs(ctx context.Context, ids []int) ([][]models.FileID, error) {
 	const primaryOnly = false
-	return qb.filesRepository().getMany(ctx, ids, primaryOnly)
+	return sceneRepository.files.getMany(ctx, ids, primaryOnly)
 }
 
 func (qb *SceneStore) FindByFileID(ctx context.Context, fileID models.FileID) ([]*models.Scene, error) {
@@ -912,10 +959,9 @@ func (qb *SceneStore) makeQuery(ctx context.Context, sceneFilter *models.SceneFi
 		query.parseQueryString(searchColumns, *q)
 	}
 
-	if err := qb.validateFilter(sceneFilter); err != nil {
-		return nil, err
-	}
-	filter := qb.makeFilter(ctx, sceneFilter)
+	filter := filterBuilderFromHandler(ctx, &sceneFilterHandler{
+		sceneFilter: sceneFilter,
+	})
 
 	if err := query.addFilter(filter); err != nil {
 		return nil, err
@@ -1214,7 +1260,7 @@ func (qb *SceneStore) AssignFiles(ctx context.Context, sceneID int, fileIDs []mo
 	}
 
 	// assign primary only if destination has no files
-	existingFileIDs, err := qb.filesRepository().get(ctx, sceneID)
+	existingFileIDs, err := sceneRepository.files.get(ctx, sceneID)
 	if err != nil {
 		return err
 	}
@@ -1223,17 +1269,10 @@ func (qb *SceneStore) AssignFiles(ctx context.Context, sceneID int, fileIDs []mo
 	return scenesFilesTableMgr.insertJoins(ctx, sceneID, firstPrimary, fileIDs)
 }
 
-func (qb *SceneStore) moviesRepository() *repository {
-	return &repository{
-		tableName: moviesScenesTable,
-		idColumn:  sceneIDColumn,
-	}
-}
-
 func (qb *SceneStore) GetMovies(ctx context.Context, id int) (ret []models.MoviesScenes, err error) {
 	ret = []models.MoviesScenes{}
 
-	if err := qb.moviesRepository().getAll(ctx, id, func(rows *sqlx.Rows) error {
+	if err := sceneRepository.movies.getAll(ctx, id, func(rows *sqlx.Rows) error {
 		var ms moviesScenesRow
 		if err := rows.StructScan(&ms); err != nil {
 			return err
@@ -1248,79 +1287,29 @@ func (qb *SceneStore) GetMovies(ctx context.Context, id int) (ret []models.Movie
 	return ret, nil
 }
 
-func (qb *SceneStore) filesRepository() *filesRepository {
-	return &filesRepository{
-		repository: repository{
-			tableName: scenesFilesTable,
-			idColumn:  sceneIDColumn,
-		},
-	}
-}
-
 func (qb *SceneStore) AddFileID(ctx context.Context, id int, fileID models.FileID) error {
 	const firstPrimary = false
 	return scenesFilesTableMgr.insertJoins(ctx, id, firstPrimary, []models.FileID{fileID})
 }
 
-func (qb *SceneStore) performersRepository() *joinRepository {
-	return &joinRepository{
-		repository: repository{
-			tableName: performersScenesTable,
-			idColumn:  sceneIDColumn,
-		},
-		fkColumn: performerIDColumn,
-	}
-}
-
 func (qb *SceneStore) GetPerformerIDs(ctx context.Context, id int) ([]int, error) {
-	return qb.performersRepository().getIDs(ctx, id)
-}
-
-func (qb *SceneStore) tagsRepository() *joinRepository {
-	return &joinRepository{
-		repository: repository{
-			tableName: scenesTagsTable,
-			idColumn:  sceneIDColumn,
-		},
-		fkColumn:     tagIDColumn,
-		foreignTable: tagTable,
-		orderBy:      "tags.name ASC",
-	}
+	return sceneRepository.performers.getIDs(ctx, id)
 }
 
 func (qb *SceneStore) GetTagIDs(ctx context.Context, id int) ([]int, error) {
-	return qb.tagsRepository().getIDs(ctx, id)
-}
-
-func (qb *SceneStore) galleriesRepository() *joinRepository {
-	return &joinRepository{
-		repository: repository{
-			tableName: scenesGalleriesTable,
-			idColumn:  sceneIDColumn,
-		},
-		fkColumn: galleryIDColumn,
-	}
+	return sceneRepository.tags.getIDs(ctx, id)
 }
 
 func (qb *SceneStore) GetGalleryIDs(ctx context.Context, id int) ([]int, error) {
-	return qb.galleriesRepository().getIDs(ctx, id)
+	return sceneRepository.galleries.getIDs(ctx, id)
 }
 
 func (qb *SceneStore) AddGalleryIDs(ctx context.Context, sceneID int, galleryIDs []int) error {
 	return scenesGalleriesTableMgr.addJoins(ctx, sceneID, galleryIDs)
 }
 
-func (qb *SceneStore) stashIDRepository() *stashIDRepository {
-	return &stashIDRepository{
-		repository{
-			tableName: "scene_stash_ids",
-			idColumn:  sceneIDColumn,
-		},
-	}
-}
-
 func (qb *SceneStore) GetStashIDs(ctx context.Context, sceneID int) ([]models.StashID, error) {
-	return qb.stashIDRepository().get(ctx, sceneID)
+	return sceneRepository.stashIDs.get(ctx, sceneID)
 }
 
 func (qb *SceneStore) FindDuplicates(ctx context.Context, distance int, durationDiff float64) ([][]*models.Scene, error) {

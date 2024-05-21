@@ -114,10 +114,10 @@ func (r *imageRowRecord) fromPartial(i models.ImagePartial) {
 
 type imageRepositoryType struct {
 	repository
-	performers *joinRepository
-	galleries  *joinRepository
-	tags       *joinRepository
-	files      *filesRepository
+	performers joinRepository
+	galleries  joinRepository
+	tags       joinRepository
+	files      filesRepository
 }
 
 func (r *imageRepositoryType) addImagesFilesTable(f *filterBuilder) {
@@ -146,7 +146,7 @@ var (
 			idColumn:  idColumn,
 		},
 
-		performers: &joinRepository{
+		performers: joinRepository{
 			repository: repository{
 				tableName: performersImagesTable,
 				idColumn:  imageIDColumn,
@@ -154,7 +154,7 @@ var (
 			fkColumn: performerIDColumn,
 		},
 
-		galleries: &joinRepository{
+		galleries: joinRepository{
 			repository: repository{
 				tableName: galleriesImagesTable,
 				idColumn:  imageIDColumn,
@@ -162,14 +162,14 @@ var (
 			fkColumn: galleryIDColumn,
 		},
 
-		files: &filesRepository{
+		files: filesRepository{
 			repository: repository{
 				tableName: imagesFilesTable,
 				idColumn:  imageIDColumn,
 			},
 		},
 
-		tags: &joinRepository{
+		tags: joinRepository{
 			repository: repository{
 				tableName: imagesTagsTable,
 				idColumn:  imageIDColumn,

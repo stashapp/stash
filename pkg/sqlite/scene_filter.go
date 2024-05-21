@@ -8,17 +8,23 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
-func (qb *SceneStore) validateFilter(sceneFilter *models.SceneFilterType) error {
+type sceneFilterHandler struct {
+	sceneFilter *models.SceneFilterType
+}
+
+func (qb *sceneFilterHandler) validate() error {
+	sceneFilter := qb.sceneFilter
 	if sceneFilter == nil {
 		return nil
 	}
 
-	if err := validateFilterCombination(sceneFilter.And, sceneFilter.Or, sceneFilter.Not); err != nil {
+	if err := validateFilterCombination(sceneFilter.OperatorFilter); err != nil {
 		return err
 	}
 
-	if subFilter := utils.FirstNotNil(sceneFilter.And, sceneFilter.Or, sceneFilter.Not); subFilter != nil {
-		if err := qb.validateFilter(subFilter); err != nil {
+	if subFilter := sceneFilter.SubFilter(); subFilter != nil {
+		sqb := &sceneFilterHandler{sceneFilter: subFilter}
+		if err := sqb.validate(); err != nil {
 			return err
 		}
 	}
@@ -26,25 +32,28 @@ func (qb *SceneStore) validateFilter(sceneFilter *models.SceneFilterType) error 
 	return nil
 }
 
-func (qb *SceneStore) makeFilter(ctx context.Context, sceneFilter *models.SceneFilterType) *filterBuilder {
-	query := &filterBuilder{}
-
-	if sceneFilter.And != nil {
-		query.and(qb.makeFilter(ctx, sceneFilter.And))
-	}
-	if sceneFilter.Or != nil {
-		query.or(qb.makeFilter(ctx, sceneFilter.Or))
-	}
-	if sceneFilter.Not != nil {
-		query.not(qb.makeFilter(ctx, sceneFilter.Not))
+func (qb *sceneFilterHandler) handle(ctx context.Context, f *filterBuilder) {
+	sceneFilter := qb.sceneFilter
+	if sceneFilter == nil {
+		return
 	}
 
-	query.handleCriterion(ctx, qb.criterionHandler(sceneFilter))
+	if err := qb.validate(); err != nil {
+		f.setError(err)
+		return
+	}
 
-	return query
+	sf := sceneFilter.SubFilter()
+	if sf != nil {
+		sub := &sceneFilterHandler{sf}
+		handleSubFilter(ctx, sub, f, sceneFilter.OperatorFilter)
+	}
+
+	f.handleCriterion(ctx, qb.criterionHandler())
 }
 
-func (qb *SceneStore) criterionHandler(sceneFilter *models.SceneFilterType) criterionHandler {
+func (qb *sceneFilterHandler) criterionHandler() criterionHandler {
+	sceneFilter := qb.sceneFilter
 	return compoundHandler{
 		intCriterionHandler(sceneFilter.ID, "scenes.id", nil),
 		pathCriterionHandler(sceneFilter.Path, "folders.path", "files.basename", qb.addFoldersTable),
@@ -101,14 +110,14 @@ func (qb *SceneStore) criterionHandler(sceneFilter *models.SceneFilterType) crit
 
 		criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
 			if sceneFilter.StashID != nil {
-				qb.stashIDRepository().join(f, "scene_stash_ids", "scenes.id")
+				sceneRepository.stashIDs.join(f, "scene_stash_ids", "scenes.id")
 				stringCriterionHandler(sceneFilter.StashID, "scene_stash_ids.stash_id")(ctx, f)
 			}
 		}),
 
 		&stashIDCriterionHandler{
 			c:                 sceneFilter.StashIDEndpoint,
-			stashIDRepository: qb.stashIDRepository(),
+			stashIDRepository: &sceneRepository.stashIDs,
 			stashIDTableAs:    "scene_stash_ids",
 			parentIDCol:       "scenes.id",
 		},
@@ -212,26 +221,26 @@ func (qb *SceneStore) criterionHandler(sceneFilter *models.SceneFilterType) crit
 	}
 }
 
-func (qb *SceneStore) addSceneFilesTable(f *filterBuilder) {
+func (qb *sceneFilterHandler) addSceneFilesTable(f *filterBuilder) {
 	f.addLeftJoin(scenesFilesTable, "", "scenes_files.scene_id = scenes.id")
 }
 
-func (qb *SceneStore) addFilesTable(f *filterBuilder) {
+func (qb *sceneFilterHandler) addFilesTable(f *filterBuilder) {
 	qb.addSceneFilesTable(f)
 	f.addLeftJoin(fileTable, "", "scenes_files.file_id = files.id")
 }
 
-func (qb *SceneStore) addFoldersTable(f *filterBuilder) {
+func (qb *sceneFilterHandler) addFoldersTable(f *filterBuilder) {
 	qb.addFilesTable(f)
 	f.addLeftJoin(folderTable, "", "files.parent_folder_id = folders.id")
 }
 
-func (qb *SceneStore) addVideoFilesTable(f *filterBuilder) {
+func (qb *sceneFilterHandler) addVideoFilesTable(f *filterBuilder) {
 	qb.addSceneFilesTable(f)
 	f.addLeftJoin(videoFileTable, "", "video_files.file_id = scenes_files.file_id")
 }
 
-func (qb *SceneStore) playCountCriterionHandler(count *models.IntCriterionInput) criterionHandlerFunc {
+func (qb *sceneFilterHandler) playCountCriterionHandler(count *models.IntCriterionInput) criterionHandlerFunc {
 	h := countCriterionHandlerBuilder{
 		primaryTable: sceneTable,
 		joinTable:    scenesViewDatesTable,
@@ -241,7 +250,7 @@ func (qb *SceneStore) playCountCriterionHandler(count *models.IntCriterionInput)
 	return h.handler(count)
 }
 
-func (qb *SceneStore) oCountCriterionHandler(count *models.IntCriterionInput) criterionHandlerFunc {
+func (qb *sceneFilterHandler) oCountCriterionHandler(count *models.IntCriterionInput) criterionHandlerFunc {
 	h := countCriterionHandlerBuilder{
 		primaryTable: sceneTable,
 		joinTable:    scenesODatesTable,
@@ -251,7 +260,7 @@ func (qb *SceneStore) oCountCriterionHandler(count *models.IntCriterionInput) cr
 	return h.handler(count)
 }
 
-func (qb *SceneStore) fileCountCriterionHandler(fileCount *models.IntCriterionInput) criterionHandlerFunc {
+func (qb *sceneFilterHandler) fileCountCriterionHandler(fileCount *models.IntCriterionInput) criterionHandlerFunc {
 	h := countCriterionHandlerBuilder{
 		primaryTable: sceneTable,
 		joinTable:    scenesFilesTable,
@@ -261,7 +270,7 @@ func (qb *SceneStore) fileCountCriterionHandler(fileCount *models.IntCriterionIn
 	return h.handler(fileCount)
 }
 
-func (qb *SceneStore) phashDuplicatedCriterionHandler(duplicatedFilter *models.PHashDuplicationCriterionInput, addJoinFn func(f *filterBuilder)) criterionHandlerFunc {
+func (qb *sceneFilterHandler) phashDuplicatedCriterionHandler(duplicatedFilter *models.PHashDuplicationCriterionInput, addJoinFn func(f *filterBuilder)) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		// TODO: Wishlist item: Implement Distance matching
 		if duplicatedFilter != nil {
@@ -281,7 +290,7 @@ func (qb *SceneStore) phashDuplicatedCriterionHandler(duplicatedFilter *models.P
 	}
 }
 
-func (qb *SceneStore) codecCriterionHandler(codec *models.StringCriterionInput, codecColumn string, addJoinFn func(f *filterBuilder)) criterionHandlerFunc {
+func (qb *sceneFilterHandler) codecCriterionHandler(codec *models.StringCriterionInput, codecColumn string, addJoinFn func(f *filterBuilder)) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if codec != nil {
 			if addJoinFn != nil {
@@ -293,7 +302,7 @@ func (qb *SceneStore) codecCriterionHandler(codec *models.StringCriterionInput, 
 	}
 }
 
-func (qb *SceneStore) hasMarkersCriterionHandler(hasMarkers *string) criterionHandlerFunc {
+func (qb *sceneFilterHandler) hasMarkersCriterionHandler(hasMarkers *string) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if hasMarkers != nil {
 			f.addLeftJoin("scene_markers", "", "scene_markers.scene_id = scenes.id")
@@ -306,7 +315,7 @@ func (qb *SceneStore) hasMarkersCriterionHandler(hasMarkers *string) criterionHa
 	}
 }
 
-func (qb *SceneStore) isMissingCriterionHandler(isMissing *string) criterionHandlerFunc {
+func (qb *sceneFilterHandler) isMissingCriterionHandler(isMissing *string) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if isMissing != nil && *isMissing != "" {
 			switch *isMissing {
@@ -314,23 +323,23 @@ func (qb *SceneStore) isMissingCriterionHandler(isMissing *string) criterionHand
 				scenesURLsTableMgr.join(f, "", "scenes.id")
 				f.addWhere("scene_urls.url IS NULL")
 			case "galleries":
-				qb.galleriesRepository().join(f, "galleries_join", "scenes.id")
+				sceneRepository.galleries.join(f, "galleries_join", "scenes.id")
 				f.addWhere("galleries_join.scene_id IS NULL")
 			case "studio":
 				f.addWhere("scenes.studio_id IS NULL")
 			case "movie":
-				qb.moviesRepository().join(f, "movies_join", "scenes.id")
+				sceneRepository.movies.join(f, "movies_join", "scenes.id")
 				f.addWhere("movies_join.scene_id IS NULL")
 			case "performers":
-				qb.performersRepository().join(f, "performers_join", "scenes.id")
+				sceneRepository.performers.join(f, "performers_join", "scenes.id")
 				f.addWhere("performers_join.scene_id IS NULL")
 			case "date":
 				f.addWhere(`scenes.date IS NULL OR scenes.date IS ""`)
 			case "tags":
-				qb.tagsRepository().join(f, "tags_join", "scenes.id")
+				sceneRepository.tags.join(f, "tags_join", "scenes.id")
 				f.addWhere("tags_join.scene_id IS NULL")
 			case "stash_id":
-				qb.stashIDRepository().join(f, "scene_stash_ids", "scenes.id")
+				sceneRepository.stashIDs.join(f, "scene_stash_ids", "scenes.id")
 				f.addWhere("scene_stash_ids.scene_id IS NULL")
 			case "phash":
 				qb.addSceneFilesTable(f)
@@ -345,7 +354,7 @@ func (qb *SceneStore) isMissingCriterionHandler(isMissing *string) criterionHand
 	}
 }
 
-func (qb *SceneStore) urlsCriterionHandler(url *models.StringCriterionInput) criterionHandlerFunc {
+func (qb *sceneFilterHandler) urlsCriterionHandler(url *models.StringCriterionInput) criterionHandlerFunc {
 	h := stringListCriterionHandlerBuilder{
 		joinTable:    scenesURLsTable,
 		stringColumn: sceneURLColumn,
@@ -357,7 +366,7 @@ func (qb *SceneStore) urlsCriterionHandler(url *models.StringCriterionInput) cri
 	return h.handler(url)
 }
 
-func (qb *SceneStore) getMultiCriterionHandlerBuilder(foreignTable, joinTable, foreignFK string, addJoinsFunc func(f *filterBuilder)) multiCriterionHandlerBuilder {
+func (qb *sceneFilterHandler) getMultiCriterionHandlerBuilder(foreignTable, joinTable, foreignFK string, addJoinsFunc func(f *filterBuilder)) multiCriterionHandlerBuilder {
 	return multiCriterionHandlerBuilder{
 		primaryTable: sceneTable,
 		foreignTable: foreignTable,
@@ -368,7 +377,7 @@ func (qb *SceneStore) getMultiCriterionHandlerBuilder(foreignTable, joinTable, f
 	}
 }
 
-func (qb *SceneStore) captionCriterionHandler(captions *models.StringCriterionInput) criterionHandlerFunc {
+func (qb *sceneFilterHandler) captionCriterionHandler(captions *models.StringCriterionInput) criterionHandlerFunc {
 	h := stringListCriterionHandlerBuilder{
 		joinTable:    videoCaptionsTable,
 		stringColumn: captionCodeColumn,
@@ -381,10 +390,8 @@ func (qb *SceneStore) captionCriterionHandler(captions *models.StringCriterionIn
 	return h.handler(captions)
 }
 
-func (qb *SceneStore) tagsCriterionHandler(tags *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
+func (qb *sceneFilterHandler) tagsCriterionHandler(tags *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
 	h := joinedHierarchicalMultiCriterionHandlerBuilder{
-		tx: qb.tx,
-
 		primaryTable: sceneTable,
 		foreignTable: tagTable,
 		foreignFK:    "tag_id",
@@ -398,7 +405,7 @@ func (qb *SceneStore) tagsCriterionHandler(tags *models.HierarchicalMultiCriteri
 	return h.handler(tags)
 }
 
-func (qb *SceneStore) tagCountCriterionHandler(tagCount *models.IntCriterionInput) criterionHandlerFunc {
+func (qb *sceneFilterHandler) tagCountCriterionHandler(tagCount *models.IntCriterionInput) criterionHandlerFunc {
 	h := countCriterionHandlerBuilder{
 		primaryTable: sceneTable,
 		joinTable:    scenesTagsTable,
@@ -408,7 +415,7 @@ func (qb *SceneStore) tagCountCriterionHandler(tagCount *models.IntCriterionInpu
 	return h.handler(tagCount)
 }
 
-func (qb *SceneStore) performersCriterionHandler(performers *models.MultiCriterionInput) criterionHandlerFunc {
+func (qb *sceneFilterHandler) performersCriterionHandler(performers *models.MultiCriterionInput) criterionHandlerFunc {
 	h := joinedMultiCriterionHandlerBuilder{
 		primaryTable: sceneTable,
 		joinTable:    performersScenesTable,
@@ -417,14 +424,14 @@ func (qb *SceneStore) performersCriterionHandler(performers *models.MultiCriteri
 		foreignFK:    performerIDColumn,
 
 		addJoinTable: func(f *filterBuilder) {
-			qb.performersRepository().join(f, "performers_join", "scenes.id")
+			sceneRepository.performers.join(f, "performers_join", "scenes.id")
 		},
 	}
 
 	return h.handler(performers)
 }
 
-func (qb *SceneStore) performerCountCriterionHandler(performerCount *models.IntCriterionInput) criterionHandlerFunc {
+func (qb *sceneFilterHandler) performerCountCriterionHandler(performerCount *models.IntCriterionInput) criterionHandlerFunc {
 	h := countCriterionHandlerBuilder{
 		primaryTable: sceneTable,
 		joinTable:    performersScenesTable,
@@ -434,7 +441,7 @@ func (qb *SceneStore) performerCountCriterionHandler(performerCount *models.IntC
 	return h.handler(performerCount)
 }
 
-func (qb *SceneStore) performerFavoriteCriterionHandler(performerfavorite *bool) criterionHandlerFunc {
+func (qb *sceneFilterHandler) performerFavoriteCriterionHandler(performerfavorite *bool) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if performerfavorite != nil {
 			f.addLeftJoin("performers_scenes", "", "scenes.id = performers_scenes.scene_id")
@@ -454,7 +461,7 @@ GROUP BY performers_scenes.scene_id HAVING SUM(performers.favorite) = 0)`, "nofa
 	}
 }
 
-func (qb *SceneStore) performerAgeCriterionHandler(performerAge *models.IntCriterionInput) criterionHandlerFunc {
+func (qb *sceneFilterHandler) performerAgeCriterionHandler(performerAge *models.IntCriterionInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if performerAge != nil {
 			f.addInnerJoin("performers_scenes", "", "scenes.id = performers_scenes.scene_id")
@@ -470,25 +477,25 @@ func (qb *SceneStore) performerAgeCriterionHandler(performerAge *models.IntCrite
 	}
 }
 
-func (qb *SceneStore) moviesCriterionHandler(movies *models.MultiCriterionInput) criterionHandlerFunc {
+func (qb *sceneFilterHandler) moviesCriterionHandler(movies *models.MultiCriterionInput) criterionHandlerFunc {
 	addJoinsFunc := func(f *filterBuilder) {
-		qb.moviesRepository().join(f, "", "scenes.id")
+		sceneRepository.movies.join(f, "", "scenes.id")
 		f.addLeftJoin("movies", "", "movies_scenes.movie_id = movies.id")
 	}
 	h := qb.getMultiCriterionHandlerBuilder(movieTable, moviesScenesTable, "movie_id", addJoinsFunc)
 	return h.handler(movies)
 }
 
-func (qb *SceneStore) galleriesCriterionHandler(galleries *models.MultiCriterionInput) criterionHandlerFunc {
+func (qb *sceneFilterHandler) galleriesCriterionHandler(galleries *models.MultiCriterionInput) criterionHandlerFunc {
 	addJoinsFunc := func(f *filterBuilder) {
-		qb.galleriesRepository().join(f, "", "scenes.id")
+		sceneRepository.galleries.join(f, "", "scenes.id")
 		f.addLeftJoin("galleries", "", "scenes_galleries.gallery_id = galleries.id")
 	}
 	h := qb.getMultiCriterionHandlerBuilder(galleryTable, scenesGalleriesTable, "gallery_id", addJoinsFunc)
 	return h.handler(galleries)
 }
 
-func (qb *SceneStore) performerTagsCriterionHandler(tags *models.HierarchicalMultiCriterionInput) criterionHandler {
+func (qb *sceneFilterHandler) performerTagsCriterionHandler(tags *models.HierarchicalMultiCriterionInput) criterionHandler {
 	return &joinedPerformerTagsHandler{
 		criterion:      tags,
 		primaryTable:   sceneTable,
@@ -497,7 +504,7 @@ func (qb *SceneStore) performerTagsCriterionHandler(tags *models.HierarchicalMul
 	}
 }
 
-func (qb *SceneStore) phashDistanceCriterionHandler(phashDistance *models.PhashDistanceCriterionInput) criterionHandlerFunc {
+func (qb *sceneFilterHandler) phashDistanceCriterionHandler(phashDistance *models.PhashDistanceCriterionInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if phashDistance != nil {
 			qb.addSceneFilesTable(f)
