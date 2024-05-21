@@ -96,7 +96,7 @@ func (qb *imageFilterHandler) criterionHandler() criterionHandler {
 			relatedRepo:    galleryRepository.repository,
 			relatedHandler: &galleryFilterHandler{imageFilter.GalleriesFilter},
 			joinFn: func(f *filterBuilder) {
-				imageRepository.galleries.innerJoin(f, "", "galleries_images.image_id = images.id")
+				imageRepository.galleries.innerJoin(f, "", "images.id")
 			},
 		},
 
@@ -120,7 +120,7 @@ func (qb *imageFilterHandler) criterionHandler() criterionHandler {
 			relatedRepo:    tagRepository.repository,
 			relatedHandler: &tagFilterHandler{imageFilter.TagsFilter},
 			joinFn: func(f *filterBuilder) {
-				imageRepository.tags.innerJoin(f, "image_tag", "image_tag.image_id = images.id")
+				imageRepository.tags.innerJoin(f, "image_tag", "images.id")
 			},
 		},
 	}

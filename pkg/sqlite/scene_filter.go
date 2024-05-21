@@ -185,7 +185,7 @@ func (qb *sceneFilterHandler) criterionHandler() criterionHandler {
 			relatedRepo:    tagRepository.repository,
 			relatedHandler: &tagFilterHandler{sceneFilter.TagsFilter},
 			joinFn: func(f *filterBuilder) {
-				sceneRepository.tags.innerJoin(f, "scene_tag", "scene_tag.scene_id = scenes.id")
+				sceneRepository.tags.innerJoin(f, "scene_tag", "scenes.id")
 			},
 		},
 
@@ -203,7 +203,7 @@ func (qb *sceneFilterHandler) criterionHandler() criterionHandler {
 			relatedRepo:    sceneMarkerRepository.repository,
 			relatedHandler: &sceneMarkerFilterHandler{sceneFilter.MarkersFilter},
 			joinFn: func(f *filterBuilder) {
-				f.addInnerJoin("scene_markers", "", "scene_markers.scene_id = scenes.id")
+				f.addInnerJoin("scene_markers", "", "scenes.id")
 			},
 		},
 	}

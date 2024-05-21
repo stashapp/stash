@@ -424,6 +424,17 @@ input GalleryFilterType {
   code: StringCriterionInput
   "Filter by photographer"
   photographer: StringCriterionInput
+
+  "Filter by related scenes that meet this criteria"
+  scenes_filter: SceneFilterType
+  "Filter by related images that meet this criteria"
+  images_filter: ImageFilterType
+  "Filter by related performers that meet this criteria"
+  performers_filter: PerformerFilterType
+  "Filter by related studios that meet this criteria"
+  studios_filter: StudioFilterType
+  "Filter by related tags that meet this criteria"
+  tags_filter: TagFilterType
 }
 
 input TagFilterType {

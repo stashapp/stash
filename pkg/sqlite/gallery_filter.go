@@ -104,6 +104,39 @@ func (qb *galleryFilterHandler) criterionHandler() criterionHandler {
 		dateCriterionHandler(filter.Date, "galleries.date"),
 		timestampCriterionHandler(filter.CreatedAt, "galleries.created_at"),
 		timestampCriterionHandler(filter.UpdatedAt, "galleries.updated_at"),
+
+		&relatedFilterHandler{
+			relatedIDCol:   "galleries_images.image_id",
+			relatedRepo:    imageRepository.repository,
+			relatedHandler: &imageFilterHandler{filter.ImagesFilter},
+			joinFn: func(f *filterBuilder) {
+				galleryRepository.images.innerJoin(f, "", "galleries.id")
+			},
+		},
+
+		&relatedFilterHandler{
+			relatedIDCol:   "performers_join.performer_id",
+			relatedRepo:    performerRepository.repository,
+			relatedHandler: &performerFilterHandler{filter.PerformersFilter},
+			joinFn: func(f *filterBuilder) {
+				galleryRepository.performers.innerJoin(f, "performers_join", "galleries.id")
+			},
+		},
+
+		&relatedFilterHandler{
+			relatedIDCol:   "galleries.studio_id",
+			relatedRepo:    studioRepository.repository,
+			relatedHandler: &studioFilterHandler{filter.StudiosFilter},
+		},
+
+		&relatedFilterHandler{
+			relatedIDCol:   "gallery_tag.tag_id",
+			relatedRepo:    tagRepository.repository,
+			relatedHandler: &tagFilterHandler{filter.TagsFilter},
+			joinFn: func(f *filterBuilder) {
+				galleryRepository.tags.innerJoin(f, "gallery_tag", "galleries.id")
+			},
+		},
 	}
 }
 
@@ -241,7 +274,7 @@ func (qb *galleryFilterHandler) tagsCriterionHandler(tags *models.HierarchicalMu
 		foreignFK:    "tag_id",
 
 		relationsTable: "tags_relations",
-		joinAs:         "image_tag",
+		joinAs:         "gallery_tag",
 		joinTable:      galleriesTagsTable,
 		primaryFK:      galleryIDColumn,
 	}
