@@ -82,6 +82,33 @@ func (qb *studioFilterHandler) criterionHandler() criterionHandler {
 		qb.childCountCriterionHandler(studioFilter.ChildCount),
 		timestampCriterionHandler(studioFilter.CreatedAt, studioTable+".created_at"),
 		timestampCriterionHandler(studioFilter.UpdatedAt, studioTable+".updated_at"),
+
+		&relatedFilterHandler{
+			relatedIDCol:   "scenes.id",
+			relatedRepo:    sceneRepository.repository,
+			relatedHandler: &sceneFilterHandler{studioFilter.ScenesFilter},
+			joinFn: func(f *filterBuilder) {
+				sceneRepository.innerJoin(f, "", "studios.id")
+			},
+		},
+
+		&relatedFilterHandler{
+			relatedIDCol:   "images.id",
+			relatedRepo:    imageRepository.repository,
+			relatedHandler: &imageFilterHandler{studioFilter.ImagesFilter},
+			joinFn: func(f *filterBuilder) {
+				studioRepository.images.innerJoin(f, "", "studios.id")
+			},
+		},
+
+		&relatedFilterHandler{
+			relatedIDCol:   "galleries.id",
+			relatedRepo:    galleryRepository.repository,
+			relatedHandler: &galleryFilterHandler{studioFilter.GalleriesFilter},
+			joinFn: func(f *filterBuilder) {
+				studioRepository.galleries.innerJoin(f, "", "studios.id")
+			},
+		},
 	}
 }
 

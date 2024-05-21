@@ -94,6 +94,10 @@ type studioRepositoryType struct {
 	repository
 
 	stashIDs stashIDRepository
+
+	scenes    repository
+	images    repository
+	galleries repository
 }
 
 var (
@@ -107,6 +111,18 @@ var (
 				tableName: "studio_stash_ids",
 				idColumn:  studioIDColumn,
 			},
+		},
+		scenes: repository{
+			tableName: sceneTable,
+			idColumn:  studioIDColumn,
+		},
+		images: repository{
+			tableName: imageTable,
+			idColumn:  studioIDColumn,
+		},
+		galleries: repository{
+			tableName: galleryTable,
+			idColumn:  studioIDColumn,
 		},
 	}
 )
