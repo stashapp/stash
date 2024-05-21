@@ -312,6 +312,10 @@ input SceneFilterType {
 }
 
 input MovieFilterType {
+  AND: MovieFilterType
+  OR: MovieFilterType
+  NOT: MovieFilterType
+
   name: StringCriterionInput
   director: StringCriterionInput
   synopsis: StringCriterionInput

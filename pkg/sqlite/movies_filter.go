@@ -12,6 +12,22 @@ type movieFilterHandler struct {
 }
 
 func (qb *movieFilterHandler) validate() error {
+	movieFilter := qb.movieFilter
+	if movieFilter == nil {
+		return nil
+	}
+
+	if err := validateFilterCombination(movieFilter.OperatorFilter); err != nil {
+		return err
+	}
+
+	if subFilter := movieFilter.SubFilter(); subFilter != nil {
+		sqb := &movieFilterHandler{movieFilter: subFilter}
+		if err := sqb.validate(); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -24,6 +40,12 @@ func (qb *movieFilterHandler) handle(ctx context.Context, f *filterBuilder) {
 	if err := qb.validate(); err != nil {
 		f.setError(err)
 		return
+	}
+
+	sf := movieFilter.SubFilter()
+	if sf != nil {
+		sub := &movieFilterHandler{sf}
+		handleSubFilter(ctx, sub, f, movieFilter.OperatorFilter)
 	}
 
 	f.handleCriterion(ctx, qb.criterionHandler())

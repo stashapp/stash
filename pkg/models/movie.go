@@ -1,6 +1,7 @@
 package models
 
 type MovieFilterType struct {
+	OperatorFilter[MovieFilterType]
 	Name     *StringCriterionInput `json:"name"`
 	Director *StringCriterionInput `json:"director"`
 	Synopsis *StringCriterionInput `json:"synopsis"`
