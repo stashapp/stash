@@ -73,9 +73,6 @@ const (
 	sceneIdxWithPerformerTag
 	sceneIdxWithTwoPerformerTag
 	sceneIdxWithPerformerTwoTags
-	sceneIdxWithStudioTag
-	sceneIdxWithTwoStudioTag
-	sceneIdxWithStudioTwoTags
 	sceneIdxWithSpacedName
 	sceneIdxWithStudioPerformer
 	sceneIdxWithGrandChildStudio
@@ -110,9 +107,6 @@ const (
 	imageIdxWithPerformerTag
 	imageIdxWithTwoPerformerTag
 	imageIdxWithPerformerTwoTags
-	imageIdxWithStudioTag
-	imageIdxWithTwoStudioTag
-	imageIdxWithStudioTwoTags
 	imageIdxWithGrandChildStudio
 	imageIdxWithPerformerParentTag
 	// new indexes above
@@ -186,9 +180,6 @@ const (
 	galleryIdxWithTwoPerformerTag
 	galleryIdxWithPerformerTwoTags
 	galleryIdxWithStudioPerformer
-	galleryIdxWithStudioTag
-	galleryIdxWithTwoStudioTag
-	galleryIdxWithStudioTwoTags
 	galleryIdxWithGrandChildStudio
 	galleryIdxWithoutFile
 	galleryIdxWithPerformerParentTag
@@ -401,9 +392,6 @@ var (
 		sceneIdxWithStudio:           studioIdxWithScene,
 		sceneIdx1WithStudio:          studioIdxWithTwoScenes,
 		sceneIdx2WithStudio:          studioIdxWithTwoScenes,
-		sceneIdxWithStudioTag:        studioIdxWithTag,
-		sceneIdxWithTwoStudioTag:     {studioIdxWithTag, studioIdx2WithTag},
-		sceneIdxWithStudioTwoTags:    studioIdxWithTwoTags,
 		sceneIdxWithStudioPerformer:  studioIdxWithScenePerformer,
 		sceneIdxWithGrandChildStudio: studioIdxWithGrandParent,
 	}
@@ -451,9 +439,6 @@ var (
 		imageIdxWithStudio:           studioIdxWithImage,
 		imageIdx1WithStudio:          studioIdxWithTwoImages,
 		imageIdx2WithStudio:          studioIdxWithTwoImages,
-		imageIdxWithStudioTag:        studioIdxWithTag,
-		imageIdxWithTwoStudioTag:     {studioIdxWithTag, studioIdx2WithTag},
-		imageIdxWithStudioTwoTags:    studioIdxWithTwoTags,
 		imageIdxWithStudioPerformer:  studioIdxWithImagePerformer,
 		imageIdxWithGrandChildStudio: studioIdxWithGrandParent,
 	}
@@ -494,9 +479,6 @@ var (
 		galleryIdxWithStudio:           studioIdxWithGallery,
 		galleryIdx1WithStudio:          studioIdxWithTwoGalleries,
 		galleryIdx2WithStudio:          studioIdxWithTwoGalleries,
-		galleryIdxWithStudioTag:        studioIdxWithTag,
-		galleryIdxWithTwoStudioTag:     {studioIdxWithTag, studioIdx2WithTag},
-		galleryIdxWithStudioTwoTags:    studioIdxWithTwoTags,
 		galleryIdxWithStudioPerformer:  studioIdxWithGalleryPerformer,
 		galleryIdxWithGrandChildStudio: studioIdxWithGrandParent,
 	}
@@ -1674,6 +1656,7 @@ func createStudios(ctx context.Context, n int, o int) error {
 		// studios [ i ] and [ n + o - i - 1  ] should have similar names with only the Name!=NaMe part different
 
 		name = getStudioStringValue(index, name)
+		tids := indexesToIDs(tagIDs, studioTags[i])
 		studio := models.Studio{
 			Name:          name,
 			URL:           getStudioStringValue(index, urlField),

@@ -696,6 +696,16 @@ func TestStudioQueryRating(t *testing.T) {
 	verifyStudiosRating(t, ratingCriterion)
 }
 
+func queryStudios(ctx context.Context, t *testing.T, studioFilter *models.StudioFilterType, findFilter *models.FindFilterType) []*models.Studio {
+	t.Helper()
+	studios, _, err := db.Studio.Query(ctx, studioFilter, findFilter)
+	if err != nil {
+		t.Errorf("Error querying studio: %s", err.Error())
+	}
+
+	return studios
+}
+
 func TestStudioQueryTags(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
 		tagCriterion := models.HierarchicalMultiCriterionInput{
