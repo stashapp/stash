@@ -25,9 +25,11 @@ type flagStruct struct {
 var (
 	flags flagStruct
 
+	homeDir, _ = os.UserHomeDir()
+
 	defaultConfigLocations = []string{
 		"config.yml",
-		filepath.Join("$HOME", ".stash", "config.yml"),
+		filepath.Join(homeDir, ".stash", "config.yml"),
 	}
 
 	// map of env vars to config keys
