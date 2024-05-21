@@ -101,9 +101,9 @@ func (qb *galleryFilterHandler) criterionHandler() criterionHandler {
 		qb.imageCountCriterionHandler(filter.ImageCount),
 		qb.performerFavoriteCriterionHandler(filter.PerformerFavorite),
 		qb.performerAgeCriterionHandler(filter.PerformerAge),
-		dateCriterionHandler(filter.Date, "galleries.date"),
-		timestampCriterionHandler(filter.CreatedAt, "galleries.created_at"),
-		timestampCriterionHandler(filter.UpdatedAt, "galleries.updated_at"),
+		&dateCriterionHandler{filter.Date, "galleries.date", nil},
+		&timestampCriterionHandler{filter.CreatedAt, "galleries.created_at", nil},
+		&timestampCriterionHandler{filter.UpdatedAt, "galleries.updated_at", nil},
 
 		&relatedFilterHandler{
 			relatedIDCol:   "scenes_galleries.scene_id",

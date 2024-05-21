@@ -137,7 +137,8 @@ func (qb *sceneFilterHandler) criterionHandler() criterionHandler {
 					"scene_last_view",
 					fmt.Sprintf("scene_last_view.%s = scenes.id", sceneIDColumn),
 				)
-				timestampCriterionHandler(sceneFilter.LastPlayedAt, "IFNULL(last_played_at, datetime(0))")(ctx, f)
+				h := timestampCriterionHandler{sceneFilter.LastPlayedAt, "IFNULL(last_played_at, datetime(0))", nil}
+				h.handle(ctx, f)
 			}
 		}),
 
@@ -152,9 +153,9 @@ func (qb *sceneFilterHandler) criterionHandler() criterionHandler {
 		qb.performerFavoriteCriterionHandler(sceneFilter.PerformerFavorite),
 		qb.performerAgeCriterionHandler(sceneFilter.PerformerAge),
 		qb.phashDuplicatedCriterionHandler(sceneFilter.Duplicated, qb.addSceneFilesTable),
-		dateCriterionHandler(sceneFilter.Date, "scenes.date"),
-		timestampCriterionHandler(sceneFilter.CreatedAt, "scenes.created_at"),
-		timestampCriterionHandler(sceneFilter.UpdatedAt, "scenes.updated_at"),
+		&dateCriterionHandler{sceneFilter.Date, "scenes.date", nil},
+		&timestampCriterionHandler{sceneFilter.CreatedAt, "scenes.created_at", nil},
+		&timestampCriterionHandler{sceneFilter.UpdatedAt, "scenes.updated_at", nil},
 
 		&relatedFilterHandler{
 			relatedIDCol:   "scenes_galleries.gallery_id",

@@ -237,21 +237,35 @@ func boolCriterionHandler(c *bool, column string, addJoinFn func(f *filterBuilde
 	}
 }
 
-func dateCriterionHandler(c *models.DateCriterionInput, column string) criterionHandlerFunc {
-	return func(ctx context.Context, f *filterBuilder) {
-		if c != nil {
-			clause, args := getDateCriterionWhereClause(column, *c)
-			f.addWhere(clause, args...)
+type dateCriterionHandler struct {
+	c      *models.DateCriterionInput
+	column string
+	joinFn func(f *filterBuilder)
+}
+
+func (h *dateCriterionHandler) handle(ctx context.Context, f *filterBuilder) {
+	if h.c != nil {
+		if h.joinFn != nil {
+			h.joinFn(f)
 		}
+		clause, args := getDateCriterionWhereClause(h.column, *h.c)
+		f.addWhere(clause, args...)
 	}
 }
 
-func timestampCriterionHandler(c *models.TimestampCriterionInput, column string) criterionHandlerFunc {
-	return func(ctx context.Context, f *filterBuilder) {
-		if c != nil {
-			clause, args := getTimestampCriterionWhereClause(column, *c)
-			f.addWhere(clause, args...)
+type timestampCriterionHandler struct {
+	c      *models.TimestampCriterionInput
+	column string
+	joinFn func(f *filterBuilder)
+}
+
+func (h *timestampCriterionHandler) handle(ctx context.Context, f *filterBuilder) {
+	if h.c != nil {
+		if h.joinFn != nil {
+			h.joinFn(f)
 		}
+		clause, args := getTimestampCriterionWhereClause(h.column, *h.c)
+		f.addWhere(clause, args...)
 	}
 }
 

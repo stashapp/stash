@@ -63,9 +63,9 @@ func (qb *movieFilterHandler) criterionHandler() criterionHandler {
 		stringCriterionHandler(movieFilter.URL, "movies.url"),
 		studioCriterionHandler(movieTable, movieFilter.Studios),
 		qb.performersCriterionHandler(movieFilter.Performers),
-		dateCriterionHandler(movieFilter.Date, "movies.date"),
-		timestampCriterionHandler(movieFilter.CreatedAt, "movies.created_at"),
-		timestampCriterionHandler(movieFilter.UpdatedAt, "movies.updated_at"),
+		&dateCriterionHandler{movieFilter.Date, "movies.date", nil},
+		&timestampCriterionHandler{movieFilter.CreatedAt, "movies.created_at", nil},
+		&timestampCriterionHandler{movieFilter.UpdatedAt, "movies.updated_at", nil},
 
 		&relatedFilterHandler{
 			relatedIDCol:   "movies_scenes.scene_id",

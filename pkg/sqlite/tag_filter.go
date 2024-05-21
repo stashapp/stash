@@ -71,8 +71,8 @@ func (qb *tagFilterHandler) criterionHandler() criterionHandler {
 		qb.childrenCriterionHandler(tagFilter.Children),
 		qb.parentCountCriterionHandler(tagFilter.ParentCount),
 		qb.childCountCriterionHandler(tagFilter.ChildCount),
-		timestampCriterionHandler(tagFilter.CreatedAt, "tags.created_at"),
-		timestampCriterionHandler(tagFilter.UpdatedAt, "tags.updated_at"),
+		&timestampCriterionHandler{tagFilter.CreatedAt, "tags.created_at", nil},
+		&timestampCriterionHandler{tagFilter.UpdatedAt, "tags.updated_at", nil},
 
 		&relatedFilterHandler{
 			relatedIDCol:   "scenes_tags.scene_id",

@@ -72,7 +72,7 @@ func (qb *imageFilterHandler) criterionHandler() criterionHandler {
 		intCriterionHandler(imageFilter.Rating100, "images.rating", nil),
 		intCriterionHandler(imageFilter.OCounter, "images.o_counter", nil),
 		boolCriterionHandler(imageFilter.Organized, "images.organized", nil),
-		dateCriterionHandler(imageFilter.Date, "images.date"),
+		&dateCriterionHandler{imageFilter.Date, "images.date", nil},
 		qb.urlsCriterionHandler(imageFilter.URL),
 
 		resolutionCriterionHandler(imageFilter.Resolution, "image_files.height", "image_files.width", imageRepository.addImageFilesTable),
@@ -88,8 +88,8 @@ func (qb *imageFilterHandler) criterionHandler() criterionHandler {
 		qb.performerTagsCriterionHandler(imageFilter.PerformerTags),
 		qb.performerFavoriteCriterionHandler(imageFilter.PerformerFavorite),
 		qb.performerAgeCriterionHandler(imageFilter.PerformerAge),
-		timestampCriterionHandler(imageFilter.CreatedAt, "images.created_at"),
-		timestampCriterionHandler(imageFilter.UpdatedAt, "images.updated_at"),
+		&timestampCriterionHandler{imageFilter.CreatedAt, "images.created_at", nil},
+		&timestampCriterionHandler{imageFilter.UpdatedAt, "images.updated_at", nil},
 
 		&relatedFilterHandler{
 			relatedIDCol:   "galleries_images.gallery_id",

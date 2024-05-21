@@ -78,13 +78,18 @@ func (r *sceneMarkerRowRecord) fromPartial(o models.SceneMarkerPartial) {
 type sceneMarkerRepositoryType struct {
 	repository
 
-	tags joinRepository
+	scenes repository
+	tags   joinRepository
 }
 
 var (
 	sceneMarkerRepository = sceneMarkerRepositoryType{
 		repository: repository{
 			tableName: sceneMarkerTable,
+			idColumn:  idColumn,
+		},
+		scenes: repository{
+			tableName: sceneTable,
 			idColumn:  idColumn,
 		},
 		tags: joinRepository{

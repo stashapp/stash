@@ -163,10 +163,10 @@ func (qb *performerFilterHandler) criterionHandler() criterionHandler {
 		qb.galleryCountCriterionHandler(filter.GalleryCount),
 		qb.playCounterCriterionHandler(filter.PlayCount),
 		qb.oCounterCriterionHandler(filter.OCounter),
-		dateCriterionHandler(filter.Birthdate, tableName+".birthdate"),
-		dateCriterionHandler(filter.DeathDate, tableName+".death_date"),
-		timestampCriterionHandler(filter.CreatedAt, tableName+".created_at"),
-		timestampCriterionHandler(filter.UpdatedAt, tableName+".updated_at"),
+		&dateCriterionHandler{filter.Birthdate, tableName + ".birthdate", nil},
+		&dateCriterionHandler{filter.DeathDate, tableName + ".death_date", nil},
+		&timestampCriterionHandler{filter.CreatedAt, tableName + ".created_at", nil},
+		&timestampCriterionHandler{filter.UpdatedAt, tableName + ".updated_at", nil},
 
 		&relatedFilterHandler{
 			relatedIDCol:   "performers_scenes.scene_id",

@@ -201,6 +201,8 @@ input SceneMarkerFilterType {
   scene_created_at: TimestampCriterionInput
   "Filter by lscene ast update time"
   scene_updated_at: TimestampCriterionInput
+  "Filter by related scenes that meet this criteria"
+  scene_filter: SceneFilterType
 }
 
 input SceneFilterType {

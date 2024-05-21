@@ -29,6 +29,10 @@ func (qb *sceneMarkerFilterHandler) handle(ctx context.Context, f *filterBuilder
 	f.handleCriterion(ctx, qb.criterionHandler())
 }
 
+func (qb *sceneMarkerFilterHandler) joinScenes(f *filterBuilder) {
+	sceneMarkerRepository.scenes.innerJoin(f, "", "scene_markers.scene_id")
+}
+
 func (qb *sceneMarkerFilterHandler) criterionHandler() criterionHandler {
 	sceneMarkerFilter := qb.sceneMarkerFilter
 	return compoundHandler{
@@ -36,11 +40,20 @@ func (qb *sceneMarkerFilterHandler) criterionHandler() criterionHandler {
 		qb.tagsCriterionHandler(sceneMarkerFilter.Tags),
 		qb.sceneTagsCriterionHandler(sceneMarkerFilter.SceneTags),
 		qb.performersCriterionHandler(sceneMarkerFilter.Performers),
-		timestampCriterionHandler(sceneMarkerFilter.CreatedAt, "scene_markers.created_at"),
-		timestampCriterionHandler(sceneMarkerFilter.UpdatedAt, "scene_markers.updated_at"),
-		dateCriterionHandler(sceneMarkerFilter.SceneDate, "scenes.date"),
-		timestampCriterionHandler(sceneMarkerFilter.SceneCreatedAt, "scenes.created_at"),
-		timestampCriterionHandler(sceneMarkerFilter.SceneUpdatedAt, "scenes.updated_at"),
+		&timestampCriterionHandler{sceneMarkerFilter.CreatedAt, "scene_markers.created_at", nil},
+		&timestampCriterionHandler{sceneMarkerFilter.UpdatedAt, "scene_markers.updated_at", nil},
+		&dateCriterionHandler{sceneMarkerFilter.SceneDate, "scenes.date", qb.joinScenes},
+		&timestampCriterionHandler{sceneMarkerFilter.SceneCreatedAt, "scenes.created_at", qb.joinScenes},
+		&timestampCriterionHandler{sceneMarkerFilter.SceneUpdatedAt, "scenes.updated_at", qb.joinScenes},
+
+		&relatedFilterHandler{
+			relatedIDCol:   "scenes.id",
+			relatedRepo:    sceneRepository.repository,
+			relatedHandler: &sceneFilterHandler{sceneMarkerFilter.SceneFilter},
+			joinFn: func(f *filterBuilder) {
+				qb.joinScenes(f)
+			},
+		},
 	}
 }
 
@@ -165,8 +178,12 @@ func (qb *sceneMarkerFilterHandler) performersCriterionHandler(performers *model
 
 	handler := h.handler(performers)
 	return func(ctx context.Context, f *filterBuilder) {
+		if performers == nil {
+			return
+		}
+
 		// Make sure scenes is included, otherwise excludes filter fails
-		f.addLeftJoin(sceneTable, "", "scenes.id = scene_markers.scene_id")
+		qb.joinScenes(f)
 		handler(ctx, f)
 	}
 }
