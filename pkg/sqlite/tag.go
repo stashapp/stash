@@ -90,8 +90,29 @@ func (r *tagRowRecord) fromPartial(o models.TagPartial) {
 	r.setTimestamp("updated_at", o.UpdatedAt)
 }
 
-type TagStore struct {
+type tagRepositoryType struct {
 	repository
+
+	aliases stringRepository
+}
+
+var (
+	tagRepository = tagRepositoryType{
+		repository: repository{
+			tableName: tagTable,
+			idColumn:  idColumn,
+		},
+		aliases: stringRepository{
+			repository: repository{
+				tableName: tagAliasesTable,
+				idColumn:  tagIDColumn,
+			},
+			stringColumn: tagAliasColumn,
+		},
+	}
+)
+
+type TagStore struct {
 	blobJoinQueryBuilder
 
 	tableMgr *table
@@ -99,10 +120,6 @@ type TagStore struct {
 
 func NewTagStore(blobStore *BlobStore) *TagStore {
 	return &TagStore{
-		repository: repository{
-			tableName: tagTable,
-			idColumn:  idColumn,
-		},
 		blobJoinQueryBuilder: blobJoinQueryBuilder{
 			blobStore: blobStore,
 			joinTable: tagTable,
@@ -176,7 +193,7 @@ func (qb *TagStore) Destroy(ctx context.Context, id int) error {
 	// cannot unset primary_tag_id in scene_markers because it is not nullable
 	countQuery := "SELECT COUNT(*) as count FROM scene_markers where primary_tag_id = ?"
 	args := []interface{}{id}
-	primaryMarkers, err := qb.runCountQuery(ctx, countQuery, args)
+	primaryMarkers, err := tagRepository.runCountQuery(ctx, countQuery, args)
 	if err != nil {
 		return err
 	}
@@ -185,7 +202,7 @@ func (qb *TagStore) Destroy(ctx context.Context, id int) error {
 		return errors.New("cannot delete tag used as a primary tag in scene markers")
 	}
 
-	return qb.destroyExisting(ctx, []int{id})
+	return tagRepository.destroyExisting(ctx, []int{id})
 }
 
 // returns nil, nil if not found
@@ -463,7 +480,7 @@ func (qb *TagStore) Query(ctx context.Context, tagFilter *models.TagFilterType, 
 		findFilter = &models.FindFilterType{}
 	}
 
-	query := qb.newQuery()
+	query := tagRepository.newQuery()
 	distinctIDs(&query, tagTable)
 
 	if q := findFilter.Q; q != nil && *q != "" {
@@ -472,10 +489,9 @@ func (qb *TagStore) Query(ctx context.Context, tagFilter *models.TagFilterType, 
 		query.parseQueryString(searchColumns, *q)
 	}
 
-	if err := qb.validateFilter(tagFilter); err != nil {
-		return nil, 0, err
-	}
-	filter := qb.makeFilter(ctx, tagFilter)
+	filter := filterBuilderFromHandler(ctx, &tagFilterHandler{
+		tagFilter: tagFilter,
+	})
 
 	if err := query.addFilter(filter); err != nil {
 		return nil, 0, err
@@ -557,7 +573,7 @@ func (qb *TagStore) getTagSort(query *queryBuilder, findFilter *models.FindFilte
 func (qb *TagStore) queryTags(ctx context.Context, query string, args []interface{}) ([]*models.Tag, error) {
 	const single = false
 	var ret []*models.Tag
-	if err := qb.queryFunc(ctx, query, args, single, func(r *sqlx.Rows) error {
+	if err := tagRepository.queryFunc(ctx, query, args, single, func(r *sqlx.Rows) error {
 		var f tagRow
 		if err := r.StructScan(&f); err != nil {
 			return err
@@ -577,7 +593,7 @@ func (qb *TagStore) queryTags(ctx context.Context, query string, args []interfac
 func (qb *TagStore) queryTagPaths(ctx context.Context, query string, args []interface{}) ([]*models.TagPath, error) {
 	const single = false
 	var ret []*models.TagPath
-	if err := qb.queryFunc(ctx, query, args, single, func(r *sqlx.Rows) error {
+	if err := tagRepository.queryFunc(ctx, query, args, single, func(r *sqlx.Rows) error {
 		var f tagPathRow
 		if err := r.StructScan(&f); err != nil {
 			return err
@@ -610,23 +626,12 @@ func (qb *TagStore) destroyImage(ctx context.Context, tagID int) error {
 	return qb.blobJoinQueryBuilder.DestroyImage(ctx, tagID, tagImageBlobColumn)
 }
 
-func (qb *TagStore) aliasRepository() *stringRepository {
-	return &stringRepository{
-		repository: repository{
-			tx:        qb.tx,
-			tableName: tagAliasesTable,
-			idColumn:  tagIDColumn,
-		},
-		stringColumn: tagAliasColumn,
-	}
-}
-
 func (qb *TagStore) GetAliases(ctx context.Context, tagID int) ([]string, error) {
-	return qb.aliasRepository().get(ctx, tagID)
+	return tagRepository.aliases.get(ctx, tagID)
 }
 
 func (qb *TagStore) UpdateAliases(ctx context.Context, tagID int, aliases []string) error {
-	return qb.aliasRepository().replace(ctx, tagID, aliases)
+	return tagRepository.aliases.replace(ctx, tagID, aliases)
 }
 
 func (qb *TagStore) Merge(ctx context.Context, source []int, destination int) error {
@@ -657,7 +662,7 @@ func (qb *TagStore) Merge(ctx context.Context, source []int, destination int) er
 
 	args = append(args, destination)
 	for table, idColumn := range tagTables {
-		_, err := qb.tx.Exec(ctx, `UPDATE OR IGNORE `+table+`
+		_, err := tagRepository.tx.Exec(ctx, `UPDATE OR IGNORE `+table+`
 SET tag_id = ?
 WHERE tag_id IN `+inBinding+`
 AND NOT EXISTS(SELECT 1 FROM `+table+` o WHERE o.`+idColumn+` = `+table+`.`+idColumn+` AND o.tag_id = ?)`,
@@ -668,22 +673,22 @@ AND NOT EXISTS(SELECT 1 FROM `+table+` o WHERE o.`+idColumn+` = `+table+`.`+idCo
 		}
 
 		// delete source tag ids from the table where they couldn't be set
-		if _, err := qb.tx.Exec(ctx, `DELETE FROM `+table+` WHERE tag_id IN `+inBinding, srcArgs...); err != nil {
+		if _, err := tagRepository.tx.Exec(ctx, `DELETE FROM `+table+` WHERE tag_id IN `+inBinding, srcArgs...); err != nil {
 			return err
 		}
 	}
 
-	_, err := qb.tx.Exec(ctx, "UPDATE "+sceneMarkerTable+" SET primary_tag_id = ? WHERE primary_tag_id IN "+inBinding, args...)
+	_, err := tagRepository.tx.Exec(ctx, "UPDATE "+sceneMarkerTable+" SET primary_tag_id = ? WHERE primary_tag_id IN "+inBinding, args...)
 	if err != nil {
 		return err
 	}
 
-	_, err = qb.tx.Exec(ctx, "INSERT INTO "+tagAliasesTable+" (tag_id, alias) SELECT ?, name FROM "+tagTable+" WHERE id IN "+inBinding, args...)
+	_, err = tagRepository.tx.Exec(ctx, "INSERT INTO "+tagAliasesTable+" (tag_id, alias) SELECT ?, name FROM "+tagTable+" WHERE id IN "+inBinding, args...)
 	if err != nil {
 		return err
 	}
 
-	_, err = qb.tx.Exec(ctx, "UPDATE "+tagAliasesTable+" SET tag_id = ? WHERE tag_id IN "+inBinding, args...)
+	_, err = tagRepository.tx.Exec(ctx, "UPDATE "+tagAliasesTable+" SET tag_id = ? WHERE tag_id IN "+inBinding, args...)
 	if err != nil {
 		return err
 	}
@@ -699,7 +704,7 @@ AND NOT EXISTS(SELECT 1 FROM `+table+` o WHERE o.`+idColumn+` = `+table+`.`+idCo
 }
 
 func (qb *TagStore) UpdateParentTags(ctx context.Context, tagID int, parentIDs []int) error {
-	tx := qb.tx
+	tx := tagRepository.tx
 	if _, err := tx.Exec(ctx, "DELETE FROM tags_relations WHERE child_id = ?", tagID); err != nil {
 		return err
 	}
@@ -722,7 +727,7 @@ func (qb *TagStore) UpdateParentTags(ctx context.Context, tagID int, parentIDs [
 }
 
 func (qb *TagStore) UpdateChildTags(ctx context.Context, tagID int, childIDs []int) error {
-	tx := qb.tx
+	tx := tagRepository.tx
 	if _, err := tx.Exec(ctx, "DELETE FROM tags_relations WHERE parent_id = ?", tagID); err != nil {
 		return err
 	}

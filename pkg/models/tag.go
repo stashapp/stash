@@ -1,9 +1,7 @@
 package models
 
 type TagFilterType struct {
-	And *TagFilterType `json:"AND"`
-	Or  *TagFilterType `json:"OR"`
-	Not *TagFilterType `json:"NOT"`
+	OperatorFilter[TagFilterType]
 	// Filter by tag name
 	Name *StringCriterionInput `json:"name"`
 	// Filter by tag aliases

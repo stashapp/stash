@@ -7,64 +7,52 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
-func (qb *TagStore) validateFilter(tagFilter *models.TagFilterType) error {
+type tagFilterHandler struct {
+	tagFilter *models.TagFilterType
+}
+
+func (qb *tagFilterHandler) validate() error {
+	tagFilter := qb.tagFilter
 	if tagFilter == nil {
 		return nil
 	}
 
-	const and = "AND"
-	const or = "OR"
-	const not = "NOT"
-
-	if tagFilter.And != nil {
-		if tagFilter.Or != nil {
-			return illegalFilterCombination(and, or)
-		}
-		if tagFilter.Not != nil {
-			return illegalFilterCombination(and, not)
-		}
-
-		return qb.validateFilter(tagFilter.And)
+	if err := validateFilterCombination(tagFilter.OperatorFilter); err != nil {
+		return err
 	}
 
-	if tagFilter.Or != nil {
-		if tagFilter.Not != nil {
-			return illegalFilterCombination(or, not)
+	if subFilter := tagFilter.SubFilter(); subFilter != nil {
+		sqb := &tagFilterHandler{tagFilter: subFilter}
+		if err := sqb.validate(); err != nil {
+			return err
 		}
-
-		return qb.validateFilter(tagFilter.Or)
-	}
-
-	if tagFilter.Not != nil {
-		return qb.validateFilter(tagFilter.Not)
 	}
 
 	return nil
 }
 
-func (qb *TagStore) makeFilter(ctx context.Context, tagFilter *models.TagFilterType) *filterBuilder {
+func (qb *tagFilterHandler) handle(ctx context.Context, f *filterBuilder) {
+	tagFilter := qb.tagFilter
 	if tagFilter == nil {
-		return nil
+		return
 	}
 
-	query := &filterBuilder{}
-
-	if tagFilter.And != nil {
-		query.and(qb.makeFilter(ctx, tagFilter.And))
-	}
-	if tagFilter.Or != nil {
-		query.or(qb.makeFilter(ctx, tagFilter.Or))
-	}
-	if tagFilter.Not != nil {
-		query.not(qb.makeFilter(ctx, tagFilter.Not))
+	if err := qb.validate(); err != nil {
+		f.setError(err)
+		return
 	}
 
-	query.handleCriterion(ctx, qb.criterionHandler(tagFilter))
+	sf := tagFilter.SubFilter()
+	if sf != nil {
+		sub := &tagFilterHandler{sf}
+		handleSubFilter(ctx, sub, f, tagFilter.OperatorFilter)
+	}
 
-	return query
+	f.handleCriterion(ctx, qb.criterionHandler())
 }
 
-func (qb *TagStore) criterionHandler(tagFilter *models.TagFilterType) criterionHandler {
+func (qb *tagFilterHandler) criterionHandler() criterionHandler {
+	tagFilter := qb.tagFilter
 	return compoundHandler{
 		stringCriterionHandler(tagFilter.Name, tagTable+".name"),
 		qb.aliasCriterionHandler(tagFilter.Aliases),
@@ -88,19 +76,19 @@ func (qb *TagStore) criterionHandler(tagFilter *models.TagFilterType) criterionH
 	}
 }
 
-func (qb *TagStore) aliasCriterionHandler(alias *models.StringCriterionInput) criterionHandlerFunc {
+func (qb *tagFilterHandler) aliasCriterionHandler(alias *models.StringCriterionInput) criterionHandlerFunc {
 	h := stringListCriterionHandlerBuilder{
 		joinTable:    tagAliasesTable,
 		stringColumn: tagAliasColumn,
 		addJoinTable: func(f *filterBuilder) {
-			qb.aliasRepository().join(f, "", "tags.id")
+			tagRepository.aliases.join(f, "", "tags.id")
 		},
 	}
 
 	return h.handler(alias)
 }
 
-func (qb *TagStore) isMissingCriterionHandler(isMissing *string) criterionHandlerFunc {
+func (qb *tagFilterHandler) isMissingCriterionHandler(isMissing *string) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if isMissing != nil && *isMissing != "" {
 			switch *isMissing {
@@ -113,7 +101,7 @@ func (qb *TagStore) isMissingCriterionHandler(isMissing *string) criterionHandle
 	}
 }
 
-func (qb *TagStore) sceneCountCriterionHandler(sceneCount *models.IntCriterionInput) criterionHandlerFunc {
+func (qb *tagFilterHandler) sceneCountCriterionHandler(sceneCount *models.IntCriterionInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if sceneCount != nil {
 			f.addLeftJoin("scenes_tags", "", "scenes_tags.tag_id = tags.id")
@@ -124,7 +112,7 @@ func (qb *TagStore) sceneCountCriterionHandler(sceneCount *models.IntCriterionIn
 	}
 }
 
-func (qb *TagStore) imageCountCriterionHandler(imageCount *models.IntCriterionInput) criterionHandlerFunc {
+func (qb *tagFilterHandler) imageCountCriterionHandler(imageCount *models.IntCriterionInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if imageCount != nil {
 			f.addLeftJoin("images_tags", "", "images_tags.tag_id = tags.id")
@@ -135,7 +123,7 @@ func (qb *TagStore) imageCountCriterionHandler(imageCount *models.IntCriterionIn
 	}
 }
 
-func (qb *TagStore) galleryCountCriterionHandler(galleryCount *models.IntCriterionInput) criterionHandlerFunc {
+func (qb *tagFilterHandler) galleryCountCriterionHandler(galleryCount *models.IntCriterionInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if galleryCount != nil {
 			f.addLeftJoin("galleries_tags", "", "galleries_tags.tag_id = tags.id")
@@ -146,7 +134,7 @@ func (qb *TagStore) galleryCountCriterionHandler(galleryCount *models.IntCriteri
 	}
 }
 
-func (qb *TagStore) performerCountCriterionHandler(performerCount *models.IntCriterionInput) criterionHandlerFunc {
+func (qb *tagFilterHandler) performerCountCriterionHandler(performerCount *models.IntCriterionInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if performerCount != nil {
 			f.addLeftJoin("performers_tags", "", "performers_tags.tag_id = tags.id")
@@ -157,7 +145,7 @@ func (qb *TagStore) performerCountCriterionHandler(performerCount *models.IntCri
 	}
 }
 
-func (qb *TagStore) markerCountCriterionHandler(markerCount *models.IntCriterionInput) criterionHandlerFunc {
+func (qb *tagFilterHandler) markerCountCriterionHandler(markerCount *models.IntCriterionInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if markerCount != nil {
 			f.addLeftJoin("scene_markers_tags", "", "scene_markers_tags.tag_id = tags.id")
@@ -169,7 +157,7 @@ func (qb *TagStore) markerCountCriterionHandler(markerCount *models.IntCriterion
 	}
 }
 
-func (qb *TagStore) parentsCriterionHandler(criterion *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
+func (qb *tagFilterHandler) parentsCriterionHandler(criterion *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if criterion != nil {
 			tags := criterion.CombineExcludes()
@@ -263,7 +251,7 @@ func (qb *TagStore) parentsCriterionHandler(criterion *models.HierarchicalMultiC
 	}
 }
 
-func (qb *TagStore) childrenCriterionHandler(criterion *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
+func (qb *tagFilterHandler) childrenCriterionHandler(criterion *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if criterion != nil {
 			tags := criterion.CombineExcludes()
@@ -357,7 +345,7 @@ func (qb *TagStore) childrenCriterionHandler(criterion *models.HierarchicalMulti
 	}
 }
 
-func (qb *TagStore) parentCountCriterionHandler(parentCount *models.IntCriterionInput) criterionHandlerFunc {
+func (qb *tagFilterHandler) parentCountCriterionHandler(parentCount *models.IntCriterionInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if parentCount != nil {
 			f.addLeftJoin("tags_relations", "parents_count", "parents_count.child_id = tags.id")
@@ -368,7 +356,7 @@ func (qb *TagStore) parentCountCriterionHandler(parentCount *models.IntCriterion
 	}
 }
 
-func (qb *TagStore) childCountCriterionHandler(childCount *models.IntCriterionInput) criterionHandlerFunc {
+func (qb *tagFilterHandler) childCountCriterionHandler(childCount *models.IntCriterionInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if childCount != nil {
 			f.addLeftJoin("tags_relations", "children_count", "children_count.parent_id = tags.id")

@@ -161,7 +161,7 @@ func (qb *sceneFilterHandler) criterionHandler() criterionHandler {
 			relatedRepo:    galleryRepository.repository,
 			relatedHandler: &galleryFilterHandler{sceneFilter.GalleriesFilter},
 			joinFn: func(f *filterBuilder) {
-				sceneRepository.galleries.join(f, "", "scenes.id")
+				sceneRepository.galleries.innerJoin(f, "", "scenes.id")
 			},
 		},
 
@@ -170,7 +170,7 @@ func (qb *sceneFilterHandler) criterionHandler() criterionHandler {
 			relatedRepo:    performerRepository.repository,
 			relatedHandler: &performerFilterHandler{sceneFilter.PerformersFilter},
 			joinFn: func(f *filterBuilder) {
-				sceneRepository.performers.join(f, "performers_join", "scenes.id")
+				sceneRepository.performers.innerJoin(f, "performers_join", "scenes.id")
 			},
 		},
 
@@ -180,16 +180,14 @@ func (qb *sceneFilterHandler) criterionHandler() criterionHandler {
 			relatedHandler: &studioFilterHandler{sceneFilter.StudiosFilter},
 		},
 
-		// &relatedFilterHandler{
-		// 	relatedIDCol: "scene_tag.tag_id",
-		// 	relatedStore: tagStore,
-		// 	makeFilterFn: func(ctx context.Context) *filterBuilder {
-		// 		return tagStore.makeFilter(ctx, sceneFilter.TagsFilter)
-		// 	},
-		// 	joinFn: func(f *filterBuilder) {
-		// 		f.addInnerJoin(scenesTagsTable, "scene_tag", "scene_tag.scene_id = scenes.id")
-		// 	},
-		// },
+		&relatedFilterHandler{
+			relatedIDCol:   "scene_tag.tag_id",
+			relatedRepo:    tagRepository.repository,
+			relatedHandler: &tagFilterHandler{sceneFilter.TagsFilter},
+			joinFn: func(f *filterBuilder) {
+				sceneRepository.tags.innerJoin(f, "scene_tag", "scene_tag.scene_id = scenes.id")
+			},
+		},
 
 		// &relatedFilterHandler{
 		// 	relatedIDCol: "movies_scenes.movie_id",

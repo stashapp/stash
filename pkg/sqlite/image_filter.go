@@ -96,7 +96,7 @@ func (qb *imageFilterHandler) criterionHandler() criterionHandler {
 			relatedRepo:    galleryRepository.repository,
 			relatedHandler: &galleryFilterHandler{imageFilter.GalleriesFilter},
 			joinFn: func(f *filterBuilder) {
-				f.addInnerJoin(galleriesImagesTable, "", "galleries_images.image_id = images.id")
+				imageRepository.galleries.innerJoin(f, "", "galleries_images.image_id = images.id")
 			},
 		},
 
@@ -105,7 +105,7 @@ func (qb *imageFilterHandler) criterionHandler() criterionHandler {
 			relatedRepo:    performerRepository.repository,
 			relatedHandler: &performerFilterHandler{imageFilter.PerformersFilter},
 			joinFn: func(f *filterBuilder) {
-				imageRepository.performers.join(f, "performers_join", "images.id")
+				imageRepository.performers.innerJoin(f, "performers_join", "images.id")
 			},
 		},
 
@@ -115,14 +115,14 @@ func (qb *imageFilterHandler) criterionHandler() criterionHandler {
 			relatedHandler: &studioFilterHandler{imageFilter.StudiosFilter},
 		},
 
-		// &relatedFilterHandler{
-		// 	relatedIDCol: "image_tag.tag_id",
-		// 	relatedRepo: tagRepository,
-		// 	relatedHandler: &tagFilterHandler{imageFilter.TagsFilter},
-		// 	joinFn: func(f *filterBuilder) {
-		// 		f.addInnerJoin(imagesTagsTable, "image_tag", "image_tag.image_id = images.id")
-		// 	},
-		// },
+		&relatedFilterHandler{
+			relatedIDCol:   "image_tag.tag_id",
+			relatedRepo:    tagRepository.repository,
+			relatedHandler: &tagFilterHandler{imageFilter.TagsFilter},
+			joinFn: func(f *filterBuilder) {
+				imageRepository.tags.innerJoin(f, "image_tag", "image_tag.image_id = images.id")
+			},
+		},
 	}
 }
 
