@@ -174,15 +174,38 @@ func (r *performerRowRecord) fromPartial(o models.PerformerPartial) {
 	r.setBool("ignore_auto_tag", o.IgnoreAutoTag)
 }
 
+type performerRepositoryType struct {
+	repository
+
+	tags     joinRepository
+	stashIDs stashIDRepository
+}
+
 var (
-	performerRepository = repository{
-		tableName: performerTable,
-		idColumn:  idColumn,
+	performerRepository = performerRepositoryType{
+		repository: repository{
+			tableName: performerTable,
+			idColumn:  idColumn,
+		},
+		tags: joinRepository{
+			repository: repository{
+				tableName: performersTagsTable,
+				idColumn:  performerIDColumn,
+			},
+			fkColumn:     tagIDColumn,
+			foreignTable: tagTable,
+			orderBy:      "tags.name ASC",
+		},
+		stashIDs: stashIDRepository{
+			repository{
+				tableName: "performer_stash_ids",
+				idColumn:  performerIDColumn,
+			},
+		},
 	}
 )
 
 type PerformerStore struct {
-	repository
 	blobJoinQueryBuilder
 
 	tableMgr *table
@@ -190,7 +213,6 @@ type PerformerStore struct {
 
 func NewPerformerStore(blobStore *BlobStore) *PerformerStore {
 	return &PerformerStore{
-		repository: performerRepository,
 		blobJoinQueryBuilder: blobJoinQueryBuilder{
 			blobStore: blobStore,
 			joinTable: performerTable,
@@ -314,7 +336,7 @@ func (qb *PerformerStore) Destroy(ctx context.Context, id int) error {
 		return err
 	}
 
-	return qb.destroyExisting(ctx, []int{id})
+	return performerRepository.destroyExisting(ctx, []int{id})
 }
 
 // returns nil, nil if not found
@@ -535,7 +557,7 @@ func (qb *PerformerStore) makeQuery(ctx context.Context, performerFilter *models
 		findFilter = &models.FindFilterType{}
 	}
 
-	query := qb.newQuery()
+	query := performerRepository.newQuery()
 	distinctIDs(&query, performerTable)
 
 	if q := findFilter.Q; q != nil && *q != "" {
@@ -544,10 +566,9 @@ func (qb *PerformerStore) makeQuery(ctx context.Context, performerFilter *models
 		query.parseQueryString(searchColumns, *q)
 	}
 
-	if err := qb.validateFilter(performerFilter); err != nil {
-		return nil, err
-	}
-	filter := qb.makeFilter(ctx, performerFilter)
+	filter := filterBuilderFromHandler(ctx, &performerFilterHandler{
+		performerFilter: performerFilter,
+	})
 
 	if err := query.addFilter(filter); err != nil {
 		return nil, err
@@ -712,21 +733,8 @@ func (qb *PerformerStore) getPerformerSort(findFilter *models.FindFilterType) (s
 	return sortQuery, nil
 }
 
-func (qb *PerformerStore) tagsRepository() *joinRepository {
-	return &joinRepository{
-		repository: repository{
-			tx:        qb.tx,
-			tableName: performersTagsTable,
-			idColumn:  performerIDColumn,
-		},
-		fkColumn:     tagIDColumn,
-		foreignTable: tagTable,
-		orderBy:      "tags.name ASC",
-	}
-}
-
 func (qb *PerformerStore) GetTagIDs(ctx context.Context, id int) ([]int, error) {
-	return qb.tagsRepository().getIDs(ctx, id)
+	return performerRepository.tags.getIDs(ctx, id)
 }
 
 func (qb *PerformerStore) GetImage(ctx context.Context, performerID int) ([]byte, error) {
@@ -743,16 +751,6 @@ func (qb *PerformerStore) UpdateImage(ctx context.Context, performerID int, imag
 
 func (qb *PerformerStore) destroyImage(ctx context.Context, performerID int) error {
 	return qb.blobJoinQueryBuilder.DestroyImage(ctx, performerID, performerImageBlobColumn)
-}
-
-func (qb *PerformerStore) stashIDRepository() *stashIDRepository {
-	return &stashIDRepository{
-		repository{
-			tx:        qb.tx,
-			tableName: "performer_stash_ids",
-			idColumn:  performerIDColumn,
-		},
-	}
 }
 
 func (qb *PerformerStore) GetAliases(ctx context.Context, performerID int) ([]string, error) {

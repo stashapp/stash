@@ -10,36 +10,25 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
-func (qb *PerformerStore) validateFilter(filter *models.PerformerFilterType) error {
+type performerFilterHandler struct {
+	performerFilter *models.PerformerFilterType
+}
+
+func (qb *performerFilterHandler) validate() error {
+	filter := qb.performerFilter
 	if filter == nil {
 		return nil
 	}
 
-	const and = "AND"
-	const or = "OR"
-	const not = "NOT"
-
-	if filter.And != nil {
-		if filter.Or != nil {
-			return illegalFilterCombination(and, or)
-		}
-		if filter.Not != nil {
-			return illegalFilterCombination(and, not)
-		}
-
-		return qb.validateFilter(filter.And)
+	if err := validateFilterCombination(filter.OperatorFilter); err != nil {
+		return err
 	}
 
-	if filter.Or != nil {
-		if filter.Not != nil {
-			return illegalFilterCombination(or, not)
+	if subFilter := filter.SubFilter(); subFilter != nil {
+		sqb := &performerFilterHandler{performerFilter: subFilter}
+		if err := sqb.validate(); err != nil {
+			return err
 		}
-
-		return qb.validateFilter(filter.Or)
-	}
-
-	if filter.Not != nil {
-		return qb.validateFilter(filter.Not)
 	}
 
 	// if legacy height filter used, ensure only supported modifiers are used
@@ -61,29 +50,28 @@ func (qb *PerformerStore) validateFilter(filter *models.PerformerFilterType) err
 	return nil
 }
 
-func (qb *PerformerStore) makeFilter(ctx context.Context, filter *models.PerformerFilterType) *filterBuilder {
+func (qb *performerFilterHandler) handle(ctx context.Context, f *filterBuilder) {
+	filter := qb.performerFilter
 	if filter == nil {
-		return nil
+		return
 	}
 
-	query := &filterBuilder{}
-
-	if filter.And != nil {
-		query.and(qb.makeFilter(ctx, filter.And))
-	}
-	if filter.Or != nil {
-		query.or(qb.makeFilter(ctx, filter.Or))
-	}
-	if filter.Not != nil {
-		query.not(qb.makeFilter(ctx, filter.Not))
+	if err := qb.validate(); err != nil {
+		f.setError(err)
+		return
 	}
 
-	query.handleCriterion(ctx, qb.criterionHandler(filter))
+	sf := filter.SubFilter()
+	if sf != nil {
+		sub := &performerFilterHandler{sf}
+		handleSubFilter(ctx, sub, f, filter.OperatorFilter)
+	}
 
-	return query
+	f.handleCriterion(ctx, qb.criterionHandler())
 }
 
-func (qb *PerformerStore) criterionHandler(filter *models.PerformerFilterType) criterionHandler {
+func (qb *performerFilterHandler) criterionHandler() criterionHandler {
+	filter := qb.performerFilter
 	const tableName = performerTable
 	heightCmCrit := filter.HeightCm
 
@@ -150,13 +138,13 @@ func (qb *PerformerStore) criterionHandler(filter *models.PerformerFilterType) c
 		intCriterionHandler(filter.Weight, tableName+".weight", nil),
 		criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
 			if filter.StashID != nil {
-				qb.stashIDRepository().join(f, "performer_stash_ids", "performers.id")
+				performerRepository.stashIDs.join(f, "performer_stash_ids", "performers.id")
 				stringCriterionHandler(filter.StashID, "performer_stash_ids.stash_id")(ctx, f)
 			}
 		}),
 		&stashIDCriterionHandler{
 			c:                 filter.StashIDEndpoint,
-			stashIDRepository: qb.stashIDRepository(),
+			stashIDRepository: &performerRepository.stashIDs,
 			stashIDTableAs:    "performer_stash_ids",
 			parentIDCol:       "performers.id",
 		},
@@ -183,7 +171,7 @@ func (qb *PerformerStore) criterionHandler(filter *models.PerformerFilterType) c
 }
 
 // TODO - we need to provide a whitelist of possible values
-func (qb *PerformerStore) performerIsMissingCriterionHandler(isMissing *string) criterionHandlerFunc {
+func (qb *performerFilterHandler) performerIsMissingCriterionHandler(isMissing *string) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if isMissing != nil && *isMissing != "" {
 			switch *isMissing {
@@ -205,7 +193,7 @@ func (qb *PerformerStore) performerIsMissingCriterionHandler(isMissing *string) 
 	}
 }
 
-func (qb *PerformerStore) performerAgeFilterCriterionHandler(age *models.IntCriterionInput) criterionHandlerFunc {
+func (qb *performerFilterHandler) performerAgeFilterCriterionHandler(age *models.IntCriterionInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if age != nil && age.Modifier.IsValid() {
 			clause, args := getIntCriterionWhereClause(
@@ -217,7 +205,7 @@ func (qb *PerformerStore) performerAgeFilterCriterionHandler(age *models.IntCrit
 	}
 }
 
-func (qb *PerformerStore) aliasCriterionHandler(alias *models.StringCriterionInput) criterionHandlerFunc {
+func (qb *performerFilterHandler) aliasCriterionHandler(alias *models.StringCriterionInput) criterionHandlerFunc {
 	h := stringListCriterionHandlerBuilder{
 		joinTable:    performersAliasesTable,
 		stringColumn: performerAliasColumn,
@@ -229,10 +217,8 @@ func (qb *PerformerStore) aliasCriterionHandler(alias *models.StringCriterionInp
 	return h.handler(alias)
 }
 
-func (qb *PerformerStore) tagsCriterionHandler(tags *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
+func (qb *performerFilterHandler) tagsCriterionHandler(tags *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
 	h := joinedHierarchicalMultiCriterionHandlerBuilder{
-		tx: qb.tx,
-
 		primaryTable: performerTable,
 		foreignTable: tagTable,
 		foreignFK:    "tag_id",
@@ -246,7 +232,7 @@ func (qb *PerformerStore) tagsCriterionHandler(tags *models.HierarchicalMultiCri
 	return h.handler(tags)
 }
 
-func (qb *PerformerStore) tagCountCriterionHandler(count *models.IntCriterionInput) criterionHandlerFunc {
+func (qb *performerFilterHandler) tagCountCriterionHandler(count *models.IntCriterionInput) criterionHandlerFunc {
 	h := countCriterionHandlerBuilder{
 		primaryTable: performerTable,
 		joinTable:    performersTagsTable,
@@ -256,7 +242,7 @@ func (qb *PerformerStore) tagCountCriterionHandler(count *models.IntCriterionInp
 	return h.handler(count)
 }
 
-func (qb *PerformerStore) sceneCountCriterionHandler(count *models.IntCriterionInput) criterionHandlerFunc {
+func (qb *performerFilterHandler) sceneCountCriterionHandler(count *models.IntCriterionInput) criterionHandlerFunc {
 	h := countCriterionHandlerBuilder{
 		primaryTable: performerTable,
 		joinTable:    performersScenesTable,
@@ -266,7 +252,7 @@ func (qb *PerformerStore) sceneCountCriterionHandler(count *models.IntCriterionI
 	return h.handler(count)
 }
 
-func (qb *PerformerStore) imageCountCriterionHandler(count *models.IntCriterionInput) criterionHandlerFunc {
+func (qb *performerFilterHandler) imageCountCriterionHandler(count *models.IntCriterionInput) criterionHandlerFunc {
 	h := countCriterionHandlerBuilder{
 		primaryTable: performerTable,
 		joinTable:    performersImagesTable,
@@ -276,7 +262,7 @@ func (qb *PerformerStore) imageCountCriterionHandler(count *models.IntCriterionI
 	return h.handler(count)
 }
 
-func (qb *PerformerStore) galleryCountCriterionHandler(count *models.IntCriterionInput) criterionHandlerFunc {
+func (qb *performerFilterHandler) galleryCountCriterionHandler(count *models.IntCriterionInput) criterionHandlerFunc {
 	h := countCriterionHandlerBuilder{
 		primaryTable: performerTable,
 		joinTable:    performersGalleriesTable,
@@ -332,7 +318,7 @@ var selectPerformerPlayCountSQL = utils.StrFormat(
 	},
 )
 
-func (qb *PerformerStore) oCounterCriterionHandler(count *models.IntCriterionInput) criterionHandlerFunc {
+func (qb *performerFilterHandler) oCounterCriterionHandler(count *models.IntCriterionInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if count == nil {
 			return
@@ -345,7 +331,7 @@ func (qb *PerformerStore) oCounterCriterionHandler(count *models.IntCriterionInp
 	}
 }
 
-func (qb *PerformerStore) playCounterCriterionHandler(count *models.IntCriterionInput) criterionHandlerFunc {
+func (qb *performerFilterHandler) playCounterCriterionHandler(count *models.IntCriterionInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if count == nil {
 			return
@@ -358,7 +344,7 @@ func (qb *PerformerStore) playCounterCriterionHandler(count *models.IntCriterion
 	}
 }
 
-func (qb *PerformerStore) studiosCriterionHandler(studios *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
+func (qb *performerFilterHandler) studiosCriterionHandler(studios *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if studios != nil {
 			formatMaps := []utils.StrFormatMap{
@@ -415,7 +401,7 @@ func (qb *PerformerStore) studiosCriterionHandler(studios *models.HierarchicalMu
 			}
 
 			const derivedPerformerStudioTable = "performer_studio"
-			valuesClause, err := getHierarchicalValues(ctx, qb.tx, studios.Value, studioTable, "", "parent_id", "child_id", studios.Depth)
+			valuesClause, err := getHierarchicalValues(ctx, performerRepository.tx, studios.Value, studioTable, "", "parent_id", "child_id", studios.Depth)
 			if err != nil {
 				f.setError(err)
 				return
@@ -439,7 +425,7 @@ func (qb *PerformerStore) studiosCriterionHandler(studios *models.HierarchicalMu
 	}
 }
 
-func (qb *PerformerStore) appearsWithCriterionHandler(performers *models.MultiCriterionInput) criterionHandlerFunc {
+func (qb *performerFilterHandler) appearsWithCriterionHandler(performers *models.MultiCriterionInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if performers != nil {
 			formatMaps := []utils.StrFormatMap{

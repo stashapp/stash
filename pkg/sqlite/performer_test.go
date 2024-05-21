@@ -731,10 +731,12 @@ func TestPerformerQueryEthnicityOr(t *testing.T) {
 			Value:    performer1Eth,
 			Modifier: models.CriterionModifierEquals,
 		},
-		Or: &models.PerformerFilterType{
-			Ethnicity: &models.StringCriterionInput{
-				Value:    performer2Eth,
-				Modifier: models.CriterionModifierEquals,
+		OperatorFilter: models.OperatorFilter[models.PerformerFilterType]{
+			Or: &models.PerformerFilterType{
+				Ethnicity: &models.StringCriterionInput{
+					Value:    performer2Eth,
+					Modifier: models.CriterionModifierEquals,
+				},
 			},
 		},
 	}
@@ -760,10 +762,12 @@ func TestPerformerQueryEthnicityAndRating(t *testing.T) {
 			Value:    performerEth,
 			Modifier: models.CriterionModifierEquals,
 		},
-		And: &models.PerformerFilterType{
-			Rating100: &models.IntCriterionInput{
-				Value:    performerRating,
-				Modifier: models.CriterionModifierEquals,
+		OperatorFilter: models.OperatorFilter[models.PerformerFilterType]{
+			And: &models.PerformerFilterType{
+				Rating100: &models.IntCriterionInput{
+					Value:    performerRating,
+					Modifier: models.CriterionModifierEquals,
+				},
 			},
 		},
 	}
@@ -801,8 +805,10 @@ func TestPerformerQueryEthnicityNotRating(t *testing.T) {
 
 	performerFilter := models.PerformerFilterType{
 		Ethnicity: &ethCriterion,
-		Not: &models.PerformerFilterType{
-			Rating100: &ratingCriterion,
+		OperatorFilter: models.OperatorFilter[models.PerformerFilterType]{
+			Not: &models.PerformerFilterType{
+				Rating100: &ratingCriterion,
+			},
 		},
 	}
 
@@ -838,24 +844,30 @@ func TestPerformerIllegalQuery(t *testing.T) {
 			// And and Or in the same filter
 			"AndOr",
 			models.PerformerFilterType{
-				And: &subFilter,
-				Or:  &subFilter,
+				OperatorFilter: models.OperatorFilter[models.PerformerFilterType]{
+					And: &subFilter,
+					Or:  &subFilter,
+				},
 			},
 		},
 		{
 			// And and Not in the same filter
 			"AndNot",
 			models.PerformerFilterType{
-				And: &subFilter,
-				Not: &subFilter,
+				OperatorFilter: models.OperatorFilter[models.PerformerFilterType]{
+					And: &subFilter,
+					Not: &subFilter,
+				},
 			},
 		},
 		{
 			// Or and Not in the same filter
 			"OrNot",
 			models.PerformerFilterType{
-				Or:  &subFilter,
-				Not: &subFilter,
+				OperatorFilter: models.OperatorFilter[models.PerformerFilterType]{
+					Or:  &subFilter,
+					Not: &subFilter,
+				},
 			},
 		},
 		{

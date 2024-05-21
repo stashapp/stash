@@ -108,9 +108,7 @@ type CircumcisionCriterionInput struct {
 }
 
 type PerformerFilterType struct {
-	And            *PerformerFilterType  `json:"AND"`
-	Or             *PerformerFilterType  `json:"OR"`
-	Not            *PerformerFilterType  `json:"NOT"`
+	OperatorFilter[PerformerFilterType]
 	Name           *StringCriterionInput `json:"name"`
 	Disambiguation *StringCriterionInput `json:"disambiguation"`
 	Details        *StringCriterionInput `json:"details"`

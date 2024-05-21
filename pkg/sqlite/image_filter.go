@@ -27,19 +27,6 @@ func (qb *imageFilterHandler) validate() error {
 		}
 	}
 
-	// if err := galleryStore.validateFilter(imageFilter.GalleriesFilter); err != nil {
-	// 	return err
-	// }
-	// if err := performerStore.validateFilter(imageFilter.PerformersFilter); err != nil {
-	// 	return err
-	// }
-	// if err := studioStore.validateFilter(imageFilter.StudiosFilter); err != nil {
-	// 	return err
-	// }
-	// if err := tagStore.validateFilter(imageFilter.TagsFilter); err != nil {
-	// 	return err
-	// }
-
 	return nil
 }
 
@@ -113,14 +100,14 @@ func (qb *imageFilterHandler) criterionHandler() criterionHandler {
 			},
 		},
 
-		// &relatedFilterHandler{
-		// 	relatedIDCol: "performers_join.performer_id",
-		// 	relatedRepo: performerRepository,
-		// 	relatedHandler: &performerFilterHandler{imageFilter.PerformersFilter},
-		// 	joinFn: func(f *filterBuilder) {
-		// 		qb.performersRepository().join(f, "performers_join", "images.id")
-		// 	},
-		// },
+		&relatedFilterHandler{
+			relatedIDCol:   "performers_join.performer_id",
+			relatedRepo:    performerRepository.repository,
+			relatedHandler: &performerFilterHandler{imageFilter.PerformersFilter},
+			joinFn: func(f *filterBuilder) {
+				imageRepository.performers.join(f, "performers_join", "images.id")
+			},
+		},
 
 		// &relatedFilterHandler{
 		// 	relatedIDCol: "images.studio_id",

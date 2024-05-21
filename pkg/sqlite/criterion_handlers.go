@@ -995,6 +995,11 @@ type relatedFilterHandler struct {
 
 func (h *relatedFilterHandler) handle(ctx context.Context, f *filterBuilder) {
 	ff := filterBuilderFromHandler(ctx, h.relatedHandler)
+	if ff.err != nil {
+		f.setError(ff.err)
+		return
+	}
+
 	if ff.empty() {
 		return
 	}
