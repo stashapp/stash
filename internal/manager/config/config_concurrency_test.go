@@ -3,6 +3,7 @@ package config
 import (
 	"sync"
 	"testing"
+	"time"
 )
 
 // should be run with -race
@@ -16,6 +17,7 @@ func TestConcurrentConfigAccess(t *testing.T) {
 		wg.Add(1)
 		go func(wk int) {
 			for l := 0; l < loops; l++ {
+				start := time.Now()
 				if err := i.SetInitialConfig(); err != nil {
 					t.Errorf("Failure setting initial configuration in worker %v iteration %v: %v", wk, l, err)
 				}
@@ -34,8 +36,12 @@ func TestConcurrentConfigAccess(t *testing.T) {
 				i.Set(Generated, i.GetGeneratedPath())
 				i.Set(Metadata, i.GetMetadataPath())
 				i.Set(Database, i.GetDatabasePath())
-				i.Set(JWTSignKey, i.GetJWTSignKey())
-				i.Set(SessionStoreKey, i.GetSessionStoreKey())
+
+				// these must be set as strings since the original values are also strings
+				// setting them as []byte will cause the returned string to be corrupted
+				i.Set(JWTSignKey, string(i.GetJWTSignKey()))
+				i.Set(SessionStoreKey, string(i.GetSessionStoreKey()))
+
 				i.GetDefaultScrapersPath()
 				i.Set(Exclude, i.GetExcludes())
 				i.Set(ImageExclude, i.GetImageExcludes())
@@ -116,6 +122,7 @@ func TestConcurrentConfigAccess(t *testing.T) {
 				i.Set(AutostartVideoOnPlaySelected, i.GetAutostartVideoOnPlaySelected())
 				i.Set(ContinuePlaylistDefault, i.GetContinuePlaylistDefault())
 				i.Set(PythonPath, i.GetPythonPath())
+				t.Logf("Worker %v iteration %v took %v", wk, l, time.Since(start))
 			}
 			wg.Done()
 		}(k)
