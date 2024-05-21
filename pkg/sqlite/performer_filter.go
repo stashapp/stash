@@ -167,6 +167,42 @@ func (qb *performerFilterHandler) criterionHandler() criterionHandler {
 		dateCriterionHandler(filter.DeathDate, tableName+".death_date"),
 		timestampCriterionHandler(filter.CreatedAt, tableName+".created_at"),
 		timestampCriterionHandler(filter.UpdatedAt, tableName+".updated_at"),
+
+		&relatedFilterHandler{
+			relatedIDCol:   "performers_scenes.scene_id",
+			relatedRepo:    sceneRepository.repository,
+			relatedHandler: &sceneFilterHandler{filter.ScenesFilter},
+			joinFn: func(f *filterBuilder) {
+				performerRepository.scenes.innerJoin(f, "", "performers.id")
+			},
+		},
+
+		&relatedFilterHandler{
+			relatedIDCol:   "performers_images.image_id",
+			relatedRepo:    imageRepository.repository,
+			relatedHandler: &imageFilterHandler{filter.ImagesFilter},
+			joinFn: func(f *filterBuilder) {
+				performerRepository.images.innerJoin(f, "", "performers.id")
+			},
+		},
+
+		&relatedFilterHandler{
+			relatedIDCol:   "performers_galleries.gallery_id",
+			relatedRepo:    galleryRepository.repository,
+			relatedHandler: &galleryFilterHandler{filter.GalleriesFilter},
+			joinFn: func(f *filterBuilder) {
+				performerRepository.galleries.innerJoin(f, "", "performers.id")
+			},
+		},
+
+		&relatedFilterHandler{
+			relatedIDCol:   "performer_tag.tag_id",
+			relatedRepo:    tagRepository.repository,
+			relatedHandler: &tagFilterHandler{filter.TagsFilter},
+			joinFn: func(f *filterBuilder) {
+				performerRepository.tags.innerJoin(f, "performer_tag", "performers.id")
+			},
+		},
 	}
 }
 
@@ -224,7 +260,7 @@ func (qb *performerFilterHandler) tagsCriterionHandler(tags *models.Hierarchical
 		foreignFK:    "tag_id",
 
 		relationsTable: "tags_relations",
-		joinAs:         "image_tag",
+		joinAs:         "performer_tag",
 		joinTable:      performersTagsTable,
 		primaryFK:      performerIDColumn,
 	}

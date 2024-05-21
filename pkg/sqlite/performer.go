@@ -179,6 +179,10 @@ type performerRepositoryType struct {
 
 	tags     joinRepository
 	stashIDs stashIDRepository
+
+	scenes    joinRepository
+	images    joinRepository
+	galleries joinRepository
 }
 
 var (
@@ -201,6 +205,30 @@ var (
 				tableName: "performer_stash_ids",
 				idColumn:  performerIDColumn,
 			},
+		},
+		scenes: joinRepository{
+			repository: repository{
+				tableName: performersScenesTable,
+				idColumn:  performerIDColumn,
+			},
+			fkColumn:     sceneIDColumn,
+			foreignTable: sceneTable,
+		},
+		images: joinRepository{
+			repository: repository{
+				tableName: performersImagesTable,
+				idColumn:  performerIDColumn,
+			},
+			fkColumn:     imageIDColumn,
+			foreignTable: imageTable,
+		},
+		galleries: joinRepository{
+			repository: repository{
+				tableName: performersGalleriesTable,
+				idColumn:  performerIDColumn,
+			},
+			fkColumn:     galleryIDColumn,
+			foreignTable: galleryTable,
 		},
 	}
 )
