@@ -109,11 +109,11 @@ func (qb *imageFilterHandler) criterionHandler() criterionHandler {
 			},
 		},
 
-		// &relatedFilterHandler{
-		// 	relatedIDCol: "images.studio_id",
-		// 	relatedRepo: studioRepository,
-		// 	relatedHandler: &studioFilterHandler{imageFilter.StudiosFilter},
-		// },
+		&relatedFilterHandler{
+			relatedIDCol:   "images.studio_id",
+			relatedRepo:    studioRepository.repository,
+			relatedHandler: &studioFilterHandler{imageFilter.StudiosFilter},
+		},
 
 		// &relatedFilterHandler{
 		// 	relatedIDCol: "image_tag.tag_id",

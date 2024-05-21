@@ -90,8 +90,28 @@ func (r *studioRowRecord) fromPartial(o models.StudioPartial) {
 	r.setBool("ignore_auto_tag", o.IgnoreAutoTag)
 }
 
-type StudioStore struct {
+type studioRepositoryType struct {
 	repository
+
+	stashIDs stashIDRepository
+}
+
+var (
+	studioRepository = studioRepositoryType{
+		repository: repository{
+			tableName: studioTable,
+			idColumn:  idColumn,
+		},
+		stashIDs: stashIDRepository{
+			repository{
+				tableName: "studio_stash_ids",
+				idColumn:  studioIDColumn,
+			},
+		},
+	}
+)
+
+type StudioStore struct {
 	blobJoinQueryBuilder
 
 	tableMgr *table
@@ -99,10 +119,6 @@ type StudioStore struct {
 
 func NewStudioStore(blobStore *BlobStore) *StudioStore {
 	return &StudioStore{
-		repository: repository{
-			tableName: studioTable,
-			idColumn:  idColumn,
-		},
 		blobJoinQueryBuilder: blobJoinQueryBuilder{
 			blobStore: blobStore,
 			joinTable: studioTable,
@@ -147,7 +163,7 @@ func (qb *StudioStore) Create(ctx context.Context, newObject *models.Studio) err
 		}
 	}
 
-	updated, _ := qb.find(ctx, id)
+	updated, err := qb.find(ctx, id)
 	if err != nil {
 		return fmt.Errorf("finding after create: %w", err)
 	}
@@ -220,7 +236,7 @@ func (qb *StudioStore) Destroy(ctx context.Context, id int) error {
 		return err
 	}
 
-	return qb.destroyExisting(ctx, []int{id})
+	return studioRepository.destroyExisting(ctx, []int{id})
 }
 
 // returns nil, nil if not found
@@ -460,7 +476,7 @@ func (qb *StudioStore) makeQuery(ctx context.Context, studioFilter *models.Studi
 		findFilter = &models.FindFilterType{}
 	}
 
-	query := qb.newQuery()
+	query := studioRepository.newQuery()
 	distinctIDs(&query, studioTable)
 
 	if q := findFilter.Q; q != nil && *q != "" {
@@ -469,10 +485,9 @@ func (qb *StudioStore) makeQuery(ctx context.Context, studioFilter *models.Studi
 		query.parseQueryString(searchColumns, *q)
 	}
 
-	if err := qb.validateFilter(studioFilter); err != nil {
-		return nil, err
-	}
-	filter := qb.makeFilter(ctx, studioFilter)
+	filter := filterBuilderFromHandler(ctx, &studioFilterHandler{
+		studioFilter: studioFilter,
+	})
 
 	if err := query.addFilter(filter); err != nil {
 		return nil, err
@@ -569,16 +584,6 @@ func (qb *StudioStore) UpdateImage(ctx context.Context, studioID int, image []by
 
 func (qb *StudioStore) destroyImage(ctx context.Context, studioID int) error {
 	return qb.blobJoinQueryBuilder.DestroyImage(ctx, studioID, studioImageBlobColumn)
-}
-
-func (qb *StudioStore) stashIDRepository() *stashIDRepository {
-	return &stashIDRepository{
-		repository{
-			tx:        qb.tx,
-			tableName: "studio_stash_ids",
-			idColumn:  studioIDColumn,
-		},
-	}
 }
 
 func (qb *StudioStore) GetStashIDs(ctx context.Context, studioID int) ([]models.StashID, error) {

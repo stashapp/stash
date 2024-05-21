@@ -6,64 +6,52 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
-func (qb *StudioStore) validateFilter(filter *models.StudioFilterType) error {
-	if filter == nil {
+type studioFilterHandler struct {
+	studioFilter *models.StudioFilterType
+}
+
+func (qb *studioFilterHandler) validate() error {
+	studioFilter := qb.studioFilter
+	if studioFilter == nil {
 		return nil
 	}
 
-	const and = "AND"
-	const or = "OR"
-	const not = "NOT"
-
-	if filter.And != nil {
-		if filter.Or != nil {
-			return illegalFilterCombination(and, or)
-		}
-		if filter.Not != nil {
-			return illegalFilterCombination(and, not)
-		}
-
-		return qb.validateFilter(filter.And)
+	if err := validateFilterCombination(studioFilter.OperatorFilter); err != nil {
+		return err
 	}
 
-	if filter.Or != nil {
-		if filter.Not != nil {
-			return illegalFilterCombination(or, not)
+	if subFilter := studioFilter.SubFilter(); subFilter != nil {
+		sqb := &studioFilterHandler{studioFilter: subFilter}
+		if err := sqb.validate(); err != nil {
+			return err
 		}
-
-		return qb.validateFilter(filter.Or)
-	}
-
-	if filter.Not != nil {
-		return qb.validateFilter(filter.Not)
 	}
 
 	return nil
 }
 
-func (qb *StudioStore) makeFilter(ctx context.Context, studioFilter *models.StudioFilterType) *filterBuilder {
+func (qb *studioFilterHandler) handle(ctx context.Context, f *filterBuilder) {
+	studioFilter := qb.studioFilter
 	if studioFilter == nil {
-		return nil
+		return
 	}
 
-	query := &filterBuilder{}
-
-	if studioFilter.And != nil {
-		query.and(qb.makeFilter(ctx, studioFilter.And))
-	}
-	if studioFilter.Or != nil {
-		query.or(qb.makeFilter(ctx, studioFilter.Or))
-	}
-	if studioFilter.Not != nil {
-		query.not(qb.makeFilter(ctx, studioFilter.Not))
+	if err := qb.validate(); err != nil {
+		f.setError(err)
+		return
 	}
 
-	query.handleCriterion(ctx, qb.criterionHandler(studioFilter))
+	sf := studioFilter.SubFilter()
+	if sf != nil {
+		sub := &studioFilterHandler{sf}
+		handleSubFilter(ctx, sub, f, studioFilter.OperatorFilter)
+	}
 
-	return query
+	f.handleCriterion(ctx, qb.criterionHandler())
 }
 
-func (qb *StudioStore) criterionHandler(studioFilter *models.StudioFilterType) criterionHandler {
+func (qb *studioFilterHandler) criterionHandler() criterionHandler {
+	studioFilter := qb.studioFilter
 	return compoundHandler{
 		stringCriterionHandler(studioFilter.Name, studioTable+".name"),
 		stringCriterionHandler(studioFilter.Details, studioTable+".details"),
@@ -74,13 +62,13 @@ func (qb *StudioStore) criterionHandler(studioFilter *models.StudioFilterType) c
 
 		criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
 			if studioFilter.StashID != nil {
-				qb.stashIDRepository().join(f, "studio_stash_ids", "studios.id")
+				studioRepository.stashIDs.join(f, "studio_stash_ids", "studios.id")
 				stringCriterionHandler(studioFilter.StashID, "studio_stash_ids.stash_id")(ctx, f)
 			}
 		}),
 		&stashIDCriterionHandler{
 			c:                 studioFilter.StashIDEndpoint,
-			stashIDRepository: qb.stashIDRepository(),
+			stashIDRepository: &studioRepository.stashIDs,
 			stashIDTableAs:    "studio_stash_ids",
 			parentIDCol:       "studios.id",
 		},
@@ -97,14 +85,14 @@ func (qb *StudioStore) criterionHandler(studioFilter *models.StudioFilterType) c
 	}
 }
 
-func (qb *StudioStore) isMissingCriterionHandler(isMissing *string) criterionHandlerFunc {
+func (qb *studioFilterHandler) isMissingCriterionHandler(isMissing *string) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if isMissing != nil && *isMissing != "" {
 			switch *isMissing {
 			case "image":
 				f.addWhere("studios.image_blob IS NULL")
 			case "stash_id":
-				qb.stashIDRepository().join(f, "studio_stash_ids", "studios.id")
+				studioRepository.stashIDs.join(f, "studio_stash_ids", "studios.id")
 				f.addWhere("studio_stash_ids.studio_id IS NULL")
 			default:
 				f.addWhere("(studios." + *isMissing + " IS NULL OR TRIM(studios." + *isMissing + ") = '')")
@@ -113,7 +101,7 @@ func (qb *StudioStore) isMissingCriterionHandler(isMissing *string) criterionHan
 	}
 }
 
-func (qb *StudioStore) sceneCountCriterionHandler(sceneCount *models.IntCriterionInput) criterionHandlerFunc {
+func (qb *studioFilterHandler) sceneCountCriterionHandler(sceneCount *models.IntCriterionInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if sceneCount != nil {
 			f.addLeftJoin("scenes", "", "scenes.studio_id = studios.id")
@@ -124,7 +112,7 @@ func (qb *StudioStore) sceneCountCriterionHandler(sceneCount *models.IntCriterio
 	}
 }
 
-func (qb *StudioStore) imageCountCriterionHandler(imageCount *models.IntCriterionInput) criterionHandlerFunc {
+func (qb *studioFilterHandler) imageCountCriterionHandler(imageCount *models.IntCriterionInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if imageCount != nil {
 			f.addLeftJoin("images", "", "images.studio_id = studios.id")
@@ -135,7 +123,7 @@ func (qb *StudioStore) imageCountCriterionHandler(imageCount *models.IntCriterio
 	}
 }
 
-func (qb *StudioStore) galleryCountCriterionHandler(galleryCount *models.IntCriterionInput) criterionHandlerFunc {
+func (qb *studioFilterHandler) galleryCountCriterionHandler(galleryCount *models.IntCriterionInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if galleryCount != nil {
 			f.addLeftJoin("galleries", "", "galleries.studio_id = studios.id")
@@ -146,7 +134,7 @@ func (qb *StudioStore) galleryCountCriterionHandler(galleryCount *models.IntCrit
 	}
 }
 
-func (qb *StudioStore) parentCriterionHandler(parents *models.MultiCriterionInput) criterionHandlerFunc {
+func (qb *studioFilterHandler) parentCriterionHandler(parents *models.MultiCriterionInput) criterionHandlerFunc {
 	addJoinsFunc := func(f *filterBuilder) {
 		f.addLeftJoin("studios", "parent_studio", "parent_studio.id = studios.parent_id")
 	}
@@ -161,7 +149,7 @@ func (qb *StudioStore) parentCriterionHandler(parents *models.MultiCriterionInpu
 	return h.handler(parents)
 }
 
-func (qb *StudioStore) aliasCriterionHandler(alias *models.StringCriterionInput) criterionHandlerFunc {
+func (qb *studioFilterHandler) aliasCriterionHandler(alias *models.StringCriterionInput) criterionHandlerFunc {
 	h := stringListCriterionHandlerBuilder{
 		joinTable:    studioAliasesTable,
 		stringColumn: studioAliasColumn,
@@ -173,7 +161,7 @@ func (qb *StudioStore) aliasCriterionHandler(alias *models.StringCriterionInput)
 	return h.handler(alias)
 }
 
-func (qb *StudioStore) childCountCriterionHandler(childCount *models.IntCriterionInput) criterionHandlerFunc {
+func (qb *studioFilterHandler) childCountCriterionHandler(childCount *models.IntCriterionInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if childCount != nil {
 			f.addLeftJoin("studios", "children_count", "children_count.parent_id = studios.id")

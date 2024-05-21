@@ -1,9 +1,7 @@
 package models
 
 type StudioFilterType struct {
-	And     *StudioFilterType     `json:"AND"`
-	Or      *StudioFilterType     `json:"OR"`
-	Not     *StudioFilterType     `json:"NOT"`
+	OperatorFilter[StudioFilterType]
 	Name    *StringCriterionInput `json:"name"`
 	Details *StringCriterionInput `json:"details"`
 	// Filter to only include studios with this parent studio

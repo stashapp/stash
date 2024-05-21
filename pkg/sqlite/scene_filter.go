@@ -174,13 +174,11 @@ func (qb *sceneFilterHandler) criterionHandler() criterionHandler {
 			},
 		},
 
-		// &relatedFilterHandler{
-		// 	relatedIDCol: "scenes.studio_id",
-		// 	relatedStore: studioStore,
-		// 	makeFilterFn: func(ctx context.Context) *filterBuilder {
-		// 		return studioStore.makeFilter(ctx, sceneFilter.StudiosFilter)
-		// 	},
-		// },
+		&relatedFilterHandler{
+			relatedIDCol:   "scenes.studio_id",
+			relatedRepo:    studioRepository.repository,
+			relatedHandler: &studioFilterHandler{sceneFilter.StudiosFilter},
+		},
 
 		// &relatedFilterHandler{
 		// 	relatedIDCol: "scene_tag.tag_id",
