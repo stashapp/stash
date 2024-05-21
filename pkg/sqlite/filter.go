@@ -169,6 +169,10 @@ type filterBuilder struct {
 	err error
 }
 
+func (f *filterBuilder) empty() bool {
+	return f == nil || (len(f.whereClauses) == 0 && len(f.joins) == 0 && len(f.havingClauses) == 0 && f.subFilter == nil)
+}
+
 func filterBuilderFromHandler(ctx context.Context, handler criterionHandler) *filterBuilder {
 	f := &filterBuilder{}
 	handler.handle(ctx, f)

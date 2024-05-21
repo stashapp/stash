@@ -104,23 +104,19 @@ func (qb *imageFilterHandler) criterionHandler() criterionHandler {
 		timestampCriterionHandler(imageFilter.CreatedAt, "images.created_at"),
 		timestampCriterionHandler(imageFilter.UpdatedAt, "images.updated_at"),
 
-		// &relatedFilterHandler{
-		// 	relatedIDCol: "galleries_images.gallery_id",
-		// 	relatedStore: &galleryRepository,
-		// 	makeFilterFn: func(ctx context.Context) *filterBuilder {
-		// 		return galleryStore.makeFilter(ctx, imageFilter.GalleriesFilter)
-		// 	},
-		// 	joinFn: func(f *filterBuilder) {
-		// 		f.addInnerJoin(galleriesImagesTable, "", "galleries_images.image_id = images.id")
-		// 	},
-		// },
+		&relatedFilterHandler{
+			relatedIDCol:   "galleries_images.gallery_id",
+			relatedRepo:    galleryRepository.repository,
+			relatedHandler: &galleryFilterHandler{imageFilter.GalleriesFilter},
+			joinFn: func(f *filterBuilder) {
+				f.addInnerJoin(galleriesImagesTable, "", "galleries_images.image_id = images.id")
+			},
+		},
 
 		// &relatedFilterHandler{
 		// 	relatedIDCol: "performers_join.performer_id",
-		// 	relatedStore: &performerRepository,
-		// 	makeFilterFn: func(ctx context.Context) *filterBuilder {
-		// 		return performerStore.makeFilter(ctx, imageFilter.PerformersFilter)
-		// 	},
+		// 	relatedRepo: performerRepository,
+		// 	relatedHandler: &performerFilterHandler{imageFilter.PerformersFilter},
 		// 	joinFn: func(f *filterBuilder) {
 		// 		qb.performersRepository().join(f, "performers_join", "images.id")
 		// 	},
@@ -128,18 +124,14 @@ func (qb *imageFilterHandler) criterionHandler() criterionHandler {
 
 		// &relatedFilterHandler{
 		// 	relatedIDCol: "images.studio_id",
-		// 	relatedStore: studioStore,
-		// 	makeFilterFn: func(ctx context.Context) *filterBuilder {
-		// 		return studioStore.makeFilter(ctx, imageFilter.StudiosFilter)
-		// 	},
+		// 	relatedRepo: studioRepository,
+		// 	relatedHandler: &studioFilterHandler{imageFilter.StudiosFilter},
 		// },
 
 		// &relatedFilterHandler{
 		// 	relatedIDCol: "image_tag.tag_id",
-		// 	relatedStore: tagStore,
-		// 	makeFilterFn: func(ctx context.Context) *filterBuilder {
-		// 		return tagStore.makeFilter(ctx, imageFilter.TagsFilter)
-		// 	},
+		// 	relatedRepo: tagRepository,
+		// 	relatedHandler: &tagFilterHandler{imageFilter.TagsFilter},
 		// 	joinFn: func(f *filterBuilder) {
 		// 		f.addInnerJoin(imagesTagsTable, "image_tag", "image_tag.image_id = images.id")
 		// 	},

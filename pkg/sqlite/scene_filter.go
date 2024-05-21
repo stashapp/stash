@@ -156,16 +156,14 @@ func (qb *sceneFilterHandler) criterionHandler() criterionHandler {
 		timestampCriterionHandler(sceneFilter.CreatedAt, "scenes.created_at"),
 		timestampCriterionHandler(sceneFilter.UpdatedAt, "scenes.updated_at"),
 
-		// &relatedFilterHandler{
-		// 	relatedIDCol: "scenes_galleries.gallery_id",
-		// 	relatedStore: galleryStore,
-		// 	makeFilterFn: func(ctx context.Context) *filterBuilder {
-		// 		return galleryStore.makeFilter(ctx, sceneFilter.GalleriesFilter)
-		// 	},
-		// 	joinFn: func(f *filterBuilder) {
-		// 		qb.galleriesRepository().join(f, "", "scenes.id")
-		// 	},
-		// },
+		&relatedFilterHandler{
+			relatedIDCol:   "scenes_galleries.gallery_id",
+			relatedRepo:    galleryRepository.repository,
+			relatedHandler: &galleryFilterHandler{sceneFilter.GalleriesFilter},
+			joinFn: func(f *filterBuilder) {
+				galleryRepository.join(f, "", "scenes.id")
+			},
+		},
 
 		// &relatedFilterHandler{
 		// 	relatedIDCol: "performers_join.performer_id",

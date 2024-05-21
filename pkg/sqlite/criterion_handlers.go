@@ -986,30 +986,22 @@ func (h *stashIDCriterionHandler) handle(ctx context.Context, f *filterBuilder) 
 	}, t+".stash_id")(ctx, f)
 }
 
-type relatedStore interface {
-	newQuery() queryBuilder
-}
-
-type filterMaker interface {
-	makeFilter(ctx context.Context) *filterBuilder
-}
-
 type relatedFilterHandler struct {
-	relatedIDCol string
-	relatedStore relatedStore
-	filterMaker  filterMaker
-	joinFn       func(f *filterBuilder)
+	relatedIDCol   string
+	relatedRepo    repository
+	relatedHandler criterionHandler
+	joinFn         func(f *filterBuilder)
 }
 
 func (h *relatedFilterHandler) handle(ctx context.Context, f *filterBuilder) {
-	subFilter := h.filterMaker.makeFilter(ctx)
-	if subFilter == nil {
+	ff := filterBuilderFromHandler(ctx, h.relatedHandler)
+	if ff.empty() {
 		return
 	}
 
-	subQuery := h.relatedStore.newQuery()
+	subQuery := h.relatedRepo.newQuery()
 	selectIDs(&subQuery, subQuery.repository.tableName)
-	if err := subQuery.addFilter(subFilter); err != nil {
+	if err := subQuery.addFilter(ff); err != nil {
 		f.setError(err)
 		return
 	}
