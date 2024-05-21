@@ -44,6 +44,21 @@ func (qb *movieFilterHandler) criterionHandler() criterionHandler {
 		dateCriterionHandler(movieFilter.Date, "movies.date"),
 		timestampCriterionHandler(movieFilter.CreatedAt, "movies.created_at"),
 		timestampCriterionHandler(movieFilter.UpdatedAt, "movies.updated_at"),
+
+		&relatedFilterHandler{
+			relatedIDCol:   "movies_scenes.scene_id",
+			relatedRepo:    sceneRepository.repository,
+			relatedHandler: &sceneFilterHandler{movieFilter.ScenesFilter},
+			joinFn: func(f *filterBuilder) {
+				movieRepository.scenes.innerJoin(f, "", "movies.id")
+			},
+		},
+
+		&relatedFilterHandler{
+			relatedIDCol:   "movies.studio_id",
+			relatedRepo:    studioRepository.repository,
+			relatedHandler: &studioFilterHandler{movieFilter.StudiosFilter},
+		},
 	}
 }
 

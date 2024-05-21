@@ -326,6 +326,11 @@ input MovieFilterType {
   created_at: TimestampCriterionInput
   "Filter by last update time"
   updated_at: TimestampCriterionInput
+
+  "Filter by related scenes that meet this criteria"
+  scenes_filter: SceneFilterType
+  "Filter by related studios that meet this criteria"
+  studios_filter: StudioFilterType
 }
 
 input StudioFilterType {

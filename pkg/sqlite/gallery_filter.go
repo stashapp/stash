@@ -106,6 +106,15 @@ func (qb *galleryFilterHandler) criterionHandler() criterionHandler {
 		timestampCriterionHandler(filter.UpdatedAt, "galleries.updated_at"),
 
 		&relatedFilterHandler{
+			relatedIDCol:   "scenes_galleries.scene_id",
+			relatedRepo:    sceneRepository.repository,
+			relatedHandler: &sceneFilterHandler{filter.ScenesFilter},
+			joinFn: func(f *filterBuilder) {
+				galleryRepository.scenes.innerJoin(f, "", "galleries.id")
+			},
+		},
+
+		&relatedFilterHandler{
 			relatedIDCol:   "galleries_images.image_id",
 			relatedRepo:    imageRepository.repository,
 			relatedHandler: &imageFilterHandler{filter.ImagesFilter},

@@ -96,10 +96,21 @@ func (r *movieRowRecord) fromPartial(o models.MoviePartial) {
 	r.setTimestamp("updated_at", o.UpdatedAt)
 }
 
+type movieRepositoryType struct {
+	repository
+	scenes repository
+}
+
 var (
-	movieRepository = repository{
-		tableName: movieTable,
-		idColumn:  idColumn,
+	movieRepository = movieRepositoryType{
+		repository: repository{
+			tableName: movieTable,
+			idColumn:  idColumn,
+		},
+		scenes: repository{
+			tableName: moviesScenesTable,
+			idColumn:  movieIDColumn,
+		},
 	}
 )
 

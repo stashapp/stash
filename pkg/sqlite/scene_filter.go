@@ -191,7 +191,7 @@ func (qb *sceneFilterHandler) criterionHandler() criterionHandler {
 
 		&relatedFilterHandler{
 			relatedIDCol:   "movies_scenes.movie_id",
-			relatedRepo:    movieRepository,
+			relatedRepo:    movieRepository.repository,
 			relatedHandler: &movieFilterHandler{sceneFilter.MoviesFilter},
 			joinFn: func(f *filterBuilder) {
 				sceneRepository.movies.innerJoin(f, "", "scenes.id")
