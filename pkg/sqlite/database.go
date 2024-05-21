@@ -383,7 +383,7 @@ func (db *Database) Analyze(ctx context.Context) error {
 }
 
 func (db *Database) ExecSQL(ctx context.Context, query string, args []interface{}) (*int64, *int64, error) {
-	wrapper := dbWrapper{}
+	wrapper := dbWrapperType{}
 
 	result, err := wrapper.Exec(ctx, query, args...)
 	if err != nil {
@@ -406,7 +406,7 @@ func (db *Database) ExecSQL(ctx context.Context, query string, args []interface{
 }
 
 func (db *Database) QuerySQL(ctx context.Context, query string, args []interface{}) ([]string, [][]interface{}, error) {
-	wrapper := dbWrapper{}
+	wrapper := dbWrapperType{}
 
 	rows, err := wrapper.QueryxContext(ctx, query, args...)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {

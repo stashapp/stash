@@ -437,7 +437,7 @@ func (qb *performerFilterHandler) studiosCriterionHandler(studios *models.Hierar
 			}
 
 			const derivedPerformerStudioTable = "performer_studio"
-			valuesClause, err := getHierarchicalValues(ctx, performerRepository.tx, studios.Value, studioTable, "", "parent_id", "child_id", studios.Depth)
+			valuesClause, err := getHierarchicalValues(ctx, studios.Value, studioTable, "", "parent_id", "child_id", studios.Depth)
 			if err != nil {
 				f.setError(err)
 				return

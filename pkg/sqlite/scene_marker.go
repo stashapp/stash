@@ -402,7 +402,7 @@ func (qb *SceneMarkerStore) querySceneMarkers(ctx context.Context, query string,
 }
 
 func (qb *SceneMarkerStore) queryMarkerStringsResultType(ctx context.Context, query string, args []interface{}) ([]*models.MarkerStringsResultType, error) {
-	rows, err := sceneMarkerRepository.tx.Queryx(ctx, query, args...)
+	rows, err := dbWrapper.Queryx(ctx, query, args...)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return nil, err
 	}

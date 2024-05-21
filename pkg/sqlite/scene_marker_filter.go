@@ -81,7 +81,7 @@ func (qb *sceneMarkerFilterHandler) tagsCriterionHandler(criterion *models.Hiera
 			}
 
 			if len(tags.Value) > 0 {
-				valuesClause, err := getHierarchicalValues(ctx, dbWrapper{}, tags.Value, tagTable, "tags_relations", "parent_id", "child_id", tags.Depth)
+				valuesClause, err := getHierarchicalValues(ctx, tags.Value, tagTable, "tags_relations", "parent_id", "child_id", tags.Depth)
 				if err != nil {
 					f.setError(err)
 					return
@@ -113,7 +113,7 @@ func (qb *sceneMarkerFilterHandler) tagsCriterionHandler(criterion *models.Hiera
 			}
 
 			if len(criterion.Excludes) > 0 {
-				valuesClause, err := getHierarchicalValues(ctx, dbWrapper{}, tags.Excludes, tagTable, "tags_relations", "parent_id", "child_id", tags.Depth)
+				valuesClause, err := getHierarchicalValues(ctx, tags.Excludes, tagTable, "tags_relations", "parent_id", "child_id", tags.Depth)
 				if err != nil {
 					f.setError(err)
 					return

@@ -536,8 +536,6 @@ func studioCriterionHandler(primaryTable string, studios *models.HierarchicalMul
 		}
 
 		hh := hierarchicalMultiCriterionHandlerBuilder{
-			tx: dbWrapper{},
-
 			primaryTable: primaryTable,
 			foreignTable: studioTable,
 			foreignFK:    studioIDColumn,
@@ -549,8 +547,6 @@ func studioCriterionHandler(primaryTable string, studios *models.HierarchicalMul
 }
 
 type hierarchicalMultiCriterionHandlerBuilder struct {
-	tx dbWrapper
-
 	primaryTable string
 	foreignTable string
 	foreignFK    string
@@ -560,7 +556,7 @@ type hierarchicalMultiCriterionHandlerBuilder struct {
 	relationsTable string
 }
 
-func getHierarchicalValues(ctx context.Context, tx dbWrapper, values []string, table, relationsTable, parentFK string, childFK string, depth *int) (string, error) {
+func getHierarchicalValues(ctx context.Context, values []string, table, relationsTable, parentFK string, childFK string, depth *int) (string, error) {
 	var args []interface{}
 
 	if parentFK == "" {
@@ -641,7 +637,7 @@ WHERE id in {inBinding}
 	query := fmt.Sprintf("WITH RECURSIVE %s SELECT 'VALUES' || GROUP_CONCAT('(' || root_id || ', ' || item_id || ')') AS val FROM items", withClause)
 
 	var valuesClause sql.NullString
-	err := tx.Get(ctx, &valuesClause, query, args...)
+	err := dbWrapper.Get(ctx, &valuesClause, query, args...)
 	if err != nil {
 		return "", fmt.Errorf("failed to get hierarchical values: %w", err)
 	}
@@ -707,7 +703,7 @@ func (m *hierarchicalMultiCriterionHandlerBuilder) handler(c *models.Hierarchica
 			}
 
 			if len(criterion.Value) > 0 {
-				valuesClause, err := getHierarchicalValues(ctx, m.tx, criterion.Value, m.foreignTable, m.relationsTable, m.parentFK, m.childFK, criterion.Depth)
+				valuesClause, err := getHierarchicalValues(ctx, criterion.Value, m.foreignTable, m.relationsTable, m.parentFK, m.childFK, criterion.Depth)
 				if err != nil {
 					f.setError(err)
 					return
@@ -723,7 +719,7 @@ func (m *hierarchicalMultiCriterionHandlerBuilder) handler(c *models.Hierarchica
 			}
 
 			if len(criterion.Excludes) > 0 {
-				valuesClause, err := getHierarchicalValues(ctx, m.tx, criterion.Excludes, m.foreignTable, m.relationsTable, m.parentFK, m.childFK, criterion.Depth)
+				valuesClause, err := getHierarchicalValues(ctx, criterion.Excludes, m.foreignTable, m.relationsTable, m.parentFK, m.childFK, criterion.Depth)
 				if err != nil {
 					f.setError(err)
 					return
@@ -736,8 +732,6 @@ func (m *hierarchicalMultiCriterionHandlerBuilder) handler(c *models.Hierarchica
 }
 
 type joinedHierarchicalMultiCriterionHandlerBuilder struct {
-	tx dbWrapper
-
 	primaryTable string
 	primaryKey   string
 	foreignTable string
@@ -820,7 +814,7 @@ func (m *joinedHierarchicalMultiCriterionHandlerBuilder) handler(c *models.Hiera
 			}
 
 			if len(criterion.Value) > 0 {
-				valuesClause, err := getHierarchicalValues(ctx, m.tx, criterion.Value, m.foreignTable, m.relationsTable, m.parentFK, m.childFK, criterion.Depth)
+				valuesClause, err := getHierarchicalValues(ctx, criterion.Value, m.foreignTable, m.relationsTable, m.parentFK, m.childFK, criterion.Depth)
 				if err != nil {
 					f.setError(err)
 					return
@@ -842,7 +836,7 @@ func (m *joinedHierarchicalMultiCriterionHandlerBuilder) handler(c *models.Hiera
 			}
 
 			if len(criterion.Excludes) > 0 {
-				valuesClause, err := getHierarchicalValues(ctx, m.tx, criterion.Excludes, m.foreignTable, m.relationsTable, m.parentFK, m.childFK, criterion.Depth)
+				valuesClause, err := getHierarchicalValues(ctx, criterion.Excludes, m.foreignTable, m.relationsTable, m.parentFK, m.childFK, criterion.Depth)
 				if err != nil {
 					f.setError(err)
 					return
@@ -920,7 +914,7 @@ func (h *joinedPerformerTagsHandler) handle(ctx context.Context, f *filterBuilde
 		}
 
 		if len(criterion.Value) > 0 {
-			valuesClause, err := getHierarchicalValues(ctx, dbWrapper{}, criterion.Value, tagTable, "tags_relations", "", "", criterion.Depth)
+			valuesClause, err := getHierarchicalValues(ctx, criterion.Value, tagTable, "tags_relations", "", "", criterion.Depth)
 			if err != nil {
 				f.setError(err)
 				return
@@ -938,7 +932,7 @@ INNER JOIN (`+valuesClause+`) t ON t.column2 = pt.tag_id
 		}
 
 		if len(criterion.Excludes) > 0 {
-			valuesClause, err := getHierarchicalValues(ctx, dbWrapper{}, criterion.Excludes, tagTable, "tags_relations", "", "", criterion.Depth)
+			valuesClause, err := getHierarchicalValues(ctx, criterion.Excludes, tagTable, "tags_relations", "", "", criterion.Depth)
 			if err != nil {
 				f.setError(err)
 				return

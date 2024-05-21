@@ -690,7 +690,7 @@ func (qb *TagStore) Merge(ctx context.Context, source []int, destination int) er
 
 	args = append(args, destination)
 	for table, idColumn := range tagTables {
-		_, err := tagRepository.tx.Exec(ctx, `UPDATE OR IGNORE `+table+`
+		_, err := dbWrapper.Exec(ctx, `UPDATE OR IGNORE `+table+`
 SET tag_id = ?
 WHERE tag_id IN `+inBinding+`
 AND NOT EXISTS(SELECT 1 FROM `+table+` o WHERE o.`+idColumn+` = `+table+`.`+idColumn+` AND o.tag_id = ?)`,
@@ -701,22 +701,22 @@ AND NOT EXISTS(SELECT 1 FROM `+table+` o WHERE o.`+idColumn+` = `+table+`.`+idCo
 		}
 
 		// delete source tag ids from the table where they couldn't be set
-		if _, err := tagRepository.tx.Exec(ctx, `DELETE FROM `+table+` WHERE tag_id IN `+inBinding, srcArgs...); err != nil {
+		if _, err := dbWrapper.Exec(ctx, `DELETE FROM `+table+` WHERE tag_id IN `+inBinding, srcArgs...); err != nil {
 			return err
 		}
 	}
 
-	_, err := tagRepository.tx.Exec(ctx, "UPDATE "+sceneMarkerTable+" SET primary_tag_id = ? WHERE primary_tag_id IN "+inBinding, args...)
+	_, err := dbWrapper.Exec(ctx, "UPDATE "+sceneMarkerTable+" SET primary_tag_id = ? WHERE primary_tag_id IN "+inBinding, args...)
 	if err != nil {
 		return err
 	}
 
-	_, err = tagRepository.tx.Exec(ctx, "INSERT INTO "+tagAliasesTable+" (tag_id, alias) SELECT ?, name FROM "+tagTable+" WHERE id IN "+inBinding, args...)
+	_, err = dbWrapper.Exec(ctx, "INSERT INTO "+tagAliasesTable+" (tag_id, alias) SELECT ?, name FROM "+tagTable+" WHERE id IN "+inBinding, args...)
 	if err != nil {
 		return err
 	}
 
-	_, err = tagRepository.tx.Exec(ctx, "UPDATE "+tagAliasesTable+" SET tag_id = ? WHERE tag_id IN "+inBinding, args...)
+	_, err = dbWrapper.Exec(ctx, "UPDATE "+tagAliasesTable+" SET tag_id = ? WHERE tag_id IN "+inBinding, args...)
 	if err != nil {
 		return err
 	}
@@ -732,8 +732,7 @@ AND NOT EXISTS(SELECT 1 FROM `+table+` o WHERE o.`+idColumn+` = `+table+`.`+idCo
 }
 
 func (qb *TagStore) UpdateParentTags(ctx context.Context, tagID int, parentIDs []int) error {
-	tx := tagRepository.tx
-	if _, err := tx.Exec(ctx, "DELETE FROM tags_relations WHERE child_id = ?", tagID); err != nil {
+	if _, err := dbWrapper.Exec(ctx, "DELETE FROM tags_relations WHERE child_id = ?", tagID); err != nil {
 		return err
 	}
 
@@ -746,7 +745,7 @@ func (qb *TagStore) UpdateParentTags(ctx context.Context, tagID int, parentIDs [
 		}
 
 		query := "INSERT INTO tags_relations (parent_id, child_id) VALUES " + strings.Join(values, ", ")
-		if _, err := tx.Exec(ctx, query, args...); err != nil {
+		if _, err := dbWrapper.Exec(ctx, query, args...); err != nil {
 			return err
 		}
 	}
@@ -755,8 +754,7 @@ func (qb *TagStore) UpdateParentTags(ctx context.Context, tagID int, parentIDs [
 }
 
 func (qb *TagStore) UpdateChildTags(ctx context.Context, tagID int, childIDs []int) error {
-	tx := tagRepository.tx
-	if _, err := tx.Exec(ctx, "DELETE FROM tags_relations WHERE parent_id = ?", tagID); err != nil {
+	if _, err := dbWrapper.Exec(ctx, "DELETE FROM tags_relations WHERE parent_id = ?", tagID); err != nil {
 		return err
 	}
 
@@ -769,7 +767,7 @@ func (qb *TagStore) UpdateChildTags(ctx context.Context, tagID int, childIDs []i
 		}
 
 		query := "INSERT INTO tags_relations (parent_id, child_id) VALUES " + strings.Join(values, ", ")
-		if _, err := tx.Exec(ctx, query, args...); err != nil {
+		if _, err := dbWrapper.Exec(ctx, query, args...); err != nil {
 			return err
 		}
 	}

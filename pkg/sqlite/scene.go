@@ -1316,7 +1316,7 @@ func (qb *SceneStore) FindDuplicates(ctx context.Context, distance int, duration
 	var dupeIds [][]int
 	if distance == 0 {
 		var ids []string
-		if err := sceneRepository.tx.Select(ctx, &ids, findExactDuplicateQuery, durationDiff); err != nil {
+		if err := dbWrapper.Select(ctx, &ids, findExactDuplicateQuery, durationDiff); err != nil {
 			return nil, err
 		}
 
