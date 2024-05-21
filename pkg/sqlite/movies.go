@@ -96,8 +96,14 @@ func (r *movieRowRecord) fromPartial(o models.MoviePartial) {
 	r.setTimestamp("updated_at", o.UpdatedAt)
 }
 
+var (
+	movieRepository = repository{
+		tableName: movieTable,
+		idColumn:  idColumn,
+	}
+)
+
 type MovieStore struct {
-	repository
 	blobJoinQueryBuilder
 
 	tableMgr *table
@@ -105,10 +111,6 @@ type MovieStore struct {
 
 func NewMovieStore(blobStore *BlobStore) *MovieStore {
 	return &MovieStore{
-		repository: repository{
-			tableName: movieTable,
-			idColumn:  idColumn,
-		},
 		blobJoinQueryBuilder: blobJoinQueryBuilder{
 			blobStore: blobStore,
 			joinTable: movieTable,
@@ -180,7 +182,7 @@ func (qb *MovieStore) Destroy(ctx context.Context, id int) error {
 		return err
 	}
 
-	return qb.destroyExisting(ctx, []int{id})
+	return movieRepository.destroyExisting(ctx, []int{id})
 }
 
 // returns nil, nil if not found
@@ -335,7 +337,7 @@ func (qb *MovieStore) makeQuery(ctx context.Context, movieFilter *models.MovieFi
 		movieFilter = &models.MovieFilterType{}
 	}
 
-	query := qb.newQuery()
+	query := movieRepository.newQuery()
 	distinctIDs(&query, movieTable)
 
 	if q := findFilter.Q; q != nil && *q != "" {
@@ -343,7 +345,9 @@ func (qb *MovieStore) makeQuery(ctx context.Context, movieFilter *models.MovieFi
 		query.parseQueryString(searchColumns, *q)
 	}
 
-	filter := qb.makeFilter(ctx, movieFilter)
+	filter := filterBuilderFromHandler(ctx, &movieFilterHandler{
+		movieFilter: movieFilter,
+	})
 
 	if err := query.addFilter(filter); err != nil {
 		return nil, err
@@ -432,7 +436,7 @@ func (qb *MovieStore) getMovieSort(findFilter *models.FindFilterType) (string, e
 func (qb *MovieStore) queryMovies(ctx context.Context, query string, args []interface{}) ([]*models.Movie, error) {
 	const single = false
 	var ret []*models.Movie
-	if err := qb.queryFunc(ctx, query, args, single, func(r *sqlx.Rows) error {
+	if err := movieRepository.queryFunc(ctx, query, args, single, func(r *sqlx.Rows) error {
 		var f movieRow
 		if err := r.StructScan(&f); err != nil {
 			return err
@@ -502,7 +506,7 @@ INNER JOIN performers_scenes ON performers_scenes.scene_id = movies_scenes.scene
 WHERE performers_scenes.performer_id = ?
 `
 	args := []interface{}{performerID}
-	return qb.runCountQuery(ctx, query, args)
+	return movieRepository.runCountQuery(ctx, query, args)
 }
 
 func (qb *MovieStore) FindByStudioID(ctx context.Context, studioID int) ([]*models.Movie, error) {
@@ -520,5 +524,5 @@ FROM movies
 WHERE movies.studio_id = ?
 `
 	args := []interface{}{studioID}
-	return qb.runCountQuery(ctx, query, args)
+	return movieRepository.runCountQuery(ctx, query, args)
 }

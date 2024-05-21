@@ -189,16 +189,14 @@ func (qb *sceneFilterHandler) criterionHandler() criterionHandler {
 			},
 		},
 
-		// &relatedFilterHandler{
-		// 	relatedIDCol: "movies_scenes.movie_id",
-		// 	relatedStore: movieStore,
-		// 	makeFilterFn: func(ctx context.Context) *filterBuilder {
-		// 		return movieStore.makeFilter(ctx, sceneFilter.MoviesFilter)
-		// 	},
-		// 	joinFn: func(f *filterBuilder) {
-		// 		qb.moviesRepository().join(f, "", "scenes.id")
-		// 	},
-		// },
+		&relatedFilterHandler{
+			relatedIDCol:   "movies_scenes.movie_id",
+			relatedRepo:    movieRepository,
+			relatedHandler: &movieFilterHandler{sceneFilter.MoviesFilter},
+			joinFn: func(f *filterBuilder) {
+				sceneRepository.movies.innerJoin(f, "", "scenes.id")
+			},
+		},
 
 		// &relatedFilterHandler{
 		// 	relatedIDCol: "scene_markers.id",

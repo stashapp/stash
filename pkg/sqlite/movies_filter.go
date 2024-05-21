@@ -7,30 +7,47 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
-func (qb *MovieStore) makeFilter(ctx context.Context, movieFilter *models.MovieFilterType) *filterBuilder {
-	if movieFilter == nil {
-		return nil
-	}
-
-	query := &filterBuilder{}
-
-	query.handleCriterion(ctx, stringCriterionHandler(movieFilter.Name, "movies.name"))
-	query.handleCriterion(ctx, stringCriterionHandler(movieFilter.Director, "movies.director"))
-	query.handleCriterion(ctx, stringCriterionHandler(movieFilter.Synopsis, "movies.synopsis"))
-	query.handleCriterion(ctx, intCriterionHandler(movieFilter.Rating100, "movies.rating", nil))
-	query.handleCriterion(ctx, floatIntCriterionHandler(movieFilter.Duration, "movies.duration", nil))
-	query.handleCriterion(ctx, qb.missingCriterionHandler(movieFilter.IsMissing))
-	query.handleCriterion(ctx, stringCriterionHandler(movieFilter.URL, "movies.url"))
-	query.handleCriterion(ctx, studioCriterionHandler(movieTable, movieFilter.Studios))
-	query.handleCriterion(ctx, qb.performersCriterionHandler(movieFilter.Performers))
-	query.handleCriterion(ctx, dateCriterionHandler(movieFilter.Date, "movies.date"))
-	query.handleCriterion(ctx, timestampCriterionHandler(movieFilter.CreatedAt, "movies.created_at"))
-	query.handleCriterion(ctx, timestampCriterionHandler(movieFilter.UpdatedAt, "movies.updated_at"))
-
-	return query
+type movieFilterHandler struct {
+	movieFilter *models.MovieFilterType
 }
 
-func (qb *MovieStore) missingCriterionHandler(isMissing *string) criterionHandlerFunc {
+func (qb *movieFilterHandler) validate() error {
+	return nil
+}
+
+func (qb *movieFilterHandler) handle(ctx context.Context, f *filterBuilder) {
+	movieFilter := qb.movieFilter
+	if movieFilter == nil {
+		return
+	}
+
+	if err := qb.validate(); err != nil {
+		f.setError(err)
+		return
+	}
+
+	f.handleCriterion(ctx, qb.criterionHandler())
+}
+
+func (qb *movieFilterHandler) criterionHandler() criterionHandler {
+	movieFilter := qb.movieFilter
+	return compoundHandler{
+		stringCriterionHandler(movieFilter.Name, "movies.name"),
+		stringCriterionHandler(movieFilter.Director, "movies.director"),
+		stringCriterionHandler(movieFilter.Synopsis, "movies.synopsis"),
+		intCriterionHandler(movieFilter.Rating100, "movies.rating", nil),
+		floatIntCriterionHandler(movieFilter.Duration, "movies.duration", nil),
+		qb.missingCriterionHandler(movieFilter.IsMissing),
+		stringCriterionHandler(movieFilter.URL, "movies.url"),
+		studioCriterionHandler(movieTable, movieFilter.Studios),
+		qb.performersCriterionHandler(movieFilter.Performers),
+		dateCriterionHandler(movieFilter.Date, "movies.date"),
+		timestampCriterionHandler(movieFilter.CreatedAt, "movies.created_at"),
+		timestampCriterionHandler(movieFilter.UpdatedAt, "movies.updated_at"),
+	}
+}
+
+func (qb *movieFilterHandler) missingCriterionHandler(isMissing *string) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if isMissing != nil && *isMissing != "" {
 			switch *isMissing {
@@ -48,7 +65,7 @@ func (qb *MovieStore) missingCriterionHandler(isMissing *string) criterionHandle
 	}
 }
 
-func (qb *MovieStore) performersCriterionHandler(performers *models.MultiCriterionInput) criterionHandlerFunc {
+func (qb *movieFilterHandler) performersCriterionHandler(performers *models.MultiCriterionInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if performers != nil {
 			if performers.Modifier == models.CriterionModifierIsNull || performers.Modifier == models.CriterionModifierNotNull {
