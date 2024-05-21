@@ -94,6 +94,10 @@ type tagRepositoryType struct {
 	repository
 
 	aliases stringRepository
+
+	scenes    joinRepository
+	images    joinRepository
+	galleries joinRepository
 }
 
 var (
@@ -108,6 +112,30 @@ var (
 				idColumn:  tagIDColumn,
 			},
 			stringColumn: tagAliasColumn,
+		},
+		scenes: joinRepository{
+			repository: repository{
+				tableName: scenesTagsTable,
+				idColumn:  tagIDColumn,
+			},
+			fkColumn:     sceneIDColumn,
+			foreignTable: sceneTable,
+		},
+		images: joinRepository{
+			repository: repository{
+				tableName: imagesTagsTable,
+				idColumn:  tagIDColumn,
+			},
+			fkColumn:     imageIDColumn,
+			foreignTable: imageTable,
+		},
+		galleries: joinRepository{
+			repository: repository{
+				tableName: galleriesTagsTable,
+				idColumn:  tagIDColumn,
+			},
+			fkColumn:     galleryIDColumn,
+			foreignTable: galleryTable,
 		},
 	}
 )

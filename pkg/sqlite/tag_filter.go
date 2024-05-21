@@ -73,6 +73,33 @@ func (qb *tagFilterHandler) criterionHandler() criterionHandler {
 		qb.childCountCriterionHandler(tagFilter.ChildCount),
 		timestampCriterionHandler(tagFilter.CreatedAt, "tags.created_at"),
 		timestampCriterionHandler(tagFilter.UpdatedAt, "tags.updated_at"),
+
+		&relatedFilterHandler{
+			relatedIDCol:   "scenes_tags.scene_id",
+			relatedRepo:    sceneRepository.repository,
+			relatedHandler: &sceneFilterHandler{tagFilter.ScenesFilter},
+			joinFn: func(f *filterBuilder) {
+				tagRepository.scenes.innerJoin(f, "", "tags.id")
+			},
+		},
+
+		&relatedFilterHandler{
+			relatedIDCol:   "images_tags.image_id",
+			relatedRepo:    imageRepository.repository,
+			relatedHandler: &imageFilterHandler{tagFilter.ImagesFilter},
+			joinFn: func(f *filterBuilder) {
+				tagRepository.images.innerJoin(f, "", "tags.id")
+			},
+		},
+
+		&relatedFilterHandler{
+			relatedIDCol:   "galleries_tags.gallery_id",
+			relatedRepo:    galleryRepository.repository,
+			relatedHandler: &galleryFilterHandler{tagFilter.GalleriesFilter},
+			joinFn: func(f *filterBuilder) {
+				tagRepository.galleries.innerJoin(f, "", "tags.id")
+			},
+		},
 	}
 }
 
