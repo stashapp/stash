@@ -130,7 +130,7 @@ func (m *schema58Migrator) migrateConfig() error {
 		newPlugins[key] = m.fromSnakeCaseMap(value)
 	}
 
-	c.Set(config.PluginsSetting, newPlugins)
+	c.SetInterface(config.PluginsSetting, newPlugins)
 	if err := c.Write(); err != nil {
 		return fmt.Errorf("failed to write config: %w", err)
 	}

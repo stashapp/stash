@@ -381,10 +381,6 @@ func (i *Config) GetNotificationsEnabled() bool {
 	return i.getBool(NotificationsEnabled)
 }
 
-// func (i *Instance) GetConfigUpdatesChannel() chan int {
-// 	return i.configUpdates
-// }
-
 // GetShowOneTimeMovedNotification shows whether a small notification to inform the user that Stash
 // will no longer show a terminal window, and instead will be available in the tray, should be shown.
 // It is true when an existing system is started after upgrading, and set to false forever after it is shown.
@@ -392,10 +388,24 @@ func (i *Config) GetShowOneTimeMovedNotification() bool {
 	return i.getBool(ShowOneTimeMovedNotification)
 }
 
-func (i *Config) Set(key string, value interface{}) {
-	// if key == MenuItems {
-	// 	i.configUpdates <- 0
-	// }
+// these methods are intended to ensure type safety (ie no primitive pointers)
+func (i *Config) SetBool(key string, value bool) {
+	i.SetInterface(key, value)
+}
+
+func (i *Config) SetString(key string, value string) {
+	i.SetInterface(key, value)
+}
+
+func (i *Config) SetInt(key string, value int) {
+	i.SetInterface(key, value)
+}
+
+func (i *Config) SetFloat(key string, value float64) {
+	i.SetInterface(key, value)
+}
+
+func (i *Config) SetInterface(key string, value interface{}) {
 	i.Lock()
 	defer i.Unlock()
 
@@ -438,9 +448,9 @@ func (i *Config) setDefault(key string, value interface{}) {
 func (i *Config) SetPassword(value string) {
 	// if blank, don't bother hashing; we want it to be blank
 	if value == "" {
-		i.Set(Password, "")
+		i.SetString(Password, "")
 	} else {
-		i.Set(Password, hashPassword(value))
+		i.SetString(Password, hashPassword(value))
 	}
 }
 
@@ -1624,7 +1634,7 @@ func (i *Config) GetNoProxy() string {
 // config field to the provided IP address to indicate that stash has been accessed
 // from this public IP without authentication.
 func (i *Config) ActivatePublicAccessTripwire(requestIP string) error {
-	i.Set(SecurityTripwireAccessedFromPublicInternet, requestIP)
+	i.SetString(SecurityTripwireAccessedFromPublicInternet, requestIP)
 	return i.Write()
 }
 
@@ -1807,7 +1817,7 @@ func (i *Config) SetInitialConfig() error {
 		if err != nil {
 			return fmt.Errorf("error generating JWTSignKey: %w", err)
 		}
-		i.Set(JWTSignKey, signKey)
+		i.SetString(JWTSignKey, signKey)
 	}
 
 	if string(i.GetSessionStoreKey()) == "" {
@@ -1815,7 +1825,7 @@ func (i *Config) SetInitialConfig() error {
 		if err != nil {
 			return fmt.Errorf("error generating session store key: %w", err)
 		}
-		i.Set(SessionStoreKey, sessionStoreKey)
+		i.SetString(SessionStoreKey, sessionStoreKey)
 	}
 
 	i.setDefaultValues()
