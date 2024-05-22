@@ -453,7 +453,7 @@ func (i *Config) Write() error {
 		return err
 	}
 
-	return os.WriteFile(i.filePath, data, 0644)
+	return os.WriteFile(i.filePath, data, 0640)
 }
 
 func (i *Config) Marshal() ([]byte, error) {
