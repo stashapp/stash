@@ -9,6 +9,7 @@ import (
 
 	"github.com/dop251/goja"
 	"github.com/stashapp/stash/pkg/javascript"
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/plugin/common"
 )
 
@@ -73,8 +74,12 @@ func (t *jsPluginTask) initVM() error {
 		return fmt.Errorf("error setting input: %w", err)
 	}
 
+	const pluginPrefix = "[Plugin / %s] "
+
 	log := &javascript.Log{
-		Progress: t.progress,
+		Logger:       logger.Logger,
+		Prefix:       fmt.Sprintf(pluginPrefix, t.plugin.Name),
+		ProgressChan: t.progress,
 	}
 
 	if err := log.AddToVM("log", t.vm); err != nil {
