@@ -1083,7 +1083,9 @@ func (qb *SceneStore) makeQuery(ctx context.Context, sceneFilter *models.SceneFi
 		return nil, err
 	}
 
-	qb.setSceneSort(&query, findFilter)
+	if err := qb.setSceneSort(&query, findFilter); err != nil {
+		return nil, err
+	}
 	query.sortAndPagination += getPagination(findFilter)
 
 	return &query, nil
@@ -1522,11 +1524,46 @@ func scenePhashDistanceCriterionHandler(qb *SceneStore, phashDistance *models.Ph
 	}
 }
 
-func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindFilterType) {
+var sceneSortOptions = sortOptions{
+	"bitrate",
+	"created_at",
+	"date",
+	"file_count",
+	"filesize",
+	"duration",
+	"file_mod_time",
+	"framerate",
+	"id",
+	"interactive",
+	"interactive_speed",
+	"last_o_at",
+	"last_played_at",
+	"movie_scene_number",
+	"o_counter",
+	"organized",
+	"performer_count",
+	"play_count",
+	"play_duration",
+	"resume_time",
+	"path",
+	"perceptual_similarity",
+	"random",
+	"rating",
+	"tag_count",
+	"title",
+	"updated_at",
+}
+
+func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindFilterType) error {
 	if findFilter == nil || findFilter.Sort == nil || *findFilter.Sort == "" {
-		return
+		return nil
 	}
 	sort := findFilter.GetSort("title")
+
+	// CVE-2024-32231 - ensure sort is in the list of allowed sorts
+	if err := sceneSortOptions.validateSort(sort); err != nil {
+		return err
+	}
 
 	addFileTable := func() {
 		query.addJoins(
@@ -1627,6 +1664,8 @@ func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindF
 
 	// Whatever the sorting, always use title/id as a final sort
 	query.sortAndPagination += ", COALESCE(scenes.title, scenes.id) COLLATE NATURAL_CI ASC"
+
+	return nil
 }
 
 func (qb *SceneStore) SaveActivity(ctx context.Context, id int, resumeTime *float64, playDuration *float64) (bool, error) {

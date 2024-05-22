@@ -368,7 +368,13 @@ func (qb *MovieStore) makeQuery(ctx context.Context, movieFilter *models.MovieFi
 		return nil, err
 	}
 
-	query.sortAndPagination = qb.getMovieSort(findFilter) + getPagination(findFilter)
+	var err error
+	query.sortAndPagination, err = qb.getMovieSort(findFilter)
+	if err != nil {
+		return nil, err
+	}
+
+	query.sortAndPagination += getPagination(findFilter)
 
 	return &query, nil
 }
@@ -466,7 +472,19 @@ func moviePerformersCriterionHandler(qb *MovieStore, performers *models.MultiCri
 	}
 }
 
-func (qb *MovieStore) getMovieSort(findFilter *models.FindFilterType) string {
+var movieSortOptions = sortOptions{
+	"created_at",
+	"date",
+	"duration",
+	"id",
+	"name",
+	"random",
+	"rating",
+	"scenes_count",
+	"updated_at",
+}
+
+func (qb *MovieStore) getMovieSort(findFilter *models.FindFilterType) (string, error) {
 	var sort string
 	var direction string
 	if findFilter == nil {
@@ -475,6 +493,11 @@ func (qb *MovieStore) getMovieSort(findFilter *models.FindFilterType) string {
 	} else {
 		sort = findFilter.GetSort("name")
 		direction = findFilter.GetDirection()
+	}
+
+	// CVE-2024-32231 - ensure sort is in the list of allowed sorts
+	if err := movieSortOptions.validateSort(sort); err != nil {
+		return "", err
 	}
 
 	sortQuery := ""
@@ -487,7 +510,7 @@ func (qb *MovieStore) getMovieSort(findFilter *models.FindFilterType) string {
 
 	// Whatever the sorting, always use name/id as a final sort
 	sortQuery += ", COALESCE(movies.name, movies.id) COLLATE NATURAL_CI ASC"
-	return sortQuery
+	return sortQuery, nil
 }
 
 func (qb *MovieStore) queryMovies(ctx context.Context, query string, args []interface{}) ([]*models.Movie, error) {

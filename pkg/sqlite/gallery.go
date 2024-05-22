@@ -782,7 +782,9 @@ func (qb *GalleryStore) makeQuery(ctx context.Context, galleryFilter *models.Gal
 		return nil, err
 	}
 
-	qb.setGallerySort(&query, findFilter)
+	if err := qb.setGallerySort(&query, findFilter); err != nil {
+		return nil, err
+	}
 	query.sortAndPagination += getPagination(findFilter)
 
 	return &query, nil
@@ -1100,13 +1102,34 @@ func galleryAverageResolutionCriterionHandler(qb *GalleryStore, resolution *mode
 	}
 }
 
-func (qb *GalleryStore) setGallerySort(query *queryBuilder, findFilter *models.FindFilterType) {
+var gallerySortOptions = sortOptions{
+	"created_at",
+	"date",
+	"file_count",
+	"file_mod_time",
+	"id",
+	"images_count",
+	"path",
+	"performer_count",
+	"random",
+	"rating",
+	"tag_count",
+	"title",
+	"updated_at",
+}
+
+func (qb *GalleryStore) setGallerySort(query *queryBuilder, findFilter *models.FindFilterType) error {
 	if findFilter == nil || findFilter.Sort == nil || *findFilter.Sort == "" {
-		return
+		return nil
 	}
 
 	sort := findFilter.GetSort("path")
 	direction := findFilter.GetDirection()
+
+	// CVE-2024-32231 - ensure sort is in the list of allowed sorts
+	if err := gallerySortOptions.validateSort(sort); err != nil {
+		return err
+	}
 
 	addFileTable := func() {
 		query.addJoins(
@@ -1163,6 +1186,8 @@ func (qb *GalleryStore) setGallerySort(query *queryBuilder, findFilter *models.F
 
 	// Whatever the sorting, always use title/id as a final sort
 	query.sortAndPagination += ", COALESCE(galleries.title, galleries.id) COLLATE NATURAL_CI ASC"
+
+	return nil
 }
 
 func (qb *GalleryStore) GetURLs(ctx context.Context, galleryID int) ([]string, error) {
