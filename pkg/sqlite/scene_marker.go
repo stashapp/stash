@@ -310,7 +310,9 @@ func (qb *SceneMarkerStore) makeQuery(ctx context.Context, sceneMarkerFilter *mo
 		return nil, err
 	}
 
-	qb.setSceneMarkerSort(&query, findFilter)
+	if err := qb.setSceneMarkerSort(&query, findFilter); err != nil {
+		return nil, err
+	}
 	query.sortAndPagination += getPagination(findFilter)
 
 	return &query, nil
@@ -473,9 +475,25 @@ func sceneMarkerPerformersCriterionHandler(qb *SceneMarkerStore, performers *mod
 	}
 }
 
-func (qb *SceneMarkerStore) setSceneMarkerSort(query *queryBuilder, findFilter *models.FindFilterType) {
+var sceneMarkerSortOptions = sortOptions{
+	"created_at",
+	"id",
+	"title",
+	"random",
+	"scene_id",
+	"scenes_updated_at",
+	"seconds",
+	"updated_at",
+}
+
+func (qb *SceneMarkerStore) setSceneMarkerSort(query *queryBuilder, findFilter *models.FindFilterType) error {
 	sort := findFilter.GetSort("title")
 	direction := findFilter.GetDirection()
+
+	// CVE-2024-32231 - ensure sort is in the list of allowed sorts
+	if err := sceneMarkerSortOptions.validateSort(sort); err != nil {
+		return err
+	}
 
 	switch sort {
 	case "scenes_updated_at":
@@ -490,6 +508,7 @@ func (qb *SceneMarkerStore) setSceneMarkerSort(query *queryBuilder, findFilter *
 	}
 
 	query.sortAndPagination += ", scene_markers.scene_id ASC, scene_markers.seconds ASC"
+	return nil
 }
 
 func (qb *SceneMarkerStore) querySceneMarkers(ctx context.Context, query string, args []interface{}) ([]*models.SceneMarker, error) {

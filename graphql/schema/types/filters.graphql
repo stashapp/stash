@@ -8,6 +8,7 @@ input FindFilterType {
   page: Int
   "use per_page = -1 to indicate all results. Defaults to 25."
   per_page: Int
+  # TODO - this should be refactored to not use a string
   sort: String
   direction: SortDirectionEnum
 }

@@ -706,7 +706,12 @@ func (qb *PerformerStore) makeQuery(ctx context.Context, performerFilter *models
 		return nil, err
 	}
 
-	query.sortAndPagination = qb.getPerformerSort(findFilter) + getPagination(findFilter)
+	var err error
+	query.sortAndPagination, err = qb.getPerformerSort(findFilter)
+	if err != nil {
+		return nil, err
+	}
+	query.sortAndPagination += getPagination(findFilter)
 
 	return &query, nil
 }
@@ -1113,7 +1118,27 @@ func (qb *PerformerStore) sortByLastPlayedAt(direction string) string {
 	return " ORDER BY (" + selectPerformerLastPlayedAtSQL + ") " + direction
 }
 
-func (qb *PerformerStore) getPerformerSort(findFilter *models.FindFilterType) string {
+var performerSortOptions = sortOptions{
+	"birthdate",
+	"created_at",
+	"galleries_count",
+	"height",
+	"id",
+	"images_count",
+	"last_o_at",
+	"last_played_at",
+	"name",
+	"o_counter",
+	"penis_length",
+	"play_count",
+	"random",
+	"rating",
+	"scenes_count",
+	"tag_count",
+	"updated_at",
+}
+
+func (qb *PerformerStore) getPerformerSort(findFilter *models.FindFilterType) (string, error) {
 	var sort string
 	var direction string
 	if findFilter == nil {
@@ -1122,6 +1147,11 @@ func (qb *PerformerStore) getPerformerSort(findFilter *models.FindFilterType) st
 	} else {
 		sort = findFilter.GetSort("name")
 		direction = findFilter.GetDirection()
+	}
+
+	// CVE-2024-32231 - ensure sort is in the list of allowed sorts
+	if err := performerSortOptions.validateSort(sort); err != nil {
+		return "", err
 	}
 
 	sortQuery := ""
@@ -1148,7 +1178,7 @@ func (qb *PerformerStore) getPerformerSort(findFilter *models.FindFilterType) st
 
 	// Whatever the sorting, always use name/id as a final sort
 	sortQuery += ", COALESCE(performers.name, performers.id) COLLATE NATURAL_CI ASC"
-	return sortQuery
+	return sortQuery, nil
 }
 
 func (qb *PerformerStore) tagsRepository() *joinRepository {

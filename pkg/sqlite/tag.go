@@ -548,7 +548,12 @@ func (qb *TagStore) Query(ctx context.Context, tagFilter *models.TagFilterType, 
 		return nil, 0, err
 	}
 
-	query.sortAndPagination = qb.getTagSort(&query, findFilter) + getPagination(findFilter)
+	var err error
+	query.sortAndPagination, err = qb.getTagSort(&query, findFilter)
+	if err != nil {
+		return nil, 0, err
+	}
+	query.sortAndPagination += getPagination(findFilter)
 	idsResult, countResult, err := query.executeFind(ctx)
 	if err != nil {
 		return nil, 0, err
@@ -853,11 +858,24 @@ func tagChildCountCriterionHandler(qb *TagStore, childCount *models.IntCriterion
 	}
 }
 
+var tagSortOptions = sortOptions{
+	"created_at",
+	"galleries_count",
+	"id",
+	"images_count",
+	"name",
+	"performers_count",
+	"random",
+	"scene_markers_count",
+	"scenes_count",
+	"updated_at",
+}
+
 func (qb *TagStore) getDefaultTagSort() string {
 	return getSort("name", "ASC", "tags")
 }
 
-func (qb *TagStore) getTagSort(query *queryBuilder, findFilter *models.FindFilterType) string {
+func (qb *TagStore) getTagSort(query *queryBuilder, findFilter *models.FindFilterType) (string, error) {
 	var sort string
 	var direction string
 	if findFilter == nil {
@@ -866,6 +884,11 @@ func (qb *TagStore) getTagSort(query *queryBuilder, findFilter *models.FindFilte
 	} else {
 		sort = findFilter.GetSort("name")
 		direction = findFilter.GetDirection()
+	}
+
+	// CVE-2024-32231 - ensure sort is in the list of allowed sorts
+	if err := tagSortOptions.validateSort(sort); err != nil {
+		return "", err
 	}
 
 	sortQuery := ""
@@ -886,7 +909,7 @@ func (qb *TagStore) getTagSort(query *queryBuilder, findFilter *models.FindFilte
 
 	// Whatever the sorting, always use name/id as a final sort
 	sortQuery += ", COALESCE(tags.name, tags.id) COLLATE NATURAL_CI ASC"
-	return sortQuery
+	return sortQuery, nil
 }
 
 func (qb *TagStore) queryTags(ctx context.Context, query string, args []interface{}) ([]*models.Tag, error) {
