@@ -122,6 +122,69 @@ func TestNestedMapSet(t *testing.T) {
 	}
 }
 
+func TestNestedMapDelete(t *testing.T) {
+	tests := []struct {
+		name     string
+		key      string
+		existing NestedMap
+		want     NestedMap
+	}{
+		{
+			name: "Delete non existing value",
+			key:  "foo.bar.baa",
+			existing: NestedMap{
+				"foo": map[string]interface{}{
+					"bar": map[string]interface{}{
+						"baz": "qux",
+					},
+				},
+			},
+			want: NestedMap{
+				"foo": map[string]interface{}{
+					"bar": map[string]interface{}{
+						"baz": "qux",
+					},
+				},
+			},
+		},
+		{
+			name: "Delete existing value",
+			key:  "foo.bar",
+			existing: NestedMap{
+				"foo": map[string]interface{}{
+					"bar": "old",
+				},
+			},
+			want: NestedMap{
+				"foo": map[string]interface{}{},
+			},
+		},
+		{
+			name: "Delete existing map",
+			key:  "foo.bar",
+			existing: NestedMap{
+				"foo": map[string]interface{}{
+					"bar": map[string]interface{}{
+						"baz": "qux",
+					},
+				},
+			},
+			want: NestedMap{
+				"foo": map[string]interface{}{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.existing.Delete(tt.key)
+			if !reflect.DeepEqual(tt.existing, tt.want) {
+				t.Errorf("NestedMap.Set() got = %v, want %v", tt.existing, tt.want)
+			}
+		})
+	}
+}
+
 func TestMergeMaps(t *testing.T) {
 	tests := []struct {
 		name   string
