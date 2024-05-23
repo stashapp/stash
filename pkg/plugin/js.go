@@ -57,6 +57,8 @@ func (t *jsPluginTask) makeOutput(o goja.Value) {
 func (t *jsPluginTask) initVM() error {
 	// converting the Args field to map[string]interface{} is required, otherwise
 	// it gets converted to an empty object
+	// ideally this should have included json tags with the correct casing but changing
+	// it now will result in a breaking change
 	type pluginInput struct {
 		// Server details to connect to the stash server.
 		ServerConnection common.StashServerConnection
