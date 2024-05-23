@@ -258,7 +258,9 @@
             "successfully_cancelled_temporary_behaviour": "成功取消暂时的服务行为",
             "until_restart": "直到服务重启",
             "video_sort_order": "默认视频排序",
-            "video_sort_order_desc": "默认情况下对视频进行排序。"
+            "video_sort_order_desc": "默认情况下对视频进行排序。",
+            "server_port": "服务器端口",
+            "server_port_desc": "运行DLNA服务器的端口。更改后需要重新启动DLNA。"
         },
         "general": {
             "auth": {
