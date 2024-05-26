@@ -764,7 +764,7 @@
                 "heading": "Página de detalle"
             },
             "use_stash_hosted_funscript": {
-                "description": "Cuando está habilitado, los funscripts se servirán directamente desde Stash a tu dispositivo de prueba sin utilizar el servidor de prueba de terceros. Requiere que Stash sea accesible desde tu dispositivo de prueba.",
+                "description": "Cuando se activa, los funscripts se servirán directamente desde Stash a tu dispositivo Handy sin utilizar el servidor Handy de terceros. Requiere que Stash sea accesible desde tu dispositivo Handy, y que se genere una clave API si stash tiene las credenciales configuradas.",
                 "heading": "Servir funscripts directamente"
             },
             "scroll_attempts_before_change": {
