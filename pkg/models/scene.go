@@ -43,6 +43,8 @@ type SceneFilterType struct {
 	Orientation *OrientationCriterionInput `json:"orientation"`
 	// Filter by framerate
 	Framerate *IntCriterionInput `json:"framerate"`
+	// Filter by bitrate
+	Bitrate *IntCriterionInput `json:"bitrate"`
 	// Filter by video codec
 	VideoCodec *StringCriterionInput `json:"video_codec"`
 	// Filter by audio codec
@@ -91,6 +93,8 @@ type SceneFilterType struct {
 	PlayCount *IntCriterionInput `json:"play_count"`
 	// Filter by play duration (in seconds)
 	PlayDuration *IntCriterionInput `json:"play_duration"`
+	// Filter by last played at
+	LastPlayedAt *TimestampCriterionInput `json:"last_played_at"`
 	// Filter by date
 	Date *DateCriterionInput `json:"date"`
 	// Filter by created at

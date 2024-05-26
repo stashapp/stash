@@ -957,6 +957,7 @@ func (qb *SceneStore) makeFilter(ctx context.Context, sceneFilter *models.SceneF
 	query.handleCriterion(ctx, resolutionCriterionHandler(sceneFilter.Resolution, "video_files.height", "video_files.width", qb.addVideoFilesTable))
 	query.handleCriterion(ctx, orientationCriterionHandler(sceneFilter.Orientation, "video_files.height", "video_files.width", qb.addVideoFilesTable))
 	query.handleCriterion(ctx, floatIntCriterionHandler(sceneFilter.Framerate, "ROUND(video_files.frame_rate)", qb.addVideoFilesTable))
+	query.handleCriterion(ctx, intCriterionHandler(sceneFilter.Bitrate, "video_files.bit_rate", qb.addVideoFilesTable))
 	query.handleCriterion(ctx, codecCriterionHandler(sceneFilter.VideoCodec, "video_files.video_codec", qb.addVideoFilesTable))
 	query.handleCriterion(ctx, codecCriterionHandler(sceneFilter.AudioCodec, "video_files.audio_codec", qb.addVideoFilesTable))
 
@@ -985,6 +986,16 @@ func (qb *SceneStore) makeFilter(ctx context.Context, sceneFilter *models.SceneF
 	query.handleCriterion(ctx, floatIntCriterionHandler(sceneFilter.ResumeTime, "scenes.resume_time", nil))
 	query.handleCriterion(ctx, floatIntCriterionHandler(sceneFilter.PlayDuration, "scenes.play_duration", nil))
 	query.handleCriterion(ctx, scenePlayCountCriterionHandler(sceneFilter.PlayCount))
+	query.handleCriterion(ctx, criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
+		if sceneFilter.LastPlayedAt != nil {
+			f.addLeftJoin(
+				fmt.Sprintf("(SELECT %s, MAX(%s) as last_played_at FROM %s GROUP BY %s)", sceneIDColumn, sceneViewDateColumn, scenesViewDatesTable, sceneIDColumn),
+				"scene_last_view",
+				fmt.Sprintf("scene_last_view.%s = scenes.id", sceneIDColumn),
+			)
+			timestampCriterionHandler(sceneFilter.LastPlayedAt, "IFNULL(last_played_at, datetime(0))")(ctx, f)
+		}
+	}))
 
 	query.handleCriterion(ctx, sceneTagsCriterionHandler(qb, sceneFilter.Tags))
 	query.handleCriterion(ctx, sceneTagCountCriterionHandler(qb, sceneFilter.TagCount))
@@ -1072,7 +1083,9 @@ func (qb *SceneStore) makeQuery(ctx context.Context, sceneFilter *models.SceneFi
 		return nil, err
 	}
 
-	qb.setSceneSort(&query, findFilter)
+	if err := qb.setSceneSort(&query, findFilter); err != nil {
+		return nil, err
+	}
 	query.sortAndPagination += getPagination(findFilter)
 
 	return &query, nil
@@ -1511,11 +1524,46 @@ func scenePhashDistanceCriterionHandler(qb *SceneStore, phashDistance *models.Ph
 	}
 }
 
-func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindFilterType) {
+var sceneSortOptions = sortOptions{
+	"bitrate",
+	"created_at",
+	"date",
+	"file_count",
+	"filesize",
+	"duration",
+	"file_mod_time",
+	"framerate",
+	"id",
+	"interactive",
+	"interactive_speed",
+	"last_o_at",
+	"last_played_at",
+	"movie_scene_number",
+	"o_counter",
+	"organized",
+	"performer_count",
+	"play_count",
+	"play_duration",
+	"resume_time",
+	"path",
+	"perceptual_similarity",
+	"random",
+	"rating",
+	"tag_count",
+	"title",
+	"updated_at",
+}
+
+func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindFilterType) error {
 	if findFilter == nil || findFilter.Sort == nil || *findFilter.Sort == "" {
-		return
+		return nil
 	}
 	sort := findFilter.GetSort("title")
+
+	// CVE-2024-32231 - ensure sort is in the list of allowed sorts
+	if err := sceneSortOptions.validateSort(sort); err != nil {
+		return err
+	}
 
 	addFileTable := func() {
 		query.addJoins(
@@ -1616,6 +1664,8 @@ func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindF
 
 	// Whatever the sorting, always use title/id as a final sort
 	query.sortAndPagination += ", COALESCE(scenes.title, scenes.id) COLLATE NATURAL_CI ASC"
+
+	return nil
 }
 
 func (qb *SceneStore) SaveActivity(ctx context.Context, id int, resumeTime *float64, playDuration *float64) (bool, error) {

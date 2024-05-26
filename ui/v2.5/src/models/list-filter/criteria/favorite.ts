@@ -11,6 +11,17 @@ export class FavoritePerformerCriterion extends BooleanCriterion {
     super(FavoritePerformerCriterionOption);
   }
 }
+export const FavoriteTagCriterionOption = new BooleanCriterionOption(
+  "favourite",
+  "favorite",
+  () => new FavoriteTagCriterion()
+);
+
+export class FavoriteTagCriterion extends BooleanCriterion {
+  constructor() {
+    super(FavoriteTagCriterionOption);
+  }
+}
 
 export const FavoriteStudioCriterionOption = new BooleanCriterionOption(
   "favourite",

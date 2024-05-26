@@ -1121,8 +1121,7 @@
             "stash_library_directories": "Stash 多媒體檔案路徑"
         },
         "creating": {
-            "creating_your_system": "建立系統中",
-            "ffmpeg_notice": "如果 <code>ffmpeg</code> 尚未在您的全域路徑中，請耐心等待 Stash 進行其下載。您可在命令提示字元中查看下載進度。"
+            "creating_your_system": "建立系統中"
         },
         "errors": {
             "something_went_wrong": "噢不！好像出了些問題！",

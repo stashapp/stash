@@ -4,7 +4,7 @@ Embedded plugin tasks are executed within the stash process using a scripting sy
 
 ## Supported script languages
 
-Stash currently supports Javascript embedded plugin tasks using [otto](https://github.com/robertkrimen/otto).
+Stash currently supports Javascript embedded plugin tasks using [goja](https://github.com/dop251/goja).
 
 # Javascript plugins
 

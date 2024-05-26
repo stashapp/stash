@@ -166,6 +166,23 @@ export const queryFindScenesByID = (sceneIDs: number[]) =>
     },
   });
 
+export const queryFindScenesForSelect = (filter: ListFilterModel) =>
+  client.query<GQL.FindScenesForSelectQuery>({
+    query: GQL.FindScenesForSelectDocument,
+    variables: {
+      filter: filter.makeFindFilter(),
+      scene_filter: filter.makeFilter(),
+    },
+  });
+
+export const queryFindScenesByIDForSelect = (sceneIDs: string[]) =>
+  client.query<GQL.FindScenesForSelectQuery>({
+    query: GQL.FindScenesForSelectDocument,
+    variables: {
+      ids: sceneIDs,
+    },
+  });
+
 export const querySceneByPathRegex = (filter: GQL.FindFilterType) =>
   client.query<GQL.FindScenesByPathRegexQuery>({
     query: GQL.FindScenesByPathRegexDocument,
@@ -2254,6 +2271,11 @@ export const queryLogs = () =>
   });
 
 export const useSystemStatus = () => GQL.useSystemStatusQuery();
+export const refetchSystemStatus = () => {
+  client.refetchQueries({
+    include: [GQL.SystemStatusDocument],
+  });
+};
 
 export const useJobsSubscribe = () => GQL.useJobsSubscribeSubscription();
 

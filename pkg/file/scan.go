@@ -134,6 +134,9 @@ type ScanOptions struct {
 	HandlerRequiredFilters []Filter
 
 	ParallelTasks int
+
+	// When true files in path will be rescanned even if they haven't changed
+	Rescan bool
 }
 
 // Scan starts the scanning process.
@@ -895,28 +898,35 @@ func (s *scanJob) handleRename(ctx context.Context, f models.File, fp []models.F
 	// assume does not exist, update existing file
 	// it's possible that there may be multiple missing files.
 	// just use the first one to rename.
+	// #4775 - using the new file instance means that any changes made to the existing
+	// file will be lost. Update the existing file instead.
 	other := missing[0]
-	otherBase := other.Base()
+	updated := other.Clone()
+	updatedBase := updated.Base()
 
-	fBase := f.Base()
+	fBaseCopy := *(f.Base())
 
-	logger.Infof("%s moved to %s. Updating path...", otherBase.Path, fBase.Path)
-	fBase.ID = otherBase.ID
-	fBase.CreatedAt = otherBase.CreatedAt
-	fBase.Fingerprints = otherBase.Fingerprints
+	oldPath := updatedBase.Path
+	newPath := fBaseCopy.Path
+
+	logger.Infof("%s moved to %s. Updating path...", oldPath, newPath)
+	fBaseCopy.ID = updatedBase.ID
+	fBaseCopy.CreatedAt = updatedBase.CreatedAt
+	fBaseCopy.Fingerprints = updatedBase.Fingerprints
+	*updatedBase = fBaseCopy
 
 	if err := s.withTxn(ctx, func(ctx context.Context) error {
-		if err := s.Repository.File.Update(ctx, f); err != nil {
-			return fmt.Errorf("updating file for rename %q: %w", fBase.Path, err)
+		if err := s.Repository.File.Update(ctx, updated); err != nil {
+			return fmt.Errorf("updating file for rename %q: %w", newPath, err)
 		}
 
-		if s.isZipFile(fBase.Basename) {
-			if err := transferZipHierarchy(ctx, s.Repository.Folder, s.Repository.File, fBase.ID, otherBase.Path, fBase.Path); err != nil {
-				return fmt.Errorf("moving zip hierarchy for renamed zip file %q: %w", fBase.Path, err)
+		if s.isZipFile(updatedBase.Basename) {
+			if err := transferZipHierarchy(ctx, s.Repository.Folder, s.Repository.File, updatedBase.ID, oldPath, newPath); err != nil {
+				return fmt.Errorf("moving zip hierarchy for renamed zip file %q: %w", newPath, err)
 			}
 		}
 
-		if err := s.fireHandlers(ctx, f, other); err != nil {
+		if err := s.fireHandlers(ctx, updated, other); err != nil {
 			return err
 		}
 
@@ -925,7 +935,7 @@ func (s *scanJob) handleRename(ctx context.Context, f models.File, fp []models.F
 		return nil, err
 	}
 
-	return f, nil
+	return updated, nil
 }
 
 func (s *scanJob) isHandlerRequired(ctx context.Context, f models.File) bool {
@@ -1016,14 +1026,20 @@ func (s *scanJob) onExistingFile(ctx context.Context, f scanFile, existing model
 
 	fileModTime := f.ModTime
 	updated := !fileModTime.Equal(base.ModTime)
+	forceRescan := s.options.Rescan
 
-	if !updated {
+	if !updated && !forceRescan {
 		return s.onUnchangedFile(ctx, f, existing)
 	}
 
 	oldBase := *base
 
-	logger.Infof("%s has been updated: rescanning", path)
+	if !updated && forceRescan {
+		logger.Infof("rescanning %s", path)
+	} else {
+		logger.Infof("%s has been updated: rescanning", path)
+	}
+
 	base.ModTime = fileModTime
 	base.Size = f.Size
 	base.UpdatedAt = time.Now()

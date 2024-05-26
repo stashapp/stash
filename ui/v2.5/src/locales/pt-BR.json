@@ -952,8 +952,7 @@
             "stash_library_directories": "Diretórios de biblioteca do Stash"
         },
         "creating": {
-            "creating_your_system": "Criando seu sistema",
-            "ffmpeg_notice": "Se <code>ffmpeg</code> não está no seu path, por favor, tenha paciência enquanto o Stash faz o download. Veja o progresso do download no output do console."
+            "creating_your_system": "Criando seu sistema"
         },
         "errors": {
             "something_went_wrong": "Ah não! Algo deu errado!",

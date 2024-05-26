@@ -28,8 +28,14 @@ import { useCompare } from "src/hooks/state";
 import { Placement } from "react-bootstrap/esm/Overlay";
 import { sortByRelevance } from "src/utils/query";
 import { PatchComponent } from "src/patch";
+import { TruncatedText } from "../Shared/TruncatedText";
 
-export type Movie = Pick<GQL.Movie, "id" | "name">;
+export type Movie = Pick<
+  GQL.Movie,
+  "id" | "name" | "date" | "front_image_path" | "aliases"
+> & {
+  studio?: Pick<GQL.Studio, "name"> | null;
+};
 type Option = SelectOption<Movie>;
 
 const _MovieSelect: React.FC<
@@ -64,7 +70,12 @@ const _MovieSelect: React.FC<
       return !exclude.includes(movie.id.toString());
     });
 
-    return sortByRelevance(input, ret, (m) => m.name).map((movie) => ({
+    return sortByRelevance(
+      input,
+      ret,
+      (m) => m.name,
+      (m) => (m.aliases ? [m.aliases] : [])
+    ).map((movie) => ({
       value: movie.id,
       object: movie,
     }));
@@ -77,9 +88,53 @@ const _MovieSelect: React.FC<
 
     const title = object.name;
 
+    // if name does not match the input value but an alias does, show the alias
+    const { inputValue } = optionProps.selectProps;
+    let alias: string | undefined = "";
+    if (!title.toLowerCase().includes(inputValue.toLowerCase())) {
+      alias = object.aliases || undefined;
+    }
+
     thisOptionProps = {
       ...optionProps,
-      children: <span>{title}</span>,
+      children: (
+        <span className="movie-select-option">
+          <span className="movie-select-row">
+            {object.front_image_path && (
+              <img
+                className="movie-select-image"
+                src={object.front_image_path}
+                loading="lazy"
+              />
+            )}
+
+            <span className="movie-select-details">
+              <TruncatedText
+                className="movie-select-title"
+                text={
+                  <span>
+                    {title}
+                    {alias && (
+                      <span className="movie-select-alias">{` (${alias})`}</span>
+                    )}
+                  </span>
+                }
+                lineCount={1}
+              />
+
+              {object.studio?.name && (
+                <span className="movie-select-studio">
+                  {object.studio?.name}
+                </span>
+              )}
+
+              {object.date && (
+                <span className="movie-select-date">{object.date}</span>
+              )}
+            </span>
+          </span>
+        </span>
+      ),
     };
 
     return <reactSelectComponents.Option {...thisOptionProps} />;
@@ -140,7 +195,10 @@ const _MovieSelect: React.FC<
 
     if (
       options.some((o) => {
-        return o.name.toLowerCase() === inputValue.toLowerCase();
+        return (
+          o.name.toLowerCase() === inputValue.toLowerCase() ||
+          o.aliases?.toLowerCase() === inputValue.toLowerCase()
+        );
       })
     ) {
       return false;

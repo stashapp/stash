@@ -1480,7 +1480,10 @@ func createPerformers(ctx context.Context, n int, o int) error {
 
 	return nil
 }
-
+func getTagBoolValue(index int) bool {
+	index = index % 2
+	return index == 1
+}
 func getTagStringValue(index int, field string) string {
 	return "tag_" + strconv.FormatInt(int64(index), 10) + "_" + field
 }

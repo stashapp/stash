@@ -138,6 +138,7 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
 
   const RenderList: React.FC<IItemListProps<T, E> & IRenderListProps> = ({
     filter,
+    filterHook,
     onChangePage: _onChangePage,
     updateFilter,
     persistState,
@@ -159,7 +160,14 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
       filter.mode
     );
 
-    const result = useResult(filter);
+    const effectiveFilter = useMemo(() => {
+      if (filterHook) {
+        return filterHook(cloneDeep(filter));
+      }
+      return filter;
+    }, [filter, filterHook]);
+
+    const result = useResult(effectiveFilter);
     const [totalCount, setTotalCount] = useState(0);
     const [metadataByline, setMetadataByline] = useState<React.ReactNode>();
     const items = useMemo(() => getItems(result), [result]);
@@ -349,7 +357,8 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
         <>
           {renderContent(
             result,
-            filter,
+            // #4780 - use effectiveFilter to ensure filterHook is applied
+            effectiveFilter,
             selectedIds,
             onSelectChange,
             onChangePage,
@@ -473,7 +482,6 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
       persistState,
       persistanceKey = filterMode,
       defaultSort = filterOptions.defaultSortBy,
-      filterHook,
       defaultZoomIndex,
       alterQuery = true,
     } = props;
@@ -654,17 +662,11 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
       [filter, updateFilter]
     );
 
-    const renderFilter = useMemo(() => {
-      if (filterInitialised) {
-        return filterHook ? filterHook(cloneDeep(filter)) : filter;
-      }
-    }, [filterInitialised, filter, filterHook]);
-
-    if (!renderFilter) return null;
+    if (!filterInitialised) return null;
 
     return (
       <RenderList
-        filter={renderFilter}
+        filter={filter}
         onChangePage={onChangePage}
         updateFilter={updateFilter}
         {...props}

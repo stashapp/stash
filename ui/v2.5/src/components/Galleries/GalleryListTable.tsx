@@ -73,6 +73,7 @@ export const GalleryListTable: React.FC<IGalleryListTableProps> = (
     <RatingSystem
       value={gallery.rating100}
       onSetRating={(value) => setRating(value, gallery.id)}
+      clickToRate
     />
   );
 

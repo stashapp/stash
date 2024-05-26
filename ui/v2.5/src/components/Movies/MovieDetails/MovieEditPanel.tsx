@@ -228,6 +228,7 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
     return (
       <MovieScrapeDialog
         movie={currentMovie}
+        movieStudio={studio}
         scraped={scrapedMovie}
         onClose={(m) => {
           onScrapeDialogClosed(m);

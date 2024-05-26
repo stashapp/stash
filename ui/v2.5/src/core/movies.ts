@@ -10,6 +10,7 @@ export const scrapedMovieToCreateInput = (toCreate: GQL.ScrapedMovie) => {
     back_image: toCreate.back_image,
     synopsis: toCreate.synopsis,
     date: toCreate.date,
+    director: toCreate.director,
     // #788 - convert duration and rating to the correct type
     duration: TextUtils.timestampToSeconds(toCreate.duration),
     studio_id: toCreate.studio?.stored_id,

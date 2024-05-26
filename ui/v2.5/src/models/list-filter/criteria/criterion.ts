@@ -180,6 +180,7 @@ export type InputType =
   | "studios"
   | "tags"
   | "performer_tags"
+  | "scenes"
   | "scene_tags"
   | "movies"
   | "galleries"
