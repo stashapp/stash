@@ -7,12 +7,6 @@
     padding-right: 15px;
     transition: none;
 
-    &.page-count,
-    &.page-count-dropdown {
-      background-color: $card-bg;
-      border-color: $card-bg;
-    }
-
     &.page-count {
       padding-right: 5px;
     }
@@ -23,11 +17,16 @@
 
     &:first-child {
       border-left: none;
+      border-right: none;
     }
 
     &:last-child {
       border-right: none;
     }
+  }
+
+  .page-count-container .btn {
+    border-radius: 0;
   }
 }
 
