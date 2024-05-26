@@ -84,7 +84,6 @@ export const Pagination: React.FC<IPaginationProps> = ({
         <span>«</span>
       </Button>
       <Button
-        className="d-none d-sm-block"
         variant="secondary"
         disabled={currentPage === 1}
         onClick={() => onChangePage(currentPage - 1)}
@@ -172,7 +171,6 @@ export const Pagination: React.FC<IPaginationProps> = ({
         </Overlay>
       </div>
       <Button
-        className="d-none d-sm-block"
         variant="secondary"
         disabled={currentPage === totalPages}
         onClick={() => onChangePage(currentPage + 1)}
