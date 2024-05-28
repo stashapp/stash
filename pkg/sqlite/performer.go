@@ -744,6 +744,7 @@ func (qb *PerformerStore) QueryCount(ctx context.Context, performerFilter *model
 	return query.executeCount(ctx)
 }
 
+// TODO - we need to provide a whitelist of possible values
 func performerIsMissingCriterionHandler(qb *PerformerStore, isMissing *string) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if isMissing != nil && *isMissing != "" {
@@ -756,6 +757,9 @@ func performerIsMissingCriterionHandler(qb *PerformerStore, isMissing *string) c
 			case "stash_id":
 				performersStashIDsTableMgr.join(f, "performer_stash_ids", "performers.id")
 				f.addWhere("performer_stash_ids.performer_id IS NULL")
+			case "aliases":
+				performersAliasesTableMgr.join(f, "", "performers.id")
+				f.addWhere("performer_aliases.alias IS NULL")
 			default:
 				f.addWhere("(performers." + *isMissing + " IS NULL OR TRIM(performers." + *isMissing + ") = '')")
 			}
