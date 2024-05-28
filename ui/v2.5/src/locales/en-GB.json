@@ -1017,7 +1017,8 @@
   "errors": {
     "header": "Error",
     "image_index_greater_than_zero": "Image index must be greater than 0",
-    "invalid_json_string": "invalid JSON string: {error}",
+    "invalid_javascript_string": "Invalid javascript code: {error}",
+    "invalid_json_string": "Invalid JSON string: {error}",
     "lazy_component_error_help": "If you recently upgraded Stash, please reload the page or clear your browser cache.",
     "loading_type": "Error loading {type}",
     "something_went_wrong": "Something went wrong."
