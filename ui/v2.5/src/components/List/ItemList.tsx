@@ -247,12 +247,12 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
     }, [filter, onChangePage, totalCount]);
     useEffect(() => {
       if (addKeybinds) {
-        const unbindExtras = addKeybinds(result, filter, selectedIds);
+        const unbindExtras = addKeybinds(result, effectiveFilter, selectedIds);
         return () => {
           unbindExtras();
         };
       }
-    }, [addKeybinds, result, filter, selectedIds]);
+    }, [addKeybinds, result, effectiveFilter, selectedIds]);
 
     function singleSelect(id: string, selected: boolean) {
       setLastClickedId(id);
@@ -334,7 +334,7 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
     }
 
     async function onOperationClicked(o: IItemListOperation<T>) {
-      await o.onClick(result, filter, selectedIds);
+      await o.onClick(result, effectiveFilter, selectedIds);
       if (o.postRefetch) {
         result.refetch();
       }
@@ -347,7 +347,7 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
       },
       isDisplayed: () => {
         if (o.isDisplayed) {
-          return o.isDisplayed(result, filter, selectedIds);
+          return o.isDisplayed(result, effectiveFilter, selectedIds);
         }
 
         return true;
