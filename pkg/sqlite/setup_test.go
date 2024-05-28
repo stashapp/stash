@@ -1420,6 +1420,14 @@ func performerStashID(i int) models.StashID {
 	}
 }
 
+func performerAliases(i int) []string {
+	if i%5 == 0 {
+		return []string{}
+	}
+
+	return []string{getPerformerStringValue(i, "alias")}
+}
+
 // createPerformers creates n performers with plain Name and o performers with camel cased NaMe included
 func createPerformers(ctx context.Context, n int, o int) error {
 	pqb := db.Performer
@@ -1443,7 +1451,7 @@ func createPerformers(ctx context.Context, n int, o int) error {
 		performer := models.Performer{
 			Name:           getPerformerStringValue(index, name),
 			Disambiguation: getPerformerStringValue(index, "disambiguation"),
-			Aliases:        models.NewRelatedStrings([]string{getPerformerStringValue(index, "alias")}),
+			Aliases:        models.NewRelatedStrings(performerAliases(index)),
 			URL:            getPerformerNullStringValue(i, urlField),
 			Favorite:       getPerformerBoolValue(i),
 			Birthdate:      getPerformerBirthdate(i),
