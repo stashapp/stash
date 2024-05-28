@@ -89,12 +89,12 @@ export function sortByRelevance<T extends ISortable>(
   }
 
   function getWords(o: T) {
-    return getName(o).toLowerCase().split(" ");
+    return getName(o).trim().toLowerCase().split(" ");
   }
 
   function getAliasWords(tag: T) {
     const aliases = getObjectAliases(tag);
-    return aliases.map((a) => a.split(" ")).flat();
+    return aliases.map((a) => a.trim().split(" ")).flat();
   }
 
   function getWordIndex(o: T) {
