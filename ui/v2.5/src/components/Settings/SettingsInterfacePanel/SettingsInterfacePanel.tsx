@@ -148,8 +148,10 @@ export const SettingsInterfacePanel: React.FC = () => {
           value={iface.language ?? undefined}
           onChange={(v) => saveInterface({ language: v })}
         >
+          <option value="af-ZA">Afrikaans (Preview)</option>
           <option value="bn-BD">বাংলা (বাংলাদেশ) (Preview)</option>
-          <option value="cs-CZ">Čeština (Preview)</option>
+          <option value="ca-ES">Catalan (Preview)</option>
+          <option value="cs-CZ">Čeština (Česko)</option>
           <option value="da-DK">Dansk (Danmark)</option>
           <option value="de-DE">Deutsch (Deutschland)</option>
           <option value="en-GB">English (United Kingdom)</option>
