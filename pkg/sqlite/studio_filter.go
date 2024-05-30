@@ -178,6 +178,8 @@ func (qb *studioFilterHandler) parentCriterionHandler(parents *models.MultiCrite
 
 func (qb *studioFilterHandler) aliasCriterionHandler(alias *models.StringCriterionInput) criterionHandlerFunc {
 	h := stringListCriterionHandlerBuilder{
+		primaryTable: studioTable,
+		primaryFK:    studioIDColumn,
 		joinTable:    studioAliasesTable,
 		stringColumn: studioAliasColumn,
 		addJoinTable: func(f *filterBuilder) {

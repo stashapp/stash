@@ -245,6 +245,56 @@ func TestMovieQueryURL(t *testing.T) {
 	verifyMovieQuery(t, filter, verifyFn)
 }
 
+func TestMovieQueryURLExcludes(t *testing.T) {
+	withRollbackTxn(func(ctx context.Context) error {
+		mqb := db.Movie
+
+		// create movie with two URLs
+		movie := models.Movie{
+			Name: "TestMovieQueryURLExcludes",
+			URLs: models.NewRelatedStrings([]string{
+				"aaa",
+				"bbb",
+			}),
+		}
+
+		err := mqb.Create(ctx, &movie)
+
+		if err != nil {
+			return fmt.Errorf("Error creating movie: %w", err)
+		}
+
+		// query for movies that exclude the URL "aaa"
+		urlCriterion := models.StringCriterionInput{
+			Value:    "aaa",
+			Modifier: models.CriterionModifierExcludes,
+		}
+
+		nameCriterion := models.StringCriterionInput{
+			Value:    movie.Name,
+			Modifier: models.CriterionModifierEquals,
+		}
+
+		filter := models.MovieFilterType{
+			URL:  &urlCriterion,
+			Name: &nameCriterion,
+		}
+
+		movies := queryMovie(ctx, t, mqb, &filter, nil)
+		assert.Len(t, movies, 0, "Expected no movies to be found")
+
+		// query for movies that exclude the URL "ccc"
+		urlCriterion.Value = "ccc"
+		movies = queryMovie(ctx, t, mqb, &filter, nil)
+
+		if assert.Len(t, movies, 1, "Expected one movie to be found") {
+			assert.Equal(t, movie.Name, movies[0].Name)
+		}
+
+		return nil
+	})
+}
+
 func verifyMovieQuery(t *testing.T, filter models.MovieFilterType, verifyFn func(s *models.Movie)) {
 	withTxn(func(ctx context.Context) error {
 		t.Helper()

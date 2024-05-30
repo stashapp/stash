@@ -160,6 +160,8 @@ func (qb *imageFilterHandler) missingCriterionHandler(isMissing *string) criteri
 
 func (qb *imageFilterHandler) urlsCriterionHandler(url *models.StringCriterionInput) criterionHandlerFunc {
 	h := stringListCriterionHandlerBuilder{
+		primaryTable: imageTable,
+		primaryFK:    imageIDColumn,
 		joinTable:    imagesURLsTable,
 		stringColumn: imageURLColumn,
 		addJoinTable: func(f *filterBuilder) {

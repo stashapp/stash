@@ -104,6 +104,8 @@ func (qb *movieFilterHandler) missingCriterionHandler(isMissing *string) criteri
 
 func (qb *movieFilterHandler) urlsCriterionHandler(url *models.StringCriterionInput) criterionHandlerFunc {
 	h := stringListCriterionHandlerBuilder{
+		primaryTable: movieTable,
+		primaryFK:    movieIDColumn,
 		joinTable:    movieURLsTable,
 		stringColumn: movieURLColumn,
 		addJoinTable: func(f *filterBuilder) {
