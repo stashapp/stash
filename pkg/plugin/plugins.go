@@ -91,7 +91,7 @@ type PluginSetting struct {
 type ServerConfig interface {
 	GetHost() string
 	GetPort() int
-	GetConfigPath() string
+	GetConfigPathAbs() string
 	HasTLSConfig() bool
 	GetPluginsPath() string
 	GetDisabledPlugins() []string
@@ -249,7 +249,7 @@ func (c Cache) makeServerConnection(ctx context.Context) common.StashServerConne
 		Host:          c.config.GetHost(),
 		Port:          c.config.GetPort(),
 		SessionCookie: cookie,
-		Dir:           c.config.GetConfigPath(),
+		Dir:           c.config.GetConfigPathAbs(),
 	}
 
 	if c.config.HasTLSConfig() {
