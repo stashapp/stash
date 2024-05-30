@@ -26,10 +26,8 @@ import { MovieEditPanel } from "./MovieEditPanel";
 import {
   faChevronDown,
   faChevronUp,
-  faLink,
   faTrashAlt,
 } from "@fortawesome/free-solid-svg-icons";
-import TextUtils from "src/utils/text";
 import { Icon } from "src/components/Shared/Icon";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { ConfigurationContext } from "src/hooks/Config";
@@ -37,7 +35,7 @@ import { DetailImage } from "src/components/Shared/DetailImage";
 import { useRatingKeybinds } from "src/hooks/keybinds";
 import { useLoadStickyHeader } from "src/hooks/detailsPanel";
 import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
-import { ExternalLink } from "src/components/Shared/ExternalLink";
+import { ExternalLinksButton } from "src/components/Shared/ExternalLinksButton";
 
 interface IProps {
   movie: GQL.MovieDataFragment;
@@ -273,16 +271,7 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
 
   const renderClickableIcons = () => (
     <span className="name-icons">
-      {movie.url && (
-        <Button
-          as={ExternalLink}
-          href={TextUtils.sanitiseURL(movie.url)}
-          className="minimal link"
-          title={movie.url}
-        >
-          <Icon icon={faLink} />
-        </Button>
-      )}
+      {movie.urls.length > 0 && <ExternalLinksButton urls={movie.urls} />}
     </span>
   );
 
