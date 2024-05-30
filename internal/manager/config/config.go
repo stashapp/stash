@@ -496,6 +496,20 @@ func (i *Config) GetConfigPath() string {
 	return filepath.Dir(i.GetConfigFile())
 }
 
+// GetConfigPathAbs returns the path of the directory containing the used
+// configuration file, resolved to an absolute path. Returns the return value
+// of GetConfigPath if the path cannot be made into an absolute path.
+func (i *Config) GetConfigPathAbs() string {
+	p := filepath.Dir(i.GetConfigFile())
+
+	ret, _ := filepath.Abs(p)
+	if ret == "" {
+		return p
+	}
+
+	return ret
+}
+
 // GetDefaultDatabaseFilePath returns the default database filename,
 // which is located in the same directory as the config file.
 func (i *Config) GetDefaultDatabaseFilePath() string {
