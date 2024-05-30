@@ -260,7 +260,9 @@ func (s *Manager) writeStashIcon() {
 
 func (s *Manager) RefreshFFMpeg(ctx context.Context) {
 	// use same directory as config path
-	configDirectory := s.Config.GetConfigPath()
+	// executing binaries requires directory to be included
+	// https://pkg.go.dev/os/exec#hdr-Executables_in_the_current_directory
+	configDirectory := s.Config.GetConfigPathAbs()
 	stashHomeDir := paths.GetStashHomeDirectory()
 
 	// prefer the configured paths

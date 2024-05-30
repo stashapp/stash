@@ -27,7 +27,7 @@ func (r *mutationResolver) Setup(ctx context.Context, input manager.SetupInput) 
 
 func (r *mutationResolver) DownloadFFMpeg(ctx context.Context) (string, error) {
 	mgr := manager.GetInstance()
-	configDir := mgr.Config.GetConfigPath()
+	configDir := mgr.Config.GetConfigPathAbs()
 
 	// don't run if ffmpeg is already installed
 	ffmpegPath := ffmpeg.FindFFMpeg(configDir)
