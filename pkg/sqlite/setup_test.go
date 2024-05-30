@@ -1303,6 +1303,15 @@ func getMovieNullStringValue(index int, field string) string {
 	return ret.String
 }
 
+func getMovieEmptyString(index int, field string) string {
+	v := getPrefixedNullStringValue("movie", index, field)
+	if !v.Valid {
+		return ""
+	}
+
+	return v.String
+}
+
 // createMoviees creates n movies with plain Name and o movies with camel cased NaMe included
 func createMovies(ctx context.Context, mqb models.MovieReaderWriter, n int, o int) error {
 	const namePlain = "Name"
@@ -1321,7 +1330,9 @@ func createMovies(ctx context.Context, mqb models.MovieReaderWriter, n int, o in
 		name = getMovieStringValue(index, name)
 		movie := models.Movie{
 			Name: name,
-			URL:  getMovieNullStringValue(index, urlField),
+			URLs: models.NewRelatedStrings([]string{
+				getMovieEmptyString(i, urlField),
+			}),
 		}
 
 		err := mqb.Create(ctx, &movie)

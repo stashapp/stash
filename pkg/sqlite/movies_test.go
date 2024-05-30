@@ -15,6 +15,16 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
+func loadMovieRelationships(ctx context.Context, expected models.Movie, actual *models.Movie) error {
+	if expected.URLs.Loaded() {
+		if err := actual.LoadURLs(ctx, db.Gallery); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func TestMovieFindByName(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
 		mqb := db.Movie
@@ -205,7 +215,14 @@ func TestMovieQueryURL(t *testing.T) {
 
 	verifyFn := func(n *models.Movie) {
 		t.Helper()
-		verifyString(t, n.URL, urlCriterion)
+
+		urls := n.URLs.List()
+		var url string
+		if len(urls) > 0 {
+			url = urls[0]
+		}
+
+		verifyString(t, url, urlCriterion)
 	}
 
 	verifyMovieQuery(t, filter, verifyFn)
@@ -234,6 +251,12 @@ func verifyMovieQuery(t *testing.T, filter models.MovieFilterType, verifyFn func
 		sqb := db.Movie
 
 		movies := queryMovie(ctx, t, sqb, &filter, nil)
+
+		for _, movie := range movies {
+			if err := movie.LoadURLs(ctx, sqb); err != nil {
+				t.Errorf("Error loading movie relationships: %v", err)
+			}
+		}
 
 		// assume it should find at least one
 		assert.Greater(t, len(movies), 0)

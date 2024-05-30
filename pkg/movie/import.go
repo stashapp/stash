@@ -55,11 +55,15 @@ func (i *Importer) movieJSONToMovie(movieJSON jsonschema.Movie) models.Movie {
 		Aliases:   movieJSON.Aliases,
 		Director:  movieJSON.Director,
 		Synopsis:  movieJSON.Synopsis,
-		URL:       movieJSON.URL,
 		CreatedAt: movieJSON.CreatedAt.GetTime(),
 		UpdatedAt: movieJSON.UpdatedAt.GetTime(),
 	}
 
+	if len(movieJSON.URLs) > 0 {
+		newMovie.URLs = models.NewRelatedStrings(movieJSON.URLs)
+	} else if movieJSON.URL != "" {
+		newMovie.URLs = models.NewRelatedStrings([]string{movieJSON.URL})
+	}
 	if movieJSON.Date != "" {
 		d, err := models.ParseDate(movieJSON.Date)
 		if err == nil {

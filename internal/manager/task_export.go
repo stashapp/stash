@@ -1109,6 +1109,11 @@ func (t *ExportTask) exportMovie(ctx context.Context, wg *sync.WaitGroup, jobCha
 	studioReader := r.Studio
 
 	for m := range jobChan {
+		if err := m.LoadURLs(ctx, r.Movie); err != nil {
+			logger.Errorf("[movies] <%s> error getting movie urls: %v", m.Name, err)
+			continue
+		}
+
 		newMovieJSON, err := movie.ToJSON(ctx, movieReader, studioReader, m)
 
 		if err != nil {

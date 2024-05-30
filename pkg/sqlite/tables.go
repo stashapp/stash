@@ -34,6 +34,8 @@ var (
 
 	studiosAliasesJoinTable  = goqu.T(studioAliasesTable)
 	studiosStashIDsJoinTable = goqu.T("studio_stash_ids")
+
+	moviesURLsJoinTable = goqu.T(movieURLsTable)
 )
 
 var (
@@ -298,6 +300,14 @@ var (
 	movieTableMgr = &table{
 		table:    goqu.T(movieTable),
 		idColumn: goqu.T(movieTable).Col(idColumn),
+	}
+
+	moviesURLsTableMgr = &orderedValueTable[string]{
+		table: table{
+			table:    moviesURLsJoinTable,
+			idColumn: moviesURLsJoinTable.Col(movieIDColumn),
+		},
+		valueColumn: moviesURLsJoinTable.Col(movieURLColumn),
 	}
 )
 
