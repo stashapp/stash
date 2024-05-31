@@ -36,9 +36,9 @@ export function sortByRelevance<T extends ISortable>(
 
   const cache: Record<string, ICacheEntry> = {};
 
-  function setCache(tag: T, partial: Partial<ICacheEntry>) {
-    cache[tag.id] = {
-      ...cache[tag.id],
+  function setCache(o: T, partial: Partial<ICacheEntry>) {
+    cache[o.id] = {
+      ...cache[o.id],
       ...partial,
     };
   }
@@ -54,7 +54,7 @@ export function sortByRelevance<T extends ISortable>(
       return [];
     }
 
-    const aliases = getAliases(o)?.map((a) => a.toLowerCase()) ?? [];
+    const aliases = getAliases(o)?.map((a) => a.trim().toLowerCase()) ?? [];
     setCache(o, { aliases });
 
     return aliases;
@@ -88,13 +88,18 @@ export function sortByRelevance<T extends ISortable>(
     return startsWith;
   }
 
-  function getWords(o: T) {
-    return getName(o).trim().toLowerCase().split(" ");
+  function getWords(n: string) {
+    // trim and remove any extra spaces
+    return n.trim().replace(/\s\s+/g, " ").toLowerCase().split(" ");
   }
 
-  function getAliasWords(tag: T) {
-    const aliases = getObjectAliases(tag);
-    return aliases.map((a) => a.trim().split(" ")).flat();
+  function getNameWords(o: T) {
+    return getWords(getName(o));
+  }
+
+  function getAliasWords(o: T) {
+    const aliases = getObjectAliases(o);
+    return aliases.map((a) => getWords(a)).flat();
   }
 
   function getWordIndex(o: T) {
@@ -104,7 +109,7 @@ export function sortByRelevance<T extends ISortable>(
       return cached;
     }
 
-    const words = getWords(o);
+    const words = getNameWords(o);
     const wordIndex = words.findIndex((w) => w === query);
     setCache(o, { wordIndex });
 
@@ -132,7 +137,7 @@ export function sortByRelevance<T extends ISortable>(
       return cached;
     }
 
-    const words = getWords(o);
+    const words = getNameWords(o);
     const wordStartsWithIndex = words.findIndex((w) => w.startsWith(query));
     setCache(o, { wordStartsWithIndex });
 
@@ -170,8 +175,8 @@ export function sortByRelevance<T extends ISortable>(
   }
 
   function compare(a: T, b: T) {
-    const aName = getName(a).toLowerCase();
-    const bName = getName(b).toLowerCase();
+    const aName = getName(a).trim().toLowerCase();
+    const bName = getName(b).trim().toLowerCase();
 
     const aAlias = aliasMatches(a);
     const bAlias = aliasMatches(b);
