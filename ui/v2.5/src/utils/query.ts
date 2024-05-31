@@ -54,7 +54,7 @@ export function sortByRelevance<T extends ISortable>(
       return [];
     }
 
-    const aliases = getAliases(o)?.map((a) => a.toLowerCase()) ?? [];
+    const aliases = getAliases(o)?.map((a) => a.trim().toLowerCase()) ?? [];
     setCache(o, { aliases });
 
     return aliases;
@@ -175,8 +175,8 @@ export function sortByRelevance<T extends ISortable>(
   }
 
   function compare(a: T, b: T) {
-    const aName = getName(a).toLowerCase();
-    const bName = getName(b).toLowerCase();
+    const aName = getName(a).trim().toLowerCase();
+    const bName = getName(b).trim().toLowerCase();
 
     const aAlias = aliasMatches(a);
     const bAlias = aliasMatches(b);
