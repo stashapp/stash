@@ -27,7 +27,7 @@ import { useCompare } from "src/hooks/state";
 import { Placement } from "react-bootstrap/esm/Overlay";
 import { sortByRelevance } from "src/utils/query";
 import { objectTitle } from "src/core/files";
-import { PatchComponent } from "src/patch";
+import { PatchComponent, PatchFunction } from "src/patch";
 import {
   Criterion,
   CriterionValue,
@@ -47,6 +47,21 @@ type ExtraSceneProps = {
   excludeIds?: string[];
   extraCriteria?: Array<Criterion<CriterionValue>>;
 };
+
+type FindScenesResult = Awaited<
+  ReturnType<typeof queryFindScenesForSelect>
+>["data"]["findScenes"]["scenes"];
+
+function sortScenesByRelevance(input: string, scenes: FindScenesResult) {
+  return sortByRelevance(input, scenes, objectTitle, (s) => {
+    return s.files.map((f) => f.path);
+  });
+}
+
+const sceneSelectSort = PatchFunction(
+  "SceneSelect.sort",
+  sortScenesByRelevance
+);
 
 const _SceneSelect: React.FC<
   IFilterProps & IFilterValueProps<Scene> & ExtraSceneProps
@@ -77,9 +92,7 @@ const _SceneSelect: React.FC<
       return !exclude.includes(scene.id.toString());
     });
 
-    return sortByRelevance(input, ret, objectTitle, (s) => {
-      return s.files.map((f) => f.path);
-    }).map((scene) => ({
+    return sceneSelectSort(input, ret).map((scene) => ({
       value: scene.id,
       object: scene,
     }));

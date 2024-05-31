@@ -27,7 +27,7 @@ import {
 import { useCompare } from "src/hooks/state";
 import { Placement } from "react-bootstrap/esm/Overlay";
 import { sortByRelevance } from "src/utils/query";
-import { PatchComponent } from "src/patch";
+import { PatchComponent, PatchFunction } from "src/patch";
 import { TruncatedText } from "../Shared/TruncatedText";
 
 export type Movie = Pick<
@@ -37,6 +37,24 @@ export type Movie = Pick<
   studio?: Pick<GQL.Studio, "name"> | null;
 };
 type Option = SelectOption<Movie>;
+
+type FindMoviesResult = Awaited<
+  ReturnType<typeof queryFindMoviesForSelect>
+>["data"]["findMovies"]["movies"];
+
+function sortMoviesByRelevance(input: string, movies: FindMoviesResult) {
+  return sortByRelevance(
+    input,
+    movies,
+    (m) => m.name,
+    (m) => (m.aliases ? [m.aliases] : [])
+  );
+}
+
+const movieSelectSort = PatchFunction(
+  "MovieSelect.sort",
+  sortMoviesByRelevance
+);
 
 const _MovieSelect: React.FC<
   IFilterProps &
@@ -70,12 +88,7 @@ const _MovieSelect: React.FC<
       return !exclude.includes(movie.id.toString());
     });
 
-    return sortByRelevance(
-      input,
-      ret,
-      (m) => m.name,
-      (m) => (m.aliases ? [m.aliases] : [])
-    ).map((movie) => ({
+    return movieSelectSort(input, ret).map((movie) => ({
       value: movie.id,
       object: movie,
     }));
