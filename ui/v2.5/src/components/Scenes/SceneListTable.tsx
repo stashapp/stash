@@ -322,8 +322,8 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
       render: TagCell,
     },
     {
-      value: "movies",
-      label: intl.formatMessage({ id: "movies" }),
+      value: "groups",
+      label: intl.formatMessage({ id: "groups" }),
       defaultShow: true,
       render: MovieCell,
     },

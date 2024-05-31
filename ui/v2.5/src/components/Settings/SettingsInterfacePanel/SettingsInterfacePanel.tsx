@@ -47,7 +47,7 @@ import { defaultMaxOptionsShown } from "src/core/config";
 const allMenuItems = [
   { id: "scenes", headingID: "scenes" },
   { id: "images", headingID: "images" },
-  { id: "movies", headingID: "movies" },
+  { id: "groups", headingID: "groups" },
   { id: "markers", headingID: "markers" },
   { id: "galleries", headingID: "galleries" },
   { id: "performers", headingID: "performers" },
@@ -659,8 +659,8 @@ export const SettingsInterfacePanel: React.FC = () => {
             }
           />
           <BooleanSetting
-            id="disableDropdownCreate_movie"
-            headingID="movie"
+            id="disableDropdownCreate_group"
+            headingID="group"
             checked={iface.disableDropdownCreate?.movie ?? undefined}
             onChange={(v) =>
               saveInterface({

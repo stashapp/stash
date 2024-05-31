@@ -3,7 +3,7 @@ import { ILabeledIdCriterion, ILabeledIdCriterionOption } from "./criterion";
 const inputType = "movies";
 
 export const MoviesCriterionOption = new ILabeledIdCriterionOption(
-  "movies",
+  "groups",
   "movies",
   false,
   inputType,

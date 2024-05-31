@@ -390,9 +390,9 @@ export const SceneDuplicateChecker: React.FC = () => {
     if (scene.movies.length <= 0) return;
 
     const popoverContent = scene.movies.map((sceneMovie) => (
-      <div className="movie-tag-container row" key="movie">
+      <div className="movie-tag-container row" key={sceneMovie.movie.id}>
         <Link
-          to={`/movies/${sceneMovie.movie.id}`}
+          to={`/groups/${sceneMovie.movie.id}`}
           className="movie-tag col m-auto zoom-2"
         >
           <img

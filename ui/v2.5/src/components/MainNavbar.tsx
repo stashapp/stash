@@ -52,9 +52,9 @@ const messages = defineMessages({
     id: "images",
     defaultMessage: "Images",
   },
-  movies: {
-    id: "movies",
-    defaultMessage: "Movies",
+  groups: {
+    id: "groups",
+    defaultMessage: "Groups",
   },
   markers: {
     id: "markers",
@@ -107,9 +107,9 @@ const allMenuItems: IMenuItem[] = [
     hotkey: "g i",
   },
   {
-    name: "movies",
-    message: messages.movies,
-    href: "/movies",
+    name: "groups",
+    message: messages.groups,
+    href: "/groups",
     icon: faFilm,
     hotkey: "g v",
     userCreatable: true,

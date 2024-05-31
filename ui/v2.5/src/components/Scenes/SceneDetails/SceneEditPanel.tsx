@@ -737,7 +737,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
   }
 
   function renderMoviesField() {
-    const title = intl.formatMessage({ id: "movies" });
+    const title = intl.formatMessage({ id: "groups" });
     const control = (
       <SceneMovieTable value={movieEntries} onUpdate={onSetMovieEntries} />
     );

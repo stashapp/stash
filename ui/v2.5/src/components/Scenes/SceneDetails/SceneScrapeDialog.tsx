@@ -254,7 +254,7 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
           onCreateNew={createNewPerformer}
         />
         <ScrapedMoviesRow
-          title={intl.formatMessage({ id: "movies" })}
+          title={intl.formatMessage({ id: "groups" })}
           result={movies}
           onChange={(value) => setMovies(value)}
           newObjects={newMovies}

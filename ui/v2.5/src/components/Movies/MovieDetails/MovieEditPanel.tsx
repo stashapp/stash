@@ -373,7 +373,7 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
         <h2>
           {intl.formatMessage(
             { id: "actions.add_entity" },
-            { entityType: intl.formatMessage({ id: "movie" }) }
+            { entityType: intl.formatMessage({ id: "group" }) }
           )}
         </h2>
       )}
@@ -382,10 +382,10 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
         when={formik.dirty}
         message={(location, action) => {
           // Check if it's a redirect after movie creation
-          if (action === "PUSH" && location.pathname.startsWith("/movies/"))
+          if (action === "PUSH" && location.pathname.startsWith("/groups/"))
             return true;
 
-          return handleUnsavedChanges(intl, "movies", movie.id)(location);
+          return handleUnsavedChanges(intl, "groups", movie.id)(location);
         }}
       />
 
@@ -402,7 +402,7 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
       </Form>
 
       <DetailsEditNavbar
-        objectName={movie?.name ?? intl.formatMessage({ id: "movie" })}
+        objectName={movie?.name ?? intl.formatMessage({ id: "group" })}
         isNew={isNew}
         classNames="col-xl-9 mt-3"
         isEditing

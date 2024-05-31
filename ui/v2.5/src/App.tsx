@@ -312,7 +312,7 @@ export const App: React.FC = () => {
             <Route path="/performers" component={Performers} />
             <Route path="/tags" component={Tags} />
             <Route path="/studios" component={Studios} />
-            <Route path="/movies" component={Movies} />
+            <Route path="/groups" component={Movies} />
             <Route path="/stats" component={Stats} />
             <Route path="/settings" component={Settings} />
             <Route

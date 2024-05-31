@@ -306,9 +306,9 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
             {renderMultiSelect("tags", tagIds)}
           </Form.Group>
 
-          <Form.Group controlId="movies">
+          <Form.Group controlId="groups">
             <Form.Label>
-              <FormattedMessage id="movies" />
+              <FormattedMessage id="groups" />
             </Form.Label>
             {renderMultiSelect("movies", movieIds)}
           </Form.Group>

@@ -15,14 +15,14 @@ const Movies: React.FC = () => {
 };
 
 const MovieRoutes: React.FC = () => {
-  const titleProps = useTitleProps({ id: "movies" });
+  const titleProps = useTitleProps({ id: "groups" });
   return (
     <>
       <Helmet {...titleProps} />
       <Switch>
-        <Route exact path="/movies" component={Movies} />
-        <Route exact path="/movies/new" component={MovieCreate} />
-        <Route path="/movies/:id/:tab?" component={Movie} />
+        <Route exact path="/groups" component={Movies} />
+        <Route exact path="/groups/new" component={MovieCreate} />
+        <Route path="/groups/:id/:tab?" component={Movie} />
       </Switch>
     </>
   );

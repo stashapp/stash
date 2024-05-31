@@ -60,7 +60,7 @@ const validTabs = [
   "scenes",
   "galleries",
   "images",
-  "movies",
+  "groups",
   "appearswith",
 ] as const;
 type TabKey = (typeof validTabs)[number];
@@ -146,7 +146,7 @@ const PerformerPage: React.FC<IProps> = ({ performer, tabKey }) => {
       } else if (performer.image_count != 0) {
         ret = "images";
       } else if (performer.movie_count != 0) {
-        ret = "movies";
+        ret = "groups";
       }
     }
 
@@ -191,7 +191,7 @@ const PerformerPage: React.FC<IProps> = ({ performer, tabKey }) => {
     Mousetrap.bind("e", () => toggleEditing());
     Mousetrap.bind("c", () => setTabKey("scenes"));
     Mousetrap.bind("g", () => setTabKey("galleries"));
-    Mousetrap.bind("m", () => setTabKey("movies"));
+    Mousetrap.bind("m", () => setTabKey("groups"));
     Mousetrap.bind("f", () => setFavorite(!performer.favorite));
     Mousetrap.bind(",", () => setCollapsed(!collapsed));
 
@@ -319,10 +319,10 @@ const PerformerPage: React.FC<IProps> = ({ performer, tabKey }) => {
         />
       </Tab>
       <Tab
-        eventKey="movies"
+        eventKey="groups"
         title={
           <>
-            {intl.formatMessage({ id: "movies" })}
+            {intl.formatMessage({ id: "groups" })}
             <Counter
               abbreviateCounter={abbreviateCounter}
               count={performer.movie_count}
@@ -332,7 +332,7 @@ const PerformerPage: React.FC<IProps> = ({ performer, tabKey }) => {
         }
       >
         <PerformerMoviesPanel
-          active={tabKey === "movies"}
+          active={tabKey === "groups"}
           performer={performer}
         />
       </Tab>

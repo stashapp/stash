@@ -445,7 +445,7 @@ const ScenePage: React.FC<IProps> = ({
             <Nav.Item>
               <Nav.Link eventKey="scene-movie-panel">
                 <FormattedMessage
-                  id="countables.movies"
+                  id="countables.groups"
                   values={{ count: scene.movies.length }}
                 />
               </Nav.Link>

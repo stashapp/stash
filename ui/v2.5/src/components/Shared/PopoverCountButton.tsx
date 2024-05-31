@@ -85,8 +85,8 @@ export const PopoverCountButton: React.FC<IProps> = ({
         };
       case "movie":
         return {
-          one: "movie",
-          other: "movies",
+          one: "group",
+          other: "groups",
         };
       case "performer":
         return {

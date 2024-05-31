@@ -247,7 +247,7 @@ const _MovieSelect: React.FC<
           { id: "actions.select_entity" },
           {
             entityType: intl.formatMessage({
-              id: props.isMulti ? "movies" : "movie",
+              id: props.isMulti ? "groups" : "group",
             }),
           }
         )

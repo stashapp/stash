@@ -63,7 +63,7 @@ const validTabs = [
   "galleries",
   "images",
   "performers",
-  "movies",
+  "groups",
   "childstudios",
 ] as const;
 type TabKey = (typeof validTabs)[number];
@@ -121,7 +121,7 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
       } else if (performerCount != 0) {
         ret = "performers";
       } else if (movieCount != 0) {
-        ret = "movies";
+        ret = "groups";
       } else if (studio.child_studios.length != 0) {
         ret = "childstudios";
       }
@@ -437,10 +437,10 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
         />
       </Tab>
       <Tab
-        eventKey="movies"
+        eventKey="groups"
         title={
           <>
-            {intl.formatMessage({ id: "movies" })}
+            {intl.formatMessage({ id: "groups" })}
             <Counter
               abbreviateCounter={abbreviateCounter}
               count={movieCount}
@@ -449,7 +449,7 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
           </>
         }
       >
-        <StudioMoviesPanel active={tabKey === "movies"} studio={studio} />
+        <StudioMoviesPanel active={tabKey === "groups"} studio={studio} />
       </Tab>
       <Tab
         eventKey="childstudios"

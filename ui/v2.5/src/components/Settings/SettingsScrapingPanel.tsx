@@ -164,7 +164,7 @@ export const SettingsScrapingPanel: React.FC = () => {
         case ScrapeType.Fragment:
           return intl.formatMessage(
             { id: "config.scraping.entity_metadata" },
-            { entityType: intl.formatMessage({ id: "movie" }) }
+            { entityType: intl.formatMessage({ id: "group" }) }
           );
         default:
           return t;
@@ -260,7 +260,7 @@ export const SettingsScrapingPanel: React.FC = () => {
     return renderTable(
       intl.formatMessage(
         { id: "config.scraping.entity_scrapers" },
-        { entityType: intl.formatMessage({ id: "movie" }) }
+        { entityType: intl.formatMessage({ id: "group" }) }
       ),
       elements
     );

@@ -509,7 +509,7 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
           onChange={(value) => setPerformers(value)}
         />
         <ScrapedMoviesRow
-          title={intl.formatMessage({ id: "movies" })}
+          title={intl.formatMessage({ id: "groups" })}
           result={movies}
           onChange={(value) => setMovies(value)}
         />

@@ -144,7 +144,7 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
     Toast.success(
       intl.formatMessage(
         { id: "toast.updated_entity" },
-        { entity: intl.formatMessage({ id: "movie" }).toLocaleLowerCase() }
+        { entity: intl.formatMessage({ id: "group" }).toLocaleLowerCase() }
       )
     );
   }
@@ -157,7 +157,7 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
     }
 
     // redirect to movies page
-    history.push(`/movies`);
+    history.push(`/groups`);
   }
 
   function toggleEditing(value?: boolean) {
@@ -188,7 +188,7 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
             values={{
               entityName:
                 movie.name ??
-                intl.formatMessage({ id: "movie" }).toLocaleLowerCase(),
+                intl.formatMessage({ id: "group" }).toLocaleLowerCase(),
             }}
           />
         </p>
