@@ -102,15 +102,40 @@
         "submit_stash_box": "ยืนยันไปยัง Stash-Box",
         "submit_update": "ยืนยันการอัปเดต",
         "tasks": {
-            "clean_confirm_message": "คุณแน่ใจแล้วนะว่าจะล้าง ? การกระทำนี้จะลบเดต้าเบสทั้งหมดรวมถึงคอนเทนต์ที่ถูก Generate แล้วทั้งหมดจากระบบ",
-            "dry_mode_selected": "ทำการเลือก Dry mode แล้ว จะไม่มีการลบเกิดขึ้นมีเพียงการบันทึกเท่านั้น",
-            "import_warning": "คุณแน่ใจแล้วนะว่าจะทำการอิมพอร์ต ? การกระทำนี้จะลบข้อมูลในเดต้าเบสและทำการอิมพอร์ตไฟล์จากข้อมูลของคุณแทน"
+            "clean_confirm_message": "คุณแน่ใจแล้วนะว่าจะล้าง? การกระทำนี้จะลบข้อมูลในฐานข้อมูลและเนื้อหาที่ถูกสร้างขึ้นของ scene และ gallery ที่ไม่มีอยู่ในไฟล์ระบบทั้งหมด",
+            "dry_mode_selected": "คุณเลือกโหมดซักซ้อมไว้ จะไม่มีการลบเกิดขึ้น มีเพียงการบันทึกล็อกเท่านั้น",
+            "import_warning": "คุณแน่ใจแล้วนะว่าจะทำการนำเข้าข้อมูล? การกระทำนี้จะลบข้อมูลในฐานข้อมูลและทำการอิมพอร์ต metadata จากข้อมูลของคุณแทน"
         },
         "temp_disable": "ปิดชั่วคราว…",
         "temp_enable": "เปิดชั่วคราว…",
         "unset": "ยกเลิกการตั้งค่า",
         "use_default": "ใช้ค่าเริ่มต้น",
-        "view_random": "ดูแบบแรนด้อม"
+        "view_random": "ดูแบบสุ่ม",
+        "download_anonymised": "ดาวน์โหลดข้อมูลที่ปิดบังตัวตนแล้ว",
+        "optimise_database": "ปรับแต่งฐานข้อมูลให้ดีขึ้น",
+        "assign_stashid_to_parent_studio": "ระบุ Stash ID ให้กับสตูดิโอบริษัทแม่พร้อมกับอัปเดต metadata",
+        "create_chapters": "สร้างแชปเตอร์",
+        "swap": "สลับ",
+        "reassign": "ตั้งค่าใหม่",
+        "reload": "รีโหลด",
+        "split": "แยก",
+        "view_history": "ประวัติการดู",
+        "add_manual_date": "เพิ่มวันที่",
+        "add_o": "เพิ่ม O",
+        "add_play": "เพิ่มจำนวนการเล่น",
+        "anonymise": "ปิดบังตัวตน",
+        "choose_date": "เลือกวันที่",
+        "clean_generated": "ลบไฟล์ที่ถูกสร้าง",
+        "clear_date_data": "ล้างข้อมูลวันที่",
+        "copy_to_clipboard": "ทำสำเนา",
+        "create_parent_studio": "สร้างสตูดิโอบริษัทแม่",
+        "disable": "ปิดใช้งาน",
+        "enable": "เปิดใช้งาน",
+        "encoding_image": "กำลังเข้ารหัสรูปภาพ…",
+        "make_primary": "ตั้งให้เป็นไฟล์หลัก",
+        "migrate_blobs": "ย้าย blob",
+        "migrate_scene_screenshots": "ย้าย scene screenshots",
+        "remove_date": "ลบวันที่"
     },
     "actions_name": "Actions",
     "age": "อายุ",
@@ -118,7 +143,7 @@
     "all": "ทั้งหมด",
     "also_known_as": "AKA",
     "ascending": "จากน้อยไปมาก",
-    "average_resolution": "ค่าเฉลี่ยความละเอียด",
+    "average_resolution": "ความละเอียดโดยเฉลี่ย",
     "birth_year": "ปีเกิด",
     "birthdate": "วันเกิด",
     "bitrate": "บิตเรท",
@@ -130,14 +155,14 @@
             "blacklist_desc": "รายการบัญชีดำจะไม่รวมอยู่ในการสืบค้น โปรดทราบว่าเป็นนิพจน์ทั่วไปและไม่คำนึงถึงขนาดตัวพิมพ์ อักขระบางตัวต้องหลีกหนีด้วยแบ็กสแลช: {chars_require_escape}",
             "blacklist_label": "บัญชีดำ",
             "query_mode_auto": "ออโต้",
-            "query_mode_auto_desc": "ใช้ข้อมูล Metadata หากมี หรือใช้ชื่อไฟล์",
+            "query_mode_auto_desc": "ใช้ข้อมูล metadata หากมี หรือใช้ชื่อไฟล์แทน",
             "query_mode_dir": "Directory",
             "query_mode_dir_desc": "ใช้โฟลเดอร์ที่มีอยู่สำหรับไฟล์วิดีโอเท่านั้น",
             "query_mode_filename": "ชื่อไฟล์",
             "query_mode_filename_desc": "ใช้ชื่อไฟล์เท่านั้น",
             "query_mode_label": "โหมดคิวรี่",
             "query_mode_metadata": "Metadata",
-            "query_mode_metadata_desc": "ใช้ Metadata เท่านั้น",
+            "query_mode_metadata_desc": "ใช้ metadata เท่านั้น",
             "query_mode_path": "พาร์ธ (Path)",
             "query_mode_path_desc": "ใช้พาร์ธของไฟล์ทั้งหมด (Path)",
             "set_cover_desc": "เปลี่ยน Cover ฉากหากมีการพบ",
@@ -146,7 +171,9 @@
             "set_tag_label": "ตั้งแท็ก",
             "show_male_desc": "สลับว่าจะให้นักแสดงชายพร้อมแท็กหรือไม่",
             "show_male_label": "โชว์นักแสดงชาย",
-            "source": "ต้นทาง"
+            "source": "ต้นทาง",
+            "mark_organized_desc": "ตั้งค่า scene เป็น organized ทันทีที่กดบันทึกข้อมูล",
+            "mark_organized_label": "ตั้งค่าเป็น organized เมื่อบันทึกข้อมูล"
         },
         "noun_query": "คิวรี่",
         "results": {
@@ -181,7 +208,8 @@
             "stash_home": "หน้าเว็บหลักของ Stash {url}",
             "stash_open_collective": "สนับสนุนเราได้ที่ {url}",
             "stash_wiki": "หน้าเว็บ {url}",
-            "version": "เวอร์ชัน"
+            "version": "เวอร์ชัน",
+            "release_date": "วันที่วางขาย:"
         },
         "application_paths": {
             "heading": "ที่อยู่ของแอปพลิเคชัน"
@@ -190,14 +218,15 @@
             "about": "เกี่ยวกับ",
             "interface": "อินเตอร์เฟส",
             "logs": "ล็อกไฟล์",
-            "metadata_providers": "ผู้ให้บริการ Metadata",
+            "metadata_providers": "ผู้ให้บริการข้อมูล metadata",
             "plugins": "ปลั๊กอิน",
             "scraping": "สแครปปิ้ง",
             "security": "ความปลอดภัย",
             "services": "เซอร์วิส",
             "system": "ระบบ",
             "tasks": "งาน",
-            "tools": "เครื่องมือ"
+            "tools": "เครื่องมือ",
+            "changelog": "Changelog"
         },
         "dlna": {
             "allow_temp_ip": "อนุญาต {tempIP}",
@@ -215,7 +244,11 @@
             "server_display_name": "ชื่อ Server ที่จะทำการแสดง",
             "server_display_name_desc": "ชื่อที่แสดงสำหรับเซิร์ฟเวอร์ DLNA ค่าเริ่มต้นเป็น {server_name} เป็นค่าว่าง",
             "successfully_cancelled_temporary_behaviour": "ยกเลิกพฤติกรรมชั่วคราวเรียบร้อยแล้ว",
-            "until_restart": "จนกว่าจะรีสตาร์ท"
+            "until_restart": "จนกว่าจะรีสตาร์ท",
+            "video_sort_order_desc": "เลือกชนิดลำดับที่ต้องการเรียงลำดับวีดีโอเป็นค่าปริยาย",
+            "video_sort_order": "ค่าปริยายการเรียงลำดับวีดีโอ",
+            "server_port": "พอร์ตเซิร์ฟเวอร์",
+            "server_port_desc": "พอร์ตที่จะเรียกใช้เซิร์ฟเวอร์ DLNA ต้องรีสตาร์ท DLNA เมื่อเปลี่ยนแปลงค่า"
         },
         "general": {
             "auth": {
@@ -235,7 +268,7 @@
                 "log_to_terminal": "ล็อกไฟล์ไปยัง Terminal",
                 "log_to_terminal_desc": "บันทึกไปยังTerminal เพิ่มเติมจากไฟล์ เป็น True เสมอหากปิดใช้งานการบันทึกไฟล์ จำเป็นต้องรีสตาร์ท",
                 "maximum_session_age": "ค่าสูงสุดของอายุ Session",
-                "maximum_session_age_desc": "เวลาที่ว่างสูงสุดก่อนเซสชันการเข้าสู่ระบบจะหมดอายุ หน่วยเป็นวินาที",
+                "maximum_session_age_desc": "ระบบจะล็อกเอาท์เมื่อไม่มีกิจกรรมใดๆ และเวลาผ่านไปตามที่ระบุ (หน่วยวินาที) (บังคับรีสตาร์ท)",
                 "password": "พาสเวิร์ด",
                 "password_desc": "รหัสผ่านเพื่อเข้าถึง Stash เว้นว่างไว้เพื่อปิดใช้งานการตรวจสอบสิทธิ์ผู้ใช้",
                 "stash-box_integration": "ทำการรวม Stash-box",
@@ -258,15 +291,15 @@
             "excluded_image_gallery_patterns_head": "รูปแบบรูปภาพ/แกลเลอรีที่ยกเว้น",
             "excluded_video_patterns_desc": "Regexps ของไฟล์วิดีโอ/พาร์ธที่จะแยกออกจากการสแกนและเพิ่มใน Clean",
             "excluded_video_patterns_head": "รูปแบบวิดีโอที่ยกเว้น",
-            "gallery_ext_desc": "รายการนามสกุลไฟล์ที่คั่นด้วยเครื่องหมายจุลภาคซึ่งจะถูกระบุว่าเป็นไฟล์ zip ของแกลเลอรี",
-            "gallery_ext_head": "แกลเลอรี่ zip Extensions",
-            "generated_file_naming_hash_desc": "ใช้ MD5 หรือ oshash สำหรับการตั้งชื่อไฟล์ที่สร้างขึ้น การเปลี่ยนแปลงนี้กำหนดให้ฉากทั้งหมดต้องมีการเติมค่า MD5/oshash ที่เกี่ยวข้อง หลังจากเปลี่ยนค่านี้ ไฟล์ที่สร้างที่มีอยู่จะต้องถูกย้ายหรือสร้างใหม่ ดูหน้างานสำหรับการย้ายข้อมูล",
+            "gallery_ext_desc": "รายการนามสกุลไฟล์ซึ่งจะถูกนับว่าเป็นไฟล์ zip ของแกลเลอรี คั่นด้วยเครื่องหมายจุลภาค",
+            "gallery_ext_head": "นามสกุลไฟล์ zip แกลเลอรี่",
+            "generated_file_naming_hash_desc": "ใช้ MD5 หรือ oshash สำหรับการตั้งชื่อไฟล์ การเปลี่ยนแปลงค่านี้จะทำให้ต้องอ่านค่า MD5/ohash จาก scene ทั้งหมดอีกครั้ง ทำได้โดยการใช้เครื่องมือสำหรับย้ายข้อมูลในหน้างาน",
             "generated_file_naming_hash_head": "แฮชการตั้งชื่อไฟล์ที่สร้าง",
             "generated_files_location": "ตำแหน่งไดเรกทอรีสำหรับไฟล์ที่สร้างขึ้น (ตัวทำเครื่องหมายฉาก ตัวอย่างฉาก สไปรท์ ฯลฯ)",
             "generated_path_head": "พาร์ธที่สร้างขึ้น",
             "hashing": "กำลัง Hash",
-            "image_ext_desc": "รายการนามสกุลไฟล์ที่คั่นด้วยเครื่องหมายจุลภาคที่จะระบุเป็นรูปภาพ",
-            "image_ext_head": "ส่วนเสริมรูปภาพ",
+            "image_ext_desc": "รายการนามสกุลไฟล์ที่จะระบุเป็นรูปภาพ คั่นด้วยเครื่องหมายจุลภาค",
+            "image_ext_head": "นามสกุลไฟล์รูปภาพ",
             "include_audio_desc": "รวมสตรีมเสียงเมื่อสร้างตัวอย่าง",
             "include_audio_head": "รวมเสียง",
             "logging": "การบันทึก",
@@ -275,16 +308,16 @@
             "maximum_transcode_size_desc": "ขนาดสูงสุดสำหรับการแปลงรหัสที่สร้างขึ้น",
             "maximum_transcode_size_head": "ขนาดการแปลงสูงสุด",
             "metadata_path": {
-                "description": "ตำแหน่งไดเร็กทอรีที่ใช้เมื่อทำการส่งออกหรือนำเข้าอย่างเต็มรูปแบบ",
-                "heading": "พาร์ธข้อมูล Metadata"
+                "description": "ไดเร็กทอรีที่ใช้เมื่อส่งออกหรือนำเข้าข้อมูลเต็มรูปแบบ",
+                "heading": "ตำแหน่งข้อมูล metadata"
             },
-            "number_of_parallel_task_for_scan_generation_desc": "ตั้งค่าเป็น 0 สำหรับการตรวจจับอัตโนมัติ คำเตือนที่เรียกใช้งานมากกว่าที่จำเป็นเพื่อให้ใช้งานได้เต็ม 100% จะทำให้ประสิทธิภาพการทำงานลดลงและอาจทำให้เกิดปัญหาอื่นๆ",
+            "number_of_parallel_task_for_scan_generation_desc": "ตั้งค่าเป็น 0 สำหรับการตั้งค่าอัตโนมัติ คำเตือน: การสั่งงานมากเกินจำเป็นอาจทำให้ระบบใช้งาน CPU สูงถึง 100% ซึ่งจะส่งผลต่อประสิทธิภาพการทำงานของระบบและอาจทำให้เกิดปัญหาอื่นๆ ได้",
             "number_of_parallel_task_for_scan_generation_head": "จำนวนงานคู่ขนานสำหรับการสแกน/การสร้าง",
             "parallel_scan_head": "การสแกน/การสร้างแบบขนาน",
             "preview_generation": "ดูตัวอย่างการสร้าง",
             "python_path": {
-                "description": "ตำแหน่งของ python ที่สามารถเรียกทำงานได้ ใช้สำหรับตัวขูดสคริปต์และปลั๊กอิน หากว่างเปล่า python จะได้รับการแก้ไขจากสภาพแวดล้อม",
-                "heading": "พาร์ธ Python"
+                "description": "ตำแหน่งไฟล์ python (ไม่ใช่โฟลเดอร์) สำหรับใช้งานสคริปต์ scraper และปลั๊กอินต่างๆ หากเว้นว่างไว้ระบบจะดึงข้อมูลตำแหน่ง python จากวินโดส์",
+                "heading": "ตำแหน่งไฟล์ Python"
             },
             "scraper_user_agent": "Scraper User-Agent",
             "scraper_user_agent_desc": "User-Agentสตริงที่ใช้ระหว่างการร้องขอ http scrape",
@@ -293,22 +326,84 @@
                 "heading": "พาร์ธ Scrapers"
             },
             "scraping": "การ Scrap",
-            "sqlite_location": "ตำแหน่งไฟล์สำหรับฐานข้อมูล SQLite (ต้องรีสตาร์ท)",
-            "video_ext_desc": "รายการนามสกุลไฟล์ที่คั่นด้วยเครื่องหมายจุลภาคซึ่งจะถูกระบุว่าเป็นวิดีโอ",
-            "video_ext_head": "ส่วนเสริมวิดีโอ",
-            "video_head": "วิดีโอ"
+            "sqlite_location": "ตำแหน่งไฟล์สำหรับฐานข้อมูล SQLite (ต้องรีสตาร์ท)\nคำเตือน: ไม่รองรับการจัดเก็บฐานข้อมูลในที่อื่นๆ ที่ไม่ใช่เครื่องเซิร์ฟเวอร์ Stash (เช่นในไดรฟ์เครือข่าย)",
+            "video_ext_desc": "รายการนามสกุลไฟล์ซึ่งจะถูกระบุว่าเป็นวิดีโอ คั่นด้วยเครื่องหมายจุลภาค",
+            "video_ext_head": "นามสกุลไฟล์วิดีโอ",
+            "video_head": "วิดีโอ",
+            "blobs_path": {
+                "description": "ตำแหน่งในไฟล์ระบบที่ใช้จัดเก็บข้อมูล binary มีผลเฉพาะเมื่อตั้งค่าประเภทการจัดเก็บเป็นแบบไฟล์ระบบเท่านั้น คำเตือน: ต้องทำการย้ายข้อมูลด้วยตนเองหากต้องการเปลี่ยนแปลงค่านี้",
+                "heading": "ตำแหน่งไฟล์ระบบสำหรับข้อมูล binary"
+            },
+            "blobs_storage": {
+                "heading": "ชนิดการจัดเก็บข้อมูล binary",
+                "description": "ตำแหน่งจัดเก็บข้อมูล binary เช่นภาพหน้าปก ข้อมูลนักแสดง และอื่นๆ หลังเปลี่ยนแปลงการตั้งค่านี้ ต้องทำการย้ายข้อมูลปัจจุบันด้วยเครื่องมือย้าย blob ในหน้างาน"
+            },
+            "ffmpeg": {
+                "ffprobe_path": {
+                    "description": "ตำแหน่งไฟล์ FFprobe (ไม่ใช่โฟลเดอร์) หากเว้นว่างไว้ ระบบจะดึงข้อมูลจากวินโดส์ผ่าน $PATH หรือไดเร็กทอรีการตั้งค่า หรือจาก $HOME/.stash",
+                    "heading": "ตำแหน่งไฟล์ FFprobe"
+                },
+                "transcode": {
+                    "input_args": {
+                        "heading": "การตั้งค่า FFmpeg เพิ่มเติม สำหรับก่อนการสร้างวีดีโอ",
+                        "desc": "ขั้นสูง: ระบุการตั้งค่า FFmpeg เพิ่มเติม สำหรับก่อนการสร้างวีดีโอ"
+                    },
+                    "output_args": {
+                        "desc": "ขั้นสูง: ระบุการตั้งค่า FFmpeg เพิ่มเติม สำหรับหลังการสร้างวีดีโอ",
+                        "heading": "การตั้งค่า FFmpeg เพิ่มเติม สำหรับหลังการสร้างวีดีโอ"
+                    }
+                },
+                "download_ffmpeg": {
+                    "description": "ดาวน์โหลด FFmpeg ไว้ที่ไดเร็กทอรีการตั้งค่าและล้างค่าตำแหน่งไฟล์ ffmpeg และ ffprobe เดิมเพื่อใช้ค่าใหม่",
+                    "heading": "ดาวน์โหลด FFmpeg"
+                },
+                "ffmpeg_path": {
+                    "description": "ตำแหน่งไฟล์ FFmpeg (ไม่ใช่โฟลเดอร์) หากเว้นว่างไว้ ระบบจะดึงข้อมูลจากวินโดส์ผ่าน $PATH หรือไดเร็กทอรีการตั้งค่า หรือจาก $HOME/.stash",
+                    "heading": "ตำแหน่งไฟล์ FFmpeg"
+                },
+                "live_transcode": {
+                    "output_args": {
+                        "heading": "การตั้งค่า FFmpeg เพิ่มเติม สำหรับหลังการ live transcode",
+                        "desc": "ขั้นสูง: ระบุการตั้งค่า FFmpeg เพิ่มเติม สำหรับหลังการ live transcode"
+                    },
+                    "input_args": {
+                        "desc": "ขั้นสูง: ระบุการตั้งค่า FFmpeg เพิ่มเติม สำหรับก่อนเริ่ม live transcode",
+                        "heading": "การตั้งค่า FFmpeg เพิ่มเติมสำหรับก่อนเริ่ม live transcode"
+                    }
+                },
+                "hardware_acceleration": {
+                    "desc": "ใช้ฮาร์ดแวร์เข้ารหัสวีดีโอสำหรับการ live transcode",
+                    "heading": "ใช้ฮาร์ดแวร์เข้ารหัสวีดีโอสำหรับ FFmpeg"
+                }
+            },
+            "funscript_heatmap_draw_range_desc": "ระบุค่าสูงต่ำ (ตามแกน y) ในการสร้าง heatmaps เมื่อเปลี่ยนแปลงค่านี้ต้องทำการสร้าง heatmaps ขึ้นใหม่",
+            "plugins_path": {
+                "description": "ไดเร็กทอรีสำหรับไฟล์การตั้งค่าปลั๊กอิน",
+                "heading": "ตำแหน่งปลั๊กอิน"
+            },
+            "backup_directory_path": {
+                "heading": "ตำแหน่งไดเร็กทอรีของไฟล์สำรองข้อมูล",
+                "description": "ไดเด็กทอรีสำหรับการสำรองฐานข้อมูล SQLite"
+            },
+            "database": "ฐานข้อมูล",
+            "funscript_heatmap_draw_range": "ระบุค่าสูงต่ำในการสร้าง heatmaps",
+            "gallery_cover_regex_desc": "ข้อมูล regexp ที่จะใช้ระบุภาพให้เป็นภาพหน้าปกแกลเลอรี",
+            "gallery_cover_regex_label": "รูปแบบชื่อหน้าปกแกลเลอรี",
+            "heatmap_generation": "การสร้าง heatmap Funscript"
         },
         "library": {
             "exclusions": "ไม่รวม",
-            "gallery_and_image_options": "Gallery และ ออปชันรูปภาพ",
-            "media_content_extensions": "ส่วนขยายเนื้อหาสื่อ"
+            "gallery_and_image_options": "ตัวเลือกแกลเลอรี่และรูปภาพ",
+            "media_content_extensions": "นามสกุลไฟล์เนื้อหา"
         },
         "logs": {
             "log_level": "ระดับ Log"
         },
         "plugins": {
             "hooks": "การใช้ Hooks",
-            "triggers_on": "Triggers บน"
+            "triggers_on": "Triggers บน",
+            "available_plugins": "ปลั๊กอินที่มีให้ใช้งาน",
+            "installed_plugins": "ปลั๊กอินที่ติดตั้งไว้"
         },
         "scraping": {
             "entity_metadata": "{entityType} Metadata",
@@ -319,7 +414,9 @@
             "scrapers": "สแครปเปอร์",
             "search_by_name": "ค้นหาตามชื่อ",
             "supported_types": "ประเภทที่รองรับ",
-            "supported_urls": "URL"
+            "supported_urls": "URL",
+            "available_scrapers": "Scraper ที่มีให้ใช้งาน",
+            "installed_scrapers": "Scraper ที่ติดตั้งไว้"
         },
         "stashbox": {
             "add_instance": "เพิ่มอินสแตนซ์ Stash-Box",
@@ -336,20 +433,251 @@
         "tasks": {
             "added_job_to_queue": "เพิ่ม {operation_name} ในคิวงาน",
             "auto_tag": {
-                "auto_tagging_all_paths": "ติดแท็กอัตโนมัติทุกพาร์ธ",
-                "auto_tagging_paths": "ติดแท็กอัตโนมัติตามพาร์ธต่อไปนี้"
+                "auto_tagging_all_paths": "ติดแท็กอัตโนมัติทุกตำแหน่งไฟล์",
+                "auto_tagging_paths": "ติดแท็กอัตโนมัติตามตำแหน่งไฟล์ต่อไปนี้"
             },
-            "auto_tag_based_on_filenames": "ติดแท็กเนื้อหาอัตโนมัติตามชื่อไฟล์",
-            "auto_tagging": "แท็กอัตโนมัติ",
-            "backing_up_database": "กำลังสำรองข้อมูลเดต้าเบส",
-            "backup_and_download": "ทำการสำรองฐานข้อมูลและดาวน์โหลดไฟล์ผลลัพธ์",
-            "backup_database": "ดำเนินการสำรองข้อมูลของฐานข้อมูลไปยังไดเร็กทอรีเดียวกันกับฐานข้อมูล โดยมีรูปแบบชื่อไฟล์ {filename_format}",
+            "auto_tag_based_on_filenames": "ติดแท็กเนื้อหาอัตโนมัติตามตำแหน่งไฟล์",
+            "auto_tagging": "การแท็กอัตโนมัติ",
+            "backing_up_database": "กำลังสำรองฐานข้อมูล",
+            "backup_and_download": "ทำการสำรองฐานข้อมูลและดาวน์โหลดไฟล์",
+            "backup_database": "ทำการสำรองฐานข้อมูลไปยังไดเร็กทอรีสำรองข้อมูล โดยมีรูปแบบชื่อไฟล์ {filename_format}",
             "cleanup_desc": "ตรวจสอบไฟล์ที่หายไปและลบออกจากฐานข้อมูล นี่คือการกระทำที่ทำลายล้าง",
             "data_management": "การจัดการเดต้า",
             "defaults_set": "มีการตั้งค่าเริ่มต้นและจะใช้เมื่อคลิกปุ่ม {action} บนหน้างาน",
-            "dont_include_file_extension_as_part_of_the_title": "ไม่รวมนามสกุลไฟล์เป็นส่วนหนึ่งของชื่อ",
-            "empty_queue": "ไม่มีงานใดกำลังทำงานอยู่",
-            "export_to_json": "เอ็กซ์พอร์ตเนื้อหาฐานข้อมูลเป็นรูปแบบ JSON ในไดเร็กทอรีข้อมูล Metadata"
+            "dont_include_file_extension_as_part_of_the_title": "ไม่นับรวมนามสกุลไฟล์เป็นส่วนหนึ่งของชื่อ",
+            "empty_queue": "ไม่มีงานใดๆ ในคิว",
+            "export_to_json": "ส่งออกฐานข้อมูลในรูปแบบ JSON ในไดเร็กทอรี metadata",
+            "generate_thumbnails_during_scan": "สร้างภาพขนาดเล็กสำหรับไฟล์ภาพ",
+            "generate_previews_during_scan_tooltip": "สร้างภาพเคลื่อนไหวตัวอย่างเพิ่มเติม (webp) ต้องเปิดใช้งานเมื่อตั้งค่า Scene/Marker Wall Preview Type เป็นภาพเคลื่อนไหวเท่านั้น มีข้อดีคือใช้งาน CPU น้อยกว่าวีดีโอตัวอย่าง แต่มีข้อเสียคือต้องสร้างไฟล์เพิ่มเติมและมีขนาดใหญ่กว่า",
+            "anonymise_database": "ทำสำเนาฐานข้อมูลแบบปิดบังตัวตนและบันทึกไว้ในไดเร็กทอรีสำรองข้อมูล สามารถแจกจ่ายไฟล์ฐานข้อมูลแก้ผู้อื่นเพื่อใช้ในการแก้ไขปัญหาต่างๆ และง่ายต่อการ debug และไม่กระทบฐานข้อมูลหลัก โดยมีรูปแบบชื่อไฟล์ {filename_format}",
+            "clean_generated": {
+                "markers": "ภาพตัวอย่างมาร์คเกอร์",
+                "previews_desc": "ภาพตัวอย่าง scene และภาพขนาดเล็ก",
+                "transcodes": "ไฟล์วีดีโอพร้อมใช้ของ scene",
+                "blob_files": "ไฟล์ blob",
+                "description": "ลบไฟล์ที่ถูกสร้างขึ้นที่ไม่มีอยู่ในฐานข้อมูล",
+                "previews": "ภาพตัวอย่าง scene",
+                "image_thumbnails": "ภาพขนาดเล็ก",
+                "image_thumbnails_desc": "ภาพขนาดเล็กและคลิป",
+                "sprites": "Scene Sprites"
+            },
+            "generate": {
+                "generating_from_paths": "กำลังสร้างไฟล์สำหรับ scene ตามตำแหน่งไฟล์ดังนี้",
+                "generating_scenes": "กำลังสร้างไฟล์สำหรับ {num} {scene}"
+            },
+            "generate_desc": "กำลังสร้างภาพอื่นๆ sprite วีดีโอ vtt และไฟล์อื่นๆ",
+            "generate_phashes_during_scan": "กำลังสร้าง perceptual hashes",
+            "generate_previews_during_scan": "กำลังสร้างภาพเคลื่อนไหวตัวอย่าง",
+            "identify": {
+                "default_options": "ค่าปริยาย",
+                "explicit_set_description": "ใช้การตั้งค่าต่อไปนี้ ยกเว้นจะมีการตั้งค่าจากแหล่งข้อมูลต้นทาง",
+                "field_options": "ตัวเลือก Field",
+                "heading": "ค้นหาและระบุข้อมูล",
+                "set_cover_images": "ตั้งค่าภาพปก",
+                "set_organized": "ตั้งค่าเป็น organized",
+                "skip_single_name_performers_tooltip": "เมื่อไม่เปิดใช้งานตัวเลือกนี้ นักแสดงที่มีชื่อทั่วไปเช่น Samantha หรือ Olga จะถูกเลือกเป็นผลลัพธ์",
+                "sources": "แหล่งข้อมูล",
+                "identifying_from_paths": "ระบุ scene จากตำแหน่งต่อไปนี้",
+                "skip_multiple_matches_tooltip": "เมื่อไม่เปิดใช้งานตัวเลือกนี้ ผลการจับคู่จะเป็นแบบสุ่มหากมีผลลัพธ์มากกว่าหนึ่ง",
+                "tag_skipped_matches_tooltip": "สร้างแท็กพิเศษ (เช่น 'Identify: Multiple Matches') เพื่อง่ายในการค้นหาและตั้งแท็กที่เหมาะสมด้วยตนเอง",
+                "description": "ตั้งค่า scene metadata อัตโนมัติโดยใช้แหล่งข้อมูลจาก stash-box และ scraper",
+                "and_create_missing": "และสร้างเนื้อหาที่ไม่มี",
+                "create_missing": "สร้างขึ้นใหม่หากไม่มี",
+                "identifying_scenes": "กำลังระบุ {num} {scene}",
+                "include_male_performers": "ระบุนักแสดงชายด้วย",
+                "skip_multiple_matches": "ข้ามการจับคู่ข้อมูลหากมีผลลัพธ์มากกว่าหนึ่ง",
+                "skip_single_name_performers": "ข้ามนักแสดงที่มีเพียงชื่อเดียวและไม่มีการระบุตัวตน",
+                "source": "แหล่งข้อมูล",
+                "source_options": "ตัวเลือก {source}",
+                "strategy": "วิธีการ",
+                "tag_skipped_matches": "แท็กการข้ามการจับคู่ด้วยแท็ก",
+                "tag_skipped_performers": "แท็กการข้ามการจับคู่นักแสดงด้วยแท็ก",
+                "field": "Field",
+                "field_behaviour": "{strategy} {field}",
+                "tag_skipped_performer_tooltip": "สร้างแท็กพิเศษ (เช่น 'Identify: Single Name Performer') เพื่อง่ายในการค้นหาและเลือกชื่อที่เหมาะสมด้วยตนเอง"
+            },
+            "generate_sprites_during_scan_tooltip": "ชุดภาพนิ่งใต้ตัวเล่นวีดีโอ ช่วยให้การกรอวีดีโอง่ายขึ้น",
+            "generate_video_previews_during_scan": "สร้างวีดีโอตัวอย่าง",
+            "scan_for_content_desc": "สแกนเนื้อหาใหม่เพื่อเพิ่มเข้าสู่ฐานข้อมูล",
+            "incremental_import": "นำเข้าข้อมูลบางส่วนจากไฟล์ zip ที่เลือก",
+            "migrate_hash_files": "ใช้เครื่องมือนี้หลังจากเปลี่ยนค่ารูปแบบชื่อไฟล์ hash เพื่อให้ตรงกับรูปแบบใหม่",
+            "optimise_database": "ทำการวิเคราะห์และปรับปรุงโครงสร้างไฟล์ฐานข้อมูลเพื่อเพิ่มประสิทธิภาพ",
+            "migrate_scene_screenshots": {
+                "description": "ย้ายภาพตัวอย่างของ scene เข้าสู่ระบบจัดเก็บ blob ใหม่ ควรทำการย้ายหลังจากการอัปเกรดระบบเป็นเวอร์ชัน 0.20 สามารถลบข้อมูลเก่าทิ้งได้หลังเสร็จสิ้นการย้ายแล้ว",
+                "delete_files": "ลบไฟล์ภาพตัวอย่าง",
+                "overwrite_existing": "เขียนทับข้อมูลภาพตัวอย่างใน blob ปัจจุบัน"
+            },
+            "optimise_database_warning": "คำเตือน: ในขณะที่กำลังทำงานนี้จะไม่สามารถเปลี่ยนแปลงค่าใดๆ ในฐานข้อมูลได้ ระยะเวลาที่ใช้ขึ้นอยู่กับขนาดของฐานข้อมูล และต้องการพื้นที่ว่างในไดรฟ์เท่ากับหรือมากกว่าขนาดของฐานข้อมูล แนะนำให้มีพื้นที่ว่างมากกว่า 1.5 เท่า",
+            "set_name_date_details_from_metadata_if_present": "ตั้งค่าชื่อ วันที่ และรายละเอียดจากข้อมูล metadata ที่แนบมาด้วย",
+            "generate_sprites_during_scan": "สร้าง scrubber sprites",
+            "anonymising_database": "กำลังปิดบังตัวตนฐานข้อมูล",
+            "generate_video_previews_during_scan_tooltip": "สร้างวีดีโอตัวอย่างที่จะเล่นอัตโนมัติเมื่อวางเคอร์เซอร์ไว้บน scene",
+            "anonymise_and_download": "ทำสำเนาฐานข้อมูลแบบปิดบังตัวตนและดาวน์โหลด",
+            "generate_clip_previews_during_scan": "กำลังสร้างภาพตัวอย่างสำหรับคลิปภาพ",
+            "generate_phashes_during_scan_tooltip": "มีประโยชน์ช่วยลดไฟล์ซ้ำซ้อนและระบุ scene",
+            "generate_video_covers_during_scan": "สร้างภาพหน้าปก scene",
+            "generated_content": "การสร้างเนื้อหาสนับสนุน",
+            "import_from_exported_json": "นำเข้าข้อมูลจากไฟล์ JSON ของคุณในไดเร็กทอรี metadata และแทนที่ฐานข้อมูลปัจจุบัน",
+            "job_queue": "คิวงาน",
+            "maintenance": "การดูแลรักษา",
+            "migrate_blobs": {
+                "delete_old": "ลบข้อมูลเก่า",
+                "description": "ย้าย blob เข้าสู่ระบบปัจจุบัน ควรทำการย้ายหลังจากเปลี่ยนแปลงการตั้งค่าวิธีจัดเก็บ blob ในระบบ สามารถลบข้อมูลเก่าทิ้งได้หลังเสร็จสิ้นการย้ายแล้ว"
+            },
+            "migrations": "การย้ายข้อมูล",
+            "only_dry_run": "เก็บกวาดในโหมดซักซ้อม จะไม่มีการลบข้อมูลใดๆ",
+            "plugin_tasks": "งานของปลั๊กอิน",
+            "scan": {
+                "scanning_all_paths": "สแกนตำแหน่งไฟล์ทั้งหมด",
+                "scanning_paths": "สแกนตำแหน่งไฟล์ดังนี้"
+            }
+        },
+        "ui": {
+            "images": {
+                "options": {
+                    "create_image_clips_from_videos": {
+                        "description": "หากตัวเลือกวีดีโอถูกปิดใช้งานในไลบราลี ไฟล์วีดีโอจะถูกสแกนเป็นคลิปภาพแทน",
+                        "heading": "สแกนไฟล์วีดีโอเป็นคลิปภาพ"
+                    }
+                }
+            },
+            "custom_css": {
+                "description": "ต้องรีโหลดหน้าเพจใหม่ทุกครั้งเพื่อแสดงผลการตั้งค่า ไม่รับรองความเข้ากันได้ระหว่าง custom CSS และอัพเดตใหม่ของ Stash",
+                "heading": "Custom CSS",
+                "option_label": "เปิดใช้งาน custom CSS"
+            },
+            "custom_javascript": {
+                "description": "ต้องรีโหลดหน้าเพจใหม่ทุกครั้งเพื่อแสดงผลการตั้งค่า ไม่รับรองความเข้ากันได้ระหว่าง custom Javascript และอัพเดตใหม่ของ Stash",
+                "heading": "Custom Javascript",
+                "option_label": "เปิดใช้งาน custom Javascript"
+            },
+            "custom_locales": {
+                "description": "ข้อความที่ต้องการใช้งานแทนที่ชุดภาษาที่เลือก ดูรายการข้อความเพิ่มเติมที่ ttps://github.com/stashapp/stash/blob/develop/ui/v2.5/src/locales/en-GB.json ต้องรีโหลดหน้าเพจใหม่เพื่อแสดงผลการตั้งค่า",
+                "option_label": "เปิดใช้งานชุดภาษากำหนดเอง",
+                "heading": "ชุดภาษากำหนดเอง"
+            },
+            "desktop_integration": {
+                "send_desktop_notifications_for_events": "ส่งการแจ้งเตือนเหตุการณ์ต่างๆ ให้กับเดสก์ท็อป",
+                "skip_opening_browser_on_startup": "ข้ามการเปิดบราวเซอร์โดยอัตโนมัติเมื่อเปิดเครื่อง",
+                "notifications_enabled": "เปิดใช้งานการแจ้งเตือน",
+                "desktop_integration": "การทำงานร่วมกันกับเดสก์ท็อป",
+                "skip_opening_browser": "ข้ามการเปิดบราวเซอร์"
+            },
+            "detail": {
+                "enable_background_image": {
+                    "heading": "ภาพพื้นหลัง",
+                    "description": "แสดงภาพพื้นหลังในหน้าแสดงรายละเอียด"
+                },
+                "heading": "หน้าแสดงรายละเอียด",
+                "show_all_details": {
+                    "description": "เปิดใช้งานตัวเลือกนี้เพื่อแสดงรายละเอียดทั้งหมดเสมอ ข้อมูลจะถูกแสดงผลในหนึ่งคอลัมน์",
+                    "heading": "แสดงข้อมูลทั้งหมด"
+                },
+                "compact_expanded_details": {
+                    "description": "เปิดใช้งานตัวเลือกนี้เพื่อแสดงข้อมูลนักแสดงเพิ่มเติมโดยยังใช้พื้นที่แสดงผลน้อยเท่าเดิม",
+                    "heading": "แสดงรายละเอียดเพิ่มเติมในพื้นที่เท่าเดิม"
+                }
+            },
+            "editing": {
+                "rating_system": {
+                    "star_precision": {
+                        "options": {
+                            "half": "ครึ่งดาว",
+                            "quarter": "หนึ่งในสี่ดาว",
+                            "full": "เต็มดาว",
+                            "tenth": "หนึ่งในสิบดาว"
+                        },
+                        "label": "ความละเอียดการติดดาว"
+                    },
+                    "type": {
+                        "label": "ระบบการให้คะแนน",
+                        "options": {
+                            "decimal": "ตัวเลขทศนิยม",
+                            "stars": "ดาว"
+                        }
+                    }
+                },
+                "heading": "การแก้ไขข้อมูล",
+                "disable_dropdown_create": {
+                    "description": "ปิดไม่ให้สร้างเนื้อหาใหม่จากกล่องตัวเลือก",
+                    "heading": "ไม่ให้สร้างเนื้อหาจากกล่องตัวเลือก"
+                },
+                "max_options_shown": {
+                    "label": "จำนวนข้อมูลมากสุดที่จะแสดงผลในกล่องตัวเลือก"
+                }
+            },
+            "abbreviate_counters": {
+                "heading": "ย่อข้อมูลตัวเลข",
+                "description": "ย่อข้อมูลตัวเลข เช่นจาก \"1831\" จะถูกย่อเป็น \"1.8K\""
+            },
+            "basic_settings": "การตั้งค่าพื้นฐาน",
+            "delete_options": {
+                "description": "ค่าปริยายเมื่อทำการลบภาพ แกลเลอรี และซีน",
+                "heading": "ตัวเลือกการลบ",
+                "options": {
+                    "delete_file": "ลบไฟล์จากเครื่องคอมพิวเตอร์ของคุณเสมอ",
+                    "delete_generated_supporting_files": "ลบไฟล์เนื้อหาที่ถูกสร้างขึ้นเสมอ"
+                }
+            }
+        },
+        "tools": {
+            "scene_filename_parser": {
+                "ignore_organized": "ไม่สนใจ scene ที่ organize แล้ว",
+                "ignored_words": "ไม่สนใจคำต่อไปนี้",
+                "title": "เครื่องมือตั้งชื่อไฟล์ scene",
+                "whitespace_chars": "การแทนที่อักขระ whitespace",
+                "add_field": "เพิ่ม Field",
+                "capitalize_title": "อักษรตัวแรกเป็นตัวพิมพ์ใหญ่",
+                "display_fields": "แสดง fields",
+                "escape_chars": "ใช้ \\ เพื่อหยุดการตรวจจับอักขระ",
+                "filename": "ชื่อไฟล์",
+                "filename_pattern": "รูปแบบชื่อไฟล์",
+                "select_parser_recipe": "เลือกสูตรการตั้งชื่อ",
+                "whitespace_chars_desc": "อักขระที่จะใช้แทนที่อักขระ whitespace ในชื่อไฟล์"
+            },
+            "scene_duplicate_checker": "เครื่องมือตรวจสอบ scene ซ้ำ",
+            "scene_tools": "เครื่องมือเกี่ยวกับ scene"
+        },
+        "advanced_mode": "โหมดปรับแต่งขั้นสูง"
+    },
+    "studio_tagger": {
+        "updating_untagged_studios_description": "อัพเดตสตูดิโอที่ยังไม่มีข้อมูลโดยการค้นหาสตูดิโอที่ยังไม่มี stashid และทำการอัปเดตข้อมูล metadata",
+        "config": {
+            "create_parent_label": "สร้างสตูดิโอบริษัทแม่",
+            "create_parent_desc": "สร้างสตูดิโอบริษัทแม่หรือแท็กที่เกี่ยวข้องหากยังไม่มี พร้อมอัปเดตข้อมูลและรูปภาพให้กับรายการที่มีอยู่แล้ว"
+        },
+        "create_or_tag_parent_studios": "สร้างสตูดิโอบริษัทแม่หรือแท็กที่เกียวข้องหากยังไม่มี",
+        "untagged_studios": "สตูดิโอที่ยังไม่มีข้อมูล"
+    },
+    "circumcised_types": {
+        "UNCUT": "ยกเลิกการตัด",
+        "CUT": "ตัด"
+    },
+    "setup": {
+        "paths": {
+            "where_can_stash_store_its_database_description": "Stash ใช้ระบบฐานข้อมูล SQLite เพื่อจัดเก็บข้อมูล metadata ของกรุหนังของคุณ หากไม่ได้ระบุเป็นอย่างอื่น ไฟล์ <code>stash-go.sqlite</code> จะถูกสร้างขึ้นในไดเร็กทอรีเดียวกันกับไฟล์ config หากต้องการระบุค่าเอง ให้ระบุตำแหน่งและชื่อไฟล์ที่ต้องการอย่าง absolute หรือ relative (อ้างอิงกับไดเร็กทอรีปัจจุบัน)",
+            "stash_alert": "ไม่ได้ตั้งค่าตำแหน่งไลบรารีไว้ จะไม่มีการเพิ่มเนื้อหาใดๆ เข้าสู่ Stash คุณแน่ใจหรือไม่?"
+        },
+        "confirm": {
+            "stash_library_directories": "ไดเร็กทอรีสำหรับไลบรารี Stash"
         }
-    }
+    },
+    "chapters": "ฉาก",
+    "studio_and_parent": "สตูดิโอและบริษัทแม่",
+    "metadata": "Metadata",
+    "parent_studio": "สตูดิโอบริษัทแม่",
+    "performer_tagger": {
+        "updating_untagged_performers_description": "อัปเดตนักแสดงที่ยังไม่มีข้อมูลโดยการค้นหานักแสดงที่ไม่มี stashid และทำการอัพเดตข้อมูล metadata",
+        "untagged_performers": "นักแสดงที่ยังไม่มีข้อมูล"
+    },
+    "library": "ไลบราลี",
+    "audio_codec": "โคเด็คเสียง",
+    "blobs_storage_type": {
+        "database": "ฐานข้อมูล",
+        "filesystem": "ระบบไฟล์"
+    },
+    "circumcised": "ขลิบ",
+    "appears_with": "แสดงร่วมกับ",
+    "parent_studios": "สตูดิโอบริษัทแม่",
+    "between_and": "และ"
 }
