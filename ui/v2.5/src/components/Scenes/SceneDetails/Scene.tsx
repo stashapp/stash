@@ -1,55 +1,56 @@
-import { Tab, Nav, Dropdown, Button } from "react-bootstrap";
 import React, {
-  useEffect,
-  useState,
-  useMemo,
   useContext,
-  useRef,
+  useEffect,
   useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
 } from "react";
+import { Button, Dropdown, Nav, Tab } from "react-bootstrap";
+import { Helmet } from "react-helmet";
 import { FormattedDate, FormattedMessage, useIntl } from "react-intl";
 import { Link, RouteComponentProps } from "react-router-dom";
-import { Helmet } from "react-helmet";
 import * as GQL from "src/core/generated-graphql";
 import {
   mutateMetadataScan,
-  useFindScene,
-  useSceneIncrementO,
-  useSceneGenerateScreenshot,
-  useSceneUpdate,
   queryFindScenes,
   queryFindScenesByID,
+  useFindScene,
+  useSceneGenerateScreenshot,
+  useSceneIncrementO,
   useSceneIncrementPlayCount,
+  useSceneUpdate,
 } from "src/core/StashService";
 
-import { SceneEditPanel } from "./SceneEditPanel";
-import { ErrorMessage } from "src/components/Shared/ErrorMessage";
-import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
-import { Icon } from "src/components/Shared/Icon";
-import { Counter } from "src/components/Shared/Counter";
-import { useToast } from "src/hooks/Toast";
-import SceneQueue, { QueuedScene } from "src/models/sceneQueue";
-import { ListFilterModel } from "src/models/list-filter/filter";
-import Mousetrap from "mousetrap";
-import { OrganizedButton } from "./OrganizedButton";
-import { ConfigurationContext } from "src/hooks/Config";
-import { getPlayerPosition } from "src/components/ScenePlayer/util";
 import {
-  faEllipsisV,
-  faChevronRight,
   faChevronLeft,
+  faChevronRight,
+  faEllipsisV,
 } from "@fortawesome/free-solid-svg-icons";
-import { objectPath, objectTitle } from "src/core/files";
-import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
-import TextUtils from "src/utils/text";
+import cx from "classnames";
+import Mousetrap from "mousetrap";
+import { getPlayerPosition } from "src/components/ScenePlayer/util";
 import {
   OCounterButton,
   ViewCountButton,
 } from "src/components/Shared/CountButton";
-import { useRatingKeybinds } from "src/hooks/keybinds";
-import { lazyComponent } from "src/utils/lazyComponent";
-import cx from "classnames";
+import { Counter } from "src/components/Shared/Counter";
+import { ErrorMessage } from "src/components/Shared/ErrorMessage";
+import { Icon } from "src/components/Shared/Icon";
+import StashImage from "src/components/Shared/Image";
+import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
+import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
+import { objectPath, objectTitle } from "src/core/files";
+import { ConfigurationContext } from "src/hooks/Config";
+import { useRatingKeybinds } from "src/hooks/keybinds";
+import { useToast } from "src/hooks/Toast";
+import { ListFilterModel } from "src/models/list-filter/filter";
+import SceneQueue, { QueuedScene } from "src/models/sceneQueue";
+import { lazyComponent } from "src/utils/lazyComponent";
+import TextUtils from "src/utils/text";
+import { OrganizedButton } from "./OrganizedButton";
+import { SceneEditPanel } from "./SceneEditPanel";
 
 const SubmitStashBoxDraft = lazyComponent(
   () => import("src/components/Dialogs/SubmitDraft")
@@ -574,7 +575,7 @@ const ScenePage: React.FC<IProps> = ({
             {scene.studio && (
               <h1 className="text-center scene-studio-image">
                 <Link to={`/studios/${scene.studio.id}`}>
-                  <img
+                  <StashImage
                     src={scene.studio.image_path ?? ""}
                     alt={`${scene.studio.name} logo`}
                     className="studio-logo"

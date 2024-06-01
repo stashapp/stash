@@ -1,17 +1,18 @@
-import { Button, ButtonGroup } from "react-bootstrap";
-import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import * as GQL from "src/core/generated-graphql";
-import NavUtils from "src/utils/navigation";
-import { FormattedMessage } from "react-intl";
-import { TruncatedText } from "../Shared/TruncatedText";
-import { GridCard, calculateCardWidth } from "../Shared/GridCard/GridCard";
-import { PopoverCountButton } from "../Shared/PopoverCountButton";
-import ScreenUtils from "src/utils/screen";
-import { Icon } from "../Shared/Icon";
 import { faHeart } from "@fortawesome/free-solid-svg-icons";
 import cx from "classnames";
+import React, { useEffect, useState } from "react";
+import { Button, ButtonGroup } from "react-bootstrap";
+import { FormattedMessage } from "react-intl";
+import { Link } from "react-router-dom";
+import * as GQL from "src/core/generated-graphql";
 import { useTagUpdate } from "src/core/StashService";
+import NavUtils from "src/utils/navigation";
+import ScreenUtils from "src/utils/screen";
+import { GridCard, calculateCardWidth } from "../Shared/GridCard/GridCard";
+import { Icon } from "../Shared/Icon";
+import StashImage from "../Shared/Image";
+import { PopoverCountButton } from "../Shared/PopoverCountButton";
+import { TruncatedText } from "../Shared/TruncatedText";
 interface IProps {
   tag: GQL.TagDataFragment;
   containerWidth?: number;
@@ -248,7 +249,7 @@ export const TagCard: React.FC<IProps> = ({
       title={tag.name ?? ""}
       linkClassName="tag-card-header"
       image={
-        <img
+        <StashImage
           loading="lazy"
           className="tag-card-image"
           alt={tag.name}

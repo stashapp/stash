@@ -1,47 +1,48 @@
-import { Button, Tab, Nav, Dropdown } from "react-bootstrap";
-import React, { useContext, useEffect, useMemo, useState } from "react";
 import {
-  useHistory,
-  Link,
-  RouteComponentProps,
-  Redirect,
-} from "react-router-dom";
-import { FormattedDate, FormattedMessage, useIntl } from "react-intl";
+  faChevronLeft,
+  faChevronRight,
+  faEllipsisV,
+} from "@fortawesome/free-solid-svg-icons";
+import cx from "classnames";
+import Mousetrap from "mousetrap";
+import React, { useContext, useEffect, useMemo, useState } from "react";
+import { Button, Dropdown, Nav, Tab } from "react-bootstrap";
 import { Helmet } from "react-helmet";
+import { FormattedDate, FormattedMessage, useIntl } from "react-intl";
+import {
+  Link,
+  Redirect,
+  RouteComponentProps,
+  useHistory,
+} from "react-router-dom";
+import { OrganizedButton } from "src/components/Scenes/SceneDetails/OrganizedButton";
+import { Counter } from "src/components/Shared/Counter";
+import { ErrorMessage } from "src/components/Shared/ErrorMessage";
+import { Icon } from "src/components/Shared/Icon";
+import StashImage from "src/components/Shared/Image";
+import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
+import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
+import { TruncatedText } from "src/components/Shared/TruncatedText";
+import { galleryPath, galleryTitle } from "src/core/galleries";
 import * as GQL from "src/core/generated-graphql";
 import {
   mutateMetadataScan,
   useFindGallery,
   useGalleryUpdate,
 } from "src/core/StashService";
-import { ErrorMessage } from "src/components/Shared/ErrorMessage";
-import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
-import { Icon } from "src/components/Shared/Icon";
-import { Counter } from "src/components/Shared/Counter";
-import Mousetrap from "mousetrap";
-import { useGalleryLightbox } from "src/hooks/Lightbox/hooks";
-import { useToast } from "src/hooks/Toast";
-import { OrganizedButton } from "src/components/Scenes/SceneDetails/OrganizedButton";
-import { GalleryEditPanel } from "./GalleryEditPanel";
-import { GalleryDetailPanel } from "./GalleryDetailPanel";
-import { DeleteGalleriesDialog } from "../DeleteGalleriesDialog";
-import { GalleryImagesPanel } from "./GalleryImagesPanel";
-import { GalleryAddPanel } from "./GalleryAddPanel";
-import { GalleryFileInfoPanel } from "./GalleryFileInfoPanel";
-import { GalleryScenesPanel } from "./GalleryScenesPanel";
-import {
-  faEllipsisV,
-  faChevronRight,
-  faChevronLeft,
-} from "@fortawesome/free-solid-svg-icons";
-import { galleryPath, galleryTitle } from "src/core/galleries";
-import { GalleryChapterPanel } from "./GalleryChaptersPanel";
-import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
-import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
-import cx from "classnames";
-import { useRatingKeybinds } from "src/hooks/keybinds";
 import { ConfigurationContext } from "src/hooks/Config";
-import { TruncatedText } from "src/components/Shared/TruncatedText";
+import { useRatingKeybinds } from "src/hooks/keybinds";
+import { useGalleryLightbox } from "src/hooks/Lightbox/hooks";
+import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
+import { useToast } from "src/hooks/Toast";
+import { DeleteGalleriesDialog } from "../DeleteGalleriesDialog";
+import { GalleryAddPanel } from "./GalleryAddPanel";
+import { GalleryChapterPanel } from "./GalleryChaptersPanel";
+import { GalleryDetailPanel } from "./GalleryDetailPanel";
+import { GalleryEditPanel } from "./GalleryEditPanel";
+import { GalleryFileInfoPanel } from "./GalleryFileInfoPanel";
+import { GalleryImagesPanel } from "./GalleryImagesPanel";
+import { GalleryScenesPanel } from "./GalleryScenesPanel";
 
 interface IProps {
   gallery: GQL.GalleryDataFragment;
@@ -366,7 +367,7 @@ export const GalleryPage: React.FC<IProps> = ({ gallery, add }) => {
             {gallery.studio && (
               <h1 className="text-center gallery-studio-image">
                 <Link to={`/studios/${gallery.studio.id}`}>
-                  <img
+                  <StashImage
                     src={gallery.studio.image_path ?? ""}
                     alt={`${gallery.studio.name} logo`}
                     className="studio-logo"

@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import { Button } from "react-bootstrap";
 
-import * as GQL from "src/core/generated-graphql";
-import { useUpdatePerformer } from "../queries";
-import PerformerModal from "../PerformerModal";
 import { faTags } from "@fortawesome/free-solid-svg-icons";
+import StashImage from "src/components/Shared/Image";
+import * as GQL from "src/core/generated-graphql";
 import { mergeStashIDs } from "src/utils/stashbox";
+import PerformerModal from "../PerformerModal";
+import { useUpdatePerformer } from "../queries";
 
 interface IStashSearchResultProps {
   performer: GQL.SlimPerformerDataFragment;
@@ -89,7 +90,11 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
       key={p.remote_site_id}
       onClick={() => setModalPerformer(p)}
     >
-      <img src={(p.images ?? [])[0]} alt="" className="PerformerTagger-thumb" />
+      <StashImage
+        src={(p.images ?? [])[0]}
+        alt=""
+        className="PerformerTagger-thumb"
+      />
       <span>
         {p.name}
         {p.disambiguation && ` (${p.disambiguation})`}

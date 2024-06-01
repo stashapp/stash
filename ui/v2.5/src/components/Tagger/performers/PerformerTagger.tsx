@@ -5,28 +5,29 @@ import { Link } from "react-router-dom";
 import { HashLink } from "react-router-hash-link";
 import { useLocalForage } from "src/hooks/LocalForage";
 
-import * as GQL from "src/core/generated-graphql";
+import { Manual } from "src/components/Help/Manual";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { ModalComponent } from "src/components/Shared/Modal";
+import * as GQL from "src/core/generated-graphql";
 import {
+  evictQueries,
+  getClient,
+  mutateStashBoxBatchPerformerTag,
+  performerMutationImpactedQueries,
   stashBoxPerformerQuery,
   useJobsSubscribe,
-  mutateStashBoxBatchPerformerTag,
-  getClient,
-  evictQueries,
-  performerMutationImpactedQueries,
 } from "src/core/StashService";
-import { Manual } from "src/components/Help/Manual";
 import { ConfigurationContext } from "src/hooks/Config";
 
-import StashSearchResult from "./StashSearchResult";
-import PerformerConfig from "./Config";
-import { LOCAL_FORAGE_KEY, ITaggerConfig, initialConfig } from "../constants";
+import { faStar, faTags } from "@fortawesome/free-solid-svg-icons";
+import { ExternalLink } from "src/components/Shared/ExternalLink";
+import StashImage from "src/components/Shared/Image";
+import { mergeStashIDs } from "src/utils/stashbox";
+import { ITaggerConfig, LOCAL_FORAGE_KEY, initialConfig } from "../constants";
 import PerformerModal from "../PerformerModal";
 import { useUpdatePerformer } from "../queries";
-import { faStar, faTags } from "@fortawesome/free-solid-svg-icons";
-import { mergeStashIDs } from "src/utils/stashbox";
-import { ExternalLink } from "src/components/Shared/ExternalLink";
+import PerformerConfig from "./Config";
+import StashSearchResult from "./StashSearchResult";
 
 type JobFragment = Pick<
   GQL.Job,
@@ -560,7 +561,7 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
             />
           )}
           <Card className="performer-card p-0 m-0">
-            <img src={performer.image_path ?? ""} alt="" />
+            <StashImage src={performer.image_path ?? ""} alt="" />
           </Card>
           <div className={`${CLASSNAME}-details`}>
             <Link

@@ -1,11 +1,12 @@
 import React, { useMemo, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
-import { PerformerEditPanel } from "./PerformerEditPanel";
 import { useHistory, useLocation } from "react-router-dom";
-import { useToast } from "src/hooks/Toast";
+import StashImage from "src/components/Shared/Image";
+import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import * as GQL from "src/core/generated-graphql";
 import { usePerformerCreate } from "src/core/StashService";
+import { useToast } from "src/hooks/Toast";
+import { PerformerEditPanel } from "./PerformerEditPanel";
 
 const PerformerCreate: React.FC = () => {
   const Toast = useToast();
@@ -50,7 +51,7 @@ const PerformerCreate: React.FC = () => {
     }
     if (image) {
       return (
-        <img
+        <StashImage
           className="performer"
           src={image}
           alt={intl.formatMessage({ id: "performer" })}

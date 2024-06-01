@@ -5,30 +5,31 @@ import { Link } from "react-router-dom";
 import { HashLink } from "react-router-hash-link";
 import { useLocalForage } from "src/hooks/LocalForage";
 
-import * as GQL from "src/core/generated-graphql";
+import { Manual } from "src/components/Help/Manual";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { ModalComponent } from "src/components/Shared/Modal";
+import * as GQL from "src/core/generated-graphql";
 import {
-  stashBoxStudioQuery,
-  useJobsSubscribe,
-  mutateStashBoxBatchStudioTag,
-  getClient,
-  studioMutationImpactedQueries,
-  useStudioCreate,
   evictQueries,
+  getClient,
+  mutateStashBoxBatchStudioTag,
+  stashBoxStudioQuery,
+  studioMutationImpactedQueries,
+  useJobsSubscribe,
+  useStudioCreate,
 } from "src/core/StashService";
-import { Manual } from "src/components/Help/Manual";
 import { ConfigurationContext } from "src/hooks/Config";
 
-import StashSearchResult from "./StashSearchResult";
-import StudioConfig from "./Config";
-import { LOCAL_FORAGE_KEY, ITaggerConfig, initialConfig } from "../constants";
-import StudioModal from "../scenes/StudioModal";
-import { useUpdateStudio } from "../queries";
-import { apolloError } from "src/utils";
 import { faStar, faTags } from "@fortawesome/free-solid-svg-icons";
 import { ExternalLink } from "src/components/Shared/ExternalLink";
+import StashImage from "src/components/Shared/Image";
+import { apolloError } from "src/utils";
+import { ITaggerConfig, LOCAL_FORAGE_KEY, initialConfig } from "../constants";
+import { useUpdateStudio } from "../queries";
+import StudioModal from "../scenes/StudioModal";
 import { mergeStudioStashIDs } from "../utils";
+import StudioConfig from "./Config";
+import StashSearchResult from "./StashSearchResult";
 
 type JobFragment = Pick<
   GQL.Job,
@@ -619,7 +620,11 @@ const StudioTaggerList: React.FC<IStudioTaggerListProps> = ({
             <div></div>
             <div>
               <Card className="studio-card">
-                <img loading="lazy" src={studio.image_path ?? ""} alt="" />
+                <StashImage
+                  loading="lazy"
+                  src={studio.image_path ?? ""}
+                  alt=""
+                />
               </Card>
             </div>
             <div className={`${CLASSNAME}-details-text`}>

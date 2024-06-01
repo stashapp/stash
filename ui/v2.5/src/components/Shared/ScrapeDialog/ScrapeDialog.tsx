@@ -1,28 +1,29 @@
-import React, { useState } from "react";
-import {
-  Form,
-  Col,
-  Row,
-  InputGroup,
-  Button,
-  FormControl,
-  Badge,
-} from "react-bootstrap";
-import { CollapseButton } from "../CollapseButton";
-import { Icon } from "../Icon";
-import { ModalComponent } from "../Modal";
-import clone from "lodash-es/clone";
-import { FormattedMessage, useIntl } from "react-intl";
 import {
   faCheck,
   faPencilAlt,
   faPlus,
   faTimes,
 } from "@fortawesome/free-solid-svg-icons";
+import clone from "lodash-es/clone";
+import React, { useState } from "react";
+import {
+  Badge,
+  Button,
+  Col,
+  Form,
+  FormControl,
+  InputGroup,
+  Row,
+} from "react-bootstrap";
+import { FormattedMessage, useIntl } from "react-intl";
 import { getCountryByISO } from "src/utils/country";
+import { CollapseButton } from "../CollapseButton";
 import { CountrySelect } from "../CountrySelect";
-import { StringListInput } from "../StringListInput";
+import { Icon } from "../Icon";
+import StashImage from "../Image";
 import { ImageSelector } from "../ImageSelector";
+import { ModalComponent } from "../Modal";
+import { StringListInput } from "../StringListInput";
 import { ScrapeResult } from "./scrapeResult";
 
 interface IScrapedFieldProps<T> {
@@ -340,7 +341,11 @@ const ScrapedImage: React.FC<IScrapedImageProps> = (props) => {
   }
 
   return (
-    <img className={props.className} src={value} alt={props.placeholder} />
+    <StashImage
+      className={props.className}
+      src={value}
+      alt={props.placeholder}
+    />
   );
 };
 

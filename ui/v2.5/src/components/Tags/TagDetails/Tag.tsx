@@ -1,35 +1,11 @@
-import { Tabs, Tab, Dropdown, Button } from "react-bootstrap";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { useHistory, Redirect, RouteComponentProps } from "react-router-dom";
-import { FormattedMessage, useIntl } from "react-intl";
-import { Helmet } from "react-helmet";
 import cx from "classnames";
 import Mousetrap from "mousetrap";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { Button, Dropdown, Tab, Tabs } from "react-bootstrap";
+import { Helmet } from "react-helmet";
+import { FormattedMessage, useIntl } from "react-intl";
+import { Redirect, RouteComponentProps, useHistory } from "react-router-dom";
 
-import * as GQL from "src/core/generated-graphql";
-import {
-  useFindTag,
-  useTagUpdate,
-  useTagDestroy,
-  mutateMetadataAutoTag,
-} from "src/core/StashService";
-import { Counter } from "src/components/Shared/Counter";
-import { DetailsEditNavbar } from "src/components/Shared/DetailsEditNavbar";
-import { ErrorMessage } from "src/components/Shared/ErrorMessage";
-import { ModalComponent } from "src/components/Shared/Modal";
-import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
-import { Icon } from "src/components/Shared/Icon";
-import { useToast } from "src/hooks/Toast";
-import { ConfigurationContext } from "src/hooks/Config";
-import { tagRelationHook } from "src/core/tags";
-import { TagScenesPanel } from "./TagScenesPanel";
-import { TagMarkersPanel } from "./TagMarkersPanel";
-import { TagImagesPanel } from "./TagImagesPanel";
-import { TagPerformersPanel } from "./TagPerformersPanel";
-import { TagGalleriesPanel } from "./TagGalleriesPanel";
-import { CompressedTagDetailsPanel, TagDetailsPanel } from "./TagDetailsPanel";
-import { TagEditPanel } from "./TagEditPanel";
-import { TagMergeModal } from "./TagMergeDialog";
 import {
   faChevronDown,
   faChevronUp,
@@ -38,9 +14,34 @@ import {
   faSignOutAlt,
   faTrashAlt,
 } from "@fortawesome/free-solid-svg-icons";
+import { Counter } from "src/components/Shared/Counter";
 import { DetailImage } from "src/components/Shared/DetailImage";
+import { DetailsEditNavbar } from "src/components/Shared/DetailsEditNavbar";
+import { ErrorMessage } from "src/components/Shared/ErrorMessage";
+import { Icon } from "src/components/Shared/Icon";
+import StashImage from "src/components/Shared/Image";
+import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
+import { ModalComponent } from "src/components/Shared/Modal";
+import * as GQL from "src/core/generated-graphql";
+import {
+  mutateMetadataAutoTag,
+  useFindTag,
+  useTagDestroy,
+  useTagUpdate,
+} from "src/core/StashService";
+import { tagRelationHook } from "src/core/tags";
+import { ConfigurationContext } from "src/hooks/Config";
 import { useLoadStickyHeader } from "src/hooks/detailsPanel";
 import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
+import { useToast } from "src/hooks/Toast";
+import { CompressedTagDetailsPanel, TagDetailsPanel } from "./TagDetailsPanel";
+import { TagEditPanel } from "./TagEditPanel";
+import { TagGalleriesPanel } from "./TagGalleriesPanel";
+import { TagImagesPanel } from "./TagImagesPanel";
+import { TagMarkersPanel } from "./TagMarkersPanel";
+import { TagMergeModal } from "./TagMergeDialog";
+import { TagPerformersPanel } from "./TagPerformersPanel";
+import { TagScenesPanel } from "./TagScenesPanel";
 
 interface IProps {
   tag: GQL.TagDataFragment;
@@ -506,7 +507,7 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
           <div className="background-image-container">
             <picture>
               <source src={tagImage} />
-              <img
+              <StashImage
                 className="background-image"
                 src={tagImage}
                 alt={`${tag.name} background`}

@@ -1,11 +1,12 @@
 import React from "react";
 import { useIntl } from "react-intl";
 import { Link } from "react-router-dom";
-import * as GQL from "src/core/generated-graphql";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
-import TextUtils from "src/utils/text";
-import { useGalleryLightbox } from "src/hooks/Lightbox/hooks";
 import { galleryTitle } from "src/core/galleries";
+import * as GQL from "src/core/generated-graphql";
+import { useGalleryLightbox } from "src/hooks/Lightbox/hooks";
+import TextUtils from "src/utils/text";
+import StashImage from "../Shared/Image";
 import { RatingSystem } from "../Shared/Rating/RatingSystem";
 
 const CLASSNAME = "GalleryWallCard";
@@ -51,7 +52,12 @@ const GalleryWallCard: React.FC<IProps> = ({ gallery }) => {
         tabIndex={0}
       >
         <RatingSystem value={gallery.rating100} disabled withoutContext />
-        <img loading="lazy" src={cover} alt="" className={CLASSNAME_IMG} />
+        <StashImage
+          loading="lazy"
+          src={cover}
+          alt=""
+          className={CLASSNAME_IMG}
+        />
         <footer className={CLASSNAME_FOOTER}>
           <Link
             to={`/galleries/${gallery.id}`}

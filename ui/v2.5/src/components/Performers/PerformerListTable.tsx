@@ -1,26 +1,27 @@
 /* eslint-disable jsx-a11y/control-has-associated-label */
 
+import { faHeart } from "@fortawesome/free-solid-svg-icons";
+import cx from "classnames";
 import React from "react";
-import { useIntl } from "react-intl";
 import { Button } from "react-bootstrap";
+import { useIntl } from "react-intl";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
-import { Icon } from "../Shared/Icon";
-import NavUtils from "src/utils/navigation";
-import { faHeart } from "@fortawesome/free-solid-svg-icons";
 import { usePerformerUpdate } from "src/core/StashService";
 import { useTableColumns } from "src/hooks/useTableColumns";
+import { getCountryByISO } from "src/utils/country";
+import NavUtils from "src/utils/navigation";
+import TextUtils from "src/utils/text";
+import { IColumn, ListTable } from "../List/ListTable";
+import { Icon } from "../Shared/Icon";
+import StashImage from "../Shared/Image";
 import { RatingSystem } from "../Shared/Rating/RatingSystem";
-import cx from "classnames";
 import {
   FormatCircumcised,
   FormatHeight,
   FormatPenisLength,
   FormatWeight,
 } from "./PerformerList";
-import TextUtils from "src/utils/text";
-import { getCountryByISO } from "src/utils/country";
-import { IColumn, ListTable } from "../List/ListTable";
 
 interface IPerformerListTableProps {
   performers: GQL.PerformerDataFragment[];
@@ -65,7 +66,7 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
 
   const ImageCell = (performer: GQL.PerformerDataFragment) => (
     <Link to={`/performers/${performer.id}`}>
-      <img
+      <StashImage
         loading="lazy"
         className="image-thumbnail"
         alt={performer.name ?? ""}

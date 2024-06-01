@@ -2,14 +2,15 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Badge, Button, Col, Form, InputGroup, Row } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 
-import * as GQL from "src/core/generated-graphql";
-import { ModalComponent } from "src/components/Shared/Modal";
-import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
-import { TruncatedText } from "src/components/Shared/TruncatedText";
+import { faSearch } from "@fortawesome/free-solid-svg-icons";
 import { Icon } from "src/components/Shared/Icon";
+import StashImage from "src/components/Shared/Image";
+import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
+import { ModalComponent } from "src/components/Shared/Modal";
+import { TruncatedText } from "src/components/Shared/TruncatedText";
+import * as GQL from "src/core/generated-graphql";
 import { queryScrapeSceneQuery } from "src/core/StashService";
 import { useToast } from "src/hooks/Toast";
-import { faSearch } from "@fortawesome/free-solid-svg-icons";
 
 interface ISceneSearchResultDetailsProps {
   scene: GQL.ScrapedSceneDataFragment;
@@ -58,7 +59,7 @@ const SceneSearchResultDetails: React.FC<ISceneSearchResultDetailsProps> = ({
     if (scene.image) {
       return (
         <div className="scene-image-container">
-          <img
+          <StashImage
             src={scene.image}
             alt=""
             className="align-self-center scene-image"

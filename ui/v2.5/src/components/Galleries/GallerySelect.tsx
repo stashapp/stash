@@ -1,21 +1,31 @@
+import cx from "classnames";
 import React, { useEffect, useMemo, useState } from "react";
 import {
+  MultiValueGenericProps,
   OptionProps,
   components as reactSelectComponents,
-  MultiValueGenericProps,
   SingleValueProps,
 } from "react-select";
-import cx from "classnames";
 
-import * as GQL from "src/core/generated-graphql";
-import {
-  queryFindGalleriesForSelect,
-  queryFindGalleriesByIDForSelect,
-} from "src/core/StashService";
-import { ConfigurationContext } from "src/hooks/Config";
+import { Placement } from "react-bootstrap/esm/Overlay";
 import { useIntl } from "react-intl";
 import { defaultMaxOptionsShown } from "src/core/config";
+import { galleryTitle } from "src/core/galleries";
+import * as GQL from "src/core/generated-graphql";
+import {
+  queryFindGalleriesByIDForSelect,
+  queryFindGalleriesForSelect,
+} from "src/core/StashService";
+import { ConfigurationContext } from "src/hooks/Config";
+import { useCompare } from "src/hooks/state";
+import {
+  Criterion,
+  CriterionValue,
+} from "src/models/list-filter/criteria/criterion";
+import { PathCriterion } from "src/models/list-filter/criteria/path";
 import { ListFilterModel } from "src/models/list-filter/filter";
+import { PatchComponent, PatchFunction } from "src/patch";
+import { sortByRelevance } from "src/utils/query";
 import {
   FilterSelectComponent,
   IFilterIDProps,
@@ -23,16 +33,7 @@ import {
   IFilterValueProps,
   Option as SelectOption,
 } from "../Shared/FilterSelect";
-import { useCompare } from "src/hooks/state";
-import { Placement } from "react-bootstrap/esm/Overlay";
-import { sortByRelevance } from "src/utils/query";
-import { galleryTitle } from "src/core/galleries";
-import { PatchComponent, PatchFunction } from "src/patch";
-import {
-  Criterion,
-  CriterionValue,
-} from "src/models/list-filter/criteria/criterion";
-import { PathCriterion } from "src/models/list-filter/criteria/path";
+import StashImage from "../Shared/Image";
 import { TruncatedText } from "../Shared/TruncatedText";
 
 export type Gallery = Pick<GQL.Gallery, "id" | "title" | "date" | "code"> & {
@@ -133,7 +134,7 @@ const _GallerySelect: React.FC<
         <span className="gallery-select-option">
           <span className="gallery-select-row">
             {object.cover?.paths?.thumbnail && (
-              <img
+              <StashImage
                 className="gallery-select-image"
                 src={object.cover.paths.thumbnail}
                 loading="lazy"

@@ -1,21 +1,16 @@
-import React, { useEffect, useRef, useState, useCallback } from "react";
+import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
+import Mousetrap from "mousetrap";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { Button, Fade, Nav, Navbar } from "react-bootstrap";
 import {
   defineMessages,
   FormattedMessage,
   MessageDescriptor,
   useIntl,
 } from "react-intl";
-import { Nav, Navbar, Button, Fade } from "react-bootstrap";
-import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { LinkContainer } from "react-router-bootstrap";
-import { Link, NavLink, useLocation, useHistory } from "react-router-dom";
-import Mousetrap from "mousetrap";
+import { Link, NavLink, useHistory, useLocation } from "react-router-dom";
 
-import SessionUtils from "src/utils/session";
-import { Icon } from "src/components/Shared/Icon";
-import { ConfigurationContext } from "src/hooks/Config";
-import { ManualStateContext } from "./Help/context";
-import { SettingsButton } from "./SettingsButton";
 import {
   faBars,
   faChartColumn,
@@ -32,8 +27,13 @@ import {
   faUser,
   faVideo,
 } from "@fortawesome/free-solid-svg-icons";
+import { Icon } from "src/components/Shared/Icon";
 import { baseURL } from "src/core/createClient";
+import { ConfigurationContext } from "src/hooks/Config";
 import { PatchComponent } from "src/patch";
+import SessionUtils from "src/utils/session";
+import { ManualStateContext } from "./Help/context";
+import { SettingsButton } from "./SettingsButton";
 
 interface IMenuItem {
   name: string;
@@ -176,7 +176,13 @@ const MainNavbarUtilityItems = PatchComponent(
 export const MainNavbar: React.FC = () => {
   const history = useHistory();
   const location = useLocation();
-  const { configuration, loading } = React.useContext(ConfigurationContext);
+  const {
+    configuration,
+    loading,
+    imageBlurred,
+    enableImageBlur,
+    disableImageBlur,
+  } = React.useContext(ConfigurationContext);
   const { openManual } = React.useContext(ManualStateContext);
 
   // Show all menu items by default, unless config says otherwise
@@ -245,6 +251,9 @@ export const MainNavbar: React.FC = () => {
   // set up hotkeys
   useEffect(() => {
     Mousetrap.bind("?", () => openManual());
+    Mousetrap.bind("b", () =>
+      imageBlurred ? disableImageBlur() : enableImageBlur()
+    );
     Mousetrap.bind("g z", () => goto("/settings"));
 
     menuItems.forEach((item) =>

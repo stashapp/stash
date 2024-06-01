@@ -1,26 +1,3 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Button, ButtonGroup, OverlayTrigger, Tooltip } from "react-bootstrap";
-import { Link, useHistory } from "react-router-dom";
-import cx from "classnames";
-import * as GQL from "src/core/generated-graphql";
-import { Icon } from "../Shared/Icon";
-import {
-  GalleryLink,
-  TagLink,
-  MovieLink,
-  SceneMarkerLink,
-} from "../Shared/TagLink";
-import { HoverPopover } from "../Shared/HoverPopover";
-import { SweatDrops } from "../Shared/SweatDrops";
-import { TruncatedText } from "../Shared/TruncatedText";
-import NavUtils from "src/utils/navigation";
-import TextUtils from "src/utils/text";
-import { SceneQueue } from "src/models/sceneQueue";
-import { ConfigurationContext } from "src/hooks/Config";
-import { PerformerPopoverButton } from "../Shared/PerformerPopoverButton";
-import { GridCard, calculateCardWidth } from "../Shared/GridCard/GridCard";
-import { RatingBanner } from "../Shared/RatingBanner";
-import { FormattedNumber } from "react-intl";
 import {
   faBox,
   faCopy,
@@ -29,11 +6,36 @@ import {
   faMapMarkerAlt,
   faTag,
 } from "@fortawesome/free-solid-svg-icons";
+import cx from "classnames";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { Button, ButtonGroup, OverlayTrigger, Tooltip } from "react-bootstrap";
+import { FormattedNumber } from "react-intl";
+import { Link, useHistory } from "react-router-dom";
 import { objectPath, objectTitle } from "src/core/files";
-import { PreviewScrubber } from "./PreviewScrubber";
+import * as GQL from "src/core/generated-graphql";
+import { useImageBlur } from "src/hooks/blur";
+import { ConfigurationContext } from "src/hooks/Config";
+import { SceneQueue } from "src/models/sceneQueue";
 import { PatchComponent } from "src/patch";
+import NavUtils from "src/utils/navigation";
 import ScreenUtils from "src/utils/screen";
+import TextUtils from "src/utils/text";
+import { GridCard, calculateCardWidth } from "../Shared/GridCard/GridCard";
 import { StudioOverlay } from "../Shared/GridCard/StudioOverlay";
+import { HoverPopover } from "../Shared/HoverPopover";
+import { Icon } from "../Shared/Icon";
+import StashImage from "../Shared/Image";
+import { PerformerPopoverButton } from "../Shared/PerformerPopoverButton";
+import { RatingBanner } from "../Shared/RatingBanner";
+import { SweatDrops } from "../Shared/SweatDrops";
+import {
+  GalleryLink,
+  MovieLink,
+  SceneMarkerLink,
+  TagLink,
+} from "../Shared/TagLink";
+import { TruncatedText } from "../Shared/TruncatedText";
+import { PreviewScrubber } from "./PreviewScrubber";
 
 interface IScenePreviewProps {
   isPortrait: boolean;
@@ -53,6 +55,7 @@ export const ScenePreview: React.FC<IScenePreviewProps> = ({
   onScrubberClick,
 }) => {
   const videoEl = useRef<HTMLVideoElement>(null);
+  const { blurClassName } = useImageBlur();
 
   useEffect(() => {
     const observer = new IntersectionObserver((entries) => {
@@ -74,7 +77,7 @@ export const ScenePreview: React.FC<IScenePreviewProps> = ({
 
   return (
     <div className={cx("scene-card-preview", { portrait: isPortrait })}>
-      <img
+      <StashImage
         className="scene-card-preview-image"
         loading="lazy"
         src={image}
@@ -84,7 +87,7 @@ export const ScenePreview: React.FC<IScenePreviewProps> = ({
         disableRemotePlayback
         playsInline
         muted={!soundActive}
-        className="scene-card-preview-video"
+        className={blurClassName("scene-card-preview-video blurred")}
         loop
         preload="none"
         ref={videoEl}
@@ -152,7 +155,7 @@ const SceneCardPopovers = PatchComponent(
             to={`/movies/${sceneMovie.movie.id}`}
             className="movie-tag col m-auto zoom-2"
           >
-            <img
+            <StashImage
               className="image-thumbnail"
               alt={sceneMovie.movie.name ?? ""}
               src={sceneMovie.movie.front_image_path ?? ""}

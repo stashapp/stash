@@ -1,51 +1,52 @@
-import { Button, Tabs, Tab } from "react-bootstrap";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { useHistory, Redirect, RouteComponentProps } from "react-router-dom";
-import { FormattedMessage, useIntl } from "react-intl";
-import { Helmet } from "react-helmet";
 import cx from "classnames";
 import Mousetrap from "mousetrap";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { Button, Tab, Tabs } from "react-bootstrap";
+import { Helmet } from "react-helmet";
+import { FormattedMessage, useIntl } from "react-intl";
+import { Redirect, RouteComponentProps, useHistory } from "react-router-dom";
 
+import {
+  faChevronDown,
+  faChevronUp,
+  faHeart,
+  faLink,
+  faTrashAlt,
+} from "@fortawesome/free-solid-svg-icons";
+import { Counter } from "src/components/Shared/Counter";
+import { DetailImage } from "src/components/Shared/DetailImage";
+import { DetailsEditNavbar } from "src/components/Shared/DetailsEditNavbar";
+import { ErrorMessage } from "src/components/Shared/ErrorMessage";
+import { ExternalLink } from "src/components/Shared/ExternalLink";
+import { Icon } from "src/components/Shared/Icon";
+import StashImage from "src/components/Shared/Image";
+import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
+import { ModalComponent } from "src/components/Shared/Modal";
+import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import * as GQL from "src/core/generated-graphql";
 import {
-  useFindStudio,
-  useStudioUpdate,
-  useStudioDestroy,
   mutateMetadataAutoTag,
+  useFindStudio,
+  useStudioDestroy,
+  useStudioUpdate,
 } from "src/core/StashService";
-import { Counter } from "src/components/Shared/Counter";
-import { DetailsEditNavbar } from "src/components/Shared/DetailsEditNavbar";
-import { ModalComponent } from "src/components/Shared/Modal";
-import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
-import { ErrorMessage } from "src/components/Shared/ErrorMessage";
-import { useToast } from "src/hooks/Toast";
 import { ConfigurationContext } from "src/hooks/Config";
-import { Icon } from "src/components/Shared/Icon";
-import { StudioScenesPanel } from "./StudioScenesPanel";
-import { StudioGalleriesPanel } from "./StudioGalleriesPanel";
-import { StudioImagesPanel } from "./StudioImagesPanel";
+import { useLoadStickyHeader } from "src/hooks/detailsPanel";
+import { useRatingKeybinds } from "src/hooks/keybinds";
+import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
+import { useToast } from "src/hooks/Toast";
+import TextUtils from "src/utils/text";
 import { StudioChildrenPanel } from "./StudioChildrenPanel";
-import { StudioPerformersPanel } from "./StudioPerformersPanel";
-import { StudioEditPanel } from "./StudioEditPanel";
 import {
   CompressedStudioDetailsPanel,
   StudioDetailsPanel,
 } from "./StudioDetailsPanel";
+import { StudioEditPanel } from "./StudioEditPanel";
+import { StudioGalleriesPanel } from "./StudioGalleriesPanel";
+import { StudioImagesPanel } from "./StudioImagesPanel";
 import { StudioMoviesPanel } from "./StudioMoviesPanel";
-import {
-  faTrashAlt,
-  faLink,
-  faChevronDown,
-  faChevronUp,
-  faHeart,
-} from "@fortawesome/free-solid-svg-icons";
-import TextUtils from "src/utils/text";
-import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
-import { DetailImage } from "src/components/Shared/DetailImage";
-import { useRatingKeybinds } from "src/hooks/keybinds";
-import { useLoadStickyHeader } from "src/hooks/detailsPanel";
-import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
-import { ExternalLink } from "src/components/Shared/ExternalLink";
+import { StudioPerformersPanel } from "./StudioPerformersPanel";
+import { StudioScenesPanel } from "./StudioScenesPanel";
 
 interface IProps {
   studio: GQL.StudioDataFragment;
@@ -482,7 +483,7 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
           <div className="background-image-container">
             <picture>
               <source src={studioImage} />
-              <img
+              <StashImage
                 className="background-image"
                 src={studioImage}
                 alt={`${studio.name} background`}

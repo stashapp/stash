@@ -1,14 +1,15 @@
 import React from "react";
-import { Link } from "react-router-dom";
-import * as GQL from "src/core/generated-graphql";
-import NavUtils from "src/utils/navigation";
 import { useIntl } from "react-intl";
+import { Link } from "react-router-dom";
 import { objectTitle } from "src/core/files";
 import { galleryTitle } from "src/core/galleries";
-import { RatingSystem } from "../Shared/Rating/RatingSystem";
+import * as GQL from "src/core/generated-graphql";
 import { useGalleryUpdate } from "src/core/StashService";
-import { IColumn, ListTable } from "../List/ListTable";
 import { useTableColumns } from "src/hooks/useTableColumns";
+import NavUtils from "src/utils/navigation";
+import { IColumn, ListTable } from "../List/ListTable";
+import StashImage from "../Shared/Image";
+import { RatingSystem } from "../Shared/Rating/RatingSystem";
 
 interface IGalleryListTableProps {
   galleries: GQL.SlimGalleryDataFragment[];
@@ -44,7 +45,7 @@ export const GalleryListTable: React.FC<IGalleryListTableProps> = (
     return (
       <Link to={`/galleries/${gallery.id}`}>
         {gallery.cover ? (
-          <img
+          <StashImage
             loading="lazy"
             alt={title}
             className="image-thumbnail"

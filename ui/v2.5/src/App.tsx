@@ -1,4 +1,8 @@
+import cloneDeep from "lodash-es/cloneDeep";
+import mergeWith from "lodash-es/mergeWith";
 import React, { Suspense, useEffect, useState } from "react";
+import { Helmet } from "react-helmet";
+import { CustomFormats, IntlProvider } from "react-intl";
 import {
   Route,
   Switch,
@@ -6,50 +10,46 @@ import {
   useLocation,
   useRouteMatch,
 } from "react-router-dom";
-import { IntlProvider, CustomFormats } from "react-intl";
-import { Helmet } from "react-helmet";
-import cloneDeep from "lodash-es/cloneDeep";
-import mergeWith from "lodash-es/mergeWith";
-import { ToastProvider } from "src/hooks/Toast";
 import { LightboxProvider } from "src/hooks/Lightbox/context";
+import { ToastProvider } from "src/hooks/Toast";
 import { initPolyfills } from "src/polyfills";
 
-import locales, { registerCountry } from "src/locales";
+import Mousetrap from "mousetrap";
+import MousetrapPause from "mousetrap-pause";
 import {
   useConfiguration,
   useConfigureUI,
   usePlugins,
   useSystemStatus,
 } from "src/core/StashService";
-import flattenMessages from "./utils/flattenMessages";
+import locales, { registerCountry } from "src/locales";
 import * as yup from "yup";
-import Mousetrap from "mousetrap";
-import MousetrapPause from "mousetrap-pause";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { MainNavbar } from "./components/MainNavbar";
 import { PageNotFound } from "./components/PageNotFound";
+import { LoadingIndicator } from "./components/Shared/LoadingIndicator";
 import * as GQL from "./core/generated-graphql";
 import { makeTitleProps } from "./hooks/title";
-import { LoadingIndicator } from "./components/Shared/LoadingIndicator";
+import flattenMessages from "./utils/flattenMessages";
 
-import { ConfigurationProvider } from "./hooks/Config";
-import { ManualProvider } from "./components/Help/context";
-import { InteractiveProvider } from "./hooks/Interactive/context";
-import { ReleaseNotesDialog } from "./components/Dialogs/ReleaseNotesDialog";
-import { releaseNotes } from "./docs/en/ReleaseNotes";
-import { getPlatformURL } from "./core/createClient";
-import { lazyComponent } from "./utils/lazyComponent";
-import { isPlatformUniquelyRenderedByApple } from "./utils/apple";
-import useScript, { useCSS } from "./hooks/useScript";
-import { useMemoOnce } from "./hooks/state";
-import Event from "./hooks/event";
 import { uniq } from "lodash-es";
+import { ReleaseNotesDialog } from "./components/Dialogs/ReleaseNotesDialog";
+import { ManualProvider } from "./components/Help/context";
+import { getPlatformURL } from "./core/createClient";
+import { releaseNotes } from "./docs/en/ReleaseNotes";
+import { ConfigurationProvider, getInitialImageBlur } from "./hooks/Config";
+import Event from "./hooks/event";
+import { InteractiveProvider } from "./hooks/Interactive/context";
+import { useMemoOnce } from "./hooks/state";
+import useScript, { useCSS } from "./hooks/useScript";
+import { isPlatformUniquelyRenderedByApple } from "./utils/apple";
+import { lazyComponent } from "./utils/lazyComponent";
 
 import { PluginRoutes } from "./plugins";
 
 // import plugin_api to run code
-import "./pluginApi";
 import { ConnectionMonitor } from "./ConnectionMonitor";
+import "./pluginApi";
 
 const Performers = lazyComponent(
   () => import("./components/Performers/Performers")
@@ -156,6 +156,8 @@ export const App: React.FC = () => {
   // use en-GB as default messages if any messages aren't found in the chosen language
   const [messages, setMessages] = useState<{}>();
   const [customMessages, setCustomMessages] = useState<{}>();
+
+  const initialImageBlur = getInitialImageBlur();
 
   useEffect(() => {
     (async () => {
@@ -365,6 +367,7 @@ export const App: React.FC = () => {
           formats={intlFormats}
         >
           <ConfigurationProvider
+            imageBlurred={initialImageBlur}
             configuration={config.data?.configuration}
             loading={config.loading}
           >

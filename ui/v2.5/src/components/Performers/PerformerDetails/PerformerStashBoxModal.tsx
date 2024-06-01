@@ -1,18 +1,19 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Form, Row, Col, Badge } from "react-bootstrap";
+import { Badge, Col, Form, Row } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 
-import * as GQL from "src/core/generated-graphql";
-import { ModalComponent } from "src/components/Shared/Modal";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
-import { stashboxDisplayName } from "src/utils/stashbox";
+import { ModalComponent } from "src/components/Shared/Modal";
+import * as GQL from "src/core/generated-graphql";
 import { useDebounce } from "src/hooks/debounce";
+import { stashboxDisplayName } from "src/utils/stashbox";
 
+import GenderIcon from "src/components/Performers/GenderIcon";
+import { CountryFlag } from "src/components/Shared/CountryFlag";
+import StashImage from "src/components/Shared/Image";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
 import { stringToGender } from "src/utils/gender";
 import TextUtils from "src/utils/text";
-import GenderIcon from "src/components/Performers/GenderIcon";
-import { CountryFlag } from "src/components/Shared/CountryFlag";
 
 const CLASSNAME = "PerformerScrapeModal";
 const CLASSNAME_LIST = `${CLASSNAME}-list`;
@@ -29,7 +30,7 @@ const PerformerSearchResultDetails: React.FC<
     if (performer.images && performer.images.length > 0) {
       return (
         <div className="scene-image-container">
-          <img
+          <StashImage
             src={performer.images[0]}
             alt=""
             className="align-self-center scene-image"

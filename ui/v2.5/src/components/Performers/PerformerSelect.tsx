@@ -1,22 +1,26 @@
+import cx from "classnames";
 import React, { useEffect, useState } from "react";
 import {
+  MultiValueGenericProps,
   OptionProps,
   components as reactSelectComponents,
-  MultiValueGenericProps,
   SingleValueProps,
 } from "react-select";
-import cx from "classnames";
 
+import { useIntl } from "react-intl";
+import { Link } from "react-router-dom";
+import { defaultMaxOptionsShown } from "src/core/config";
 import * as GQL from "src/core/generated-graphql";
 import {
-  usePerformerCreate,
   queryFindPerformersByIDForSelect,
   queryFindPerformersForSelect,
+  usePerformerCreate,
 } from "src/core/StashService";
 import { ConfigurationContext } from "src/hooks/Config";
-import { useIntl } from "react-intl";
-import { defaultMaxOptionsShown } from "src/core/config";
+import { useCompare } from "src/hooks/state";
 import { ListFilterModel } from "src/models/list-filter/filter";
+import { PatchComponent, PatchFunction } from "src/patch";
+import { sortByRelevance } from "src/utils/query";
 import {
   FilterSelectComponent,
   IFilterIDProps,
@@ -24,10 +28,7 @@ import {
   IFilterValueProps,
   Option as SelectOption,
 } from "../Shared/FilterSelect";
-import { useCompare } from "src/hooks/state";
-import { Link } from "react-router-dom";
-import { sortByRelevance } from "src/utils/query";
-import { PatchComponent, PatchFunction } from "src/patch";
+import StashImage from "../Shared/Image";
 
 export type SelectObject = {
   id: string;
@@ -118,7 +119,7 @@ const _PerformerSelect: React.FC<
             target="_blank"
             className="performer-select-image-link"
           >
-            <img
+            <StashImage
               className="performer-select-image"
               src={object.image_path ?? ""}
               loading="lazy"

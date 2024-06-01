@@ -1,10 +1,11 @@
 import React, { useMemo, useState } from "react";
-import { useHistory, useLocation } from "react-router-dom";
 import { useIntl } from "react-intl";
+import { useHistory, useLocation } from "react-router-dom";
 
+import StashImage from "src/components/Shared/Image";
+import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import * as GQL from "src/core/generated-graphql";
 import { useStudioCreate } from "src/core/StashService";
-import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { useToast } from "src/hooks/Toast";
 import { StudioEditPanel } from "./StudioEditPanel";
 
@@ -43,7 +44,7 @@ const StudioCreate: React.FC = () => {
 
   function renderImage() {
     if (image) {
-      return <img className="logo" alt="" src={image} />;
+      return <StashImage className="logo" alt="" src={image} />;
     }
   }
 

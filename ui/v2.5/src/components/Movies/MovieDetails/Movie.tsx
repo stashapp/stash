@@ -1,43 +1,44 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { Button } from "react-bootstrap";
-import { FormattedMessage, useIntl } from "react-intl";
-import { Helmet } from "react-helmet";
-import cx from "classnames";
-import Mousetrap from "mousetrap";
-import * as GQL from "src/core/generated-graphql";
-import {
-  useFindMovie,
-  useMovieUpdate,
-  useMovieDestroy,
-} from "src/core/StashService";
-import { useHistory, RouteComponentProps } from "react-router-dom";
-import { DetailsEditNavbar } from "src/components/Shared/DetailsEditNavbar";
-import { ErrorMessage } from "src/components/Shared/ErrorMessage";
-import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
-import { useLightbox } from "src/hooks/Lightbox/hooks";
-import { ModalComponent } from "src/components/Shared/Modal";
-import { useToast } from "src/hooks/Toast";
-import { MovieScenesPanel } from "./MovieScenesPanel";
-import {
-  CompressedMovieDetailsPanel,
-  MovieDetailsPanel,
-} from "./MovieDetailsPanel";
-import { MovieEditPanel } from "./MovieEditPanel";
 import {
   faChevronDown,
   faChevronUp,
   faLink,
   faTrashAlt,
 } from "@fortawesome/free-solid-svg-icons";
-import TextUtils from "src/utils/text";
-import { Icon } from "src/components/Shared/Icon";
-import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
-import { ConfigurationContext } from "src/hooks/Config";
+import cx from "classnames";
+import Mousetrap from "mousetrap";
+import React, { useEffect, useMemo, useState } from "react";
+import { Button } from "react-bootstrap";
+import { Helmet } from "react-helmet";
+import { FormattedMessage, useIntl } from "react-intl";
+import { RouteComponentProps, useHistory } from "react-router-dom";
 import { DetailImage } from "src/components/Shared/DetailImage";
-import { useRatingKeybinds } from "src/hooks/keybinds";
-import { useLoadStickyHeader } from "src/hooks/detailsPanel";
-import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
+import { DetailsEditNavbar } from "src/components/Shared/DetailsEditNavbar";
+import { ErrorMessage } from "src/components/Shared/ErrorMessage";
 import { ExternalLink } from "src/components/Shared/ExternalLink";
+import { Icon } from "src/components/Shared/Icon";
+import StashImage from "src/components/Shared/Image";
+import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
+import { ModalComponent } from "src/components/Shared/Modal";
+import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
+import * as GQL from "src/core/generated-graphql";
+import {
+  useFindMovie,
+  useMovieDestroy,
+  useMovieUpdate,
+} from "src/core/StashService";
+import { ConfigurationContext } from "src/hooks/Config";
+import { useLoadStickyHeader } from "src/hooks/detailsPanel";
+import { useRatingKeybinds } from "src/hooks/keybinds";
+import { useLightbox } from "src/hooks/Lightbox/hooks";
+import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
+import { useToast } from "src/hooks/Toast";
+import TextUtils from "src/utils/text";
+import {
+  CompressedMovieDetailsPanel,
+  MovieDetailsPanel,
+} from "./MovieDetailsPanel";
+import { MovieEditPanel } from "./MovieEditPanel";
+import { MovieScenesPanel } from "./MovieScenesPanel";
 
 interface IProps {
   movie: GQL.MovieDataFragment;
@@ -367,7 +368,7 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
           <div className="background-image-container">
             <picture>
               <source src={image} />
-              <img
+              <StashImage
                 className="background-image"
                 src={image}
                 alt={`${movie.name} background`}

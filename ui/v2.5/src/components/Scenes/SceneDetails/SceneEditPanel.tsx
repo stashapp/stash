@@ -1,54 +1,55 @@
-import React, { useEffect, useState, useMemo } from "react";
-import { FormattedMessage, useIntl } from "react-intl";
+import { faSearch, faSyncAlt } from "@fortawesome/free-solid-svg-icons";
+import { useFormik } from "formik";
+import isEqual from "lodash-es/isEqual";
+import Mousetrap from "mousetrap";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Button,
+  ButtonGroup,
+  Col,
   Dropdown,
   DropdownButton,
   Form,
-  Col,
   Row,
-  ButtonGroup,
 } from "react-bootstrap";
-import Mousetrap from "mousetrap";
-import * as GQL from "src/core/generated-graphql";
-import * as yup from "yup";
-import {
-  queryScrapeScene,
-  queryScrapeSceneURL,
-  useListSceneScrapers,
-  mutateReloadScrapers,
-  queryScrapeSceneQueryFragment,
-} from "src/core/StashService";
-import { Icon } from "src/components/Shared/Icon";
-import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
-import { ImageInput } from "src/components/Shared/ImageInput";
-import { useToast } from "src/hooks/Toast";
-import ImageUtils from "src/utils/image";
-import { getStashIDs } from "src/utils/stashIds";
-import { useFormik } from "formik";
+import { FormattedMessage, useIntl } from "react-intl";
 import { Prompt } from "react-router-dom";
-import { ConfigurationContext } from "src/hooks/Config";
-import { stashboxDisplayName } from "src/utils/stashbox";
-import { IMovieEntry, SceneMovieTable } from "./SceneMovieTable";
-import { faSearch, faSyncAlt } from "@fortawesome/free-solid-svg-icons";
+import { Gallery, GallerySelect } from "src/components/Galleries/GallerySelect";
+import { Movie } from "src/components/Movies/MovieSelect";
+import {
+  Performer,
+  PerformerSelect,
+} from "src/components/Performers/PerformerSelect";
+import { Icon } from "src/components/Shared/Icon";
+import StashImage from "src/components/Shared/Image";
+import { ImageInput } from "src/components/Shared/ImageInput";
+import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
+import { Studio, StudioSelect } from "src/components/Studios/StudioSelect";
+import { Tag, TagSelect } from "src/components/Tags/TagSelect";
 import { objectTitle } from "src/core/files";
 import { galleryTitle } from "src/core/galleries";
+import * as GQL from "src/core/generated-graphql";
+import {
+  mutateReloadScrapers,
+  queryScrapeScene,
+  queryScrapeSceneQueryFragment,
+  queryScrapeSceneURL,
+  useListSceneScrapers,
+} from "src/core/StashService";
+import { ConfigurationContext } from "src/hooks/Config";
+import { useToast } from "src/hooks/Toast";
+import { formikUtils } from "src/utils/form";
+import ImageUtils from "src/utils/image";
 import { lazyComponent } from "src/utils/lazyComponent";
-import isEqual from "lodash-es/isEqual";
+import { stashboxDisplayName } from "src/utils/stashbox";
+import { getStashIDs } from "src/utils/stashIds";
 import {
   yupDateString,
   yupFormikValidate,
   yupUniqueStringList,
 } from "src/utils/yup";
-import {
-  Performer,
-  PerformerSelect,
-} from "src/components/Performers/PerformerSelect";
-import { formikUtils } from "src/utils/form";
-import { Tag, TagSelect } from "src/components/Tags/TagSelect";
-import { Studio, StudioSelect } from "src/components/Studios/StudioSelect";
-import { Gallery, GallerySelect } from "src/components/Galleries/GallerySelect";
-import { Movie } from "src/components/Movies/MovieSelect";
+import * as yup from "yup";
+import { IMovieEntry, SceneMovieTable } from "./SceneMovieTable";
 
 const SceneScrapeDialog = lazyComponent(() => import("./SceneScrapeDialog"));
 const SceneQueryModal = lazyComponent(() => import("./SceneQueryModal"));
@@ -676,7 +677,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
     if (coverImagePreview) {
       return (
-        <img
+        <StashImage
           className="scene-cover"
           src={coverImagePreview}
           alt={intl.formatMessage({ id: "cover_image" })}

@@ -1,22 +1,26 @@
+import cx from "classnames";
 import React, { useEffect, useMemo, useState } from "react";
 import {
+  MultiValueGenericProps,
   OptionProps,
   components as reactSelectComponents,
-  MultiValueGenericProps,
   SingleValueProps,
 } from "react-select";
-import cx from "classnames";
 
+import { Placement } from "react-bootstrap/esm/Overlay";
+import { useIntl } from "react-intl";
+import { defaultMaxOptionsShown } from "src/core/config";
 import * as GQL from "src/core/generated-graphql";
 import {
-  queryFindMoviesForSelect,
   queryFindMoviesByIDForSelect,
+  queryFindMoviesForSelect,
   useMovieCreate,
 } from "src/core/StashService";
 import { ConfigurationContext } from "src/hooks/Config";
-import { useIntl } from "react-intl";
-import { defaultMaxOptionsShown } from "src/core/config";
+import { useCompare } from "src/hooks/state";
 import { ListFilterModel } from "src/models/list-filter/filter";
+import { PatchComponent, PatchFunction } from "src/patch";
+import { sortByRelevance } from "src/utils/query";
 import {
   FilterSelectComponent,
   IFilterIDProps,
@@ -24,10 +28,7 @@ import {
   IFilterValueProps,
   Option as SelectOption,
 } from "../Shared/FilterSelect";
-import { useCompare } from "src/hooks/state";
-import { Placement } from "react-bootstrap/esm/Overlay";
-import { sortByRelevance } from "src/utils/query";
-import { PatchComponent, PatchFunction } from "src/patch";
+import StashImage from "../Shared/Image";
 import { TruncatedText } from "../Shared/TruncatedText";
 
 export type Movie = Pick<
@@ -114,7 +115,7 @@ const _MovieSelect: React.FC<
         <span className="movie-select-option">
           <span className="movie-select-row">
             {object.front_image_path && (
-              <img
+              <StashImage
                 className="movie-select-image"
                 src={object.front_image_path}
                 loading="lazy"

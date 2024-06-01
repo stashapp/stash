@@ -1,9 +1,3 @@
-import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import cx from "classnames";
-import { Button, Form, Spinner } from "react-bootstrap";
-import { Icon } from "src/components/Shared/Icon";
-import { useIntl } from "react-intl";
 import {
   faChevronDown,
   faChevronUp,
@@ -11,6 +5,13 @@ import {
   faStepBackward,
   faStepForward,
 } from "@fortawesome/free-solid-svg-icons";
+import cx from "classnames";
+import React, { useEffect, useState } from "react";
+import { Button, Form, Spinner } from "react-bootstrap";
+import { useIntl } from "react-intl";
+import { Link } from "react-router-dom";
+import { Icon } from "src/components/Shared/Icon";
+import StashImage from "src/components/Shared/Image";
 import { objectTitle } from "src/core/files";
 import { QueuedScene } from "src/models/sceneQueue";
 
@@ -88,7 +89,7 @@ export const QueueViewer: React.FC<IPlaylistViewer> = ({
         >
           <div className="ml-1 d-flex align-items-center">
             <div className="thumbnail-container">
-              <img
+              <StashImage
                 loading="lazy"
                 alt={scene.title ?? ""}
                 src={scene.paths.screenshot ?? ""}

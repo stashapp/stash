@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from "react";
-import cx from "classnames";
-import { LoadingIndicator } from "./LoadingIndicator";
-import { Button } from "react-bootstrap";
 import { faArrowLeft, faArrowRight } from "@fortawesome/free-solid-svg-icons";
-import { Icon } from "./Icon";
+import cx from "classnames";
+import React, { useEffect, useState } from "react";
+import { Button } from "react-bootstrap";
 import { FormattedMessage } from "react-intl";
+import { Icon } from "./Icon";
+import StashImage from "./Image";
+import { LoadingIndicator } from "./LoadingIndicator";
 
 interface IImageSelectorProps {
   imageClassName?: string;
@@ -74,13 +75,13 @@ export const ImageSelector: React.FC<IImageSelectorProps> = ({
 
       <div className="performer-image">
         {/* hidden image to handle loading */}
-        <img
+        <StashImage
           src={images[imageIndex]}
           className="d-none"
           onLoad={() => handleLoad(imageIndex)}
           onError={handleError}
         />
-        <img
+        <StashImage
           src={currentImage}
           className={cx(imageClassName, { loading: imageState === "loading" })}
           alt=""

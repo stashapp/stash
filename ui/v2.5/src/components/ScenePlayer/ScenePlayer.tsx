@@ -1,3 +1,4 @@
+import cx from "classnames";
 import React, {
   KeyboardEvent,
   useCallback,
@@ -7,29 +8,27 @@ import React, {
   useRef,
   useState,
 } from "react";
-import videojs, { VideoJsPlayer, VideoJsPlayerOptions } from "video.js";
+import {
+  useSceneIncrementPlayCount,
+  useSceneSaveActivity,
+} from "src/core/StashService";
 import useScript from "src/hooks/useScript";
+import { UAParser } from "ua-parser-js";
+import videojs, { VideoJsPlayer, VideoJsPlayerOptions } from "video.js";
 import "videojs-contrib-dash";
 import "videojs-mobile-ui";
 import "videojs-seek-buttons";
-import { UAParser } from "ua-parser-js";
+import "./big-buttons";
 import "./live";
+import "./markers";
+import "./persist-volume";
 import "./PlaylistButtons";
 import "./source-selector";
-import "./persist-volume";
-import "./markers";
-import "./vtt-thumbnails";
-import "./big-buttons";
 import "./track-activity";
 import "./vrmode";
-import cx from "classnames";
-import {
-  useSceneSaveActivity,
-  useSceneIncrementPlayCount,
-} from "src/core/StashService";
+import "./vtt-thumbnails";
 
 import * as GQL from "src/core/generated-graphql";
-import { ScenePlayerScrubber } from "./ScenePlayerScrubber";
 import { ConfigurationContext } from "src/hooks/Config";
 import {
   ConnectionState,
@@ -37,14 +36,16 @@ import {
 } from "src/hooks/Interactive/context";
 import { SceneInteractiveStatus } from "src/hooks/Interactive/status";
 import { languageMap } from "src/utils/caption";
+import { ScenePlayerScrubber } from "./ScenePlayerScrubber";
 import { VIDEO_PLAYER_ID } from "./util";
 
 // @ts-ignore
 import airplay from "@silvermine/videojs-airplay";
 // @ts-ignore
 import chromecast from "@silvermine/videojs-chromecast";
-import abLoopPlugin from "videojs-abloop";
+import { useImageBlur } from "src/hooks/blur";
 import ScreenUtils from "src/utils/screen";
+import abLoopPlugin from "videojs-abloop";
 
 // register videojs plugins
 airplay(videojs);
@@ -221,6 +222,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   onPrevious,
 }) => {
   const { configuration } = useContext(ConfigurationContext);
+  const { blurClassName } = useImageBlur();
   const interfaceConfig = configuration?.interface;
   const uiConfig = configuration?.ui;
   const videoRef = useRef<HTMLDivElement>(null);
@@ -825,7 +827,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       className={cx("VideoPlayer", { portrait: isPortrait })}
       onKeyDownCapture={onKeyDown}
     >
-      <div className="video-wrapper" ref={videoRef} />
+      <div className={blurClassName("video-wrapper")} ref={videoRef} />
       {scene.interactive &&
         (interactiveState !== ConnectionState.Ready ||
           getPlayer()?.paused()) && <SceneInteractiveStatus />}

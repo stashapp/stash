@@ -1,19 +1,20 @@
-import { Button, ButtonGroup, OverlayTrigger, Tooltip } from "react-bootstrap";
+import { faBox, faPlayCircle, faTag } from "@fortawesome/free-solid-svg-icons";
 import React, { useEffect, useState } from "react";
+import { Button, ButtonGroup, OverlayTrigger, Tooltip } from "react-bootstrap";
+import { galleryTitle } from "src/core/galleries";
 import * as GQL from "src/core/generated-graphql";
+import NavUtils from "src/utils/navigation";
+import ScreenUtils from "src/utils/screen";
 import { GridCard, calculateCardWidth } from "../Shared/GridCard/GridCard";
+import { StudioOverlay } from "../Shared/GridCard/StudioOverlay";
 import { HoverPopover } from "../Shared/HoverPopover";
 import { Icon } from "../Shared/Icon";
-import { SceneLink, TagLink } from "../Shared/TagLink";
-import { TruncatedText } from "../Shared/TruncatedText";
+import StashImage from "../Shared/Image";
 import { PerformerPopoverButton } from "../Shared/PerformerPopoverButton";
 import { PopoverCountButton } from "../Shared/PopoverCountButton";
-import NavUtils from "src/utils/navigation";
 import { RatingBanner } from "../Shared/RatingBanner";
-import { faBox, faPlayCircle, faTag } from "@fortawesome/free-solid-svg-icons";
-import { galleryTitle } from "src/core/galleries";
-import ScreenUtils from "src/utils/screen";
-import { StudioOverlay } from "../Shared/GridCard/StudioOverlay";
+import { SceneLink, TagLink } from "../Shared/TagLink";
+import { TruncatedText } from "../Shared/TruncatedText";
 
 interface IProps {
   gallery: GQL.SlimGalleryDataFragment;
@@ -168,7 +169,7 @@ export const GalleryCard: React.FC<IProps> = (props) => {
       image={
         <>
           {props.gallery.cover ? (
-            <img
+            <StashImage
               loading="lazy"
               className="gallery-card-image"
               alt={props.gallery.title ?? ""}

@@ -1,16 +1,17 @@
 import React from "react";
-import { Link } from "react-router-dom";
-import * as GQL from "src/core/generated-graphql";
-import NavUtils from "src/utils/navigation";
-import TextUtils from "src/utils/text";
 import { FormattedMessage, FormattedNumber, useIntl } from "react-intl";
+import { Link } from "react-router-dom";
 import { objectTitle } from "src/core/files";
 import { galleryTitle } from "src/core/galleries";
-import SceneQueue from "src/models/sceneQueue";
-import { RatingSystem } from "../Shared/Rating/RatingSystem";
+import * as GQL from "src/core/generated-graphql";
 import { useSceneUpdate } from "src/core/StashService";
-import { IColumn, ListTable } from "../List/ListTable";
 import { useTableColumns } from "src/hooks/useTableColumns";
+import SceneQueue from "src/models/sceneQueue";
+import NavUtils from "src/utils/navigation";
+import TextUtils from "src/utils/text";
+import { IColumn, ListTable } from "../List/ListTable";
+import StashImage from "../Shared/Image";
+import { RatingSystem } from "../Shared/Rating/RatingSystem";
 
 interface ISceneListTableProps {
   scenes: GQL.SlimSceneDataFragment[];
@@ -49,7 +50,7 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
 
     return (
       <Link to={sceneLink}>
-        <img
+        <StashImage
           loading="lazy"
           className="image-thumbnail"
           alt={title}

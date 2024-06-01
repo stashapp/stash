@@ -1,21 +1,30 @@
+import cx from "classnames";
 import React, { useEffect, useMemo, useState } from "react";
 import {
+  MultiValueGenericProps,
   OptionProps,
   components as reactSelectComponents,
-  MultiValueGenericProps,
   SingleValueProps,
 } from "react-select";
-import cx from "classnames";
 
-import * as GQL from "src/core/generated-graphql";
-import {
-  queryFindScenesForSelect,
-  queryFindScenesByIDForSelect,
-} from "src/core/StashService";
-import { ConfigurationContext } from "src/hooks/Config";
+import { Placement } from "react-bootstrap/esm/Overlay";
 import { useIntl } from "react-intl";
 import { defaultMaxOptionsShown } from "src/core/config";
+import { objectTitle } from "src/core/files";
+import * as GQL from "src/core/generated-graphql";
+import {
+  queryFindScenesByIDForSelect,
+  queryFindScenesForSelect,
+} from "src/core/StashService";
+import { ConfigurationContext } from "src/hooks/Config";
+import { useCompare } from "src/hooks/state";
+import {
+  Criterion,
+  CriterionValue,
+} from "src/models/list-filter/criteria/criterion";
 import { ListFilterModel } from "src/models/list-filter/filter";
+import { PatchComponent, PatchFunction } from "src/patch";
+import { sortByRelevance } from "src/utils/query";
 import {
   FilterSelectComponent,
   IFilterIDProps,
@@ -23,15 +32,7 @@ import {
   IFilterValueProps,
   Option as SelectOption,
 } from "../Shared/FilterSelect";
-import { useCompare } from "src/hooks/state";
-import { Placement } from "react-bootstrap/esm/Overlay";
-import { sortByRelevance } from "src/utils/query";
-import { objectTitle } from "src/core/files";
-import { PatchComponent, PatchFunction } from "src/patch";
-import {
-  Criterion,
-  CriterionValue,
-} from "src/models/list-filter/criteria/criterion";
+import StashImage from "../Shared/Image";
 import { TruncatedText } from "../Shared/TruncatedText";
 
 export type Scene = Pick<GQL.Scene, "id" | "title" | "date" | "code"> & {
@@ -120,7 +121,7 @@ const _SceneSelect: React.FC<
         <span className="scene-select-option">
           <span className="scene-select-row">
             {object.paths?.screenshot && (
-              <img
+              <StashImage
                 className="scene-select-image"
                 src={object.paths.screenshot}
                 loading="lazy"

@@ -1,13 +1,14 @@
 import React, { useState } from "react";
 import { Button } from "react-bootstrap";
 
+import { faTags } from "@fortawesome/free-solid-svg-icons";
+import { useIntl } from "react-intl";
+import StashImage from "src/components/Shared/Image";
 import * as GQL from "src/core/generated-graphql";
+import { useStudioCreate } from "src/core/StashService";
+import { apolloError } from "src/utils";
 import { useUpdateStudio } from "../queries";
 import StudioModal from "../scenes/StudioModal";
-import { faTags } from "@fortawesome/free-solid-svg-icons";
-import { useStudioCreate } from "src/core/StashService";
-import { useIntl } from "react-intl";
-import { apolloError } from "src/utils";
 import { mergeStudioStashIDs } from "../utils";
 
 interface IStashSearchResultProps {
@@ -114,7 +115,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
       key={p.remote_site_id}
       onClick={() => setModalStudio(p)}
     >
-      <img
+      <StashImage
         loading="lazy"
         src={(p.image ?? [])[0]}
         alt=""

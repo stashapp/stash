@@ -1,39 +1,40 @@
-import { Tab, Nav, Dropdown } from "react-bootstrap";
-import React, { useContext, useEffect, useMemo, useState } from "react";
-import { FormattedDate, FormattedMessage, useIntl } from "react-intl";
-import { useHistory, Link, RouteComponentProps } from "react-router-dom";
-import { Helmet } from "react-helmet";
-import {
-  useFindImage,
-  useImageIncrementO,
-  useImageUpdate,
-  mutateMetadataScan,
-  useImageDecrementO,
-  useImageResetO,
-} from "src/core/StashService";
-import { ErrorMessage } from "src/components/Shared/ErrorMessage";
-import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
-import { Icon } from "src/components/Shared/Icon";
-import { Counter } from "src/components/Shared/Counter";
-import { useToast } from "src/hooks/Toast";
+import { faEllipsisV } from "@fortawesome/free-solid-svg-icons";
+import cx from "classnames";
 import * as Mousetrap from "mousetrap";
-import * as GQL from "src/core/generated-graphql";
+import React, { useContext, useEffect, useMemo, useState } from "react";
+import { Dropdown, Nav, Tab } from "react-bootstrap";
+import { Helmet } from "react-helmet";
+import { FormattedDate, FormattedMessage, useIntl } from "react-intl";
+import { Link, RouteComponentProps, useHistory } from "react-router-dom";
 import { OCounterButton } from "src/components/Scenes/SceneDetails/OCounterButton";
 import { OrganizedButton } from "src/components/Scenes/SceneDetails/OrganizedButton";
-import { ImageFileInfoPanel } from "./ImageFileInfoPanel";
-import { ImageEditPanel } from "./ImageEditPanel";
-import { ImageDetailPanel } from "./ImageDetailPanel";
-import { DeleteImagesDialog } from "../DeleteImagesDialog";
-import { faEllipsisV } from "@fortawesome/free-solid-svg-icons";
-import { objectPath, objectTitle } from "src/core/files";
-import { isVideo } from "src/utils/visualFile";
-import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
-import { useRatingKeybinds } from "src/hooks/keybinds";
-import { ConfigurationContext } from "src/hooks/Config";
-import TextUtils from "src/utils/text";
+import { Counter } from "src/components/Shared/Counter";
+import { ErrorMessage } from "src/components/Shared/ErrorMessage";
+import { Icon } from "src/components/Shared/Icon";
+import StashImage from "src/components/Shared/Image";
+import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
-import cx from "classnames";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
+import { objectPath, objectTitle } from "src/core/files";
+import * as GQL from "src/core/generated-graphql";
+import {
+  mutateMetadataScan,
+  useFindImage,
+  useImageDecrementO,
+  useImageIncrementO,
+  useImageResetO,
+  useImageUpdate,
+} from "src/core/StashService";
+import { ConfigurationContext } from "src/hooks/Config";
+import { useRatingKeybinds } from "src/hooks/keybinds";
+import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
+import { useToast } from "src/hooks/Toast";
+import TextUtils from "src/utils/text";
+import { isVideo } from "src/utils/visualFile";
+import { DeleteImagesDialog } from "../DeleteImagesDialog";
+import { ImageDetailPanel } from "./ImageDetailPanel";
+import { ImageEditPanel } from "./ImageEditPanel";
+import { ImageFileInfoPanel } from "./ImageFileInfoPanel";
 
 interface IProps {
   image: GQL.ImageDataFragment;
@@ -299,7 +300,7 @@ const ImagePage: React.FC<IProps> = ({ image }) => {
             {image.studio && (
               <h1 className="text-center image-studio-image">
                 <Link to={`/studios/${image.studio.id}`}>
-                  <img
+                  <StashImage
                     src={image.studio.image_path ?? ""}
                     alt={`${image.studio.name} logo`}
                     className="studio-logo"

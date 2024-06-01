@@ -1,15 +1,16 @@
+import { faPlayCircle } from "@fortawesome/free-solid-svg-icons";
 import React, { useEffect, useState } from "react";
 import { Button, ButtonGroup } from "react-bootstrap";
+import { FormattedMessage } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
+import ScreenUtils from "src/utils/screen";
 import { GridCard, calculateCardWidth } from "../Shared/GridCard/GridCard";
 import { HoverPopover } from "../Shared/HoverPopover";
 import { Icon } from "../Shared/Icon";
+import StashImage from "../Shared/Image";
+import { RatingBanner } from "../Shared/RatingBanner";
 import { SceneLink } from "../Shared/TagLink";
 import { TruncatedText } from "../Shared/TruncatedText";
-import { FormattedMessage } from "react-intl";
-import { RatingBanner } from "../Shared/RatingBanner";
-import { faPlayCircle } from "@fortawesome/free-solid-svg-icons";
-import ScreenUtils from "src/utils/screen";
 
 interface IProps {
   movie: GQL.MovieDataFragment;
@@ -91,7 +92,7 @@ export const MovieCard: React.FC<IProps> = (props: IProps) => {
       linkClassName="movie-card-header"
       image={
         <>
-          <img
+          <StashImage
             loading="lazy"
             className="movie-card-image"
             alt={props.movie.name ?? ""}

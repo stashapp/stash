@@ -1,24 +1,25 @@
-import React, { useState, useContext, PropsWithChildren, useMemo } from "react";
-import * as GQL from "src/core/generated-graphql";
-import { Link } from "react-router-dom";
+import React, { PropsWithChildren, useContext, useMemo, useState } from "react";
 import { Button, Collapse, Form, InputGroup } from "react-bootstrap";
 import { FormattedMessage } from "react-intl";
+import { Link } from "react-router-dom";
+import * as GQL from "src/core/generated-graphql";
 
-import { sortPerformers } from "src/core/performers";
-import { Icon } from "src/components/Shared/Icon";
-import { OperationButton } from "src/components/Shared/OperationButton";
-import { PerformerLink, TagLink } from "src/components/Shared/TagLink";
-import { TruncatedText } from "src/components/Shared/TruncatedText";
-import { parsePath, prepareQueryString } from "src/components/Tagger/utils";
-import { ScenePreview } from "src/components/Scenes/SceneCard";
-import { TaggerStateContext } from "../context";
 import {
   faChevronDown,
   faChevronUp,
   faImage,
 } from "@fortawesome/free-solid-svg-icons";
-import { objectPath, objectTitle } from "src/core/files";
+import { ScenePreview } from "src/components/Scenes/SceneCard";
 import { ExternalLink } from "src/components/Shared/ExternalLink";
+import { Icon } from "src/components/Shared/Icon";
+import StashImage from "src/components/Shared/Image";
+import { OperationButton } from "src/components/Shared/OperationButton";
+import { PerformerLink, TagLink } from "src/components/Shared/TagLink";
+import { TruncatedText } from "src/components/Shared/TruncatedText";
+import { parsePath, prepareQueryString } from "src/components/Tagger/utils";
+import { objectPath, objectTitle } from "src/core/files";
+import { sortPerformers } from "src/core/performers";
+import { TaggerStateContext } from "../context";
 
 interface ITaggerSceneDetails {
   scene: GQL.SlimSceneDataFragment;
@@ -49,7 +50,7 @@ const TaggerSceneDetails: React.FC<ITaggerSceneDetails> = ({ scene }) => {
                     to={`/performers/${performer.id}`}
                     className="performer-tag col m-auto zoom-2"
                   >
-                    <img
+                    <StashImage
                       loading="lazy"
                       className="image-thumbnail"
                       alt={performer.name ?? ""}

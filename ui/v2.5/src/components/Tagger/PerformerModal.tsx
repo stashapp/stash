@@ -1,16 +1,9 @@
+import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
+import cx from "classnames";
 import React, { useState } from "react";
 import { Button } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
-import cx from "classnames";
-import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 
-import { LoadingIndicator } from "../Shared/LoadingIndicator";
-import { Icon } from "../Shared/Icon";
-import { ModalComponent } from "../Shared/Modal";
-import { TruncatedText } from "../Shared/TruncatedText";
-import * as GQL from "src/core/generated-graphql";
-import { stringToGender } from "src/utils/gender";
-import { getCountryByISO } from "src/utils/country";
 import {
   faArrowLeft,
   faArrowRight,
@@ -18,7 +11,15 @@ import {
   faExternalLinkAlt,
   faTimes,
 } from "@fortawesome/free-solid-svg-icons";
+import * as GQL from "src/core/generated-graphql";
+import { getCountryByISO } from "src/utils/country";
+import { stringToGender } from "src/utils/gender";
 import { ExternalLink } from "../Shared/ExternalLink";
+import { Icon } from "../Shared/Icon";
+import StashImage from "../Shared/Image";
+import { LoadingIndicator } from "../Shared/LoadingIndicator";
+import { ModalComponent } from "../Shared/Modal";
+import { TruncatedText } from "../Shared/TruncatedText";
 
 interface IPerformerModalProps {
   performer: GQL.ScrapedScenePerformerDataFragment;
@@ -135,7 +136,7 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({
               <Icon icon={excluded.image ? faTimes : faCheck} />
             </Button>
           )}
-          <img
+          <StashImage
             src={images[imageIndex]}
             className={cx({ "d-none": imageState !== "loaded" })}
             alt=""

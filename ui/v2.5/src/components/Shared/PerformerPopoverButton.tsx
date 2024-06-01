@@ -6,6 +6,7 @@ import * as GQL from "src/core/generated-graphql";
 import { sortPerformers } from "src/core/performers";
 import { HoverPopover } from "./HoverPopover";
 import { Icon } from "./Icon";
+import StashImage from "./Image";
 import { PerformerLink } from "./TagLink";
 
 interface IProps {
@@ -23,7 +24,7 @@ export const PerformerPopoverButton: React.FC<IProps> = ({ performers }) => {
         to={`/performers/${performer.id}`}
         className="performer-tag col m-auto zoom-2"
       >
-        <img
+        <StashImage
           className="image-thumbnail"
           alt={performer.name ?? ""}
           src={performer.image_path ?? ""}

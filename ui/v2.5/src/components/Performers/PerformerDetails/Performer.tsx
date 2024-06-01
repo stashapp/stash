@@ -1,50 +1,51 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Button, Tabs, Tab, Col, Row } from "react-bootstrap";
-import { useIntl } from "react-intl";
-import { useHistory, Redirect, RouteComponentProps } from "react-router-dom";
-import { Helmet } from "react-helmet";
-import cx from "classnames";
-import Mousetrap from "mousetrap";
-import * as GQL from "src/core/generated-graphql";
-import {
-  useFindPerformer,
-  usePerformerUpdate,
-  usePerformerDestroy,
-  mutateMetadataAutoTag,
-} from "src/core/StashService";
-import { Counter } from "src/components/Shared/Counter";
-import { DetailsEditNavbar } from "src/components/Shared/DetailsEditNavbar";
-import { ErrorMessage } from "src/components/Shared/ErrorMessage";
-import { Icon } from "src/components/Shared/Icon";
-import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
-import { useLightbox } from "src/hooks/Lightbox/hooks";
-import { useToast } from "src/hooks/Toast";
-import { ConfigurationContext } from "src/hooks/Config";
-import TextUtils from "src/utils/text";
-import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
-import {
-  CompressedPerformerDetailsPanel,
-  PerformerDetailsPanel,
-} from "./PerformerDetailsPanel";
-import { PerformerScenesPanel } from "./PerformerScenesPanel";
-import { PerformerGalleriesPanel } from "./PerformerGalleriesPanel";
-import { PerformerMoviesPanel } from "./PerformerMoviesPanel";
-import { PerformerImagesPanel } from "./PerformerImagesPanel";
-import { PerformerAppearsWithPanel } from "./performerAppearsWithPanel";
-import { PerformerEditPanel } from "./PerformerEditPanel";
-import { PerformerSubmitButton } from "./PerformerSubmitButton";
+import { faInstagram, faTwitter } from "@fortawesome/free-brands-svg-icons";
 import {
   faChevronDown,
   faChevronUp,
   faHeart,
   faLink,
 } from "@fortawesome/free-solid-svg-icons";
-import { faInstagram, faTwitter } from "@fortawesome/free-brands-svg-icons";
-import { useRatingKeybinds } from "src/hooks/keybinds";
+import cx from "classnames";
+import Mousetrap from "mousetrap";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { Button, Col, Row, Tab, Tabs } from "react-bootstrap";
+import { Helmet } from "react-helmet";
+import { useIntl } from "react-intl";
+import { Redirect, RouteComponentProps, useHistory } from "react-router-dom";
+import { Counter } from "src/components/Shared/Counter";
 import { DetailImage } from "src/components/Shared/DetailImage";
-import { useLoadStickyHeader } from "src/hooks/detailsPanel";
-import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
+import { DetailsEditNavbar } from "src/components/Shared/DetailsEditNavbar";
+import { ErrorMessage } from "src/components/Shared/ErrorMessage";
 import { ExternalLink } from "src/components/Shared/ExternalLink";
+import { Icon } from "src/components/Shared/Icon";
+import StashImage from "src/components/Shared/Image";
+import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
+import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
+import * as GQL from "src/core/generated-graphql";
+import {
+  mutateMetadataAutoTag,
+  useFindPerformer,
+  usePerformerDestroy,
+  usePerformerUpdate,
+} from "src/core/StashService";
+import { ConfigurationContext } from "src/hooks/Config";
+import { useLoadStickyHeader } from "src/hooks/detailsPanel";
+import { useRatingKeybinds } from "src/hooks/keybinds";
+import { useLightbox } from "src/hooks/Lightbox/hooks";
+import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
+import { useToast } from "src/hooks/Toast";
+import TextUtils from "src/utils/text";
+import { PerformerAppearsWithPanel } from "./performerAppearsWithPanel";
+import {
+  CompressedPerformerDetailsPanel,
+  PerformerDetailsPanel,
+} from "./PerformerDetailsPanel";
+import { PerformerEditPanel } from "./PerformerEditPanel";
+import { PerformerGalleriesPanel } from "./PerformerGalleriesPanel";
+import { PerformerImagesPanel } from "./PerformerImagesPanel";
+import { PerformerMoviesPanel } from "./PerformerMoviesPanel";
+import { PerformerScenesPanel } from "./PerformerScenesPanel";
+import { PerformerSubmitButton } from "./PerformerSubmitButton";
 
 interface IProps {
   performer: GQL.PerformerDataFragment;
@@ -344,7 +345,7 @@ const PerformerPage: React.FC<IProps> = ({ performer, tabKey }) => {
           <div className="background-image-container">
             <picture>
               <source src={activeImage} />
-              <img
+              <StashImage
                 className="background-image"
                 src={activeImage}
                 alt={`${performer.name} background`}

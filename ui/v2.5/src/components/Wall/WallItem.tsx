@@ -1,20 +1,21 @@
+import cx from "classnames";
 import React, {
+  MouseEvent,
+  useCallback,
+  useEffect,
+  useMemo,
   useRef,
   useState,
-  useEffect,
-  useCallback,
-  MouseEvent,
-  useMemo,
 } from "react";
 import { Link } from "react-router-dom";
-import * as GQL from "src/core/generated-graphql";
-import TextUtils from "src/utils/text";
-import NavUtils from "src/utils/navigation";
-import cx from "classnames";
-import { SceneQueue } from "src/models/sceneQueue";
-import { ConfigurationContext } from "src/hooks/Config";
-import { markerTitle } from "src/core/markers";
 import { objectTitle } from "src/core/files";
+import * as GQL from "src/core/generated-graphql";
+import { markerTitle } from "src/core/markers";
+import { ConfigurationContext } from "src/hooks/Config";
+import { SceneQueue } from "src/models/sceneQueue";
+import NavUtils from "src/utils/navigation";
+import TextUtils from "src/utils/text";
+import StashImage from "../Shared/Image";
 
 export type WallItemType = keyof WallItemData;
 
@@ -65,7 +66,7 @@ const Preview: React.FC<{
   }, [previewType, soundOnPreview, active]);
 
   const image = (
-    <img
+    <StashImage
       loading="lazy"
       alt=""
       className="wall-item-media"

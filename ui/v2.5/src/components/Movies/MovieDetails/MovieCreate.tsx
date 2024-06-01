@@ -1,9 +1,10 @@
 import React, { useMemo, useState } from "react";
+import { useIntl } from "react-intl";
+import { useHistory, useLocation } from "react-router-dom";
+import StashImage from "src/components/Shared/Image";
+import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import * as GQL from "src/core/generated-graphql";
 import { useMovieCreate } from "src/core/StashService";
-import { useHistory, useLocation } from "react-router-dom";
-import { useIntl } from "react-intl";
-import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { useToast } from "src/hooks/Toast";
 import { MovieEditPanel } from "./MovieEditPanel";
 
@@ -44,7 +45,7 @@ const MovieCreate: React.FC = () => {
     if (frontImage) {
       return (
         <div className="movie-image-container">
-          <img alt="Front Cover" src={frontImage} />
+          <StashImage alt="Front Cover" src={frontImage} />
         </div>
       );
     }
@@ -54,7 +55,7 @@ const MovieCreate: React.FC = () => {
     if (backImage) {
       return (
         <div className="movie-image-container">
-          <img alt="Back Cover" src={backImage} />
+          <StashImage alt="Back Cover" src={backImage} />
         </div>
       );
     }

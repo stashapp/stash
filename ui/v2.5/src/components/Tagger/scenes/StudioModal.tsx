@@ -1,21 +1,22 @@
+import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
+import cx from "classnames";
 import React, { useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-import cx from "classnames";
-import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 
-import * as GQL from "src/core/generated-graphql";
-import { useFindStudio } from "src/core/StashService";
-import { Icon } from "src/components/Shared/Icon";
-import { ModalComponent } from "src/components/Shared/Modal";
 import {
   faCheck,
   faExternalLinkAlt,
   faTimes,
 } from "@fortawesome/free-solid-svg-icons";
 import { Button, Form } from "react-bootstrap";
-import { TruncatedText } from "src/components/Shared/TruncatedText";
-import { excludeFields } from "src/utils/data";
 import { ExternalLink } from "src/components/Shared/ExternalLink";
+import { Icon } from "src/components/Shared/Icon";
+import StashImage from "src/components/Shared/Image";
+import { ModalComponent } from "src/components/Shared/Modal";
+import { TruncatedText } from "src/components/Shared/TruncatedText";
+import * as GQL from "src/core/generated-graphql";
+import { useFindStudio } from "src/core/StashService";
+import { excludeFields } from "src/utils/data";
 
 interface IStudioDetailsProps {
   studio: GQL.ScrapedSceneStudioDataFragment;
@@ -49,7 +50,7 @@ const StudioDetails: React.FC<IStudioDetailsProps> = ({
             >
               <Icon icon={excluded.image ? faTimes : faCheck} />
             </Button>
-            <img src={studio.image} alt="" />
+            <StashImage src={studio.image} alt="" />
           </div>
         </div>
       </div>

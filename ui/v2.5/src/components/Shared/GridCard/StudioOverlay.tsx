@@ -1,6 +1,7 @@
 import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { ConfigurationContext } from "src/hooks/Config";
+import StashImage from "../Image";
 
 interface IStudio {
   id: string;
@@ -38,7 +39,7 @@ export const StudioOverlay: React.FC<{
         {showStudioAsText ? (
           studio.name
         ) : (
-          <img
+          <StashImage
             className="image-thumbnail"
             loading="lazy"
             alt={studio.name}

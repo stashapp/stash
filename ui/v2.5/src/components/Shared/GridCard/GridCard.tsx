@@ -1,10 +1,11 @@
+import useResizeObserver from "@react-hook/resize-observer";
+import cx from "classnames";
 import React, { MutableRefObject, useRef, useState } from "react";
 import { Card, Form } from "react-bootstrap";
 import { Link } from "react-router-dom";
-import cx from "classnames";
-import { TruncatedText } from "../TruncatedText";
 import ScreenUtils from "src/utils/screen";
-import useResizeObserver from "@react-hook/resize-observer";
+import StashImage from "../Image";
+import { TruncatedText } from "../TruncatedText";
 
 interface ICardProps {
   className?: string;
@@ -119,7 +120,7 @@ export const GridCard: React.FC<ICardProps> = (props: ICardProps) => {
   function maybeRenderInteractiveHeatmap() {
     if (props.interactiveHeatmap) {
       return (
-        <img
+        <StashImage
           loading="lazy"
           src={props.interactiveHeatmap}
           alt="interactive heatmap"

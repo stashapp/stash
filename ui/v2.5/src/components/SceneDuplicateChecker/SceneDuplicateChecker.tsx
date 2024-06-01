@@ -11,26 +11,9 @@ import {
   Table,
   Tooltip,
 } from "react-bootstrap";
-import { Link, useHistory } from "react-router-dom";
 import { FormattedMessage, FormattedNumber, useIntl } from "react-intl";
+import { Link, useHistory } from "react-router-dom";
 
-import * as GQL from "src/core/generated-graphql";
-import { LoadingIndicator } from "../Shared/LoadingIndicator";
-import { ErrorMessage } from "../Shared/ErrorMessage";
-import { HoverPopover } from "../Shared/HoverPopover";
-import { Icon } from "../Shared/Icon";
-import {
-  GalleryLink,
-  MovieLink,
-  SceneMarkerLink,
-  TagLink,
-} from "../Shared/TagLink";
-import { SweatDrops } from "../Shared/SweatDrops";
-import { Pagination } from "src/components/List/Pagination";
-import TextUtils from "src/utils/text";
-import { DeleteScenesDialog } from "src/components/Scenes/DeleteScenesDialog";
-import { EditScenesDialog } from "../Scenes/EditScenesDialog";
-import { PerformerPopoverButton } from "../Shared/PerformerPopoverButton";
 import {
   faBox,
   faExclamationTriangle,
@@ -42,8 +25,26 @@ import {
   faTag,
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
-import { SceneMergeModal } from "../Scenes/SceneMergeDialog";
+import { Pagination } from "src/components/List/Pagination";
+import { DeleteScenesDialog } from "src/components/Scenes/DeleteScenesDialog";
 import { objectTitle } from "src/core/files";
+import * as GQL from "src/core/generated-graphql";
+import TextUtils from "src/utils/text";
+import { EditScenesDialog } from "../Scenes/EditScenesDialog";
+import { SceneMergeModal } from "../Scenes/SceneMergeDialog";
+import { ErrorMessage } from "../Shared/ErrorMessage";
+import { HoverPopover } from "../Shared/HoverPopover";
+import { Icon } from "../Shared/Icon";
+import StashImage from "../Shared/Image";
+import { LoadingIndicator } from "../Shared/LoadingIndicator";
+import { PerformerPopoverButton } from "../Shared/PerformerPopoverButton";
+import { SweatDrops } from "../Shared/SweatDrops";
+import {
+  GalleryLink,
+  MovieLink,
+  SceneMarkerLink,
+  TagLink,
+} from "../Shared/TagLink";
 
 const CLASSNAME = "duplicate-checker";
 
@@ -395,7 +396,7 @@ export const SceneDuplicateChecker: React.FC = () => {
           to={`/movies/${sceneMovie.movie.id}`}
           className="movie-tag col m-auto zoom-2"
         >
-          <img
+          <StashImage
             className="image-thumbnail"
             alt={sceneMovie.movie.name ?? ""}
             src={sceneMovie.movie.front_image_path ?? ""}
@@ -864,7 +865,7 @@ export const SceneDuplicateChecker: React.FC = () => {
                       <td>
                         <HoverPopover
                           content={
-                            <img
+                            <StashImage
                               src={scene.paths.sprite ?? ""}
                               alt=""
                               width={600}
@@ -872,7 +873,7 @@ export const SceneDuplicateChecker: React.FC = () => {
                           }
                           placement="right"
                         >
-                          <img
+                          <StashImage
                             src={scene.paths.sprite ?? ""}
                             alt=""
                             width={100}

@@ -5,6 +5,7 @@
 | Keyboard sequence | Action |
 |-------------------|--------|
 | `?` | Display manual |
+| `b` | Blur/Unblur images |
 
 ### Global Navigation
 

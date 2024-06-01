@@ -1,18 +1,19 @@
 import React, { useEffect, useState } from "react";
+import { ButtonGroup } from "react-bootstrap";
+import { FormattedMessage } from "react-intl";
 import { Link } from "react-router-dom";
-import * as GQL from "src/core/generated-graphql";
-import NavUtils from "src/utils/navigation";
 import {
   GridCard,
   calculateCardWidth,
 } from "src/components/Shared/GridCard/GridCard";
-import { ButtonGroup } from "react-bootstrap";
-import { FormattedMessage } from "react-intl";
-import { PopoverCountButton } from "../Shared/PopoverCountButton";
-import { RatingBanner } from "../Shared/RatingBanner";
+import * as GQL from "src/core/generated-graphql";
+import { useStudioUpdate } from "src/core/StashService";
+import NavUtils from "src/utils/navigation";
 import ScreenUtils from "src/utils/screen";
 import { FavoriteIcon } from "../Shared/FavoriteIcon";
-import { useStudioUpdate } from "src/core/StashService";
+import StashImage from "../Shared/Image";
+import { PopoverCountButton } from "../Shared/PopoverCountButton";
+import { RatingBanner } from "../Shared/RatingBanner";
 
 interface IProps {
   studio: GQL.StudioDataFragment;
@@ -195,7 +196,7 @@ export const StudioCard: React.FC<IProps> = ({
       title={studio.name}
       linkClassName="studio-card-header"
       image={
-        <img
+        <StashImage
           loading="lazy"
           className="studio-card-image"
           alt={studio.name}

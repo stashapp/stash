@@ -1,35 +1,36 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
-import cx from "classnames";
-import { Badge, Button, Col, Form, Row } from "react-bootstrap";
-import { FormattedMessage, useIntl } from "react-intl";
-import uniq from "lodash-es/uniq";
-import { blobToBase64 } from "base64-blob";
-import { distance } from "src/utils/hamming";
 import { faCheckCircle } from "@fortawesome/free-regular-svg-icons";
 import {
   faPlus,
   faTriangleExclamation,
   faXmark,
 } from "@fortawesome/free-solid-svg-icons";
+import { blobToBase64 } from "base64-blob";
+import cx from "classnames";
+import uniq from "lodash-es/uniq";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { Badge, Button, Col, Form, Row } from "react-bootstrap";
+import { FormattedMessage, useIntl } from "react-intl";
+import { distance } from "src/utils/hamming";
 
-import * as GQL from "src/core/generated-graphql";
+import { ExternalLink } from "src/components/Shared/ExternalLink";
 import { HoverPopover } from "src/components/Shared/HoverPopover";
 import { Icon } from "src/components/Shared/Icon";
-import { SuccessIcon } from "src/components/Shared/SuccessIcon";
+import StashImage from "src/components/Shared/Image";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
-import { TagSelect } from "src/components/Shared/Select";
-import { TruncatedText } from "src/components/Shared/TruncatedText";
 import { OperationButton } from "src/components/Shared/OperationButton";
+import { TagSelect } from "src/components/Shared/Select";
+import { SuccessIcon } from "src/components/Shared/SuccessIcon";
+import { TruncatedText } from "src/components/Shared/TruncatedText";
+import * as GQL from "src/core/generated-graphql";
+import { useInitialState } from "src/hooks/state";
 import * as FormUtils from "src/utils/form";
 import { stringToGender } from "src/utils/gender";
+import { getStashboxBase } from "src/utils/stashbox";
 import { IScrapedScene, TaggerStateContext } from "../context";
 import { OptionalField } from "../IncludeButton";
-import { SceneTaggerModalsState } from "./sceneTaggerModals";
 import PerformerResult from "./PerformerResult";
+import { SceneTaggerModalsState } from "./sceneTaggerModals";
 import StudioResult from "./StudioResult";
-import { useInitialState } from "src/hooks/state";
-import { getStashboxBase } from "src/utils/stashbox";
-import { ExternalLink } from "src/components/Shared/ExternalLink";
 import { compareScenesForSort } from "./utils";
 
 const getDurationIcon = (matchPercentage: number) => {
@@ -490,7 +491,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
             }
             setExclude={(v) => setExcludedField(fields.cover_image, v)}
           >
-            <img
+            <StashImage
               src={scene.image}
               alt=""
               className="align-self-center scene-image"

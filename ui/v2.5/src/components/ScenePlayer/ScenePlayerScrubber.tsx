@@ -1,19 +1,20 @@
+import {
+  faChevronLeft,
+  faChevronRight,
+} from "@fortawesome/free-solid-svg-icons";
 import React, {
   CSSProperties,
+  useCallback,
   useEffect,
   useRef,
   useState,
-  useCallback,
 } from "react";
 import { Button } from "react-bootstrap";
-import * as GQL from "src/core/generated-graphql";
-import TextUtils from "src/utils/text";
 import { Icon } from "src/components/Shared/Icon";
-import {
-  faChevronRight,
-  faChevronLeft,
-} from "@fortawesome/free-solid-svg-icons";
+import * as GQL from "src/core/generated-graphql";
+import { useImageBlur } from "src/hooks/blur";
 import { useSpriteInfo } from "src/hooks/sprite";
+import TextUtils from "src/utils/text";
 
 interface IScenePlayerScrubberProps {
   file: GQL.VideoFileDataFragment;
@@ -48,6 +49,7 @@ export const ScenePlayerScrubber: React.FC<IScenePlayerScrubberProps> = ({
   const [width, setWidth] = useState(0);
   const [scrubWidth, setScrubWidth] = useState(0);
   const position = useRef(0);
+  const { blurClassName } = useImageBlur();
   const setPosition = useCallback(
     (value: number, seek: boolean) => {
       if (!scrubWidth) return;
@@ -301,7 +303,7 @@ export const ScenePlayerScrubber: React.FC<IScenePlayerScrubberProps> = ({
       return (
         <div
           key={index}
-          className="scrubber-item"
+          className={blurClassName("scrubber-item")}
           style={sprite.style}
           data-sprite-item-id={index}
         >
