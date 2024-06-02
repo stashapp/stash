@@ -261,7 +261,7 @@
             "video_sort_order": "Ordre de tri vidéo par défaut",
             "video_sort_order_desc": "Commande pour trier les vidéos par défaut.",
             "server_port": "Port du Serveur",
-            "server_port_desc": "Port pour servir le serveur DLNA. Nécessite un redémarrage du DLNA après modification."
+            "server_port_desc": "Port sur lequel le serveur DLNA doit fonctionner. Nécessite un redémarrage du DLNA après modification."
         },
         "general": {
             "auth": {
@@ -344,14 +344,14 @@
                 },
                 "download_ffmpeg": {
                     "heading": "Télécharger FFmpeg",
-                    "description": "Télécharge FFmpeg dans le dossier de configuration et nettoie les chemins de ffmpeg et ffprobe pour les résoudre depuis le dossier de configuration."
+                    "description": "Télécharge FFmpeg dans le répertoire de configuration et nettoie les chemins de FFmpeg et FFprobe pour les résoudre depuis le répertoire de configuration."
                 },
                 "ffmpeg_path": {
                     "heading": "Chemin de l'exécutable FFmpeg",
-                    "description": "Chemin vers l'exécutable de ffmpeg (pas juste le dossier). Si vide, ffmpeg sera résolu à partir de l'environnement via $PATH, le dossier de configuration, ou depuis $HOME/.stash"
+                    "description": "Chemin vers l'exécutable de FFmpeg (pas seulement le répertoire). Si vide, FFmpeg sera résolu à partir de l'environnement via $PATH, le répertoire de configuration, ou depuis $HOME/.stash"
                 },
                 "ffprobe_path": {
-                    "description": "Chemin vers l'exécutable de ffprobe (pas juste le dossier). Si vide, ffprobe sera résolu à partir de l'environnement via $PATH, le dossier de configuration, ou depuis $HOME/.stash",
+                    "description": "Chemin vers l'exécutable de FFprobe (pas seulement le répertoire). Si vide, FFprobe sera résolu à partir de l'environnement via $PATH, le répertoire de configuration, ou depuis $HOME/.stash",
                     "heading": "Chemin de l'exécutable FFprobe"
                 }
             },
@@ -784,7 +784,7 @@
             },
             "title": "Interface utilisateur",
             "use_stash_hosted_funscript": {
-                "description": "Activée, les funscripts sont transmis directement de Stash à votre dispositif Handy sans recourir au serveur Handy de tierce partie. Nécessite que Stash soit accessible depuis votre dispositif Handy, et qu'une clé d'API a été générée si stash a des identifiants de configuré.",
+                "description": "Activée, les scripts interactifs sont transmis directement de Stash à votre dispositif Handy sans recourir au serveur Handy de tierce partie. Nécessite que Stash soit accessible depuis votre dispositif Handy, et qu'une clé API soit générée si Stash a des informations d'identification configurées.",
                 "heading": "Transmettre directement les funscripts"
             }
         },
@@ -815,7 +815,7 @@
         "equals": "est égal à",
         "excludes": "ne contient pas",
         "format_string": "{criterion} {modifierString} {valueString}",
-        "format_string_depth": "{criterion} {modifierString} {valueString} (+{depth, plural, =-1 {tous} other {{depth}}})",
+        "format_string_depth": "{criterion} {modifierString} {valueString} (+{depth, plural, =-1 {all} other {{depth}}})",
         "format_string_excludes": "{criterion} {modifierString} {valueString} (exclus {excludedString})",
         "format_string_excludes_depth": "{criterion} {modifierString} {valueString} (exclut {excludedString}) (+{depth, plural, =-1 {all} other {{depth}}})",
         "greater_than": "est plus grand que",
@@ -978,17 +978,17 @@
         "search_accuracy_label": "Pertinence de recherche",
         "title": "Scènes dupliquées",
         "only_select_matching_codecs": "Sélectionner uniquement si tous les codecs correspondent dans le groupe des doublons",
-        "select_all_but_largest_resolution": "Selectionne tous les fichiers dans chaque groupe dupliqué, sauf le fichier avec la plus haute résolution",
-        "select_oldest": "Selectionne le ficher le plus ancien dans le groupe dupliqué",
-        "select_options": "Selectionner des options…",
-        "select_youngest": "Selectionne le ficher le plus récent dans le groupe dupliqué",
-        "select_all_but_largest_file": "Selectionne tous les fichiers dans chaque groupe dupliqué, sauf le plus gros fichier",
-        "select_none": "Ne rien sélectionner"
+        "select_all_but_largest_resolution": "Sélectionner tous les fichiers de chaque groupe dupliqué, à l'exception du fichier avec la plus haute résolution",
+        "select_oldest": "Sélectionner le ficher le plus ancien dans le groupe dupliqué",
+        "select_options": "Sélectionner Options…",
+        "select_youngest": "Sélectionner le fichier le plus récent dans le groupe dupliqué",
+        "select_all_but_largest_file": "Sélectionner tous les fichiers de chaque groupe dupliqué, à l'exception du fichier le plus volumineux",
+        "select_none": "Sélectionner Aucun"
     },
-    "duplicated_phash": "Dupliqué (pHash)",
+    "duplicated_phash": "Dupliqué (Empreinte)",
     "duration": "Durée",
     "effect_filters": {
-        "aspect": "Forme",
+        "aspect": "Aspect",
         "blue": "Bleu",
         "blur": "Flou",
         "brightness": "Luminosité",
@@ -1034,7 +1034,7 @@
     "filters": "Filtres",
     "folder": "Répertoire",
     "framerate": "Fréquence",
-    "frames_per_second": "{value} ips",
+    "frames_per_second": "{value} fps",
     "front_page": {
         "types": {
             "premade_filter": "Filtre prédéfini",
@@ -1079,7 +1079,7 @@
     "index_of_total": "{index} de {total}",
     "instagram": "Instagram",
     "interactive": "Interactif",
-    "interactive_speed": "Vitesse Interactive",
+    "interactive_speed": "Vitesse interactive",
     "isMissing": "Est manquant",
     "last_played_at": "Dernière lecture le",
     "library": "Bibliothèque",
@@ -1094,7 +1094,7 @@
         "checksum": "Somme de contrôle",
         "downloaded_from": "Téléchargé depuis",
         "hash": "Hachage",
-        "interactive_speed": "Vitesse Interactive",
+        "interactive_speed": "Vitesse interactive",
         "performer_card": {
             "age": "{age} {years_old}",
             "age_context": "{age} {years_old} dans cette scène"
@@ -1133,7 +1133,7 @@
     "penis": "Pénis",
     "penis_length": "Longueur du pénis",
     "penis_length_cm": "Longueur du pénis (cm)",
-    "perceptual_similarity": "Similitude perceptuelle (pHash)",
+    "perceptual_similarity": "Similitude perceptuelle (Empreinte)",
     "performer": "Performeurs",
     "performer_age": "Âge du performeur",
     "performer_count": "Nombre de performeurs",
@@ -1281,18 +1281,18 @@
             "welcome_contrib": "Nous accueillons également les contributions sous forme de code (corrections de bogues, améliorations et nouvelles fonctionnalités), de tests, de rapports de bogues, de demandes d'améliorations et de fonctionnalités, et d'assistance utilisateurs. Vous trouverez plus de précisions dans la section \"Contribution\" du manuel de l'application.",
             "your_system_has_been_created": "Bravo ! Votre système a été créé !",
             "download_ffmpeg": "Télécharger FFmpeg",
-            "missing_ffmpeg": "Le binaire obligatoire <code>ffmpeg</code> est manquant. Vous pouvez le télécharger automatiquement dans votre dossier de configuration en cochant la case ci-dessous. Vous pouvez aussi fournir les chemins pour les binaires de <code>ffmpeg</code> et <code>ffprobe</code> dans les paramètres systèmes. Ces binaires doivent être présent pour le bon fonctionnement de Stash."
+            "missing_ffmpeg": "Il manque le binaire <code>FFmpeg</code> requis. Vous pouvez le télécharger automatiquement dans votre répertoire de configuration en cochant la case ci-dessous. Vous pouvez également saisir les chemins d'accès aux binaires <code>FFmpeg</code> et <code>FFprobe</code> dans les paramètres systèmes. Ces binaires doivent être présent pour le fonctionnement de Stash."
         },
         "welcome": {
             "config_path_logic_explained": "Stash essaie d'abord de trouver son fichier de configuration (<code>config.yml</code>) dans le répertoire de travail courant, et s'il ne le trouve pas, il se reporte sur <code>{fallback_path}</code>. Vous pouvez également faire en sorte que Stash lise un fichier de configuration spécifique en le lançant avec les options <code>-c '<path to config file>'</code> ou <code>--config '<path to config file>'</code>.",
             "in_current_stash_directory": "Dans le répertoire <code>{path}</code> :",
-            "in_the_current_working_directory": "Dans <code>{path}</code>, le répertoire de travail courant, actuellement :",
+            "in_the_current_working_directory": "Dans <code>{path}</code>, le répertoire de travail, courant :",
             "next_step": "Une fois que tout est réglé, si vous êtes prêt à procéder à la configuration d'un nouveau système, s'il vous plaît choisissez l'emplacement où vous souhaitez stocker votre fichier de configuration.",
             "store_stash_config": "Où voulez-vous stocker votre configuration de Stash ?",
             "unable_to_locate_config": "Si vous lisez ceci, Stash n'a pas pu trouver de configuration existante. Cet assistant vous guidera dans le processus de paramétrage d'une nouvelle configuration.",
             "unexpected_explained": "Si vous obtenez cet écran de manière inattendue, essayez de redémarrer Stash dans le bon répertoire de travail ou avec le drapeau <code>-c</code>.",
-            "in_the_current_working_directory_disabled_macos": "Non supporté lorsque <code>Stash.app</code> est lancé,<br></br>lancez <code>stash-macos</code> pour installer dans le répertoire courant",
-            "in_the_current_working_directory_disabled": "Dans <code>{path}</code>, le répertoire courant :"
+            "in_the_current_working_directory_disabled_macos": "Non supporté lors de l'exécution de <code>Stash.app</code>,<br></br>exécuter <code>stash-macos</code> pour le configurer dans le répertoire de travail",
+            "in_the_current_working_directory_disabled": "Dans <code>{path}</code>, le répertoire de travail :"
         },
         "welcome_specific_config": {
             "config_path": "Stash utilisera le chemin suivant pour le fichier de configuration : <code>{path}</code>",
@@ -1418,51 +1418,51 @@
     "distance": "Distance",
     "package_manager": {
         "description": "Description",
-        "installed_version": "Version Installée",
+        "installed_version": "Version installée",
         "latest_version": "Dernière version",
         "source": {
-            "url": "URL Source",
+            "url": "URL source",
             "name": "Nom",
             "local_path": {
-                "heading": "Chemin Local",
-                "description": "Chemin relatif pour stocker les paquets de cette source. A noter que changer ceci nécessite le déplacement manuel des paquets."
+                "heading": "Chemin local",
+                "description": "Chemin relatif pour stocker les paquets de cette source. A noter que ce changement nécessite le déplacement manuel des paquets."
             }
         },
         "uninstall": "Désinstaller",
-        "confirm_delete_source": "Etes-vous sûr de vouloir supprimer la source {name} ({url}) ?",
-        "confirm_uninstall": "Etes-vous sûr de vouloir désinstaller {number} paquets ?",
-        "hide_unselected": "Masquer ceux non sélectionnés",
+        "confirm_delete_source": "Êtes-vous sûr de vouloir supprimer la source {name} ({url}) ?",
+        "confirm_uninstall": "Êtes-vous sûr de vouloir désinstaller {number} paquets ?",
+        "hide_unselected": "Masquer les non sélectionnés",
         "package": "Paquet",
-        "no_upgradable": "Tous les paquets sont à jour",
-        "no_packages": "Aucun paquets trouvé",
+        "no_upgradable": "Pas de paquets à mettre à jour trouvés",
+        "no_packages": "Aucun paquet trouvé",
         "no_sources": "Aucune source configurée",
         "version": "Version",
-        "check_for_updates": "Vérifier les MÀJ",
+        "check_for_updates": "Vérifier les mises à jour",
         "required_by": "Requis par {packages}",
         "selected_only": "Seulement sélectionnés",
         "show_all": "Tout montrer",
         "update": "Mettre à jour",
-        "add_source": "Ajouter une Source",
-        "edit_source": "Modifier la Source",
+        "add_source": "Ajouter une source",
+        "edit_source": "Modifier la source",
         "install": "Installer",
         "unknown": "<inconnu>"
     },
-    "tag_parent_tooltip": "A des tags parents",
-    "primary_tag": "Tag Principal",
+    "tag_parent_tooltip": "A des étiquettes parentes",
+    "primary_tag": "Étiquette principale",
     "connection_monitor": {
-        "websocket_connection_reestablished": "La connexion websocket a été rétablie",
-        "websocket_connection_failed": "Impossible de créer la connexion websocket : Voir la console du navigateur pour plus de détails"
+        "websocket_connection_reestablished": "Connexion websocket rétablie",
+        "websocket_connection_failed": "Impossible d'établir une connexion websocket : voir la console du navigateur pour plus de détails"
     },
     "last_o_at": "Dernier O le",
     "o_count": "Nombre d'O",
     "o_history": "Historique d'O",
     "odate_recorded_no": "Aucune date d'O enregistrée",
-    "subsidiary_studio_count": "Nombre de studios enfants",
-    "tag_sub_tag_tooltip": "A des sous-tags",
+    "subsidiary_studio_count": "Nombre de studios affiliés",
+    "tag_sub_tag_tooltip": "A des étiquettes affiliées",
     "time": "Temps",
     "photographer": "Photographe",
     "play_history": "Historique de Lecture",
-    "playdate_recorded_no": "Aucune Date de Lecture Enregistrée",
+    "playdate_recorded_no": "Aucune date de lecture enregistrée",
     "plays": "{value} lectures",
     "unknown_date": "Date inconnue",
     "history": "Historique"
