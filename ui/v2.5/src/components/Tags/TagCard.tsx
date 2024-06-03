@@ -21,22 +21,25 @@ interface IProps {
   onSelectedChanged?: (selected: boolean, shiftKey: boolean) => void;
 }
 
-export const TagCard: React.FC<IProps> = (props: IProps) => {
+export const TagCard: React.FC<IProps> = ({
+  tag,
+  containerWidth,
+  zoomIndex,
+  selecting,
+  selected,
+  onSelectedChanged,
+}) => {
   const [cardWidth, setCardWidth] = useState<number>();
   const [updateTag] = useTagUpdate();
   useEffect(() => {
-    if (
-      !props.containerWidth ||
-      props.zoomIndex === undefined ||
-      ScreenUtils.isMobile()
-    )
+    if (!containerWidth || zoomIndex === undefined || ScreenUtils.isMobile())
       return;
 
-    let zoomValue = props.zoomIndex;
+    let zoomValue = zoomIndex;
     let preferredCardWidth: number;
     switch (zoomValue) {
       case 0:
-        preferredCardWidth = 280;
+        preferredCardWidth = 240;
         break;
       case 1:
         preferredCardWidth = 340;
@@ -48,18 +51,18 @@ export const TagCard: React.FC<IProps> = (props: IProps) => {
         preferredCardWidth = 640;
     }
     let fittedCardWidth = calculateCardWidth(
-      props.containerWidth,
+      containerWidth,
       preferredCardWidth!
     );
     setCardWidth(fittedCardWidth);
-  }, [props.containerWidth, props.zoomIndex]);
+  }, [containerWidth, zoomIndex]);
 
   function maybeRenderDescription() {
-    if (props.tag.description) {
+    if (tag.description) {
       return (
         <TruncatedText
           className="tag-description"
-          text={props.tag.description}
+          text={tag.description}
           lineCount={3}
         />
       );
@@ -96,8 +99,8 @@ export const TagCard: React.FC<IProps> = (props: IProps) => {
     }
   }
   function maybeRenderParents() {
-    if (props.tag.parents.length === 1) {
-      const parent = props.tag.parents[0];
+    if (tag.parents.length === 1) {
+      const parent = tag.parents[0];
       return (
         <div className="tag-parent-tags">
           <FormattedMessage
@@ -110,18 +113,18 @@ export const TagCard: React.FC<IProps> = (props: IProps) => {
       );
     }
 
-    if (props.tag.parents.length > 1) {
+    if (tag.parents.length > 1) {
       return (
         <div className="tag-parent-tags">
           <FormattedMessage
             id="sub_tag_of"
             values={{
               parent: (
-                <Link to={NavUtils.makeParentTagsUrl(props.tag)}>
-                  {props.tag.parents.length}&nbsp;
+                <Link to={NavUtils.makeParentTagsUrl(tag)}>
+                  {tag.parents.length}&nbsp;
                   <FormattedMessage
                     id="countables.tags"
-                    values={{ count: props.tag.parents.length }}
+                    values={{ count: tag.parents.length }}
                   />
                 </Link>
               ),
@@ -133,18 +136,18 @@ export const TagCard: React.FC<IProps> = (props: IProps) => {
   }
 
   function maybeRenderChildren() {
-    if (props.tag.children.length > 0) {
+    if (tag.children.length > 0) {
       return (
         <div className="tag-sub-tags">
           <FormattedMessage
             id="parent_of"
             values={{
               children: (
-                <Link to={NavUtils.makeChildTagsUrl(props.tag)}>
-                  {props.tag.children.length}&nbsp;
+                <Link to={NavUtils.makeChildTagsUrl(tag)}>
+                  {tag.children.length}&nbsp;
                   <FormattedMessage
                     id="countables.tags"
-                    values={{ count: props.tag.children.length }}
+                    values={{ count: tag.children.length }}
                   />
                 </Link>
               ),
@@ -156,72 +159,72 @@ export const TagCard: React.FC<IProps> = (props: IProps) => {
   }
 
   function maybeRenderScenesPopoverButton() {
-    if (!props.tag.scene_count) return;
+    if (!tag.scene_count) return;
 
     return (
       <PopoverCountButton
         className="scene-count"
         type="scene"
-        count={props.tag.scene_count}
-        url={NavUtils.makeTagScenesUrl(props.tag)}
+        count={tag.scene_count}
+        url={NavUtils.makeTagScenesUrl(tag)}
       />
     );
   }
 
   function maybeRenderSceneMarkersPopoverButton() {
-    if (!props.tag.scene_marker_count) return;
+    if (!tag.scene_marker_count) return;
 
     return (
       <PopoverCountButton
         className="marker-count"
         type="marker"
-        count={props.tag.scene_marker_count}
-        url={NavUtils.makeTagSceneMarkersUrl(props.tag)}
+        count={tag.scene_marker_count}
+        url={NavUtils.makeTagSceneMarkersUrl(tag)}
       />
     );
   }
 
   function maybeRenderImagesPopoverButton() {
-    if (!props.tag.image_count) return;
+    if (!tag.image_count) return;
 
     return (
       <PopoverCountButton
         className="image-count"
         type="image"
-        count={props.tag.image_count}
-        url={NavUtils.makeTagImagesUrl(props.tag)}
+        count={tag.image_count}
+        url={NavUtils.makeTagImagesUrl(tag)}
       />
     );
   }
 
   function maybeRenderGalleriesPopoverButton() {
-    if (!props.tag.gallery_count) return;
+    if (!tag.gallery_count) return;
 
     return (
       <PopoverCountButton
         className="gallery-count"
         type="gallery"
-        count={props.tag.gallery_count}
-        url={NavUtils.makeTagGalleriesUrl(props.tag)}
+        count={tag.gallery_count}
+        url={NavUtils.makeTagGalleriesUrl(tag)}
       />
     );
   }
 
   function maybeRenderPerformersPopoverButton() {
-    if (!props.tag.performer_count) return;
+    if (!tag.performer_count) return;
 
     return (
       <PopoverCountButton
         className="performer-count"
         type="performer"
-        count={props.tag.performer_count}
-        url={NavUtils.makeTagPerformersUrl(props.tag)}
+        count={tag.performer_count}
+        url={NavUtils.makeTagPerformersUrl(tag)}
       />
     );
   }
 
   function maybeRenderPopoverButtonGroup() {
-    if (props.tag) {
+    if (tag) {
       return (
         <>
           <hr />
@@ -239,17 +242,17 @@ export const TagCard: React.FC<IProps> = (props: IProps) => {
 
   return (
     <GridCard
-      className={`tag-card zoom-${props.zoomIndex}`}
-      url={`/tags/${props.tag.id}`}
+      className={`tag-card zoom-${zoomIndex}`}
+      url={`/tags/${tag.id}`}
       width={cardWidth}
-      title={props.tag.name ?? ""}
+      title={tag.name ?? ""}
       linkClassName="tag-card-header"
       image={
         <img
           loading="lazy"
           className="tag-card-image"
-          alt={props.tag.name}
-          src={props.tag.image_path ?? ""}
+          alt={tag.name}
+          src={tag.image_path ?? ""}
         />
       }
       details={
@@ -261,9 +264,9 @@ export const TagCard: React.FC<IProps> = (props: IProps) => {
       }
       overlays={<>{renderFavoriteIcon()}</>}
       popovers={maybeRenderPopoverButtonGroup()}
-      selected={props.selected}
-      selecting={props.selecting}
-      onSelectedChanged={props.onSelectedChanged}
+      selected={selected}
+      selecting={selecting}
+      onSelectedChanged={onSelectedChanged}
     />
   );
 };
