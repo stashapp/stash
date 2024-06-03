@@ -31,6 +31,7 @@ See the [Scene Filename Parser](/help/SceneFilenameParser.md) page.
 # Generated Content
 
 The scanning function automatically generates a screenshot of each scene. The generated content provides the following:
+
 * Video or image previews that are played when mousing over the scene card
 * Perceptual hashes - helps match against StashDB, and feeds the duplicate finder
 * Sprites (scene stills for parts of each scene) that are shown in the scene scrubber
