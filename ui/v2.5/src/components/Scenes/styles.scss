@@ -1148,6 +1148,12 @@ input[type="range"].blue-slider {
   width: 100%;
 }
 
+@media (min-width: 1200px) {
+  .secondary.detail-header {
+    display: none;
+  }
+}
+
 .secondary.detail-header {
   background-color: unset;
   border-bottom: solid 1px #ffffff2b;
