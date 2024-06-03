@@ -359,6 +359,13 @@ export const QueueViewer: React.FC<IPlaylistViewer> = ({
   }
 
   function renderPlaylistEntry(scene: QueuedScene) {
+    const title = objectTitle(scene);
+    const studio = scene?.studio?.name;
+    const performersStr = scene?.performers
+      ?.map(function (performer) {
+        return performer.name;
+      })
+      .join(", ");
     return (
       <li
         className={cx("my-2", { current: isCurrentScene(scene) })}
@@ -383,14 +390,14 @@ export const QueueViewer: React.FC<IPlaylistViewer> = ({
               />
             </div>
             <div className="queue-scene-details">
-              <span className="queue-scene-title">{objectTitle(scene)}</span>
-              <span className="queue-scene-studio">{scene?.studio?.name}</span>
-              <span className="queue-scene-performers">
-                {scene?.performers
-                  ?.map(function (performer) {
-                    return performer.name;
-                  })
-                  .join(", ")}
+              <span className="queue-scene-title" title={title}>
+                {title}
+              </span>
+              <span className="queue-scene-studio" title={studio}>
+                {studio}
+              </span>
+              <span className="queue-scene-performers" title={performersStr}>
+                {performersStr}
               </span>
               <span className="queue-scene-date">{scene?.date}</span>
             </div>
