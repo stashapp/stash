@@ -219,7 +219,9 @@
             "server_display_name_desc": "Mostra el nom del servidor DLNA. Per defecte a {server_name} si està buit.",
             "successfully_cancelled_temporary_behaviour": "S'ha cancel·lat correctament el comportament temporal",
             "until_restart": "fins que es reiniciï",
-            "video_sort_order_desc": "Ordena els vídeos per defecte."
+            "video_sort_order_desc": "Ordena els vídeos per defecte.",
+            "server_port": "Port del servidor",
+            "server_port_desc": "Port on executar el servidor DLNA. Requereix reiniciar el DLNA després de canviar."
         },
         "general": {
             "auth": {
@@ -358,7 +360,9 @@
             "preview_generation": "Previsualitzar generació de fitxers",
             "scraping": "Rastreig",
             "sqlite_location": "Ruta relativa per a la base de dades SQLite (requereix reinici). AVÍS: Emmagatzemar la base de dades en un sistema diferent al servidor Stash (per exemple a través de la xarxa) no està suportat!",
-            "video_ext_desc": "Llista delimitada per comes de les extensions d'arxiu que seran identificades com a vídeos."
+            "video_ext_desc": "Llista delimitada per comes de les extensions d'arxiu que seran identificades com a vídeos.",
+            "video_ext_head": "Extensions de vídeo",
+            "video_head": "Vídeo"
         },
         "about": {
             "build_hash": "Build hash:",
@@ -377,6 +381,137 @@
         "advanced_mode": "Mode avançat",
         "application_paths": {
             "heading": "Rutes de l'Aplicació"
+        },
+        "tasks": {
+            "dont_include_file_extension_as_part_of_the_title": "No incloure l'extensió de l'arxiu com a part del títol",
+            "generate_phashes_during_scan": "Generar hashes de percepció (Phashes)",
+            "generate_desc": "Generar imatge de suport, conjunts d'imatges, vídeo, vtt i resta d'arxius.",
+            "generate_phashes_during_scan_tooltip": "Per a cerca de duplicats i identificació d'escenes.",
+            "generate_previews_during_scan": "Generar imatges prèvies animades",
+            "generate_previews_during_scan_tooltip": "També generi vistes prèvies animades (webp), que només són necessàries quan el Tipus de vista prèvia de paret d'escena/marcador està configurat en Imatge animada. En navegar utilitzen menys CPU que les vistes prèvies de vídeo, però es generen a més d'ells i són arxius de major grandària.",
+            "identify": {
+                "and_create_missing": "i crear no existents",
+                "explicit_set_description": "Aquestes opcions s'usaran predeterminadament si no se sobreescriuen en les opcions específiques per a cada font.",
+                "identifying_scenes": "Identificant {num} {scene}",
+                "sources": "Fonts",
+                "tag_skipped_matches": "Etiquetar coincidències omeses amb",
+                "strategy": "Estratègia",
+                "tag_skipped_matches_tooltip": "Cree una etiqueta como 'Identificar: coincidencias múltiples' que pueda filtrar en la vista Etiquetador de escenas y elija la coincidencia correcta manualmente",
+                "tag_skipped_performer_tooltip": "Crea una etiqueta com \"Identificar: Artista amb un nom\" que pots filtrar en l'etiquetador d'escenes i triar com vols tractar a aquests artistes",
+                "tag_skipped_performers": "Etiqueta als intèrprets omesos amb",
+                "create_missing": "Crear no existents",
+                "default_options": "Opcions per defecte",
+                "description": "Obtenir automàticament metadades per a les escenes utilitzant una instància stash-box i els rastrejadors instal·lats.",
+                "field": "Camp",
+                "field_behaviour": "{strategy} {field}",
+                "field_options": "Opcions de camp",
+                "heading": "Identificar",
+                "identifying_from_paths": "Identificació de les escenes que es trobin en les següents rutes",
+                "include_male_performers": "Incloure actors (homes)",
+                "set_cover_images": "Selecció automàtica de caràtula d'escena",
+                "set_organized": "Marcar escena com \"classificada\"",
+                "skip_multiple_matches": "Ometre coincidències que tinguin més d'un resultat",
+                "skip_multiple_matches_tooltip": "Si està desactivat i s'obté més d'un resultat, es triarà una coincidència a l'atzar",
+                "skip_single_name_performers": "Saltar intèrprets amb un sol nom sense desambiguació",
+                "skip_single_name_performers_tooltip": "Si això no està habilitat, s'aparellaran artistes que sovint són genèrics com Samantha o Olga",
+                "source": "Font",
+                "source_options": "Opcions de {source}"
+            },
+            "generate_sprites_during_scan": "Generar miniatures d'imatge del reproductor de vídeo",
+            "migrate_blobs": {
+                "description": "Migrar blobs al sistema d'emmagatzematge de blobs actual. Aquesta migració hauria d'executar-se després de canviar el sistema d'emmagatzematge de blobs. Opcionalment es poden esborrar les dades antigues després de la migració.",
+                "delete_old": "Esborrar dades antigues"
+            },
+            "incremental_import": "Importació gradual o progressiva des d'un arxiu zip d'exportació aportat per l'usuari.",
+            "maintenance": "Manteniment",
+            "migrate_scene_screenshots": {
+                "description": "Migrar captures de pantalla d'escenes al nou sistema d'emmagatzematge blob. Aquesta migració hauria d'executar-se migrar un sistema existent a la versió 0.20. Opcionalment es poden esborrar les captures de pantalla antigues després de la migració.",
+                "delete_files": "Esborrar fitxers de captures de pantalla",
+                "overwrite_existing": "Sobreescriure blobs existents amb dades de captures de pantalla"
+            },
+            "migrations": "Migracions",
+            "backup_database": "Realitza una còpia de seguretat de la base de dades en el directori de còpies de seguretat. La còpia s'emmagatzema amb el format {filename_format}",
+            "added_job_to_queue": "Afegit/a {operation_name} a la cua de treball",
+            "anonymise_and_download": "Realitza una còpia anònima de la base de dades i descàrrega el fitxer resultant.",
+            "anonymise_database": "Fa una còpia de la base de dades al directori de còpies de seguretat anonimitzant tota la informació sensible. Aquesta còpia es pot proveir a tercers per a solucionar i depurar problemes. La base de dades original no és modificada. La base de dades anonimitzada s'emmagatzema amb el format {filename_format}.",
+            "anonymising_database": "Anonimitzar la base de dades",
+            "auto_tag": {
+                "auto_tagging_paths": "Etiquetar automàticament les següents rutes",
+                "auto_tagging_all_paths": "Etiquetar automàticament totes les rutes"
+            },
+            "auto_tag_based_on_filenames": "Etiquetatge automatitzat del contingut basat en noms d'arxiu.",
+            "auto_tagging": "Auto-etiquetat",
+            "backing_up_database": "Guardant suport de la base de dades",
+            "backup_and_download": "Duu a terme una còpia de seguretat de la base de dades i la guarda en un fitxer de suport.",
+            "cleanup_desc": "Buscar fitxers eliminats del sistema d'arxius i eliminar-los de la base de dades. PRECAUCIÓ: aquesta és una acció destructiva.",
+            "clean_generated": {
+                "blob_files": "Arxius Blob",
+                "description": "Elimina els arxius generats sense una entrada corresponent en la base de dades.",
+                "image_thumbnails": "Miniatures d'imatges",
+                "image_thumbnails_desc": "Miniatures d'imatges i clips",
+                "markers": "Vista prèvia de marcadors",
+                "previews": "Vista prèvia d'escenes",
+                "previews_desc": "Vista prèvia d'escenes i miniatures",
+                "sprites": "Sprites d'escenes",
+                "transcodes": "Transcodificacions d'escenes"
+            },
+            "data_management": "Gestió de dades",
+            "defaults_set": "Les opcions per defecte s'han guardat i seran usades cada vegada que premis el botó de {action} en la pàgina de tasques.",
+            "empty_queue": "Actualment no hi ha tasques en execució.",
+            "export_to_json": "Exporta el contingut de la base de dades en format JSON en el directori de metadades.",
+            "generate": {
+                "generating_from_paths": "Generant multimèdia de suport per a les escenes en les següents rutes",
+                "generating_scenes": "Generant multimèdia de suport per a {num} {scene}"
+            },
+            "generate_clip_previews_during_scan": "Generar vistes prèvies per a clips d'imatges",
+            "generate_sprites_during_scan_tooltip": "El conjunt d'imatges que es mostra sota el reproductor de vídeo per a facilitar la navegació.",
+            "generate_thumbnails_during_scan": "Generar miniatures de les imatges",
+            "generate_video_covers_during_scan": "Generar caràtules d'escenes",
+            "generate_video_previews_during_scan": "Generar vistes prèvies",
+            "generate_video_previews_during_scan_tooltip": "Generar vistes prèvies en vídeo que es reprodueixen en passar el ratolí per sobre d'una escena",
+            "generated_content": "Contingut generat",
+            "import_from_exported_json": "Importar des del fitxer JSON exportat en el directori de metadades. Esborrarà la base de dades existent.",
+            "job_queue": "Cua de tasques",
+            "migrate_hash_files": "S'executarà després de fer un canvi de tipus de hash per a canviar de nom els fitxers generats al nou format hash."
+        },
+        "plugins": {
+            "hooks": "Hooks",
+            "available_plugins": "Connectors disponibles",
+            "installed_plugins": "Connectors instal·lats",
+            "triggers_on": "Es duu a terme durant"
+        },
+        "scraping": {
+            "entity_scrapers": "Rastrejadors de {entityType}",
+            "excluded_tag_patterns_head": "Patrons d'etiquetes exclosos",
+            "scraper": "Rastrejador",
+            "available_scrapers": "Rastrejadors disponibles",
+            "entity_metadata": "Metadades de {entityType}",
+            "excluded_tag_patterns_desc": "Expressions regulars de noms d'etiquetes per a excloure dels resultats del rastreig",
+            "installed_scrapers": "Rastrejadors instal·lats",
+            "scrapers": "Rastrejadors",
+            "search_by_name": "Cerca per nom",
+            "supported_types": "Tipus suportats",
+            "supported_urls": "Adreces web"
+        },
+        "stashbox": {
+            "endpoint": "Terminal de xarxa",
+            "add_instance": "Afegir instància stash-box",
+            "api_key": "Clau API",
+            "description": "Stash-box permet automatitzar l'etiquetatge d'escenes, actors i actrius, basat en empremtes dactilars i noms d'arxiu.\nEl terminal de xarxa i la clau API poden ser trobats en la teva pàgina d'usuari de la instància stash-box. Els noms són requerits quan s'agregui més d'una instància stash-box.",
+            "graphql_endpoint": "Terminal de xarxa GraphQL",
+            "name": "Nom",
+            "title": "Terminal de xarxa Stash-box"
+        },
+        "library": {
+            "media_content_extensions": "Extensions de contingut multimèdia",
+            "exclusions": "Exclusions",
+            "gallery_and_image_options": "Opcions de Galeria i Imatge"
+        },
+        "logs": {
+            "log_level": "Nivell de registre"
+        },
+        "system": {
+            "transcoding": "Transcodificació"
         }
     },
     "actions_name": "Accions",

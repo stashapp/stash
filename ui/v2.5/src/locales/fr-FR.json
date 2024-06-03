@@ -121,20 +121,21 @@
         },
         "temp_disable": "Désactiver temporairement…",
         "temp_enable": "Activer temporairement…",
-        "unset": "Désactiver",
+        "unset": "Retirer",
         "use_default": "Utiliser par défaut",
         "view_random": "Visionner au hasard",
         "add_manual_date": "Ajouter une date manuellement",
-        "add_o": "Ajouter O",
-        "add_play": "Ajouter Lecture",
+        "add_o": "Ajouter un O",
+        "add_play": "Ajouter une lecture",
         "choose_date": "Choisir une date",
-        "clear_date_data": "Supprimer les données de date",
+        "clear_date_data": "Effacer les données de date",
         "copy_to_clipboard": "Copier dans le presse-papier",
         "disable": "Désactiver",
         "enable": "Activer",
-        "reload": "Recharger",
-        "remove_date": "Supprimer date",
-        "clean_generated": "Nettoyer les fichiers générés"
+        "reload": "Actualiser",
+        "remove_date": "Supprimer la date",
+        "clean_generated": "Nettoyer les fichiers générés",
+        "view_history": "Voir l'historique"
     },
     "actions_name": "Actions",
     "age": "Âge",
@@ -258,7 +259,9 @@
             "successfully_cancelled_temporary_behaviour": "Le comportement temporaire a été annulé avec succès",
             "until_restart": "jusqu'au redémarrage",
             "video_sort_order": "Ordre de tri vidéo par défaut",
-            "video_sort_order_desc": "Commande pour trier les vidéos par défaut."
+            "video_sort_order_desc": "Commande pour trier les vidéos par défaut.",
+            "server_port": "Port du Serveur",
+            "server_port_desc": "Port sur lequel le serveur DLNA doit fonctionner. Nécessite un redémarrage du DLNA après modification."
         },
         "general": {
             "auth": {
@@ -338,6 +341,18 @@
                         "desc": "Avancé : Arguments supplémentaires à passer à FFmpeg avant le champ de sortie lors de la génération de la vidéo.",
                         "heading": "Arguments de sortie du transcodage FFmpeg"
                     }
+                },
+                "download_ffmpeg": {
+                    "heading": "Télécharger FFmpeg",
+                    "description": "Télécharge FFmpeg dans le répertoire de configuration et nettoie les chemins de FFmpeg et FFprobe pour les résoudre depuis le répertoire de configuration."
+                },
+                "ffmpeg_path": {
+                    "heading": "Chemin de l'exécutable FFmpeg",
+                    "description": "Chemin vers l'exécutable de FFmpeg (pas seulement le répertoire). Si vide, FFmpeg sera résolu à partir de l'environnement via $PATH, le répertoire de configuration, ou depuis $HOME/.stash"
+                },
+                "ffprobe_path": {
+                    "description": "Chemin vers l'exécutable de FFprobe (pas seulement le répertoire). Si vide, FFprobe sera résolu à partir de l'environnement via $PATH, le répertoire de configuration, ou depuis $HOME/.stash",
+                    "heading": "Chemin de l'exécutable FFprobe"
                 }
             },
             "funscript_heatmap_draw_range": "Inclure l'amplitude dans les cartes thermiques générées",
@@ -390,7 +405,7 @@
             }
         },
         "library": {
-            "exclusions": "Exclusions",
+            "exclusions": "Exceptions",
             "gallery_and_image_options": "Options des galeries et images",
             "media_content_extensions": "Extensions du contenu multimédia"
         },
@@ -723,7 +738,7 @@
                     "enable_chromecast": "Activer Chromecast",
                     "show_ab_loop_controls": "Afficher les commandes du plugin AB Loop",
                     "show_scrubber": "Montrer la barre de progression",
-                    "track_activity": "Suivre l'activité",
+                    "track_activity": "Activer l'historique de lecture des scènes",
                     "vr_tag": {
                         "description": "Le bouton VR est uniquement affiché pour les scènes comportant cette étiquette.",
                         "heading": "Étiquette VR"
@@ -769,11 +784,11 @@
             },
             "title": "Interface utilisateur",
             "use_stash_hosted_funscript": {
-                "description": "Activée, les funscripts sont transmis directement de Stash à votre dispositif Handy sans recourir au serveur Handy de tierce partie. Nécessite que Stash soit accessible depuis votre dispositif Handy.",
+                "description": "Activée, les scripts interactifs sont transmis directement de Stash à votre dispositif Handy sans recourir au serveur Handy de tierce partie. Nécessite que Stash soit accessible depuis votre dispositif Handy, et qu'une clé API soit générée si Stash a des informations d'identification configurées.",
                 "heading": "Transmettre directement les funscripts"
             }
         },
-        "advanced_mode": "Mode Avancé"
+        "advanced_mode": "Mode avancé"
     },
     "configuration": "Configuration",
     "countables": {
@@ -801,7 +816,7 @@
         "excludes": "ne contient pas",
         "format_string": "{criterion} {modifierString} {valueString}",
         "format_string_depth": "{criterion} {modifierString} {valueString} (+{depth, plural, =-1 {all} other {{depth}}})",
-        "format_string_excludes": "{criterion} {modifierString} {valueString} (excludes {excludedString})",
+        "format_string_excludes": "{criterion} {modifierString} {valueString} (exclus {excludedString})",
         "format_string_excludes_depth": "{criterion} {modifierString} {valueString} (exclut {excludedString}) (+{depth, plural, =-1 {all} other {{depth}}})",
         "greater_than": "est plus grand que",
         "includes": "contient",
@@ -830,7 +845,7 @@
         "delete_alert": "{count, plural, one {Le {singularEntity} suivant sera supprimé} other {Les {pluralEntity} suivants seront supprimés}} définitivement :",
         "delete_confirm": "Êtes-vous sûr de vouloir supprimer {entityName} ?",
         "delete_entity_desc": "{count, plural, one {Êtes-vous sûr de vouloir supprimer cette {singularEntity} ? Si le fichier n'est pas également supprimé, cette {singularEntity} sera ajoutée à nouveau lors de la prochaine analyse.} other {Êtes-vous sûr de vouloir supprimer ces {pluralEntity} ? Si les fichiers ne sont pas également supprimés, ces {pluralEntity} seront ajoutées à nouveau lors de la prochaine analyse.}}",
-        "delete_entity_simple_desc": "{count, plural, one {Êtes-vous sûr de vouloir supprimer ce {singularEntity}?} other {Êtes-vous sûr de vouloir supprimer ces {pluralEntity}?}}",
+        "delete_entity_simple_desc": "{count, plural, one {Êtes-vous sûr de vouloir supprimer ce {singularEntity} ?} other {Êtes-vous sûr de vouloir supprimer ces {pluralEntity} ?}}",
         "delete_entity_title": "Supprimer {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
         "delete_galleries_extra": "…ainsi que tous fichiers image qui ne sont pas associés à une autre galerie.",
         "delete_gallery_files": "Supprime le répertoire ou l'archive zip de la galerie et toutes images qui ne sont pas associées à une autre galerie.",
@@ -962,9 +977,15 @@
         },
         "search_accuracy_label": "Pertinence de recherche",
         "title": "Scènes dupliquées",
-        "only_select_matching_codecs": "Sélectionner uniquement si tous les codecs correspondent dans le groupe des doublons"
+        "only_select_matching_codecs": "Sélectionner uniquement si tous les codecs correspondent dans le groupe des doublons",
+        "select_all_but_largest_resolution": "Sélectionner tous les fichiers de chaque groupe dupliqué, à l'exception du fichier avec la plus haute résolution",
+        "select_oldest": "Sélectionner le ficher le plus ancien dans le groupe dupliqué",
+        "select_options": "Sélectionner Options…",
+        "select_youngest": "Sélectionner le fichier le plus récent dans le groupe dupliqué",
+        "select_all_but_largest_file": "Sélectionner tous les fichiers de chaque groupe dupliqué, à l'exception du fichier le plus volumineux",
+        "select_none": "Sélectionner Aucun"
     },
-    "duplicated_phash": "Empreinte dupliquée",
+    "duplicated_phash": "Dupliqué (Empreinte)",
     "duration": "Durée",
     "effect_filters": {
         "aspect": "Aspect",
@@ -992,7 +1013,8 @@
         "image_index_greater_than_zero": "L'index de l'image doit être supérieur à 0",
         "lazy_component_error_help": "Si vous avez récemment mis à jour Stash, merci de recharger la page ou de vider le cache de votre navigateur.",
         "loading_type": "Erreur de chargement de {type}",
-        "something_went_wrong": "Quelque chose n'a pas fonctionné."
+        "something_went_wrong": "Quelque chose n'a pas fonctionné.",
+        "header": "Erreur"
     },
     "ethnicity": "Ethnicité",
     "existing_value": "valeur existante",
@@ -1081,7 +1103,8 @@
         "play_count": "Compteur de lecture",
         "play_duration": "Temps de lecture",
         "stream": "Flux",
-        "video_codec": "Codec vidéo"
+        "video_codec": "Codec vidéo",
+        "o_count": "Nombre d'O"
     },
     "megabits_per_second": "{value} mbps",
     "metadata": "Métadonnées",
@@ -1110,7 +1133,7 @@
     "penis": "Pénis",
     "penis_length": "Longueur du pénis",
     "penis_length_cm": "Longueur du pénis (cm)",
-    "perceptual_similarity": "Similitude perceptuelle (empreinte)",
+    "perceptual_similarity": "Similitude perceptuelle (Empreinte)",
     "performer": "Performeurs",
     "performer_age": "Âge du performeur",
     "performer_count": "Nombre de performeurs",
@@ -1256,16 +1279,20 @@
             "support_us": "Soutenez-nous",
             "thanks_for_trying_stash": "Merci d'avoir essayé Stash !",
             "welcome_contrib": "Nous accueillons également les contributions sous forme de code (corrections de bogues, améliorations et nouvelles fonctionnalités), de tests, de rapports de bogues, de demandes d'améliorations et de fonctionnalités, et d'assistance utilisateurs. Vous trouverez plus de précisions dans la section \"Contribution\" du manuel de l'application.",
-            "your_system_has_been_created": "Bravo ! Votre système a été créé !"
+            "your_system_has_been_created": "Bravo ! Votre système a été créé !",
+            "download_ffmpeg": "Télécharger FFmpeg",
+            "missing_ffmpeg": "Il manque le binaire <code>FFmpeg</code> requis. Vous pouvez le télécharger automatiquement dans votre répertoire de configuration en cochant la case ci-dessous. Vous pouvez également saisir les chemins d'accès aux binaires <code>FFmpeg</code> et <code>FFprobe</code> dans les paramètres systèmes. Ces binaires doivent être présent pour le fonctionnement de Stash."
         },
         "welcome": {
             "config_path_logic_explained": "Stash essaie d'abord de trouver son fichier de configuration (<code>config.yml</code>) dans le répertoire de travail courant, et s'il ne le trouve pas, il se reporte sur <code>{fallback_path}</code>. Vous pouvez également faire en sorte que Stash lise un fichier de configuration spécifique en le lançant avec les options <code>-c '<path to config file>'</code> ou <code>--config '<path to config file>'</code>.",
-            "in_current_stash_directory": "Dans le répertoire <code>{path}</code>:",
-            "in_the_current_working_directory": "Dans le répertoire de travail courant",
+            "in_current_stash_directory": "Dans le répertoire <code>{path}</code> :",
+            "in_the_current_working_directory": "Dans <code>{path}</code>, le répertoire de travail, courant :",
             "next_step": "Une fois que tout est réglé, si vous êtes prêt à procéder à la configuration d'un nouveau système, s'il vous plaît choisissez l'emplacement où vous souhaitez stocker votre fichier de configuration.",
             "store_stash_config": "Où voulez-vous stocker votre configuration de Stash ?",
             "unable_to_locate_config": "Si vous lisez ceci, Stash n'a pas pu trouver de configuration existante. Cet assistant vous guidera dans le processus de paramétrage d'une nouvelle configuration.",
-            "unexpected_explained": "Si vous obtenez cet écran de manière inattendue, essayez de redémarrer Stash dans le bon répertoire de travail ou avec le drapeau <code>-c</code>."
+            "unexpected_explained": "Si vous obtenez cet écran de manière inattendue, essayez de redémarrer Stash dans le bon répertoire de travail ou avec le drapeau <code>-c</code>.",
+            "in_the_current_working_directory_disabled_macos": "Non supporté lors de l'exécution de <code>Stash.app</code>,<br></br>exécuter <code>stash-macos</code> pour le configurer dans le répertoire de travail",
+            "in_the_current_working_directory_disabled": "Dans <code>{path}</code>, le répertoire de travail :"
         },
         "welcome_specific_config": {
             "config_path": "Stash utilisera le chemin suivant pour le fichier de configuration : <code>{path}</code>",
@@ -1375,8 +1402,10 @@
     "url": "URL",
     "urls": "URLs",
     "validation": {
-        "date_invalid_form": "${path} doit être du format AAAA-MM-JJ",
-        "required": "${path} est un champ requis"
+        "date_invalid_form": "${path} doit être au format AAAA-MM-JJ",
+        "required": "${path} est un champ requis",
+        "blank": "${path} ne doit pas être vide",
+        "unique": "${path} doit être unique"
     },
     "video_codec": "Codec vidéo",
     "videos": "Vidéos",
@@ -1388,6 +1417,53 @@
     "orientation": "Orientation",
     "distance": "Distance",
     "package_manager": {
-        "description": "Description"
-    }
+        "description": "Description",
+        "installed_version": "Version installée",
+        "latest_version": "Dernière version",
+        "source": {
+            "url": "URL source",
+            "name": "Nom",
+            "local_path": {
+                "heading": "Chemin local",
+                "description": "Chemin relatif pour stocker les paquets de cette source. A noter que ce changement nécessite le déplacement manuel des paquets."
+            }
+        },
+        "uninstall": "Désinstaller",
+        "confirm_delete_source": "Êtes-vous sûr de vouloir supprimer la source {name} ({url}) ?",
+        "confirm_uninstall": "Êtes-vous sûr de vouloir désinstaller {number} paquets ?",
+        "hide_unselected": "Masquer les non sélectionnés",
+        "package": "Paquet",
+        "no_upgradable": "Pas de paquets à mettre à jour trouvés",
+        "no_packages": "Aucun paquet trouvé",
+        "no_sources": "Aucune source configurée",
+        "version": "Version",
+        "check_for_updates": "Vérifier les mises à jour",
+        "required_by": "Requis par {packages}",
+        "selected_only": "Seulement sélectionnés",
+        "show_all": "Tout montrer",
+        "update": "Mettre à jour",
+        "add_source": "Ajouter une source",
+        "edit_source": "Modifier la source",
+        "install": "Installer",
+        "unknown": "<inconnu>"
+    },
+    "tag_parent_tooltip": "A des étiquettes parentes",
+    "primary_tag": "Étiquette principale",
+    "connection_monitor": {
+        "websocket_connection_reestablished": "Connexion websocket rétablie",
+        "websocket_connection_failed": "Impossible d'établir une connexion websocket : voir la console du navigateur pour plus de détails"
+    },
+    "last_o_at": "Dernier O le",
+    "o_count": "Nombre d'O",
+    "o_history": "Historique d'O",
+    "odate_recorded_no": "Aucune date d'O enregistrée",
+    "subsidiary_studio_count": "Nombre de studios affiliés",
+    "tag_sub_tag_tooltip": "A des étiquettes affiliées",
+    "time": "Temps",
+    "photographer": "Photographe",
+    "play_history": "Historique de Lecture",
+    "playdate_recorded_no": "Aucune date de lecture enregistrée",
+    "plays": "{value} lectures",
+    "unknown_date": "Date inconnue",
+    "history": "Historique"
 }
