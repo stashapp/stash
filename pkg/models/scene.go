@@ -53,6 +53,10 @@ type SceneFilterType struct {
 	Duration *IntCriterionInput `json:"duration"`
 	// Filter to only include scenes which have markers. `true` or `false`
 	HasMarkers *string `json:"has_markers"`
+	// Filter to only include scenes with markers having these tags
+	MarkerTags *HierarchicalMultiCriterionInput `json:"marker_tags"`
+	// Filter to only include scenes with markers having these primary tags
+	PrimaryMarkerTags *HierarchicalMultiCriterionInput `json:"primary_marker_tags"`
 	// Filter to only include scenes missing this property
 	IsMissing *string `json:"is_missing"`
 	// Filter to only include scenes with this studio

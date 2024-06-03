@@ -64,8 +64,8 @@ const (
 	sceneIdxWithTag
 	sceneIdxWithTwoTags
 	sceneIdxWithThreeTags
-	sceneIdxWithMarkerAndTag
-	sceneIdxWithMarkerTwoTags
+	sceneIdxWithTagAndMarker
+	sceneIdxWithTwoTagsAndMarker
 	sceneIdxWithStudio
 	sceneIdx1WithStudio
 	sceneIdx2WithStudio
@@ -78,6 +78,9 @@ const (
 	sceneIdxWithGrandChildStudio
 	sceneIdxMissingPhash
 	sceneIdxWithPerformerParentTag
+	sceneIdxWithMarkerParentTag
+	sceneIdxWithTwoMarkers
+	sceneIdxWithoutMarkers
 	// new indexes above
 	lastSceneIdx
 
@@ -194,8 +197,8 @@ const (
 	tagIdx1WithScene
 	tagIdx2WithScene
 	tagIdx3WithScene
-	tagIdxWithPrimaryMarkers
-	tagIdxWithMarkers
+	tagIdxWithPrimaryMarkers // tag is primary tag for multiple markers
+	tagIdxWithMarkers        // tag is secondary tag for multiple markers
 	tagIdxWithCoverImage
 	tagIdxWithImage
 	tagIdx1WithImage
@@ -213,7 +216,8 @@ const (
 	tagIdxWithGrandChild
 	tagIdxWithParentAndChild
 	tagIdxWithGrandParent
-	tagIdx2WithMarkers
+	tagIdx2WithMarkers        // tag is secondary tag for multiple markers (alt)
+	tagIdx2WithPrimaryMarkers // tag is primary tag for multiple markers (alt)
 	// new indexes above
 	// tags with dup names start from the end
 	tagIdx1WithDupName
@@ -353,11 +357,11 @@ var (
 
 var (
 	sceneTags = linkMap{
-		sceneIdxWithTag:           {tagIdxWithScene},
-		sceneIdxWithTwoTags:       {tagIdx1WithScene, tagIdx2WithScene},
-		sceneIdxWithThreeTags:     {tagIdx1WithScene, tagIdx2WithScene, tagIdx3WithScene},
-		sceneIdxWithMarkerAndTag:  {tagIdx3WithScene},
-		sceneIdxWithMarkerTwoTags: {tagIdx2WithScene, tagIdx3WithScene},
+		sceneIdxWithTag:              {tagIdxWithScene},
+		sceneIdxWithTwoTags:          {tagIdx1WithScene, tagIdx2WithScene},
+		sceneIdxWithThreeTags:        {tagIdx1WithScene, tagIdx2WithScene, tagIdx3WithScene},
+		sceneIdxWithTagAndMarker:     {tagIdx3WithScene},
+		sceneIdxWithTwoTagsAndMarker: {tagIdx2WithScene, tagIdx3WithScene},
 	}
 
 	scenePerformers = linkMap{
@@ -403,8 +407,12 @@ var (
 		{sceneIdxWithMarkers, tagIdxWithPrimaryMarkers, []int{tagIdxWithMarkers}},
 		{sceneIdxWithMarkers, tagIdxWithPrimaryMarkers, []int{tagIdx2WithMarkers}},
 		{sceneIdxWithMarkers, tagIdxWithPrimaryMarkers, []int{tagIdxWithMarkers, tagIdx2WithMarkers}},
-		{sceneIdxWithMarkerAndTag, tagIdxWithPrimaryMarkers, nil},
-		{sceneIdxWithMarkerTwoTags, tagIdxWithPrimaryMarkers, nil},
+		{sceneIdxWithMarkers, tagIdx2WithPrimaryMarkers, []int{tagIdxWithMarkers, tagIdx2WithMarkers}},
+		{sceneIdxWithTwoMarkers, tagIdxWithPrimaryMarkers, []int{tagIdxWithMarkers}},
+		{sceneIdxWithTwoMarkers, tagIdxWithPrimaryMarkers, []int{tagIdx2WithMarkers}},
+		{sceneIdxWithTagAndMarker, tagIdxWithPrimaryMarkers, nil},
+		{sceneIdxWithTwoTagsAndMarker, tagIdxWithPrimaryMarkers, nil},
+		{sceneIdxWithMarkerParentTag, tagIdxWithParentAndChild, nil},
 	}
 )
 
@@ -1562,7 +1570,7 @@ func createTags(ctx context.Context, tqb models.TagReaderWriter, n int, o int) e
 
 		tag := models.Tag{
 			Name:          getTagStringValue(index, name),
-			IgnoreAutoTag: getIgnoreAutoTag(i),
+			IgnoreAutoTag: getIgnoreAutoTag(index),
 		}
 
 		err := tqb.Create(ctx, &tag)

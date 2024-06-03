@@ -3439,7 +3439,7 @@ func TestSceneQueryTags(t *testing.T) {
 			[]int{
 				sceneIdxWithTag,
 				sceneIdxWithTwoTags,
-				sceneIdxWithMarkerAndTag,
+				sceneIdxWithTagAndMarker,
 			},
 			false,
 		},
@@ -3451,7 +3451,7 @@ func TestSceneQueryTags(t *testing.T) {
 			[]int{
 				sceneIdxWithTag,
 				sceneIdxWithTwoTags,
-				sceneIdxWithMarkerAndTag,
+				sceneIdxWithTagAndMarker,
 			},
 			[]int{sceneIdx1WithPerformer},
 			false,
@@ -3674,6 +3674,422 @@ func TestSceneQueryPerformerTags(t *testing.T) {
 					Modifier: models.CriterionModifierNotEquals,
 					Value: []string{
 						strconv.Itoa(tagIDs[tagIdx2WithPerformer]),
+					},
+				},
+			},
+			nil,
+			nil,
+			true,
+		},
+	}
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+
+			results, err := db.Scene.Query(ctx, models.SceneQueryOptions{
+				SceneFilter: tt.filter,
+				QueryOptions: models.QueryOptions{
+					FindFilter: tt.findFilter,
+				},
+			})
+			if (err != nil) != tt.wantErr {
+				t.Errorf("SceneStore.Query() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			include := indexesToIDs(sceneIDs, tt.includeIdxs)
+			exclude := indexesToIDs(sceneIDs, tt.excludeIdxs)
+
+			for _, i := range include {
+				assert.Contains(results.IDs, i)
+			}
+			for _, e := range exclude {
+				assert.NotContains(results.IDs, e)
+			}
+		})
+	}
+}
+
+func TestSceneQueryMarkerTags(t *testing.T) {
+	allDepth := -1
+
+	tests := []struct {
+		name        string
+		findFilter  *models.FindFilterType
+		filter      *models.SceneFilterType
+		includeIdxs []int
+		excludeIdxs []int
+		wantErr     bool
+	}{
+		{
+			"includes",
+			nil,
+			&models.SceneFilterType{
+				MarkerTags: &models.HierarchicalMultiCriterionInput{
+					Value: []string{
+						strconv.Itoa(tagIDs[tagIdxWithMarkers]),
+						strconv.Itoa(tagIDs[tagIdx2WithMarkers]),
+					},
+					Modifier: models.CriterionModifierIncludes,
+				},
+			},
+			[]int{
+				sceneIdxWithMarkers,
+				sceneIdxWithTwoMarkers,
+			},
+			[]int{
+				sceneIdxWithTagAndMarker,
+				sceneIdxWithTwoTagsAndMarker,
+			},
+			false,
+		},
+		{
+			"includes primary",
+			nil,
+			&models.SceneFilterType{
+				MarkerTags: &models.HierarchicalMultiCriterionInput{
+					Value: []string{
+						strconv.Itoa(tagIDs[tagIdxWithPrimaryMarkers]),
+						strconv.Itoa(tagIDs[tagIdxWithMarkers]),
+						strconv.Itoa(tagIDs[tagIdx2WithMarkers]),
+					},
+					Modifier: models.CriterionModifierIncludes,
+				},
+			},
+			[]int{
+				sceneIdxWithMarkers,
+				sceneIdxWithTagAndMarker,
+				sceneIdxWithTwoTagsAndMarker,
+				sceneIdxWithTwoMarkers,
+			},
+			[]int{},
+			false,
+		},
+		{
+			"includes sub-tags",
+			nil,
+			&models.SceneFilterType{
+				MarkerTags: &models.HierarchicalMultiCriterionInput{
+					Value: []string{
+						strconv.Itoa(tagIDs[tagIdxWithParentAndChild]),
+					},
+					Depth:    &allDepth,
+					Modifier: models.CriterionModifierIncludes,
+				},
+			},
+			[]int{
+				sceneIdxWithMarkerParentTag,
+			},
+			[]int{
+				sceneIdxWithMarkers,
+				sceneIdxWithTagAndMarker,
+				sceneIdxWithTwoTagsAndMarker,
+				sceneIdxWithTwoMarkers,
+			},
+			false,
+		},
+		{
+			"includes all",
+			nil,
+			&models.SceneFilterType{
+				MarkerTags: &models.HierarchicalMultiCriterionInput{
+					Value: []string{
+						strconv.Itoa(tagIDs[tagIdxWithMarkers]),
+						strconv.Itoa(tagIDs[tagIdx2WithMarkers]),
+					},
+					Modifier: models.CriterionModifierIncludesAll,
+				},
+			},
+			[]int{
+				sceneIdxWithMarkers,
+				sceneIdxWithTwoMarkers,
+			},
+			[]int{
+				sceneIdxWithTagAndMarker,
+				sceneIdxWithTwoTagsAndMarker,
+			},
+			false,
+		},
+		{
+			"excludes tag tagIdx2WithMarkers",
+			nil,
+			&models.SceneFilterType{
+				MarkerTags: &models.HierarchicalMultiCriterionInput{
+					Modifier: models.CriterionModifierExcludes,
+					Value:    []string{strconv.Itoa(tagIDs[tagIdx2WithMarkers])},
+				},
+			},
+			nil,
+			[]int{
+				sceneIdxWithMarkers,
+			},
+			false,
+		},
+		{
+			"excludes sub-tags",
+			nil,
+			&models.SceneFilterType{
+				MarkerTags: &models.HierarchicalMultiCriterionInput{
+					Value: []string{
+						strconv.Itoa(tagIDs[tagIdxWithParentAndChild]),
+					},
+					Depth:    &allDepth,
+					Modifier: models.CriterionModifierExcludes,
+				},
+			},
+			[]int{
+				sceneIdxWithMarkers,
+			},
+			[]int{
+				sceneIdxWithMarkerParentTag,
+			},
+			false,
+		},
+		{
+			"is null",
+			nil,
+			&models.SceneFilterType{
+				MarkerTags: &models.HierarchicalMultiCriterionInput{
+					Modifier: models.CriterionModifierIsNull,
+				},
+			},
+			[]int{sceneIdxWithoutMarkers},
+			[]int{sceneIdxWithMarkers},
+			false,
+		},
+		{
+			"not null",
+			nil,
+			&models.SceneFilterType{
+				MarkerTags: &models.HierarchicalMultiCriterionInput{
+					Modifier: models.CriterionModifierNotNull,
+				},
+			},
+			[]int{sceneIdxWithMarkers},
+			[]int{sceneIdxWithoutMarkers},
+			false,
+		},
+		{
+			"equals",
+			nil,
+			&models.SceneFilterType{
+				MarkerTags: &models.HierarchicalMultiCriterionInput{
+					Modifier: models.CriterionModifierEquals,
+					Value: []string{
+						strconv.Itoa(tagIDs[tagIdx2WithMarkers]),
+					},
+				},
+			},
+			nil,
+			nil,
+			true,
+		},
+		{
+			"not equals",
+			nil,
+			&models.SceneFilterType{
+				MarkerTags: &models.HierarchicalMultiCriterionInput{
+					Modifier: models.CriterionModifierNotEquals,
+					Value: []string{
+						strconv.Itoa(tagIDs[tagIdx2WithMarkers]),
+					},
+				},
+			},
+			nil,
+			nil,
+			true,
+		},
+	}
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+
+			results, err := db.Scene.Query(ctx, models.SceneQueryOptions{
+				SceneFilter: tt.filter,
+				QueryOptions: models.QueryOptions{
+					FindFilter: tt.findFilter,
+				},
+			})
+			if (err != nil) != tt.wantErr {
+				t.Errorf("SceneStore.Query() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			include := indexesToIDs(sceneIDs, tt.includeIdxs)
+			exclude := indexesToIDs(sceneIDs, tt.excludeIdxs)
+
+			for _, i := range include {
+				assert.Contains(results.IDs, i)
+			}
+			for _, e := range exclude {
+				assert.NotContains(results.IDs, e)
+			}
+		})
+	}
+}
+
+func TestSceneQueryPrimaryMarkerTags(t *testing.T) {
+	allDepth := -1
+
+	tests := []struct {
+		name        string
+		findFilter  *models.FindFilterType
+		filter      *models.SceneFilterType
+		includeIdxs []int
+		excludeIdxs []int
+		wantErr     bool
+	}{
+		{
+			"includes",
+			nil,
+			&models.SceneFilterType{
+				PrimaryMarkerTags: &models.HierarchicalMultiCriterionInput{
+					Value: []string{
+						strconv.Itoa(tagIDs[tagIdxWithPrimaryMarkers]),
+					},
+					Modifier: models.CriterionModifierIncludes,
+				},
+			},
+			[]int{
+				sceneIdxWithMarkers,
+				sceneIdxWithTwoMarkers,
+				sceneIdxWithTagAndMarker,
+				sceneIdxWithTwoTagsAndMarker,
+			},
+			[]int{
+				sceneIdxWithMarkerParentTag,
+			},
+			false,
+		},
+		{
+			"includes sub-tags",
+			nil,
+			&models.SceneFilterType{
+				PrimaryMarkerTags: &models.HierarchicalMultiCriterionInput{
+					Value: []string{
+						strconv.Itoa(tagIDs[tagIdxWithParentAndChild]),
+					},
+					Depth:    &allDepth,
+					Modifier: models.CriterionModifierIncludes,
+				},
+			},
+			[]int{
+				sceneIdxWithMarkerParentTag,
+			},
+			[]int{
+				sceneIdxWithMarkers,
+				sceneIdxWithTagAndMarker,
+				sceneIdxWithTwoTagsAndMarker,
+				sceneIdxWithTwoMarkers,
+			},
+			false,
+		},
+		{
+			"includes all",
+			nil,
+			&models.SceneFilterType{
+				PrimaryMarkerTags: &models.HierarchicalMultiCriterionInput{
+					Value: []string{
+						strconv.Itoa(tagIDs[tagIdxWithPrimaryMarkers]),
+						strconv.Itoa(tagIDs[tagIdx2WithPrimaryMarkers]),
+					},
+					Modifier: models.CriterionModifierIncludesAll,
+				},
+			},
+			[]int{
+				sceneIdxWithMarkers,
+			},
+			[]int{
+				sceneIdxWithTwoMarkers,
+				sceneIdxWithTagAndMarker,
+				sceneIdxWithTwoTagsAndMarker,
+			},
+			false,
+		},
+		{
+			"excludes tag tagIdx2WithPrimaryMarkers",
+			nil,
+			&models.SceneFilterType{
+				PrimaryMarkerTags: &models.HierarchicalMultiCriterionInput{
+					Modifier: models.CriterionModifierExcludes,
+					Value:    []string{strconv.Itoa(tagIDs[tagIdx2WithPrimaryMarkers])},
+				},
+			},
+			nil,
+			[]int{
+				sceneIdxWithMarkers,
+			},
+			false,
+		},
+		{
+			"excludes sub-tags",
+			nil,
+			&models.SceneFilterType{
+				PrimaryMarkerTags: &models.HierarchicalMultiCriterionInput{
+					Value: []string{
+						strconv.Itoa(tagIDs[tagIdxWithParentAndChild]),
+					},
+					Depth:    &allDepth,
+					Modifier: models.CriterionModifierExcludes,
+				},
+			},
+			[]int{
+				sceneIdxWithMarkers,
+			},
+			[]int{
+				sceneIdxWithMarkerParentTag,
+			},
+			false,
+		},
+		{
+			"is null",
+			nil,
+			&models.SceneFilterType{
+				PrimaryMarkerTags: &models.HierarchicalMultiCriterionInput{
+					Modifier: models.CriterionModifierIsNull,
+				},
+			},
+			[]int{sceneIdxWithoutMarkers},
+			[]int{sceneIdxWithMarkers},
+			false,
+		},
+		{
+			"not null",
+			nil,
+			&models.SceneFilterType{
+				PrimaryMarkerTags: &models.HierarchicalMultiCriterionInput{
+					Modifier: models.CriterionModifierNotNull,
+				},
+			},
+			[]int{sceneIdxWithMarkers},
+			[]int{sceneIdxWithoutMarkers},
+			false,
+		},
+		{
+			"equals",
+			nil,
+			&models.SceneFilterType{
+				PrimaryMarkerTags: &models.HierarchicalMultiCriterionInput{
+					Modifier: models.CriterionModifierEquals,
+					Value: []string{
+						strconv.Itoa(tagIDs[tagIdx2WithMarkers]),
+					},
+				},
+			},
+			nil,
+			nil,
+			true,
+		},
+		{
+			"not equals",
+			nil,
+			&models.SceneFilterType{
+				PrimaryMarkerTags: &models.HierarchicalMultiCriterionInput{
+					Modifier: models.CriterionModifierNotEquals,
+					Value: []string{
+						strconv.Itoa(tagIDs[tagIdx2WithMarkers]),
 					},
 				},
 			},

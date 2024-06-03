@@ -242,6 +242,10 @@ input SceneFilterType {
   duration: IntCriterionInput
   "Filter to only include scenes which have markers. `true` or `false`"
   has_markers: String
+  "Filter to only include scenes with markers having these tags"
+  marker_tags: HierarchicalMultiCriterionInput
+  "Filter to only include scenes with markers having these primary tags"
+  primary_marker_tags: HierarchicalMultiCriterionInput
   "Filter to only include scenes missing this property"
   is_missing: String
   "Filter to only include scenes with this studio"
