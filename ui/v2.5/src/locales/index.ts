@@ -1,7 +1,9 @@
 import Countries from "i18n-iso-countries";
 
 export const localeCountries = {
+  af: () => import("i18n-iso-countries/langs/af.json"),
   bn: () => import("i18n-iso-countries/langs/bn.json"),
+  ca: () => import("i18n-iso-countries/langs/ca.json"),
   cs: () => import("i18n-iso-countries/langs/cs.json"),
   da: () => import("i18n-iso-countries/langs/da.json"),
   de: () => import("i18n-iso-countries/langs/de.json"),
@@ -44,7 +46,9 @@ export async function registerCountry(locale: string) {
 }
 
 export const localeLoader = {
+  afZA: () => import("./af-ZA.json"),
   bnBD: () => import("./bn-BD.json"),
+  caES: () => import("./ca-ES.json"),
   csCZ: () => import("./cs-CZ.json"),
   daDK: () => import("./da-DK.json"),
   deDE: () => import("./de-DE.json"),
@@ -62,6 +66,7 @@ export const localeLoader = {
   jaJP: () => import("./ja-JP.json"),
   koKR: () => import("./ko-KR.json"),
   // nbNO: () => import("./nb-NO.json"),
+  // neNP: () => import("./ne-NP.json"),
   nlNL: () => import("./nl-NL.json"),
   plPL: () => import("./pl-PL.json"),
   ptBR: () => import("./pt-BR.json"),

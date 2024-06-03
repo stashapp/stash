@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import { ModalComponent } from "./Modal";
-import { SceneSelect } from "./Select";
 import { useToast } from "src/hooks/Toast";
 import { useIntl } from "react-intl";
 import { faSignOutAlt } from "@fortawesome/free-solid-svg-icons";
 import { Col, Form, Row } from "react-bootstrap";
 import * as FormUtils from "src/utils/form";
 import { mutateSceneAssignFile } from "src/core/StashService";
+import { Scene, SceneSelect } from "src/components/Scenes/SceneSelect";
 
 interface IFile {
   id: string;
@@ -21,7 +21,7 @@ interface IReassignFilesDialogProps {
 export const ReassignFilesDialog: React.FC<IReassignFilesDialogProps> = (
   props: IReassignFilesDialogProps
 ) => {
-  const [scenes, setScenes] = useState<{ id: string; title: string }[]>([]);
+  const [scenes, setScenes] = useState<Scene[]>([]);
 
   const intl = useIntl();
   const singularEntity = intl.formatMessage({ id: "file" });
@@ -89,7 +89,7 @@ export const ReassignFilesDialog: React.FC<IReassignFilesDialogProps> = (
           })}
           <Col sm={9} xl={12}>
             <SceneSelect
-              selected={scenes}
+              values={scenes}
               onSelect={(items) => setScenes(items)}
             />
           </Col>

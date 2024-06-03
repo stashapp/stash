@@ -181,6 +181,7 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
       Mousetrap.unbind("e");
       Mousetrap.unbind("d d");
       Mousetrap.unbind(",");
+      Mousetrap.unbind("f");
     };
   });
 

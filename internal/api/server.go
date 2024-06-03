@@ -53,6 +53,28 @@ type Server struct {
 	manager *manager.Manager
 }
 
+// TODO - os.DirFS doesn't implement ReadDir, so re-implement it here
+// This can be removed when we upgrade go
+type osFS string
+
+func (dir osFS) ReadDir(name string) ([]os.DirEntry, error) {
+	fullname := string(dir) + "/" + name
+	entries, err := os.ReadDir(fullname)
+	if err != nil {
+		var e *os.PathError
+		if errors.As(err, &e) {
+			// See comment in dirFS.Open.
+			e.Path = name
+		}
+		return nil, err
+	}
+	return entries, nil
+}
+
+func (dir osFS) Open(name string) (fs.File, error) {
+	return os.DirFS(string(dir)).Open(name)
+}
+
 // Called at startup
 func Initialize() (*Server, error) {
 	mgr := manager.GetInstance()
@@ -213,25 +235,31 @@ func Initialize() (*Server, error) {
 		r.Mount("/custom", getCustomRoutes(customServedFolders))
 	}
 
-	customUILocation := cfg.GetCustomUILocation()
-	staticUI := statigz.FileServer(ui.UIBox.(fs.ReadDirFS))
+	var uiFS fs.FS
+	var staticUI *statigz.Server
+	customUILocation := cfg.GetUILocation()
+	if customUILocation != "" {
+		logger.Debugf("Serving UI from %s", customUILocation)
+		uiFS = osFS(customUILocation)
+		staticUI = statigz.FileServer(uiFS.(fs.ReadDirFS))
+	} else {
+		logger.Debug("Serving embedded UI")
+		uiFS = ui.UIBox
+		staticUI = statigz.FileServer(ui.UIBox.(fs.ReadDirFS))
+	}
 
 	// Serve the web app
 	r.HandleFunc("/*", func(w http.ResponseWriter, r *http.Request) {
 		ext := path.Ext(r.URL.Path)
 
-		if customUILocation != "" {
-			if r.URL.Path == "index.html" || ext == "" {
-				r.URL.Path = "/"
-			}
-
-			http.FileServer(http.Dir(customUILocation)).ServeHTTP(w, r)
-			return
+		if ext == ".html" || ext == "" {
+			w.Header().Set("Content-Type", "text/html")
+			setPageSecurityHeaders(w, r, pluginCache.ListPlugins())
 		}
 
-		if ext == ".html" || ext == "" {
+		if ext == "" || r.URL.Path == "/" || r.URL.Path == "/index.html" {
 			themeColor := cfg.GetThemeColor()
-			data, err := fs.ReadFile(ui.UIBox, "index.html")
+			data, err := fs.ReadFile(uiFS, "index.html")
 			if err != nil {
 				panic(err)
 			}
@@ -240,9 +268,6 @@ func Initialize() (*Server, error) {
 			prefix := getProxyPrefix(r)
 			indexHtml = strings.ReplaceAll(indexHtml, "%COLOR%", themeColor)
 			indexHtml = strings.Replace(indexHtml, `<base href="/"`, fmt.Sprintf(`<base href="%s/"`, prefix), 1)
-
-			w.Header().Set("Content-Type", "text/html")
-			setPageSecurityHeaders(w, r, pluginCache.ListPlugins())
 
 			utils.ServeStaticContent(w, r, []byte(indexHtml))
 		} else {

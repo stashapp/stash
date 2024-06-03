@@ -1,4 +1,4 @@
-import { ButtonGroup } from "react-bootstrap";
+import { Button, ButtonGroup } from "react-bootstrap";
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
@@ -8,7 +8,10 @@ import { TruncatedText } from "../Shared/TruncatedText";
 import { GridCard, calculateCardWidth } from "../Shared/GridCard/GridCard";
 import { PopoverCountButton } from "../Shared/PopoverCountButton";
 import ScreenUtils from "src/utils/screen";
-
+import { Icon } from "../Shared/Icon";
+import { faHeart } from "@fortawesome/free-solid-svg-icons";
+import cx from "classnames";
+import { useTagUpdate } from "src/core/StashService";
 interface IProps {
   tag: GQL.TagDataFragment;
   containerWidth?: number;
@@ -20,7 +23,7 @@ interface IProps {
 
 export const TagCard: React.FC<IProps> = (props: IProps) => {
   const [cardWidth, setCardWidth] = useState<number>();
-
+  const [updateTag] = useTagUpdate();
   useEffect(() => {
     if (
       !props.containerWidth ||
@@ -62,7 +65,36 @@ export const TagCard: React.FC<IProps> = (props: IProps) => {
       );
     }
   }
+  function renderFavoriteIcon() {
+    return (
+      <Link to="" onClick={(e) => e.preventDefault()}>
+        <Button
+          className={cx(
+            "minimal",
+            "mousetrap",
+            "favorite-button",
+            tag.favorite ? "favorite" : "not-favorite"
+          )}
+          onClick={() => onToggleFavorite!(!tag.favorite)}
+        >
+          <Icon icon={faHeart} size="2x" />
+        </Button>
+      </Link>
+    );
+  }
 
+  function onToggleFavorite(v: boolean) {
+    if (tag.id) {
+      updateTag({
+        variables: {
+          input: {
+            id: tag.id,
+            favorite: v,
+          },
+        },
+      });
+    }
+  }
   function maybeRenderParents() {
     if (props.tag.parents.length === 1) {
       const parent = props.tag.parents[0];
@@ -227,6 +259,7 @@ export const TagCard: React.FC<IProps> = (props: IProps) => {
           {maybeRenderChildren()}
         </>
       }
+      overlays={<>{renderFavoriteIcon()}</>}
       popovers={maybeRenderPopoverButtonGroup()}
       selected={props.selected}
       selecting={props.selecting}

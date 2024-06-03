@@ -10,10 +10,14 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 )
 
-const pluginPrefix = "[Plugin] "
-
+// Log provides log wrappers for usable from the JS VM.
 type Log struct {
-	Progress chan float64
+	// Logger is the LoggerImpl to forward log messages to.
+	Logger logger.LoggerImpl
+	// Prefix is the prefix to prepend to log messages.
+	Prefix string
+	// ProgressChan is a channel that receives float64s indicating the current progress of an operation.
+	ProgressChan chan float64
 }
 
 func (l *Log) argToString(call goja.FunctionCall) string {
@@ -33,27 +37,27 @@ func (l *Log) argToString(call goja.FunctionCall) string {
 }
 
 func (l *Log) logTrace(call goja.FunctionCall) goja.Value {
-	logger.Trace(pluginPrefix + l.argToString(call))
+	l.Logger.Trace(l.Prefix, l.argToString(call))
 	return nil
 }
 
 func (l *Log) logDebug(call goja.FunctionCall) goja.Value {
-	logger.Debug(pluginPrefix + l.argToString(call))
+	l.Logger.Debug(l.Prefix, l.argToString(call))
 	return nil
 }
 
 func (l *Log) logInfo(call goja.FunctionCall) goja.Value {
-	logger.Info(pluginPrefix + l.argToString(call))
+	l.Logger.Info(l.Prefix, l.argToString(call))
 	return nil
 }
 
 func (l *Log) logWarn(call goja.FunctionCall) goja.Value {
-	logger.Warn(pluginPrefix + l.argToString(call))
+	l.Logger.Warn(l.Prefix, l.argToString(call))
 	return nil
 }
 
 func (l *Log) logError(call goja.FunctionCall) goja.Value {
-	logger.Error(pluginPrefix + l.argToString(call))
+	l.Logger.Error(l.Prefix, l.argToString(call))
 	return nil
 }
 
@@ -62,7 +66,7 @@ func (l *Log) logError(call goja.FunctionCall) goja.Value {
 // complete. Values outside of this range will be clamp to be within it.
 func (l *Log) logProgress(value float64) {
 	value = math.Min(math.Max(0, value), 1)
-	l.Progress <- value
+	l.ProgressChan <- value
 }
 
 func (l *Log) AddToVM(globalName string, vm *VM) error {

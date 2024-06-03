@@ -137,7 +137,39 @@ Registers an after function. An after function is called after the render functi
 
 Returns `void`.
 
-#### `PluginApi.Event`
+#### Patchable components and functions
+
+- `CountrySelect`
+- `DateInput`
+- `FolderSelect`
+- `GalleryIDSelect`
+- `GallerySelect`
+- `GallerySelect.sort`
+- `Icon`
+- `MovieIDSelect`
+- `MovieSelect`
+- `MovieSelect.sort`
+- `PerformerIDSelect`
+- `PerformerSelect`
+- `PerformerSelect.sort`
+- `PluginRoutes`
+- `SceneCard`
+- `SceneCard.Details`
+- `SceneCard.Image`
+- `SceneCard.Overlays`
+- `SceneCard.Popovers`
+- `SceneIDSelect`
+- `SceneSelect`
+- `SceneSelect.sort`
+- `Setting`
+- `StudioIDSelect`
+- `StudioSelect`
+- `StudioSelect.sort`
+- `TagIDSelect`
+- `TagSelect`
+- `TagSelect.sort`
+
+### `PluginApi.Event`
 
 Allows plugins to listen for Stash's events.
 

@@ -89,3 +89,16 @@ query SceneStreams($id: ID!) {
     }
   }
 }
+
+query FindScenesForSelect(
+  $filter: FindFilterType
+  $scene_filter: SceneFilterType
+  $ids: [ID!]
+) {
+  findScenes(filter: $filter, scene_filter: $scene_filter, ids: $ids) {
+    count
+    scenes {
+      ...SelectSceneData
+    }
+  }
+}

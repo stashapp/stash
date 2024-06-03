@@ -353,6 +353,11 @@ endif
 ui: ui-env
 	cd ui/v2.5 && yarn build
 
+.PHONY: zip-ui
+zip-ui:
+	rm -f dist/stash-ui.zip
+	cd ui/v2.5/build && zip -r ../../../dist/stash-ui.zip .
+
 .PHONY: ui-start
 ui-start: ui-env
 	cd ui/v2.5 && yarn start --host
