@@ -62,7 +62,7 @@ export const SceneMarkersPanel: React.FC<ISceneMarkersPanelProps> = ({
   ).reduce((prev, current) => [...prev, ...current], []);
 
   return (
-    <div className="scene-markers-panel">
+    <div id="scene-markers-panel" className="scene-markers-panel">
       <Button onClick={() => onOpenEditor()}>
         <FormattedMessage id="actions.create_marker" />
       </Button>

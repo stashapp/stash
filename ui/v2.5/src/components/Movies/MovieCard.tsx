@@ -19,6 +19,7 @@ interface IProps {
   selected?: boolean;
   zoomIndex?: number;
   onSelectedChanged?: (selected: boolean, shiftKey: boolean) => void;
+  titleOnImage?: boolean;
 }
 
 export const MovieCard: React.FC<IProps> = (props: IProps) => {
@@ -134,6 +135,7 @@ export const MovieCard: React.FC<IProps> = (props: IProps) => {
       selecting={props.selecting}
       onSelectedChanged={props.onSelectedChanged}
       popovers={maybeRenderPopoverButtonGroup()}
+      titleOnImage={props.titleOnImage}
     />
   );
 };

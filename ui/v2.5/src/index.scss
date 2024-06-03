@@ -54,8 +54,11 @@ body {
   }
 }
 
+#gallery-page,
+#image-page,
 #movie-page,
 #performer-page,
+#scene-page,
 #studio-page,
 #tag-page {
   margin-top: -0.5rem;
@@ -267,12 +270,40 @@ dd {
   }
 }
 
+.detail-header.collapsed .detail-item-value {
+  -webkit-box-orient: vertical;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+}
+
 .gallery-tabs,
 .image-tabs,
 .scene-tabs {
   .detail-item {
+    background-color: #202b33;
     padding-right: 1rem;
     width: 100%;
+  }
+
+  .detail-item.studio {
+    display: none;
+  }
+
+  .gallery-performers,
+  .image-performers,
+  .scene-performers {
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .tab-content,
+  .nav-tabs {
+    padding-left: 15px;
+
+    .dropdown {
+      display: flex;
+    }
   }
 
   .collapsed .detail-item-value {
@@ -282,26 +313,54 @@ dd {
     overflow: hidden;
   }
 
+  .gallery-tags,
+  .image-tags,
+  .scene-tags,
+  .gallery-performers,
+  .image-performers,
+  .scene-performers,
+  .scene-galleries,
+  .details p.pre {
+    height: auto;
+    transition: max-height 0.3s linear;
+  }
+
   .details .collapsed-detail p.pre {
     -webkit-box-orient: vertical;
     display: -webkit-box;
     -webkit-line-clamp: 8;
     max-height: 175px;
-    overflow: hidden;
+    overflow-y: hidden;
   }
 
   .gallery-tags.collapsed-detail,
   .image-tags.collapsed-detail,
   .scene-tags.collapsed-detail {
     max-height: 180px;
-    overflow: hidden;
+    overflow-y: hidden;
   }
 
   .gallery-performers.collapsed-detail,
   .image-performers.collapsed-detail,
   .scene-performers.collapsed-detail {
-    max-height: 460px;
-    overflow: hidden;
+    max-height: 365px;
+    overflow-y: hidden;
+  }
+
+  .scene-galleries {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: start;
+  }
+
+  .scene-galleries.collapsed-detail {
+    max-height: 210px;
+    overflow-y: hidden;
+  }
+
+  .scene-galleries .tag-item {
+    display: none;
   }
 }
 
@@ -1250,21 +1309,73 @@ $detailTabWidth: calc(100% / 3);
     &:not(.full-width) .detail-item-title {
       margin-bottom: 0.25em;
     }
-  }
 
-  .gallery-scenes,
-  .image-galleries,
-  .scene-galleries,
-  .scene-movies {
-    width: 100%;
+    .gallery-card {
+      margin: 8px;
+      overflow: unset;
+      padding-bottom: 0;
+      transition: ease 0.5s;
 
-    span {
+      .thumbnail-section {
+        background-color: white;
+        border: solid 1px black;
+        height: auto;
+        padding: 3px;
+        z-index: 10;
+      }
+
+      .gallery-card-image {
+        height: auto;
+        width: 12.9rem;
+      }
+
+      .gallery-card-image.portrait-image {
+        height: 12.9rem;
+        width: auto;
+      }
+
+      .card-section,
+      .performer-count,
+      .scene-count,
+      .tag-count,
+      .studio-overlay,
+      hr {
+        display: none;
+      }
+
+      .image-count {
+        background-color: #00000059;
+        border-radius: 5px;
+        bottom: 0.5rem;
+        padding-bottom: 3px;
+        padding-right: 3px;
+        position: absolute;
+        right: 10px;
+        z-index: 100;
+      }
+
+      .image-count > button {
+        padding: 0;
+      }
+    }
+
+    .gallery-card:hover {
+      transform: rotate(2deg);
+    }
+
+    .gallery-card::before {
+      background-color: white;
+      border: solid 1px black;
+      content: "";
+      height: 100%;
+      position: absolute;
+      transform: rotate(-3deg);
+      transition: ease 0.5s;
       width: 100%;
     }
 
-    span div {
-      overflow: hidden;
-      text-overflow: ellipsis;
+    .gallery-card:hover::before {
+      transform: rotate(3deg);
     }
   }
 }

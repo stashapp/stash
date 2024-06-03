@@ -6,10 +6,11 @@ import { TagLink } from "src/components/Shared/TagLink";
 import { PerformerCard } from "src/components/Performers/PerformerCard";
 import { sortPerformers } from "src/core/performers";
 import { PhotographerLink } from "src/components/Shared/Link";
-import { faCaretDown, faCaretUp } from "@fortawesome/free-solid-svg-icons";
-import { Icon } from "src/components/Shared/Icon";
 import { useContainerDimensions } from "src/components/Shared/GridCard/GridCard";
-import { DetailItem } from "src/components/Shared/DetailItem";
+import {
+  DetailItem,
+  maybeRenderShowMoreLess,
+} from "src/components/Shared/DetailItem";
 
 interface IGalleryDetailProps {
   gallery: GQL.GalleryDataFragment;
@@ -29,19 +30,24 @@ export const GalleryDetailPanel: React.FC<IGalleryDetailProps> = ({
   const [tagRef, { height: tagHeight }] = useContainerDimensions();
 
   const details = useMemo(() => {
+    const limit = 160;
     return gallery.details?.length ? (
       <>
         <div
           className={`details ${
-            collapsedDetails ? "collapsed-detail" : "expanded-detail"
+            collapsedDetails && detailsHeight >= limit
+              ? "collapsed-detail"
+              : "expanded-detail"
           }`}
-          ref={detailsRef}
         >
-          <p className="pre">{gallery.details}</p>
+          <p className="pre" ref={detailsRef}>
+            {gallery.details}
+          </p>
         </div>
         {maybeRenderShowMoreLess(
           detailsHeight,
-          160,
+          limit,
+          detailsRef,
           setCollapsedDetails,
           collapsedDetails
         )}
@@ -56,6 +62,7 @@ export const GalleryDetailPanel: React.FC<IGalleryDetailProps> = ({
   ]);
 
   const tags = useMemo(() => {
+    const limit = 160;
     if (gallery.tags.length === 0) return;
     const galleryTags = gallery.tags.map((tag) => (
       <TagLink key={tag.id} tag={tag} />
@@ -64,7 +71,9 @@ export const GalleryDetailPanel: React.FC<IGalleryDetailProps> = ({
       <>
         <div
           className={`gallery-tags ${
-            collapsedTags ? "collapsed-detail" : "expanded-detail"
+            collapsedTags && tagHeight >= limit
+              ? "collapsed-detail"
+              : "expanded-detail"
           }`}
           ref={tagRef}
         >
@@ -72,7 +81,8 @@ export const GalleryDetailPanel: React.FC<IGalleryDetailProps> = ({
         </div>
         {maybeRenderShowMoreLess(
           tagHeight,
-          160,
+          limit,
+          tagRef,
           setCollapsedTags,
           collapsedTags
         )}
@@ -80,40 +90,8 @@ export const GalleryDetailPanel: React.FC<IGalleryDetailProps> = ({
     );
   }, [gallery.tags, tagRef, tagHeight, setCollapsedTags, collapsedTags]);
 
-  // const scenes = useMemo(() => {
-  //   if (gallery.scenes.length === 0) return;
-  //   const scenes = gallery.scenes.map((scene) => (
-  //     <GalleryDetailedLink key={scene.id} gallery={scene} />
-  //     <div />
-  //   ));
-  //   return (
-  //     <>
-  //       <div className={`gallery-scene`}>{scenes}</div>
-  //     </>
-  //   );
-  // }, [gallery.scenes]);
-
-  function maybeRenderShowMoreLess(
-    height: number,
-    limit: number,
-    setCollapsed: React.Dispatch<React.SetStateAction<boolean>>,
-    collapsed: boolean
-  ) {
-    if (height < limit) {
-      return;
-    }
-    return (
-      <span
-        className={`show-${collapsed ? "more" : "less"}`}
-        onClick={() => setCollapsed(!collapsed)}
-      >
-        {collapsed ? "Show more" : "Show less"}
-        <Icon className="fa-solid" icon={collapsed ? faCaretDown : faCaretUp} />
-      </span>
-    );
-  }
-
   const performers = useMemo(() => {
+    const limit = 365;
     const sorted = sortPerformers(gallery.performers);
     const cards = sorted.map((performer) => (
       <PerformerCard
@@ -127,7 +105,9 @@ export const GalleryDetailPanel: React.FC<IGalleryDetailProps> = ({
       <>
         <div
           className={`row justify-content-center gallery-performers ${
-            collapsedPerformers ? "collapsed-detail" : "expanded-detail"
+            collapsedPerformers && perfHeight >= limit
+              ? "collapsed-detail"
+              : "expanded-detail"
           }`}
           ref={perfRef}
         >
@@ -135,7 +115,8 @@ export const GalleryDetailPanel: React.FC<IGalleryDetailProps> = ({
         </div>
         {maybeRenderShowMoreLess(
           perfHeight,
-          165,
+          limit,
+          perfRef,
           setCollapsedPerformers,
           collapsedPerformers
         )}
@@ -155,9 +136,10 @@ export const GalleryDetailPanel: React.FC<IGalleryDetailProps> = ({
 
   return (
     <>
-      <div className="row">
+      <div id="gallery-details-panel" className="row">
         <div className={`${galleryDetailsWidth} col-12 gallery-details`}>
           <div className="detail-group">
+            <DetailItem id="studio" value={gallery.studio?.name} fullWidth />
             <DetailItem id="scene_code" value={gallery.code} fullWidth />
             <DetailItem
               id="director"

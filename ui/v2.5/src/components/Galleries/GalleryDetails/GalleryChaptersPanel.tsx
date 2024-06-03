@@ -52,7 +52,7 @@ export const GalleryChapterPanel: React.FC<IGalleryChapterPanelProps> = ({
     );
 
   return (
-    <div>
+    <div id="gallery-chapter-panel">
       <Button onClick={() => onOpenEditor()}>
         <FormattedMessage id="actions.create_chapters" />
       </Button>

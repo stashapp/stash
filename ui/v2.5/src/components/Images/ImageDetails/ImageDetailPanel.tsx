@@ -7,9 +7,10 @@ import { sortPerformers } from "src/core/performers";
 import { FormattedMessage, useIntl } from "react-intl";
 import { PhotographerLink } from "src/components/Shared/Link";
 import { useContainerDimensions } from "src/components/Shared/GridCard/GridCard";
-import { faCaretDown, faCaretUp } from "@fortawesome/free-solid-svg-icons";
-import { Icon } from "src/components/Shared/Icon";
-import { DetailItem } from "src/components/Shared/DetailItem";
+import {
+  DetailItem,
+  maybeRenderShowMoreLess,
+} from "src/components/Shared/DetailItem";
 interface IImageDetailProps {
   image: GQL.ImageDataFragment;
 }
@@ -26,19 +27,24 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
   const [tagRef, { height: tagHeight }] = useContainerDimensions();
 
   const details = useMemo(() => {
+    const limit = 160;
     return props.image.details?.length ? (
       <>
         <div
           className={`details ${
-            collapsedDetails ? "collapsed-detail" : "expanded-detail"
+            collapsedDetails && detailsHeight >= limit
+              ? "collapsed-detail"
+              : "expanded-detail"
           }`}
-          ref={detailsRef}
         >
-          <p className="pre">{props.image.details}</p>
+          <p className="pre" ref={detailsRef}>
+            {props.image.details}
+          </p>
         </div>
         {maybeRenderShowMoreLess(
           detailsHeight,
-          160,
+          limit,
+          detailsRef,
           setCollapsedDetails,
           collapsedDetails
         )}
@@ -53,6 +59,7 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
   ]);
 
   const tags = useMemo(() => {
+    const limit = 160;
     if (props.image.tags.length === 0) return;
     const imageTags = props.image.tags.map((tag) => (
       <TagLink key={tag.id} tag={tag} />
@@ -61,7 +68,9 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
       <>
         <div
           className={`image-tags ${
-            collapsedTags ? "collapsed-detail" : "expanded-detail"
+            collapsedTags && tagHeight >= limit
+              ? "collapsed-detail"
+              : "expanded-detail"
           }`}
           ref={tagRef}
         >
@@ -69,7 +78,8 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
         </div>
         {maybeRenderShowMoreLess(
           tagHeight,
-          160,
+          limit,
+          tagRef,
           setCollapsedTags,
           collapsedTags
         )}
@@ -89,27 +99,8 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
     );
   }, [props.image.galleries]);
 
-  function maybeRenderShowMoreLess(
-    height: number,
-    limit: number,
-    setCollapsed: React.Dispatch<React.SetStateAction<boolean>>,
-    collapsed: boolean
-  ) {
-    if (height < limit) {
-      return;
-    }
-    return (
-      <span
-        className={`show-${collapsed ? "more" : "less"}`}
-        onClick={() => setCollapsed(!collapsed)}
-      >
-        {collapsed ? "Show more" : "Show less"}
-        <Icon className="fa-solid" icon={collapsed ? faCaretDown : faCaretUp} />
-      </span>
-    );
-  }
-
   const performers = useMemo(() => {
+    const limit = 365;
     const sorted = sortPerformers(props.image.performers);
     const cards = sorted.map((performer) => (
       <PerformerCard
@@ -123,7 +114,9 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
       <>
         <div
           className={`row justify-content-center image-performers ${
-            collapsedPerformers ? "collapsed-detail" : "expanded-detail"
+            collapsedPerformers && perfHeight >= limit
+              ? "collapsed-detail"
+              : "expanded-detail"
           }`}
           ref={perfRef}
         >
@@ -131,7 +124,8 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
         </div>
         {maybeRenderShowMoreLess(
           perfHeight,
-          165,
+          limit,
+          perfRef,
           setCollapsedPerformers,
           collapsedPerformers
         )}
@@ -154,6 +148,11 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
       <div className="row">
         <div className={`${imageDetailsWidth} col-12 image-details`}>
           <div className="detail-group">
+            <DetailItem
+              id="studio"
+              value={props.image.studio?.name}
+              fullWidth
+            />
             <DetailItem id="scene_code" value={props.image.code} fullWidth />
             <DetailItem
               id="director"

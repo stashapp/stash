@@ -313,7 +313,7 @@ const ImagePage: React.FC<IProps> = ({ image }) => {
   }, [file?.width, file?.height]);
 
   return (
-    <div className="row">
+    <div id="image-page" className="row">
       <Helmet>
         <title>{title}</title>
       </Helmet>
@@ -325,15 +325,17 @@ const ImagePage: React.FC<IProps> = ({ image }) => {
           <div className="detail-container">
             <div className="image-header-container">
               {image.studio && (
-                <h1 className="text-center image-studio-image">
-                  <Link to={`/studios/${image.studio.id}`}>
-                    <img
-                      src={image.studio.image_path ?? ""}
-                      alt={`${image.studio.name} logo`}
-                      className="studio-logo"
-                    />
-                  </Link>
-                </h1>
+                <>
+                  <h1 className="text-center image-studio-image">
+                    <Link to={`/studios/${image.studio.id}`}>
+                      <img
+                        src={image.studio.image_path ?? ""}
+                        alt={`${image.studio.name} logo`}
+                        className="studio-logo"
+                      />
+                    </Link>
+                  </h1>
+                </>
               )}
               <h3
                 className={cx("image-header", { "no-studio": !image.studio })}

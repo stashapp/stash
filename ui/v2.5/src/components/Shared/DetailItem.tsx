@@ -1,6 +1,40 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
 import cx from "classnames";
+import { Icon } from "./Icon";
+import { faCaretDown, faCaretUp } from "@fortawesome/free-solid-svg-icons";
+
+export function maybeRenderShowMoreLess(
+  height: number,
+  limit: number,
+  ref: React.MutableRefObject<HTMLDivElement | null>,
+  setCollapsed: React.Dispatch<React.SetStateAction<boolean>>,
+  collapsed: boolean
+) {
+  if (height < limit) {
+    return;
+  }
+  return (
+    <span
+      className={`show-${collapsed ? "more" : "less"}`}
+      onClick={() => {
+        const container = ref.current;
+        if (container == null) {
+          return;
+        }
+        if (container.style.maxHeight) {
+          container.style.maxHeight = "";
+        } else {
+          container.style.maxHeight = container.scrollHeight + "px";
+        }
+        setCollapsed(!collapsed);
+      }}
+    >
+      {collapsed ? "Show more" : "Show less"}
+      <Icon className="fa-solid" icon={collapsed ? faCaretDown : faCaretUp} />
+    </span>
+  );
+}
 
 interface IDetailItem {
   id?: string | null;

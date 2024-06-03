@@ -382,7 +382,7 @@ export const GalleryPage: React.FC<IProps> = ({ gallery, add }) => {
   const title = galleryTitle(gallery);
 
   return (
-    <div className="row">
+    <div id="gallery-page" className="row">
       <Helmet>
         <title>{title}</title>
       </Helmet>
@@ -397,15 +397,17 @@ export const GalleryPage: React.FC<IProps> = ({ gallery, add }) => {
           <div className="detail-container">
             <div className="gallery-header-container">
               {gallery.studio && (
-                <h1 className="text-center gallery-studio-image">
-                  <Link to={`/studios/${gallery.studio.id}`}>
-                    <img
-                      src={gallery.studio.image_path ?? ""}
-                      alt={`${gallery.studio.name} logo`}
-                      className="studio-logo"
-                    />
-                  </Link>
-                </h1>
+                <>
+                  <h1 className="text-center gallery-studio-image">
+                    <Link to={`/studios/${gallery.studio.id}`}>
+                      <img
+                        src={gallery.studio.image_path ?? ""}
+                        alt={`${gallery.studio.name} logo`}
+                        className="studio-logo"
+                      />
+                    </Link>
+                  </h1>
+                </>
               )}
               <h3
                 className={cx("gallery-header", {

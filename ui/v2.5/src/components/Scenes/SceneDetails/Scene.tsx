@@ -6,6 +6,7 @@ import React, {
   useContext,
   useRef,
   useLayoutEffect,
+  useCallback,
 } from "react";
 import { FormattedDate, FormattedMessage, useIntl } from "react-intl";
 import { Link, RouteComponentProps } from "react-router-dom";
@@ -196,6 +197,60 @@ const ScenePage: React.FC<IProps> = ({
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
   const [isGenerateDialogOpen, setIsGenerateDialogOpen] = useState(false);
 
+  const tabNavRef = useRef<HTMLDivElement>(null);
+  const dropDownRef = useRef<HTMLDivElement>(null);
+
+  const [dropdownWidths, setDropdownWidths] = useState<number[]>([]);
+
+  const autoCollapseTabs = useCallback(() => {
+    const nav = tabNavRef.current;
+    const dropdown = dropDownRef.current;
+    if (nav == null || dropdown == null) {
+      return;
+    }
+
+    let height = nav.clientHeight;
+    const dropdownTabs = dropdown.children[1];
+
+    const maxHeight = 40;
+    let navChildren = nav.children;
+    let dropdownChildren = dropdownTabs.children;
+    if (height >= maxHeight) {
+      dropdown.classList.remove("d-none");
+
+      while (height >= maxHeight) {
+        let { length } = navChildren;
+        dropdownWidths.push(navChildren[length - 2].clientWidth);
+        setDropdownWidths(dropdownWidths);
+        dropdownTabs.prepend(navChildren[length - 2]);
+        height = nav.clientHeight;
+      }
+    } else {
+      const padding = 15;
+      const buttonWidth = 25;
+      let width = 0;
+      for (let i = 0; i < navChildren.length - 1; i++) {
+        width += navChildren[i].clientWidth;
+      }
+      width += padding;
+
+      while (
+        height < maxHeight &&
+        navChildren.length > 0 &&
+        dropdownChildren.length > 0 &&
+        dropdownWidths[0] + width + buttonWidth < nav.clientWidth
+      ) {
+        nav.insertBefore(dropdownChildren[0], dropdown);
+        dropdownWidths.shift();
+        height = nav.clientHeight;
+      }
+
+      if (dropdownChildren.length === 0) {
+        dropdown.classList.add("d-none");
+      }
+    }
+  }, [dropdownWidths]);
+
   const onIncrementOClick = async () => {
     try {
       await incrementO();
@@ -203,6 +258,14 @@ const ScenePage: React.FC<IProps> = ({
       Toast.error(e);
     }
   };
+
+  useEffect(() => {
+    window.addEventListener("resize", autoCollapseTabs);
+  }, [autoCollapseTabs]);
+
+  useEffect(() => {
+    autoCollapseTabs(); // update on reload
+  }, [queueScenes, autoCollapseTabs]);
 
   function setRating(v: number | null) {
     updateScene({
@@ -452,15 +515,17 @@ const ScenePage: React.FC<IProps> = ({
         <div className="detail-container">
           <div className="scene-header-container">
             {scene.studio && (
-              <h1 className="text-center scene-studio-image">
-                <Link to={`/studios/${scene.studio.id}`}>
-                  <img
-                    src={scene.studio.image_path ?? ""}
-                    alt={`${scene.studio.name} logo`}
-                    className="studio-logo"
-                  />
-                </Link>
-              </h1>
+              <>
+                <h1 className="text-center scene-studio-image">
+                  <Link to={`/studios/${scene.studio.id}`}>
+                    <img
+                      src={scene.studio.image_path ?? ""}
+                      alt={`${scene.studio.name} logo`}
+                      className="studio-logo"
+                    />
+                  </Link>
+                </h1>
+              </>
             )}
             <h3 className={cx("scene-header", { "no-studio": !scene.studio })}>
               <TruncatedText lineCount={2} text={title} />
@@ -532,7 +597,7 @@ const ScenePage: React.FC<IProps> = ({
       onSelect={(k) => k && setActiveTabKey(k)}
     >
       <div>
-        <Nav variant="tabs" className="mr-auto">
+        <Nav variant="tabs" className="mr-auto" ref={tabNavRef}>
           <Nav.Item>
             <Nav.Link eventKey="scene-details-panel">
               <FormattedMessage id="details" />
@@ -573,6 +638,19 @@ const ScenePage: React.FC<IProps> = ({
               <FormattedMessage id="actions.edit" />
             </Nav.Link>
           </Nav.Item>
+          <Dropdown ref={dropDownRef}>
+            <Dropdown.Toggle
+              variant="secondary"
+              id="tab-dropdown"
+              className="minimal"
+            >
+              <Icon icon={faEllipsisV} />
+            </Dropdown.Toggle>
+            <Dropdown.Menu
+              className="bg-secondary text-white"
+              renderOnMount={true}
+            ></Dropdown.Menu>
+          </Dropdown>
         </Nav>
       </div>
 
@@ -924,7 +1002,7 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
   }
 
   return (
-    <div className="row">
+    <div id="scene-page" className="row">
       <ScenePage
         scene={scene}
         setTimestamp={setTimestamp}

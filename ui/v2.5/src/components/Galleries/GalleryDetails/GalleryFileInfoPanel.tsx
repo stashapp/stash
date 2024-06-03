@@ -145,12 +145,12 @@ export const GalleryFileInfoPanel: React.FC<IGalleryFileInfoPanelProps> = (
   }, [props.gallery, loading, Toast, deletingFile]);
 
   return (
-    <>
+    <div id="gallery-file-info-panel">
       <dl className="container gallery-file-info details-list">
         <URLsField id="urls" urls={props.gallery.urls} truncate />
       </dl>
 
       {filesPanel}
-    </>
+    </div>
   );
 };
