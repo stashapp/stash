@@ -1,42 +1,35 @@
 # Configuration
 
-## Stashes
+## Library
 
 This section allows you to add and remove directories from your library list. Files in these directories will be included when scanning. Files that are outside of these directories will be removed when running the Clean task.
 
 > **⚠️ Note:** Don't forget to click `Save` after updating these directories!
 
-## Excluded Patterns
+## Excluded patterns
 
-Given a valid [regex](https://github.com/google/re2/wiki/Syntax), files that match even partially are excluded during the Scan process and are not entered in the database. Also during the Clean task if these files exist in the DB they are removed from it and their generated files get deleted.
+Given a valid [regex](https://github.com/google/re2/wiki/Syntax), files that match even partially are excluded during the Scan process and are not entered in the database. Also during the Clean task if these files exist in the DB they are removed from it and their generated files get deleted.  
 Prior to matching both the filenames and patterns are converted to lower case so the match is case insensitive.
 
-Regex patterns can be added in the config file or from the UI.
-If you add manually to the config file a restart is needed while from the UI you just need to click the Save button.
+Regex patterns can be added in the config file or from the UI.  
+If you add manually to the config file a restart is needed while from the UI you just need to click the Save button.  
 When added through the config file directly special care must be given to double escape the `\` character.
 
-Some examples
+There are 2 sperate exclusion settings. One is for videos, another is for images/galleries.
 
-For the config file you need the following added
-```
-exclude:
-- "sample\\.mp4$"
-- "/\\.[[:word:]]+/"
-- "c:\\\\stash\\\\videos\\\\exclude"
-- "^/stash/videos/exclude/"
-- "\\\\\\\\stash\\network\\\\share\\\\excl\\\\"
-```
-* the first excludes all files ending in `sample.mp4` ( `.` needs to be escaped also)
-* the second hidden directories `/.directoryname/`
-* the third is an example for a windows directory `c:\stash\videos\exclude`
-* the fourth the directory `/stash/videos/exclude/`
-* and the last a windows network path `\\stash\network\share\excl\`
+Some examples:
 
-**Note:** if a directory is excluded for images and videos, then the directory will be excluded from scans completely.
+- `"sample\.mp4$"` will exclude all files ending in `sample.mp4`. 
+- `"/\.[[:word:]]+/"` will exclude all hidden directories like `/.directoryname/`.
+- `"c:\\stash\\videos\\exclude"` will exclude specific Windows directory `c:\stash\videos\exclude`.
+- `"^/stash/videos/exclude/"` will exclude all directories that match `/stash/videos/exclude/` pattern.
+- `"\\\\stash\\network\\share\\excl\\"` will exlcude specific Windows network path `\\stash\network\share\excl\`.
 
-_a useful [link](https://regex101.com/) to experiment with regexps_
+> **Note:** If a directory is excluded for images and videos, then the directory will be excluded from scans completely.
 
-## Gallery Creation from Folders
+_There is a useful [regex101](https://regex101.com/) site that can help test and experiment with regexps._
+
+## Gallery creation from folders
 
 In the Library section you can find an option to create a gallery from each folder containing images. This will be applied on all libraries when activated, including the base folder of a library. 
 
@@ -71,11 +64,11 @@ After changing the file naming hash, any existing generated files will now be na
 These instructions are for existing users whose systems will be defaulted to use and calculate MD5 checksums. Once completed, MD5 checksums will no longer be calculated when scanning, and oshash will be used for generated file naming. Existing calculated MD5 checksums will remain on scenes, but checksums will not be calculated for new scenes.
 
 1. Scan the library (to populate oshash for all existing scenes).
-2. In Settings -> Configuration page, untick `Calculate MD5` and select `oshash` as file naming hash. Save the configuration.
+2. In Settings -> System page, untick `Calculate MD5` and select `oshash` as file naming hash. Save the configuration.
 3. In Settings -> Tasks page, click on the `Rename generated files` migration button.
 
 
-## Parallel Scan/Generation
+## Parallel scan/generation
 
 #### Number of parallel task for scan/generation
 
@@ -84,16 +77,17 @@ This setting controls how many sub-tasks will be run in parallel during scanning
 Auto-detection can be enabled by setting this to zero. This will calculate the number of parallel tasks to be logical cores/4 + 1.
 
 This setting can be used to increase/decrease overall CPU utilisation in two scenarios:
-1) High performance 4+ core cpus.
-2) Media files stored on remote/cloud filesystem.
+
+1. High performance 4+ core cpus.
+2. Media files stored on remote/cloud filesystem.
 
 Note: If this is set too high it will decrease overall performance and causes failures (out of memory).
 
-## Hardware Accelerated Live Transcoding
+## Hardware accelerated live transcoding
 
 Hardware accelerated live transcoding can be enabled by setting the `FFmpeg hardware encoding` setting. Stash outputs the supported hardware encoders to the log file on startup at the Info log level. If a given hardware encoder is not supported, it's error message is logged to the Debug log level for debugging purposes.
 
-## HLS/DASH Streaming
+## HLS/DASH streaming
 
 To stream using HLS (such as on Apple devices) or DASH, the Cache path must be set. This directory is used to store temporary files during the live-transcoding process. The Cache path can be set in the System settings page. 
 
