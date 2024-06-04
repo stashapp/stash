@@ -1873,6 +1873,17 @@ export const useTagUpdate = () =>
     },
   });
 
+export const useBulkTagUpdate = (input: GQL.BulkTagUpdateInput) =>
+  GQL.useBulkTagUpdateMutation({
+    variables: { input },
+    update(cache, result) {
+      if (!result.data?.bulkTagUpdate) return;
+
+      evictTypeFields(cache, tagMutationImpactedTypeFields);
+      evictQueries(cache, tagMutationImpactedQueries);
+    },
+  });
+
 export const useTagDestroy = (input: GQL.TagDestroyInput) =>
   GQL.useTagDestroyMutation({
     variables: input,
