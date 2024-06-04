@@ -34,6 +34,7 @@ import TextUtils from "src/utils/text";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import cx from "classnames";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
+import { PatchComponent } from "src/patch";
 
 interface IProps {
   image: GQL.ImageDataFragment;
@@ -42,6 +43,20 @@ interface IProps {
 interface IImageParams {
   id: string;
 }
+
+interface IImageDropdownItemProps {
+  imageId: string;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const _ImageDropdownItem = (props: IImageDropdownItemProps) => {
+  return null;
+};
+
+export const ImageDropdownItem = PatchComponent(
+  "ImageDropdownItem",
+  _ImageDropdownItem
+);
 
 const ImagePage: React.FC<IProps> = ({ image }) => {
   const history = useHistory();
@@ -196,6 +211,7 @@ const ImagePage: React.FC<IProps> = ({ image }) => {
               values={{ entityType: intl.formatMessage({ id: "image" }) }}
             />
           </Dropdown.Item>
+          <ImageDropdownItem imageId={image.id} />
         </Dropdown.Menu>
       </Dropdown>
     );

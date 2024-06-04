@@ -142,10 +142,12 @@ Returns `void`.
 - `CountrySelect`
 - `DateInput`
 - `FolderSelect`
+- `GalleryDropdownItem`
 - `GalleryIDSelect`
 - `GallerySelect`
 - `GallerySelect.sort`
 - `Icon`
+- `ImageDropdownItem`
 - `MovieIDSelect`
 - `MovieSelect`
 - `MovieSelect.sort`
@@ -154,6 +156,7 @@ Returns `void`.
 - `PerformerSelect.sort`
 - `PluginRoutes`
 - `SceneCard`
+- `SceneDropdownItem`
 - `SceneCard.Details`
 - `SceneCard.Image`
 - `SceneCard.Overlays`

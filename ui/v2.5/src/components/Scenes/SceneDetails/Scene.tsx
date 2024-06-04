@@ -50,6 +50,7 @@ import { useRatingKeybinds } from "src/hooks/keybinds";
 import { lazyComponent } from "src/utils/lazyComponent";
 import cx from "classnames";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
+import { PatchComponent } from "src/patch";
 
 const SubmitStashBoxDraft = lazyComponent(
   () => import("src/components/Dialogs/SubmitDraft")
@@ -80,6 +81,20 @@ const GenerateDialog = lazyComponent(
 );
 const SceneVideoFilterPanel = lazyComponent(
   () => import("./SceneVideoFilterPanel")
+);
+
+interface ISceneDropdownItemProps {
+  sceneId: string;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const _SceneDropdownItem = (props: ISceneDropdownItemProps) => {
+  return null;
+};
+
+export const SceneDropdownItem = PatchComponent(
+  "SceneDropdownItem",
+  _SceneDropdownItem
 );
 
 const VideoFrameRateResolution: React.FC<{
@@ -411,6 +426,7 @@ const ScenePage: React.FC<IProps> = ({
             values={{ entityType: intl.formatMessage({ id: "scene" }) }}
           />
         </Dropdown.Item>
+        <SceneDropdownItem sceneId={scene.id} />
       </Dropdown.Menu>
     </Dropdown>
   );
