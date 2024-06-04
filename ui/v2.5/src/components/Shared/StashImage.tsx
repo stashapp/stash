@@ -10,7 +10,7 @@ const StashImage: React.FC<IImageProps> = ({ className, ...rest }) => {
   const configContext = useContext(ConfigurationContext);
 
   return (
-    <StashImage
+    <img
       className={cx(
         className,
         configContext.imageBlurred ? BLURRED_CLASSNAME : ""

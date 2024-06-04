@@ -14,6 +14,7 @@ import {
   faChevronLeft,
 } from "@fortawesome/free-solid-svg-icons";
 import { useSpriteInfo } from "src/hooks/sprite";
+import { useImageBlur } from "src/hooks/blur";
 
 interface IScenePlayerScrubberProps {
   file: GQL.VideoFileDataFragment;
@@ -42,7 +43,7 @@ export const ScenePlayerScrubber: React.FC<IScenePlayerScrubberProps> = ({
   const lastMouseEvent = useRef<MouseEvent | null>(null);
   const startMouseEvent = useRef<MouseEvent | null>(null);
   const velocity = useRef(0);
-
+  const { blurClassName } = useImageBlur();
   const prevTime = useRef(NaN);
   const _width = useRef(0);
   const [width, setWidth] = useState(0);
@@ -301,7 +302,7 @@ export const ScenePlayerScrubber: React.FC<IScenePlayerScrubberProps> = ({
       return (
         <div
           key={index}
-          className="scrubber-item"
+          className={blurClassName("scrubber-item")}
           style={sprite.style}
           data-sprite-item-id={index}
         >

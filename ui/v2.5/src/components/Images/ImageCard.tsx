@@ -22,6 +22,7 @@ import { objectTitle } from "src/core/files";
 import { TruncatedText } from "../Shared/TruncatedText";
 import ScreenUtils from "src/utils/screen";
 import { StudioOverlay } from "../Shared/GridCard/StudioOverlay";
+import { useImageBlur } from "src/hooks/blur";
 
 interface IImageCardProps {
   image: GQL.SlimImageDataFragment;
@@ -186,6 +187,7 @@ export const ImageCard: React.FC<IImageCardProps> = (
       : props.image.paths.thumbnail ?? "";
   const video = source.includes("preview");
   const ImagePreview = video ? "video" : "img";
+  const { blurClassName } = useImageBlur();
 
   return (
     <GridCard
@@ -200,7 +202,7 @@ export const ImageCard: React.FC<IImageCardProps> = (
             <ImagePreview
               loop={video}
               autoPlay={video}
-              className="image-card-preview-image"
+              className={blurClassName("image-card-preview-image")}
               alt={props.image.title ?? ""}
               src={source}
             />

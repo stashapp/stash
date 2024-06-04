@@ -45,6 +45,7 @@ import airplay from "@silvermine/videojs-airplay";
 import chromecast from "@silvermine/videojs-chromecast";
 import abLoopPlugin from "videojs-abloop";
 import ScreenUtils from "src/utils/screen";
+import { useImageBlur } from "src/hooks/blur";
 
 // register videojs plugins
 airplay(videojs);
@@ -221,6 +222,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   onPrevious,
 }) => {
   const { configuration } = useContext(ConfigurationContext);
+  const { blurClassName } = useImageBlur();
   const interfaceConfig = configuration?.interface;
   const uiConfig = configuration?.ui;
   const videoRef = useRef<HTMLDivElement>(null);
@@ -825,7 +827,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       className={cx("VideoPlayer", { portrait: isPortrait })}
       onKeyDownCapture={onKeyDown}
     >
-      <div className="video-wrapper" ref={videoRef} />
+      <div className={blurClassName("video-wrapper")} ref={videoRef} />
       {scene.interactive &&
         (interactiveState !== ConnectionState.Ready ||
           getPlayer()?.paused()) && <SceneInteractiveStatus />}

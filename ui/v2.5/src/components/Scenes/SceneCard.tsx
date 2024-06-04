@@ -35,6 +35,7 @@ import { PatchComponent } from "src/patch";
 import ScreenUtils from "src/utils/screen";
 import { StudioOverlay } from "../Shared/GridCard/StudioOverlay";
 import StashImage from "../Shared/StashImage";
+import { useImageBlur } from "src/hooks/blur";
 
 interface IScenePreviewProps {
   isPortrait: boolean;
@@ -54,6 +55,7 @@ export const ScenePreview: React.FC<IScenePreviewProps> = ({
   onScrubberClick,
 }) => {
   const videoEl = useRef<HTMLVideoElement>(null);
+  const { blurClassName } = useImageBlur();
 
   useEffect(() => {
     const observer = new IntersectionObserver((entries) => {
@@ -85,7 +87,7 @@ export const ScenePreview: React.FC<IScenePreviewProps> = ({
         disableRemotePlayback
         playsInline
         muted={!soundActive}
-        className="scene-card-preview-video"
+        className={blurClassName("scene-card-preview-video")}
         loop
         preload="none"
         ref={videoEl}

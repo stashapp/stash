@@ -176,9 +176,13 @@ const MainNavbarUtilityItems = PatchComponent(
 export const MainNavbar: React.FC = () => {
   const history = useHistory();
   const location = useLocation();
-  const { configuration, loading,     imageBlurred,
+  const {
+    configuration,
+    loading,
+    imageBlurred,
     enableImageBlur,
-    disableImageBlur } = React.useContext(ConfigurationContext);
+    disableImageBlur,
+  } = React.useContext(ConfigurationContext);
   const { openManual } = React.useContext(ManualStateContext);
 
   // Show all menu items by default, unless config says otherwise

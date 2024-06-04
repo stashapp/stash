@@ -90,7 +90,11 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
       key={p.remote_site_id}
       onClick={() => setModalPerformer(p)}
     >
-      <StashImage src={(p.images ?? [])[0]} alt="" className="PerformerTagger-thumb" />
+      <StashImage
+        src={(p.images ?? [])[0]}
+        alt=""
+        className="PerformerTagger-thumb"
+      />
       <span>
         {p.name}
         {p.disambiguation && ` (${p.disambiguation})`}

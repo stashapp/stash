@@ -52,7 +52,12 @@ const GalleryWallCard: React.FC<IProps> = ({ gallery }) => {
         tabIndex={0}
       >
         <RatingSystem value={gallery.rating100} disabled withoutContext />
-        <StashImage loading="lazy" src={cover} alt="" className={CLASSNAME_IMG} />
+        <StashImage
+          loading="lazy"
+          src={cover}
+          alt=""
+          className={CLASSNAME_IMG}
+        />
         <footer className={CLASSNAME_FOOTER}>
           <Link
             to={`/galleries/${gallery.id}`}

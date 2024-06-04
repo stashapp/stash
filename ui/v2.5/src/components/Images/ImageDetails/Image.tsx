@@ -35,6 +35,7 @@ import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import cx from "classnames";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
 import StashImage from "src/components/Shared/StashImage";
+import { useImageBlur } from "src/hooks/blur";
 
 interface IProps {
   image: GQL.ImageDataFragment;
@@ -280,6 +281,7 @@ const ImagePage: React.FC<IProps> = ({ image }) => {
 
   const title = objectTitle(image);
   const ImageView = isVideo(image.visual_files[0]) ? "video" : "img";
+  const { blurClassName } = useImageBlur();
 
   const resolution = useMemo(() => {
     return file?.width && file?.height
@@ -366,7 +368,7 @@ const ImagePage: React.FC<IProps> = ({ image }) => {
           loop={image.visual_files[0].__typename == "VideoFile"}
           autoPlay={image.visual_files[0].__typename == "VideoFile"}
           controls={image.visual_files[0].__typename == "VideoFile"}
-          className="m-sm-auto no-gutter image-image"
+          className={blurClassName("m-sm-auto no-gutter image-image")}
           style={
             image.visual_files[0].__typename == "VideoFile"
               ? { width: "100%", height: "100%" }
