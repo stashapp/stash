@@ -21,6 +21,7 @@ import {
 import TextUtils from "src/utils/text";
 import { getCountryByISO } from "src/utils/country";
 import { IColumn, ListTable } from "../List/ListTable";
+import StashImage from "../Shared/StashImage";
 
 interface IPerformerListTableProps {
   performers: GQL.PerformerDataFragment[];
@@ -65,7 +66,7 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
 
   const ImageCell = (performer: GQL.PerformerDataFragment) => (
     <Link to={`/performers/${performer.id}`}>
-      <img
+      <StashImage
         loading="lazy"
         className="image-thumbnail"
         alt={performer.name ?? ""}

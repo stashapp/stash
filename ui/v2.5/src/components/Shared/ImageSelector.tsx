@@ -5,6 +5,7 @@ import { Button } from "react-bootstrap";
 import { faArrowLeft, faArrowRight } from "@fortawesome/free-solid-svg-icons";
 import { Icon } from "./Icon";
 import { FormattedMessage } from "react-intl";
+import StashImage from "./StashImage";
 
 interface IImageSelectorProps {
   imageClassName?: string;
@@ -74,13 +75,13 @@ export const ImageSelector: React.FC<IImageSelectorProps> = ({
 
       <div className="performer-image">
         {/* hidden image to handle loading */}
-        <img
+        <StashImage
           src={images[imageIndex]}
           className="d-none"
           onLoad={() => handleLoad(imageIndex)}
           onError={handleError}
         />
-        <img
+        <StashImage
           src={currentImage}
           className={cx(imageClassName, { loading: imageState === "loading" })}
           alt=""

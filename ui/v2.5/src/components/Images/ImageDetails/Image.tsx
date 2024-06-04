@@ -34,6 +34,7 @@ import TextUtils from "src/utils/text";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import cx from "classnames";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
+import StashImage from "src/components/Shared/StashImage";
 
 interface IProps {
   image: GQL.ImageDataFragment;
@@ -299,7 +300,7 @@ const ImagePage: React.FC<IProps> = ({ image }) => {
             {image.studio && (
               <h1 className="text-center image-studio-image">
                 <Link to={`/studios/${image.studio.id}`}>
-                  <img
+                  <StashImage
                     src={image.studio.image_path ?? ""}
                     alt={`${image.studio.name} logo`}
                     className="studio-logo"

@@ -29,6 +29,7 @@ import { apolloError } from "src/utils";
 import { faStar, faTags } from "@fortawesome/free-solid-svg-icons";
 import { ExternalLink } from "src/components/Shared/ExternalLink";
 import { mergeStudioStashIDs } from "../utils";
+import StashImage from "src/components/Shared/StashImage";
 
 type JobFragment = Pick<
   GQL.Job,
@@ -619,7 +620,7 @@ const StudioTaggerList: React.FC<IStudioTaggerListProps> = ({
             <div></div>
             <div>
               <Card className="studio-card">
-                <img loading="lazy" src={studio.image_path ?? ""} alt="" />
+                <StashImage loading="lazy" src={studio.image_path ?? ""} alt="" />
               </Card>
             </div>
             <div className={`${CLASSNAME}-details-text`}>

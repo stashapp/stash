@@ -33,6 +33,7 @@ import {
   CriterionValue,
 } from "src/models/list-filter/criteria/criterion";
 import { TruncatedText } from "../Shared/TruncatedText";
+import StashImage from "../Shared/StashImage";
 
 export type Scene = Pick<GQL.Scene, "id" | "title" | "date" | "code"> & {
   studio?: Pick<GQL.Studio, "name"> | null;
@@ -120,7 +121,7 @@ const _SceneSelect: React.FC<
         <span className="scene-select-option">
           <span className="scene-select-row">
             {object.paths?.screenshot && (
-              <img
+              <StashImage
                 className="scene-select-image"
                 src={object.paths.screenshot}
                 loading="lazy"

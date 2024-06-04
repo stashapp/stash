@@ -6,6 +6,7 @@ import { useHistory, useLocation } from "react-router-dom";
 import { useToast } from "src/hooks/Toast";
 import * as GQL from "src/core/generated-graphql";
 import { usePerformerCreate } from "src/core/StashService";
+import StashImage from "src/components/Shared/StashImage";
 
 const PerformerCreate: React.FC = () => {
   const Toast = useToast();
@@ -50,7 +51,7 @@ const PerformerCreate: React.FC = () => {
     }
     if (image) {
       return (
-        <img
+        <StashImage
           className="performer"
           src={image}
           alt={intl.formatMessage({ id: "performer" })}

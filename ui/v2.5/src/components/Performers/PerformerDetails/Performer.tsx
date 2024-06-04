@@ -45,6 +45,7 @@ import { DetailImage } from "src/components/Shared/DetailImage";
 import { useLoadStickyHeader } from "src/hooks/detailsPanel";
 import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
 import { ExternalLink } from "src/components/Shared/ExternalLink";
+import StashImage from "src/components/Shared/StashImage";
 
 interface IProps {
   performer: GQL.PerformerDataFragment;
@@ -344,7 +345,7 @@ const PerformerPage: React.FC<IProps> = ({ performer, tabKey }) => {
           <div className="background-image-container">
             <picture>
               <source src={activeImage} />
-              <img
+              <StashImage
                 className="background-image"
                 src={activeImage}
                 alt={`${performer.name} background`}

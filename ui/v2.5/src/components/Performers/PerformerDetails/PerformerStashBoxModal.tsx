@@ -13,6 +13,7 @@ import { stringToGender } from "src/utils/gender";
 import TextUtils from "src/utils/text";
 import GenderIcon from "src/components/Performers/GenderIcon";
 import { CountryFlag } from "src/components/Shared/CountryFlag";
+import StashImage from "src/components/Shared/StashImage";
 
 const CLASSNAME = "PerformerScrapeModal";
 const CLASSNAME_LIST = `${CLASSNAME}-list`;
@@ -29,7 +30,7 @@ const PerformerSearchResultDetails: React.FC<
     if (performer.images && performer.images.length > 0) {
       return (
         <div className="scene-image-container">
-          <img
+          <StashImage
             src={performer.images[0]}
             alt=""
             className="align-self-center scene-image"

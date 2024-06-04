@@ -19,6 +19,7 @@ import {
   faTimes,
 } from "@fortawesome/free-solid-svg-icons";
 import { ExternalLink } from "../Shared/ExternalLink";
+import StashImage from "../Shared/StashImage";
 
 interface IPerformerModalProps {
   performer: GQL.ScrapedScenePerformerDataFragment;
@@ -135,7 +136,7 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({
               <Icon icon={excluded.image ? faTimes : faCheck} />
             </Button>
           )}
-          <img
+          <StashImage
             src={images[imageIndex]}
             className={cx({ "d-none": imageState !== "loaded" })}
             alt=""

@@ -23,6 +23,7 @@ import { usePerformerUpdate } from "src/core/StashService";
 import { ILabeledId } from "src/models/list-filter/types";
 import ScreenUtils from "src/utils/screen";
 import { FavoriteIcon } from "../Shared/FavoriteIcon";
+import StashImage from "../Shared/StashImage";
 
 export interface IPerformerCardExtraCriteria {
   scenes?: Criterion<CriterionValue>[];
@@ -264,7 +265,7 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
       }
       image={
         <>
-          <img
+          <StashImage
             loading="lazy"
             className="performer-card-image"
             alt={performer.name ?? ""}

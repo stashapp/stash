@@ -41,6 +41,7 @@ import {
 import { DetailImage } from "src/components/Shared/DetailImage";
 import { useLoadStickyHeader } from "src/hooks/detailsPanel";
 import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
+import StashImage from "src/components/Shared/StashImage";
 
 interface IProps {
   tag: GQL.TagDataFragment;
@@ -506,7 +507,7 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
           <div className="background-image-container">
             <picture>
               <source src={tagImage} />
-              <img
+              <StashImage
                 className="background-image"
                 src={tagImage}
                 alt={`${tag.name} background`}

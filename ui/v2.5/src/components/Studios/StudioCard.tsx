@@ -13,6 +13,7 @@ import { RatingBanner } from "../Shared/RatingBanner";
 import ScreenUtils from "src/utils/screen";
 import { FavoriteIcon } from "../Shared/FavoriteIcon";
 import { useStudioUpdate } from "src/core/StashService";
+import StashImage from "../Shared/StashImage";
 
 interface IProps {
   studio: GQL.StudioDataFragment;
@@ -195,7 +196,7 @@ export const StudioCard: React.FC<IProps> = ({
       title={studio.name}
       linkClassName="studio-card-header"
       image={
-        <img
+        <StashImage
           loading="lazy"
           className="studio-card-image"
           alt={studio.name}

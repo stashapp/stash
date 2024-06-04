@@ -340,7 +340,7 @@ const ScrapedImage: React.FC<IScrapedImageProps> = (props) => {
   }
 
   return (
-    <img className={props.className} src={value} alt={props.placeholder} />
+    <StashImage className={props.className} src={value} alt={props.placeholder} />
   );
 };
 

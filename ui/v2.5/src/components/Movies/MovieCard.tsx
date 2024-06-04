@@ -10,6 +10,7 @@ import { FormattedMessage } from "react-intl";
 import { RatingBanner } from "../Shared/RatingBanner";
 import { faPlayCircle } from "@fortawesome/free-solid-svg-icons";
 import ScreenUtils from "src/utils/screen";
+import StashImage from "../Shared/StashImage";
 
 interface IProps {
   movie: GQL.MovieDataFragment;
@@ -91,7 +92,7 @@ export const MovieCard: React.FC<IProps> = (props: IProps) => {
       linkClassName="movie-card-header"
       image={
         <>
-          <img
+          <StashImage
             loading="lazy"
             className="movie-card-image"
             alt={props.movie.name ?? ""}

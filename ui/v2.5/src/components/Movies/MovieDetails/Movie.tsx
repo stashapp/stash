@@ -38,6 +38,7 @@ import { useRatingKeybinds } from "src/hooks/keybinds";
 import { useLoadStickyHeader } from "src/hooks/detailsPanel";
 import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
 import { ExternalLink } from "src/components/Shared/ExternalLink";
+import StashImage from "src/components/Shared/StashImage";
 
 interface IProps {
   movie: GQL.MovieDataFragment;
@@ -367,7 +368,7 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
           <div className="background-image-container">
             <picture>
               <source src={image} />
-              <img
+              <StashImage
                 className="background-image"
                 src={image}
                 alt={`${movie.name} background`}

@@ -1370,3 +1370,11 @@ select {
 .table-list .rating-number {
   width: 6rem;
 }
+
+img.blurred,
+video.blurred,
+.video-wrapper.blurred video,
+.video-wrapper.blurred .vjs-poster,
+.scrubber-item.blurred {
+  filter: blur(1.5rem);
+}

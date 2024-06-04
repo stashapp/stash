@@ -27,6 +27,7 @@ import { useUpdatePerformer } from "../queries";
 import { faStar, faTags } from "@fortawesome/free-solid-svg-icons";
 import { mergeStashIDs } from "src/utils/stashbox";
 import { ExternalLink } from "src/components/Shared/ExternalLink";
+import StashImage from "src/components/Shared/StashImage";
 
 type JobFragment = Pick<
   GQL.Job,
@@ -560,7 +561,7 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
             />
           )}
           <Card className="performer-card p-0 m-0">
-            <img src={performer.image_path ?? ""} alt="" />
+            <StashImage src={performer.image_path ?? ""} alt="" />
           </Card>
           <div className={`${CLASSNAME}-details`}>
             <Link

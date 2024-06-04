@@ -31,6 +31,7 @@ import { useInitialState } from "src/hooks/state";
 import { getStashboxBase } from "src/utils/stashbox";
 import { ExternalLink } from "src/components/Shared/ExternalLink";
 import { compareScenesForSort } from "./utils";
+import StashImage from "src/components/Shared/StashImage";
 
 const getDurationIcon = (matchPercentage: number) => {
   if (matchPercentage > 65)
@@ -490,7 +491,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
             }
             setExclude={(v) => setExcludedField(fields.cover_image, v)}
           >
-            <img
+            <StashImage
               src={scene.image}
               alt=""
               className="align-self-center scene-image"

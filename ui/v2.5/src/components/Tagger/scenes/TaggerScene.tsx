@@ -19,6 +19,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { objectPath, objectTitle } from "src/core/files";
 import { ExternalLink } from "src/components/Shared/ExternalLink";
+import StashImage from "src/components/Shared/StashImage";
 
 interface ITaggerSceneDetails {
   scene: GQL.SlimSceneDataFragment;
@@ -49,7 +50,7 @@ const TaggerSceneDetails: React.FC<ITaggerSceneDetails> = ({ scene }) => {
                     to={`/performers/${performer.id}`}
                     className="performer-tag col m-auto zoom-2"
                   >
-                    <img
+                    <StashImage
                       loading="lazy"
                       className="image-thumbnail"
                       alt={performer.name ?? ""}

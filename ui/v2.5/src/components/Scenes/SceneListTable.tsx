@@ -11,6 +11,7 @@ import { RatingSystem } from "../Shared/Rating/RatingSystem";
 import { useSceneUpdate } from "src/core/StashService";
 import { IColumn, ListTable } from "../List/ListTable";
 import { useTableColumns } from "src/hooks/useTableColumns";
+import StashImage from "../Shared/StashImage";
 
 interface ISceneListTableProps {
   scenes: GQL.SlimSceneDataFragment[];
@@ -49,7 +50,7 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
 
     return (
       <Link to={sceneLink}>
-        <img
+        <StashImage
           loading="lazy"
           className="image-thumbnail"
           alt={title}

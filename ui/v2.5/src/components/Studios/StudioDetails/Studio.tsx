@@ -46,6 +46,7 @@ import { useRatingKeybinds } from "src/hooks/keybinds";
 import { useLoadStickyHeader } from "src/hooks/detailsPanel";
 import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
 import { ExternalLink } from "src/components/Shared/ExternalLink";
+import StashImage from "src/components/Shared/StashImage";
 
 interface IProps {
   studio: GQL.StudioDataFragment;
@@ -482,7 +483,7 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
           <div className="background-image-container">
             <picture>
               <source src={studioImage} />
-              <img
+              <StashImage
                 className="background-image"
                 src={studioImage}
                 alt={`${studio.name} background`}

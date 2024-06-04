@@ -7,6 +7,7 @@ import { useStudioCreate } from "src/core/StashService";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { useToast } from "src/hooks/Toast";
 import { StudioEditPanel } from "./StudioEditPanel";
+import StashImage from "src/components/Shared/StashImage";
 
 const StudioCreate: React.FC = () => {
   const history = useHistory();
@@ -43,7 +44,7 @@ const StudioCreate: React.FC = () => {
 
   function renderImage() {
     if (image) {
-      return <img className="logo" alt="" src={image} />;
+      return <StashImage className="logo" alt="" src={image} />;
     }
   }
 

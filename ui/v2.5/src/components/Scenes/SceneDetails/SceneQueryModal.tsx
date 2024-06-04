@@ -10,6 +10,7 @@ import { Icon } from "src/components/Shared/Icon";
 import { queryScrapeSceneQuery } from "src/core/StashService";
 import { useToast } from "src/hooks/Toast";
 import { faSearch } from "@fortawesome/free-solid-svg-icons";
+import StashImage from "src/components/Shared/StashImage";
 
 interface ISceneSearchResultDetailsProps {
   scene: GQL.ScrapedSceneDataFragment;
@@ -58,7 +59,7 @@ const SceneSearchResultDetails: React.FC<ISceneSearchResultDetailsProps> = ({
     if (scene.image) {
       return (
         <div className="scene-image-container">
-          <img
+          <StashImage
             src={scene.image}
             alt=""
             className="align-self-center scene-image"

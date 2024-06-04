@@ -14,6 +14,7 @@ import { faBox, faPlayCircle, faTag } from "@fortawesome/free-solid-svg-icons";
 import { galleryTitle } from "src/core/galleries";
 import ScreenUtils from "src/utils/screen";
 import { StudioOverlay } from "../Shared/GridCard/StudioOverlay";
+import StashImage from "../Shared/StashImage";
 
 interface IProps {
   gallery: GQL.SlimGalleryDataFragment;
@@ -168,7 +169,7 @@ export const GalleryCard: React.FC<IProps> = (props) => {
       image={
         <>
           {props.gallery.cover ? (
-            <img
+            <StashImage
               loading="lazy"
               className="gallery-card-image"
               alt={props.gallery.title ?? ""}

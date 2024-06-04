@@ -9,6 +9,7 @@ import { RatingSystem } from "../Shared/Rating/RatingSystem";
 import { useGalleryUpdate } from "src/core/StashService";
 import { IColumn, ListTable } from "../List/ListTable";
 import { useTableColumns } from "src/hooks/useTableColumns";
+import StashImage from "../Shared/StashImage";
 
 interface IGalleryListTableProps {
   galleries: GQL.SlimGalleryDataFragment[];
@@ -44,7 +45,7 @@ export const GalleryListTable: React.FC<IGalleryListTableProps> = (
     return (
       <Link to={`/galleries/${gallery.id}`}>
         {gallery.cover ? (
-          <img
+          <StashImage
             loading="lazy"
             alt={title}
             className="image-thumbnail"

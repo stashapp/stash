@@ -9,6 +9,7 @@ import { useStudioCreate } from "src/core/StashService";
 import { useIntl } from "react-intl";
 import { apolloError } from "src/utils";
 import { mergeStudioStashIDs } from "../utils";
+import StashImage from "src/components/Shared/StashImage";
 
 interface IStashSearchResultProps {
   studio: GQL.SlimStudioDataFragment;
@@ -114,7 +115,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
       key={p.remote_site_id}
       onClick={() => setModalStudio(p)}
     >
-      <img
+      <StashImage
         loading="lazy"
         src={(p.image ?? [])[0]}
         alt=""

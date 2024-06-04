@@ -1,5 +1,6 @@
 import { useLayoutEffect, useRef } from "react";
 import { remToPx } from "src/utils/units";
+import StashImage from "./StashImage";
 
 const DEFAULT_WIDTH = Math.round(remToPx(30));
 
@@ -35,5 +36,5 @@ export const DetailImage = (props: IDetailImageProps) => {
     fixWidth();
   }, [props.src]);
 
-  return <img ref={imgRef} onLoad={() => fixWidth()} {...props} />;
+  return <StashImage ref={imgRef} onLoad={() => fixWidth()} {...props} />;
 };

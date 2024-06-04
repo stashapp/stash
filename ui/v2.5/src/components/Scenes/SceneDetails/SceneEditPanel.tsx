@@ -49,6 +49,7 @@ import { Tag, TagSelect } from "src/components/Tags/TagSelect";
 import { Studio, StudioSelect } from "src/components/Studios/StudioSelect";
 import { Gallery, GallerySelect } from "src/components/Galleries/GallerySelect";
 import { Movie } from "src/components/Movies/MovieSelect";
+import StashImage from "src/components/Shared/StashImage";
 
 const SceneScrapeDialog = lazyComponent(() => import("./SceneScrapeDialog"));
 const SceneQueryModal = lazyComponent(() => import("./SceneQueryModal"));
@@ -676,7 +677,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
     if (coverImagePreview) {
       return (
-        <img
+        <StashImage
           className="scene-cover"
           src={coverImagePreview}
           alt={intl.formatMessage({ id: "cover_image" })}

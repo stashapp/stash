@@ -28,6 +28,7 @@ import { useCompare } from "src/hooks/state";
 import { Link } from "react-router-dom";
 import { sortByRelevance } from "src/utils/query";
 import { PatchComponent, PatchFunction } from "src/patch";
+import StashImage from "../Shared/StashImage";
 
 export type SelectObject = {
   id: string;
@@ -118,7 +119,7 @@ const _PerformerSelect: React.FC<
             target="_blank"
             className="performer-select-image-link"
           >
-            <img
+            <StashImage
               className="performer-select-image"
               src={object.image_path ?? ""}
               loading="lazy"

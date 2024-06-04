@@ -34,6 +34,7 @@ import { PreviewScrubber } from "./PreviewScrubber";
 import { PatchComponent } from "src/patch";
 import ScreenUtils from "src/utils/screen";
 import { StudioOverlay } from "../Shared/GridCard/StudioOverlay";
+import StashImage from "../Shared/StashImage";
 
 interface IScenePreviewProps {
   isPortrait: boolean;
@@ -74,7 +75,7 @@ export const ScenePreview: React.FC<IScenePreviewProps> = ({
 
   return (
     <div className={cx("scene-card-preview", { portrait: isPortrait })}>
-      <img
+      <StashImage
         className="scene-card-preview-image"
         loading="lazy"
         src={image}
@@ -152,7 +153,7 @@ const SceneCardPopovers = PatchComponent(
             to={`/movies/${sceneMovie.movie.id}`}
             className="movie-tag col m-auto zoom-2"
           >
-            <img
+            <StashImage
               className="image-thumbnail"
               alt={sceneMovie.movie.name ?? ""}
               src={sceneMovie.movie.front_image_path ?? ""}

@@ -7,6 +7,7 @@ import TextUtils from "src/utils/text";
 import { useGalleryLightbox } from "src/hooks/Lightbox/hooks";
 import { galleryTitle } from "src/core/galleries";
 import { RatingSystem } from "../Shared/Rating/RatingSystem";
+import StashImage from "../Shared/StashImage";
 
 const CLASSNAME = "GalleryWallCard";
 const CLASSNAME_FOOTER = `${CLASSNAME}-footer`;
@@ -51,7 +52,7 @@ const GalleryWallCard: React.FC<IProps> = ({ gallery }) => {
         tabIndex={0}
       >
         <RatingSystem value={gallery.rating100} disabled withoutContext />
-        <img loading="lazy" src={cover} alt="" className={CLASSNAME_IMG} />
+        <StashImage loading="lazy" src={cover} alt="" className={CLASSNAME_IMG} />
         <footer className={CLASSNAME_FOOTER}>
           <Link
             to={`/galleries/${gallery.id}`}

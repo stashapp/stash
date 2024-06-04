@@ -32,7 +32,7 @@ import * as GQL from "./core/generated-graphql";
 import { makeTitleProps } from "./hooks/title";
 import { LoadingIndicator } from "./components/Shared/LoadingIndicator";
 
-import { ConfigurationProvider } from "./hooks/Config";
+import { ConfigurationProvider, getInitialImageBlur } from "./hooks/Config";
 import { ManualProvider } from "./components/Help/context";
 import { InteractiveProvider } from "./hooks/Interactive/context";
 import { ReleaseNotesDialog } from "./components/Dialogs/ReleaseNotesDialog";
@@ -79,6 +79,7 @@ const SceneDuplicateChecker = lazyComponent(
 );
 
 const appleRendering = isPlatformUniquelyRenderedByApple();
+const initialImageBlur = getInitialImageBlur();
 
 initPolyfills();
 
@@ -365,6 +366,7 @@ export const App: React.FC = () => {
           formats={intlFormats}
         >
           <ConfigurationProvider
+            imageBlurred={initialImageBlur}
             configuration={config.data?.configuration}
             loading={config.loading}
           >

@@ -34,6 +34,7 @@ import {
 } from "src/models/list-filter/criteria/criterion";
 import { PathCriterion } from "src/models/list-filter/criteria/path";
 import { TruncatedText } from "../Shared/TruncatedText";
+import StashImage from "../Shared/StashImage";
 
 export type Gallery = Pick<GQL.Gallery, "id" | "title" | "date" | "code"> & {
   studio?: Pick<GQL.Studio, "name"> | null;
@@ -133,7 +134,7 @@ const _GallerySelect: React.FC<
         <span className="gallery-select-option">
           <span className="gallery-select-row">
             {object.cover?.paths?.thumbnail && (
-              <img
+              <StashImage
                 className="gallery-select-image"
                 src={object.cover.paths.thumbnail}
                 loading="lazy"

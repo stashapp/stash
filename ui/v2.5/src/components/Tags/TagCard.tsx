@@ -12,6 +12,7 @@ import { Icon } from "../Shared/Icon";
 import { faHeart } from "@fortawesome/free-solid-svg-icons";
 import cx from "classnames";
 import { useTagUpdate } from "src/core/StashService";
+import StashImage from "../Shared/StashImage";
 interface IProps {
   tag: GQL.TagDataFragment;
   containerWidth?: number;
@@ -248,7 +249,7 @@ export const TagCard: React.FC<IProps> = ({
       title={tag.name ?? ""}
       linkClassName="tag-card-header"
       image={
-        <img
+        <StashImage
           loading="lazy"
           className="tag-card-image"
           alt={tag.name}

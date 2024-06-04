@@ -50,6 +50,7 @@ import { useRatingKeybinds } from "src/hooks/keybinds";
 import { lazyComponent } from "src/utils/lazyComponent";
 import cx from "classnames";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
+import StashImage from "src/components/Shared/StashImage";
 
 const SubmitStashBoxDraft = lazyComponent(
   () => import("src/components/Dialogs/SubmitDraft")
@@ -574,7 +575,7 @@ const ScenePage: React.FC<IProps> = ({
             {scene.studio && (
               <h1 className="text-center scene-studio-image">
                 <Link to={`/studios/${scene.studio.id}`}>
-                  <img
+                  <StashImage
                     src={scene.studio.image_path ?? ""}
                     alt={`${scene.studio.name} logo`}
                     className="studio-logo"

@@ -6,6 +6,7 @@ import { useIntl } from "react-intl";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { useToast } from "src/hooks/Toast";
 import { MovieEditPanel } from "./MovieEditPanel";
+import StashImage from "src/components/Shared/StashImage";
 
 const MovieCreate: React.FC = () => {
   const history = useHistory();
@@ -44,7 +45,7 @@ const MovieCreate: React.FC = () => {
     if (frontImage) {
       return (
         <div className="movie-image-container">
-          <img alt="Front Cover" src={frontImage} />
+          <StashImage alt="Front Cover" src={frontImage} />
         </div>
       );
     }
@@ -54,7 +55,7 @@ const MovieCreate: React.FC = () => {
     if (backImage) {
       return (
         <div className="movie-image-container">
-          <img alt="Back Cover" src={backImage} />
+          <StashImage alt="Back Cover" src={backImage} />
         </div>
       );
     }

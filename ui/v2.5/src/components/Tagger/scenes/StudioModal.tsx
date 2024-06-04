@@ -16,6 +16,7 @@ import { Button, Form } from "react-bootstrap";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
 import { excludeFields } from "src/utils/data";
 import { ExternalLink } from "src/components/Shared/ExternalLink";
+import StashImage from "src/components/Shared/StashImage";
 
 interface IStudioDetailsProps {
   studio: GQL.ScrapedSceneStudioDataFragment;
@@ -49,7 +50,7 @@ const StudioDetails: React.FC<IStudioDetailsProps> = ({
             >
               <Icon icon={excluded.image ? faTimes : faCheck} />
             </Button>
-            <img src={studio.image} alt="" />
+            <StashImage src={studio.image} alt="" />
           </div>
         </div>
       </div>

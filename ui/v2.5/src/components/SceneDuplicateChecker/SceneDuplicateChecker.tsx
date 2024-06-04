@@ -44,6 +44,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { SceneMergeModal } from "../Scenes/SceneMergeDialog";
 import { objectTitle } from "src/core/files";
+import StashImage from "../Shared/StashImage";
 
 const CLASSNAME = "duplicate-checker";
 
@@ -395,7 +396,7 @@ export const SceneDuplicateChecker: React.FC = () => {
           to={`/movies/${sceneMovie.movie.id}`}
           className="movie-tag col m-auto zoom-2"
         >
-          <img
+          <StashImage
             className="image-thumbnail"
             alt={sceneMovie.movie.name ?? ""}
             src={sceneMovie.movie.front_image_path ?? ""}
@@ -864,7 +865,7 @@ export const SceneDuplicateChecker: React.FC = () => {
                       <td>
                         <HoverPopover
                           content={
-                            <img
+                            <StashImage
                               src={scene.paths.sprite ?? ""}
                               alt=""
                               width={600}
@@ -872,7 +873,7 @@ export const SceneDuplicateChecker: React.FC = () => {
                           }
                           placement="right"
                         >
-                          <img
+                          <StashImage
                             src={scene.paths.sprite ?? ""}
                             alt=""
                             width={100}

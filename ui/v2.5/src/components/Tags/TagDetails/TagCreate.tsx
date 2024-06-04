@@ -7,6 +7,7 @@ import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { useToast } from "src/hooks/Toast";
 import { tagRelationHook } from "src/core/tags";
 import { TagEditPanel } from "./TagEditPanel";
+import StashImage from "src/components/Shared/StashImage";
 
 const TagCreate: React.FC = () => {
   const intl = useIntl();
@@ -51,7 +52,7 @@ const TagCreate: React.FC = () => {
 
   function renderImage() {
     if (image) {
-      return <img className="logo" alt="" src={image} />;
+      return <StashImage className="logo" alt="" src={image} />;
     }
   }
 

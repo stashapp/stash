@@ -29,6 +29,7 @@ import { Placement } from "react-bootstrap/esm/Overlay";
 import { sortByRelevance } from "src/utils/query";
 import { PatchComponent, PatchFunction } from "src/patch";
 import { TruncatedText } from "../Shared/TruncatedText";
+import StashImage from "../Shared/StashImage";
 
 export type Movie = Pick<
   GQL.Movie,
@@ -114,7 +115,7 @@ const _MovieSelect: React.FC<
         <span className="movie-select-option">
           <span className="movie-select-row">
             {object.front_image_path && (
-              <img
+              <StashImage
                 className="movie-select-image"
                 src={object.front_image_path}
                 loading="lazy"

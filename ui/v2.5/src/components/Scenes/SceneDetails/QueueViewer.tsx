@@ -13,6 +13,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { objectTitle } from "src/core/files";
 import { QueuedScene } from "src/models/sceneQueue";
+import StashImage from "src/components/Shared/StashImage";
 
 export interface IPlaylistViewer {
   scenes: QueuedScene[];
@@ -88,7 +89,7 @@ export const QueueViewer: React.FC<IPlaylistViewer> = ({
         >
           <div className="ml-1 d-flex align-items-center">
             <div className="thumbnail-container">
-              <img
+              <StashImage
                 loading="lazy"
                 alt={scene.title ?? ""}
                 src={scene.paths.screenshot ?? ""}

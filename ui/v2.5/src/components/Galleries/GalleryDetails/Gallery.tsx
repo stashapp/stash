@@ -42,6 +42,7 @@ import cx from "classnames";
 import { useRatingKeybinds } from "src/hooks/keybinds";
 import { ConfigurationContext } from "src/hooks/Config";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
+import StashImage from "src/components/Shared/StashImage";
 
 interface IProps {
   gallery: GQL.GalleryDataFragment;
@@ -366,7 +367,7 @@ export const GalleryPage: React.FC<IProps> = ({ gallery, add }) => {
             {gallery.studio && (
               <h1 className="text-center gallery-studio-image">
                 <Link to={`/studios/${gallery.studio.id}`}>
-                  <img
+                  <StashImage
                     src={gallery.studio.image_path ?? ""}
                     alt={`${gallery.studio.name} logo`}
                     className="studio-logo"

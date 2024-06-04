@@ -15,6 +15,7 @@ import { SceneQueue } from "src/models/sceneQueue";
 import { ConfigurationContext } from "src/hooks/Config";
 import { markerTitle } from "src/core/markers";
 import { objectTitle } from "src/core/files";
+import StashImage from "../Shared/StashImage";
 
 export type WallItemType = keyof WallItemData;
 
@@ -65,7 +66,7 @@ const Preview: React.FC<{
   }, [previewType, soundOnPreview, active]);
 
   const image = (
-    <img
+    <StashImage
       loading="lazy"
       alt=""
       className="wall-item-media"

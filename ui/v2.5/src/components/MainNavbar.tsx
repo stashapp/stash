@@ -176,7 +176,9 @@ const MainNavbarUtilityItems = PatchComponent(
 export const MainNavbar: React.FC = () => {
   const history = useHistory();
   const location = useLocation();
-  const { configuration, loading } = React.useContext(ConfigurationContext);
+  const { configuration, loading,     imageBlurred,
+    enableImageBlur,
+    disableImageBlur } = React.useContext(ConfigurationContext);
   const { openManual } = React.useContext(ManualStateContext);
 
   // Show all menu items by default, unless config says otherwise
@@ -245,6 +247,9 @@ export const MainNavbar: React.FC = () => {
   // set up hotkeys
   useEffect(() => {
     Mousetrap.bind("?", () => openManual());
+    Mousetrap.bind("b", () =>
+      imageBlurred ? disableImageBlur() : enableImageBlur()
+    );
     Mousetrap.bind("g z", () => goto("/settings"));
 
     menuItems.forEach((item) =>
