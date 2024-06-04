@@ -22,10 +22,12 @@ input StashIDInput {
 
 input StashBoxFingerprintSubmissionInput {
   scene_ids: [String!]!
-  stash_box_index: Int!
+  stash_box_index: Int @deprecated(reason: "use stash_box_endpoint")
+  stash_box_endpoint: String
 }
 
 input StashBoxDraftSubmissionInput {
   id: String!
-  stash_box_index: Int!
+  stash_box_index: Int @deprecated(reason: "use stash_box_endpoint")
+  stash_box_endpoint: String
 }
