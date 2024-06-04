@@ -218,6 +218,14 @@ func TestEnsureHierarchy(t *testing.T) {
 	}
 }
 
+func idsFromSlice(tags []*models.Tag) []int {
+	ids := make([]int, len(tags))
+	for i, tag := range tags {
+		ids[i] = tag.ID
+	}
+	return ids
+}
+
 func testEnsureHierarchy(t *testing.T, tc testUniqueHierarchyCase, queryParents, queryChildren bool) {
 	db := mocks.NewDatabase()
 
@@ -246,12 +254,12 @@ func testEnsureHierarchy(t *testing.T, tc testUniqueHierarchyCase, queryParents,
 
 	if queryParents {
 		parentIDs = nil
-		db.Tag.On("FindByChildTagID", testCtx, tc.id).Return(tc.parents, nil).Once()
+		db.Tag.On("GetChildIDs", testCtx, tc.id).Return(idsFromSlice(tc.parents), nil).Once()
 	}
 
 	if queryChildren {
 		childIDs = nil
-		db.Tag.On("FindByParentTagID", testCtx, tc.id).Return(tc.children, nil).Once()
+		db.Tag.On("GetParentIDs", testCtx, tc.id).Return(idsFromSlice(tc.children), nil).Once()
 	}
 
 	db.Tag.On("FindAllAncestors", testCtx, mock.AnythingOfType("int"), []int(nil)).Return(func(ctx context.Context, tagID int, excludeIDs []int) []*models.TagPath {

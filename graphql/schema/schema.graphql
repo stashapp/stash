@@ -325,6 +325,7 @@ type Mutation {
   tagDestroy(input: TagDestroyInput!): Boolean!
   tagsDestroy(ids: [ID!]!): Boolean!
   tagsMerge(input: TagsMergeInput!): Tag
+  bulkTagUpdate(input: BulkTagUpdateInput!): [Tag!]
 
   """
   Moves the given files to the given destination. Returns true if successful.

@@ -60,3 +60,14 @@ input TagsMergeInput {
   source: [ID!]!
   destination: ID!
 }
+
+input BulkTagUpdateInput {
+  ids: [ID!]
+  description: String
+  aliases: BulkUpdateStrings
+  ignore_auto_tag: Boolean
+  favorite: Boolean
+
+  parent_ids: BulkUpdateIds
+  child_ids: BulkUpdateIds
+}
