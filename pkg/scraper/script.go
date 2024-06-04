@@ -224,7 +224,7 @@ func (s *scriptScraper) runScraperScript(ctx context.Context, inString string, o
 		if err != nil {
 			logger.Warnf("%s", err)
 		} else {
-			cmd = p.Command(context.TODO(), command[1:])
+			cmd = p.Command(ctx, command[1:])
 			envVariable, _ := filepath.Abs(filepath.Dir(filepath.Dir(s.config.path)))
 			python.AppendPythonPath(cmd, envVariable)
 		}
@@ -232,7 +232,7 @@ func (s *scriptScraper) runScraperScript(ctx context.Context, inString string, o
 
 	if cmd == nil {
 		// if could not find python, just use the command args as-is
-		cmd = stashExec.Command(command[0], command[1:]...)
+		cmd = stashExec.CommandContext(ctx, command[0], command[1:]...)
 	}
 
 	cmd.Dir = filepath.Dir(s.config.path)
