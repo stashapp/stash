@@ -327,8 +327,8 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     }
   }, [isActive, loading, stashScene, index, resolveScene, scene]);
 
-  const stashBoxBaseURL = currentSource?.stashboxEndpoint
-    ? getStashboxBase(currentSource.stashboxEndpoint)
+  const stashBoxBaseURL = currentSource?.sourceInput.stash_box_endpoint
+    ? getStashboxBase(currentSource.sourceInput.stash_box_endpoint)
     : undefined;
   const stashBoxURL = useMemo(() => {
     if (stashBoxBaseURL) {
@@ -404,7 +404,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     const includeStashID = !excludedFieldList.includes("stash_ids");
     if (
       includeStashID &&
-      currentSource?.stashboxEndpoint &&
+      currentSource?.sourceInput.stash_box_endpoint &&
       scene.remote_site_id
     ) {
       sceneCreateInput.stash_ids = [
@@ -415,9 +415,11 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
               stash_id: s.stash_id,
             };
           })
-          .filter((s) => s.endpoint !== currentSource.stashboxEndpoint) ?? []),
+          .filter(
+            (s) => s.endpoint !== currentSource.sourceInput.stash_box_endpoint
+          ) ?? []),
         {
-          endpoint: currentSource.stashboxEndpoint,
+          endpoint: currentSource.sourceInput.stash_box_endpoint,
           stash_id: scene.remote_site_id,
         },
       ];
@@ -662,7 +664,9 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
             selectedID={studioID}
             setSelectedID={(id) => setStudioID(id)}
             onCreate={() => showStudioModal(scene.studio!)}
-            endpoint={currentSource?.stashboxEndpoint}
+            endpoint={
+              currentSource?.sourceInput.stash_box_endpoint ?? undefined
+            }
             onLink={async () => {
               await linkStudio(scene.studio!, studioID!);
             }}
@@ -691,7 +695,9 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
               onLink={async () => {
                 await linkPerformer(performer, performerIDs[performerIndex]!);
               }}
-              endpoint={currentSource?.stashboxEndpoint}
+              endpoint={
+                currentSource?.sourceInput.stash_box_endpoint ?? undefined
+              }
               key={`${performer.name ?? performer.remote_site_id ?? ""}`}
             />
           ))}

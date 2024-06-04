@@ -5,7 +5,6 @@ export const SCRAPER_PREFIX = "scraper:";
 
 export interface ITaggerSource {
   id: string;
-  stashboxEndpoint?: string;
   sourceInput: ScraperSourceInput;
   displayName: string;
   supportSceneQuery?: boolean;
