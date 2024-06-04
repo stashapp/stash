@@ -5,9 +5,6 @@ import { ConfigurationContext } from "./Config";
 
 export const useImageBlur = () => {
   const { imageBlurred } = useContext(ConfigurationContext);
-
-  console.log(imageBlurred);
-
   const blurClassName = (name: string): string => {
     return cx(name, imageBlurred ? BLURRED_CLASSNAME : "");
   };
