@@ -211,22 +211,11 @@ var testUniqueHierarchyCases = []testUniqueHierarchyCase{
 
 func TestEnsureHierarchy(t *testing.T) {
 	for _, tc := range testUniqueHierarchyCases {
-		testEnsureHierarchy(t, tc, false, false)
-		testEnsureHierarchy(t, tc, true, false)
-		testEnsureHierarchy(t, tc, false, true)
-		testEnsureHierarchy(t, tc, true, true)
+		testEnsureHierarchy(t, tc)
 	}
 }
 
-func idsFromSlice(tags []*models.Tag) []int {
-	ids := make([]int, len(tags))
-	for i, tag := range tags {
-		ids[i] = tag.ID
-	}
-	return ids
-}
-
-func testEnsureHierarchy(t *testing.T, tc testUniqueHierarchyCase, queryParents, queryChildren bool) {
+func testEnsureHierarchy(t *testing.T, tc testUniqueHierarchyCase) {
 	db := mocks.NewDatabase()
 
 	var parentIDs, childIDs []int
@@ -252,16 +241,6 @@ func testEnsureHierarchy(t *testing.T, tc testUniqueHierarchyCase, queryParents,
 		}
 	}
 
-	if queryParents {
-		parentIDs = nil
-		db.Tag.On("GetChildIDs", testCtx, tc.id).Return(idsFromSlice(tc.parents), nil).Once()
-	}
-
-	if queryChildren {
-		childIDs = nil
-		db.Tag.On("GetParentIDs", testCtx, tc.id).Return(idsFromSlice(tc.children), nil).Once()
-	}
-
 	db.Tag.On("FindAllAncestors", testCtx, mock.AnythingOfType("int"), []int(nil)).Return(func(ctx context.Context, tagID int, excludeIDs []int) []*models.TagPath {
 		return tc.onFindAllAncestors
 	}, func(ctx context.Context, tagID int, excludeIDs []int) error {
@@ -280,7 +259,7 @@ func testEnsureHierarchy(t *testing.T, tc testUniqueHierarchyCase, queryParents,
 		return fmt.Errorf("undefined descendants for: %d", tagID)
 	}).Maybe()
 
-	res := ValidateHierarchy(testCtx, testUniqueHierarchyTags[tc.id], parentIDs, childIDs, db.Tag)
+	res := ValidateHierarchyExisting(testCtx, testUniqueHierarchyTags[tc.id], parentIDs, childIDs, db.Tag)
 
 	assert := assert.New(t)
 
