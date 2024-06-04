@@ -21,8 +21,8 @@ import (
 // inputs for scrapers
 
 type fingerprintInput struct {
-	Type        string      `json:"type,omitempty"`
-	Fingerprint interface{} `json:"fingerprint,omitempty"`
+	Type        string `json:"type,omitempty"`
+	Fingerprint string `json:"fingerprint,omitempty"`
 }
 
 type fileInput struct {
@@ -78,14 +78,22 @@ func fileInputFromFile(f models.BaseFile) fileInput {
 		z = &zz
 	}
 
-	return fileInput{
-		ID:           f.ID.String(),
-		ZipFile:      z,
-		ModTime:      stashJson.JSONTime{Time: f.ModTime},
-		Path:         f.Path,
-		Fingerprints: nil, // TODO
-		Size:         f.Size,
+	ret := fileInput{
+		ID:      f.ID.String(),
+		ZipFile: z,
+		ModTime: stashJson.JSONTime{Time: f.ModTime},
+		Path:    f.Path,
+		Size:    f.Size,
 	}
+
+	for _, fp := range f.Fingerprints {
+		ret.Fingerprints = append(ret.Fingerprints, fingerprintInput{
+			Type:        fp.Type,
+			Fingerprint: fp.Value(),
+		})
+	}
+
+	return ret
 }
 
 func videoFileInputFromVideoFile(vf *models.VideoFile) videoFileInput {
