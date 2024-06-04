@@ -259,7 +259,9 @@
             "successfully_cancelled_temporary_behaviour": "Lyckad avbrytning av temporärt beteende",
             "until_restart": "tills omstart",
             "video_sort_order": "Standard Scen Sorteringsordning",
-            "video_sort_order_desc": "Ordningen som scener sorteras i som standard."
+            "video_sort_order_desc": "Ordningen som scener sorteras i som standard.",
+            "server_port_desc": "Port att köra DLNA-servern från. Kräver omstart av DLNA efter ändring.",
+            "server_port": "Serverport"
         },
         "general": {
             "auth": {
@@ -782,7 +784,7 @@
             },
             "title": "Användargränssnitt",
             "use_stash_hosted_funscript": {
-                "description": "När aktiverat kommer funscripts att skickas direkt från Stash till din Handy-enhet utan att använda tredjeparts Handy-servern. Kräver att Stash kan nås från din Handy-enhet.",
+                "description": "När aktiverat kommer funscripts att skickas direkt från Stash till din Handy-enhet utan att använda tredjeparts Handy-servern. Kräver att Stash kan nås från din Handy-enhet och att en API-nyckel är genererad om stash har lösenord aktiverat.",
                 "heading": "Skicka funscripts direkt"
             }
         },
