@@ -24,6 +24,7 @@ import { CountrySelect } from "../CountrySelect";
 import { StringListInput } from "../StringListInput";
 import { ImageSelector } from "../ImageSelector";
 import { ScrapeResult } from "./scrapeResult";
+import StashImage from "../StashImage";
 
 interface IScrapedFieldProps<T> {
   result: ScrapeResult<T>;
