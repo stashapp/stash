@@ -1,11 +1,5 @@
 import cloneDeep from "lodash-es/cloneDeep";
-import React, {
-  HTMLAttributes,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import cx from "classnames";
 import Mousetrap from "mousetrap";
 import { SortDirectionEnum } from "src/core/generated-graphql";
@@ -27,9 +21,8 @@ import { ListFilterModel } from "src/models/list-filter/filter";
 import useFocus from "src/utils/focus";
 import { ListFilterOptions } from "src/models/list-filter/filter-options";
 import { FormattedMessage, useIntl } from "react-intl";
-import { SavedFilterList } from "./SavedFilterList";
+import { SavedFilterDropdown } from "./SavedFilterList";
 import {
-  faBookmark,
   faCaretDown,
   faCaretUp,
   faCheck,
@@ -191,22 +184,6 @@ export const ListFilter: React.FC<IListFilterProps> = ({
       ));
   }
 
-  const SavedFilterDropdown = React.forwardRef<
-    HTMLDivElement,
-    HTMLAttributes<HTMLDivElement>
-  >(({ style, className }: HTMLAttributes<HTMLDivElement>, ref) => (
-    <div ref={ref} style={style} className={className}>
-      <SavedFilterList
-        filter={filter}
-        onSetFilter={(f) => {
-          onFilterUpdate(f);
-        }}
-        view={view}
-      />
-    </div>
-  ));
-  SavedFilterDropdown.displayName = "SavedFilterDropdown";
-
   function render() {
     const currentSortBy = filterOptions.sortByOptions.find(
       (o) => o.value === filter.sortBy
@@ -257,24 +234,13 @@ export const ListFilter: React.FC<IListFilterProps> = ({
         </div>
 
         <ButtonGroup className="mr-2 mb-2">
-          <Dropdown>
-            <OverlayTrigger
-              placement="top"
-              overlay={
-                <Tooltip id="filter-tooltip">
-                  <FormattedMessage id="search_filter.saved_filters" />
-                </Tooltip>
-              }
-            >
-              <Dropdown.Toggle variant="secondary">
-                <Icon icon={faBookmark} />
-              </Dropdown.Toggle>
-            </OverlayTrigger>
-            <Dropdown.Menu
-              as={SavedFilterDropdown}
-              className="saved-filter-list-menu"
-            />
-          </Dropdown>
+          <SavedFilterDropdown
+            filter={filter}
+            onSetFilter={(f) => {
+              onFilterUpdate(f);
+            }}
+            view={view}
+          />
           <OverlayTrigger
             placement="top"
             overlay={
