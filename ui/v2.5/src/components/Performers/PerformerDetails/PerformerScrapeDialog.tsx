@@ -8,6 +8,7 @@ import {
   ScrapeDialogRow,
   ScrapedTextAreaRow,
   ScrapedCountryRow,
+  ScrapedStringListRow,
 } from "src/components/Shared/ScrapeDialog/ScrapeDialog";
 import { Form } from "react-bootstrap";
 import {
@@ -29,6 +30,7 @@ import { ScrapedTagsRow } from "src/components/Shared/ScrapeDialog/ScrapedObject
 import { sortStoredIdObjects } from "src/utils/data";
 import { Tag } from "src/components/Tags/TagSelect";
 import { useCreateScrapedTag } from "src/components/Shared/ScrapeDialog/createObjects";
+import { uniq } from "lodash-es";
 
 function renderScrapedGender(
   result: ScrapeResult<string>,
@@ -273,8 +275,13 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
   const [piercings, setPiercings] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(props.performer.piercings, props.scraped.piercings)
   );
-  const [url, setURL] = useState<ScrapeResult<string>>(
-    new ScrapeResult<string>(props.performer.url, props.scraped.url)
+  const [urls, setURLs] = useState<ScrapeResult<string[]>>(
+    new ScrapeResult<string[]>(
+      props.performer.urls,
+      props.scraped.urls
+        ? uniq((props.performer.urls ?? []).concat(props.scraped.urls ?? []))
+        : undefined
+    )
   );
   const [twitter, setTwitter] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(props.performer.twitter, props.scraped.twitter)
@@ -357,7 +364,7 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
     careerLength,
     tattoos,
     piercings,
-    url,
+    urls,
     twitter,
     instagram,
     gender,
@@ -391,7 +398,7 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
       career_length: careerLength.getNewValue(),
       tattoos: tattoos.getNewValue(),
       piercings: piercings.getNewValue(),
-      url: url.getNewValue(),
+      urls: urls.getNewValue(),
       twitter: twitter.getNewValue(),
       instagram: instagram.getNewValue(),
       gender: gender.getNewValue(),
@@ -505,10 +512,10 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
           result={piercings}
           onChange={(value) => setPiercings(value)}
         />
-        <ScrapedInputGroupRow
-          title={intl.formatMessage({ id: "url" })}
-          result={url}
-          onChange={(value) => setURL(value)}
+        <ScrapedStringListRow
+          title={intl.formatMessage({ id: "urls" })}
+          result={urls}
+          onChange={(value) => setURLs(value)}
         />
         <ScrapedInputGroupRow
           title={intl.formatMessage({ id: "twitter" })}
