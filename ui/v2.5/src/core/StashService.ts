@@ -1951,15 +1951,6 @@ export const useSaveFilter = () =>
     },
   });
 
-export const useSetDefaultFilter = () =>
-  GQL.useSetDefaultFilterMutation({
-    update(cache, result) {
-      if (!result.data?.setDefaultFilter) return;
-
-      evictQueries(cache, [GQL.FindDefaultFilterDocument]);
-    },
-  });
-
 export const useSavedFilterDestroy = () =>
   GQL.useDestroySavedFilterMutation({
     update(cache, result, { variables }) {
@@ -1967,8 +1958,6 @@ export const useSavedFilterDestroy = () =>
 
       const obj = { __typename: "SavedFilter", id: variables.input.id };
       deleteObject(cache, obj, GQL.FindSavedFilterDocument);
-
-      evictQueries(cache, [GQL.FindDefaultFilterDocument]);
     },
   });
 

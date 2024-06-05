@@ -17,9 +17,7 @@ import {
   Criterion,
   CriterionValue,
 } from "src/models/list-filter/criteria/criterion";
-import {
-  ListFilterModel,
-} from "src/models/list-filter/filter";
+import { ListFilterModel } from "src/models/list-filter/filter";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { useHistory, useLocation } from "react-router-dom";
 import { ConfigurationContext } from "src/hooks/Config";
@@ -34,6 +32,7 @@ import { LoadingIndicator } from "../Shared/LoadingIndicator";
 import { DisplayMode } from "src/models/list-filter/types";
 import { ButtonToolbar } from "react-bootstrap";
 import { View } from "./views";
+import { useDefaultFilter } from "./util";
 
 interface IDataItem {
   id: string;
@@ -548,7 +547,7 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
       (newFilter: ListFilterModel) => {
         if (!alterQuery) return;
 
-        const newParams = newFilter.makeQueryParameters(false);
+        const newParams = newFilter.makeQueryParameters();
         history.replace({ ...history.location, search: newParams });
       },
       [alterQuery, history]
@@ -567,17 +566,11 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
       // Only run once
       if (filterInitialised) return;
 
-      let newFilter = new ListFilterModel(
-        filterMode,
-        config,
-        defaultSort,
-        defaultDisplayMode,
-        defaultZoomIndex
-      );
+      let newFilter = new ListFilterModel(filterMode, config, defaultZoomIndex);
       let loadDefault = true;
       if (alterQuery && location.search) {
         loadDefault = false;
-        newFilter.configureFromQueryString(location.search, defaultFilter);
+        newFilter.configureFromQueryString(location.search);
       }
 
       if (view) {

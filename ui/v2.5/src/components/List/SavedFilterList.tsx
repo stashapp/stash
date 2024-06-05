@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useState } from "react";
 import {
   Button,
   ButtonGroup,
@@ -23,22 +23,17 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { Icon } from "../Shared/Icon";
 import { LoadingIndicator } from "../Shared/LoadingIndicator";
 import { faSave, faTimes } from "@fortawesome/free-solid-svg-icons";
-import { DefaultFilters, IUIConfig } from "src/core/config";
-import { ConfigurationContext } from "src/hooks/Config";
-import { IHierarchicalLabelValue } from "src/models/list-filter/types";
 
 interface ISavedFilterListProps {
   filter: ListFilterModel;
   onSetFilter: (f: ListFilterModel) => void;
   view?: View;
-  filterHook?: (filter: ListFilterModel) => ListFilterModel;
 }
 
 export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
   filter,
   onSetFilter,
   view,
-  filterHook,
 }) => {
   const Toast = useToast();
   const intl = useIntl();
@@ -56,8 +51,6 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
 
   const [saveFilter] = useSaveFilter();
   const [destroyFilter] = useSavedFilterDestroy();
-  const { configuration } = useContext(ConfigurationContext);
-  const ui = (configuration?.ui ?? {}) as IUIConfig;
   const [saveUI] = useConfigureUI();
 
   const savedFilters = data?.findSavedFilters ?? [];
