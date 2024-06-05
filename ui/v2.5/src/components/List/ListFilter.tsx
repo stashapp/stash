@@ -27,7 +27,6 @@ import { ListFilterModel } from "src/models/list-filter/filter";
 import useFocus from "src/utils/focus";
 import { ListFilterOptions } from "src/models/list-filter/filter-options";
 import { FormattedMessage, useIntl } from "react-intl";
-import { PersistanceLevel } from "./ItemList";
 import { SavedFilterList } from "./SavedFilterList";
 import {
   faBookmark,
@@ -39,12 +38,13 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { FilterButton } from "./Filters/FilterButton";
 import { useDebounce } from "src/hooks/debounce";
+import { View } from "./views";
 
 interface IListFilterProps {
   onFilterUpdate: (newFilter: ListFilterModel) => void;
   filter: ListFilterModel;
   filterOptions: ListFilterOptions;
-  persistState?: PersistanceLevel;
+  view?: View;
   openFilterDialog: () => void;
 }
 
@@ -55,7 +55,7 @@ export const ListFilter: React.FC<IListFilterProps> = ({
   filter,
   filterOptions,
   openFilterDialog,
-  persistState,
+  view,
 }) => {
   const [customPageSizeShowing, setCustomPageSizeShowing] = useState(false);
   const [queryRef, setQueryFocus] = useFocus();
@@ -201,7 +201,7 @@ export const ListFilter: React.FC<IListFilterProps> = ({
         onSetFilter={(f) => {
           onFilterUpdate(f);
         }}
-        persistState={persistState}
+        view={view}
       />
     </div>
   ));

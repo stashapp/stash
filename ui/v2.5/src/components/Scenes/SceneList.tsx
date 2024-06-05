@@ -5,11 +5,7 @@ import { useHistory } from "react-router-dom";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
 import { queryFindScenes, useFindScenes } from "src/core/StashService";
-import {
-  makeItemList,
-  PersistanceLevel,
-  showWhenSelected,
-} from "../List/ItemList";
+import { makeItemList, showWhenSelected } from "../List/ItemList";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 import { Tagger } from "../Tagger/scenes/SceneTagger";
@@ -28,6 +24,7 @@ import { faPlay } from "@fortawesome/free-solid-svg-icons";
 import { SceneMergeModal } from "./SceneMergeDialog";
 import { objectTitle } from "src/core/files";
 import TextUtils from "src/utils/text";
+import { View } from "../List/views";
 
 const SceneItemList = makeItemList({
   filterMode: GQL.FilterMode.Scenes,
@@ -78,14 +75,14 @@ const SceneItemList = makeItemList({
 interface ISceneList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
   defaultSort?: string;
-  persistState?: PersistanceLevel;
+  view?: View;
   alterQuery?: boolean;
 }
 
 export const SceneList: React.FC<ISceneList> = ({
   filterHook,
   defaultSort,
-  persistState,
+  view,
   alterQuery,
 }) => {
   const intl = useIntl();
@@ -357,7 +354,7 @@ export const SceneList: React.FC<ISceneList> = ({
         zoomable
         selectable
         filterHook={filterHook}
-        persistState={persistState}
+        view={view}
         alterQuery={alterQuery}
         otherOperations={otherOperations}
         addKeybinds={addKeybinds}

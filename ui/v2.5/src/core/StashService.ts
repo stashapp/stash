@@ -452,11 +452,6 @@ export const useFindSavedFilters = (mode?: GQL.FilterMode) =>
     variables: { mode },
   });
 
-export const useFindDefaultFilter = (mode: GQL.FilterMode) =>
-  GQL.useFindDefaultFilterQuery({
-    variables: { mode },
-  });
-
 /// Object Mutations
 
 // Increases/decreases the given field of the Stats query by diff

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import {
   Button,
   ButtonGroup,
@@ -10,30 +10,35 @@ import {
   Tooltip,
 } from "react-bootstrap";
 import {
+  useConfigureUI,
   useFindSavedFilters,
   useSavedFilterDestroy,
   useSaveFilter,
-  useSetDefaultFilter,
 } from "src/core/StashService";
 import { useToast } from "src/hooks/Toast";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { SavedFilterDataFragment } from "src/core/generated-graphql";
-import { PersistanceLevel } from "./ItemList";
+import { View } from "./views";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Icon } from "../Shared/Icon";
 import { LoadingIndicator } from "../Shared/LoadingIndicator";
 import { faSave, faTimes } from "@fortawesome/free-solid-svg-icons";
+import { DefaultFilters, IUIConfig } from "src/core/config";
+import { ConfigurationContext } from "src/hooks/Config";
+import { IHierarchicalLabelValue } from "src/models/list-filter/types";
 
 interface ISavedFilterListProps {
   filter: ListFilterModel;
   onSetFilter: (f: ListFilterModel) => void;
-  persistState?: PersistanceLevel;
+  view?: View;
+  filterHook?: (filter: ListFilterModel) => ListFilterModel;
 }
 
 export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
   filter,
   onSetFilter,
-  persistState,
+  view,
+  filterHook,
 }) => {
   const Toast = useToast();
   const intl = useIntl();
@@ -51,7 +56,9 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
 
   const [saveFilter] = useSaveFilter();
   const [destroyFilter] = useSavedFilterDestroy();
-  const [setDefaultFilter] = useSetDefaultFilter();
+  const { configuration } = useContext(ConfigurationContext);
+  const ui = (configuration?.ui ?? {}) as IUIConfig;
+  const [saveUI] = useConfigureUI();
 
   const savedFilters = data?.findSavedFilters ?? [];
 
@@ -127,18 +134,26 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
   }
 
   async function onSetDefaultFilter() {
+    if (!view) {
+      return;
+    }
+
     const filterCopy = filter.clone();
 
     try {
       setSaving(true);
 
-      await setDefaultFilter({
+      await saveUI({
         variables: {
-          input: {
-            mode: filter.mode,
-            find_filter: filterCopy.makeFindFilter(),
-            object_filter: filterCopy.makeSavedFilter(),
-            ui_options: filterCopy.makeSavedUIOptions(),
+          partial: {
+            defaultFilters: {
+              [view.toString()]: {
+                mode: filter.mode,
+                find_filter: filterCopy.makeFindFilter(),
+                object_filter: filterCopy.makeSavedFilter(),
+                ui_options: filterCopy.makeSavedUIOptions(),
+              },
+            },
           },
         },
       });
@@ -302,7 +317,7 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
   }
 
   function maybeRenderSetDefaultButton() {
-    if (persistState === PersistanceLevel.ALL) {
+    if (view) {
       return (
         <div className="mt-1">
           <Button
