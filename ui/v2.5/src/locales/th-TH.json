@@ -179,9 +179,9 @@
         "results": {
             "duration_off": "ระยะเวลาปิดอย่างน้อย {number}s",
             "duration_unknown": "ระยะเวลาไม่ทราบ",
-            "fp_found": "{fpCount, plural, =0 {ไม่พบลายนิ้วมือใหม่ที่ตรงกัน} other {# พบลายนิ้วมือใหม่ที่ตรงกัน}}",
+            "fp_found": "{fpCount, plural, =0 {ไม่พบข้อมูลอัตลักษณ์ที่ตรงกัน} other {# พบข้อมูลอัตลักษณ์ที่ตรงกัน}}",
             "fp_matches": "ระยะเวลาตรงกัน",
-            "fp_matches_multi": "ระยะเวลาตรงกัน {matchCount}/{durationsLength} fingerprint(s)",
+            "fp_matches_multi": "ระยะเวลาตรงกัน {matchCount}/{durationsLength} ชุดข้อมูล",
             "hash_matches": "{hash_type} ตรงกัน",
             "match_failed_already_tagged": "ฉากถูกแท็กแล้ว",
             "match_failed_no_result": "ไม่พบผลลัพธ์",
@@ -189,7 +189,7 @@
             "phash_matches": "{count} PHashes ตรงกัน",
             "unnamed": "ไม่มีชื่อ"
         },
-        "verb_match_fp": "ลายนิ้วมือตรงกัน",
+        "verb_match_fp": "ข้อมูลอัตลักษณ์ตรงกัน",
         "verb_matched": "ตรงกัน",
         "verb_scrape_all": "สแครปทั้งหมด",
         "verb_submit_fp": "ยืนยัน {fpCount, plural, one{# Fingerprint} other{# Fingerprints}}",
@@ -475,22 +475,22 @@
                 "heading": "ค้นหาและระบุข้อมูล",
                 "set_cover_images": "ตั้งค่าภาพปก",
                 "set_organized": "ตั้งค่าเป็น organized",
-                "skip_single_name_performers_tooltip": "เมื่อไม่เปิดใช้งานตัวเลือกนี้ นักแสดงที่มีชื่อทั่วไปเช่น Samantha หรือ Olga จะถูกเลือกเป็นผลลัพธ์",
+                "skip_single_name_performers_tooltip": "เมื่อปิดใช้งานตัวเลือกนี้ นักแสดงที่มีชื่อทั่วไปเช่น Samantha หรือ Olga จะถูกเลือกเป็นผลลัพธ์",
                 "sources": "แหล่งข้อมูล",
                 "identifying_from_paths": "ระบุ scene จากตำแหน่งต่อไปนี้",
-                "skip_multiple_matches_tooltip": "เมื่อไม่เปิดใช้งานตัวเลือกนี้ ผลการจับคู่จะเป็นแบบสุ่มหากมีผลลัพธ์มากกว่าหนึ่ง",
+                "skip_multiple_matches_tooltip": "เมื่อปิดใช้งานตัวเลือกนี้ ผลการเปรียบเทียบข้อมูลจะเป็นแบบสุ่มหากมีผลลัพธ์มากกว่าหนึ่ง",
                 "tag_skipped_matches_tooltip": "สร้างแท็กพิเศษ (เช่น 'Identify: Multiple Matches') เพื่อง่ายในการค้นหาและตั้งแท็กที่เหมาะสมด้วยตนเอง",
                 "description": "ตั้งค่า scene metadata อัตโนมัติโดยใช้แหล่งข้อมูลจาก stash-box และ scraper",
                 "and_create_missing": "และสร้างเนื้อหาที่ไม่มี",
                 "create_missing": "สร้างขึ้นใหม่หากไม่มี",
                 "identifying_scenes": "กำลังระบุ {num} {scene}",
                 "include_male_performers": "ระบุนักแสดงชายด้วย",
-                "skip_multiple_matches": "ข้ามการจับคู่ข้อมูลหากมีผลลัพธ์มากกว่าหนึ่ง",
+                "skip_multiple_matches": "ข้ามการเปรียบเทียบข้อมูลหากมีผลลัพธ์มากกว่าหนึ่ง",
                 "skip_single_name_performers": "ข้ามนักแสดงที่มีเพียงชื่อเดียวและไม่มีการระบุตัวตน",
                 "source": "แหล่งข้อมูล",
                 "source_options": "ตัวเลือก {source}",
                 "strategy": "วิธีการ",
-                "tag_skipped_matches": "แท็กการข้ามการจับคู่ด้วยแท็ก",
+                "tag_skipped_matches": "แท็กไฟล์ที่ถูกข้ามการเปรียบเทียบข้อมูลด้วยแท็กพิเศษ",
                 "tag_skipped_performers": "แท็กการข้ามการจับคู่นักแสดงด้วยแท็ก",
                 "field": "Field",
                 "field_behaviour": "{strategy} {field}",
@@ -751,7 +751,8 @@
                 "filename": "ชื่อไฟล์",
                 "filename_pattern": "รูปแบบชื่อไฟล์",
                 "select_parser_recipe": "เลือกสูตรการตั้งชื่อ",
-                "whitespace_chars_desc": "อักขระที่จะใช้แทนที่อักขระ whitespace ในชื่อไฟล์"
+                "whitespace_chars_desc": "อักขระที่จะใช้แทนที่อักขระ whitespace ในชื่อไฟล์",
+                "matches_with": "เปรียบเทียบคำโดยตรง"
             },
             "scene_duplicate_checker": "เครื่องมือตรวจสอบ scene ซ้ำ",
             "scene_tools": "เครื่องมือเกี่ยวกับ scene"
@@ -774,11 +775,51 @@
     "setup": {
         "paths": {
             "where_can_stash_store_its_database_description": "Stash ใช้ระบบฐานข้อมูล SQLite เพื่อจัดเก็บข้อมูล metadata ของกรุหนังของคุณ หากไม่ได้ระบุเป็นอย่างอื่น ไฟล์ <code>stash-go.sqlite</code> จะถูกสร้างขึ้นในไดเร็กทอรีเดียวกันกับไฟล์ config หากต้องการระบุค่าเอง ให้ระบุตำแหน่งและชื่อไฟล์ที่ต้องการอย่าง absolute หรือ relative (อ้างอิงกับไดเร็กทอรีปัจจุบัน)",
-            "stash_alert": "ไม่ได้ตั้งค่าตำแหน่งไลบรารีไว้ จะไม่มีการเพิ่มเนื้อหาใดๆ เข้าสู่ Stash คุณแน่ใจหรือไม่?"
+            "stash_alert": "ไม่ได้ตั้งค่าตำแหน่งไลบรารีไว้ จะไม่มีการเพิ่มเนื้อหาใดๆ เข้าสู่ Stash คุณแน่ใจหรือไม่?",
+            "database_filename_empty_for_default": "ชื่อฐานข้อมูล (เว้นว่างไว้เพื่อใช้ค่าปริยาย)",
+            "path_to_cache_directory_empty_for_default": "ไดเร็กทอรีสำหรับไฟล์แคช (เว้นว่างไว้เพื่อใช้ค่าปริยาย)",
+            "description": "ถัดไปเป็นการตั้งค่าตำแหน่งที่ต้องการเก็บไฟล์หนังของคุณ และตำแหน่งสำหรับบันทึกฐานข้อมูล ไฟล์ที่ถูกสร้าง และไฟล์แคช โดยคุณสามารถเปลี่ยนแปลงค่าเหล่านี้ได้ภายหลัง",
+            "set_up_your_paths": "ระบุตำแหน่งไฟล์",
+            "path_to_generated_directory_empty_for_default": "ไดเร็กทอรีสำหรับไฟล์ที่ถูกสร้างขึ้น (เว้นว่างไว้เพื่อใช้ค่าปริยาย)",
+            "path_to_blobs_directory_empty_for_default": "ไดเร็กทอรีสำหรับไฟล์ blob (เว้นว่างไว้เพื่อใช้ค่าปริยาย)"
         },
         "confirm": {
-            "stash_library_directories": "ไดเร็กทอรีสำหรับไลบรารี Stash"
-        }
+            "stash_library_directories": "ไดเร็กทอรีสำหรับไลบรารี Stash",
+            "almost_ready": "การตั้งค่าใกล้สำเร็จ กรุณายืนยันค่าต่อไปนี้ คุณสามารถคลิกย้อนกลับเพื่อกลับไปเปลี่ยนแปลงค่าได้ หากข้อมูลทุกอย่างถูกต้องคลิดยืนยันเพื่อเริ่มสร้างระบบ",
+            "blobs_use_database": "<using database>",
+            "nearly_there": "เกือบเสร็จแล้ว!",
+            "cache_directory": "ไดเร็กทอรีสำหรับแคช",
+            "blobs_directory": "ไดเร็กทอรีสำหรับข้อมูล binary",
+            "configuration_file_location": "ตำแหน่งไฟล์บันทึกการตั้งค่า:",
+            "database_file_path": "ตำแหน่งไฟล์ฐานข้อมูล",
+            "generated_directory": "ไดเร็กทอรีสำหรับไฟล์ที่ถูกสร้างขึ้น"
+        },
+        "migrate": {
+            "migration_irreversible_warning": "การย้ายฐานข้อมูลแบบ schema เป็นการย้ายแบบถาวร เมื่อย้ายสำเร็จฐานข้อมูลนี้จะไม่สามารถใช้งานกับ stash รุ่นก่อนหน้าได้",
+            "migration_notes": "Migration Notes",
+            "migration_required": "จำเป็นต้องย้ายฐานข้อมูล",
+            "migration_failed_error": "พบเจอปัญหาต่อไปนี้ระหว่างการย้ายฐานข้อมูล:",
+            "schema_too_old": "ฐานข้อมูลปัจจุบันของคุณเป็นรุ่น <strong>{databaseSchema}</strong> ซึ่งจำเป็นต้องทำการย้ายขึ้นไปเป็นรุ่น <strong>{appSchema}</strong> คุณไม่สามารถใช้งาน Stash รุ่นนี้ได้โดยไม่ทำการย้ายฐานข้อมูล หากไม่ต้องการคุณสามารถดาวน์เกรดกลับไปใช้รุ่นก่อนหน้าที่เข้ากันได้กับฐานข้อมูลของคุณ",
+            "backup_recommended": "การสำรองไฟล์ฐานข้อมูลก่อนทำการย้ายฐานข้อมูลเป็นแนวทางปฏิบัติที่ดิ เราช่วยทำให้คุณได้โดยจะบันทึกไฟล์สำรองไว้ที่ <code>{defaultBackupPath}</code>",
+            "backup_database_path_leave_empty_to_disable_backup": "ตำแหน่งสำหรับสำรองไฟล์ฐานข้อมูล (เว้นว่างไว้หากไม่ต้องการสำรองข้อมูล):",
+            "migrating_database": "กำลังย้ายฐานข้อมูล",
+            "migration_failed": "การย้ายฐานข้อมูลไม่สำเร็จ",
+            "migration_failed_help": "กรุณาแก้ไขก่อนลองอีกครั้ง หากไม่สำเร็จคุณสามารถรายงานบั๊กได้ที่ {githubLink} หรือขอความช่วยเหลือได้ที่ {discordLink}",
+            "perform_schema_migration": "เริ่มการย้ายฐานข้อมูลแบบ schema"
+        },
+        "creating": {
+            "creating_your_system": "กำลังสร้างระบบ"
+        },
+        "errors": {
+            "something_went_wrong": "ไม่นะ! เกิดข้อผิดพลาดบางอย่าง!",
+            "something_went_wrong_description": "หากปัญหาเกิดขึ้นจากการตั้งค่าไม่ถูกต้อง คลิกย้อนกลับเพื่อกลับไปแก้ไขให้ถูกต้อง หากเป็นกรณีอื่นคุณสามารถรายงานบั๊กได้ที่ {githubLink} หรือขอความช่วยเหลือได้ที่ {discordLink}",
+            "something_went_wrong_while_setting_up_your_system": "เกิดข้อผิดพลาดระหว่างสร้างระบบ ข้อมูลความผิดพลาดคือ: {error}"
+        },
+        "folder": {
+            "up_dir": "ย้อนไดเร็กทอรีขึ้นไปหนึ่งระดับ",
+            "file_path": "ตำแหน่งไฟล์"
+        },
+        "github_repository": "Github repository"
     },
     "chapters": "ฉาก",
     "studio_and_parent": "สตูดิโอและบริษัทแม่",
@@ -787,7 +828,37 @@
     "performer_tagger": {
         "updating_untagged_performers_description": "อัปเดตนักแสดงที่ยังไม่มีข้อมูลโดยการค้นหานักแสดงที่ไม่มี stashid และทำการอัพเดตข้อมูล metadata",
         "untagged_performers": "นักแสดงที่ยังไม่มีข้อมูล",
-        "add_new_performers": "เพิ่มนักแสดง"
+        "add_new_performers": "เพิ่มนักแสดง",
+        "performer_selection": "การเลือกนักแสดง",
+        "performer_successfully_tagged": "เพิ่มข้อมูลนักแสดงสำเร็จ:",
+        "tag_status": "สถานะการเพิ่มข้อมูล",
+        "refresh_tagged_performers": "รีเฟรชนักแสดงที่มีข้อมูลแล้ว",
+        "batch_add_performers": "เพิ่มนักแสดงพร้อมกันหลายคน",
+        "config": {
+            "active_stash-box_instance": "แหล่งข้อมูล stash-box ที่เลือกใช้:",
+            "excluded_fields": "ข้อมูลที่ไม่ต้องการใช้งาน:",
+            "no_fields_are_excluded": "ไม่มีข้อมูลที่ไม่ต้องการใช้งาน",
+            "these_fields_will_not_be_changed_when_updating_performers": "ข้อมูลประเภทที่เลือกไว้จะไม่ถูกเปลี่ยนแปลงหรืออัปเดต",
+            "no_instances_found": "ไม่พบแหล่งข้อมูล",
+            "edit_excluded_fields": "แก้ไขประเภทข้อมูลที่ไม่ต้องการใช้งาน"
+        },
+        "batch_update_performers": "อัปเดตข้อมูลนักแสดงพร้อมกันหลายคน",
+        "network_error": "พบปัญหาเน็ตเวิร์ค",
+        "any_names_entered_will_be_queried": "รายชื่อนักแสดงจะถูกเรียกหาข้อมูลจาก stash-box ที่เลือกไว้ โดยจะเลือกเฉพาะข้อมูลที่ตรงกันเท่านั้น",
+        "failed_to_save_performer": "ไม่สามารถบันทึกข้อมูลนักแสดง \"{performer}\" ได้",
+        "no_results_found": "ไม่เจอผลลัพธ์",
+        "update_performer": "เครื่องมืออัปเดตข้อมูลนักแสดง",
+        "to_use_the_performer_tagger": "ต้องทำการตั้งค่า stash-box ก่อนถึงจะใช้งานเครื่องมือเพิ่มข้อมูลนักแสดงได้",
+        "performer_names_separated_by_comma": "ชื่อนักแสดงแต่ละคน คั่นด้วยเครื่องหมายคอมมา (,)",
+        "refreshing_will_update_the_data": "การรีเฟรชจะอัปเดตนักแสดงที่มีข้อมูลแล้วด้วยข้อมูลจาก stash-box ที่เลือก",
+        "name_already_exists": "พบนักแสดงที่ใช้ชื่อนี้แล้ว",
+        "number_of_performers_will_be_processed": "จะอัปเดตนักแสดงจำนวน {performer_count} คน",
+        "status_tagging_performers": "สถานะ: กำลังเพิ่มข้อมูลนักแสดง",
+        "update_performers": "เครื่องมืออัปเดตข้อมูลนักแสดง",
+        "status_tagging_job_queued": "สถานะ: งานเพิ่มข้อมูลถูกเพิ่มเข้าคิว",
+        "current_page": "หน้าปัจจุบัน",
+        "performer_already_tagged": "นักแสดงที่มีข้อมูลแล้ว",
+        "query_all_performers_in_the_database": "นักแสดงทั้งหมดในฐานข้อมูล"
     },
     "library": "ไลบราลี",
     "audio_codec": "โคเด็คเสียง",
@@ -888,7 +959,7 @@
             "source": "ต้นทาง"
         },
         "delete_alert": "ไฟล์{count, plural, one {{singularEntity}} other {{pluralEntity}}}ต่อไปนี้จะถูกลบอย่างถาวร:",
-        "delete_entity_desc": "{count, plural, one {คุณแน่ใจว่าต้องการลบ{singularEntity}ใช่หรือไม่?  หากไม่เลือกให้ลบไฟล์ทิ้งด้วย {singularEntity}เหล่านี้จะถูกเพิ่มกลับเข้ามาใหม่เมื่อทำการสแกนอีกครั้ง} other {คุณแน่ใจว่าต้องการลบ{pluralEntity}ใช่หรือไม่?  หากไม่เลือกให้ลบไฟล์ทิ้งด้วย {pluralEntity} เหล่านี้จะถูกเพิ่มกลับเข้ามาใหม่เมื่อทำการสแกนอีกครั้ง}}",
+        "delete_entity_desc": "{count, plural, one {คุณแน่ใจว่าต้องการลบ{singularEntity}ใช่หรือไม่? หากไม่เลือกให้ลบไฟล์ทิ้งด้วย {singularEntity}เหล่านี้จะถูกเพิ่มกลับเข้ามาใหม่เมื่อทำการสแกนอีกครั้ง} other {คุณแน่ใจว่าต้องการลบ{pluralEntity}ใช่หรือไม่? หากไม่เลือกให้ลบไฟล์ทิ้งด้วย {pluralEntity} เหล่านี้จะถูกเพิ่มกลับเข้ามาใหม่เมื่อทำการสแกนอีกครั้ง}}",
         "delete_confirm": "คุณแน่ใจว่าต้องการลบ{entityName}ใช่หรือไม่?",
         "delete_entity_simple_desc": "{count, plural, one {คุณแน่ใจว่าต้องการลบ{singularEntity}ใช่หรือไม่?} other {คุณแน่ใจว่าต้องการลบ{pluralEntity}ใช่หรือไม่?}}",
         "delete_entity_title": "{count, plural, one {ลบ{singularEntity}} other {ลบ{pluralEntity}}}",
@@ -934,7 +1005,7 @@
             "equal": "ระยะเวลาต้องเท่ากัน",
             "any": "เท่าไหร่ก็ได้"
         },
-        "only_select_matching_codecs": "ทำการเลือกถ้าโคเด็กของทุกไฟล์ในกลุ่มตรงกัน",
+        "only_select_matching_codecs": "ทำการเลือกถ้าโคเด็คของทุกไฟล์ในกลุ่มตรงกัน",
         "select_none": "ไม่เลือกไฟล์ใดๆ",
         "select_all_but_largest_resolution": "เลือกทุกไฟล์ยกเว้นไฟล์ที่มีความละเอียดสูงสุด",
         "options": {
@@ -1167,5 +1238,44 @@
     "penis": "องคชาต",
     "penis_length": "ความยาวองคชาต",
     "performer_count": "จำนวนนักแสดง",
-    "donate": "บริจาค"
+    "donate": "บริจาค",
+    "search_filter": {
+        "update_filter": "อัปเดตฟิลเตอร์",
+        "name": "ฟิลเตอร์ค้นหา",
+        "saved_filters": "ฟิลเตอร์ที่บันทึกไว้",
+        "edit_filter": "แก้ไขฟิลเตอร์ค้นหา"
+    },
+    "seconds": "วินาที",
+    "piercings": "การเจาะ",
+    "play_count": "จำนวนครั้งที่เล่น",
+    "play_duration": "รายะเวลาที่เล่น",
+    "play_history": "ประวัติการเล่น",
+    "scene_created_at": "เวลาที่ถูกสร้าง",
+    "resume_time": "เวลาที่จะเริ่มเล่น",
+    "rating": "คะแนน",
+    "recently_added_objects": "{objects} ที่เพิ่งถูกเพิ่ม",
+    "random": "สุ่ม",
+    "scene": "ซีน",
+    "scenes": "ซีน",
+    "second": "วินาที",
+    "settings": "การตั้งค่า",
+    "recently_released_objects": "{objects} ที่เพิ่งวางขาย",
+    "release_notes": "Release Notes",
+    "sceneTagger": "เครื่องมือเพิ่มข้อมูลซีน",
+    "scene_tags": "แท็กของซีน",
+    "performer_favorite": "ชอบใจ",
+    "performer_tags": "แท็กของนักแสดง",
+    "performers": "นักแสดง",
+    "photographer": "ช่างภาพ",
+    "playdate_recorded_no": "ไม่พบบันทึกการเล่น",
+    "plays": "เล่นแล้ว {value} ครั้ง",
+    "primary_file": "ไฟล์หลัก",
+    "primary_tag": "แท็กหลัก",
+    "queue": "คิว",
+    "resolution": "ความละเอียด",
+    "scene_code": "รหัสไฟล์",
+    "scene_count": "จำนวนซีน",
+    "scene_id": "ซีนไอดี",
+    "scene_updated_at": "วันที่อัปเดตซีน",
+    "scenes_updated_at": "วันที่อัปเดตซีน"
 }
