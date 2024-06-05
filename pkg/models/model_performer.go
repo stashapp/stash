@@ -10,9 +10,6 @@ type Performer struct {
 	Name           string          `json:"name"`
 	Disambiguation string          `json:"disambiguation"`
 	Gender         *GenderEnum     `json:"gender"`
-	URL            string          `json:"url"`
-	Twitter        string          `json:"twitter"`
-	Instagram      string          `json:"instagram"`
 	Birthdate      *Date           `json:"birthdate"`
 	Ethnicity      string          `json:"ethnicity"`
 	Country        string          `json:"country"`
@@ -37,6 +34,7 @@ type Performer struct {
 	IgnoreAutoTag bool   `json:"ignore_auto_tag"`
 
 	Aliases  RelatedStrings  `json:"aliases"`
+	URLs     RelatedStrings  `json:"urls"`
 	TagIDs   RelatedIDs      `json:"tag_ids"`
 	StashIDs RelatedStashIDs `json:"stash_ids"`
 }
@@ -55,9 +53,7 @@ type PerformerPartial struct {
 	Name           OptionalString
 	Disambiguation OptionalString
 	Gender         OptionalString
-	URL            OptionalString
-	Twitter        OptionalString
-	Instagram      OptionalString
+	URLs           *UpdateStrings
 	Birthdate      OptionalDate
 	Ethnicity      OptionalString
 	Country        OptionalString
@@ -96,6 +92,12 @@ func NewPerformerPartial() PerformerPartial {
 func (s *Performer) LoadAliases(ctx context.Context, l AliasLoader) error {
 	return s.Aliases.load(func() ([]string, error) {
 		return l.GetAliases(ctx, s.ID)
+	})
+}
+
+func (s *Performer) LoadURLs(ctx context.Context, l URLLoader) error {
+	return s.URLs.load(func() ([]string, error) {
+		return l.GetURLs(ctx, s.ID)
 	})
 }
 

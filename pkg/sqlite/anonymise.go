@@ -495,9 +495,6 @@ func (db *Anonymiser) anonymisePerformers(ctx context.Context) error {
 				table.Col(idColumn),
 				table.Col("name"),
 				table.Col("details"),
-				table.Col("url"),
-				table.Col("twitter"),
-				table.Col("instagram"),
 				table.Col("tattoos"),
 				table.Col("piercings"),
 			).Where(table.Col(idColumn).Gt(lastID)).Limit(1000)
@@ -510,9 +507,6 @@ func (db *Anonymiser) anonymisePerformers(ctx context.Context) error {
 					id        int
 					name      sql.NullString
 					details   sql.NullString
-					url       sql.NullString
-					twitter   sql.NullString
-					instagram sql.NullString
 					tattoos   sql.NullString
 					piercings sql.NullString
 				)
@@ -521,9 +515,6 @@ func (db *Anonymiser) anonymisePerformers(ctx context.Context) error {
 					&id,
 					&name,
 					&details,
-					&url,
-					&twitter,
-					&instagram,
 					&tattoos,
 					&piercings,
 				); err != nil {
@@ -533,9 +524,6 @@ func (db *Anonymiser) anonymisePerformers(ctx context.Context) error {
 				set := goqu.Record{}
 				db.obfuscateNullString(set, "name", name)
 				db.obfuscateNullString(set, "details", details)
-				db.obfuscateNullString(set, "url", url)
-				db.obfuscateNullString(set, "twitter", twitter)
-				db.obfuscateNullString(set, "instagram", instagram)
 				db.obfuscateNullString(set, "tattoos", tattoos)
 				db.obfuscateNullString(set, "piercings", piercings)
 
@@ -563,6 +551,10 @@ func (db *Anonymiser) anonymisePerformers(ctx context.Context) error {
 	}
 
 	if err := db.anonymiseAliases(ctx, goqu.T(performersAliasesTable), "performer_id"); err != nil {
+		return err
+	}
+
+	if err := db.anonymiseURLs(ctx, goqu.T(performerURLsTable), "performer_id"); err != nil {
 		return err
 	}
 

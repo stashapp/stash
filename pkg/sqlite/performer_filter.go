@@ -134,6 +134,7 @@ func (qb *performerFilterHandler) criterionHandler() criterionHandler {
 		stringCriterionHandler(filter.Piercings, tableName+".piercings"),
 		intCriterionHandler(filter.Rating100, tableName+".rating", nil),
 		stringCriterionHandler(filter.HairColor, tableName+".hair_color"),
+		qb.urlsCriterionHandler(filter.URL),
 		stringCriterionHandler(filter.URL, tableName+".url"),
 		intCriterionHandler(filter.Weight, tableName+".weight", nil),
 		criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
@@ -239,6 +240,20 @@ func (qb *performerFilterHandler) performerAgeFilterCriterionHandler(age *models
 			f.addWhere(clause, args...)
 		}
 	}
+}
+
+func (qb *performerFilterHandler) urlsCriterionHandler(url *models.StringCriterionInput) criterionHandlerFunc {
+	h := stringListCriterionHandlerBuilder{
+		// primaryTable: performerTable,
+		// primaryFK:    performerIDColumn,
+		joinTable:    performerURLsTable,
+		stringColumn: performerURLColumn,
+		addJoinTable: func(f *filterBuilder) {
+			performersURLsTableMgr.join(f, "", "performers.id")
+		},
+	}
+
+	return h.handler(url)
 }
 
 func (qb *performerFilterHandler) aliasCriterionHandler(alias *models.StringCriterionInput) criterionHandlerFunc {

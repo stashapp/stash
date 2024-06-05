@@ -23,6 +23,9 @@ const (
 	performerAliasColumn   = "alias"
 	performersTagsTable    = "performers_tags"
 
+	performerURLsTable = "performer_urls"
+	performerURLColumn = "url"
+
 	performerImageBlobColumn = "image_blob"
 )
 
@@ -31,9 +34,6 @@ type performerRow struct {
 	Name          null.String `db:"name"` // TODO: make schema non-nullable
 	Disambigation zero.String `db:"disambiguation"`
 	Gender        zero.String `db:"gender"`
-	URL           zero.String `db:"url"`
-	Twitter       zero.String `db:"twitter"`
-	Instagram     zero.String `db:"instagram"`
 	Birthdate     NullDate    `db:"birthdate"`
 	Ethnicity     zero.String `db:"ethnicity"`
 	Country       zero.String `db:"country"`
@@ -68,9 +68,6 @@ func (r *performerRow) fromPerformer(o models.Performer) {
 	if o.Gender != nil && o.Gender.IsValid() {
 		r.Gender = zero.StringFrom(o.Gender.String())
 	}
-	r.URL = zero.StringFrom(o.URL)
-	r.Twitter = zero.StringFrom(o.Twitter)
-	r.Instagram = zero.StringFrom(o.Instagram)
 	r.Birthdate = NullDateFromDatePtr(o.Birthdate)
 	r.Ethnicity = zero.StringFrom(o.Ethnicity)
 	r.Country = zero.StringFrom(o.Country)
@@ -101,9 +98,6 @@ func (r *performerRow) resolve() *models.Performer {
 		ID:             r.ID,
 		Name:           r.Name.String,
 		Disambiguation: r.Disambigation.String,
-		URL:            r.URL.String,
-		Twitter:        r.Twitter.String,
-		Instagram:      r.Instagram.String,
 		Birthdate:      r.Birthdate.DatePtr(),
 		Ethnicity:      r.Ethnicity.String,
 		Country:        r.Country.String,
@@ -148,9 +142,6 @@ func (r *performerRowRecord) fromPartial(o models.PerformerPartial) {
 	r.setString("name", o.Name)
 	r.setNullString("disambiguation", o.Disambiguation)
 	r.setNullString("gender", o.Gender)
-	r.setNullString("url", o.URL)
-	r.setNullString("twitter", o.Twitter)
-	r.setNullString("instagram", o.Instagram)
 	r.setNullDate("birthdate", o.Birthdate)
 	r.setNullString("ethnicity", o.Ethnicity)
 	r.setNullString("country", o.Country)
@@ -272,6 +263,13 @@ func (qb *PerformerStore) Create(ctx context.Context, newObject *models.Performe
 		}
 	}
 
+	if newObject.URLs.Loaded() {
+		const startPos = 0
+		if err := performersURLsTableMgr.insertJoins(ctx, id, startPos, newObject.URLs.List()); err != nil {
+			return err
+		}
+	}
+
 	if newObject.TagIDs.Loaded() {
 		if err := performersTagsTableMgr.insertJoins(ctx, id, newObject.TagIDs.List()); err != nil {
 			return err
@@ -315,6 +313,12 @@ func (qb *PerformerStore) UpdatePartial(ctx context.Context, id int, partial mod
 		}
 	}
 
+	if partial.URLs != nil {
+		if err := performersURLsTableMgr.modifyJoins(ctx, id, partial.URLs.Values, partial.URLs.Mode); err != nil {
+			return nil, err
+		}
+	}
+
 	if partial.TagIDs != nil {
 		if err := performersTagsTableMgr.modifyJoins(ctx, id, partial.TagIDs.IDs, partial.TagIDs.Mode); err != nil {
 			return nil, err
@@ -339,6 +343,12 @@ func (qb *PerformerStore) Update(ctx context.Context, updatedObject *models.Perf
 
 	if updatedObject.Aliases.Loaded() {
 		if err := performersAliasesTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.Aliases.List()); err != nil {
+			return err
+		}
+	}
+
+	if updatedObject.URLs.Loaded() {
+		if err := performersURLsTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.URLs.List()); err != nil {
 			return err
 		}
 	}
@@ -783,6 +793,10 @@ func (qb *PerformerStore) destroyImage(ctx context.Context, performerID int) err
 
 func (qb *PerformerStore) GetAliases(ctx context.Context, performerID int) ([]string, error) {
 	return performersAliasesTableMgr.get(ctx, performerID)
+}
+
+func (qb *PerformerStore) GetURLs(ctx context.Context, performerID int) ([]string, error) {
+	return performersURLsTableMgr.get(ctx, performerID)
 }
 
 func (qb *PerformerStore) GetStashIDs(ctx context.Context, performerID int) ([]models.StashID, error) {

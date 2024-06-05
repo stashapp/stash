@@ -24,6 +24,79 @@ func (r *performerResolver) AliasList(ctx context.Context, obj *models.Performer
 	return obj.Aliases.List(), nil
 }
 
+func (r *performerResolver) URL(ctx context.Context, obj *models.Performer) (*string, error) {
+	if !obj.URLs.Loaded() {
+		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+			return obj.LoadURLs(ctx, r.repository.Performer)
+		}); err != nil {
+			return nil, err
+		}
+	}
+
+	urls := obj.URLs.List()
+	if len(urls) == 0 {
+		return nil, nil
+	}
+
+	return &urls[0], nil
+}
+
+func (r *performerResolver) Twitter(ctx context.Context, obj *models.Performer) (*string, error) {
+	if !obj.URLs.Loaded() {
+		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+			return obj.LoadURLs(ctx, r.repository.Performer)
+		}); err != nil {
+			return nil, err
+		}
+	}
+
+	urls := obj.URLs.List()
+
+	// find the first twitter url
+	for _, url := range urls {
+		if performer.IsTwitterURL(url) {
+			u := url
+			return &u, nil
+		}
+	}
+
+	return nil, nil
+}
+
+func (r *performerResolver) Instagram(ctx context.Context, obj *models.Performer) (*string, error) {
+	if !obj.URLs.Loaded() {
+		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+			return obj.LoadURLs(ctx, r.repository.Performer)
+		}); err != nil {
+			return nil, err
+		}
+	}
+
+	urls := obj.URLs.List()
+
+	// find the first instagram url
+	for _, url := range urls {
+		if performer.IsInstagramURL(url) {
+			u := url
+			return &u, nil
+		}
+	}
+
+	return nil, nil
+}
+
+func (r *performerResolver) Urls(ctx context.Context, obj *models.Performer) ([]string, error) {
+	if !obj.URLs.Loaded() {
+		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+			return obj.LoadURLs(ctx, r.repository.Performer)
+		}); err != nil {
+			return nil, err
+		}
+	}
+
+	return obj.URLs.List(), nil
+}
+
 func (r *performerResolver) Height(ctx context.Context, obj *models.Performer) (*string, error) {
 	if obj.Height != nil {
 		ret := strconv.Itoa(*obj.Height)
