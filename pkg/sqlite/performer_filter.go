@@ -244,8 +244,8 @@ func (qb *performerFilterHandler) performerAgeFilterCriterionHandler(age *models
 
 func (qb *performerFilterHandler) urlsCriterionHandler(url *models.StringCriterionInput) criterionHandlerFunc {
 	h := stringListCriterionHandlerBuilder{
-		// primaryTable: performerTable,
-		// primaryFK:    performerIDColumn,
+		primaryTable: performerTable,
+		primaryFK:    performerIDColumn,
 		joinTable:    performerURLsTable,
 		stringColumn: performerURLColumn,
 		addJoinTable: func(f *filterBuilder) {
