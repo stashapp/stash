@@ -18,6 +18,7 @@ The text field allows you to search using keywords. Keyword searching matches on
 | Tag | Name, Aliases |
 
 Keyword matching uses the following rules:
+
 * all words are required in the matching field. For example, `foo bar` matches scenes with both `foo` and `bar` in the title.
 * the `or` keyword or symbol (`|`) is used to match either fields. For example, `foo or bar` (or `foo | bar`) matches scenes with `foo` or `bar` in the title. Or sets can be combined. For example, `foo or bar or baz xyz or zyx` matches scenes with one of `foo`, `bar` and `baz`, *and* `xyz` or `zyx`.
 * the not symbol (`-`) is used to exclude terms. For example, `foo -bar` matches scenes with `foo` and excludes those with `bar`. The not symbol cannot be combined with an or operand. That is, `-foo or bar` will be interpreted to match `-foo` or `bar`. On the other hand, `foo or bar -baz` will match `foo` or `bar` and exclude `baz`.
