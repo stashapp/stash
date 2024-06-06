@@ -534,6 +534,21 @@ func (p *postProcessJavascript) Apply(ctx context.Context, value string, q mappe
 		return value
 	}
 
+	log := &javascript.Log{
+		Logger:       logger.Logger,
+		Prefix:       "",
+		ProgressChan: make(chan float64),
+	}
+
+	if err := log.AddToVM("log", vm); err != nil {
+		logger.Logger.Errorf("error adding log API: %w", err)
+	}
+
+	util := &javascript.Util{}
+	if err := util.AddToVM("util", vm); err != nil {
+		logger.Logger.Errorf("error adding util API: %w", err)
+	}
+
 	script, err := javascript.CompileScript("", "(function() { "+string(*p)+"})()")
 	if err != nil {
 		logger.Warnf("javascript failed to compile: %v", err)
