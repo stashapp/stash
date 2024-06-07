@@ -7,6 +7,7 @@ import (
 	"reflect"
 
 	"github.com/dop251/goja"
+	"github.com/stashapp/stash/pkg/logger"
 )
 
 type VM struct {
@@ -36,6 +37,17 @@ func (tfm optionalFieldNameMapper) MethodName(t reflect.Type, m reflect.Method) 
 
 func NewVM() *VM {
 	r := goja.New()
+
+	// enable console for backwards compatibility
+	c := console{
+		Log{
+			Logger: logger.Logger,
+		},
+	}
+
+	// there should not be any reason for this to fail
+	_ = c.AddToVM("console", &VM{Runtime: r})
+
 	r.SetFieldNameMapper(optionalFieldNameMapper{goja.TagFieldNameMapper("json", true)})
 	return &VM{Runtime: r}
 }
