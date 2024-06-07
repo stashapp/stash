@@ -208,34 +208,57 @@ func templateReplaceScale(input string, template string, match []int, minusoneha
 	return input[0:matchStart] + res + input[matchEnd:]
 }
 
-// Replace video filter scaling with hardware scaling for full hardware transcoding
+// Replace video filter scaling with hardware scaling for full hardware transcoding (also fixes the format)
 func (f *FFMpeg) hwCodecFilter(args VideoFilter, codec VideoCodec, fullhw bool) VideoFilter {
 	sargs := string(args)
 
 	match := scaler_re.FindStringSubmatchIndex(sargs)
 	if match == nil {
+		return f.hwApplyFullHWFilter(args, codec, fullhw)
+	}
+
+	return f.hwApplyScaleTemplate(sargs, codec, match, fullhw)
+}
+
+// Apply format switching if applicable
+func (f *FFMpeg) hwApplyFullHWFilter(args VideoFilter, codec VideoCodec, fullhw bool) VideoFilter {
+	if !fullhw || f.version.major < 5 {
 		return args
 	}
 
 	switch codec {
 	case VideoCodecN264:
-		template := "scale_cuda=$value"
-		// In 10bit inputs you might get an error like "10 bit encode not supported"
-		if fullhw && f.version.major >= 5 {
-			template += ":format=nv12"
-		}
-		args = VideoFilter(templateReplaceScale(sargs, template, match, false))
-	case VideoCodecV264,
-		VideoCodecVVP9:
-		template := "scale_vaapi=$value"
-		args = VideoFilter(templateReplaceScale(sargs, template, match, false))
-	case VideoCodecI264,
-		VideoCodecIVP9:
-		template := "scale_qsv=$value"
-		args = VideoFilter(templateReplaceScale(sargs, template, match, true))
+		args = args.Append("scale_cuda=format=nv12")
+	case VideoCodecV264, VideoCodecVVP9:
+		args = args.Append("scale_vaapi=format=nv12")
+	case VideoCodecI264, VideoCodecIVP9:
+		args = args.Append("scale_qsv=format=nv12")
 	}
 
 	return args
+}
+
+// Switch scaler
+func (f *FFMpeg) hwApplyScaleTemplate(sargs string, codec VideoCodec, match []int, fullhw bool) VideoFilter {
+	var template string
+
+	switch codec {
+	case VideoCodecN264:
+		template = "scale_cuda=$value"
+	case VideoCodecV264, VideoCodecVVP9:
+		template = "scale_vaapi=$value"
+	case VideoCodecI264, VideoCodecIVP9:
+		template = "scale_qsv=$value"
+	default:
+		return VideoFilter(sargs)
+	}
+
+	if fullhw && f.version.major >= 5 {
+		template += ":format=nv12"
+	}
+
+	isIntel := codec == VideoCodecI264 || codec == VideoCodecIVP9
+	return VideoFilter(templateReplaceScale(sargs, template, match, isIntel))
 }
 
 // Returns the max resolution for a given codec, or a default
