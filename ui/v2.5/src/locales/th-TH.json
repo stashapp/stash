@@ -1,7 +1,7 @@
 {
     "actions": {
         "add": "เพิ่ม",
-        "add_directory": "เพิ่มโฟลเดอร์",
+        "add_directory": "เพิ่มไดเร็กทอรี",
         "add_entity": "เพิ่ม{entityType}",
         "add_to_entity": "เพิ่มไปยัง{entityType}",
         "allow": "อนุญาต",
@@ -13,15 +13,15 @@
         "cancel": "ยกเลิก",
         "clean": "เก็บกวาด",
         "clear": "ล้างค่า",
-        "clear_back_image": "ล้างค่ารูปภาพเบื้องหลัง",
-        "clear_front_image": "ล้างค่ารูปภาพด้านหน้า",
-        "clear_image": "ล้างค่ารูป",
+        "clear_back_image": "ล้างค่าภาพปกหลัง",
+        "clear_front_image": "ล้างค่าภาพปกหน้า",
+        "clear_image": "ล้างค่ารูปภาพ",
         "close": "ปิด",
         "confirm": "ยืนยัน",
         "continue": "ถัดไป",
         "create": "สร้าง",
         "create_entity": "สร้าง{entityType}",
-        "create_marker": "สร้างจุดมาร์ค",
+        "create_marker": "สร้างมาร์คเกอร์",
         "created_entity": "สร้าง{entity_type}: {entity_name}",
         "customise": "ปรับแต่ง",
         "delete": "ลบ",
@@ -114,7 +114,7 @@
         "download_anonymised": "ดาวน์โหลดข้อมูลที่ปิดบังตัวตนแล้ว",
         "optimise_database": "ปรับแต่งฐานข้อมูลให้ดีขึ้น",
         "assign_stashid_to_parent_studio": "ระบุ Stash ID ให้กับสตูดิโอบริษัทแม่พร้อมกับอัปเดต metadata",
-        "create_chapters": "สร้างแชปเตอร์",
+        "create_chapters": "สร้างฉาก",
         "swap": "สลับ",
         "reassign": "ตั้งค่าใหม่",
         "reload": "รีโหลด",
@@ -122,11 +122,11 @@
         "view_history": "ประวัติการดู",
         "add_manual_date": "เพิ่มวันที่",
         "add_o": "เพิ่ม O",
-        "add_play": "เพิ่มจำนวนการเล่น",
+        "add_play": "เพิ่มจำนวนครั้งที่เล่น",
         "anonymise": "ปิดบังตัวตน",
         "choose_date": "เลือกวันที่",
         "clean_generated": "ลบไฟล์ที่ถูกสร้าง",
-        "clear_date_data": "ล้างข้อมูลวันที่",
+        "clear_date_data": "ล้างค่าข้อมูลวันที่",
         "copy_to_clipboard": "ทำสำเนา",
         "create_parent_studio": "สร้างสตูดิโอบริษัทแม่",
         "disable": "ปิดใช้งาน",
@@ -151,7 +151,7 @@
     "career_length": "ระยะเวลาในวงการ",
     "component_tagger": {
         "config": {
-            "active_instance": "instant Stash-box ที่ใช้งานอยู่:",
+            "active_instance": "Stash-box ที่ใช้งานอยู่:",
             "blacklist_desc": "รายการบัญชีดำจะไม่รวมอยู่ในการสืบค้น โปรดทราบว่าเป็นนิพจน์ทั่วไปและไม่คำนึงถึงขนาดตัวพิมพ์ อักขระบางตัวต้องหลีกหนีด้วยแบ็กสแลช: {chars_require_escape}",
             "blacklist_label": "บัญชีดำ",
             "query_mode_auto": "ออโต้",
@@ -183,9 +183,9 @@
             "fp_matches": "ระยะเวลาตรงกัน",
             "fp_matches_multi": "ระยะเวลาตรงกัน {matchCount}/{durationsLength} ชุดข้อมูล",
             "hash_matches": "{hash_type} ตรงกัน",
-            "match_failed_already_tagged": "ฉากถูกแท็กแล้ว",
+            "match_failed_already_tagged": "มีข้อมูลซีนนี้แล้ว",
             "match_failed_no_result": "ไม่พบผลลัพธ์",
-            "match_success": "ฉากนี้ถูกแท็กเรียบร้อยแล้ว",
+            "match_success": "เพิ่มข้อมูลซีนสำเร็จแล้ว",
             "phash_matches": "{count} PHashes ตรงกัน",
             "unnamed": "ไม่มีชื่อ"
         },
@@ -226,7 +226,7 @@
             "system": "ระบบ",
             "tasks": "งาน",
             "tools": "เครื่องมือ",
-            "changelog": "Changelog"
+            "changelog": "บันทึกความเปลี่ยนแปลง"
         },
         "dlna": {
             "allow_temp_ip": "อนุญาต {tempIP}",
@@ -245,8 +245,8 @@
             "server_display_name_desc": "ชื่อที่แสดงสำหรับเซิร์ฟเวอร์ DLNA ค่าเริ่มต้นเป็น {server_name} เป็นค่าว่าง",
             "successfully_cancelled_temporary_behaviour": "ยกเลิกพฤติกรรมชั่วคราวเรียบร้อยแล้ว",
             "until_restart": "จนกว่าจะรีสตาร์ท",
-            "video_sort_order_desc": "เลือกชนิดลำดับที่ต้องการเรียงลำดับวีดีโอเป็นค่าปริยาย",
-            "video_sort_order": "ค่าปริยายการเรียงลำดับวีดีโอ",
+            "video_sort_order_desc": "เลือกชนิดลำดับที่ต้องการเรียงลำดับวิดีโอเป็นค่าปริยาย",
+            "video_sort_order": "ค่าปริยายการเรียงลำดับวิดีโอ",
             "server_port": "พอร์ตเซิร์ฟเวอร์",
             "server_port_desc": "พอร์ตที่จะเรียกใช้เซิร์ฟเวอร์ DLNA ต้องรีสตาร์ท DLNA เมื่อเปลี่ยนแปลงค่า"
         },
@@ -326,7 +326,7 @@
                 "heading": "พาร์ธ Scrapers"
             },
             "scraping": "การ Scrap",
-            "sqlite_location": "ตำแหน่งไฟล์สำหรับฐานข้อมูล SQLite (ต้องรีสตาร์ท)\nคำเตือน: ไม่รองรับการจัดเก็บฐานข้อมูลในที่อื่นๆ ที่ไม่ใช่เครื่องเซิร์ฟเวอร์ Stash (เช่นในไดรฟ์เครือข่าย)",
+            "sqlite_location": "ตำแหน่งไฟล์สำหรับฐานข้อมูล SQLite (ต้องรีสตาร์ท)<br>คำเตือน: ไม่รองรับการจัดเก็บฐานข้อมูลในที่อื่นๆ ที่ไม่ใช่เครื่องเซิร์ฟเวอร์ Stash (เช่นในไดรฟ์เครือข่าย)!",
             "video_ext_desc": "รายการนามสกุลไฟล์ซึ่งจะถูกระบุว่าเป็นวิดีโอ คั่นด้วยเครื่องหมายจุลภาค",
             "video_ext_head": "นามสกุลไฟล์วิดีโอ",
             "video_head": "วิดีโอ",
@@ -345,12 +345,12 @@
                 },
                 "transcode": {
                     "input_args": {
-                        "heading": "การตั้งค่า FFmpeg เพิ่มเติม สำหรับก่อนการสร้างวีดีโอ",
-                        "desc": "ขั้นสูง: ระบุการตั้งค่า FFmpeg เพิ่มเติม สำหรับก่อนการสร้างวีดีโอ"
+                        "heading": "การตั้งค่า FFmpeg เพิ่มเติม สำหรับก่อนการสร้างวิดีโอ",
+                        "desc": "ขั้นสูง: ระบุการตั้งค่า FFmpeg เพิ่มเติม สำหรับก่อนการสร้างวิดีโอ"
                     },
                     "output_args": {
-                        "desc": "ขั้นสูง: ระบุการตั้งค่า FFmpeg เพิ่มเติม สำหรับหลังการสร้างวีดีโอ",
-                        "heading": "การตั้งค่า FFmpeg เพิ่มเติม สำหรับหลังการสร้างวีดีโอ"
+                        "desc": "ขั้นสูง: ระบุการตั้งค่า FFmpeg เพิ่มเติม สำหรับหลังการสร้างวิดีโอ",
+                        "heading": "การตั้งค่า FFmpeg เพิ่มเติม สำหรับหลังการสร้างวิดีโอ"
                     }
                 },
                 "download_ffmpeg": {
@@ -372,8 +372,8 @@
                     }
                 },
                 "hardware_acceleration": {
-                    "desc": "ใช้ฮาร์ดแวร์เข้ารหัสวีดีโอสำหรับการ live transcode",
-                    "heading": "ใช้ฮาร์ดแวร์เข้ารหัสวีดีโอสำหรับ FFmpeg"
+                    "desc": "ใช้ฮาร์ดแวร์เข้ารหัสวิดีโอสำหรับการ live transcode",
+                    "heading": "ใช้ฮาร์ดแวร์เข้ารหัสวิดีโอสำหรับ FFmpeg"
                 }
             },
             "funscript_heatmap_draw_range_desc": "ระบุค่าสูงต่ำ (ตามแกน y) ในการสร้าง heatmaps เมื่อเปลี่ยนแปลงค่านี้ต้องทำการสร้าง heatmaps ขึ้นใหม่",
@@ -448,12 +448,12 @@
             "empty_queue": "ไม่มีงานใดๆ ในคิว",
             "export_to_json": "ส่งออกฐานข้อมูลในรูปแบบ JSON ในไดเร็กทอรี metadata",
             "generate_thumbnails_during_scan": "สร้างภาพขนาดเล็กสำหรับไฟล์ภาพ",
-            "generate_previews_during_scan_tooltip": "สร้างภาพเคลื่อนไหวตัวอย่างเพิ่มเติม (webp) ต้องเปิดใช้งานเมื่อตั้งค่า Scene/Marker Wall Preview Type เป็นภาพเคลื่อนไหวเท่านั้น มีข้อดีคือใช้งาน CPU น้อยกว่าวีดีโอตัวอย่าง แต่มีข้อเสียคือต้องสร้างไฟล์เพิ่มเติมและมีขนาดใหญ่กว่า",
+            "generate_previews_during_scan_tooltip": "สร้างภาพเคลื่อนไหวตัวอย่างเพิ่มเติม (webp) ต้องเปิดใช้งานเมื่อตั้งค่า Scene/Marker Wall Preview Type เป็นภาพเคลื่อนไหวเท่านั้น มีข้อดีคือใช้งาน CPU น้อยกว่าวิดีโอตัวอย่าง แต่มีข้อเสียคือต้องสร้างไฟล์เพิ่มเติมและมีขนาดใหญ่กว่า",
             "anonymise_database": "ทำสำเนาฐานข้อมูลแบบปิดบังตัวตนและบันทึกไว้ในไดเร็กทอรีสำรองข้อมูล สามารถแจกจ่ายไฟล์ฐานข้อมูลแก้ผู้อื่นเพื่อใช้ในการแก้ไขปัญหาต่างๆ และง่ายต่อการ debug และไม่กระทบฐานข้อมูลหลัก โดยมีรูปแบบชื่อไฟล์ {filename_format}",
             "clean_generated": {
                 "markers": "ภาพตัวอย่างมาร์คเกอร์",
                 "previews_desc": "ภาพตัวอย่าง scene และภาพขนาดเล็ก",
-                "transcodes": "ไฟล์วีดีโอพร้อมใช้ของ scene",
+                "transcodes": "ไฟล์วิดีโอพร้อมใช้ของ scene",
                 "blob_files": "ไฟล์ blob",
                 "description": "ลบไฟล์ที่ถูกสร้างขึ้นที่ไม่มีอยู่ในฐานข้อมูล",
                 "previews": "ภาพตัวอย่าง scene",
@@ -465,7 +465,7 @@
                 "generating_from_paths": "กำลังสร้างไฟล์สำหรับ scene ตามตำแหน่งไฟล์ดังนี้",
                 "generating_scenes": "กำลังสร้างไฟล์สำหรับ {num} {scene}"
             },
-            "generate_desc": "กำลังสร้างภาพอื่นๆ sprite วีดีโอ vtt และไฟล์อื่นๆ",
+            "generate_desc": "กำลังสร้างภาพอื่นๆ sprite วิดีโอ vtt และไฟล์อื่นๆ",
             "generate_phashes_during_scan": "กำลังสร้าง perceptual hashes",
             "generate_previews_during_scan": "กำลังสร้างภาพเคลื่อนไหวตัวอย่าง",
             "identify": {
@@ -492,12 +492,12 @@
                 "strategy": "วิธีการ",
                 "tag_skipped_matches": "แท็กไฟล์ที่ถูกข้ามการเปรียบเทียบข้อมูลด้วยแท็กพิเศษ",
                 "tag_skipped_performers": "แท็กการข้ามการจับคู่นักแสดงด้วยแท็ก",
-                "field": "Field",
+                "field": "ประเภทข้อมูล",
                 "field_behaviour": "{strategy} {field}",
                 "tag_skipped_performer_tooltip": "สร้างแท็กพิเศษ (เช่น 'Identify: Single Name Performer') เพื่อง่ายในการค้นหาและเลือกชื่อที่เหมาะสมด้วยตนเอง"
             },
-            "generate_sprites_during_scan_tooltip": "ชุดภาพนิ่งใต้ตัวเล่นวีดีโอ ช่วยให้การกรอวีดีโอง่ายขึ้น",
-            "generate_video_previews_during_scan": "สร้างวีดีโอตัวอย่าง",
+            "generate_sprites_during_scan_tooltip": "ชุดภาพนิ่งใต้ตัวเล่นวิดีโอ ช่วยให้การกรอวิดีโอง่ายขึ้น",
+            "generate_video_previews_during_scan": "สร้างวิดีโอตัวอย่าง",
             "scan_for_content_desc": "สแกนเนื้อหาใหม่เพื่อเพิ่มเข้าสู่ฐานข้อมูล",
             "incremental_import": "นำเข้าข้อมูลบางส่วนจากไฟล์ zip ที่เลือก",
             "migrate_hash_files": "ใช้เครื่องมือนี้หลังจากเปลี่ยนค่ารูปแบบชื่อไฟล์ hash เพื่อให้ตรงกับรูปแบบใหม่",
@@ -511,7 +511,7 @@
             "set_name_date_details_from_metadata_if_present": "ตั้งค่าชื่อ วันที่ และรายละเอียดจากข้อมูล metadata ที่แนบมาด้วย",
             "generate_sprites_during_scan": "สร้าง scrubber sprites",
             "anonymising_database": "กำลังปิดบังตัวตนฐานข้อมูล",
-            "generate_video_previews_during_scan_tooltip": "สร้างวีดีโอตัวอย่างที่จะเล่นอัตโนมัติเมื่อวางเคอร์เซอร์ไว้บน scene",
+            "generate_video_previews_during_scan_tooltip": "สร้างวิดีโอตัวอย่างที่จะเล่นอัตโนมัติเมื่อวางเคอร์เซอร์ไว้บน scene",
             "anonymise_and_download": "ทำสำเนาฐานข้อมูลแบบปิดบังตัวตนและดาวน์โหลด",
             "generate_clip_previews_during_scan": "กำลังสร้างภาพตัวอย่างสำหรับคลิปภาพ",
             "generate_phashes_during_scan_tooltip": "มีประโยชน์ช่วยลดไฟล์ซ้ำซ้อนและระบุ scene",
@@ -536,8 +536,8 @@
             "images": {
                 "options": {
                     "create_image_clips_from_videos": {
-                        "description": "หากตัวเลือกวีดีโอถูกปิดใช้งานในไลบราลี ไฟล์วีดีโอจะถูกสแกนเป็นคลิปภาพแทน",
-                        "heading": "สแกนไฟล์วีดีโอเป็นคลิปภาพ"
+                        "description": "หากตัวเลือกวิดีโอถูกปิดใช้งานในไลบราลี ไฟล์วิดีโอจะถูกสแกนเป็นคลิปภาพแทน",
+                        "heading": "สแกนไฟล์วิดีโอเป็นคลิปภาพ"
                     },
                     "write_image_thumbnails": {
                         "heading": "บันทึกภาพตัวอย่าง",
@@ -717,7 +717,7 @@
                 "heading": "กล่องภาพ"
             },
             "max_loop_duration": {
-                "description": "ระยะเวลามากสุดก่อนที่ตัวเล่นวีดีโอจะวนลูป - ใส่ 0 เพื่อปิดใช้งาน",
+                "description": "ระยะเวลามากสุดก่อนที่ตัวเล่นวิดีโอจะวนลูป - ใส่ 0 เพื่อปิดใช้งาน",
                 "heading": "ระยะเวลาก่อนวนลูป"
             },
             "scene_list": {
@@ -736,6 +736,24 @@
             "show_tag_card_on_hover": {
                 "heading": "กล่องแท็ก",
                 "description": "แสดงกล่องแท็กเมื่อวางเคอร์เซอร์บนแท็ก"
+            },
+            "funscript_offset": {
+                "heading": "หน่วงเวลา Funscript",
+                "description": "หน่วงเวลาการเล่นสคริปต์อินเตอร์แอ็คทีฟ หน่วยมิลลิวินาที"
+            },
+            "handy_connection": {
+                "connect": "เชื่อมต่อ",
+                "server_offset": {
+                    "heading": "หน่วงเวลาเซิร์ฟเวอร์"
+                },
+                "status": {
+                    "heading": "สถานะการเชื่อมต่ออุปกรณ์ Handy"
+                },
+                "sync": "ซิงค์"
+            },
+            "handy_connection_key": {
+                "description": "ระบุคีย์สำหรับเชื่อมต่ออุปกรณ์ Handy และแบ่งปันข้อมูลการเล่นซีนกับเว็บไซต์ handyfeeling.com",
+                "heading": "คีย์สำหรับเชื่อมต่อ Handy"
             }
         },
         "tools": {
@@ -763,10 +781,39 @@
         "updating_untagged_studios_description": "อัพเดตสตูดิโอที่ยังไม่มีข้อมูลโดยการค้นหาสตูดิโอที่ยังไม่มี stashid และทำการอัปเดตข้อมูล metadata",
         "config": {
             "create_parent_label": "สร้างสตูดิโอบริษัทแม่",
-            "create_parent_desc": "สร้างสตูดิโอบริษัทแม่หรือแท็กที่เกี่ยวข้องหากยังไม่มี พร้อมอัปเดตข้อมูลและรูปภาพให้กับรายการที่มีอยู่แล้ว"
+            "create_parent_desc": "สร้างสตูดิโอบริษัทแม่หรือแท็กที่เกี่ยวข้องหากยังไม่มี พร้อมอัปเดตข้อมูลและรูปภาพให้กับรายการที่มีอยู่แล้ว",
+            "active_stash-box_instance": "Stash-box instance ที่ใช้งาน:",
+            "excluded_fields": "ข้อมูลที่ไม่ต้องการใช้งาน:",
+            "edit_excluded_fields": "แก้ไขประเภทข้อมูลที่ไม่ต้องการใช้งาน",
+            "no_fields_are_excluded": "ไม่มีข้อมูลที่ไม่ต้องการใช้งาน",
+            "no_instances_found": "ไม่พบแหล่งข้อมูล",
+            "these_fields_will_not_be_changed_when_updating_studios": "ข้อมูลประเภทที่เลือกไว้จะไม่ถูกเปลี่ยนแปลงหรืออัปเดต"
         },
         "create_or_tag_parent_studios": "สร้างสตูดิโอบริษัทแม่หรือแท็กที่เกียวข้องหากยังไม่มี",
-        "untagged_studios": "สตูดิโอที่ยังไม่มีข้อมูล"
+        "untagged_studios": "สตูดิโอที่ยังไม่มีข้อมูล",
+        "failed_to_save_studio": "บันทึกสตูดิโอ \"{studio}\" ไม่สำเร็จ",
+        "network_error": "พบข้อผิดพลาดทางเน็ตเวิร์ค",
+        "refresh_tagged_studios": "รีเฟรชสตูดิโอที่มีข้อมูลแล้ว",
+        "batch_add_studios": "เพิ่มสตูดิโอพร้อมกันหลายแห่ง",
+        "any_names_entered_will_be_queried": "รายชื่อสตูดิโอจะถูกเรียกหาข้อมูลจาก stash-box ที่เลือกไว้ โดยจะเลือกเฉพาะข้อมูลที่ตรงกันเท่านั้น",
+        "batch_update_studios": "อัพเดตสตูดิโอพร้อมกันหลายแห่ง",
+        "no_results_found": "ไม่พบผลลัพธ์",
+        "status_tagging_job_queued": "สถานะ: เพิ่มงานเพิ่มข้อมูลแล้ว",
+        "studio_names_separated_by_comma": "ชื่อสตูดิโอคั่นแต่ละแห่ง คั่นด้วยเครื่องหมายคอมมา (,)",
+        "to_use_the_studio_tagger": "ต้องทำการตั้งค่า stash-box ก่อนถึงจะใช้งานเครื่องมือเพิ่มข้อมูลสตูดิโอได้",
+        "status_tagging_studios": "สถานะ: กำลังเพิ่มข้อมูลสตูดิโอ",
+        "studio_already_tagged": "มีข้อมูลสตูดิโอนี้แล้ว",
+        "add_new_studios": "เพิ่มสตูดิโอ",
+        "current_page": "หน้าปัจจุบัน",
+        "name_already_exists": "พบสตูดิโอที่ใช้ชื่อนี้แล้ว",
+        "number_of_studios_will_be_processed": "จะอัปเดตสตูดิโอจำนวน {studio_count} แห่ง",
+        "query_all_studios_in_the_database": "สตูดิโอทั้งหมดในฐานข้อมูล",
+        "refreshing_will_update_the_data": "การรีเฟรชจะอัปเดตสตูดิโอที่มีข้อมูลแล้วด้วยข้อมูลจาก stash-box ที่เลือก",
+        "update_studio": "อัพเดตสตูดิโอ",
+        "studio_selection": "การเลือกสตูดิโอ",
+        "studio_successfully_tagged": "เพิ่มข้อมูลสตูดิโอสำเร็จแล้ว",
+        "tag_status": "สถานะการเพิ่มข้อมูล",
+        "update_studios": "อัพเดตสตูดิโอ"
     },
     "circumcised_types": {
         "UNCUT": "ยกเลิกการตัด",
@@ -774,14 +821,26 @@
     },
     "setup": {
         "paths": {
-            "where_can_stash_store_its_database_description": "Stash ใช้ระบบฐานข้อมูล SQLite เพื่อจัดเก็บข้อมูล metadata ของกรุหนังของคุณ หากไม่ได้ระบุเป็นอย่างอื่น ไฟล์ <code>stash-go.sqlite</code> จะถูกสร้างขึ้นในไดเร็กทอรีเดียวกันกับไฟล์ config หากต้องการระบุค่าเอง ให้ระบุตำแหน่งและชื่อไฟล์ที่ต้องการอย่าง absolute หรือ relative (อ้างอิงกับไดเร็กทอรีปัจจุบัน)",
+            "where_can_stash_store_its_database_description": "Stash ใช้ระบบฐานข้อมูล SQLite เพื่อจัดเก็บข้อมูล metadata ของกรุหนังของคุณ หากไม่ได้ระบุเป็นอย่างอื่น ไฟล์ <code>stash-go.sqlite</code> จะถูกสร้างขึ้นในไดเร็กทอรีเดียวกันกับไฟล์การตั้งค่า หากต้องการระบุค่าเองให้ระบุตำแหน่งและชื่อไฟล์ที่ต้องการแบบ absolute หรือ relative",
             "stash_alert": "ไม่ได้ตั้งค่าตำแหน่งไลบรารีไว้ จะไม่มีการเพิ่มเนื้อหาใดๆ เข้าสู่ Stash คุณแน่ใจหรือไม่?",
             "database_filename_empty_for_default": "ชื่อฐานข้อมูล (เว้นว่างไว้เพื่อใช้ค่าปริยาย)",
             "path_to_cache_directory_empty_for_default": "ไดเร็กทอรีสำหรับไฟล์แคช (เว้นว่างไว้เพื่อใช้ค่าปริยาย)",
             "description": "ถัดไปเป็นการตั้งค่าตำแหน่งที่ต้องการเก็บไฟล์หนังของคุณ และตำแหน่งสำหรับบันทึกฐานข้อมูล ไฟล์ที่ถูกสร้าง และไฟล์แคช โดยคุณสามารถเปลี่ยนแปลงค่าเหล่านี้ได้ภายหลัง",
             "set_up_your_paths": "ระบุตำแหน่งไฟล์",
             "path_to_generated_directory_empty_for_default": "ไดเร็กทอรีสำหรับไฟล์ที่ถูกสร้างขึ้น (เว้นว่างไว้เพื่อใช้ค่าปริยาย)",
-            "path_to_blobs_directory_empty_for_default": "ไดเร็กทอรีสำหรับไฟล์ blob (เว้นว่างไว้เพื่อใช้ค่าปริยาย)"
+            "path_to_blobs_directory_empty_for_default": "ไดเร็กทอรีสำหรับไฟล์ blob (เว้นว่างไว้เพื่อใช้ค่าปริยาย)",
+            "store_blobs_in_database": "จัดเก็บ blob ในฐานข้อมูล",
+            "where_can_stash_store_blobs": "คุณต้องการให้ Stash จัดเก็บฐานข้อมูลที่ไหน?",
+            "where_can_stash_store_its_database": "ต้องการให้ Stash เก็บไฟล์ฐานข้อมูลที่ไหน?",
+            "where_can_stash_store_cache_files": "คุณต้องการให้ Stash เก็บไฟล์แคชที่ไหน?",
+            "where_can_stash_store_blobs_description_addendum": "อีกทางเลือกหนึ่งคือคุณสามารถตั้งค่าให้เก็บบันทึกข้อมูลในฐานข้อมูลก็ได้เช่นกัน <strong>หมายเหตุ:</strong> ทางเลือกนี้จะทำให้ขนาดไฟล์ฐานข้อมูลใหญ่ขึ้นและใช้เวลาในการโยกย้ายนานขึ้นด้วย",
+            "where_can_stash_store_cache_files_description": "Stash ต้องการที่เก็บแคชสำหรับไฟล์ใช้งานชั่วคราวเพื่อให้ฟังก์ชันการแปลงวิดีโอสดแบบ HSL/DASH ทำงานได้ หากไม่ได้ระบุเป็นอย่างอื่น Stash จะสร้างไดเร็กทอรี <code>cache</code> ไว้ในไดเร็กทอรีเดียวกันกับไฟล์การตั้งค่า หากต้องการระบุค่าเองให้ระบุตำแหน่งไดเร็กทอรีแบบ absolute หรือ relative หากไม่มีไดเร็กทอรีนี้อยู่ Stash จะสร้างใหม่ให้",
+            "where_can_stash_store_blobs_description": "Stash สามารถบันทึกข้อมูลไบนารี เช่น หน้าปกซีน นักแสดง สตูดิโอ และภาพประกอบแท็ก ในฐานข้อมูลหรือในไฟล์ระบบก็ได้ หากไม่ได้ระบุเป็นอย่างอื่น Stash จะจัดเก็บในไฟล์ระบบที่ไดเร็กทอรีย่อย <code>blobs</code> ซึ่งอยู่ในไดเร็กทอรีเดียวกันกับไฟล์การตั้งค่า หากต้องการระบุค่าเองให้ระบุตำแหน่งไดเร็กทอรีในรูปแบบ absolute หรือ relative หากไม่มีไดเร็กทอรีนี้อยู่ Stash จะสร้างใหม่ให้",
+            "where_can_stash_store_its_generated_content": "ต้องการให้ Stash เก็บเนื้อหาที่ถูกสร้างขึ้นที่ไหน?",
+            "where_can_stash_store_its_generated_content_description": "Stash จะสร้างไฟล์รูปภาพและวิดีโอขึ้นเพื่อใช้เป็นไฟล์ตัวอย่างสำหรับเนื้อหา รวมถึงการแปลงไฟล์จากรูปแบบที่ไม่รองรับด้วย หากไม่ได้ระบุเป็นอย่างอื่น Stash จะสร้างไดเร็กทอรี <code>generated</code> ขึ้นในไดเร็กทอรีเดียวกับไฟล์การตั้งค่า หากต้องการระบุค่าเองให้ระบุตำแหน่งไดเร็กทอรีในรูปแบบ absolute หรือ relative หากไม่มีไดเร็กทอรีนี้อยู่ Stash จะสร้างใหม่ให้",
+            "where_is_your_porn_located": "ไฟล์หนังชมพูของคุณอยู่ที่ไหน?",
+            "where_can_stash_store_its_database_warning": "คำเตือน: Stash <strong>ไม่รองรับ</strong>การจัดเก็บฐานข้อมูลในที่อื่นๆ ที่ไม่ใช่เซิร์ฟเวอร์ Stash! (เช่นจัดเก็บฐานข้อมูลบน NAS แต่เซิร์ฟเวอร์อยู่ที่คอมพิวเตอร์เครื่องอื่น) ระบบฐานข้อมูล SQLite ไม่ได้ถูกออกแบบมาสำหรับการทำงานบนเน็ตเวิร์คและอาจทำให้ฐานข้อมูลพังได้",
+            "where_is_your_porn_located_description": "เพิ่มไดเร็กทอรีที่มีไฟล์หนังชมพูและรูปภาพชมพูของคุณ Stash จะสแกนและเพิ่มไฟล์เหล่านั้นเข้าสู่ฐานข้อมูล"
         },
         "confirm": {
             "stash_library_directories": "ไดเร็กทอรีสำหรับไลบรารี Stash",
@@ -819,18 +878,50 @@
             "up_dir": "ย้อนไดเร็กทอรีขึ้นไปหนึ่งระดับ",
             "file_path": "ตำแหน่งไฟล์"
         },
-        "github_repository": "Github repository"
+        "github_repository": "Github repository",
+        "success": {
+            "support_us": "สนับสนุนเรา",
+            "thanks_for_trying_stash": "ขอบคุณที่เลือกใช้ Stash!",
+            "help_links": "หากพบเจอปัญหา มีข้อสงสัย หรือข้อเสนอแนะ สามารถรายงานปัญหาได้ที่ {githubLink} หรือขอความช่วยเหลือได้ที่ {discordLink}",
+            "in_app_manual_explained": "เราแนะนำให้ศึกษาคู่มือการใช้งานภายใน Stash โดยคลิกที่ไอคอน {icon} ทางด้านขวาบนของหน้าจอ",
+            "missing_ffmpeg": "ไม่พบไฟล์ <code>ffmpeg</code> คุณสามารถดาวน์โหลดและติดตั้งในไดเร็กทอรีการตั้งค่าได้ทันทีโดยติ๊กถูกที่กล่องด้านล่างนี้ หรือคุณสามารถระบุตำแหน่งไฟล์ <code>ffmpeg</code> และ <code>ffprobe</code> ได้ด้วยตนเองในหน้าระบบ",
+            "next_config_step_one": "หน้าถัดไปเป็นหน้าการตั้งค่าต่างๆ ของระบบ เช่นปรับแต่งการค้นหาไฟล์ ตั้งรหัสล็อกอิน เป็นต้น",
+            "next_config_step_two": "หากตั้งค่าเสร็จสิ้นแล้ว คุณสามารถเริ่มสแกนเนื้อหาได้โดยไปที่หน้า <code>{localized_task}</code> แล้วคลิก <code>{localized_scan}</code>",
+            "welcome_contrib": "เรายินดีต้อนรับผู้อยากสนับสนุนเราในทุกรูปแบบเสมอ ไม่ว่าจะเป็นการโค้ด (แก้บั๊ก การปรับปรุงโค้ด หรือการเพิ่มความสามารถระบบ) ร่วมทดสอบระบบ รายงานบั๊ก เสนอข้อปรับปรุง เสนอขอความสามารถใหม่ๆ หรือการขอความช่วยเหลือก็ตาม โดยสามารถดูรายละเอียดเพิ่มเติมได้ในคู่มือภายใน Stash",
+            "your_system_has_been_created": "การติดตั้งสำเร็จ! ระบบถูกสร้างเรียบร้อยแล้ว!",
+            "download_ffmpeg": "ดาวน์โหลด FFmpeg",
+            "getting_help": "ขอความช่วยเหลือ",
+            "open_collective": "อย่าลืมแวะไปที่ {open_collective_link} เพื่อร่วมเป็นส่วนหนึ่งในการพัฒนา Stash ของเรา"
+        },
+        "welcome_specific_config": {
+            "config_path": "Stash จะใช้ตำแหน่งเก็บไฟล์การตั้งค่าดังนี้: <code>{path}</code>",
+            "unable_to_locate_specified_config": "Stash ไม่พบไฟล์การตั้งค่าที่ตำแหน่งที่ระบุไว้ ตัวช่วยการติดตั้งนี้จะช่วยดำเนินการปรับแต่งการตั้งค่าให้คุณ",
+            "next_step": "คลิกต่อไปเมื่อพร้อมดำเนินการต่อ"
+        },
+        "welcome": {
+            "in_the_current_working_directory": "ภายในไดเร็กทอรีที่ทำงานอยู่ <code>{path}</code>:",
+            "in_the_current_working_directory_disabled_macos": "ไม่สามารถทำงานได้ในขณะที่ <code>Stash.app</code> ทำงานอยู่<br></br>เรียกใช้ <code>stash-macos</code> เพื่อติดตั้งในไดเร็กทอรีที่ทำงานอยู่",
+            "in_the_current_working_directory_disabled": "ภายในไดเร็กทอรีที่ทำงานอยู่ <code>{path}</code>:",
+            "store_stash_config": "ต้องการเก็บไฟล์การตั้งค่าไว้ที่ไหน?",
+            "config_path_logic_explained": "Stash จะมองหาไฟล์การตั้งค่า (<code>config.yml</code>) จากไดเร็กทอรีที่ทำงานอยู่ก่อนเสมอ หากไม่เจอจึงจะใช้ค่า <code>{fallback_path}</code> แทน คุณสามารถตั้งให้ Stash มองหาไฟล์จากตำแหน่งที่ต้องการได้โดยการระบุ <code>-c '<path to config file>'</code> or <code>--config '<path to config file>'</code>",
+            "unable_to_locate_config": "ไม่พบไฟล์การตั้งค่าที่มีอยู่ ตัวช่วยการติดตั้งนี้จะช่วยดำเนินการปรับแต่งการตั้งค่าให้คุณ",
+            "in_current_stash_directory": "ภายในไดเร็กทอรี <code>{path}</code>:",
+            "next_step": "กรุณาระบุตำแหน่งสำหรับจัดเก็บไฟล์การตั้งค่า",
+            "unexpected_explained": "พบปัญหาบางอย่าง กรุณารีสตาร์ท Stash ในไดเร็กทอรีที่ถูกต้องด้วยธง <code>-c</code>"
+        },
+        "welcome_to_stash": "ยินดีต้อนรับสู่ Stash",
+        "stash_setup_wizard": "ตัวช่วยการติดตั้ง Stash"
     },
     "chapters": "ฉาก",
     "studio_and_parent": "สตูดิโอและบริษัทแม่",
-    "metadata": "เมตาเดตา",
+    "metadata": "Metadata",
     "parent_studio": "สตูดิโอบริษัทแม่",
     "performer_tagger": {
         "updating_untagged_performers_description": "อัปเดตนักแสดงที่ยังไม่มีข้อมูลโดยการค้นหานักแสดงที่ไม่มี stashid และทำการอัพเดตข้อมูล metadata",
         "untagged_performers": "นักแสดงที่ยังไม่มีข้อมูล",
         "add_new_performers": "เพิ่มนักแสดง",
         "performer_selection": "การเลือกนักแสดง",
-        "performer_successfully_tagged": "เพิ่มข้อมูลนักแสดงสำเร็จ:",
+        "performer_successfully_tagged": "เพิ่มข้อมูลนักแสดงสำเร็จแล้ว:",
         "tag_status": "สถานะการเพิ่มข้อมูล",
         "refresh_tagged_performers": "รีเฟรชนักแสดงที่มีข้อมูลแล้ว",
         "batch_add_performers": "เพิ่มนักแสดงพร้อมกันหลายคน",
@@ -846,7 +937,7 @@
         "network_error": "พบปัญหาเน็ตเวิร์ค",
         "any_names_entered_will_be_queried": "รายชื่อนักแสดงจะถูกเรียกหาข้อมูลจาก stash-box ที่เลือกไว้ โดยจะเลือกเฉพาะข้อมูลที่ตรงกันเท่านั้น",
         "failed_to_save_performer": "ไม่สามารถบันทึกข้อมูลนักแสดง \"{performer}\" ได้",
-        "no_results_found": "ไม่เจอผลลัพธ์",
+        "no_results_found": "ไม่พบผลลัพธ์",
         "update_performer": "เครื่องมืออัปเดตข้อมูลนักแสดง",
         "to_use_the_performer_tagger": "ต้องทำการตั้งค่า stash-box ก่อนถึงจะใช้งานเครื่องมือเพิ่มข้อมูลนักแสดงได้",
         "performer_names_separated_by_comma": "ชื่อนักแสดงแต่ละคน คั่นด้วยเครื่องหมายคอมมา (,)",
@@ -857,7 +948,7 @@
         "update_performers": "เครื่องมืออัปเดตข้อมูลนักแสดง",
         "status_tagging_job_queued": "สถานะ: งานเพิ่มข้อมูลถูกเพิ่มเข้าคิว",
         "current_page": "หน้าปัจจุบัน",
-        "performer_already_tagged": "นักแสดงที่มีข้อมูลแล้ว",
+        "performer_already_tagged": "มีข้อมูลนักแสดงคนนี้แล้ว",
         "query_all_performers_in_the_database": "นักแสดงทั้งหมดในฐานข้อมูล"
     },
     "library": "ไลบราลี",
@@ -883,7 +974,11 @@
         "not_between": "ไม่อยู่ระหว่าง",
         "not_equals": "ไม่ใช่",
         "not_matches_regex": "ไม่ตรงกับ regex",
-        "excludes": "ยกเว้น"
+        "excludes": "ยกเว้น",
+        "format_string": "{criterion} {modifierString} {valueString}",
+        "format_string_depth": "{criterion} {modifierString} {valueString} (+{depth, plural, =-1 {all} other {{depth}}})",
+        "format_string_excludes": "{criterion} {modifierString} {valueString} (excludes {excludedString})",
+        "format_string_excludes_depth": "{criterion} {modifierString} {valueString} (excludes {excludedString}) (+{depth, plural, =-1 {all} other {{depth}}})"
     },
     "country": "ประเทศ",
     "dialogs": {
@@ -936,7 +1031,7 @@
             "preview_exclude_start_time_head": "ไม่รวมช่วงต้นวิดีโอ",
             "covers": "หน้าปกซีน",
             "image_previews": "ภาพเคลื่อนไหวตัวอย่าง",
-            "interactive_heatmap_speed": "สร้าง heatmaps และกราฟความเร็วสำหรับซีนอินเตอร์แอ็กทีฟ",
+            "interactive_heatmap_speed": "สร้าง heatmaps และกราฟความเร็วสำหรับซีนอินเตอร์แอ็คทีฟ",
             "marker_image_previews": "สร้างภาพเคลื่อนไหวตัวอย่างสำหรับมาร์คเกอร์",
             "marker_screenshots": "ภาพหน้าจอมาร์คเกอร์",
             "override_preview_generation_options_desc": "ไม่สนใจการตั้งค่าตัวเลือกการสร้างพรีวิวของระบบ เปลี่ยนค่าปริยายที่หน้า ระบบ -> การสร้างพริวิว",
@@ -1085,7 +1180,8 @@
         "hash": "Hash",
         "play_duration": "ระยะเวลาที่เล่น",
         "stream": "สตรีม",
-        "video_codec": "โคเด็ควิดีโอ"
+        "video_codec": "โคเด็ควิดีโอ",
+        "interactive_speed": "ความเร็วอินเตอร์แอ็คทีฟ"
     },
     "package_manager": {
         "add_source": "เพิ่มแหล่งข้อมูล",
@@ -1136,7 +1232,7 @@
     "measurements": "สัดส่วน",
     "folder": "โฟลเดอร์",
     "framerate": "อัตราเฟรม",
-    "frames_per_second": "{value} fps",
+    "frames_per_second": "{value} เฟรมต่อวินาที",
     "penis_length_cm": "ความยาวองคชาต (ซม.)",
     "connection_monitor": {
         "websocket_connection_failed": "ไม่สามารถเชื่อมต่อ websocket ได้ ตรวจสอบรายละเอียดเพิ่มเติมที่คอนโซลของบราวเซอร์",
@@ -1197,7 +1293,7 @@
     },
     "index_of_total": "รายการที่ {index} จาก {total}",
     "galleries": "แกลเลอรี",
-    "interactive_speed": "Interactive Speed",
+    "interactive_speed": "ความเร็วอินเตอร์แอ็คทีฟ",
     "include_sub_studios": "นับรวมสตูดิโอลูกด้วย",
     "isMissing": "ที่ไม่มี",
     "include_sub_tags": "นับรวมแท็กย่อยด้วย",
@@ -1275,7 +1371,99 @@
     "resolution": "ความละเอียด",
     "scene_code": "รหัสไฟล์",
     "scene_count": "จำนวนซีน",
-    "scene_id": "ซีนไอดี",
+    "scene_id": "รหัสซีน",
     "scene_updated_at": "วันที่อัปเดตซีน",
-    "scenes_updated_at": "วันที่อัปเดตซีน"
+    "scenes_updated_at": "วันที่อัปเดตซีน",
+    "scene_date": "วันที่ปล่อยซีน",
+    "stash_ids": "Stash ID",
+    "stash_id_endpoint": "Stash ID Endpoint",
+    "stats": {
+        "total_play_duration": "ระยะเวลาที่เล่นรวม",
+        "total_o_count": "จำนวน O-Count ทั้งหมด",
+        "total_play_count": "จำนวนครั้งที่เล่นรวม",
+        "scenes_played": "จำนวนซีนที่เล่นแล้ว",
+        "image_size": "ขนาดรูปภาพ",
+        "scenes_duration": "ระยะเวลารวมทุกซีน",
+        "scenes_size": "ขนาดซีนทั้งหมด"
+    },
+    "studio": "สตูดิโอ",
+    "studios": "สตูดิโอ",
+    "true": "จริง",
+    "twitter": "ทวิตเตอร์",
+    "video_codec": "โคเด็ควิดีโอ",
+    "weight_kg": "น้ำหนัก (กก.)",
+    "years_old": "ปี",
+    "zip_file_count": "จำนวนไฟล์ซิป",
+    "countables": {
+        "images": "{count, plural, one {รูปภาพ} other {รูปภาพ}}",
+        "scenes": "{count, plural, one {ซีน} other {ซีน}}",
+        "studios": "{count, plural, one {สตูดิโอ} other {สตูดิโอ}}",
+        "tags": "{count, plural, one {แท็ก} other {แท็ก}}",
+        "files": "{count, plural, one {ไฟล์} other {ไฟล์}}",
+        "galleries": "{count, plural, one {แกลเลอรี} other {แกลเลอรี}}",
+        "markers": "{count, plural, one {มาร์คเกอร์} other {มาร์คเกอร์}}",
+        "movies": "{count, plural, one {หนัง} other {หนัง}}",
+        "performers": "{count, plural, one {นักแสดง} other {นักแสดง}}"
+    },
+    "sub_tags": "แท็กย่อย",
+    "synopsis": "เรื่องย่อ",
+    "tag": "แท็ก",
+    "toast": {
+        "merged_scenes": "รวมซีนแล้ว",
+        "delete_past_tense": "ลบ{count, plural, one {{singularEntity}} other {{pluralEntity}}}แล้ว",
+        "added_generation_job_to_queue": "เพิ่มงานสร้างไฟล์เพิ่มเติมในคิวแล้ว",
+        "generating_screenshot": "กำลังสร้างภาพหน้าจอ…",
+        "rescanning_entity": "กำลังสแกน{count, plural, one {{singularEntity}} other {{pluralEntity}}}…",
+        "started_auto_tagging": "เริ่มงานเพิ่มข้อมูลอัตโนมัติแล้ว",
+        "started_importing": "เริ่มการนำเข้าข้อมูลแล้ว",
+        "added_entity": "เพิ่ม{count, plural, one {{singularEntity}} other {{pluralEntity}}}แล้ว",
+        "created_entity": "สร้าง{entity}แล้ว",
+        "default_filter_set": "ชุดฟิลเตอร์พื้นฐาน",
+        "image_index_too_large": "พบความผิดพลาด: index รูปภาพมีขนาดใหญ่กว่าจำนวนรูปภาพในแกลเลอรี",
+        "merged_tags": "รวมแท็กแล้ว",
+        "reassign_past_tense": "ย้ายไฟล์แล้ว",
+        "removed_entity": "ลบ{count, plural, one {{singularEntity}} other {{pluralEntity}}}แล้ว",
+        "saved_entity": "บันทึก{entity}แล้ว",
+        "started_generating": "เริ่มสร้างไฟล์เพิ่มเติมแล้ว",
+        "updated_entity": "อัปเดต{entity}แล้ว"
+    },
+    "stashbox": {
+        "submit_update": "มีอยู่แล้วที่ {endpoint_name}",
+        "go_review_draft": "ไปที่ {endpoint_name} เพื่อตรวจสอบการตั้งค่า",
+        "selected_stash_box": "Stash-Box endpoint ที่เลือกไว้",
+        "source": "แหล่งข้อมูล Stash-Box",
+        "submission_failed": "การส่งข้อมูลไม่สำเร็จ",
+        "submission_successful": "การส่งข้อมูลสำเร็จ"
+    },
+    "studio_depth": "ระดับ (เว้นว่างเพื่อนับทั้งหมด)",
+    "type": "ประเภท",
+    "url": "URL",
+    "urls": "URLs",
+    "validation": {
+        "date_invalid_form": "${path} ต้องอยู่ในรูปแบบ YYYY-MM-DD",
+        "required": "จำเป็นต้องระบุ ${path}",
+        "blank": "${path} ต้องไม่เว้นว่างไว้",
+        "unique": "${path} ต้องไม่ซ้ำ"
+    },
+    "operations": "ปฏิบัติการ",
+    "statistics": "สถิติ",
+    "status": "สถานะ: {statusText}",
+    "subsidiary_studio_count": "จำนวนสตูดิโอย่อย",
+    "subsidiary_studios": "สตูดิโอย่อย",
+    "tag_count": "จำนวนแท็ก",
+    "tag_parent_tooltip": "มีแท็กหลัก",
+    "sub_tag_count": "จำนวนแท็กย่อย",
+    "sub_tag_of": "เป็นแท็กย่อยของ {parent}",
+    "tag_sub_tag_tooltip": "มีแท็กย่อย",
+    "tags": "แท็ก",
+    "tattoos": "รอยสัก",
+    "time": "เวลา",
+    "title": "ชื่อเรื่อง",
+    "updated_at": "อัปเดตเมื่อ",
+    "total": "ทั้งหมด",
+    "unknown_date": "ไม่ระบุวันที่",
+    "view_all": "ดูทั้งหมด",
+    "weight": "น้ำหนัก",
+    "videos": "วิดีโอ",
+    "stash_id": "Stash ID"
 }
