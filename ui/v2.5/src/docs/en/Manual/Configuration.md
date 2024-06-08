@@ -15,7 +15,7 @@ Regex patterns can be added in the config file or from the UI.
 If you add manually to the config file a restart is needed while from the UI you just need to click the Save button.  
 When added through the config file directly special care must be given to double escape the `\` character.
 
-There are 2 sperate exclusion settings. One is for videos, another is for images/galleries.
+There are 2 separate exclusion settings. One is for videos, another is for images/galleries.
 
 Some examples:
 
@@ -23,7 +23,7 @@ Some examples:
 - `"/\.[[:word:]]+/"` will exclude all hidden directories like `/.directoryname/`.
 - `"c:\\stash\\videos\\exclude"` will exclude specific Windows directory `c:\stash\videos\exclude`.
 - `"^/stash/videos/exclude/"` will exclude all directories that match `/stash/videos/exclude/` pattern.
-- `"\\\\stash\\network\\share\\excl\\"` will exlcude specific Windows network path `\\stash\network\share\excl\`.
+- `"\\\\stash\\network\\share\\excl\\"` will exclude specific Windows network path `\\stash\network\share\excl\`.
 
 > **Note:** If a directory is excluded for images and videos, then the directory will be excluded from scans completely.
 
