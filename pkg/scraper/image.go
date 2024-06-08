@@ -12,8 +12,13 @@ import (
 )
 
 func setPerformerImage(ctx context.Context, client *http.Client, p *models.ScrapedPerformer, globalConfig GlobalConfig) error {
-	if p.Image == nil || !strings.HasPrefix(*p.Image, "http") {
+	if p.Image == nil {
 		// nothing to do
+		return nil
+	}
+
+	if !strings.HasPrefix(*p.Image, "http") {
+		p.Images = []string{*p.Image}
 		return nil
 	}
 
