@@ -207,6 +207,7 @@ func Initialize() (*Server, error) {
 
 	r.Mount("/performer", server.getPerformerRoutes())
 	r.Mount("/scene", server.getSceneRoutes())
+	r.Mount("/gallery", server.getGalleryRoutes())
 	r.Mount("/image", server.getImageRoutes())
 	r.Mount("/studio", server.getStudioRoutes())
 	r.Mount("/group", server.getGroupRoutes())
@@ -323,6 +324,16 @@ func (s *Server) getSceneRoutes() chi.Router {
 		captionFinder:     repo.File,
 		sceneMarkerFinder: repo.SceneMarker,
 		tagFinder:         repo.Tag,
+	}.Routes()
+}
+
+func (s *Server) getGalleryRoutes() chi.Router {
+	repo := s.manager.Repository
+	return galleryRoutes{
+		routes:        routes{txnManager: repo.TxnManager},
+		imageFinder:   repo.Image,
+		galleryFinder: repo.Gallery,
+		fileGetter:    repo.File,
 	}.Routes()
 }
 

@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/stashapp/stash/internal/api/loaders"
+	"github.com/stashapp/stash/internal/api/urlbuilders"
 	"github.com/stashapp/stash/internal/manager/config"
 
 	"github.com/stashapp/stash/pkg/image"
@@ -188,4 +189,14 @@ func (r *galleryResolver) Urls(ctx context.Context, obj *models.Gallery) ([]stri
 	}
 
 	return obj.URLs.List(), nil
+}
+
+func (r *galleryResolver) Paths(ctx context.Context, obj *models.Gallery) (*GalleryPathsType, error) {
+	baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
+	builder := urlbuilders.NewGalleryURLBuilder(baseURL, obj)
+	previewPath := builder.GetPreviewURL()
+
+	return &GalleryPathsType{
+		Preview: previewPath,
+	}, nil
 }

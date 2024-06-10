@@ -14,6 +14,44 @@ import { faBox, faPlayCircle, faTag } from "@fortawesome/free-solid-svg-icons";
 import { galleryTitle } from "src/core/galleries";
 import ScreenUtils from "src/utils/screen";
 import { StudioOverlay } from "../Shared/GridCard/StudioOverlay";
+import { GalleryPreviewScrubber } from "./GalleryPreviewScrubber";
+import cx from "classnames";
+
+interface IScenePreviewProps {
+  isPortrait?: boolean;
+  gallery: GQL.SlimGalleryDataFragment;
+  onScrubberClick?: (index: number) => void;
+}
+
+export const GalleryPreview: React.FC<IScenePreviewProps> = ({
+  gallery,
+  isPortrait = false,
+  onScrubberClick,
+}) => {
+  const [imgSrc, setImgSrc] = useState<string | undefined>(
+    gallery.cover?.paths.thumbnail ?? undefined
+  );
+
+  return (
+    <div className={cx("gallery-card-cover", { portrait: isPortrait })}>
+      {!!imgSrc && (
+        <img
+          loading="lazy"
+          className="gallery-card-image"
+          alt={gallery.title ?? ""}
+          src={imgSrc}
+        />
+      )}
+      <GalleryPreviewScrubber
+        previewPath={gallery.paths.preview}
+        defaultPath={gallery.cover?.paths.thumbnail ?? ""}
+        imageCount={gallery.image_count}
+        onClick={onScrubberClick}
+        onPathChanged={setImgSrc}
+      />
+    </div>
+  );
+};
 
 interface IProps {
   gallery: GQL.SlimGalleryDataFragment;
@@ -167,14 +205,7 @@ export const GalleryCard: React.FC<IProps> = (props) => {
       linkClassName="gallery-card-header"
       image={
         <>
-          {props.gallery.cover ? (
-            <img
-              loading="lazy"
-              className="gallery-card-image"
-              alt={props.gallery.title ?? ""}
-              src={`${props.gallery.cover.paths.thumbnail}`}
-            />
-          ) : undefined}
+          <GalleryPreview gallery={props.gallery} />
           <RatingBanner rating={props.gallery.rating100} />
         </>
       }
