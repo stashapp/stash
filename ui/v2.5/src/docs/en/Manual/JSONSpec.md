@@ -10,7 +10,7 @@ The metadata given to Stash can be exported into the JSON format. This structure
 * `studios`
 * `movies`
 
-# File naming
+## File naming
 
 When exported, files are named with different formats depending on the object type:
 
@@ -26,7 +26,7 @@ When exported, files are named with different formats depending on the object ty
 
 Note that the file naming is not significant when importing. All json files will be read from the subdirectories.
   
-# Content of the json files
+## Content of the json files
 
 In the following, the values of the according jsons will be shown. If the value should be a number, it is written with after comma values (like `29.98` or `50.0`), but still as a string. The meaning from most of them should be obvious due to the previous explanation or from the possible values stash offers when editing, otherwise a short comment will be added.
 
@@ -42,7 +42,7 @@ Example:
 "created_at": "2019-05-03T21:36:58+01:00"
 ```
 
-## Performer
+### Performer
 ```
 name  
 url  
@@ -68,7 +68,7 @@ rating (integer)
 details
 ```
 
-## Studio
+### Studio
 ```
 name  
 url  
@@ -79,7 +79,7 @@ rating (integer)
 details  
 ```
 
-## Scene
+### Scene
 ```
 title  
 studio  
@@ -110,7 +110,7 @@ updated_at
 ```
 
 
-## Image
+### Image
 ```
 title  
 studio  
@@ -126,7 +126,7 @@ created_at
 updated_at  
 ```
 
-## Gallery
+### Gallery
 ```
 title  
 studio  
@@ -209,11 +209,11 @@ created_at
 updated_at
 ```
 
-# In JSON format
+## In JSON format
 
 For those preferring the json-format, defined [here](https://json-schema.org/), the following format may be more interesting:
 
-## performer.json
+### performer.json
 
 ``` json
 {
@@ -313,7 +313,7 @@ For those preferring the json-format, defined [here](https://json-schema.org/), 
 
 ```
 
-## studio.json
+### studio.json
 
 ``` json
 {
@@ -352,7 +352,7 @@ For those preferring the json-format, defined [here](https://json-schema.org/), 
 }
 ```
 
-## scene.json
+### scene.json
 
 ```json
 {

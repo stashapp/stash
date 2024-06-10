@@ -79,3 +79,19 @@ fragment SceneData on Scene {
     label
   }
 }
+
+fragment SelectSceneData on Scene {
+  id
+  title
+  date
+  code
+  studio {
+    name
+  }
+  files {
+    path
+  }
+  paths {
+    screenshot
+  }
+}

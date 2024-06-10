@@ -46,6 +46,21 @@ export const IdentifyDialog: React.FC<IIdentifyDialogProps> = ({
           field: "title",
           strategy: GQL.IdentifyFieldStrategy.Overwrite,
         },
+        {
+          field: "studio",
+          strategy: GQL.IdentifyFieldStrategy.Merge,
+          createMissing: true,
+        },
+        {
+          field: "performers",
+          strategy: GQL.IdentifyFieldStrategy.Merge,
+          createMissing: true,
+        },
+        {
+          field: "tags",
+          strategy: GQL.IdentifyFieldStrategy.Merge,
+          createMissing: true,
+        },
       ],
       includeMalePerformers: true,
       setCoverImage: true,

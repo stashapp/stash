@@ -89,6 +89,7 @@ const criterionOptions = [
   createDurationCriterionOption("resume_time"),
   createDurationCriterionOption("play_duration"),
   createMandatoryNumberCriterionOption("play_count"),
+  createMandatoryTimestampCriterionOption("last_played_at"),
   HasMarkersCriterionOption,
   SceneIsMissingCriterionOption,
   TagsCriterionOption,

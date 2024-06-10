@@ -27,6 +27,8 @@ type GalleryFilterType struct {
 	AverageResolution *ResolutionCriterionInput `json:"average_resolution"`
 	// Filter to only include scenes which have chapters. `true` or `false`
 	HasChapters *string `json:"has_chapters"`
+	// Filter to only include galleries with these scenes
+	Scenes *MultiCriterionInput `json:"scenes"`
 	// Filter to only include galleries with this studio
 	Studios *HierarchicalMultiCriterionInput `json:"studios"`
 	// Filter to only include galleries with these tags

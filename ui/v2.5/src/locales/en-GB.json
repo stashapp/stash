@@ -257,6 +257,8 @@
       "recent_ip_addresses": "Recent IP addresses",
       "server_display_name": "Server Display Name",
       "server_display_name_desc": "Display name for the DLNA server. Defaults to {server_name} if empty.",
+      "server_port": "Server Port",
+      "server_port_desc": "Port to run the DLNA server on. Requires DLNA restart after changing.",
       "successfully_cancelled_temporary_behaviour": "Successfully cancelled temporary behaviour",
       "until_restart": "until restart",
       "video_sort_order": "Default Video Sort Order",
@@ -737,7 +739,7 @@
           "enable_chromecast": "Enable Chromecast",
           "show_ab_loop_controls": "Show AB Loop plugin controls",
           "show_scrubber": "Show Scrubber",
-          "track_activity": "Track Activity",
+          "track_activity": "Enable Scene Play history",
           "vr_tag": {
             "description": "The VR button will only be displayed for scenes with this tag.",
             "heading": "VR Tag"
@@ -783,7 +785,7 @@
       },
       "title": "User Interface",
       "use_stash_hosted_funscript": {
-        "description": "When enabled, funscripts will be served directly from Stash to your Handy device without using the third party Handy server. Requires that Stash be accessible from your Handy device.",
+        "description": "When enabled, funscripts will be served directly from Stash to your Handy device without using the third party Handy server. Requires that Stash be accessible from your Handy device, and that an API key is generated if stash has credentials configured.",
         "heading": "Serve funscripts directly"
       }
     }

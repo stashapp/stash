@@ -10,6 +10,7 @@ import { OrganizedCriterionOption } from "./criteria/organized";
 import { HasChaptersCriterionOption } from "./criteria/has-chapters";
 import { PerformersCriterionOption } from "./criteria/performers";
 import { AverageResolutionCriterionOption } from "./criteria/resolution";
+import { ScenesCriterionOption } from "./criteria/scenes";
 import { StudiosCriterionOption } from "./criteria/studios";
 import {
   PerformerTagsCriterionOption,
@@ -61,6 +62,7 @@ const criterionOptions = [
   createMandatoryNumberCriterionOption("performer_age"),
   PerformerFavoriteCriterionOption,
   createMandatoryNumberCriterionOption("image_count"),
+  ScenesCriterionOption,
   StudiosCriterionOption,
   createStringCriterionOption("url"),
   createMandatoryNumberCriterionOption("file_count", "zip_file_count"),

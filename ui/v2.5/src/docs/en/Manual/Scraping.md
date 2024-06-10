@@ -19,8 +19,6 @@ Stash supports scraping of metadata from various external sources.
 | performer | | ✔️ | ✔️ |
 | scene | ✔️  | ✔️ | ✔️ |
 
-# Scraper Operation
-
 ## Included Scrapers
 
 Stash provides the following built-in scrapers:

@@ -75,6 +75,8 @@ input ScanMetaDataFilterInput {
 input ScanMetadataInput {
   paths: [String!]
 
+  "Forces a rescan on files even if modification time is unchanged"
+  rescan: Boolean
   "Generate covers during scan"
   scanGenerateCovers: Boolean
   "Generate previews during scan"
@@ -95,6 +97,8 @@ input ScanMetadataInput {
 }
 
 type ScanMetadataOptions {
+  "Forces a rescan on files even if modification time is unchanged"
+  rescan: Boolean!
   "Generate covers during scan"
   scanGenerateCovers: Boolean!
   "Generate previews during scan"

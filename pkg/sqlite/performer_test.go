@@ -1760,14 +1760,17 @@ func verifyPerformersRating100(t *testing.T, ratingCriterion models.IntCriterion
 	})
 }
 
+func performerQueryIsMissing(ctx context.Context, t *testing.T, m string) []*models.Performer {
+	performerFilter := models.PerformerFilterType{
+		IsMissing: &m,
+	}
+
+	return queryPerformers(ctx, t, &performerFilter, nil)
+}
+
 func TestPerformerQueryIsMissingRating(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		isMissing := "rating"
-		performerFilter := models.PerformerFilterType{
-			IsMissing: &isMissing,
-		}
-
-		performers := queryPerformers(ctx, t, &performerFilter, nil)
+		performers := performerQueryIsMissing(ctx, t, "rating")
 
 		assert.True(t, len(performers) > 0)
 
@@ -1781,16 +1784,7 @@ func TestPerformerQueryIsMissingRating(t *testing.T) {
 
 func TestPerformerQueryIsMissingImage(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		isMissing := "image"
-		performerFilter := &models.PerformerFilterType{
-			IsMissing: &isMissing,
-		}
-
-		// ensure query does not error
-		performers, _, err := db.Performer.Query(ctx, performerFilter, nil)
-		if err != nil {
-			t.Errorf("Error querying performers: %s", err.Error())
-		}
+		performers := performerQueryIsMissing(ctx, t, "image")
 
 		assert.True(t, len(performers) > 0)
 
@@ -1800,6 +1794,24 @@ func TestPerformerQueryIsMissingImage(t *testing.T) {
 				t.Errorf("error getting performer image: %s", err.Error())
 			}
 			assert.Nil(t, img)
+		}
+
+		return nil
+	})
+}
+
+func TestPerformerQueryIsMissingAlias(t *testing.T) {
+	withTxn(func(ctx context.Context) error {
+		performers := performerQueryIsMissing(ctx, t, "aliases")
+
+		assert.True(t, len(performers) > 0)
+
+		for _, performer := range performers {
+			a, err := db.Performer.GetAliases(ctx, performer.ID)
+			if err != nil {
+				t.Errorf("error getting performer aliases: %s", err.Error())
+			}
+			assert.Nil(t, a)
 		}
 
 		return nil

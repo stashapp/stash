@@ -13,8 +13,8 @@ interface IHoverPopover {
 }
 
 export const HoverPopover: React.FC<IHoverPopover> = ({
-  enterDelay = 0,
-  leaveDelay = 400,
+  enterDelay = 200,
+  leaveDelay = 200,
   content,
   children,
   className,

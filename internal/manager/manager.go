@@ -245,7 +245,7 @@ func (s *Manager) Setup(ctx context.Context, input SetupInput) error {
 			}
 		}
 
-		s.Config.Set(config.Generated, input.GeneratedLocation)
+		s.Config.SetString(config.Generated, input.GeneratedLocation)
 	}
 
 	// create the cache directory if it does not exist
@@ -256,11 +256,11 @@ func (s *Manager) Setup(ctx context.Context, input SetupInput) error {
 			}
 		}
 
-		cfg.Set(config.Cache, input.CacheLocation)
+		cfg.SetString(config.Cache, input.CacheLocation)
 	}
 
 	if input.StoreBlobsInDatabase {
-		cfg.Set(config.BlobsStorage, config.BlobStorageTypeDatabase)
+		cfg.SetInterface(config.BlobsStorage, config.BlobStorageTypeDatabase)
 	} else {
 		if !cfg.HasOverride(config.BlobsPath) {
 			if exists, _ := fsutil.DirExists(input.BlobsLocation); !exists {
@@ -269,18 +269,18 @@ func (s *Manager) Setup(ctx context.Context, input SetupInput) error {
 				}
 			}
 
-			cfg.Set(config.BlobsPath, input.BlobsLocation)
+			cfg.SetString(config.BlobsPath, input.BlobsLocation)
 		}
 
-		cfg.Set(config.BlobsStorage, config.BlobStorageTypeFilesystem)
+		cfg.SetInterface(config.BlobsStorage, config.BlobStorageTypeFilesystem)
 	}
 
 	// set the configuration
 	if !cfg.HasOverride(config.Database) {
-		cfg.Set(config.Database, input.DatabaseFile)
+		cfg.SetString(config.Database, input.DatabaseFile)
 	}
 
-	cfg.Set(config.Stash, input.Stashes)
+	cfg.SetInterface(config.Stash, input.Stashes)
 
 	if err := cfg.Write(); err != nil {
 		return fmt.Errorf("error writing configuration file: %v", err)
