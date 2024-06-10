@@ -57,7 +57,7 @@ export const ScrapedStudioRow: React.FC<IScrapedStudioRow> = ({
             const { id, ...data } = items[0];
             onChangeFn({
               ...data,
-              stored_id: id
+              stored_id: id,
             });
           }
         }}
