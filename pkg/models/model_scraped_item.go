@@ -125,7 +125,7 @@ type ScrapedPerformer struct {
 	Aliases        *string       `json:"aliases"`
 	Tags           []*ScrapedTag `json:"tags"`
 	// This should be a base64 encoded data URL
-	Image        *string  `json:"image"`
+	Image        *string  `json:"image"` // deprecated: use Images
 	Images       []string `json:"images"`
 	Details      *string  `json:"details"`
 	DeathDate    *string  `json:"death_date"`
