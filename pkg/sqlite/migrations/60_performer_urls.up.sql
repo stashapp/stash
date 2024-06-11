@@ -121,7 +121,10 @@ INSERT INTO `performer_urls`
   SELECT 
     `id`,
     (SELECT count(*) FROM `performer_urls` WHERE `performer_id` = `performers`.`id`)+1,
-    `twitter`
+    CASE
+      WHEN `twitter` LIKE 'http%://%' THEN `twitter`
+      ELSE 'https://www.twitter.com/' || `twitter`
+    END
   FROM `performers`
   WHERE `performers`.`twitter` IS NOT NULL AND `performers`.`twitter` != '';
 
@@ -134,7 +137,10 @@ INSERT INTO `performer_urls`
   SELECT 
     `id`,
     (SELECT count(*) FROM `performer_urls` WHERE `performer_id` = `performers`.`id`)+1,
-    `instagram`
+    CASE
+      WHEN `instagram` LIKE 'http%://%' THEN `instagram`
+      ELSE 'https://www.instagram.com/' || `instagram`
+    END
   FROM `performers`
   WHERE `performers`.`instagram` IS NOT NULL AND `performers`.`instagram` != '';
 
