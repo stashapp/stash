@@ -419,7 +419,6 @@ export const SceneEditPanel: React.FC<IProps> = ({
               key={s.endpoint}
               onClick={() =>
                 onScrapeQueryClicked({
-                  stash_box_index: index,
                   stash_box_endpoint: s.endpoint,
                 })
               }
@@ -451,7 +450,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
   function onSceneSelected(s: GQL.ScrapedSceneDataFragment) {
     if (!scraper) return;
 
-    if (scraper?.stash_box_index !== undefined) {
+    if (scraper?.stash_box_endpoint !== undefined) {
       // must be stash-box - assume full scene
       setScrapedScene(s);
     } else {
@@ -491,7 +490,6 @@ export const SceneEditPanel: React.FC<IProps> = ({
             key={s.endpoint}
             onClick={() =>
               onScrapeClicked({
-                stash_box_index: index,
                 stash_box_endpoint: s.endpoint,
               })
             }

@@ -6,41 +6,46 @@ import (
 	"strconv"
 
 	"github.com/stashapp/stash/internal/manager"
-	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/scraper/stashbox"
 )
 
 func (r *mutationResolver) SubmitStashBoxFingerprints(ctx context.Context, input StashBoxFingerprintSubmissionInput) (bool, error) {
-	boxes := config.GetInstance().GetStashBoxes()
-
-	if input.StashBoxIndex < 0 || input.StashBoxIndex >= len(boxes) {
-		return false, fmt.Errorf("invalid stash_box_index %d", input.StashBoxIndex)
+	b, err := resolveStashBox(input.StashBoxIndex, input.StashBoxEndpoint)
+	if err != nil {
+		return false, err
 	}
 
-	client := stashbox.NewClient(*boxes[input.StashBoxIndex], r.stashboxRepository())
-
-	return client.SubmitStashBoxFingerprints(ctx, input.SceneIds, boxes[input.StashBoxIndex].Endpoint)
+	client := r.newStashBoxClient(*b)
+	return client.SubmitStashBoxFingerprints(ctx, input.SceneIds)
 }
 
 func (r *mutationResolver) StashBoxBatchPerformerTag(ctx context.Context, input manager.StashBoxBatchTagInput) (string, error) {
-	jobID := manager.GetInstance().StashBoxBatchPerformerTag(ctx, input)
+	b, err := resolveStashBoxBatchTagInput(input.Endpoint, input.StashBoxEndpoint)
+	if err != nil {
+		return "", err
+	}
+
+	jobID := manager.GetInstance().StashBoxBatchPerformerTag(ctx, b, input)
 	return strconv.Itoa(jobID), nil
 }
 
 func (r *mutationResolver) StashBoxBatchStudioTag(ctx context.Context, input manager.StashBoxBatchTagInput) (string, error) {
-	jobID := manager.GetInstance().StashBoxBatchStudioTag(ctx, input)
+	b, err := resolveStashBoxBatchTagInput(input.Endpoint, input.StashBoxEndpoint)
+	if err != nil {
+		return "", err
+	}
+
+	jobID := manager.GetInstance().StashBoxBatchStudioTag(ctx, b, input)
 	return strconv.Itoa(jobID), nil
 }
 
 func (r *mutationResolver) SubmitStashBoxSceneDraft(ctx context.Context, input StashBoxDraftSubmissionInput) (*string, error) {
-	boxes := config.GetInstance().GetStashBoxes()
-
-	if input.StashBoxIndex < 0 || input.StashBoxIndex >= len(boxes) {
-		return nil, fmt.Errorf("invalid stash_box_index %d", input.StashBoxIndex)
+	b, err := resolveStashBox(input.StashBoxIndex, input.StashBoxEndpoint)
+	if err != nil {
+		return nil, err
 	}
 
-	client := stashbox.NewClient(*boxes[input.StashBoxIndex], r.stashboxRepository())
+	client := r.newStashBoxClient(*b)
 
 	id, err := strconv.Atoi(input.ID)
 	if err != nil {
@@ -68,7 +73,7 @@ func (r *mutationResolver) SubmitStashBoxSceneDraft(ctx context.Context, input S
 			return fmt.Errorf("loading scene URLs: %w", err)
 		}
 
-		res, err = client.SubmitSceneDraft(ctx, scene, boxes[input.StashBoxIndex].Endpoint, cover)
+		res, err = client.SubmitSceneDraft(ctx, scene, cover)
 		return err
 	})
 
@@ -76,13 +81,12 @@ func (r *mutationResolver) SubmitStashBoxSceneDraft(ctx context.Context, input S
 }
 
 func (r *mutationResolver) SubmitStashBoxPerformerDraft(ctx context.Context, input StashBoxDraftSubmissionInput) (*string, error) {
-	boxes := config.GetInstance().GetStashBoxes()
-
-	if input.StashBoxIndex < 0 || input.StashBoxIndex >= len(boxes) {
-		return nil, fmt.Errorf("invalid stash_box_index %d", input.StashBoxIndex)
+	b, err := resolveStashBox(input.StashBoxIndex, input.StashBoxEndpoint)
+	if err != nil {
+		return nil, err
 	}
 
-	client := stashbox.NewClient(*boxes[input.StashBoxIndex], r.stashboxRepository())
+	client := r.newStashBoxClient(*b)
 
 	id, err := strconv.Atoi(input.ID)
 	if err != nil {
@@ -101,7 +105,7 @@ func (r *mutationResolver) SubmitStashBoxPerformerDraft(ctx context.Context, inp
 			return fmt.Errorf("performer with id %d not found", id)
 		}
 
-		res, err = client.SubmitPerformerDraft(ctx, performer, boxes[input.StashBoxIndex].Endpoint)
+		res, err = client.SubmitPerformerDraft(ctx, performer)
 		return err
 	})
 
