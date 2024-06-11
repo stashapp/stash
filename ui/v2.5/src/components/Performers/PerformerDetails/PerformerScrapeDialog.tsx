@@ -283,12 +283,6 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
         : undefined
     )
   );
-  const [twitter, setTwitter] = useState<ScrapeResult<string>>(
-    new ScrapeResult<string>(props.performer.twitter, props.scraped.twitter)
-  );
-  const [instagram, setInstagram] = useState<ScrapeResult<string>>(
-    new ScrapeResult<string>(props.performer.instagram, props.scraped.instagram)
-  );
   const [gender, setGender] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(
       genderToString(props.performer.gender),
@@ -365,8 +359,6 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
     tattoos,
     piercings,
     urls,
-    twitter,
-    instagram,
     gender,
     image,
     tags,
@@ -399,8 +391,6 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
       tattoos: tattoos.getNewValue(),
       piercings: piercings.getNewValue(),
       urls: urls.getNewValue(),
-      twitter: twitter.getNewValue(),
-      instagram: instagram.getNewValue(),
       gender: gender.getNewValue(),
       tags: tags.getNewValue(),
       images: newImage ? [newImage] : undefined,
@@ -516,16 +506,6 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
           title={intl.formatMessage({ id: "urls" })}
           result={urls}
           onChange={(value) => setURLs(value)}
-        />
-        <ScrapedInputGroupRow
-          title={intl.formatMessage({ id: "twitter" })}
-          result={twitter}
-          onChange={(value) => setTwitter(value)}
-        />
-        <ScrapedInputGroupRow
-          title={intl.formatMessage({ id: "instagram" })}
-          result={instagram}
-          onChange={(value) => setInstagram(value)}
         />
         <ScrapedTextAreaRow
           title={intl.formatMessage({ id: "details" })}
