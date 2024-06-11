@@ -135,7 +135,6 @@ func (qb *performerFilterHandler) criterionHandler() criterionHandler {
 		intCriterionHandler(filter.Rating100, tableName+".rating", nil),
 		stringCriterionHandler(filter.HairColor, tableName+".hair_color"),
 		qb.urlsCriterionHandler(filter.URL),
-		stringCriterionHandler(filter.URL, tableName+".url"),
 		intCriterionHandler(filter.Weight, tableName+".weight", nil),
 		criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
 			if filter.StashID != nil {
