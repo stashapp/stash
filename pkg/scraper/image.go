@@ -12,8 +12,16 @@ import (
 )
 
 func setPerformerImage(ctx context.Context, client *http.Client, p *models.ScrapedPerformer, globalConfig GlobalConfig) error {
-	if p.Image == nil || !strings.HasPrefix(*p.Image, "http") {
+	// backwards compatibility: we fetch the image if it's a URL and set it to the first image
+	// Image is deprecated, so only do this if Images is unset
+	if p.Image == nil || len(p.Images) > 0 {
 		// nothing to do
+		return nil
+	}
+
+	// don't try to get the image if it doesn't appear to be a URL
+	if !strings.HasPrefix(*p.Image, "http") {
+		p.Images = []string{*p.Image}
 		return nil
 	}
 
