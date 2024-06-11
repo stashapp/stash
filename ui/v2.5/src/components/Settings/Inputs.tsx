@@ -273,9 +273,14 @@ export interface ISettingModal<T> {
   subHeading?: React.ReactNode;
   value: T | undefined;
   close: (v?: T) => void;
-  renderField: (value: T | undefined, setValue: (v?: T) => void) => JSX.Element;
+  renderField: (
+    value: T | undefined,
+    setValue: (v?: T) => void,
+    error?: string
+  ) => JSX.Element;
   modalProps?: ModalProps;
   validate?: (v: T) => boolean | undefined;
+  error?: string | undefined;
 }
 
 export const SettingModal = <T extends {}>(props: ISettingModal<T>) => {
@@ -289,6 +294,7 @@ export const SettingModal = <T extends {}>(props: ISettingModal<T>) => {
     renderField,
     modalProps,
     validate,
+    error,
   } = props;
 
   const intl = useIntl();
@@ -306,7 +312,7 @@ export const SettingModal = <T extends {}>(props: ISettingModal<T>) => {
           {headingID ? <FormattedMessage id={headingID} /> : heading}
         </Modal.Header>
         <Modal.Body>
-          {renderField(currentValue, setCurrentValue)}
+          {renderField(currentValue, setCurrentValue, error)}
           {subHeadingID ? (
             <div className="sub-heading">
               {intl.formatMessage({ id: subHeadingID })}
@@ -341,9 +347,14 @@ interface IModalSetting<T> extends ISetting {
   buttonText?: string;
   buttonTextID?: string;
   onChange: (v: T) => void;
-  renderField: (value: T | undefined, setValue: (v?: T) => void) => JSX.Element;
+  renderField: (
+    value: T | undefined,
+    setValue: (v?: T) => void,
+    error?: string
+  ) => JSX.Element;
   renderValue?: (v: T | undefined) => JSX.Element;
   modalProps?: ModalProps;
+  validateChange?: (v: T) => void | undefined;
 }
 
 export const ModalSetting = <T extends {}>(props: IModalSetting<T>) => {
@@ -364,9 +375,28 @@ export const ModalSetting = <T extends {}>(props: IModalSetting<T>) => {
     modalProps,
     disabled,
     advanced,
+    validateChange,
   } = props;
   const [showModal, setShowModal] = useState(false);
+  const [error, setError] = useState<string>();
   const { advancedMode } = useSettings();
+
+  function onClose(v: T | undefined) {
+    setError(undefined);
+    if (v !== undefined) {
+      if (validateChange) {
+        try {
+          validateChange(v);
+        } catch (e) {
+          setError((e as Error).message);
+          return;
+        }
+      }
+
+      onChange(v);
+    }
+    setShowModal(false);
+  }
 
   if (advanced && !advancedMode) return null;
 
@@ -380,10 +410,8 @@ export const ModalSetting = <T extends {}>(props: IModalSetting<T>) => {
           subHeading={subHeading}
           value={value}
           renderField={renderField}
-          close={(v) => {
-            if (v !== undefined) onChange(v);
-            setShowModal(false);
-          }}
+          close={onClose}
+          error={error}
           {...modalProps}
         />
       ) : undefined}
