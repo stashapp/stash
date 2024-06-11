@@ -713,7 +713,8 @@ div.dropdown-menu {
 }
 
 .filter-container,
-.operation-container {
+.operation-container,
+.pagination {
   align-items: center;
   display: flex;
   justify-content: center;
@@ -1328,6 +1329,11 @@ $detailTabWidth: calc(100% / 3);
 .btn-group > .dropdown:not(:last-child) > .btn {
   border-bottom-right-radius: 0;
   border-top-right-radius: 0;
+}
+
+.btn-group > .dropdown:not(:first-child) > .btn {
+  border-bottom-left-radius: 0;
+  border-top-left-radius: 0;
 }
 
 dl.details-list {

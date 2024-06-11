@@ -7,13 +7,26 @@
     padding-right: 15px;
     transition: none;
 
+    &.page-count {
+      padding-right: 5px;
+    }
+
+    &.page-count-dropdown {
+      padding-left: 5px;
+    }
+
     &:first-child {
       border-left: none;
+      border-right: none;
     }
 
     &:last-child {
       border-right: none;
     }
+  }
+
+  .page-count-container .btn {
+    border-radius: 0;
   }
 }
 
