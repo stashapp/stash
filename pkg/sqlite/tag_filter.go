@@ -105,6 +105,8 @@ func (qb *tagFilterHandler) criterionHandler() criterionHandler {
 
 func (qb *tagFilterHandler) aliasCriterionHandler(alias *models.StringCriterionInput) criterionHandlerFunc {
 	h := stringListCriterionHandlerBuilder{
+		primaryTable: tagTable,
+		primaryFK:    tagIDColumn,
 		joinTable:    tagAliasesTable,
 		stringColumn: tagAliasColumn,
 		addJoinTable: func(f *filterBuilder) {

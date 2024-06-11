@@ -60,7 +60,7 @@ func (qb *movieFilterHandler) criterionHandler() criterionHandler {
 		intCriterionHandler(movieFilter.Rating100, "movies.rating", nil),
 		floatIntCriterionHandler(movieFilter.Duration, "movies.duration", nil),
 		qb.missingCriterionHandler(movieFilter.IsMissing),
-		stringCriterionHandler(movieFilter.URL, "movies.url"),
+		qb.urlsCriterionHandler(movieFilter.URL),
 		studioCriterionHandler(movieTable, movieFilter.Studios),
 		qb.performersCriterionHandler(movieFilter.Performers),
 		&dateCriterionHandler{movieFilter.Date, "movies.date", nil},
@@ -100,6 +100,20 @@ func (qb *movieFilterHandler) missingCriterionHandler(isMissing *string) criteri
 			}
 		}
 	}
+}
+
+func (qb *movieFilterHandler) urlsCriterionHandler(url *models.StringCriterionInput) criterionHandlerFunc {
+	h := stringListCriterionHandlerBuilder{
+		primaryTable: movieTable,
+		primaryFK:    movieIDColumn,
+		joinTable:    movieURLsTable,
+		stringColumn: movieURLColumn,
+		addJoinTable: func(f *filterBuilder) {
+			moviesURLsTableMgr.join(f, "", "movies.id")
+		},
+	}
+
+	return h.handler(url)
 }
 
 func (qb *movieFilterHandler) performersCriterionHandler(performers *models.MultiCriterionInput) criterionHandlerFunc {

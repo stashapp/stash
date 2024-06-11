@@ -20,6 +20,35 @@ func (r *movieResolver) Rating100(ctx context.Context, obj *models.Movie) (*int,
 	return obj.Rating, nil
 }
 
+func (r *movieResolver) URL(ctx context.Context, obj *models.Movie) (*string, error) {
+	if !obj.URLs.Loaded() {
+		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+			return obj.LoadURLs(ctx, r.repository.Movie)
+		}); err != nil {
+			return nil, err
+		}
+	}
+
+	urls := obj.URLs.List()
+	if len(urls) == 0 {
+		return nil, nil
+	}
+
+	return &urls[0], nil
+}
+
+func (r *movieResolver) Urls(ctx context.Context, obj *models.Movie) ([]string, error) {
+	if !obj.URLs.Loaded() {
+		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+			return obj.LoadURLs(ctx, r.repository.Movie)
+		}); err != nil {
+			return nil, err
+		}
+	}
+
+	return obj.URLs.List(), nil
+}
+
 func (r *movieResolver) Studio(ctx context.Context, obj *models.Movie) (ret *models.Studio, err error) {
 	if obj.StudioID == nil {
 		return nil, nil

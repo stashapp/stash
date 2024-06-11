@@ -23,7 +23,7 @@ func ToJSON(ctx context.Context, reader ImageGetter, studioReader models.StudioG
 		Aliases:   movie.Aliases,
 		Director:  movie.Director,
 		Synopsis:  movie.Synopsis,
-		URL:       movie.URL,
+		URLs:      movie.URLs.List(),
 		CreatedAt: json.JSONTime{Time: movie.CreatedAt},
 		UpdatedAt: json.JSONTime{Time: movie.UpdatedAt},
 	}

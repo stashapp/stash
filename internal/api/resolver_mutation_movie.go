@@ -38,7 +38,6 @@ func (r *mutationResolver) MovieCreate(ctx context.Context, input MovieCreateInp
 	newMovie.Rating = input.Rating100
 	newMovie.Director = translator.string(input.Director)
 	newMovie.Synopsis = translator.string(input.Synopsis)
-	newMovie.URL = translator.string(input.URL)
 
 	var err error
 
@@ -49,6 +48,12 @@ func (r *mutationResolver) MovieCreate(ctx context.Context, input MovieCreateInp
 	newMovie.StudioID, err = translator.intPtrFromString(input.StudioID)
 	if err != nil {
 		return nil, fmt.Errorf("converting studio id: %w", err)
+	}
+
+	if input.Urls != nil {
+		newMovie.URLs = models.NewRelatedStrings(input.Urls)
+	} else if input.URL != nil {
+		newMovie.URLs = models.NewRelatedStrings([]string{*input.URL})
 	}
 
 	// Process the base 64 encoded image string
@@ -125,7 +130,6 @@ func (r *mutationResolver) MovieUpdate(ctx context.Context, input MovieUpdateInp
 	updatedMovie.Rating = translator.optionalInt(input.Rating100, "rating100")
 	updatedMovie.Director = translator.optionalString(input.Director, "director")
 	updatedMovie.Synopsis = translator.optionalString(input.Synopsis, "synopsis")
-	updatedMovie.URL = translator.optionalString(input.URL, "url")
 
 	updatedMovie.Date, err = translator.optionalDate(input.Date, "date")
 	if err != nil {
@@ -135,6 +139,8 @@ func (r *mutationResolver) MovieUpdate(ctx context.Context, input MovieUpdateInp
 	if err != nil {
 		return nil, fmt.Errorf("converting studio id: %w", err)
 	}
+
+	updatedMovie.URLs = translator.optionalURLs(input.Urls, input.URL)
 
 	var frontimageData []byte
 	frontImageIncluded := translator.hasField("front_image")
@@ -205,6 +211,7 @@ func (r *mutationResolver) BulkMovieUpdate(ctx context.Context, input BulkMovieU
 	if err != nil {
 		return nil, fmt.Errorf("converting studio id: %w", err)
 	}
+	updatedMovie.URLs = translator.optionalURLsBulk(input.Urls, nil)
 
 	ret := []*models.Movie{}
 

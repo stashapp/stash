@@ -243,6 +243,8 @@ func (qb *performerFilterHandler) performerAgeFilterCriterionHandler(age *models
 
 func (qb *performerFilterHandler) aliasCriterionHandler(alias *models.StringCriterionInput) criterionHandlerFunc {
 	h := stringListCriterionHandlerBuilder{
+		primaryTable: performerTable,
+		primaryFK:    performerIDColumn,
 		joinTable:    performersAliasesTable,
 		stringColumn: performerAliasColumn,
 		addJoinTable: func(f *filterBuilder) {

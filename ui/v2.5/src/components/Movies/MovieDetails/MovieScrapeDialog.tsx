@@ -6,6 +6,7 @@ import {
   ScrapedInputGroupRow,
   ScrapedImageRow,
   ScrapedTextAreaRow,
+  ScrapedStringListRow,
 } from "src/components/Shared/ScrapeDialog/ScrapeDialog";
 import TextUtils from "src/utils/text";
 import {
@@ -15,6 +16,7 @@ import {
 import { Studio } from "src/components/Studios/StudioSelect";
 import { useCreateScrapedStudio } from "src/components/Shared/ScrapeDialog/createObjects";
 import { ScrapedStudioRow } from "src/components/Shared/ScrapeDialog/ScrapedObjectsRow";
+import { uniq } from "lodash-es";
 
 interface IMovieScrapeDialogProps {
   movie: Partial<GQL.MovieUpdateInput>;
@@ -64,8 +66,13 @@ export const MovieScrapeDialog: React.FC<IMovieScrapeDialogProps> = (
       props.scraped.studio?.stored_id ? props.scraped.studio : undefined
     )
   );
-  const [url, setURL] = useState<ScrapeResult<string>>(
-    new ScrapeResult<string>(props.movie.url, props.scraped.url)
+  const [urls, setURLs] = useState<ScrapeResult<string[]>>(
+    new ScrapeResult<string[]>(
+      props.movie.urls,
+      props.scraped.urls
+        ? uniq((props.movie.urls ?? []).concat(props.scraped.urls ?? []))
+        : undefined
+    )
   );
   const [frontImage, setFrontImage] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(props.movie.front_image, props.scraped.front_image)
@@ -94,7 +101,7 @@ export const MovieScrapeDialog: React.FC<IMovieScrapeDialogProps> = (
     director,
     synopsis,
     studio,
-    url,
+    urls,
     frontImage,
     backImage,
   ];
@@ -117,7 +124,7 @@ export const MovieScrapeDialog: React.FC<IMovieScrapeDialogProps> = (
       director: director.getNewValue(),
       synopsis: synopsis.getNewValue(),
       studio: newStudioValue,
-      url: url.getNewValue(),
+      urls: urls.getNewValue(),
       front_image: frontImage.getNewValue(),
       back_image: backImage.getNewValue(),
     };
@@ -164,10 +171,10 @@ export const MovieScrapeDialog: React.FC<IMovieScrapeDialogProps> = (
           newStudio={newStudio}
           onCreateNew={createNewStudio}
         />
-        <ScrapedInputGroupRow
-          title="URL"
-          result={url}
-          onChange={(value) => setURL(value)}
+        <ScrapedStringListRow
+          title={intl.formatMessage({ id: "urls" })}
+          result={urls}
+          onChange={(value) => setURLs(value)}
         />
         <ScrapedImageRow
           title="Front Image"

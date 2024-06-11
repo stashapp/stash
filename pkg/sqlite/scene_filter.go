@@ -345,6 +345,8 @@ func (qb *sceneFilterHandler) isMissingCriterionHandler(isMissing *string) crite
 
 func (qb *sceneFilterHandler) urlsCriterionHandler(url *models.StringCriterionInput) criterionHandlerFunc {
 	h := stringListCriterionHandlerBuilder{
+		primaryTable: sceneTable,
+		primaryFK:    sceneIDColumn,
 		joinTable:    scenesURLsTable,
 		stringColumn: sceneURLColumn,
 		addJoinTable: func(f *filterBuilder) {
@@ -368,11 +370,23 @@ func (qb *sceneFilterHandler) getMultiCriterionHandlerBuilder(foreignTable, join
 
 func (qb *sceneFilterHandler) captionCriterionHandler(captions *models.StringCriterionInput) criterionHandlerFunc {
 	h := stringListCriterionHandlerBuilder{
+		primaryTable: sceneTable,
+		primaryFK:    sceneIDColumn,
 		joinTable:    videoCaptionsTable,
 		stringColumn: captionCodeColumn,
 		addJoinTable: func(f *filterBuilder) {
 			qb.addSceneFilesTable(f)
 			f.addLeftJoin(videoCaptionsTable, "", "video_captions.file_id = scenes_files.file_id")
+		},
+		excludeHandler: func(f *filterBuilder, criterion *models.StringCriterionInput) {
+			excludeClause := `scenes.id NOT IN (
+				SELECT scenes_files.scene_id from scenes_files 
+				INNER JOIN video_captions on video_captions.file_id = scenes_files.file_id 
+				WHERE video_captions.language_code LIKE ?
+			)`
+			f.addWhere(excludeClause, criterion.Value)
+
+			// TODO - should we also exclude null values?
 		},
 	}
 

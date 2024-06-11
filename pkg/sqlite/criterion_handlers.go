@@ -517,20 +517,51 @@ func (m *countCriterionHandlerBuilder) handler(criterion *models.IntCriterionInp
 
 // handler for StringCriterion for string list fields
 type stringListCriterionHandlerBuilder struct {
+	primaryTable string
+	// foreign key of the primary object on the join table
+	primaryFK string
 	// table joining primary and foreign objects
 	joinTable string
 	// string field on the join table
 	stringColumn string
 
-	addJoinTable func(f *filterBuilder)
+	addJoinTable   func(f *filterBuilder)
+	excludeHandler func(f *filterBuilder, criterion *models.StringCriterionInput)
 }
 
 func (m *stringListCriterionHandlerBuilder) handler(criterion *models.StringCriterionInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if criterion != nil {
-			m.addJoinTable(f)
+			if criterion.Modifier == models.CriterionModifierExcludes {
+				// special handling for excludes
+				if m.excludeHandler != nil {
+					m.excludeHandler(f, criterion)
+					return
+				}
 
-			stringCriterionHandler(criterion, m.joinTable+"."+m.stringColumn)(ctx, f)
+				// excludes all of the provided values
+				// need to use actual join table name for this
+				// <primaryTable>.id NOT IN (select <joinTable>.<primaryFK> from <joinTable> where <joinTable>.<foreignFK> in <values>)
+				whereClause := utils.StrFormat("{primaryTable}.id NOT IN (SELECT {joinTable}.{primaryFK} from {joinTable} where {joinTable}.{stringColumn} LIKE ?)",
+					utils.StrFormatMap{
+						"primaryTable": m.primaryTable,
+						"joinTable":    m.joinTable,
+						"primaryFK":    m.primaryFK,
+						"stringColumn": m.stringColumn,
+					},
+				)
+
+				f.addWhere(whereClause, "%"+criterion.Value+"%")
+
+				// TODO - should we also exclude null values?
+				// m.addJoinTable(f)
+				// stringCriterionHandler(&models.StringCriterionInput{
+				// 	Modifier: models.CriterionModifierNotNull,
+				// }, m.joinTable+"."+m.stringColumn)(ctx, f)
+			} else {
+				m.addJoinTable(f)
+				stringCriterionHandler(criterion, m.joinTable+"."+m.stringColumn)(ctx, f)
+			}
 		}
 	}
 }

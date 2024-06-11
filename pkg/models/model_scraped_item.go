@@ -368,13 +368,16 @@ type ScrapedMovie struct {
 	Date     *string        `json:"date"`
 	Rating   *string        `json:"rating"`
 	Director *string        `json:"director"`
-	URL      *string        `json:"url"`
+	URLs     []string       `json:"urls"`
 	Synopsis *string        `json:"synopsis"`
 	Studio   *ScrapedStudio `json:"studio"`
 	// This should be a base64 encoded data URL
 	FrontImage *string `json:"front_image"`
 	// This should be a base64 encoded data URL
 	BackImage *string `json:"back_image"`
+
+	// deprecated
+	URL *string `json:"url"`
 }
 
 func (ScrapedMovie) IsScrapedContent() {}

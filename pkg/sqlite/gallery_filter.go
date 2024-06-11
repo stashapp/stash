@@ -151,6 +151,8 @@ func (qb *galleryFilterHandler) criterionHandler() criterionHandler {
 
 func (qb *galleryFilterHandler) urlsCriterionHandler(url *models.StringCriterionInput) criterionHandlerFunc {
 	h := stringListCriterionHandlerBuilder{
+		primaryTable: galleryTable,
+		primaryFK:    galleryIDColumn,
 		joinTable:    galleriesURLsTable,
 		stringColumn: galleriesURLColumn,
 		addJoinTable: func(f *filterBuilder) {

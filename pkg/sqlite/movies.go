@@ -22,6 +22,9 @@ const (
 
 	movieFrontImageBlobColumn = "front_image_blob"
 	movieBackImageBlobColumn  = "back_image_blob"
+
+	movieURLsTable = "movie_urls"
+	movieURLColumn = "url"
 )
 
 type movieRow struct {
@@ -35,7 +38,6 @@ type movieRow struct {
 	StudioID  null.Int    `db:"studio_id,omitempty"`
 	Director  zero.String `db:"director"`
 	Synopsis  zero.String `db:"synopsis"`
-	URL       zero.String `db:"url"`
 	CreatedAt Timestamp   `db:"created_at"`
 	UpdatedAt Timestamp   `db:"updated_at"`
 
@@ -54,7 +56,6 @@ func (r *movieRow) fromMovie(o models.Movie) {
 	r.StudioID = intFromPtr(o.StudioID)
 	r.Director = zero.StringFrom(o.Director)
 	r.Synopsis = zero.StringFrom(o.Synopsis)
-	r.URL = zero.StringFrom(o.URL)
 	r.CreatedAt = Timestamp{Timestamp: o.CreatedAt}
 	r.UpdatedAt = Timestamp{Timestamp: o.UpdatedAt}
 }
@@ -70,7 +71,6 @@ func (r *movieRow) resolve() *models.Movie {
 		StudioID:  nullIntPtr(r.StudioID),
 		Director:  r.Director.String,
 		Synopsis:  r.Synopsis.String,
-		URL:       r.URL.String,
 		CreatedAt: r.CreatedAt.Timestamp,
 		UpdatedAt: r.UpdatedAt.Timestamp,
 	}
@@ -91,7 +91,6 @@ func (r *movieRowRecord) fromPartial(o models.MoviePartial) {
 	r.setNullInt("studio_id", o.StudioID)
 	r.setNullString("director", o.Director)
 	r.setNullString("synopsis", o.Synopsis)
-	r.setNullString("url", o.URL)
 	r.setTimestamp("created_at", o.CreatedAt)
 	r.setTimestamp("updated_at", o.UpdatedAt)
 }
@@ -148,6 +147,13 @@ func (qb *MovieStore) Create(ctx context.Context, newObject *models.Movie) error
 		return err
 	}
 
+	if newObject.URLs.Loaded() {
+		const startPos = 0
+		if err := moviesURLsTableMgr.insertJoins(ctx, id, startPos, newObject.URLs.List()); err != nil {
+			return err
+		}
+	}
+
 	updated, err := qb.find(ctx, id)
 	if err != nil {
 		return fmt.Errorf("finding after create: %w", err)
@@ -173,6 +179,12 @@ func (qb *MovieStore) UpdatePartial(ctx context.Context, id int, partial models.
 		}
 	}
 
+	if partial.URLs != nil {
+		if err := moviesURLsTableMgr.modifyJoins(ctx, id, partial.URLs.Values, partial.URLs.Mode); err != nil {
+			return nil, err
+		}
+	}
+
 	return qb.find(ctx, id)
 }
 
@@ -182,6 +194,12 @@ func (qb *MovieStore) Update(ctx context.Context, updatedObject *models.Movie) e
 
 	if err := qb.tableMgr.updateByID(ctx, updatedObject.ID, r); err != nil {
 		return err
+	}
+
+	if updatedObject.URLs.Loaded() {
+		if err := moviesURLsTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.URLs.List()); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -536,4 +554,8 @@ WHERE movies.studio_id = ?
 `
 	args := []interface{}{studioID}
 	return movieRepository.runCountQuery(ctx, query, args)
+}
+
+func (qb *MovieStore) GetURLs(ctx context.Context, movieID int) ([]string, error) {
+	return moviesURLsTableMgr.get(ctx, movieID)
 }
