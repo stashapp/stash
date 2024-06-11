@@ -681,7 +681,18 @@ declare namespace PluginApi {
     "SceneCard.Details": React.FC<any>;
     "SceneCard.Overlays": React.FC<any>;
     "SceneCard.Image": React.FC<any>;
-    SceneCard: React.FC<any>;
+    PluginSettings: React.FC<any>;
+    Setting: React.FC<any>;
+    SettingGroup: React.FC<any>;
+    BooleanSetting: React.FC<any>;
+    SelectSetting: React.FC<any>;
+    ChangeButtonSetting: React.FC<any>;
+    SettingModal: React.FC<any>;
+    ModalSetting: React.FC<any>;
+    StringSetting: React.FC<any>;
+    NumberSetting: React.FC<any>;
+    StringListSetting: React.FC<any>;
+    ConstantSetting: React.FC<any>;
   };
   namespace utils {
     namespace NavUtils {
@@ -921,6 +932,34 @@ declare namespace PluginApi {
       toast: any;
       success(message: JSX.Element | string): void;
       error(error: unknown): void;
+    };
+
+    function useSettings(): {
+      loading: boolean;
+      error: any | undefined;
+      general: any;
+      interface: any;
+      defaults: any;
+      scraping: any;
+      dlna: any;
+      ui: any;
+      plugins: any;
+
+      advancedMode: boolean;
+
+      // apikey isn't directly settable, so expose it here
+      apiKey: string;
+
+      saveGeneral: (input: any) => void;
+      saveInterface: (input: any) => void;
+      saveDefaults: (input: any) => void;
+      saveScraping: (input: any) => void;
+      saveDLNA: (input: any) => void;
+      saveUI: (input: any) => void;
+      savePluginSettings: (pluginID: string, input: {}) => void;
+      setAdvancedMode: (value: boolean) => void;
+
+      refetch: () => void;
     };
   }
   namespace patch {
