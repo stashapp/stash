@@ -24,6 +24,10 @@ const (
 	tagAliasColumn  = "alias"
 
 	tagImageBlobColumn = "image_blob"
+
+	tagRelationsTable = "tags_relations"
+	tagParentIDColumn = "parent_id"
+	tagChildIDColumn  = "child_id"
 )
 
 type tagRow struct {
@@ -173,6 +177,24 @@ func (qb *TagStore) Create(ctx context.Context, newObject *models.Tag) error {
 		return err
 	}
 
+	if newObject.Aliases.Loaded() {
+		if err := tagsAliasesTableMgr.insertJoins(ctx, id, newObject.Aliases.List()); err != nil {
+			return err
+		}
+	}
+
+	if newObject.ParentIDs.Loaded() {
+		if err := tagsParentTagsTableMgr.insertJoins(ctx, id, newObject.ParentIDs.List()); err != nil {
+			return err
+		}
+	}
+
+	if newObject.ChildIDs.Loaded() {
+		if err := tagsChildTagsTableMgr.insertJoins(ctx, id, newObject.ChildIDs.List()); err != nil {
+			return err
+		}
+	}
+
 	updated, err := qb.find(ctx, id)
 	if err != nil {
 		return fmt.Errorf("finding after create: %w", err)
@@ -198,6 +220,24 @@ func (qb *TagStore) UpdatePartial(ctx context.Context, id int, partial models.Ta
 		}
 	}
 
+	if partial.Aliases != nil {
+		if err := tagsAliasesTableMgr.modifyJoins(ctx, id, partial.Aliases.Values, partial.Aliases.Mode); err != nil {
+			return nil, err
+		}
+	}
+
+	if partial.ParentIDs != nil {
+		if err := tagsParentTagsTableMgr.modifyJoins(ctx, id, partial.ParentIDs.IDs, partial.ParentIDs.Mode); err != nil {
+			return nil, err
+		}
+	}
+
+	if partial.ChildIDs != nil {
+		if err := tagsChildTagsTableMgr.modifyJoins(ctx, id, partial.ChildIDs.IDs, partial.ChildIDs.Mode); err != nil {
+			return nil, err
+		}
+	}
+
 	return qb.find(ctx, id)
 }
 
@@ -207,6 +247,24 @@ func (qb *TagStore) Update(ctx context.Context, updatedObject *models.Tag) error
 
 	if err := qb.tableMgr.updateByID(ctx, updatedObject.ID, r); err != nil {
 		return err
+	}
+
+	if updatedObject.Aliases.Loaded() {
+		if err := tagsAliasesTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.Aliases.List()); err != nil {
+			return err
+		}
+	}
+
+	if updatedObject.ParentIDs.Loaded() {
+		if err := tagsParentTagsTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.ParentIDs.List()); err != nil {
+			return err
+		}
+	}
+
+	if updatedObject.ChildIDs.Loaded() {
+		if err := tagsChildTagsTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.ChildIDs.List()); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -421,6 +479,14 @@ func (qb *TagStore) FindByNames(ctx context.Context, names []string, nocase bool
 	}
 
 	return ret, nil
+}
+
+func (qb *TagStore) GetParentIDs(ctx context.Context, relatedID int) ([]int, error) {
+	return tagsParentTagsTableMgr.get(ctx, relatedID)
+}
+
+func (qb *TagStore) GetChildIDs(ctx context.Context, relatedID int) ([]int, error) {
+	return tagsChildTagsTableMgr.get(ctx, relatedID)
 }
 
 func (qb *TagStore) FindByParentTagID(ctx context.Context, parentID int) ([]*models.Tag, error) {
