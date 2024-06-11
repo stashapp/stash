@@ -212,6 +212,9 @@ func (qb *performerFilterHandler) performerIsMissingCriterionHandler(isMissing *
 	return func(ctx context.Context, f *filterBuilder) {
 		if isMissing != nil && *isMissing != "" {
 			switch *isMissing {
+			case "url":
+				performersURLsTableMgr.join(f, "", "performers.id")
+				f.addWhere("performer_urls.url IS NULL")
 			case "scenes": // Deprecated: use `scene_count == 0` filter instead
 				f.addLeftJoin(performersScenesTable, "scenes_join", "scenes_join.performer_id = performers.id")
 				f.addWhere("scenes_join.scene_id IS NULL")
