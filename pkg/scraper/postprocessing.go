@@ -67,6 +67,27 @@ func (c Cache) postScrapePerformer(ctx context.Context, p models.ScrapedPerforme
 
 	p.Country = resolveCountryName(p.Country)
 
+	// populate URL/URLs
+	// if URLs are provided, only use those
+	if len(p.URLs) > 0 {
+		p.URL = &p.URLs[0]
+	} else {
+		urls := []string{}
+		if p.URL != nil {
+			urls = append(urls, *p.URL)
+		}
+		if p.Twitter != nil {
+			urls = append(urls, *p.Twitter)
+		}
+		if p.Instagram != nil {
+			urls = append(urls, *p.Instagram)
+		}
+
+		if len(urls) > 0 {
+			p.URLs = urls
+		}
+	}
+
 	return p, nil
 }
 
