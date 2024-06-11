@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"strconv"
 
 	"github.com/jinzhu/copier"
 	"github.com/shurcooL/graphql"
@@ -309,63 +308,4 @@ func (s *stashScraper) scrapeGalleryByGallery(ctx context.Context, gallery *mode
 
 func (s *stashScraper) scrapeByURL(_ context.Context, _ string, _ ScrapeContentType) (ScrapedContent, error) {
 	return nil, ErrNotSupported
-}
-
-func sceneToUpdateInput(scene *models.Scene) models.SceneUpdateInput {
-	dateToStringPtr := func(s *models.Date) *string {
-		if s != nil {
-			v := s.String()
-			return &v
-		}
-
-		return nil
-	}
-
-	// fallback to file basename if title is empty
-	title := scene.GetTitle()
-
-	var url *string
-	urls := scene.URLs.List()
-	if len(urls) > 0 {
-		url = &urls[0]
-	}
-
-	return models.SceneUpdateInput{
-		ID:      strconv.Itoa(scene.ID),
-		Title:   &title,
-		Details: &scene.Details,
-		// include deprecated URL for now
-		URL:  url,
-		Urls: urls,
-		Date: dateToStringPtr(scene.Date),
-	}
-}
-
-func galleryToUpdateInput(gallery *models.Gallery) models.GalleryUpdateInput {
-	dateToStringPtr := func(s *models.Date) *string {
-		if s != nil {
-			v := s.String()
-			return &v
-		}
-
-		return nil
-	}
-
-	// fallback to file basename if title is empty
-	title := gallery.GetTitle()
-
-	var url *string
-	urls := gallery.URLs.List()
-	if len(urls) > 0 {
-		url = &urls[0]
-	}
-
-	return models.GalleryUpdateInput{
-		ID:      strconv.Itoa(gallery.ID),
-		Title:   &title,
-		Details: &gallery.Details,
-		URL:     url,
-		Urls:    urls,
-		Date:    dateToStringPtr(gallery.Date),
-	}
 }

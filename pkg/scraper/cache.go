@@ -53,6 +53,7 @@ func isCDPPathWS(c GlobalConfig) bool {
 type SceneFinder interface {
 	models.SceneGetter
 	models.URLLoader
+	models.VideoFileLoader
 }
 
 type PerformerFinder interface {
@@ -380,7 +381,15 @@ func (c Cache) getScene(ctx context.Context, sceneID int) (*models.Scene, error)
 			return fmt.Errorf("scene with id %d not found", sceneID)
 		}
 
-		return ret.LoadURLs(ctx, qb)
+		if err := ret.LoadURLs(ctx, qb); err != nil {
+			return err
+		}
+
+		if err := ret.LoadFiles(ctx, qb); err != nil {
+			return err
+		}
+
+		return nil
 	}); err != nil {
 		return nil, err
 	}
@@ -403,12 +412,15 @@ func (c Cache) getGallery(ctx context.Context, galleryID int) (*models.Gallery, 
 			return fmt.Errorf("gallery with id %d not found", galleryID)
 		}
 
-		err = ret.LoadFiles(ctx, qb)
-		if err != nil {
+		if err := ret.LoadURLs(ctx, qb); err != nil {
 			return err
 		}
 
-		return ret.LoadURLs(ctx, qb)
+		if err := ret.LoadFiles(ctx, qb); err != nil {
+			return err
+		}
+
+		return nil
 	}); err != nil {
 		return nil, err
 	}
