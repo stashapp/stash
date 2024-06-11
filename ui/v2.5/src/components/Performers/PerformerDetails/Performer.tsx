@@ -106,9 +106,9 @@ const PerformerPage: React.FC<IProps> = ({ performer, tabKey }) => {
     );
 
     return [
-      { icon: faLink, urls: others },
-      { icon: faTwitter, urls: twitter },
-      { icon: faInstagram, urls: instagram },
+      { icon: faLink, className: "", urls: others },
+      { icon: faTwitter, className: "twitter", urls: twitter },
+      { icon: faInstagram, className: "instagram", urls: instagram },
     ];
   }, [performer.urls]);
 
@@ -515,6 +515,7 @@ const PerformerPage: React.FC<IProps> = ({ performer, tabKey }) => {
           <ExternalLinksButton
             key={url.icon.iconName}
             icon={url.icon}
+            className={url.className}
             urls={url.urls}
           />
         ))}
