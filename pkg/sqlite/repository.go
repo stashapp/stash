@@ -20,7 +20,6 @@ type objectList interface {
 }
 
 type repository struct {
-	tx        dbWrapper
 	tableName string
 	idColumn  string
 }
@@ -48,7 +47,7 @@ func (r *repository) destroyExisting(ctx context.Context, ids []int) error {
 func (r *repository) destroy(ctx context.Context, ids []int) error {
 	for _, id := range ids {
 		stmt := fmt.Sprintf("DELETE FROM %s WHERE %s = ?", r.tableName, r.idColumn)
-		if _, err := r.tx.Exec(ctx, stmt, id); err != nil {
+		if _, err := dbWrapper.Exec(ctx, stmt, id); err != nil {
 			return err
 		}
 	}
@@ -78,7 +77,7 @@ func (r *repository) runCountQuery(ctx context.Context, query string, args []int
 	}{0}
 
 	// Perform query and fetch result
-	if err := r.tx.Get(ctx, &result, query, args...); err != nil && !errors.Is(err, sql.ErrNoRows) {
+	if err := dbWrapper.Get(ctx, &result, query, args...); err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return 0, err
 	}
 
@@ -90,7 +89,7 @@ func (r *repository) runIdsQuery(ctx context.Context, query string, args []inter
 		Int int `db:"id"`
 	}
 
-	if err := r.tx.Select(ctx, &result, query, args...); err != nil && !errors.Is(err, sql.ErrNoRows) {
+	if err := dbWrapper.Select(ctx, &result, query, args...); err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return []int{}, fmt.Errorf("running query: %s [%v]: %w", query, args, err)
 	}
 
@@ -102,7 +101,7 @@ func (r *repository) runIdsQuery(ctx context.Context, query string, args []inter
 }
 
 func (r *repository) queryFunc(ctx context.Context, query string, args []interface{}, single bool, f func(rows *sqlx.Rows) error) error {
-	rows, err := r.tx.Queryx(ctx, query, args...)
+	rows, err := dbWrapper.Queryx(ctx, query, args...)
 
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return err
@@ -150,7 +149,7 @@ func (r *repository) queryStruct(ctx context.Context, query string, args []inter
 }
 
 func (r *repository) querySimple(ctx context.Context, query string, args []interface{}, out interface{}) error {
-	rows, err := r.tx.Queryx(ctx, query, args...)
+	rows, err := dbWrapper.Queryx(ctx, query, args...)
 
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return err
@@ -230,7 +229,6 @@ func (r *repository) join(j joiner, as string, parentIDCol string) {
 	j.addLeftJoin(r.tableName, as, fmt.Sprintf("%s.%s = %s", t, r.idColumn, parentIDCol))
 }
 
-//nolint:golint,unused
 func (r *repository) innerJoin(j joiner, as string, parentIDCol string) {
 	t := r.tableName
 	if as != "" {
@@ -269,7 +267,7 @@ func (r *joinRepository) getIDs(ctx context.Context, id int) ([]int, error) {
 }
 
 func (r *joinRepository) insert(ctx context.Context, id int, foreignIDs ...int) error {
-	stmt, err := r.tx.Prepare(ctx, fmt.Sprintf("INSERT INTO %s (%s, %s) VALUES (?, ?)", r.tableName, r.idColumn, r.fkColumn))
+	stmt, err := dbWrapper.Prepare(ctx, fmt.Sprintf("INSERT INTO %s (%s, %s) VALUES (?, ?)", r.tableName, r.idColumn, r.fkColumn))
 	if err != nil {
 		return err
 	}
@@ -277,7 +275,7 @@ func (r *joinRepository) insert(ctx context.Context, id int, foreignIDs ...int) 
 	defer stmt.Close()
 
 	for _, fk := range foreignIDs {
-		if _, err := r.tx.ExecStmt(ctx, stmt, id, fk); err != nil {
+		if _, err := dbWrapper.ExecStmt(ctx, stmt, id, fk); err != nil {
 			return err
 		}
 	}
@@ -286,7 +284,7 @@ func (r *joinRepository) insert(ctx context.Context, id int, foreignIDs ...int) 
 
 // insertOrIgnore inserts a join into the table, silently failing in the event that a conflict occurs (ie when the join already exists)
 func (r *joinRepository) insertOrIgnore(ctx context.Context, id int, foreignIDs ...int) error {
-	stmt, err := r.tx.Prepare(ctx, fmt.Sprintf("INSERT INTO %s (%s, %s) VALUES (?, ?) ON CONFLICT (%[2]s, %s) DO NOTHING", r.tableName, r.idColumn, r.fkColumn))
+	stmt, err := dbWrapper.Prepare(ctx, fmt.Sprintf("INSERT INTO %s (%s, %s) VALUES (?, ?) ON CONFLICT (%[2]s, %s) DO NOTHING", r.tableName, r.idColumn, r.fkColumn))
 	if err != nil {
 		return err
 	}
@@ -294,7 +292,7 @@ func (r *joinRepository) insertOrIgnore(ctx context.Context, id int, foreignIDs 
 	defer stmt.Close()
 
 	for _, fk := range foreignIDs {
-		if _, err := r.tx.ExecStmt(ctx, stmt, id, fk); err != nil {
+		if _, err := dbWrapper.ExecStmt(ctx, stmt, id, fk); err != nil {
 			return err
 		}
 	}
@@ -310,7 +308,7 @@ func (r *joinRepository) destroyJoins(ctx context.Context, id int, foreignIDs ..
 		args[i+1] = v
 	}
 
-	if _, err := r.tx.Exec(ctx, stmt, args...); err != nil {
+	if _, err := dbWrapper.Exec(ctx, stmt, args...); err != nil {
 		return err
 	}
 
@@ -360,7 +358,7 @@ func (r *captionRepository) get(ctx context.Context, id models.FileID) ([]*model
 
 func (r *captionRepository) insert(ctx context.Context, id models.FileID, caption *models.VideoCaption) (sql.Result, error) {
 	stmt := fmt.Sprintf("INSERT INTO %s (%s, %s, %s, %s) VALUES (?, ?, ?, ?)", r.tableName, r.idColumn, captionCodeColumn, captionFilenameColumn, captionTypeColumn)
-	return r.tx.Exec(ctx, stmt, id, caption.LanguageCode, caption.Filename, caption.CaptionType)
+	return dbWrapper.Exec(ctx, stmt, id, caption.LanguageCode, caption.Filename, caption.CaptionType)
 }
 
 func (r *captionRepository) replace(ctx context.Context, id models.FileID, captions []*models.VideoCaption) error {
@@ -399,7 +397,7 @@ func (r *stringRepository) get(ctx context.Context, id int) ([]string, error) {
 
 func (r *stringRepository) insert(ctx context.Context, id int, s string) (sql.Result, error) {
 	stmt := fmt.Sprintf("INSERT INTO %s (%s, %s) VALUES (?, ?)", r.tableName, r.idColumn, r.stringColumn)
-	return r.tx.Exec(ctx, stmt, id, s)
+	return dbWrapper.Exec(ctx, stmt, id, s)
 }
 
 func (r *stringRepository) replace(ctx context.Context, id int, newStrings []string) error {

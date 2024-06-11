@@ -5,8 +5,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"strconv"
-	"strings"
 
 	"github.com/doug-martin/goqu/v9"
 	"github.com/doug-martin/goqu/v9/exp"
@@ -176,8 +174,66 @@ func (r *performerRowRecord) fromPartial(o models.PerformerPartial) {
 	r.setBool("ignore_auto_tag", o.IgnoreAutoTag)
 }
 
-type PerformerStore struct {
+type performerRepositoryType struct {
 	repository
+
+	tags     joinRepository
+	stashIDs stashIDRepository
+
+	scenes    joinRepository
+	images    joinRepository
+	galleries joinRepository
+}
+
+var (
+	performerRepository = performerRepositoryType{
+		repository: repository{
+			tableName: performerTable,
+			idColumn:  idColumn,
+		},
+		tags: joinRepository{
+			repository: repository{
+				tableName: performersTagsTable,
+				idColumn:  performerIDColumn,
+			},
+			fkColumn:     tagIDColumn,
+			foreignTable: tagTable,
+			orderBy:      "tags.name ASC",
+		},
+		stashIDs: stashIDRepository{
+			repository{
+				tableName: "performer_stash_ids",
+				idColumn:  performerIDColumn,
+			},
+		},
+		scenes: joinRepository{
+			repository: repository{
+				tableName: performersScenesTable,
+				idColumn:  performerIDColumn,
+			},
+			fkColumn:     sceneIDColumn,
+			foreignTable: sceneTable,
+		},
+		images: joinRepository{
+			repository: repository{
+				tableName: performersImagesTable,
+				idColumn:  performerIDColumn,
+			},
+			fkColumn:     imageIDColumn,
+			foreignTable: imageTable,
+		},
+		galleries: joinRepository{
+			repository: repository{
+				tableName: performersGalleriesTable,
+				idColumn:  performerIDColumn,
+			},
+			fkColumn:     galleryIDColumn,
+			foreignTable: galleryTable,
+		},
+	}
+)
+
+type PerformerStore struct {
 	blobJoinQueryBuilder
 
 	tableMgr *table
@@ -185,10 +241,6 @@ type PerformerStore struct {
 
 func NewPerformerStore(blobStore *BlobStore) *PerformerStore {
 	return &PerformerStore{
-		repository: repository{
-			tableName: performerTable,
-			idColumn:  idColumn,
-		},
 		blobJoinQueryBuilder: blobJoinQueryBuilder{
 			blobStore: blobStore,
 			joinTable: performerTable,
@@ -312,7 +364,7 @@ func (qb *PerformerStore) Destroy(ctx context.Context, id int) error {
 		return err
 	}
 
-	return qb.destroyExisting(ctx, []int{id})
+	return performerRepository.destroyExisting(ctx, []int{id})
 }
 
 // returns nil, nil if not found
@@ -525,161 +577,6 @@ func (qb *PerformerStore) QueryForAutoTag(ctx context.Context, words []string) (
 	return ret, nil
 }
 
-func (qb *PerformerStore) validateFilter(filter *models.PerformerFilterType) error {
-	const and = "AND"
-	const or = "OR"
-	const not = "NOT"
-
-	if filter.And != nil {
-		if filter.Or != nil {
-			return illegalFilterCombination(and, or)
-		}
-		if filter.Not != nil {
-			return illegalFilterCombination(and, not)
-		}
-
-		return qb.validateFilter(filter.And)
-	}
-
-	if filter.Or != nil {
-		if filter.Not != nil {
-			return illegalFilterCombination(or, not)
-		}
-
-		return qb.validateFilter(filter.Or)
-	}
-
-	if filter.Not != nil {
-		return qb.validateFilter(filter.Not)
-	}
-
-	// if legacy height filter used, ensure only supported modifiers are used
-	if filter.Height != nil {
-		// treat as an int filter
-		intCrit := &models.IntCriterionInput{
-			Modifier: filter.Height.Modifier,
-		}
-		if !intCrit.ValidModifier() {
-			return fmt.Errorf("invalid height modifier: %s", filter.Height.Modifier)
-		}
-
-		// ensure value is a valid number
-		if _, err := strconv.Atoi(filter.Height.Value); err != nil {
-			return fmt.Errorf("invalid height value: %s", filter.Height.Value)
-		}
-	}
-
-	return nil
-}
-
-func (qb *PerformerStore) makeFilter(ctx context.Context, filter *models.PerformerFilterType) *filterBuilder {
-	query := &filterBuilder{}
-
-	if filter.And != nil {
-		query.and(qb.makeFilter(ctx, filter.And))
-	}
-	if filter.Or != nil {
-		query.or(qb.makeFilter(ctx, filter.Or))
-	}
-	if filter.Not != nil {
-		query.not(qb.makeFilter(ctx, filter.Not))
-	}
-
-	const tableName = performerTable
-	query.handleCriterion(ctx, stringCriterionHandler(filter.Name, tableName+".name"))
-	query.handleCriterion(ctx, stringCriterionHandler(filter.Disambiguation, tableName+".disambiguation"))
-	query.handleCriterion(ctx, stringCriterionHandler(filter.Details, tableName+".details"))
-
-	query.handleCriterion(ctx, boolCriterionHandler(filter.FilterFavorites, tableName+".favorite", nil))
-	query.handleCriterion(ctx, boolCriterionHandler(filter.IgnoreAutoTag, tableName+".ignore_auto_tag", nil))
-
-	query.handleCriterion(ctx, yearFilterCriterionHandler(filter.BirthYear, tableName+".birthdate"))
-	query.handleCriterion(ctx, yearFilterCriterionHandler(filter.DeathYear, tableName+".death_date"))
-
-	query.handleCriterion(ctx, performerAgeFilterCriterionHandler(filter.Age))
-
-	query.handleCriterion(ctx, criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
-		if gender := filter.Gender; gender != nil {
-			genderCopy := *gender
-			if genderCopy.Value.IsValid() && len(genderCopy.ValueList) == 0 {
-				genderCopy.ValueList = []models.GenderEnum{genderCopy.Value}
-			}
-
-			v := utils.StringerSliceToStringSlice(genderCopy.ValueList)
-			enumCriterionHandler(genderCopy.Modifier, v, tableName+".gender")(ctx, f)
-		}
-	}))
-
-	query.handleCriterion(ctx, performerIsMissingCriterionHandler(qb, filter.IsMissing))
-	query.handleCriterion(ctx, stringCriterionHandler(filter.Ethnicity, tableName+".ethnicity"))
-	query.handleCriterion(ctx, stringCriterionHandler(filter.Country, tableName+".country"))
-	query.handleCriterion(ctx, stringCriterionHandler(filter.EyeColor, tableName+".eye_color"))
-
-	// special handler for legacy height filter
-	heightCmCrit := filter.HeightCm
-	if heightCmCrit == nil && filter.Height != nil {
-		heightCm, _ := strconv.Atoi(filter.Height.Value) // already validated
-		heightCmCrit = &models.IntCriterionInput{
-			Value:    heightCm,
-			Modifier: filter.Height.Modifier,
-		}
-	}
-
-	query.handleCriterion(ctx, intCriterionHandler(heightCmCrit, tableName+".height", nil))
-
-	query.handleCriterion(ctx, stringCriterionHandler(filter.Measurements, tableName+".measurements"))
-	query.handleCriterion(ctx, stringCriterionHandler(filter.FakeTits, tableName+".fake_tits"))
-	query.handleCriterion(ctx, floatCriterionHandler(filter.PenisLength, tableName+".penis_length", nil))
-
-	query.handleCriterion(ctx, criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
-		if circumcised := filter.Circumcised; circumcised != nil {
-			v := utils.StringerSliceToStringSlice(circumcised.Value)
-			enumCriterionHandler(circumcised.Modifier, v, tableName+".circumcised")(ctx, f)
-		}
-	}))
-
-	query.handleCriterion(ctx, stringCriterionHandler(filter.CareerLength, tableName+".career_length"))
-	query.handleCriterion(ctx, stringCriterionHandler(filter.Tattoos, tableName+".tattoos"))
-	query.handleCriterion(ctx, stringCriterionHandler(filter.Piercings, tableName+".piercings"))
-	query.handleCriterion(ctx, intCriterionHandler(filter.Rating100, tableName+".rating", nil))
-	query.handleCriterion(ctx, stringCriterionHandler(filter.HairColor, tableName+".hair_color"))
-	query.handleCriterion(ctx, stringCriterionHandler(filter.URL, tableName+".url"))
-	query.handleCriterion(ctx, intCriterionHandler(filter.Weight, tableName+".weight", nil))
-	query.handleCriterion(ctx, criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
-		if filter.StashID != nil {
-			qb.stashIDRepository().join(f, "performer_stash_ids", "performers.id")
-			stringCriterionHandler(filter.StashID, "performer_stash_ids.stash_id")(ctx, f)
-		}
-	}))
-	query.handleCriterion(ctx, &stashIDCriterionHandler{
-		c:                 filter.StashIDEndpoint,
-		stashIDRepository: qb.stashIDRepository(),
-		stashIDTableAs:    "performer_stash_ids",
-		parentIDCol:       "performers.id",
-	})
-
-	query.handleCriterion(ctx, performerAliasCriterionHandler(qb, filter.Aliases))
-
-	query.handleCriterion(ctx, performerTagsCriterionHandler(qb, filter.Tags))
-
-	query.handleCriterion(ctx, performerStudiosCriterionHandler(qb, filter.Studios))
-
-	query.handleCriterion(ctx, performerAppearsWithCriterionHandler(qb, filter.Performers))
-
-	query.handleCriterion(ctx, performerTagCountCriterionHandler(qb, filter.TagCount))
-	query.handleCriterion(ctx, performerSceneCountCriterionHandler(qb, filter.SceneCount))
-	query.handleCriterion(ctx, performerImageCountCriterionHandler(qb, filter.ImageCount))
-	query.handleCriterion(ctx, performerGalleryCountCriterionHandler(qb, filter.GalleryCount))
-	query.handleCriterion(ctx, performerPlayCounterCriterionHandler(qb, filter.PlayCount))
-	query.handleCriterion(ctx, performerOCounterCriterionHandler(qb, filter.OCounter))
-	query.handleCriterion(ctx, dateCriterionHandler(filter.Birthdate, tableName+".birthdate"))
-	query.handleCriterion(ctx, dateCriterionHandler(filter.DeathDate, tableName+".death_date"))
-	query.handleCriterion(ctx, timestampCriterionHandler(filter.CreatedAt, tableName+".created_at"))
-	query.handleCriterion(ctx, timestampCriterionHandler(filter.UpdatedAt, tableName+".updated_at"))
-
-	return query
-}
-
 func (qb *PerformerStore) makeQuery(ctx context.Context, performerFilter *models.PerformerFilterType, findFilter *models.FindFilterType) (*queryBuilder, error) {
 	if performerFilter == nil {
 		performerFilter = &models.PerformerFilterType{}
@@ -688,7 +585,7 @@ func (qb *PerformerStore) makeQuery(ctx context.Context, performerFilter *models
 		findFilter = &models.FindFilterType{}
 	}
 
-	query := qb.newQuery()
+	query := performerRepository.newQuery()
 	distinctIDs(&query, performerTable)
 
 	if q := findFilter.Q; q != nil && *q != "" {
@@ -697,10 +594,9 @@ func (qb *PerformerStore) makeQuery(ctx context.Context, performerFilter *models
 		query.parseQueryString(searchColumns, *q)
 	}
 
-	if err := qb.validateFilter(performerFilter); err != nil {
-		return nil, err
-	}
-	filter := qb.makeFilter(ctx, performerFilter)
+	filter := filterBuilderFromHandler(ctx, &performerFilterHandler{
+		performerFilter: performerFilter,
+	})
 
 	if err := query.addFilter(filter); err != nil {
 		return nil, err
@@ -744,164 +640,15 @@ func (qb *PerformerStore) QueryCount(ctx context.Context, performerFilter *model
 	return query.executeCount(ctx)
 }
 
-// TODO - we need to provide a whitelist of possible values
-func performerIsMissingCriterionHandler(qb *PerformerStore, isMissing *string) criterionHandlerFunc {
-	return func(ctx context.Context, f *filterBuilder) {
-		if isMissing != nil && *isMissing != "" {
-			switch *isMissing {
-			case "scenes": // Deprecated: use `scene_count == 0` filter instead
-				f.addLeftJoin(performersScenesTable, "scenes_join", "scenes_join.performer_id = performers.id")
-				f.addWhere("scenes_join.scene_id IS NULL")
-			case "image":
-				f.addWhere("performers.image_blob IS NULL")
-			case "stash_id":
-				performersStashIDsTableMgr.join(f, "performer_stash_ids", "performers.id")
-				f.addWhere("performer_stash_ids.performer_id IS NULL")
-			case "aliases":
-				performersAliasesTableMgr.join(f, "", "performers.id")
-				f.addWhere("performer_aliases.alias IS NULL")
-			default:
-				f.addWhere("(performers." + *isMissing + " IS NULL OR TRIM(performers." + *isMissing + ") = '')")
-			}
-		}
-	}
+func (qb *PerformerStore) sortByOCounter(direction string) string {
+	// need to sum the o_counter from scenes and images
+	return " ORDER BY (" + selectPerformerOCountSQL + ") " + direction
 }
 
-func yearFilterCriterionHandler(year *models.IntCriterionInput, col string) criterionHandlerFunc {
-	return func(ctx context.Context, f *filterBuilder) {
-		if year != nil && year.Modifier.IsValid() {
-			clause, args := getIntCriterionWhereClause("cast(strftime('%Y', "+col+") as int)", *year)
-			f.addWhere(clause, args...)
-		}
-	}
+func (qb *PerformerStore) sortByPlayCount(direction string) string {
+	// need to sum the o_counter from scenes and images
+	return " ORDER BY (" + selectPerformerPlayCountSQL + ") " + direction
 }
-
-func performerAgeFilterCriterionHandler(age *models.IntCriterionInput) criterionHandlerFunc {
-	return func(ctx context.Context, f *filterBuilder) {
-		if age != nil && age.Modifier.IsValid() {
-			clause, args := getIntCriterionWhereClause(
-				"cast(IFNULL(strftime('%Y.%m%d', performers.death_date), strftime('%Y.%m%d', 'now')) - strftime('%Y.%m%d', performers.birthdate) as int)",
-				*age,
-			)
-			f.addWhere(clause, args...)
-		}
-	}
-}
-
-func performerAliasCriterionHandler(qb *PerformerStore, alias *models.StringCriterionInput) criterionHandlerFunc {
-	h := stringListCriterionHandlerBuilder{
-		joinTable:    performersAliasesTable,
-		stringColumn: performerAliasColumn,
-		addJoinTable: func(f *filterBuilder) {
-			performersAliasesTableMgr.join(f, "", "performers.id")
-		},
-	}
-
-	return h.handler(alias)
-}
-
-func performerTagsCriterionHandler(qb *PerformerStore, tags *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
-	h := joinedHierarchicalMultiCriterionHandlerBuilder{
-		tx: qb.tx,
-
-		primaryTable: performerTable,
-		foreignTable: tagTable,
-		foreignFK:    "tag_id",
-
-		relationsTable: "tags_relations",
-		joinAs:         "image_tag",
-		joinTable:      performersTagsTable,
-		primaryFK:      performerIDColumn,
-	}
-
-	return h.handler(tags)
-}
-
-func performerTagCountCriterionHandler(qb *PerformerStore, count *models.IntCriterionInput) criterionHandlerFunc {
-	h := countCriterionHandlerBuilder{
-		primaryTable: performerTable,
-		joinTable:    performersTagsTable,
-		primaryFK:    performerIDColumn,
-	}
-
-	return h.handler(count)
-}
-
-func performerSceneCountCriterionHandler(qb *PerformerStore, count *models.IntCriterionInput) criterionHandlerFunc {
-	h := countCriterionHandlerBuilder{
-		primaryTable: performerTable,
-		joinTable:    performersScenesTable,
-		primaryFK:    performerIDColumn,
-	}
-
-	return h.handler(count)
-}
-
-func performerImageCountCriterionHandler(qb *PerformerStore, count *models.IntCriterionInput) criterionHandlerFunc {
-	h := countCriterionHandlerBuilder{
-		primaryTable: performerTable,
-		joinTable:    performersImagesTable,
-		primaryFK:    performerIDColumn,
-	}
-
-	return h.handler(count)
-}
-
-func performerGalleryCountCriterionHandler(qb *PerformerStore, count *models.IntCriterionInput) criterionHandlerFunc {
-	h := countCriterionHandlerBuilder{
-		primaryTable: performerTable,
-		joinTable:    performersGalleriesTable,
-		primaryFK:    performerIDColumn,
-	}
-
-	return h.handler(count)
-}
-
-// used for sorting and filtering on performer o-count
-var selectPerformerOCountSQL = utils.StrFormat(
-	"SELECT SUM(o_counter) "+
-		"FROM ("+
-		"SELECT SUM(o_counter) as o_counter from {performers_images} s "+
-		"LEFT JOIN {images} ON {images}.id = s.{images_id} "+
-		"WHERE s.{performer_id} = {performers}.id "+
-		"UNION ALL "+
-		"SELECT COUNT({scenes_o_dates}.{o_date}) as o_counter from {performers_scenes} s "+
-		"LEFT JOIN {scenes} ON {scenes}.id = s.{scene_id} "+
-		"LEFT JOIN {scenes_o_dates} ON {scenes_o_dates}.{scene_id} = {scenes}.id "+
-		"WHERE s.{performer_id} = {performers}.id "+
-		")",
-	map[string]interface{}{
-		"performers_images": performersImagesTable,
-		"images":            imageTable,
-		"performer_id":      performerIDColumn,
-		"images_id":         imageIDColumn,
-		"performers":        performerTable,
-		"performers_scenes": performersScenesTable,
-		"scenes":            sceneTable,
-		"scene_id":          sceneIDColumn,
-		"scenes_o_dates":    scenesODatesTable,
-		"o_date":            sceneODateColumn,
-	},
-)
-
-// used for sorting and filtering play count on performer view count
-var selectPerformerPlayCountSQL = utils.StrFormat(
-	"SELECT COUNT(DISTINCT {view_date}) FROM ("+
-		"SELECT {view_date} FROM {performers_scenes} s "+
-		"LEFT JOIN {scenes} ON {scenes}.id = s.{scene_id} "+
-		"LEFT JOIN {scenes_view_dates} ON {scenes_view_dates}.{scene_id} = {scenes}.id "+
-		"WHERE s.{performer_id} = {performers}.id"+
-		")",
-	map[string]interface{}{
-		"performer_id":      performerIDColumn,
-		"performers":        performerTable,
-		"performers_scenes": performersScenesTable,
-		"scenes":            sceneTable,
-		"scene_id":          sceneIDColumn,
-		"scenes_view_dates": scenesViewDatesTable,
-		"view_date":         sceneViewDateColumn,
-	},
-)
 
 // used for sorting on performer last o_date
 var selectPerformerLastOAtSQL = utils.StrFormat(
@@ -922,6 +669,11 @@ var selectPerformerLastOAtSQL = utils.StrFormat(
 	},
 )
 
+func (qb *PerformerStore) sortByLastOAt(direction string) string {
+	// need to get the o_dates from scenes
+	return " ORDER BY (" + selectPerformerLastOAtSQL + ") " + direction
+}
+
 // used for sorting on performer last view_date
 var selectPerformerLastPlayedAtSQL = utils.StrFormat(
 	"SELECT MAX(view_date) FROM ("+
@@ -940,182 +692,6 @@ var selectPerformerLastPlayedAtSQL = utils.StrFormat(
 		"view_date":         sceneViewDateColumn,
 	},
 )
-
-func performerOCounterCriterionHandler(qb *PerformerStore, count *models.IntCriterionInput) criterionHandlerFunc {
-	return func(ctx context.Context, f *filterBuilder) {
-		if count == nil {
-			return
-		}
-
-		lhs := "(" + selectPerformerOCountSQL + ")"
-		clause, args := getIntCriterionWhereClause(lhs, *count)
-
-		f.addWhere(clause, args...)
-	}
-}
-
-func performerPlayCounterCriterionHandler(qb *PerformerStore, count *models.IntCriterionInput) criterionHandlerFunc {
-	return func(ctx context.Context, f *filterBuilder) {
-		if count == nil {
-			return
-		}
-
-		lhs := "(" + selectPerformerPlayCountSQL + ")"
-		clause, args := getIntCriterionWhereClause(lhs, *count)
-
-		f.addWhere(clause, args...)
-	}
-}
-
-func performerStudiosCriterionHandler(qb *PerformerStore, studios *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
-	return func(ctx context.Context, f *filterBuilder) {
-		if studios != nil {
-			formatMaps := []utils.StrFormatMap{
-				{
-					"primaryTable": sceneTable,
-					"joinTable":    performersScenesTable,
-					"primaryFK":    sceneIDColumn,
-				},
-				{
-					"primaryTable": imageTable,
-					"joinTable":    performersImagesTable,
-					"primaryFK":    imageIDColumn,
-				},
-				{
-					"primaryTable": galleryTable,
-					"joinTable":    performersGalleriesTable,
-					"primaryFK":    galleryIDColumn,
-				},
-			}
-
-			if studios.Modifier == models.CriterionModifierIsNull || studios.Modifier == models.CriterionModifierNotNull {
-				var notClause string
-				if studios.Modifier == models.CriterionModifierNotNull {
-					notClause = "NOT"
-				}
-
-				var conditions []string
-				for _, c := range formatMaps {
-					f.addLeftJoin(c["joinTable"].(string), "", fmt.Sprintf("%s.performer_id = performers.id", c["joinTable"]))
-					f.addLeftJoin(c["primaryTable"].(string), "", fmt.Sprintf("%s.%s = %s.id", c["joinTable"], c["primaryFK"], c["primaryTable"]))
-
-					conditions = append(conditions, fmt.Sprintf("%s.studio_id IS NULL", c["primaryTable"]))
-				}
-
-				f.addWhere(fmt.Sprintf("%s (%s)", notClause, strings.Join(conditions, " AND ")))
-				return
-			}
-
-			if len(studios.Value) == 0 {
-				return
-			}
-
-			var clauseCondition string
-
-			switch studios.Modifier {
-			case models.CriterionModifierIncludes:
-				// return performers who appear in scenes/images/galleries with any of the given studios
-				clauseCondition = "NOT"
-			case models.CriterionModifierExcludes:
-				// exclude performers who appear in scenes/images/galleries with any of the given studios
-				clauseCondition = ""
-			default:
-				return
-			}
-
-			const derivedPerformerStudioTable = "performer_studio"
-			valuesClause, err := getHierarchicalValues(ctx, qb.tx, studios.Value, studioTable, "", "parent_id", "child_id", studios.Depth)
-			if err != nil {
-				f.setError(err)
-				return
-			}
-			f.addWith("studio(root_id, item_id) AS (" + valuesClause + ")")
-
-			templStr := `SELECT performer_id FROM {primaryTable}
-	INNER JOIN {joinTable} ON {primaryTable}.id = {joinTable}.{primaryFK}
-	INNER JOIN studio ON {primaryTable}.studio_id = studio.item_id`
-
-			var unions []string
-			for _, c := range formatMaps {
-				unions = append(unions, utils.StrFormat(templStr, c))
-			}
-
-			f.addWith(fmt.Sprintf("%s AS (%s)", derivedPerformerStudioTable, strings.Join(unions, " UNION ")))
-
-			f.addLeftJoin(derivedPerformerStudioTable, "", fmt.Sprintf("performers.id = %s.performer_id", derivedPerformerStudioTable))
-			f.addWhere(fmt.Sprintf("%s.performer_id IS %s NULL", derivedPerformerStudioTable, clauseCondition))
-		}
-	}
-}
-
-func performerAppearsWithCriterionHandler(qb *PerformerStore, performers *models.MultiCriterionInput) criterionHandlerFunc {
-	return func(ctx context.Context, f *filterBuilder) {
-		if performers != nil {
-			formatMaps := []utils.StrFormatMap{
-				{
-					"primaryTable": performersScenesTable,
-					"joinTable":    performersScenesTable,
-					"primaryFK":    sceneIDColumn,
-				},
-				{
-					"primaryTable": performersImagesTable,
-					"joinTable":    performersImagesTable,
-					"primaryFK":    imageIDColumn,
-				},
-				{
-					"primaryTable": performersGalleriesTable,
-					"joinTable":    performersGalleriesTable,
-					"primaryFK":    galleryIDColumn,
-				},
-			}
-
-			if len(performers.Value) == '0' {
-				return
-			}
-
-			const derivedPerformerPerformersTable = "performer_performers"
-
-			valuesClause := strings.Join(performers.Value, "),(")
-
-			f.addWith("performer(id) AS (VALUES(" + valuesClause + "))")
-
-			templStr := `SELECT {primaryTable}2.performer_id FROM {primaryTable}
-			INNER JOIN {primaryTable} AS {primaryTable}2 ON {primaryTable}.{primaryFK} = {primaryTable}2.{primaryFK}
-			INNER JOIN performer ON {primaryTable}.performer_id = performer.id
-			WHERE {primaryTable}2.performer_id != performer.id`
-
-			if performers.Modifier == models.CriterionModifierIncludesAll && len(performers.Value) > 1 {
-				templStr += `
-							GROUP BY {primaryTable}2.performer_id
-							HAVING(count(distinct {primaryTable}.performer_id) IS ` + strconv.Itoa(len(performers.Value)) + `)`
-			}
-
-			var unions []string
-			for _, c := range formatMaps {
-				unions = append(unions, utils.StrFormat(templStr, c))
-			}
-
-			f.addWith(fmt.Sprintf("%s AS (%s)", derivedPerformerPerformersTable, strings.Join(unions, " UNION ")))
-
-			f.addInnerJoin(derivedPerformerPerformersTable, "", fmt.Sprintf("performers.id = %s.performer_id", derivedPerformerPerformersTable))
-		}
-	}
-}
-
-func (qb *PerformerStore) sortByOCounter(direction string) string {
-	// need to sum the o_counter from scenes and images
-	return " ORDER BY (" + selectPerformerOCountSQL + ") " + direction
-}
-
-func (qb *PerformerStore) sortByPlayCount(direction string) string {
-	// need to sum the o_counter from scenes and images
-	return " ORDER BY (" + selectPerformerPlayCountSQL + ") " + direction
-}
-
-func (qb *PerformerStore) sortByLastOAt(direction string) string {
-	// need to get the o_dates from scenes
-	return " ORDER BY (" + selectPerformerLastOAtSQL + ") " + direction
-}
 
 func (qb *PerformerStore) sortByLastPlayedAt(direction string) string {
 	// need to get the view_dates from scenes
@@ -1185,21 +761,8 @@ func (qb *PerformerStore) getPerformerSort(findFilter *models.FindFilterType) (s
 	return sortQuery, nil
 }
 
-func (qb *PerformerStore) tagsRepository() *joinRepository {
-	return &joinRepository{
-		repository: repository{
-			tx:        qb.tx,
-			tableName: performersTagsTable,
-			idColumn:  performerIDColumn,
-		},
-		fkColumn:     tagIDColumn,
-		foreignTable: tagTable,
-		orderBy:      "tags.name ASC",
-	}
-}
-
 func (qb *PerformerStore) GetTagIDs(ctx context.Context, id int) ([]int, error) {
-	return qb.tagsRepository().getIDs(ctx, id)
+	return performerRepository.tags.getIDs(ctx, id)
 }
 
 func (qb *PerformerStore) GetImage(ctx context.Context, performerID int) ([]byte, error) {
@@ -1216,16 +779,6 @@ func (qb *PerformerStore) UpdateImage(ctx context.Context, performerID int, imag
 
 func (qb *PerformerStore) destroyImage(ctx context.Context, performerID int) error {
 	return qb.blobJoinQueryBuilder.DestroyImage(ctx, performerID, performerImageBlobColumn)
-}
-
-func (qb *PerformerStore) stashIDRepository() *stashIDRepository {
-	return &stashIDRepository{
-		repository{
-			tx:        qb.tx,
-			tableName: "performer_stash_ids",
-			idColumn:  performerIDColumn,
-		},
-	}
 }
 
 func (qb *PerformerStore) GetAliases(ctx context.Context, performerID int) ([]string, error) {

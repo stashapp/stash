@@ -112,24 +112,87 @@ func (r *imageRowRecord) fromPartial(i models.ImagePartial) {
 	r.setTimestamp("updated_at", i.UpdatedAt)
 }
 
-type ImageStore struct {
+type imageRepositoryType struct {
 	repository
-
-	tableMgr *table
-	oCounterManager
-
-	fileStore *FileStore
+	performers joinRepository
+	galleries  joinRepository
+	tags       joinRepository
+	files      filesRepository
 }
 
-func NewImageStore(fileStore *FileStore) *ImageStore {
-	return &ImageStore{
+func (r *imageRepositoryType) addImagesFilesTable(f *filterBuilder) {
+	f.addLeftJoin(imagesFilesTable, "", "images_files.image_id = images.id")
+}
+
+func (r *imageRepositoryType) addFilesTable(f *filterBuilder) {
+	r.addImagesFilesTable(f)
+	f.addLeftJoin(fileTable, "", "images_files.file_id = files.id")
+}
+
+func (r *imageRepositoryType) addFoldersTable(f *filterBuilder) {
+	r.addFilesTable(f)
+	f.addLeftJoin(folderTable, "", "files.parent_folder_id = folders.id")
+}
+
+func (r *imageRepositoryType) addImageFilesTable(f *filterBuilder) {
+	r.addImagesFilesTable(f)
+	f.addLeftJoin(imageFileTable, "", "image_files.file_id = images_files.file_id")
+}
+
+var (
+	imageRepository = imageRepositoryType{
 		repository: repository{
 			tableName: imageTable,
 			idColumn:  idColumn,
 		},
+
+		performers: joinRepository{
+			repository: repository{
+				tableName: performersImagesTable,
+				idColumn:  imageIDColumn,
+			},
+			fkColumn: performerIDColumn,
+		},
+
+		galleries: joinRepository{
+			repository: repository{
+				tableName: galleriesImagesTable,
+				idColumn:  imageIDColumn,
+			},
+			fkColumn: galleryIDColumn,
+		},
+
+		files: filesRepository{
+			repository: repository{
+				tableName: imagesFilesTable,
+				idColumn:  imageIDColumn,
+			},
+		},
+
+		tags: joinRepository{
+			repository: repository{
+				tableName: imagesTagsTable,
+				idColumn:  imageIDColumn,
+			},
+			fkColumn:     tagIDColumn,
+			foreignTable: tagTable,
+			orderBy:      "tags.name ASC",
+		},
+	}
+)
+
+type ImageStore struct {
+	tableMgr *table
+	oCounterManager
+
+	repo *storeRepository
+}
+
+func NewImageStore(r *storeRepository) *ImageStore {
+	return &ImageStore{
 		tableMgr:        imageTableMgr,
 		oCounterManager: oCounterManager{imageTableMgr},
-		fileStore:       fileStore,
+		repo:            r,
 	}
 }
 
@@ -418,13 +481,13 @@ func (qb *ImageStore) getMany(ctx context.Context, q *goqu.SelectDataset) ([]*mo
 }
 
 func (qb *ImageStore) GetFiles(ctx context.Context, id int) ([]models.File, error) {
-	fileIDs, err := qb.filesRepository().get(ctx, id)
+	fileIDs, err := imageRepository.files.get(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
 	// use fileStore to load files
-	files, err := qb.fileStore.Find(ctx, fileIDs...)
+	files, err := qb.repo.File.Find(ctx, fileIDs...)
 	if err != nil {
 		return nil, err
 	}
@@ -434,7 +497,7 @@ func (qb *ImageStore) GetFiles(ctx context.Context, id int) ([]models.File, erro
 
 func (qb *ImageStore) GetManyFileIDs(ctx context.Context, ids []int) ([][]models.FileID, error) {
 	const primaryOnly = false
-	return qb.filesRepository().getMany(ctx, ids, primaryOnly)
+	return imageRepository.files.getMany(ctx, ids, primaryOnly)
 }
 
 func (qb *ImageStore) FindByFileID(ctx context.Context, fileID models.FileID) ([]*models.Image, error) {
@@ -642,110 +705,6 @@ func (qb *ImageStore) All(ctx context.Context) ([]*models.Image, error) {
 	return qb.getMany(ctx, qb.selectDataset())
 }
 
-func (qb *ImageStore) validateFilter(imageFilter *models.ImageFilterType) error {
-	const and = "AND"
-	const or = "OR"
-	const not = "NOT"
-
-	if imageFilter.And != nil {
-		if imageFilter.Or != nil {
-			return illegalFilterCombination(and, or)
-		}
-		if imageFilter.Not != nil {
-			return illegalFilterCombination(and, not)
-		}
-
-		return qb.validateFilter(imageFilter.And)
-	}
-
-	if imageFilter.Or != nil {
-		if imageFilter.Not != nil {
-			return illegalFilterCombination(or, not)
-		}
-
-		return qb.validateFilter(imageFilter.Or)
-	}
-
-	if imageFilter.Not != nil {
-		return qb.validateFilter(imageFilter.Not)
-	}
-
-	return nil
-}
-
-func (qb *ImageStore) makeFilter(ctx context.Context, imageFilter *models.ImageFilterType) *filterBuilder {
-	query := &filterBuilder{}
-
-	if imageFilter.And != nil {
-		query.and(qb.makeFilter(ctx, imageFilter.And))
-	}
-	if imageFilter.Or != nil {
-		query.or(qb.makeFilter(ctx, imageFilter.Or))
-	}
-	if imageFilter.Not != nil {
-		query.not(qb.makeFilter(ctx, imageFilter.Not))
-	}
-
-	query.handleCriterion(ctx, intCriterionHandler(imageFilter.ID, "images.id", nil))
-	query.handleCriterion(ctx, criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
-		if imageFilter.Checksum != nil {
-			qb.addImagesFilesTable(f)
-			f.addInnerJoin(fingerprintTable, "fingerprints_md5", "images_files.file_id = fingerprints_md5.file_id AND fingerprints_md5.type = 'md5'")
-		}
-
-		stringCriterionHandler(imageFilter.Checksum, "fingerprints_md5.fingerprint")(ctx, f)
-	}))
-	query.handleCriterion(ctx, stringCriterionHandler(imageFilter.Title, "images.title"))
-	query.handleCriterion(ctx, stringCriterionHandler(imageFilter.Code, "images.code"))
-	query.handleCriterion(ctx, stringCriterionHandler(imageFilter.Details, "images.details"))
-	query.handleCriterion(ctx, stringCriterionHandler(imageFilter.Photographer, "images.photographer"))
-
-	query.handleCriterion(ctx, pathCriterionHandler(imageFilter.Path, "folders.path", "files.basename", qb.addFoldersTable))
-	query.handleCriterion(ctx, imageFileCountCriterionHandler(qb, imageFilter.FileCount))
-	query.handleCriterion(ctx, intCriterionHandler(imageFilter.Rating100, "images.rating", nil))
-	query.handleCriterion(ctx, intCriterionHandler(imageFilter.OCounter, "images.o_counter", nil))
-	query.handleCriterion(ctx, boolCriterionHandler(imageFilter.Organized, "images.organized", nil))
-	query.handleCriterion(ctx, dateCriterionHandler(imageFilter.Date, "images.date"))
-	query.handleCriterion(ctx, imageURLsCriterionHandler(imageFilter.URL))
-
-	query.handleCriterion(ctx, resolutionCriterionHandler(imageFilter.Resolution, "image_files.height", "image_files.width", qb.addImageFilesTable))
-	query.handleCriterion(ctx, orientationCriterionHandler(imageFilter.Orientation, "image_files.height", "image_files.width", qb.addImageFilesTable))
-	query.handleCriterion(ctx, imageIsMissingCriterionHandler(qb, imageFilter.IsMissing))
-
-	query.handleCriterion(ctx, imageTagsCriterionHandler(qb, imageFilter.Tags))
-	query.handleCriterion(ctx, imageTagCountCriterionHandler(qb, imageFilter.TagCount))
-	query.handleCriterion(ctx, imageGalleriesCriterionHandler(qb, imageFilter.Galleries))
-	query.handleCriterion(ctx, imagePerformersCriterionHandler(qb, imageFilter.Performers))
-	query.handleCriterion(ctx, imagePerformerCountCriterionHandler(qb, imageFilter.PerformerCount))
-	query.handleCriterion(ctx, studioCriterionHandler(imageTable, imageFilter.Studios))
-	query.handleCriterion(ctx, imagePerformerTagsCriterionHandler(qb, imageFilter.PerformerTags))
-	query.handleCriterion(ctx, imagePerformerFavoriteCriterionHandler(imageFilter.PerformerFavorite))
-	query.handleCriterion(ctx, imagePerformerAgeCriterionHandler(imageFilter.PerformerAge))
-	query.handleCriterion(ctx, timestampCriterionHandler(imageFilter.CreatedAt, "images.created_at"))
-	query.handleCriterion(ctx, timestampCriterionHandler(imageFilter.UpdatedAt, "images.updated_at"))
-
-	return query
-}
-
-func (qb *ImageStore) addImagesFilesTable(f *filterBuilder) {
-	f.addLeftJoin(imagesFilesTable, "", "images_files.image_id = images.id")
-}
-
-func (qb *ImageStore) addFilesTable(f *filterBuilder) {
-	qb.addImagesFilesTable(f)
-	f.addLeftJoin(fileTable, "", "images_files.file_id = files.id")
-}
-
-func (qb *ImageStore) addFoldersTable(f *filterBuilder) {
-	qb.addFilesTable(f)
-	f.addLeftJoin(folderTable, "", "files.parent_folder_id = folders.id")
-}
-
-func (qb *ImageStore) addImageFilesTable(f *filterBuilder) {
-	qb.addImagesFilesTable(f)
-	f.addLeftJoin(imageFileTable, "", "image_files.file_id = images_files.file_id")
-}
-
 func (qb *ImageStore) makeQuery(ctx context.Context, imageFilter *models.ImageFilterType, findFilter *models.FindFilterType) (*queryBuilder, error) {
 	if imageFilter == nil {
 		imageFilter = &models.ImageFilterType{}
@@ -754,7 +713,7 @@ func (qb *ImageStore) makeQuery(ctx context.Context, imageFilter *models.ImageFi
 		findFilter = &models.FindFilterType{}
 	}
 
-	query := qb.newQuery()
+	query := imageRepository.newQuery()
 	distinctIDs(&query, imageTable)
 
 	if q := findFilter.Q; q != nil && *q != "" {
@@ -782,10 +741,9 @@ func (qb *ImageStore) makeQuery(ctx context.Context, imageFilter *models.ImageFi
 		query.parseQueryString(searchColumns, *q)
 	}
 
-	if err := qb.validateFilter(imageFilter); err != nil {
-		return nil, err
-	}
-	filter := qb.makeFilter(ctx, imageFilter)
+	filter := filterBuilderFromHandler(ctx, &imageFilterHandler{
+		imageFilter: imageFilter,
+	})
 
 	if err := query.addFilter(filter); err != nil {
 		return nil, err
@@ -824,7 +782,7 @@ func (qb *ImageStore) queryGroupedFields(ctx context.Context, options models.Ima
 		return models.NewImageQueryResult(qb), nil
 	}
 
-	aggregateQuery := qb.newQuery()
+	aggregateQuery := imageRepository.newQuery()
 
 	if options.Count {
 		aggregateQuery.addColumn("COUNT(DISTINCT temp.id) as total")
@@ -868,7 +826,7 @@ func (qb *ImageStore) queryGroupedFields(ctx context.Context, options models.Ima
 		Megapixels null.Float
 		Size       null.Float
 	}{}
-	if err := qb.repository.queryStruct(ctx, aggregateQuery.toSQL(includeSortPagination), query.args, &out); err != nil {
+	if err := imageRepository.queryStruct(ctx, aggregateQuery.toSQL(includeSortPagination), query.args, &out); err != nil {
 		return nil, err
 	}
 
@@ -886,171 +844,6 @@ func (qb *ImageStore) QueryCount(ctx context.Context, imageFilter *models.ImageF
 	}
 
 	return query.executeCount(ctx)
-}
-
-func imageFileCountCriterionHandler(qb *ImageStore, fileCount *models.IntCriterionInput) criterionHandlerFunc {
-	h := countCriterionHandlerBuilder{
-		primaryTable: imageTable,
-		joinTable:    imagesFilesTable,
-		primaryFK:    imageIDColumn,
-	}
-
-	return h.handler(fileCount)
-}
-
-func imageIsMissingCriterionHandler(qb *ImageStore, isMissing *string) criterionHandlerFunc {
-	return func(ctx context.Context, f *filterBuilder) {
-		if isMissing != nil && *isMissing != "" {
-			switch *isMissing {
-			case "studio":
-				f.addWhere("images.studio_id IS NULL")
-			case "performers":
-				qb.performersRepository().join(f, "performers_join", "images.id")
-				f.addWhere("performers_join.image_id IS NULL")
-			case "galleries":
-				qb.galleriesRepository().join(f, "galleries_join", "images.id")
-				f.addWhere("galleries_join.image_id IS NULL")
-			case "tags":
-				qb.tagsRepository().join(f, "tags_join", "images.id")
-				f.addWhere("tags_join.image_id IS NULL")
-			default:
-				f.addWhere("(images." + *isMissing + " IS NULL OR TRIM(images." + *isMissing + ") = '')")
-			}
-		}
-	}
-}
-
-func imageURLsCriterionHandler(url *models.StringCriterionInput) criterionHandlerFunc {
-	h := stringListCriterionHandlerBuilder{
-		joinTable:    imagesURLsTable,
-		stringColumn: imageURLColumn,
-		addJoinTable: func(f *filterBuilder) {
-			imagesURLsTableMgr.join(f, "", "images.id")
-		},
-	}
-
-	return h.handler(url)
-}
-
-func (qb *ImageStore) getMultiCriterionHandlerBuilder(foreignTable, joinTable, foreignFK string, addJoinsFunc func(f *filterBuilder)) multiCriterionHandlerBuilder {
-	return multiCriterionHandlerBuilder{
-		primaryTable: imageTable,
-		foreignTable: foreignTable,
-		joinTable:    joinTable,
-		primaryFK:    imageIDColumn,
-		foreignFK:    foreignFK,
-		addJoinsFunc: addJoinsFunc,
-	}
-}
-
-func imageTagsCriterionHandler(qb *ImageStore, tags *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
-	h := joinedHierarchicalMultiCriterionHandlerBuilder{
-		tx: qb.tx,
-
-		primaryTable: imageTable,
-		foreignTable: tagTable,
-		foreignFK:    "tag_id",
-
-		relationsTable: "tags_relations",
-		joinAs:         "image_tag",
-		joinTable:      imagesTagsTable,
-		primaryFK:      imageIDColumn,
-	}
-
-	return h.handler(tags)
-}
-
-func imageTagCountCriterionHandler(qb *ImageStore, tagCount *models.IntCriterionInput) criterionHandlerFunc {
-	h := countCriterionHandlerBuilder{
-		primaryTable: imageTable,
-		joinTable:    imagesTagsTable,
-		primaryFK:    imageIDColumn,
-	}
-
-	return h.handler(tagCount)
-}
-
-func imageGalleriesCriterionHandler(qb *ImageStore, galleries *models.MultiCriterionInput) criterionHandlerFunc {
-	addJoinsFunc := func(f *filterBuilder) {
-		if galleries.Modifier == models.CriterionModifierIncludes || galleries.Modifier == models.CriterionModifierIncludesAll {
-			f.addInnerJoin(galleriesImagesTable, "", "galleries_images.image_id = images.id")
-			f.addInnerJoin(galleryTable, "", "galleries_images.gallery_id = galleries.id")
-		}
-	}
-	h := qb.getMultiCriterionHandlerBuilder(galleryTable, galleriesImagesTable, galleryIDColumn, addJoinsFunc)
-
-	return h.handler(galleries)
-}
-
-func imagePerformersCriterionHandler(qb *ImageStore, performers *models.MultiCriterionInput) criterionHandlerFunc {
-	h := joinedMultiCriterionHandlerBuilder{
-		primaryTable: imageTable,
-		joinTable:    performersImagesTable,
-		joinAs:       "performers_join",
-		primaryFK:    imageIDColumn,
-		foreignFK:    performerIDColumn,
-
-		addJoinTable: func(f *filterBuilder) {
-			qb.performersRepository().join(f, "performers_join", "images.id")
-		},
-	}
-
-	return h.handler(performers)
-}
-
-func imagePerformerCountCriterionHandler(qb *ImageStore, performerCount *models.IntCriterionInput) criterionHandlerFunc {
-	h := countCriterionHandlerBuilder{
-		primaryTable: imageTable,
-		joinTable:    performersImagesTable,
-		primaryFK:    imageIDColumn,
-	}
-
-	return h.handler(performerCount)
-}
-
-func imagePerformerFavoriteCriterionHandler(performerfavorite *bool) criterionHandlerFunc {
-	return func(ctx context.Context, f *filterBuilder) {
-		if performerfavorite != nil {
-			f.addLeftJoin("performers_images", "", "images.id = performers_images.image_id")
-
-			if *performerfavorite {
-				// contains at least one favorite
-				f.addLeftJoin("performers", "", "performers.id = performers_images.performer_id")
-				f.addWhere("performers.favorite = 1")
-			} else {
-				// contains zero favorites
-				f.addLeftJoin(`(SELECT performers_images.image_id as id FROM performers_images
-JOIN performers ON performers.id = performers_images.performer_id
-GROUP BY performers_images.image_id HAVING SUM(performers.favorite) = 0)`, "nofaves", "images.id = nofaves.id")
-				f.addWhere("performers_images.image_id IS NULL OR nofaves.id IS NOT NULL")
-			}
-		}
-	}
-}
-
-func imagePerformerAgeCriterionHandler(performerAge *models.IntCriterionInput) criterionHandlerFunc {
-	return func(ctx context.Context, f *filterBuilder) {
-		if performerAge != nil {
-			f.addInnerJoin("performers_images", "", "images.id = performers_images.image_id")
-			f.addInnerJoin("performers", "", "performers_images.performer_id = performers.id")
-
-			f.addWhere("images.date != '' AND performers.birthdate != ''")
-			f.addWhere("images.date IS NOT NULL AND performers.birthdate IS NOT NULL")
-
-			ageCalc := "cast(strftime('%Y.%m%d', images.date) - strftime('%Y.%m%d', performers.birthdate) as int)"
-			whereClause, args := getIntWhereClause(ageCalc, performerAge.Modifier, performerAge.Value, performerAge.Value2)
-			f.addWhere(whereClause, args...)
-		}
-	}
-}
-
-func imagePerformerTagsCriterionHandler(qb *ImageStore, tags *models.HierarchicalMultiCriterionInput) criterionHandler {
-	return &joinedPerformerTagsHandler{
-		criterion:      tags,
-		primaryTable:   imageTable,
-		joinTable:      performersImagesTable,
-		joinPrimaryKey: imageIDColumn,
-	}
 }
 
 var imageSortOptions = sortOptions{
@@ -1138,34 +931,13 @@ func (qb *ImageStore) setImageSortAndPagination(q *queryBuilder, findFilter *mod
 	return nil
 }
 
-func (qb *ImageStore) galleriesRepository() *joinRepository {
-	return &joinRepository{
-		repository: repository{
-			tx:        qb.tx,
-			tableName: galleriesImagesTable,
-			idColumn:  imageIDColumn,
-		},
-		fkColumn: galleryIDColumn,
-	}
-}
-
-func (qb *ImageStore) filesRepository() *filesRepository {
-	return &filesRepository{
-		repository: repository{
-			tx:        qb.tx,
-			tableName: imagesFilesTable,
-			idColumn:  imageIDColumn,
-		},
-	}
-}
-
 func (qb *ImageStore) AddFileID(ctx context.Context, id int, fileID models.FileID) error {
 	const firstPrimary = false
 	return imagesFilesTableMgr.insertJoins(ctx, id, firstPrimary, []models.FileID{fileID})
 }
 
 func (qb *ImageStore) GetGalleryIDs(ctx context.Context, imageID int) ([]int, error) {
-	return qb.galleriesRepository().getIDs(ctx, imageID)
+	return imageRepository.galleries.getIDs(ctx, imageID)
 }
 
 // func (qb *imageQueryBuilder) UpdateGalleries(ctx context.Context, imageID int, galleryIDs []int) error {
@@ -1173,46 +945,22 @@ func (qb *ImageStore) GetGalleryIDs(ctx context.Context, imageID int) ([]int, er
 // 	return qb.galleriesRepository().replace(ctx, imageID, galleryIDs)
 // }
 
-func (qb *ImageStore) performersRepository() *joinRepository {
-	return &joinRepository{
-		repository: repository{
-			tx:        qb.tx,
-			tableName: performersImagesTable,
-			idColumn:  imageIDColumn,
-		},
-		fkColumn: performerIDColumn,
-	}
-}
-
 func (qb *ImageStore) GetPerformerIDs(ctx context.Context, imageID int) ([]int, error) {
-	return qb.performersRepository().getIDs(ctx, imageID)
+	return imageRepository.performers.getIDs(ctx, imageID)
 }
 
 func (qb *ImageStore) UpdatePerformers(ctx context.Context, imageID int, performerIDs []int) error {
 	// Delete the existing joins and then create new ones
-	return qb.performersRepository().replace(ctx, imageID, performerIDs)
-}
-
-func (qb *ImageStore) tagsRepository() *joinRepository {
-	return &joinRepository{
-		repository: repository{
-			tx:        qb.tx,
-			tableName: imagesTagsTable,
-			idColumn:  imageIDColumn,
-		},
-		fkColumn:     tagIDColumn,
-		foreignTable: tagTable,
-		orderBy:      "tags.name ASC",
-	}
+	return imageRepository.performers.replace(ctx, imageID, performerIDs)
 }
 
 func (qb *ImageStore) GetTagIDs(ctx context.Context, imageID int) ([]int, error) {
-	return qb.tagsRepository().getIDs(ctx, imageID)
+	return imageRepository.tags.getIDs(ctx, imageID)
 }
 
 func (qb *ImageStore) UpdateTags(ctx context.Context, imageID int, tagIDs []int) error {
 	// Delete the existing joins and then create new ones
-	return qb.tagsRepository().replace(ctx, imageID, tagIDs)
+	return imageRepository.tags.replace(ctx, imageID, tagIDs)
 }
 
 func (qb *ImageStore) GetURLs(ctx context.Context, imageID int) ([]string, error) {
