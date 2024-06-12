@@ -41,6 +41,7 @@
 | `s a` | Select all on page |
 | `s n` | Unselect all |
 | `e` | Edit selected |
+| `q` | Edit selected with all fields |
 | `d d` | Delete selected |
 
 ## Scenes page shortcuts

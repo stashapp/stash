@@ -172,18 +172,33 @@ export const GalleryList: React.FC<IGalleryList> = ({
   }
 
   function renderEditDialog(
-    selectedImages: GQL.SlimGalleryDataFragment[],
+    selectedGalleries: GQL.SlimGalleryDataFragment[],
     onClose: (applied: boolean) => void
   ) {
-    return <EditGalleriesDialog selected={selectedImages} onClose={onClose} />;
+    return (
+      <EditGalleriesDialog selected={selectedGalleries} onClose={onClose} />
+    );
+  }
+
+  function renderEditDialogAllFields(
+    selectedGalleries: GQL.SlimGalleryDataFragment[],
+    onClose: (applied: boolean) => void
+  ) {
+    return (
+      <EditGalleriesDialog
+        selected={selectedGalleries}
+        onClose={onClose}
+        showAllFields={true}
+      />
+    );
   }
 
   function renderDeleteDialog(
-    selectedImages: GQL.SlimGalleryDataFragment[],
+    selectedGalleries: GQL.SlimGalleryDataFragment[],
     onClose: (confirmed: boolean) => void
   ) {
     return (
-      <DeleteGalleriesDialog selected={selectedImages} onClose={onClose} />
+      <DeleteGalleriesDialog selected={selectedGalleries} onClose={onClose} />
     );
   }
 
@@ -198,6 +213,7 @@ export const GalleryList: React.FC<IGalleryList> = ({
       addKeybinds={addKeybinds}
       renderContent={renderContent}
       renderEditDialog={renderEditDialog}
+      renderEditDialogAllFields={renderEditDialogAllFields}
       renderDeleteDialog={renderDeleteDialog}
     />
   );

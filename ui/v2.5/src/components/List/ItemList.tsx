@@ -104,6 +104,10 @@ interface IItemListProps<T extends QueryResult, E extends IDataItem> {
     selected: E[],
     onClose: (applied: boolean) => void
   ) => React.ReactNode;
+  renderEditDialogAllFields?: (
+    selected: E[],
+    onClose: (applied: boolean) => void
+  ) => React.ReactNode;
   renderDeleteDialog?: (
     selected: E[],
     onClose: (confirmed: boolean) => void
@@ -146,10 +150,12 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
     otherOperations,
     renderContent,
     renderEditDialog,
+    renderEditDialogAllFields: renderEditDialogAllFields,
     renderDeleteDialog,
     addKeybinds,
   }) => {
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+    const [isEditDialogAllOpen, setIsEditDialogAllFieldsOpen] = useState(false);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
     const [lastClickedId, setLastClickedId] = useState<string>();
@@ -370,6 +376,20 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
       result.refetch();
     }
 
+    function onEditAllFields() {
+      setIsEditDialogAllFieldsOpen(true);
+    }
+
+    function onEditDialogAllFieldsClosed(applied: boolean) {
+      if (applied) {
+        onSelectNone();
+      }
+      setIsEditDialogAllFieldsOpen(false);
+
+      // refetch
+      result.refetch();
+    }
+
     function onDelete() {
       setIsDeleteDialogOpen(true);
     }
@@ -488,6 +508,9 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
             otherOperations={operations}
             itemsSelected={selectedIds.size > 0}
             onEdit={renderEditDialog ? onEdit : undefined}
+            onEditAllFields={
+              renderEditDialogAllFields ? onEditAllFields : undefined
+            }
             onDelete={renderDeleteDialog ? onDelete : undefined}
           />
           <ListViewOptions
@@ -516,6 +539,12 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
           renderEditDialog &&
           renderEditDialog(getSelectedData(items, selectedIds), (applied) =>
             onEditDialogClosed(applied)
+          )}
+        {isEditDialogAllOpen &&
+          renderEditDialogAllFields &&
+          renderEditDialogAllFields(
+            getSelectedData(items, selectedIds),
+            (applied) => onEditDialogAllFieldsClosed(applied)
           )}
         {isDeleteDialogOpen &&
           renderDeleteDialog &&

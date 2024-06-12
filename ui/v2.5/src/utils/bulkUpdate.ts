@@ -25,6 +25,10 @@ interface IHasID {
   id: string;
 }
 
+interface IHasString {
+  value: string;
+}
+
 interface IHasStudio {
   studio?: GQL.Maybe<IHasID> | undefined;
 }
@@ -66,8 +70,23 @@ export function getAggregateIds(sortedLists: string[][]) {
   return ret;
 }
 
+export function getAggregateUrls(state: { urls: IHasString[] }[]) {
+  const sortedLists = state.map((o) => o.urls.map((oo) => oo.value).sort());
+  return getAggregateIds(sortedLists);
+}
+
+export function getAggregateAliases(state: { aliases: IHasString[] }[]) {
+  const sortedLists = state.map((o) => o.aliases.map((oo) => oo.value).sort());
+  return getAggregateIds(sortedLists);
+}
+
 export function getAggregateGalleryIds(state: { galleries: IHasID[] }[]) {
   const sortedLists = state.map((o) => o.galleries.map((oo) => oo.id).sort());
+  return getAggregateIds(sortedLists);
+}
+
+export function getAggregateSceneIds(state: { scenes: IHasID[] }[]) {
+  const sortedLists = state.map((o) => o.scenes.map((oo) => oo.id).sort());
   return getAggregateIds(sortedLists);
 }
 
@@ -99,6 +118,16 @@ export function makeBulkUpdateIds(
   return {
     mode,
     ids,
+  };
+}
+
+export function makeBulkUpdateStrings(
+  values: string[],
+  mode: GQL.BulkUpdateIdMode
+): GQL.BulkUpdateStrings {
+  return {
+    mode,
+    values,
   };
 }
 
@@ -138,6 +167,29 @@ export function getAggregateInputIDs(
   } else {
     // if performerIds non-empty, then we are setting them
     return makeBulkUpdateIds(inputIds || [], mode);
+  }
+
+  return undefined;
+}
+
+// If the above is incorrect, this is too.
+export function getAggregateInputStrings(
+  mode: GQL.BulkUpdateIdMode,
+  inputStrings: string[] | undefined,
+  aggregateStrings: string[]
+) {
+  if (
+    mode === GQL.BulkUpdateIdMode.Set &&
+    (!inputStrings || inputStrings.length === 0)
+  ) {
+    // and all scenes have the same strings,
+    if (aggregateStrings.length > 0) {
+      // then unset the inputStrings, otherwise ignore
+      return makeBulkUpdateStrings(inputStrings || [], mode);
+    }
+  } else {
+    // if inputStrings non-empty, then we are setting them
+    return makeBulkUpdateStrings(inputStrings || [], mode);
   }
 
   return undefined;

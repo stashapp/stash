@@ -344,6 +344,19 @@ export const SceneList: React.FC<ISceneList> = ({
     return <EditScenesDialog selected={selectedScenes} onClose={onClose} />;
   }
 
+  function renderEditDialogAllFields(
+    selectedScenes: GQL.SlimSceneDataFragment[],
+    onClose: (applied: boolean) => void
+  ) {
+    return (
+      <EditScenesDialog
+        selected={selectedScenes}
+        onClose={onClose}
+        showAllFields={true}
+      />
+    );
+  }
+
   function renderDeleteDialog(
     selectedScenes: GQL.SlimSceneDataFragment[],
     onClose: (confirmed: boolean) => void
@@ -364,6 +377,7 @@ export const SceneList: React.FC<ISceneList> = ({
         defaultSort={defaultSort}
         renderContent={renderContent}
         renderEditDialog={renderEditDialog}
+        renderEditDialogAllFields={renderEditDialogAllFields}
         renderDeleteDialog={renderDeleteDialog}
       />
     </TaggerContext>
