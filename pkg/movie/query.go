@@ -18,3 +18,15 @@ func CountByStudioID(ctx context.Context, r models.MovieQueryer, id int, depth *
 
 	return r.QueryCount(ctx, filter, nil)
 }
+
+func CountByTagID(ctx context.Context, r models.MovieQueryer, id int, depth *int) (int, error) {
+	filter := &models.MovieFilterType{
+		Tags: &models.HierarchicalMultiCriterionInput{
+			Value:    []string{strconv.Itoa(id)},
+			Modifier: models.CriterionModifierIncludes,
+			Depth:    depth,
+		},
+	}
+
+	return r.QueryCount(ctx, filter, nil)
+}

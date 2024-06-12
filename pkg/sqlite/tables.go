@@ -36,6 +36,7 @@ var (
 	studiosStashIDsJoinTable = goqu.T("studio_stash_ids")
 
 	moviesURLsJoinTable = goqu.T(movieURLsTable)
+	moviesTagsJoinTable = goqu.T(moviesTagsTable)
 
 	tagsAliasesJoinTable  = goqu.T(tagAliasesTable)
 	tagRelationsJoinTable = goqu.T(tagRelationsTable)
@@ -329,6 +330,16 @@ var (
 			idColumn: moviesURLsJoinTable.Col(movieIDColumn),
 		},
 		valueColumn: moviesURLsJoinTable.Col(movieURLColumn),
+	}
+
+	moviesTagsTableMgr = &joinTable{
+		table: table{
+			table:    moviesTagsJoinTable,
+			idColumn: moviesTagsJoinTable.Col(movieIDColumn),
+		},
+		fkColumn:     moviesTagsJoinTable.Col(tagIDColumn),
+		foreignTable: tagTableMgr,
+		orderBy:      tagTableMgr.table.Col("name").Asc(),
 	}
 )
 

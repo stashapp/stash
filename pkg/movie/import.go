@@ -3,9 +3,11 @@ package movie
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
+	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -17,6 +19,7 @@ type ImporterReaderWriter interface {
 type Importer struct {
 	ReaderWriter        ImporterReaderWriter
 	StudioWriter        models.StudioFinderCreator
+	TagWriter           models.TagFinderCreator
 	Input               jsonschema.Movie
 	MissingRefBehaviour models.ImportMissingRefEnum
 
@@ -29,6 +32,10 @@ func (i *Importer) PreImport(ctx context.Context) error {
 	i.movie = i.movieJSONToMovie(i.Input)
 
 	if err := i.populateStudio(ctx); err != nil {
+		return err
+	}
+
+	if err := i.populateTags(ctx); err != nil {
 		return err
 	}
 
@@ -49,6 +56,74 @@ func (i *Importer) PreImport(ctx context.Context) error {
 	return nil
 }
 
+func (i *Importer) populateTags(ctx context.Context) error {
+	if len(i.Input.Tags) > 0 {
+
+		tags, err := importTags(ctx, i.TagWriter, i.Input.Tags, i.MissingRefBehaviour)
+		if err != nil {
+			return err
+		}
+
+		for _, p := range tags {
+			i.movie.TagIDs.Add(p.ID)
+		}
+	}
+
+	return nil
+}
+
+func importTags(ctx context.Context, tagWriter models.TagFinderCreator, names []string, missingRefBehaviour models.ImportMissingRefEnum) ([]*models.Tag, error) {
+	tags, err := tagWriter.FindByNames(ctx, names, false)
+	if err != nil {
+		return nil, err
+	}
+
+	var pluckedNames []string
+	for _, tag := range tags {
+		pluckedNames = append(pluckedNames, tag.Name)
+	}
+
+	missingTags := sliceutil.Filter(names, func(name string) bool {
+		return !sliceutil.Contains(pluckedNames, name)
+	})
+
+	if len(missingTags) > 0 {
+		if missingRefBehaviour == models.ImportMissingRefEnumFail {
+			return nil, fmt.Errorf("tags [%s] not found", strings.Join(missingTags, ", "))
+		}
+
+		if missingRefBehaviour == models.ImportMissingRefEnumCreate {
+			createdTags, err := createTags(ctx, tagWriter, missingTags)
+			if err != nil {
+				return nil, fmt.Errorf("error creating tags: %v", err)
+			}
+
+			tags = append(tags, createdTags...)
+		}
+
+		// ignore if MissingRefBehaviour set to Ignore
+	}
+
+	return tags, nil
+}
+
+func createTags(ctx context.Context, tagWriter models.TagFinderCreator, names []string) ([]*models.Tag, error) {
+	var ret []*models.Tag
+	for _, name := range names {
+		newTag := models.NewTag()
+		newTag.Name = name
+
+		err := tagWriter.Create(ctx, &newTag)
+		if err != nil {
+			return nil, err
+		}
+
+		ret = append(ret, &newTag)
+	}
+
+	return ret, nil
+}
+
 func (i *Importer) movieJSONToMovie(movieJSON jsonschema.Movie) models.Movie {
 	newMovie := models.Movie{
 		Name:      movieJSON.Name,
@@ -57,6 +132,8 @@ func (i *Importer) movieJSONToMovie(movieJSON jsonschema.Movie) models.Movie {
 		Synopsis:  movieJSON.Synopsis,
 		CreatedAt: movieJSON.CreatedAt.GetTime(),
 		UpdatedAt: movieJSON.UpdatedAt.GetTime(),
+
+		TagIDs: models.NewRelatedIDs([]int{}),
 	}
 
 	if len(movieJSON.URLs) > 0 {

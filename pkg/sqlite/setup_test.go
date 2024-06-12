@@ -150,9 +150,12 @@ const (
 const (
 	movieIdxWithScene = iota
 	movieIdxWithStudio
+	movieIdxWithTag
+	movieIdxWithTwoTags
+	movieIdxWithThreeTags
 	// movies with dup names start from the end
-	// create 10 more basic movies (can remove this if we add more indexes)
-	movieIdxWithDupName = movieIdxWithStudio + 10
+	// create 7 more basic movies (can remove this if we add more indexes)
+	movieIdxWithDupName = movieIdxWithStudio + 7
 
 	moviesNameCase   = movieIdxWithDupName
 	moviesNameNoCase = 1
@@ -214,6 +217,10 @@ const (
 	tagIdxWithParentAndChild
 	tagIdxWithGrandParent
 	tagIdx2WithMarkers
+	tagIdxWithMovie
+	tagIdx1WithMovie
+	tagIdx2WithMovie
+	tagIdx3WithMovie
 	// new indexes above
 	// tags with dup names start from the end
 	tagIdx1WithDupName
@@ -487,6 +494,12 @@ var (
 	movieStudioLinks = [][2]int{
 		{movieIdxWithStudio, studioIdxWithMovie},
 	}
+
+	movieTags = linkMap{
+		movieIdxWithTag:       {tagIdxWithMovie},
+		movieIdxWithTwoTags:   {tagIdx1WithMovie, tagIdx2WithMovie},
+		movieIdxWithThreeTags: {tagIdx1WithMovie, tagIdx2WithMovie, tagIdx3WithMovie},
+	}
 )
 
 var (
@@ -622,12 +635,12 @@ func populateDB() error {
 
 		// TODO - link folders to zip files
 
-		if err := createMovies(ctx, db.Movie, moviesNameCase, moviesNameNoCase); err != nil {
-			return fmt.Errorf("error creating movies: %s", err.Error())
-		}
-
 		if err := createTags(ctx, db.Tag, tagsNameCase, tagsNameNoCase); err != nil {
 			return fmt.Errorf("error creating tags: %s", err.Error())
+		}
+
+		if err := createMovies(ctx, db.Movie, moviesNameCase, moviesNameNoCase); err != nil {
+			return fmt.Errorf("error creating movies: %s", err.Error())
 		}
 
 		if err := createPerformers(ctx, performersNameCase, performersNameNoCase); err != nil {
@@ -1321,6 +1334,8 @@ func createMovies(ctx context.Context, mqb models.MovieReaderWriter, n int, o in
 		index := i
 		name := namePlain
 
+		tids := indexesToIDs(tagIDs, movieTags[i])
+
 		if i >= n { // i<n tags get normal names
 			name = nameNoCase       // i>=n movies get dup names if case is not checked
 			index = n + o - (i + 1) // for the name to be the same the number (index) must be the same also
@@ -1333,6 +1348,7 @@ func createMovies(ctx context.Context, mqb models.MovieReaderWriter, n int, o in
 			URLs: models.NewRelatedStrings([]string{
 				getMovieEmptyString(i, urlField),
 			}),
+			TagIDs: models.NewRelatedIDs(tids),
 		}
 
 		err := mqb.Create(ctx, &movie)
