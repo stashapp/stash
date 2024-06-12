@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback, useMemo } from "react";
 import { Button, Form } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import { DurationInput } from "src/components/Shared/DurationInput";
@@ -66,6 +66,22 @@ export const SettingsInterfacePanel: React.FC = () => {
     loading,
     error,
   } = useSettings();
+
+  // convert old movies menu item to groups
+  const massageMenuItems = useCallback((menuItems: string[]) => {
+    return menuItems.map((item) => {
+      if (item === "movies") {
+        return "groups";
+      }
+      return item;
+    });
+  }, []);
+
+  const massagedMenuItems = useMemo(() => {
+    if (!iface.menuItems) return iface.menuItems;
+
+    return massageMenuItems(iface.menuItems);
+  }, [iface.menuItems, massageMenuItems]);
 
   const {
     interactive,
@@ -231,8 +247,8 @@ export const SettingsInterfacePanel: React.FC = () => {
           <CheckboxGroup
             groupId="menu-items"
             items={allMenuItems}
-            checkedIds={iface.menuItems ?? undefined}
-            onChange={(v) => saveInterface({ menuItems: v })}
+            checkedIds={massagedMenuItems ?? undefined}
+            onChange={(v) => saveInterface({ menuItems: massageMenuItems(v) })}
           />
         </div>
 
