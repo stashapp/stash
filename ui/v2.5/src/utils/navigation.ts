@@ -121,7 +121,7 @@ const makePerformerMoviesUrl = (
 
   filter.criteria.push(criterion);
   addExtraCriteria(filter.criteria, extraCriteria);
-  return `/movies?${filter.makeQueryParameters()}`;
+  return `/groups?${filter.makeQueryParameters()}`;
 };
 
 const makePerformersCountryUrl = (
@@ -184,7 +184,7 @@ const makeStudioMoviesUrl = (studio: Partial<GQL.StudioDataFragment>) => {
     depth: 0,
   };
   filter.criteria.push(criterion);
-  return `/movies?${filter.makeQueryParameters()}`;
+  return `/groups?${filter.makeQueryParameters()}`;
 };
 
 const makeStudioPerformersUrl = (studio: Partial<GQL.StudioDataFragment>) => {
@@ -355,7 +355,7 @@ const makeDirectorMoviesUrl = (director: string) => {
   filter.criteria.push(
     stringEqualsCriterion(createStringCriterionOption("director"), director)
   );
-  return `/movies?${filter.makeQueryParameters()}`;
+  return `/groups?${filter.makeQueryParameters()}`;
 };
 
 const makePhotographerGalleriesUrl = (photographer: string) => {
