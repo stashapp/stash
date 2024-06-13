@@ -9,9 +9,7 @@ type PHashDuplicationCriterionInput struct {
 }
 
 type SceneFilterType struct {
-	And      *SceneFilterType      `json:"AND"`
-	Or       *SceneFilterType      `json:"OR"`
-	Not      *SceneFilterType      `json:"NOT"`
+	OperatorFilter[SceneFilterType]
 	ID       *IntCriterionInput    `json:"id"`
 	Title    *StringCriterionInput `json:"title"`
 	Code     *StringCriterionInput `json:"code"`
@@ -93,8 +91,22 @@ type SceneFilterType struct {
 	PlayCount *IntCriterionInput `json:"play_count"`
 	// Filter by play duration (in seconds)
 	PlayDuration *IntCriterionInput `json:"play_duration"`
+	// Filter by last played at
+	LastPlayedAt *TimestampCriterionInput `json:"last_played_at"`
 	// Filter by date
 	Date *DateCriterionInput `json:"date"`
+	// Filter by related galleries that meet this criteria
+	GalleriesFilter *GalleryFilterType `json:"galleries_filter"`
+	// Filter by related performers that meet this criteria
+	PerformersFilter *PerformerFilterType `json:"performers_filter"`
+	// Filter by related studios that meet this criteria
+	StudiosFilter *StudioFilterType `json:"studios_filter"`
+	// Filter by related tags that meet this criteria
+	TagsFilter *TagFilterType `json:"tags_filter"`
+	// Filter by related movies that meet this criteria
+	MoviesFilter *MovieFilterType `json:"movies_filter"`
+	// Filter by related markers that meet this criteria
+	MarkersFilter *SceneMarkerFilterType `json:"markers_filter"`
 	// Filter by created at
 	CreatedAt *TimestampCriterionInput `json:"created_at"`
 	// Filter by updated at

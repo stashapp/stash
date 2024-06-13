@@ -166,6 +166,23 @@ export const queryFindScenesByID = (sceneIDs: number[]) =>
     },
   });
 
+export const queryFindScenesForSelect = (filter: ListFilterModel) =>
+  client.query<GQL.FindScenesForSelectQuery>({
+    query: GQL.FindScenesForSelectDocument,
+    variables: {
+      filter: filter.makeFindFilter(),
+      scene_filter: filter.makeFilter(),
+    },
+  });
+
+export const queryFindScenesByIDForSelect = (sceneIDs: string[]) =>
+  client.query<GQL.FindScenesForSelectQuery>({
+    query: GQL.FindScenesForSelectDocument,
+    variables: {
+      ids: sceneIDs,
+    },
+  });
+
 export const querySceneByPathRegex = (filter: GQL.FindFilterType) =>
   client.query<GQL.FindScenesByPathRegexQuery>({
     query: GQL.FindScenesByPathRegexDocument,
@@ -1856,6 +1873,17 @@ export const useTagUpdate = () =>
     },
   });
 
+export const useBulkTagUpdate = (input: GQL.BulkTagUpdateInput) =>
+  GQL.useBulkTagUpdateMutation({
+    variables: { input },
+    update(cache, result) {
+      if (!result.data?.bulkTagUpdate) return;
+
+      evictTypeFields(cache, tagMutationImpactedTypeFields);
+      evictQueries(cache, tagMutationImpactedQueries);
+    },
+  });
+
 export const useTagDestroy = (input: GQL.TagDestroyInput) =>
   GQL.useTagDestroyMutation({
     variables: input,
@@ -2037,19 +2065,21 @@ export const queryScrapeSceneQueryFragment = (
 
 export const stashBoxSceneBatchQuery = (
   sceneIds: string[],
-  stashBoxIndex: number
+  stashBoxEndpoint: string
 ) =>
-  client.query<GQL.ScrapeMultiScenesQuery>({
-    query: GQL.ScrapeMultiScenesDocument,
-    variables: {
-      source: {
-        stash_box_index: stashBoxIndex,
+  client.query<GQL.ScrapeMultiScenesQuery, GQL.ScrapeMultiScenesQueryVariables>(
+    {
+      query: GQL.ScrapeMultiScenesDocument,
+      variables: {
+        source: {
+          stash_box_endpoint: stashBoxEndpoint,
+        },
+        input: {
+          scene_ids: sceneIds,
+        },
       },
-      input: {
-        scene_ids: sceneIds,
-      },
-    },
-  });
+    }
+  );
 
 export const useListPerformerScrapers = () =>
   GQL.useListPerformerScrapersQuery();
@@ -2093,13 +2123,16 @@ export const queryScrapePerformerURL = (url: string) =>
 
 export const stashBoxPerformerQuery = (
   searchVal: string,
-  stashBoxIndex: number
+  stashBoxEndpoint: string
 ) =>
-  client.query<GQL.ScrapeSinglePerformerQuery>({
+  client.query<
+    GQL.ScrapeSinglePerformerQuery,
+    GQL.ScrapeSinglePerformerQueryVariables
+  >({
     query: GQL.ScrapeSinglePerformerDocument,
     variables: {
       source: {
-        stash_box_index: stashBoxIndex,
+        stash_box_endpoint: stashBoxEndpoint,
       },
       input: {
         query: searchVal,
@@ -2110,13 +2143,16 @@ export const stashBoxPerformerQuery = (
 
 export const stashBoxStudioQuery = (
   query: string | null,
-  stashBoxIndex: number
+  stashBoxEndpoint: string
 ) =>
-  client.query<GQL.ScrapeSingleStudioQuery>({
+  client.query<
+    GQL.ScrapeSingleStudioQuery,
+    GQL.ScrapeSingleStudioQueryVariables
+  >({
     query: GQL.ScrapeSingleStudioDocument,
     variables: {
       source: {
-        stash_box_index: stashBoxIndex,
+        stash_box_endpoint: stashBoxEndpoint,
       },
       input: {
         query: query,
@@ -2229,6 +2265,11 @@ export const queryLogs = () =>
   });
 
 export const useSystemStatus = () => GQL.useSystemStatusQuery();
+export const refetchSystemStatus = () => {
+  client.refetchQueries({
+    include: [GQL.SystemStatusDocument],
+  });
+};
 
 export const useJobsSubscribe = () => GQL.useJobsSubscribeSubscription();
 

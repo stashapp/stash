@@ -108,9 +108,7 @@ type CircumcisionCriterionInput struct {
 }
 
 type PerformerFilterType struct {
-	And            *PerformerFilterType  `json:"AND"`
-	Or             *PerformerFilterType  `json:"OR"`
-	Not            *PerformerFilterType  `json:"NOT"`
+	OperatorFilter[PerformerFilterType]
 	Name           *StringCriterionInput `json:"name"`
 	Disambiguation *StringCriterionInput `json:"disambiguation"`
 	Details        *StringCriterionInput `json:"details"`
@@ -188,6 +186,14 @@ type PerformerFilterType struct {
 	Birthdate *DateCriterionInput `json:"birth_date"`
 	// Filter by death date
 	DeathDate *DateCriterionInput `json:"death_date"`
+	// Filter by related scenes that meet this criteria
+	ScenesFilter *SceneFilterType `json:"scenes_filter"`
+	// Filter by related images that meet this criteria
+	ImagesFilter *ImageFilterType `json:"images_filter"`
+	// Filter by related galleries that meet this criteria
+	GalleriesFilter *GalleryFilterType `json:"galleries_filter"`
+	// Filter by related tags that meet this criteria
+	TagsFilter *TagFilterType `json:"tags_filter"`
 	// Filter by created at
 	CreatedAt *TimestampCriterionInput `json:"created_at"`
 	// Filter by updated at

@@ -307,7 +307,8 @@ test:
 # runs all tests - including integration tests
 .PHONY: it
 it:
-	go test -tags=integration ./...
+	$(eval GO_BUILD_TAGS += integration)
+	go test -tags "$(GO_BUILD_TAGS)" ./...
 
 # generates test mocks
 .PHONY: generate-test-mocks
@@ -352,6 +353,11 @@ endif
 .PHONY: ui
 ui: ui-env
 	cd ui/v2.5 && yarn build
+
+.PHONY: zip-ui
+zip-ui:
+	rm -f dist/stash-ui.zip
+	cd ui/v2.5/build && zip -r ../../../dist/stash-ui.zip .
 
 .PHONY: ui-start
 ui-start: ui-env

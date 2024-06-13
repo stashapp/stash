@@ -90,7 +90,7 @@ fragment ScrapedMovieData on ScrapedMovie {
   date
   rating
   director
-  url
+  urls
   synopsis
   front_image
   back_image
@@ -108,7 +108,7 @@ fragment ScrapedSceneMovieData on ScrapedMovie {
   date
   rating
   director
-  url
+  urls
   synopsis
   front_image
   back_image

@@ -1,12 +1,12 @@
 import { Button, Tab, Nav, Dropdown } from "react-bootstrap";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useContext, useEffect, useMemo, useState } from "react";
 import {
   useHistory,
   Link,
   RouteComponentProps,
   Redirect,
 } from "react-router-dom";
-import { FormattedMessage, useIntl } from "react-intl";
+import { FormattedDate, FormattedMessage, useIntl } from "react-intl";
 import { Helmet } from "react-helmet";
 import * as GQL from "src/core/generated-graphql";
 import {
@@ -37,6 +37,11 @@ import {
 import { galleryPath, galleryTitle } from "src/core/galleries";
 import { GalleryChapterPanel } from "./GalleryChaptersPanel";
 import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
+import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
+import cx from "classnames";
+import { useRatingKeybinds } from "src/hooks/keybinds";
+import { ConfigurationContext } from "src/hooks/Config";
+import { TruncatedText } from "src/components/Shared/TruncatedText";
 
 interface IProps {
   gallery: GQL.GalleryDataFragment;
@@ -52,6 +57,7 @@ export const GalleryPage: React.FC<IProps> = ({ gallery, add }) => {
   const history = useHistory();
   const Toast = useToast();
   const intl = useIntl();
+  const { configuration } = useContext(ConfigurationContext);
   const showLightbox = useGalleryLightbox(gallery.id, gallery.chapters);
 
   const [collapsed, setCollapsed] = useState(false);
@@ -236,14 +242,6 @@ export const GalleryPage: React.FC<IProps> = ({ gallery, add }) => {
                 <FormattedMessage id="actions.edit" />
               </Nav.Link>
             </Nav.Item>
-            <Nav.Item className="ml-auto">
-              <OrganizedButton
-                loading={organizedLoading}
-                organized={gallery.organized}
-                onClick={onOrganizedClick}
-              />
-            </Nav.Item>
-            <Nav.Item>{renderOperations()}</Nav.Item>
           </Nav>
         </div>
 
@@ -320,6 +318,23 @@ export const GalleryPage: React.FC<IProps> = ({ gallery, add }) => {
     );
   }
 
+  function setRating(v: number | null) {
+    updateGallery({
+      variables: {
+        input: {
+          id: gallery.id,
+          rating100: v,
+        },
+      },
+    });
+  }
+
+  useRatingKeybinds(
+    true,
+    configuration?.ui.ratingSystemOptions?.type,
+    setRating
+  );
+
   // set up hotkeys
   useEffect(() => {
     Mousetrap.bind("a", () => setActiveTabKey("gallery-details-panel"));
@@ -346,19 +361,58 @@ export const GalleryPage: React.FC<IProps> = ({ gallery, add }) => {
       </Helmet>
       {maybeRenderDeleteDialog()}
       <div className={`gallery-tabs ${collapsed ? "collapsed" : ""}`}>
-        <div className="d-none d-xl-block">
-          {gallery.studio && (
-            <h1 className="text-center">
-              <Link to={`/studios/${gallery.studio.id}`}>
-                <img
-                  src={gallery.studio.image_path ?? ""}
-                  alt={`${gallery.studio.name} logo`}
-                  className="studio-logo"
+        <div>
+          <div className="gallery-header-container">
+            {gallery.studio && (
+              <h1 className="text-center gallery-studio-image">
+                <Link to={`/studios/${gallery.studio.id}`}>
+                  <img
+                    src={gallery.studio.image_path ?? ""}
+                    alt={`${gallery.studio.name} logo`}
+                    className="studio-logo"
+                  />
+                </Link>
+              </h1>
+            )}
+            <h3
+              className={cx("gallery-header", { "no-studio": !gallery.studio })}
+            >
+              <TruncatedText lineCount={2} text={title} />
+            </h3>
+          </div>
+
+          <div className="gallery-subheader">
+            {!!gallery.date && (
+              <span className="date" data-value={gallery.date}>
+                <FormattedDate
+                  value={gallery.date}
+                  format="long"
+                  timeZone="utc"
                 />
-              </Link>
-            </h1>
-          )}
-          <h3 className="gallery-header">{title}</h3>
+              </span>
+            )}
+          </div>
+
+          <div className="gallery-toolbar">
+            <span className="gallery-toolbar-group">
+              <RatingSystem
+                value={gallery.rating100}
+                onSetRating={setRating}
+                clickToRate
+                withoutContext
+              />
+            </span>
+            <span className="gallery-toolbar-group">
+              <span>
+                <OrganizedButton
+                  loading={organizedLoading}
+                  organized={gallery.organized}
+                  onClick={onOrganizedClick}
+                />
+              </span>
+              <span>{renderOperations()}</span>
+            </span>
+          </div>
         </div>
         {renderTabs()}
       </div>

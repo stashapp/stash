@@ -165,9 +165,9 @@ export const SceneDuplicateChecker: React.FC = () => {
   }
 
   const findLargestScene = (group: GQL.SlimSceneDataFragment[]) => {
-    // Get total size of a scene
+    // Get maximum file size of a scene
     const totalSize = (scene: GQL.SlimSceneDataFragment) => {
-      return scene.files.reduce((sum: number, f) => sum + (f.size || 0), 0);
+      return scene.files.reduce((prev: number, f) => Math.max(prev, f.size), 0);
     };
     // Find scene object with maximum total size
     return group.reduce((largest, scene) => {
@@ -178,10 +178,10 @@ export const SceneDuplicateChecker: React.FC = () => {
   };
 
   const findLargestResolutionScene = (group: GQL.SlimSceneDataFragment[]) => {
-    // Get resolution of a scene
+    // Get maximum resolution of a scene
     const sceneResolution = (scene: GQL.SlimSceneDataFragment) => {
       return scene.files.reduce(
-        (sum: number, f) => sum + (f.height * f.width || 0),
+        (prev: number, f) => Math.max(prev, f.height * f.width),
         0
       );
     };

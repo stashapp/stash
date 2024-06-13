@@ -37,7 +37,10 @@ export function after(component: string, fn: Function) {
   afterFns[component].push(fn);
 }
 
-export function RegisterComponent(component: string, fn: Function) {
+export function RegisterComponent<T extends Function>(
+  component: string,
+  fn: T
+) {
   // register with the plugin api
   if (components[component]) {
     throw new Error("Component " + component + " has already been registered");
@@ -49,7 +52,7 @@ export function RegisterComponent(component: string, fn: Function) {
 }
 
 // patches a function to implement the before/instead/after functionality
-export function PatchFunction(name: string, fn: Function) {
+export function PatchFunction<T extends Function>(name: string, fn: T) {
   return new Proxy(fn, {
     apply(target, ctx, args) {
       let result;

@@ -119,7 +119,19 @@
         "temp_enable": "Vorübergehend aktivieren…",
         "unset": "Aufheben",
         "use_default": "Standard verwenden",
-        "view_random": "Zeige Zufällige"
+        "view_random": "Zufällige anzeigen",
+        "disable": "Deaktivieren",
+        "enable": "Aktivieren",
+        "encoding_image": "Bild wird encodiert…",
+        "optimise_database": "Datenbank optimieren",
+        "reload": "Neu laden",
+        "remove_date": "Datum entfernen",
+        "choose_date": "Datum auswählen",
+        "clean_generated": "Generierte Dateien aufräumen",
+        "create_parent_studio": "Übergeordnetes Studio erstellen",
+        "add_manual_date": "Manuelles Datum hinzufügen",
+        "copy_to_clipboard": "In die Zwischenablage kopieren",
+        "view_history": "Verlauf anzeigen"
     },
     "actions_name": "Aktionen",
     "age": "Alter",
@@ -320,6 +332,9 @@
                         "desc": "Erweitert: Zusätzliche Parameter für die Videogenerierung mit ffmpeg, welche vor dem Ausgabefeld übergeben werden können.",
                         "heading": "FFmpeg Transkodierung Ausgangsparameter"
                     }
+                },
+                "download_ffmpeg": {
+                    "heading": "FFmpeg herunterladen"
                 }
             },
             "funscript_heatmap_draw_range": "Reichweite in generierte Heatmaps einbeziehen",
@@ -702,7 +717,8 @@
                 }
             },
             "title": "Benutzeroberfläche"
-        }
+        },
+        "advanced_mode": "Fortgeschrittener Modus"
     },
     "configuration": "Konfiguration",
     "countables": {
@@ -1117,8 +1133,7 @@
             "stash_library_directories": "Stash Bibliotheks-Ordner"
         },
         "creating": {
-            "creating_your_system": "Erstelle dein System",
-            "ffmpeg_notice": "Wenn <code>ffmpeg</code> nicht in deinen Pfaden existiert, warte bitte während Stash es für dich herunterlädt. Der Downloadfortschritt wird im Konsolen-Output ausgegeben."
+            "creating_your_system": "Erstelle dein System"
         },
         "errors": {
             "something_went_wrong": "Oh nein! Etwas ist schief gelaufen!",
@@ -1256,5 +1271,6 @@
     "weight": "Gewicht",
     "weight_kg": "Gewicht (kg)",
     "years_old": "Jahre alt",
-    "zip_file_count": "Anzahl der Zip-Dateien"
+    "zip_file_count": "Anzahl der Zip-Dateien",
+    "audio_codec": "Audio Codec"
 }

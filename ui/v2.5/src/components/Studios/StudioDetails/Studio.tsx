@@ -181,6 +181,7 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
       Mousetrap.unbind("e");
       Mousetrap.unbind("d d");
       Mousetrap.unbind(",");
+      Mousetrap.unbind("f");
     };
   });
 
@@ -565,6 +566,8 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
               <RatingSystem
                 value={studio.rating100}
                 onSetRating={(value) => setRating(value)}
+                clickToRate
+                withoutContext
               />
               {maybeRenderDetails()}
               {maybeRenderEditPanel()}

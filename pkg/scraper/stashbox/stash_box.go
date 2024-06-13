@@ -251,11 +251,13 @@ func (c Client) findStashBoxScenesByFingerprints(ctx context.Context, scenes [][
 	return ret, nil
 }
 
-func (c Client) SubmitStashBoxFingerprints(ctx context.Context, sceneIDs []string, endpoint string) (bool, error) {
+func (c Client) SubmitStashBoxFingerprints(ctx context.Context, sceneIDs []string) (bool, error) {
 	ids, err := stringslice.StringSliceToIntSlice(sceneIDs)
 	if err != nil {
 		return false, err
 	}
+
+	endpoint := c.box.Endpoint
 
 	var fingerprints []graphql.FingerprintSubmission
 
@@ -676,6 +678,9 @@ func performerFragmentToScrapedPerformer(p graphql.PerformerFragment) *models.Sc
 			return !strings.EqualFold(s, p.Name)
 		})
 
+		// #4596 - stash-box may return duplicate aliases. Filter these out
+		p.Aliases = stringslice.UniqueFold(p.Aliases)
+
 		alias := strings.Join(p.Aliases, ", ")
 		sp.Aliases = &alias
 	}
@@ -942,12 +947,13 @@ func appendFingerprintUnique(v []*graphql.FingerprintInput, toAdd *graphql.Finge
 	return append(v, toAdd)
 }
 
-func (c Client) SubmitSceneDraft(ctx context.Context, scene *models.Scene, endpoint string, cover []byte) (*string, error) {
+func (c Client) SubmitSceneDraft(ctx context.Context, scene *models.Scene, cover []byte) (*string, error) {
 	draft := graphql.SceneDraftInput{}
 	var image io.Reader
 	r := c.repository
 	pqb := r.Performer
 	sqb := r.Studio
+	endpoint := c.box.Endpoint
 
 	if scene.Title != "" {
 		draft.Title = &scene.Title
@@ -1112,10 +1118,11 @@ func (c Client) SubmitSceneDraft(ctx context.Context, scene *models.Scene, endpo
 	// return id, nil
 }
 
-func (c Client) SubmitPerformerDraft(ctx context.Context, performer *models.Performer, endpoint string) (*string, error) {
+func (c Client) SubmitPerformerDraft(ctx context.Context, performer *models.Performer) (*string, error) {
 	draft := graphql.PerformerDraftInput{}
 	var image io.Reader
 	pqb := c.repository.Performer
+	endpoint := c.box.Endpoint
 
 	if err := performer.LoadAliases(ctx, pqb); err != nil {
 		return nil, err

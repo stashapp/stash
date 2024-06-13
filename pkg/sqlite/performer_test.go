@@ -731,10 +731,12 @@ func TestPerformerQueryEthnicityOr(t *testing.T) {
 			Value:    performer1Eth,
 			Modifier: models.CriterionModifierEquals,
 		},
-		Or: &models.PerformerFilterType{
-			Ethnicity: &models.StringCriterionInput{
-				Value:    performer2Eth,
-				Modifier: models.CriterionModifierEquals,
+		OperatorFilter: models.OperatorFilter[models.PerformerFilterType]{
+			Or: &models.PerformerFilterType{
+				Ethnicity: &models.StringCriterionInput{
+					Value:    performer2Eth,
+					Modifier: models.CriterionModifierEquals,
+				},
 			},
 		},
 	}
@@ -760,10 +762,12 @@ func TestPerformerQueryEthnicityAndRating(t *testing.T) {
 			Value:    performerEth,
 			Modifier: models.CriterionModifierEquals,
 		},
-		And: &models.PerformerFilterType{
-			Rating100: &models.IntCriterionInput{
-				Value:    performerRating,
-				Modifier: models.CriterionModifierEquals,
+		OperatorFilter: models.OperatorFilter[models.PerformerFilterType]{
+			And: &models.PerformerFilterType{
+				Rating100: &models.IntCriterionInput{
+					Value:    performerRating,
+					Modifier: models.CriterionModifierEquals,
+				},
 			},
 		},
 	}
@@ -801,8 +805,10 @@ func TestPerformerQueryEthnicityNotRating(t *testing.T) {
 
 	performerFilter := models.PerformerFilterType{
 		Ethnicity: &ethCriterion,
-		Not: &models.PerformerFilterType{
-			Rating100: &ratingCriterion,
+		OperatorFilter: models.OperatorFilter[models.PerformerFilterType]{
+			Not: &models.PerformerFilterType{
+				Rating100: &ratingCriterion,
+			},
 		},
 	}
 
@@ -838,24 +844,30 @@ func TestPerformerIllegalQuery(t *testing.T) {
 			// And and Or in the same filter
 			"AndOr",
 			models.PerformerFilterType{
-				And: &subFilter,
-				Or:  &subFilter,
+				OperatorFilter: models.OperatorFilter[models.PerformerFilterType]{
+					And: &subFilter,
+					Or:  &subFilter,
+				},
 			},
 		},
 		{
 			// And and Not in the same filter
 			"AndNot",
 			models.PerformerFilterType{
-				And: &subFilter,
-				Not: &subFilter,
+				OperatorFilter: models.OperatorFilter[models.PerformerFilterType]{
+					And: &subFilter,
+					Not: &subFilter,
+				},
 			},
 		},
 		{
 			// Or and Not in the same filter
 			"OrNot",
 			models.PerformerFilterType{
-				Or:  &subFilter,
-				Not: &subFilter,
+				OperatorFilter: models.OperatorFilter[models.PerformerFilterType]{
+					Or:  &subFilter,
+					Not: &subFilter,
+				},
 			},
 		},
 		{
@@ -1760,14 +1772,17 @@ func verifyPerformersRating100(t *testing.T, ratingCriterion models.IntCriterion
 	})
 }
 
+func performerQueryIsMissing(ctx context.Context, t *testing.T, m string) []*models.Performer {
+	performerFilter := models.PerformerFilterType{
+		IsMissing: &m,
+	}
+
+	return queryPerformers(ctx, t, &performerFilter, nil)
+}
+
 func TestPerformerQueryIsMissingRating(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		isMissing := "rating"
-		performerFilter := models.PerformerFilterType{
-			IsMissing: &isMissing,
-		}
-
-		performers := queryPerformers(ctx, t, &performerFilter, nil)
+		performers := performerQueryIsMissing(ctx, t, "rating")
 
 		assert.True(t, len(performers) > 0)
 
@@ -1781,16 +1796,7 @@ func TestPerformerQueryIsMissingRating(t *testing.T) {
 
 func TestPerformerQueryIsMissingImage(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		isMissing := "image"
-		performerFilter := &models.PerformerFilterType{
-			IsMissing: &isMissing,
-		}
-
-		// ensure query does not error
-		performers, _, err := db.Performer.Query(ctx, performerFilter, nil)
-		if err != nil {
-			t.Errorf("Error querying performers: %s", err.Error())
-		}
+		performers := performerQueryIsMissing(ctx, t, "image")
 
 		assert.True(t, len(performers) > 0)
 
@@ -1800,6 +1806,24 @@ func TestPerformerQueryIsMissingImage(t *testing.T) {
 				t.Errorf("error getting performer image: %s", err.Error())
 			}
 			assert.Nil(t, img)
+		}
+
+		return nil
+	})
+}
+
+func TestPerformerQueryIsMissingAlias(t *testing.T) {
+	withTxn(func(ctx context.Context) error {
+		performers := performerQueryIsMissing(ctx, t, "aliases")
+
+		assert.True(t, len(performers) > 0)
+
+		for _, performer := range performers {
+			a, err := db.Performer.GetAliases(ctx, performer.ID)
+			if err != nil {
+				t.Errorf("error getting performer aliases: %s", err.Error())
+			}
+			assert.Nil(t, a)
 		}
 
 		return nil

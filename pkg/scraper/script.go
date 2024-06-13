@@ -8,13 +8,202 @@ import (
 	"io"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	stashExec "github.com/stashapp/stash/pkg/exec"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	stashJson "github.com/stashapp/stash/pkg/models/json"
 	"github.com/stashapp/stash/pkg/python"
 )
+
+// inputs for scrapers
+
+type fingerprintInput struct {
+	Type        string `json:"type,omitempty"`
+	Fingerprint string `json:"fingerprint,omitempty"`
+}
+
+type fileInput struct {
+	ID      string             `json:"id"`
+	ZipFile *fileInput         `json:"zip_file,omitempty"`
+	ModTime stashJson.JSONTime `json:"mod_time"`
+
+	Path string `json:"path,omitempty"`
+
+	Fingerprints []fingerprintInput `json:"fingerprints,omitempty"`
+	Size         int64              `json:"size,omitempty"`
+}
+
+type videoFileInput struct {
+	fileInput
+	Format     string  `json:"format,omitempty"`
+	Width      int     `json:"width,omitempty"`
+	Height     int     `json:"height,omitempty"`
+	Duration   float64 `json:"duration,omitempty"`
+	VideoCodec string  `json:"video_codec,omitempty"`
+	AudioCodec string  `json:"audio_codec,omitempty"`
+	FrameRate  float64 `json:"frame_rate,omitempty"`
+	BitRate    int64   `json:"bitrate,omitempty"`
+
+	Interactive      bool `json:"interactive,omitempty"`
+	InteractiveSpeed *int `json:"interactive_speed,omitempty"`
+}
+
+// sceneInput is the input passed to the scraper for an existing scene
+type sceneInput struct {
+	ID    string `json:"id"`
+	Title string `json:"title"`
+	Code  string `json:"code,omitempty"`
+
+	// deprecated - use urls instead
+	URL  *string  `json:"url"`
+	URLs []string `json:"urls"`
+
+	// don't use omitempty for these to maintain backwards compatibility
+	Date    *string `json:"date"`
+	Details string  `json:"details"`
+
+	Director string `json:"director,omitempty"`
+
+	Files []videoFileInput `json:"files,omitempty"`
+}
+
+func fileInputFromFile(f models.BaseFile) fileInput {
+	b := f.Base()
+	var z *fileInput
+	if b.ZipFile != nil {
+		zz := fileInputFromFile(*b.ZipFile.Base())
+		z = &zz
+	}
+
+	ret := fileInput{
+		ID:      f.ID.String(),
+		ZipFile: z,
+		ModTime: stashJson.JSONTime{Time: f.ModTime},
+		Path:    f.Path,
+		Size:    f.Size,
+	}
+
+	for _, fp := range f.Fingerprints {
+		ret.Fingerprints = append(ret.Fingerprints, fingerprintInput{
+			Type:        fp.Type,
+			Fingerprint: fp.Value(),
+		})
+	}
+
+	return ret
+}
+
+func videoFileInputFromVideoFile(vf *models.VideoFile) videoFileInput {
+	return videoFileInput{
+		fileInput:        fileInputFromFile(*vf.Base()),
+		Format:           vf.Format,
+		Width:            vf.Width,
+		Height:           vf.Height,
+		Duration:         vf.Duration,
+		VideoCodec:       vf.VideoCodec,
+		AudioCodec:       vf.AudioCodec,
+		FrameRate:        vf.FrameRate,
+		BitRate:          vf.BitRate,
+		Interactive:      vf.Interactive,
+		InteractiveSpeed: vf.InteractiveSpeed,
+	}
+}
+
+func sceneInputFromScene(scene *models.Scene) sceneInput {
+	dateToStringPtr := func(s *models.Date) *string {
+		if s != nil {
+			v := s.String()
+			return &v
+		}
+
+		return nil
+	}
+
+	// fallback to file basename if title is empty
+	title := scene.GetTitle()
+
+	var url *string
+	urls := scene.URLs.List()
+	if len(urls) > 0 {
+		url = &urls[0]
+	}
+
+	ret := sceneInput{
+		ID:      strconv.Itoa(scene.ID),
+		Title:   title,
+		Details: scene.Details,
+		// include deprecated URL for now
+		URL:      url,
+		URLs:     urls,
+		Date:     dateToStringPtr(scene.Date),
+		Code:     scene.Code,
+		Director: scene.Director,
+	}
+
+	for _, f := range scene.Files.List() {
+		vf := videoFileInputFromVideoFile(f)
+		ret.Files = append(ret.Files, vf)
+	}
+
+	return ret
+}
+
+type galleryInput struct {
+	ID      string   `json:"id"`
+	Title   string   `json:"title"`
+	Urls    []string `json:"urls"`
+	Date    *string  `json:"date"`
+	Details string   `json:"details"`
+
+	Code         string `json:"code,omitempty"`
+	Photographer string `json:"photographer,omitempty"`
+
+	Files []fileInput `json:"files,omitempty"`
+
+	// deprecated
+	URL *string `json:"url"`
+}
+
+func galleryInputFromGallery(gallery *models.Gallery) galleryInput {
+	dateToStringPtr := func(s *models.Date) *string {
+		if s != nil {
+			v := s.String()
+			return &v
+		}
+
+		return nil
+	}
+
+	// fallback to file basename if title is empty
+	title := gallery.GetTitle()
+
+	var url *string
+	urls := gallery.URLs.List()
+	if len(urls) > 0 {
+		url = &urls[0]
+	}
+
+	ret := galleryInput{
+		ID:           strconv.Itoa(gallery.ID),
+		Title:        title,
+		Details:      gallery.Details,
+		URL:          url,
+		Urls:         urls,
+		Date:         dateToStringPtr(gallery.Date),
+		Code:         gallery.Code,
+		Photographer: gallery.Photographer,
+	}
+
+	for _, f := range gallery.Files.List() {
+		fi := fileInputFromFile(*f.Base())
+		ret.Files = append(ret.Files, fi)
+	}
+
+	return ret
+}
 
 var ErrScraperScript = errors.New("scraper script error")
 
@@ -43,7 +232,7 @@ func (s *scriptScraper) runScraperScript(ctx context.Context, inString string, o
 		if err != nil {
 			logger.Warnf("%s", err)
 		} else {
-			cmd = p.Command(context.TODO(), command[1:])
+			cmd = p.Command(ctx, command[1:])
 			envVariable, _ := filepath.Abs(filepath.Dir(filepath.Dir(s.config.path)))
 			python.AppendPythonPath(cmd, envVariable)
 		}
@@ -51,7 +240,7 @@ func (s *scriptScraper) runScraperScript(ctx context.Context, inString string, o
 
 	if cmd == nil {
 		// if could not find python, just use the command args as-is
-		cmd = stashExec.Command(command[0], command[1:]...)
+		cmd = stashExec.CommandContext(ctx, command[0], command[1:]...)
 	}
 
 	cmd.Dir = filepath.Dir(s.config.path)
@@ -205,7 +394,7 @@ func (s *scriptScraper) scrape(ctx context.Context, input string, ty ScrapeConte
 }
 
 func (s *scriptScraper) scrapeSceneByScene(ctx context.Context, scene *models.Scene) (*ScrapedScene, error) {
-	inString, err := json.Marshal(sceneToUpdateInput(scene))
+	inString, err := json.Marshal(sceneInputFromScene(scene))
 
 	if err != nil {
 		return nil, err
@@ -219,7 +408,7 @@ func (s *scriptScraper) scrapeSceneByScene(ctx context.Context, scene *models.Sc
 }
 
 func (s *scriptScraper) scrapeGalleryByGallery(ctx context.Context, gallery *models.Gallery) (*ScrapedGallery, error) {
-	inString, err := json.Marshal(galleryToUpdateInput(gallery))
+	inString, err := json.Marshal(galleryInputFromGallery(gallery))
 
 	if err != nil {
 		return nil, err

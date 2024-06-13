@@ -8,5 +8,10 @@ fragment SlimMovieData on Movie {
 fragment SelectMovieData on Movie {
   id
   name
+  aliases
+  date
+  studio {
+    name
+  }
   front_image_path
 }

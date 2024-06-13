@@ -128,7 +128,7 @@ input ScraperSourceInput {
   stash_box_index: Int @deprecated(reason: "use stash_box_endpoint")
   "Stash-box endpoint"
   stash_box_endpoint: String
-  "Scraper ID to scrape with. Should be unset if stash_box_index is set"
+  "Scraper ID to scrape with. Should be unset if stash_box_endpoint/stash_box_index is set"
   scraper_id: ID
 }
 
@@ -137,7 +137,7 @@ type ScraperSource {
   stash_box_index: Int @deprecated(reason: "use stash_box_endpoint")
   "Stash-box endpoint"
   stash_box_endpoint: String
-  "Scraper ID to scrape with. Should be unset if stash_box_index is set"
+  "Scraper ID to scrape with. Should be unset if stash_box_endpoint/stash_box_index is set"
   scraper_id: ID
 }
 
@@ -196,7 +196,9 @@ input ScrapeSingleMovieInput {
 
 input StashBoxSceneQueryInput {
   "Index of the configured stash-box instance to use"
-  stash_box_index: Int!
+  stash_box_index: Int @deprecated(reason: "use stash_box_endpoint")
+  "Endpoint of the stash-box instance to use"
+  stash_box_endpoint: String
   "Instructs query by scene fingerprints"
   scene_ids: [ID!]
   "Query by query string"
@@ -205,7 +207,9 @@ input StashBoxSceneQueryInput {
 
 input StashBoxPerformerQueryInput {
   "Index of the configured stash-box instance to use"
-  stash_box_index: Int!
+  stash_box_index: Int @deprecated(reason: "use stash_box_endpoint")
+  "Endpoint of the stash-box instance to use"
+  stash_box_endpoint: String
   "Instructs query by scene fingerprints"
   performer_ids: [ID!]
   "Query by query string"
@@ -226,7 +230,9 @@ type StashBoxFingerprint {
 "If neither ids nor names are set, tag all items"
 input StashBoxBatchTagInput {
   "Stash endpoint to use for the tagging"
-  endpoint: Int!
+  endpoint: Int @deprecated(reason: "use stash_box_endpoint")
+  "Endpoint of the stash-box instance to use"
+  stash_box_endpoint: String
   "Fields to exclude when executing the tagging"
   exclude_fields: [String!]
   "Refresh items already tagged by StashBox if true. Only tag items with no StashBox tagging if false"

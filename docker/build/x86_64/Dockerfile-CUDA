@@ -16,7 +16,7 @@ ARG STASH_VERSION
 RUN BUILD_DATE=$(date +"%Y-%m-%d %H:%M:%S") make ui
 
 # Build Backend
-FROM golang:1.19-bullseye as backend
+FROM golang:1.22-bullseye as backend
 RUN apt update && apt install -y build-essential golang
 WORKDIR /stash
 COPY ./go* ./*.go Makefile gqlgen.yml .gqlgenc.yml /stash/

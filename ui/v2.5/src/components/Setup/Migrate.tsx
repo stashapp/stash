@@ -7,12 +7,13 @@ import {
   useSystemStatus,
   mutateMigrate,
   postMigrate,
+  refetchSystemStatus,
 } from "src/core/StashService";
 import { migrationNotes } from "src/docs/en/MigrationNotes";
 import { ExternalLink } from "../Shared/ExternalLink";
 import { LoadingIndicator } from "../Shared/LoadingIndicator";
 import { MarkdownPage } from "../Shared/MarkdownPage";
-import { useMonitorJob } from "src/utils/job";
+import { JobFragment, useMonitorJob } from "src/utils/job";
 
 export const Migrate: React.FC = () => {
   const intl = useIntl();
@@ -26,7 +27,7 @@ export const Migrate: React.FC = () => {
 
   const [jobID, setJobID] = useState<string | undefined>();
 
-  const { job } = useMonitorJob(jobID, (finishedJob) => {
+  function onJobFinished(finishedJob?: JobFragment) {
     setJobID(undefined);
     setMigrateLoading(false);
 
@@ -34,9 +35,12 @@ export const Migrate: React.FC = () => {
       setMigrateError(finishedJob.error);
     } else {
       postMigrate();
-      history.push("/");
+      // refetch the system status so that the we get redirected
+      refetchSystemStatus();
     }
-  });
+  }
+
+  const { job } = useMonitorJob(jobID, onJobFinished);
 
   // if database path includes path separators, then this is passed through
   // to the migration path. Extract the base name of the database file.
@@ -147,7 +151,7 @@ export const Migrate: React.FC = () => {
     systemStatus.systemStatus.status !== GQL.SystemStatusEnum.NeedsMigration
   ) {
     // redirect to main page
-    history.push("/");
+    history.replace("/");
     return <LoadingIndicator />;
   }
 

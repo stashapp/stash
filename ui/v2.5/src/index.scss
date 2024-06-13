@@ -422,6 +422,7 @@ dd {
   align-items: center;
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
   white-space: pre-line;
 
   .birthdate,
@@ -712,7 +713,8 @@ div.dropdown-menu {
 }
 
 .filter-container,
-.operation-container {
+.operation-container,
+.pagination {
   align-items: center;
   display: flex;
   justify-content: center;
@@ -1329,6 +1331,11 @@ $detailTabWidth: calc(100% / 3);
   border-top-right-radius: 0;
 }
 
+.btn-group > .dropdown:not(:first-child) > .btn {
+  border-bottom-left-radius: 0;
+  border-top-left-radius: 0;
+}
+
 dl.details-list {
   display: grid;
   grid-column-gap: 10px;
@@ -1363,4 +1370,9 @@ select {
 
 .primary-file {
   font-weight: bold;
+}
+
+// ensure rating number editing doesn't resize column
+.table-list .rating-number {
+  width: 6rem;
 }

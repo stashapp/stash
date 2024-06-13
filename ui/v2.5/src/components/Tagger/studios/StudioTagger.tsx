@@ -268,7 +268,6 @@ interface IStudioTaggerListProps {
   selectedEndpoint: { endpoint: string; index: number };
   isIdle: boolean;
   config: ITaggerConfig;
-  stashBoxes?: GQL.StashBox[];
   onBatchAdd: (studioInput: string, createParent: boolean) => void;
   onBatchUpdate: (
     ids: string[] | undefined,
@@ -282,7 +281,6 @@ const StudioTaggerList: React.FC<IStudioTaggerListProps> = ({
   selectedEndpoint,
   isIdle,
   config,
-  stashBoxes,
   onBatchAdd,
   onBatchUpdate,
 }) => {
@@ -315,7 +313,7 @@ const StudioTaggerList: React.FC<IStudioTaggerListProps> = ({
   >();
 
   const doBoxSearch = (studioID: string, searchVal: string) => {
-    stashBoxStudioQuery(searchVal, selectedEndpoint.index)
+    stashBoxStudioQuery(searchVal, selectedEndpoint.endpoint)
       .then((queryData) => {
         const s = queryData.data?.scrapeSingleStudio ?? [];
         setSearchResults({
@@ -344,17 +342,13 @@ const StudioTaggerList: React.FC<IStudioTaggerListProps> = ({
     setLoading(true);
   };
 
-  const doBoxUpdate = (
-    studioID: string,
-    stashID: string,
-    endpointIndex: number
-  ) => {
+  const doBoxUpdate = (studioID: string, stashID: string, endpoint: string) => {
     setLoadingUpdate(stashID);
     setError({
       ...error,
       [studioID]: undefined,
     });
-    stashBoxStudioQuery(stashID, endpointIndex)
+    stashBoxStudioQuery(stashID, endpoint)
       .then((queryData) => {
         const data = queryData.data?.scrapeSingleStudio ?? [];
         if (data.length > 0) {
@@ -535,29 +529,23 @@ const StudioTaggerList: React.FC<IStudioTaggerListProps> = ({
           <div className="small">{stashID.stash_id}</div>
         );
 
-        const endpointIndex =
-          stashBoxes?.findIndex((box) => box.endpoint === stashID.endpoint) ??
-          -1;
-
         subContent = (
           <div key={studio.id}>
             <InputGroup className="StudioTagger-box-link">
               <InputGroup.Text>{link}</InputGroup.Text>
               <InputGroup.Append>
-                {endpointIndex !== -1 && (
-                  <Button
-                    onClick={() =>
-                      doBoxUpdate(studio.id, stashID.stash_id, endpointIndex)
-                    }
-                    disabled={!!loadingUpdate}
-                  >
-                    {loadingUpdate === stashID.stash_id ? (
-                      <LoadingIndicator inline small message="" />
-                    ) : (
-                      <FormattedMessage id="actions.refresh" />
-                    )}
-                  </Button>
-                )}
+                <Button
+                  onClick={() =>
+                    doBoxUpdate(studio.id, stashID.stash_id, stashID.endpoint)
+                  }
+                  disabled={!!loadingUpdate}
+                >
+                  {loadingUpdate === stashID.stash_id ? (
+                    <LoadingIndicator inline small message="" />
+                  ) : (
+                    <FormattedMessage id="actions.refresh" />
+                  )}
+                </Button>
               </InputGroup.Append>
             </InputGroup>
             {error[studio.id] && (
@@ -849,7 +837,6 @@ export const StudioTagger: React.FC<ITaggerProps> = ({ studios }) => {
               }}
               isIdle={batchJobID === undefined}
               config={config}
-              stashBoxes={stashConfig?.general.stashBoxes}
               onBatchAdd={batchAdd}
               onBatchUpdate={batchUpdate}
             />
