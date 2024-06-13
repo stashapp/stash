@@ -16,6 +16,8 @@ fragment TagData on Tag {
   gallery_count_all: gallery_count(depth: -1)
   performer_count
   performer_count_all: performer_count(depth: -1)
+  movie_count
+  movie_count_all: movie_count(depth: -1)
 
   parents {
     ...SlimTagData

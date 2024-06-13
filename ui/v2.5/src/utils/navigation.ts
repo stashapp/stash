@@ -78,7 +78,7 @@ const makePerformerImagesUrl = (
 };
 
 export interface INamedObject {
-  id?: string;
+  id: string;
   name?: string;
 }
 
@@ -262,8 +262,7 @@ const makeChildTagsUrl = (tag: Partial<GQL.TagDataFragment>) => {
   return `/tags?${filter.makeQueryParameters()}`;
 };
 
-const makeTagScenesUrl = (tag: Partial<GQL.TagDataFragment>) => {
-  if (!tag.id) return "#";
+function makeTagFilter(mode: GQL.FilterMode, tag: INamedObject) {
   const filter = new ListFilterModel(GQL.FilterMode.Scenes, undefined);
   const criterion = new TagsCriterion(TagsCriterionOption);
   criterion.value = {
@@ -272,59 +271,31 @@ const makeTagScenesUrl = (tag: Partial<GQL.TagDataFragment>) => {
     depth: 0,
   };
   filter.criteria.push(criterion);
-  return `/scenes?${filter.makeQueryParameters()}`;
+  return filter.makeQueryParameters();
+}
+
+const makeTagScenesUrl = (tag: INamedObject) => {
+  return `/scenes?${makeTagFilter(GQL.FilterMode.Scenes, tag)}`;
 };
 
-const makeTagPerformersUrl = (tag: Partial<GQL.TagDataFragment>) => {
-  if (!tag.id) return "#";
-  const filter = new ListFilterModel(GQL.FilterMode.Performers, undefined);
-  const criterion = new TagsCriterion(TagsCriterionOption);
-  criterion.value = {
-    items: [{ id: tag.id, label: tag.name || `Tag ${tag.id}` }],
-    excluded: [],
-    depth: 0,
-  };
-  filter.criteria.push(criterion);
-  return `/performers?${filter.makeQueryParameters()}`;
+const makeTagPerformersUrl = (tag: INamedObject) => {
+  return `/performers?${makeTagFilter(GQL.FilterMode.Performers, tag)}`;
 };
 
-const makeTagSceneMarkersUrl = (tag: Partial<GQL.TagDataFragment>) => {
-  if (!tag.id) return "#";
-  const filter = new ListFilterModel(GQL.FilterMode.SceneMarkers, undefined);
-  const criterion = new TagsCriterion(TagsCriterionOption);
-  criterion.value = {
-    items: [{ id: tag.id, label: tag.name || `Tag ${tag.id}` }],
-    excluded: [],
-    depth: 0,
-  };
-  filter.criteria.push(criterion);
-  return `/scenes/markers?${filter.makeQueryParameters()}`;
+const makeTagSceneMarkersUrl = (tag: INamedObject) => {
+  return `/scenes/markers?${makeTagFilter(GQL.FilterMode.SceneMarkers, tag)}`;
 };
 
-const makeTagGalleriesUrl = (tag: Partial<GQL.TagDataFragment>) => {
-  if (!tag.id) return "#";
-  const filter = new ListFilterModel(GQL.FilterMode.Galleries, undefined);
-  const criterion = new TagsCriterion(TagsCriterionOption);
-  criterion.value = {
-    items: [{ id: tag.id, label: tag.name || `Tag ${tag.id}` }],
-    excluded: [],
-    depth: 0,
-  };
-  filter.criteria.push(criterion);
-  return `/galleries?${filter.makeQueryParameters()}`;
+const makeTagGalleriesUrl = (tag: INamedObject) => {
+  return `/galleries?${makeTagFilter(GQL.FilterMode.Galleries, tag)}`;
 };
 
-const makeTagImagesUrl = (tag: Partial<GQL.TagDataFragment>) => {
-  if (!tag.id) return "#";
-  const filter = new ListFilterModel(GQL.FilterMode.Images, undefined);
-  const criterion = new TagsCriterion(TagsCriterionOption);
-  criterion.value = {
-    items: [{ id: tag.id, label: tag.name || `Tag ${tag.id}` }],
-    excluded: [],
-    depth: 0,
-  };
-  filter.criteria.push(criterion);
-  return `/images?${filter.makeQueryParameters()}`;
+const makeTagImagesUrl = (tag: INamedObject) => {
+  return `/images?${makeTagFilter(GQL.FilterMode.Images, tag)}`;
+};
+
+const makeTagMoviesUrl = (tag: INamedObject) => {
+  return `/movies?${makeTagFilter(GQL.FilterMode.Movies, tag)}`;
 };
 
 type SceneMarkerDataFragment = Pick<GQL.SceneMarker, "id" | "seconds"> & {
@@ -441,6 +412,7 @@ const NavUtils = {
   makeTagPerformersUrl,
   makeTagGalleriesUrl,
   makeTagImagesUrl,
+  makeTagMoviesUrl,
   makeScenesPHashMatchUrl,
   makeSceneMarkerUrl,
   makeMovieScenesUrl,

@@ -25,6 +25,7 @@ import {
   yupUniqueStringList,
 } from "src/utils/yup";
 import { Studio, StudioSelect } from "src/components/Studios/StudioSelect";
+import { useTagsEdit } from "src/hooks/tagsEdit";
 
 interface IMovieEditPanel {
   movie: Partial<GQL.MovieDataFragment>;
@@ -66,6 +67,7 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
     duration: yup.number().integer().min(0).nullable().defined(),
     date: yupDateString(intl),
     studio_id: yup.string().required().nullable(),
+    tag_ids: yup.array(yup.string().required()).defined(),
     director: yup.string().ensure(),
     urls: yupUniqueStringList(intl),
     synopsis: yup.string().ensure(),
@@ -79,6 +81,7 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
     duration: movie?.duration ?? null,
     date: movie?.date ?? "",
     studio_id: movie?.studio?.id ?? null,
+    tag_ids: (movie?.tags ?? []).map((t) => t.id),
     director: movie?.director ?? "",
     urls: movie?.urls ?? [],
     synopsis: movie?.synopsis ?? "",
@@ -92,6 +95,11 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
     validate: yupFormikValidate(schema),
     onSubmit: (values) => onSave(schema.cast(values)),
   });
+
+  const { tags, updateTagsStateFromScraper, tagsControl } = useTagsEdit(
+    movie.tags,
+    (ids) => formik.setFieldValue("tag_ids", ids)
+  );
 
   function onSetStudio(item: Studio | null) {
     setStudio(item);
@@ -159,6 +167,7 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
     if (state.urls) {
       formik.setFieldValue("urls", state.urls);
     }
+    updateTagsStateFromScraper(state.tags ?? undefined);
 
     if (state.front_image) {
       // image is a base64 string
@@ -231,6 +240,7 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
       <MovieScrapeDialog
         movie={currentMovie}
         movieStudio={studio}
+        movieTags={tags}
         scraped={scrapedMovie}
         onClose={(m) => {
           onScrapeDialogClosed(m);
@@ -351,6 +361,11 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
     return renderField("studio_id", title, control);
   }
 
+  function renderTagsField() {
+    const title = intl.formatMessage({ id: "tags" });
+    return renderField("tag_ids", title, tagsControl());
+  }
+
   // TODO: CSS class
   return (
     <div>
@@ -383,6 +398,7 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
         {renderInputField("director")}
         {renderURLListField("urls", onScrapeMovieURL, urlScrapable)}
         {renderInputField("synopsis", "textarea")}
+        {renderTagsField()}
       </Form>
 
       <DetailsEditNavbar

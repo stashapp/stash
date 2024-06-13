@@ -17,74 +17,79 @@ import { Studio } from "src/components/Studios/StudioSelect";
 import { useCreateScrapedStudio } from "src/components/Shared/ScrapeDialog/createObjects";
 import { ScrapedStudioRow } from "src/components/Shared/ScrapeDialog/ScrapedObjectsRow";
 import { uniq } from "lodash-es";
+import { Tag } from "src/components/Tags/TagSelect";
+import { useScrapedTags } from "src/components/Shared/ScrapeDialog/scrapedTags";
 
 interface IMovieScrapeDialogProps {
   movie: Partial<GQL.MovieUpdateInput>;
   movieStudio: Studio | null;
+  movieTags: Tag[];
   scraped: GQL.ScrapedMovie;
 
   onClose: (scrapedMovie?: GQL.ScrapedMovie) => void;
 }
 
-export const MovieScrapeDialog: React.FC<IMovieScrapeDialogProps> = (
-  props: IMovieScrapeDialogProps
-) => {
+export const MovieScrapeDialog: React.FC<IMovieScrapeDialogProps> = ({
+  movie,
+  movieStudio,
+  movieTags,
+  scraped,
+  onClose,
+}) => {
   const intl = useIntl();
 
   const [name, setName] = useState<ScrapeResult<string>>(
-    new ScrapeResult<string>(props.movie.name, props.scraped.name)
+    new ScrapeResult<string>(movie.name, scraped.name)
   );
   const [aliases, setAliases] = useState<ScrapeResult<string>>(
-    new ScrapeResult<string>(props.movie.aliases, props.scraped.aliases)
+    new ScrapeResult<string>(movie.aliases, scraped.aliases)
   );
   const [duration, setDuration] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(
-      TextUtils.secondsToTimestamp(props.movie.duration || 0),
+      TextUtils.secondsToTimestamp(movie.duration || 0),
       // convert seconds to string if it's a number
-      props.scraped.duration && !isNaN(+props.scraped.duration)
-        ? TextUtils.secondsToTimestamp(parseInt(props.scraped.duration, 10))
-        : props.scraped.duration
+      scraped.duration && !isNaN(+scraped.duration)
+        ? TextUtils.secondsToTimestamp(parseInt(scraped.duration, 10))
+        : scraped.duration
     )
   );
   const [date, setDate] = useState<ScrapeResult<string>>(
-    new ScrapeResult<string>(props.movie.date, props.scraped.date)
+    new ScrapeResult<string>(movie.date, scraped.date)
   );
   const [director, setDirector] = useState<ScrapeResult<string>>(
-    new ScrapeResult<string>(props.movie.director, props.scraped.director)
+    new ScrapeResult<string>(movie.director, scraped.director)
   );
   const [synopsis, setSynopsis] = useState<ScrapeResult<string>>(
-    new ScrapeResult<string>(props.movie.synopsis, props.scraped.synopsis)
+    new ScrapeResult<string>(movie.synopsis, scraped.synopsis)
   );
   const [studio, setStudio] = useState<ObjectScrapeResult<GQL.ScrapedStudio>>(
     new ObjectScrapeResult<GQL.ScrapedStudio>(
-      props.movieStudio
+      movieStudio
         ? {
-            stored_id: props.movieStudio.id,
-            name: props.movieStudio.name,
+            stored_id: movieStudio.id,
+            name: movieStudio.name,
           }
         : undefined,
-      props.scraped.studio?.stored_id ? props.scraped.studio : undefined
+      scraped.studio?.stored_id ? scraped.studio : undefined
     )
   );
   const [urls, setURLs] = useState<ScrapeResult<string[]>>(
     new ScrapeResult<string[]>(
-      props.movie.urls,
-      props.scraped.urls
-        ? uniq((props.movie.urls ?? []).concat(props.scraped.urls ?? []))
+      movie.urls,
+      scraped.urls
+        ? uniq((movie.urls ?? []).concat(scraped.urls ?? []))
         : undefined
     )
   );
   const [frontImage, setFrontImage] = useState<ScrapeResult<string>>(
-    new ScrapeResult<string>(props.movie.front_image, props.scraped.front_image)
+    new ScrapeResult<string>(movie.front_image, scraped.front_image)
   );
   const [backImage, setBackImage] = useState<ScrapeResult<string>>(
-    new ScrapeResult<string>(props.movie.back_image, props.scraped.back_image)
+    new ScrapeResult<string>(movie.back_image, scraped.back_image)
   );
 
   const [newStudio, setNewStudio] = useState<GQL.ScrapedStudio | undefined>(
-    props.scraped.studio && !props.scraped.studio.stored_id
-      ? props.scraped.studio
-      : undefined
+    scraped.studio && !scraped.studio.stored_id ? scraped.studio : undefined
   );
 
   const createNewStudio = useCreateScrapedStudio({
@@ -92,6 +97,11 @@ export const MovieScrapeDialog: React.FC<IMovieScrapeDialogProps> = (
     setScrapeResult: setStudio,
     setNewObject: setNewStudio,
   });
+
+  const { tags, newTags, scrapedTagsRow } = useScrapedTags(
+    movieTags,
+    scraped.tags
+  );
 
   const allFields = [
     name,
@@ -101,17 +111,21 @@ export const MovieScrapeDialog: React.FC<IMovieScrapeDialogProps> = (
     director,
     synopsis,
     studio,
+    tags,
     urls,
     frontImage,
     backImage,
   ];
   // don't show the dialog if nothing was scraped
-  if (allFields.every((r) => !r.scraped) && !newStudio) {
-    props.onClose();
+  if (
+    allFields.every((r) => !r.scraped) &&
+    !newStudio &&
+    newTags.length === 0
+  ) {
+    onClose();
     return <></>;
   }
 
-  // todo: reenable
   function makeNewScrapedItem(): GQL.ScrapedMovie {
     const newStudioValue = studio.getNewValue();
     const durationString = duration.getNewValue();
@@ -124,6 +138,7 @@ export const MovieScrapeDialog: React.FC<IMovieScrapeDialogProps> = (
       director: director.getNewValue(),
       synopsis: synopsis.getNewValue(),
       studio: newStudioValue,
+      tags: tags.getNewValue(),
       urls: urls.getNewValue(),
       front_image: frontImage.getNewValue(),
       back_image: backImage.getNewValue(),
@@ -176,6 +191,7 @@ export const MovieScrapeDialog: React.FC<IMovieScrapeDialogProps> = (
           result={urls}
           onChange={(value) => setURLs(value)}
         />
+        {scrapedTagsRow}
         <ScrapedImageRow
           title="Front Image"
           className="movie-image"
@@ -200,7 +216,7 @@ export const MovieScrapeDialog: React.FC<IMovieScrapeDialogProps> = (
       )}
       renderScrapeRows={renderScrapeRows}
       onClose={(apply) => {
-        props.onClose(apply ? makeNewScrapedItem() : undefined);
+        onClose(apply ? makeNewScrapedItem() : undefined);
       }}
     />
   );

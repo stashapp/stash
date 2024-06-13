@@ -191,7 +191,7 @@ export const GalleryLink: React.FC<IGalleryLinkProps> = ({
 
 interface ITagLinkProps {
   tag: INamedObject;
-  linkType?: "scene" | "gallery" | "image" | "details" | "performer";
+  linkType?: "scene" | "gallery" | "image" | "details" | "performer" | "movie";
   className?: string;
   hoverPlacement?: Placement;
   showHierarchyIcon?: boolean;
@@ -216,6 +216,8 @@ export const TagLink: React.FC<ITagLinkProps> = ({
         return NavUtils.makeTagGalleriesUrl(tag);
       case "image":
         return NavUtils.makeTagImagesUrl(tag);
+      case "movie":
+        return NavUtils.makeTagMoviesUrl(tag);
       case "details":
         return NavUtils.makeTagUrl(tag.id ?? "");
     }

@@ -305,6 +305,7 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
       return (
         <MovieDetailsPanel
           movie={movie}
+          collapsed={collapsed}
           fullWidth={!collapsed && !compactExpandedDetails}
         />
       );

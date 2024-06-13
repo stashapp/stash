@@ -223,6 +223,19 @@ export const TagCard: React.FC<IProps> = ({
     );
   }
 
+  function maybeRenderMoviesPopoverButton() {
+    if (!tag.movie_count) return;
+
+    return (
+      <PopoverCountButton
+        className="movie-count"
+        type="movie"
+        count={tag.movie_count}
+        url={NavUtils.makeTagMoviesUrl(tag)}
+      />
+    );
+  }
+
   function maybeRenderPopoverButtonGroup() {
     if (tag) {
       return (
@@ -232,6 +245,7 @@ export const TagCard: React.FC<IProps> = ({
             {maybeRenderScenesPopoverButton()}
             {maybeRenderImagesPopoverButton()}
             {maybeRenderGalleriesPopoverButton()}
+            {maybeRenderMoviesPopoverButton()}
             {maybeRenderSceneMarkersPopoverButton()}
             {maybeRenderPerformersPopoverButton()}
           </ButtonGroup>
