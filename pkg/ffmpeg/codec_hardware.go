@@ -179,7 +179,8 @@ func (f *FFMpeg) hwFilterInit(toCodec VideoCodec, fullhw bool) VideoFilter {
 	var videoFilter VideoFilter
 	switch toCodec {
 	case VideoCodecV264,
-		VideoCodecVVP9:
+		VideoCodecVVP9,
+		VideoCodecM264:
 		if !fullhw {
 			videoFilter = videoFilter.Append("format=yuv420p")
 			videoFilter = videoFilter.Append("hwupload")
