@@ -127,10 +127,6 @@ func (m *schema60Migrator) saveDefaultFilters(defaultFilters schema60DefaultFilt
 		return nil
 	}
 
-	if err := m.backupConfig(orgPath); err != nil {
-		return fmt.Errorf("backing up config: %w", err)
-	}
-
 	uiConfig := config.GetUIConfiguration()
 	if uiConfig == nil {
 		uiConfig = make(map[string]interface{})
@@ -140,6 +136,10 @@ func (m *schema60Migrator) saveDefaultFilters(defaultFilters schema60DefaultFilt
 	if _, found := uiConfig["defaultFilters"]; found {
 		logger.Warn("defaultFilters already exists in the UI config, skipping migration")
 		return nil
+	}
+
+	if err := m.backupConfig(orgPath); err != nil {
+		return fmt.Errorf("backing up config: %w", err)
 	}
 
 	uiConfig["defaultFilters"] = defaultFilters
@@ -156,7 +156,7 @@ func (m *schema60Migrator) backupConfig(orgPath string) error {
 	c := config.GetInstance()
 
 	// save a backup of the original config file
-	backupPath := fmt.Sprintf("%s.58.%s", orgPath, time.Now().Format("20060102_150405"))
+	backupPath := fmt.Sprintf("%s.59.%s", orgPath, time.Now().Format("20060102_150405"))
 
 	data, err := c.Marshal()
 	if err != nil {
