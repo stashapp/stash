@@ -323,8 +323,7 @@ func (f *FFMpeg) hwApplyScaleTemplate(sargs string, codec VideoCodec, match []in
 	isIntel := codec == VideoCodecI264 || codec == VideoCodecIVP9
 	// BUG: scale_vt doesn't call ff_scale_adjust_dimensions, thus cant accept negative size values
 	isApple := codec == VideoCodecM264
-	isDebug := true
-	return VideoFilter(templateReplaceScale(sargs, template, match, vf, isIntel || isApple || isDebug))
+	return VideoFilter(templateReplaceScale(sargs, template, match, vf, isIntel || isApple))
 }
 
 // Returns the max resolution for a given codec, or a default
