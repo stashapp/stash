@@ -1107,6 +1107,7 @@ func (t *ExportTask) exportMovie(ctx context.Context, wg *sync.WaitGroup, jobCha
 	r := t.repository
 	movieReader := r.Movie
 	studioReader := r.Studio
+	tagReader := r.Tag
 
 	for m := range jobChan {
 		if err := m.LoadURLs(ctx, r.Movie); err != nil {
@@ -1120,6 +1121,14 @@ func (t *ExportTask) exportMovie(ctx context.Context, wg *sync.WaitGroup, jobCha
 			logger.Errorf("[movies] <%s> error getting tag JSON: %v", m.Name, err)
 			continue
 		}
+
+		tags, err := tagReader.FindByMovieID(ctx, m.ID)
+		if err != nil {
+			logger.Errorf("[movies] <%s> error getting image tag names: %v", m.Name, err)
+			continue
+		}
+
+		newMovieJSON.Tags = tag.GetNames(tags)
 
 		if t.includeDependencies {
 			if m.StudioID != nil {

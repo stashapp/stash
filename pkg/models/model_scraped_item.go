@@ -371,6 +371,7 @@ type ScrapedMovie struct {
 	URLs     []string       `json:"urls"`
 	Synopsis *string        `json:"synopsis"`
 	Studio   *ScrapedStudio `json:"studio"`
+	Tags     []*ScrapedTag  `json:"tags"`
 	// This should be a base64 encoded data URL
 	FrontImage *string `json:"front_image"`
 	// This should be a base64 encoded data URL

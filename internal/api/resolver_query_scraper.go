@@ -144,6 +144,23 @@ func filterPerformerTags(p []*models.ScrapedPerformer) {
 	}
 }
 
+// filterMovieTags removes tags matching excluded tag patterns from the provided scraped movies
+func filterMovieTags(p []*models.ScrapedMovie) {
+	excludeRegexps := compileRegexps(manager.GetInstance().Config.GetScraperExcludeTagPatterns())
+
+	var ignoredTags []string
+
+	for _, s := range p {
+		var ignored []string
+		s.Tags, ignored = filterTags(excludeRegexps, s.Tags)
+		ignoredTags = sliceutil.AppendUniques(ignoredTags, ignored)
+	}
+
+	if len(ignoredTags) > 0 {
+		logger.Debugf("Scraping ignored tags: %s", strings.Join(ignoredTags, ", "))
+	}
+}
+
 func (r *queryResolver) ScrapeSceneURL(ctx context.Context, url string) (*scraper.ScrapedScene, error) {
 	content, err := r.scraperCache().ScrapeURL(ctx, url, scraper.ScrapeContentTypeScene)
 	if err != nil {
@@ -186,7 +203,14 @@ func (r *queryResolver) ScrapeMovieURL(ctx context.Context, url string) (*models
 		return nil, err
 	}
 
-	return marshalScrapedMovie(content)
+	ret, err := marshalScrapedMovie(content)
+	if err != nil {
+		return nil, err
+	}
+
+	filterMovieTags([]*models.ScrapedMovie{ret})
+
+	return ret, nil
 }
 
 func (r *queryResolver) ScrapeSingleScene(ctx context.Context, source scraper.Source, input ScrapeSingleSceneInput) ([]*scraper.ScrapedScene, error) {

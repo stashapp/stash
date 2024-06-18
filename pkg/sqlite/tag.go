@@ -424,6 +424,18 @@ func (qb *TagStore) FindByGalleryID(ctx context.Context, galleryID int) ([]*mode
 	return qb.queryTags(ctx, query, args)
 }
 
+func (qb *TagStore) FindByMovieID(ctx context.Context, movieID int) ([]*models.Tag, error) {
+	query := `
+		SELECT tags.* FROM tags
+		LEFT JOIN movies_tags as movies_join on movies_join.tag_id = tags.id
+		WHERE movies_join.movie_id = ?
+		GROUP BY tags.id
+	`
+	query += qb.getDefaultTagSort()
+	args := []interface{}{movieID}
+	return qb.queryTags(ctx, query, args)
+}
+
 func (qb *TagStore) FindBySceneMarkerID(ctx context.Context, sceneMarkerID int) ([]*models.Tag, error) {
 	query := `
 		SELECT tags.* FROM tags
@@ -615,6 +627,7 @@ var tagSortOptions = sortOptions{
 	"galleries_count",
 	"id",
 	"images_count",
+	"movies_count",
 	"name",
 	"performers_count",
 	"random",
@@ -655,6 +668,8 @@ func (qb *TagStore) getTagSort(query *queryBuilder, findFilter *models.FindFilte
 		sortQuery += getCountSort(tagTable, galleriesTagsTable, tagIDColumn, direction)
 	case "performers_count":
 		sortQuery += getCountSort(tagTable, performersTagsTable, tagIDColumn, direction)
+	case "movies_count":
+		sortQuery += getCountSort(tagTable, moviesTagsTable, tagIDColumn, direction)
 	default:
 		sortQuery += getSort(sort, direction, "tags")
 	}
@@ -887,4 +902,18 @@ SELECT t.*, c.path FROM tags t INNER JOIN children c ON t.id = c.child_id
 	args = append(args, append(append(excludeArgs, excludeArgs...), excludeArgs...)...)
 
 	return qb.queryTagPaths(ctx, query, args)
+}
+
+type tagRelationshipStore struct {
+	idRelationshipStore
+}
+
+func (s *tagRelationshipStore) CountByTagID(ctx context.Context, tagID int) (int, error) {
+	joinTable := s.joinTable.table.table
+	q := dialect.Select(goqu.COUNT("*")).From(joinTable).Where(joinTable.Col(tagIDColumn).Eq(tagID))
+	return count(ctx, q)
+}
+
+func (s *tagRelationshipStore) GetTagIDs(ctx context.Context, id int) ([]int, error) {
+	return s.joinTable.get(ctx, id)
 }

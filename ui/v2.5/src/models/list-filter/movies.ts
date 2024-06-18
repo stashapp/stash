@@ -3,6 +3,7 @@ import {
   createDateCriterionOption,
   createMandatoryTimestampCriterionOption,
   createDurationCriterionOption,
+  createMandatoryNumberCriterionOption,
 } from "./criteria/criterion";
 import { MovieIsMissingCriterionOption } from "./criteria/is-missing";
 import { StudiosCriterionOption } from "./criteria/studios";
@@ -10,10 +11,18 @@ import { PerformersCriterionOption } from "./criteria/performers";
 import { ListFilterOptions } from "./filter-options";
 import { DisplayMode } from "./types";
 import { RatingCriterionOption } from "./criteria/rating";
+import { TagsCriterionOption } from "./criteria/tags";
 
 const defaultSortBy = "name";
 
-const sortByOptions = ["name", "random", "date", "duration", "rating"]
+const sortByOptions = [
+  "name",
+  "random",
+  "date",
+  "duration",
+  "rating",
+  "tag_count",
+]
   .map(ListFilterOptions.createSortBy)
   .concat([
     {
@@ -33,6 +42,8 @@ const criterionOptions = [
   RatingCriterionOption,
   PerformersCriterionOption,
   createDateCriterionOption("date"),
+  TagsCriterionOption,
+  createMandatoryNumberCriterionOption("tag_count"),
   createMandatoryTimestampCriterionOption("created_at"),
   createMandatoryTimestampCriterionOption("updated_at"),
 ];

@@ -312,6 +312,29 @@ func (_m *MovieReaderWriter) GetFrontImage(ctx context.Context, movieID int) ([]
 	return r0, r1
 }
 
+// GetTagIDs provides a mock function with given fields: ctx, relatedID
+func (_m *MovieReaderWriter) GetTagIDs(ctx context.Context, relatedID int) ([]int, error) {
+	ret := _m.Called(ctx, relatedID)
+
+	var r0 []int
+	if rf, ok := ret.Get(0).(func(context.Context, int) []int); ok {
+		r0 = rf(ctx, relatedID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]int)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, relatedID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetURLs provides a mock function with given fields: ctx, relatedID
 func (_m *MovieReaderWriter) GetURLs(ctx context.Context, relatedID int) ([]string, error) {
 	ret := _m.Called(ctx, relatedID)

@@ -1118,6 +1118,7 @@
   "megabits_per_second": "{value} mbps",
   "metadata": "Metadata",
   "movie": "Movie",
+  "movie_count": "Movie Count",
   "movie_scene_number": "Scene Number",
   "movies": "Movies",
   "name": "Name",

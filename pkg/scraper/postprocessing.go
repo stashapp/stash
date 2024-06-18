@@ -71,13 +71,24 @@ func (c Cache) postScrapePerformer(ctx context.Context, p models.ScrapedPerforme
 }
 
 func (c Cache) postScrapeMovie(ctx context.Context, m models.ScrapedMovie) (ScrapedContent, error) {
-	if m.Studio != nil {
-		r := c.repository
-		if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
-			return match.ScrapedStudio(ctx, r.StudioFinder, m.Studio, nil)
-		}); err != nil {
-			return nil, err
+	r := c.repository
+	if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
+		tqb := r.TagFinder
+		tags, err := postProcessTags(ctx, tqb, m.Tags)
+		if err != nil {
+			return err
 		}
+		m.Tags = tags
+
+		if m.Studio != nil {
+			if err := match.ScrapedStudio(ctx, r.StudioFinder, m.Studio, nil); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}); err != nil {
+		return nil, err
 	}
 
 	// post-process - set the image if applicable

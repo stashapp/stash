@@ -21,14 +21,9 @@ import {
   stringToCircumcised,
 } from "src/utils/circumcised";
 import { IStashBox } from "./PerformerStashBoxModal";
-import {
-  ObjectListScrapeResult,
-  ScrapeResult,
-} from "src/components/Shared/ScrapeDialog/scrapeResult";
-import { ScrapedTagsRow } from "src/components/Shared/ScrapeDialog/ScrapedObjectsRow";
-import { sortStoredIdObjects } from "src/utils/data";
+import { ScrapeResult } from "src/components/Shared/ScrapeDialog/scrapeResult";
 import { Tag } from "src/components/Tags/TagSelect";
-import { useCreateScrapedTag } from "src/components/Shared/ScrapeDialog/createObjects";
+import { useScrapedTags } from "src/components/Shared/ScrapeDialog/scrapedTags";
 
 function renderScrapedGender(
   result: ScrapeResult<string>,
@@ -304,28 +299,10 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
     )
   );
 
-  const [tags, setTags] = useState<ObjectListScrapeResult<GQL.ScrapedTag>>(
-    new ObjectListScrapeResult<GQL.ScrapedTag>(
-      sortStoredIdObjects(
-        props.performerTags.map((t) => ({
-          stored_id: t.id,
-          name: t.name,
-        }))
-      ),
-      sortStoredIdObjects(props.scraped.tags ?? undefined)
-    )
+  const { tags, newTags, scrapedTagsRow } = useScrapedTags(
+    props.performerTags,
+    props.scraped.tags
   );
-
-  const [newTags, setNewTags] = useState<GQL.ScrapedTag[]>(
-    props.scraped.tags?.filter((t) => !t.stored_id) ?? []
-  );
-
-  const createNewTag = useCreateScrapedTag({
-    scrapeResult: tags,
-    setScrapeResult: setTags,
-    newObjects: newTags,
-    setNewObjects: setNewTags,
-  });
 
   const [image, setImage] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(
@@ -525,13 +502,7 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
           result={details}
           onChange={(value) => setDetails(value)}
         />
-        <ScrapedTagsRow
-          title={intl.formatMessage({ id: "tags" })}
-          result={tags}
-          onChange={(value) => setTags(value)}
-          newObjects={newTags}
-          onCreateNew={createNewTag}
-        />
+        {scrapedTagsRow}
         <ScrapedImagesRow
           title={intl.formatMessage({ id: "performer_image" })}
           className="performer-image"

@@ -23,6 +23,8 @@ const (
 	movieFrontImageBlobColumn = "front_image_blob"
 	movieBackImageBlobColumn  = "back_image_blob"
 
+	moviesTagsTable = "movies_tags"
+
 	movieURLsTable = "movie_urls"
 	movieURLColumn = "url"
 )
@@ -98,6 +100,7 @@ func (r *movieRowRecord) fromPartial(o models.MoviePartial) {
 type movieRepositoryType struct {
 	repository
 	scenes repository
+	tags   joinRepository
 }
 
 var (
@@ -110,11 +113,21 @@ var (
 			tableName: moviesScenesTable,
 			idColumn:  movieIDColumn,
 		},
+		tags: joinRepository{
+			repository: repository{
+				tableName: moviesTagsTable,
+				idColumn:  movieIDColumn,
+			},
+			fkColumn:     tagIDColumn,
+			foreignTable: tagTable,
+			orderBy:      "tags.name ASC",
+		},
 	}
 )
 
 type MovieStore struct {
 	blobJoinQueryBuilder
+	tagRelationshipStore
 
 	tableMgr *table
 }
@@ -124,6 +137,11 @@ func NewMovieStore(blobStore *BlobStore) *MovieStore {
 		blobJoinQueryBuilder: blobJoinQueryBuilder{
 			blobStore: blobStore,
 			joinTable: movieTable,
+		},
+		tagRelationshipStore: tagRelationshipStore{
+			idRelationshipStore: idRelationshipStore{
+				joinTable: moviesTagsTableMgr,
+			},
 		},
 
 		tableMgr: movieTableMgr,
@@ -152,6 +170,10 @@ func (qb *MovieStore) Create(ctx context.Context, newObject *models.Movie) error
 		if err := moviesURLsTableMgr.insertJoins(ctx, id, startPos, newObject.URLs.List()); err != nil {
 			return err
 		}
+	}
+
+	if err := qb.tagRelationshipStore.createRelationships(ctx, id, newObject.TagIDs); err != nil {
+		return err
 	}
 
 	updated, err := qb.find(ctx, id)
@@ -185,6 +207,10 @@ func (qb *MovieStore) UpdatePartial(ctx context.Context, id int, partial models.
 		}
 	}
 
+	if err := qb.tagRelationshipStore.modifyRelationships(ctx, id, partial.TagIDs); err != nil {
+		return nil, err
+	}
+
 	return qb.find(ctx, id)
 }
 
@@ -200,6 +226,10 @@ func (qb *MovieStore) Update(ctx context.Context, updatedObject *models.Movie) e
 		if err := moviesURLsTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.URLs.List()); err != nil {
 			return err
 		}
+	}
+
+	if err := qb.tagRelationshipStore.replaceRelationships(ctx, updatedObject.ID, updatedObject.TagIDs); err != nil {
+		return err
 	}
 
 	return nil
@@ -430,6 +460,7 @@ var movieSortOptions = sortOptions{
 	"random",
 	"rating",
 	"scenes_count",
+	"tag_count",
 	"updated_at",
 }
 
@@ -451,6 +482,8 @@ func (qb *MovieStore) getMovieSort(findFilter *models.FindFilterType) (string, e
 
 	sortQuery := ""
 	switch sort {
+	case "tag_count":
+		sortQuery += getCountSort(movieTable, moviesTagsTable, movieIDColumn, direction)
 	case "scenes_count": // generic getSort won't work for this
 		sortQuery += getCountSort(movieTable, moviesScenesTable, movieIDColumn, direction)
 	default:
