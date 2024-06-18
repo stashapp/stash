@@ -204,26 +204,19 @@ func (f *FFMpeg) hwFilterInit(toCodec VideoCodec, fullhw bool) VideoFilter {
 	return videoFilter
 }
 
-var scaler_re = regexp.MustCompile(`scale=(?P<value>[-\d]+:[-\d]+)`)
+var scaler_re = regexp.MustCompile(`scale=(?P<value>([-\d]+):([-\d]+))`)
 
 func templateReplaceScale(input string, template string, match []int, vf *models.VideoFile, minusonehack bool) string {
 	result := []byte{}
 
 	if minusonehack {
-		matches := scaler_re.FindStringSubmatch(input)
-		split := strings.Split(matches[1], ":")
-		if len(split) != 2 {
-			logger.Error("split not found")
-			return input
-		}
-
 		// Parse width and height
-		w, err := strconv.Atoi(split[0])
+		w, err := strconv.Atoi(input[match[4]:match[5]])
 		if err != nil {
 			logger.Error("failed to parse width")
 			return input
 		}
-		h, err := strconv.Atoi(split[1])
+		h, err := strconv.Atoi(input[match[6]:match[7]])
 		if err != nil {
 			logger.Error("failed to parse height")
 			return input
