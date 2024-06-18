@@ -40,7 +40,7 @@ func (m *schema60Migrator) decodeJSON(s string, v interface{}) {
 	}
 }
 
-type schema60DefaultFilters map[string]map[string]interface{}
+type schema60DefaultFilters map[string]interface{}
 
 func (m *schema60Migrator) migrate(ctx context.Context) error {
 
@@ -142,7 +142,7 @@ func (m *schema60Migrator) saveDefaultFilters(defaultFilters schema60DefaultFilt
 		return fmt.Errorf("backing up config: %w", err)
 	}
 
-	uiConfig["defaultFilters"] = defaultFilters
+	uiConfig["defaultFilters"] = map[string]interface{}(defaultFilters)
 	config.SetUIConfiguration(uiConfig)
 
 	if err := config.Write(); err != nil {
