@@ -14,7 +14,6 @@ import { Icon } from "src/components/Shared/Icon";
 import { ImageInput } from "src/components/Shared/ImageInput";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { CountrySelect } from "src/components/Shared/CountrySelect";
-import { URLField } from "src/components/Shared/URLField";
 import ImageUtils from "src/utils/image";
 import { getStashIDs } from "src/utils/stashIds";
 import { stashboxDisplayName } from "src/utils/stashbox";
@@ -45,6 +44,7 @@ import {
   yupInputEnum,
   yupDateString,
   yupUniqueAliases,
+  yupUniqueStringList,
 } from "src/utils/yup";
 import { useTagsEdit } from "src/hooks/tagsEdit";
 
@@ -109,9 +109,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     tattoos: yup.string().ensure(),
     piercings: yup.string().ensure(),
     career_length: yup.string().ensure(),
-    url: yup.string().ensure(),
-    twitter: yup.string().ensure(),
-    instagram: yup.string().ensure(),
+    urls: yupUniqueStringList(intl),
     details: yup.string().ensure(),
     tag_ids: yup.array(yup.string().required()).defined(),
     ignore_auto_tag: yup.boolean().defined(),
@@ -139,9 +137,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     tattoos: performer.tattoos ?? "",
     piercings: performer.piercings ?? "",
     career_length: performer.career_length ?? "",
-    url: performer.url ?? "",
-    twitter: performer.twitter ?? "",
-    instagram: performer.instagram ?? "",
+    urls: performer.urls ?? [],
     details: performer.details ?? "",
     tag_ids: (performer.tags ?? []).map((t) => t.id),
     ignore_auto_tag: performer.ignore_auto_tag ?? false,
@@ -239,14 +235,8 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     if (state.piercings) {
       formik.setFieldValue("piercings", state.piercings);
     }
-    if (state.url) {
-      formik.setFieldValue("url", state.url);
-    }
-    if (state.twitter) {
-      formik.setFieldValue("twitter", state.twitter);
-    }
-    if (state.instagram) {
-      formik.setFieldValue("instagram", state.instagram);
+    if (state.urls) {
+      formik.setFieldValue("urls", state.urls);
     }
     if (state.gender) {
       // gender is a string in the scraper data
@@ -411,8 +401,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     }
   }
 
-  async function onScrapePerformerURL() {
-    const { url } = formik.values;
+  async function onScrapePerformerURL(url: string) {
     if (!url) return;
     setIsLoading(true);
     try {
@@ -613,6 +602,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     renderDateField,
     renderStringListField,
     renderStashIDsField,
+    renderURLListField,
   } = formikUtils(intl, formik);
 
   function renderCountryField() {
@@ -627,18 +617,6 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     return renderField("country", title, control);
   }
 
-  function renderUrlField() {
-    const title = intl.formatMessage({ id: "url" });
-    const control = (
-      <URLField
-        {...formik.getFieldProps("url")}
-        onScrapeClick={onScrapePerformerURL}
-        urlScrapable={urlScrapable}
-      />
-    );
-
-    return renderField("url", title, control);
-  }
   function renderTagsField() {
     const title = intl.formatMessage({ id: "tags" });
 
@@ -686,10 +664,8 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
         {renderInputField("career_length")}
 
-        {renderUrlField()}
+        {renderURLListField("urls", onScrapePerformerURL, urlScrapable)}
 
-        {renderInputField("twitter")}
-        {renderInputField("instagram")}
         {renderInputField("details", "textarea")}
         {renderTagsField()}
 

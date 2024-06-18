@@ -1374,6 +1374,15 @@ func getPerformerNullStringValue(index int, field string) string {
 	return ret.String
 }
 
+func getPerformerEmptyString(index int, field string) string {
+	v := getPrefixedNullStringValue("performer", index, field)
+	if !v.Valid {
+		return ""
+	}
+
+	return v.String
+}
+
 func getPerformerBoolValue(index int) bool {
 	index = index % 2
 	return index == 1
@@ -1479,17 +1488,19 @@ func createPerformers(ctx context.Context, n int, o int) error {
 			Name:           getPerformerStringValue(index, name),
 			Disambiguation: getPerformerStringValue(index, "disambiguation"),
 			Aliases:        models.NewRelatedStrings(performerAliases(index)),
-			URL:            getPerformerNullStringValue(i, urlField),
-			Favorite:       getPerformerBoolValue(i),
-			Birthdate:      getPerformerBirthdate(i),
-			DeathDate:      getPerformerDeathDate(i),
-			Details:        getPerformerStringValue(i, "Details"),
-			Ethnicity:      getPerformerStringValue(i, "Ethnicity"),
-			PenisLength:    getPerformerPenisLength(i),
-			Circumcised:    getPerformerCircumcised(i),
-			Rating:         getIntPtr(getRating(i)),
-			IgnoreAutoTag:  getIgnoreAutoTag(i),
-			TagIDs:         models.NewRelatedIDs(tids),
+			URLs: models.NewRelatedStrings([]string{
+				getPerformerEmptyString(i, urlField),
+			}),
+			Favorite:      getPerformerBoolValue(i),
+			Birthdate:     getPerformerBirthdate(i),
+			DeathDate:     getPerformerDeathDate(i),
+			Details:       getPerformerStringValue(i, "Details"),
+			Ethnicity:     getPerformerStringValue(i, "Ethnicity"),
+			PenisLength:   getPerformerPenisLength(i),
+			Circumcised:   getPerformerCircumcised(i),
+			Rating:        getIntPtr(getRating(i)),
+			IgnoreAutoTag: getIgnoreAutoTag(i),
+			TagIDs:        models.NewRelatedIDs(tids),
 		}
 
 		careerLength := getPerformerCareerLength(i)

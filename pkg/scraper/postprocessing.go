@@ -6,6 +6,7 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 // postScrape handles post-processing of scraped content. If the content
@@ -66,6 +67,31 @@ func (c Cache) postScrapePerformer(ctx context.Context, p models.ScrapedPerforme
 	}
 
 	p.Country = resolveCountryName(p.Country)
+
+	// populate URL/URLs
+	// if URLs are provided, only use those
+	if len(p.URLs) > 0 {
+		p.URL = &p.URLs[0]
+	} else {
+		urls := []string{}
+		if p.URL != nil {
+			urls = append(urls, *p.URL)
+		}
+		if p.Twitter != nil && *p.Twitter != "" {
+			// handle twitter profile names
+			u := utils.URLFromHandle(*p.Twitter, "https://twitter.com")
+			urls = append(urls, u)
+		}
+		if p.Instagram != nil && *p.Instagram != "" {
+			// handle instagram profile names
+			u := utils.URLFromHandle(*p.Instagram, "https://instagram.com")
+			urls = append(urls, u)
+		}
+
+		if len(urls) > 0 {
+			p.URLs = urls
+		}
+	}
 
 	return p, nil
 }

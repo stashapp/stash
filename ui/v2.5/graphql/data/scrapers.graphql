@@ -18,9 +18,7 @@ fragment ScrapedPerformerData on ScrapedPerformer {
   name
   disambiguation
   gender
-  url
-  twitter
-  instagram
+  urls
   birthdate
   ethnicity
   country
@@ -50,9 +48,7 @@ fragment ScrapedScenePerformerData on ScrapedPerformer {
   name
   disambiguation
   gender
-  url
-  twitter
-  instagram
+  urls
   birthdate
   ethnicity
   country

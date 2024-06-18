@@ -134,7 +134,7 @@ func (qb *performerFilterHandler) criterionHandler() criterionHandler {
 		stringCriterionHandler(filter.Piercings, tableName+".piercings"),
 		intCriterionHandler(filter.Rating100, tableName+".rating", nil),
 		stringCriterionHandler(filter.HairColor, tableName+".hair_color"),
-		stringCriterionHandler(filter.URL, tableName+".url"),
+		qb.urlsCriterionHandler(filter.URL),
 		intCriterionHandler(filter.Weight, tableName+".weight", nil),
 		criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
 			if filter.StashID != nil {
@@ -211,6 +211,9 @@ func (qb *performerFilterHandler) performerIsMissingCriterionHandler(isMissing *
 	return func(ctx context.Context, f *filterBuilder) {
 		if isMissing != nil && *isMissing != "" {
 			switch *isMissing {
+			case "url":
+				performersURLsTableMgr.join(f, "", "performers.id")
+				f.addWhere("performer_urls.url IS NULL")
 			case "scenes": // Deprecated: use `scene_count == 0` filter instead
 				f.addLeftJoin(performersScenesTable, "scenes_join", "scenes_join.performer_id = performers.id")
 				f.addWhere("scenes_join.scene_id IS NULL")
@@ -239,6 +242,20 @@ func (qb *performerFilterHandler) performerAgeFilterCriterionHandler(age *models
 			f.addWhere(clause, args...)
 		}
 	}
+}
+
+func (qb *performerFilterHandler) urlsCriterionHandler(url *models.StringCriterionInput) criterionHandlerFunc {
+	h := stringListCriterionHandlerBuilder{
+		primaryTable: performerTable,
+		primaryFK:    performerIDColumn,
+		joinTable:    performerURLsTable,
+		stringColumn: performerURLColumn,
+		addJoinTable: func(f *filterBuilder) {
+			performersURLsTableMgr.join(f, "", "performers.id")
+		},
+	}
+
+	return h.handler(url)
 }
 
 func (qb *performerFilterHandler) aliasCriterionHandler(alias *models.StringCriterionInput) criterionHandlerFunc {

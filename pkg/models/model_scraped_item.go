@@ -107,9 +107,10 @@ type ScrapedPerformer struct {
 	Name           *string       `json:"name"`
 	Disambiguation *string       `json:"disambiguation"`
 	Gender         *string       `json:"gender"`
-	URL            *string       `json:"url"`
-	Twitter        *string       `json:"twitter"`
-	Instagram      *string       `json:"instagram"`
+	URLs           []string      `json:"urls"`
+	URL            *string       `json:"url"`       // deprecated
+	Twitter        *string       `json:"twitter"`   // deprecated
+	Instagram      *string       `json:"instagram"` // deprecated
 	Birthdate      *string       `json:"birthdate"`
 	Ethnicity      *string       `json:"ethnicity"`
 	Country        *string       `json:"country"`
@@ -191,9 +192,7 @@ func (p *ScrapedPerformer) ToPerformer(endpoint string, excluded map[string]bool
 			ret.Weight = &w
 		}
 	}
-	if p.Instagram != nil && !excluded["instagram"] {
-		ret.Instagram = *p.Instagram
-	}
+
 	if p.Measurements != nil && !excluded["measurements"] {
 		ret.Measurements = *p.Measurements
 	}
@@ -221,11 +220,27 @@ func (p *ScrapedPerformer) ToPerformer(endpoint string, excluded map[string]bool
 			ret.Circumcised = &v
 		}
 	}
-	if p.Twitter != nil && !excluded["twitter"] {
-		ret.Twitter = *p.Twitter
-	}
-	if p.URL != nil && !excluded["url"] {
-		ret.URL = *p.URL
+
+	// if URLs are provided, only use those
+	if len(p.URLs) > 0 {
+		if !excluded["urls"] {
+			ret.URLs = NewRelatedStrings(p.URLs)
+		}
+	} else {
+		urls := []string{}
+		if p.URL != nil && !excluded["url"] {
+			urls = append(urls, *p.URL)
+		}
+		if p.Twitter != nil && !excluded["twitter"] {
+			urls = append(urls, *p.Twitter)
+		}
+		if p.Instagram != nil && !excluded["instagram"] {
+			urls = append(urls, *p.Instagram)
+		}
+
+		if len(urls) > 0 {
+			ret.URLs = NewRelatedStrings(urls)
+		}
 	}
 
 	if p.RemoteSiteID != nil && endpoint != "" {
@@ -309,9 +324,6 @@ func (p *ScrapedPerformer) ToPartial(endpoint string, excluded map[string]bool, 
 			ret.Weight = NewOptionalInt(w)
 		}
 	}
-	if p.Instagram != nil && !excluded["instagram"] {
-		ret.Instagram = NewOptionalString(*p.Instagram)
-	}
 	if p.Measurements != nil && !excluded["measurements"] {
 		ret.Measurements = NewOptionalString(*p.Measurements)
 	}
@@ -330,11 +342,33 @@ func (p *ScrapedPerformer) ToPartial(endpoint string, excluded map[string]bool, 
 	if p.Tattoos != nil && !excluded["tattoos"] {
 		ret.Tattoos = NewOptionalString(*p.Tattoos)
 	}
-	if p.Twitter != nil && !excluded["twitter"] {
-		ret.Twitter = NewOptionalString(*p.Twitter)
-	}
-	if p.URL != nil && !excluded["url"] {
-		ret.URL = NewOptionalString(*p.URL)
+
+	// if URLs are provided, only use those
+	if len(p.URLs) > 0 {
+		if !excluded["urls"] {
+			ret.URLs = &UpdateStrings{
+				Values: p.URLs,
+				Mode:   RelationshipUpdateModeSet,
+			}
+		}
+	} else {
+		urls := []string{}
+		if p.URL != nil && !excluded["url"] {
+			urls = append(urls, *p.URL)
+		}
+		if p.Twitter != nil && !excluded["twitter"] {
+			urls = append(urls, *p.Twitter)
+		}
+		if p.Instagram != nil && !excluded["instagram"] {
+			urls = append(urls, *p.Instagram)
+		}
+
+		if len(urls) > 0 {
+			ret.URLs = &UpdateStrings{
+				Values: urls,
+				Mode:   RelationshipUpdateModeSet,
+			}
+		}
 	}
 
 	if p.RemoteSiteID != nil && endpoint != "" {

@@ -161,9 +161,9 @@ func Test_scrapedToPerformerInput(t *testing.T) {
 				Tattoos:        nextVal(),
 				Piercings:      nextVal(),
 				Aliases:        nextVal(),
+				URL:            nextVal(),
 				Twitter:        nextVal(),
 				Instagram:      nextVal(),
-				URL:            nextVal(),
 				Details:        nextVal(),
 				RemoteSiteID:   &remoteSiteID,
 			},
@@ -186,9 +186,7 @@ func Test_scrapedToPerformerInput(t *testing.T) {
 				Tattoos:        *nextVal(),
 				Piercings:      *nextVal(),
 				Aliases:        NewRelatedStrings([]string{*nextVal()}),
-				Twitter:        *nextVal(),
-				Instagram:      *nextVal(),
-				URL:            *nextVal(),
+				URLs:           NewRelatedStrings([]string{*nextVal(), *nextVal(), *nextVal()}),
 				Details:        *nextVal(),
 				StashIDs: NewRelatedStashIDs([]StashID{
 					{

@@ -9,7 +9,6 @@ import (
 	"io"
 	"mime/multipart"
 	"net/http"
-	"regexp"
 	"strconv"
 	"strings"
 
@@ -41,6 +40,7 @@ type PerformerReader interface {
 	match.PerformerFinder
 	models.AliasLoader
 	models.StashIDLoader
+	models.URLLoader
 	FindBySceneID(ctx context.Context, sceneID int) ([]*models.Performer, error)
 	GetImage(ctx context.Context, performerID int) ([]byte, error)
 }
@@ -685,6 +685,10 @@ func performerFragmentToScrapedPerformer(p graphql.PerformerFragment) *models.Sc
 		sp.Aliases = &alias
 	}
 
+	for _, u := range p.Urls {
+		sp.URLs = append(sp.URLs, u.URL)
+	}
+
 	return sp
 }
 
@@ -1128,6 +1132,10 @@ func (c Client) SubmitPerformerDraft(ctx context.Context, performer *models.Perf
 		return nil, err
 	}
 
+	if err := performer.LoadURLs(ctx, pqb); err != nil {
+		return nil, err
+	}
+
 	if err := performer.LoadStashIDs(ctx, pqb); err != nil {
 		return nil, err
 	}
@@ -1195,28 +1203,8 @@ func (c Client) SubmitPerformerDraft(ctx context.Context, performer *models.Perf
 		}
 	}
 
-	var urls []string
-	if len(strings.TrimSpace(performer.Twitter)) > 0 {
-		reg := regexp.MustCompile(`https?:\/\/(?:www\.)?twitter\.com`)
-		if reg.MatchString(performer.Twitter) {
-			urls = append(urls, strings.TrimSpace(performer.Twitter))
-		} else {
-			urls = append(urls, "https://twitter.com/"+strings.TrimSpace(performer.Twitter))
-		}
-	}
-	if len(strings.TrimSpace(performer.Instagram)) > 0 {
-		reg := regexp.MustCompile(`https?:\/\/(?:www\.)?instagram\.com`)
-		if reg.MatchString(performer.Instagram) {
-			urls = append(urls, strings.TrimSpace(performer.Instagram))
-		} else {
-			urls = append(urls, "https://instagram.com/"+strings.TrimSpace(performer.Instagram))
-		}
-	}
-	if len(strings.TrimSpace(performer.URL)) > 0 {
-		urls = append(urls, strings.TrimSpace(performer.URL))
-	}
-	if len(urls) > 0 {
-		draft.Urls = urls
+	if len(performer.URLs.List()) > 0 {
+		draft.Urls = performer.URLs.List()
 	}
 
 	stashIDs, err := pqb.GetStashIDs(ctx, performer.ID)

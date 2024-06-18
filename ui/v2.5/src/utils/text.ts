@@ -369,9 +369,6 @@ const resolution = (width: number, height: number) => {
   }
 };
 
-const twitterURL = new URL("https://www.twitter.com");
-const instagramURL = new URL("https://www.instagram.com");
-
 const sanitiseURL = (url?: string, siteURL?: URL) => {
   if (!url) {
     return url;
@@ -485,8 +482,6 @@ const TextUtils = {
   resolution,
   sanitiseURL,
   domainFromURL,
-  twitterURL,
-  instagramURL,
   formatDate,
   formatDateTime,
   secondsAsTimeString,

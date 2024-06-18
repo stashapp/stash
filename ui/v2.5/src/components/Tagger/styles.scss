@@ -165,6 +165,12 @@
       width: 12px;
     }
   }
+
+  &-value ul {
+    font-size: 0.8em;
+    list-style-type: none;
+    padding-inline-start: 0;
+  }
 }
 
 .PerformerTagger {

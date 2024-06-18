@@ -8,6 +8,7 @@ import {
   ScrapeDialogRow,
   ScrapedTextAreaRow,
   ScrapedCountryRow,
+  ScrapedStringListRow,
 } from "src/components/Shared/ScrapeDialog/ScrapeDialog";
 import { Form } from "react-bootstrap";
 import {
@@ -23,6 +24,7 @@ import {
 import { IStashBox } from "./PerformerStashBoxModal";
 import { ScrapeResult } from "src/components/Shared/ScrapeDialog/scrapeResult";
 import { Tag } from "src/components/Tags/TagSelect";
+import { uniq } from "lodash-es";
 import { useScrapedTags } from "src/components/Shared/ScrapeDialog/scrapedTags";
 
 function renderScrapedGender(
@@ -268,14 +270,13 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
   const [piercings, setPiercings] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(props.performer.piercings, props.scraped.piercings)
   );
-  const [url, setURL] = useState<ScrapeResult<string>>(
-    new ScrapeResult<string>(props.performer.url, props.scraped.url)
-  );
-  const [twitter, setTwitter] = useState<ScrapeResult<string>>(
-    new ScrapeResult<string>(props.performer.twitter, props.scraped.twitter)
-  );
-  const [instagram, setInstagram] = useState<ScrapeResult<string>>(
-    new ScrapeResult<string>(props.performer.instagram, props.scraped.instagram)
+  const [urls, setURLs] = useState<ScrapeResult<string[]>>(
+    new ScrapeResult<string[]>(
+      props.performer.urls,
+      props.scraped.urls
+        ? uniq((props.performer.urls ?? []).concat(props.scraped.urls ?? []))
+        : undefined
+    )
   );
   const [gender, setGender] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(
@@ -334,9 +335,7 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
     careerLength,
     tattoos,
     piercings,
-    url,
-    twitter,
-    instagram,
+    urls,
     gender,
     image,
     tags,
@@ -368,9 +367,7 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
       career_length: careerLength.getNewValue(),
       tattoos: tattoos.getNewValue(),
       piercings: piercings.getNewValue(),
-      url: url.getNewValue(),
-      twitter: twitter.getNewValue(),
-      instagram: instagram.getNewValue(),
+      urls: urls.getNewValue(),
       gender: gender.getNewValue(),
       tags: tags.getNewValue(),
       images: newImage ? [newImage] : undefined,
@@ -482,20 +479,10 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
           result={piercings}
           onChange={(value) => setPiercings(value)}
         />
-        <ScrapedInputGroupRow
-          title={intl.formatMessage({ id: "url" })}
-          result={url}
-          onChange={(value) => setURL(value)}
-        />
-        <ScrapedInputGroupRow
-          title={intl.formatMessage({ id: "twitter" })}
-          result={twitter}
-          onChange={(value) => setTwitter(value)}
-        />
-        <ScrapedInputGroupRow
-          title={intl.formatMessage({ id: "instagram" })}
-          result={instagram}
-          onChange={(value) => setInstagram(value)}
+        <ScrapedStringListRow
+          title={intl.formatMessage({ id: "urls" })}
+          result={urls}
+          onChange={(value) => setURLs(value)}
         />
         <ScrapedTextAreaRow
           title={intl.formatMessage({ id: "details" })}

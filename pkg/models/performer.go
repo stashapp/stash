@@ -203,7 +203,8 @@ type PerformerFilterType struct {
 type PerformerCreateInput struct {
 	Name           string          `json:"name"`
 	Disambiguation *string         `json:"disambiguation"`
-	URL            *string         `json:"url"`
+	URL            *string         `json:"url"` // deprecated
+	Urls           []string        `json:"urls"`
 	Gender         *GenderEnum     `json:"gender"`
 	Birthdate      *string         `json:"birthdate"`
 	Ethnicity      *string         `json:"ethnicity"`
@@ -220,8 +221,8 @@ type PerformerCreateInput struct {
 	Piercings      *string         `json:"piercings"`
 	Aliases        *string         `json:"aliases"`
 	AliasList      []string        `json:"alias_list"`
-	Twitter        *string         `json:"twitter"`
-	Instagram      *string         `json:"instagram"`
+	Twitter        *string         `json:"twitter"`   // deprecated
+	Instagram      *string         `json:"instagram"` // deprecated
 	Favorite       *bool           `json:"favorite"`
 	TagIds         []string        `json:"tag_ids"`
 	// This should be a URL or a base64 encoded data URL
@@ -239,7 +240,8 @@ type PerformerUpdateInput struct {
 	ID             string          `json:"id"`
 	Name           *string         `json:"name"`
 	Disambiguation *string         `json:"disambiguation"`
-	URL            *string         `json:"url"`
+	URL            *string         `json:"url"` // deprecated
+	Urls           []string        `json:"urls"`
 	Gender         *GenderEnum     `json:"gender"`
 	Birthdate      *string         `json:"birthdate"`
 	Ethnicity      *string         `json:"ethnicity"`
@@ -256,8 +258,8 @@ type PerformerUpdateInput struct {
 	Piercings      *string         `json:"piercings"`
 	Aliases        *string         `json:"aliases"`
 	AliasList      []string        `json:"alias_list"`
-	Twitter        *string         `json:"twitter"`
-	Instagram      *string         `json:"instagram"`
+	Twitter        *string         `json:"twitter"`   // deprecated
+	Instagram      *string         `json:"instagram"` // deprecated
 	Favorite       *bool           `json:"favorite"`
 	TagIds         []string        `json:"tag_ids"`
 	// This should be a URL or a base64 encoded data URL
