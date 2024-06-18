@@ -2,6 +2,7 @@ package scraper
 
 import (
 	"context"
+	"regexp"
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/match"
@@ -44,6 +45,17 @@ func (c Cache) postScrape(ctx context.Context, content ScrapedContent) (ScrapedC
 	return content, nil
 }
 
+// urlFromHandle adds the site URL to the input if the input is not already a URL
+func urlFromHandle(input string, siteURL string) string {
+	// if the input is already a URL, return it
+	re := regexp.MustCompile(`^https?://`)
+	if re.MatchString(input) {
+		return input
+	}
+
+	return siteURL + input
+}
+
 func (c Cache) postScrapePerformer(ctx context.Context, p models.ScrapedPerformer) (ScrapedContent, error) {
 	r := c.repository
 	if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
@@ -76,11 +88,15 @@ func (c Cache) postScrapePerformer(ctx context.Context, p models.ScrapedPerforme
 		if p.URL != nil {
 			urls = append(urls, *p.URL)
 		}
-		if p.Twitter != nil {
-			urls = append(urls, *p.Twitter)
+		if p.Twitter != nil && *p.Twitter != "" {
+			// handle twitter profile names
+			u := urlFromHandle(*p.Twitter, "https://twitter.com/")
+			urls = append(urls, u)
 		}
-		if p.Instagram != nil {
-			urls = append(urls, *p.Instagram)
+		if p.Instagram != nil && *p.Instagram != "" {
+			// handle instagram profile names
+			u := urlFromHandle(*p.Instagram, "https://instagram.com/")
+			urls = append(urls, u)
 		}
 
 		if len(urls) > 0 {
