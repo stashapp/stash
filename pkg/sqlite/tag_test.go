@@ -42,7 +42,7 @@ func TestMarkerFindBySceneMarkerID(t *testing.T) {
 	})
 }
 
-func TestMarkerFindByMovieID(t *testing.T) {
+func TestTagFindByMovieID(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
 		tqb := db.Tag
 

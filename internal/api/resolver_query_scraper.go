@@ -144,7 +144,7 @@ func filterPerformerTags(p []*models.ScrapedPerformer) {
 	}
 }
 
-// filterGalleryTags removes tags matching excluded tag patterns from the provided scraped galleries
+// filterMovieTags removes tags matching excluded tag patterns from the provided scraped movies
 func filterMovieTags(p []*models.ScrapedMovie) {
 	excludeRegexps := compileRegexps(manager.GetInstance().Config.GetScraperExcludeTagPatterns())
 
