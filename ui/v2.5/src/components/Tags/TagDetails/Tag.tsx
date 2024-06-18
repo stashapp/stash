@@ -41,6 +41,7 @@ import {
 import { DetailImage } from "src/components/Shared/DetailImage";
 import { useLoadStickyHeader } from "src/hooks/detailsPanel";
 import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
+import { TagMoviesPanel } from "./TagMoviesPanel";
 
 interface IProps {
   tag: GQL.TagDataFragment;
@@ -57,6 +58,7 @@ const validTabs = [
   "scenes",
   "images",
   "galleries",
+  "movies",
   "markers",
   "performers",
 ] as const;
@@ -101,6 +103,8 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
     (showAllCounts ? tag.image_count_all : tag.image_count) ?? 0;
   const galleryCount =
     (showAllCounts ? tag.gallery_count_all : tag.gallery_count) ?? 0;
+  const movieCount =
+    (showAllCounts ? tag.movie_count_all : tag.movie_count) ?? 0;
   const sceneMarkerCount =
     (showAllCounts ? tag.scene_marker_count_all : tag.scene_marker_count) ?? 0;
   const performerCount =
@@ -113,6 +117,8 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
         ret = "images";
       } else if (galleryCount != 0) {
         ret = "galleries";
+      } else if (movieCount != 0) {
+        ret = "movies";
       } else if (sceneMarkerCount != 0) {
         ret = "markers";
       } else if (performerCount != 0) {
@@ -121,7 +127,14 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
     }
 
     return ret;
-  }, [sceneCount, imageCount, galleryCount, sceneMarkerCount, performerCount]);
+  }, [
+    sceneCount,
+    imageCount,
+    galleryCount,
+    sceneMarkerCount,
+    performerCount,
+    movieCount,
+  ]);
 
   const setTabKey = useCallback(
     (newTabKey: string | null) => {
@@ -462,6 +475,21 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
         }
       >
         <TagGalleriesPanel active={tabKey === "galleries"} tag={tag} />
+      </Tab>
+      <Tab
+        eventKey="movies"
+        title={
+          <>
+            {intl.formatMessage({ id: "movies" })}
+            <Counter
+              abbreviateCounter={abbreviateCounter}
+              count={movieCount}
+              hideZero
+            />
+          </>
+        }
+      >
+        <TagMoviesPanel active={tabKey === "movies"} tag={tag} />
       </Tab>
       <Tab
         eventKey="markers"

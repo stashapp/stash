@@ -155,6 +155,10 @@ func (t *table) join(j joiner, as string, parentIDCol string) {
 type joinTable struct {
 	table
 	fkColumn exp.IdentifierExpression
+
+	// required for ordering
+	foreignTable *table
+	orderBy      exp.OrderedExpression
 }
 
 func (t *joinTable) invert() *joinTable {
@@ -169,6 +173,13 @@ func (t *joinTable) invert() *joinTable {
 
 func (t *joinTable) get(ctx context.Context, id int) ([]int, error) {
 	q := dialect.Select(t.fkColumn).From(t.table.table).Where(t.idColumn.Eq(id))
+
+	if t.orderBy != nil {
+		if t.foreignTable != nil {
+			q = q.InnerJoin(t.foreignTable.table, goqu.On(t.foreignTable.idColumn.Eq(t.fkColumn)))
+		}
+		q = q.Order(t.orderBy)
+	}
 
 	const single = false
 	var ret []int

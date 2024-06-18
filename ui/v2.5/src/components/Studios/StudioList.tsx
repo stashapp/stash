@@ -9,17 +9,14 @@ import {
   useFindStudios,
   useStudiosDestroy,
 } from "src/core/StashService";
-import {
-  makeItemList,
-  PersistanceLevel,
-  showWhenSelected,
-} from "../List/ItemList";
+import { makeItemList, showWhenSelected } from "../List/ItemList";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 import { ExportDialog } from "../Shared/ExportDialog";
 import { DeleteEntityDialog } from "../Shared/DeleteEntityDialog";
 import { StudioTagger } from "../Tagger/studios/StudioTagger";
 import { StudioCardGrid } from "./StudioCardGrid";
+import { View } from "../List/views";
 
 const StudioItemList = makeItemList({
   filterMode: GQL.FilterMode.Studios,
@@ -35,12 +32,14 @@ const StudioItemList = makeItemList({
 interface IStudioList {
   fromParent?: boolean;
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
+  view?: View;
   alterQuery?: boolean;
 }
 
 export const StudioList: React.FC<IStudioList> = ({
   fromParent,
   filterHook,
+  view,
   alterQuery,
 }) => {
   const intl = useIntl();
@@ -181,7 +180,7 @@ export const StudioList: React.FC<IStudioList> = ({
     <StudioItemList
       selectable
       filterHook={filterHook}
-      persistState={fromParent ? PersistanceLevel.NONE : PersistanceLevel.ALL}
+      view={view}
       alterQuery={alterQuery}
       otherOperations={otherOperations}
       addKeybinds={addKeybinds}

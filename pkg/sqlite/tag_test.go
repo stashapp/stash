@@ -42,6 +42,33 @@ func TestMarkerFindBySceneMarkerID(t *testing.T) {
 	})
 }
 
+func TestTagFindByMovieID(t *testing.T) {
+	withTxn(func(ctx context.Context) error {
+		tqb := db.Tag
+
+		movieID := movieIDs[movieIdxWithTag]
+
+		tags, err := tqb.FindByMovieID(ctx, movieID)
+
+		if err != nil {
+			t.Errorf("Error finding tags: %s", err.Error())
+		}
+
+		assert.Len(t, tags, 1)
+		assert.Equal(t, tagIDs[tagIdxWithMovie], tags[0].ID)
+
+		tags, err = tqb.FindByMovieID(ctx, 0)
+
+		if err != nil {
+			t.Errorf("Error finding tags: %s", err.Error())
+		}
+
+		assert.Len(t, tags, 0)
+
+		return nil
+	})
+}
+
 func TestTagFindByName(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
 		tqb := db.Tag
@@ -202,6 +229,10 @@ func TestTagQuerySort(t *testing.T) {
 		sortBy = "performers_count"
 		tags = queryTags(ctx, t, sqb, nil, findFilter)
 		assert.Equal(tagIDs[tagIdx2WithPerformer], tags[0].ID)
+
+		sortBy = "movies_count"
+		tags = queryTags(ctx, t, sqb, nil, findFilter)
+		assert.Equal(tagIDs[tagIdx1WithMovie], tags[0].ID)
 
 		return nil
 	})

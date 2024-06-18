@@ -94,6 +94,9 @@ fragment ScrapedMovieData on ScrapedMovie {
   studio {
     ...ScrapedMovieStudioData
   }
+  tags {
+    ...ScrapedSceneTagData
+  }
 }
 
 fragment ScrapedSceneMovieData on ScrapedMovie {
@@ -111,6 +114,9 @@ fragment ScrapedSceneMovieData on ScrapedMovie {
 
   studio {
     ...ScrapedMovieStudioData
+  }
+  tags {
+    ...ScrapedSceneTagData
   }
 }
 

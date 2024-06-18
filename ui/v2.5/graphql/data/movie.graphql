@@ -11,6 +11,10 @@ fragment MovieData on Movie {
     ...SlimStudioData
   }
 
+  tags {
+    ...SlimTagData
+  }
+
   synopsis
   urls
   front_image_path

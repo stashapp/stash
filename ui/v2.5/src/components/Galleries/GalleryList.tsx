@@ -4,11 +4,7 @@ import cloneDeep from "lodash-es/cloneDeep";
 import { useHistory } from "react-router-dom";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
-import {
-  makeItemList,
-  PersistanceLevel,
-  showWhenSelected,
-} from "../List/ItemList";
+import { makeItemList, showWhenSelected } from "../List/ItemList";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 import { queryFindGalleries, useFindGalleries } from "src/core/StashService";
@@ -18,6 +14,7 @@ import { DeleteGalleriesDialog } from "./DeleteGalleriesDialog";
 import { ExportDialog } from "../Shared/ExportDialog";
 import { GalleryListTable } from "./GalleryListTable";
 import { GalleryCardGrid } from "./GalleryGridCard";
+import { View } from "../List/views";
 
 const GalleryItemList = makeItemList({
   filterMode: GQL.FilterMode.Galleries,
@@ -32,13 +29,13 @@ const GalleryItemList = makeItemList({
 
 interface IGalleryList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
-  persistState?: PersistanceLevel;
+  view?: View;
   alterQuery?: boolean;
 }
 
 export const GalleryList: React.FC<IGalleryList> = ({
   filterHook,
-  persistState,
+  view,
   alterQuery,
 }) => {
   const intl = useIntl();
@@ -192,7 +189,7 @@ export const GalleryList: React.FC<IGalleryList> = ({
       zoomable
       selectable
       filterHook={filterHook}
-      persistState={persistState}
+      view={view}
       alterQuery={alterQuery}
       otherOperations={otherOperations}
       addKeybinds={addKeybinds}

@@ -50,6 +50,11 @@ func (r *mutationResolver) MovieCreate(ctx context.Context, input MovieCreateInp
 		return nil, fmt.Errorf("converting studio id: %w", err)
 	}
 
+	newMovie.TagIDs, err = translator.relatedIds(input.TagIds)
+	if err != nil {
+		return nil, fmt.Errorf("converting tag ids: %w", err)
+	}
+
 	if input.Urls != nil {
 		newMovie.URLs = models.NewRelatedStrings(input.Urls)
 	} else if input.URL != nil {
@@ -140,6 +145,11 @@ func (r *mutationResolver) MovieUpdate(ctx context.Context, input MovieUpdateInp
 		return nil, fmt.Errorf("converting studio id: %w", err)
 	}
 
+	updatedMovie.TagIDs, err = translator.updateIds(input.TagIds, "tag_ids")
+	if err != nil {
+		return nil, fmt.Errorf("converting tag ids: %w", err)
+	}
+
 	updatedMovie.URLs = translator.optionalURLs(input.Urls, input.URL)
 
 	var frontimageData []byte
@@ -211,6 +221,12 @@ func (r *mutationResolver) BulkMovieUpdate(ctx context.Context, input BulkMovieU
 	if err != nil {
 		return nil, fmt.Errorf("converting studio id: %w", err)
 	}
+
+	updatedMovie.TagIDs, err = translator.updateIdsBulk(input.TagIds, "tag_ids")
+	if err != nil {
+		return nil, fmt.Errorf("converting tag ids: %w", err)
+	}
+
 	updatedMovie.URLs = translator.optionalURLsBulk(input.Urls, nil)
 
 	ret := []*models.Movie{}

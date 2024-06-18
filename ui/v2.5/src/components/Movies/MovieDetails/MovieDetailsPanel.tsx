@@ -5,18 +5,53 @@ import TextUtils from "src/utils/text";
 import { DetailItem } from "src/components/Shared/DetailItem";
 import { Link } from "react-router-dom";
 import { DirectorLink } from "src/components/Shared/Link";
+import { TagLink } from "src/components/Shared/TagLink";
 
 interface IMovieDetailsPanel {
   movie: GQL.MovieDataFragment;
+  collapsed?: boolean;
   fullWidth?: boolean;
 }
 
 export const MovieDetailsPanel: React.FC<IMovieDetailsPanel> = ({
   movie,
+  collapsed,
   fullWidth,
 }) => {
   // Network state
   const intl = useIntl();
+
+  function renderTagsField() {
+    if (!movie.tags.length) {
+      return;
+    }
+    return (
+      <ul className="pl-0">
+        {(movie.tags ?? []).map((tag) => (
+          <TagLink key={tag.id} linkType="movie" tag={tag} />
+        ))}
+      </ul>
+    );
+  }
+
+  function maybeRenderExtraDetails() {
+    if (!collapsed) {
+      return (
+        <>
+          <DetailItem
+            id="synopsis"
+            value={movie.synopsis}
+            fullWidth={fullWidth}
+          />
+          <DetailItem
+            id="tags"
+            value={renderTagsField()}
+            fullWidth={fullWidth}
+          />
+        </>
+      );
+    }
+  }
 
   return (
     <div className="detail-group">
@@ -57,7 +92,7 @@ export const MovieDetailsPanel: React.FC<IMovieDetailsPanel> = ({
         }
         fullWidth={fullWidth}
       />
-      <DetailItem id="synopsis" value={movie.synopsis} fullWidth={fullWidth} />
+      {maybeRenderExtraDetails()}
     </div>
   );
 };

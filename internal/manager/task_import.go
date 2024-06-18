@@ -351,6 +351,7 @@ func (t *ImportTask) ImportMovies(ctx context.Context) {
 			movieImporter := &movie.Importer{
 				ReaderWriter:        r.Movie,
 				StudioWriter:        r.Studio,
+				TagWriter:           r.Tag,
 				Input:               *movieJSON,
 				MissingRefBehaviour: t.MissingRefBehaviour,
 			}

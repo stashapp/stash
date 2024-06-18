@@ -284,11 +284,13 @@ type mappedMovieScraperConfig struct {
 	mappedConfig
 
 	Studio mappedConfig `yaml:"Studio"`
+	Tags   mappedConfig `yaml:"Tags"`
 }
 type _mappedMovieScraperConfig mappedMovieScraperConfig
 
 const (
 	mappedScraperConfigMovieStudio = "Studio"
+	mappedScraperConfigMovieTags   = "Tags"
 )
 
 func (s *mappedMovieScraperConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
@@ -303,8 +305,10 @@ func (s *mappedMovieScraperConfig) UnmarshalYAML(unmarshal func(interface{}) err
 	thisMap := make(map[string]interface{})
 
 	thisMap[mappedScraperConfigMovieStudio] = parentMap[mappedScraperConfigMovieStudio]
-
 	delete(parentMap, mappedScraperConfigMovieStudio)
+
+	thisMap[mappedScraperConfigMovieTags] = parentMap[mappedScraperConfigMovieTags]
+	delete(parentMap, mappedScraperConfigMovieTags)
 
 	// re-unmarshal the sub-fields
 	yml, err := yaml.Marshal(thisMap)
@@ -1086,6 +1090,7 @@ func (s mappedScraper) scrapeMovie(ctx context.Context, q mappedQuery) (*models.
 	movieMap := movieScraperConfig.mappedConfig
 
 	movieStudioMap := movieScraperConfig.Studio
+	movieTagsMap := movieScraperConfig.Tags
 
 	results := movieMap.process(ctx, q, s.Common)
 
@@ -1100,7 +1105,19 @@ func (s mappedScraper) scrapeMovie(ctx context.Context, q mappedQuery) (*models.
 		}
 	}
 
-	if len(results) == 0 && ret.Studio == nil {
+	// now apply the tags
+	if movieTagsMap != nil {
+		logger.Debug(`Processing movie tags:`)
+		tagResults := movieTagsMap.process(ctx, q, s.Common)
+
+		for _, p := range tagResults {
+			tag := &models.ScrapedTag{}
+			p.apply(tag)
+			ret.Tags = append(ret.Tags, tag)
+		}
+	}
+
+	if len(results) == 0 && ret.Studio == nil && len(ret.Tags) == 0 {
 		return nil, nil
 	}
 

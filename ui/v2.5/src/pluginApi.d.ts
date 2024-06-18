@@ -39,7 +39,6 @@ declare namespace PluginApi {
     const EnableDlnaDocument: { [key: string]: any };
     const ExportObjectsDocument: { [key: string]: any };
     const FilterMode: { [key: string]: any };
-    const FindDefaultFilterDocument: { [key: string]: any };
     const FindDuplicateScenesDocument: { [key: string]: any };
     const FindGalleriesDocument: { [key: string]: any };
     const FindGalleriesForSelectDocument: { [key: string]: any };
@@ -208,7 +207,6 @@ declare namespace PluginApi {
     const SelectPerformerDataFragmentDoc: { [key: string]: any };
     const SelectStudioDataFragmentDoc: { [key: string]: any };
     const SelectTagDataFragmentDoc: { [key: string]: any };
-    const SetDefaultFilterDocument: { [key: string]: any };
     const SetPluginsEnabledDocument: { [key: string]: any };
     const SetupDocument: { [key: string]: any };
     const SlimGalleryDataFragmentDoc: { [key: string]: any };
@@ -254,7 +252,6 @@ declare namespace PluginApi {
     function refetchConfigurationQuery(...args: any[]): any;
     function refetchDirectoryQuery(...args: any[]): any;
     function refetchDlnaStatusQuery(...args: any[]): any;
-    function refetchFindDefaultFilterQuery(...args: any[]): any;
     function refetchFindDuplicateScenesQuery(...args: any[]): any;
     function refetchFindGalleriesForSelectQuery(...args: any[]): any;
     function refetchFindGalleriesQuery(...args: any[]): any;
@@ -349,9 +346,6 @@ declare namespace PluginApi {
     function useDlnaStatusSuspenseQuery(...args: any[]): any;
     function useEnableDlnaMutation(...args: any[]): any;
     function useExportObjectsMutation(...args: any[]): any;
-    function useFindDefaultFilterLazyQuery(...args: any[]): any;
-    function useFindDefaultFilterQuery(...args: any[]): any;
-    function useFindDefaultFilterSuspenseQuery(...args: any[]): any;
     function useFindDuplicateScenesLazyQuery(...args: any[]): any;
     function useFindDuplicateScenesQuery(...args: any[]): any;
     function useFindDuplicateScenesSuspenseQuery(...args: any[]): any;

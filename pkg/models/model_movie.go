@@ -19,7 +19,8 @@ type Movie struct {
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 
-	URLs RelatedStrings `json:"urls"`
+	URLs   RelatedStrings `json:"urls"`
+	TagIDs RelatedIDs     `json:"tag_ids"`
 }
 
 func NewMovie() Movie {
@@ -30,9 +31,15 @@ func NewMovie() Movie {
 	}
 }
 
-func (g *Movie) LoadURLs(ctx context.Context, l URLLoader) error {
-	return g.URLs.load(func() ([]string, error) {
-		return l.GetURLs(ctx, g.ID)
+func (m *Movie) LoadURLs(ctx context.Context, l URLLoader) error {
+	return m.URLs.load(func() ([]string, error) {
+		return l.GetURLs(ctx, m.ID)
+	})
+}
+
+func (m *Movie) LoadTagIDs(ctx context.Context, l TagIDLoader) error {
+	return m.TagIDs.load(func() ([]int, error) {
+		return l.GetTagIDs(ctx, m.ID)
 	})
 }
 
@@ -47,6 +54,7 @@ type MoviePartial struct {
 	Director  OptionalString
 	Synopsis  OptionalString
 	URLs      *UpdateStrings
+	TagIDs    *UpdateIDs
 	CreatedAt OptionalTime
 	UpdatedAt OptionalTime
 }

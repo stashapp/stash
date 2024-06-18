@@ -3,6 +3,7 @@ import * as GQL from "src/core/generated-graphql";
 import { MoviesCriterion } from "src/models/list-filter/criteria/movies";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { SceneList } from "src/components/Scenes/SceneList";
+import { View } from "src/components/List/views";
 
 interface IMovieScenesPanel {
   active: boolean;
@@ -51,6 +52,7 @@ export const MovieScenesPanel: React.FC<IMovieScenesPanel> = ({
         filterHook={filterHook}
         defaultSort="movie_scene_number"
         alterQuery={active}
+        view={View.MovieScenes}
       />
     );
   }
