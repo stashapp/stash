@@ -1,11 +1,18 @@
 package performer
 
-import "strings"
+import (
+	"regexp"
+)
+
+var (
+	twitterURLRE   = regexp.MustCompile(`^https?:\/\/(?:www\.)?twitter\.com\/`)
+	instagramURLRE = regexp.MustCompile(`^https?:\/\/(?:www\.)?instagram\.com\/`)
+)
 
 func IsTwitterURL(url string) bool {
-	return strings.HasPrefix(url, "https://twitter.com/")
+	return twitterURLRE.MatchString(url)
 }
 
 func IsInstagramURL(url string) bool {
-	return strings.HasPrefix(url, "https://instagram.com/")
+	return instagramURLRE.MatchString(url)
 }
