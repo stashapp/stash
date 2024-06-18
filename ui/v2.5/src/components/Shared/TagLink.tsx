@@ -71,40 +71,6 @@ export const PerformerLink: React.FC<IPerformerLinkProps> = ({
   );
 };
 
-interface IStudioLinkProps {
-  studio: INamedObject;
-  linkType?: "scene" | "movie" | "gallery" | "image";
-  className?: string;
-}
-
-export const StudioLink: React.FC<IStudioLinkProps> = ({
-  studio,
-  linkType = "scene",
-  className,
-}) => {
-  const link = useMemo(() => {
-    switch (linkType) {
-      case "movie":
-        return NavUtils.makeStudioGalleriesUrl(studio);
-      case "gallery":
-        return NavUtils.makeStudioGalleriesUrl(studio);
-      case "image":
-        return NavUtils.makeStudioImagesUrl(studio);
-      case "scene":
-      default:
-        return NavUtils.makeStudioScenesUrl(studio);
-    }
-  }, [studio, linkType]);
-
-  const title = studio.name || "";
-
-  return (
-    <CommonLinkComponent link={link} className={className}>
-      {title}
-    </CommonLinkComponent>
-  );
-};
-
 interface IMovieLinkProps {
   movie: INamedObject;
   linkType?: "scene";
