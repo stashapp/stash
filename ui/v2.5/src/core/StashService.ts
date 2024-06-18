@@ -452,11 +452,6 @@ export const useFindSavedFilters = (mode?: GQL.FilterMode) =>
     variables: { mode },
   });
 
-export const useFindDefaultFilter = (mode: GQL.FilterMode) =>
-  GQL.useFindDefaultFilterQuery({
-    variables: { mode },
-  });
-
 /// Object Mutations
 
 // Increases/decreases the given field of the Stats query by diff
@@ -1956,15 +1951,6 @@ export const useSaveFilter = () =>
     },
   });
 
-export const useSetDefaultFilter = () =>
-  GQL.useSetDefaultFilterMutation({
-    update(cache, result) {
-      if (!result.data?.setDefaultFilter) return;
-
-      evictQueries(cache, [GQL.FindDefaultFilterDocument]);
-    },
-  });
-
 export const useSavedFilterDestroy = () =>
   GQL.useDestroySavedFilterMutation({
     update(cache, result, { variables }) {
@@ -1972,8 +1958,6 @@ export const useSavedFilterDestroy = () =>
 
       const obj = { __typename: "SavedFilter", id: variables.input.id };
       deleteObject(cache, obj, GQL.FindSavedFilterDocument);
-
-      evictQueries(cache, [GQL.FindDefaultFilterDocument]);
     },
   });
 

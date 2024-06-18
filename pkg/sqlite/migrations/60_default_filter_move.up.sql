@@ -1,0 +1,2 @@
+-- no schema changes
+-- default filters will be removed in post-migration

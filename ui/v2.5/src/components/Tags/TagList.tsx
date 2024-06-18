@@ -3,11 +3,7 @@ import cloneDeep from "lodash-es/cloneDeep";
 import Mousetrap from "mousetrap";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
-import {
-  makeItemList,
-  PersistanceLevel,
-  showWhenSelected,
-} from "../List/ItemList";
+import { makeItemList, showWhenSelected } from "../List/ItemList";
 import { Button } from "react-bootstrap";
 import { Link, useHistory } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
@@ -29,6 +25,7 @@ import { tagRelationHook } from "../../core/tags";
 import { faTrashAlt } from "@fortawesome/free-solid-svg-icons";
 import { TagCardGrid } from "./TagCardGrid";
 import { EditTagsDialog } from "./EditTagsDialog";
+import { View } from "../List/views";
 
 interface ITagList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
@@ -363,7 +360,7 @@ export const TagList: React.FC<ITagList> = ({ filterHook, alterQuery }) => {
       zoomable
       defaultZoomIndex={0}
       filterHook={filterHook}
-      persistState={PersistanceLevel.ALL}
+      view={View.Tags}
       alterQuery={alterQuery}
       otherOperations={otherOperations}
       addKeybinds={addKeybinds}
