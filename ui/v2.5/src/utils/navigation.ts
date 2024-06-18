@@ -263,7 +263,7 @@ const makeChildTagsUrl = (tag: Partial<GQL.TagDataFragment>) => {
 };
 
 function makeTagFilter(mode: GQL.FilterMode, tag: INamedObject) {
-  const filter = new ListFilterModel(GQL.FilterMode.Scenes, undefined);
+  const filter = new ListFilterModel(mode, undefined);
   const criterion = new TagsCriterion(TagsCriterionOption);
   criterion.value = {
     items: [{ id: tag.id, label: tag.name || `Tag ${tag.id}` }],
@@ -282,7 +282,7 @@ const makeTagPerformersUrl = (tag: INamedObject) => {
   return `/performers?${makeTagFilter(GQL.FilterMode.Performers, tag)}`;
 };
 
-const makeTagStudiosUrl = (tag: Partial<GQL.TagDataFragment>) => {
+const makeTagStudiosUrl = (tag: INamedObject) => {
   return `/studios?${makeTagFilter(GQL.FilterMode.Studios, tag)}`;
 };
 
