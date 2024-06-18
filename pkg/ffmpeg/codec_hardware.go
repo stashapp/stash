@@ -356,7 +356,7 @@ func (f *FFMpeg) hwCodecHLSCompatible() *VideoCodec {
 			VideoCodecI264,
 			VideoCodecV264,
 			VideoCodecR264,
-			VideoCodecM264:
+			VideoCodecM264: // Note that the Apple encoder sucks at startup, thus HLS quality is crap
 			return &element
 		}
 	}
