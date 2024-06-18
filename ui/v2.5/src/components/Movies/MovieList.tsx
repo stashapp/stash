@@ -11,15 +11,12 @@ import {
   useFindMovies,
   useMoviesDestroy,
 } from "src/core/StashService";
-import {
-  makeItemList,
-  PersistanceLevel,
-  showWhenSelected,
-} from "../List/ItemList";
+import { makeItemList, showWhenSelected } from "../List/ItemList";
 import { ExportDialog } from "../Shared/ExportDialog";
 import { DeleteEntityDialog } from "../Shared/DeleteEntityDialog";
 import { MovieCardGrid } from "./MovieCardGrid";
 import { EditMoviesDialog } from "./EditMoviesDialog";
+import { View } from "../List/views";
 
 const MovieItemList = makeItemList({
   filterMode: GQL.FilterMode.Movies,
@@ -34,10 +31,15 @@ const MovieItemList = makeItemList({
 
 interface IMovieList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
+  view?: View;
   alterQuery?: boolean;
 }
 
-export const MovieList: React.FC<IMovieList> = ({ filterHook, alterQuery }) => {
+export const MovieList: React.FC<IMovieList> = ({
+  filterHook,
+  alterQuery,
+  view,
+}) => {
   const intl = useIntl();
   const history = useHistory();
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
@@ -175,7 +177,7 @@ export const MovieList: React.FC<IMovieList> = ({ filterHook, alterQuery }) => {
     <MovieItemList
       selectable
       filterHook={filterHook}
-      persistState={PersistanceLevel.ALL}
+      view={view}
       alterQuery={alterQuery}
       otherOperations={otherOperations}
       addKeybinds={addKeybinds}

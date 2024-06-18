@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { HTMLAttributes, useState } from "react";
 import {
   Button,
   ButtonGroup,
@@ -10,30 +10,30 @@ import {
   Tooltip,
 } from "react-bootstrap";
 import {
+  useConfigureUI,
   useFindSavedFilters,
   useSavedFilterDestroy,
   useSaveFilter,
-  useSetDefaultFilter,
 } from "src/core/StashService";
 import { useToast } from "src/hooks/Toast";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { SavedFilterDataFragment } from "src/core/generated-graphql";
-import { PersistanceLevel } from "./ItemList";
+import { View } from "./views";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Icon } from "../Shared/Icon";
 import { LoadingIndicator } from "../Shared/LoadingIndicator";
-import { faSave, faTimes } from "@fortawesome/free-solid-svg-icons";
+import { faBookmark, faSave, faTimes } from "@fortawesome/free-solid-svg-icons";
 
 interface ISavedFilterListProps {
   filter: ListFilterModel;
   onSetFilter: (f: ListFilterModel) => void;
-  persistState?: PersistanceLevel;
+  view?: View;
 }
 
 export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
   filter,
   onSetFilter,
-  persistState,
+  view,
 }) => {
   const Toast = useToast();
   const intl = useIntl();
@@ -51,7 +51,7 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
 
   const [saveFilter] = useSaveFilter();
   const [destroyFilter] = useSavedFilterDestroy();
-  const [setDefaultFilter] = useSetDefaultFilter();
+  const [saveUI] = useConfigureUI();
 
   const savedFilters = data?.findSavedFilters ?? [];
 
@@ -127,18 +127,26 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
   }
 
   async function onSetDefaultFilter() {
+    if (!view) {
+      return;
+    }
+
     const filterCopy = filter.clone();
 
     try {
       setSaving(true);
 
-      await setDefaultFilter({
+      await saveUI({
         variables: {
-          input: {
-            mode: filter.mode,
-            find_filter: filterCopy.makeFindFilter(),
-            object_filter: filterCopy.makeSavedFilter(),
-            ui_options: filterCopy.makeSavedUIOptions(),
+          partial: {
+            defaultFilters: {
+              [view.toString()]: {
+                mode: filter.mode,
+                find_filter: filterCopy.makeFindFilter(),
+                object_filter: filterCopy.makeSavedFilter(),
+                ui_options: filterCopy.makeSavedUIOptions(),
+              },
+            },
           },
         },
       });
@@ -302,17 +310,19 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
   }
 
   function maybeRenderSetDefaultButton() {
-    if (persistState === PersistanceLevel.ALL) {
+    if (view) {
       return (
         <div className="mt-1">
-          <Button
+          <Dropdown.Item
+            as={Button}
+            title={intl.formatMessage({ id: "actions.set_as_default" })}
             className="set-as-default-button"
             variant="secondary"
             size="sm"
             onClick={() => onSetDefaultFilter()}
           >
             {intl.formatMessage({ id: "actions.set_as_default" })}
-          </Button>
+          </Dropdown.Item>
         </div>
       );
     }
@@ -355,5 +365,38 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
       {renderSavedFilters()}
       {maybeRenderSetDefaultButton()}
     </>
+  );
+};
+
+export const SavedFilterDropdown: React.FC<ISavedFilterListProps> = (props) => {
+  const SavedFilterDropdownRef = React.forwardRef<
+    HTMLDivElement,
+    HTMLAttributes<HTMLDivElement>
+  >(({ style, className }: HTMLAttributes<HTMLDivElement>, ref) => (
+    <div ref={ref} style={style} className={className}>
+      <SavedFilterList {...props} />
+    </div>
+  ));
+  SavedFilterDropdownRef.displayName = "SavedFilterDropdown";
+
+  return (
+    <Dropdown>
+      <OverlayTrigger
+        placement="top"
+        overlay={
+          <Tooltip id="filter-tooltip">
+            <FormattedMessage id="search_filter.saved_filters" />
+          </Tooltip>
+        }
+      >
+        <Dropdown.Toggle variant="secondary">
+          <Icon icon={faBookmark} />
+        </Dropdown.Toggle>
+      </OverlayTrigger>
+      <Dropdown.Menu
+        as={SavedFilterDropdownRef}
+        className="saved-filter-list-menu"
+      />
+    </Dropdown>
   );
 };

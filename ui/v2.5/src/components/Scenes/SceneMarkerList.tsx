@@ -9,10 +9,11 @@ import {
   useFindSceneMarkers,
 } from "src/core/StashService";
 import NavUtils from "src/utils/navigation";
-import { makeItemList, PersistanceLevel } from "../List/ItemList";
+import { makeItemList } from "../List/ItemList";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 import { MarkerWallPanel } from "../Wall/WallPanel";
+import { View } from "../List/views";
 
 const SceneMarkerItemList = makeItemList({
   filterMode: GQL.FilterMode.SceneMarkers,
@@ -27,11 +28,13 @@ const SceneMarkerItemList = makeItemList({
 
 interface ISceneMarkerList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
+  view?: View;
   alterQuery?: boolean;
 }
 
 export const SceneMarkerList: React.FC<ISceneMarkerList> = ({
   filterHook,
+  view,
   alterQuery,
 }) => {
   const intl = useIntl();
@@ -96,7 +99,7 @@ export const SceneMarkerList: React.FC<ISceneMarkerList> = ({
   return (
     <SceneMarkerItemList
       filterHook={filterHook}
-      persistState={PersistanceLevel.ALL}
+      view={view}
       alterQuery={alterQuery}
       otherOperations={otherOperations}
       addKeybinds={addKeybinds}
