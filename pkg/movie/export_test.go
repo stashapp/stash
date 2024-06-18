@@ -72,7 +72,7 @@ func createFullMovie(id int, studioID int) models.Movie {
 		Duration:  &duration,
 		Director:  director,
 		Synopsis:  synopsis,
-		URL:       url,
+		URLs:      models.NewRelatedStrings([]string{url}),
 		StudioID:  &studioID,
 		CreatedAt: createTime,
 		UpdatedAt: updateTime,
@@ -82,6 +82,7 @@ func createFullMovie(id int, studioID int) models.Movie {
 func createEmptyMovie(id int) models.Movie {
 	return models.Movie{
 		ID:        id,
+		URLs:      models.NewRelatedStrings([]string{}),
 		CreatedAt: createTime,
 		UpdatedAt: updateTime,
 	}
@@ -96,7 +97,7 @@ func createFullJSONMovie(studio, frontImage, backImage string) *jsonschema.Movie
 		Duration:   duration,
 		Director:   director,
 		Synopsis:   synopsis,
-		URL:        url,
+		URLs:       []string{url},
 		Studio:     studio,
 		FrontImage: frontImage,
 		BackImage:  backImage,
@@ -111,6 +112,7 @@ func createFullJSONMovie(studio, frontImage, backImage string) *jsonschema.Movie
 
 func createEmptyJSONMovie() *jsonschema.Movie {
 	return &jsonschema.Movie{
+		URLs: []string{},
 		CreatedAt: json.JSONTime{
 			Time: createTime,
 		},

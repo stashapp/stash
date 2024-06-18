@@ -4,11 +4,11 @@ import * as GQL from "src/core/generated-graphql";
 import { GridCard, calculateCardWidth } from "../Shared/GridCard/GridCard";
 import { HoverPopover } from "../Shared/HoverPopover";
 import { Icon } from "../Shared/Icon";
-import { SceneLink } from "../Shared/TagLink";
+import { SceneLink, TagLink } from "../Shared/TagLink";
 import { TruncatedText } from "../Shared/TruncatedText";
 import { FormattedMessage } from "react-intl";
 import { RatingBanner } from "../Shared/RatingBanner";
-import { faPlayCircle } from "@fortawesome/free-solid-svg-icons";
+import { faPlayCircle, faTag } from "@fortawesome/free-solid-svg-icons";
 import ScreenUtils from "src/utils/screen";
 
 interface IProps {
@@ -20,37 +20,44 @@ interface IProps {
   onSelectedChanged?: (selected: boolean, shiftKey: boolean) => void;
 }
 
-export const MovieCard: React.FC<IProps> = (props: IProps) => {
+export const MovieCard: React.FC<IProps> = ({
+  movie,
+  sceneIndex,
+  containerWidth,
+  selecting,
+  selected,
+  onSelectedChanged,
+}) => {
   const [cardWidth, setCardWidth] = useState<number>();
 
   useEffect(() => {
-    if (!props.containerWidth || ScreenUtils.isMobile()) return;
+    if (!containerWidth || ScreenUtils.isMobile()) return;
 
     let preferredCardWidth = 250;
     let fittedCardWidth = calculateCardWidth(
-      props.containerWidth,
+      containerWidth,
       preferredCardWidth!
     );
     setCardWidth(fittedCardWidth);
-  }, [props, props.containerWidth]);
+  }, [containerWidth]);
 
   function maybeRenderSceneNumber() {
-    if (!props.sceneIndex) return;
+    if (!sceneIndex) return;
 
     return (
       <>
         <hr />
         <span className="movie-scene-number">
-          <FormattedMessage id="scene" /> #{props.sceneIndex}
+          <FormattedMessage id="scene" /> #{sceneIndex}
         </span>
       </>
     );
   }
 
   function maybeRenderScenesPopoverButton() {
-    if (props.movie.scenes.length === 0) return;
+    if (movie.scenes.length === 0) return;
 
-    const popoverContent = props.movie.scenes.map((scene) => (
+    const popoverContent = movie.scenes.map((scene) => (
       <SceneLink key={scene.id} scene={scene} />
     ));
 
@@ -62,20 +69,38 @@ export const MovieCard: React.FC<IProps> = (props: IProps) => {
       >
         <Button className="minimal">
           <Icon icon={faPlayCircle} />
-          <span>{props.movie.scenes.length}</span>
+          <span>{movie.scenes.length}</span>
+        </Button>
+      </HoverPopover>
+    );
+  }
+
+  function maybeRenderTagPopoverButton() {
+    if (movie.tags.length <= 0) return;
+
+    const popoverContent = movie.tags.map((tag) => (
+      <TagLink key={tag.id} linkType="movie" tag={tag} />
+    ));
+
+    return (
+      <HoverPopover placement="bottom" content={popoverContent}>
+        <Button className="minimal tag-count">
+          <Icon icon={faTag} />
+          <span>{movie.tags.length}</span>
         </Button>
       </HoverPopover>
     );
   }
 
   function maybeRenderPopoverButtonGroup() {
-    if (props.sceneIndex || props.movie.scenes.length > 0) {
+    if (sceneIndex || movie.scenes.length > 0 || movie.tags.length > 0) {
       return (
         <>
           {maybeRenderSceneNumber()}
           <hr />
           <ButtonGroup className="card-popovers">
             {maybeRenderScenesPopoverButton()}
+            {maybeRenderTagPopoverButton()}
           </ButtonGroup>
         </>
       );
@@ -85,34 +110,34 @@ export const MovieCard: React.FC<IProps> = (props: IProps) => {
   return (
     <GridCard
       className="movie-card"
-      url={`/movies/${props.movie.id}`}
+      url={`/movies/${movie.id}`}
       width={cardWidth}
-      title={props.movie.name}
+      title={movie.name}
       linkClassName="movie-card-header"
       image={
         <>
           <img
             loading="lazy"
             className="movie-card-image"
-            alt={props.movie.name ?? ""}
-            src={props.movie.front_image_path ?? ""}
+            alt={movie.name ?? ""}
+            src={movie.front_image_path ?? ""}
           />
-          <RatingBanner rating={props.movie.rating100} />
+          <RatingBanner rating={movie.rating100} />
         </>
       }
       details={
         <div className="movie-card__details">
-          <span className="movie-card__date">{props.movie.date}</span>
+          <span className="movie-card__date">{movie.date}</span>
           <TruncatedText
             className="movie-card__description"
-            text={props.movie.synopsis}
+            text={movie.synopsis}
             lineCount={3}
           />
         </div>
       }
-      selected={props.selected}
-      selecting={props.selecting}
-      onSelectedChanged={props.onSelectedChanged}
+      selected={selected}
+      selecting={selecting}
+      onSelectedChanged={onSelectedChanged}
       popovers={maybeRenderPopoverButtonGroup()}
     />
   );

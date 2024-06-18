@@ -27,6 +27,7 @@ import {
   InstalledPluginPackages,
 } from "./PluginPackageManager";
 import { ExternalLink } from "../Shared/ExternalLink";
+import { PatchComponent } from "src/patch";
 
 interface IPluginSettingProps {
   pluginID: string;
@@ -75,11 +76,38 @@ const PluginSetting: React.FC<IPluginSettingProps> = ({
   }
 };
 
+const PluginSettings: React.FC<{
+  pluginID: string;
+  settings: GQL.PluginSetting[];
+}> = PatchComponent("PluginSettings", ({ pluginID, settings }) => {
+  const { plugins, savePluginSettings } = useSettings();
+  const pluginSettings = plugins[pluginID] ?? {};
+
+  return (
+    <div className="plugin-settings">
+      {settings.map((setting) => (
+        <PluginSetting
+          key={setting.name}
+          pluginID={pluginID}
+          setting={setting}
+          value={pluginSettings[setting.name]}
+          onChange={(v) =>
+            savePluginSettings(pluginID, {
+              ...pluginSettings,
+              [setting.name]: v,
+            })
+          }
+        />
+      ))}
+    </div>
+  );
+});
+
 export const SettingsPluginsPanel: React.FC = () => {
   const Toast = useToast();
   const intl = useIntl();
 
-  const { loading: configLoading, plugins, savePluginSettings } = useSettings();
+  const { loading: configLoading } = useSettings();
   const { data, loading } = usePlugins();
 
   const [changedPluginID, setChangedPluginID] = React.useState<
@@ -163,7 +191,10 @@ export const SettingsPluginsPanel: React.FC = () => {
           }
         >
           {renderPluginHooks(plugin.hooks ?? undefined)}
-          {renderPluginSettings(plugin.id, plugin.settings ?? [])}
+          <PluginSettings
+            pluginID={plugin.id}
+            settings={plugin.settings ?? []}
+          />
         </SettingGroup>
       ));
 
@@ -208,37 +239,8 @@ export const SettingsPluginsPanel: React.FC = () => {
       );
     }
 
-    function renderPluginSettings(
-      pluginID: string,
-      settings: GQL.PluginSetting[]
-    ) {
-      const pluginSettings = plugins[pluginID] ?? {};
-
-      return settings.map((setting) => (
-        <PluginSetting
-          key={setting.name}
-          pluginID={pluginID}
-          setting={setting}
-          value={pluginSettings[setting.name]}
-          onChange={(v) =>
-            savePluginSettings(pluginID, {
-              ...pluginSettings,
-              [setting.name]: v,
-            })
-          }
-        />
-      ));
-    }
-
     return renderPlugins();
-  }, [
-    data?.plugins,
-    intl,
-    Toast,
-    changedPluginID,
-    plugins,
-    savePluginSettings,
-  ]);
+  }, [data?.plugins, intl, Toast, changedPluginID]);
 
   if (loading || configLoading) return <LoadingIndicator />;
 

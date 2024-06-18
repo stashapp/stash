@@ -258,7 +258,9 @@
             "successfully_cancelled_temporary_behaviour": "成功取消暂时的服务行为",
             "until_restart": "直到服务重启",
             "video_sort_order": "默认视频排序",
-            "video_sort_order_desc": "默认情况下对视频进行排序。"
+            "video_sort_order_desc": "默认情况下对视频进行排序。",
+            "server_port": "服务器端口",
+            "server_port_desc": "运行DLNA服务器的端口。更改后需要重新启动DLNA。"
         },
         "general": {
             "auth": {
@@ -781,7 +783,7 @@
                 }
             },
             "use_stash_hosted_funscript": {
-                "description": "启用后，funscript将直接从Stash提供到您的Handy设备，而无需使用第三方Handy服务器。要求您的Handy设备可以访问Stash。",
+                "description": "启用后，funscript将直接从Stash提供到您的Handy设备，而无需使用第三方Handy服务器。要求可以从您的Handy设备访问Stash，并且如果stash配置了凭据，则会生成API密钥。",
                 "heading": "直接提供funscripts服务"
             }
         },

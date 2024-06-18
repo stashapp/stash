@@ -9,11 +9,15 @@ import { useToast } from "src/hooks/Toast";
 import * as FormUtils from "src/utils/form";
 import { RatingSystem } from "../Shared/Rating/RatingSystem";
 import {
+  getAggregateInputIDs,
   getAggregateInputValue,
   getAggregateRating,
   getAggregateStudioId,
+  getAggregateTagIds,
 } from "src/utils/bulkUpdate";
 import { faPencilAlt } from "@fortawesome/free-solid-svg-icons";
+import { isEqual } from "lodash-es";
+import { MultiSet } from "../Shared/MultiSet";
 
 interface IListOperationProps {
   selected: GQL.MovieDataFragment[];
@@ -29,6 +33,12 @@ export const EditMoviesDialog: React.FC<IListOperationProps> = (
   const [studioId, setStudioId] = useState<string | undefined>();
   const [director, setDirector] = useState<string | undefined>();
 
+  const [tagMode, setTagMode] = React.useState<GQL.BulkUpdateIdMode>(
+    GQL.BulkUpdateIdMode.Add
+  );
+  const [tagIds, setTagIds] = useState<string[]>();
+  const [existingTagIds, setExistingTagIds] = useState<string[]>();
+
   const [updateMovies] = useBulkMovieUpdate(getMovieInput());
 
   const [isUpdating, setIsUpdating] = useState(false);
@@ -36,6 +46,7 @@ export const EditMoviesDialog: React.FC<IListOperationProps> = (
   function getMovieInput(): GQL.BulkMovieUpdateInput {
     const aggregateRating = getAggregateRating(props.selected);
     const aggregateStudioId = getAggregateStudioId(props.selected);
+    const aggregateTagIds = getAggregateTagIds(props.selected);
 
     const movieInput: GQL.BulkMovieUpdateInput = {
       ids: props.selected.map((movie) => movie.id),
@@ -45,6 +56,7 @@ export const EditMoviesDialog: React.FC<IListOperationProps> = (
     // if rating is undefined
     movieInput.rating100 = getAggregateInputValue(rating100, aggregateRating);
     movieInput.studio_id = getAggregateInputValue(studioId, aggregateStudioId);
+    movieInput.tag_ids = getAggregateInputIDs(tagMode, tagIds, aggregateTagIds);
 
     return movieInput;
   }
@@ -72,14 +84,18 @@ export const EditMoviesDialog: React.FC<IListOperationProps> = (
     const state = props.selected;
     let updateRating: number | undefined;
     let updateStudioId: string | undefined;
+    let updateTagIds: string[] = [];
     let updateDirector: string | undefined;
     let first = true;
 
     state.forEach((movie: GQL.MovieDataFragment) => {
+      const movieTagIDs = (movie.tags ?? []).map((p) => p.id).sort();
+
       if (first) {
         first = false;
         updateRating = movie.rating100 ?? undefined;
         updateStudioId = movie.studio?.id ?? undefined;
+        updateTagIds = movieTagIDs;
         updateDirector = movie.director ?? undefined;
       } else {
         if (movie.rating100 !== updateRating) {
@@ -91,11 +107,15 @@ export const EditMoviesDialog: React.FC<IListOperationProps> = (
         if (movie.director !== updateDirector) {
           updateDirector = undefined;
         }
+        if (!isEqual(movieTagIDs, updateTagIds)) {
+          updateTagIds = [];
+        }
       }
     });
 
     setRating(updateRating);
     setStudioId(updateStudioId);
+    setExistingTagIds(updateTagIds);
     setDirector(updateDirector);
   }, [props.selected]);
 
@@ -156,6 +176,20 @@ export const EditMoviesDialog: React.FC<IListOperationProps> = (
               value={director}
               onChange={(event) => setDirector(event.currentTarget.value)}
               placeholder={intl.formatMessage({ id: "director" })}
+            />
+          </Form.Group>
+          <Form.Group controlId="tags">
+            <Form.Label>
+              <FormattedMessage id="tags" />
+            </Form.Label>
+            <MultiSet
+              type="tags"
+              disabled={isUpdating}
+              onUpdate={(itemIDs) => setTagIds(itemIDs)}
+              onSetMode={(newMode) => setTagMode(newMode)}
+              existingIds={existingTagIds ?? []}
+              ids={tagIds ?? []}
+              mode={tagMode}
             />
           </Form.Group>
         </Form>

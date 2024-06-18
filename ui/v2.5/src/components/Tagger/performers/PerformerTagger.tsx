@@ -238,7 +238,6 @@ interface IPerformerTaggerListProps {
   selectedEndpoint: { endpoint: string; index: number };
   isIdle: boolean;
   config: ITaggerConfig;
-  stashBoxes?: GQL.StashBox[];
   onBatchAdd: (performerInput: string) => void;
   onBatchUpdate: (ids: string[] | undefined, refresh: boolean) => void;
 }
@@ -248,7 +247,6 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
   selectedEndpoint,
   isIdle,
   config,
-  stashBoxes,
   onBatchAdd,
   onBatchUpdate,
 }) => {
@@ -277,7 +275,7 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
   >();
 
   const doBoxSearch = (performerID: string, searchVal: string) => {
-    stashBoxPerformerQuery(searchVal, selectedEndpoint.index)
+    stashBoxPerformerQuery(searchVal, selectedEndpoint.endpoint)
       .then((queryData) => {
         const s = queryData.data?.scrapeSinglePerformer ?? [];
         setSearchResults({
@@ -309,14 +307,14 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
   const doBoxUpdate = (
     performerID: string,
     stashID: string,
-    endpointIndex: number
+    endpoint: string
   ) => {
     setLoadingUpdate(stashID);
     setError({
       ...error,
       [performerID]: undefined,
     });
-    stashBoxPerformerQuery(stashID, endpointIndex)
+    stashBoxPerformerQuery(stashID, endpoint)
       .then((queryData) => {
         const data = queryData.data?.scrapeSinglePerformer ?? [];
         if (data.length > 0) {
@@ -477,29 +475,27 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
           <div className="small">{stashID.stash_id}</div>
         );
 
-        const endpointIndex =
-          stashBoxes?.findIndex((box) => box.endpoint === stashID.endpoint) ??
-          -1;
-
         subContent = (
           <div key={performer.id}>
             <InputGroup className="PerformerTagger-box-link">
               <InputGroup.Text>{link}</InputGroup.Text>
               <InputGroup.Append>
-                {endpointIndex !== -1 && (
-                  <Button
-                    onClick={() =>
-                      doBoxUpdate(performer.id, stashID.stash_id, endpointIndex)
-                    }
-                    disabled={!!loadingUpdate}
-                  >
-                    {loadingUpdate === stashID.stash_id ? (
-                      <LoadingIndicator inline small message="" />
-                    ) : (
-                      <FormattedMessage id="actions.refresh" />
-                    )}
-                  </Button>
-                )}
+                <Button
+                  onClick={() =>
+                    doBoxUpdate(
+                      performer.id,
+                      stashID.stash_id,
+                      stashID.endpoint
+                    )
+                  }
+                  disabled={!!loadingUpdate}
+                >
+                  {loadingUpdate === stashID.stash_id ? (
+                    <LoadingIndicator inline small message="" />
+                  ) : (
+                    <FormattedMessage id="actions.refresh" />
+                  )}
+                </Button>
               </InputGroup.Append>
             </InputGroup>
             {error[performer.id] && (
@@ -787,7 +783,6 @@ export const PerformerTagger: React.FC<ITaggerProps> = ({ performers }) => {
               }}
               isIdle={batchJobID === undefined}
               config={config}
-              stashBoxes={stashConfig?.general.stashBoxes}
               onBatchAdd={batchAdd}
               onBatchUpdate={batchUpdate}
             />

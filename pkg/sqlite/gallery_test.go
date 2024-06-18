@@ -1534,10 +1534,12 @@ func TestGalleryQueryPathOr(t *testing.T) {
 			Value:    gallery1Path,
 			Modifier: models.CriterionModifierEquals,
 		},
-		Or: &models.GalleryFilterType{
-			Path: &models.StringCriterionInput{
-				Value:    gallery2Path,
-				Modifier: models.CriterionModifierEquals,
+		OperatorFilter: models.OperatorFilter[models.GalleryFilterType]{
+			Or: &models.GalleryFilterType{
+				Path: &models.StringCriterionInput{
+					Value:    gallery2Path,
+					Modifier: models.CriterionModifierEquals,
+				},
 			},
 		},
 	}
@@ -1568,10 +1570,12 @@ func TestGalleryQueryPathAndRating(t *testing.T) {
 			Value:    galleryPath,
 			Modifier: models.CriterionModifierEquals,
 		},
-		And: &models.GalleryFilterType{
-			Rating100: &models.IntCriterionInput{
-				Value:    *galleryRating,
-				Modifier: models.CriterionModifierEquals,
+		OperatorFilter: models.OperatorFilter[models.GalleryFilterType]{
+			And: &models.GalleryFilterType{
+				Rating100: &models.IntCriterionInput{
+					Value:    *galleryRating,
+					Modifier: models.CriterionModifierEquals,
+				},
 			},
 		},
 	}
@@ -1609,8 +1613,10 @@ func TestGalleryQueryPathNotRating(t *testing.T) {
 
 	galleryFilter := models.GalleryFilterType{
 		Path: &pathCriterion,
-		Not: &models.GalleryFilterType{
-			Rating100: &ratingCriterion,
+		OperatorFilter: models.OperatorFilter[models.GalleryFilterType]{
+			Not: &models.GalleryFilterType{
+				Rating100: &ratingCriterion,
+			},
 		},
 	}
 
@@ -1641,8 +1647,10 @@ func TestGalleryIllegalQuery(t *testing.T) {
 	}
 
 	galleryFilter := &models.GalleryFilterType{
-		And: &subFilter,
-		Or:  &subFilter,
+		OperatorFilter: models.OperatorFilter[models.GalleryFilterType]{
+			And: &subFilter,
+			Or:  &subFilter,
+		},
 	}
 
 	withTxn(func(ctx context.Context) error {

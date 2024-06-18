@@ -785,7 +785,7 @@
       },
       "title": "User Interface",
       "use_stash_hosted_funscript": {
-        "description": "When enabled, funscripts will be served directly from Stash to your Handy device without using the third party Handy server. Requires that Stash be accessible from your Handy device.",
+        "description": "When enabled, funscripts will be served directly from Stash to your Handy device without using the third party Handy server. Requires that Stash be accessible from your Handy device, and that an API key is generated if stash has credentials configured.",
         "heading": "Serve funscripts directly"
       }
     }
@@ -1017,6 +1017,8 @@
   "errors": {
     "header": "Error",
     "image_index_greater_than_zero": "Image index must be greater than 0",
+    "invalid_javascript_string": "Invalid javascript code: {error}",
+    "invalid_json_string": "Invalid JSON string: {error}",
     "lazy_component_error_help": "If you recently upgraded Stash, please reload the page or clear your browser cache.",
     "loading_type": "Error loading {type}",
     "something_went_wrong": "Something went wrong."
@@ -1116,6 +1118,7 @@
   "megabits_per_second": "{value} mbps",
   "metadata": "Metadata",
   "movie": "Movie",
+  "movie_count": "Movie Count",
   "movie_scene_number": "Scene Number",
   "movies": "Movies",
   "name": "Name",
@@ -1160,6 +1163,7 @@
     "version": "Version"
   },
   "pagination": {
+    "current_total": "{current} of {total}",
     "first": "First",
     "last": "Last",
     "next": "Next",

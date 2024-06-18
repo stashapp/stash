@@ -9,6 +9,7 @@ import (
 
 	"github.com/dop251/goja"
 	"github.com/stashapp/stash/pkg/javascript"
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/plugin/common"
 )
 
@@ -56,6 +57,8 @@ func (t *jsPluginTask) makeOutput(o goja.Value) {
 func (t *jsPluginTask) initVM() error {
 	// converting the Args field to map[string]interface{} is required, otherwise
 	// it gets converted to an empty object
+	// ideally this should have included json tags with the correct casing but changing
+	// it now will result in a breaking change
 	type pluginInput struct {
 		// Server details to connect to the stash server.
 		ServerConnection common.StashServerConnection
@@ -73,8 +76,12 @@ func (t *jsPluginTask) initVM() error {
 		return fmt.Errorf("error setting input: %w", err)
 	}
 
+	const pluginPrefix = "[Plugin / %s] "
+
 	log := &javascript.Log{
-		Progress: t.progress,
+		Logger:       logger.Logger,
+		Prefix:       fmt.Sprintf(pluginPrefix, t.plugin.Name),
+		ProgressChan: t.progress,
 	}
 
 	if err := log.AddToVM("log", t.vm); err != nil {

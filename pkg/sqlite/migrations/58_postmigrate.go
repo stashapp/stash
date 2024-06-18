@@ -13,6 +13,7 @@ import (
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/sqlite"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 type schema58Migrator struct {
@@ -93,6 +94,31 @@ func (m *schema58Migrator) fromSnakeCaseValue(val interface{}) interface{} {
 	}
 }
 
+// renameKey renames a fully qualified key name in a map
+func (m *schema58Migrator) renameKey(mm map[string]interface{}, from, to string) {
+	nm := utils.NestedMap(mm)
+	v, found := nm.Get(from)
+	if !found {
+		return
+	}
+
+	nm.Delete(from)
+	nm.Set(to, v)
+}
+
+func (m *schema58Migrator) renameFrontPageContentKeys(ui map[string]interface{}) {
+	frontPageContent, found := ui["frontPageContent"].([]interface{})
+	if !found {
+		return
+	}
+
+	for _, v := range frontPageContent {
+		vm := v.(map[string]interface{})
+		m.renameKey(vm, "savedfilterid", "savedFilterId")
+		m.renameKey(vm, "sortby", "sortBy")
+	}
+}
+
 func (m *schema58Migrator) migrateConfig() error {
 	c := config.GetInstance()
 
@@ -120,6 +146,10 @@ func (m *schema58Migrator) migrateConfig() error {
 	ui := c.GetUIConfiguration()
 	if ui != nil {
 		ui = m.fromSnakeCaseMap(ui)
+
+		// find and rename specific frontEndPage keys
+		m.renameFrontPageContentKeys(ui)
+
 		c.SetUIConfiguration(ui)
 	}
 
@@ -130,7 +160,7 @@ func (m *schema58Migrator) migrateConfig() error {
 		newPlugins[key] = m.fromSnakeCaseMap(value)
 	}
 
-	c.Set(config.PluginsSetting, newPlugins)
+	c.SetInterface(config.PluginsSetting, newPlugins)
 	if err := c.Write(); err != nil {
 		return fmt.Errorf("failed to write config: %w", err)
 	}

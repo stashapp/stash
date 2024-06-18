@@ -91,8 +91,44 @@ func (r *studioRowRecord) fromPartial(o models.StudioPartial) {
 	r.setBool("ignore_auto_tag", o.IgnoreAutoTag)
 }
 
-type StudioStore struct {
+type studioRepositoryType struct {
 	repository
+
+	stashIDs stashIDRepository
+
+	scenes    repository
+	images    repository
+	galleries repository
+}
+
+var (
+	studioRepository = studioRepositoryType{
+		repository: repository{
+			tableName: studioTable,
+			idColumn:  idColumn,
+		},
+		stashIDs: stashIDRepository{
+			repository{
+				tableName: "studio_stash_ids",
+				idColumn:  studioIDColumn,
+			},
+		},
+		scenes: repository{
+			tableName: sceneTable,
+			idColumn:  studioIDColumn,
+		},
+		images: repository{
+			tableName: imageTable,
+			idColumn:  studioIDColumn,
+		},
+		galleries: repository{
+			tableName: galleryTable,
+			idColumn:  studioIDColumn,
+		},
+	}
+)
+
+type StudioStore struct {
 	blobJoinQueryBuilder
 
 	tableMgr *table
@@ -100,10 +136,6 @@ type StudioStore struct {
 
 func NewStudioStore(blobStore *BlobStore) *StudioStore {
 	return &StudioStore{
-		repository: repository{
-			tableName: studioTable,
-			idColumn:  idColumn,
-		},
 		blobJoinQueryBuilder: blobJoinQueryBuilder{
 			blobStore: blobStore,
 			joinTable: studioTable,
@@ -154,7 +186,7 @@ func (qb *StudioStore) Create(ctx context.Context, newObject *models.Studio) err
 		}
 	}
 
-	updated, _ := qb.find(ctx, id)
+	updated, err := qb.find(ctx, id)
 	if err != nil {
 		return fmt.Errorf("finding after create: %w", err)
 	}
@@ -239,7 +271,7 @@ func (qb *StudioStore) Destroy(ctx context.Context, id int) error {
 		return err
 	}
 
-	return qb.destroyExisting(ctx, []int{id})
+	return studioRepository.destroyExisting(ctx, []int{id})
 }
 
 // returns nil, nil if not found
@@ -478,85 +510,6 @@ func (qb *StudioStore) QueryForAutoTag(ctx context.Context, words []string) ([]*
 	return ret, nil
 }
 
-func (qb *StudioStore) validateFilter(filter *models.StudioFilterType) error {
-	const and = "AND"
-	const or = "OR"
-	const not = "NOT"
-
-	if filter.And != nil {
-		if filter.Or != nil {
-			return illegalFilterCombination(and, or)
-		}
-		if filter.Not != nil {
-			return illegalFilterCombination(and, not)
-		}
-
-		return qb.validateFilter(filter.And)
-	}
-
-	if filter.Or != nil {
-		if filter.Not != nil {
-			return illegalFilterCombination(or, not)
-		}
-
-		return qb.validateFilter(filter.Or)
-	}
-
-	if filter.Not != nil {
-		return qb.validateFilter(filter.Not)
-	}
-
-	return nil
-}
-
-func (qb *StudioStore) makeFilter(ctx context.Context, studioFilter *models.StudioFilterType) *filterBuilder {
-	query := &filterBuilder{}
-
-	if studioFilter.And != nil {
-		query.and(qb.makeFilter(ctx, studioFilter.And))
-	}
-	if studioFilter.Or != nil {
-		query.or(qb.makeFilter(ctx, studioFilter.Or))
-	}
-	if studioFilter.Not != nil {
-		query.not(qb.makeFilter(ctx, studioFilter.Not))
-	}
-
-	query.handleCriterion(ctx, stringCriterionHandler(studioFilter.Name, studioTable+".name"))
-	query.handleCriterion(ctx, stringCriterionHandler(studioFilter.Details, studioTable+".details"))
-	query.handleCriterion(ctx, stringCriterionHandler(studioFilter.URL, studioTable+".url"))
-	query.handleCriterion(ctx, intCriterionHandler(studioFilter.Rating100, studioTable+".rating", nil))
-	query.handleCriterion(ctx, boolCriterionHandler(studioFilter.Favorite, studioTable+".favorite", nil))
-	query.handleCriterion(ctx, boolCriterionHandler(studioFilter.IgnoreAutoTag, studioTable+".ignore_auto_tag", nil))
-
-	query.handleCriterion(ctx, criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
-		if studioFilter.StashID != nil {
-			qb.stashIDRepository().join(f, "studio_stash_ids", "studios.id")
-			stringCriterionHandler(studioFilter.StashID, "studio_stash_ids.stash_id")(ctx, f)
-		}
-	}))
-	query.handleCriterion(ctx, &stashIDCriterionHandler{
-		c:                 studioFilter.StashIDEndpoint,
-		stashIDRepository: qb.stashIDRepository(),
-		stashIDTableAs:    "studio_stash_ids",
-		parentIDCol:       "studios.id",
-	})
-
-	query.handleCriterion(ctx, studioIsMissingCriterionHandler(qb, studioFilter.IsMissing))
-	query.handleCriterion(ctx, studioTagCountCriterionHandler(qb, studioFilter.TagCount))
-	query.handleCriterion(ctx, studioSceneCountCriterionHandler(qb, studioFilter.SceneCount))
-	query.handleCriterion(ctx, studioImageCountCriterionHandler(qb, studioFilter.ImageCount))
-	query.handleCriterion(ctx, studioGalleryCountCriterionHandler(qb, studioFilter.GalleryCount))
-	query.handleCriterion(ctx, studioParentCriterionHandler(qb, studioFilter.Parents))
-	query.handleCriterion(ctx, studioAliasCriterionHandler(qb, studioFilter.Aliases))
-	query.handleCriterion(ctx, studioTagsCriterionHandler(qb, studioFilter.Tags))
-	query.handleCriterion(ctx, studioChildCountCriterionHandler(qb, studioFilter.ChildCount))
-	query.handleCriterion(ctx, timestampCriterionHandler(studioFilter.CreatedAt, studioTable+".created_at"))
-	query.handleCriterion(ctx, timestampCriterionHandler(studioFilter.UpdatedAt, studioTable+".updated_at"))
-
-	return query
-}
-
 func (qb *StudioStore) makeQuery(ctx context.Context, studioFilter *models.StudioFilterType, findFilter *models.FindFilterType) (*queryBuilder, error) {
 	if studioFilter == nil {
 		studioFilter = &models.StudioFilterType{}
@@ -565,7 +518,7 @@ func (qb *StudioStore) makeQuery(ctx context.Context, studioFilter *models.Studi
 		findFilter = &models.FindFilterType{}
 	}
 
-	query := qb.newQuery()
+	query := studioRepository.newQuery()
 	distinctIDs(&query, studioTable)
 
 	if q := findFilter.Q; q != nil && *q != "" {
@@ -574,16 +527,20 @@ func (qb *StudioStore) makeQuery(ctx context.Context, studioFilter *models.Studi
 		query.parseQueryString(searchColumns, *q)
 	}
 
-	if err := qb.validateFilter(studioFilter); err != nil {
-		return nil, err
-	}
-	filter := qb.makeFilter(ctx, studioFilter)
+	filter := filterBuilderFromHandler(ctx, &studioFilterHandler{
+		studioFilter: studioFilter,
+	})
 
 	if err := query.addFilter(filter); err != nil {
 		return nil, err
 	}
 
-	query.sortAndPagination = qb.getStudioSort(findFilter) + getPagination(findFilter)
+	var err error
+	query.sortAndPagination, err = qb.getStudioSort(findFilter)
+	if err != nil {
+		return nil, err
+	}
+	query.sortAndPagination += getPagination(findFilter)
 
 	return &query, nil
 }
@@ -616,121 +573,20 @@ func (qb *StudioStore) QueryCount(ctx context.Context, studioFilter *models.Stud
 	return query.executeCount(ctx)
 }
 
-func studioIsMissingCriterionHandler(qb *StudioStore, isMissing *string) criterionHandlerFunc {
-	return func(ctx context.Context, f *filterBuilder) {
-		if isMissing != nil && *isMissing != "" {
-			switch *isMissing {
-			case "image":
-				f.addWhere("studios.image_blob IS NULL")
-			case "stash_id":
-				qb.stashIDRepository().join(f, "studio_stash_ids", "studios.id")
-				f.addWhere("studio_stash_ids.studio_id IS NULL")
-			default:
-				f.addWhere("(studios." + *isMissing + " IS NULL OR TRIM(studios." + *isMissing + ") = '')")
-			}
-		}
-	}
+var studioSortOptions = sortOptions{
+	"child_count",
+	"created_at",
+	"galleries_count",
+	"id",
+	"images_count",
+	"name",
+	"scenes_count",
+	"random",
+	"rating",
+	"updated_at",
 }
 
-func studioSceneCountCriterionHandler(qb *StudioStore, sceneCount *models.IntCriterionInput) criterionHandlerFunc {
-	return func(ctx context.Context, f *filterBuilder) {
-		if sceneCount != nil {
-			f.addLeftJoin("scenes", "", "scenes.studio_id = studios.id")
-			clause, args := getIntCriterionWhereClause("count(distinct scenes.id)", *sceneCount)
-
-			f.addHaving(clause, args...)
-		}
-	}
-}
-
-func studioImageCountCriterionHandler(qb *StudioStore, imageCount *models.IntCriterionInput) criterionHandlerFunc {
-	return func(ctx context.Context, f *filterBuilder) {
-		if imageCount != nil {
-			f.addLeftJoin("images", "", "images.studio_id = studios.id")
-			clause, args := getIntCriterionWhereClause("count(distinct images.id)", *imageCount)
-
-			f.addHaving(clause, args...)
-		}
-	}
-}
-
-func studioGalleryCountCriterionHandler(qb *StudioStore, galleryCount *models.IntCriterionInput) criterionHandlerFunc {
-	return func(ctx context.Context, f *filterBuilder) {
-		if galleryCount != nil {
-			f.addLeftJoin("galleries", "", "galleries.studio_id = studios.id")
-			clause, args := getIntCriterionWhereClause("count(distinct galleries.id)", *galleryCount)
-
-			f.addHaving(clause, args...)
-		}
-	}
-}
-
-func studioTagCountCriterionHandler(qb *StudioStore, tagCount *models.IntCriterionInput) criterionHandlerFunc {
-	h := countCriterionHandlerBuilder{
-		primaryTable: studioTable,
-		joinTable:    studiosTagsTable,
-		primaryFK:    studioIDColumn,
-	}
-
-	return h.handler(tagCount)
-}
-
-func studioParentCriterionHandler(qb *StudioStore, parents *models.MultiCriterionInput) criterionHandlerFunc {
-	addJoinsFunc := func(f *filterBuilder) {
-		f.addLeftJoin("studios", "parent_studio", "parent_studio.id = studios.parent_id")
-	}
-	h := multiCriterionHandlerBuilder{
-		primaryTable: studioTable,
-		foreignTable: "parent_studio",
-		joinTable:    "",
-		primaryFK:    studioIDColumn,
-		foreignFK:    "parent_id",
-		addJoinsFunc: addJoinsFunc,
-	}
-	return h.handler(parents)
-}
-
-func studioAliasCriterionHandler(qb *StudioStore, alias *models.StringCriterionInput) criterionHandlerFunc {
-	h := stringListCriterionHandlerBuilder{
-		joinTable:    studioAliasesTable,
-		stringColumn: studioAliasColumn,
-		addJoinTable: func(f *filterBuilder) {
-			studiosAliasesTableMgr.join(f, "", "studios.id")
-		},
-	}
-
-	return h.handler(alias)
-}
-
-func studioChildCountCriterionHandler(qb *StudioStore, childCount *models.IntCriterionInput) criterionHandlerFunc {
-	return func(ctx context.Context, f *filterBuilder) {
-		if childCount != nil {
-			f.addLeftJoin("studios", "children_count", "children_count.parent_id = studios.id")
-			clause, args := getIntCriterionWhereClause("count(distinct children_count.id)", *childCount)
-
-			f.addHaving(clause, args...)
-		}
-	}
-}
-
-func studioTagsCriterionHandler(qb *StudioStore, tags *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
-	h := joinedHierarchicalMultiCriterionHandlerBuilder{
-		tx: qb.tx,
-
-		primaryTable: studioTable,
-		foreignTable: tagTable,
-		foreignFK:    "tag_id",
-
-		relationsTable: "tags_relations",
-		joinAs:         "image_tag",
-		joinTable:      studiosTagsTable,
-		primaryFK:      studioIDColumn,
-	}
-
-	return h.handler(tags)
-}
-
-func (qb *StudioStore) getStudioSort(findFilter *models.FindFilterType) string {
+func (qb *StudioStore) getStudioSort(findFilter *models.FindFilterType) (string, error) {
 	var sort string
 	var direction string
 	if findFilter == nil {
@@ -739,6 +595,11 @@ func (qb *StudioStore) getStudioSort(findFilter *models.FindFilterType) string {
 	} else {
 		sort = findFilter.GetSort("name")
 		direction = findFilter.GetDirection()
+	}
+
+	// CVE-2024-32231 - ensure sort is in the list of allowed sorts
+	if err := studioSortOptions.validateSort(sort); err != nil {
+		return "", err
 	}
 
 	sortQuery := ""
@@ -759,13 +620,12 @@ func (qb *StudioStore) getStudioSort(findFilter *models.FindFilterType) string {
 
 	// Whatever the sorting, always use name/id as a final sort
 	sortQuery += ", COALESCE(studios.name, studios.id) COLLATE NATURAL_CI ASC"
-	return sortQuery
+	return sortQuery, nil
 }
 
 func (qb *StudioStore) tagsRepository() *joinRepository {
 	return &joinRepository{
 		repository: repository{
-			tx:        qb.tx,
 			tableName: studiosTagsTable,
 			idColumn:  studioIDColumn,
 		},
@@ -789,16 +649,6 @@ func (qb *StudioStore) UpdateImage(ctx context.Context, studioID int, image []by
 
 func (qb *StudioStore) destroyImage(ctx context.Context, studioID int) error {
 	return qb.blobJoinQueryBuilder.DestroyImage(ctx, studioID, studioImageBlobColumn)
-}
-
-func (qb *StudioStore) stashIDRepository() *stashIDRepository {
-	return &stashIDRepository{
-		repository{
-			tx:        qb.tx,
-			tableName: "studio_stash_ids",
-			idColumn:  studioIDColumn,
-		},
-	}
 }
 
 func (qb *StudioStore) GetTagIDs(ctx context.Context, id int) ([]int, error) {

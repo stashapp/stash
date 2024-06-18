@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Button, Form, Badge, Dropdown } from "react-bootstrap";
+import { Button, Form, Dropdown } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
@@ -8,15 +8,12 @@ import {
   useListPerformerScrapers,
   queryScrapePerformer,
   mutateReloadScrapers,
-  useTagCreate,
   queryScrapePerformerURL,
 } from "src/core/StashService";
 import { Icon } from "src/components/Shared/Icon";
 import { ImageInput } from "src/components/Shared/ImageInput";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
-import { CollapseButton } from "src/components/Shared/CollapseButton";
 import { CountrySelect } from "src/components/Shared/CountrySelect";
-import { URLField } from "src/components/Shared/URLField";
 import ImageUtils from "src/utils/image";
 import { getStashIDs } from "src/utils/stashIds";
 import { stashboxDisplayName } from "src/utils/stashbox";
@@ -38,7 +35,7 @@ import { PerformerScrapeDialog } from "./PerformerScrapeDialog";
 import PerformerScrapeModal from "./PerformerScrapeModal";
 import PerformerStashBoxModal, { IStashBox } from "./PerformerStashBoxModal";
 import cx from "classnames";
-import { faPlus, faSyncAlt } from "@fortawesome/free-solid-svg-icons";
+import { faSyncAlt } from "@fortawesome/free-solid-svg-icons";
 import isEqual from "lodash-es/isEqual";
 import { formikUtils } from "src/utils/form";
 import {
@@ -47,8 +44,9 @@ import {
   yupInputEnum,
   yupDateString,
   yupUniqueAliases,
+  yupUniqueStringList,
 } from "src/utils/yup";
-import { Tag, TagSelect } from "src/components/Tags/TagSelect";
+import { useTagsEdit } from "src/hooks/tagsEdit";
 
 const isScraper = (
   scraper: GQL.Scraper | GQL.StashBox
@@ -77,13 +75,10 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
   // Editing state
   const [scraper, setScraper] = useState<GQL.Scraper | IStashBox>();
-  const [newTags, setNewTags] = useState<GQL.ScrapedTag[]>();
   const [isScraperModalOpen, setIsScraperModalOpen] = useState<boolean>(false);
 
   // Network state
   const [isLoading, setIsLoading] = useState(false);
-
-  const [tags, setTags] = useState<Tag[]>([]);
 
   const Scrapers = useListPerformerScrapers();
   const [queryableScrapers, setQueryableScrapers] = useState<GQL.Scraper[]>([]);
@@ -92,7 +87,6 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     useState<GQL.ScrapedPerformer>();
   const { configuration: stashConfig } = React.useContext(ConfigurationContext);
 
-  const [createTag] = useTagCreate();
   const intl = useIntl();
 
   const schema = yup.object({
@@ -115,9 +109,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     tattoos: yup.string().ensure(),
     piercings: yup.string().ensure(),
     career_length: yup.string().ensure(),
-    url: yup.string().ensure(),
-    twitter: yup.string().ensure(),
-    instagram: yup.string().ensure(),
+    urls: yupUniqueStringList(intl),
     details: yup.string().ensure(),
     tag_ids: yup.array(yup.string().required()).defined(),
     ignore_auto_tag: yup.boolean().defined(),
@@ -145,9 +137,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     tattoos: performer.tattoos ?? "",
     piercings: performer.piercings ?? "",
     career_length: performer.career_length ?? "",
-    url: performer.url ?? "",
-    twitter: performer.twitter ?? "",
-    instagram: performer.instagram ?? "",
+    urls: performer.urls ?? [],
     details: performer.details ?? "",
     tag_ids: (performer.tags ?? []).map((t) => t.id),
     ignore_auto_tag: performer.ignore_auto_tag ?? false,
@@ -163,17 +153,10 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     onSubmit: (values) => onSave(schema.cast(values)),
   });
 
-  function onSetTags(items: Tag[]) {
-    setTags(items);
-    formik.setFieldValue(
-      "tag_ids",
-      items.map((item) => item.id)
-    );
-  }
-
-  useEffect(() => {
-    setTags(performer.tags ?? []);
-  }, [performer.tags]);
+  const { tags, updateTagsStateFromScraper, tagsControl } = useTagsEdit(
+    performer.tags,
+    (ids) => formik.setFieldValue("tag_ids", ids)
+  );
 
   function translateScrapedGender(scrapedGender?: string) {
     if (!scrapedGender) {
@@ -204,43 +187,6 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     } else {
       const caseInsensitive = true;
       return stringToCircumcised(scrapedCircumcised, caseInsensitive);
-    }
-  }
-
-  async function createNewTag(toCreate: GQL.ScrapedTag) {
-    const tagInput: GQL.TagCreateInput = { name: toCreate.name ?? "" };
-    try {
-      const result = await createTag({
-        variables: {
-          input: tagInput,
-        },
-      });
-
-      if (!result.data?.tagCreate) {
-        Toast.error(new Error("Failed to create tag"));
-        return;
-      }
-
-      // add the new tag to the new tags value
-      const newTagIds = formik.values.tag_ids.concat([
-        result.data.tagCreate.id,
-      ]);
-      formik.setFieldValue("tag_ids", newTagIds);
-
-      // remove the tag from the list
-      const newTagsClone = newTags!.concat();
-      const pIndex = newTagsClone.indexOf(toCreate);
-      newTagsClone.splice(pIndex, 1);
-
-      setNewTags(newTagsClone);
-
-      Toast.success(
-        <span>
-          Created tag: <b>{toCreate.name}</b>
-        </span>
-      );
-    } catch (e) {
-      Toast.error(e);
     }
   }
 
@@ -289,14 +235,8 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     if (state.piercings) {
       formik.setFieldValue("piercings", state.piercings);
     }
-    if (state.url) {
-      formik.setFieldValue("url", state.url);
-    }
-    if (state.twitter) {
-      formik.setFieldValue("twitter", state.twitter);
-    }
-    if (state.instagram) {
-      formik.setFieldValue("instagram", state.instagram);
+    if (state.urls) {
+      formik.setFieldValue("urls", state.urls);
     }
     if (state.gender) {
       // gender is a string in the scraper data
@@ -312,20 +252,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
         formik.setFieldValue("circumcised", newCircumcised);
       }
     }
-    if (state.tags) {
-      // map tags to their ids and filter out those not found
-      onSetTags(
-        state.tags.map((p) => {
-          return {
-            id: p.stored_id!,
-            name: p.name ?? "",
-            aliases: [],
-          };
-        })
-      );
-
-      setNewTags(state.tags.filter((t) => !t.stored_id));
-    }
+    updateTagsStateFromScraper(state.tags ?? undefined);
 
     // image is a base64 string
     // #404: don't overwrite image if it has been modified by the user
@@ -474,8 +401,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     }
   }
 
-  async function onScrapePerformerURL() {
-    const { url } = formik.values;
+  async function onScrapePerformerURL(url: string) {
     if (!url) return;
     setIsLoading(true);
     try {
@@ -597,6 +523,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     return (
       <PerformerScrapeDialog
         performer={currentPerformer}
+        performerTags={tags}
         scraped={scrapedPerformer}
         scraper={scraper}
         onClose={(p) => {
@@ -675,6 +602,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     renderDateField,
     renderStringListField,
     renderStashIDsField,
+    renderURLListField,
   } = formikUtils(intl, formik);
 
   function renderCountryField() {
@@ -689,71 +617,10 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     return renderField("country", title, control);
   }
 
-  function renderUrlField() {
-    const title = intl.formatMessage({ id: "url" });
-    const control = (
-      <URLField
-        {...formik.getFieldProps("url")}
-        onScrapeClick={onScrapePerformerURL}
-        urlScrapable={urlScrapable}
-      />
-    );
-
-    return renderField("url", title, control);
-  }
-
-  function renderNewTags() {
-    if (!newTags || newTags.length === 0) {
-      return;
-    }
-
-    const ret = (
-      <>
-        {newTags.map((t) => (
-          <Badge
-            className="tag-item"
-            variant="secondary"
-            key={t.name}
-            onClick={() => createNewTag(t)}
-          >
-            {t.name}
-            <Button className="minimal ml-2">
-              <Icon className="fa-fw" icon={faPlus} />
-            </Button>
-          </Badge>
-        ))}
-      </>
-    );
-
-    const minCollapseLength = 10;
-
-    if (newTags.length >= minCollapseLength) {
-      return (
-        <CollapseButton text={`Missing (${newTags.length})`}>
-          {ret}
-        </CollapseButton>
-      );
-    }
-
-    return ret;
-  }
-
   function renderTagsField() {
     const title = intl.formatMessage({ id: "tags" });
 
-    const control = (
-      <>
-        <TagSelect
-          menuPortalTarget={document.body}
-          isMulti
-          onSelect={onSetTags}
-          values={tags}
-        />
-        {renderNewTags()}
-      </>
-    );
-
-    return renderField("tag_ids", title, control);
+    return renderField("tag_ids", title, tagsControl());
   }
 
   return (
@@ -797,10 +664,8 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
         {renderInputField("career_length")}
 
-        {renderUrlField()}
+        {renderURLListField("urls", onScrapePerformerURL, urlScrapable)}
 
-        {renderInputField("twitter")}
-        {renderInputField("instagram")}
         {renderInputField("details", "textarea")}
         {renderTagsField()}
 

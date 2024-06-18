@@ -28,7 +28,7 @@ import { useCompare } from "src/hooks/state";
 import { TagPopover } from "./TagPopover";
 import { Placement } from "react-bootstrap/esm/Overlay";
 import { sortByRelevance } from "src/utils/query";
-import { PatchComponent } from "src/patch";
+import { PatchComponent, PatchFunction } from "src/patch";
 
 export type SelectObject = {
   id: string;
@@ -38,6 +38,21 @@ export type SelectObject = {
 
 export type Tag = Pick<GQL.Tag, "id" | "name" | "aliases" | "image_path">;
 type Option = SelectOption<Tag>;
+
+type FindTagsResult = Awaited<
+  ReturnType<typeof queryFindTagsForSelect>
+>["data"]["findTags"]["tags"];
+
+function sortTagsByRelevance(input: string, tags: FindTagsResult) {
+  return sortByRelevance(
+    input,
+    tags,
+    (t) => t.name,
+    (t) => t.aliases
+  );
+}
+
+const tagSelectSort = PatchFunction("TagSelect.sort", sortTagsByRelevance);
 
 const _TagSelect: React.FC<
   IFilterProps &
@@ -71,12 +86,7 @@ const _TagSelect: React.FC<
       return !exclude.includes(tag.id.toString());
     });
 
-    return sortByRelevance(
-      input,
-      ret,
-      (t) => t.name,
-      (t) => t.aliases
-    ).map((tag) => ({
+    return tagSelectSort(input, ret).map((tag) => ({
       value: tag.id,
       object: tag,
     }));

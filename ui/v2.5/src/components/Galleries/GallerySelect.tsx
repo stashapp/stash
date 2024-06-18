@@ -27,7 +27,7 @@ import { useCompare } from "src/hooks/state";
 import { Placement } from "react-bootstrap/esm/Overlay";
 import { sortByRelevance } from "src/utils/query";
 import { galleryTitle } from "src/core/galleries";
-import { PatchComponent } from "src/patch";
+import { PatchComponent, PatchFunction } from "src/patch";
 import {
   Criterion,
   CriterionValue,
@@ -48,6 +48,24 @@ type ExtraGalleryProps = {
   excludeIds?: string[];
   extraCriteria?: Array<Criterion<CriterionValue>>;
 };
+
+type FindGalleriesResult = Awaited<
+  ReturnType<typeof queryFindGalleriesForSelect>
+>["data"]["findGalleries"]["galleries"];
+
+function sortGalleriesByRelevance(
+  input: string,
+  galleries: FindGalleriesResult
+) {
+  return sortByRelevance(input, galleries, galleryTitle, (g) => {
+    return g.files.map((f) => f.path).concat(g.folder?.path ?? []);
+  });
+}
+
+const gallerySelectSort = PatchFunction(
+  "GallerySelect.sort",
+  sortGalleriesByRelevance
+);
 
 const _GallerySelect: React.FC<
   IFilterProps & IFilterValueProps<Gallery> & ExtraGalleryProps
@@ -78,9 +96,7 @@ const _GallerySelect: React.FC<
       return !exclude.includes(gallery.id.toString());
     });
 
-    return sortByRelevance(input, ret, galleryTitle, (g) => {
-      return g.files.map((f) => f.path).concat(g.folder?.path ?? []);
-    }).map((gallery) => ({
+    return gallerySelectSort(input, ret).map((gallery) => ({
       value: gallery.id,
       object: gallery,
     }));

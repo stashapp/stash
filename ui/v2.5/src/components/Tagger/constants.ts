@@ -5,7 +5,6 @@ export const SCRAPER_PREFIX = "scraper:";
 
 export interface ITaggerSource {
   id: string;
-  stashboxEndpoint?: string;
   sourceInput: ScraperSourceInput;
   displayName: string;
   supportSceneQuery?: boolean;
@@ -79,10 +78,8 @@ export const PERFORMER_FIELDS = [
   "tattoos",
   "piercings",
   "career_length",
-  "url",
-  "twitter",
-  "instagram",
+  "urls",
   "details",
 ];
 
-export const STUDIO_FIELDS = ["name", "image", "url", "parent_studio"];
+export const STUDIO_FIELDS = ["name", "image", "urls", "parent_studio"];

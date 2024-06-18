@@ -346,8 +346,8 @@ func (qb *BlobStore) delete(ctx context.Context, checksum string) error {
 }
 
 type blobJoinQueryBuilder struct {
-	repository
-	blobStore *BlobStore
+	repository repository
+	blobStore  *BlobStore
 
 	joinTable string
 }
@@ -381,7 +381,7 @@ func (qb *blobJoinQueryBuilder) UpdateImage(ctx context.Context, id int, blobCol
 	}
 
 	sqlQuery := fmt.Sprintf("UPDATE %s SET %s = ? WHERE id = ?", qb.joinTable, blobCol)
-	if _, err := qb.tx.Exec(ctx, sqlQuery, checksum, id); err != nil {
+	if _, err := dbWrapper.Exec(ctx, sqlQuery, checksum, id); err != nil {
 		return err
 	}
 
@@ -428,7 +428,7 @@ func (qb *blobJoinQueryBuilder) DestroyImage(ctx context.Context, id int, blobCo
 	}
 
 	updateQuery := fmt.Sprintf("UPDATE %s SET %s = NULL WHERE id = ?", qb.joinTable, blobCol)
-	if _, err = qb.tx.Exec(ctx, updateQuery, id); err != nil {
+	if _, err = dbWrapper.Exec(ctx, updateQuery, id); err != nil {
 		return err
 	}
 
@@ -441,7 +441,7 @@ func (qb *blobJoinQueryBuilder) HasImage(ctx context.Context, id int, blobCol st
 		"joinCol":   blobCol,
 	})
 
-	c, err := qb.runCountQuery(ctx, stmt, []interface{}{id})
+	c, err := qb.repository.runCountQuery(ctx, stmt, []interface{}{id})
 	if err != nil {
 		return false, err
 	}

@@ -62,8 +62,8 @@ const PerformerScrapeModal: React.FC<IProps> = ({
           </div>
         ) : (
           <ul className={CLASSNAME_LIST}>
-            {performers.map((p) => (
-              <li key={p.url}>
+            {performers.map((p, i) => (
+              <li key={i}>
                 <Button
                   variant="link"
                   onClick={() => onSelectPerformer(p, scraper)}

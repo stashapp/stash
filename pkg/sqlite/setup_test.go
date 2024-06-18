@@ -150,9 +150,12 @@ const (
 const (
 	movieIdxWithScene = iota
 	movieIdxWithStudio
+	movieIdxWithTag
+	movieIdxWithTwoTags
+	movieIdxWithThreeTags
 	// movies with dup names start from the end
-	// create 10 more basic movies (can remove this if we add more indexes)
-	movieIdxWithDupName = movieIdxWithStudio + 10
+	// create 7 more basic movies (can remove this if we add more indexes)
+	movieIdxWithDupName = movieIdxWithStudio + 7
 
 	moviesNameCase   = movieIdxWithDupName
 	moviesNameNoCase = 1
@@ -217,6 +220,10 @@ const (
 	tagIdxWithParentAndChild
 	tagIdxWithGrandParent
 	tagIdx2WithMarkers
+	tagIdxWithMovie
+	tagIdx1WithMovie
+	tagIdx2WithMovie
+	tagIdx3WithMovie
 	// new indexes above
 	// tags with dup names start from the end
 	tagIdx1WithDupName
@@ -494,6 +501,12 @@ var (
 	movieStudioLinks = [][2]int{
 		{movieIdxWithStudio, studioIdxWithMovie},
 	}
+
+	movieTags = linkMap{
+		movieIdxWithTag:       {tagIdxWithMovie},
+		movieIdxWithTwoTags:   {tagIdx1WithMovie, tagIdx2WithMovie},
+		movieIdxWithThreeTags: {tagIdx1WithMovie, tagIdx2WithMovie, tagIdx3WithMovie},
+	}
 )
 
 var (
@@ -638,12 +651,12 @@ func populateDB() error {
 
 		// TODO - link folders to zip files
 
-		if err := createMovies(ctx, db.Movie, moviesNameCase, moviesNameNoCase); err != nil {
-			return fmt.Errorf("error creating movies: %s", err.Error())
-		}
-
 		if err := createTags(ctx, db.Tag, tagsNameCase, tagsNameNoCase); err != nil {
 			return fmt.Errorf("error creating tags: %s", err.Error())
+		}
+
+		if err := createMovies(ctx, db.Movie, moviesNameCase, moviesNameNoCase); err != nil {
+			return fmt.Errorf("error creating movies: %s", err.Error())
 		}
 
 		if err := createPerformers(ctx, performersNameCase, performersNameNoCase); err != nil {
@@ -1319,6 +1332,15 @@ func getMovieNullStringValue(index int, field string) string {
 	return ret.String
 }
 
+func getMovieEmptyString(index int, field string) string {
+	v := getPrefixedNullStringValue("movie", index, field)
+	if !v.Valid {
+		return ""
+	}
+
+	return v.String
+}
+
 // createMoviees creates n movies with plain Name and o movies with camel cased NaMe included
 func createMovies(ctx context.Context, mqb models.MovieReaderWriter, n int, o int) error {
 	const namePlain = "Name"
@@ -1327,6 +1349,8 @@ func createMovies(ctx context.Context, mqb models.MovieReaderWriter, n int, o in
 	for i := 0; i < n+o; i++ {
 		index := i
 		name := namePlain
+
+		tids := indexesToIDs(tagIDs, movieTags[i])
 
 		if i >= n { // i<n tags get normal names
 			name = nameNoCase       // i>=n movies get dup names if case is not checked
@@ -1337,7 +1361,10 @@ func createMovies(ctx context.Context, mqb models.MovieReaderWriter, n int, o in
 		name = getMovieStringValue(index, name)
 		movie := models.Movie{
 			Name: name,
-			URL:  getMovieNullStringValue(index, urlField),
+			URLs: models.NewRelatedStrings([]string{
+				getMovieEmptyString(i, urlField),
+			}),
+			TagIDs: models.NewRelatedIDs(tids),
 		}
 
 		err := mqb.Create(ctx, &movie)
@@ -1361,6 +1388,15 @@ func getPerformerNullStringValue(index int, field string) string {
 	ret := getPrefixedNullStringValue("performer", index, field)
 
 	return ret.String
+}
+
+func getPerformerEmptyString(index int, field string) string {
+	v := getPrefixedNullStringValue("performer", index, field)
+	if !v.Valid {
+		return ""
+	}
+
+	return v.String
 }
 
 func getPerformerBoolValue(index int) bool {
@@ -1436,6 +1472,14 @@ func performerStashID(i int) models.StashID {
 	}
 }
 
+func performerAliases(i int) []string {
+	if i%5 == 0 {
+		return []string{}
+	}
+
+	return []string{getPerformerStringValue(i, "alias")}
+}
+
 // createPerformers creates n performers with plain Name and o performers with camel cased NaMe included
 func createPerformers(ctx context.Context, n int, o int) error {
 	pqb := db.Performer
@@ -1459,18 +1503,20 @@ func createPerformers(ctx context.Context, n int, o int) error {
 		performer := models.Performer{
 			Name:           getPerformerStringValue(index, name),
 			Disambiguation: getPerformerStringValue(index, "disambiguation"),
-			Aliases:        models.NewRelatedStrings([]string{getPerformerStringValue(index, "alias")}),
-			URL:            getPerformerNullStringValue(i, urlField),
-			Favorite:       getPerformerBoolValue(i),
-			Birthdate:      getPerformerBirthdate(i),
-			DeathDate:      getPerformerDeathDate(i),
-			Details:        getPerformerStringValue(i, "Details"),
-			Ethnicity:      getPerformerStringValue(i, "Ethnicity"),
-			PenisLength:    getPerformerPenisLength(i),
-			Circumcised:    getPerformerCircumcised(i),
-			Rating:         getIntPtr(getRating(i)),
-			IgnoreAutoTag:  getIgnoreAutoTag(i),
-			TagIDs:         models.NewRelatedIDs(tids),
+			Aliases:        models.NewRelatedStrings(performerAliases(index)),
+			URLs: models.NewRelatedStrings([]string{
+				getPerformerEmptyString(i, urlField),
+			}),
+			Favorite:      getPerformerBoolValue(i),
+			Birthdate:     getPerformerBirthdate(i),
+			DeathDate:     getPerformerDeathDate(i),
+			Details:       getPerformerStringValue(i, "Details"),
+			Ethnicity:     getPerformerStringValue(i, "Ethnicity"),
+			PenisLength:   getPerformerPenisLength(i),
+			Circumcised:   getPerformerCircumcised(i),
+			Rating:        getIntPtr(getRating(i)),
+			IgnoreAutoTag: getIgnoreAutoTag(i),
+			TagIDs:        models.NewRelatedIDs(tids),
 		}
 
 		careerLength := getPerformerCareerLength(i)

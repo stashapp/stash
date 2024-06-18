@@ -174,6 +174,7 @@ export type CriterionType =
   | "gallery_count"
   | "performer_count"
   | "studio_count"
+  | "movie_count"
   | "death_year"
   | "url"
   | "interactive"

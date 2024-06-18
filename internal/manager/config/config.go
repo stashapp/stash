@@ -232,6 +232,9 @@ const (
 	SecurityTripwireAccessedFromPublicInternet        = "security_tripwire_accessed_from_public_internet"
 	securityTripwireAccessedFromPublicInternetDefault = ""
 
+	sslCertPath = "ssl_cert_path"
+	sslKeyPath  = "ssl_key_path"
+
 	// DLNA options
 	DLNAServerName         = "dlna.server_name"
 	DLNADefaultEnabled     = "dlna.default_enabled"
@@ -285,10 +288,6 @@ var (
 	defaultGalleryExtensions = []string{"zip", "cbz"}
 	defaultMenuItems         = []string{"scenes", "images", "movies", "markers", "galleries", "performers", "studios", "tags"}
 )
-
-var jsonUnmarshalConf = koanf.UnmarshalConf{
-	Tag: "json",
-}
 
 type MissingConfigError struct {
 	missingFields []string
@@ -360,8 +359,17 @@ func (i *Config) InitTLS() {
 		paths.GetStashHomeDirectory(),
 	}
 
-	i.certFile = fsutil.FindInPaths(tlsPaths, "stash.crt")
-	i.keyFile = fsutil.FindInPaths(tlsPaths, "stash.key")
+	i.certFile = i.getString(sslCertPath)
+	if i.certFile == "" {
+		// Look for default file
+		i.certFile = fsutil.FindInPaths(tlsPaths, "stash.crt")
+	}
+
+	i.keyFile = i.getString(sslKeyPath)
+	if i.keyFile == "" {
+		// Look for default file
+		i.keyFile = fsutil.FindInPaths(tlsPaths, "stash.key")
+	}
 }
 
 func (i *Config) GetTLSFiles() (certFile, keyFile string) {
@@ -381,10 +389,6 @@ func (i *Config) GetNotificationsEnabled() bool {
 	return i.getBool(NotificationsEnabled)
 }
 
-// func (i *Instance) GetConfigUpdatesChannel() chan int {
-// 	return i.configUpdates
-// }
-
 // GetShowOneTimeMovedNotification shows whether a small notification to inform the user that Stash
 // will no longer show a terminal window, and instead will be available in the tray, should be shown.
 // It is true when an existing system is started after upgrading, and set to false forever after it is shown.
@@ -392,10 +396,24 @@ func (i *Config) GetShowOneTimeMovedNotification() bool {
 	return i.getBool(ShowOneTimeMovedNotification)
 }
 
-func (i *Config) Set(key string, value interface{}) {
-	// if key == MenuItems {
-	// 	i.configUpdates <- 0
-	// }
+// these methods are intended to ensure type safety (ie no primitive pointers)
+func (i *Config) SetBool(key string, value bool) {
+	i.SetInterface(key, value)
+}
+
+func (i *Config) SetString(key string, value string) {
+	i.SetInterface(key, value)
+}
+
+func (i *Config) SetInt(key string, value int) {
+	i.SetInterface(key, value)
+}
+
+func (i *Config) SetFloat(key string, value float64) {
+	i.SetInterface(key, value)
+}
+
+func (i *Config) SetInterface(key string, value interface{}) {
 	i.Lock()
 	defer i.Unlock()
 
@@ -438,9 +456,9 @@ func (i *Config) setDefault(key string, value interface{}) {
 func (i *Config) SetPassword(value string) {
 	// if blank, don't bother hashing; we want it to be blank
 	if value == "" {
-		i.Set(Password, "")
+		i.SetString(Password, "")
 	} else {
-		i.Set(Password, hashPassword(value))
+		i.SetString(Password, hashPassword(value))
 	}
 }
 
@@ -453,7 +471,7 @@ func (i *Config) Write() error {
 		return err
 	}
 
-	return os.WriteFile(i.filePath, data, 0644)
+	return os.WriteFile(i.filePath, data, 0640)
 }
 
 func (i *Config) Marshal() ([]byte, error) {
@@ -484,6 +502,20 @@ func (i *Config) GetConfigFile() string {
 // configuration file.
 func (i *Config) GetConfigPath() string {
 	return filepath.Dir(i.GetConfigFile())
+}
+
+// GetConfigPathAbs returns the path of the directory containing the used
+// configuration file, resolved to an absolute path. Returns the return value
+// of GetConfigPath if the path cannot be made into an absolute path.
+func (i *Config) GetConfigPathAbs() string {
+	p := filepath.Dir(i.GetConfigFile())
+
+	ret, _ := filepath.Abs(p)
+	if ret == "" {
+		return p
+	}
+
+	return ret
 }
 
 // GetDefaultDatabaseFilePath returns the default database filename,
@@ -1428,7 +1460,8 @@ func (i *Config) GetDefaultIdentifySettings() *identify.Options {
 
 	if v.Exists(DefaultIdentifySettings) && v.Get(DefaultIdentifySettings) != nil {
 		var ret identify.Options
-		if err := v.UnmarshalWithConf(DefaultIdentifySettings, &ret, jsonUnmarshalConf); err != nil {
+
+		if err := v.Unmarshal(DefaultIdentifySettings, &ret); err != nil {
 			return nil
 		}
 		return &ret
@@ -1447,7 +1480,7 @@ func (i *Config) GetDefaultScanSettings() *ScanMetadataOptions {
 
 	if v.Exists(DefaultScanSettings) && v.Get(DefaultScanSettings) != nil {
 		var ret ScanMetadataOptions
-		if err := v.UnmarshalWithConf(DefaultScanSettings, &ret, jsonUnmarshalConf); err != nil {
+		if err := v.Unmarshal(DefaultScanSettings, &ret); err != nil {
 			return nil
 		}
 		return &ret
@@ -1624,7 +1657,7 @@ func (i *Config) GetNoProxy() string {
 // config field to the provided IP address to indicate that stash has been accessed
 // from this public IP without authentication.
 func (i *Config) ActivatePublicAccessTripwire(requestIP string) error {
-	i.Set(SecurityTripwireAccessedFromPublicInternet, requestIP)
+	i.SetString(SecurityTripwireAccessedFromPublicInternet, requestIP)
 	return i.Write()
 }
 
@@ -1807,7 +1840,7 @@ func (i *Config) SetInitialConfig() error {
 		if err != nil {
 			return fmt.Errorf("error generating JWTSignKey: %w", err)
 		}
-		i.Set(JWTSignKey, signKey)
+		i.SetString(JWTSignKey, signKey)
 	}
 
 	if string(i.GetSessionStoreKey()) == "" {
@@ -1815,7 +1848,7 @@ func (i *Config) SetInitialConfig() error {
 		if err != nil {
 			return fmt.Errorf("error generating session store key: %w", err)
 		}
-		i.Set(SessionStoreKey, sessionStoreKey)
+		i.SetString(SessionStoreKey, sessionStoreKey)
 	}
 
 	i.setDefaultValues()

@@ -366,8 +366,9 @@ func (s *Manager) MigrateHash(ctx context.Context) int {
 
 // If neither ids nor names are set, tag all items
 type StashBoxBatchTagInput struct {
-	// Stash endpoint to use for the tagging
-	Endpoint int `json:"endpoint"`
+	// Stash endpoint to use for the tagging - deprecated - use StashBoxEndpoint
+	Endpoint         *int    `json:"endpoint"`
+	StashBoxEndpoint *string `json:"stash_box_endpoint"`
 	// Fields to exclude when executing the tagging
 	ExcludeFields []string `json:"exclude_fields"`
 	// Refresh items already tagged by StashBox if true. Only tag items with no StashBox tagging if false
@@ -388,15 +389,9 @@ type StashBoxBatchTagInput struct {
 	PerformerNames []string `json:"performer_names"`
 }
 
-func (s *Manager) StashBoxBatchPerformerTag(ctx context.Context, input StashBoxBatchTagInput) int {
+func (s *Manager) StashBoxBatchPerformerTag(ctx context.Context, box *models.StashBox, input StashBoxBatchTagInput) int {
 	j := job.MakeJobExec(func(ctx context.Context, progress *job.Progress) error {
 		logger.Infof("Initiating stash-box batch performer tag")
-
-		boxes := config.GetInstance().GetStashBoxes()
-		if input.Endpoint < 0 || input.Endpoint >= len(boxes) {
-			return fmt.Errorf("invalid stash_box_index %d", input.Endpoint)
-		}
-		box := boxes[input.Endpoint]
 
 		var tasks []StashBoxBatchTagTask
 
@@ -526,15 +521,9 @@ func (s *Manager) StashBoxBatchPerformerTag(ctx context.Context, input StashBoxB
 	return s.JobManager.Add(ctx, "Batch stash-box performer tag...", j)
 }
 
-func (s *Manager) StashBoxBatchStudioTag(ctx context.Context, input StashBoxBatchTagInput) int {
+func (s *Manager) StashBoxBatchStudioTag(ctx context.Context, box *models.StashBox, input StashBoxBatchTagInput) int {
 	j := job.MakeJobExec(func(ctx context.Context, progress *job.Progress) error {
 		logger.Infof("Initiating stash-box batch studio tag")
-
-		boxes := config.GetInstance().GetStashBoxes()
-		if input.Endpoint < 0 || input.Endpoint >= len(boxes) {
-			return fmt.Errorf("invalid stash_box_index %d", input.Endpoint)
-		}
-		box := boxes[input.Endpoint]
 
 		var tasks []StashBoxBatchTagTask
 

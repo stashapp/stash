@@ -27,7 +27,7 @@ func (r *mutationResolver) Setup(ctx context.Context, input manager.SetupInput) 
 
 func (r *mutationResolver) DownloadFFMpeg(ctx context.Context) (string, error) {
 	mgr := manager.GetInstance()
-	configDir := mgr.Config.GetConfigPath()
+	configDir := mgr.Config.GetConfigPathAbs()
 
 	// don't run if ffmpeg is already installed
 	ffmpegPath := ffmpeg.FindFFMpeg(configDir)
@@ -41,8 +41,8 @@ func (r *mutationResolver) DownloadFFMpeg(ctx context.Context) (string, error) {
 		OnComplete: func(ctx context.Context) {
 			// clear the ffmpeg and ffprobe paths
 			logger.Infof("Clearing ffmpeg and ffprobe config paths so they are resolved from the config directory")
-			mgr.Config.Set(config.FFMpegPath, "")
-			mgr.Config.Set(config.FFProbePath, "")
+			mgr.Config.SetString(config.FFMpegPath, "")
+			mgr.Config.SetString(config.FFProbePath, "")
 			mgr.RefreshFFMpeg(ctx)
 			mgr.RefreshStreamManager()
 		},
@@ -51,6 +51,34 @@ func (r *mutationResolver) DownloadFFMpeg(ctx context.Context) (string, error) {
 	jobID := mgr.JobManager.Add(ctx, "Downloading ffmpeg...", t)
 
 	return strconv.Itoa(jobID), nil
+}
+
+func (r *mutationResolver) setConfigString(key string, value *string) {
+	c := config.GetInstance()
+	if value != nil {
+		c.SetString(key, *value)
+	}
+}
+
+func (r *mutationResolver) setConfigBool(key string, value *bool) {
+	c := config.GetInstance()
+	if value != nil {
+		c.SetBool(key, *value)
+	}
+}
+
+func (r *mutationResolver) setConfigInt(key string, value *int) {
+	c := config.GetInstance()
+	if value != nil {
+		c.SetInt(key, *value)
+	}
+}
+
+func (r *mutationResolver) setConfigFloat(key string, value *float64) {
+	c := config.GetInstance()
+	if value != nil {
+		c.SetFloat(key, *value)
+	}
 }
 
 func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGeneralInput) (*ConfigGeneralResult, error) {
@@ -74,7 +102,7 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 				}
 			}
 		}
-		c.Set(config.Stash, input.Stashes)
+		c.SetInterface(config.Stash, input.Stashes)
 	}
 
 	checkConfigOverride := func(key string) error {
@@ -109,7 +137,7 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 		if ext != ".db" && ext != ".sqlite" && ext != ".sqlite3" {
 			return makeConfigGeneralResult(), fmt.Errorf("invalid database path, use extension db, sqlite, or sqlite3")
 		}
-		c.Set(config.Database, input.DatabasePath)
+		c.SetString(config.Database, *input.DatabasePath)
 	}
 
 	existingBackupDirectoryPath := c.GetBackupDirectoryPath()
@@ -118,7 +146,7 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 			return makeConfigGeneralResult(), err
 		}
 
-		c.Set(config.BackupDirectoryPath, input.BackupDirectoryPath)
+		c.SetString(config.BackupDirectoryPath, *input.BackupDirectoryPath)
 	}
 
 	existingGeneratedPath := c.GetGeneratedPath()
@@ -127,7 +155,7 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 			return makeConfigGeneralResult(), err
 		}
 
-		c.Set(config.Generated, input.GeneratedPath)
+		c.SetString(config.Generated, *input.GeneratedPath)
 	}
 
 	refreshScraperCache := false
@@ -140,7 +168,7 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 
 		refreshScraperCache = true
 		refreshScraperSource = true
-		c.Set(config.ScrapersPath, input.ScrapersPath)
+		c.SetString(config.ScrapersPath, *input.ScrapersPath)
 	}
 
 	refreshPluginCache := false
@@ -153,7 +181,7 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 
 		refreshPluginCache = true
 		refreshPluginSource = true
-		c.Set(config.PluginsPath, input.PluginsPath)
+		c.SetString(config.PluginsPath, *input.PluginsPath)
 	}
 
 	existingMetadataPath := c.GetMetadataPath()
@@ -162,7 +190,7 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 			return makeConfigGeneralResult(), err
 		}
 
-		c.Set(config.Metadata, input.MetadataPath)
+		c.SetString(config.Metadata, *input.MetadataPath)
 	}
 
 	refreshStreamManager := false
@@ -172,7 +200,7 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 			return makeConfigGeneralResult(), err
 		}
 
-		c.Set(config.Cache, input.CachePath)
+		c.SetString(config.Cache, *input.CachePath)
 		refreshStreamManager = true
 	}
 
@@ -183,7 +211,7 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 			return makeConfigGeneralResult(), err
 		}
 
-		c.Set(config.BlobsPath, input.BlobsPath)
+		c.SetString(config.BlobsPath, *input.BlobsPath)
 		refreshBlobStorage = true
 	}
 
@@ -192,7 +220,7 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 			return makeConfigGeneralResult(), fmt.Errorf("blobs path must be set when using filesystem storage")
 		}
 
-		c.Set(config.BlobsStorage, input.BlobsStorage)
+		c.SetInterface(config.BlobsStorage, *input.BlobsStorage)
 
 		refreshBlobStorage = true
 	}
@@ -205,7 +233,7 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 			}
 		}
 
-		c.Set(config.FFMpegPath, input.FfmpegPath)
+		c.SetString(config.FFMpegPath, *input.FfmpegPath)
 		refreshFfmpeg = true
 	}
 
@@ -216,7 +244,7 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 			}
 		}
 
-		c.Set(config.FFProbePath, input.FfprobePath)
+		c.SetString(config.FFProbePath, *input.FfprobePath)
 		refreshFfmpeg = true
 	}
 
@@ -236,68 +264,42 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 			return makeConfigGeneralResult(), err
 		}
 
-		c.Set(config.VideoFileNamingAlgorithm, *input.VideoFileNamingAlgorithm)
+		c.SetInterface(config.VideoFileNamingAlgorithm, *input.VideoFileNamingAlgorithm)
 	}
 
-	if input.CalculateMd5 != nil {
-		c.Set(config.CalculateMD5, *input.CalculateMd5)
-	}
-
-	if input.ParallelTasks != nil {
-		c.Set(config.ParallelTasks, *input.ParallelTasks)
-	}
-
-	if input.PreviewAudio != nil {
-		c.Set(config.PreviewAudio, *input.PreviewAudio)
-	}
-
-	if input.PreviewSegments != nil {
-		c.Set(config.PreviewSegments, *input.PreviewSegments)
-	}
-	if input.PreviewSegmentDuration != nil {
-		c.Set(config.PreviewSegmentDuration, *input.PreviewSegmentDuration)
-	}
-	if input.PreviewExcludeStart != nil {
-		c.Set(config.PreviewExcludeStart, *input.PreviewExcludeStart)
-	}
-	if input.PreviewExcludeEnd != nil {
-		c.Set(config.PreviewExcludeEnd, *input.PreviewExcludeEnd)
-	}
+	r.setConfigBool(config.CalculateMD5, input.CalculateMd5)
+	r.setConfigInt(config.ParallelTasks, input.ParallelTasks)
+	r.setConfigBool(config.PreviewAudio, input.PreviewAudio)
+	r.setConfigInt(config.PreviewSegments, input.PreviewSegments)
+	r.setConfigFloat(config.PreviewSegmentDuration, input.PreviewSegmentDuration)
+	r.setConfigString(config.PreviewExcludeStart, input.PreviewExcludeStart)
+	r.setConfigString(config.PreviewExcludeEnd, input.PreviewExcludeEnd)
 	if input.PreviewPreset != nil {
-		c.Set(config.PreviewPreset, input.PreviewPreset.String())
+		c.SetString(config.PreviewPreset, input.PreviewPreset.String())
 	}
 
-	if input.TranscodeHardwareAcceleration != nil {
-		c.Set(config.TranscodeHardwareAcceleration, *input.TranscodeHardwareAcceleration)
-	}
+	r.setConfigBool(config.TranscodeHardwareAcceleration, input.TranscodeHardwareAcceleration)
 	if input.MaxTranscodeSize != nil {
-		c.Set(config.MaxTranscodeSize, input.MaxTranscodeSize.String())
+		c.SetString(config.MaxTranscodeSize, input.MaxTranscodeSize.String())
 	}
 
 	if input.MaxStreamingTranscodeSize != nil {
-		c.Set(config.MaxStreamingTranscodeSize, input.MaxStreamingTranscodeSize.String())
+		c.SetString(config.MaxStreamingTranscodeSize, input.MaxStreamingTranscodeSize.String())
 	}
-
-	if input.WriteImageThumbnails != nil {
-		c.Set(config.WriteImageThumbnails, *input.WriteImageThumbnails)
-	}
-
-	if input.CreateImageClipsFromVideos != nil {
-		c.Set(config.CreateImageClipsFromVideos, *input.CreateImageClipsFromVideos)
-	}
+	r.setConfigBool(config.WriteImageThumbnails, input.WriteImageThumbnails)
+	r.setConfigBool(config.CreateImageClipsFromVideos, input.CreateImageClipsFromVideos)
 
 	if input.GalleryCoverRegex != nil {
-
 		_, err := regexp.Compile(*input.GalleryCoverRegex)
 		if err != nil {
 			return makeConfigGeneralResult(), fmt.Errorf("Gallery cover regex '%v' invalid, '%v'", *input.GalleryCoverRegex, err.Error())
 		}
 
-		c.Set(config.GalleryCoverRegex, *input.GalleryCoverRegex)
+		c.SetString(config.GalleryCoverRegex, *input.GalleryCoverRegex)
 	}
 
 	if input.Username != nil && *input.Username != c.GetUsername() {
-		c.Set(config.Username, input.Username)
+		c.SetString(config.Username, *input.Username)
 		if *input.Password == "" {
 			logger.Info("Username cleared")
 		} else {
@@ -320,24 +322,13 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 		}
 	}
 
-	if input.MaxSessionAge != nil {
-		c.Set(config.MaxSessionAge, *input.MaxSessionAge)
-	}
-
-	if input.LogFile != nil {
-		c.Set(config.LogFile, input.LogFile)
-	}
-
-	if input.LogOut != nil {
-		c.Set(config.LogOut, *input.LogOut)
-	}
-
-	if input.LogAccess != nil {
-		c.Set(config.LogAccess, *input.LogAccess)
-	}
+	r.setConfigInt(config.MaxSessionAge, input.MaxSessionAge)
+	r.setConfigString(config.LogFile, input.LogFile)
+	r.setConfigBool(config.LogOut, input.LogOut)
+	r.setConfigBool(config.LogAccess, input.LogAccess)
 
 	if input.LogLevel != nil && *input.LogLevel != c.GetLogLevel() {
-		c.Set(config.LogLevel, input.LogLevel)
+		c.SetString(config.LogLevel, *input.LogLevel)
 		logger := manager.GetInstance().Logger
 		logger.SetLogLevel(*input.LogLevel)
 	}
@@ -349,7 +340,7 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 				return makeConfigGeneralResult(), fmt.Errorf("video exclusion pattern '%v' invalid: %w", r, err)
 			}
 		}
-		c.Set(config.Exclude, input.Excludes)
+		c.SetInterface(config.Exclude, input.Excludes)
 	}
 
 	if input.ImageExcludes != nil {
@@ -359,27 +350,25 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 				return makeConfigGeneralResult(), fmt.Errorf("image/gallery exclusion pattern '%v' invalid: %w", r, err)
 			}
 		}
-		c.Set(config.ImageExclude, input.ImageExcludes)
+		c.SetInterface(config.ImageExclude, input.ImageExcludes)
 	}
 
 	if input.VideoExtensions != nil {
-		c.Set(config.VideoExtensions, input.VideoExtensions)
+		c.SetInterface(config.VideoExtensions, input.VideoExtensions)
 	}
 
 	if input.ImageExtensions != nil {
-		c.Set(config.ImageExtensions, input.ImageExtensions)
+		c.SetInterface(config.ImageExtensions, input.ImageExtensions)
 	}
 
 	if input.GalleryExtensions != nil {
-		c.Set(config.GalleryExtensions, input.GalleryExtensions)
+		c.SetInterface(config.GalleryExtensions, input.GalleryExtensions)
 	}
 
-	if input.CreateGalleriesFromFolders != nil {
-		c.Set(config.CreateGalleriesFromFolders, input.CreateGalleriesFromFolders)
-	}
+	r.setConfigBool(config.CreateGalleriesFromFolders, input.CreateGalleriesFromFolders)
 
 	if input.CustomPerformerImageLocation != nil {
-		c.Set(config.CustomPerformerImageLocation, *input.CustomPerformerImageLocation)
+		c.SetString(config.CustomPerformerImageLocation, *input.CustomPerformerImageLocation)
 		initCustomPerformerImages(*input.CustomPerformerImageLocation)
 	}
 
@@ -387,37 +376,35 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 		if err := c.ValidateStashBoxes(input.StashBoxes); err != nil {
 			return nil, err
 		}
-		c.Set(config.StashBoxes, input.StashBoxes)
+		c.SetInterface(config.StashBoxes, input.StashBoxes)
 	}
 
 	if input.PythonPath != nil {
-		c.Set(config.PythonPath, input.PythonPath)
+		r.setConfigString(config.PythonPath, input.PythonPath)
 	}
 
 	if input.TranscodeInputArgs != nil {
-		c.Set(config.TranscodeInputArgs, input.TranscodeInputArgs)
+		c.SetInterface(config.TranscodeInputArgs, input.TranscodeInputArgs)
 	}
 	if input.TranscodeOutputArgs != nil {
-		c.Set(config.TranscodeOutputArgs, input.TranscodeOutputArgs)
+		c.SetInterface(config.TranscodeOutputArgs, input.TranscodeOutputArgs)
 	}
 	if input.LiveTranscodeInputArgs != nil {
-		c.Set(config.LiveTranscodeInputArgs, input.LiveTranscodeInputArgs)
+		c.SetInterface(config.LiveTranscodeInputArgs, input.LiveTranscodeInputArgs)
 	}
 	if input.LiveTranscodeOutputArgs != nil {
-		c.Set(config.LiveTranscodeOutputArgs, input.LiveTranscodeOutputArgs)
+		c.SetInterface(config.LiveTranscodeOutputArgs, input.LiveTranscodeOutputArgs)
 	}
 
-	if input.DrawFunscriptHeatmapRange != nil {
-		c.Set(config.DrawFunscriptHeatmapRange, input.DrawFunscriptHeatmapRange)
-	}
+	r.setConfigBool(config.DrawFunscriptHeatmapRange, input.DrawFunscriptHeatmapRange)
 
 	if input.ScraperPackageSources != nil {
-		c.Set(config.ScraperPackageSources, input.ScraperPackageSources)
+		c.SetInterface(config.ScraperPackageSources, input.ScraperPackageSources)
 		refreshScraperSource = true
 	}
 
 	if input.PluginPackageSources != nil {
-		c.Set(config.PluginPackageSources, input.PluginPackageSources)
+		c.SetInterface(config.PluginPackageSources, input.PluginPackageSources)
 		refreshPluginSource = true
 	}
 
@@ -457,102 +444,70 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 func (r *mutationResolver) ConfigureInterface(ctx context.Context, input ConfigInterfaceInput) (*ConfigInterfaceResult, error) {
 	c := config.GetInstance()
 
-	setBool := func(key string, v *bool) {
-		if v != nil {
-			c.Set(key, *v)
-		}
-	}
-
-	setString := func(key string, v *string) {
-		if v != nil {
-			c.Set(key, *v)
-		}
-	}
-
 	if input.MenuItems != nil {
-		c.Set(config.MenuItems, input.MenuItems)
+		c.SetInterface(config.MenuItems, input.MenuItems)
 	}
 
-	setBool(config.SoundOnPreview, input.SoundOnPreview)
-	setBool(config.WallShowTitle, input.WallShowTitle)
+	r.setConfigBool(config.SoundOnPreview, input.SoundOnPreview)
+	r.setConfigBool(config.WallShowTitle, input.WallShowTitle)
 
-	setBool(config.NoBrowser, input.NoBrowser)
+	r.setConfigBool(config.NoBrowser, input.NoBrowser)
 
-	setBool(config.NotificationsEnabled, input.NotificationsEnabled)
+	r.setConfigBool(config.NotificationsEnabled, input.NotificationsEnabled)
 
-	setBool(config.ShowScrubber, input.ShowScrubber)
+	r.setConfigBool(config.ShowScrubber, input.ShowScrubber)
 
-	if input.WallPlayback != nil {
-		c.Set(config.WallPlayback, *input.WallPlayback)
-	}
+	r.setConfigString(config.WallPlayback, input.WallPlayback)
+	r.setConfigInt(config.MaximumLoopDuration, input.MaximumLoopDuration)
+	r.setConfigBool(config.AutostartVideo, input.AutostartVideo)
+	r.setConfigBool(config.ShowStudioAsText, input.ShowStudioAsText)
+	r.setConfigBool(config.AutostartVideoOnPlaySelected, input.AutostartVideoOnPlaySelected)
+	r.setConfigBool(config.ContinuePlaylistDefault, input.ContinuePlaylistDefault)
 
-	if input.MaximumLoopDuration != nil {
-		c.Set(config.MaximumLoopDuration, *input.MaximumLoopDuration)
-	}
-
-	setBool(config.AutostartVideo, input.AutostartVideo)
-	setBool(config.ShowStudioAsText, input.ShowStudioAsText)
-	setBool(config.AutostartVideoOnPlaySelected, input.AutostartVideoOnPlaySelected)
-	setBool(config.ContinuePlaylistDefault, input.ContinuePlaylistDefault)
-
-	if input.Language != nil {
-		c.Set(config.Language, *input.Language)
-	}
+	r.setConfigString(config.Language, input.Language)
 
 	if input.ImageLightbox != nil {
 		options := input.ImageLightbox
 
-		if options.SlideshowDelay != nil {
-			c.Set(config.ImageLightboxSlideshowDelay, *options.SlideshowDelay)
-		}
+		r.setConfigInt(config.ImageLightboxSlideshowDelay, options.SlideshowDelay)
 
-		setString(config.ImageLightboxDisplayModeKey, (*string)(options.DisplayMode))
-		setBool(config.ImageLightboxScaleUp, options.ScaleUp)
-		setBool(config.ImageLightboxResetZoomOnNav, options.ResetZoomOnNav)
-		setString(config.ImageLightboxScrollModeKey, (*string)(options.ScrollMode))
+		r.setConfigString(config.ImageLightboxDisplayModeKey, (*string)(options.DisplayMode))
+		r.setConfigBool(config.ImageLightboxScaleUp, options.ScaleUp)
+		r.setConfigBool(config.ImageLightboxResetZoomOnNav, options.ResetZoomOnNav)
+		r.setConfigString(config.ImageLightboxScrollModeKey, (*string)(options.ScrollMode))
 
-		if options.ScrollAttemptsBeforeChange != nil {
-			c.Set(config.ImageLightboxScrollAttemptsBeforeChange, *options.ScrollAttemptsBeforeChange)
-		}
+		r.setConfigInt(config.ImageLightboxScrollAttemptsBeforeChange, options.ScrollAttemptsBeforeChange)
 	}
 
 	if input.CSS != nil {
 		c.SetCSS(*input.CSS)
 	}
 
-	setBool(config.CSSEnabled, input.CSSEnabled)
+	r.setConfigBool(config.CSSEnabled, input.CSSEnabled)
 
 	if input.Javascript != nil {
 		c.SetJavascript(*input.Javascript)
 	}
 
-	setBool(config.JavascriptEnabled, input.JavascriptEnabled)
+	r.setConfigBool(config.JavascriptEnabled, input.JavascriptEnabled)
 
 	if input.CustomLocales != nil {
 		c.SetCustomLocales(*input.CustomLocales)
 	}
 
-	setBool(config.CustomLocalesEnabled, input.CustomLocalesEnabled)
+	r.setConfigBool(config.CustomLocalesEnabled, input.CustomLocalesEnabled)
 
 	if input.DisableDropdownCreate != nil {
 		ddc := input.DisableDropdownCreate
-		setBool(config.DisableDropdownCreatePerformer, ddc.Performer)
-		setBool(config.DisableDropdownCreateStudio, ddc.Studio)
-		setBool(config.DisableDropdownCreateTag, ddc.Tag)
-		setBool(config.DisableDropdownCreateMovie, ddc.Movie)
+		r.setConfigBool(config.DisableDropdownCreatePerformer, ddc.Performer)
+		r.setConfigBool(config.DisableDropdownCreateStudio, ddc.Studio)
+		r.setConfigBool(config.DisableDropdownCreateTag, ddc.Tag)
+		r.setConfigBool(config.DisableDropdownCreateMovie, ddc.Movie)
 	}
 
-	if input.HandyKey != nil {
-		c.Set(config.HandyKey, *input.HandyKey)
-	}
-
-	if input.FunscriptOffset != nil {
-		c.Set(config.FunscriptOffset, *input.FunscriptOffset)
-	}
-
-	if input.UseStashHostedFunscript != nil {
-		c.Set(config.UseStashHostedFunscript, *input.UseStashHostedFunscript)
-	}
+	r.setConfigString(config.HandyKey, input.HandyKey)
+	r.setConfigInt(config.FunscriptOffset, input.FunscriptOffset)
+	r.setConfigBool(config.UseStashHostedFunscript, input.UseStashHostedFunscript)
 
 	if err := c.Write(); err != nil {
 		return makeConfigInterfaceResult(), err
@@ -564,30 +519,23 @@ func (r *mutationResolver) ConfigureInterface(ctx context.Context, input ConfigI
 func (r *mutationResolver) ConfigureDlna(ctx context.Context, input ConfigDLNAInput) (*ConfigDLNAResult, error) {
 	c := config.GetInstance()
 
-	if input.ServerName != nil {
-		c.Set(config.DLNAServerName, *input.ServerName)
-	}
+	r.setConfigString(config.DLNAServerName, input.ServerName)
 
 	if input.WhitelistedIPs != nil {
-		c.Set(config.DLNADefaultIPWhitelist, input.WhitelistedIPs)
+		c.SetInterface(config.DLNADefaultIPWhitelist, input.WhitelistedIPs)
 	}
 
-	if input.VideoSortOrder != nil {
-		c.Set(config.DLNAVideoSortOrder, input.VideoSortOrder)
-	}
-
-	if input.Port != nil {
-		c.Set(config.DLNAPort, *input.Port)
-	}
+	r.setConfigString(config.DLNAVideoSortOrder, input.VideoSortOrder)
+	r.setConfigInt(config.DLNAPort, input.Port)
 
 	refresh := false
 	if input.Enabled != nil {
-		c.Set(config.DLNADefaultEnabled, *input.Enabled)
+		c.SetBool(config.DLNADefaultEnabled, *input.Enabled)
 		refresh = true
 	}
 
 	if input.Interfaces != nil {
-		c.Set(config.DLNAInterfaces, input.Interfaces)
+		c.SetInterface(config.DLNAInterfaces, input.Interfaces)
 	}
 
 	if err := c.Write(); err != nil {
@@ -606,12 +554,12 @@ func (r *mutationResolver) ConfigureScraping(ctx context.Context, input ConfigSc
 
 	refreshScraperCache := false
 	if input.ScraperUserAgent != nil {
-		c.Set(config.ScraperUserAgent, input.ScraperUserAgent)
+		c.SetString(config.ScraperUserAgent, *input.ScraperUserAgent)
 		refreshScraperCache = true
 	}
 
 	if input.ScraperCDPPath != nil {
-		c.Set(config.ScraperCDPPath, input.ScraperCDPPath)
+		c.SetString(config.ScraperCDPPath, *input.ScraperCDPPath)
 		refreshScraperCache = true
 	}
 
@@ -622,12 +570,10 @@ func (r *mutationResolver) ConfigureScraping(ctx context.Context, input ConfigSc
 				return makeConfigScrapingResult(), fmt.Errorf("tag exclusion pattern '%v' invalid: %w", r, err)
 			}
 		}
-		c.Set(config.ScraperExcludeTagPatterns, input.ExcludeTagPatterns)
+		c.SetInterface(config.ScraperExcludeTagPatterns, input.ExcludeTagPatterns)
 	}
 
-	if input.ScraperCertCheck != nil {
-		c.Set(config.ScraperCertCheck, input.ScraperCertCheck)
-	}
+	r.setConfigBool(config.ScraperCertCheck, input.ScraperCertCheck)
 
 	if refreshScraperCache {
 		manager.GetInstance().RefreshScraperCache()
@@ -643,30 +589,25 @@ func (r *mutationResolver) ConfigureDefaults(ctx context.Context, input ConfigDe
 	c := config.GetInstance()
 
 	if input.Identify != nil {
-		c.Set(config.DefaultIdentifySettings, input.Identify)
+		c.SetInterface(config.DefaultIdentifySettings, input.Identify)
 	}
 
 	if input.Scan != nil {
 		// if input.Scan is used then ScanMetadataOptions is included in the config file
 		// this causes the values to not be read correctly
-		c.Set(config.DefaultScanSettings, input.Scan.ScanMetadataOptions)
+		c.SetInterface(config.DefaultScanSettings, input.Scan.ScanMetadataOptions)
 	}
 
 	if input.AutoTag != nil {
-		c.Set(config.DefaultAutoTagSettings, input.AutoTag)
+		c.SetInterface(config.DefaultAutoTagSettings, input.AutoTag)
 	}
 
 	if input.Generate != nil {
-		c.Set(config.DefaultGenerateSettings, input.Generate)
+		c.SetInterface(config.DefaultGenerateSettings, input.Generate)
 	}
 
-	if input.DeleteFile != nil {
-		c.Set(config.DeleteFileDefault, *input.DeleteFile)
-	}
-
-	if input.DeleteGenerated != nil {
-		c.Set(config.DeleteGeneratedDefault, *input.DeleteGenerated)
-	}
+	r.setConfigBool(config.DeleteFileDefault, input.DeleteFile)
+	r.setConfigBool(config.DeleteGeneratedDefault, input.DeleteGenerated)
 
 	if err := c.Write(); err != nil {
 		return makeConfigDefaultsResult(), err
@@ -690,7 +631,7 @@ func (r *mutationResolver) GenerateAPIKey(ctx context.Context, input GenerateAPI
 		}
 	}
 
-	c.Set(config.ApiKey, newAPIKey)
+	c.SetString(config.ApiKey, newAPIKey)
 	if err := c.Write(); err != nil {
 		return newAPIKey, err
 	}

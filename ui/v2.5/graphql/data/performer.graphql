@@ -2,10 +2,8 @@ fragment PerformerData on Performer {
   id
   name
   disambiguation
-  url
+  urls
   gender
-  twitter
-  instagram
   birthdate
   ethnicity
   country

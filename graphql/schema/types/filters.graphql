@@ -8,6 +8,7 @@ input FindFilterType {
   page: Int
   "use per_page = -1 to indicate all results. Defaults to 25."
   per_page: Int
+  # TODO - this should be refactored to not use a string
   sort: String
   direction: SortDirectionEnum
 }
@@ -169,6 +170,14 @@ input PerformerFilterType {
   birthdate: DateCriterionInput
   "Filter by death date"
   death_date: DateCriterionInput
+  "Filter by related scenes that meet this criteria"
+  scenes_filter: SceneFilterType
+  "Filter by related images that meet this criteria"
+  images_filter: ImageFilterType
+  "Filter by related galleries that meet this criteria"
+  galleries_filter: GalleryFilterType
+  "Filter by related tags that meet this criteria"
+  tags_filter: TagFilterType
   "Filter by creation time"
   created_at: TimestampCriterionInput
   "Filter by last update time"
@@ -192,6 +201,8 @@ input SceneMarkerFilterType {
   scene_created_at: TimestampCriterionInput
   "Filter by lscene ast update time"
   scene_updated_at: TimestampCriterionInput
+  "Filter by related scenes that meet this criteria"
+  scene_filter: SceneFilterType
 }
 
 input SceneFilterType {
@@ -289,9 +300,26 @@ input SceneFilterType {
   created_at: TimestampCriterionInput
   "Filter by last update time"
   updated_at: TimestampCriterionInput
+
+  "Filter by related galleries that meet this criteria"
+  galleries_filter: GalleryFilterType
+  "Filter by related performers that meet this criteria"
+  performers_filter: PerformerFilterType
+  "Filter by related studios that meet this criteria"
+  studios_filter: StudioFilterType
+  "Filter by related tags that meet this criteria"
+  tags_filter: TagFilterType
+  "Filter by related movies that meet this criteria"
+  movies_filter: MovieFilterType
+  "Filter by related markers that meet this criteria"
+  markers_filter: SceneMarkerFilterType
 }
 
 input MovieFilterType {
+  AND: MovieFilterType
+  OR: MovieFilterType
+  NOT: MovieFilterType
+
   name: StringCriterionInput
   director: StringCriterionInput
   synopsis: StringCriterionInput
@@ -310,12 +338,21 @@ input MovieFilterType {
   url: StringCriterionInput
   "Filter to only include movies where performer appears in a scene"
   performers: MultiCriterionInput
+  "Filter to only include movies with these tags"
+  tags: HierarchicalMultiCriterionInput
+  "Filter by tag count"
+  tag_count: IntCriterionInput
   "Filter by date"
   date: DateCriterionInput
   "Filter by creation time"
   created_at: TimestampCriterionInput
   "Filter by last update time"
   updated_at: TimestampCriterionInput
+
+  "Filter by related scenes that meet this criteria"
+  scenes_filter: SceneFilterType
+  "Filter by related studios that meet this criteria"
+  studios_filter: StudioFilterType
 }
 
 input StudioFilterType {
@@ -353,6 +390,12 @@ input StudioFilterType {
   child_count: IntCriterionInput
   "Filter by autotag ignore value"
   ignore_auto_tag: Boolean
+  "Filter by related scenes that meet this criteria"
+  scenes_filter: SceneFilterType
+  "Filter by related images that meet this criteria"
+  images_filter: ImageFilterType
+  "Filter by related galleries that meet this criteria"
+  galleries_filter: GalleryFilterType
   "Filter by creation time"
   created_at: TimestampCriterionInput
   "Filter by last update time"
@@ -420,6 +463,17 @@ input GalleryFilterType {
   code: StringCriterionInput
   "Filter by photographer"
   photographer: StringCriterionInput
+
+  "Filter by related scenes that meet this criteria"
+  scenes_filter: SceneFilterType
+  "Filter by related images that meet this criteria"
+  images_filter: ImageFilterType
+  "Filter by related performers that meet this criteria"
+  performers_filter: PerformerFilterType
+  "Filter by related studios that meet this criteria"
+  studios_filter: StudioFilterType
+  "Filter by related tags that meet this criteria"
+  tags_filter: TagFilterType
 }
 
 input TagFilterType {
@@ -456,6 +510,9 @@ input TagFilterType {
 
   "Filter by number of studios with this tag"
   studio_count: IntCriterionInput
+  
+  "Filter by number of movies with this tag"
+  movie_count: IntCriterionInput
 
   "Filter by number of markers with this tag"
   marker_count: IntCriterionInput
@@ -474,6 +531,13 @@ input TagFilterType {
 
   "Filter by autotag ignore value"
   ignore_auto_tag: Boolean
+
+  "Filter by related scenes that meet this criteria"
+  scenes_filter: SceneFilterType
+  "Filter by related images that meet this criteria"
+  images_filter: ImageFilterType
+  "Filter by related galleries that meet this criteria"
+  galleries_filter: GalleryFilterType
 
   "Filter by creation time"
   created_at: TimestampCriterionInput
@@ -542,6 +606,15 @@ input ImageFilterType {
   code: StringCriterionInput
   "Filter by photographer"
   photographer: StringCriterionInput
+
+  "Filter by related galleries that meet this criteria"
+  galleries_filter: GalleryFilterType
+  "Filter by related performers that meet this criteria"
+  performers_filter: PerformerFilterType
+  "Filter by related studios that meet this criteria"
+  studios_filter: StudioFilterType
+  "Filter by related tags that meet this criteria"
+  tags_filter: TagFilterType
 }
 
 enum CriterionModifier {

@@ -20,12 +20,55 @@ func (r *movieResolver) Rating100(ctx context.Context, obj *models.Movie) (*int,
 	return obj.Rating, nil
 }
 
+func (r *movieResolver) URL(ctx context.Context, obj *models.Movie) (*string, error) {
+	if !obj.URLs.Loaded() {
+		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+			return obj.LoadURLs(ctx, r.repository.Movie)
+		}); err != nil {
+			return nil, err
+		}
+	}
+
+	urls := obj.URLs.List()
+	if len(urls) == 0 {
+		return nil, nil
+	}
+
+	return &urls[0], nil
+}
+
+func (r *movieResolver) Urls(ctx context.Context, obj *models.Movie) ([]string, error) {
+	if !obj.URLs.Loaded() {
+		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+			return obj.LoadURLs(ctx, r.repository.Movie)
+		}); err != nil {
+			return nil, err
+		}
+	}
+
+	return obj.URLs.List(), nil
+}
+
 func (r *movieResolver) Studio(ctx context.Context, obj *models.Movie) (ret *models.Studio, err error) {
 	if obj.StudioID == nil {
 		return nil, nil
 	}
 
 	return loaders.From(ctx).StudioByID.Load(*obj.StudioID)
+}
+
+func (r movieResolver) Tags(ctx context.Context, obj *models.Movie) (ret []*models.Tag, err error) {
+	if !obj.TagIDs.Loaded() {
+		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+			return obj.LoadTagIDs(ctx, r.repository.Movie)
+		}); err != nil {
+			return nil, err
+		}
+	}
+
+	var errs []error
+	ret, errs = loaders.From(ctx).TagByID.LoadAll(obj.TagIDs.List())
+	return ret, firstError(errs)
 }
 
 func (r *movieResolver) FrontImagePath(ctx context.Context, obj *models.Movie) (*string, error) {

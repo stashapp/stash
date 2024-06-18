@@ -2,7 +2,7 @@
 
 Scrapers can be contributed to the community by creating a PR in [this repository](https://github.com/stashapp/CommunityScrapers/pulls).
 
-# Scraper configuration file format
+## Scraper configuration file format
 
 ```yaml
 name: <site>
@@ -166,7 +166,6 @@ sceneByURL:
 The above configuration requires that `sceneScraper` exists in the `xPathScrapers` configuration.
 
 XPath scraping configurations specify the mapping between object fields and an xpath selector. The xpath scraper scrapes the applicable URL and uses xpath to populate the object fields.
->
 
 ### scrapeJson
 
@@ -202,6 +201,7 @@ xPathScrapers:
 ### scrapeXPath and scrapeJson use with `sceneByFragment` and `sceneByQueryFragment`
 
 For `sceneByFragment` and `sceneByQueryFragment`, the `queryURL` field must also be present. This field is used to build a query URL for scenes. For `sceneByFragment`, the `queryURL` field supports the following placeholder fields:
+
 * `{checksum}` - the MD5 checksum of the scene
 * `{oshash}` - the oshash of the scene
 * `{filename}` - the base filename of the scene

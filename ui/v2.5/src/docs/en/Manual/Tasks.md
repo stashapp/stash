@@ -2,7 +2,7 @@
 
 This page allows you to direct the stash server to perform a variety of tasks.
 
-# Scanning
+## Scanning
 
 The scan function walks through the stash directories you have configured for new and moved files. 
 
@@ -22,15 +22,16 @@ The scan task accepts the following options:
 | Generate thumbnails for images | Generates thumbnails for image files. | 
 | Generate previews for image clips | Generates a gif/looping video as thumbnail for image clips/gifs. |
 
-# Auto Tagging
+## Auto Tagging
 See the [Auto Tagging](/help/AutoTagging.md) page.
 
-# Scene Filename Parser
+## Scene Filename Parser
 See the [Scene Filename Parser](/help/SceneFilenameParser.md) page.
 
-# Generated Content
+## Generated Content
 
 The scanning function automatically generates a screenshot of each scene. The generated content provides the following:
+
 * Video or image previews that are played when mousing over the scene card
 * Perceptual hashes - helps match against StashDB, and feeds the duplicate finder
 * Sprites (scene stills for parts of each scene) that are shown in the scene scrubber
@@ -55,28 +56,26 @@ The generate task accepts the following options:
 | Image Clip Previews | Generates a gif/looping video as thumbnail for image clips/gifs. |
 | Overwrite existing generated files | By default, where a generated file exists, it is not regenerated. When this flag is enabled, then the generated files are regenerated. |
 
-## Transcodes
+### Transcodes
 
 Web browsers support a limited number of video and audio codecs and containers. Stash will directly stream video files where the browser supports the codecs and container. Originally, stash did not support viewing scene videos where the browser did not support the codecs/container, and generating transcodes was a way of viewing these files.
 
 Stash has since implemented live transcoding, so transcodes are essentially unnecessary now. Further, transcodes use up a significant amount of disk space and are not guaranteed to be lossless.
 
-## Image gallery thumbnails
+### Image gallery thumbnails
 
 These are generated when the gallery is first viewed, so generating them beforehand is not necessary.
 
-# Cleaning
+## Cleaning
 
 This task will walk through your configured media directories and remove any scene from the database that can no longer be found. It will also remove generated files for scenes that subsequently no longer exist.
 
 Care should be taken with this task, especially where the configured media directories may be inaccessible due to network issues.
 
-# Exporting and Importing
+## Exporting and Importing
 
 The import and export tasks read and write JSON files to the configured metadata directory. Import from file will merge your database with a file.
 
 > **⚠️ Note:** The full import task wipes the current database completely before importing.
 
 See the [JSON Specification](/help/JSONSpec.md) page for details on the exported JSON format.
-
----

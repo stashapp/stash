@@ -330,7 +330,7 @@ func (s *runningStream) makeStreamArgs(sm *StreamManager, segment int) Args {
 
 	codec := HLSGetCodec(sm, s.streamType.Name)
 
-	fullhw := sm.config.GetTranscodeHardwareAcceleration() && sm.encoder.hwCanFullHWTranscode(sm.context, s.vf, codec)
+	fullhw := sm.config.GetTranscodeHardwareAcceleration() && sm.encoder.hwCanFullHWTranscode(sm.context, codec, s.vf, s.maxTranscodeSize)
 	args = sm.encoder.hwDeviceInit(args, codec, fullhw)
 	args = append(args, extraInputArgs...)
 

@@ -158,6 +158,7 @@ func (i *Config) initConfig() error {
 		// if file does not exist, assume it is a new system
 		if exists, _ := fsutil.FileExists(configFile); !exists {
 			i.isNewSystem = true
+			i.SetConfigFile(configFile)
 
 			// ensure we can write to the file
 			if err := fsutil.Touch(configFile); err != nil {

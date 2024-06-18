@@ -146,10 +146,9 @@ export const TaggerContext: React.FC = ({ children }) => {
     const scrapers = Scrapers.data.listScrapers;
 
     const stashboxSources: ITaggerSource[] = stashBoxes.map((s, i) => ({
-      id: `${STASH_BOX_PREFIX}${i}`,
-      stashboxEndpoint: s.endpoint,
+      id: `${STASH_BOX_PREFIX}${s.endpoint}`,
       sourceInput: {
-        stash_box_index: i,
+        stash_box_endpoint: s.endpoint,
       },
       displayName: `stash-box: ${s.name || `#${i + 1}`}`,
       supportSceneFragment: true,
@@ -192,14 +191,14 @@ export const TaggerContext: React.FC = ({ children }) => {
   }, [currentSource]);
 
   function getPendingFingerprints() {
-    const endpoint = currentSource?.stashboxEndpoint;
+    const endpoint = currentSource?.sourceInput.stash_box_endpoint;
     if (!config || !endpoint) return [];
 
     return config.fingerprintQueue[endpoint] ?? [];
   }
 
   function clearSubmissionQueue() {
-    const endpoint = currentSource?.stashboxEndpoint;
+    const endpoint = currentSource?.sourceInput.stash_box_endpoint;
     if (!config || !endpoint) return;
 
     setConfig({
@@ -215,18 +214,16 @@ export const TaggerContext: React.FC = ({ children }) => {
     GQL.useSubmitStashBoxFingerprintsMutation();
 
   async function submitFingerprints() {
-    const endpoint = currentSource?.stashboxEndpoint;
-    const stashBoxIndex =
-      currentSource?.sourceInput.stash_box_index ?? undefined;
+    const endpoint = currentSource?.sourceInput.stash_box_endpoint;
 
-    if (!config || !endpoint || stashBoxIndex === undefined) return;
+    if (!config || !endpoint) return;
 
     try {
       setLoading(true);
       await submitFingerprintsMutation({
         variables: {
           input: {
-            stash_box_index: stashBoxIndex,
+            stash_box_endpoint: endpoint,
             scene_ids: config.fingerprintQueue[endpoint],
           },
         },
@@ -241,7 +238,7 @@ export const TaggerContext: React.FC = ({ children }) => {
   }
 
   function queueFingerprintSubmission(sceneId: string) {
-    const endpoint = currentSource?.stashboxEndpoint;
+    const endpoint = currentSource?.sourceInput.stash_box_endpoint;
     if (!config || !endpoint) return;
 
     setConfig({
@@ -276,7 +273,8 @@ export const TaggerContext: React.FC = ({ children }) => {
       );
       let newResult: ISceneQueryResult;
       // scenes are already resolved if they come from stash-box
-      const resolved = currentSource.sourceInput.stash_box_index !== undefined;
+      const resolved =
+        currentSource.sourceInput.stash_box_endpoint !== undefined;
 
       if (results.error) {
         newResult = { error: results.error.message };
@@ -365,13 +363,16 @@ export const TaggerContext: React.FC = ({ children }) => {
       setLoading(true);
       setMultiError(undefined);
 
-      const stashBoxIndex =
-        currentSource.sourceInput.stash_box_index ?? undefined;
+      const stashBoxEndpoint =
+        currentSource.sourceInput.stash_box_endpoint ?? undefined;
 
       // if current source is stash-box, we can use the multi-scene
       // interface
-      if (stashBoxIndex !== undefined) {
-        const results = await stashBoxSceneBatchQuery(sceneIDs, stashBoxIndex);
+      if (stashBoxEndpoint !== undefined) {
+        const results = await stashBoxSceneBatchQuery(
+          sceneIDs,
+          stashBoxEndpoint
+        );
 
         if (results.error) {
           setMultiError(results.error.message);
@@ -604,7 +605,11 @@ export const TaggerContext: React.FC = ({ children }) => {
     performer: GQL.ScrapedPerformer,
     performerID: string
   ) {
-    if (!performer.remote_site_id || !currentSource?.stashboxEndpoint) return;
+    if (
+      !performer.remote_site_id ||
+      !currentSource?.sourceInput.stash_box_endpoint
+    )
+      return;
 
     try {
       const queryResult = await queryFindPerformer(performerID);
@@ -620,7 +625,7 @@ export const TaggerContext: React.FC = ({ children }) => {
 
         stashIDs.push({
           stash_id: performer.remote_site_id,
-          endpoint: currentSource?.stashboxEndpoint,
+          endpoint: currentSource?.sourceInput.stash_box_endpoint,
         });
 
         await updatePerformer({
@@ -722,7 +727,7 @@ export const TaggerContext: React.FC = ({ children }) => {
       const studioID = result.data?.studioUpdate?.id;
 
       const stashID = input.stash_ids?.find((e) => {
-        return e.endpoint === currentSource?.stashboxEndpoint;
+        return e.endpoint === currentSource?.sourceInput.stash_box_endpoint;
       })?.stash_id;
 
       if (stashID) {
@@ -757,7 +762,11 @@ export const TaggerContext: React.FC = ({ children }) => {
   }
 
   async function linkStudio(studio: GQL.ScrapedStudio, studioID: string) {
-    if (!studio.remote_site_id || !currentSource?.stashboxEndpoint) return;
+    if (
+      !studio.remote_site_id ||
+      !currentSource?.sourceInput.stash_box_endpoint
+    )
+      return;
 
     try {
       const queryResult = await queryFindStudio(studioID);
@@ -773,7 +782,7 @@ export const TaggerContext: React.FC = ({ children }) => {
 
         stashIDs.push({
           stash_id: studio.remote_site_id,
-          endpoint: currentSource?.stashboxEndpoint,
+          endpoint: currentSource?.sourceInput.stash_box_endpoint,
         });
 
         await updateStudio({

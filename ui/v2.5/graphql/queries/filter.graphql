@@ -9,9 +9,3 @@ query FindSavedFilters($mode: FilterMode) {
     ...SavedFilterData
   }
 }
-
-query FindDefaultFilter($mode: FilterMode!) {
-  findDefaultFilter(mode: $mode) {
-    ...SavedFilterData
-  }
-}

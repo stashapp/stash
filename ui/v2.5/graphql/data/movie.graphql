@@ -11,8 +11,12 @@ fragment MovieData on Movie {
     ...SlimStudioData
   }
 
+  tags {
+    ...SlimTagData
+  }
+
   synopsis
-  url
+  urls
   front_image_path
   back_image_path
   scene_count
