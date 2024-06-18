@@ -95,6 +95,7 @@ type studioRepositoryType struct {
 	repository
 
 	stashIDs stashIDRepository
+	tags     joinRepository
 
 	scenes    repository
 	images    repository
@@ -125,11 +126,21 @@ var (
 			tableName: galleryTable,
 			idColumn:  studioIDColumn,
 		},
+		tags: joinRepository{
+			repository: repository{
+				tableName: studiosTagsTable,
+				idColumn:  studioIDColumn,
+			},
+			fkColumn:     tagIDColumn,
+			foreignTable: tagTable,
+			orderBy:      "tags.name ASC",
+		},
 	}
 )
 
 type StudioStore struct {
 	blobJoinQueryBuilder
+	tagRelationshipStore
 
 	tableMgr *table
 }
@@ -139,6 +150,11 @@ func NewStudioStore(blobStore *BlobStore) *StudioStore {
 		blobJoinQueryBuilder: blobJoinQueryBuilder{
 			blobStore: blobStore,
 			joinTable: studioTable,
+		},
+		tagRelationshipStore: tagRelationshipStore{
+			idRelationshipStore: idRelationshipStore{
+				joinTable: studiosTagsTableMgr,
+			},
 		},
 
 		tableMgr: studioTableMgr,
@@ -174,10 +190,8 @@ func (qb *StudioStore) Create(ctx context.Context, newObject *models.Studio) err
 		}
 	}
 
-	if newObject.TagIDs.Loaded() {
-		if err := studiosTagsTableMgr.insertJoins(ctx, id, newObject.TagIDs.List()); err != nil {
-			return err
-		}
+	if err := qb.tagRelationshipStore.createRelationships(ctx, id, newObject.TagIDs); err != nil {
+		return err
 	}
 
 	if newObject.StashIDs.Loaded() {
@@ -220,10 +234,8 @@ func (qb *StudioStore) UpdatePartial(ctx context.Context, input models.StudioPar
 		}
 	}
 
-	if input.TagIDs != nil {
-		if err := studiosTagsTableMgr.modifyJoins(ctx, input.ID, input.TagIDs.IDs, input.TagIDs.Mode); err != nil {
-			return nil, err
-		}
+	if err := qb.tagRelationshipStore.modifyRelationships(ctx, input.ID, input.TagIDs); err != nil {
+		return nil, err
 	}
 
 	if input.StashIDs != nil {
@@ -250,10 +262,8 @@ func (qb *StudioStore) Update(ctx context.Context, updatedObject *models.Studio)
 		}
 	}
 
-	if updatedObject.TagIDs.Loaded() {
-		if err := studiosTagsTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.TagIDs.List()); err != nil {
-			return err
-		}
+	if err := qb.tagRelationshipStore.replaceRelationships(ctx, updatedObject.ID, updatedObject.TagIDs); err != nil {
+		return err
 	}
 
 	if updatedObject.StashIDs.Loaded() {
@@ -463,13 +473,6 @@ func (qb *StudioStore) FindByStashIDStatus(ctx context.Context, hasStashID bool,
 	return ret, nil
 }
 
-func (qb *StudioStore) CountByTagID(ctx context.Context, tagID int) (int, error) {
-	joinTable := studiosTagsJoinTable
-
-	q := dialect.Select(goqu.COUNT("*")).From(joinTable).Where(joinTable.Col(tagIDColumn).Eq(tagID))
-	return count(ctx, q)
-}
-
 func (qb *StudioStore) Count(ctx context.Context) (int, error) {
 	q := dialect.Select(goqu.COUNT("*")).From(qb.table())
 	return count(ctx, q)
@@ -623,18 +626,6 @@ func (qb *StudioStore) getStudioSort(findFilter *models.FindFilterType) (string,
 	return sortQuery, nil
 }
 
-func (qb *StudioStore) tagsRepository() *joinRepository {
-	return &joinRepository{
-		repository: repository{
-			tableName: studiosTagsTable,
-			idColumn:  studioIDColumn,
-		},
-		fkColumn:     tagIDColumn,
-		foreignTable: tagTable,
-		orderBy:      "tags.name ASC",
-	}
-}
-
 func (qb *StudioStore) GetImage(ctx context.Context, studioID int) ([]byte, error) {
 	return qb.blobJoinQueryBuilder.GetImage(ctx, studioID, studioImageBlobColumn)
 }
@@ -649,10 +640,6 @@ func (qb *StudioStore) UpdateImage(ctx context.Context, studioID int, image []by
 
 func (qb *StudioStore) destroyImage(ctx context.Context, studioID int) error {
 	return qb.blobJoinQueryBuilder.DestroyImage(ctx, studioID, studioImageBlobColumn)
-}
-
-func (qb *StudioStore) GetTagIDs(ctx context.Context, id int) ([]int, error) {
-	return qb.tagsRepository().getIDs(ctx, id)
 }
 
 func (qb *StudioStore) GetStashIDs(ctx context.Context, studioID int) ([]models.StashID, error) {
