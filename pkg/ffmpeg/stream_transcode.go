@@ -60,7 +60,6 @@ func CodecInit(codec VideoCodec) (args Args) {
 		)
 	case VideoCodecM264:
 		args = append(args,
-			"-prio_speed", "1",
 			"-realtime", "1",
 		)
 	case VideoCodecO264:
