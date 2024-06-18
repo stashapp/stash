@@ -17,7 +17,7 @@ import { StudiosCriterionOption } from "./criteria/studios";
 import { InteractiveCriterionOption } from "./criteria/interactive";
 import {
   PerformerTagsCriterionOption,
-  StudioTagsCriterionOption,
+  // StudioTagsCriterionOption,
   TagsCriterionOption,
 } from "./criteria/tags";
 import { ListFilterOptions, MediaSortByOptions } from "./filter-options";
@@ -100,7 +100,7 @@ const criterionOptions = [
   createMandatoryNumberCriterionOption("performer_count"),
   createMandatoryNumberCriterionOption("performer_age"),
   PerformerFavoriteCriterionOption,
-  StudioTagsCriterionOption,
+  // StudioTagsCriterionOption,
   StudiosCriterionOption,
   MoviesCriterionOption,
   GalleriesCriterionOption,

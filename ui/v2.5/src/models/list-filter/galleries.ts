@@ -14,7 +14,7 @@ import { ScenesCriterionOption } from "./criteria/scenes";
 import { StudiosCriterionOption } from "./criteria/studios";
 import {
   PerformerTagsCriterionOption,
-  StudioTagsCriterionOption,
+  // StudioTagsCriterionOption,
   TagsCriterionOption,
 } from "./criteria/tags";
 import { ListFilterOptions, MediaSortByOptions } from "./filter-options";
@@ -63,7 +63,7 @@ const criterionOptions = [
   createMandatoryNumberCriterionOption("performer_age"),
   PerformerFavoriteCriterionOption,
   createMandatoryNumberCriterionOption("image_count"),
-  StudioTagsCriterionOption,
+  // StudioTagsCriterionOption,
   ScenesCriterionOption,
   StudiosCriterionOption,
   createStringCriterionOption("url"),

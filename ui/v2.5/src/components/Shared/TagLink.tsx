@@ -225,7 +225,14 @@ export const GalleryLink: React.FC<IGalleryLinkProps> = ({
 
 interface ITagLinkProps {
   tag: INamedObject;
-  linkType?: "scene" | "gallery" | "image" | "details" | "performer" | "movie" | "studio";
+  linkType?:
+    | "scene"
+    | "gallery"
+    | "image"
+    | "details"
+    | "performer"
+    | "movie"
+    | "studio";
   className?: string;
   hoverPlacement?: Placement;
   showHierarchyIcon?: boolean;

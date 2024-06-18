@@ -16,7 +16,7 @@ import { OrientationCriterionOption } from "./criteria/orientation";
 import { StudiosCriterionOption } from "./criteria/studios";
 import {
   PerformerTagsCriterionOption,
-  StudioTagsCriterionOption,
+  // StudioTagsCriterionOption,
   TagsCriterionOption,
 } from "./criteria/tags";
 import { ListFilterOptions, MediaSortByOptions } from "./filter-options";
@@ -55,7 +55,7 @@ const criterionOptions = [
   createMandatoryNumberCriterionOption("performer_count"),
   createMandatoryNumberCriterionOption("performer_age"),
   PerformerFavoriteCriterionOption,
-  StudioTagsCriterionOption,
+  // StudioTagsCriterionOption,
   StudiosCriterionOption,
   createStringCriterionOption("url"),
   createDateCriterionOption("date"),

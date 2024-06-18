@@ -256,8 +256,6 @@ input SceneFilterType {
   is_missing: String
   "Filter to only include scenes with this studio"
   studios: HierarchicalMultiCriterionInput
-  "Filter to only include scenes with studios with these tags"
-  studio_tags: HierarchicalMultiCriterionInput
   "Filter to only include scenes with this movie"
   movies: MultiCriterionInput
   "Filter to only include scenes with this gallery"
@@ -330,8 +328,6 @@ input MovieFilterType {
   rating100: IntCriterionInput
   "Filter to only include movies with this studio"
   studios: HierarchicalMultiCriterionInput
-  "Filter to only include movies with studios with these tags"
-  studio_tags: HierarchicalMultiCriterionInput
   "Filter to only include movies missing this property"
   is_missing: String
   "Filter by url"
@@ -433,8 +429,6 @@ input GalleryFilterType {
   scenes: MultiCriterionInput
   "Filter to only include galleries with this studio"
   studios: HierarchicalMultiCriterionInput
-  "Filter to only include galleries with studios with these tags"
-  studio_tags: HierarchicalMultiCriterionInput
   "Filter to only include galleries with these tags"
   tags: HierarchicalMultiCriterionInput
   "Filter by tag count"
@@ -510,7 +504,7 @@ input TagFilterType {
 
   "Filter by number of studios with this tag"
   studio_count: IntCriterionInput
-  
+
   "Filter by number of movies with this tag"
   movie_count: IntCriterionInput
 
@@ -580,8 +574,6 @@ input ImageFilterType {
   is_missing: String
   "Filter to only include images with this studio"
   studios: HierarchicalMultiCriterionInput
-  "Filter to only include images with studios with these tags"
-  studio_tags: HierarchicalMultiCriterionInput
   "Filter to only include images with these tags"
   tags: HierarchicalMultiCriterionInput
   "Filter by tag count"

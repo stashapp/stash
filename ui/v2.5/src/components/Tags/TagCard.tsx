@@ -232,10 +232,10 @@ export const TagCard: React.FC<IProps> = ({
         type="studio"
         count={tag.studio_count}
         url={NavUtils.makeTagStudiosUrl(tag)}
-        />
+      />
     );
   }
-  
+
   function maybeRenderMoviesPopoverButton() {
     if (!tag.movie_count) return;
 
