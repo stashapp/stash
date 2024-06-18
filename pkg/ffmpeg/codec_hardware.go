@@ -199,11 +199,6 @@ func (f *FFMpeg) hwFilterInit(toCodec VideoCodec, fullhw bool) VideoFilter {
 			videoFilter = videoFilter.Append("hwupload=extra_hw_frames=64")
 			videoFilter = videoFilter.Append("format=yuv420p")
 		}
-	case VideoCodecM264:
-		if !fullhw {
-			videoFilter = videoFilter.Append("format=yuv420p")
-			videoFilter = videoFilter.Append("hwupload")
-		}
 	}
 
 	return videoFilter
@@ -244,10 +239,10 @@ func templateReplaceScale(input string, template string, match []int, vf *models
 
 		// Fix not divisible by 2 errors
 		if w%2 != 0 {
-			w += 1
+			w++
 		}
 		if h%2 != 0 {
-			h += 1
+			h++
 		}
 
 		template = strings.ReplaceAll(template, "$value", fmt.Sprintf("%d:%d", w, h))
