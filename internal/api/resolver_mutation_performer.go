@@ -12,6 +12,11 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
+const (
+	twitterURL   = "https://twitter.com"
+	instagramURL = "https://instagram.com"
+)
+
 // used to refetch performer after hooks run
 func (r *mutationResolver) getPerformer(ctx context.Context, id int) (ret *models.Performer, err error) {
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
@@ -60,10 +65,10 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 		newPerformer.URLs.Add(*input.URL)
 	}
 	if input.Twitter != nil {
-		newPerformer.URLs.Add(*input.Twitter)
+		newPerformer.URLs.Add(utils.URLFromHandle(*input.Twitter, twitterURL))
 	}
 	if input.Instagram != nil {
-		newPerformer.URLs.Add(*input.Instagram)
+		newPerformer.URLs.Add(utils.URLFromHandle(*input.Instagram, instagramURL))
 	}
 
 	if input.Urls != nil {
@@ -174,33 +179,35 @@ func (r *mutationResolver) handleLegacyURLs(ctx context.Context, performerID int
 	}
 
 	if legacyTwitter.Set {
+		value := utils.URLFromHandle(legacyTwitter.Value, twitterURL)
 		found := false
 		// find and replace the first twitter URL
 		for i, url := range existingURLs {
 			if performer.IsTwitterURL(url) {
-				existingURLs[i] = legacyTwitter.Value
+				existingURLs[i] = value
 				found = true
 				break
 			}
 		}
 
 		if !found {
-			existingURLs = append(existingURLs, legacyTwitter.Value)
+			existingURLs = append(existingURLs, value)
 		}
 	}
 	if legacyInstagram.Set {
 		found := false
+		value := utils.URLFromHandle(legacyInstagram.Value, instagramURL)
 		// find and replace the first instagram URL
 		for i, url := range existingURLs {
 			if performer.IsInstagramURL(url) {
-				existingURLs[i] = legacyInstagram.Value
+				existingURLs[i] = value
 				found = true
 				break
 			}
 		}
 
 		if !found {
-			existingURLs = append(existingURLs, legacyInstagram.Value)
+			existingURLs = append(existingURLs, value)
 		}
 	}
 
