@@ -230,6 +230,10 @@ func TestTagQuerySort(t *testing.T) {
 		tags = queryTags(ctx, t, sqb, nil, findFilter)
 		assert.Equal(tagIDs[tagIdx2WithPerformer], tags[0].ID)
 
+		sortBy = "studios_count"
+		tags = queryTags(ctx, t, sqb, nil, findFilter)
+		assert.Equal(tagIDs[tagIdx2WithStudio], tags[0].ID)
+
 		sortBy = "movies_count"
 		tags = queryTags(ctx, t, sqb, nil, findFilter)
 		assert.Equal(tagIDs[tagIdx1WithMovie], tags[0].ID)
@@ -569,6 +573,45 @@ func verifyTagPerformerCount(t *testing.T, imageCountCriterion models.IntCriteri
 	})
 }
 
+func TestTagQueryStudioCount(t *testing.T) {
+	countCriterion := models.IntCriterionInput{
+		Value:    1,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	verifyTagStudioCount(t, countCriterion)
+
+	countCriterion.Modifier = models.CriterionModifierNotEquals
+	verifyTagStudioCount(t, countCriterion)
+
+	countCriterion.Modifier = models.CriterionModifierLessThan
+	verifyTagStudioCount(t, countCriterion)
+
+	countCriterion.Value = 0
+	countCriterion.Modifier = models.CriterionModifierGreaterThan
+	verifyTagStudioCount(t, countCriterion)
+}
+
+func verifyTagStudioCount(t *testing.T, imageCountCriterion models.IntCriterionInput) {
+	withTxn(func(ctx context.Context) error {
+		qb := db.Tag
+		tagFilter := models.TagFilterType{
+			StudioCount: &imageCountCriterion,
+		}
+
+		tags, _, err := qb.Query(ctx, &tagFilter, nil)
+		if err != nil {
+			t.Errorf("Error querying tag: %s", err.Error())
+		}
+
+		for _, tag := range tags {
+			verifyInt(t, getTagStudioCount(tag.ID), imageCountCriterion)
+		}
+
+		return nil
+	})
+}
+
 func TestTagQueryParentCount(t *testing.T) {
 	countCriterion := models.IntCriterionInput{
 		Value:    1,
@@ -882,6 +925,9 @@ func TestTagMerge(t *testing.T) {
 			tagIdxWithPerformer,
 			tagIdx1WithPerformer,
 			tagIdx2WithPerformer,
+			tagIdxWithStudio,
+			tagIdx1WithStudio,
+			tagIdx2WithStudio,
 			tagIdxWithGallery,
 			tagIdx1WithGallery,
 			tagIdx2WithGallery,
@@ -969,6 +1015,14 @@ func TestTagMerge(t *testing.T) {
 		}
 
 		assert.Contains(performerTagIDs, destID)
+
+		// ensure studio points to new tag
+		studioTagIDs, err := db.Studio.GetTagIDs(ctx, studioIDs[studioIdxWithTwoTags])
+		if err != nil {
+			return err
+		}
+
+		assert.Contains(studioTagIDs, destID)
 
 		return nil
 	}); err != nil {

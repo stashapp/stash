@@ -448,6 +448,18 @@ func (qb *TagStore) FindBySceneMarkerID(ctx context.Context, sceneMarkerID int) 
 	return qb.queryTags(ctx, query, args)
 }
 
+func (qb *TagStore) FindByStudioID(ctx context.Context, studioID int) ([]*models.Tag, error) {
+	query := `
+		SELECT tags.* FROM tags
+		LEFT JOIN studios_tags as studios_join on studios_join.tag_id = tags.id
+		WHERE studios_join.studio_id = ?
+		GROUP BY tags.id
+	`
+	query += qb.getDefaultTagSort()
+	args := []interface{}{studioID}
+	return qb.queryTags(ctx, query, args)
+}
+
 func (qb *TagStore) FindByName(ctx context.Context, name string, nocase bool) (*models.Tag, error) {
 	// query := "SELECT * FROM tags WHERE name = ?"
 	// if nocase {
@@ -628,6 +640,7 @@ var tagSortOptions = sortOptions{
 	"id",
 	"images_count",
 	"movies_count",
+	"studios_count",
 	"name",
 	"performers_count",
 	"random",
@@ -668,6 +681,8 @@ func (qb *TagStore) getTagSort(query *queryBuilder, findFilter *models.FindFilte
 		sortQuery += getCountSort(tagTable, galleriesTagsTable, tagIDColumn, direction)
 	case "performers_count":
 		sortQuery += getCountSort(tagTable, performersTagsTable, tagIDColumn, direction)
+	case "studios_count":
+		sortQuery += getCountSort(tagTable, studiosTagsTable, tagIDColumn, direction)
 	case "movies_count":
 		sortQuery += getCountSort(tagTable, moviesTagsTable, tagIDColumn, direction)
 	default:
@@ -767,6 +782,7 @@ func (qb *TagStore) Merge(ctx context.Context, source []int, destination int) er
 		galleriesTagsTable:   galleryIDColumn,
 		imagesTagsTable:      imageIDColumn,
 		"performers_tags":    "performer_id",
+		"studios_tags":       "studio_id",
 	}
 
 	args = append(args, destination)

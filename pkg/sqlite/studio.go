@@ -25,6 +25,7 @@ const (
 	studioParentIDColumn  = "parent_id"
 	studioNameColumn      = "name"
 	studioImageBlobColumn = "image_blob"
+	studiosTagsTable      = "studios_tags"
 )
 
 type studioRow struct {
@@ -94,6 +95,7 @@ type studioRepositoryType struct {
 	repository
 
 	stashIDs stashIDRepository
+	tags     joinRepository
 
 	scenes    repository
 	images    repository
@@ -124,11 +126,21 @@ var (
 			tableName: galleryTable,
 			idColumn:  studioIDColumn,
 		},
+		tags: joinRepository{
+			repository: repository{
+				tableName: studiosTagsTable,
+				idColumn:  studioIDColumn,
+			},
+			fkColumn:     tagIDColumn,
+			foreignTable: tagTable,
+			orderBy:      "tags.name ASC",
+		},
 	}
 )
 
 type StudioStore struct {
 	blobJoinQueryBuilder
+	tagRelationshipStore
 
 	tableMgr *table
 }
@@ -138,6 +150,11 @@ func NewStudioStore(blobStore *BlobStore) *StudioStore {
 		blobJoinQueryBuilder: blobJoinQueryBuilder{
 			blobStore: blobStore,
 			joinTable: studioTable,
+		},
+		tagRelationshipStore: tagRelationshipStore{
+			idRelationshipStore: idRelationshipStore{
+				joinTable: studiosTagsTableMgr,
+			},
 		},
 
 		tableMgr: studioTableMgr,
@@ -171,6 +188,10 @@ func (qb *StudioStore) Create(ctx context.Context, newObject *models.Studio) err
 		if err := studiosAliasesTableMgr.insertJoins(ctx, id, newObject.Aliases.List()); err != nil {
 			return err
 		}
+	}
+
+	if err := qb.tagRelationshipStore.createRelationships(ctx, id, newObject.TagIDs); err != nil {
+		return err
 	}
 
 	if newObject.StashIDs.Loaded() {
@@ -213,6 +234,10 @@ func (qb *StudioStore) UpdatePartial(ctx context.Context, input models.StudioPar
 		}
 	}
 
+	if err := qb.tagRelationshipStore.modifyRelationships(ctx, input.ID, input.TagIDs); err != nil {
+		return nil, err
+	}
+
 	if input.StashIDs != nil {
 		if err := studiosStashIDsTableMgr.modifyJoins(ctx, input.ID, input.StashIDs.StashIDs, input.StashIDs.Mode); err != nil {
 			return nil, err
@@ -235,6 +260,10 @@ func (qb *StudioStore) Update(ctx context.Context, updatedObject *models.Studio)
 		if err := studiosAliasesTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.Aliases.List()); err != nil {
 			return err
 		}
+	}
+
+	if err := qb.tagRelationshipStore.replaceRelationships(ctx, updatedObject.ID, updatedObject.TagIDs); err != nil {
+		return err
 	}
 
 	if updatedObject.StashIDs.Loaded() {
@@ -538,6 +567,15 @@ func (qb *StudioStore) Query(ctx context.Context, studioFilter *models.StudioFil
 	return studios, countResult, nil
 }
 
+func (qb *StudioStore) QueryCount(ctx context.Context, studioFilter *models.StudioFilterType, findFilter *models.FindFilterType) (int, error) {
+	query, err := qb.makeQuery(ctx, studioFilter, findFilter)
+	if err != nil {
+		return 0, err
+	}
+
+	return query.executeCount(ctx)
+}
+
 var studioSortOptions = sortOptions{
 	"child_count",
 	"created_at",
@@ -569,6 +607,8 @@ func (qb *StudioStore) getStudioSort(findFilter *models.FindFilterType) (string,
 
 	sortQuery := ""
 	switch sort {
+	case "tag_count":
+		sortQuery += getCountSort(studioTable, studiosTagsTable, studioIDColumn, direction)
 	case "scenes_count":
 		sortQuery += getCountSort(studioTable, sceneTable, studioIDColumn, direction)
 	case "images_count":

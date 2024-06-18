@@ -427,6 +427,29 @@ func (_m *TagReaderWriter) FindBySceneMarkerID(ctx context.Context, sceneMarkerI
 	return r0, r1
 }
 
+// FindByStudioID provides a mock function with given fields: ctx, studioID
+func (_m *TagReaderWriter) FindByStudioID(ctx context.Context, studioID int) ([]*models.Tag, error) {
+	ret := _m.Called(ctx, studioID)
+
+	var r0 []*models.Tag
+	if rf, ok := ret.Get(0).(func(context.Context, int) []*models.Tag); ok {
+		r0 = rf(ctx, studioID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.Tag)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, studioID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // FindMany provides a mock function with given fields: ctx, ids
 func (_m *TagReaderWriter) FindMany(ctx context.Context, ids []int) ([]*models.Tag, error) {
 	ret := _m.Called(ctx, ids)

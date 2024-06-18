@@ -1376,6 +1376,7 @@
   "status": "Status: {statusText}",
   "studio": "Studio",
   "studio_and_parent": "Studio & Parent",
+  "studio_count": "Studio Count",
   "studio_depth": "Levels (empty for all)",
   "studio_tagger": {
     "add_new_studios": "Add New Studios",
@@ -1415,6 +1416,7 @@
     "update_studios": "Update Studios",
     "updating_untagged_studios_description": "Updating untagged studios will try to match any studios that lack a stashid and update the metadata."
   },
+  "studio_tags": "Studio Tags",
   "studios": "Studios",
   "sub_tag_count": "Sub-Tag Count",
   "sub_tag_of": "Sub-tag of {parent}",

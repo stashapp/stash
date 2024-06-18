@@ -58,6 +58,27 @@ func (_m *StudioReaderWriter) Count(ctx context.Context) (int, error) {
 	return r0, r1
 }
 
+// CountByTagID provides a mock function with given fields: ctx, tagID
+func (_m *StudioReaderWriter) CountByTagID(ctx context.Context, tagID int) (int, error) {
+	ret := _m.Called(ctx, tagID)
+
+	var r0 int
+	if rf, ok := ret.Get(0).(func(context.Context, int) int); ok {
+		r0 = rf(ctx, tagID)
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, tagID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Create provides a mock function with given fields: ctx, newStudio
 func (_m *StudioReaderWriter) Create(ctx context.Context, newStudio *models.Studio) error {
 	ret := _m.Called(ctx, newStudio)
@@ -316,6 +337,29 @@ func (_m *StudioReaderWriter) GetStashIDs(ctx context.Context, relatedID int) ([
 	return r0, r1
 }
 
+// GetTagIDs provides a mock function with given fields: ctx, relatedID
+func (_m *StudioReaderWriter) GetTagIDs(ctx context.Context, relatedID int) ([]int, error) {
+	ret := _m.Called(ctx, relatedID)
+
+	var r0 []int
+	if rf, ok := ret.Get(0).(func(context.Context, int) []int); ok {
+		r0 = rf(ctx, relatedID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]int)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, relatedID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // HasImage provides a mock function with given fields: ctx, studioID
 func (_m *StudioReaderWriter) HasImage(ctx context.Context, studioID int) (bool, error) {
 	ret := _m.Called(ctx, studioID)
@@ -365,6 +409,27 @@ func (_m *StudioReaderWriter) Query(ctx context.Context, studioFilter *models.St
 	}
 
 	return r0, r1, r2
+}
+
+// QueryCount provides a mock function with given fields: ctx, studioFilter, findFilter
+func (_m *StudioReaderWriter) QueryCount(ctx context.Context, studioFilter *models.StudioFilterType, findFilter *models.FindFilterType) (int, error) {
+	ret := _m.Called(ctx, studioFilter, findFilter)
+
+	var r0 int
+	if rf, ok := ret.Get(0).(func(context.Context, *models.StudioFilterType, *models.FindFilterType) int); ok {
+		r0 = rf(ctx, studioFilter, findFilter)
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, *models.StudioFilterType, *models.FindFilterType) error); ok {
+		r1 = rf(ctx, studioFilter, findFilter)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // QueryForAutoTag provides a mock function with given fields: ctx, words

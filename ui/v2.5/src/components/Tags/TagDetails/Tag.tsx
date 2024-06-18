@@ -26,6 +26,7 @@ import { TagScenesPanel } from "./TagScenesPanel";
 import { TagMarkersPanel } from "./TagMarkersPanel";
 import { TagImagesPanel } from "./TagImagesPanel";
 import { TagPerformersPanel } from "./TagPerformersPanel";
+import { TagStudiosPanel } from "./TagStudiosPanel";
 import { TagGalleriesPanel } from "./TagGalleriesPanel";
 import { CompressedTagDetailsPanel, TagDetailsPanel } from "./TagDetailsPanel";
 import { TagEditPanel } from "./TagEditPanel";
@@ -61,6 +62,7 @@ const validTabs = [
   "movies",
   "markers",
   "performers",
+  "studios",
 ] as const;
 type TabKey = (typeof validTabs)[number];
 
@@ -109,6 +111,8 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
     (showAllCounts ? tag.scene_marker_count_all : tag.scene_marker_count) ?? 0;
   const performerCount =
     (showAllCounts ? tag.performer_count_all : tag.performer_count) ?? 0;
+  const studioCount =
+    (showAllCounts ? tag.studio_count_all : tag.studio_count) ?? 0;
 
   const populatedDefaultTab = useMemo(() => {
     let ret: TabKey = "scenes";
@@ -123,6 +127,8 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
         ret = "markers";
       } else if (performerCount != 0) {
         ret = "performers";
+      } else if (studioCount != 0) {
+        ret = "studios";
       }
     }
 
@@ -133,6 +139,7 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
     galleryCount,
     sceneMarkerCount,
     performerCount,
+    studioCount,
     movieCount,
   ]);
 
@@ -520,6 +527,21 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
         }
       >
         <TagPerformersPanel active={tabKey === "performers"} tag={tag} />
+      </Tab>
+      <Tab
+        eventKey="studios"
+        title={
+          <>
+            {intl.formatMessage({ id: "studios" })}
+            <Counter
+              abbreviateCounter={abbreviateCounter}
+              count={studioCount}
+              hideZero
+            />
+          </>
+        }
+      >
+        <TagStudiosPanel active={tabKey === "studios"} tag={tag} />
       </Tab>
     </Tabs>
   );

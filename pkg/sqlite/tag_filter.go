@@ -66,6 +66,7 @@ func (qb *tagFilterHandler) criterionHandler() criterionHandler {
 		qb.imageCountCriterionHandler(tagFilter.ImageCount),
 		qb.galleryCountCriterionHandler(tagFilter.GalleryCount),
 		qb.performerCountCriterionHandler(tagFilter.PerformerCount),
+		qb.studioCountCriterionHandler(tagFilter.StudioCount),
 		qb.movieCountCriterionHandler(tagFilter.MovieCount),
 		qb.markerCountCriterionHandler(tagFilter.MarkerCount),
 		qb.parentsCriterionHandler(tagFilter.Parents),
@@ -169,6 +170,17 @@ func (qb *tagFilterHandler) performerCountCriterionHandler(performerCount *model
 		if performerCount != nil {
 			f.addLeftJoin("performers_tags", "", "performers_tags.tag_id = tags.id")
 			clause, args := getIntCriterionWhereClause("count(distinct performers_tags.performer_id)", *performerCount)
+
+			f.addHaving(clause, args...)
+		}
+	}
+}
+
+func (qb *tagFilterHandler) studioCountCriterionHandler(studioCount *models.IntCriterionInput) criterionHandlerFunc {
+	return func(ctx context.Context, f *filterBuilder) {
+		if studioCount != nil {
+			f.addLeftJoin("studios_tags", "", "studios_tags.tag_id = tags.id")
+			clause, args := getIntCriterionWhereClause("count(distinct studios_tags.studio_id)", *studioCount)
 
 			f.addHaving(clause, args...)
 		}

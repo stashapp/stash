@@ -68,6 +68,7 @@ func createFullStudio(id int, parentID int) models.Studio {
 		Rating:        &rating,
 		IgnoreAutoTag: autoTagIgnored,
 		Aliases:       models.NewRelatedStrings(aliases),
+		TagIDs:        models.NewRelatedIDs([]int{}),
 		StashIDs:      models.NewRelatedStashIDs(stashIDs),
 	}
 
@@ -84,6 +85,7 @@ func createEmptyStudio(id int) models.Studio {
 		CreatedAt: createTime,
 		UpdatedAt: updateTime,
 		Aliases:   models.NewRelatedStrings([]string{}),
+		TagIDs:    models.NewRelatedIDs([]int{}),
 		StashIDs:  models.NewRelatedStashIDs([]models.StashID{}),
 	}
 }

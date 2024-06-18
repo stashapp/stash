@@ -207,6 +207,9 @@ const (
 	tagIdxWithPerformer
 	tagIdx1WithPerformer
 	tagIdx2WithPerformer
+	tagIdxWithStudio
+	tagIdx1WithStudio
+	tagIdx2WithStudio
 	tagIdxWithGallery
 	tagIdx1WithGallery
 	tagIdx2WithGallery
@@ -245,6 +248,10 @@ const (
 	studioIdxWithScenePerformer
 	studioIdxWithImagePerformer
 	studioIdxWithGalleryPerformer
+	studioIdxWithTag
+	studioIdx2WithTag
+	studioIdxWithTwoTags
+	studioIdxWithParentTag
 	studioIdxWithGrandChild
 	studioIdxWithParentAndChild
 	studioIdxWithGrandParent
@@ -507,6 +514,15 @@ var (
 		{studioIdxWithChildStudio, studioIdxWithParentStudio},
 		{studioIdxWithGrandChild, studioIdxWithParentAndChild},
 		{studioIdxWithParentAndChild, studioIdxWithGrandParent},
+	}
+)
+
+var (
+	studioTags = linkMap{
+		studioIdxWithTag:       {tagIdxWithStudio},
+		studioIdx2WithTag:      {tagIdx2WithStudio},
+		studioIdxWithTwoTags:   {tagIdx1WithStudio, tagIdx2WithStudio},
+		studioIdxWithParentTag: {tagIdxWithParentAndChild},
 	}
 )
 
@@ -1566,6 +1582,11 @@ func getTagPerformerCount(id int) int {
 	return len(performerTags.reverseLookup(idx))
 }
 
+func getTagStudioCount(id int) int {
+	idx := indexFromID(tagIDs, id)
+	return len(studioTags.reverseLookup(idx))
+}
+
 func getTagParentCount(id int) int {
 	if id == tagIDs[tagIdxWithParentTag] || id == tagIDs[tagIdxWithGrandParent] || id == tagIDs[tagIdxWithParentAndChild] {
 		return 1
@@ -1681,11 +1702,13 @@ func createStudios(ctx context.Context, n int, o int) error {
 		// studios [ i ] and [ n + o - i - 1  ] should have similar names with only the Name!=NaMe part different
 
 		name = getStudioStringValue(index, name)
+		tids := indexesToIDs(tagIDs, studioTags[i])
 		studio := models.Studio{
 			Name:          name,
 			URL:           getStudioStringValue(index, urlField),
 			Favorite:      getStudioBoolValue(index),
 			IgnoreAutoTag: getIgnoreAutoTag(i),
+			TagIDs:        models.NewRelatedIDs(tids),
 		}
 		// only add aliases for some scenes
 		if i == studioIdxWithMovie || i%5 == 0 {

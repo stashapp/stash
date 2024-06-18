@@ -33,6 +33,9 @@ fragment StudioData on Studio {
   rating100
   favorite
   aliases
+  tags {
+    ...SlimTagData
+  }
 }
 
 fragment SelectStudioData on Studio {

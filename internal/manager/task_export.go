@@ -982,6 +982,7 @@ func (t *ExportTask) ExportStudios(ctx context.Context, workers int) {
 func (t *ExportTask) exportStudio(ctx context.Context, wg *sync.WaitGroup, jobChan <-chan *models.Studio) {
 	defer wg.Done()
 
+	r := t.repository
 	studioReader := t.repository.Studio
 
 	for s := range jobChan {
@@ -990,6 +991,18 @@ func (t *ExportTask) exportStudio(ctx context.Context, wg *sync.WaitGroup, jobCh
 		if err != nil {
 			logger.Errorf("[studios] <%s> error getting studio JSON: %v", s.Name, err)
 			continue
+		}
+
+		tags, err := r.Tag.FindByStudioID(ctx, s.ID)
+		if err != nil {
+			logger.Errorf("[studios] <%s> error getting studio tags: %s", s.Name, err.Error())
+			continue
+		}
+
+		newStudioJSON.Tags = tag.GetNames(tags)
+
+		if t.includeDependencies {
+			t.tags.IDs = sliceutil.AppendUniques(t.tags.IDs, tag.GetIDs(tags))
 		}
 
 		fn := newStudioJSON.Filename()

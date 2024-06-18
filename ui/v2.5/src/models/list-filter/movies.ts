@@ -11,6 +11,7 @@ import { PerformersCriterionOption } from "./criteria/performers";
 import { ListFilterOptions } from "./filter-options";
 import { DisplayMode } from "./types";
 import { RatingCriterionOption } from "./criteria/rating";
+// import { StudioTagsCriterionOption } from "./criteria/tags";
 import { TagsCriterionOption } from "./criteria/tags";
 
 const defaultSortBy = "name";
@@ -32,6 +33,7 @@ const sortByOptions = [
   ]);
 const displayModeOptions = [DisplayMode.Grid];
 const criterionOptions = [
+  // StudioTagsCriterionOption,
   StudiosCriterionOption,
   MovieIsMissingCriterionOption,
   createStringCriterionOption("url"),

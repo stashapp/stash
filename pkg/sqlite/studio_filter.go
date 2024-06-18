@@ -74,11 +74,13 @@ func (qb *studioFilterHandler) criterionHandler() criterionHandler {
 		},
 
 		qb.isMissingCriterionHandler(studioFilter.IsMissing),
+		qb.tagCountCriterionHandler(studioFilter.TagCount),
 		qb.sceneCountCriterionHandler(studioFilter.SceneCount),
 		qb.imageCountCriterionHandler(studioFilter.ImageCount),
 		qb.galleryCountCriterionHandler(studioFilter.GalleryCount),
 		qb.parentCriterionHandler(studioFilter.Parents),
 		qb.aliasCriterionHandler(studioFilter.Aliases),
+		qb.tagsCriterionHandler(studioFilter.Tags),
 		qb.childCountCriterionHandler(studioFilter.ChildCount),
 		&timestampCriterionHandler{studioFilter.CreatedAt, studioTable + ".created_at", nil},
 		&timestampCriterionHandler{studioFilter.UpdatedAt, studioTable + ".updated_at", nil},
@@ -161,6 +163,16 @@ func (qb *studioFilterHandler) galleryCountCriterionHandler(galleryCount *models
 	}
 }
 
+func (qb *studioFilterHandler) tagCountCriterionHandler(tagCount *models.IntCriterionInput) criterionHandlerFunc {
+	h := countCriterionHandlerBuilder{
+		primaryTable: studioTable,
+		joinTable:    studiosTagsTable,
+		primaryFK:    studioIDColumn,
+	}
+
+	return h.handler(tagCount)
+}
+
 func (qb *studioFilterHandler) parentCriterionHandler(parents *models.MultiCriterionInput) criterionHandlerFunc {
 	addJoinsFunc := func(f *filterBuilder) {
 		f.addLeftJoin("studios", "parent_studio", "parent_studio.id = studios.parent_id")
@@ -199,4 +211,19 @@ func (qb *studioFilterHandler) childCountCriterionHandler(childCount *models.Int
 			f.addHaving(clause, args...)
 		}
 	}
+}
+
+func (qb *studioFilterHandler) tagsCriterionHandler(tags *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
+	h := joinedHierarchicalMultiCriterionHandlerBuilder{
+		primaryTable: studioTable,
+		foreignTable: tagTable,
+		foreignFK:    "tag_id",
+
+		relationsTable: "tags_relations",
+		joinTable:      studiosTagsTable,
+		joinAs:         "studio_tag",
+		primaryFK:      studioIDColumn,
+	}
+
+	return h.handler(tags)
 }

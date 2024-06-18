@@ -292,8 +292,11 @@ func (t *ImportTask) ImportStudios(ctx context.Context) {
 }
 
 func (t *ImportTask) importStudio(ctx context.Context, studioJSON *jsonschema.Studio, pendingParent map[string][]*jsonschema.Studio) error {
+	r := t.repository
+
 	importer := &studio.Importer{
 		ReaderWriter:        t.repository.Studio,
+		TagWriter:           r.Tag,
 		Input:               *studioJSON,
 		MissingRefBehaviour: t.MissingRefBehaviour,
 	}
