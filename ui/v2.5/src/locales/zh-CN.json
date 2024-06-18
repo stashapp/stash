@@ -1469,5 +1469,7 @@
         "websocket_connection_failed": "无法建立websocket连接：有关详细信息，请参阅浏览器控制台"
     },
     "o_count": "高潮次数",
-    "movie_count": "影片数量"
+    "movie_count": "影片数量",
+    "studio_tags": "工作室标签",
+    "studio_count": "工作室计数"
 }
