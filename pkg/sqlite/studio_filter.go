@@ -90,7 +90,7 @@ func (qb *studioFilterHandler) criterionHandler() criterionHandler {
 			relatedRepo:    sceneRepository.repository,
 			relatedHandler: &sceneFilterHandler{studioFilter.ScenesFilter},
 			joinFn: func(f *filterBuilder) {
-				sceneRepository.innerJoin(f, "", "studios.id")
+				studioRepository.scenes.innerJoin(f, "", "studios.id")
 			},
 		},
 
