@@ -97,7 +97,7 @@ func (f *FFMpeg) hwCanFullHWTranscode(ctx context.Context, codec VideoCodec, vf 
 	args = args.XError()
 	args = f.hwDeviceInit(args, codec, true)
 	args = args.Input(vf.Path)
-	args = args.Duration(0.1)
+	args = args.Duration(1)
 
 	videoFilter := f.hwMaxResFilter(codec, vf, reqHeight, true)
 	args = append(args, CodecInit(codec)...)
