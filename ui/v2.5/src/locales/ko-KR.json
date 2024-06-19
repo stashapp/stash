@@ -57,9 +57,9 @@
         "import_from_file": "파일 불러오기",
         "logout": "로그아웃",
         "make_primary": "첫 번째로 만들기",
-        "merge": "합치기",
-        "merge_from": "...에서 합치기",
-        "merge_into": "...로 합치기",
+        "merge": "병합",
+        "merge_from": "...에서 병합",
+        "merge_into": "...로 병합",
         "migrate_blobs": "Blob 마이그레이션",
         "migrate_scene_screenshots": "영상 스크린샷 마이그레이션",
         "next_action": "다음",
@@ -134,7 +134,8 @@
         "clear_date_data": "날짜 데이터 삭제",
         "copy_to_clipboard": "클립보드에 복사",
         "reload": "새로고침",
-        "remove_date": "날짜 삭제"
+        "remove_date": "날짜 삭제",
+        "view_history": "기록 보기"
     },
     "actions_name": "액션",
     "age": "나이",
@@ -178,7 +179,7 @@
             "query_mode_path_desc": "전체 파일 경로 사용",
             "set_cover_desc": "영상 커버가 있다면 그 이미지로 교체합니다.",
             "set_cover_label": "영상 커버 이미지 설정",
-            "set_tag_desc": "영상에 이미 존재하는 태그들을 덮어쓰기/합치기 함으로써 태그를 영상에 추가합니다.",
+            "set_tag_desc": "영상에 이미 존재하는 태그들을 덮어쓰거나 병합함으로써 태그를 영상에 추가합니다.",
             "set_tag_label": "태그 설정",
             "show_male_desc": "남성 배우들의 태그 가능 여부 설정을 켜거나 끕니다.",
             "show_male_label": "남성 배우 보여주기",
@@ -257,7 +258,9 @@
             "successfully_cancelled_temporary_behaviour": "임시 설정을 취소하는 데에 성공했습니다",
             "until_restart": "재시작 전까지",
             "video_sort_order": "기본 비디오 정렬 순서",
-            "video_sort_order_desc": "비디오를 정렬할 기본값 순서입니다."
+            "video_sort_order_desc": "비디오를 정렬할 기본값 순서입니다.",
+            "server_port": "서버 포트",
+            "server_port_desc": "DLNA 서버를 동작시킬 포트입니다. 변경 이후 DLNA 재시작이 필요합니다."
         },
         "general": {
             "auth": {
@@ -493,7 +496,15 @@
                 "source": "소스",
                 "source_options": "{source} 옵션",
                 "sources": "소스",
-                "strategy": "방법"
+                "strategy": "방법",
+                "skip_single_name_performers_tooltip": "만약 이 옵션이 설정되지 않은 경우, 'Samantha' 혹은 'Olga'와 같은 흔한 이름들이 매칭될 것입니다",
+                "tag_skipped_performer_tooltip": "이 옵션에 해당하는 배우들에 대해, 나중에 영상 태거 뷰에서 배우 정보를 원하는 대로 다룰 수 있도록, '식별: 한 단어 이름 배우' 등과 같은 태그를 만듭니다",
+                "skip_multiple_matches_tooltip": "만약 이 옵션이 설정되지 않은 상태에서 여러 개의 결과가 도출된 경우, 여러 개의 결과 중 무작위로 하나가 선택될 것입니다",
+                "skip_single_name_performers": "다른 배우의 이름과 겹치지 않으면서도 한 단어의 이름으로 이뤄진 배우의 경우, 처리하지 않고 건너뛰기",
+                "skip_multiple_matches": "여러 개의 매칭 결과가 나왔을 때, 처리하지 않고 건너뛰기",
+                "tag_skipped_matches": "처리하지 않고 건너뛴 항목들에 대해 다음과 같이 태그하기",
+                "tag_skipped_matches_tooltip": "다수 식별 결과가 도출된 항목들을 대상으로, 실제로 일치하는 식별 결과를 영상 태거 뷰에서 직접 고를 수 있도록, '식별: 다수 매칭' 등과 같은 태그를 만듭니다",
+                "tag_skipped_performers": "처리하지 않고 건너뛴 배우들에 대해 다음과 같이 태그하기"
             },
             "import_from_exported_json": "메타데이터 폴더에서 내보낸 JSON 파일에서 가져오기 작업을 합니다. 기존 데이터베이스를 지웁니다.",
             "incremental_import": "내보낸 zip 파일에서 증가한 부분만 가져옵니다.",
@@ -708,7 +719,7 @@
                         "heading": "플레이리스트 이어보기"
                     },
                     "show_scrubber": "스크러버 보이기",
-                    "track_activity": "활동 트래킹",
+                    "track_activity": "영상 재생 기록 활성화",
                     "vr_tag": {
                         "description": "VR 버튼은 이 태그를 가진 영상에서만 보여질 것입니다.",
                         "heading": "VR 태그"
@@ -758,7 +769,7 @@
             "title": "UI",
             "use_stash_hosted_funscript": {
                 "heading": "funscript 직접 전달",
-                "description": "활성화되면, 서드 파티 Handy 서버를 사용하지 않고 Stash로부터 Handy 디바이스로 곧바로 funscript가 전달될 것입니다. Stash가 Handy 디바이스에 접근 가능한 상태여야 합니다."
+                "description": "활성화되면, 서드 파티 Handy 서버를 사용하지 않고 Stash로부터 Handy 디바이스로 곧바로 funscript가 전달될 것입니다. Stash가 Handy 디바이스에 접근 가능한 상태여야 하고, Stash에서 인증이 설정된 상태라면 API 키가 생성되어 있어야 합니다."
             },
             "detail": {
                 "enable_background_image": {
@@ -812,7 +823,10 @@
         "not_between": "구간 밖",
         "not_equals": "≠",
         "not_matches_regex": "정규표현식 불일치",
-        "not_null": "값 존재함"
+        "not_null": "값 존재함",
+        "format_string_excludes": "{criterion} {modifierString} {valueString} ({excludedString} 제외)",
+        "format_string_excludes_depth": "{criterion} {modifierString} {valueString} ({excludedString} 제외) (+{depth, plural, =-1 {all} other {{depth}}})",
+        "format_string_depth": "{criterion} {modifierString} {valueString} (+{depth, plural, =-1 {all} other {{depth}}})"
     },
     "custom": "커스텀",
     "date": "날짜",
@@ -925,7 +939,15 @@
         "unsaved_changes": "저장되지 않은 변경 사항들이 있습니다. 그래도 나가겠습니까?",
         "performers_found": "{count} 명의 배우들을 찾았습니다",
         "clear_o_history_confirm": "정말 싸버린 기록을 삭제하시겠습니까?",
-        "clear_play_history_confirm": "정말 재생 기록을 삭제하시겠습니까?"
+        "clear_play_history_confirm": "정말 재생 기록을 삭제하시겠습니까?",
+        "merge": {
+            "destination": "~으로 병합 (병합 결과)",
+            "source": "~을 (병합 대상)",
+            "empty_results": "병합 결과 값이 바뀌지 않을 것입니다."
+        },
+        "reassign_files": {
+            "destination": "~으로 재지정"
+        }
     },
     "dimensions": "해상도",
     "director": "감독",
@@ -1057,7 +1079,7 @@
     "interactive": "인터렉티브",
     "interactive_speed": "인터랙티브 속도",
     "isMissing": "데이터 누락됨",
-    "last_played_at": "마지막으로 재생",
+    "last_played_at": "마지막 재생 날짜",
     "library": "라이브러리",
     "loading": {
         "generic": "로드 중…"
@@ -1192,7 +1214,8 @@
             "database_file_path": "데이터베이스 파일 경로",
             "generated_directory": "생성된 컨텐츠 폴더",
             "nearly_there": "거의 끝났습니다!",
-            "stash_library_directories": "Stash 라이브러리 폴더"
+            "stash_library_directories": "Stash 라이브러리 폴더",
+            "blobs_use_database": "<데이터베이스 사용 중>"
         },
         "creating": {
             "creating_your_system": "시스템 생성 중"
@@ -1382,7 +1405,8 @@
         "to_use_the_studio_tagger": "스튜디오 태거를 사용하려면, stash-box 인스턴스가 설정되어야 합니다.",
         "update_studios": "스튜디오 업데이트",
         "untagged_studios": "태그되지 않은 스튜디오",
-        "update_studio": "스튜디오 업데이트"
+        "update_studio": "스튜디오 업데이트",
+        "studio_selection": "스튜디오 선택"
     },
     "audio_codec": "오디오 코덱",
     "connection_monitor": {
@@ -1422,10 +1446,12 @@
         "no_sources": "패키지 소스 없음",
         "version": "버전",
         "show_all": "모두 보여주기",
-        "update": "업데이트"
+        "update": "업데이트",
+        "selected_only": "선택된 것만",
+        "required_by": "{packages}로 인해 요구됨"
     },
     "o_count": "싼 횟수",
-    "orientation": "",
+    "orientation": "방향",
     "parent_studio": "부모 스튜디오",
     "subsidiary_studio_count": "자회사 스튜디오 개수",
     "time": "시간",
@@ -1435,5 +1461,9 @@
     "play_history": "재생 기록",
     "primary_tag": "주 태그",
     "unknown_date": "날짜 미상",
-    "urls": "URL"
+    "urls": "URL",
+    "distance": "거리",
+    "studio_and_parent": "스튜디오 & 모회사",
+    "tag_parent_tooltip": "상위 태그 존재 여부",
+    "tag_sub_tag_tooltip": "하위 태그 존재 여부"
 }

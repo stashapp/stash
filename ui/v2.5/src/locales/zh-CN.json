@@ -1013,7 +1013,9 @@
         "lazy_component_error_help": "如果您最近升级了 Stash，请重新加载页面或清除浏览器缓存。",
         "something_went_wrong": "出了些问题。",
         "header": "错误",
-        "loading_type": "加载 {type} 出错"
+        "loading_type": "加载 {type} 出错",
+        "invalid_javascript_string": "无效的javascript代码：{error}",
+        "invalid_json_string": "无效的JSON字符串：{error}"
     },
     "ethnicity": "人种",
     "existing_value": "现值",
@@ -1119,7 +1121,8 @@
         "first": "首页",
         "last": "尾页",
         "next": "下一页",
-        "previous": "上一页"
+        "previous": "上一页",
+        "current_total": "第{current}页， 共 {total}页"
     },
     "parent_of": "{children}的上级",
     "parent_studios": "上级工作室",
@@ -1465,5 +1468,8 @@
         "websocket_connection_reestablished": "Websocket连接已重新建立",
         "websocket_connection_failed": "无法建立websocket连接：有关详细信息，请参阅浏览器控制台"
     },
-    "o_count": "高潮次数"
+    "o_count": "高潮次数",
+    "movie_count": "影片数量",
+    "studio_tags": "工作室标签",
+    "studio_count": "工作室计数"
 }
