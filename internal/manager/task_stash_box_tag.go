@@ -311,13 +311,13 @@ func (t *StashBoxBatchTagTask) processMatchedStudio(ctx context.Context, s *mode
 				return err
 			}
 
-			partial := s.ToPartial(s.StoredID, t.box.Endpoint, excluded, existingStashIDs)
+			partial := s.ToPartial(*s.StoredID, t.box.Endpoint, excluded, existingStashIDs)
 
-			if err := studio.ValidateModify(ctx, *partial, qb); err != nil {
+			if err := studio.ValidateModify(ctx, partial, qb); err != nil {
 				return err
 			}
 
-			if _, err := qb.UpdatePartial(ctx, *partial); err != nil {
+			if _, err := qb.UpdatePartial(ctx, partial); err != nil {
 				return err
 			}
 
@@ -435,13 +435,13 @@ func (t *StashBoxBatchTagTask) processParentStudio(ctx context.Context, parent *
 				return err
 			}
 
-			partial := parent.ToPartial(parent.StoredID, t.box.Endpoint, excluded, existingStashIDs)
+			partial := parent.ToPartial(*parent.StoredID, t.box.Endpoint, excluded, existingStashIDs)
 
-			if err := studio.ValidateModify(ctx, *partial, qb); err != nil {
+			if err := studio.ValidateModify(ctx, partial, qb); err != nil {
 				return err
 			}
 
-			if _, err := qb.UpdatePartial(ctx, *partial); err != nil {
+			if _, err := qb.UpdatePartial(ctx, partial); err != nil {
 				return err
 			}
 
