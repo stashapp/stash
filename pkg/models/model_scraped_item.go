@@ -82,8 +82,6 @@ func (s *ScrapedStudio) ToPartial(id string, endpoint string, excluded map[strin
 				ret.ParentID = NewOptionalInt(parentID)
 			}
 		}
-	} else {
-		ret.ParentID = NewOptionalIntPtr(nil)
 	}
 
 	if s.RemoteSiteID != nil && endpoint != "" {
