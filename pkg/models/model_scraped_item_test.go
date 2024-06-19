@@ -247,3 +247,123 @@ func Test_scrapedToPerformerInput(t *testing.T) {
 		})
 	}
 }
+
+func TestScrapedStudio_ToPartial(t *testing.T) {
+	var (
+		id                = 1000
+		idStr             = strconv.Itoa(id)
+		storedID          = "storedID"
+		parentStoredID    = 2000
+		parentStoredIDStr = strconv.Itoa(parentStoredID)
+		name              = "name"
+		url               = "url"
+		remoteSiteID      = "remoteSiteID"
+		endpoint          = "endpoint"
+		image             = "image"
+		images            = []string{image}
+
+		existingEndpoint = "existingEndpoint"
+		existingStashID  = StashID{"existingStashID", existingEndpoint}
+		existingStashIDs = []StashID{existingStashID}
+	)
+
+	fullStudio := ScrapedStudio{
+		StoredID: &storedID,
+		Name:     name,
+		URL:      &url,
+		Parent: &ScrapedStudio{
+			StoredID: &parentStoredIDStr,
+		},
+		Image:        &image,
+		Images:       images,
+		RemoteSiteID: &remoteSiteID,
+	}
+
+	type args struct {
+		id               string
+		endpoint         string
+		excluded         map[string]bool
+		existingStashIDs []StashID
+	}
+
+	stdArgs := args{
+		id:               idStr,
+		endpoint:         endpoint,
+		excluded:         map[string]bool{},
+		existingStashIDs: existingStashIDs,
+	}
+
+	excludeAll := map[string]bool{
+		"name":   true,
+		"url":    true,
+		"parent": true,
+	}
+
+	tests := []struct {
+		name string
+		o    ScrapedStudio
+		args args
+		want StudioPartial
+	}{
+		{
+			"full no exclusions",
+			fullStudio,
+			stdArgs,
+			StudioPartial{
+				ID:       id,
+				Name:     NewOptionalString(name),
+				URL:      NewOptionalString(url),
+				ParentID: NewOptionalInt(parentStoredID),
+				StashIDs: &UpdateStashIDs{
+					StashIDs: append(existingStashIDs, StashID{
+						Endpoint: endpoint,
+						StashID:  remoteSiteID,
+					}),
+					Mode: RelationshipUpdateModeSet,
+				},
+			},
+		},
+		{
+			"exclude all",
+			fullStudio,
+			args{
+				id:       idStr,
+				excluded: excludeAll,
+			},
+			StudioPartial{
+				ID: id,
+			},
+		},
+		{
+			"overwrite stash id",
+			fullStudio,
+			args{
+				id:               idStr,
+				excluded:         excludeAll,
+				endpoint:         existingEndpoint,
+				existingStashIDs: existingStashIDs,
+			},
+			StudioPartial{
+				ID: id,
+				StashIDs: &UpdateStashIDs{
+					StashIDs: []StashID{{
+						Endpoint: existingEndpoint,
+						StashID:  remoteSiteID,
+					}},
+					Mode: RelationshipUpdateModeSet,
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := tt.o
+			got := s.ToPartial(tt.args.id, tt.args.endpoint, tt.args.excluded, tt.args.existingStashIDs)
+
+			// unset updatedAt - we don't need to compare it
+			got.UpdatedAt = OptionalTime{}
+
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
