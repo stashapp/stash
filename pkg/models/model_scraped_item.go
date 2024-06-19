@@ -62,9 +62,9 @@ func (s *ScrapedStudio) GetImage(ctx context.Context, excluded map[string]bool) 
 	return nil, nil
 }
 
-func (s *ScrapedStudio) ToPartial(id *string, endpoint string, excluded map[string]bool, existingStashIDs []StashID) *StudioPartial {
+func (s *ScrapedStudio) ToPartial(id string, endpoint string, excluded map[string]bool, existingStashIDs []StashID) StudioPartial {
 	ret := NewStudioPartial()
-	ret.ID, _ = strconv.Atoi(*id)
+	ret.ID, _ = strconv.Atoi(id)
 
 	if s.Name != "" && !excluded["name"] {
 		ret.Name = NewOptionalString(s.Name)
@@ -82,8 +82,6 @@ func (s *ScrapedStudio) ToPartial(id *string, endpoint string, excluded map[stri
 				ret.ParentID = NewOptionalInt(parentID)
 			}
 		}
-	} else {
-		ret.ParentID = NewOptionalIntPtr(nil)
 	}
 
 	if s.RemoteSiteID != nil && endpoint != "" {
@@ -97,7 +95,7 @@ func (s *ScrapedStudio) ToPartial(id *string, endpoint string, excluded map[stri
 		})
 	}
 
-	return &ret
+	return ret
 }
 
 // A performer from a scraping operation...
