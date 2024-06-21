@@ -1,11 +1,10 @@
-import React, { MutableRefObject, useEffect, useRef, useState } from "react";
+import React, { MutableRefObject, useRef, useState } from "react";
 import { Card, Form } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import cx from "classnames";
 import { TruncatedText } from "../TruncatedText";
 import ScreenUtils from "src/utils/screen";
 import useResizeObserver from "@react-hook/resize-observer";
-import { CooldownTimer } from "../CooldownTimer";
 
 interface ICardProps {
   className?: string;
