@@ -1,10 +1,11 @@
-import React, { MutableRefObject, useRef, useState } from "react";
+import React, { MutableRefObject, useEffect, useRef, useState } from "react";
 import { Card, Form } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import cx from "classnames";
 import { TruncatedText } from "../TruncatedText";
 import ScreenUtils from "src/utils/screen";
 import useResizeObserver from "@react-hook/resize-observer";
+import { CooldownTimer } from "../CooldownTimer";
 
 interface ICardProps {
   className?: string;
@@ -53,7 +54,14 @@ export const useContainerDimensions = <
 
   useResizeObserver(target, (entry) => {
     const { inlineSize: width, blockSize: height } = entry.contentBoxSize[0];
-    setDimension({ width, height });
+    let difference = Math.abs(dimension.width - width);
+    // Only adjust when width changed by a significant margin. This addresses the cornercase that sees
+    // the dimensions toggle back and forward when the window is adjusted perfectly such that overflow
+    // is trigger then immediable disabled because of a resize event then continues this loop endlessly.
+    // 15 pixels is the amount of space the scrollbar takes up by default
+    if (difference > 15) {
+      setDimension({ width, height });
+    }
   });
 
   return [target, dimension];
