@@ -10,7 +10,7 @@ import {
   Tooltip,
 } from "react-bootstrap";
 import {
-  useConfigureUI,
+  useConfigureUISetting,
   useFindSavedFilters,
   useSavedFilterDestroy,
   useSaveFilter,
@@ -51,7 +51,7 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
 
   const [saveFilter] = useSaveFilter();
   const [destroyFilter] = useSavedFilterDestroy();
-  const [saveUI] = useConfigureUI();
+  const [saveUISetting] = useConfigureUISetting();
 
   const savedFilters = data?.findSavedFilters ?? [];
 
@@ -136,17 +136,14 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
     try {
       setSaving(true);
 
-      await saveUI({
+      await saveUISetting({
         variables: {
-          partial: {
-            defaultFilters: {
-              [view.toString()]: {
-                mode: filter.mode,
-                find_filter: filterCopy.makeFindFilter(),
-                object_filter: filterCopy.makeSavedFilter(),
-                ui_options: filterCopy.makeSavedUIOptions(),
-              },
-            },
+          key: `defaultFilters.${view.toString()}`,
+          value: {
+            mode: filter.mode,
+            find_filter: filterCopy.makeFindFilter(),
+            object_filter: filterCopy.makeSavedFilter(),
+            ui_options: filterCopy.makeSavedUIOptions(),
           },
         },
       });
