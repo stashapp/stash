@@ -182,10 +182,9 @@ func (f *FFMpeg) hwFilterInit(toCodec VideoCodec, fullhw bool) VideoFilter {
 	var videoFilter VideoFilter
 	switch toCodec {
 	case VideoCodecV264,
-		VideoCodecVVP9,
-		VideoCodecM264:
+		VideoCodecVVP9:
 		if !fullhw {
-			videoFilter = videoFilter.Append("format=yuv420p")
+			videoFilter = videoFilter.Append("format=vaapi_vld")
 			videoFilter = videoFilter.Append("hwupload")
 		}
 	case VideoCodecN264:
@@ -198,6 +197,11 @@ func (f *FFMpeg) hwFilterInit(toCodec VideoCodec, fullhw bool) VideoFilter {
 		if !fullhw {
 			videoFilter = videoFilter.Append("hwupload=extra_hw_frames=64")
 			videoFilter = videoFilter.Append("format=qsv")
+		}
+	case VideoCodecM264:
+		if !fullhw {
+			videoFilter = videoFilter.Append("format=nv12")
+			videoFilter = videoFilter.Append("hwupload")
 		}
 	}
 
@@ -270,7 +274,7 @@ func (f *FFMpeg) hwApplyFullHWFilter(args VideoFilter, codec VideoCodec, fullhw 
 		}
 	case VideoCodecV264, VideoCodecVVP9:
 		if fullhw && f.version.major >= 3 && f.version.minor >= 1 { // Added in FFMpeg 3.1
-			args = args.Append("scale_vaapi=format=yuv420p")
+			args = args.Append("scale_vaapi=format=vaapi_vld")
 		}
 	case VideoCodecI264, VideoCodecIVP9:
 		if fullhw && f.version.major >= 3 && f.version.minor >= 3 { // Added in FFMpeg 3.3
