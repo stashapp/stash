@@ -44,7 +44,7 @@ interface IDimension {
 
 export const useContainerDimensions = <
   T extends HTMLElement = HTMLDivElement
->(): [MutableRefObject<T | null>, IDimension] => {
+>(reduceSensitivity=true): [MutableRefObject<T | null>, IDimension] => {
   const target = useRef<T | null>(null);
   const [dimension, setDimension] = useState<IDimension>({
     width: 0,
@@ -58,7 +58,7 @@ export const useContainerDimensions = <
     // the dimensions toggle back and forward when the window is adjusted perfectly such that overflow
     // is trigger then immediable disabled because of a resize event then continues this loop endlessly.
     // 15 pixels is the amount of space the scrollbar takes up by default
-    if (difference > 15) {
+    if (!reduceSensitivity || difference > 15) {
       setDimension({ width, height });
     }
   });
