@@ -42,9 +42,9 @@ interface IDimension {
   height: number;
 }
 
-export const useContainerDimensions = <
-  T extends HTMLElement = HTMLDivElement
->(reduceSensitivity=true): [MutableRefObject<T | null>, IDimension] => {
+export const useContainerDimensions = <T extends HTMLElement = HTMLDivElement>(
+  reduceSensitivity = true
+): [MutableRefObject<T | null>, IDimension] => {
   const target = useRef<T | null>(null);
   const [dimension, setDimension] = useState<IDimension>({
     width: 0,
