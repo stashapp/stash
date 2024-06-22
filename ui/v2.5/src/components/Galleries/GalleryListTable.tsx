@@ -134,6 +134,16 @@ export const GalleryListTable: React.FC<IGalleryListTableProps> = (
     </ul>
   );
 
+  const PathCell = (scene: GQL.SlimGalleryDataFragment) => (
+    <ul className="newline-list overflowable">
+      {scene.files.map((file) => (
+        <li key={file.id}>
+          <span>{file.path}</span>
+        </li>
+      ))}
+    </ul>
+  );
+
   interface IColumnSpec {
     value: string;
     label: string;
@@ -211,6 +221,11 @@ export const GalleryListTable: React.FC<IGalleryListTableProps> = (
       label: intl.formatMessage({ id: "photographer" }),
       render: (s) => <>{s.photographer}</>,
     },
+    {
+      value: "path",
+      label: intl.formatMessage({ id: "path" }),
+      render: PathCell,
+    }
   ];
 
   const defaultColumns = allColumns
