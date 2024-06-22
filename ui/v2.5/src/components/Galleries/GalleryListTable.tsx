@@ -225,7 +225,7 @@ export const GalleryListTable: React.FC<IGalleryListTableProps> = (
       value: "path",
       label: intl.formatMessage({ id: "path" }),
       render: PathCell,
-    }
+    },
   ];
 
   const defaultColumns = allColumns
