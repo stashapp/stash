@@ -436,6 +436,7 @@ input[type="range"].zoom-slider {
 
     li {
       display: inline;
+      white-space: pre-wrap;
     }
 
     li::after {
@@ -459,6 +460,7 @@ input[type="range"].zoom-slider {
   }
 
   .newline-list.overflowable {
+    -webkit-line-clamp: 1;
     width: 700px;
   }
 
@@ -487,10 +489,6 @@ input[type="range"].zoom-slider {
   .newline-list.overflowable li .ellips-data:hover,
   .comma-list.overflowable li .ellips-data:hover {
     max-width: fit-content;
-  }
-
-  .newline-list.overflowable:hover li {
-    white-space: pre-wrap;
   }
 
   td {

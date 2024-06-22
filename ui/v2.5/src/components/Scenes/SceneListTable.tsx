@@ -246,7 +246,7 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
   );
 
   const PathCell = (scene: GQL.SlimSceneDataFragment) => (
-    <ul className="newline-list overflowable">
+    <ul className="newline-list overflowable TruncatedText">
       {scene.files.map((file) => (
         <li key={file.id}>
           <span>{file.path}</span>

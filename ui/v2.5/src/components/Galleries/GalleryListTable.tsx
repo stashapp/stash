@@ -135,7 +135,7 @@ export const GalleryListTable: React.FC<IGalleryListTableProps> = (
   );
 
   const PathCell = (scene: GQL.SlimGalleryDataFragment) => (
-    <ul className="newline-list overflowable">
+    <ul className="newline-list overflowable TruncatedText">
       {scene.files.map((file) => (
         <li key={file.id}>
           <span>{file.path}</span>
