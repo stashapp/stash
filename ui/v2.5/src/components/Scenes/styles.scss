@@ -628,6 +628,10 @@ input[type="range"].blue-slider {
     position: sticky;
     top: 0;
     z-index: 100;
+
+    .form-check {
+      display: inline-block;
+    }
   }
 
   .queue-scene-details {

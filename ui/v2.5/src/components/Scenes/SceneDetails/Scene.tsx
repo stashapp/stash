@@ -147,6 +147,10 @@ interface IProps {
   collapsed: boolean;
   setCollapsed: (state: boolean) => void;
   setContinuePlaylist: (value: boolean) => void;
+  loopQueue: boolean;
+  setLoopQueue: (value: boolean) => void;
+  loopScene: boolean;
+  setLoopScene: (value: boolean) => void;
 }
 
 interface ISceneParams {
@@ -170,6 +174,10 @@ const ScenePage: React.FC<IProps> = ({
   collapsed,
   setCollapsed,
   setContinuePlaylist,
+  loopQueue,
+  setLoopQueue,
+  loopScene,
+  setLoopScene,
 }) => {
   const Toast = useToast();
   const intl = useIntl();
@@ -505,6 +513,10 @@ const ScenePage: React.FC<IProps> = ({
             hasMoreScenes={queueHasMoreScenes}
             onLessScenes={onQueueLessScenes}
             onMoreScenes={onQueueMoreScenes}
+            loopQueue={loopQueue}
+            setLoopQueue={setLoopQueue}
+            loopScene={loopScene}
+            setLoopScene={setLoopScene}
           />
         </Tab.Pane>
         <Tab.Pane eventKey="scene-markers-panel">
@@ -719,6 +731,14 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
     [queueScenes, id]
   );
 
+  const [loopQueue, setLoopQueue] = useState(false);
+
+  const [loopScene, setLoopScene] = useState(false);
+
+  const forceLoop =
+    (continuePlaylist && loopScene) ||
+    (continuePlaylist && loopQueue && queueTotal === 1);
+
   function getSetTimestamp(fn: (value: number) => void) {
     _setTimestamp.current = fn;
   }
@@ -803,6 +823,36 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
     return scenes;
   }
 
+  async function onQueueFirstScenes() {
+    if (!sceneQueue.query || queueStart <= 1) {
+      return;
+    }
+
+    const filterCopy = sceneQueue.query.clone();
+    const newStart = 1;
+    filterCopy.currentPage = newStart;
+    const query = await queryFindScenes(filterCopy);
+    const { scenes } = query.data.findScenes;
+    setQueueScenes(scenes);
+
+    return scenes;
+  }
+
+  async function onQueueLastScenes() {
+    if (!sceneQueue.query || !queueHasMoreScenes) {
+      return;
+    }
+
+    const filterCopy = sceneQueue.query.clone();
+    const newStart = queueTotal;
+    filterCopy.currentPage = Math.ceil(newStart / filterCopy.itemsPerPage);
+    const query = await queryFindScenes(filterCopy);
+    const { scenes } = query.data.findScenes;
+    setQueueScenes(scenes);
+
+    return scenes;
+  }
+
   function loadScene(sceneID: string, autoPlay?: boolean, newPage?: number) {
     const sceneLink = sceneQueue.makeLink(sceneID, {
       newPage,
@@ -812,19 +862,34 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
     history.replace(sceneLink);
   }
 
-  async function queueNext(autoPlay: boolean) {
+  async function queueNext(autoPlay: boolean, loop?: boolean) {
     if (currentQueueIndex === -1) return;
 
     if (currentQueueIndex < queueScenes.length - 1) {
       loadScene(queueScenes[currentQueueIndex + 1].id, autoPlay);
     } else {
       // if we're at the end of the queue, load more scenes
-      if (currentQueueIndex === queueScenes.length - 1 && queueHasMoreScenes) {
-        const loadedScenes = await onQueueMoreScenes();
-        if (loadedScenes && loadedScenes.length > 0) {
-          // set the page to the next page
-          const newPage = (sceneQueue.query?.currentPage ?? 0) + 1;
-          loadScene(loadedScenes[0].id, autoPlay, newPage);
+      if (currentQueueIndex === queueScenes.length - 1) {
+        if (queueHasMoreScenes) {
+          const loadedScenes = await onQueueMoreScenes();
+          if (loadedScenes && loadedScenes.length > 0) {
+            // set the page to the next page
+            const newPage = (sceneQueue.query?.currentPage ?? 0) + 1;
+            loadScene(loadedScenes[0].id, autoPlay, newPage);
+          }
+        } else if (loop !== false) {
+          // no more scenes in queue
+          if (queueStart > 1) {
+            // load the first page and jump to the first scene
+            const loadedScenes = await onQueueFirstScenes();
+            if (loadedScenes && loadedScenes.length > 0) {
+              const newPage = 1;
+              loadScene(loadedScenes[0].id, autoPlay, newPage);
+            }
+          } else {
+            // jump to first scene in queue
+            loadScene(queueScenes[0].id, autoPlay);
+          }
         }
       }
     }
@@ -846,6 +911,25 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
             autoPlay,
             newPage
           );
+        }
+      } else {
+        // we're at the first scene of the first page.
+        if (queueHasMoreScenes) {
+          // we're at the beginning of the queue and queue has more pages. Jump to the last scene in the last page.
+          const loadedScenes = await onQueueLastScenes();
+          if (loadedScenes && loadedScenes.length > 0) {
+            const newPage = Math.ceil(
+              queueTotal / (sceneQueue.query?.itemsPerPage ?? 0)
+            );
+            loadScene(
+              loadedScenes[loadedScenes.length - 1].id,
+              autoPlay,
+              newPage
+            );
+          }
+        } else {
+          // we're at the beginning of the queue and there are no more pages so jump the last scene in the queue.
+          loadScene(queueScenes[queueScenes.length - 1].id, autoPlay);
         }
       }
     }
@@ -876,7 +960,7 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
   function onComplete() {
     // load the next scene if we're continuing
     if (continuePlaylist) {
-      queueNext(true);
+      queueNext(true, loopQueue);
     }
   }
 
@@ -933,6 +1017,10 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
         collapsed={collapsed}
         setCollapsed={setCollapsed}
         setContinuePlaylist={setContinuePlaylist}
+        loopQueue={loopQueue}
+        setLoopQueue={setLoopQueue}
+        loopScene={loopScene}
+        setLoopScene={setLoopScene}
       />
       <div className={`scene-player-container ${collapsed ? "expanded" : ""}`}>
         <ScenePlayer
@@ -946,6 +1034,7 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
           onComplete={onComplete}
           onNext={() => queueNext(true)}
           onPrevious={() => queuePrevious(true)}
+          forceLoop={forceLoop}
         />
       </div>
     </div>

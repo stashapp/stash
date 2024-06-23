@@ -203,6 +203,7 @@ interface IScenePlayerProps {
   autoplay?: boolean;
   permitLoop?: boolean;
   initialTimestamp: number;
+  forceLoop?: boolean;
   sendSetTimestamp: (setTimestamp: (value: number) => void) => void;
   onComplete: () => void;
   onNext: () => void;
@@ -215,6 +216,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   autoplay,
   permitLoop = true,
   initialTimestamp: _initialTimestamp,
+  forceLoop,
   sendSetTimestamp,
   onComplete,
   onNext,
@@ -264,11 +266,12 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   const maxLoopDuration = interfaceConfig?.maximumLoopDuration ?? 0;
   const looping = useMemo(
     () =>
-      !!file?.duration &&
-      permitLoop &&
-      maxLoopDuration !== 0 &&
-      file.duration < maxLoopDuration,
-    [file, permitLoop, maxLoopDuration]
+      forceLoop ||
+      (!!file?.duration &&
+        permitLoop &&
+        maxLoopDuration !== 0 &&
+        file.duration < maxLoopDuration),
+    [file, permitLoop, maxLoopDuration, forceLoop]
   );
 
   const getPlayer = useCallback(() => {
