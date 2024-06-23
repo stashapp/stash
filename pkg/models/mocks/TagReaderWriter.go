@@ -266,6 +266,29 @@ func (_m *TagReaderWriter) FindByImageID(ctx context.Context, imageID int) ([]*m
 	return r0, r1
 }
 
+// FindByMovieID provides a mock function with given fields: ctx, movieID
+func (_m *TagReaderWriter) FindByMovieID(ctx context.Context, movieID int) ([]*models.Tag, error) {
+	ret := _m.Called(ctx, movieID)
+
+	var r0 []*models.Tag
+	if rf, ok := ret.Get(0).(func(context.Context, int) []*models.Tag); ok {
+		r0 = rf(ctx, movieID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.Tag)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, movieID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // FindByName provides a mock function with given fields: ctx, name, nocase
 func (_m *TagReaderWriter) FindByName(ctx context.Context, name string, nocase bool) (*models.Tag, error) {
 	ret := _m.Called(ctx, name, nocase)
@@ -404,6 +427,29 @@ func (_m *TagReaderWriter) FindBySceneMarkerID(ctx context.Context, sceneMarkerI
 	return r0, r1
 }
 
+// FindByStudioID provides a mock function with given fields: ctx, studioID
+func (_m *TagReaderWriter) FindByStudioID(ctx context.Context, studioID int) ([]*models.Tag, error) {
+	ret := _m.Called(ctx, studioID)
+
+	var r0 []*models.Tag
+	if rf, ok := ret.Get(0).(func(context.Context, int) []*models.Tag); ok {
+		r0 = rf(ctx, studioID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.Tag)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, studioID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // FindMany provides a mock function with given fields: ctx, ids
 func (_m *TagReaderWriter) FindMany(ctx context.Context, ids []int) ([]*models.Tag, error) {
 	ret := _m.Called(ctx, ids)
@@ -450,6 +496,29 @@ func (_m *TagReaderWriter) GetAliases(ctx context.Context, relatedID int) ([]str
 	return r0, r1
 }
 
+// GetChildIDs provides a mock function with given fields: ctx, relatedID
+func (_m *TagReaderWriter) GetChildIDs(ctx context.Context, relatedID int) ([]int, error) {
+	ret := _m.Called(ctx, relatedID)
+
+	var r0 []int
+	if rf, ok := ret.Get(0).(func(context.Context, int) []int); ok {
+		r0 = rf(ctx, relatedID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]int)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, relatedID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetImage provides a mock function with given fields: ctx, tagID
 func (_m *TagReaderWriter) GetImage(ctx context.Context, tagID int) ([]byte, error) {
 	ret := _m.Called(ctx, tagID)
@@ -466,6 +535,29 @@ func (_m *TagReaderWriter) GetImage(ctx context.Context, tagID int) ([]byte, err
 	var r1 error
 	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
 		r1 = rf(ctx, tagID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetParentIDs provides a mock function with given fields: ctx, relatedID
+func (_m *TagReaderWriter) GetParentIDs(ctx context.Context, relatedID int) ([]int, error) {
+	ret := _m.Called(ctx, relatedID)
+
+	var r0 []int
+	if rf, ok := ret.Get(0).(func(context.Context, int) []int); ok {
+		r0 = rf(ctx, relatedID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]int)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, relatedID)
 	} else {
 		r1 = ret.Error(1)
 	}

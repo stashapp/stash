@@ -36,9 +36,9 @@ import {
   yupUniqueStringList,
 } from "src/utils/yup";
 import { formikUtils } from "src/utils/form";
-import { Tag, TagSelect } from "src/components/Tags/TagSelect";
 import { Studio, StudioSelect } from "src/components/Studios/StudioSelect";
 import { Scene, SceneSelect } from "src/components/Scenes/SceneSelect";
+import { useTagsEdit } from "src/hooks/tagsEdit";
 
 interface IProps {
   gallery: Partial<GQL.GalleryDataFragment>;
@@ -58,7 +58,6 @@ export const GalleryEditPanel: React.FC<IProps> = ({
   const [scenes, setScenes] = useState<Scene[]>([]);
 
   const [performers, setPerformers] = useState<Performer[]>([]);
-  const [tags, setTags] = useState<Tag[]>([]);
   const [studio, setStudio] = useState<Studio | null>(null);
 
   const isNew = gallery.id === undefined;
@@ -110,6 +109,11 @@ export const GalleryEditPanel: React.FC<IProps> = ({
     onSubmit: (values) => onSave(schema.cast(values)),
   });
 
+  const { tags, updateTagsStateFromScraper, tagsControl } = useTagsEdit(
+    gallery.tags,
+    (ids) => formik.setFieldValue("tag_ids", ids)
+  );
+
   function onSetScenes(items: Scene[]) {
     setScenes(items);
     formik.setFieldValue(
@@ -126,14 +130,6 @@ export const GalleryEditPanel: React.FC<IProps> = ({
     );
   }
 
-  function onSetTags(items: Tag[]) {
-    setTags(items);
-    formik.setFieldValue(
-      "tag_ids",
-      items.map((item) => item.id)
-    );
-  }
-
   function onSetStudio(item: Studio | null) {
     setStudio(item);
     formik.setFieldValue("studio_id", item ? item.id : null);
@@ -142,10 +138,6 @@ export const GalleryEditPanel: React.FC<IProps> = ({
   useEffect(() => {
     setPerformers(gallery.performers ?? []);
   }, [gallery.performers]);
-
-  useEffect(() => {
-    setTags(gallery.tags ?? []);
-  }, [gallery.tags]);
 
   useEffect(() => {
     setStudio(gallery.studio ?? null);
@@ -339,23 +331,7 @@ export const GalleryEditPanel: React.FC<IProps> = ({
       }
     }
 
-    if (galleryData?.tags?.length) {
-      const idTags = galleryData.tags.filter((t) => {
-        return t.stored_id !== undefined && t.stored_id !== null;
-      });
-
-      if (idTags.length > 0) {
-        onSetTags(
-          idTags.map((p) => {
-            return {
-              id: p.stored_id!,
-              name: p.name ?? "",
-              aliases: [],
-            };
-          })
-        );
-      }
-    }
+    updateTagsStateFromScraper(galleryData.tags ?? undefined);
   }
 
   async function onScrapeGalleryURL(url: string) {
@@ -437,16 +413,7 @@ export const GalleryEditPanel: React.FC<IProps> = ({
 
   function renderTagsField() {
     const title = intl.formatMessage({ id: "tags" });
-    const control = (
-      <TagSelect
-        isMulti
-        onSelect={onSetTags}
-        values={tags}
-        hoverPlacement="right"
-      />
-    );
-
-    return renderField("tag_ids", title, control, fullWidthProps);
+    return renderField("tag_ids", title, tagsControl(), fullWidthProps);
   }
 
   function renderDetailsField() {

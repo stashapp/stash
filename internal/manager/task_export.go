@@ -982,6 +982,7 @@ func (t *ExportTask) ExportStudios(ctx context.Context, workers int) {
 func (t *ExportTask) exportStudio(ctx context.Context, wg *sync.WaitGroup, jobChan <-chan *models.Studio) {
 	defer wg.Done()
 
+	r := t.repository
 	studioReader := t.repository.Studio
 
 	for s := range jobChan {
@@ -990,6 +991,18 @@ func (t *ExportTask) exportStudio(ctx context.Context, wg *sync.WaitGroup, jobCh
 		if err != nil {
 			logger.Errorf("[studios] <%s> error getting studio JSON: %v", s.Name, err)
 			continue
+		}
+
+		tags, err := r.Tag.FindByStudioID(ctx, s.ID)
+		if err != nil {
+			logger.Errorf("[studios] <%s> error getting studio tags: %s", s.Name, err.Error())
+			continue
+		}
+
+		newStudioJSON.Tags = tag.GetNames(tags)
+
+		if t.includeDependencies {
+			t.tags.IDs = sliceutil.AppendUniques(t.tags.IDs, tag.GetIDs(tags))
 		}
 
 		fn := newStudioJSON.Filename()
@@ -1107,14 +1120,28 @@ func (t *ExportTask) exportMovie(ctx context.Context, wg *sync.WaitGroup, jobCha
 	r := t.repository
 	movieReader := r.Movie
 	studioReader := r.Studio
+	tagReader := r.Tag
 
 	for m := range jobChan {
+		if err := m.LoadURLs(ctx, r.Movie); err != nil {
+			logger.Errorf("[movies] <%s> error getting movie urls: %v", m.Name, err)
+			continue
+		}
+
 		newMovieJSON, err := movie.ToJSON(ctx, movieReader, studioReader, m)
 
 		if err != nil {
 			logger.Errorf("[movies] <%s> error getting tag JSON: %v", m.Name, err)
 			continue
 		}
+
+		tags, err := tagReader.FindByMovieID(ctx, m.ID)
+		if err != nil {
+			logger.Errorf("[movies] <%s> error getting image tag names: %v", m.Name, err)
+			continue
+		}
+
+		newMovieJSON.Tags = tag.GetNames(tags)
 
 		if t.includeDependencies {
 			if m.StudioID != nil {

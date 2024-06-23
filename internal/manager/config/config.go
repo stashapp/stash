@@ -232,6 +232,9 @@ const (
 	SecurityTripwireAccessedFromPublicInternet        = "security_tripwire_accessed_from_public_internet"
 	securityTripwireAccessedFromPublicInternetDefault = ""
 
+	sslCertPath = "ssl_cert_path"
+	sslKeyPath  = "ssl_key_path"
+
 	// DLNA options
 	DLNAServerName         = "dlna.server_name"
 	DLNADefaultEnabled     = "dlna.default_enabled"
@@ -285,10 +288,6 @@ var (
 	defaultGalleryExtensions = []string{"zip", "cbz"}
 	defaultMenuItems         = []string{"scenes", "images", "movies", "markers", "galleries", "performers", "studios", "tags"}
 )
-
-var jsonUnmarshalConf = koanf.UnmarshalConf{
-	Tag: "json",
-}
 
 type MissingConfigError struct {
 	missingFields []string
@@ -360,8 +359,17 @@ func (i *Config) InitTLS() {
 		paths.GetStashHomeDirectory(),
 	}
 
-	i.certFile = fsutil.FindInPaths(tlsPaths, "stash.crt")
-	i.keyFile = fsutil.FindInPaths(tlsPaths, "stash.key")
+	i.certFile = i.getString(sslCertPath)
+	if i.certFile == "" {
+		// Look for default file
+		i.certFile = fsutil.FindInPaths(tlsPaths, "stash.crt")
+	}
+
+	i.keyFile = i.getString(sslKeyPath)
+	if i.keyFile == "" {
+		// Look for default file
+		i.keyFile = fsutil.FindInPaths(tlsPaths, "stash.key")
+	}
 }
 
 func (i *Config) GetTLSFiles() (certFile, keyFile string) {
@@ -1452,7 +1460,8 @@ func (i *Config) GetDefaultIdentifySettings() *identify.Options {
 
 	if v.Exists(DefaultIdentifySettings) && v.Get(DefaultIdentifySettings) != nil {
 		var ret identify.Options
-		if err := v.UnmarshalWithConf(DefaultIdentifySettings, &ret, jsonUnmarshalConf); err != nil {
+
+		if err := v.Unmarshal(DefaultIdentifySettings, &ret); err != nil {
 			return nil
 		}
 		return &ret
@@ -1471,7 +1480,7 @@ func (i *Config) GetDefaultScanSettings() *ScanMetadataOptions {
 
 	if v.Exists(DefaultScanSettings) && v.Get(DefaultScanSettings) != nil {
 		var ret ScanMetadataOptions
-		if err := v.UnmarshalWithConf(DefaultScanSettings, &ret, jsonUnmarshalConf); err != nil {
+		if err := v.Unmarshal(DefaultScanSettings, &ret); err != nil {
 			return nil
 		}
 		return &ret

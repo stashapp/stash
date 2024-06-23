@@ -9,7 +9,6 @@ import (
 	"io"
 	"mime/multipart"
 	"net/http"
-	"regexp"
 	"strconv"
 	"strings"
 
@@ -41,6 +40,7 @@ type PerformerReader interface {
 	match.PerformerFinder
 	models.AliasLoader
 	models.StashIDLoader
+	models.URLLoader
 	FindBySceneID(ctx context.Context, sceneID int) ([]*models.Performer, error)
 	GetImage(ctx context.Context, performerID int) ([]byte, error)
 }
@@ -251,11 +251,13 @@ func (c Client) findStashBoxScenesByFingerprints(ctx context.Context, scenes [][
 	return ret, nil
 }
 
-func (c Client) SubmitStashBoxFingerprints(ctx context.Context, sceneIDs []string, endpoint string) (bool, error) {
+func (c Client) SubmitStashBoxFingerprints(ctx context.Context, sceneIDs []string) (bool, error) {
 	ids, err := stringslice.StringSliceToIntSlice(sceneIDs)
 	if err != nil {
 		return false, err
 	}
+
+	endpoint := c.box.Endpoint
 
 	var fingerprints []graphql.FingerprintSubmission
 
@@ -683,6 +685,10 @@ func performerFragmentToScrapedPerformer(p graphql.PerformerFragment) *models.Sc
 		sp.Aliases = &alias
 	}
 
+	for _, u := range p.Urls {
+		sp.URLs = append(sp.URLs, u.URL)
+	}
+
 	return sp
 }
 
@@ -945,12 +951,13 @@ func appendFingerprintUnique(v []*graphql.FingerprintInput, toAdd *graphql.Finge
 	return append(v, toAdd)
 }
 
-func (c Client) SubmitSceneDraft(ctx context.Context, scene *models.Scene, endpoint string, cover []byte) (*string, error) {
+func (c Client) SubmitSceneDraft(ctx context.Context, scene *models.Scene, cover []byte) (*string, error) {
 	draft := graphql.SceneDraftInput{}
 	var image io.Reader
 	r := c.repository
 	pqb := r.Performer
 	sqb := r.Studio
+	endpoint := c.box.Endpoint
 
 	if scene.Title != "" {
 		draft.Title = &scene.Title
@@ -1115,12 +1122,17 @@ func (c Client) SubmitSceneDraft(ctx context.Context, scene *models.Scene, endpo
 	// return id, nil
 }
 
-func (c Client) SubmitPerformerDraft(ctx context.Context, performer *models.Performer, endpoint string) (*string, error) {
+func (c Client) SubmitPerformerDraft(ctx context.Context, performer *models.Performer) (*string, error) {
 	draft := graphql.PerformerDraftInput{}
 	var image io.Reader
 	pqb := c.repository.Performer
+	endpoint := c.box.Endpoint
 
 	if err := performer.LoadAliases(ctx, pqb); err != nil {
+		return nil, err
+	}
+
+	if err := performer.LoadURLs(ctx, pqb); err != nil {
 		return nil, err
 	}
 
@@ -1191,28 +1203,8 @@ func (c Client) SubmitPerformerDraft(ctx context.Context, performer *models.Perf
 		}
 	}
 
-	var urls []string
-	if len(strings.TrimSpace(performer.Twitter)) > 0 {
-		reg := regexp.MustCompile(`https?:\/\/(?:www\.)?twitter\.com`)
-		if reg.MatchString(performer.Twitter) {
-			urls = append(urls, strings.TrimSpace(performer.Twitter))
-		} else {
-			urls = append(urls, "https://twitter.com/"+strings.TrimSpace(performer.Twitter))
-		}
-	}
-	if len(strings.TrimSpace(performer.Instagram)) > 0 {
-		reg := regexp.MustCompile(`https?:\/\/(?:www\.)?instagram\.com`)
-		if reg.MatchString(performer.Instagram) {
-			urls = append(urls, strings.TrimSpace(performer.Instagram))
-		} else {
-			urls = append(urls, "https://instagram.com/"+strings.TrimSpace(performer.Instagram))
-		}
-	}
-	if len(strings.TrimSpace(performer.URL)) > 0 {
-		urls = append(urls, strings.TrimSpace(performer.URL))
-	}
-	if len(urls) > 0 {
-		draft.Urls = urls
+	if len(performer.URLs.List()) > 0 {
+		draft.Urls = performer.URLs.List()
 	}
 
 	stashIDs, err := pqb.GetStashIDs(ctx, performer.ID)

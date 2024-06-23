@@ -4,6 +4,7 @@ import {
   faImages,
   faPlayCircle,
   faUser,
+  faVideo,
   faMapMarkerAlt,
 } from "@fortawesome/free-solid-svg-icons";
 import React, { useMemo } from "react";
@@ -20,7 +21,8 @@ type PopoverLinkType =
   | "gallery"
   | "marker"
   | "movie"
-  | "performer";
+  | "performer"
+  | "studio";
 
 interface IProps {
   className?: string;
@@ -54,6 +56,8 @@ export const PopoverCountButton: React.FC<IProps> = ({
         return faFilm;
       case "performer":
         return faUser;
+      case "studio":
+        return faVideo;
     }
   }
 
@@ -88,6 +92,11 @@ export const PopoverCountButton: React.FC<IProps> = ({
         return {
           one: "performer",
           other: "performers",
+        };
+      case "studio":
+        return {
+          one: "studio",
+          other: "studios",
         };
     }
   }

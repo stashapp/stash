@@ -55,6 +55,13 @@ export const PerformerTagsCriterionOption = new BaseTagsCriterionOption(
   withoutEqualsModifierOptions
 );
 
+// TODO - this requires using a nested studios_filter which needs to be added separately
+// export const StudioTagsCriterionOption = new BaseTagsCriterionOption(
+//   "studio_tags",
+//   "studio_tags",
+//   withoutEqualsModifierOptions
+// );
+
 export const ParentTagsCriterionOption = new BaseTagsCriterionOption(
   "parent_tags",
   "parents",

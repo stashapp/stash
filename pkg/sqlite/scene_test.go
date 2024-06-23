@@ -2411,10 +2411,12 @@ func TestSceneQueryPathOr(t *testing.T) {
 			Value:    scene1Path,
 			Modifier: models.CriterionModifierEquals,
 		},
-		Or: &models.SceneFilterType{
-			Path: &models.StringCriterionInput{
-				Value:    scene2Path,
-				Modifier: models.CriterionModifierEquals,
+		OperatorFilter: models.OperatorFilter[models.SceneFilterType]{
+			Or: &models.SceneFilterType{
+				Path: &models.StringCriterionInput{
+					Value:    scene2Path,
+					Modifier: models.CriterionModifierEquals,
+				},
 			},
 		},
 	}
@@ -2444,10 +2446,12 @@ func TestSceneQueryPathAndRating(t *testing.T) {
 			Value:    scenePath,
 			Modifier: models.CriterionModifierEquals,
 		},
-		And: &models.SceneFilterType{
-			Rating100: &models.IntCriterionInput{
-				Value:    sceneRating,
-				Modifier: models.CriterionModifierEquals,
+		OperatorFilter: models.OperatorFilter[models.SceneFilterType]{
+			And: &models.SceneFilterType{
+				Rating100: &models.IntCriterionInput{
+					Value:    sceneRating,
+					Modifier: models.CriterionModifierEquals,
+				},
 			},
 		},
 	}
@@ -2484,8 +2488,10 @@ func TestSceneQueryPathNotRating(t *testing.T) {
 
 	sceneFilter := models.SceneFilterType{
 		Path: &pathCriterion,
-		Not: &models.SceneFilterType{
-			Rating100: &ratingCriterion,
+		OperatorFilter: models.OperatorFilter[models.SceneFilterType]{
+			Not: &models.SceneFilterType{
+				Rating100: &ratingCriterion,
+			},
 		},
 	}
 
@@ -2516,8 +2522,10 @@ func TestSceneIllegalQuery(t *testing.T) {
 	}
 
 	sceneFilter := &models.SceneFilterType{
-		And: &subFilter,
-		Or:  &subFilter,
+		OperatorFilter: models.OperatorFilter[models.SceneFilterType]{
+			And: &subFilter,
+			Or:  &subFilter,
+		},
 	}
 
 	withTxn(func(ctx context.Context) error {

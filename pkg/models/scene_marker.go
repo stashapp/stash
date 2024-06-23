@@ -19,6 +19,8 @@ type SceneMarkerFilterType struct {
 	SceneCreatedAt *TimestampCriterionInput `json:"scene_created_at"`
 	// Filter by scenes updated at
 	SceneUpdatedAt *TimestampCriterionInput `json:"scene_updated_at"`
+	// Filter by related scenes that meet this criteria
+	SceneFilter *SceneFilterType `json:"scene_filter"`
 }
 
 type MarkerStringsResultType struct {

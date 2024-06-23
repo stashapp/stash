@@ -1017,6 +1017,8 @@
   "errors": {
     "header": "Error",
     "image_index_greater_than_zero": "Image index must be greater than 0",
+    "invalid_javascript_string": "Invalid javascript code: {error}",
+    "invalid_json_string": "Invalid JSON string: {error}",
     "lazy_component_error_help": "If you recently upgraded Stash, please reload the page or clear your browser cache.",
     "loading_type": "Error loading {type}",
     "something_went_wrong": "Something went wrong."
@@ -1116,6 +1118,7 @@
   "megabits_per_second": "{value} mbps",
   "metadata": "Metadata",
   "movie": "Movie",
+  "movie_count": "Movie Count",
   "movie_scene_number": "Scene Number",
   "movies": "Movies",
   "name": "Name",
@@ -1160,6 +1163,7 @@
     "version": "Version"
   },
   "pagination": {
+    "current_total": "{current} of {total}",
     "first": "First",
     "last": "Last",
     "next": "Next",
@@ -1372,6 +1376,7 @@
   "status": "Status: {statusText}",
   "studio": "Studio",
   "studio_and_parent": "Studio & Parent",
+  "studio_count": "Studio Count",
   "studio_depth": "Levels (empty for all)",
   "studio_tagger": {
     "add_new_studios": "Add New Studios",
@@ -1411,6 +1416,7 @@
     "update_studios": "Update Studios",
     "updating_untagged_studios_description": "Updating untagged studios will try to match any studios that lack a stashid and update the metadata."
   },
+  "studio_tags": "Studio Tags",
   "studios": "Studios",
   "sub_tag_count": "Sub-Tag Count",
   "sub_tag_of": "Sub-tag of {parent}",

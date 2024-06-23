@@ -16,10 +16,11 @@ type Performer {
   id: ID!
   name: String!
   disambiguation: String
-  url: String
+  url: String @deprecated(reason: "Use urls")
+  urls: [String!]
   gender: GenderEnum
-  twitter: String
-  instagram: String
+  twitter: String @deprecated(reason: "Use urls")
+  instagram: String @deprecated(reason: "Use urls")
   birthdate: String
   ethnicity: String
   country: String
@@ -60,7 +61,8 @@ type Performer {
 input PerformerCreateInput {
   name: String!
   disambiguation: String
-  url: String
+  url: String @deprecated(reason: "Use urls")
+  urls: [String!]
   gender: GenderEnum
   birthdate: String
   ethnicity: String
@@ -75,8 +77,8 @@ input PerformerCreateInput {
   tattoos: String
   piercings: String
   alias_list: [String!]
-  twitter: String
-  instagram: String
+  twitter: String @deprecated(reason: "Use urls")
+  instagram: String @deprecated(reason: "Use urls")
   favorite: Boolean
   tag_ids: [ID!]
   "This should be a URL or a base64 encoded data URL"
@@ -95,7 +97,8 @@ input PerformerUpdateInput {
   id: ID!
   name: String
   disambiguation: String
-  url: String
+  url: String @deprecated(reason: "Use urls")
+  urls: [String!]
   gender: GenderEnum
   birthdate: String
   ethnicity: String
@@ -110,8 +113,8 @@ input PerformerUpdateInput {
   tattoos: String
   piercings: String
   alias_list: [String!]
-  twitter: String
-  instagram: String
+  twitter: String @deprecated(reason: "Use urls")
+  instagram: String @deprecated(reason: "Use urls")
   favorite: Boolean
   tag_ids: [ID!]
   "This should be a URL or a base64 encoded data URL"
@@ -135,7 +138,8 @@ input BulkPerformerUpdateInput {
   clientMutationId: String
   ids: [ID!]
   disambiguation: String
-  url: String
+  url: String @deprecated(reason: "Use urls")
+  urls: BulkUpdateStrings
   gender: GenderEnum
   birthdate: String
   ethnicity: String
@@ -150,8 +154,8 @@ input BulkPerformerUpdateInput {
   tattoos: String
   piercings: String
   alias_list: BulkUpdateStrings
-  twitter: String
-  instagram: String
+  twitter: String @deprecated(reason: "Use urls")
+  instagram: String @deprecated(reason: "Use urls")
   favorite: Boolean
   tag_ids: BulkUpdateIds
   # rating expressed as 1-100

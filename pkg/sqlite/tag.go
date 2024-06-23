@@ -24,6 +24,10 @@ const (
 	tagAliasColumn  = "alias"
 
 	tagImageBlobColumn = "image_blob"
+
+	tagRelationsTable = "tags_relations"
+	tagParentIDColumn = "parent_id"
+	tagChildIDColumn  = "child_id"
 )
 
 type tagRow struct {
@@ -90,8 +94,57 @@ func (r *tagRowRecord) fromPartial(o models.TagPartial) {
 	r.setTimestamp("updated_at", o.UpdatedAt)
 }
 
-type TagStore struct {
+type tagRepositoryType struct {
 	repository
+
+	aliases stringRepository
+
+	scenes    joinRepository
+	images    joinRepository
+	galleries joinRepository
+}
+
+var (
+	tagRepository = tagRepositoryType{
+		repository: repository{
+			tableName: tagTable,
+			idColumn:  idColumn,
+		},
+		aliases: stringRepository{
+			repository: repository{
+				tableName: tagAliasesTable,
+				idColumn:  tagIDColumn,
+			},
+			stringColumn: tagAliasColumn,
+		},
+		scenes: joinRepository{
+			repository: repository{
+				tableName: scenesTagsTable,
+				idColumn:  tagIDColumn,
+			},
+			fkColumn:     sceneIDColumn,
+			foreignTable: sceneTable,
+		},
+		images: joinRepository{
+			repository: repository{
+				tableName: imagesTagsTable,
+				idColumn:  tagIDColumn,
+			},
+			fkColumn:     imageIDColumn,
+			foreignTable: imageTable,
+		},
+		galleries: joinRepository{
+			repository: repository{
+				tableName: galleriesTagsTable,
+				idColumn:  tagIDColumn,
+			},
+			fkColumn:     galleryIDColumn,
+			foreignTable: galleryTable,
+		},
+	}
+)
+
+type TagStore struct {
 	blobJoinQueryBuilder
 
 	tableMgr *table
@@ -99,10 +152,6 @@ type TagStore struct {
 
 func NewTagStore(blobStore *BlobStore) *TagStore {
 	return &TagStore{
-		repository: repository{
-			tableName: tagTable,
-			idColumn:  idColumn,
-		},
 		blobJoinQueryBuilder: blobJoinQueryBuilder{
 			blobStore: blobStore,
 			joinTable: tagTable,
@@ -126,6 +175,24 @@ func (qb *TagStore) Create(ctx context.Context, newObject *models.Tag) error {
 	id, err := qb.tableMgr.insertID(ctx, r)
 	if err != nil {
 		return err
+	}
+
+	if newObject.Aliases.Loaded() {
+		if err := tagsAliasesTableMgr.insertJoins(ctx, id, newObject.Aliases.List()); err != nil {
+			return err
+		}
+	}
+
+	if newObject.ParentIDs.Loaded() {
+		if err := tagsParentTagsTableMgr.insertJoins(ctx, id, newObject.ParentIDs.List()); err != nil {
+			return err
+		}
+	}
+
+	if newObject.ChildIDs.Loaded() {
+		if err := tagsChildTagsTableMgr.insertJoins(ctx, id, newObject.ChildIDs.List()); err != nil {
+			return err
+		}
 	}
 
 	updated, err := qb.find(ctx, id)
@@ -153,6 +220,24 @@ func (qb *TagStore) UpdatePartial(ctx context.Context, id int, partial models.Ta
 		}
 	}
 
+	if partial.Aliases != nil {
+		if err := tagsAliasesTableMgr.modifyJoins(ctx, id, partial.Aliases.Values, partial.Aliases.Mode); err != nil {
+			return nil, err
+		}
+	}
+
+	if partial.ParentIDs != nil {
+		if err := tagsParentTagsTableMgr.modifyJoins(ctx, id, partial.ParentIDs.IDs, partial.ParentIDs.Mode); err != nil {
+			return nil, err
+		}
+	}
+
+	if partial.ChildIDs != nil {
+		if err := tagsChildTagsTableMgr.modifyJoins(ctx, id, partial.ChildIDs.IDs, partial.ChildIDs.Mode); err != nil {
+			return nil, err
+		}
+	}
+
 	return qb.find(ctx, id)
 }
 
@@ -162,6 +247,24 @@ func (qb *TagStore) Update(ctx context.Context, updatedObject *models.Tag) error
 
 	if err := qb.tableMgr.updateByID(ctx, updatedObject.ID, r); err != nil {
 		return err
+	}
+
+	if updatedObject.Aliases.Loaded() {
+		if err := tagsAliasesTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.Aliases.List()); err != nil {
+			return err
+		}
+	}
+
+	if updatedObject.ParentIDs.Loaded() {
+		if err := tagsParentTagsTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.ParentIDs.List()); err != nil {
+			return err
+		}
+	}
+
+	if updatedObject.ChildIDs.Loaded() {
+		if err := tagsChildTagsTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.ChildIDs.List()); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -176,7 +279,7 @@ func (qb *TagStore) Destroy(ctx context.Context, id int) error {
 	// cannot unset primary_tag_id in scene_markers because it is not nullable
 	countQuery := "SELECT COUNT(*) as count FROM scene_markers where primary_tag_id = ?"
 	args := []interface{}{id}
-	primaryMarkers, err := qb.runCountQuery(ctx, countQuery, args)
+	primaryMarkers, err := tagRepository.runCountQuery(ctx, countQuery, args)
 	if err != nil {
 		return err
 	}
@@ -185,7 +288,7 @@ func (qb *TagStore) Destroy(ctx context.Context, id int) error {
 		return errors.New("cannot delete tag used as a primary tag in scene markers")
 	}
 
-	return qb.destroyExisting(ctx, []int{id})
+	return tagRepository.destroyExisting(ctx, []int{id})
 }
 
 // returns nil, nil if not found
@@ -321,6 +424,18 @@ func (qb *TagStore) FindByGalleryID(ctx context.Context, galleryID int) ([]*mode
 	return qb.queryTags(ctx, query, args)
 }
 
+func (qb *TagStore) FindByMovieID(ctx context.Context, movieID int) ([]*models.Tag, error) {
+	query := `
+		SELECT tags.* FROM tags
+		LEFT JOIN movies_tags as movies_join on movies_join.tag_id = tags.id
+		WHERE movies_join.movie_id = ?
+		GROUP BY tags.id
+	`
+	query += qb.getDefaultTagSort()
+	args := []interface{}{movieID}
+	return qb.queryTags(ctx, query, args)
+}
+
 func (qb *TagStore) FindBySceneMarkerID(ctx context.Context, sceneMarkerID int) ([]*models.Tag, error) {
 	query := `
 		SELECT tags.* FROM tags
@@ -330,6 +445,18 @@ func (qb *TagStore) FindBySceneMarkerID(ctx context.Context, sceneMarkerID int) 
 	`
 	query += qb.getDefaultTagSort()
 	args := []interface{}{sceneMarkerID}
+	return qb.queryTags(ctx, query, args)
+}
+
+func (qb *TagStore) FindByStudioID(ctx context.Context, studioID int) ([]*models.Tag, error) {
+	query := `
+		SELECT tags.* FROM tags
+		LEFT JOIN studios_tags as studios_join on studios_join.tag_id = tags.id
+		WHERE studios_join.studio_id = ?
+		GROUP BY tags.id
+	`
+	query += qb.getDefaultTagSort()
+	args := []interface{}{studioID}
 	return qb.queryTags(ctx, query, args)
 }
 
@@ -376,6 +503,14 @@ func (qb *TagStore) FindByNames(ctx context.Context, names []string, nocase bool
 	}
 
 	return ret, nil
+}
+
+func (qb *TagStore) GetParentIDs(ctx context.Context, relatedID int) ([]int, error) {
+	return tagsParentTagsTableMgr.get(ctx, relatedID)
+}
+
+func (qb *TagStore) GetChildIDs(ctx context.Context, relatedID int) ([]int, error) {
+	return tagsChildTagsTableMgr.get(ctx, relatedID)
 }
 
 func (qb *TagStore) FindByParentTagID(ctx context.Context, parentID int) ([]*models.Tag, error) {
@@ -455,73 +590,6 @@ func (qb *TagStore) QueryForAutoTag(ctx context.Context, words []string) ([]*mod
 	return qb.queryTags(ctx, query+" WHERE "+where, args)
 }
 
-func (qb *TagStore) validateFilter(tagFilter *models.TagFilterType) error {
-	const and = "AND"
-	const or = "OR"
-	const not = "NOT"
-
-	if tagFilter.And != nil {
-		if tagFilter.Or != nil {
-			return illegalFilterCombination(and, or)
-		}
-		if tagFilter.Not != nil {
-			return illegalFilterCombination(and, not)
-		}
-
-		return qb.validateFilter(tagFilter.And)
-	}
-
-	if tagFilter.Or != nil {
-		if tagFilter.Not != nil {
-			return illegalFilterCombination(or, not)
-		}
-
-		return qb.validateFilter(tagFilter.Or)
-	}
-
-	if tagFilter.Not != nil {
-		return qb.validateFilter(tagFilter.Not)
-	}
-
-	return nil
-}
-
-func (qb *TagStore) makeFilter(ctx context.Context, tagFilter *models.TagFilterType) *filterBuilder {
-	query := &filterBuilder{}
-
-	if tagFilter.And != nil {
-		query.and(qb.makeFilter(ctx, tagFilter.And))
-	}
-	if tagFilter.Or != nil {
-		query.or(qb.makeFilter(ctx, tagFilter.Or))
-	}
-	if tagFilter.Not != nil {
-		query.not(qb.makeFilter(ctx, tagFilter.Not))
-	}
-
-	query.handleCriterion(ctx, stringCriterionHandler(tagFilter.Name, tagTable+".name"))
-	query.handleCriterion(ctx, tagAliasCriterionHandler(qb, tagFilter.Aliases))
-
-	query.handleCriterion(ctx, boolCriterionHandler(tagFilter.Favorite, tagTable+".favorite", nil))
-	query.handleCriterion(ctx, stringCriterionHandler(tagFilter.Description, tagTable+".description"))
-	query.handleCriterion(ctx, boolCriterionHandler(tagFilter.IgnoreAutoTag, tagTable+".ignore_auto_tag", nil))
-
-	query.handleCriterion(ctx, tagIsMissingCriterionHandler(qb, tagFilter.IsMissing))
-	query.handleCriterion(ctx, tagSceneCountCriterionHandler(qb, tagFilter.SceneCount))
-	query.handleCriterion(ctx, tagImageCountCriterionHandler(qb, tagFilter.ImageCount))
-	query.handleCriterion(ctx, tagGalleryCountCriterionHandler(qb, tagFilter.GalleryCount))
-	query.handleCriterion(ctx, tagPerformerCountCriterionHandler(qb, tagFilter.PerformerCount))
-	query.handleCriterion(ctx, tagMarkerCountCriterionHandler(qb, tagFilter.MarkerCount))
-	query.handleCriterion(ctx, tagParentsCriterionHandler(qb, tagFilter.Parents))
-	query.handleCriterion(ctx, tagChildrenCriterionHandler(qb, tagFilter.Children))
-	query.handleCriterion(ctx, tagParentCountCriterionHandler(qb, tagFilter.ParentCount))
-	query.handleCriterion(ctx, tagChildCountCriterionHandler(qb, tagFilter.ChildCount))
-	query.handleCriterion(ctx, timestampCriterionHandler(tagFilter.CreatedAt, "tags.created_at"))
-	query.handleCriterion(ctx, timestampCriterionHandler(tagFilter.UpdatedAt, "tags.updated_at"))
-
-	return query
-}
-
 func (qb *TagStore) Query(ctx context.Context, tagFilter *models.TagFilterType, findFilter *models.FindFilterType) ([]*models.Tag, int, error) {
 	if tagFilter == nil {
 		tagFilter = &models.TagFilterType{}
@@ -530,7 +598,7 @@ func (qb *TagStore) Query(ctx context.Context, tagFilter *models.TagFilterType, 
 		findFilter = &models.FindFilterType{}
 	}
 
-	query := qb.newQuery()
+	query := tagRepository.newQuery()
 	distinctIDs(&query, tagTable)
 
 	if q := findFilter.Q; q != nil && *q != "" {
@@ -539,10 +607,9 @@ func (qb *TagStore) Query(ctx context.Context, tagFilter *models.TagFilterType, 
 		query.parseQueryString(searchColumns, *q)
 	}
 
-	if err := qb.validateFilter(tagFilter); err != nil {
-		return nil, 0, err
-	}
-	filter := qb.makeFilter(ctx, tagFilter)
+	filter := filterBuilderFromHandler(ctx, &tagFilterHandler{
+		tagFilter: tagFilter,
+	})
 
 	if err := query.addFilter(filter); err != nil {
 		return nil, 0, err
@@ -567,302 +634,13 @@ func (qb *TagStore) Query(ctx context.Context, tagFilter *models.TagFilterType, 
 	return tags, countResult, nil
 }
 
-func tagAliasCriterionHandler(qb *TagStore, alias *models.StringCriterionInput) criterionHandlerFunc {
-	h := stringListCriterionHandlerBuilder{
-		joinTable:    tagAliasesTable,
-		stringColumn: tagAliasColumn,
-		addJoinTable: func(f *filterBuilder) {
-			qb.aliasRepository().join(f, "", "tags.id")
-		},
-	}
-
-	return h.handler(alias)
-}
-
-func tagIsMissingCriterionHandler(qb *TagStore, isMissing *string) criterionHandlerFunc {
-	return func(ctx context.Context, f *filterBuilder) {
-		if isMissing != nil && *isMissing != "" {
-			switch *isMissing {
-			case "image":
-				f.addWhere("tags.image_blob IS NULL")
-			default:
-				f.addWhere("(tags." + *isMissing + " IS NULL OR TRIM(tags." + *isMissing + ") = '')")
-			}
-		}
-	}
-}
-
-func tagSceneCountCriterionHandler(qb *TagStore, sceneCount *models.IntCriterionInput) criterionHandlerFunc {
-	return func(ctx context.Context, f *filterBuilder) {
-		if sceneCount != nil {
-			f.addLeftJoin("scenes_tags", "", "scenes_tags.tag_id = tags.id")
-			clause, args := getIntCriterionWhereClause("count(distinct scenes_tags.scene_id)", *sceneCount)
-
-			f.addHaving(clause, args...)
-		}
-	}
-}
-
-func tagImageCountCriterionHandler(qb *TagStore, imageCount *models.IntCriterionInput) criterionHandlerFunc {
-	return func(ctx context.Context, f *filterBuilder) {
-		if imageCount != nil {
-			f.addLeftJoin("images_tags", "", "images_tags.tag_id = tags.id")
-			clause, args := getIntCriterionWhereClause("count(distinct images_tags.image_id)", *imageCount)
-
-			f.addHaving(clause, args...)
-		}
-	}
-}
-
-func tagGalleryCountCriterionHandler(qb *TagStore, galleryCount *models.IntCriterionInput) criterionHandlerFunc {
-	return func(ctx context.Context, f *filterBuilder) {
-		if galleryCount != nil {
-			f.addLeftJoin("galleries_tags", "", "galleries_tags.tag_id = tags.id")
-			clause, args := getIntCriterionWhereClause("count(distinct galleries_tags.gallery_id)", *galleryCount)
-
-			f.addHaving(clause, args...)
-		}
-	}
-}
-
-func tagPerformerCountCriterionHandler(qb *TagStore, performerCount *models.IntCriterionInput) criterionHandlerFunc {
-	return func(ctx context.Context, f *filterBuilder) {
-		if performerCount != nil {
-			f.addLeftJoin("performers_tags", "", "performers_tags.tag_id = tags.id")
-			clause, args := getIntCriterionWhereClause("count(distinct performers_tags.performer_id)", *performerCount)
-
-			f.addHaving(clause, args...)
-		}
-	}
-}
-
-func tagMarkerCountCriterionHandler(qb *TagStore, markerCount *models.IntCriterionInput) criterionHandlerFunc {
-	return func(ctx context.Context, f *filterBuilder) {
-		if markerCount != nil {
-			f.addLeftJoin("scene_markers_tags", "", "scene_markers_tags.tag_id = tags.id")
-			f.addLeftJoin("scene_markers", "", "scene_markers_tags.scene_marker_id = scene_markers.id OR scene_markers.primary_tag_id = tags.id")
-			clause, args := getIntCriterionWhereClause("count(distinct scene_markers.id)", *markerCount)
-
-			f.addHaving(clause, args...)
-		}
-	}
-}
-
-func tagParentsCriterionHandler(qb *TagStore, criterion *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
-	return func(ctx context.Context, f *filterBuilder) {
-		if criterion != nil {
-			tags := criterion.CombineExcludes()
-
-			// validate the modifier
-			switch tags.Modifier {
-			case models.CriterionModifierIncludesAll, models.CriterionModifierIncludes, models.CriterionModifierExcludes, models.CriterionModifierIsNull, models.CriterionModifierNotNull:
-				// valid
-			default:
-				f.setError(fmt.Errorf("invalid modifier %s for tag parent/children", criterion.Modifier))
-			}
-
-			if tags.Modifier == models.CriterionModifierIsNull || tags.Modifier == models.CriterionModifierNotNull {
-				var notClause string
-				if tags.Modifier == models.CriterionModifierNotNull {
-					notClause = "NOT"
-				}
-
-				f.addLeftJoin("tags_relations", "parent_relations", "tags.id = parent_relations.child_id")
-
-				f.addWhere(fmt.Sprintf("parent_relations.parent_id IS %s NULL", notClause))
-				return
-			}
-
-			if len(tags.Value) == 0 && len(tags.Excludes) == 0 {
-				return
-			}
-
-			if len(tags.Value) > 0 {
-				var args []interface{}
-				for _, val := range tags.Value {
-					args = append(args, val)
-				}
-
-				depthVal := 0
-				if tags.Depth != nil {
-					depthVal = *tags.Depth
-				}
-
-				var depthCondition string
-				if depthVal != -1 {
-					depthCondition = fmt.Sprintf("WHERE depth < %d", depthVal)
-				}
-
-				query := `parents AS (
-		SELECT parent_id AS root_id, child_id AS item_id, 0 AS depth FROM tags_relations WHERE parent_id IN` + getInBinding(len(tags.Value)) + `
-		UNION
-		SELECT root_id, child_id, depth + 1 FROM tags_relations INNER JOIN parents ON item_id = parent_id ` + depthCondition + `
-	)`
-
-				f.addRecursiveWith(query, args...)
-
-				f.addLeftJoin("parents", "", "parents.item_id = tags.id")
-
-				addHierarchicalConditionClauses(f, tags, "parents", "root_id")
-			}
-
-			if len(tags.Excludes) > 0 {
-				var args []interface{}
-				for _, val := range tags.Excludes {
-					args = append(args, val)
-				}
-
-				depthVal := 0
-				if tags.Depth != nil {
-					depthVal = *tags.Depth
-				}
-
-				var depthCondition string
-				if depthVal != -1 {
-					depthCondition = fmt.Sprintf("WHERE depth < %d", depthVal)
-				}
-
-				query := `parents2 AS (
-		SELECT parent_id AS root_id, child_id AS item_id, 0 AS depth FROM tags_relations WHERE parent_id IN` + getInBinding(len(tags.Excludes)) + `
-		UNION
-		SELECT root_id, child_id, depth + 1 FROM tags_relations INNER JOIN parents2 ON item_id = parent_id ` + depthCondition + `
-	)`
-
-				f.addRecursiveWith(query, args...)
-
-				f.addLeftJoin("parents2", "", "parents2.item_id = tags.id")
-
-				addHierarchicalConditionClauses(f, models.HierarchicalMultiCriterionInput{
-					Value:    tags.Excludes,
-					Depth:    tags.Depth,
-					Modifier: models.CriterionModifierExcludes,
-				}, "parents2", "root_id")
-			}
-		}
-	}
-}
-
-func tagChildrenCriterionHandler(qb *TagStore, criterion *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
-	return func(ctx context.Context, f *filterBuilder) {
-		if criterion != nil {
-			tags := criterion.CombineExcludes()
-
-			// validate the modifier
-			switch tags.Modifier {
-			case models.CriterionModifierIncludesAll, models.CriterionModifierIncludes, models.CriterionModifierExcludes, models.CriterionModifierIsNull, models.CriterionModifierNotNull:
-				// valid
-			default:
-				f.setError(fmt.Errorf("invalid modifier %s for tag parent/children", criterion.Modifier))
-			}
-
-			if tags.Modifier == models.CriterionModifierIsNull || tags.Modifier == models.CriterionModifierNotNull {
-				var notClause string
-				if tags.Modifier == models.CriterionModifierNotNull {
-					notClause = "NOT"
-				}
-
-				f.addLeftJoin("tags_relations", "child_relations", "tags.id = child_relations.parent_id")
-
-				f.addWhere(fmt.Sprintf("child_relations.child_id IS %s NULL", notClause))
-				return
-			}
-
-			if len(tags.Value) == 0 && len(tags.Excludes) == 0 {
-				return
-			}
-
-			if len(tags.Value) > 0 {
-				var args []interface{}
-				for _, val := range tags.Value {
-					args = append(args, val)
-				}
-
-				depthVal := 0
-				if tags.Depth != nil {
-					depthVal = *tags.Depth
-				}
-
-				var depthCondition string
-				if depthVal != -1 {
-					depthCondition = fmt.Sprintf("WHERE depth < %d", depthVal)
-				}
-
-				query := `children AS (
-		SELECT child_id AS root_id, parent_id AS item_id, 0 AS depth FROM tags_relations WHERE child_id IN` + getInBinding(len(tags.Value)) + `
-		UNION
-		SELECT root_id, parent_id, depth + 1 FROM tags_relations INNER JOIN children ON item_id = child_id ` + depthCondition + `
-	)`
-
-				f.addRecursiveWith(query, args...)
-
-				f.addLeftJoin("children", "", "children.item_id = tags.id")
-
-				addHierarchicalConditionClauses(f, tags, "children", "root_id")
-			}
-
-			if len(tags.Excludes) > 0 {
-				var args []interface{}
-				for _, val := range tags.Excludes {
-					args = append(args, val)
-				}
-
-				depthVal := 0
-				if tags.Depth != nil {
-					depthVal = *tags.Depth
-				}
-
-				var depthCondition string
-				if depthVal != -1 {
-					depthCondition = fmt.Sprintf("WHERE depth < %d", depthVal)
-				}
-
-				query := `children2 AS (
-		SELECT child_id AS root_id, parent_id AS item_id, 0 AS depth FROM tags_relations WHERE child_id IN` + getInBinding(len(tags.Excludes)) + `
-		UNION
-		SELECT root_id, parent_id, depth + 1 FROM tags_relations INNER JOIN children2 ON item_id = child_id ` + depthCondition + `
-	)`
-
-				f.addRecursiveWith(query, args...)
-
-				f.addLeftJoin("children2", "", "children2.item_id = tags.id")
-
-				addHierarchicalConditionClauses(f, models.HierarchicalMultiCriterionInput{
-					Value:    tags.Excludes,
-					Depth:    tags.Depth,
-					Modifier: models.CriterionModifierExcludes,
-				}, "children2", "root_id")
-			}
-		}
-	}
-}
-
-func tagParentCountCriterionHandler(qb *TagStore, parentCount *models.IntCriterionInput) criterionHandlerFunc {
-	return func(ctx context.Context, f *filterBuilder) {
-		if parentCount != nil {
-			f.addLeftJoin("tags_relations", "parents_count", "parents_count.child_id = tags.id")
-			clause, args := getIntCriterionWhereClause("count(distinct parents_count.parent_id)", *parentCount)
-
-			f.addHaving(clause, args...)
-		}
-	}
-}
-
-func tagChildCountCriterionHandler(qb *TagStore, childCount *models.IntCriterionInput) criterionHandlerFunc {
-	return func(ctx context.Context, f *filterBuilder) {
-		if childCount != nil {
-			f.addLeftJoin("tags_relations", "children_count", "children_count.parent_id = tags.id")
-			clause, args := getIntCriterionWhereClause("count(distinct children_count.child_id)", *childCount)
-
-			f.addHaving(clause, args...)
-		}
-	}
-}
-
 var tagSortOptions = sortOptions{
 	"created_at",
 	"galleries_count",
 	"id",
 	"images_count",
+	"movies_count",
+	"studios_count",
 	"name",
 	"performers_count",
 	"random",
@@ -903,6 +681,10 @@ func (qb *TagStore) getTagSort(query *queryBuilder, findFilter *models.FindFilte
 		sortQuery += getCountSort(tagTable, galleriesTagsTable, tagIDColumn, direction)
 	case "performers_count":
 		sortQuery += getCountSort(tagTable, performersTagsTable, tagIDColumn, direction)
+	case "studios_count":
+		sortQuery += getCountSort(tagTable, studiosTagsTable, tagIDColumn, direction)
+	case "movies_count":
+		sortQuery += getCountSort(tagTable, moviesTagsTable, tagIDColumn, direction)
 	default:
 		sortQuery += getSort(sort, direction, "tags")
 	}
@@ -915,7 +697,7 @@ func (qb *TagStore) getTagSort(query *queryBuilder, findFilter *models.FindFilte
 func (qb *TagStore) queryTags(ctx context.Context, query string, args []interface{}) ([]*models.Tag, error) {
 	const single = false
 	var ret []*models.Tag
-	if err := qb.queryFunc(ctx, query, args, single, func(r *sqlx.Rows) error {
+	if err := tagRepository.queryFunc(ctx, query, args, single, func(r *sqlx.Rows) error {
 		var f tagRow
 		if err := r.StructScan(&f); err != nil {
 			return err
@@ -935,7 +717,7 @@ func (qb *TagStore) queryTags(ctx context.Context, query string, args []interfac
 func (qb *TagStore) queryTagPaths(ctx context.Context, query string, args []interface{}) ([]*models.TagPath, error) {
 	const single = false
 	var ret []*models.TagPath
-	if err := qb.queryFunc(ctx, query, args, single, func(r *sqlx.Rows) error {
+	if err := tagRepository.queryFunc(ctx, query, args, single, func(r *sqlx.Rows) error {
 		var f tagPathRow
 		if err := r.StructScan(&f); err != nil {
 			return err
@@ -968,23 +750,12 @@ func (qb *TagStore) destroyImage(ctx context.Context, tagID int) error {
 	return qb.blobJoinQueryBuilder.DestroyImage(ctx, tagID, tagImageBlobColumn)
 }
 
-func (qb *TagStore) aliasRepository() *stringRepository {
-	return &stringRepository{
-		repository: repository{
-			tx:        qb.tx,
-			tableName: tagAliasesTable,
-			idColumn:  tagIDColumn,
-		},
-		stringColumn: tagAliasColumn,
-	}
-}
-
 func (qb *TagStore) GetAliases(ctx context.Context, tagID int) ([]string, error) {
-	return qb.aliasRepository().get(ctx, tagID)
+	return tagRepository.aliases.get(ctx, tagID)
 }
 
 func (qb *TagStore) UpdateAliases(ctx context.Context, tagID int, aliases []string) error {
-	return qb.aliasRepository().replace(ctx, tagID, aliases)
+	return tagRepository.aliases.replace(ctx, tagID, aliases)
 }
 
 func (qb *TagStore) Merge(ctx context.Context, source []int, destination int) error {
@@ -1011,11 +782,12 @@ func (qb *TagStore) Merge(ctx context.Context, source []int, destination int) er
 		galleriesTagsTable:   galleryIDColumn,
 		imagesTagsTable:      imageIDColumn,
 		"performers_tags":    "performer_id",
+		"studios_tags":       "studio_id",
 	}
 
 	args = append(args, destination)
 	for table, idColumn := range tagTables {
-		_, err := qb.tx.Exec(ctx, `UPDATE OR IGNORE `+table+`
+		_, err := dbWrapper.Exec(ctx, `UPDATE OR IGNORE `+table+`
 SET tag_id = ?
 WHERE tag_id IN `+inBinding+`
 AND NOT EXISTS(SELECT 1 FROM `+table+` o WHERE o.`+idColumn+` = `+table+`.`+idColumn+` AND o.tag_id = ?)`,
@@ -1026,22 +798,22 @@ AND NOT EXISTS(SELECT 1 FROM `+table+` o WHERE o.`+idColumn+` = `+table+`.`+idCo
 		}
 
 		// delete source tag ids from the table where they couldn't be set
-		if _, err := qb.tx.Exec(ctx, `DELETE FROM `+table+` WHERE tag_id IN `+inBinding, srcArgs...); err != nil {
+		if _, err := dbWrapper.Exec(ctx, `DELETE FROM `+table+` WHERE tag_id IN `+inBinding, srcArgs...); err != nil {
 			return err
 		}
 	}
 
-	_, err := qb.tx.Exec(ctx, "UPDATE "+sceneMarkerTable+" SET primary_tag_id = ? WHERE primary_tag_id IN "+inBinding, args...)
+	_, err := dbWrapper.Exec(ctx, "UPDATE "+sceneMarkerTable+" SET primary_tag_id = ? WHERE primary_tag_id IN "+inBinding, args...)
 	if err != nil {
 		return err
 	}
 
-	_, err = qb.tx.Exec(ctx, "INSERT INTO "+tagAliasesTable+" (tag_id, alias) SELECT ?, name FROM "+tagTable+" WHERE id IN "+inBinding, args...)
+	_, err = dbWrapper.Exec(ctx, "INSERT INTO "+tagAliasesTable+" (tag_id, alias) SELECT ?, name FROM "+tagTable+" WHERE id IN "+inBinding, args...)
 	if err != nil {
 		return err
 	}
 
-	_, err = qb.tx.Exec(ctx, "UPDATE "+tagAliasesTable+" SET tag_id = ? WHERE tag_id IN "+inBinding, args...)
+	_, err = dbWrapper.Exec(ctx, "UPDATE "+tagAliasesTable+" SET tag_id = ? WHERE tag_id IN "+inBinding, args...)
 	if err != nil {
 		return err
 	}
@@ -1057,8 +829,7 @@ AND NOT EXISTS(SELECT 1 FROM `+table+` o WHERE o.`+idColumn+` = `+table+`.`+idCo
 }
 
 func (qb *TagStore) UpdateParentTags(ctx context.Context, tagID int, parentIDs []int) error {
-	tx := qb.tx
-	if _, err := tx.Exec(ctx, "DELETE FROM tags_relations WHERE child_id = ?", tagID); err != nil {
+	if _, err := dbWrapper.Exec(ctx, "DELETE FROM tags_relations WHERE child_id = ?", tagID); err != nil {
 		return err
 	}
 
@@ -1071,7 +842,7 @@ func (qb *TagStore) UpdateParentTags(ctx context.Context, tagID int, parentIDs [
 		}
 
 		query := "INSERT INTO tags_relations (parent_id, child_id) VALUES " + strings.Join(values, ", ")
-		if _, err := tx.Exec(ctx, query, args...); err != nil {
+		if _, err := dbWrapper.Exec(ctx, query, args...); err != nil {
 			return err
 		}
 	}
@@ -1080,8 +851,7 @@ func (qb *TagStore) UpdateParentTags(ctx context.Context, tagID int, parentIDs [
 }
 
 func (qb *TagStore) UpdateChildTags(ctx context.Context, tagID int, childIDs []int) error {
-	tx := qb.tx
-	if _, err := tx.Exec(ctx, "DELETE FROM tags_relations WHERE parent_id = ?", tagID); err != nil {
+	if _, err := dbWrapper.Exec(ctx, "DELETE FROM tags_relations WHERE parent_id = ?", tagID); err != nil {
 		return err
 	}
 
@@ -1094,7 +864,7 @@ func (qb *TagStore) UpdateChildTags(ctx context.Context, tagID int, childIDs []i
 		}
 
 		query := "INSERT INTO tags_relations (parent_id, child_id) VALUES " + strings.Join(values, ", ")
-		if _, err := tx.Exec(ctx, query, args...); err != nil {
+		if _, err := dbWrapper.Exec(ctx, query, args...); err != nil {
 			return err
 		}
 	}
@@ -1148,4 +918,18 @@ SELECT t.*, c.path FROM tags t INNER JOIN children c ON t.id = c.child_id
 	args = append(args, append(append(excludeArgs, excludeArgs...), excludeArgs...)...)
 
 	return qb.queryTagPaths(ctx, query, args)
+}
+
+type tagRelationshipStore struct {
+	idRelationshipStore
+}
+
+func (s *tagRelationshipStore) CountByTagID(ctx context.Context, tagID int) (int, error) {
+	joinTable := s.joinTable.table.table
+	q := dialect.Select(goqu.COUNT("*")).From(joinTable).Where(joinTable.Col(tagIDColumn).Eq(tagID))
+	return count(ctx, q)
+}
+
+func (s *tagRelationshipStore) GetTagIDs(ctx context.Context, id int) ([]int, error) {
+	return s.joinTable.get(ctx, id)
 }

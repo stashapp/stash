@@ -78,6 +78,7 @@ type PerformerReader interface {
 	AliasLoader
 	StashIDLoader
 	TagIDLoader
+	URLLoader
 
 	All(ctx context.Context) ([]*Performer, error)
 	GetImage(ctx context.Context, performerID int) ([]byte, error)

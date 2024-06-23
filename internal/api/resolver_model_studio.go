@@ -40,6 +40,20 @@ func (r *studioResolver) Aliases(ctx context.Context, obj *models.Studio) ([]str
 	return obj.Aliases.List(), nil
 }
 
+func (r *studioResolver) Tags(ctx context.Context, obj *models.Studio) (ret []*models.Tag, err error) {
+	if !obj.TagIDs.Loaded() {
+		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+			return obj.LoadTagIDs(ctx, r.repository.Studio)
+		}); err != nil {
+			return nil, err
+		}
+	}
+
+	var errs []error
+	ret, errs = loaders.From(ctx).TagByID.LoadAll(obj.TagIDs.List())
+	return ret, firstError(errs)
+}
+
 func (r *studioResolver) SceneCount(ctx context.Context, obj *models.Studio, depth *int) (ret int, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		ret, err = scene.CountByStudioID(ctx, r.repository.Scene, obj.ID, depth)

@@ -19,6 +19,7 @@ type Studio struct {
 	IgnoreAutoTag bool   `json:"ignore_auto_tag"`
 
 	Aliases  RelatedStrings  `json:"aliases"`
+	TagIDs   RelatedIDs      `json:"tag_ids"`
 	StashIDs RelatedStashIDs `json:"stash_ids"`
 }
 
@@ -45,6 +46,7 @@ type StudioPartial struct {
 	IgnoreAutoTag OptionalBool
 
 	Aliases  *UpdateStrings
+	TagIDs   *UpdateIDs
 	StashIDs *UpdateStashIDs
 }
 
@@ -61,6 +63,12 @@ func (s *Studio) LoadAliases(ctx context.Context, l AliasLoader) error {
 	})
 }
 
+func (s *Studio) LoadTagIDs(ctx context.Context, l TagIDLoader) error {
+	return s.TagIDs.load(func() ([]int, error) {
+		return l.GetTagIDs(ctx, s.ID)
+	})
+}
+
 func (s *Studio) LoadStashIDs(ctx context.Context, l StashIDLoader) error {
 	return s.StashIDs.load(func() ([]StashID, error) {
 		return l.GetStashIDs(ctx, s.ID)
@@ -69,6 +77,10 @@ func (s *Studio) LoadStashIDs(ctx context.Context, l StashIDLoader) error {
 
 func (s *Studio) LoadRelationships(ctx context.Context, l PerformerReader) error {
 	if err := s.LoadAliases(ctx, l); err != nil {
+		return err
+	}
+
+	if err := s.LoadTagIDs(ctx, l); err != nil {
 		return err
 	}
 

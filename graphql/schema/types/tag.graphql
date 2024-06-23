@@ -13,6 +13,8 @@ type Tag {
   image_count(depth: Int): Int! # Resolver
   gallery_count(depth: Int): Int! # Resolver
   performer_count(depth: Int): Int! # Resolver
+  studio_count(depth: Int): Int! # Resolver
+  movie_count(depth: Int): Int! # Resolver
   parents: [Tag!]!
   children: [Tag!]!
 
@@ -59,4 +61,15 @@ type FindTagsResultType {
 input TagsMergeInput {
   source: [ID!]!
   destination: ID!
+}
+
+input BulkTagUpdateInput {
+  ids: [ID!]
+  description: String
+  aliases: BulkUpdateStrings
+  ignore_auto_tag: Boolean
+  favorite: Boolean
+
+  parent_ids: BulkUpdateIds
+  child_ids: BulkUpdateIds
 }

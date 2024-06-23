@@ -5,6 +5,7 @@ type Studio {
   parent_studio: Studio
   child_studios: [Studio!]!
   aliases: [String!]!
+  tags: [Tag!]!
   ignore_auto_tag: Boolean!
 
   image_path: String # Resolver
@@ -35,6 +36,7 @@ input StudioCreateInput {
   favorite: Boolean
   details: String
   aliases: [String!]
+  tag_ids: [ID!]
   ignore_auto_tag: Boolean
 }
 
@@ -51,6 +53,7 @@ input StudioUpdateInput {
   favorite: Boolean
   details: String
   aliases: [String!]
+  tag_ids: [ID!]
   ignore_auto_tag: Boolean
 }
 

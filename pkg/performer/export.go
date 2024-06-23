@@ -16,6 +16,7 @@ type ImageAliasStashIDGetter interface {
 	GetImage(ctx context.Context, performerID int) ([]byte, error)
 	models.AliasLoader
 	models.StashIDLoader
+	models.URLLoader
 }
 
 // ToJSON converts a Performer object into its JSON equivalent.
@@ -23,7 +24,6 @@ func ToJSON(ctx context.Context, reader ImageAliasStashIDGetter, performer *mode
 	newPerformerJSON := jsonschema.Performer{
 		Name:           performer.Name,
 		Disambiguation: performer.Disambiguation,
-		URL:            performer.URL,
 		Ethnicity:      performer.Ethnicity,
 		Country:        performer.Country,
 		EyeColor:       performer.EyeColor,
@@ -32,8 +32,6 @@ func ToJSON(ctx context.Context, reader ImageAliasStashIDGetter, performer *mode
 		CareerLength:   performer.CareerLength,
 		Tattoos:        performer.Tattoos,
 		Piercings:      performer.Piercings,
-		Twitter:        performer.Twitter,
-		Instagram:      performer.Instagram,
 		Favorite:       performer.Favorite,
 		Details:        performer.Details,
 		HairColor:      performer.HairColor,
@@ -77,6 +75,11 @@ func ToJSON(ctx context.Context, reader ImageAliasStashIDGetter, performer *mode
 	}
 
 	newPerformerJSON.Aliases = performer.Aliases.List()
+
+	if err := performer.LoadURLs(ctx, reader); err != nil {
+		return nil, fmt.Errorf("loading performer urls: %w", err)
+	}
+	newPerformerJSON.URLs = performer.URLs.List()
 
 	if err := performer.LoadStashIDs(ctx, reader); err != nil {
 		return nil, fmt.Errorf("loading performer stash ids: %w", err)

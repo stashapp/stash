@@ -1,6 +1,7 @@
 package models
 
 import (
+	"context"
 	"time"
 )
 
@@ -15,9 +16,11 @@ type Movie struct {
 	StudioID  *int      `json:"studio_id"`
 	Director  string    `json:"director"`
 	Synopsis  string    `json:"synopsis"`
-	URL       string    `json:"url"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
+
+	URLs   RelatedStrings `json:"urls"`
+	TagIDs RelatedIDs     `json:"tag_ids"`
 }
 
 func NewMovie() Movie {
@@ -26,6 +29,18 @@ func NewMovie() Movie {
 		CreatedAt: currentTime,
 		UpdatedAt: currentTime,
 	}
+}
+
+func (m *Movie) LoadURLs(ctx context.Context, l URLLoader) error {
+	return m.URLs.load(func() ([]string, error) {
+		return l.GetURLs(ctx, m.ID)
+	})
+}
+
+func (m *Movie) LoadTagIDs(ctx context.Context, l TagIDLoader) error {
+	return m.TagIDs.load(func() ([]int, error) {
+		return l.GetTagIDs(ctx, m.ID)
+	})
 }
 
 type MoviePartial struct {
@@ -38,7 +53,8 @@ type MoviePartial struct {
 	StudioID  OptionalInt
 	Director  OptionalString
 	Synopsis  OptionalString
-	URL       OptionalString
+	URLs      *UpdateStrings
+	TagIDs    *UpdateIDs
 	CreatedAt OptionalTime
 	UpdatedAt OptionalTime
 }

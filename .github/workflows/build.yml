@@ -12,7 +12,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  COMPILER_IMAGE: stashapp/compiler:8
+  COMPILER_IMAGE: stashapp/compiler:9
 
 jobs:
   build:
@@ -22,6 +22,11 @@ jobs:
 
     - name: Checkout
       run: git fetch --prune --unshallow --tags
+
+    - name: Setup Go
+      uses: actions/setup-go@v5
+      with:
+        go-version-file: 'go.mod'
 
     - name: Pull compiler image
       run: docker pull $COMPILER_IMAGE
