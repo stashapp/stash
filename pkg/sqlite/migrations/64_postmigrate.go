@@ -64,7 +64,7 @@ func (m *schema64Migrator) migrate(ctx context.Context) error {
 
 			// convert the timestamp to the correct format
 			logger.Debugf("correcting view date %q to UTC date %q for scene %d", viewDate.Timestamp, viewDate.Timestamp.UTC(), id)
-			r, err := m.db.Exec("UPDATE scenes_view_dates SET view_date = ? WHERE view_date = ? OR view_date = ?", utcTimestamp, viewDate.Timestamp, viewDate)
+			r, err := m.db.Exec("UPDATE scenes_view_dates SET view_date = ? WHERE scene_id = ? AND (view_date = ? OR view_date = ?)", utcTimestamp, id, viewDate.Timestamp, viewDate)
 			if err != nil {
 				return fmt.Errorf("error correcting view date %s to %s: %w", viewDate.Timestamp, viewDate, err)
 			}
