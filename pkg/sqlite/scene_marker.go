@@ -301,6 +301,7 @@ func (qb *SceneMarkerStore) makeQuery(ctx context.Context, sceneMarkerFilter *mo
 	distinctIDs(&query, sceneMarkerTable)
 
 	if q := findFilter.Q; q != nil && *q != "" {
+		query.join(sceneTable, "", "scenes.id = scene_markers.scene_id")
 		query.join(tagTable, "", "scene_markers.primary_tag_id = tags.id")
 		searchColumns := []string{"scene_markers.title", "scenes.title", "tags.name"}
 		query.parseQueryString(searchColumns, *q)
