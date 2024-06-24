@@ -42,9 +42,9 @@ interface IDimension {
   height: number;
 }
 
-export const useContainerDimensions = <
-  T extends HTMLElement = HTMLDivElement
->(): [MutableRefObject<T | null>, IDimension] => {
+export const useContainerDimensions = <T extends HTMLElement = HTMLDivElement>(
+  sensitivityThreshold = 20
+): [MutableRefObject<T | null>, IDimension] => {
   const target = useRef<T | null>(null);
   const [dimension, setDimension] = useState<IDimension>({
     width: 0,
@@ -53,7 +53,14 @@ export const useContainerDimensions = <
 
   useResizeObserver(target, (entry) => {
     const { inlineSize: width, blockSize: height } = entry.contentBoxSize[0];
-    setDimension({ width, height });
+    let difference = Math.abs(dimension.width - width);
+    // Only adjust when width changed by a significant margin. This addresses the cornercase that sees
+    // the dimensions toggle back and forward when the window is adjusted perfectly such that overflow
+    // is trigger then immediable disabled because of a resize event then continues this loop endlessly.
+    // the scrollbar size varies between platforms. Windows is apparently around 17 pixels.
+    if (difference > sensitivityThreshold) {
+      setDimension({ width, height });
+    }
   });
 
   return [target, dimension];
