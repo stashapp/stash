@@ -342,7 +342,7 @@ func (s *runningStream) makeStreamArgs(sm *StreamManager, segment int) Args {
 
 	videoOnly := ProbeAudioCodec(s.vf.AudioCodec) == MissingUnsupported
 
-	videoFilter := sm.encoder.hwMaxResFilter(codec, s.vf.Width, s.vf.Height, s.maxTranscodeSize, fullhw)
+	videoFilter := sm.encoder.hwMaxResFilter(codec, s.vf, s.maxTranscodeSize, fullhw)
 
 	args = append(args, s.streamType.Args(codec, segment, videoFilter, videoOnly, s.outputDir)...)
 

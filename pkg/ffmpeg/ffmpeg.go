@@ -195,6 +195,20 @@ type FFMpegVersion struct {
 	patch int
 }
 
+// Gteq returns true if the version is greater than or equal to the other version.
+func (v FFMpegVersion) Gteq(other FFMpegVersion) bool {
+	if v.major > other.major {
+		return true
+	}
+	if v.major == other.major && v.minor > other.minor {
+		return true
+	}
+	if v.major == other.major && v.minor == other.minor && v.patch >= other.patch {
+		return true
+	}
+	return false
+}
+
 // FFMpeg provides an interface to ffmpeg.
 type FFMpeg struct {
 	ffmpeg         string
