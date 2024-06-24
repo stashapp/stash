@@ -444,13 +444,42 @@ input[type="range"].zoom-slider {
     }
   }
 
+  .newline-list {
+    list-style: none;
+    margin: 0;
+    padding: 4px 2px;
+
+    li {
+      display: inline;
+      white-space: pre-wrap;
+    }
+
+    li::after {
+      content: "\A";
+    }
+
+    li:last-child::after {
+      content: "";
+    }
+  }
+
+  .newline-list.overflowable,
   .comma-list.overflowable {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  .comma-list.overflowable {
     width: 190px;
   }
 
+  .newline-list.overflowable {
+    -webkit-line-clamp: 1;
+    width: 700px;
+  }
+
+  .newline-list.overflowable:hover,
   .comma-list.overflowable:hover {
     background: #28343c;
     border: 1px solid #414c53;
@@ -459,7 +488,6 @@ input[type="range"].zoom-slider {
     height: auto;
     margin-left: -0.4rem;
     margin-top: -0.9rem;
-    max-width: 40rem;
     overflow: hidden;
     padding: 0.1rem 0.5rem;
     position: absolute;
@@ -469,6 +497,11 @@ input[type="range"].zoom-slider {
     z-index: 100;
   }
 
+  .comma-list.overflowable:hover {
+    max-width: 40rem;
+  }
+
+  .newline-list.overflowable li .ellips-data:hover,
   .comma-list.overflowable li .ellips-data:hover {
     max-width: fit-content;
   }

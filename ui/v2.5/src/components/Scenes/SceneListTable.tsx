@@ -226,7 +226,7 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
   );
 
   const AudioCodecCell = (scene: GQL.SlimSceneDataFragment) => (
-    <ul className="comma-list">
+    <ul className="comma-list over">
       {scene.files.map((file) => (
         <li key={file.id}>
           <span>{file.audio_codec}</span>
@@ -240,6 +240,16 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
       {scene.files.map((file) => (
         <li key={file.id}>
           <span>{file.video_codec}</span>
+        </li>
+      ))}
+    </ul>
+  );
+
+  const PathCell = (scene: GQL.SlimSceneDataFragment) => (
+    <ul className="newline-list overflowable TruncatedText">
+      {scene.files.map((file) => (
+        <li key={file.id}>
+          <span>{file.path}</span>
         </li>
       ))}
     </ul>
@@ -342,6 +352,11 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
       value: "resolution",
       label: intl.formatMessage({ id: "resolution" }),
       render: ResolutionCell,
+    },
+    {
+      value: "path",
+      label: intl.formatMessage({ id: "path" }),
+      render: PathCell,
     },
     {
       value: "filesize",
