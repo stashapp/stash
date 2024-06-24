@@ -269,15 +269,15 @@ func (f *FFMpeg) hwCodecFilter(args VideoFilter, codec VideoCodec, vf *models.Vi
 func (f *FFMpeg) hwApplyFullHWFilter(args VideoFilter, codec VideoCodec, fullhw bool) VideoFilter {
 	switch codec {
 	case VideoCodecN264:
-		if fullhw && f.version.major >= 5 { // Added in FFMpeg 5
+		if fullhw && f.version.Gteq(FFMpegVersion{major: 5}) { // Added in FFMpeg 5
 			args = args.Append("scale_cuda=format=yuv420p")
 		}
 	case VideoCodecV264, VideoCodecVVP9:
-		if fullhw && f.version.major >= 3 && f.version.minor >= 1 { // Added in FFMpeg 3.1
+		if fullhw && f.version.Gteq(FFMpegVersion{major: 3, minor: 1}) { // Added in FFMpeg 3.1
 			args = args.Append("scale_vaapi=format=nv12")
 		}
 	case VideoCodecI264, VideoCodecIVP9:
-		if fullhw && f.version.major >= 3 && f.version.minor >= 3 { // Added in FFMpeg 3.3
+		if fullhw && f.version.Gteq(FFMpegVersion{major: 3, minor: 3}) { // Added in FFMpeg 3.3
 			args = args.Append("scale_qsv=format=nv12")
 		}
 	}
@@ -292,17 +292,17 @@ func (f *FFMpeg) hwApplyScaleTemplate(sargs string, codec VideoCodec, match []in
 	switch codec {
 	case VideoCodecN264:
 		template = "scale_cuda=$value"
-		if fullhw && f.version.major >= 5 { // Added in FFMpeg 5
+		if fullhw && f.version.Gteq(FFMpegVersion{major: 5}) { // Added in FFMpeg 5
 			template += ":format=yuv420p"
 		}
 	case VideoCodecV264, VideoCodecVVP9:
 		template = "scale_vaapi=$value"
-		if fullhw && f.version.major >= 3 && f.version.minor >= 1 { // Added in FFMpeg 3.1
+		if fullhw && f.version.Gteq(FFMpegVersion{major: 3, minor: 1}) { // Added in FFMpeg 3.1
 			template += ":format=nv12"
 		}
 	case VideoCodecI264, VideoCodecIVP9:
 		template = "scale_qsv=$value"
-		if fullhw && f.version.major >= 3 && f.version.minor >= 3 { // Added in FFMpeg 3.3
+		if fullhw && f.version.Gteq(FFMpegVersion{major: 3, minor: 3}) { // Added in FFMpeg 3.3
 			template += ":format=nv12"
 		}
 	case VideoCodecM264:
