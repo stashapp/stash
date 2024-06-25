@@ -28,7 +28,7 @@ export const GroupDetailsPanel: React.FC<IGroupDetailsPanel> = ({
     return (
       <ul className="pl-0">
         {(group.tags ?? []).map((tag) => (
-          <TagLink key={tag.id} linkType="movie" tag={tag} />
+          <TagLink key={tag.id} linkType="group" tag={tag} />
         ))}
       </ul>
     );
@@ -85,7 +85,7 @@ export const GroupDetailsPanel: React.FC<IGroupDetailsPanel> = ({
         id="director"
         value={
           group.director ? (
-            <DirectorLink director={group.director} linkType="movie" />
+            <DirectorLink director={group.director} linkType="group" />
           ) : (
             ""
           )
@@ -98,7 +98,7 @@ export const GroupDetailsPanel: React.FC<IGroupDetailsPanel> = ({
 };
 
 export const CompressedMovieDetailsPanel: React.FC<IGroupDetailsPanel> = ({
-  group: movie,
+  group,
 }) => {
   function scrollToTop() {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -108,12 +108,12 @@ export const CompressedMovieDetailsPanel: React.FC<IGroupDetailsPanel> = ({
     <div className="sticky detail-header">
       <div className="sticky detail-header-group">
         <a className="movie-name" onClick={() => scrollToTop()}>
-          {movie.name}
+          {group.name}
         </a>
-        {movie?.studio?.name ? (
+        {group?.studio?.name ? (
           <>
             <span className="detail-divider">/</span>
-            <span className="movie-studio">{movie?.studio?.name}</span>
+            <span className="movie-studio">{group?.studio?.name}</span>
           </>
         ) : (
           ""

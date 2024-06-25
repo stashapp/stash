@@ -22,7 +22,7 @@ export const SceneGroupTable: React.FC<IProps> = (props) => {
 
   const intl = useIntl();
 
-  const movieIDs = useMemo(() => value.map((m) => m.movie.id), [value]);
+  const groupIDs = useMemo(() => value.map((m) => m.movie.id), [value]);
 
   const updateFieldChanged = (index: number, sceneIndex: number | null) => {
     const newValues = value.map((existing, i) => {
@@ -38,21 +38,21 @@ export const SceneGroupTable: React.FC<IProps> = (props) => {
     onUpdate(newValues);
   };
 
-  function onMovieSet(index: number, movies: Group[]) {
-    if (!movies.length) {
+  function onGroupSet(index: number, groups: Group[]) {
+    if (!groups.length) {
       // remove this entry
       const newValues = value.filter((_, i) => i !== index);
       onUpdate(newValues);
       return;
     }
 
-    const movie = movies[0];
+    const group = groups[0];
 
     const newValues = value.map((existing, i) => {
       if (i === index) {
         return {
           ...existing,
-          movie: movie,
+          movie: group,
         };
       }
       return existing;
@@ -61,17 +61,17 @@ export const SceneGroupTable: React.FC<IProps> = (props) => {
     onUpdate(newValues);
   }
 
-  function onNewMovieSet(movies: Group[]) {
-    if (!movies.length) {
+  function onNewGroupSet(groups: Group[]) {
+    if (!groups.length) {
       return;
     }
 
-    const movie = movies[0];
+    const group = groups[0];
 
     const newValues = [
       ...value,
       {
-        movie: movie,
+        movie: group,
         scene_index: null,
       },
     ];
@@ -86,9 +86,9 @@ export const SceneGroupTable: React.FC<IProps> = (props) => {
           <Row key={m.movie.id} className="movie-row">
             <Col xs={9}>
               <GroupSelect
-                onSelect={(items) => onMovieSet(i, items)}
+                onSelect={(items) => onGroupSet(i, items)}
                 values={[m.movie!]}
-                excludeIds={movieIDs}
+                excludeIds={groupIDs}
               />
             </Col>
             <Col xs={3}>
@@ -111,9 +111,9 @@ export const SceneGroupTable: React.FC<IProps> = (props) => {
         <Row className="movie-row">
           <Col xs={12}>
             <GroupSelect
-              onSelect={(items) => onNewMovieSet(items)}
+              onSelect={(items) => onNewGroupSet(items)}
               values={[]}
-              excludeIds={movieIDs}
+              excludeIds={groupIDs}
             />
           </Col>
         </Row>

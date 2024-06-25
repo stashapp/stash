@@ -197,7 +197,7 @@ interface ITagLinkProps {
     | "image"
     | "details"
     | "performer"
-    | "movie"
+    | "group"
     | "studio";
   className?: string;
   hoverPlacement?: Placement;
@@ -225,7 +225,7 @@ export const TagLink: React.FC<ITagLinkProps> = ({
         return NavUtils.makeTagGalleriesUrl(tag);
       case "image":
         return NavUtils.makeTagImagesUrl(tag);
-      case "movie":
+      case "group":
         return NavUtils.makeTagGroupsUrl(tag);
       case "details":
         return NavUtils.makeTagUrl(tag.id ?? "");

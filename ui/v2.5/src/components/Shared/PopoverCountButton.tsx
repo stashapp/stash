@@ -20,7 +20,7 @@ type PopoverLinkType =
   | "image"
   | "gallery"
   | "marker"
-  | "movie"
+  | "group"
   | "performer"
   | "studio";
 
@@ -52,7 +52,7 @@ export const PopoverCountButton: React.FC<IProps> = ({
         return faImages;
       case "marker":
         return faMapMarkerAlt;
-      case "movie":
+      case "group":
         return faFilm;
       case "performer":
         return faUser;
@@ -83,7 +83,7 @@ export const PopoverCountButton: React.FC<IProps> = ({
           one: "marker",
           other: "markers",
         };
-      case "movie":
+      case "group":
         return {
           one: "group",
           other: "groups",

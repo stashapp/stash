@@ -105,7 +105,7 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
     (showAllCounts ? tag.image_count_all : tag.image_count) ?? 0;
   const galleryCount =
     (showAllCounts ? tag.gallery_count_all : tag.gallery_count) ?? 0;
-  const movieCount =
+  const groupCount =
     (showAllCounts ? tag.movie_count_all : tag.movie_count) ?? 0;
   const sceneMarkerCount =
     (showAllCounts ? tag.scene_marker_count_all : tag.scene_marker_count) ?? 0;
@@ -121,7 +121,7 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
         ret = "images";
       } else if (galleryCount != 0) {
         ret = "galleries";
-      } else if (movieCount != 0) {
+      } else if (groupCount != 0) {
         ret = "groups";
       } else if (sceneMarkerCount != 0) {
         ret = "markers";
@@ -140,7 +140,7 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
     sceneMarkerCount,
     performerCount,
     studioCount,
-    movieCount,
+    groupCount,
   ]);
 
   const setTabKey = useCallback(
@@ -490,7 +490,7 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
             {intl.formatMessage({ id: "groups" })}
             <Counter
               abbreviateCounter={abbreviateCounter}
-              count={movieCount}
+              count={groupCount}
               hideZero
             />
           </>

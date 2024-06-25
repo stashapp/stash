@@ -57,7 +57,7 @@ export const GroupEditPanel: React.FC<IGroupEditPanel> = ({
   const [imageClipboard, setImageClipboard] = useState<string>();
 
   const Scrapers = useListMovieScrapers();
-  const [scrapedMovie, setScrapedMovie] = useState<GQL.ScrapedMovie>();
+  const [scrapedGroup, setScrapedGroup] = useState<GQL.ScrapedMovie>();
 
   const [studio, setStudio] = useState<Studio | null>(null);
 
@@ -128,7 +128,7 @@ export const GroupEditPanel: React.FC<IGroupEditPanel> = ({
     };
   });
 
-  function updateMovieEditStateFromScraper(
+  function updateGroupEditStateFromScraper(
     state: Partial<GQL.ScrapedMovieDataFragment>
   ) {
     if (state.name) {
@@ -200,11 +200,11 @@ export const GroupEditPanel: React.FC<IGroupEditPanel> = ({
         return;
       }
 
-      // if this is a new movie, just dump the data
+      // if this is a new group, just dump the data
       if (isNew) {
-        updateMovieEditStateFromScraper(result.data.scrapeMovieURL);
+        updateGroupEditStateFromScraper(result.data.scrapeMovieURL);
       } else {
-        setScrapedMovie(result.data.scrapeMovieURL);
+        setScrapedGroup(result.data.scrapeMovieURL);
       }
     } catch (e) {
       Toast.error(e);
@@ -223,25 +223,25 @@ export const GroupEditPanel: React.FC<IGroupEditPanel> = ({
   }
 
   function maybeRenderScrapeDialog() {
-    if (!scrapedMovie) {
+    if (!scrapedGroup) {
       return;
     }
 
-    const currentMovie = {
+    const currentGroup = {
       id: group.id!,
       ...formik.values,
     };
 
     // Get image paths for scrape gui
-    currentMovie.front_image = group?.front_image_path;
-    currentMovie.back_image = group?.back_image_path;
+    currentGroup.front_image = group?.front_image_path;
+    currentGroup.back_image = group?.back_image_path;
 
     return (
       <GroupScrapeDialog
-        group={currentMovie}
+        group={currentGroup}
         groupStudio={studio}
         groupTags={tags}
-        scraped={scrapedMovie}
+        scraped={scrapedGroup}
         onClose={(m) => {
           onScrapeDialogClosed(m);
         }}
@@ -251,9 +251,9 @@ export const GroupEditPanel: React.FC<IGroupEditPanel> = ({
 
   function onScrapeDialogClosed(p?: GQL.ScrapedMovieDataFragment) {
     if (p) {
-      updateMovieEditStateFromScraper(p);
+      updateGroupEditStateFromScraper(p);
     }
-    setScrapedMovie(undefined);
+    setScrapedGroup(undefined);
   }
 
   const encodingImage = ImageUtils.usePasteImage(showImageAlert);

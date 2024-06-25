@@ -79,7 +79,7 @@ export const GroupCard: React.FC<IProps> = ({
     if (group.tags.length <= 0) return;
 
     const popoverContent = group.tags.map((tag) => (
-      <TagLink key={tag.id} linkType="movie" tag={tag} />
+      <TagLink key={tag.id} linkType="group" tag={tag} />
     ));
 
     return (

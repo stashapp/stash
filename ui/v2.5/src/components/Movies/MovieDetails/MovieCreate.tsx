@@ -14,7 +14,7 @@ const GroupCreate: React.FC = () => {
 
   const location = useLocation();
   const query = useMemo(() => new URLSearchParams(location.search), [location]);
-  const movie = {
+  const group = {
     name: query.get("q") ?? undefined,
   };
 
@@ -78,7 +78,7 @@ const GroupCreate: React.FC = () => {
         </div>
 
         <GroupEditPanel
-          group={movie}
+          group={group}
           onSubmit={onSave}
           onCancel={() => history.push("/groups")}
           onDelete={() => {}}

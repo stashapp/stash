@@ -24,7 +24,7 @@ export const LabeledIdFilter: React.FC<ILabeledIdFilterProps> = ({
     inputType !== "performer_tags" &&
     inputType !== "tags" &&
     inputType !== "scenes" &&
-    inputType !== "movies" &&
+    inputType !== "groups" &&
     inputType !== "galleries"
   ) {
     return null;

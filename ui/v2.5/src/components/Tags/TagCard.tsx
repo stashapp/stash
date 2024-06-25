@@ -242,7 +242,7 @@ export const TagCard: React.FC<IProps> = ({
     return (
       <PopoverCountButton
         className="movie-count"
-        type="movie"
+        type="group"
         count={tag.movie_count}
         url={NavUtils.makeTagGroupsUrl(tag)}
       />

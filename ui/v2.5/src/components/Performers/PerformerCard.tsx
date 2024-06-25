@@ -184,7 +184,7 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
     return (
       <PopoverCountButton
         className="movie-count"
-        type="movie"
+        type="group"
         count={performer.movie_count}
         url={NavUtils.makePerformerGroupsUrl(
           performer,

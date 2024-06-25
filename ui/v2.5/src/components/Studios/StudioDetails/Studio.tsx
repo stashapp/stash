@@ -108,7 +108,7 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
     (showAllCounts ? studio.image_count_all : studio.image_count) ?? 0;
   const performerCount =
     (showAllCounts ? studio.performer_count_all : studio.performer_count) ?? 0;
-  const movieCount =
+  const groupCount =
     (showAllCounts ? studio.movie_count_all : studio.movie_count) ?? 0;
 
   const populatedDefaultTab = useMemo(() => {
@@ -120,7 +120,7 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
         ret = "images";
       } else if (performerCount != 0) {
         ret = "performers";
-      } else if (movieCount != 0) {
+      } else if (groupCount != 0) {
         ret = "groups";
       } else if (studio.child_studios.length != 0) {
         ret = "childstudios";
@@ -133,7 +133,7 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
     galleryCount,
     imageCount,
     performerCount,
-    movieCount,
+    groupCount,
     studio,
   ]);
 
@@ -443,7 +443,7 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
             {intl.formatMessage({ id: "groups" })}
             <Counter
               abbreviateCounter={abbreviateCounter}
-              count={movieCount}
+              count={groupCount}
               hideZero
             />
           </>

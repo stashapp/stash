@@ -85,7 +85,7 @@ interface IGroup {
   movie: IHasID;
 }
 
-export function getAggregateMovieIds(state: { movies: IGroup[] }[]) {
+export function getAggregateGroupIds(state: { movies: IGroup[] }[]) {
   const sortedLists = state.map((o) =>
     o.movies.map((oo) => oo.movie.id).sort()
   );

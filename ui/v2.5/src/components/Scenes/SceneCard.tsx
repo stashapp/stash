@@ -143,24 +143,24 @@ const SceneCardPopovers = PatchComponent(
       return <PerformerPopoverButton performers={props.scene.performers} />;
     }
 
-    function maybeRenderMoviePopoverButton() {
+    function maybeRenderGroupPopoverButton() {
       if (props.scene.movies.length <= 0) return;
 
-      const popoverContent = props.scene.movies.map((sceneMovie) => (
-        <div className="movie-tag-container row" key="movie">
+      const popoverContent = props.scene.movies.map((sceneGroup) => (
+        <div className="movie-tag-container row" key={sceneGroup.movie.id}>
           <Link
-            to={`/groups/${sceneMovie.movie.id}`}
+            to={`/groups/${sceneGroup.movie.id}`}
             className="movie-tag col m-auto zoom-2"
           >
             <img
               className="image-thumbnail"
-              alt={sceneMovie.movie.name ?? ""}
-              src={sceneMovie.movie.front_image_path ?? ""}
+              alt={sceneGroup.movie.name ?? ""}
+              src={sceneGroup.movie.front_image_path ?? ""}
             />
           </Link>
           <GroupLink
-            key={sceneMovie.movie.id}
-            group={sceneMovie.movie}
+            key={sceneGroup.movie.id}
+            group={sceneGroup.movie}
             className="d-block"
           />
         </div>
@@ -291,7 +291,7 @@ const SceneCardPopovers = PatchComponent(
             <ButtonGroup className="card-popovers">
               {maybeRenderTagPopoverButton()}
               {maybeRenderPerformerPopoverButton()}
-              {maybeRenderMoviePopoverButton()}
+              {maybeRenderGroupPopoverButton()}
               {maybeRenderSceneMarkerPopoverButton()}
               {maybeRenderOCounter()}
               {maybeRenderGallery()}

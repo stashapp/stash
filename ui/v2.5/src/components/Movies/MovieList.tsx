@@ -111,7 +111,7 @@ export const GroupList: React.FC<IGroupList> = ({
     selectedIds: Set<string>,
     onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void
   ) {
-    function maybeRenderMovieExportDialog() {
+    function maybeRenderGroupExportDialog() {
       if (isExportDialogOpen) {
         return (
           <ExportDialog
@@ -145,7 +145,7 @@ export const GroupList: React.FC<IGroupList> = ({
     }
     return (
       <>
-        {maybeRenderMovieExportDialog()}
+        {maybeRenderGroupExportDialog()}
         {renderGroups()}
       </>
     );

@@ -173,7 +173,7 @@ export type InputType =
   | "performer_tags"
   | "scenes"
   | "scene_tags"
-  | "movies"
+  | "groups"
   | "galleries"
   | undefined;
 

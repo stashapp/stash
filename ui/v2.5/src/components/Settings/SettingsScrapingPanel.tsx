@@ -79,7 +79,7 @@ export const SettingsScrapingPanel: React.FC = () => {
     useListSceneScrapers();
   const { data: galleryScrapers, loading: loadingGalleries } =
     useListGalleryScrapers();
-  const { data: movieScrapers, loading: loadingMovies } =
+  const { data: groupScrapers, loading: loadingGroups } =
     useListMovieScrapers();
 
   const { general, scraping, loading, error, saveGeneral, saveScraping } =
@@ -158,7 +158,7 @@ export const SettingsScrapingPanel: React.FC = () => {
     );
   }
 
-  function renderMovieScrapeTypes(types: ScrapeType[]) {
+  function renderGroupScrapeTypes(types: ScrapeType[]) {
     const typeStrings = types.map((t) => {
       switch (t) {
         case ScrapeType.Fragment:
@@ -246,12 +246,12 @@ export const SettingsScrapingPanel: React.FC = () => {
     );
   }
 
-  function renderMovieScrapers() {
-    const elements = (movieScrapers?.listScrapers ?? []).map((scraper) => (
+  function renderGroupScrapers() {
+    const elements = (groupScrapers?.listScrapers ?? []).map((scraper) => (
       <tr key={scraper.id}>
         <td>{scraper.name}</td>
         <td>
-          {renderMovieScrapeTypes(scraper.movie?.supported_scrapes ?? [])}
+          {renderGroupScrapeTypes(scraper.movie?.supported_scrapes ?? [])}
         </td>
         <td>{renderURLs(scraper.movie?.urls ?? [])}</td>
       </tr>
@@ -297,7 +297,7 @@ export const SettingsScrapingPanel: React.FC = () => {
     loadingScenes ||
     loadingGalleries ||
     loadingPerformers ||
-    loadingMovies
+    loadingGroups
   )
     return <LoadingIndicator />;
 
@@ -361,7 +361,7 @@ export const SettingsScrapingPanel: React.FC = () => {
           {renderSceneScrapers()}
           {renderGalleryScrapers()}
           {renderPerformerScrapers()}
-          {renderMovieScrapers()}
+          {renderGroupScrapers()}
         </div>
       </SettingSection>
     </>
