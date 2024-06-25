@@ -214,6 +214,37 @@ func (r *sceneResolver) Movies(ctx context.Context, obj *models.Scene) (ret []*S
 	return ret, nil
 }
 
+func (r *sceneResolver) Groups(ctx context.Context, obj *models.Scene) (ret []*SceneGroup, err error) {
+	if !obj.Movies.Loaded() {
+		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+			qb := r.repository.Scene
+
+			return obj.LoadMovies(ctx, qb)
+		}); err != nil {
+			return nil, err
+		}
+	}
+
+	loader := loaders.From(ctx).MovieByID
+
+	for _, sm := range obj.Movies.List() {
+		movie, err := loader.Load(sm.MovieID)
+		if err != nil {
+			return nil, err
+		}
+
+		sceneIdx := sm.SceneIndex
+		sceneGroup := &SceneGroup{
+			Group:      movie,
+			SceneIndex: sceneIdx,
+		}
+
+		ret = append(ret, sceneGroup)
+	}
+
+	return ret, nil
+}
+
 func (r *sceneResolver) Tags(ctx context.Context, obj *models.Scene) (ret []*models.Tag, err error) {
 	if !obj.TagIDs.Loaded() {
 		if err := r.withReadTxn(ctx, func(ctx context.Context) error {

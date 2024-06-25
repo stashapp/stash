@@ -98,7 +98,7 @@ func (r *studioResolver) PerformerCount(ctx context.Context, obj *models.Studio,
 	return ret, nil
 }
 
-func (r *studioResolver) MovieCount(ctx context.Context, obj *models.Studio, depth *int) (ret int, err error) {
+func (r *studioResolver) GroupCount(ctx context.Context, obj *models.Studio, depth *int) (ret int, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		ret, err = movie.CountByStudioID(ctx, r.repository.Movie, obj.ID, depth)
 		return err
@@ -107,6 +107,11 @@ func (r *studioResolver) MovieCount(ctx context.Context, obj *models.Studio, dep
 	}
 
 	return ret, nil
+}
+
+// deprecated
+func (r *studioResolver) MovieCount(ctx context.Context, obj *models.Studio, depth *int) (ret int, err error) {
+	return r.GroupCount(ctx, obj, depth)
 }
 
 func (r *studioResolver) ParentStudio(ctx context.Context, obj *models.Studio) (ret *models.Studio, err error) {
@@ -144,7 +149,7 @@ func (r *studioResolver) Rating100(ctx context.Context, obj *models.Studio) (*in
 	return obj.Rating, nil
 }
 
-func (r *studioResolver) Movies(ctx context.Context, obj *models.Studio) (ret []*models.Movie, err error) {
+func (r *studioResolver) Groups(ctx context.Context, obj *models.Studio) (ret []*models.Movie, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		ret, err = r.repository.Movie.FindByStudioID(ctx, obj.ID)
 		return err
@@ -153,4 +158,9 @@ func (r *studioResolver) Movies(ctx context.Context, obj *models.Studio) (ret []
 	}
 
 	return ret, nil
+}
+
+// deprecated
+func (r *studioResolver) Movies(ctx context.Context, obj *models.Studio) (ret []*models.Movie, err error) {
+	return r.Groups(ctx, obj)
 }

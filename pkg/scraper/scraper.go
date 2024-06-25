@@ -31,6 +31,7 @@ type ScrapeContentType string
 const (
 	ScrapeContentTypeGallery   ScrapeContentType = "GALLERY"
 	ScrapeContentTypeMovie     ScrapeContentType = "MOVIE"
+	ScrapeContentTypeGroup     ScrapeContentType = "GROUP"
 	ScrapeContentTypePerformer ScrapeContentType = "PERFORMER"
 	ScrapeContentTypeScene     ScrapeContentType = "SCENE"
 )
@@ -38,13 +39,14 @@ const (
 var AllScrapeContentType = []ScrapeContentType{
 	ScrapeContentTypeGallery,
 	ScrapeContentTypeMovie,
+	ScrapeContentTypeGroup,
 	ScrapeContentTypePerformer,
 	ScrapeContentTypeScene,
 }
 
 func (e ScrapeContentType) IsValid() bool {
 	switch e {
-	case ScrapeContentTypeGallery, ScrapeContentTypeMovie, ScrapeContentTypePerformer, ScrapeContentTypeScene:
+	case ScrapeContentTypeGallery, ScrapeContentTypeMovie, ScrapeContentTypeGroup, ScrapeContentTypePerformer, ScrapeContentTypeScene:
 		return true
 	}
 	return false
@@ -80,6 +82,8 @@ type Scraper struct {
 	Scene *ScraperSpec `json:"scene"`
 	// Details for gallery scraper
 	Gallery *ScraperSpec `json:"gallery"`
+	// Details for movie scraper
+	Group *ScraperSpec `json:"group"`
 	// Details for movie scraper
 	Movie *ScraperSpec `json:"movie"`
 }

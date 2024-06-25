@@ -31,3 +31,35 @@ input ScrapedMovieInput {
   synopsis: String
   # not including tags for the input
 }
+
+"A group from a scraping operation..."
+type ScrapedGroup {
+  stored_id: ID
+  name: String
+  aliases: String
+  duration: String
+  date: String
+  rating: String
+  director: String
+  urls: [String!]
+  synopsis: String
+  studio: ScrapedStudio
+  tags: [ScrapedTag!]
+
+  "This should be a base64 encoded data URL"
+  front_image: String
+  "This should be a base64 encoded data URL"
+  back_image: String
+}
+
+input ScrapedGroupInput {
+  name: String
+  aliases: String
+  duration: String
+  date: String
+  rating: String
+  director: String
+  urls: [String!]
+  synopsis: String
+  # not including tags for the input
+}

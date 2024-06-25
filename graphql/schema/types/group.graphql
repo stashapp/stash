@@ -1,0 +1,80 @@
+type Group {
+  id: ID!
+  name: String!
+  aliases: String
+  "Duration in seconds"
+  duration: Int
+  date: String
+  # rating expressed as 1-100
+  rating100: Int
+  studio: Studio
+  director: String
+  synopsis: String
+  urls: [String!]!
+  tags: [Tag!]!
+  created_at: Time!
+  updated_at: Time!
+
+  front_image_path: String # Resolver
+  back_image_path: String # Resolver
+  scene_count: Int! # Resolver
+  scenes: [Scene!]!
+}
+
+input GroupCreateInput {
+  name: String!
+  aliases: String
+  "Duration in seconds"
+  duration: Int
+  date: String
+  # rating expressed as 1-100
+  rating100: Int
+  studio_id: ID
+  director: String
+  synopsis: String
+  urls: [String!]
+  tag_ids: [ID!]
+  "This should be a URL or a base64 encoded data URL"
+  front_image: String
+  "This should be a URL or a base64 encoded data URL"
+  back_image: String
+}
+
+input GroupUpdateInput {
+  id: ID!
+  name: String
+  aliases: String
+  duration: Int
+  date: String
+  # rating expressed as 1-100
+  rating100: Int
+  studio_id: ID
+  director: String
+  synopsis: String
+  urls: [String!]
+  tag_ids: [ID!]
+  "This should be a URL or a base64 encoded data URL"
+  front_image: String
+  "This should be a URL or a base64 encoded data URL"
+  back_image: String
+}
+
+input BulkGroupUpdateInput {
+  clientMutationId: String
+  ids: [ID!]
+  # rating expressed as 1-100
+  rating100: Int
+  studio_id: ID
+  director: String
+  urls: BulkUpdateStrings
+  tag_ids: BulkUpdateIds
+}
+
+input GroupDestroyInput {
+  id: ID!
+}
+
+type FindGroupsResultType {
+  count: Int!
+  groups: [Group!]!
+}

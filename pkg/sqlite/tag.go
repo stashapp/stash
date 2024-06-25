@@ -683,7 +683,7 @@ func (qb *TagStore) getTagSort(query *queryBuilder, findFilter *models.FindFilte
 		sortQuery += getCountSort(tagTable, performersTagsTable, tagIDColumn, direction)
 	case "studios_count":
 		sortQuery += getCountSort(tagTable, studiosTagsTable, tagIDColumn, direction)
-	case "movies_count":
+	case "movies_count", "groups_count":
 		sortQuery += getCountSort(tagTable, moviesTagsTable, tagIDColumn, direction)
 	default:
 		sortQuery += getSort(sort, direction, "tags")

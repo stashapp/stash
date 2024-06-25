@@ -14,7 +14,8 @@ type Tag {
   gallery_count(depth: Int): Int! # Resolver
   performer_count(depth: Int): Int! # Resolver
   studio_count(depth: Int): Int! # Resolver
-  movie_count(depth: Int): Int! # Resolver
+  group_count(depth: Int): Int! # Resolver
+  movie_count(depth: Int): Int! @deprecated(reason: "use group_count instead") # Resolver
   parents: [Tag!]!
   children: [Tag!]!
 

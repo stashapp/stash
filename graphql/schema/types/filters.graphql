@@ -257,7 +257,9 @@ input SceneFilterType {
   "Filter to only include scenes with this studio"
   studios: HierarchicalMultiCriterionInput
   "Filter to only include scenes with this movie"
-  movies: MultiCriterionInput
+  movies: MultiCriterionInput @deprecated(reason: "use groups instead")
+  "Filter to only include scenes with this group"
+  groups: MultiCriterionInput
   "Filter to only include scenes with this gallery"
   galleries: MultiCriterionInput
   "Filter to only include scenes with these tags"
@@ -309,6 +311,9 @@ input SceneFilterType {
   tags_filter: TagFilterType
   "Filter by related movies that meet this criteria"
   movies_filter: MovieFilterType
+    @deprecated(reason: "use groups_filter instead")
+  "Filter by related groups that meet this criteria"
+  groups_filter: GroupFilterType
   "Filter by related markers that meet this criteria"
   markers_filter: SceneMarkerFilterType
 }
@@ -335,6 +340,44 @@ input MovieFilterType {
   "Filter to only include movies where performer appears in a scene"
   performers: MultiCriterionInput
   "Filter to only include movies with these tags"
+  tags: HierarchicalMultiCriterionInput
+  "Filter by tag count"
+  tag_count: IntCriterionInput
+  "Filter by date"
+  date: DateCriterionInput
+  "Filter by creation time"
+  created_at: TimestampCriterionInput
+  "Filter by last update time"
+  updated_at: TimestampCriterionInput
+
+  "Filter by related scenes that meet this criteria"
+  scenes_filter: SceneFilterType
+  "Filter by related studios that meet this criteria"
+  studios_filter: StudioFilterType
+}
+
+input GroupFilterType {
+  AND: GroupFilterType
+  OR: GroupFilterType
+  NOT: GroupFilterType
+
+  name: StringCriterionInput
+  director: StringCriterionInput
+  synopsis: StringCriterionInput
+
+  "Filter by duration (in seconds)"
+  duration: IntCriterionInput
+  # rating expressed as 1-100
+  rating100: IntCriterionInput
+  "Filter to only include groups with this studio"
+  studios: HierarchicalMultiCriterionInput
+  "Filter to only include groups missing this property"
+  is_missing: String
+  "Filter by url"
+  url: StringCriterionInput
+  "Filter to only include groups where performer appears in a scene"
+  performers: MultiCriterionInput
+  "Filter to only include groups with these tags"
   tags: HierarchicalMultiCriterionInput
   "Filter by tag count"
   tag_count: IntCriterionInput
@@ -507,6 +550,9 @@ input TagFilterType {
 
   "Filter by number of movies with this tag"
   movie_count: IntCriterionInput
+
+  "Filter by number of group with this tag"
+  group_count: IntCriterionInput
 
   "Filter by number of markers with this tag"
   marker_count: IntCriterionInput
@@ -702,6 +748,7 @@ enum FilterMode {
   GALLERIES
   SCENE_MARKERS
   MOVIES
+  GROUPS
   TAGS
   IMAGES
 }

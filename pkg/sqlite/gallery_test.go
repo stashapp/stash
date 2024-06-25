@@ -1881,7 +1881,7 @@ func TestGalleryQueryIsMissingPerformers(t *testing.T) {
 
 		assert.True(t, len(galleries) > 0)
 
-		// ensure non of the ids equal the one with movies
+		// ensure non of the ids equal the one with galleries
 		for _, gallery := range galleries {
 			assert.NotEqual(t, galleryIDs[galleryIdxWithPerformer], gallery.ID)
 		}

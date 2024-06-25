@@ -299,6 +299,7 @@ func (c config) spec() Scraper {
 
 	if len(movie.SupportedScrapes) > 0 {
 		ret.Movie = &movie
+		ret.Group = &movie
 	}
 
 	return ret
@@ -312,7 +313,7 @@ func (c config) supports(ty ScrapeContentType) bool {
 		return (c.SceneByName != nil && c.SceneByQueryFragment != nil) || c.SceneByFragment != nil || len(c.SceneByURL) > 0
 	case ScrapeContentTypeGallery:
 		return c.GalleryByFragment != nil || len(c.GalleryByURL) > 0
-	case ScrapeContentTypeMovie:
+	case ScrapeContentTypeMovie, ScrapeContentTypeGroup:
 		return len(c.MovieByURL) > 0
 	}
 
@@ -339,7 +340,7 @@ func (c config) matchesURL(url string, ty ScrapeContentType) bool {
 				return true
 			}
 		}
-	case ScrapeContentTypeMovie:
+	case ScrapeContentTypeMovie, ScrapeContentTypeGroup:
 		for _, scraper := range c.MovieByURL {
 			if scraper.matchesURL(url) {
 				return true
