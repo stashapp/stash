@@ -104,8 +104,8 @@ export const SceneEditPanel: React.FC<IProps> = ({
   }, [scene.performers]);
 
   useEffect(() => {
-    setGroups(scene.movies?.map((m) => m.movie) ?? []);
-  }, [scene.movies]);
+    setGroups(scene.groups?.map((m) => m.group) ?? []);
+  }, [scene.groups]);
 
   useEffect(() => {
     setStudio(scene.studio ?? null);
@@ -125,10 +125,10 @@ export const SceneEditPanel: React.FC<IProps> = ({
     gallery_ids: yup.array(yup.string().required()).defined(),
     studio_id: yup.string().required().nullable(),
     performer_ids: yup.array(yup.string().required()).defined(),
-    movies: yup
+    groups: yup
       .array(
         yup.object({
-          movie_id: yup.string().required(),
+          group_id: yup.string().required(),
           scene_index: yup.number().integer().nullable().defined(),
         })
       )
@@ -149,8 +149,8 @@ export const SceneEditPanel: React.FC<IProps> = ({
       gallery_ids: (scene.galleries ?? []).map((g) => g.id),
       studio_id: scene.studio?.id ?? null,
       performer_ids: (scene.performers ?? []).map((p) => p.id),
-      movies: (scene.movies ?? []).map((m) => {
-        return { movie_id: m.movie.id, scene_index: m.scene_index ?? null };
+      groups: (scene.groups ?? []).map((m) => {
+        return { group_id: m.group.id, scene_index: m.scene_index ?? null };
       }),
       tag_ids: (scene.tags ?? []).map((t) => t.id),
       stash_ids: getStashIDs(scene.stash_ids),
@@ -187,16 +187,16 @@ export const SceneEditPanel: React.FC<IProps> = ({
     return sceneImage;
   }, [formik.values.cover_image, scene.paths?.screenshot]);
 
-  const movieEntries = useMemo(() => {
-    return formik.values.movies
+  const groupEntries = useMemo(() => {
+    return formik.values.groups
       .map((m) => {
         return {
-          movie: groups.find((mm) => mm.id === m.movie_id),
+          group: groups.find((mm) => mm.id === m.group_id),
           scene_index: m.scene_index,
         };
       })
-      .filter((m) => m.movie !== undefined) as IGroupEntry[];
-  }, [formik.values.movies, groups]);
+      .filter((m) => m.group !== undefined) as IGroupEntry[];
+  }, [formik.values.groups, groups]);
 
   function onSetGalleries(items: Gallery[]) {
     setGalleries(items);
@@ -256,21 +256,21 @@ export const SceneEditPanel: React.FC<IProps> = ({
   function onSetGroups(items: Group[]) {
     setGroups(items);
 
-    const existingMovies = formik.values.movies;
+    const existingGroups = formik.values.groups;
 
-    const newMovies = items.map((m) => {
-      const existing = existingMovies.find((mm) => mm.movie_id === m.id);
+    const newGroups = items.map((m) => {
+      const existing = existingGroups.find((mm) => mm.group_id === m.id);
       if (existing) {
         return existing;
       }
 
       return {
-        movie_id: m.id,
+        group_id: m.id,
         scene_index: null,
       };
     });
 
-    formik.setFieldValue("movies", newMovies);
+    formik.setFieldValue("groups", newGroups);
   }
 
   async function onSave(input: InputValues) {
@@ -568,8 +568,8 @@ export const SceneEditPanel: React.FC<IProps> = ({
       }
     }
 
-    if (updatedScene.movies && updatedScene.movies.length > 0) {
-      const idMovis = updatedScene.movies.filter((p) => {
+    if (updatedScene.groups && updatedScene.groups.length > 0) {
+      const idMovis = updatedScene.groups.filter((p) => {
         return p.stored_id !== undefined && p.stored_id !== null;
       });
 
@@ -725,24 +725,24 @@ export const SceneEditPanel: React.FC<IProps> = ({
     return renderField("performer_ids", title, control, fullWidthProps);
   }
 
-  function onSetMovieEntries(input: IGroupEntry[]) {
-    setGroups(input.map((m) => m.movie));
+  function onSetGroupEntries(input: IGroupEntry[]) {
+    setGroups(input.map((m) => m.group));
 
-    const newMovies = input.map((m) => ({
-      movie_id: m.movie.id,
+    const newGroups = input.map((m) => ({
+      group_id: m.group.id,
       scene_index: m.scene_index,
     }));
 
-    formik.setFieldValue("movies", newMovies);
+    formik.setFieldValue("groups", newGroups);
   }
 
-  function renderMoviesField() {
+  function renderGroupsField() {
     const title = intl.formatMessage({ id: "groups" });
     const control = (
-      <SceneGroupTable value={movieEntries} onUpdate={onSetMovieEntries} />
+      <SceneGroupTable value={groupEntries} onUpdate={onSetGroupEntries} />
     );
 
-    return renderField("movies", title, control, fullWidthProps);
+    return renderField("groups", title, control, fullWidthProps);
   }
 
   function renderTagsField() {
@@ -820,7 +820,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
             {renderGalleriesField()}
             {renderStudioField()}
             {renderPerformersField()}
-            {renderMoviesField()}
+            {renderGroupsField()}
             {renderTagsField()}
 
             {renderStashIDsField(

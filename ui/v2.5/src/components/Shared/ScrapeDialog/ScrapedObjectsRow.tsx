@@ -197,7 +197,7 @@ export const ScrapedPerformersRow: React.FC<
 };
 
 export const ScrapedGroupsRow: React.FC<
-  IScrapedObjectRowImpl<GQL.ScrapedMovie>
+  IScrapedObjectRowImpl<GQL.ScrapedGroup>
 > = ({ title, result, onChange, newObjects, onCreateNew }) => {
   const groupsCopy = useMemo(() => {
     return (
@@ -209,9 +209,9 @@ export const ScrapedGroupsRow: React.FC<
   }, [newObjects]);
 
   function renderScrapedGroups(
-    scrapeResult: ScrapeResult<GQL.ScrapedMovie[]>,
+    scrapeResult: ScrapeResult<GQL.ScrapedGroup[]>,
     isNew?: boolean,
-    onChangeFn?: (value: GQL.ScrapedMovie[]) => void
+    onChangeFn?: (value: GQL.ScrapedGroup[]) => void
   ) {
     const resultValue = isNew
       ? scrapeResult.newValue
@@ -244,7 +244,7 @@ export const ScrapedGroupsRow: React.FC<
   }
 
   return (
-    <ScrapedObjectsRow<GQL.ScrapedMovie>
+    <ScrapedObjectsRow<GQL.ScrapedGroup>
       title={title}
       result={result}
       renderObjects={renderScrapedGroups}

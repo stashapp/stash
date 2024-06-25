@@ -5,7 +5,7 @@ import {
   createDurationCriterionOption,
   createMandatoryNumberCriterionOption,
 } from "./criteria/criterion";
-import { MovieIsMissingCriterionOption } from "./criteria/is-missing";
+import { GroupIsMissingCriterionOption } from "./criteria/is-missing";
 import { StudiosCriterionOption } from "./criteria/studios";
 import { PerformersCriterionOption } from "./criteria/performers";
 import { ListFilterOptions } from "./filter-options";
@@ -35,7 +35,7 @@ const displayModeOptions = [DisplayMode.Grid];
 const criterionOptions = [
   // StudioTagsCriterionOption,
   StudiosCriterionOption,
-  MovieIsMissingCriterionOption,
+  GroupIsMissingCriterionOption,
   createStringCriterionOption("url"),
   createStringCriterionOption("name"),
   createStringCriterionOption("director"),
@@ -50,7 +50,7 @@ const criterionOptions = [
   createMandatoryTimestampCriterionOption("updated_at"),
 ];
 
-export const MovieListFilterOptions = new ListFilterOptions(
+export const GroupListFilterOptions = new ListFilterOptions(
   defaultSortBy,
   sortByOptions,
   displayModeOptions,

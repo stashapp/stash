@@ -387,23 +387,23 @@ export const SceneDuplicateChecker: React.FC = () => {
   }
 
   function maybeRenderGroupPopoverButton(scene: GQL.SlimSceneDataFragment) {
-    if (scene.movies.length <= 0) return;
+    if (scene.groups.length <= 0) return;
 
-    const popoverContent = scene.movies.map((sceneMovie) => (
-      <div className="group-tag-container row" key={sceneMovie.movie.id}>
+    const popoverContent = scene.groups.map((sceneGroup) => (
+      <div className="group-tag-container row" key={sceneGroup.group.id}>
         <Link
-          to={`/groups/${sceneMovie.movie.id}`}
+          to={`/groups/${sceneGroup.group.id}`}
           className="group-tag col m-auto zoom-2"
         >
           <img
             className="image-thumbnail"
-            alt={sceneMovie.movie.name ?? ""}
-            src={sceneMovie.movie.front_image_path ?? ""}
+            alt={sceneGroup.group.name ?? ""}
+            src={sceneGroup.group.front_image_path ?? ""}
           />
         </Link>
         <GroupLink
-          key={sceneMovie.movie.id}
-          group={sceneMovie.movie}
+          key={sceneGroup.group.id}
+          group={sceneGroup.group}
           className="d-block"
         />
       </div>
@@ -417,7 +417,7 @@ export const SceneDuplicateChecker: React.FC = () => {
       >
         <Button className="minimal">
           <Icon icon={faFilm} />
-          <span>{scene.movies.length}</span>
+          <span>{scene.groups.length}</span>
         </Button>
       </HoverPopover>
     );
@@ -511,7 +511,7 @@ export const SceneDuplicateChecker: React.FC = () => {
     if (
       scene.tags.length > 0 ||
       scene.performers.length > 0 ||
-      scene.movies.length > 0 ||
+      scene.groups.length > 0 ||
       scene.scene_markers.length > 0 ||
       scene?.o_counter ||
       scene.galleries.length > 0 ||

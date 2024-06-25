@@ -1,13 +1,13 @@
 import React from "react";
 import * as GQL from "src/core/generated-graphql";
-import { MoviesCriterion } from "src/models/list-filter/criteria/movies";
+import { GroupsCriterion as GroupsCriterion } from "src/models/list-filter/criteria/movies";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { SceneList } from "src/components/Scenes/SceneList";
 import { View } from "src/components/List/views";
 
 interface IGroupScenesPanel {
   active: boolean;
-  group: GQL.MovieDataFragment;
+  group: GQL.GroupDataFragment;
 }
 
 export const GroupScenesPanel: React.FC<IGroupScenesPanel> = ({
@@ -15,32 +15,32 @@ export const GroupScenesPanel: React.FC<IGroupScenesPanel> = ({
   group,
 }) => {
   function filterHook(filter: ListFilterModel) {
-    const movieValue = { id: group.id, label: group.name };
-    // if movie is already present, then we modify it, otherwise add
-    let movieCriterion = filter.criteria.find((c) => {
-      return c.criterionOption.type === "movies";
-    }) as MoviesCriterion | undefined;
+    const groupValue = { id: group.id, label: group.name };
+    // if group is already present, then we modify it, otherwise add
+    let groupCriterion = filter.criteria.find((c) => {
+      return c.criterionOption.type === "groups";
+    }) as GroupsCriterion | undefined;
 
     if (
-      movieCriterion &&
-      (movieCriterion.modifier === GQL.CriterionModifier.IncludesAll ||
-        movieCriterion.modifier === GQL.CriterionModifier.Includes)
+      groupCriterion &&
+      (groupCriterion.modifier === GQL.CriterionModifier.IncludesAll ||
+        groupCriterion.modifier === GQL.CriterionModifier.Includes)
     ) {
-      // add the movie if not present
+      // add the group if not present
       if (
-        !movieCriterion.value.find((p) => {
+        !groupCriterion.value.find((p) => {
           return p.id === group.id;
         })
       ) {
-        movieCriterion.value.push(movieValue);
+        groupCriterion.value.push(groupValue);
       }
 
-      movieCriterion.modifier = GQL.CriterionModifier.IncludesAll;
+      groupCriterion.modifier = GQL.CriterionModifier.IncludesAll;
     } else {
       // overwrite
-      movieCriterion = new MoviesCriterion();
-      movieCriterion.value = [movieValue];
-      filter.criteria.push(movieCriterion);
+      groupCriterion = new GroupsCriterion();
+      groupCriterion.value = [groupValue];
+      filter.criteria.push(groupCriterion);
     }
 
     return filter;
@@ -50,7 +50,7 @@ export const GroupScenesPanel: React.FC<IGroupScenesPanel> = ({
     return (
       <SceneList
         filterHook={filterHook}
-        defaultSort="movie_scene_number"
+        defaultSort="group_scene_number"
         alterQuery={active}
         view={View.GroupScenes}
       />

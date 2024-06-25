@@ -2,16 +2,16 @@ import { ILabeledIdCriterion, ILabeledIdCriterionOption } from "./criterion";
 
 const inputType = "groups";
 
-export const MoviesCriterionOption = new ILabeledIdCriterionOption(
+export const GroupsCriterionOption = new ILabeledIdCriterionOption(
   "groups",
-  "movies",
+  "groups",
   false,
   inputType,
-  () => new MoviesCriterion()
+  () => new GroupsCriterion()
 );
 
-export class MoviesCriterion extends ILabeledIdCriterion {
+export class GroupsCriterion extends ILabeledIdCriterion {
   constructor() {
-    super(MoviesCriterionOption);
+    super(GroupsCriterionOption);
   }
 }

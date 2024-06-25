@@ -237,13 +237,13 @@ export const TagCard: React.FC<IProps> = ({
   }
 
   function maybeRenderGroupsPopoverButton() {
-    if (!tag.movie_count) return;
+    if (!tag.group_count) return;
 
     return (
       <PopoverCountButton
         className="group-count"
         type="group"
-        count={tag.movie_count}
+        count={tag.group_count}
         url={NavUtils.makeTagGroupsUrl(tag)}
       />
     );

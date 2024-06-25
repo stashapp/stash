@@ -441,12 +441,12 @@ const ScenePage: React.FC<IProps> = ({
               <FormattedMessage id="markers" />
             </Nav.Link>
           </Nav.Item>
-          {scene.movies.length > 0 ? (
+          {scene.groups.length > 0 ? (
             <Nav.Item>
               <Nav.Link eventKey="scene-group-panel">
                 <FormattedMessage
                   id="countables.groups"
-                  values={{ count: scene.movies.length }}
+                  values={{ count: scene.groups.length }}
                 />
               </Nav.Link>
             </Nav.Item>

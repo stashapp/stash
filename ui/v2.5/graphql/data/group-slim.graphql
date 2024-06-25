@@ -1,11 +1,11 @@
-fragment SlimMovieData on Movie {
+fragment SlimGroupData on Group {
   id
   name
   front_image_path
   rating100
 }
 
-fragment SelectMovieData on Movie {
+fragment SelectGroupData on Group {
   id
   name
   aliases

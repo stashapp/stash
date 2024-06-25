@@ -28,7 +28,7 @@ export interface IPerformerCardExtraCriteria {
   scenes?: Criterion<CriterionValue>[];
   images?: Criterion<CriterionValue>[];
   galleries?: Criterion<CriterionValue>[];
-  movies?: Criterion<CriterionValue>[];
+  groups?: Criterion<CriterionValue>[];
   performer?: ILabeledId;
 }
 
@@ -179,17 +179,17 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
   }
 
   function maybeRenderGroupsPopoverButton() {
-    if (!performer.movie_count) return;
+    if (!performer.group_count) return;
 
     return (
       <PopoverCountButton
         className="group-count"
         type="group"
-        count={performer.movie_count}
+        count={performer.group_count}
         url={NavUtils.makePerformerGroupsUrl(
           performer,
           extraCriteria?.performer,
-          extraCriteria?.movies
+          extraCriteria?.groups
         )}
       />
     );
@@ -202,7 +202,7 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
       performer.gallery_count ||
       performer.tags.length > 0 ||
       performer.o_counter ||
-      performer.movie_count
+      performer.group_count
     ) {
       return (
         <>

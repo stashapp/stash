@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { useFindMovies } from "src/core/StashService";
+import { useFindGroups } from "src/core/StashService";
 import Slider from "@ant-design/react-slick";
 import { GroupCard } from "./MovieCard";
 import { ListFilterModel } from "src/models/list-filter/filter";
@@ -15,8 +15,8 @@ interface IProps {
 }
 
 export const GroupRecommendationRow: React.FC<IProps> = (props: IProps) => {
-  const result = useFindMovies(props.filter);
-  const cardCount = result.data?.findMovies.count;
+  const result = useFindGroups(props.filter);
+  const cardCount = result.data?.findGroups.count;
 
   if (!result.loading && !cardCount) {
     return null;
@@ -42,8 +42,8 @@ export const GroupRecommendationRow: React.FC<IProps> = (props: IProps) => {
           ? [...Array(props.filter.itemsPerPage)].map((i) => (
               <div key={`_${i}`} className="group-skeleton skeleton-card"></div>
             ))
-          : result.data?.findMovies.movies.map((m) => (
-              <GroupCard key={m.id} group={m} />
+          : result.data?.findGroups.groups.map((g) => (
+              <GroupCard key={g.id} group={g} />
             ))}
       </Slider>
     </RecommendationRow>

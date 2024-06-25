@@ -4,8 +4,8 @@ import * as GQL from "src/core/generated-graphql";
 import * as yup from "yup";
 import Mousetrap from "mousetrap";
 import {
-  queryScrapeMovieURL,
-  useListMovieScrapers,
+  queryScrapeGroupURL,
+  useListGroupScrapers,
 } from "src/core/StashService";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { DetailsEditNavbar } from "src/components/Shared/DetailsEditNavbar";
@@ -28,8 +28,8 @@ import { Studio, StudioSelect } from "src/components/Studios/StudioSelect";
 import { useTagsEdit } from "src/hooks/tagsEdit";
 
 interface IGroupEditPanel {
-  group: Partial<GQL.MovieDataFragment>;
-  onSubmit: (movie: GQL.MovieCreateInput) => Promise<void>;
+  group: Partial<GQL.GroupDataFragment>;
+  onSubmit: (group: GQL.GroupCreateInput) => Promise<void>;
   onCancel: () => void;
   onDelete: () => void;
   setFrontImage: (image?: string | null) => void;
@@ -56,8 +56,8 @@ export const GroupEditPanel: React.FC<IGroupEditPanel> = ({
 
   const [imageClipboard, setImageClipboard] = useState<string>();
 
-  const Scrapers = useListMovieScrapers();
-  const [scrapedGroup, setScrapedGroup] = useState<GQL.ScrapedMovie>();
+  const Scrapers = useListGroupScrapers();
+  const [scrapedGroup, setScrapedGroup] = useState<GQL.ScrapedGroup>();
 
   const [studio, setStudio] = useState<Studio | null>(null);
 
@@ -129,7 +129,7 @@ export const GroupEditPanel: React.FC<IGroupEditPanel> = ({
   });
 
   function updateGroupEditStateFromScraper(
-    state: Partial<GQL.ScrapedMovieDataFragment>
+    state: Partial<GQL.ScrapedGroupDataFragment>
   ) {
     if (state.name) {
       formik.setFieldValue("name", state.name);
@@ -190,21 +190,21 @@ export const GroupEditPanel: React.FC<IGroupEditPanel> = ({
     setIsLoading(false);
   }
 
-  async function onScrapeMovieURL(url: string) {
+  async function onScrapeGroupURL(url: string) {
     if (!url) return;
     setIsLoading(true);
 
     try {
-      const result = await queryScrapeMovieURL(url);
-      if (!result.data || !result.data.scrapeMovieURL) {
+      const result = await queryScrapeGroupURL(url);
+      if (!result.data || !result.data.scrapeGroupURL) {
         return;
       }
 
       // if this is a new group, just dump the data
       if (isNew) {
-        updateGroupEditStateFromScraper(result.data.scrapeMovieURL);
+        updateGroupEditStateFromScraper(result.data.scrapeGroupURL);
       } else {
-        setScrapedGroup(result.data.scrapeMovieURL);
+        setScrapedGroup(result.data.scrapeGroupURL);
       }
     } catch (e) {
       Toast.error(e);
@@ -217,7 +217,7 @@ export const GroupEditPanel: React.FC<IGroupEditPanel> = ({
     return (
       !!scrapedUrl &&
       (Scrapers?.data?.listScrapers ?? []).some((s) =>
-        (s?.movie?.urls ?? []).some((u) => scrapedUrl.includes(u))
+        (s?.group?.urls ?? []).some((u) => scrapedUrl.includes(u))
       )
     );
   }
@@ -249,7 +249,7 @@ export const GroupEditPanel: React.FC<IGroupEditPanel> = ({
     );
   }
 
-  function onScrapeDialogClosed(p?: GQL.ScrapedMovieDataFragment) {
+  function onScrapeDialogClosed(p?: GQL.ScrapedGroupDataFragment) {
     if (p) {
       updateGroupEditStateFromScraper(p);
     }
@@ -381,7 +381,7 @@ export const GroupEditPanel: React.FC<IGroupEditPanel> = ({
       <Prompt
         when={formik.dirty}
         message={(location, action) => {
-          // Check if it's a redirect after movie creation
+          // Check if it's a redirect after group creation
           if (action === "PUSH" && location.pathname.startsWith("/groups/"))
             return true;
 
@@ -396,7 +396,7 @@ export const GroupEditPanel: React.FC<IGroupEditPanel> = ({
         {renderDateField("date")}
         {renderStudioField()}
         {renderInputField("director")}
-        {renderURLListField("urls", onScrapeMovieURL, urlScrapable)}
+        {renderURLListField("urls", onScrapeGroupURL, urlScrapable)}
         {renderInputField("synopsis", "textarea")}
         {renderTagsField()}
       </Form>

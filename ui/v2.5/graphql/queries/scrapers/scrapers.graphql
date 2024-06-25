@@ -31,11 +31,11 @@ query ListGalleryScrapers {
   }
 }
 
-query ListMovieScrapers {
-  listScrapers(types: [MOVIE]) {
+query ListGroupScrapers {
+  listScrapers(types: [GROUP]) {
     id
     name
-    movie {
+    group {
       urls
       supported_scrapes
     }
@@ -114,9 +114,9 @@ query ScrapeGalleryURL($url: String!) {
   }
 }
 
-query ScrapeMovieURL($url: String!) {
-  scrapeMovieURL(url: $url) {
-    ...ScrapedMovieData
+query ScrapeGroupURL($url: String!) {
+  scrapeGroupURL(url: $url) {
+    ...ScrapedGroupData
   }
 }
 

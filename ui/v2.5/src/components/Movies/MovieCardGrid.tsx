@@ -4,7 +4,7 @@ import { GroupCard } from "./MovieCard";
 import { useContainerDimensions } from "../Shared/GridCard/GridCard";
 
 interface IGroupCardGrid {
-  groups: GQL.MovieDataFragment[];
+  groups: GQL.GroupDataFragment[];
   selectedIds: Set<string>;
   onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void;
 }

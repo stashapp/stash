@@ -82,12 +82,12 @@ export function getAggregateTagIds(state: { tags: IHasID[] }[]) {
 }
 
 interface IGroup {
-  movie: IHasID;
+  group: IHasID;
 }
 
-export function getAggregateGroupIds(state: { movies: IGroup[] }[]) {
+export function getAggregateGroupIds(state: { groups: IGroup[] }[]) {
   const sortedLists = state.map((o) =>
-    o.movies.map((oo) => oo.movie.id).sort()
+    o.groups.map((oo) => oo.group.id).sort()
   );
   return getAggregateIds(sortedLists);
 }

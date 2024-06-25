@@ -58,8 +58,8 @@ fragment SlimSceneData on Scene {
     image_path
   }
 
-  movies {
-    movie {
+  groups {
+    group {
       id
       name
       front_image_path

@@ -21,12 +21,12 @@ import { Tag } from "src/components/Tags/TagSelect";
 import { useScrapedTags } from "src/components/Shared/ScrapeDialog/scrapedTags";
 
 interface IGroupScrapeDialogProps {
-  group: Partial<GQL.MovieUpdateInput>;
+  group: Partial<GQL.GroupUpdateInput>;
   groupStudio: Studio | null;
   groupTags: Tag[];
-  scraped: GQL.ScrapedMovie;
+  scraped: GQL.ScrapedGroup;
 
-  onClose: (scrapedMovie?: GQL.ScrapedMovie) => void;
+  onClose: (scrapedGroup?: GQL.ScrapedGroup) => void;
 }
 
 export const GroupScrapeDialog: React.FC<IGroupScrapeDialogProps> = ({
@@ -126,7 +126,7 @@ export const GroupScrapeDialog: React.FC<IGroupScrapeDialogProps> = ({
     return <></>;
   }
 
-  function makeNewScrapedItem(): GQL.ScrapedMovie {
+  function makeNewScrapedItem(): GQL.ScrapedGroup {
     const newStudioValue = studio.getNewValue();
     const durationString = duration.getNewValue();
 

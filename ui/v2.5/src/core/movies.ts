@@ -1,10 +1,10 @@
 import * as GQL from "src/core/generated-graphql";
 import TextUtils from "src/utils/text";
 
-export const scrapedGroupToCreateInput = (toCreate: GQL.ScrapedMovie) => {
-  const input: GQL.MovieCreateInput = {
+export const scrapedGroupToCreateInput = (toCreate: GQL.ScrapedGroup) => {
+  const input: GQL.GroupCreateInput = {
     name: toCreate.name ?? "",
-    url: toCreate.url,
+    urls: toCreate.urls,
     aliases: toCreate.aliases,
     front_image: toCreate.front_image,
     back_image: toCreate.back_image,

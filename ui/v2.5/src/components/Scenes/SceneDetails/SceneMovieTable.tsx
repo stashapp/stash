@@ -5,10 +5,10 @@ import { Form, Row, Col } from "react-bootstrap";
 import { Group, GroupSelect } from "src/components/Movies/MovieSelect";
 import cx from "classnames";
 
-export type MovieSceneIndexMap = Map<string, number | undefined>;
+export type GroupSceneIndexMap = Map<string, number | undefined>;
 
 export interface IGroupEntry {
-  movie: Group;
+  group: Group;
   scene_index?: GQL.InputMaybe<number> | undefined;
 }
 
@@ -22,7 +22,7 @@ export const SceneGroupTable: React.FC<IProps> = (props) => {
 
   const intl = useIntl();
 
-  const groupIDs = useMemo(() => value.map((m) => m.movie.id), [value]);
+  const groupIDs = useMemo(() => value.map((m) => m.group.id), [value]);
 
   const updateFieldChanged = (index: number, sceneIndex: number | null) => {
     const newValues = value.map((existing, i) => {
@@ -52,7 +52,7 @@ export const SceneGroupTable: React.FC<IProps> = (props) => {
       if (i === index) {
         return {
           ...existing,
-          movie: group,
+          group: group,
         };
       }
       return existing;
@@ -71,7 +71,7 @@ export const SceneGroupTable: React.FC<IProps> = (props) => {
     const newValues = [
       ...value,
       {
-        movie: group,
+        group: group,
         scene_index: null,
       },
     ];
@@ -83,11 +83,11 @@ export const SceneGroupTable: React.FC<IProps> = (props) => {
     return (
       <>
         {value.map((m, i) => (
-          <Row key={m.movie.id} className="group-row">
+          <Row key={m.group.id} className="group-row">
             <Col xs={9}>
               <GroupSelect
                 onSelect={(items) => onGroupSet(i, items)}
-                values={[m.movie!]}
+                values={[m.group!]}
                 excludeIds={groupIDs}
               />
             </Col>
