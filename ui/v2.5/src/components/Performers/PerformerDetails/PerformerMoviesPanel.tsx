@@ -18,7 +18,7 @@ export const PerformerMoviesPanel: React.FC<IPerformerDetailsProps> = ({
     <MovieList
       filterHook={filterHook}
       alterQuery={active}
-      view={View.PerformerMovies}
+      view={View.PerformerGroups}
     />
   );
 };

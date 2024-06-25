@@ -52,7 +52,7 @@ export const MovieScenesPanel: React.FC<IMovieScenesPanel> = ({
         filterHook={filterHook}
         defaultSort="movie_scene_number"
         alterQuery={active}
-        view={View.MovieScenes}
+        view={View.GroupScenes}
       />
     );
   }

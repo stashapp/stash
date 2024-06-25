@@ -18,7 +18,7 @@ export const StudioMoviesPanel: React.FC<IStudioMoviesPanel> = ({
     <MovieList
       filterHook={filterHook}
       alterQuery={active}
-      view={View.StudioMovies}
+      view={View.StudioGroups}
     />
   );
 };

@@ -11,7 +11,7 @@ import { View } from "../List/views";
 const Movies: React.FC = () => {
   useScrollToTopOnMount();
 
-  return <MovieList view={View.Movies} />;
+  return <MovieList view={View.Groups} />;
 };
 
 const MovieRoutes: React.FC = () => {
