@@ -126,7 +126,7 @@ export const SceneMovieTable: React.FC<IProps> = (props) => {
       <Row className="movie-table-header">
         <Col xs={9}></Col>
         <Form.Label column xs={3} className="movie-scene-number-header">
-          {intl.formatMessage({ id: "movie_scene_number" })}
+          {intl.formatMessage({ id: "group_scene_number" })}
         </Form.Label>
       </Row>
       {renderTableData()}

@@ -27,7 +27,7 @@ export const MovieRecommendationRow: React.FC<IProps> = (props: IProps) => {
       className="movie-recommendations"
       header={props.header}
       link={
-        <Link to={`/movies?${props.filter.makeQueryParameters()}`}>
+        <Link to={`/groups?${props.filter.makeQueryParameters()}`}>
           <FormattedMessage id="view_all" />
         </Link>
       }

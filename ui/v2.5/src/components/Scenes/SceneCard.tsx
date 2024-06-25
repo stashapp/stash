@@ -149,7 +149,7 @@ const SceneCardPopovers = PatchComponent(
       const popoverContent = props.scene.movies.map((sceneMovie) => (
         <div className="movie-tag-container row" key="movie">
           <Link
-            to={`/movies/${sceneMovie.movie.id}`}
+            to={`/groups/${sceneMovie.movie.id}`}
             className="movie-tag col m-auto zoom-2"
           >
             <img

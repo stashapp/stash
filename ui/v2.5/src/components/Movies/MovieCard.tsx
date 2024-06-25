@@ -110,7 +110,7 @@ export const MovieCard: React.FC<IProps> = ({
   return (
     <GridCard
       className="movie-card"
-      url={`/movies/${movie.id}`}
+      url={`/groups/${movie.id}`}
       width={cardWidth}
       title={movie.name}
       linkClassName="movie-card-header"

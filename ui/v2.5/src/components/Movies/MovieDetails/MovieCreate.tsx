@@ -30,7 +30,7 @@ const MovieCreate: React.FC = () => {
       variables: { input },
     });
     if (result.data?.movieCreate?.id) {
-      history.push(`/movies/${result.data.movieCreate.id}`);
+      history.push(`/groups/${result.data.movieCreate.id}`);
       Toast.success(
         intl.formatMessage(
           { id: "toast.created_entity" },
@@ -80,7 +80,7 @@ const MovieCreate: React.FC = () => {
         <MovieEditPanel
           movie={movie}
           onSubmit={onSave}
-          onCancel={() => history.push("/movies")}
+          onCancel={() => history.push("/groups")}
           onDelete={() => {}}
           setFrontImage={setFrontImage}
           setBackImage={setBackImage}

@@ -216,7 +216,7 @@ const makeMovieScenesUrl = (movie: Partial<GQL.MovieDataFragment>) => {
   const filter = new ListFilterModel(GQL.FilterMode.Scenes, undefined);
   const criterion = new MoviesCriterion();
   criterion.value = [
-    { id: movie.id, label: movie.name || `Movie ${movie.id}` },
+    { id: movie.id, label: movie.name || `Group ${movie.id}` },
   ];
   filter.criteria.push(criterion);
   return `/scenes?${filter.makeQueryParameters()}`;
@@ -299,7 +299,7 @@ const makeTagImagesUrl = (tag: INamedObject) => {
 };
 
 const makeTagMoviesUrl = (tag: INamedObject) => {
-  return `/movies?${makeTagFilter(GQL.FilterMode.Movies, tag)}`;
+  return `/groups?${makeTagFilter(GQL.FilterMode.Movies, tag)}`;
 };
 
 type SceneMarkerDataFragment = Pick<GQL.SceneMarker, "id" | "seconds"> & {

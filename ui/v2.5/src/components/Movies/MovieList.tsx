@@ -90,7 +90,7 @@ export const MovieList: React.FC<IMovieList> = ({
       if (singleResult.data.findMovies.movies.length === 1) {
         const { id } = singleResult.data.findMovies.movies[0];
         // navigate to the movie page
-        history.push(`/movies/${id}`);
+        history.push(`/groups/${id}`);
       }
     }
   }

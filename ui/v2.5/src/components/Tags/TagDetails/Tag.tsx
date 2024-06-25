@@ -59,7 +59,7 @@ const validTabs = [
   "scenes",
   "images",
   "galleries",
-  "movies",
+  "groups",
   "markers",
   "performers",
   "studios",
@@ -122,7 +122,7 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
       } else if (galleryCount != 0) {
         ret = "galleries";
       } else if (movieCount != 0) {
-        ret = "movies";
+        ret = "groups";
       } else if (sceneMarkerCount != 0) {
         ret = "markers";
       } else if (performerCount != 0) {
@@ -484,10 +484,10 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
         <TagGalleriesPanel active={tabKey === "galleries"} tag={tag} />
       </Tab>
       <Tab
-        eventKey="movies"
+        eventKey="groups"
         title={
           <>
-            {intl.formatMessage({ id: "movies" })}
+            {intl.formatMessage({ id: "groups" })}
             <Counter
               abbreviateCounter={abbreviateCounter}
               count={movieCount}
@@ -496,7 +496,7 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
           </>
         }
       >
-        <TagMoviesPanel active={tabKey === "movies"} tag={tag} />
+        <TagMoviesPanel active={tabKey === "groups"} tag={tag} />
       </Tab>
       <Tab
         eventKey="markers"
