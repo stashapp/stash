@@ -24,7 +24,7 @@ interface IListOperationProps {
   onClose: (applied: boolean) => void;
 }
 
-export const EditMoviesDialog: React.FC<IListOperationProps> = (
+export const EditGroupsDialog: React.FC<IListOperationProps> = (
   props: IListOperationProps
 ) => {
   const intl = useIntl();

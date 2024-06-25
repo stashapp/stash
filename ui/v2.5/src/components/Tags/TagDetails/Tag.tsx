@@ -42,7 +42,7 @@ import {
 import { DetailImage } from "src/components/Shared/DetailImage";
 import { useLoadStickyHeader } from "src/hooks/detailsPanel";
 import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
-import { TagMoviesPanel } from "./TagMoviesPanel";
+import { TagGroupsPanel } from "./TagMoviesPanel";
 
 interface IProps {
   tag: GQL.TagDataFragment;
@@ -496,7 +496,7 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
           </>
         }
       >
-        <TagMoviesPanel active={tabKey === "groups"} tag={tag} />
+        <TagGroupsPanel active={tabKey === "groups"} tag={tag} />
       </Tab>
       <Tab
         eventKey="markers"

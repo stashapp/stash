@@ -17,7 +17,7 @@ import {
   ScrapeResult,
 } from "src/components/Shared/ScrapeDialog/scrapeResult";
 import {
-  ScrapedMoviesRow,
+  ScrapedGroupsRow,
   ScrapedPerformersRow,
   ScrapedStudioRow,
 } from "src/components/Shared/ScrapeDialog/ScrapedObjectsRow";
@@ -28,7 +28,7 @@ import {
 } from "src/components/Shared/ScrapeDialog/createObjects";
 import { Tag } from "src/components/Tags/TagSelect";
 import { Studio } from "src/components/Studios/StudioSelect";
-import { Movie } from "src/components/Movies/MovieSelect";
+import { Group } from "src/components/Movies/MovieSelect";
 import { useScrapedTags } from "src/components/Shared/ScrapeDialog/scrapedTags";
 
 interface ISceneScrapeDialogProps {
@@ -36,7 +36,7 @@ interface ISceneScrapeDialogProps {
   sceneStudio: Studio | null;
   scenePerformers: Performer[];
   sceneTags: Tag[];
-  sceneMovies: Movie[];
+  sceneMovies: Group[];
   scraped: GQL.ScrapedScene;
   endpoint?: string;
 
@@ -253,7 +253,7 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
           newObjects={newPerformers}
           onCreateNew={createNewPerformer}
         />
-        <ScrapedMoviesRow
+        <ScrapedGroupsRow
           title={intl.formatMessage({ id: "groups" })}
           result={movies}
           onChange={(value) => setMovies(value)}

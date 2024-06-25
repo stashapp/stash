@@ -13,7 +13,7 @@ export const DirectorLink: React.FC<{
       case "scene":
         return NavUtils.makeDirectorScenesUrl(director);
       case "movie":
-        return NavUtils.makeDirectorMoviesUrl(director);
+        return NavUtils.makeDirectorGroupsUrl(director);
     }
   }, [director, linkType]);
 

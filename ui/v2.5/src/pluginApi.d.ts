@@ -693,12 +693,12 @@ declare namespace PluginApi {
       function makePerformerScenesUrl(...args: any[]): any;
       function makePerformerImagesUrl(...args: any[]): any;
       function makePerformerGalleriesUrl(...args: any[]): any;
-      function makePerformerMoviesUrl(...args: any[]): any;
+      function makePerformerGroupsUrl(...args: any[]): any;
       function makePerformersCountryUrl(...args: any[]): any;
       function makeStudioScenesUrl(...args: any[]): any;
       function makeStudioImagesUrl(...args: any[]): any;
       function makeStudioGalleriesUrl(...args: any[]): any;
-      function makeStudioMoviesUrl(...args: any[]): any;
+      function makeStudioGroupsUrl(...args: any[]): any;
       function makeStudioPerformersUrl(...args: any[]): any;
       function makeTagUrl(...args: any[]): any;
       function makeParentTagsUrl(...args: any[]): any;
@@ -710,7 +710,7 @@ declare namespace PluginApi {
       function makeTagImagesUrl(...args: any[]): any;
       function makeScenesPHashMatchUrl(...args: any[]): any;
       function makeSceneMarkerUrl(...args: any[]): any;
-      function makeMovieScenesUrl(...args: any[]): any;
+      function makeGroupScenesUrl(...args: any[]): any;
       function makeChildStudiosUrl(...args: any[]): any;
       function makeGalleryImagesUrl(...args: any[]): any;
     }

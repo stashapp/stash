@@ -26,7 +26,7 @@ import { faTableColumns } from "@fortawesome/free-solid-svg-icons";
 import { TagIDSelect } from "../Tags/TagSelect";
 import { StudioIDSelect } from "../Studios/StudioSelect";
 import { GalleryIDSelect } from "../Galleries/GallerySelect";
-import { MovieIDSelect } from "../Movies/MovieSelect";
+import { GroupIDSelect } from "../Movies/MovieSelect";
 import { SceneIDSelect } from "../Scenes/SceneSelect";
 
 export type SelectObject = {
@@ -364,8 +364,8 @@ export const StudioSelect: React.FC<
   return <StudioIDSelect {...props} />;
 };
 
-export const MovieSelect: React.FC<IFilterProps> = (props) => {
-  return <MovieIDSelect {...props} />;
+export const GroupSelect: React.FC<IFilterProps> = (props) => {
+  return <GroupIDSelect {...props} />;
 };
 
 export const TagSelect: React.FC<
@@ -383,7 +383,7 @@ export const FilterSelect: React.FC<IFilterProps & ITypeProps> = (props) => {
     case "scenes":
       return <SceneSelect {...props} creatable={false} />;
     case "movies":
-      return <MovieSelect {...props} creatable={false} />;
+      return <GroupSelect {...props} creatable={false} />;
     case "galleries":
       return <GallerySelect {...props} />;
     default:

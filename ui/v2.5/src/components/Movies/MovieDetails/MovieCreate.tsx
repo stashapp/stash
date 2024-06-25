@@ -5,9 +5,9 @@ import { useHistory, useLocation } from "react-router-dom";
 import { useIntl } from "react-intl";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { useToast } from "src/hooks/Toast";
-import { MovieEditPanel } from "./MovieEditPanel";
+import { GroupEditPanel } from "./MovieEditPanel";
 
-const MovieCreate: React.FC = () => {
+const GroupCreate: React.FC = () => {
   const history = useHistory();
   const intl = useIntl();
   const Toast = useToast();
@@ -77,8 +77,8 @@ const MovieCreate: React.FC = () => {
           )}
         </div>
 
-        <MovieEditPanel
-          movie={movie}
+        <GroupEditPanel
+          group={movie}
           onSubmit={onSave}
           onCancel={() => history.push("/groups")}
           onDelete={() => {}}
@@ -91,4 +91,4 @@ const MovieCreate: React.FC = () => {
   );
 };
 
-export default MovieCreate;
+export default GroupCreate;

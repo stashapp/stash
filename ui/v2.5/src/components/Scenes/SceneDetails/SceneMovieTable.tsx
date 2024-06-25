@@ -2,22 +2,22 @@ import React, { useMemo } from "react";
 import { useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import { Form, Row, Col } from "react-bootstrap";
-import { Movie, MovieSelect } from "src/components/Movies/MovieSelect";
+import { Group, GroupSelect } from "src/components/Movies/MovieSelect";
 import cx from "classnames";
 
 export type MovieSceneIndexMap = Map<string, number | undefined>;
 
-export interface IMovieEntry {
-  movie: Movie;
+export interface IGroupEntry {
+  movie: Group;
   scene_index?: GQL.InputMaybe<number> | undefined;
 }
 
 export interface IProps {
-  value: IMovieEntry[];
-  onUpdate: (input: IMovieEntry[]) => void;
+  value: IGroupEntry[];
+  onUpdate: (input: IGroupEntry[]) => void;
 }
 
-export const SceneMovieTable: React.FC<IProps> = (props) => {
+export const SceneGroupTable: React.FC<IProps> = (props) => {
   const { value, onUpdate } = props;
 
   const intl = useIntl();
@@ -38,7 +38,7 @@ export const SceneMovieTable: React.FC<IProps> = (props) => {
     onUpdate(newValues);
   };
 
-  function onMovieSet(index: number, movies: Movie[]) {
+  function onMovieSet(index: number, movies: Group[]) {
     if (!movies.length) {
       // remove this entry
       const newValues = value.filter((_, i) => i !== index);
@@ -61,7 +61,7 @@ export const SceneMovieTable: React.FC<IProps> = (props) => {
     onUpdate(newValues);
   }
 
-  function onNewMovieSet(movies: Movie[]) {
+  function onNewMovieSet(movies: Group[]) {
     if (!movies.length) {
       return;
     }
@@ -85,7 +85,7 @@ export const SceneMovieTable: React.FC<IProps> = (props) => {
         {value.map((m, i) => (
           <Row key={m.movie.id} className="movie-row">
             <Col xs={9}>
-              <MovieSelect
+              <GroupSelect
                 onSelect={(items) => onMovieSet(i, items)}
                 values={[m.movie!]}
                 excludeIds={movieIDs}
@@ -110,7 +110,7 @@ export const SceneMovieTable: React.FC<IProps> = (props) => {
         ))}
         <Row className="movie-row">
           <Col xs={12}>
-            <MovieSelect
+            <GroupSelect
               onSelect={(items) => onNewMovieSet(items)}
               values={[]}
               excludeIds={movieIDs}

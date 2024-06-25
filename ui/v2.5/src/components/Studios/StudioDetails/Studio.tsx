@@ -31,7 +31,7 @@ import {
   CompressedStudioDetailsPanel,
   StudioDetailsPanel,
 } from "./StudioDetailsPanel";
-import { StudioMoviesPanel } from "./StudioMoviesPanel";
+import { StudioGroupsPanel } from "./StudioMoviesPanel";
 import {
   faTrashAlt,
   faLink,
@@ -449,7 +449,7 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
           </>
         }
       >
-        <StudioMoviesPanel active={tabKey === "groups"} studio={studio} />
+        <StudioGroupsPanel active={tabKey === "groups"} studio={studio} />
       </Tab>
       <Tab
         eventKey="childstudios"

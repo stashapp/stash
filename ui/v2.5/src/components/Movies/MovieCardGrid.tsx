@@ -1,27 +1,27 @@
 import React from "react";
 import * as GQL from "src/core/generated-graphql";
-import { MovieCard } from "./MovieCard";
+import { GroupCard } from "./MovieCard";
 import { useContainerDimensions } from "../Shared/GridCard/GridCard";
 
-interface IMovieCardGrid {
-  movies: GQL.MovieDataFragment[];
+interface IGroupCardGrid {
+  groups: GQL.MovieDataFragment[];
   selectedIds: Set<string>;
   onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void;
 }
 
-export const MovieCardGrid: React.FC<IMovieCardGrid> = ({
-  movies,
+export const GroupCardGrid: React.FC<IGroupCardGrid> = ({
+  groups,
   selectedIds,
   onSelectChange,
 }) => {
   const [componentRef, { width }] = useContainerDimensions();
   return (
     <div className="row justify-content-center" ref={componentRef}>
-      {movies.map((p) => (
-        <MovieCard
+      {groups.map((p) => (
+        <GroupCard
           key={p.id}
           containerWidth={width}
-          movie={p}
+          group={p}
           selecting={selectedIds.size > 0}
           selected={selectedIds.has(p.id)}
           onSelectedChanged={(selected: boolean, shiftKey: boolean) =>

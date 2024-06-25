@@ -21,7 +21,7 @@ import { HoverPopover } from "../Shared/HoverPopover";
 import { Icon } from "../Shared/Icon";
 import {
   GalleryLink,
-  MovieLink,
+  GroupLink,
   SceneMarkerLink,
   TagLink,
 } from "../Shared/TagLink";
@@ -386,7 +386,7 @@ export const SceneDuplicateChecker: React.FC = () => {
     return <PerformerPopoverButton performers={scene.performers} />;
   }
 
-  function maybeRenderMoviePopoverButton(scene: GQL.SlimSceneDataFragment) {
+  function maybeRenderGroupPopoverButton(scene: GQL.SlimSceneDataFragment) {
     if (scene.movies.length <= 0) return;
 
     const popoverContent = scene.movies.map((sceneMovie) => (
@@ -401,9 +401,9 @@ export const SceneDuplicateChecker: React.FC = () => {
             src={sceneMovie.movie.front_image_path ?? ""}
           />
         </Link>
-        <MovieLink
+        <GroupLink
           key={sceneMovie.movie.id}
-          movie={sceneMovie.movie}
+          group={sceneMovie.movie}
           className="d-block"
         />
       </div>
@@ -523,7 +523,7 @@ export const SceneDuplicateChecker: React.FC = () => {
           <ButtonGroup className="flex-wrap">
             {maybeRenderTagPopoverButton(scene)}
             {maybeRenderPerformerPopoverButton(scene)}
-            {maybeRenderMoviePopoverButton(scene)}
+            {maybeRenderGroupPopoverButton(scene)}
             {maybeRenderSceneMarkerPopoverButton(scene)}
             {maybeRenderOCounter(scene)}
             {maybeRenderGallery(scene)}

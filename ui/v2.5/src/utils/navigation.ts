@@ -103,7 +103,7 @@ const makePerformerGalleriesUrl = (
   return `/galleries?${filter.makeQueryParameters()}`;
 };
 
-const makePerformerMoviesUrl = (
+const makePerformerGroupsUrl = (
   performer: Partial<GQL.PerformerDataFragment>,
   extraPerformer?: ILabeledId,
   extraCriteria?: Criterion<CriterionValue>[]
@@ -174,7 +174,7 @@ const makeStudioGalleriesUrl = (studio: Partial<GQL.StudioDataFragment>) => {
   return `/galleries?${filter.makeQueryParameters()}`;
 };
 
-const makeStudioMoviesUrl = (studio: Partial<GQL.StudioDataFragment>) => {
+const makeStudioGroupsUrl = (studio: Partial<GQL.StudioDataFragment>) => {
   if (!studio.id) return "#";
   const filter = new ListFilterModel(GQL.FilterMode.Movies, undefined);
   const criterion = new StudiosCriterion();
@@ -211,12 +211,12 @@ const makeChildStudiosUrl = (studio: Partial<GQL.StudioDataFragment>) => {
   return `/studios?${filter.makeQueryParameters()}`;
 };
 
-const makeMovieScenesUrl = (movie: Partial<GQL.MovieDataFragment>) => {
-  if (!movie.id) return "#";
+const makeGroupScenesUrl = (group: Partial<GQL.MovieDataFragment>) => {
+  if (!group.id) return "#";
   const filter = new ListFilterModel(GQL.FilterMode.Scenes, undefined);
   const criterion = new MoviesCriterion();
   criterion.value = [
-    { id: movie.id, label: movie.name || `Group ${movie.id}` },
+    { id: group.id, label: group.name || `Group ${group.id}` },
   ];
   filter.criteria.push(criterion);
   return `/scenes?${filter.makeQueryParameters()}`;
@@ -298,7 +298,7 @@ const makeTagImagesUrl = (tag: INamedObject) => {
   return `/images?${makeTagFilter(GQL.FilterMode.Images, tag)}`;
 };
 
-const makeTagMoviesUrl = (tag: INamedObject) => {
+const makeTagGroupsUrl = (tag: INamedObject) => {
   return `/groups?${makeTagFilter(GQL.FilterMode.Movies, tag)}`;
 };
 
@@ -349,7 +349,7 @@ const makeDirectorScenesUrl = (director: string) => {
   return `/scenes?${filter.makeQueryParameters()}`;
 };
 
-const makeDirectorMoviesUrl = (director: string) => {
+const makeDirectorGroupsUrl = (director: string) => {
   if (director.length == 0) return "#";
   const filter = new ListFilterModel(GQL.FilterMode.Movies, undefined);
   filter.criteria.push(
@@ -401,12 +401,12 @@ const NavUtils = {
   makePerformerScenesUrl,
   makePerformerImagesUrl,
   makePerformerGalleriesUrl,
-  makePerformerMoviesUrl,
+  makePerformerGroupsUrl,
   makePerformersCountryUrl,
   makeStudioScenesUrl,
   makeStudioImagesUrl,
   makeStudioGalleriesUrl,
-  makeStudioMoviesUrl,
+  makeStudioGroupsUrl: makeStudioGroupsUrl,
   makeStudioPerformersUrl,
   makeTagUrl,
   makeParentTagsUrl,
@@ -417,16 +417,16 @@ const NavUtils = {
   makeTagStudiosUrl,
   makeTagGalleriesUrl,
   makeTagImagesUrl,
-  makeTagMoviesUrl,
+  makeTagGroupsUrl,
   makeScenesPHashMatchUrl,
   makeSceneMarkerUrl,
-  makeMovieScenesUrl,
+  makeGroupScenesUrl,
   makeChildStudiosUrl,
   makeGalleryImagesUrl,
   makeDirectorScenesUrl,
   makePhotographerGalleriesUrl,
   makePhotographerImagesUrl,
-  makeDirectorMoviesUrl,
+  makeDirectorGroupsUrl,
 };
 
 export default NavUtils;

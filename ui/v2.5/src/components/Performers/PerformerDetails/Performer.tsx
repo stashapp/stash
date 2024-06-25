@@ -27,7 +27,7 @@ import {
 } from "./PerformerDetailsPanel";
 import { PerformerScenesPanel } from "./PerformerScenesPanel";
 import { PerformerGalleriesPanel } from "./PerformerGalleriesPanel";
-import { PerformerMoviesPanel } from "./PerformerMoviesPanel";
+import { PerformerGroupsPanel } from "./PerformerMoviesPanel";
 import { PerformerImagesPanel } from "./PerformerImagesPanel";
 import { PerformerAppearsWithPanel } from "./performerAppearsWithPanel";
 import { PerformerEditPanel } from "./PerformerEditPanel";
@@ -331,7 +331,7 @@ const PerformerPage: React.FC<IProps> = ({ performer, tabKey }) => {
           </>
         }
       >
-        <PerformerMoviesPanel
+        <PerformerGroupsPanel
           active={tabKey === "groups"}
           performer={performer}
         />

@@ -124,11 +124,11 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
     }
   };
 
-  const MovieCell = (scene: GQL.SlimSceneDataFragment) => (
+  const GroupCell = (scene: GQL.SlimSceneDataFragment) => (
     <ul className="comma-list overflowable">
       {scene.movies.map((sceneMovie) => (
         <li key={sceneMovie.movie.id}>
-          <Link to={NavUtils.makeMovieScenesUrl(sceneMovie.movie)}>
+          <Link to={NavUtils.makeGroupScenesUrl(sceneMovie.movie)}>
             <span className="ellips-data">{sceneMovie.movie.name}</span>
           </Link>
         </li>
@@ -325,7 +325,7 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
       value: "groups",
       label: intl.formatMessage({ id: "groups" }),
       defaultShow: true,
-      render: MovieCell,
+      render: GroupCell,
     },
     {
       value: "galleries",

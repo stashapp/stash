@@ -14,11 +14,11 @@ import {
 import { makeItemList, showWhenSelected } from "../List/ItemList";
 import { ExportDialog } from "../Shared/ExportDialog";
 import { DeleteEntityDialog } from "../Shared/DeleteEntityDialog";
-import { MovieCardGrid } from "./MovieCardGrid";
-import { EditMoviesDialog } from "./EditMoviesDialog";
+import { GroupCardGrid } from "./MovieCardGrid";
+import { EditGroupsDialog } from "./EditMoviesDialog";
 import { View } from "../List/views";
 
-const MovieItemList = makeItemList({
+const GroupItemList = makeItemList({
   filterMode: GQL.FilterMode.Movies,
   useResult: useFindMovies,
   getItems(result: GQL.FindMoviesQueryResult) {
@@ -29,13 +29,13 @@ const MovieItemList = makeItemList({
   },
 });
 
-interface IMovieList {
+interface IGroupList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
   view?: View;
   alterQuery?: boolean;
 }
 
-export const MovieList: React.FC<IMovieList> = ({
+export const GroupList: React.FC<IGroupList> = ({
   filterHook,
   alterQuery,
   view,
@@ -127,13 +127,13 @@ export const MovieList: React.FC<IMovieList> = ({
       }
     }
 
-    function renderMovies() {
+    function renderGroups() {
       if (!result.data?.findMovies) return;
 
       if (filter.displayMode === DisplayMode.Grid) {
         return (
-          <MovieCardGrid
-            movies={result.data.findMovies.movies}
+          <GroupCardGrid
+            groups={result.data.findMovies.movies}
             selectedIds={selectedIds}
             onSelectChange={onSelectChange}
           />
@@ -146,25 +146,25 @@ export const MovieList: React.FC<IMovieList> = ({
     return (
       <>
         {maybeRenderMovieExportDialog()}
-        {renderMovies()}
+        {renderGroups()}
       </>
     );
   }
 
   function renderEditDialog(
-    selectedMovies: GQL.MovieDataFragment[],
+    selectedGroups: GQL.MovieDataFragment[],
     onClose: (applied: boolean) => void
   ) {
-    return <EditMoviesDialog selected={selectedMovies} onClose={onClose} />;
+    return <EditGroupsDialog selected={selectedGroups} onClose={onClose} />;
   }
 
   function renderDeleteDialog(
-    selectedMovies: GQL.SlimMovieDataFragment[],
+    selectedGroups: GQL.SlimMovieDataFragment[],
     onClose: (confirmed: boolean) => void
   ) {
     return (
       <DeleteEntityDialog
-        selected={selectedMovies}
+        selected={selectedGroups}
         onClose={onClose}
         singularEntity={intl.formatMessage({ id: "group" })}
         pluralEntity={intl.formatMessage({ id: "groups" })}
@@ -174,7 +174,7 @@ export const MovieList: React.FC<IMovieList> = ({
   }
 
   return (
-    <MovieItemList
+    <GroupItemList
       selectable
       filterHook={filterHook}
       view={view}

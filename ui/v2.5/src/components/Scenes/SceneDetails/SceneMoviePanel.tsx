@@ -1,18 +1,18 @@
 import React from "react";
 import * as GQL from "src/core/generated-graphql";
-import { MovieCard } from "src/components/Movies/MovieCard";
+import { GroupCard } from "src/components/Movies/MovieCard";
 
 interface ISceneMoviePanelProps {
   scene: GQL.SceneDataFragment;
 }
 
-export const SceneMoviePanel: React.FC<ISceneMoviePanelProps> = (
+export const SceneGroupPanel: React.FC<ISceneMoviePanelProps> = (
   props: ISceneMoviePanelProps
 ) => {
   const cards = props.scene.movies.map((sceneMovie) => (
-    <MovieCard
+    <GroupCard
       key={sceneMovie.movie.id}
-      movie={sceneMovie.movie}
+      group={sceneMovie.movie}
       sceneIndex={sceneMovie.scene_index ?? undefined}
     />
   ));
@@ -24,4 +24,4 @@ export const SceneMoviePanel: React.FC<ISceneMoviePanelProps> = (
   );
 };
 
-export default SceneMoviePanel;
+export default SceneGroupPanel;

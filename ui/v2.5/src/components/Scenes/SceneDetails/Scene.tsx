@@ -70,7 +70,7 @@ const SceneMarkersPanel = lazyComponent(() => import("./SceneMarkersPanel"));
 const SceneFileInfoPanel = lazyComponent(() => import("./SceneFileInfoPanel"));
 const SceneDetailPanel = lazyComponent(() => import("./SceneDetailPanel"));
 const SceneHistoryPanel = lazyComponent(() => import("./SceneHistoryPanel"));
-const SceneMoviePanel = lazyComponent(() => import("./SceneMoviePanel"));
+const SceneGroupPanel = lazyComponent(() => import("./SceneMoviePanel"));
 const SceneGalleriesPanel = lazyComponent(
   () => import("./SceneGalleriesPanel")
 );
@@ -515,7 +515,7 @@ const ScenePage: React.FC<IProps> = ({
           />
         </Tab.Pane>
         <Tab.Pane eventKey="scene-movie-panel">
-          <SceneMoviePanel scene={scene} />
+          <SceneGroupPanel scene={scene} />
         </Tab.Pane>
         {scene.galleries.length >= 1 && (
           <Tab.Pane eventKey="scene-galleries-panel">

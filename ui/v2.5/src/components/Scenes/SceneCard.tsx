@@ -7,7 +7,7 @@ import { Icon } from "../Shared/Icon";
 import {
   GalleryLink,
   TagLink,
-  MovieLink,
+  GroupLink,
   SceneMarkerLink,
 } from "../Shared/TagLink";
 import { HoverPopover } from "../Shared/HoverPopover";
@@ -158,9 +158,9 @@ const SceneCardPopovers = PatchComponent(
               src={sceneMovie.movie.front_image_path ?? ""}
             />
           </Link>
-          <MovieLink
+          <GroupLink
             key={sceneMovie.movie.id}
-            movie={sceneMovie.movie}
+            group={sceneMovie.movie}
             className="d-block"
           />
         </div>

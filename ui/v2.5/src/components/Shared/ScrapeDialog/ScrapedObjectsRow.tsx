@@ -8,7 +8,7 @@ import {
 } from "src/components/Shared/ScrapeDialog/scrapeResult";
 import { TagSelect } from "src/components/Tags/TagSelect";
 import { StudioSelect } from "src/components/Studios/StudioSelect";
-import { MovieSelect } from "src/components/Movies/MovieSelect";
+import { GroupSelect } from "src/components/Movies/MovieSelect";
 
 interface IScrapedStudioRow {
   title: string;
@@ -196,10 +196,10 @@ export const ScrapedPerformersRow: React.FC<
   );
 };
 
-export const ScrapedMoviesRow: React.FC<
+export const ScrapedGroupsRow: React.FC<
   IScrapedObjectRowImpl<GQL.ScrapedMovie>
 > = ({ title, result, onChange, newObjects, onCreateNew }) => {
-  const moviesCopy = useMemo(() => {
+  const groupsCopy = useMemo(() => {
     return (
       newObjects?.map((p) => {
         const name: string = p.name ?? "";
@@ -208,7 +208,7 @@ export const ScrapedMoviesRow: React.FC<
     );
   }, [newObjects]);
 
-  function renderScrapedMovies(
+  function renderScrapedGroups(
     scrapeResult: ScrapeResult<GQL.ScrapedMovie[]>,
     isNew?: boolean,
     onChangeFn?: (value: GQL.ScrapedMovie[]) => void
@@ -228,7 +228,7 @@ export const ScrapedMoviesRow: React.FC<
     });
 
     return (
-      <MovieSelect
+      <GroupSelect
         isMulti
         className="form-control react-select"
         isDisabled={!isNew}
@@ -247,9 +247,9 @@ export const ScrapedMoviesRow: React.FC<
     <ScrapedObjectsRow<GQL.ScrapedMovie>
       title={title}
       result={result}
-      renderObjects={renderScrapedMovies}
+      renderObjects={renderScrapedGroups}
       onChange={onChange}
-      newObjects={moviesCopy}
+      newObjects={groupsCopy}
       onCreateNew={onCreateNew}
       getName={(value) => value.name ?? ""}
     />
