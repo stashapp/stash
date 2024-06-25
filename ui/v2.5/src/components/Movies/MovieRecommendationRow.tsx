@@ -24,7 +24,7 @@ export const GroupRecommendationRow: React.FC<IProps> = (props: IProps) => {
 
   return (
     <RecommendationRow
-      className="movie-recommendations"
+      className="group-recommendations"
       header={props.header}
       link={
         <Link to={`/groups?${props.filter.makeQueryParameters()}`}>
@@ -40,7 +40,7 @@ export const GroupRecommendationRow: React.FC<IProps> = (props: IProps) => {
       >
         {result.loading
           ? [...Array(props.filter.itemsPerPage)].map((i) => (
-              <div key={`_${i}`} className="movie-skeleton skeleton-card"></div>
+              <div key={`_${i}`} className="group-skeleton skeleton-card"></div>
             ))
           : result.data?.findMovies.movies.map((m) => (
               <GroupCard key={m.id} group={m} />

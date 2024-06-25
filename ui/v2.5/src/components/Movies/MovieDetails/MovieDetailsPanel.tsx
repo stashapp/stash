@@ -107,13 +107,13 @@ export const CompressedMovieDetailsPanel: React.FC<IGroupDetailsPanel> = ({
   return (
     <div className="sticky detail-header">
       <div className="sticky detail-header-group">
-        <a className="movie-name" onClick={() => scrollToTop()}>
+        <a className="group-name" onClick={() => scrollToTop()}>
           {group.name}
         </a>
         {group?.studio?.name ? (
           <>
             <span className="detail-divider">/</span>
-            <span className="movie-studio">{group?.studio?.name}</span>
+            <span className="group-studio">{group?.studio?.name}</span>
           </>
         ) : (
           ""

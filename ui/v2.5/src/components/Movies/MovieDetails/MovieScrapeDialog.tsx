@@ -194,13 +194,13 @@ export const GroupScrapeDialog: React.FC<IGroupScrapeDialogProps> = ({
         {scrapedTagsRow}
         <ScrapedImageRow
           title="Front Image"
-          className="movie-image"
+          className="group-image"
           result={frontImage}
           onChange={(value) => setFrontImage(value)}
         />
         <ScrapedImageRow
           title="Back Image"
-          className="movie-image"
+          className="group-image"
           result={backImage}
           onChange={(value) => setBackImage(value)}
         />

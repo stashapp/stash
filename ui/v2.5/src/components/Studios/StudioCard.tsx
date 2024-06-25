@@ -147,7 +147,7 @@ export const StudioCard: React.FC<IProps> = ({
 
     return (
       <PopoverCountButton
-        className="movie-count"
+        className="group-count"
         type="group"
         count={studio.movie_count}
         url={NavUtils.makeStudioGroupsUrl(studio)}

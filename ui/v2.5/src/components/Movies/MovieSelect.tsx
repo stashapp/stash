@@ -111,24 +111,24 @@ const _GroupSelect: React.FC<
     thisOptionProps = {
       ...optionProps,
       children: (
-        <span className="movie-select-option">
-          <span className="movie-select-row">
+        <span className="group-select-option">
+          <span className="group-select-row">
             {object.front_image_path && (
               <img
-                className="movie-select-image"
+                className="group-select-image"
                 src={object.front_image_path}
                 loading="lazy"
               />
             )}
 
-            <span className="movie-select-details">
+            <span className="group-select-details">
               <TruncatedText
-                className="movie-select-title"
+                className="group-select-title"
                 text={
                   <span>
                     {title}
                     {alias && (
-                      <span className="movie-select-alias">{` (${alias})`}</span>
+                      <span className="group-select-alias">{` (${alias})`}</span>
                     )}
                   </span>
                 }
@@ -136,13 +136,13 @@ const _GroupSelect: React.FC<
               />
 
               {object.studio?.name && (
-                <span className="movie-select-studio">
+                <span className="group-select-studio">
                   {object.studio?.name}
                 </span>
               )}
 
               {object.date && (
-                <span className="movie-select-date">{object.date}</span>
+                <span className="group-select-date">{object.date}</span>
               )}
             </span>
           </span>
@@ -190,7 +190,7 @@ const _GroupSelect: React.FC<
     return {
       value: result.data!.movieCreate!.id,
       item: result.data!.movieCreate!,
-      message: "Created movie",
+      message: "Created group",
     };
   };
 
@@ -224,9 +224,9 @@ const _GroupSelect: React.FC<
     <FilterSelectComponent<Group, boolean>
       {...props}
       className={cx(
-        "movie-select",
+        "group-select",
         {
-          "movie-select-active": props.active,
+          "group-select-active": props.active,
         },
         props.className
       )}

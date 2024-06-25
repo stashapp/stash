@@ -443,7 +443,7 @@ const ScenePage: React.FC<IProps> = ({
           </Nav.Item>
           {scene.movies.length > 0 ? (
             <Nav.Item>
-              <Nav.Link eventKey="scene-movie-panel">
+              <Nav.Link eventKey="scene-group-panel">
                 <FormattedMessage
                   id="countables.groups"
                   values={{ count: scene.movies.length }}
@@ -514,7 +514,7 @@ const ScenePage: React.FC<IProps> = ({
             isVisible={activeTabKey === "scene-markers-panel"}
           />
         </Tab.Pane>
-        <Tab.Pane eventKey="scene-movie-panel">
+        <Tab.Pane eventKey="scene-group-panel">
           <SceneGroupPanel scene={scene} />
         </Tab.Pane>
         {scene.galleries.length >= 1 && (

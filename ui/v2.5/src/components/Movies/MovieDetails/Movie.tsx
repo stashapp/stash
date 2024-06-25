@@ -229,14 +229,14 @@ const GroupPage: React.FC<IProps> = ({ group }) => {
 
     if (image && defaultImage) {
       return (
-        <div className="movie-image-container">
+        <div className="group-image-container">
           <DetailImage alt="Front Cover" src={image} />
         </div>
       );
     } else if (image) {
       return (
         <Button
-          className="movie-image-container"
+          className="group-image-container"
           variant="link"
           onClick={() => showLightbox()}
         >
@@ -259,7 +259,7 @@ const GroupPage: React.FC<IProps> = ({ group }) => {
     if (image) {
       return (
         <Button
-          className="movie-image-container"
+          className="group-image-container"
           variant="link"
           onClick={() => showLightbox(index - 1)}
         >
@@ -384,7 +384,7 @@ const GroupPage: React.FC<IProps> = ({ group }) => {
   });
 
   return (
-    <div id="movie-page" className="row">
+    <div id="group-page" className="row">
       <Helmet>
         <title>{group?.name}</title>
       </Helmet>
@@ -399,7 +399,7 @@ const GroupPage: React.FC<IProps> = ({ group }) => {
                   message={intl.formatMessage({ id: "actions.encoding_image" })}
                 />
               ) : (
-                <div className="movie-images">
+                <div className="group-images">
                   {renderFrontImage()}
                   {renderBackImage()}
                 </div>
@@ -407,9 +407,9 @@ const GroupPage: React.FC<IProps> = ({ group }) => {
             </div>
           </div>
           <div className="row">
-            <div className="movie-head col">
+            <div className="group-head col">
               <h2>
-                <span className="movie-name">{group.name}</span>
+                <span className="group-name">{group.name}</span>
                 {maybeRenderShowCollapseButton()}
                 {renderClickableIcons()}
               </h2>
@@ -428,8 +428,8 @@ const GroupPage: React.FC<IProps> = ({ group }) => {
       </div>
       {maybeRenderCompressedDetails()}
       <div className="detail-body">
-        <div className="movie-body">
-          <div className="movie-tabs">{maybeRenderTab()}</div>
+        <div className="group-body">
+          <div className="group-tabs">{maybeRenderTab()}</div>
         </div>
       </div>
       {renderDeleteAlert()}

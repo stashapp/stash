@@ -147,10 +147,10 @@ const SceneCardPopovers = PatchComponent(
       if (props.scene.movies.length <= 0) return;
 
       const popoverContent = props.scene.movies.map((sceneGroup) => (
-        <div className="movie-tag-container row" key={sceneGroup.movie.id}>
+        <div className="group-tag-container row" key={sceneGroup.movie.id}>
           <Link
             to={`/groups/${sceneGroup.movie.id}`}
-            className="movie-tag col m-auto zoom-2"
+            className="group-tag col m-auto zoom-2"
           >
             <img
               className="image-thumbnail"
@@ -170,7 +170,7 @@ const SceneCardPopovers = PatchComponent(
         <HoverPopover
           placement="bottom"
           content={popoverContent}
-          className="movie-count tag-tooltip"
+          className="group-count tag-tooltip"
         >
           <Button className="minimal">
             <Icon icon={faFilm} />

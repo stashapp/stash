@@ -389,7 +389,7 @@ export const GroupEditPanel: React.FC<IGroupEditPanel> = ({
         }}
       />
 
-      <Form noValidate onSubmit={formik.handleSubmit} id="movie-edit">
+      <Form noValidate onSubmit={formik.handleSubmit} id="group-edit">
         {renderInputField("name")}
         {renderInputField("aliases")}
         {renderDurationField("duration")}

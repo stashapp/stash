@@ -43,7 +43,7 @@ const GroupCreate: React.FC = () => {
   function renderFrontImage() {
     if (frontImage) {
       return (
-        <div className="movie-image-container">
+        <div className="group-image-container">
           <img alt="Front Cover" src={frontImage} />
         </div>
       );
@@ -53,7 +53,7 @@ const GroupCreate: React.FC = () => {
   function renderBackImage() {
     if (backImage) {
       return (
-        <div className="movie-image-container">
+        <div className="group-image-container">
           <img alt="Back Cover" src={backImage} />
         </div>
       );
@@ -63,14 +63,14 @@ const GroupCreate: React.FC = () => {
   // TODO: CSS class
   return (
     <div className="row">
-      <div className="movie-details mb-3 col">
+      <div className="group-details mb-3 col">
         <div className="logo w-100">
           {encodingImage ? (
             <LoadingIndicator
               message={intl.formatMessage({ id: "actions.encoding_image" })}
             />
           ) : (
-            <div className="movie-images">
+            <div className="group-images">
               {renderFrontImage()}
               {renderBackImage()}
             </div>

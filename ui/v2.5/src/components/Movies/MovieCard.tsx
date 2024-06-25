@@ -47,7 +47,7 @@ export const GroupCard: React.FC<IProps> = ({
     return (
       <>
         <hr />
-        <span className="movie-scene-number">
+        <span className="group-scene-number">
           <FormattedMessage id="scene" /> #{sceneIndex}
         </span>
       </>
@@ -109,16 +109,16 @@ export const GroupCard: React.FC<IProps> = ({
 
   return (
     <GridCard
-      className="movie-card"
+      className="group-card"
       url={`/groups/${group.id}`}
       width={cardWidth}
       title={group.name}
-      linkClassName="movie-card-header"
+      linkClassName="group-card-header"
       image={
         <>
           <img
             loading="lazy"
-            className="movie-card-image"
+            className="group-card-image"
             alt={group.name ?? ""}
             src={group.front_image_path ?? ""}
           />
@@ -126,10 +126,10 @@ export const GroupCard: React.FC<IProps> = ({
         </>
       }
       details={
-        <div className="movie-card__details">
-          <span className="movie-card__date">{group.date}</span>
+        <div className="group-card__details">
+          <span className="group-card__date">{group.date}</span>
           <TruncatedText
-            className="movie-card__description"
+            className="group-card__description"
             text={group.synopsis}
             lineCount={3}
           />

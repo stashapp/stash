@@ -579,7 +579,7 @@ export const SettingsInterfacePanel: React.FC = () => {
           </div>
           <BooleanSetting
             id="enableMovieBackgroundImage"
-            headingID="movie"
+            headingID="group"
             checked={ui.enableMovieBackgroundImage ?? undefined}
             onChange={(v) => saveUI({ enableMovieBackgroundImage: v })}
           />
