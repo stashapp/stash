@@ -26,7 +26,7 @@ import { faTableColumns } from "@fortawesome/free-solid-svg-icons";
 import { TagIDSelect } from "../Tags/TagSelect";
 import { StudioIDSelect } from "../Studios/StudioSelect";
 import { GalleryIDSelect } from "../Galleries/GallerySelect";
-import { GroupIDSelect } from "../Movies/MovieSelect";
+import { GroupIDSelect } from "../Groups/GroupSelect";
 import { SceneIDSelect } from "../Scenes/SceneSelect";
 
 export type SelectObject = {

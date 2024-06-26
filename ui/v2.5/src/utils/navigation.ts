@@ -12,7 +12,7 @@ import {
   TagsCriterionOption,
 } from "src/models/list-filter/criteria/tags";
 import { ListFilterModel } from "src/models/list-filter/filter";
-import { GroupsCriterion } from "src/models/list-filter/criteria/movies";
+import { GroupsCriterion } from "src/models/list-filter/criteria/groups";
 import {
   Criterion,
   CriterionOption,

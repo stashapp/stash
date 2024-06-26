@@ -1,6 +1,6 @@
 import React from "react";
 import * as GQL from "src/core/generated-graphql";
-import { GroupsCriterion as GroupsCriterion } from "src/models/list-filter/criteria/movies";
+import { GroupsCriterion } from "src/models/list-filter/criteria/groups";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { SceneList } from "src/components/Scenes/SceneList";
 import { View } from "src/components/List/views";

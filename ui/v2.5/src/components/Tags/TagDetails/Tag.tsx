@@ -42,7 +42,7 @@ import {
 import { DetailImage } from "src/components/Shared/DetailImage";
 import { useLoadStickyHeader } from "src/hooks/detailsPanel";
 import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
-import { TagGroupsPanel } from "./TagMoviesPanel";
+import { TagGroupsPanel } from "./TagGroupsPanel";
 
 interface IProps {
   tag: GQL.TagDataFragment;

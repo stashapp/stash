@@ -27,7 +27,7 @@ import {
 } from "./PerformerDetailsPanel";
 import { PerformerScenesPanel } from "./PerformerScenesPanel";
 import { PerformerGalleriesPanel } from "./PerformerGalleriesPanel";
-import { PerformerGroupsPanel } from "./PerformerMoviesPanel";
+import { PerformerGroupsPanel } from "./PerformerGroupsPanel";
 import { PerformerImagesPanel } from "./PerformerImagesPanel";
 import { PerformerAppearsWithPanel } from "./performerAppearsWithPanel";
 import { PerformerEditPanel } from "./PerformerEditPanel";

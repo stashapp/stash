@@ -8,7 +8,7 @@ import {
 } from "src/components/Shared/ScrapeDialog/scrapeResult";
 import { TagSelect } from "src/components/Tags/TagSelect";
 import { StudioSelect } from "src/components/Studios/StudioSelect";
-import { GroupSelect } from "src/components/Movies/MovieSelect";
+import { GroupSelect } from "src/components/Groups/GroupSelect";
 
 interface IScrapedStudioRow {
   title: string;

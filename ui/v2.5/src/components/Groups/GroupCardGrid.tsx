@@ -1,6 +1,6 @@
 import React from "react";
 import * as GQL from "src/core/generated-graphql";
-import { GroupCard } from "./MovieCard";
+import { GroupCard } from "./GroupCard";
 import { useContainerDimensions } from "../Shared/GridCard/GridCard";
 
 interface IGroupCardGrid {

@@ -2,9 +2,9 @@ import React from "react";
 import { Route, Switch } from "react-router-dom";
 import { Helmet } from "react-helmet";
 import { useTitleProps } from "src/hooks/title";
-import Group from "./MovieDetails/Movie";
-import GroupCreate from "./MovieDetails/MovieCreate";
-import { GroupList } from "./MovieList";
+import Group from "./GroupDetails/Group";
+import GroupCreate from "./GroupDetails/GroupCreate";
+import { GroupList } from "./GroupList";
 import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
 import { View } from "../List/views";
 

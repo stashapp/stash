@@ -37,7 +37,7 @@ const sortByOptions = ["name", "random"]
     },
     {
       messageID: "group_count",
-      value: "movies_count",
+      value: "groups_count",
     },
     {
       messageID: "marker_count",

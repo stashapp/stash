@@ -5,7 +5,7 @@ import { useHistory, useLocation } from "react-router-dom";
 import { useIntl } from "react-intl";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { useToast } from "src/hooks/Toast";
-import { GroupEditPanel } from "./MovieEditPanel";
+import { GroupEditPanel } from "./GroupEditPanel";
 
 const GroupCreate: React.FC = () => {
   const history = useHistory();

@@ -14,8 +14,8 @@ import {
 import { makeItemList, showWhenSelected } from "../List/ItemList";
 import { ExportDialog } from "../Shared/ExportDialog";
 import { DeleteEntityDialog } from "../Shared/DeleteEntityDialog";
-import { GroupCardGrid } from "./MovieCardGrid";
-import { EditGroupsDialog } from "./EditMoviesDialog";
+import { GroupCardGrid } from "./GroupCardGrid";
+import { EditGroupsDialog } from "./EditGroupsDialog";
 import { View } from "../List/views";
 
 const GroupItemList = makeItemList({
