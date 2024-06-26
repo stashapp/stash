@@ -5,16 +5,16 @@ import { useHistory, useLocation } from "react-router-dom";
 import { useIntl } from "react-intl";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { useToast } from "src/hooks/Toast";
-import { MovieEditPanel } from "./MovieEditPanel";
+import { GroupEditPanel } from "./MovieEditPanel";
 
-const MovieCreate: React.FC = () => {
+const GroupCreate: React.FC = () => {
   const history = useHistory();
   const intl = useIntl();
   const Toast = useToast();
 
   const location = useLocation();
   const query = useMemo(() => new URLSearchParams(location.search), [location]);
-  const movie = {
+  const group = {
     name: query.get("q") ?? undefined,
   };
 
@@ -30,7 +30,7 @@ const MovieCreate: React.FC = () => {
       variables: { input },
     });
     if (result.data?.movieCreate?.id) {
-      history.push(`/movies/${result.data.movieCreate.id}`);
+      history.push(`/groups/${result.data.movieCreate.id}`);
       Toast.success(
         intl.formatMessage(
           { id: "toast.created_entity" },
@@ -43,7 +43,7 @@ const MovieCreate: React.FC = () => {
   function renderFrontImage() {
     if (frontImage) {
       return (
-        <div className="movie-image-container">
+        <div className="group-image-container">
           <img alt="Front Cover" src={frontImage} />
         </div>
       );
@@ -53,7 +53,7 @@ const MovieCreate: React.FC = () => {
   function renderBackImage() {
     if (backImage) {
       return (
-        <div className="movie-image-container">
+        <div className="group-image-container">
           <img alt="Back Cover" src={backImage} />
         </div>
       );
@@ -63,24 +63,24 @@ const MovieCreate: React.FC = () => {
   // TODO: CSS class
   return (
     <div className="row">
-      <div className="movie-details mb-3 col">
+      <div className="group-details mb-3 col">
         <div className="logo w-100">
           {encodingImage ? (
             <LoadingIndicator
               message={intl.formatMessage({ id: "actions.encoding_image" })}
             />
           ) : (
-            <div className="movie-images">
+            <div className="group-images">
               {renderFrontImage()}
               {renderBackImage()}
             </div>
           )}
         </div>
 
-        <MovieEditPanel
-          movie={movie}
+        <GroupEditPanel
+          group={group}
           onSubmit={onSave}
-          onCancel={() => history.push("/movies")}
+          onCancel={() => history.push("/groups")}
           onDelete={() => {}}
           setFrontImage={setFrontImage}
           setBackImage={setBackImage}
@@ -91,4 +91,4 @@ const MovieCreate: React.FC = () => {
   );
 };
 
-export default MovieCreate;
+export default GroupCreate;

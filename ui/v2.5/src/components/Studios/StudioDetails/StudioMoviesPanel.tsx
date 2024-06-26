@@ -1,24 +1,24 @@
 import React from "react";
 import * as GQL from "src/core/generated-graphql";
-import { MovieList } from "src/components/Movies/MovieList";
+import { GroupList } from "src/components/Movies/MovieList";
 import { useStudioFilterHook } from "src/core/studios";
 import { View } from "src/components/List/views";
 
-interface IStudioMoviesPanel {
+interface IStudioGroupsPanel {
   active: boolean;
   studio: GQL.StudioDataFragment;
 }
 
-export const StudioMoviesPanel: React.FC<IStudioMoviesPanel> = ({
+export const StudioGroupsPanel: React.FC<IStudioGroupsPanel> = ({
   active,
   studio,
 }) => {
   const filterHook = useStudioFilterHook(studio);
   return (
-    <MovieList
+    <GroupList
       filterHook={filterHook}
       alterQuery={active}
-      view={View.StudioMovies}
+      view={View.StudioGroups}
     />
   );
 };

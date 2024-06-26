@@ -47,7 +47,6 @@ const sortByOptions = [
   "resume_time",
   "play_duration",
   "play_count",
-  "movie_scene_number",
   "interactive",
   "interactive_speed",
   "perceptual_similarity",
@@ -58,6 +57,10 @@ const sortByOptions = [
     {
       messageID: "o_count",
       value: "o_counter",
+    },
+    {
+      messageID: "group_scene_number",
+      value: "movie_scene_number",
     },
   ]);
 const displayModeOptions = [

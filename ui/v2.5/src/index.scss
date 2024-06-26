@@ -54,7 +54,7 @@ body {
   }
 }
 
-#movie-page,
+#group-page,
 #performer-page,
 #studio-page,
 #tag-page {
@@ -83,7 +83,7 @@ dd {
     display: none;
   }
 
-  .movie-name,
+  .group-name,
   .performer-name,
   .studio-name,
   .tag-name {
@@ -93,7 +93,7 @@ dd {
   .sticky.detail-header-group {
     padding: 1rem 2.5rem;
 
-    a.movie-name,
+    a.group-name,
     a.performer-name,
     a.studio-name,
     a.tag-name {
@@ -313,7 +313,7 @@ dd {
   justify-content: center;
   padding: 0 1rem;
 
-  .movie-images {
+  .group-images {
     height: 100%;
   }
 
@@ -322,7 +322,7 @@ dd {
     height: auto;
     padding: 0;
 
-    .movie-images {
+    .group-images {
       .img {
         max-width: 100%;
       }
@@ -335,18 +335,18 @@ dd {
     transition: 0.5s;
   }
 
-  .movie-images img {
+  .group-images img {
     @media (max-width: 576px) {
       max-width: 100%;
     }
   }
 }
 
-#movie-page .detail-header-image .movie-images img {
+#group-page .detail-header-image .group-images img {
   max-width: 13rem;
 }
 
-#movie-page .detail-header-image img,
+#group-page .detail-header-image img,
 #performer-page .detail-header-image img,
 #tag-page .detail-header-image img {
   border-radius: 0.5rem;

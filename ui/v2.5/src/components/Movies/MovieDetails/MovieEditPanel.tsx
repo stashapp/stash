@@ -15,7 +15,7 @@ import TextUtils from "src/utils/text";
 import ImageUtils from "src/utils/image";
 import { useFormik } from "formik";
 import { Prompt } from "react-router-dom";
-import { MovieScrapeDialog } from "./MovieScrapeDialog";
+import { GroupScrapeDialog } from "./MovieScrapeDialog";
 import isEqual from "lodash-es/isEqual";
 import { handleUnsavedChanges } from "src/utils/navigation";
 import { formikUtils } from "src/utils/form";
@@ -27,8 +27,8 @@ import {
 import { Studio, StudioSelect } from "src/components/Studios/StudioSelect";
 import { useTagsEdit } from "src/hooks/tagsEdit";
 
-interface IMovieEditPanel {
-  movie: Partial<GQL.MovieDataFragment>;
+interface IGroupEditPanel {
+  group: Partial<GQL.MovieDataFragment>;
   onSubmit: (movie: GQL.MovieCreateInput) => Promise<void>;
   onCancel: () => void;
   onDelete: () => void;
@@ -37,8 +37,8 @@ interface IMovieEditPanel {
   setEncodingImage: (loading: boolean) => void;
 }
 
-export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
-  movie,
+export const GroupEditPanel: React.FC<IGroupEditPanel> = ({
+  group,
   onSubmit,
   onCancel,
   onDelete,
@@ -49,7 +49,7 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
   const intl = useIntl();
   const Toast = useToast();
 
-  const isNew = movie.id === undefined;
+  const isNew = group.id === undefined;
 
   const [isLoading, setIsLoading] = useState(false);
   const [isImageAlertOpen, setIsImageAlertOpen] = useState<boolean>(false);
@@ -57,7 +57,7 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
   const [imageClipboard, setImageClipboard] = useState<string>();
 
   const Scrapers = useListMovieScrapers();
-  const [scrapedMovie, setScrapedMovie] = useState<GQL.ScrapedMovie>();
+  const [scrapedGroup, setScrapedGroup] = useState<GQL.ScrapedMovie>();
 
   const [studio, setStudio] = useState<Studio | null>(null);
 
@@ -76,15 +76,15 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
   });
 
   const initialValues = {
-    name: movie?.name ?? "",
-    aliases: movie?.aliases ?? "",
-    duration: movie?.duration ?? null,
-    date: movie?.date ?? "",
-    studio_id: movie?.studio?.id ?? null,
-    tag_ids: (movie?.tags ?? []).map((t) => t.id),
-    director: movie?.director ?? "",
-    urls: movie?.urls ?? [],
-    synopsis: movie?.synopsis ?? "",
+    name: group?.name ?? "",
+    aliases: group?.aliases ?? "",
+    duration: group?.duration ?? null,
+    date: group?.date ?? "",
+    studio_id: group?.studio?.id ?? null,
+    tag_ids: (group?.tags ?? []).map((t) => t.id),
+    director: group?.director ?? "",
+    urls: group?.urls ?? [],
+    synopsis: group?.synopsis ?? "",
   };
 
   type InputValues = yup.InferType<typeof schema>;
@@ -97,7 +97,7 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
   });
 
   const { tags, updateTagsStateFromScraper, tagsControl } = useTagsEdit(
-    movie.tags,
+    group.tags,
     (ids) => formik.setFieldValue("tag_ids", ids)
   );
 
@@ -107,8 +107,8 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
   }
 
   useEffect(() => {
-    setStudio(movie.studio ?? null);
-  }, [movie.studio]);
+    setStudio(group.studio ?? null);
+  }, [group.studio]);
 
   // set up hotkeys
   useEffect(() => {
@@ -128,7 +128,7 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
     };
   });
 
-  function updateMovieEditStateFromScraper(
+  function updateGroupEditStateFromScraper(
     state: Partial<GQL.ScrapedMovieDataFragment>
   ) {
     if (state.name) {
@@ -200,11 +200,11 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
         return;
       }
 
-      // if this is a new movie, just dump the data
+      // if this is a new group, just dump the data
       if (isNew) {
-        updateMovieEditStateFromScraper(result.data.scrapeMovieURL);
+        updateGroupEditStateFromScraper(result.data.scrapeMovieURL);
       } else {
-        setScrapedMovie(result.data.scrapeMovieURL);
+        setScrapedGroup(result.data.scrapeMovieURL);
       }
     } catch (e) {
       Toast.error(e);
@@ -223,25 +223,25 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
   }
 
   function maybeRenderScrapeDialog() {
-    if (!scrapedMovie) {
+    if (!scrapedGroup) {
       return;
     }
 
-    const currentMovie = {
-      id: movie.id!,
+    const currentGroup = {
+      id: group.id!,
       ...formik.values,
     };
 
     // Get image paths for scrape gui
-    currentMovie.front_image = movie?.front_image_path;
-    currentMovie.back_image = movie?.back_image_path;
+    currentGroup.front_image = group?.front_image_path;
+    currentGroup.back_image = group?.back_image_path;
 
     return (
-      <MovieScrapeDialog
-        movie={currentMovie}
-        movieStudio={studio}
-        movieTags={tags}
-        scraped={scrapedMovie}
+      <GroupScrapeDialog
+        group={currentGroup}
+        groupStudio={studio}
+        groupTags={tags}
+        scraped={scrapedGroup}
         onClose={(m) => {
           onScrapeDialogClosed(m);
         }}
@@ -251,9 +251,9 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
 
   function onScrapeDialogClosed(p?: GQL.ScrapedMovieDataFragment) {
     if (p) {
-      updateMovieEditStateFromScraper(p);
+      updateGroupEditStateFromScraper(p);
     }
-    setScrapedMovie(undefined);
+    setScrapedGroup(undefined);
   }
 
   const encodingImage = ImageUtils.usePasteImage(showImageAlert);
@@ -373,7 +373,7 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
         <h2>
           {intl.formatMessage(
             { id: "actions.add_entity" },
-            { entityType: intl.formatMessage({ id: "movie" }) }
+            { entityType: intl.formatMessage({ id: "group" }) }
           )}
         </h2>
       )}
@@ -382,14 +382,14 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
         when={formik.dirty}
         message={(location, action) => {
           // Check if it's a redirect after movie creation
-          if (action === "PUSH" && location.pathname.startsWith("/movies/"))
+          if (action === "PUSH" && location.pathname.startsWith("/groups/"))
             return true;
 
-          return handleUnsavedChanges(intl, "movies", movie.id)(location);
+          return handleUnsavedChanges(intl, "groups", group.id)(location);
         }}
       />
 
-      <Form noValidate onSubmit={formik.handleSubmit} id="movie-edit">
+      <Form noValidate onSubmit={formik.handleSubmit} id="group-edit">
         {renderInputField("name")}
         {renderInputField("aliases")}
         {renderDurationField("duration")}
@@ -402,7 +402,7 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
       </Form>
 
       <DetailsEditNavbar
-        objectName={movie?.name ?? intl.formatMessage({ id: "movie" })}
+        objectName={group?.name ?? intl.formatMessage({ id: "group" })}
         isNew={isNew}
         classNames="col-xl-9 mt-3"
         isEditing

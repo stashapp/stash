@@ -143,7 +143,7 @@ export function generateDefaultFrontPageContent(intl: IntlShape) {
   return [
     recentlyReleased(intl, FilterMode.Scenes, "scenes"),
     recentlyAdded(intl, FilterMode.Studios, "studios"),
-    recentlyReleased(intl, FilterMode.Movies, "movies"),
+    recentlyReleased(intl, FilterMode.Movies, "groups"),
     recentlyAdded(intl, FilterMode.Performers, "performers"),
     recentlyReleased(intl, FilterMode.Galleries, "galleries"),
   ];
@@ -156,8 +156,8 @@ export function generatePremadeFrontPageContent(intl: IntlShape) {
     recentlyReleased(intl, FilterMode.Galleries, "galleries"),
     recentlyAdded(intl, FilterMode.Galleries, "galleries"),
     recentlyAdded(intl, FilterMode.Images, "images"),
-    recentlyReleased(intl, FilterMode.Movies, "movies"),
-    recentlyAdded(intl, FilterMode.Movies, "movies"),
+    recentlyReleased(intl, FilterMode.Movies, "groups"),
+    recentlyAdded(intl, FilterMode.Movies, "groups"),
     recentlyAdded(intl, FilterMode.Studios, "studios"),
     recentlyAdded(intl, FilterMode.Performers, "performers"),
   ];

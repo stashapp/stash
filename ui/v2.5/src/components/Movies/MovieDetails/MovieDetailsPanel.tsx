@@ -7,14 +7,14 @@ import { Link } from "react-router-dom";
 import { DirectorLink } from "src/components/Shared/Link";
 import { TagLink } from "src/components/Shared/TagLink";
 
-interface IMovieDetailsPanel {
-  movie: GQL.MovieDataFragment;
+interface IGroupDetailsPanel {
+  group: GQL.MovieDataFragment;
   collapsed?: boolean;
   fullWidth?: boolean;
 }
 
-export const MovieDetailsPanel: React.FC<IMovieDetailsPanel> = ({
-  movie,
+export const GroupDetailsPanel: React.FC<IGroupDetailsPanel> = ({
+  group,
   collapsed,
   fullWidth,
 }) => {
@@ -22,13 +22,13 @@ export const MovieDetailsPanel: React.FC<IMovieDetailsPanel> = ({
   const intl = useIntl();
 
   function renderTagsField() {
-    if (!movie.tags.length) {
+    if (!group.tags.length) {
       return;
     }
     return (
       <ul className="pl-0">
-        {(movie.tags ?? []).map((tag) => (
-          <TagLink key={tag.id} linkType="movie" tag={tag} />
+        {(group.tags ?? []).map((tag) => (
+          <TagLink key={tag.id} linkType="group" tag={tag} />
         ))}
       </ul>
     );
@@ -40,7 +40,7 @@ export const MovieDetailsPanel: React.FC<IMovieDetailsPanel> = ({
         <>
           <DetailItem
             id="synopsis"
-            value={movie.synopsis}
+            value={group.synopsis}
             fullWidth={fullWidth}
           />
           <DetailItem
@@ -58,21 +58,21 @@ export const MovieDetailsPanel: React.FC<IMovieDetailsPanel> = ({
       <DetailItem
         id="duration"
         value={
-          movie.duration ? TextUtils.secondsToTimestamp(movie.duration) : ""
+          group.duration ? TextUtils.secondsToTimestamp(group.duration) : ""
         }
         fullWidth={fullWidth}
       />
       <DetailItem
         id="date"
-        value={movie.date ? TextUtils.formatDate(intl, movie.date) : ""}
+        value={group.date ? TextUtils.formatDate(intl, group.date) : ""}
         fullWidth={fullWidth}
       />
       <DetailItem
         id="studio"
         value={
-          movie.studio?.id ? (
-            <Link to={`/studios/${movie.studio?.id}`}>
-              {movie.studio?.name}
+          group.studio?.id ? (
+            <Link to={`/studios/${group.studio?.id}`}>
+              {group.studio?.name}
             </Link>
           ) : (
             ""
@@ -84,8 +84,8 @@ export const MovieDetailsPanel: React.FC<IMovieDetailsPanel> = ({
       <DetailItem
         id="director"
         value={
-          movie.director ? (
-            <DirectorLink director={movie.director} linkType="movie" />
+          group.director ? (
+            <DirectorLink director={group.director} linkType="group" />
           ) : (
             ""
           )
@@ -97,8 +97,8 @@ export const MovieDetailsPanel: React.FC<IMovieDetailsPanel> = ({
   );
 };
 
-export const CompressedMovieDetailsPanel: React.FC<IMovieDetailsPanel> = ({
-  movie,
+export const CompressedMovieDetailsPanel: React.FC<IGroupDetailsPanel> = ({
+  group,
 }) => {
   function scrollToTop() {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -107,13 +107,13 @@ export const CompressedMovieDetailsPanel: React.FC<IMovieDetailsPanel> = ({
   return (
     <div className="sticky detail-header">
       <div className="sticky detail-header-group">
-        <a className="movie-name" onClick={() => scrollToTop()}>
-          {movie.name}
+        <a className="group-name" onClick={() => scrollToTop()}>
+          {group.name}
         </a>
-        {movie?.studio?.name ? (
+        {group?.studio?.name ? (
           <>
             <span className="detail-divider">/</span>
-            <span className="movie-studio">{movie?.studio?.name}</span>
+            <span className="group-studio">{group?.studio?.name}</span>
           </>
         ) : (
           ""

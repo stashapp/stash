@@ -20,33 +20,33 @@ import { uniq } from "lodash-es";
 import { Tag } from "src/components/Tags/TagSelect";
 import { useScrapedTags } from "src/components/Shared/ScrapeDialog/scrapedTags";
 
-interface IMovieScrapeDialogProps {
-  movie: Partial<GQL.MovieUpdateInput>;
-  movieStudio: Studio | null;
-  movieTags: Tag[];
+interface IGroupScrapeDialogProps {
+  group: Partial<GQL.MovieUpdateInput>;
+  groupStudio: Studio | null;
+  groupTags: Tag[];
   scraped: GQL.ScrapedMovie;
 
   onClose: (scrapedMovie?: GQL.ScrapedMovie) => void;
 }
 
-export const MovieScrapeDialog: React.FC<IMovieScrapeDialogProps> = ({
-  movie,
-  movieStudio,
-  movieTags,
+export const GroupScrapeDialog: React.FC<IGroupScrapeDialogProps> = ({
+  group,
+  groupStudio: groupStudio,
+  groupTags: groupTags,
   scraped,
   onClose,
 }) => {
   const intl = useIntl();
 
   const [name, setName] = useState<ScrapeResult<string>>(
-    new ScrapeResult<string>(movie.name, scraped.name)
+    new ScrapeResult<string>(group.name, scraped.name)
   );
   const [aliases, setAliases] = useState<ScrapeResult<string>>(
-    new ScrapeResult<string>(movie.aliases, scraped.aliases)
+    new ScrapeResult<string>(group.aliases, scraped.aliases)
   );
   const [duration, setDuration] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(
-      TextUtils.secondsToTimestamp(movie.duration || 0),
+      TextUtils.secondsToTimestamp(group.duration || 0),
       // convert seconds to string if it's a number
       scraped.duration && !isNaN(+scraped.duration)
         ? TextUtils.secondsToTimestamp(parseInt(scraped.duration, 10))
@@ -54,20 +54,20 @@ export const MovieScrapeDialog: React.FC<IMovieScrapeDialogProps> = ({
     )
   );
   const [date, setDate] = useState<ScrapeResult<string>>(
-    new ScrapeResult<string>(movie.date, scraped.date)
+    new ScrapeResult<string>(group.date, scraped.date)
   );
   const [director, setDirector] = useState<ScrapeResult<string>>(
-    new ScrapeResult<string>(movie.director, scraped.director)
+    new ScrapeResult<string>(group.director, scraped.director)
   );
   const [synopsis, setSynopsis] = useState<ScrapeResult<string>>(
-    new ScrapeResult<string>(movie.synopsis, scraped.synopsis)
+    new ScrapeResult<string>(group.synopsis, scraped.synopsis)
   );
   const [studio, setStudio] = useState<ObjectScrapeResult<GQL.ScrapedStudio>>(
     new ObjectScrapeResult<GQL.ScrapedStudio>(
-      movieStudio
+      groupStudio
         ? {
-            stored_id: movieStudio.id,
-            name: movieStudio.name,
+            stored_id: groupStudio.id,
+            name: groupStudio.name,
           }
         : undefined,
       scraped.studio?.stored_id ? scraped.studio : undefined
@@ -75,17 +75,17 @@ export const MovieScrapeDialog: React.FC<IMovieScrapeDialogProps> = ({
   );
   const [urls, setURLs] = useState<ScrapeResult<string[]>>(
     new ScrapeResult<string[]>(
-      movie.urls,
+      group.urls,
       scraped.urls
-        ? uniq((movie.urls ?? []).concat(scraped.urls ?? []))
+        ? uniq((group.urls ?? []).concat(scraped.urls ?? []))
         : undefined
     )
   );
   const [frontImage, setFrontImage] = useState<ScrapeResult<string>>(
-    new ScrapeResult<string>(movie.front_image, scraped.front_image)
+    new ScrapeResult<string>(group.front_image, scraped.front_image)
   );
   const [backImage, setBackImage] = useState<ScrapeResult<string>>(
-    new ScrapeResult<string>(movie.back_image, scraped.back_image)
+    new ScrapeResult<string>(group.back_image, scraped.back_image)
   );
 
   const [newStudio, setNewStudio] = useState<GQL.ScrapedStudio | undefined>(
@@ -99,7 +99,7 @@ export const MovieScrapeDialog: React.FC<IMovieScrapeDialogProps> = ({
   });
 
   const { tags, newTags, scrapedTagsRow } = useScrapedTags(
-    movieTags,
+    groupTags,
     scraped.tags
   );
 
@@ -194,13 +194,13 @@ export const MovieScrapeDialog: React.FC<IMovieScrapeDialogProps> = ({
         {scrapedTagsRow}
         <ScrapedImageRow
           title="Front Image"
-          className="movie-image"
+          className="group-image"
           result={frontImage}
           onChange={(value) => setFrontImage(value)}
         />
         <ScrapedImageRow
           title="Back Image"
-          className="movie-image"
+          className="group-image"
           result={backImage}
           onChange={(value) => setBackImage(value)}
         />
@@ -212,7 +212,7 @@ export const MovieScrapeDialog: React.FC<IMovieScrapeDialogProps> = ({
     <ScrapeDialog
       title={intl.formatMessage(
         { id: "dialogs.scrape_entity_title" },
-        { entity_type: intl.formatMessage({ id: "movie" }) }
+        { entity_type: intl.formatMessage({ id: "group" }) }
       )}
       renderScrapeRows={renderScrapeRows}
       onClose={(apply) => {

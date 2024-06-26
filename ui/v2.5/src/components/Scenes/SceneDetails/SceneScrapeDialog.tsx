@@ -17,18 +17,18 @@ import {
   ScrapeResult,
 } from "src/components/Shared/ScrapeDialog/scrapeResult";
 import {
-  ScrapedMoviesRow,
+  ScrapedGroupsRow,
   ScrapedPerformersRow,
   ScrapedStudioRow,
 } from "src/components/Shared/ScrapeDialog/ScrapedObjectsRow";
 import {
-  useCreateScrapedMovie,
+  useCreateScrapedGroup,
   useCreateScrapedPerformer,
   useCreateScrapedStudio,
 } from "src/components/Shared/ScrapeDialog/createObjects";
 import { Tag } from "src/components/Tags/TagSelect";
 import { Studio } from "src/components/Studios/StudioSelect";
-import { Movie } from "src/components/Movies/MovieSelect";
+import { Group } from "src/components/Movies/MovieSelect";
 import { useScrapedTags } from "src/components/Shared/ScrapeDialog/scrapedTags";
 
 interface ISceneScrapeDialogProps {
@@ -36,7 +36,7 @@ interface ISceneScrapeDialogProps {
   sceneStudio: Studio | null;
   scenePerformers: Performer[];
   sceneTags: Tag[];
-  sceneMovies: Movie[];
+  sceneGroups: Group[];
   scraped: GQL.ScrapedScene;
   endpoint?: string;
 
@@ -48,7 +48,7 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
   sceneStudio,
   scenePerformers,
   sceneTags,
-  sceneMovies,
+  sceneGroups,
   scraped,
   onClose,
   endpoint,
@@ -114,12 +114,12 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
     scraped.performers?.filter((t) => !t.stored_id) ?? []
   );
 
-  const [movies, setMovies] = useState<
+  const [groups, setGroups] = useState<
     ObjectListScrapeResult<GQL.ScrapedMovie>
   >(
     new ObjectListScrapeResult<GQL.ScrapedMovie>(
       sortStoredIdObjects(
-        sceneMovies.map((p) => ({
+        sceneGroups.map((p) => ({
           stored_id: p.id,
           name: p.name,
         }))
@@ -127,7 +127,7 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
       sortStoredIdObjects(scraped.movies ?? undefined)
     )
   );
-  const [newMovies, setNewMovies] = useState<GQL.ScrapedMovie[]>(
+  const [newGroups, setNewGroups] = useState<GQL.ScrapedMovie[]>(
     scraped.movies?.filter((t) => !t.stored_id) ?? []
   );
 
@@ -157,11 +157,11 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
     setNewObjects: setNewPerformers,
   });
 
-  const createNewMovie = useCreateScrapedMovie({
-    scrapeResult: movies,
-    setScrapeResult: setMovies,
-    newObjects: newMovies,
-    setNewObjects: setNewMovies,
+  const createNewGroup = useCreateScrapedGroup({
+    scrapeResult: groups,
+    setScrapeResult: setGroups,
+    newObjects: newGroups,
+    setNewObjects: setNewGroups,
   });
 
   const intl = useIntl();
@@ -176,7 +176,7 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
       director,
       studio,
       performers,
-      movies,
+      groups,
       tags,
       details,
       image,
@@ -184,7 +184,7 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
     ].every((r) => !r.scraped) &&
     newTags.length === 0 &&
     newPerformers.length === 0 &&
-    newMovies.length === 0 &&
+    newGroups.length === 0 &&
     !newStudio
   ) {
     onClose();
@@ -202,7 +202,7 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
       director: director.getNewValue(),
       studio: newStudioValue,
       performers: performers.getNewValue(),
-      movies: movies.getNewValue(),
+      movies: groups.getNewValue(),
       tags: tags.getNewValue(),
       details: details.getNewValue(),
       image: image.getNewValue(),
@@ -253,12 +253,12 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
           newObjects={newPerformers}
           onCreateNew={createNewPerformer}
         />
-        <ScrapedMoviesRow
-          title={intl.formatMessage({ id: "movies" })}
-          result={movies}
-          onChange={(value) => setMovies(value)}
-          newObjects={newMovies}
-          onCreateNew={createNewMovie}
+        <ScrapedGroupsRow
+          title={intl.formatMessage({ id: "groups" })}
+          result={groups}
+          onChange={(value) => setGroups(value)}
+          newObjects={newGroups}
+          onCreateNew={createNewGroup}
         />
         {scrapedTagsRow}
         <ScrapedTextAreaRow

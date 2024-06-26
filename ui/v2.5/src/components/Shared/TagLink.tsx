@@ -71,25 +71,25 @@ export const PerformerLink: React.FC<IPerformerLinkProps> = ({
   );
 };
 
-interface IMovieLinkProps {
-  movie: INamedObject;
+interface IGroupLinkProps {
+  group: INamedObject;
   linkType?: "scene";
   className?: string;
 }
 
-export const MovieLink: React.FC<IMovieLinkProps> = ({
-  movie,
+export const GroupLink: React.FC<IGroupLinkProps> = ({
+  group,
   linkType = "scene",
   className,
 }) => {
   const link = useMemo(() => {
     switch (linkType) {
       case "scene":
-        return NavUtils.makeMovieScenesUrl(movie);
+        return NavUtils.makeGroupScenesUrl(group);
     }
-  }, [movie, linkType]);
+  }, [group, linkType]);
 
-  const title = movie.name || "";
+  const title = group.name || "";
 
   return (
     <CommonLinkComponent link={link} className={className}>
@@ -197,7 +197,7 @@ interface ITagLinkProps {
     | "image"
     | "details"
     | "performer"
-    | "movie"
+    | "group"
     | "studio";
   className?: string;
   hoverPlacement?: Placement;
@@ -225,8 +225,8 @@ export const TagLink: React.FC<ITagLinkProps> = ({
         return NavUtils.makeTagGalleriesUrl(tag);
       case "image":
         return NavUtils.makeTagImagesUrl(tag);
-      case "movie":
-        return NavUtils.makeTagMoviesUrl(tag);
+      case "group":
+        return NavUtils.makeTagGroupsUrl(tag);
       case "details":
         return NavUtils.makeTagUrl(tag.id ?? "");
     }

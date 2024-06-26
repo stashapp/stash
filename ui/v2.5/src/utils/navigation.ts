@@ -103,7 +103,7 @@ const makePerformerGalleriesUrl = (
   return `/galleries?${filter.makeQueryParameters()}`;
 };
 
-const makePerformerMoviesUrl = (
+const makePerformerGroupsUrl = (
   performer: Partial<GQL.PerformerDataFragment>,
   extraPerformer?: ILabeledId,
   extraCriteria?: Criterion<CriterionValue>[]
@@ -121,7 +121,7 @@ const makePerformerMoviesUrl = (
 
   filter.criteria.push(criterion);
   addExtraCriteria(filter.criteria, extraCriteria);
-  return `/movies?${filter.makeQueryParameters()}`;
+  return `/groups?${filter.makeQueryParameters()}`;
 };
 
 const makePerformersCountryUrl = (
@@ -174,7 +174,7 @@ const makeStudioGalleriesUrl = (studio: Partial<GQL.StudioDataFragment>) => {
   return `/galleries?${filter.makeQueryParameters()}`;
 };
 
-const makeStudioMoviesUrl = (studio: Partial<GQL.StudioDataFragment>) => {
+const makeStudioGroupsUrl = (studio: Partial<GQL.StudioDataFragment>) => {
   if (!studio.id) return "#";
   const filter = new ListFilterModel(GQL.FilterMode.Movies, undefined);
   const criterion = new StudiosCriterion();
@@ -184,7 +184,7 @@ const makeStudioMoviesUrl = (studio: Partial<GQL.StudioDataFragment>) => {
     depth: 0,
   };
   filter.criteria.push(criterion);
-  return `/movies?${filter.makeQueryParameters()}`;
+  return `/groups?${filter.makeQueryParameters()}`;
 };
 
 const makeStudioPerformersUrl = (studio: Partial<GQL.StudioDataFragment>) => {
@@ -211,12 +211,12 @@ const makeChildStudiosUrl = (studio: Partial<GQL.StudioDataFragment>) => {
   return `/studios?${filter.makeQueryParameters()}`;
 };
 
-const makeMovieScenesUrl = (movie: Partial<GQL.MovieDataFragment>) => {
-  if (!movie.id) return "#";
+const makeGroupScenesUrl = (group: Partial<GQL.MovieDataFragment>) => {
+  if (!group.id) return "#";
   const filter = new ListFilterModel(GQL.FilterMode.Scenes, undefined);
   const criterion = new MoviesCriterion();
   criterion.value = [
-    { id: movie.id, label: movie.name || `Movie ${movie.id}` },
+    { id: group.id, label: group.name || `Group ${group.id}` },
   ];
   filter.criteria.push(criterion);
   return `/scenes?${filter.makeQueryParameters()}`;
@@ -298,8 +298,8 @@ const makeTagImagesUrl = (tag: INamedObject) => {
   return `/images?${makeTagFilter(GQL.FilterMode.Images, tag)}`;
 };
 
-const makeTagMoviesUrl = (tag: INamedObject) => {
-  return `/movies?${makeTagFilter(GQL.FilterMode.Movies, tag)}`;
+const makeTagGroupsUrl = (tag: INamedObject) => {
+  return `/groups?${makeTagFilter(GQL.FilterMode.Movies, tag)}`;
 };
 
 type SceneMarkerDataFragment = Pick<GQL.SceneMarker, "id" | "seconds"> & {
@@ -349,13 +349,13 @@ const makeDirectorScenesUrl = (director: string) => {
   return `/scenes?${filter.makeQueryParameters()}`;
 };
 
-const makeDirectorMoviesUrl = (director: string) => {
+const makeDirectorGroupsUrl = (director: string) => {
   if (director.length == 0) return "#";
   const filter = new ListFilterModel(GQL.FilterMode.Movies, undefined);
   filter.criteria.push(
     stringEqualsCriterion(createStringCriterionOption("director"), director)
   );
-  return `/movies?${filter.makeQueryParameters()}`;
+  return `/groups?${filter.makeQueryParameters()}`;
 };
 
 const makePhotographerGalleriesUrl = (photographer: string) => {
@@ -401,12 +401,12 @@ const NavUtils = {
   makePerformerScenesUrl,
   makePerformerImagesUrl,
   makePerformerGalleriesUrl,
-  makePerformerMoviesUrl,
+  makePerformerGroupsUrl,
   makePerformersCountryUrl,
   makeStudioScenesUrl,
   makeStudioImagesUrl,
   makeStudioGalleriesUrl,
-  makeStudioMoviesUrl,
+  makeStudioGroupsUrl: makeStudioGroupsUrl,
   makeStudioPerformersUrl,
   makeTagUrl,
   makeParentTagsUrl,
@@ -417,16 +417,16 @@ const NavUtils = {
   makeTagStudiosUrl,
   makeTagGalleriesUrl,
   makeTagImagesUrl,
-  makeTagMoviesUrl,
+  makeTagGroupsUrl,
   makeScenesPHashMatchUrl,
   makeSceneMarkerUrl,
-  makeMovieScenesUrl,
+  makeGroupScenesUrl,
   makeChildStudiosUrl,
   makeGalleryImagesUrl,
   makeDirectorScenesUrl,
   makePhotographerGalleriesUrl,
   makePhotographerImagesUrl,
-  makeDirectorMoviesUrl,
+  makeDirectorGroupsUrl,
 };
 
 export default NavUtils;

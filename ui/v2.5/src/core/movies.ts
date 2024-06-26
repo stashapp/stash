@@ -1,7 +1,7 @@
 import * as GQL from "src/core/generated-graphql";
 import TextUtils from "src/utils/text";
 
-export const scrapedMovieToCreateInput = (toCreate: GQL.ScrapedMovie) => {
+export const scrapedGroupToCreateInput = (toCreate: GQL.ScrapedMovie) => {
   const input: GQL.MovieCreateInput = {
     name: toCreate.name ?? "",
     url: toCreate.url,

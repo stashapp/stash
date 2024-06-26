@@ -13,7 +13,7 @@ import { RatingSystem } from "../Shared/Rating/RatingSystem";
 import {
   getAggregateInputIDs,
   getAggregateInputValue,
-  getAggregateMovieIds,
+  getAggregateGroupIds,
   getAggregatePerformerIds,
   getAggregateRating,
   getAggregateStudioId,
@@ -42,11 +42,11 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
   );
   const [tagIds, setTagIds] = useState<string[]>();
   const [existingTagIds, setExistingTagIds] = useState<string[]>();
-  const [movieMode, setMovieMode] = React.useState<GQL.BulkUpdateIdMode>(
+  const [groupMode, setGroupMode] = React.useState<GQL.BulkUpdateIdMode>(
     GQL.BulkUpdateIdMode.Add
   );
-  const [movieIds, setMovieIds] = useState<string[]>();
-  const [existingMovieIds, setExistingMovieIds] = useState<string[]>();
+  const [groupIds, setGroupIds] = useState<string[]>();
+  const [existingGroupIds, setExistingGroupIds] = useState<string[]>();
   const [organized, setOrganized] = useState<boolean | undefined>();
 
   const [updateScenes] = useBulkSceneUpdate(getSceneInput());
@@ -62,7 +62,7 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
     const aggregateStudioId = getAggregateStudioId(props.selected);
     const aggregatePerformerIds = getAggregatePerformerIds(props.selected);
     const aggregateTagIds = getAggregateTagIds(props.selected);
-    const aggregateMovieIds = getAggregateMovieIds(props.selected);
+    const aggregateGroupIds = getAggregateGroupIds(props.selected);
 
     const sceneInput: GQL.BulkSceneUpdateInput = {
       ids: props.selected.map((scene) => {
@@ -80,9 +80,9 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
     );
     sceneInput.tag_ids = getAggregateInputIDs(tagMode, tagIds, aggregateTagIds);
     sceneInput.movie_ids = getAggregateInputIDs(
-      movieMode,
-      movieIds,
-      aggregateMovieIds
+      groupMode,
+      groupIds,
+      aggregateGroupIds
     );
 
     if (organized !== undefined) {
@@ -115,7 +115,7 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
     let updateStudioID: string | undefined;
     let updatePerformerIds: string[] = [];
     let updateTagIds: string[] = [];
-    let updateMovieIds: string[] = [];
+    let updateGroupIds: string[] = [];
     let updateOrganized: boolean | undefined;
     let first = true;
 
@@ -126,14 +126,14 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
         .map((p) => p.id)
         .sort();
       const sceneTagIDs = (scene.tags ?? []).map((p) => p.id).sort();
-      const sceneMovieIDs = (scene.movies ?? []).map((m) => m.movie.id).sort();
+      const sceneGroupIDs = (scene.movies ?? []).map((m) => m.movie.id).sort();
 
       if (first) {
         updateRating = sceneRating ?? undefined;
         updateStudioID = sceneStudioID;
         updatePerformerIds = scenePerformerIDs;
         updateTagIds = sceneTagIDs;
-        updateMovieIds = sceneMovieIDs;
+        updateGroupIds = sceneGroupIDs;
         first = false;
         updateOrganized = scene.organized;
       } else {
@@ -149,8 +149,8 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
         if (!isEqual(sceneTagIDs, updateTagIds)) {
           updateTagIds = [];
         }
-        if (!isEqual(sceneMovieIDs, updateMovieIds)) {
-          updateMovieIds = [];
+        if (!isEqual(sceneGroupIDs, updateGroupIds)) {
+          updateGroupIds = [];
         }
         if (scene.organized !== updateOrganized) {
           updateOrganized = undefined;
@@ -162,7 +162,7 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
     setStudioId(updateStudioID);
     setExistingPerformerIds(updatePerformerIds);
     setExistingTagIds(updateTagIds);
-    setExistingMovieIds(updateMovieIds);
+    setExistingGroupIds(updateGroupIds);
     setOrganized(updateOrganized);
   }, [props.selected]);
 
@@ -173,7 +173,7 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
   }, [organized, checkboxRef]);
 
   function renderMultiSelect(
-    type: "performers" | "tags" | "movies",
+    type: "performers" | "tags" | "groups",
     ids: string[] | undefined
   ) {
     let mode = GQL.BulkUpdateIdMode.Add;
@@ -187,9 +187,9 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
         mode = tagMode;
         existingIds = existingTagIds;
         break;
-      case "movies":
-        mode = movieMode;
-        existingIds = existingMovieIds;
+      case "groups":
+        mode = groupMode;
+        existingIds = existingGroupIds;
         break;
     }
 
@@ -205,8 +205,8 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
             case "tags":
               setTagIds(itemIDs);
               break;
-            case "movies":
-              setMovieIds(itemIDs);
+            case "groups":
+              setGroupIds(itemIDs);
               break;
           }
         }}
@@ -218,8 +218,8 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
             case "tags":
               setTagMode(newMode);
               break;
-            case "movies":
-              setMovieMode(newMode);
+            case "groups":
+              setGroupMode(newMode);
               break;
           }
         }}
@@ -306,11 +306,11 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
             {renderMultiSelect("tags", tagIds)}
           </Form.Group>
 
-          <Form.Group controlId="movies">
+          <Form.Group controlId="groups">
             <Form.Label>
-              <FormattedMessage id="movies" />
+              <FormattedMessage id="groups" />
             </Form.Label>
-            {renderMultiSelect("movies", movieIds)}
+            {renderMultiSelect("groups", groupIds)}
           </Form.Group>
 
           <Form.Group controlId="organized">

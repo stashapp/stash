@@ -2,30 +2,30 @@ import React from "react";
 import { Route, Switch } from "react-router-dom";
 import { Helmet } from "react-helmet";
 import { useTitleProps } from "src/hooks/title";
-import Movie from "./MovieDetails/Movie";
-import MovieCreate from "./MovieDetails/MovieCreate";
-import { MovieList } from "./MovieList";
+import Group from "./MovieDetails/Movie";
+import GroupCreate from "./MovieDetails/MovieCreate";
+import { GroupList } from "./MovieList";
 import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
 import { View } from "../List/views";
 
-const Movies: React.FC = () => {
+const Groups: React.FC = () => {
   useScrollToTopOnMount();
 
-  return <MovieList view={View.Movies} />;
+  return <GroupList view={View.Groups} />;
 };
 
-const MovieRoutes: React.FC = () => {
-  const titleProps = useTitleProps({ id: "movies" });
+const GroupRoutes: React.FC = () => {
+  const titleProps = useTitleProps({ id: "groups" });
   return (
     <>
       <Helmet {...titleProps} />
       <Switch>
-        <Route exact path="/movies" component={Movies} />
-        <Route exact path="/movies/new" component={MovieCreate} />
-        <Route path="/movies/:id/:tab?" component={Movie} />
+        <Route exact path="/groups" component={Groups} />
+        <Route exact path="/groups/new" component={GroupCreate} />
+        <Route path="/groups/:id/:tab?" component={Group} />
       </Switch>
     </>
   );
 };
 
-export default MovieRoutes;
+export default GroupRoutes;

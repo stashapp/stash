@@ -24,7 +24,7 @@ interface IListOperationProps {
   onClose: (applied: boolean) => void;
 }
 
-export const EditMoviesDialog: React.FC<IListOperationProps> = (
+export const EditGroupsDialog: React.FC<IListOperationProps> = (
   props: IListOperationProps
 ) => {
   const intl = useIntl();
@@ -69,7 +69,7 @@ export const EditMoviesDialog: React.FC<IListOperationProps> = (
         intl.formatMessage(
           { id: "toast.updated_entity" },
           {
-            entity: intl.formatMessage({ id: "movies" }).toLocaleLowerCase(),
+            entity: intl.formatMessage({ id: "groups" }).toLocaleLowerCase(),
           }
         )
       );
@@ -126,7 +126,7 @@ export const EditMoviesDialog: React.FC<IListOperationProps> = (
         icon={faPencilAlt}
         header={intl.formatMessage(
           { id: "actions.edit_entity" },
-          { entityType: intl.formatMessage({ id: "movies" }) }
+          { entityType: intl.formatMessage({ id: "groups" }) }
         )}
         accept={{
           onClick: onSave,

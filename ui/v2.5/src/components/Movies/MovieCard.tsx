@@ -12,7 +12,7 @@ import { faPlayCircle, faTag } from "@fortawesome/free-solid-svg-icons";
 import ScreenUtils from "src/utils/screen";
 
 interface IProps {
-  movie: GQL.MovieDataFragment;
+  group: GQL.MovieDataFragment;
   containerWidth?: number;
   sceneIndex?: number;
   selecting?: boolean;
@@ -20,8 +20,8 @@ interface IProps {
   onSelectedChanged?: (selected: boolean, shiftKey: boolean) => void;
 }
 
-export const MovieCard: React.FC<IProps> = ({
-  movie,
+export const GroupCard: React.FC<IProps> = ({
+  group,
   sceneIndex,
   containerWidth,
   selecting,
@@ -47,7 +47,7 @@ export const MovieCard: React.FC<IProps> = ({
     return (
       <>
         <hr />
-        <span className="movie-scene-number">
+        <span className="group-scene-number">
           <FormattedMessage id="scene" /> #{sceneIndex}
         </span>
       </>
@@ -55,9 +55,9 @@ export const MovieCard: React.FC<IProps> = ({
   }
 
   function maybeRenderScenesPopoverButton() {
-    if (movie.scenes.length === 0) return;
+    if (group.scenes.length === 0) return;
 
-    const popoverContent = movie.scenes.map((scene) => (
+    const popoverContent = group.scenes.map((scene) => (
       <SceneLink key={scene.id} scene={scene} />
     ));
 
@@ -69,31 +69,31 @@ export const MovieCard: React.FC<IProps> = ({
       >
         <Button className="minimal">
           <Icon icon={faPlayCircle} />
-          <span>{movie.scenes.length}</span>
+          <span>{group.scenes.length}</span>
         </Button>
       </HoverPopover>
     );
   }
 
   function maybeRenderTagPopoverButton() {
-    if (movie.tags.length <= 0) return;
+    if (group.tags.length <= 0) return;
 
-    const popoverContent = movie.tags.map((tag) => (
-      <TagLink key={tag.id} linkType="movie" tag={tag} />
+    const popoverContent = group.tags.map((tag) => (
+      <TagLink key={tag.id} linkType="group" tag={tag} />
     ));
 
     return (
       <HoverPopover placement="bottom" content={popoverContent}>
         <Button className="minimal tag-count">
           <Icon icon={faTag} />
-          <span>{movie.tags.length}</span>
+          <span>{group.tags.length}</span>
         </Button>
       </HoverPopover>
     );
   }
 
   function maybeRenderPopoverButtonGroup() {
-    if (sceneIndex || movie.scenes.length > 0 || movie.tags.length > 0) {
+    if (sceneIndex || group.scenes.length > 0 || group.tags.length > 0) {
       return (
         <>
           {maybeRenderSceneNumber()}
@@ -109,28 +109,28 @@ export const MovieCard: React.FC<IProps> = ({
 
   return (
     <GridCard
-      className="movie-card"
-      url={`/movies/${movie.id}`}
+      className="group-card"
+      url={`/groups/${group.id}`}
       width={cardWidth}
-      title={movie.name}
-      linkClassName="movie-card-header"
+      title={group.name}
+      linkClassName="group-card-header"
       image={
         <>
           <img
             loading="lazy"
-            className="movie-card-image"
-            alt={movie.name ?? ""}
-            src={movie.front_image_path ?? ""}
+            className="group-card-image"
+            alt={group.name ?? ""}
+            src={group.front_image_path ?? ""}
           />
-          <RatingBanner rating={movie.rating100} />
+          <RatingBanner rating={group.rating100} />
         </>
       }
       details={
-        <div className="movie-card__details">
-          <span className="movie-card__date">{movie.date}</span>
+        <div className="group-card__details">
+          <span className="group-card__date">{group.date}</span>
           <TruncatedText
-            className="movie-card__description"
-            text={movie.synopsis}
+            className="group-card__description"
+            text={group.synopsis}
             lineCount={3}
           />
         </div>

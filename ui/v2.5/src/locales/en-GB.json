@@ -798,9 +798,9 @@
   "countables": {
     "files": "{count, plural, one {File} other {Files}}",
     "galleries": "{count, plural, one {Gallery} other {Galleries}}",
+    "groups": "{count, plural, one {Group} other {Groups}}",
     "images": "{count, plural, one {Image} other {Images}}",
     "markers": "{count, plural, one {Marker} other {Markers}}",
-    "movies": "{count, plural, one {Movie} other {Movies}}",
     "performers": "{count, plural, one {Performer} other {Performers}}",
     "scenes": "{count, plural, one {Scene} other {Scenes}}",
     "studios": "{count, plural, one {Studio} other {Studios}}",
@@ -1060,6 +1060,10 @@
     "TRANSGENDER_FEMALE": "Transgender Female",
     "TRANSGENDER_MALE": "Transgender Male"
   },
+  "group": "Group",
+  "group_count": "Group Count",
+  "group_scene_number": "Scene Number",
+  "groups": "Groups",
   "hair_color": "Hair Colour",
   "handy_connection_status": {
     "connecting": "Connecting",
@@ -1117,10 +1121,6 @@
   },
   "megabits_per_second": "{value} mbps",
   "metadata": "Metadata",
-  "movie": "Movie",
-  "movie_count": "Movie Count",
-  "movie_scene_number": "Scene Number",
-  "movies": "Movies",
   "name": "Name",
   "new": "New",
   "none": "None",

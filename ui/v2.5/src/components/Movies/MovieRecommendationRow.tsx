@@ -2,7 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { useFindMovies } from "src/core/StashService";
 import Slider from "@ant-design/react-slick";
-import { MovieCard } from "./MovieCard";
+import { GroupCard } from "./MovieCard";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { getSlickSliderSettings } from "src/core/recommendations";
 import { RecommendationRow } from "../FrontPage/RecommendationRow";
@@ -14,7 +14,7 @@ interface IProps {
   header: string;
 }
 
-export const MovieRecommendationRow: React.FC<IProps> = (props: IProps) => {
+export const GroupRecommendationRow: React.FC<IProps> = (props: IProps) => {
   const result = useFindMovies(props.filter);
   const cardCount = result.data?.findMovies.count;
 
@@ -24,10 +24,10 @@ export const MovieRecommendationRow: React.FC<IProps> = (props: IProps) => {
 
   return (
     <RecommendationRow
-      className="movie-recommendations"
+      className="group-recommendations"
       header={props.header}
       link={
-        <Link to={`/movies?${props.filter.makeQueryParameters()}`}>
+        <Link to={`/groups?${props.filter.makeQueryParameters()}`}>
           <FormattedMessage id="view_all" />
         </Link>
       }
@@ -40,10 +40,10 @@ export const MovieRecommendationRow: React.FC<IProps> = (props: IProps) => {
       >
         {result.loading
           ? [...Array(props.filter.itemsPerPage)].map((i) => (
-              <div key={`_${i}`} className="movie-skeleton skeleton-card"></div>
+              <div key={`_${i}`} className="group-skeleton skeleton-card"></div>
             ))
           : result.data?.findMovies.movies.map((m) => (
-              <MovieCard key={m.id} movie={m} />
+              <GroupCard key={m.id} group={m} />
             ))}
       </Slider>
     </RecommendationRow>

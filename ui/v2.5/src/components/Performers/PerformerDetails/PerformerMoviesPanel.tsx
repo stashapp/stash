@@ -1,6 +1,6 @@
 import React from "react";
 import * as GQL from "src/core/generated-graphql";
-import { MovieList } from "src/components/Movies/MovieList";
+import { GroupList } from "src/components/Movies/MovieList";
 import { usePerformerFilterHook } from "src/core/performers";
 import { View } from "src/components/List/views";
 
@@ -9,16 +9,16 @@ interface IPerformerDetailsProps {
   performer: GQL.PerformerDataFragment;
 }
 
-export const PerformerMoviesPanel: React.FC<IPerformerDetailsProps> = ({
+export const PerformerGroupsPanel: React.FC<IPerformerDetailsProps> = ({
   active,
   performer,
 }) => {
   const filterHook = usePerformerFilterHook(performer);
   return (
-    <MovieList
+    <GroupList
       filterHook={filterHook}
       alterQuery={active}
-      view={View.PerformerMovies}
+      view={View.PerformerGroups}
     />
   );
 };
