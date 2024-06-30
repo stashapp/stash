@@ -92,6 +92,7 @@ export const scrapedPerformerToCreateInput = (
     name: toCreate.name ?? "",
     gender: stringToGender(toCreate.gender),
     birthdate: toCreate.birthdate,
+    disambiguation: toCreate.disambiguation,
     ethnicity: toCreate.ethnicity,
     country: toCreate.country,
     eye_color: toCreate.eye_color,
