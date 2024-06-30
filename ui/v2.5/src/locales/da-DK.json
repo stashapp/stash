@@ -559,7 +559,7 @@
                 "heading": "Redigering",
                 "rating_system": {
                     "type": {
-                        "label": "Type af bedømmelsessystem",
+                        "label": "Type af ranglistesystem",
                         "options": {
                             "decimal": "Decimal",
                             "stars": "Stjerner"
@@ -890,7 +890,7 @@
         }
     },
     "dimensions": "Dimensioner",
-    "director": "Direktør",
+    "director": "Instruktør",
     "display_mode": {
         "grid": "Gitter",
         "list": "Liste",
@@ -1098,7 +1098,7 @@
     "piercings": "Piercinger",
     "queue": "Kø",
     "random": "Tilfældig",
-    "rating": "Bedømmelse",
+    "rating": "Rangliste",
     "recently_added_objects": "Senest Tilføjet {objects}",
     "recently_released_objects": "Senest Udgivet {objects}",
     "resolution": "Opløsning",
