@@ -1,5 +1,5 @@
 import { Button, Tabs, Tab } from "react-bootstrap";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useHistory, Redirect, RouteComponentProps } from "react-router-dom";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Helmet } from "react-helmet";
@@ -13,7 +13,6 @@ import {
   useStudioDestroy,
   mutateMetadataAutoTag,
 } from "src/core/StashService";
-import { Counter } from "src/components/Shared/Counter";
 import { DetailsEditNavbar } from "src/components/Shared/DetailsEditNavbar";
 import { ModalComponent } from "src/components/Shared/Modal";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
@@ -47,6 +46,10 @@ import { useLoadStickyHeader } from "src/hooks/detailsPanel";
 import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
 import { ExternalLink } from "src/components/Shared/ExternalLink";
 import { BackgroundImage } from "src/components/Shared/DetailsPage/BackgroundImage";
+import {
+  TabTitleCounter,
+  useTabKey,
+} from "src/components/Shared/DetailsPage/Tabs";
 
 interface IProps {
   studio: GQL.StudioDataFragment;
@@ -73,34 +76,12 @@ function isTabKey(tab: string): tab is TabKey {
   return validTabs.includes(tab as TabKey);
 }
 
-const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
-  const history = useHistory();
-  const Toast = useToast();
-  const intl = useIntl();
-
-  // Configuration settings
-  const { configuration } = React.useContext(ConfigurationContext);
-  const uiConfig = configuration?.ui;
-  const abbreviateCounter = uiConfig?.abbreviateCounters ?? false;
-  const enableBackgroundImage = uiConfig?.enableStudioBackgroundImage ?? false;
-  const showAllDetails = uiConfig?.showAllDetails ?? true;
-  const compactExpandedDetails = uiConfig?.compactExpandedDetails ?? false;
-
-  const [collapsed, setCollapsed] = useState<boolean>(!showAllDetails);
-  const loadStickyHeader = useLoadStickyHeader();
-
-  // Editing state
-  const [isEditing, setIsEditing] = useState<boolean>(false);
-  const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
-
-  // Editing studio state
-  const [image, setImage] = useState<string | null>();
-  const [encodingImage, setEncodingImage] = useState<boolean>(false);
-
-  const [updateStudio] = useStudioUpdate();
-  const [deleteStudio] = useStudioDestroy({ id: studio.id });
-
-  const showAllCounts = uiConfig?.showChildStudioContent;
+const StudioTabs: React.FC<{
+  tabKey?: TabKey;
+  studio: GQL.StudioDataFragment;
+  abbreviateCounter: boolean;
+  showAllCounts?: boolean;
+}> = ({ tabKey, studio, abbreviateCounter, showAllCounts = false }) => {
   const sceneCount =
     (showAllCounts ? studio.scene_count_all : studio.scene_count) ?? 0;
   const galleryCount =
@@ -138,23 +119,131 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
     studio,
   ]);
 
-  const setTabKey = useCallback(
-    (newTabKey: string | null) => {
-      if (!newTabKey) newTabKey = populatedDefaultTab;
-      if (newTabKey === tabKey) return;
+  const { setTabKey } = useTabKey({
+    tabKey,
+    validTabs,
+    defaultTabKey: populatedDefaultTab,
+    baseURL: `/studios/${studio.id}`,
+  });
 
-      if (isTabKey(newTabKey)) {
-        history.replace(`/studios/${studio.id}/${newTabKey}`);
-      }
-    },
-    [populatedDefaultTab, tabKey, history, studio.id]
+  return (
+    <Tabs
+      id="studio-tabs"
+      mountOnEnter
+      unmountOnExit
+      activeKey={tabKey}
+      onSelect={setTabKey}
+    >
+      <Tab
+        eventKey="scenes"
+        title={
+          <TabTitleCounter
+            messageID="scenes"
+            count={sceneCount}
+            abbreviateCounter={abbreviateCounter}
+          />
+        }
+      >
+        <StudioScenesPanel active={tabKey === "scenes"} studio={studio} />
+      </Tab>
+      <Tab
+        eventKey="galleries"
+        title={
+          <TabTitleCounter
+            messageID="galleries"
+            count={galleryCount}
+            abbreviateCounter={abbreviateCounter}
+          />
+        }
+      >
+        <StudioGalleriesPanel active={tabKey === "galleries"} studio={studio} />
+      </Tab>
+      <Tab
+        eventKey="images"
+        title={
+          <TabTitleCounter
+            messageID="images"
+            count={imageCount}
+            abbreviateCounter={abbreviateCounter}
+          />
+        }
+      >
+        <StudioImagesPanel active={tabKey === "images"} studio={studio} />
+      </Tab>
+      <Tab
+        eventKey="performers"
+        title={
+          <TabTitleCounter
+            messageID="performers"
+            count={performerCount}
+            abbreviateCounter={abbreviateCounter}
+          />
+        }
+      >
+        <StudioPerformersPanel
+          active={tabKey === "performers"}
+          studio={studio}
+        />
+      </Tab>
+      <Tab
+        eventKey="groups"
+        title={
+          <TabTitleCounter
+            messageID="groups"
+            count={groupCount}
+            abbreviateCounter={abbreviateCounter}
+          />
+        }
+      >
+        <StudioGroupsPanel active={tabKey === "groups"} studio={studio} />
+      </Tab>
+      <Tab
+        eventKey="childstudios"
+        title={
+          <TabTitleCounter
+            messageID="subsidiary_studios"
+            count={studio.child_studios.length}
+            abbreviateCounter={abbreviateCounter}
+          />
+        }
+      >
+        <StudioChildrenPanel
+          active={tabKey === "childstudios"}
+          studio={studio}
+        />
+      </Tab>
+    </Tabs>
   );
+};
 
-  useEffect(() => {
-    if (!tabKey) {
-      setTabKey(populatedDefaultTab);
-    }
-  }, [setTabKey, populatedDefaultTab, tabKey]);
+const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
+  const history = useHistory();
+  const Toast = useToast();
+  const intl = useIntl();
+
+  // Configuration settings
+  const { configuration } = React.useContext(ConfigurationContext);
+  const uiConfig = configuration?.ui;
+  const abbreviateCounter = uiConfig?.abbreviateCounters ?? false;
+  const enableBackgroundImage = uiConfig?.enableStudioBackgroundImage ?? false;
+  const showAllDetails = uiConfig?.showAllDetails ?? true;
+  const compactExpandedDetails = uiConfig?.compactExpandedDetails ?? false;
+
+  const [collapsed, setCollapsed] = useState<boolean>(!showAllDetails);
+  const loadStickyHeader = useLoadStickyHeader();
+
+  // Editing state
+  const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
+
+  // Editing studio state
+  const [image, setImage] = useState<string | null>();
+  const [encodingImage, setEncodingImage] = useState<boolean>(false);
+
+  const [updateStudio] = useStudioUpdate();
+  const [deleteStudio] = useStudioDestroy({ id: studio.id });
+
+  const showAllCounts = uiConfig?.showChildStudioContent;
 
   function setFavorite(v: boolean) {
     if (studio.id) {
@@ -366,119 +455,6 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
     }
   }
 
-  const renderTabs = () => (
-    <Tabs
-      id="studio-tabs"
-      mountOnEnter
-      unmountOnExit
-      activeKey={tabKey}
-      onSelect={setTabKey}
-    >
-      <Tab
-        eventKey="scenes"
-        title={
-          <>
-            {intl.formatMessage({ id: "scenes" })}
-            <Counter
-              abbreviateCounter={abbreviateCounter}
-              count={sceneCount}
-              hideZero
-            />
-          </>
-        }
-      >
-        <StudioScenesPanel active={tabKey === "scenes"} studio={studio} />
-      </Tab>
-      <Tab
-        eventKey="galleries"
-        title={
-          <>
-            {intl.formatMessage({ id: "galleries" })}
-            <Counter
-              abbreviateCounter={abbreviateCounter}
-              count={galleryCount}
-              hideZero
-            />
-          </>
-        }
-      >
-        <StudioGalleriesPanel active={tabKey === "galleries"} studio={studio} />
-      </Tab>
-      <Tab
-        eventKey="images"
-        title={
-          <>
-            {intl.formatMessage({ id: "images" })}
-            <Counter
-              abbreviateCounter={abbreviateCounter}
-              count={imageCount}
-              hideZero
-            />
-          </>
-        }
-      >
-        <StudioImagesPanel active={tabKey === "images"} studio={studio} />
-      </Tab>
-      <Tab
-        eventKey="performers"
-        title={
-          <>
-            {intl.formatMessage({ id: "performers" })}
-            <Counter
-              abbreviateCounter={abbreviateCounter}
-              count={performerCount}
-              hideZero
-            />
-          </>
-        }
-      >
-        <StudioPerformersPanel
-          active={tabKey === "performers"}
-          studio={studio}
-        />
-      </Tab>
-      <Tab
-        eventKey="groups"
-        title={
-          <>
-            {intl.formatMessage({ id: "groups" })}
-            <Counter
-              abbreviateCounter={abbreviateCounter}
-              count={groupCount}
-              hideZero
-            />
-          </>
-        }
-      >
-        <StudioGroupsPanel active={tabKey === "groups"} studio={studio} />
-      </Tab>
-      <Tab
-        eventKey="childstudios"
-        title={
-          <>
-            {intl.formatMessage({ id: "subsidiary_studios" })}
-            <Counter
-              abbreviateCounter={false}
-              count={studio.child_studios.length}
-              hideZero
-            />
-          </>
-        }
-      >
-        <StudioChildrenPanel
-          active={tabKey === "childstudios"}
-          studio={studio}
-        />
-      </Tab>
-    </Tabs>
-  );
-
-  function maybeRenderTab() {
-    if (!isEditing) {
-      return renderTabs();
-    }
-  }
-
   function maybeRenderEditPanel() {
     if (isEditing) {
       return (
@@ -560,7 +536,16 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
       {maybeRenderCompressedDetails()}
       <div className="detail-body">
         <div className="studio-body">
-          <div className="studio-tabs">{maybeRenderTab()}</div>
+          <div className="studio-tabs">
+            {!isEditing && (
+              <StudioTabs
+                studio={studio}
+                tabKey={tabKey}
+                abbreviateCounter={abbreviateCounter}
+                showAllCounts={showAllCounts}
+              />
+            )}
+          </div>
         </div>
       </div>
       {renderDeleteAlert()}
