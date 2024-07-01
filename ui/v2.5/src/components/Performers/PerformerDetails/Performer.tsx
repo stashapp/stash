@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Button, Tabs, Tab, Col, Row } from "react-bootstrap";
 import { useIntl } from "react-intl";
 import { useHistory, Redirect, RouteComponentProps } from "react-router-dom";
@@ -12,7 +12,6 @@ import {
   usePerformerDestroy,
   mutateMetadataAutoTag,
 } from "src/core/StashService";
-import { Counter } from "src/components/Shared/Counter";
 import { DetailsEditNavbar } from "src/components/Shared/DetailsEditNavbar";
 import { ErrorMessage } from "src/components/Shared/ErrorMessage";
 import { Icon } from "src/components/Shared/Icon";
@@ -45,6 +44,10 @@ import { useLoadStickyHeader } from "src/hooks/detailsPanel";
 import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
 import { ExternalLinksButton } from "src/components/Shared/ExternalLinksButton";
 import { BackgroundImage } from "src/components/Shared/DetailsPage/BackgroundImage";
+import {
+  TabTitleCounter,
+  useTabKey,
+} from "src/components/Shared/DetailsPage/Tabs";
 
 interface IProps {
   performer: GQL.PerformerDataFragment;
@@ -69,6 +72,136 @@ type TabKey = (typeof validTabs)[number];
 function isTabKey(tab: string): tab is TabKey {
   return validTabs.includes(tab as TabKey);
 }
+
+const PerformerTabs: React.FC<{
+  tabKey?: TabKey;
+  performer: GQL.PerformerDataFragment;
+  abbreviateCounter: boolean;
+}> = ({ tabKey, performer, abbreviateCounter }) => {
+  const populatedDefaultTab = useMemo(() => {
+    let ret: TabKey = "scenes";
+    if (performer.scene_count == 0) {
+      if (performer.gallery_count != 0) {
+        ret = "galleries";
+      } else if (performer.image_count != 0) {
+        ret = "images";
+      } else if (performer.group_count != 0) {
+        ret = "groups";
+      }
+    }
+
+    return ret;
+  }, [performer]);
+
+  const { setTabKey } = useTabKey({
+    tabKey,
+    validTabs,
+    defaultTabKey: populatedDefaultTab,
+    baseURL: `/performers/${performer.id}`,
+  });
+
+  useEffect(() => {
+    Mousetrap.bind("c", () => setTabKey("scenes"));
+    Mousetrap.bind("g", () => setTabKey("galleries"));
+    Mousetrap.bind("m", () => setTabKey("groups"));
+
+    return () => {
+      Mousetrap.unbind("c");
+      Mousetrap.unbind("g");
+      Mousetrap.unbind("m");
+    };
+  });
+
+  return (
+    <Tabs
+      id="performer-tabs"
+      mountOnEnter
+      unmountOnExit
+      activeKey={tabKey}
+      onSelect={setTabKey}
+    >
+      <Tab
+        eventKey="scenes"
+        title={
+          <TabTitleCounter
+            messageID="scenes"
+            count={performer.scene_count}
+            abbreviateCounter={abbreviateCounter}
+          />
+        }
+      >
+        <PerformerScenesPanel
+          active={tabKey === "scenes"}
+          performer={performer}
+        />
+      </Tab>
+
+      <Tab
+        eventKey="galleries"
+        title={
+          <TabTitleCounter
+            messageID="galleries"
+            count={performer.gallery_count}
+            abbreviateCounter={abbreviateCounter}
+          />
+        }
+      >
+        <PerformerGalleriesPanel
+          active={tabKey === "galleries"}
+          performer={performer}
+        />
+      </Tab>
+
+      <Tab
+        eventKey="images"
+        title={
+          <TabTitleCounter
+            messageID="images"
+            count={performer.image_count}
+            abbreviateCounter={abbreviateCounter}
+          />
+        }
+      >
+        <PerformerImagesPanel
+          active={tabKey === "images"}
+          performer={performer}
+        />
+      </Tab>
+
+      <Tab
+        eventKey="groups"
+        title={
+          <TabTitleCounter
+            messageID="groups"
+            count={performer.group_count}
+            abbreviateCounter={abbreviateCounter}
+          />
+        }
+      >
+        <PerformerGroupsPanel
+          active={tabKey === "groups"}
+          performer={performer}
+        />
+      </Tab>
+
+      <Tab
+        eventKey="appearswith"
+        title={
+          <TabTitleCounter
+            messageID="appears_with"
+            count={performer.performer_count}
+            abbreviateCounter={abbreviateCounter}
+          />
+        }
+      >
+        <PerformerAppearsWithPanel
+          active={tabKey === "appearswith"}
+          performer={performer}
+        />
+      </Tab>
+    </Tabs>
+  );
+};
 
 const PerformerPage: React.FC<IProps> = ({ performer, tabKey }) => {
   const Toast = useToast();
@@ -139,39 +272,6 @@ const PerformerPage: React.FC<IProps> = ({ performer, tabKey }) => {
   const [updatePerformer] = usePerformerUpdate();
   const [deletePerformer, { loading: isDestroying }] = usePerformerDestroy();
 
-  const populatedDefaultTab = useMemo(() => {
-    let ret: TabKey = "scenes";
-    if (performer.scene_count == 0) {
-      if (performer.gallery_count != 0) {
-        ret = "galleries";
-      } else if (performer.image_count != 0) {
-        ret = "images";
-      } else if (performer.group_count != 0) {
-        ret = "groups";
-      }
-    }
-
-    return ret;
-  }, [performer]);
-
-  const setTabKey = useCallback(
-    (newTabKey: string | null) => {
-      if (!newTabKey) newTabKey = populatedDefaultTab;
-      if (newTabKey === tabKey) return;
-
-      if (isTabKey(newTabKey)) {
-        history.replace(`/performers/${performer.id}/${newTabKey}`);
-      }
-    },
-    [populatedDefaultTab, tabKey, history, performer.id]
-  );
-
-  useEffect(() => {
-    if (!tabKey) {
-      setTabKey(populatedDefaultTab);
-    }
-  }, [setTabKey, populatedDefaultTab, tabKey]);
-
   async function onAutoTag() {
     try {
       await mutateMetadataAutoTag({ performers: [performer.id] });
@@ -190,17 +290,11 @@ const PerformerPage: React.FC<IProps> = ({ performer, tabKey }) => {
   // set up hotkeys
   useEffect(() => {
     Mousetrap.bind("e", () => toggleEditing());
-    Mousetrap.bind("c", () => setTabKey("scenes"));
-    Mousetrap.bind("g", () => setTabKey("galleries"));
-    Mousetrap.bind("m", () => setTabKey("groups"));
     Mousetrap.bind("f", () => setFavorite(!performer.favorite));
     Mousetrap.bind(",", () => setCollapsed(!collapsed));
 
     return () => {
       Mousetrap.unbind("e");
-      Mousetrap.unbind("c");
-      Mousetrap.unbind("g");
-      Mousetrap.unbind("m");
       Mousetrap.unbind("f");
       Mousetrap.unbind(",");
     };
@@ -257,106 +351,6 @@ const PerformerPage: React.FC<IProps> = ({ performer, tabKey }) => {
       );
     }
   }
-  const renderTabs = () => (
-    <Tabs
-      id="performer-tabs"
-      mountOnEnter
-      unmountOnExit
-      activeKey={tabKey}
-      onSelect={setTabKey}
-    >
-      <Tab
-        eventKey="scenes"
-        title={
-          <>
-            {intl.formatMessage({ id: "scenes" })}
-            <Counter
-              abbreviateCounter={abbreviateCounter}
-              count={performer.scene_count}
-              hideZero
-            />
-          </>
-        }
-      >
-        <PerformerScenesPanel
-          active={tabKey === "scenes"}
-          performer={performer}
-        />
-      </Tab>
-      <Tab
-        eventKey="galleries"
-        title={
-          <>
-            {intl.formatMessage({ id: "galleries" })}
-            <Counter
-              abbreviateCounter={abbreviateCounter}
-              count={performer.gallery_count}
-              hideZero
-            />
-          </>
-        }
-      >
-        <PerformerGalleriesPanel
-          active={tabKey === "galleries"}
-          performer={performer}
-        />
-      </Tab>
-      <Tab
-        eventKey="images"
-        title={
-          <>
-            {intl.formatMessage({ id: "images" })}
-            <Counter
-              abbreviateCounter={abbreviateCounter}
-              count={performer.image_count}
-              hideZero
-            />
-          </>
-        }
-      >
-        <PerformerImagesPanel
-          active={tabKey === "images"}
-          performer={performer}
-        />
-      </Tab>
-      <Tab
-        eventKey="groups"
-        title={
-          <>
-            {intl.formatMessage({ id: "groups" })}
-            <Counter
-              abbreviateCounter={abbreviateCounter}
-              count={performer.group_count}
-              hideZero
-            />
-          </>
-        }
-      >
-        <PerformerGroupsPanel
-          active={tabKey === "groups"}
-          performer={performer}
-        />
-      </Tab>
-      <Tab
-        eventKey="appearswith"
-        title={
-          <>
-            {intl.formatMessage({ id: "appears_with" })}
-            <Counter
-              abbreviateCounter={abbreviateCounter}
-              count={performer.performer_count}
-              hideZero
-            />
-          </>
-        }
-      >
-        <PerformerAppearsWithPanel
-          active={tabKey === "appearswith"}
-          performer={performer}
-        />
-      </Tab>
-    </Tabs>
-  );
 
   function maybeRenderEditPanel() {
     if (isEditing) {
@@ -419,12 +413,6 @@ const PerformerPage: React.FC<IProps> = ({ performer, tabKey }) => {
   function maybeRenderCompressedDetails() {
     if (!isEditing && loadStickyHeader) {
       return <CompressedPerformerDetailsPanel performer={performer} />;
-    }
-  }
-
-  function maybeRenderTab() {
-    if (!isEditing) {
-      return renderTabs();
     }
   }
 
@@ -565,7 +553,15 @@ const PerformerPage: React.FC<IProps> = ({ performer, tabKey }) => {
       {maybeRenderCompressedDetails()}
       <div className="detail-body">
         <div className="performer-body">
-          <div className="performer-tabs">{maybeRenderTab()}</div>
+          <div className="performer-tabs">
+            {!isEditing && (
+              <PerformerTabs
+                tabKey={tabKey}
+                performer={performer}
+                abbreviateCounter={abbreviateCounter}
+              />
+            )}
+          </div>
         </div>
       </div>
     </div>
