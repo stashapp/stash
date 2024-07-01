@@ -798,7 +798,8 @@
         "performers": "{count, plural, one {演员} other {演员}}",
         "scenes": "{count, plural, one {短片} other {短片}}",
         "studios": "{count, plural, one {工作室} other {工作室}}",
-        "tags": "{count, plural, one {标签} other {标签}}"
+        "tags": "{count, plural, one {标签} other {标签}}",
+        "groups": "{count, plural, one {群组} other {群组}}"
     },
     "country": "国家",
     "cover_image": "封面图片",
@@ -1466,5 +1467,9 @@
     },
     "o_count": "高潮次数",
     "studio_tags": "工作室标签",
-    "studio_count": "工作室计数"
+    "studio_count": "工作室计数",
+    "group": "群组",
+    "group_count": "群组总计",
+    "group_scene_number": "短片序号",
+    "groups": "群组"
 }
