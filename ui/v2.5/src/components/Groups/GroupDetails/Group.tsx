@@ -36,7 +36,7 @@ import { useRatingKeybinds } from "src/hooks/keybinds";
 import { useLoadStickyHeader } from "src/hooks/detailsPanel";
 import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
 import { ExternalLinksButton } from "src/components/Shared/ExternalLinksButton";
-import { BackgroundImage } from "src/components/Shared/BackgroundImage";
+import { BackgroundImage } from "src/components/Shared/DetailsPage/BackgroundImage";
 
 interface IProps {
   group: GQL.GroupDataFragment;
