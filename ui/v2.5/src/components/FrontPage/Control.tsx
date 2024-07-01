@@ -43,7 +43,8 @@ const RecommendationRow: React.FC<IFilter> = ({ mode, filter, header }) => {
           header={header}
         />
       );
-    case (GQL.FilterMode.Movies, GQL.FilterMode.Groups):
+    case GQL.FilterMode.Movies:
+    case GQL.FilterMode.Groups:
       return (
         <GroupRecommendationRow
           isTouch={isTouch}
