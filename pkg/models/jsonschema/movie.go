@@ -23,6 +23,7 @@ type Movie struct {
 	BackImage  string        `json:"back_image,omitempty"`
 	URLs       []string      `json:"urls,omitempty"`
 	Studio     string        `json:"studio,omitempty"`
+	Tags       []string      `json:"tags,omitempty"`
 	CreatedAt  json.JSONTime `json:"created_at,omitempty"`
 	UpdatedAt  json.JSONTime `json:"updated_at,omitempty"`
 

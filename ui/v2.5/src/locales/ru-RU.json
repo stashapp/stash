@@ -252,7 +252,9 @@
             "successfully_cancelled_temporary_behaviour": "Временно запущенный сервис DLNA, успешно отключен",
             "until_restart": "до перезагрузки",
             "video_sort_order": "Порядок сортировки видео по умолчанию",
-            "video_sort_order_desc": "Порядок сортировки видео по умолчанию."
+            "video_sort_order_desc": "Порядок сортировки видео по умолчанию.",
+            "server_port_desc": "Порт DLNA-сервера. После изменения требуется перезапуск DLNA.",
+            "server_port": "Порт DLNA"
         },
         "general": {
             "auth": {

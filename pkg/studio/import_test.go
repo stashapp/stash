@@ -16,13 +16,19 @@ const invalidImage = "aW1hZ2VCeXRlcw&&"
 
 const (
 	studioNameErr      = "studioNameErr"
-	existingStudioName = "existingTagName"
+	existingStudioName = "existingStudioName"
 
 	existingStudioID = 100
+	existingTagID    = 105
+	errTagsID        = 106
 
 	existingParentStudioName = "existingParentStudioName"
 	existingParentStudioErr  = "existingParentStudioErr"
 	missingParentStudioName  = "existingParentStudioName"
+
+	existingTagName = "existingTagName"
+	existingTagErr  = "existingTagErr"
+	missingTagName  = "missingTagName"
 )
 
 var testCtx = context.Background()
@@ -65,6 +71,97 @@ func TestImporterPreImport(t *testing.T) {
 	expectedStudio := createFullStudio(0, 0)
 	expectedStudio.ParentID = nil
 	assert.Equal(t, expectedStudio, i.studio)
+}
+
+func TestImporterPreImportWithTag(t *testing.T) {
+	db := mocks.NewDatabase()
+
+	i := Importer{
+		ReaderWriter:        db.Studio,
+		TagWriter:           db.Tag,
+		MissingRefBehaviour: models.ImportMissingRefEnumFail,
+		Input: jsonschema.Studio{
+			Tags: []string{
+				existingTagName,
+			},
+		},
+	}
+
+	db.Tag.On("FindByNames", testCtx, []string{existingTagName}, false).Return([]*models.Tag{
+		{
+			ID:   existingTagID,
+			Name: existingTagName,
+		},
+	}, nil).Once()
+	db.Tag.On("FindByNames", testCtx, []string{existingTagErr}, false).Return(nil, errors.New("FindByNames error")).Once()
+
+	err := i.PreImport(testCtx)
+	assert.Nil(t, err)
+	assert.Equal(t, existingTagID, i.studio.TagIDs.List()[0])
+
+	i.Input.Tags = []string{existingTagErr}
+	err = i.PreImport(testCtx)
+	assert.NotNil(t, err)
+
+	db.AssertExpectations(t)
+}
+
+func TestImporterPreImportWithMissingTag(t *testing.T) {
+	db := mocks.NewDatabase()
+
+	i := Importer{
+		ReaderWriter: db.Studio,
+		TagWriter:    db.Tag,
+		Input: jsonschema.Studio{
+			Tags: []string{
+				missingTagName,
+			},
+		},
+		MissingRefBehaviour: models.ImportMissingRefEnumFail,
+	}
+
+	db.Tag.On("FindByNames", testCtx, []string{missingTagName}, false).Return(nil, nil).Times(3)
+	db.Tag.On("Create", testCtx, mock.AnythingOfType("*models.Tag")).Run(func(args mock.Arguments) {
+		t := args.Get(1).(*models.Tag)
+		t.ID = existingTagID
+	}).Return(nil)
+
+	err := i.PreImport(testCtx)
+	assert.NotNil(t, err)
+
+	i.MissingRefBehaviour = models.ImportMissingRefEnumIgnore
+	err = i.PreImport(testCtx)
+	assert.Nil(t, err)
+
+	i.MissingRefBehaviour = models.ImportMissingRefEnumCreate
+	err = i.PreImport(testCtx)
+	assert.Nil(t, err)
+	assert.Equal(t, existingTagID, i.studio.TagIDs.List()[0])
+
+	db.AssertExpectations(t)
+}
+
+func TestImporterPreImportWithMissingTagCreateErr(t *testing.T) {
+	db := mocks.NewDatabase()
+
+	i := Importer{
+		ReaderWriter: db.Studio,
+		TagWriter:    db.Tag,
+		Input: jsonschema.Studio{
+			Tags: []string{
+				missingTagName,
+			},
+		},
+		MissingRefBehaviour: models.ImportMissingRefEnumCreate,
+	}
+
+	db.Tag.On("FindByNames", testCtx, []string{missingTagName}, false).Return(nil, nil).Once()
+	db.Tag.On("Create", testCtx, mock.AnythingOfType("*models.Tag")).Return(errors.New("Create error"))
+
+	err := i.PreImport(testCtx)
+	assert.NotNil(t, err)
+
+	db.AssertExpectations(t)
 }
 
 func TestImporterPreImportWithParent(t *testing.T) {
@@ -156,6 +253,7 @@ func TestImporterPostImport(t *testing.T) {
 
 	i := Importer{
 		ReaderWriter: db.Studio,
+		TagWriter:    db.Tag,
 		Input: jsonschema.Studio{
 			Aliases: []string{"alias"},
 		},
@@ -181,6 +279,7 @@ func TestImporterFindExistingID(t *testing.T) {
 
 	i := Importer{
 		ReaderWriter: db.Studio,
+		TagWriter:    db.Tag,
 		Input: jsonschema.Studio{
 			Name: studioName,
 		},
@@ -223,6 +322,7 @@ func TestCreate(t *testing.T) {
 
 	i := Importer{
 		ReaderWriter: db.Studio,
+		TagWriter:    db.Tag,
 		studio:       studio,
 	}
 
@@ -258,6 +358,7 @@ func TestUpdate(t *testing.T) {
 
 	i := Importer{
 		ReaderWriter: db.Studio,
+		TagWriter:    db.Tag,
 		studio:       studio,
 	}
 

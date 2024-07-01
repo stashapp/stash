@@ -29,7 +29,7 @@ import { useFormik } from "formik";
 import { Prompt } from "react-router-dom";
 import { ConfigurationContext } from "src/hooks/Config";
 import { stashboxDisplayName } from "src/utils/stashbox";
-import { IMovieEntry, SceneMovieTable } from "./SceneMovieTable";
+import { IGroupEntry, SceneGroupTable } from "./SceneMovieTable";
 import { faSearch, faSyncAlt } from "@fortawesome/free-solid-svg-icons";
 import { objectTitle } from "src/core/files";
 import { galleryTitle } from "src/core/galleries";
@@ -45,10 +45,10 @@ import {
   PerformerSelect,
 } from "src/components/Performers/PerformerSelect";
 import { formikUtils } from "src/utils/form";
-import { Tag, TagSelect } from "src/components/Tags/TagSelect";
 import { Studio, StudioSelect } from "src/components/Studios/StudioSelect";
 import { Gallery, GallerySelect } from "src/components/Galleries/GallerySelect";
-import { Movie } from "src/components/Movies/MovieSelect";
+import { Group } from "src/components/Movies/MovieSelect";
+import { useTagsEdit } from "src/hooks/tagsEdit";
 
 const SceneScrapeDialog = lazyComponent(() => import("./SceneScrapeDialog"));
 const SceneQueryModal = lazyComponent(() => import("./SceneQueryModal"));
@@ -75,8 +75,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
   const [galleries, setGalleries] = useState<Gallery[]>([]);
   const [performers, setPerformers] = useState<Performer[]>([]);
-  const [movies, setMovies] = useState<Movie[]>([]);
-  const [tags, setTags] = useState<Tag[]>([]);
+  const [groups, setGroups] = useState<Group[]>([]);
   const [studio, setStudio] = useState<Studio | null>(null);
 
   const Scrapers = useListSceneScrapers();
@@ -105,12 +104,8 @@ export const SceneEditPanel: React.FC<IProps> = ({
   }, [scene.performers]);
 
   useEffect(() => {
-    setMovies(scene.movies?.map((m) => m.movie) ?? []);
+    setGroups(scene.movies?.map((m) => m.movie) ?? []);
   }, [scene.movies]);
-
-  useEffect(() => {
-    setTags(scene.tags ?? []);
-  }, [scene.tags]);
 
   useEffect(() => {
     setStudio(scene.studio ?? null);
@@ -174,6 +169,11 @@ export const SceneEditPanel: React.FC<IProps> = ({
     onSubmit: (values) => onSave(schema.cast(values)),
   });
 
+  const { tags, updateTagsStateFromScraper, tagsControl } = useTagsEdit(
+    scene.tags,
+    (ids) => formik.setFieldValue("tag_ids", ids)
+  );
+
   const coverImagePreview = useMemo(() => {
     const sceneImage = scene.paths?.screenshot;
     const formImage = formik.values.cover_image;
@@ -191,12 +191,12 @@ export const SceneEditPanel: React.FC<IProps> = ({
     return formik.values.movies
       .map((m) => {
         return {
-          movie: movies.find((mm) => mm.id === m.movie_id),
+          movie: groups.find((mm) => mm.id === m.movie_id),
           scene_index: m.scene_index,
         };
       })
-      .filter((m) => m.movie !== undefined) as IMovieEntry[];
-  }, [formik.values.movies, movies]);
+      .filter((m) => m.movie !== undefined) as IGroupEntry[];
+  }, [formik.values.movies, groups]);
 
   function onSetGalleries(items: Gallery[]) {
     setGalleries(items);
@@ -210,14 +210,6 @@ export const SceneEditPanel: React.FC<IProps> = ({
     setPerformers(items);
     formik.setFieldValue(
       "performer_ids",
-      items.map((item) => item.id)
-    );
-  }
-
-  function onSetTags(items: Tag[]) {
-    setTags(items);
-    formik.setFieldValue(
-      "tag_ids",
       items.map((item) => item.id)
     );
   }
@@ -261,8 +253,8 @@ export const SceneEditPanel: React.FC<IProps> = ({
     setQueryableScrapers(newQueryableScrapers);
   }, [Scrapers, stashConfig]);
 
-  function onSetMovies(items: Movie[]) {
-    setMovies(items);
+  function onSetGroups(items: Group[]) {
+    setGroups(items);
 
     const existingMovies = formik.values.movies;
 
@@ -394,7 +386,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
         sceneStudio={studio}
         sceneTags={tags}
         scenePerformers={performers}
-        sceneMovies={movies}
+        sceneGroups={groups}
         scraped={scrapedScene}
         endpoint={endpoint}
         onClose={(s) => onScrapeDialogClosed(s)}
@@ -582,7 +574,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
       });
 
       if (idMovis.length > 0) {
-        onSetMovies(
+        onSetGroups(
           idMovis.map((p) => {
             return {
               id: p.stored_id!,
@@ -593,23 +585,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
       }
     }
 
-    if (updatedScene?.tags?.length) {
-      const idTags = updatedScene.tags.filter((p) => {
-        return p.stored_id !== undefined && p.stored_id !== null;
-      });
-
-      if (idTags.length > 0) {
-        onSetTags(
-          idTags.map((p) => {
-            return {
-              id: p.stored_id!,
-              name: p.name ?? "",
-              aliases: [],
-            };
-          })
-        );
-      }
-    }
+    updateTagsStateFromScraper(updatedScene.tags ?? undefined);
 
     if (updatedScene.image) {
       // image is a base64 string
@@ -749,8 +725,8 @@ export const SceneEditPanel: React.FC<IProps> = ({
     return renderField("performer_ids", title, control, fullWidthProps);
   }
 
-  function onSetMovieEntries(input: IMovieEntry[]) {
-    setMovies(input.map((m) => m.movie));
+  function onSetMovieEntries(input: IGroupEntry[]) {
+    setGroups(input.map((m) => m.movie));
 
     const newMovies = input.map((m) => ({
       movie_id: m.movie.id,
@@ -761,9 +737,9 @@ export const SceneEditPanel: React.FC<IProps> = ({
   }
 
   function renderMoviesField() {
-    const title = intl.formatMessage({ id: "movies" });
+    const title = intl.formatMessage({ id: "groups" });
     const control = (
-      <SceneMovieTable value={movieEntries} onUpdate={onSetMovieEntries} />
+      <SceneGroupTable value={movieEntries} onUpdate={onSetMovieEntries} />
     );
 
     return renderField("movies", title, control, fullWidthProps);
@@ -771,16 +747,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
   function renderTagsField() {
     const title = intl.formatMessage({ id: "tags" });
-    const control = (
-      <TagSelect
-        isMulti
-        onSelect={onSetTags}
-        values={tags}
-        hoverPlacement="right"
-      />
-    );
-
-    return renderField("tag_ids", title, control, fullWidthProps);
+    return renderField("tag_ids", title, tagsControl(), fullWidthProps);
   }
 
   function renderDetailsField() {

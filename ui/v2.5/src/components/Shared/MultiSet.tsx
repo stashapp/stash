@@ -10,7 +10,7 @@ import {
 } from "../Galleries/GallerySelect";
 
 interface IMultiSetProps {
-  type: "performers" | "studios" | "tags" | "movies" | "galleries";
+  type: "performers" | "studios" | "tags" | "groups" | "galleries";
   existingIds?: string[];
   ids?: string[];
   mode: GQL.BulkUpdateIdMode;

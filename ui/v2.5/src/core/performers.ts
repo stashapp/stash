@@ -90,9 +90,9 @@ export const scrapedPerformerToCreateInput = (
 
   const input: GQL.PerformerCreateInput = {
     name: toCreate.name ?? "",
-    url: toCreate.url,
     gender: stringToGender(toCreate.gender),
     birthdate: toCreate.birthdate,
+    disambiguation: toCreate.disambiguation,
     ethnicity: toCreate.ethnicity,
     country: toCreate.country,
     eye_color: toCreate.eye_color,
@@ -103,8 +103,7 @@ export const scrapedPerformerToCreateInput = (
     tattoos: toCreate.tattoos,
     piercings: toCreate.piercings,
     alias_list: aliases,
-    twitter: toCreate.twitter,
-    instagram: toCreate.instagram,
+    urls: toCreate.urls,
     tag_ids: filterData((toCreate.tags ?? []).map((t) => t.stored_id)),
     image:
       (toCreate.images ?? []).length > 0

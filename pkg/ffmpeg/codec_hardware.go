@@ -4,7 +4,9 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"math"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/stashapp/stash/pkg/logger"
@@ -25,7 +27,7 @@ var (
 	VideoCodecVVPX VideoCodec = "vp8_vaapi"
 )
 
-const minHeight int = 256
+const minHeight int = 480
 
 // Tests all (given) hardware codec's
 func (f *FFMpeg) InitHWSupport(ctx context.Context) {
@@ -38,17 +40,19 @@ func (f *FFMpeg) InitHWSupport(ctx context.Context) {
 		VideoCodecR264,
 		VideoCodecIVP9,
 		VideoCodecVVP9,
+		VideoCodecM264,
 	} {
 		var args Args
 		args = append(args, "-hide_banner")
 		args = args.LogLevel(LogLevelWarning)
 		args = f.hwDeviceInit(args, codec, false)
 		args = args.Format("lavfi")
-		args = args.Input(fmt.Sprintf("color=c=red:s=%dx%d", 1280, 720))
+		vFile := &models.VideoFile{Width: 1280, Height: 720}
+		args = args.Input(fmt.Sprintf("color=c=red:s=%dx%d", vFile.Width, vFile.Height))
 		args = args.Duration(0.1)
 
 		// Test scaling
-		videoFilter := f.hwMaxResFilter(codec, 1280, 720, minHeight, false)
+		videoFilter := f.hwMaxResFilter(codec, vFile, minHeight, false)
 		args = append(args, CodecInit(codec)...)
 		args = args.VideoFilter(videoFilter)
 
@@ -93,9 +97,9 @@ func (f *FFMpeg) hwCanFullHWTranscode(ctx context.Context, codec VideoCodec, vf 
 	args = args.XError()
 	args = f.hwDeviceInit(args, codec, true)
 	args = args.Input(vf.Path)
-	args = args.Duration(0.1)
+	args = args.Duration(1)
 
-	videoFilter := f.hwMaxResFilter(codec, vf.Width, vf.Height, reqHeight, true)
+	videoFilter := f.hwMaxResFilter(codec, vf, reqHeight, true)
 	args = append(args, CodecInit(codec)...)
 	args = args.VideoFilter(videoFilter)
 
@@ -128,12 +132,12 @@ func (f *FFMpeg) hwDeviceInit(args Args, toCodec VideoCodec, fullhw bool) Args {
 		args = append(args, "-hwaccel_device")
 		args = append(args, "0")
 		if fullhw {
+			args = append(args, "-threads")
+			args = append(args, "1")
 			args = append(args, "-hwaccel")
 			args = append(args, "cuda")
 			args = append(args, "-hwaccel_output_format")
 			args = append(args, "cuda")
-			args = append(args, "-extra_hw_frames")
-			args = append(args, "5")
 		}
 	case VideoCodecV264,
 		VideoCodecVVP9:
@@ -158,6 +162,16 @@ func (f *FFMpeg) hwDeviceInit(args Args, toCodec VideoCodec, fullhw bool) Args {
 			args = append(args, "-filter_hw_device")
 			args = append(args, "hw")
 		}
+	case VideoCodecM264:
+		if fullhw {
+			args = append(args, "-hwaccel")
+			args = append(args, "videotoolbox")
+			args = append(args, "-hwaccel_output_format")
+			args = append(args, "videotoolbox_vld")
+		} else {
+			args = append(args, "-init_hw_device")
+			args = append(args, "videotoolbox=vt")
+		}
 	}
 
 	return args
@@ -175,7 +189,7 @@ func (f *FFMpeg) hwFilterInit(toCodec VideoCodec, fullhw bool) VideoFilter {
 		}
 	case VideoCodecN264:
 		if !fullhw {
-			videoFilter = videoFilter.Append("format=nv12")
+			videoFilter = videoFilter.Append("format=yuv420p")
 			videoFilter = videoFilter.Append("hwupload_cuda")
 		}
 	case VideoCodecI264,
@@ -184,23 +198,54 @@ func (f *FFMpeg) hwFilterInit(toCodec VideoCodec, fullhw bool) VideoFilter {
 			videoFilter = videoFilter.Append("hwupload=extra_hw_frames=64")
 			videoFilter = videoFilter.Append("format=qsv")
 		}
+	case VideoCodecM264:
+		if !fullhw {
+			videoFilter = videoFilter.Append("format=nv12")
+			videoFilter = videoFilter.Append("hwupload")
+		}
 	}
 
 	return videoFilter
 }
 
-var scaler_re = regexp.MustCompile(`scale=(?P<value>[-\d]+:[-\d]+)`)
+var scaler_re = regexp.MustCompile(`scale=(?P<value>([-\d]+):([-\d]+))`)
 
-func templateReplaceScale(input string, template string, match []int, minusonehack bool) string {
+func templateReplaceScale(input string, template string, match []int, vf *models.VideoFile, minusonehack bool) string {
 	result := []byte{}
 
-	res := string(scaler_re.ExpandString(result, template, input, match))
-
-	// BUG: [scale_qsv]: Size values less than -1 are not acceptable.
-	// Fix: Replace all instances of -2 with -1 in a scale operation
 	if minusonehack {
-		res = strings.ReplaceAll(res, "-2", "-1")
+		// Parse width and height
+		w, err := strconv.Atoi(input[match[4]:match[5]])
+		if err != nil {
+			logger.Error("failed to parse width")
+			return input
+		}
+		h, err := strconv.Atoi(input[match[6]:match[7]])
+		if err != nil {
+			logger.Error("failed to parse height")
+			return input
+		}
+
+		// Calculate ratio
+		ratio := float64(vf.Width) / float64(vf.Height)
+		if w < 0 {
+			w = int(math.Round(float64(h) * ratio))
+		} else if h < 0 {
+			h = int(math.Round(float64(w) / ratio))
+		}
+
+		// Fix not divisible by 2 errors
+		if w%2 != 0 {
+			w++
+		}
+		if h%2 != 0 {
+			h++
+		}
+
+		template = strings.ReplaceAll(template, "$value", fmt.Sprintf("%d:%d", w, h))
 	}
+
+	res := string(scaler_re.ExpandString(result, template, input, match))
 
 	matchStart := match[0]
 	matchEnd := match[1]
@@ -208,56 +253,91 @@ func templateReplaceScale(input string, template string, match []int, minusoneha
 	return input[0:matchStart] + res + input[matchEnd:]
 }
 
-// Replace video filter scaling with hardware scaling for full hardware transcoding
-func (f *FFMpeg) hwCodecFilter(args VideoFilter, codec VideoCodec, fullhw bool) VideoFilter {
+// Replace video filter scaling with hardware scaling for full hardware transcoding (also fixes the format)
+func (f *FFMpeg) hwCodecFilter(args VideoFilter, codec VideoCodec, vf *models.VideoFile, fullhw bool) VideoFilter {
 	sargs := string(args)
 
 	match := scaler_re.FindStringSubmatchIndex(sargs)
 	if match == nil {
-		return args
+		return f.hwApplyFullHWFilter(args, codec, fullhw)
 	}
 
+	return f.hwApplyScaleTemplate(sargs, codec, match, vf, fullhw)
+}
+
+// Apply format switching if applicable
+func (f *FFMpeg) hwApplyFullHWFilter(args VideoFilter, codec VideoCodec, fullhw bool) VideoFilter {
 	switch codec {
 	case VideoCodecN264:
-		template := "scale_cuda=$value"
-		// In 10bit inputs you might get an error like "10 bit encode not supported"
-		if fullhw && f.version.major >= 5 {
-			template += ":format=nv12"
+		if fullhw && f.version.Gteq(FFMpegVersion{major: 5}) { // Added in FFMpeg 5
+			args = args.Append("scale_cuda=format=yuv420p")
 		}
-		args = VideoFilter(templateReplaceScale(sargs, template, match, false))
-	case VideoCodecV264,
-		VideoCodecVVP9:
-		template := "scale_vaapi=$value"
-		args = VideoFilter(templateReplaceScale(sargs, template, match, false))
-	case VideoCodecI264,
-		VideoCodecIVP9:
-		template := "scale_qsv=$value"
-		args = VideoFilter(templateReplaceScale(sargs, template, match, true))
+	case VideoCodecV264, VideoCodecVVP9:
+		if fullhw && f.version.Gteq(FFMpegVersion{major: 3, minor: 1}) { // Added in FFMpeg 3.1
+			args = args.Append("scale_vaapi=format=nv12")
+		}
+	case VideoCodecI264, VideoCodecIVP9:
+		if fullhw && f.version.Gteq(FFMpegVersion{major: 3, minor: 3}) { // Added in FFMpeg 3.3
+			args = args.Append("scale_qsv=format=nv12")
+		}
 	}
 
 	return args
 }
 
+// Switch scaler
+func (f *FFMpeg) hwApplyScaleTemplate(sargs string, codec VideoCodec, match []int, vf *models.VideoFile, fullhw bool) VideoFilter {
+	var template string
+
+	switch codec {
+	case VideoCodecN264:
+		template = "scale_cuda=$value"
+		if fullhw && f.version.Gteq(FFMpegVersion{major: 5}) { // Added in FFMpeg 5
+			template += ":format=yuv420p"
+		}
+	case VideoCodecV264, VideoCodecVVP9:
+		template = "scale_vaapi=$value"
+		if fullhw && f.version.Gteq(FFMpegVersion{major: 3, minor: 1}) { // Added in FFMpeg 3.1
+			template += ":format=nv12"
+		}
+	case VideoCodecI264, VideoCodecIVP9:
+		template = "scale_qsv=$value"
+		if fullhw && f.version.Gteq(FFMpegVersion{major: 3, minor: 3}) { // Added in FFMpeg 3.3
+			template += ":format=nv12"
+		}
+	case VideoCodecM264:
+		template = "scale_vt=$value"
+	default:
+		return VideoFilter(sargs)
+	}
+
+	// BUG: [scale_qsv]: Size values less than -1 are not acceptable.
+	isIntel := codec == VideoCodecI264 || codec == VideoCodecIVP9
+	// BUG: scale_vt doesn't call ff_scale_adjust_dimensions, thus cant accept negative size values
+	isApple := codec == VideoCodecM264
+	return VideoFilter(templateReplaceScale(sargs, template, match, vf, isIntel || isApple))
+}
+
 // Returns the max resolution for a given codec, or a default
-func (f *FFMpeg) hwCodecMaxRes(codec VideoCodec, dW int, dH int) (int, int) {
+func (f *FFMpeg) hwCodecMaxRes(codec VideoCodec) (int, int) {
 	switch codec {
 	case VideoCodecN264,
 		VideoCodecI264:
 		return 4096, 4096
 	}
 
-	return dW, dH
+	return 0, 0
 }
 
 // Return a maxres filter
-func (f *FFMpeg) hwMaxResFilter(toCodec VideoCodec, width int, height int, reqHeight int, fullhw bool) VideoFilter {
-	if width == 0 || height == 0 {
+func (f *FFMpeg) hwMaxResFilter(toCodec VideoCodec, vf *models.VideoFile, reqHeight int, fullhw bool) VideoFilter {
+	if vf.Width == 0 || vf.Height == 0 {
 		return ""
 	}
 	videoFilter := f.hwFilterInit(toCodec, fullhw)
-	maxWidth, maxHeight := f.hwCodecMaxRes(toCodec, width, height)
-	videoFilter = videoFilter.ScaleMaxLM(width, height, reqHeight, maxWidth, maxHeight)
-	return f.hwCodecFilter(videoFilter, toCodec, fullhw)
+	maxWidth, maxHeight := f.hwCodecMaxRes(toCodec)
+	videoFilter = videoFilter.ScaleMaxLM(vf.Width, vf.Height, reqHeight, maxWidth, maxHeight)
+	return f.hwCodecFilter(videoFilter, toCodec, vf, fullhw)
 }
 
 // Return if a hardware accelerated for HLS is available
@@ -267,7 +347,8 @@ func (f *FFMpeg) hwCodecHLSCompatible() *VideoCodec {
 		case VideoCodecN264,
 			VideoCodecI264,
 			VideoCodecV264,
-			VideoCodecR264:
+			VideoCodecR264,
+			VideoCodecM264: // Note that the Apple encoder sucks at startup, thus HLS quality is crap
 			return &element
 		}
 	}
@@ -279,7 +360,8 @@ func (f *FFMpeg) hwCodecMP4Compatible() *VideoCodec {
 	for _, element := range f.hwCodecSupport {
 		switch element {
 		case VideoCodecN264,
-			VideoCodecI264:
+			VideoCodecI264,
+			VideoCodecM264:
 			return &element
 		}
 	}

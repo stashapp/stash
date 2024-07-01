@@ -3,18 +3,19 @@ import * as GQL from "src/core/generated-graphql";
 import { MoviesCriterion } from "src/models/list-filter/criteria/movies";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { SceneList } from "src/components/Scenes/SceneList";
+import { View } from "src/components/List/views";
 
-interface IMovieScenesPanel {
+interface IGroupScenesPanel {
   active: boolean;
-  movie: GQL.MovieDataFragment;
+  group: GQL.MovieDataFragment;
 }
 
-export const MovieScenesPanel: React.FC<IMovieScenesPanel> = ({
+export const GroupScenesPanel: React.FC<IGroupScenesPanel> = ({
   active,
-  movie,
+  group,
 }) => {
   function filterHook(filter: ListFilterModel) {
-    const movieValue = { id: movie.id, label: movie.name };
+    const movieValue = { id: group.id, label: group.name };
     // if movie is already present, then we modify it, otherwise add
     let movieCriterion = filter.criteria.find((c) => {
       return c.criterionOption.type === "movies";
@@ -28,7 +29,7 @@ export const MovieScenesPanel: React.FC<IMovieScenesPanel> = ({
       // add the movie if not present
       if (
         !movieCriterion.value.find((p) => {
-          return p.id === movie.id;
+          return p.id === group.id;
         })
       ) {
         movieCriterion.value.push(movieValue);
@@ -45,12 +46,13 @@ export const MovieScenesPanel: React.FC<IMovieScenesPanel> = ({
     return filter;
   }
 
-  if (movie && movie.id) {
+  if (group && group.id) {
     return (
       <SceneList
         filterHook={filterHook}
         defaultSort="movie_scene_number"
         alterQuery={active}
+        view={View.GroupScenes}
       />
     );
   }

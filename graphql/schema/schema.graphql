@@ -4,6 +4,7 @@ type Query {
   findSavedFilter(id: ID!): SavedFilter
   findSavedFilters(mode: FilterMode): [SavedFilter!]!
   findDefaultFilter(mode: FilterMode!): SavedFilter
+    @deprecated(reason: "default filter now stored in UI config")
 
   "Find a scene by ID or Checksum"
   findScene(id: ID, checksum: String): Scene
@@ -345,6 +346,7 @@ type Mutation {
   saveFilter(input: SaveFilterInput!): SavedFilter!
   destroySavedFilter(input: DestroyFilterInput!): Boolean!
   setDefaultFilter(input: SetDefaultFilterInput!): Boolean!
+    @deprecated(reason: "now uses UI config")
 
   "Change general configuration options"
   configureGeneral(input: ConfigGeneralInput!): ConfigGeneralResult!

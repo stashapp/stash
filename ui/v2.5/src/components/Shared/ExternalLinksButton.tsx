@@ -7,7 +7,8 @@ import { IconDefinition, faLink } from "@fortawesome/free-solid-svg-icons";
 export const ExternalLinksButton: React.FC<{
   icon?: IconDefinition;
   urls: string[];
-}> = ({ urls, icon = faLink }) => {
+  className?: string;
+}> = ({ urls, icon = faLink, className = "" }) => {
   if (!urls.length) {
     return null;
   }
@@ -17,7 +18,7 @@ export const ExternalLinksButton: React.FC<{
       <Button
         as={ExternalLink}
         href={TextUtils.sanitiseURL(urls[0])}
-        className="minimal link external-links-button"
+        className={`minimal link external-links-button ${className}`}
         title={urls[0]}
       >
         <Icon icon={icon} />
@@ -27,7 +28,7 @@ export const ExternalLinksButton: React.FC<{
 
   return (
     <Dropdown className="external-links-button">
-      <Dropdown.Toggle as={Button} className="minimal link">
+      <Dropdown.Toggle as={Button} className={`minimal link ${className}`}>
         <Icon icon={icon} />
       </Dropdown.Toggle>
 

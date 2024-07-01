@@ -2,15 +2,15 @@ import React from "react";
 import { Route, Switch } from "react-router-dom";
 import { Helmet } from "react-helmet";
 import { useTitleProps } from "src/hooks/title";
-import { PersistanceLevel } from "../List/ItemList";
 import Image from "./ImageDetails/Image";
 import { ImageList } from "./ImageList";
 import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
+import { View } from "../List/views";
 
 const Images: React.FC = () => {
   useScrollToTopOnMount();
 
-  return <ImageList persistState={PersistanceLevel.ALL} />;
+  return <ImageList view={View.Images} />;
 };
 
 const ImageRoutes: React.FC = () => {

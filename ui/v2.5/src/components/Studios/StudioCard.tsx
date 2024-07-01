@@ -6,13 +6,17 @@ import {
   GridCard,
   calculateCardWidth,
 } from "src/components/Shared/GridCard/GridCard";
-import { ButtonGroup } from "react-bootstrap";
+import { HoverPopover } from "../Shared/HoverPopover";
+import { Icon } from "../Shared/Icon";
+import { TagLink } from "../Shared/TagLink";
+import { Button, ButtonGroup } from "react-bootstrap";
 import { FormattedMessage } from "react-intl";
 import { PopoverCountButton } from "../Shared/PopoverCountButton";
 import { RatingBanner } from "../Shared/RatingBanner";
 import ScreenUtils from "src/utils/screen";
 import { FavoriteIcon } from "../Shared/FavoriteIcon";
 import { useStudioUpdate } from "src/core/StashService";
+import { faTag } from "@fortawesome/free-solid-svg-icons";
 
 interface IProps {
   studio: GQL.StudioDataFragment;
@@ -138,15 +142,15 @@ export const StudioCard: React.FC<IProps> = ({
     );
   }
 
-  function maybeRenderMoviesPopoverButton() {
+  function maybeRenderGroupsPopoverButton() {
     if (!studio.movie_count) return;
 
     return (
       <PopoverCountButton
-        className="movie-count"
-        type="movie"
+        className="group-count"
+        type="group"
         count={studio.movie_count}
-        url={NavUtils.makeStudioMoviesUrl(studio)}
+        url={NavUtils.makeStudioGroupsUrl(studio)}
       />
     );
   }
@@ -164,23 +168,42 @@ export const StudioCard: React.FC<IProps> = ({
     );
   }
 
+  function maybeRenderTagPopoverButton() {
+    if (studio.tags.length <= 0) return;
+
+    const popoverContent = studio.tags.map((tag) => (
+      <TagLink key={tag.id} linkType="studio" tag={tag} />
+    ));
+
+    return (
+      <HoverPopover placement="bottom" content={popoverContent}>
+        <Button className="minimal tag-count">
+          <Icon icon={faTag} />
+          <span>{studio.tags.length}</span>
+        </Button>
+      </HoverPopover>
+    );
+  }
+
   function maybeRenderPopoverButtonGroup() {
     if (
       studio.scene_count ||
       studio.image_count ||
       studio.gallery_count ||
       studio.movie_count ||
-      studio.performer_count
+      studio.performer_count ||
+      studio.tags.length > 0
     ) {
       return (
         <>
           <hr />
           <ButtonGroup className="card-popovers">
             {maybeRenderScenesPopoverButton()}
-            {maybeRenderMoviesPopoverButton()}
+            {maybeRenderGroupsPopoverButton()}
             {maybeRenderImagesPopoverButton()}
             {maybeRenderGalleriesPopoverButton()}
             {maybeRenderPerformersPopoverButton()}
+            {maybeRenderTagPopoverButton()}
           </ButtonGroup>
         </>
       );

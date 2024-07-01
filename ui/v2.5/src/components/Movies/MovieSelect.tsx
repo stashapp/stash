@@ -30,13 +30,13 @@ import { sortByRelevance } from "src/utils/query";
 import { PatchComponent, PatchFunction } from "src/patch";
 import { TruncatedText } from "../Shared/TruncatedText";
 
-export type Movie = Pick<
+export type Group = Pick<
   GQL.Movie,
   "id" | "name" | "date" | "front_image_path" | "aliases"
 > & {
   studio?: Pick<GQL.Studio, "name"> | null;
 };
-type Option = SelectOption<Movie>;
+type Option = SelectOption<Group>;
 
 type FindMoviesResult = Awaited<
   ReturnType<typeof queryFindMoviesForSelect>
@@ -56,9 +56,9 @@ const movieSelectSort = PatchFunction(
   sortMoviesByRelevance
 );
 
-const _MovieSelect: React.FC<
+const _GroupSelect: React.FC<
   IFilterProps &
-    IFilterValueProps<Movie> & {
+    IFilterValueProps<Group> & {
       hoverPlacement?: Placement;
       excludeIds?: string[];
     }
@@ -94,7 +94,7 @@ const _MovieSelect: React.FC<
     }));
   }
 
-  const MovieOption: React.FC<OptionProps<Option, boolean>> = (optionProps) => {
+  const GroupOption: React.FC<OptionProps<Option, boolean>> = (optionProps) => {
     let thisOptionProps = optionProps;
 
     const { object } = optionProps.data;
@@ -111,24 +111,24 @@ const _MovieSelect: React.FC<
     thisOptionProps = {
       ...optionProps,
       children: (
-        <span className="movie-select-option">
-          <span className="movie-select-row">
+        <span className="group-select-option">
+          <span className="group-select-row">
             {object.front_image_path && (
               <img
-                className="movie-select-image"
+                className="group-select-image"
                 src={object.front_image_path}
                 loading="lazy"
               />
             )}
 
-            <span className="movie-select-details">
+            <span className="group-select-details">
               <TruncatedText
-                className="movie-select-title"
+                className="group-select-title"
                 text={
                   <span>
                     {title}
                     {alias && (
-                      <span className="movie-select-alias">{` (${alias})`}</span>
+                      <span className="group-select-alias">{` (${alias})`}</span>
                     )}
                   </span>
                 }
@@ -136,13 +136,13 @@ const _MovieSelect: React.FC<
               />
 
               {object.studio?.name && (
-                <span className="movie-select-studio">
+                <span className="group-select-studio">
                   {object.studio?.name}
                 </span>
               )}
 
               {object.date && (
-                <span className="movie-select-date">{object.date}</span>
+                <span className="group-select-date">{object.date}</span>
               )}
             </span>
           </span>
@@ -153,7 +153,7 @@ const _MovieSelect: React.FC<
     return <reactSelectComponents.Option {...thisOptionProps} />;
   };
 
-  const MovieMultiValueLabel: React.FC<
+  const GroupMultiValueLabel: React.FC<
     MultiValueGenericProps<Option, boolean>
   > = (optionProps) => {
     let thisOptionProps = optionProps;
@@ -168,7 +168,7 @@ const _MovieSelect: React.FC<
     return <reactSelectComponents.MultiValueLabel {...thisOptionProps} />;
   };
 
-  const MovieValueLabel: React.FC<SingleValueProps<Option, boolean>> = (
+  const GroupValueLabel: React.FC<SingleValueProps<Option, boolean>> = (
     optionProps
   ) => {
     let thisOptionProps = optionProps;
@@ -190,7 +190,7 @@ const _MovieSelect: React.FC<
     return {
       value: result.data!.movieCreate!.id,
       item: result.data!.movieCreate!,
-      message: "Created movie",
+      message: "Created group",
     };
   };
 
@@ -201,7 +201,7 @@ const _MovieSelect: React.FC<
     };
   };
 
-  const isValidNewOption = (inputValue: string, options: Movie[]) => {
+  const isValidNewOption = (inputValue: string, options: Group[]) => {
     if (!inputValue) {
       return false;
     }
@@ -221,12 +221,12 @@ const _MovieSelect: React.FC<
   };
 
   return (
-    <FilterSelectComponent<Movie, boolean>
+    <FilterSelectComponent<Group, boolean>
       {...props}
       className={cx(
-        "movie-select",
+        "group-select",
         {
-          "movie-select-active": props.active,
+          "group-select-active": props.active,
         },
         props.className
       )}
@@ -234,9 +234,9 @@ const _MovieSelect: React.FC<
       getNamedObject={getNamedObject}
       isValidNewOption={isValidNewOption}
       components={{
-        Option: MovieOption,
-        MultiValueLabel: MovieMultiValueLabel,
-        SingleValue: MovieValueLabel,
+        Option: GroupOption,
+        MultiValueLabel: GroupMultiValueLabel,
+        SingleValue: GroupValueLabel,
       }}
       isMulti={props.isMulti ?? false}
       creatable={props.creatable ?? defaultCreatable}
@@ -247,7 +247,7 @@ const _MovieSelect: React.FC<
           { id: "actions.select_entity" },
           {
             entityType: intl.formatMessage({
-              id: props.isMulti ? "movies" : "movie",
+              id: props.isMulti ? "groups" : "group",
             }),
           }
         )
@@ -257,22 +257,22 @@ const _MovieSelect: React.FC<
   );
 };
 
-export const MovieSelect = PatchComponent("MovieSelect", _MovieSelect);
+export const GroupSelect = PatchComponent("GroupSelect", _GroupSelect);
 
-const _MovieIDSelect: React.FC<IFilterProps & IFilterIDProps<Movie>> = (
+const _GroupIDSelect: React.FC<IFilterProps & IFilterIDProps<Group>> = (
   props
 ) => {
   const { ids, onSelect: onSelectValues } = props;
 
-  const [values, setValues] = useState<Movie[]>([]);
+  const [values, setValues] = useState<Group[]>([]);
   const idsChanged = useCompare(ids);
 
-  function onSelect(items: Movie[]) {
+  function onSelect(items: Group[]) {
     setValues(items);
     onSelectValues?.(items);
   }
 
-  async function loadObjectsByID(idsToLoad: string[]): Promise<Movie[]> {
+  async function loadObjectsByID(idsToLoad: string[]): Promise<Group[]> {
     const query = await queryFindMoviesByIDForSelect(idsToLoad);
     const { movies: loadedMovies } = query.data.findMovies;
 
@@ -303,7 +303,7 @@ const _MovieIDSelect: React.FC<IFilterProps & IFilterIDProps<Movie>> = (
     load();
   }, [ids, idsChanged, values]);
 
-  return <MovieSelect {...props} values={values} onSelect={onSelect} />;
+  return <GroupSelect {...props} values={values} onSelect={onSelect} />;
 };
 
-export const MovieIDSelect = PatchComponent("MovieIDSelect", _MovieIDSelect);
+export const GroupIDSelect = PatchComponent("GroupIDSelect", _GroupIDSelect);

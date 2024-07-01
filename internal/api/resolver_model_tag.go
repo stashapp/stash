@@ -8,8 +8,10 @@ import (
 	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/movie"
 	"github.com/stashapp/stash/pkg/performer"
 	"github.com/stashapp/stash/pkg/scene"
+	"github.com/stashapp/stash/pkg/studio"
 )
 
 func (r *tagResolver) Parents(ctx context.Context, obj *models.Tag) (ret []*models.Tag, err error) {
@@ -99,6 +101,28 @@ func (r *tagResolver) GalleryCount(ctx context.Context, obj *models.Tag, depth *
 func (r *tagResolver) PerformerCount(ctx context.Context, obj *models.Tag, depth *int) (ret int, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		ret, err = performer.CountByTagID(ctx, r.repository.Performer, obj.ID, depth)
+		return err
+	}); err != nil {
+		return 0, err
+	}
+
+	return ret, nil
+}
+
+func (r *tagResolver) StudioCount(ctx context.Context, obj *models.Tag, depth *int) (ret int, err error) {
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+		ret, err = studio.CountByTagID(ctx, r.repository.Studio, obj.ID, depth)
+		return err
+	}); err != nil {
+		return 0, err
+	}
+
+	return ret, nil
+}
+
+func (r *tagResolver) MovieCount(ctx context.Context, obj *models.Tag, depth *int) (ret int, err error) {
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+		ret, err = movie.CountByTagID(ctx, r.repository.Movie, obj.ID, depth)
 		return err
 	}); err != nil {
 		return 0, err

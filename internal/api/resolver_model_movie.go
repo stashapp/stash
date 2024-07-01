@@ -57,6 +57,20 @@ func (r *movieResolver) Studio(ctx context.Context, obj *models.Movie) (ret *mod
 	return loaders.From(ctx).StudioByID.Load(*obj.StudioID)
 }
 
+func (r movieResolver) Tags(ctx context.Context, obj *models.Movie) (ret []*models.Tag, err error) {
+	if !obj.TagIDs.Loaded() {
+		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+			return obj.LoadTagIDs(ctx, r.repository.Movie)
+		}); err != nil {
+			return nil, err
+		}
+	}
+
+	var errs []error
+	ret, errs = loaders.From(ctx).TagByID.LoadAll(obj.TagIDs.List())
+	return ret, firstError(errs)
+}
+
 func (r *movieResolver) FrontImagePath(ctx context.Context, obj *models.Movie) (*string, error) {
 	var hasImage bool
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {

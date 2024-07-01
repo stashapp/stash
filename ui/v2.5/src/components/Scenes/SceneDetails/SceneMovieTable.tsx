@@ -2,27 +2,27 @@ import React, { useMemo } from "react";
 import { useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import { Form, Row, Col } from "react-bootstrap";
-import { Movie, MovieSelect } from "src/components/Movies/MovieSelect";
+import { Group, GroupSelect } from "src/components/Movies/MovieSelect";
 import cx from "classnames";
 
 export type MovieSceneIndexMap = Map<string, number | undefined>;
 
-export interface IMovieEntry {
-  movie: Movie;
+export interface IGroupEntry {
+  movie: Group;
   scene_index?: GQL.InputMaybe<number> | undefined;
 }
 
 export interface IProps {
-  value: IMovieEntry[];
-  onUpdate: (input: IMovieEntry[]) => void;
+  value: IGroupEntry[];
+  onUpdate: (input: IGroupEntry[]) => void;
 }
 
-export const SceneMovieTable: React.FC<IProps> = (props) => {
+export const SceneGroupTable: React.FC<IProps> = (props) => {
   const { value, onUpdate } = props;
 
   const intl = useIntl();
 
-  const movieIDs = useMemo(() => value.map((m) => m.movie.id), [value]);
+  const groupIDs = useMemo(() => value.map((m) => m.movie.id), [value]);
 
   const updateFieldChanged = (index: number, sceneIndex: number | null) => {
     const newValues = value.map((existing, i) => {
@@ -38,21 +38,21 @@ export const SceneMovieTable: React.FC<IProps> = (props) => {
     onUpdate(newValues);
   };
 
-  function onMovieSet(index: number, movies: Movie[]) {
-    if (!movies.length) {
+  function onGroupSet(index: number, groups: Group[]) {
+    if (!groups.length) {
       // remove this entry
       const newValues = value.filter((_, i) => i !== index);
       onUpdate(newValues);
       return;
     }
 
-    const movie = movies[0];
+    const group = groups[0];
 
     const newValues = value.map((existing, i) => {
       if (i === index) {
         return {
           ...existing,
-          movie: movie,
+          movie: group,
         };
       }
       return existing;
@@ -61,17 +61,17 @@ export const SceneMovieTable: React.FC<IProps> = (props) => {
     onUpdate(newValues);
   }
 
-  function onNewMovieSet(movies: Movie[]) {
-    if (!movies.length) {
+  function onNewGroupSet(groups: Group[]) {
+    if (!groups.length) {
       return;
     }
 
-    const movie = movies[0];
+    const group = groups[0];
 
     const newValues = [
       ...value,
       {
-        movie: movie,
+        movie: group,
         scene_index: null,
       },
     ];
@@ -83,12 +83,12 @@ export const SceneMovieTable: React.FC<IProps> = (props) => {
     return (
       <>
         {value.map((m, i) => (
-          <Row key={m.movie.id} className="movie-row">
+          <Row key={m.movie.id} className="group-row">
             <Col xs={9}>
-              <MovieSelect
-                onSelect={(items) => onMovieSet(i, items)}
+              <GroupSelect
+                onSelect={(items) => onGroupSet(i, items)}
                 values={[m.movie!]}
-                excludeIds={movieIDs}
+                excludeIds={groupIDs}
               />
             </Col>
             <Col xs={3}>
@@ -108,12 +108,12 @@ export const SceneMovieTable: React.FC<IProps> = (props) => {
             </Col>
           </Row>
         ))}
-        <Row className="movie-row">
+        <Row className="group-row">
           <Col xs={12}>
-            <MovieSelect
-              onSelect={(items) => onNewMovieSet(items)}
+            <GroupSelect
+              onSelect={(items) => onNewGroupSet(items)}
               values={[]}
-              excludeIds={movieIDs}
+              excludeIds={groupIDs}
             />
           </Col>
         </Row>
@@ -122,11 +122,11 @@ export const SceneMovieTable: React.FC<IProps> = (props) => {
   }
 
   return (
-    <div className={cx("movie-table", { "no-movies": !value.length })}>
-      <Row className="movie-table-header">
+    <div className={cx("group-table", { "no-groups": !value.length })}>
+      <Row className="group-table-header">
         <Col xs={9}></Col>
-        <Form.Label column xs={3} className="movie-scene-number-header">
-          {intl.formatMessage({ id: "movie_scene_number" })}
+        <Form.Label column xs={3} className="group-scene-number-header">
+          {intl.formatMessage({ id: "group_scene_number" })}
         </Form.Label>
       </Row>
       {renderTableData()}

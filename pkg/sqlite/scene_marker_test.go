@@ -74,6 +74,27 @@ func TestMarkerCountByTagID(t *testing.T) {
 	})
 }
 
+func TestMarkerQueryQ(t *testing.T) {
+	withTxn(func(ctx context.Context) error {
+		q := getSceneTitle(sceneIdxWithMarkers)
+		m, _, err := db.SceneMarker.Query(ctx, nil, &models.FindFilterType{
+			Q: &q,
+		})
+
+		if err != nil {
+			t.Errorf("Error querying scene markers: %s", err.Error())
+		}
+
+		if !assert.Greater(t, len(m), 0) {
+			return nil
+		}
+
+		assert.Equal(t, sceneIDs[sceneIdxWithMarkers], m[0].SceneID)
+
+		return nil
+	})
+}
+
 func TestMarkerQuerySortBySceneUpdated(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
 		sort := "scenes_updated_at"

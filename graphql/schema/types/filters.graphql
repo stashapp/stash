@@ -334,6 +334,10 @@ input MovieFilterType {
   url: StringCriterionInput
   "Filter to only include movies where performer appears in a scene"
   performers: MultiCriterionInput
+  "Filter to only include movies with these tags"
+  tags: HierarchicalMultiCriterionInput
+  "Filter by tag count"
+  tag_count: IntCriterionInput
   "Filter by date"
   date: DateCriterionInput
   "Filter by creation time"
@@ -358,6 +362,8 @@ input StudioFilterType {
   parents: MultiCriterionInput
   "Filter by StashID"
   stash_id_endpoint: StashIDCriterionInput
+  "Filter to only include studios with these tags"
+  tags: HierarchicalMultiCriterionInput
   "Filter to only include studios missing this property"
   is_missing: String
   # rating expressed as 1-100
@@ -370,6 +376,8 @@ input StudioFilterType {
   image_count: IntCriterionInput
   "Filter by gallery count"
   gallery_count: IntCriterionInput
+  "Filter by tag count"
+  tag_count: IntCriterionInput
   "Filter by url"
   url: StringCriterionInput
   "Filter by studio aliases"
@@ -493,6 +501,12 @@ input TagFilterType {
 
   "Filter by number of performers with this tag"
   performer_count: IntCriterionInput
+
+  "Filter by number of studios with this tag"
+  studio_count: IntCriterionInput
+
+  "Filter by number of movies with this tag"
+  movie_count: IntCriterionInput
 
   "Filter by number of markers with this tag"
   marker_count: IntCriterionInput

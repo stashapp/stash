@@ -163,6 +163,12 @@ func (i *Input) populateURL() {
 	if i.Scene != nil && i.Scene.URL == nil && len(i.Scene.URLs) > 0 {
 		i.Scene.URL = &i.Scene.URLs[0]
 	}
+	if i.Gallery != nil && i.Gallery.URL == nil && len(i.Gallery.URLs) > 0 {
+		i.Gallery.URL = &i.Gallery.URLs[0]
+	}
+	if i.Performer != nil && i.Performer.URL == nil && len(i.Performer.URLs) > 0 {
+		i.Performer.URL = &i.Performer.URLs[0]
+	}
 }
 
 // simple type definitions that can help customize

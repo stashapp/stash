@@ -60,7 +60,7 @@ func CodecInit(codec VideoCodec) (args Args) {
 		)
 	case VideoCodecM264:
 		args = append(args,
-			"-prio_speed", "1",
+			"-realtime", "1",
 		)
 	case VideoCodecO264:
 		args = append(args,
@@ -198,7 +198,7 @@ func (o TranscodeOptions) makeStreamArgs(sm *StreamManager) Args {
 
 	videoOnly := ProbeAudioCodec(o.VideoFile.AudioCodec) == MissingUnsupported
 
-	videoFilter := sm.encoder.hwMaxResFilter(codec, o.VideoFile.Width, o.VideoFile.Height, maxTranscodeSize, fullhw)
+	videoFilter := sm.encoder.hwMaxResFilter(codec, o.VideoFile, maxTranscodeSize, fullhw)
 
 	args = append(args, o.StreamType.Args(codec, videoFilter, videoOnly)...)
 

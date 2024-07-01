@@ -53,7 +53,7 @@ export const Stats: React.FC = () => {
             <FormattedNumber value={data.stats.movie_count} />
           </p>
           <p className="heading">
-            <FormattedMessage id="movies" />
+            <FormattedMessage id="groups" />
           </p>
         </div>
         <div className="stats-element">

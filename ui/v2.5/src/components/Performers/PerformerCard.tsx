@@ -178,15 +178,15 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
     );
   }
 
-  function maybeRenderMoviesPopoverButton() {
+  function maybeRenderGroupsPopoverButton() {
     if (!performer.movie_count) return;
 
     return (
       <PopoverCountButton
-        className="movie-count"
-        type="movie"
+        className="group-count"
+        type="group"
         count={performer.movie_count}
-        url={NavUtils.makePerformerMoviesUrl(
+        url={NavUtils.makePerformerGroupsUrl(
           performer,
           extraCriteria?.performer,
           extraCriteria?.movies
@@ -209,7 +209,7 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
           <hr />
           <ButtonGroup className="card-popovers">
             {maybeRenderScenesPopoverButton()}
-            {maybeRenderMoviesPopoverButton()}
+            {maybeRenderGroupsPopoverButton()}
             {maybeRenderImagesPopoverButton()}
             {maybeRenderGalleriesPopoverButton()}
             {maybeRenderTagPopoverButton()}

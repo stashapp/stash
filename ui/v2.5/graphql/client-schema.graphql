@@ -16,11 +16,6 @@ extend input SaveFilterInput {
   ui_options: SavedUIOptions
 }
 
-extend input SetDefaultFilterInput {
-  object_filter: SavedObjectFilter
-  ui_options: SavedUIOptions
-}
-
 extend type Mutation {
   configureUI(input: Map, partial: Map): UIConfig!
 }

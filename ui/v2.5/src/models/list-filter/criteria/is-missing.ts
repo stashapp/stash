@@ -50,8 +50,6 @@ export const PerformerIsMissingCriterionOption = new IsMissingCriterionOption(
   "is_missing",
   [
     "url",
-    "twitter",
-    "instagram",
     "ethnicity",
     "country",
     "hair_color",

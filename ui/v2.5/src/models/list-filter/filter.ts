@@ -17,6 +17,7 @@ import {
   SavedObjectFilter,
   SavedUIOptions,
 } from "./types";
+import { ListFilterOptions } from "./filter-options";
 
 interface IDecodedParams {
   perPage?: number;
@@ -49,7 +50,8 @@ const DEFAULT_PARAMS = {
 
 // TODO: handle customCriteria
 export class ListFilterModel {
-  public mode: FilterMode;
+  public readonly mode: FilterMode;
+  public readonly options: ListFilterOptions;
   private config?: ConfigDataFragment;
   public searchTerm: string = "";
   public currentPage = DEFAULT_PARAMS.currentPage;
@@ -65,19 +67,18 @@ export class ListFilterModel {
   public constructor(
     mode: FilterMode,
     config?: ConfigDataFragment,
-    defaultSort?: string,
-    defaultDisplayMode?: DisplayMode,
     defaultZoomIndex?: number
   ) {
     this.mode = mode;
     this.config = config;
-    this.sortBy = defaultSort;
+    this.options = getFilterOptions(mode);
+    const { defaultSortBy, displayModeOptions } = this.options;
+
+    this.sortBy = defaultSortBy;
     if (this.sortBy === "date") {
       this.sortDirection = SortDirectionEnum.Desc;
     }
-    if (defaultDisplayMode !== undefined) {
-      this.displayMode = defaultDisplayMode;
-    }
+    this.displayMode = displayModeOptions[0];
     if (defaultZoomIndex !== undefined) {
       this.defaultZoomIndex = defaultZoomIndex;
       this.zoomIndex = defaultZoomIndex;

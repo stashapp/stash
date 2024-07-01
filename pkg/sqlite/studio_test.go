@@ -704,6 +704,110 @@ func TestStudioQueryRating(t *testing.T) {
 	verifyStudiosRating(t, ratingCriterion)
 }
 
+func queryStudios(ctx context.Context, t *testing.T, studioFilter *models.StudioFilterType, findFilter *models.FindFilterType) []*models.Studio {
+	t.Helper()
+	studios, _, err := db.Studio.Query(ctx, studioFilter, findFilter)
+	if err != nil {
+		t.Errorf("Error querying studio: %s", err.Error())
+	}
+
+	return studios
+}
+
+func TestStudioQueryTags(t *testing.T) {
+	withTxn(func(ctx context.Context) error {
+		tagCriterion := models.HierarchicalMultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(tagIDs[tagIdxWithStudio]),
+				strconv.Itoa(tagIDs[tagIdx1WithStudio]),
+			},
+			Modifier: models.CriterionModifierIncludes,
+		}
+
+		studioFilter := models.StudioFilterType{
+			Tags: &tagCriterion,
+		}
+
+		// ensure ids are correct
+		studios := queryStudios(ctx, t, &studioFilter, nil)
+		assert.Len(t, studios, 2)
+		for _, studio := range studios {
+			assert.True(t, studio.ID == studioIDs[studioIdxWithTag] || studio.ID == studioIDs[studioIdxWithTwoTags])
+		}
+
+		tagCriterion = models.HierarchicalMultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(tagIDs[tagIdx1WithStudio]),
+				strconv.Itoa(tagIDs[tagIdx2WithStudio]),
+			},
+			Modifier: models.CriterionModifierIncludesAll,
+		}
+
+		studios = queryStudios(ctx, t, &studioFilter, nil)
+
+		assert.Len(t, studios, 1)
+		assert.Equal(t, sceneIDs[studioIdxWithTwoTags], studios[0].ID)
+
+		tagCriterion = models.HierarchicalMultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(tagIDs[tagIdx1WithStudio]),
+			},
+			Modifier: models.CriterionModifierExcludes,
+		}
+
+		q := getSceneStringValue(studioIdxWithTwoTags, titleField)
+		findFilter := models.FindFilterType{
+			Q: &q,
+		}
+
+		studios = queryStudios(ctx, t, &studioFilter, &findFilter)
+		assert.Len(t, studios, 0)
+
+		return nil
+	})
+}
+
+func TestStudioQueryTagCount(t *testing.T) {
+	const tagCount = 1
+	tagCountCriterion := models.IntCriterionInput{
+		Value:    tagCount,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	verifyStudiosTagCount(t, tagCountCriterion)
+
+	tagCountCriterion.Modifier = models.CriterionModifierNotEquals
+	verifyStudiosTagCount(t, tagCountCriterion)
+
+	tagCountCriterion.Modifier = models.CriterionModifierGreaterThan
+	verifyStudiosTagCount(t, tagCountCriterion)
+
+	tagCountCriterion.Modifier = models.CriterionModifierLessThan
+	verifyStudiosTagCount(t, tagCountCriterion)
+}
+
+func verifyStudiosTagCount(t *testing.T, tagCountCriterion models.IntCriterionInput) {
+	withTxn(func(ctx context.Context) error {
+		sqb := db.Studio
+		studioFilter := models.StudioFilterType{
+			TagCount: &tagCountCriterion,
+		}
+
+		studios := queryStudios(ctx, t, &studioFilter, nil)
+		assert.Greater(t, len(studios), 0)
+
+		for _, studio := range studios {
+			ids, err := sqb.GetTagIDs(ctx, studio.ID)
+			if err != nil {
+				return err
+			}
+			verifyInt(t, len(ids), tagCountCriterion)
+		}
+
+		return nil
+	})
+}
+
 func verifyStudioQuery(t *testing.T, filter models.StudioFilterType, verifyFn func(ctx context.Context, s *models.Studio)) {
 	withTxn(func(ctx context.Context) error {
 		t.Helper()

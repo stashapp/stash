@@ -63,6 +63,8 @@ func (qb *movieFilterHandler) criterionHandler() criterionHandler {
 		qb.urlsCriterionHandler(movieFilter.URL),
 		studioCriterionHandler(movieTable, movieFilter.Studios),
 		qb.performersCriterionHandler(movieFilter.Performers),
+		qb.tagsCriterionHandler(movieFilter.Tags),
+		qb.tagCountCriterionHandler(movieFilter.TagCount),
 		&dateCriterionHandler{movieFilter.Date, "movies.date", nil},
 		&timestampCriterionHandler{movieFilter.CreatedAt, "movies.created_at", nil},
 		&timestampCriterionHandler{movieFilter.UpdatedAt, "movies.updated_at", nil},
@@ -161,4 +163,29 @@ func (qb *movieFilterHandler) performersCriterionHandler(performers *models.Mult
 			}
 		}
 	}
+}
+
+func (qb *movieFilterHandler) tagsCriterionHandler(tags *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
+	h := joinedHierarchicalMultiCriterionHandlerBuilder{
+		primaryTable: movieTable,
+		foreignTable: tagTable,
+		foreignFK:    "tag_id",
+
+		relationsTable: "tags_relations",
+		joinAs:         "movie_tag",
+		joinTable:      moviesTagsTable,
+		primaryFK:      movieIDColumn,
+	}
+
+	return h.handler(tags)
+}
+
+func (qb *movieFilterHandler) tagCountCriterionHandler(count *models.IntCriterionInput) criterionHandlerFunc {
+	h := countCriterionHandlerBuilder{
+		primaryTable: movieTable,
+		joinTable:    moviesTagsTable,
+		primaryFK:    movieIDColumn,
+	}
+
+	return h.handler(count)
 }

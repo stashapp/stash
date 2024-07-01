@@ -14,6 +14,10 @@ type StudioFilterType struct {
 	IsMissing *string `json:"is_missing"`
 	// Filter by rating expressed as 1-100
 	Rating100 *IntCriterionInput `json:"rating100"`
+	// Filter to only include studios with these tags
+	Tags *HierarchicalMultiCriterionInput `json:"tags"`
+	// Filter by tag count
+	TagCount *IntCriterionInput `json:"tag_count"`
 	// Filter by favorite
 	Favorite *bool `json:"favorite"`
 	// Filter by scene count
@@ -53,6 +57,7 @@ type StudioCreateInput struct {
 	Favorite      *bool     `json:"favorite"`
 	Details       *string   `json:"details"`
 	Aliases       []string  `json:"aliases"`
+	TagIds        []string  `json:"tag_ids"`
 	IgnoreAutoTag *bool     `json:"ignore_auto_tag"`
 }
 
@@ -68,5 +73,6 @@ type StudioUpdateInput struct {
 	Favorite      *bool     `json:"favorite"`
 	Details       *string   `json:"details"`
 	Aliases       []string  `json:"aliases"`
+	TagIds        []string  `json:"tag_ids"`
 	IgnoreAutoTag *bool     `json:"ignore_auto_tag"`
 }
