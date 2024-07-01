@@ -44,6 +44,7 @@ import { DetailImage } from "src/components/Shared/DetailImage";
 import { useLoadStickyHeader } from "src/hooks/detailsPanel";
 import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
 import { ExternalLinksButton } from "src/components/Shared/ExternalLinksButton";
+import { BackgroundImage } from "src/components/Shared/BackgroundImage";
 
 interface IProps {
   performer: GQL.PerformerDataFragment;
@@ -357,27 +358,6 @@ const PerformerPage: React.FC<IProps> = ({ performer, tabKey }) => {
     </Tabs>
   );
 
-  function maybeRenderHeaderBackgroundImage() {
-    if (enableBackgroundImage && !isEditing && activeImage) {
-      const activeImageURL = new URL(activeImage);
-      let isDefaultImage = activeImageURL.searchParams.get("default");
-      if (!isDefaultImage) {
-        return (
-          <div className="background-image-container">
-            <picture>
-              <source src={activeImage} />
-              <img
-                className="background-image"
-                src={activeImage}
-                alt={`${performer.name} background`}
-              />
-            </picture>
-          </div>
-        );
-      }
-    }
-  }
-
   function maybeRenderEditPanel() {
     if (isEditing) {
       return (
@@ -543,7 +523,10 @@ const PerformerPage: React.FC<IProps> = ({ performer, tabKey }) => {
       </Helmet>
 
       <div className={headerClassName}>
-        {maybeRenderHeaderBackgroundImage()}
+        <BackgroundImage
+          imagePath={activeImage ?? undefined}
+          show={enableBackgroundImage && !isEditing}
+        />
         <div className="detail-container">
           <div className="detail-header-image">
             {encodingImage ? (

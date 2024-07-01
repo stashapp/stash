@@ -36,6 +36,7 @@ import { useRatingKeybinds } from "src/hooks/keybinds";
 import { useLoadStickyHeader } from "src/hooks/detailsPanel";
 import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
 import { ExternalLinksButton } from "src/components/Shared/ExternalLinksButton";
+import { BackgroundImage } from "src/components/Shared/BackgroundImage";
 
 interface IProps {
   group: GQL.GroupDataFragment;
@@ -347,28 +348,6 @@ const GroupPage: React.FC<IProps> = ({ group }) => {
     }
   }
 
-  function maybeRenderHeaderBackgroundImage() {
-    let image = group.front_image_path;
-    if (enableBackgroundImage && !isEditing && image) {
-      const imageURL = new URL(image);
-      let isDefaultImage = imageURL.searchParams.get("default");
-      if (!isDefaultImage) {
-        return (
-          <div className="background-image-container">
-            <picture>
-              <source src={image} />
-              <img
-                className="background-image"
-                src={image}
-                alt={`${group.name} background`}
-              />
-            </picture>
-          </div>
-        );
-      }
-    }
-  }
-
   function maybeRenderTab() {
     if (!isEditing) {
       return renderTabs();
@@ -390,7 +369,10 @@ const GroupPage: React.FC<IProps> = ({ group }) => {
       </Helmet>
 
       <div className={headerClassName}>
-        {maybeRenderHeaderBackgroundImage()}
+        <BackgroundImage
+          imagePath={group.front_image_path ?? undefined}
+          show={!enableBackgroundImage && !isEditing}
+        />
         <div className="detail-container">
           <div className="detail-header-image">
             <div className="logo w-100">

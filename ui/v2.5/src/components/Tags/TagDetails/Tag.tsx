@@ -43,6 +43,7 @@ import { DetailImage } from "src/components/Shared/DetailImage";
 import { useLoadStickyHeader } from "src/hooks/detailsPanel";
 import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
 import { TagGroupsPanel } from "./TagGroupsPanel";
+import { BackgroundImage } from "src/components/Shared/BackgroundImage";
 
 interface IProps {
   tag: GQL.TagDataFragment;
@@ -546,28 +547,6 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
     </Tabs>
   );
 
-  function maybeRenderHeaderBackgroundImage() {
-    let tagImage = tag.image_path;
-    if (enableBackgroundImage && !isEditing && tagImage) {
-      const tagImageURL = new URL(tagImage);
-      let isDefaultImage = tagImageURL.searchParams.get("default");
-      if (!isDefaultImage) {
-        return (
-          <div className="background-image-container">
-            <picture>
-              <source src={tagImage} />
-              <img
-                className="background-image"
-                src={tagImage}
-                alt={`${tag.name} background`}
-              />
-            </picture>
-          </div>
-        );
-      }
-    }
-  }
-
   function maybeRenderTab() {
     if (!isEditing) {
       return renderTabs();
@@ -593,7 +572,10 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
       </Helmet>
 
       <div className={headerClassName}>
-        {maybeRenderHeaderBackgroundImage()}
+        <BackgroundImage
+          imagePath={tag.image_path ?? undefined}
+          show={enableBackgroundImage && !isEditing}
+        />
         <div className="detail-container">
           <div className="detail-header-image">
             {encodingImage ? (

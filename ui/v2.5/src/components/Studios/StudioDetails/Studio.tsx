@@ -46,6 +46,7 @@ import { useRatingKeybinds } from "src/hooks/keybinds";
 import { useLoadStickyHeader } from "src/hooks/detailsPanel";
 import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
 import { ExternalLink } from "src/components/Shared/ExternalLink";
+import { BackgroundImage } from "src/components/Shared/BackgroundImage";
 
 interface IProps {
   studio: GQL.StudioDataFragment;
@@ -472,28 +473,6 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
     </Tabs>
   );
 
-  function maybeRenderHeaderBackgroundImage() {
-    let studioImage = studio.image_path;
-    if (enableBackgroundImage && !isEditing && studioImage) {
-      const studioImageURL = new URL(studioImage);
-      let isDefaultImage = studioImageURL.searchParams.get("default");
-      if (!isDefaultImage) {
-        return (
-          <div className="background-image-container">
-            <picture>
-              <source src={studioImage} />
-              <img
-                className="background-image"
-                src={studioImage}
-                alt={`${studio.name} background`}
-              />
-            </picture>
-          </div>
-        );
-      }
-    }
-  }
-
   function maybeRenderTab() {
     if (!isEditing) {
       return renderTabs();
@@ -544,7 +523,10 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
       </Helmet>
 
       <div className={headerClassName}>
-        {maybeRenderHeaderBackgroundImage()}
+        <BackgroundImage
+          imagePath={studio.image_path ?? undefined}
+          show={!enableBackgroundImage && !isEditing}
+        />
         <div className="detail-container">
           <div className="detail-header-image">
             {encodingImage ? (
