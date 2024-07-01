@@ -795,7 +795,6 @@
         "galleries": "{count, plural, one {图库} other {图库}}",
         "images": "{count, plural, one {图片} other {图片}}",
         "markers": "{count, plural, one {标记} other {标记}}",
-        "movies": "{count, plural, one {电影} other {电影}}",
         "performers": "{count, plural, one {演员} other {演员}}",
         "scenes": "{count, plural, one {短片} other {短片}}",
         "studios": "{count, plural, one {工作室} other {工作室}}",
@@ -1108,9 +1107,6 @@
     },
     "megabits_per_second": "{value} Mbps",
     "metadata": "元数据",
-    "movie": "电影",
-    "movie_scene_number": "短片编码",
-    "movies": "电影",
     "name": "名称",
     "new": "新增",
     "none": "空",
@@ -1469,7 +1465,6 @@
         "websocket_connection_failed": "无法建立websocket连接：有关详细信息，请参阅浏览器控制台"
     },
     "o_count": "高潮次数",
-    "movie_count": "影片数量",
     "studio_tags": "工作室标签",
     "studio_count": "工作室计数"
 }
