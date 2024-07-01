@@ -1,5 +1,5 @@
 import { Tabs, Tab, Dropdown, Button } from "react-bootstrap";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useHistory, Redirect, RouteComponentProps } from "react-router-dom";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Helmet } from "react-helmet";
@@ -13,7 +13,6 @@ import {
   useTagDestroy,
   mutateMetadataAutoTag,
 } from "src/core/StashService";
-import { Counter } from "src/components/Shared/Counter";
 import { DetailsEditNavbar } from "src/components/Shared/DetailsEditNavbar";
 import { ErrorMessage } from "src/components/Shared/ErrorMessage";
 import { ModalComponent } from "src/components/Shared/Modal";
@@ -44,6 +43,10 @@ import { useLoadStickyHeader } from "src/hooks/detailsPanel";
 import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
 import { TagGroupsPanel } from "./TagGroupsPanel";
 import { BackgroundImage } from "src/components/Shared/DetailsPage/BackgroundImage";
+import {
+  TabTitleCounter,
+  useTabKey,
+} from "src/components/Shared/DetailsPage/Tabs";
 
 interface IProps {
   tag: GQL.TagDataFragment;
@@ -71,35 +74,12 @@ function isTabKey(tab: string): tab is TabKey {
   return validTabs.includes(tab as TabKey);
 }
 
-const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
-  const history = useHistory();
-  const Toast = useToast();
-  const intl = useIntl();
-
-  // Configuration settings
-  const { configuration } = React.useContext(ConfigurationContext);
-  const uiConfig = configuration?.ui;
-  const abbreviateCounter = uiConfig?.abbreviateCounters ?? false;
-  const enableBackgroundImage = uiConfig?.enableTagBackgroundImage ?? false;
-  const showAllDetails = uiConfig?.showAllDetails ?? true;
-  const compactExpandedDetails = uiConfig?.compactExpandedDetails ?? false;
-
-  const [collapsed, setCollapsed] = useState<boolean>(!showAllDetails);
-  const loadStickyHeader = useLoadStickyHeader();
-
-  // Editing state
-  const [isEditing, setIsEditing] = useState<boolean>(false);
-  const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
-  const [mergeType, setMergeType] = useState<"from" | "into" | undefined>();
-
-  // Editing tag state
-  const [image, setImage] = useState<string | null>();
-  const [encodingImage, setEncodingImage] = useState<boolean>(false);
-
-  const [updateTag] = useTagUpdate();
-  const [deleteTag] = useTagDestroy({ id: tag.id });
-
-  const showAllCounts = uiConfig?.showChildTagContent;
+const TagTabs: React.FC<{
+  tabKey?: TabKey;
+  tag: GQL.TagDataFragment;
+  abbreviateCounter: boolean;
+  showAllCounts?: boolean;
+}> = ({ tabKey, tag, abbreviateCounter, showAllCounts = false }) => {
   const sceneCount =
     (showAllCounts ? tag.scene_count_all : tag.scene_count) ?? 0;
   const imageCount =
@@ -144,23 +124,138 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
     groupCount,
   ]);
 
-  const setTabKey = useCallback(
-    (newTabKey: string | null) => {
-      if (!newTabKey) newTabKey = populatedDefaultTab;
-      if (newTabKey === tabKey) return;
+  const { setTabKey } = useTabKey({
+    tabKey,
+    validTabs,
+    defaultTabKey: populatedDefaultTab,
+    baseURL: `/tags/${tag.id}`,
+  });
 
-      if (isTabKey(newTabKey)) {
-        history.replace(`/tags/${tag.id}/${newTabKey}`);
-      }
-    },
-    [populatedDefaultTab, tabKey, history, tag.id]
+  return (
+    <Tabs
+      id="tag-tabs"
+      mountOnEnter
+      unmountOnExit
+      activeKey={tabKey}
+      onSelect={setTabKey}
+    >
+      <Tab
+        eventKey="scenes"
+        title={
+          <TabTitleCounter
+            messageID="scenes"
+            count={sceneCount}
+            abbreviateCounter={abbreviateCounter}
+          />
+        }
+      >
+        <TagScenesPanel active={tabKey === "scenes"} tag={tag} />
+      </Tab>
+      <Tab
+        eventKey="images"
+        title={
+          <TabTitleCounter
+            messageID="images"
+            count={imageCount}
+            abbreviateCounter={abbreviateCounter}
+          />
+        }
+      >
+        <TagImagesPanel active={tabKey === "images"} tag={tag} />
+      </Tab>
+      <Tab
+        eventKey="galleries"
+        title={
+          <TabTitleCounter
+            messageID="galleries"
+            count={galleryCount}
+            abbreviateCounter={abbreviateCounter}
+          />
+        }
+      >
+        <TagGalleriesPanel active={tabKey === "galleries"} tag={tag} />
+      </Tab>
+      <Tab
+        eventKey="groups"
+        title={
+          <TabTitleCounter
+            messageID="groups"
+            count={groupCount}
+            abbreviateCounter={abbreviateCounter}
+          />
+        }
+      >
+        <TagGroupsPanel active={tabKey === "groups"} tag={tag} />
+      </Tab>
+      <Tab
+        eventKey="markers"
+        title={
+          <TabTitleCounter
+            messageID="markers"
+            count={sceneMarkerCount}
+            abbreviateCounter={abbreviateCounter}
+          />
+        }
+      >
+        <TagMarkersPanel active={tabKey === "markers"} tag={tag} />
+      </Tab>
+      <Tab
+        eventKey="performers"
+        title={
+          <TabTitleCounter
+            messageID="performers"
+            count={performerCount}
+            abbreviateCounter={abbreviateCounter}
+          />
+        }
+      >
+        <TagPerformersPanel active={tabKey === "performers"} tag={tag} />
+      </Tab>
+      <Tab
+        eventKey="studios"
+        title={
+          <TabTitleCounter
+            messageID="studios"
+            count={studioCount}
+            abbreviateCounter={abbreviateCounter}
+          />
+        }
+      >
+        <TagStudiosPanel active={tabKey === "studios"} tag={tag} />
+      </Tab>
+    </Tabs>
   );
+};
 
-  useEffect(() => {
-    if (!tabKey) {
-      setTabKey(populatedDefaultTab);
-    }
-  }, [setTabKey, populatedDefaultTab, tabKey]);
+const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
+  const history = useHistory();
+  const Toast = useToast();
+  const intl = useIntl();
+
+  // Configuration settings
+  const { configuration } = React.useContext(ConfigurationContext);
+  const uiConfig = configuration?.ui;
+  const abbreviateCounter = uiConfig?.abbreviateCounters ?? false;
+  const enableBackgroundImage = uiConfig?.enableTagBackgroundImage ?? false;
+  const showAllDetails = uiConfig?.showAllDetails ?? true;
+  const compactExpandedDetails = uiConfig?.compactExpandedDetails ?? false;
+
+  const [collapsed, setCollapsed] = useState<boolean>(!showAllDetails);
+  const loadStickyHeader = useLoadStickyHeader();
+
+  // Editing state
+  const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
+  const [mergeType, setMergeType] = useState<"from" | "into" | undefined>();
+
+  // Editing tag state
+  const [image, setImage] = useState<string | null>();
+  const [encodingImage, setEncodingImage] = useState<boolean>(false);
+
+  const [updateTag] = useTagUpdate();
+  const [deleteTag] = useTagDestroy({ id: tag.id });
+
+  const showAllCounts = uiConfig?.showChildTagContent;
 
   function setFavorite(v: boolean) {
     if (tag.id) {
@@ -431,128 +526,6 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
     }
   }
 
-  const renderTabs = () => (
-    <Tabs
-      id="tag-tabs"
-      mountOnEnter
-      unmountOnExit
-      activeKey={tabKey}
-      onSelect={setTabKey}
-    >
-      <Tab
-        eventKey="scenes"
-        title={
-          <>
-            {intl.formatMessage({ id: "scenes" })}
-            <Counter
-              abbreviateCounter={abbreviateCounter}
-              count={sceneCount}
-              hideZero
-            />
-          </>
-        }
-      >
-        <TagScenesPanel active={tabKey === "scenes"} tag={tag} />
-      </Tab>
-      <Tab
-        eventKey="images"
-        title={
-          <>
-            {intl.formatMessage({ id: "images" })}
-            <Counter
-              abbreviateCounter={abbreviateCounter}
-              count={imageCount}
-              hideZero
-            />
-          </>
-        }
-      >
-        <TagImagesPanel active={tabKey === "images"} tag={tag} />
-      </Tab>
-      <Tab
-        eventKey="galleries"
-        title={
-          <>
-            {intl.formatMessage({ id: "galleries" })}
-            <Counter
-              abbreviateCounter={abbreviateCounter}
-              count={galleryCount}
-              hideZero
-            />
-          </>
-        }
-      >
-        <TagGalleriesPanel active={tabKey === "galleries"} tag={tag} />
-      </Tab>
-      <Tab
-        eventKey="groups"
-        title={
-          <>
-            {intl.formatMessage({ id: "groups" })}
-            <Counter
-              abbreviateCounter={abbreviateCounter}
-              count={groupCount}
-              hideZero
-            />
-          </>
-        }
-      >
-        <TagGroupsPanel active={tabKey === "groups"} tag={tag} />
-      </Tab>
-      <Tab
-        eventKey="markers"
-        title={
-          <>
-            {intl.formatMessage({ id: "markers" })}
-            <Counter
-              abbreviateCounter={abbreviateCounter}
-              count={sceneMarkerCount}
-              hideZero
-            />
-          </>
-        }
-      >
-        <TagMarkersPanel active={tabKey === "markers"} tag={tag} />
-      </Tab>
-      <Tab
-        eventKey="performers"
-        title={
-          <>
-            {intl.formatMessage({ id: "performers" })}
-            <Counter
-              abbreviateCounter={abbreviateCounter}
-              count={performerCount}
-              hideZero
-            />
-          </>
-        }
-      >
-        <TagPerformersPanel active={tabKey === "performers"} tag={tag} />
-      </Tab>
-      <Tab
-        eventKey="studios"
-        title={
-          <>
-            {intl.formatMessage({ id: "studios" })}
-            <Counter
-              abbreviateCounter={abbreviateCounter}
-              count={studioCount}
-              hideZero
-            />
-          </>
-        }
-      >
-        <TagStudiosPanel active={tabKey === "studios"} tag={tag} />
-      </Tab>
-    </Tabs>
-  );
-
-  function maybeRenderTab() {
-    if (!isEditing) {
-      return renderTabs();
-    }
-  }
-
   function maybeRenderCompressedDetails() {
     if (!isEditing && loadStickyHeader) {
       return <CompressedTagDetailsPanel tag={tag} />;
@@ -603,7 +576,16 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
       {maybeRenderCompressedDetails()}
       <div className="detail-body">
         <div className="tag-body">
-          <div className="tag-tabs">{maybeRenderTab()}</div>
+          <div className="tag-tabs">
+            {!isEditing && (
+              <TagTabs
+                tabKey={tabKey}
+                tag={tag}
+                abbreviateCounter={abbreviateCounter}
+                showAllCounts={showAllCounts}
+              />
+            )}
+          </div>
         </div>
       </div>
       {renderDeleteAlert()}
