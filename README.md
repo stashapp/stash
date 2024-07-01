@@ -57,10 +57,11 @@ Stash can pull metadata (performers, tags, descriptions, studios, and more) dire
 <sub>[StashDB](http://stashdb.org) is the canonical instance of our open source metadata API, [stash-box](https://github.com/stashapp/stash-box).</sub>
 
 # Translation
-[![Translate](https://hosted.weblate.org/widget/stashapp/stash/svg-badge.svg)](https://hosted.weblate.org/engage/stashapp/)
-🇧🇷 🇨🇳 🇩🇰 🇳🇱 🇬🇧 🇪🇪 🇫🇮 🇫🇷 🇩🇪 🇮🇹 🇯🇵 🇰🇷 🇵🇱 🇷🇺 🇪🇸 🇸🇪 🇹🇼 🇹🇷
+[![Translate](https://translate.codeberg.org/widget/stash/stash/svg-badge.svg)](https://translate.codeberg.org/engage/stash/)
 
-Stash is available in 25 languages (so far!) and it could be in your language too. We use Weblate to coordinate community translations. If you want to help us translate Stash into your language, you can make an account at [Stash's Weblate](https://hosted.weblate.org/projects/stashapp/stash/) to get started contributing new languages or improving existing ones. Thanks!
+Stash is available in 32 languages (so far!) and it could be in your language too. We use Weblate to coordinate community translations. If you want to help us translate Stash into your language, you can make an account at [Codeberg's Weblate](https://translate.codeberg.org.org/projects/stash/stash/) to get started contributing new languages or improving existing ones. Thanks!
+
+[![Translation status](https://translate.codeberg.org/widget/stash/stash/multi-auto.svg)](https://translate.codeberg.org/engage/stash/)
 
 # Support (FAQ)
 
