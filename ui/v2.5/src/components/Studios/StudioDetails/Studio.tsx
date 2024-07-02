@@ -1,4 +1,4 @@
-import { Button, Tabs, Tab } from "react-bootstrap";
+import { Tabs, Tab } from "react-bootstrap";
 import React, { useEffect, useMemo, useState } from "react";
 import { useHistory, Redirect, RouteComponentProps } from "react-router-dom";
 import { FormattedMessage, useIntl } from "react-intl";
@@ -19,7 +19,6 @@ import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { ErrorMessage } from "src/components/Shared/ErrorMessage";
 import { useToast } from "src/hooks/Toast";
 import { ConfigurationContext } from "src/hooks/Config";
-import { Icon } from "src/components/Shared/Icon";
 import { StudioScenesPanel } from "./StudioScenesPanel";
 import { StudioGalleriesPanel } from "./StudioGalleriesPanel";
 import { StudioImagesPanel } from "./StudioImagesPanel";
@@ -31,14 +30,12 @@ import {
   StudioDetailsPanel,
 } from "./StudioDetailsPanel";
 import { StudioGroupsPanel } from "./StudioGroupsPanel";
-import { faTrashAlt, faLink } from "@fortawesome/free-solid-svg-icons";
-import TextUtils from "src/utils/text";
+import { faTrashAlt } from "@fortawesome/free-solid-svg-icons";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { DetailImage } from "src/components/Shared/DetailImage";
 import { useRatingKeybinds } from "src/hooks/keybinds";
 import { useLoadStickyHeader } from "src/hooks/detailsPanel";
 import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
-import { ExternalLink } from "src/components/Shared/ExternalLink";
 import { BackgroundImage } from "src/components/Shared/DetailsPage/BackgroundImage";
 import {
   TabTitleCounter,
@@ -47,6 +44,7 @@ import {
 import { DetailTitle } from "src/components/Shared/DetailsPage/DetailTitle";
 import { ExpandCollapseButton } from "src/components/Shared/CollapseButton";
 import { FavoriteIcon } from "src/components/Shared/FavoriteIcon";
+import { ExternalLinkButtons } from "src/components/Shared/ExternalLinksButton";
 
 interface IProps {
   studio: GQL.StudioDataFragment;
@@ -241,6 +239,11 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
   const [deleteStudio] = useStudioDestroy({ id: studio.id });
 
   const showAllCounts = uiConfig?.showChildStudioContent;
+
+  // make array of url so that it doesn't re-render on every change
+  const urls = useMemo(() => {
+    return studio?.url ? [studio.url] : [];
+  }, [studio.url]);
 
   function setFavorite(v: boolean) {
     if (studio.id) {
@@ -484,16 +487,7 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
                     favorite={studio.favorite}
                     onToggleFavorite={(v) => setFavorite(v)}
                   />
-                  {studio.url && (
-                    <Button
-                      as={ExternalLink}
-                      href={TextUtils.sanitiseURL(studio.url)}
-                      className="minimal link"
-                      title={studio.url}
-                    >
-                      <Icon icon={faLink} />
-                    </Button>
-                  )}
+                  <ExternalLinkButtons urls={urls} />
                 </span>
               </DetailTitle>
 

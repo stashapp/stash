@@ -30,13 +30,11 @@ import { PerformerImagesPanel } from "./PerformerImagesPanel";
 import { PerformerAppearsWithPanel } from "./performerAppearsWithPanel";
 import { PerformerEditPanel } from "./PerformerEditPanel";
 import { PerformerSubmitButton } from "./PerformerSubmitButton";
-import { faLink } from "@fortawesome/free-solid-svg-icons";
-import { faInstagram, faTwitter } from "@fortawesome/free-brands-svg-icons";
 import { useRatingKeybinds } from "src/hooks/keybinds";
 import { DetailImage } from "src/components/Shared/DetailImage";
 import { useLoadStickyHeader } from "src/hooks/detailsPanel";
 import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
-import { ExternalLinksButton } from "src/components/Shared/ExternalLinksButton";
+import { ExternalLinkButtons } from "src/components/Shared/ExternalLinksButton";
 import { BackgroundImage } from "src/components/Shared/DetailsPage/BackgroundImage";
 import {
   TabTitleCounter,
@@ -219,29 +217,6 @@ const PerformerPage: React.FC<IProps> = ({ performer, tabKey }) => {
   const [image, setImage] = useState<string | null>();
   const [encodingImage, setEncodingImage] = useState<boolean>(false);
   const loadStickyHeader = useLoadStickyHeader();
-
-  // a list of urls to display in the performer details
-  const urls = useMemo(() => {
-    if (!performer.urls?.length) {
-      return [];
-    }
-
-    const twitter = performer.urls.filter((u) =>
-      u.match(/https?:\/\/(?:www\.)?twitter.com\//)
-    );
-    const instagram = performer.urls.filter((u) =>
-      u.match(/https?:\/\/(?:www\.)?instagram.com\//)
-    );
-    const others = performer.urls.filter(
-      (u) => !twitter.includes(u) && !instagram.includes(u)
-    );
-
-    return [
-      { icon: faLink, className: "", urls: others },
-      { icon: faTwitter, className: "twitter", urls: twitter },
-      { icon: faInstagram, className: "instagram", urls: instagram },
-    ];
-  }, [performer.urls]);
 
   const activeImage = useMemo(() => {
     const performerImage = performer.image_path;
@@ -497,14 +472,7 @@ const PerformerPage: React.FC<IProps> = ({ performer, tabKey }) => {
                     favorite={performer.favorite}
                     onToggleFavorite={(v) => setFavorite(v)}
                   />
-                  {urls.map((url) => (
-                    <ExternalLinksButton
-                      key={url.icon.iconName}
-                      icon={url.icon}
-                      className={url.className}
-                      urls={url.urls}
-                    />
-                  ))}
+                  <ExternalLinkButtons urls={performer.urls ?? undefined} />
                 </span>
               </DetailTitle>
               {maybeRenderAliases()}

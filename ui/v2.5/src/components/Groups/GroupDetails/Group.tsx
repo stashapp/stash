@@ -248,12 +248,6 @@ const GroupPage: React.FC<IProps> = ({ group }) => {
     }
   }
 
-  const renderClickableIcons = () => (
-    <span className="name-icons">
-      {group.urls.length > 0 && <ExternalLinksButton urls={group.urls} />}
-    </span>
-  );
-
   function maybeRenderAliases() {
     if (group?.aliases) {
       return (
@@ -375,7 +369,11 @@ const GroupPage: React.FC<IProps> = ({ group }) => {
                     setCollapsed={(v) => setCollapsed(v)}
                   />
                 )}
-                {renderClickableIcons()}
+                <span className="name-icons">
+                  {group.urls.length > 0 && (
+                    <ExternalLinksButton urls={group.urls} />
+                  )}
+                </span>
               </DetailTitle>
 
               {maybeRenderAliases()}
