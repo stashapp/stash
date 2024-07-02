@@ -31,8 +31,6 @@ import { CompressedTagDetailsPanel, TagDetailsPanel } from "./TagDetailsPanel";
 import { TagEditPanel } from "./TagEditPanel";
 import { TagMergeModal } from "./TagMergeDialog";
 import {
-  faChevronDown,
-  faChevronUp,
   faHeart,
   faSignInAlt,
   faSignOutAlt,
@@ -48,6 +46,7 @@ import {
   useTabKey,
 } from "src/components/Shared/DetailsPage/Tabs";
 import { DetailTitle } from "src/components/Shared/DetailsPage/DetailTitle";
+import { ExpandCollapseButton } from "src/components/Shared/CollapseButton";
 
 interface IProps {
   tag: GQL.TagDataFragment;
@@ -376,25 +375,6 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
     );
   }
 
-  function getCollapseButtonIcon() {
-    return collapsed ? faChevronDown : faChevronUp;
-  }
-
-  function maybeRenderShowCollapseButton() {
-    if (!isEditing) {
-      return (
-        <span className="detail-expand-collapse">
-          <Button
-            className="minimal expand-collapse"
-            onClick={() => setCollapsed(!collapsed)}
-          >
-            <Icon className="fa-fw" icon={getCollapseButtonIcon()} />
-          </Button>
-        </span>
-      );
-    }
-  }
-
   function maybeRenderAliases() {
     if (tag?.aliases?.length) {
       return (
@@ -563,7 +543,12 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
           <div className="row">
             <div className="tag-head col">
               <DetailTitle name={tag.name} classNamePrefix="tag">
-                {maybeRenderShowCollapseButton()}
+                {!isEditing && (
+                  <ExpandCollapseButton
+                    collapsed={collapsed}
+                    setCollapsed={(v) => setCollapsed(v)}
+                  />
+                )}
                 {renderClickableIcons()}
               </DetailTitle>
 

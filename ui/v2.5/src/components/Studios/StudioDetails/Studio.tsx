@@ -31,13 +31,7 @@ import {
   StudioDetailsPanel,
 } from "./StudioDetailsPanel";
 import { StudioGroupsPanel } from "./StudioGroupsPanel";
-import {
-  faTrashAlt,
-  faLink,
-  faChevronDown,
-  faChevronUp,
-  faHeart,
-} from "@fortawesome/free-solid-svg-icons";
+import { faTrashAlt, faLink, faHeart } from "@fortawesome/free-solid-svg-icons";
 import TextUtils from "src/utils/text";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { DetailImage } from "src/components/Shared/DetailImage";
@@ -51,6 +45,7 @@ import {
   useTabKey,
 } from "src/components/Shared/DetailsPage/Tabs";
 import { DetailTitle } from "src/components/Shared/DetailsPage/DetailTitle";
+import { ExpandCollapseButton } from "src/components/Shared/CollapseButton";
 
 interface IProps {
   studio: GQL.StudioDataFragment;
@@ -357,10 +352,6 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
     }
   }
 
-  function getCollapseButtonIcon() {
-    return collapsed ? faChevronDown : faChevronUp;
-  }
-
   function toggleEditing(value?: boolean) {
     if (value !== undefined) {
       setIsEditing(value);
@@ -435,21 +426,6 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
     }
   }
 
-  function maybeRenderShowCollapseButton() {
-    if (!isEditing) {
-      return (
-        <span className="detail-expand-collapse">
-          <Button
-            className="minimal expand-collapse"
-            onClick={() => setCollapsed(!collapsed)}
-          >
-            <Icon className="fa-fw" icon={getCollapseButtonIcon()} />
-          </Button>
-        </span>
-      );
-    }
-  }
-
   function maybeRenderCompressedDetails() {
     if (!isEditing && loadStickyHeader) {
       return <CompressedStudioDetailsPanel studio={studio} />;
@@ -517,7 +493,12 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
           <div className="row">
             <div className="studio-head col">
               <DetailTitle name={studio.name ?? ""} classNamePrefix="studio">
-                {maybeRenderShowCollapseButton()}
+                {!isEditing && (
+                  <ExpandCollapseButton
+                    collapsed={collapsed}
+                    setCollapsed={(v) => setCollapsed(v)}
+                  />
+                )}
                 {renderClickableIcons()}
               </DetailTitle>
 

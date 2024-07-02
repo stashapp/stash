@@ -31,12 +31,7 @@ import { PerformerImagesPanel } from "./PerformerImagesPanel";
 import { PerformerAppearsWithPanel } from "./performerAppearsWithPanel";
 import { PerformerEditPanel } from "./PerformerEditPanel";
 import { PerformerSubmitButton } from "./PerformerSubmitButton";
-import {
-  faChevronDown,
-  faChevronUp,
-  faHeart,
-  faLink,
-} from "@fortawesome/free-solid-svg-icons";
+import { faHeart, faLink } from "@fortawesome/free-solid-svg-icons";
 import { faInstagram, faTwitter } from "@fortawesome/free-brands-svg-icons";
 import { useRatingKeybinds } from "src/hooks/keybinds";
 import { DetailImage } from "src/components/Shared/DetailImage";
@@ -49,6 +44,7 @@ import {
   useTabKey,
 } from "src/components/Shared/DetailsPage/Tabs";
 import { DetailTitle } from "src/components/Shared/DetailsPage/DetailTitle";
+import { ExpandCollapseButton } from "src/components/Shared/CollapseButton";
 
 interface IProps {
   performer: GQL.PerformerDataFragment;
@@ -395,10 +391,6 @@ const PerformerPage: React.FC<IProps> = ({ performer, tabKey }) => {
     }
   }
 
-  function getCollapseButtonIcon() {
-    return collapsed ? faChevronDown : faChevronUp;
-  }
-
   function maybeRenderDetails() {
     if (!isEditing) {
       return (
@@ -450,21 +442,6 @@ const PerformerPage: React.FC<IProps> = ({ performer, tabKey }) => {
           },
         },
       });
-    }
-  }
-
-  function maybeRenderShowCollapseButton() {
-    if (!isEditing) {
-      return (
-        <span className="detail-expand-collapse">
-          <Button
-            className="minimal expand-collapse"
-            onClick={() => setCollapsed(!collapsed)}
-          >
-            <Icon className="fa-fw" icon={getCollapseButtonIcon()} />
-          </Button>
-        </span>
-      );
     }
   }
 
@@ -533,7 +510,12 @@ const PerformerPage: React.FC<IProps> = ({ performer, tabKey }) => {
                 disambiguation={performer.disambiguation ?? undefined}
                 classNamePrefix="performer"
               >
-                {maybeRenderShowCollapseButton()}
+                {!isEditing && (
+                  <ExpandCollapseButton
+                    collapsed={collapsed}
+                    setCollapsed={(v) => setCollapsed(v)}
+                  />
+                )}
                 {renderClickableIcons()}
               </DetailTitle>
               {maybeRenderAliases()}

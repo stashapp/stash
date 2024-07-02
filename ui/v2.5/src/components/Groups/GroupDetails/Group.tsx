@@ -23,12 +23,7 @@ import {
   GroupDetailsPanel,
 } from "./GroupDetailsPanel";
 import { GroupEditPanel } from "./GroupEditPanel";
-import {
-  faChevronDown,
-  faChevronUp,
-  faTrashAlt,
-} from "@fortawesome/free-solid-svg-icons";
-import { Icon } from "src/components/Shared/Icon";
+import { faTrashAlt } from "@fortawesome/free-solid-svg-icons";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { ConfigurationContext } from "src/hooks/Config";
 import { DetailImage } from "src/components/Shared/DetailImage";
@@ -38,6 +33,7 @@ import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
 import { ExternalLinksButton } from "src/components/Shared/ExternalLinksButton";
 import { BackgroundImage } from "src/components/Shared/DetailsPage/BackgroundImage";
 import { DetailTitle } from "src/components/Shared/DetailsPage/DetailTitle";
+import { ExpandCollapseButton } from "src/components/Shared/CollapseButton";
 
 interface IProps {
   group: GQL.GroupDataFragment;
@@ -196,25 +192,6 @@ const GroupPage: React.FC<IProps> = ({ group }) => {
         </p>
       </ModalComponent>
     );
-  }
-
-  function getCollapseButtonIcon() {
-    return collapsed ? faChevronDown : faChevronUp;
-  }
-
-  function maybeRenderShowCollapseButton() {
-    if (!isEditing) {
-      return (
-        <span className="detail-expand-collapse">
-          <Button
-            className="minimal expand-collapse"
-            onClick={() => setCollapsed(!collapsed)}
-          >
-            <Icon className="fa-fw" icon={getCollapseButtonIcon()} />
-          </Button>
-        </span>
-      );
-    }
   }
 
   function renderFrontImage() {
@@ -392,7 +369,12 @@ const GroupPage: React.FC<IProps> = ({ group }) => {
           <div className="row">
             <div className="group-head col">
               <DetailTitle name={group.name} classNamePrefix="group">
-                {maybeRenderShowCollapseButton()}
+                {!isEditing && (
+                  <ExpandCollapseButton
+                    collapsed={collapsed}
+                    setCollapsed={(v) => setCollapsed(v)}
+                  />
+                )}
                 {renderClickableIcons()}
               </DetailTitle>
 
