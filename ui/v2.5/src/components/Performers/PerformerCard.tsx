@@ -277,6 +277,8 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
           <FavoriteIcon
             favorite={performer.favorite}
             onToggleFavorite={onToggleFavorite}
+            size="2x"
+            className="hide-not-favorite"
           />
           {maybeRenderRatingBanner()}
           {maybeRenderFlag()}

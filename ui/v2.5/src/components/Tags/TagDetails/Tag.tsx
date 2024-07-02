@@ -1,4 +1,4 @@
-import { Tabs, Tab, Dropdown, Button } from "react-bootstrap";
+import { Tabs, Tab, Dropdown } from "react-bootstrap";
 import React, { useEffect, useMemo, useState } from "react";
 import { useHistory, Redirect, RouteComponentProps } from "react-router-dom";
 import { FormattedMessage, useIntl } from "react-intl";
@@ -31,7 +31,6 @@ import { CompressedTagDetailsPanel, TagDetailsPanel } from "./TagDetailsPanel";
 import { TagEditPanel } from "./TagEditPanel";
 import { TagMergeModal } from "./TagMergeDialog";
 import {
-  faHeart,
   faSignInAlt,
   faSignOutAlt,
   faTrashAlt,
@@ -47,6 +46,7 @@ import {
 } from "src/components/Shared/DetailsPage/Tabs";
 import { DetailTitle } from "src/components/Shared/DetailsPage/DetailTitle";
 import { ExpandCollapseButton } from "src/components/Shared/CollapseButton";
+import { FavoriteIcon } from "src/components/Shared/FavoriteIcon";
 
 interface IProps {
   tag: GQL.TagDataFragment;
@@ -411,17 +411,6 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
     }
   }
 
-  const renderClickableIcons = () => (
-    <span className="name-icons">
-      <Button
-        className={cx("minimal", tag.favorite ? "favorite" : "not-favorite")}
-        onClick={() => setFavorite(!tag.favorite)}
-      >
-        <Icon icon={faHeart} />
-      </Button>
-    </span>
-  );
-
   function renderMergeButton() {
     return (
       <Dropdown>
@@ -549,7 +538,12 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
                     setCollapsed={(v) => setCollapsed(v)}
                   />
                 )}
-                {renderClickableIcons()}
+                <span className="name-icons">
+                  <FavoriteIcon
+                    favorite={tag.favorite}
+                    onToggleFavorite={(v) => setFavorite(v)}
+                  />
+                </span>
               </DetailTitle>
 
               {maybeRenderAliases()}

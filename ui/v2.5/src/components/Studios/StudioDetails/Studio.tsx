@@ -31,7 +31,7 @@ import {
   StudioDetailsPanel,
 } from "./StudioDetailsPanel";
 import { StudioGroupsPanel } from "./StudioGroupsPanel";
-import { faTrashAlt, faLink, faHeart } from "@fortawesome/free-solid-svg-icons";
+import { faTrashAlt, faLink } from "@fortawesome/free-solid-svg-icons";
 import TextUtils from "src/utils/text";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { DetailImage } from "src/components/Shared/DetailImage";
@@ -46,6 +46,7 @@ import {
 } from "src/components/Shared/DetailsPage/Tabs";
 import { DetailTitle } from "src/components/Shared/DetailsPage/DetailTitle";
 import { ExpandCollapseButton } from "src/components/Shared/CollapseButton";
+import { FavoriteIcon } from "src/components/Shared/FavoriteIcon";
 
 interface IProps {
   studio: GQL.StudioDataFragment;
@@ -380,27 +381,6 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
     }
   }
 
-  const renderClickableIcons = () => (
-    <span className="name-icons">
-      <Button
-        className={cx("minimal", studio.favorite ? "favorite" : "not-favorite")}
-        onClick={() => setFavorite(!studio.favorite)}
-      >
-        <Icon icon={faHeart} />
-      </Button>
-      {studio.url && (
-        <Button
-          as={ExternalLink}
-          href={TextUtils.sanitiseURL(studio.url)}
-          className="minimal link"
-          title={studio.url}
-        >
-          <Icon icon={faLink} />
-        </Button>
-      )}
-    </span>
-  );
-
   function setRating(v: number | null) {
     if (studio.id) {
       updateStudio({
@@ -499,7 +479,22 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
                     setCollapsed={(v) => setCollapsed(v)}
                   />
                 )}
-                {renderClickableIcons()}
+                <span className="name-icons">
+                  <FavoriteIcon
+                    favorite={studio.favorite}
+                    onToggleFavorite={(v) => setFavorite(v)}
+                  />
+                  {studio.url && (
+                    <Button
+                      as={ExternalLink}
+                      href={TextUtils.sanitiseURL(studio.url)}
+                      className="minimal link"
+                      title={studio.url}
+                    >
+                      <Icon icon={faLink} />
+                    </Button>
+                  )}
+                </span>
               </DetailTitle>
 
               {maybeRenderAliases()}

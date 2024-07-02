@@ -536,7 +536,10 @@ button.btn.favorite-button {
   &.not-favorite {
     color: rgba(191, 204, 214, 0.5);
     filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.9));
-    opacity: 0;
+
+    &.hide-not-favorite {
+      opacity: 0;
+    }
   }
 
   &.favorite {

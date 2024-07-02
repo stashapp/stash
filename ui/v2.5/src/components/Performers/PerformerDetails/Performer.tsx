@@ -14,7 +14,6 @@ import {
 } from "src/core/StashService";
 import { DetailsEditNavbar } from "src/components/Shared/DetailsEditNavbar";
 import { ErrorMessage } from "src/components/Shared/ErrorMessage";
-import { Icon } from "src/components/Shared/Icon";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { useLightbox } from "src/hooks/Lightbox/hooks";
 import { useToast } from "src/hooks/Toast";
@@ -31,7 +30,7 @@ import { PerformerImagesPanel } from "./PerformerImagesPanel";
 import { PerformerAppearsWithPanel } from "./performerAppearsWithPanel";
 import { PerformerEditPanel } from "./PerformerEditPanel";
 import { PerformerSubmitButton } from "./PerformerSubmitButton";
-import { faHeart, faLink } from "@fortawesome/free-solid-svg-icons";
+import { faLink } from "@fortawesome/free-solid-svg-icons";
 import { faInstagram, faTwitter } from "@fortawesome/free-brands-svg-icons";
 import { useRatingKeybinds } from "src/hooks/keybinds";
 import { DetailImage } from "src/components/Shared/DetailImage";
@@ -45,6 +44,7 @@ import {
 } from "src/components/Shared/DetailsPage/Tabs";
 import { DetailTitle } from "src/components/Shared/DetailsPage/DetailTitle";
 import { ExpandCollapseButton } from "src/components/Shared/CollapseButton";
+import { FavoriteIcon } from "src/components/Shared/FavoriteIcon";
 
 interface IProps {
   performer: GQL.PerformerDataFragment;
@@ -445,30 +445,6 @@ const PerformerPage: React.FC<IProps> = ({ performer, tabKey }) => {
     }
   }
 
-  function renderClickableIcons() {
-    return (
-      <span className="name-icons">
-        <Button
-          className={cx(
-            "minimal",
-            performer.favorite ? "favorite" : "not-favorite"
-          )}
-          onClick={() => setFavorite(!performer.favorite)}
-        >
-          <Icon icon={faHeart} />
-        </Button>
-        {urls.map((url) => (
-          <ExternalLinksButton
-            key={url.icon.iconName}
-            icon={url.icon}
-            className={url.className}
-            urls={url.urls}
-          />
-        ))}
-      </span>
-    );
-  }
-
   if (isDestroying)
     return (
       <LoadingIndicator
@@ -516,7 +492,20 @@ const PerformerPage: React.FC<IProps> = ({ performer, tabKey }) => {
                     setCollapsed={(v) => setCollapsed(v)}
                   />
                 )}
-                {renderClickableIcons()}
+                <span className="name-icons">
+                  <FavoriteIcon
+                    favorite={performer.favorite}
+                    onToggleFavorite={(v) => setFavorite(v)}
+                  />
+                  {urls.map((url) => (
+                    <ExternalLinksButton
+                      key={url.icon.iconName}
+                      icon={url.icon}
+                      className={url.className}
+                      urls={url.urls}
+                    />
+                  ))}
+                </span>
               </DetailTitle>
               {maybeRenderAliases()}
               <RatingSystem
