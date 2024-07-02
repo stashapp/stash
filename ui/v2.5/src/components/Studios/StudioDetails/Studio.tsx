@@ -46,6 +46,7 @@ import { ExpandCollapseButton } from "src/components/Shared/CollapseButton";
 import { FavoriteIcon } from "src/components/Shared/FavoriteIcon";
 import { ExternalLinkButtons } from "src/components/Shared/ExternalLinksButton";
 import { AliasList } from "src/components/Shared/DetailsPage/AliasList";
+import { HeaderImage } from "src/components/Shared/DetailsPage/HeaderImage";
 
 interface IProps {
   studio: GQL.StudioDataFragment;
@@ -246,6 +247,21 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
     return studio?.url ? [studio.url] : [];
   }, [studio.url]);
 
+  const studioImage = useMemo(() => {
+    const existingPath = studio.image_path;
+    if (isEditing) {
+      if (image === null && existingPath) {
+        const studioImageURL = new URL(existingPath);
+        studioImageURL.searchParams.set("default", "true");
+        return studioImageURL.toString();
+      } else if (image) {
+        return image;
+      }
+    }
+
+    return existingPath;
+  }, [isEditing, image, studio.image_path]);
+
   function setFavorite(v: boolean) {
     if (studio.id) {
       updateStudio({
@@ -356,25 +372,6 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
     setImage(undefined);
   }
 
-  function renderImage() {
-    let studioImage = studio.image_path;
-    if (isEditing) {
-      if (image === null && studioImage) {
-        const studioImageURL = new URL(studioImage);
-        studioImageURL.searchParams.set("default", "true");
-        studioImage = studioImageURL.toString();
-      } else if (image) {
-        studioImage = image;
-      }
-    }
-
-    if (studioImage) {
-      return (
-        <DetailImage className="logo" alt={studio.name} src={studioImage} />
-      );
-    }
-  }
-
   function setRating(v: number | null) {
     if (studio.id) {
       updateStudio({
@@ -455,15 +452,15 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
           show={!enableBackgroundImage && !isEditing}
         />
         <div className="detail-container">
-          <div className="detail-header-image">
-            {encodingImage ? (
-              <LoadingIndicator
-                message={intl.formatMessage({ id: "actions.encoding_image" })}
+          <HeaderImage encodingImage={encodingImage}>
+            {studioImage && (
+              <DetailImage
+                className="logo"
+                alt={studio.name}
+                src={studioImage}
               />
-            ) : (
-              renderImage()
             )}
-          </div>
+          </HeaderImage>
           <div className="row">
             <div className="studio-head col">
               <DetailTitle name={studio.name ?? ""} classNamePrefix="studio">

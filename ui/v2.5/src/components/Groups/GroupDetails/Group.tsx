@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Button } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Helmet } from "react-helmet";
 import cx from "classnames";
@@ -14,7 +13,6 @@ import { useHistory, RouteComponentProps } from "react-router-dom";
 import { DetailsEditNavbar } from "src/components/Shared/DetailsEditNavbar";
 import { ErrorMessage } from "src/components/Shared/ErrorMessage";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
-import { useLightbox } from "src/hooks/Lightbox/hooks";
 import { ModalComponent } from "src/components/Shared/Modal";
 import { useToast } from "src/hooks/Toast";
 import { GroupScenesPanel } from "./GroupScenesPanel";
@@ -35,6 +33,8 @@ import { BackgroundImage } from "src/components/Shared/DetailsPage/BackgroundIma
 import { DetailTitle } from "src/components/Shared/DetailsPage/DetailTitle";
 import { ExpandCollapseButton } from "src/components/Shared/CollapseButton";
 import { AliasList } from "src/components/Shared/DetailsPage/AliasList";
+import { HeaderImage } from "src/components/Shared/DetailsPage/HeaderImage";
+import { LightboxLink } from "src/hooks/Lightbox/LightboxLink";
 
 interface IProps {
   group: GQL.GroupDataFragment;
@@ -73,42 +73,59 @@ const GroupPage: React.FC<IProps> = ({ group }) => {
     [group.aliases]
   );
 
-  const defaultImage =
-    group.front_image_path && group.front_image_path.includes("default=true")
-      ? true
-      : false;
+  const isDefaultImage =
+    group.front_image_path && group.front_image_path.includes("default=true");
 
   const lightboxImages = useMemo(() => {
-    const covers = [
-      ...(group.front_image_path && !defaultImage
-        ? [
-            {
-              paths: {
-                thumbnail: group.front_image_path,
-                image: group.front_image_path,
-              },
-            },
-          ]
-        : []),
-      ...(group.back_image_path
-        ? [
-            {
-              paths: {
-                thumbnail: group.back_image_path,
-                image: group.back_image_path,
-              },
-            },
-          ]
-        : []),
-    ];
+    const covers = [];
+
+    if (group.front_image_path && !isDefaultImage) {
+      covers.push({
+        paths: {
+          thumbnail: group.front_image_path,
+          image: group.front_image_path,
+        },
+      });
+    }
+
+    if (group.back_image_path) {
+      covers.push({
+        paths: {
+          thumbnail: group.back_image_path,
+          image: group.back_image_path,
+        },
+      });
+    }
     return covers;
-  }, [group.front_image_path, group.back_image_path, defaultImage]);
+  }, [group.front_image_path, group.back_image_path, isDefaultImage]);
 
-  const index = lightboxImages.length;
+  const activeFrontImage = useMemo(() => {
+    let existingImage = group.front_image_path;
+    if (isEditing) {
+      if (frontImage === null && existingImage) {
+        const imageURL = new URL(existingImage);
+        imageURL.searchParams.set("default", "true");
+        return imageURL.toString();
+      } else if (frontImage) {
+        return frontImage;
+      }
+    }
 
-  const showLightbox = useLightbox({
-    images: lightboxImages,
-  });
+    return existingImage;
+  }, [isEditing, group.front_image_path, frontImage]);
+
+  const activeBackImage = useMemo(() => {
+    let existingImage = group.back_image_path;
+    if (isEditing) {
+      if (backImage === null) {
+        return undefined;
+      } else if (backImage) {
+        return backImage;
+      }
+    }
+
+    return existingImage;
+  }, [isEditing, group.back_image_path, backImage]);
 
   const [updateGroup, { loading: updating }] = useGroupUpdate();
   const [deleteGroup, { loading: deleting }] = useGroupDestroy({
@@ -200,60 +217,6 @@ const GroupPage: React.FC<IProps> = ({ group }) => {
     );
   }
 
-  function renderFrontImage() {
-    let image = group.front_image_path;
-    if (isEditing) {
-      if (frontImage === null && image) {
-        const imageURL = new URL(image);
-        imageURL.searchParams.set("default", "true");
-        image = imageURL.toString();
-      } else if (frontImage) {
-        image = frontImage;
-      }
-    }
-
-    if (image && defaultImage) {
-      return (
-        <div className="group-image-container">
-          <DetailImage alt="Front Cover" src={image} />
-        </div>
-      );
-    } else if (image) {
-      return (
-        <Button
-          className="group-image-container"
-          variant="link"
-          onClick={() => showLightbox()}
-        >
-          <DetailImage alt="Front Cover" src={image} />
-        </Button>
-      );
-    }
-  }
-
-  function renderBackImage() {
-    let image = group.back_image_path;
-    if (isEditing) {
-      if (backImage === null) {
-        image = undefined;
-      } else if (backImage) {
-        image = backImage;
-      }
-    }
-
-    if (image) {
-      return (
-        <Button
-          className="group-image-container"
-          variant="link"
-          onClick={() => showLightbox(index - 1)}
-        >
-          <DetailImage alt="Back Cover" src={image} />
-        </Button>
-      );
-    }
-  }
-
   function setRating(v: number | null) {
     if (group.id) {
       updateGroup({
@@ -342,20 +305,23 @@ const GroupPage: React.FC<IProps> = ({ group }) => {
           show={!enableBackgroundImage && !isEditing}
         />
         <div className="detail-container">
-          <div className="detail-header-image">
-            <div className="logo w-100">
-              {encodingImage ? (
-                <LoadingIndicator
-                  message={intl.formatMessage({ id: "actions.encoding_image" })}
-                />
-              ) : (
-                <div className="group-images">
-                  {renderFrontImage()}
-                  {renderBackImage()}
-                </div>
+          <HeaderImage encodingImage={encodingImage}>
+            <div className="group-images">
+              {!!activeFrontImage && (
+                <LightboxLink images={lightboxImages}>
+                  <DetailImage alt="Front Cover" src={activeFrontImage} />
+                </LightboxLink>
+              )}
+              {!!activeBackImage && (
+                <LightboxLink
+                  images={lightboxImages}
+                  index={lightboxImages.length - 1}
+                >
+                  <DetailImage alt="Back Cover" src={activeBackImage} />
+                </LightboxLink>
               )}
             </div>
-          </div>
+          </HeaderImage>
           <div className="row">
             <div className="group-head col">
               <DetailTitle name={group.name} classNamePrefix="group">

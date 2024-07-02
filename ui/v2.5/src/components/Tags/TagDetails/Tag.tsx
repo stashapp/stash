@@ -48,6 +48,7 @@ import { DetailTitle } from "src/components/Shared/DetailsPage/DetailTitle";
 import { ExpandCollapseButton } from "src/components/Shared/CollapseButton";
 import { FavoriteIcon } from "src/components/Shared/FavoriteIcon";
 import { AliasList } from "src/components/Shared/DetailsPage/AliasList";
+import { HeaderImage } from "src/components/Shared/DetailsPage/HeaderImage";
 
 interface IProps {
   tag: GQL.TagDataFragment;
@@ -258,6 +259,21 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
 
   const showAllCounts = uiConfig?.showChildTagContent;
 
+  const tagImage = useMemo(() => {
+    let existingImage = tag.image_path;
+    if (isEditing) {
+      if (image === null && existingImage) {
+        const tagImageURL = new URL(existingImage);
+        tagImageURL.searchParams.set("default", "true");
+        return tagImageURL.toString();
+      } else if (image) {
+        return image;
+      }
+    }
+
+    return existingImage;
+  }, [isEditing, tag.image_path, image]);
+
   function setFavorite(v: boolean) {
     if (tag.id) {
       updateTag({
@@ -385,23 +401,6 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
     setImage(undefined);
   }
 
-  function renderImage() {
-    let tagImage = tag.image_path;
-    if (isEditing) {
-      if (image === null && tagImage) {
-        const tagImageURL = new URL(tagImage);
-        tagImageURL.searchParams.set("default", "true");
-        tagImage = tagImageURL.toString();
-      } else if (image) {
-        tagImage = image;
-      }
-    }
-
-    if (tagImage) {
-      return <DetailImage className="logo" alt={tag.name} src={tagImage} />;
-    }
-  }
-
   function renderMergeButton() {
     return (
       <Dropdown>
@@ -511,15 +510,11 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
           show={enableBackgroundImage && !isEditing}
         />
         <div className="detail-container">
-          <div className="detail-header-image">
-            {encodingImage ? (
-              <LoadingIndicator
-                message={intl.formatMessage({ id: "actions.encoding_image" })}
-              />
-            ) : (
-              renderImage()
+          <HeaderImage encodingImage={encodingImage}>
+            {tagImage && (
+              <DetailImage className="logo" alt={tag.name} src={tagImage} />
             )}
-          </div>
+          </HeaderImage>
           <div className="row">
             <div className="tag-head col">
               <DetailTitle name={tag.name} classNamePrefix="tag">

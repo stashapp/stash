@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Button, Tabs, Tab, Col, Row } from "react-bootstrap";
+import { Tabs, Tab, Col, Row } from "react-bootstrap";
 import { useIntl } from "react-intl";
 import { useHistory, Redirect, RouteComponentProps } from "react-router-dom";
 import { Helmet } from "react-helmet";
@@ -15,7 +15,6 @@ import {
 import { DetailsEditNavbar } from "src/components/Shared/DetailsEditNavbar";
 import { ErrorMessage } from "src/components/Shared/ErrorMessage";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
-import { useLightbox } from "src/hooks/Lightbox/hooks";
 import { useToast } from "src/hooks/Toast";
 import { ConfigurationContext } from "src/hooks/Config";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
@@ -44,6 +43,8 @@ import { DetailTitle } from "src/components/Shared/DetailsPage/DetailTitle";
 import { ExpandCollapseButton } from "src/components/Shared/CollapseButton";
 import { FavoriteIcon } from "src/components/Shared/FavoriteIcon";
 import { AliasList } from "src/components/Shared/DetailsPage/AliasList";
+import { HeaderImage } from "src/components/Shared/DetailsPage/HeaderImage";
+import { LightboxLink } from "src/hooks/Lightbox/LightboxLink";
 
 interface IProps {
   performer: GQL.PerformerDataFragment;
@@ -238,10 +239,6 @@ const PerformerPage: React.FC<IProps> = ({ performer, tabKey }) => {
     [activeImage]
   );
 
-  const showLightbox = useLightbox({
-    images: lightboxImages,
-  });
-
   const [updatePerformer] = usePerformerUpdate();
   const [deletePerformer, { loading: isDestroying }] = usePerformerDestroy();
 
@@ -309,20 +306,6 @@ const PerformerPage: React.FC<IProps> = ({ performer, tabKey }) => {
       setIsEditing((e) => !e);
     }
     setImage(undefined);
-  }
-
-  function renderImage() {
-    if (activeImage) {
-      return (
-        <Button variant="link" onClick={() => showLightbox()}>
-          <DetailImage
-            className="performer"
-            src={activeImage}
-            alt={performer.name}
-          />
-        </Button>
-      );
-    }
   }
 
   function maybeRenderEditPanel() {
@@ -436,15 +419,18 @@ const PerformerPage: React.FC<IProps> = ({ performer, tabKey }) => {
           show={enableBackgroundImage && !isEditing}
         />
         <div className="detail-container">
-          <div className="detail-header-image">
-            {encodingImage ? (
-              <LoadingIndicator
-                message={intl.formatMessage({ id: "actions.encoding_image" })}
-              />
-            ) : (
-              renderImage()
+          <HeaderImage encodingImage={encodingImage}>
+            {!!activeImage && (
+              <LightboxLink images={lightboxImages}>
+                <DetailImage
+                  className="performer"
+                  src={activeImage}
+                  alt={performer.name}
+                />
+              </LightboxLink>
             )}
-          </div>
+          </HeaderImage>
+
           <div className="row">
             <div className="performer-head col">
               <DetailTitle
