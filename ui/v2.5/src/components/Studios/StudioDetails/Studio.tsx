@@ -50,6 +50,7 @@ import {
   TabTitleCounter,
   useTabKey,
 } from "src/components/Shared/DetailsPage/Tabs";
+import { DetailTitle } from "src/components/Shared/DetailsPage/DetailTitle";
 
 interface IProps {
   studio: GQL.StudioDataFragment;
@@ -515,11 +516,11 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
           </div>
           <div className="row">
             <div className="studio-head col">
-              <h2>
-                <span className="studio-name">{studio.name}</span>
+              <DetailTitle name={studio.name ?? ""} classNamePrefix="studio">
                 {maybeRenderShowCollapseButton()}
                 {renderClickableIcons()}
-              </h2>
+              </DetailTitle>
+
               {maybeRenderAliases()}
               <RatingSystem
                 value={studio.rating100}

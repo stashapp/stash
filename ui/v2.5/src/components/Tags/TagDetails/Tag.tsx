@@ -47,6 +47,7 @@ import {
   TabTitleCounter,
   useTabKey,
 } from "src/components/Shared/DetailsPage/Tabs";
+import { DetailTitle } from "src/components/Shared/DetailsPage/DetailTitle";
 
 interface IProps {
   tag: GQL.TagDataFragment;
@@ -561,11 +562,11 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
           </div>
           <div className="row">
             <div className="tag-head col">
-              <h2>
-                <span className="tag-name">{tag.name}</span>
+              <DetailTitle name={tag.name} classNamePrefix="tag">
                 {maybeRenderShowCollapseButton()}
                 {renderClickableIcons()}
-              </h2>
+              </DetailTitle>
+
               {maybeRenderAliases()}
               {maybeRenderDetails()}
               {maybeRenderEditPanel()}

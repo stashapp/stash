@@ -37,6 +37,7 @@ import { useLoadStickyHeader } from "src/hooks/detailsPanel";
 import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
 import { ExternalLinksButton } from "src/components/Shared/ExternalLinksButton";
 import { BackgroundImage } from "src/components/Shared/DetailsPage/BackgroundImage";
+import { DetailTitle } from "src/components/Shared/DetailsPage/DetailTitle";
 
 interface IProps {
   group: GQL.GroupDataFragment;
@@ -390,11 +391,11 @@ const GroupPage: React.FC<IProps> = ({ group }) => {
           </div>
           <div className="row">
             <div className="group-head col">
-              <h2>
-                <span className="group-name">{group.name}</span>
+              <DetailTitle name={group.name} classNamePrefix="group">
                 {maybeRenderShowCollapseButton()}
                 {renderClickableIcons()}
-              </h2>
+              </DetailTitle>
+
               {maybeRenderAliases()}
               <RatingSystem
                 value={group.rating100}

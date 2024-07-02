@@ -48,6 +48,7 @@ import {
   TabTitleCounter,
   useTabKey,
 } from "src/components/Shared/DetailsPage/Tabs";
+import { DetailTitle } from "src/components/Shared/DetailsPage/DetailTitle";
 
 interface IProps {
   performer: GQL.PerformerDataFragment;
@@ -527,16 +528,14 @@ const PerformerPage: React.FC<IProps> = ({ performer, tabKey }) => {
           </div>
           <div className="row">
             <div className="performer-head col">
-              <h2>
-                <span className="performer-name">{performer.name}</span>
-                {performer.disambiguation && (
-                  <span className="performer-disambiguation">
-                    {` (${performer.disambiguation})`}
-                  </span>
-                )}
+              <DetailTitle
+                name={performer.name}
+                disambiguation={performer.disambiguation ?? undefined}
+                classNamePrefix="performer"
+              >
                 {maybeRenderShowCollapseButton()}
                 {renderClickableIcons()}
-              </h2>
+              </DetailTitle>
               {maybeRenderAliases()}
               <RatingSystem
                 value={performer.rating100}
