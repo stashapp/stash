@@ -43,6 +43,7 @@ import {
 import { DetailTitle } from "src/components/Shared/DetailsPage/DetailTitle";
 import { ExpandCollapseButton } from "src/components/Shared/CollapseButton";
 import { FavoriteIcon } from "src/components/Shared/FavoriteIcon";
+import { AliasList } from "src/components/Shared/DetailsPage/AliasList";
 
 interface IProps {
   performer: GQL.PerformerDataFragment;
@@ -384,16 +385,6 @@ const PerformerPage: React.FC<IProps> = ({ performer, tabKey }) => {
     }
   }
 
-  function maybeRenderAliases() {
-    if (performer?.alias_list?.length) {
-      return (
-        <div>
-          <span className="alias-head">{performer.alias_list?.join(", ")}</span>
-        </div>
-      );
-    }
-  }
-
   function setFavorite(v: boolean) {
     if (performer.id) {
       updatePerformer({
@@ -475,7 +466,7 @@ const PerformerPage: React.FC<IProps> = ({ performer, tabKey }) => {
                   <ExternalLinkButtons urls={performer.urls ?? undefined} />
                 </span>
               </DetailTitle>
-              {maybeRenderAliases()}
+              <AliasList aliases={performer.alias_list} />
               <RatingSystem
                 value={performer.rating100}
                 onSetRating={(value) => setRating(value)}

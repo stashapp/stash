@@ -45,6 +45,7 @@ import { DetailTitle } from "src/components/Shared/DetailsPage/DetailTitle";
 import { ExpandCollapseButton } from "src/components/Shared/CollapseButton";
 import { FavoriteIcon } from "src/components/Shared/FavoriteIcon";
 import { ExternalLinkButtons } from "src/components/Shared/ExternalLinksButton";
+import { AliasList } from "src/components/Shared/DetailsPage/AliasList";
 
 interface IProps {
   studio: GQL.StudioDataFragment;
@@ -346,16 +347,6 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
     );
   }
 
-  function maybeRenderAliases() {
-    if (studio?.aliases?.length) {
-      return (
-        <div>
-          <span className="alias-head">{studio?.aliases?.join(", ")}</span>
-        </div>
-      );
-    }
-  }
-
   function toggleEditing(value?: boolean) {
     if (value !== undefined) {
       setIsEditing(value);
@@ -491,7 +482,7 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
                 </span>
               </DetailTitle>
 
-              {maybeRenderAliases()}
+              <AliasList aliases={studio.aliases} />
               <RatingSystem
                 value={studio.rating100}
                 onSetRating={(value) => setRating(value)}

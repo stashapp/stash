@@ -47,6 +47,7 @@ import {
 import { DetailTitle } from "src/components/Shared/DetailsPage/DetailTitle";
 import { ExpandCollapseButton } from "src/components/Shared/CollapseButton";
 import { FavoriteIcon } from "src/components/Shared/FavoriteIcon";
+import { AliasList } from "src/components/Shared/DetailsPage/AliasList";
 
 interface IProps {
   tag: GQL.TagDataFragment;
@@ -375,16 +376,6 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
     );
   }
 
-  function maybeRenderAliases() {
-    if (tag?.aliases?.length) {
-      return (
-        <div>
-          <span className="alias-head">{tag?.aliases?.join(", ")}</span>
-        </div>
-      );
-    }
-  }
-
   function toggleEditing(value?: boolean) {
     if (value !== undefined) {
       setIsEditing(value);
@@ -546,7 +537,7 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
                 </span>
               </DetailTitle>
 
-              {maybeRenderAliases()}
+              <AliasList aliases={tag.aliases} />
               {maybeRenderDetails()}
               {maybeRenderEditPanel()}
             </div>

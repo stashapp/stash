@@ -34,6 +34,7 @@ import { ExternalLinksButton } from "src/components/Shared/ExternalLinksButton";
 import { BackgroundImage } from "src/components/Shared/DetailsPage/BackgroundImage";
 import { DetailTitle } from "src/components/Shared/DetailsPage/DetailTitle";
 import { ExpandCollapseButton } from "src/components/Shared/CollapseButton";
+import { AliasList } from "src/components/Shared/DetailsPage/AliasList";
 
 interface IProps {
   group: GQL.GroupDataFragment;
@@ -66,6 +67,11 @@ const GroupPage: React.FC<IProps> = ({ group }) => {
   const [frontImage, setFrontImage] = useState<string | null>();
   const [backImage, setBackImage] = useState<string | null>();
   const [encodingImage, setEncodingImage] = useState<boolean>(false);
+
+  const aliases = useMemo(
+    () => (group.aliases ? [group.aliases] : []),
+    [group.aliases]
+  );
 
   const defaultImage =
     group.front_image_path && group.front_image_path.includes("default=true")
@@ -248,16 +254,6 @@ const GroupPage: React.FC<IProps> = ({ group }) => {
     }
   }
 
-  function maybeRenderAliases() {
-    if (group?.aliases) {
-      return (
-        <div>
-          <span className="alias-head">{group?.aliases}</span>
-        </div>
-      );
-    }
-  }
-
   function setRating(v: number | null) {
     if (group.id) {
       updateGroup({
@@ -376,7 +372,7 @@ const GroupPage: React.FC<IProps> = ({ group }) => {
                 </span>
               </DetailTitle>
 
-              {maybeRenderAliases()}
+              <AliasList aliases={aliases} />
               <RatingSystem
                 value={group.rating100}
                 onSetRating={(value) => setRating(value)}
