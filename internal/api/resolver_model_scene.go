@@ -194,7 +194,7 @@ func (r *sceneResolver) Movies(ctx context.Context, obj *models.Scene) (ret []*S
 		}
 	}
 
-	loader := loaders.From(ctx).MovieByID
+	loader := loaders.From(ctx).GroupByID
 
 	for _, sm := range obj.Movies.List() {
 		movie, err := loader.Load(sm.MovieID)
@@ -225,7 +225,7 @@ func (r *sceneResolver) Groups(ctx context.Context, obj *models.Scene) (ret []*S
 		}
 	}
 
-	loader := loaders.From(ctx).MovieByID
+	loader := loaders.From(ctx).GroupByID
 
 	for _, sm := range obj.Movies.List() {
 		movie, err := loader.Load(sm.MovieID)
