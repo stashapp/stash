@@ -256,6 +256,11 @@
   }
 }
 
+.scraper-toolbar {
+  display: flex;
+  justify-content: space-between;
+}
+
 .job-table.card {
   background-color: $card-bg;
   height: 10em;

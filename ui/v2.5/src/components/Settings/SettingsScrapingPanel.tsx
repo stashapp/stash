@@ -24,6 +24,7 @@ import {
   InstalledScraperPackages,
 } from "./ScraperPackageManager";
 import { ExternalLink } from "../Shared/ExternalLink";
+import { ClearableInput } from "../Shared/ClearableInput";
 
 const ScraperTable: React.FC<
   PropsWithChildren<{
@@ -153,8 +154,22 @@ const ScraperTableRow: React.FC<{
   );
 };
 
+function filterScraper(filter: string) {
+  return (name: string, urls: string[] | undefined | null) => {
+    if (!filter) return true;
+
+    return (
+      name.toLowerCase().includes(filter) ||
+      urls?.some((url) => url.toLowerCase().includes(filter))
+    );
+  };
+}
+
 const ScrapersSection: React.FC = () => {
   const Toast = useToast();
+  const intl = useIntl();
+
+  const [filter, setFilter] = useState("");
 
   const { data: performerScrapers, loading: loadingPerformers } =
     useListPerformerScrapers();
@@ -164,6 +179,30 @@ const ScrapersSection: React.FC = () => {
     useListGalleryScrapers();
   const { data: groupScrapers, loading: loadingGroups } =
     useListGroupScrapers();
+
+  const filteredScrapers = useMemo(() => {
+    const filterFn = filterScraper(filter.toLowerCase());
+    return {
+      performers: performerScrapers?.listScrapers.filter((s) =>
+        filterFn(s.name, s.performer?.urls)
+      ),
+      scenes: sceneScrapers?.listScrapers.filter((s) =>
+        filterFn(s.name, s.scene?.urls)
+      ),
+      galleries: galleryScrapers?.listScrapers.filter((s) =>
+        filterFn(s.name, s.gallery?.urls)
+      ),
+      groups: groupScrapers?.listScrapers.filter((s) =>
+        filterFn(s.name, s.group?.urls)
+      ),
+    };
+  }, [
+    performerScrapers,
+    sceneScrapers,
+    galleryScrapers,
+    groupScrapers,
+    filter,
+  ]);
 
   async function onReloadScrapers() {
     try {
@@ -182,7 +221,13 @@ const ScrapersSection: React.FC = () => {
 
   return (
     <SettingSection headingID="config.scraping.scrapers">
-      <div className="content">
+      <div className="content scraper-toolbar">
+        <ClearableInput
+          placeholder={`${intl.formatMessage({ id: "filter" })}...`}
+          value={filter}
+          setValue={(v) => setFilter(v)}
+        />
+
         <Button onClick={() => onReloadScrapers()}>
           <span className="fa-icon">
             <Icon icon={faSyncAlt} />
@@ -195,7 +240,7 @@ const ScrapersSection: React.FC = () => {
 
       <div className="content">
         <ScraperTable entityType="scene">
-          {sceneScrapers?.listScrapers.map((scraper) => (
+          {filteredScrapers.scenes?.map((scraper) => (
             <ScraperTableRow
               key={scraper.id}
               name={scraper.name}
@@ -207,7 +252,7 @@ const ScrapersSection: React.FC = () => {
         </ScraperTable>
 
         <ScraperTable entityType="gallery">
-          {galleryScrapers?.listScrapers.map((scraper) => (
+          {filteredScrapers.galleries?.map((scraper) => (
             <ScraperTableRow
               key={scraper.id}
               name={scraper.name}
@@ -219,7 +264,7 @@ const ScrapersSection: React.FC = () => {
         </ScraperTable>
 
         <ScraperTable entityType="performer">
-          {performerScrapers?.listScrapers.map((scraper) => (
+          {filteredScrapers.performers?.map((scraper) => (
             <ScraperTableRow
               key={scraper.id}
               name={scraper.name}
@@ -231,7 +276,7 @@ const ScrapersSection: React.FC = () => {
         </ScraperTable>
 
         <ScraperTable entityType="group">
-          {groupScrapers?.listScrapers.map((scraper) => (
+          {filteredScrapers.groups?.map((scraper) => (
             <ScraperTableRow
               key={scraper.id}
               name={scraper.name}
