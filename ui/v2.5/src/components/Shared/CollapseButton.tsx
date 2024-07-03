@@ -7,7 +7,7 @@ import { Button, Collapse } from "react-bootstrap";
 import { Icon } from "./Icon";
 
 interface IProps {
-  text: string;
+  text: React.ReactNode;
 }
 
 export const CollapseButton: React.FC<React.PropsWithChildren<IProps>> = (

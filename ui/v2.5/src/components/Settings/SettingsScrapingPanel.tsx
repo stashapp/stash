@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { PropsWithChildren, useMemo, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Button } from "react-bootstrap";
 import {
@@ -24,55 +24,154 @@ import {
   InstalledScraperPackages,
 } from "./ScraperPackageManager";
 import { ExternalLink } from "../Shared/ExternalLink";
+import { ClearableInput } from "../Shared/ClearableInput";
+import { Counter } from "../Shared/Counter";
+
+const ScraperTable: React.FC<
+  PropsWithChildren<{
+    entityType: string;
+    count?: number;
+  }>
+> = ({ entityType, count, children }) => {
+  const intl = useIntl();
+
+  const titleEl = useMemo(() => {
+    const title = intl.formatMessage(
+      { id: "config.scraping.entity_scrapers" },
+      { entityType: intl.formatMessage({ id: entityType }) }
+    );
+
+    if (count) {
+      return (
+        <span>
+          {title} <Counter count={count} />
+        </span>
+      );
+    }
+
+    return title;
+  }, [count, entityType, intl]);
+
+  return (
+    <CollapseButton text={titleEl}>
+      <table className="scraper-table">
+        <thead>
+          <tr>
+            <th>
+              <FormattedMessage id="name" />
+            </th>
+            <th>
+              <FormattedMessage id="config.scraping.supported_types" />
+            </th>
+            <th>
+              <FormattedMessage id="config.scraping.supported_urls" />
+            </th>
+          </tr>
+        </thead>
+        <tbody>{children}</tbody>
+      </table>
+    </CollapseButton>
+  );
+};
+
+const ScrapeTypeList: React.FC<{
+  types: ScrapeType[];
+  entityType: string;
+}> = ({ types, entityType }) => {
+  const intl = useIntl();
+
+  const typeStrings = useMemo(
+    () =>
+      types.map((t) => {
+        switch (t) {
+          case ScrapeType.Fragment:
+            return intl.formatMessage(
+              { id: "config.scraping.entity_metadata" },
+              { entityType: intl.formatMessage({ id: entityType }) }
+            );
+          default:
+            return t;
+        }
+      }),
+    [types, entityType, intl]
+  );
+
+  return (
+    <ul>
+      {typeStrings.map((t) => (
+        <li key={t}>{t}</li>
+      ))}
+    </ul>
+  );
+};
 
 interface IURLList {
   urls: string[];
 }
 
 const URLList: React.FC<IURLList> = ({ urls }) => {
-  const maxCollapsedItems = 5;
-  const [expanded, setExpanded] = useState<boolean>(false);
-
-  function linkSite(url: string) {
-    const u = new URL(url);
-    return `${u.protocol}//${u.host}`;
-  }
-
-  function renderLink(url?: string) {
-    if (url) {
-      const sanitised = TextUtils.sanitiseURL(url);
-      const siteURL = linkSite(sanitised!);
-
-      return <ExternalLink href={siteURL}>{sanitised}</ExternalLink>;
-    }
-  }
-
-  function getListItems() {
-    const items = urls.map((u) => <li key={u}>{renderLink(u)}</li>);
-
-    if (items.length > maxCollapsedItems) {
-      if (!expanded) {
-        items.length = maxCollapsedItems;
-      }
-
-      items.push(
-        <li key="expand/collapse">
-          <Button onClick={() => setExpanded(!expanded)} variant="link">
-            {expanded ? "less" : "more"}
-          </Button>
-        </li>
-      );
+  const items = useMemo(() => {
+    function linkSite(url: string) {
+      const u = new URL(url);
+      return `${u.protocol}//${u.host}`;
     }
 
-    return items;
-  }
+    const ret = urls
+      .slice()
+      .sort()
+      .map((u) => {
+        const sanitised = TextUtils.sanitiseURL(u);
+        const siteURL = linkSite(sanitised!);
 
-  return <ul>{getListItems()}</ul>;
+        return (
+          <li key={u}>
+            <ExternalLink href={siteURL}>{sanitised}</ExternalLink>
+          </li>
+        );
+      });
+
+    return ret;
+  }, [urls]);
+
+  return <ul>{items}</ul>;
 };
 
-export const SettingsScrapingPanel: React.FC = () => {
+const ScraperTableRow: React.FC<{
+  name: string;
+  entityType: string;
+  supportedScrapes: ScrapeType[];
+  urls: string[];
+}> = ({ name, entityType, supportedScrapes, urls }) => {
+  return (
+    <tr>
+      <td>{name}</td>
+      <td>
+        <ScrapeTypeList types={supportedScrapes} entityType={entityType} />
+      </td>
+      <td>
+        <URLList urls={urls} />
+      </td>
+    </tr>
+  );
+};
+
+function filterScraper(filter: string) {
+  return (name: string, urls: string[] | undefined | null) => {
+    if (!filter) return true;
+
+    return (
+      name.toLowerCase().includes(filter) ||
+      urls?.some((url) => url.toLowerCase().includes(filter))
+    );
+  };
+}
+
+const ScrapersSection: React.FC = () => {
   const Toast = useToast();
   const intl = useIntl();
+
+  const [filter, setFilter] = useState("");
+
   const { data: performerScrapers, loading: loadingPerformers } =
     useListPerformerScrapers();
   const { data: sceneScrapers, loading: loadingScenes } =
@@ -82,8 +181,29 @@ export const SettingsScrapingPanel: React.FC = () => {
   const { data: groupScrapers, loading: loadingGroups } =
     useListGroupScrapers();
 
-  const { general, scraping, loading, error, saveGeneral, saveScraping } =
-    useSettings();
+  const filteredScrapers = useMemo(() => {
+    const filterFn = filterScraper(filter.toLowerCase());
+    return {
+      performers: performerScrapers?.listScrapers.filter((s) =>
+        filterFn(s.name, s.performer?.urls)
+      ),
+      scenes: sceneScrapers?.listScrapers.filter((s) =>
+        filterFn(s.name, s.scene?.urls)
+      ),
+      galleries: galleryScrapers?.listScrapers.filter((s) =>
+        filterFn(s.name, s.gallery?.urls)
+      ),
+      groups: groupScrapers?.listScrapers.filter((s) =>
+        filterFn(s.name, s.group?.urls)
+      ),
+    };
+  }, [
+    performerScrapers,
+    sceneScrapers,
+    galleryScrapers,
+    groupScrapers,
+    filter,
+  ]);
 
   async function onReloadScrapers() {
     try {
@@ -93,213 +213,111 @@ export const SettingsScrapingPanel: React.FC = () => {
     }
   }
 
-  function renderPerformerScrapeTypes(types: ScrapeType[]) {
-    const typeStrings = types
-      .filter((t) => t !== ScrapeType.Fragment)
-      .map((t) => {
-        switch (t) {
-          case ScrapeType.Name:
-            return intl.formatMessage({ id: "config.scraping.search_by_name" });
-          default:
-            return t;
-        }
-      });
-
+  if (loadingScenes || loadingGalleries || loadingPerformers || loadingGroups)
     return (
-      <ul>
-        {typeStrings.map((t) => (
-          <li key={t}>{t}</li>
-        ))}
-      </ul>
+      <SettingSection headingID="config.scraping.scrapers">
+        <LoadingIndicator />
+      </SettingSection>
     );
-  }
 
-  function renderSceneScrapeTypes(types: ScrapeType[]) {
-    const typeStrings = types.map((t) => {
-      switch (t) {
-        case ScrapeType.Fragment:
-          return intl.formatMessage(
-            { id: "config.scraping.entity_metadata" },
-            { entityType: intl.formatMessage({ id: "scene" }) }
-          );
-        default:
-          return t;
-      }
-    });
+  return (
+    <SettingSection headingID="config.scraping.scrapers">
+      <div className="content scraper-toolbar">
+        <ClearableInput
+          placeholder={`${intl.formatMessage({ id: "filter" })}...`}
+          value={filter}
+          setValue={(v) => setFilter(v)}
+        />
 
-    return (
-      <ul>
-        {typeStrings.map((t) => (
-          <li key={t}>{t}</li>
-        ))}
-      </ul>
-    );
-  }
+        <Button onClick={() => onReloadScrapers()}>
+          <span className="fa-icon">
+            <Icon icon={faSyncAlt} />
+          </span>
+          <span>
+            <FormattedMessage id="actions.reload_scrapers" />
+          </span>
+        </Button>
+      </div>
 
-  function renderGalleryScrapeTypes(types: ScrapeType[]) {
-    const typeStrings = types.map((t) => {
-      switch (t) {
-        case ScrapeType.Fragment:
-          return intl.formatMessage(
-            { id: "config.scraping.entity_metadata" },
-            { entityType: intl.formatMessage({ id: "gallery" }) }
-          );
-        default:
-          return t;
-      }
-    });
+      <div className="content">
+        {!!filteredScrapers.scenes?.length && (
+          <ScraperTable
+            entityType="scene"
+            count={filteredScrapers.scenes?.length}
+          >
+            {filteredScrapers.scenes?.map((scraper) => (
+              <ScraperTableRow
+                key={scraper.id}
+                name={scraper.name}
+                entityType="scene"
+                supportedScrapes={scraper.scene?.supported_scrapes ?? []}
+                urls={scraper.scene?.urls ?? []}
+              />
+            ))}
+          </ScraperTable>
+        )}
 
-    return (
-      <ul>
-        {typeStrings.map((t) => (
-          <li key={t}>{t}</li>
-        ))}
-      </ul>
-    );
-  }
+        {!!filteredScrapers.galleries?.length && (
+          <ScraperTable
+            entityType="gallery"
+            count={filteredScrapers.galleries?.length}
+          >
+            {filteredScrapers.galleries?.map((scraper) => (
+              <ScraperTableRow
+                key={scraper.id}
+                name={scraper.name}
+                entityType="gallery"
+                supportedScrapes={scraper.gallery?.supported_scrapes ?? []}
+                urls={scraper.gallery?.urls ?? []}
+              />
+            ))}
+          </ScraperTable>
+        )}
 
-  function renderGroupScrapeTypes(types: ScrapeType[]) {
-    const typeStrings = types.map((t) => {
-      switch (t) {
-        case ScrapeType.Fragment:
-          return intl.formatMessage(
-            { id: "config.scraping.entity_metadata" },
-            { entityType: intl.formatMessage({ id: "group" }) }
-          );
-        default:
-          return t;
-      }
-    });
+        {!!filteredScrapers.performers?.length && (
+          <ScraperTable
+            entityType="performer"
+            count={filteredScrapers.performers?.length}
+          >
+            {filteredScrapers.performers?.map((scraper) => (
+              <ScraperTableRow
+                key={scraper.id}
+                name={scraper.name}
+                entityType="performer"
+                supportedScrapes={scraper.performer?.supported_scrapes ?? []}
+                urls={scraper.performer?.urls ?? []}
+              />
+            ))}
+          </ScraperTable>
+        )}
 
-    return (
-      <ul>
-        {typeStrings.map((t) => (
-          <li key={t}>{t}</li>
-        ))}
-      </ul>
-    );
-  }
+        {!!filteredScrapers.groups?.length && (
+          <ScraperTable
+            entityType="group"
+            count={filteredScrapers.groups?.length}
+          >
+            {filteredScrapers.groups?.map((scraper) => (
+              <ScraperTableRow
+                key={scraper.id}
+                name={scraper.name}
+                entityType="group"
+                supportedScrapes={scraper.group?.supported_scrapes ?? []}
+                urls={scraper.group?.urls ?? []}
+              />
+            ))}
+          </ScraperTable>
+        )}
+      </div>
+    </SettingSection>
+  );
+};
 
-  function renderURLs(urls: string[]) {
-    return <URLList urls={urls} />;
-  }
-
-  function renderSceneScrapers() {
-    const elements = (sceneScrapers?.listScrapers ?? []).map((scraper) => (
-      <tr key={scraper.id}>
-        <td>{scraper.name}</td>
-        <td>
-          {renderSceneScrapeTypes(scraper.scene?.supported_scrapes ?? [])}
-        </td>
-        <td>{renderURLs(scraper.scene?.urls ?? [])}</td>
-      </tr>
-    ));
-
-    return renderTable(
-      intl.formatMessage(
-        { id: "config.scraping.entity_scrapers" },
-        { entityType: intl.formatMessage({ id: "scene" }) }
-      ),
-      elements
-    );
-  }
-
-  function renderGalleryScrapers() {
-    const elements = (galleryScrapers?.listScrapers ?? []).map((scraper) => (
-      <tr key={scraper.id}>
-        <td>{scraper.name}</td>
-        <td>
-          {renderGalleryScrapeTypes(scraper.gallery?.supported_scrapes ?? [])}
-        </td>
-        <td>{renderURLs(scraper.gallery?.urls ?? [])}</td>
-      </tr>
-    ));
-
-    return renderTable(
-      intl.formatMessage(
-        { id: "config.scraping.entity_scrapers" },
-        { entityType: intl.formatMessage({ id: "gallery" }) }
-      ),
-      elements
-    );
-  }
-
-  function renderPerformerScrapers() {
-    const elements = (performerScrapers?.listScrapers ?? []).map((scraper) => (
-      <tr key={scraper.id}>
-        <td>{scraper.name}</td>
-        <td>
-          {renderPerformerScrapeTypes(
-            scraper.performer?.supported_scrapes ?? []
-          )}
-        </td>
-        <td>{renderURLs(scraper.performer?.urls ?? [])}</td>
-      </tr>
-    ));
-
-    return renderTable(
-      intl.formatMessage(
-        { id: "config.scraping.entity_scrapers" },
-        { entityType: intl.formatMessage({ id: "performer" }) }
-      ),
-      elements
-    );
-  }
-
-  function renderGroupScrapers() {
-    const elements = (groupScrapers?.listScrapers ?? []).map((scraper) => (
-      <tr key={scraper.id}>
-        <td>{scraper.name}</td>
-        <td>
-          {renderGroupScrapeTypes(scraper.group?.supported_scrapes ?? [])}
-        </td>
-        <td>{renderURLs(scraper.group?.urls ?? [])}</td>
-      </tr>
-    ));
-
-    return renderTable(
-      intl.formatMessage(
-        { id: "config.scraping.entity_scrapers" },
-        { entityType: intl.formatMessage({ id: "group" }) }
-      ),
-      elements
-    );
-  }
-
-  function renderTable(title: string, elements: JSX.Element[]) {
-    if (elements.length > 0) {
-      return (
-        <CollapseButton text={title}>
-          <table className="scraper-table">
-            <thead>
-              <tr>
-                <th>{intl.formatMessage({ id: "name" })}</th>
-                <th>
-                  {intl.formatMessage({
-                    id: "config.scraping.supported_types",
-                  })}
-                </th>
-                <th>
-                  {intl.formatMessage({ id: "config.scraping.supported_urls" })}
-                </th>
-              </tr>
-            </thead>
-            <tbody>{elements}</tbody>
-          </table>
-        </CollapseButton>
-      );
-    }
-  }
+export const SettingsScrapingPanel: React.FC = () => {
+  const { general, scraping, loading, error, saveGeneral, saveScraping } =
+    useSettings();
 
   if (error) return <h1>{error.message}</h1>;
-  if (
-    loading ||
-    loadingScenes ||
-    loadingGalleries ||
-    loadingPerformers ||
-    loadingGroups
-  )
-    return <LoadingIndicator />;
+  if (loading) return <LoadingIndicator />;
 
   return (
     <>
@@ -345,25 +363,7 @@ export const SettingsScrapingPanel: React.FC = () => {
       <InstalledScraperPackages />
       <AvailableScraperPackages />
 
-      <SettingSection headingID="config.scraping.scrapers">
-        <div className="content">
-          <Button onClick={() => onReloadScrapers()}>
-            <span className="fa-icon">
-              <Icon icon={faSyncAlt} />
-            </span>
-            <span>
-              <FormattedMessage id="actions.reload_scrapers" />
-            </span>
-          </Button>
-        </div>
-
-        <div className="content">
-          {renderSceneScrapers()}
-          {renderGalleryScrapers()}
-          {renderPerformerScrapers()}
-          {renderGroupScrapers()}
-        </div>
-      </SettingSection>
+      <ScrapersSection />
     </>
   );
 };
