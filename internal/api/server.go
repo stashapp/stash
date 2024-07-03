@@ -347,7 +347,7 @@ func (s *Server) getMovieRoutes() chi.Router {
 	repo := s.manager.Repository
 	return movieRoutes{
 		routes:      routes{txnManager: repo.TxnManager},
-		movieFinder: repo.Movie,
+		movieFinder: repo.Group,
 	}.Routes()
 }
 

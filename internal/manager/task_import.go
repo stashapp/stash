@@ -352,7 +352,7 @@ func (t *ImportTask) ImportMovies(ctx context.Context) {
 
 		if err := r.WithTxn(ctx, func(ctx context.Context) error {
 			movieImporter := &movie.Importer{
-				ReaderWriter:        r.Movie,
+				ReaderWriter:        r.Group,
 				StudioWriter:        r.Studio,
 				TagWriter:           r.Tag,
 				Input:               *movieJSON,
@@ -648,7 +648,7 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 				MissingRefBehaviour: t.MissingRefBehaviour,
 
 				GalleryFinder:   r.Gallery,
-				MovieWriter:     r.Movie,
+				MovieWriter:     r.Group,
 				PerformerWriter: r.Performer,
 				StudioWriter:    r.Studio,
 				TagWriter:       r.Tag,

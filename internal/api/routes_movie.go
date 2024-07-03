@@ -15,7 +15,7 @@ import (
 )
 
 type MovieFinder interface {
-	models.MovieGetter
+	models.GroupGetter
 	GetFrontImage(ctx context.Context, movieID int) ([]byte, error)
 	GetBackImage(ctx context.Context, movieID int) ([]byte, error)
 }

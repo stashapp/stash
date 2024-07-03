@@ -1340,7 +1340,7 @@ func getMovieEmptyString(index int, field string) string {
 }
 
 // createMoviees creates n movies with plain Name and o movies with camel cased NaMe included
-func createMovies(ctx context.Context, mqb models.MovieReaderWriter, n int, o int) error {
+func createMovies(ctx context.Context, mqb models.GroupReaderWriter, n int, o int) error {
 	const namePlain = "Name"
 	const nameNoCase = "NaMe"
 
@@ -1842,7 +1842,7 @@ func doLinks(links [][2]int, fn func(idx1, idx2 int) error) error {
 	return nil
 }
 
-func linkMovieStudios(ctx context.Context, mqb models.MovieWriter) error {
+func linkMovieStudios(ctx context.Context, mqb models.GroupWriter) error {
 	return doLinks(movieStudioLinks, func(movieIndex, studioIndex int) error {
 		movie := models.GroupPartial{
 			StudioID: models.NewOptionalInt(studioIDs[studioIndex]),

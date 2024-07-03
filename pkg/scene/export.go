@@ -169,7 +169,7 @@ func GetDependentTagIDs(ctx context.Context, tags TagFinder, markerReader models
 
 // GetSceneMoviesJSON returns a slice of SceneMovie JSON representation objects
 // corresponding to the provided scene's scene movie relationships.
-func GetSceneMoviesJSON(ctx context.Context, movieReader models.MovieGetter, scene *models.Scene) ([]jsonschema.SceneMovie, error) {
+func GetSceneMoviesJSON(ctx context.Context, movieReader models.GroupGetter, scene *models.Scene) ([]jsonschema.SceneMovie, error) {
 	sceneMovies := scene.Movies.List()
 
 	var results []jsonschema.SceneMovie

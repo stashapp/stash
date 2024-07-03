@@ -26,7 +26,7 @@ type Importer struct {
 	StudioWriter        models.StudioFinderCreator
 	GalleryFinder       models.GalleryFinder
 	PerformerWriter     models.PerformerFinderCreator
-	MovieWriter         models.MovieFinderCreator
+	MovieWriter         models.GroupFinderCreator
 	TagWriter           models.TagFinderCreator
 	Input               jsonschema.Scene
 	MissingRefBehaviour models.ImportMissingRefEnum

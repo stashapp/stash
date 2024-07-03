@@ -54,8 +54,8 @@ models:
   # movie is group under the hood
   Movie:
     model: github.com/stashapp/stash/pkg/models.Group
-  GroupFilterType:
-    model: github.com/stashapp/stash/pkg/models.MovieFilterType
+  MovieFilterType:
+    model: github.com/stashapp/stash/pkg/models.GroupFilterType
   # autobind on config causes generation issues
   BlobsStorageType:
     model: github.com/stashapp/stash/internal/manager/config.BlobsStorageType

@@ -438,7 +438,7 @@ func TestMovieQuery(t *testing.T) {
 	tests := []struct {
 		name        string
 		findFilter  *models.FindFilterType
-		filter      *models.MovieFilterType
+		filter      *models.GroupFilterType
 		includeIdxs []int
 		excludeIdxs []int
 		wantErr     bool
@@ -446,7 +446,7 @@ func TestMovieQuery(t *testing.T) {
 		{
 			"is missing front image",
 			nil,
-			&models.MovieFilterType{
+			&models.GroupFilterType{
 				IsMissing: &frontImage,
 			},
 			// just ensure that it doesn't error
@@ -457,7 +457,7 @@ func TestMovieQuery(t *testing.T) {
 		{
 			"is missing back image",
 			nil,
-			&models.MovieFilterType{
+			&models.GroupFilterType{
 				IsMissing: &backImage,
 			},
 			// just ensure that it doesn't error
@@ -501,7 +501,7 @@ func TestMovieQueryStudio(t *testing.T) {
 			Modifier: models.CriterionModifierIncludes,
 		}
 
-		movieFilter := models.MovieFilterType{
+		movieFilter := models.GroupFilterType{
 			Studios: &studioCriterion,
 		}
 
@@ -546,7 +546,7 @@ func TestMovieQueryURL(t *testing.T) {
 		Modifier: models.CriterionModifierEquals,
 	}
 
-	filter := models.MovieFilterType{
+	filter := models.GroupFilterType{
 		URL: &urlCriterion,
 	}
 
@@ -612,7 +612,7 @@ func TestMovieQueryURLExcludes(t *testing.T) {
 			Modifier: models.CriterionModifierEquals,
 		}
 
-		filter := models.MovieFilterType{
+		filter := models.GroupFilterType{
 			URL:  &urlCriterion,
 			Name: &nameCriterion,
 		}
@@ -632,7 +632,7 @@ func TestMovieQueryURLExcludes(t *testing.T) {
 	})
 }
 
-func verifyMovieQuery(t *testing.T, filter models.MovieFilterType, verifyFn func(s *models.Group)) {
+func verifyMovieQuery(t *testing.T, filter models.GroupFilterType, verifyFn func(s *models.Group)) {
 	withTxn(func(ctx context.Context) error {
 		t.Helper()
 		sqb := db.Movie
@@ -656,7 +656,7 @@ func verifyMovieQuery(t *testing.T, filter models.MovieFilterType, verifyFn func
 	})
 }
 
-func queryMovies(ctx context.Context, t *testing.T, movieFilter *models.MovieFilterType, findFilter *models.FindFilterType) []*models.Group {
+func queryMovies(ctx context.Context, t *testing.T, movieFilter *models.GroupFilterType, findFilter *models.FindFilterType) []*models.Group {
 	sqb := db.Movie
 	movies, _, err := sqb.Query(ctx, movieFilter, findFilter)
 	if err != nil {
@@ -676,7 +676,7 @@ func TestMovieQueryTags(t *testing.T) {
 			Modifier: models.CriterionModifierIncludes,
 		}
 
-		movieFilter := models.MovieFilterType{
+		movieFilter := models.GroupFilterType{
 			Tags: &tagCriterion,
 		}
 
@@ -743,7 +743,7 @@ func TestMovieQueryTagCount(t *testing.T) {
 func verifyMoviesTagCount(t *testing.T, tagCountCriterion models.IntCriterionInput) {
 	withTxn(func(ctx context.Context) error {
 		sqb := db.Movie
-		movieFilter := models.MovieFilterType{
+		movieFilter := models.GroupFilterType{
 			TagCount: &tagCountCriterion,
 		}
 

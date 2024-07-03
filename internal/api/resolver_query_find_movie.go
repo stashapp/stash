@@ -15,7 +15,7 @@ func (r *queryResolver) FindMovie(ctx context.Context, id string) (ret *models.G
 	}
 
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		ret, err = r.repository.Movie.Find(ctx, idInt)
+		ret, err = r.repository.Group.Find(ctx, idInt)
 		return err
 	}); err != nil {
 		return nil, err
@@ -24,7 +24,7 @@ func (r *queryResolver) FindMovie(ctx context.Context, id string) (ret *models.G
 	return ret, nil
 }
 
-func (r *queryResolver) FindMovies(ctx context.Context, movieFilter *models.MovieFilterType, filter *models.FindFilterType, ids []string) (ret *FindMoviesResultType, err error) {
+func (r *queryResolver) FindMovies(ctx context.Context, movieFilter *models.GroupFilterType, filter *models.FindFilterType, ids []string) (ret *FindMoviesResultType, err error) {
 	idInts, err := stringslice.StringSliceToIntSlice(ids)
 	if err != nil {
 		return nil, err
@@ -36,10 +36,10 @@ func (r *queryResolver) FindMovies(ctx context.Context, movieFilter *models.Movi
 		var total int
 
 		if len(idInts) > 0 {
-			movies, err = r.repository.Movie.FindMany(ctx, idInts)
+			movies, err = r.repository.Group.FindMany(ctx, idInts)
 			total = len(movies)
 		} else {
-			movies, total, err = r.repository.Movie.Query(ctx, movieFilter, filter)
+			movies, total, err = r.repository.Group.Query(ctx, movieFilter, filter)
 		}
 
 		if err != nil {
@@ -60,7 +60,7 @@ func (r *queryResolver) FindMovies(ctx context.Context, movieFilter *models.Movi
 
 func (r *queryResolver) AllMovies(ctx context.Context) (ret []*models.Group, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		ret, err = r.repository.Movie.All(ctx)
+		ret, err = r.repository.Group.All(ctx)
 		return err
 	}); err != nil {
 		return nil, err

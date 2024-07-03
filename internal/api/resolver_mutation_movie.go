@@ -15,7 +15,7 @@ import (
 // used to refetch movie after hooks run
 func (r *mutationResolver) getMovie(ctx context.Context, id int) (ret *models.Group, err error) {
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		ret, err = r.repository.Movie.Find(ctx, id)
+		ret, err = r.repository.Group.Find(ctx, id)
 		return err
 	}); err != nil {
 		return nil, err
@@ -87,7 +87,7 @@ func (r *mutationResolver) MovieCreate(ctx context.Context, input MovieCreateInp
 
 	// Start the transaction and save the movie
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		qb := r.repository.Movie
+		qb := r.repository.Group
 
 		err = qb.Create(ctx, &newMovie)
 		if err != nil {
@@ -175,7 +175,7 @@ func (r *mutationResolver) MovieUpdate(ctx context.Context, input MovieUpdateInp
 	// Start the transaction and save the movie
 	var movie *models.Group
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		qb := r.repository.Movie
+		qb := r.repository.Group
 		movie, err = qb.UpdatePartial(ctx, movieID, updatedMovie)
 		if err != nil {
 			return err
@@ -236,7 +236,7 @@ func (r *mutationResolver) BulkMovieUpdate(ctx context.Context, input BulkMovieU
 	ret := []*models.Group{}
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		qb := r.repository.Movie
+		qb := r.repository.Group
 
 		for _, movieID := range movieIDs {
 			movie, err := qb.UpdatePartial(ctx, movieID, updatedMovie)
@@ -276,7 +276,7 @@ func (r *mutationResolver) MovieDestroy(ctx context.Context, input MovieDestroyI
 	}
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		return r.repository.Movie.Destroy(ctx, id)
+		return r.repository.Group.Destroy(ctx, id)
 	}); err != nil {
 		return false, err
 	}
@@ -295,7 +295,7 @@ func (r *mutationResolver) MoviesDestroy(ctx context.Context, movieIDs []string)
 	}
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		qb := r.repository.Movie
+		qb := r.repository.Group
 		for _, id := range ids {
 			if err := qb.Destroy(ctx, id); err != nil {
 				return err

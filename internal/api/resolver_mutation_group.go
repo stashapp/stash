@@ -82,7 +82,7 @@ func (r *mutationResolver) GroupCreate(ctx context.Context, input GroupCreateInp
 
 	// Start the transaction and save the movie
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		qb := r.repository.Movie
+		qb := r.repository.Group
 
 		err = qb.Create(ctx, newMovie)
 		if err != nil {
@@ -182,7 +182,7 @@ func (r *mutationResolver) GroupUpdate(ctx context.Context, input GroupUpdateInp
 	// Start the transaction and save the movie
 	var movie *models.Group
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		qb := r.repository.Movie
+		qb := r.repository.Group
 		movie, err = qb.UpdatePartial(ctx, movieID, updatedMovie)
 		if err != nil {
 			return err
@@ -254,7 +254,7 @@ func (r *mutationResolver) BulkGroupUpdate(ctx context.Context, input BulkGroupU
 	ret := []*models.Group{}
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		qb := r.repository.Movie
+		qb := r.repository.Group
 
 		for _, movieID := range movieIDs {
 			movie, err := qb.UpdatePartial(ctx, movieID, updatedMovie)
@@ -294,7 +294,7 @@ func (r *mutationResolver) GroupDestroy(ctx context.Context, input GroupDestroyI
 	}
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		return r.repository.Movie.Destroy(ctx, id)
+		return r.repository.Group.Destroy(ctx, id)
 	}); err != nil {
 		return false, err
 	}
@@ -313,7 +313,7 @@ func (r *mutationResolver) GroupsDestroy(ctx context.Context, groupIDs []string)
 	}
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		qb := r.repository.Movie
+		qb := r.repository.Group
 		for _, id := range ids {
 			if err := qb.Destroy(ctx, id); err != nil {
 				return err

@@ -388,12 +388,12 @@ func (qb *MovieStore) All(ctx context.Context) ([]*models.Group, error) {
 	))
 }
 
-func (qb *MovieStore) makeQuery(ctx context.Context, movieFilter *models.MovieFilterType, findFilter *models.FindFilterType) (*queryBuilder, error) {
+func (qb *MovieStore) makeQuery(ctx context.Context, movieFilter *models.GroupFilterType, findFilter *models.FindFilterType) (*queryBuilder, error) {
 	if findFilter == nil {
 		findFilter = &models.FindFilterType{}
 	}
 	if movieFilter == nil {
-		movieFilter = &models.MovieFilterType{}
+		movieFilter = &models.GroupFilterType{}
 	}
 
 	query := movieRepository.newQuery()
@@ -423,7 +423,7 @@ func (qb *MovieStore) makeQuery(ctx context.Context, movieFilter *models.MovieFi
 	return &query, nil
 }
 
-func (qb *MovieStore) Query(ctx context.Context, movieFilter *models.MovieFilterType, findFilter *models.FindFilterType) ([]*models.Group, int, error) {
+func (qb *MovieStore) Query(ctx context.Context, movieFilter *models.GroupFilterType, findFilter *models.FindFilterType) ([]*models.Group, int, error) {
 	query, err := qb.makeQuery(ctx, movieFilter, findFilter)
 	if err != nil {
 		return nil, 0, err
@@ -442,7 +442,7 @@ func (qb *MovieStore) Query(ctx context.Context, movieFilter *models.MovieFilter
 	return movies, countResult, nil
 }
 
-func (qb *MovieStore) QueryCount(ctx context.Context, movieFilter *models.MovieFilterType, findFilter *models.FindFilterType) (int, error) {
+func (qb *MovieStore) QueryCount(ctx context.Context, movieFilter *models.GroupFilterType, findFilter *models.FindFilterType) (int, error) {
 	query, err := qb.makeQuery(ctx, movieFilter, findFilter)
 	if err != nil {
 		return 0, err

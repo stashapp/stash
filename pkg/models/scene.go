@@ -106,9 +106,9 @@ type SceneFilterType struct {
 	// Filter by related tags that meet this criteria
 	TagsFilter *TagFilterType `json:"tags_filter"`
 	// Filter by related groups that meet this criteria
-	GroupsFilter *MovieFilterType `json:"groups_filter"`
+	GroupsFilter *GroupFilterType `json:"groups_filter"`
 	// Filter by related movies that meet this criteria
-	MoviesFilter *MovieFilterType `json:"movies_filter"`
+	MoviesFilter *GroupFilterType `json:"movies_filter"`
 	// Filter by related markers that meet this criteria
 	MarkersFilter *SceneMarkerFilterType `json:"markers_filter"`
 	// Filter by created at

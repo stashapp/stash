@@ -284,7 +284,7 @@ func (t *ExportTask) zipFile(fn, outDir string, z *zip.Writer) error {
 
 func (t *ExportTask) populateMovieScenes(ctx context.Context) {
 	r := t.repository
-	reader := r.Movie
+	reader := r.Group
 	sceneReader := r.Scene
 
 	var movies []*models.Group
@@ -488,7 +488,7 @@ func (t *ExportTask) exportScene(ctx context.Context, wg *sync.WaitGroup, jobCha
 	r := t.repository
 	sceneReader := r.Scene
 	studioReader := r.Studio
-	movieReader := r.Movie
+	movieReader := r.Group
 	galleryReader := r.Gallery
 	performerReader := r.Performer
 	tagReader := r.Tag
@@ -1084,7 +1084,7 @@ func (t *ExportTask) exportTag(ctx context.Context, wg *sync.WaitGroup, jobChan 
 func (t *ExportTask) ExportMovies(ctx context.Context, workers int) {
 	var moviesWg sync.WaitGroup
 
-	reader := t.repository.Movie
+	reader := t.repository.Group
 	var movies []*models.Group
 	var err error
 	all := t.full || (t.groups != nil && t.groups.all)
@@ -1125,12 +1125,12 @@ func (t *ExportTask) exportMovie(ctx context.Context, wg *sync.WaitGroup, jobCha
 	defer wg.Done()
 
 	r := t.repository
-	movieReader := r.Movie
+	movieReader := r.Group
 	studioReader := r.Studio
 	tagReader := r.Tag
 
 	for m := range jobChan {
-		if err := m.LoadURLs(ctx, r.Movie); err != nil {
+		if err := m.LoadURLs(ctx, r.Group); err != nil {
 			logger.Errorf("[movies] <%s> error getting movie urls: %v", m.Name, err)
 			continue
 		}

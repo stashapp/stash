@@ -95,7 +95,7 @@ func NewRepository(repo models.Repository) Repository {
 		GalleryFinder:   repo.Gallery,
 		TagFinder:       repo.Tag,
 		PerformerFinder: repo.Performer,
-		MovieFinder:     repo.Movie,
+		MovieFinder:     repo.Group,
 		StudioFinder:    repo.Studio,
 	}
 }

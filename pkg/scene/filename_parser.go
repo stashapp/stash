@@ -464,7 +464,7 @@ func NewFilenameParserRepository(repo models.Repository) FilenameParserRepositor
 		Scene:     repo.Scene,
 		Performer: repo.Performer,
 		Studio:    repo.Studio,
-		Movie:     repo.Movie,
+		Movie:     repo.Group,
 		Tag:       repo.Tag,
 	}
 }

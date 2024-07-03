@@ -12,7 +12,7 @@ import (
 )
 
 type ImporterReaderWriter interface {
-	models.MovieCreatorUpdater
+	models.GroupCreatorUpdater
 	FindByName(ctx context.Context, name string, nocase bool) (*models.Group, error)
 }
 

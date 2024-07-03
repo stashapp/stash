@@ -33,7 +33,7 @@ func NewRepository(repo models.Repository) Repository {
 		StudioFinder:    repo.Studio,
 		TagFinder:       repo.Tag,
 		PerformerFinder: repo.Performer,
-		MovieFinder:     repo.Movie,
+		MovieFinder:     repo.Group,
 	}
 }
 

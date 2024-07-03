@@ -23,7 +23,7 @@ func (r *movieResolver) Rating100(ctx context.Context, obj *models.Group) (*int,
 func (r *movieResolver) URL(ctx context.Context, obj *models.Group) (*string, error) {
 	if !obj.URLs.Loaded() {
 		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-			return obj.LoadURLs(ctx, r.repository.Movie)
+			return obj.LoadURLs(ctx, r.repository.Group)
 		}); err != nil {
 			return nil, err
 		}
@@ -40,7 +40,7 @@ func (r *movieResolver) URL(ctx context.Context, obj *models.Group) (*string, er
 func (r *movieResolver) Urls(ctx context.Context, obj *models.Group) ([]string, error) {
 	if !obj.URLs.Loaded() {
 		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-			return obj.LoadURLs(ctx, r.repository.Movie)
+			return obj.LoadURLs(ctx, r.repository.Group)
 		}); err != nil {
 			return nil, err
 		}
@@ -60,7 +60,7 @@ func (r *movieResolver) Studio(ctx context.Context, obj *models.Group) (ret *mod
 func (r movieResolver) Tags(ctx context.Context, obj *models.Group) (ret []*models.Tag, err error) {
 	if !obj.TagIDs.Loaded() {
 		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-			return obj.LoadTagIDs(ctx, r.repository.Movie)
+			return obj.LoadTagIDs(ctx, r.repository.Group)
 		}); err != nil {
 			return nil, err
 		}
@@ -75,7 +75,7 @@ func (r *movieResolver) FrontImagePath(ctx context.Context, obj *models.Group) (
 	var hasImage bool
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		var err error
-		hasImage, err = r.repository.Movie.HasFrontImage(ctx, obj.ID)
+		hasImage, err = r.repository.Group.HasFrontImage(ctx, obj.ID)
 		return err
 	}); err != nil {
 		return nil, err
@@ -90,7 +90,7 @@ func (r *movieResolver) BackImagePath(ctx context.Context, obj *models.Group) (*
 	var hasImage bool
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		var err error
-		hasImage, err = r.repository.Movie.HasBackImage(ctx, obj.ID)
+		hasImage, err = r.repository.Group.HasBackImage(ctx, obj.ID)
 		return err
 	}); err != nil {
 		return nil, err

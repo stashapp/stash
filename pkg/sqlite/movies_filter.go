@@ -8,7 +8,7 @@ import (
 )
 
 type movieFilterHandler struct {
-	movieFilter *models.MovieFilterType
+	movieFilter *models.GroupFilterType
 }
 
 func (qb *movieFilterHandler) validate() error {

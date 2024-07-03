@@ -401,11 +401,11 @@ func (_m *MovieReaderWriter) HasFrontImage(ctx context.Context, movieID int) (bo
 }
 
 // Query provides a mock function with given fields: ctx, movieFilter, findFilter
-func (_m *MovieReaderWriter) Query(ctx context.Context, movieFilter *models.MovieFilterType, findFilter *models.FindFilterType) ([]*models.Group, int, error) {
+func (_m *MovieReaderWriter) Query(ctx context.Context, movieFilter *models.GroupFilterType, findFilter *models.FindFilterType) ([]*models.Group, int, error) {
 	ret := _m.Called(ctx, movieFilter, findFilter)
 
 	var r0 []*models.Group
-	if rf, ok := ret.Get(0).(func(context.Context, *models.MovieFilterType, *models.FindFilterType) []*models.Group); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *models.GroupFilterType, *models.FindFilterType) []*models.Group); ok {
 		r0 = rf(ctx, movieFilter, findFilter)
 	} else {
 		if ret.Get(0) != nil {
@@ -414,14 +414,14 @@ func (_m *MovieReaderWriter) Query(ctx context.Context, movieFilter *models.Movi
 	}
 
 	var r1 int
-	if rf, ok := ret.Get(1).(func(context.Context, *models.MovieFilterType, *models.FindFilterType) int); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, *models.GroupFilterType, *models.FindFilterType) int); ok {
 		r1 = rf(ctx, movieFilter, findFilter)
 	} else {
 		r1 = ret.Get(1).(int)
 	}
 
 	var r2 error
-	if rf, ok := ret.Get(2).(func(context.Context, *models.MovieFilterType, *models.FindFilterType) error); ok {
+	if rf, ok := ret.Get(2).(func(context.Context, *models.GroupFilterType, *models.FindFilterType) error); ok {
 		r2 = rf(ctx, movieFilter, findFilter)
 	} else {
 		r2 = ret.Error(2)
@@ -431,18 +431,18 @@ func (_m *MovieReaderWriter) Query(ctx context.Context, movieFilter *models.Movi
 }
 
 // QueryCount provides a mock function with given fields: ctx, movieFilter, findFilter
-func (_m *MovieReaderWriter) QueryCount(ctx context.Context, movieFilter *models.MovieFilterType, findFilter *models.FindFilterType) (int, error) {
+func (_m *MovieReaderWriter) QueryCount(ctx context.Context, movieFilter *models.GroupFilterType, findFilter *models.FindFilterType) (int, error) {
 	ret := _m.Called(ctx, movieFilter, findFilter)
 
 	var r0 int
-	if rf, ok := ret.Get(0).(func(context.Context, *models.MovieFilterType, *models.FindFilterType) int); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *models.GroupFilterType, *models.FindFilterType) int); ok {
 		r0 = rf(ctx, movieFilter, findFilter)
 	} else {
 		r0 = ret.Get(0).(int)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, *models.MovieFilterType, *models.FindFilterType) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, *models.GroupFilterType, *models.FindFilterType) error); ok {
 		r1 = rf(ctx, movieFilter, findFilter)
 	} else {
 		r1 = ret.Error(1)

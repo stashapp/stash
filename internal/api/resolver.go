@@ -182,7 +182,7 @@ func (r *queryResolver) Stats(ctx context.Context) (*StatsResultType, error) {
 		galleryQB := repo.Gallery
 		studioQB := repo.Studio
 		performerQB := repo.Performer
-		movieQB := repo.Movie
+		movieQB := repo.Group
 		tagQB := repo.Tag
 
 		// embrace the error
