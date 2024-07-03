@@ -153,8 +153,9 @@ const ScraperTableRow: React.FC<{
   );
 };
 
-export const SettingsScrapingPanel: React.FC = () => {
+const ScrapersSection: React.FC = () => {
   const Toast = useToast();
+
   const { data: performerScrapers, loading: loadingPerformers } =
     useListPerformerScrapers();
   const { data: sceneScrapers, loading: loadingScenes } =
@@ -164,9 +165,6 @@ export const SettingsScrapingPanel: React.FC = () => {
   const { data: groupScrapers, loading: loadingGroups } =
     useListGroupScrapers();
 
-  const { general, scraping, loading, error, saveGeneral, saveScraping } =
-    useSettings();
-
   async function onReloadScrapers() {
     try {
       await mutateReloadScrapers();
@@ -175,15 +173,85 @@ export const SettingsScrapingPanel: React.FC = () => {
     }
   }
 
+  if (loadingScenes || loadingGalleries || loadingPerformers || loadingGroups)
+    return (
+      <SettingSection headingID="config.scraping.scrapers">
+        <LoadingIndicator />
+      </SettingSection>
+    );
+
+  return (
+    <SettingSection headingID="config.scraping.scrapers">
+      <div className="content">
+        <Button onClick={() => onReloadScrapers()}>
+          <span className="fa-icon">
+            <Icon icon={faSyncAlt} />
+          </span>
+          <span>
+            <FormattedMessage id="actions.reload_scrapers" />
+          </span>
+        </Button>
+      </div>
+
+      <div className="content">
+        <ScraperTable entityType="scene">
+          {sceneScrapers?.listScrapers.map((scraper) => (
+            <ScraperTableRow
+              key={scraper.id}
+              name={scraper.name}
+              entityType="scene"
+              supportedScrapes={scraper.scene?.supported_scrapes ?? []}
+              urls={scraper.scene?.urls ?? []}
+            />
+          ))}
+        </ScraperTable>
+
+        <ScraperTable entityType="gallery">
+          {galleryScrapers?.listScrapers.map((scraper) => (
+            <ScraperTableRow
+              key={scraper.id}
+              name={scraper.name}
+              entityType="gallery"
+              supportedScrapes={scraper.gallery?.supported_scrapes ?? []}
+              urls={scraper.gallery?.urls ?? []}
+            />
+          ))}
+        </ScraperTable>
+
+        <ScraperTable entityType="performer">
+          {performerScrapers?.listScrapers.map((scraper) => (
+            <ScraperTableRow
+              key={scraper.id}
+              name={scraper.name}
+              entityType="performer"
+              supportedScrapes={scraper.performer?.supported_scrapes ?? []}
+              urls={scraper.performer?.urls ?? []}
+            />
+          ))}
+        </ScraperTable>
+
+        <ScraperTable entityType="group">
+          {groupScrapers?.listScrapers.map((scraper) => (
+            <ScraperTableRow
+              key={scraper.id}
+              name={scraper.name}
+              entityType="group"
+              supportedScrapes={scraper.group?.supported_scrapes ?? []}
+              urls={scraper.group?.urls ?? []}
+            />
+          ))}
+        </ScraperTable>
+      </div>
+    </SettingSection>
+  );
+};
+
+export const SettingsScrapingPanel: React.FC = () => {
+  const { general, scraping, loading, error, saveGeneral, saveScraping } =
+    useSettings();
+
   if (error) return <h1>{error.message}</h1>;
-  if (
-    loading ||
-    loadingScenes ||
-    loadingGalleries ||
-    loadingPerformers ||
-    loadingGroups
-  )
-    return <LoadingIndicator />;
+  if (loading) return <LoadingIndicator />;
 
   return (
     <>
@@ -229,68 +297,7 @@ export const SettingsScrapingPanel: React.FC = () => {
       <InstalledScraperPackages />
       <AvailableScraperPackages />
 
-      <SettingSection headingID="config.scraping.scrapers">
-        <div className="content">
-          <Button onClick={() => onReloadScrapers()}>
-            <span className="fa-icon">
-              <Icon icon={faSyncAlt} />
-            </span>
-            <span>
-              <FormattedMessage id="actions.reload_scrapers" />
-            </span>
-          </Button>
-        </div>
-
-        <div className="content">
-          <ScraperTable entityType="scene">
-            {sceneScrapers?.listScrapers.map((scraper) => (
-              <ScraperTableRow
-                key={scraper.id}
-                name={scraper.name}
-                entityType="scene"
-                supportedScrapes={scraper.scene?.supported_scrapes ?? []}
-                urls={scraper.scene?.urls ?? []}
-              />
-            ))}
-          </ScraperTable>
-
-          <ScraperTable entityType="gallery">
-            {galleryScrapers?.listScrapers.map((scraper) => (
-              <ScraperTableRow
-                key={scraper.id}
-                name={scraper.name}
-                entityType="gallery"
-                supportedScrapes={scraper.gallery?.supported_scrapes ?? []}
-                urls={scraper.gallery?.urls ?? []}
-              />
-            ))}
-          </ScraperTable>
-
-          <ScraperTable entityType="performer">
-            {performerScrapers?.listScrapers.map((scraper) => (
-              <ScraperTableRow
-                key={scraper.id}
-                name={scraper.name}
-                entityType="performer"
-                supportedScrapes={scraper.performer?.supported_scrapes ?? []}
-                urls={scraper.performer?.urls ?? []}
-              />
-            ))}
-          </ScraperTable>
-
-          <ScraperTable entityType="group">
-            {groupScrapers?.listScrapers.map((scraper) => (
-              <ScraperTableRow
-                key={scraper.id}
-                name={scraper.name}
-                entityType="group"
-                supportedScrapes={scraper.group?.supported_scrapes ?? []}
-                urls={scraper.group?.urls ?? []}
-              />
-            ))}
-          </ScraperTable>
-        </div>
-      </SettingSection>
+      <ScrapersSection />
     </>
   );
 };
