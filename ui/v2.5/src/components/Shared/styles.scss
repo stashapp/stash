@@ -599,4 +599,9 @@ button.btn.favorite-button {
 
 .scraper-menu .dropdown-menu {
   min-width: 250px;
+
+  .dropdown-divider {
+    border-top-color: $textfield-bg;
+    margin: 0;
+  }
 }

@@ -73,6 +73,11 @@ export const ScraperMenu: React.FC<{
             {stashboxDisplayName(s.name, index)}
           </Dropdown.Item>
         ))}
+
+        {filteredStashboxes.length > 0 && filteredScrapers.length > 0 && (
+          <Dropdown.Divider />
+        )}
+
         {filteredScrapers.map((s) => (
           <Dropdown.Item
             key={s.name}
