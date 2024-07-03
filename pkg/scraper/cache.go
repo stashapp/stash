@@ -84,7 +84,7 @@ type Repository struct {
 	GalleryFinder   GalleryFinder
 	TagFinder       TagFinder
 	PerformerFinder PerformerFinder
-	MovieFinder     match.MovieNamesFinder
+	MovieFinder     match.GroupNamesFinder
 	StudioFinder    StudioFinder
 }
 

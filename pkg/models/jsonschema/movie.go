@@ -11,7 +11,7 @@ import (
 	"github.com/stashapp/stash/pkg/models/json"
 )
 
-type Movie struct {
+type Group struct {
 	Name       string        `json:"name,omitempty"`
 	Aliases    string        `json:"aliases,omitempty"`
 	Duration   int           `json:"duration,omitempty"`
@@ -31,7 +31,7 @@ type Movie struct {
 	URL string `json:"url,omitempty"`
 }
 
-func (s Movie) Filename() string {
+func (s Group) Filename() string {
 	return fsutil.SanitiseBasename(s.Name) + ".json"
 }
 
@@ -40,8 +40,8 @@ type MovieSynopsisBC struct {
 	Synopsis string `json:"sypnopsis,omitempty"`
 }
 
-func LoadMovieFile(filePath string) (*Movie, error) {
-	var movie Movie
+func LoadGroupFile(filePath string) (*Group, error) {
+	var movie Group
 	file, err := os.Open(filePath)
 	if err != nil {
 		return nil, err
@@ -72,7 +72,7 @@ func LoadMovieFile(filePath string) (*Movie, error) {
 	return &movie, nil
 }
 
-func SaveMovieFile(filePath string, movie *Movie) error {
+func SaveGroupFile(filePath string, movie *Group) error {
 	if movie == nil {
 		return fmt.Errorf("movie must not be nil")
 	}

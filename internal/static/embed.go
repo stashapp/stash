@@ -26,7 +26,7 @@ const (
 	Studio             = "studio"
 	DefaultStudioImage = "studio/studio.svg"
 
-	Movie             = "movie"
+	Group             = "movie"
 	DefaultGroupImage = "movie/movie.png"
 )
 

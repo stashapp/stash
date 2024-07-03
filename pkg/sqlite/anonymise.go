@@ -57,7 +57,7 @@ func (db *Anonymiser) Anonymise(ctx context.Context) error {
 			func() error { return db.anonymisePerformers(ctx) },
 			func() error { return db.anonymiseStudios(ctx) },
 			func() error { return db.anonymiseTags(ctx) },
-			func() error { return db.anonymiseMovies(ctx) },
+			func() error { return db.anonymiseGroups(ctx) },
 			func() error { return db.Optimise(ctx) },
 		})
 	}(); err != nil {
@@ -825,8 +825,8 @@ func (db *Anonymiser) anonymiseTags(ctx context.Context) error {
 	return nil
 }
 
-func (db *Anonymiser) anonymiseMovies(ctx context.Context) error {
-	logger.Infof("Anonymising movies")
+func (db *Anonymiser) anonymiseGroups(ctx context.Context) error {
+	logger.Infof("Anonymising groups")
 	table := groupTableMgr.table
 	lastID := 0
 	total := 0
@@ -883,7 +883,7 @@ func (db *Anonymiser) anonymiseMovies(ctx context.Context) error {
 				total++
 
 				if total%logEvery == 0 {
-					logger.Infof("Anonymised %d movies", total)
+					logger.Infof("Anonymised %d groups", total)
 				}
 
 				return nil

@@ -316,13 +316,13 @@ func (me *contentDirectoryService) handleBrowseDirectChildren(obj object, host s
 		objs = me.getPerformerScenes(childPath(paths), host)
 	}
 
-	// Movies
-	if obj.Path == "movies" {
-		objs = me.getMovies()
+	// Groups - deprecated
+	if obj.Path == "groups" {
+		objs = me.getGroups()
 	}
 
-	if strings.HasPrefix(obj.Path, "movies/") {
-		objs = me.getMovieScenes(childPath(paths), host)
+	if strings.HasPrefix(obj.Path, "groups/") {
+		objs = me.getGroupScenes(childPath(paths), host)
 	}
 
 	// Rating
@@ -433,7 +433,7 @@ func getRootObjects() []interface{} {
 	objs = append(objs, makeStorageFolder("performers", "performers", rootID))
 	objs = append(objs, makeStorageFolder("tags", "tags", rootID))
 	objs = append(objs, makeStorageFolder("studios", "studios", rootID))
-	objs = append(objs, makeStorageFolder("movies", "movies", rootID))
+	objs = append(objs, makeStorageFolder("groups", "groups", rootID))
 	objs = append(objs, makeStorageFolder("rating", "rating", rootID))
 
 	return objs
@@ -658,18 +658,18 @@ func (me *contentDirectoryService) getPerformerScenes(paths []string, host strin
 	return me.getVideos(sceneFilter, parentID, host)
 }
 
-func (me *contentDirectoryService) getMovies() []interface{} {
+func (me *contentDirectoryService) getGroups() []interface{} {
 	var objs []interface{}
 
 	r := me.repository
 	if err := r.WithReadTxn(context.TODO(), func(ctx context.Context) error {
-		movies, err := r.MovieFinder.All(ctx)
+		groups, err := r.GroupFinder.All(ctx)
 		if err != nil {
 			return err
 		}
 
-		for _, s := range movies {
-			objs = append(objs, makeStorageFolder("movies/"+strconv.Itoa(s.ID), s.Name, "movies"))
+		for _, s := range groups {
+			objs = append(objs, makeStorageFolder("groups/"+strconv.Itoa(s.ID), s.Name, "groups"))
 		}
 
 		return nil
@@ -680,15 +680,15 @@ func (me *contentDirectoryService) getMovies() []interface{} {
 	return objs
 }
 
-func (me *contentDirectoryService) getMovieScenes(paths []string, host string) []interface{} {
+func (me *contentDirectoryService) getGroupScenes(paths []string, host string) []interface{} {
 	sceneFilter := &models.SceneFilterType{
-		Movies: &models.MultiCriterionInput{
+		Groups: &models.MultiCriterionInput{
 			Modifier: models.CriterionModifierIncludes,
 			Value:    []string{paths[0]},
 		},
 	}
 
-	parentID := "movies/" + strings.Join(paths, "/")
+	parentID := "groups/" + strings.Join(paths, "/")
 
 	page := getPageFromID(paths)
 	if page != nil {

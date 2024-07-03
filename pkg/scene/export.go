@@ -167,34 +167,34 @@ func GetDependentTagIDs(ctx context.Context, tags TagFinder, markerReader models
 	return ret, nil
 }
 
-// GetSceneMoviesJSON returns a slice of SceneMovie JSON representation objects
-// corresponding to the provided scene's scene movie relationships.
-func GetSceneMoviesJSON(ctx context.Context, movieReader models.GroupGetter, scene *models.Scene) ([]jsonschema.SceneMovie, error) {
-	sceneMovies := scene.Groups.List()
+// GetSceneGroupsJSON returns a slice of SceneGroup JSON representation objects
+// corresponding to the provided scene's scene group relationships.
+func GetSceneGroupsJSON(ctx context.Context, groupReader models.GroupGetter, scene *models.Scene) ([]jsonschema.SceneGroup, error) {
+	sceneGroups := scene.Groups.List()
 
-	var results []jsonschema.SceneMovie
-	for _, sceneMovie := range sceneMovies {
-		movie, err := movieReader.Find(ctx, sceneMovie.GroupID)
+	var results []jsonschema.SceneGroup
+	for _, sceneGroup := range sceneGroups {
+		group, err := groupReader.Find(ctx, sceneGroup.GroupID)
 		if err != nil {
-			return nil, fmt.Errorf("error getting movie: %v", err)
+			return nil, fmt.Errorf("error getting group: %v", err)
 		}
 
-		if movie != nil {
-			sceneMovieJSON := jsonschema.SceneMovie{
-				MovieName: movie.Name,
+		if group != nil {
+			sceneGroupJSON := jsonschema.SceneGroup{
+				GroupName: group.Name,
 			}
-			if sceneMovie.SceneIndex != nil {
-				sceneMovieJSON.SceneIndex = *sceneMovie.SceneIndex
+			if sceneGroup.SceneIndex != nil {
+				sceneGroupJSON.SceneIndex = *sceneGroup.SceneIndex
 			}
-			results = append(results, sceneMovieJSON)
+			results = append(results, sceneGroupJSON)
 		}
 	}
 
 	return results, nil
 }
 
-// GetDependentMovieIDs returns a slice of movie IDs that this scene references.
-func GetDependentMovieIDs(ctx context.Context, scene *models.Scene) ([]int, error) {
+// GetDependentGroupIDs returns a slice of group IDs that this scene references.
+func GetDependentGroupIDs(ctx context.Context, scene *models.Scene) ([]int, error) {
 	var ret []int
 
 	m := scene.Groups.List()

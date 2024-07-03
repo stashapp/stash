@@ -16,7 +16,7 @@ type PerformerFinder interface {
 	FindByStashID(ctx context.Context, stashID models.StashID) ([]*models.Performer, error)
 }
 
-type MovieNamesFinder interface {
+type GroupNamesFinder interface {
 	FindByNames(ctx context.Context, names []string, nocase bool) ([]*models.Group, error)
 }
 
@@ -120,7 +120,7 @@ func ScrapedStudio(ctx context.Context, qb StudioFinder, s *models.ScrapedStudio
 
 // ScrapedMovie matches the provided movie with the movies
 // in the database and sets the ID field if one is found.
-func ScrapedMovie(ctx context.Context, qb MovieNamesFinder, m *models.ScrapedMovie) error {
+func ScrapedMovie(ctx context.Context, qb GroupNamesFinder, m *models.ScrapedMovie) error {
 	if m.StoredID != nil || m.Name == nil {
 		return nil
 	}
