@@ -79,7 +79,7 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
       aggregatePerformerIds
     );
     sceneInput.tag_ids = getAggregateInputIDs(tagMode, tagIds, aggregateTagIds);
-    sceneInput.movie_ids = getAggregateInputIDs(
+    sceneInput.group_ids = getAggregateInputIDs(
       groupMode,
       groupIds,
       aggregateGroupIds
@@ -126,7 +126,7 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
         .map((p) => p.id)
         .sort();
       const sceneTagIDs = (scene.tags ?? []).map((p) => p.id).sort();
-      const sceneGroupIDs = (scene.movies ?? []).map((m) => m.movie.id).sort();
+      const sceneGroupIDs = (scene.groups ?? []).map((m) => m.group.id).sort();
 
       if (first) {
         updateRating = sceneRating ?? undefined;

@@ -6,9 +6,9 @@ import cx from "classnames";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
 import {
-  useFindMovie,
-  useMovieUpdate,
-  useMovieDestroy,
+  useFindGroup,
+  useGroupUpdate,
+  useGroupDestroy,
 } from "src/core/StashService";
 import { useHistory, RouteComponentProps } from "react-router-dom";
 import { DetailsEditNavbar } from "src/components/Shared/DetailsEditNavbar";
@@ -19,7 +19,7 @@ import { ModalComponent } from "src/components/Shared/Modal";
 import { useToast } from "src/hooks/Toast";
 import { GroupScenesPanel } from "./MovieScenesPanel";
 import {
-  CompressedMovieDetailsPanel,
+  CompressedGroupDetailsPanel,
   GroupDetailsPanel,
 } from "./MovieDetailsPanel";
 import { GroupEditPanel } from "./MovieEditPanel";
@@ -38,7 +38,7 @@ import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
 import { ExternalLinksButton } from "src/components/Shared/ExternalLinksButton";
 
 interface IProps {
-  group: GQL.MovieDataFragment;
+  group: GQL.GroupDataFragment;
 }
 
 interface IGroupParams {
@@ -64,7 +64,7 @@ const GroupPage: React.FC<IProps> = ({ group }) => {
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
 
-  // Editing movie state
+  // Editing group state
   const [frontImage, setFrontImage] = useState<string | null>();
   const [backImage, setBackImage] = useState<string | null>();
   const [encodingImage, setEncodingImage] = useState<boolean>(false);
@@ -106,8 +106,8 @@ const GroupPage: React.FC<IProps> = ({ group }) => {
     images: lightboxImages,
   });
 
-  const [updateMovie, { loading: updating }] = useMovieUpdate();
-  const [deleteMovie, { loading: deleting }] = useMovieDestroy({
+  const [updateGroup, { loading: updating }] = useGroupUpdate();
+  const [deleteGroup, { loading: deleting }] = useGroupDestroy({
     id: group.id,
   });
 
@@ -131,8 +131,8 @@ const GroupPage: React.FC<IProps> = ({ group }) => {
     setRating
   );
 
-  async function onSave(input: GQL.MovieCreateInput) {
-    await updateMovie({
+  async function onSave(input: GQL.GroupCreateInput) {
+    await updateGroup({
       variables: {
         input: {
           id: group.id,
@@ -151,12 +151,12 @@ const GroupPage: React.FC<IProps> = ({ group }) => {
 
   async function onDelete() {
     try {
-      await deleteMovie();
+      await deleteGroup();
     } catch (e) {
       Toast.error(e);
     }
 
-    // redirect to movies page
+    // redirect to groups page
     history.push(`/groups`);
   }
 
@@ -287,7 +287,7 @@ const GroupPage: React.FC<IProps> = ({ group }) => {
 
   function setRating(v: number | null) {
     if (group.id) {
-      updateMovie({
+      updateGroup({
         variables: {
           input: {
             id: group.id,
@@ -343,7 +343,7 @@ const GroupPage: React.FC<IProps> = ({ group }) => {
 
   function maybeRenderCompressedDetails() {
     if (!isEditing && loadStickyHeader) {
-      return <CompressedMovieDetailsPanel group={group} />;
+      return <CompressedGroupDetailsPanel group={group} />;
     }
   }
 
@@ -441,16 +441,16 @@ const GroupLoader: React.FC<RouteComponentProps<IGroupParams>> = ({
   match,
 }) => {
   const { id } = match.params;
-  const { data, loading, error } = useFindMovie(id);
+  const { data, loading, error } = useFindGroup(id);
 
   useScrollToTopOnMount();
 
   if (loading) return <LoadingIndicator />;
   if (error) return <ErrorMessage error={error.message} />;
-  if (!data?.findMovie)
-    return <ErrorMessage error={`No movie found with id ${id}.`} />;
+  if (!data?.findGroup)
+    return <ErrorMessage error={`No group found with id ${id}.`} />;
 
-  return <GroupPage group={data.findMovie} />;
+  return <GroupPage group={data.findGroup} />;
 };
 
 export default GroupLoader;

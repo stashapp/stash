@@ -9,10 +9,10 @@ interface ISceneGroupPanelProps {
 export const SceneGroupPanel: React.FC<ISceneGroupPanelProps> = (
   props: ISceneGroupPanelProps
 ) => {
-  const cards = props.scene.movies.map((sceneGroup) => (
+  const cards = props.scene.groups.map((sceneGroup) => (
     <GroupCard
-      key={sceneGroup.movie.id}
-      group={sceneGroup.movie}
+      key={sceneGroup.group.id}
+      group={sceneGroup.group}
       sceneIndex={sceneGroup.scene_index ?? undefined}
     />
   ));

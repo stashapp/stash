@@ -7,9 +7,9 @@ import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 import * as GQL from "src/core/generated-graphql";
 import {
-  queryFindMovies,
-  useFindMovies,
-  useMoviesDestroy,
+  queryFindGroups,
+  useFindGroups,
+  useGroupsDestroy,
 } from "src/core/StashService";
 import { makeItemList, showWhenSelected } from "../List/ItemList";
 import { ExportDialog } from "../Shared/ExportDialog";
@@ -19,13 +19,13 @@ import { EditGroupsDialog } from "./EditMoviesDialog";
 import { View } from "../List/views";
 
 const GroupItemList = makeItemList({
-  filterMode: GQL.FilterMode.Movies,
-  useResult: useFindMovies,
-  getItems(result: GQL.FindMoviesQueryResult) {
-    return result?.data?.findMovies?.movies ?? [];
+  filterMode: GQL.FilterMode.Groups,
+  useResult: useFindGroups,
+  getItems(result: GQL.FindGroupsQueryResult) {
+    return result?.data?.findGroups?.groups ?? [];
   },
-  getCount(result: GQL.FindMoviesQueryResult) {
-    return result?.data?.findMovies?.count ?? 0;
+  getCount(result: GQL.FindGroupsQueryResult) {
+    return result?.data?.findGroups?.count ?? 0;
   },
 });
 
@@ -62,7 +62,7 @@ export const GroupList: React.FC<IGroupList> = ({
   ];
 
   function addKeybinds(
-    result: GQL.FindMoviesQueryResult,
+    result: GQL.FindGroupsQueryResult,
     filter: ListFilterModel
   ) {
     Mousetrap.bind("p r", () => {
@@ -75,21 +75,21 @@ export const GroupList: React.FC<IGroupList> = ({
   }
 
   async function viewRandom(
-    result: GQL.FindMoviesQueryResult,
+    result: GQL.FindGroupsQueryResult,
     filter: ListFilterModel
   ) {
     // query for a random image
-    if (result.data?.findMovies) {
-      const { count } = result.data.findMovies;
+    if (result.data?.findGroups) {
+      const { count } = result.data.findGroups;
 
       const index = Math.floor(Math.random() * count);
       const filterCopy = cloneDeep(filter);
       filterCopy.itemsPerPage = 1;
       filterCopy.currentPage = index + 1;
-      const singleResult = await queryFindMovies(filterCopy);
-      if (singleResult.data.findMovies.movies.length === 1) {
-        const { id } = singleResult.data.findMovies.movies[0];
-        // navigate to the movie page
+      const singleResult = await queryFindGroups(filterCopy);
+      if (singleResult.data.findGroups.groups.length === 1) {
+        const { id } = singleResult.data.findGroups.groups[0];
+        // navigate to the group page
         history.push(`/groups/${id}`);
       }
     }
@@ -106,7 +106,7 @@ export const GroupList: React.FC<IGroupList> = ({
   }
 
   function renderContent(
-    result: GQL.FindMoviesQueryResult,
+    result: GQL.FindGroupsQueryResult,
     filter: ListFilterModel,
     selectedIds: Set<string>,
     onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void
@@ -116,7 +116,7 @@ export const GroupList: React.FC<IGroupList> = ({
         return (
           <ExportDialog
             exportInput={{
-              movies: {
+              groups: {
                 ids: Array.from(selectedIds.values()),
                 all: isExportAll,
               },
@@ -128,12 +128,12 @@ export const GroupList: React.FC<IGroupList> = ({
     }
 
     function renderGroups() {
-      if (!result.data?.findMovies) return;
+      if (!result.data?.findGroups) return;
 
       if (filter.displayMode === DisplayMode.Grid) {
         return (
           <GroupCardGrid
-            groups={result.data.findMovies.movies}
+            groups={result.data.findGroups.groups}
             selectedIds={selectedIds}
             onSelectChange={onSelectChange}
           />
@@ -152,14 +152,14 @@ export const GroupList: React.FC<IGroupList> = ({
   }
 
   function renderEditDialog(
-    selectedGroups: GQL.MovieDataFragment[],
+    selectedGroups: GQL.GroupDataFragment[],
     onClose: (applied: boolean) => void
   ) {
     return <EditGroupsDialog selected={selectedGroups} onClose={onClose} />;
   }
 
   function renderDeleteDialog(
-    selectedGroups: GQL.SlimMovieDataFragment[],
+    selectedGroups: GQL.SlimGroupDataFragment[],
     onClose: (confirmed: boolean) => void
   ) {
     return (
@@ -168,7 +168,7 @@ export const GroupList: React.FC<IGroupList> = ({
         onClose={onClose}
         singularEntity={intl.formatMessage({ id: "group" })}
         pluralEntity={intl.formatMessage({ id: "groups" })}
-        destroyMutation={useMoviesDestroy}
+        destroyMutation={useGroupsDestroy}
       />
     );
   }

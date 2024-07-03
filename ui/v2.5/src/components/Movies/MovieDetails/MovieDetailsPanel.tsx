@@ -8,7 +8,7 @@ import { DirectorLink } from "src/components/Shared/Link";
 import { TagLink } from "src/components/Shared/TagLink";
 
 interface IGroupDetailsPanel {
-  group: GQL.MovieDataFragment;
+  group: GQL.GroupDataFragment;
   collapsed?: boolean;
   fullWidth?: boolean;
 }
@@ -97,7 +97,7 @@ export const GroupDetailsPanel: React.FC<IGroupDetailsPanel> = ({
   );
 };
 
-export const CompressedMovieDetailsPanel: React.FC<IGroupDetailsPanel> = ({
+export const CompressedGroupDetailsPanel: React.FC<IGroupDetailsPanel> = ({
   group,
 }) => {
   function scrollToTop() {

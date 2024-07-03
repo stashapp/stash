@@ -1330,7 +1330,7 @@ func verifyPerformerQuery(t *testing.T, filter models.PerformerFilterType, verif
 
 		for _, performer := range performers {
 			if err := performer.LoadURLs(ctx, db.Performer); err != nil {
-				t.Errorf("Error loading movie relationships: %v", err)
+				t.Errorf("Error loading url relationships: %v", err)
 			}
 		}
 

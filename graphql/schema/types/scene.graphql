@@ -26,6 +26,11 @@ type SceneMovie {
   scene_index: Int
 }
 
+type SceneGroup {
+  group: Group!
+  scene_index: Int
+}
+
 type VideoCaption {
   language_code: String!
   caption_type: String!
@@ -68,7 +73,8 @@ type Scene {
   scene_markers: [SceneMarker!]!
   galleries: [Gallery!]!
   studio: Studio
-  movies: [SceneMovie!]!
+  groups: [SceneGroup!]!
+  movies: [SceneMovie!]! @deprecated(reason: "Use groups")
   tags: [Tag!]!
   performers: [Performer!]!
   stash_ids: [StashID!]!
@@ -79,6 +85,11 @@ type Scene {
 
 input SceneMovieInput {
   movie_id: ID!
+  scene_index: Int
+}
+
+input SceneGroupInput {
+  group_id: ID!
   scene_index: Int
 }
 
@@ -96,7 +107,8 @@ input SceneCreateInput {
   studio_id: ID
   gallery_ids: [ID!]
   performer_ids: [ID!]
-  movies: [SceneMovieInput!]
+  groups: [SceneGroupInput!]
+  movies: [SceneMovieInput!] @deprecated(reason: "Use groups")
   tag_ids: [ID!]
   "This should be a URL or a base64 encoded data URL"
   cover_image: String
@@ -128,7 +140,8 @@ input SceneUpdateInput {
   studio_id: ID
   gallery_ids: [ID!]
   performer_ids: [ID!]
-  movies: [SceneMovieInput!]
+  groups: [SceneGroupInput!]
+  movies: [SceneMovieInput!] @deprecated(reason: "Use groups")
   tag_ids: [ID!]
   "This should be a URL or a base64 encoded data URL"
   cover_image: String
@@ -175,7 +188,8 @@ input BulkSceneUpdateInput {
   gallery_ids: BulkUpdateIds
   performer_ids: BulkUpdateIds
   tag_ids: BulkUpdateIds
-  movie_ids: BulkUpdateIds
+  group_ids: BulkUpdateIds
+  movie_ids: BulkUpdateIds @deprecated(reason: "Use group_ids")
 }
 
 input SceneDestroyInput {

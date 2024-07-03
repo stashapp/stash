@@ -12,19 +12,7 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
-// used to refetch movie after hooks run
-func (r *mutationResolver) getMovie(ctx context.Context, id int) (ret *models.Movie, err error) {
-	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		ret, err = r.repository.Movie.Find(ctx, id)
-		return err
-	}); err != nil {
-		return nil, err
-	}
-
-	return ret, nil
-}
-
-func (r *mutationResolver) MovieCreate(ctx context.Context, input MovieCreateInput) (*models.Movie, error) {
+func movieFromGroupCreateInput(ctx context.Context, input GroupCreateInput) (*models.Movie, error) {
 	translator := changesetTranslator{
 		inputMap: getUpdateInputMap(ctx),
 	}
@@ -57,8 +45,15 @@ func (r *mutationResolver) MovieCreate(ctx context.Context, input MovieCreateInp
 
 	if input.Urls != nil {
 		newMovie.URLs = models.NewRelatedStrings(input.Urls)
-	} else if input.URL != nil {
-		newMovie.URLs = models.NewRelatedStrings([]string{*input.URL})
+	}
+
+	return &newMovie, nil
+}
+
+func (r *mutationResolver) GroupCreate(ctx context.Context, input GroupCreateInput) (*models.Movie, error) {
+	newMovie, err := movieFromGroupCreateInput(ctx, input)
+	if err != nil {
+		return nil, err
 	}
 
 	// Process the base 64 encoded image string
@@ -89,7 +84,7 @@ func (r *mutationResolver) MovieCreate(ctx context.Context, input MovieCreateInp
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Movie
 
-		err = qb.Create(ctx, &newMovie)
+		err = qb.Create(ctx, newMovie)
 		if err != nil {
 			return err
 		}
@@ -118,16 +113,7 @@ func (r *mutationResolver) MovieCreate(ctx context.Context, input MovieCreateInp
 	return r.getMovie(ctx, newMovie.ID)
 }
 
-func (r *mutationResolver) MovieUpdate(ctx context.Context, input MovieUpdateInput) (*models.Movie, error) {
-	movieID, err := strconv.Atoi(input.ID)
-	if err != nil {
-		return nil, fmt.Errorf("converting id: %w", err)
-	}
-
-	translator := changesetTranslator{
-		inputMap: getUpdateInputMap(ctx),
-	}
-
+func moviePartialFromGroupUpdateInput(translator changesetTranslator, input GroupUpdateInput) (ret models.MoviePartial, err error) {
 	// Populate movie from the input
 	updatedMovie := models.NewMoviePartial()
 
@@ -140,19 +126,40 @@ func (r *mutationResolver) MovieUpdate(ctx context.Context, input MovieUpdateInp
 
 	updatedMovie.Date, err = translator.optionalDate(input.Date, "date")
 	if err != nil {
-		return nil, fmt.Errorf("converting date: %w", err)
+		err = fmt.Errorf("converting date: %w", err)
+		return
 	}
 	updatedMovie.StudioID, err = translator.optionalIntFromString(input.StudioID, "studio_id")
 	if err != nil {
-		return nil, fmt.Errorf("converting studio id: %w", err)
+		err = fmt.Errorf("converting studio id: %w", err)
+		return
 	}
 
 	updatedMovie.TagIDs, err = translator.updateIds(input.TagIds, "tag_ids")
 	if err != nil {
-		return nil, fmt.Errorf("converting tag ids: %w", err)
+		err = fmt.Errorf("converting tag ids: %w", err)
+		return
 	}
 
-	updatedMovie.URLs = translator.optionalURLs(input.Urls, input.URL)
+	updatedMovie.URLs = translator.updateStrings(input.Urls, "urls")
+
+	return updatedMovie, nil
+}
+
+func (r *mutationResolver) GroupUpdate(ctx context.Context, input GroupUpdateInput) (*models.Movie, error) {
+	movieID, err := strconv.Atoi(input.ID)
+	if err != nil {
+		return nil, fmt.Errorf("converting id: %w", err)
+	}
+
+	translator := changesetTranslator{
+		inputMap: getUpdateInputMap(ctx),
+	}
+
+	updatedMovie, err := moviePartialFromGroupUpdateInput(translator, input)
+	if err != nil {
+		return nil, err
+	}
 
 	var frontimageData []byte
 	frontImageIncluded := translator.hasField("front_image")
@@ -205,7 +212,30 @@ func (r *mutationResolver) MovieUpdate(ctx context.Context, input MovieUpdateInp
 	return r.getMovie(ctx, movie.ID)
 }
 
-func (r *mutationResolver) BulkMovieUpdate(ctx context.Context, input BulkMovieUpdateInput) ([]*models.Movie, error) {
+func moviePartialFromBulkGroupUpdateInput(translator changesetTranslator, input BulkGroupUpdateInput) (ret models.MoviePartial, err error) {
+	updatedMovie := models.NewMoviePartial()
+
+	updatedMovie.Rating = translator.optionalInt(input.Rating100, "rating100")
+	updatedMovie.Director = translator.optionalString(input.Director, "director")
+
+	updatedMovie.StudioID, err = translator.optionalIntFromString(input.StudioID, "studio_id")
+	if err != nil {
+		err = fmt.Errorf("converting studio id: %w", err)
+		return
+	}
+
+	updatedMovie.TagIDs, err = translator.updateIdsBulk(input.TagIds, "tag_ids")
+	if err != nil {
+		err = fmt.Errorf("converting tag ids: %w", err)
+		return
+	}
+
+	updatedMovie.URLs = translator.optionalURLsBulk(input.Urls, nil)
+
+	return updatedMovie, nil
+}
+
+func (r *mutationResolver) BulkGroupUpdate(ctx context.Context, input BulkGroupUpdateInput) ([]*models.Movie, error) {
 	movieIDs, err := stringslice.StringSliceToIntSlice(input.Ids)
 	if err != nil {
 		return nil, fmt.Errorf("converting ids: %w", err)
@@ -216,22 +246,10 @@ func (r *mutationResolver) BulkMovieUpdate(ctx context.Context, input BulkMovieU
 	}
 
 	// Populate movie from the input
-	updatedMovie := models.NewMoviePartial()
-
-	updatedMovie.Rating = translator.optionalInt(input.Rating100, "rating100")
-	updatedMovie.Director = translator.optionalString(input.Director, "director")
-
-	updatedMovie.StudioID, err = translator.optionalIntFromString(input.StudioID, "studio_id")
+	updatedMovie, err := moviePartialFromBulkGroupUpdateInput(translator, input)
 	if err != nil {
-		return nil, fmt.Errorf("converting studio id: %w", err)
+		return nil, err
 	}
-
-	updatedMovie.TagIDs, err = translator.updateIdsBulk(input.TagIds, "tag_ids")
-	if err != nil {
-		return nil, fmt.Errorf("converting tag ids: %w", err)
-	}
-
-	updatedMovie.URLs = translator.optionalURLsBulk(input.Urls, nil)
 
 	ret := []*models.Movie{}
 
@@ -269,7 +287,7 @@ func (r *mutationResolver) BulkMovieUpdate(ctx context.Context, input BulkMovieU
 	return newRet, nil
 }
 
-func (r *mutationResolver) MovieDestroy(ctx context.Context, input MovieDestroyInput) (bool, error) {
+func (r *mutationResolver) GroupDestroy(ctx context.Context, input GroupDestroyInput) (bool, error) {
 	id, err := strconv.Atoi(input.ID)
 	if err != nil {
 		return false, fmt.Errorf("converting id: %w", err)
@@ -288,8 +306,8 @@ func (r *mutationResolver) MovieDestroy(ctx context.Context, input MovieDestroyI
 	return true, nil
 }
 
-func (r *mutationResolver) MoviesDestroy(ctx context.Context, movieIDs []string) (bool, error) {
-	ids, err := stringslice.StringSliceToIntSlice(movieIDs)
+func (r *mutationResolver) GroupsDestroy(ctx context.Context, groupIDs []string) (bool, error) {
+	ids, err := stringslice.StringSliceToIntSlice(groupIDs)
 	if err != nil {
 		return false, fmt.Errorf("converting ids: %w", err)
 	}
@@ -309,8 +327,8 @@ func (r *mutationResolver) MoviesDestroy(ctx context.Context, movieIDs []string)
 
 	for _, id := range ids {
 		// for backwards compatibility - run both movie and group hooks
-		r.hookExecutor.ExecutePostHooks(ctx, id, hook.GroupDestroyPost, movieIDs, nil)
-		r.hookExecutor.ExecutePostHooks(ctx, id, hook.MovieDestroyPost, movieIDs, nil)
+		r.hookExecutor.ExecutePostHooks(ctx, id, hook.GroupDestroyPost, groupIDs, nil)
+		r.hookExecutor.ExecutePostHooks(ctx, id, hook.MovieDestroyPost, groupIDs, nil)
 	}
 
 	return true, nil

@@ -77,13 +77,22 @@ type Query {
   ): FindStudiosResultType!
 
   "Find a movie by ID"
-  findMovie(id: ID!): Movie
+  findMovie(id: ID!): Movie @deprecated(reason: "Use findGroup instead")
   "A function which queries Movie objects"
   findMovies(
     movie_filter: MovieFilterType
     filter: FindFilterType
     ids: [ID!]
-  ): FindMoviesResultType!
+  ): FindMoviesResultType! @deprecated(reason: "Use findGroups instead")
+
+  "Find a group by ID"
+  findGroup(id: ID!): Group
+  "A function which queries Group objects"
+  findGroups(
+    group_filter: GroupFilterType
+    filter: FindFilterType
+    ids: [ID!]
+  ): FindGroupsResultType!
 
   findGallery(id: ID!): Gallery
   findGalleries(
@@ -156,7 +165,13 @@ type Query {
   scrapeSingleMovie(
     source: ScraperSourceInput!
     input: ScrapeSingleMovieInput!
-  ): [ScrapedMovie!]!
+  ): [ScrapedMovie!]! @deprecated(reason: "Use scrapeSingleGroup instead")
+
+  "Scrape for a single group"
+  scrapeSingleGroup(
+    source: ScraperSourceInput!
+    input: ScrapeSingleGroupInput!
+  ): [ScrapedGroup!]!
 
   "Scrapes content based on a URL"
   scrapeURL(url: String!, ty: ScrapeContentType!): ScrapedContent
@@ -169,6 +184,9 @@ type Query {
   scrapeGalleryURL(url: String!): ScrapedGallery
   "Scrapes a complete movie record based on a URL"
   scrapeMovieURL(url: String!): ScrapedMovie
+    @deprecated(reason: "Use scrapeGroupURL instead")
+  "Scrapes a complete group record based on a URL"
+  scrapeGroupURL(url: String!): ScrapedGroup
 
   # Plugins
   "List loaded plugins"
@@ -214,7 +232,7 @@ type Query {
   allPerformers: [Performer!]!
   allTags: [Tag!]! @deprecated(reason: "Use findTags instead")
   allStudios: [Studio!]! @deprecated(reason: "Use findStudios instead")
-  allMovies: [Movie!]! @deprecated(reason: "Use findMovies instead")
+  allMovies: [Movie!]! @deprecated(reason: "Use findGroups instead")
 
   # Get everything with minimal metadata
 
@@ -316,10 +334,21 @@ type Mutation {
   studiosDestroy(ids: [ID!]!): Boolean!
 
   movieCreate(input: MovieCreateInput!): Movie
+    @deprecated(reason: "Use groupCreate instead")
   movieUpdate(input: MovieUpdateInput!): Movie
+    @deprecated(reason: "Use groupUpdate instead")
   movieDestroy(input: MovieDestroyInput!): Boolean!
+    @deprecated(reason: "Use groupDestroy instead")
   moviesDestroy(ids: [ID!]!): Boolean!
+    @deprecated(reason: "Use groupsDestroy instead")
   bulkMovieUpdate(input: BulkMovieUpdateInput!): [Movie!]
+    @deprecated(reason: "Use bulkGroupUpdate instead")
+
+  groupCreate(input: GroupCreateInput!): Group
+  groupUpdate(input: GroupUpdateInput!): Group
+  groupDestroy(input: GroupDestroyInput!): Boolean!
+  groupsDestroy(ids: [ID!]!): Boolean!
+  bulkGroupUpdate(input: BulkGroupUpdateInput!): [Group!]
 
   tagCreate(input: TagCreateInput!): Tag
   tagUpdate(input: TagUpdateInput!): Tag

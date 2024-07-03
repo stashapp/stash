@@ -384,7 +384,7 @@ func (s *scriptScraper) scrape(ctx context.Context, input string, ty ScrapeConte
 		var scene *ScrapedScene
 		err := s.runScraperScript(ctx, input, &scene)
 		return scene, err
-	case ScrapeContentTypeMovie:
+	case ScrapeContentTypeMovie, ScrapeContentTypeGroup:
 		var movie *models.ScrapedMovie
 		err := s.runScraperScript(ctx, input, &movie)
 		return movie, err

@@ -72,9 +72,14 @@ func (r *Resolver) SceneMarker() SceneMarkerResolver {
 func (r *Resolver) Studio() StudioResolver {
 	return &studioResolver{r}
 }
+
+func (r *Resolver) Group() GroupResolver {
+	return &groupResolver{&movieResolver{r}}
+}
 func (r *Resolver) Movie() MovieResolver {
 	return &movieResolver{r}
 }
+
 func (r *Resolver) Subscription() SubscriptionResolver {
 	return &subscriptionResolver{r}
 }
@@ -111,7 +116,11 @@ type sceneResolver struct{ *Resolver }
 type sceneMarkerResolver struct{ *Resolver }
 type imageResolver struct{ *Resolver }
 type studioResolver struct{ *Resolver }
+
+// group is movie under the hood
 type movieResolver struct{ *Resolver }
+type groupResolver struct{ *movieResolver }
+
 type tagResolver struct{ *Resolver }
 type galleryFileResolver struct{ *Resolver }
 type videoFileResolver struct{ *Resolver }
@@ -218,7 +227,7 @@ func (r *queryResolver) Stats(ctx context.Context) (*StatsResultType, error) {
 			return err
 		}
 
-		moviesCount, err := movieQB.Count(ctx)
+		groupsCount, err := movieQB.Count(ctx)
 		if err != nil {
 			return err
 		}
@@ -262,7 +271,8 @@ func (r *queryResolver) Stats(ctx context.Context) (*StatsResultType, error) {
 			GalleryCount:      galleryCount,
 			PerformerCount:    performersCount,
 			StudioCount:       studiosCount,
-			MovieCount:        moviesCount,
+			GroupCount:        groupsCount,
+			MovieCount:        groupsCount,
 			TagCount:          tagsCount,
 			TotalOCount:       totalOCount,
 			TotalPlayDuration: totalPlayDuration,

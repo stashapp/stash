@@ -9,9 +9,9 @@ import cx from "classnames";
 
 import * as GQL from "src/core/generated-graphql";
 import {
-  queryFindMoviesForSelect,
-  queryFindMoviesByIDForSelect,
-  useMovieCreate,
+  queryFindGroupsForSelect,
+  queryFindGroupsByIDForSelect,
+  useGroupCreate,
 } from "src/core/StashService";
 import { ConfigurationContext } from "src/hooks/Config";
 import { useIntl } from "react-intl";
@@ -31,29 +31,29 @@ import { PatchComponent, PatchFunction } from "src/patch";
 import { TruncatedText } from "../Shared/TruncatedText";
 
 export type Group = Pick<
-  GQL.Movie,
+  GQL.Group,
   "id" | "name" | "date" | "front_image_path" | "aliases"
 > & {
   studio?: Pick<GQL.Studio, "name"> | null;
 };
 type Option = SelectOption<Group>;
 
-type FindMoviesResult = Awaited<
-  ReturnType<typeof queryFindMoviesForSelect>
->["data"]["findMovies"]["movies"];
+type FindGroupsResult = Awaited<
+  ReturnType<typeof queryFindGroupsForSelect>
+>["data"]["findGroups"]["groups"];
 
-function sortMoviesByRelevance(input: string, movies: FindMoviesResult) {
+function sortGroupsByRelevance(input: string, groups: FindGroupsResult) {
   return sortByRelevance(
     input,
-    movies,
+    groups,
     (m) => m.name,
     (m) => (m.aliases ? [m.aliases] : [])
   );
 }
 
-const movieSelectSort = PatchFunction(
-  "MovieSelect.sort",
-  sortMoviesByRelevance
+const groupSelectSort = PatchFunction(
+  "GroupSelect.sort",
+  sortGroupsByRelevance
 );
 
 const _GroupSelect: React.FC<
@@ -63,7 +63,7 @@ const _GroupSelect: React.FC<
       excludeIds?: string[];
     }
 > = (props) => {
-  const [createMovie] = useMovieCreate();
+  const [createGroup] = useGroupCreate();
 
   const { configuration } = React.useContext(ConfigurationContext);
   const intl = useIntl();
@@ -74,23 +74,23 @@ const _GroupSelect: React.FC<
 
   const exclude = useMemo(() => props.excludeIds ?? [], [props.excludeIds]);
 
-  async function loadMovies(input: string): Promise<Option[]> {
-    const filter = new ListFilterModel(GQL.FilterMode.Movies);
+  async function loadGroups(input: string): Promise<Option[]> {
+    const filter = new ListFilterModel(GQL.FilterMode.Groups);
     filter.searchTerm = input;
     filter.currentPage = 1;
     filter.itemsPerPage = maxOptionsShown;
     filter.sortBy = "name";
     filter.sortDirection = GQL.SortDirectionEnum.Asc;
-    const query = await queryFindMoviesForSelect(filter);
-    let ret = query.data.findMovies.movies.filter((movie) => {
+    const query = await queryFindGroupsForSelect(filter);
+    let ret = query.data.findGroups.groups.filter((group) => {
       // HACK - we should probably exclude these in the backend query, but
       // this will do in the short-term
-      return !exclude.includes(movie.id.toString());
+      return !exclude.includes(group.id.toString());
     });
 
-    return movieSelectSort(input, ret).map((movie) => ({
-      value: movie.id,
-      object: movie,
+    return groupSelectSort(input, ret).map((group) => ({
+      value: group.id,
+      object: group,
     }));
   }
 
@@ -184,12 +184,12 @@ const _GroupSelect: React.FC<
   };
 
   const onCreate = async (name: string) => {
-    const result = await createMovie({
+    const result = await createGroup({
       variables: { input: { name } },
     });
     return {
-      value: result.data!.movieCreate!.id,
-      item: result.data!.movieCreate!,
+      value: result.data!.groupCreate!.id,
+      item: result.data!.groupCreate!,
       message: "Created group",
     };
   };
@@ -230,7 +230,7 @@ const _GroupSelect: React.FC<
         },
         props.className
       )}
-      loadOptions={loadMovies}
+      loadOptions={loadGroups}
       getNamedObject={getNamedObject}
       isValidNewOption={isValidNewOption}
       components={{
@@ -273,10 +273,10 @@ const _GroupIDSelect: React.FC<IFilterProps & IFilterIDProps<Group>> = (
   }
 
   async function loadObjectsByID(idsToLoad: string[]): Promise<Group[]> {
-    const query = await queryFindMoviesByIDForSelect(idsToLoad);
-    const { movies: loadedMovies } = query.data.findMovies;
+    const query = await queryFindGroupsByIDForSelect(idsToLoad);
+    const { groups: loadedGroups } = query.data.findGroups;
 
-    return loadedMovies;
+    return loadedGroups;
   }
 
   useEffect(() => {

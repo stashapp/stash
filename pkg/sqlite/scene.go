@@ -1074,6 +1074,7 @@ var sceneSortOptions = sortOptions{
 	"duration",
 	"file_mod_time",
 	"framerate",
+	"group_scene_number",
 	"id",
 	"interactive",
 	"interactive_speed",
@@ -1140,7 +1141,7 @@ func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindF
 
 	direction := findFilter.GetDirection()
 	switch sort {
-	case "movie_scene_number":
+	case "movie_scene_number", "group_scene_number":
 		query.join(moviesScenesTable, "", "scenes.id = movies_scenes.scene_id")
 		query.sortAndPagination += getSort("scene_index", direction, moviesScenesTable)
 	case "tag_count":

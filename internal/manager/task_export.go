@@ -42,7 +42,7 @@ type ExportTask struct {
 	scenes     *exportSpec
 	images     *exportSpec
 	performers *exportSpec
-	movies     *exportSpec
+	groups     *exportSpec
 	tags       *exportSpec
 	studios    *exportSpec
 	galleries  *exportSpec
@@ -63,7 +63,8 @@ type ExportObjectsInput struct {
 	Studios             *ExportObjectTypeInput `json:"studios"`
 	Performers          *ExportObjectTypeInput `json:"performers"`
 	Tags                *ExportObjectTypeInput `json:"tags"`
-	Movies              *ExportObjectTypeInput `json:"movies"`
+	Groups              *ExportObjectTypeInput `json:"groups"`
+	Movies              *ExportObjectTypeInput `json:"movies"` // deprecated
 	Galleries           *ExportObjectTypeInput `json:"galleries"`
 	IncludeDependencies *bool                  `json:"includeDependencies"`
 }
@@ -97,13 +98,19 @@ func CreateExportTask(a models.HashAlgorithm, input ExportObjectsInput) *ExportT
 		includeDeps = *input.IncludeDependencies
 	}
 
+	// handle deprecated Movies field
+	groupSpec := input.Groups
+	if groupSpec == nil && input.Movies != nil {
+		groupSpec = input.Movies
+	}
+
 	return &ExportTask{
 		repository:          GetInstance().Repository,
 		fileNamingAlgorithm: a,
 		scenes:              newExportSpec(input.Scenes),
 		images:              newExportSpec(input.Images),
 		performers:          newExportSpec(input.Performers),
-		movies:              newExportSpec(input.Movies),
+		groups:              newExportSpec(groupSpec),
 		tags:                newExportSpec(input.Tags),
 		studios:             newExportSpec(input.Studios),
 		galleries:           newExportSpec(input.Galleries),
@@ -282,11 +289,11 @@ func (t *ExportTask) populateMovieScenes(ctx context.Context) {
 
 	var movies []*models.Movie
 	var err error
-	all := t.full || (t.movies != nil && t.movies.all)
+	all := t.full || (t.groups != nil && t.groups.all)
 	if all {
 		movies, err = reader.All(ctx)
-	} else if t.movies != nil && len(t.movies.IDs) > 0 {
-		movies, err = reader.FindMany(ctx, t.movies.IDs)
+	} else if t.groups != nil && len(t.groups.IDs) > 0 {
+		movies, err = reader.FindMany(ctx, t.groups.IDs)
 	}
 
 	if err != nil {
@@ -574,7 +581,7 @@ func (t *ExportTask) exportScene(ctx context.Context, wg *sync.WaitGroup, jobCha
 				logger.Errorf("[scenes] <%s> error getting scene movies: %v", sceneHash, err)
 				continue
 			}
-			t.movies.IDs = sliceutil.AppendUniques(t.movies.IDs, movieIDs)
+			t.groups.IDs = sliceutil.AppendUniques(t.groups.IDs, movieIDs)
 
 			t.performers.IDs = sliceutil.AppendUniques(t.performers.IDs, performer.GetIDs(performers))
 		}
@@ -1080,11 +1087,11 @@ func (t *ExportTask) ExportMovies(ctx context.Context, workers int) {
 	reader := t.repository.Movie
 	var movies []*models.Movie
 	var err error
-	all := t.full || (t.movies != nil && t.movies.all)
+	all := t.full || (t.groups != nil && t.groups.all)
 	if all {
 		movies, err = reader.All(ctx)
-	} else if t.movies != nil && len(t.movies.IDs) > 0 {
-		movies, err = reader.FindMany(ctx, t.movies.IDs)
+	} else if t.groups != nil && len(t.groups.IDs) > 0 {
+		movies, err = reader.FindMany(ctx, t.groups.IDs)
 	}
 
 	if err != nil {

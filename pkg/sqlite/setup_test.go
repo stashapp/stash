@@ -278,9 +278,7 @@ const (
 )
 
 const (
-	savedFilterIdxDefaultScene = iota
-	savedFilterIdxDefaultImage
-	savedFilterIdxScene
+	savedFilterIdxScene = iota
 	savedFilterIdxImage
 
 	// new indexes above
@@ -1777,9 +1775,9 @@ func createChapter(ctx context.Context, mqb models.GalleryChapterReaderWriter, c
 
 func getSavedFilterMode(index int) models.FilterMode {
 	switch index {
-	case savedFilterIdxScene, savedFilterIdxDefaultScene:
+	case savedFilterIdxScene:
 		return models.FilterModeScenes
-	case savedFilterIdxImage, savedFilterIdxDefaultImage:
+	case savedFilterIdxImage:
 		return models.FilterModeImages
 	default:
 		return models.FilterModeScenes
@@ -1787,11 +1785,6 @@ func getSavedFilterMode(index int) models.FilterMode {
 }
 
 func getSavedFilterName(index int) string {
-	if index <= savedFilterIdxDefaultImage {
-		// empty string for default filters
-		return ""
-	}
-
 	if index <= savedFilterIdxImage {
 		// use the same name for the first two - should be possible
 		return firstSavedFilterName

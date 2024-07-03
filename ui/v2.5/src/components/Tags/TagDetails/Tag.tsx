@@ -106,7 +106,7 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
   const galleryCount =
     (showAllCounts ? tag.gallery_count_all : tag.gallery_count) ?? 0;
   const groupCount =
-    (showAllCounts ? tag.movie_count_all : tag.movie_count) ?? 0;
+    (showAllCounts ? tag.group_count_all : tag.group_count) ?? 0;
   const sceneMarkerCount =
     (showAllCounts ? tag.scene_marker_count_all : tag.scene_marker_count) ?? 0;
   const performerCount =

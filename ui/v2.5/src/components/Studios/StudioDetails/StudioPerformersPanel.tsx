@@ -25,7 +25,7 @@ export const StudioPerformersPanel: React.FC<IStudioPerformersPanel> = ({
     scenes: [studioCriterion],
     images: [studioCriterion],
     galleries: [studioCriterion],
-    movies: [studioCriterion],
+    groups: [studioCriterion],
   };
 
   const filterHook = useStudioFilterHook(studio);

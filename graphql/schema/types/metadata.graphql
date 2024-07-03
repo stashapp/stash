@@ -284,7 +284,8 @@ input ExportObjectsInput {
   studios: ExportObjectTypeInput
   performers: ExportObjectTypeInput
   tags: ExportObjectTypeInput
-  movies: ExportObjectTypeInput
+  groups: ExportObjectTypeInput
+  movies: ExportObjectTypeInput @deprecated(reason: "Use groups instead")
   galleries: ExportObjectTypeInput
   includeDependencies: Boolean
 }

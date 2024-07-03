@@ -1,4 +1,4 @@
-fragment MovieData on Movie {
+fragment GroupData on Group {
   id
   name
   aliases

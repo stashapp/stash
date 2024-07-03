@@ -80,9 +80,17 @@ func (r *mutationResolver) SceneCreate(ctx context.Context, input models.SceneCr
 		return nil, fmt.Errorf("converting gallery ids: %w", err)
 	}
 
-	newScene.Movies, err = translator.relatedMovies(input.Movies)
-	if err != nil {
-		return nil, fmt.Errorf("converting movies: %w", err)
+	// prefer groups over movies
+	if len(input.Groups) > 0 {
+		newScene.Movies, err = translator.relatedMoviesFromGroups(input.Groups)
+		if err != nil {
+			return nil, fmt.Errorf("converting groups: %w", err)
+		}
+	} else if len(input.Movies) > 0 {
+		newScene.Movies, err = translator.relatedMovies(input.Movies)
+		if err != nil {
+			return nil, fmt.Errorf("converting movies: %w", err)
+		}
 	}
 
 	var coverImageData []byte
@@ -216,9 +224,16 @@ func scenePartialFromInput(input models.SceneUpdateInput, translator changesetTr
 		return nil, fmt.Errorf("converting gallery ids: %w", err)
 	}
 
-	updatedScene.MovieIDs, err = translator.updateMovieIDs(input.Movies, "movies")
-	if err != nil {
-		return nil, fmt.Errorf("converting movies: %w", err)
+	if translator.hasField("groups") {
+		updatedScene.MovieIDs, err = translator.updateMovieIDsFromGroups(input.Groups, "groups")
+		if err != nil {
+			return nil, fmt.Errorf("converting movies: %w", err)
+		}
+	} else if translator.hasField("movies") {
+		updatedScene.MovieIDs, err = translator.updateMovieIDs(input.Movies, "movies")
+		if err != nil {
+			return nil, fmt.Errorf("converting movies: %w", err)
+		}
 	}
 
 	return &updatedScene, nil
@@ -358,9 +373,16 @@ func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input BulkSceneU
 		return nil, fmt.Errorf("converting gallery ids: %w", err)
 	}
 
-	updatedScene.MovieIDs, err = translator.updateMovieIDsBulk(input.MovieIds, "movie_ids")
-	if err != nil {
-		return nil, fmt.Errorf("converting movie ids: %w", err)
+	if translator.hasField("groups") {
+		updatedScene.MovieIDs, err = translator.updateMovieIDsBulk(input.GroupIds, "group_ids")
+		if err != nil {
+			return nil, fmt.Errorf("converting group ids: %w", err)
+		}
+	} else if translator.hasField("movies") {
+		updatedScene.MovieIDs, err = translator.updateMovieIDsBulk(input.MovieIds, "movie_ids")
+		if err != nil {
+			return nil, fmt.Errorf("converting movie ids: %w", err)
+		}
 	}
 
 	ret := []*models.Scene{}

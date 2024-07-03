@@ -42,7 +42,8 @@ type Performer {
   scene_count: Int! # Resolver
   image_count: Int! # Resolver
   gallery_count: Int! # Resolver
-  movie_count: Int! # Resolver
+  group_count: Int! # Resolver
+  movie_count: Int! @deprecated(reason: "use group_count instead") # Resolver
   performer_count: Int! # Resolver
   o_counter: Int # Resolver
   scenes: [Scene!]!
@@ -55,7 +56,8 @@ type Performer {
   weight: Int
   created_at: Time!
   updated_at: Time!
-  movies: [Movie!]!
+  groups: [Group!]! @deprecated(reason: "use groups instead")
+  movies: [Movie!]! @deprecated(reason: "use groups instead")
 }
 
 input PerformerCreateInput {

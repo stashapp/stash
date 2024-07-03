@@ -414,3 +414,24 @@ type ScrapedMovie struct {
 }
 
 func (ScrapedMovie) IsScrapedContent() {}
+
+// ScrapedGroup is a group from a scraping operation
+type ScrapedGroup struct {
+	StoredID *string        `json:"stored_id"`
+	Name     *string        `json:"name"`
+	Aliases  *string        `json:"aliases"`
+	Duration *string        `json:"duration"`
+	Date     *string        `json:"date"`
+	Rating   *string        `json:"rating"`
+	Director *string        `json:"director"`
+	URLs     []string       `json:"urls"`
+	Synopsis *string        `json:"synopsis"`
+	Studio   *ScrapedStudio `json:"studio"`
+	Tags     []*ScrapedTag  `json:"tags"`
+	// This should be a base64 encoded data URL
+	FrontImage *string `json:"front_image"`
+	// This should be a base64 encoded data URL
+	BackImage *string `json:"back_image"`
+}
+
+func (ScrapedGroup) IsScrapedContent() {}

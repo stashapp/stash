@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import * as GQL from "src/core/generated-graphql";
-import { useMovieCreate } from "src/core/StashService";
+import { useGroupCreate } from "src/core/StashService";
 import { useHistory, useLocation } from "react-router-dom";
 import { useIntl } from "react-intl";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
@@ -18,23 +18,23 @@ const GroupCreate: React.FC = () => {
     name: query.get("q") ?? undefined,
   };
 
-  // Editing movie state
+  // Editing group state
   const [frontImage, setFrontImage] = useState<string | null>();
   const [backImage, setBackImage] = useState<string | null>();
   const [encodingImage, setEncodingImage] = useState<boolean>(false);
 
-  const [createMovie] = useMovieCreate();
+  const [createGroup] = useGroupCreate();
 
-  async function onSave(input: GQL.MovieCreateInput) {
-    const result = await createMovie({
+  async function onSave(input: GQL.GroupCreateInput) {
+    const result = await createGroup({
       variables: { input },
     });
-    if (result.data?.movieCreate?.id) {
-      history.push(`/groups/${result.data.movieCreate.id}`);
+    if (result.data?.groupCreate?.id) {
+      history.push(`/groups/${result.data.groupCreate.id}`);
       Toast.success(
         intl.formatMessage(
           { id: "toast.created_entity" },
-          { entity: intl.formatMessage({ id: "gallery" }).toLocaleLowerCase() }
+          { entity: intl.formatMessage({ id: "group" }).toLocaleLowerCase() }
         )
       );
     }

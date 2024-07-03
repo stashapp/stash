@@ -3,7 +3,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { Button } from "react-bootstrap";
 import {
   mutateReloadScrapers,
-  useListMovieScrapers,
+  useListGroupScrapers,
   useListPerformerScrapers,
   useListSceneScrapers,
   useListGalleryScrapers,
@@ -80,7 +80,7 @@ export const SettingsScrapingPanel: React.FC = () => {
   const { data: galleryScrapers, loading: loadingGalleries } =
     useListGalleryScrapers();
   const { data: groupScrapers, loading: loadingGroups } =
-    useListMovieScrapers();
+    useListGroupScrapers();
 
   const { general, scraping, loading, error, saveGeneral, saveScraping } =
     useSettings();
@@ -251,9 +251,9 @@ export const SettingsScrapingPanel: React.FC = () => {
       <tr key={scraper.id}>
         <td>{scraper.name}</td>
         <td>
-          {renderGroupScrapeTypes(scraper.movie?.supported_scrapes ?? [])}
+          {renderGroupScrapeTypes(scraper.group?.supported_scrapes ?? [])}
         </td>
-        <td>{renderURLs(scraper.movie?.urls ?? [])}</td>
+        <td>{renderURLs(scraper.group?.urls ?? [])}</td>
       </tr>
     ));
 

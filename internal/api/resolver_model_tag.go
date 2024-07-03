@@ -120,7 +120,7 @@ func (r *tagResolver) StudioCount(ctx context.Context, obj *models.Tag, depth *i
 	return ret, nil
 }
 
-func (r *tagResolver) MovieCount(ctx context.Context, obj *models.Tag, depth *int) (ret int, err error) {
+func (r *tagResolver) GroupCount(ctx context.Context, obj *models.Tag, depth *int) (ret int, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		ret, err = movie.CountByTagID(ctx, r.repository.Movie, obj.ID, depth)
 		return err
@@ -129,6 +129,10 @@ func (r *tagResolver) MovieCount(ctx context.Context, obj *models.Tag, depth *in
 	}
 
 	return ret, nil
+}
+
+func (r *tagResolver) MovieCount(ctx context.Context, obj *models.Tag, depth *int) (ret int, err error) {
+	return r.GroupCount(ctx, obj, depth)
 }
 
 func (r *tagResolver) ImagePath(ctx context.Context, obj *models.Tag) (*string, error) {

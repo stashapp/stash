@@ -12,7 +12,7 @@ import {
   TagsCriterionOption,
 } from "src/models/list-filter/criteria/tags";
 import { ListFilterModel } from "src/models/list-filter/filter";
-import { MoviesCriterion } from "src/models/list-filter/criteria/movies";
+import { GroupsCriterion } from "src/models/list-filter/criteria/movies";
 import {
   Criterion,
   CriterionOption,
@@ -109,7 +109,7 @@ const makePerformerGroupsUrl = (
   extraCriteria?: Criterion<CriterionValue>[]
 ) => {
   if (!performer.id) return "#";
-  const filter = new ListFilterModel(GQL.FilterMode.Movies, undefined);
+  const filter = new ListFilterModel(GQL.FilterMode.Groups, undefined);
   const criterion = new PerformersCriterion();
   criterion.value.items = [
     { id: performer.id, label: performer.name || `Performer ${performer.id}` },
@@ -176,7 +176,7 @@ const makeStudioGalleriesUrl = (studio: Partial<GQL.StudioDataFragment>) => {
 
 const makeStudioGroupsUrl = (studio: Partial<GQL.StudioDataFragment>) => {
   if (!studio.id) return "#";
-  const filter = new ListFilterModel(GQL.FilterMode.Movies, undefined);
+  const filter = new ListFilterModel(GQL.FilterMode.Groups, undefined);
   const criterion = new StudiosCriterion();
   criterion.value = {
     items: [{ id: studio.id, label: studio.name || `Studio ${studio.id}` }],
@@ -211,10 +211,10 @@ const makeChildStudiosUrl = (studio: Partial<GQL.StudioDataFragment>) => {
   return `/studios?${filter.makeQueryParameters()}`;
 };
 
-const makeGroupScenesUrl = (group: Partial<GQL.MovieDataFragment>) => {
+const makeGroupScenesUrl = (group: Partial<GQL.GroupDataFragment>) => {
   if (!group.id) return "#";
   const filter = new ListFilterModel(GQL.FilterMode.Scenes, undefined);
-  const criterion = new MoviesCriterion();
+  const criterion = new GroupsCriterion();
   criterion.value = [
     { id: group.id, label: group.name || `Group ${group.id}` },
   ];
@@ -299,7 +299,7 @@ const makeTagImagesUrl = (tag: INamedObject) => {
 };
 
 const makeTagGroupsUrl = (tag: INamedObject) => {
-  return `/groups?${makeTagFilter(GQL.FilterMode.Movies, tag)}`;
+  return `/groups?${makeTagFilter(GQL.FilterMode.Groups, tag)}`;
 };
 
 type SceneMarkerDataFragment = Pick<GQL.SceneMarker, "id" | "seconds"> & {
@@ -351,7 +351,7 @@ const makeDirectorScenesUrl = (director: string) => {
 
 const makeDirectorGroupsUrl = (director: string) => {
   if (director.length == 0) return "#";
-  const filter = new ListFilterModel(GQL.FilterMode.Movies, undefined);
+  const filter = new ListFilterModel(GQL.FilterMode.Groups, undefined);
   filter.criteria.push(
     stringEqualsCriterion(createStringCriterionOption("director"), director)
   );

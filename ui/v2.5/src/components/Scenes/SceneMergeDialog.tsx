@@ -100,10 +100,10 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
     };
   }
 
-  function groupToStoredID(o: { movie: { id: string; name: string } }) {
+  function groupToStoredID(o: { group: { id: string; name: string } }) {
     return {
-      stored_id: o.movie.id,
-      name: o.movie.name,
+      stored_id: o.group.id,
+      name: o.group.name,
     };
   }
 
@@ -142,10 +142,10 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
   );
 
   const [groups, setGroups] = useState<
-    ObjectListScrapeResult<GQL.ScrapedMovie>
+    ObjectListScrapeResult<GQL.ScrapedGroup>
   >(
-    new ObjectListScrapeResult<GQL.ScrapedMovie>(
-      sortStoredIdObjects(dest.movies.map(groupToStoredID))
+    new ObjectListScrapeResult<GQL.ScrapedGroup>(
+      sortStoredIdObjects(dest.groups.map(groupToStoredID))
     )
   );
 
@@ -253,9 +253,9 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
     );
 
     setGroups(
-      new ObjectListScrapeResult<GQL.ScrapedMovie>(
-        sortStoredIdObjects(dest.movies.map(groupToStoredID)),
-        uniqIDStoredIDs(all.map((s) => s.movies.map(groupToStoredID)).flat())
+      new ObjectListScrapeResult<GQL.ScrapedGroup>(
+        sortStoredIdObjects(dest.groups.map(groupToStoredID)),
+        uniqIDStoredIDs(all.map((s) => s.groups.map(groupToStoredID)).flat())
       )
     );
 
@@ -585,14 +585,14 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
         gallery_ids: galleries.getNewValue(),
         studio_id: studio.getNewValue()?.stored_id,
         performer_ids: performers.getNewValue()?.map((p) => p.stored_id!),
-        movies: groups.getNewValue()?.map((m) => {
-          // find the equivalent movie in the original scenes
+        groups: groups.getNewValue()?.map((m) => {
+          // find the equivalent group in the original scenes
           const found = all
-            .map((s) => s.movies)
+            .map((s) => s.groups)
             .flat()
-            .find((mm) => mm.movie.id === m.stored_id);
+            .find((mm) => mm.group.id === m.stored_id);
           return {
-            movie_id: m.stored_id!,
+            group_id: m.stored_id!,
             scene_index: found!.scene_index,
           };
         }),

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Form, Col, Row } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
-import { useBulkMovieUpdate } from "src/core/StashService";
+import { useBulkGroupUpdate } from "src/core/StashService";
 import * as GQL from "src/core/generated-graphql";
 import { ModalComponent } from "../Shared/Modal";
 import { StudioSelect } from "../Shared/Select";
@@ -20,7 +20,7 @@ import { isEqual } from "lodash-es";
 import { MultiSet } from "../Shared/MultiSet";
 
 interface IListOperationProps {
-  selected: GQL.MovieDataFragment[];
+  selected: GQL.GroupDataFragment[];
   onClose: (applied: boolean) => void;
 }
 
@@ -39,32 +39,32 @@ export const EditGroupsDialog: React.FC<IListOperationProps> = (
   const [tagIds, setTagIds] = useState<string[]>();
   const [existingTagIds, setExistingTagIds] = useState<string[]>();
 
-  const [updateMovies] = useBulkMovieUpdate(getMovieInput());
+  const [updateGroups] = useBulkGroupUpdate(getGroupInput());
 
   const [isUpdating, setIsUpdating] = useState(false);
 
-  function getMovieInput(): GQL.BulkMovieUpdateInput {
+  function getGroupInput(): GQL.BulkGroupUpdateInput {
     const aggregateRating = getAggregateRating(props.selected);
     const aggregateStudioId = getAggregateStudioId(props.selected);
     const aggregateTagIds = getAggregateTagIds(props.selected);
 
-    const movieInput: GQL.BulkMovieUpdateInput = {
-      ids: props.selected.map((movie) => movie.id),
+    const groupInput: GQL.BulkGroupUpdateInput = {
+      ids: props.selected.map((group) => group.id),
       director,
     };
 
     // if rating is undefined
-    movieInput.rating100 = getAggregateInputValue(rating100, aggregateRating);
-    movieInput.studio_id = getAggregateInputValue(studioId, aggregateStudioId);
-    movieInput.tag_ids = getAggregateInputIDs(tagMode, tagIds, aggregateTagIds);
+    groupInput.rating100 = getAggregateInputValue(rating100, aggregateRating);
+    groupInput.studio_id = getAggregateInputValue(studioId, aggregateStudioId);
+    groupInput.tag_ids = getAggregateInputIDs(tagMode, tagIds, aggregateTagIds);
 
-    return movieInput;
+    return groupInput;
   }
 
   async function onSave() {
     setIsUpdating(true);
     try {
-      await updateMovies();
+      await updateGroups();
       Toast.success(
         intl.formatMessage(
           { id: "toast.updated_entity" },
@@ -88,26 +88,26 @@ export const EditGroupsDialog: React.FC<IListOperationProps> = (
     let updateDirector: string | undefined;
     let first = true;
 
-    state.forEach((movie: GQL.MovieDataFragment) => {
-      const movieTagIDs = (movie.tags ?? []).map((p) => p.id).sort();
+    state.forEach((group: GQL.GroupDataFragment) => {
+      const groupTagIDs = (group.tags ?? []).map((p) => p.id).sort();
 
       if (first) {
         first = false;
-        updateRating = movie.rating100 ?? undefined;
-        updateStudioId = movie.studio?.id ?? undefined;
-        updateTagIds = movieTagIDs;
-        updateDirector = movie.director ?? undefined;
+        updateRating = group.rating100 ?? undefined;
+        updateStudioId = group.studio?.id ?? undefined;
+        updateTagIds = groupTagIDs;
+        updateDirector = group.director ?? undefined;
       } else {
-        if (movie.rating100 !== updateRating) {
+        if (group.rating100 !== updateRating) {
           updateRating = undefined;
         }
-        if (movie.studio?.id !== updateStudioId) {
+        if (group.studio?.id !== updateStudioId) {
           updateStudioId = undefined;
         }
-        if (movie.director !== updateDirector) {
+        if (group.director !== updateDirector) {
           updateDirector = undefined;
         }
-        if (!isEqual(movieTagIDs, updateTagIds)) {
+        if (!isEqual(groupTagIDs, updateTagIds)) {
           updateTagIds = [];
         }
       }

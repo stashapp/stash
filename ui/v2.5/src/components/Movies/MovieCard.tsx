@@ -12,7 +12,7 @@ import { faPlayCircle, faTag } from "@fortawesome/free-solid-svg-icons";
 import ScreenUtils from "src/utils/screen";
 
 interface IProps {
-  group: GQL.MovieDataFragment;
+  group: GQL.GroupDataFragment;
   containerWidth?: number;
   sceneIndex?: number;
   selecting?: boolean;

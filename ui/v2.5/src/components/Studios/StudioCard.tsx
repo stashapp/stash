@@ -143,13 +143,13 @@ export const StudioCard: React.FC<IProps> = ({
   }
 
   function maybeRenderGroupsPopoverButton() {
-    if (!studio.movie_count) return;
+    if (!studio.group_count) return;
 
     return (
       <PopoverCountButton
         className="group-count"
         type="group"
-        count={studio.movie_count}
+        count={studio.group_count}
         url={NavUtils.makeStudioGroupsUrl(studio)}
       />
     );
@@ -190,7 +190,7 @@ export const StudioCard: React.FC<IProps> = ({
       studio.scene_count ||
       studio.image_count ||
       studio.gallery_count ||
-      studio.movie_count ||
+      studio.group_count ||
       studio.performer_count ||
       studio.tags.length > 0
     ) {
