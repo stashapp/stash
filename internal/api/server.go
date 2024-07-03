@@ -345,9 +345,9 @@ func (s *Server) getStudioRoutes() chi.Router {
 
 func (s *Server) getMovieRoutes() chi.Router {
 	repo := s.manager.Repository
-	return movieRoutes{
+	return groupRoutes{
 		routes:      routes{txnManager: repo.TxnManager},
-		movieFinder: repo.Group,
+		groupFinder: repo.Group,
 	}.Routes()
 }
 

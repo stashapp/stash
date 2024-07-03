@@ -82,7 +82,7 @@ func (r *mutationResolver) MovieCreate(ctx context.Context, input MovieCreateInp
 	// HACK: if back image is being set, set the front image to the default.
 	// This is because we can't have a null front image with a non-null back image.
 	if len(frontimageData) == 0 && len(backimageData) != 0 {
-		frontimageData = static.ReadAll(static.DefaultMovieImage)
+		frontimageData = static.ReadAll(static.DefaultGroupImage)
 	}
 
 	// Start the transaction and save the movie
