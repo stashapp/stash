@@ -15,15 +15,15 @@ type MovieReaderWriter struct {
 }
 
 // All provides a mock function with given fields: ctx
-func (_m *MovieReaderWriter) All(ctx context.Context) ([]*models.Movie, error) {
+func (_m *MovieReaderWriter) All(ctx context.Context) ([]*models.Group, error) {
 	ret := _m.Called(ctx)
 
-	var r0 []*models.Movie
-	if rf, ok := ret.Get(0).(func(context.Context) []*models.Movie); ok {
+	var r0 []*models.Group
+	if rf, ok := ret.Get(0).(func(context.Context) []*models.Group); ok {
 		r0 = rf(ctx)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*models.Movie)
+			r0 = ret.Get(0).([]*models.Group)
 		}
 	}
 
@@ -101,11 +101,11 @@ func (_m *MovieReaderWriter) CountByStudioID(ctx context.Context, studioID int) 
 }
 
 // Create provides a mock function with given fields: ctx, newMovie
-func (_m *MovieReaderWriter) Create(ctx context.Context, newMovie *models.Movie) error {
+func (_m *MovieReaderWriter) Create(ctx context.Context, newMovie *models.Group) error {
 	ret := _m.Called(ctx, newMovie)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *models.Movie) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *models.Group) error); ok {
 		r0 = rf(ctx, newMovie)
 	} else {
 		r0 = ret.Error(0)
@@ -129,15 +129,15 @@ func (_m *MovieReaderWriter) Destroy(ctx context.Context, id int) error {
 }
 
 // Find provides a mock function with given fields: ctx, id
-func (_m *MovieReaderWriter) Find(ctx context.Context, id int) (*models.Movie, error) {
+func (_m *MovieReaderWriter) Find(ctx context.Context, id int) (*models.Group, error) {
 	ret := _m.Called(ctx, id)
 
-	var r0 *models.Movie
-	if rf, ok := ret.Get(0).(func(context.Context, int) *models.Movie); ok {
+	var r0 *models.Group
+	if rf, ok := ret.Get(0).(func(context.Context, int) *models.Group); ok {
 		r0 = rf(ctx, id)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*models.Movie)
+			r0 = ret.Get(0).(*models.Group)
 		}
 	}
 
@@ -152,15 +152,15 @@ func (_m *MovieReaderWriter) Find(ctx context.Context, id int) (*models.Movie, e
 }
 
 // FindByName provides a mock function with given fields: ctx, name, nocase
-func (_m *MovieReaderWriter) FindByName(ctx context.Context, name string, nocase bool) (*models.Movie, error) {
+func (_m *MovieReaderWriter) FindByName(ctx context.Context, name string, nocase bool) (*models.Group, error) {
 	ret := _m.Called(ctx, name, nocase)
 
-	var r0 *models.Movie
-	if rf, ok := ret.Get(0).(func(context.Context, string, bool) *models.Movie); ok {
+	var r0 *models.Group
+	if rf, ok := ret.Get(0).(func(context.Context, string, bool) *models.Group); ok {
 		r0 = rf(ctx, name, nocase)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*models.Movie)
+			r0 = ret.Get(0).(*models.Group)
 		}
 	}
 
@@ -175,15 +175,15 @@ func (_m *MovieReaderWriter) FindByName(ctx context.Context, name string, nocase
 }
 
 // FindByNames provides a mock function with given fields: ctx, names, nocase
-func (_m *MovieReaderWriter) FindByNames(ctx context.Context, names []string, nocase bool) ([]*models.Movie, error) {
+func (_m *MovieReaderWriter) FindByNames(ctx context.Context, names []string, nocase bool) ([]*models.Group, error) {
 	ret := _m.Called(ctx, names, nocase)
 
-	var r0 []*models.Movie
-	if rf, ok := ret.Get(0).(func(context.Context, []string, bool) []*models.Movie); ok {
+	var r0 []*models.Group
+	if rf, ok := ret.Get(0).(func(context.Context, []string, bool) []*models.Group); ok {
 		r0 = rf(ctx, names, nocase)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*models.Movie)
+			r0 = ret.Get(0).([]*models.Group)
 		}
 	}
 
@@ -198,15 +198,15 @@ func (_m *MovieReaderWriter) FindByNames(ctx context.Context, names []string, no
 }
 
 // FindByPerformerID provides a mock function with given fields: ctx, performerID
-func (_m *MovieReaderWriter) FindByPerformerID(ctx context.Context, performerID int) ([]*models.Movie, error) {
+func (_m *MovieReaderWriter) FindByPerformerID(ctx context.Context, performerID int) ([]*models.Group, error) {
 	ret := _m.Called(ctx, performerID)
 
-	var r0 []*models.Movie
-	if rf, ok := ret.Get(0).(func(context.Context, int) []*models.Movie); ok {
+	var r0 []*models.Group
+	if rf, ok := ret.Get(0).(func(context.Context, int) []*models.Group); ok {
 		r0 = rf(ctx, performerID)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*models.Movie)
+			r0 = ret.Get(0).([]*models.Group)
 		}
 	}
 
@@ -221,15 +221,15 @@ func (_m *MovieReaderWriter) FindByPerformerID(ctx context.Context, performerID 
 }
 
 // FindByStudioID provides a mock function with given fields: ctx, studioID
-func (_m *MovieReaderWriter) FindByStudioID(ctx context.Context, studioID int) ([]*models.Movie, error) {
+func (_m *MovieReaderWriter) FindByStudioID(ctx context.Context, studioID int) ([]*models.Group, error) {
 	ret := _m.Called(ctx, studioID)
 
-	var r0 []*models.Movie
-	if rf, ok := ret.Get(0).(func(context.Context, int) []*models.Movie); ok {
+	var r0 []*models.Group
+	if rf, ok := ret.Get(0).(func(context.Context, int) []*models.Group); ok {
 		r0 = rf(ctx, studioID)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*models.Movie)
+			r0 = ret.Get(0).([]*models.Group)
 		}
 	}
 
@@ -244,15 +244,15 @@ func (_m *MovieReaderWriter) FindByStudioID(ctx context.Context, studioID int) (
 }
 
 // FindMany provides a mock function with given fields: ctx, ids
-func (_m *MovieReaderWriter) FindMany(ctx context.Context, ids []int) ([]*models.Movie, error) {
+func (_m *MovieReaderWriter) FindMany(ctx context.Context, ids []int) ([]*models.Group, error) {
 	ret := _m.Called(ctx, ids)
 
-	var r0 []*models.Movie
-	if rf, ok := ret.Get(0).(func(context.Context, []int) []*models.Movie); ok {
+	var r0 []*models.Group
+	if rf, ok := ret.Get(0).(func(context.Context, []int) []*models.Group); ok {
 		r0 = rf(ctx, ids)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*models.Movie)
+			r0 = ret.Get(0).([]*models.Group)
 		}
 	}
 
@@ -401,15 +401,15 @@ func (_m *MovieReaderWriter) HasFrontImage(ctx context.Context, movieID int) (bo
 }
 
 // Query provides a mock function with given fields: ctx, movieFilter, findFilter
-func (_m *MovieReaderWriter) Query(ctx context.Context, movieFilter *models.MovieFilterType, findFilter *models.FindFilterType) ([]*models.Movie, int, error) {
+func (_m *MovieReaderWriter) Query(ctx context.Context, movieFilter *models.MovieFilterType, findFilter *models.FindFilterType) ([]*models.Group, int, error) {
 	ret := _m.Called(ctx, movieFilter, findFilter)
 
-	var r0 []*models.Movie
-	if rf, ok := ret.Get(0).(func(context.Context, *models.MovieFilterType, *models.FindFilterType) []*models.Movie); ok {
+	var r0 []*models.Group
+	if rf, ok := ret.Get(0).(func(context.Context, *models.MovieFilterType, *models.FindFilterType) []*models.Group); ok {
 		r0 = rf(ctx, movieFilter, findFilter)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*models.Movie)
+			r0 = ret.Get(0).([]*models.Group)
 		}
 	}
 
@@ -452,11 +452,11 @@ func (_m *MovieReaderWriter) QueryCount(ctx context.Context, movieFilter *models
 }
 
 // Update provides a mock function with given fields: ctx, updatedMovie
-func (_m *MovieReaderWriter) Update(ctx context.Context, updatedMovie *models.Movie) error {
+func (_m *MovieReaderWriter) Update(ctx context.Context, updatedMovie *models.Group) error {
 	ret := _m.Called(ctx, updatedMovie)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *models.Movie) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *models.Group) error); ok {
 		r0 = rf(ctx, updatedMovie)
 	} else {
 		r0 = ret.Error(0)
@@ -494,20 +494,20 @@ func (_m *MovieReaderWriter) UpdateFrontImage(ctx context.Context, movieID int, 
 }
 
 // UpdatePartial provides a mock function with given fields: ctx, id, updatedMovie
-func (_m *MovieReaderWriter) UpdatePartial(ctx context.Context, id int, updatedMovie models.MoviePartial) (*models.Movie, error) {
+func (_m *MovieReaderWriter) UpdatePartial(ctx context.Context, id int, updatedMovie models.GroupPartial) (*models.Group, error) {
 	ret := _m.Called(ctx, id, updatedMovie)
 
-	var r0 *models.Movie
-	if rf, ok := ret.Get(0).(func(context.Context, int, models.MoviePartial) *models.Movie); ok {
+	var r0 *models.Group
+	if rf, ok := ret.Get(0).(func(context.Context, int, models.GroupPartial) *models.Group); ok {
 		r0 = rf(ctx, id, updatedMovie)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*models.Movie)
+			r0 = ret.Get(0).(*models.Group)
 		}
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, int, models.MoviePartial) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, int, models.GroupPartial) error); ok {
 		r1 = rf(ctx, id, updatedMovie)
 	} else {
 		r1 = ret.Error(1)

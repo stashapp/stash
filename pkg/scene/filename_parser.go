@@ -413,7 +413,7 @@ type FilenameParser struct {
 	repository     FilenameParserRepository
 	performerCache map[string]*models.Performer
 	studioCache    map[string]*models.Studio
-	movieCache     map[string]*models.Movie
+	movieCache     map[string]*models.Group
 	tagCache       map[string]*models.Tag
 }
 
@@ -427,7 +427,7 @@ func NewFilenameParser(filter *models.FindFilterType, config models.SceneParserI
 
 	p.performerCache = make(map[string]*models.Performer)
 	p.studioCache = make(map[string]*models.Studio)
-	p.movieCache = make(map[string]*models.Movie)
+	p.movieCache = make(map[string]*models.Group)
 	p.tagCache = make(map[string]*models.Tag)
 
 	p.initWhiteSpaceRegex()
@@ -579,10 +579,10 @@ func (p *FilenameParser) queryStudio(ctx context.Context, qb models.StudioQuerye
 }
 
 type MovieNameFinder interface {
-	FindByName(ctx context.Context, name string, nocase bool) (*models.Movie, error)
+	FindByName(ctx context.Context, name string, nocase bool) (*models.Group, error)
 }
 
-func (p *FilenameParser) queryMovie(ctx context.Context, qb MovieNameFinder, movieName string) *models.Movie {
+func (p *FilenameParser) queryMovie(ctx context.Context, qb MovieNameFinder, movieName string) *models.Group {
 	// massage the movie name
 	movieName = delimiterRE.ReplaceAllString(movieName, " ")
 

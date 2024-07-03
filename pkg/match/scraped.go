@@ -17,7 +17,7 @@ type PerformerFinder interface {
 }
 
 type MovieNamesFinder interface {
-	FindByNames(ctx context.Context, names []string, nocase bool) ([]*models.Movie, error)
+	FindByNames(ctx context.Context, names []string, nocase bool) ([]*models.Group, error)
 }
 
 // ScrapedPerformer matches the provided performer with the

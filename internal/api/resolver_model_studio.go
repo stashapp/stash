@@ -149,7 +149,7 @@ func (r *studioResolver) Rating100(ctx context.Context, obj *models.Studio) (*in
 	return obj.Rating, nil
 }
 
-func (r *studioResolver) Groups(ctx context.Context, obj *models.Studio) (ret []*models.Movie, err error) {
+func (r *studioResolver) Groups(ctx context.Context, obj *models.Studio) (ret []*models.Group, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		ret, err = r.repository.Movie.FindByStudioID(ctx, obj.ID)
 		return err
@@ -161,6 +161,6 @@ func (r *studioResolver) Groups(ctx context.Context, obj *models.Studio) (ret []
 }
 
 // deprecated
-func (r *studioResolver) Movies(ctx context.Context, obj *models.Studio) (ret []*models.Movie, err error) {
+func (r *studioResolver) Movies(ctx context.Context, obj *models.Studio) (ret []*models.Group, err error) {
 	return r.Groups(ctx, obj)
 }

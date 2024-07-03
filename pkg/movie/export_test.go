@@ -62,8 +62,8 @@ var (
 	updateTime = time.Date(2002, 01, 01, 0, 0, 0, 0, time.UTC)
 )
 
-func createFullMovie(id int, studioID int) models.Movie {
-	return models.Movie{
+func createFullMovie(id int, studioID int) models.Group {
+	return models.Group{
 		ID:        id,
 		Name:      movieName,
 		Aliases:   movieAliases,
@@ -79,8 +79,8 @@ func createFullMovie(id int, studioID int) models.Movie {
 	}
 }
 
-func createEmptyMovie(id int) models.Movie {
-	return models.Movie{
+func createEmptyMovie(id int) models.Group {
+	return models.Group{
 		ID:        id,
 		URLs:      models.NewRelatedStrings([]string{}),
 		CreatedAt: createTime,
@@ -123,7 +123,7 @@ func createEmptyJSONMovie() *jsonschema.Movie {
 }
 
 type testScenario struct {
-	movie    models.Movie
+	movie    models.Group
 	expected *jsonschema.Movie
 	err      bool
 }

@@ -12,13 +12,13 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
-func movieFromGroupCreateInput(ctx context.Context, input GroupCreateInput) (*models.Movie, error) {
+func movieFromGroupCreateInput(ctx context.Context, input GroupCreateInput) (*models.Group, error) {
 	translator := changesetTranslator{
 		inputMap: getUpdateInputMap(ctx),
 	}
 
 	// Populate a new movie from the input
-	newMovie := models.NewMovie()
+	newMovie := models.NewGroup()
 
 	newMovie.Name = input.Name
 	newMovie.Aliases = translator.string(input.Aliases)
@@ -50,7 +50,7 @@ func movieFromGroupCreateInput(ctx context.Context, input GroupCreateInput) (*mo
 	return &newMovie, nil
 }
 
-func (r *mutationResolver) GroupCreate(ctx context.Context, input GroupCreateInput) (*models.Movie, error) {
+func (r *mutationResolver) GroupCreate(ctx context.Context, input GroupCreateInput) (*models.Group, error) {
 	newMovie, err := movieFromGroupCreateInput(ctx, input)
 	if err != nil {
 		return nil, err
@@ -113,9 +113,9 @@ func (r *mutationResolver) GroupCreate(ctx context.Context, input GroupCreateInp
 	return r.getMovie(ctx, newMovie.ID)
 }
 
-func moviePartialFromGroupUpdateInput(translator changesetTranslator, input GroupUpdateInput) (ret models.MoviePartial, err error) {
+func moviePartialFromGroupUpdateInput(translator changesetTranslator, input GroupUpdateInput) (ret models.GroupPartial, err error) {
 	// Populate movie from the input
-	updatedMovie := models.NewMoviePartial()
+	updatedMovie := models.NewGroupPartial()
 
 	updatedMovie.Name = translator.optionalString(input.Name, "name")
 	updatedMovie.Aliases = translator.optionalString(input.Aliases, "aliases")
@@ -146,7 +146,7 @@ func moviePartialFromGroupUpdateInput(translator changesetTranslator, input Grou
 	return updatedMovie, nil
 }
 
-func (r *mutationResolver) GroupUpdate(ctx context.Context, input GroupUpdateInput) (*models.Movie, error) {
+func (r *mutationResolver) GroupUpdate(ctx context.Context, input GroupUpdateInput) (*models.Group, error) {
 	movieID, err := strconv.Atoi(input.ID)
 	if err != nil {
 		return nil, fmt.Errorf("converting id: %w", err)
@@ -180,7 +180,7 @@ func (r *mutationResolver) GroupUpdate(ctx context.Context, input GroupUpdateInp
 	}
 
 	// Start the transaction and save the movie
-	var movie *models.Movie
+	var movie *models.Group
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Movie
 		movie, err = qb.UpdatePartial(ctx, movieID, updatedMovie)
@@ -212,8 +212,8 @@ func (r *mutationResolver) GroupUpdate(ctx context.Context, input GroupUpdateInp
 	return r.getMovie(ctx, movie.ID)
 }
 
-func moviePartialFromBulkGroupUpdateInput(translator changesetTranslator, input BulkGroupUpdateInput) (ret models.MoviePartial, err error) {
-	updatedMovie := models.NewMoviePartial()
+func moviePartialFromBulkGroupUpdateInput(translator changesetTranslator, input BulkGroupUpdateInput) (ret models.GroupPartial, err error) {
+	updatedMovie := models.NewGroupPartial()
 
 	updatedMovie.Rating = translator.optionalInt(input.Rating100, "rating100")
 	updatedMovie.Director = translator.optionalString(input.Director, "director")
@@ -235,7 +235,7 @@ func moviePartialFromBulkGroupUpdateInput(translator changesetTranslator, input 
 	return updatedMovie, nil
 }
 
-func (r *mutationResolver) BulkGroupUpdate(ctx context.Context, input BulkGroupUpdateInput) ([]*models.Movie, error) {
+func (r *mutationResolver) BulkGroupUpdate(ctx context.Context, input BulkGroupUpdateInput) ([]*models.Group, error) {
 	movieIDs, err := stringslice.StringSliceToIntSlice(input.Ids)
 	if err != nil {
 		return nil, fmt.Errorf("converting ids: %w", err)
@@ -251,7 +251,7 @@ func (r *mutationResolver) BulkGroupUpdate(ctx context.Context, input BulkGroupU
 		return nil, err
 	}
 
-	ret := []*models.Movie{}
+	ret := []*models.Group{}
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Movie
@@ -270,7 +270,7 @@ func (r *mutationResolver) BulkGroupUpdate(ctx context.Context, input BulkGroupU
 		return nil, err
 	}
 
-	var newRet []*models.Movie
+	var newRet []*models.Group
 	for _, movie := range ret {
 		// for backwards compatibility - run both movie and group hooks
 		r.hookExecutor.ExecutePostHooks(ctx, movie.ID, hook.GroupUpdatePost, input, translator.getFields())

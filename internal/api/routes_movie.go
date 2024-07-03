@@ -38,7 +38,7 @@ func (rs movieRoutes) Routes() chi.Router {
 }
 
 func (rs movieRoutes) FrontImage(w http.ResponseWriter, r *http.Request) {
-	movie := r.Context().Value(movieKey).(*models.Movie)
+	movie := r.Context().Value(movieKey).(*models.Group)
 	defaultParam := r.URL.Query().Get("default")
 	var image []byte
 	if defaultParam != "true" {
@@ -64,7 +64,7 @@ func (rs movieRoutes) FrontImage(w http.ResponseWriter, r *http.Request) {
 }
 
 func (rs movieRoutes) BackImage(w http.ResponseWriter, r *http.Request) {
-	movie := r.Context().Value(movieKey).(*models.Movie)
+	movie := r.Context().Value(movieKey).(*models.Group)
 	defaultParam := r.URL.Query().Get("default")
 	var image []byte
 	if defaultParam != "true" {
@@ -97,7 +97,7 @@ func (rs movieRoutes) MovieCtx(next http.Handler) http.Handler {
 			return
 		}
 
-		var movie *models.Movie
+		var movie *models.Group
 		_ = rs.withReadTxn(r, func(ctx context.Context) error {
 			movie, _ = rs.movieFinder.Find(ctx, movieID)
 			return nil

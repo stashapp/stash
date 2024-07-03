@@ -293,7 +293,7 @@ func TestImporterFindExistingID(t *testing.T) {
 
 	errFindByName := errors.New("FindByName error")
 	db.Movie.On("FindByName", testCtx, movieName, false).Return(nil, nil).Once()
-	db.Movie.On("FindByName", testCtx, existingMovieName, false).Return(&models.Movie{
+	db.Movie.On("FindByName", testCtx, existingMovieName, false).Return(&models.Group{
 		ID: existingMovieID,
 	}, nil).Once()
 	db.Movie.On("FindByName", testCtx, movieNameErr, false).Return(nil, errFindByName).Once()
@@ -318,11 +318,11 @@ func TestImporterFindExistingID(t *testing.T) {
 func TestCreate(t *testing.T) {
 	db := mocks.NewDatabase()
 
-	movie := models.Movie{
+	movie := models.Group{
 		Name: movieName,
 	}
 
-	movieErr := models.Movie{
+	movieErr := models.Group{
 		Name: movieNameErr,
 	}
 
@@ -334,7 +334,7 @@ func TestCreate(t *testing.T) {
 
 	errCreate := errors.New("Create error")
 	db.Movie.On("Create", testCtx, &movie).Run(func(args mock.Arguments) {
-		m := args.Get(1).(*models.Movie)
+		m := args.Get(1).(*models.Group)
 		m.ID = movieID
 	}).Return(nil).Once()
 	db.Movie.On("Create", testCtx, &movieErr).Return(errCreate).Once()
@@ -354,11 +354,11 @@ func TestCreate(t *testing.T) {
 func TestUpdate(t *testing.T) {
 	db := mocks.NewDatabase()
 
-	movie := models.Movie{
+	movie := models.Group{
 		Name: movieName,
 	}
 
-	movieErr := models.Movie{
+	movieErr := models.Group{
 		Name: movieNameErr,
 	}
 

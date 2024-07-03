@@ -17,7 +17,7 @@ type ImageGetter interface {
 }
 
 // ToJSON converts a Movie into its JSON equivalent.
-func ToJSON(ctx context.Context, reader ImageGetter, studioReader models.StudioGetter, movie *models.Movie) (*jsonschema.Movie, error) {
+func ToJSON(ctx context.Context, reader ImageGetter, studioReader models.StudioGetter, movie *models.Group) (*jsonschema.Movie, error) {
 	newMovieJSON := jsonschema.Movie{
 		Name:      movie.Name,
 		Aliases:   movie.Aliases,

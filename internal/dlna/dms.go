@@ -68,7 +68,7 @@ type PerformerFinder interface {
 }
 
 type MovieFinder interface {
-	All(ctx context.Context) ([]*models.Movie, error)
+	All(ctx context.Context) ([]*models.Group, error)
 }
 
 const (

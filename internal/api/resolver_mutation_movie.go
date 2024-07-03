@@ -13,7 +13,7 @@ import (
 )
 
 // used to refetch movie after hooks run
-func (r *mutationResolver) getMovie(ctx context.Context, id int) (ret *models.Movie, err error) {
+func (r *mutationResolver) getMovie(ctx context.Context, id int) (ret *models.Group, err error) {
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		ret, err = r.repository.Movie.Find(ctx, id)
 		return err
@@ -24,13 +24,13 @@ func (r *mutationResolver) getMovie(ctx context.Context, id int) (ret *models.Mo
 	return ret, nil
 }
 
-func (r *mutationResolver) MovieCreate(ctx context.Context, input MovieCreateInput) (*models.Movie, error) {
+func (r *mutationResolver) MovieCreate(ctx context.Context, input MovieCreateInput) (*models.Group, error) {
 	translator := changesetTranslator{
 		inputMap: getUpdateInputMap(ctx),
 	}
 
 	// Populate a new movie from the input
-	newMovie := models.NewMovie()
+	newMovie := models.NewGroup()
 
 	newMovie.Name = input.Name
 	newMovie.Aliases = translator.string(input.Aliases)
@@ -118,7 +118,7 @@ func (r *mutationResolver) MovieCreate(ctx context.Context, input MovieCreateInp
 	return r.getMovie(ctx, newMovie.ID)
 }
 
-func (r *mutationResolver) MovieUpdate(ctx context.Context, input MovieUpdateInput) (*models.Movie, error) {
+func (r *mutationResolver) MovieUpdate(ctx context.Context, input MovieUpdateInput) (*models.Group, error) {
 	movieID, err := strconv.Atoi(input.ID)
 	if err != nil {
 		return nil, fmt.Errorf("converting id: %w", err)
@@ -129,7 +129,7 @@ func (r *mutationResolver) MovieUpdate(ctx context.Context, input MovieUpdateInp
 	}
 
 	// Populate movie from the input
-	updatedMovie := models.NewMoviePartial()
+	updatedMovie := models.NewGroupPartial()
 
 	updatedMovie.Name = translator.optionalString(input.Name, "name")
 	updatedMovie.Aliases = translator.optionalString(input.Aliases, "aliases")
@@ -173,7 +173,7 @@ func (r *mutationResolver) MovieUpdate(ctx context.Context, input MovieUpdateInp
 	}
 
 	// Start the transaction and save the movie
-	var movie *models.Movie
+	var movie *models.Group
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Movie
 		movie, err = qb.UpdatePartial(ctx, movieID, updatedMovie)
@@ -205,7 +205,7 @@ func (r *mutationResolver) MovieUpdate(ctx context.Context, input MovieUpdateInp
 	return r.getMovie(ctx, movie.ID)
 }
 
-func (r *mutationResolver) BulkMovieUpdate(ctx context.Context, input BulkMovieUpdateInput) ([]*models.Movie, error) {
+func (r *mutationResolver) BulkMovieUpdate(ctx context.Context, input BulkMovieUpdateInput) ([]*models.Group, error) {
 	movieIDs, err := stringslice.StringSliceToIntSlice(input.Ids)
 	if err != nil {
 		return nil, fmt.Errorf("converting ids: %w", err)
@@ -216,7 +216,7 @@ func (r *mutationResolver) BulkMovieUpdate(ctx context.Context, input BulkMovieU
 	}
 
 	// Populate movie from the input
-	updatedMovie := models.NewMoviePartial()
+	updatedMovie := models.NewGroupPartial()
 
 	updatedMovie.Rating = translator.optionalInt(input.Rating100, "rating100")
 	updatedMovie.Director = translator.optionalString(input.Director, "director")
@@ -233,7 +233,7 @@ func (r *mutationResolver) BulkMovieUpdate(ctx context.Context, input BulkMovieU
 
 	updatedMovie.URLs = translator.optionalURLsBulk(input.Urls, nil)
 
-	ret := []*models.Movie{}
+	ret := []*models.Group{}
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Movie
@@ -252,7 +252,7 @@ func (r *mutationResolver) BulkMovieUpdate(ctx context.Context, input BulkMovieU
 		return nil, err
 	}
 
-	var newRet []*models.Movie
+	var newRet []*models.Group
 	for _, movie := range ret {
 		// for backwards compatibility - run both movie and group hooks
 		r.hookExecutor.ExecutePostHooks(ctx, movie.ID, hook.GroupUpdatePost, input, translator.getFields())

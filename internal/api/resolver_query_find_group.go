@@ -8,7 +8,7 @@ import (
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 )
 
-func (r *queryResolver) FindGroup(ctx context.Context, id string) (ret *models.Movie, err error) {
+func (r *queryResolver) FindGroup(ctx context.Context, id string) (ret *models.Group, err error) {
 	idInt, err := strconv.Atoi(id)
 	if err != nil {
 		return nil, err
@@ -31,7 +31,7 @@ func (r *queryResolver) FindGroups(ctx context.Context, movieFilter *models.Movi
 	}
 
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		var movies []*models.Movie
+		var movies []*models.Group
 		var err error
 		var total int
 

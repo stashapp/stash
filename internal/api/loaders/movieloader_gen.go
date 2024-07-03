@@ -12,7 +12,7 @@ import (
 // MovieLoaderConfig captures the config to create a new MovieLoader
 type MovieLoaderConfig struct {
 	// Fetch is a method that provides the data for the loader
-	Fetch func(keys []int) ([]*models.Movie, []error)
+	Fetch func(keys []int) ([]*models.Group, []error)
 
 	// Wait is how long wait before sending a batch
 	Wait time.Duration
@@ -33,7 +33,7 @@ func NewMovieLoader(config MovieLoaderConfig) *MovieLoader {
 // MovieLoader batches and caches requests
 type MovieLoader struct {
 	// this method provides the data for the loader
-	fetch func(keys []int) ([]*models.Movie, []error)
+	fetch func(keys []int) ([]*models.Group, []error)
 
 	// how long to done before sending a batch
 	wait time.Duration
@@ -44,7 +44,7 @@ type MovieLoader struct {
 	// INTERNAL
 
 	// lazily created cache
-	cache map[int]*models.Movie
+	cache map[int]*models.Group
 
 	// the current batch. keys will continue to be collected until timeout is hit,
 	// then everything will be sent to the fetch method and out to the listeners
@@ -56,25 +56,25 @@ type MovieLoader struct {
 
 type movieLoaderBatch struct {
 	keys    []int
-	data    []*models.Movie
+	data    []*models.Group
 	error   []error
 	closing bool
 	done    chan struct{}
 }
 
 // Load a Movie by key, batching and caching will be applied automatically
-func (l *MovieLoader) Load(key int) (*models.Movie, error) {
+func (l *MovieLoader) Load(key int) (*models.Group, error) {
 	return l.LoadThunk(key)()
 }
 
 // LoadThunk returns a function that when called will block waiting for a Movie.
 // This method should be used if you want one goroutine to make requests to many
 // different data loaders without blocking until the thunk is called.
-func (l *MovieLoader) LoadThunk(key int) func() (*models.Movie, error) {
+func (l *MovieLoader) LoadThunk(key int) func() (*models.Group, error) {
 	l.mu.Lock()
 	if it, ok := l.cache[key]; ok {
 		l.mu.Unlock()
-		return func() (*models.Movie, error) {
+		return func() (*models.Group, error) {
 			return it, nil
 		}
 	}
@@ -85,10 +85,10 @@ func (l *MovieLoader) LoadThunk(key int) func() (*models.Movie, error) {
 	pos := batch.keyIndex(l, key)
 	l.mu.Unlock()
 
-	return func() (*models.Movie, error) {
+	return func() (*models.Group, error) {
 		<-batch.done
 
-		var data *models.Movie
+		var data *models.Group
 		if pos < len(batch.data) {
 			data = batch.data[pos]
 		}
@@ -113,14 +113,14 @@ func (l *MovieLoader) LoadThunk(key int) func() (*models.Movie, error) {
 
 // LoadAll fetches many keys at once. It will be broken into appropriate sized
 // sub batches depending on how the loader is configured
-func (l *MovieLoader) LoadAll(keys []int) ([]*models.Movie, []error) {
-	results := make([]func() (*models.Movie, error), len(keys))
+func (l *MovieLoader) LoadAll(keys []int) ([]*models.Group, []error) {
+	results := make([]func() (*models.Group, error), len(keys))
 
 	for i, key := range keys {
 		results[i] = l.LoadThunk(key)
 	}
 
-	movies := make([]*models.Movie, len(keys))
+	movies := make([]*models.Group, len(keys))
 	errors := make([]error, len(keys))
 	for i, thunk := range results {
 		movies[i], errors[i] = thunk()
@@ -131,13 +131,13 @@ func (l *MovieLoader) LoadAll(keys []int) ([]*models.Movie, []error) {
 // LoadAllThunk returns a function that when called will block waiting for a Movies.
 // This method should be used if you want one goroutine to make requests to many
 // different data loaders without blocking until the thunk is called.
-func (l *MovieLoader) LoadAllThunk(keys []int) func() ([]*models.Movie, []error) {
-	results := make([]func() (*models.Movie, error), len(keys))
+func (l *MovieLoader) LoadAllThunk(keys []int) func() ([]*models.Group, []error) {
+	results := make([]func() (*models.Group, error), len(keys))
 	for i, key := range keys {
 		results[i] = l.LoadThunk(key)
 	}
-	return func() ([]*models.Movie, []error) {
-		movies := make([]*models.Movie, len(keys))
+	return func() ([]*models.Group, []error) {
+		movies := make([]*models.Group, len(keys))
 		errors := make([]error, len(keys))
 		for i, thunk := range results {
 			movies[i], errors[i] = thunk()
@@ -149,7 +149,7 @@ func (l *MovieLoader) LoadAllThunk(keys []int) func() ([]*models.Movie, []error)
 // Prime the cache with the provided key and value. If the key already exists, no change is made
 // and false is returned.
 // (To forcefully prime the cache, clear the key first with loader.clear(key).prime(key, value).)
-func (l *MovieLoader) Prime(key int, value *models.Movie) bool {
+func (l *MovieLoader) Prime(key int, value *models.Group) bool {
 	l.mu.Lock()
 	var found bool
 	if _, found = l.cache[key]; !found {
@@ -169,9 +169,9 @@ func (l *MovieLoader) Clear(key int) {
 	l.mu.Unlock()
 }
 
-func (l *MovieLoader) unsafeSet(key int, value *models.Movie) {
+func (l *MovieLoader) unsafeSet(key int, value *models.Group) {
 	if l.cache == nil {
-		l.cache = map[int]*models.Movie{}
+		l.cache = map[int]*models.Group{}
 	}
 	l.cache[key] = value
 }

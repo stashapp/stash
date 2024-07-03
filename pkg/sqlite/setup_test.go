@@ -1357,7 +1357,7 @@ func createMovies(ctx context.Context, mqb models.MovieReaderWriter, n int, o in
 		// movies [ i ] and [ n + o - i - 1  ] should have similar names with only the Name!=NaMe part different
 
 		name = getMovieStringValue(index, name)
-		movie := models.Movie{
+		movie := models.Group{
 			Name: name,
 			URLs: models.NewRelatedStrings([]string{
 				getMovieEmptyString(i, urlField),
@@ -1844,7 +1844,7 @@ func doLinks(links [][2]int, fn func(idx1, idx2 int) error) error {
 
 func linkMovieStudios(ctx context.Context, mqb models.MovieWriter) error {
 	return doLinks(movieStudioLinks, func(movieIndex, studioIndex int) error {
-		movie := models.MoviePartial{
+		movie := models.GroupPartial{
 			StudioID: models.NewOptionalInt(studioIDs[studioIndex]),
 		}
 		_, err := mqb.UpdatePartial(ctx, movieIDs[movieIndex], movie)

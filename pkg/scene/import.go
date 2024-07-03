@@ -381,7 +381,7 @@ func (i *Importer) populateMovies(ctx context.Context) error {
 }
 
 func (i *Importer) createMovie(ctx context.Context, name string) (int, error) {
-	newMovie := models.NewMovie()
+	newMovie := models.NewGroup()
 	newMovie.Name = name
 
 	err := i.MovieWriter.Create(ctx, &newMovie)

@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-type Movie struct {
+type Group struct {
 	ID       int    `json:"id"`
 	Name     string `json:"name"`
 	Aliases  string `json:"aliases"`
@@ -23,27 +23,27 @@ type Movie struct {
 	TagIDs RelatedIDs     `json:"tag_ids"`
 }
 
-func NewMovie() Movie {
+func NewGroup() Group {
 	currentTime := time.Now()
-	return Movie{
+	return Group{
 		CreatedAt: currentTime,
 		UpdatedAt: currentTime,
 	}
 }
 
-func (m *Movie) LoadURLs(ctx context.Context, l URLLoader) error {
+func (m *Group) LoadURLs(ctx context.Context, l URLLoader) error {
 	return m.URLs.load(func() ([]string, error) {
 		return l.GetURLs(ctx, m.ID)
 	})
 }
 
-func (m *Movie) LoadTagIDs(ctx context.Context, l TagIDLoader) error {
+func (m *Group) LoadTagIDs(ctx context.Context, l TagIDLoader) error {
 	return m.TagIDs.load(func() ([]int, error) {
 		return l.GetTagIDs(ctx, m.ID)
 	})
 }
 
-type MoviePartial struct {
+type GroupPartial struct {
 	Name     OptionalString
 	Aliases  OptionalString
 	Duration OptionalInt
@@ -59,9 +59,9 @@ type MoviePartial struct {
 	UpdatedAt OptionalTime
 }
 
-func NewMoviePartial() MoviePartial {
+func NewGroupPartial() GroupPartial {
 	currentTime := time.Now()
-	return MoviePartial{
+	return GroupPartial{
 		UpdatedAt: NewOptionalTime(currentTime),
 	}
 }

@@ -8,7 +8,7 @@ import (
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 )
 
-func (r *queryResolver) FindMovie(ctx context.Context, id string) (ret *models.Movie, err error) {
+func (r *queryResolver) FindMovie(ctx context.Context, id string) (ret *models.Group, err error) {
 	idInt, err := strconv.Atoi(id)
 	if err != nil {
 		return nil, err
@@ -31,7 +31,7 @@ func (r *queryResolver) FindMovies(ctx context.Context, movieFilter *models.Movi
 	}
 
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		var movies []*models.Movie
+		var movies []*models.Group
 		var err error
 		var total int
 
@@ -58,7 +58,7 @@ func (r *queryResolver) FindMovies(ctx context.Context, movieFilter *models.Movi
 	return ret, nil
 }
 
-func (r *queryResolver) AllMovies(ctx context.Context) (ret []*models.Movie, err error) {
+func (r *queryResolver) AllMovies(ctx context.Context) (ret []*models.Group, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		ret, err = r.repository.Movie.All(ctx)
 		return err

@@ -1,8 +1,9 @@
 package urlbuilders
 
 import (
-	"github.com/stashapp/stash/pkg/models"
 	"strconv"
+
+	"github.com/stashapp/stash/pkg/models"
 )
 
 type MovieURLBuilder struct {
@@ -11,7 +12,7 @@ type MovieURLBuilder struct {
 	UpdatedAt string
 }
 
-func NewMovieURLBuilder(baseURL string, movie *models.Movie) MovieURLBuilder {
+func NewMovieURLBuilder(baseURL string, movie *models.Group) MovieURLBuilder {
 	return MovieURLBuilder{
 		BaseURL:   baseURL,
 		MovieID:   strconv.Itoa(movie.ID),

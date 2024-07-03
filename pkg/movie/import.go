@@ -13,7 +13,7 @@ import (
 
 type ImporterReaderWriter interface {
 	models.MovieCreatorUpdater
-	FindByName(ctx context.Context, name string, nocase bool) (*models.Movie, error)
+	FindByName(ctx context.Context, name string, nocase bool) (*models.Group, error)
 }
 
 type Importer struct {
@@ -23,7 +23,7 @@ type Importer struct {
 	Input               jsonschema.Movie
 	MissingRefBehaviour models.ImportMissingRefEnum
 
-	movie          models.Movie
+	movie          models.Group
 	frontImageData []byte
 	backImageData  []byte
 }
@@ -124,8 +124,8 @@ func createTags(ctx context.Context, tagWriter models.TagFinderCreator, names []
 	return ret, nil
 }
 
-func (i *Importer) movieJSONToMovie(movieJSON jsonschema.Movie) models.Movie {
-	newMovie := models.Movie{
+func (i *Importer) movieJSONToMovie(movieJSON jsonschema.Movie) models.Group {
+	newMovie := models.Group{
 		Name:      movieJSON.Name,
 		Aliases:   movieJSON.Aliases,
 		Director:  movieJSON.Director,

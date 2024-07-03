@@ -287,7 +287,7 @@ func (t *ExportTask) populateMovieScenes(ctx context.Context) {
 	reader := r.Movie
 	sceneReader := r.Scene
 
-	var movies []*models.Movie
+	var movies []*models.Group
 	var err error
 	all := t.full || (t.groups != nil && t.groups.all)
 	if all {
@@ -1085,7 +1085,7 @@ func (t *ExportTask) ExportMovies(ctx context.Context, workers int) {
 	var moviesWg sync.WaitGroup
 
 	reader := t.repository.Movie
-	var movies []*models.Movie
+	var movies []*models.Group
 	var err error
 	all := t.full || (t.groups != nil && t.groups.all)
 	if all {
@@ -1101,7 +1101,7 @@ func (t *ExportTask) ExportMovies(ctx context.Context, workers int) {
 	logger.Info("[movies] exporting")
 	startTime := time.Now()
 
-	jobCh := make(chan *models.Movie, workers*2) // make a buffered channel to feed workers
+	jobCh := make(chan *models.Group, workers*2) // make a buffered channel to feed workers
 
 	for w := 0; w < workers; w++ { // create export Studio workers
 		moviesWg.Add(1)
@@ -1121,7 +1121,7 @@ func (t *ExportTask) ExportMovies(ctx context.Context, workers int) {
 	logger.Infof("[movies] export complete in %s. %d workers used.", time.Since(startTime), workers)
 
 }
-func (t *ExportTask) exportMovie(ctx context.Context, wg *sync.WaitGroup, jobChan <-chan *models.Movie) {
+func (t *ExportTask) exportMovie(ctx context.Context, wg *sync.WaitGroup, jobChan <-chan *models.Group) {
 	defer wg.Done()
 
 	r := t.repository

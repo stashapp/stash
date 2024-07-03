@@ -232,8 +232,8 @@ func (m Middleware) fetchTags(ctx context.Context) func(keys []int) ([]*models.T
 	}
 }
 
-func (m Middleware) fetchMovies(ctx context.Context) func(keys []int) ([]*models.Movie, []error) {
-	return func(keys []int) (ret []*models.Movie, errs []error) {
+func (m Middleware) fetchMovies(ctx context.Context) func(keys []int) ([]*models.Group, []error) {
+	return func(keys []int) (ret []*models.Group, errs []error) {
 		err := m.Repository.WithDB(ctx, func(ctx context.Context) error {
 			var err error
 			ret, err = m.Repository.Movie.FindMany(ctx, keys)

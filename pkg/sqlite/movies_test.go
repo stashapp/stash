@@ -16,7 +16,7 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
-func loadMovieRelationships(ctx context.Context, expected models.Movie, actual *models.Movie) error {
+func loadMovieRelationships(ctx context.Context, expected models.Group, actual *models.Group) error {
 	if expected.URLs.Loaded() {
 		if err := actual.LoadURLs(ctx, db.Movie); err != nil {
 			return err
@@ -47,12 +47,12 @@ func Test_MovieStore_Create(t *testing.T) {
 
 	tests := []struct {
 		name      string
-		newObject models.Movie
+		newObject models.Group
 		wantErr   bool
 	}{
 		{
 			"full",
-			models.Movie{
+			models.Group{
 				Name:      name,
 				Duration:  &duration,
 				Date:      &date,
@@ -70,7 +70,7 @@ func Test_MovieStore_Create(t *testing.T) {
 		},
 		{
 			"invalid tag id",
-			models.Movie{
+			models.Group{
 				Name:   name,
 				TagIDs: models.NewRelatedIDs([]int{invalidID}),
 			},
@@ -145,12 +145,12 @@ func Test_movieQueryBuilder_Update(t *testing.T) {
 
 	tests := []struct {
 		name          string
-		updatedObject *models.Movie
+		updatedObject *models.Group
 		wantErr       bool
 	}{
 		{
 			"full",
-			&models.Movie{
+			&models.Group{
 				ID:        movieIDs[movieIdxWithTag],
 				Name:      name,
 				Duration:  &duration,
@@ -169,7 +169,7 @@ func Test_movieQueryBuilder_Update(t *testing.T) {
 		},
 		{
 			"clear tag ids",
-			&models.Movie{
+			&models.Group{
 				ID:     movieIDs[movieIdxWithTag],
 				Name:   name,
 				TagIDs: models.NewRelatedIDs([]int{}),
@@ -178,7 +178,7 @@ func Test_movieQueryBuilder_Update(t *testing.T) {
 		},
 		{
 			"invalid studio id",
-			&models.Movie{
+			&models.Group{
 				ID:       movieIDs[movieIdxWithScene],
 				Name:     name,
 				StudioID: &invalidID,
@@ -187,7 +187,7 @@ func Test_movieQueryBuilder_Update(t *testing.T) {
 		},
 		{
 			"invalid tag id",
-			&models.Movie{
+			&models.Group{
 				ID:     movieIDs[movieIdxWithScene],
 				Name:   name,
 				TagIDs: models.NewRelatedIDs([]int{invalidID}),
@@ -227,9 +227,9 @@ func Test_movieQueryBuilder_Update(t *testing.T) {
 	}
 }
 
-func clearMoviePartial() models.MoviePartial {
+func clearMoviePartial() models.GroupPartial {
 	// leave mandatory fields
-	return models.MoviePartial{
+	return models.GroupPartial{
 		Aliases:  models.OptionalString{Set: true, Null: true},
 		Synopsis: models.OptionalString{Set: true, Null: true},
 		Director: models.OptionalString{Set: true, Null: true},
@@ -259,14 +259,14 @@ func Test_movieQueryBuilder_UpdatePartial(t *testing.T) {
 	tests := []struct {
 		name    string
 		id      int
-		partial models.MoviePartial
-		want    models.Movie
+		partial models.GroupPartial
+		want    models.Group
 		wantErr bool
 	}{
 		{
 			"full",
 			movieIDs[movieIdxWithScene],
-			models.MoviePartial{
+			models.GroupPartial{
 				Name:     models.NewOptionalString(name),
 				Director: models.NewOptionalString(director),
 				Synopsis: models.NewOptionalString(synopsis),
@@ -286,7 +286,7 @@ func Test_movieQueryBuilder_UpdatePartial(t *testing.T) {
 					Mode: models.RelationshipUpdateModeSet,
 				},
 			},
-			models.Movie{
+			models.Group{
 				ID:        movieIDs[movieIdxWithScene],
 				Name:      name,
 				Director:  director,
@@ -307,7 +307,7 @@ func Test_movieQueryBuilder_UpdatePartial(t *testing.T) {
 			"clear all",
 			movieIDs[movieIdxWithScene],
 			clearMoviePartial(),
-			models.Movie{
+			models.Group{
 				ID:     movieIDs[movieIdxWithScene],
 				Name:   movieNames[movieIdxWithScene],
 				TagIDs: models.NewRelatedIDs([]int{}),
@@ -317,8 +317,8 @@ func Test_movieQueryBuilder_UpdatePartial(t *testing.T) {
 		{
 			"invalid id",
 			invalidID,
-			models.MoviePartial{},
-			models.Movie{},
+			models.GroupPartial{},
+			models.Group{},
 			true,
 		},
 	}
@@ -420,7 +420,7 @@ func TestMovieFindByNames(t *testing.T) {
 	})
 }
 
-func moviesToIDs(i []*models.Movie) []int {
+func moviesToIDs(i []*models.Group) []int {
 	ret := make([]int, len(i))
 	for i, v := range i {
 		ret[i] = v.ID
@@ -550,7 +550,7 @@ func TestMovieQueryURL(t *testing.T) {
 		URL: &urlCriterion,
 	}
 
-	verifyFn := func(n *models.Movie) {
+	verifyFn := func(n *models.Group) {
 		t.Helper()
 
 		urls := n.URLs.List()
@@ -587,7 +587,7 @@ func TestMovieQueryURLExcludes(t *testing.T) {
 		mqb := db.Movie
 
 		// create movie with two URLs
-		movie := models.Movie{
+		movie := models.Group{
 			Name: "TestMovieQueryURLExcludes",
 			URLs: models.NewRelatedStrings([]string{
 				"aaa",
@@ -632,7 +632,7 @@ func TestMovieQueryURLExcludes(t *testing.T) {
 	})
 }
 
-func verifyMovieQuery(t *testing.T, filter models.MovieFilterType, verifyFn func(s *models.Movie)) {
+func verifyMovieQuery(t *testing.T, filter models.MovieFilterType, verifyFn func(s *models.Group)) {
 	withTxn(func(ctx context.Context) error {
 		t.Helper()
 		sqb := db.Movie
@@ -656,7 +656,7 @@ func verifyMovieQuery(t *testing.T, filter models.MovieFilterType, verifyFn func
 	})
 }
 
-func queryMovies(ctx context.Context, t *testing.T, movieFilter *models.MovieFilterType, findFilter *models.FindFilterType) []*models.Movie {
+func queryMovies(ctx context.Context, t *testing.T, movieFilter *models.MovieFilterType, findFilter *models.FindFilterType) []*models.Group {
 	sqb := db.Movie
 	movies, _, err := sqb.Query(ctx, movieFilter, findFilter)
 	if err != nil {
@@ -796,7 +796,7 @@ func TestMovieUpdateFrontImage(t *testing.T) {
 
 		// create movie to test against
 		const name = "TestMovieUpdateMovieImages"
-		movie := models.Movie{
+		movie := models.Group{
 			Name: name,
 		}
 		err := qb.Create(ctx, &movie)
@@ -816,7 +816,7 @@ func TestMovieUpdateBackImage(t *testing.T) {
 
 		// create movie to test against
 		const name = "TestMovieUpdateMovieImages"
-		movie := models.Movie{
+		movie := models.Group{
 			Name: name,
 		}
 		err := qb.Create(ctx, &movie)

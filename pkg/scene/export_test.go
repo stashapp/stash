@@ -395,10 +395,10 @@ func TestGetSceneMoviesJSON(t *testing.T) {
 
 	movieErr := errors.New("error getting movie")
 
-	db.Movie.On("Find", testCtx, validMovie1).Return(&models.Movie{
+	db.Movie.On("Find", testCtx, validMovie1).Return(&models.Group{
 		Name: movie1Name,
 	}, nil).Once()
-	db.Movie.On("Find", testCtx, validMovie2).Return(&models.Movie{
+	db.Movie.On("Find", testCtx, validMovie2).Return(&models.Group{
 		Name: movie2Name,
 	}, nil).Once()
 	db.Movie.On("Find", testCtx, invalidMovie).Return(nil, movieErr).Once()

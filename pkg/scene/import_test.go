@@ -237,7 +237,7 @@ func TestImporterPreImportWithMovie(t *testing.T) {
 		},
 	}
 
-	db.Movie.On("FindByName", testCtx, existingMovieName, false).Return(&models.Movie{
+	db.Movie.On("FindByName", testCtx, existingMovieName, false).Return(&models.Group{
 		ID:   existingMovieID,
 		Name: existingMovieName,
 	}, nil).Once()
@@ -270,8 +270,8 @@ func TestImporterPreImportWithMissingMovie(t *testing.T) {
 	}
 
 	db.Movie.On("FindByName", testCtx, missingMovieName, false).Return(nil, nil).Times(3)
-	db.Movie.On("Create", testCtx, mock.AnythingOfType("*models.Movie")).Run(func(args mock.Arguments) {
-		m := args.Get(1).(*models.Movie)
+	db.Movie.On("Create", testCtx, mock.AnythingOfType("*models.Group")).Run(func(args mock.Arguments) {
+		m := args.Get(1).(*models.Group)
 		m.ID = existingMovieID
 	}).Return(nil)
 
@@ -306,7 +306,7 @@ func TestImporterPreImportWithMissingMovieCreateErr(t *testing.T) {
 	}
 
 	db.Movie.On("FindByName", testCtx, missingMovieName, false).Return(nil, nil).Once()
-	db.Movie.On("Create", testCtx, mock.AnythingOfType("*models.Movie")).Return(errors.New("Create error"))
+	db.Movie.On("Create", testCtx, mock.AnythingOfType("*models.Group")).Return(errors.New("Create error"))
 
 	err := i.PreImport(testCtx)
 	assert.NotNil(t, err)
