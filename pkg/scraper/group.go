@@ -82,7 +82,7 @@ func loadUrlCandidates(c config, ty ScrapeContentType) []*scrapeByURLConfig {
 	case ScrapeContentTypeScene:
 		return c.SceneByURL
 	case ScrapeContentTypeMovie, ScrapeContentTypeGroup:
-		return c.MovieByURL
+		return append(c.MovieByURL, c.GroupByURL...)
 	case ScrapeContentTypeGallery:
 		return c.GalleryByURL
 	}
