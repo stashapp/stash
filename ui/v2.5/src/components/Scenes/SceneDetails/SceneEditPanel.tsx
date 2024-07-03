@@ -1,14 +1,6 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-import {
-  Button,
-  Dropdown,
-  DropdownButton,
-  Form,
-  Col,
-  Row,
-  ButtonGroup,
-} from "react-bootstrap";
+import { Button, Dropdown, Form, Col, Row, ButtonGroup } from "react-bootstrap";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
 import * as yup from "yup";
@@ -49,6 +41,7 @@ import { Studio, StudioSelect } from "src/components/Studios/StudioSelect";
 import { Gallery, GallerySelect } from "src/components/Galleries/GallerySelect";
 import { Group } from "src/components/Groups/GroupSelect";
 import { useTagsEdit } from "src/hooks/tagsEdit";
+import { ScraperMenu } from "src/components/Shared/ScraperMenu";
 
 const SceneScrapeDialog = lazyComponent(() => import("./SceneScrapeDialog"));
 const SceneQueryModal = lazyComponent(() => import("./SceneQueryModal"));
@@ -468,47 +461,6 @@ export const SceneEditPanel: React.FC<IProps> = ({
     );
   };
 
-  function renderScraperMenu() {
-    const stashBoxes = stashConfig?.general.stashBoxes ?? [];
-
-    return (
-      <DropdownButton
-        className="d-inline-block"
-        id="scene-scrape"
-        title={intl.formatMessage({ id: "actions.scrape_with" })}
-      >
-        {stashBoxes.map((s, index) => (
-          <Dropdown.Item
-            key={s.endpoint}
-            onClick={() =>
-              onScrapeClicked({
-                stash_box_endpoint: s.endpoint,
-              })
-            }
-          >
-            {stashboxDisplayName(s.name, index)}
-          </Dropdown.Item>
-        ))}
-        {fragmentScrapers.map((s) => (
-          <Dropdown.Item
-            key={s.name}
-            onClick={() => onScrapeClicked({ scraper_id: s.id })}
-          >
-            {s.name}
-          </Dropdown.Item>
-        ))}
-        <Dropdown.Item onClick={() => onReloadScrapers()}>
-          <span className="fa-icon">
-            <Icon icon={faSyncAlt} />
-          </span>
-          <span>
-            <FormattedMessage id="actions.reload_scrapers" />
-          </span>
-        </Dropdown.Item>
-      </DropdownButton>
-    );
-  }
-
   function urlScrapable(scrapedUrl: string): boolean {
     return (Scrapers?.data?.listScrapers ?? []).some((s) =>
       (s?.scene?.urls ?? []).some((u) => scrapedUrl.includes(u))
@@ -801,7 +753,12 @@ export const SceneEditPanel: React.FC<IProps> = ({
           {!isNew && (
             <div className="ml-auto text-right d-flex">
               <ButtonGroup className="scraper-group">
-                {renderScraperMenu()}
+                <ScraperMenu
+                  stashBoxes={stashConfig?.general.stashBoxes ?? []}
+                  fragmentScrapers={fragmentScrapers}
+                  onScrapeClicked={onScrapeClicked}
+                  onReloadScrapers={onReloadScrapers}
+                />
                 {renderScrapeQueryMenu()}
               </ButtonGroup>
             </div>
