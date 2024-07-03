@@ -9,7 +9,7 @@ import { faSyncAlt } from "@fortawesome/free-solid-svg-icons";
 export const ScraperMenu: React.FC<{
   toggle: React.ReactNode;
   variant?: string;
-  stashBoxes: StashBox[];
+  stashBoxes?: StashBox[];
   scrapers: { id: string; name: string }[];
   onScraperClicked: (s: ScraperSourceInput) => void;
   onReloadScrapers: () => void;
@@ -28,7 +28,7 @@ export const ScraperMenu: React.FC<{
       <Dropdown.Toggle variant={variant}>{toggle}</Dropdown.Toggle>
 
       <Dropdown.Menu>
-        {stashBoxes.map((s, index) => (
+        {stashBoxes?.map((s, index) => (
           <Dropdown.Item
             key={s.endpoint}
             onClick={() =>
