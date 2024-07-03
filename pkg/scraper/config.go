@@ -45,8 +45,9 @@ type config struct {
 	// Configuration for querying a gallery by a URL
 	GalleryByURL []*scrapeByURLConfig `yaml:"galleryByURL"`
 
-	// Configuration for querying a movie by a URL
+	// Configuration for querying a movie by a URL - deprecated, use GroupByURL
 	MovieByURL []*scrapeByURLConfig `yaml:"movieByURL"`
+	GroupByURL []*scrapeByURLConfig `yaml:"groupByURL"`
 
 	// Scraper debugging options
 	DebugOptions *scraperDebugOptions `yaml:"debug"`
@@ -99,7 +100,11 @@ func (c config) validate() error {
 		}
 	}
 
-	for _, s := range c.MovieByURL {
+	if len(c.MovieByURL) > 0 && len(c.GroupByURL) > 0 {
+		return errors.New("movieByURL disallowed if groupByURL is present")
+	}
+
+	for _, s := range append(c.MovieByURL, c.GroupByURL...) {
 		if err := s.validate(); err != nil {
 			return err
 		}
@@ -289,17 +294,17 @@ func (c config) spec() Scraper {
 		ret.Gallery = &gallery
 	}
 
-	movie := ScraperSpec{}
-	if len(c.MovieByURL) > 0 {
-		movie.SupportedScrapes = append(movie.SupportedScrapes, ScrapeTypeURL)
-		for _, v := range c.MovieByURL {
-			movie.Urls = append(movie.Urls, v.URL...)
+	group := ScraperSpec{}
+	if len(c.MovieByURL) > 0 || len(c.GroupByURL) > 0 {
+		group.SupportedScrapes = append(group.SupportedScrapes, ScrapeTypeURL)
+		for _, v := range append(c.MovieByURL, c.GroupByURL...) {
+			group.Urls = append(group.Urls, v.URL...)
 		}
 	}
 
-	if len(movie.SupportedScrapes) > 0 {
-		ret.Movie = &movie
-		ret.Group = &movie
+	if len(group.SupportedScrapes) > 0 {
+		ret.Movie = &group
+		ret.Group = &group
 	}
 
 	return ret
@@ -314,7 +319,7 @@ func (c config) supports(ty ScrapeContentType) bool {
 	case ScrapeContentTypeGallery:
 		return c.GalleryByFragment != nil || len(c.GalleryByURL) > 0
 	case ScrapeContentTypeMovie, ScrapeContentTypeGroup:
-		return len(c.MovieByURL) > 0
+		return len(c.MovieByURL) > 0 || len(c.GroupByURL) > 0
 	}
 
 	panic("Unhandled ScrapeContentType")

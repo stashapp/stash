@@ -7,22 +7,22 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
-type movieFilterHandler struct {
-	movieFilter *models.MovieFilterType
+type groupFilterHandler struct {
+	groupFilter *models.GroupFilterType
 }
 
-func (qb *movieFilterHandler) validate() error {
-	movieFilter := qb.movieFilter
-	if movieFilter == nil {
+func (qb *groupFilterHandler) validate() error {
+	groupFilter := qb.groupFilter
+	if groupFilter == nil {
 		return nil
 	}
 
-	if err := validateFilterCombination(movieFilter.OperatorFilter); err != nil {
+	if err := validateFilterCombination(groupFilter.OperatorFilter); err != nil {
 		return err
 	}
 
-	if subFilter := movieFilter.SubFilter(); subFilter != nil {
-		sqb := &movieFilterHandler{movieFilter: subFilter}
+	if subFilter := groupFilter.SubFilter(); subFilter != nil {
+		sqb := &groupFilterHandler{groupFilter: subFilter}
 		if err := sqb.validate(); err != nil {
 			return err
 		}
@@ -31,9 +31,9 @@ func (qb *movieFilterHandler) validate() error {
 	return nil
 }
 
-func (qb *movieFilterHandler) handle(ctx context.Context, f *filterBuilder) {
-	movieFilter := qb.movieFilter
-	if movieFilter == nil {
+func (qb *groupFilterHandler) handle(ctx context.Context, f *filterBuilder) {
+	groupFilter := qb.groupFilter
+	if groupFilter == nil {
 		return
 	}
 
@@ -42,51 +42,51 @@ func (qb *movieFilterHandler) handle(ctx context.Context, f *filterBuilder) {
 		return
 	}
 
-	sf := movieFilter.SubFilter()
+	sf := groupFilter.SubFilter()
 	if sf != nil {
-		sub := &movieFilterHandler{sf}
-		handleSubFilter(ctx, sub, f, movieFilter.OperatorFilter)
+		sub := &groupFilterHandler{sf}
+		handleSubFilter(ctx, sub, f, groupFilter.OperatorFilter)
 	}
 
 	f.handleCriterion(ctx, qb.criterionHandler())
 }
 
-func (qb *movieFilterHandler) criterionHandler() criterionHandler {
-	movieFilter := qb.movieFilter
+func (qb *groupFilterHandler) criterionHandler() criterionHandler {
+	groupFilter := qb.groupFilter
 	return compoundHandler{
-		stringCriterionHandler(movieFilter.Name, "movies.name"),
-		stringCriterionHandler(movieFilter.Director, "movies.director"),
-		stringCriterionHandler(movieFilter.Synopsis, "movies.synopsis"),
-		intCriterionHandler(movieFilter.Rating100, "movies.rating", nil),
-		floatIntCriterionHandler(movieFilter.Duration, "movies.duration", nil),
-		qb.missingCriterionHandler(movieFilter.IsMissing),
-		qb.urlsCriterionHandler(movieFilter.URL),
-		studioCriterionHandler(movieTable, movieFilter.Studios),
-		qb.performersCriterionHandler(movieFilter.Performers),
-		qb.tagsCriterionHandler(movieFilter.Tags),
-		qb.tagCountCriterionHandler(movieFilter.TagCount),
-		&dateCriterionHandler{movieFilter.Date, "movies.date", nil},
-		&timestampCriterionHandler{movieFilter.CreatedAt, "movies.created_at", nil},
-		&timestampCriterionHandler{movieFilter.UpdatedAt, "movies.updated_at", nil},
+		stringCriterionHandler(groupFilter.Name, "movies.name"),
+		stringCriterionHandler(groupFilter.Director, "movies.director"),
+		stringCriterionHandler(groupFilter.Synopsis, "movies.synopsis"),
+		intCriterionHandler(groupFilter.Rating100, "movies.rating", nil),
+		floatIntCriterionHandler(groupFilter.Duration, "movies.duration", nil),
+		qb.missingCriterionHandler(groupFilter.IsMissing),
+		qb.urlsCriterionHandler(groupFilter.URL),
+		studioCriterionHandler(groupTable, groupFilter.Studios),
+		qb.performersCriterionHandler(groupFilter.Performers),
+		qb.tagsCriterionHandler(groupFilter.Tags),
+		qb.tagCountCriterionHandler(groupFilter.TagCount),
+		&dateCriterionHandler{groupFilter.Date, "movies.date", nil},
+		&timestampCriterionHandler{groupFilter.CreatedAt, "movies.created_at", nil},
+		&timestampCriterionHandler{groupFilter.UpdatedAt, "movies.updated_at", nil},
 
 		&relatedFilterHandler{
 			relatedIDCol:   "movies_scenes.scene_id",
 			relatedRepo:    sceneRepository.repository,
-			relatedHandler: &sceneFilterHandler{movieFilter.ScenesFilter},
+			relatedHandler: &sceneFilterHandler{groupFilter.ScenesFilter},
 			joinFn: func(f *filterBuilder) {
-				movieRepository.scenes.innerJoin(f, "", "movies.id")
+				groupRepository.scenes.innerJoin(f, "", "movies.id")
 			},
 		},
 
 		&relatedFilterHandler{
 			relatedIDCol:   "movies.studio_id",
 			relatedRepo:    studioRepository.repository,
-			relatedHandler: &studioFilterHandler{movieFilter.StudiosFilter},
+			relatedHandler: &studioFilterHandler{groupFilter.StudiosFilter},
 		},
 	}
 }
 
-func (qb *movieFilterHandler) missingCriterionHandler(isMissing *string) criterionHandlerFunc {
+func (qb *groupFilterHandler) missingCriterionHandler(isMissing *string) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if isMissing != nil && *isMissing != "" {
 			switch *isMissing {
@@ -104,21 +104,21 @@ func (qb *movieFilterHandler) missingCriterionHandler(isMissing *string) criteri
 	}
 }
 
-func (qb *movieFilterHandler) urlsCriterionHandler(url *models.StringCriterionInput) criterionHandlerFunc {
+func (qb *groupFilterHandler) urlsCriterionHandler(url *models.StringCriterionInput) criterionHandlerFunc {
 	h := stringListCriterionHandlerBuilder{
-		primaryTable: movieTable,
-		primaryFK:    movieIDColumn,
-		joinTable:    movieURLsTable,
-		stringColumn: movieURLColumn,
+		primaryTable: groupTable,
+		primaryFK:    groupIDColumn,
+		joinTable:    groupURLsTable,
+		stringColumn: groupURLColumn,
 		addJoinTable: func(f *filterBuilder) {
-			moviesURLsTableMgr.join(f, "", "movies.id")
+			groupsURLsTableMgr.join(f, "", "movies.id")
 		},
 	}
 
 	return h.handler(url)
 }
 
-func (qb *movieFilterHandler) performersCriterionHandler(performers *models.MultiCriterionInput) criterionHandlerFunc {
+func (qb *groupFilterHandler) performersCriterionHandler(performers *models.MultiCriterionInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if performers != nil {
 			if performers.Modifier == models.CriterionModifierIsNull || performers.Modifier == models.CriterionModifierNotNull {
@@ -165,26 +165,26 @@ func (qb *movieFilterHandler) performersCriterionHandler(performers *models.Mult
 	}
 }
 
-func (qb *movieFilterHandler) tagsCriterionHandler(tags *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
+func (qb *groupFilterHandler) tagsCriterionHandler(tags *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
 	h := joinedHierarchicalMultiCriterionHandlerBuilder{
-		primaryTable: movieTable,
+		primaryTable: groupTable,
 		foreignTable: tagTable,
 		foreignFK:    "tag_id",
 
 		relationsTable: "tags_relations",
 		joinAs:         "movie_tag",
-		joinTable:      moviesTagsTable,
-		primaryFK:      movieIDColumn,
+		joinTable:      groupsTagsTable,
+		primaryFK:      groupIDColumn,
 	}
 
 	return h.handler(tags)
 }
 
-func (qb *movieFilterHandler) tagCountCriterionHandler(count *models.IntCriterionInput) criterionHandlerFunc {
+func (qb *groupFilterHandler) tagCountCriterionHandler(count *models.IntCriterionInput) criterionHandlerFunc {
 	h := countCriterionHandlerBuilder{
-		primaryTable: movieTable,
-		joinTable:    moviesTagsTable,
-		primaryFK:    movieIDColumn,
+		primaryTable: groupTable,
+		joinTable:    groupsTagsTable,
+		primaryFK:    groupIDColumn,
 	}
 
 	return h.handler(count)

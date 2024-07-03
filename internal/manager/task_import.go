@@ -127,7 +127,7 @@ func (t *ImportTask) Start(ctx context.Context) {
 	t.ImportTags(ctx)
 	t.ImportPerformers(ctx)
 	t.ImportStudios(ctx)
-	t.ImportMovies(ctx)
+	t.ImportGroups(ctx)
 	t.ImportFiles(ctx)
 	t.ImportGalleries(ctx)
 
@@ -325,14 +325,14 @@ func (t *ImportTask) importStudio(ctx context.Context, studioJSON *jsonschema.St
 	return nil
 }
 
-func (t *ImportTask) ImportMovies(ctx context.Context) {
-	logger.Info("[movies] importing")
+func (t *ImportTask) ImportGroups(ctx context.Context) {
+	logger.Info("[groups] importing")
 
-	path := t.json.json.Movies
+	path := t.json.json.Groups
 	files, err := os.ReadDir(path)
 	if err != nil {
 		if !errors.Is(err, os.ErrNotExist) {
-			logger.Errorf("[movies] failed to read movies directory: %v", err)
+			logger.Errorf("[groups] failed to read movies directory: %v", err)
 		}
 
 		return
@@ -342,31 +342,31 @@ func (t *ImportTask) ImportMovies(ctx context.Context) {
 
 	for i, fi := range files {
 		index := i + 1
-		movieJSON, err := jsonschema.LoadMovieFile(filepath.Join(path, fi.Name()))
+		groupJSON, err := jsonschema.LoadGroupFile(filepath.Join(path, fi.Name()))
 		if err != nil {
-			logger.Errorf("[movies] failed to read json: %v", err)
+			logger.Errorf("[groups] failed to read json: %v", err)
 			continue
 		}
 
-		logger.Progressf("[movies] %d of %d", index, len(files))
+		logger.Progressf("[groups] %d of %d", index, len(files))
 
 		if err := r.WithTxn(ctx, func(ctx context.Context) error {
-			movieImporter := &movie.Importer{
-				ReaderWriter:        r.Movie,
+			groupImporter := &movie.Importer{
+				ReaderWriter:        r.Group,
 				StudioWriter:        r.Studio,
 				TagWriter:           r.Tag,
-				Input:               *movieJSON,
+				Input:               *groupJSON,
 				MissingRefBehaviour: t.MissingRefBehaviour,
 			}
 
-			return performImport(ctx, movieImporter, t.DuplicateBehaviour)
+			return performImport(ctx, groupImporter, t.DuplicateBehaviour)
 		}); err != nil {
-			logger.Errorf("[movies] <%s> import failed: %v", fi.Name(), err)
+			logger.Errorf("[groups] <%s> import failed: %v", fi.Name(), err)
 			continue
 		}
 	}
 
-	logger.Info("[movies] import complete")
+	logger.Info("[groups] import complete")
 }
 
 func (t *ImportTask) ImportFiles(ctx context.Context) {
@@ -648,7 +648,7 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 				MissingRefBehaviour: t.MissingRefBehaviour,
 
 				GalleryFinder:   r.Gallery,
-				MovieWriter:     r.Movie,
+				GroupWriter:     r.Group,
 				PerformerWriter: r.Performer,
 				StudioWriter:    r.Studio,
 				TagWriter:       r.Tag,

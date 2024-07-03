@@ -1079,7 +1079,7 @@ func (s mappedScraper) scrapeGallery(ctx context.Context, q mappedQuery) (*Scrap
 	return &ret, nil
 }
 
-func (s mappedScraper) scrapeMovie(ctx context.Context, q mappedQuery) (*models.ScrapedMovie, error) {
+func (s mappedScraper) scrapeGroup(ctx context.Context, q mappedQuery) (*models.ScrapedMovie, error) {
 	var ret models.ScrapedMovie
 
 	movieScraperConfig := s.Movie

@@ -74,7 +74,7 @@ type storeRepository struct {
 	SavedFilter    *SavedFilterStore
 	Studio         *StudioStore
 	Tag            *TagStore
-	Movie          *MovieStore
+	Group          *GroupStore
 }
 
 type Database struct {
@@ -110,7 +110,7 @@ func NewDatabase() *Database {
 		Performer:      performerStore,
 		Studio:         studioStore,
 		Tag:            tagStore,
-		Movie:          NewMovieStore(blobStore),
+		Group:          NewGroupStore(blobStore),
 		SavedFilter:    NewSavedFilterStore(),
 	}
 

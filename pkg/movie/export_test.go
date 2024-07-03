@@ -62,8 +62,8 @@ var (
 	updateTime = time.Date(2002, 01, 01, 0, 0, 0, 0, time.UTC)
 )
 
-func createFullMovie(id int, studioID int) models.Movie {
-	return models.Movie{
+func createFullMovie(id int, studioID int) models.Group {
+	return models.Group{
 		ID:        id,
 		Name:      movieName,
 		Aliases:   movieAliases,
@@ -79,8 +79,8 @@ func createFullMovie(id int, studioID int) models.Movie {
 	}
 }
 
-func createEmptyMovie(id int) models.Movie {
-	return models.Movie{
+func createEmptyMovie(id int) models.Group {
+	return models.Group{
 		ID:        id,
 		URLs:      models.NewRelatedStrings([]string{}),
 		CreatedAt: createTime,
@@ -88,8 +88,8 @@ func createEmptyMovie(id int) models.Movie {
 	}
 }
 
-func createFullJSONMovie(studio, frontImage, backImage string) *jsonschema.Movie {
-	return &jsonschema.Movie{
+func createFullJSONMovie(studio, frontImage, backImage string) *jsonschema.Group {
+	return &jsonschema.Group{
 		Name:       movieName,
 		Aliases:    movieAliases,
 		Date:       date,
@@ -110,8 +110,8 @@ func createFullJSONMovie(studio, frontImage, backImage string) *jsonschema.Movie
 	}
 }
 
-func createEmptyJSONMovie() *jsonschema.Movie {
-	return &jsonschema.Movie{
+func createEmptyJSONMovie() *jsonschema.Group {
+	return &jsonschema.Group{
 		URLs: []string{},
 		CreatedAt: json.JSONTime{
 			Time: createTime,
@@ -123,8 +123,8 @@ func createEmptyJSONMovie() *jsonschema.Movie {
 }
 
 type testScenario struct {
-	movie    models.Movie
-	expected *jsonschema.Movie
+	movie    models.Group
+	expected *jsonschema.Group
 	err      bool
 }
 
@@ -174,18 +174,18 @@ func TestToJSON(t *testing.T) {
 
 	imageErr := errors.New("error getting image")
 
-	db.Movie.On("GetFrontImage", testCtx, movieID).Return(frontImageBytes, nil).Once()
-	db.Movie.On("GetFrontImage", testCtx, missingStudioMovieID).Return(frontImageBytes, nil).Once()
-	db.Movie.On("GetFrontImage", testCtx, emptyID).Return(nil, nil).Once().Maybe()
-	db.Movie.On("GetFrontImage", testCtx, errFrontImageID).Return(nil, imageErr).Once()
-	db.Movie.On("GetFrontImage", testCtx, errBackImageID).Return(frontImageBytes, nil).Once()
+	db.Group.On("GetFrontImage", testCtx, movieID).Return(frontImageBytes, nil).Once()
+	db.Group.On("GetFrontImage", testCtx, missingStudioMovieID).Return(frontImageBytes, nil).Once()
+	db.Group.On("GetFrontImage", testCtx, emptyID).Return(nil, nil).Once().Maybe()
+	db.Group.On("GetFrontImage", testCtx, errFrontImageID).Return(nil, imageErr).Once()
+	db.Group.On("GetFrontImage", testCtx, errBackImageID).Return(frontImageBytes, nil).Once()
 
-	db.Movie.On("GetBackImage", testCtx, movieID).Return(backImageBytes, nil).Once()
-	db.Movie.On("GetBackImage", testCtx, missingStudioMovieID).Return(backImageBytes, nil).Once()
-	db.Movie.On("GetBackImage", testCtx, emptyID).Return(nil, nil).Once()
-	db.Movie.On("GetBackImage", testCtx, errBackImageID).Return(nil, imageErr).Once()
-	db.Movie.On("GetBackImage", testCtx, errFrontImageID).Return(backImageBytes, nil).Maybe()
-	db.Movie.On("GetBackImage", testCtx, errStudioMovieID).Return(backImageBytes, nil).Maybe()
+	db.Group.On("GetBackImage", testCtx, movieID).Return(backImageBytes, nil).Once()
+	db.Group.On("GetBackImage", testCtx, missingStudioMovieID).Return(backImageBytes, nil).Once()
+	db.Group.On("GetBackImage", testCtx, emptyID).Return(nil, nil).Once()
+	db.Group.On("GetBackImage", testCtx, errBackImageID).Return(nil, imageErr).Once()
+	db.Group.On("GetBackImage", testCtx, errFrontImageID).Return(backImageBytes, nil).Maybe()
+	db.Group.On("GetBackImage", testCtx, errStudioMovieID).Return(backImageBytes, nil).Maybe()
 
 	studioErr := errors.New("error getting studio")
 
@@ -195,7 +195,7 @@ func TestToJSON(t *testing.T) {
 
 	for i, s := range scenarios {
 		movie := s.movie
-		json, err := ToJSON(testCtx, db.Movie, db.Studio, &movie)
+		json, err := ToJSON(testCtx, db.Group, db.Studio, &movie)
 
 		switch {
 		case !s.err && err != nil:

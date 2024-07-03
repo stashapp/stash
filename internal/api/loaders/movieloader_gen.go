@@ -9,10 +9,10 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
-// MovieLoaderConfig captures the config to create a new MovieLoader
-type MovieLoaderConfig struct {
+// GroupLoaderConfig captures the config to create a new GroupLoader
+type GroupLoaderConfig struct {
 	// Fetch is a method that provides the data for the loader
-	Fetch func(keys []int) ([]*models.Movie, []error)
+	Fetch func(keys []int) ([]*models.Group, []error)
 
 	// Wait is how long wait before sending a batch
 	Wait time.Duration
@@ -21,19 +21,19 @@ type MovieLoaderConfig struct {
 	MaxBatch int
 }
 
-// NewMovieLoader creates a new MovieLoader given a fetch, wait, and maxBatch
-func NewMovieLoader(config MovieLoaderConfig) *MovieLoader {
-	return &MovieLoader{
+// NewGroupLoader creates a new GroupLoader given a fetch, wait, and maxBatch
+func NewGroupLoader(config GroupLoaderConfig) *GroupLoader {
+	return &GroupLoader{
 		fetch:    config.Fetch,
 		wait:     config.Wait,
 		maxBatch: config.MaxBatch,
 	}
 }
 
-// MovieLoader batches and caches requests
-type MovieLoader struct {
+// GroupLoader batches and caches requests
+type GroupLoader struct {
 	// this method provides the data for the loader
-	fetch func(keys []int) ([]*models.Movie, []error)
+	fetch func(keys []int) ([]*models.Group, []error)
 
 	// how long to done before sending a batch
 	wait time.Duration
@@ -44,51 +44,51 @@ type MovieLoader struct {
 	// INTERNAL
 
 	// lazily created cache
-	cache map[int]*models.Movie
+	cache map[int]*models.Group
 
 	// the current batch. keys will continue to be collected until timeout is hit,
 	// then everything will be sent to the fetch method and out to the listeners
-	batch *movieLoaderBatch
+	batch *groupLoaderBatch
 
 	// mutex to prevent races
 	mu sync.Mutex
 }
 
-type movieLoaderBatch struct {
+type groupLoaderBatch struct {
 	keys    []int
-	data    []*models.Movie
+	data    []*models.Group
 	error   []error
 	closing bool
 	done    chan struct{}
 }
 
-// Load a Movie by key, batching and caching will be applied automatically
-func (l *MovieLoader) Load(key int) (*models.Movie, error) {
+// Load a Group by key, batching and caching will be applied automatically
+func (l *GroupLoader) Load(key int) (*models.Group, error) {
 	return l.LoadThunk(key)()
 }
 
-// LoadThunk returns a function that when called will block waiting for a Movie.
+// LoadThunk returns a function that when called will block waiting for a Group.
 // This method should be used if you want one goroutine to make requests to many
 // different data loaders without blocking until the thunk is called.
-func (l *MovieLoader) LoadThunk(key int) func() (*models.Movie, error) {
+func (l *GroupLoader) LoadThunk(key int) func() (*models.Group, error) {
 	l.mu.Lock()
 	if it, ok := l.cache[key]; ok {
 		l.mu.Unlock()
-		return func() (*models.Movie, error) {
+		return func() (*models.Group, error) {
 			return it, nil
 		}
 	}
 	if l.batch == nil {
-		l.batch = &movieLoaderBatch{done: make(chan struct{})}
+		l.batch = &groupLoaderBatch{done: make(chan struct{})}
 	}
 	batch := l.batch
 	pos := batch.keyIndex(l, key)
 	l.mu.Unlock()
 
-	return func() (*models.Movie, error) {
+	return func() (*models.Group, error) {
 		<-batch.done
 
-		var data *models.Movie
+		var data *models.Group
 		if pos < len(batch.data) {
 			data = batch.data[pos]
 		}
@@ -113,43 +113,43 @@ func (l *MovieLoader) LoadThunk(key int) func() (*models.Movie, error) {
 
 // LoadAll fetches many keys at once. It will be broken into appropriate sized
 // sub batches depending on how the loader is configured
-func (l *MovieLoader) LoadAll(keys []int) ([]*models.Movie, []error) {
-	results := make([]func() (*models.Movie, error), len(keys))
+func (l *GroupLoader) LoadAll(keys []int) ([]*models.Group, []error) {
+	results := make([]func() (*models.Group, error), len(keys))
 
 	for i, key := range keys {
 		results[i] = l.LoadThunk(key)
 	}
 
-	movies := make([]*models.Movie, len(keys))
+	groups := make([]*models.Group, len(keys))
 	errors := make([]error, len(keys))
 	for i, thunk := range results {
-		movies[i], errors[i] = thunk()
+		groups[i], errors[i] = thunk()
 	}
-	return movies, errors
+	return groups, errors
 }
 
-// LoadAllThunk returns a function that when called will block waiting for a Movies.
+// LoadAllThunk returns a function that when called will block waiting for a Groups.
 // This method should be used if you want one goroutine to make requests to many
 // different data loaders without blocking until the thunk is called.
-func (l *MovieLoader) LoadAllThunk(keys []int) func() ([]*models.Movie, []error) {
-	results := make([]func() (*models.Movie, error), len(keys))
+func (l *GroupLoader) LoadAllThunk(keys []int) func() ([]*models.Group, []error) {
+	results := make([]func() (*models.Group, error), len(keys))
 	for i, key := range keys {
 		results[i] = l.LoadThunk(key)
 	}
-	return func() ([]*models.Movie, []error) {
-		movies := make([]*models.Movie, len(keys))
+	return func() ([]*models.Group, []error) {
+		groups := make([]*models.Group, len(keys))
 		errors := make([]error, len(keys))
 		for i, thunk := range results {
-			movies[i], errors[i] = thunk()
+			groups[i], errors[i] = thunk()
 		}
-		return movies, errors
+		return groups, errors
 	}
 }
 
 // Prime the cache with the provided key and value. If the key already exists, no change is made
 // and false is returned.
 // (To forcefully prime the cache, clear the key first with loader.clear(key).prime(key, value).)
-func (l *MovieLoader) Prime(key int, value *models.Movie) bool {
+func (l *GroupLoader) Prime(key int, value *models.Group) bool {
 	l.mu.Lock()
 	var found bool
 	if _, found = l.cache[key]; !found {
@@ -163,22 +163,22 @@ func (l *MovieLoader) Prime(key int, value *models.Movie) bool {
 }
 
 // Clear the value at key from the cache, if it exists
-func (l *MovieLoader) Clear(key int) {
+func (l *GroupLoader) Clear(key int) {
 	l.mu.Lock()
 	delete(l.cache, key)
 	l.mu.Unlock()
 }
 
-func (l *MovieLoader) unsafeSet(key int, value *models.Movie) {
+func (l *GroupLoader) unsafeSet(key int, value *models.Group) {
 	if l.cache == nil {
-		l.cache = map[int]*models.Movie{}
+		l.cache = map[int]*models.Group{}
 	}
 	l.cache[key] = value
 }
 
 // keyIndex will return the location of the key in the batch, if its not found
 // it will add the key to the batch
-func (b *movieLoaderBatch) keyIndex(l *MovieLoader, key int) int {
+func (b *groupLoaderBatch) keyIndex(l *GroupLoader, key int) int {
 	for i, existingKey := range b.keys {
 		if key == existingKey {
 			return i
@@ -202,7 +202,7 @@ func (b *movieLoaderBatch) keyIndex(l *MovieLoader, key int) int {
 	return pos
 }
 
-func (b *movieLoaderBatch) startTimer(l *MovieLoader) {
+func (b *groupLoaderBatch) startTimer(l *GroupLoader) {
 	time.Sleep(l.wait)
 	l.mu.Lock()
 
@@ -218,7 +218,7 @@ func (b *movieLoaderBatch) startTimer(l *MovieLoader) {
 	b.end(l)
 }
 
-func (b *movieLoaderBatch) end(l *MovieLoader) {
+func (b *groupLoaderBatch) end(l *GroupLoader) {
 	b.data, b.error = l.fetch(b.keys)
 	close(b.done)
 }

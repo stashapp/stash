@@ -51,11 +51,11 @@ models:
         fieldName: DurationFinite
       frame_rate:
         fieldName: FrameRateFinite
-  # group is movie under the hood
-  Group:
-    model: github.com/stashapp/stash/pkg/models.Movie
-  GroupFilterType:
-    model: github.com/stashapp/stash/pkg/models.MovieFilterType
+  # movie is group under the hood
+  Movie:
+    model: github.com/stashapp/stash/pkg/models.Group
+  MovieFilterType:
+    model: github.com/stashapp/stash/pkg/models.GroupFilterType
   # autobind on config causes generation issues
   BlobsStorageType:
     model: github.com/stashapp/stash/internal/manager/config.BlobsStorageType

@@ -14,22 +14,22 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
-type MovieFinder interface {
-	models.MovieGetter
-	GetFrontImage(ctx context.Context, movieID int) ([]byte, error)
-	GetBackImage(ctx context.Context, movieID int) ([]byte, error)
+type GroupFinder interface {
+	models.GroupGetter
+	GetFrontImage(ctx context.Context, groupID int) ([]byte, error)
+	GetBackImage(ctx context.Context, groupID int) ([]byte, error)
 }
 
-type movieRoutes struct {
+type groupRoutes struct {
 	routes
-	movieFinder MovieFinder
+	groupFinder GroupFinder
 }
 
-func (rs movieRoutes) Routes() chi.Router {
+func (rs groupRoutes) Routes() chi.Router {
 	r := chi.NewRouter()
 
-	r.Route("/{movieId}", func(r chi.Router) {
-		r.Use(rs.MovieCtx)
+	r.Route("/{groupId}", func(r chi.Router) {
+		r.Use(rs.GroupCtx)
 		r.Get("/frontimage", rs.FrontImage)
 		r.Get("/backimage", rs.BackImage)
 	})
@@ -37,77 +37,77 @@ func (rs movieRoutes) Routes() chi.Router {
 	return r
 }
 
-func (rs movieRoutes) FrontImage(w http.ResponseWriter, r *http.Request) {
-	movie := r.Context().Value(movieKey).(*models.Movie)
+func (rs groupRoutes) FrontImage(w http.ResponseWriter, r *http.Request) {
+	group := r.Context().Value(groupKey).(*models.Group)
 	defaultParam := r.URL.Query().Get("default")
 	var image []byte
 	if defaultParam != "true" {
 		readTxnErr := rs.withReadTxn(r, func(ctx context.Context) error {
 			var err error
-			image, err = rs.movieFinder.GetFrontImage(ctx, movie.ID)
+			image, err = rs.groupFinder.GetFrontImage(ctx, group.ID)
 			return err
 		})
 		if errors.Is(readTxnErr, context.Canceled) {
 			return
 		}
 		if readTxnErr != nil {
-			logger.Warnf("read transaction error on fetch movie front image: %v", readTxnErr)
+			logger.Warnf("read transaction error on fetch group front image: %v", readTxnErr)
 		}
 	}
 
 	// fallback to default image
 	if len(image) == 0 {
-		image = static.ReadAll(static.DefaultMovieImage)
+		image = static.ReadAll(static.DefaultGroupImage)
 	}
 
 	utils.ServeImage(w, r, image)
 }
 
-func (rs movieRoutes) BackImage(w http.ResponseWriter, r *http.Request) {
-	movie := r.Context().Value(movieKey).(*models.Movie)
+func (rs groupRoutes) BackImage(w http.ResponseWriter, r *http.Request) {
+	group := r.Context().Value(groupKey).(*models.Group)
 	defaultParam := r.URL.Query().Get("default")
 	var image []byte
 	if defaultParam != "true" {
 		readTxnErr := rs.withReadTxn(r, func(ctx context.Context) error {
 			var err error
-			image, err = rs.movieFinder.GetBackImage(ctx, movie.ID)
+			image, err = rs.groupFinder.GetBackImage(ctx, group.ID)
 			return err
 		})
 		if errors.Is(readTxnErr, context.Canceled) {
 			return
 		}
 		if readTxnErr != nil {
-			logger.Warnf("read transaction error on fetch movie back image: %v", readTxnErr)
+			logger.Warnf("read transaction error on fetch group back image: %v", readTxnErr)
 		}
 	}
 
 	// fallback to default image
 	if len(image) == 0 {
-		image = static.ReadAll(static.DefaultMovieImage)
+		image = static.ReadAll(static.DefaultGroupImage)
 	}
 
 	utils.ServeImage(w, r, image)
 }
 
-func (rs movieRoutes) MovieCtx(next http.Handler) http.Handler {
+func (rs groupRoutes) GroupCtx(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		movieID, err := strconv.Atoi(chi.URLParam(r, "movieId"))
+		groupID, err := strconv.Atoi(chi.URLParam(r, "groupId"))
 		if err != nil {
 			http.Error(w, http.StatusText(404), 404)
 			return
 		}
 
-		var movie *models.Movie
+		var group *models.Group
 		_ = rs.withReadTxn(r, func(ctx context.Context) error {
-			movie, _ = rs.movieFinder.Find(ctx, movieID)
+			group, _ = rs.groupFinder.Find(ctx, groupID)
 			return nil
 		})
-		if movie == nil {
+		if group == nil {
 			http.Error(w, http.StatusText(404), 404)
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), movieKey, movie)
+		ctx := context.WithValue(r.Context(), groupKey, group)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

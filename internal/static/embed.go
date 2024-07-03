@@ -26,8 +26,8 @@ const (
 	Studio             = "studio"
 	DefaultStudioImage = "studio/studio.svg"
 
-	Movie             = "movie"
-	DefaultMovieImage = "movie/movie.png"
+	Group             = "movie"
+	DefaultGroupImage = "movie/movie.png"
 )
 
 // Sub returns an FS rooted at path, using fs.Sub.

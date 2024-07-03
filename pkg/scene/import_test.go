@@ -17,7 +17,7 @@ const invalidImage = "aW1hZ2VCeXRlcw&&"
 var (
 	existingStudioID    = 101
 	existingPerformerID = 103
-	existingMovieID     = 104
+	existingGroupID     = 104
 	existingTagID       = 105
 
 	existingStudioName = "existingStudioName"
@@ -28,9 +28,9 @@ var (
 	existingPerformerErr  = "existingPerformerErr"
 	missingPerformerName  = "missingPerformerName"
 
-	existingMovieName = "existingMovieName"
-	existingMovieErr  = "existingMovieErr"
-	missingMovieName  = "missingMovieName"
+	existingGroupName = "existingGroupName"
+	existingGroupErr  = "existingGroupErr"
+	missingGroupName  = "missingGroupName"
 
 	existingTagName = "existingTagName"
 	existingTagErr  = "existingTagErr"
@@ -221,58 +221,58 @@ func TestImporterPreImportWithMissingPerformerCreateErr(t *testing.T) {
 	db.AssertExpectations(t)
 }
 
-func TestImporterPreImportWithMovie(t *testing.T) {
+func TestImporterPreImportWithGroup(t *testing.T) {
 	db := mocks.NewDatabase()
 
 	i := Importer{
-		MovieWriter:         db.Movie,
+		GroupWriter:         db.Group,
 		MissingRefBehaviour: models.ImportMissingRefEnumFail,
 		Input: jsonschema.Scene{
-			Movies: []jsonschema.SceneMovie{
+			Groups: []jsonschema.SceneGroup{
 				{
-					MovieName:  existingMovieName,
+					GroupName:  existingGroupName,
 					SceneIndex: 1,
 				},
 			},
 		},
 	}
 
-	db.Movie.On("FindByName", testCtx, existingMovieName, false).Return(&models.Movie{
-		ID:   existingMovieID,
-		Name: existingMovieName,
+	db.Group.On("FindByName", testCtx, existingGroupName, false).Return(&models.Group{
+		ID:   existingGroupID,
+		Name: existingGroupName,
 	}, nil).Once()
-	db.Movie.On("FindByName", testCtx, existingMovieErr, false).Return(nil, errors.New("FindByName error")).Once()
+	db.Group.On("FindByName", testCtx, existingGroupErr, false).Return(nil, errors.New("FindByName error")).Once()
 
 	err := i.PreImport(testCtx)
 	assert.Nil(t, err)
-	assert.Equal(t, existingMovieID, i.scene.Movies.List()[0].MovieID)
+	assert.Equal(t, existingGroupID, i.scene.Groups.List()[0].GroupID)
 
-	i.Input.Movies[0].MovieName = existingMovieErr
+	i.Input.Groups[0].GroupName = existingGroupErr
 	err = i.PreImport(testCtx)
 	assert.NotNil(t, err)
 
 	db.AssertExpectations(t)
 }
 
-func TestImporterPreImportWithMissingMovie(t *testing.T) {
+func TestImporterPreImportWithMissingGroup(t *testing.T) {
 	db := mocks.NewDatabase()
 
 	i := Importer{
-		MovieWriter: db.Movie,
+		GroupWriter: db.Group,
 		Input: jsonschema.Scene{
-			Movies: []jsonschema.SceneMovie{
+			Groups: []jsonschema.SceneGroup{
 				{
-					MovieName: missingMovieName,
+					GroupName: missingGroupName,
 				},
 			},
 		},
 		MissingRefBehaviour: models.ImportMissingRefEnumFail,
 	}
 
-	db.Movie.On("FindByName", testCtx, missingMovieName, false).Return(nil, nil).Times(3)
-	db.Movie.On("Create", testCtx, mock.AnythingOfType("*models.Movie")).Run(func(args mock.Arguments) {
-		m := args.Get(1).(*models.Movie)
-		m.ID = existingMovieID
+	db.Group.On("FindByName", testCtx, missingGroupName, false).Return(nil, nil).Times(3)
+	db.Group.On("Create", testCtx, mock.AnythingOfType("*models.Group")).Run(func(args mock.Arguments) {
+		m := args.Get(1).(*models.Group)
+		m.ID = existingGroupID
 	}).Return(nil)
 
 	err := i.PreImport(testCtx)
@@ -285,28 +285,28 @@ func TestImporterPreImportWithMissingMovie(t *testing.T) {
 	i.MissingRefBehaviour = models.ImportMissingRefEnumCreate
 	err = i.PreImport(testCtx)
 	assert.Nil(t, err)
-	assert.Equal(t, existingMovieID, i.scene.Movies.List()[0].MovieID)
+	assert.Equal(t, existingGroupID, i.scene.Groups.List()[0].GroupID)
 
 	db.AssertExpectations(t)
 }
 
-func TestImporterPreImportWithMissingMovieCreateErr(t *testing.T) {
+func TestImporterPreImportWithMissingGroupCreateErr(t *testing.T) {
 	db := mocks.NewDatabase()
 
 	i := Importer{
-		MovieWriter: db.Movie,
+		GroupWriter: db.Group,
 		Input: jsonschema.Scene{
-			Movies: []jsonschema.SceneMovie{
+			Groups: []jsonschema.SceneGroup{
 				{
-					MovieName: missingMovieName,
+					GroupName: missingGroupName,
 				},
 			},
 		},
 		MissingRefBehaviour: models.ImportMissingRefEnumCreate,
 	}
 
-	db.Movie.On("FindByName", testCtx, missingMovieName, false).Return(nil, nil).Once()
-	db.Movie.On("Create", testCtx, mock.AnythingOfType("*models.Movie")).Return(errors.New("Create error"))
+	db.Group.On("FindByName", testCtx, missingGroupName, false).Return(nil, nil).Once()
+	db.Group.On("Create", testCtx, mock.AnythingOfType("*models.Group")).Return(errors.New("Create error"))
 
 	err := i.PreImport(testCtx)
 	assert.NotNil(t, err)

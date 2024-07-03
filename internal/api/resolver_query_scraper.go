@@ -144,8 +144,8 @@ func filterPerformerTags(p []*models.ScrapedPerformer) {
 	}
 }
 
-// filterMovieTags removes tags matching excluded tag patterns from the provided scraped movies
-func filterMovieTags(p []*models.ScrapedMovie) {
+// filterGroupTags removes tags matching excluded tag patterns from the provided scraped movies
+func filterGroupTags(p []*models.ScrapedMovie) {
 	excludeRegexps := compileRegexps(manager.GetInstance().Config.GetScraperExcludeTagPatterns())
 
 	var ignoredTags []string
@@ -208,7 +208,7 @@ func (r *queryResolver) ScrapeMovieURL(ctx context.Context, url string) (*models
 		return nil, err
 	}
 
-	filterMovieTags([]*models.ScrapedMovie{ret})
+	filterGroupTags([]*models.ScrapedMovie{ret})
 
 	return ret, nil
 }
@@ -224,7 +224,7 @@ func (r *queryResolver) ScrapeGroupURL(ctx context.Context, url string) (*models
 		return nil, err
 	}
 
-	filterMovieTags([]*models.ScrapedMovie{ret})
+	filterGroupTags([]*models.ScrapedMovie{ret})
 
 	// convert to scraped group
 	group := &models.ScrapedGroup{

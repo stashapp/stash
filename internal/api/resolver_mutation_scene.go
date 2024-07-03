@@ -82,12 +82,12 @@ func (r *mutationResolver) SceneCreate(ctx context.Context, input models.SceneCr
 
 	// prefer groups over movies
 	if len(input.Groups) > 0 {
-		newScene.Movies, err = translator.relatedMoviesFromGroups(input.Groups)
+		newScene.Groups, err = translator.relatedGroups(input.Groups)
 		if err != nil {
 			return nil, fmt.Errorf("converting groups: %w", err)
 		}
 	} else if len(input.Movies) > 0 {
-		newScene.Movies, err = translator.relatedMovies(input.Movies)
+		newScene.Groups, err = translator.relatedGroupsFromMovies(input.Movies)
 		if err != nil {
 			return nil, fmt.Errorf("converting movies: %w", err)
 		}
@@ -225,12 +225,12 @@ func scenePartialFromInput(input models.SceneUpdateInput, translator changesetTr
 	}
 
 	if translator.hasField("groups") {
-		updatedScene.MovieIDs, err = translator.updateMovieIDsFromGroups(input.Groups, "groups")
+		updatedScene.GroupIDs, err = translator.updateGroupIDs(input.Groups, "groups")
 		if err != nil {
-			return nil, fmt.Errorf("converting movies: %w", err)
+			return nil, fmt.Errorf("converting groups: %w", err)
 		}
 	} else if translator.hasField("movies") {
-		updatedScene.MovieIDs, err = translator.updateMovieIDs(input.Movies, "movies")
+		updatedScene.GroupIDs, err = translator.updateGroupIDsFromMovies(input.Movies, "movies")
 		if err != nil {
 			return nil, fmt.Errorf("converting movies: %w", err)
 		}
@@ -374,12 +374,12 @@ func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input BulkSceneU
 	}
 
 	if translator.hasField("groups") {
-		updatedScene.MovieIDs, err = translator.updateMovieIDsBulk(input.GroupIds, "group_ids")
+		updatedScene.GroupIDs, err = translator.updateGroupIDsBulk(input.GroupIds, "group_ids")
 		if err != nil {
 			return nil, fmt.Errorf("converting group ids: %w", err)
 		}
 	} else if translator.hasField("movies") {
-		updatedScene.MovieIDs, err = translator.updateMovieIDsBulk(input.MovieIds, "movie_ids")
+		updatedScene.GroupIDs, err = translator.updateGroupIDsBulk(input.MovieIds, "movie_ids")
 		if err != nil {
 			return nil, fmt.Errorf("converting movie ids: %w", err)
 		}

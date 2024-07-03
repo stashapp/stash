@@ -120,7 +120,7 @@ func CreateExportTask(a models.HashAlgorithm, input ExportObjectsInput) *ExportT
 
 func (t *ExportTask) Start(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
-	// @manager.total = Scene.count + Gallery.count + Performer.count + Studio.count + Movie.count
+	// @manager.total = Scene.count + Gallery.count + Performer.count + Studio.count + Group.count
 	workerCount := runtime.GOMAXPROCS(0) // set worker count to number of cpus available
 
 	startTime := time.Now()
@@ -156,11 +156,11 @@ func (t *ExportTask) Start(ctx context.Context, wg *sync.WaitGroup) {
 	paths.EnsureJSONDirs(t.baseDir)
 
 	txnErr := t.repository.WithTxn(ctx, func(ctx context.Context) error {
-		// include movie scenes and gallery images
+		// include group scenes and gallery images
 		if !t.full {
-			// only include movie scenes if includeDependencies is also set
+			// only include group scenes if includeDependencies is also set
 			if !t.scenes.all && t.includeDependencies {
-				t.populateMovieScenes(ctx)
+				t.populateGroupScenes(ctx)
 			}
 
 			// always export gallery images
@@ -172,7 +172,7 @@ func (t *ExportTask) Start(ctx context.Context, wg *sync.WaitGroup) {
 		t.ExportScenes(ctx, workerCount)
 		t.ExportImages(ctx, workerCount)
 		t.ExportGalleries(ctx, workerCount)
-		t.ExportMovies(ctx, workerCount)
+		t.ExportGroups(ctx, workerCount)
 		t.ExportPerformers(ctx, workerCount)
 		t.ExportStudios(ctx, workerCount)
 		t.ExportTags(ctx, workerCount)
@@ -229,7 +229,7 @@ func (t *ExportTask) zipFiles(w io.Writer) error {
 	walkWarn(t.json.json.Galleries, t.zipWalkFunc(u.json.Galleries, z))
 	walkWarn(t.json.json.Performers, t.zipWalkFunc(u.json.Performers, z))
 	walkWarn(t.json.json.Studios, t.zipWalkFunc(u.json.Studios, z))
-	walkWarn(t.json.json.Movies, t.zipWalkFunc(u.json.Movies, z))
+	walkWarn(t.json.json.Groups, t.zipWalkFunc(u.json.Groups, z))
 	walkWarn(t.json.json.Scenes, t.zipWalkFunc(u.json.Scenes, z))
 	walkWarn(t.json.json.Images, t.zipWalkFunc(u.json.Images, z))
 
@@ -282,28 +282,28 @@ func (t *ExportTask) zipFile(fn, outDir string, z *zip.Writer) error {
 	return nil
 }
 
-func (t *ExportTask) populateMovieScenes(ctx context.Context) {
+func (t *ExportTask) populateGroupScenes(ctx context.Context) {
 	r := t.repository
-	reader := r.Movie
+	reader := r.Group
 	sceneReader := r.Scene
 
-	var movies []*models.Movie
+	var groups []*models.Group
 	var err error
 	all := t.full || (t.groups != nil && t.groups.all)
 	if all {
-		movies, err = reader.All(ctx)
+		groups, err = reader.All(ctx)
 	} else if t.groups != nil && len(t.groups.IDs) > 0 {
-		movies, err = reader.FindMany(ctx, t.groups.IDs)
+		groups, err = reader.FindMany(ctx, t.groups.IDs)
 	}
 
 	if err != nil {
-		logger.Errorf("[movies] failed to fetch movies: %v", err)
+		logger.Errorf("[groups] failed to fetch groups: %v", err)
 	}
 
-	for _, m := range movies {
-		scenes, err := sceneReader.FindByMovieID(ctx, m.ID)
+	for _, m := range groups {
+		scenes, err := sceneReader.FindByGroupID(ctx, m.ID)
 		if err != nil {
-			logger.Errorf("[movies] <%s> failed to fetch scenes for movie: %v", m.Name, err)
+			logger.Errorf("[groups] <%s> failed to fetch scenes for group: %v", m.Name, err)
 			continue
 		}
 
@@ -488,7 +488,7 @@ func (t *ExportTask) exportScene(ctx context.Context, wg *sync.WaitGroup, jobCha
 	r := t.repository
 	sceneReader := r.Scene
 	studioReader := r.Studio
-	movieReader := r.Movie
+	groupReader := r.Group
 	galleryReader := r.Gallery
 	performerReader := r.Performer
 	tagReader := r.Tag
@@ -556,9 +556,9 @@ func (t *ExportTask) exportScene(ctx context.Context, wg *sync.WaitGroup, jobCha
 			continue
 		}
 
-		newSceneJSON.Movies, err = scene.GetSceneMoviesJSON(ctx, movieReader, s)
+		newSceneJSON.Groups, err = scene.GetSceneGroupsJSON(ctx, groupReader, s)
 		if err != nil {
-			logger.Errorf("[scenes] <%s> error getting scene movies JSON: %v", sceneHash, err)
+			logger.Errorf("[scenes] <%s> error getting scene groups JSON: %v", sceneHash, err)
 			continue
 		}
 
@@ -576,12 +576,12 @@ func (t *ExportTask) exportScene(ctx context.Context, wg *sync.WaitGroup, jobCha
 			}
 			t.tags.IDs = sliceutil.AppendUniques(t.tags.IDs, tagIDs)
 
-			movieIDs, err := scene.GetDependentMovieIDs(ctx, s)
+			groupIDs, err := scene.GetDependentGroupIDs(ctx, s)
 			if err != nil {
-				logger.Errorf("[scenes] <%s> error getting scene movies: %v", sceneHash, err)
+				logger.Errorf("[scenes] <%s> error getting scene groups: %v", sceneHash, err)
 				continue
 			}
-			t.groups.IDs = sliceutil.AppendUniques(t.groups.IDs, movieIDs)
+			t.groups.IDs = sliceutil.AppendUniques(t.groups.IDs, groupIDs)
 
 			t.performers.IDs = sliceutil.AppendUniques(t.performers.IDs, performer.GetIDs(performers))
 		}
@@ -1081,74 +1081,74 @@ func (t *ExportTask) exportTag(ctx context.Context, wg *sync.WaitGroup, jobChan 
 	}
 }
 
-func (t *ExportTask) ExportMovies(ctx context.Context, workers int) {
-	var moviesWg sync.WaitGroup
+func (t *ExportTask) ExportGroups(ctx context.Context, workers int) {
+	var groupsWg sync.WaitGroup
 
-	reader := t.repository.Movie
-	var movies []*models.Movie
+	reader := t.repository.Group
+	var groups []*models.Group
 	var err error
 	all := t.full || (t.groups != nil && t.groups.all)
 	if all {
-		movies, err = reader.All(ctx)
+		groups, err = reader.All(ctx)
 	} else if t.groups != nil && len(t.groups.IDs) > 0 {
-		movies, err = reader.FindMany(ctx, t.groups.IDs)
+		groups, err = reader.FindMany(ctx, t.groups.IDs)
 	}
 
 	if err != nil {
-		logger.Errorf("[movies] failed to fetch movies: %v", err)
+		logger.Errorf("[groups] failed to fetch groups: %v", err)
 	}
 
-	logger.Info("[movies] exporting")
+	logger.Info("[groups] exporting")
 	startTime := time.Now()
 
-	jobCh := make(chan *models.Movie, workers*2) // make a buffered channel to feed workers
+	jobCh := make(chan *models.Group, workers*2) // make a buffered channel to feed workers
 
 	for w := 0; w < workers; w++ { // create export Studio workers
-		moviesWg.Add(1)
-		go t.exportMovie(ctx, &moviesWg, jobCh)
+		groupsWg.Add(1)
+		go t.exportGroup(ctx, &groupsWg, jobCh)
 	}
 
-	for i, movie := range movies {
+	for i, group := range groups {
 		index := i + 1
-		logger.Progressf("[movies] %d of %d", index, len(movies))
+		logger.Progressf("[groups] %d of %d", index, len(groups))
 
-		jobCh <- movie // feed workers
+		jobCh <- group // feed workers
 	}
 
 	close(jobCh)
-	moviesWg.Wait()
+	groupsWg.Wait()
 
-	logger.Infof("[movies] export complete in %s. %d workers used.", time.Since(startTime), workers)
+	logger.Infof("[groups] export complete in %s. %d workers used.", time.Since(startTime), workers)
 
 }
-func (t *ExportTask) exportMovie(ctx context.Context, wg *sync.WaitGroup, jobChan <-chan *models.Movie) {
+func (t *ExportTask) exportGroup(ctx context.Context, wg *sync.WaitGroup, jobChan <-chan *models.Group) {
 	defer wg.Done()
 
 	r := t.repository
-	movieReader := r.Movie
+	groupReader := r.Group
 	studioReader := r.Studio
 	tagReader := r.Tag
 
 	for m := range jobChan {
-		if err := m.LoadURLs(ctx, r.Movie); err != nil {
-			logger.Errorf("[movies] <%s> error getting movie urls: %v", m.Name, err)
+		if err := m.LoadURLs(ctx, r.Group); err != nil {
+			logger.Errorf("[groups] <%s> error getting group urls: %v", m.Name, err)
 			continue
 		}
 
-		newMovieJSON, err := movie.ToJSON(ctx, movieReader, studioReader, m)
+		newGroupJSON, err := movie.ToJSON(ctx, groupReader, studioReader, m)
 
 		if err != nil {
-			logger.Errorf("[movies] <%s> error getting tag JSON: %v", m.Name, err)
+			logger.Errorf("[groups] <%s> error getting tag JSON: %v", m.Name, err)
 			continue
 		}
 
-		tags, err := tagReader.FindByMovieID(ctx, m.ID)
+		tags, err := tagReader.FindByGroupID(ctx, m.ID)
 		if err != nil {
-			logger.Errorf("[movies] <%s> error getting image tag names: %v", m.Name, err)
+			logger.Errorf("[groups] <%s> error getting image tag names: %v", m.Name, err)
 			continue
 		}
 
-		newMovieJSON.Tags = tag.GetNames(tags)
+		newGroupJSON.Tags = tag.GetNames(tags)
 
 		if t.includeDependencies {
 			if m.StudioID != nil {
@@ -1156,10 +1156,10 @@ func (t *ExportTask) exportMovie(ctx context.Context, wg *sync.WaitGroup, jobCha
 			}
 		}
 
-		fn := newMovieJSON.Filename()
+		fn := newGroupJSON.Filename()
 
-		if err := t.json.saveMovie(fn, newMovieJSON); err != nil {
-			logger.Errorf("[movies] <%s> failed to save json: %v", m.Name, err)
+		if err := t.json.saveGroup(fn, newGroupJSON); err != nil {
+			logger.Errorf("[groups] <%s> failed to save json: %v", m.Name, err)
 		}
 	}
 }

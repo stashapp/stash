@@ -16,14 +16,14 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
-func loadMovieRelationships(ctx context.Context, expected models.Movie, actual *models.Movie) error {
+func loadGroupRelationships(ctx context.Context, expected models.Group, actual *models.Group) error {
 	if expected.URLs.Loaded() {
-		if err := actual.LoadURLs(ctx, db.Movie); err != nil {
+		if err := actual.LoadURLs(ctx, db.Group); err != nil {
 			return err
 		}
 	}
 	if expected.TagIDs.Loaded() {
-		if err := actual.LoadTagIDs(ctx, db.Movie); err != nil {
+		if err := actual.LoadTagIDs(ctx, db.Group); err != nil {
 			return err
 		}
 	}
@@ -31,7 +31,7 @@ func loadMovieRelationships(ctx context.Context, expected models.Movie, actual *
 	return nil
 }
 
-func Test_MovieStore_Create(t *testing.T) {
+func Test_GroupStore_Create(t *testing.T) {
 	var (
 		name      = "name"
 		url       = "url"
@@ -47,21 +47,21 @@ func Test_MovieStore_Create(t *testing.T) {
 
 	tests := []struct {
 		name      string
-		newObject models.Movie
+		newObject models.Group
 		wantErr   bool
 	}{
 		{
 			"full",
-			models.Movie{
+			models.Group{
 				Name:      name,
 				Duration:  &duration,
 				Date:      &date,
 				Rating:    &rating,
-				StudioID:  &studioIDs[studioIdxWithMovie],
+				StudioID:  &studioIDs[studioIdxWithGroup],
 				Director:  director,
 				Synopsis:  synopsis,
 				URLs:      models.NewRelatedStrings([]string{url}),
-				TagIDs:    models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithMovie]}),
+				TagIDs:    models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithGroup]}),
 				Aliases:   aliases,
 				CreatedAt: createdAt,
 				UpdatedAt: updatedAt,
@@ -70,7 +70,7 @@ func Test_MovieStore_Create(t *testing.T) {
 		},
 		{
 			"invalid tag id",
-			models.Movie{
+			models.Group{
 				Name:   name,
 				TagIDs: models.NewRelatedIDs([]int{invalidID}),
 			},
@@ -78,7 +78,7 @@ func Test_MovieStore_Create(t *testing.T) {
 		},
 	}
 
-	qb := db.Movie
+	qb := db.Group
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -86,7 +86,7 @@ func Test_MovieStore_Create(t *testing.T) {
 
 			p := tt.newObject
 			if err := qb.Create(ctx, &p); (err != nil) != tt.wantErr {
-				t.Errorf("MovieStore.Create() error = %v, wantErr = %v", err, tt.wantErr)
+				t.Errorf("GroupStore.Create() error = %v, wantErr = %v", err, tt.wantErr)
 			}
 
 			if tt.wantErr {
@@ -100,17 +100,17 @@ func Test_MovieStore_Create(t *testing.T) {
 			copy.ID = p.ID
 
 			// load relationships
-			if err := loadMovieRelationships(ctx, copy, &p); err != nil {
-				t.Errorf("loadMovieRelationships() error = %v", err)
+			if err := loadGroupRelationships(ctx, copy, &p); err != nil {
+				t.Errorf("loadGroupRelationships() error = %v", err)
 				return
 			}
 
 			assert.Equal(copy, p)
 
-			// ensure can find the movie
+			// ensure can find the group
 			found, err := qb.Find(ctx, p.ID)
 			if err != nil {
-				t.Errorf("MovieStore.Find() error = %v", err)
+				t.Errorf("GroupStore.Find() error = %v", err)
 			}
 
 			if !assert.NotNil(found) {
@@ -118,8 +118,8 @@ func Test_MovieStore_Create(t *testing.T) {
 			}
 
 			// load relationships
-			if err := loadMovieRelationships(ctx, copy, found); err != nil {
-				t.Errorf("loadMovieRelationships() error = %v", err)
+			if err := loadGroupRelationships(ctx, copy, found); err != nil {
+				t.Errorf("loadGroupRelationships() error = %v", err)
 				return
 			}
 			assert.Equal(copy, *found)
@@ -129,7 +129,7 @@ func Test_MovieStore_Create(t *testing.T) {
 	}
 }
 
-func Test_movieQueryBuilder_Update(t *testing.T) {
+func Test_groupQueryBuilder_Update(t *testing.T) {
 	var (
 		name      = "name"
 		url       = "url"
@@ -145,22 +145,22 @@ func Test_movieQueryBuilder_Update(t *testing.T) {
 
 	tests := []struct {
 		name          string
-		updatedObject *models.Movie
+		updatedObject *models.Group
 		wantErr       bool
 	}{
 		{
 			"full",
-			&models.Movie{
-				ID:        movieIDs[movieIdxWithTag],
+			&models.Group{
+				ID:        groupIDs[groupIdxWithTag],
 				Name:      name,
 				Duration:  &duration,
 				Date:      &date,
 				Rating:    &rating,
-				StudioID:  &studioIDs[studioIdxWithMovie],
+				StudioID:  &studioIDs[studioIdxWithGroup],
 				Director:  director,
 				Synopsis:  synopsis,
 				URLs:      models.NewRelatedStrings([]string{url}),
-				TagIDs:    models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithMovie]}),
+				TagIDs:    models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithGroup]}),
 				Aliases:   aliases,
 				CreatedAt: createdAt,
 				UpdatedAt: updatedAt,
@@ -169,8 +169,8 @@ func Test_movieQueryBuilder_Update(t *testing.T) {
 		},
 		{
 			"clear tag ids",
-			&models.Movie{
-				ID:     movieIDs[movieIdxWithTag],
+			&models.Group{
+				ID:     groupIDs[groupIdxWithTag],
 				Name:   name,
 				TagIDs: models.NewRelatedIDs([]int{}),
 			},
@@ -178,8 +178,8 @@ func Test_movieQueryBuilder_Update(t *testing.T) {
 		},
 		{
 			"invalid studio id",
-			&models.Movie{
-				ID:       movieIDs[movieIdxWithScene],
+			&models.Group{
+				ID:       groupIDs[groupIdxWithScene],
 				Name:     name,
 				StudioID: &invalidID,
 			},
@@ -187,8 +187,8 @@ func Test_movieQueryBuilder_Update(t *testing.T) {
 		},
 		{
 			"invalid tag id",
-			&models.Movie{
-				ID:     movieIDs[movieIdxWithScene],
+			&models.Group{
+				ID:     groupIDs[groupIdxWithScene],
 				Name:   name,
 				TagIDs: models.NewRelatedIDs([]int{invalidID}),
 			},
@@ -196,7 +196,7 @@ func Test_movieQueryBuilder_Update(t *testing.T) {
 		},
 	}
 
-	qb := db.Movie
+	qb := db.Group
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
@@ -204,7 +204,7 @@ func Test_movieQueryBuilder_Update(t *testing.T) {
 			copy := *tt.updatedObject
 
 			if err := qb.Update(ctx, tt.updatedObject); (err != nil) != tt.wantErr {
-				t.Errorf("movieQueryBuilder.Update() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("groupQueryBuilder.Update() error = %v, wantErr %v", err, tt.wantErr)
 			}
 
 			if tt.wantErr {
@@ -213,12 +213,12 @@ func Test_movieQueryBuilder_Update(t *testing.T) {
 
 			s, err := qb.Find(ctx, tt.updatedObject.ID)
 			if err != nil {
-				t.Errorf("movieQueryBuilder.Find() error = %v", err)
+				t.Errorf("groupQueryBuilder.Find() error = %v", err)
 			}
 
 			// load relationships
-			if err := loadMovieRelationships(ctx, copy, s); err != nil {
-				t.Errorf("loadMovieRelationships() error = %v", err)
+			if err := loadGroupRelationships(ctx, copy, s); err != nil {
+				t.Errorf("loadGroupRelationships() error = %v", err)
 				return
 			}
 
@@ -227,9 +227,9 @@ func Test_movieQueryBuilder_Update(t *testing.T) {
 	}
 }
 
-func clearMoviePartial() models.MoviePartial {
+func clearGroupPartial() models.GroupPartial {
 	// leave mandatory fields
-	return models.MoviePartial{
+	return models.GroupPartial{
 		Aliases:  models.OptionalString{Set: true, Null: true},
 		Synopsis: models.OptionalString{Set: true, Null: true},
 		Director: models.OptionalString{Set: true, Null: true},
@@ -242,7 +242,7 @@ func clearMoviePartial() models.MoviePartial {
 	}
 }
 
-func Test_movieQueryBuilder_UpdatePartial(t *testing.T) {
+func Test_groupQueryBuilder_UpdatePartial(t *testing.T) {
 	var (
 		name      = "name"
 		url       = "url"
@@ -259,14 +259,14 @@ func Test_movieQueryBuilder_UpdatePartial(t *testing.T) {
 	tests := []struct {
 		name    string
 		id      int
-		partial models.MoviePartial
-		want    models.Movie
+		partial models.GroupPartial
+		want    models.Group
 		wantErr bool
 	}{
 		{
 			"full",
-			movieIDs[movieIdxWithScene],
-			models.MoviePartial{
+			groupIDs[groupIdxWithScene],
+			models.GroupPartial{
 				Name:     models.NewOptionalString(name),
 				Director: models.NewOptionalString(director),
 				Synopsis: models.NewOptionalString(synopsis),
@@ -278,16 +278,16 @@ func Test_movieQueryBuilder_UpdatePartial(t *testing.T) {
 				Date:      models.NewOptionalDate(date),
 				Duration:  models.NewOptionalInt(duration),
 				Rating:    models.NewOptionalInt(rating),
-				StudioID:  models.NewOptionalInt(studioIDs[studioIdxWithMovie]),
+				StudioID:  models.NewOptionalInt(studioIDs[studioIdxWithGroup]),
 				CreatedAt: models.NewOptionalTime(createdAt),
 				UpdatedAt: models.NewOptionalTime(updatedAt),
 				TagIDs: &models.UpdateIDs{
-					IDs:  []int{tagIDs[tagIdx1WithMovie], tagIDs[tagIdx1WithDupName]},
+					IDs:  []int{tagIDs[tagIdx1WithGroup], tagIDs[tagIdx1WithDupName]},
 					Mode: models.RelationshipUpdateModeSet,
 				},
 			},
-			models.Movie{
-				ID:        movieIDs[movieIdxWithScene],
+			models.Group{
+				ID:        groupIDs[groupIdxWithScene],
 				Name:      name,
 				Director:  director,
 				Synopsis:  synopsis,
@@ -296,20 +296,20 @@ func Test_movieQueryBuilder_UpdatePartial(t *testing.T) {
 				Date:      &date,
 				Duration:  &duration,
 				Rating:    &rating,
-				StudioID:  &studioIDs[studioIdxWithMovie],
+				StudioID:  &studioIDs[studioIdxWithGroup],
 				CreatedAt: createdAt,
 				UpdatedAt: updatedAt,
-				TagIDs:    models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithMovie]}),
+				TagIDs:    models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithGroup]}),
 			},
 			false,
 		},
 		{
 			"clear all",
-			movieIDs[movieIdxWithScene],
-			clearMoviePartial(),
-			models.Movie{
-				ID:     movieIDs[movieIdxWithScene],
-				Name:   movieNames[movieIdxWithScene],
+			groupIDs[groupIdxWithScene],
+			clearGroupPartial(),
+			models.Group{
+				ID:     groupIDs[groupIdxWithScene],
+				Name:   groupNames[groupIdxWithScene],
 				TagIDs: models.NewRelatedIDs([]int{}),
 			},
 			false,
@@ -317,20 +317,20 @@ func Test_movieQueryBuilder_UpdatePartial(t *testing.T) {
 		{
 			"invalid id",
 			invalidID,
-			models.MoviePartial{},
-			models.Movie{},
+			models.GroupPartial{},
+			models.Group{},
 			true,
 		},
 	}
 	for _, tt := range tests {
-		qb := db.Movie
+		qb := db.Group
 
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
 
 			got, err := qb.UpdatePartial(ctx, tt.id, tt.partial)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("movieQueryBuilder.UpdatePartial() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("groupQueryBuilder.UpdatePartial() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 
@@ -339,8 +339,8 @@ func Test_movieQueryBuilder_UpdatePartial(t *testing.T) {
 			}
 
 			// load relationships
-			if err := loadMovieRelationships(ctx, tt.want, got); err != nil {
-				t.Errorf("loadMovieRelationships() error = %v", err)
+			if err := loadGroupRelationships(ctx, tt.want, got); err != nil {
+				t.Errorf("loadGroupRelationships() error = %v", err)
 				return
 			}
 
@@ -348,12 +348,12 @@ func Test_movieQueryBuilder_UpdatePartial(t *testing.T) {
 
 			s, err := qb.Find(ctx, tt.id)
 			if err != nil {
-				t.Errorf("movieQueryBuilder.Find() error = %v", err)
+				t.Errorf("groupQueryBuilder.Find() error = %v", err)
 			}
 
 			// load relationships
-			if err := loadMovieRelationships(ctx, tt.want, s); err != nil {
-				t.Errorf("loadMovieRelationships() error = %v", err)
+			if err := loadGroupRelationships(ctx, tt.want, s); err != nil {
+				t.Errorf("loadGroupRelationships() error = %v", err)
 				return
 			}
 
@@ -362,65 +362,65 @@ func Test_movieQueryBuilder_UpdatePartial(t *testing.T) {
 	}
 }
 
-func TestMovieFindByName(t *testing.T) {
+func TestGroupFindByName(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		mqb := db.Movie
+		mqb := db.Group
 
-		name := movieNames[movieIdxWithScene] // find a movie by name
+		name := groupNames[groupIdxWithScene] // find a group by name
 
-		movie, err := mqb.FindByName(ctx, name, false)
-
-		if err != nil {
-			t.Errorf("Error finding movies: %s", err.Error())
-		}
-
-		assert.Equal(t, movieNames[movieIdxWithScene], movie.Name)
-
-		name = movieNames[movieIdxWithDupName] // find a movie by name nocase
-
-		movie, err = mqb.FindByName(ctx, name, true)
+		group, err := mqb.FindByName(ctx, name, false)
 
 		if err != nil {
-			t.Errorf("Error finding movies: %s", err.Error())
+			t.Errorf("Error finding groups: %s", err.Error())
 		}
-		// movieIdxWithDupName and movieIdxWithScene should have similar names ( only diff should be Name vs NaMe)
-		//movie.Name should match with movieIdxWithScene since its ID is before moveIdxWithDupName
-		assert.Equal(t, movieNames[movieIdxWithScene], movie.Name)
-		//movie.Name should match with movieIdxWithDupName if the check is not case sensitive
-		assert.Equal(t, strings.ToLower(movieNames[movieIdxWithDupName]), strings.ToLower(movie.Name))
+
+		assert.Equal(t, groupNames[groupIdxWithScene], group.Name)
+
+		name = groupNames[groupIdxWithDupName] // find a group by name nocase
+
+		group, err = mqb.FindByName(ctx, name, true)
+
+		if err != nil {
+			t.Errorf("Error finding groups: %s", err.Error())
+		}
+		// groupIdxWithDupName and groupIdxWithScene should have similar names ( only diff should be Name vs NaMe)
+		//group.Name should match with groupIdxWithScene since its ID is before moveIdxWithDupName
+		assert.Equal(t, groupNames[groupIdxWithScene], group.Name)
+		//group.Name should match with groupIdxWithDupName if the check is not case sensitive
+		assert.Equal(t, strings.ToLower(groupNames[groupIdxWithDupName]), strings.ToLower(group.Name))
 
 		return nil
 	})
 }
 
-func TestMovieFindByNames(t *testing.T) {
+func TestGroupFindByNames(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
 		var names []string
 
-		mqb := db.Movie
+		mqb := db.Group
 
-		names = append(names, movieNames[movieIdxWithScene]) // find movies by names
+		names = append(names, groupNames[groupIdxWithScene]) // find groups by names
 
-		movies, err := mqb.FindByNames(ctx, names, false)
+		groups, err := mqb.FindByNames(ctx, names, false)
 		if err != nil {
-			t.Errorf("Error finding movies: %s", err.Error())
+			t.Errorf("Error finding groups: %s", err.Error())
 		}
-		assert.Len(t, movies, 1)
-		assert.Equal(t, movieNames[movieIdxWithScene], movies[0].Name)
+		assert.Len(t, groups, 1)
+		assert.Equal(t, groupNames[groupIdxWithScene], groups[0].Name)
 
-		movies, err = mqb.FindByNames(ctx, names, true) // find movies by names nocase
+		groups, err = mqb.FindByNames(ctx, names, true) // find groups by names nocase
 		if err != nil {
-			t.Errorf("Error finding movies: %s", err.Error())
+			t.Errorf("Error finding groups: %s", err.Error())
 		}
-		assert.Len(t, movies, 2) // movieIdxWithScene and movieIdxWithDupName
-		assert.Equal(t, strings.ToLower(movieNames[movieIdxWithScene]), strings.ToLower(movies[0].Name))
-		assert.Equal(t, strings.ToLower(movieNames[movieIdxWithScene]), strings.ToLower(movies[1].Name))
+		assert.Len(t, groups, 2) // groupIdxWithScene and groupIdxWithDupName
+		assert.Equal(t, strings.ToLower(groupNames[groupIdxWithScene]), strings.ToLower(groups[0].Name))
+		assert.Equal(t, strings.ToLower(groupNames[groupIdxWithScene]), strings.ToLower(groups[1].Name))
 
 		return nil
 	})
 }
 
-func moviesToIDs(i []*models.Movie) []int {
+func groupsToIDs(i []*models.Group) []int {
 	ret := make([]int, len(i))
 	for i, v := range i {
 		ret[i] = v.ID
@@ -429,7 +429,7 @@ func moviesToIDs(i []*models.Movie) []int {
 	return ret
 }
 
-func TestMovieQuery(t *testing.T) {
+func TestGroupQuery(t *testing.T) {
 	var (
 		frontImage = "front_image"
 		backImage  = "back_image"
@@ -438,7 +438,7 @@ func TestMovieQuery(t *testing.T) {
 	tests := []struct {
 		name        string
 		findFilter  *models.FindFilterType
-		filter      *models.MovieFilterType
+		filter      *models.GroupFilterType
 		includeIdxs []int
 		excludeIdxs []int
 		wantErr     bool
@@ -446,7 +446,7 @@ func TestMovieQuery(t *testing.T) {
 		{
 			"is missing front image",
 			nil,
-			&models.MovieFilterType{
+			&models.GroupFilterType{
 				IsMissing: &frontImage,
 			},
 			// just ensure that it doesn't error
@@ -457,7 +457,7 @@ func TestMovieQuery(t *testing.T) {
 		{
 			"is missing back image",
 			nil,
-			&models.MovieFilterType{
+			&models.GroupFilterType{
 				IsMissing: &backImage,
 			},
 			// just ensure that it doesn't error
@@ -471,13 +471,13 @@ func TestMovieQuery(t *testing.T) {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
 
-			results, _, err := db.Movie.Query(ctx, tt.filter, tt.findFilter)
+			results, _, err := db.Group.Query(ctx, tt.filter, tt.findFilter)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("MovieQueryBuilder.Query() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("GroupQueryBuilder.Query() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 
-			ids := moviesToIDs(results)
+			ids := groupsToIDs(results)
 			include := indexesToIDs(performerIDs, tt.includeIdxs)
 			exclude := indexesToIDs(performerIDs, tt.excludeIdxs)
 
@@ -491,66 +491,66 @@ func TestMovieQuery(t *testing.T) {
 	}
 }
 
-func TestMovieQueryStudio(t *testing.T) {
+func TestGroupQueryStudio(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		mqb := db.Movie
+		mqb := db.Group
 		studioCriterion := models.HierarchicalMultiCriterionInput{
 			Value: []string{
-				strconv.Itoa(studioIDs[studioIdxWithMovie]),
+				strconv.Itoa(studioIDs[studioIdxWithGroup]),
 			},
 			Modifier: models.CriterionModifierIncludes,
 		}
 
-		movieFilter := models.MovieFilterType{
+		groupFilter := models.GroupFilterType{
 			Studios: &studioCriterion,
 		}
 
-		movies, _, err := mqb.Query(ctx, &movieFilter, nil)
+		groups, _, err := mqb.Query(ctx, &groupFilter, nil)
 		if err != nil {
-			t.Errorf("Error querying movie: %s", err.Error())
+			t.Errorf("Error querying group: %s", err.Error())
 		}
 
-		assert.Len(t, movies, 1)
+		assert.Len(t, groups, 1)
 
 		// ensure id is correct
-		assert.Equal(t, movieIDs[movieIdxWithStudio], movies[0].ID)
+		assert.Equal(t, groupIDs[groupIdxWithStudio], groups[0].ID)
 
 		studioCriterion = models.HierarchicalMultiCriterionInput{
 			Value: []string{
-				strconv.Itoa(studioIDs[studioIdxWithMovie]),
+				strconv.Itoa(studioIDs[studioIdxWithGroup]),
 			},
 			Modifier: models.CriterionModifierExcludes,
 		}
 
-		q := getMovieStringValue(movieIdxWithStudio, titleField)
+		q := getGroupStringValue(groupIdxWithStudio, titleField)
 		findFilter := models.FindFilterType{
 			Q: &q,
 		}
 
-		movies, _, err = mqb.Query(ctx, &movieFilter, &findFilter)
+		groups, _, err = mqb.Query(ctx, &groupFilter, &findFilter)
 		if err != nil {
-			t.Errorf("Error querying movie: %s", err.Error())
+			t.Errorf("Error querying group: %s", err.Error())
 		}
-		assert.Len(t, movies, 0)
+		assert.Len(t, groups, 0)
 
 		return nil
 	})
 }
 
-func TestMovieQueryURL(t *testing.T) {
+func TestGroupQueryURL(t *testing.T) {
 	const sceneIdx = 1
-	movieURL := getMovieStringValue(sceneIdx, urlField)
+	groupURL := getGroupStringValue(sceneIdx, urlField)
 
 	urlCriterion := models.StringCriterionInput{
-		Value:    movieURL,
+		Value:    groupURL,
 		Modifier: models.CriterionModifierEquals,
 	}
 
-	filter := models.MovieFilterType{
+	filter := models.GroupFilterType{
 		URL: &urlCriterion,
 	}
 
-	verifyFn := func(n *models.Movie) {
+	verifyFn := func(n *models.Group) {
 		t.Helper()
 
 		urls := n.URLs.List()
@@ -562,93 +562,93 @@ func TestMovieQueryURL(t *testing.T) {
 		verifyString(t, url, urlCriterion)
 	}
 
-	verifyMovieQuery(t, filter, verifyFn)
+	verifyGroupQuery(t, filter, verifyFn)
 
 	urlCriterion.Modifier = models.CriterionModifierNotEquals
-	verifyMovieQuery(t, filter, verifyFn)
+	verifyGroupQuery(t, filter, verifyFn)
 
 	urlCriterion.Modifier = models.CriterionModifierMatchesRegex
-	urlCriterion.Value = "movie_.*1_URL"
-	verifyMovieQuery(t, filter, verifyFn)
+	urlCriterion.Value = "group_.*1_URL"
+	verifyGroupQuery(t, filter, verifyFn)
 
 	urlCriterion.Modifier = models.CriterionModifierNotMatchesRegex
-	verifyMovieQuery(t, filter, verifyFn)
+	verifyGroupQuery(t, filter, verifyFn)
 
 	urlCriterion.Modifier = models.CriterionModifierIsNull
 	urlCriterion.Value = ""
-	verifyMovieQuery(t, filter, verifyFn)
+	verifyGroupQuery(t, filter, verifyFn)
 
 	urlCriterion.Modifier = models.CriterionModifierNotNull
-	verifyMovieQuery(t, filter, verifyFn)
+	verifyGroupQuery(t, filter, verifyFn)
 }
 
-func TestMovieQueryURLExcludes(t *testing.T) {
+func TestGroupQueryURLExcludes(t *testing.T) {
 	withRollbackTxn(func(ctx context.Context) error {
-		mqb := db.Movie
+		mqb := db.Group
 
-		// create movie with two URLs
-		movie := models.Movie{
-			Name: "TestMovieQueryURLExcludes",
+		// create group with two URLs
+		group := models.Group{
+			Name: "TestGroupQueryURLExcludes",
 			URLs: models.NewRelatedStrings([]string{
 				"aaa",
 				"bbb",
 			}),
 		}
 
-		err := mqb.Create(ctx, &movie)
+		err := mqb.Create(ctx, &group)
 
 		if err != nil {
-			return fmt.Errorf("Error creating movie: %w", err)
+			return fmt.Errorf("Error creating group: %w", err)
 		}
 
-		// query for movies that exclude the URL "aaa"
+		// query for groups that exclude the URL "aaa"
 		urlCriterion := models.StringCriterionInput{
 			Value:    "aaa",
 			Modifier: models.CriterionModifierExcludes,
 		}
 
 		nameCriterion := models.StringCriterionInput{
-			Value:    movie.Name,
+			Value:    group.Name,
 			Modifier: models.CriterionModifierEquals,
 		}
 
-		filter := models.MovieFilterType{
+		filter := models.GroupFilterType{
 			URL:  &urlCriterion,
 			Name: &nameCriterion,
 		}
 
-		movies := queryMovies(ctx, t, &filter, nil)
-		assert.Len(t, movies, 0, "Expected no movies to be found")
+		groups := queryGroups(ctx, t, &filter, nil)
+		assert.Len(t, groups, 0, "Expected no groups to be found")
 
-		// query for movies that exclude the URL "ccc"
+		// query for groups that exclude the URL "ccc"
 		urlCriterion.Value = "ccc"
-		movies = queryMovies(ctx, t, &filter, nil)
+		groups = queryGroups(ctx, t, &filter, nil)
 
-		if assert.Len(t, movies, 1, "Expected one movie to be found") {
-			assert.Equal(t, movie.Name, movies[0].Name)
+		if assert.Len(t, groups, 1, "Expected one group to be found") {
+			assert.Equal(t, group.Name, groups[0].Name)
 		}
 
 		return nil
 	})
 }
 
-func verifyMovieQuery(t *testing.T, filter models.MovieFilterType, verifyFn func(s *models.Movie)) {
+func verifyGroupQuery(t *testing.T, filter models.GroupFilterType, verifyFn func(s *models.Group)) {
 	withTxn(func(ctx context.Context) error {
 		t.Helper()
-		sqb := db.Movie
+		sqb := db.Group
 
-		movies := queryMovies(ctx, t, &filter, nil)
+		groups := queryGroups(ctx, t, &filter, nil)
 
-		for _, movie := range movies {
-			if err := movie.LoadURLs(ctx, sqb); err != nil {
-				t.Errorf("Error loading movie relationships: %v", err)
+		for _, group := range groups {
+			if err := group.LoadURLs(ctx, sqb); err != nil {
+				t.Errorf("Error loading group relationships: %v", err)
 			}
 		}
 
 		// assume it should find at least one
-		assert.Greater(t, len(movies), 0)
+		assert.Greater(t, len(groups), 0)
 
-		for _, m := range movies {
+		for _, m := range groups {
 			verifyFn(m)
 		}
 
@@ -656,102 +656,102 @@ func verifyMovieQuery(t *testing.T, filter models.MovieFilterType, verifyFn func
 	})
 }
 
-func queryMovies(ctx context.Context, t *testing.T, movieFilter *models.MovieFilterType, findFilter *models.FindFilterType) []*models.Movie {
-	sqb := db.Movie
-	movies, _, err := sqb.Query(ctx, movieFilter, findFilter)
+func queryGroups(ctx context.Context, t *testing.T, groupFilter *models.GroupFilterType, findFilter *models.FindFilterType) []*models.Group {
+	sqb := db.Group
+	groups, _, err := sqb.Query(ctx, groupFilter, findFilter)
 	if err != nil {
-		t.Errorf("Error querying movie: %s", err.Error())
+		t.Errorf("Error querying group: %s", err.Error())
 	}
 
-	return movies
+	return groups
 }
 
-func TestMovieQueryTags(t *testing.T) {
+func TestGroupQueryTags(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
 		tagCriterion := models.HierarchicalMultiCriterionInput{
 			Value: []string{
-				strconv.Itoa(tagIDs[tagIdxWithMovie]),
-				strconv.Itoa(tagIDs[tagIdx1WithMovie]),
+				strconv.Itoa(tagIDs[tagIdxWithGroup]),
+				strconv.Itoa(tagIDs[tagIdx1WithGroup]),
 			},
 			Modifier: models.CriterionModifierIncludes,
 		}
 
-		movieFilter := models.MovieFilterType{
+		groupFilter := models.GroupFilterType{
 			Tags: &tagCriterion,
 		}
 
 		// ensure ids are correct
-		movies := queryMovies(ctx, t, &movieFilter, nil)
-		assert.Len(t, movies, 3)
-		for _, movie := range movies {
-			assert.True(t, movie.ID == movieIDs[movieIdxWithTag] || movie.ID == movieIDs[movieIdxWithTwoTags] || movie.ID == movieIDs[movieIdxWithThreeTags])
+		groups := queryGroups(ctx, t, &groupFilter, nil)
+		assert.Len(t, groups, 3)
+		for _, group := range groups {
+			assert.True(t, group.ID == groupIDs[groupIdxWithTag] || group.ID == groupIDs[groupIdxWithTwoTags] || group.ID == groupIDs[groupIdxWithThreeTags])
 		}
 
 		tagCriterion = models.HierarchicalMultiCriterionInput{
 			Value: []string{
-				strconv.Itoa(tagIDs[tagIdx1WithMovie]),
-				strconv.Itoa(tagIDs[tagIdx2WithMovie]),
+				strconv.Itoa(tagIDs[tagIdx1WithGroup]),
+				strconv.Itoa(tagIDs[tagIdx2WithGroup]),
 			},
 			Modifier: models.CriterionModifierIncludesAll,
 		}
 
-		movies = queryMovies(ctx, t, &movieFilter, nil)
+		groups = queryGroups(ctx, t, &groupFilter, nil)
 
-		if assert.Len(t, movies, 2) {
-			assert.Equal(t, sceneIDs[movieIdxWithTwoTags], movies[0].ID)
-			assert.Equal(t, sceneIDs[movieIdxWithThreeTags], movies[1].ID)
+		if assert.Len(t, groups, 2) {
+			assert.Equal(t, sceneIDs[groupIdxWithTwoTags], groups[0].ID)
+			assert.Equal(t, sceneIDs[groupIdxWithThreeTags], groups[1].ID)
 		}
 
 		tagCriterion = models.HierarchicalMultiCriterionInput{
 			Value: []string{
-				strconv.Itoa(tagIDs[tagIdx1WithMovie]),
+				strconv.Itoa(tagIDs[tagIdx1WithGroup]),
 			},
 			Modifier: models.CriterionModifierExcludes,
 		}
 
-		q := getSceneStringValue(movieIdxWithTwoTags, titleField)
+		q := getSceneStringValue(groupIdxWithTwoTags, titleField)
 		findFilter := models.FindFilterType{
 			Q: &q,
 		}
 
-		movies = queryMovies(ctx, t, &movieFilter, &findFilter)
-		assert.Len(t, movies, 0)
+		groups = queryGroups(ctx, t, &groupFilter, &findFilter)
+		assert.Len(t, groups, 0)
 
 		return nil
 	})
 }
 
-func TestMovieQueryTagCount(t *testing.T) {
+func TestGroupQueryTagCount(t *testing.T) {
 	const tagCount = 1
 	tagCountCriterion := models.IntCriterionInput{
 		Value:    tagCount,
 		Modifier: models.CriterionModifierEquals,
 	}
 
-	verifyMoviesTagCount(t, tagCountCriterion)
+	verifyGroupsTagCount(t, tagCountCriterion)
 
 	tagCountCriterion.Modifier = models.CriterionModifierNotEquals
-	verifyMoviesTagCount(t, tagCountCriterion)
+	verifyGroupsTagCount(t, tagCountCriterion)
 
 	tagCountCriterion.Modifier = models.CriterionModifierGreaterThan
-	verifyMoviesTagCount(t, tagCountCriterion)
+	verifyGroupsTagCount(t, tagCountCriterion)
 
 	tagCountCriterion.Modifier = models.CriterionModifierLessThan
-	verifyMoviesTagCount(t, tagCountCriterion)
+	verifyGroupsTagCount(t, tagCountCriterion)
 }
 
-func verifyMoviesTagCount(t *testing.T, tagCountCriterion models.IntCriterionInput) {
+func verifyGroupsTagCount(t *testing.T, tagCountCriterion models.IntCriterionInput) {
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Movie
-		movieFilter := models.MovieFilterType{
+		sqb := db.Group
+		groupFilter := models.GroupFilterType{
 			TagCount: &tagCountCriterion,
 		}
 
-		movies := queryMovies(ctx, t, &movieFilter, nil)
-		assert.Greater(t, len(movies), 0)
+		groups := queryGroups(ctx, t, &groupFilter, nil)
+		assert.Greater(t, len(groups), 0)
 
-		for _, movie := range movies {
-			ids, err := sqb.GetTagIDs(ctx, movie.ID)
+		for _, group := range groups {
+			ids, err := sqb.GetTagIDs(ctx, group.ID)
 			if err != nil {
 				return err
 			}
@@ -762,7 +762,7 @@ func verifyMoviesTagCount(t *testing.T, tagCountCriterion models.IntCriterionInp
 	})
 }
 
-func TestMovieQuerySorting(t *testing.T) {
+func TestGroupQuerySorting(t *testing.T) {
 	sort := "scenes_count"
 	direction := models.SortDirectionEnumDesc
 	findFilter := models.FindFilterType{
@@ -771,60 +771,60 @@ func TestMovieQuerySorting(t *testing.T) {
 	}
 
 	withTxn(func(ctx context.Context) error {
-		movies := queryMovies(ctx, t, nil, &findFilter)
+		groups := queryGroups(ctx, t, nil, &findFilter)
 
 		// scenes should be in same order as indexes
-		firstMovie := movies[0]
+		firstGroup := groups[0]
 
-		assert.Equal(t, movieIDs[movieIdxWithScene], firstMovie.ID)
+		assert.Equal(t, groupIDs[groupIdxWithScene], firstGroup.ID)
 
 		// sort in descending order
 		direction = models.SortDirectionEnumAsc
 
-		movies = queryMovies(ctx, t, nil, &findFilter)
-		lastMovie := movies[len(movies)-1]
+		groups = queryGroups(ctx, t, nil, &findFilter)
+		lastGroup := groups[len(groups)-1]
 
-		assert.Equal(t, movieIDs[movieIdxWithScene], lastMovie.ID)
+		assert.Equal(t, groupIDs[groupIdxWithScene], lastGroup.ID)
 
 		return nil
 	})
 }
 
-func TestMovieUpdateFrontImage(t *testing.T) {
+func TestGroupUpdateFrontImage(t *testing.T) {
 	if err := withRollbackTxn(func(ctx context.Context) error {
-		qb := db.Movie
+		qb := db.Group
 
-		// create movie to test against
-		const name = "TestMovieUpdateMovieImages"
-		movie := models.Movie{
+		// create group to test against
+		const name = "TestGroupUpdateGroupImages"
+		group := models.Group{
 			Name: name,
 		}
-		err := qb.Create(ctx, &movie)
+		err := qb.Create(ctx, &group)
 		if err != nil {
-			return fmt.Errorf("Error creating movie: %s", err.Error())
+			return fmt.Errorf("Error creating group: %s", err.Error())
 		}
 
-		return testUpdateImage(t, ctx, movie.ID, qb.UpdateFrontImage, qb.GetFrontImage)
+		return testUpdateImage(t, ctx, group.ID, qb.UpdateFrontImage, qb.GetFrontImage)
 	}); err != nil {
 		t.Error(err.Error())
 	}
 }
 
-func TestMovieUpdateBackImage(t *testing.T) {
+func TestGroupUpdateBackImage(t *testing.T) {
 	if err := withRollbackTxn(func(ctx context.Context) error {
-		qb := db.Movie
+		qb := db.Group
 
-		// create movie to test against
-		const name = "TestMovieUpdateMovieImages"
-		movie := models.Movie{
+		// create group to test against
+		const name = "TestGroupUpdateGroupImages"
+		group := models.Group{
 			Name: name,
 		}
-		err := qb.Create(ctx, &movie)
+		err := qb.Create(ctx, &group)
 		if err != nil {
-			return fmt.Errorf("Error creating movie: %s", err.Error())
+			return fmt.Errorf("Error creating group: %s", err.Error())
 		}
 
-		return testUpdateImage(t, ctx, movie.ID, qb.UpdateBackImage, qb.GetBackImage)
+		return testUpdateImage(t, ctx, group.ID, qb.UpdateBackImage, qb.GetBackImage)
 	}); err != nil {
 		t.Error(err.Error())
 	}

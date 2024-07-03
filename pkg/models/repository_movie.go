@@ -2,87 +2,87 @@ package models
 
 import "context"
 
-// MovieGetter provides methods to get movies by ID.
-type MovieGetter interface {
+// GroupGetter provides methods to get groups by ID.
+type GroupGetter interface {
 	// TODO - rename this to Find and remove existing method
-	FindMany(ctx context.Context, ids []int) ([]*Movie, error)
-	Find(ctx context.Context, id int) (*Movie, error)
+	FindMany(ctx context.Context, ids []int) ([]*Group, error)
+	Find(ctx context.Context, id int) (*Group, error)
 }
 
-// MovieFinder provides methods to find movies.
-type MovieFinder interface {
-	MovieGetter
-	FindByPerformerID(ctx context.Context, performerID int) ([]*Movie, error)
-	FindByStudioID(ctx context.Context, studioID int) ([]*Movie, error)
-	FindByName(ctx context.Context, name string, nocase bool) (*Movie, error)
-	FindByNames(ctx context.Context, names []string, nocase bool) ([]*Movie, error)
+// GroupFinder provides methods to find groups.
+type GroupFinder interface {
+	GroupGetter
+	FindByPerformerID(ctx context.Context, performerID int) ([]*Group, error)
+	FindByStudioID(ctx context.Context, studioID int) ([]*Group, error)
+	FindByName(ctx context.Context, name string, nocase bool) (*Group, error)
+	FindByNames(ctx context.Context, names []string, nocase bool) ([]*Group, error)
 }
 
-// MovieQueryer provides methods to query movies.
-type MovieQueryer interface {
-	Query(ctx context.Context, movieFilter *MovieFilterType, findFilter *FindFilterType) ([]*Movie, int, error)
-	QueryCount(ctx context.Context, movieFilter *MovieFilterType, findFilter *FindFilterType) (int, error)
+// GroupQueryer provides methods to query groups.
+type GroupQueryer interface {
+	Query(ctx context.Context, groupFilter *GroupFilterType, findFilter *FindFilterType) ([]*Group, int, error)
+	QueryCount(ctx context.Context, groupFilter *GroupFilterType, findFilter *FindFilterType) (int, error)
 }
 
-// MovieCounter provides methods to count movies.
-type MovieCounter interface {
+// GroupCounter provides methods to count groups.
+type GroupCounter interface {
 	Count(ctx context.Context) (int, error)
 	CountByPerformerID(ctx context.Context, performerID int) (int, error)
 	CountByStudioID(ctx context.Context, studioID int) (int, error)
 }
 
-// MovieCreator provides methods to create movies.
-type MovieCreator interface {
-	Create(ctx context.Context, newMovie *Movie) error
+// GroupCreator provides methods to create groups.
+type GroupCreator interface {
+	Create(ctx context.Context, newGroup *Group) error
 }
 
-// MovieUpdater provides methods to update movies.
-type MovieUpdater interface {
-	Update(ctx context.Context, updatedMovie *Movie) error
-	UpdatePartial(ctx context.Context, id int, updatedMovie MoviePartial) (*Movie, error)
-	UpdateFrontImage(ctx context.Context, movieID int, frontImage []byte) error
-	UpdateBackImage(ctx context.Context, movieID int, backImage []byte) error
+// GroupUpdater provides methods to update groups.
+type GroupUpdater interface {
+	Update(ctx context.Context, updatedGroup *Group) error
+	UpdatePartial(ctx context.Context, id int, updatedGroup GroupPartial) (*Group, error)
+	UpdateFrontImage(ctx context.Context, groupID int, frontImage []byte) error
+	UpdateBackImage(ctx context.Context, groupID int, backImage []byte) error
 }
 
-// MovieDestroyer provides methods to destroy movies.
-type MovieDestroyer interface {
+// GroupDestroyer provides methods to destroy groups.
+type GroupDestroyer interface {
 	Destroy(ctx context.Context, id int) error
 }
 
-type MovieCreatorUpdater interface {
-	MovieCreator
-	MovieUpdater
+type GroupCreatorUpdater interface {
+	GroupCreator
+	GroupUpdater
 }
 
-type MovieFinderCreator interface {
-	MovieFinder
-	MovieCreator
+type GroupFinderCreator interface {
+	GroupFinder
+	GroupCreator
 }
 
-// MovieReader provides all methods to read movies.
-type MovieReader interface {
-	MovieFinder
-	MovieQueryer
-	MovieCounter
+// GroupReader provides all methods to read groups.
+type GroupReader interface {
+	GroupFinder
+	GroupQueryer
+	GroupCounter
 	URLLoader
 	TagIDLoader
 
-	All(ctx context.Context) ([]*Movie, error)
-	GetFrontImage(ctx context.Context, movieID int) ([]byte, error)
-	HasFrontImage(ctx context.Context, movieID int) (bool, error)
-	GetBackImage(ctx context.Context, movieID int) ([]byte, error)
-	HasBackImage(ctx context.Context, movieID int) (bool, error)
+	All(ctx context.Context) ([]*Group, error)
+	GetFrontImage(ctx context.Context, groupID int) ([]byte, error)
+	HasFrontImage(ctx context.Context, groupID int) (bool, error)
+	GetBackImage(ctx context.Context, groupID int) ([]byte, error)
+	HasBackImage(ctx context.Context, groupID int) (bool, error)
 }
 
-// MovieWriter provides all methods to modify movies.
-type MovieWriter interface {
-	MovieCreator
-	MovieUpdater
-	MovieDestroyer
+// GroupWriter provides all methods to modify groups.
+type GroupWriter interface {
+	GroupCreator
+	GroupUpdater
+	GroupDestroyer
 }
 
-// MovieReaderWriter provides all movie methods.
-type MovieReaderWriter interface {
-	MovieReader
-	MovieWriter
+// GroupReaderWriter provides all group methods.
+type GroupReaderWriter interface {
+	GroupReader
+	GroupWriter
 }

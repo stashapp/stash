@@ -216,7 +216,7 @@ func TestStudioQueryForAutoTag(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
 		tqb := db.Studio
 
-		name := studioNames[studioIdxWithMovie] // find a studio by name
+		name := studioNames[studioIdxWithGroup] // find a studio by name
 
 		studios, err := tqb.QueryForAutoTag(ctx, []string{name})
 
@@ -225,16 +225,16 @@ func TestStudioQueryForAutoTag(t *testing.T) {
 		}
 
 		assert.Len(t, studios, 1)
-		assert.Equal(t, strings.ToLower(studioNames[studioIdxWithMovie]), strings.ToLower(studios[0].Name))
+		assert.Equal(t, strings.ToLower(studioNames[studioIdxWithGroup]), strings.ToLower(studios[0].Name))
 
-		name = getStudioStringValue(studioIdxWithMovie, "Alias")
+		name = getStudioStringValue(studioIdxWithGroup, "Alias")
 		studios, err = tqb.QueryForAutoTag(ctx, []string{name})
 
 		if err != nil {
 			t.Errorf("Error finding studios: %s", err.Error())
 		}
 		if assert.Len(t, studios, 1) {
-			assert.Equal(t, studioIDs[studioIdxWithMovie], studios[0].ID)
+			assert.Equal(t, studioIDs[studioIdxWithGroup], studios[0].ID)
 		}
 		return nil
 	})
@@ -911,7 +911,7 @@ func TestStudioQueryName(t *testing.T) {
 }
 
 func TestStudioQueryAlias(t *testing.T) {
-	const studioIdx = studioIdxWithMovie
+	const studioIdx = studioIdxWithGroup
 	studioName := getStudioStringValue(studioIdx, "Alias")
 
 	aliasCriterion := &models.StringCriterionInput{

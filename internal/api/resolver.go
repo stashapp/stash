@@ -74,10 +74,10 @@ func (r *Resolver) Studio() StudioResolver {
 }
 
 func (r *Resolver) Group() GroupResolver {
-	return &groupResolver{&movieResolver{r}}
+	return &groupResolver{r}
 }
 func (r *Resolver) Movie() MovieResolver {
-	return &movieResolver{r}
+	return &movieResolver{&groupResolver{r}}
 }
 
 func (r *Resolver) Subscription() SubscriptionResolver {
@@ -117,9 +117,9 @@ type sceneMarkerResolver struct{ *Resolver }
 type imageResolver struct{ *Resolver }
 type studioResolver struct{ *Resolver }
 
-// group is movie under the hood
-type movieResolver struct{ *Resolver }
-type groupResolver struct{ *movieResolver }
+// movie is group under the hood
+type groupResolver struct{ *Resolver }
+type movieResolver struct{ *groupResolver }
 
 type tagResolver struct{ *Resolver }
 type galleryFileResolver struct{ *Resolver }
@@ -182,7 +182,7 @@ func (r *queryResolver) Stats(ctx context.Context) (*StatsResultType, error) {
 		galleryQB := repo.Gallery
 		studioQB := repo.Studio
 		performerQB := repo.Performer
-		movieQB := repo.Movie
+		movieQB := repo.Group
 		tagQB := repo.Tag
 
 		// embrace the error

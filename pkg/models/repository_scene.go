@@ -23,7 +23,7 @@ type SceneFinder interface {
 	FindByPrimaryFileID(ctx context.Context, fileID FileID) ([]*Scene, error)
 	FindByPerformerID(ctx context.Context, performerID int) ([]*Scene, error)
 	FindByGalleryID(ctx context.Context, performerID int) ([]*Scene, error)
-	FindByMovieID(ctx context.Context, movieID int) ([]*Scene, error)
+	FindByGroupID(ctx context.Context, groupID int) ([]*Scene, error)
 	FindDuplicates(ctx context.Context, distance int, durationDiff float64) ([][]*Scene, error)
 }
 
@@ -37,7 +37,7 @@ type SceneQueryer interface {
 type SceneCounter interface {
 	Count(ctx context.Context) (int, error)
 	CountByPerformerID(ctx context.Context, performerID int) (int, error)
-	CountByMovieID(ctx context.Context, movieID int) (int, error)
+	CountByGroupID(ctx context.Context, groupID int) (int, error)
 	CountByFileID(ctx context.Context, fileID FileID) (int, error)
 	CountByStudioID(ctx context.Context, studioID int) (int, error)
 	CountByTagID(ctx context.Context, tagID int) (int, error)
@@ -99,7 +99,7 @@ type SceneReader interface {
 	GalleryIDLoader
 	PerformerIDLoader
 	TagIDLoader
-	SceneMovieLoader
+	SceneGroupLoader
 	StashIDLoader
 	VideoFileLoader
 

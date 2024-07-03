@@ -14,7 +14,7 @@ type Database struct {
 	Gallery        *GalleryReaderWriter
 	GalleryChapter *GalleryChapterReaderWriter
 	Image          *ImageReaderWriter
-	Movie          *MovieReaderWriter
+	Group          *GroupReaderWriter
 	Performer      *PerformerReaderWriter
 	Scene          *SceneReaderWriter
 	SceneMarker    *SceneMarkerReaderWriter
@@ -63,7 +63,7 @@ func NewDatabase() *Database {
 		Gallery:        &GalleryReaderWriter{},
 		GalleryChapter: &GalleryChapterReaderWriter{},
 		Image:          &ImageReaderWriter{},
-		Movie:          &MovieReaderWriter{},
+		Group:          &GroupReaderWriter{},
 		Performer:      &PerformerReaderWriter{},
 		Scene:          &SceneReaderWriter{},
 		SceneMarker:    &SceneMarkerReaderWriter{},
@@ -79,7 +79,7 @@ func (db *Database) AssertExpectations(t mock.TestingT) {
 	db.Gallery.AssertExpectations(t)
 	db.GalleryChapter.AssertExpectations(t)
 	db.Image.AssertExpectations(t)
-	db.Movie.AssertExpectations(t)
+	db.Group.AssertExpectations(t)
 	db.Performer.AssertExpectations(t)
 	db.Scene.AssertExpectations(t)
 	db.SceneMarker.AssertExpectations(t)
@@ -96,7 +96,7 @@ func (db *Database) Repository() models.Repository {
 		Gallery:        db.Gallery,
 		GalleryChapter: db.GalleryChapter,
 		Image:          db.Image,
-		Movie:          db.Movie,
+		Group:          db.Group,
 		Performer:      db.Performer,
 		Scene:          db.Scene,
 		SceneMarker:    db.SceneMarker,

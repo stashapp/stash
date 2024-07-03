@@ -84,7 +84,7 @@ func (s *xpathScraper) scrapeByURL(ctx context.Context, url string, ty ScrapeCon
 		}
 		return ret, nil
 	case ScrapeContentTypeMovie, ScrapeContentTypeGroup:
-		ret, err := scraper.scrapeMovie(ctx, q)
+		ret, err := scraper.scrapeGroup(ctx, q)
 		if err != nil || ret == nil {
 			return nil, err
 		}

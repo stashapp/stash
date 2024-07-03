@@ -184,20 +184,20 @@ func (r *sceneResolver) Studio(ctx context.Context, obj *models.Scene) (ret *mod
 }
 
 func (r *sceneResolver) Movies(ctx context.Context, obj *models.Scene) (ret []*SceneMovie, err error) {
-	if !obj.Movies.Loaded() {
+	if !obj.Groups.Loaded() {
 		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 			qb := r.repository.Scene
 
-			return obj.LoadMovies(ctx, qb)
+			return obj.LoadGroups(ctx, qb)
 		}); err != nil {
 			return nil, err
 		}
 	}
 
-	loader := loaders.From(ctx).MovieByID
+	loader := loaders.From(ctx).GroupByID
 
-	for _, sm := range obj.Movies.List() {
-		movie, err := loader.Load(sm.MovieID)
+	for _, sm := range obj.Groups.List() {
+		movie, err := loader.Load(sm.GroupID)
 		if err != nil {
 			return nil, err
 		}
@@ -215,27 +215,27 @@ func (r *sceneResolver) Movies(ctx context.Context, obj *models.Scene) (ret []*S
 }
 
 func (r *sceneResolver) Groups(ctx context.Context, obj *models.Scene) (ret []*SceneGroup, err error) {
-	if !obj.Movies.Loaded() {
+	if !obj.Groups.Loaded() {
 		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 			qb := r.repository.Scene
 
-			return obj.LoadMovies(ctx, qb)
+			return obj.LoadGroups(ctx, qb)
 		}); err != nil {
 			return nil, err
 		}
 	}
 
-	loader := loaders.From(ctx).MovieByID
+	loader := loaders.From(ctx).GroupByID
 
-	for _, sm := range obj.Movies.List() {
-		movie, err := loader.Load(sm.MovieID)
+	for _, sm := range obj.Groups.List() {
+		group, err := loader.Load(sm.GroupID)
 		if err != nil {
 			return nil, err
 		}
 
 		sceneIdx := sm.SceneIndex
 		sceneGroup := &SceneGroup{
-			Group:      movie,
+			Group:      group,
 			SceneIndex: sceneIdx,
 		}
 

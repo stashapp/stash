@@ -1,32 +1,33 @@
 package urlbuilders
 
 import (
-	"github.com/stashapp/stash/pkg/models"
 	"strconv"
+
+	"github.com/stashapp/stash/pkg/models"
 )
 
-type MovieURLBuilder struct {
+type GroupURLBuilder struct {
 	BaseURL   string
-	MovieID   string
+	GroupID   string
 	UpdatedAt string
 }
 
-func NewMovieURLBuilder(baseURL string, movie *models.Movie) MovieURLBuilder {
-	return MovieURLBuilder{
+func NewGroupURLBuilder(baseURL string, group *models.Group) GroupURLBuilder {
+	return GroupURLBuilder{
 		BaseURL:   baseURL,
-		MovieID:   strconv.Itoa(movie.ID),
-		UpdatedAt: strconv.FormatInt(movie.UpdatedAt.Unix(), 10),
+		GroupID:   strconv.Itoa(group.ID),
+		UpdatedAt: strconv.FormatInt(group.UpdatedAt.Unix(), 10),
 	}
 }
 
-func (b MovieURLBuilder) GetMovieFrontImageURL(hasImage bool) string {
-	url := b.BaseURL + "/movie/" + b.MovieID + "/frontimage?t=" + b.UpdatedAt
+func (b GroupURLBuilder) GetGroupFrontImageURL(hasImage bool) string {
+	url := b.BaseURL + "/group/" + b.GroupID + "/frontimage?t=" + b.UpdatedAt
 	if !hasImage {
 		url += "&default=true"
 	}
 	return url
 }
 
-func (b MovieURLBuilder) GetMovieBackImageURL() string {
-	return b.BaseURL + "/movie/" + b.MovieID + "/backimage?t=" + b.UpdatedAt
+func (b GroupURLBuilder) GetGroupBackImageURL() string {
+	return b.BaseURL + "/group/" + b.GroupID + "/backimage?t=" + b.UpdatedAt
 }

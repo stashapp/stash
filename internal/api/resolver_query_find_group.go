@@ -8,14 +8,14 @@ import (
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 )
 
-func (r *queryResolver) FindGroup(ctx context.Context, id string) (ret *models.Movie, err error) {
+func (r *queryResolver) FindGroup(ctx context.Context, id string) (ret *models.Group, err error) {
 	idInt, err := strconv.Atoi(id)
 	if err != nil {
 		return nil, err
 	}
 
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		ret, err = r.repository.Movie.Find(ctx, idInt)
+		ret, err = r.repository.Group.Find(ctx, idInt)
 		return err
 	}); err != nil {
 		return nil, err
@@ -24,22 +24,22 @@ func (r *queryResolver) FindGroup(ctx context.Context, id string) (ret *models.M
 	return ret, nil
 }
 
-func (r *queryResolver) FindGroups(ctx context.Context, movieFilter *models.MovieFilterType, filter *models.FindFilterType, ids []string) (ret *FindGroupsResultType, err error) {
+func (r *queryResolver) FindGroups(ctx context.Context, groupFilter *models.GroupFilterType, filter *models.FindFilterType, ids []string) (ret *FindGroupsResultType, err error) {
 	idInts, err := stringslice.StringSliceToIntSlice(ids)
 	if err != nil {
 		return nil, err
 	}
 
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		var movies []*models.Movie
+		var groups []*models.Group
 		var err error
 		var total int
 
 		if len(idInts) > 0 {
-			movies, err = r.repository.Movie.FindMany(ctx, idInts)
-			total = len(movies)
+			groups, err = r.repository.Group.FindMany(ctx, idInts)
+			total = len(groups)
 		} else {
-			movies, total, err = r.repository.Movie.Query(ctx, movieFilter, filter)
+			groups, total, err = r.repository.Group.Query(ctx, groupFilter, filter)
 		}
 
 		if err != nil {
@@ -48,7 +48,7 @@ func (r *queryResolver) FindGroups(ctx context.Context, movieFilter *models.Movi
 
 		ret = &FindGroupsResultType{
 			Count:  total,
-			Groups: movies,
+			Groups: groups,
 		}
 		return nil
 	}); err != nil {

@@ -122,7 +122,7 @@ func (r *tagResolver) StudioCount(ctx context.Context, obj *models.Tag, depth *i
 
 func (r *tagResolver) GroupCount(ctx context.Context, obj *models.Tag, depth *int) (ret int, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		ret, err = movie.CountByTagID(ctx, r.repository.Movie, obj.ID, depth)
+		ret, err = movie.CountByTagID(ctx, r.repository.Group, obj.ID, depth)
 		return err
 	}); err != nil {
 		return 0, err

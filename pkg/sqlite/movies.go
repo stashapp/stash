@@ -17,19 +17,19 @@ import (
 )
 
 const (
-	movieTable    = "movies"
-	movieIDColumn = "movie_id"
+	groupTable    = "movies"
+	groupIDColumn = "movie_id"
 
-	movieFrontImageBlobColumn = "front_image_blob"
-	movieBackImageBlobColumn  = "back_image_blob"
+	groupFrontImageBlobColumn = "front_image_blob"
+	groupBackImageBlobColumn  = "back_image_blob"
 
-	moviesTagsTable = "movies_tags"
+	groupsTagsTable = "movies_tags"
 
-	movieURLsTable = "movie_urls"
-	movieURLColumn = "url"
+	groupURLsTable = "movie_urls"
+	groupURLColumn = "url"
 )
 
-type movieRow struct {
+type groupRow struct {
 	ID       int         `db:"id" goqu:"skipinsert"`
 	Name     zero.String `db:"name"`
 	Aliases  zero.String `db:"aliases"`
@@ -48,7 +48,7 @@ type movieRow struct {
 	BackImageBlob  zero.String `db:"back_image_blob"`
 }
 
-func (r *movieRow) fromMovie(o models.Movie) {
+func (r *groupRow) fromGroup(o models.Group) {
 	r.ID = o.ID
 	r.Name = zero.StringFrom(o.Name)
 	r.Aliases = zero.StringFrom(o.Aliases)
@@ -62,8 +62,8 @@ func (r *movieRow) fromMovie(o models.Movie) {
 	r.UpdatedAt = Timestamp{Timestamp: o.UpdatedAt}
 }
 
-func (r *movieRow) resolve() *models.Movie {
-	ret := &models.Movie{
+func (r *groupRow) resolve() *models.Group {
+	ret := &models.Group{
 		ID:        r.ID,
 		Name:      r.Name.String,
 		Aliases:   r.Aliases.String,
@@ -80,11 +80,11 @@ func (r *movieRow) resolve() *models.Movie {
 	return ret
 }
 
-type movieRowRecord struct {
+type groupRowRecord struct {
 	updateRecord
 }
 
-func (r *movieRowRecord) fromPartial(o models.MoviePartial) {
+func (r *groupRowRecord) fromPartial(o models.GroupPartial) {
 	r.setNullString("name", o.Name)
 	r.setNullString("aliases", o.Aliases)
 	r.setNullInt("duration", o.Duration)
@@ -97,26 +97,26 @@ func (r *movieRowRecord) fromPartial(o models.MoviePartial) {
 	r.setTimestamp("updated_at", o.UpdatedAt)
 }
 
-type movieRepositoryType struct {
+type groupRepositoryType struct {
 	repository
 	scenes repository
 	tags   joinRepository
 }
 
 var (
-	movieRepository = movieRepositoryType{
+	groupRepository = groupRepositoryType{
 		repository: repository{
-			tableName: movieTable,
+			tableName: groupTable,
 			idColumn:  idColumn,
 		},
 		scenes: repository{
-			tableName: moviesScenesTable,
-			idColumn:  movieIDColumn,
+			tableName: groupsScenesTable,
+			idColumn:  groupIDColumn,
 		},
 		tags: joinRepository{
 			repository: repository{
-				tableName: moviesTagsTable,
-				idColumn:  movieIDColumn,
+				tableName: groupsTagsTable,
+				idColumn:  groupIDColumn,
 			},
 			fkColumn:     tagIDColumn,
 			foreignTable: tagTable,
@@ -125,40 +125,40 @@ var (
 	}
 )
 
-type MovieStore struct {
+type GroupStore struct {
 	blobJoinQueryBuilder
 	tagRelationshipStore
 
 	tableMgr *table
 }
 
-func NewMovieStore(blobStore *BlobStore) *MovieStore {
-	return &MovieStore{
+func NewGroupStore(blobStore *BlobStore) *GroupStore {
+	return &GroupStore{
 		blobJoinQueryBuilder: blobJoinQueryBuilder{
 			blobStore: blobStore,
-			joinTable: movieTable,
+			joinTable: groupTable,
 		},
 		tagRelationshipStore: tagRelationshipStore{
 			idRelationshipStore: idRelationshipStore{
-				joinTable: moviesTagsTableMgr,
+				joinTable: groupsTagsTableMgr,
 			},
 		},
 
-		tableMgr: movieTableMgr,
+		tableMgr: groupTableMgr,
 	}
 }
 
-func (qb *MovieStore) table() exp.IdentifierExpression {
+func (qb *GroupStore) table() exp.IdentifierExpression {
 	return qb.tableMgr.table
 }
 
-func (qb *MovieStore) selectDataset() *goqu.SelectDataset {
+func (qb *GroupStore) selectDataset() *goqu.SelectDataset {
 	return dialect.From(qb.table()).Select(qb.table().All())
 }
 
-func (qb *MovieStore) Create(ctx context.Context, newObject *models.Movie) error {
-	var r movieRow
-	r.fromMovie(*newObject)
+func (qb *GroupStore) Create(ctx context.Context, newObject *models.Group) error {
+	var r groupRow
+	r.fromGroup(*newObject)
 
 	id, err := qb.tableMgr.insertID(ctx, r)
 	if err != nil {
@@ -167,7 +167,7 @@ func (qb *MovieStore) Create(ctx context.Context, newObject *models.Movie) error
 
 	if newObject.URLs.Loaded() {
 		const startPos = 0
-		if err := moviesURLsTableMgr.insertJoins(ctx, id, startPos, newObject.URLs.List()); err != nil {
+		if err := groupsURLsTableMgr.insertJoins(ctx, id, startPos, newObject.URLs.List()); err != nil {
 			return err
 		}
 	}
@@ -186,8 +186,8 @@ func (qb *MovieStore) Create(ctx context.Context, newObject *models.Movie) error
 	return nil
 }
 
-func (qb *MovieStore) UpdatePartial(ctx context.Context, id int, partial models.MoviePartial) (*models.Movie, error) {
-	r := movieRowRecord{
+func (qb *GroupStore) UpdatePartial(ctx context.Context, id int, partial models.GroupPartial) (*models.Group, error) {
+	r := groupRowRecord{
 		updateRecord{
 			Record: make(exp.Record),
 		},
@@ -202,7 +202,7 @@ func (qb *MovieStore) UpdatePartial(ctx context.Context, id int, partial models.
 	}
 
 	if partial.URLs != nil {
-		if err := moviesURLsTableMgr.modifyJoins(ctx, id, partial.URLs.Values, partial.URLs.Mode); err != nil {
+		if err := groupsURLsTableMgr.modifyJoins(ctx, id, partial.URLs.Values, partial.URLs.Mode); err != nil {
 			return nil, err
 		}
 	}
@@ -214,16 +214,16 @@ func (qb *MovieStore) UpdatePartial(ctx context.Context, id int, partial models.
 	return qb.find(ctx, id)
 }
 
-func (qb *MovieStore) Update(ctx context.Context, updatedObject *models.Movie) error {
-	var r movieRow
-	r.fromMovie(*updatedObject)
+func (qb *GroupStore) Update(ctx context.Context, updatedObject *models.Group) error {
+	var r groupRow
+	r.fromGroup(*updatedObject)
 
 	if err := qb.tableMgr.updateByID(ctx, updatedObject.ID, r); err != nil {
 		return err
 	}
 
 	if updatedObject.URLs.Loaded() {
-		if err := moviesURLsTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.URLs.List()); err != nil {
+		if err := groupsURLsTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.URLs.List()); err != nil {
 			return err
 		}
 	}
@@ -235,17 +235,17 @@ func (qb *MovieStore) Update(ctx context.Context, updatedObject *models.Movie) e
 	return nil
 }
 
-func (qb *MovieStore) Destroy(ctx context.Context, id int) error {
+func (qb *GroupStore) Destroy(ctx context.Context, id int) error {
 	// must handle image checksums manually
 	if err := qb.destroyImages(ctx, id); err != nil {
 		return err
 	}
 
-	return movieRepository.destroyExisting(ctx, []int{id})
+	return groupRepository.destroyExisting(ctx, []int{id})
 }
 
 // returns nil, nil if not found
-func (qb *MovieStore) Find(ctx context.Context, id int) (*models.Movie, error) {
+func (qb *GroupStore) Find(ctx context.Context, id int) (*models.Group, error) {
 	ret, err := qb.find(ctx, id)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, nil
@@ -253,8 +253,8 @@ func (qb *MovieStore) Find(ctx context.Context, id int) (*models.Movie, error) {
 	return ret, err
 }
 
-func (qb *MovieStore) FindMany(ctx context.Context, ids []int) ([]*models.Movie, error) {
-	ret := make([]*models.Movie, len(ids))
+func (qb *GroupStore) FindMany(ctx context.Context, ids []int) ([]*models.Group, error) {
+	ret := make([]*models.Group, len(ids))
 
 	table := qb.table()
 	if err := batchExec(ids, defaultBatchSize, func(batch []int) error {
@@ -276,7 +276,7 @@ func (qb *MovieStore) FindMany(ctx context.Context, ids []int) ([]*models.Movie,
 
 	for i := range ret {
 		if ret[i] == nil {
-			return nil, fmt.Errorf("movie with id %d not found", ids[i])
+			return nil, fmt.Errorf("group with id %d not found", ids[i])
 		}
 	}
 
@@ -284,7 +284,7 @@ func (qb *MovieStore) FindMany(ctx context.Context, ids []int) ([]*models.Movie,
 }
 
 // returns nil, sql.ErrNoRows if not found
-func (qb *MovieStore) find(ctx context.Context, id int) (*models.Movie, error) {
+func (qb *GroupStore) find(ctx context.Context, id int) (*models.Group, error) {
 	q := qb.selectDataset().Where(qb.tableMgr.byID(id))
 
 	ret, err := qb.get(ctx, q)
@@ -296,7 +296,7 @@ func (qb *MovieStore) find(ctx context.Context, id int) (*models.Movie, error) {
 }
 
 // returns nil, sql.ErrNoRows if not found
-func (qb *MovieStore) get(ctx context.Context, q *goqu.SelectDataset) (*models.Movie, error) {
+func (qb *GroupStore) get(ctx context.Context, q *goqu.SelectDataset) (*models.Group, error) {
 	ret, err := qb.getMany(ctx, q)
 	if err != nil {
 		return nil, err
@@ -309,11 +309,11 @@ func (qb *MovieStore) get(ctx context.Context, q *goqu.SelectDataset) (*models.M
 	return ret[0], nil
 }
 
-func (qb *MovieStore) getMany(ctx context.Context, q *goqu.SelectDataset) ([]*models.Movie, error) {
+func (qb *GroupStore) getMany(ctx context.Context, q *goqu.SelectDataset) ([]*models.Group, error) {
 	const single = false
-	var ret []*models.Movie
+	var ret []*models.Group
 	if err := queryFunc(ctx, q, single, func(r *sqlx.Rows) error {
-		var f movieRow
+		var f groupRow
 		if err := r.StructScan(&f); err != nil {
 			return err
 		}
@@ -329,7 +329,7 @@ func (qb *MovieStore) getMany(ctx context.Context, q *goqu.SelectDataset) ([]*mo
 	return ret, nil
 }
 
-func (qb *MovieStore) FindByName(ctx context.Context, name string, nocase bool) (*models.Movie, error) {
+func (qb *GroupStore) FindByName(ctx context.Context, name string, nocase bool) (*models.Group, error) {
 	// query := "SELECT * FROM movies WHERE name = ?"
 	// if nocase {
 	// 	query += " COLLATE NOCASE"
@@ -349,7 +349,7 @@ func (qb *MovieStore) FindByName(ctx context.Context, name string, nocase bool) 
 	return ret, nil
 }
 
-func (qb *MovieStore) FindByNames(ctx context.Context, names []string, nocase bool) ([]*models.Movie, error) {
+func (qb *GroupStore) FindByNames(ctx context.Context, names []string, nocase bool) ([]*models.Group, error) {
 	// query := "SELECT * FROM movies WHERE name"
 	// if nocase {
 	// 	query += " COLLATE NOCASE"
@@ -374,12 +374,12 @@ func (qb *MovieStore) FindByNames(ctx context.Context, names []string, nocase bo
 	return ret, nil
 }
 
-func (qb *MovieStore) Count(ctx context.Context) (int, error) {
+func (qb *GroupStore) Count(ctx context.Context) (int, error) {
 	q := dialect.Select(goqu.COUNT("*")).From(qb.table())
 	return count(ctx, q)
 }
 
-func (qb *MovieStore) All(ctx context.Context) ([]*models.Movie, error) {
+func (qb *GroupStore) All(ctx context.Context) ([]*models.Group, error) {
 	table := qb.table()
 
 	return qb.getMany(ctx, qb.selectDataset().Order(
@@ -388,24 +388,24 @@ func (qb *MovieStore) All(ctx context.Context) ([]*models.Movie, error) {
 	))
 }
 
-func (qb *MovieStore) makeQuery(ctx context.Context, movieFilter *models.MovieFilterType, findFilter *models.FindFilterType) (*queryBuilder, error) {
+func (qb *GroupStore) makeQuery(ctx context.Context, groupFilter *models.GroupFilterType, findFilter *models.FindFilterType) (*queryBuilder, error) {
 	if findFilter == nil {
 		findFilter = &models.FindFilterType{}
 	}
-	if movieFilter == nil {
-		movieFilter = &models.MovieFilterType{}
+	if groupFilter == nil {
+		groupFilter = &models.GroupFilterType{}
 	}
 
-	query := movieRepository.newQuery()
-	distinctIDs(&query, movieTable)
+	query := groupRepository.newQuery()
+	distinctIDs(&query, groupTable)
 
 	if q := findFilter.Q; q != nil && *q != "" {
 		searchColumns := []string{"movies.name", "movies.aliases"}
 		query.parseQueryString(searchColumns, *q)
 	}
 
-	filter := filterBuilderFromHandler(ctx, &movieFilterHandler{
-		movieFilter: movieFilter,
+	filter := filterBuilderFromHandler(ctx, &groupFilterHandler{
+		groupFilter: groupFilter,
 	})
 
 	if err := query.addFilter(filter); err != nil {
@@ -413,7 +413,7 @@ func (qb *MovieStore) makeQuery(ctx context.Context, movieFilter *models.MovieFi
 	}
 
 	var err error
-	query.sortAndPagination, err = qb.getMovieSort(findFilter)
+	query.sortAndPagination, err = qb.getGroupSort(findFilter)
 	if err != nil {
 		return nil, err
 	}
@@ -423,8 +423,8 @@ func (qb *MovieStore) makeQuery(ctx context.Context, movieFilter *models.MovieFi
 	return &query, nil
 }
 
-func (qb *MovieStore) Query(ctx context.Context, movieFilter *models.MovieFilterType, findFilter *models.FindFilterType) ([]*models.Movie, int, error) {
-	query, err := qb.makeQuery(ctx, movieFilter, findFilter)
+func (qb *GroupStore) Query(ctx context.Context, groupFilter *models.GroupFilterType, findFilter *models.FindFilterType) ([]*models.Group, int, error) {
+	query, err := qb.makeQuery(ctx, groupFilter, findFilter)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -434,16 +434,16 @@ func (qb *MovieStore) Query(ctx context.Context, movieFilter *models.MovieFilter
 		return nil, 0, err
 	}
 
-	movies, err := qb.FindMany(ctx, idsResult)
+	groups, err := qb.FindMany(ctx, idsResult)
 	if err != nil {
 		return nil, 0, err
 	}
 
-	return movies, countResult, nil
+	return groups, countResult, nil
 }
 
-func (qb *MovieStore) QueryCount(ctx context.Context, movieFilter *models.MovieFilterType, findFilter *models.FindFilterType) (int, error) {
-	query, err := qb.makeQuery(ctx, movieFilter, findFilter)
+func (qb *GroupStore) QueryCount(ctx context.Context, groupFilter *models.GroupFilterType, findFilter *models.FindFilterType) (int, error) {
+	query, err := qb.makeQuery(ctx, groupFilter, findFilter)
 	if err != nil {
 		return 0, err
 	}
@@ -451,7 +451,7 @@ func (qb *MovieStore) QueryCount(ctx context.Context, movieFilter *models.MovieF
 	return query.executeCount(ctx)
 }
 
-var movieSortOptions = sortOptions{
+var groupSortOptions = sortOptions{
 	"created_at",
 	"date",
 	"duration",
@@ -464,7 +464,7 @@ var movieSortOptions = sortOptions{
 	"updated_at",
 }
 
-func (qb *MovieStore) getMovieSort(findFilter *models.FindFilterType) (string, error) {
+func (qb *GroupStore) getGroupSort(findFilter *models.FindFilterType) (string, error) {
 	var sort string
 	var direction string
 	if findFilter == nil {
@@ -476,16 +476,16 @@ func (qb *MovieStore) getMovieSort(findFilter *models.FindFilterType) (string, e
 	}
 
 	// CVE-2024-32231 - ensure sort is in the list of allowed sorts
-	if err := movieSortOptions.validateSort(sort); err != nil {
+	if err := groupSortOptions.validateSort(sort); err != nil {
 		return "", err
 	}
 
 	sortQuery := ""
 	switch sort {
 	case "tag_count":
-		sortQuery += getCountSort(movieTable, moviesTagsTable, movieIDColumn, direction)
+		sortQuery += getCountSort(groupTable, groupsTagsTable, groupIDColumn, direction)
 	case "scenes_count": // generic getSort won't work for this
-		sortQuery += getCountSort(movieTable, moviesScenesTable, movieIDColumn, direction)
+		sortQuery += getCountSort(groupTable, groupsScenesTable, groupIDColumn, direction)
 	default:
 		sortQuery += getSort(sort, direction, "movies")
 	}
@@ -495,11 +495,11 @@ func (qb *MovieStore) getMovieSort(findFilter *models.FindFilterType) (string, e
 	return sortQuery, nil
 }
 
-func (qb *MovieStore) queryMovies(ctx context.Context, query string, args []interface{}) ([]*models.Movie, error) {
+func (qb *GroupStore) queryGroups(ctx context.Context, query string, args []interface{}) ([]*models.Group, error) {
 	const single = false
-	var ret []*models.Movie
-	if err := movieRepository.queryFunc(ctx, query, args, single, func(r *sqlx.Rows) error {
-		var f movieRow
+	var ret []*models.Group
+	if err := groupRepository.queryFunc(ctx, query, args, single, func(r *sqlx.Rows) error {
+		var f groupRow
 		if err := r.StructScan(&f); err != nil {
 			return err
 		}
@@ -515,42 +515,42 @@ func (qb *MovieStore) queryMovies(ctx context.Context, query string, args []inte
 	return ret, nil
 }
 
-func (qb *MovieStore) UpdateFrontImage(ctx context.Context, movieID int, frontImage []byte) error {
-	return qb.UpdateImage(ctx, movieID, movieFrontImageBlobColumn, frontImage)
+func (qb *GroupStore) UpdateFrontImage(ctx context.Context, groupID int, frontImage []byte) error {
+	return qb.UpdateImage(ctx, groupID, groupFrontImageBlobColumn, frontImage)
 }
 
-func (qb *MovieStore) UpdateBackImage(ctx context.Context, movieID int, backImage []byte) error {
-	return qb.UpdateImage(ctx, movieID, movieBackImageBlobColumn, backImage)
+func (qb *GroupStore) UpdateBackImage(ctx context.Context, groupID int, backImage []byte) error {
+	return qb.UpdateImage(ctx, groupID, groupBackImageBlobColumn, backImage)
 }
 
-func (qb *MovieStore) destroyImages(ctx context.Context, movieID int) error {
-	if err := qb.DestroyImage(ctx, movieID, movieFrontImageBlobColumn); err != nil {
+func (qb *GroupStore) destroyImages(ctx context.Context, groupID int) error {
+	if err := qb.DestroyImage(ctx, groupID, groupFrontImageBlobColumn); err != nil {
 		return err
 	}
-	if err := qb.DestroyImage(ctx, movieID, movieBackImageBlobColumn); err != nil {
+	if err := qb.DestroyImage(ctx, groupID, groupBackImageBlobColumn); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (qb *MovieStore) GetFrontImage(ctx context.Context, movieID int) ([]byte, error) {
-	return qb.GetImage(ctx, movieID, movieFrontImageBlobColumn)
+func (qb *GroupStore) GetFrontImage(ctx context.Context, groupID int) ([]byte, error) {
+	return qb.GetImage(ctx, groupID, groupFrontImageBlobColumn)
 }
 
-func (qb *MovieStore) HasFrontImage(ctx context.Context, movieID int) (bool, error) {
-	return qb.HasImage(ctx, movieID, movieFrontImageBlobColumn)
+func (qb *GroupStore) HasFrontImage(ctx context.Context, groupID int) (bool, error) {
+	return qb.HasImage(ctx, groupID, groupFrontImageBlobColumn)
 }
 
-func (qb *MovieStore) GetBackImage(ctx context.Context, movieID int) ([]byte, error) {
-	return qb.GetImage(ctx, movieID, movieBackImageBlobColumn)
+func (qb *GroupStore) GetBackImage(ctx context.Context, groupID int) ([]byte, error) {
+	return qb.GetImage(ctx, groupID, groupBackImageBlobColumn)
 }
 
-func (qb *MovieStore) HasBackImage(ctx context.Context, movieID int) (bool, error) {
-	return qb.HasImage(ctx, movieID, movieBackImageBlobColumn)
+func (qb *GroupStore) HasBackImage(ctx context.Context, groupID int) (bool, error) {
+	return qb.HasImage(ctx, groupID, groupBackImageBlobColumn)
 }
 
-func (qb *MovieStore) FindByPerformerID(ctx context.Context, performerID int) ([]*models.Movie, error) {
+func (qb *GroupStore) FindByPerformerID(ctx context.Context, performerID int) ([]*models.Group, error) {
 	query := `SELECT DISTINCT movies.*
 FROM movies
 INNER JOIN movies_scenes ON movies.id = movies_scenes.movie_id
@@ -558,37 +558,37 @@ INNER JOIN performers_scenes ON performers_scenes.scene_id = movies_scenes.scene
 WHERE performers_scenes.performer_id = ?
 `
 	args := []interface{}{performerID}
-	return qb.queryMovies(ctx, query, args)
+	return qb.queryGroups(ctx, query, args)
 }
 
-func (qb *MovieStore) CountByPerformerID(ctx context.Context, performerID int) (int, error) {
+func (qb *GroupStore) CountByPerformerID(ctx context.Context, performerID int) (int, error) {
 	query := `SELECT COUNT(DISTINCT movies_scenes.movie_id) AS count
 FROM movies_scenes
 INNER JOIN performers_scenes ON performers_scenes.scene_id = movies_scenes.scene_id
 WHERE performers_scenes.performer_id = ?
 `
 	args := []interface{}{performerID}
-	return movieRepository.runCountQuery(ctx, query, args)
+	return groupRepository.runCountQuery(ctx, query, args)
 }
 
-func (qb *MovieStore) FindByStudioID(ctx context.Context, studioID int) ([]*models.Movie, error) {
+func (qb *GroupStore) FindByStudioID(ctx context.Context, studioID int) ([]*models.Group, error) {
 	query := `SELECT movies.*
 FROM movies
 WHERE movies.studio_id = ?
 `
 	args := []interface{}{studioID}
-	return qb.queryMovies(ctx, query, args)
+	return qb.queryGroups(ctx, query, args)
 }
 
-func (qb *MovieStore) CountByStudioID(ctx context.Context, studioID int) (int, error) {
+func (qb *GroupStore) CountByStudioID(ctx context.Context, studioID int) (int, error) {
 	query := `SELECT COUNT(1) AS count
 FROM movies
 WHERE movies.studio_id = ?
 `
 	args := []interface{}{studioID}
-	return movieRepository.runCountQuery(ctx, query, args)
+	return groupRepository.runCountQuery(ctx, query, args)
 }
 
-func (qb *MovieStore) GetURLs(ctx context.Context, movieID int) ([]string, error) {
-	return moviesURLsTableMgr.get(ctx, movieID)
+func (qb *GroupStore) GetURLs(ctx context.Context, groupID int) ([]string, error) {
+	return groupsURLsTableMgr.get(ctx, groupID)
 }

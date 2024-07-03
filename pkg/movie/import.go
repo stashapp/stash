@@ -12,24 +12,24 @@ import (
 )
 
 type ImporterReaderWriter interface {
-	models.MovieCreatorUpdater
-	FindByName(ctx context.Context, name string, nocase bool) (*models.Movie, error)
+	models.GroupCreatorUpdater
+	FindByName(ctx context.Context, name string, nocase bool) (*models.Group, error)
 }
 
 type Importer struct {
 	ReaderWriter        ImporterReaderWriter
 	StudioWriter        models.StudioFinderCreator
 	TagWriter           models.TagFinderCreator
-	Input               jsonschema.Movie
+	Input               jsonschema.Group
 	MissingRefBehaviour models.ImportMissingRefEnum
 
-	movie          models.Movie
+	group          models.Group
 	frontImageData []byte
 	backImageData  []byte
 }
 
 func (i *Importer) PreImport(ctx context.Context) error {
-	i.movie = i.movieJSONToMovie(i.Input)
+	i.group = i.groupJSONToGroup(i.Input)
 
 	if err := i.populateStudio(ctx); err != nil {
 		return err
@@ -65,7 +65,7 @@ func (i *Importer) populateTags(ctx context.Context) error {
 		}
 
 		for _, p := range tags {
-			i.movie.TagIDs.Add(p.ID)
+			i.group.TagIDs.Add(p.ID)
 		}
 	}
 
@@ -124,38 +124,38 @@ func createTags(ctx context.Context, tagWriter models.TagFinderCreator, names []
 	return ret, nil
 }
 
-func (i *Importer) movieJSONToMovie(movieJSON jsonschema.Movie) models.Movie {
-	newMovie := models.Movie{
-		Name:      movieJSON.Name,
-		Aliases:   movieJSON.Aliases,
-		Director:  movieJSON.Director,
-		Synopsis:  movieJSON.Synopsis,
-		CreatedAt: movieJSON.CreatedAt.GetTime(),
-		UpdatedAt: movieJSON.UpdatedAt.GetTime(),
+func (i *Importer) groupJSONToGroup(groupJSON jsonschema.Group) models.Group {
+	newGroup := models.Group{
+		Name:      groupJSON.Name,
+		Aliases:   groupJSON.Aliases,
+		Director:  groupJSON.Director,
+		Synopsis:  groupJSON.Synopsis,
+		CreatedAt: groupJSON.CreatedAt.GetTime(),
+		UpdatedAt: groupJSON.UpdatedAt.GetTime(),
 
 		TagIDs: models.NewRelatedIDs([]int{}),
 	}
 
-	if len(movieJSON.URLs) > 0 {
-		newMovie.URLs = models.NewRelatedStrings(movieJSON.URLs)
-	} else if movieJSON.URL != "" {
-		newMovie.URLs = models.NewRelatedStrings([]string{movieJSON.URL})
+	if len(groupJSON.URLs) > 0 {
+		newGroup.URLs = models.NewRelatedStrings(groupJSON.URLs)
+	} else if groupJSON.URL != "" {
+		newGroup.URLs = models.NewRelatedStrings([]string{groupJSON.URL})
 	}
-	if movieJSON.Date != "" {
-		d, err := models.ParseDate(movieJSON.Date)
+	if groupJSON.Date != "" {
+		d, err := models.ParseDate(groupJSON.Date)
 		if err == nil {
-			newMovie.Date = &d
+			newGroup.Date = &d
 		}
 	}
-	if movieJSON.Rating != 0 {
-		newMovie.Rating = &movieJSON.Rating
+	if groupJSON.Rating != 0 {
+		newGroup.Rating = &groupJSON.Rating
 	}
 
-	if movieJSON.Duration != 0 {
-		newMovie.Duration = &movieJSON.Duration
+	if groupJSON.Duration != 0 {
+		newGroup.Duration = &groupJSON.Duration
 	}
 
-	return newMovie
+	return newGroup
 }
 
 func (i *Importer) populateStudio(ctx context.Context) error {
@@ -167,7 +167,7 @@ func (i *Importer) populateStudio(ctx context.Context) error {
 
 		if studio == nil {
 			if i.MissingRefBehaviour == models.ImportMissingRefEnumFail {
-				return fmt.Errorf("movie studio '%s' not found", i.Input.Studio)
+				return fmt.Errorf("group studio '%s' not found", i.Input.Studio)
 			}
 
 			if i.MissingRefBehaviour == models.ImportMissingRefEnumIgnore {
@@ -179,10 +179,10 @@ func (i *Importer) populateStudio(ctx context.Context) error {
 				if err != nil {
 					return err
 				}
-				i.movie.StudioID = &studioID
+				i.group.StudioID = &studioID
 			}
 		} else {
-			i.movie.StudioID = &studio.ID
+			i.group.StudioID = &studio.ID
 		}
 	}
 
@@ -204,13 +204,13 @@ func (i *Importer) createStudio(ctx context.Context, name string) (int, error) {
 func (i *Importer) PostImport(ctx context.Context, id int) error {
 	if len(i.frontImageData) > 0 {
 		if err := i.ReaderWriter.UpdateFrontImage(ctx, id, i.frontImageData); err != nil {
-			return fmt.Errorf("error setting movie front image: %v", err)
+			return fmt.Errorf("error setting group front image: %v", err)
 		}
 	}
 
 	if len(i.backImageData) > 0 {
 		if err := i.ReaderWriter.UpdateBackImage(ctx, id, i.backImageData); err != nil {
-			return fmt.Errorf("error setting movie back image: %v", err)
+			return fmt.Errorf("error setting group back image: %v", err)
 		}
 	}
 
@@ -237,21 +237,21 @@ func (i *Importer) FindExistingID(ctx context.Context) (*int, error) {
 }
 
 func (i *Importer) Create(ctx context.Context) (*int, error) {
-	err := i.ReaderWriter.Create(ctx, &i.movie)
+	err := i.ReaderWriter.Create(ctx, &i.group)
 	if err != nil {
-		return nil, fmt.Errorf("error creating movie: %v", err)
+		return nil, fmt.Errorf("error creating group: %v", err)
 	}
 
-	id := i.movie.ID
+	id := i.group.ID
 	return &id, nil
 }
 
 func (i *Importer) Update(ctx context.Context, id int) error {
-	movie := i.movie
-	movie.ID = id
-	err := i.ReaderWriter.Update(ctx, &movie)
+	group := i.group
+	group.ID = id
+	err := i.ReaderWriter.Update(ctx, &group)
 	if err != nil {
-		return fmt.Errorf("error updating existing movie: %v", err)
+		return fmt.Errorf("error updating existing group: %v", err)
 	}
 
 	return nil

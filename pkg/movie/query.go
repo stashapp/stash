@@ -7,8 +7,8 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
-func CountByStudioID(ctx context.Context, r models.MovieQueryer, id int, depth *int) (int, error) {
-	filter := &models.MovieFilterType{
+func CountByStudioID(ctx context.Context, r models.GroupQueryer, id int, depth *int) (int, error) {
+	filter := &models.GroupFilterType{
 		Studios: &models.HierarchicalMultiCriterionInput{
 			Value:    []string{strconv.Itoa(id)},
 			Modifier: models.CriterionModifierIncludes,
@@ -19,8 +19,8 @@ func CountByStudioID(ctx context.Context, r models.MovieQueryer, id int, depth *
 	return r.QueryCount(ctx, filter, nil)
 }
 
-func CountByTagID(ctx context.Context, r models.MovieQueryer, id int, depth *int) (int, error) {
-	filter := &models.MovieFilterType{
+func CountByTagID(ctx context.Context, r models.GroupQueryer, id int, depth *int) (int, error) {
+	filter := &models.GroupFilterType{
 		Tags: &models.HierarchicalMultiCriterionInput{
 			Value:    []string{strconv.Itoa(id)},
 			Modifier: models.CriterionModifierIncludes,

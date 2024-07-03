@@ -33,8 +33,8 @@ type FileIDLoader interface {
 	GetManyFileIDs(ctx context.Context, ids []int) ([][]FileID, error)
 }
 
-type SceneMovieLoader interface {
-	GetMovies(ctx context.Context, id int) ([]MoviesScenes, error)
+type SceneGroupLoader interface {
+	GetGroups(ctx context.Context, id int) ([]GroupsScenes, error)
 }
 
 type StashIDLoader interface {
@@ -115,50 +115,50 @@ func (r *RelatedIDs) load(fn func() ([]int, error)) error {
 	return nil
 }
 
-// RelatedMovies represents a list of related Movies.
-type RelatedMovies struct {
-	list []MoviesScenes
+// RelatedGroups represents a list of related Groups.
+type RelatedGroups struct {
+	list []GroupsScenes
 }
 
-// NewRelatedMovies returns a loaded RelatedMovies object with the provided movies.
+// NewRelatedGroups returns a loaded RelateGroups object with the provided groups.
 // Loaded will return true when called on the returned object if the provided slice is not nil.
-func NewRelatedMovies(list []MoviesScenes) RelatedMovies {
-	return RelatedMovies{
+func NewRelatedGroups(list []GroupsScenes) RelatedGroups {
+	return RelatedGroups{
 		list: list,
 	}
 }
 
 // Loaded returns true if the relationship has been loaded.
-func (r RelatedMovies) Loaded() bool {
+func (r RelatedGroups) Loaded() bool {
 	return r.list != nil
 }
 
-func (r RelatedMovies) mustLoaded() {
+func (r RelatedGroups) mustLoaded() {
 	if !r.Loaded() {
 		panic("list has not been loaded")
 	}
 }
 
-// List returns the related Movies. Panics if the relationship has not been loaded.
-func (r RelatedMovies) List() []MoviesScenes {
+// List returns the related Groups. Panics if the relationship has not been loaded.
+func (r RelatedGroups) List() []GroupsScenes {
 	r.mustLoaded()
 
 	return r.list
 }
 
 // Add adds the provided ids to the list. Panics if the relationship has not been loaded.
-func (r *RelatedMovies) Add(movies ...MoviesScenes) {
+func (r *RelatedGroups) Add(groups ...GroupsScenes) {
 	r.mustLoaded()
 
-	r.list = append(r.list, movies...)
+	r.list = append(r.list, groups...)
 }
 
-// ForID returns the MoviesScenes object for the given movie ID. Returns nil if not found.
-func (r *RelatedMovies) ForID(id int) *MoviesScenes {
+// ForID returns the GroupsScenes object for the given group ID. Returns nil if not found.
+func (r *RelatedGroups) ForID(id int) *GroupsScenes {
 	r.mustLoaded()
 
 	for _, v := range r.list {
-		if v.MovieID == id {
+		if v.GroupID == id {
 			return &v
 		}
 	}
@@ -166,7 +166,7 @@ func (r *RelatedMovies) ForID(id int) *MoviesScenes {
 	return nil
 }
 
-func (r *RelatedMovies) load(fn func() ([]MoviesScenes, error)) error {
+func (r *RelatedGroups) load(fn func() ([]GroupsScenes, error)) error {
 	if r.Loaded() {
 		return nil
 	}
@@ -177,7 +177,7 @@ func (r *RelatedMovies) load(fn func() ([]MoviesScenes, error)) error {
 	}
 
 	if ids == nil {
-		ids = []MoviesScenes{}
+		ids = []GroupsScenes{}
 	}
 
 	r.list = ids

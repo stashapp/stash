@@ -588,30 +588,30 @@ func (t *orderedValueTable[T]) modifyJoins(ctx context.Context, id int, v []T, m
 	return nil
 }
 
-type scenesMoviesTable struct {
+type scenesGroupsTable struct {
 	table
 }
 
-type moviesScenesRow struct {
+type groupsScenesRow struct {
 	SceneID    null.Int `db:"scene_id"`
-	MovieID    null.Int `db:"movie_id"`
+	GroupID    null.Int `db:"movie_id"`
 	SceneIndex null.Int `db:"scene_index"`
 }
 
-func (r moviesScenesRow) resolve(sceneID int) models.MoviesScenes {
-	return models.MoviesScenes{
-		MovieID:    int(r.MovieID.Int64),
+func (r groupsScenesRow) resolve(sceneID int) models.GroupsScenes {
+	return models.GroupsScenes{
+		GroupID:    int(r.GroupID.Int64),
 		SceneIndex: nullIntPtr(r.SceneIndex),
 	}
 }
 
-func (t *scenesMoviesTable) get(ctx context.Context, id int) ([]models.MoviesScenes, error) {
+func (t *scenesGroupsTable) get(ctx context.Context, id int) ([]models.GroupsScenes, error) {
 	q := dialect.Select("movie_id", "scene_index").From(t.table.table).Where(t.idColumn.Eq(id))
 
 	const single = false
-	var ret []models.MoviesScenes
+	var ret []models.GroupsScenes
 	if err := queryFunc(ctx, q, single, func(rows *sqlx.Rows) error {
-		var v moviesScenesRow
+		var v groupsScenesRow
 		if err := rows.StructScan(&v); err != nil {
 			return err
 		}
@@ -620,15 +620,15 @@ func (t *scenesMoviesTable) get(ctx context.Context, id int) ([]models.MoviesSce
 
 		return nil
 	}); err != nil {
-		return nil, fmt.Errorf("getting scene movies from %s: %w", t.table.table.GetTable(), err)
+		return nil, fmt.Errorf("getting scene groups from %s: %w", t.table.table.GetTable(), err)
 	}
 
 	return ret, nil
 }
 
-func (t *scenesMoviesTable) insertJoin(ctx context.Context, id int, v models.MoviesScenes) (sql.Result, error) {
+func (t *scenesGroupsTable) insertJoin(ctx context.Context, id int, v models.GroupsScenes) (sql.Result, error) {
 	q := dialect.Insert(t.table.table).Cols(t.idColumn.GetCol(), "movie_id", "scene_index").Vals(
-		goqu.Vals{id, v.MovieID, intFromPtr(v.SceneIndex)},
+		goqu.Vals{id, v.GroupID, intFromPtr(v.SceneIndex)},
 	)
 	ret, err := exec(ctx, q)
 	if err != nil {
@@ -638,7 +638,7 @@ func (t *scenesMoviesTable) insertJoin(ctx context.Context, id int, v models.Mov
 	return ret, nil
 }
 
-func (t *scenesMoviesTable) insertJoins(ctx context.Context, id int, v []models.MoviesScenes) error {
+func (t *scenesGroupsTable) insertJoins(ctx context.Context, id int, v []models.GroupsScenes) error {
 	for _, fk := range v {
 		if _, err := t.insertJoin(ctx, id, fk); err != nil {
 			return err
@@ -648,7 +648,7 @@ func (t *scenesMoviesTable) insertJoins(ctx context.Context, id int, v []models.
 	return nil
 }
 
-func (t *scenesMoviesTable) replaceJoins(ctx context.Context, id int, v []models.MoviesScenes) error {
+func (t *scenesGroupsTable) replaceJoins(ctx context.Context, id int, v []models.GroupsScenes) error {
 	if err := t.destroy(ctx, []int{id}); err != nil {
 		return err
 	}
@@ -656,7 +656,7 @@ func (t *scenesMoviesTable) replaceJoins(ctx context.Context, id int, v []models
 	return t.insertJoins(ctx, id, v)
 }
 
-func (t *scenesMoviesTable) addJoins(ctx context.Context, id int, v []models.MoviesScenes) error {
+func (t *scenesGroupsTable) addJoins(ctx context.Context, id int, v []models.GroupsScenes) error {
 	// get existing foreign keys
 	fks, err := t.get(ctx, id)
 	if err != nil {
@@ -664,12 +664,12 @@ func (t *scenesMoviesTable) addJoins(ctx context.Context, id int, v []models.Mov
 	}
 
 	// only add values that are not already present
-	var filtered []models.MoviesScenes
+	var filtered []models.GroupsScenes
 	for _, vv := range v {
 		found := false
 
 		for _, e := range fks {
-			if vv.MovieID == e.MovieID {
+			if vv.GroupID == e.GroupID {
 				found = true
 				break
 			}
@@ -682,11 +682,11 @@ func (t *scenesMoviesTable) addJoins(ctx context.Context, id int, v []models.Mov
 	return t.insertJoins(ctx, id, filtered)
 }
 
-func (t *scenesMoviesTable) destroyJoins(ctx context.Context, id int, v []models.MoviesScenes) error {
+func (t *scenesGroupsTable) destroyJoins(ctx context.Context, id int, v []models.GroupsScenes) error {
 	for _, vv := range v {
 		q := dialect.Delete(t.table.table).Where(
 			t.idColumn.Eq(id),
-			t.table.table.Col("movie_id").Eq(vv.MovieID),
+			t.table.table.Col("movie_id").Eq(vv.GroupID),
 		)
 
 		if _, err := exec(ctx, q); err != nil {
@@ -697,7 +697,7 @@ func (t *scenesMoviesTable) destroyJoins(ctx context.Context, id int, v []models
 	return nil
 }
 
-func (t *scenesMoviesTable) modifyJoins(ctx context.Context, id int, v []models.MoviesScenes, mode models.RelationshipUpdateMode) error {
+func (t *scenesGroupsTable) modifyJoins(ctx context.Context, id int, v []models.GroupsScenes, mode models.RelationshipUpdateMode) error {
 	switch mode {
 	case models.RelationshipUpdateModeSet:
 		return t.replaceJoins(ctx, id, v)

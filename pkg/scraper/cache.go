@@ -84,7 +84,7 @@ type Repository struct {
 	GalleryFinder   GalleryFinder
 	TagFinder       TagFinder
 	PerformerFinder PerformerFinder
-	MovieFinder     match.MovieNamesFinder
+	GroupFinder     match.GroupNamesFinder
 	StudioFinder    StudioFinder
 }
 
@@ -95,7 +95,7 @@ func NewRepository(repo models.Repository) Repository {
 		GalleryFinder:   repo.Gallery,
 		TagFinder:       repo.Tag,
 		PerformerFinder: repo.Performer,
-		MovieFinder:     repo.Movie,
+		GroupFinder:     repo.Group,
 		StudioFinder:    repo.Studio,
 	}
 }
