@@ -596,3 +596,12 @@ button.btn.favorite-button {
 .external-links-button {
   display: inline-block;
 }
+
+.scraper-menu .dropdown-menu {
+  min-width: 250px;
+
+  .dropdown-divider {
+    border-top-color: $textfield-bg;
+    margin: 0;
+  }
+}

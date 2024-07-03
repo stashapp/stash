@@ -1,14 +1,6 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-import {
-  Button,
-  Dropdown,
-  DropdownButton,
-  Form,
-  Col,
-  Row,
-  ButtonGroup,
-} from "react-bootstrap";
+import { Button, Form, Col, Row, ButtonGroup } from "react-bootstrap";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
 import * as yup from "yup";
@@ -28,9 +20,8 @@ import { getStashIDs } from "src/utils/stashIds";
 import { useFormik } from "formik";
 import { Prompt } from "react-router-dom";
 import { ConfigurationContext } from "src/hooks/Config";
-import { stashboxDisplayName } from "src/utils/stashbox";
 import { IGroupEntry, SceneGroupTable } from "./SceneGroupTable";
-import { faSearch, faSyncAlt } from "@fortawesome/free-solid-svg-icons";
+import { faSearch } from "@fortawesome/free-solid-svg-icons";
 import { objectTitle } from "src/core/files";
 import { galleryTitle } from "src/core/galleries";
 import { lazyComponent } from "src/utils/lazyComponent";
@@ -49,6 +40,7 @@ import { Studio, StudioSelect } from "src/components/Studios/StudioSelect";
 import { Gallery, GallerySelect } from "src/components/Galleries/GallerySelect";
 import { Group } from "src/components/Groups/GroupSelect";
 import { useTagsEdit } from "src/hooks/tagsEdit";
+import { ScraperMenu } from "src/components/Shared/ScraperMenu";
 
 const SceneScrapeDialog = lazyComponent(() => import("./SceneScrapeDialog"));
 const SceneQueryModal = lazyComponent(() => import("./SceneQueryModal"));
@@ -394,51 +386,6 @@ export const SceneEditPanel: React.FC<IProps> = ({
     );
   }
 
-  function renderScrapeQueryMenu() {
-    const stashBoxes = stashConfig?.general.stashBoxes ?? [];
-
-    if (stashBoxes.length === 0 && queryableScrapers.length === 0) return;
-
-    return (
-      <Dropdown title={intl.formatMessage({ id: "actions.scrape_query" })}>
-        <Dropdown.Toggle variant="secondary">
-          <Icon icon={faSearch} />
-        </Dropdown.Toggle>
-
-        <Dropdown.Menu>
-          {stashBoxes.map((s, index) => (
-            <Dropdown.Item
-              key={s.endpoint}
-              onClick={() =>
-                onScrapeQueryClicked({
-                  stash_box_endpoint: s.endpoint,
-                })
-              }
-            >
-              {stashboxDisplayName(s.name, index)}
-            </Dropdown.Item>
-          ))}
-          {queryableScrapers.map((s) => (
-            <Dropdown.Item
-              key={s.name}
-              onClick={() => onScrapeQueryClicked({ scraper_id: s.id })}
-            >
-              {s.name}
-            </Dropdown.Item>
-          ))}
-          <Dropdown.Item onClick={() => onReloadScrapers()}>
-            <span className="fa-icon">
-              <Icon icon={faSyncAlt} />
-            </span>
-            <span>
-              <FormattedMessage id="actions.reload_scrapers" />
-            </span>
-          </Dropdown.Item>
-        </Dropdown.Menu>
-      </Dropdown>
-    );
-  }
-
   function onSceneSelected(s: GQL.ScrapedSceneDataFragment) {
     if (!scraper) return;
 
@@ -467,47 +414,6 @@ export const SceneEditPanel: React.FC<IProps> = ({
       />
     );
   };
-
-  function renderScraperMenu() {
-    const stashBoxes = stashConfig?.general.stashBoxes ?? [];
-
-    return (
-      <DropdownButton
-        className="d-inline-block"
-        id="scene-scrape"
-        title={intl.formatMessage({ id: "actions.scrape_with" })}
-      >
-        {stashBoxes.map((s, index) => (
-          <Dropdown.Item
-            key={s.endpoint}
-            onClick={() =>
-              onScrapeClicked({
-                stash_box_endpoint: s.endpoint,
-              })
-            }
-          >
-            {stashboxDisplayName(s.name, index)}
-          </Dropdown.Item>
-        ))}
-        {fragmentScrapers.map((s) => (
-          <Dropdown.Item
-            key={s.name}
-            onClick={() => onScrapeClicked({ scraper_id: s.id })}
-          >
-            {s.name}
-          </Dropdown.Item>
-        ))}
-        <Dropdown.Item onClick={() => onReloadScrapers()}>
-          <span className="fa-icon">
-            <Icon icon={faSyncAlt} />
-          </span>
-          <span>
-            <FormattedMessage id="actions.reload_scrapers" />
-          </span>
-        </Dropdown.Item>
-      </DropdownButton>
-    );
-  }
 
   function urlScrapable(scrapedUrl: string): boolean {
     return (Scrapers?.data?.listScrapers ?? []).some((s) =>
@@ -801,8 +707,21 @@ export const SceneEditPanel: React.FC<IProps> = ({
           {!isNew && (
             <div className="ml-auto text-right d-flex">
               <ButtonGroup className="scraper-group">
-                {renderScraperMenu()}
-                {renderScrapeQueryMenu()}
+                <ScraperMenu
+                  toggle={intl.formatMessage({ id: "actions.scrape_with" })}
+                  stashBoxes={stashConfig?.general.stashBoxes ?? []}
+                  scrapers={fragmentScrapers}
+                  onScraperClicked={onScrapeClicked}
+                  onReloadScrapers={onReloadScrapers}
+                />
+                <ScraperMenu
+                  variant="secondary"
+                  toggle={<Icon icon={faSearch} />}
+                  stashBoxes={stashConfig?.general.stashBoxes ?? []}
+                  scrapers={queryableScrapers}
+                  onScraperClicked={onScrapeQueryClicked}
+                  onReloadScrapers={onReloadScrapers}
+                />
               </ButtonGroup>
             </div>
           )}
