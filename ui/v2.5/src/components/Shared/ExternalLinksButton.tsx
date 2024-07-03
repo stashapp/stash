@@ -59,7 +59,7 @@ export const ExternalLinkButtons: React.FC<{ urls: string[] | undefined }> = ({
     }
 
     const twitter = urls.filter((u) =>
-      u.match(/https?:\/\/(?:www\.)?twitter.com\//)
+      u.match(/https?:\/\/(?:www\.)?(?:twitter|x).com\//)
     );
     const instagram = urls.filter((u) =>
       u.match(/https?:\/\/(?:www\.)?instagram.com\//)
