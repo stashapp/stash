@@ -442,56 +442,6 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
     );
   }
 
-  function maybeRenderDetails() {
-    if (!isEditing) {
-      return (
-        <TagDetailsPanel
-          tag={tag}
-          fullWidth={!collapsed && !compactExpandedDetails}
-        />
-      );
-    }
-  }
-
-  function maybeRenderEditPanel() {
-    if (isEditing) {
-      return (
-        <TagEditPanel
-          tag={tag}
-          onSubmit={onSave}
-          onCancel={() => toggleEditing()}
-          onDelete={onDelete}
-          setImage={setImage}
-          setEncodingImage={setEncodingImage}
-        />
-      );
-    }
-    {
-      return (
-        <DetailsEditNavbar
-          objectName={tag.name}
-          isNew={false}
-          isEditing={isEditing}
-          onToggleEdit={() => toggleEditing()}
-          onSave={() => {}}
-          onImageChange={() => {}}
-          onClearImage={() => {}}
-          onAutoTag={onAutoTag}
-          autoTagDisabled={tag.ignore_auto_tag}
-          onDelete={onDelete}
-          classNames="mb-2"
-          customButtons={renderMergeButton()}
-        />
-      );
-    }
-  }
-
-  function maybeRenderCompressedDetails() {
-    if (!isEditing && loadStickyHeader) {
-      return <CompressedTagDetailsPanel tag={tag} />;
-    }
-  }
-
   const headerClassName = cx("detail-header", {
     edit: isEditing,
     collapsed,
@@ -533,13 +483,46 @@ const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
               </DetailTitle>
 
               <AliasList aliases={tag.aliases} />
-              {maybeRenderDetails()}
-              {maybeRenderEditPanel()}
+              {!isEditing && (
+                <TagDetailsPanel
+                  tag={tag}
+                  fullWidth={!collapsed && !compactExpandedDetails}
+                />
+              )}
+              {isEditing ? (
+                <TagEditPanel
+                  tag={tag}
+                  onSubmit={onSave}
+                  onCancel={() => toggleEditing()}
+                  onDelete={onDelete}
+                  setImage={setImage}
+                  setEncodingImage={setEncodingImage}
+                />
+              ) : (
+                <DetailsEditNavbar
+                  objectName={tag.name}
+                  isNew={false}
+                  isEditing={isEditing}
+                  onToggleEdit={() => toggleEditing()}
+                  onSave={() => {}}
+                  onImageChange={() => {}}
+                  onClearImage={() => {}}
+                  onAutoTag={onAutoTag}
+                  autoTagDisabled={tag.ignore_auto_tag}
+                  onDelete={onDelete}
+                  classNames="mb-2"
+                  customButtons={renderMergeButton()}
+                />
+              )}
             </div>
           </div>
         </div>
       </div>
-      {maybeRenderCompressedDetails()}
+
+      {!isEditing && loadStickyHeader && (
+        <CompressedTagDetailsPanel tag={tag} />
+      )}
+
       <div className="detail-body">
         <div className="tag-body">
           <div className="tag-tabs">

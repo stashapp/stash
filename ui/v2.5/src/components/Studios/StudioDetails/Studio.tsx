@@ -385,55 +385,6 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
     }
   }
 
-  function maybeRenderDetails() {
-    if (!isEditing) {
-      return (
-        <StudioDetailsPanel
-          studio={studio}
-          collapsed={collapsed}
-          fullWidth={!collapsed && !compactExpandedDetails}
-        />
-      );
-    }
-  }
-
-  function maybeRenderCompressedDetails() {
-    if (!isEditing && loadStickyHeader) {
-      return <CompressedStudioDetailsPanel studio={studio} />;
-    }
-  }
-
-  function maybeRenderEditPanel() {
-    if (isEditing) {
-      return (
-        <StudioEditPanel
-          studio={studio}
-          onSubmit={onSave}
-          onCancel={() => toggleEditing()}
-          onDelete={onDelete}
-          setImage={setImage}
-          setEncodingImage={setEncodingImage}
-        />
-      );
-    }
-    {
-      return (
-        <DetailsEditNavbar
-          objectName={studio.name ?? intl.formatMessage({ id: "studio" })}
-          isNew={false}
-          isEditing={isEditing}
-          onToggleEdit={() => toggleEditing()}
-          onSave={() => {}}
-          onImageChange={() => {}}
-          onClearImage={() => {}}
-          onAutoTag={onAutoTag}
-          autoTagDisabled={studio.ignore_auto_tag}
-          onDelete={onDelete}
-        />
-      );
-    }
-  }
-
   const headerClassName = cx("detail-header", {
     edit: isEditing,
     collapsed,
@@ -486,13 +437,47 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
                 clickToRate
                 withoutContext
               />
-              {maybeRenderDetails()}
-              {maybeRenderEditPanel()}
+              {!isEditing && (
+                <StudioDetailsPanel
+                  studio={studio}
+                  collapsed={collapsed}
+                  fullWidth={!collapsed && !compactExpandedDetails}
+                />
+              )}
+              {isEditing ? (
+                <StudioEditPanel
+                  studio={studio}
+                  onSubmit={onSave}
+                  onCancel={() => toggleEditing()}
+                  onDelete={onDelete}
+                  setImage={setImage}
+                  setEncodingImage={setEncodingImage}
+                />
+              ) : (
+                <DetailsEditNavbar
+                  objectName={
+                    studio.name ?? intl.formatMessage({ id: "studio" })
+                  }
+                  isNew={false}
+                  isEditing={isEditing}
+                  onToggleEdit={() => toggleEditing()}
+                  onSave={() => {}}
+                  onImageChange={() => {}}
+                  onClearImage={() => {}}
+                  onAutoTag={onAutoTag}
+                  autoTagDisabled={studio.ignore_auto_tag}
+                  onDelete={onDelete}
+                />
+              )}
             </div>
           </div>
         </div>
       </div>
-      {maybeRenderCompressedDetails()}
+
+      {!isEditing && loadStickyHeader && (
+        <CompressedStudioDetailsPanel studio={studio} />
+      )}
+
       <div className="detail-body">
         <div className="studio-body">
           <div className="studio-tabs">

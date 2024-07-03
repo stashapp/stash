@@ -232,53 +232,6 @@ const GroupPage: React.FC<IProps> = ({ group }) => {
 
   const renderTabs = () => <GroupScenesPanel active={true} group={group} />;
 
-  function maybeRenderDetails() {
-    if (!isEditing) {
-      return (
-        <GroupDetailsPanel
-          group={group}
-          collapsed={collapsed}
-          fullWidth={!collapsed && !compactExpandedDetails}
-        />
-      );
-    }
-  }
-
-  function maybeRenderEditPanel() {
-    if (isEditing) {
-      return (
-        <GroupEditPanel
-          group={group}
-          onSubmit={onSave}
-          onCancel={() => toggleEditing()}
-          onDelete={onDelete}
-          setFrontImage={setFrontImage}
-          setBackImage={setBackImage}
-          setEncodingImage={setEncodingImage}
-        />
-      );
-    }
-    {
-      return (
-        <DetailsEditNavbar
-          objectName={group.name}
-          isNew={false}
-          isEditing={isEditing}
-          onToggleEdit={() => toggleEditing()}
-          onSave={() => {}}
-          onImageChange={() => {}}
-          onDelete={onDelete}
-        />
-      );
-    }
-  }
-
-  function maybeRenderCompressedDetails() {
-    if (!isEditing && loadStickyHeader) {
-      return <CompressedGroupDetailsPanel group={group} />;
-    }
-  }
-
   function maybeRenderTab() {
     if (!isEditing) {
       return renderTabs();
@@ -332,9 +285,7 @@ const GroupPage: React.FC<IProps> = ({ group }) => {
                   />
                 )}
                 <span className="name-icons">
-                  {group.urls.length > 0 && (
-                    <ExternalLinksButton urls={group.urls} />
-                  )}
+                  <ExternalLinksButton urls={group.urls} />
                 </span>
               </DetailTitle>
 
@@ -345,13 +296,43 @@ const GroupPage: React.FC<IProps> = ({ group }) => {
                 clickToRate
                 withoutContext
               />
-              {maybeRenderDetails()}
-              {maybeRenderEditPanel()}
+              {!isEditing && (
+                <GroupDetailsPanel
+                  group={group}
+                  collapsed={collapsed}
+                  fullWidth={!collapsed && !compactExpandedDetails}
+                />
+              )}
+              {isEditing ? (
+                <GroupEditPanel
+                  group={group}
+                  onSubmit={onSave}
+                  onCancel={() => toggleEditing()}
+                  onDelete={onDelete}
+                  setFrontImage={setFrontImage}
+                  setBackImage={setBackImage}
+                  setEncodingImage={setEncodingImage}
+                />
+              ) : (
+                <DetailsEditNavbar
+                  objectName={group.name}
+                  isNew={false}
+                  isEditing={isEditing}
+                  onToggleEdit={() => toggleEditing()}
+                  onSave={() => {}}
+                  onImageChange={() => {}}
+                  onDelete={onDelete}
+                />
+              )}
             </div>
           </div>
         </div>
       </div>
-      {maybeRenderCompressedDetails()}
+
+      {!isEditing && loadStickyHeader && (
+        <CompressedGroupDetailsPanel group={group} />
+      )}
+
       <div className="detail-body">
         <div className="group-body">
           <div className="group-tabs">{maybeRenderTab()}</div>

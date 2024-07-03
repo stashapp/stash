@@ -308,66 +308,6 @@ const PerformerPage: React.FC<IProps> = ({ performer, tabKey }) => {
     setImage(undefined);
   }
 
-  function maybeRenderEditPanel() {
-    if (isEditing) {
-      return (
-        <PerformerEditPanel
-          performer={performer}
-          isVisible={isEditing}
-          onSubmit={onSave}
-          onCancel={() => toggleEditing()}
-          setImage={setImage}
-          setEncodingImage={setEncodingImage}
-        />
-      );
-    }
-    {
-      return (
-        <Col>
-          <Row xs={8}>
-            <DetailsEditNavbar
-              objectName={
-                performer?.name ?? intl.formatMessage({ id: "performer" })
-              }
-              onToggleEdit={() => toggleEditing()}
-              onDelete={onDelete}
-              onAutoTag={onAutoTag}
-              autoTagDisabled={performer.ignore_auto_tag}
-              isNew={false}
-              isEditing={false}
-              onSave={() => {}}
-              onImageChange={() => {}}
-              classNames="mb-2"
-              customButtons={
-                <div>
-                  <PerformerSubmitButton performer={performer} />
-                </div>
-              }
-            ></DetailsEditNavbar>
-          </Row>
-        </Col>
-      );
-    }
-  }
-
-  function maybeRenderDetails() {
-    if (!isEditing) {
-      return (
-        <PerformerDetailsPanel
-          performer={performer}
-          collapsed={collapsed}
-          fullWidth={!collapsed && !compactExpandedDetails}
-        />
-      );
-    }
-  }
-
-  function maybeRenderCompressedDetails() {
-    if (!isEditing && loadStickyHeader) {
-      return <CompressedPerformerDetailsPanel performer={performer} />;
-    }
-  }
-
   function setFavorite(v: boolean) {
     if (performer.id) {
       updatePerformer({
@@ -459,13 +399,57 @@ const PerformerPage: React.FC<IProps> = ({ performer, tabKey }) => {
                 clickToRate
                 withoutContext
               />
-              {maybeRenderDetails()}
-              {maybeRenderEditPanel()}
+              {!isEditing && (
+                <PerformerDetailsPanel
+                  performer={performer}
+                  collapsed={collapsed}
+                  fullWidth={!collapsed && !compactExpandedDetails}
+                />
+              )}
+              {isEditing ? (
+                <PerformerEditPanel
+                  performer={performer}
+                  isVisible={isEditing}
+                  onSubmit={onSave}
+                  onCancel={() => toggleEditing()}
+                  setImage={setImage}
+                  setEncodingImage={setEncodingImage}
+                />
+              ) : (
+                <Col>
+                  <Row xs={8}>
+                    <DetailsEditNavbar
+                      objectName={
+                        performer?.name ??
+                        intl.formatMessage({ id: "performer" })
+                      }
+                      onToggleEdit={() => toggleEditing()}
+                      onDelete={onDelete}
+                      onAutoTag={onAutoTag}
+                      autoTagDisabled={performer.ignore_auto_tag}
+                      isNew={false}
+                      isEditing={false}
+                      onSave={() => {}}
+                      onImageChange={() => {}}
+                      classNames="mb-2"
+                      customButtons={
+                        <div>
+                          <PerformerSubmitButton performer={performer} />
+                        </div>
+                      }
+                    ></DetailsEditNavbar>
+                  </Row>
+                </Col>
+              )}
             </div>
           </div>
         </div>
       </div>
-      {maybeRenderCompressedDetails()}
+
+      {!isEditing && loadStickyHeader && (
+        <CompressedPerformerDetailsPanel performer={performer} />
+      )}
+
       <div className="detail-body">
         <div className="performer-body">
           <div className="performer-tabs">
