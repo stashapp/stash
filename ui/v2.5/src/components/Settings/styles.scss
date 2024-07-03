@@ -248,6 +248,8 @@
 
   ul {
     margin-bottom: 0;
+    max-height: 100px;
+    overflow: auto;
     padding-left: 0;
   }
 

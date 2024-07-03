@@ -110,9 +110,6 @@ interface IURLList {
 }
 
 const URLList: React.FC<IURLList> = ({ urls }) => {
-  const maxCollapsedItems = 5;
-  const [expanded, setExpanded] = useState<boolean>(false);
-
   const items = useMemo(() => {
     function linkSite(url: string) {
       const u = new URL(url);
@@ -130,22 +127,8 @@ const URLList: React.FC<IURLList> = ({ urls }) => {
       );
     });
 
-    if (ret.length > maxCollapsedItems) {
-      if (!expanded) {
-        ret.length = maxCollapsedItems;
-      }
-
-      ret.push(
-        <li>
-          <Button onClick={() => setExpanded(!expanded)} variant="link">
-            {expanded ? "less" : "more"}
-          </Button>
-        </li>
-      );
-    }
-
     return ret;
-  }, [urls, expanded]);
+  }, [urls]);
 
   return <ul>{items}</ul>;
 };
