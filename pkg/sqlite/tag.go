@@ -424,7 +424,7 @@ func (qb *TagStore) FindByGalleryID(ctx context.Context, galleryID int) ([]*mode
 	return qb.queryTags(ctx, query, args)
 }
 
-func (qb *TagStore) FindByMovieID(ctx context.Context, movieID int) ([]*models.Tag, error) {
+func (qb *TagStore) FindByGroupID(ctx context.Context, movieID int) ([]*models.Tag, error) {
 	query := `
 		SELECT tags.* FROM tags
 		LEFT JOIN movies_tags as movies_join on movies_join.tag_id = tags.id
@@ -637,6 +637,7 @@ func (qb *TagStore) Query(ctx context.Context, tagFilter *models.TagFilterType, 
 var tagSortOptions = sortOptions{
 	"created_at",
 	"galleries_count",
+	"groups_count",
 	"id",
 	"images_count",
 	"movies_count",
@@ -684,7 +685,7 @@ func (qb *TagStore) getTagSort(query *queryBuilder, findFilter *models.FindFilte
 	case "studios_count":
 		sortQuery += getCountSort(tagTable, studiosTagsTable, tagIDColumn, direction)
 	case "movies_count", "groups_count":
-		sortQuery += getCountSort(tagTable, moviesTagsTable, tagIDColumn, direction)
+		sortQuery += getCountSort(tagTable, groupsTagsTable, tagIDColumn, direction)
 	default:
 		sortQuery += getSort(sort, direction, "tags")
 	}

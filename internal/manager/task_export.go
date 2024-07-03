@@ -301,7 +301,7 @@ func (t *ExportTask) populateMovieScenes(ctx context.Context) {
 	}
 
 	for _, m := range movies {
-		scenes, err := sceneReader.FindByMovieID(ctx, m.ID)
+		scenes, err := sceneReader.FindByGroupID(ctx, m.ID)
 		if err != nil {
 			logger.Errorf("[movies] <%s> failed to fetch scenes for movie: %v", m.Name, err)
 			continue
@@ -1142,7 +1142,7 @@ func (t *ExportTask) exportMovie(ctx context.Context, wg *sync.WaitGroup, jobCha
 			continue
 		}
 
-		tags, err := tagReader.FindByMovieID(ctx, m.ID)
+		tags, err := tagReader.FindByGroupID(ctx, m.ID)
 		if err != nil {
 			logger.Errorf("[movies] <%s> error getting image tag names: %v", m.Name, err)
 			continue

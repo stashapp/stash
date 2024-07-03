@@ -245,7 +245,7 @@ func TestImporterPreImportWithMovie(t *testing.T) {
 
 	err := i.PreImport(testCtx)
 	assert.Nil(t, err)
-	assert.Equal(t, existingMovieID, i.scene.Movies.List()[0].MovieID)
+	assert.Equal(t, existingMovieID, i.scene.Groups.List()[0].GroupID)
 
 	i.Input.Movies[0].MovieName = existingMovieErr
 	err = i.PreImport(testCtx)
@@ -285,7 +285,7 @@ func TestImporterPreImportWithMissingMovie(t *testing.T) {
 	i.MissingRefBehaviour = models.ImportMissingRefEnumCreate
 	err = i.PreImport(testCtx)
 	assert.Nil(t, err)
-	assert.Equal(t, existingMovieID, i.scene.Movies.List()[0].MovieID)
+	assert.Equal(t, existingMovieID, i.scene.Groups.List()[0].GroupID)
 
 	db.AssertExpectations(t)
 }

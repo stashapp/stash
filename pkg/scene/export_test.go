@@ -336,20 +336,20 @@ type sceneMoviesTestScenario struct {
 	err      bool
 }
 
-var validMovies = models.NewRelatedMovies([]models.MoviesScenes{
+var validMovies = models.NewRelatedGroups([]models.GroupsScenes{
 	{
-		MovieID:    validMovie1,
+		GroupID:    validMovie1,
 		SceneIndex: &movie1Scene,
 	},
 	{
-		MovieID:    validMovie2,
+		GroupID:    validMovie2,
 		SceneIndex: &movie2Scene,
 	},
 })
 
-var invalidMovies = models.NewRelatedMovies([]models.MoviesScenes{
+var invalidMovies = models.NewRelatedGroups([]models.GroupsScenes{
 	{
-		MovieID:    invalidMovie,
+		GroupID:    invalidMovie,
 		SceneIndex: &movie1Scene,
 	},
 })
@@ -358,7 +358,7 @@ var getSceneMoviesJSONScenarios = []sceneMoviesTestScenario{
 	{
 		models.Scene{
 			ID:     sceneID,
-			Movies: validMovies,
+			Groups: validMovies,
 		},
 		[]jsonschema.SceneMovie{
 			{
@@ -375,7 +375,7 @@ var getSceneMoviesJSONScenarios = []sceneMoviesTestScenario{
 	{
 		models.Scene{
 			ID:     noMoviesID,
-			Movies: models.NewRelatedMovies([]models.MoviesScenes{}),
+			Groups: models.NewRelatedGroups([]models.GroupsScenes{}),
 		},
 		nil,
 		false,
@@ -383,7 +383,7 @@ var getSceneMoviesJSONScenarios = []sceneMoviesTestScenario{
 	{
 		models.Scene{
 			ID:     errFindMovieID,
-			Movies: invalidMovies,
+			Groups: invalidMovies,
 		},
 		nil,
 		true,

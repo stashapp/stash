@@ -108,7 +108,7 @@ func (r *movieResolver) BackImagePath(ctx context.Context, obj *models.Group) (*
 
 func (r *movieResolver) SceneCount(ctx context.Context, obj *models.Group) (ret int, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		ret, err = r.repository.Scene.CountByMovieID(ctx, obj.ID)
+		ret, err = r.repository.Scene.CountByGroupID(ctx, obj.ID)
 		return err
 	}); err != nil {
 		return 0, err
@@ -120,7 +120,7 @@ func (r *movieResolver) SceneCount(ctx context.Context, obj *models.Group) (ret 
 func (r *movieResolver) Scenes(ctx context.Context, obj *models.Group) (ret []*models.Scene, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		var err error
-		ret, err = r.repository.Scene.FindByMovieID(ctx, obj.ID)
+		ret, err = r.repository.Scene.FindByGroupID(ctx, obj.ID)
 		return err
 	}); err != nil {
 		return nil, err

@@ -190,8 +190,8 @@ func (_m *SceneReaderWriter) CountByFileID(ctx context.Context, fileID models.Fi
 	return r0, r1
 }
 
-// CountByMovieID provides a mock function with given fields: ctx, movieID
-func (_m *SceneReaderWriter) CountByMovieID(ctx context.Context, movieID int) (int, error) {
+// CountByGroupID provides a mock function with given fields: ctx, movieID
+func (_m *SceneReaderWriter) CountByGroupID(ctx context.Context, movieID int) (int, error) {
 	ret := _m.Called(ctx, movieID)
 
 	var r0 int
@@ -589,8 +589,8 @@ func (_m *SceneReaderWriter) FindByGalleryID(ctx context.Context, performerID in
 	return r0, r1
 }
 
-// FindByMovieID provides a mock function with given fields: ctx, movieID
-func (_m *SceneReaderWriter) FindByMovieID(ctx context.Context, movieID int) ([]*models.Scene, error) {
+// FindByGroupID provides a mock function with given fields: ctx, movieID
+func (_m *SceneReaderWriter) FindByGroupID(ctx context.Context, movieID int) ([]*models.Scene, error) {
 	ret := _m.Called(ctx, movieID)
 
 	var r0 []*models.Scene
@@ -978,16 +978,16 @@ func (_m *SceneReaderWriter) GetManyViewDates(ctx context.Context, ids []int) ([
 	return r0, r1
 }
 
-// GetMovies provides a mock function with given fields: ctx, id
-func (_m *SceneReaderWriter) GetMovies(ctx context.Context, id int) ([]models.MoviesScenes, error) {
+// GetGroups provides a mock function with given fields: ctx, id
+func (_m *SceneReaderWriter) GetGroups(ctx context.Context, id int) ([]models.GroupsScenes, error) {
 	ret := _m.Called(ctx, id)
 
-	var r0 []models.MoviesScenes
-	if rf, ok := ret.Get(0).(func(context.Context, int) []models.MoviesScenes); ok {
+	var r0 []models.GroupsScenes
+	if rf, ok := ret.Get(0).(func(context.Context, int) []models.GroupsScenes); ok {
 		r0 = rf(ctx, id)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]models.MoviesScenes)
+			r0 = ret.Get(0).([]models.GroupsScenes)
 		}
 	}
 

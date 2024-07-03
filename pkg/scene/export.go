@@ -170,11 +170,11 @@ func GetDependentTagIDs(ctx context.Context, tags TagFinder, markerReader models
 // GetSceneMoviesJSON returns a slice of SceneMovie JSON representation objects
 // corresponding to the provided scene's scene movie relationships.
 func GetSceneMoviesJSON(ctx context.Context, movieReader models.GroupGetter, scene *models.Scene) ([]jsonschema.SceneMovie, error) {
-	sceneMovies := scene.Movies.List()
+	sceneMovies := scene.Groups.List()
 
 	var results []jsonschema.SceneMovie
 	for _, sceneMovie := range sceneMovies {
-		movie, err := movieReader.Find(ctx, sceneMovie.MovieID)
+		movie, err := movieReader.Find(ctx, sceneMovie.GroupID)
 		if err != nil {
 			return nil, fmt.Errorf("error getting movie: %v", err)
 		}
@@ -197,9 +197,9 @@ func GetSceneMoviesJSON(ctx context.Context, movieReader models.GroupGetter, sce
 func GetDependentMovieIDs(ctx context.Context, scene *models.Scene) ([]int, error) {
 	var ret []int
 
-	m := scene.Movies.List()
+	m := scene.Groups.List()
 	for _, mm := range m {
-		ret = append(ret, mm.MovieID)
+		ret = append(ret, mm.GroupID)
 	}
 
 	return ret, nil

@@ -266,8 +266,8 @@ func (_m *TagReaderWriter) FindByImageID(ctx context.Context, imageID int) ([]*m
 	return r0, r1
 }
 
-// FindByMovieID provides a mock function with given fields: ctx, movieID
-func (_m *TagReaderWriter) FindByMovieID(ctx context.Context, movieID int) ([]*models.Tag, error) {
+// FindByGroupID provides a mock function with given fields: ctx, movieID
+func (_m *TagReaderWriter) FindByGroupID(ctx context.Context, movieID int) ([]*models.Tag, error) {
 	ret := _m.Called(ctx, movieID)
 
 	var r0 []*models.Tag

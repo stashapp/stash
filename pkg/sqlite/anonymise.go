@@ -827,7 +827,7 @@ func (db *Anonymiser) anonymiseTags(ctx context.Context) error {
 
 func (db *Anonymiser) anonymiseMovies(ctx context.Context) error {
 	logger.Infof("Anonymising movies")
-	table := movieTableMgr.table
+	table := groupTableMgr.table
 	lastID := 0
 	total := 0
 	const logEvery = 10000
@@ -893,7 +893,7 @@ func (db *Anonymiser) anonymiseMovies(ctx context.Context) error {
 		}
 	}
 
-	if err := db.anonymiseURLs(ctx, goqu.T(movieURLsTable), "movie_id"); err != nil {
+	if err := db.anonymiseURLs(ctx, goqu.T(groupURLsTable), "movie_id"); err != nil {
 		return err
 	}
 

@@ -89,7 +89,7 @@ func (i *Importer) sceneJSONToScene(sceneJSON jsonschema.Scene) models.Scene {
 		PerformerIDs: models.NewRelatedIDs([]int{}),
 		TagIDs:       models.NewRelatedIDs([]int{}),
 		GalleryIDs:   models.NewRelatedIDs([]int{}),
-		Movies:       models.NewRelatedMovies([]models.MoviesScenes{}),
+		Groups:       models.NewRelatedGroups([]models.GroupsScenes{}),
 		StashIDs:     models.NewRelatedStashIDs(sceneJSON.StashIDs),
 	}
 
@@ -364,8 +364,8 @@ func (i *Importer) populateMovies(ctx context.Context) error {
 				movieID = movie.ID
 			}
 
-			toAdd := models.MoviesScenes{
-				MovieID: movieID,
+			toAdd := models.GroupsScenes{
+				GroupID: movieID,
 			}
 
 			if inputMovie.SceneIndex != 0 {
@@ -373,7 +373,7 @@ func (i *Importer) populateMovies(ctx context.Context) error {
 				toAdd.SceneIndex = &index
 			}
 
-			i.scene.Movies.Add(toAdd)
+			i.scene.Groups.Add(toAdd)
 		}
 	}
 

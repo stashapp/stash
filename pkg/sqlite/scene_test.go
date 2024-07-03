@@ -41,8 +41,8 @@ func loadSceneRelationships(ctx context.Context, expected models.Scene, actual *
 			return err
 		}
 	}
-	if expected.Movies.Loaded() {
-		if err := actual.LoadMovies(ctx, db.Scene); err != nil {
+	if expected.Groups.Loaded() {
+		if err := actual.LoadGroups(ctx, db.Scene); err != nil {
 			return err
 		}
 	}
@@ -120,13 +120,13 @@ func Test_sceneQueryBuilder_Create(t *testing.T) {
 				GalleryIDs:   models.NewRelatedIDs([]int{galleryIDs[galleryIdxWithScene]}),
 				TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithScene]}),
 				PerformerIDs: models.NewRelatedIDs([]int{performerIDs[performerIdx1WithScene], performerIDs[performerIdx1WithDupName]}),
-				Movies: models.NewRelatedMovies([]models.MoviesScenes{
+				Groups: models.NewRelatedGroups([]models.GroupsScenes{
 					{
-						MovieID:    movieIDs[movieIdxWithScene],
+						GroupID:    groupIDs[groupIdxWithScene],
 						SceneIndex: &sceneIndex,
 					},
 					{
-						MovieID:    movieIDs[movieIdxWithStudio],
+						GroupID:    groupIDs[groupIdxWithStudio],
 						SceneIndex: &sceneIndex2,
 					},
 				}),
@@ -165,13 +165,13 @@ func Test_sceneQueryBuilder_Create(t *testing.T) {
 				GalleryIDs:   models.NewRelatedIDs([]int{galleryIDs[galleryIdxWithScene]}),
 				TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithScene]}),
 				PerformerIDs: models.NewRelatedIDs([]int{performerIDs[performerIdx1WithScene], performerIDs[performerIdx1WithDupName]}),
-				Movies: models.NewRelatedMovies([]models.MoviesScenes{
+				Groups: models.NewRelatedGroups([]models.GroupsScenes{
 					{
-						MovieID:    movieIDs[movieIdxWithScene],
+						GroupID:    groupIDs[groupIdxWithScene],
 						SceneIndex: &sceneIndex,
 					},
 					{
-						MovieID:    movieIDs[movieIdxWithStudio],
+						GroupID:    groupIDs[groupIdxWithStudio],
 						SceneIndex: &sceneIndex2,
 					},
 				}),
@@ -219,11 +219,11 @@ func Test_sceneQueryBuilder_Create(t *testing.T) {
 			true,
 		},
 		{
-			"invalid movie id",
+			"invalid group id",
 			models.Scene{
-				Movies: models.NewRelatedMovies([]models.MoviesScenes{
+				Groups: models.NewRelatedGroups([]models.GroupsScenes{
 					{
-						MovieID:    invalidID,
+						GroupID:    invalidID,
 						SceneIndex: &sceneIndex,
 					},
 				}),
@@ -349,13 +349,13 @@ func Test_sceneQueryBuilder_Update(t *testing.T) {
 				GalleryIDs:   models.NewRelatedIDs([]int{galleryIDs[galleryIdxWithScene]}),
 				TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithScene]}),
 				PerformerIDs: models.NewRelatedIDs([]int{performerIDs[performerIdx1WithScene], performerIDs[performerIdx1WithDupName]}),
-				Movies: models.NewRelatedMovies([]models.MoviesScenes{
+				Groups: models.NewRelatedGroups([]models.GroupsScenes{
 					{
-						MovieID:    movieIDs[movieIdxWithScene],
+						GroupID:    groupIDs[groupIdxWithScene],
 						SceneIndex: &sceneIndex,
 					},
 					{
-						MovieID:    movieIDs[movieIdxWithStudio],
+						GroupID:    groupIDs[groupIdxWithStudio],
 						SceneIndex: &sceneIndex2,
 					},
 				}),
@@ -381,7 +381,7 @@ func Test_sceneQueryBuilder_Update(t *testing.T) {
 				GalleryIDs:   models.NewRelatedIDs([]int{}),
 				TagIDs:       models.NewRelatedIDs([]int{}),
 				PerformerIDs: models.NewRelatedIDs([]int{}),
-				Movies:       models.NewRelatedMovies([]models.MoviesScenes{}),
+				Groups:       models.NewRelatedGroups([]models.GroupsScenes{}),
 				StashIDs:     models.NewRelatedStashIDs([]models.StashID{}),
 			},
 			false,
@@ -411,10 +411,10 @@ func Test_sceneQueryBuilder_Update(t *testing.T) {
 			false,
 		},
 		{
-			"clear movies",
+			"clear groups",
 			&models.Scene{
-				ID:     sceneIDs[sceneIdxWithMovie],
-				Movies: models.NewRelatedMovies([]models.MoviesScenes{}),
+				ID:     sceneIDs[sceneIdxWithGroup],
+				Groups: models.NewRelatedGroups([]models.GroupsScenes{}),
 			},
 			false,
 		},
@@ -451,12 +451,12 @@ func Test_sceneQueryBuilder_Update(t *testing.T) {
 			true,
 		},
 		{
-			"invalid movie id",
+			"invalid group id",
 			&models.Scene{
 				ID: sceneIDs[sceneIdxWithSpacedName],
-				Movies: models.NewRelatedMovies([]models.MoviesScenes{
+				Groups: models.NewRelatedGroups([]models.GroupsScenes{
 					{
-						MovieID:    invalidID,
+						GroupID:    invalidID,
 						SceneIndex: &sceneIndex,
 					},
 				}),
@@ -573,14 +573,14 @@ func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 					IDs:  []int{performerIDs[performerIdx1WithScene], performerIDs[performerIdx1WithDupName]},
 					Mode: models.RelationshipUpdateModeSet,
 				},
-				MovieIDs: &models.UpdateMovieIDs{
-					Movies: []models.MoviesScenes{
+				GroupIDs: &models.UpdateGroupIDs{
+					Groups: []models.GroupsScenes{
 						{
-							MovieID:    movieIDs[movieIdxWithScene],
+							GroupID:    groupIDs[groupIdxWithScene],
 							SceneIndex: &sceneIndex,
 						},
 						{
-							MovieID:    movieIDs[movieIdxWithStudio],
+							GroupID:    groupIDs[groupIdxWithStudio],
 							SceneIndex: &sceneIndex2,
 						},
 					},
@@ -621,13 +621,13 @@ func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 				GalleryIDs:   models.NewRelatedIDs([]int{galleryIDs[galleryIdxWithScene]}),
 				TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithScene]}),
 				PerformerIDs: models.NewRelatedIDs([]int{performerIDs[performerIdx1WithScene], performerIDs[performerIdx1WithDupName]}),
-				Movies: models.NewRelatedMovies([]models.MoviesScenes{
+				Groups: models.NewRelatedGroups([]models.GroupsScenes{
 					{
-						MovieID:    movieIDs[movieIdxWithScene],
+						GroupID:    groupIDs[groupIdxWithScene],
 						SceneIndex: &sceneIndex,
 					},
 					{
-						MovieID:    movieIDs[movieIdxWithStudio],
+						GroupID:    groupIDs[groupIdxWithStudio],
 						SceneIndex: &sceneIndex2,
 					},
 				}),
@@ -658,7 +658,7 @@ func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 				GalleryIDs:   models.NewRelatedIDs([]int{}),
 				TagIDs:       models.NewRelatedIDs([]int{}),
 				PerformerIDs: models.NewRelatedIDs([]int{}),
-				Movies:       models.NewRelatedMovies([]models.MoviesScenes{}),
+				Groups:       models.NewRelatedGroups([]models.GroupsScenes{}),
 				StashIDs:     models.NewRelatedStashIDs([]models.StashID{}),
 				PlayDuration: getScenePlayDuration(sceneIdxWithSpacedName),
 				ResumeTime:   getSceneResumeTime(sceneIdxWithSpacedName),
@@ -727,13 +727,13 @@ func Test_sceneQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 		stashID1    = "stashid1"
 		stashID2    = "stashid2"
 
-		movieScenes = []models.MoviesScenes{
+		groupScenes = []models.GroupsScenes{
 			{
-				MovieID:    movieIDs[movieIdxWithDupName],
+				GroupID:    groupIDs[groupIdxWithDupName],
 				SceneIndex: &sceneIndex,
 			},
 			{
-				MovieID:    movieIDs[movieIdxWithStudio],
+				GroupID:    groupIDs[groupIdxWithStudio],
 				SceneIndex: &sceneIndex2,
 			},
 		}
@@ -863,40 +863,40 @@ func Test_sceneQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 			false,
 		},
 		{
-			"add movies",
-			sceneIDs[sceneIdxWithMovie],
+			"add groups",
+			sceneIDs[sceneIdxWithGroup],
 			models.ScenePartial{
-				MovieIDs: &models.UpdateMovieIDs{
-					Movies: movieScenes,
+				GroupIDs: &models.UpdateGroupIDs{
+					Groups: groupScenes,
 					Mode:   models.RelationshipUpdateModeAdd,
 				},
 			},
 			models.Scene{
-				Movies: models.NewRelatedMovies(append([]models.MoviesScenes{
+				Groups: models.NewRelatedGroups(append([]models.GroupsScenes{
 					{
-						MovieID: indexesToIDs(movieIDs, sceneMovies[sceneIdxWithMovie])[0],
+						GroupID: indexesToIDs(groupIDs, sceneGroups[sceneIdxWithGroup])[0],
 					},
-				}, movieScenes...)),
+				}, groupScenes...)),
 			},
 			false,
 		},
 		{
-			"add movies to empty",
+			"add groups to empty",
 			sceneIDs[sceneIdx1WithPerformer],
 			models.ScenePartial{
-				MovieIDs: &models.UpdateMovieIDs{
-					Movies: movieScenes,
+				GroupIDs: &models.UpdateGroupIDs{
+					Groups: groupScenes,
 					Mode:   models.RelationshipUpdateModeAdd,
 				},
 			},
 			models.Scene{
-				Movies: models.NewRelatedMovies([]models.MoviesScenes{
+				Groups: models.NewRelatedGroups([]models.GroupsScenes{
 					{
-						MovieID:    movieIDs[movieIdxWithDupName],
+						GroupID:    groupIDs[groupIdxWithDupName],
 						SceneIndex: &sceneIndex,
 					},
 					{
-						MovieID:    movieIDs[movieIdxWithStudio],
+						GroupID:    groupIDs[groupIdxWithStudio],
 						SceneIndex: &sceneIndex2,
 					},
 				}),
@@ -967,27 +967,27 @@ func Test_sceneQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 			false,
 		},
 		{
-			"add duplicate movies",
-			sceneIDs[sceneIdxWithMovie],
+			"add duplicate groups",
+			sceneIDs[sceneIdxWithGroup],
 			models.ScenePartial{
-				MovieIDs: &models.UpdateMovieIDs{
-					Movies: append([]models.MoviesScenes{
+				GroupIDs: &models.UpdateGroupIDs{
+					Groups: append([]models.GroupsScenes{
 						{
-							MovieID:    movieIDs[movieIdxWithScene],
+							GroupID:    groupIDs[groupIdxWithScene],
 							SceneIndex: &sceneIndex,
 						},
 					},
-						movieScenes...,
+						groupScenes...,
 					),
 					Mode: models.RelationshipUpdateModeAdd,
 				},
 			},
 			models.Scene{
-				Movies: models.NewRelatedMovies(append([]models.MoviesScenes{
+				Groups: models.NewRelatedGroups(append([]models.GroupsScenes{
 					{
-						MovieID: indexesToIDs(movieIDs, sceneMovies[sceneIdxWithMovie])[0],
+						GroupID: indexesToIDs(groupIDs, sceneGroups[sceneIdxWithGroup])[0],
 					},
-				}, movieScenes...)),
+				}, groupScenes...)),
 			},
 			false,
 		},
@@ -1044,13 +1044,13 @@ func Test_sceneQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 			true,
 		},
 		{
-			"add invalid movies",
-			sceneIDs[sceneIdxWithMovie],
+			"add invalid groups",
+			sceneIDs[sceneIdxWithGroup],
 			models.ScenePartial{
-				MovieIDs: &models.UpdateMovieIDs{
-					Movies: []models.MoviesScenes{
+				GroupIDs: &models.UpdateGroupIDs{
+					Groups: []models.GroupsScenes{
 						{
-							MovieID: invalidID,
+							GroupID: invalidID,
 						},
 					},
 					Mode: models.RelationshipUpdateModeAdd,
@@ -1102,20 +1102,20 @@ func Test_sceneQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 			false,
 		},
 		{
-			"remove movies",
-			sceneIDs[sceneIdxWithMovie],
+			"remove groups",
+			sceneIDs[sceneIdxWithGroup],
 			models.ScenePartial{
-				MovieIDs: &models.UpdateMovieIDs{
-					Movies: []models.MoviesScenes{
+				GroupIDs: &models.UpdateGroupIDs{
+					Groups: []models.GroupsScenes{
 						{
-							MovieID: movieIDs[movieIdxWithScene],
+							GroupID: groupIDs[groupIdxWithScene],
 						},
 					},
 					Mode: models.RelationshipUpdateModeRemove,
 				},
 			},
 			models.Scene{
-				Movies: models.NewRelatedMovies([]models.MoviesScenes{}),
+				Groups: models.NewRelatedGroups([]models.GroupsScenes{}),
 			},
 			false,
 		},
@@ -1176,22 +1176,22 @@ func Test_sceneQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 			false,
 		},
 		{
-			"remove unrelated movies",
-			sceneIDs[sceneIdxWithMovie],
+			"remove unrelated groups",
+			sceneIDs[sceneIdxWithGroup],
 			models.ScenePartial{
-				MovieIDs: &models.UpdateMovieIDs{
-					Movies: []models.MoviesScenes{
+				GroupIDs: &models.UpdateGroupIDs{
+					Groups: []models.GroupsScenes{
 						{
-							MovieID: movieIDs[movieIdxWithDupName],
+							GroupID: groupIDs[groupIdxWithDupName],
 						},
 					},
 					Mode: models.RelationshipUpdateModeRemove,
 				},
 			},
 			models.Scene{
-				Movies: models.NewRelatedMovies([]models.MoviesScenes{
+				Groups: models.NewRelatedGroups([]models.GroupsScenes{
 					{
-						MovieID: indexesToIDs(movieIDs, sceneMovies[sceneIdxWithMovie])[0],
+						GroupID: indexesToIDs(groupIDs, sceneGroups[sceneIdxWithGroup])[0],
 					},
 				}),
 			},
@@ -1257,9 +1257,9 @@ func Test_sceneQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 				assert.ElementsMatch(tt.want.GalleryIDs.List(), got.GalleryIDs.List())
 				assert.ElementsMatch(tt.want.GalleryIDs.List(), s.GalleryIDs.List())
 			}
-			if tt.partial.MovieIDs != nil {
-				assert.ElementsMatch(tt.want.Movies.List(), got.Movies.List())
-				assert.ElementsMatch(tt.want.Movies.List(), s.Movies.List())
+			if tt.partial.GroupIDs != nil {
+				assert.ElementsMatch(tt.want.Groups.List(), got.Groups.List())
+				assert.ElementsMatch(tt.want.Groups.List(), s.Groups.List())
 			}
 			if tt.partial.StashIDs != nil {
 				assert.ElementsMatch(tt.want.StashIDs.List(), got.StashIDs.List())
@@ -1467,9 +1467,9 @@ func Test_sceneQueryBuilder_Find(t *testing.T) {
 			false,
 		},
 		{
-			"with movies",
-			sceneIDs[sceneIdxWithMovie],
-			makeSceneWithID(sceneIdxWithMovie),
+			"with groups",
+			sceneIDs[sceneIdxWithGroup],
+			makeSceneWithID(sceneIdxWithGroup),
 			false,
 		},
 	}
@@ -1527,13 +1527,13 @@ func Test_sceneQueryBuilder_FindMany(t *testing.T) {
 				sceneIDs[sceneIdxWithGallery],
 				sceneIDs[sceneIdxWithTwoPerformers],
 				sceneIDs[sceneIdxWithTwoTags],
-				sceneIDs[sceneIdxWithMovie],
+				sceneIDs[sceneIdxWithGroup],
 			},
 			[]*models.Scene{
 				makeSceneWithID(sceneIdxWithGallery),
 				makeSceneWithID(sceneIdxWithTwoPerformers),
 				makeSceneWithID(sceneIdxWithTwoTags),
-				makeSceneWithID(sceneIdxWithMovie),
+				makeSceneWithID(sceneIdxWithGroup),
 			},
 			false,
 		},
@@ -1608,9 +1608,9 @@ func Test_sceneQueryBuilder_FindByChecksum(t *testing.T) {
 			false,
 		},
 		{
-			"with movies",
-			getChecksum(sceneIdxWithMovie),
-			[]*models.Scene{makeSceneWithID(sceneIdxWithMovie)},
+			"with groups",
+			getChecksum(sceneIdxWithGroup),
+			[]*models.Scene{makeSceneWithID(sceneIdxWithGroup)},
 			false,
 		},
 	}
@@ -1678,9 +1678,9 @@ func Test_sceneQueryBuilder_FindByOSHash(t *testing.T) {
 			false,
 		},
 		{
-			"with movies",
-			getOSHash(sceneIdxWithMovie),
-			[]*models.Scene{makeSceneWithID(sceneIdxWithMovie)},
+			"with groups",
+			getOSHash(sceneIdxWithGroup),
+			[]*models.Scene{makeSceneWithID(sceneIdxWithGroup)},
 			false,
 		},
 	}
@@ -1749,9 +1749,9 @@ func Test_sceneQueryBuilder_FindByPath(t *testing.T) {
 			false,
 		},
 		{
-			"with movies",
-			getPath(sceneIdxWithMovie),
-			[]*models.Scene{makeSceneWithID(sceneIdxWithMovie)},
+			"with groups",
+			getPath(sceneIdxWithGroup),
+			[]*models.Scene{makeSceneWithID(sceneIdxWithGroup)},
 			false,
 		},
 	}
@@ -2107,7 +2107,7 @@ func TestSceneQuery(t *testing.T) {
 				},
 			},
 			[]int{sceneIdxWithGallery},
-			[]int{sceneIdxWithMovie},
+			[]int{sceneIdxWithGroup},
 			false,
 		},
 		{
@@ -2120,7 +2120,7 @@ func TestSceneQuery(t *testing.T) {
 				},
 			},
 			[]int{sceneIdxWithGallery},
-			[]int{sceneIdxWithMovie},
+			[]int{sceneIdxWithGroup},
 			false,
 		},
 		// {
@@ -2133,7 +2133,7 @@ func TestSceneQuery(t *testing.T) {
 		// 		},
 		// 	},
 		// 	[]int{sceneIdxWithGallery},
-		// 	[]int{sceneIdxWithMovie},
+		// 	[]int{sceneIdxWithGroup},
 		// 	false,
 		// },
 		{
@@ -3108,7 +3108,7 @@ func TestSceneQueryIsMissingMovies(t *testing.T) {
 			IsMissing: &isMissing,
 		}
 
-		q := getSceneStringValue(sceneIdxWithMovie, titleField)
+		q := getSceneStringValue(sceneIdxWithGroup, titleField)
 		findFilter := models.FindFilterType{
 			Q: &q,
 		}
@@ -3122,7 +3122,7 @@ func TestSceneQueryIsMissingMovies(t *testing.T) {
 
 		// ensure non of the ids equal the one with movies
 		for _, scene := range scenes {
-			assert.NotEqual(t, sceneIDs[sceneIdxWithMovie], scene.ID)
+			assert.NotEqual(t, sceneIDs[sceneIdxWithGroup], scene.ID)
 		}
 
 		return nil
@@ -3878,7 +3878,7 @@ func TestSceneQueryMovies(t *testing.T) {
 		sqb := db.Scene
 		movieCriterion := models.MultiCriterionInput{
 			Value: []string{
-				strconv.Itoa(movieIDs[movieIdxWithScene]),
+				strconv.Itoa(groupIDs[groupIdxWithScene]),
 			},
 			Modifier: models.CriterionModifierIncludes,
 		}
@@ -3892,16 +3892,16 @@ func TestSceneQueryMovies(t *testing.T) {
 		assert.Len(t, scenes, 1)
 
 		// ensure id is correct
-		assert.Equal(t, sceneIDs[sceneIdxWithMovie], scenes[0].ID)
+		assert.Equal(t, sceneIDs[sceneIdxWithGroup], scenes[0].ID)
 
 		movieCriterion = models.MultiCriterionInput{
 			Value: []string{
-				strconv.Itoa(movieIDs[movieIdxWithScene]),
+				strconv.Itoa(groupIDs[groupIdxWithScene]),
 			},
 			Modifier: models.CriterionModifierExcludes,
 		}
 
-		q := getSceneStringValue(sceneIdxWithMovie, titleField)
+		q := getSceneStringValue(sceneIdxWithGroup, titleField)
 		findFilter := models.FindFilterType{
 			Q: &q,
 		}
@@ -4212,22 +4212,22 @@ func TestSceneCountByTagID(t *testing.T) {
 	})
 }
 
-func TestSceneCountByMovieID(t *testing.T) {
+func TestSceneCountByGroupID(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
 		sqb := db.Scene
 
-		sceneCount, err := sqb.CountByMovieID(ctx, movieIDs[movieIdxWithScene])
+		sceneCount, err := sqb.CountByGroupID(ctx, groupIDs[groupIdxWithScene])
 
 		if err != nil {
-			t.Errorf("error calling CountByMovieID: %s", err.Error())
+			t.Errorf("error calling CountByGroupID: %s", err.Error())
 		}
 
 		assert.Equal(t, 1, sceneCount)
 
-		sceneCount, err = sqb.CountByMovieID(ctx, 0)
+		sceneCount, err = sqb.CountByGroupID(ctx, 0)
 
 		if err != nil {
-			t.Errorf("error calling CountByMovieID: %s", err.Error())
+			t.Errorf("error calling CountByGroupID: %s", err.Error())
 		}
 
 		assert.Equal(t, 0, sceneCount)
@@ -4264,16 +4264,16 @@ func TestFindByMovieID(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
 		sqb := db.Scene
 
-		scenes, err := sqb.FindByMovieID(ctx, movieIDs[movieIdxWithScene])
+		scenes, err := sqb.FindByGroupID(ctx, groupIDs[groupIdxWithScene])
 
 		if err != nil {
 			t.Errorf("error calling FindByMovieID: %s", err.Error())
 		}
 
 		assert.Len(t, scenes, 1)
-		assert.Equal(t, sceneIDs[sceneIdxWithMovie], scenes[0].ID)
+		assert.Equal(t, sceneIDs[sceneIdxWithGroup], scenes[0].ID)
 
-		scenes, err = sqb.FindByMovieID(ctx, 0)
+		scenes, err = sqb.FindByGroupID(ctx, 0)
 
 		if err != nil {
 			t.Errorf("error calling FindByMovieID: %s", err.Error())
