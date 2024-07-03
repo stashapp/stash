@@ -228,14 +228,14 @@ func (r *sceneResolver) Groups(ctx context.Context, obj *models.Scene) (ret []*S
 	loader := loaders.From(ctx).GroupByID
 
 	for _, sm := range obj.Groups.List() {
-		movie, err := loader.Load(sm.GroupID)
+		group, err := loader.Load(sm.GroupID)
 		if err != nil {
 			return nil, err
 		}
 
 		sceneIdx := sm.SceneIndex
 		sceneGroup := &SceneGroup{
-			Group:      movie,
+			Group:      group,
 			SceneIndex: sceneIdx,
 		}
 

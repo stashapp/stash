@@ -24,22 +24,22 @@ func (r *queryResolver) FindGroup(ctx context.Context, id string) (ret *models.G
 	return ret, nil
 }
 
-func (r *queryResolver) FindGroups(ctx context.Context, movieFilter *models.GroupFilterType, filter *models.FindFilterType, ids []string) (ret *FindGroupsResultType, err error) {
+func (r *queryResolver) FindGroups(ctx context.Context, groupFilter *models.GroupFilterType, filter *models.FindFilterType, ids []string) (ret *FindGroupsResultType, err error) {
 	idInts, err := stringslice.StringSliceToIntSlice(ids)
 	if err != nil {
 		return nil, err
 	}
 
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		var movies []*models.Group
+		var groups []*models.Group
 		var err error
 		var total int
 
 		if len(idInts) > 0 {
-			movies, err = r.repository.Group.FindMany(ctx, idInts)
-			total = len(movies)
+			groups, err = r.repository.Group.FindMany(ctx, idInts)
+			total = len(groups)
 		} else {
-			movies, total, err = r.repository.Group.Query(ctx, movieFilter, filter)
+			groups, total, err = r.repository.Group.Query(ctx, groupFilter, filter)
 		}
 
 		if err != nil {
@@ -48,7 +48,7 @@ func (r *queryResolver) FindGroups(ctx context.Context, movieFilter *models.Grou
 
 		ret = &FindGroupsResultType{
 			Count:  total,
-			Groups: movies,
+			Groups: groups,
 		}
 		return nil
 	}); err != nil {

@@ -41,7 +41,7 @@ type Scene struct {
 	GalleryIDs   RelatedIDs      `json:"gallery_ids"`
 	TagIDs       RelatedIDs      `json:"tag_ids"`
 	PerformerIDs RelatedIDs      `json:"performer_ids"`
-	Groups       RelatedGroups   `json:"movies"`
+	Groups       RelatedGroups   `json:"groups"`
 	StashIDs     RelatedStashIDs `json:"stash_ids"`
 }
 

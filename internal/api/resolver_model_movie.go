@@ -8,7 +8,7 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
-func (r *movieResolver) Date(ctx context.Context, obj *models.Group) (*string, error) {
+func (r *groupResolver) Date(ctx context.Context, obj *models.Group) (*string, error) {
 	if obj.Date != nil {
 		result := obj.Date.String()
 		return &result, nil
@@ -16,11 +16,11 @@ func (r *movieResolver) Date(ctx context.Context, obj *models.Group) (*string, e
 	return nil, nil
 }
 
-func (r *movieResolver) Rating100(ctx context.Context, obj *models.Group) (*int, error) {
+func (r *groupResolver) Rating100(ctx context.Context, obj *models.Group) (*int, error) {
 	return obj.Rating, nil
 }
 
-func (r *movieResolver) URL(ctx context.Context, obj *models.Group) (*string, error) {
+func (r *groupResolver) URL(ctx context.Context, obj *models.Group) (*string, error) {
 	if !obj.URLs.Loaded() {
 		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 			return obj.LoadURLs(ctx, r.repository.Group)
@@ -37,7 +37,7 @@ func (r *movieResolver) URL(ctx context.Context, obj *models.Group) (*string, er
 	return &urls[0], nil
 }
 
-func (r *movieResolver) Urls(ctx context.Context, obj *models.Group) ([]string, error) {
+func (r *groupResolver) Urls(ctx context.Context, obj *models.Group) ([]string, error) {
 	if !obj.URLs.Loaded() {
 		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 			return obj.LoadURLs(ctx, r.repository.Group)
@@ -49,7 +49,7 @@ func (r *movieResolver) Urls(ctx context.Context, obj *models.Group) ([]string, 
 	return obj.URLs.List(), nil
 }
 
-func (r *movieResolver) Studio(ctx context.Context, obj *models.Group) (ret *models.Studio, err error) {
+func (r *groupResolver) Studio(ctx context.Context, obj *models.Group) (ret *models.Studio, err error) {
 	if obj.StudioID == nil {
 		return nil, nil
 	}
@@ -57,7 +57,7 @@ func (r *movieResolver) Studio(ctx context.Context, obj *models.Group) (ret *mod
 	return loaders.From(ctx).StudioByID.Load(*obj.StudioID)
 }
 
-func (r movieResolver) Tags(ctx context.Context, obj *models.Group) (ret []*models.Tag, err error) {
+func (r groupResolver) Tags(ctx context.Context, obj *models.Group) (ret []*models.Tag, err error) {
 	if !obj.TagIDs.Loaded() {
 		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 			return obj.LoadTagIDs(ctx, r.repository.Group)
@@ -71,7 +71,7 @@ func (r movieResolver) Tags(ctx context.Context, obj *models.Group) (ret []*mode
 	return ret, firstError(errs)
 }
 
-func (r *movieResolver) FrontImagePath(ctx context.Context, obj *models.Group) (*string, error) {
+func (r *groupResolver) FrontImagePath(ctx context.Context, obj *models.Group) (*string, error) {
 	var hasImage bool
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		var err error
@@ -86,7 +86,7 @@ func (r *movieResolver) FrontImagePath(ctx context.Context, obj *models.Group) (
 	return &imagePath, nil
 }
 
-func (r *movieResolver) BackImagePath(ctx context.Context, obj *models.Group) (*string, error) {
+func (r *groupResolver) BackImagePath(ctx context.Context, obj *models.Group) (*string, error) {
 	var hasImage bool
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		var err error
@@ -106,7 +106,7 @@ func (r *movieResolver) BackImagePath(ctx context.Context, obj *models.Group) (*
 	return &imagePath, nil
 }
 
-func (r *movieResolver) SceneCount(ctx context.Context, obj *models.Group) (ret int, err error) {
+func (r *groupResolver) SceneCount(ctx context.Context, obj *models.Group) (ret int, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		ret, err = r.repository.Scene.CountByGroupID(ctx, obj.ID)
 		return err
@@ -117,7 +117,7 @@ func (r *movieResolver) SceneCount(ctx context.Context, obj *models.Group) (ret 
 	return ret, nil
 }
 
-func (r *movieResolver) Scenes(ctx context.Context, obj *models.Group) (ret []*models.Scene, err error) {
+func (r *groupResolver) Scenes(ctx context.Context, obj *models.Group) (ret []*models.Scene, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		var err error
 		ret, err = r.repository.Scene.FindByGroupID(ctx, obj.ID)

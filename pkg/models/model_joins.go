@@ -51,7 +51,7 @@ func (u *UpdateGroupIDs) AddUnique(v GroupsScenes) {
 	u.Groups = append(u.Groups, v)
 }
 
-func MoviesScenesFromInput(input []SceneMovieInput) ([]GroupsScenes, error) {
+func GroupsScenesFromInput(input []SceneMovieInput) ([]GroupsScenes, error) {
 	ret := make([]GroupsScenes, len(input))
 
 	for i, v := range input {

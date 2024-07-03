@@ -31,15 +31,15 @@ func (r *queryResolver) FindMovies(ctx context.Context, movieFilter *models.Grou
 	}
 
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		var movies []*models.Group
+		var groups []*models.Group
 		var err error
 		var total int
 
 		if len(idInts) > 0 {
-			movies, err = r.repository.Group.FindMany(ctx, idInts)
-			total = len(movies)
+			groups, err = r.repository.Group.FindMany(ctx, idInts)
+			total = len(groups)
 		} else {
-			movies, total, err = r.repository.Group.Query(ctx, movieFilter, filter)
+			groups, total, err = r.repository.Group.Query(ctx, movieFilter, filter)
 		}
 
 		if err != nil {
@@ -48,7 +48,7 @@ func (r *queryResolver) FindMovies(ctx context.Context, movieFilter *models.Grou
 
 		ret = &FindMoviesResultType{
 			Count:  total,
-			Movies: movies,
+			Movies: groups,
 		}
 		return nil
 	}); err != nil {
