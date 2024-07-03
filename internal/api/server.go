@@ -209,7 +209,7 @@ func Initialize() (*Server, error) {
 	r.Mount("/scene", server.getSceneRoutes())
 	r.Mount("/image", server.getImageRoutes())
 	r.Mount("/studio", server.getStudioRoutes())
-	r.Mount("/movie", server.getMovieRoutes())
+	r.Mount("/group", server.getMovieRoutes())
 	r.Mount("/tag", server.getTagRoutes())
 	r.Mount("/downloads", server.getDownloadsRoutes())
 	r.Mount("/plugin", server.getPluginRoutes())

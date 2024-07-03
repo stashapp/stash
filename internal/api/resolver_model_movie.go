@@ -82,7 +82,7 @@ func (r *movieResolver) FrontImagePath(ctx context.Context, obj *models.Group) (
 	}
 
 	baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
-	imagePath := urlbuilders.NewMovieURLBuilder(baseURL, obj).GetMovieFrontImageURL(hasImage)
+	imagePath := urlbuilders.NewGroupURLBuilder(baseURL, obj).GetGroupFrontImageURL(hasImage)
 	return &imagePath, nil
 }
 
@@ -102,7 +102,7 @@ func (r *movieResolver) BackImagePath(ctx context.Context, obj *models.Group) (*
 	}
 
 	baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
-	imagePath := urlbuilders.NewMovieURLBuilder(baseURL, obj).GetMovieBackImageURL()
+	imagePath := urlbuilders.NewGroupURLBuilder(baseURL, obj).GetGroupBackImageURL()
 	return &imagePath, nil
 }
 
