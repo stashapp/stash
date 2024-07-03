@@ -9,7 +9,7 @@ import {
 import { ObjectScrapeResult, ScrapeResult } from "./scrapeResult";
 import { useIntl } from "react-intl";
 import { scrapedPerformerToCreateInput } from "src/core/performers";
-import { scrapedGroupToCreateInput } from "src/core/movies";
+import { scrapedGroupToCreateInput } from "src/core/groups";
 
 function useCreateObject<T>(
   entityTypeID: string,

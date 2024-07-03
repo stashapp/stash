@@ -2,7 +2,7 @@ import React, { useMemo } from "react";
 import { useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import { Form, Row, Col } from "react-bootstrap";
-import { Group, GroupSelect } from "src/components/Movies/MovieSelect";
+import { Group, GroupSelect } from "src/components/Groups/GroupSelect";
 import cx from "classnames";
 
 export type GroupSceneIndexMap = Map<string, number | undefined>;

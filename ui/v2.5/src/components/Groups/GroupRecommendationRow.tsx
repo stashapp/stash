@@ -2,7 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { useFindGroups } from "src/core/StashService";
 import Slider from "@ant-design/react-slick";
-import { GroupCard } from "./MovieCard";
+import { GroupCard } from "./GroupCard";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { getSlickSliderSettings } from "src/core/recommendations";
 import { RecommendationRow } from "../FrontPage/RecommendationRow";

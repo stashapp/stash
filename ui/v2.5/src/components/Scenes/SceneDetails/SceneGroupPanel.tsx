@@ -1,6 +1,6 @@
 import React from "react";
 import * as GQL from "src/core/generated-graphql";
-import { GroupCard } from "src/components/Movies/MovieCard";
+import { GroupCard } from "src/components/Groups/GroupCard";
 
 interface ISceneGroupPanelProps {
   scene: GQL.SceneDataFragment;

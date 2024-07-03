@@ -7,7 +7,7 @@ import { ConfigurationContext } from "src/hooks/Config";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { GalleryRecommendationRow } from "../Galleries/GalleryRecommendationRow";
 import { ImageRecommendationRow } from "../Images/ImageRecommendationRow";
-import { GroupRecommendationRow } from "../Movies/MovieRecommendationRow";
+import { GroupRecommendationRow } from "../Groups/GroupRecommendationRow";
 import { PerformerRecommendationRow } from "../Performers/PerformerRecommendationRow";
 import { SceneRecommendationRow } from "../Scenes/SceneRecommendationRow";
 import { StudioRecommendationRow } from "../Studios/StudioRecommendationRow";

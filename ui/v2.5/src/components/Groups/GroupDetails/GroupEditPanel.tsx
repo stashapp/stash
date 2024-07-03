@@ -15,7 +15,7 @@ import TextUtils from "src/utils/text";
 import ImageUtils from "src/utils/image";
 import { useFormik } from "formik";
 import { Prompt } from "react-router-dom";
-import { GroupScrapeDialog } from "./MovieScrapeDialog";
+import { GroupScrapeDialog } from "./GroupScrapeDialog";
 import isEqual from "lodash-es/isEqual";
 import { handleUnsavedChanges } from "src/utils/navigation";
 import { formikUtils } from "src/utils/form";

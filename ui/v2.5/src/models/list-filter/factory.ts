@@ -2,7 +2,7 @@ import { FilterMode } from "src/core/generated-graphql";
 import { ListFilterOptions } from "./filter-options";
 import { GalleryListFilterOptions } from "./galleries";
 import { ImageListFilterOptions } from "./images";
-import { GroupListFilterOptions } from "./movies";
+import { GroupListFilterOptions } from "./groups";
 import { PerformerListFilterOptions } from "./performers";
 import { SceneMarkerListFilterOptions } from "./scene-markers";
 import { SceneListFilterOptions } from "./scenes";

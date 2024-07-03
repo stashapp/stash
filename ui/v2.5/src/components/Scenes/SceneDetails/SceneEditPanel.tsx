@@ -29,7 +29,7 @@ import { useFormik } from "formik";
 import { Prompt } from "react-router-dom";
 import { ConfigurationContext } from "src/hooks/Config";
 import { stashboxDisplayName } from "src/utils/stashbox";
-import { IGroupEntry, SceneGroupTable } from "./SceneMovieTable";
+import { IGroupEntry, SceneGroupTable } from "./SceneGroupTable";
 import { faSearch, faSyncAlt } from "@fortawesome/free-solid-svg-icons";
 import { objectTitle } from "src/core/files";
 import { galleryTitle } from "src/core/galleries";
@@ -47,7 +47,7 @@ import {
 import { formikUtils } from "src/utils/form";
 import { Studio, StudioSelect } from "src/components/Studios/StudioSelect";
 import { Gallery, GallerySelect } from "src/components/Galleries/GallerySelect";
-import { Group } from "src/components/Movies/MovieSelect";
+import { Group } from "src/components/Groups/GroupSelect";
 import { useTagsEdit } from "src/hooks/tagsEdit";
 
 const SceneScrapeDialog = lazyComponent(() => import("./SceneScrapeDialog"));

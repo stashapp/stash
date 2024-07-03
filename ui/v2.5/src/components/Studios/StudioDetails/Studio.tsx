@@ -31,7 +31,7 @@ import {
   CompressedStudioDetailsPanel,
   StudioDetailsPanel,
 } from "./StudioDetailsPanel";
-import { StudioGroupsPanel } from "./StudioMoviesPanel";
+import { StudioGroupsPanel } from "./StudioGroupsPanel";
 import {
   faTrashAlt,
   faLink,

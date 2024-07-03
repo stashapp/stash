@@ -17,12 +17,12 @@ import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { useLightbox } from "src/hooks/Lightbox/hooks";
 import { ModalComponent } from "src/components/Shared/Modal";
 import { useToast } from "src/hooks/Toast";
-import { GroupScenesPanel } from "./MovieScenesPanel";
+import { GroupScenesPanel } from "./GroupScenesPanel";
 import {
   CompressedGroupDetailsPanel,
   GroupDetailsPanel,
-} from "./MovieDetailsPanel";
-import { GroupEditPanel } from "./MovieEditPanel";
+} from "./GroupDetailsPanel";
+import { GroupEditPanel } from "./GroupEditPanel";
 import {
   faChevronDown,
   faChevronUp,

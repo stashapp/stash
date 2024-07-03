@@ -28,7 +28,7 @@ import {
 } from "src/components/Shared/ScrapeDialog/createObjects";
 import { Tag } from "src/components/Tags/TagSelect";
 import { Studio } from "src/components/Studios/StudioSelect";
-import { Group } from "src/components/Movies/MovieSelect";
+import { Group } from "src/components/Groups/GroupSelect";
 import { useScrapedTags } from "src/components/Shared/ScrapeDialog/scrapedTags";
 
 interface ISceneScrapeDialogProps {
