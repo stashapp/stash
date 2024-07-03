@@ -116,16 +116,19 @@ const URLList: React.FC<IURLList> = ({ urls }) => {
       return `${u.protocol}//${u.host}`;
     }
 
-    const ret = urls.map((u) => {
-      const sanitised = TextUtils.sanitiseURL(u);
-      const siteURL = linkSite(sanitised!);
+    const ret = urls
+      .slice()
+      .sort()
+      .map((u) => {
+        const sanitised = TextUtils.sanitiseURL(u);
+        const siteURL = linkSite(sanitised!);
 
-      return (
-        <li key={u}>
-          <ExternalLink href={siteURL}>{sanitised}</ExternalLink>
-        </li>
-      );
-    });
+        return (
+          <li key={u}>
+            <ExternalLink href={siteURL}>{sanitised}</ExternalLink>
+          </li>
+        );
+      });
 
     return ret;
   }, [urls]);
