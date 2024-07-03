@@ -25,20 +25,35 @@ import {
 } from "./ScraperPackageManager";
 import { ExternalLink } from "../Shared/ExternalLink";
 import { ClearableInput } from "../Shared/ClearableInput";
+import { Counter } from "../Shared/Counter";
 
 const ScraperTable: React.FC<
   PropsWithChildren<{
     entityType: string;
+    count?: number;
   }>
-> = ({ entityType, children }) => {
+> = ({ entityType, count, children }) => {
   const intl = useIntl();
-  const title = intl.formatMessage(
-    { id: "config.scraping.entity_scrapers" },
-    { entityType: intl.formatMessage({ id: entityType }) }
-  );
+
+  const titleEl = useMemo(() => {
+    const title = intl.formatMessage(
+      { id: "config.scraping.entity_scrapers" },
+      { entityType: intl.formatMessage({ id: entityType }) }
+    );
+
+    if (count) {
+      return (
+        <span>
+          {title} <Counter count={count} />
+        </span>
+      );
+    }
+
+    return title;
+  }, [count, entityType, intl]);
 
   return (
-    <CollapseButton text={title}>
+    <CollapseButton text={titleEl}>
       <table className="scraper-table">
         <thead>
           <tr>
@@ -239,53 +254,73 @@ const ScrapersSection: React.FC = () => {
       </div>
 
       <div className="content">
-        <ScraperTable entityType="scene">
-          {filteredScrapers.scenes?.map((scraper) => (
-            <ScraperTableRow
-              key={scraper.id}
-              name={scraper.name}
-              entityType="scene"
-              supportedScrapes={scraper.scene?.supported_scrapes ?? []}
-              urls={scraper.scene?.urls ?? []}
-            />
-          ))}
-        </ScraperTable>
+        {!!filteredScrapers.scenes?.length && (
+          <ScraperTable
+            entityType="scene"
+            count={filteredScrapers.scenes?.length}
+          >
+            {filteredScrapers.scenes?.map((scraper) => (
+              <ScraperTableRow
+                key={scraper.id}
+                name={scraper.name}
+                entityType="scene"
+                supportedScrapes={scraper.scene?.supported_scrapes ?? []}
+                urls={scraper.scene?.urls ?? []}
+              />
+            ))}
+          </ScraperTable>
+        )}
 
-        <ScraperTable entityType="gallery">
-          {filteredScrapers.galleries?.map((scraper) => (
-            <ScraperTableRow
-              key={scraper.id}
-              name={scraper.name}
-              entityType="gallery"
-              supportedScrapes={scraper.gallery?.supported_scrapes ?? []}
-              urls={scraper.gallery?.urls ?? []}
-            />
-          ))}
-        </ScraperTable>
+        {!!filteredScrapers.galleries?.length && (
+          <ScraperTable
+            entityType="gallery"
+            count={filteredScrapers.galleries?.length}
+          >
+            {filteredScrapers.galleries?.map((scraper) => (
+              <ScraperTableRow
+                key={scraper.id}
+                name={scraper.name}
+                entityType="gallery"
+                supportedScrapes={scraper.gallery?.supported_scrapes ?? []}
+                urls={scraper.gallery?.urls ?? []}
+              />
+            ))}
+          </ScraperTable>
+        )}
 
-        <ScraperTable entityType="performer">
-          {filteredScrapers.performers?.map((scraper) => (
-            <ScraperTableRow
-              key={scraper.id}
-              name={scraper.name}
-              entityType="performer"
-              supportedScrapes={scraper.performer?.supported_scrapes ?? []}
-              urls={scraper.performer?.urls ?? []}
-            />
-          ))}
-        </ScraperTable>
+        {!!filteredScrapers.performers?.length && (
+          <ScraperTable
+            entityType="performer"
+            count={filteredScrapers.performers?.length}
+          >
+            {filteredScrapers.performers?.map((scraper) => (
+              <ScraperTableRow
+                key={scraper.id}
+                name={scraper.name}
+                entityType="performer"
+                supportedScrapes={scraper.performer?.supported_scrapes ?? []}
+                urls={scraper.performer?.urls ?? []}
+              />
+            ))}
+          </ScraperTable>
+        )}
 
-        <ScraperTable entityType="group">
-          {filteredScrapers.groups?.map((scraper) => (
-            <ScraperTableRow
-              key={scraper.id}
-              name={scraper.name}
-              entityType="group"
-              supportedScrapes={scraper.group?.supported_scrapes ?? []}
-              urls={scraper.group?.urls ?? []}
-            />
-          ))}
-        </ScraperTable>
+        {!!filteredScrapers.groups?.length && (
+          <ScraperTable
+            entityType="group"
+            count={filteredScrapers.groups?.length}
+          >
+            {filteredScrapers.groups?.map((scraper) => (
+              <ScraperTableRow
+                key={scraper.id}
+                name={scraper.name}
+                entityType="group"
+                supportedScrapes={scraper.group?.supported_scrapes ?? []}
+                urls={scraper.group?.urls ?? []}
+              />
+            ))}
+          </ScraperTable>
+        )}
       </div>
     </SettingSection>
   );
