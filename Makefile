@@ -379,9 +379,12 @@ fmt-ui-quick:
 # does not run tsc checks, as they are slow
 validate-ui-quick:
 	cd ui/v2.5 && \
-	yarn run eslint $$(git diff --name-only --relative --diff-filter d src | grep -e "\.tsx\?\$$") && \
-	yarn run stylelint $$(git diff --name-only --relative --diff-filter d src | grep "\.scss") && \
-	yarn run prettier --check $$(git diff --name-only --relative --diff-filter d . ../../graphql)
+	tsfiles=$$(git diff --name-only --relative --diff-filter d src | grep -e "\.tsx\?\$$"); \
+	scssfiles=$$(git diff --name-only --relative --diff-filter d src | grep "\.scss"); \
+	prettyfiles=$$(git diff --name-only --relative --diff-filter d . ../../graphql); \
+	if [ -n "$$tsfiles" ]; then yarn run eslint $$tsfiles; fi && \
+	if [ -n "$$scssfiles" ]; then yarn run stylelint $$scssfiles; fi && \
+	if [ -n "$$prettyfiles" ]; then yarn run prettier --check $$prettyfiles; fi
 
 # runs all of the backend PR-acceptance steps
 .PHONY: validate-backend
