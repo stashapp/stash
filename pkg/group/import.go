@@ -1,4 +1,4 @@
-package movie
+package group
 
 import (
 	"context"

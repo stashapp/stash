@@ -6,9 +6,9 @@ import (
 	"github.com/stashapp/stash/internal/api/loaders"
 	"github.com/stashapp/stash/internal/api/urlbuilders"
 	"github.com/stashapp/stash/pkg/gallery"
+	"github.com/stashapp/stash/pkg/group"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/movie"
 	"github.com/stashapp/stash/pkg/performer"
 	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/studio"
@@ -122,7 +122,7 @@ func (r *tagResolver) StudioCount(ctx context.Context, obj *models.Tag, depth *i
 
 func (r *tagResolver) GroupCount(ctx context.Context, obj *models.Tag, depth *int) (ret int, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		ret, err = movie.CountByTagID(ctx, r.repository.Group, obj.ID, depth)
+		ret, err = group.CountByTagID(ctx, r.repository.Group, obj.ID, depth)
 		return err
 	}); err != nil {
 		return 0, err
