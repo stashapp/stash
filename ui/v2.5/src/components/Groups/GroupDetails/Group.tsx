@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Button } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Helmet } from "react-helmet";
 import cx from "classnames";
@@ -14,7 +13,6 @@ import { useHistory, RouteComponentProps } from "react-router-dom";
 import { DetailsEditNavbar } from "src/components/Shared/DetailsEditNavbar";
 import { ErrorMessage } from "src/components/Shared/ErrorMessage";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
-import { useLightbox } from "src/hooks/Lightbox/hooks";
 import { ModalComponent } from "src/components/Shared/Modal";
 import { useToast } from "src/hooks/Toast";
 import { GroupScenesPanel } from "./GroupScenesPanel";
@@ -23,12 +21,7 @@ import {
   GroupDetailsPanel,
 } from "./GroupDetailsPanel";
 import { GroupEditPanel } from "./GroupEditPanel";
-import {
-  faChevronDown,
-  faChevronUp,
-  faTrashAlt,
-} from "@fortawesome/free-solid-svg-icons";
-import { Icon } from "src/components/Shared/Icon";
+import { faTrashAlt } from "@fortawesome/free-solid-svg-icons";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { ConfigurationContext } from "src/hooks/Config";
 import { DetailImage } from "src/components/Shared/DetailImage";
@@ -36,6 +29,12 @@ import { useRatingKeybinds } from "src/hooks/keybinds";
 import { useLoadStickyHeader } from "src/hooks/detailsPanel";
 import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
 import { ExternalLinksButton } from "src/components/Shared/ExternalLinksButton";
+import { BackgroundImage } from "src/components/Shared/DetailsPage/BackgroundImage";
+import { DetailTitle } from "src/components/Shared/DetailsPage/DetailTitle";
+import { ExpandCollapseButton } from "src/components/Shared/CollapseButton";
+import { AliasList } from "src/components/Shared/DetailsPage/AliasList";
+import { HeaderImage } from "src/components/Shared/DetailsPage/HeaderImage";
+import { LightboxLink } from "src/hooks/Lightbox/LightboxLink";
 
 interface IProps {
   group: GQL.GroupDataFragment;
@@ -69,42 +68,64 @@ const GroupPage: React.FC<IProps> = ({ group }) => {
   const [backImage, setBackImage] = useState<string | null>();
   const [encodingImage, setEncodingImage] = useState<boolean>(false);
 
-  const defaultImage =
-    group.front_image_path && group.front_image_path.includes("default=true")
-      ? true
-      : false;
+  const aliases = useMemo(
+    () => (group.aliases ? [group.aliases] : []),
+    [group.aliases]
+  );
+
+  const isDefaultImage =
+    group.front_image_path && group.front_image_path.includes("default=true");
 
   const lightboxImages = useMemo(() => {
-    const covers = [
-      ...(group.front_image_path && !defaultImage
-        ? [
-            {
-              paths: {
-                thumbnail: group.front_image_path,
-                image: group.front_image_path,
-              },
-            },
-          ]
-        : []),
-      ...(group.back_image_path
-        ? [
-            {
-              paths: {
-                thumbnail: group.back_image_path,
-                image: group.back_image_path,
-              },
-            },
-          ]
-        : []),
-    ];
+    const covers = [];
+
+    if (group.front_image_path && !isDefaultImage) {
+      covers.push({
+        paths: {
+          thumbnail: group.front_image_path,
+          image: group.front_image_path,
+        },
+      });
+    }
+
+    if (group.back_image_path) {
+      covers.push({
+        paths: {
+          thumbnail: group.back_image_path,
+          image: group.back_image_path,
+        },
+      });
+    }
     return covers;
-  }, [group.front_image_path, group.back_image_path, defaultImage]);
+  }, [group.front_image_path, group.back_image_path, isDefaultImage]);
 
-  const index = lightboxImages.length;
+  const activeFrontImage = useMemo(() => {
+    let existingImage = group.front_image_path;
+    if (isEditing) {
+      if (frontImage === null && existingImage) {
+        const imageURL = new URL(existingImage);
+        imageURL.searchParams.set("default", "true");
+        return imageURL.toString();
+      } else if (frontImage) {
+        return frontImage;
+      }
+    }
 
-  const showLightbox = useLightbox({
-    images: lightboxImages,
-  });
+    return existingImage;
+  }, [isEditing, group.front_image_path, frontImage]);
+
+  const activeBackImage = useMemo(() => {
+    let existingImage = group.back_image_path;
+    if (isEditing) {
+      if (backImage === null) {
+        return undefined;
+      } else if (backImage) {
+        return backImage;
+      }
+    }
+
+    return existingImage;
+  }, [isEditing, group.back_image_path, backImage]);
 
   const [updateGroup, { loading: updating }] = useGroupUpdate();
   const [deleteGroup, { loading: deleting }] = useGroupDestroy({
@@ -196,95 +217,6 @@ const GroupPage: React.FC<IProps> = ({ group }) => {
     );
   }
 
-  function getCollapseButtonIcon() {
-    return collapsed ? faChevronDown : faChevronUp;
-  }
-
-  function maybeRenderShowCollapseButton() {
-    if (!isEditing) {
-      return (
-        <span className="detail-expand-collapse">
-          <Button
-            className="minimal expand-collapse"
-            onClick={() => setCollapsed(!collapsed)}
-          >
-            <Icon className="fa-fw" icon={getCollapseButtonIcon()} />
-          </Button>
-        </span>
-      );
-    }
-  }
-
-  function renderFrontImage() {
-    let image = group.front_image_path;
-    if (isEditing) {
-      if (frontImage === null && image) {
-        const imageURL = new URL(image);
-        imageURL.searchParams.set("default", "true");
-        image = imageURL.toString();
-      } else if (frontImage) {
-        image = frontImage;
-      }
-    }
-
-    if (image && defaultImage) {
-      return (
-        <div className="group-image-container">
-          <DetailImage alt="Front Cover" src={image} />
-        </div>
-      );
-    } else if (image) {
-      return (
-        <Button
-          className="group-image-container"
-          variant="link"
-          onClick={() => showLightbox()}
-        >
-          <DetailImage alt="Front Cover" src={image} />
-        </Button>
-      );
-    }
-  }
-
-  function renderBackImage() {
-    let image = group.back_image_path;
-    if (isEditing) {
-      if (backImage === null) {
-        image = undefined;
-      } else if (backImage) {
-        image = backImage;
-      }
-    }
-
-    if (image) {
-      return (
-        <Button
-          className="group-image-container"
-          variant="link"
-          onClick={() => showLightbox(index - 1)}
-        >
-          <DetailImage alt="Back Cover" src={image} />
-        </Button>
-      );
-    }
-  }
-
-  const renderClickableIcons = () => (
-    <span className="name-icons">
-      {group.urls.length > 0 && <ExternalLinksButton urls={group.urls} />}
-    </span>
-  );
-
-  function maybeRenderAliases() {
-    if (group?.aliases) {
-      return (
-        <div>
-          <span className="alias-head">{group?.aliases}</span>
-        </div>
-      );
-    }
-  }
-
   function setRating(v: number | null) {
     if (group.id) {
       updateGroup({
@@ -299,75 +231,6 @@ const GroupPage: React.FC<IProps> = ({ group }) => {
   }
 
   const renderTabs = () => <GroupScenesPanel active={true} group={group} />;
-
-  function maybeRenderDetails() {
-    if (!isEditing) {
-      return (
-        <GroupDetailsPanel
-          group={group}
-          collapsed={collapsed}
-          fullWidth={!collapsed && !compactExpandedDetails}
-        />
-      );
-    }
-  }
-
-  function maybeRenderEditPanel() {
-    if (isEditing) {
-      return (
-        <GroupEditPanel
-          group={group}
-          onSubmit={onSave}
-          onCancel={() => toggleEditing()}
-          onDelete={onDelete}
-          setFrontImage={setFrontImage}
-          setBackImage={setBackImage}
-          setEncodingImage={setEncodingImage}
-        />
-      );
-    }
-    {
-      return (
-        <DetailsEditNavbar
-          objectName={group.name}
-          isNew={false}
-          isEditing={isEditing}
-          onToggleEdit={() => toggleEditing()}
-          onSave={() => {}}
-          onImageChange={() => {}}
-          onDelete={onDelete}
-        />
-      );
-    }
-  }
-
-  function maybeRenderCompressedDetails() {
-    if (!isEditing && loadStickyHeader) {
-      return <CompressedGroupDetailsPanel group={group} />;
-    }
-  }
-
-  function maybeRenderHeaderBackgroundImage() {
-    let image = group.front_image_path;
-    if (enableBackgroundImage && !isEditing && image) {
-      const imageURL = new URL(image);
-      let isDefaultImage = imageURL.searchParams.get("default");
-      if (!isDefaultImage) {
-        return (
-          <div className="background-image-container">
-            <picture>
-              <source src={image} />
-              <img
-                className="background-image"
-                src={image}
-                alt={`${group.name} background`}
-              />
-            </picture>
-          </div>
-        );
-      }
-    }
-  }
 
   function maybeRenderTab() {
     if (!isEditing) {
@@ -390,43 +253,86 @@ const GroupPage: React.FC<IProps> = ({ group }) => {
       </Helmet>
 
       <div className={headerClassName}>
-        {maybeRenderHeaderBackgroundImage()}
+        <BackgroundImage
+          imagePath={group.front_image_path ?? undefined}
+          show={!enableBackgroundImage && !isEditing}
+        />
         <div className="detail-container">
-          <div className="detail-header-image">
-            <div className="logo w-100">
-              {encodingImage ? (
-                <LoadingIndicator
-                  message={intl.formatMessage({ id: "actions.encoding_image" })}
-                />
-              ) : (
-                <div className="group-images">
-                  {renderFrontImage()}
-                  {renderBackImage()}
-                </div>
+          <HeaderImage encodingImage={encodingImage}>
+            <div className="group-images">
+              {!!activeFrontImage && (
+                <LightboxLink images={lightboxImages}>
+                  <DetailImage alt="Front Cover" src={activeFrontImage} />
+                </LightboxLink>
+              )}
+              {!!activeBackImage && (
+                <LightboxLink
+                  images={lightboxImages}
+                  index={lightboxImages.length - 1}
+                >
+                  <DetailImage alt="Back Cover" src={activeBackImage} />
+                </LightboxLink>
               )}
             </div>
-          </div>
+          </HeaderImage>
           <div className="row">
             <div className="group-head col">
-              <h2>
-                <span className="group-name">{group.name}</span>
-                {maybeRenderShowCollapseButton()}
-                {renderClickableIcons()}
-              </h2>
-              {maybeRenderAliases()}
+              <DetailTitle name={group.name} classNamePrefix="group">
+                {!isEditing && (
+                  <ExpandCollapseButton
+                    collapsed={collapsed}
+                    setCollapsed={(v) => setCollapsed(v)}
+                  />
+                )}
+                <span className="name-icons">
+                  <ExternalLinksButton urls={group.urls} />
+                </span>
+              </DetailTitle>
+
+              <AliasList aliases={aliases} />
               <RatingSystem
                 value={group.rating100}
                 onSetRating={(value) => setRating(value)}
                 clickToRate
                 withoutContext
               />
-              {maybeRenderDetails()}
-              {maybeRenderEditPanel()}
+              {!isEditing && (
+                <GroupDetailsPanel
+                  group={group}
+                  collapsed={collapsed}
+                  fullWidth={!collapsed && !compactExpandedDetails}
+                />
+              )}
+              {isEditing ? (
+                <GroupEditPanel
+                  group={group}
+                  onSubmit={onSave}
+                  onCancel={() => toggleEditing()}
+                  onDelete={onDelete}
+                  setFrontImage={setFrontImage}
+                  setBackImage={setBackImage}
+                  setEncodingImage={setEncodingImage}
+                />
+              ) : (
+                <DetailsEditNavbar
+                  objectName={group.name}
+                  isNew={false}
+                  isEditing={isEditing}
+                  onToggleEdit={() => toggleEditing()}
+                  onSave={() => {}}
+                  onImageChange={() => {}}
+                  onDelete={onDelete}
+                />
+              )}
             </div>
           </div>
         </div>
       </div>
-      {maybeRenderCompressedDetails()}
+
+      {!isEditing && loadStickyHeader && (
+        <CompressedGroupDetailsPanel group={group} />
+      )}
+
       <div className="detail-body">
         <div className="group-body">
           <div className="group-tabs">{maybeRenderTab()}</div>

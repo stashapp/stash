@@ -236,6 +236,8 @@ export const StudioCard: React.FC<IProps> = ({
         <FavoriteIcon
           favorite={studio.favorite}
           onToggleFavorite={(v) => onToggleFavorite(v)}
+          size="2x"
+          className="hide-not-favorite"
         />
       }
       popovers={maybeRenderPopoverButtonGroup()}

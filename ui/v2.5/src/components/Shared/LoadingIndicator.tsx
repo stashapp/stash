@@ -4,7 +4,7 @@ import cx from "classnames";
 import { useIntl } from "react-intl";
 
 interface ILoadingProps {
-  message?: string;
+  message?: JSX.Element | string;
   inline?: boolean;
   small?: boolean;
   card?: boolean;
