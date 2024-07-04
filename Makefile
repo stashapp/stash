@@ -372,6 +372,17 @@ fmt-ui:
 validate-ui:
 	cd ui/v2.5 && yarn run validate
 
+# these targets run the same steps as fmt-ui and validate-ui, but only on files that have changed
+fmt-ui-quick:
+	cd ui/v2.5 && yarn run prettier --write $$(git diff --name-only --relative --diff-filter d . ../../graphql)
+
+# does not run tsc checks, as they are slow
+validate-ui-quick:
+	cd ui/v2.5 && \
+	yarn run eslint $$(git diff --name-only --relative --diff-filter d src | grep -e "\.tsx\?\$$") && \
+	yarn run stylelint $$(git diff --name-only --relative --diff-filter d src | grep "\.scss") && \
+	yarn run prettier --check $$(git diff --name-only --relative --diff-filter d . ../../graphql)
+
 # runs all of the backend PR-acceptance steps
 .PHONY: validate-backend
 validate-backend: lint it
