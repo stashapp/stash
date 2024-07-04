@@ -13,12 +13,12 @@ import (
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/gallery"
+	"github.com/stashapp/stash/pkg/group"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
 	"github.com/stashapp/stash/pkg/models/paths"
-	"github.com/stashapp/stash/pkg/movie"
 	"github.com/stashapp/stash/pkg/performer"
 	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/studio"
@@ -351,7 +351,7 @@ func (t *ImportTask) ImportGroups(ctx context.Context) {
 		logger.Progressf("[groups] %d of %d", index, len(files))
 
 		if err := r.WithTxn(ctx, func(ctx context.Context) error {
-			groupImporter := &movie.Importer{
+			groupImporter := &group.Importer{
 				ReaderWriter:        r.Group,
 				StudioWriter:        r.Studio,
 				TagWriter:           r.Tag,

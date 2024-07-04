@@ -15,13 +15,13 @@ import (
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/gallery"
+	"github.com/stashapp/stash/pkg/group"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/json"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
 	"github.com/stashapp/stash/pkg/models/paths"
-	"github.com/stashapp/stash/pkg/movie"
 	"github.com/stashapp/stash/pkg/performer"
 	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/sliceutil"
@@ -1135,7 +1135,7 @@ func (t *ExportTask) exportGroup(ctx context.Context, wg *sync.WaitGroup, jobCha
 			continue
 		}
 
-		newGroupJSON, err := movie.ToJSON(ctx, groupReader, studioReader, m)
+		newGroupJSON, err := group.ToJSON(ctx, groupReader, studioReader, m)
 
 		if err != nil {
 			logger.Errorf("[groups] <%s> error getting tag JSON: %v", m.Name, err)

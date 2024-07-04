@@ -7,7 +7,7 @@ import (
 	"io/fs"
 )
 
-//go:embed performer performer_male scene image tag studio movie
+//go:embed performer performer_male scene image tag studio group
 var data embed.FS
 
 const (
@@ -26,8 +26,8 @@ const (
 	Studio             = "studio"
 	DefaultStudioImage = "studio/studio.svg"
 
-	Group             = "movie"
-	DefaultGroupImage = "movie/movie.png"
+	Group             = "group"
+	DefaultGroupImage = "group/group.png"
 )
 
 // Sub returns an FS rooted at path, using fs.Sub.
