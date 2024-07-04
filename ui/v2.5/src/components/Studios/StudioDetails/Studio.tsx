@@ -400,7 +400,7 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
       <div className={headerClassName}>
         <BackgroundImage
           imagePath={studio.image_path ?? undefined}
-          show={!enableBackgroundImage && !isEditing}
+          show={enableBackgroundImage && !isEditing}
         />
         <div className="detail-container">
           <HeaderImage encodingImage={encodingImage}>
