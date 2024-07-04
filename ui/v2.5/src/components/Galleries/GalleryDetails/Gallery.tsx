@@ -124,6 +124,7 @@ export const GalleryPage: React.FC<IProps> = ({ gallery, add }) => {
 
     await mutateMetadataScan({
       paths: [path],
+      rescan: true,
     });
 
     Toast.success(

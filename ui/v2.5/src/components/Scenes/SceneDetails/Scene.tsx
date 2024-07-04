@@ -297,6 +297,7 @@ const ScenePage: React.FC<IProps> = ({
   async function onRescan() {
     await mutateMetadataScan({
       paths: [objectPath(scene)],
+      rescan: true,
     });
 
     Toast.success(

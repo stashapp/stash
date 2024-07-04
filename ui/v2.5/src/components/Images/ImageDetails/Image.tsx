@@ -80,6 +80,7 @@ const ImagePage: React.FC<IProps> = ({ image }) => {
 
     await mutateMetadataScan({
       paths: [objectPath(image)],
+      rescan: true,
     });
 
     Toast.success(
