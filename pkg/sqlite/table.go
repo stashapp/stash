@@ -710,6 +710,42 @@ func (t *scenesGroupsTable) modifyJoins(ctx context.Context, id int, v []models.
 	return nil
 }
 
+type imageGalleriesTable struct {
+	joinTable
+}
+
+func (t *imageGalleriesTable) setCover(ctx context.Context, id int, galleryID int) error {
+	if err := t.resetCover(ctx, galleryID); err != nil {
+		return err
+	}
+
+	table := t.table.table
+
+	q := dialect.Update(table).Prepared(true).Set(goqu.Record{
+		"cover": true,
+	}).Where(t.idColumn.Eq(id), table.Col(galleryIDColumn).Eq(galleryID))
+
+	if _, err := exec(ctx, q); err != nil {
+		return fmt.Errorf("setting cover flag in %s: %w", t.table.table.GetTable(), err)
+	}
+
+	return nil
+}
+
+func (t *imageGalleriesTable) resetCover(ctx context.Context, galleryID int) error {
+	table := t.table.table
+
+	q := dialect.Update(table).Prepared(true).Set(goqu.Record{
+		"cover": false,
+	}).Where(table.Col(galleryIDColumn).Eq(galleryID))
+
+	if _, err := exec(ctx, q); err != nil {
+		return fmt.Errorf("unsetting cover flags in %s: %w", t.table.table.GetTable(), err)
+	}
+
+	return nil
+}
+
 type relatedFilesTable struct {
 	table
 }

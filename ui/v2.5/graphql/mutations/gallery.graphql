@@ -43,3 +43,13 @@ mutation AddGalleryImages($gallery_id: ID!, $image_ids: [ID!]!) {
 mutation RemoveGalleryImages($gallery_id: ID!, $image_ids: [ID!]!) {
   removeGalleryImages(input: { gallery_id: $gallery_id, image_ids: $image_ids })
 }
+
+mutation SetGalleryCover($gallery_id: ID!, $cover_image_id: ID!) {
+  setGalleryCover(
+    input: { gallery_id: $gallery_id, cover_image_id: $cover_image_id }
+  )
+}
+
+mutation ResetGalleryCover($gallery_id: ID!) {
+  resetGalleryCover(input: { gallery_id: $gallery_id })
+}

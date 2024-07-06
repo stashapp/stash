@@ -114,6 +114,29 @@ func (_m *ImageReaderWriter) CountByGalleryID(ctx context.Context, galleryID int
 	return r0, r1
 }
 
+// CoverByGalleryID provides a mock function with given fields: ctx, galleryId
+func (_m *ImageReaderWriter) CoverByGalleryID(ctx context.Context, galleryId int) (*models.Image, error) {
+	ret := _m.Called(ctx, galleryId)
+
+	var r0 *models.Image
+	if rf, ok := ret.Get(0).(func(context.Context, int) *models.Image); ok {
+		r0 = rf(ctx, galleryId)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.Image)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, galleryId)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Create provides a mock function with given fields: ctx, newImage, fileIDs
 func (_m *ImageReaderWriter) Create(ctx context.Context, newImage *models.Image, fileIDs []models.FileID) error {
 	ret := _m.Called(ctx, newImage, fileIDs)

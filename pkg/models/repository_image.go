@@ -24,6 +24,7 @@ type ImageFinder interface {
 type ImageQueryer interface {
 	Query(ctx context.Context, options ImageQueryOptions) (*ImageQueryResult, error)
 	QueryCount(ctx context.Context, imageFilter *ImageFilterType, findFilter *FindFilterType) (int, error)
+	CoverByGalleryID(ctx context.Context, galleryId int) (*Image, error)
 }
 
 // ImageCounter provides methods to count images.

@@ -1,0 +1,1 @@
+ALTER TABLE `galleries_images` ADD COLUMN `cover` BOOLEAN NOT NULL DEFAULT 0;
