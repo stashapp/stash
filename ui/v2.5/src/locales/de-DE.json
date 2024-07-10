@@ -400,7 +400,8 @@
         },
         "plugins": {
             "hooks": "Einbindungen",
-            "triggers_on": "Auslösen bei"
+            "triggers_on": "Auslösen bei",
+            "installed_plugins": "Installierte Plugins"
         },
         "scraping": {
             "entity_metadata": "{entityType} Metadaten",
@@ -411,7 +412,9 @@
             "scrapers": "Scraper",
             "search_by_name": "Suche nach Name",
             "supported_types": "Unterstützte Typen",
-            "supported_urls": "Unterstützte Adressen"
+            "supported_urls": "Unterstützte Adressen",
+            "available_scrapers": "Verfügbare Scraper",
+            "installed_scrapers": "Installierte Scraper"
         },
         "stashbox": {
             "add_instance": "Stash-Box-Instanz hinzufügen",
@@ -479,7 +482,8 @@
                 "source": "Quelle",
                 "source_options": "{source} Optionen",
                 "sources": "Quellen",
-                "strategy": "Strategie"
+                "strategy": "Strategie",
+                "skip_multiple_matches": "Überspringe Treffer, die mehr als ein Ergebnis haben"
             },
             "import_from_exported_json": "Import aus exportiertem JSON im Metadatenverzeichnis. Löscht die vorhandene Datenbank.",
             "incremental_import": "Inkrementeller Import aus einer Export-ZIP-Datei.",
@@ -503,7 +507,18 @@
                 "scanning_paths": "Scannen der folgenden Pfade"
             },
             "scan_for_content_desc": "Suchen nach neuen Inhalten und füge sie der Datenbank hinzu.",
-            "set_name_date_details_from_metadata_if_present": "Name, Datum und Details aus eingebetteten Metadaten festlegen"
+            "set_name_date_details_from_metadata_if_present": "Name, Datum und Details aus eingebetteten Metadaten festlegen",
+            "clean_generated": {
+                "blob_files": "Blob Dateien",
+                "description": "Entfernt generierte Dateien ohne korrespondierenden Datenbankeintrag.",
+                "image_thumbnails": "Bild Miniaturansichten",
+                "image_thumbnails_desc": "Bild Miniaturansichten und Clips",
+                "markers": "Marker Vorschauen",
+                "previews": "Szenen Vorschauen",
+                "previews_desc": "Szenen Vorschauen und Miniaturansichten",
+                "transcodes": "Transkodierte Szenen"
+            },
+            "generate_sprites_during_scan_tooltip": "Die Anzahl an Bilder, die unter dem Video Player, zur einfacheren Navigation, angezeigt werden."
         },
         "tools": {
             "scene_duplicate_checker": "Duplikatsprüfung für Szenen",
