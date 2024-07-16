@@ -84,6 +84,7 @@ export interface IQueryResultContextState<
   result: T;
   cachedResult: T;
   items: E[];
+  totalCount: number;
 }
 
 export const QueryResultStateContext =
@@ -95,11 +96,11 @@ export const QueryResultContext = <
 >(
   props: IQueryResultContextOptions<T, E> & {
     children?:
-      | ((props: IListContextState) => React.ReactNode)
+      | ((props: IQueryResultContextState<T, E>) => React.ReactNode)
       | React.ReactNode;
   }
 ) => {
-  const { filterHook, useResult, getItems, children } = props;
+  const { filterHook, useResult, getItems, getCount, children } = props;
 
   const { filter } = useFilter();
   const effectiveFilter = useMemo(() => {
@@ -115,12 +116,17 @@ export const QueryResultContext = <
   const cachedResult = useCachedQueryResult(effectiveFilter, result);
 
   const items = useMemo(() => getItems(result), [getItems, result]);
+  const totalCount = useMemo(
+    () => getCount(cachedResult),
+    [getCount, cachedResult]
+  );
 
   const state: IQueryResultContextState<T, E> = {
     effectiveFilter,
     result,
     cachedResult,
     items,
+    totalCount,
   };
 
   return (

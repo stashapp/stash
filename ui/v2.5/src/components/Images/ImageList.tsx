@@ -11,11 +11,7 @@ import { useHistory } from "react-router-dom";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
 import { queryFindImages, useFindImages } from "src/core/StashService";
-import {
-  makeItemList,
-  IItemListOperation,
-  showWhenSelected,
-} from "../List/ItemList";
+import { makeItemList, showWhenSelected } from "../List/ItemList";
 import { useLightbox } from "src/hooks/Lightbox/hooks";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
@@ -31,6 +27,7 @@ import TextUtils from "src/utils/text";
 import { ConfigurationContext } from "src/hooks/Config";
 import { ImageGridCard } from "./ImageGridCard";
 import { View } from "../List/views";
+import { IItemListOperation } from "../List/FilteredListToolbar";
 
 interface IImageWallProps {
   images: GQL.SlimImageDataFragment[];

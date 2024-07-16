@@ -1,10 +1,4 @@
-import React, {
-  PropsWithChildren,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import * as GQL from "src/core/generated-graphql";
 import { QueryResult } from "@apollo/client";
 import {
@@ -12,19 +6,8 @@ import {
   CriterionValue,
 } from "src/models/list-filter/criteria/criterion";
 import { ListFilterModel } from "src/models/list-filter/filter";
-import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
-import { Pagination, PaginationIndex } from "./Pagination";
 import { EditFilterDialog } from "src/components/List/EditFilterDialog";
-import { ListFilter } from "./ListFilter";
 import { FilterTags } from "./FilterTags";
-import { ListViewOptions } from "./ListViewOptions";
-import {
-  IListFilterOperation,
-  ListOperationButtons,
-} from "./ListOperationButtons";
-import { LoadingIndicator } from "../Shared/LoadingIndicator";
-import { DisplayMode } from "src/models/list-filter/types";
-import { ButtonToolbar } from "react-bootstrap";
 import { View } from "./views";
 import { IHasID } from "src/utils/data";
 import {
@@ -41,23 +24,8 @@ import {
   useListKeyboardShortcuts,
   useScrollToTopOnPageChange,
 } from "./util";
-
-export interface IItemListOperation<T extends QueryResult> {
-  text: string;
-  onClick: (
-    result: T,
-    filter: ListFilterModel,
-    selectedIds: Set<string>
-  ) => Promise<void>;
-  isDisplayed?: (
-    result: T,
-    filter: ListFilterModel,
-    selectedIds: Set<string>
-  ) => boolean;
-  postRefetch?: boolean;
-  icon?: IconDefinition;
-  buttonVariant?: string;
-}
+import { FilteredListToolbar, IItemListOperation } from "./FilteredListToolbar";
+import { PagedList } from "./PagedList";
 
 interface IItemListOptions<T extends QueryResult, E extends IHasID> {
   filterMode: GQL.FilterMode;
@@ -102,154 +70,6 @@ interface IItemListProps<T extends QueryResult, E extends IHasID> {
     selectedIds: Set<string>
   ) => () => void;
 }
-
-const FilteredListToolbar: React.FC<{
-  showEditFilter: (editingCriterion?: string) => void;
-  view?: View;
-  onEdit?: () => void;
-  onDelete?: () => void;
-  operations?: IListFilterOperation[];
-  zoomable?: boolean;
-}> = ({
-  showEditFilter,
-  view,
-  onEdit,
-  onDelete,
-  operations,
-  zoomable = false,
-}) => {
-  const { getSelected, onSelectAll, onSelectNone } = useListContext();
-  const { filter, setFilter } = useFilter();
-
-  const filterOptions = filter.options;
-
-  function onChangeDisplayMode(displayMode: DisplayMode) {
-    setFilter(filter.setDisplayMode(displayMode));
-  }
-
-  function onChangeZoom(newZoomIndex: number) {
-    setFilter(filter.setZoom(newZoomIndex));
-  }
-
-  return (
-    <ButtonToolbar className="justify-content-center">
-      <ListFilter
-        onFilterUpdate={setFilter}
-        filter={filter}
-        openFilterDialog={() => showEditFilter()}
-        view={view}
-      />
-      <ListOperationButtons
-        onSelectAll={onSelectAll}
-        onSelectNone={onSelectNone}
-        otherOperations={operations}
-        itemsSelected={getSelected().length > 0}
-        onEdit={onEdit}
-        onDelete={onDelete}
-      />
-      <ListViewOptions
-        displayMode={filter.displayMode}
-        displayModeOptions={filterOptions.displayModeOptions}
-        onSetDisplayMode={onChangeDisplayMode}
-        zoomIndex={zoomable ? filter.zoomIndex : undefined}
-        onSetZoom={zoomable ? onChangeZoom : undefined}
-      />
-    </ButtonToolbar>
-  );
-};
-
-const PagedList: React.FC<
-  PropsWithChildren<{
-    result: QueryResult;
-    cachedResult: QueryResult;
-    filter: ListFilterModel;
-    totalCount: number;
-    onChangePage: (page: number) => void;
-    metadataByline?: React.ReactNode;
-  }>
-> = ({
-  result,
-  cachedResult,
-  filter,
-  totalCount,
-  onChangePage,
-  metadataByline,
-  children,
-}) => {
-  const pages = Math.ceil(totalCount / filter.itemsPerPage);
-
-  const pagination = useMemo(() => {
-    return (
-      <Pagination
-        itemsPerPage={filter.itemsPerPage}
-        currentPage={filter.currentPage}
-        totalItems={totalCount}
-        metadataByline={metadataByline}
-        onChangePage={onChangePage}
-      />
-    );
-  }, [
-    filter.itemsPerPage,
-    filter.currentPage,
-    totalCount,
-    metadataByline,
-    onChangePage,
-  ]);
-
-  const paginationIndex = useMemo(() => {
-    if (cachedResult.loading) return;
-    return (
-      <PaginationIndex
-        itemsPerPage={filter.itemsPerPage}
-        currentPage={filter.currentPage}
-        totalItems={totalCount}
-        metadataByline={metadataByline}
-      />
-    );
-  }, [
-    cachedResult.loading,
-    filter.itemsPerPage,
-    filter.currentPage,
-    totalCount,
-    metadataByline,
-  ]);
-
-  const content = useMemo(() => {
-    if (result.loading) {
-      return <LoadingIndicator />;
-    }
-    if (result.error) {
-      return <h1>{result.error.message}</h1>;
-    }
-
-    return (
-      <>
-        {children}
-        {!!pages && (
-          <>
-            {paginationIndex}
-            {pagination}
-          </>
-        )}
-      </>
-    );
-  }, [
-    result.loading,
-    result.error,
-    pages,
-    children,
-    pagination,
-    paginationIndex,
-  ]);
-
-  return (
-    <>
-      {pagination}
-      {paginationIndex}
-      {content}
-    </>
-  );
-};
 
 /**
  * A factory function for ItemList components.
