@@ -86,7 +86,12 @@ export class ListFilterModel {
   }
 
   public clone() {
-    return Object.assign(new ListFilterModel(this.mode, this.config), this);
+    const ret = Object.assign(
+      new ListFilterModel(this.mode, this.config),
+      this
+    );
+    ret.criteria = this.criteria.map((c) => c.clone());
+    return ret;
   }
 
   public empty() {
