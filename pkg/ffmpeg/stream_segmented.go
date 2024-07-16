@@ -8,6 +8,7 @@ import (
 	"io"
 	"math"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -45,6 +46,10 @@ const (
 	// maximum idle time between segment requests before
 	// stopping transcode and deleting cache folder
 	maxIdleTime = 30 * time.Second
+
+	resolutionParamKey = "resolution"
+	// TODO - setting the apikey in here isn't ideal
+	apiKeyParamKey = "apikey"
 )
 
 type StreamType struct {
@@ -425,9 +430,21 @@ func serveHLSManifest(sm *StreamManager, w http.ResponseWriter, r *http.Request,
 	baseUrl.RawQuery = ""
 	baseURL := baseUrl.String()
 
-	var urlQuery string
+	urlQuery := url.Values{}
+	apikey := r.URL.Query().Get(apiKeyParamKey)
+
 	if resolution != "" {
-		urlQuery = fmt.Sprintf("?resolution=%s", resolution)
+		urlQuery.Set(resolutionParamKey, resolution)
+	}
+
+	// TODO - this needs to be handled outside of this package
+	if apikey != "" {
+		urlQuery.Set(apiKeyParamKey, apikey)
+	}
+
+	urlQueryString := ""
+	if len(urlQuery) > 0 {
+		urlQueryString = "?" + urlQuery.Encode()
 	}
 
 	var buf bytes.Buffer
@@ -449,7 +466,7 @@ func serveHLSManifest(sm *StreamManager, w http.ResponseWriter, r *http.Request,
 		}
 
 		fmt.Fprintf(&buf, "#EXTINF:%f,\n", thisLength)
-		fmt.Fprintf(&buf, "%s/%d.ts%s\n", baseURL, segment, urlQuery)
+		fmt.Fprintf(&buf, "%s/%d.ts%s\n", baseURL, segment, urlQueryString)
 
 		leftover -= thisLength
 		segment++
@@ -508,11 +525,18 @@ func serveDASHManifest(sm *StreamManager, w http.ResponseWriter, r *http.Request
 		videoWidth = vf.Width
 	}
 
-	var urlQuery string
+	urlQuery := url.Values{}
+
+	// TODO - this needs to be handled outside of this package
+	apikey := r.URL.Query().Get(apiKeyParamKey)
+	if apikey != "" {
+		urlQuery.Set(apiKeyParamKey, apikey)
+	}
+
 	maxTranscodeSize := sm.config.GetMaxStreamingTranscodeSize().GetMaxResolution()
 	if resolution != "" {
 		maxTranscodeSize = models.StreamingResolutionEnum(resolution).GetMaxResolution()
-		urlQuery = fmt.Sprintf("?resolution=%s", resolution)
+		urlQuery.Set(resolutionParamKey, resolution)
 	}
 	if maxTranscodeSize != 0 {
 		videoSize := videoHeight
@@ -527,6 +551,11 @@ func serveDASHManifest(sm *StreamManager, w http.ResponseWriter, r *http.Request
 		}
 	}
 
+	urlQueryString := ""
+	if len(urlQuery) > 0 {
+		urlQueryString = "?" + urlQuery.Encode()
+	}
+
 	mediaDuration := mpd.Duration(time.Duration(probeResult.FileDuration * float64(time.Second)))
 	m := mpd.NewMPD(mpd.DASH_PROFILE_LIVE, mediaDuration.String(), "PT4.0S")
 
@@ -536,12 +565,12 @@ func serveDASHManifest(sm *StreamManager, w http.ResponseWriter, r *http.Request
 
 	video, _ := m.AddNewAdaptationSetVideo(MimeWebmVideo, "progressive", true, 1)
 
-	_, _ = video.SetNewSegmentTemplate(2, "init_v.webm"+urlQuery, "$Number$_v.webm"+urlQuery, 0, 1)
+	_, _ = video.SetNewSegmentTemplate(2, "init_v.webm"+urlQueryString, "$Number$_v.webm"+urlQueryString, 0, 1)
 	_, _ = video.AddNewRepresentationVideo(200000, "vp09.00.40.08", "0", framerate, int64(videoWidth), int64(videoHeight))
 
 	if ProbeAudioCodec(vf.AudioCodec) != MissingUnsupported {
 		audio, _ := m.AddNewAdaptationSetAudio(MimeWebmAudio, true, 1, "und")
-		_, _ = audio.SetNewSegmentTemplate(2, "init_a.webm"+urlQuery, "$Number$_a.webm"+urlQuery, 0, 1)
+		_, _ = audio.SetNewSegmentTemplate(2, "init_a.webm"+urlQueryString, "$Number$_a.webm"+urlQueryString, 0, 1)
 		_, _ = audio.AddNewRepresentationAudio(48000, 96000, "opus", "1")
 	}
 
