@@ -104,36 +104,37 @@ interface IItemListProps<T extends QueryResult, E extends IHasID> {
 }
 
 const FilteredListToolbar: React.FC<{
-  filter: ListFilterModel;
-  updateFilter: (filter: ListFilterModel) => void;
   showEditFilter: (editingCriterion?: string) => void;
   view?: View;
   onEdit?: () => void;
   onDelete?: () => void;
   operations?: IListFilterOperation[];
-  onChangeZoom?: (zoomIndex: number) => void;
+  zoomable?: boolean;
 }> = ({
-  filter,
-  updateFilter,
   showEditFilter,
   view,
   onEdit,
   onDelete,
   operations,
-  onChangeZoom,
+  zoomable = false,
 }) => {
   const { getSelected, onSelectAll, onSelectNone } = useListContext();
+  const { filter, setFilter } = useFilter();
 
   const filterOptions = filter.options;
 
   function onChangeDisplayMode(displayMode: DisplayMode) {
-    updateFilter(filter.setDisplayMode(displayMode));
+    setFilter(filter.setDisplayMode(displayMode));
+  }
+
+  function onChangeZoom(newZoomIndex: number) {
+    setFilter(filter.setZoom(newZoomIndex));
   }
 
   return (
     <ButtonToolbar className="justify-content-center">
       <ListFilter
-        onFilterUpdate={updateFilter}
+        onFilterUpdate={setFilter}
         filter={filter}
         openFilterDialog={() => showEditFilter()}
         view={view}
@@ -150,8 +151,8 @@ const FilteredListToolbar: React.FC<{
         displayMode={filter.displayMode}
         displayModeOptions={filterOptions.displayModeOptions}
         onSetDisplayMode={onChangeDisplayMode}
-        zoomIndex={onChangeZoom ? filter.zoomIndex : undefined}
-        onSetZoom={onChangeZoom}
+        zoomIndex={zoomable ? filter.zoomIndex : undefined}
+        onSetZoom={zoomable ? onChangeZoom : undefined}
       />
     </ButtonToolbar>
   );
@@ -342,10 +343,6 @@ export function makeItemList<T extends QueryResult, E extends IHasID>({
       }
     }, [addKeybinds, result, effectiveFilter, selectedIds]);
 
-    function onChangeZoom(newZoomIndex: number) {
-      updateFilter(filter.setZoom(newZoomIndex));
-    }
-
     async function onOperationClicked(o: IItemListOperation<T>) {
       await o.onClick(result, effectiveFilter, selectedIds);
       if (o.postRefetch) {
@@ -426,12 +423,10 @@ export function makeItemList<T extends QueryResult, E extends IHasID>({
     return (
       <div className="item-list-container">
         <FilteredListToolbar
-          filter={filter}
-          updateFilter={updateFilter}
           showEditFilter={showEditFilter}
           view={view}
           operations={operations}
-          onChangeZoom={zoomable ? onChangeZoom : undefined}
+          zoomable={zoomable}
           onEdit={renderEditDialog ? onEdit : undefined}
           onDelete={renderDeleteDialog ? onDelete : undefined}
         />
