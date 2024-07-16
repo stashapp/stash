@@ -89,6 +89,10 @@ export class ListFilterModel {
     return Object.assign(new ListFilterModel(this.mode, this.config), this);
   }
 
+  public empty() {
+    return new ListFilterModel(this.mode, this.config, this.defaultZoomIndex);
+  }
+
   // returns the number of filters applied
   public count() {
     // don't include search term
@@ -442,5 +446,45 @@ export class ListFilterModel {
       display_mode: this.displayMode,
       zoom_index: this.zoomIndex,
     };
+  }
+
+  public clearCriteria() {
+    const ret = this.clone();
+    ret.criteria = [];
+    ret.currentPage = 1;
+    return ret;
+  }
+
+  public removeCriterion(type: CriterionType) {
+    const ret = this.clone();
+    const c = ret.criteria.find((cc) => cc.criterionOption.type === type);
+
+    if (!c) return ret;
+
+    const newCriteria = ret.criteria.filter((cc) => {
+      return cc.getId() !== c.getId();
+    });
+
+    ret.criteria = newCriteria;
+    ret.currentPage = 1;
+    return ret;
+  }
+
+  public changePage(page: number) {
+    const ret = this.clone();
+    ret.currentPage = page;
+    return ret;
+  }
+
+  public setZoom(zoomIndex: number) {
+    const ret = this.clone();
+    ret.zoomIndex = zoomIndex;
+    return ret;
+  }
+
+  public setDisplayMode(displayMode: DisplayMode) {
+    const ret = this.clone();
+    ret.displayMode = displayMode;
+    return ret;
   }
 }

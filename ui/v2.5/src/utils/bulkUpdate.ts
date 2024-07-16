@@ -1,5 +1,6 @@
 import * as GQL from "src/core/generated-graphql";
 import isEqual from "lodash-es/isEqual";
+import { IHasID } from "./data";
 
 interface IHasRating {
   rating100?: GQL.Maybe<number> | undefined;
@@ -19,10 +20,6 @@ export function getAggregateRating(state: IHasRating[]) {
   });
 
   return ret;
-}
-
-interface IHasID {
-  id: string;
 }
 
 interface IHasStudio {
