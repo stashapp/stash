@@ -46,6 +46,10 @@ const (
 	// maximum idle time between segment requests before
 	// stopping transcode and deleting cache folder
 	maxIdleTime = 30 * time.Second
+
+	resolutionParamKey = "resolution"
+	// TODO - setting the apikey in here isn't ideal
+	apiKeyParamKey = "apikey"
 )
 
 type StreamType struct {
@@ -427,14 +431,15 @@ func serveHLSManifest(sm *StreamManager, w http.ResponseWriter, r *http.Request,
 	baseURL := baseUrl.String()
 
 	urlQuery := url.Values{}
-	apikey := r.URL.Query().Get("apikey")
+	apikey := r.URL.Query().Get(apiKeyParamKey)
 
 	if resolution != "" {
-		urlQuery.Set("resolution", resolution)
+		urlQuery.Set(resolutionParamKey, resolution)
 	}
 
+	// TODO - this needs to be handled outside of this package
 	if apikey != "" {
-		urlQuery.Set("apikey", apikey)
+		urlQuery.Set(apiKeyParamKey, apikey)
 	}
 
 	urlQueryString := ""
@@ -521,15 +526,17 @@ func serveDASHManifest(sm *StreamManager, w http.ResponseWriter, r *http.Request
 	}
 
 	urlQuery := url.Values{}
-	apikey := r.URL.Query().Get("apikey")
+
+	// TODO - this needs to be handled outside of this package
+	apikey := r.URL.Query().Get(apiKeyParamKey)
 	if apikey != "" {
-		urlQuery.Set("apikey", apikey)
+		urlQuery.Set(apiKeyParamKey, apikey)
 	}
 
 	maxTranscodeSize := sm.config.GetMaxStreamingTranscodeSize().GetMaxResolution()
 	if resolution != "" {
 		maxTranscodeSize = models.StreamingResolutionEnum(resolution).GetMaxResolution()
-		urlQuery.Set("resolution", resolution)
+		urlQuery.Set(resolutionParamKey, resolution)
 	}
 	if maxTranscodeSize != 0 {
 		videoSize := videoHeight
