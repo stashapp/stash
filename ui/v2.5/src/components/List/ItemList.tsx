@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, {
+  PropsWithChildren,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import * as GQL from "src/core/generated-graphql";
 import { QueryResult } from "@apollo/client";
 import {
@@ -27,26 +33,9 @@ import {
 import { FilteredListToolbar, IItemListOperation } from "./FilteredListToolbar";
 import { PagedList } from "./PagedList";
 
-interface IItemListOptions<T extends QueryResult, E extends IHasID> {
-  filterMode: GQL.FilterMode;
-  useResult: (filter: ListFilterModel) => T;
-  getCount: (data: T) => number;
-  renderMetadataByline?: (data: T) => React.ReactNode;
-  getItems: (data: T) => E[];
-}
-
 interface IItemListProps<T extends QueryResult, E extends IHasID> {
   view?: View;
-  defaultSort?: string;
-  filterHook?: (filter: ListFilterModel) => ListFilterModel;
-  filterDialog?: (
-    criteria: Criterion<CriterionValue>[],
-    setCriteria: (v: Criterion<CriterionValue>[]) => void
-  ) => React.ReactNode;
   zoomable?: boolean;
-  selectable?: boolean;
-  alterQuery?: boolean;
-  defaultZoomIndex?: number;
   otherOperations?: IItemListOperation<T>[];
   renderContent: (
     result: T,
@@ -56,6 +45,7 @@ interface IItemListProps<T extends QueryResult, E extends IHasID> {
     onChangePage: (page: number) => void,
     pageCount: number
   ) => React.ReactNode;
+  renderMetadataByline?: (data: T) => React.ReactNode;
   renderEditDialog?: (
     selected: E[],
     onClose: (applied: boolean) => void
@@ -71,254 +61,272 @@ interface IItemListProps<T extends QueryResult, E extends IHasID> {
   ) => () => void;
 }
 
-/**
- * A factory function for ItemList components.
- * IMPORTANT: as the component manipulates the URL query string, if there are
- * ever multiple ItemLists rendered at once, all but one of them need to have
- * `alterQuery` set to false to prevent conflicts.
- */
-export function makeItemList<T extends QueryResult, E extends IHasID>({
-  filterMode,
-  useResult,
-  getCount,
-  renderMetadataByline,
-  getItems,
-}: IItemListOptions<T, E>) {
-  const RenderList: React.FC<IItemListProps<T, E>> = ({
+export const ItemList = <T extends QueryResult, E extends IHasID>(
+  props: IItemListProps<T, E>
+) => {
+  const {
     view,
     zoomable,
     otherOperations,
     renderContent,
     renderEditDialog,
     renderDeleteDialog,
+    renderMetadataByline,
     addKeybinds,
-  }) => {
-    const { filter, setFilter: updateFilter } = useFilter();
-    const { effectiveFilter, result, cachedResult } = useQueryResultContext<
-      T,
-      E
-    >();
-    const {
-      selectedIds,
-      getSelected,
-      onSelectChange,
-      onSelectAll,
-      onSelectNone,
-    } = useListContext<E>();
+  } = props;
 
-    const { modal, showModal, closeModal } = useModal();
+  const { filter, setFilter: updateFilter } = useFilter();
+  const { effectiveFilter, result, cachedResult, totalCount } =
+    useQueryResultContext<T, E>();
+  const {
+    selectedIds,
+    getSelected,
+    onSelectChange,
+    onSelectAll,
+    onSelectNone,
+  } = useListContext<E>();
 
-    const totalCount = useMemo(() => getCount(cachedResult), [cachedResult]);
-    const metadataByline = useMemo(() => {
-      if (cachedResult.loading) return "";
+  const { modal, showModal, closeModal } = useModal();
 
-      return renderMetadataByline?.(cachedResult) ?? "";
-    }, [cachedResult]);
+  const metadataByline = useMemo(() => {
+    if (cachedResult.loading) return "";
 
-    const pages = Math.ceil(totalCount / filter.itemsPerPage);
+    return renderMetadataByline?.(cachedResult) ?? "";
+  }, [renderMetadataByline, cachedResult]);
 
-    const onChangePage = useCallback(
-      (p: number) => {
-        updateFilter(filter.changePage(p));
-      },
-      [filter, updateFilter]
-    );
+  const pages = Math.ceil(totalCount / filter.itemsPerPage);
 
-    useEnsureValidPage(filter, totalCount, updateFilter);
+  const onChangePage = useCallback(
+    (p: number) => {
+      updateFilter(filter.changePage(p));
+    },
+    [filter, updateFilter]
+  );
 
-    const showEditFilter = useCallback(
-      (editingCriterion?: string) => {
-        function onApplyEditFilter(f: ListFilterModel) {
-          closeModal();
-          updateFilter(f);
-        }
+  useEnsureValidPage(filter, totalCount, updateFilter);
 
-        showModal(
-          <EditFilterDialog
-            filter={filter}
-            onApply={onApplyEditFilter}
-            onCancel={() => closeModal()}
-            editingCriterion={editingCriterion}
-          />
-        );
-      },
-      [filter, updateFilter, showModal, closeModal]
-    );
-
-    useListKeyboardShortcuts({
-      currentPage: filter.currentPage,
-      onChangePage,
-      onSelectAll,
-      onSelectNone,
-      pages,
-      showEditFilter,
-    });
-
-    useEffect(() => {
-      if (addKeybinds) {
-        const unbindExtras = addKeybinds(result, effectiveFilter, selectedIds);
-        return () => {
-          unbindExtras();
-        };
-      }
-    }, [addKeybinds, result, effectiveFilter, selectedIds]);
-
-    async function onOperationClicked(o: IItemListOperation<T>) {
-      await o.onClick(result, effectiveFilter, selectedIds);
-      if (o.postRefetch) {
-        result.refetch();
-      }
-    }
-
-    const operations = otherOperations?.map((o) => ({
-      text: o.text,
-      onClick: () => {
-        onOperationClicked(o);
-      },
-      isDisplayed: () => {
-        if (o.isDisplayed) {
-          return o.isDisplayed(result, effectiveFilter, selectedIds);
-        }
-
-        return true;
-      },
-      icon: o.icon,
-      buttonVariant: o.buttonVariant,
-    }));
-
-    function onEdit() {
-      if (!renderEditDialog) {
-        return;
+  const showEditFilter = useCallback(
+    (editingCriterion?: string) => {
+      function onApplyEditFilter(f: ListFilterModel) {
+        closeModal();
+        updateFilter(f);
       }
 
       showModal(
-        renderEditDialog(getSelected(), (applied) =>
-          onEditDialogClosed(applied)
-        )
-      );
-    }
-
-    function onEditDialogClosed(applied: boolean) {
-      if (applied) {
-        onSelectNone();
-      }
-      closeModal();
-
-      // refetch
-      result.refetch();
-    }
-
-    function onDelete() {
-      if (!renderDeleteDialog) {
-        return;
-      }
-
-      showModal(
-        renderDeleteDialog(getSelected(), (deleted) =>
-          onDeleteDialogClosed(deleted)
-        )
-      );
-    }
-
-    function onDeleteDialogClosed(deleted: boolean) {
-      if (deleted) {
-        onSelectNone();
-      }
-      closeModal();
-
-      // refetch
-      result.refetch();
-    }
-
-    function onRemoveCriterion(removedCriterion: Criterion<CriterionValue>) {
-      updateFilter(
-        filter.removeCriterion(removedCriterion.criterionOption.type)
-      );
-    }
-
-    function onClearAllCriteria() {
-      updateFilter(filter.clearCriteria());
-    }
-
-    return (
-      <div className="item-list-container">
-        <FilteredListToolbar
-          showEditFilter={showEditFilter}
-          view={view}
-          operations={operations}
-          zoomable={zoomable}
-          onEdit={renderEditDialog ? onEdit : undefined}
-          onDelete={renderDeleteDialog ? onDelete : undefined}
-        />
-        <FilterTags
-          criteria={filter.criteria}
-          onEditCriterion={(c) => showEditFilter(c.criterionOption.type)}
-          onRemoveCriterion={onRemoveCriterion}
-          onRemoveAll={() => onClearAllCriteria()}
-        />
-        {modal}
-
-        <PagedList
-          result={result}
-          cachedResult={cachedResult}
+        <EditFilterDialog
           filter={filter}
-          totalCount={totalCount}
-          onChangePage={onChangePage}
-          metadataByline={metadataByline}
-        >
-          {renderContent(
-            result,
-            // #4780 - use effectiveFilter to ensure filterHook is applied
-            effectiveFilter,
-            selectedIds,
-            onSelectChange,
-            onChangePage,
-            pages
-          )}
-        </PagedList>
-      </div>
+          onApply={onApplyEditFilter}
+          onCancel={() => closeModal()}
+          editingCriterion={editingCriterion}
+        />
+      );
+    },
+    [filter, updateFilter, showModal, closeModal]
+  );
+
+  useListKeyboardShortcuts({
+    currentPage: filter.currentPage,
+    onChangePage,
+    onSelectAll,
+    onSelectNone,
+    pages,
+    showEditFilter,
+  });
+
+  useEffect(() => {
+    if (addKeybinds) {
+      const unbindExtras = addKeybinds(result, effectiveFilter, selectedIds);
+      return () => {
+        unbindExtras();
+      };
+    }
+  }, [addKeybinds, result, effectiveFilter, selectedIds]);
+
+  async function onOperationClicked(o: IItemListOperation<T>) {
+    await o.onClick(result, effectiveFilter, selectedIds);
+    if (o.postRefetch) {
+      result.refetch();
+    }
+  }
+
+  const operations = otherOperations?.map((o) => ({
+    text: o.text,
+    onClick: () => {
+      onOperationClicked(o);
+    },
+    isDisplayed: () => {
+      if (o.isDisplayed) {
+        return o.isDisplayed(result, effectiveFilter, selectedIds);
+      }
+
+      return true;
+    },
+    icon: o.icon,
+    buttonVariant: o.buttonVariant,
+  }));
+
+  function onEdit() {
+    if (!renderEditDialog) {
+      return;
+    }
+
+    showModal(
+      renderEditDialog(getSelected(), (applied) => onEditDialogClosed(applied))
     );
-  };
+  }
 
-  const ItemList: React.FC<IItemListProps<T, E>> = (props) => {
-    const { view, filterHook, selectable, alterQuery = true } = props;
+  function onEditDialogClosed(applied: boolean) {
+    if (applied) {
+      onSelectNone();
+    }
+    closeModal();
 
-    const [filter, setFilterState] = useState<ListFilterModel>(
-      () => new ListFilterModel(filterMode)
+    // refetch
+    result.refetch();
+  }
+
+  function onDelete() {
+    if (!renderDeleteDialog) {
+      return;
+    }
+
+    showModal(
+      renderDeleteDialog(getSelected(), (deleted) =>
+        onDeleteDialogClosed(deleted)
+      )
     );
+  }
 
-    const { defaultFilter, loading: defaultFilterLoading } = useDefaultFilter(
-      filterMode,
-      view
-    );
+  function onDeleteDialogClosed(deleted: boolean) {
+    if (deleted) {
+      onSelectNone();
+    }
+    closeModal();
 
-    // scroll to the top of the page when the page changes
-    useScrollToTopOnPageChange(filter.currentPage);
+    // refetch
+    result.refetch();
+  }
 
-    if (defaultFilterLoading) return null;
+  function onRemoveCriterion(removedCriterion: Criterion<CriterionValue>) {
+    updateFilter(filter.removeCriterion(removedCriterion.criterionOption.type));
+  }
 
-    return (
-      <FilterContext filter={filter} setFilter={setFilterState}>
-        <SetFilterURL defaultFilter={defaultFilter} setURL={alterQuery}>
-          <QueryResultContext
-            filterHook={filterHook}
-            useResult={useResult}
-            getCount={getCount}
-            getItems={getItems}
-          >
-            {({ items }) => (
-              <ListContext selectable={selectable} items={items}>
-                <RenderList {...props} />
-              </ListContext>
-            )}
-          </QueryResultContext>
-        </SetFilterURL>
-      </FilterContext>
-    );
-  };
+  function onClearAllCriteria() {
+    updateFilter(filter.clearCriteria());
+  }
 
-  return ItemList;
+  return (
+    <div className="item-list-container">
+      <FilteredListToolbar
+        showEditFilter={showEditFilter}
+        view={view}
+        operations={operations}
+        zoomable={zoomable}
+        onEdit={renderEditDialog ? onEdit : undefined}
+        onDelete={renderDeleteDialog ? onDelete : undefined}
+      />
+      <FilterTags
+        criteria={filter.criteria}
+        onEditCriterion={(c) => showEditFilter(c.criterionOption.type)}
+        onRemoveCriterion={onRemoveCriterion}
+        onRemoveAll={() => onClearAllCriteria()}
+      />
+      {modal}
+
+      <PagedList
+        result={result}
+        cachedResult={cachedResult}
+        filter={filter}
+        totalCount={totalCount}
+        onChangePage={onChangePage}
+        metadataByline={metadataByline}
+      >
+        {renderContent(
+          result,
+          // #4780 - use effectiveFilter to ensure filterHook is applied
+          effectiveFilter,
+          selectedIds,
+          onSelectChange,
+          onChangePage,
+          pages
+        )}
+      </PagedList>
+    </div>
+  );
+};
+
+interface IItemListContextProps<T extends QueryResult, E extends IHasID> {
+  filterMode: GQL.FilterMode;
+  defaultSort?: string;
+  useResult: (filter: ListFilterModel) => T;
+  getCount: (data: T) => number;
+  getItems: (data: T) => E[];
+  filterHook?: (filter: ListFilterModel) => ListFilterModel;
+  view?: View;
+  alterQuery?: boolean;
+  selectable?: boolean;
 }
+
+// Provides the contexts for the ItemList component. Includes functionality to scroll
+// to top on page change.
+export const ItemListContext = <T extends QueryResult, E extends IHasID>(
+  props: PropsWithChildren<IItemListContextProps<T, E>>
+) => {
+  const {
+    filterMode,
+    defaultSort,
+    useResult,
+    getCount,
+    getItems,
+    view,
+    filterHook,
+    alterQuery = true,
+    selectable,
+    children,
+  } = props;
+
+  const emptyFilter = useMemo(
+    () =>
+      new ListFilterModel(filterMode, undefined, {
+        defaultSortBy: defaultSort,
+      }),
+    [filterMode, defaultSort]
+  );
+
+  const [filter, setFilterState] = useState<ListFilterModel>(
+    () =>
+      new ListFilterModel(filterMode, undefined, { defaultSortBy: defaultSort })
+  );
+
+  const { defaultFilter, loading: defaultFilterLoading } = useDefaultFilter(
+    emptyFilter,
+    view
+  );
+
+  // scroll to the top of the page when the page changes
+  useScrollToTopOnPageChange(filter.currentPage);
+
+  if (defaultFilterLoading) return null;
+
+  return (
+    <FilterContext filter={filter} setFilter={setFilterState}>
+      <SetFilterURL defaultFilter={defaultFilter} setURL={alterQuery}>
+        <QueryResultContext
+          filterHook={filterHook}
+          useResult={useResult}
+          getCount={getCount}
+          getItems={getItems}
+        >
+          {({ items }) => (
+            <ListContext selectable={selectable} items={items}>
+              {children}
+            </ListContext>
+          )}
+        </QueryResultContext>
+      </SetFilterURL>
+    </FilterContext>
+  );
+};
 
 export const showWhenSelected = <T extends QueryResult>(
   result: T,

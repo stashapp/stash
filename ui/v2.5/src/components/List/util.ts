@@ -3,7 +3,6 @@ import Mousetrap from "mousetrap";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { useHistory, useLocation } from "react-router-dom";
 import { isEqual, isFunction } from "lodash-es";
-import * as GQL from "src/core/generated-graphql";
 import { QueryResult } from "@apollo/client";
 import { IHasID } from "src/utils/data";
 import { ConfigurationContext } from "src/hooks/Config";
@@ -64,8 +63,7 @@ export function useFilterURL(
   return { setFilter: updateFilter };
 }
 
-export function useDefaultFilter(mode: GQL.FilterMode, view?: View) {
-  const emptyFilter = useMemo(() => new ListFilterModel(mode), [mode]);
+export function useDefaultFilter(emptyFilter: ListFilterModel, view?: View) {
   const { configuration: config, loading } = useContext(ConfigurationContext);
 
   const defaultFilter = useMemo(() => {

@@ -67,21 +67,32 @@ export class ListFilterModel {
   public constructor(
     mode: FilterMode,
     config?: ConfigDataFragment,
-    defaultZoomIndex?: number
+    options?: {
+      defaultZoomIndex?: number;
+      defaultSortBy?: string;
+      defaultSortDir?: SortDirectionEnum;
+    }
   ) {
     this.mode = mode;
     this.config = config;
     this.options = getFilterOptions(mode);
     const { defaultSortBy, displayModeOptions } = this.options;
 
-    this.sortBy = defaultSortBy;
-    if (this.sortBy === "date") {
-      this.sortDirection = SortDirectionEnum.Desc;
+    if (options?.defaultSortBy) {
+      this.sortBy = options.defaultSortBy;
+      if (options.defaultSortDir) {
+        this.sortDirection = options.defaultSortDir;
+      }
+    } else {
+      this.sortBy = defaultSortBy;
+      if (this.sortBy === "date") {
+        this.sortDirection = SortDirectionEnum.Desc;
+      }
     }
     this.displayMode = displayModeOptions[0];
-    if (defaultZoomIndex !== undefined) {
-      this.defaultZoomIndex = defaultZoomIndex;
-      this.zoomIndex = defaultZoomIndex;
+    if (options?.defaultZoomIndex !== undefined) {
+      this.defaultZoomIndex = options.defaultZoomIndex;
+      this.zoomIndex = options.defaultZoomIndex;
     }
   }
 
@@ -95,7 +106,9 @@ export class ListFilterModel {
   }
 
   public empty() {
-    return new ListFilterModel(this.mode, this.config, this.defaultZoomIndex);
+    return new ListFilterModel(this.mode, this.config, {
+      defaultZoomIndex: this.defaultZoomIndex,
+    });
   }
 
   // returns the number of filters applied
