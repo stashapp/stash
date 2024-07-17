@@ -19,6 +19,8 @@ export const StudioScenesPanel: React.FC<IStudioScenesPanel> = ({
       filterHook={filterHook}
       alterQuery={active}
       view={View.StudioScenes}
+      // show the effective filter to allow changing the depth
+      showEffectiveFilter
     />
   );
 };

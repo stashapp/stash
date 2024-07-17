@@ -159,6 +159,7 @@ interface IPerformerList {
   view?: View;
   alterQuery?: boolean;
   extraCriteria?: IPerformerCardExtraCriteria;
+  showEffectiveFilter?: boolean;
 }
 
 export const PerformerList: React.FC<IPerformerList> = ({
@@ -166,6 +167,7 @@ export const PerformerList: React.FC<IPerformerList> = ({
   view,
   alterQuery,
   extraCriteria,
+  showEffectiveFilter,
 }) => {
   const intl = useIntl();
   const history = useHistory();
@@ -335,6 +337,7 @@ export const PerformerList: React.FC<IPerformerList> = ({
         renderContent={renderContent}
         renderEditDialog={renderEditDialog}
         renderDeleteDialog={renderDeleteDialog}
+        showEffectiveFilter={showEffectiveFilter}
       />
     </ItemListContext>
   );

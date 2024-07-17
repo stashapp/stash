@@ -16,6 +16,8 @@ export const TagScenesPanel: React.FC<ITagScenesPanel> = ({ active, tag }) => {
       filterHook={filterHook}
       alterQuery={active}
       view={View.TagScenes}
+      // show the effective filter to allow changing the depth
+      showEffectiveFilter
     />
   );
 };

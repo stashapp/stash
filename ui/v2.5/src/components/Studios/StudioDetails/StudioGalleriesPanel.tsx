@@ -19,6 +19,8 @@ export const StudioGalleriesPanel: React.FC<IStudioGalleriesPanel> = ({
       filterHook={filterHook}
       alterQuery={active}
       view={View.StudioGalleries}
+      // show the effective filter to allow changing the depth
+      showEffectiveFilter
     />
   );
 };

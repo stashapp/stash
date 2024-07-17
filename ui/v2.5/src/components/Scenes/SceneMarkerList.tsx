@@ -27,12 +27,14 @@ interface ISceneMarkerList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
   view?: View;
   alterQuery?: boolean;
+  showEffectiveFilter?: boolean;
 }
 
 export const SceneMarkerList: React.FC<ISceneMarkerList> = ({
   filterHook,
   view,
   alterQuery,
+  showEffectiveFilter,
 }) => {
   const intl = useIntl();
   const history = useHistory();
@@ -110,6 +112,7 @@ export const SceneMarkerList: React.FC<ISceneMarkerList> = ({
         otherOperations={otherOperations}
         addKeybinds={addKeybinds}
         renderContent={renderContent}
+        showEffectiveFilter={showEffectiveFilter}
       />
     </ItemListContext>
   );

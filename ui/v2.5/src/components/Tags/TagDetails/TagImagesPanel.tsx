@@ -16,6 +16,8 @@ export const TagImagesPanel: React.FC<ITagImagesPanel> = ({ active, tag }) => {
       filterHook={filterHook}
       alterQuery={active}
       view={View.TagImages}
+      // show the effective filter to allow changing the depth
+      showEffectiveFilter
     />
   );
 };

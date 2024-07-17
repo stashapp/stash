@@ -269,6 +269,7 @@ interface IImageList {
   alterQuery?: boolean;
   extraOperations?: IItemListOperation<GQL.FindImagesQueryResult>[];
   chapters?: GQL.GalleryChapterDataFragment[];
+  showEffectiveFilter?: boolean;
 }
 
 export const ImageList: React.FC<IImageList> = ({
@@ -277,6 +278,7 @@ export const ImageList: React.FC<IImageList> = ({
   alterQuery,
   extraOperations,
   chapters = [],
+  showEffectiveFilter,
 }) => {
   const intl = useIntl();
   const history = useHistory();
@@ -431,6 +433,7 @@ export const ImageList: React.FC<IImageList> = ({
         renderEditDialog={renderEditDialog}
         renderDeleteDialog={renderDeleteDialog}
         renderMetadataByline={renderMetadataByline}
+        showEffectiveFilter={showEffectiveFilter}
       />
     </ItemListContext>
   );

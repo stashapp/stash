@@ -58,6 +58,8 @@ export const TagMarkersPanel: React.FC<ITagMarkersPanel> = ({
       filterHook={filterHook}
       alterQuery={active}
       view={View.TagMarkers}
+      // show the effective filter to allow changing the depth
+      showEffectiveFilter
     />
   );
 };

@@ -28,12 +28,14 @@ interface IGalleryList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
   view?: View;
   alterQuery?: boolean;
+  showEffectiveFilter?: boolean;
 }
 
 export const GalleryList: React.FC<IGalleryList> = ({
   filterHook,
   view,
   alterQuery,
+  showEffectiveFilter,
 }) => {
   const intl = useIntl();
   const history = useHistory();
@@ -202,6 +204,7 @@ export const GalleryList: React.FC<IGalleryList> = ({
         renderContent={renderContent}
         renderEditDialog={renderEditDialog}
         renderDeleteDialog={renderDeleteDialog}
+        showEffectiveFilter={showEffectiveFilter}
       />
     </ItemListContext>
   );

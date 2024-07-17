@@ -8,5 +8,12 @@ export const TagGroupsPanel: React.FC<{
   tag: GQL.TagDataFragment;
 }> = ({ active, tag }) => {
   const filterHook = useTagFilterHook(tag);
-  return <GroupList filterHook={filterHook} alterQuery={active} />;
+  return (
+    <GroupList
+      filterHook={filterHook}
+      alterQuery={active}
+      // show the effective filter to allow changing the depth
+      showEffectiveFilter
+    />
+  );
 };

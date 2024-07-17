@@ -13,5 +13,12 @@ export const TagStudiosPanel: React.FC<ITagStudiosPanel> = ({
   tag,
 }) => {
   const filterHook = useTagFilterHook(tag);
-  return <StudioList filterHook={filterHook} alterQuery={active} />;
+  return (
+    <StudioList
+      filterHook={filterHook}
+      alterQuery={active}
+      // show the effective filter to allow changing the depth
+      showEffectiveFilter
+    />
+  );
 };

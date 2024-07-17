@@ -36,6 +36,8 @@ export const StudioPerformersPanel: React.FC<IStudioPerformersPanel> = ({
       extraCriteria={extraCriteria}
       alterQuery={active}
       view={View.StudioPerformers}
+      // show the effective filter to allow changing the depth
+      showEffectiveFilter
     />
   );
 };

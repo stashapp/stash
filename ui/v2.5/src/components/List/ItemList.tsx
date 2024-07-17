@@ -37,6 +37,7 @@ interface IItemListProps<T extends QueryResult, E extends IHasID> {
   view?: View;
   zoomable?: boolean;
   otherOperations?: IItemListOperation<T>[];
+  showEffectiveFilter?: boolean;
   renderContent: (
     result: T,
     filter: ListFilterModel,
@@ -68,6 +69,7 @@ export const ItemList = <T extends QueryResult, E extends IHasID>(
     view,
     zoomable,
     otherOperations,
+    showEffectiveFilter = false,
     renderContent,
     renderEditDialog,
     renderDeleteDialog,
@@ -114,14 +116,21 @@ export const ItemList = <T extends QueryResult, E extends IHasID>(
 
       showModal(
         <EditFilterDialog
-          filter={filter}
+          filter={!showEffectiveFilter ? filter : effectiveFilter}
           onApply={onApplyEditFilter}
           onCancel={() => closeModal()}
           editingCriterion={editingCriterion}
         />
       );
     },
-    [filter, updateFilter, showModal, closeModal]
+    [
+      filter,
+      showEffectiveFilter,
+      effectiveFilter,
+      updateFilter,
+      showModal,
+      closeModal,
+    ]
   );
 
   useListKeyboardShortcuts({
@@ -226,7 +235,9 @@ export const ItemList = <T extends QueryResult, E extends IHasID>(
         onDelete={renderDeleteDialog ? onDelete : undefined}
       />
       <FilterTags
-        criteria={filter.criteria}
+        criteria={
+          !showEffectiveFilter ? filter.criteria : effectiveFilter.criteria
+        }
         onEditCriterion={(c) => showEditFilter(c.criterionOption.type)}
         onRemoveCriterion={onRemoveCriterion}
         onRemoveAll={() => onClearAllCriteria()}

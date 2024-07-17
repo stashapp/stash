@@ -19,6 +19,8 @@ export const StudioGroupsPanel: React.FC<IStudioGroupsPanel> = ({
       filterHook={filterHook}
       alterQuery={active}
       view={View.StudioGroups}
+      // show the effective filter to allow changing the depth
+      showEffectiveFilter
     />
   );
 };
