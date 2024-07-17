@@ -260,11 +260,12 @@ export class ILabeledIdCriterionOption extends CriterionOption {
 }
 
 export class ILabeledIdCriterion extends Criterion<ILabeledId[]> {
+  constructor(type: CriterionOption, value: ILabeledId[] = []) {
+    super(type, value);
+  }
+
   public clone(): Criterion<ILabeledId[]> {
-    const newCriterion = new (this.constructor as new (
-      type: CriterionOption,
-      value: ILabeledId[]
-    ) => Criterion<ILabeledId[]>)(
+    const newCriterion = new ILabeledIdCriterion(
       this.criterionOption,
       this.value.map((v) => ({ ...v }))
     );
@@ -293,32 +294,29 @@ export class ILabeledIdCriterion extends Criterion<ILabeledId[]> {
 
     return this.value.length > 0;
   }
-
-  constructor(type: CriterionOption) {
-    super(type, []);
-  }
 }
 
 export class IHierarchicalLabeledIdCriterion extends Criterion<IHierarchicalLabelValue> {
-  constructor(type: CriterionOption) {
-    const value: IHierarchicalLabelValue = {
+  constructor(
+    type: CriterionOption,
+    value: IHierarchicalLabelValue = {
       items: [],
       excluded: [],
       depth: 0,
-    };
-
+    }
+  ) {
     super(type, value);
   }
 
   public clone(): Criterion<IHierarchicalLabelValue> {
-    const newCriterion = new (this.constructor as new (
-      type: CriterionOption,
-      value: IHierarchicalLabelValue
-    ) => Criterion<IHierarchicalLabelValue>)(this.criterionOption, {
-      ...this.value,
-      items: this.value.items.map((v) => ({ ...v })),
-      excluded: this.value.excluded.map((v) => ({ ...v })),
-    });
+    const newCriterion = new IHierarchicalLabeledIdCriterion(
+      this.criterionOption,
+      {
+        ...this.value,
+        items: this.value.items.map((v) => ({ ...v })),
+        excluded: this.value.excluded.map((v) => ({ ...v })),
+      }
+    );
     newCriterion.modifier = this.modifier;
     return newCriterion;
   }
@@ -535,15 +533,15 @@ export class StringCriterion extends Criterion<string> {
 }
 
 export class MultiStringCriterion extends Criterion<string[]> {
-  constructor(type: CriterionOption) {
-    super(type, []);
+  constructor(type: CriterionOption, value: string[] = []) {
+    super(type, value);
   }
 
   public clone(): Criterion<string[]> {
-    const newCriterion = new (this.constructor as new (
-      type: CriterionOption,
-      value: string[]
-    ) => Criterion<string[]>)(this.criterionOption, this.value.slice());
+    const newCriterion = new MultiStringCriterion(
+      this.criterionOption,
+      this.value.slice()
+    );
     newCriterion.modifier = this.modifier;
     return newCriterion;
   }
