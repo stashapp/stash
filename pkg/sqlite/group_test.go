@@ -27,22 +27,34 @@ func loadGroupRelationships(ctx context.Context, expected models.Group, actual *
 			return err
 		}
 	}
+	if expected.ContainingGroups.Loaded() {
+		if err := actual.LoadContainingGroupIDs(ctx, db.Group); err != nil {
+			return err
+		}
+	}
+	if expected.SubGroups.Loaded() {
+		if err := actual.LoadSubGroupIDs(ctx, db.Group); err != nil {
+			return err
+		}
+	}
 
 	return nil
 }
 
 func Test_GroupStore_Create(t *testing.T) {
 	var (
-		name      = "name"
-		url       = "url"
-		aliases   = "alias1, alias2"
-		director  = "director"
-		rating    = 60
-		duration  = 34
-		synopsis  = "synopsis"
-		date, _   = models.ParseDate("2003-02-01")
-		createdAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
-		updatedAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		name                       = "name"
+		url                        = "url"
+		aliases                    = "alias1, alias2"
+		director                   = "director"
+		rating                     = 60
+		duration                   = 34
+		synopsis                   = "synopsis"
+		date, _                    = models.ParseDate("2003-02-01")
+		containingGroupDescription = "containingGroupDescription"
+		subGroupDescription        = "subGroupDescription"
+		createdAt                  = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		updatedAt                  = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 	)
 
 	tests := []struct {
@@ -53,15 +65,21 @@ func Test_GroupStore_Create(t *testing.T) {
 		{
 			"full",
 			models.Group{
-				Name:      name,
-				Duration:  &duration,
-				Date:      &date,
-				Rating:    &rating,
-				StudioID:  &studioIDs[studioIdxWithGroup],
-				Director:  director,
-				Synopsis:  synopsis,
-				URLs:      models.NewRelatedStrings([]string{url}),
-				TagIDs:    models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithGroup]}),
+				Name:     name,
+				Duration: &duration,
+				Date:     &date,
+				Rating:   &rating,
+				StudioID: &studioIDs[studioIdxWithGroup],
+				Director: director,
+				Synopsis: synopsis,
+				URLs:     models.NewRelatedStrings([]string{url}),
+				TagIDs:   models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithGroup]}),
+				ContainingGroups: models.NewRelatedGroupDescriptions([]models.GroupIDDescription{
+					{GroupID: groupIDs[groupIdxWithScene], Description: containingGroupDescription},
+				}),
+				SubGroups: models.NewRelatedGroupDescriptions([]models.GroupIDDescription{
+					{GroupID: groupIDs[groupIdxWithStudio], Description: subGroupDescription},
+				}),
 				Aliases:   aliases,
 				CreatedAt: createdAt,
 				UpdatedAt: updatedAt,
@@ -73,6 +91,22 @@ func Test_GroupStore_Create(t *testing.T) {
 			models.Group{
 				Name:   name,
 				TagIDs: models.NewRelatedIDs([]int{invalidID}),
+			},
+			true,
+		},
+		{
+			"invalid containing group id",
+			models.Group{
+				Name:             name,
+				ContainingGroups: models.NewRelatedGroupDescriptions([]models.GroupIDDescription{{GroupID: invalidID}}),
+			},
+			true,
+		},
+		{
+			"invalid sub group id",
+			models.Group{
+				Name:      name,
+				SubGroups: models.NewRelatedGroupDescriptions([]models.GroupIDDescription{{GroupID: invalidID}}),
 			},
 			true,
 		},
@@ -131,36 +165,44 @@ func Test_GroupStore_Create(t *testing.T) {
 
 func Test_groupQueryBuilder_Update(t *testing.T) {
 	var (
-		name      = "name"
-		url       = "url"
-		aliases   = "alias1, alias2"
-		director  = "director"
-		rating    = 60
-		duration  = 34
-		synopsis  = "synopsis"
-		date, _   = models.ParseDate("2003-02-01")
-		createdAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
-		updatedAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		name                       = "name"
+		url                        = "url"
+		aliases                    = "alias1, alias2"
+		director                   = "director"
+		rating                     = 60
+		duration                   = 34
+		synopsis                   = "synopsis"
+		date, _                    = models.ParseDate("2003-02-01")
+		containingGroupDescription = "containingGroupDescription"
+		subGroupDescription        = "subGroupDescription"
+		createdAt                  = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		updatedAt                  = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 	)
 
 	tests := []struct {
 		name          string
-		updatedObject *models.Group
+		updatedObject models.Group
 		wantErr       bool
 	}{
 		{
 			"full",
-			&models.Group{
-				ID:        groupIDs[groupIdxWithTag],
-				Name:      name,
-				Duration:  &duration,
-				Date:      &date,
-				Rating:    &rating,
-				StudioID:  &studioIDs[studioIdxWithGroup],
-				Director:  director,
-				Synopsis:  synopsis,
-				URLs:      models.NewRelatedStrings([]string{url}),
-				TagIDs:    models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithGroup]}),
+			models.Group{
+				ID:       groupIDs[groupIdxWithTag],
+				Name:     name,
+				Duration: &duration,
+				Date:     &date,
+				Rating:   &rating,
+				StudioID: &studioIDs[studioIdxWithGroup],
+				Director: director,
+				Synopsis: synopsis,
+				URLs:     models.NewRelatedStrings([]string{url}),
+				TagIDs:   models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithGroup]}),
+				ContainingGroups: models.NewRelatedGroupDescriptions([]models.GroupIDDescription{
+					{GroupID: groupIDs[groupIdxWithScene], Description: containingGroupDescription},
+				}),
+				SubGroups: models.NewRelatedGroupDescriptions([]models.GroupIDDescription{
+					{GroupID: groupIDs[groupIdxWithStudio], Description: subGroupDescription},
+				}),
 				Aliases:   aliases,
 				CreatedAt: createdAt,
 				UpdatedAt: updatedAt,
@@ -169,7 +211,7 @@ func Test_groupQueryBuilder_Update(t *testing.T) {
 		},
 		{
 			"clear tag ids",
-			&models.Group{
+			models.Group{
 				ID:     groupIDs[groupIdxWithTag],
 				Name:   name,
 				TagIDs: models.NewRelatedIDs([]int{}),
@@ -177,8 +219,26 @@ func Test_groupQueryBuilder_Update(t *testing.T) {
 			false,
 		},
 		{
+			"clear containing ids",
+			models.Group{
+				ID:               groupIDs[groupIdxWithParent],
+				Name:             name,
+				ContainingGroups: models.NewRelatedGroupDescriptions([]models.GroupIDDescription{}),
+			},
+			false,
+		},
+		{
+			"clear sub ids",
+			models.Group{
+				ID:        groupIDs[groupIdxWithChild],
+				Name:      name,
+				SubGroups: models.NewRelatedGroupDescriptions([]models.GroupIDDescription{}),
+			},
+			false,
+		},
+		{
 			"invalid studio id",
-			&models.Group{
+			models.Group{
 				ID:       groupIDs[groupIdxWithScene],
 				Name:     name,
 				StudioID: &invalidID,
@@ -187,10 +247,28 @@ func Test_groupQueryBuilder_Update(t *testing.T) {
 		},
 		{
 			"invalid tag id",
-			&models.Group{
+			models.Group{
 				ID:     groupIDs[groupIdxWithScene],
 				Name:   name,
 				TagIDs: models.NewRelatedIDs([]int{invalidID}),
+			},
+			true,
+		},
+		{
+			"invalid containing group id",
+			models.Group{
+				ID:               groupIDs[groupIdxWithScene],
+				Name:             name,
+				ContainingGroups: models.NewRelatedGroupDescriptions([]models.GroupIDDescription{{GroupID: invalidID}}),
+			},
+			true,
+		},
+		{
+			"invalid sub group id",
+			models.Group{
+				ID:        groupIDs[groupIdxWithScene],
+				Name:      name,
+				SubGroups: models.NewRelatedGroupDescriptions([]models.GroupIDDescription{{GroupID: invalidID}}),
 			},
 			true,
 		},
@@ -201,9 +279,10 @@ func Test_groupQueryBuilder_Update(t *testing.T) {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
 
-			copy := *tt.updatedObject
+			actual := tt.updatedObject
+			expected := tt.updatedObject
 
-			if err := qb.Update(ctx, tt.updatedObject); (err != nil) != tt.wantErr {
+			if err := qb.Update(ctx, &actual); (err != nil) != tt.wantErr {
 				t.Errorf("groupQueryBuilder.Update() error = %v, wantErr %v", err, tt.wantErr)
 			}
 
@@ -211,49 +290,61 @@ func Test_groupQueryBuilder_Update(t *testing.T) {
 				return
 			}
 
-			s, err := qb.Find(ctx, tt.updatedObject.ID)
+			s, err := qb.Find(ctx, actual.ID)
 			if err != nil {
 				t.Errorf("groupQueryBuilder.Find() error = %v", err)
 			}
 
 			// load relationships
-			if err := loadGroupRelationships(ctx, copy, s); err != nil {
+			if err := loadGroupRelationships(ctx, expected, s); err != nil {
 				t.Errorf("loadGroupRelationships() error = %v", err)
 				return
 			}
 
-			assert.Equal(copy, *s)
+			assert.Equal(expected, *s)
 		})
 	}
 }
 
-func clearGroupPartial() models.GroupPartial {
+var clearGroupPartial = models.GroupPartial{
 	// leave mandatory fields
-	return models.GroupPartial{
-		Aliases:  models.OptionalString{Set: true, Null: true},
-		Synopsis: models.OptionalString{Set: true, Null: true},
-		Director: models.OptionalString{Set: true, Null: true},
-		Duration: models.OptionalInt{Set: true, Null: true},
-		URLs:     &models.UpdateStrings{Mode: models.RelationshipUpdateModeSet},
-		Date:     models.OptionalDate{Set: true, Null: true},
-		Rating:   models.OptionalInt{Set: true, Null: true},
-		StudioID: models.OptionalInt{Set: true, Null: true},
-		TagIDs:   &models.UpdateIDs{Mode: models.RelationshipUpdateModeSet},
+	Aliases:          models.OptionalString{Set: true, Null: true},
+	Synopsis:         models.OptionalString{Set: true, Null: true},
+	Director:         models.OptionalString{Set: true, Null: true},
+	Duration:         models.OptionalInt{Set: true, Null: true},
+	URLs:             &models.UpdateStrings{Mode: models.RelationshipUpdateModeSet},
+	Date:             models.OptionalDate{Set: true, Null: true},
+	Rating:           models.OptionalInt{Set: true, Null: true},
+	StudioID:         models.OptionalInt{Set: true, Null: true},
+	TagIDs:           &models.UpdateIDs{Mode: models.RelationshipUpdateModeSet},
+	ContainingGroups: &models.UpdateGroupDescriptions{Mode: models.RelationshipUpdateModeSet},
+	SubGroups:        &models.UpdateGroupDescriptions{Mode: models.RelationshipUpdateModeSet},
+}
+
+func emptyGroup(idx int) models.Group {
+	return models.Group{
+		ID:               groupIDs[idx],
+		Name:             groupNames[idx],
+		TagIDs:           models.NewRelatedIDs([]int{}),
+		ContainingGroups: models.NewRelatedGroupDescriptions([]models.GroupIDDescription{}),
+		SubGroups:        models.NewRelatedGroupDescriptions([]models.GroupIDDescription{}),
 	}
 }
 
 func Test_groupQueryBuilder_UpdatePartial(t *testing.T) {
 	var (
-		name      = "name"
-		url       = "url"
-		aliases   = "alias1, alias2"
-		director  = "director"
-		rating    = 60
-		duration  = 34
-		synopsis  = "synopsis"
-		date, _   = models.ParseDate("2003-02-01")
-		createdAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
-		updatedAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		name                       = "name"
+		url                        = "url"
+		aliases                    = "alias1, alias2"
+		director                   = "director"
+		rating                     = 60
+		duration                   = 34
+		synopsis                   = "synopsis"
+		date, _                    = models.ParseDate("2003-02-01")
+		containingGroupDescription = "containingGroupDescription"
+		subGroupDescription        = "subGroupDescription"
+		createdAt                  = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		updatedAt                  = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 	)
 
 	tests := []struct {
@@ -285,6 +376,20 @@ func Test_groupQueryBuilder_UpdatePartial(t *testing.T) {
 					IDs:  []int{tagIDs[tagIdx1WithGroup], tagIDs[tagIdx1WithDupName]},
 					Mode: models.RelationshipUpdateModeSet,
 				},
+				ContainingGroups: &models.UpdateGroupDescriptions{
+					Groups: []models.GroupIDDescription{
+						{GroupID: groupIDs[groupIdxWithStudio], Description: containingGroupDescription},
+						{GroupID: groupIDs[groupIdxWithThreeTags], Description: containingGroupDescription},
+					},
+					Mode: models.RelationshipUpdateModeSet,
+				},
+				SubGroups: &models.UpdateGroupDescriptions{
+					Groups: []models.GroupIDDescription{
+						{GroupID: groupIDs[groupIdxWithTag], Description: subGroupDescription},
+						{GroupID: groupIDs[groupIdxWithDupName], Description: subGroupDescription},
+					},
+					Mode: models.RelationshipUpdateModeSet,
+				},
 			},
 			models.Group{
 				ID:        groupIDs[groupIdxWithScene],
@@ -300,17 +405,113 @@ func Test_groupQueryBuilder_UpdatePartial(t *testing.T) {
 				CreatedAt: createdAt,
 				UpdatedAt: updatedAt,
 				TagIDs:    models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithGroup]}),
+				ContainingGroups: models.NewRelatedGroupDescriptions([]models.GroupIDDescription{
+					{GroupID: groupIDs[groupIdxWithStudio], Description: containingGroupDescription},
+					{GroupID: groupIDs[groupIdxWithThreeTags], Description: containingGroupDescription},
+				}),
+				SubGroups: models.NewRelatedGroupDescriptions([]models.GroupIDDescription{
+					{GroupID: groupIDs[groupIdxWithTag], Description: subGroupDescription},
+					{GroupID: groupIDs[groupIdxWithDupName], Description: subGroupDescription},
+				}),
 			},
 			false,
 		},
 		{
 			"clear all",
 			groupIDs[groupIdxWithScene],
-			clearGroupPartial(),
+			clearGroupPartial,
+			emptyGroup(groupIdxWithScene),
+			false,
+		},
+		{
+			"clear tag ids",
+			groupIDs[groupIdxWithTag],
+			clearGroupPartial,
+			emptyGroup(groupIdxWithTag),
+			false,
+		},
+		{
+			"clear group relationships",
+			groupIDs[groupIdxWithParentAndChild],
+			clearGroupPartial,
+			emptyGroup(groupIdxWithParentAndChild),
+			false,
+		},
+		{
+			"add containing group",
+			groupIDs[groupIdxWithParent],
+			models.GroupPartial{
+				ContainingGroups: &models.UpdateGroupDescriptions{
+					Groups: []models.GroupIDDescription{
+						{GroupID: groupIDs[groupIdxWithScene], Description: containingGroupDescription},
+					},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			},
 			models.Group{
-				ID:     groupIDs[groupIdxWithScene],
-				Name:   groupNames[groupIdxWithScene],
-				TagIDs: models.NewRelatedIDs([]int{}),
+				ID:   groupIDs[groupIdxWithParent],
+				Name: groupNames[groupIdxWithParent],
+				ContainingGroups: models.NewRelatedGroupDescriptions([]models.GroupIDDescription{
+					{GroupID: groupIDs[groupIdxWithChild]},
+					{GroupID: groupIDs[groupIdxWithScene], Description: containingGroupDescription},
+				}),
+			},
+			false,
+		},
+		{
+			"add sub group",
+			groupIDs[groupIdxWithChild],
+			models.GroupPartial{
+				SubGroups: &models.UpdateGroupDescriptions{
+					Groups: []models.GroupIDDescription{
+						{GroupID: groupIDs[groupIdxWithScene], Description: subGroupDescription},
+					},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			},
+			models.Group{
+				ID:   groupIDs[groupIdxWithChild],
+				Name: groupNames[groupIdxWithChild],
+				SubGroups: models.NewRelatedGroupDescriptions([]models.GroupIDDescription{
+					{GroupID: groupIDs[groupIdxWithParent]},
+					{GroupID: groupIDs[groupIdxWithScene], Description: subGroupDescription},
+				}),
+			},
+			false,
+		},
+		{
+			"remove containing group",
+			groupIDs[groupIdxWithParent],
+			models.GroupPartial{
+				ContainingGroups: &models.UpdateGroupDescriptions{
+					Groups: []models.GroupIDDescription{
+						{GroupID: groupIDs[groupIdxWithChild]},
+					},
+					Mode: models.RelationshipUpdateModeRemove,
+				},
+			},
+			models.Group{
+				ID:               groupIDs[groupIdxWithParent],
+				Name:             groupNames[groupIdxWithParent],
+				ContainingGroups: models.NewRelatedGroupDescriptions([]models.GroupIDDescription{}),
+			},
+			false,
+		},
+		{
+			"remove sub group",
+			groupIDs[groupIdxWithChild],
+			models.GroupPartial{
+				SubGroups: &models.UpdateGroupDescriptions{
+					Groups: []models.GroupIDDescription{
+						{GroupID: groupIDs[groupIdxWithParent]},
+					},
+					Mode: models.RelationshipUpdateModeRemove,
+				},
+			},
+			models.Group{
+				ID:        groupIDs[groupIdxWithChild],
+				Name:      groupNames[groupIdxWithChild],
+				SubGroups: models.NewRelatedGroupDescriptions([]models.GroupIDDescription{}),
 			},
 			false,
 		},

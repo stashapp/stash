@@ -68,3 +68,13 @@ func GroupsScenesFromInput(input []SceneMovieInput) ([]GroupsScenes, error) {
 
 	return ret, nil
 }
+
+type GroupIDDescription struct {
+	GroupID     int    `json:"group_id"`
+	Description string `json:"description"`
+}
+
+type UpdateGroupDescriptions struct {
+	Groups []GroupIDDescription   `json:"groups"`
+	Mode   RelationshipUpdateMode `json:"mode"`
+}

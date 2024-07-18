@@ -289,6 +289,29 @@ func (_m *GroupReaderWriter) GetBackImage(ctx context.Context, groupID int) ([]b
 	return r0, r1
 }
 
+// GetContainingGroupDescriptions provides a mock function with given fields: ctx, id
+func (_m *GroupReaderWriter) GetContainingGroupDescriptions(ctx context.Context, id int) ([]models.GroupIDDescription, error) {
+	ret := _m.Called(ctx, id)
+
+	var r0 []models.GroupIDDescription
+	if rf, ok := ret.Get(0).(func(context.Context, int) []models.GroupIDDescription); ok {
+		r0 = rf(ctx, id)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]models.GroupIDDescription)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, id)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetFrontImage provides a mock function with given fields: ctx, groupID
 func (_m *GroupReaderWriter) GetFrontImage(ctx context.Context, groupID int) ([]byte, error) {
 	ret := _m.Called(ctx, groupID)
@@ -305,6 +328,29 @@ func (_m *GroupReaderWriter) GetFrontImage(ctx context.Context, groupID int) ([]
 	var r1 error
 	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
 		r1 = rf(ctx, groupID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetSubGroupDescriptions provides a mock function with given fields: ctx, id
+func (_m *GroupReaderWriter) GetSubGroupDescriptions(ctx context.Context, id int) ([]models.GroupIDDescription, error) {
+	ret := _m.Called(ctx, id)
+
+	var r0 []models.GroupIDDescription
+	if rf, ok := ret.Get(0).(func(context.Context, int) []models.GroupIDDescription); ok {
+		r0 = rf(ctx, id)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]models.GroupIDDescription)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, id)
 	} else {
 		r1 = ret.Error(1)
 	}

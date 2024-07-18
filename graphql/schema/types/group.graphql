@@ -1,3 +1,9 @@
+"GroupDescription represents a relationship to a group with a description of the relationship"
+type GroupDescription {
+  group: Group!
+  description: String
+}
+
 type Group {
   id: ID!
   name: String!
@@ -15,10 +21,18 @@ type Group {
   created_at: Time!
   updated_at: Time!
 
+  containing_groups: [GroupDescription!]!
+  sub_groups: [GroupDescription!]!
+
   front_image_path: String # Resolver
   back_image_path: String # Resolver
   scene_count: Int! # Resolver
   scenes: [Scene!]!
+}
+
+input GroupDescriptionInput {
+  group_id: ID!
+  description: String
 }
 
 input GroupCreateInput {
@@ -34,6 +48,10 @@ input GroupCreateInput {
   synopsis: String
   urls: [String!]
   tag_ids: [ID!]
+
+  containing_groups: [GroupDescriptionInput!]
+  sub_groups: [GroupDescriptionInput!]
+
   "This should be a URL or a base64 encoded data URL"
   front_image: String
   "This should be a URL or a base64 encoded data URL"
@@ -53,6 +71,10 @@ input GroupUpdateInput {
   synopsis: String
   urls: [String!]
   tag_ids: [ID!]
+
+  containing_groups: [GroupDescriptionInput!]
+  sub_groups: [GroupDescriptionInput!]
+
   "This should be a URL or a base64 encoded data URL"
   front_image: String
   "This should be a URL or a base64 encoded data URL"
@@ -68,6 +90,9 @@ input BulkGroupUpdateInput {
   director: String
   urls: BulkUpdateStrings
   tag_ids: BulkUpdateIds
+
+  containing_group_ids: BulkUpdateIds
+  sub_group_ids: BulkUpdateIds
 }
 
 input GroupDestroyInput {

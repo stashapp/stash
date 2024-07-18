@@ -27,6 +27,8 @@ const (
 
 	groupURLsTable = "group_urls"
 	groupURLColumn = "url"
+
+	groupRelationsTable = "groups_relations"
 )
 
 type groupRow struct {
@@ -128,6 +130,7 @@ var (
 type GroupStore struct {
 	blobJoinQueryBuilder
 	tagRelationshipStore
+	groupRelationshipStore
 
 	tableMgr *table
 }
@@ -142,6 +145,9 @@ func NewGroupStore(blobStore *BlobStore) *GroupStore {
 			idRelationshipStore: idRelationshipStore{
 				joinTable: groupsTagsTableMgr,
 			},
+		},
+		groupRelationshipStore: groupRelationshipStore{
+			table: groupRelationshipTableMgr,
 		},
 
 		tableMgr: groupTableMgr,
@@ -173,6 +179,14 @@ func (qb *GroupStore) Create(ctx context.Context, newObject *models.Group) error
 	}
 
 	if err := qb.tagRelationshipStore.createRelationships(ctx, id, newObject.TagIDs); err != nil {
+		return err
+	}
+
+	if err := qb.groupRelationshipStore.createContainingRelationships(ctx, id, newObject.ContainingGroups); err != nil {
+		return err
+	}
+
+	if err := qb.groupRelationshipStore.createSubRelationships(ctx, id, newObject.SubGroups); err != nil {
 		return err
 	}
 
@@ -211,6 +225,14 @@ func (qb *GroupStore) UpdatePartial(ctx context.Context, id int, partial models.
 		return nil, err
 	}
 
+	if err := qb.groupRelationshipStore.modifyContainingRelationships(ctx, id, partial.ContainingGroups); err != nil {
+		return nil, err
+	}
+
+	if err := qb.groupRelationshipStore.modifySubRelationships(ctx, id, partial.SubGroups); err != nil {
+		return nil, err
+	}
+
 	return qb.find(ctx, id)
 }
 
@@ -229,6 +251,14 @@ func (qb *GroupStore) Update(ctx context.Context, updatedObject *models.Group) e
 	}
 
 	if err := qb.tagRelationshipStore.replaceRelationships(ctx, updatedObject.ID, updatedObject.TagIDs); err != nil {
+		return err
+	}
+
+	if err := qb.groupRelationshipStore.replaceContainingRelationships(ctx, updatedObject.ID, updatedObject.ContainingGroups); err != nil {
+		return err
+	}
+
+	if err := qb.groupRelationshipStore.replaceSubRelationships(ctx, updatedObject.ID, updatedObject.SubGroups); err != nil {
 		return err
 	}
 

@@ -153,9 +153,14 @@ const (
 	groupIdxWithTag
 	groupIdxWithTwoTags
 	groupIdxWithThreeTags
+	groupIdxWithGrandChild
+	groupIdxWithChild
+	groupIdxWithParentAndChild
+	groupIdxWithParent
+	groupIdxWithGrandParent
 	// groups with dup names start from the end
-	// create 7 more basic groups (can remove this if we add more indexes)
-	groupIdxWithDupName = groupIdxWithStudio + 7
+	// create 2 more basic groups (can remove this if we add more indexes)
+	groupIdxWithDupName = groupIdxWithGrandParent + 2
 
 	groupsNameCase   = groupIdxWithDupName
 	groupsNameNoCase = 1
@@ -541,6 +546,14 @@ var (
 	}
 )
 
+var (
+	groupParentLinks = [][2]int{
+		{groupIdxWithChild, groupIdxWithParent},
+		{groupIdxWithGrandChild, groupIdxWithParentAndChild},
+		{groupIdxWithParentAndChild, groupIdxWithGrandParent},
+	}
+)
+
 func indexesToIDs(ids []int, indexes []int) []int {
 	ret := make([]int, len(indexes))
 	for i, idx := range indexes {
@@ -694,6 +707,10 @@ func populateDB() error {
 		}
 
 		if err := linkTagsParent(ctx, db.Tag); err != nil {
+			return fmt.Errorf("error linking tags parent: %s", err.Error())
+		}
+
+		if err := linkGroupsParent(ctx, db.Group); err != nil {
 			return fmt.Errorf("error linking tags parent: %s", err.Error())
 		}
 
@@ -1882,6 +1899,24 @@ func linkTagsParent(ctx context.Context, qb models.TagReaderWriter) error {
 		parentIDs = append(parentIDs, tagIDs[parentIndex])
 
 		return qb.UpdateParentTags(ctx, tagID, parentIDs)
+	})
+}
+
+func linkGroupsParent(ctx context.Context, qb models.GroupReaderWriter) error {
+	return doLinks(groupParentLinks, func(parentIndex, childIndex int) error {
+		groupID := groupIDs[childIndex]
+
+		p := models.GroupPartial{
+			ContainingGroups: &models.UpdateGroupDescriptions{
+				Groups: []models.GroupIDDescription{
+					{GroupID: groupIDs[parentIndex]},
+				},
+				Mode: models.RelationshipUpdateModeAdd,
+			},
+		}
+
+		_, err := qb.UpdatePartial(ctx, groupID, p)
+		return err
 	})
 }
 

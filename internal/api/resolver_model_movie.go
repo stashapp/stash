@@ -71,6 +71,57 @@ func (r groupResolver) Tags(ctx context.Context, obj *models.Group) (ret []*mode
 	return ret, firstError(errs)
 }
 
+func (r groupResolver) relatedGroups(ctx context.Context, rgd models.RelatedGroupDescriptions) (ret []*GroupDescription, err error) {
+	// rgd must be loaded
+	gds := rgd.List()
+	ids := make([]int, len(gds))
+	for i, gd := range gds {
+		ids[i] = gd.GroupID
+	}
+
+	groups, errs := loaders.From(ctx).GroupByID.LoadAll(ids)
+
+	err = firstError(errs)
+	if err != nil {
+		return
+	}
+
+	ret = make([]*GroupDescription, len(groups))
+	for i, group := range groups {
+		ret[i] = &GroupDescription{Group: group}
+		d := gds[i].Description
+		if d != "" {
+			ret[i].Description = &d
+		}
+	}
+
+	return ret, firstError(errs)
+}
+
+func (r groupResolver) ContainingGroups(ctx context.Context, obj *models.Group) (ret []*GroupDescription, err error) {
+	if !obj.ContainingGroups.Loaded() {
+		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+			return obj.LoadContainingGroupIDs(ctx, r.repository.Group)
+		}); err != nil {
+			return nil, err
+		}
+	}
+
+	return r.relatedGroups(ctx, obj.ContainingGroups)
+}
+
+func (r groupResolver) SubGroups(ctx context.Context, obj *models.Group) (ret []*GroupDescription, err error) {
+	if !obj.SubGroups.Loaded() {
+		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+			return obj.LoadSubGroupIDs(ctx, r.repository.Group)
+		}); err != nil {
+			return nil, err
+		}
+	}
+
+	return r.relatedGroups(ctx, obj.SubGroups)
+}
+
 func (r *groupResolver) FrontImagePath(ctx context.Context, obj *models.Group) (*string, error) {
 	var hasImage bool
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {

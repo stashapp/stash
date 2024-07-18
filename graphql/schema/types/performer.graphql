@@ -56,7 +56,7 @@ type Performer {
   weight: Int
   created_at: Time!
   updated_at: Time!
-  groups: [Group!]! @deprecated(reason: "use groups instead")
+  groups: [Group!]!
   movies: [Movie!]! @deprecated(reason: "use groups instead")
 }
 

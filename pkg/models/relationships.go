@@ -37,6 +37,14 @@ type SceneGroupLoader interface {
 	GetGroups(ctx context.Context, id int) ([]GroupsScenes, error)
 }
 
+type ContainingGroupLoader interface {
+	GetContainingGroupDescriptions(ctx context.Context, id int) ([]GroupIDDescription, error)
+}
+
+type SubGroupLoader interface {
+	GetSubGroupDescriptions(ctx context.Context, id int) ([]GroupIDDescription, error)
+}
+
 type StashIDLoader interface {
 	GetStashIDs(ctx context.Context, relatedID int) ([]StashID, error)
 }
@@ -178,6 +186,75 @@ func (r *RelatedGroups) load(fn func() ([]GroupsScenes, error)) error {
 
 	if ids == nil {
 		ids = []GroupsScenes{}
+	}
+
+	r.list = ids
+
+	return nil
+}
+
+type RelatedGroupDescriptions struct {
+	list []GroupIDDescription
+}
+
+// NewRelatedGroups returns a loaded RelateGroups object with the provided groups.
+// Loaded will return true when called on the returned object if the provided slice is not nil.
+func NewRelatedGroupDescriptions(list []GroupIDDescription) RelatedGroupDescriptions {
+	return RelatedGroupDescriptions{
+		list: list,
+	}
+}
+
+// Loaded returns true if the relationship has been loaded.
+func (r RelatedGroupDescriptions) Loaded() bool {
+	return r.list != nil
+}
+
+func (r RelatedGroupDescriptions) mustLoaded() {
+	if !r.Loaded() {
+		panic("list has not been loaded")
+	}
+}
+
+// List returns the related Groups. Panics if the relationship has not been loaded.
+func (r RelatedGroupDescriptions) List() []GroupIDDescription {
+	r.mustLoaded()
+
+	return r.list
+}
+
+// Add adds the provided ids to the list. Panics if the relationship has not been loaded.
+func (r *RelatedGroupDescriptions) Add(groups ...GroupIDDescription) {
+	r.mustLoaded()
+
+	r.list = append(r.list, groups...)
+}
+
+// ForID returns the GroupsScenes object for the given group ID. Returns nil if not found.
+func (r *RelatedGroupDescriptions) ForID(id int) *GroupIDDescription {
+	r.mustLoaded()
+
+	for _, v := range r.list {
+		if v.GroupID == id {
+			return &v
+		}
+	}
+
+	return nil
+}
+
+func (r *RelatedGroupDescriptions) load(fn func() ([]GroupIDDescription, error)) error {
+	if r.Loaded() {
+		return nil
+	}
+
+	ids, err := fn()
+	if err != nil {
+		return err
+	}
+
+	if ids == nil {
+		ids = []GroupIDDescription{}
 	}
 
 	r.list = ids

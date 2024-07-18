@@ -43,6 +43,16 @@ func groupFromGroupCreateInput(ctx context.Context, input GroupCreateInput) (*mo
 		return nil, fmt.Errorf("converting tag ids: %w", err)
 	}
 
+	newGroup.ContainingGroups, err = translator.groupIDDescriptions(input.ContainingGroups)
+	if err != nil {
+		return nil, fmt.Errorf("converting containing group ids: %w", err)
+	}
+
+	newGroup.SubGroups, err = translator.groupIDDescriptions(input.SubGroups)
+	if err != nil {
+		return nil, fmt.Errorf("converting containing group ids: %w", err)
+	}
+
 	if input.Urls != nil {
 		newGroup.URLs = models.NewRelatedStrings(input.Urls)
 	}
@@ -141,6 +151,18 @@ func groupPartialFromGroupUpdateInput(translator changesetTranslator, input Grou
 		return
 	}
 
+	updatedGroup.ContainingGroups, err = translator.updateGroupIDDescriptions(input.ContainingGroups, "containing_groups")
+	if err != nil {
+		err = fmt.Errorf("converting containing group ids: %w", err)
+		return
+	}
+
+	updatedGroup.SubGroups, err = translator.updateGroupIDDescriptions(input.SubGroups, "sub_groups")
+	if err != nil {
+		err = fmt.Errorf("converting containing group ids: %w", err)
+		return
+	}
+
 	updatedGroup.URLs = translator.updateStrings(input.Urls, "urls")
 
 	return updatedGroup, nil
@@ -227,6 +249,18 @@ func groupPartialFromBulkGroupUpdateInput(translator changesetTranslator, input 
 	updatedGroup.TagIDs, err = translator.updateIdsBulk(input.TagIds, "tag_ids")
 	if err != nil {
 		err = fmt.Errorf("converting tag ids: %w", err)
+		return
+	}
+
+	updatedGroup.ContainingGroups, err = translator.updateGroupIDDescriptionsBulk(input.ContainingGroupIds, "containing_group_ids")
+	if err != nil {
+		err = fmt.Errorf("converting containing group ids: %w", err)
+		return
+	}
+
+	updatedGroup.SubGroups, err = translator.updateGroupIDDescriptionsBulk(input.SubGroupIds, "sub_group_ids")
+	if err != nil {
+		err = fmt.Errorf("converting containing group ids: %w", err)
 		return
 	}
 
