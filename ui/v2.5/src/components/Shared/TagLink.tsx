@@ -73,7 +73,7 @@ export const PerformerLink: React.FC<IPerformerLinkProps> = ({
 
 interface IGroupLinkProps {
   group: INamedObject;
-  linkType?: "scene";
+  linkType?: "scene" | "details";
   className?: string;
 }
 
@@ -86,6 +86,8 @@ export const GroupLink: React.FC<IGroupLinkProps> = ({
     switch (linkType) {
       case "scene":
         return NavUtils.makeGroupScenesUrl(group);
+      case "details":
+        return NavUtils.makeGroupUrl(group.id ?? "");
     }
   }, [group, linkType]);
 

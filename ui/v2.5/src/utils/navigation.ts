@@ -382,6 +382,10 @@ const makePhotographerImagesUrl = (photographer: string) => {
   return `/images?${filter.makeQueryParameters()}`;
 };
 
+const makeGroupUrl = (id: string) => {
+  return `/groups/${id}`;
+};
+
 export function handleUnsavedChanges(
   intl: IntlShape,
   basepath: string,
@@ -409,6 +413,7 @@ const NavUtils = {
   makeStudioGroupsUrl: makeStudioGroupsUrl,
   makeStudioPerformersUrl,
   makeTagUrl,
+  makeGroupUrl,
   makeParentTagsUrl,
   makeChildTagsUrl,
   makeTagSceneMarkersUrl,

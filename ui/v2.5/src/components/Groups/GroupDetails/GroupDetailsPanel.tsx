@@ -5,7 +5,28 @@ import TextUtils from "src/utils/text";
 import { DetailItem } from "src/components/Shared/DetailItem";
 import { Link } from "react-router-dom";
 import { DirectorLink } from "src/components/Shared/Link";
-import { TagLink } from "src/components/Shared/TagLink";
+import { GroupLink, TagLink } from "src/components/Shared/TagLink";
+
+interface IGroupDescription {
+  group: GQL.SlimGroupDataFragment;
+  description?: string | null;
+}
+
+const GroupsList: React.FC<{ groups: IGroupDescription[] }> = ({ groups }) => {
+  if (!groups.length) {
+    return null;
+  }
+
+  return (
+    <ul className="groups-list">
+      {groups.map((entry) => (
+        <li key={entry.group.id}>
+          <GroupLink group={entry.group} linkType="details" />
+        </li>
+      ))}
+    </ul>
+  );
+};
 
 interface IGroupDetailsPanel {
   group: GQL.GroupDataFragment;
@@ -48,6 +69,13 @@ export const GroupDetailsPanel: React.FC<IGroupDetailsPanel> = ({
             value={renderTagsField()}
             fullWidth={fullWidth}
           />
+          {group.containing_groups.length > 0 && (
+            <DetailItem
+              id="containing_groups"
+              value={<GroupsList groups={group.containing_groups} />}
+              fullWidth={fullWidth}
+            />
+          )}
         </>
       );
     }
