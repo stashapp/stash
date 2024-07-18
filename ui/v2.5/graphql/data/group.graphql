@@ -15,6 +15,20 @@ fragment GroupData on Group {
     ...SlimTagData
   }
 
+  containing_groups {
+    group {
+      ...SlimGroupData
+    }
+    description
+  }
+
+  sub_groups {
+    group {
+      ...SlimGroupData
+    }
+    description
+  }
+
   synopsis
   urls
   front_image_path
