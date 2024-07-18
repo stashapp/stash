@@ -86,8 +86,8 @@ func (db *Anonymiser) deleteBlobs() error {
 		func() error { return db.truncateColumn("studios", "image_blob") },
 		func() error { return db.truncateColumn("performers", "image_blob") },
 		func() error { return db.truncateColumn("scenes", "cover_blob") },
-		func() error { return db.truncateColumn("movies", "front_image_blob") },
-		func() error { return db.truncateColumn("movies", "back_image_blob") },
+		func() error { return db.truncateColumn("groups", "front_image_blob") },
+		func() error { return db.truncateColumn("groups", "back_image_blob") },
 
 		func() error { return db.truncateTable("blobs") },
 	})
@@ -893,7 +893,7 @@ func (db *Anonymiser) anonymiseGroups(ctx context.Context) error {
 		}
 	}
 
-	if err := db.anonymiseURLs(ctx, goqu.T(groupURLsTable), "movie_id"); err != nil {
+	if err := db.anonymiseURLs(ctx, goqu.T(groupURLsTable), "group_id"); err != nil {
 		return err
 	}
 
