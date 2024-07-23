@@ -26,7 +26,8 @@ performerByURL:
 xPathScrapers:
   performerSearch:
     performer:
-      Name: //div[@id="search-result"]//p[@data-test="subject-name"]/text()
+      Name: 
+        selector: //div[@id="search-result"]//p[@data-test="subject-name"]/text()
       URL:
         selector: //div[@id="search-result"]//div[@data-test="teaser-subject"]/a/@href
         postProcess:
@@ -42,6 +43,8 @@ xPathScrapers:
         selector: //h1
         postProcess:
           - replace:
+              - regex: '\s\bidentifies\b.*$'
+                with: ""
               - regex: \sBio\s*$
                 with: ""
       URL: //link[@rel="alternate" and @hreflang="x-default"]/@href
@@ -59,9 +62,9 @@ xPathScrapers:
         postProcess:
           - map:
               Asian: Asian
-              Caucasian: White
+              White: Caucasian
               Black: Black
-              Latin: Hispanic
+              Hispanic: Latin
       Country: //a[@data-test="link-country"]/span/text()
       EyeColor: //span[text()='Eye Color']/following-sibling::span/a
       Height:
@@ -78,13 +81,13 @@ xPathScrapers:
         postProcess:
           - map:
               Unknown: ""
-      FakeTits:
+      BreastType:
         selector: //span[text()='Boobs']/following-sibling::span/a
         postProcess:
           - map:
-              Unknown: ""
-              Fake: "Yes"
-              Natural: "No"
+              Unknown: "NA"
+              Fake: "Fake"
+              Natural: "Natural"
       CareerLength:
         selector: //div[contains(@class,'timeline-horizontal')]//p[@class='m-0']
         concat: "-"
@@ -111,7 +114,12 @@ xPathScrapers:
               - regex: Passed away on (.+) at the age of \d+
                 with: $1
           - parseDate: January 2, 2006
-      HairColor: //span[text()='Hair Color']/following-sibling::span/a
+      HairColor: 
+        selector: //span[text()='Hair Color']/following-sibling::span/a
+        postProcess:
+          - map:
+              Brown: "Brunette"
+              Blond: "Blonde"
       Weight:
         selector: //span[text()='Weight']/following-sibling::span/a
         postProcess:
@@ -119,7 +127,7 @@ xPathScrapers:
             - regex: \D+[\s\S]+
               with: ""
 
-# Last updated April 13, 2021
+# Last updated July 03, 2024
 `
 
 func getFreeonesScraper(globalConfig GlobalConfig) scraper {
