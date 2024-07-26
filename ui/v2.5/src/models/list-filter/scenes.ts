@@ -8,7 +8,7 @@ import {
 } from "./criteria/criterion";
 import { HasMarkersCriterionOption } from "./criteria/has-markers";
 import { SceneIsMissingCriterionOption } from "./criteria/is-missing";
-import { GroupsCriterionOption } from "./criteria/groups";
+import { BaseGroupsCriterionOption } from "./criteria/groups";
 import { GalleriesCriterionOption } from "./criteria/galleries";
 import { OrganizedCriterionOption } from "./criteria/organized";
 import { PerformersCriterionOption } from "./criteria/performers";
@@ -105,7 +105,7 @@ const criterionOptions = [
   PerformerFavoriteCriterionOption,
   // StudioTagsCriterionOption,
   StudiosCriterionOption,
-  GroupsCriterionOption,
+  BaseGroupsCriterionOption,
   GalleriesCriterionOption,
   createStringCriterionOption("url"),
   StashIDCriterionOption,

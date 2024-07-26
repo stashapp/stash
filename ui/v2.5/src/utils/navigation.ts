@@ -386,6 +386,25 @@ const makeGroupUrl = (id: string) => {
   return `/groups/${id}`;
 };
 
+const makeContainingGroupsUrl = (group: Partial<GQL.SlimGroupDataFragment>) => {
+  if (!group.id) return "#";
+  const filter = new ListFilterModel(GQL.FilterMode.Groups, undefined);
+  // TODO
+  // const criterion = new TagsCriterion(ChildTagsCriterionOption);
+  // criterion.value = {
+  //   items: [
+  //     {
+  //       id: group.id,
+  //       label: group.name || `Tag ${group.id}`,
+  //     },
+  //   ],
+  //   excluded: [],
+  //   depth: 0,
+  // };
+  // filter.criteria.push(criterion);
+  return `/groups?${filter.makeQueryParameters()}`;
+};
+
 export function handleUnsavedChanges(
   intl: IntlShape,
   basepath: string,
@@ -432,6 +451,7 @@ const NavUtils = {
   makePhotographerGalleriesUrl,
   makePhotographerImagesUrl,
   makeDirectorGroupsUrl,
+  makeContainingGroupsUrl,
 };
 
 export default NavUtils;

@@ -1421,6 +1421,7 @@
   },
   "studio_tags": "Studio Tags",
   "studios": "Studios",
+  "sub_group_of": "Sub-group of {parent}",
   "sub_tag_count": "Sub-Tag Count",
   "sub_tag_of": "Sub-tag of {parent}",
   "sub_tags": "Sub-Tags",
