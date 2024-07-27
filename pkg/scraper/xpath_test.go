@@ -464,13 +464,13 @@ const sceneHTML = `
                                             <div class="pornstarsWrapper">
                                                 Pornstars:&nbsp;
                                                 <a class="pstar-list-btn js-mxp" data-mxptype="Pornstar"
-                                                    data-mxptext="Alex D" href="/pornstar/alex-d">Alex D
+                                                    data-mxptext="Alex D" data-gender="male" href="/pornstar/alex-d">Alex D
                                                 </a>
                                                 , <a class="pstar-list-btn js-mxp" data-mxptype="Pornstar"
-                                                    data-mxptext="Mia Malkova" href="/pornstar/mia-malkova">
+                                                    data-mxptext="Mia Malkova" data-gender="female" href="/pornstar/mia-malkova">
                                                 </a>
                                                 , <a class="pstar-list-btn js-mxp" data-mxptype="Pornstar"
-                                                    data-mxptext="Riley Reid" href="/pornstar/riley-reid">Riley Reid
+                                                    data-mxptext="Riley Reid" data-gender="female" href="/pornstar/riley-reid">Riley Reid
                                                 </a>
                                                 <div class="tooltipTrig suggestBtn" data-title="Add a pornstar">
                                                     <a class="add-btn-small add-pornstar-btn-2">+
@@ -570,6 +570,10 @@ func makeSceneXPathConfig() mappedScraper {
 	performerConfig := make(mappedConfig)
 	performerConfig["Name"] = makeSimpleAttrConfig(`$performerElem/@data-mxptext`)
 	performerConfig["URL"] = makeSimpleAttrConfig(`$performerElem/@href`)
+	performerConfig["Gender"] = mappedScraperAttrConfig{
+		Selector:  `$performerElem/@data-gender`,
+		Duplicate: true,
+	}
 	config.Performers.mappedConfig = performerConfig
 
 	studioConfig := make(mappedConfig)
@@ -636,7 +640,7 @@ func verifyMovies(t *testing.T, expectedMovieNames []string, actualMovies []*mod
 	}
 }
 
-func verifyPerformers(t *testing.T, expectedNames []string, expectedURLs []string, actualPerformers []*models.ScrapedPerformer) {
+func verifyPerformers(t *testing.T, expectedNames []string, expectedURLs []string, expectedGenders []string, actualPerformers []*models.ScrapedPerformer) {
 	t.Helper()
 
 	i := 0
@@ -645,16 +649,24 @@ func verifyPerformers(t *testing.T, expectedNames []string, expectedURLs []strin
 		actualName := ""
 		expectedURL := ""
 		actualURL := ""
+		expectedGender := ""
+		actualGender := ""
 		if i < len(expectedNames) {
 			expectedName = expectedNames[i]
 		}
 		if i < len(expectedURLs) {
 			expectedURL = expectedURLs[i]
 		}
+		if i < len(expectedGenders) {
+			expectedGender = expectedGenders[i]
+		}
 		if i < len(actualPerformers) {
 			actualName = *actualPerformers[i].Name
 			if actualPerformers[i].URL != nil {
 				actualURL = *actualPerformers[i].URL
+			}
+			if actualPerformers[i].Gender != nil {
+				actualGender = *actualPerformers[i].Gender
 			}
 		}
 
@@ -663,6 +675,9 @@ func verifyPerformers(t *testing.T, expectedNames []string, expectedURLs []strin
 		}
 		if expectedURL != actualURL {
 			t.Errorf("Expected performer URL %s, got %s", expectedURL, actualURL)
+		}
+		if expectedGender != actualGender {
+			t.Errorf("Expected performer Gender %s, got %s", expectedGender, actualGender)
 		}
 		i++
 	}
@@ -729,7 +744,13 @@ func TestApplySceneXPathConfig(t *testing.T) {
 		"/pornstar/riley-reid",
 	}
 
-	verifyPerformers(t, expectedPerformerNames, expectedPerformerURLs, scene.Performers)
+	expectedPerformerGenders := []string{
+		"male",
+		"female",
+		"female",
+	}
+
+	verifyPerformers(t, expectedPerformerNames, expectedPerformerURLs, expectedPerformerGenders, scene.Performers)
 
 	const expectedStudioName = "Sis Loves Me"
 	const expectedStudioURL = "/channels/sis-loves-me"

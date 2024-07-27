@@ -82,7 +82,7 @@ func (s mappedConfig) postProcess(ctx context.Context, q mappedQuery, attrConfig
 		if attrConfig.hasSplit() {
 			results := attrConfig.splitString(result)
 			// skip cleaning when the query is used for searching
-			if q.getType() == SearchQuery {
+			if q.getType() == SearchQuery || attrConfig.hasDuplicate() {
 				return results
 			}
 			results = attrConfig.cleanResults(results)
@@ -100,7 +100,7 @@ func (s mappedConfig) postProcess(ctx context.Context, q mappedQuery, attrConfig
 			ret = append(ret, text)
 		}
 		// skip cleaning when the query is used for searching
-		if q.getType() == SearchQuery {
+		if q.getType() == SearchQuery || attrConfig.hasDuplicate() {
 			return ret
 		}
 		ret = attrConfig.cleanResults(ret)
@@ -660,6 +660,7 @@ type mappedScraperAttrConfig struct {
 	PostProcess []mappedPostProcessAction `yaml:"postProcess"`
 	Concat      string                    `yaml:"concat"`
 	Split       string                    `yaml:"split"`
+	Duplicate   bool                      `yaml:"duplicate"`
 
 	postProcessActions []postProcessAction
 
@@ -741,6 +742,10 @@ func (c mappedScraperAttrConfig) hasConcat() bool {
 
 func (c mappedScraperAttrConfig) hasSplit() bool {
 	return c.Split != ""
+}
+
+func (c mappedScraperAttrConfig) hasDuplicate() bool {
+	return c.Duplicate
 }
 
 func (c mappedScraperAttrConfig) concatenateResults(nodes []string) string {
