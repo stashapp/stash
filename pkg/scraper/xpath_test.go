@@ -662,7 +662,7 @@ func verifyPerformers(t *testing.T, expectedNames []string, expectedURLs []strin
 			t.Errorf("Expected performer name %s, got %s", expectedName, actualName)
 		}
 		if expectedURL != actualURL {
-			t.Errorf("Expected performer URL %s, got %s", expectedName, actualName)
+			t.Errorf("Expected performer URL %s, got %s", expectedURL, actualURL)
 		}
 		i++
 	}
