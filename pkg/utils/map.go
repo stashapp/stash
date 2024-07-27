@@ -47,6 +47,23 @@ func (m NestedMap) Set(key string, value interface{}) {
 	current[fields[len(fields)-1]] = value
 }
 
+func (m NestedMap) Delete(key string) {
+	fields := strings.Split(key, ".")
+
+	current := m
+
+	for _, f := range fields[:len(fields)-1] {
+		v, ok := current[f].(map[string]interface{})
+		if !ok {
+			return
+		}
+
+		current = v
+	}
+
+	delete(current, fields[len(fields)-1])
+}
+
 // MergeMaps merges src into dest. If a key exists in both maps, the value from src is used.
 func MergeMaps(dest map[string]interface{}, src map[string]interface{}) {
 	for k, v := range src {

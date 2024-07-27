@@ -542,7 +542,7 @@ func (me *Server) contentDirectoryEventSubHandler(w http.ResponseWriter, r *http
 	case r.Method == "SUBSCRIBE" && r.Header.Get("SID") == "":
 		urls := upnp.ParseCallbackURLs(r.Header.Get("CALLBACK"))
 		var timeout int
-		fmt.Sscanf(r.Header.Get("TIMEOUT"), "Second-%d", &timeout)
+		_, _ = fmt.Sscanf(r.Header.Get("TIMEOUT"), "Second-%d", &timeout)
 		sid, timeout, _ := service.Subscribe(urls, timeout)
 		w.Header()["SID"] = []string{sid}
 		w.Header()["TIMEOUT"] = []string{fmt.Sprintf("Second-%d", timeout)}
@@ -595,6 +595,8 @@ func (me *Server) initMux(mux *http.ServeMux) {
 			return
 		}
 
+		w.Header().Set("transferMode.dlna.org", "Streaming")
+		w.Header().Set("contentFeatures.dlna.org", "DLNA.ORG_OP=01;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=01500000000000000000000000000000")
 		me.sceneServer.StreamSceneDirect(scene, w, r)
 	})
 	mux.HandleFunc(rootDescPath, func(w http.ResponseWriter, r *http.Request) {

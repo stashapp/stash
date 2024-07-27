@@ -791,7 +791,9 @@ func (qb *ImageStore) makeQuery(ctx context.Context, imageFilter *models.ImageFi
 		return nil, err
 	}
 
-	qb.setImageSortAndPagination(&query, findFilter)
+	if err := qb.setImageSortAndPagination(&query, findFilter); err != nil {
+		return nil, err
+	}
 
 	return &query, nil
 }
@@ -1051,12 +1053,34 @@ func imagePerformerTagsCriterionHandler(qb *ImageStore, tags *models.Hierarchica
 	}
 }
 
-func (qb *ImageStore) setImageSortAndPagination(q *queryBuilder, findFilter *models.FindFilterType) {
+var imageSortOptions = sortOptions{
+	"created_at",
+	"date",
+	"file_count",
+	"file_mod_time",
+	"filesize",
+	"id",
+	"o_counter",
+	"path",
+	"performer_count",
+	"random",
+	"rating",
+	"tag_count",
+	"title",
+	"updated_at",
+}
+
+func (qb *ImageStore) setImageSortAndPagination(q *queryBuilder, findFilter *models.FindFilterType) error {
 	sortClause := ""
 
 	if findFilter != nil && findFilter.Sort != nil && *findFilter.Sort != "" {
 		sort := findFilter.GetSort("title")
 		direction := findFilter.GetDirection()
+
+		// CVE-2024-32231 - ensure sort is in the list of allowed sorts
+		if err := imageSortOptions.validateSort(sort); err != nil {
+			return err
+		}
 
 		// translate sort field
 		if sort == "file_mod_time" {
@@ -1110,6 +1134,8 @@ func (qb *ImageStore) setImageSortAndPagination(q *queryBuilder, findFilter *mod
 	}
 
 	q.sortAndPagination = sortClause + getPagination(findFilter)
+
+	return nil
 }
 
 func (qb *ImageStore) galleriesRepository() *joinRepository {

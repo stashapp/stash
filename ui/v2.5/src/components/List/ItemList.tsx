@@ -137,6 +137,7 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
 
   const RenderList: React.FC<IItemListProps<T, E> & IRenderListProps> = ({
     filter,
+    filterHook,
     onChangePage: _onChangePage,
     updateFilter,
     persistState,
@@ -156,7 +157,14 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
     const [editingCriterion, setEditingCriterion] = useState<string>();
     const [showEditFilter, setShowEditFilter] = useState(false);
 
-    const result = useResult(filter);
+    const effectiveFilter = useMemo(() => {
+      if (filterHook) {
+        return filterHook(cloneDeep(filter));
+      }
+      return filter;
+    }, [filter, filterHook]);
+
+    const result = useResult(effectiveFilter);
     const [totalCount, setTotalCount] = useState(0);
     const [metadataByline, setMetadataByline] = useState<React.ReactNode>();
     const items = useMemo(() => getItems(result), [result]);
@@ -239,12 +247,12 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
     }, [filter, onChangePage, totalCount]);
     useEffect(() => {
       if (addKeybinds) {
-        const unbindExtras = addKeybinds(result, filter, selectedIds);
+        const unbindExtras = addKeybinds(result, effectiveFilter, selectedIds);
         return () => {
           unbindExtras();
         };
       }
-    }, [addKeybinds, result, filter, selectedIds]);
+    }, [addKeybinds, result, effectiveFilter, selectedIds]);
 
     function singleSelect(id: string, selected: boolean) {
       setLastClickedId(id);
@@ -326,7 +334,7 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
     }
 
     async function onOperationClicked(o: IItemListOperation<T>) {
-      await o.onClick(result, filter, selectedIds);
+      await o.onClick(result, effectiveFilter, selectedIds);
       if (o.postRefetch) {
         result.refetch();
       }
@@ -339,7 +347,7 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
       },
       isDisplayed: () => {
         if (o.isDisplayed) {
-          return o.isDisplayed(result, filter, selectedIds);
+          return o.isDisplayed(result, effectiveFilter, selectedIds);
         }
 
         return true;
@@ -414,7 +422,8 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
         <>
           {renderContent(
             result,
-            filter,
+            // #4780 - use effectiveFilter to ensure filterHook is applied
+            effectiveFilter,
             selectedIds,
             onSelectChange,
             onChangePage,
@@ -525,7 +534,6 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
       persistState,
       persistanceKey = filterMode,
       defaultSort = filterOptions.defaultSortBy,
-      filterHook,
       defaultZoomIndex,
       alterQuery = true,
     } = props;
@@ -712,17 +720,11 @@ export function makeItemList<T extends QueryResult, E extends IDataItem>({
       [filter, updateFilter]
     );
 
-    const renderFilter = useMemo(() => {
-      if (filterInitialised) {
-        return filterHook ? filterHook(cloneDeep(filter)) : filter;
-      }
-    }, [filterInitialised, filter, filterHook]);
-
-    if (!renderFilter) return null;
+    if (!filterInitialised) return null;
 
     return (
       <RenderList
-        filter={renderFilter}
+        filter={filter}
         onChangePage={onChangePage}
         updateFilter={updateFilter}
         {...props}

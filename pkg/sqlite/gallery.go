@@ -699,6 +699,7 @@ func (qb *GalleryStore) makeFilter(ctx context.Context, galleryFilter *models.Ga
 	query.handleCriterion(ctx, galleryPerformersCriterionHandler(qb, galleryFilter.Performers))
 	query.handleCriterion(ctx, galleryPerformerCountCriterionHandler(qb, galleryFilter.PerformerCount))
 	query.handleCriterion(ctx, hasChaptersCriterionHandler(galleryFilter.HasChapters))
+	query.handleCriterion(ctx, galleryScenesCriterionHandler(qb, galleryFilter.Scenes))
 	query.handleCriterion(ctx, studioCriterionHandler(galleryTable, galleryFilter.Studios))
 	query.handleCriterion(ctx, galleryPerformerTagsCriterionHandler(qb, galleryFilter.PerformerTags))
 	query.handleCriterion(ctx, galleryAverageResolutionCriterionHandler(qb, galleryFilter.AverageResolution))
@@ -781,7 +782,9 @@ func (qb *GalleryStore) makeQuery(ctx context.Context, galleryFilter *models.Gal
 		return nil, err
 	}
 
-	qb.setGallerySort(&query, findFilter)
+	if err := qb.setGallerySort(&query, findFilter); err != nil {
+		return nil, err
+	}
 	query.sortAndPagination += getPagination(findFilter)
 
 	return &query, nil
@@ -825,6 +828,17 @@ func galleryURLsCriterionHandler(url *models.StringCriterionInput) criterionHand
 	}
 
 	return h.handler(url)
+}
+
+func (qb *GalleryStore) getMultiCriterionHandlerBuilder(foreignTable, joinTable, foreignFK string, addJoinsFunc func(f *filterBuilder)) multiCriterionHandlerBuilder {
+	return multiCriterionHandlerBuilder{
+		primaryTable: galleryTable,
+		foreignTable: foreignTable,
+		joinTable:    joinTable,
+		primaryFK:    galleryIDColumn,
+		foreignFK:    foreignFK,
+		addJoinsFunc: addJoinsFunc,
+	}
 }
 
 func (qb *GalleryStore) galleryPathCriterionHandler(c *models.StringCriterionInput) criterionHandlerFunc {
@@ -958,6 +972,15 @@ func galleryTagCountCriterionHandler(qb *GalleryStore, tagCount *models.IntCrite
 	return h.handler(tagCount)
 }
 
+func galleryScenesCriterionHandler(qb *GalleryStore, scenes *models.MultiCriterionInput) criterionHandlerFunc {
+	addJoinsFunc := func(f *filterBuilder) {
+		qb.scenesRepository().join(f, "", "galleries.id")
+		f.addLeftJoin("scenes", "", "scenes_galleries.scene_id = scenes.id")
+	}
+	h := qb.getMultiCriterionHandlerBuilder(sceneTable, galleriesScenesTable, "scene_id", addJoinsFunc)
+	return h.handler(scenes)
+}
+
 func galleryPerformersCriterionHandler(qb *GalleryStore, performers *models.MultiCriterionInput) criterionHandlerFunc {
 	h := joinedMultiCriterionHandlerBuilder{
 		primaryTable: galleryTable,
@@ -1079,13 +1102,34 @@ func galleryAverageResolutionCriterionHandler(qb *GalleryStore, resolution *mode
 	}
 }
 
-func (qb *GalleryStore) setGallerySort(query *queryBuilder, findFilter *models.FindFilterType) {
+var gallerySortOptions = sortOptions{
+	"created_at",
+	"date",
+	"file_count",
+	"file_mod_time",
+	"id",
+	"images_count",
+	"path",
+	"performer_count",
+	"random",
+	"rating",
+	"tag_count",
+	"title",
+	"updated_at",
+}
+
+func (qb *GalleryStore) setGallerySort(query *queryBuilder, findFilter *models.FindFilterType) error {
 	if findFilter == nil || findFilter.Sort == nil || *findFilter.Sort == "" {
-		return
+		return nil
 	}
 
 	sort := findFilter.GetSort("path")
 	direction := findFilter.GetDirection()
+
+	// CVE-2024-32231 - ensure sort is in the list of allowed sorts
+	if err := gallerySortOptions.validateSort(sort); err != nil {
+		return err
+	}
 
 	addFileTable := func() {
 		query.addJoins(
@@ -1142,6 +1186,8 @@ func (qb *GalleryStore) setGallerySort(query *queryBuilder, findFilter *models.F
 
 	// Whatever the sorting, always use title/id as a final sort
 	query.sortAndPagination += ", COALESCE(galleries.title, galleries.id) COLLATE NATURAL_CI ASC"
+
+	return nil
 }
 
 func (qb *GalleryStore) GetURLs(ctx context.Context, galleryID int) ([]string, error) {

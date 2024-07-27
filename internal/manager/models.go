@@ -13,6 +13,8 @@ type SystemStatus struct {
 	Os             string           `json:"os"`
 	WorkingDir     string           `json:"working_dir"`
 	HomeDir        string           `json:"home_dir"`
+	FfmpegPath     *string          `json:"ffmpegPath"`
+	FfprobePath    *string          `json:"ffprobePath"`
 }
 
 type SetupInput struct {

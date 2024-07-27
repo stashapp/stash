@@ -555,7 +555,12 @@ func (qb *StudioStore) makeQuery(ctx context.Context, studioFilter *models.Studi
 		return nil, err
 	}
 
-	query.sortAndPagination = qb.getStudioSort(findFilter) + getPagination(findFilter)
+	var err error
+	query.sortAndPagination, err = qb.getStudioSort(findFilter)
+	if err != nil {
+		return nil, err
+	}
+	query.sortAndPagination += getPagination(findFilter)
 
 	return &query, nil
 }
@@ -666,7 +671,20 @@ func studioChildCountCriterionHandler(qb *StudioStore, childCount *models.IntCri
 	}
 }
 
-func (qb *StudioStore) getStudioSort(findFilter *models.FindFilterType) string {
+var studioSortOptions = sortOptions{
+	"child_count",
+	"created_at",
+	"galleries_count",
+	"id",
+	"images_count",
+	"name",
+	"scenes_count",
+	"random",
+	"rating",
+	"updated_at",
+}
+
+func (qb *StudioStore) getStudioSort(findFilter *models.FindFilterType) (string, error) {
 	var sort string
 	var direction string
 	if findFilter == nil {
@@ -675,6 +693,11 @@ func (qb *StudioStore) getStudioSort(findFilter *models.FindFilterType) string {
 	} else {
 		sort = findFilter.GetSort("name")
 		direction = findFilter.GetDirection()
+	}
+
+	// CVE-2024-32231 - ensure sort is in the list of allowed sorts
+	if err := studioSortOptions.validateSort(sort); err != nil {
+		return "", err
 	}
 
 	sortQuery := ""
@@ -693,7 +716,7 @@ func (qb *StudioStore) getStudioSort(findFilter *models.FindFilterType) string {
 
 	// Whatever the sorting, always use name/id as a final sort
 	sortQuery += ", COALESCE(studios.name, studios.id) COLLATE NATURAL_CI ASC"
-	return sortQuery
+	return sortQuery, nil
 }
 
 func (qb *StudioStore) GetImage(ctx context.Context, studioID int) ([]byte, error) {

@@ -192,7 +192,6 @@ func (s *Manager) postInit(ctx context.Context) error {
 	s.RefreshScraperCache()
 	s.RefreshScraperSourceManager()
 
-	s.RefreshStreamManager()
 	s.RefreshDLNA()
 
 	s.SetBlobStoreOptions()
@@ -239,9 +238,8 @@ func (s *Manager) postInit(ctx context.Context) error {
 		logger.Info("Using HTTP proxy")
 	}
 
-	if err := s.initFFmpeg(ctx); err != nil {
-		return fmt.Errorf("error initializing FFmpeg subsystem: %v", err)
-	}
+	s.RefreshFFMpeg(ctx)
+	s.RefreshStreamManager()
 
 	return nil
 }
@@ -260,41 +258,55 @@ func (s *Manager) writeStashIcon() {
 	}
 }
 
-func (s *Manager) initFFmpeg(ctx context.Context) error {
+func (s *Manager) RefreshFFMpeg(ctx context.Context) {
 	// use same directory as config path
-	configDirectory := s.Config.GetConfigPath()
-	paths := []string{
-		configDirectory,
-		paths.GetStashHomeDirectory(),
-	}
-	ffmpegPath, ffprobePath := ffmpeg.GetPaths(paths)
+	// executing binaries requires directory to be included
+	// https://pkg.go.dev/os/exec#hdr-Executables_in_the_current_directory
+	configDirectory := s.Config.GetConfigPathAbs()
+	stashHomeDir := paths.GetStashHomeDirectory()
 
-	if ffmpegPath == "" || ffprobePath == "" {
-		logger.Infof("couldn't find FFmpeg, attempting to download it")
-		if err := ffmpeg.Download(ctx, configDirectory); err != nil {
-			path, absErr := filepath.Abs(configDirectory)
-			if absErr != nil {
-				path = configDirectory
-			}
-			msg := `Unable to automatically download FFmpeg
+	// prefer the configured paths
+	ffmpegPath := s.Config.GetFFMpegPath()
+	ffprobePath := s.Config.GetFFProbePath()
 
-Check the readme for download links.
-The ffmpeg and ffprobe binaries should be placed in %s.
-
-`
-			logger.Errorf(msg, path)
-			return err
-		} else {
-			// After download get new paths for ffmpeg and ffprobe
-			ffmpegPath, ffprobePath = ffmpeg.GetPaths(paths)
+	// ensure the paths are valid
+	if ffmpegPath != "" {
+		// path was set explicitly
+		if err := ffmpeg.ValidateFFMpeg(ffmpegPath); err != nil {
+			logger.Errorf("invalid ffmpeg path: %v", err)
+			return
 		}
+
+		if err := ffmpeg.ValidateFFMpegCodecSupport(ffmpegPath); err != nil {
+			logger.Warn(err)
+		}
+	} else {
+		ffmpegPath = ffmpeg.ResolveFFMpeg(configDirectory, stashHomeDir)
 	}
 
-	s.FFMpeg = ffmpeg.NewEncoder(ffmpegPath)
-	s.FFProbe = ffmpeg.FFProbe(ffprobePath)
+	if ffprobePath != "" {
+		if err := ffmpeg.ValidateFFProbe(ffmpegPath); err != nil {
+			logger.Errorf("invalid ffprobe path: %v", err)
+			return
+		}
+	} else {
+		ffprobePath = ffmpeg.ResolveFFProbe(configDirectory, stashHomeDir)
+	}
 
-	s.FFMpeg.InitHWSupport(ctx)
-	s.RefreshStreamManager()
+	if ffmpegPath == "" {
+		logger.Warn("Couldn't find FFmpeg")
+	}
+	if ffprobePath == "" {
+		logger.Warn("Couldn't find FFProbe")
+	}
 
-	return nil
+	if ffmpegPath != "" && ffprobePath != "" {
+		logger.Debugf("using ffmpeg: %s", ffmpegPath)
+		logger.Debugf("using ffprobe: %s", ffprobePath)
+
+		s.FFMpeg = ffmpeg.NewEncoder(ffmpegPath)
+		s.FFProbe = ffmpeg.FFProbe(ffprobePath)
+
+		s.FFMpeg.InitHWSupport(ctx)
+	}
 }

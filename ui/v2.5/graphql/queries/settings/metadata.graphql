@@ -8,5 +8,7 @@ query SystemStatus {
     os
     workingDir
     homeDir
+    ffmpegPath
+    ffprobePath
   }
 }

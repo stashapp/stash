@@ -81,7 +81,21 @@ export const LibraryTasks: React.FC = () => {
     identify: false,
   });
 
-  const [scanOptions, setScanOptions] = useState<GQL.ScanMetadataInput>({});
+  function getDefaultScanOptions(): GQL.ScanMetadataInput {
+    return {
+      scanGenerateCovers: true,
+      scanGeneratePreviews: false,
+      scanGenerateImagePreviews: false,
+      scanGenerateSprites: false,
+      scanGeneratePhashes: false,
+      scanGenerateThumbnails: false,
+      scanGenerateClipPreviews: false,
+    };
+  }
+
+  const [scanOptions, setScanOptions] = useState<GQL.ScanMetadataInput>(
+    getDefaultScanOptions()
+  );
   const [autoTagOptions, setAutoTagOptions] =
     useState<GQL.AutoTagMetadataInput>({
       performers: ["*"],

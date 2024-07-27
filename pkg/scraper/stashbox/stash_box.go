@@ -676,6 +676,9 @@ func performerFragmentToScrapedPerformer(p graphql.PerformerFragment) *models.Sc
 			return !strings.EqualFold(s, p.Name)
 		})
 
+		// #4596 - stash-box may return duplicate aliases. Filter these out
+		p.Aliases = stringslice.UniqueFold(p.Aliases)
+
 		alias := strings.Join(p.Aliases, ", ")
 		sp.Aliases = &alias
 	}

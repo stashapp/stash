@@ -3,7 +3,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import * as GQL from "src/core/generated-graphql";
 import { Icon } from "../Shared/Icon";
 import { LoadingIndicator } from "../Shared/LoadingIndicator";
-import { StringListSelect, GallerySelect, SceneSelect } from "../Shared/Select";
+import { StringListSelect, GallerySelect } from "../Shared/Select";
 import * as FormUtils from "src/utils/form";
 import ImageUtils from "src/utils/image";
 import TextUtils from "src/utils/text";
@@ -35,6 +35,7 @@ import {
   ScrapedStudioRow,
   ScrapedTagsRow,
 } from "../Shared/ScrapeDialog/ScrapedObjectsRow";
+import { Scene, SceneSelect } from "src/components/Scenes/SceneSelect";
 
 interface IStashIDsField {
   values: GQL.StashId[];
@@ -645,12 +646,8 @@ export const SceneMergeModal: React.FC<ISceneMergeModalProps> = ({
   onClose,
   scenes,
 }) => {
-  const [sourceScenes, setSourceScenes] = useState<
-    { id: string; title: string }[]
-  >([]);
-  const [destScene, setDestScene] = useState<{ id: string; title: string }[]>(
-    []
-  );
+  const [sourceScenes, setSourceScenes] = useState<Scene[]>([]);
+  const [destScene, setDestScene] = useState<Scene[]>([]);
 
   const [loadedSources, setLoadedSources] = useState<
     GQL.SlimSceneDataFragment[]
@@ -773,7 +770,7 @@ export const SceneMergeModal: React.FC<ISceneMergeModalProps> = ({
               <SceneSelect
                 isMulti
                 onSelect={(items) => setSourceScenes(items)}
-                selected={sourceScenes}
+                values={sourceScenes}
               />
             </Col>
           </Form.Group>
@@ -805,7 +802,7 @@ export const SceneMergeModal: React.FC<ISceneMergeModalProps> = ({
             <Col sm={9} xl={12}>
               <SceneSelect
                 onSelect={(items) => setDestScene(items)}
-                selected={destScene}
+                values={destScene}
               />
             </Col>
           </Form.Group>

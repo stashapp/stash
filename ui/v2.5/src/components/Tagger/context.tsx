@@ -253,6 +253,14 @@ export const TaggerContext: React.FC = ({ children }) => {
     });
   }
 
+  function clearSearchResults(sceneID: string) {
+    setSearchResults((current) => {
+      const newSearchResults = { ...current };
+      delete newSearchResults[sceneID];
+      return newSearchResults;
+    });
+  }
+
   async function doSceneQuery(sceneID: string, searchVal: string) {
     if (!currentSource) {
       return;
@@ -260,6 +268,7 @@ export const TaggerContext: React.FC = ({ children }) => {
 
     try {
       setLoading(true);
+      clearSearchResults(sceneID);
 
       const results = await queryScrapeSceneQuery(
         currentSource.sourceInput,
@@ -294,6 +303,8 @@ export const TaggerContext: React.FC = ({ children }) => {
     if (!currentSource) {
       return;
     }
+
+    clearSearchResults(sceneID);
 
     let newResult: ISceneQueryResult;
 
@@ -330,11 +341,7 @@ export const TaggerContext: React.FC = ({ children }) => {
       return;
     }
 
-    setSearchResults((current) => {
-      const newResults = { ...current };
-      delete newResults[sceneID];
-      return newResults;
-    });
+    clearSearchResults(sceneID);
 
     try {
       setLoading(true);
@@ -454,14 +461,6 @@ export const TaggerContext: React.FC = ({ children }) => {
         [sceneID]: { ...searchResults[sceneID], results: newResult },
       });
     }
-  }
-
-  function clearSearchResults(sceneID: string) {
-    setSearchResults((current) => {
-      const newSearchResults = { ...current };
-      delete newSearchResults[sceneID];
-      return newSearchResults;
-    });
   }
 
   async function saveScene(

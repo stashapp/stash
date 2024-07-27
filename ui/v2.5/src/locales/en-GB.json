@@ -134,6 +134,7 @@
     "temp_enable": "Enable temporarily…",
     "unset": "Unset",
     "use_default": "Use default",
+    "view_history": "View history",
     "view_random": "View Random"
   },
   "actions_name": "Actions",
@@ -256,6 +257,8 @@
       "recent_ip_addresses": "Recent IP addresses",
       "server_display_name": "Server Display Name",
       "server_display_name_desc": "Display name for the DLNA server. Defaults to {server_name} if empty.",
+      "server_port": "Server Port",
+      "server_port_desc": "Port to run the DLNA server on. Requires DLNA restart after changing.",
       "successfully_cancelled_temporary_behaviour": "Successfully cancelled temporary behaviour",
       "until_restart": "until restart",
       "video_sort_order": "Default Video Sort Order",
@@ -316,6 +319,18 @@
       "excluded_video_patterns_desc": "Regexps of video files/paths to exclude from Scan and add to Clean",
       "excluded_video_patterns_head": "Excluded Video Patterns",
       "ffmpeg": {
+        "download_ffmpeg": {
+          "description": "Downloads FFmpeg into the configuration directory and clears the ffmpeg and ffprobe paths to resolve from the configuration directory.",
+          "heading": "Download FFmpeg"
+        },
+        "ffmpeg_path": {
+          "description": "Path to the ffmpeg executable (not just the folder). If empty, ffmpeg will be resolved from the environment via $PATH, the configuration directory, or from $HOME/.stash",
+          "heading": "FFmpeg Executable Path"
+        },
+        "ffprobe_path": {
+          "description": "Path to the ffprobe executable (not just the folder). If empty, ffprobe will be resolved from the environment via $PATH, the configuration directory, or from $HOME/.stash",
+          "heading": "FFprobe Executable Path"
+        },
         "hardware_acceleration": {
           "desc": "Uses available hardware to encode video for live transcoding.",
           "heading": "FFmpeg hardware encoding"
@@ -724,7 +739,7 @@
           "enable_chromecast": "Enable Chromecast",
           "show_ab_loop_controls": "Show AB Loop plugin controls",
           "show_scrubber": "Show Scrubber",
-          "track_activity": "Track Activity",
+          "track_activity": "Enable Scene Play history",
           "vr_tag": {
             "description": "The VR button will only be displayed for scenes with this tag.",
             "heading": "VR Tag"
@@ -770,7 +785,7 @@
       },
       "title": "User Interface",
       "use_stash_hosted_funscript": {
-        "description": "When enabled, funscripts will be served directly from Stash to your Handy device without using the third party Handy server. Requires that Stash be accessible from your Handy device.",
+        "description": "When enabled, funscripts will be served directly from Stash to your Handy device without using the third party Handy server. Requires that Stash be accessible from your Handy device, and that an API key is generated if stash has credentials configured.",
         "heading": "Serve funscripts directly"
       }
     }
@@ -1254,8 +1269,7 @@
       "stash_library_directories": "Stash library directories"
     },
     "creating": {
-      "creating_your_system": "Creating your system",
-      "ffmpeg_notice": "If <code>ffmpeg</code> is not yet in your paths, please be patient while stash downloads it. View the console output to see download progress."
+      "creating_your_system": "Creating your system"
     },
     "errors": {
       "something_went_wrong": "Oh no! Something went wrong!",
@@ -1304,9 +1318,11 @@
     },
     "stash_setup_wizard": "Stash Setup Wizard",
     "success": {
+      "download_ffmpeg": "Download ffmpeg",
       "getting_help": "Getting help",
       "help_links": "If you run into issues or have any questions or suggestions, feel free to open an issue in the {githubLink}, or ask the community in the {discordLink}.",
       "in_app_manual_explained": "You are encouraged to check out the in-app manual which can be accessed from the icon in the top-right corner of the screen that looks like this: {icon}",
+      "missing_ffmpeg": "You are missing the required <code>ffmpeg</code> binary. You can automatically download it into your configuration directory by checking the box below. Alternatively, you can supply paths to the <code>ffmpeg</code> and <code>ffprobe</code> binaries in the System Settings. These binaries must be present for Stash to function.",
       "next_config_step_one": "You will be taken to the Configuration page next. This page will allow you to customize what files to include and exclude, set a username and password to protect your system, and a whole bunch of other options.",
       "next_config_step_two": "When you are satisfied with these settings, you can begin scanning your content into Stash by clicking on <code>{localized_task}</code>, then <code>{localized_scan}</code>.",
       "open_collective": "Check out our {open_collective_link} to see how you can contribute to the continued development of Stash.",

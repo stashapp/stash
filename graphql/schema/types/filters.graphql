@@ -8,6 +8,7 @@ input FindFilterType {
   page: Int
   "use per_page = -1 to indicate all results. Defaults to 25."
   per_page: Int
+  # TODO - this should be refactored to not use a string
   sort: String
   direction: SortDirectionEnum
 }
@@ -231,6 +232,8 @@ input SceneFilterType {
   orientation: OrientationCriterionInput
   "Filter by frame rate"
   framerate: IntCriterionInput
+  "Filter by bit rate"
+  bitrate: IntCriterionInput
   "Filter by video codec"
   video_codec: StringCriterionInput
   "Filter by audio codec"
@@ -277,6 +280,8 @@ input SceneFilterType {
   play_count: IntCriterionInput
   "Filter by play duration (in seconds)"
   play_duration: IntCriterionInput
+  "Filter by scene last played time"
+  last_played_at: TimestampCriterionInput
   "Filter by date"
   date: DateCriterionInput
   "Filter by creation time"
@@ -374,6 +379,8 @@ input GalleryFilterType {
   average_resolution: ResolutionCriterionInput
   "Filter to only include galleries that have chapters. `true` or `false`"
   has_chapters: String
+  "Filter to only include galleries with these scenes"
+  scenes: MultiCriterionInput
   "Filter to only include galleries with this studio"
   studios: HierarchicalMultiCriterionInput
   "Filter to only include galleries with these tags"
@@ -416,6 +423,9 @@ input TagFilterType {
 
   "Filter by tag aliases"
   aliases: StringCriterionInput
+
+  "Filter by favorite"
+  favorite: Boolean
 
   "Filter by tag description"
   description: StringCriterionInput
