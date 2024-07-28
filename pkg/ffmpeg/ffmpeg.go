@@ -158,7 +158,7 @@ func (f *FFMpeg) getVersion() error {
 		return err
 	}
 
-	version_re := regexp.MustCompile(`ffmpeg version ((\d+)\.(\d+)(?:\.(\d+))?)`)
+	version_re := regexp.MustCompile(`ffmpeg version n?((\d+)\.(\d+)(?:\.(\d+))?)`)
 	stdoutStr := stdout.String()
 	match := version_re.FindStringSubmatchIndex(stdoutStr)
 	if match == nil {
