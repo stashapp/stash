@@ -10,61 +10,13 @@ import { FormattedMessage } from "react-intl";
 import { RatingBanner } from "../Shared/RatingBanner";
 import { faPlayCircle, faTag } from "@fortawesome/free-solid-svg-icons";
 import ScreenUtils from "src/utils/screen";
-import { Link } from "react-router-dom";
 import NavUtils from "src/utils/navigation";
 import { PopoverCountButton } from "../Shared/PopoverCountButton";
-
-interface IGroupEntry {
-  group: GQL.SlimGroupDataFragment;
-  description?: string | null;
-}
-
-const ContainingGroups: React.FC<{
-  group: GQL.SlimGroupDataFragment;
-  containingGroups: IGroupEntry[];
-}> = ({ group, containingGroups }) => {
-  if (containingGroups.length === 1) {
-    const g = containingGroups[0].group;
-    return (
-      <div className="group-containing-groups">
-        <FormattedMessage
-          id="sub_group_of"
-          values={{
-            parent: <Link to={NavUtils.makeGroupUrl(g.id)}>{g.name}</Link>,
-          }}
-        />
-      </div>
-    );
-  }
-
-  if (containingGroups.length > 1) {
-    return (
-      <div className="group-containing-groups">
-        <FormattedMessage
-          id="sub_group_of"
-          values={{
-            parent: (
-              <Link to={NavUtils.makeContainingGroupsUrl(group)}>
-                {containingGroups.length}&nbsp;
-                <FormattedMessage
-                  id="countables.groups"
-                  values={{ count: containingGroups.length }}
-                />
-              </Link>
-            ),
-          }}
-        />
-      </div>
-    );
-  }
-
-  return null;
-};
 
 interface IProps {
   group: GQL.GroupDataFragment;
   containerWidth?: number;
-  sceneIndex?: number;
+  description?: number;
   selecting?: boolean;
   selected?: boolean;
   onSelectedChanged?: (selected: boolean, shiftKey: boolean) => void;
@@ -72,7 +24,7 @@ interface IProps {
 
 export const GroupCard: React.FC<IProps> = ({
   group,
-  sceneIndex,
+  description,
   containerWidth,
   selecting,
   selected,
@@ -92,13 +44,13 @@ export const GroupCard: React.FC<IProps> = ({
   }, [containerWidth]);
 
   function maybeRenderSceneNumber() {
-    if (!sceneIndex) return;
+    if (!description) return;
 
     return (
       <>
         <hr />
         <span className="group-scene-number">
-          <FormattedMessage id="scene" /> #{sceneIndex}
+          <FormattedMessage id="scene" /> #{description}
         </span>
       </>
     );
@@ -144,7 +96,7 @@ export const GroupCard: React.FC<IProps> = ({
 
   function maybeRenderPopoverButtonGroup() {
     if (
-      sceneIndex ||
+      description ||
       group.scenes.length > 0 ||
       group.tags.length > 0 ||
       group.sub_groups.length > 0
@@ -156,11 +108,18 @@ export const GroupCard: React.FC<IProps> = ({
           <ButtonGroup className="card-popovers">
             {maybeRenderScenesPopoverButton()}
             {maybeRenderTagPopoverButton()}
+            {group.containing_groups.length > 0 && (
+              <PopoverCountButton
+                count={group.containing_groups.length}
+                type="containing_group"
+                url={NavUtils.makeContainingGroupsUrl(group)}
+              />
+            )}
             {group.sub_groups.length > 0 && (
               <PopoverCountButton
                 count={group.sub_groups.length}
-                type="group"
-                url="#"
+                type="sub_group"
+                url={NavUtils.makeSubGroupsUrl(group)}
               />
             )}
           </ButtonGroup>
@@ -194,10 +153,6 @@ export const GroupCard: React.FC<IProps> = ({
             className="group-card__description"
             text={group.synopsis}
             lineCount={3}
-          />
-          <ContainingGroups
-            group={group}
-            containingGroups={group.containing_groups}
           />
         </div>
       }

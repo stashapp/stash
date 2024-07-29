@@ -13,7 +13,7 @@ export const SceneGroupPanel: React.FC<ISceneGroupPanelProps> = (
     <GroupCard
       key={sceneGroup.group.id}
       group={sceneGroup.group}
-      sceneIndex={sceneGroup.scene_index ?? undefined}
+      description={sceneGroup.scene_index ?? undefined}
     />
   ));
 

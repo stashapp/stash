@@ -319,6 +319,7 @@ export class IHierarchicalLabeledIdCriterion extends Criterion<IHierarchicalLabe
     // excluded only makes sense for includes and includes all
     // so reset it for other modifiers
     if (
+      this.value &&
       value !== CriterionModifier.Includes &&
       value !== CriterionModifier.IncludesAll
     ) {

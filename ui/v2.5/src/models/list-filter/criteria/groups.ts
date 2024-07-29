@@ -1,5 +1,5 @@
 import { CriterionModifier } from "src/core/generated-graphql";
-import { CriterionOption, ILabeledIdCriterion } from "./criterion";
+import { CriterionOption, IHierarchicalLabeledIdCriterion } from "./criterion";
 import { CriterionType } from "../types";
 
 const inputType = "groups";
@@ -11,15 +11,15 @@ const modifierOptions = [
   CriterionModifier.NotNull,
 ];
 
+const defaultModifier = CriterionModifier.Includes;
+
 class BaseGroupsCriterionOption extends CriterionOption {
-  constructor(
-    messageID: string,
-    type: CriterionType,
-  ) {
+  constructor(messageID: string, type: CriterionType) {
     super({
       messageID,
       type,
       modifierOptions,
+      defaultModifier,
       inputType,
       makeCriterion: () => new GroupsCriterion(this),
     });
@@ -28,17 +28,17 @@ class BaseGroupsCriterionOption extends CriterionOption {
 
 export const GroupsCriterionOption = new BaseGroupsCriterionOption(
   "groups",
-  "groups",
+  "groups"
 );
 
-export class GroupsCriterion extends ILabeledIdCriterion {}
+export class GroupsCriterion extends IHierarchicalLabeledIdCriterion {}
 
-// export const ContainingGroupsCriterionOption = new BaseGroupsCriterionOption(
-//   "containing_groups",
-//   "containing_groups",
-// );
+export const ContainingGroupsCriterionOption = new BaseGroupsCriterionOption(
+  "containing_groups",
+  "containing_groups"
+);
 
-// export const ChildTagsCriterionOption = new BaseGroupsCriterionOption(
-//   "sub_groups",
-//   "sub_groups",
-// );
+export const SubGroupsCriterionOption = new BaseGroupsCriterionOption(
+  "sub_groups",
+  "sub_groups"
+);

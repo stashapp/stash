@@ -1,6 +1,9 @@
 import React from "react";
 import * as GQL from "src/core/generated-graphql";
-import { GroupsCriterion } from "src/models/list-filter/criteria/groups";
+import {
+  GroupsCriterion,
+  GroupsCriterionOption,
+} from "src/models/list-filter/criteria/groups";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { SceneList } from "src/components/Scenes/SceneList";
 import { View } from "src/components/List/views";
@@ -28,18 +31,18 @@ export const GroupScenesPanel: React.FC<IGroupScenesPanel> = ({
     ) {
       // add the group if not present
       if (
-        !groupCriterion.value.find((p) => {
+        !groupCriterion.value.items.find((p) => {
           return p.id === group.id;
         })
       ) {
-        groupCriterion.value.push(groupValue);
+        groupCriterion.value.items.push(groupValue);
       }
 
       groupCriterion.modifier = GQL.CriterionModifier.IncludesAll;
     } else {
       // overwrite
-      groupCriterion = new GroupsCriterion();
-      groupCriterion.value = [groupValue];
+      groupCriterion = new GroupsCriterion(GroupsCriterionOption);
+      groupCriterion.value = { items: [groupValue], depth: 0, excluded: [] };
       filter.criteria.push(groupCriterion);
     }
 

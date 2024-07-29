@@ -21,6 +21,8 @@ type PopoverLinkType =
   | "gallery"
   | "marker"
   | "group"
+  | "containing_group"
+  | "sub_group"
   | "performer"
   | "studio";
 
@@ -42,6 +44,7 @@ export const PopoverCountButton: React.FC<IProps> = ({
 
   const intl = useIntl();
 
+  // TODO - refactor - create SceneIcon, ImageIcon etc components
   function getIcon() {
     switch (type) {
       case "scene":
@@ -53,6 +56,8 @@ export const PopoverCountButton: React.FC<IProps> = ({
       case "marker":
         return faMapMarkerAlt;
       case "group":
+      case "containing_group":
+      case "sub_group":
         return faFilm;
       case "performer":
         return faUser;
@@ -88,6 +93,16 @@ export const PopoverCountButton: React.FC<IProps> = ({
           one: "group",
           other: "groups",
         };
+      case "containing_group":
+        return {
+          one: "containing_group",
+          other: "containing_groups",
+        };
+      case "sub_group":
+        return {
+          one: "sub_group",
+          other: "sub_groups",
+        };
       case "performer":
         return {
           one: "performer",
@@ -104,7 +119,9 @@ export const PopoverCountButton: React.FC<IProps> = ({
   function getTitle() {
     const pluralCategory = intl.formatPlural(count);
     const options = getPluralOptions();
-    const plural = options[pluralCategory as "one"] || options.other;
+    const plural = intl.formatMessage({
+      id: options[pluralCategory as "one"] || options.other,
+    });
     return `${count} ${plural}`;
   }
 

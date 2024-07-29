@@ -795,6 +795,8 @@
     "websocket_connection_failed": "Unable to make websocket connection: see browser console for details",
     "websocket_connection_reestablished": "Websocket connection re-established"
   },
+  "containing_group": "Containing Group",
+  "containing_group_count": "Containing Group Count",
   "containing_groups": "Containing Groups",
   "countables": {
     "files": "{count, plural, one {File} other {Files}}",
@@ -1421,7 +1423,9 @@
   },
   "studio_tags": "Studio Tags",
   "studios": "Studios",
-  "sub_group_of": "Sub-group of {parent}",
+  "sub_group": "Sub-Group",
+  "sub_group_count": "Sub-Group Count",
+  "sub_groups": "Sub-Groups",
   "sub_tag_count": "Sub-Tag Count",
   "sub_tag_of": "Sub-tag of {parent}",
   "sub_tags": "Sub-Tags",
