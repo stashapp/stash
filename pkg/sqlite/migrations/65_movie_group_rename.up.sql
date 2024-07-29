@@ -1,7 +1,7 @@
 ALTER TABLE `movies` RENAME TO `groups`;
 
 DROP INDEX `index_movies_on_name`;
-CREATE INDEX `index_movies_on_name` ON `groups`(`name`);
+CREATE INDEX `index_groups_on_name` ON `groups`(`name`);
 DROP INDEX `index_movies_on_studio_id`;
 CREATE INDEX `index_groups_on_studio_id` on `groups` (`studio_id`);
 
