@@ -1,4 +1,5 @@
 ALTER TABLE `movies` RENAME TO `groups`;
+ALTER TABLE `groups` RENAME COLUMN `synopsis` TO `description`;
 
 DROP INDEX `index_movies_on_name`;
 CREATE INDEX `index_groups_on_name` ON `groups`(`name`);

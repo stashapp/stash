@@ -56,7 +56,7 @@ func (qb *groupFilterHandler) criterionHandler() criterionHandler {
 	return compoundHandler{
 		stringCriterionHandler(groupFilter.Name, "groups.name"),
 		stringCriterionHandler(groupFilter.Director, "groups.director"),
-		stringCriterionHandler(groupFilter.Synopsis, "groups.synopsis"),
+		stringCriterionHandler(groupFilter.Synopsis, "groups.description"),
 		intCriterionHandler(groupFilter.Rating100, "groups.rating", nil),
 		floatIntCriterionHandler(groupFilter.Duration, "groups.duration", nil),
 		qb.missingCriterionHandler(groupFilter.IsMissing),

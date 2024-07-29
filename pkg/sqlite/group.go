@@ -36,12 +36,12 @@ type groupRow struct {
 	Duration null.Int    `db:"duration"`
 	Date     NullDate    `db:"date"`
 	// expressed as 1-100
-	Rating    null.Int    `db:"rating"`
-	StudioID  null.Int    `db:"studio_id,omitempty"`
-	Director  zero.String `db:"director"`
-	Synopsis  zero.String `db:"synopsis"`
-	CreatedAt Timestamp   `db:"created_at"`
-	UpdatedAt Timestamp   `db:"updated_at"`
+	Rating      null.Int    `db:"rating"`
+	StudioID    null.Int    `db:"studio_id,omitempty"`
+	Director    zero.String `db:"director"`
+	Description zero.String `db:"description"`
+	CreatedAt   Timestamp   `db:"created_at"`
+	UpdatedAt   Timestamp   `db:"updated_at"`
 
 	// not used in resolutions or updates
 	FrontImageBlob zero.String `db:"front_image_blob"`
@@ -57,7 +57,7 @@ func (r *groupRow) fromGroup(o models.Group) {
 	r.Rating = intFromPtr(o.Rating)
 	r.StudioID = intFromPtr(o.StudioID)
 	r.Director = zero.StringFrom(o.Director)
-	r.Synopsis = zero.StringFrom(o.Synopsis)
+	r.Description = zero.StringFrom(o.Synopsis)
 	r.CreatedAt = Timestamp{Timestamp: o.CreatedAt}
 	r.UpdatedAt = Timestamp{Timestamp: o.UpdatedAt}
 }
@@ -72,7 +72,7 @@ func (r *groupRow) resolve() *models.Group {
 		Rating:    nullIntPtr(r.Rating),
 		StudioID:  nullIntPtr(r.StudioID),
 		Director:  r.Director.String,
-		Synopsis:  r.Synopsis.String,
+		Synopsis:  r.Description.String,
 		CreatedAt: r.CreatedAt.Timestamp,
 		UpdatedAt: r.UpdatedAt.Timestamp,
 	}
@@ -92,7 +92,7 @@ func (r *groupRowRecord) fromPartial(o models.GroupPartial) {
 	r.setNullInt("rating", o.Rating)
 	r.setNullInt("studio_id", o.StudioID)
 	r.setNullString("director", o.Director)
-	r.setNullString("synopsis", o.Synopsis)
+	r.setNullString("description", o.Synopsis)
 	r.setTimestamp("created_at", o.CreatedAt)
 	r.setTimestamp("updated_at", o.UpdatedAt)
 }

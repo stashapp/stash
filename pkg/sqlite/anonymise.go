@@ -838,7 +838,7 @@ func (db *Anonymiser) anonymiseGroups(ctx context.Context) error {
 				table.Col(idColumn),
 				table.Col("name"),
 				table.Col("aliases"),
-				table.Col("synopsis"),
+				table.Col("description"),
 				table.Col("director"),
 			).Where(table.Col(idColumn).Gt(lastID)).Limit(1000)
 
@@ -847,18 +847,18 @@ func (db *Anonymiser) anonymiseGroups(ctx context.Context) error {
 			const single = false
 			return queryFunc(ctx, query, single, func(rows *sqlx.Rows) error {
 				var (
-					id       int
-					name     sql.NullString
-					aliases  sql.NullString
-					synopsis sql.NullString
-					director sql.NullString
+					id          int
+					name        sql.NullString
+					aliases     sql.NullString
+					description sql.NullString
+					director    sql.NullString
 				)
 
 				if err := rows.Scan(
 					&id,
 					&name,
 					&aliases,
-					&synopsis,
+					&description,
 					&director,
 				); err != nil {
 					return err
@@ -867,7 +867,7 @@ func (db *Anonymiser) anonymiseGroups(ctx context.Context) error {
 				set := goqu.Record{}
 				db.obfuscateNullString(set, "name", name)
 				db.obfuscateNullString(set, "aliases", aliases)
-				db.obfuscateNullString(set, "synopsis", synopsis)
+				db.obfuscateNullString(set, "description", description)
 				db.obfuscateNullString(set, "director", director)
 
 				if len(set) > 0 {
