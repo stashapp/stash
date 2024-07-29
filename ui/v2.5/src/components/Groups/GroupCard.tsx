@@ -99,7 +99,7 @@ export const GroupCard: React.FC<IProps> = ({
       description ||
       group.scenes.length > 0 ||
       group.tags.length > 0 ||
-      group.sub_groups.length > 0
+      group.sub_group_count > 0
     ) {
       return (
         <>
@@ -115,9 +115,9 @@ export const GroupCard: React.FC<IProps> = ({
                 url={NavUtils.makeContainingGroupsUrl(group)}
               />
             )}
-            {group.sub_groups.length > 0 && (
+            {group.sub_group_count > 0 && (
               <PopoverCountButton
-                count={group.sub_groups.length}
+                count={group.sub_group_count}
                 type="sub_group"
                 url={NavUtils.makeSubGroupsUrl(group)}
               />

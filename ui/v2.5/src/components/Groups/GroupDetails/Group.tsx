@@ -9,7 +9,7 @@ import {
   useGroupUpdate,
   useGroupDestroy,
 } from "src/core/StashService";
-import { useHistory, RouteComponentProps } from "react-router-dom";
+import { useHistory, RouteComponentProps, Redirect } from "react-router-dom";
 import { DetailsEditNavbar } from "src/components/Shared/DetailsEditNavbar";
 import { ErrorMessage } from "src/components/Shared/ErrorMessage";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
@@ -35,16 +35,93 @@ import { ExpandCollapseButton } from "src/components/Shared/CollapseButton";
 import { AliasList } from "src/components/Shared/DetailsPage/AliasList";
 import { HeaderImage } from "src/components/Shared/DetailsPage/HeaderImage";
 import { LightboxLink } from "src/hooks/Lightbox/LightboxLink";
+import {
+  TabTitleCounter,
+  useTabKey,
+} from "src/components/Shared/DetailsPage/Tabs";
+import { Tab, Tabs } from "react-bootstrap";
+import { GroupSubGroupsPanel } from "./GroupSubGroupsPanel";
+
+const validTabs = ["default", "scenes", "subgroups"] as const;
+type TabKey = (typeof validTabs)[number];
+
+function isTabKey(tab: string): tab is TabKey {
+  return validTabs.includes(tab as TabKey);
+}
+
+const GroupTabs: React.FC<{
+  tabKey?: TabKey;
+  group: GQL.GroupDataFragment;
+  abbreviateCounter: boolean;
+  showAllCounts?: boolean;
+}> = ({ tabKey, group, abbreviateCounter, showAllCounts = false }) => {
+  const sceneCount =
+    (showAllCounts ? group.scene_count_all : group.scene_count) ?? 0;
+  const groupCount =
+    (showAllCounts ? group.sub_group_count_all : group.sub_group_count) ?? 0;
+
+  const populatedDefaultTab = useMemo(() => {
+    if (sceneCount == 0 && groupCount !== 0) {
+      return "subgroups";
+    }
+
+    return "scenes";
+  }, [sceneCount, groupCount]);
+
+  const { setTabKey } = useTabKey({
+    tabKey,
+    validTabs,
+    defaultTabKey: populatedDefaultTab,
+    baseURL: `/groups/${group.id}`,
+  });
+
+  return (
+    <Tabs
+      id="group-tabs"
+      mountOnEnter
+      unmountOnExit
+      activeKey={tabKey}
+      onSelect={setTabKey}
+    >
+      <Tab
+        eventKey="scenes"
+        title={
+          <TabTitleCounter
+            messageID="scenes"
+            count={sceneCount}
+            abbreviateCounter={abbreviateCounter}
+          />
+        }
+      >
+        <GroupScenesPanel active={tabKey === "scenes"} group={group} />
+      </Tab>
+      <Tab
+        eventKey="subgroups"
+        title={
+          <TabTitleCounter
+            messageID="sub_groups"
+            count={groupCount}
+            abbreviateCounter={abbreviateCounter}
+          />
+        }
+      >
+        <GroupSubGroupsPanel active={tabKey === "subgroups"} group={group} />
+      </Tab>
+    </Tabs>
+  );
+};
 
 interface IProps {
   group: GQL.GroupDataFragment;
+  tabKey?: TabKey;
 }
 
 interface IGroupParams {
   id: string;
+  tab?: string;
 }
 
-const GroupPage: React.FC<IProps> = ({ group }) => {
+const GroupPage: React.FC<IProps> = ({ group, tabKey }) => {
   const intl = useIntl();
   const history = useHistory();
   const Toast = useToast();
@@ -230,14 +307,6 @@ const GroupPage: React.FC<IProps> = ({ group }) => {
     }
   }
 
-  const renderTabs = () => <GroupScenesPanel active={true} group={group} />;
-
-  function maybeRenderTab() {
-    if (!isEditing) {
-      return renderTabs();
-    }
-  }
-
   if (updating || deleting) return <LoadingIndicator />;
 
   const headerClassName = cx("detail-header", {
@@ -335,7 +404,16 @@ const GroupPage: React.FC<IProps> = ({ group }) => {
 
       <div className="detail-body">
         <div className="group-body">
-          <div className="group-tabs">{maybeRenderTab()}</div>
+          <div className="group-tabs">
+            {!isEditing && (
+              <GroupTabs
+                group={group}
+                tabKey={tabKey}
+                abbreviateCounter={true}
+                showAllCounts={true}
+              />
+            )}
+          </div>
         </div>
       </div>
       {renderDeleteAlert()}
@@ -344,19 +422,33 @@ const GroupPage: React.FC<IProps> = ({ group }) => {
 };
 
 const GroupLoader: React.FC<RouteComponentProps<IGroupParams>> = ({
+  location,
   match,
 }) => {
-  const { id } = match.params;
+  const { id, tab } = match.params;
   const { data, loading, error } = useFindGroup(id);
 
   useScrollToTopOnMount();
+
+  if (tab && !isTabKey(tab)) {
+    return (
+      <Redirect
+        to={{
+          ...location,
+          pathname: `/groups/${id}`,
+        }}
+      />
+    );
+  }
 
   if (loading) return <LoadingIndicator />;
   if (error) return <ErrorMessage error={error.message} />;
   if (!data?.findGroup)
     return <ErrorMessage error={`No group found with id ${id}.`} />;
 
-  return <GroupPage group={data.findGroup} />;
+  return (
+    <GroupPage group={data.findGroup} tabKey={tab as TabKey | undefined} />
+  );
 };
 
 export default GroupLoader;
