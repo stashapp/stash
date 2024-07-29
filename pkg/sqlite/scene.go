@@ -851,17 +851,11 @@ func (qb *SceneStore) PlayDuration(ctx context.Context) (float64, error) {
 	return ret, nil
 }
 
+// TODO - currently only used by unit test
 func (qb *SceneStore) CountByStudioID(ctx context.Context, studioID int) (int, error) {
 	table := qb.table()
 
 	q := dialect.Select(goqu.COUNT("*")).From(table).Where(table.Col(studioIDColumn).Eq(studioID))
-	return count(ctx, q)
-}
-
-func (qb *SceneStore) CountByTagID(ctx context.Context, tagID int) (int, error) {
-	joinTable := scenesTagsJoinTable
-
-	q := dialect.Select(goqu.COUNT("*")).From(joinTable).Where(joinTable.Col(tagIDColumn).Eq(tagID))
 	return count(ctx, q)
 }
 

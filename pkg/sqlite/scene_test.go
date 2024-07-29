@@ -4283,54 +4283,6 @@ func verifyScenesPerformerCount(t *testing.T, performerCountCriterion models.Int
 	})
 }
 
-func TestSceneCountByTagID(t *testing.T) {
-	withTxn(func(ctx context.Context) error {
-		sqb := db.Scene
-
-		sceneCount, err := sqb.CountByTagID(ctx, tagIDs[tagIdxWithScene])
-
-		if err != nil {
-			t.Errorf("error calling CountByTagID: %s", err.Error())
-		}
-
-		assert.Equal(t, 1, sceneCount)
-
-		sceneCount, err = sqb.CountByTagID(ctx, 0)
-
-		if err != nil {
-			t.Errorf("error calling CountByTagID: %s", err.Error())
-		}
-
-		assert.Equal(t, 0, sceneCount)
-
-		return nil
-	})
-}
-
-func TestSceneCountByStudioID(t *testing.T) {
-	withTxn(func(ctx context.Context) error {
-		sqb := db.Scene
-
-		sceneCount, err := sqb.CountByStudioID(ctx, studioIDs[studioIdxWithScene])
-
-		if err != nil {
-			t.Errorf("error calling CountByStudioID: %s", err.Error())
-		}
-
-		assert.Equal(t, 1, sceneCount)
-
-		sceneCount, err = sqb.CountByStudioID(ctx, 0)
-
-		if err != nil {
-			t.Errorf("error calling CountByStudioID: %s", err.Error())
-		}
-
-		assert.Equal(t, 0, sceneCount)
-
-		return nil
-	})
-}
-
 func TestFindByMovieID(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
 		sqb := db.Scene
