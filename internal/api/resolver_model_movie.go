@@ -5,7 +5,9 @@ import (
 
 	"github.com/stashapp/stash/internal/api/loaders"
 	"github.com/stashapp/stash/internal/api/urlbuilders"
+	"github.com/stashapp/stash/pkg/group"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/scene"
 )
 
 func (r *groupResolver) Date(ctx context.Context, obj *models.Group) (*string, error) {
@@ -122,6 +124,17 @@ func (r groupResolver) SubGroups(ctx context.Context, obj *models.Group) (ret []
 	return r.relatedGroups(ctx, obj.SubGroups)
 }
 
+func (r *groupResolver) SubGroupCount(ctx context.Context, obj *models.Group, depth *int) (ret int, err error) {
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+		ret, err = group.CountByContainingGroupID(ctx, r.repository.Group, obj.ID, depth)
+		return err
+	}); err != nil {
+		return 0, err
+	}
+
+	return ret, nil
+}
+
 func (r *groupResolver) FrontImagePath(ctx context.Context, obj *models.Group) (*string, error) {
 	var hasImage bool
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
@@ -157,9 +170,9 @@ func (r *groupResolver) BackImagePath(ctx context.Context, obj *models.Group) (*
 	return &imagePath, nil
 }
 
-func (r *groupResolver) SceneCount(ctx context.Context, obj *models.Group) (ret int, err error) {
+func (r *groupResolver) SceneCount(ctx context.Context, obj *models.Group, depth *int) (ret int, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		ret, err = r.repository.Scene.CountByGroupID(ctx, obj.ID)
+		ret, err = scene.CountByGroupID(ctx, r.repository.Scene, obj.ID, depth)
 		return err
 	}); err != nil {
 		return 0, err

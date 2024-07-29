@@ -791,13 +791,6 @@ func (qb *SceneStore) FindByGroupID(ctx context.Context, groupID int) ([]*models
 	return ret, nil
 }
 
-func (qb *SceneStore) CountByGroupID(ctx context.Context, groupID int) (int, error) {
-	joinTable := scenesGroupsJoinTable
-
-	q := dialect.Select(goqu.COUNT("*")).From(joinTable).Where(joinTable.Col(groupIDColumn).Eq(groupID))
-	return count(ctx, q)
-}
-
 func (qb *SceneStore) Count(ctx context.Context) (int, error) {
 	q := dialect.Select(goqu.COUNT("*")).From(qb.table())
 	return count(ctx, q)

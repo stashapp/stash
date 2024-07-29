@@ -4307,30 +4307,6 @@ func TestSceneCountByTagID(t *testing.T) {
 	})
 }
 
-func TestSceneCountByGroupID(t *testing.T) {
-	withTxn(func(ctx context.Context) error {
-		sqb := db.Scene
-
-		sceneCount, err := sqb.CountByGroupID(ctx, groupIDs[groupIdxWithScene])
-
-		if err != nil {
-			t.Errorf("error calling CountByGroupID: %s", err.Error())
-		}
-
-		assert.Equal(t, 1, sceneCount)
-
-		sceneCount, err = sqb.CountByGroupID(ctx, 0)
-
-		if err != nil {
-			t.Errorf("error calling CountByGroupID: %s", err.Error())
-		}
-
-		assert.Equal(t, 0, sceneCount)
-
-		return nil
-	})
-}
-
 func TestSceneCountByStudioID(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
 		sqb := db.Scene
