@@ -682,7 +682,7 @@ func (me *contentDirectoryService) getGroups() []interface{} {
 
 func (me *contentDirectoryService) getGroupScenes(paths []string, host string) []interface{} {
 	sceneFilter := &models.SceneFilterType{
-		Groups: &models.MultiCriterionInput{
+		Groups: &models.HierarchicalMultiCriterionInput{
 			Modifier: models.CriterionModifierIncludes,
 			Value:    []string{paths[0]},
 		},

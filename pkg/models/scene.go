@@ -56,7 +56,7 @@ type SceneFilterType struct {
 	// Filter to only include scenes with this studio
 	Studios *HierarchicalMultiCriterionInput `json:"studios"`
 	// Filter to only include scenes with this group
-	Groups *MultiCriterionInput `json:"groups"`
+	Groups *HierarchicalMultiCriterionInput `json:"groups"`
 	// Filter to only include scenes with this movie
 	Movies *MultiCriterionInput `json:"movies"`
 	// Filter to only include scenes with this gallery

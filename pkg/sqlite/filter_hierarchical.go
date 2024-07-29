@@ -71,13 +71,13 @@ SELECT root_id, {item_id_col}, depth + 1 FROM {relation_table} INNER JOIN {alias
 	var queryMap utils.StrFormatMap
 	if isParents {
 		queryMap = utils.StrFormatMap{
-			"root_id_col": "parent_id",
-			"item_id_col": "child_id",
+			"root_id_col": h.parentIDCol,
+			"item_id_col": h.childIDCol,
 		}
 	} else {
 		queryMap = utils.StrFormatMap{
-			"root_id_col": "child_id",
-			"item_id_col": "parent_id",
+			"root_id_col": h.childIDCol,
+			"item_id_col": h.parentIDCol,
 		}
 	}
 

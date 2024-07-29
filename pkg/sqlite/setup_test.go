@@ -78,6 +78,7 @@ const (
 	sceneIdxWithGrandChildStudio
 	sceneIdxMissingPhash
 	sceneIdxWithPerformerParentTag
+	sceneIdxWithGroupWithParent
 	// new indexes above
 	lastSceneIdx
 
@@ -158,9 +159,10 @@ const (
 	groupIdxWithParentAndChild
 	groupIdxWithParent
 	groupIdxWithGrandParent
+	groupIdxWithParentAndScene
+	groupIdxWithChildWithScene
 	// groups with dup names start from the end
-	// create 2 more basic groups (can remove this if we add more indexes)
-	groupIdxWithDupName = groupIdxWithGrandParent + 2
+	groupIdxWithDupName
 
 	groupsNameCase   = groupIdxWithDupName
 	groupsNameNoCase = 1
@@ -395,7 +397,8 @@ var (
 	}
 
 	sceneGroups = linkMap{
-		sceneIdxWithGroup: {groupIdxWithScene},
+		sceneIdxWithGroup:           {groupIdxWithScene},
+		sceneIdxWithGroupWithParent: {groupIdxWithParentAndScene},
 	}
 
 	sceneStudios = map[int]int{
@@ -551,6 +554,7 @@ var (
 		{groupIdxWithChild, groupIdxWithParent},
 		{groupIdxWithGrandChild, groupIdxWithParentAndChild},
 		{groupIdxWithParentAndChild, groupIdxWithGrandParent},
+		{groupIdxWithChildWithScene, groupIdxWithParentAndScene},
 	}
 )
 

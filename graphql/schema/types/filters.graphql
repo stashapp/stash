@@ -259,7 +259,7 @@ input SceneFilterType {
   "Filter to only include scenes with this movie"
   movies: MultiCriterionInput @deprecated(reason: "use groups instead")
   "Filter to only include scenes with this group"
-  groups: MultiCriterionInput
+  groups: HierarchicalMultiCriterionInput
   "Filter to only include scenes with this gallery"
   galleries: MultiCriterionInput
   "Filter to only include scenes with these tags"
@@ -387,6 +387,15 @@ input GroupFilterType {
   created_at: TimestampCriterionInput
   "Filter by last update time"
   updated_at: TimestampCriterionInput
+
+  "Filter by containing groups"
+  containing_groups: HierarchicalMultiCriterionInput
+  "Filter by sub groups"
+  sub_groups: HierarchicalMultiCriterionInput
+  "Filter by number of containing groups the group has"
+  containing_group_count: IntCriterionInput
+  "Filter by number of sub-groups the group has"
+  sub_group_count: IntCriterionInput
 
   "Filter by related scenes that meet this criteria"
   scenes_filter: SceneFilterType

@@ -14,6 +14,8 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sliceutil"
+	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 )
 
 func loadGroupRelationships(ctx context.Context, expected models.Group, actual *models.Group) error {
@@ -985,7 +987,7 @@ func TestGroupQuerySorting(t *testing.T) {
 		groups = queryGroups(ctx, t, nil, &findFilter)
 		lastGroup := groups[len(groups)-1]
 
-		assert.Equal(t, groupIDs[groupIdxWithScene], lastGroup.ID)
+		assert.Equal(t, groupIDs[groupIdxWithParentAndScene], lastGroup.ID)
 
 		return nil
 	})
@@ -1028,6 +1030,374 @@ func TestGroupUpdateBackImage(t *testing.T) {
 		return testUpdateImage(t, ctx, group.ID, qb.UpdateBackImage, qb.GetBackImage)
 	}); err != nil {
 		t.Error(err.Error())
+	}
+}
+
+func TestGroupQueryContainingGroups(t *testing.T) {
+	const nameField = "Name"
+
+	type criterion struct {
+		valueIdxs []int
+		modifier  models.CriterionModifier
+		depth     int
+	}
+
+	tests := []struct {
+		name        string
+		c           criterion
+		q           string
+		includeIdxs []int
+	}{
+		{
+			"includes",
+			criterion{
+				[]int{groupIdxWithChild},
+				models.CriterionModifierIncludes,
+				0,
+			},
+			"",
+			[]int{groupIdxWithParent},
+		},
+		{
+			"excludes",
+			criterion{
+				[]int{groupIdxWithChild},
+				models.CriterionModifierExcludes,
+				0,
+			},
+			getGroupStringValue(groupIdxWithParent, nameField),
+			nil,
+		},
+		{
+			"includes (all levels)",
+			criterion{
+				[]int{groupIdxWithGrandChild},
+				models.CriterionModifierIncludes,
+				-1,
+			},
+			"",
+			[]int{groupIdxWithParentAndChild, groupIdxWithGrandParent},
+		},
+		{
+			"includes (1 level)",
+			criterion{
+				[]int{groupIdxWithGrandChild},
+				models.CriterionModifierIncludes,
+				1,
+			},
+			"",
+			[]int{groupIdxWithParentAndChild, groupIdxWithGrandParent},
+		},
+		{
+			"is null",
+			criterion{
+				nil,
+				models.CriterionModifierIsNull,
+				0,
+			},
+			getGroupStringValue(groupIdxWithParent, nameField),
+			nil,
+		},
+		{
+			"not null",
+			criterion{
+				nil,
+				models.CriterionModifierNotNull,
+				0,
+			},
+			"",
+			[]int{groupIdxWithParentAndChild, groupIdxWithParent, groupIdxWithGrandParent, groupIdxWithParentAndScene},
+		},
+	}
+
+	qb := db.Group
+
+	for _, tt := range tests {
+		valueIDs := indexesToIDs(groupIDs, tt.c.valueIdxs)
+		expectedIDs := indexesToIDs(groupIDs, tt.includeIdxs)
+
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			groupFilter := &models.GroupFilterType{
+				ContainingGroups: &models.HierarchicalMultiCriterionInput{
+					Value:    intslice.IntSliceToStringSlice(valueIDs),
+					Modifier: tt.c.modifier,
+				},
+			}
+
+			if tt.c.depth != 0 {
+				groupFilter.ContainingGroups.Depth = &tt.c.depth
+			}
+
+			findFilter := models.FindFilterType{}
+			if tt.q != "" {
+				findFilter.Q = &tt.q
+			}
+
+			groups, _, err := qb.Query(ctx, groupFilter, &findFilter)
+			if err != nil {
+				t.Errorf("GroupStore.Query() error = %v", err)
+				return
+			}
+
+			// get ids of groups
+			groupIDs := sliceutil.Map(groups, func(g *models.Group) int { return g.ID })
+			assert.ElementsMatch(t, expectedIDs, groupIDs)
+		})
+	}
+}
+
+func TestGroupQuerySubGroups(t *testing.T) {
+	const nameField = "Name"
+
+	type criterion struct {
+		valueIdxs []int
+		modifier  models.CriterionModifier
+		depth     int
+	}
+
+	tests := []struct {
+		name         string
+		c            criterion
+		q            string
+		expectedIdxs []int
+	}{
+		{
+			"includes",
+			criterion{
+				[]int{groupIdxWithParent},
+				models.CriterionModifierIncludes,
+				0,
+			},
+			"",
+			[]int{groupIdxWithChild},
+		},
+		{
+			"excludes",
+			criterion{
+				[]int{groupIdxWithParent},
+				models.CriterionModifierExcludes,
+				0,
+			},
+			getGroupStringValue(groupIdxWithChild, nameField),
+			nil,
+		},
+		{
+			"includes (all levels)",
+			criterion{
+				[]int{groupIdxWithGrandParent},
+				models.CriterionModifierIncludes,
+				-1,
+			},
+			"",
+			[]int{groupIdxWithGrandChild, groupIdxWithParentAndChild},
+		},
+		{
+			"includes (1 level)",
+			criterion{
+				[]int{groupIdxWithGrandParent},
+				models.CriterionModifierIncludes,
+				1,
+			},
+			"",
+			[]int{groupIdxWithGrandChild, groupIdxWithParentAndChild},
+		},
+		{
+			"is null",
+			criterion{
+				nil,
+				models.CriterionModifierIsNull,
+				0,
+			},
+			getGroupStringValue(groupIdxWithChild, nameField),
+			nil,
+		},
+		{
+			"not null",
+			criterion{
+				nil,
+				models.CriterionModifierNotNull,
+				0,
+			},
+			"",
+			[]int{groupIdxWithGrandChild, groupIdxWithChild, groupIdxWithParentAndChild, groupIdxWithChildWithScene},
+		},
+	}
+
+	qb := db.Group
+
+	for _, tt := range tests {
+		valueIDs := indexesToIDs(groupIDs, tt.c.valueIdxs)
+		expectedIDs := indexesToIDs(groupIDs, tt.expectedIdxs)
+
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			groupFilter := &models.GroupFilterType{
+				SubGroups: &models.HierarchicalMultiCriterionInput{
+					Value:    intslice.IntSliceToStringSlice(valueIDs),
+					Modifier: tt.c.modifier,
+				},
+			}
+
+			if tt.c.depth != 0 {
+				groupFilter.SubGroups.Depth = &tt.c.depth
+			}
+
+			findFilter := models.FindFilterType{}
+			if tt.q != "" {
+				findFilter.Q = &tt.q
+			}
+
+			groups, _, err := qb.Query(ctx, groupFilter, &findFilter)
+			if err != nil {
+				t.Errorf("GroupStore.Query() error = %v", err)
+				return
+			}
+
+			// get ids of groups
+			groupIDs := sliceutil.Map(groups, func(g *models.Group) int { return g.ID })
+			assert.ElementsMatch(t, expectedIDs, groupIDs)
+		})
+	}
+}
+
+func TestGroupQueryContainingGroupCount(t *testing.T) {
+	const nameField = "Name"
+
+	tests := []struct {
+		name         string
+		value        int
+		modifier     models.CriterionModifier
+		q            string
+		expectedIdxs []int
+	}{
+		{
+			"equals",
+			1,
+			models.CriterionModifierEquals,
+			"",
+			[]int{groupIdxWithParent, groupIdxWithGrandParent, groupIdxWithParentAndChild, groupIdxWithParentAndScene},
+		},
+		{
+			"not equals",
+			1,
+			models.CriterionModifierNotEquals,
+			getGroupStringValue(groupIdxWithParent, nameField),
+			nil,
+		},
+		{
+			"less than",
+			1,
+			models.CriterionModifierLessThan,
+			getGroupStringValue(groupIdxWithParent, nameField),
+			nil,
+		},
+		{
+			"greater than",
+			0,
+			models.CriterionModifierGreaterThan,
+			"",
+			[]int{groupIdxWithParent, groupIdxWithGrandParent, groupIdxWithParentAndChild, groupIdxWithParentAndScene},
+		},
+	}
+
+	qb := db.Group
+
+	for _, tt := range tests {
+		expectedIDs := indexesToIDs(groupIDs, tt.expectedIdxs)
+
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			groupFilter := &models.GroupFilterType{
+				ContainingGroupCount: &models.IntCriterionInput{
+					Value:    tt.value,
+					Modifier: tt.modifier,
+				},
+			}
+
+			findFilter := models.FindFilterType{}
+			if tt.q != "" {
+				findFilter.Q = &tt.q
+			}
+
+			groups, _, err := qb.Query(ctx, groupFilter, &findFilter)
+			if err != nil {
+				t.Errorf("GroupStore.Query() error = %v", err)
+				return
+			}
+
+			// get ids of groups
+			groupIDs := sliceutil.Map(groups, func(g *models.Group) int { return g.ID })
+			assert.ElementsMatch(t, expectedIDs, groupIDs)
+		})
+	}
+}
+
+func TestGroupQuerySubGroupCount(t *testing.T) {
+	const nameField = "Name"
+
+	tests := []struct {
+		name         string
+		value        int
+		modifier     models.CriterionModifier
+		q            string
+		expectedIdxs []int
+	}{
+		{
+			"equals",
+			1,
+			models.CriterionModifierEquals,
+			"",
+			[]int{groupIdxWithChild, groupIdxWithGrandChild, groupIdxWithParentAndChild, groupIdxWithChildWithScene},
+		},
+		{
+			"not equals",
+			1,
+			models.CriterionModifierNotEquals,
+			getGroupStringValue(groupIdxWithChild, nameField),
+			nil,
+		},
+		{
+			"less than",
+			1,
+			models.CriterionModifierLessThan,
+			getGroupStringValue(groupIdxWithChild, nameField),
+			nil,
+		},
+		{
+			"greater than",
+			0,
+			models.CriterionModifierGreaterThan,
+			"",
+			[]int{groupIdxWithChild, groupIdxWithGrandChild, groupIdxWithParentAndChild, groupIdxWithChildWithScene},
+		},
+	}
+
+	qb := db.Group
+
+	for _, tt := range tests {
+		expectedIDs := indexesToIDs(groupIDs, tt.expectedIdxs)
+
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			groupFilter := &models.GroupFilterType{
+				SubGroupCount: &models.IntCriterionInput{
+					Value:    tt.value,
+					Modifier: tt.modifier,
+				},
+			}
+
+			findFilter := models.FindFilterType{}
+			if tt.q != "" {
+				findFilter.Q = &tt.q
+			}
+
+			groups, _, err := qb.Query(ctx, groupFilter, &findFilter)
+			if err != nil {
+				t.Errorf("GroupStore.Query() error = %v", err)
+				return
+			}
+
+			// get ids of groups
+			groupIDs := sliceutil.Map(groups, func(g *models.Group) int { return g.ID })
+			assert.ElementsMatch(t, expectedIDs, groupIDs)
+		})
 	}
 }
 
