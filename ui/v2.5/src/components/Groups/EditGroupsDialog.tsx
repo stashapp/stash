@@ -9,6 +9,7 @@ import { useToast } from "src/hooks/Toast";
 import * as FormUtils from "src/utils/form";
 import { RatingSystem } from "../Shared/Rating/RatingSystem";
 import {
+  getAggregateIds,
   getAggregateInputIDs,
   getAggregateInputValue,
   getAggregateRating,
@@ -22,6 +23,15 @@ import { MultiSet } from "../Shared/MultiSet";
 interface IListOperationProps {
   selected: GQL.GroupDataFragment[];
   onClose: (applied: boolean) => void;
+}
+
+export function getAggregateContainingGroupIds(
+  state: Pick<GQL.GroupDataFragment, "containing_groups">[]
+) {
+  const sortedLists = state.map((o) =>
+    o.containing_groups.map((oo) => oo.group.id).sort()
+  );
+  return getAggregateIds(sortedLists);
 }
 
 export const EditGroupsDialog: React.FC<IListOperationProps> = (
@@ -39,6 +49,12 @@ export const EditGroupsDialog: React.FC<IListOperationProps> = (
   const [tagIds, setTagIds] = useState<string[]>();
   const [existingTagIds, setExistingTagIds] = useState<string[]>();
 
+  const [containingGroupsMode, setGroupMode] =
+    React.useState<GQL.BulkUpdateIdMode>(GQL.BulkUpdateIdMode.Add);
+  const [containingGroupIds, setGroupIds] = useState<string[]>();
+  const [existingContainingGroupIds, setExistingContainingGroupIds] =
+    useState<string[]>();
+
   const [updateGroups] = useBulkGroupUpdate(getGroupInput());
 
   const [isUpdating, setIsUpdating] = useState(false);
@@ -47,16 +63,21 @@ export const EditGroupsDialog: React.FC<IListOperationProps> = (
     const aggregateRating = getAggregateRating(props.selected);
     const aggregateStudioId = getAggregateStudioId(props.selected);
     const aggregateTagIds = getAggregateTagIds(props.selected);
+    const aggregateGroupIds = getAggregateContainingGroupIds(props.selected);
 
     const groupInput: GQL.BulkGroupUpdateInput = {
       ids: props.selected.map((group) => group.id),
       director,
     };
 
-    // if rating is undefined
     groupInput.rating100 = getAggregateInputValue(rating100, aggregateRating);
     groupInput.studio_id = getAggregateInputValue(studioId, aggregateStudioId);
     groupInput.tag_ids = getAggregateInputIDs(tagMode, tagIds, aggregateTagIds);
+    groupInput.containing_group_ids = getAggregateInputIDs(
+      containingGroupsMode,
+      containingGroupIds,
+      aggregateGroupIds
+    );
 
     return groupInput;
   }
@@ -85,17 +106,22 @@ export const EditGroupsDialog: React.FC<IListOperationProps> = (
     let updateRating: number | undefined;
     let updateStudioId: string | undefined;
     let updateTagIds: string[] = [];
+    let updateContainingGroupIds: string[] = [];
     let updateDirector: string | undefined;
     let first = true;
 
     state.forEach((group: GQL.GroupDataFragment) => {
       const groupTagIDs = (group.tags ?? []).map((p) => p.id).sort();
+      const groupContainingGroupIDs = (group.containing_groups ?? [])
+        .map((p) => p.group.id)
+        .sort();
 
       if (first) {
         first = false;
         updateRating = group.rating100 ?? undefined;
         updateStudioId = group.studio?.id ?? undefined;
         updateTagIds = groupTagIDs;
+        updateContainingGroupIds = groupContainingGroupIDs;
         updateDirector = group.director ?? undefined;
       } else {
         if (group.rating100 !== updateRating) {
@@ -110,12 +136,16 @@ export const EditGroupsDialog: React.FC<IListOperationProps> = (
         if (!isEqual(groupTagIDs, updateTagIds)) {
           updateTagIds = [];
         }
+        if (!isEqual(groupContainingGroupIDs, updateContainingGroupIds)) {
+          updateTagIds = [];
+        }
       }
     });
 
     setRating(updateRating);
     setStudioId(updateStudioId);
     setExistingTagIds(updateTagIds);
+    setExistingContainingGroupIds(updateContainingGroupIds);
     setDirector(updateDirector);
   }, [props.selected]);
 
@@ -165,6 +195,20 @@ export const EditGroupsDialog: React.FC<IListOperationProps> = (
                 isDisabled={isUpdating}
               />
             </Col>
+          </Form.Group>
+          <Form.Group controlId="containing-groups">
+            <Form.Label>
+              <FormattedMessage id="containing_groups" />
+            </Form.Label>
+            <MultiSet
+              type="groups"
+              disabled={isUpdating}
+              onUpdate={(itemIDs) => setGroupIds(itemIDs)}
+              onSetMode={(newMode) => setGroupMode(newMode)}
+              existingIds={existingContainingGroupIds ?? []}
+              ids={containingGroupIds ?? []}
+              mode={containingGroupsMode}
+            />
           </Form.Group>
           <Form.Group controlId="director">
             <Form.Label>

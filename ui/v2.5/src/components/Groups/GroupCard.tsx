@@ -99,6 +99,7 @@ export const GroupCard: React.FC<IProps> = ({
       description ||
       group.scenes.length > 0 ||
       group.tags.length > 0 ||
+      group.containing_groups.length > 0 ||
       group.sub_group_count > 0
     ) {
       return (
