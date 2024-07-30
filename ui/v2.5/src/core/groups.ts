@@ -60,7 +60,7 @@ export const useContainingGroupFilterHook = (
       groupCriterion.value = {
         items: [groupValue],
         excluded: [],
-        depth: configuration?.ui.showChildStudioContent ? -1 : 0,
+        depth: configuration?.ui.showSubGroupContent ? -1 : 0,
       };
       groupCriterion.modifier = GQL.CriterionModifier.Includes;
       filter.criteria.push(groupCriterion);

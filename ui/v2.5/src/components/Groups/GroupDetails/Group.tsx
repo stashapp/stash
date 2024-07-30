@@ -132,6 +132,8 @@ const GroupPage: React.FC<IProps> = ({ group, tabKey }) => {
   const enableBackgroundImage = uiConfig?.enableMovieBackgroundImage ?? false;
   const compactExpandedDetails = uiConfig?.compactExpandedDetails ?? false;
   const showAllDetails = uiConfig?.showAllDetails ?? true;
+  const abbreviateCounter = uiConfig?.abbreviateCounters ?? false;
+  const showAllCounts = uiConfig?.showSubGroupContent ?? false;
 
   const [collapsed, setCollapsed] = useState<boolean>(!showAllDetails);
   const loadStickyHeader = useLoadStickyHeader();
@@ -409,8 +411,8 @@ const GroupPage: React.FC<IProps> = ({ group, tabKey }) => {
               <GroupTabs
                 group={group}
                 tabKey={tabKey}
-                abbreviateCounter={true}
-                showAllCounts={true}
+                abbreviateCounter={abbreviateCounter}
+                showAllCounts={showAllCounts}
               />
             )}
           </div>
