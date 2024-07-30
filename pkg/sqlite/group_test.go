@@ -1401,6 +1401,53 @@ func TestGroupQuerySubGroupCount(t *testing.T) {
 	}
 }
 
+func TestGroupFindInAncestors(t *testing.T) {
+	tests := []struct {
+		name         string
+		ancestorIdxs []int
+		idxs         []int
+		expectedIdxs []int
+	}{
+		{
+			"basic",
+			[]int{groupIdxWithGrandParent},
+			[]int{groupIdxWithGrandChild},
+			[]int{groupIdxWithGrandChild},
+		},
+		{
+			"same",
+			[]int{groupIdxWithScene},
+			[]int{groupIdxWithScene},
+			[]int{groupIdxWithScene},
+		},
+		{
+			"no matches",
+			[]int{groupIdxWithGrandParent},
+			[]int{groupIdxWithScene},
+			nil,
+		},
+	}
+
+	qb := db.Group
+
+	for _, tt := range tests {
+		ancestorIDs := indexesToIDs(groupIDs, tt.ancestorIdxs)
+		ids := indexesToIDs(groupIDs, tt.idxs)
+		expectedIDs := indexesToIDs(groupIDs, tt.expectedIdxs)
+
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			found, err := qb.FindInAncestors(ctx, ancestorIDs, ids)
+			if err != nil {
+				t.Errorf("GroupStore.FindInAncestors() error = %v", err)
+				return
+			}
+
+			// get ids of groups
+			assert.ElementsMatch(t, found, expectedIDs)
+		})
+	}
+}
+
 // TODO Update
 // TODO Destroy - ensure image is destroyed
 // TODO Find
