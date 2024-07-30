@@ -73,8 +73,3 @@ type GroupIDDescription struct {
 	GroupID     int    `json:"group_id"`
 	Description string `json:"description"`
 }
-
-type UpdateGroupDescriptions struct {
-	Groups []GroupIDDescription   `json:"groups"`
-	Mode   RelationshipUpdateMode `json:"mode"`
-}

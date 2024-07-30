@@ -622,3 +622,45 @@ WHERE groups.studio_id = ?
 func (qb *GroupStore) GetURLs(ctx context.Context, groupID int) ([]string, error) {
 	return groupsURLsTableMgr.get(ctx, groupID)
 }
+
+// FindInAscestors returns a list of group IDs where a group in the ids list is an ascestor of the ancestor group IDs
+func (qb *GroupStore) FindInAncestors(ctx context.Context, ascestorIDs []int, ids []int) ([]int, error) {
+	/*
+		WITH RECURSIVE ascestors AS (
+		 SELECT g.id AS parent_id FROM groups g WHERE g.id IN (:ascestorIDs)
+		 UNION
+		 SELECT gr.containing_id FROM groups_relations gr INNER JOIN ascestors a ON a.parent_id = gr.sub_id
+		)
+		SELECT p.parent_id FROM ascestors p WHERE p.parent_id IN (:ids);
+	*/
+	table := qb.table()
+	const ascestors = "ancestors"
+	const parentID = "parent_id"
+	q := dialect.From(ascestors).Prepared(true).
+		WithRecursive(ascestors,
+			dialect.From(qb.table()).Select(table.Col(idColumn).As(parentID)).
+				Where(table.Col(idColumn).In(ascestorIDs)).
+				Union(
+					dialect.From(groupRelationsJoinTable).InnerJoin(
+						goqu.I(ascestors), goqu.On(goqu.I("parent_id").Eq(goqu.I("sub_id"))),
+					).Select("containing_id"),
+				),
+		).Select(parentID).Where(goqu.I(parentID).In(ids))
+
+	const single = false
+	var ret []int
+	if err := queryFunc(ctx, q, single, func(r *sqlx.Rows) error {
+		var id int
+		if err := r.Scan(&id); err != nil {
+			return err
+		}
+
+		ret = append(ret, id)
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+
+}

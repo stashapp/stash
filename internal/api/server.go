@@ -157,11 +157,13 @@ func Initialize() (*Server, error) {
 	sceneService := mgr.SceneService
 	imageService := mgr.ImageService
 	galleryService := mgr.GalleryService
+	groupService := mgr.GroupService
 	resolver := &Resolver{
 		repository:     repo,
 		sceneService:   sceneService,
 		imageService:   imageService,
 		galleryService: galleryService,
+		groupService:   groupService,
 		hookExecutor:   pluginCache,
 	}
 

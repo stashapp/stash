@@ -2,6 +2,8 @@ package models
 
 import (
 	"context"
+
+	"github.com/stashapp/stash/pkg/sliceutil"
 )
 
 type SceneIDLoader interface {
@@ -221,6 +223,13 @@ func (r RelatedGroupDescriptions) List() []GroupIDDescription {
 	r.mustLoaded()
 
 	return r.list
+}
+
+// List returns the related Groups. Panics if the relationship has not been loaded.
+func (r RelatedGroupDescriptions) IDs() []int {
+	r.mustLoaded()
+
+	return sliceutil.Map(r.list, func(d GroupIDDescription) int { return d.GroupID })
 }
 
 // Add adds the provided ids to the list. Panics if the relationship has not been loaded.

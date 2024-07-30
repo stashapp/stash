@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/stashapp/stash/internal/static"
+	"github.com/stashapp/stash/pkg/group"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin/hook"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
@@ -92,24 +93,8 @@ func (r *mutationResolver) GroupCreate(ctx context.Context, input GroupCreateInp
 
 	// Start the transaction and save the group
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		qb := r.repository.Group
-
-		err = qb.Create(ctx, newGroup)
-		if err != nil {
+		if err = r.groupService.Create(ctx, newGroup, frontimageData, backimageData); err != nil {
 			return err
-		}
-
-		// update image table
-		if len(frontimageData) > 0 {
-			if err := qb.UpdateFrontImage(ctx, newGroup.ID, frontimageData); err != nil {
-				return err
-			}
-		}
-
-		if len(backimageData) > 0 {
-			if err := qb.UpdateBackImage(ctx, newGroup.ID, backimageData); err != nil {
-				return err
-			}
 		}
 
 		return nil
@@ -201,26 +186,20 @@ func (r *mutationResolver) GroupUpdate(ctx context.Context, input GroupUpdateInp
 		}
 	}
 
-	// Start the transaction and save the group
-	var group *models.Group
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		qb := r.repository.Group
-		group, err = qb.UpdatePartial(ctx, groupID, updatedGroup)
+		frontImage := group.ImageInput{
+			Image: frontimageData,
+			Set:   frontImageIncluded,
+		}
+
+		backImage := group.ImageInput{
+			Image: backimageData,
+			Set:   backImageIncluded,
+		}
+
+		_, err = r.groupService.UpdatePartial(ctx, groupID, updatedGroup, frontImage, backImage)
 		if err != nil {
 			return err
-		}
-
-		// update image table
-		if frontImageIncluded {
-			if err := qb.UpdateFrontImage(ctx, group.ID, frontimageData); err != nil {
-				return err
-			}
-		}
-
-		if backImageIncluded {
-			if err := qb.UpdateBackImage(ctx, group.ID, backimageData); err != nil {
-				return err
-			}
 		}
 
 		return nil
@@ -229,9 +208,9 @@ func (r *mutationResolver) GroupUpdate(ctx context.Context, input GroupUpdateInp
 	}
 
 	// for backwards compatibility - run both movie and group hooks
-	r.hookExecutor.ExecutePostHooks(ctx, group.ID, hook.GroupUpdatePost, input, translator.getFields())
-	r.hookExecutor.ExecutePostHooks(ctx, group.ID, hook.MovieUpdatePost, input, translator.getFields())
-	return r.getGroup(ctx, group.ID)
+	r.hookExecutor.ExecutePostHooks(ctx, groupID, hook.GroupUpdatePost, input, translator.getFields())
+	r.hookExecutor.ExecutePostHooks(ctx, groupID, hook.MovieUpdatePost, input, translator.getFields())
+	return r.getGroup(ctx, groupID)
 }
 
 func groupPartialFromBulkGroupUpdateInput(translator changesetTranslator, input BulkGroupUpdateInput) (ret models.GroupPartial, err error) {
@@ -288,10 +267,8 @@ func (r *mutationResolver) BulkGroupUpdate(ctx context.Context, input BulkGroupU
 	ret := []*models.Group{}
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		qb := r.repository.Group
-
 		for _, groupID := range groupIDs {
-			group, err := qb.UpdatePartial(ctx, groupID, updatedGroup)
+			group, err := r.groupService.UpdatePartial(ctx, groupID, updatedGroup, group.ImageInput{}, group.ImageInput{})
 			if err != nil {
 				return err
 			}
