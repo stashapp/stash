@@ -75,7 +75,6 @@ interface ISceneList {
   defaultSort?: string;
   view?: View;
   alterQuery?: boolean;
-  showEffectiveFilter?: boolean;
 }
 
 export const SceneList: React.FC<ISceneList> = ({
@@ -83,7 +82,6 @@ export const SceneList: React.FC<ISceneList> = ({
   defaultSort,
   view,
   alterQuery,
-  showEffectiveFilter,
 }) => {
   const intl = useIntl();
   const history = useHistory();
@@ -372,7 +370,6 @@ export const SceneList: React.FC<ISceneList> = ({
           renderEditDialog={renderEditDialog}
           renderDeleteDialog={renderDeleteDialog}
           renderMetadataByline={renderMetadataByline}
-          showEffectiveFilter={showEffectiveFilter}
         />
       </ItemListContext>
     </TaggerContext>

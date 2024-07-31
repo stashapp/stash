@@ -30,14 +30,12 @@ interface IGroupList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
   view?: View;
   alterQuery?: boolean;
-  showEffectiveFilter?: boolean;
 }
 
 export const GroupList: React.FC<IGroupList> = ({
   filterHook,
   alterQuery,
   view,
-  showEffectiveFilter,
 }) => {
   const intl = useIntl();
   const history = useHistory();
@@ -192,7 +190,6 @@ export const GroupList: React.FC<IGroupList> = ({
         renderContent={renderContent}
         renderEditDialog={renderEditDialog}
         renderDeleteDialog={renderDeleteDialog}
-        showEffectiveFilter={showEffectiveFilter}
       />
     </ItemListContext>
   );

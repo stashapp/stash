@@ -31,7 +31,6 @@ interface IStudioList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
   view?: View;
   alterQuery?: boolean;
-  showEffectiveFilter?: boolean;
 }
 
 export const StudioList: React.FC<IStudioList> = ({
@@ -39,7 +38,6 @@ export const StudioList: React.FC<IStudioList> = ({
   filterHook,
   view,
   alterQuery,
-  showEffectiveFilter,
 }) => {
   const intl = useIntl();
   const history = useHistory();
@@ -194,7 +192,6 @@ export const StudioList: React.FC<IStudioList> = ({
         addKeybinds={addKeybinds}
         renderContent={renderContent}
         renderDeleteDialog={renderDeleteDialog}
-        showEffectiveFilter={showEffectiveFilter}
       />
     </ItemListContext>
   );
