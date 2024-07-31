@@ -6,19 +6,14 @@ import { StudioList } from "src/components/Studios/StudioList";
 interface ITagStudiosPanel {
   active: boolean;
   tag: GQL.TagDataFragment;
+  showSubTagContent?: boolean;
 }
 
 export const TagStudiosPanel: React.FC<ITagStudiosPanel> = ({
   active,
   tag,
+  showSubTagContent,
 }) => {
-  const filterHook = useTagFilterHook(tag);
-  return (
-    <StudioList
-      filterHook={filterHook}
-      alterQuery={active}
-      // show the effective filter to allow changing the depth
-      showEffectiveFilter
-    />
-  );
+  const filterHook = useTagFilterHook(tag, showSubTagContent);
+  return <StudioList filterHook={filterHook} alterQuery={active} />;
 };

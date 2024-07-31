@@ -258,6 +258,15 @@ dd {
     padding: 5px 0;
   }
 
+  .item-list-header {
+    align-content: center;
+    // border-bottom: solid 2px #192127;
+    display: flex;
+    justify-content: center;
+    margin: 0;
+    padding: 5px 0 0 0;
+  }
+
   .item-list-container {
     padding-top: 15px;
 
