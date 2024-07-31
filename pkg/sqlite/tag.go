@@ -424,15 +424,15 @@ func (qb *TagStore) FindByGalleryID(ctx context.Context, galleryID int) ([]*mode
 	return qb.queryTags(ctx, query, args)
 }
 
-func (qb *TagStore) FindByGroupID(ctx context.Context, movieID int) ([]*models.Tag, error) {
+func (qb *TagStore) FindByGroupID(ctx context.Context, groupID int) ([]*models.Tag, error) {
 	query := `
 		SELECT tags.* FROM tags
-		LEFT JOIN movies_tags as movies_join on movies_join.tag_id = tags.id
-		WHERE movies_join.movie_id = ?
+		LEFT JOIN groups_tags as groups_join on groups_join.tag_id = tags.id
+		WHERE groups_join.group_id = ?
 		GROUP BY tags.id
 	`
 	query += qb.getDefaultTagSort()
-	args := []interface{}{movieID}
+	args := []interface{}{groupID}
 	return qb.queryTags(ctx, query, args)
 }
 
