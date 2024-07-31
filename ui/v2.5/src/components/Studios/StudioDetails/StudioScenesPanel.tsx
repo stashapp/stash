@@ -7,20 +7,20 @@ import { View } from "src/components/List/views";
 interface IStudioScenesPanel {
   active: boolean;
   studio: GQL.StudioDataFragment;
+  showChildStudioContent?: boolean;
 }
 
 export const StudioScenesPanel: React.FC<IStudioScenesPanel> = ({
   active,
   studio,
+  showChildStudioContent,
 }) => {
-  const filterHook = useStudioFilterHook(studio);
+  const filterHook = useStudioFilterHook(studio, showChildStudioContent);
   return (
     <SceneList
       filterHook={filterHook}
       alterQuery={active}
       view={View.StudioScenes}
-      // show the effective filter to allow changing the depth
-      showEffectiveFilter
     />
   );
 };

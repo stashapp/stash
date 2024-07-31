@@ -1,4 +1,4 @@
-import { Tabs, Tab } from "react-bootstrap";
+import { Tabs, Tab, Form } from "react-bootstrap";
 import React, { useEffect, useMemo, useState } from "react";
 import { useHistory, Redirect, RouteComponentProps } from "react-router-dom";
 import { FormattedMessage, useIntl } from "react-intl";
@@ -79,16 +79,18 @@ const StudioTabs: React.FC<{
   abbreviateCounter: boolean;
   showAllCounts?: boolean;
 }> = ({ tabKey, studio, abbreviateCounter, showAllCounts = false }) => {
+  const [showAllDetails, setShowAllDetails] = useState<boolean>(showAllCounts);
+
   const sceneCount =
-    (showAllCounts ? studio.scene_count_all : studio.scene_count) ?? 0;
+    (showAllDetails ? studio.scene_count_all : studio.scene_count) ?? 0;
   const galleryCount =
-    (showAllCounts ? studio.gallery_count_all : studio.gallery_count) ?? 0;
+    (showAllDetails ? studio.gallery_count_all : studio.gallery_count) ?? 0;
   const imageCount =
-    (showAllCounts ? studio.image_count_all : studio.image_count) ?? 0;
+    (showAllDetails ? studio.image_count_all : studio.image_count) ?? 0;
   const performerCount =
-    (showAllCounts ? studio.performer_count_all : studio.performer_count) ?? 0;
+    (showAllDetails ? studio.performer_count_all : studio.performer_count) ?? 0;
   const groupCount =
-    (showAllCounts ? studio.group_count_all : studio.group_count) ?? 0;
+    (showAllDetails ? studio.group_count_all : studio.group_count) ?? 0;
 
   const populatedDefaultTab = useMemo(() => {
     let ret: TabKey = "scenes";
@@ -123,6 +125,21 @@ const StudioTabs: React.FC<{
     baseURL: `/studios/${studio.id}`,
   });
 
+  const contentSwitch = useMemo(
+    () => (
+      <div className="item-list-header">
+        <Form.Check
+          id="showSubContent"
+          checked={showAllDetails}
+          onChange={() => setShowAllDetails(!showAllDetails)}
+          type="switch"
+          label={<FormattedMessage id="include_sub_studio_content" />}
+        />
+      </div>
+    ),
+    [showAllDetails]
+  );
+
   return (
     <Tabs
       id="studio-tabs"
@@ -141,7 +158,12 @@ const StudioTabs: React.FC<{
           />
         }
       >
-        <StudioScenesPanel active={tabKey === "scenes"} studio={studio} />
+        {contentSwitch}
+        <StudioScenesPanel
+          active={tabKey === "scenes"}
+          studio={studio}
+          showChildStudioContent={showAllDetails}
+        />
       </Tab>
       <Tab
         eventKey="galleries"
@@ -153,7 +175,12 @@ const StudioTabs: React.FC<{
           />
         }
       >
-        <StudioGalleriesPanel active={tabKey === "galleries"} studio={studio} />
+        {contentSwitch}
+        <StudioGalleriesPanel
+          active={tabKey === "galleries"}
+          studio={studio}
+          showChildStudioContent={showAllDetails}
+        />
       </Tab>
       <Tab
         eventKey="images"
@@ -165,7 +192,12 @@ const StudioTabs: React.FC<{
           />
         }
       >
-        <StudioImagesPanel active={tabKey === "images"} studio={studio} />
+        {contentSwitch}
+        <StudioImagesPanel
+          active={tabKey === "images"}
+          studio={studio}
+          showChildStudioContent={showAllDetails}
+        />
       </Tab>
       <Tab
         eventKey="performers"
@@ -177,9 +209,11 @@ const StudioTabs: React.FC<{
           />
         }
       >
+        {contentSwitch}
         <StudioPerformersPanel
           active={tabKey === "performers"}
           studio={studio}
+          showChildStudioContent={showAllDetails}
         />
       </Tab>
       <Tab
@@ -192,7 +226,12 @@ const StudioTabs: React.FC<{
           />
         }
       >
-        <StudioGroupsPanel active={tabKey === "groups"} studio={studio} />
+        {contentSwitch}
+        <StudioGroupsPanel
+          active={tabKey === "groups"}
+          studio={studio}
+          showChildStudioContent={showAllDetails}
+        />
       </Tab>
       <Tab
         eventKey="childstudios"

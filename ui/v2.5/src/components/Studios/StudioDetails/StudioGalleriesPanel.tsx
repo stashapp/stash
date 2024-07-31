@@ -7,20 +7,20 @@ import { View } from "src/components/List/views";
 interface IStudioGalleriesPanel {
   active: boolean;
   studio: GQL.StudioDataFragment;
+  showChildStudioContent?: boolean;
 }
 
 export const StudioGalleriesPanel: React.FC<IStudioGalleriesPanel> = ({
   active,
   studio,
+  showChildStudioContent,
 }) => {
-  const filterHook = useStudioFilterHook(studio);
+  const filterHook = useStudioFilterHook(studio, showChildStudioContent);
   return (
     <GalleryList
       filterHook={filterHook}
       alterQuery={active}
       view={View.StudioGalleries}
-      // show the effective filter to allow changing the depth
-      showEffectiveFilter
     />
   );
 };
