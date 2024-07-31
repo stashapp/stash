@@ -19,7 +19,6 @@ import {
 import { Icon } from "../Shared/Icon";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import useFocus from "src/utils/focus";
-import { ListFilterOptions } from "src/models/list-filter/filter-options";
 import { FormattedMessage, useIntl } from "react-intl";
 import { SavedFilterDropdown } from "./SavedFilterList";
 import {
@@ -36,7 +35,6 @@ import { View } from "./views";
 interface IListFilterProps {
   onFilterUpdate: (newFilter: ListFilterModel) => void;
   filter: ListFilterModel;
-  filterOptions: ListFilterOptions;
   view?: View;
   openFilterDialog: () => void;
 }
@@ -46,7 +44,6 @@ const PAGE_SIZE_OPTIONS = ["20", "40", "60", "120", "250", "500", "1000"];
 export const ListFilter: React.FC<IListFilterProps> = ({
   onFilterUpdate,
   filter,
-  filterOptions,
   openFilterDialog,
   view,
 }) => {
@@ -57,6 +54,8 @@ export const ListFilter: React.FC<IListFilterProps> = ({
   );
   const perPageSelect = useRef(null);
   const [perPageInput, perPageFocus] = useFocus();
+
+  const filterOptions = filter.options;
 
   const searchQueryUpdated = useCallback(
     (value: string) => {

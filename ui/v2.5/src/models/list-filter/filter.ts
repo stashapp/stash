@@ -67,26 +67,48 @@ export class ListFilterModel {
   public constructor(
     mode: FilterMode,
     config?: ConfigDataFragment,
-    defaultZoomIndex?: number
+    options?: {
+      defaultZoomIndex?: number;
+      defaultSortBy?: string;
+      defaultSortDir?: SortDirectionEnum;
+    }
   ) {
     this.mode = mode;
     this.config = config;
     this.options = getFilterOptions(mode);
     const { defaultSortBy, displayModeOptions } = this.options;
 
-    this.sortBy = defaultSortBy;
-    if (this.sortBy === "date") {
-      this.sortDirection = SortDirectionEnum.Desc;
+    if (options?.defaultSortBy) {
+      this.sortBy = options.defaultSortBy;
+      if (options.defaultSortDir) {
+        this.sortDirection = options.defaultSortDir;
+      }
+    } else {
+      this.sortBy = defaultSortBy;
+      if (this.sortBy === "date") {
+        this.sortDirection = SortDirectionEnum.Desc;
+      }
     }
     this.displayMode = displayModeOptions[0];
-    if (defaultZoomIndex !== undefined) {
-      this.defaultZoomIndex = defaultZoomIndex;
-      this.zoomIndex = defaultZoomIndex;
+    if (options?.defaultZoomIndex !== undefined) {
+      this.defaultZoomIndex = options.defaultZoomIndex;
+      this.zoomIndex = options.defaultZoomIndex;
     }
   }
 
   public clone() {
-    return Object.assign(new ListFilterModel(this.mode, this.config), this);
+    const ret = Object.assign(
+      new ListFilterModel(this.mode, this.config),
+      this
+    );
+    ret.criteria = this.criteria.map((c) => c.clone());
+    return ret;
+  }
+
+  public empty() {
+    return new ListFilterModel(this.mode, this.config, {
+      defaultZoomIndex: this.defaultZoomIndex,
+    });
   }
 
   // returns the number of filters applied
@@ -442,5 +464,45 @@ export class ListFilterModel {
       display_mode: this.displayMode,
       zoom_index: this.zoomIndex,
     };
+  }
+
+  public clearCriteria() {
+    const ret = this.clone();
+    ret.criteria = [];
+    ret.currentPage = 1;
+    return ret;
+  }
+
+  public removeCriterion(type: CriterionType) {
+    const ret = this.clone();
+    const c = ret.criteria.find((cc) => cc.criterionOption.type === type);
+
+    if (!c) return ret;
+
+    const newCriteria = ret.criteria.filter((cc) => {
+      return cc.getId() !== c.getId();
+    });
+
+    ret.criteria = newCriteria;
+    ret.currentPage = 1;
+    return ret;
+  }
+
+  public changePage(page: number) {
+    const ret = this.clone();
+    ret.currentPage = page;
+    return ret;
+  }
+
+  public setZoom(zoomIndex: number) {
+    const ret = this.clone();
+    ret.zoomIndex = zoomIndex;
+    return ret;
+  }
+
+  public setDisplayMode(displayMode: DisplayMode) {
+    const ret = this.clone();
+    ret.displayMode = displayMode;
+    return ret;
   }
 }

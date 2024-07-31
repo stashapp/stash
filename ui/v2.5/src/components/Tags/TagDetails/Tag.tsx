@@ -1,4 +1,4 @@
-import { Tabs, Tab, Dropdown } from "react-bootstrap";
+import { Tabs, Tab, Dropdown, Form } from "react-bootstrap";
 import React, { useEffect, useMemo, useState } from "react";
 import { useHistory, Redirect, RouteComponentProps } from "react-router-dom";
 import { FormattedMessage, useIntl } from "react-intl";
@@ -82,20 +82,22 @@ const TagTabs: React.FC<{
   abbreviateCounter: boolean;
   showAllCounts?: boolean;
 }> = ({ tabKey, tag, abbreviateCounter, showAllCounts = false }) => {
+  const [showAllDetails, setShowAllDetails] = useState<boolean>(showAllCounts);
+
   const sceneCount =
-    (showAllCounts ? tag.scene_count_all : tag.scene_count) ?? 0;
+    (showAllDetails ? tag.scene_count_all : tag.scene_count) ?? 0;
   const imageCount =
-    (showAllCounts ? tag.image_count_all : tag.image_count) ?? 0;
+    (showAllDetails ? tag.image_count_all : tag.image_count) ?? 0;
   const galleryCount =
-    (showAllCounts ? tag.gallery_count_all : tag.gallery_count) ?? 0;
+    (showAllDetails ? tag.gallery_count_all : tag.gallery_count) ?? 0;
   const groupCount =
-    (showAllCounts ? tag.group_count_all : tag.group_count) ?? 0;
+    (showAllDetails ? tag.group_count_all : tag.group_count) ?? 0;
   const sceneMarkerCount =
-    (showAllCounts ? tag.scene_marker_count_all : tag.scene_marker_count) ?? 0;
+    (showAllDetails ? tag.scene_marker_count_all : tag.scene_marker_count) ?? 0;
   const performerCount =
-    (showAllCounts ? tag.performer_count_all : tag.performer_count) ?? 0;
+    (showAllDetails ? tag.performer_count_all : tag.performer_count) ?? 0;
   const studioCount =
-    (showAllCounts ? tag.studio_count_all : tag.studio_count) ?? 0;
+    (showAllDetails ? tag.studio_count_all : tag.studio_count) ?? 0;
 
   const populatedDefaultTab = useMemo(() => {
     let ret: TabKey = "scenes";
@@ -133,6 +135,21 @@ const TagTabs: React.FC<{
     baseURL: `/tags/${tag.id}`,
   });
 
+  const contentSwitch = useMemo(
+    () => (
+      <div className="item-list-header">
+        <Form.Check
+          id="showSubContent"
+          checked={showAllDetails}
+          onChange={() => setShowAllDetails(!showAllDetails)}
+          type="switch"
+          label={<FormattedMessage id="include_sub_tag_content" />}
+        />
+      </div>
+    ),
+    [showAllDetails]
+  );
+
   return (
     <Tabs
       id="tag-tabs"
@@ -151,7 +168,12 @@ const TagTabs: React.FC<{
           />
         }
       >
-        <TagScenesPanel active={tabKey === "scenes"} tag={tag} />
+        {contentSwitch}
+        <TagScenesPanel
+          active={tabKey === "scenes"}
+          tag={tag}
+          showSubTagContent={showAllDetails}
+        />
       </Tab>
       <Tab
         eventKey="images"
@@ -163,7 +185,12 @@ const TagTabs: React.FC<{
           />
         }
       >
-        <TagImagesPanel active={tabKey === "images"} tag={tag} />
+        {contentSwitch}
+        <TagImagesPanel
+          active={tabKey === "images"}
+          tag={tag}
+          showSubTagContent={showAllDetails}
+        />
       </Tab>
       <Tab
         eventKey="galleries"
@@ -175,7 +202,12 @@ const TagTabs: React.FC<{
           />
         }
       >
-        <TagGalleriesPanel active={tabKey === "galleries"} tag={tag} />
+        {contentSwitch}
+        <TagGalleriesPanel
+          active={tabKey === "galleries"}
+          tag={tag}
+          showSubTagContent={showAllDetails}
+        />
       </Tab>
       <Tab
         eventKey="groups"
@@ -187,7 +219,12 @@ const TagTabs: React.FC<{
           />
         }
       >
-        <TagGroupsPanel active={tabKey === "groups"} tag={tag} />
+        {contentSwitch}
+        <TagGroupsPanel
+          active={tabKey === "groups"}
+          tag={tag}
+          showSubTagContent={showAllDetails}
+        />
       </Tab>
       <Tab
         eventKey="markers"
@@ -199,7 +236,12 @@ const TagTabs: React.FC<{
           />
         }
       >
-        <TagMarkersPanel active={tabKey === "markers"} tag={tag} />
+        {contentSwitch}
+        <TagMarkersPanel
+          active={tabKey === "markers"}
+          tag={tag}
+          showSubTagContent={showAllDetails}
+        />
       </Tab>
       <Tab
         eventKey="performers"
@@ -211,7 +253,12 @@ const TagTabs: React.FC<{
           />
         }
       >
-        <TagPerformersPanel active={tabKey === "performers"} tag={tag} />
+        {contentSwitch}
+        <TagPerformersPanel
+          active={tabKey === "performers"}
+          tag={tag}
+          showSubTagContent={showAllDetails}
+        />
       </Tab>
       <Tab
         eventKey="studios"
@@ -223,7 +270,12 @@ const TagTabs: React.FC<{
           />
         }
       >
-        <TagStudiosPanel active={tabKey === "studios"} tag={tag} />
+        {contentSwitch}
+        <TagStudiosPanel
+          active={tabKey === "studios"}
+          tag={tag}
+          showSubTagContent={showAllDetails}
+        />
       </Tab>
     </Tabs>
   );

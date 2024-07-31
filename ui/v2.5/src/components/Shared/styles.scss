@@ -1,4 +1,24 @@
 .LoadingIndicator {
+  // fade in animation - delay showing
+  animation: fadeInAnimation ease 200ms;
+  animation-delay: 200ms;
+  animation-fill-mode: forwards;
+  animation-iteration-count: 1;
+
+  opacity: 0;
+}
+
+@keyframes fadeInAnimation {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+.LoadingIndicator {
   align-items: center;
   display: flex;
   flex-direction: column;
@@ -6,7 +26,7 @@
   width: 100%;
 
   &:not(.card-based) {
-    height: 70vh;
+    padding-top: 2rem;
   }
 
   &-message {

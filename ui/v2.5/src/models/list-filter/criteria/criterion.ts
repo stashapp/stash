@@ -89,6 +89,15 @@ export abstract class Criterion<V extends CriterionValue> {
     this.value = value;
   }
 
+  public clone(): Criterion<V> {
+    const newCriterion = new (this.constructor as new (
+      type: CriterionOption,
+      value: V
+    ) => Criterion<V>)(this.criterionOption, this.value);
+    newCriterion.modifier = this.modifier;
+    return newCriterion;
+  }
+
   public static getModifierLabel(intl: IntlShape, modifier: CriterionModifier) {
     const modifierMessageID = modifierMessageIDs[modifier];
 
@@ -251,6 +260,19 @@ export class ILabeledIdCriterionOption extends CriterionOption {
 }
 
 export class ILabeledIdCriterion extends Criterion<ILabeledId[]> {
+  constructor(type: CriterionOption, value: ILabeledId[] = []) {
+    super(type, value);
+  }
+
+  public clone(): Criterion<ILabeledId[]> {
+    const newCriterion = new ILabeledIdCriterion(
+      this.criterionOption,
+      this.value.map((v) => ({ ...v }))
+    );
+    newCriterion.modifier = this.modifier;
+    return newCriterion;
+  }
+
   protected getLabelValue(_intl: IntlShape): string {
     return this.value.map((v) => v.label).join(", ");
   }
@@ -272,21 +294,31 @@ export class ILabeledIdCriterion extends Criterion<ILabeledId[]> {
 
     return this.value.length > 0;
   }
-
-  constructor(type: CriterionOption) {
-    super(type, []);
-  }
 }
 
 export class IHierarchicalLabeledIdCriterion extends Criterion<IHierarchicalLabelValue> {
-  constructor(type: CriterionOption) {
-    const value: IHierarchicalLabelValue = {
+  constructor(
+    type: CriterionOption,
+    value: IHierarchicalLabelValue = {
       items: [],
       excluded: [],
       depth: 0,
-    };
-
+    }
+  ) {
     super(type, value);
+  }
+
+  public clone(): Criterion<IHierarchicalLabelValue> {
+    const newCriterion = new IHierarchicalLabeledIdCriterion(
+      this.criterionOption,
+      {
+        ...this.value,
+        items: this.value.items.map((v) => ({ ...v })),
+        excluded: this.value.excluded.map((v) => ({ ...v })),
+      }
+    );
+    newCriterion.modifier = this.modifier;
+    return newCriterion;
   }
 
   override get modifier(): CriterionModifier {
@@ -501,8 +533,17 @@ export class StringCriterion extends Criterion<string> {
 }
 
 export class MultiStringCriterion extends Criterion<string[]> {
-  constructor(type: CriterionOption) {
-    super(type, []);
+  constructor(type: CriterionOption, value: string[] = []) {
+    super(type, value);
+  }
+
+  public clone(): Criterion<string[]> {
+    const newCriterion = new MultiStringCriterion(
+      this.criterionOption,
+      this.value.slice()
+    );
+    newCriterion.modifier = this.modifier;
+    return newCriterion;
   }
 
   protected getLabelValue(_intl: IntlShape) {

@@ -7,13 +7,15 @@ import { View } from "src/components/List/views";
 interface ITagPerformersPanel {
   active: boolean;
   tag: GQL.TagDataFragment;
+  showSubTagContent?: boolean;
 }
 
 export const TagPerformersPanel: React.FC<ITagPerformersPanel> = ({
   active,
   tag,
+  showSubTagContent,
 }) => {
-  const filterHook = useTagFilterHook(tag);
+  const filterHook = useTagFilterHook(tag, showSubTagContent);
   return (
     <PerformerList
       filterHook={filterHook}
