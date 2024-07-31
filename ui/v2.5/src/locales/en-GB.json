@@ -1433,6 +1433,7 @@
   "studio_tags": "Studio Tags",
   "studios": "Studios",
   "sub_group": "Sub-Group",
+  "sub_group_of": "Sub-group of {parent}",
   "sub_group_count": "Sub-Group Count",
   "sub_groups": "Sub-Groups",
   "sub_tag_count": "Sub-Tag Count",

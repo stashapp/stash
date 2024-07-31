@@ -12,6 +12,50 @@ import { faPlayCircle, faTag } from "@fortawesome/free-solid-svg-icons";
 import ScreenUtils from "src/utils/screen";
 import NavUtils from "src/utils/navigation";
 import { PopoverCountButton } from "../Shared/PopoverCountButton";
+import { Link } from "react-router-dom";
+
+const ContainingGroups: React.FC<{
+  group: GQL.GroupDataFragment;
+}> = ({ group }) => {
+  const containingGroups = group.containing_groups;
+
+  if (containingGroups.length === 1) {
+    const g = containingGroups[0].group;
+    return (
+      <div className="group-containing-groups">
+        <FormattedMessage
+          id="sub_group_of"
+          values={{
+            parent: <Link to={NavUtils.makeGroupUrl(g.id)}>{g.name}</Link>,
+          }}
+        />
+      </div>
+    );
+  }
+
+  if (containingGroups.length > 1) {
+    return (
+      <div className="group-containing-groups">
+        <FormattedMessage
+          id="sub_group_of"
+          values={{
+            parent: (
+              <Link to={NavUtils.makeContainingGroupsUrl(group)}>
+                {containingGroups.length}&nbsp;
+                <FormattedMessage
+                  id="countables.groups"
+                  values={{ count: containingGroups.length }}
+                />
+              </Link>
+            ),
+          }}
+        />
+      </div>
+    );
+  }
+
+  return null;
+};
 
 interface IProps {
   group: GQL.GroupDataFragment;
@@ -109,13 +153,6 @@ export const GroupCard: React.FC<IProps> = ({
           <ButtonGroup className="card-popovers">
             {maybeRenderScenesPopoverButton()}
             {maybeRenderTagPopoverButton()}
-            {group.containing_groups.length > 0 && (
-              <PopoverCountButton
-                count={group.containing_groups.length}
-                type="containing_group"
-                url={NavUtils.makeContainingGroupsUrl(group)}
-              />
-            )}
             {group.sub_group_count > 0 && (
               <PopoverCountButton
                 count={group.sub_group_count}
@@ -155,6 +192,7 @@ export const GroupCard: React.FC<IProps> = ({
             text={group.synopsis}
             lineCount={3}
           />
+          <ContainingGroups group={group} />
         </div>
       }
       selected={selected}

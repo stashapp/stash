@@ -21,7 +21,6 @@ type PopoverLinkType =
   | "gallery"
   | "marker"
   | "group"
-  | "containing_group"
   | "sub_group"
   | "performer"
   | "studio";
@@ -56,7 +55,6 @@ export const PopoverCountButton: React.FC<IProps> = ({
       case "marker":
         return faMapMarkerAlt;
       case "group":
-      case "containing_group":
       case "sub_group":
         return faFilm;
       case "performer":
@@ -92,11 +90,6 @@ export const PopoverCountButton: React.FC<IProps> = ({
         return {
           one: "group",
           other: "groups",
-        };
-      case "containing_group":
-        return {
-          one: "containing_group",
-          other: "containing_groups",
         };
       case "sub_group":
         return {
