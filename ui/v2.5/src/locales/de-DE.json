@@ -342,7 +342,16 @@
                     }
                 },
                 "download_ffmpeg": {
-                    "heading": "FFmpeg herunterladen"
+                    "heading": "FFmpeg herunterladen",
+                    "description": "Lädt FFmpeg in das Konfigurationsverzeichnis herunter und löscht die Pfade ffmpeg und ffprobe, um sie aus dem Konfigurationsverzeichnis aufzulösen."
+                },
+                "ffmpeg_path": {
+                    "heading": "FFmpeg.exe Pfad",
+                    "description": "Pfad zu ffmpeg.exe (nicht nur der Ordner). Wenn nicht angegeben wird ffmpeg.exe aus der Umgebungsvariable $PATH, dem Konfigurationsverzeichnis oder aus $HOME/.stash aufgelöst"
+                },
+                "ffprobe_path": {
+                    "description": "Pfad zu ffprobe.exe (nicht nur der Ordner). Wenn nicht angegeben wird ffprobe.exe aus der Umgebungsvariable $PATH, dem Konfigurationsverzeichnis oder aus $HOME/.stash aufgelöst",
+                    "heading": "FFprobe.exe Pfad"
                 }
             },
             "funscript_heatmap_draw_range": "Reichweite in generierte Heatmaps einbeziehen",
@@ -388,7 +397,11 @@
             "sqlite_location": "Dateispeicherort für die SQLite-Datenbank (erfordert Neustart). ACHTUNG: Ein Speicherort auf einem anderen System als dem Server auf dem Stash läuft (z.B. Netzwerkspeicher) wird nicht unterstützt!",
             "video_ext_desc": "Durch Kommas getrennte Liste von Dateierweiterungen, die als Videos identifiziert werden.",
             "video_ext_head": "Videodateiformate",
-            "video_head": "Video"
+            "video_head": "Video",
+            "plugins_path": {
+                "heading": "Plugins Pfad",
+                "description": "Speicherort der Plugin-Konfigurationsdateien"
+            }
         },
         "library": {
             "exclusions": "Ausnahmen",
@@ -401,7 +414,8 @@
         "plugins": {
             "hooks": "Einbindungen",
             "triggers_on": "Auslösen bei",
-            "installed_plugins": "Installierte Plugins"
+            "installed_plugins": "Installierte Plugins",
+            "available_plugins": "Verfügbare Plugins"
         },
         "scraping": {
             "entity_metadata": "{entityType} Metadaten",
@@ -483,7 +497,11 @@
                 "source_options": "{source} Optionen",
                 "sources": "Quellen",
                 "strategy": "Strategie",
-                "skip_multiple_matches": "Überspringe Treffer, die mehr als ein Ergebnis haben"
+                "skip_multiple_matches": "Überspringe Treffer, die mehr als ein Ergebnis haben",
+                "skip_multiple_matches_tooltip": "Wenn dies nicht aktiviert ist und mehr als ein Ergebnis zurückgegeben wird, wird ein passendes zufällig ausgewählt",
+                "skip_single_name_performers": "Darsteller mit nur einem - nicht eindeutigem - Namen überspringen",
+                "skip_single_name_performers_tooltip": "Wenn dies nicht aktiviert ist, werden Darsteller, die oft generisch sind, wie Samantha oder Olga, abgeglichen",
+                "tag_skipped_matches": "Übersprungenes Tag passt zu"
             },
             "import_from_exported_json": "Import aus exportiertem JSON im Metadatenverzeichnis. Löscht die vorhandene Datenbank.",
             "incremental_import": "Inkrementeller Import aus einer Export-ZIP-Datei.",
@@ -516,7 +534,8 @@
                 "markers": "Marker Vorschauen",
                 "previews": "Szenen Vorschauen",
                 "previews_desc": "Szenen Vorschauen und Miniaturansichten",
-                "transcodes": "Transkodierte Szenen"
+                "transcodes": "Transkodierte Szenen",
+                "sprites": "Sprites der Szenen"
             },
             "generate_sprites_during_scan_tooltip": "Die Anzahl an Bilder, die unter dem Video Player, zur einfacheren Navigation, angezeigt werden."
         },
