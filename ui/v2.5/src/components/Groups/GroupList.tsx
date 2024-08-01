@@ -54,6 +54,7 @@ interface IGroupList {
   view?: View;
   alterQuery?: boolean;
   fromGroupId?: string;
+  onMove?: (srcIds: string[], targetId: string) => void;
 }
 
 export const GroupList: React.FC<IGroupList> = ({
@@ -61,6 +62,7 @@ export const GroupList: React.FC<IGroupList> = ({
   alterQuery,
   view,
   fromGroupId,
+  onMove,
 }) => {
   const intl = useIntl();
   const history = useHistory();
@@ -149,6 +151,7 @@ export const GroupList: React.FC<IGroupList> = ({
             selectedIds={selectedIds}
             onSelectChange={onSelectChange}
             fromGroupId={fromGroupId}
+            onMove={onMove}
           />
         )}
       </>

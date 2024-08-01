@@ -8,6 +8,7 @@ interface IGroupCardGrid {
   selectedIds: Set<string>;
   onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void;
   fromGroupId?: string;
+  onMove?: (srcIds: string[], targetId: string) => void;
 }
 
 export const GroupCardGrid: React.FC<IGroupCardGrid> = ({
@@ -15,6 +16,7 @@ export const GroupCardGrid: React.FC<IGroupCardGrid> = ({
   selectedIds,
   onSelectChange,
   fromGroupId,
+  onMove,
 }) => {
   const [componentRef, { width }] = useContainerDimensions();
   return (
@@ -30,6 +32,7 @@ export const GroupCardGrid: React.FC<IGroupCardGrid> = ({
             onSelectChange(p.id, selected, shiftKey)
           }
           fromGroupId={fromGroupId}
+          onMove={onMove}
         />
       ))}
     </div>

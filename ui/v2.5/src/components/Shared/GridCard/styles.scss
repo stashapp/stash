@@ -57,3 +57,21 @@
     transition: opacity 0.5s;
   }
 }
+
+.move-target {
+  align-items: center;
+  background-color: $muted-gray;
+  color: $secondary;
+  display: flex;
+  height: 100%;
+  justify-content: center;
+  opacity: 0.5;
+  pointer-events: none;
+  position: absolute;
+  width: 100%;
+
+  .fa-icon {
+    height: 50%;
+    width: 50%;
+  }
+}

@@ -88,6 +88,7 @@ interface IProps {
   selected?: boolean;
   onSelectedChanged?: (selected: boolean, shiftKey: boolean) => void;
   fromGroupId?: string;
+  onMove?: (srcIds: string[], targetId: string) => void;
 }
 
 export const GroupCard: React.FC<IProps> = ({
@@ -98,6 +99,7 @@ export const GroupCard: React.FC<IProps> = ({
   selected,
   onSelectedChanged,
   fromGroupId,
+  onMove,
 }) => {
   const [cardWidth, setCardWidth] = useState<number>();
 
@@ -197,6 +199,8 @@ export const GroupCard: React.FC<IProps> = ({
   return (
     <GridCard
       className="group-card"
+      objectId={group.id}
+      onMove={onMove}
       url={`/groups/${group.id}`}
       width={cardWidth}
       title={group.name}
