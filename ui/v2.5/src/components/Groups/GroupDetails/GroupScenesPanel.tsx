@@ -69,6 +69,7 @@ export const GroupScenesPanel: React.FC<IGroupScenesPanel> = ({
         defaultSort="group_scene_number"
         alterQuery={active}
         view={View.GroupScenes}
+        fromGroupId={group.id}
       />
     );
   }

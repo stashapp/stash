@@ -20,7 +20,7 @@ import { ConfigurationContext } from "src/hooks/Config";
 import { PerformerPopoverButton } from "../Shared/PerformerPopoverButton";
 import { GridCard, calculateCardWidth } from "../Shared/GridCard/GridCard";
 import { RatingBanner } from "../Shared/RatingBanner";
-import { FormattedNumber } from "react-intl";
+import { FormattedMessage, FormattedNumber } from "react-intl";
 import {
   faBox,
   faCopy,
@@ -106,7 +106,25 @@ interface ISceneCardProps {
   selected?: boolean | undefined;
   zoomIndex?: number;
   onSelectedChanged?: (selected: boolean, shiftKey: boolean) => void;
+  fromGroupId?: string;
 }
+
+const Description: React.FC<{
+  sceneNumber?: number;
+}> = ({ sceneNumber }) => {
+  if (!sceneNumber) return null;
+
+  return (
+    <>
+      <hr />
+      {sceneNumber !== undefined && (
+        <span className="scene-group-scene-number">
+          <FormattedMessage id="scene" /> #{sceneNumber}
+        </span>
+      )}
+    </>
+  );
+};
 
 const SceneCardPopovers = PatchComponent(
   "SceneCard.Popovers",
@@ -115,6 +133,17 @@ const SceneCardPopovers = PatchComponent(
       () => (props.scene.files.length > 0 ? props.scene.files[0] : undefined),
       [props.scene]
     );
+
+    const sceneNumber = useMemo(() => {
+      if (!props.fromGroupId) {
+        return undefined;
+      }
+
+      const group = props.scene.groups.find(
+        (g) => g.group.id === props.fromGroupId
+      );
+      return group?.scene_index ?? undefined;
+    }, [props.fromGroupId, props.scene.groups]);
 
     function maybeRenderTagPopoverButton() {
       if (props.scene.tags.length <= 0) return;
@@ -283,10 +312,12 @@ const SceneCardPopovers = PatchComponent(
           props.scene.scene_markers.length > 0 ||
           props.scene?.o_counter ||
           props.scene.galleries.length > 0 ||
-          props.scene.organized)
+          props.scene.organized ||
+          sceneNumber !== undefined)
       ) {
         return (
           <>
+            <Description sceneNumber={sceneNumber} />
             <hr />
             <ButtonGroup className="card-popovers">
               {maybeRenderTagPopoverButton()}

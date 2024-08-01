@@ -75,6 +75,7 @@ interface ISceneList {
   defaultSort?: string;
   view?: View;
   alterQuery?: boolean;
+  fromGroupId?: string;
 }
 
 export const SceneList: React.FC<ISceneList> = ({
@@ -82,6 +83,7 @@ export const SceneList: React.FC<ISceneList> = ({
   defaultSort,
   view,
   alterQuery,
+  fromGroupId,
 }) => {
   const intl = useIntl();
   const history = useHistory();
@@ -297,6 +299,7 @@ export const SceneList: React.FC<ISceneList> = ({
             zoomIndex={filter.zoomIndex}
             selectedIds={selectedIds}
             onSelectChange={onSelectChange}
+            fromGroupId={fromGroupId}
           />
         );
       }
