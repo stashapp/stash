@@ -7,16 +7,17 @@ import {
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { SceneList } from "src/components/Scenes/SceneList";
 import { View } from "src/components/List/views";
-import { ConfigurationContext } from "src/hooks/Config";
 
 interface IGroupScenesPanel {
   active: boolean;
   group: GQL.GroupDataFragment;
+  showSubGroupContent?: boolean;
 }
 
-function useFilterHook(group: Pick<GQL.StudioDataFragment, "id" | "name">) {
-  const { configuration } = React.useContext(ConfigurationContext);
-
+function useFilterHook(
+  group: Pick<GQL.GroupDataFragment, "id" | "name">,
+  showSubGroupContent?: boolean
+) {
   return (filter: ListFilterModel) => {
     const groupValue = { id: group.id, label: group.name };
     // if group is already present, then we modify it, otherwise add
@@ -44,7 +45,7 @@ function useFilterHook(group: Pick<GQL.StudioDataFragment, "id" | "name">) {
       groupCriterion = new GroupsCriterion(GroupsCriterionOption);
       groupCriterion.value = {
         items: [groupValue],
-        depth: configuration?.ui.showSubGroupContent ? -1 : 0,
+        depth: showSubGroupContent ? -1 : 0,
         excluded: [],
       };
       filter.criteria.push(groupCriterion);
@@ -57,8 +58,9 @@ function useFilterHook(group: Pick<GQL.StudioDataFragment, "id" | "name">) {
 export const GroupScenesPanel: React.FC<IGroupScenesPanel> = ({
   active,
   group,
+  showSubGroupContent,
 }) => {
-  const filterHook = useFilterHook(group);
+  const filterHook = useFilterHook(group, showSubGroupContent);
 
   if (group && group.id) {
     return (

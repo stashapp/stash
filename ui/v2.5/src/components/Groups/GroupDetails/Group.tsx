@@ -39,7 +39,7 @@ import {
   TabTitleCounter,
   useTabKey,
 } from "src/components/Shared/DetailsPage/Tabs";
-import { Tab, Tabs } from "react-bootstrap";
+import { Form, Tab, Tabs } from "react-bootstrap";
 import { GroupSubGroupsPanel } from "./GroupSubGroupsPanel";
 
 const validTabs = ["default", "scenes", "subgroups"] as const;
@@ -55,10 +55,11 @@ const GroupTabs: React.FC<{
   abbreviateCounter: boolean;
   showAllCounts?: boolean;
 }> = ({ tabKey, group, abbreviateCounter, showAllCounts = false }) => {
+  const [showAllDetails, setShowAllDetails] = useState<boolean>(showAllCounts);
   const sceneCount =
-    (showAllCounts ? group.scene_count_all : group.scene_count) ?? 0;
+    (showAllDetails ? group.scene_count_all : group.scene_count) ?? 0;
   const groupCount =
-    (showAllCounts ? group.sub_group_count_all : group.sub_group_count) ?? 0;
+    (showAllDetails ? group.sub_group_count_all : group.sub_group_count) ?? 0;
 
   const populatedDefaultTab = useMemo(() => {
     if (sceneCount == 0 && groupCount !== 0) {
@@ -74,6 +75,21 @@ const GroupTabs: React.FC<{
     defaultTabKey: populatedDefaultTab,
     baseURL: `/groups/${group.id}`,
   });
+
+  const contentSwitch = useMemo(
+    () => (
+      <div className="item-list-header">
+        <Form.Check
+          id="showSubContent"
+          checked={showAllDetails}
+          onChange={() => setShowAllDetails(!showAllDetails)}
+          type="switch"
+          label={<FormattedMessage id="include_sub_group_content" />}
+        />
+      </div>
+    ),
+    [showAllDetails]
+  );
 
   return (
     <Tabs
@@ -93,7 +109,12 @@ const GroupTabs: React.FC<{
           />
         }
       >
-        <GroupScenesPanel active={tabKey === "scenes"} group={group} />
+        {contentSwitch}
+        <GroupScenesPanel
+          active={tabKey === "scenes"}
+          group={group}
+          showSubGroupContent={showAllDetails}
+        />
       </Tab>
       <Tab
         eventKey="subgroups"
@@ -105,7 +126,12 @@ const GroupTabs: React.FC<{
           />
         }
       >
-        <GroupSubGroupsPanel active={tabKey === "subgroups"} group={group} />
+        {contentSwitch}
+        <GroupSubGroupsPanel
+          active={tabKey === "subgroups"}
+          group={group}
+          showSubGroupContent={showAllDetails}
+        />
       </Tab>
     </Tabs>
   );
