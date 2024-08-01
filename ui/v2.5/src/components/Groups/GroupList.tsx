@@ -18,6 +18,29 @@ import { GroupCardGrid } from "./GroupCardGrid";
 import { EditGroupsDialog } from "./EditGroupsDialog";
 import { View } from "../List/views";
 
+const GroupExportDialog: React.FC<{
+  open?: boolean;
+  selectedIds: Set<string>;
+  isExportAll?: boolean;
+  onClose: () => void;
+}> = ({ open = false, selectedIds, isExportAll = false, onClose }) => {
+  if (!open) {
+    return null;
+  }
+
+  return (
+    <ExportDialog
+      exportInput={{
+        groups: {
+          ids: Array.from(selectedIds.values()),
+          all: isExportAll,
+        },
+      }}
+      onClose={onClose}
+    />
+  );
+};
+
 function getItems(result: GQL.FindGroupsQueryResult) {
   return result?.data?.findGroups?.groups ?? [];
 }
@@ -30,12 +53,14 @@ interface IGroupList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
   view?: View;
   alterQuery?: boolean;
+  fromGroupId?: string;
 }
 
 export const GroupList: React.FC<IGroupList> = ({
   filterHook,
   alterQuery,
   view,
+  fromGroupId,
 }) => {
   const intl = useIntl();
   const history = useHistory();
@@ -110,42 +135,22 @@ export const GroupList: React.FC<IGroupList> = ({
     selectedIds: Set<string>,
     onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void
   ) {
-    function maybeRenderGroupExportDialog() {
-      if (isExportDialogOpen) {
-        return (
-          <ExportDialog
-            exportInput={{
-              groups: {
-                ids: Array.from(selectedIds.values()),
-                all: isExportAll,
-              },
-            }}
-            onClose={() => setIsExportDialogOpen(false)}
-          />
-        );
-      }
-    }
-
-    function renderGroups() {
-      if (!result.data?.findGroups) return;
-
-      if (filter.displayMode === DisplayMode.Grid) {
-        return (
-          <GroupCardGrid
-            groups={result.data.findGroups.groups}
-            selectedIds={selectedIds}
-            onSelectChange={onSelectChange}
-          />
-        );
-      }
-      if (filter.displayMode === DisplayMode.List) {
-        return <h1>TODO</h1>;
-      }
-    }
     return (
       <>
-        {maybeRenderGroupExportDialog()}
-        {renderGroups()}
+        <GroupExportDialog
+          open={isExportDialogOpen}
+          selectedIds={selectedIds}
+          isExportAll={isExportAll}
+          onClose={() => setIsExportDialogOpen(false)}
+        />
+        {filter.displayMode === DisplayMode.Grid && (
+          <GroupCardGrid
+            groups={result.data?.findGroups.groups ?? []}
+            selectedIds={selectedIds}
+            onSelectChange={onSelectChange}
+            fromGroupId={fromGroupId}
+          />
+        )}
       </>
     );
   }

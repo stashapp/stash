@@ -61,6 +61,7 @@ export const GroupSubGroupsPanel: React.FC<IGroupSubGroupsPanel> = ({
       filterHook={filterHook}
       alterQuery={active}
       view={View.GroupSubGroups}
+      fromGroupId={group.id}
     />
   );
 };

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Button, ButtonGroup } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
 import { GridCard, calculateCardWidth } from "../Shared/GridCard/GridCard";
@@ -57,24 +57,61 @@ const ContainingGroups: React.FC<{
   return null;
 };
 
+const Description: React.FC<{
+  sceneNumber?: number;
+  description?: string;
+}> = ({ sceneNumber, description }) => {
+  if (!sceneNumber && !description) return null;
+
+  return (
+    <>
+      <hr />
+      {sceneNumber !== undefined && (
+        <span className="group-scene-number">
+          <FormattedMessage id="scene" /> #{sceneNumber}
+        </span>
+      )}
+      {description !== undefined && (
+        <span className="group-containing-group-description">
+          {description}
+        </span>
+      )}
+    </>
+  );
+};
+
 interface IProps {
   group: GQL.GroupDataFragment;
   containerWidth?: number;
-  description?: number;
+  sceneNumber?: number;
   selecting?: boolean;
   selected?: boolean;
   onSelectedChanged?: (selected: boolean, shiftKey: boolean) => void;
+  fromGroupId?: string;
 }
 
 export const GroupCard: React.FC<IProps> = ({
   group,
-  description,
+  sceneNumber,
   containerWidth,
   selecting,
   selected,
   onSelectedChanged,
+  fromGroupId,
 }) => {
   const [cardWidth, setCardWidth] = useState<number>();
+
+  const groupDescription = useMemo(() => {
+    if (!fromGroupId) {
+      return undefined;
+    }
+
+    const containingGroup = group.containing_groups.find(
+      (cg) => cg.group.id === fromGroupId
+    );
+
+    return containingGroup?.description ?? undefined;
+  }, [fromGroupId, group.containing_groups]);
 
   useEffect(() => {
     if (!containerWidth || ScreenUtils.isMobile()) return;
@@ -86,19 +123,6 @@ export const GroupCard: React.FC<IProps> = ({
     );
     setCardWidth(fittedCardWidth);
   }, [containerWidth]);
-
-  function maybeRenderSceneNumber() {
-    if (!description) return;
-
-    return (
-      <>
-        <hr />
-        <span className="group-scene-number">
-          <FormattedMessage id="scene" /> #{description}
-        </span>
-      </>
-    );
-  }
 
   function maybeRenderScenesPopoverButton() {
     if (group.scenes.length === 0) return;
@@ -140,7 +164,8 @@ export const GroupCard: React.FC<IProps> = ({
 
   function maybeRenderPopoverButtonGroup() {
     if (
-      description ||
+      sceneNumber ||
+      groupDescription ||
       group.scenes.length > 0 ||
       group.tags.length > 0 ||
       group.containing_groups.length > 0 ||
@@ -148,7 +173,10 @@ export const GroupCard: React.FC<IProps> = ({
     ) {
       return (
         <>
-          {maybeRenderSceneNumber()}
+          <Description
+            sceneNumber={sceneNumber}
+            description={groupDescription}
+          />
           <hr />
           <ButtonGroup className="card-popovers">
             {maybeRenderScenesPopoverButton()}

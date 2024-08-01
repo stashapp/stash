@@ -7,12 +7,14 @@ interface IGroupCardGrid {
   groups: GQL.GroupDataFragment[];
   selectedIds: Set<string>;
   onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void;
+  fromGroupId?: string;
 }
 
 export const GroupCardGrid: React.FC<IGroupCardGrid> = ({
   groups,
   selectedIds,
   onSelectChange,
+  fromGroupId,
 }) => {
   const [componentRef, { width }] = useContainerDimensions();
   return (
@@ -27,6 +29,7 @@ export const GroupCardGrid: React.FC<IGroupCardGrid> = ({
           onSelectedChanged={(selected: boolean, shiftKey: boolean) =>
             onSelectChange(p.id, selected, shiftKey)
           }
+          fromGroupId={fromGroupId}
         />
       ))}
     </div>
