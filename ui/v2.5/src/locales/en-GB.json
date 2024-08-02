@@ -1111,7 +1111,8 @@
     "o_count": "O Count",
     "performer_card": {
       "age": "{age} {years_old}",
-      "age_context": "{age} {years_old} in this scene"
+      "age_context": "{age} {years_old} in this scene",
+      "age_context_short": "{age} in this scene"
     },
     "phash": "PHash",
     "play_count": "Play Count",
