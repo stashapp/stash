@@ -89,14 +89,7 @@ export abstract class Criterion<V extends CriterionValue> {
     this.value = value;
   }
 
-  public clone(): Criterion<V> {
-    const newCriterion = new (this.constructor as new (
-      type: CriterionOption,
-      value: V
-    ) => Criterion<V>)(this.criterionOption, this.value);
-    newCriterion.modifier = this.modifier;
-    return newCriterion;
-  }
+  public abstract clone(): Criterion<V>;
 
   public static getModifierLabel(intl: IntlShape, modifier: CriterionModifier) {
     const modifierMessageID = modifierMessageIDs[modifier];
@@ -519,6 +512,13 @@ export class StringCriterion extends Criterion<string> {
     super(type, "");
   }
 
+  public clone() {
+    const newCriterion = new StringCriterion(this.criterionOption);
+    newCriterion.modifier = this.modifier;
+    newCriterion.value = this.value;
+    return newCriterion;
+  }
+
   protected getLabelValue(_intl: IntlShape) {
     return this.value;
   }
@@ -714,6 +714,17 @@ export function createMandatoryNumberCriterionOption(
 }
 
 export class NumberCriterion extends Criterion<INumberValue> {
+  constructor(type: CriterionOption) {
+    super(type, { value: undefined, value2: undefined });
+  }
+
+  public clone() {
+    const newCriterion = new NumberCriterion(this.criterionOption);
+    newCriterion.modifier = this.modifier;
+    newCriterion.value = { ...this.value };
+    return newCriterion;
+  }
+
   public get value(): INumberValue {
     return this._value;
   }
@@ -772,10 +783,6 @@ export class NumberCriterion extends Criterion<INumberValue> {
 
     return true;
   }
-
-  constructor(type: CriterionOption) {
-    super(type, { value: undefined, value2: undefined });
-  }
 }
 
 export class DurationCriterionOption extends MandatoryNumberCriterionOption {
@@ -794,6 +801,13 @@ export function createDurationCriterionOption(
 export class DurationCriterion extends Criterion<INumberValue> {
   constructor(type: CriterionOption) {
     super(type, { value: undefined, value2: undefined });
+  }
+
+  public clone() {
+    const newCriterion = new DurationCriterion(this.criterionOption);
+    newCriterion.modifier = this.modifier;
+    newCriterion.value = { ...this.value };
+    return newCriterion;
   }
 
   public toCriterionInput(): IntCriterionInput {
@@ -869,6 +883,17 @@ export function createDateCriterionOption(value: CriterionType) {
 }
 
 export class DateCriterion extends Criterion<IDateValue> {
+  constructor(type: CriterionOption) {
+    super(type, { value: "", value2: undefined });
+  }
+
+  public clone() {
+    const newCriterion = new DateCriterion(this.criterionOption);
+    newCriterion.modifier = this.modifier;
+    newCriterion.value = { ...this.value };
+    return newCriterion;
+  }
+
   public encodeValue() {
     return {
       value: this.value.value,
@@ -914,10 +939,6 @@ export class DateCriterion extends Criterion<IDateValue> {
     }
 
     return true;
-  }
-
-  constructor(type: CriterionOption) {
-    super(type, { value: "", value2: undefined });
   }
 }
 
@@ -968,6 +989,17 @@ export function createMandatoryTimestampCriterionOption(value: CriterionType) {
 }
 
 export class TimestampCriterion extends Criterion<ITimestampValue> {
+  constructor(type: CriterionOption) {
+    super(type, { value: "", value2: undefined });
+  }
+
+  public clone() {
+    const newCriterion = new TimestampCriterion(this.criterionOption);
+    newCriterion.modifier = this.modifier;
+    newCriterion.value = { ...this.value };
+    return newCriterion;
+  }
+
   public encodeValue() {
     return {
       value: this.value?.value,
@@ -1024,9 +1056,5 @@ export class TimestampCriterion extends Criterion<ITimestampValue> {
     }
 
     return true;
-  }
-
-  constructor(type: CriterionOption) {
-    super(type, { value: "", value2: undefined });
   }
 }
