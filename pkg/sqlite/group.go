@@ -442,9 +442,7 @@ func (qb *GroupStore) makeQuery(ctx context.Context, groupFilter *models.GroupFi
 		return nil, err
 	}
 
-	var err error
-	query.sortAndPagination, err = qb.getGroupSort(findFilter)
-	if err != nil {
+	if err := qb.setGroupSort(&query, findFilter); err != nil {
 		return nil, err
 	}
 
@@ -490,11 +488,12 @@ var groupSortOptions = sortOptions{
 	"random",
 	"rating",
 	"scenes_count",
+	"sub_group_order",
 	"tag_count",
 	"updated_at",
 }
 
-func (qb *GroupStore) getGroupSort(findFilter *models.FindFilterType) (string, error) {
+func (qb *GroupStore) setGroupSort(query *queryBuilder, findFilter *models.FindFilterType) error {
 	var sort string
 	var direction string
 	if findFilter == nil {
@@ -507,22 +506,24 @@ func (qb *GroupStore) getGroupSort(findFilter *models.FindFilterType) (string, e
 
 	// CVE-2024-32231 - ensure sort is in the list of allowed sorts
 	if err := groupSortOptions.validateSort(sort); err != nil {
-		return "", err
+		return err
 	}
 
-	sortQuery := ""
 	switch sort {
+	case "sub_group_order":
+		query.join(groupRelationsTable, "", "groups.id = groups_relations.sub_id")
+		query.sortAndPagination += getSort("order_index", direction, groupRelationsTable)
 	case "tag_count":
-		sortQuery += getCountSort(groupTable, groupsTagsTable, groupIDColumn, direction)
+		query.sortAndPagination += getCountSort(groupTable, groupsTagsTable, groupIDColumn, direction)
 	case "scenes_count": // generic getSort won't work for this
-		sortQuery += getCountSort(groupTable, groupsScenesTable, groupIDColumn, direction)
+		query.sortAndPagination += getCountSort(groupTable, groupsScenesTable, groupIDColumn, direction)
 	default:
-		sortQuery += getSort(sort, direction, "groups")
+		query.sortAndPagination += getSort(sort, direction, "groups")
 	}
 
 	// Whatever the sorting, always use name/id as a final sort
-	sortQuery += ", COALESCE(groups.name, groups.id) COLLATE NATURAL_CI ASC"
-	return sortQuery, nil
+	query.sortAndPagination += ", COALESCE(groups.name, groups.id) COLLATE NATURAL_CI ASC"
+	return nil
 }
 
 func (qb *GroupStore) queryGroups(ctx context.Context, query string, args []interface{}) ([]*models.Group, error) {

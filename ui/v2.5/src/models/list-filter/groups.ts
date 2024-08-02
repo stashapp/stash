@@ -27,6 +27,7 @@ const sortByOptions = [
   "duration",
   "rating",
   "tag_count",
+  "sub_group_order",
 ]
   .map(ListFilterOptions.createSortBy)
   .concat([
