@@ -507,6 +507,7 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
           title={intl.formatMessage({ id: "performers" })}
           result={performers}
           onChange={(value) => setPerformers(value)}
+          ageFromDate={date.useNewValue ? date.newValue : date.originalValue}
         />
         <ScrapedGroupsRow
           title={intl.formatMessage({ id: "groups" })}

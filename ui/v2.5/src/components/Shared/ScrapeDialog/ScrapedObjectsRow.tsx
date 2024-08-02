@@ -137,8 +137,8 @@ type IScrapedObjectRowImpl<T> = Omit<
 >;
 
 export const ScrapedPerformersRow: React.FC<
-  IScrapedObjectRowImpl<GQL.ScrapedPerformer>
-> = ({ title, result, onChange, newObjects, onCreateNew }) => {
+  IScrapedObjectRowImpl<GQL.ScrapedPerformer> & { ageFromDate?: string | null }
+> = ({ title, result, onChange, newObjects, onCreateNew, ageFromDate }) => {
   const performersCopy = useMemo(() => {
     return (
       newObjects?.map((p) => {
@@ -179,6 +179,7 @@ export const ScrapedPerformersRow: React.FC<
           }
         }}
         values={selectValue}
+        ageFromDate={ageFromDate}
       />
     );
   }
