@@ -51,6 +51,7 @@ interface IPerformerResultProps {
   onCreate: () => void;
   onLink?: () => Promise<void>;
   endpoint?: string;
+  ageFromDate?: string | null;
 }
 
 const PerformerResult: React.FC<IPerformerResultProps> = ({
@@ -60,6 +61,7 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
   onCreate,
   onLink,
   endpoint,
+  ageFromDate,
 }) => {
   const { data: performerData, loading: stashLoading } =
     GQL.useFindPerformerQuery({
@@ -191,6 +193,7 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
           onSelect={handleSelect}
           active={selectedSource === "existing"}
           isClearable={false}
+          ageFromDate={ageFromDate}
         />
         {maybeRenderLinkButton()}
       </ButtonGroup>
