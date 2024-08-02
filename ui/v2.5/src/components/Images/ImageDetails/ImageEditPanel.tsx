@@ -214,9 +214,22 @@ export const ImageEditPanel: React.FC<IProps> = ({
   }
 
   function renderPerformersField() {
+    const date = (() => {
+      try {
+        return schema.validateSyncAt("date", formik.values);
+      } catch (e) {
+        return undefined;
+      }
+    })();
+
     const title = intl.formatMessage({ id: "performers" });
     const control = (
-      <PerformerSelect isMulti onSelect={onSetPerformers} values={performers} />
+      <PerformerSelect
+        isMulti
+        onSelect={onSetPerformers}
+        values={performers}
+        ageFromDate={date}
+      />
     );
 
     return renderField("performer_ids", title, control, fullWidthProps);
