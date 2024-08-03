@@ -688,6 +688,7 @@ declare namespace PluginApi {
     StringListSetting: React.FC<any>;
     ConstantSetting: React.FC<any>;
   };
+  type PatchableComponentNames = keyof typeof components | string;
   namespace utils {
     namespace NavUtils {
       function makePerformerScenesUrl(...args: any[]): any;
@@ -955,11 +956,53 @@ declare namespace PluginApi {
 
       refetch: () => void;
     };
+    export enum ConnectionState {
+      Missing,
+      Disconnected,
+      Error,
+      Connecting,
+      Syncing,
+      Uploading,
+      Ready,
+    }
+    type AsyncVoid = Promise<void>;
+    export type InteractiveAPI = {
+      _connected: boolean;
+      _playing: boolean;
+      _scriptOffset: number;
+      _handy: typeof import("thehandy");
+      _useStashHostedFunscript: boolean;
+      connect(): Promise<void>;
+      set handyKey(key: string);
+      get handyKey(): string;
+      set useStashHostedFunscript(useStashHostedFunscript: boolean);
+      get useStashHostedFunscript(): boolean;
+      set scriptOffset(offset: number);
+      uploadScript(funscriptPath: string, apiKey?: string): AsyncVoid;
+      sync(): Promise<number>;
+      setServerTimeOffset(offset: number);
+      play(position: number): AsyncVoid;
+      pause(): Promise<void>;
+      ensurePlaying(position: number): AsyncVoid;
+      setLooping(looping: boolean): AsyncVoid;
+    };
+
+    function useInteractive(): {
+      interactive: InteractiveAPI;
+      state: ConnectionState;
+      serverOffset: number;
+      initialised: boolean;
+      currentScript?: string;
+      error?: string;
+      initialise: () => Promise<void>;
+      uploadScript: (funscriptPath: string) => Promise<void>;
+      sync: () => Promise<void>;
+    };
   }
   namespace patch {
-    function before(target: string, fn: Function): void;
-    function instead(target: string, fn: Function): void;
-    function after(target: string, fn: Function): void;
+    function before(target: PatchableComponentNames, fn: Function): void;
+    function instead(target: PatchableComponentNames, fn: Function): void;
+    function after(target: PatchableComponentNames, fn: Function): void;
   }
   namespace register {
     function route(path: string, component: React.FC<any>): void;
