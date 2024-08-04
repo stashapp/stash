@@ -117,13 +117,18 @@ const _PerformerSelect: React.FC<
       );
     }
 
-    const age = TextUtils.age(
-      object.birthdate,
-      props.ageFromDate ?? object.death_date
-    );
-    const ageL10nId = props.ageFromDate
-      ? "age_on_date"
-      : "media_info.performer_card.age";
+    const sceneAge = TextUtils.age(object.birthdate, props.ageFromDate);
+
+    const age =
+      sceneAge < 18
+        ? TextUtils.age(object.birthdate, object.death_date)
+        : sceneAge;
+
+    const ageL10nId =
+      !props.ageFromDate || sceneAge < 18
+        ? "media_info.performer_card.age"
+        : "age_on_date";
+
     const ageL10String = intl.formatMessage({
       id: "years_old",
       defaultMessage: "years old",
