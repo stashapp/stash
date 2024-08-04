@@ -122,7 +122,7 @@ const _PerformerSelect: React.FC<
       props.ageFromDate ?? object.death_date
     );
     const ageL10nId = props.ageFromDate
-      ? "media_info.performer_card.age_context_short"
+      ? "age_on_date"
       : "media_info.performer_card.age";
     const ageL10String = intl.formatMessage({
       id: "years_old",
