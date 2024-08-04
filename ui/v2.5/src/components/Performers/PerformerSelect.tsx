@@ -175,7 +175,10 @@ const _PerformerSelect: React.FC<
               )}
 
               {object.birthdate && (
-                <span className="performer-select-birthdate">{`${object.birthdate} (${ageString})`}</span>
+                <span className="performer-select-birthdate">
+                  {object.birthdate}
+                  <span className="performer-select-age">{` (${ageString})`}</span>
+                </span>
               )}
             </span>
           </span>
