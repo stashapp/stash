@@ -687,6 +687,7 @@ declare namespace PluginApi {
     NumberSetting: React.FC<any>;
     StringListSetting: React.FC<any>;
     ConstantSetting: React.FC<any>;
+    SceneFileInfoPanel: React.FC<any>;
   };
   type PatchableComponentNames = keyof typeof components | string;
   namespace utils {
@@ -965,26 +966,27 @@ declare namespace PluginApi {
       Uploading,
       Ready,
     }
-    type AsyncVoid = Promise<void>;
+
+    type Handy = typeof import("thehandy").default;
     export type InteractiveAPI = {
-      _connected: boolean;
-      _playing: boolean;
-      _scriptOffset: number;
-      _handy: typeof import("thehandy");
-      _useStashHostedFunscript: boolean;
+      readonly _connected: boolean;
+      readonly _playing: boolean;
+      readonly _scriptOffset: number;
+      readonly _handy: Handy;
+      readonly _useStashHostedFunscript: boolean;
       connect(): Promise<void>;
       set handyKey(key: string);
       get handyKey(): string;
       set useStashHostedFunscript(useStashHostedFunscript: boolean);
       get useStashHostedFunscript(): boolean;
       set scriptOffset(offset: number);
-      uploadScript(funscriptPath: string, apiKey?: string): AsyncVoid;
+      uploadScript(funscriptPath: string, apiKey?: string): Promise<void>;
       sync(): Promise<number>;
-      setServerTimeOffset(offset: number);
-      play(position: number): AsyncVoid;
+      setServerTimeOffset(offset: number): void;
+      play(position: number): Promise<void>;
       pause(): Promise<void>;
-      ensurePlaying(position: number): AsyncVoid;
-      setLooping(looping: boolean): AsyncVoid;
+      ensurePlaying(position: number): Promise<void>;
+      setLooping(looping: boolean): Promise<void>;
     };
 
     function useInteractive(): {
