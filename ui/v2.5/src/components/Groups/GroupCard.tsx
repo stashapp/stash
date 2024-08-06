@@ -88,7 +88,7 @@ interface IProps {
   selected?: boolean;
   onSelectedChanged?: (selected: boolean, shiftKey: boolean) => void;
   fromGroupId?: string;
-  onMove?: (srcIds: string[], targetId: string) => void;
+  onMove?: (srcIds: string[], targetId: string, after: boolean) => void;
 }
 
 export const GroupCard: React.FC<IProps> = ({

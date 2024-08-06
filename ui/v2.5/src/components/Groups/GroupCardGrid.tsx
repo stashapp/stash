@@ -8,7 +8,7 @@ interface IGroupCardGrid {
   selectedIds: Set<string>;
   onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void;
   fromGroupId?: string;
-  onMove?: (srcIds: string[], targetId: string) => void;
+  onMove?: (srcIds: string[], targetId: string, after: boolean) => void;
 }
 
 export const GroupCardGrid: React.FC<IGroupCardGrid> = ({

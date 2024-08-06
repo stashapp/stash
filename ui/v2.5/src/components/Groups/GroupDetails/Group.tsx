@@ -58,8 +58,7 @@ const GroupTabs: React.FC<{
   const [showAllDetails, setShowAllDetails] = useState<boolean>(showAllCounts);
   const sceneCount =
     (showAllDetails ? group.scene_count_all : group.scene_count) ?? 0;
-  const groupCount =
-    (showAllDetails ? group.sub_group_count_all : group.sub_group_count) ?? 0;
+  const groupCount = group.sub_group_count ?? 0;
 
   const populatedDefaultTab = useMemo(() => {
     if (sceneCount == 0 && groupCount !== 0) {
@@ -126,12 +125,7 @@ const GroupTabs: React.FC<{
           />
         }
       >
-        {contentSwitch}
-        <GroupSubGroupsPanel
-          active={tabKey === "subgroups"}
-          group={group}
-          showSubGroupContent={showAllDetails}
-        />
+        <GroupSubGroupsPanel active={tabKey === "subgroups"} group={group} />
       </Tab>
     </Tabs>
   );

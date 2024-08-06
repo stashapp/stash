@@ -1369,6 +1369,41 @@ export const useGroupsDestroy = (input: GQL.GroupsDestroyMutationVariables) =>
     },
   });
 
+export function useReorderSubGroupsMutation() {
+  return GQL.useReorderSubGroupsMutation({
+    update(cache) {
+      evictQueries(cache, [
+        GQL.FindGroupsDocument, // various filters
+      ]);
+    },
+  });
+}
+
+export const useRemoveSubGroups = () => {
+  const [bulkUpdateGroups] = GQL.useBulkGroupUpdateMutation({
+    update(cache, result) {
+      if (!result.data?.bulkGroupUpdate) return;
+
+      evictTypeFields(cache, groupMutationImpactedTypeFields);
+      evictQueries(cache, groupMutationImpactedQueries);
+    },
+  });
+
+  return (containingGroupId: string, removeIds: string[]) => {
+    return bulkUpdateGroups({
+      variables: {
+        input: {
+          ids: removeIds,
+          containing_group_ids: {
+            mode: GQL.BulkUpdateIdMode.Remove,
+            ids: [containingGroupId],
+          },
+        },
+      },
+    });
+  };
+};
+
 const sceneMarkerMutationImpactedTypeFields = {
   Tag: ["scene_marker_count"],
 };

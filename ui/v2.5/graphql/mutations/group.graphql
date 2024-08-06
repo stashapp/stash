@@ -23,3 +23,7 @@ mutation GroupDestroy($id: ID!) {
 mutation GroupsDestroy($ids: [ID!]!) {
   groupsDestroy(ids: $ids)
 }
+
+mutation ReorderSubGroups($input: ReorderSubGroupsInput!) {
+  reorderSubGroups(input: $input)
+}

@@ -60,7 +60,7 @@
 
 .move-target {
   align-items: center;
-  background-color: $muted-gray;
+  background-color: $primary;
   color: $secondary;
   display: flex;
   height: 100%;
@@ -68,10 +68,18 @@
   opacity: 0.5;
   pointer-events: none;
   position: absolute;
-  width: 100%;
+  width: 10%;
 
-  .fa-icon {
-    height: 50%;
-    width: 50%;
+  // .fa-icon {
+  //   height: 50%;
+  //   width: 50%;
+  // }
+
+  &.move-target-before {
+    left: 0;
+  }
+
+  &.move-target-after {
+    right: 0;
   }
 }

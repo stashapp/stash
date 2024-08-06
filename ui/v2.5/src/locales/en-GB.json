@@ -91,6 +91,7 @@
     "reload_scrapers": "Reload scrapers",
     "remove": "Remove",
     "remove_date": "Remove date",
+    "remove_from_containing_group": "Remove from Group",
     "remove_from_gallery": "Remove from Gallery",
     "rename_gen_files": "Rename generated files",
     "rescan": "Rescan",

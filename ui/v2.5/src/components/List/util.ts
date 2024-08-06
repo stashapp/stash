@@ -7,6 +7,7 @@ import { QueryResult } from "@apollo/client";
 import { IHasID } from "src/utils/data";
 import { ConfigurationContext } from "src/hooks/Config";
 import { View } from "./views";
+import { usePrevious } from "src/hooks/state";
 
 export function useFilterURL(
   filter: ListFilterModel,
@@ -179,6 +180,25 @@ export function useListKeyboardShortcuts(props: {
 export function useListSelect<T extends { id: string }>(items: T[]) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [lastClickedId, setLastClickedId] = useState<string>();
+
+  const prevItems = usePrevious(items);
+
+  useEffect(() => {
+    if (prevItems === items) {
+      return;
+    }
+
+    // filter out any selectedIds that are no longer in the list
+    const newSelectedIds = new Set<string>();
+
+    selectedIds.forEach((id) => {
+      if (items.some((item) => item.id === id)) {
+        newSelectedIds.add(id);
+      }
+    });
+
+    setSelectedIds(newSelectedIds);
+  }, [prevItems, items, selectedIds]);
 
   function singleSelect(id: string, selected: boolean) {
     setLastClickedId(id);

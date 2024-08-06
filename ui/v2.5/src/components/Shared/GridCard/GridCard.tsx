@@ -11,11 +11,8 @@ import { TruncatedText } from "../TruncatedText";
 import ScreenUtils from "src/utils/screen";
 import useResizeObserver from "@react-hook/resize-observer";
 import { Icon } from "../Icon";
-import {
-  faArrowRightToBracket,
-  faGripLines,
-} from "@fortawesome/free-solid-svg-icons";
-import { useDragMoveSelect } from "./dragMoveSelect";
+import { faGripLines } from "@fortawesome/free-solid-svg-icons";
+import { DragSide, useDragMoveSelect } from "./dragMoveSelect";
 
 interface ICardProps {
   className?: string;
@@ -38,7 +35,7 @@ interface ICardProps {
 
   // move logic - both of the following are required to enable move dragging
   objectId?: string; // required for move dragging
-  onMove?: (srcIds: string[], targetId: string) => void;
+  onMove?: (srcIds: string[], targetId: string, after: boolean) => void;
 }
 
 export const calculateCardWidth = (
@@ -124,11 +121,19 @@ const Controls: React.FC<PropsWithChildren<{}>> = ({ children }) => {
   return <div className="card-controls">{children}</div>;
 };
 
-const MoveTarget: React.FC<{}> = () => (
-  <div className="move-target">
-    <Icon icon={faArrowRightToBracket} />
-  </div>
-);
+const MoveTarget: React.FC<{ dragSide: DragSide }> = ({ dragSide }) => {
+  if (dragSide === undefined) {
+    return null;
+  }
+
+  return (
+    <div
+      className={`move-target move-target-${
+        dragSide === DragSide.BEFORE ? "before" : "after"
+      }`}
+    ></div>
+  );
+};
 
 export const GridCard: React.FC<ICardProps> = (props: ICardProps) => {
   const { setInHandle, moveTarget, dragProps } = useDragMoveSelect({
@@ -192,7 +197,7 @@ export const GridCard: React.FC<ICardProps> = (props: ICardProps) => {
           : {}
       }
     >
-      {moveTarget && <MoveTarget />}
+      {moveTarget !== undefined && <MoveTarget dragSide={moveTarget} />}
       <Controls>
         {props.onSelectedChanged && (
           <Checkbox
@@ -201,7 +206,9 @@ export const GridCard: React.FC<ICardProps> = (props: ICardProps) => {
           />
         )}
 
-        {!!props.objectId && <DragHandle setInHandle={setInHandle} />}
+        {!!props.objectId && props.onMove && (
+          <DragHandle setInHandle={setInHandle} />
+        )}
       </Controls>
 
       <div className={cx(props.thumbnailSectionClassName, "thumbnail-section")}>

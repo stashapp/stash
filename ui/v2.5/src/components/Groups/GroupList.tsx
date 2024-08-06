@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { PropsWithChildren, useState } from "react";
 import { useIntl } from "react-intl";
 import cloneDeep from "lodash-es/cloneDeep";
 import Mousetrap from "mousetrap";
@@ -17,6 +17,10 @@ import { DeleteEntityDialog } from "../Shared/DeleteEntityDialog";
 import { GroupCardGrid } from "./GroupCardGrid";
 import { EditGroupsDialog } from "./EditGroupsDialog";
 import { View } from "../List/views";
+import {
+  IFilteredListToolbar,
+  IItemListOperation,
+} from "../List/FilteredListToolbar";
 
 const GroupExportDialog: React.FC<{
   open?: boolean;
@@ -41,6 +45,8 @@ const GroupExportDialog: React.FC<{
   );
 };
 
+const filterMode = GQL.FilterMode.Groups;
+
 function getItems(result: GQL.FindGroupsQueryResult) {
   return result?.data?.findGroups?.groups ?? [];
 }
@@ -49,27 +55,56 @@ function getCount(result: GQL.FindGroupsQueryResult) {
   return result?.data?.findGroups?.count ?? 0;
 }
 
-interface IGroupList {
+interface IGroupListContext {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
+  defaultFilter?: ListFilterModel;
   view?: View;
   alterQuery?: boolean;
+  selectable?: boolean;
+}
+
+export const GroupListContext: React.FC<
+  PropsWithChildren<IGroupListContext>
+> = ({ alterQuery, filterHook, defaultFilter, view, selectable, children }) => {
+  return (
+    <ItemListContext
+      filterMode={filterMode}
+      defaultFilter={defaultFilter}
+      useResult={useFindGroups}
+      getItems={getItems}
+      getCount={getCount}
+      alterQuery={alterQuery}
+      filterHook={filterHook}
+      view={view}
+      selectable={selectable}
+    >
+      {children}
+    </ItemListContext>
+  );
+};
+
+interface IGroupList extends IGroupListContext {
   fromGroupId?: string;
-  onMove?: (srcIds: string[], targetId: string) => void;
+  onMove?: (srcIds: string[], targetId: string, after: boolean) => void;
+  renderToolbar?: (props: IFilteredListToolbar) => React.ReactNode;
+  otherOperations?: IItemListOperation<GQL.FindGroupsQueryResult>[];
 }
 
 export const GroupList: React.FC<IGroupList> = ({
   filterHook,
   alterQuery,
+  defaultFilter,
   view,
   fromGroupId,
   onMove,
+  selectable,
+  renderToolbar,
+  otherOperations: providedOperations = [],
 }) => {
   const intl = useIntl();
   const history = useHistory();
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
   const [isExportAll, setIsExportAll] = useState(false);
-
-  const filterMode = GQL.FilterMode.Groups;
 
   const otherOperations = [
     {
@@ -85,6 +120,7 @@ export const GroupList: React.FC<IGroupList> = ({
       text: intl.formatMessage({ id: "actions.export_all" }),
       onClick: onExportAll,
     },
+    ...providedOperations,
   ];
 
   function addKeybinds(
@@ -181,15 +217,12 @@ export const GroupList: React.FC<IGroupList> = ({
   }
 
   return (
-    <ItemListContext
-      filterMode={filterMode}
-      useResult={useFindGroups}
-      getItems={getItems}
-      getCount={getCount}
+    <GroupListContext
       alterQuery={alterQuery}
       filterHook={filterHook}
       view={view}
-      selectable
+      defaultFilter={defaultFilter}
+      selectable={selectable}
     >
       <ItemList
         view={view}
@@ -198,7 +231,8 @@ export const GroupList: React.FC<IGroupList> = ({
         renderContent={renderContent}
         renderEditDialog={renderEditDialog}
         renderDeleteDialog={renderDeleteDialog}
+        renderToolbar={renderToolbar}
       />
-    </ItemListContext>
+    </GroupListContext>
   );
 };

@@ -31,14 +31,16 @@ export interface IItemListOperation<T extends QueryResult> {
   buttonVariant?: string;
 }
 
-export const FilteredListToolbar: React.FC<{
-  showEditFilter: (editingCriterion?: string) => void;
+export interface IFilteredListToolbar {
+  showEditFilter?: (editingCriterion?: string) => void;
   view?: View;
   onEdit?: () => void;
   onDelete?: () => void;
   operations?: IListFilterOperation[];
   zoomable?: boolean;
-}> = ({
+}
+
+export const FilteredListToolbar: React.FC<IFilteredListToolbar> = ({
   showEditFilter,
   view,
   onEdit,
@@ -60,13 +62,15 @@ export const FilteredListToolbar: React.FC<{
   }
 
   return (
-    <ButtonToolbar className="justify-content-center">
-      <ListFilter
-        onFilterUpdate={setFilter}
-        filter={filter}
-        openFilterDialog={() => showEditFilter()}
-        view={view}
-      />
+    <ButtonToolbar className="filtered-list-toolbar">
+      {showEditFilter && (
+        <ListFilter
+          onFilterUpdate={setFilter}
+          filter={filter}
+          openFilterDialog={() => showEditFilter()}
+          view={view}
+        />
+      )}
       <ListOperationButtons
         onSelectAll={onSelectAll}
         onSelectNone={onSelectNone}
