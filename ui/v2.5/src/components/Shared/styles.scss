@@ -492,12 +492,14 @@ div.react-datepicker {
 
 .clearable-text-field-clear {
   background-color: $secondary;
+  bottom: 0;
   color: $muted-gray;
   font-size: 0.875rem;
   margin: 0.375rem 0.75rem;
   padding: 0;
   position: absolute;
   right: 0;
+  top: 0;
   z-index: 4;
 
   &:hover,
