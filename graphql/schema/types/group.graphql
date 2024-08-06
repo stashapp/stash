@@ -100,6 +100,20 @@ input GroupDestroyInput {
   id: ID!
 }
 
+input ReorderSubGroupsInput {
+  "ID of the group to reorder sub groups for"
+  group_id: ID!
+  """
+  IDs of the sub groups to reorder. These must be a subset of the current sub groups.
+  Sub groups will be inserted in this order at the insert_index
+  """
+  sub_group_ids: [ID!]!
+  "The sub-group ID at which to insert the sub groups"
+  insert_at_id: ID!
+  "If true, the sub groups will be inserted after the insert_index, otherwise they will be inserted before"
+  insert_after: Boolean
+}
+
 type FindGroupsResultType {
   count: Int!
   groups: [Group!]!

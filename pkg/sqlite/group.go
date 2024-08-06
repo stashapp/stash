@@ -663,5 +663,4 @@ func (qb *GroupStore) FindInAncestors(ctx context.Context, ascestorIDs []int, id
 	}
 
 	return ret, nil
-
 }

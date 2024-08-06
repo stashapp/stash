@@ -15,10 +15,15 @@ type CreatorUpdater interface {
 	models.SubGroupLoader
 
 	AnscestorFinder
+	SubGroupReorderer
 }
 
 type AnscestorFinder interface {
 	FindInAncestors(ctx context.Context, ascestorIDs []int, ids []int) ([]int, error)
+}
+
+type SubGroupReorderer interface {
+	ReorderSubGroups(ctx context.Context, groupID int, subGroupIDs []int, insertID int, insertAfter bool) error
 }
 
 type Service struct {

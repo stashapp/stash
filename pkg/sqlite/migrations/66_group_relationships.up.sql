@@ -1,7 +1,7 @@
 CREATE TABLE `groups_relations` (
   `containing_id` integer not null,
   `sub_id` integer not null,
-  `order_index` float not null,
+  `order_index` integer not null,
   `description` varchar(255),
   primary key (`containing_id`, `sub_id`),
   foreign key (`containing_id`) references `groups`(`id`) on delete cascade,

@@ -35,4 +35,6 @@ type GalleryService interface {
 type GroupService interface {
 	Create(ctx context.Context, group *models.Group, frontimageData []byte, backimageData []byte) error
 	UpdatePartial(ctx context.Context, id int, updatedGroup models.GroupPartial, frontImage group.ImageInput, backImage group.ImageInput) (*models.Group, error)
+
+	ReorderSubGroups(ctx context.Context, groupID int, subGroupIDs []int, insertPointID int, insertAfter bool) error
 }

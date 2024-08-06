@@ -350,6 +350,9 @@ type Mutation {
   groupsDestroy(ids: [ID!]!): Boolean!
   bulkGroupUpdate(input: BulkGroupUpdateInput!): [Group!]
 
+  "Reorder sub groups within a group. Returns true if successful."
+  reorderSubGroups(input: ReorderSubGroupsInput!): Boolean!
+
   tagCreate(input: TagCreateInput!): Tag
   tagUpdate(input: TagUpdateInput!): Tag
   tagDestroy(input: TagDestroyInput!): Boolean!

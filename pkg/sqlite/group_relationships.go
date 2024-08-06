@@ -5,15 +5,17 @@ import (
 	"fmt"
 
 	"github.com/doug-martin/goqu/v9"
+	"github.com/doug-martin/goqu/v9/exp"
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/models"
+	"gopkg.in/guregu/null.v4"
 	"gopkg.in/guregu/null.v4/zero"
 )
 
 type groupRelationshipRow struct {
 	ContainingID int         `db:"containing_id"`
 	SubID        int         `db:"sub_id"`
-	OrderIndex   float64     `db:"order_index"`
+	OrderIndex   int         `db:"order_index"`
 	Description  zero.String `db:"description"`
 }
 
@@ -74,19 +76,19 @@ func (s *groupRelationshipStore) getGroupRelationships(ctx context.Context, id i
 }
 
 // getMaxOrderIndex gets the maximum order index for the containing group with the given id
-func (s *groupRelationshipStore) getMaxOrderIndex(ctx context.Context, containingID int) (float64, error) {
+func (s *groupRelationshipStore) getMaxOrderIndex(ctx context.Context, containingID int) (int, error) {
 	idColumn := s.table.table.Col("containing_id")
 
 	q := dialect.Select(goqu.MAX("order_index")).
 		From(s.table.table).
 		Where(idColumn.Eq(containingID))
 
-	var maxOrderIndex zero.Float
+	var maxOrderIndex zero.Int
 	if err := querySimple(ctx, q, &maxOrderIndex); err != nil {
 		return 0, fmt.Errorf("getting max order index: %w", err)
 	}
 
-	return maxOrderIndex.Float64, nil
+	return int(maxOrderIndex.Int64), nil
 }
 
 // createRelationships creates relationships between a group and other groups.
@@ -94,7 +96,7 @@ func (s *groupRelationshipStore) getMaxOrderIndex(ctx context.Context, containin
 func (s *groupRelationshipStore) createRelationships(ctx context.Context, id int, d models.RelatedGroupDescriptions, idIsContaining bool) error {
 	if d.Loaded() {
 		for i, v := range d.List() {
-			orderIndex := float64(i + 1)
+			orderIndex := i + 1
 
 			r := groupRelationshipRow{
 				ContainingID: id,
@@ -190,7 +192,7 @@ func (s *groupRelationshipStore) modifySubRelationships(ctx context.Context, id 
 
 func (s *groupRelationshipStore) addJoins(ctx context.Context, id int, v models.UpdateGroupDescriptions, idIsContaining bool) error {
 	// if we're adding to a containing group, get the max order index first
-	var maxOrderIndex float64
+	var maxOrderIndex int
 	if idIsContaining {
 		var err error
 		maxOrderIndex, err = s.getMaxOrderIndex(ctx, id)
@@ -207,7 +209,7 @@ func (s *groupRelationshipStore) addJoins(ctx context.Context, id int, v models.
 		if idIsContaining {
 			r.ContainingID = id
 			r.SubID = vv.GroupID
-			r.OrderIndex = maxOrderIndex + float64(i+1)
+			r.OrderIndex = maxOrderIndex + (i + 1)
 		} else {
 			// get the max order index of the containing groups sub groups
 			containingMaxOrderIndex, err := s.getMaxOrderIndex(ctx, vv.GroupID)
@@ -273,6 +275,124 @@ func (s *groupRelationshipStore) destroyJoins(ctx context.Context, id int, v mod
 
 	if _, err := exec(ctx, q); err != nil {
 		return fmt.Errorf("destroying %s: %w", table.GetTable(), err)
+	}
+
+	return nil
+}
+
+func (s *groupRelationshipStore) getOrderIndexOfSubGroup(ctx context.Context, containingGroupID int, subGroupID int) (int, error) {
+	table := s.table.table
+	q := dialect.Select("order_index").
+		From(table).
+		Where(
+			table.Col("containing_id").Eq(containingGroupID),
+			table.Col("sub_id").Eq(subGroupID),
+		)
+
+	var orderIndex null.Int
+	if err := querySimple(ctx, q, &orderIndex); err != nil {
+		return 0, fmt.Errorf("getting order index: %w", err)
+	}
+
+	if !orderIndex.Valid {
+		return 0, fmt.Errorf("sub-group %d not found in containing group %d", subGroupID, containingGroupID)
+	}
+
+	return int(orderIndex.Int64), nil
+}
+
+func (s *groupRelationshipStore) getOrderIndexAfterOrderIndex(ctx context.Context, containingGroupID int, orderIndex int) (int, error) {
+	table := s.table.table
+	q := dialect.Select(goqu.MIN("order_index")).From(table).Where(
+		table.Col("containing_id").Eq(containingGroupID),
+		table.Col("order_index").Gt(orderIndex),
+	)
+
+	var ret null.Int
+	if err := querySimple(ctx, q, &ret); err != nil {
+		return 0, fmt.Errorf("getting order index: %w", err)
+	}
+
+	if !ret.Valid {
+		return orderIndex + 1, nil
+	}
+
+	return int(ret.Int64), nil
+}
+
+// incrementOrderIndexes increments the order_index value of all sub-groups in the containing group at or after the given index
+func (s *groupRelationshipStore) incrementOrderIndexes(ctx context.Context, groupID int, indexBefore int) error {
+	table := s.table.table
+
+	// WORKAROUND - sqlite won't allow incrementing the value directly since it causes a
+	// unique constraint violation.
+	// Instead, we first set the order index to a negative value temporarily
+	// see https://stackoverflow.com/a/7703239/695786
+	q := dialect.Update(table).Set(exp.Record{
+		"order_index": goqu.L("-order_index"),
+	}).Where(
+		table.Col("containing_id").Eq(groupID),
+		table.Col("order_index").Gte(indexBefore),
+	)
+
+	if _, err := exec(ctx, q); err != nil {
+		return fmt.Errorf("updating %s: %w", table.GetTable(), err)
+	}
+
+	q = dialect.Update(table).Set(exp.Record{
+		"order_index": goqu.L("1-order_index"),
+	}).Where(
+		table.Col("containing_id").Eq(groupID),
+		table.Col("order_index").Lt(0),
+	)
+
+	if _, err := exec(ctx, q); err != nil {
+		return fmt.Errorf("updating %s: %w", table.GetTable(), err)
+	}
+
+	return nil
+}
+
+func (s *groupRelationshipStore) reorderSubGroup(ctx context.Context, groupID int, subGroupID int, insertPointID int, insertAfter bool) error {
+	insertPointIndex, err := s.getOrderIndexOfSubGroup(ctx, groupID, insertPointID)
+	if err != nil {
+		return err
+	}
+
+	// if we're setting before
+	if insertAfter {
+		insertPointIndex, err = s.getOrderIndexAfterOrderIndex(ctx, groupID, insertPointIndex)
+		if err != nil {
+			return err
+		}
+	}
+
+	// increment the order index of all sub-groups after and including the insertion point
+	if err := s.incrementOrderIndexes(ctx, groupID, int(insertPointIndex)); err != nil {
+		return err
+	}
+
+	// set the order index of the sub-group to the insertion point
+	table := s.table.table
+	q := dialect.Update(table).Set(exp.Record{
+		"order_index": insertPointIndex,
+	}).Where(
+		table.Col("containing_id").Eq(groupID),
+		table.Col("sub_id").Eq(subGroupID),
+	)
+
+	if _, err := exec(ctx, q); err != nil {
+		return fmt.Errorf("updating %s: %w", table.GetTable(), err)
+	}
+
+	return nil
+}
+
+func (s *groupRelationshipStore) ReorderSubGroups(ctx context.Context, groupID int, subGroupIDs []int, insertPointID int, insertAfter bool) error {
+	for _, id := range subGroupIDs {
+		if err := s.reorderSubGroup(ctx, groupID, id, insertPointID, insertAfter); err != nil {
+			return err
+		}
 	}
 
 	return nil

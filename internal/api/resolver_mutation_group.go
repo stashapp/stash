@@ -344,3 +344,30 @@ func (r *mutationResolver) GroupsDestroy(ctx context.Context, groupIDs []string)
 
 	return true, nil
 }
+
+func (r *mutationResolver) ReorderSubGroups(ctx context.Context, input ReorderSubGroupsInput) (bool, error) {
+	groupID, err := strconv.Atoi(input.GroupID)
+	if err != nil {
+		return false, fmt.Errorf("converting group id: %w", err)
+	}
+
+	subGroupIDs, err := stringslice.StringSliceToIntSlice(input.SubGroupIds)
+	if err != nil {
+		return false, fmt.Errorf("converting sub group ids: %w", err)
+	}
+
+	insertPointID, err := strconv.Atoi(input.InsertAtID)
+	if err != nil {
+		return false, fmt.Errorf("converting insert at id: %w", err)
+	}
+
+	insertAfter := utils.IsTrue(input.InsertAfter)
+
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		return r.groupService.ReorderSubGroups(ctx, groupID, subGroupIDs, insertPointID, insertAfter)
+	}); err != nil {
+		return false, err
+	}
+
+	return true, nil
+}

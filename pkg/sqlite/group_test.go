@@ -1448,6 +1448,139 @@ func TestGroupFindInAncestors(t *testing.T) {
 	}
 }
 
+func TestGroupReorderSubGroups(t *testing.T) {
+	tests := []struct {
+		name        string
+		subGroupLen int
+		idxsToMove  []int
+		insertLoc   int
+		insertAfter bool
+		// order of elements, using original indexes
+		expectedIdxs []int
+	}{
+		{
+			"move single back before",
+			5,
+			[]int{2},
+			1,
+			false,
+			[]int{0, 2, 1, 3, 4},
+		},
+		{
+			"move single forward before",
+			5,
+			[]int{2},
+			4,
+			false,
+			[]int{0, 1, 3, 2, 4},
+		},
+		{
+			"move multiple back before",
+			5,
+			[]int{3, 2, 4},
+			0,
+			false,
+			[]int{3, 2, 4, 0, 1},
+		},
+		{
+			"move multiple forward before",
+			5,
+			[]int{2, 1, 0},
+			4,
+			false,
+			[]int{3, 2, 1, 0, 4},
+		},
+		{
+			"move single back after",
+			5,
+			[]int{2},
+			0,
+			true,
+			[]int{0, 2, 1, 3, 4},
+		},
+		{
+			"move single forward after",
+			5,
+			[]int{2},
+			4,
+			true,
+			[]int{0, 1, 3, 4, 2},
+		},
+		{
+			"move multiple back after",
+			5,
+			[]int{3, 2, 4},
+			0,
+			false,
+			[]int{0, 3, 2, 4, 1},
+		},
+		{
+			"move multiple forward after",
+			5,
+			[]int{2, 1, 0},
+			4,
+			false,
+			[]int{3, 4, 2, 1, 0},
+		},
+	}
+
+	qb := db.Group
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			// create the group
+			group := models.Group{
+				Name: "TestGroupReorderSubGroups",
+			}
+
+			if err := qb.Create(ctx, &group); err != nil {
+				t.Errorf("GroupStore.Create() error = %v", err)
+				return
+			}
+
+			// and sub-groups
+			idxToId := make([]int, tt.subGroupLen)
+
+			for i := 0; i < tt.subGroupLen; i++ {
+				subGroup := models.Group{
+					Name: fmt.Sprintf("SubGroup %d", i),
+					ContainingGroups: models.NewRelatedGroupDescriptions([]models.GroupIDDescription{
+						{GroupID: group.ID},
+					}),
+				}
+
+				if err := qb.Create(ctx, &subGroup); err != nil {
+					t.Errorf("GroupStore.Create() error = %v", err)
+					return
+				}
+
+				idxToId[i] = subGroup.ID
+			}
+
+			// reorder
+			idsToMove := indexesToIDs(idxToId, tt.idxsToMove)
+			insertID := idxToId[tt.insertLoc]
+			if err := qb.ReorderSubGroups(ctx, group.ID, idsToMove, insertID, tt.insertAfter); err != nil {
+				t.Errorf("GroupStore.ReorderSubGroups() error = %v", err)
+				return
+			}
+
+			// validate the new order
+			gd, err := qb.GetSubGroupDescriptions(ctx, group.ID)
+			if err != nil {
+				t.Errorf("GroupStore.GetSubGroupDescriptions() error = %v", err)
+				return
+			}
+
+			// get ids of groups
+			newIDs := sliceutil.Map(gd, func(gd models.GroupIDDescription) int { return gd.GroupID })
+			newIdxs := sliceutil.Map(newIDs, func(id int) int { return sliceutil.Index(idxToId, id) })
+
+			assert.ElementsMatch(t, tt.expectedIdxs, newIdxs)
+		})
+	}
+}
+
 // TODO Update
 // TODO Destroy - ensure image is destroyed
 // TODO Find
