@@ -1,5 +1,11 @@
 import cloneDeep from "lodash-es/cloneDeep";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import Mousetrap from "mousetrap";
 import { SortDirectionEnum } from "src/core/generated-graphql";
 import {
@@ -102,42 +108,44 @@ export const SearchTermInput: React.FC<{
   );
 };
 
-interface IListFilterProps {
-  onFilterUpdate: (newFilter: ListFilterModel) => void;
-  filter: ListFilterModel;
-  view?: View;
-  openFilterDialog: () => void;
-}
-
 const PAGE_SIZE_OPTIONS = ["20", "40", "60", "120", "250", "500", "1000"];
 
-export const ListFilter: React.FC<IListFilterProps> = ({
-  onFilterUpdate,
-  filter,
-  openFilterDialog,
-  view,
-}) => {
-  const [customPageSizeShowing, setCustomPageSizeShowing] = useState(false);
-  const perPageSelect = useRef(null);
-  const [perPageInput, perPageFocus] = useFocus();
-
-  const filterOptions = filter.options;
-
+export const PageSizeSelector: React.FC<{
+  pageSize: number;
+  setPageSize: (pageSize: number) => void;
+}> = ({ pageSize, setPageSize }) => {
   const intl = useIntl();
 
-  useEffect(() => {
-    Mousetrap.bind("r", () => onReshuffleRandomSort());
-
-    return () => {
-      Mousetrap.unbind("r");
-    };
-  });
+  const perPageSelect = useRef(null);
+  const [perPageInput, perPageFocus] = useFocus();
+  const [customPageSizeShowing, setCustomPageSizeShowing] = useState(false);
 
   useEffect(() => {
     if (customPageSizeShowing) {
       perPageFocus();
     }
   }, [customPageSizeShowing, perPageFocus]);
+
+  const pageSizeOptions = useMemo(() => {
+    const ret = PAGE_SIZE_OPTIONS.map((o) => {
+      return {
+        label: o,
+        value: o,
+      };
+    });
+    const currentPerPage = pageSize.toString();
+    if (!ret.find((o) => o.value === currentPerPage)) {
+      ret.push({ label: currentPerPage, value: currentPerPage });
+      ret.sort((a, b) => parseInt(a.value, 10) - parseInt(b.value, 10));
+    }
+
+    ret.push({
+      label: `${intl.formatMessage({ id: "custom" })}...`,
+      value: "custom",
+    });
+
+    return ret;
+  }, [intl, pageSize]);
 
   function onChangePageSize(val: string) {
     if (val === "custom") {
@@ -154,6 +162,94 @@ export const ListFilter: React.FC<IListFilterProps> = ({
       return;
     }
 
+    setPageSize(pp);
+  }
+
+  return (
+    <div className="page-size-selector">
+      <Form.Control
+        as="select"
+        ref={perPageSelect}
+        onChange={(e) => onChangePageSize(e.target.value)}
+        value={pageSize.toString()}
+        className="btn-secondary"
+      >
+        {pageSizeOptions.map((s) => (
+          <option value={s.value} key={s.value}>
+            {s.label}
+          </option>
+        ))}
+      </Form.Control>
+      <Overlay
+        target={perPageSelect.current}
+        show={customPageSizeShowing}
+        placement="bottom"
+        rootClose
+        onHide={() => setCustomPageSizeShowing(false)}
+      >
+        <Popover id="custom_pagesize_popover">
+          <Form inline>
+            <InputGroup>
+              <Form.Control
+                type="number"
+                min={1}
+                className="text-input"
+                ref={perPageInput}
+                onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) => {
+                  if (e.key === "Enter") {
+                    onChangePageSize(
+                      (perPageInput.current as HTMLInputElement)?.value ?? ""
+                    );
+                    e.preventDefault();
+                  }
+                }}
+              />
+              <InputGroup.Append>
+                <Button
+                  variant="primary"
+                  onClick={() =>
+                    onChangePageSize(
+                      (perPageInput.current as HTMLInputElement)?.value ?? ""
+                    )
+                  }
+                >
+                  <Icon icon={faCheck} />
+                </Button>
+              </InputGroup.Append>
+            </InputGroup>
+          </Form>
+        </Popover>
+      </Overlay>
+    </div>
+  );
+};
+
+interface IListFilterProps {
+  onFilterUpdate: (newFilter: ListFilterModel) => void;
+  filter: ListFilterModel;
+  view?: View;
+  openFilterDialog: () => void;
+}
+
+export const ListFilter: React.FC<IListFilterProps> = ({
+  onFilterUpdate,
+  filter,
+  openFilterDialog,
+  view,
+}) => {
+  const filterOptions = filter.options;
+
+  const intl = useIntl();
+
+  useEffect(() => {
+    Mousetrap.bind("r", () => onReshuffleRandomSort());
+
+    return () => {
+      Mousetrap.unbind("r");
+    };
+  });
+
+  function onChangePageSize(pp: number) {
     const newFilter = cloneDeep(filter);
     newFilter.itemsPerPage = pp;
     newFilter.currentPage = 1;
@@ -210,25 +306,6 @@ export const ListFilter: React.FC<IListFilterProps> = ({
     const currentSortBy = filterOptions.sortByOptions.find(
       (o) => o.value === filter.sortBy
     );
-
-    const pageSizeOptions = PAGE_SIZE_OPTIONS.map((o) => {
-      return {
-        label: o,
-        value: o,
-      };
-    });
-    const currentPerPage = filter.itemsPerPage.toString();
-    if (!pageSizeOptions.find((o) => o.value === currentPerPage)) {
-      pageSizeOptions.push({ label: currentPerPage, value: currentPerPage });
-      pageSizeOptions.sort(
-        (a, b) => parseInt(a.value, 10) - parseInt(b.value, 10)
-      );
-    }
-
-    pageSizeOptions.push({
-      label: `${intl.formatMessage({ id: "custom" })}...`,
-      value: "custom",
-    });
 
     return (
       <>
@@ -301,63 +378,10 @@ export const ListFilter: React.FC<IListFilterProps> = ({
           )}
         </Dropdown>
 
-        <div className="mb-2">
-          <Form.Control
-            as="select"
-            ref={perPageSelect}
-            onChange={(e) => onChangePageSize(e.target.value)}
-            value={filter.itemsPerPage.toString()}
-            className="btn-secondary"
-          >
-            {pageSizeOptions.map((s) => (
-              <option value={s.value} key={s.value}>
-                {s.label}
-              </option>
-            ))}
-          </Form.Control>
-          <Overlay
-            target={perPageSelect.current}
-            show={customPageSizeShowing}
-            placement="bottom"
-            rootClose
-            onHide={() => setCustomPageSizeShowing(false)}
-          >
-            <Popover id="custom_pagesize_popover">
-              <Form inline>
-                <InputGroup>
-                  <Form.Control
-                    type="number"
-                    min={1}
-                    className="text-input"
-                    ref={perPageInput}
-                    onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) => {
-                      if (e.key === "Enter") {
-                        onChangePageSize(
-                          (perPageInput.current as HTMLInputElement)?.value ??
-                            ""
-                        );
-                        e.preventDefault();
-                      }
-                    }}
-                  />
-                  <InputGroup.Append>
-                    <Button
-                      variant="primary"
-                      onClick={() =>
-                        onChangePageSize(
-                          (perPageInput.current as HTMLInputElement)?.value ??
-                            ""
-                        )
-                      }
-                    >
-                      <Icon icon={faCheck} />
-                    </Button>
-                  </InputGroup.Append>
-                </InputGroup>
-              </Form>
-            </Popover>
-          </Overlay>
-        </div>
+        <PageSizeSelector
+          pageSize={filter.itemsPerPage}
+          setPageSize={onChangePageSize}
+        />
       </>
     );
   }
