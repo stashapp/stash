@@ -993,6 +993,37 @@ func TestGroupQuerySorting(t *testing.T) {
 	})
 }
 
+func TestGroupQuerySortOrderIndex(t *testing.T) {
+	sort := "sub_group_order"
+	direction := models.SortDirectionEnumDesc
+	findFilter := models.FindFilterType{
+		Sort:      &sort,
+		Direction: &direction,
+	}
+
+	groupFilter := models.GroupFilterType{
+		ContainingGroups: &models.HierarchicalMultiCriterionInput{
+			Value:    intslice.IntSliceToStringSlice([]int{groupIdxWithChild}),
+			Modifier: models.CriterionModifierIncludes,
+		},
+	}
+
+	withTxn(func(ctx context.Context) error {
+		// just ensure there are no errors
+		_, _, err := db.Group.Query(ctx, &groupFilter, &findFilter)
+		if err != nil {
+			t.Errorf("Error querying group: %s", err.Error())
+		}
+
+		_, _, err = db.Group.Query(ctx, nil, &findFilter)
+		if err != nil {
+			t.Errorf("Error querying group: %s", err.Error())
+		}
+
+		return nil
+	})
+}
+
 func TestGroupUpdateFrontImage(t *testing.T) {
 	if err := withRollbackTxn(func(ctx context.Context) error {
 		qb := db.Group

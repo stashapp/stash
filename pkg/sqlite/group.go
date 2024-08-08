@@ -511,8 +511,15 @@ func (qb *GroupStore) setGroupSort(query *queryBuilder, findFilter *models.FindF
 
 	switch sort {
 	case "sub_group_order":
-		query.join(groupRelationsTable, "", "groups.id = groups_relations.sub_id")
-		query.sortAndPagination += getSort("order_index", direction, groupRelationsTable)
+		// sub_group_order is a special sort that sorts by the order_index of the subgroups
+		if query.hasJoin("groups_parents") {
+			query.sortAndPagination += getSort("order_index", direction, "groups_parents")
+		} else {
+			// this will give unexpected results if the query is not filtered by a parent group and
+			// the group has multiple parents and order indexes
+			query.join(groupRelationsTable, "", "groups.id = groups_relations.sub_id")
+			query.sortAndPagination += getSort("order_index", direction, groupRelationsTable)
+		}
 	case "tag_count":
 		query.sortAndPagination += getCountSort(groupTable, groupsTagsTable, groupIDColumn, direction)
 	case "scenes_count": // generic getSort won't work for this

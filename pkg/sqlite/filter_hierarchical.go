@@ -115,6 +115,23 @@ func (h hierarchicalRelationshipHandler) handleValues(f *filterBuilder, c models
 	addHierarchicalConditionClauses(f, c, tableAlias, "root_id")
 }
 
+func (h hierarchicalRelationshipHandler) handleValuesSimple(f *filterBuilder, value string, isParents bool) {
+	joinCol := h.childIDCol
+	valueCol := h.parentIDCol
+	if !isParents {
+		joinCol = h.parentIDCol
+		valueCol = h.childIDCol
+	}
+
+	tableAlias := h.parentsAlias()
+	if !isParents {
+		tableAlias = h.childrenAlias()
+	}
+
+	f.addInnerJoin(h.relationTable, tableAlias, fmt.Sprintf("%s.%s = %s.id", tableAlias, joinCol, h.primaryTable))
+	f.addWhere(fmt.Sprintf("%s.%s = ?", tableAlias, valueCol), value)
+}
+
 func (h hierarchicalRelationshipHandler) hierarchicalCriterionHandler(criterion *models.HierarchicalMultiCriterionInput, isParents bool) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if criterion != nil {
@@ -132,6 +149,17 @@ func (h hierarchicalRelationshipHandler) hierarchicalCriterionHandler(criterion 
 			}
 
 			if len(c.Value) == 0 && len(c.Excludes) == 0 {
+				return
+			}
+
+			depth := 0
+			if c.Depth != nil {
+				depth = *c.Depth
+			}
+
+			// if we have a single include, no excludes, and no depth, we can use a simple join and where clause
+			if (c.Modifier == models.CriterionModifierIncludes || c.Modifier == models.CriterionModifierIncludesAll) && len(c.Value) == 1 && len(c.Excludes) == 0 && depth == 0 {
+				h.handleValuesSimple(f, c.Value[0], isParents)
 				return
 			}
 
