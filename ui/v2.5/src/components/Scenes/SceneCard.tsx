@@ -1,15 +1,10 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Button, ButtonGroup, OverlayTrigger, Tooltip } from "react-bootstrap";
-import { Link, useHistory } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 import cx from "classnames";
 import * as GQL from "src/core/generated-graphql";
 import { Icon } from "../Shared/Icon";
-import {
-  GalleryLink,
-  TagLink,
-  GroupLink,
-  SceneMarkerLink,
-} from "../Shared/TagLink";
+import { GalleryLink, TagLink, SceneMarkerLink } from "../Shared/TagLink";
 import { HoverPopover } from "../Shared/HoverPopover";
 import { SweatDrops } from "../Shared/SweatDrops";
 import { TruncatedText } from "../Shared/TruncatedText";
@@ -34,6 +29,7 @@ import { PreviewScrubber } from "./PreviewScrubber";
 import { PatchComponent } from "src/patch";
 import ScreenUtils from "src/utils/screen";
 import { StudioOverlay } from "../Shared/GridCard/StudioOverlay";
+import { GroupTag } from "../Groups/GroupTag";
 
 interface IScenePreviewProps {
   isPortrait: boolean;
@@ -176,23 +172,7 @@ const SceneCardPopovers = PatchComponent(
       if (props.scene.groups.length <= 0) return;
 
       const popoverContent = props.scene.groups.map((sceneGroup) => (
-        <div className="group-tag-container row" key={sceneGroup.group.id}>
-          <Link
-            to={`/groups/${sceneGroup.group.id}`}
-            className="group-tag col m-auto zoom-2"
-          >
-            <img
-              className="image-thumbnail"
-              alt={sceneGroup.group.name ?? ""}
-              src={sceneGroup.group.front_image_path ?? ""}
-            />
-          </Link>
-          <GroupLink
-            key={sceneGroup.group.id}
-            group={sceneGroup.group}
-            className="d-block"
-          />
-        </div>
+        <GroupTag key={sceneGroup.group.id} group={sceneGroup.group} />
       ));
 
       return (

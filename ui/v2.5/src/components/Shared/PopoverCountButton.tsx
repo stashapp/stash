@@ -7,13 +7,36 @@ import {
   faVideo,
   faMapMarkerAlt,
 } from "@fortawesome/free-solid-svg-icons";
-import React, { useMemo } from "react";
+import React from "react";
 import { Button, OverlayTrigger, Tooltip } from "react-bootstrap";
 import { FormattedNumber, useIntl } from "react-intl";
 import { Link } from "react-router-dom";
 import { ConfigurationContext } from "src/hooks/Config";
 import TextUtils from "src/utils/text";
 import { Icon } from "./Icon";
+
+export const Count: React.FC<{
+  count: number;
+}> = ({ count }) => {
+  const { configuration } = React.useContext(ConfigurationContext);
+  const abbreviateCounter = configuration?.ui.abbreviateCounters ?? false;
+
+  if (!abbreviateCounter) {
+    return <span>{count}</span>;
+  }
+
+  const formatted = TextUtils.abbreviateCounter(count);
+
+  return (
+    <span>
+      <FormattedNumber
+        value={formatted.size}
+        maximumFractionDigits={formatted.digits}
+      />
+      {formatted.unit}
+    </span>
+  );
+};
 
 type PopoverLinkType =
   | "scene"
@@ -38,9 +61,6 @@ export const PopoverCountButton: React.FC<IProps> = ({
   type,
   count,
 }) => {
-  const { configuration } = React.useContext(ConfigurationContext);
-  const abbreviateCounter = configuration?.ui.abbreviateCounters ?? false;
-
   const intl = useIntl();
 
   // TODO - refactor - create SceneIcon, ImageIcon etc components
@@ -118,23 +138,6 @@ export const PopoverCountButton: React.FC<IProps> = ({
     return `${count} ${plural}`;
   }
 
-  const countEl = useMemo(() => {
-    if (!abbreviateCounter) {
-      return count;
-    }
-
-    const formatted = TextUtils.abbreviateCounter(count);
-    return (
-      <span>
-        <FormattedNumber
-          value={formatted.size}
-          maximumFractionDigits={formatted.digits}
-        />
-        {formatted.unit}
-      </span>
-    );
-  }, [count, abbreviateCounter]);
-
   return (
     <>
       <OverlayTrigger
@@ -144,7 +147,7 @@ export const PopoverCountButton: React.FC<IProps> = ({
         <Link className={className} to={url}>
           <Button className="minimal">
             <Icon icon={getIcon()} />
-            <span>{countEl}</span>
+            <Count count={count} />
           </Button>
         </Link>
       </OverlayTrigger>

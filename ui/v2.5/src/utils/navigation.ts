@@ -411,7 +411,7 @@ const makeContainingGroupsUrl = (group: Partial<GQL.SlimGroupDataFragment>) => {
   return `/groups?${filter.makeQueryParameters()}`;
 };
 
-const makeSubGroupsUrl = (group: Partial<GQL.SlimGroupDataFragment>) => {
+const makeSubGroupsUrl = (group: INamedObject) => {
   if (!group.id) return "#";
   const filter = new ListFilterModel(GQL.FilterMode.Groups, undefined);
   const criterion = new GroupsCriterion(ContainingGroupsCriterionOption);

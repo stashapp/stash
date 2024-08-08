@@ -99,3 +99,15 @@
     display: inline;
   }
 }
+
+.related-group-popover-button {
+  .containing-group-count {
+    display: inline-block;
+  }
+
+  .related-group-count .fa-icon {
+    color: $text-muted;
+    margin-left: 0;
+    margin-right: 0.25rem;
+  }
+}
