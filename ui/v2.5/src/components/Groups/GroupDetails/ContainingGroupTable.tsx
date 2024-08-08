@@ -7,18 +7,24 @@ import cx from "classnames";
 
 export type GroupSceneIndexMap = Map<string, number | undefined>;
 
-export interface IContainingGroupEntry {
+export interface IRelatedGroupEntry {
   group: Group;
   description?: GQL.InputMaybe<string> | undefined;
 }
 
 export const ContainingGroupTable: React.FC<{
-  value: IContainingGroupEntry[];
-  onUpdate: (input: IContainingGroupEntry[]) => void;
+  value: IRelatedGroupEntry[];
+  onUpdate: (input: IRelatedGroupEntry[]) => void;
+  excludeIDs?: string[];
 }> = (props) => {
   const { value, onUpdate } = props;
 
   const groupIDs = useMemo(() => value.map((m) => m.group.id), [value]);
+
+  const excludeIDs = useMemo(
+    () => [...groupIDs, ...(props.excludeIDs ?? [])],
+    [props.excludeIDs, groupIDs]
+  );
 
   const updateFieldChanged = (index: number, description: string | null) => {
     const newValues = value.map((existing, i) => {
@@ -89,7 +95,7 @@ export const ContainingGroupTable: React.FC<{
             <GroupSelect
               onSelect={(items) => onGroupSet(i, items)}
               values={[m.group!]}
-              excludeIds={groupIDs}
+              excludeIds={excludeIDs}
             />
           </Col>
           <Col xs={3}>
@@ -109,9 +115,12 @@ export const ContainingGroupTable: React.FC<{
       <Row className="group-row">
         <Col xs={12}>
           <GroupSelect
+            // re-create this component to refresh the default values updating the excluded ids
+            // setting the key to the length of the groupIDs array will cause the component to re-render
+            key={groupIDs.length}
             onSelect={(items) => onNewGroupSet(items)}
             values={[]}
-            excludeIds={groupIDs}
+            excludeIds={excludeIDs}
           />
         </Col>
       </Row>

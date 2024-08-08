@@ -1379,10 +1379,32 @@ export function useReorderSubGroupsMutation() {
   });
 }
 
-export const useRemoveSubGroups = () => {
-  const [bulkUpdateGroups] = GQL.useBulkGroupUpdateMutation({
+export const useAddSubGroups = () => {
+  const [addSubGroups] = GQL.useAddGroupSubGroupsMutation({
     update(cache, result) {
-      if (!result.data?.bulkGroupUpdate) return;
+      if (!result.data?.addGroupSubGroups) return;
+
+      evictTypeFields(cache, groupMutationImpactedTypeFields);
+      evictQueries(cache, groupMutationImpactedQueries);
+    },
+  });
+
+  return (containingGroupId: string, toAdd: GQL.GroupDescriptionInput[]) => {
+    return addSubGroups({
+      variables: {
+        input: {
+          containing_group_id: containingGroupId,
+          sub_groups: toAdd,
+        },
+      },
+    });
+  };
+};
+
+export const useRemoveSubGroups = () => {
+  const [removeSubGroups] = GQL.useRemoveGroupSubGroupsMutation({
+    update(cache, result) {
+      if (!result.data?.removeGroupSubGroups) return;
 
       evictTypeFields(cache, groupMutationImpactedTypeFields);
       evictQueries(cache, groupMutationImpactedQueries);
@@ -1390,14 +1412,11 @@ export const useRemoveSubGroups = () => {
   });
 
   return (containingGroupId: string, removeIds: string[]) => {
-    return bulkUpdateGroups({
+    return removeSubGroups({
       variables: {
         input: {
-          ids: removeIds,
-          containing_group_ids: {
-            mode: GQL.BulkUpdateIdMode.Remove,
-            ids: [containingGroupId],
-          },
+          containing_group_id: containingGroupId,
+          sub_group_ids: removeIds,
         },
       },
     });

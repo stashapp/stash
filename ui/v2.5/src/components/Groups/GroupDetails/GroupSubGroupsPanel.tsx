@@ -19,10 +19,15 @@ import {
 } from "src/components/List/ListFilter";
 import { useFilter } from "src/components/List/FilterProvider";
 import { IFilteredListToolbar } from "src/components/List/FilteredListToolbar";
-import { showWhenSelected } from "src/components/List/ItemList";
-import { faMinus } from "@fortawesome/free-solid-svg-icons";
+import {
+  showWhenNoneSelected,
+  showWhenSelected,
+} from "src/components/List/ItemList";
+import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { useIntl } from "react-intl";
 import { useToast } from "src/hooks/Toast";
+import { useModal } from "src/hooks/modal";
+import { AddSubGroupsDialog } from "./AddGroupsDialog";
 
 const useContainingGroupFilterHook = (
   group: Pick<GQL.StudioDataFragment, "id" | "name">,
@@ -102,6 +107,7 @@ export const GroupSubGroupsPanel: React.FC<IGroupSubGroupsPanel> = ({
 }) => {
   const intl = useIntl();
   const Toast = useToast();
+  const { modal, showModal, closeModal } = useModal();
 
   const [reorderSubGroups] = useReorderSubGroupsMutation();
   const mutateRemoveSubGroups = useRemoveSubGroups();
@@ -143,7 +149,21 @@ export const GroupSubGroupsPanel: React.FC<IGroupSubGroupsPanel> = ({
     }
   }
 
+  async function onAddSubGroups() {
+    showModal(
+      <AddSubGroupsDialog containingGroup={group} onClose={closeModal} />
+    );
+  }
+
   const otherOperations = [
+    {
+      text: intl.formatMessage({ id: "actions.add_sub_groups" }),
+      onClick: onAddSubGroups,
+      isDisplayed: showWhenNoneSelected,
+      postRefetch: true,
+      icon: faPlus,
+      buttonVariant: "secondary",
+    },
     {
       text: intl.formatMessage({ id: "actions.remove_from_containing_group" }),
       onClick: removeSubGroups,
@@ -168,14 +188,17 @@ export const GroupSubGroupsPanel: React.FC<IGroupSubGroupsPanel> = ({
   }
 
   return (
-    <GroupList
-      defaultFilter={defaultFilter}
-      filterHook={filterHook}
-      alterQuery={active}
-      fromGroupId={group.id}
-      otherOperations={otherOperations}
-      onMove={onMove}
-      renderToolbar={(props) => <Toolbar {...props} />}
-    />
+    <>
+      {modal}
+      <GroupList
+        defaultFilter={defaultFilter}
+        filterHook={filterHook}
+        alterQuery={active}
+        fromGroupId={group.id}
+        otherOperations={otherOperations}
+        onMove={onMove}
+        renderToolbar={(props) => <Toolbar {...props} />}
+      />
+    </>
   );
 };

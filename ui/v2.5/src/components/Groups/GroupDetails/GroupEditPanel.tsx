@@ -29,7 +29,7 @@ import { useTagsEdit } from "src/hooks/tagsEdit";
 import { Group } from "src/components/Groups/GroupSelect";
 import {
   ContainingGroupTable,
-  IContainingGroupEntry,
+  IRelatedGroupEntry,
 } from "./ContainingGroupTable";
 
 interface IGroupEditPanel {
@@ -126,7 +126,7 @@ export const GroupEditPanel: React.FC<IGroupEditPanel> = ({
           description: m.description,
         };
       })
-      .filter((m) => m.group !== undefined) as IContainingGroupEntry[];
+      .filter((m) => m.group !== undefined) as IRelatedGroupEntry[];
   }, [formik.values.containing_groups, containingGroups]);
 
   function onSetStudio(item: Studio | null) {
@@ -398,7 +398,7 @@ export const GroupEditPanel: React.FC<IGroupEditPanel> = ({
     return renderField("tag_ids", title, tagsControl());
   }
 
-  function onSetContainingGroupEntries(input: IContainingGroupEntry[]) {
+  function onSetContainingGroupEntries(input: IRelatedGroupEntry[]) {
     setContainingGroups(input.map((m) => m.group));
 
     const newGroups = input.map((m) => ({
