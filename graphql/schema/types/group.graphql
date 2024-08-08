@@ -82,6 +82,11 @@ input GroupUpdateInput {
   back_image: String
 }
 
+input BulkUpdateGroupDescriptionsInput {
+  groups: [GroupDescriptionInput!]!
+  mode: BulkUpdateIdMode!
+}
+
 input BulkGroupUpdateInput {
   clientMutationId: String
   ids: [ID!]
@@ -92,8 +97,8 @@ input BulkGroupUpdateInput {
   urls: BulkUpdateStrings
   tag_ids: BulkUpdateIds
 
-  containing_group_ids: BulkUpdateIds
-  sub_group_ids: BulkUpdateIds
+  containing_groups: BulkUpdateGroupDescriptionsInput
+  sub_groups: BulkUpdateGroupDescriptionsInput
 }
 
 input GroupDestroyInput {
@@ -117,4 +122,16 @@ input ReorderSubGroupsInput {
 type FindGroupsResultType {
   count: Int!
   groups: [Group!]!
+}
+
+input GroupSubGroupAddInput {
+  containing_group_id: ID!
+  sub_groups: [GroupDescriptionInput!]!
+  "The index at which to insert the sub groups. If not provided, the sub groups will be appended to the end"
+  insert_index: Int
+}
+
+input GroupSubGroupRemoveInput {
+  containing_group_id: ID!
+  sub_group_ids: [ID!]!
 }

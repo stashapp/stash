@@ -1612,6 +1612,229 @@ func TestGroupReorderSubGroups(t *testing.T) {
 	}
 }
 
+func TestGroupAddSubGroups(t *testing.T) {
+	tests := []struct {
+		name                string
+		existingSubGroupLen int
+		insertGroupsLen     int
+		insertLoc           int
+		// order of elements, using original indexes
+		expectedIdxs []int
+	}{
+		{
+			"append single",
+			4,
+			1,
+			999,
+			[]int{0, 1, 2, 3, 4},
+		},
+		{
+			"insert single middle",
+			4,
+			1,
+			2,
+			[]int{0, 1, 4, 2, 3},
+		},
+		{
+			"insert single start",
+			4,
+			1,
+			0,
+			[]int{4, 0, 1, 2, 3},
+		},
+		{
+			"append multiple",
+			4,
+			2,
+			999,
+			[]int{0, 1, 2, 3, 4, 5},
+		},
+		{
+			"insert multiple middle",
+			4,
+			2,
+			2,
+			[]int{0, 1, 4, 5, 2, 3},
+		},
+		{
+			"insert multiple start",
+			4,
+			2,
+			0,
+			[]int{4, 5, 0, 1, 2, 3},
+		},
+	}
+
+	qb := db.Group
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			// create the group
+			group := models.Group{
+				Name: "TestGroupReorderSubGroups",
+			}
+
+			if err := qb.Create(ctx, &group); err != nil {
+				t.Errorf("GroupStore.Create() error = %v", err)
+				return
+			}
+
+			// and sub-groups
+			idxToId := make([]int, tt.existingSubGroupLen+tt.insertGroupsLen)
+
+			for i := 0; i < tt.existingSubGroupLen; i++ {
+				subGroup := models.Group{
+					Name: fmt.Sprintf("Existing SubGroup %d", i),
+					ContainingGroups: models.NewRelatedGroupDescriptions([]models.GroupIDDescription{
+						{GroupID: group.ID},
+					}),
+				}
+
+				if err := qb.Create(ctx, &subGroup); err != nil {
+					t.Errorf("GroupStore.Create() error = %v", err)
+					return
+				}
+
+				idxToId[i] = subGroup.ID
+			}
+
+			// and sub-groups to insert
+			for i := 0; i < tt.insertGroupsLen; i++ {
+				subGroup := models.Group{
+					Name: fmt.Sprintf("Inserted SubGroup %d", i),
+				}
+
+				if err := qb.Create(ctx, &subGroup); err != nil {
+					t.Errorf("GroupStore.Create() error = %v", err)
+					return
+				}
+
+				idxToId[i+tt.existingSubGroupLen] = subGroup.ID
+			}
+
+			// convert ids to description
+			idDescriptions := make([]models.GroupIDDescription, tt.insertGroupsLen)
+			for i, id := range idxToId[tt.existingSubGroupLen:] {
+				idDescriptions[i] = models.GroupIDDescription{GroupID: id}
+			}
+
+			// add
+			if err := qb.AddSubGroups(ctx, group.ID, idDescriptions, &tt.insertLoc); err != nil {
+				t.Errorf("GroupStore.AddSubGroups() error = %v", err)
+				return
+			}
+
+			// validate the new order
+			gd, err := qb.GetSubGroupDescriptions(ctx, group.ID)
+			if err != nil {
+				t.Errorf("GroupStore.GetSubGroupDescriptions() error = %v", err)
+				return
+			}
+
+			// get ids of groups
+			newIDs := sliceutil.Map(gd, func(gd models.GroupIDDescription) int { return gd.GroupID })
+			newIdxs := sliceutil.Map(newIDs, func(id int) int { return sliceutil.Index(idxToId, id) })
+
+			assert.ElementsMatch(t, tt.expectedIdxs, newIdxs)
+		})
+	}
+}
+
+func TestGroupRemoveSubGroups(t *testing.T) {
+	tests := []struct {
+		name        string
+		subGroupLen int
+		removeIdxs  []int
+		// order of elements, using original indexes
+		expectedIdxs []int
+	}{
+		{
+			"remove last",
+			4,
+			[]int{3},
+			[]int{0, 1, 2},
+		},
+		{
+			"remove first",
+			4,
+			[]int{0},
+			[]int{1, 2, 3},
+		},
+		{
+			"remove middle",
+			4,
+			[]int{2},
+			[]int{0, 1, 3},
+		},
+		{
+			"remove multiple",
+			4,
+			[]int{1, 3},
+			[]int{0, 2},
+		},
+		{
+			"remove all",
+			4,
+			[]int{0, 1, 2, 3},
+			[]int{},
+		},
+	}
+
+	qb := db.Group
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			// create the group
+			group := models.Group{
+				Name: "TestGroupReorderSubGroups",
+			}
+
+			if err := qb.Create(ctx, &group); err != nil {
+				t.Errorf("GroupStore.Create() error = %v", err)
+				return
+			}
+
+			// and sub-groups
+			idxToId := make([]int, tt.subGroupLen)
+
+			for i := 0; i < tt.subGroupLen; i++ {
+				subGroup := models.Group{
+					Name: fmt.Sprintf("Existing SubGroup %d", i),
+					ContainingGroups: models.NewRelatedGroupDescriptions([]models.GroupIDDescription{
+						{GroupID: group.ID},
+					}),
+				}
+
+				if err := qb.Create(ctx, &subGroup); err != nil {
+					t.Errorf("GroupStore.Create() error = %v", err)
+					return
+				}
+
+				idxToId[i] = subGroup.ID
+			}
+
+			idsToRemove := indexesToIDs(idxToId, tt.removeIdxs)
+			if err := qb.RemoveSubGroups(ctx, group.ID, idsToRemove); err != nil {
+				t.Errorf("GroupStore.RemoveSubGroups() error = %v", err)
+				return
+			}
+
+			// validate the new order
+			gd, err := qb.GetSubGroupDescriptions(ctx, group.ID)
+			if err != nil {
+				t.Errorf("GroupStore.GetSubGroupDescriptions() error = %v", err)
+				return
+			}
+
+			// get ids of groups
+			newIDs := sliceutil.Map(gd, func(gd models.GroupIDDescription) int { return gd.GroupID })
+			newIdxs := sliceutil.Map(newIDs, func(id int) int { return sliceutil.Index(idxToId, id) })
+
+			assert.ElementsMatch(t, tt.expectedIdxs, newIdxs)
+		})
+	}
+}
+
 // TODO Update
 // TODO Destroy - ensure image is destroyed
 // TODO Find

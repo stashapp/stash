@@ -231,13 +231,13 @@ func groupPartialFromBulkGroupUpdateInput(translator changesetTranslator, input 
 		return
 	}
 
-	updatedGroup.ContainingGroups, err = translator.updateGroupIDDescriptionsBulk(input.ContainingGroupIds, "containing_group_ids")
+	updatedGroup.ContainingGroups, err = translator.updateGroupIDDescriptionsBulk(input.ContainingGroups, "containing_groups")
 	if err != nil {
 		err = fmt.Errorf("converting containing group ids: %w", err)
 		return
 	}
 
-	updatedGroup.SubGroups, err = translator.updateGroupIDDescriptionsBulk(input.SubGroupIds, "sub_group_ids")
+	updatedGroup.SubGroups, err = translator.updateGroupIDDescriptionsBulk(input.SubGroups, "sub_groups")
 	if err != nil {
 		err = fmt.Errorf("converting containing group ids: %w", err)
 		return
@@ -340,6 +340,46 @@ func (r *mutationResolver) GroupsDestroy(ctx context.Context, groupIDs []string)
 		// for backwards compatibility - run both movie and group hooks
 		r.hookExecutor.ExecutePostHooks(ctx, id, hook.GroupDestroyPost, groupIDs, nil)
 		r.hookExecutor.ExecutePostHooks(ctx, id, hook.MovieDestroyPost, groupIDs, nil)
+	}
+
+	return true, nil
+}
+
+func (r *mutationResolver) AddGroupSubGroups(ctx context.Context, input GroupSubGroupAddInput) (bool, error) {
+	groupID, err := strconv.Atoi(input.ContainingGroupID)
+	if err != nil {
+		return false, fmt.Errorf("converting group id: %w", err)
+	}
+
+	subGroups, err := groupsDescriptionsFromGroupInput(input.SubGroups)
+	if err != nil {
+		return false, fmt.Errorf("converting sub group ids: %w", err)
+	}
+
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		return r.groupService.AddSubGroups(ctx, groupID, subGroups, input.InsertIndex)
+	}); err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
+
+func (r *mutationResolver) RemoveGroupSubGroups(ctx context.Context, input GroupSubGroupRemoveInput) (bool, error) {
+	groupID, err := strconv.Atoi(input.ContainingGroupID)
+	if err != nil {
+		return false, fmt.Errorf("converting group id: %w", err)
+	}
+
+	subGroupIDs, err := stringslice.StringSliceToIntSlice(input.SubGroupIds)
+	if err != nil {
+		return false, fmt.Errorf("converting sub group ids: %w", err)
+	}
+
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		return r.groupService.RemoveSubGroups(ctx, groupID, subGroupIDs)
+	}); err != nil {
+		return false, err
 	}
 
 	return true, nil

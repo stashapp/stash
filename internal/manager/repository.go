@@ -36,5 +36,7 @@ type GroupService interface {
 	Create(ctx context.Context, group *models.Group, frontimageData []byte, backimageData []byte) error
 	UpdatePartial(ctx context.Context, id int, updatedGroup models.GroupPartial, frontImage group.ImageInput, backImage group.ImageInput) (*models.Group, error)
 
+	AddSubGroups(ctx context.Context, groupID int, subGroups []models.GroupIDDescription, insertIndex *int) error
+	RemoveSubGroups(ctx context.Context, groupID int, subGroupIDs []int) error
 	ReorderSubGroups(ctx context.Context, groupID int, subGroupIDs []int, insertPointID int, insertAfter bool) error
 }

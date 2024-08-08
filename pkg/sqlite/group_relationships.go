@@ -172,9 +172,13 @@ func (s *groupRelationshipStore) modifyRelationships(ctx context.Context, id int
 	case models.RelationshipUpdateModeSet:
 		return s.replaceJoins(ctx, id, *v, idIsContaining)
 	case models.RelationshipUpdateModeAdd:
-		return s.addJoins(ctx, id, *v, idIsContaining)
+		return s.addJoins(ctx, id, v.Groups, idIsContaining)
 	case models.RelationshipUpdateModeRemove:
-		return s.destroyJoins(ctx, id, *v, idIsContaining)
+		toRemove := make([]int, len(v.Groups))
+		for i, vv := range v.Groups {
+			toRemove[i] = vv.GroupID
+		}
+		return s.destroyJoins(ctx, id, toRemove, idIsContaining)
 	}
 
 	return nil
@@ -190,7 +194,7 @@ func (s *groupRelationshipStore) modifySubRelationships(ctx context.Context, id 
 	return s.modifyRelationships(ctx, id, v, idIsContaining)
 }
 
-func (s *groupRelationshipStore) addJoins(ctx context.Context, id int, v models.UpdateGroupDescriptions, idIsContaining bool) error {
+func (s *groupRelationshipStore) addJoins(ctx context.Context, id int, groups []models.GroupIDDescription, idIsContaining bool) error {
 	// if we're adding to a containing group, get the max order index first
 	var maxOrderIndex int
 	if idIsContaining {
@@ -201,7 +205,7 @@ func (s *groupRelationshipStore) addJoins(ctx context.Context, id int, v models.
 		}
 	}
 
-	for i, vv := range v.Groups {
+	for i, vv := range groups {
 		r := groupRelationshipRow{
 			Description: zero.StringFrom(vv.Description),
 		}
@@ -257,12 +261,7 @@ func (s *groupRelationshipStore) replaceJoins(ctx context.Context, id int, v mod
 	return s.createRelationships(ctx, id, rgd, idIsContaining)
 }
 
-func (s *groupRelationshipStore) destroyJoins(ctx context.Context, id int, v models.UpdateGroupDescriptions, idIsContaining bool) error {
-	ids := make([]int, len(v.Groups))
-	for i, vv := range v.Groups {
-		ids[i] = vv.GroupID
-	}
-
+func (s *groupRelationshipStore) destroyJoins(ctx context.Context, id int, toRemove []int, idIsContaining bool) error {
 	table := s.table.table
 	idColumn := table.Col("containing_id")
 	fkColumn := table.Col("sub_id")
@@ -271,7 +270,7 @@ func (s *groupRelationshipStore) destroyJoins(ctx context.Context, id int, v mod
 		fkColumn = table.Col("containing_id")
 	}
 
-	q := dialect.Delete(table).Where(idColumn.Eq(id), fkColumn.In(ids))
+	q := dialect.Delete(table).Where(idColumn.Eq(id), fkColumn.In(toRemove))
 
 	if _, err := exec(ctx, q); err != nil {
 		return fmt.Errorf("destroying %s: %w", table.GetTable(), err)
@@ -299,6 +298,26 @@ func (s *groupRelationshipStore) getOrderIndexOfSubGroup(ctx context.Context, co
 	}
 
 	return int(orderIndex.Int64), nil
+}
+
+func (s *groupRelationshipStore) getGroupIDAtOrderIndex(ctx context.Context, containingGroupID int, orderIndex int) (*int, error) {
+	table := s.table.table
+	q := dialect.Select(table.Col("sub_id")).From(table).Where(
+		table.Col("containing_id").Eq(containingGroupID),
+		table.Col("order_index").Eq(orderIndex),
+	)
+
+	var ret null.Int
+	if err := querySimple(ctx, q, &ret); err != nil {
+		return nil, fmt.Errorf("getting sub id for order index: %w", err)
+	}
+
+	if !ret.Valid {
+		return nil, nil
+	}
+
+	intRet := int(ret.Int64)
+	return &intRet, nil
 }
 
 func (s *groupRelationshipStore) getOrderIndexAfterOrderIndex(ctx context.Context, containingGroupID int, orderIndex int) (int, error) {
@@ -386,6 +405,45 @@ func (s *groupRelationshipStore) reorderSubGroup(ctx context.Context, groupID in
 	}
 
 	return nil
+}
+
+func (s *groupRelationshipStore) AddSubGroups(ctx context.Context, groupID int, subGroups []models.GroupIDDescription, insertIndex *int) error {
+	const idIsContaining = true
+
+	if err := s.addJoins(ctx, groupID, subGroups, idIsContaining); err != nil {
+		return err
+	}
+
+	ids := make([]int, len(subGroups))
+	for i, v := range subGroups {
+		ids[i] = v.GroupID
+	}
+
+	if insertIndex != nil {
+		// get the id of the sub-group at the insert index
+		insertPointID, err := s.getGroupIDAtOrderIndex(ctx, groupID, *insertIndex)
+		if err != nil {
+			return err
+		}
+
+		if insertPointID == nil {
+			// if the insert index is out of bounds, just assume adding to the end
+			return nil
+		}
+
+		// reorder the sub-groups
+		const insertAfter = false
+		if err := s.ReorderSubGroups(ctx, groupID, ids, *insertPointID, insertAfter); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (s *groupRelationshipStore) RemoveSubGroups(ctx context.Context, groupID int, subGroupIDs []int) error {
+	const idIsContaining = true
+	return s.destroyJoins(ctx, groupID, subGroupIDs, idIsContaining)
 }
 
 func (s *groupRelationshipStore) ReorderSubGroups(ctx context.Context, groupID int, subGroupIDs []int, insertPointID int, insertAfter bool) error {

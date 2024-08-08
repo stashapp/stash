@@ -480,19 +480,14 @@ func (t changesetTranslator) updateGroupIDDescriptions(value []*GroupDescription
 	}, nil
 }
 
-func (t changesetTranslator) updateGroupIDDescriptionsBulk(value *BulkUpdateIds, field string) (*models.UpdateGroupDescriptions, error) {
+func (t changesetTranslator) updateGroupIDDescriptionsBulk(value *BulkUpdateGroupDescriptionsInput, field string) (*models.UpdateGroupDescriptions, error) {
 	if !t.hasField(field) || value == nil {
 		return nil, nil
 	}
 
-	ids, err := stringslice.StringSliceToIntSlice(value.Ids)
+	groups, err := groupsDescriptionsFromGroupInput(value.Groups)
 	if err != nil {
-		return nil, fmt.Errorf("converting ids [%v]: %w", value.Ids, err)
-	}
-
-	groups := make([]models.GroupIDDescription, len(ids))
-	for i, id := range ids {
-		groups[i] = models.GroupIDDescription{GroupID: id}
+		return nil, err
 	}
 
 	return &models.UpdateGroupDescriptions{

@@ -15,11 +15,21 @@ type CreatorUpdater interface {
 	models.SubGroupLoader
 
 	AnscestorFinder
+	SubGroupAdder
+	SubGroupRemover
 	SubGroupReorderer
 }
 
 type AnscestorFinder interface {
 	FindInAncestors(ctx context.Context, ascestorIDs []int, ids []int) ([]int, error)
+}
+
+type SubGroupAdder interface {
+	AddSubGroups(ctx context.Context, groupID int, subGroups []models.GroupIDDescription, insertIndex *int) error
+}
+
+type SubGroupRemover interface {
+	RemoveSubGroups(ctx context.Context, groupID int, subGroupIDs []int) error
 }
 
 type SubGroupReorderer interface {
