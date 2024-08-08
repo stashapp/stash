@@ -56,13 +56,13 @@ const groupSelectSort = PatchFunction(
   sortGroupsByRelevance
 );
 
-const _GroupSelect: React.FC<
+export const GroupSelect: React.FC<
   IFilterProps &
     IFilterValueProps<Group> & {
       hoverPlacement?: Placement;
       excludeIds?: string[];
     }
-> = (props) => {
+> = PatchComponent("GroupSelect", (props) => {
   const [createGroup] = useGroupCreate();
 
   const { configuration } = React.useContext(ConfigurationContext);
@@ -255,9 +255,7 @@ const _GroupSelect: React.FC<
       closeMenuOnSelect={!props.isMulti}
     />
   );
-};
-
-export const GroupSelect = PatchComponent("GroupSelect", _GroupSelect);
+});
 
 const _GroupIDSelect: React.FC<IFilterProps & IFilterIDProps<Group>> = (
   props
