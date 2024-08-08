@@ -73,11 +73,20 @@ export const EditGroupsDialog: React.FC<IListOperationProps> = (
     groupInput.rating100 = getAggregateInputValue(rating100, aggregateRating);
     groupInput.studio_id = getAggregateInputValue(studioId, aggregateStudioId);
     groupInput.tag_ids = getAggregateInputIDs(tagMode, tagIds, aggregateTagIds);
-    groupInput.containing_group_ids = getAggregateInputIDs(
+    const aggContainingGroupIds = getAggregateInputIDs(
       containingGroupsMode,
       containingGroupIds,
       aggregateGroupIds
     );
+
+    if (aggContainingGroupIds) {
+      groupInput.containing_groups = {
+        groups: (aggContainingGroupIds.ids ?? []).map((id) => ({
+          group_id: id,
+        })),
+        mode: aggContainingGroupIds?.mode,
+      };
+    }
 
     return groupInput;
   }
