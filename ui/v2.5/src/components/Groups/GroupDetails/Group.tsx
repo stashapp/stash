@@ -39,7 +39,7 @@ import {
   TabTitleCounter,
   useTabKey,
 } from "src/components/Shared/DetailsPage/Tabs";
-import { Form, Tab, Tabs } from "react-bootstrap";
+import { Tab, Tabs } from "react-bootstrap";
 import { GroupSubGroupsPanel } from "./GroupSubGroupsPanel";
 
 const validTabs = ["default", "scenes", "subgroups"] as const;
@@ -53,12 +53,8 @@ const GroupTabs: React.FC<{
   tabKey?: TabKey;
   group: GQL.GroupDataFragment;
   abbreviateCounter: boolean;
-  showAllCounts?: boolean;
-}> = ({ tabKey, group, abbreviateCounter, showAllCounts = false }) => {
-  const [showAllDetails, setShowAllDetails] = useState<boolean>(showAllCounts);
-  const sceneCount =
-    (showAllDetails ? group.scene_count_all : group.scene_count) ?? 0;
-  const groupCount = group.sub_group_count ?? 0;
+}> = ({ tabKey, group, abbreviateCounter }) => {
+  const { scene_count: sceneCount, sub_group_count: groupCount } = group;
 
   const populatedDefaultTab = useMemo(() => {
     if (sceneCount == 0 && groupCount !== 0) {
@@ -74,21 +70,6 @@ const GroupTabs: React.FC<{
     defaultTabKey: populatedDefaultTab,
     baseURL: `/groups/${group.id}`,
   });
-
-  const contentSwitch = useMemo(
-    () => (
-      <div className="item-list-header">
-        <Form.Check
-          id="showSubContent"
-          checked={showAllDetails}
-          onChange={() => setShowAllDetails(!showAllDetails)}
-          type="switch"
-          label={<FormattedMessage id="include_sub_group_content" />}
-        />
-      </div>
-    ),
-    [showAllDetails]
-  );
 
   return (
     <Tabs
@@ -108,12 +89,7 @@ const GroupTabs: React.FC<{
           />
         }
       >
-        {contentSwitch}
-        <GroupScenesPanel
-          active={tabKey === "scenes"}
-          group={group}
-          showSubGroupContent={showAllDetails}
-        />
+        <GroupScenesPanel active={tabKey === "scenes"} group={group} />
       </Tab>
       <Tab
         eventKey="subgroups"
@@ -153,7 +129,6 @@ const GroupPage: React.FC<IProps> = ({ group, tabKey }) => {
   const compactExpandedDetails = uiConfig?.compactExpandedDetails ?? false;
   const showAllDetails = uiConfig?.showAllDetails ?? true;
   const abbreviateCounter = uiConfig?.abbreviateCounters ?? false;
-  const showAllCounts = uiConfig?.showSubGroupContent ?? false;
 
   const [collapsed, setCollapsed] = useState<boolean>(!showAllDetails);
   const loadStickyHeader = useLoadStickyHeader();
@@ -432,7 +407,6 @@ const GroupPage: React.FC<IProps> = ({ group, tabKey }) => {
                 group={group}
                 tabKey={tabKey}
                 abbreviateCounter={abbreviateCounter}
-                showAllCounts={showAllCounts}
               />
             )}
           </div>

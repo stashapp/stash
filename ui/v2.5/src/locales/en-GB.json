@@ -650,15 +650,6 @@
         "description": "Time offset in milliseconds for interactive scripts playback.",
         "heading": "Funscript Offset (ms)"
       },
-      "group_panel": {
-        "heading": "Group View",
-        "options": {
-          "show_sub_group_content": {
-            "description": "In the group view, display content from the sub-groups as well",
-            "heading": "Display sub-groups content"
-          }
-        }
-      },
       "handy_connection": {
         "connect": "Connect",
         "server_offset": {
