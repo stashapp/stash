@@ -39,7 +39,7 @@
         "edit_entity": "编辑{entityType}",
         "export": "导出",
         "export_all": "导出所有…",
-        "find": "搜索",
+        "find": "查找",
         "finish": "完成",
         "from_file": "来自文件…",
         "from_url": "来自网址…",
@@ -129,7 +129,7 @@
         "enable": "启用",
         "clear_date_data": "清除日期数据",
         "choose_date": "选择一个日期",
-        "add_play": "添加播放",
+        "add_play": "添加播放记录",
         "add_manual_date": "添加手动日期",
         "copy_to_clipboard": "复制到剪切板",
         "remove_date": "去除日期",
@@ -243,7 +243,7 @@
         "dlna": {
             "allow_temp_ip": "允许 {tempIP}",
             "allowed_ip_addresses": "已经允许的 IP 地址",
-            "allowed_ip_temporarily": "暂时允许 IP 地址",
+            "allowed_ip_temporarily": "暂时允许的 IP 地址",
             "default_ip_whitelist": "默认 IP 白名单",
             "default_ip_whitelist_desc": "默认IP地址允许连接到DLNA，使用 {wildcard} 以允许所有IP地址连接。",
             "disabled_dlna_temporarily": "暂时禁止 DLNA",
@@ -431,7 +431,7 @@
             "installed_scrapers": "已安装刮削器"
         },
         "stashbox": {
-            "add_instance": "新增 Stash-Box 入口",
+            "add_instance": "新增 Stash-Box 实例",
             "api_key": "API 密钥",
             "description": "Stash-box 根据指纹和文件名自动标记短片和演员。\n入口和 API 密钥可以在您的帐户页面上的 stash-box 实例中找到。 添加多个实例时必须设置名称。",
             "endpoint": "入口",
@@ -471,7 +471,7 @@
             "generate_phashes_during_scan": "生成感知识别码",
             "generate_phashes_during_scan_tooltip": "为了防止重复和短片甄别.",
             "generate_previews_during_scan": "生成动态图片预览",
-            "generate_previews_during_scan_tooltip": "生成webp动画预览，仅适用于预览类型设为动图的情况. 浏览时将更少CPU占用，但生成的是额外的且更大的文件。",
+            "generate_previews_during_scan_tooltip": "生成webp动画预览，仅适用于短片/标记墙预览类型设为动图的情况. 浏览时将更少CPU占用，但生成的是额外的且更大的文件。",
             "generate_sprites_during_scan": "生成时间轴预览小图",
             "generate_thumbnails_during_scan": "生成图片的缩略图",
             "generate_video_covers_during_scan": "生成短片封面",
@@ -795,11 +795,11 @@
         "galleries": "{count, plural, one {图库} other {图库}}",
         "images": "{count, plural, one {图片} other {图片}}",
         "markers": "{count, plural, one {标记} other {标记}}",
-        "movies": "{count, plural, one {电影} other {电影}}",
         "performers": "{count, plural, one {演员} other {演员}}",
         "scenes": "{count, plural, one {短片} other {短片}}",
         "studios": "{count, plural, one {工作室} other {工作室}}",
-        "tags": "{count, plural, one {标签} other {标签}}"
+        "tags": "{count, plural, one {标签} other {标签}}",
+        "groups": "{count, plural, one {群组} other {群组}}"
     },
     "country": "国家",
     "cover_image": "封面图片",
@@ -1108,9 +1108,6 @@
     },
     "megabits_per_second": "{value} Mbps",
     "metadata": "元数据",
-    "movie": "电影",
-    "movie_scene_number": "短片编码",
-    "movies": "电影",
     "name": "名称",
     "new": "新增",
     "none": "空",
@@ -1138,7 +1135,7 @@
     "performer_image": "演员图片",
     "performer_tagger": {
         "add_new_performers": "添加演员",
-        "any_names_entered_will_be_queried": "任何输入的名字将会从远程的Stash-Box端点查询并且加入（如果找到）。只有完全符合的名字才会视为匹配。",
+        "any_names_entered_will_be_queried": "任何输入的名字将会从远程的Stash-Box实例查询并且加入（如果找到）。只有完全符合的名字才会视为匹配。",
         "batch_add_performers": "批量添加演员",
         "batch_update_performers": "批量更新演员",
         "config": {
@@ -1159,7 +1156,7 @@
         "performer_names_separated_by_comma": "演员名（逗号分隔）",
         "performer_selection": "选择演员",
         "performer_successfully_tagged": "演员成功标签：",
-        "query_all_performers_in_the_database": "查找所有在数据库的演员",
+        "query_all_performers_in_the_database": "查找所有在此数据库的演员",
         "refresh_tagged_performers": "更新已标签的演员",
         "refreshing_will_update_the_data": "重新载入会更新所有已从stash-box端点标签的演员的数据。",
         "status_tagging_job_queued": "状态：标签工作入列",
@@ -1261,7 +1258,7 @@
             "where_can_stash_store_its_generated_content": "哪里可以存放Stash产生的资料？",
             "where_can_stash_store_its_generated_content_description": "为了可以提供缩图，预览和浏览图，Stash生成图片和视频。同时也包括将不支持的文件转码后的视频。默认情况下，Stash会建立一个<code>generated</code>文件夹在含有你配置文件的目录中。如果你要修改生成媒体的地方，请输入一个绝对，或者相对(对于当前工作目录)的路径。如果此目录不存在，Stash会自动建立它。",
             "where_is_your_porn_located": "你的收藏在哪里？",
-            "where_is_your_porn_located_description": "加入含有你收藏的视频和图片的目录。Stash会在扫描时使用这些目录去寻找视频和图片。",
+            "where_is_your_porn_located_description": "添加含有你收藏的视频和图片的目录。Stash会在扫描时使用这些目录去寻找视频和图片。",
             "path_to_blobs_directory_empty_for_default": "blobs目录的路径（默认为空）",
             "store_blobs_in_database": "将 blobs存储到数据库"
         },
@@ -1397,7 +1394,7 @@
         "to_use_the_studio_tagger": "使用工作室标记器需要配置一个stash-box实例。",
         "untagged_studios": "未设置标签的工作室",
         "number_of_studios_will_be_processed": "{studio_count} 个工作室将被修改",
-        "query_all_studios_in_the_database": "数据库中所有工作室",
+        "query_all_studios_in_the_database": "此数据库中所有工作室",
         "status_tagging_studios": "状态：正在给工作室设置标签",
         "refresh_tagged_studios": "刷新已标记的工作室",
         "studio_already_tagged": "已标记工作室",
@@ -1469,7 +1466,10 @@
         "websocket_connection_failed": "无法建立websocket连接：有关详细信息，请参阅浏览器控制台"
     },
     "o_count": "高潮次数",
-    "movie_count": "影片数量",
     "studio_tags": "工作室标签",
-    "studio_count": "工作室计数"
+    "studio_count": "工作室计数",
+    "group": "群组",
+    "group_count": "群组总计",
+    "group_scene_number": "短片序号",
+    "groups": "群组"
 }

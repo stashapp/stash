@@ -126,7 +126,10 @@
         "assign_stashid_to_parent_studio": "Määra eksisteerivale vanemstuudiole Stash ID ja uuenda metaandmeid",
         "create_parent_studio": "Loo vanemstuudio",
         "encoding_image": "Pildi kodeerimine…",
-        "optimise_database": "Optimiseeri Andmebaasi"
+        "optimise_database": "Optimiseeri Andmebaasi",
+        "clean_generated": "Puhasta genereeritud faile",
+        "choose_date": "Vali kuupäev",
+        "copy_to_clipboard": "Kopeeri lõikelauale"
     },
     "actions_name": "Tegevused",
     "age": "Vanus",
@@ -244,7 +247,9 @@
             "successfully_cancelled_temporary_behaviour": "Edukalt tühistatud ajutine käitumine",
             "until_restart": "restardini",
             "video_sort_order": "Videote Sorteerimise Vaikeväärtus",
-            "video_sort_order_desc": "Viis, kuidas vaikimisi videoid sorteerida."
+            "video_sort_order_desc": "Viis, kuidas vaikimisi videoid sorteerida.",
+            "server_port": "Serveri port",
+            "server_port_desc": "Port DLNA serveri jaoks. Vajab peale muutmist DLNA taaskäivitust."
         },
         "general": {
             "auth": {
@@ -756,7 +761,6 @@
         "galleries": "{count, plural, one {Galerii} other {Galleriid}}",
         "images": "{count, plural, one {Pilt} other {Pilti}}",
         "markers": "{count, plural, one {Marker} other {Markerit}}",
-        "movies": "{count, plural, one {Film} other {Filmi}}",
         "performers": "{count, plural, one {Näitleja} other {Näitlejat}}",
         "scenes": "{count, plural, one {Stseen} other {Stseeni}}",
         "studios": "{count, plural, one {Stuudio} other {Stuudiot}}",
@@ -1062,9 +1066,6 @@
     },
     "megabits_per_second": "{value} mbps",
     "metadata": "Metaandmed",
-    "movie": "Film",
-    "movie_scene_number": "Filmi Stseeninumber",
-    "movies": "Filmid",
     "name": "Nimi",
     "new": "Uus",
     "none": "Puudub",

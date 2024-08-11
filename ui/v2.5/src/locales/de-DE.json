@@ -131,7 +131,11 @@
         "create_parent_studio": "Übergeordnetes Studio erstellen",
         "add_manual_date": "Manuelles Datum hinzufügen",
         "copy_to_clipboard": "In die Zwischenablage kopieren",
-        "view_history": "Verlauf anzeigen"
+        "view_history": "Verlauf anzeigen",
+        "add_o": "O hinzufügen",
+        "add_play": "abspielen hinzufügen",
+        "clear_date_data": "Datum-Eintrag löschen",
+        "assign_stashid_to_parent_studio": "Stash ID existierendem Elternstudio hinzufügen und Metadaten aktualisieren"
     },
     "actions_name": "Aktionen",
     "age": "Alter",
@@ -179,7 +183,9 @@
             "set_tag_label": "Tags anhängen",
             "show_male_desc": "Auswahl ob männliche Darsteller der Szene hinzugefügt werden können.",
             "show_male_label": "Männliche Darsteller anzeigen",
-            "source": "Quelle"
+            "source": "Quelle",
+            "mark_organized_label": "Beim speichern als organisiert markieren",
+            "mark_organized_desc": "Markiere die Szene nach dem klicken auf Speichern als organisiert."
         },
         "noun_query": "Anfrage",
         "results": {
@@ -252,7 +258,9 @@
             "successfully_cancelled_temporary_behaviour": "Erfolgreich temporäres Verhalten aufgehoben",
             "until_restart": "bis Neustart",
             "video_sort_order": "Standard-Videosortierreihenfolge",
-            "video_sort_order_desc": "Reihenfolge, in der Videos standardmäßig sortiert werden."
+            "video_sort_order_desc": "Reihenfolge, in der Videos standardmäßig sortiert werden.",
+            "server_port": "Server Port",
+            "server_port_desc": "Port, auf dem der DLNA Server laufen soll. Benötigt nach einer Änderung einen DLNA Neustart."
         },
         "general": {
             "auth": {
@@ -334,7 +342,16 @@
                     }
                 },
                 "download_ffmpeg": {
-                    "heading": "FFmpeg herunterladen"
+                    "heading": "FFmpeg herunterladen",
+                    "description": "Lädt FFmpeg in das Konfigurationsverzeichnis herunter und löscht die Pfade ffmpeg und ffprobe, um sie aus dem Konfigurationsverzeichnis aufzulösen."
+                },
+                "ffmpeg_path": {
+                    "heading": "FFmpeg.exe Pfad",
+                    "description": "Pfad zu ffmpeg.exe (nicht nur der Ordner). Wenn nicht angegeben wird ffmpeg.exe aus der Umgebungsvariable $PATH, dem Konfigurationsverzeichnis oder aus $HOME/.stash aufgelöst"
+                },
+                "ffprobe_path": {
+                    "description": "Pfad zu ffprobe.exe (nicht nur der Ordner). Wenn nicht angegeben wird ffprobe.exe aus der Umgebungsvariable $PATH, dem Konfigurationsverzeichnis oder aus $HOME/.stash aufgelöst",
+                    "heading": "FFprobe.exe Pfad"
                 }
             },
             "funscript_heatmap_draw_range": "Reichweite in generierte Heatmaps einbeziehen",
@@ -380,7 +397,11 @@
             "sqlite_location": "Dateispeicherort für die SQLite-Datenbank (erfordert Neustart). ACHTUNG: Ein Speicherort auf einem anderen System als dem Server auf dem Stash läuft (z.B. Netzwerkspeicher) wird nicht unterstützt!",
             "video_ext_desc": "Durch Kommas getrennte Liste von Dateierweiterungen, die als Videos identifiziert werden.",
             "video_ext_head": "Videodateiformate",
-            "video_head": "Video"
+            "video_head": "Video",
+            "plugins_path": {
+                "heading": "Plugins Pfad",
+                "description": "Speicherort der Plugin-Konfigurationsdateien"
+            }
         },
         "library": {
             "exclusions": "Ausnahmen",
@@ -392,7 +413,9 @@
         },
         "plugins": {
             "hooks": "Einbindungen",
-            "triggers_on": "Auslösen bei"
+            "triggers_on": "Auslösen bei",
+            "installed_plugins": "Installierte Plugins",
+            "available_plugins": "Verfügbare Plugins"
         },
         "scraping": {
             "entity_metadata": "{entityType} Metadaten",
@@ -403,7 +426,9 @@
             "scrapers": "Scraper",
             "search_by_name": "Suche nach Name",
             "supported_types": "Unterstützte Typen",
-            "supported_urls": "Unterstützte Adressen"
+            "supported_urls": "Unterstützte Adressen",
+            "available_scrapers": "Verfügbare Scraper",
+            "installed_scrapers": "Installierte Scraper"
         },
         "stashbox": {
             "add_instance": "Stash-Box-Instanz hinzufügen",
@@ -471,7 +496,12 @@
                 "source": "Quelle",
                 "source_options": "{source} Optionen",
                 "sources": "Quellen",
-                "strategy": "Strategie"
+                "strategy": "Strategie",
+                "skip_multiple_matches": "Überspringe Treffer, die mehr als ein Ergebnis haben",
+                "skip_multiple_matches_tooltip": "Wenn dies nicht aktiviert ist und mehr als ein Ergebnis zurückgegeben wird, wird ein passendes zufällig ausgewählt",
+                "skip_single_name_performers": "Darsteller mit nur einem - nicht eindeutigem - Namen überspringen",
+                "skip_single_name_performers_tooltip": "Wenn dies nicht aktiviert ist, werden Darsteller, die oft generisch sind, wie Samantha oder Olga, abgeglichen",
+                "tag_skipped_matches": "Übersprungenes Tag passt zu"
             },
             "import_from_exported_json": "Import aus exportiertem JSON im Metadatenverzeichnis. Löscht die vorhandene Datenbank.",
             "incremental_import": "Inkrementeller Import aus einer Export-ZIP-Datei.",
@@ -495,7 +525,19 @@
                 "scanning_paths": "Scannen der folgenden Pfade"
             },
             "scan_for_content_desc": "Suchen nach neuen Inhalten und füge sie der Datenbank hinzu.",
-            "set_name_date_details_from_metadata_if_present": "Name, Datum und Details aus eingebetteten Metadaten festlegen"
+            "set_name_date_details_from_metadata_if_present": "Name, Datum und Details aus eingebetteten Metadaten festlegen",
+            "clean_generated": {
+                "blob_files": "Blob Dateien",
+                "description": "Entfernt generierte Dateien ohne korrespondierenden Datenbankeintrag.",
+                "image_thumbnails": "Bild Miniaturansichten",
+                "image_thumbnails_desc": "Bild Miniaturansichten und Clips",
+                "markers": "Marker Vorschauen",
+                "previews": "Szenen Vorschauen",
+                "previews_desc": "Szenen Vorschauen und Miniaturansichten",
+                "transcodes": "Transkodierte Szenen",
+                "sprites": "Sprites der Szenen"
+            },
+            "generate_sprites_during_scan_tooltip": "Die Anzahl an Bilder, die unter dem Video Player, zur einfacheren Navigation, angezeigt werden."
         },
         "tools": {
             "scene_duplicate_checker": "Duplikatsprüfung für Szenen",
@@ -726,7 +768,6 @@
         "galleries": "{count, plural, one {Galerie} other {Galerien}}",
         "images": "{count, plural, one {Bild} other {Bilder}}",
         "markers": "{count, plural, one {Markierung} other {Markierungen}}",
-        "movies": "{count, plural, one {Film} other {Filme}}",
         "performers": "{count, plural, one {Darsteller} other {Darsteller}}",
         "scenes": "{count, plural, one {Szene} other {Szenen}}",
         "studios": "{count, plural, one {Studio} other {Studios}}",
@@ -1022,9 +1063,6 @@
     },
     "megabits_per_second": "{value} Megabit pro Sekunde",
     "metadata": "Metadaten",
-    "movie": "Film",
-    "movie_scene_number": "Filmszenennummer",
-    "movies": "Filme",
     "name": "Name",
     "new": "Neu",
     "none": "Keiner",

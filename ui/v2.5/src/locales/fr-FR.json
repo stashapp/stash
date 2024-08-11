@@ -796,11 +796,11 @@
         "galleries": "{count, plural, one {Galerie} other {Galeries}}",
         "images": "{count, plural, one {Image} other {Images}}",
         "markers": "{count, plural, one {Marqueur} other {Marqueurs}}",
-        "movies": "{count, plural, one {Film} other {Films}}",
         "performers": "{count, plural, one {Performeur} other {Performeurs}}",
         "scenes": "{count, plural, one {Scène} other {Scènes}}",
         "studios": "{count, plural, one {Studio} other {Studios}}",
-        "tags": "{count, plural, one {Étiquette} other {Étiquettes}}"
+        "tags": "{count, plural, one {Étiquette} other {Étiquettes}}",
+        "groups": "{count, plural, one {Groupe} other {Groupes}}"
     },
     "country": "Pays",
     "cover_image": "Vignette",
@@ -988,7 +988,7 @@
     "duplicated_phash": "Dupliqué (Empreinte)",
     "duration": "Durée",
     "effect_filters": {
-        "aspect": "Aspect",
+        "aspect": "Rapport d'image",
         "blue": "Bleu",
         "blur": "Flou",
         "brightness": "Luminosité",
@@ -1014,7 +1014,9 @@
         "lazy_component_error_help": "Si vous avez récemment mis à jour Stash, merci de recharger la page ou de vider le cache de votre navigateur.",
         "loading_type": "Erreur de chargement de {type}",
         "something_went_wrong": "Quelque chose n'a pas fonctionné.",
-        "header": "Erreur"
+        "header": "Erreur",
+        "invalid_javascript_string": "Code javascript invalide : {error}",
+        "invalid_json_string": "Chaine JSON invalide : {error}"
     },
     "ethnicity": "Ethnicité",
     "existing_value": "valeur existante",
@@ -1034,7 +1036,7 @@
     "filters": "Filtres",
     "folder": "Répertoire",
     "framerate": "Fréquence",
-    "frames_per_second": "{value} fps",
+    "frames_per_second": "{value} ips",
     "front_page": {
         "types": {
             "premade_filter": "Filtre prédéfini",
@@ -1108,9 +1110,6 @@
     },
     "megabits_per_second": "{value} mbps",
     "metadata": "Métadonnées",
-    "movie": "Film",
-    "movie_scene_number": "Numéro de scène",
-    "movies": "Films",
     "name": "Nom",
     "new": "Nouveau",
     "none": "Aucun",
@@ -1121,7 +1120,8 @@
         "first": "Première",
         "last": "Dernière",
         "next": "Suivante",
-        "previous": "Précédente"
+        "previous": "Précédente",
+        "current_total": "{current} sur {total}"
     },
     "parent_of": "Parent de {children}",
     "parent_studio": "Studio parent",
@@ -1389,9 +1389,9 @@
         "removed_entity": "{count, plural, one {{singularEntity} retiré} other {{pluralEntity} retirés}}",
         "rescanning_entity": "Réanalyse de {count, plural, one {{singularEntity}} other {{pluralEntity}}}…",
         "saved_entity": "{entity} sauvegardé·e",
-        "started_auto_tagging": "Démarrage de l'étiquetage automatique",
-        "started_generating": "Démarrage de la génération",
-        "started_importing": "Démarrage de l'importation",
+        "started_auto_tagging": "Début de l'étiquetage automatique",
+        "started_generating": "Début de la génération",
+        "started_importing": "Début de l'importation",
         "updated_entity": "{entity} mis·e à jour"
     },
     "total": "Total",
@@ -1465,5 +1465,11 @@
     "playdate_recorded_no": "Aucune date de lecture enregistrée",
     "plays": "{value} lectures",
     "unknown_date": "Date inconnue",
-    "history": "Historique"
+    "history": "Historique",
+    "group_count": "Nombre de groupes",
+    "group_scene_number": "Numéro de scène",
+    "groups": "Groupes",
+    "group": "Groupe",
+    "studio_count": "Nombre de studios",
+    "studio_tags": "Étiquettes du studio"
 }
