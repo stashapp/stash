@@ -1471,5 +1471,7 @@
     "groups": "Groupes",
     "group": "Groupe",
     "studio_count": "Nombre de studios",
-    "studio_tags": "Étiquettes du studio"
+    "studio_tags": "Étiquettes du studio",
+    "include_sub_studio_content": "Inclure le contenu des studios affiliés",
+    "include_sub_tag_content": "Inclure le contenu des étiquettes affiliées"
 }
