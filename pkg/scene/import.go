@@ -150,7 +150,7 @@ func (i *Importer) populateViewHistory() {
 }
 
 func (i *Importer) populateOHistory() {
-	i.viewHistory = getHistory(
+	i.oHistory = getHistory(
 		i.Input.OHistory,
 		i.Input.OCounter,
 		i.Input.CreatedAt, // no last o count date
