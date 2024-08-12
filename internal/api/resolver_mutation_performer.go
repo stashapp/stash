@@ -108,7 +108,12 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 			return err
 		}
 
-		err = qb.Create(ctx, &newPerformer)
+		i := &models.CreatePerformerInput{
+			Performer:    &newPerformer,
+			CustomFields: input.CustomFields,
+		}
+
+		err = qb.Create(ctx, i)
 		if err != nil {
 			return err
 		}
@@ -289,6 +294,8 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 	if err != nil {
 		return nil, fmt.Errorf("converting tag ids: %w", err)
 	}
+
+	updatedPerformer.CustomFields = input.CustomFields
 
 	var imageData []byte
 	imageIncluded := translator.hasField("image")

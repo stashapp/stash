@@ -81,57 +81,61 @@ func Test_PerformerStore_Create(t *testing.T) {
 
 	tests := []struct {
 		name      string
-		newObject models.Performer
+		newObject models.CreatePerformerInput
 		wantErr   bool
 	}{
 		{
 			"full",
-			models.Performer{
-				Name:           name,
-				Disambiguation: disambiguation,
-				Gender:         &gender,
-				URLs:           models.NewRelatedStrings(urls),
-				Birthdate:      &birthdate,
-				Ethnicity:      ethnicity,
-				Country:        country,
-				EyeColor:       eyeColor,
-				Height:         &height,
-				Measurements:   measurements,
-				FakeTits:       fakeTits,
-				PenisLength:    &penisLength,
-				Circumcised:    &circumcised,
-				CareerLength:   careerLength,
-				Tattoos:        tattoos,
-				Piercings:      piercings,
-				Favorite:       favorite,
-				Rating:         &rating,
-				Details:        details,
-				DeathDate:      &deathdate,
-				HairColor:      hairColor,
-				Weight:         &weight,
-				IgnoreAutoTag:  ignoreAutoTag,
-				TagIDs:         models.NewRelatedIDs([]int{tagIDs[tagIdx1WithPerformer], tagIDs[tagIdx1WithDupName]}),
-				Aliases:        models.NewRelatedStrings(aliases),
-				StashIDs: models.NewRelatedStashIDs([]models.StashID{
-					{
-						StashID:  stashID1,
-						Endpoint: endpoint1,
-					},
-					{
-						StashID:  stashID2,
-						Endpoint: endpoint2,
-					},
-				}),
-				CreatedAt: createdAt,
-				UpdatedAt: updatedAt,
+			models.CreatePerformerInput{
+				Performer: &models.Performer{
+					Name:           name,
+					Disambiguation: disambiguation,
+					Gender:         &gender,
+					URLs:           models.NewRelatedStrings(urls),
+					Birthdate:      &birthdate,
+					Ethnicity:      ethnicity,
+					Country:        country,
+					EyeColor:       eyeColor,
+					Height:         &height,
+					Measurements:   measurements,
+					FakeTits:       fakeTits,
+					PenisLength:    &penisLength,
+					Circumcised:    &circumcised,
+					CareerLength:   careerLength,
+					Tattoos:        tattoos,
+					Piercings:      piercings,
+					Favorite:       favorite,
+					Rating:         &rating,
+					Details:        details,
+					DeathDate:      &deathdate,
+					HairColor:      hairColor,
+					Weight:         &weight,
+					IgnoreAutoTag:  ignoreAutoTag,
+					TagIDs:         models.NewRelatedIDs([]int{tagIDs[tagIdx1WithPerformer], tagIDs[tagIdx1WithDupName]}),
+					Aliases:        models.NewRelatedStrings(aliases),
+					StashIDs: models.NewRelatedStashIDs([]models.StashID{
+						{
+							StashID:  stashID1,
+							Endpoint: endpoint1,
+						},
+						{
+							StashID:  stashID2,
+							Endpoint: endpoint2,
+						},
+					}),
+					CreatedAt: createdAt,
+					UpdatedAt: updatedAt,
+				},
 			},
 			false,
 		},
 		{
 			"invalid tag id",
-			models.Performer{
-				Name:   name,
-				TagIDs: models.NewRelatedIDs([]int{invalidID}),
+			models.CreatePerformerInput{
+				Performer: &models.Performer{
+					Name:   name,
+					TagIDs: models.NewRelatedIDs([]int{invalidID}),
+				},
 			},
 			true,
 		},
@@ -155,16 +159,16 @@ func Test_PerformerStore_Create(t *testing.T) {
 
 			assert.NotZero(p.ID)
 
-			copy := tt.newObject
+			copy := *tt.newObject.Performer
 			copy.ID = p.ID
 
 			// load relationships
-			if err := loadPerformerRelationships(ctx, copy, &p); err != nil {
+			if err := loadPerformerRelationships(ctx, copy, p.Performer); err != nil {
 				t.Errorf("loadPerformerRelationships() error = %v", err)
 				return
 			}
 
-			assert.Equal(copy, p)
+			assert.Equal(copy, *p.Performer)
 
 			// ensure can find the performer
 			found, err := qb.Find(ctx, p.ID)
@@ -228,77 +232,85 @@ func Test_PerformerStore_Update(t *testing.T) {
 
 	tests := []struct {
 		name          string
-		updatedObject *models.Performer
+		updatedObject models.UpdatePerformerInput
 		wantErr       bool
 	}{
 		{
 			"full",
-			&models.Performer{
-				ID:             performerIDs[performerIdxWithGallery],
-				Name:           name,
-				Disambiguation: disambiguation,
-				Gender:         &gender,
-				URLs:           models.NewRelatedStrings(urls),
-				Birthdate:      &birthdate,
-				Ethnicity:      ethnicity,
-				Country:        country,
-				EyeColor:       eyeColor,
-				Height:         &height,
-				Measurements:   measurements,
-				FakeTits:       fakeTits,
-				PenisLength:    &penisLength,
-				Circumcised:    &circumcised,
-				CareerLength:   careerLength,
-				Tattoos:        tattoos,
-				Piercings:      piercings,
-				Favorite:       favorite,
-				Rating:         &rating,
-				Details:        details,
-				DeathDate:      &deathdate,
-				HairColor:      hairColor,
-				Weight:         &weight,
-				IgnoreAutoTag:  ignoreAutoTag,
-				Aliases:        models.NewRelatedStrings(aliases),
-				TagIDs:         models.NewRelatedIDs([]int{tagIDs[tagIdx1WithPerformer], tagIDs[tagIdx1WithDupName]}),
-				StashIDs: models.NewRelatedStashIDs([]models.StashID{
-					{
-						StashID:  stashID1,
-						Endpoint: endpoint1,
-					},
-					{
-						StashID:  stashID2,
-						Endpoint: endpoint2,
-					},
-				}),
-				CreatedAt: createdAt,
-				UpdatedAt: updatedAt,
+			models.UpdatePerformerInput{
+				Performer: &models.Performer{
+					ID:             performerIDs[performerIdxWithGallery],
+					Name:           name,
+					Disambiguation: disambiguation,
+					Gender:         &gender,
+					URLs:           models.NewRelatedStrings(urls),
+					Birthdate:      &birthdate,
+					Ethnicity:      ethnicity,
+					Country:        country,
+					EyeColor:       eyeColor,
+					Height:         &height,
+					Measurements:   measurements,
+					FakeTits:       fakeTits,
+					PenisLength:    &penisLength,
+					Circumcised:    &circumcised,
+					CareerLength:   careerLength,
+					Tattoos:        tattoos,
+					Piercings:      piercings,
+					Favorite:       favorite,
+					Rating:         &rating,
+					Details:        details,
+					DeathDate:      &deathdate,
+					HairColor:      hairColor,
+					Weight:         &weight,
+					IgnoreAutoTag:  ignoreAutoTag,
+					Aliases:        models.NewRelatedStrings(aliases),
+					TagIDs:         models.NewRelatedIDs([]int{tagIDs[tagIdx1WithPerformer], tagIDs[tagIdx1WithDupName]}),
+					StashIDs: models.NewRelatedStashIDs([]models.StashID{
+						{
+							StashID:  stashID1,
+							Endpoint: endpoint1,
+						},
+						{
+							StashID:  stashID2,
+							Endpoint: endpoint2,
+						},
+					}),
+					CreatedAt: createdAt,
+					UpdatedAt: updatedAt,
+				},
 			},
 			false,
 		},
 		{
 			"clear nullables",
-			&models.Performer{
-				ID:       performerIDs[performerIdxWithGallery],
-				Aliases:  models.NewRelatedStrings([]string{}),
-				URLs:     models.NewRelatedStrings([]string{}),
-				TagIDs:   models.NewRelatedIDs([]int{}),
-				StashIDs: models.NewRelatedStashIDs([]models.StashID{}),
+			models.UpdatePerformerInput{
+				Performer: &models.Performer{
+					ID:       performerIDs[performerIdxWithGallery],
+					Aliases:  models.NewRelatedStrings([]string{}),
+					URLs:     models.NewRelatedStrings([]string{}),
+					TagIDs:   models.NewRelatedIDs([]int{}),
+					StashIDs: models.NewRelatedStashIDs([]models.StashID{}),
+				},
 			},
 			false,
 		},
 		{
 			"clear tag ids",
-			&models.Performer{
-				ID:     performerIDs[sceneIdxWithTag],
-				TagIDs: models.NewRelatedIDs([]int{}),
+			models.UpdatePerformerInput{
+				Performer: &models.Performer{
+					ID:     performerIDs[sceneIdxWithTag],
+					TagIDs: models.NewRelatedIDs([]int{}),
+				},
 			},
 			false,
 		},
 		{
 			"invalid tag id",
-			&models.Performer{
-				ID:     performerIDs[sceneIdxWithGallery],
-				TagIDs: models.NewRelatedIDs([]int{invalidID}),
+			models.UpdatePerformerInput{
+				Performer: &models.Performer{
+					ID:     performerIDs[sceneIdxWithGallery],
+					TagIDs: models.NewRelatedIDs([]int{invalidID}),
+				},
 			},
 			true,
 		},
@@ -309,9 +321,9 @@ func Test_PerformerStore_Update(t *testing.T) {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
 
-			copy := *tt.updatedObject
+			copy := *tt.updatedObject.Performer
 
-			if err := qb.Update(ctx, tt.updatedObject); (err != nil) != tt.wantErr {
+			if err := qb.Update(ctx, &tt.updatedObject); (err != nil) != tt.wantErr {
 				t.Errorf("PerformerStore.Update() error = %v, wantErr %v", err, tt.wantErr)
 			}
 
@@ -1172,7 +1184,7 @@ func TestPerformerUpdatePerformerImage(t *testing.T) {
 		performer := models.Performer{
 			Name: name,
 		}
-		err := qb.Create(ctx, &performer)
+		err := qb.Create(ctx, &models.CreatePerformerInput{Performer: &performer})
 		if err != nil {
 			return fmt.Errorf("Error creating performer: %s", err.Error())
 		}
@@ -1680,7 +1692,7 @@ func TestPerformerStashIDs(t *testing.T) {
 		performer := &models.Performer{
 			Name: name,
 		}
-		if err := qb.Create(ctx, performer); err != nil {
+		if err := qb.Create(ctx, &models.CreatePerformerInput{Performer: performer}); err != nil {
 			return fmt.Errorf("Error creating performer: %s", err.Error())
 		}
 

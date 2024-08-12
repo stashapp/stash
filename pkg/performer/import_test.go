@@ -234,8 +234,16 @@ func TestCreate(t *testing.T) {
 		Name: performerName,
 	}
 
+	performerInput := models.CreatePerformerInput{
+		Performer: &performer,
+	}
+
 	performerErr := models.Performer{
 		Name: performerNameErr,
+	}
+
+	performerErrInput := models.CreatePerformerInput{
+		Performer: &performerErr,
 	}
 
 	i := Importer{
@@ -245,11 +253,11 @@ func TestCreate(t *testing.T) {
 	}
 
 	errCreate := errors.New("Create error")
-	db.Performer.On("Create", testCtx, &performer).Run(func(args mock.Arguments) {
-		arg := args.Get(1).(*models.Performer)
+	db.Performer.On("Create", testCtx, &performerInput).Run(func(args mock.Arguments) {
+		arg := args.Get(1).(*models.CreatePerformerInput)
 		arg.ID = performerID
 	}).Return(nil).Once()
-	db.Performer.On("Create", testCtx, &performerErr).Return(errCreate).Once()
+	db.Performer.On("Create", testCtx, &performerErrInput).Return(errCreate).Once()
 
 	id, err := i.Create(testCtx)
 	assert.Equal(t, performerID, *id)
@@ -284,7 +292,10 @@ func TestUpdate(t *testing.T) {
 
 	// id needs to be set for the mock input
 	performer.ID = performerID
-	db.Performer.On("Update", testCtx, &performer).Return(nil).Once()
+	performerInput := models.UpdatePerformerInput{
+		Performer: &performer,
+	}
+	db.Performer.On("Update", testCtx, &performerInput).Return(nil).Once()
 
 	err := i.Update(testCtx, performerID)
 	assert.Nil(t, err)
@@ -293,7 +304,10 @@ func TestUpdate(t *testing.T) {
 
 	// need to set id separately
 	performerErr.ID = errImageID
-	db.Performer.On("Update", testCtx, &performerErr).Return(errUpdate).Once()
+	performerErrInput := models.UpdatePerformerInput{
+		Performer: &performerErr,
+	}
+	db.Performer.On("Update", testCtx, &performerErrInput).Return(errUpdate).Once()
 
 	err = i.Update(testCtx, errImageID)
 	assert.NotNil(t, err)

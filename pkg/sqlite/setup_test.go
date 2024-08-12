@@ -1556,7 +1556,7 @@ func createPerformers(ctx context.Context, n int, o int) error {
 			})
 		}
 
-		err := pqb.Create(ctx, &performer)
+		err := pqb.Create(ctx, &models.CreatePerformerInput{Performer: &performer})
 
 		if err != nil {
 			return fmt.Errorf("Error creating performer %v+: %s", performer, err.Error())

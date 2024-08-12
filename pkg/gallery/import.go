@@ -188,7 +188,9 @@ func (i *Importer) createPerformers(ctx context.Context, names []string) ([]*mod
 		newPerformer := models.NewPerformer()
 		newPerformer.Name = name
 
-		err := i.PerformerWriter.Create(ctx, &newPerformer)
+		err := i.PerformerWriter.Create(ctx, &models.CreatePerformerInput{
+			Performer: &newPerformer,
+		})
 		if err != nil {
 			return nil, err
 		}

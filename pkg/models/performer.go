@@ -234,6 +234,8 @@ type PerformerCreateInput struct {
 	HairColor     *string        `json:"hair_color"`
 	Weight        *int           `json:"weight"`
 	IgnoreAutoTag *bool          `json:"ignore_auto_tag"`
+
+	CustomFields map[string]interface{} `json:"custom_fields"`
 }
 
 type PerformerUpdateInput struct {
@@ -271,4 +273,6 @@ type PerformerUpdateInput struct {
 	HairColor     *string        `json:"hair_color"`
 	Weight        *int           `json:"weight"`
 	IgnoreAutoTag *bool          `json:"ignore_auto_tag"`
+
+	CustomFields CustomFieldsInput `json:"custom_fields"`
 }
