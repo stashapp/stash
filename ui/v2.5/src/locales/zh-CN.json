@@ -1471,5 +1471,7 @@
     "group": "群组",
     "group_count": "群组总计",
     "group_scene_number": "短片序号",
-    "groups": "群组"
+    "groups": "群组",
+    "include_sub_studio_content": "包括子工作室内容",
+    "include_sub_tag_content": "包括子标签内容"
 }
