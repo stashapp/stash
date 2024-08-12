@@ -30,6 +30,9 @@ const sortByOptions = [
   "play_count",
   "last_played_at",
   "last_o_at",
+  "career_length",
+  "weight",
+  "measurements",
 ]
   .map(ListFilterOptions.createSortBy)
   .concat([
