@@ -4,7 +4,7 @@
 
 * [Go](https://golang.org/dl/)
 * [GolangCI](https://golangci-lint.run/) - A meta-linter which runs several linters in parallel
-  * To install, follow the [local installation instructions](https://golangci-lint.run/usage/install/#local-installation)
+  * To install, follow the [local installation instructions](https://golangci-lint.run/welcome/install/#local-installation)
 * [Yarn](https://yarnpkg.com/en/docs/install) - Yarn package manager
 
 ## Environment
