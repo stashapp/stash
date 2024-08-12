@@ -13,10 +13,10 @@ export function useFilterURL(
   setFilter: React.Dispatch<React.SetStateAction<ListFilterModel>>,
   options?: {
     defaultFilter?: ListFilterModel;
-    setURL?: boolean;
+    active?: boolean;
   }
 ) {
-  const { defaultFilter, setURL = true } = options ?? {};
+  const { defaultFilter, active = true } = options ?? {};
 
   const history = useHistory();
   const location = useLocation();
@@ -28,7 +28,7 @@ export function useFilterURL(
     ) => {
       const newFilter = isFunction(value) ? value(filter) : value;
 
-      if (setURL) {
+      if (active) {
         const newParams = newFilter.makeQueryParameters();
         history.replace({ ...history.location, search: newParams });
       } else {
@@ -36,12 +36,15 @@ export function useFilterURL(
         setFilter(newFilter);
       }
     },
-    [history, setURL, setFilter, filter]
+    [history, active, setFilter, filter]
   );
 
   // This hook runs on every page location change (ie navigation),
   // and updates the filter accordingly.
   useEffect(() => {
+    // don't apply if active is false
+    if (!active) return;
+
     // re-init to load default filter on empty new query params
     if (!location.search) {
       if (defaultFilter) updateFilter(defaultFilter.clone());
@@ -58,7 +61,7 @@ export function useFilterURL(
         return prevFilter;
       }
     });
-  }, [location.search, defaultFilter, setFilter, updateFilter]);
+  }, [active, location.search, defaultFilter, setFilter, updateFilter]);
 
   return { setFilter: updateFilter };
 }

@@ -1,6 +1,5 @@
 import cloneDeep from "lodash-es/cloneDeep";
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import cx from "classnames";
 import Mousetrap from "mousetrap";
 import { SortDirectionEnum } from "src/core/generated-graphql";
 import {
@@ -11,7 +10,6 @@ import {
   OverlayTrigger,
   Tooltip,
   InputGroup,
-  FormControl,
   Popover,
   Overlay,
 } from "react-bootstrap";
@@ -26,11 +24,83 @@ import {
   faCaretUp,
   faCheck,
   faRandom,
-  faTimes,
 } from "@fortawesome/free-solid-svg-icons";
 import { FilterButton } from "./Filters/FilterButton";
 import { useDebounce } from "src/hooks/debounce";
 import { View } from "./views";
+import { ClearableInput } from "../Shared/ClearableInput";
+
+export function useDebouncedSearchInput(
+  filter: ListFilterModel,
+  setFilter: (filter: ListFilterModel) => void
+) {
+  const callback = useCallback(
+    (value: string) => {
+      const newFilter = filter.clone();
+      newFilter.searchTerm = value;
+      newFilter.currentPage = 1;
+      setFilter(newFilter);
+    },
+    [filter, setFilter]
+  );
+
+  const onClear = useCallback(() => callback(""), [callback]);
+
+  const searchCallback = useDebounce(callback, 500);
+
+  return { searchCallback, onClear };
+}
+
+export const SearchTermInput: React.FC<{
+  filter: ListFilterModel;
+  onFilterUpdate: (newFilter: ListFilterModel) => void;
+}> = ({ filter, onFilterUpdate }) => {
+  const intl = useIntl();
+  const [localInput, setLocalInput] = useState(filter.searchTerm);
+
+  const focus = useFocus();
+  const [, setQueryFocus] = focus;
+
+  useEffect(() => {
+    setLocalInput(filter.searchTerm);
+  }, [filter.searchTerm]);
+
+  const { searchCallback, onClear } = useDebouncedSearchInput(
+    filter,
+    onFilterUpdate
+  );
+
+  useEffect(() => {
+    Mousetrap.bind("/", (e) => {
+      setQueryFocus();
+      e.preventDefault();
+    });
+
+    return () => {
+      Mousetrap.unbind("/");
+    };
+  });
+
+  function onSetQuery(value: string) {
+    setLocalInput(value);
+
+    if (!value) {
+      onClear();
+    }
+
+    searchCallback(value);
+  }
+
+  return (
+    <ClearableInput
+      className="search-term-input"
+      focus={focus}
+      value={localInput}
+      setValue={onSetQuery}
+      placeholder={`${intl.formatMessage({ id: "actions.search" })}…`}
+    />
+  );
+};
 
 interface IListFilterProps {
   onFilterUpdate: (newFilter: ListFilterModel) => void;
@@ -48,44 +118,17 @@ export const ListFilter: React.FC<IListFilterProps> = ({
   view,
 }) => {
   const [customPageSizeShowing, setCustomPageSizeShowing] = useState(false);
-  const [queryRef, setQueryFocus] = useFocus();
-  const [queryClearShowing, setQueryClearShowing] = useState(
-    !!filter.searchTerm
-  );
   const perPageSelect = useRef(null);
   const [perPageInput, perPageFocus] = useFocus();
 
   const filterOptions = filter.options;
 
-  const searchQueryUpdated = useCallback(
-    (value: string) => {
-      const newFilter = cloneDeep(filter);
-      newFilter.searchTerm = value;
-      newFilter.currentPage = 1;
-      onFilterUpdate(newFilter);
-    },
-    [filter, onFilterUpdate]
-  );
-
-  const searchCallback = useDebounce((value: string) => {
-    const newFilter = cloneDeep(filter);
-    newFilter.searchTerm = value;
-    newFilter.currentPage = 1;
-    onFilterUpdate(newFilter);
-  }, 500);
-
   const intl = useIntl();
 
   useEffect(() => {
-    Mousetrap.bind("/", (e) => {
-      setQueryFocus();
-      e.preventDefault();
-    });
-
     Mousetrap.bind("r", () => onReshuffleRandomSort());
 
     return () => {
-      Mousetrap.unbind("/");
       Mousetrap.unbind("r");
     };
   });
@@ -95,14 +138,6 @@ export const ListFilter: React.FC<IListFilterProps> = ({
       perPageFocus();
     }
   }, [customPageSizeShowing, perPageFocus]);
-
-  // clear search input when filter is cleared
-  useEffect(() => {
-    if (!filter.searchTerm) {
-      if (queryRef.current) queryRef.current.value = "";
-      setQueryClearShowing(false);
-    }
-  }, [filter.searchTerm, queryRef]);
 
   function onChangePageSize(val: string) {
     if (val === "custom") {
@@ -123,18 +158,6 @@ export const ListFilter: React.FC<IListFilterProps> = ({
     newFilter.itemsPerPage = pp;
     newFilter.currentPage = 1;
     onFilterUpdate(newFilter);
-  }
-
-  function onChangeQuery(event: React.FormEvent<HTMLInputElement>) {
-    searchCallback(event.currentTarget.value);
-    setQueryClearShowing(!!event.currentTarget.value);
-  }
-
-  function onClearQuery() {
-    if (queryRef.current) queryRef.current.value = "";
-    searchQueryUpdated("");
-    setQueryFocus();
-    setQueryClearShowing(false);
   }
 
   function onChangeSortDirection() {
@@ -209,27 +232,8 @@ export const ListFilter: React.FC<IListFilterProps> = ({
 
     return (
       <>
-        <div className="mb-2 mr-2 d-flex">
-          <div className="flex-grow-1 query-text-field-group">
-            <FormControl
-              ref={queryRef}
-              placeholder={`${intl.formatMessage({ id: "actions.search" })}…`}
-              defaultValue={filter.searchTerm}
-              onInput={onChangeQuery}
-              className="query-text-field bg-secondary text-white border-secondary"
-            />
-            <Button
-              variant="secondary"
-              onClick={onClearQuery}
-              title={intl.formatMessage({ id: "actions.clear" })}
-              className={cx(
-                "query-text-field-clear",
-                queryClearShowing ? "" : "d-none"
-              )}
-            >
-              <Icon icon={faTimes} />
-            </Button>
-          </div>
+        <div className="mb-2 d-flex">
+          <SearchTermInput filter={filter} onFilterUpdate={onFilterUpdate} />
         </div>
 
         <ButtonGroup className="mr-2 mb-2">

@@ -89,7 +89,13 @@ export abstract class Criterion<V extends CriterionValue> {
     this.value = value;
   }
 
-  public abstract clone(): Criterion<V>;
+  public clone() {
+    const ret = Object.assign(Object.create(Object.getPrototypeOf(this)), this);
+    ret.cloneValues();
+    return ret;
+  }
+
+  protected cloneValues() {}
 
   public static getModifierLabel(intl: IntlShape, modifier: CriterionModifier) {
     const modifierMessageID = modifierMessageIDs[modifier];
@@ -257,13 +263,8 @@ export class ILabeledIdCriterion extends Criterion<ILabeledId[]> {
     super(type, value);
   }
 
-  public clone(): Criterion<ILabeledId[]> {
-    const newCriterion = new ILabeledIdCriterion(
-      this.criterionOption,
-      this.value.map((v) => ({ ...v }))
-    );
-    newCriterion.modifier = this.modifier;
-    return newCriterion;
+  public cloneValues() {
+    this.value = this.value.map((v) => ({ ...v }));
   }
 
   protected getLabelValue(_intl: IntlShape): string {
@@ -301,17 +302,12 @@ export class IHierarchicalLabeledIdCriterion extends Criterion<IHierarchicalLabe
     super(type, value);
   }
 
-  public clone(): Criterion<IHierarchicalLabelValue> {
-    const newCriterion = new IHierarchicalLabeledIdCriterion(
-      this.criterionOption,
-      {
-        ...this.value,
-        items: this.value.items.map((v) => ({ ...v })),
-        excluded: this.value.excluded.map((v) => ({ ...v })),
-      }
-    );
-    newCriterion.modifier = this.modifier;
-    return newCriterion;
+  public cloneValues() {
+    this.value = {
+      ...this.value,
+      items: this.value.items.map((v) => ({ ...v })),
+      excluded: this.value.excluded.map((v) => ({ ...v })),
+    };
   }
 
   override get modifier(): CriterionModifier {
@@ -512,13 +508,6 @@ export class StringCriterion extends Criterion<string> {
     super(type, "");
   }
 
-  public clone() {
-    const newCriterion = new StringCriterion(this.criterionOption);
-    newCriterion.modifier = this.modifier;
-    newCriterion.value = this.value;
-    return newCriterion;
-  }
-
   protected getLabelValue(_intl: IntlShape) {
     return this.value;
   }
@@ -532,18 +521,13 @@ export class StringCriterion extends Criterion<string> {
   }
 }
 
-export class MultiStringCriterion extends Criterion<string[]> {
+export abstract class MultiStringCriterion extends Criterion<string[]> {
   constructor(type: CriterionOption, value: string[] = []) {
     super(type, value);
   }
 
-  public clone(): Criterion<string[]> {
-    const newCriterion = new MultiStringCriterion(
-      this.criterionOption,
-      this.value.slice()
-    );
-    newCriterion.modifier = this.modifier;
-    return newCriterion;
+  public cloneValues() {
+    this.value = this.value.slice();
   }
 
   protected getLabelValue(_intl: IntlShape) {
@@ -718,11 +702,8 @@ export class NumberCriterion extends Criterion<INumberValue> {
     super(type, { value: undefined, value2: undefined });
   }
 
-  public clone() {
-    const newCriterion = new NumberCriterion(this.criterionOption);
-    newCriterion.modifier = this.modifier;
-    newCriterion.value = { ...this.value };
-    return newCriterion;
+  public cloneValues() {
+    this.value = { ...this.value };
   }
 
   public get value(): INumberValue {
@@ -803,11 +784,8 @@ export class DurationCriterion extends Criterion<INumberValue> {
     super(type, { value: undefined, value2: undefined });
   }
 
-  public clone() {
-    const newCriterion = new DurationCriterion(this.criterionOption);
-    newCriterion.modifier = this.modifier;
-    newCriterion.value = { ...this.value };
-    return newCriterion;
+  public cloneValues() {
+    this.value = { ...this.value };
   }
 
   public toCriterionInput(): IntCriterionInput {
@@ -887,11 +865,8 @@ export class DateCriterion extends Criterion<IDateValue> {
     super(type, { value: "", value2: undefined });
   }
 
-  public clone() {
-    const newCriterion = new DateCriterion(this.criterionOption);
-    newCriterion.modifier = this.modifier;
-    newCriterion.value = { ...this.value };
-    return newCriterion;
+  public cloneValues() {
+    this.value = { ...this.value };
   }
 
   public encodeValue() {
@@ -993,11 +968,8 @@ export class TimestampCriterion extends Criterion<ITimestampValue> {
     super(type, { value: "", value2: undefined });
   }
 
-  public clone() {
-    const newCriterion = new TimestampCriterion(this.criterionOption);
-    newCriterion.modifier = this.modifier;
-    newCriterion.value = { ...this.value };
-    return newCriterion;
+  public cloneValues() {
+    this.value = { ...this.value };
   }
 
   public encodeValue() {

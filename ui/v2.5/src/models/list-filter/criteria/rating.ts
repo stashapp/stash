@@ -45,11 +45,8 @@ export class RatingCriterion extends Criterion<INumberValue> {
     this.ratingSystem = ratingSystem;
   }
 
-  public clone() {
-    const newCriterion = new RatingCriterion(this.ratingSystem);
-    newCriterion.modifier = this.modifier;
-    newCriterion.value = { ...this.value };
-    return newCriterion;
+  public cloneValues() {
+    this.value = { ...this.value };
   }
 
   public get value(): INumberValue {

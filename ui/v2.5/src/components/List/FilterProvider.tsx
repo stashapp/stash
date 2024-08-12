@@ -65,7 +65,7 @@ export const SetFilterURL = (props: {
 
   const { setFilter } = useFilterURL(filter, setFilterOrig, {
     defaultFilter,
-    setURL,
+    active: setURL,
   });
 
   return (

@@ -29,11 +29,8 @@ export class PhashCriterion extends Criterion<IPhashDistanceValue> {
     super(PhashCriterionOption, { value: "", distance: 0 });
   }
 
-  public clone() {
-    const newCriterion = new PhashCriterion();
-    newCriterion.modifier = this.modifier;
-    newCriterion.value = { ...this.value };
-    return newCriterion;
+  public cloneValues() {
+    this.value = { ...this.value };
   }
 
   protected getLabelValue() {

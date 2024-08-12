@@ -27,11 +27,8 @@ export class StashIDCriterion extends Criterion<IStashIDValue> {
     });
   }
 
-  public clone() {
-    const newCriterion = new StashIDCriterion();
-    newCriterion.modifier = this.modifier;
-    newCriterion.value = { ...this.value };
-    return newCriterion;
+  public cloneValues() {
+    this.value = { ...this.value };
   }
 
   public get value(): IStashIDValue {
