@@ -710,6 +710,7 @@ func (qb *PerformerStore) sortByLastPlayedAt(direction string) string {
 
 var performerSortOptions = sortOptions{
 	"birthdate",
+	"career_length",
 	"created_at",
 	"galleries_count",
 	"height",
@@ -717,6 +718,7 @@ var performerSortOptions = sortOptions{
 	"images_count",
 	"last_o_at",
 	"last_played_at",
+	"measurements",
 	"name",
 	"o_counter",
 	"penis_length",
@@ -726,6 +728,7 @@ var performerSortOptions = sortOptions{
 	"scenes_count",
 	"tag_count",
 	"updated_at",
+	"weight",
 }
 
 func (qb *PerformerStore) getPerformerSort(findFilter *models.FindFilterType) (string, error) {
