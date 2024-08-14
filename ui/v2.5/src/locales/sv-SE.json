@@ -1471,5 +1471,7 @@
     "group_scene_number": "Scennummer",
     "groups": "Grupper",
     "studio_count": "Antal Studior",
-    "studio_tags": "Studiotaggar"
+    "studio_tags": "Studiotaggar",
+    "include_sub_studio_content": "Inkludera innehåll från underordnade studior",
+    "include_sub_tag_content": "Inkludera innehåll från underordnade taggar"
 }
