@@ -300,6 +300,8 @@ input SceneFilterType {
   created_at: TimestampCriterionInput
   "Filter by last update time"
   updated_at: TimestampCriterionInput
+  "Filter by file size"
+  file_size: IntCriterionInput
 
   "Filter by related galleries that meet this criteria"
   galleries_filter: GalleryFilterType
