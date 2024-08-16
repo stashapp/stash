@@ -500,8 +500,8 @@
                 "skip_multiple_matches": "跳过有多个结果的匹配",
                 "skip_single_name_performers": "跳过无消歧义字段且名字为单个词的表演者",
                 "skip_multiple_matches_tooltip": "如果未启用此选项，且返回的结果不止一个，则将随机选择一个结果与之匹配",
-                "tag_skipped_performers": "跳过以下匹配的演员",
-                "tag_skipped_matches": "跳过以下匹配的标签",
+                "tag_skipped_performers": "标记跳过的演员",
+                "tag_skipped_matches": "标记跳过的匹配项",
                 "skip_single_name_performers_tooltip": "如果未启用此选项，则将匹配 Samantha 或 Olga 等经常被通用的表演者",
                 "tag_skipped_performer_tooltip": "创建类似“识别：单名表演者”的标签，您可以在短片标签视图中进行筛选，并选择如何处理这些表演者",
                 "tag_skipped_matches_tooltip": "创建类似“识别：多个匹配项”的标签，您可以在短片标签视图中进行筛选，并手动选择正确的匹配项"
@@ -825,7 +825,7 @@
         "not_matches_regex": "不符合正则表达式",
         "not_null": "不为空",
         "format_string_depth": "{criterion}{modifierString}{valueString}(+{depth, plural, =-1 {all} other {{depth}}})",
-        "format_string_excludes": "{criterion} {modifierString} {valueString} (包括 {excludedString})",
+        "format_string_excludes": "{criterion} {modifierString} {valueString} (不包括 {excludedString})",
         "format_string_excludes_depth": "{criterion} {modifierString} {valueString} (包括 {excludedString}) (+{depth, plural, =-1 {全部} other {{depth}}})"
     },
     "custom": "自定义",
@@ -934,7 +934,7 @@
             "transcodes_tooltip": "将为所有内容提前生成MP4转码文件；对慢速CPU有用，但需要更多磁盘空间",
             "video_previews": "预览",
             "video_previews_tooltip": "鼠标悬停在短片上时播放的预览短片",
-            "phash_tooltip": "针对去重和场景鉴定",
+            "phash_tooltip": "针对去重和短片识别",
             "image_thumbnails": "图像缩略图",
             "clip_previews": "图像片段预览"
         },
