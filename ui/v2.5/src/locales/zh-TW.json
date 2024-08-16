@@ -134,7 +134,8 @@
         "create_parent_studio": "新增母工作室",
         "optimise_database": "最佳化資料庫",
         "choose_date": "選擇日期",
-        "clean_generated": "清除已生成的文件"
+        "clean_generated": "清除已生成的文件",
+        "view_history": "查看歷史"
     },
     "actions_name": "動作",
     "age": "年齡",
@@ -251,7 +252,8 @@
             "successfully_cancelled_temporary_behaviour": "已關閉暫時啟用伺服器的功能",
             "until_restart": "直到重啟",
             "video_sort_order": "預設的影片排序",
-            "video_sort_order_desc": "依照預設方式排序影片。"
+            "video_sort_order_desc": "依照預設方式排序影片。",
+            "server_port": "伺服器埠"
         },
         "general": {
             "auth": {
