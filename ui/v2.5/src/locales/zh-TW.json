@@ -253,7 +253,8 @@
             "until_restart": "直到重啟",
             "video_sort_order": "預設的影片排序",
             "video_sort_order_desc": "依照預設方式排序影片。",
-            "server_port": "伺服器埠"
+            "server_port": "伺服器埠",
+            "server_port_desc": "運行 DLNA 伺服器的埠。更改後需要重新啟動 DLNA。"
         },
         "general": {
             "auth": {
@@ -333,6 +334,18 @@
                         "heading": "FFMpeg 即時串流輸出選項",
                         "desc": "進階：產生影片時在 \"output\" 欄位之前傳遞給 ffmpeg 的附加參數。"
                     }
+                },
+                "download_ffmpeg": {
+                    "description": "將 FFmpeg 下載到配置目錄中，並從配置目錄中清除要解析的 ffmpeg 和 ffprobe 路徑。",
+                    "heading": "下載 FFmpeg"
+                },
+                "ffmpeg_path": {
+                    "description": "ffmpeg 可執行文件的路徑（而不僅僅是資料夾）。如果為空，則ffmpeg將通過 $PATH、配置目錄或 $HOME/.stash 從環境中解析",
+                    "heading": "FFmpeg 可執行文件路徑"
+                },
+                "ffprobe_path": {
+                    "description": "ffprobe 可執行檔（而不僅僅是資料夾）的路徑。如果為空，則ffprobe將通過 $PATH、配置目錄或 $HOME/.stash 從環境中解析",
+                    "heading": "FFprobe 可執行文件路徑"
                 }
             },
             "gallery_ext_desc": "以逗號分隔的副檔名名稱，這類檔案將視為圖庫。",
@@ -479,7 +492,11 @@
                 "skip_multiple_matches": "跳過具有多個結果的匹配結果",
                 "skip_single_name_performers": "跳過單名且沒有歧義的演員",
                 "skip_multiple_matches_tooltip": "如果未啟用此功能且搜尋回傳多個結果，則會隨機選擇一個其中一個進行匹配",
-                "skip_single_name_performers_tooltip": "如果未啟用此功能，則會自動匹配 Samantha 或者 Olga 這種常見名稱的演員"
+                "skip_single_name_performers_tooltip": "如果未啟用此功能，則會自動匹配 Samantha 或者 Olga 這種常見名稱的演員",
+                "tag_skipped_matches": "標記跳過的匹配項",
+                "tag_skipped_matches_tooltip": "創建一個標籤，例如「識別：多個匹配項」，您可以在短片標籤器視圖中過濾該標籤，並手動選擇正確的匹配項",
+                "tag_skipped_performer_tooltip": "創建一個標籤，例如“識別：單名表演者”，您可以在短片標籤器視圖中篩選該標籤，並選擇您希望如何處理這些表演者",
+                "tag_skipped_performers": "標記跳過的表演者"
             },
             "import_from_exported_json": "匯入先前從 Metadata 資料夾中匯出的 JSON 檔。此動作將清除現有資料庫中的內容。",
             "incremental_import": "從匯出 ZIP 檔進行增量匯入。",
@@ -499,7 +516,9 @@
             "generate_sprites_during_scan_tooltip": "便於瀏覽顯示在影片播放器下方的一組預覽圖。",
             "generate_video_covers_during_scan": "產生短片封面",
             "migrate_scene_screenshots": {
-                "delete_files": "刪除截圖檔案"
+                "delete_files": "刪除截圖檔案",
+                "description": "將場景螢幕截圖遷移到新的 blob 儲存系統中。應在將現有系統遷移到 0.20 後運行此遷移。可以選擇在遷移後刪除舊的屏幕截圖。",
+                "overwrite_existing": "使用螢幕截圖資料覆蓋現有 blob"
             },
             "clean_generated": {
                 "blob_files": "Blob 檔案",
@@ -513,8 +532,11 @@
                 "transcodes": "短片轉碼"
             },
             "migrate_blobs": {
-                "description": "將 Blob 遷移到當前的 Blob 儲存系統。 此遷移應在更改 Blob 儲存系統後執行。 遷移後可以選擇性的刪除舊資料。"
-            }
+                "description": "將 Blob 遷移到當前的 Blob 儲存系統。 此遷移應在更改 Blob 儲存系統後執行。 遷移後可以選擇性的刪除舊資料。",
+                "delete_old": "刪除舊資料"
+            },
+            "optimise_database": "嘗試通過分析然後重建整個資料庫檔來提高性能。",
+            "optimise_database_warning": "警告：當此任務運行時，任何修改資料庫的操作都將失敗，並且根據資料庫大小，可能需要幾分鐘才能完成。它還至少需要與資料庫大小一樣多的可用磁碟空間，但建議使用1.5倍。"
         },
         "tools": {
             "scene_duplicate_checker": "短片相近性檢查工具",
@@ -594,6 +616,9 @@
                             "stars": "星級"
                         }
                     }
+                },
+                "max_options_shown": {
+                    "label": "在選擇下拉式選單中顯示的最大項目數量"
                 }
             },
             "funscript_offset": {
@@ -623,6 +648,10 @@
                     "write_image_thumbnails": {
                         "description": "建立縮圖時，將檔案寫至磁碟中",
                         "heading": "建立圖片縮圖"
+                    },
+                    "create_image_clips_from_videos": {
+                        "description": "當資料庫停用影片時，視訊檔（以視訊副檔名結尾的檔案）會被掃描為圖像剪輯。",
+                        "heading": "將視訊擴充檔掃描為圖片剪輯"
                     }
                 }
             },
@@ -681,9 +710,12 @@
                     "show_scrubber": "顯示預覽軸",
                     "track_activity": "追蹤使用活動",
                     "vr_tag": {
-                        "heading": "VR 標籤"
+                        "heading": "VR 標籤",
+                        "description": "VR 按鈕只會顯示在有此標籤的場景中。"
                     },
-                    "enable_chromecast": "啟用 Chromecast"
+                    "enable_chromecast": "啟用 Chromecast",
+                    "show_ab_loop_controls": "顯示AB循環插件控件",
+                    "disable_mobile_media_auto_rotate": "停用行動裝置上全螢幕媒體的自動旋轉功能"
                 }
             },
             "scene_wall": {
@@ -726,14 +758,27 @@
             "title": "使用者介面",
             "image_wall": {
                 "heading": "圖片預覽牆",
-                "direction": "方向"
+                "direction": "方向",
+                "margin": "邊距（像素）"
             },
             "detail": {
                 "heading": "細節頁面",
                 "show_all_details": {
                     "heading": "顯示所有細節",
                     "description": "啟用後，預設將顯示所有內容的細節內容，並且每個詳細資訊項目將以單列呈現"
+                },
+                "compact_expanded_details": {
+                    "heading": "緊湊型擴充詳細資料",
+                    "description": "啟用時，此選項會呈現擴充的詳細資料，同時保持簡潔的呈現方式"
+                },
+                "enable_background_image": {
+                    "description": "在詳細頁面上顯示背景圖片。",
+                    "heading": "啟用背景影像"
                 }
+            },
+            "use_stash_hosted_funscript": {
+                "description": "啟用後，funscript 將直接從 Stash 傳送至您的 Handy 裝置，而無需使用第三方 Handy 伺服器。要求可從您的 Handy 裝置存取 Stash，且如果 stash 已設定憑證，則會產生 API 金鑰。",
+                "heading": "直接為 funscript 服務"
             }
         },
         "advanced_mode": "進階模式"
@@ -747,7 +792,8 @@
         "performers": "演員",
         "scenes": "短片",
         "studios": "工作室",
-        "tags": "標籤"
+        "tags": "標籤",
+        "groups": "{count, plural, one {群組} other {群組}}"
     },
     "country": "國家",
     "cover_image": "封面圖片",
@@ -771,7 +817,10 @@
         "not_between": "不與 ... 之間",
         "not_equals": "不是",
         "not_matches_regex": "不符合正規表示式",
-        "not_null": "不為空"
+        "not_null": "不為空",
+        "format_string_excludes": "{criterion} {modifierString} {valueString} (排除{excludedString})",
+        "format_string_depth": "{criterion}{modifierString}{valueString}(+{depth, plural, =-1 {所有} other {{深度}}})",
+        "format_string_excludes_depth": "{criterion} {modifierString} {valueString} (排除 {excludedString}) (+{depth, plural, =-1 {所有} other {{深度}}})"
     },
     "custom": "自訂",
     "date": "日期",
@@ -817,7 +866,8 @@
                 "label": "滑動模式",
                 "pan_y": "Y 軸滑動",
                 "zoom": "放大"
-            }
+            },
+            "page_header": "第 {page} 頁，共計{total}頁"
         },
         "merge": {
             "destination": "目標",
@@ -866,7 +916,11 @@
             "transcodes": "轉檔",
             "transcodes_tooltip": "將不支援的影片格式轉換成 MP4",
             "video_previews": "影片預覽",
-            "video_previews_tooltip": "此預覽將於滑鼠移至影片上時自動播放"
+            "video_previews_tooltip": "此預覽將於滑鼠移至影片上時自動播放",
+            "clip_previews": "影象剪輯預覽",
+            "covers": "短片封面",
+            "image_thumbnails": "圖片縮圖",
+            "phash_tooltip": "可用於辨認短片或偵測重複的短片。"
         },
         "scenes_found": "已找到 {count} 個短片",
         "scrape_entity_query": "{entity_type}爬蟲搜尋",
@@ -877,11 +931,15 @@
         "unsaved_changes": "尚有未儲存的更改。你確定要離開嗎？",
         "imagewall": {
             "direction": {
-                "row": "行"
-            }
+                "row": "行",
+                "column": "縱列",
+                "description": "以列或以行為基礎的佈局。"
+            },
+            "margin_desc": "每個完整影像周圍的邊界像素數目。"
         },
         "clear_o_history_confirm": "您確定要清除尻尻紀錄嗎？",
-        "clear_play_history_confirm": "您確定要清除播放紀錄嗎？"
+        "clear_play_history_confirm": "您確定要清除播放紀錄嗎？",
+        "performers_found": "找到{count} 個演員"
     },
     "dimensions": "解析度",
     "director": "導演",
@@ -904,7 +962,19 @@
             "medium": "中"
         },
         "search_accuracy_label": "搜尋準確度",
-        "title": "相近的短片"
+        "title": "相近的短片",
+        "duration_diff": "最長時間差",
+        "duration_options": {
+            "any": "任何",
+            "equal": "相等"
+        },
+        "only_select_matching_codecs": "僅在重複群組中的所有編解碼器都符合時才選擇",
+        "select_all_but_largest_file": "選取每個重複群組中的每個檔案，最大的檔案除外",
+        "select_none": "清除選擇",
+        "select_oldest": "選取重複群組中最舊的檔案",
+        "select_options": "選擇選項…",
+        "select_youngest": "選擇重複組中最新的檔案",
+        "select_all_but_largest_resolution": "選取每個重复的群組中的每個檔案，解析度最高的檔案除外"
     },
     "duplicated_phash": "重複的檔案 (PHash)",
     "duration": "長度",
@@ -1254,5 +1324,25 @@
     "appears_with": "共同演出",
     "audio_codec": "音訊編碼",
     "circumcised": "已切除包皮",
-    "date_format": "YYYY-MM-DD"
+    "date_format": "YYYY-MM-DD",
+    "connection_monitor": {
+        "websocket_connection_failed": "無法建立 websocket 連線：詳細資訊請參閱瀏覽器主控台",
+        "websocket_connection_reestablished": "Websocket 連線已重新建立"
+    },
+    "distance": "距離",
+    "errors": {
+        "header": "錯誤",
+        "image_index_greater_than_zero": "影象索引必須大於0",
+        "invalid_javascript_string": "無效的 javascript 程式碼: {error}",
+        "invalid_json_string": "無效的 JSON 字串： {error}",
+        "something_went_wrong": "出错了。",
+        "loading_type": "載入{type}時出錯",
+        "lazy_component_error_help": "如果您最近升級了 Stash，請重新載入頁面或清除瀏覽器cache。"
+    },
+    "group": "群組",
+    "group_count": "群組計數",
+    "group_scene_number": "短片編號",
+    "groups": "群組",
+    "hasChapters": "擁有章節",
+    "history": "歷史紀錄"
 }
