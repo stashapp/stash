@@ -31,6 +31,7 @@ type Gallery {
   cover: Image
 
   paths: GalleryPathsType! # Resolver
+  image(index: Int!): Image!
 }
 
 input GalleryCreateInput {

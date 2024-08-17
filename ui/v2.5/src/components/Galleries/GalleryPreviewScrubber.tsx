@@ -47,7 +47,7 @@ export const GalleryPreviewScrubber: React.FC<{
         totalSprites={imageCount}
         activeIndex={activeIndex}
         setActiveIndex={(i) => debounceSetActiveIndex(i)}
-        onClick={() => onScrubberClick}
+        onClick={() => onScrubberClick()}
       />
     </div>
   );

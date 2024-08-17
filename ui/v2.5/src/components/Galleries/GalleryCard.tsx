@@ -16,6 +16,7 @@ import ScreenUtils from "src/utils/screen";
 import { StudioOverlay } from "../Shared/GridCard/StudioOverlay";
 import { GalleryPreviewScrubber } from "./GalleryPreviewScrubber";
 import cx from "classnames";
+import { useHistory } from "react-router-dom";
 
 interface IScenePreviewProps {
   isPortrait?: boolean;
@@ -63,6 +64,7 @@ interface IProps {
 }
 
 export const GalleryCard: React.FC<IProps> = (props) => {
+  const history = useHistory();
   const [cardWidth, setCardWidth] = useState<number>();
 
   useEffect(() => {
@@ -205,7 +207,13 @@ export const GalleryCard: React.FC<IProps> = (props) => {
       linkClassName="gallery-card-header"
       image={
         <>
-          <GalleryPreview gallery={props.gallery} />
+          <GalleryPreview
+            gallery={props.gallery}
+            onScrubberClick={(i) => {
+              console.log(i);
+              history.push(`/galleries/${props.gallery.id}/images/${i}`);
+            }}
+          />
           <RatingBanner rating={props.gallery.rating100} />
         </>
       }

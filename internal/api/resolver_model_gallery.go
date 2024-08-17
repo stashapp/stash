@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/stashapp/stash/internal/api/loaders"
 	"github.com/stashapp/stash/internal/api/urlbuilders"
@@ -199,4 +200,19 @@ func (r *galleryResolver) Paths(ctx context.Context, obj *models.Gallery) (*Gall
 	return &GalleryPathsType{
 		Preview: previewPath,
 	}, nil
+}
+
+func (r *galleryResolver) Image(ctx context.Context, obj *models.Gallery, index int) (ret *models.Image, err error) {
+	if index < 0 {
+		return nil, fmt.Errorf("index must >= 0")
+	}
+
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+		ret, err = r.repository.Image.FindByGalleryIDIndex(ctx, obj.ID, uint(index))
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return
 }
