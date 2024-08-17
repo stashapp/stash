@@ -5,8 +5,9 @@ import { LibraryTasks } from "./LibraryTasks";
 import { DataManagementTasks } from "./DataManagementTasks";
 import { PluginTasks } from "./PluginTasks";
 import { JobTable } from "./JobTable";
+import { PatchComponent } from "src/patch";
 
-export const SettingsTasksPanel: React.FC = () => {
+export const SettingsTasksPanel: React.FC = PatchComponent("SettingsTasksPanel", () => {
   const intl = useIntl();
   const [isBackupRunning, setIsBackupRunning] = useState<boolean>(false);
   const [isAnonymiseRunning, setIsAnonymiseRunning] = useState<boolean>(false);
@@ -48,4 +49,4 @@ export const SettingsTasksPanel: React.FC = () => {
       </div>
     </div>
   );
-};
+});

@@ -6,11 +6,12 @@ import { useToast } from "src/hooks/Toast";
 import * as GQL from "src/core/generated-graphql";
 import { SettingSection } from "../SettingSection";
 import { Setting, SettingGroup } from "../Inputs";
+import { PatchComponent } from "src/patch";
 
 type Plugin = Pick<GQL.Plugin, "id">;
 type PluginTask = Pick<GQL.PluginTask, "name" | "description">;
 
-export const PluginTasks: React.FC = () => {
+export const PluginTasks: React.FC = PatchComponent("PluginTasks", () => {
   const intl = useIntl();
   const Toast = useToast();
 
@@ -73,4 +74,4 @@ export const PluginTasks: React.FC = () => {
       </SettingSection>
     </Form.Group>
   );
-};
+});

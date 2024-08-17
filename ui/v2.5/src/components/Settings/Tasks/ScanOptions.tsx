@@ -1,13 +1,14 @@
 import React from "react";
 import * as GQL from "src/core/generated-graphql";
 import { BooleanSetting } from "../Inputs";
+import { PatchComponent } from "src/patch";
 
 interface IScanOptions {
   options: GQL.ScanMetadataInput;
   setOptions: (s: GQL.ScanMetadataInput) => void;
 }
 
-export const ScanOptions: React.FC<IScanOptions> = ({
+export const ScanOptions: React.FC<IScanOptions> = PatchComponent("ScanOptions", ({
   options,
   setOptions: setOptionsState,
 }) => {
@@ -79,4 +80,4 @@ export const ScanOptions: React.FC<IScanOptions> = ({
       />
     </>
   );
-};
+});

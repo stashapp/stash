@@ -22,52 +22,39 @@ interface ISetting {
 
 export const Setting: React.FC<PropsWithChildren<ISetting>> = PatchComponent(
   "Setting",
-  (props: PropsWithChildren<ISetting>) => {
-    const {
-      id,
-      className,
-      heading,
-      headingID,
-      subHeadingID,
-      subHeading,
-      children,
-      tooltipID,
-      onClick,
-      disabled,
-      advanced,
-    } = props;
-
-    // these components can be used in the setup wizard, where advanced mode is not available
+  ({
+    id,
+    className,
+    heading,
+    headingID,
+    subHeadingID,
+    subHeading,
+    children,
+    tooltipID,
+    onClick,
+    disabled,
+    advanced,
+  }: PropsWithChildren<ISetting>) => {
     const { advancedMode } = useSettingsOptional();
-
     const intl = useIntl();
 
-    function renderHeading() {
-      if (headingID) {
-        return intl.formatMessage({ id: headingID });
-      }
-      return heading;
-    }
+    if (advanced && !advancedMode) return null;
 
-    function renderSubHeading() {
-      if (subHeadingID) {
-        return (
-          <div className="sub-heading">
-            {intl.formatMessage({ id: subHeadingID })}
-          </div>
-        );
-      }
-      if (subHeading) {
-        return <div className="sub-heading">{subHeading}</div>;
-      }
-    }
+    const renderHeading = () =>
+      headingID ? intl.formatMessage({ id: headingID }) : heading;
+    const renderSubHeading = () =>
+      subHeadingID ? (
+        <div className="sub-heading">
+          {intl.formatMessage({ id: subHeadingID })}
+        </div>
+      ) : subHeading ? (
+        <div className="sub-heading">{subHeading}</div>
+      ) : null;
 
     const tooltip = tooltipID
       ? intl.formatMessage({ id: tooltipID })
       : undefined;
     const disabledClassName = disabled ? "disabled" : "";
-
-    if (advanced && !advancedMode) return null;
 
     return (
       <div
@@ -83,7 +70,7 @@ export const Setting: React.FC<PropsWithChildren<ISetting>> = PatchComponent(
       </div>
     );
   }
-) as React.FC<PropsWithChildren<ISetting>>;
+);
 
 interface ISettingGroup {
   settingProps?: ISetting;
@@ -95,13 +82,17 @@ interface ISettingGroup {
 export const SettingGroup: React.FC<PropsWithChildren<ISettingGroup>> =
   PatchComponent(
     "SettingGroup",
-    ({ settingProps, topLevel, collapsible, collapsedDefault, children }) => {
+    ({
+      settingProps,
+      topLevel,
+      collapsible,
+      collapsedDefault,
+      children,
+    }: PropsWithChildren<ISettingGroup>) => {
       const [open, setOpen] = useState(!collapsedDefault);
 
-      function renderCollapseButton() {
-        if (!collapsible) return;
-
-        return (
+      const renderCollapseButton = () =>
+        collapsible ? (
           <Button
             className="setting-group-collapse-button"
             variant="minimal"
@@ -109,27 +100,24 @@ export const SettingGroup: React.FC<PropsWithChildren<ISettingGroup>> =
           >
             <Icon className="fa-fw" icon={open ? faChevronUp : faChevronDown} />
           </Button>
-        );
-      }
+        ) : null;
 
-      function onDivClick(e: React.MouseEvent<HTMLDivElement>) {
+      const onDivClick = (e: React.MouseEvent<HTMLDivElement>) => {
         if (!collapsible) return;
 
-        // ensure button was not clicked
         let target: HTMLElement | null = e.target as HTMLElement;
         while (target && target !== e.currentTarget) {
           if (
             target.nodeName.toLowerCase() === "button" ||
             target.nodeName.toLowerCase() === "a"
           ) {
-            // button clicked, swallow event
             return;
           }
           target = target.parentElement;
         }
 
         setOpen(!open);
-      }
+      };
 
       return (
         <div className={`setting-group ${collapsible ? "collapsible" : ""}`}>
@@ -153,20 +141,16 @@ interface IBooleanSetting extends ISetting {
 
 export const BooleanSetting: React.FC<IBooleanSetting> = PatchComponent(
   "BooleanSetting",
-  (props) => {
-    const { id, disabled, checked, onChange, ...settingProps } = props;
-
-    return (
-      <Setting {...settingProps} disabled={disabled}>
-        <Form.Switch
-          id={id}
-          disabled={disabled}
-          checked={checked ?? false}
-          onChange={() => onChange(!checked)}
-        />
-      </Setting>
-    );
-  }
+  ({ id, disabled, checked, onChange, ...settingProps }: IBooleanSetting) => (
+    <Setting {...settingProps} disabled={disabled}>
+      <Form.Switch
+        id={id}
+        disabled={disabled}
+        checked={checked ?? false}
+        onChange={() => onChange(!checked)}
+      />
+    </Setting>
+  )
 );
 
 interface ISelectSetting extends ISetting {
@@ -177,25 +161,31 @@ interface ISelectSetting extends ISetting {
 export const SelectSetting: React.FC<PropsWithChildren<ISelectSetting>> =
   PatchComponent(
     "SelectSetting",
-    ({ id, headingID, subHeadingID, value, children, onChange, advanced }) => {
-      return (
-        <Setting
-          advanced={advanced}
-          headingID={headingID}
-          subHeadingID={subHeadingID}
-          id={id}
+    ({
+      id,
+      headingID,
+      subHeadingID,
+      value,
+      children,
+      onChange,
+      advanced,
+    }: PropsWithChildren<ISelectSetting>) => (
+      <Setting
+        advanced={advanced}
+        headingID={headingID}
+        subHeadingID={subHeadingID}
+        id={id}
+      >
+        <Form.Control
+          className="input-control"
+          as="select"
+          value={value ?? ""}
+          onChange={(e) => onChange(e.currentTarget.value)}
         >
-          <Form.Control
-            className="input-control"
-            as="select"
-            value={value ?? ""}
-            onChange={(e) => onChange(e.currentTarget.value)}
-          >
-            {children}
-          </Form.Control>
-        </Setting>
-      );
-    }
+          {children}
+        </Form.Control>
+      </Setting>
+    )
   );
 
 interface IDialogSetting<T> extends ISetting {
@@ -205,22 +195,22 @@ interface IDialogSetting<T> extends ISetting {
   renderValue?: (v: T | undefined) => JSX.Element;
   onChange: () => void;
 }
-const _ChangeButtonSetting = <T extends {}>(props: IDialogSetting<T>) => {
-  const {
-    id,
-    className,
-    headingID,
-    heading,
-    tooltipID,
-    subHeadingID,
-    subHeading,
-    value,
-    onChange,
-    renderValue,
-    buttonText,
-    buttonTextID,
-    disabled,
-  } = props;
+
+const _ChangeButtonSetting = <T extends {}>({
+  id,
+  className,
+  headingID,
+  heading,
+  tooltipID,
+  subHeadingID,
+  subHeading,
+  value,
+  onChange,
+  renderValue,
+  buttonText,
+  buttonTextID,
+  disabled,
+}: IDialogSetting<T>) => {
   const intl = useIntl();
 
   const tooltip = tooltipID ? intl.formatMessage({ id: tooltipID }) : undefined;
@@ -232,30 +222,22 @@ const _ChangeButtonSetting = <T extends {}>(props: IDialogSetting<T>) => {
         <h3 title={tooltip}>
           {headingID
             ? intl.formatMessage({ id: headingID })
-            : heading
-            ? heading
-            : undefined}
+            : heading || undefined}
         </h3>
-
         <div className="value">
           {renderValue ? renderValue(value) : undefined}
         </div>
-
         {subHeadingID ? (
           <div className="sub-heading">
             {intl.formatMessage({ id: subHeadingID })}
           </div>
         ) : subHeading ? (
           <div className="sub-heading">{subHeading}</div>
-        ) : undefined}
+        ) : null}
       </div>
       <div>
         <Button onClick={() => onChange()} disabled={disabled}>
-          {buttonText ? (
-            buttonText
-          ) : (
-            <FormattedMessage id={buttonTextID ?? "actions.edit"} />
-          )}
+          {buttonText || <FormattedMessage id={buttonTextID ?? "actions.edit"} />}
         </Button>
       </div>
     </div>
@@ -284,20 +266,18 @@ export interface ISettingModal<T> {
   error?: string | undefined;
 }
 
-const _SettingModal = <T extends {}>(props: ISettingModal<T>) => {
-  const {
-    heading,
-    headingID,
-    subHeading,
-    subHeadingID,
-    value,
-    close,
-    renderField,
-    modalProps,
-    validate,
-    error,
-  } = props;
-
+const _SettingModal = <T extends {}>({
+  heading,
+  headingID,
+  subHeading,
+  subHeadingID,
+  value,
+  close,
+  renderField,
+  modalProps,
+  validate,
+  error,
+}: ISettingModal<T>) => {
   const intl = useIntl();
   const [currentValue, setCurrentValue] = useState<T | undefined>(value);
 
@@ -320,7 +300,7 @@ const _SettingModal = <T extends {}>(props: ISettingModal<T>) => {
             </div>
           ) : subHeading ? (
             <div className="sub-heading">{subHeading}</div>
-          ) : undefined}
+          ) : null}
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={() => close()}>
@@ -363,31 +343,30 @@ interface IModalSetting<T> extends ISetting {
   validateChange?: (v: T) => void | undefined;
 }
 
-export const _ModalSetting = <T extends {}>(props: IModalSetting<T>) => {
-  const {
-    id,
-    className,
-    value,
-    headingID,
-    heading,
-    subHeadingID,
-    subHeading,
-    onChange,
-    renderField,
-    renderValue,
-    tooltipID,
-    buttonText,
-    buttonTextID,
-    modalProps,
-    disabled,
-    advanced,
-    validateChange,
-  } = props;
+export const _ModalSetting = <T extends {}>({
+  id,
+  className,
+  value,
+  headingID,
+  heading,
+  subHeadingID,
+  subHeading,
+  onChange,
+  renderField,
+  renderValue,
+  tooltipID,
+  buttonText,
+  buttonTextID,
+  modalProps,
+  disabled,
+  advanced,
+  validateChange,
+}: IModalSetting<T>) => {
   const [showModal, setShowModal] = useState(false);
   const [error, setError] = useState<string>();
   const { advancedMode } = useSettings();
 
-  function onClose(v: T | undefined) {
+  const onClose = (v: T | undefined) => {
     setError(undefined);
     if (v !== undefined) {
       if (validateChange) {
@@ -398,17 +377,16 @@ export const _ModalSetting = <T extends {}>(props: IModalSetting<T>) => {
           return;
         }
       }
-
       onChange(v);
     }
     setShowModal(false);
-  }
+  };
 
   if (advanced && !advancedMode) return null;
 
   return (
     <>
-      {showModal ? (
+      {showModal && (
         <SettingModal<T>
           headingID={headingID}
           subHeadingID={subHeadingID}
@@ -420,7 +398,7 @@ export const _ModalSetting = <T extends {}>(props: IModalSetting<T>) => {
           error={error}
           {...modalProps}
         />
-      ) : undefined}
+      )}
 
       <ChangeButtonSetting<T>
         id={id}
@@ -453,23 +431,21 @@ interface IStringSetting extends ISetting {
 
 export const StringSetting: React.FC<IStringSetting> = PatchComponent(
   "StringSetting",
-  (props) => {
-    return (
-      <ModalSetting<string>
-        {...props}
-        renderField={(value, setValue) => (
-          <Form.Control
-            className="text-input"
-            value={value ?? ""}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setValue(e.currentTarget.value)
-            }
-          />
-        )}
-        renderValue={(value) => <span>{value}</span>}
-      />
-    );
-  }
+  (props: IStringSetting) => (
+    <ModalSetting<string>
+      {...props}
+      renderField={(value, setValue) => (
+        <Form.Control
+          className="text-input"
+          value={value ?? ""}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            setValue(e.currentTarget.value)
+          }
+        />
+      )}
+      renderValue={(value) => <span>{value}</span>}
+    />
+  )
 );
 
 interface INumberSetting extends ISetting {
@@ -479,24 +455,22 @@ interface INumberSetting extends ISetting {
 
 export const NumberSetting: React.FC<INumberSetting> = PatchComponent(
   "NumberSetting",
-  (props) => {
-    return (
-      <ModalSetting<number>
-        {...props}
-        renderField={(value, setValue) => (
-          <Form.Control
-            className="text-input"
-            type="number"
-            value={value ?? 0}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setValue(Number.parseInt(e.currentTarget.value || "0", 10))
-            }
-          />
-        )}
-        renderValue={(value) => <span>{value}</span>}
-      />
-    );
-  }
+  (props: INumberSetting) => (
+    <ModalSetting<number>
+      {...props}
+      renderField={(value, setValue) => (
+        <Form.Control
+          className="text-input"
+          type="number"
+          value={value ?? 0}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            setValue(Number.parseInt(e.currentTarget.value || "0", 10))
+          }
+        />
+      )}
+      renderValue={(value) => <span>{value}</span>}
+    />
+  )
 );
 
 interface IStringListSetting extends ISetting {
@@ -507,28 +481,26 @@ interface IStringListSetting extends ISetting {
 
 export const StringListSetting: React.FC<IStringListSetting> = PatchComponent(
   "StringListSetting",
-  (props) => {
-    return (
-      <ModalSetting<string[]>
-        {...props}
-        renderField={(value, setValue) => (
-          <StringListInput
-            value={value ?? []}
-            setValue={setValue}
-            placeholder={props.defaultNewValue}
-          />
-        )}
-        renderValue={(value) => (
-          <div>
-            {value?.map((v, i) => (
-              // eslint-disable-next-line react/no-array-index-key
-              <div key={i}>{v}</div>
-            ))}
-          </div>
-        )}
-      />
-    );
-  }
+  (props: IStringListSetting) => (
+    <ModalSetting<string[]>
+      {...props}
+      renderField={(value, setValue) => (
+        <StringListInput
+          value={value ?? []}
+          setValue={setValue}
+          placeholder={props.defaultNewValue}
+        />
+      )}
+      renderValue={(value) => (
+        <div>
+          {value?.map((v, i) => (
+            // eslint-disable-next-line react/no-array-index-key
+            <div key={i}>{v}</div>
+          ))}
+        </div>
+      )}
+    />
+  )
 );
 
 interface IConstantSetting<T> extends ISetting {
@@ -536,17 +508,21 @@ interface IConstantSetting<T> extends ISetting {
   renderValue?: (v: T | undefined) => JSX.Element;
 }
 
-export const _ConstantSetting = <T extends {}>(props: IConstantSetting<T>) => {
-  const { id, headingID, subHeading, subHeadingID, renderValue, value } = props;
+export const _ConstantSetting = <T extends {}>({
+  id,
+  headingID,
+  subHeading,
+  subHeadingID,
+  renderValue,
+  value,
+}: IConstantSetting<T>) => {
   const intl = useIntl();
 
   return (
     <div className="setting" id={id}>
       <div>
         <h3>{headingID ? intl.formatMessage({ id: headingID }) : undefined}</h3>
-
         <div className="value">{renderValue ? renderValue(value) : value}</div>
-
         {subHeadingID ? (
           <div className="sub-heading">
             {intl.formatMessage({ id: subHeadingID })}

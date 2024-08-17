@@ -17,6 +17,7 @@ import {
   faHourglassStart,
   faTimes,
 } from "@fortawesome/free-solid-svg-icons";
+import { PatchComponent } from "src/patch";
 
 type JobFragment = Pick<
   GQL.Job,
@@ -27,7 +28,7 @@ interface IJob {
   job: JobFragment;
 }
 
-const Task: React.FC<IJob> = ({ job }) => {
+const Task: React.FC<IJob> = PatchComponent("Task", ({ job }) => {
   const [stopping, setStopping] = useState(false);
   const [className, setClassName] = useState("");
 
@@ -169,9 +170,9 @@ const Task: React.FC<IJob> = ({ job }) => {
       </div>
     </li>
   );
-};
+});
 
-export const JobTable: React.FC = () => {
+export const JobTable: React.FC = PatchComponent("JobTable", () => {
   const intl = useIntl();
   const jobStatus = useJobQueue();
   const jobsSubscribe = useJobsSubscribe();
@@ -233,4 +234,4 @@ export const JobTable: React.FC = () => {
       </ul>
     </Card>
   );
-};
+});

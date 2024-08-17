@@ -8,6 +8,7 @@ import { useSettings } from "./context";
 import { LoadingIndicator } from "../Shared/LoadingIndicator";
 import { useToast } from "src/hooks/Toast";
 import { useGenerateAPIKey } from "src/core/StashService";
+import { PatchComponent } from "src/patch";  // Ensure PatchComponent is imported
 
 type AuthenticationSettingsInput = Pick<
   GQL.ConfigGeneralInput,
@@ -67,103 +68,106 @@ const AuthenticationInput: React.FC<IAuthenticationInput> = ({
   );
 };
 
-export const SettingsSecurityPanel: React.FC = () => {
-  const intl = useIntl();
-  const Toast = useToast();
+export const SettingsSecurityPanel: React.FC = PatchComponent(
+  "SettingsSecurityPanel",
+  () => {
+    const intl = useIntl();
+    const Toast = useToast();
 
-  const { general, apiKey, loading, error, saveGeneral, refetch } =
-    useSettings();
+    const { general, apiKey, loading, error, saveGeneral, refetch } =
+      useSettings();
 
-  const [generateAPIKey] = useGenerateAPIKey();
+    const [generateAPIKey] = useGenerateAPIKey();
 
-  async function onGenerateAPIKey() {
-    try {
-      await generateAPIKey({
-        variables: {
-          input: {},
-        },
-      });
-      refetch();
-    } catch (e) {
-      Toast.error(e);
-    }
-  }
-
-  async function onClearAPIKey() {
-    try {
-      await generateAPIKey({
-        variables: {
-          input: {
-            clear: true,
+    async function onGenerateAPIKey() {
+      try {
+        await generateAPIKey({
+          variables: {
+            input: {},
           },
-        },
-      });
-      refetch();
-    } catch (e) {
-      Toast.error(e);
+        });
+        refetch();
+      } catch (e) {
+        Toast.error(e);
+      }
     }
-  }
 
-  if (error) return <h1>{error.message}</h1>;
-  if (loading) return <LoadingIndicator />;
+    async function onClearAPIKey() {
+      try {
+        await generateAPIKey({
+          variables: {
+            input: {
+              clear: true,
+            },
+          },
+        });
+        refetch();
+      } catch (e) {
+        Toast.error(e);
+      }
+    }
 
-  return (
-    <>
-      <SettingSection headingID="config.general.auth.authentication">
-        <ModalSetting<AuthenticationSettingsInput>
-          id="authentication-settings"
-          headingID="config.general.auth.credentials.heading"
-          subHeadingID="config.general.auth.credentials.description"
-          value={{
-            username: general.username,
-            password: general.password,
-          }}
-          onChange={(v) => saveGeneral(v)}
-          renderField={(value, setValue) => (
-            <AuthenticationInput value={value ?? {}} setValue={setValue} />
-          )}
-          renderValue={(v) => {
-            if (v?.username && v?.password)
-              return <span>{v?.username ?? ""}</span>;
-            return <></>;
-          }}
-        />
+    if (error) return <h1>{error.message}</h1>;
+    if (loading) return <LoadingIndicator />;
 
-        <div className="setting" id="apikey">
-          <div>
-            <h3>{intl.formatMessage({ id: "config.general.auth.api_key" })}</h3>
+    return (
+      <>
+        <SettingSection headingID="config.general.auth.authentication">
+          <ModalSetting<AuthenticationSettingsInput>
+            id="authentication-settings"
+            headingID="config.general.auth.credentials.heading"
+            subHeadingID="config.general.auth.credentials.description"
+            value={{
+              username: general.username,
+              password: general.password,
+            }}
+            onChange={(v) => saveGeneral(v)}
+            renderField={(value, setValue) => (
+              <AuthenticationInput value={value ?? {}} setValue={setValue} />
+            )}
+            renderValue={(v) => {
+              if (v?.username && v?.password)
+                return <span>{v?.username ?? ""}</span>;
+              return <></>;
+            }}
+          />
 
-            <div className="value text-break">{apiKey}</div>
+          <div className="setting" id="apikey">
+            <div>
+              <h3>{intl.formatMessage({ id: "config.general.auth.api_key" })}</h3>
 
-            <div className="sub-heading">
-              {intl.formatMessage({ id: "config.general.auth.api_key_desc" })}
+              <div className="value text-break">{apiKey}</div>
+
+              <div className="sub-heading">
+                {intl.formatMessage({ id: "config.general.auth.api_key_desc" })}
+              </div>
+            </div>
+            <div>
+              <Button
+                disabled={!general.username || !general.password}
+                onClick={() => onGenerateAPIKey()}
+              >
+                {intl.formatMessage({
+                  id: "config.general.auth.generate_api_key",
+                })}
+              </Button>
+              <Button variant="danger" onClick={() => onClearAPIKey()}>
+                {intl.formatMessage({
+                  id: "config.general.auth.clear_api_key",
+                })}
+              </Button>
             </div>
           </div>
-          <div>
-            <Button
-              disabled={!general.username || !general.password}
-              onClick={() => onGenerateAPIKey()}
-            >
-              {intl.formatMessage({
-                id: "config.general.auth.generate_api_key",
-              })}
-            </Button>
-            <Button variant="danger" onClick={() => onClearAPIKey()}>
-              {intl.formatMessage({
-                id: "config.general.auth.clear_api_key",
-              })}
-            </Button>
-          </div>
-        </div>
 
-        <NumberSetting
-          id="maxSessionAge"
-          headingID="config.general.auth.maximum_session_age"
-          subHeadingID="config.general.auth.maximum_session_age_desc"
-          value={general.maxSessionAge ?? undefined}
-          onChange={(v) => saveGeneral({ maxSessionAge: v })}
-        />
-      </SettingSection>
-    </>
-  );
-};
+          <NumberSetting
+            id="maxSessionAge"
+            headingID="config.general.auth.maximum_session_age"
+            subHeadingID="config.general.auth.maximum_session_age_desc"
+            value={general.maxSessionAge ?? undefined}
+            onChange={(v) => saveGeneral({ maxSessionAge: v })}
+          />
+        </SettingSection>
+      </>
+    );
+  }
+);

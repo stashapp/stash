@@ -20,13 +20,14 @@ import { ManualLink } from "src/components/Help/context";
 import { Icon } from "src/components/Shared/Icon";
 import { faQuestionCircle } from "@fortawesome/free-solid-svg-icons";
 import { useSettings } from "../context";
+import { PatchComponent } from "src/patch";
 
 interface IAutoTagOptions {
   options: GQL.AutoTagMetadataInput;
   setOptions: (s: GQL.AutoTagMetadataInput) => void;
 }
 
-const AutoTagOptions: React.FC<IAutoTagOptions> = ({
+const AutoTagOptions: React.FC<IAutoTagOptions> = PatchComponent("AutoTagOptions", ({
   options,
   setOptions: setOptionsState,
 }) => {
@@ -66,9 +67,9 @@ const AutoTagOptions: React.FC<IAutoTagOptions> = ({
       />
     </>
   );
-};
+});
 
-export const LibraryTasks: React.FC = () => {
+export const LibraryTasks: React.FC = PatchComponent("LibraryTasks", () => {
   const intl = useIntl();
   const Toast = useToast();
   const { ui, saveUI, loading } = useSettings();
@@ -444,4 +445,4 @@ export const LibraryTasks: React.FC = () => {
       </SettingSection>
     </Form.Group>
   );
-};
+});

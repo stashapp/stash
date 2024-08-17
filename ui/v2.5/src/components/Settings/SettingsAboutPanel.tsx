@@ -5,8 +5,9 @@ import { useLatestVersion } from "src/core/StashService";
 import { ExternalLink } from "../Shared/ExternalLink";
 import { ConstantSetting, SettingGroup } from "./Inputs";
 import { SettingSection } from "./SettingSection";
+import { PatchComponent } from "src/patch";  // Ensure PatchComponent is imported
 
-export const SettingsAboutPanel: React.FC = () => {
+export const SettingsAboutPanel: React.FC = PatchComponent("SettingsAboutPanel", () => {
   const gitHash = import.meta.env.VITE_APP_GITHASH;
   const stashVersion = import.meta.env.VITE_APP_STASH_VERSION;
   const buildTime = import.meta.env.VITE_APP_DATE;
@@ -165,4 +166,4 @@ export const SettingsAboutPanel: React.FC = () => {
       </SettingSection>
     </>
   );
-};
+});

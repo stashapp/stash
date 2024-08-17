@@ -5,6 +5,7 @@ import { useLoggingSubscribe, queryLogs } from "src/core/StashService";
 import { SelectSetting } from "./Inputs";
 import { SettingSection } from "./SettingSection";
 import { JobTable } from "./Tasks/JobTable";
+import { PatchComponent } from "src/patch";  // Ensure PatchComponent is imported
 
 function convertTime(logEntry: GQL.LogEntryDataFragment) {
   function pad(val: number) {
@@ -35,7 +36,7 @@ interface ILogElementProps {
   logEntry: LogEntry;
 }
 
-const LogElement: React.FC<ILogElementProps> = ({ logEntry }) => {
+const LogElement: React.FC<ILogElementProps> = PatchComponent("LogElement", ({ logEntry }) => {
   // pad to maximum length of level enum
   const level = logEntry.level.padEnd(GQL.LogLevel.Progress.length);
 
@@ -46,7 +47,7 @@ const LogElement: React.FC<ILogElementProps> = ({ logEntry }) => {
       <span className="col col-sm-9">{logEntry.message}</span>
     </div>
   );
-};
+});
 
 class LogEntry {
   public time: string;
@@ -72,7 +73,7 @@ const MAX_LOG_ENTRIES = 50000;
 const MAX_DISPLAY_LOG_ENTRIES = 1000;
 const logLevels = ["Trace", "Debug", "Info", "Warning", "Error"];
 
-export const SettingsLogsPanel: React.FC = () => {
+export const SettingsLogsPanel: React.FC = PatchComponent("SettingsLogsPanel", () => {
   const [entries, setEntries] = useState<LogEntry[]>([]);
   const { data, error } = useLoggingSubscribe();
   const [logLevel, setLogLevel] = useState<string>("Info");
@@ -154,4 +155,4 @@ export const SettingsLogsPanel: React.FC = () => {
       </div>
     </>
   );
-};
+});
