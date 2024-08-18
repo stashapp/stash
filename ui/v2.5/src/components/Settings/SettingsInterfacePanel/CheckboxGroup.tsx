@@ -16,12 +16,7 @@ interface ICheckboxGroupProps {
 
 export const CheckboxGroup: React.FC<ICheckboxGroupProps> = PatchComponent(
   "CheckboxGroup",
-  ({
-    groupId,
-    items,
-    checkedIds = [],
-    onChange,
-  }) => {
+  ({ groupId, items, checkedIds = [], onChange }) => {
     function generateId(itemId: string) {
       return `${groupId}-${itemId}`;
     }

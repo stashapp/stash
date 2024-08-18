@@ -169,7 +169,7 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
     function validateJavascriptString(v: string) {
       if (!v) return;
       try {
-        new Function(v);
+        eval(v);
       } catch (e) {
         throw new Error(
           intl.formatMessage(
