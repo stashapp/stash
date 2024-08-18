@@ -58,7 +58,7 @@ const allMenuItems = [
 
 export const SettingsInterfacePanel: React.FC = PatchComponent(
   "SettingsInterfacePanel",
-  () => {
+  function SettingsInterfacePanel() {
     const intl = useIntl();
 
     const {
@@ -70,7 +70,6 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
       error,
     } = useSettings();
 
-    // convert old movies menu item to groups
     const massageMenuItems = useCallback((menuItems: string[]) => {
       return menuItems.map((item) => {
         if (item === "movies") {
@@ -98,17 +97,14 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
 
     const [, setInterfaceLocalForage] = useInterfaceLocalForage();
 
-    const saveLightboxSettings = (v: Partial<GQL.ConfigImageLightboxInput>) => {
-      // save in local forage as well for consistency
-      setInterfaceLocalForage((prev) => {
-        return {
-          ...prev,
-          imageLightbox: {
-            ...prev.imageLightbox,
-            ...v,
-          },
-        };
-      });
+    function saveLightboxSettings(v: Partial<GQL.ConfigImageLightboxInput>) {
+      setInterfaceLocalForage((prev) => ({
+        ...prev,
+        imageLightbox: {
+          ...prev.imageLightbox,
+          ...v,
+        },
+      }));
 
       saveInterface({
         imageLightbox: {
@@ -116,45 +112,45 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
           ...v,
         },
       });
-    };
+    }
 
-    const saveImageWallMargin = (m: number) => {
+    function saveImageWallMargin(m: number) {
       saveUI({
         imageWallOptions: {
           ...(ui.imageWallOptions ?? defaultImageWallOptions),
           margin: m,
         },
       });
-    };
+    }
 
-    const saveImageWallDirection = (d: ImageWallDirection) => {
+    function saveImageWallDirection(d: ImageWallDirection) {
       saveUI({
         imageWallOptions: {
           ...(ui.imageWallOptions ?? defaultImageWallOptions),
           direction: d,
         },
       });
-    };
+    }
 
-    const saveRatingSystemType = (t: RatingSystemType) => {
+    function saveRatingSystemType(t: RatingSystemType) {
       saveUI({
         ratingSystemOptions: {
           ...ui.ratingSystemOptions,
           type: t,
         },
       });
-    };
+    }
 
-    const saveRatingSystemStarPrecision = (p: RatingStarPrecision) => {
+    function saveRatingSystemStarPrecision(p: RatingStarPrecision) {
       saveUI({
         ratingSystemOptions: {
           ...(ui.ratingSystemOptions ?? defaultRatingSystemOptions),
           starPrecision: p,
         },
       });
-    };
+    }
 
-    const validateLocaleString = (v: string) => {
+    function validateLocaleString(v: string) {
       if (!v) return;
       try {
         JSON.parse(v);
@@ -168,13 +164,11 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
           )
         );
       }
-    };
+    }
 
-    const validateJavascriptString = (v: string) => {
+    function validateJavascriptString(v: string) {
       if (!v) return;
       try {
-        // creates a function from the string to validate it but does not execute it
-        // eslint-disable-next-line @typescript-eslint/no-implied-eval
         new Function(v);
       } catch (e) {
         throw new Error(
@@ -186,12 +180,11 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
           )
         );
       }
-    };
+    }
 
     if (error) return <h1>{error.message}</h1>;
     if (loading) return <LoadingIndicator />;
 
-    // https://en.wikipedia.org/wiki/List_of_language_names
     return (
       <>
         <SettingSection headingID="config.ui.basic_settings">
@@ -484,7 +477,9 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
             headingID="config.ui.image_wall.direction"
             subHeadingID="dialogs.imagewall.direction.description"
             value={ui.imageWallOptions?.direction ?? defaultImageWallDirection}
-            onChange={(v) => saveImageWallDirection(v as ImageWallDirection)}
+            onChange={(v) =>
+              saveImageWallDirection(v as ImageWallDirection)
+            }
           >
             {Array.from(imageWallDirectionIntlMap.entries()).map((v) => (
               <option key={v[0]} value={v[0]}>
@@ -595,19 +590,25 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
               id="enableMovieBackgroundImage"
               headingID="group"
               checked={ui.enableMovieBackgroundImage ?? undefined}
-              onChange={(v) => saveUI({ enableMovieBackgroundImage: v })}
+              onChange={(v) =>
+                saveUI({ enableMovieBackgroundImage: v })
+              }
             />
             <BooleanSetting
               id="enablePerformerBackgroundImage"
               headingID="performer"
               checked={ui.enablePerformerBackgroundImage ?? undefined}
-              onChange={(v) => saveUI({ enablePerformerBackgroundImage: v })}
+              onChange={(v) =>
+                saveUI({ enablePerformerBackgroundImage: v })
+              }
             />
             <BooleanSetting
               id="enableStudioBackgroundImage"
               headingID="studio"
               checked={ui.enableStudioBackgroundImage ?? undefined}
-              onChange={(v) => saveUI({ enableStudioBackgroundImage: v })}
+              onChange={(v) =>
+                saveUI({ enableStudioBackgroundImage: v })
+              }
             />
             <BooleanSetting
               id="enableTagBackgroundImage"
@@ -652,7 +653,9 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
             <BooleanSetting
               id="disableDropdownCreate_performer"
               headingID="performer"
-              checked={iface.disableDropdownCreate?.performer ?? undefined}
+              checked={
+                iface.disableDropdownCreate?.performer ?? undefined
+              }
               onChange={(v) =>
                 saveInterface({
                   disableDropdownCreate: {
@@ -732,16 +735,20 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
                 defaultRatingStarPrecision
               }
               onChange={(v) =>
-                saveRatingSystemStarPrecision(v as RatingStarPrecision)
+                saveRatingSystemStarPrecision(
+                  v as RatingStarPrecision
+                )
               }
             >
-              {Array.from(ratingStarPrecisionIntlMap.entries()).map((v) => (
-                <option key={v[0]} value={v[0]}>
-                  {intl.formatMessage({
-                    id: v[1],
-                  })}
-                </option>
-              ))}
+              {Array.from(ratingStarPrecisionIntlMap.entries()).map(
+                (v) => (
+                  <option key={v[0]} value={v[0]}>
+                    {intl.formatMessage({
+                      id: v[1],
+                    })}
+                  </option>
+                )
+              )}
             </SelectSetting>
           )}
         </SettingSection>
@@ -818,7 +825,9 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
             id="custom-locales-enabled"
             headingID="config.ui.custom_locales.option_label"
             checked={iface.customLocalesEnabled ?? undefined}
-            onChange={(v) => saveInterface({ customLocalesEnabled: v })}
+            onChange={(v) =>
+              saveInterface({ customLocalesEnabled: v })
+            }
           />
 
           <ModalSetting<string>
@@ -872,14 +881,17 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
                     <FormattedMessage
                       id={connectionStateLabel(interactiveState)}
                     />
-                    {interactiveError && <span>: {interactiveError}</span>}
+                    {interactiveError && (
+                      <span>: {interactiveError}</span>
+                    )}
                   </div>
                 </div>
                 <div>
                   {!interactiveInitialised && (
                     <Button
                       disabled={
-                        interactiveState === ConnectionState.Connecting ||
+                        interactiveState ===
+                          ConnectionState.Connecting ||
                         interactiveState === ConnectionState.Syncing
                       }
                       onClick={() => initialiseInteractive()}
@@ -934,10 +946,12 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
             headingID="config.ui.use_stash_hosted_funscript.heading"
             subHeadingID="config.ui.use_stash_hosted_funscript.description"
             checked={iface.useStashHostedFunscript ?? false}
-            onChange={(v) => saveInterface({ useStashHostedFunscript: v })}
+            onChange={(v) =>
+              saveInterface({ useStashHostedFunscript: v })
+            }
           />
         </SettingSection>
       </>
     );
   }
-) as React.FC;
+);
