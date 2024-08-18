@@ -169,7 +169,9 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
     function validateJavascriptString(v: string) {
       if (!v) return;
       try {
-        eval(v);
+        // creates a function from the string to validate it but does not execute it
+        // eslint-disable-next-line @typescript-eslint/no-implied-eval
+        new Function(v);
       } catch (e) {
         throw new Error(
           intl.formatMessage(
@@ -338,9 +340,7 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
             id="disable-mobile-media-auto-rotate"
             headingID="config.ui.scene_player.options.disable_mobile_media_auto_rotate"
             checked={ui.disableMobileMediaAutoRotateEnabled ?? undefined}
-            onChange={(v) =>
-              saveUI({ disableMobileMediaAutoRotateEnabled: v })
-            }
+            onChange={(v) => saveUI({ disableMobileMediaAutoRotateEnabled: v })}
           />
           <BooleanSetting
             id="show-scrubber"
@@ -401,9 +401,7 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
             headingID="config.ui.scene_player.options.auto_start_video_on_play_selected.heading"
             subHeadingID="config.ui.scene_player.options.auto_start_video_on_play_selected.description"
             checked={iface.autostartVideoOnPlaySelected ?? undefined}
-            onChange={(v) =>
-              saveInterface({ autostartVideoOnPlaySelected: v })
-            }
+            onChange={(v) => saveInterface({ autostartVideoOnPlaySelected: v })}
           />
 
           <BooleanSetting
@@ -477,9 +475,7 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
             headingID="config.ui.image_wall.direction"
             subHeadingID="dialogs.imagewall.direction.description"
             value={ui.imageWallOptions?.direction ?? defaultImageWallDirection}
-            onChange={(v) =>
-              saveImageWallDirection(v as ImageWallDirection)
-            }
+            onChange={(v) => saveImageWallDirection(v as ImageWallDirection)}
           >
             {Array.from(imageWallDirectionIntlMap.entries()).map((v) => (
               <option key={v[0]} value={v[0]}>
@@ -590,25 +586,19 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
               id="enableMovieBackgroundImage"
               headingID="group"
               checked={ui.enableMovieBackgroundImage ?? undefined}
-              onChange={(v) =>
-                saveUI({ enableMovieBackgroundImage: v })
-              }
+              onChange={(v) => saveUI({ enableMovieBackgroundImage: v })}
             />
             <BooleanSetting
               id="enablePerformerBackgroundImage"
               headingID="performer"
               checked={ui.enablePerformerBackgroundImage ?? undefined}
-              onChange={(v) =>
-                saveUI({ enablePerformerBackgroundImage: v })
-              }
+              onChange={(v) => saveUI({ enablePerformerBackgroundImage: v })}
             />
             <BooleanSetting
               id="enableStudioBackgroundImage"
               headingID="studio"
               checked={ui.enableStudioBackgroundImage ?? undefined}
-              onChange={(v) =>
-                saveUI({ enableStudioBackgroundImage: v })
-              }
+              onChange={(v) => saveUI({ enableStudioBackgroundImage: v })}
             />
             <BooleanSetting
               id="enableTagBackgroundImage"
@@ -653,9 +643,7 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
             <BooleanSetting
               id="disableDropdownCreate_performer"
               headingID="performer"
-              checked={
-                iface.disableDropdownCreate?.performer ?? undefined
-              }
+              checked={iface.disableDropdownCreate?.performer ?? undefined}
               onChange={(v) =>
                 saveInterface({
                   disableDropdownCreate: {
@@ -735,20 +723,16 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
                 defaultRatingStarPrecision
               }
               onChange={(v) =>
-                saveRatingSystemStarPrecision(
-                  v as RatingStarPrecision
-                )
+                saveRatingSystemStarPrecision(v as RatingStarPrecision)
               }
             >
-              {Array.from(ratingStarPrecisionIntlMap.entries()).map(
-                (v) => (
-                  <option key={v[0]} value={v[0]}>
-                    {intl.formatMessage({
-                      id: v[1],
-                    })}
-                  </option>
-                )
-              )}
+              {Array.from(ratingStarPrecisionIntlMap.entries()).map((v) => (
+                <option key={v[0]} value={v[0]}>
+                  {intl.formatMessage({
+                    id: v[1],
+                  })}
+                </option>
+              ))}
             </SelectSetting>
           )}
         </SettingSection>
@@ -825,9 +809,7 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
             id="custom-locales-enabled"
             headingID="config.ui.custom_locales.option_label"
             checked={iface.customLocalesEnabled ?? undefined}
-            onChange={(v) =>
-              saveInterface({ customLocalesEnabled: v })
-            }
+            onChange={(v) => saveInterface({ customLocalesEnabled: v })}
           />
 
           <ModalSetting<string>
@@ -881,17 +863,14 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
                     <FormattedMessage
                       id={connectionStateLabel(interactiveState)}
                     />
-                    {interactiveError && (
-                      <span>: {interactiveError}</span>
-                    )}
+                    {interactiveError && <span>: {interactiveError}</span>}
                   </div>
                 </div>
                 <div>
                   {!interactiveInitialised && (
                     <Button
                       disabled={
-                        interactiveState ===
-                          ConnectionState.Connecting ||
+                        interactiveState === ConnectionState.Connecting ||
                         interactiveState === ConnectionState.Syncing
                       }
                       onClick={() => initialiseInteractive()}
@@ -946,9 +925,7 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
             headingID="config.ui.use_stash_hosted_funscript.heading"
             subHeadingID="config.ui.use_stash_hosted_funscript.description"
             checked={iface.useStashHostedFunscript ?? false}
-            onChange={(v) =>
-              saveInterface({ useStashHostedFunscript: v })
-            }
+            onChange={(v) => saveInterface({ useStashHostedFunscript: v })}
           />
         </SettingSection>
       </>
