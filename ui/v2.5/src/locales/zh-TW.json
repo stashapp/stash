@@ -912,7 +912,7 @@
             "preview_seg_duration_desc": "每個預覽片段的長度，以秒為單位。",
             "preview_seg_duration_head": "預覽片段長度",
             "sprites": "時間軸預覽",
-            "sprites_tooltip": "時間軸預覽（用於短片中時間軸的預覽圖）",
+            "sprites_tooltip": "時間軸預覽（用於短片中時間軸的預覽圖）。",
             "transcodes": "轉檔",
             "transcodes_tooltip": "將不支援的影片格式轉換成 MP4",
             "video_previews": "影片預覽",
@@ -920,7 +920,7 @@
             "clip_previews": "影象剪輯預覽",
             "covers": "短片封面",
             "image_thumbnails": "圖片縮圖",
-            "phash_tooltip": "可用於辨認短片或偵測重複的短片。"
+            "phash_tooltip": "可用於辨認短片或偵測重複的短片"
         },
         "scenes_found": "已找到 {count} 個短片",
         "scrape_entity_query": "{entity_type}爬蟲搜尋",
@@ -1084,7 +1084,8 @@
         "play_count": "播放次數",
         "play_duration": "播放長度",
         "stream": "串流連結",
-        "video_codec": "影片編碼"
+        "video_codec": "影片編碼",
+        "o_count": "O 計數"
     },
     "megabits_per_second": "{value} megabits/秒",
     "metadata": "Metadata",
@@ -1098,7 +1099,8 @@
         "first": "最前一頁",
         "last": "最後一頁",
         "next": "下一頁",
-        "previous": "上一頁"
+        "previous": "上一頁",
+        "current_total": "第{current}頁， 共 {total}頁"
     },
     "parent_of": "{children} 的母物件",
     "parent_studios": "母工作室",
@@ -1175,7 +1177,8 @@
     "search_filter": {
         "name": "篩選",
         "saved_filters": "已儲存的過濾條件",
-        "update_filter": "更新篩選"
+        "update_filter": "更新篩選",
+        "edit_filter": "編輯篩選器"
     },
     "seconds": "秒",
     "settings": "設定",
@@ -1186,7 +1189,10 @@
             "database_file_path": "資料庫檔案路徑",
             "generated_directory": "生成媒體路徑",
             "nearly_there": "快好了！",
-            "stash_library_directories": "Stash 多媒體檔案路徑"
+            "stash_library_directories": "Stash 多媒體檔案路徑",
+            "cache_directory": "快取目錄",
+            "blobs_directory": "二進位資料目錄",
+            "blobs_use_database": "<使用資料庫中>"
         },
         "creating": {
             "creating_your_system": "建立系統中"
@@ -1225,7 +1231,16 @@
             "where_can_stash_store_its_generated_content": "Stash 可以在哪裡儲存其生成內容？",
             "where_can_stash_store_its_generated_content_description": "為提供縮圖、預覽和其他預覽資料，Stash 將自動生成圖片和影片資訊。這包括不支援的檔案格式之轉檔。預設情況下，Stash 將在包含您設定檔案的資料夾中建立一個新的 <code>generated</code> 資料夾。如果要更改此生成媒體的儲存位置，請在此輸入絕對或相對路徑（相對於目前工作目錄）。如果該資料夾不存在，Stash 將自動建立此目錄。",
             "where_is_your_porn_located": "你的片片都藏哪？",
-            "where_is_your_porn_located_description": "在此選擇你A片及圖片的資料夾，Stash 將在掃描影片及圖片時使用這些路徑。"
+            "where_is_your_porn_located_description": "在此選擇你A片及圖片的資料夾，Stash 將在掃描影片及圖片時使用這些路徑。",
+            "path_to_blobs_directory_empty_for_default": "blobs 目錄的路徑 (預設為空)",
+            "path_to_cache_directory_empty_for_default": "快取目錄的路徑 (預設為空)",
+            "store_blobs_in_database": "將 blobs 儲存到資料庫",
+            "where_can_stash_store_blobs": "Stash 可以在哪裡儲存資料庫的二進位資料？",
+            "where_can_stash_store_blobs_description": "Stash可以在資料庫或檔案系統中儲存二進位制資料，如場景封面、表演者、工作室和標籤影象。預設情況下，它會將這些資料儲存在檔案系統中包含配置檔案的目錄中的子目錄 <code>blobs</code> 中。如果要更改此項，請輸入絕對或相對（到當前工作目錄）路徑。如果Stash不存在此目錄，它將建立此目錄。",
+            "where_can_stash_store_cache_files": "Stash可以在哪裡儲存快取檔案？",
+            "where_can_stash_store_blobs_description_addendum": "或者，您可以將此資料儲存在資料庫中。<strong>注意：</strong>這將增加資料庫檔案的大小，並增加資料庫遷移時間。",
+            "where_can_stash_store_cache_files_description": "為了使HLS/DASH實時轉碼等功能正常執行，Stash需要一個臨時檔案的快取目錄。預設情況下，Stash將在包含您的配置檔案的目錄中建立一個<code>cache</code>目錄。如果您想更改此設定，請輸入絕對或相對（與當前工作目錄）路徑。如果Stash不存在，它將建立此目錄。",
+            "where_can_stash_store_its_database_warning": "警告：將資料庫儲存在與執行Stash的系統不同的系統上（例如，將資料庫儲存在NAS上，同時在另一台計算機上執行Stash伺服器）是<strong>不受支援的</strong>！SQLite不適用於跨網路使用，嘗試這樣做很容易導致整個資料庫損壞。"
         },
         "stash_setup_wizard": "Stash 安裝精靈",
         "success": {
@@ -1238,7 +1253,9 @@
             "support_us": "支持我們",
             "thanks_for_trying_stash": "感謝您使用 Stash！",
             "welcome_contrib": "我們也歡迎以程式碼（錯誤修復、改進和新功能實作）、測試、錯誤報告、改進和功能請求以及使用者支援的形式做出貢獻。詳情請見程式內說明的 Contribution（貢獻）頁面。",
-            "your_system_has_been_created": "成功！您的系統已安裝完成！"
+            "your_system_has_been_created": "成功！您的系統已安裝完成！",
+            "missing_ffmpeg": "您缺少所需的<code>ffmpeg</code>二進位制檔案。您可以通過選中下面的框自動將其下載到您的配置目錄中。或者，您可以在系統設定中提供<code>ffmpeg</code>和<code>ffprobe</code>二進位制檔案的路徑。Stash必須存在這些二進位制檔案才能執行。",
+            "download_ffmpeg": "下載 ffmpeg"
         },
         "welcome": {
             "config_path_logic_explained": "Stash 於執行時，會先在執行目錄中找尋其設定檔案 (<code>config.yml</code>)，當找不到時，它將會再試著使用 <code>$HOME/.stash/config.yml</code>（於 Windows 中，此路徑為 <code>%USERPROFILE%\\.stash\\config.yml</code>）。您也可在執行 Stash 時透過 <code>-c '<設定檔路徑>'</code> 提供設定路徑，或者 <code>--config '<path to config file>'</code>。",
@@ -1247,7 +1264,9 @@
             "next_step": "如果您已準備好繼續安裝本程式，請選擇您想要儲存設定檔案的位置，然後點擊「下一步」。",
             "store_stash_config": "您希望在哪裡儲存您的 Stash 設定呢？",
             "unable_to_locate_config": "如果看到此畫面的話，則代表 Stash 無法找到先前的設定檔案。本安裝畫面將帶您建立新的設定檔案。",
-            "unexpected_explained": "如果您覺得此畫面不應該出現的話，請試著在正確的 Stash 資料夾中重新啟動本程式，或者將設定路徑設為 <code>-c</code>。"
+            "unexpected_explained": "如果您覺得此畫面不應該出現的話，請試著在正確的 Stash 資料夾中重新啟動本程式，或者將設定路徑設為 <code>-c</code>。",
+            "in_the_current_working_directory_disabled": "在<code>{path}</code>中，工作目錄：",
+            "in_the_current_working_directory_disabled_macos": "當正在執行 <code>Stash.app</code>時不支援,<br></br>在工作目錄中執行 <code>stash-macos</code>來設定"
         },
         "welcome_specific_config": {
             "config_path": "Stash 將使用下列設定檔案路徑：<code>{path}</code>",
@@ -1264,13 +1283,18 @@
         "selected_stash_box": "已選擇的 Stash-Box 端點",
         "submission_failed": "提交失敗",
         "submission_successful": "提交成功",
-        "submit_update": "已存在於 {endpoint_name}"
+        "submit_update": "已存在於 {endpoint_name}",
+        "source": "Stash-Box源"
     },
     "statistics": "統計資訊",
     "stats": {
         "image_size": "圖片大小",
         "scenes_duration": "短片長度",
-        "scenes_size": "短片大小"
+        "scenes_size": "短片大小",
+        "scenes_played": "已播放的短片",
+        "total_o_count": "總O計數",
+        "total_play_count": "總播放數",
+        "total_play_duration": "總播放時長"
     },
     "status": "狀態：{statusText}",
     "studio": "工作室",
@@ -1344,5 +1368,60 @@
     "group_scene_number": "短片編號",
     "groups": "群組",
     "hasChapters": "擁有章節",
-    "history": "歷史紀錄"
+    "history": "歷史紀錄",
+    "image_index": "圖片#",
+    "index_of_total": "第{index}個，共 {total}個",
+    "last_o_at": "最後 O 在",
+    "package_manager": {
+        "source": {
+            "name": "名稱",
+            "url": "源 URL",
+            "local_path": {
+                "heading": "本地路徑",
+                "description": "儲存此源的軟體包的相對路徑。請注意，變更此路徑需要手動移動軟體包。"
+            }
+        },
+        "uninstall": "解除安裝",
+        "unknown": "<未知>",
+        "update": "更新",
+        "version": "版本",
+        "add_source": "新增源",
+        "check_for_updates": "檢查更新",
+        "confirm_delete_source": "您確定要刪除源{name} ({url})嗎？",
+        "confirm_uninstall": "您確定要解除安裝{number}軟體包嗎？",
+        "description": "描述",
+        "edit_source": "編輯源",
+        "hide_unselected": "隱藏未選取的",
+        "install": "安装",
+        "installed_version": "已安裝版本",
+        "latest_version": "最新版本",
+        "no_packages": "未找到軟體包",
+        "no_sources": "未配置源",
+        "no_upgradable": "未找到可升級軟體包",
+        "package": "軟體包",
+        "required_by": "為 {packages} 所需",
+        "selected_only": "僅選定",
+        "show_all": "顯示全部"
+    },
+    "photographer": "攝影師",
+    "play_history": "播放歷史",
+    "playdate_recorded_no": "無播放日期記錄",
+    "second": "秒",
+    "studio_count": "工作室計數",
+    "studio_and_parent": "工作室與其上級",
+    "studio_tagger": {
+        "add_new_studios": "新增工作室"
+    },
+    "include_sub_studio_content": "包括子工作室內容",
+    "include_sub_tag_content": "包含子標籤內容",
+    "o_count": "O 計數",
+    "o_history": "o 歷史記錄",
+    "odate_recorded_no": "無O記錄日期",
+    "orientation": "方向",
+    "parent_studio": "母工作室",
+    "penis": "陰莖",
+    "penis_length": "陰莖長度",
+    "penis_length_cm": "陰莖長度（公分）",
+    "plays": "{value} 次播放",
+    "primary_tag": "主要標籤"
 }
