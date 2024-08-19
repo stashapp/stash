@@ -908,8 +908,8 @@ export const SceneDuplicateChecker: React.FC = () => {
                             {scene.title
                               ? scene.title
                               : TextUtils.fileNameFromPath(
-                                file?.path ?? ""
-                              )}{" "}
+                                  file?.path ?? ""
+                                )}{" "}
                           </Link>
                         </p>
                         <p className="scene-path">{file?.path ?? ""}</p>
@@ -932,7 +932,9 @@ export const SceneDuplicateChecker: React.FC = () => {
                       </td>
                       <td>{file?.video_codec ?? ""}</td>
                       <td>{file?.audio_codec ?? ""}</td>
-                      <td>{file ? new Date(file.mod_time).toDateString() : ""}</td>
+                      <td>
+                        {file ? new Date(file.mod_time).toDateString() : ""}
+                      </td>
                       <td>
                         <Button
                           className="edit-button"
