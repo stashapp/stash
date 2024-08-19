@@ -908,8 +908,8 @@ export const SceneDuplicateChecker: React.FC = () => {
                             {scene.title
                               ? scene.title
                               : TextUtils.fileNameFromPath(
-                                  file?.path ?? ""
-                                )}{" "}
+                                file?.path ?? ""
+                              )}{" "}
                           </Link>
                         </p>
                         <p className="scene-path">{file?.path ?? ""}</p>
