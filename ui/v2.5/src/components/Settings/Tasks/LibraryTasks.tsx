@@ -20,55 +20,56 @@ import { ManualLink } from "src/components/Help/context";
 import { Icon } from "src/components/Shared/Icon";
 import { faQuestionCircle } from "@fortawesome/free-solid-svg-icons";
 import { useSettings } from "../context";
+import { PatchComponent } from "src/patch";
 
 interface IAutoTagOptions {
   options: GQL.AutoTagMetadataInput;
   setOptions: (s: GQL.AutoTagMetadataInput) => void;
 }
 
-const AutoTagOptions: React.FC<IAutoTagOptions> = ({
-  options,
-  setOptions: setOptionsState,
-}) => {
-  const { performers, studios, tags } = options;
-  const wildcard = ["*"];
+const AutoTagOptions: React.FC<IAutoTagOptions> = PatchComponent(
+  "AutoTagOptions",
+  ({ options, setOptions: setOptionsState }) => {
+    const { performers, studios, tags } = options;
+    const wildcard = ["*"];
 
-  function set(v?: boolean) {
-    if (v) {
-      return wildcard;
+    function set(v?: boolean) {
+      if (v) {
+        return wildcard;
+      }
+      return [];
     }
-    return [];
+
+    function setOptions(input: Partial<GQL.AutoTagMetadataInput>) {
+      setOptionsState({ ...options, ...input });
+    }
+
+    return (
+      <>
+        <BooleanSetting
+          id="autotag-performers"
+          checked={!!performers?.length}
+          headingID="performers"
+          onChange={(v) => setOptions({ performers: set(v) })}
+        />
+        <BooleanSetting
+          id="autotag-studios"
+          checked={!!studios?.length}
+          headingID="studios"
+          onChange={(v) => setOptions({ studios: set(v) })}
+        />
+        <BooleanSetting
+          id="autotag-tags"
+          checked={!!tags?.length}
+          headingID="tags"
+          onChange={(v) => setOptions({ tags: set(v) })}
+        />
+      </>
+    );
   }
+);
 
-  function setOptions(input: Partial<GQL.AutoTagMetadataInput>) {
-    setOptionsState({ ...options, ...input });
-  }
-
-  return (
-    <>
-      <BooleanSetting
-        id="autotag-performers"
-        checked={!!performers?.length}
-        headingID="performers"
-        onChange={(v) => setOptions({ performers: set(v) })}
-      />
-      <BooleanSetting
-        id="autotag-studios"
-        checked={!!studios?.length}
-        headingID="studios"
-        onChange={(v) => setOptions({ studios: set(v) })}
-      />
-      <BooleanSetting
-        id="autotag-tags"
-        checked={!!tags?.length}
-        headingID="tags"
-        onChange={(v) => setOptions({ tags: set(v) })}
-      />
-    </>
-  );
-};
-
-export const LibraryTasks: React.FC = () => {
+export const LibraryTasks: React.FC = PatchComponent("LibraryTasks", () => {
   const intl = useIntl();
   const Toast = useToast();
   const { ui, saveUI, loading } = useSettings();
@@ -154,6 +155,7 @@ export const LibraryTasks: React.FC = () => {
     // combine the defaults with the system preview generation settings
     // only do this once
     // don't do this if UI had a default
+
     if (!configRead && !taskDefaults?.generate) {
       if (configuration?.defaults.generate) {
         const { generate } = configuration.defaults;
@@ -444,4 +446,4 @@ export const LibraryTasks: React.FC = () => {
       </SettingSection>
     </Form.Group>
   );
-};
+});

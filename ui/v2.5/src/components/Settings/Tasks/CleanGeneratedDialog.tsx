@@ -7,64 +7,68 @@ import { faTrashAlt } from "@fortawesome/free-solid-svg-icons";
 import { SettingSection } from "../SettingSection";
 import { useSettings } from "../context";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
+import { PatchComponent } from "src/patch";
 
 const CleanGeneratedOptions: React.FC<{
   options: GQL.CleanGeneratedInput;
   setOptions: (s: GQL.CleanGeneratedInput) => void;
-}> = ({ options, setOptions: setOptionsState }) => {
-  function setOptions(input: Partial<GQL.CleanGeneratedInput>) {
-    setOptionsState({ ...options, ...input });
-  }
+}> = PatchComponent(
+  "CleanGeneratedOptions",
+  ({ options, setOptions: setOptionsState }) => {
+    function setOptions(input: Partial<GQL.CleanGeneratedInput>) {
+      setOptionsState({ ...options, ...input });
+    }
 
-  return (
-    <>
-      <BooleanSetting
-        id="clean-generated-blob-files"
-        checked={options.blobFiles ?? false}
-        headingID="config.tasks.clean_generated.blob_files"
-        onChange={(v) => setOptions({ blobFiles: v })}
-      />
-      <BooleanSetting
-        id="clean-generated-screenshots"
-        checked={options.screenshots ?? false}
-        headingID="config.tasks.clean_generated.previews"
-        subHeadingID="config.tasks.clean_generated.previews_desc"
-        onChange={(v) => setOptions({ screenshots: v })}
-      />
-      <BooleanSetting
-        id="clean-generated-sprites"
-        checked={options.sprites ?? false}
-        headingID="config.tasks.clean_generated.sprites"
-        onChange={(v) => setOptions({ sprites: v })}
-      />
-      <BooleanSetting
-        id="clean-generated-transcodes"
-        checked={options.transcodes ?? false}
-        headingID="config.tasks.clean_generated.transcodes"
-        onChange={(v) => setOptions({ transcodes: v })}
-      />
-      <BooleanSetting
-        id="clean-generated-markers"
-        checked={options.markers ?? false}
-        headingID="config.tasks.clean_generated.markers"
-        onChange={(v) => setOptions({ markers: v })}
-      />
-      <BooleanSetting
-        id="clean-generated-image-thumbnails"
-        checked={options.imageThumbnails ?? false}
-        headingID="config.tasks.clean_generated.image_thumbnails"
-        subHeadingID="config.tasks.clean_generated.image_thumbnails_desc"
-        onChange={(v) => setOptions({ imageThumbnails: v })}
-      />
-      <BooleanSetting
-        id="clean-generated-dryrun"
-        checked={options.dryRun ?? false}
-        headingID="config.tasks.only_dry_run"
-        onChange={(v) => setOptions({ dryRun: v })}
-      />
-    </>
-  );
-};
+    return (
+      <>
+        <BooleanSetting
+          id="clean-generated-blob-files"
+          checked={options.blobFiles ?? false}
+          headingID="config.tasks.clean_generated.blob_files"
+          onChange={(v) => setOptions({ blobFiles: v })}
+        />
+        <BooleanSetting
+          id="clean-generated-screenshots"
+          checked={options.screenshots ?? false}
+          headingID="config.tasks.clean_generated.previews"
+          subHeadingID="config.tasks.clean_generated.previews_desc"
+          onChange={(v) => setOptions({ screenshots: v })}
+        />
+        <BooleanSetting
+          id="clean-generated-sprites"
+          checked={options.sprites ?? false}
+          headingID="config.tasks.clean_generated.sprites"
+          onChange={(v) => setOptions({ sprites: v })}
+        />
+        <BooleanSetting
+          id="clean-generated-transcodes"
+          checked={options.transcodes ?? false}
+          headingID="config.tasks.clean_generated.transcodes"
+          onChange={(v) => setOptions({ transcodes: v })}
+        />
+        <BooleanSetting
+          id="clean-generated-markers"
+          checked={options.markers ?? false}
+          headingID="config.tasks.clean_generated.markers"
+          onChange={(v) => setOptions({ markers: v })}
+        />
+        <BooleanSetting
+          id="clean-generated-image-thumbnails"
+          checked={options.imageThumbnails ?? false}
+          headingID="config.tasks.clean_generated.image_thumbnails"
+          subHeadingID="config.tasks.clean_generated.image_thumbnails_desc"
+          onChange={(v) => setOptions({ imageThumbnails: v })}
+        />
+        <BooleanSetting
+          id="clean-generated-dryrun"
+          checked={options.dryRun ?? false}
+          headingID="config.tasks.only_dry_run"
+          onChange={(v) => setOptions({ dryRun: v })}
+        />
+      </>
+    );
+  }
+);
 
 export const CleanGeneratedDialog: React.FC<{
   onClose: (input?: GQL.CleanGeneratedInput) => void;
