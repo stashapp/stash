@@ -26,13 +26,14 @@ import {
 import { ExternalLink } from "../Shared/ExternalLink";
 import { ClearableInput } from "../Shared/ClearableInput";
 import { Counter } from "../Shared/Counter";
+import { PatchComponent } from "src/patch"; // Import PatchComponent
 
 const ScraperTable: React.FC<
   PropsWithChildren<{
     entityType: string;
     count?: number;
   }>
-> = ({ entityType, count, children }) => {
+> = PatchComponent("ScraperTable", ({ entityType, count, children }) => {
   const intl = useIntl();
 
   const titleEl = useMemo(() => {
@@ -72,12 +73,12 @@ const ScraperTable: React.FC<
       </table>
     </CollapseButton>
   );
-};
+});
 
 const ScrapeTypeList: React.FC<{
   types: ScrapeType[];
   entityType: string;
-}> = ({ types, entityType }) => {
+}> = PatchComponent("ScrapeTypeList", ({ types, entityType }) => {
   const intl = useIntl();
 
   const typeStrings = useMemo(
@@ -103,13 +104,13 @@ const ScrapeTypeList: React.FC<{
       ))}
     </ul>
   );
-};
+});
 
 interface IURLList {
   urls: string[];
 }
 
-const URLList: React.FC<IURLList> = ({ urls }) => {
+const URLList: React.FC<IURLList> = PatchComponent("URLList", ({ urls }) => {
   const items = useMemo(() => {
     function linkSite(url: string) {
       const u = new URL(url);
@@ -134,26 +135,29 @@ const URLList: React.FC<IURLList> = ({ urls }) => {
   }, [urls]);
 
   return <ul>{items}</ul>;
-};
+});
 
 const ScraperTableRow: React.FC<{
   name: string;
   entityType: string;
   supportedScrapes: ScrapeType[];
   urls: string[];
-}> = ({ name, entityType, supportedScrapes, urls }) => {
-  return (
-    <tr>
-      <td>{name}</td>
-      <td>
-        <ScrapeTypeList types={supportedScrapes} entityType={entityType} />
-      </td>
-      <td>
-        <URLList urls={urls} />
-      </td>
-    </tr>
-  );
-};
+}> = PatchComponent(
+  "ScraperTableRow",
+  ({ name, entityType, supportedScrapes, urls }) => {
+    return (
+      <tr>
+        <td>{name}</td>
+        <td>
+          <ScrapeTypeList types={supportedScrapes} entityType={entityType} />
+        </td>
+        <td>
+          <URLList urls={urls} />
+        </td>
+      </tr>
+    );
+  }
+);
 
 function filterScraper(filter: string) {
   return (name: string, urls: string[] | undefined | null) => {
@@ -166,7 +170,7 @@ function filterScraper(filter: string) {
   };
 }
 
-const ScrapersSection: React.FC = () => {
+const ScrapersSection: React.FC = PatchComponent("ScrapersSection", () => {
   const Toast = useToast();
   const intl = useIntl();
 
@@ -310,60 +314,63 @@ const ScrapersSection: React.FC = () => {
       </div>
     </SettingSection>
   );
-};
+});
 
-export const SettingsScrapingPanel: React.FC = () => {
-  const { general, scraping, loading, error, saveGeneral, saveScraping } =
-    useSettings();
+export const SettingsScrapingPanel: React.FC = PatchComponent(
+  "SettingsScrapingPanel",
+  () => {
+    const { general, scraping, loading, error, saveGeneral, saveScraping } =
+      useSettings();
 
-  if (error) return <h1>{error.message}</h1>;
-  if (loading) return <LoadingIndicator />;
+    if (error) return <h1>{error.message}</h1>;
+    if (loading) return <LoadingIndicator />;
 
-  return (
-    <>
-      <StashBoxSetting
-        value={general.stashBoxes ?? []}
-        onChange={(v) => saveGeneral({ stashBoxes: v })}
-      />
-
-      <SettingSection headingID="config.general.scraping">
-        <StringSetting
-          id="scraperUserAgent"
-          headingID="config.general.scraper_user_agent"
-          subHeadingID="config.general.scraper_user_agent_desc"
-          value={scraping.scraperUserAgent ?? undefined}
-          onChange={(v) => saveScraping({ scraperUserAgent: v })}
+    return (
+      <>
+        <StashBoxSetting
+          value={general.stashBoxes ?? []}
+          onChange={(v) => saveGeneral({ stashBoxes: v })}
         />
 
-        <StringSetting
-          id="scraperCDPPath"
-          headingID="config.general.chrome_cdp_path"
-          subHeadingID="config.general.chrome_cdp_path_desc"
-          value={scraping.scraperCDPPath ?? undefined}
-          onChange={(v) => saveScraping({ scraperCDPPath: v })}
-        />
+        <SettingSection headingID="config.general.scraping">
+          <StringSetting
+            id="scraperUserAgent"
+            headingID="config.general.scraper_user_agent"
+            subHeadingID="config.general.scraper_user_agent_desc"
+            value={scraping.scraperUserAgent ?? undefined}
+            onChange={(v) => saveScraping({ scraperUserAgent: v })}
+          />
 
-        <BooleanSetting
-          id="scraper-cert-check"
-          headingID="config.general.check_for_insecure_certificates"
-          subHeadingID="config.general.check_for_insecure_certificates_desc"
-          checked={scraping.scraperCertCheck ?? undefined}
-          onChange={(v) => saveScraping({ scraperCertCheck: v })}
-        />
+          <StringSetting
+            id="scraperCDPPath"
+            headingID="config.general.chrome_cdp_path"
+            subHeadingID="config.general.chrome_cdp_path_desc"
+            value={scraping.scraperCDPPath ?? undefined}
+            onChange={(v) => saveScraping({ scraperCDPPath: v })}
+          />
 
-        <StringListSetting
-          id="excluded-tag-patterns"
-          headingID="config.scraping.excluded_tag_patterns_head"
-          subHeadingID="config.scraping.excluded_tag_patterns_desc"
-          value={scraping.excludeTagPatterns ?? undefined}
-          onChange={(v) => saveScraping({ excludeTagPatterns: v })}
-        />
-      </SettingSection>
+          <BooleanSetting
+            id="scraper-cert-check"
+            headingID="config.general.check_for_insecure_certificates"
+            subHeadingID="config.general.check_for_insecure_certificates_desc"
+            checked={scraping.scraperCertCheck ?? undefined}
+            onChange={(v) => saveScraping({ scraperCertCheck: v })}
+          />
 
-      <InstalledScraperPackages />
-      <AvailableScraperPackages />
+          <StringListSetting
+            id="excluded-tag-patterns"
+            headingID="config.scraping.excluded_tag_patterns_head"
+            subHeadingID="config.scraping.excluded_tag_patterns_desc"
+            value={scraping.excludeTagPatterns ?? undefined}
+            onChange={(v) => saveScraping({ excludeTagPatterns: v })}
+          />
+        </SettingSection>
 
-      <ScrapersSection />
-    </>
-  );
-};
+        <InstalledScraperPackages />
+        <AvailableScraperPackages />
+
+        <ScrapersSection />
+      </>
+    );
+  }
+);

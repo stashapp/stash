@@ -103,165 +103,168 @@ const PluginSettings: React.FC<{
   );
 });
 
-export const SettingsPluginsPanel: React.FC = () => {
-  const Toast = useToast();
-  const intl = useIntl();
+export const SettingsPluginsPanel: React.FC = PatchComponent(
+  "SettingsPluginsPanel",
+  () => {
+    const Toast = useToast();
+    const intl = useIntl();
 
-  const { loading: configLoading } = useSettings();
-  const { data, loading } = usePlugins();
+    const { loading: configLoading } = useSettings();
+    const { data, loading } = usePlugins();
 
-  const [changedPluginID, setChangedPluginID] = React.useState<
-    string | undefined
-  >();
+    const [changedPluginID, setChangedPluginID] = React.useState<
+      string | undefined
+    >();
 
-  async function onReloadPlugins() {
-    try {
-      await mutateReloadPlugins();
-    } catch (e) {
-      Toast.error(e);
-    }
-  }
-
-  const pluginElements = useMemo(() => {
-    function renderLink(url?: string) {
-      if (url) {
-        return (
-          <Button
-            as={ExternalLink}
-            href={TextUtils.sanitiseURL(url)}
-            className="minimal link"
-          >
-            <Icon icon={faLink} />
-          </Button>
-        );
+    async function onReloadPlugins() {
+      try {
+        await mutateReloadPlugins();
+      } catch (e) {
+        Toast.error(e);
       }
     }
 
-    function renderEnableButton(pluginID: string, enabled: boolean) {
-      async function onClick() {
-        try {
-          await mutateSetPluginsEnabled({ [pluginID]: !enabled });
-        } catch (e) {
-          Toast.error(e);
+    const pluginElements = useMemo(() => {
+      function renderLink(url?: string) {
+        if (url) {
+          return (
+            <Button
+              as={ExternalLink}
+              href={TextUtils.sanitiseURL(url)}
+              className="minimal link"
+            >
+              <Icon icon={faLink} />
+            </Button>
+          );
+        }
+      }
+
+      function renderEnableButton(pluginID: string, enabled: boolean) {
+        async function onClick() {
+          try {
+            await mutateSetPluginsEnabled({ [pluginID]: !enabled });
+          } catch (e) {
+            Toast.error(e);
+          }
+
+          setChangedPluginID(pluginID);
         }
 
-        setChangedPluginID(pluginID);
-      }
-
-      return (
-        <Button size="sm" onClick={onClick}>
-          <FormattedMessage
-            id={enabled ? "actions.disable" : "actions.enable"}
-          />
-        </Button>
-      );
-    }
-
-    function onReloadUI() {
-      window.location.reload();
-    }
-
-    function maybeRenderReloadUI(pluginID: string) {
-      if (pluginID === changedPluginID) {
         return (
-          <Button size="sm" onClick={() => onReloadUI()}>
-            Reload UI
+          <Button size="sm" onClick={onClick}>
+            <FormattedMessage
+              id={enabled ? "actions.disable" : "actions.enable"}
+            />
           </Button>
         );
       }
-    }
 
-    function renderPlugins() {
-      const elements = (data?.plugins ?? []).map((plugin) => (
-        <SettingGroup
-          key={plugin.id}
-          settingProps={{
-            heading: `${plugin.name} ${
-              plugin.version ? `(${plugin.version})` : undefined
-            }`,
-            className: !plugin.enabled ? "disabled" : undefined,
-            subHeading: plugin.description,
-          }}
-          topLevel={
-            <>
-              {renderLink(plugin.url ?? undefined)}
-              {maybeRenderReloadUI(plugin.id)}
-              {renderEnableButton(plugin.id, plugin.enabled)}
-            </>
-          }
-        >
-          {renderPluginHooks(plugin.hooks ?? undefined)}
-          <PluginSettings
-            pluginID={plugin.id}
-            settings={plugin.settings ?? []}
-          />
-        </SettingGroup>
-      ));
-
-      return <div>{elements}</div>;
-    }
-
-    function renderPluginHooks(
-      hooks?: Pick<GQL.PluginHook, "name" | "description" | "hooks">[]
-    ) {
-      if (!hooks || hooks.length === 0) {
-        return;
+      function onReloadUI() {
+        window.location.reload();
       }
 
-      return (
-        <div className="setting">
-          <div>
-            <h5>
-              <FormattedMessage id="config.plugins.hooks" />
-            </h5>
-            {hooks.map((h) => (
-              <div key={`${h.name}`}>
-                <h6>{h.name}</h6>
-                <CollapseButton
-                  text={intl.formatMessage({
-                    id: "config.plugins.triggers_on",
-                  })}
-                >
-                  <ul>
-                    {h.hooks?.map((hh) => (
-                      <li key={hh}>
-                        <code>{hh}</code>
-                      </li>
-                    ))}
-                  </ul>
-                </CollapseButton>
-                <small className="text-muted">{h.description}</small>
-              </div>
-            ))}
+      function maybeRenderReloadUI(pluginID: string) {
+        if (pluginID === changedPluginID) {
+          return (
+            <Button size="sm" onClick={() => onReloadUI()}>
+              Reload UI
+            </Button>
+          );
+        }
+      }
+
+      function renderPlugins() {
+        const elements = (data?.plugins ?? []).map((plugin) => (
+          <SettingGroup
+            key={plugin.id}
+            settingProps={{
+              heading: `${plugin.name} ${
+                plugin.version ? `(${plugin.version})` : undefined
+              }`,
+              className: !plugin.enabled ? "disabled" : undefined,
+              subHeading: plugin.description,
+            }}
+            topLevel={
+              <>
+                {renderLink(plugin.url ?? undefined)}
+                {maybeRenderReloadUI(plugin.id)}
+                {renderEnableButton(plugin.id, plugin.enabled)}
+              </>
+            }
+          >
+            {renderPluginHooks(plugin.hooks ?? undefined)}
+            <PluginSettings
+              pluginID={plugin.id}
+              settings={plugin.settings ?? []}
+            />
+          </SettingGroup>
+        ));
+
+        return <div>{elements}</div>;
+      }
+
+      function renderPluginHooks(
+        hooks?: Pick<GQL.PluginHook, "name" | "description" | "hooks">[]
+      ) {
+        if (!hooks || hooks.length === 0) {
+          return;
+        }
+
+        return (
+          <div className="setting">
+            <div>
+              <h5>
+                <FormattedMessage id="config.plugins.hooks" />
+              </h5>
+              {hooks.map((h) => (
+                <div key={`${h.name}`}>
+                  <h6>{h.name}</h6>
+                  <CollapseButton
+                    text={intl.formatMessage({
+                      id: "config.plugins.triggers_on",
+                    })}
+                  >
+                    <ul>
+                      {h.hooks?.map((hh) => (
+                        <li key={hh}>
+                          <code>{hh}</code>
+                        </li>
+                      ))}
+                    </ul>
+                  </CollapseButton>
+                  <small className="text-muted">{h.description}</small>
+                </div>
+              ))}
+            </div>
+            <div />
           </div>
-          <div />
-        </div>
-      );
-    }
+        );
+      }
 
-    return renderPlugins();
-  }, [data?.plugins, intl, Toast, changedPluginID]);
+      return renderPlugins();
+    }, [data?.plugins, intl, Toast, changedPluginID]);
 
-  if (loading || configLoading) return <LoadingIndicator />;
+    if (loading || configLoading) return <LoadingIndicator />;
 
-  return (
-    <>
-      <InstalledPluginPackages />
-      <AvailablePluginPackages />
+    return (
+      <>
+        <InstalledPluginPackages />
+        <AvailablePluginPackages />
 
-      <SettingSection headingID="config.categories.plugins">
-        <Setting headingID="actions.reload_plugins">
-          <Button onClick={() => onReloadPlugins()}>
-            <span className="fa-icon">
-              <Icon icon={faSyncAlt} />
-            </span>
-            <span>
-              <FormattedMessage id="actions.reload_plugins" />
-            </span>
-          </Button>
-        </Setting>
-        {pluginElements}
-      </SettingSection>
-    </>
-  );
-};
+        <SettingSection headingID="config.categories.plugins">
+          <Setting headingID="actions.reload_plugins">
+            <Button onClick={() => onReloadPlugins()}>
+              <span className="fa-icon">
+                <Icon icon={faSyncAlt} />
+              </span>
+              <span>
+                <FormattedMessage id="actions.reload_plugins" />
+              </span>
+            </Button>
+          </Setting>
+          {pluginElements}
+        </SettingSection>
+      </>
+    );
+  }
+);

@@ -2,6 +2,7 @@ import React, { PropsWithChildren } from "react";
 import { Card } from "react-bootstrap";
 import { useIntl } from "react-intl";
 import { useSettings } from "./context";
+import { PatchComponent } from "src/patch";
 
 interface ISettingGroup {
   id?: string;
@@ -10,27 +11,27 @@ interface ISettingGroup {
   advanced?: boolean;
 }
 
-export const SettingSection: React.FC<PropsWithChildren<ISettingGroup>> = ({
-  id,
-  children,
-  headingID,
-  subHeadingID,
-  advanced,
-}) => {
-  const intl = useIntl();
-  const { advancedMode } = useSettings();
+export const SettingSection: React.FC<PropsWithChildren<ISettingGroup>> =
+  PatchComponent(
+    "SettingSection",
+    ({ id, children, headingID, subHeadingID, advanced }) => {
+      const intl = useIntl();
+      const { advancedMode } = useSettings();
 
-  if (advanced && !advancedMode) return null;
+      if (advanced && !advancedMode) return null;
 
-  return (
-    <div className="setting-section" id={id}>
-      <h1>{headingID ? intl.formatMessage({ id: headingID }) : undefined}</h1>
-      {subHeadingID ? (
-        <div className="sub-heading">
-          {intl.formatMessage({ id: subHeadingID })}
+      return (
+        <div className="setting-section" id={id}>
+          <h1>
+            {headingID ? intl.formatMessage({ id: headingID }) : undefined}
+          </h1>
+          {subHeadingID ? (
+            <div className="sub-heading">
+              {intl.formatMessage({ id: subHeadingID })}
+            </div>
+          ) : undefined}
+          <Card>{children}</Card>
         </div>
-      ) : undefined}
-      <Card>{children}</Card>
-    </div>
+      );
+    }
   );
-};
