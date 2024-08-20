@@ -39,6 +39,10 @@ $sceneTabWidth: 450px;
   position: absolute;
   width: 100%;
 
+  &:not(.vjs-has-started) .vjs-control-bar {
+    display: flex;
+  }
+
   .vjs-button {
     outline: none;
   }
