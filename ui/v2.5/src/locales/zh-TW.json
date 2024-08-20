@@ -406,7 +406,7 @@
             "log_level": "日誌檔級別"
         },
         "plugins": {
-            "hooks": "Hooks",
+            "hooks": "鉤子",
             "triggers_on": "觸發於",
             "available_plugins": "可使用的插件",
             "installed_plugins": "已安裝的插件"
@@ -1259,8 +1259,8 @@
         },
         "welcome": {
             "config_path_logic_explained": "Stash 於執行時，會先在執行目錄中找尋其設定檔案 (<code>config.yml</code>)，當找不到時，它將會再試著使用 <code>$HOME/.stash/config.yml</code>（於 Windows 中，此路徑為 <code>%USERPROFILE%\\.stash\\config.yml</code>）。您也可在執行 Stash 時透過 <code>-c '<設定檔路徑>'</code> 提供設定路徑，或者 <code>--config '<path to config file>'</code>。",
-            "in_current_stash_directory": "於 <code>$HOME/.stash</code> 資料夾中",
-            "in_the_current_working_directory": "於目前的工作路徑",
+            "in_current_stash_directory": "於 <code>{path}</code> 資料夾中：",
+            "in_the_current_working_directory": "於目前的工作路徑 <code>{path}</code>：",
             "next_step": "如果您已準備好繼續安裝本程式，請選擇您想要儲存設定檔案的位置，然後點擊「下一步」。",
             "store_stash_config": "您希望在哪裡儲存您的 Stash 設定呢？",
             "unable_to_locate_config": "如果看到此畫面的話，則代表 Stash 無法找到先前的設定檔案。本安裝畫面將帶您建立新的設定檔案。",
@@ -1326,7 +1326,8 @@
         "started_auto_tagging": "自動套用標籤中",
         "started_generating": "生成檔案中",
         "started_importing": "匯入中",
-        "updated_entity": "已更新{entity}"
+        "updated_entity": "已更新{entity}",
+        "image_index_too_large": "錯誤：圖片索引大於圖庫中的圖片數量"
     },
     "total": "總計",
     "true": "是",
@@ -1410,7 +1411,42 @@
     "studio_count": "工作室計數",
     "studio_and_parent": "工作室與其上級",
     "studio_tagger": {
-        "add_new_studios": "新增工作室"
+        "add_new_studios": "新增工作室",
+        "batch_update_studios": "批量更新工作室",
+        "config": {
+            "active_stash-box_instance": "目前使用的 Stash-box：",
+            "create_parent_desc": "建立缺失的母工作室，或使用確切的名稱匹配標記和更新現有母工作室的資料/影象",
+            "create_parent_label": "建立家長工作室",
+            "edit_excluded_fields": "編輯排除的欄位",
+            "excluded_fields": "已排除欄位：",
+            "no_instances_found": "尚未設定端點",
+            "these_fields_will_not_be_changed_when_updating_studios": "更新工作室時不會更改這些欄位。",
+            "no_fields_are_excluded": "尚無排除任何欄位"
+        },
+        "any_names_entered_will_be_queried": "如果輸入的名稱有在設定的 Stash-Box 端點上找到的話，則相對應的結果將會被自動新增。只有完全符合的結果才會被視為匹配。",
+        "batch_add_studios": "批量添加工作室",
+        "studio_already_tagged": "已經設定標籤的工作室",
+        "refreshing_will_update_the_data": "重新整理後將更新所有已在此stash-box例項被標記的工作室的资料。",
+        "status_tagging_job_queued": "狀態：標籤設定任務排隊中",
+        "status_tagging_studios": "狀態：給工作室設定標籤中",
+        "untagged_studios": "未設定標籤的工作室",
+        "update_studio": "更新工作室",
+        "update_studios": "更新工作室",
+        "updating_untagged_studios_description": "更新未標記的工作室將嘗試匹配任何缺乏stashid的工作室並更新metadata。",
+        "studio_names_separated_by_comma": "以逗號分隔的工作室名稱",
+        "studio_selection": "工作室選擇",
+        "studio_successfully_tagged": "工作室已成功設定標籤",
+        "tag_status": "標籤狀態",
+        "to_use_the_studio_tagger": "使用工作室標籤器需要配置一個stash-box例項。",
+        "create_or_tag_parent_studios": "建立缺失的母工作室或標記已存在的母工作室",
+        "current_page": "目前頁面",
+        "failed_to_save_studio": "儲存工作室“{studio}”失敗",
+        "name_already_exists": "名稱已存在",
+        "network_error": "網路錯誤",
+        "number_of_studios_will_be_processed": "{studio_count}個工作室將被處理",
+        "query_all_studios_in_the_database": "此資料庫中的所有工作室",
+        "refresh_tagged_studios": "重新整理已設定標籤的工作室",
+        "no_results_found": "沒有找到結果。"
     },
     "include_sub_studio_content": "包括子工作室內容",
     "include_sub_tag_content": "包含子標籤內容",
@@ -1423,5 +1459,19 @@
     "penis_length": "陰莖長度",
     "penis_length_cm": "陰莖長度（公分）",
     "plays": "{value} 次播放",
-    "primary_tag": "主要標籤"
+    "primary_tag": "主要標籤",
+    "studio_tags": "工作室標籤",
+    "subsidiary_studio_count": "子工作室數量",
+    "tag_parent_tooltip": "有父母標籤",
+    "validation": {
+        "required": "${path}是必填欄位",
+        "date_invalid_form": "${path}必須是YYYY-MM-DD形式",
+        "unique": "${path}必須是唯一的",
+        "blank": "${path}不能為空"
+    },
+    "video_codec": "影片編碼",
+    "tag_sub_tag_tooltip": "有子標籤",
+    "time": "時間",
+    "unknown_date": "未知日期",
+    "urls": "支援網址"
 }
