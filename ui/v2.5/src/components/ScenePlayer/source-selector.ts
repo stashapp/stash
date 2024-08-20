@@ -81,6 +81,15 @@ class SourceMenuButton extends videojs.getComponent("MenuButton") {
 
     return this.items;
   }
+
+  setSelectedSource(source: ISource) {
+    this.selectedSource = source;
+    if (this.items === undefined) return;
+
+    for (const item of this.items) {
+      item.selected(item.source === this.selectedSource);
+    }
+  }
 }
 
 class SourceSelectorPlugin extends videojs.getPlugin("plugin") {
@@ -90,6 +99,9 @@ class SourceSelectorPlugin extends videojs.getPlugin("plugin") {
   private cleanupTextTracks: HTMLTrackElement[] = [];
   private manualTextTracks: HTMLTrackElement[] = [];
 
+  // don't auto play next source if user manually selected a source
+  private manuallySelected = false;
+
   constructor(player: VideoJsPlayer) {
     super(player);
 
@@ -98,6 +110,8 @@ class SourceSelectorPlugin extends videojs.getPlugin("plugin") {
     this.menu.on("sourceselected", (_, source: ISource) => {
       this.selectedIndex = this.sources.findIndex((src) => src === source);
       if (this.selectedIndex === -1) return;
+
+      this.manuallySelected = true;
 
       const loadSrc = this.sources[this.selectedIndex];
 
@@ -154,14 +168,22 @@ class SourceSelectorPlugin extends videojs.getPlugin("plugin") {
       const currentSource = player.currentSource() as ISource;
       console.log(`Source '${currentSource.label}' is unsupported`);
 
-      if (this.sources.length > 1) {
-        if (this.selectedIndex === -1) return;
+      // don't auto play next source if user manually selected a source
+      if (this.manuallySelected) {
+        return;
+      }
 
-        this.sources.splice(this.selectedIndex, 1);
-        const newSource = this.sources[0];
+      // TODO - make auto play next source configurable
+      // try the next source in the list
+      if (
+        this.selectedIndex !== -1 &&
+        this.selectedIndex + 1 < this.sources.length
+      ) {
+        this.selectedIndex += 1;
+        const newSource = this.sources[this.selectedIndex];
         console.log(`Trying next source in playlist: '${newSource.label}'`);
-        this.menu.setSources(this.sources);
-        this.selectedIndex = 0;
+        this.menu.setSelectedSource(newSource);
+
         player.src(newSource);
         player.load();
         player.play();
