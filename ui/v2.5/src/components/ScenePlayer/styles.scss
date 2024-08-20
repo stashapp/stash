@@ -43,6 +43,24 @@ $sceneTabWidth: 450px;
     display: flex;
   }
 
+  // show controls even when an error is displayed
+  /* stylelint-disable declaration-no-important */
+  &.vjs-error .vjs-control-bar {
+    display: flex !important;
+  }
+  /* stylelint-enable declaration-no-important */
+
+  // allow interaction with the controls when error is displayed
+  .vjs-error-display,
+  .vjs-error-display .vjs-modal-dialog-content {
+    position: static;
+  }
+
+  // hide spinner when error is displayed
+  &.vjs-error .vjs-loading-spinner {
+    display: none;
+  }
+
   .vjs-button {
     outline: none;
   }
