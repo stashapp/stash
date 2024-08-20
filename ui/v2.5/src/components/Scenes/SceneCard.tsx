@@ -347,9 +347,21 @@ const SceneCardImage = PatchComponent(
 
     function maybeRenderSceneSpecsOverlay() {
       let sizeObj = null;
+      let frameRate = "";
+
       if (file?.size) {
         sizeObj = TextUtils.fileSize(file.size);
       }
+
+      if (file?.frame_rate) {
+        frameRate = `${Math.round(file.frame_rate)}`;
+      }
+
+      const resolution =
+        file?.width && file?.height
+          ? TextUtils.resolution(file?.width, file?.height)
+          : "";
+
       return (
         <div className="scene-specs-overlay">
           {sizeObj != null ? (
@@ -365,10 +377,10 @@ const SceneCardImage = PatchComponent(
           ) : (
             ""
           )}
-          {file?.width && file?.height ? (
+          {resolution || frameRate ? (
             <span className="overlay-resolution">
-              {" "}
-              {TextUtils.resolution(file?.width, file?.height)}
+              {resolution}
+              {frameRate ? `${frameRate}` : ""}
             </span>
           ) : (
             ""
