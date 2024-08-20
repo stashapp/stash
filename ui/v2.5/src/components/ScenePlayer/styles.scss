@@ -219,6 +219,14 @@ $sceneTabWidth: 450px;
       content: "\f110";
       font-family: VideoJS;
     }
+
+    .vjs-menu-item.vjs-source-menu-item-error:not(.vjs-selected) {
+      color: $text-muted;
+    }
+
+    .vjs-menu-item.vjs-source-menu-item-error {
+      font-style: italic;
+    }
   }
 
   .vjs-vr-selector {

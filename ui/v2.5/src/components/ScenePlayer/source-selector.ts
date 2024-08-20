@@ -2,6 +2,7 @@ import videojs, { VideoJsPlayer } from "video.js";
 
 export interface ISource extends videojs.Tech.SourceObject {
   label?: string;
+  errored?: boolean;
 }
 
 class SourceMenuItem extends videojs.getComponent("MenuItem") {
@@ -90,6 +91,13 @@ class SourceMenuButton extends videojs.getComponent("MenuButton") {
       item.selected(item.source === this.selectedSource);
     }
   }
+
+  markSourceErrored(source: ISource) {
+    const item = this.items.find((i) => i.source.src === source.src);
+    if (item === undefined) return;
+
+    item.addClass("vjs-source-menu-item-error");
+  }
 }
 
 class SourceSelectorPlugin extends videojs.getPlugin("plugin") {
@@ -167,6 +175,10 @@ class SourceSelectorPlugin extends videojs.getPlugin("plugin") {
 
       const currentSource = player.currentSource() as ISource;
       console.log(`Source '${currentSource.label}' is unsupported`);
+
+      // mark current source as errored
+      currentSource.errored = true;
+      this.menu.markSourceErrored(currentSource);
 
       // don't auto play next source if user manually selected a source
       if (this.manuallySelected) {
