@@ -140,6 +140,44 @@
       z-index: -1;
     }
 
+    .wall-item {
+      position: relative; /* Ensure overlay elements are positioned correctly */
+
+      .studio-overlay {
+        display: block;
+        font-weight: 900;
+        height: 10%;
+        max-width: 40%;
+        opacity: 0.75;
+        position: absolute;
+        right: 0.7rem;
+        top: 0.7rem;
+        transition: opacity 0.5s;
+        z-index: 8;
+
+        .image-thumbnail {
+          height: 50px;
+          object-fit: contain;
+          width: 100%;
+        }
+
+        a {
+          color: $text-color;
+          display: inline-block;
+          letter-spacing: -0.03rem;
+          text-align: right;
+          text-decoration: none;
+          text-shadow: 0 0 3px #000;
+        }
+
+        &:hover,
+        &:active {
+          opacity: 0.75;
+          transition: opacity 0.5s;
+        }
+      }
+    }
+
     @media (min-width: 576px) {
       &:hover {
         z-index: 2;

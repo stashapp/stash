@@ -15,6 +15,7 @@ import { SceneQueue } from "src/models/sceneQueue";
 import { ConfigurationContext } from "src/hooks/Config";
 import { markerTitle } from "src/core/markers";
 import { objectTitle } from "src/core/files";
+import { StudioOverlay } from "../Shared/GridCard/StudioOverlay"; // Import StudioOverlay component
 
 export type WallItemType = keyof WallItemData;
 
@@ -158,6 +159,7 @@ export const WallItem = <T extends WallItemType>({
         return type as never;
     }
   }, [type, data]);
+
   const linkSrc = useMemo(() => {
     switch (type) {
       case "scene":
@@ -175,6 +177,7 @@ export const WallItem = <T extends WallItemType>({
         return type;
     }
   }, [type, data, sceneQueue, index]);
+
   const title = useMemo(() => {
     switch (type) {
       case "scene":
@@ -195,6 +198,7 @@ export const WallItem = <T extends WallItemType>({
         return type;
     }
   }, [type, data]);
+
   const tags = useMemo(() => {
     if (type === "sceneMarker") {
       const sceneMarker = data as GQL.SceneMarkerDataFragment;
@@ -250,6 +254,9 @@ export const WallItem = <T extends WallItemType>({
           <Preview previews={previews} config={config} active={active} />
           {renderText()}
         </Link>
+        {type === "scene" && (
+          <StudioOverlay studio={(data as GQL.SlimSceneDataFragment).studio} />
+        )}
       </div>
     </div>
   );
