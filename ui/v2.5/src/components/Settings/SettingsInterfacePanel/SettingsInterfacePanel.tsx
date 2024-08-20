@@ -69,7 +69,7 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
       loading,
       error,
     } = useSettings();
-
+    // convert old movies menu item to groups
     const massageMenuItems = useCallback((menuItems: string[]) => {
       return menuItems.map((item) => {
         if (item === "movies") {
@@ -98,6 +98,7 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
     const [, setInterfaceLocalForage] = useInterfaceLocalForage();
 
     function saveLightboxSettings(v: Partial<GQL.ConfigImageLightboxInput>) {
+      // save in local forage as well for consistency
       setInterfaceLocalForage((prev) => ({
         ...prev,
         imageLightbox: {
@@ -186,6 +187,8 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
 
     if (error) return <h1>{error.message}</h1>;
     if (loading) return <LoadingIndicator />;
+
+     // https://en.wikipedia.org/wiki/List_of_language_names
 
     return (
       <>
