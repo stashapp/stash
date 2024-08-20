@@ -132,8 +132,16 @@ interface IPluginApi {
     );
   }
 
+  function Overlays() {
+    return <span className="example-react-component-custom-overlay">Custom overlay</span>;
+  }
+
   PluginApi.patch.instead("SceneCard.Details", function (props: any, _: any, original: any) {
     return <SceneDetails {...props} />;
+  });
+
+  PluginApi.patch.instead("SceneCard.Overlays", function (props: any, _: any, original: (props: any) => any) {  
+    return <><Overlays />{original({...props})}</>;
   });
 
   const TestPage: React.FC = () => {
