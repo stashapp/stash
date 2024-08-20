@@ -54,15 +54,6 @@ export const ScraperMenu: React.FC<{
       <Dropdown.Toggle variant={variant}>{toggle}</Dropdown.Toggle>
 
       <Dropdown.Menu>
-        <Dropdown.Item onClick={() => onReloadScrapers()}>
-          <span className="fa-icon">
-            <Icon icon={faSyncAlt} />
-          </span>
-          <span>
-            <FormattedMessage id="actions.reload_scrapers" />
-          </span>
-        </Dropdown.Item>
-
         {(stashBoxes?.length ?? 0) + scrapers.length > minFilteredScrapers && (
           <ClearableInput
             placeholder={`${intl.formatMessage({ id: "filter" })}...`}
@@ -70,7 +61,6 @@ export const ScraperMenu: React.FC<{
             setValue={setFilter}
           />
         )}
-
         {filteredStashboxes.map((s, index) => (
           <Dropdown.Item
             key={s.endpoint}
@@ -96,6 +86,14 @@ export const ScraperMenu: React.FC<{
             {s.name}
           </Dropdown.Item>
         ))}
+        <Dropdown.Item onClick={() => onReloadScrapers()}>
+          <span className="fa-icon">
+            <Icon icon={faSyncAlt} />
+          </span>
+          <span>
+            <FormattedMessage id="actions.reload_scrapers" />
+          </span>
+        </Dropdown.Item>
       </Dropdown.Menu>
     </Dropdown>
   );
