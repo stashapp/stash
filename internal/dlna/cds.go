@@ -192,7 +192,7 @@ func (me *contentDirectoryService) Handle(action string, argsXML []byte, r *http
 
 		obj, err := me.objectFromID(browse.ObjectID)
 		if err != nil {
-			return nil, upnp.Errorf(upnpav.NoSuchObjectErrorCode, err.Error())
+			return nil, upnp.Errorf(upnpav.NoSuchObjectErrorCode, "cannot find object with id %q: %v", browse.ObjectID, err.Error())
 		}
 
 		switch browse.BrowseFlag {
