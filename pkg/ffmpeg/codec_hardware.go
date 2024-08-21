@@ -15,18 +15,18 @@ import (
 
 var (
 	// Hardware codec's
-	VideoCodecN264  VideoCodec = makeVideoCodec("H264 NVENC", "h264_nvenc")
-	VideoCodecN264H VideoCodec = makeVideoCodec("H264 NVENC HQ profile", "h264_nvenc")
-	VideoCodecI264  VideoCodec = makeVideoCodec("H264 Intel Quick Sync Video (QSV)", "h264_qsv")
-	VideoCodecI264C VideoCodec = makeVideoCodec("H264 Intel Quick Sync Video (QSV) Compatibility profile", "h264_qsv")
-	VideoCodecA264  VideoCodec = makeVideoCodec("H264 Advanced Media Framework (AMF)", "h264_amf")
-	VideoCodecM264  VideoCodec = makeVideoCodec("H264 VideoToolbox", "h264_videotoolbox")
-	VideoCodecV264  VideoCodec = makeVideoCodec("H264 VAAPI", "h264_vaapi")
-	VideoCodecR264  VideoCodec = makeVideoCodec("H264 V4L2M2M", "h264_v4l2m2m")
-	VideoCodecO264  VideoCodec = makeVideoCodec("H264 OMX", "h264_omx")
-	VideoCodecIVP9  VideoCodec = makeVideoCodec("VP9 Intel Quick Sync Video (QSV)", "vp9_qsv")
-	VideoCodecVVP9  VideoCodec = makeVideoCodec("VP9 VAAPI", "vp9_vaapi")
-	VideoCodecVVPX  VideoCodec = makeVideoCodec("VP8 VAAPI", "vp8_vaapi")
+	VideoCodecN264  = makeVideoCodec("H264 NVENC", "h264_nvenc")
+	VideoCodecN264H = makeVideoCodec("H264 NVENC HQ profile", "h264_nvenc")
+	VideoCodecI264  = makeVideoCodec("H264 Intel Quick Sync Video (QSV)", "h264_qsv")
+	VideoCodecI264C = makeVideoCodec("H264 Intel Quick Sync Video (QSV) Compatibility profile", "h264_qsv")
+	VideoCodecA264  = makeVideoCodec("H264 Advanced Media Framework (AMF)", "h264_amf")
+	VideoCodecM264  = makeVideoCodec("H264 VideoToolbox", "h264_videotoolbox")
+	VideoCodecV264  = makeVideoCodec("H264 VAAPI", "h264_vaapi")
+	VideoCodecR264  = makeVideoCodec("H264 V4L2M2M", "h264_v4l2m2m")
+	VideoCodecO264  = makeVideoCodec("H264 OMX", "h264_omx")
+	VideoCodecIVP9  = makeVideoCodec("VP9 Intel Quick Sync Video (QSV)", "vp9_qsv")
+	VideoCodecVVP9  = makeVideoCodec("VP9 VAAPI", "vp9_vaapi")
+	VideoCodecVVPX  = makeVideoCodec("VP8 VAAPI", "vp8_vaapi")
 )
 
 const minHeight int = 480
