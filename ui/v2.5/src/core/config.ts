@@ -60,6 +60,8 @@ export interface IUIConfig {
   enableTagBackgroundImage?: boolean;
   // if true view expanded details compact
   compactExpandedDetails?: boolean;
+  // if true measurements > 50-45-50 will be converted into US (Imperial) values
+  autoConvertMetricMeasurements?: boolean;
   // if true show all content details by default
   showAllDetails?: boolean;
 

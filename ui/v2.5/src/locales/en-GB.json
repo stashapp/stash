@@ -642,7 +642,11 @@
               "stars": "Stars"
             }
           }
-        }
+        },
+        "auto_convert_metric_measurements": {
+          "description": "When enabled, this option will auto-convert metric measurements into US (Inches) for values > 50-45-50 (In Performer Edit)",
+          "heading": "Auto Convert Metric Measurements"
+        }        
       },
       "funscript_offset": {
         "description": "Time offset in milliseconds for interactive scripts playback.",
