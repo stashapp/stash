@@ -27,6 +27,7 @@ fragment ScrapedPerformerData on ScrapedPerformer {
   measurements
   fake_tits
   penis_length
+  cup_size
   circumcised
   career_length
   tattoos

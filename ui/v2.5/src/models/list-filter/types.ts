@@ -159,6 +159,7 @@ export type CriterionType =
   | "weight"
   | "measurements"
   | "fake_tits"
+  | "cup_size"
   | "penis_length"
   | "circumcised"
   | "career_length"

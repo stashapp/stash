@@ -48,6 +48,7 @@ const performerFields = [
   // "weight",
   "measurements",
   "fake_tits",
+  "cup_size",
   "penis_length",
   "circumcised",
   "hair_color",

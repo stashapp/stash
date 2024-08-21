@@ -16,6 +16,7 @@ type ScrapedPerformer {
   height: String
   measurements: String
   fake_tits: String
+  cup_size: String
   penis_length: String
   circumcised: String
   career_length: String
@@ -52,6 +53,7 @@ input ScrapedPerformerInput {
   height: String
   measurements: String
   fake_tits: String
+  cup_size: String
   penis_length: String
   circumcised: String
   career_length: String

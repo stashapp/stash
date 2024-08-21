@@ -104,6 +104,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     weight: yupInputNumber().positive().truncate().nullable().defined(),
     measurements: yup.string().ensure(),
     fake_tits: yup.string().ensure(),
+    cup_size: yup.string().ensure(),
     penis_length: yupInputNumber().positive().nullable().defined(),
     circumcised: yupInputEnum(GQL.CircumisedEnum).nullable().defined(),
     tattoos: yup.string().ensure(),
@@ -132,6 +133,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     weight: performer.weight ?? null,
     measurements: performer.measurements ?? "",
     fake_tits: performer.fake_tits ?? "",
+    cup_size: performer.cup_size ?? "",
     penis_length: performer.penis_length ?? null,
     circumcised: performer.circumcised ?? null,
     tattoos: performer.tattoos ?? "",
@@ -280,6 +282,9 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     }
     if (state.penis_length) {
       formik.setFieldValue("penis_length", state.penis_length);
+    }
+    if (state.cup_size) {
+      formik.setFieldValue("cup_size", state.cup_size);
     }
 
     const remoteSiteID = state.remote_site_id;
@@ -658,6 +663,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
         {renderInputField("measurements")}
         {renderInputField("fake_tits")}
+        {renderInputField("cup_size", "text", "Cup Size")}
 
         {renderInputField("tattoos", "textarea")}
         {renderInputField("piercings", "textarea")}

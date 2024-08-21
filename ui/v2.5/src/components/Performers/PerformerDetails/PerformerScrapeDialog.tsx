@@ -258,6 +258,9 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
   const [fakeTits, setFakeTits] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(props.performer.fake_tits, props.scraped.fake_tits)
   );
+  const [cupSize, setCupSize] = useState<ScrapeResult<string>>(
+    new ScrapeResult<string>(props.performer.cup_size, props.scraped.cup_size)
+  );
   const [careerLength, setCareerLength] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(
       props.performer.career_length,
@@ -330,6 +333,7 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
     height,
     measurements,
     fakeTits,
+    cupSize,
     penisLength,
     circumcised,
     careerLength,
@@ -364,6 +368,7 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
       height: height.getNewValue(),
       measurements: measurements.getNewValue(),
       fake_tits: fakeTits.getNewValue(),
+      cup_size: cupSize.getNewValue(),
       career_length: careerLength.getNewValue(),
       tattoos: tattoos.getNewValue(),
       piercings: piercings.getNewValue(),
@@ -463,6 +468,11 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
           title={intl.formatMessage({ id: "fake_tits" })}
           result={fakeTits}
           onChange={(value) => setFakeTits(value)}
+        />
+        <ScrapedInputGroupRow
+          title={intl.formatMessage({ id: "cup_size" })}
+          result={cupSize}
+          onChange={(value) => setCupSize(value)}
         />
         <ScrapedInputGroupRow
           title={intl.formatMessage({ id: "career_length" })}

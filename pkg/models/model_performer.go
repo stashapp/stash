@@ -17,6 +17,7 @@ type Performer struct {
 	Height         *int            `json:"height"`
 	Measurements   string          `json:"measurements"`
 	FakeTits       string          `json:"fake_tits"`
+	CupSize        string          `json:"cup_size"`
 	PenisLength    *float64        `json:"penis_length"`
 	Circumcised    *CircumisedEnum `json:"circumcised"`
 	CareerLength   string          `json:"career_length"`
@@ -61,6 +62,7 @@ type PerformerPartial struct {
 	Height         OptionalInt
 	Measurements   OptionalString
 	FakeTits       OptionalString
+	CupSize        OptionalString
 	PenisLength    OptionalFloat64
 	Circumcised    OptionalString
 	CareerLength   OptionalString

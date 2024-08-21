@@ -29,6 +29,7 @@ func ToJSON(ctx context.Context, reader ImageAliasStashIDGetter, performer *mode
 		EyeColor:       performer.EyeColor,
 		Measurements:   performer.Measurements,
 		FakeTits:       performer.FakeTits,
+		CupSize:        performer.CupSize,
 		CareerLength:   performer.CareerLength,
 		Tattoos:        performer.Tattoos,
 		Piercings:      performer.Piercings,

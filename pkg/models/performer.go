@@ -132,6 +132,8 @@ type PerformerFilterType struct {
 	Measurements *StringCriterionInput `json:"measurements"`
 	// Filter by fake tits value
 	FakeTits *StringCriterionInput `json:"fake_tits"`
+	// Filter by fake tits value
+	CupSize *StringCriterionInput `json:"cup_size"`
 	// Filter by penis length value
 	PenisLength *FloatCriterionInput `json:"penis_length"`
 	// Filter by circumcision
@@ -214,6 +216,7 @@ type PerformerCreateInput struct {
 	HeightCm       *int            `json:"height_cm"`
 	Measurements   *string         `json:"measurements"`
 	FakeTits       *string         `json:"fake_tits"`
+	CupSize        *string         `json:"cup_size"`
 	PenisLength    *float64        `json:"penis_length"`
 	Circumcised    *CircumisedEnum `json:"circumcised"`
 	CareerLength   *string         `json:"career_length"`
@@ -251,6 +254,7 @@ type PerformerUpdateInput struct {
 	HeightCm       *int            `json:"height_cm"`
 	Measurements   *string         `json:"measurements"`
 	FakeTits       *string         `json:"fake_tits"`
+	CupSize        *string         `json:"cup_size"`
 	PenisLength    *float64        `json:"penis_length"`
 	Circumcised    *CircumisedEnum `json:"circumcised"`
 	CareerLength   *string         `json:"career_length"`

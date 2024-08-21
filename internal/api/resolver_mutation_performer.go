@@ -46,6 +46,7 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 	newPerformer.EyeColor = translator.string(input.EyeColor)
 	newPerformer.Measurements = translator.string(input.Measurements)
 	newPerformer.FakeTits = translator.string(input.FakeTits)
+	newPerformer.CupSize = translator.string(input.CupSize)
 	newPerformer.PenisLength = input.PenisLength
 	newPerformer.Circumcised = input.Circumcised
 	newPerformer.CareerLength = translator.string(input.CareerLength)
@@ -240,6 +241,7 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 	updatedPerformer.EyeColor = translator.optionalString(input.EyeColor, "eye_color")
 	updatedPerformer.Measurements = translator.optionalString(input.Measurements, "measurements")
 	updatedPerformer.FakeTits = translator.optionalString(input.FakeTits, "fake_tits")
+	updatedPerformer.CupSize = translator.optionalString(input.CupSize, "cup_size")
 	updatedPerformer.PenisLength = translator.optionalFloat64(input.PenisLength, "penis_length")
 	updatedPerformer.Circumcised = translator.optionalString((*string)(input.Circumcised), "circumcised")
 	updatedPerformer.CareerLength = translator.optionalString(input.CareerLength, "career_length")
@@ -355,6 +357,7 @@ func (r *mutationResolver) BulkPerformerUpdate(ctx context.Context, input BulkPe
 	updatedPerformer.EyeColor = translator.optionalString(input.EyeColor, "eye_color")
 	updatedPerformer.Measurements = translator.optionalString(input.Measurements, "measurements")
 	updatedPerformer.FakeTits = translator.optionalString(input.FakeTits, "fake_tits")
+	updatedPerformer.CupSize = translator.optionalString(input.CupSize, "cup_size")
 	updatedPerformer.PenisLength = translator.optionalFloat64(input.PenisLength, "penis_length")
 	updatedPerformer.Circumcised = translator.optionalString((*string)(input.Circumcised), "circumcised")
 	updatedPerformer.CareerLength = translator.optionalString(input.CareerLength, "career_length")

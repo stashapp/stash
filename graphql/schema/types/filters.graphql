@@ -118,6 +118,8 @@ input PerformerFilterType {
   measurements: StringCriterionInput
   "Filter by fake tits value"
   fake_tits: StringCriterionInput
+  "Filter by cup size value"
+  cup_size: StringCriterionInput
   "Filter by penis length value"
   penis_length: FloatCriterionInput
   "Filter by ciricumcision"

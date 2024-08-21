@@ -41,6 +41,7 @@ type performerRow struct {
 	Height        null.Int    `db:"height"`
 	Measurements  zero.String `db:"measurements"`
 	FakeTits      zero.String `db:"fake_tits"`
+	CupSize       zero.String `db:"cup_size"`
 	PenisLength   null.Float  `db:"penis_length"`
 	Circumcised   zero.String `db:"circumcised"`
 	CareerLength  zero.String `db:"career_length"`
@@ -75,6 +76,7 @@ func (r *performerRow) fromPerformer(o models.Performer) {
 	r.Height = intFromPtr(o.Height)
 	r.Measurements = zero.StringFrom(o.Measurements)
 	r.FakeTits = zero.StringFrom(o.FakeTits)
+	r.CupSize = zero.StringFrom(o.CupSize)
 	r.PenisLength = null.FloatFromPtr(o.PenisLength)
 	if o.Circumcised != nil && o.Circumcised.IsValid() {
 		r.Circumcised = zero.StringFrom(o.Circumcised.String())
@@ -105,6 +107,7 @@ func (r *performerRow) resolve() *models.Performer {
 		Height:         nullIntPtr(r.Height),
 		Measurements:   r.Measurements.String,
 		FakeTits:       r.FakeTits.String,
+		CupSize:        r.CupSize.String,
 		PenisLength:    nullFloatPtr(r.PenisLength),
 		CareerLength:   r.CareerLength.String,
 		Tattoos:        r.Tattoos.String,
@@ -149,6 +152,7 @@ func (r *performerRowRecord) fromPartial(o models.PerformerPartial) {
 	r.setNullInt("height", o.Height)
 	r.setNullString("measurements", o.Measurements)
 	r.setNullString("fake_tits", o.FakeTits)
+	r.setNullString("cup_size", o.CupSize)
 	r.setNullFloat64("penis_length", o.PenisLength)
 	r.setNullString("circumcised", o.Circumcised)
 	r.setNullString("career_length", o.CareerLength)
