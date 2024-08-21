@@ -1391,7 +1391,7 @@
         "saved_entity": "{entity} sauvegardé·e",
         "started_auto_tagging": "Début de l'étiquetage automatique",
         "started_generating": "Début de la génération",
-        "started_importing": "Début de l'importation",
+        "started_importing": "Début d'importation",
         "updated_entity": "{entity} mis·e à jour"
     },
     "total": "Total",
