@@ -27,7 +27,7 @@
         "created_entity": "已创建{entity_type}: {entity_name}",
         "customise": "自定义",
         "delete": "删除",
-        "delete_entity": "删除{entityType}",
+        "delete_entity": "删除",
         "delete_file": "删除文件",
         "delete_file_and_funscript": "删除文件 (和 funscript)",
         "delete_generated_supporting_files": "删除已生成的附加文件",

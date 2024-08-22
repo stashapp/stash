@@ -25,7 +25,7 @@
         "created_entity": "তৈরি হয়েছে {entity_type}: {entity_name}",
         "customise": "সাজাও",
         "delete": "মুছুন",
-        "delete_entity": "{entityType} মুছুন",
+        "delete_entity": "মুছুন",
         "delete_file": "ফাইল মুছুন",
         "delete_file_and_funscript": "ফাইল মুছুন (সাথে funscript ও)",
         "delete_generated_supporting_files": "জেনারেট হওয়া সমর্থিত ফাইলসমূহ মুছুন",

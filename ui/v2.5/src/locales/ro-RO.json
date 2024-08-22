@@ -23,7 +23,7 @@
         "created_entity": "S-a creat {entity_type}: {entity_name}",
         "customise": "Personalizați",
         "delete": "Șterge",
-        "delete_entity": "Șterge {entityType}",
+        "delete_entity": "Șterge",
         "delete_file": "Șterge fişier",
         "delete_file_and_funscript": "Șterge fişier (şi funscript)",
         "disallow": "Nu se permite",

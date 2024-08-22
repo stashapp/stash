@@ -27,7 +27,7 @@
         "created_entity": "Создано {entity_type}: {entity_name}",
         "customise": "Настроить",
         "delete": "Удалить",
-        "delete_entity": "Удалить {entityType}",
+        "delete_entity": "Удалить",
         "delete_file": "Удалить файл",
         "delete_file_and_funscript": "Удалить файл (вместе с funscript)",
         "delete_generated_supporting_files": "Удалить сгенерированные вспомогательные файлы",

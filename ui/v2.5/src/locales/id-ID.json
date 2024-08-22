@@ -36,7 +36,7 @@
         "created_entity": "Telah dibuat {entity_type}: {entity_name}",
         "customise": "Sesuaikan",
         "delete": "Hapus",
-        "delete_entity": "Hapus {entityType}",
+        "delete_entity": "Hapus",
         "delete_file": "Hapus berkas",
         "delete_file_and_funscript": "Hapus berkas (dan funscript)",
         "delete_generated_supporting_files": "Hapus file pendukung yang dihasilkan",

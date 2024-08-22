@@ -25,7 +25,7 @@
         "create_parent_studio": "Crea un estudi pare",
         "created_entity": "Creat {entity_type}: {entity_name}",
         "customise": "Personalitza",
-        "delete_entity": "Suprimeix {entityType}",
+        "delete_entity": "Suprimeix",
         "delete_file": "Suprimeix el fitxer",
         "delete_file_and_funscript": "Suprimeix el fitxer (i funscript)",
         "delete_generated_supporting_files": "Suprimeix els fitxers de suport generats",

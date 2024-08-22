@@ -27,7 +27,7 @@
         "create_parent_studio": "पैरेंट स्टूडियो बनाएं",
         "created_entity": "बनाया गया {entity_type}: {entity_name}",
         "customise": "कस्टमाइज करें",
-        "delete_entity": "{entityType} मिटाएं",
+        "delete_entity": "मिटाएं",
         "disable": "अक्षम करें",
         "delete_generated_supporting_files": "उत्पन्न की गई सहायक फ़ाइलें मिटाएं",
         "download": "डाउनलोड करें",

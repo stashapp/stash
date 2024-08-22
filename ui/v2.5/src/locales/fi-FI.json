@@ -27,7 +27,7 @@
         "created_entity": "Luotu: {entityType}: {entity_name}",
         "customise": "Kustomoi",
         "delete": "Poista",
-        "delete_entity": "Poista {entityType}",
+        "delete_entity": "Poista",
         "delete_file": "Poista tiedosto",
         "delete_file_and_funscript": "Poista tiedosto (ja funscript)",
         "delete_generated_supporting_files": "Poista generoidut lisätiedostot",

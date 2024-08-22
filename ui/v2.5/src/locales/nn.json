@@ -29,7 +29,7 @@
         "created_entity": "Oppretta {entity_type}: {entity_name}",
         "customise": "Tilpass",
         "delete": "Slett",
-        "delete_entity": "Slett {entityType}",
+        "delete_entity": "Slett",
         "delete_file": "Slett fil",
         "disable": "Slå av",
         "remove_date": "Fjern dato",

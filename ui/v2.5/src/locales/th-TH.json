@@ -25,7 +25,7 @@
         "created_entity": "สร้าง{entity_type}: {entity_name}",
         "customise": "ปรับแต่ง",
         "delete": "ลบ",
-        "delete_entity": "ลบ{entityType}",
+        "delete_entity": "ลบ",
         "delete_file": "ลบไฟล์",
         "delete_file_and_funscript": "ลบไฟล์ (และ funscript)",
         "delete_generated_supporting_files": "ลบไฟล์ที่เกี่ยวข้อง",

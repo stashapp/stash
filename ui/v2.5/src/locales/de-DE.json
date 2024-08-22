@@ -27,7 +27,7 @@
         "created_entity": "{entity_type} erstellt: {entity_name}",
         "customise": "Anpassen",
         "delete": "Löschen",
-        "delete_entity": "Lösche {entityType}",
+        "delete_entity": "Lösche",
         "delete_file": "Lösche Datei",
         "delete_file_and_funscript": "Datei löschen (inkl. funscript)",
         "delete_generated_supporting_files": "Lösche generierte Hilfsdaten",

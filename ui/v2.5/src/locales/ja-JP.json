@@ -26,7 +26,7 @@
         "created_entity": "{entity_type}を作成しました: {entity_name}",
         "customise": "カスタマイズ",
         "delete": "削除",
-        "delete_entity": "{entityType}を削除",
+        "delete_entity": "を削除",
         "delete_file": "ファイルを削除",
         "delete_file_and_funscript": "ファイルを削除 (ファンスクリプトを含む)",
         "delete_generated_supporting_files": "生成済みのサポートファイルを削除",

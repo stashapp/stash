@@ -27,7 +27,7 @@
         "created_entity": "{entity_type}을 생성했습니다. ({entity_name})",
         "customise": "사용자 정의",
         "delete": "삭제",
-        "delete_entity": "{entityType} 삭제",
+        "delete_entity": "삭제",
         "delete_file": "파일 삭제",
         "delete_file_and_funscript": "파일 삭제 (funscript 포함)",
         "delete_generated_supporting_files": "생성된 컨텐츠 파일들까지 삭제",

@@ -33,7 +33,7 @@
         "clear_image": "Notīrīt bildi",
         "create": "Izveidot",
         "assign_stashid_to_parent_studio": "Piešķirt pagaidu ID esošajai vecākstudijai un atjaunināt metadatus",
-        "delete_entity": "Dzēst {EntityType}",
+        "delete_entity": "Dzēst",
         "create_parent_studio": "Izveidot pamatstudiju",
         "clear_date_data": "Notīrīt visus datus",
         "add_manual_date": "Pievienot manuālo datumu",

@@ -27,7 +27,7 @@
         "created_entity": "Lavet {entity_type}: {entity_name}",
         "customise": "Tilpas",
         "delete": "Slet",
-        "delete_entity": "Slet {entityType}",
+        "delete_entity": "Slet",
         "delete_file": "Slet fil",
         "delete_file_and_funscript": "Slet fil (og funscript)",
         "delete_generated_supporting_files": "Slet genereret filer",

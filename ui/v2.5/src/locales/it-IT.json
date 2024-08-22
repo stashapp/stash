@@ -27,7 +27,7 @@
         "created_entity": "Creata/o {entity_type}: {entity_name}",
         "customise": "Personalizza",
         "delete": "Cancella",
-        "delete_entity": "Cancella {entityType}",
+        "delete_entity": "Cancella",
         "delete_file": "Cancella file",
         "delete_file_and_funscript": "Cancella file (e funscript)",
         "delete_generated_supporting_files": "Cancella file di supporto creati",

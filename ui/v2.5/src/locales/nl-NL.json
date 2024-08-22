@@ -25,7 +25,7 @@
         "created_entity": "Aangemaakt {entity_type}: {entity_name}",
         "customise": "Aanpassen",
         "delete": "Verwijder",
-        "delete_entity": "Verwijder {entityType}",
+        "delete_entity": "Verwijder",
         "delete_file": "Verwijder bestand",
         "delete_file_and_funscript": "Verwijder bestand (en funscript)",
         "delete_generated_supporting_files": "Verwijder gegenereerde ondersteuningsbestanden",

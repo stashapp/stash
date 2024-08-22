@@ -22,7 +22,7 @@
         "create_marker": "Napravi Marker",
         "created_entity": "Stvoren {entity_type}: {entity_name}",
         "delete": "Izbrisati",
-        "delete_entity": "Izbrišite {entityType}",
+        "delete_entity": "Izbrišite",
         "delete_file": "Izbrišite datoteku",
         "delete_generated_supporting_files": "Izbrišite generirane datoteke",
         "disallow": "Zabrani",

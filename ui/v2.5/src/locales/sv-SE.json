@@ -29,7 +29,7 @@
         "created_entity": "Skapade {entity_type}: {entity_name}",
         "customise": "Ändra",
         "delete": "Radera",
-        "delete_entity": "Radera {entityType}",
+        "delete_entity": "Radera",
         "delete_file": "Radera fil",
         "delete_file_and_funscript": "Radera fil (och funskript)",
         "delete_generated_supporting_files": "Radera genererade filer",

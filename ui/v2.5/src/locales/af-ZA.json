@@ -19,7 +19,7 @@
         "create_entity": "Skep {entityType}",
         "create_parent_studio": "Skep ouerateljee",
         "delete": "Verwyder",
-        "delete_entity": "Verwyder {entityType}",
+        "delete_entity": "Verwyder",
         "delete_file_and_funscript": "Verwyder lêer (en funscript)",
         "delete_generated_supporting_files": "Verwyder gegenereerde ondersteunende lêers",
         "disable": "Deaktiveer",

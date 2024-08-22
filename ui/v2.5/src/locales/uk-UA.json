@@ -25,7 +25,7 @@
         "created_entity": "Створений {entity_type}:{entity_name}",
         "customise": "Кастомізувати",
         "delete": "Видалити",
-        "delete_entity": "Видалити {entityType}",
+        "delete_entity": "Видалити",
         "delete_file": "Видалити Файл",
         "delete_file_and_funscript": "Видалити Файл (і фанскрипт)",
         "delete_generated_supporting_files": "Видалити згенеровані файли підтрикм",

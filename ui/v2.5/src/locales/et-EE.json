@@ -27,7 +27,7 @@
         "created_entity": "Loodud {entity_type}: {entity_name}",
         "customise": "Kohanda",
         "delete": "Kustuta",
-        "delete_entity": "Kustuta {entityType}",
+        "delete_entity": "Kustuta",
         "delete_file": "Kustuta fail",
         "delete_file_and_funscript": "Kustuta fail (ja funscript)",
         "delete_generated_supporting_files": "Kustuta genereeritud toetusfailid",

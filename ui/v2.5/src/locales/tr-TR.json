@@ -24,7 +24,7 @@
         "create_marker": "Yer İmi Oluştur",
         "created_entity": "{entity_type}: {entity_name} oluşturuldu",
         "delete": "Sil",
-        "delete_entity": "{entityType} Sil",
+        "delete_entity": "Sil",
         "delete_file": "Dosyayı sil",
         "delete_generated_supporting_files": "Oluşturulan ek dosyaları sil",
         "disallow": "İzin verme",

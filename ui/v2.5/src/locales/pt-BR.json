@@ -29,7 +29,7 @@
         "created_entity": "Criar {entity_type}: {entity_name}",
         "customise": "Customizar",
         "delete": "Apagar",
-        "delete_entity": "Apagar {entityType}",
+        "delete_entity": "Apagar",
         "delete_file": "Apagar arquivo",
         "delete_file_and_funscript": "Deletar arquivo (e funscript)",
         "delete_generated_supporting_files": "Apagar arquivos gerados de suporte",

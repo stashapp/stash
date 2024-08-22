@@ -25,7 +25,7 @@
         "created_entity": "Vytvořen {entity_type}: {entity_name}",
         "customise": "Customizovat",
         "delete": "Odstranit",
-        "delete_entity": "Odstranit {entityType}",
+        "delete_entity": "Odstranit",
         "delete_file": "Odstranit soubor",
         "delete_file_and_funscript": "Odstranit soubor (a funscript)",
         "delete_generated_supporting_files": "Odstranit generované podpůrné soubory",

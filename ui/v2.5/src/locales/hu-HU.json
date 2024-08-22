@@ -23,7 +23,7 @@
         "create": "Létrehoz",
         "create_entity": "{entityType} Létrehozása",
         "delete": "Törlés",
-        "delete_entity": "{entityType} Törlése",
+        "delete_entity": "Törlése",
         "delete_file": "Fájl Törlése",
         "delete_generated_supporting_files": "Létrehozott kiegészítő fájlok törlése",
         "disallow": "Tiltás",
