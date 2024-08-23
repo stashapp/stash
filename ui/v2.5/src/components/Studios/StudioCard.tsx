@@ -51,6 +51,8 @@ function maybeRenderParent(
 
 function maybeRenderChildren(studio: GQL.StudioDataFragment) {
   if (studio.child_studios.length > 0) {
+    const studioLabel =
+      studio.child_studios.length === 1 ? "studio" : "studios";
     return (
       <div className="studio-child-studios">
         <FormattedMessage
@@ -58,7 +60,7 @@ function maybeRenderChildren(studio: GQL.StudioDataFragment) {
           values={{
             children: (
               <Link to={NavUtils.makeChildStudiosUrl(studio)}>
-                {studio.child_studios.length} studios
+                {studio.child_studios.length} {studioLabel}
               </Link>
             ),
           }}
