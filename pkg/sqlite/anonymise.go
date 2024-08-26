@@ -47,6 +47,8 @@ func (db *Anonymiser) Anonymise(ctx context.Context) error {
 		return utils.Do([]func() error{
 			func() error { return db.deleteBlobs() },
 			func() error { return db.deleteStashIDs() },
+			func() error { return db.clearOHistory() },
+			func() error { return db.clearWatchHistory() },
 			func() error { return db.anonymiseFolders(ctx) },
 			func() error { return db.anonymiseFiles(ctx) },
 			func() error { return db.anonymiseFingerprints(ctx) },
@@ -98,6 +100,18 @@ func (db *Anonymiser) deleteStashIDs() error {
 		func() error { return db.truncateTable("scene_stash_ids") },
 		func() error { return db.truncateTable("studio_stash_ids") },
 		func() error { return db.truncateTable("performer_stash_ids") },
+	})
+}
+
+func (db *Anonymiser) clearOHistory() error {
+	return utils.Do([]func() error{
+		func() error { return db.truncateTable("scenes_o_dates") },
+	})
+}
+
+func (db *Anonymiser) clearWatchHistory() error {
+	return utils.Do([]func() error{
+		func() error { return db.truncateTable("scenes_view_dates") },
 	})
 }
 
