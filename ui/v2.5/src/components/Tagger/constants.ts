@@ -11,7 +11,6 @@ export interface ITaggerSource {
   supportSceneFragment?: boolean;
 }
 
-export const LOCAL_FORAGE_KEY = "tagger";
 export const DEFAULT_BLACKLIST = [
   "\\sXXX\\s",
   "1080p",
