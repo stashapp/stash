@@ -1,3 +1,7 @@
+// Package loaders contains the dataloaders used by the resolver in [api].
+// They are generated with `make generate-dataloaders`.
+// The dataloaders are used to batch requests to the database.
+
 //go:generate go run github.com/vektah/dataloaden SceneLoader int *github.com/stashapp/stash/pkg/models.Scene
 //go:generate go run github.com/vektah/dataloaden GalleryLoader int *github.com/stashapp/stash/pkg/models.Gallery
 //go:generate go run github.com/vektah/dataloaden ImageLoader int *github.com/stashapp/stash/pkg/models.Image

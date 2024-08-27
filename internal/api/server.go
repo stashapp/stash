@@ -75,7 +75,8 @@ func (dir osFS) Open(name string) (fs.File, error) {
 	return os.DirFS(string(dir)).Open(name)
 }
 
-// Called at startup
+// Initialize creates a new [Server] instance.
+// It assumes that the [manager.Manager] instance has been initialised.
 func Initialize() (*Server, error) {
 	mgr := manager.GetInstance()
 	cfg := mgr.Config
@@ -288,6 +289,9 @@ func Initialize() (*Server, error) {
 	return server, nil
 }
 
+// Start starts the server. It listens on the configured address and port.
+// It calls ListenAndServeTLS if TLS is configured, otherwise it calls ListenAndServe.
+// Calls to Start are blocked until the server is shutdown.
 func (s *Server) Start() error {
 	logger.Infof("stash is listening on " + s.Addr)
 	logger.Infof("stash is running at " + s.displayAddress)
@@ -299,6 +303,7 @@ func (s *Server) Start() error {
 	}
 }
 
+// Shutdown gracefully shuts down the server without interrupting any active connections.
 func (s *Server) Shutdown() {
 	err := s.Server.Shutdown(context.TODO())
 	if err != nil {

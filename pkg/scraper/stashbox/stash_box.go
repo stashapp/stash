@@ -1,3 +1,4 @@
+// Package stashbox provides a client interface to a stash-box server instance.
 package stashbox
 
 import (
