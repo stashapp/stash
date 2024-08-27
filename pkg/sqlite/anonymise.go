@@ -84,14 +84,14 @@ func (db *Anonymiser) truncateTable(tableName string) error {
 
 func (db *Anonymiser) deleteBlobs() error {
 	return utils.Do([]func() error{
-		func() error { return db.truncateColumn("tags", "image_blob") },
-		func() error { return db.truncateColumn("studios", "image_blob") },
-		func() error { return db.truncateColumn("performers", "image_blob") },
-		func() error { return db.truncateColumn("scenes", "cover_blob") },
-		func() error { return db.truncateColumn("groups", "front_image_blob") },
-		func() error { return db.truncateColumn("groups", "back_image_blob") },
+		func() error { return db.truncateColumn(tagTable, tagImageBlobColumn) },
+		func() error { return db.truncateColumn(studioTable, studioImageBlobColumn) },
+		func() error { return db.truncateColumn(performerTable, performerImageBlobColumn) },
+		func() error { return db.truncateColumn(sceneTable, sceneCoverBlobColumn) },
+		func() error { return db.truncateColumn(groupTable, groupFrontImageBlobColumn) },
+		func() error { return db.truncateColumn(groupTable, groupBackImageBlobColumn) },
 
-		func() error { return db.truncateTable("blobs") },
+		func() error { return db.truncateTable(blobTable) },
 	})
 }
 
@@ -105,13 +105,13 @@ func (db *Anonymiser) deleteStashIDs() error {
 
 func (db *Anonymiser) clearOHistory() error {
 	return utils.Do([]func() error{
-		func() error { return db.truncateTable("scenes_o_dates") },
+		func() error { return db.truncateTable(scenesODatesTable) },
 	})
 }
 
 func (db *Anonymiser) clearWatchHistory() error {
 	return utils.Do([]func() error{
-		func() error { return db.truncateTable("scenes_view_dates") },
+		func() error { return db.truncateTable(scenesViewDatesTable) },
 	})
 }
 
