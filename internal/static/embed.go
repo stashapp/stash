@@ -1,3 +1,4 @@
+// Package static provides the static files embedded in the application.
 package static
 
 import (

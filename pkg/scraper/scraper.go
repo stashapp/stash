@@ -1,3 +1,5 @@
+// Package scraper provides interfaces to interact with the scraper subsystem.
+// The [Cache] type is the main entry point to the scraper subsystem.
 package scraper
 
 import (

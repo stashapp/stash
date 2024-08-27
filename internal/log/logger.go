@@ -1,3 +1,4 @@
+// Package log provides an implementation of [logger.LoggerImpl], using logrus.
 package log
 
 import (

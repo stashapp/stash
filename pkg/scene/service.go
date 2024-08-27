@@ -1,3 +1,5 @@
+// Package scene provides the application logic for scene functionality.
+// Most functionality is provided by [Service].
 package scene
 
 import (
