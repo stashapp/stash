@@ -500,7 +500,7 @@ textarea.text-input {
 .zoom-0 {
   .gallery-card-image,
   .tag-card-image {
-    max-height: 180px;
+    height: 180px;
   }
 }
 
@@ -509,7 +509,7 @@ textarea.text-input {
 
   .gallery-card-image,
   .tag-card-image {
-    max-height: 240px;
+    height: 240px;
   }
 
   .image-card-preview {
@@ -520,7 +520,7 @@ textarea.text-input {
 .zoom-2 {
   .gallery-card-image,
   .tag-card-image {
-    max-height: 360px;
+    height: 360px;
   }
 
   .image-card-preview {
@@ -531,7 +531,7 @@ textarea.text-input {
 .zoom-3 {
   .tag-card-image,
   .gallery-card-image {
-    max-height: 480px;
+    height: 480px;
   }
 
   .image-card-preview {
