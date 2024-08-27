@@ -70,11 +70,6 @@
   position: absolute;
   width: 10%;
 
-  // .fa-icon {
-  //   height: 50%;
-  //   width: 50%;
-  // }
-
   &.move-target-before {
     left: 0;
   }
@@ -82,4 +77,8 @@
   &.move-target-after {
     right: 0;
   }
+}
+
+.card-drag-handle {
+  filter: drop-shadow(1px 1px 1px rgba(0, 0, 0, 0.7));
 }
