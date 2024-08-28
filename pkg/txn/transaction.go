@@ -1,3 +1,4 @@
+// Package txn provides functions for running transactions.
 package txn
 
 import (

@@ -1,3 +1,4 @@
+// Package paths provides functions to return paths to various resources.
 package paths
 
 import (
