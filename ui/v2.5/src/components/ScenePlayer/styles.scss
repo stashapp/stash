@@ -34,8 +34,11 @@ $sceneTabWidth: 450px;
   }
 }
 
-.VideoPlayer.no-file .vjs-big-play-button {
-  display: none;
+.VideoPlayer.no-file .video-js {
+  .vjs-big-play-button,
+  .vjs-control-bar {
+    display: none;
+  }
 }
 
 .video-js {
