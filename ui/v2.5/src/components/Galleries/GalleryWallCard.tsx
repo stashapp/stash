@@ -41,6 +41,10 @@ const GalleryWallCard: React.FC<IProps> = ({ gallery }) => {
       : performerNames;
 
   async function showLightboxStart() {
+    if (gallery.image_count === 0) {
+      return;
+    }
+
     showLightbox(0);
   }
 
