@@ -34,6 +34,13 @@ $sceneTabWidth: 450px;
   }
 }
 
+.VideoPlayer.no-file .video-js {
+  .vjs-big-play-button,
+  .vjs-control-bar {
+    display: none;
+  }
+}
+
 .video-js {
   height: 100%;
   position: absolute;
