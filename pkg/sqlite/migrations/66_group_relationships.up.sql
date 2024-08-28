@@ -5,7 +5,8 @@ CREATE TABLE `groups_relations` (
   `description` varchar(255),
   primary key (`containing_id`, `sub_id`),
   foreign key (`containing_id`) references `groups`(`id`) on delete cascade,
-  foreign key (`sub_id`) references `groups`(`id`) on delete cascade
+  foreign key (`sub_id`) references `groups`(`id`) on delete cascade,
+  check (`containing_id` != `sub_id`)
 );
 
 CREATE INDEX `index_groups_relations_sub_id` ON `groups_relations` (`sub_id`);

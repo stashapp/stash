@@ -101,7 +101,15 @@ func (s *Service) validateUpdateGroupHierarchy(ctx context.Context, existing *mo
 		effectiveSubGroups = subGroups.Apply(existingSubGroups)
 	}
 
-	return s.validateGroupHierarchy(ctx, idsFromGroupDescriptions(effectiveContainingGroups), idsFromGroupDescriptions(effectiveSubGroups))
+	containingIDs := idsFromGroupDescriptions(effectiveContainingGroups)
+	subIDs := idsFromGroupDescriptions(effectiveSubGroups)
+
+	// ensure we haven't set the group as a subgroup of itself
+	if sliceutil.Contains(containingIDs, existing.ID) || sliceutil.Contains(subIDs, existing.ID) {
+		return ErrHierarchyLoop
+	}
+
+	return s.validateGroupHierarchy(ctx, containingIDs, subIDs)
 }
 
 func idsFromGroupDescriptions(v []models.GroupIDDescription) []int {

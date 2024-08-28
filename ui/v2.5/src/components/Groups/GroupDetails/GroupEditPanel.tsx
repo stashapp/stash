@@ -415,6 +415,7 @@ export const GroupEditPanel: React.FC<IGroupEditPanel> = ({
       <ContainingGroupTable
         value={containingGroupEntries}
         onUpdate={onSetContainingGroupEntries}
+        excludeIDs={group.id ? [group.id] : undefined}
       />
     );
 
