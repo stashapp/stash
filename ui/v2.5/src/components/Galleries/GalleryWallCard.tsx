@@ -19,17 +19,20 @@ interface IProps {
 
 const GalleryWallCard: React.FC<IProps> = ({ gallery }) => {
   const intl = useIntl();
+  const [orientation, setOrientation] = React.useState<
+    "landscape" | "portrait"
+  >("landscape");
   const showLightbox = useGalleryLightbox(gallery.id, gallery.chapters);
 
-  const coverFile = gallery?.cover?.files.length
-    ? gallery.cover.files[0]
-    : undefined;
+  const cover = gallery?.paths.cover;
 
-  const orientation =
-    (coverFile?.width ?? 0) > (coverFile?.height ?? 0)
-      ? "landscape"
-      : "portrait";
-  const cover = gallery?.cover?.paths.thumbnail ?? "";
+  function onImageLoad(e: React.SyntheticEvent<HTMLImageElement, Event>) {
+    const target = e.target as HTMLImageElement;
+    setOrientation(
+      target.naturalWidth > target.naturalHeight ? "landscape" : "portrait"
+    );
+  }
+
   const title = galleryTitle(gallery);
   const performerNames = gallery.performers.map((p) => p.name);
   const performers =
@@ -51,7 +54,13 @@ const GalleryWallCard: React.FC<IProps> = ({ gallery }) => {
         tabIndex={0}
       >
         <RatingSystem value={gallery.rating100} disabled withoutContext />
-        <img loading="lazy" src={cover} alt="" className={CLASSNAME_IMG} />
+        <img
+          loading="lazy"
+          src={cover}
+          alt=""
+          className={CLASSNAME_IMG}
+          onLoad={onImageLoad}
+        />
         <footer className={CLASSNAME_FOOTER}>
           <Link
             to={`/galleries/${gallery.id}`}
