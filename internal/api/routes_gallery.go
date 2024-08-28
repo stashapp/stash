@@ -8,8 +8,12 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
+	"github.com/stashapp/stash/internal/manager/config"
+	"github.com/stashapp/stash/internal/static"
+	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 type GalleryFinder interface {
@@ -17,15 +21,17 @@ type GalleryFinder interface {
 	FindByChecksum(ctx context.Context, checksum string) ([]*models.Gallery, error)
 }
 
-type ImageByIndexer interface {
+type GalleryImageFinder interface {
 	FindByGalleryIDIndex(ctx context.Context, galleryID int, index uint) (*models.Image, error)
+	image.Queryer
+	image.CoverQueryer
 }
 
 type galleryRoutes struct {
 	routes
 	imageRoutes   imageRoutes
 	galleryFinder GalleryFinder
-	imageFinder   ImageByIndexer
+	imageFinder   GalleryImageFinder
 	fileGetter    models.FileGetter
 }
 
@@ -35,10 +41,44 @@ func (rs galleryRoutes) Routes() chi.Router {
 	r.Route("/{galleryId}", func(r chi.Router) {
 		r.Use(rs.GalleryCtx)
 
+		r.Get("/cover", rs.Cover)
 		r.Get("/preview/{imageIndex}", rs.Preview)
 	})
 
 	return r
+}
+
+func (rs galleryRoutes) Cover(w http.ResponseWriter, r *http.Request) {
+	g := r.Context().Value(galleryKey).(*models.Gallery)
+
+	var i *models.Image
+	_ = rs.withReadTxn(r, func(ctx context.Context) error {
+		// Find cover image first
+		i, _ = image.FindGalleryCover(ctx, rs.imageFinder, g.ID, config.GetInstance().GetGalleryCoverRegex())
+		if i == nil {
+			return nil
+		}
+
+		// serveThumbnail needs files populated
+		if err := i.LoadPrimaryFile(ctx, rs.fileGetter); err != nil {
+			if !errors.Is(err, context.Canceled) {
+				logger.Errorf("error loading primary file for image %d: %v", i.ID, err)
+			}
+			// set image to nil so that it doesn't try to use the primary file
+			i = nil
+		}
+
+		return nil
+	})
+
+	if i == nil {
+		// fallback to default image
+		image := static.ReadAll(static.DefaultGalleryImage)
+		utils.ServeImage(w, r, image)
+		return
+	}
+
+	rs.imageRoutes.serveThumbnail(w, r, i)
 }
 
 func (rs galleryRoutes) Preview(w http.ResponseWriter, r *http.Request) {
@@ -55,6 +95,9 @@ func (rs galleryRoutes) Preview(w http.ResponseWriter, r *http.Request) {
 	_ = rs.withReadTxn(r, func(ctx context.Context) error {
 		qb := rs.imageFinder
 		i, _ = qb.FindByGalleryIDIndex(ctx, g.ID, uint(index))
+		if i == nil {
+			return nil
+		}
 		// TODO - handle errors?
 
 		// serveThumbnail needs files populated

@@ -195,10 +195,10 @@ func (r *galleryResolver) Urls(ctx context.Context, obj *models.Gallery) ([]stri
 func (r *galleryResolver) Paths(ctx context.Context, obj *models.Gallery) (*GalleryPathsType, error) {
 	baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
 	builder := urlbuilders.NewGalleryURLBuilder(baseURL, obj)
-	previewPath := builder.GetPreviewURL()
 
 	return &GalleryPathsType{
-		Preview: previewPath,
+		Cover:  builder.GetCoverURL(),
+		Preview: builder.GetPreviewURL(),
 	}, nil
 }
 
