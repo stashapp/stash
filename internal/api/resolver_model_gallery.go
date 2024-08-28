@@ -197,7 +197,7 @@ func (r *galleryResolver) Paths(ctx context.Context, obj *models.Gallery) (*Gall
 	builder := urlbuilders.NewGalleryURLBuilder(baseURL, obj)
 
 	return &GalleryPathsType{
-		Cover:  builder.GetCoverURL(),
+		Cover:   builder.GetCoverURL(),
 		Preview: builder.GetPreviewURL(),
 	}, nil
 }
