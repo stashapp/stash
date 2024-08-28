@@ -18,6 +18,7 @@ import {
   useSceneIncrementPlayCount,
   useSceneResetO,
   useSceneResetPlayCount,
+  useSceneResetActivity,
 } from "src/core/StashService";
 import * as GQL from "src/core/generated-graphql";
 import { TextField } from "src/utils/field";
@@ -72,9 +73,19 @@ const History: React.FC<{
 
 const HistoryMenu: React.FC<{
   hasHistory: boolean;
+  showResetResumeDuration: boolean;
   onAddDate: () => void;
   onClearDates: () => void;
-}> = ({ hasHistory, onAddDate, onClearDates }) => {
+  resetResume: () => void;
+  resetDuration: () => void;
+}> = ({
+  hasHistory,
+  showResetResumeDuration,
+  onAddDate,
+  onClearDates,
+  resetResume,
+  resetDuration,
+}) => {
   const intl = useIntl();
 
   return (
@@ -99,6 +110,22 @@ const HistoryMenu: React.FC<{
             onClick={() => onClearDates()}
           >
             <FormattedMessage id="actions.clear_date_data" />
+          </Dropdown.Item>
+        )}
+        {showResetResumeDuration && (
+          <Dropdown.Item
+            className="bg-secondary text-white"
+            onClick={() => resetResume()}
+          >
+            <FormattedMessage id="actions.reset_resume_time" />
+          </Dropdown.Item>
+        )}
+        {showResetResumeDuration && (
+          <Dropdown.Item
+            className="bg-secondary text-white"
+            onClick={() => resetDuration()}
+          >
+            <FormattedMessage id="actions.reset_play_duration" />
           </Dropdown.Item>
         )}
       </Dropdown.Menu>
@@ -160,6 +187,8 @@ export const SceneHistoryPanel: React.FC<ISceneHistoryProps> = ({ scene }) => {
   const [incrementOCount] = useSceneIncrementO(scene.id);
   const [decrementOCount] = useSceneDecrementO(scene.id);
   const [resetO] = useSceneResetO(scene.id);
+  const [resetResume] = useSceneResetActivity(scene.id, true, false);
+  const [resetDuration] = useSceneResetActivity(scene.id, false, true);
 
   function dateStringToISOString(time: string) {
     const date = TextUtils.stringToFuzzyDateTime(time);
@@ -217,6 +246,26 @@ export const SceneHistoryPanel: React.FC<ISceneHistoryProps> = ({ scene }) => {
     resetO({
       variables: {
         id: scene.id,
+      },
+    });
+  }
+
+  function handleResetResume() {
+    resetResume({
+      variables: {
+        id: scene.id,
+        reset_resume: true,
+        reset_duration: false,
+      },
+    });
+  }
+
+  function handleResetDuration() {
+    resetDuration({
+      variables: {
+        id: scene.id,
+        reset_resume: false,
+        reset_duration: true,
       },
     });
   }
@@ -296,8 +345,11 @@ export const SceneHistoryPanel: React.FC<ISceneHistoryProps> = ({ scene }) => {
               </Button>
               <HistoryMenu
                 hasHistory={playHistory.length > 0}
+                showResetResumeDuration={true}
                 onAddDate={() => setDialogPartial({ addPlay: true })}
                 onClearDates={() => setDialogPartial({ playHistory: true })}
+                resetResume={() => handleResetResume()}
+                resetDuration={() => handleResetDuration()}
               />
             </span>
           </h5>
@@ -336,8 +388,11 @@ export const SceneHistoryPanel: React.FC<ISceneHistoryProps> = ({ scene }) => {
               </Button>
               <HistoryMenu
                 hasHistory={oHistory.length > 0}
+                showResetResumeDuration={false}
                 onAddDate={() => setDialogPartial({ addO: true })}
                 onClearDates={() => setDialogPartial({ oHistory: true })}
+                resetResume={() => handleResetResume()}
+                resetDuration={() => handleResetDuration()}
               />
             </span>
           </h5>

@@ -1267,6 +1267,27 @@ func (_m *SceneReaderWriter) QueryCount(ctx context.Context, sceneFilter *models
 	return r0, r1
 }
 
+// ResetActivity provides a mock function with given fields: ctx, sceneID, resetResume, resetDuration
+func (_m *SceneReaderWriter) ResetActivity(ctx context.Context, sceneID int, resetResume bool, resetDuration bool) (bool, error) {
+	ret := _m.Called(ctx, sceneID, resetResume, resetDuration)
+
+	var r0 bool
+	if rf, ok := ret.Get(0).(func(context.Context, int, bool, bool) bool); ok {
+		r0 = rf(ctx, sceneID, resetResume, resetDuration)
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, int, bool, bool) error); ok {
+		r1 = rf(ctx, sceneID, resetResume, resetDuration)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // ResetO provides a mock function with given fields: ctx, id
 func (_m *SceneReaderWriter) ResetO(ctx context.Context, id int) (int, error) {
 	ret := _m.Called(ctx, id)

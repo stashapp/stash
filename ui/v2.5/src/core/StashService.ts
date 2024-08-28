@@ -786,6 +786,21 @@ export const useSceneResetO = (id: string) =>
     },
   });
 
+export const useSceneResetActivity = (
+  id: string,
+  reset_resume: boolean,
+  reset_duration: boolean
+) =>
+  GQL.useSceneResetActivityMutation({
+    variables: { id, reset_resume, reset_duration },
+    update(cache, result) {
+      if (!result.data?.sceneResetActivity) return;
+
+      evictTypeFields(cache, sceneMutationImpactedTypeFields);
+      evictQueries(cache, sceneMutationImpactedQueries);
+    },
+  });
+
 export const useSceneGenerateScreenshot = () =>
   GQL.useSceneGenerateScreenshotMutation();
 

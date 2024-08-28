@@ -847,6 +847,24 @@ func (r *mutationResolver) SceneSaveActivity(ctx context.Context, id string, res
 	return ret, nil
 }
 
+func (r *mutationResolver) SceneResetActivity(ctx context.Context, id string, resetResume bool, resetDuration bool) (ret bool, err error) {
+	sceneID, err := strconv.Atoi(id)
+	if err != nil {
+		return false, fmt.Errorf("converting id: %w", err)
+	}
+
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		qb := r.repository.Scene
+
+		ret, err = qb.ResetActivity(ctx, sceneID, resetResume, resetDuration)
+		return err
+	}); err != nil {
+		return false, err
+	}
+
+	return ret, nil
+}
+
 // deprecated
 func (r *mutationResolver) SceneIncrementPlayCount(ctx context.Context, id string) (ret int, err error) {
 	sceneID, err := strconv.Atoi(id)
