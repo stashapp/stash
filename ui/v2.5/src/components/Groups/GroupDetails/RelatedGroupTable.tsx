@@ -18,6 +18,7 @@ export const RelatedGroupTable: React.FC<{
   onUpdate: (input: IRelatedGroupEntry[]) => void;
   excludeIDs?: string[];
   filterHook?: (f: ListFilterModel) => ListFilterModel;
+  disabled?: boolean;
 }> = (props) => {
   const { value, onUpdate } = props;
 
@@ -99,6 +100,7 @@ export const RelatedGroupTable: React.FC<{
               values={[m.group!]}
               excludeIds={excludeIDs}
               filterHook={props.filterHook}
+              isDisabled={props.disabled}
             />
           </Col>
           <Col xs={3}>
@@ -111,6 +113,7 @@ export const RelatedGroupTable: React.FC<{
                   e.currentTarget.value === "" ? null : e.currentTarget.value
                 );
               }}
+              disabled={props.disabled}
             />
           </Col>
         </Row>
@@ -125,6 +128,7 @@ export const RelatedGroupTable: React.FC<{
             values={[]}
             excludeIds={excludeIDs}
             filterHook={props.filterHook}
+            isDisabled={props.disabled}
           />
         </Col>
       </Row>
