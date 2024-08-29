@@ -5,7 +5,6 @@ import { ListFilterModel } from "src/models/list-filter/filter";
 import { ImageList } from "src/components/Images/ImageList";
 import {
   mutateRemoveGalleryImages,
-  mutateResetGalleryCover,
   mutateSetGalleryCover,
 } from "src/core/StashService";
 import {
@@ -94,25 +93,6 @@ export const GalleryImagesPanel: React.FC<IGalleryDetailsProps> = ({
     }
   }
 
-  async function resetCover() {
-    try {
-      await mutateResetGalleryCover({
-        gallery_id: gallery.id!,
-      });
-
-      Toast.success(
-        intl.formatMessage(
-          { id: "toast.updated_entity" },
-          {
-            entity: intl.formatMessage({ id: "gallery" }).toLocaleLowerCase(),
-          }
-        )
-      );
-    } catch (e) {
-      Toast.error(e);
-    }
-  }
-
   async function removeImages(
     result: GQL.FindImagesQueryResult,
     filter: ListFilterModel,
@@ -144,10 +124,6 @@ export const GalleryImagesPanel: React.FC<IGalleryDetailsProps> = ({
       text: intl.formatMessage({ id: "actions.set_cover" }),
       onClick: setCover,
       isDisplayed: showWhenSingleSelection,
-    },
-    {
-      text: intl.formatMessage({ id: "actions.reset_cover" }),
-      onClick: resetCover,
     },
     {
       text: intl.formatMessage({ id: "actions.remove_from_gallery" }),
