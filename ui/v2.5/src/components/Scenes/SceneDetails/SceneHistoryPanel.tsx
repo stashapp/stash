@@ -21,6 +21,7 @@ import {
   useSceneResetActivity,
 } from "src/core/StashService";
 import * as GQL from "src/core/generated-graphql";
+import { useToast } from "src/hooks/Toast";
 import { TextField } from "src/utils/field";
 import TextUtils from "src/utils/text";
 
@@ -169,6 +170,7 @@ interface ISceneHistoryProps {
 
 export const SceneHistoryPanel: React.FC<ISceneHistoryProps> = ({ scene }) => {
   const intl = useIntl();
+  const Toast = useToast();
 
   const [dialogs, setDialogs] = React.useState({
     playHistory: false,
@@ -250,24 +252,50 @@ export const SceneHistoryPanel: React.FC<ISceneHistoryProps> = ({ scene }) => {
     });
   }
 
-  function handleResetResume() {
-    resetResume({
-      variables: {
-        id: scene.id,
-        reset_resume: true,
-        reset_duration: false,
-      },
-    });
+  async function handleResetResume() {
+    try {
+      await resetResume({
+        variables: {
+          id: scene.id,
+          reset_resume: true,
+          reset_duration: false,
+        },
+      });
+
+      Toast.success(
+        intl.formatMessage(
+          { id: "toast.updated_entity" },
+          {
+            entity: intl.formatMessage({ id: "scene" }).toLocaleLowerCase(),
+          }
+        )
+      );
+    } catch (e) {
+      Toast.error(e);
+    }
   }
 
-  function handleResetDuration() {
-    resetDuration({
-      variables: {
-        id: scene.id,
-        reset_resume: false,
-        reset_duration: true,
-      },
-    });
+  async function handleResetDuration() {
+    try {
+      await resetDuration({
+        variables: {
+          id: scene.id,
+          reset_resume: false,
+          reset_duration: true,
+        },
+      });
+
+      Toast.success(
+        intl.formatMessage(
+          { id: "toast.updated_entity" },
+          {
+            entity: intl.formatMessage({ id: "scene" }).toLocaleLowerCase(),
+          }
+        )
+      );
+    } catch (e) {
+      Toast.error(e);
+    }
   }
 
   function maybeRenderDialogs() {
