@@ -14,9 +14,21 @@ export const HoverScrubber: React.FC<IHoverScrubber> = ({
   setActiveIndex,
   onClick,
 }) => {
-  function getActiveIndex(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
+  function getActiveIndex(
+    e:
+      | React.MouseEvent<HTMLDivElement, MouseEvent>
+      | React.TouchEvent<HTMLDivElement>
+  ) {
     const { width } = e.currentTarget.getBoundingClientRect();
-    const x = e.nativeEvent.offsetX;
+
+    let x = 0;
+    if (e.nativeEvent instanceof MouseEvent) {
+      x = e.nativeEvent.offsetX;
+    } else if (e.nativeEvent instanceof TouchEvent) {
+      x =
+        e.nativeEvent.touches[0].clientX -
+        e.currentTarget.getBoundingClientRect().x;
+    }
 
     const i = Math.round((x / width) * (totalSprites - 1));
 
@@ -26,24 +38,42 @@ export const HoverScrubber: React.FC<IHoverScrubber> = ({
     return i;
   }
 
-  function onMouseMove(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
+  function onMove(
+    e:
+      | React.MouseEvent<HTMLDivElement, MouseEvent>
+      | React.TouchEvent<HTMLDivElement>
+  ) {
     const relatedTarget = e.currentTarget;
 
-    if (relatedTarget !== e.target) return;
+    if (
+      (e instanceof MouseEvent && relatedTarget !== e.target) ||
+      (e instanceof TouchEvent &&
+        document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY))
+    )
+      return;
 
     setActiveIndex(getActiveIndex(e));
   }
 
-  function onMouseLeave() {
+  function onLeave() {
     setActiveIndex(undefined);
   }
 
-  function onScrubberClick(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
+  function onScrubberClick(
+    e:
+      | React.MouseEvent<HTMLDivElement, MouseEvent>
+      | React.TouchEvent<HTMLDivElement>
+  ) {
     if (!onClick) return;
 
     const relatedTarget = e.currentTarget;
 
-    if (relatedTarget !== e.target) return;
+    if (
+      (e instanceof MouseEvent && relatedTarget !== e.target) ||
+      (e instanceof TouchEvent &&
+        document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY))
+    )
+      return;
 
     e.preventDefault();
     onClick();
@@ -67,9 +97,12 @@ export const HoverScrubber: React.FC<IHoverScrubber> = ({
     >
       <div
         className="hover-scrubber-area"
-        onMouseMove={onMouseMove}
-        onMouseLeave={onMouseLeave}
+        onMouseMove={onMove}
+        onTouchMove={onMove}
+        onMouseLeave={onLeave}
+        onTouchEnd={onLeave}
         onClick={onScrubberClick}
+        onTouchStart={onScrubberClick}
       />
       <div className="hover-scrubber-indicator">
         {activeIndex !== undefined && (
