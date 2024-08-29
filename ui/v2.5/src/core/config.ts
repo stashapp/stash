@@ -8,6 +8,7 @@ import {
   SortDirectionEnum,
 } from "./generated-graphql";
 import { View } from "src/components/List/views";
+import { ITaggerConfig } from "src/components/Tagger/constants";
 
 // NOTE: double capitals aren't converted correctly in the backend
 
@@ -97,6 +98,8 @@ export interface IUIConfig {
   taskDefaults?: Record<string, {}>;
 
   defaultFilters?: DefaultFilters;
+
+  taggerConfig?: ITaggerConfig;
 }
 
 export function getFrontPageContent(

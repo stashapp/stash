@@ -384,9 +384,13 @@ const SceneCardImage = PatchComponent(
           ) : (
             ""
           )}
-          {(file?.duration ?? 0) >= 1
-            ? TextUtils.secondsToTimestamp(file?.duration ?? 0)
-            : ""}
+          {(file?.duration ?? 0) >= 1 ? (
+            <span className="overlay-duration">
+              {TextUtils.secondsToTimestamp(file?.duration ?? 0)}
+            </span>
+          ) : (
+            ""
+          )}
         </div>
       );
     }

@@ -40,6 +40,7 @@ func (qb *sceneMarkerFilterHandler) criterionHandler() criterionHandler {
 		qb.tagsCriterionHandler(sceneMarkerFilter.Tags),
 		qb.sceneTagsCriterionHandler(sceneMarkerFilter.SceneTags),
 		qb.performersCriterionHandler(sceneMarkerFilter.Performers),
+		qb.scenesCriterionHandler(sceneMarkerFilter.Scenes),
 		&timestampCriterionHandler{sceneMarkerFilter.CreatedAt, "scene_markers.created_at", nil},
 		&timestampCriterionHandler{sceneMarkerFilter.UpdatedAt, "scene_markers.updated_at", nil},
 		&dateCriterionHandler{sceneMarkerFilter.SceneDate, "scenes.date", qb.joinScenes},
@@ -186,4 +187,19 @@ func (qb *sceneMarkerFilterHandler) performersCriterionHandler(performers *model
 		qb.joinScenes(f)
 		handler(ctx, f)
 	}
+}
+
+func (qb *sceneMarkerFilterHandler) scenesCriterionHandler(scenes *models.MultiCriterionInput) criterionHandlerFunc {
+	addJoinsFunc := func(f *filterBuilder) {
+		f.addLeftJoin(sceneTable, "markers_scenes", "markers_scenes.id = scene_markers.scene_id")
+	}
+	h := multiCriterionHandlerBuilder{
+		primaryTable: sceneMarkerTable,
+		foreignTable: "markers_scenes",
+		joinTable:    "",
+		primaryFK:    sceneIDColumn,
+		foreignFK:    sceneIDColumn,
+		addJoinsFunc: addJoinsFunc,
+	}
+	return h.handler(scenes)
 }

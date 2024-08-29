@@ -1,3 +1,4 @@
+// Package sliceutil provides utilities for working with slices.
 package sliceutil
 
 // Index returns the first index of the provided value in the provided

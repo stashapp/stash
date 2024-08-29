@@ -1,3 +1,5 @@
+// Package manager provides the core manager of the application.
+// This consolidates all the services and managers into a single struct.
 package manager
 
 import (

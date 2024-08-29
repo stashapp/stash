@@ -1,3 +1,4 @@
+// Package static provides the static files embedded in the application.
 package static
 
 import (
@@ -27,7 +28,7 @@ const (
 	DefaultStudioImage = "studio/studio.svg"
 
 	Group             = "group"
-	DefaultGroupImage = "group/group.png"
+	DefaultGroupImage = "group/group.svg"
 )
 
 // Sub returns an FS rooted at path, using fs.Sub.

@@ -1,3 +1,7 @@
+type GalleryPathsType {
+  preview: String! # Resolver
+}
+
 "Gallery type"
 type Gallery {
   id: ID!
@@ -25,6 +29,9 @@ type Gallery {
   performers: [Performer!]!
 
   cover: Image
+
+  paths: GalleryPathsType! # Resolver
+  image(index: Int!): Image!
 }
 
 input GalleryCreateInput {

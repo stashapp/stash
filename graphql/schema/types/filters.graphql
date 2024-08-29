@@ -191,6 +191,8 @@ input SceneMarkerFilterType {
   scene_tags: HierarchicalMultiCriterionInput
   "Filter to only include scene markers with these performers"
   performers: MultiCriterionInput
+  "Filter to only include scene markers from these scenes"
+  scenes: MultiCriterionInput
   "Filter by creation time"
   created_at: TimestampCriterionInput
   "Filter by last update time"

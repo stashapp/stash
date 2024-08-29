@@ -275,6 +275,10 @@ export const useFindGallery = (id: string) => {
   return GQL.useFindGalleryQuery({ variables: { id }, skip });
 };
 
+export const useFindGalleryImageID = (id: string, index: number) => {
+  return GQL.useFindGalleryImageIdQuery({ variables: { id, index } });
+};
+
 export const useFindGalleries = (filter?: ListFilterModel) =>
   GQL.useFindGalleriesQuery({
     skip: filter === undefined,
