@@ -890,6 +890,14 @@ func (qb *GalleryStore) UpdateImages(ctx context.Context, galleryID int, imageID
 	return galleryRepository.images.replace(ctx, galleryID, imageIDs)
 }
 
+func (qb *GalleryStore) SetCover(ctx context.Context, galleryID int, coverImageID int) error {
+	return imageGalleriesTableMgr.setCover(ctx, coverImageID, galleryID)
+}
+
+func (qb *GalleryStore) ResetCover(ctx context.Context, galleryID int) error {
+	return imageGalleriesTableMgr.resetCover(ctx, galleryID)
+}
+
 func (qb *GalleryStore) GetSceneIDs(ctx context.Context, id int) ([]int, error) {
 	return galleryRepository.scenes.getIDs(ctx, id)
 }

@@ -115,3 +115,12 @@ input GalleryRemoveInput {
   gallery_id: ID!
   image_ids: [ID!]!
 }
+
+input GallerySetCoverInput {
+  gallery_id: ID!
+  cover_image_id: ID!
+}
+
+input GalleryResetCoverInput {
+  gallery_id: ID!
+}

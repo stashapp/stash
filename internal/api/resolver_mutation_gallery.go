@@ -478,6 +478,61 @@ func (r *mutationResolver) RemoveGalleryImages(ctx context.Context, input Galler
 	return true, nil
 }
 
+func (r *mutationResolver) SetGalleryCover(ctx context.Context, input GallerySetCoverInput) (bool, error) {
+	galleryID, err := strconv.Atoi(input.GalleryID)
+	if err != nil {
+		return false, fmt.Errorf("converting gallery id: %w", err)
+	}
+
+	coverImageID, err := strconv.Atoi(input.CoverImageID)
+	if err != nil {
+		return false, fmt.Errorf("converting cover image id: %w", err)
+	}
+
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		qb := r.repository.Gallery
+		gallery, err := qb.Find(ctx, galleryID)
+		if err != nil {
+			return err
+		}
+
+		if gallery == nil {
+			return fmt.Errorf("gallery with id %d not found", galleryID)
+		}
+
+		return r.galleryService.SetCover(ctx, gallery, coverImageID)
+	}); err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
+
+func (r *mutationResolver) ResetGalleryCover(ctx context.Context, input GalleryResetCoverInput) (bool, error) {
+	galleryID, err := strconv.Atoi(input.GalleryID)
+	if err != nil {
+		return false, fmt.Errorf("converting gallery id: %w", err)
+	}
+
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		qb := r.repository.Gallery
+		gallery, err := qb.Find(ctx, galleryID)
+		if err != nil {
+			return err
+		}
+
+		if gallery == nil {
+			return fmt.Errorf("gallery with id %d not found", galleryID)
+		}
+
+		return r.galleryService.ResetCover(ctx, gallery)
+	}); err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
+
 func (r *mutationResolver) getGalleryChapter(ctx context.Context, id int) (ret *models.GalleryChapter, err error) {
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		ret, err = r.repository.GalleryChapter.Find(ctx, id)

@@ -1580,6 +1580,34 @@ export const mutateAddGalleryImages = (input: GQL.GalleryAddInput) =>
     },
   });
 
+export const mutateSetGalleryCover = (input: GQL.GallerySetCoverInput) =>
+  client.mutate<GQL.SetGalleryCoverMutation>({
+    mutation: GQL.SetGalleryCoverDocument,
+    variables: input,
+    update(cache, result) {
+      if (!result.data?.setGalleryCover) return;
+
+      cache.evict({
+        id: cache.identify({ __typename: "Gallery", id: input.gallery_id }),
+        fieldName: "cover",
+      });
+    },
+  });
+
+export const mutateResetGalleryCover = (input: GQL.GalleryResetCoverInput) =>
+  client.mutate<GQL.ResetGalleryCoverMutation>({
+    mutation: GQL.ResetGalleryCoverDocument,
+    variables: input,
+    update(cache, result) {
+      if (!result.data?.resetGalleryCover) return;
+
+      cache.evict({
+        id: cache.identify({ __typename: "Gallery", id: input.gallery_id }),
+        fieldName: "cover",
+      });
+    },
+  });
+
 export const mutateRemoveGalleryImages = (input: GQL.GalleryRemoveInput) =>
   client.mutate<GQL.RemoveGalleryImagesMutation>({
     mutation: GQL.RemoveGalleryImagesDocument,
