@@ -107,6 +107,13 @@ func FindGalleryCover(ctx context.Context, r models.ImageQueryer, galleryID int,
 }
 
 func findGalleryCover(ctx context.Context, r models.ImageQueryer, galleryID int, useCoverJpg bool, galleryCoverRegex string) (*models.Image, error) {
+	img, err := r.CoverByGalleryID(ctx, galleryID)
+	if err != nil {
+		return nil, err
+	} else if img != nil {
+		return img, nil
+	}
+
 	// try to find cover.jpg in the gallery
 	perPage := 1
 	sortBy := "path"

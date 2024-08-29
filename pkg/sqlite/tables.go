@@ -57,12 +57,14 @@ var (
 		},
 	}
 
-	imageGalleriesTableMgr = &joinTable{
-		table: table{
-			table:    galleriesImagesJoinTable,
-			idColumn: galleriesImagesJoinTable.Col(imageIDColumn),
+	imageGalleriesTableMgr = &imageGalleriesTable{
+		joinTable: joinTable{
+			table: table{
+				table:    galleriesImagesJoinTable,
+				idColumn: galleriesImagesJoinTable.Col(imageIDColumn),
+			},
+			fkColumn: galleriesImagesJoinTable.Col(galleryIDColumn),
 		},
-		fkColumn: galleriesImagesJoinTable.Col(galleryIDColumn),
 	}
 
 	imagesTagsTableMgr = &joinTable{
