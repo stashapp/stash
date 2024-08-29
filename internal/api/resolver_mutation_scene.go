@@ -847,7 +847,7 @@ func (r *mutationResolver) SceneSaveActivity(ctx context.Context, id string, res
 	return ret, nil
 }
 
-func (r *mutationResolver) SceneResetActivity(ctx context.Context, id string, resetResume bool, resetDuration bool) (ret bool, err error) {
+func (r *mutationResolver) SceneResetActivity(ctx context.Context, id string, resetResume *bool, resetDuration *bool) (ret bool, err error) {
 	sceneID, err := strconv.Atoi(id)
 	if err != nil {
 		return false, fmt.Errorf("converting id: %w", err)
@@ -856,7 +856,7 @@ func (r *mutationResolver) SceneResetActivity(ctx context.Context, id string, re
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Scene
 
-		ret, err = qb.ResetActivity(ctx, sceneID, resetResume, resetDuration)
+		ret, err = qb.ResetActivity(ctx, sceneID, utils.IsTrue(resetResume), utils.IsTrue(resetDuration))
 		return err
 	}); err != nil {
 		return false, err
