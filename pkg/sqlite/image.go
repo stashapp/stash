@@ -480,6 +480,42 @@ func (qb *ImageStore) getMany(ctx context.Context, q *goqu.SelectDataset) ([]*mo
 	return ret, nil
 }
 
+// Returns the custom cover for the gallery, if one has been set.
+func (qb *ImageStore) CoverByGalleryID(ctx context.Context, galleryID int) (*models.Image, error) {
+	table := qb.table()
+
+	sq := dialect.From(table).
+		InnerJoin(
+			galleriesImagesJoinTable,
+			goqu.On(table.Col(idColumn).Eq(galleriesImagesJoinTable.Col(imageIDColumn))),
+		).
+		Select(table.Col(idColumn)).
+		Where(goqu.And(
+			galleriesImagesJoinTable.Col("gallery_id").Eq(galleryID),
+			galleriesImagesJoinTable.Col("cover").Eq(true),
+		))
+
+	q := qb.selectDataset().Prepared(true).Where(
+		table.Col(idColumn).Eq(
+			sq,
+		),
+	)
+
+	ret, err := qb.getMany(ctx, q)
+	if err != nil {
+		return nil, fmt.Errorf("getting cover for gallery %d: %w", galleryID, err)
+	}
+
+	switch {
+	case len(ret) > 1:
+		return nil, fmt.Errorf("internal error: multiple covers returned for gallery %d", galleryID)
+	case len(ret) == 1:
+		return ret[0], nil
+	default:
+		return nil, nil
+	}
+}
+
 func (qb *ImageStore) GetFiles(ctx context.Context, id int) ([]models.File, error) {
 	fileIDs, err := imageRepository.files.get(ctx, id)
 	if err != nil {

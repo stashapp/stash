@@ -317,6 +317,8 @@ type Mutation {
 
   addGalleryImages(input: GalleryAddInput!): Boolean!
   removeGalleryImages(input: GalleryRemoveInput!): Boolean!
+  setGalleryCover(input: GallerySetCoverInput!): Boolean!
+  resetGalleryCover(input: GalleryResetCoverInput!): Boolean!
 
   galleryChapterCreate(input: GalleryChapterCreateInput!): GalleryChapter
   galleryChapterUpdate(input: GalleryChapterUpdateInput!): GalleryChapter

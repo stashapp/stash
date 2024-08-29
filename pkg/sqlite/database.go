@@ -30,7 +30,7 @@ const (
 	dbConnTimeout = 30
 )
 
-var appSchemaVersion uint = 65
+var appSchemaVersion uint = 66
 
 //go:embed migrations/*.sql
 var migrationsBox embed.FS
