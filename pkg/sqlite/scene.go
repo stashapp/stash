@@ -1234,6 +1234,30 @@ func (qb *SceneStore) SaveActivity(ctx context.Context, id int, resumeTime *floa
 	return true, nil
 }
 
+func (qb *SceneStore) ResetActivity(ctx context.Context, id int, resetResume bool, resetDuration bool) (bool, error) {
+	if err := qb.tableMgr.checkIDExists(ctx, id); err != nil {
+		return false, err
+	}
+
+	record := goqu.Record{}
+
+	if resetResume {
+		record["resume_time"] = 0.0
+	}
+
+	if resetDuration {
+		record["play_duration"] = 0.0
+	}
+
+	if len(record) > 0 {
+		if err := qb.tableMgr.updateByID(ctx, id, record); err != nil {
+			return false, err
+		}
+	}
+
+	return true, nil
+}
+
 func (qb *SceneStore) GetURLs(ctx context.Context, sceneID int) ([]string, error) {
 	return scenesURLsTableMgr.get(ctx, sceneID)
 }

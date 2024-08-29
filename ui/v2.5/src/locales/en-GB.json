@@ -94,6 +94,8 @@
     "remove_from_gallery": "Remove from Gallery",
     "rename_gen_files": "Rename generated files",
     "rescan": "Rescan",
+    "reset_play_duration": "Reset play duration",
+    "reset_resume_time": "Reset resume time",
     "reset_cover": "Restore Default Cover",
     "reshuffle": "Reshuffle",
     "running": "running",
