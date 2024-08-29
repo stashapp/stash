@@ -594,7 +594,7 @@ type scenesGroupsTable struct {
 
 type groupsScenesRow struct {
 	SceneID    null.Int `db:"scene_id"`
-	GroupID    null.Int `db:"movie_id"`
+	GroupID    null.Int `db:"group_id"`
 	SceneIndex null.Int `db:"scene_index"`
 }
 
@@ -606,7 +606,7 @@ func (r groupsScenesRow) resolve(sceneID int) models.GroupsScenes {
 }
 
 func (t *scenesGroupsTable) get(ctx context.Context, id int) ([]models.GroupsScenes, error) {
-	q := dialect.Select("movie_id", "scene_index").From(t.table.table).Where(t.idColumn.Eq(id))
+	q := dialect.Select("group_id", "scene_index").From(t.table.table).Where(t.idColumn.Eq(id))
 
 	const single = false
 	var ret []models.GroupsScenes
@@ -627,7 +627,7 @@ func (t *scenesGroupsTable) get(ctx context.Context, id int) ([]models.GroupsSce
 }
 
 func (t *scenesGroupsTable) insertJoin(ctx context.Context, id int, v models.GroupsScenes) (sql.Result, error) {
-	q := dialect.Insert(t.table.table).Cols(t.idColumn.GetCol(), "movie_id", "scene_index").Vals(
+	q := dialect.Insert(t.table.table).Cols(t.idColumn.GetCol(), "group_id", "scene_index").Vals(
 		goqu.Vals{id, v.GroupID, intFromPtr(v.SceneIndex)},
 	)
 	ret, err := exec(ctx, q)
@@ -686,7 +686,7 @@ func (t *scenesGroupsTable) destroyJoins(ctx context.Context, id int, v []models
 	for _, vv := range v {
 		q := dialect.Delete(t.table.table).Where(
 			t.idColumn.Eq(id),
-			t.table.table.Col("movie_id").Eq(vv.GroupID),
+			t.table.table.Col("group_id").Eq(vv.GroupID),
 		)
 
 		if _, err := exec(ctx, q); err != nil {

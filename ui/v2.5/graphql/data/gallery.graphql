@@ -11,6 +11,10 @@ fragment GalleryData on Gallery {
   rating100
   organized
 
+  paths {
+    preview
+  }
+
   files {
     ...GalleryFileData
   }
@@ -51,6 +55,9 @@ fragment SelectGalleryData on Gallery {
     paths {
       thumbnail
     }
+  }
+  paths {
+    preview
   }
   files {
     path

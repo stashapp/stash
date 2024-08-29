@@ -193,8 +193,8 @@ func (qb *tagFilterHandler) studioCountCriterionHandler(studioCount *models.IntC
 func (qb *tagFilterHandler) groupCountCriterionHandler(groupCount *models.IntCriterionInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if groupCount != nil {
-			f.addLeftJoin("movies_tags", "", "movies_tags.tag_id = tags.id")
-			clause, args := getIntCriterionWhereClause("count(distinct movies_tags.movie_id)", *groupCount)
+			f.addLeftJoin("groups_tags", "", "groups_tags.tag_id = tags.id")
+			clause, args := getIntCriterionWhereClause("count(distinct groups_tags.group_id)", *groupCount)
 
 			f.addHaving(clause, args...)
 		}

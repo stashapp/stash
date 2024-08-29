@@ -6,7 +6,8 @@ import { GroupList } from "src/components/Groups/GroupList";
 export const TagGroupsPanel: React.FC<{
   active: boolean;
   tag: GQL.TagDataFragment;
-}> = ({ active, tag }) => {
-  const filterHook = useTagFilterHook(tag);
+  showSubTagContent?: boolean;
+}> = ({ active, tag, showSubTagContent }) => {
+  const filterHook = useTagFilterHook(tag, showSubTagContent);
   return <GroupList filterHook={filterHook} alterQuery={active} />;
 };

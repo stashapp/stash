@@ -1,3 +1,24 @@
+## Goals and design vision
+
+The goal of stash is to be:
+- an application for organising and viewing adult content - currently this is videos and images, in future this will be extended to include audio and text content
+  - organising includes scraping of metadata from websites and metadata repositories
+- free and open-source
+- portable and offline - can be run on a USB stick without needing to install dependencies (with the exception of ffmpeg)
+- minimal, but highly extensible. The core feature set should be the minimum required to achieve the primary goal, while being extensible enough to extend via plugins
+- easy to learn and use, with minimal technical knowledge required
+
+The core stash system is not intended for:
+- managing downloading of content
+- managing content on external websites
+- publically sharing content
+
+Other requirements:
+- support as many video and image formats as possible
+- interfaces with external systems (for example stash-box) should be made as generic as possible. 
+
+Design considerations:
+- features are easy to add and difficult to remove. Large superfluous features should be scrutinised and avoided where possible (eg DLNA, filename parser). Such features should be considered for third-party plugins instead.
 
 ## Technical Debt
 Please be sure to consider how heavily your contribution impacts the maintainability of the project long term, sometimes less is more.  We don't want to merge collossal pull requests with hundreds of dependencies by a driveby contributor.

@@ -5,7 +5,7 @@ import { useHistory } from "react-router-dom";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
 import { queryFindScenes, useFindScenes } from "src/core/StashService";
-import { makeItemList, showWhenSelected } from "../List/ItemList";
+import { ItemList, ItemListContext, showWhenSelected } from "../List/ItemList";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 import { Tagger } from "../Tagger/scenes/SceneTagger";
@@ -26,51 +26,49 @@ import { objectTitle } from "src/core/files";
 import TextUtils from "src/utils/text";
 import { View } from "../List/views";
 
-const SceneItemList = makeItemList({
-  filterMode: GQL.FilterMode.Scenes,
-  useResult: useFindScenes,
-  getItems(result: GQL.FindScenesQueryResult) {
-    return result?.data?.findScenes?.scenes ?? [];
-  },
-  getCount(result: GQL.FindScenesQueryResult) {
-    return result?.data?.findScenes?.count ?? 0;
-  },
-  renderMetadataByline(result: GQL.FindScenesQueryResult) {
-    const duration = result?.data?.findScenes?.duration;
-    const size = result?.data?.findScenes?.filesize;
-    const filesize = size ? TextUtils.fileSize(size) : undefined;
+function getItems(result: GQL.FindScenesQueryResult) {
+  return result?.data?.findScenes?.scenes ?? [];
+}
 
-    if (!duration && !size) {
-      return;
-    }
+function getCount(result: GQL.FindScenesQueryResult) {
+  return result?.data?.findScenes?.count ?? 0;
+}
 
-    const separator = duration && size ? " - " : "";
+function renderMetadataByline(result: GQL.FindScenesQueryResult) {
+  const duration = result?.data?.findScenes?.duration;
+  const size = result?.data?.findScenes?.filesize;
+  const filesize = size ? TextUtils.fileSize(size) : undefined;
 
-    return (
-      <span className="scenes-stats">
-        &nbsp;(
-        {duration ? (
-          <span className="scenes-duration">
-            {TextUtils.secondsAsTimeString(duration, 3)}
-          </span>
-        ) : undefined}
-        {separator}
-        {size && filesize ? (
-          <span className="scenes-size">
-            <FormattedNumber
-              value={filesize.size}
-              maximumFractionDigits={TextUtils.fileSizeFractionalDigits(
-                filesize.unit
-              )}
-            />
-            {` ${TextUtils.formatFileSizeUnit(filesize.unit)}`}
-          </span>
-        ) : undefined}
-        )
-      </span>
-    );
-  },
-});
+  if (!duration && !size) {
+    return;
+  }
+
+  const separator = duration && size ? " - " : "";
+
+  return (
+    <span className="scenes-stats">
+      &nbsp;(
+      {duration ? (
+        <span className="scenes-duration">
+          {TextUtils.secondsAsTimeString(duration, 3)}
+        </span>
+      ) : undefined}
+      {separator}
+      {size && filesize ? (
+        <span className="scenes-size">
+          <FormattedNumber
+            value={filesize.size}
+            maximumFractionDigits={TextUtils.fileSizeFractionalDigits(
+              filesize.unit
+            )}
+          />
+          {` ${TextUtils.formatFileSizeUnit(filesize.unit)}`}
+        </span>
+      ) : undefined}
+      )
+    </span>
+  );
+}
 
 interface ISceneList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
@@ -94,6 +92,8 @@ export const SceneList: React.FC<ISceneList> = ({
   const [isIdentifyDialogOpen, setIsIdentifyDialogOpen] = useState(false);
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
   const [isExportAll, setIsExportAll] = useState(false);
+
+  const filterMode = GQL.FilterMode.Scenes;
 
   const otherOperations = [
     {
@@ -350,19 +350,28 @@ export const SceneList: React.FC<ISceneList> = ({
 
   return (
     <TaggerContext>
-      <SceneItemList
-        zoomable
-        selectable
+      <ItemListContext
+        filterMode={filterMode}
+        defaultSort={defaultSort}
+        useResult={useFindScenes}
+        getItems={getItems}
+        getCount={getCount}
+        alterQuery={alterQuery}
         filterHook={filterHook}
         view={view}
-        alterQuery={alterQuery}
-        otherOperations={otherOperations}
-        addKeybinds={addKeybinds}
-        defaultSort={defaultSort}
-        renderContent={renderContent}
-        renderEditDialog={renderEditDialog}
-        renderDeleteDialog={renderDeleteDialog}
-      />
+        selectable
+      >
+        <ItemList
+          zoomable
+          view={view}
+          otherOperations={otherOperations}
+          addKeybinds={addKeybinds}
+          renderContent={renderContent}
+          renderEditDialog={renderEditDialog}
+          renderDeleteDialog={renderDeleteDialog}
+          renderMetadataByline={renderMetadataByline}
+        />
+      </ItemListContext>
     </TaggerContext>
   );
 };

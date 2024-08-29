@@ -189,7 +189,7 @@ export const GalleryPage: React.FC<IProps> = ({ gallery, add }) => {
             onClick={() => setIsDeleteAlertOpen(true)}
           >
             <FormattedMessage
-              id="actions.delete_entity"
+              id="actions.delete"
               values={{ entityType: intl.formatMessage({ id: "gallery" }) }}
             />
           </Dropdown.Item>

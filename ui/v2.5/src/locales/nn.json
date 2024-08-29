@@ -1,0 +1,174 @@
+{
+    "actions": {
+        "add_entity": "Legg til {entityType}",
+        "add_manual_date": "Legg til dato manuelt",
+        "add_o": "Legg til O",
+        "add_play": "Legg til avspeling",
+        "add_to_entity": "",
+        "allow": "Tillat",
+        "allow_temporarily": "Tillat mellombels",
+        "apply": "Bruk",
+        "auto_tag": "Set merkelapp automatisk",
+        "browse_for_image": "Bla gjennom etter bilete …",
+        "cancel": "Avbryt",
+        "choose_date": "Vel ein dato",
+        "clean": "Rydd opp",
+        "clean_generated": "Rydd opp i genererte filer",
+        "close": "Lukk",
+        "confirm": "Stadfest",
+        "copy_to_clipboard": "Kopier til utklippstavla",
+        "clear_date_data": "Tøm dato-data",
+        "continue": "Hald fram",
+        "add": "Legg til",
+        "backup": "Ta reservekopi",
+        "create": "Opprett",
+        "create_chapters": "Opprett kapittel",
+        "create_entity": "Opprett {entityType}",
+        "create_marker": "Opprett merke",
+        "create_parent_studio": "Opprett forelderstudio",
+        "created_entity": "Oppretta {entity_type}: {entity_name}",
+        "customise": "Tilpass",
+        "delete": "Slett",
+        "delete_entity": "Slett {entityType}",
+        "delete_file": "Slett fil",
+        "disable": "Slå av",
+        "remove_date": "Fjern dato",
+        "open_random": "Opna tilfeldig",
+        "play_random": "Spel av tilfeldig",
+        "submit_update": "Send inn oppdatering",
+        "view_random": "Vis tilfeldig",
+        "add_directory": "Legg til mappe"
+    },
+    "countables": {
+        "groups": "{count, plural, one {Gruppe} other {Grupper}}",
+        "files": "{count, plural, one {Fil} other {Filer}}",
+        "images": "{count, plural, one {Bilete} other {Bilete}}",
+        "performers": "{count, plural, one {Utøvar} other {Utøvarar}}",
+        "tags": "{count, plural, one {Merkelapp} other {Merkelappar}}",
+        "markers": "{count, plural, one {Merke} other {Merke}}",
+        "scenes": "{count, plural, one {Scene} other {Scener}}",
+        "studios": "{count, plural, one {Studio} other {Studio}}"
+    },
+    "dialogs": {
+        "delete_object_desc": "Er du sikker på at du vil sletta {count, plural, one {denne {singularEntity}} other {desse {pluralEntity}}}?",
+        "performers_found": "Fann {count} utøvarar",
+        "delete_entity_title": "{count, plural, one {Slett {singularEntity}} other {Slett {pluralEntity}}}",
+        "scenes_found": "Fann {count} scener",
+        "dont_show_until_updated": "Ikkje vis før neste oppdatering"
+    },
+    "date": "Dato",
+    "bitrate": "Bitrate",
+    "performer_tagger": {
+        "number_of_performers_will_be_processed": "{performer_count} utøvarar vert handsama",
+        "batch_update_performers": "Oppdater fleire utøvarar samtidig",
+        "update_performer": "Oppdater utøvar",
+        "update_performers": "Oppdater utøvarar"
+    },
+    "studio_tagger": {
+        "number_of_studios_will_be_processed": "{studio_count} studio vert handsama",
+        "batch_update_studios": "Oppdater fleire studio samtidig",
+        "update_studios": "Oppdater studio"
+    },
+    "config": {
+        "tasks": {
+            "cleanup_desc": "Sjå etter manglande filer og fjern dei frå databasen. Dette kan ikkje angrast.",
+            "clean_generated": {
+                "blob_files": "Blob-filer",
+                "description": "Fjernar genererte filer som ikkje har ei tilhøyrande databaseoppføring.",
+                "image_thumbnails": "Miniatyrbilete",
+                "markers": "Førehandsvisingar av merke",
+                "previews": "Førehandsvisingar av scener",
+                "previews_desc": "Førehandsvisingar og miniatyrbilete av scener",
+                "image_thumbnails_desc": "Miniatyrbilete og -klipp",
+                "transcodes": "Omkodingar av scener"
+            }
+        },
+        "ui": {
+            "editing": {
+                "rating_system": {
+                    "type": {
+                        "options": {
+                            "stars": "Stjerner",
+                            "decimal": "Desimal"
+                        }
+                    }
+                }
+            }
+        },
+        "about": {
+            "release_date": "Utgjevingsdato:"
+        }
+    },
+    "dupe_check": {
+        "duration_diff": "Maksgrense for lengdeskilnad",
+        "duration_options": {
+            "any": "Vilkårleg",
+            "equal": "Er like"
+        }
+    },
+    "birthdate": "Fødselsdato",
+    "component_tagger": {
+        "config": {
+            "query_mode_path": "Sti"
+        },
+        "results": {
+            "duration_off": "Lengdeskilnad er på {number} s",
+            "duration_unknown": "Ukjend lengd",
+            "fp_matches": "Lengd samsvarer",
+            "fp_matches_multi": "Lengd samsvarer med {matchCount}/{durationsLength} fingeravtrykk",
+            "phash_matches": "{count} PHashes samsvarer"
+        },
+        "verb_submit_fp": "Send inn {fpCount, plural, one{# fingeravtrykk} other{# fingeravtrykk}}"
+    },
+    "country": "Land",
+    "date_format": "ÅÅÅÅ-MM-DD",
+    "datetime_format": "ÅÅÅÅ-MM-DD TT:MM",
+    "death_date": "Dødsdato",
+    "duration": "Lengd",
+    "file_count": "Tal på filer",
+    "filesize": "Filstorleik",
+    "framerate": "Biletrate",
+    "interactive": "",
+    "last_o_at": "Siste O",
+    "gallery_count": "Tal på galleri",
+    "group_count": "Tal på grupper",
+    "marker_count": "Tal på merke",
+    "media_info": {
+        "play_duration": "Avspelingslengd",
+        "play_count": "Tal på avspelingar",
+        "o_count": "Tal på O"
+    },
+    "package_manager": {
+        "check_for_updates": "Sjå etter oppdateringar"
+    },
+    "parent_tag_count": "Tal på overordna merkelappar",
+    "pagination": {
+        "last": "Siste"
+    },
+    "o_count": "Tal på O",
+    "o_counter": "O-teljar",
+    "organized": "Organisert",
+    "playdate_recorded_no": "Ingen avspelingsdato er registrert",
+    "play_duration": "Avspelingslengd",
+    "performer_count": "Tal på utøvarar",
+    "play_count": "Tal på avspelingar",
+    "rating": "Karakter",
+    "stats": {
+        "total_o_count": "Tal på O"
+    },
+    "toast": {
+        "generating_screenshot": "Genererer skjermbilete …",
+        "updated_entity": "Oppdaterte {entity}"
+    },
+    "sub_tag_count": "Tal på underordna merkelappar",
+    "tag_count": "Tal på merkelappar",
+    "odate_recorded_no": "Ingen O-dato er registrert",
+    "unknown_date": "Ukjend dato",
+    "updated_at": "Oppdatert den",
+    "validation": {
+        "date_invalid_form": "${path} må vera i formatet ÅÅÅÅ-MM-DD"
+    },
+    "zip_file_count": "Tal på zippa filer",
+    "image_count": "Tal på bilete",
+    "scene_count": "Tal på scener"
+}

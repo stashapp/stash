@@ -122,7 +122,9 @@
         "temp_enable": "Habilitar temporariamente…",
         "unset": "Desaplicar",
         "use_default": "Usar padrão",
-        "view_random": "Mostrar aleatoriamente"
+        "view_random": "Mostrar aleatoriamente",
+        "remove_date": "Remover data",
+        "view_history": "Visualizar Histórico"
     },
     "actions_name": "Ações",
     "age": "Idade",
@@ -246,7 +248,8 @@
             "successfully_cancelled_temporary_behaviour": "Comportamento temporário cancelado com sucesso",
             "until_restart": "até reiniciar",
             "video_sort_order": "Ordem de classificação de vídeo padrão",
-            "video_sort_order_desc": "Ordem para classificar os vídeos por padrão."
+            "video_sort_order_desc": "Ordem para classificar os vídeos por padrão.",
+            "server_port": "Porta do Servidor"
         },
         "general": {
             "auth": {
@@ -311,6 +314,9 @@
                     "input_args": {
                         "desc": "Avançado: Argumentos adicionais para passar para o ffmpeg antes do campo de entrada ao transcodificar vídeo ao vivo."
                     }
+                },
+                "download_ffmpeg": {
+                    "heading": "Baixar o FFmpeg"
                 }
             },
             "gallery_ext_desc": "Lista delimitada por vírgulas de extensões de arquivo que serão identificadas como arquivos ZIP da galeria.",
@@ -598,7 +604,8 @@
                 "heading": "Atraso do slideshow (segundos)"
             },
             "title": "Interface de usuário"
-        }
+        },
+        "advanced_mode": "Modo Avançado"
     },
     "configuration": "Configuração",
     "countables": {
@@ -606,7 +613,6 @@
         "galleries": "{count, plural, one {Galeria} other {Galerias}}",
         "images": "{count, plural, one {Imagem} other {Imagens}}",
         "markers": "{count, plural, one {Marcador} other {Marcadores}}",
-        "movies": "{count, plural, one {Filme} other {Filmes}}",
         "performers": "{count, plural, one {Artista} other {Artistas}}",
         "scenes": "{count, plural, one {Cena} other {Cenas}}",
         "studios": "{count, plural, one {Estúdio} other {Estúdios}}",
@@ -856,9 +862,6 @@
     },
     "megabits_per_second": "{value} megabits por segundo",
     "metadata": "Metadados",
-    "movie": "Filme",
-    "movie_scene_number": "Número da cena do filme",
-    "movies": "Filmes",
     "name": "Nome",
     "new": "Novo",
     "none": "Nenhum",

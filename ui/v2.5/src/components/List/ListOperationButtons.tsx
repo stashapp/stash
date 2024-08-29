@@ -16,7 +16,7 @@ import {
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 
-interface IListFilterOperation {
+export interface IListFilterOperation {
   text: string;
   onClick: () => void;
   isDisplayed?: () => boolean;

@@ -47,6 +47,8 @@ func (db *Anonymiser) Anonymise(ctx context.Context) error {
 		return utils.Do([]func() error{
 			func() error { return db.deleteBlobs() },
 			func() error { return db.deleteStashIDs() },
+			func() error { return db.clearOHistory() },
+			func() error { return db.clearWatchHistory() },
 			func() error { return db.anonymiseFolders(ctx) },
 			func() error { return db.anonymiseFiles(ctx) },
 			func() error { return db.anonymiseFingerprints(ctx) },
@@ -82,14 +84,14 @@ func (db *Anonymiser) truncateTable(tableName string) error {
 
 func (db *Anonymiser) deleteBlobs() error {
 	return utils.Do([]func() error{
-		func() error { return db.truncateColumn("tags", "image_blob") },
-		func() error { return db.truncateColumn("studios", "image_blob") },
-		func() error { return db.truncateColumn("performers", "image_blob") },
-		func() error { return db.truncateColumn("scenes", "cover_blob") },
-		func() error { return db.truncateColumn("movies", "front_image_blob") },
-		func() error { return db.truncateColumn("movies", "back_image_blob") },
+		func() error { return db.truncateColumn(tagTable, tagImageBlobColumn) },
+		func() error { return db.truncateColumn(studioTable, studioImageBlobColumn) },
+		func() error { return db.truncateColumn(performerTable, performerImageBlobColumn) },
+		func() error { return db.truncateColumn(sceneTable, sceneCoverBlobColumn) },
+		func() error { return db.truncateColumn(groupTable, groupFrontImageBlobColumn) },
+		func() error { return db.truncateColumn(groupTable, groupBackImageBlobColumn) },
 
-		func() error { return db.truncateTable("blobs") },
+		func() error { return db.truncateTable(blobTable) },
 	})
 }
 
@@ -98,6 +100,18 @@ func (db *Anonymiser) deleteStashIDs() error {
 		func() error { return db.truncateTable("scene_stash_ids") },
 		func() error { return db.truncateTable("studio_stash_ids") },
 		func() error { return db.truncateTable("performer_stash_ids") },
+	})
+}
+
+func (db *Anonymiser) clearOHistory() error {
+	return utils.Do([]func() error{
+		func() error { return db.truncateTable(scenesODatesTable) },
+	})
+}
+
+func (db *Anonymiser) clearWatchHistory() error {
+	return utils.Do([]func() error{
+		func() error { return db.truncateTable(scenesViewDatesTable) },
 	})
 }
 
@@ -838,7 +852,7 @@ func (db *Anonymiser) anonymiseGroups(ctx context.Context) error {
 				table.Col(idColumn),
 				table.Col("name"),
 				table.Col("aliases"),
-				table.Col("synopsis"),
+				table.Col("description"),
 				table.Col("director"),
 			).Where(table.Col(idColumn).Gt(lastID)).Limit(1000)
 
@@ -847,18 +861,18 @@ func (db *Anonymiser) anonymiseGroups(ctx context.Context) error {
 			const single = false
 			return queryFunc(ctx, query, single, func(rows *sqlx.Rows) error {
 				var (
-					id       int
-					name     sql.NullString
-					aliases  sql.NullString
-					synopsis sql.NullString
-					director sql.NullString
+					id          int
+					name        sql.NullString
+					aliases     sql.NullString
+					description sql.NullString
+					director    sql.NullString
 				)
 
 				if err := rows.Scan(
 					&id,
 					&name,
 					&aliases,
-					&synopsis,
+					&description,
 					&director,
 				); err != nil {
 					return err
@@ -867,7 +881,7 @@ func (db *Anonymiser) anonymiseGroups(ctx context.Context) error {
 				set := goqu.Record{}
 				db.obfuscateNullString(set, "name", name)
 				db.obfuscateNullString(set, "aliases", aliases)
-				db.obfuscateNullString(set, "synopsis", synopsis)
+				db.obfuscateNullString(set, "description", description)
 				db.obfuscateNullString(set, "director", director)
 
 				if len(set) > 0 {
@@ -893,7 +907,7 @@ func (db *Anonymiser) anonymiseGroups(ctx context.Context) error {
 		}
 	}
 
-	if err := db.anonymiseURLs(ctx, goqu.T(groupURLsTable), "movie_id"); err != nil {
+	if err := db.anonymiseURLs(ctx, goqu.T(groupURLsTable), "group_id"); err != nil {
 		return err
 	}
 

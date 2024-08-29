@@ -7,10 +7,15 @@ import { View } from "src/components/List/views";
 interface ITagScenesPanel {
   active: boolean;
   tag: GQL.TagDataFragment;
+  showSubTagContent?: boolean;
 }
 
-export const TagScenesPanel: React.FC<ITagScenesPanel> = ({ active, tag }) => {
-  const filterHook = useTagFilterHook(tag);
+export const TagScenesPanel: React.FC<ITagScenesPanel> = ({
+  active,
+  tag,
+  showSubTagContent,
+}) => {
+  const filterHook = useTagFilterHook(tag, showSubTagContent);
   return (
     <SceneList
       filterHook={filterHook}

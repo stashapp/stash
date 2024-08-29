@@ -8,16 +8,8 @@ import {
 import { SceneMarkerList } from "src/components/Scenes/SceneMarkerList";
 import { View } from "src/components/List/views";
 
-interface ITagMarkersPanel {
-  active: boolean;
-  tag: GQL.TagDataFragment;
-}
-
-export const TagMarkersPanel: React.FC<ITagMarkersPanel> = ({
-  active,
-  tag,
-}) => {
-  function filterHook(filter: ListFilterModel) {
+function useFilterHook(tag: GQL.TagDataFragment, showSubTagContent?: boolean) {
+  return (filter: ListFilterModel) => {
     const tagValue = { id: tag.id, label: tag.name };
     // if tag is already present, then we modify it, otherwise add
     let tagCriterion = filter.criteria.find((c) => {
@@ -45,13 +37,27 @@ export const TagMarkersPanel: React.FC<ITagMarkersPanel> = ({
       tagCriterion.value = {
         items: [tagValue],
         excluded: [],
-        depth: 0,
+        depth: showSubTagContent ? -1 : 0,
       };
       filter.criteria.push(tagCriterion);
     }
 
     return filter;
-  }
+  };
+}
+
+interface ITagMarkersPanel {
+  active: boolean;
+  tag: GQL.TagDataFragment;
+  showSubTagContent?: boolean;
+}
+
+export const TagMarkersPanel: React.FC<ITagMarkersPanel> = ({
+  active,
+  tag,
+  showSubTagContent,
+}) => {
+  const filterHook = useFilterHook(tag, showSubTagContent);
 
   return (
     <SceneMarkerList

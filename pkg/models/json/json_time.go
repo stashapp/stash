@@ -1,3 +1,4 @@
+// Package json provides generic JSON types.
 package json
 
 import (

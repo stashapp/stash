@@ -3,7 +3,7 @@ import cloneDeep from "lodash-es/cloneDeep";
 import Mousetrap from "mousetrap";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
-import { makeItemList, showWhenSelected } from "../List/ItemList";
+import { ItemList, ItemListContext, showWhenSelected } from "../List/ItemList";
 import { Button } from "react-bootstrap";
 import { Link, useHistory } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
@@ -27,26 +27,26 @@ import { TagCardGrid } from "./TagCardGrid";
 import { EditTagsDialog } from "./EditTagsDialog";
 import { View } from "../List/views";
 
+function getItems(result: GQL.FindTagsQueryResult) {
+  return result?.data?.findTags?.tags ?? [];
+}
+
+function getCount(result: GQL.FindTagsQueryResult) {
+  return result?.data?.findTags?.count ?? 0;
+}
+
 interface ITagList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
   alterQuery?: boolean;
 }
 
-const TagItemList = makeItemList({
-  filterMode: GQL.FilterMode.Tags,
-  useResult: useFindTags,
-  getItems(result: GQL.FindTagsQueryResult) {
-    return result?.data?.findTags?.tags ?? [];
-  },
-  getCount(result: GQL.FindTagsQueryResult) {
-    return result?.data?.findTags?.count ?? 0;
-  },
-});
-
 export const TagList: React.FC<ITagList> = ({ filterHook, alterQuery }) => {
   const Toast = useToast();
   const [deletingTag, setDeletingTag] =
     useState<Partial<GQL.TagDataFragment> | null>(null);
+
+  const filterMode = GQL.FilterMode.Tags;
+  const view = View.Tags;
 
   function getDeleteTagInput() {
     const tagInput: Partial<GQL.TagDestroyInput> = {};
@@ -355,18 +355,25 @@ export const TagList: React.FC<ITagList> = ({ filterHook, alterQuery }) => {
   }
 
   return (
-    <TagItemList
-      selectable
-      zoomable
-      defaultZoomIndex={0}
-      filterHook={filterHook}
-      view={View.Tags}
+    <ItemListContext
+      filterMode={filterMode}
+      useResult={useFindTags}
+      getItems={getItems}
+      getCount={getCount}
       alterQuery={alterQuery}
-      otherOperations={otherOperations}
-      addKeybinds={addKeybinds}
-      renderContent={renderContent}
-      renderDeleteDialog={renderDeleteDialog}
-      renderEditDialog={renderEditDialog}
-    />
+      filterHook={filterHook}
+      view={view}
+      selectable
+    >
+      <ItemList
+        view={view}
+        zoomable
+        otherOperations={otherOperations}
+        addKeybinds={addKeybinds}
+        renderContent={renderContent}
+        renderEditDialog={renderEditDialog}
+        renderDeleteDialog={renderDeleteDialog}
+      />
+    </ItemListContext>
   );
 };

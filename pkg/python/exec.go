@@ -1,3 +1,4 @@
+// Package python provides utilities for working with the python executable.
 package python
 
 import (

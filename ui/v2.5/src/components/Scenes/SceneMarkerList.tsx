@@ -9,22 +9,19 @@ import {
   useFindSceneMarkers,
 } from "src/core/StashService";
 import NavUtils from "src/utils/navigation";
-import { makeItemList } from "../List/ItemList";
+import { ItemList, ItemListContext } from "../List/ItemList";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 import { MarkerWallPanel } from "../Wall/WallPanel";
 import { View } from "../List/views";
 
-const SceneMarkerItemList = makeItemList({
-  filterMode: GQL.FilterMode.SceneMarkers,
-  useResult: useFindSceneMarkers,
-  getItems(result: GQL.FindSceneMarkersQueryResult) {
-    return result?.data?.findSceneMarkers?.scene_markers ?? [];
-  },
-  getCount(result: GQL.FindSceneMarkersQueryResult) {
-    return result?.data?.findSceneMarkers?.count ?? 0;
-  },
-});
+function getItems(result: GQL.FindSceneMarkersQueryResult) {
+  return result?.data?.findSceneMarkers?.scene_markers ?? [];
+}
+
+function getCount(result: GQL.FindSceneMarkersQueryResult) {
+  return result?.data?.findSceneMarkers?.count ?? 0;
+}
 
 interface ISceneMarkerList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
@@ -39,6 +36,8 @@ export const SceneMarkerList: React.FC<ISceneMarkerList> = ({
 }) => {
   const intl = useIntl();
   const history = useHistory();
+
+  const filterMode = GQL.FilterMode.SceneMarkers;
 
   const otherOperations = [
     {
@@ -97,14 +96,22 @@ export const SceneMarkerList: React.FC<ISceneMarkerList> = ({
   }
 
   return (
-    <SceneMarkerItemList
+    <ItemListContext
+      filterMode={filterMode}
+      useResult={useFindSceneMarkers}
+      getItems={getItems}
+      getCount={getCount}
+      alterQuery={alterQuery}
       filterHook={filterHook}
       view={view}
-      alterQuery={alterQuery}
-      otherOperations={otherOperations}
-      addKeybinds={addKeybinds}
-      renderContent={renderContent}
-    />
+    >
+      <ItemList
+        view={view}
+        otherOperations={otherOperations}
+        addKeybinds={addKeybinds}
+        renderContent={renderContent}
+      />
+    </ItemListContext>
   );
 };
 

@@ -3,7 +3,6 @@ import { Button, Card, Form, InputGroup, ProgressBar } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Link } from "react-router-dom";
 import { HashLink } from "react-router-hash-link";
-import { useLocalForage } from "src/hooks/LocalForage";
 
 import * as GQL from "src/core/generated-graphql";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
@@ -21,12 +20,13 @@ import { ConfigurationContext } from "src/hooks/Config";
 
 import StashSearchResult from "./StashSearchResult";
 import PerformerConfig from "./Config";
-import { LOCAL_FORAGE_KEY, ITaggerConfig, initialConfig } from "../constants";
+import { ITaggerConfig } from "../constants";
 import PerformerModal from "../PerformerModal";
 import { useUpdatePerformer } from "../queries";
 import { faStar, faTags } from "@fortawesome/free-solid-svg-icons";
 import { mergeStashIDs } from "src/utils/stashbox";
 import { ExternalLink } from "src/components/Shared/ExternalLink";
+import { useTaggerConfig } from "../config";
 
 type JobFragment = Pick<
   GQL.Job,
@@ -621,10 +621,7 @@ export const PerformerTagger: React.FC<ITaggerProps> = ({ performers }) => {
   const jobsSubscribe = useJobsSubscribe();
   const intl = useIntl();
   const { configuration: stashConfig } = React.useContext(ConfigurationContext);
-  const [{ data: config }, setConfig] = useLocalForage<ITaggerConfig>(
-    LOCAL_FORAGE_KEY,
-    initialConfig
-  );
+  const { config, setConfig } = useTaggerConfig();
   const [showConfig, setShowConfig] = useState(false);
   const [showManual, setShowManual] = useState(false);
 

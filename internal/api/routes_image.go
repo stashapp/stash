@@ -46,8 +46,12 @@ func (rs imageRoutes) Routes() chi.Router {
 }
 
 func (rs imageRoutes) Thumbnail(w http.ResponseWriter, r *http.Request) {
-	mgr := manager.GetInstance()
 	img := r.Context().Value(imageKey).(*models.Image)
+	rs.serveThumbnail(w, r, img)
+}
+
+func (rs imageRoutes) serveThumbnail(w http.ResponseWriter, r *http.Request, img *models.Image) {
+	mgr := manager.GetInstance()
 	filepath := mgr.Paths.Generated.GetThumbnailPath(img.Checksum, models.DefaultGthumbWidth)
 
 	// if the thumbnail doesn't exist, encode on the fly

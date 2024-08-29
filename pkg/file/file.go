@@ -1,3 +1,4 @@
+// Package file provides functionality for managing, scanning and cleaning files and folders.
 package file
 
 import (

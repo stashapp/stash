@@ -784,7 +784,6 @@
         "galleries": "{count, plural, one {Galerie} other {Galerie}}",
         "images": "{count, plural, one {Obrázek} other {Obrázky}}",
         "markers": "{count, plural, one {Marker} other {Markery}}",
-        "movies": "{count, plural, one {Film} other {Filmy}}",
         "performers": "{count, plural, one {Účinkující} other {Účinkující}}",
         "scenes": "{count, plural, one {Scéna} other {Scény}}",
         "studios": "{count, plural, one {Studio} other {Studia}}",
@@ -1270,8 +1269,6 @@
         "o_count": "Počet O"
     },
     "megabits_per_second": "{value} mbps",
-    "movie": "Film",
-    "movie_scene_number": "Číslo scény",
     "o_counter": "O-Počítadlo",
     "none": "Žádný",
     "pagination": {
@@ -1318,7 +1315,6 @@
     "ignore_auto_tag": "Ignoruj automatické tagování",
     "instagram": "Instragram",
     "metadata": "Metadata",
-    "movies": "Filmy",
     "name": "Jméno",
     "new": "Nový",
     "organized": "Organizovaný",
