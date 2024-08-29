@@ -1835,6 +1835,61 @@ func TestGroupRemoveSubGroups(t *testing.T) {
 	}
 }
 
+func TestGroupFindSubGroupIDs(t *testing.T) {
+	tests := []struct {
+		name               string
+		containingGroupIdx int
+		subIdxs            []int
+		expectedIdxs       []int
+	}{
+		{
+			"overlap",
+			groupIdxWithGrandChild,
+			[]int{groupIdxWithParentAndChild, groupIdxWithGrandParent},
+			[]int{groupIdxWithParentAndChild},
+		},
+		{
+			"non-overlap",
+			groupIdxWithGrandChild,
+			[]int{groupIdxWithGrandParent},
+			[]int{},
+		},
+		{
+			"none",
+			groupIdxWithScene,
+			[]int{groupIdxWithDupName},
+			[]int{},
+		},
+		{
+			"invalid",
+			invalidID,
+			[]int{invalidID},
+			[]int{},
+		},
+	}
+
+	qb := db.Group
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			subIDs := indexesToIDs(groupIDs, tt.subIdxs)
+
+			id := indexToID(groupIDs, tt.containingGroupIdx)
+
+			found, err := qb.FindSubGroupIDs(ctx, id, subIDs)
+			if err != nil {
+				t.Errorf("GroupStore.FindSubGroupIDs() error = %v", err)
+				return
+			}
+
+			// get ids of groups
+			foundIdxs := sliceutil.Map(found, func(id int) int { return sliceutil.Index(groupIDs, id) })
+
+			assert.ElementsMatch(t, tt.expectedIdxs, foundIdxs)
+		})
+	}
+}
+
 // TODO Update
 // TODO Destroy - ensure image is destroyed
 // TODO Find

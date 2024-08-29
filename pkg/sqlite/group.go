@@ -631,6 +631,36 @@ func (qb *GroupStore) GetURLs(ctx context.Context, groupID int) ([]string, error
 	return groupsURLsTableMgr.get(ctx, groupID)
 }
 
+// FindSubGroupIDs returns a list of group IDs where a group in the ids list is a sub-group of the parent group
+func (qb *GroupStore) FindSubGroupIDs(ctx context.Context, containingID int, ids []int) ([]int, error) {
+	/*
+		SELECT gr.sub_id FROM groups_relations gr
+		WHERE gr.containing_id = :parentID AND gr.sub_id IN (:ids);
+	*/
+	table := groupRelationshipTableMgr.table
+	q := dialect.From(table).Prepared(true).
+		Select(table.Col("sub_id")).Where(
+		table.Col("containing_id").Eq(containingID),
+		table.Col("sub_id").In(ids),
+	)
+
+	const single = false
+	var ret []int
+	if err := queryFunc(ctx, q, single, func(r *sqlx.Rows) error {
+		var id int
+		if err := r.Scan(&id); err != nil {
+			return err
+		}
+
+		ret = append(ret, id)
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+}
+
 // FindInAscestors returns a list of group IDs where a group in the ids list is an ascestor of the ancestor group IDs
 func (qb *GroupStore) FindInAncestors(ctx context.Context, ascestorIDs []int, ids []int) ([]int, error) {
 	/*

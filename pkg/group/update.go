@@ -2,9 +2,19 @@ package group
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sliceutil"
 )
+
+type SubGroupAlreadyInGroupError struct {
+	GroupIDs []int
+}
+
+func (e *SubGroupAlreadyInGroupError) Error() string {
+	return fmt.Sprintf("subgroups with IDs %v already in group", e.GroupIDs)
+}
 
 type ImageInput struct {
 	Image []byte
@@ -49,6 +59,22 @@ func (s *Service) AddSubGroups(ctx context.Context, groupID int, subGroups []mod
 	// ensure it exists
 	if existing == nil {
 		return models.ErrNotFound
+	}
+
+	// ensure the subgroups aren't already sub-groups of the group
+	subGroupIDs := sliceutil.Map(subGroups, func(sg models.GroupIDDescription) int {
+		return sg.GroupID
+	})
+
+	existingSubGroupIDs, err := s.Repository.FindSubGroupIDs(ctx, groupID, subGroupIDs)
+	if err != nil {
+		return err
+	}
+
+	if len(existingSubGroupIDs) > 0 {
+		return &SubGroupAlreadyInGroupError{
+			GroupIDs: existingSubGroupIDs,
+		}
 	}
 
 	// validate the hierarchy

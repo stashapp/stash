@@ -561,10 +561,17 @@ var (
 func indexesToIDs(ids []int, indexes []int) []int {
 	ret := make([]int, len(indexes))
 	for i, idx := range indexes {
-		ret[i] = ids[idx]
+		ret[i] = indexToID(ids, idx)
 	}
 
 	return ret
+}
+
+func indexToID(ids []int, idx int) int {
+	if idx < 0 {
+		return invalidID
+	}
+	return ids[idx]
 }
 
 func indexFromID(ids []int, id int) int {
