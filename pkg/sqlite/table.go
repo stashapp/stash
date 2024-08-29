@@ -737,7 +737,10 @@ func (t *imageGalleriesTable) resetCover(ctx context.Context, galleryID int) err
 
 	q := dialect.Update(table).Prepared(true).Set(goqu.Record{
 		"cover": false,
-	}).Where(table.Col(galleryIDColumn).Eq(galleryID))
+	}).Where(
+		table.Col(galleryIDColumn).Eq(galleryID),
+		table.Col("cover").Eq(true),
+	)
 
 	if _, err := exec(ctx, q); err != nil {
 		return fmt.Errorf("unsetting cover flags in %s: %w", t.table.table.GetTable(), err)
