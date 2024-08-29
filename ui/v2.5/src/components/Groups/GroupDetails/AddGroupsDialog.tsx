@@ -1,15 +1,17 @@
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { Form } from "react-bootstrap";
 import { useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import { useToast } from "src/hooks/Toast";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
-import {
-  ContainingGroupTable,
-  IRelatedGroupEntry,
-} from "./ContainingGroupTable";
+import { RelatedGroupTable, IRelatedGroupEntry } from "./RelatedGroupTable";
 import { ModalComponent } from "src/components/Shared/Modal";
 import { useAddSubGroups } from "src/core/StashService";
+import { ListFilterModel } from "src/models/list-filter/filter";
+import {
+  ContainingGroupsCriterionOption,
+  GroupsCriterion,
+} from "src/models/list-filter/criteria/groups";
 
 interface IListOperationProps {
   containingGroup: GQL.GroupDataFragment;
@@ -33,6 +35,28 @@ export const AddSubGroupsDialog: React.FC<IListOperationProps> = (
       ...props.containingGroup.containing_groups.map((m) => m.group.id),
       props.containingGroup.id,
     ],
+    [props.containingGroup]
+  );
+
+  const filterHook = useCallback(
+    (f: ListFilterModel) => {
+      const groupValue = {
+        id: props.containingGroup.id,
+        label: props.containingGroup.name,
+      };
+
+      // filter out sub groups that are already in the containing group
+      const criterion = new GroupsCriterion(ContainingGroupsCriterionOption);
+      criterion.value = {
+        items: [groupValue],
+        depth: 1,
+        excluded: [],
+      };
+      criterion.modifier = GQL.CriterionModifier.Excludes;
+      f.criteria.push(criterion);
+
+      return f;
+    },
     [props.containingGroup]
   );
 
@@ -85,10 +109,11 @@ export const AddSubGroupsDialog: React.FC<IListOperationProps> = (
       isRunning={isUpdating}
     >
       <Form>
-        <ContainingGroupTable
+        <RelatedGroupTable
           value={entries}
           onUpdate={(input) => setEntries(input)}
           excludeIDs={excludeIDs}
+          filterHook={filterHook}
         />
       </Form>
     </ModalComponent>

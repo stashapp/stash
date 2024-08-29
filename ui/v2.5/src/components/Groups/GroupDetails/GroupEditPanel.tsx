@@ -27,10 +27,7 @@ import {
 import { Studio, StudioSelect } from "src/components/Studios/StudioSelect";
 import { useTagsEdit } from "src/hooks/tagsEdit";
 import { Group } from "src/components/Groups/GroupSelect";
-import {
-  ContainingGroupTable,
-  IRelatedGroupEntry,
-} from "./ContainingGroupTable";
+import { RelatedGroupTable, IRelatedGroupEntry } from "./RelatedGroupTable";
 
 interface IGroupEditPanel {
   group: Partial<GQL.GroupDataFragment>;
@@ -412,7 +409,7 @@ export const GroupEditPanel: React.FC<IGroupEditPanel> = ({
   function renderContainingGroupsField() {
     const title = intl.formatMessage({ id: "containing_groups" });
     const control = (
-      <ContainingGroupTable
+      <RelatedGroupTable
         value={containingGroupEntries}
         onUpdate={onSetContainingGroupEntries}
         excludeIDs={group.id ? [group.id] : undefined}

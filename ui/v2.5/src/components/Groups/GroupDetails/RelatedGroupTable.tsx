@@ -4,6 +4,7 @@ import * as GQL from "src/core/generated-graphql";
 import { Form, Row, Col } from "react-bootstrap";
 import { Group, GroupSelect } from "src/components/Groups/GroupSelect";
 import cx from "classnames";
+import { ListFilterModel } from "src/models/list-filter/filter";
 
 export type GroupSceneIndexMap = Map<string, number | undefined>;
 
@@ -12,10 +13,11 @@ export interface IRelatedGroupEntry {
   description?: GQL.InputMaybe<string> | undefined;
 }
 
-export const ContainingGroupTable: React.FC<{
+export const RelatedGroupTable: React.FC<{
   value: IRelatedGroupEntry[];
   onUpdate: (input: IRelatedGroupEntry[]) => void;
   excludeIDs?: string[];
+  filterHook?: (f: ListFilterModel) => ListFilterModel;
 }> = (props) => {
   const { value, onUpdate } = props;
 
@@ -96,6 +98,7 @@ export const ContainingGroupTable: React.FC<{
               onSelect={(items) => onGroupSet(i, items)}
               values={[m.group!]}
               excludeIds={excludeIDs}
+              filterHook={props.filterHook}
             />
           </Col>
           <Col xs={3}>
@@ -121,6 +124,7 @@ export const ContainingGroupTable: React.FC<{
             onSelect={(items) => onNewGroupSet(items)}
             values={[]}
             excludeIds={excludeIDs}
+            filterHook={props.filterHook}
           />
         </Col>
       </Row>
