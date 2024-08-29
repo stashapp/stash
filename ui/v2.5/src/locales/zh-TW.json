@@ -135,7 +135,11 @@
         "optimise_database": "最佳化資料庫",
         "choose_date": "選擇日期",
         "clean_generated": "清除已生成的文件",
-        "view_history": "查看歷史"
+        "view_history": "查看歷史",
+        "reset_cover": "恢復預設封面",
+        "reset_play_duration": "重置播放時長",
+        "reset_resume_time": "重置恢復時間",
+        "set_cover": "設為封面"
     },
     "actions_name": "動作",
     "age": "年齡",
