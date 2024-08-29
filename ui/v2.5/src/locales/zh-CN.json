@@ -135,7 +135,11 @@
         "remove_date": "去除日期",
         "add_o": "添加高潮记录",
         "clean_generated": "清除已生成的文件",
-        "view_history": "观看历史"
+        "view_history": "观看历史",
+        "reset_cover": "恢复默认封面",
+        "set_cover": "设置为封面",
+        "reset_play_duration": "重置播放时长",
+        "reset_resume_time": "重置恢复时间"
     },
     "actions_name": "操作",
     "age": "年龄",
