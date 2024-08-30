@@ -139,7 +139,9 @@
         "reset_cover": "恢復預設封面",
         "reset_play_duration": "重置播放時長",
         "reset_resume_time": "重置恢復時間",
-        "set_cover": "設為封面"
+        "set_cover": "設為封面",
+        "remove_from_containing_group": "從群組中刪除",
+        "add_sub_groups": "新增子組"
     },
     "actions_name": "動作",
     "age": "年齡",
@@ -1477,5 +1479,14 @@
     "tag_sub_tag_tooltip": "有子標籤",
     "time": "時間",
     "unknown_date": "未知日期",
-    "urls": "支援網址"
+    "urls": "支援網址",
+    "containing_group_count": "包含群組計數",
+    "containing_groups": "包含群組",
+    "include_sub_group_content": "包括子組內容",
+    "sub_group_count": "子組計數",
+    "sub_group_of": "{parent}的子組",
+    "sub_group_order": "子組順序",
+    "sub_groups": "子組",
+    "containing_group": "包含群組",
+    "sub_group": "子組"
 }
