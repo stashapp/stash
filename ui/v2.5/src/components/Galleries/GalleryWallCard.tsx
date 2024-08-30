@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useIntl } from "react-intl";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
@@ -7,6 +7,7 @@ import TextUtils from "src/utils/text";
 import { useGalleryLightbox } from "src/hooks/Lightbox/hooks";
 import { galleryTitle } from "src/core/galleries";
 import { RatingSystem } from "../Shared/Rating/RatingSystem";
+import { GalleryPreviewScrubber } from "./GalleryPreviewScrubber";
 
 const CLASSNAME = "GalleryWallCard";
 const CLASSNAME_FOOTER = `${CLASSNAME}-footer`;
@@ -29,7 +30,9 @@ const GalleryWallCard: React.FC<IProps> = ({ gallery }) => {
     (coverFile?.width ?? 0) > (coverFile?.height ?? 0)
       ? "landscape"
       : "portrait";
-  const cover = gallery?.cover?.paths.thumbnail ?? "";
+  const [imgSrc, setImgSrc] = useState<string | undefined>(
+    gallery.cover?.paths.thumbnail ?? undefined
+  );
   const title = galleryTitle(gallery);
   const performerNames = gallery.performers.map((p) => p.name);
   const performers =
@@ -51,25 +54,37 @@ const GalleryWallCard: React.FC<IProps> = ({ gallery }) => {
         tabIndex={0}
       >
         <RatingSystem value={gallery.rating100} disabled withoutContext />
-        <img loading="lazy" src={cover} alt="" className={CLASSNAME_IMG} />
-        <footer className={CLASSNAME_FOOTER}>
-          <Link
-            to={`/galleries/${gallery.id}`}
-            onClick={(e) => e.stopPropagation()}
-          >
-            {title && (
-              <TruncatedText
-                text={title}
-                lineCount={1}
-                className={CLASSNAME_TITLE}
-              />
-            )}
-            <TruncatedText text={performers.join(", ")} />
-            <div>
-              {gallery.date && TextUtils.formatDate(intl, gallery.date)}
-            </div>
-          </Link>
-        </footer>
+        <img loading="lazy" src={imgSrc} alt="" className={CLASSNAME_IMG} />
+        <div className="lineargradient">
+          <footer className={CLASSNAME_FOOTER}>
+            <Link
+              to={`/galleries/${gallery.id}`}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {title && (
+                <TruncatedText
+                  text={title}
+                  lineCount={1}
+                  className={CLASSNAME_TITLE}
+                />
+              )}
+              <TruncatedText text={performers.join(", ")} />
+              <div>
+                {gallery.date && TextUtils.formatDate(intl, gallery.date)}
+              </div>
+            </Link>
+          </footer>
+          <GalleryPreviewScrubber
+            previewPath={gallery.paths.preview}
+            defaultPath={gallery.cover?.paths.thumbnail ?? ""}
+            imageCount={gallery.image_count}
+            onClick={(i) => {
+              console.log(i);
+              showLightbox(i);
+            }}
+            onPathChanged={setImgSrc}
+          />
+        </div>
       </section>
     </>
   );

@@ -240,6 +240,18 @@ $galleryTabWidth: 450px;
     width: 96vw;
   }
 
+  .lineargradient {
+    background-image: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.3));
+    bottom: 100px;
+    height: 100px;
+    position: relative;
+  }
+
+  .preview-scrubber {
+    top: 0;
+    z-index: 1;
+  }
+
   @mixin galleryWidth($width) {
     height: math.div($width, 3) * 2;
 
@@ -274,13 +286,13 @@ $galleryTabWidth: 450px;
   }
 
   &-footer {
-    background-image: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.3));
-    bottom: 0;
+    bottom: 20px;
     padding: 1rem;
     position: absolute;
     text-shadow: 1px 1px 3px black;
     transition: 0s opacity;
     width: 100%;
+    z-index: 2;
 
     @media (min-width: 768px) {
       opacity: 0;
@@ -313,6 +325,7 @@ $galleryTabWidth: 450px;
     right: 1rem;
     text-shadow: 1px 1px 3px black;
     top: 1rem;
+    z-index: 2;
   }
 
   .rating-stars {

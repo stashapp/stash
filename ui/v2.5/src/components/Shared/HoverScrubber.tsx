@@ -76,6 +76,7 @@ export const HoverScrubber: React.FC<IHoverScrubber> = ({
       return;
 
     e.preventDefault();
+    e.stopPropagation();
     onClick();
   }
 
