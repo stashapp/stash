@@ -135,7 +135,13 @@
         "add_o": "O hinzufügen",
         "add_play": "abspielen hinzufügen",
         "clear_date_data": "Datum-Eintrag löschen",
-        "assign_stashid_to_parent_studio": "Stash ID existierendem Elternstudio hinzufügen und Metadaten aktualisieren"
+        "assign_stashid_to_parent_studio": "Stash ID existierendem Elternstudio hinzufügen und Metadaten aktualisieren",
+        "set_cover": "Als Titelbild setzen",
+        "reset_cover": "Titelbild zurücksetzen",
+        "remove_from_containing_group": "Von Gruppe entfernen",
+        "reset_play_duration": "Spieldauer zurücksetzten",
+        "reset_resume_time": "Wiederaufnahmezeit zurücksetzten",
+        "add_sub_groups": "Untergruppen hinzufügen"
     },
     "actions_name": "Aktionen",
     "age": "Alter",
@@ -502,7 +508,8 @@
                 "skip_single_name_performers": "Darsteller mit nur einem - nicht eindeutigem - Namen überspringen",
                 "skip_single_name_performers_tooltip": "Wenn dies nicht aktiviert ist, werden Darsteller, die oft generisch sind, wie Samantha oder Olga, abgeglichen",
                 "tag_skipped_matches": "Übersprungenes Tag passt zu",
-                "tag_skipped_matches_tooltip": "Erstellen Sie ein Tag wie 'Identifizieren: Mehrere Übereinstimmungen“, nach denen Sie in der Scene Tagger-Ansicht filtern und die richtige Übereinstimmung von Hand auswählen können"
+                "tag_skipped_matches_tooltip": "Erstellen Sie ein Tag wie 'Identifizieren: Mehrere Übereinstimmungen“, nach denen Sie in der Scene Tagger-Ansicht filtern und die richtige Übereinstimmung von Hand auswählen können",
+                "tag_skipped_performers": "Setze folgenden Tag bei übersprungenen Darstellern"
             },
             "import_from_exported_json": "Import aus exportiertem JSON im Metadatenverzeichnis. Löscht die vorhandene Datenbank.",
             "incremental_import": "Inkrementeller Import aus einer Export-ZIP-Datei.",
