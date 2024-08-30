@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"net/url"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -1097,7 +1098,10 @@ func (i *Config) ValidateCredentials(username string, password string) bool {
 	return username == authUser && err == nil
 }
 
-var stashBoxRe = regexp.MustCompile("^http.*graphql$")
+func stashBoxValidate(str string) bool {
+	u, err := url.Parse(str)
+	return err == nil && u.Scheme != "" && u.Host != "" && u.Path == "/graphql"
+}
 
 type StashBoxInput struct {
 	Endpoint string `json:"endpoint"`
@@ -1118,7 +1122,7 @@ func (i *Config) ValidateStashBoxes(boxes []*StashBoxInput) error {
 			return &StashBoxError{msg: "endpoint cannot be blank"}
 		}
 
-		if !stashBoxRe.Match([]byte(box.Endpoint)) {
+		if !stashBoxValidate(box.Endpoint) {
 			return &StashBoxError{msg: "endpoint is invalid"}
 		}
 
