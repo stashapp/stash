@@ -1388,6 +1388,60 @@ export const useGroupsDestroy = (input: GQL.GroupsDestroyMutationVariables) =>
     },
   });
 
+export function useReorderSubGroupsMutation() {
+  return GQL.useReorderSubGroupsMutation({
+    update(cache) {
+      evictQueries(cache, [
+        GQL.FindGroupsDocument, // various filters
+      ]);
+    },
+  });
+}
+
+export const useAddSubGroups = () => {
+  const [addSubGroups] = GQL.useAddGroupSubGroupsMutation({
+    update(cache, result) {
+      if (!result.data?.addGroupSubGroups) return;
+
+      evictTypeFields(cache, groupMutationImpactedTypeFields);
+      evictQueries(cache, groupMutationImpactedQueries);
+    },
+  });
+
+  return (containingGroupId: string, toAdd: GQL.GroupDescriptionInput[]) => {
+    return addSubGroups({
+      variables: {
+        input: {
+          containing_group_id: containingGroupId,
+          sub_groups: toAdd,
+        },
+      },
+    });
+  };
+};
+
+export const useRemoveSubGroups = () => {
+  const [removeSubGroups] = GQL.useRemoveGroupSubGroupsMutation({
+    update(cache, result) {
+      if (!result.data?.removeGroupSubGroups) return;
+
+      evictTypeFields(cache, groupMutationImpactedTypeFields);
+      evictQueries(cache, groupMutationImpactedQueries);
+    },
+  });
+
+  return (containingGroupId: string, removeIds: string[]) => {
+    return removeSubGroups({
+      variables: {
+        input: {
+          containing_group_id: containingGroupId,
+          sub_group_ids: removeIds,
+        },
+      },
+    });
+  };
+};
+
 const sceneMarkerMutationImpactedTypeFields = {
   Tag: ["scene_marker_count"],
 };

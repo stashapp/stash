@@ -56,13 +56,14 @@ const groupSelectSort = PatchFunction(
   sortGroupsByRelevance
 );
 
-const _GroupSelect: React.FC<
+export const GroupSelect: React.FC<
   IFilterProps &
     IFilterValueProps<Group> & {
       hoverPlacement?: Placement;
       excludeIds?: string[];
+      filterHook?: (f: ListFilterModel) => ListFilterModel;
     }
-> = (props) => {
+> = PatchComponent("GroupSelect", (props) => {
   const [createGroup] = useGroupCreate();
 
   const { configuration } = React.useContext(ConfigurationContext);
@@ -75,12 +76,17 @@ const _GroupSelect: React.FC<
   const exclude = useMemo(() => props.excludeIds ?? [], [props.excludeIds]);
 
   async function loadGroups(input: string): Promise<Option[]> {
-    const filter = new ListFilterModel(GQL.FilterMode.Groups);
+    let filter = new ListFilterModel(GQL.FilterMode.Groups);
     filter.searchTerm = input;
     filter.currentPage = 1;
     filter.itemsPerPage = maxOptionsShown;
     filter.sortBy = "name";
     filter.sortDirection = GQL.SortDirectionEnum.Asc;
+
+    if (props.filterHook) {
+      filter = props.filterHook(filter);
+    }
+
     const query = await queryFindGroupsForSelect(filter);
     let ret = query.data.findGroups.groups.filter((group) => {
       // HACK - we should probably exclude these in the backend query, but
@@ -255,9 +261,7 @@ const _GroupSelect: React.FC<
       closeMenuOnSelect={!props.isMulti}
     />
   );
-};
-
-export const GroupSelect = PatchComponent("GroupSelect", _GroupSelect);
+});
 
 const _GroupIDSelect: React.FC<IFilterProps & IFilterIDProps<Group>> = (
   props

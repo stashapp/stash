@@ -434,3 +434,64 @@ func (t changesetTranslator) updateGroupIDsBulk(value *BulkUpdateIds, field stri
 		Mode:   value.Mode,
 	}, nil
 }
+
+func groupsDescriptionsFromGroupInput(input []*GroupDescriptionInput) ([]models.GroupIDDescription, error) {
+	ret := make([]models.GroupIDDescription, len(input))
+
+	for i, v := range input {
+		gID, err := strconv.Atoi(v.GroupID)
+		if err != nil {
+			return nil, fmt.Errorf("invalid group ID: %s", v.GroupID)
+		}
+
+		ret[i] = models.GroupIDDescription{
+			GroupID: gID,
+		}
+		if v.Description != nil {
+			ret[i].Description = *v.Description
+		}
+	}
+
+	return ret, nil
+}
+
+func (t changesetTranslator) groupIDDescriptions(value []*GroupDescriptionInput) (models.RelatedGroupDescriptions, error) {
+	groupsScenes, err := groupsDescriptionsFromGroupInput(value)
+	if err != nil {
+		return models.RelatedGroupDescriptions{}, err
+	}
+
+	return models.NewRelatedGroupDescriptions(groupsScenes), nil
+}
+
+func (t changesetTranslator) updateGroupIDDescriptions(value []*GroupDescriptionInput, field string) (*models.UpdateGroupDescriptions, error) {
+	if !t.hasField(field) {
+		return nil, nil
+	}
+
+	groupsScenes, err := groupsDescriptionsFromGroupInput(value)
+	if err != nil {
+		return nil, err
+	}
+
+	return &models.UpdateGroupDescriptions{
+		Groups: groupsScenes,
+		Mode:   models.RelationshipUpdateModeSet,
+	}, nil
+}
+
+func (t changesetTranslator) updateGroupIDDescriptionsBulk(value *BulkUpdateGroupDescriptionsInput, field string) (*models.UpdateGroupDescriptions, error) {
+	if !t.hasField(field) || value == nil {
+		return nil, nil
+	}
+
+	groups, err := groupsDescriptionsFromGroupInput(value.Groups)
+	if err != nil {
+		return nil, err
+	}
+
+	return &models.UpdateGroupDescriptions{
+		Groups: groups,
+		Mode:   value.Mode,
+	}, nil
+}

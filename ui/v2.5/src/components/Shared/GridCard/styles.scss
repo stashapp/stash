@@ -57,3 +57,28 @@
     transition: opacity 0.5s;
   }
 }
+
+.move-target {
+  align-items: center;
+  background-color: $primary;
+  color: $secondary;
+  display: flex;
+  height: 100%;
+  justify-content: center;
+  opacity: 0.5;
+  pointer-events: none;
+  position: absolute;
+  width: 10%;
+
+  &.move-target-before {
+    left: 0;
+  }
+
+  &.move-target-after {
+    right: 0;
+  }
+}
+
+.card-drag-handle {
+  filter: drop-shadow(1px 1px 1px rgba(0, 0, 0, 0.7));
+}

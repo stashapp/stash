@@ -16,6 +16,18 @@ type ImporterReaderWriter interface {
 	FindByName(ctx context.Context, name string, nocase bool) (*models.Group, error)
 }
 
+type SubGroupNotExistError struct {
+	missingSubGroup string
+}
+
+func (e SubGroupNotExistError) Error() string {
+	return fmt.Sprintf("sub group <%s> does not exist", e.missingSubGroup)
+}
+
+func (e SubGroupNotExistError) MissingSubGroup() string {
+	return e.missingSubGroup
+}
+
 type Importer struct {
 	ReaderWriter        ImporterReaderWriter
 	StudioWriter        models.StudioFinderCreator
@@ -202,6 +214,22 @@ func (i *Importer) createStudio(ctx context.Context, name string) (int, error) {
 }
 
 func (i *Importer) PostImport(ctx context.Context, id int) error {
+	subGroups, err := i.getSubGroups(ctx)
+	if err != nil {
+		return err
+	}
+
+	if len(subGroups) > 0 {
+		if _, err := i.ReaderWriter.UpdatePartial(ctx, id, models.GroupPartial{
+			SubGroups: &models.UpdateGroupDescriptions{
+				Groups: subGroups,
+				Mode:   models.RelationshipUpdateModeSet,
+			},
+		}); err != nil {
+			return fmt.Errorf("error setting parents: %v", err)
+		}
+	}
+
 	if len(i.frontImageData) > 0 {
 		if err := i.ReaderWriter.UpdateFrontImage(ctx, id, i.frontImageData); err != nil {
 			return fmt.Errorf("error setting group front image: %v", err)
@@ -255,4 +283,54 @@ func (i *Importer) Update(ctx context.Context, id int) error {
 	}
 
 	return nil
+}
+
+func (i *Importer) getSubGroups(ctx context.Context) ([]models.GroupIDDescription, error) {
+	var subGroups []models.GroupIDDescription
+	for _, subGroup := range i.Input.SubGroups {
+		group, err := i.ReaderWriter.FindByName(ctx, subGroup.Group, false)
+		if err != nil {
+			return nil, fmt.Errorf("error finding parent by name: %v", err)
+		}
+
+		if group == nil {
+			if i.MissingRefBehaviour == models.ImportMissingRefEnumFail {
+				return nil, SubGroupNotExistError{missingSubGroup: subGroup.Group}
+			}
+
+			if i.MissingRefBehaviour == models.ImportMissingRefEnumIgnore {
+				continue
+			}
+
+			if i.MissingRefBehaviour == models.ImportMissingRefEnumCreate {
+				parentID, err := i.createSubGroup(ctx, subGroup.Group)
+				if err != nil {
+					return nil, err
+				}
+				subGroups = append(subGroups, models.GroupIDDescription{
+					GroupID:     parentID,
+					Description: subGroup.Description,
+				})
+			}
+		} else {
+			subGroups = append(subGroups, models.GroupIDDescription{
+				GroupID:     group.ID,
+				Description: subGroup.Description,
+			})
+		}
+	}
+
+	return subGroups, nil
+}
+
+func (i *Importer) createSubGroup(ctx context.Context, name string) (int, error) {
+	newGroup := models.NewGroup()
+	newGroup.Name = name
+
+	err := i.ReaderWriter.Create(ctx, &newGroup)
+	if err != nil {
+		return 0, err
+	}
+
+	return newGroup.ID, nil
 }

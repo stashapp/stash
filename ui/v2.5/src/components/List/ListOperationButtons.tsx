@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { PropsWithChildren, useEffect } from "react";
 import {
   Button,
   ButtonGroup,
@@ -15,6 +15,23 @@ import {
   faPencilAlt,
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
+
+export const OperationDropdown: React.FC<PropsWithChildren<{}>> = ({
+  children,
+}) => {
+  if (!children) return null;
+
+  return (
+    <Dropdown>
+      <Dropdown.Toggle variant="secondary" id="more-menu">
+        <Icon icon={faEllipsisH} />
+      </Dropdown.Toggle>
+      <Dropdown.Menu className="bg-secondary text-white">
+        {children}
+      </Dropdown.Menu>
+    </Dropdown>
+  );
+};
 
 export interface IListFilterOperation {
   text: string;
@@ -154,6 +171,11 @@ export const ListOperationButtons: React.FC<IListOperationButtonsProps> = ({
     if (otherOperations) {
       otherOperations
         .filter((o) => {
+          // buttons with icons are rendered in the button group
+          if (o.icon) {
+            return false;
+          }
+
           if (!o.isDisplayed) {
             return true;
           }
@@ -173,18 +195,11 @@ export const ListOperationButtons: React.FC<IListOperationButtonsProps> = ({
         });
     }
 
-    if (options.length > 0) {
-      return (
-        <Dropdown>
-          <Dropdown.Toggle variant="secondary" id="more-menu">
-            <Icon icon={faEllipsisH} />
-          </Dropdown.Toggle>
-          <Dropdown.Menu className="bg-secondary text-white">
-            {options}
-          </Dropdown.Menu>
-        </Dropdown>
-      );
-    }
+    return (
+      <OperationDropdown>
+        {options.length > 0 ? options : undefined}
+      </OperationDropdown>
+    );
   }
 
   return (

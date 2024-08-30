@@ -30,7 +30,11 @@ import {
   useListKeyboardShortcuts,
   useScrollToTopOnPageChange,
 } from "./util";
-import { FilteredListToolbar, IItemListOperation } from "./FilteredListToolbar";
+import {
+  FilteredListToolbar,
+  IFilteredListToolbar,
+  IItemListOperation,
+} from "./FilteredListToolbar";
 import { PagedList } from "./PagedList";
 
 interface IItemListProps<T extends QueryResult, E extends IHasID> {
@@ -59,6 +63,7 @@ interface IItemListProps<T extends QueryResult, E extends IHasID> {
     filter: ListFilterModel,
     selectedIds: Set<string>
   ) => () => void;
+  renderToolbar?: (props: IFilteredListToolbar) => React.ReactNode;
 }
 
 export const ItemList = <T extends QueryResult, E extends IHasID>(
@@ -73,6 +78,7 @@ export const ItemList = <T extends QueryResult, E extends IHasID>(
     renderDeleteDialog,
     renderMetadataByline,
     addKeybinds,
+    renderToolbar: providedToolbar,
   } = props;
 
   const { filter, setFilter: updateFilter } = useFilter();
@@ -142,28 +148,30 @@ export const ItemList = <T extends QueryResult, E extends IHasID>(
     }
   }, [addKeybinds, result, effectiveFilter, selectedIds]);
 
-  async function onOperationClicked(o: IItemListOperation<T>) {
-    await o.onClick(result, effectiveFilter, selectedIds);
-    if (o.postRefetch) {
-      result.refetch();
-    }
-  }
-
-  const operations = otherOperations?.map((o) => ({
-    text: o.text,
-    onClick: () => {
-      onOperationClicked(o);
-    },
-    isDisplayed: () => {
-      if (o.isDisplayed) {
-        return o.isDisplayed(result, effectiveFilter, selectedIds);
+  const operations = useMemo(() => {
+    async function onOperationClicked(o: IItemListOperation<T>) {
+      await o.onClick(result, effectiveFilter, selectedIds);
+      if (o.postRefetch) {
+        result.refetch();
       }
+    }
 
-      return true;
-    },
-    icon: o.icon,
-    buttonVariant: o.buttonVariant,
-  }));
+    return otherOperations?.map((o) => ({
+      text: o.text,
+      onClick: () => {
+        onOperationClicked(o);
+      },
+      isDisplayed: () => {
+        if (o.isDisplayed) {
+          return o.isDisplayed(result, effectiveFilter, selectedIds);
+        }
+
+        return true;
+      },
+      icon: o.icon,
+      buttonVariant: o.buttonVariant,
+    }));
+  }, [result, effectiveFilter, selectedIds, otherOperations]);
 
   function onEdit() {
     if (!renderEditDialog) {
@@ -215,16 +223,22 @@ export const ItemList = <T extends QueryResult, E extends IHasID>(
     updateFilter(filter.clearCriteria());
   }
 
+  const filterListToolbarProps = {
+    showEditFilter,
+    view: view,
+    operations: operations,
+    zoomable: zoomable,
+    onEdit: renderEditDialog ? onEdit : undefined,
+    onDelete: renderDeleteDialog ? onDelete : undefined,
+  };
+
   return (
     <div className="item-list-container">
-      <FilteredListToolbar
-        showEditFilter={showEditFilter}
-        view={view}
-        operations={operations}
-        zoomable={zoomable}
-        onEdit={renderEditDialog ? onEdit : undefined}
-        onDelete={renderDeleteDialog ? onDelete : undefined}
-      />
+      {providedToolbar ? (
+        providedToolbar(filterListToolbarProps)
+      ) : (
+        <FilteredListToolbar {...filterListToolbarProps} />
+      )}
       <FilterTags
         criteria={filter.criteria}
         onEditCriterion={(c) => showEditFilter(c.criterionOption.type)}
@@ -258,6 +272,7 @@ export const ItemList = <T extends QueryResult, E extends IHasID>(
 interface IItemListContextProps<T extends QueryResult, E extends IHasID> {
   filterMode: GQL.FilterMode;
   defaultSort?: string;
+  defaultFilter?: ListFilterModel;
   useResult: (filter: ListFilterModel) => T;
   getCount: (data: T) => number;
   getItems: (data: T) => E[];
@@ -275,6 +290,7 @@ export const ItemListContext = <T extends QueryResult, E extends IHasID>(
   const {
     filterMode,
     defaultSort,
+    defaultFilter: providedDefaultFilter,
     useResult,
     getCount,
     getItems,
@@ -287,10 +303,11 @@ export const ItemListContext = <T extends QueryResult, E extends IHasID>(
 
   const emptyFilter = useMemo(
     () =>
+      providedDefaultFilter?.clone() ??
       new ListFilterModel(filterMode, undefined, {
         defaultSortBy: defaultSort,
       }),
-    [filterMode, defaultSort]
+    [filterMode, defaultSort, providedDefaultFilter]
   );
 
   const [filter, setFilterState] = useState<ListFilterModel>(
@@ -342,4 +359,12 @@ export const showWhenSingleSelection = <T extends QueryResult>(
   selectedIds: Set<string>
 ) => {
   return selectedIds.size == 1;
+};
+
+export const showWhenNoneSelected = <T extends QueryResult>(
+  result: T,
+  filter: ListFilterModel,
+  selectedIds: Set<string>
+) => {
+  return selectedIds.size === 0;
 };

@@ -37,8 +37,9 @@ var (
 	studiosTagsJoinTable     = goqu.T(studiosTagsTable)
 	studiosStashIDsJoinTable = goqu.T("studio_stash_ids")
 
-	groupsURLsJoinTable = goqu.T(groupURLsTable)
-	groupsTagsJoinTable = goqu.T(groupsTagsTable)
+	groupsURLsJoinTable     = goqu.T(groupURLsTable)
+	groupsTagsJoinTable     = goqu.T(groupsTagsTable)
+	groupRelationsJoinTable = goqu.T(groupRelationsTable)
 
 	tagsAliasesJoinTable  = goqu.T(tagAliasesTable)
 	tagRelationsJoinTable = goqu.T(tagRelationsTable)
@@ -360,6 +361,10 @@ var (
 		fkColumn:     groupsTagsJoinTable.Col(tagIDColumn),
 		foreignTable: tagTableMgr,
 		orderBy:      tagTableMgr.table.Col("name").Asc(),
+	}
+
+	groupRelationshipTableMgr = &table{
+		table: groupRelationsJoinTable,
 	}
 )
 

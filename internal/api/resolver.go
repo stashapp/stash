@@ -37,6 +37,7 @@ type Resolver struct {
 	sceneService   manager.SceneService
 	imageService   manager.ImageService
 	galleryService manager.GalleryService
+	groupService   manager.GroupService
 
 	hookExecutor hookExecutor
 }

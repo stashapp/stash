@@ -234,29 +234,47 @@ button.collapse-button.btn-primary:not(:disabled):not(.disabled):active {
     height: 5px;
   }
 
-  .card-check {
+  .card-controls {
+    align-items: center;
+    display: flex;
     left: 0.5rem;
-    margin-top: -12px;
-    opacity: 0;
-    padding-left: 15px;
+
     position: absolute;
     top: 0.7rem;
-    width: 1.2rem;
     z-index: 1;
+  }
+
+  .card-check,
+  .card-drag-handle {
+    height: 1.2rem;
+    opacity: 0;
+    width: 1.2rem;
+
+    @media (hover: none), (pointer: coarse) {
+      // always show card controls when hovering not supported
+      opacity: 0.25;
+    }
+  }
+
+  .card-drag-handle {
+    cursor: move;
+  }
+
+  .card-check {
+    padding-left: 15px;
 
     &:checked {
       opacity: 0.75;
     }
 
     @media (hover: none), (pointer: coarse) {
-      // always show card check button when hovering not supported
-      opacity: 0.25;
-      // and make it bigger
+      // and make it bigger when hovering not supported
       width: 1.5rem;
     }
   }
 
-  &:hover .card-check {
+  &:hover .card-check,
+  &:hover .card-drag-handle {
     opacity: 0.75;
     transition: opacity 0.5s;
   }

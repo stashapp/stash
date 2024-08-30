@@ -78,6 +78,7 @@ const (
 	sceneIdxWithGrandChildStudio
 	sceneIdxMissingPhash
 	sceneIdxWithPerformerParentTag
+	sceneIdxWithGroupWithParent
 	// new indexes above
 	lastSceneIdx
 
@@ -153,9 +154,15 @@ const (
 	groupIdxWithTag
 	groupIdxWithTwoTags
 	groupIdxWithThreeTags
+	groupIdxWithGrandChild
+	groupIdxWithChild
+	groupIdxWithParentAndChild
+	groupIdxWithParent
+	groupIdxWithGrandParent
+	groupIdxWithParentAndScene
+	groupIdxWithChildWithScene
 	// groups with dup names start from the end
-	// create 7 more basic groups (can remove this if we add more indexes)
-	groupIdxWithDupName = groupIdxWithStudio + 7
+	groupIdxWithDupName
 
 	groupsNameCase   = groupIdxWithDupName
 	groupsNameNoCase = 1
@@ -390,7 +397,8 @@ var (
 	}
 
 	sceneGroups = linkMap{
-		sceneIdxWithGroup: {groupIdxWithScene},
+		sceneIdxWithGroup:           {groupIdxWithScene},
+		sceneIdxWithGroupWithParent: {groupIdxWithParentAndScene},
 	}
 
 	sceneStudios = map[int]int{
@@ -541,13 +549,29 @@ var (
 	}
 )
 
+var (
+	groupParentLinks = [][2]int{
+		{groupIdxWithChild, groupIdxWithParent},
+		{groupIdxWithGrandChild, groupIdxWithParentAndChild},
+		{groupIdxWithParentAndChild, groupIdxWithGrandParent},
+		{groupIdxWithChildWithScene, groupIdxWithParentAndScene},
+	}
+)
+
 func indexesToIDs(ids []int, indexes []int) []int {
 	ret := make([]int, len(indexes))
 	for i, idx := range indexes {
-		ret[i] = ids[idx]
+		ret[i] = indexToID(ids, idx)
 	}
 
 	return ret
+}
+
+func indexToID(ids []int, idx int) int {
+	if idx < 0 {
+		return invalidID
+	}
+	return ids[idx]
 }
 
 func indexFromID(ids []int, id int) int {
@@ -694,6 +718,10 @@ func populateDB() error {
 		}
 
 		if err := linkTagsParent(ctx, db.Tag); err != nil {
+			return fmt.Errorf("error linking tags parent: %s", err.Error())
+		}
+
+		if err := linkGroupsParent(ctx, db.Group); err != nil {
 			return fmt.Errorf("error linking tags parent: %s", err.Error())
 		}
 
@@ -1882,6 +1910,24 @@ func linkTagsParent(ctx context.Context, qb models.TagReaderWriter) error {
 		parentIDs = append(parentIDs, tagIDs[parentIndex])
 
 		return qb.UpdateParentTags(ctx, tagID, parentIDs)
+	})
+}
+
+func linkGroupsParent(ctx context.Context, qb models.GroupReaderWriter) error {
+	return doLinks(groupParentLinks, func(parentIndex, childIndex int) error {
+		groupID := groupIDs[childIndex]
+
+		p := models.GroupPartial{
+			ContainingGroups: &models.UpdateGroupDescriptions{
+				Groups: []models.GroupIDDescription{
+					{GroupID: groupIDs[parentIndex]},
+				},
+				Mode: models.RelationshipUpdateModeAdd,
+			},
+		}
+
+		_, err := qb.UpdatePartial(ctx, groupID, p)
+		return err
 	})
 }
 

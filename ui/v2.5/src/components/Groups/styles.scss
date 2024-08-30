@@ -14,7 +14,8 @@
     width: 100%;
   }
 
-  .group-scene-number {
+  .group-scene-number,
+  .group-containing-group-description {
     text-align: center;
   }
 
@@ -87,5 +88,26 @@
         white-space: nowrap;
       }
     }
+  }
+}
+
+.groups-list {
+  list-style-type: none;
+  padding-inline-start: 0;
+
+  li {
+    display: inline;
+  }
+}
+
+.related-group-popover-button {
+  .containing-group-count {
+    display: inline-block;
+  }
+
+  .related-group-count .fa-icon {
+    color: $text-muted;
+    margin-left: 0;
+    margin-right: 0.25rem;
   }
 }

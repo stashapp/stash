@@ -17,6 +17,7 @@ import (
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/gallery"
+	"github.com/stashapp/stash/pkg/group"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/logger"
@@ -67,6 +68,10 @@ func Initialize(cfg *config.Config, l *log.Logger) (*Manager, error) {
 		Folder:       db.Folder,
 	}
 
+	groupService := &group.Service{
+		Repository: db.Group,
+	}
+
 	sceneServer := &SceneServer{
 		TxnManager:       repo.TxnManager,
 		SceneCoverGetter: repo.Scene,
@@ -99,6 +104,7 @@ func Initialize(cfg *config.Config, l *log.Logger) (*Manager, error) {
 		SceneService:   sceneService,
 		ImageService:   imageService,
 		GalleryService: galleryService,
+		GroupService:   groupService,
 
 		scanSubs: &subscriptionManager{},
 	}

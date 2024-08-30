@@ -9,6 +9,7 @@ import { useToast } from "src/hooks/Toast";
 import * as FormUtils from "src/utils/form";
 import { RatingSystem } from "../Shared/Rating/RatingSystem";
 import {
+  getAggregateIds,
   getAggregateInputIDs,
   getAggregateInputValue,
   getAggregateRating,
@@ -18,10 +19,52 @@ import {
 import { faPencilAlt } from "@fortawesome/free-solid-svg-icons";
 import { isEqual } from "lodash-es";
 import { MultiSet } from "../Shared/MultiSet";
+import { ContainingGroupsMultiSet } from "./ContainingGroupsMultiSet";
+import { IRelatedGroupEntry } from "./GroupDetails/RelatedGroupTable";
 
 interface IListOperationProps {
   selected: GQL.GroupDataFragment[];
   onClose: (applied: boolean) => void;
+}
+
+export function getAggregateContainingGroups(
+  state: Pick<GQL.GroupDataFragment, "containing_groups">[]
+) {
+  const sortedLists: IRelatedGroupEntry[][] = state.map((o) =>
+    o.containing_groups
+      .map((oo) => ({
+        group: oo.group,
+        description: oo.description,
+      }))
+      .sort((a, b) => a.group.id.localeCompare(b.group.id))
+  );
+
+  return getAggregateIds(sortedLists);
+}
+
+function getAggregateContainingGroupInput(
+  mode: GQL.BulkUpdateIdMode,
+  input: IRelatedGroupEntry[] | undefined,
+  aggregateValues: IRelatedGroupEntry[]
+): GQL.BulkUpdateGroupDescriptionsInput | undefined {
+  if (mode === GQL.BulkUpdateIdMode.Set && (!input || input.length === 0)) {
+    // and all scenes have the same ids,
+    if (aggregateValues.length > 0) {
+      // then unset, otherwise ignore
+      return { mode, groups: [] };
+    }
+  } else {
+    // if input non-empty, then we are setting them
+    return {
+      mode,
+      groups:
+        input?.map((e) => {
+          return { group_id: e.group.id, description: e.description };
+        }) || [],
+    };
+  }
+
+  return undefined;
 }
 
 export const EditGroupsDialog: React.FC<IListOperationProps> = (
@@ -39,6 +82,12 @@ export const EditGroupsDialog: React.FC<IListOperationProps> = (
   const [tagIds, setTagIds] = useState<string[]>();
   const [existingTagIds, setExistingTagIds] = useState<string[]>();
 
+  const [containingGroupsMode, setGroupMode] =
+    React.useState<GQL.BulkUpdateIdMode>(GQL.BulkUpdateIdMode.Add);
+  const [containingGroups, setGroups] = useState<IRelatedGroupEntry[]>();
+  const [existingContainingGroups, setExistingContainingGroups] =
+    useState<IRelatedGroupEntry[]>();
+
   const [updateGroups] = useBulkGroupUpdate(getGroupInput());
 
   const [isUpdating, setIsUpdating] = useState(false);
@@ -47,16 +96,22 @@ export const EditGroupsDialog: React.FC<IListOperationProps> = (
     const aggregateRating = getAggregateRating(props.selected);
     const aggregateStudioId = getAggregateStudioId(props.selected);
     const aggregateTagIds = getAggregateTagIds(props.selected);
+    const aggregateGroups = getAggregateContainingGroups(props.selected);
 
     const groupInput: GQL.BulkGroupUpdateInput = {
       ids: props.selected.map((group) => group.id),
       director,
     };
 
-    // if rating is undefined
     groupInput.rating100 = getAggregateInputValue(rating100, aggregateRating);
     groupInput.studio_id = getAggregateInputValue(studioId, aggregateStudioId);
     groupInput.tag_ids = getAggregateInputIDs(tagMode, tagIds, aggregateTagIds);
+
+    groupInput.containing_groups = getAggregateContainingGroupInput(
+      containingGroupsMode,
+      containingGroups,
+      aggregateGroups
+    );
 
     return groupInput;
   }
@@ -85,17 +140,22 @@ export const EditGroupsDialog: React.FC<IListOperationProps> = (
     let updateRating: number | undefined;
     let updateStudioId: string | undefined;
     let updateTagIds: string[] = [];
+    let updateContainingGroupIds: IRelatedGroupEntry[] = [];
     let updateDirector: string | undefined;
     let first = true;
 
     state.forEach((group: GQL.GroupDataFragment) => {
       const groupTagIDs = (group.tags ?? []).map((p) => p.id).sort();
+      const groupContainingGroupIDs = (group.containing_groups ?? []).sort(
+        (a, b) => a.group.id.localeCompare(b.group.id)
+      );
 
       if (first) {
         first = false;
         updateRating = group.rating100 ?? undefined;
         updateStudioId = group.studio?.id ?? undefined;
         updateTagIds = groupTagIDs;
+        updateContainingGroupIds = groupContainingGroupIDs;
         updateDirector = group.director ?? undefined;
       } else {
         if (group.rating100 !== updateRating) {
@@ -110,12 +170,16 @@ export const EditGroupsDialog: React.FC<IListOperationProps> = (
         if (!isEqual(groupTagIDs, updateTagIds)) {
           updateTagIds = [];
         }
+        if (!isEqual(groupContainingGroupIDs, updateContainingGroupIds)) {
+          updateTagIds = [];
+        }
       }
     });
 
     setRating(updateRating);
     setStudioId(updateStudioId);
     setExistingTagIds(updateTagIds);
+    setExistingContainingGroups(updateContainingGroupIds);
     setDirector(updateDirector);
   }, [props.selected]);
 
@@ -165,6 +229,19 @@ export const EditGroupsDialog: React.FC<IListOperationProps> = (
                 isDisabled={isUpdating}
               />
             </Col>
+          </Form.Group>
+          <Form.Group controlId="containing-groups">
+            <Form.Label>
+              <FormattedMessage id="containing_groups" />
+            </Form.Label>
+            <ContainingGroupsMultiSet
+              disabled={isUpdating}
+              onUpdate={(v) => setGroups(v)}
+              onSetMode={(newMode) => setGroupMode(newMode)}
+              existingValue={existingContainingGroups ?? []}
+              value={containingGroups ?? []}
+              mode={containingGroupsMode}
+            />
           </Form.Group>
           <Form.Group controlId="director">
             <Form.Label>

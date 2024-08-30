@@ -13,6 +13,10 @@ import { DisplayMode } from "./types";
 import { RatingCriterionOption } from "./criteria/rating";
 // import { StudioTagsCriterionOption } from "./criteria/tags";
 import { TagsCriterionOption } from "./criteria/tags";
+import {
+  ContainingGroupsCriterionOption,
+  SubGroupsCriterionOption,
+} from "./criteria/groups";
 
 const defaultSortBy = "name";
 
@@ -23,6 +27,7 @@ const sortByOptions = [
   "duration",
   "rating",
   "tag_count",
+  "sub_group_order",
 ]
   .map(ListFilterOptions.createSortBy)
   .concat([
@@ -44,6 +49,10 @@ const criterionOptions = [
   RatingCriterionOption,
   PerformersCriterionOption,
   createDateCriterionOption("date"),
+  ContainingGroupsCriterionOption,
+  SubGroupsCriterionOption,
+  createMandatoryNumberCriterionOption("containing_group_count"),
+  createMandatoryNumberCriterionOption("sub_group_count"),
   TagsCriterionOption,
   createMandatoryNumberCriterionOption("tag_count"),
   createMandatoryTimestampCriterionOption("created_at"),

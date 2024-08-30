@@ -51,6 +51,14 @@ func (qb *groupFilterHandler) handle(ctx context.Context, f *filterBuilder) {
 	f.handleCriterion(ctx, qb.criterionHandler())
 }
 
+var groupHierarchyHandler = hierarchicalRelationshipHandler{
+	primaryTable:  groupTable,
+	relationTable: groupRelationsTable,
+	aliasPrefix:   groupTable,
+	parentIDCol:   "containing_id",
+	childIDCol:    "sub_id",
+}
+
 func (qb *groupFilterHandler) criterionHandler() criterionHandler {
 	groupFilter := qb.groupFilter
 	return compoundHandler{
@@ -66,6 +74,10 @@ func (qb *groupFilterHandler) criterionHandler() criterionHandler {
 		qb.tagsCriterionHandler(groupFilter.Tags),
 		qb.tagCountCriterionHandler(groupFilter.TagCount),
 		&dateCriterionHandler{groupFilter.Date, "groups.date", nil},
+		groupHierarchyHandler.ParentsCriterionHandler(groupFilter.ContainingGroups),
+		groupHierarchyHandler.ChildrenCriterionHandler(groupFilter.SubGroups),
+		groupHierarchyHandler.ParentCountCriterionHandler(groupFilter.ContainingGroupCount),
+		groupHierarchyHandler.ChildCountCriterionHandler(groupFilter.SubGroupCount),
 		&timestampCriterionHandler{groupFilter.CreatedAt, "groups.created_at", nil},
 		&timestampCriterionHandler{groupFilter.UpdatedAt, "groups.updated_at", nil},
 

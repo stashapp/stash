@@ -27,6 +27,8 @@ const (
 
 	groupURLsTable = "group_urls"
 	groupURLColumn = "url"
+
+	groupRelationsTable = "groups_relations"
 )
 
 type groupRow struct {
@@ -128,6 +130,7 @@ var (
 type GroupStore struct {
 	blobJoinQueryBuilder
 	tagRelationshipStore
+	groupRelationshipStore
 
 	tableMgr *table
 }
@@ -142,6 +145,9 @@ func NewGroupStore(blobStore *BlobStore) *GroupStore {
 			idRelationshipStore: idRelationshipStore{
 				joinTable: groupsTagsTableMgr,
 			},
+		},
+		groupRelationshipStore: groupRelationshipStore{
+			table: groupRelationshipTableMgr,
 		},
 
 		tableMgr: groupTableMgr,
@@ -173,6 +179,14 @@ func (qb *GroupStore) Create(ctx context.Context, newObject *models.Group) error
 	}
 
 	if err := qb.tagRelationshipStore.createRelationships(ctx, id, newObject.TagIDs); err != nil {
+		return err
+	}
+
+	if err := qb.groupRelationshipStore.createContainingRelationships(ctx, id, newObject.ContainingGroups); err != nil {
+		return err
+	}
+
+	if err := qb.groupRelationshipStore.createSubRelationships(ctx, id, newObject.SubGroups); err != nil {
 		return err
 	}
 
@@ -211,6 +225,14 @@ func (qb *GroupStore) UpdatePartial(ctx context.Context, id int, partial models.
 		return nil, err
 	}
 
+	if err := qb.groupRelationshipStore.modifyContainingRelationships(ctx, id, partial.ContainingGroups); err != nil {
+		return nil, err
+	}
+
+	if err := qb.groupRelationshipStore.modifySubRelationships(ctx, id, partial.SubGroups); err != nil {
+		return nil, err
+	}
+
 	return qb.find(ctx, id)
 }
 
@@ -229,6 +251,14 @@ func (qb *GroupStore) Update(ctx context.Context, updatedObject *models.Group) e
 	}
 
 	if err := qb.tagRelationshipStore.replaceRelationships(ctx, updatedObject.ID, updatedObject.TagIDs); err != nil {
+		return err
+	}
+
+	if err := qb.groupRelationshipStore.replaceContainingRelationships(ctx, updatedObject.ID, updatedObject.ContainingGroups); err != nil {
+		return err
+	}
+
+	if err := qb.groupRelationshipStore.replaceSubRelationships(ctx, updatedObject.ID, updatedObject.SubGroups); err != nil {
 		return err
 	}
 
@@ -412,9 +442,7 @@ func (qb *GroupStore) makeQuery(ctx context.Context, groupFilter *models.GroupFi
 		return nil, err
 	}
 
-	var err error
-	query.sortAndPagination, err = qb.getGroupSort(findFilter)
-	if err != nil {
+	if err := qb.setGroupSort(&query, findFilter); err != nil {
 		return nil, err
 	}
 
@@ -460,11 +488,12 @@ var groupSortOptions = sortOptions{
 	"random",
 	"rating",
 	"scenes_count",
+	"sub_group_order",
 	"tag_count",
 	"updated_at",
 }
 
-func (qb *GroupStore) getGroupSort(findFilter *models.FindFilterType) (string, error) {
+func (qb *GroupStore) setGroupSort(query *queryBuilder, findFilter *models.FindFilterType) error {
 	var sort string
 	var direction string
 	if findFilter == nil {
@@ -477,22 +506,31 @@ func (qb *GroupStore) getGroupSort(findFilter *models.FindFilterType) (string, e
 
 	// CVE-2024-32231 - ensure sort is in the list of allowed sorts
 	if err := groupSortOptions.validateSort(sort); err != nil {
-		return "", err
+		return err
 	}
 
-	sortQuery := ""
 	switch sort {
+	case "sub_group_order":
+		// sub_group_order is a special sort that sorts by the order_index of the subgroups
+		if query.hasJoin("groups_parents") {
+			query.sortAndPagination += getSort("order_index", direction, "groups_parents")
+		} else {
+			// this will give unexpected results if the query is not filtered by a parent group and
+			// the group has multiple parents and order indexes
+			query.join(groupRelationsTable, "", "groups.id = groups_relations.sub_id")
+			query.sortAndPagination += getSort("order_index", direction, groupRelationsTable)
+		}
 	case "tag_count":
-		sortQuery += getCountSort(groupTable, groupsTagsTable, groupIDColumn, direction)
+		query.sortAndPagination += getCountSort(groupTable, groupsTagsTable, groupIDColumn, direction)
 	case "scenes_count": // generic getSort won't work for this
-		sortQuery += getCountSort(groupTable, groupsScenesTable, groupIDColumn, direction)
+		query.sortAndPagination += getCountSort(groupTable, groupsScenesTable, groupIDColumn, direction)
 	default:
-		sortQuery += getSort(sort, direction, "groups")
+		query.sortAndPagination += getSort(sort, direction, "groups")
 	}
 
 	// Whatever the sorting, always use name/id as a final sort
-	sortQuery += ", COALESCE(groups.name, groups.id) COLLATE NATURAL_CI ASC"
-	return sortQuery, nil
+	query.sortAndPagination += ", COALESCE(groups.name, groups.id) COLLATE NATURAL_CI ASC"
+	return nil
 }
 
 func (qb *GroupStore) queryGroups(ctx context.Context, query string, args []interface{}) ([]*models.Group, error) {
@@ -591,4 +629,75 @@ WHERE groups.studio_id = ?
 
 func (qb *GroupStore) GetURLs(ctx context.Context, groupID int) ([]string, error) {
 	return groupsURLsTableMgr.get(ctx, groupID)
+}
+
+// FindSubGroupIDs returns a list of group IDs where a group in the ids list is a sub-group of the parent group
+func (qb *GroupStore) FindSubGroupIDs(ctx context.Context, containingID int, ids []int) ([]int, error) {
+	/*
+		SELECT gr.sub_id FROM groups_relations gr
+		WHERE gr.containing_id = :parentID AND gr.sub_id IN (:ids);
+	*/
+	table := groupRelationshipTableMgr.table
+	q := dialect.From(table).Prepared(true).
+		Select(table.Col("sub_id")).Where(
+		table.Col("containing_id").Eq(containingID),
+		table.Col("sub_id").In(ids),
+	)
+
+	const single = false
+	var ret []int
+	if err := queryFunc(ctx, q, single, func(r *sqlx.Rows) error {
+		var id int
+		if err := r.Scan(&id); err != nil {
+			return err
+		}
+
+		ret = append(ret, id)
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+}
+
+// FindInAscestors returns a list of group IDs where a group in the ids list is an ascestor of the ancestor group IDs
+func (qb *GroupStore) FindInAncestors(ctx context.Context, ascestorIDs []int, ids []int) ([]int, error) {
+	/*
+		WITH RECURSIVE ascestors AS (
+		 SELECT g.id AS parent_id FROM groups g WHERE g.id IN (:ascestorIDs)
+		 UNION
+		 SELECT gr.containing_id FROM groups_relations gr INNER JOIN ascestors a ON a.parent_id = gr.sub_id
+		)
+		SELECT p.parent_id FROM ascestors p WHERE p.parent_id IN (:ids);
+	*/
+	table := qb.table()
+	const ascestors = "ancestors"
+	const parentID = "parent_id"
+	q := dialect.From(ascestors).Prepared(true).
+		WithRecursive(ascestors,
+			dialect.From(qb.table()).Select(table.Col(idColumn).As(parentID)).
+				Where(table.Col(idColumn).In(ascestorIDs)).
+				Union(
+					dialect.From(groupRelationsJoinTable).InnerJoin(
+						goqu.I(ascestors), goqu.On(goqu.I("parent_id").Eq(goqu.I("sub_id"))),
+					).Select("containing_id"),
+				),
+		).Select(parentID).Where(goqu.I(parentID).In(ids))
+
+	const single = false
+	var ret []int
+	if err := queryFunc(ctx, q, single, func(r *sqlx.Rows) error {
+		var id int
+		if err := r.Scan(&id); err != nil {
+			return err
+		}
+
+		ret = append(ret, id)
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
 }

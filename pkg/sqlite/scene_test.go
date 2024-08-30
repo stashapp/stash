@@ -16,6 +16,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/sliceutil"
+	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -2217,7 +2218,7 @@ func TestSceneQuery(t *testing.T) {
 				},
 			})
 			if (err != nil) != tt.wantErr {
-				t.Errorf("PerformerStore.Query() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("SceneStore.Query() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 
@@ -3873,6 +3874,100 @@ func TestSceneQueryStudioDepth(t *testing.T) {
 	})
 }
 
+func TestSceneGroups(t *testing.T) {
+	type criterion struct {
+		valueIdxs []int
+		modifier  models.CriterionModifier
+		depth     int
+	}
+
+	tests := []struct {
+		name        string
+		c           criterion
+		q           string
+		includeIdxs []int
+		excludeIdxs []int
+	}{
+		{
+			"includes",
+			criterion{
+				[]int{groupIdxWithScene},
+				models.CriterionModifierIncludes,
+				0,
+			},
+			"",
+			[]int{sceneIdxWithGroup},
+			nil,
+		},
+		{
+			"excludes",
+			criterion{
+				[]int{groupIdxWithScene},
+				models.CriterionModifierExcludes,
+				0,
+			},
+			getSceneStringValue(sceneIdxWithGroup, titleField),
+			nil,
+			[]int{sceneIdxWithGroup},
+		},
+		{
+			"includes (depth = 1)",
+			criterion{
+				[]int{groupIdxWithChildWithScene},
+				models.CriterionModifierIncludes,
+				1,
+			},
+			"",
+			[]int{sceneIdxWithGroupWithParent},
+			nil,
+		},
+	}
+
+	for _, tt := range tests {
+		valueIDs := indexesToIDs(groupIDs, tt.c.valueIdxs)
+
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+
+			sceneFilter := &models.SceneFilterType{
+				Groups: &models.HierarchicalMultiCriterionInput{
+					Value:    intslice.IntSliceToStringSlice(valueIDs),
+					Modifier: tt.c.modifier,
+				},
+			}
+
+			if tt.c.depth != 0 {
+				sceneFilter.Groups.Depth = &tt.c.depth
+			}
+
+			findFilter := &models.FindFilterType{}
+			if tt.q != "" {
+				findFilter.Q = &tt.q
+			}
+
+			results, err := db.Scene.Query(ctx, models.SceneQueryOptions{
+				SceneFilter: sceneFilter,
+				QueryOptions: models.QueryOptions{
+					FindFilter: findFilter,
+				},
+			})
+			if err != nil {
+				t.Errorf("SceneStore.Query() error = %v", err)
+				return
+			}
+
+			include := indexesToIDs(sceneIDs, tt.includeIdxs)
+			exclude := indexesToIDs(sceneIDs, tt.excludeIdxs)
+
+			assert.Subset(results.IDs, include)
+
+			for _, e := range exclude {
+				assert.NotContains(results.IDs, e)
+			}
+		})
+	}
+}
+
 func TestSceneQueryMovies(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
 		sqb := db.Scene
@@ -4183,78 +4278,6 @@ func verifyScenesPerformerCount(t *testing.T, performerCountCriterion models.Int
 
 			verifyInt(t, len(scene.PerformerIDs.List()), performerCountCriterion)
 		}
-
-		return nil
-	})
-}
-
-func TestSceneCountByTagID(t *testing.T) {
-	withTxn(func(ctx context.Context) error {
-		sqb := db.Scene
-
-		sceneCount, err := sqb.CountByTagID(ctx, tagIDs[tagIdxWithScene])
-
-		if err != nil {
-			t.Errorf("error calling CountByTagID: %s", err.Error())
-		}
-
-		assert.Equal(t, 1, sceneCount)
-
-		sceneCount, err = sqb.CountByTagID(ctx, 0)
-
-		if err != nil {
-			t.Errorf("error calling CountByTagID: %s", err.Error())
-		}
-
-		assert.Equal(t, 0, sceneCount)
-
-		return nil
-	})
-}
-
-func TestSceneCountByGroupID(t *testing.T) {
-	withTxn(func(ctx context.Context) error {
-		sqb := db.Scene
-
-		sceneCount, err := sqb.CountByGroupID(ctx, groupIDs[groupIdxWithScene])
-
-		if err != nil {
-			t.Errorf("error calling CountByGroupID: %s", err.Error())
-		}
-
-		assert.Equal(t, 1, sceneCount)
-
-		sceneCount, err = sqb.CountByGroupID(ctx, 0)
-
-		if err != nil {
-			t.Errorf("error calling CountByGroupID: %s", err.Error())
-		}
-
-		assert.Equal(t, 0, sceneCount)
-
-		return nil
-	})
-}
-
-func TestSceneCountByStudioID(t *testing.T) {
-	withTxn(func(ctx context.Context) error {
-		sqb := db.Scene
-
-		sceneCount, err := sqb.CountByStudioID(ctx, studioIDs[studioIdxWithScene])
-
-		if err != nil {
-			t.Errorf("error calling CountByStudioID: %s", err.Error())
-		}
-
-		assert.Equal(t, 1, sceneCount)
-
-		sceneCount, err = sqb.CountByStudioID(ctx, 0)
-
-		if err != nil {
-			t.Errorf("error calling CountByStudioID: %s", err.Error())
-		}
-
-		assert.Equal(t, 0, sceneCount)
 
 		return nil
 	})
