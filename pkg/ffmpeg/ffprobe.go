@@ -147,7 +147,16 @@ func (f *FFProbe) Path() string {
 
 // NewVideoFile runs ffprobe on the given path and returns a VideoFile.
 func (f *FFProbe) NewVideoFile(videoPath string) (*VideoFile, error) {
-	args := []string{"-v", "quiet", "-print_format", "json", "-show_format", "-show_streams", "-show_error", videoPath}
+	args := []string{
+		"-v",
+		"quiet",
+		"-print_format", "json",
+		"-show_format",
+		"-show_streams",
+		"-show_error",
+		"-show_entries", "stream_side_data=rotation",
+		videoPath,
+	}
 	cmd := stashExec.Command(string(*f), args...)
 	out, err := cmd.Output()
 
@@ -246,13 +255,14 @@ func parse(filePath string, probeJSON *FFProbeJSON) (*VideoFile, error) {
 			framerate = 0
 		}
 		result.FrameRate = math.Round(framerate*100) / 100
-		if rotate, err := strconv.ParseInt(videoStream.Tags.Rotate, 10, 64); err == nil && rotate != 180 {
+		result.Width = videoStream.Width
+		result.Height = videoStream.Height
+
+		if isRotated(videoStream) {
 			result.Width = videoStream.Height
 			result.Height = videoStream.Width
-		} else {
-			result.Width = videoStream.Width
-			result.Height = videoStream.Height
 		}
+
 		result.VideoStreamDuration, err = strconv.ParseFloat(videoStream.Duration, 64)
 		if err != nil {
 			// Revert to the historical behaviour, which is still correct in the vast majority of cases.
@@ -261,6 +271,25 @@ func parse(filePath string, probeJSON *FFProbeJSON) (*VideoFile, error) {
 	}
 
 	return result, nil
+}
+
+func isRotated(s *FFProbeStream) bool {
+	rotate, _ := strconv.ParseInt(s.Tags.Rotate, 10, 64)
+	if rotate != 180 && rotate != 0 {
+		return true
+	}
+
+	for _, sd := range s.SideDataList {
+		r := sd.Rotation
+		if r < 0 {
+			r = -r
+		}
+		if r != 0 && r != 180 {
+			return true
+		}
+	}
+
+	return false
 }
 
 func (v *VideoFile) getAudioStream() *FFProbeStream {
