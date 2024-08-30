@@ -305,7 +305,7 @@ func (s *Manager) RefreshFFMpeg(ctx context.Context) {
 		logger.Debugf("using ffprobe: %s", ffprobePath)
 
 		s.FFMpeg = ffmpeg.NewEncoder(ffmpegPath)
-		s.FFProbe = ffmpeg.FFProbe(ffprobePath)
+		s.FFProbe = ffmpeg.NewFFProbe(ffprobePath)
 
 		s.FFMpeg.InitHWSupport(ctx)
 	}

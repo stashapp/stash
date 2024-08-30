@@ -19,7 +19,7 @@ import (
 
 // Decorator adds image specific fields to a File.
 type Decorator struct {
-	FFProbe ffmpeg.FFProbe
+	FFProbe *ffmpeg.FFProbe
 }
 
 func (d *Decorator) Decorate(ctx context.Context, fs models.FS, f models.File) (models.File, error) {

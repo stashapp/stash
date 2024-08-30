@@ -1,12 +1,14 @@
 package ffmpeg
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"math"
 	"os"
 	"os/exec"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -15,6 +17,8 @@ import (
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 )
+
+const minimumFFProbeVersion = 5
 
 func ValidateFFProbe(ffprobePath string) error {
 	cmd := stashExec.Command(ffprobePath, "-h")
@@ -139,10 +143,73 @@ func (v *VideoFile) TranscodeScale(maxSize int) (int, int) {
 }
 
 // FFProbe provides an interface to the ffprobe executable.
-type FFProbe string
+type FFProbe struct {
+	path    string
+	version Version
+}
 
 func (f *FFProbe) Path() string {
-	return string(*f)
+	return f.path
+}
+
+var ffprobeVersionRE = regexp.MustCompile(`ffprobe version n?((\d+)\.(\d+)(?:\.(\d+))?)`)
+
+func (f *FFProbe) getVersion() error {
+	var args []string
+	args = append(args, "-version")
+	cmd := stashExec.Command(f.path, args...)
+
+	var stdout bytes.Buffer
+	cmd.Stdout = &stdout
+
+	var err error
+	if err = cmd.Run(); err != nil {
+		return err
+	}
+
+	stdoutStr := stdout.String()
+	match := ffprobeVersionRE.FindStringSubmatchIndex(stdoutStr)
+	if match == nil {
+		return errors.New("version string malformed")
+	}
+
+	majorS := stdoutStr[match[4]:match[5]]
+	minorS := stdoutStr[match[6]:match[7]]
+
+	// patch is optional
+	var patchS string
+	if match[8] != -1 && match[9] != -1 {
+		patchS = stdoutStr[match[8]:match[9]]
+	}
+
+	if i, err := strconv.Atoi(majorS); err == nil {
+		f.version.major = i
+	}
+	if i, err := strconv.Atoi(minorS); err == nil {
+		f.version.minor = i
+	}
+	if i, err := strconv.Atoi(patchS); err == nil {
+		f.version.patch = i
+	}
+	logger.Debugf("FFProbe version %s detected", f.version.String())
+
+	return nil
+}
+
+// Creates a new FFProbe instance.
+func NewFFProbe(path string) *FFProbe {
+	ret := &FFProbe{
+		path: path,
+	}
+	if err := ret.getVersion(); err != nil {
+		logger.Warnf("FFProbe version not detected %v", err)
+	}
+
+	if ret.version.major != 0 && ret.version.major < minimumFFProbeVersion {
+		logger.Warnf("FFProbe version %d.%d.%d detected, but %d.x or later is required", ret.version.major, ret.version.minor, ret.version.patch, minimumFFProbeVersion)
+	}
+
+	return ret
 }
 
 // NewVideoFile runs ffprobe on the given path and returns a VideoFile.
@@ -154,10 +221,16 @@ func (f *FFProbe) NewVideoFile(videoPath string) (*VideoFile, error) {
 		"-show_format",
 		"-show_streams",
 		"-show_error",
-		"-show_entries", "stream_side_data=rotation",
-		videoPath,
 	}
-	cmd := stashExec.Command(string(*f), args...)
+
+	// show_entries stream_side_data=rotation requires 5.x or later ffprobe
+	if f.version.major >= 5 {
+		args = append(args, "-show_entries", "stream_side_data=rotation")
+	}
+
+	args = append(args, videoPath)
+
+	cmd := stashExec.Command(f.path, args...)
 	out, err := cmd.Output()
 
 	if err != nil {
@@ -176,7 +249,7 @@ func (f *FFProbe) NewVideoFile(videoPath string) (*VideoFile, error) {
 // Used when the frame count is missing or incorrect.
 func (f *FFProbe) GetReadFrameCount(path string) (int64, error) {
 	args := []string{"-v", "quiet", "-print_format", "json", "-count_frames", "-show_format", "-show_streams", "-show_error", path}
-	out, err := stashExec.Command(string(*f), args...).Output()
+	out, err := stashExec.Command(f.path, args...).Output()
 
 	if err != nil {
 		return 0, fmt.Errorf("FFProbe encountered an error with <%s>.\nError JSON:\n%s\nError: %s", path, string(out), err.Error())

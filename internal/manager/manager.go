@@ -43,7 +43,7 @@ type Manager struct {
 	Paths *paths.Paths
 
 	FFMpeg        *ffmpeg.FFMpeg
-	FFProbe       ffmpeg.FFProbe
+	FFProbe       *ffmpeg.FFProbe
 	StreamManager *ffmpeg.StreamManager
 
 	JobManager      *job.Manager
@@ -299,7 +299,7 @@ func (s *Manager) Setup(ctx context.Context, input SetupInput) error {
 }
 
 func (s *Manager) validateFFmpeg() error {
-	if s.FFMpeg == nil || s.FFProbe == "" {
+	if s.FFMpeg == nil || s.FFProbe == nil {
 		return errors.New("missing ffmpeg and/or ffprobe")
 	}
 	return nil
@@ -399,7 +399,7 @@ func (s *Manager) GetSystemStatus() *SystemStatus {
 	}
 
 	ffprobePath := ""
-	if s.FFProbe != "" {
+	if s.FFProbe != nil {
 		ffprobePath = s.FFProbe.Path()
 	}
 
