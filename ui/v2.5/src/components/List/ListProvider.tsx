@@ -66,6 +66,26 @@ export function useListContext<T extends IHasID = IHasID>() {
   return context as IListContextState<T>;
 }
 
+const emptyState: IListContextState = {
+  selectable: false,
+  selectedIds: new Set(),
+  getSelected: () => [],
+  onSelectChange: () => {},
+  onSelectAll: () => {},
+  onSelectNone: () => {},
+  items: [],
+};
+
+export function useListContextOptional<T extends IHasID = IHasID>() {
+  const context = React.useContext(ListStateContext);
+
+  if (context === null) {
+    return emptyState as IListContextState<T>;
+  }
+
+  return context as IListContextState<T>;
+}
+
 interface IQueryResultContextOptions<
   T extends QueryResult,
   E extends IHasID = IHasID

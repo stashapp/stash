@@ -37,10 +37,7 @@ type SceneQueryer interface {
 type SceneCounter interface {
 	Count(ctx context.Context) (int, error)
 	CountByPerformerID(ctx context.Context, performerID int) (int, error)
-	CountByGroupID(ctx context.Context, groupID int) (int, error)
 	CountByFileID(ctx context.Context, fileID FileID) (int, error)
-	CountByStudioID(ctx context.Context, studioID int) (int, error)
-	CountByTagID(ctx context.Context, tagID int) (int, error)
 	CountMissingChecksum(ctx context.Context) (int, error)
 	CountMissingOSHash(ctx context.Context) (int, error)
 	OCountByPerformerID(ctx context.Context, performerID int) (int, error)

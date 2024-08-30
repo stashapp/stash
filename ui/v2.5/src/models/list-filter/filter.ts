@@ -488,6 +488,12 @@ export class ListFilterModel {
     return ret;
   }
 
+  public setPageSize(pageSize: number) {
+    const ret = this.clone();
+    ret.itemsPerPage = pageSize;
+    return ret;
+  }
+
   public changePage(page: number) {
     const ret = this.clone();
     ret.currentPage = page;

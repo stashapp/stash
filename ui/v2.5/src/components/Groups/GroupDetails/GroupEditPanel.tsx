@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import * as yup from "yup";
@@ -26,6 +26,8 @@ import {
 } from "src/utils/yup";
 import { Studio, StudioSelect } from "src/components/Studios/StudioSelect";
 import { useTagsEdit } from "src/hooks/tagsEdit";
+import { Group } from "src/components/Groups/GroupSelect";
+import { RelatedGroupTable, IRelatedGroupEntry } from "./RelatedGroupTable";
 
 interface IGroupEditPanel {
   group: Partial<GQL.GroupDataFragment>;
@@ -60,6 +62,7 @@ export const GroupEditPanel: React.FC<IGroupEditPanel> = ({
   const [scrapedGroup, setScrapedGroup] = useState<GQL.ScrapedGroup>();
 
   const [studio, setStudio] = useState<Studio | null>(null);
+  const [containingGroups, setContainingGroups] = useState<Group[]>([]);
 
   const schema = yup.object({
     name: yup.string().required(),
@@ -68,6 +71,14 @@ export const GroupEditPanel: React.FC<IGroupEditPanel> = ({
     date: yupDateString(intl),
     studio_id: yup.string().required().nullable(),
     tag_ids: yup.array(yup.string().required()).defined(),
+    containing_groups: yup
+      .array(
+        yup.object({
+          group_id: yup.string().required(),
+          description: yup.string().nullable().ensure(),
+        })
+      )
+      .defined(),
     director: yup.string().ensure(),
     urls: yupUniqueStringList(intl),
     synopsis: yup.string().ensure(),
@@ -82,6 +93,9 @@ export const GroupEditPanel: React.FC<IGroupEditPanel> = ({
     date: group?.date ?? "",
     studio_id: group?.studio?.id ?? null,
     tag_ids: (group?.tags ?? []).map((t) => t.id),
+    containing_groups: (group?.containing_groups ?? []).map((m) => {
+      return { group_id: m.group.id, description: m.description ?? "" };
+    }),
     director: group?.director ?? "",
     urls: group?.urls ?? [],
     synopsis: group?.synopsis ?? "",
@@ -101,6 +115,17 @@ export const GroupEditPanel: React.FC<IGroupEditPanel> = ({
     (ids) => formik.setFieldValue("tag_ids", ids)
   );
 
+  const containingGroupEntries = useMemo(() => {
+    return formik.values.containing_groups
+      .map((m) => {
+        return {
+          group: containingGroups.find((mm) => mm.id === m.group_id),
+          description: m.description,
+        };
+      })
+      .filter((m) => m.group !== undefined) as IRelatedGroupEntry[];
+  }, [formik.values.containing_groups, containingGroups]);
+
   function onSetStudio(item: Studio | null) {
     setStudio(item);
     formik.setFieldValue("studio_id", item ? item.id : null);
@@ -109,6 +134,10 @@ export const GroupEditPanel: React.FC<IGroupEditPanel> = ({
   useEffect(() => {
     setStudio(group.studio ?? null);
   }, [group.studio]);
+
+  useEffect(() => {
+    setContainingGroups(group.containing_groups?.map((m) => m.group) ?? []);
+  }, [group.containing_groups]);
 
   // set up hotkeys
   useEffect(() => {
@@ -366,6 +395,30 @@ export const GroupEditPanel: React.FC<IGroupEditPanel> = ({
     return renderField("tag_ids", title, tagsControl());
   }
 
+  function onSetContainingGroupEntries(input: IRelatedGroupEntry[]) {
+    setContainingGroups(input.map((m) => m.group));
+
+    const newGroups = input.map((m) => ({
+      group_id: m.group.id,
+      description: m.description,
+    }));
+
+    formik.setFieldValue("containing_groups", newGroups);
+  }
+
+  function renderContainingGroupsField() {
+    const title = intl.formatMessage({ id: "containing_groups" });
+    const control = (
+      <RelatedGroupTable
+        value={containingGroupEntries}
+        onUpdate={onSetContainingGroupEntries}
+        excludeIDs={group.id ? [group.id] : undefined}
+      />
+    );
+
+    return renderField("containing_groups", title, control);
+  }
+
   // TODO: CSS class
   return (
     <div>
@@ -394,6 +447,7 @@ export const GroupEditPanel: React.FC<IGroupEditPanel> = ({
         {renderInputField("aliases")}
         {renderDurationField("duration")}
         {renderDateField("date")}
+        {renderContainingGroupsField()}
         {renderStudioField()}
         {renderInputField("director")}
         {renderURLListField("urls", onScrapeGroupURL, urlScrapable)}

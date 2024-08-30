@@ -327,6 +327,7 @@ func (t *ImportTask) importStudio(ctx context.Context, studioJSON *jsonschema.St
 
 func (t *ImportTask) ImportGroups(ctx context.Context) {
 	logger.Info("[groups] importing")
+	pendingSubs := make(map[string][]*jsonschema.Group)
 
 	path := t.json.json.Groups
 	files, err := os.ReadDir(path)
@@ -351,22 +352,70 @@ func (t *ImportTask) ImportGroups(ctx context.Context) {
 		logger.Progressf("[groups] %d of %d", index, len(files))
 
 		if err := r.WithTxn(ctx, func(ctx context.Context) error {
-			groupImporter := &group.Importer{
-				ReaderWriter:        r.Group,
-				StudioWriter:        r.Studio,
-				TagWriter:           r.Tag,
-				Input:               *groupJSON,
-				MissingRefBehaviour: t.MissingRefBehaviour,
+			return t.importGroup(ctx, groupJSON, pendingSubs, false)
+		}); err != nil {
+			var subError group.SubGroupNotExistError
+			if errors.As(err, &subError) {
+				missingSub := subError.MissingSubGroup()
+				pendingSubs[missingSub] = append(pendingSubs[missingSub], groupJSON)
+				continue
 			}
 
-			return performImport(ctx, groupImporter, t.DuplicateBehaviour)
-		}); err != nil {
-			logger.Errorf("[groups] <%s> import failed: %v", fi.Name(), err)
+			logger.Errorf("[groups] <%s> failed to import: %v", fi.Name(), err)
 			continue
 		}
 	}
 
+	for _, s := range pendingSubs {
+		for _, orphanGroupJSON := range s {
+			if err := r.WithTxn(ctx, func(ctx context.Context) error {
+				return t.importGroup(ctx, orphanGroupJSON, nil, true)
+			}); err != nil {
+				logger.Errorf("[groups] <%s> failed to create: %v", orphanGroupJSON.Name, err)
+				continue
+			}
+		}
+	}
+
 	logger.Info("[groups] import complete")
+}
+
+func (t *ImportTask) importGroup(ctx context.Context, groupJSON *jsonschema.Group, pendingSub map[string][]*jsonschema.Group, fail bool) error {
+	r := t.repository
+
+	importer := &group.Importer{
+		ReaderWriter:        r.Group,
+		StudioWriter:        r.Studio,
+		TagWriter:           r.Tag,
+		Input:               *groupJSON,
+		MissingRefBehaviour: t.MissingRefBehaviour,
+	}
+
+	// first phase: return error if parent does not exist
+	if !fail {
+		importer.MissingRefBehaviour = models.ImportMissingRefEnumFail
+	}
+
+	if err := performImport(ctx, importer, t.DuplicateBehaviour); err != nil {
+		return err
+	}
+
+	for _, containingGroupJSON := range pendingSub[groupJSON.Name] {
+		if err := t.importGroup(ctx, containingGroupJSON, pendingSub, fail); err != nil {
+			var subError group.SubGroupNotExistError
+			if errors.As(err, &subError) {
+				missingSub := subError.MissingSubGroup()
+				pendingSub[missingSub] = append(pendingSub[missingSub], containingGroupJSON)
+				continue
+			}
+
+			return fmt.Errorf("failed to create containing group <%s>: %v", containingGroupJSON.Name, err)
+		}
+	}
+
+	delete(pendingSub, groupJSON.Name)
+
+	return nil
 }
 
 func (t *ImportTask) ImportFiles(ctx context.Context) {

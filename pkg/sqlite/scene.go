@@ -791,13 +791,6 @@ func (qb *SceneStore) FindByGroupID(ctx context.Context, groupID int) ([]*models
 	return ret, nil
 }
 
-func (qb *SceneStore) CountByGroupID(ctx context.Context, groupID int) (int, error) {
-	joinTable := scenesGroupsJoinTable
-
-	q := dialect.Select(goqu.COUNT("*")).From(joinTable).Where(joinTable.Col(groupIDColumn).Eq(groupID))
-	return count(ctx, q)
-}
-
 func (qb *SceneStore) Count(ctx context.Context) (int, error) {
 	q := dialect.Select(goqu.COUNT("*")).From(qb.table())
 	return count(ctx, q)
@@ -858,17 +851,11 @@ func (qb *SceneStore) PlayDuration(ctx context.Context) (float64, error) {
 	return ret, nil
 }
 
+// TODO - currently only used by unit test
 func (qb *SceneStore) CountByStudioID(ctx context.Context, studioID int) (int, error) {
 	table := qb.table()
 
 	q := dialect.Select(goqu.COUNT("*")).From(table).Where(table.Col(studioIDColumn).Eq(studioID))
-	return count(ctx, q)
-}
-
-func (qb *SceneStore) CountByTagID(ctx context.Context, tagID int) (int, error) {
-	joinTable := scenesTagsJoinTable
-
-	q := dialect.Select(goqu.COUNT("*")).From(joinTable).Where(joinTable.Col(tagIDColumn).Eq(tagID))
 	return count(ctx, q)
 }
 

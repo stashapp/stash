@@ -1134,6 +1134,10 @@ func (t *ExportTask) exportGroup(ctx context.Context, wg *sync.WaitGroup, jobCha
 			logger.Errorf("[groups] <%s> error getting group urls: %v", m.Name, err)
 			continue
 		}
+		if err := m.LoadSubGroupIDs(ctx, r.Group); err != nil {
+			logger.Errorf("[groups] <%s> error getting group sub-groups: %v", m.Name, err)
+			continue
+		}
 
 		newGroupJSON, err := group.ToJSON(ctx, groupReader, studioReader, m)
 
@@ -1149,6 +1153,25 @@ func (t *ExportTask) exportGroup(ctx context.Context, wg *sync.WaitGroup, jobCha
 		}
 
 		newGroupJSON.Tags = tag.GetNames(tags)
+
+		subGroups := m.SubGroups.List()
+		if err := func() error {
+			for _, sg := range subGroups {
+				subGroup, err := groupReader.Find(ctx, sg.GroupID)
+				if err != nil {
+					return fmt.Errorf("error getting sub group: %v", err)
+				}
+
+				newGroupJSON.SubGroups = append(newGroupJSON.SubGroups, jsonschema.SubGroupDescription{
+					// TODO - this won't be unique
+					Group:       subGroup.Name,
+					Description: sg.Description,
+				})
+			}
+			return nil
+		}(); err != nil {
+			logger.Errorf("[groups] <%s> %v", m.Name, err)
+		}
 
 		if t.includeDependencies {
 			if m.StudioID != nil {

@@ -5,7 +5,9 @@ import (
 
 	"github.com/stashapp/stash/internal/api/loaders"
 	"github.com/stashapp/stash/internal/api/urlbuilders"
+	"github.com/stashapp/stash/pkg/group"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/scene"
 )
 
 func (r *groupResolver) Date(ctx context.Context, obj *models.Group) (*string, error) {
@@ -71,6 +73,68 @@ func (r groupResolver) Tags(ctx context.Context, obj *models.Group) (ret []*mode
 	return ret, firstError(errs)
 }
 
+func (r groupResolver) relatedGroups(ctx context.Context, rgd models.RelatedGroupDescriptions) (ret []*GroupDescription, err error) {
+	// rgd must be loaded
+	gds := rgd.List()
+	ids := make([]int, len(gds))
+	for i, gd := range gds {
+		ids[i] = gd.GroupID
+	}
+
+	groups, errs := loaders.From(ctx).GroupByID.LoadAll(ids)
+
+	err = firstError(errs)
+	if err != nil {
+		return
+	}
+
+	ret = make([]*GroupDescription, len(groups))
+	for i, group := range groups {
+		ret[i] = &GroupDescription{Group: group}
+		d := gds[i].Description
+		if d != "" {
+			ret[i].Description = &d
+		}
+	}
+
+	return ret, firstError(errs)
+}
+
+func (r groupResolver) ContainingGroups(ctx context.Context, obj *models.Group) (ret []*GroupDescription, err error) {
+	if !obj.ContainingGroups.Loaded() {
+		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+			return obj.LoadContainingGroupIDs(ctx, r.repository.Group)
+		}); err != nil {
+			return nil, err
+		}
+	}
+
+	return r.relatedGroups(ctx, obj.ContainingGroups)
+}
+
+func (r groupResolver) SubGroups(ctx context.Context, obj *models.Group) (ret []*GroupDescription, err error) {
+	if !obj.SubGroups.Loaded() {
+		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+			return obj.LoadSubGroupIDs(ctx, r.repository.Group)
+		}); err != nil {
+			return nil, err
+		}
+	}
+
+	return r.relatedGroups(ctx, obj.SubGroups)
+}
+
+func (r *groupResolver) SubGroupCount(ctx context.Context, obj *models.Group, depth *int) (ret int, err error) {
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+		ret, err = group.CountByContainingGroupID(ctx, r.repository.Group, obj.ID, depth)
+		return err
+	}); err != nil {
+		return 0, err
+	}
+
+	return ret, nil
+}
+
 func (r *groupResolver) FrontImagePath(ctx context.Context, obj *models.Group) (*string, error) {
 	var hasImage bool
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
@@ -106,9 +170,9 @@ func (r *groupResolver) BackImagePath(ctx context.Context, obj *models.Group) (*
 	return &imagePath, nil
 }
 
-func (r *groupResolver) SceneCount(ctx context.Context, obj *models.Group) (ret int, err error) {
+func (r *groupResolver) SceneCount(ctx context.Context, obj *models.Group, depth *int) (ret int, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		ret, err = r.repository.Scene.CountByGroupID(ctx, obj.ID)
+		ret, err = scene.CountByGroupID(ctx, r.repository.Scene, obj.ID, depth)
 		return err
 	}); err != nil {
 		return 0, err
