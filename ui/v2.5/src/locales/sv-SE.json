@@ -135,7 +135,13 @@
         "clear_date_data": "Rensa datumdata",
         "clean_generated": "Rensa genererade filer",
         "remove_date": "Ta bort datum",
-        "view_history": "Visningshistorik"
+        "view_history": "Visningshistorik",
+        "reset_cover": "Återställ Standardomslag",
+        "reset_play_duration": "Återställ uppspelad tid",
+        "add_sub_groups": "Lägg Till Undergrupper",
+        "remove_from_containing_group": "Ta bort från Grupp",
+        "reset_resume_time": "Återställ återupptagningstid",
+        "set_cover": "Välj som Omslag"
     },
     "actions_name": "Handlingar",
     "age": "Ålder",
@@ -1473,5 +1479,14 @@
     "studio_count": "Antal Studior",
     "studio_tags": "Studiotaggar",
     "include_sub_studio_content": "Inkludera innehåll från underordnade studior",
-    "include_sub_tag_content": "Inkludera innehåll från underordnade taggar"
+    "include_sub_tag_content": "Inkludera innehåll från underordnade taggar",
+    "containing_group": "Innehållande grupp",
+    "containing_group_count": "Antal Innehållande Grupper",
+    "containing_groups": "Innehållande Grupper",
+    "include_sub_group_content": "Inkludera innehåll från undergrupper",
+    "sub_group_count": "Antal Undergrupper",
+    "sub_group_of": "Undergrupp av {parent}",
+    "sub_group_order": "Ordning av Undergrupper",
+    "sub_groups": "Undergrupper",
+    "sub_group": "Undergrupp"
 }
