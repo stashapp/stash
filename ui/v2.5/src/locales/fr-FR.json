@@ -135,7 +135,13 @@
         "reload": "Actualiser",
         "remove_date": "Supprimer la date",
         "clean_generated": "Nettoyer les fichiers générés",
-        "view_history": "Voir l'historique"
+        "view_history": "Voir l'historique",
+        "reset_cover": "Rétablir la vignette par défaut",
+        "reset_play_duration": "Réinitialiser la durée de lecture",
+        "reset_resume_time": "Réinitialiser le temps de reprise",
+        "set_cover": "Définir comme vignette",
+        "remove_from_containing_group": "Supprimer du groupe",
+        "add_sub_groups": "Ajouter des groupes affiliés"
     },
     "actions_name": "Actions",
     "age": "Âge",
@@ -1473,5 +1479,14 @@
     "studio_count": "Nombre de studios",
     "studio_tags": "Étiquettes du studio",
     "include_sub_studio_content": "Inclure le contenu des studios affiliés",
-    "include_sub_tag_content": "Inclure le contenu des étiquettes affiliées"
+    "include_sub_tag_content": "Inclure le contenu des étiquettes affiliées",
+    "containing_group": "Groupe contenant",
+    "containing_group_count": "Nombre de groupes contenant",
+    "containing_groups": "Groupes contenant",
+    "include_sub_group_content": "Inclure le contenu des groupes affiliés",
+    "sub_group_order": "Ordre de groupe affilié",
+    "sub_groups": "Groupes affiliés",
+    "sub_group_of": "Groupe affilié de {parent}",
+    "sub_group": "Groupe affilié",
+    "sub_group_count": "Nombre de groupes affiliés"
 }
