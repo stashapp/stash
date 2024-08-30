@@ -335,3 +335,11 @@ export const showWhenSelected = <T extends QueryResult>(
 ) => {
   return selectedIds.size > 0;
 };
+
+export const showWhenSingleSelection = <T extends QueryResult>(
+  result: T,
+  filter: ListFilterModel,
+  selectedIds: Set<string>
+) => {
+  return selectedIds.size == 1;
+};

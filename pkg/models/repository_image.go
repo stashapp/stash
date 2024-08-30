@@ -18,12 +18,14 @@ type ImageFinder interface {
 	FindByFolderID(ctx context.Context, fileID FolderID) ([]*Image, error)
 	FindByZipFileID(ctx context.Context, zipFileID FileID) ([]*Image, error)
 	FindByGalleryID(ctx context.Context, galleryID int) ([]*Image, error)
+	FindByGalleryIDIndex(ctx context.Context, galleryID int, index uint) (*Image, error)
 }
 
 // ImageQueryer provides methods to query images.
 type ImageQueryer interface {
 	Query(ctx context.Context, options ImageQueryOptions) (*ImageQueryResult, error)
 	QueryCount(ctx context.Context, imageFilter *ImageFilterType, findFilter *FindFilterType) (int, error)
+	CoverByGalleryID(ctx context.Context, galleryId int) (*Image, error)
 }
 
 // ImageCounter provides methods to count images.

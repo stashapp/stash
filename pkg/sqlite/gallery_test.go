@@ -2973,6 +2973,34 @@ func TestGalleryQueryHasChapters(t *testing.T) {
 	})
 }
 
+func TestGallerySetAndResetCover(t *testing.T) {
+	withTxn(func(ctx context.Context) error {
+		sqb := db.Gallery
+
+		imagePath2 := getFilePath(folderIdxWithImageFiles, getImageBasename(imageIdx2WithGallery))
+
+		result, err := db.Image.CoverByGalleryID(ctx, galleryIDs[galleryIdxWithTwoImages])
+		assert.Nil(t, err)
+		assert.Nil(t, result)
+
+		err = sqb.SetCover(ctx, galleryIDs[galleryIdxWithTwoImages], imageIDs[imageIdx2WithGallery])
+		assert.Nil(t, err)
+
+		result, err = db.Image.CoverByGalleryID(ctx, galleryIDs[galleryIdxWithTwoImages])
+		assert.Nil(t, err)
+		assert.Equal(t, result.Path, imagePath2)
+
+		err = sqb.ResetCover(ctx, galleryIDs[galleryIdxWithTwoImages])
+		assert.Nil(t, err)
+
+		result, err = db.Image.CoverByGalleryID(ctx, galleryIDs[galleryIdxWithTwoImages])
+		assert.Nil(t, err)
+		assert.Nil(t, result)
+
+		return nil
+	})
+}
+
 // TODO Count
 // TODO All
 // TODO Query

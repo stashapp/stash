@@ -275,6 +275,10 @@ export const useFindGallery = (id: string) => {
   return GQL.useFindGalleryQuery({ variables: { id }, skip });
 };
 
+export const useFindGalleryImageID = (id: string, index: number) => {
+  return GQL.useFindGalleryImageIdQuery({ variables: { id, index } });
+};
+
 export const useFindGalleries = (filter?: ListFilterModel) =>
   GQL.useFindGalleriesQuery({
     skip: filter === undefined,
@@ -779,6 +783,21 @@ export const useSceneResetO = (id: string) =>
         GQL.FindScenesDocument, // filter by o_counter
         GQL.FindPerformersDocument, // filter by o_counter
       ]);
+    },
+  });
+
+export const useSceneResetActivity = (
+  id: string,
+  reset_resume: boolean,
+  reset_duration: boolean
+) =>
+  GQL.useSceneResetActivityMutation({
+    variables: { id, reset_resume, reset_duration },
+    update(cache, result) {
+      if (!result.data?.sceneResetActivity) return;
+
+      evictTypeFields(cache, sceneMutationImpactedTypeFields);
+      evictQueries(cache, sceneMutationImpactedQueries);
     },
   });
 
@@ -1519,6 +1538,34 @@ export const mutateAddGalleryImages = (input: GQL.GalleryAddInput) =>
         GQL.FindGalleriesDocument, // filter by image count
         GQL.FindImagesDocument, // filter by gallery
       ]);
+    },
+  });
+
+export const mutateSetGalleryCover = (input: GQL.GallerySetCoverInput) =>
+  client.mutate<GQL.SetGalleryCoverMutation>({
+    mutation: GQL.SetGalleryCoverDocument,
+    variables: input,
+    update(cache, result) {
+      if (!result.data?.setGalleryCover) return;
+
+      cache.evict({
+        id: cache.identify({ __typename: "Gallery", id: input.gallery_id }),
+        fieldName: "cover",
+      });
+    },
+  });
+
+export const mutateResetGalleryCover = (input: GQL.GalleryResetCoverInput) =>
+  client.mutate<GQL.ResetGalleryCoverMutation>({
+    mutation: GQL.ResetGalleryCoverDocument,
+    variables: input,
+    update(cache, result) {
+      if (!result.data?.resetGalleryCover) return;
+
+      cache.evict({
+        id: cache.identify({ __typename: "Gallery", id: input.gallery_id }),
+        fieldName: "cover",
+      });
     },
   });
 
