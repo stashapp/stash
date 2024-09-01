@@ -142,7 +142,12 @@ export const GalleryCard: React.FC<IProps> = (props) => {
   function maybeRenderPerformerPopoverButton() {
     if (props.gallery.performers.length <= 0) return;
 
-    return <PerformerPopoverButton performers={props.gallery.performers} />;
+    return (
+      <PerformerPopoverButton
+        performers={props.gallery.performers}
+        linkType="gallery"
+      />
+    );
   }
 
   function maybeRenderImagesPopoverButton() {
