@@ -32,6 +32,8 @@ RUN make flags-release flags-pie stash
 
 # Final Runnable Image
 FROM nvidia/cuda:12.0.1-base-ubuntu22.04
+ARG STASH_VERSION
+LABEL org.opencontainers.image.source="https://github.com/stashapp/stash/" org.opencontainers.image.revision=${STASH_VERSION}
 RUN apt update && apt upgrade -y && apt install -y ca-certificates libvips-tools ffmpeg wget intel-media-va-driver-non-free vainfo
 RUN rm -rf /var/lib/apt/lists/*
 COPY --from=backend /stash/stash /usr/bin/
