@@ -25,13 +25,17 @@ Keyword matching uses the following rules:
 * surrounding a phrase in quotes (`"`) matches on that exact phrase. For example, `"foo bar"` matches scenes with `foo bar` in the title. Quotes may also be used to escape the keywords and symbols. For example, `foo "-bar"` will match scenes with `foo` and `-bar`.
 * quoted phrases may be used with the or and not operators. For example, `"foo bar" or baz -"xyz zyx"` will match scenes with `foo bar` *or* `baz`, and exclude those with `xyz zyx`.
 * `or` keywords or symbols at the start or end of a line will be treated literally. That is, `or foo` will match scenes with `or` and `foo`.
-* all matching is case-insensitive
+* all keyword matching is case-insensitive
 
 ### Filters
 
 Filters can be accessed by clicking the filter button on the right side of the query text field. 
 
 Note that only one filter criterion per criterion type may be assigned.
+
+#### Regex modifiers
+
+Some filters have regex modifier as an option. Regex modifiers are always case-sensitive.
 
 ### Sorting and page size
 
