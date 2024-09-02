@@ -94,6 +94,9 @@ export function formikUtils<V extends FormikValues>(
           {...formikProps}
           value={value}
           isInvalid={!!error}
+          onWheel={(e: React.WheelEvent<HTMLTextAreaElement>) => {
+            e.currentTarget.blur();
+          }}
         />
       );
     } else {
@@ -105,6 +108,9 @@ export function formikUtils<V extends FormikValues>(
           {...formikProps}
           value={value}
           isInvalid={!!error}
+          onWheel={(e: React.WheelEvent<HTMLInputElement>) => {
+            e.currentTarget.blur(); // Disable scrolling on text, number, etc.
+          }}
         />
       );
     }
