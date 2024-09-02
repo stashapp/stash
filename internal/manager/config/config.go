@@ -1100,7 +1100,7 @@ func (i *Config) ValidateCredentials(username string, password string) bool {
 
 func stashBoxValidate(str string) bool {
 	u, err := url.Parse(str)
-	return err == nil && u.Scheme != "" && u.Host != "" && u.Path == "/graphql"
+	return err == nil && u.Scheme != "" && u.Host != "" && strings.HasSuffix(u.Path, "/graphql")
 }
 
 type StashBoxInput struct {
