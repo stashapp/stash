@@ -31,7 +31,7 @@ var (
 
 type ThumbnailEncoder struct {
 	FFMpeg             *ffmpeg.FFMpeg
-	FFProbe            ffmpeg.FFProbe
+	FFProbe            *ffmpeg.FFProbe
 	ClipPreviewOptions ClipPreviewOptions
 	vips               *vipsEncoder
 }
@@ -49,7 +49,7 @@ func GetVipsPath() string {
 	return vipsPath
 }
 
-func NewThumbnailEncoder(ffmpegEncoder *ffmpeg.FFMpeg, ffProbe ffmpeg.FFProbe, clipPreviewOptions ClipPreviewOptions) ThumbnailEncoder {
+func NewThumbnailEncoder(ffmpegEncoder *ffmpeg.FFMpeg, ffProbe *ffmpeg.FFProbe, clipPreviewOptions ClipPreviewOptions) ThumbnailEncoder {
 	ret := ThumbnailEncoder{
 		FFMpeg:             ffmpegEncoder,
 		FFProbe:            ffProbe,
