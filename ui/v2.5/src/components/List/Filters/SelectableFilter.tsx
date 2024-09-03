@@ -24,6 +24,7 @@ import { CriterionModifier } from "src/core/generated-graphql";
 import { keyboardClickHandler } from "src/utils/keyboard";
 import { useDebounce } from "src/hooks/debounce";
 import useFocus from "src/utils/focus";
+import ScreenUtils from "src/utils/screen";
 
 interface ISelectedItem {
   item: ILabeledId;
@@ -235,7 +236,10 @@ export const ObjectsFilter = <
     setDisplayQuery("");
 
     // focus the input box
-    setInputFocus();
+    // don't do this on touch devices, as it's annoying
+    if (!ScreenUtils.isTouch()) {
+      setInputFocus();
+    }
   }
 
   const onUnselect = useCallback(
