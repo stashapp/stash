@@ -8,7 +8,7 @@ import {
   Overlay,
   Popover,
 } from "react-bootstrap";
-import { FormattedMessage, useIntl } from "react-intl";
+import { FormattedMessage, FormattedNumber, useIntl } from "react-intl";
 import useFocus from "src/utils/focus";
 import { Icon } from "../Shared/Icon";
 import { faCheck, faChevronDown } from "@fortawesome/free-solid-svg-icons";
@@ -143,6 +143,8 @@ interface IPaginationIndexProps {
   metadataByline?: React.ReactNode;
 }
 
+const minPagesForCompact = 4;
+
 export const Pagination: React.FC<IPaginationProps> = ({
   itemsPerPage,
   currentPage,
@@ -155,6 +157,30 @@ export const Pagination: React.FC<IPaginationProps> = ({
     () => Math.ceil(totalItems / itemsPerPage),
     [totalItems, itemsPerPage]
   );
+
+  const pageButtons = useMemo(() => {
+    if (totalPages >= minPagesForCompact)
+      return (
+        <PageCount
+          totalPages={totalPages}
+          currentPage={currentPage}
+          onChangePage={onChangePage}
+        />
+      );
+
+    const pages = [...Array(totalPages).keys()].map((i) => i + 1);
+
+    return pages.map((page: number) => (
+      <Button
+        variant="secondary"
+        key={page}
+        active={currentPage === page}
+        onClick={() => onChangePage(page)}
+      >
+        <FormattedNumber value={page} />
+      </Button>
+    ));
+  }, [totalPages, currentPage, onChangePage]);
 
   if (totalPages <= 1) return <div />;
 
@@ -176,13 +202,7 @@ export const Pagination: React.FC<IPaginationProps> = ({
       >
         &lt;
       </Button>
-
-      <PageCount
-        totalPages={totalPages}
-        currentPage={currentPage}
-        onChangePage={onChangePage}
-      />
-
+      {pageButtons}
       <Button
         variant="secondary"
         disabled={currentPage === totalPages}
