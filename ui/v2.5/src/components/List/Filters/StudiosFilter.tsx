@@ -45,6 +45,7 @@ const StudiosFilter: React.FC<IStudiosFilter> = ({
       criterion={criterion}
       setCriterion={setCriterion}
       useResults={useStudioQuery}
+      singleValue
     />
   );
 };
