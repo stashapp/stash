@@ -30,7 +30,7 @@ export const GalleryPreview: React.FC<IScenePreviewProps> = ({
   onScrubberClick,
 }) => {
   const [imgSrc, setImgSrc] = useState<string | undefined>(
-    gallery.cover?.paths.thumbnail ?? undefined
+    gallery.paths.cover ?? undefined
   );
 
   return (
@@ -43,13 +43,15 @@ export const GalleryPreview: React.FC<IScenePreviewProps> = ({
           src={imgSrc}
         />
       )}
-      <GalleryPreviewScrubber
-        previewPath={gallery.paths.preview}
-        defaultPath={gallery.cover?.paths.thumbnail ?? ""}
-        imageCount={gallery.image_count}
-        onClick={onScrubberClick}
-        onPathChanged={setImgSrc}
-      />
+      {gallery.image_count > 0 && (
+        <GalleryPreviewScrubber
+          previewPath={gallery.paths.preview}
+          defaultPath={gallery.paths.cover ?? ""}
+          imageCount={gallery.image_count}
+          onClick={onScrubberClick}
+          onPathChanged={setImgSrc}
+        />
+      )}
     </div>
   );
 };

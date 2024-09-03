@@ -25,6 +25,9 @@ type ImageFinder interface {
 type ImageQueryer interface {
 	Query(ctx context.Context, options ImageQueryOptions) (*ImageQueryResult, error)
 	QueryCount(ctx context.Context, imageFilter *ImageFilterType, findFilter *FindFilterType) (int, error)
+}
+
+type GalleryCoverFinder interface {
 	CoverByGalleryID(ctx context.Context, galleryId int) (*Image, error)
 }
 
@@ -72,6 +75,8 @@ type ImageReader interface {
 	PerformerIDLoader
 	TagIDLoader
 	FileLoader
+
+	GalleryCoverFinder
 
 	All(ctx context.Context) ([]*Image, error)
 	Size(ctx context.Context) (float64, error)
