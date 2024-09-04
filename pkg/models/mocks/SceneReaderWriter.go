@@ -190,27 +190,6 @@ func (_m *SceneReaderWriter) CountByFileID(ctx context.Context, fileID models.Fi
 	return r0, r1
 }
 
-// CountByGroupID provides a mock function with given fields: ctx, groupID
-func (_m *SceneReaderWriter) CountByGroupID(ctx context.Context, groupID int) (int, error) {
-	ret := _m.Called(ctx, groupID)
-
-	var r0 int
-	if rf, ok := ret.Get(0).(func(context.Context, int) int); ok {
-		r0 = rf(ctx, groupID)
-	} else {
-		r0 = ret.Get(0).(int)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
-		r1 = rf(ctx, groupID)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // CountByPerformerID provides a mock function with given fields: ctx, performerID
 func (_m *SceneReaderWriter) CountByPerformerID(ctx context.Context, performerID int) (int, error) {
 	ret := _m.Called(ctx, performerID)
@@ -225,48 +204,6 @@ func (_m *SceneReaderWriter) CountByPerformerID(ctx context.Context, performerID
 	var r1 error
 	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
 		r1 = rf(ctx, performerID)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// CountByStudioID provides a mock function with given fields: ctx, studioID
-func (_m *SceneReaderWriter) CountByStudioID(ctx context.Context, studioID int) (int, error) {
-	ret := _m.Called(ctx, studioID)
-
-	var r0 int
-	if rf, ok := ret.Get(0).(func(context.Context, int) int); ok {
-		r0 = rf(ctx, studioID)
-	} else {
-		r0 = ret.Get(0).(int)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
-		r1 = rf(ctx, studioID)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// CountByTagID provides a mock function with given fields: ctx, tagID
-func (_m *SceneReaderWriter) CountByTagID(ctx context.Context, tagID int) (int, error) {
-	ret := _m.Called(ctx, tagID)
-
-	var r0 int
-	if rf, ok := ret.Get(0).(func(context.Context, int) int); ok {
-		r0 = rf(ctx, tagID)
-	} else {
-		r0 = ret.Get(0).(int)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
-		r1 = rf(ctx, tagID)
 	} else {
 		r1 = ret.Error(1)
 	}
