@@ -34,6 +34,7 @@ The following partial date fields are also supported. The date will only be set 
 |`dd`|Two digit date|
 
 The following full date fields are supported, using the same partial date rules as above:
+
 * `yyyymmdd`
 * `yymmdd`
 * `ddmmyyyy`

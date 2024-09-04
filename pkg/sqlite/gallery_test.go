@@ -1534,10 +1534,12 @@ func TestGalleryQueryPathOr(t *testing.T) {
 			Value:    gallery1Path,
 			Modifier: models.CriterionModifierEquals,
 		},
-		Or: &models.GalleryFilterType{
-			Path: &models.StringCriterionInput{
-				Value:    gallery2Path,
-				Modifier: models.CriterionModifierEquals,
+		OperatorFilter: models.OperatorFilter[models.GalleryFilterType]{
+			Or: &models.GalleryFilterType{
+				Path: &models.StringCriterionInput{
+					Value:    gallery2Path,
+					Modifier: models.CriterionModifierEquals,
+				},
 			},
 		},
 	}
@@ -1568,10 +1570,12 @@ func TestGalleryQueryPathAndRating(t *testing.T) {
 			Value:    galleryPath,
 			Modifier: models.CriterionModifierEquals,
 		},
-		And: &models.GalleryFilterType{
-			Rating100: &models.IntCriterionInput{
-				Value:    *galleryRating,
-				Modifier: models.CriterionModifierEquals,
+		OperatorFilter: models.OperatorFilter[models.GalleryFilterType]{
+			And: &models.GalleryFilterType{
+				Rating100: &models.IntCriterionInput{
+					Value:    *galleryRating,
+					Modifier: models.CriterionModifierEquals,
+				},
 			},
 		},
 	}
@@ -1609,8 +1613,10 @@ func TestGalleryQueryPathNotRating(t *testing.T) {
 
 	galleryFilter := models.GalleryFilterType{
 		Path: &pathCriterion,
-		Not: &models.GalleryFilterType{
-			Rating100: &ratingCriterion,
+		OperatorFilter: models.OperatorFilter[models.GalleryFilterType]{
+			Not: &models.GalleryFilterType{
+				Rating100: &ratingCriterion,
+			},
 		},
 	}
 
@@ -1641,8 +1647,10 @@ func TestGalleryIllegalQuery(t *testing.T) {
 	}
 
 	galleryFilter := &models.GalleryFilterType{
-		And: &subFilter,
-		Or:  &subFilter,
+		OperatorFilter: models.OperatorFilter[models.GalleryFilterType]{
+			And: &subFilter,
+			Or:  &subFilter,
+		},
 	}
 
 	withTxn(func(ctx context.Context) error {
@@ -1873,7 +1881,7 @@ func TestGalleryQueryIsMissingPerformers(t *testing.T) {
 
 		assert.True(t, len(galleries) > 0)
 
-		// ensure non of the ids equal the one with movies
+		// ensure non of the ids equal the one with galleries
 		for _, gallery := range galleries {
 			assert.NotEqual(t, galleryIDs[galleryIdxWithPerformer], gallery.ID)
 		}
@@ -2960,6 +2968,34 @@ func TestGalleryQueryHasChapters(t *testing.T) {
 		galleries = queryGallery(ctx, t, sqb, &galleryFilter, &findFilter)
 
 		assert.NotEqual(t, 0, len(galleries))
+
+		return nil
+	})
+}
+
+func TestGallerySetAndResetCover(t *testing.T) {
+	withTxn(func(ctx context.Context) error {
+		sqb := db.Gallery
+
+		imagePath2 := getFilePath(folderIdxWithImageFiles, getImageBasename(imageIdx2WithGallery))
+
+		result, err := db.Image.CoverByGalleryID(ctx, galleryIDs[galleryIdxWithTwoImages])
+		assert.Nil(t, err)
+		assert.Nil(t, result)
+
+		err = sqb.SetCover(ctx, galleryIDs[galleryIdxWithTwoImages], imageIDs[imageIdx2WithGallery])
+		assert.Nil(t, err)
+
+		result, err = db.Image.CoverByGalleryID(ctx, galleryIDs[galleryIdxWithTwoImages])
+		assert.Nil(t, err)
+		assert.Equal(t, result.Path, imagePath2)
+
+		err = sqb.ResetCover(ctx, galleryIDs[galleryIdxWithTwoImages])
+		assert.Nil(t, err)
+
+		result, err = db.Image.CoverByGalleryID(ctx, galleryIDs[galleryIdxWithTwoImages])
+		assert.Nil(t, err)
+		assert.Nil(t, result)
 
 		return nil
 	})

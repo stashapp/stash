@@ -14,6 +14,59 @@ import { faBox, faPlayCircle, faTag } from "@fortawesome/free-solid-svg-icons";
 import { galleryTitle } from "src/core/galleries";
 import ScreenUtils from "src/utils/screen";
 import { StudioOverlay } from "../Shared/GridCard/StudioOverlay";
+import { GalleryPreviewScrubber } from "./GalleryPreviewScrubber";
+import cx from "classnames";
+import { useHistory } from "react-router-dom";
+
+interface IScenePreviewProps {
+  isPortrait?: boolean;
+  gallery: GQL.SlimGalleryDataFragment;
+  onScrubberClick?: (index: number) => void;
+}
+
+export const GalleryPreview: React.FC<IScenePreviewProps> = ({
+  gallery,
+  isPortrait = false,
+  onScrubberClick,
+}) => {
+
+  // ignoring isPortrait property to avoid merge conflicts later
+  const [portraitImage, setPortraitImage] = React.useState(false);
+
+  function identifyPortaitImage(e: React.UIEvent<HTMLImageElement>) {
+    const img = e.target as HTMLImageElement;
+    // set width = 200px if zero-sized image (SVG w/o intrinsic size)
+    setPortraitImage(img.width < img.height);
+    console.log("portraitImage: "+portraitImage)
+  }
+
+  const [imgSrc, setImgSrc] = useState<string | undefined>(
+    gallery.paths.cover ?? undefined
+  );
+
+  return (
+    <div className={cx("gallery-card-cover", { portrait: isPortrait })}>
+      {!!imgSrc && (
+        <img
+          loading="lazy"
+          className={`gallery-card-image ${ portraitImage ? "portrait-image" : ""}`}
+          alt={gallery.title ?? ""}
+          src={imgSrc}
+          onLoad={identifyPortaitImage}
+        />
+      )}
+      {gallery.image_count > 0 && (
+        <GalleryPreviewScrubber
+          previewPath={gallery.paths.preview}
+          defaultPath={gallery.paths.cover ?? ""}
+          imageCount={gallery.image_count}
+          onClick={onScrubberClick}
+          onPathChanged={setImgSrc}
+        />
+      )}
+    </div>
+  );
+};
 
 interface IProps {
   gallery: GQL.SlimGalleryDataFragment;
@@ -26,6 +79,7 @@ interface IProps {
 }
 
 export const GalleryCard: React.FC<IProps> = (props) => {
+  const history = useHistory();
   const [cardWidth, setCardWidth] = useState<number>();
 
   useEffect(() => {
@@ -168,19 +222,13 @@ export const GalleryCard: React.FC<IProps> = (props) => {
       linkClassName="gallery-card-header"
       image={
         <>
-          {props.gallery.cover ? (
-            <img
-              loading="lazy"
-              className={`gallery-card-image ${
-                props.gallery.cover.files[0].height >
-                props.gallery.cover.files[0].width
-                  ? "portrait-image"
-                  : ""
-              }`}
-              alt={props.gallery.title ?? ""}
-              src={`${props.gallery.cover.paths.thumbnail}`}
-            />
-          ) : undefined}
+          <GalleryPreview
+            gallery={props.gallery}
+            onScrubberClick={(i) => {
+              console.log(i);
+              history.push(`/galleries/${props.gallery.id}/images/${i}`);
+            }}
+          />
           <RatingBanner rating={props.gallery.rating100} />
         </>
       }

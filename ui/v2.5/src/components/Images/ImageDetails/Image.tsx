@@ -106,6 +106,7 @@ const ImagePage: React.FC<IProps> = ({ image }) => {
 
     await mutateMetadataScan({
       paths: [objectPath(image)],
+      rescan: true,
     });
 
     Toast.success(
@@ -218,7 +219,7 @@ const ImagePage: React.FC<IProps> = ({ image }) => {
             onClick={() => setIsDeleteAlertOpen(true)}
           >
             <FormattedMessage
-              id="actions.delete_entity"
+              id="actions.delete"
               values={{ entityType: intl.formatMessage({ id: "image" }) }}
             />
           </Dropdown.Item>

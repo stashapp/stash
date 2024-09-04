@@ -132,7 +132,7 @@ func (db *Database) Repository() models.Repository {
 		Gallery:        db.Gallery,
 		GalleryChapter: db.GalleryChapter,
 		Image:          db.Image,
-		Movie:          db.Movie,
+		Group:          db.Group,
 		Performer:      db.Performer,
 		Scene:          db.Scene,
 		SceneMarker:    db.SceneMarker,

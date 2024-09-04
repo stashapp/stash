@@ -43,14 +43,12 @@ export const GalleryListTable: React.FC<IGalleryListTableProps> = (
 
     return (
       <Link to={`/galleries/${gallery.id}`}>
-        {gallery.cover ? (
-          <img
-            loading="lazy"
-            alt={title}
-            className="image-thumbnail"
-            src={`${gallery.cover.paths.thumbnail}`}
-          />
-        ) : undefined}
+        <img
+          loading="lazy"
+          alt={title}
+          className="image-thumbnail"
+          src={gallery.paths.cover}
+        />
       </Link>
     );
   };
@@ -134,6 +132,16 @@ export const GalleryListTable: React.FC<IGalleryListTableProps> = (
     </ul>
   );
 
+  const PathCell = (scene: GQL.SlimGalleryDataFragment) => (
+    <ul className="newline-list overflowable TruncatedText">
+      {scene.files.map((file) => (
+        <li key={file.id}>
+          <span>{file.path}</span>
+        </li>
+      ))}
+    </ul>
+  );
+
   interface IColumnSpec {
     value: string;
     label: string;
@@ -210,6 +218,11 @@ export const GalleryListTable: React.FC<IGalleryListTableProps> = (
       value: "photographer",
       label: intl.formatMessage({ id: "photographer" }),
       render: (s) => <>{s.photographer}</>,
+    },
+    {
+      value: "path",
+      label: intl.formatMessage({ id: "path" }),
+      render: PathCell,
     },
   ];
 

@@ -17,6 +17,7 @@ import (
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/gallery"
+	"github.com/stashapp/stash/pkg/group"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/logger"
@@ -67,6 +68,10 @@ func Initialize(cfg *config.Config, l *log.Logger) (*Manager, error) {
 		Folder:       db.Folder,
 	}
 
+	groupService := &group.Service{
+		Repository: db.Group,
+	}
+
 	sceneServer := &SceneServer{
 		TxnManager:       repo.TxnManager,
 		SceneCoverGetter: repo.Scene,
@@ -99,6 +104,7 @@ func Initialize(cfg *config.Config, l *log.Logger) (*Manager, error) {
 		SceneService:   sceneService,
 		ImageService:   imageService,
 		GalleryService: galleryService,
+		GroupService:   groupService,
 
 		scanSubs: &subscriptionManager{},
 	}
@@ -260,7 +266,9 @@ func (s *Manager) writeStashIcon() {
 
 func (s *Manager) RefreshFFMpeg(ctx context.Context) {
 	// use same directory as config path
-	configDirectory := s.Config.GetConfigPath()
+	// executing binaries requires directory to be included
+	// https://pkg.go.dev/os/exec#hdr-Executables_in_the_current_directory
+	configDirectory := s.Config.GetConfigPathAbs()
 	stashHomeDir := paths.GetStashHomeDirectory()
 
 	// prefer the configured paths
@@ -269,9 +277,14 @@ func (s *Manager) RefreshFFMpeg(ctx context.Context) {
 
 	// ensure the paths are valid
 	if ffmpegPath != "" {
+		// path was set explicitly
 		if err := ffmpeg.ValidateFFMpeg(ffmpegPath); err != nil {
 			logger.Errorf("invalid ffmpeg path: %v", err)
 			return
+		}
+
+		if err := ffmpeg.ValidateFFMpegCodecSupport(ffmpegPath); err != nil {
+			logger.Warn(err)
 		}
 	} else {
 		ffmpegPath = ffmpeg.ResolveFFMpeg(configDirectory, stashHomeDir)
@@ -298,7 +311,7 @@ func (s *Manager) RefreshFFMpeg(ctx context.Context) {
 		logger.Debugf("using ffprobe: %s", ffprobePath)
 
 		s.FFMpeg = ffmpeg.NewEncoder(ffmpegPath)
-		s.FFProbe = ffmpeg.FFProbe(ffprobePath)
+		s.FFProbe = ffmpeg.NewFFProbe(ffprobePath)
 
 		s.FFMpeg.InitHWSupport(ctx)
 	}

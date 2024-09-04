@@ -21,7 +21,7 @@ func startSystray(exit chan int, faviconProvider FaviconProvider) {
 	c := config.GetInstance()
 	if c.GetShowOneTimeMovedNotification() {
 		SendNotification("Stash has moved!", "Stash now runs in your tray, instead of a terminal window.")
-		c.Set(config.ShowOneTimeMovedNotification, false)
+		c.SetBool(config.ShowOneTimeMovedNotification, false)
 		if err := c.Write(); err != nil {
 			logger.Errorf("Error while writing configuration file: %v", err)
 		}

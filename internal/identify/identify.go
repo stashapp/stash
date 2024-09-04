@@ -1,3 +1,6 @@
+// Package identify provides the scene identification functionality for the application.
+// The identify functionality uses scene scrapers to identify a given scene and
+// set its metadata based on the scraped data.
 package identify
 
 import (
@@ -252,7 +255,8 @@ func (t *SceneIdentifier) getSceneUpdater(ctx context.Context, s *models.Scene, 
 		}
 	}
 
-	if utils.IsTrue(options.SetCoverImage) {
+	// SetCoverImage defaults to true if unset
+	if options.SetCoverImage == nil || *options.SetCoverImage {
 		ret.CoverImage, err = rel.cover(ctx)
 		if err != nil {
 			return nil, err

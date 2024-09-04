@@ -134,7 +134,8 @@
         "clear_date_data": "Очистить информацию о дате",
         "copy_to_clipboard": "Скопировать в буфер обмена",
         "disable": "Выключить",
-        "remove_date": "Удалить дату"
+        "remove_date": "Удалить дату",
+        "view_history": "Смотреть просмотренные"
     },
     "actions_name": "Действия",
     "age": "Возраст",
@@ -251,7 +252,9 @@
             "successfully_cancelled_temporary_behaviour": "Временно запущенный сервис DLNA, успешно отключен",
             "until_restart": "до перезагрузки",
             "video_sort_order": "Порядок сортировки видео по умолчанию",
-            "video_sort_order_desc": "Порядок сортировки видео по умолчанию."
+            "video_sort_order_desc": "Порядок сортировки видео по умолчанию.",
+            "server_port_desc": "Порт DLNA-сервера. После изменения требуется перезапуск DLNA.",
+            "server_port": "Порт DLNA"
         },
         "general": {
             "auth": {
@@ -322,6 +325,18 @@
                         "desc": "Расширенные настройки: Параметры для передачи в ffmpeg перед полем вывода при кодировании видео в реальном времени.",
                         "heading": "Выходные параметры FFmpeg Live Transcode"
                     }
+                },
+                "download_ffmpeg": {
+                    "description": "Скачивает FFmpeg в каталог конфигурации и очищает пути ffmpeg и ffprobe.",
+                    "heading": "Скачать FFmpeg"
+                },
+                "ffmpeg_path": {
+                    "heading": "Путь к исполнимому файлу FFmpeg",
+                    "description": "Путь к исполнимому файлу ffmpeg (включая имя файла). При пустом значении, путь будет взят из переменной $PATH, каталога конфигурации или из $HOME/.stash"
+                },
+                "ffprobe_path": {
+                    "heading": "Путь к исполнимому файлу FFprobe",
+                    "description": "Путь к исполнимому файлу ffprobe (включая имя файла). При пустом значении, путь будет взят из переменной $PATH, каталога конфигурации или из $HOME/.stash"
                 }
             },
             "gallery_ext_desc": "Список расширений через запятую, которые будут распознаны как архивы с картинками.",
@@ -774,7 +789,6 @@
         "galleries": "{count, plural, one {Галерея} other {Галереи}}",
         "images": "{count, plural, one {Изображение} other {Изображения}}",
         "markers": "{count, plural, one {Маркер} other {Маркеры}}",
-        "movies": "{count, plural, one {Фильм} other {Фильмы}}",
         "performers": "{count, plural, one {Актер} other {Актеры}}",
         "scenes": "{count, plural, one {Сцена} other {Сцены}}",
         "studios": "{count, plural, one {Студия} other {Студии}}",
@@ -961,7 +975,7 @@
         "select_oldest": "Выбрать самый старый файл в группе дубликатов",
         "select_options": "Опции…"
     },
-    "duplicated_phash": "Дублированный (phash)",
+    "duplicated_phash": "Повтор (pHash)",
     "duration": "Продолжительность",
     "effect_filters": {
         "aspect": "Аспект",
@@ -1074,9 +1088,6 @@
     },
     "megabits_per_second": "{value} мегабит в секунду",
     "metadata": "Метаданные",
-    "movie": "Фильм",
-    "movie_scene_number": "Номер сцены в фильме",
-    "movies": "Фильмы",
     "name": "Имя",
     "new": "Новый",
     "none": "Отсутствует",
@@ -1182,8 +1193,7 @@
             "cache_directory": "Каталог кэша"
         },
         "creating": {
-            "creating_your_system": "Создаем вашу систему",
-            "ffmpeg_notice": "Если <code>ffmpeg</code> еще не указан в ваших путях, наберитесь терпения, пока stash загрузит его. Чтобы проследить за ходом загрузки, проверьте консоль."
+            "creating_your_system": "Создаем вашу систему"
         },
         "errors": {
             "something_went_wrong": "О, нет! Что-то пошло не так!",
@@ -1241,7 +1251,9 @@
             "support_us": "Поддержите нас",
             "thanks_for_trying_stash": "Спасибо, что попробовали Stash!",
             "welcome_contrib": "Кроме того, всегда приветствуются привносимый вклад в виде кода (исправления ошибок, улучшения и новые функции), тестирование, отчетов об ошибках, идей для функций и улучшений, а также поддержка пользователей. Подробности об этом в соответствующем разделе встроенного в приложение руководства пользователя.",
-            "your_system_has_been_created": "Готово! Ваша система создана!"
+            "your_system_has_been_created": "Готово! Ваша система создана!",
+            "download_ffmpeg": "Скачать ffmpeg",
+            "missing_ffmpeg": "Отсутствует необходимый исполнимый файл <code>ffmpeg</code>. Вы можете автоматически скачать его в каталог конфигурации, выбрав опцию ниже. В качестве альтернативы, можно задать пути к исполняемым файлам <code>ffmpeg</code> и <code>ffprobe</code> в Системных настройках. Файлы ffmpeg и ffprobe необходимы для работы Stash."
         },
         "welcome": {
             "config_path_logic_explained": "Stash сначала пытается найти свой файл конфигурации (<code>config.yml</code>) в текущем рабочем каталоге, и, если он не находит его там, возвращается к <code>$HOME/.stash/config.yml</code>. Вы также можете заставить Stash использовать определенный файл конфигурации, запустив его с параметрами <code>-c '<путь к файлу конфигурации>'</code> или <code>--config '<путь к файлу конфигурации>'</code>.",
@@ -1444,5 +1456,10 @@
     "distance": "Дистанция",
     "history": "История",
     "image_index": "Изображение #",
-    "studio_and_parent": "Студия & Родительская студия"
+    "studio_and_parent": "Студия & Родительская студия",
+    "connection_monitor": {
+        "websocket_connection_failed": "Не удается выполнить соединение websocket: подробности в консоли браузера",
+        "websocket_connection_reestablished": "Соединение websocket восстановлено"
+    },
+    "o_count": "Количество О"
 }

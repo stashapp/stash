@@ -53,9 +53,9 @@ fragment SceneData on Scene {
     ...SlimStudioData
   }
 
-  movies {
-    movie {
-      ...MovieData
+  groups {
+    group {
+      ...GroupData
     }
     scene_index
   }
@@ -77,5 +77,21 @@ fragment SceneData on Scene {
     url
     mime_type
     label
+  }
+}
+
+fragment SelectSceneData on Scene {
+  id
+  title
+  date
+  code
+  studio {
+    name
+  }
+  files {
+    path
+  }
+  paths {
+    screenshot
   }
 }

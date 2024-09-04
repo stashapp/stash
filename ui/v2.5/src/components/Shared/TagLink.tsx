@@ -72,29 +72,38 @@ export const PerformerLink: React.FC<IPerformerLinkProps> = ({
   );
 };
 
-interface IMovieLinkProps {
-  movie: INamedObject;
-  linkType?: "scene";
+interface IGroupLinkProps {
+  group: INamedObject;
+  description?: string;
+  linkType?: "scene" | "sub_group" | "details";
   className?: string;
 }
 
-export const MovieLink: React.FC<IMovieLinkProps> = ({
-  movie,
+export const GroupLink: React.FC<IGroupLinkProps> = ({
+  group,
+  description,
   linkType = "scene",
   className,
 }) => {
   const link = useMemo(() => {
     switch (linkType) {
       case "scene":
-        return NavUtils.makeMovieScenesUrl(movie);
+        return NavUtils.makeGroupScenesUrl(group);
+      case "sub_group":
+        return NavUtils.makeSubGroupsUrl(group);
+      case "details":
+        return NavUtils.makeGroupUrl(group.id ?? "");
     }
-  }, [movie, linkType]);
+  }, [group, linkType]);
 
-  const title = movie.name || "";
+  const title = group.name || "";
 
   return (
     <CommonLinkComponent link={link} className={className}>
-      {title}
+      {title}{" "}
+      {description && (
+        <span className="group-description">({description})</span>
+      )}
     </CommonLinkComponent>
   );
 };
@@ -223,7 +232,14 @@ export const GalleryDetailedLink: React.FC<IGalleryDetailedLinkProps> = ({
 
 interface ITagLinkProps {
   tag: INamedObject;
-  linkType?: "scene" | "gallery" | "image" | "details" | "performer";
+  linkType?:
+    | "scene"
+    | "gallery"
+    | "image"
+    | "details"
+    | "performer"
+    | "group"
+    | "studio";
   className?: string;
   hoverPlacement?: Placement;
   showHierarchyIcon?: boolean;
@@ -244,10 +260,14 @@ export const TagLink: React.FC<ITagLinkProps> = ({
         return NavUtils.makeTagScenesUrl(tag);
       case "performer":
         return NavUtils.makeTagPerformersUrl(tag);
+      case "studio":
+        return NavUtils.makeTagStudiosUrl(tag);
       case "gallery":
         return NavUtils.makeTagGalleriesUrl(tag);
       case "image":
         return NavUtils.makeTagImagesUrl(tag);
+      case "group":
+        return NavUtils.makeTagGroupsUrl(tag);
       case "details":
         return NavUtils.makeTagUrl(tag.id ?? "");
     }

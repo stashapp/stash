@@ -12,7 +12,7 @@ import (
 )
 
 type updateImageFunc func(ctx context.Context, id int, image []byte) error
-type getImageFunc func(ctx context.Context, movieID int) ([]byte, error)
+type getImageFunc func(ctx context.Context, id int) ([]byte, error)
 
 func testUpdateImage(t *testing.T, ctx context.Context, id int, updateFn updateImageFunc, getFn getImageFunc) error {
 	image := []byte("image")

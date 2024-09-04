@@ -745,7 +745,6 @@
         "galleries": "{count, plural, one {Galleri} other {Gallerier}}",
         "images": "{count, plural, one {Billede} other {Billeder}}",
         "markers": "{count, plural, one {Markør} other {Markører}}",
-        "movies": "{count, plural, one {Film} other {Film}}",
         "performers": "{count, plural, one {Kunstner} other {Kunstnere}}",
         "scenes": "{count, plural, one {Scene} other {Scener}}",
         "studios": "{count, plural, one {Studie} other {Studier}}",
@@ -1031,9 +1030,6 @@
     },
     "megabits_per_second": "{value} mbps",
     "metadata": "Metadata",
-    "movie": "Film",
-    "movie_scene_number": "Scene Nummer",
-    "movies": "Film",
     "name": "Navn",
     "new": "Ny",
     "none": "Ingen",
@@ -1130,8 +1126,7 @@
             "cache_directory": "Cache bibliotek"
         },
         "creating": {
-            "creating_your_system": "Oprettelse af dit system",
-            "ffmpeg_notice": "Hvis <code>ffmpeg</code> endnu ikke er på dine stier, så vær tålmodig, mens stash downloader det. Se konsoloutputtet for at se downloadfremskridt."
+            "creating_your_system": "Oprettelse af dit system"
         },
         "errors": {
             "something_went_wrong": "Åh nej! Noget gik galt!",

@@ -22,7 +22,7 @@ type Repository struct {
 	StudioFinder    StudioFinder
 	TagFinder       TagFinder
 	PerformerFinder PerformerFinder
-	MovieFinder     MovieFinder
+	GroupFinder     GroupFinder
 }
 
 func NewRepository(repo models.Repository) Repository {
@@ -33,7 +33,7 @@ func NewRepository(repo models.Repository) Repository {
 		StudioFinder:    repo.Studio,
 		TagFinder:       repo.Tag,
 		PerformerFinder: repo.Performer,
-		MovieFinder:     repo.Movie,
+		GroupFinder:     repo.Group,
 	}
 }
 
@@ -76,6 +76,7 @@ type Config interface {
 	GetDLNAServerName() string
 	GetDLNADefaultIPWhitelist() []string
 	GetVideoSortOrder() string
+	GetDLNAPortAsString() string
 }
 
 type Service struct {
@@ -138,7 +139,7 @@ func (s *Service) init() error {
 	var dmsConfig = &dmsConfig{
 		Path:           "",
 		IfNames:        s.config.GetDLNADefaultIPWhitelist(),
-		Http:           ":1338",
+		Http:           s.config.GetDLNAPortAsString(),
 		FriendlyName:   friendlyName,
 		LogHeaders:     false,
 		NotifyInterval: 30 * time.Second,
@@ -241,7 +242,7 @@ func (s *Service) Start(duration *time.Duration) error {
 		}
 
 		go func() {
-			logger.Info("Starting DLNA")
+			logger.Info("Starting DLNA " + s.server.HTTPConn.Addr().String())
 			if err := s.server.Serve(); err != nil {
 				logger.Error(err)
 			}

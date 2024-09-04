@@ -59,6 +59,9 @@ const ScenePlayer = lazyComponent(
   () => import("src/components/ScenePlayer/ScenePlayer")
 );
 
+const GalleryViewer = lazyComponent(
+  () => import("src/components/Galleries/GalleryViewer")
+);
 const ExternalPlayerButton = lazyComponent(
   () => import("./ExternalPlayerButton")
 );
@@ -68,6 +71,10 @@ const SceneMarkersPanel = lazyComponent(() => import("./SceneMarkersPanel"));
 const SceneFileInfoPanel = lazyComponent(() => import("./SceneFileInfoPanel"));
 const SceneDetailPanel = lazyComponent(() => import("./SceneDetailPanel"));
 const SceneHistoryPanel = lazyComponent(() => import("./SceneHistoryPanel"));
+const SceneGroupPanel = lazyComponent(() => import("./SceneGroupPanel"));
+const SceneGalleriesPanel = lazyComponent(
+  () => import("./SceneGalleriesPanel")
+);
 const DeleteScenesDialog = lazyComponent(() => import("../DeleteScenesDialog"));
 const GenerateDialog = lazyComponent(
   () => import("../../Dialogs/GenerateDialog")
@@ -355,6 +362,7 @@ const ScenePage: React.FC<IProps> = ({
   async function onRescan() {
     await mutateMetadataScan({
       paths: [objectPath(scene)],
+      rescan: true,
     });
 
     Toast.success(
@@ -465,7 +473,7 @@ const ScenePage: React.FC<IProps> = ({
           onClick={() => setIsDeleteAlertOpen(true)}
         >
           <FormattedMessage
-            id="actions.delete_entity"
+            id="actions.delete"
             values={{ entityType: intl.formatMessage({ id: "scene" }) }}
           />
         </Dropdown.Item>

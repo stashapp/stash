@@ -1,3 +1,4 @@
+// Package match provides functions for matching paths to models.
 package match
 
 import (

@@ -125,7 +125,17 @@
         "encoding_image": "Conversione immagine…",
         "clean_generated": "Rimuovi file generati",
         "copy_to_clipboard": "Copia negli appunti",
-        "enable": "Abilita"
+        "enable": "Abilita",
+        "add_manual_date": "Aggiungi Manualmente Data",
+        "assign_stashid_to_parent_studio": "Assegna StashID ad uno Studio esistente e aggiorna i dati",
+        "clear_date_data": "Cancella le date",
+        "create_parent_studio": "Crea Studio Padre",
+        "migrate_blobs": "Migra i Blobs (Oggetti di grandi dimensioni)",
+        "migrate_scene_screenshots": "Migra gli Screenshot delle scene",
+        "optimise_database": "Ottimizza il Database",
+        "reload": "Ricarica",
+        "remove_date": "Rimuovi la data",
+        "view_history": "Visualizza cronologia"
     },
     "actions_name": "Azioni",
     "age": "Età",
@@ -168,7 +178,9 @@
             "set_tag_label": "Imposta i tags",
             "show_male_desc": "Attiva/Disattiva l'opzione di taggare attori maschi.",
             "show_male_label": "Mostra attori maschi",
-            "source": "Sorgente"
+            "source": "Sorgente",
+            "mark_organized_desc": "Contrassegna immediatamente la scena come \"ordinata\" quando si clicca sul pulsante Save.",
+            "mark_organized_label": "Contrassegna come \"ordinato\" al salvataggio"
         },
         "noun_query": "Query",
         "results": {
@@ -639,7 +651,8 @@
                 }
             },
             "title": "Interfaccia Utente"
-        }
+        },
+        "advanced_mode": "Modalità Avanzata"
     },
     "configuration": "Configurazione",
     "countables": {
@@ -647,7 +660,6 @@
         "galleries": "{count, plural, one {Galleria} other {Gallerie}}",
         "images": "{count, plural, one {Immagine} other {Immagini}}",
         "markers": "{count, plural, one {Marcatore} other {Marcatori}}",
-        "movies": "{count, plural, one {Film} other {Film}}",
         "performers": "{count, plural, one {Attore/Attrice} other {Attori/Attrici}}",
         "scenes": "{count, plural, one {Scena} other {Scene}}",
         "studios": "{count, plural, one {Studio} other {Studi}}",
@@ -922,9 +934,6 @@
     },
     "megabits_per_second": "{value} megabits per secondo",
     "metadata": "Metadati",
-    "movie": "Film",
-    "movie_scene_number": "Numero Scena",
-    "movies": "Film",
     "name": "Nome",
     "new": "Nuovo",
     "none": "Nessuno/a",
@@ -1026,8 +1035,7 @@
             "stash_library_directories": "Cartelle libreria di Stash"
         },
         "creating": {
-            "creating_your_system": "Creando il tuo sistema",
-            "ffmpeg_notice": "Se <code>ffmpeg</code> non è già presente nei tuoi percorsi, sii paziente mentre Stash lo scarica. Controllate la console per seguire il progresso."
+            "creating_your_system": "Creando il tuo sistema"
         },
         "errors": {
             "something_went_wrong": "Oh no! Qualcosa è andato storto!",
@@ -1162,5 +1170,11 @@
         "date_invalid_form": "${path} deve essere nel formato AAAA-MM-GG"
     },
     "datetime_format": "AAAA-MM-GG OO:MM",
-    "date_format": "AAAA-MM-GG"
+    "date_format": "AAAA-MM-GG",
+    "audio_codec": "Codec Audio",
+    "circumcised": "Circonciso",
+    "circumcised_types": {
+        "CUT": "Taglia",
+        "UNCUT": "Annulla taglio"
+    }
 }

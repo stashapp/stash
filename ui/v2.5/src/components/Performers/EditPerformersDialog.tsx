@@ -36,9 +36,6 @@ interface IListOperationProps {
 const performerFields = [
   "favorite",
   "disambiguation",
-  "url",
-  "instagram",
-  "twitter",
   "rating100",
   "gender",
   "birthdate",
@@ -358,15 +355,6 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
           )}
           {renderTextField("career_length", updateInput.career_length, (v) =>
             setUpdateField({ career_length: v })
-          )}
-          {renderTextField("url", updateInput.url, (v) =>
-            setUpdateField({ url: v })
-          )}
-          {renderTextField("twitter", updateInput.twitter, (v) =>
-            setUpdateField({ twitter: v })
-          )}
-          {renderTextField("instagram", updateInput.instagram, (v) =>
-            setUpdateField({ instagram: v })
           )}
 
           <Form.Group controlId="tags">

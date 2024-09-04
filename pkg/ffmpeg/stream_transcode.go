@@ -45,12 +45,31 @@ func CodecInit(codec VideoCodec) (args Args) {
 			"-rc", "vbr",
 			"-cq", "15",
 		)
-	case VideoCodecI264:
+	case VideoCodecN264H:
+		args = append(args,
+			"-profile", "p7",
+			"-tune", "hq",
+			"-profile", "high",
+			"-rc", "vbr",
+			"-rc-lookahead", "60",
+			"-surfaces", "64",
+			"-spatial-aq", "1",
+			"-aq-strength", "15",
+			"-cq", "15",
+			"-coder", "cabac",
+			"-b_ref_mode", "middle",
+		)
+	case VideoCodecI264, VideoCodecIVP9:
 		args = append(args,
 			"-global_quality", "20",
 			"-preset", "faster",
 		)
-	case VideoCodecV264:
+	case VideoCodecI264C:
+		args = append(args,
+			"-q", "20",
+			"-preset", "faster",
+		)
+	case VideoCodecV264, VideoCodecVVP9:
 		args = append(args,
 			"-qp", "20",
 		)
@@ -60,21 +79,12 @@ func CodecInit(codec VideoCodec) (args Args) {
 		)
 	case VideoCodecM264:
 		args = append(args,
-			"-prio_speed", "1",
+			"-realtime", "1",
 		)
 	case VideoCodecO264:
 		args = append(args,
 			"-preset", "superfast",
 			"-crf", "25",
-		)
-	case VideoCodecIVP9:
-		args = append(args,
-			"-global_quality", "20",
-			"-preset", "faster",
-		)
-	case VideoCodecVVP9:
-		args = append(args,
-			"-qp", "20",
 		)
 	}
 
@@ -138,14 +148,30 @@ type TranscodeOptions struct {
 	StartTime  float64
 }
 
-func FileGetCodec(sm *StreamManager, mimetype string) (codec VideoCodec) {
-	switch mimetype {
+func (o TranscodeOptions) FileGetCodec(sm *StreamManager, maxTranscodeSize int) (codec VideoCodec) {
+	needsResize := false
+
+	if maxTranscodeSize != 0 {
+		if o.VideoFile.Width > o.VideoFile.Height {
+			needsResize = o.VideoFile.Width > maxTranscodeSize
+		} else {
+			needsResize = o.VideoFile.Height > maxTranscodeSize
+		}
+	}
+
+	switch o.StreamType.MimeType {
 	case MimeMp4Video:
+		if !needsResize && o.VideoFile.VideoCodec == H264 {
+			return VideoCodecCopy
+		}
 		codec = VideoCodecLibX264
 		if hwcodec := sm.encoder.hwCodecMP4Compatible(); hwcodec != nil && sm.config.GetTranscodeHardwareAcceleration() {
 			codec = *hwcodec
 		}
 	case MimeWebmVideo:
+		if !needsResize && (o.VideoFile.VideoCodec == Vp8 || o.VideoFile.VideoCodec == Vp9) {
+			return VideoCodecCopy
+		}
 		codec = VideoCodecVP9
 		if hwcodec := sm.encoder.hwCodecWEBMCompatible(); hwcodec != nil && sm.config.GetTranscodeHardwareAcceleration() {
 			codec = *hwcodec
@@ -168,9 +194,10 @@ func (o TranscodeOptions) makeStreamArgs(sm *StreamManager) Args {
 	args := Args{"-hide_banner"}
 	args = args.LogLevel(LogLevelError)
 
-	codec := FileGetCodec(sm, o.StreamType.MimeType)
+	codec := o.FileGetCodec(sm, maxTranscodeSize)
 
-	args = sm.encoder.hwDeviceInit(args, codec)
+	fullhw := sm.config.GetTranscodeHardwareAcceleration() && sm.encoder.hwCanFullHWTranscode(sm.context, codec, o.VideoFile, maxTranscodeSize)
+	args = sm.encoder.hwDeviceInit(args, codec, fullhw)
 	args = append(args, extraInputArgs...)
 
 	if o.StartTime != 0 {
@@ -181,7 +208,7 @@ func (o TranscodeOptions) makeStreamArgs(sm *StreamManager) Args {
 
 	videoOnly := ProbeAudioCodec(o.VideoFile.AudioCodec) == MissingUnsupported
 
-	videoFilter := sm.encoder.hwMaxResFilter(codec, o.VideoFile.Width, o.VideoFile.Height, maxTranscodeSize)
+	videoFilter := sm.encoder.hwMaxResFilter(codec, o.VideoFile, maxTranscodeSize, fullhw)
 
 	args = append(args, o.StreamType.Args(codec, videoFilter, videoOnly)...)
 

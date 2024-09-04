@@ -30,7 +30,7 @@ const (
 	dbConnTimeout = 30
 )
 
-var appSchemaVersion uint = 56
+var appSchemaVersion uint = 67
 
 //go:embed migrations/*.sql
 var migrationsBox embed.FS
@@ -61,7 +61,7 @@ func (e *MismatchedSchemaVersionError) Error() string {
 	return fmt.Sprintf("schema version %d is incompatible with required schema version %d", e.CurrentSchemaVersion, e.RequiredSchemaVersion)
 }
 
-type Database struct {
+type storeRepository struct {
 	Blobs          *BlobStore
 	File           *FileStore
 	Folder         *FolderStore
@@ -74,7 +74,11 @@ type Database struct {
 	SavedFilter    *SavedFilterStore
 	Studio         *StudioStore
 	Tag            *TagStore
-	Movie          *MovieStore
+	Group          *GroupStore
+}
+
+type Database struct {
+	*storeRepository
 
 	db     *sqlx.DB
 	dbPath string
@@ -87,23 +91,32 @@ type Database struct {
 func NewDatabase() *Database {
 	fileStore := NewFileStore()
 	folderStore := NewFolderStore()
+	galleryStore := NewGalleryStore(fileStore, folderStore)
 	blobStore := NewBlobStore(BlobStoreOptions{})
+	performerStore := NewPerformerStore(blobStore)
+	studioStore := NewStudioStore(blobStore)
+	tagStore := NewTagStore(blobStore)
 
-	ret := &Database{
+	r := &storeRepository{}
+	*r = storeRepository{
 		Blobs:          blobStore,
 		File:           fileStore,
 		Folder:         folderStore,
-		Scene:          NewSceneStore(fileStore, blobStore),
+		Scene:          NewSceneStore(r, blobStore),
 		SceneMarker:    NewSceneMarkerStore(),
-		Image:          NewImageStore(fileStore),
-		Gallery:        NewGalleryStore(fileStore, folderStore),
+		Image:          NewImageStore(r),
+		Gallery:        galleryStore,
 		GalleryChapter: NewGalleryChapterStore(),
-		Performer:      NewPerformerStore(blobStore),
-		Studio:         NewStudioStore(blobStore),
-		Tag:            NewTagStore(blobStore),
-		Movie:          NewMovieStore(blobStore),
+		Performer:      performerStore,
+		Studio:         studioStore,
+		Tag:            tagStore,
+		Group:          NewGroupStore(blobStore),
 		SavedFilter:    NewSavedFilterStore(),
-		lockChan:       make(chan struct{}, 1),
+	}
+
+	ret := &Database{
+		storeRepository: r,
+		lockChan:        make(chan struct{}, 1),
 	}
 
 	return ret
@@ -370,7 +383,7 @@ func (db *Database) Analyze(ctx context.Context) error {
 }
 
 func (db *Database) ExecSQL(ctx context.Context, query string, args []interface{}) (*int64, *int64, error) {
-	wrapper := dbWrapper{}
+	wrapper := dbWrapperType{}
 
 	result, err := wrapper.Exec(ctx, query, args...)
 	if err != nil {
@@ -393,7 +406,7 @@ func (db *Database) ExecSQL(ctx context.Context, query string, args []interface{
 }
 
 func (db *Database) QuerySQL(ctx context.Context, query string, args []interface{}) ([]string, [][]interface{}, error) {
-	wrapper := dbWrapper{}
+	wrapper := dbWrapperType{}
 
 	rows, err := wrapper.QueryxContext(ctx, query, args...)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {

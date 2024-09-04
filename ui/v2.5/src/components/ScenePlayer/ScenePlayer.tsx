@@ -248,7 +248,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   const auto = useRef(false);
   const interactiveReady = useRef(false);
   const minimumPlayPercent = uiConfig?.minimumPlayPercent ?? 0;
-  const trackActivity = uiConfig?.trackActivity ?? false;
+  const trackActivity = uiConfig?.trackActivity ?? true;
   const vrTag = uiConfig?.vrTag ?? undefined;
 
   useScript(
@@ -822,7 +822,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
   return (
     <div
-      className={cx("VideoPlayer", { portrait: isPortrait })}
+      className={cx("VideoPlayer", { portrait: isPortrait, "no-file": !file })}
       onKeyDownCapture={onKeyDown}
     >
       <div className="video-wrapper" ref={videoRef} />

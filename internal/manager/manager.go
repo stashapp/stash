@@ -1,3 +1,5 @@
+// Package manager provides the core manager of the application.
+// This consolidates all the services and managers into a single struct.
 package manager
 
 import (
@@ -41,7 +43,7 @@ type Manager struct {
 	Paths *paths.Paths
 
 	FFMpeg        *ffmpeg.FFMpeg
-	FFProbe       ffmpeg.FFProbe
+	FFProbe       *ffmpeg.FFProbe
 	StreamManager *ffmpeg.StreamManager
 
 	JobManager      *job.Manager
@@ -64,6 +66,7 @@ type Manager struct {
 	SceneService   SceneService
 	ImageService   ImageService
 	GalleryService GalleryService
+	GroupService   GroupService
 
 	scanSubs *subscriptionManager
 }
@@ -245,7 +248,7 @@ func (s *Manager) Setup(ctx context.Context, input SetupInput) error {
 			}
 		}
 
-		s.Config.Set(config.Generated, input.GeneratedLocation)
+		s.Config.SetString(config.Generated, input.GeneratedLocation)
 	}
 
 	// create the cache directory if it does not exist
@@ -256,11 +259,11 @@ func (s *Manager) Setup(ctx context.Context, input SetupInput) error {
 			}
 		}
 
-		cfg.Set(config.Cache, input.CacheLocation)
+		cfg.SetString(config.Cache, input.CacheLocation)
 	}
 
 	if input.StoreBlobsInDatabase {
-		cfg.Set(config.BlobsStorage, config.BlobStorageTypeDatabase)
+		cfg.SetInterface(config.BlobsStorage, config.BlobStorageTypeDatabase)
 	} else {
 		if !cfg.HasOverride(config.BlobsPath) {
 			if exists, _ := fsutil.DirExists(input.BlobsLocation); !exists {
@@ -269,18 +272,18 @@ func (s *Manager) Setup(ctx context.Context, input SetupInput) error {
 				}
 			}
 
-			cfg.Set(config.BlobsPath, input.BlobsLocation)
+			cfg.SetString(config.BlobsPath, input.BlobsLocation)
 		}
 
-		cfg.Set(config.BlobsStorage, config.BlobStorageTypeFilesystem)
+		cfg.SetInterface(config.BlobsStorage, config.BlobStorageTypeFilesystem)
 	}
 
 	// set the configuration
 	if !cfg.HasOverride(config.Database) {
-		cfg.Set(config.Database, input.DatabaseFile)
+		cfg.SetString(config.Database, input.DatabaseFile)
 	}
 
-	cfg.Set(config.Stash, input.Stashes)
+	cfg.SetInterface(config.Stash, input.Stashes)
 
 	if err := cfg.Write(); err != nil {
 		return fmt.Errorf("error writing configuration file: %v", err)
@@ -297,7 +300,7 @@ func (s *Manager) Setup(ctx context.Context, input SetupInput) error {
 }
 
 func (s *Manager) validateFFmpeg() error {
-	if s.FFMpeg == nil || s.FFProbe == "" {
+	if s.FFMpeg == nil || s.FFProbe == nil {
 		return errors.New("missing ffmpeg and/or ffprobe")
 	}
 	return nil
@@ -397,7 +400,7 @@ func (s *Manager) GetSystemStatus() *SystemStatus {
 	}
 
 	ffprobePath := ""
-	if s.FFProbe != "" {
+	if s.FFProbe != nil {
 		ffprobePath = s.FFProbe.Path()
 	}
 

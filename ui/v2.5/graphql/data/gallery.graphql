@@ -11,6 +11,11 @@ fragment GalleryData on Gallery {
   rating100
   organized
 
+  paths {
+    cover
+    preview
+  }
+
   files {
     ...GalleryFileData
   }
@@ -20,9 +25,6 @@ fragment GalleryData on Gallery {
 
   chapters {
     ...GalleryChapterData
-  }
-  cover {
-    ...SlimImageData
   }
   studio {
     ...SlimStudioData
@@ -42,6 +44,19 @@ fragment GalleryData on Gallery {
 fragment SelectGalleryData on Gallery {
   id
   title
+  date
+  code
+  studio {
+    name
+  }
+  cover {
+    paths {
+      thumbnail
+    }
+  }
+  paths {
+    preview
+  }
   files {
     path
   }

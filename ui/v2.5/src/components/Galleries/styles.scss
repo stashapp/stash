@@ -88,6 +88,14 @@
     color: $text-color;
   }
 
+  &-cover {
+    position: relative;
+  }
+
+  .preview-scrubber {
+    top: 0;
+  }
+
   &-image {
     object-fit: contain;
   }
@@ -206,8 +214,10 @@ $galleryTabWidth: 450px;
 
   .gallery-container {
     flex: 0 0 calc(100% - #{$galleryTabWidth} - 15px);
+    height: calc(100vh - 4rem);
     max-width: calc(100% - #{$galleryTabWidth} - 15px);
     padding-left: 0;
+    overflow: auto;
 
     &.expanded {
       flex: 0 0 calc(100% - 15px);
@@ -401,8 +411,51 @@ $galleryTabWidth: 450px;
   padding-right: 2px;
 }
 
-.gallery-select-alias {
-  font-size: 0.8rem;
-  font-weight: bold;
-  white-space: pre;
+.gallery-select-option {
+  .gallery-select-row {
+    align-items: center;
+    display: flex;
+    width: 100%;
+
+    .gallery-select-image {
+      background-color: $body-bg;
+      margin-right: 0.4em;
+      max-height: 50px;
+      max-width: 89px;
+      object-fit: contain;
+      object-position: center;
+    }
+
+    .gallery-select-details {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      max-height: 4.1rem;
+      overflow: hidden;
+
+      .gallery-select-title {
+        flex-shrink: 0;
+        white-space: pre-wrap;
+        word-break: break-all;
+      }
+
+      .gallery-select-date,
+      .gallery-select-studio,
+      .gallery-select-code {
+        color: $text-muted;
+        flex-shrink: 0;
+        font-size: 0.9rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+    }
+  }
+
+  .gallery-select-alias {
+    font-size: 0.8rem;
+    font-weight: bold;
+    width: 100%;
+    word-break: break-all;
+  }
 }

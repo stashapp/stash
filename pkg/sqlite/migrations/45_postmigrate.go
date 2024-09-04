@@ -273,7 +273,7 @@ func (m *schema45Migrator) migrateConfig(ctx context.Context) error {
 	}
 
 	logger.Infof("Setting blobs storage to %s", defaultStorage.String())
-	c.Set(config.BlobsStorage, defaultStorage)
+	c.SetInterface(config.BlobsStorage, defaultStorage)
 	if err := c.Write(); err != nil {
 		logger.Errorf("Error while writing configuration file: %s", err.Error())
 	}
@@ -282,7 +282,7 @@ func (m *schema45Migrator) migrateConfig(ctx context.Context) error {
 	scanDefaults := c.GetDefaultScanSettings()
 	if scanDefaults != nil {
 		scanDefaults.ScanGenerateCovers = true
-		c.Set(config.DefaultScanSettings, scanDefaults)
+		c.SetInterface(config.DefaultScanSettings, scanDefaults)
 		if err := c.Write(); err != nil {
 			logger.Errorf("Error while writing configuration file: %s", err.Error())
 		}

@@ -18,9 +18,7 @@ fragment ScrapedPerformerData on ScrapedPerformer {
   name
   disambiguation
   gender
-  url
-  twitter
-  instagram
+  urls
   birthdate
   ethnicity
   country
@@ -50,9 +48,7 @@ fragment ScrapedScenePerformerData on ScrapedPerformer {
   name
   disambiguation
   gender
-  url
-  twitter
-  instagram
+  urls
   birthdate
   ethnicity
   country
@@ -77,30 +73,33 @@ fragment ScrapedScenePerformerData on ScrapedPerformer {
   weight
 }
 
-fragment ScrapedMovieStudioData on ScrapedStudio {
+fragment ScrapedGroupStudioData on ScrapedStudio {
   stored_id
   name
   url
 }
 
-fragment ScrapedMovieData on ScrapedMovie {
+fragment ScrapedGroupData on ScrapedGroup {
   name
   aliases
   duration
   date
   rating
   director
-  url
+  urls
   synopsis
   front_image
   back_image
 
   studio {
-    ...ScrapedMovieStudioData
+    ...ScrapedGroupStudioData
+  }
+  tags {
+    ...ScrapedSceneTagData
   }
 }
 
-fragment ScrapedSceneMovieData on ScrapedMovie {
+fragment ScrapedSceneGroupData on ScrapedGroup {
   stored_id
   name
   aliases
@@ -108,13 +107,16 @@ fragment ScrapedSceneMovieData on ScrapedMovie {
   date
   rating
   director
-  url
+  urls
   synopsis
   front_image
   back_image
 
   studio {
-    ...ScrapedMovieStudioData
+    ...ScrapedGroupStudioData
+  }
+  tags {
+    ...ScrapedSceneTagData
   }
 }
 
@@ -171,8 +173,8 @@ fragment ScrapedSceneData on ScrapedScene {
     ...ScrapedScenePerformerData
   }
 
-  movies {
-    ...ScrapedSceneMovieData
+  groups {
+    ...ScrapedSceneGroupData
   }
 
   fingerprints {
@@ -243,8 +245,8 @@ fragment ScrapedStashBoxSceneData on ScrapedScene {
     ...ScrapedScenePerformerData
   }
 
-  movies {
-    ...ScrapedSceneMovieData
+  groups {
+    ...ScrapedSceneGroupData
   }
 }
 

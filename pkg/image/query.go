@@ -7,6 +7,19 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
+type Queryer interface {
+	Query(ctx context.Context, options models.ImageQueryOptions) (*models.ImageQueryResult, error)
+}
+
+type CoverQueryer interface {
+	Queryer
+	CoverByGalleryID(ctx context.Context, galleryId int) (*models.Image, error)
+}
+
+type QueryCounter interface {
+	QueryCount(ctx context.Context, imageFilter *models.ImageFilterType, findFilter *models.FindFilterType) (int, error)
+}
+
 // QueryOptions returns a ImageQueryResult populated with the provided filters.
 func QueryOptions(imageFilter *models.ImageFilterType, findFilter *models.FindFilterType, count bool) models.ImageQueryOptions {
 	return models.ImageQueryOptions{
@@ -19,7 +32,7 @@ func QueryOptions(imageFilter *models.ImageFilterType, findFilter *models.FindFi
 }
 
 // Query queries for images using the provided filters.
-func Query(ctx context.Context, qb models.ImageQueryer, imageFilter *models.ImageFilterType, findFilter *models.FindFilterType) ([]*models.Image, error) {
+func Query(ctx context.Context, qb Queryer, imageFilter *models.ImageFilterType, findFilter *models.FindFilterType) ([]*models.Image, error) {
 	result, err := qb.Query(ctx, QueryOptions(imageFilter, findFilter, false))
 	if err != nil {
 		return nil, err
@@ -33,7 +46,7 @@ func Query(ctx context.Context, qb models.ImageQueryer, imageFilter *models.Imag
 	return images, nil
 }
 
-func CountByPerformerID(ctx context.Context, r models.ImageQueryer, id int) (int, error) {
+func CountByPerformerID(ctx context.Context, r QueryCounter, id int) (int, error) {
 	filter := &models.ImageFilterType{
 		Performers: &models.MultiCriterionInput{
 			Value:    []string{strconv.Itoa(id)},
@@ -44,7 +57,7 @@ func CountByPerformerID(ctx context.Context, r models.ImageQueryer, id int) (int
 	return r.QueryCount(ctx, filter, nil)
 }
 
-func CountByStudioID(ctx context.Context, r models.ImageQueryer, id int, depth *int) (int, error) {
+func CountByStudioID(ctx context.Context, r QueryCounter, id int, depth *int) (int, error) {
 	filter := &models.ImageFilterType{
 		Studios: &models.HierarchicalMultiCriterionInput{
 			Value:    []string{strconv.Itoa(id)},
@@ -56,7 +69,7 @@ func CountByStudioID(ctx context.Context, r models.ImageQueryer, id int, depth *
 	return r.QueryCount(ctx, filter, nil)
 }
 
-func CountByTagID(ctx context.Context, r models.ImageQueryer, id int, depth *int) (int, error) {
+func CountByTagID(ctx context.Context, r QueryCounter, id int, depth *int) (int, error) {
 	filter := &models.ImageFilterType{
 		Tags: &models.HierarchicalMultiCriterionInput{
 			Value:    []string{strconv.Itoa(id)},
@@ -68,7 +81,7 @@ func CountByTagID(ctx context.Context, r models.ImageQueryer, id int, depth *int
 	return r.QueryCount(ctx, filter, nil)
 }
 
-func FindByGalleryID(ctx context.Context, r models.ImageQueryer, galleryID int, sortBy string, sortDir models.SortDirectionEnum) ([]*models.Image, error) {
+func FindByGalleryID(ctx context.Context, r Queryer, galleryID int, sortBy string, sortDir models.SortDirectionEnum) ([]*models.Image, error) {
 	perPage := -1
 
 	findFilter := models.FindFilterType{
@@ -91,7 +104,7 @@ func FindByGalleryID(ctx context.Context, r models.ImageQueryer, galleryID int, 
 	}, &findFilter)
 }
 
-func FindGalleryCover(ctx context.Context, r models.ImageQueryer, galleryID int, galleryCoverRegex string) (*models.Image, error) {
+func FindGalleryCover(ctx context.Context, r CoverQueryer, galleryID int, galleryCoverRegex string) (*models.Image, error) {
 	const useCoverJpg = true
 	img, err := findGalleryCover(ctx, r, galleryID, useCoverJpg, galleryCoverRegex)
 	if err != nil {
@@ -106,7 +119,14 @@ func FindGalleryCover(ctx context.Context, r models.ImageQueryer, galleryID int,
 	return findGalleryCover(ctx, r, galleryID, !useCoverJpg, galleryCoverRegex)
 }
 
-func findGalleryCover(ctx context.Context, r models.ImageQueryer, galleryID int, useCoverJpg bool, galleryCoverRegex string) (*models.Image, error) {
+func findGalleryCover(ctx context.Context, r CoverQueryer, galleryID int, useCoverJpg bool, galleryCoverRegex string) (*models.Image, error) {
+	img, err := r.CoverByGalleryID(ctx, galleryID)
+	if err != nil {
+		return nil, err
+	} else if img != nil {
+		return img, nil
+	}
+
 	// try to find cover.jpg in the gallery
 	perPage := 1
 	sortBy := "path"

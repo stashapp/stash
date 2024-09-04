@@ -111,6 +111,7 @@ fragment ConfigInterfaceData on ConfigInterfaceResult {
 fragment ConfigDLNAData on ConfigDLNAResult {
   serverName
   enabled
+  port
   whitelistedIPs
   interfaces
   videoSortOrder
@@ -150,6 +151,7 @@ fragment ScraperSourceData on ScraperSource {
 
 fragment ConfigDefaultSettingsData on ConfigDefaultSettingsResult {
   scan {
+    # don't get rescan - it should never be defaulted to true
     scanGenerateCovers
     scanGeneratePreviews
     scanGenerateImagePreviews

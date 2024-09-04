@@ -1,10 +1,14 @@
+// Package loaders contains the dataloaders used by the resolver in [api].
+// They are generated with `make generate-dataloaders`.
+// The dataloaders are used to batch requests to the database.
+
 //go:generate go run github.com/vektah/dataloaden SceneLoader int *github.com/stashapp/stash/pkg/models.Scene
 //go:generate go run github.com/vektah/dataloaden GalleryLoader int *github.com/stashapp/stash/pkg/models.Gallery
 //go:generate go run github.com/vektah/dataloaden ImageLoader int *github.com/stashapp/stash/pkg/models.Image
 //go:generate go run github.com/vektah/dataloaden PerformerLoader int *github.com/stashapp/stash/pkg/models.Performer
 //go:generate go run github.com/vektah/dataloaden StudioLoader int *github.com/stashapp/stash/pkg/models.Studio
 //go:generate go run github.com/vektah/dataloaden TagLoader int *github.com/stashapp/stash/pkg/models.Tag
-//go:generate go run github.com/vektah/dataloaden MovieLoader int *github.com/stashapp/stash/pkg/models.Movie
+//go:generate go run github.com/vektah/dataloaden GroupLoader int *github.com/stashapp/stash/pkg/models.Group
 //go:generate go run github.com/vektah/dataloaden FileLoader github.com/stashapp/stash/pkg/models.FileID github.com/stashapp/stash/pkg/models.File
 //go:generate go run github.com/vektah/dataloaden SceneFileIDsLoader int []github.com/stashapp/stash/pkg/models.FileID
 //go:generate go run github.com/vektah/dataloaden ImageFileIDsLoader int []github.com/stashapp/stash/pkg/models.FileID
@@ -52,7 +56,7 @@ type Loaders struct {
 	PerformerByID *PerformerLoader
 	StudioByID    *StudioLoader
 	TagByID       *TagLoader
-	MovieByID     *MovieLoader
+	GroupByID     *GroupLoader
 	FileByID      *FileLoader
 }
 
@@ -94,10 +98,10 @@ func (m Middleware) Middleware(next http.Handler) http.Handler {
 				maxBatch: maxBatch,
 				fetch:    m.fetchTags(ctx),
 			},
-			MovieByID: &MovieLoader{
+			GroupByID: &GroupLoader{
 				wait:     wait,
 				maxBatch: maxBatch,
-				fetch:    m.fetchMovies(ctx),
+				fetch:    m.fetchGroups(ctx),
 			},
 			FileByID: &FileLoader{
 				wait:     wait,
@@ -232,11 +236,11 @@ func (m Middleware) fetchTags(ctx context.Context) func(keys []int) ([]*models.T
 	}
 }
 
-func (m Middleware) fetchMovies(ctx context.Context) func(keys []int) ([]*models.Movie, []error) {
-	return func(keys []int) (ret []*models.Movie, errs []error) {
+func (m Middleware) fetchGroups(ctx context.Context) func(keys []int) ([]*models.Group, []error) {
+	return func(keys []int) (ret []*models.Group, errs []error) {
 		err := m.Repository.WithDB(ctx, func(ctx context.Context) error {
 			var err error
-			ret, err = m.Repository.Movie.FindMany(ctx, keys)
+			ret, err = m.Repository.Group.FindMany(ctx, keys)
 			return err
 		})
 		return ret, toErrorSlice(err)

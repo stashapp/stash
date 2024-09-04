@@ -18,7 +18,7 @@ COPY --from=binary /stash /usr/bin/
 RUN apk add --no-cache --virtual .build-deps gcc python3-dev musl-dev \
     && apk add --no-cache ca-certificates python3 py3-requests py3-requests-toolbelt py3-lxml py3-pip ffmpeg ruby tzdata \
     && apk add --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/v3.18/community vips=8.14.3-r0 vips-tools=8.14.3-r0 \
-    && pip install --user --break-system-packages mechanicalsoup cloudscraper bencoder.pyx \
+    && pip install --user --break-system-packages mechanicalsoup cloudscraper bencoder.pyx stashapp-tools \
     && gem install faraday \
     && apk del .build-deps
 ENV STASH_CONFIG_FILE=/root/.stash/config.yml

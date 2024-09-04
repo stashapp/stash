@@ -17,27 +17,26 @@ import {
   ScrapeResult,
 } from "src/components/Shared/ScrapeDialog/scrapeResult";
 import {
-  ScrapedMoviesRow,
+  ScrapedGroupsRow,
   ScrapedPerformersRow,
   ScrapedStudioRow,
-  ScrapedTagsRow,
 } from "src/components/Shared/ScrapeDialog/ScrapedObjectsRow";
 import {
-  useCreateScrapedMovie,
+  useCreateScrapedGroup,
   useCreateScrapedPerformer,
   useCreateScrapedStudio,
-  useCreateScrapedTag,
 } from "src/components/Shared/ScrapeDialog/createObjects";
 import { Tag } from "src/components/Tags/TagSelect";
 import { Studio } from "src/components/Studios/StudioSelect";
-import { Movie } from "src/components/Movies/MovieSelect";
+import { Group } from "src/components/Groups/GroupSelect";
+import { useScrapedTags } from "src/components/Shared/ScrapeDialog/scrapedTags";
 
 interface ISceneScrapeDialogProps {
   scene: Partial<GQL.SceneUpdateInput>;
   sceneStudio: Studio | null;
   scenePerformers: Performer[];
   sceneTags: Tag[];
-  sceneMovies: Movie[];
+  sceneGroups: Group[];
   scraped: GQL.ScrapedScene;
   endpoint?: string;
 
@@ -49,7 +48,7 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
   sceneStudio,
   scenePerformers,
   sceneTags,
-  sceneMovies,
+  sceneGroups,
   scraped,
   onClose,
   endpoint,
@@ -115,36 +114,26 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
     scraped.performers?.filter((t) => !t.stored_id) ?? []
   );
 
-  const [movies, setMovies] = useState<
-    ObjectListScrapeResult<GQL.ScrapedMovie>
+  const [groups, setGroups] = useState<
+    ObjectListScrapeResult<GQL.ScrapedGroup>
   >(
-    new ObjectListScrapeResult<GQL.ScrapedMovie>(
+    new ObjectListScrapeResult<GQL.ScrapedGroup>(
       sortStoredIdObjects(
-        sceneMovies.map((p) => ({
+        sceneGroups.map((p) => ({
           stored_id: p.id,
           name: p.name,
         }))
       ),
-      sortStoredIdObjects(scraped.movies ?? undefined)
+      sortStoredIdObjects(scraped.groups ?? undefined)
     )
   );
-  const [newMovies, setNewMovies] = useState<GQL.ScrapedMovie[]>(
-    scraped.movies?.filter((t) => !t.stored_id) ?? []
+  const [newGroups, setNewGroups] = useState<GQL.ScrapedGroup[]>(
+    scraped.groups?.filter((t) => !t.stored_id) ?? []
   );
 
-  const [tags, setTags] = useState<ObjectListScrapeResult<GQL.ScrapedTag>>(
-    new ObjectListScrapeResult<GQL.ScrapedTag>(
-      sortStoredIdObjects(
-        sceneTags.map((t) => ({
-          stored_id: t.id,
-          name: t.name,
-        }))
-      ),
-      sortStoredIdObjects(scraped.tags ?? undefined)
-    )
-  );
-  const [newTags, setNewTags] = useState<GQL.ScrapedTag[]>(
-    scraped.tags?.filter((t) => !t.stored_id) ?? []
+  const { tags, newTags, scrapedTagsRow } = useScrapedTags(
+    sceneTags,
+    scraped.tags
   );
 
   const [details, setDetails] = useState<ScrapeResult<string>>(
@@ -168,18 +157,11 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
     setNewObjects: setNewPerformers,
   });
 
-  const createNewMovie = useCreateScrapedMovie({
-    scrapeResult: movies,
-    setScrapeResult: setMovies,
-    newObjects: newMovies,
-    setNewObjects: setNewMovies,
-  });
-
-  const createNewTag = useCreateScrapedTag({
-    scrapeResult: tags,
-    setScrapeResult: setTags,
-    newObjects: newTags,
-    setNewObjects: setNewTags,
+  const createNewGroup = useCreateScrapedGroup({
+    scrapeResult: groups,
+    setScrapeResult: setGroups,
+    newObjects: newGroups,
+    setNewObjects: setNewGroups,
   });
 
   const intl = useIntl();
@@ -194,7 +176,7 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
       director,
       studio,
       performers,
-      movies,
+      groups,
       tags,
       details,
       image,
@@ -202,7 +184,7 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
     ].every((r) => !r.scraped) &&
     newTags.length === 0 &&
     newPerformers.length === 0 &&
-    newMovies.length === 0 &&
+    newGroups.length === 0 &&
     !newStudio
   ) {
     onClose();
@@ -220,7 +202,7 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
       director: director.getNewValue(),
       studio: newStudioValue,
       performers: performers.getNewValue(),
-      movies: movies.getNewValue(),
+      groups: groups.getNewValue(),
       tags: tags.getNewValue(),
       details: details.getNewValue(),
       image: image.getNewValue(),
@@ -271,20 +253,14 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
           newObjects={newPerformers}
           onCreateNew={createNewPerformer}
         />
-        <ScrapedMoviesRow
-          title={intl.formatMessage({ id: "movies" })}
-          result={movies}
-          onChange={(value) => setMovies(value)}
-          newObjects={newMovies}
-          onCreateNew={createNewMovie}
+        <ScrapedGroupsRow
+          title={intl.formatMessage({ id: "groups" })}
+          result={groups}
+          onChange={(value) => setGroups(value)}
+          newObjects={newGroups}
+          onCreateNew={createNewGroup}
         />
-        <ScrapedTagsRow
-          title={intl.formatMessage({ id: "tags" })}
-          result={tags}
-          onChange={(value) => setTags(value)}
-          newObjects={newTags}
-          onCreateNew={createNewTag}
-        />
+        {scrapedTagsRow}
         <ScrapedTextAreaRow
           title={intl.formatMessage({ id: "details" })}
           result={details}

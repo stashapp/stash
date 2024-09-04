@@ -6,11 +6,12 @@ import Studio from "./StudioDetails/Studio";
 import StudioCreate from "./StudioDetails/StudioCreate";
 import { StudioList } from "./StudioList";
 import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
+import { View } from "../List/views";
 
 const Studios: React.FC = () => {
   useScrollToTopOnMount();
 
-  return <StudioList />;
+  return <StudioList view={View.Studios} />;
 };
 
 const StudioRoutes: React.FC = () => {

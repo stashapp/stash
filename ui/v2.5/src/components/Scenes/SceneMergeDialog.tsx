@@ -3,7 +3,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import * as GQL from "src/core/generated-graphql";
 import { Icon } from "../Shared/Icon";
 import { LoadingIndicator } from "../Shared/LoadingIndicator";
-import { StringListSelect, GallerySelect, SceneSelect } from "../Shared/Select";
+import { StringListSelect, GallerySelect } from "../Shared/Select";
 import * as FormUtils from "src/utils/form";
 import ImageUtils from "src/utils/image";
 import TextUtils from "src/utils/text";
@@ -30,11 +30,12 @@ import {
   hasScrapedValues,
 } from "../Shared/ScrapeDialog/scrapeResult";
 import {
-  ScrapedMoviesRow,
+  ScrapedGroupsRow,
   ScrapedPerformersRow,
   ScrapedStudioRow,
   ScrapedTagsRow,
 } from "../Shared/ScrapeDialog/ScrapedObjectsRow";
+import { Scene, SceneSelect } from "src/components/Scenes/SceneSelect";
 
 interface IStashIDsField {
   values: GQL.StashId[];
@@ -99,10 +100,10 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
     };
   }
 
-  function movieToStoredID(o: { movie: { id: string; name: string } }) {
+  function groupToStoredID(o: { group: { id: string; name: string } }) {
     return {
-      stored_id: o.movie.id,
-      name: o.movie.name,
+      stored_id: o.group.id,
+      name: o.group.name,
     };
   }
 
@@ -140,11 +141,11 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
     )
   );
 
-  const [movies, setMovies] = useState<
-    ObjectListScrapeResult<GQL.ScrapedMovie>
+  const [groups, setGroups] = useState<
+    ObjectListScrapeResult<GQL.ScrapedGroup>
   >(
-    new ObjectListScrapeResult<GQL.ScrapedMovie>(
-      sortStoredIdObjects(dest.movies.map(movieToStoredID))
+    new ObjectListScrapeResult<GQL.ScrapedGroup>(
+      sortStoredIdObjects(dest.groups.map(groupToStoredID))
     )
   );
 
@@ -251,10 +252,10 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
       )
     );
 
-    setMovies(
-      new ObjectListScrapeResult<GQL.ScrapedMovie>(
-        sortStoredIdObjects(dest.movies.map(movieToStoredID)),
-        uniqIDStoredIDs(all.map((s) => s.movies.map(movieToStoredID)).flat())
+    setGroups(
+      new ObjectListScrapeResult<GQL.ScrapedGroup>(
+        sortStoredIdObjects(dest.groups.map(groupToStoredID)),
+        uniqIDStoredIDs(all.map((s) => s.groups.map(groupToStoredID)).flat())
       )
     );
 
@@ -330,7 +331,7 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
       galleries,
       studio,
       performers,
-      movies,
+      groups,
       tags,
       details,
       organized,
@@ -347,7 +348,7 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
     galleries,
     studio,
     performers,
-    movies,
+    groups,
     tags,
     details,
     organized,
@@ -507,10 +508,10 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
           result={performers}
           onChange={(value) => setPerformers(value)}
         />
-        <ScrapedMoviesRow
-          title={intl.formatMessage({ id: "movies" })}
-          result={movies}
-          onChange={(value) => setMovies(value)}
+        <ScrapedGroupsRow
+          title={intl.formatMessage({ id: "groups" })}
+          result={groups}
+          onChange={(value) => setGroups(value)}
         />
         <ScrapedTagsRow
           title={intl.formatMessage({ id: "tags" })}
@@ -584,14 +585,14 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
         gallery_ids: galleries.getNewValue(),
         studio_id: studio.getNewValue()?.stored_id,
         performer_ids: performers.getNewValue()?.map((p) => p.stored_id!),
-        movies: movies.getNewValue()?.map((m) => {
-          // find the equivalent movie in the original scenes
+        groups: groups.getNewValue()?.map((m) => {
+          // find the equivalent group in the original scenes
           const found = all
-            .map((s) => s.movies)
+            .map((s) => s.groups)
             .flat()
-            .find((mm) => mm.movie.id === m.stored_id);
+            .find((mm) => mm.group.id === m.stored_id);
           return {
-            movie_id: m.stored_id!,
+            group_id: m.stored_id!,
             scene_index: found!.scene_index,
           };
         }),
@@ -645,12 +646,8 @@ export const SceneMergeModal: React.FC<ISceneMergeModalProps> = ({
   onClose,
   scenes,
 }) => {
-  const [sourceScenes, setSourceScenes] = useState<
-    { id: string; title: string }[]
-  >([]);
-  const [destScene, setDestScene] = useState<{ id: string; title: string }[]>(
-    []
-  );
+  const [sourceScenes, setSourceScenes] = useState<Scene[]>([]);
+  const [destScene, setDestScene] = useState<Scene[]>([]);
 
   const [loadedSources, setLoadedSources] = useState<
     GQL.SlimSceneDataFragment[]
@@ -773,7 +770,7 @@ export const SceneMergeModal: React.FC<ISceneMergeModalProps> = ({
               <SceneSelect
                 isMulti
                 onSelect={(items) => setSourceScenes(items)}
-                selected={sourceScenes}
+                values={sourceScenes}
               />
             </Col>
           </Form.Group>
@@ -805,7 +802,7 @@ export const SceneMergeModal: React.FC<ISceneMergeModalProps> = ({
             <Col sm={9} xl={12}>
               <SceneSelect
                 onSelect={(items) => setDestScene(items)}
-                selected={destScene}
+                values={destScene}
               />
             </Col>
           </Form.Group>

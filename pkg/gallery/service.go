@@ -1,3 +1,5 @@
+// Package gallery provides application logic for managing galleries.
+// This functionality is exposed via the [Service] type.
 package gallery
 
 import (

@@ -37,6 +37,8 @@ func main() {
 
 	defer recoverPanic()
 
+	initLogTemp()
+
 	helpFlag := false
 	pflag.BoolVarP(&helpFlag, "help", "h", false, "show this help text and exit")
 
@@ -102,6 +104,16 @@ func main() {
 	desktop.Start(exit, &ui.FaviconProvider)
 
 	exitCode = <-exit
+}
+
+// initLogTemp initializes a temporary logger for use before the config is loaded.
+// Logs only error level message to stderr.
+func initLogTemp() *log.Logger {
+	l := log.NewLogger()
+	l.Init("", true, "Error")
+	logger.Logger = l
+
+	return l
 }
 
 func initLog(cfg *config.Config) *log.Logger {

@@ -27,7 +27,7 @@ import {
 import { useCompare } from "src/hooks/state";
 import { Placement } from "react-bootstrap/esm/Overlay";
 import { sortByRelevance } from "src/utils/query";
-import { PatchComponent } from "src/patch";
+import { PatchComponent, PatchFunction } from "src/patch";
 
 export type SelectObject = {
   id: string;
@@ -37,6 +37,24 @@ export type SelectObject = {
 
 export type Studio = Pick<GQL.Studio, "id" | "name" | "aliases" | "image_path">;
 type Option = SelectOption<Studio>;
+
+type FindStudiosResult = Awaited<
+  ReturnType<typeof queryFindStudiosForSelect>
+>["data"]["findStudios"]["studios"];
+
+function sortStudiosByRelevance(input: string, studios: FindStudiosResult) {
+  return sortByRelevance(
+    input,
+    studios,
+    (s) => s.name,
+    (s) => s.aliases
+  );
+}
+
+const studioSelectSort = PatchFunction(
+  "StudioSelect.sort",
+  sortStudiosByRelevance
+);
 
 const _StudioSelect: React.FC<
   IFilterProps &
@@ -70,12 +88,7 @@ const _StudioSelect: React.FC<
       return !exclude.includes(studio.id.toString());
     });
 
-    return sortByRelevance(
-      input,
-      ret,
-      (s) => s.name,
-      (s) => s.aliases
-    ).map((studio) => ({
+    return studioSelectSort(input, ret).map((studio) => ({
       value: studio.id,
       object: studio,
     }));
