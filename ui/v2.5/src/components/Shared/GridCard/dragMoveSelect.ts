@@ -16,6 +16,8 @@ export function useDragMoveSelect(props: {
   const { selectedIds } = useListContextOptional();
 
   const [inHandle, setInHandle] = useState(false);
+
+  // true if this is the source of a move operation
   const [moveSrc, setMoveSrc] = useState(false);
   const [moveTarget, setMoveTarget] = useState<DragSide | undefined>();
 
@@ -75,6 +77,7 @@ export function useDragMoveSelect(props: {
       ev.dataTransfer.dropEffect = "copy";
       ev.preventDefault();
     } else if (ev.dataTransfer.effectAllowed === "move" && !moveSrc) {
+      // don't allow move on self
       doSetMoveTarget(event);
       ev.dataTransfer.dropEffect = "move";
       ev.preventDefault();
@@ -92,7 +95,8 @@ export function useDragMoveSelect(props: {
   }
 
   function onDragOver(event: React.DragEvent<HTMLElement>) {
-    if (event.dataTransfer.effectAllowed === "move" && moveSrc) {
+    // only set move target if move is allowed, or if this is not the source of the move
+    if (event.dataTransfer.effectAllowed !== "move" || moveSrc) {
       return;
     }
 
