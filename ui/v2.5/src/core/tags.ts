@@ -6,11 +6,11 @@ import {
   TagsCriterionOption,
 } from "src/models/list-filter/criteria/tags";
 import { ListFilterModel } from "src/models/list-filter/filter";
-import React from "react";
-import { ConfigurationContext } from "src/hooks/Config";
 
-export const useTagFilterHook = (tag: GQL.TagDataFragment) => {
-  const { configuration } = React.useContext(ConfigurationContext);
+export const useTagFilterHook = (
+  tag: GQL.TagDataFragment,
+  showSubTagContent?: boolean
+) => {
   return (filter: ListFilterModel) => {
     const tagValue = { id: tag.id, label: tag.name };
     // if tag is already present, then we modify it, otherwise add
@@ -42,7 +42,7 @@ export const useTagFilterHook = (tag: GQL.TagDataFragment) => {
       tagCriterion.value = {
         items: [tagValue],
         excluded: [],
-        depth: configuration?.ui.showChildTagContent ? -1 : 0,
+        depth: showSubTagContent ? -1 : 0,
       };
       tagCriterion.modifier = GQL.CriterionModifier.IncludesAll;
       filter.criteria.push(tagCriterion);

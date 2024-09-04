@@ -11,6 +11,7 @@ import { Helmet } from "react-helmet";
 import * as GQL from "src/core/generated-graphql";
 import {
   mutateMetadataScan,
+  mutateResetGalleryCover,
   useFindGallery,
   useGalleryUpdate,
 } from "src/core/StashService";
@@ -124,6 +125,7 @@ export const GalleryPage: React.FC<IProps> = ({ gallery, add }) => {
 
     await mutateMetadataScan({
       paths: [path],
+      rescan: true,
     });
 
     Toast.success(
@@ -135,6 +137,25 @@ export const GalleryPage: React.FC<IProps> = ({ gallery, add }) => {
         }
       )
     );
+  }
+
+  async function onResetCover() {
+    try {
+      await mutateResetGalleryCover({
+        gallery_id: gallery.id!,
+      });
+
+      Toast.success(
+        intl.formatMessage(
+          { id: "toast.updated_entity" },
+          {
+            entity: intl.formatMessage({ id: "gallery" }).toLocaleLowerCase(),
+          }
+        )
+      );
+    } catch (e) {
+      Toast.error(e);
+    }
   }
 
   async function onClickChapter(imageindex: number) {
@@ -175,7 +196,6 @@ export const GalleryPage: React.FC<IProps> = ({ gallery, add }) => {
         <Dropdown.Menu className="bg-secondary text-white">
           {path ? (
             <Dropdown.Item
-              key="rescan"
               className="bg-secondary text-white"
               onClick={() => onRescan()}
             >
@@ -183,12 +203,17 @@ export const GalleryPage: React.FC<IProps> = ({ gallery, add }) => {
             </Dropdown.Item>
           ) : undefined}
           <Dropdown.Item
-            key="delete-gallery"
+            className="bg-secondary text-white"
+            onClick={() => onResetCover()}
+          >
+            <FormattedMessage id="actions.reset_cover" />
+          </Dropdown.Item>
+          <Dropdown.Item
             className="bg-secondary text-white"
             onClick={() => setIsDeleteAlertOpen(true)}
           >
             <FormattedMessage
-              id="actions.delete_entity"
+              id="actions.delete"
               values={{ entityType: intl.formatMessage({ id: "gallery" }) }}
             />
           </Dropdown.Item>

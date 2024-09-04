@@ -1,3 +1,4 @@
+// Package pkg provides interfaces to interact with the package system used for plugins and scrapers.
 package pkg
 
 import (

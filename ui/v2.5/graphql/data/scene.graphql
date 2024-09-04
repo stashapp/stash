@@ -53,9 +53,9 @@ fragment SceneData on Scene {
     ...SlimStudioData
   }
 
-  movies {
-    movie {
-      ...MovieData
+  groups {
+    group {
+      ...GroupData
     }
     scene_index
   }

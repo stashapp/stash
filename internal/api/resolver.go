@@ -37,6 +37,7 @@ type Resolver struct {
 	sceneService   manager.SceneService
 	imageService   manager.ImageService
 	galleryService manager.GalleryService
+	groupService   manager.GroupService
 
 	hookExecutor hookExecutor
 }
@@ -72,9 +73,14 @@ func (r *Resolver) SceneMarker() SceneMarkerResolver {
 func (r *Resolver) Studio() StudioResolver {
 	return &studioResolver{r}
 }
-func (r *Resolver) Movie() MovieResolver {
-	return &movieResolver{r}
+
+func (r *Resolver) Group() GroupResolver {
+	return &groupResolver{r}
 }
+func (r *Resolver) Movie() MovieResolver {
+	return &movieResolver{&groupResolver{r}}
+}
+
 func (r *Resolver) Subscription() SubscriptionResolver {
 	return &subscriptionResolver{r}
 }
@@ -111,7 +117,11 @@ type sceneResolver struct{ *Resolver }
 type sceneMarkerResolver struct{ *Resolver }
 type imageResolver struct{ *Resolver }
 type studioResolver struct{ *Resolver }
-type movieResolver struct{ *Resolver }
+
+// movie is group under the hood
+type groupResolver struct{ *Resolver }
+type movieResolver struct{ *groupResolver }
+
 type tagResolver struct{ *Resolver }
 type galleryFileResolver struct{ *Resolver }
 type videoFileResolver struct{ *Resolver }
@@ -173,7 +183,7 @@ func (r *queryResolver) Stats(ctx context.Context) (*StatsResultType, error) {
 		galleryQB := repo.Gallery
 		studioQB := repo.Studio
 		performerQB := repo.Performer
-		movieQB := repo.Movie
+		movieQB := repo.Group
 		tagQB := repo.Tag
 
 		// embrace the error
@@ -218,7 +228,7 @@ func (r *queryResolver) Stats(ctx context.Context) (*StatsResultType, error) {
 			return err
 		}
 
-		moviesCount, err := movieQB.Count(ctx)
+		groupsCount, err := movieQB.Count(ctx)
 		if err != nil {
 			return err
 		}
@@ -262,7 +272,8 @@ func (r *queryResolver) Stats(ctx context.Context) (*StatsResultType, error) {
 			GalleryCount:      galleryCount,
 			PerformerCount:    performersCount,
 			StudioCount:       studiosCount,
-			MovieCount:        moviesCount,
+			GroupCount:        groupsCount,
+			MovieCount:        groupsCount,
 			TagCount:          tagsCount,
 			TotalOCount:       totalOCount,
 			TotalPlayDuration: totalPlayDuration,

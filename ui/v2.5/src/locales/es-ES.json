@@ -789,11 +789,11 @@
         "galleries": "{count, plural, one {Galería} other {Galerías}}",
         "images": "{count, plural, one {Imagen} other {Imágenes}}",
         "markers": "{count, plural, one {Marcador} other {Marcadores}}",
-        "movies": "{count, plural, one {Película} other {Películas}}",
         "performers": "{count, plural, one {Actriz/Actor} other {Actrices/Actores}}",
         "scenes": "{count, plural, one {Escena} other {Escenas}}",
         "studios": "{count, plural, one {Estudio} other {Estudios}}",
-        "tags": "{count, plural, one {Etiqueta} other {Etiquetas}}"
+        "tags": "{count, plural, one {Etiqueta} other {Etiquetas}}",
+        "groups": "{count, plural, one {Grupo} other {Grupos}}"
     },
     "country": "País",
     "cover_image": "Carátula",
@@ -1075,9 +1075,6 @@
     },
     "megabits_per_second": "{value} megabits por segundo (mbps)",
     "metadata": "Metadatos",
-    "movie": "Película",
-    "movie_scene_number": "Número de escena",
-    "movies": "Películas",
     "name": "Nombre",
     "new": "Añadir",
     "none": "Ninguno/a",
@@ -1088,7 +1085,8 @@
         "first": "Primera",
         "last": "Última",
         "next": "Siguiente",
-        "previous": "Anterior"
+        "previous": "Anterior",
+        "current_total": "{current} de {total}"
     },
     "parent_of": "Matriz de {children}",
     "parent_studios": "Estudio matriz",
@@ -1327,7 +1325,9 @@
         "header": "Error",
         "lazy_component_error_help": "Si ractualizaste Stash recientemente, por favor recarga la página o limpia la caché de tu navegador.",
         "something_went_wrong": "Algo salió mal.",
-        "loading_type": "Error cargando {type}"
+        "loading_type": "Error cargando {type}",
+        "invalid_javascript_string": "Código javascript no válido: {error}",
+        "invalid_json_string": "Cadena JSON no válida: {error}"
     },
     "file_count": "Conteo de archivos",
     "hasChapters": "Tiene capítulos",
@@ -1465,5 +1465,11 @@
     "zip_file_count": "Números de archivos zip",
     "unknown_date": "Fecha desconocida",
     "stash_id_endpoint": "Punto final de identificador (ID) de Stash",
-    "studio_and_parent": "Estudio y ancestro"
+    "studio_and_parent": "Estudio y ancestro",
+    "group": "Grupo",
+    "group_count": "Recuento de grupos",
+    "group_scene_number": "Número de escena",
+    "groups": "Grupos",
+    "studio_count": "Recuento de estudios",
+    "studio_tags": "Etiquetas de estudio"
 }

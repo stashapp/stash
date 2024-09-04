@@ -232,6 +232,9 @@ const (
 	SecurityTripwireAccessedFromPublicInternet        = "security_tripwire_accessed_from_public_internet"
 	securityTripwireAccessedFromPublicInternetDefault = ""
 
+	sslCertPath = "ssl_cert_path"
+	sslKeyPath  = "ssl_key_path"
+
 	// DLNA options
 	DLNAServerName         = "dlna.server_name"
 	DLNADefaultEnabled     = "dlna.default_enabled"
@@ -356,8 +359,17 @@ func (i *Config) InitTLS() {
 		paths.GetStashHomeDirectory(),
 	}
 
-	i.certFile = fsutil.FindInPaths(tlsPaths, "stash.crt")
-	i.keyFile = fsutil.FindInPaths(tlsPaths, "stash.key")
+	i.certFile = i.getString(sslCertPath)
+	if i.certFile == "" {
+		// Look for default file
+		i.certFile = fsutil.FindInPaths(tlsPaths, "stash.crt")
+	}
+
+	i.keyFile = i.getString(sslKeyPath)
+	if i.keyFile == "" {
+		// Look for default file
+		i.keyFile = fsutil.FindInPaths(tlsPaths, "stash.key")
+	}
 }
 
 func (i *Config) GetTLSFiles() (certFile, keyFile string) {

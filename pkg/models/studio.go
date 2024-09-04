@@ -1,9 +1,7 @@
 package models
 
 type StudioFilterType struct {
-	And     *StudioFilterType     `json:"AND"`
-	Or      *StudioFilterType     `json:"OR"`
-	Not     *StudioFilterType     `json:"NOT"`
+	OperatorFilter[StudioFilterType]
 	Name    *StringCriterionInput `json:"name"`
 	Details *StringCriterionInput `json:"details"`
 	// Filter to only include studios with this parent studio
@@ -16,6 +14,10 @@ type StudioFilterType struct {
 	IsMissing *string `json:"is_missing"`
 	// Filter by rating expressed as 1-100
 	Rating100 *IntCriterionInput `json:"rating100"`
+	// Filter to only include studios with these tags
+	Tags *HierarchicalMultiCriterionInput `json:"tags"`
+	// Filter by tag count
+	TagCount *IntCriterionInput `json:"tag_count"`
 	// Filter by favorite
 	Favorite *bool `json:"favorite"`
 	// Filter by scene count
@@ -32,6 +34,12 @@ type StudioFilterType struct {
 	ChildCount *IntCriterionInput `json:"child_count"`
 	// Filter by autotag ignore value
 	IgnoreAutoTag *bool `json:"ignore_auto_tag"`
+	// Filter by related scenes that meet this criteria
+	ScenesFilter *SceneFilterType `json:"scenes_filter"`
+	// Filter by related images that meet this criteria
+	ImagesFilter *ImageFilterType `json:"images_filter"`
+	// Filter by related galleries that meet this criteria
+	GalleriesFilter *GalleryFilterType `json:"galleries_filter"`
 	// Filter by created at
 	CreatedAt *TimestampCriterionInput `json:"created_at"`
 	// Filter by updated at
@@ -49,6 +57,7 @@ type StudioCreateInput struct {
 	Favorite      *bool     `json:"favorite"`
 	Details       *string   `json:"details"`
 	Aliases       []string  `json:"aliases"`
+	TagIds        []string  `json:"tag_ids"`
 	IgnoreAutoTag *bool     `json:"ignore_auto_tag"`
 }
 
@@ -64,5 +73,6 @@ type StudioUpdateInput struct {
 	Favorite      *bool     `json:"favorite"`
 	Details       *string   `json:"details"`
 	Aliases       []string  `json:"aliases"`
+	TagIds        []string  `json:"tag_ids"`
 	IgnoreAutoTag *bool     `json:"ignore_auto_tag"`
 }

@@ -108,9 +108,7 @@ type CircumcisionCriterionInput struct {
 }
 
 type PerformerFilterType struct {
-	And            *PerformerFilterType  `json:"AND"`
-	Or             *PerformerFilterType  `json:"OR"`
-	Not            *PerformerFilterType  `json:"NOT"`
+	OperatorFilter[PerformerFilterType]
 	Name           *StringCriterionInput `json:"name"`
 	Disambiguation *StringCriterionInput `json:"disambiguation"`
 	Details        *StringCriterionInput `json:"details"`
@@ -188,6 +186,14 @@ type PerformerFilterType struct {
 	Birthdate *DateCriterionInput `json:"birth_date"`
 	// Filter by death date
 	DeathDate *DateCriterionInput `json:"death_date"`
+	// Filter by related scenes that meet this criteria
+	ScenesFilter *SceneFilterType `json:"scenes_filter"`
+	// Filter by related images that meet this criteria
+	ImagesFilter *ImageFilterType `json:"images_filter"`
+	// Filter by related galleries that meet this criteria
+	GalleriesFilter *GalleryFilterType `json:"galleries_filter"`
+	// Filter by related tags that meet this criteria
+	TagsFilter *TagFilterType `json:"tags_filter"`
 	// Filter by created at
 	CreatedAt *TimestampCriterionInput `json:"created_at"`
 	// Filter by updated at
@@ -197,7 +203,8 @@ type PerformerFilterType struct {
 type PerformerCreateInput struct {
 	Name           string          `json:"name"`
 	Disambiguation *string         `json:"disambiguation"`
-	URL            *string         `json:"url"`
+	URL            *string         `json:"url"` // deprecated
+	Urls           []string        `json:"urls"`
 	Gender         *GenderEnum     `json:"gender"`
 	Birthdate      *string         `json:"birthdate"`
 	Ethnicity      *string         `json:"ethnicity"`
@@ -214,8 +221,8 @@ type PerformerCreateInput struct {
 	Piercings      *string         `json:"piercings"`
 	Aliases        *string         `json:"aliases"`
 	AliasList      []string        `json:"alias_list"`
-	Twitter        *string         `json:"twitter"`
-	Instagram      *string         `json:"instagram"`
+	Twitter        *string         `json:"twitter"`   // deprecated
+	Instagram      *string         `json:"instagram"` // deprecated
 	Favorite       *bool           `json:"favorite"`
 	TagIds         []string        `json:"tag_ids"`
 	// This should be a URL or a base64 encoded data URL
@@ -233,7 +240,8 @@ type PerformerUpdateInput struct {
 	ID             string          `json:"id"`
 	Name           *string         `json:"name"`
 	Disambiguation *string         `json:"disambiguation"`
-	URL            *string         `json:"url"`
+	URL            *string         `json:"url"` // deprecated
+	Urls           []string        `json:"urls"`
 	Gender         *GenderEnum     `json:"gender"`
 	Birthdate      *string         `json:"birthdate"`
 	Ethnicity      *string         `json:"ethnicity"`
@@ -250,8 +258,8 @@ type PerformerUpdateInput struct {
 	Piercings      *string         `json:"piercings"`
 	Aliases        *string         `json:"aliases"`
 	AliasList      []string        `json:"alias_list"`
-	Twitter        *string         `json:"twitter"`
-	Instagram      *string         `json:"instagram"`
+	Twitter        *string         `json:"twitter"`   // deprecated
+	Instagram      *string         `json:"instagram"` // deprecated
 	Favorite       *bool           `json:"favorite"`
 	TagIds         []string        `json:"tag_ids"`
 	// This should be a URL or a base64 encoded data URL

@@ -33,26 +33,21 @@ func (r *mutationResolver) TagCreate(ctx context.Context, input TagCreateInput) 
 	newTag := models.NewTag()
 
 	newTag.Name = input.Name
+	newTag.Aliases = models.NewRelatedStrings(input.Aliases)
 	newTag.Favorite = translator.bool(input.Favorite)
 	newTag.Description = translator.string(input.Description)
 	newTag.IgnoreAutoTag = translator.bool(input.IgnoreAutoTag)
 
 	var err error
 
-	var parentIDs []int
-	if len(input.ParentIds) > 0 {
-		parentIDs, err = stringslice.StringSliceToIntSlice(input.ParentIds)
-		if err != nil {
-			return nil, fmt.Errorf("converting parent ids: %w", err)
-		}
+	newTag.ParentIDs, err = translator.relatedIds(input.ParentIds)
+	if err != nil {
+		return nil, fmt.Errorf("converting parent tag ids: %w", err)
 	}
 
-	var childIDs []int
-	if len(input.ChildIds) > 0 {
-		childIDs, err = stringslice.StringSliceToIntSlice(input.ChildIds)
-		if err != nil {
-			return nil, fmt.Errorf("converting child ids: %w", err)
-		}
+	newTag.ChildIDs, err = translator.relatedIds(input.ChildIds)
+	if err != nil {
+		return nil, fmt.Errorf("converting child tag ids: %w", err)
 	}
 
 	// Process the base 64 encoded image string
@@ -68,8 +63,7 @@ func (r *mutationResolver) TagCreate(ctx context.Context, input TagCreateInput) 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Tag
 
-		// ensure name is unique
-		if err := tag.EnsureTagNameUnique(ctx, 0, newTag.Name, qb); err != nil {
+		if err := tag.ValidateCreate(ctx, newTag, qb); err != nil {
 			return err
 		}
 
@@ -81,36 +75,6 @@ func (r *mutationResolver) TagCreate(ctx context.Context, input TagCreateInput) 
 		// update image table
 		if len(imageData) > 0 {
 			if err := qb.UpdateImage(ctx, newTag.ID, imageData); err != nil {
-				return err
-			}
-		}
-
-		if len(input.Aliases) > 0 {
-			if err := tag.EnsureAliasesUnique(ctx, newTag.ID, input.Aliases, qb); err != nil {
-				return err
-			}
-
-			if err := qb.UpdateAliases(ctx, newTag.ID, input.Aliases); err != nil {
-				return err
-			}
-		}
-
-		if len(parentIDs) > 0 {
-			if err := qb.UpdateParentTags(ctx, newTag.ID, parentIDs); err != nil {
-				return err
-			}
-		}
-
-		if len(childIDs) > 0 {
-			if err := qb.UpdateChildTags(ctx, newTag.ID, childIDs); err != nil {
-				return err
-			}
-		}
-
-		// FIXME: This should be called before any changes are made, but
-		// requires a rewrite of ValidateHierarchy.
-		if len(parentIDs) > 0 || len(childIDs) > 0 {
-			if err := tag.ValidateHierarchy(ctx, &newTag, parentIDs, childIDs, qb); err != nil {
 				return err
 			}
 		}
@@ -137,24 +101,21 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input TagUpdateInput) 
 	// Populate tag from the input
 	updatedTag := models.NewTagPartial()
 
+	updatedTag.Name = translator.optionalString(input.Name, "name")
 	updatedTag.Favorite = translator.optionalBool(input.Favorite, "favorite")
 	updatedTag.IgnoreAutoTag = translator.optionalBool(input.IgnoreAutoTag, "ignore_auto_tag")
 	updatedTag.Description = translator.optionalString(input.Description, "description")
 
-	var parentIDs []int
-	if translator.hasField("parent_ids") {
-		parentIDs, err = stringslice.StringSliceToIntSlice(input.ParentIds)
-		if err != nil {
-			return nil, fmt.Errorf("converting parent ids: %w", err)
-		}
+	updatedTag.Aliases = translator.updateStrings(input.Aliases, "aliases")
+
+	updatedTag.ParentIDs, err = translator.updateIds(input.ParentIds, "parent_ids")
+	if err != nil {
+		return nil, fmt.Errorf("converting parent tag ids: %w", err)
 	}
 
-	var childIDs []int
-	if translator.hasField("child_ids") {
-		childIDs, err = stringslice.StringSliceToIntSlice(input.ChildIds)
-		if err != nil {
-			return nil, fmt.Errorf("converting child ids: %w", err)
-		}
+	updatedTag.ChildIDs, err = translator.updateIds(input.ChildIds, "child_ids")
+	if err != nil {
+		return nil, fmt.Errorf("converting child tag ids: %w", err)
 	}
 
 	var imageData []byte
@@ -171,22 +132,8 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input TagUpdateInput) 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Tag
 
-		// ensure name is unique
-		t, err = qb.Find(ctx, tagID)
-		if err != nil {
+		if err := tag.ValidateUpdate(ctx, tagID, updatedTag, qb); err != nil {
 			return err
-		}
-
-		if t == nil {
-			return fmt.Errorf("tag with id %d not found", tagID)
-		}
-
-		if input.Name != nil && t.Name != *input.Name {
-			if err := tag.EnsureTagNameUnique(ctx, tagID, *input.Name, qb); err != nil {
-				return err
-			}
-
-			updatedTag.Name = models.NewOptionalString(*input.Name)
 		}
 
 		t, err = qb.UpdatePartial(ctx, tagID, updatedTag)
@@ -201,37 +148,6 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input TagUpdateInput) 
 			}
 		}
 
-		if translator.hasField("aliases") {
-			if err := tag.EnsureAliasesUnique(ctx, tagID, input.Aliases, qb); err != nil {
-				return err
-			}
-
-			if err := qb.UpdateAliases(ctx, tagID, input.Aliases); err != nil {
-				return err
-			}
-		}
-
-		if parentIDs != nil {
-			if err := qb.UpdateParentTags(ctx, tagID, parentIDs); err != nil {
-				return err
-			}
-		}
-
-		if childIDs != nil {
-			if err := qb.UpdateChildTags(ctx, tagID, childIDs); err != nil {
-				return err
-			}
-		}
-
-		// FIXME: This should be called before any changes are made, but
-		// requires a rewrite of ValidateHierarchy.
-		if parentIDs != nil || childIDs != nil {
-			if err := tag.ValidateHierarchy(ctx, t, parentIDs, childIDs, qb); err != nil {
-				logger.Errorf("Error saving tag: %s", err)
-				return err
-			}
-		}
-
 		return nil
 	}); err != nil {
 		return nil, err
@@ -239,6 +155,75 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input TagUpdateInput) 
 
 	r.hookExecutor.ExecutePostHooks(ctx, t.ID, hook.TagUpdatePost, input, translator.getFields())
 	return r.getTag(ctx, t.ID)
+}
+
+func (r *mutationResolver) BulkTagUpdate(ctx context.Context, input BulkTagUpdateInput) ([]*models.Tag, error) {
+	tagIDs, err := stringslice.StringSliceToIntSlice(input.Ids)
+	if err != nil {
+		return nil, fmt.Errorf("converting ids: %w", err)
+	}
+
+	translator := changesetTranslator{
+		inputMap: getUpdateInputMap(ctx),
+	}
+
+	// Populate scene from the input
+	updatedTag := models.NewTagPartial()
+
+	updatedTag.Description = translator.optionalString(input.Description, "description")
+	updatedTag.Favorite = translator.optionalBool(input.Favorite, "favorite")
+	updatedTag.IgnoreAutoTag = translator.optionalBool(input.IgnoreAutoTag, "ignore_auto_tag")
+
+	updatedTag.Aliases = translator.updateStringsBulk(input.Aliases, "aliases")
+
+	updatedTag.ParentIDs, err = translator.updateIdsBulk(input.ParentIds, "parent_ids")
+	if err != nil {
+		return nil, fmt.Errorf("converting parent tag ids: %w", err)
+	}
+
+	updatedTag.ChildIDs, err = translator.updateIdsBulk(input.ChildIds, "child_ids")
+	if err != nil {
+		return nil, fmt.Errorf("converting child tag ids: %w", err)
+	}
+
+	ret := []*models.Tag{}
+
+	// Start the transaction and save the scenes
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		qb := r.repository.Tag
+
+		for _, tagID := range tagIDs {
+			if err := tag.ValidateUpdate(ctx, tagID, updatedTag, qb); err != nil {
+				return err
+			}
+
+			tag, err := qb.UpdatePartial(ctx, tagID, updatedTag)
+			if err != nil {
+				return err
+			}
+
+			ret = append(ret, tag)
+		}
+
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	// execute post hooks outside of txn
+	var newRet []*models.Tag
+	for _, tag := range ret {
+		r.hookExecutor.ExecutePostHooks(ctx, tag.ID, hook.TagUpdatePost, input, translator.getFields())
+
+		tag, err = r.getTag(ctx, tag.ID)
+		if err != nil {
+			return nil, err
+		}
+
+		newRet = append(newRet, tag)
+	}
+
+	return newRet, nil
 }
 
 func (r *mutationResolver) TagDestroy(ctx context.Context, input TagDestroyInput) (bool, error) {
@@ -331,7 +316,7 @@ func (r *mutationResolver) TagsMerge(ctx context.Context, input TagsMergeInput) 
 			return err
 		}
 
-		err = tag.ValidateHierarchy(ctx, t, parents, children, qb)
+		err = tag.ValidateHierarchyExisting(ctx, t, parents, children, qb)
 		if err != nil {
 			logger.Errorf("Error merging tag: %s", err)
 			return err

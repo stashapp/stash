@@ -252,7 +252,9 @@
             "successfully_cancelled_temporary_behaviour": "Временно запущенный сервис DLNA, успешно отключен",
             "until_restart": "до перезагрузки",
             "video_sort_order": "Порядок сортировки видео по умолчанию",
-            "video_sort_order_desc": "Порядок сортировки видео по умолчанию."
+            "video_sort_order_desc": "Порядок сортировки видео по умолчанию.",
+            "server_port_desc": "Порт DLNA-сервера. После изменения требуется перезапуск DLNA.",
+            "server_port": "Порт DLNA"
         },
         "general": {
             "auth": {
@@ -787,7 +789,6 @@
         "galleries": "{count, plural, one {Галерея} other {Галереи}}",
         "images": "{count, plural, one {Изображение} other {Изображения}}",
         "markers": "{count, plural, one {Маркер} other {Маркеры}}",
-        "movies": "{count, plural, one {Фильм} other {Фильмы}}",
         "performers": "{count, plural, one {Актер} other {Актеры}}",
         "scenes": "{count, plural, one {Сцена} other {Сцены}}",
         "studios": "{count, plural, one {Студия} other {Студии}}",
@@ -1087,9 +1088,6 @@
     },
     "megabits_per_second": "{value} мегабит в секунду",
     "metadata": "Метаданные",
-    "movie": "Фильм",
-    "movie_scene_number": "Номер сцены в фильме",
-    "movies": "Фильмы",
     "name": "Имя",
     "new": "Новый",
     "none": "Отсутствует",

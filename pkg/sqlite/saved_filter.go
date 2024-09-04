@@ -141,23 +141,6 @@ func (qb *SavedFilterStore) Update(ctx context.Context, updatedObject *models.Sa
 	return nil
 }
 
-func (qb *SavedFilterStore) SetDefault(ctx context.Context, obj *models.SavedFilter) error {
-	// find the existing default
-	existing, err := qb.FindDefault(ctx, obj.Mode)
-	if err != nil {
-		return err
-	}
-
-	obj.Name = savedFilterDefaultName
-
-	if existing != nil {
-		obj.ID = existing.ID
-		return qb.Update(ctx, obj)
-	}
-
-	return qb.Create(ctx, obj)
-}
-
 func (qb *SavedFilterStore) Destroy(ctx context.Context, id int) error {
 	return qb.destroyExisting(ctx, []int{id})
 }
@@ -245,29 +228,24 @@ func (qb *SavedFilterStore) getMany(ctx context.Context, q *goqu.SelectDataset) 
 func (qb *SavedFilterStore) FindByMode(ctx context.Context, mode models.FilterMode) ([]*models.SavedFilter, error) {
 	// SELECT * FROM %s WHERE mode = ? AND name != ? ORDER BY name ASC
 	table := qb.table()
-	sq := qb.selectDataset().Prepared(true).Where(
-		table.Col("mode").Eq(mode),
-		table.Col("name").Neq(savedFilterDefaultName),
-	).Order(table.Col("name").Asc())
+
+	// TODO - querying on groups needs to include movies
+	// remove this when we migrate to remove the movies filter mode in the database
+	var whereClause exp.Expression
+
+	if mode == models.FilterModeGroups || mode == models.FilterModeMovies {
+		whereClause = goqu.Or(
+			table.Col("mode").Eq(models.FilterModeGroups),
+			table.Col("mode").Eq(models.FilterModeMovies),
+		)
+	} else {
+		whereClause = table.Col("mode").Eq(mode)
+	}
+
+	sq := qb.selectDataset().Prepared(true).Where(whereClause).Order(table.Col("name").Asc())
 	ret, err := qb.getMany(ctx, sq)
 
 	if err != nil {
-		return nil, err
-	}
-
-	return ret, nil
-}
-
-func (qb *SavedFilterStore) FindDefault(ctx context.Context, mode models.FilterMode) (*models.SavedFilter, error) {
-	// SELECT * FROM saved_filters WHERE mode = ? AND name = ?
-	table := qb.table()
-	sq := qb.selectDataset().Prepared(true).Where(
-		table.Col("mode").Eq(mode),
-		table.Col("name").Eq(savedFilterDefaultName),
-	)
-
-	ret, err := qb.get(ctx, sq)
-	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return nil, err
 	}
 

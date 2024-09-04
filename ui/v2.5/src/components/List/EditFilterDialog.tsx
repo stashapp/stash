@@ -193,7 +193,8 @@ const CriterionOptionList: React.FC<ICriterionList> = ({
 const FilterModeToConfigKey = {
   [FilterMode.Galleries]: "galleries",
   [FilterMode.Images]: "images",
-  [FilterMode.Movies]: "movies",
+  [FilterMode.Movies]: "groups",
+  [FilterMode.Groups]: "groups",
   [FilterMode.Performers]: "performers",
   [FilterMode.SceneMarkers]: "sceneMarkers",
   [FilterMode.Scenes]: "scenes",

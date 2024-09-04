@@ -40,6 +40,15 @@ export const RatingCriterionOption = new CriterionOption({
 export class RatingCriterion extends Criterion<INumberValue> {
   ratingSystem: RatingSystemOptions;
 
+  constructor(ratingSystem: RatingSystemOptions) {
+    super(RatingCriterionOption, { value: 0, value2: undefined });
+    this.ratingSystem = ratingSystem;
+  }
+
+  public cloneValues() {
+    this.value = { ...this.value };
+  }
+
   public get value(): INumberValue {
     return this._value;
   }
@@ -75,10 +84,5 @@ export class RatingCriterion extends Criterion<INumberValue> {
     } else {
       return `${convertToRatingFormat(value, this.ratingSystem) ?? 0}`;
     }
-  }
-
-  constructor(ratingSystem: RatingSystemOptions) {
-    super(RatingCriterionOption, { value: 0, value2: undefined });
-    this.ratingSystem = ratingSystem;
   }
 }

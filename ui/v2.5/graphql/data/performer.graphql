@@ -2,10 +2,8 @@ fragment PerformerData on Performer {
   id
   name
   disambiguation
-  url
+  urls
   gender
-  twitter
-  instagram
   birthdate
   ethnicity
   country
@@ -25,7 +23,7 @@ fragment PerformerData on Performer {
   scene_count
   image_count
   gallery_count
-  movie_count
+  group_count
   performer_count
   o_counter
 
