@@ -997,6 +997,21 @@ func (qb *ImageStore) AddFileID(ctx context.Context, id int, fileID models.FileI
 	return imagesFilesTableMgr.insertJoins(ctx, id, firstPrimary, []models.FileID{fileID})
 }
 
+// RemoveFileID removes the file ID from the image.
+// If the file ID is the primary file, then the next file in the list is set as the primary file.
+func (qb *ImageStore) RemoveFileID(ctx context.Context, id int, fileID models.FileID) error {
+	fileIDs, err := imagesFilesTableMgr.get(ctx, id)
+	if err != nil {
+		return fmt.Errorf("getting file IDs for image %d: %w", id, err)
+	}
+
+	fileIDs = sliceutil.Filter(fileIDs, func(f models.FileID) bool {
+		return f != fileID
+	})
+
+	return imagesFilesTableMgr.replaceJoins(ctx, id, fileIDs)
+}
+
 func (qb *ImageStore) GetGalleryIDs(ctx context.Context, imageID int) ([]int, error) {
 	return imageRepository.galleries.getIDs(ctx, imageID)
 }

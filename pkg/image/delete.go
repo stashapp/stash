@@ -2,6 +2,7 @@ package image
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/fsutil"
@@ -43,8 +44,9 @@ func (s *Service) Destroy(ctx context.Context, i *models.Image, fileDeleter *Fil
 // Returns a slice of images that were destroyed.
 func (s *Service) DestroyZipImages(ctx context.Context, zipFile models.File, fileDeleter *FileDeleter, deleteGenerated bool) ([]*models.Image, error) {
 	var imgsDestroyed []*models.Image
+	zipFileID := zipFile.Base().ID
 
-	imgs, err := s.Repository.FindByZipFileID(ctx, zipFile.Base().ID)
+	imgs, err := s.Repository.FindByZipFileID(ctx, zipFileID)
 	if err != nil {
 		return nil, err
 	}
@@ -52,6 +54,23 @@ func (s *Service) DestroyZipImages(ctx context.Context, zipFile models.File, fil
 	for _, img := range imgs {
 		if err := img.LoadFiles(ctx, s.Repository); err != nil {
 			return nil, err
+		}
+
+		// #5048 - if the image has multiple files, we just want to remove the file in the zip file,
+		// not delete the image entirely
+		if len(img.Files.List()) > 1 {
+			for _, f := range img.Files.List() {
+				if f.Base().ZipFileID == nil || *f.Base().ZipFileID != zipFileID {
+					continue
+				}
+
+				if err := s.Repository.RemoveFileID(ctx, img.ID, f.Base().ID); err != nil {
+					return nil, fmt.Errorf("failed to remove file from image: %w", err)
+				}
+			}
+
+			// don't delete the image
+			continue
 		}
 
 		const deleteFileInZip = false

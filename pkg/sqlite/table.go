@@ -759,6 +759,29 @@ type relatedFilesTable struct {
 // 	FileID  models.FileID `db:"file_id"`
 // }
 
+// get returns the file IDs related to the provided scene ID
+// the primary file is returned first
+func (t *relatedFilesTable) get(ctx context.Context, id int) ([]models.FileID, error) {
+	q := dialect.Select("file_id").From(t.table.table).Where(t.idColumn.Eq(id)).Order(t.table.table.Col("primary").Desc())
+
+	const single = false
+	var ret []models.FileID
+	if err := queryFunc(ctx, q, single, func(rows *sqlx.Rows) error {
+		var v models.FileID
+		if err := rows.Scan(&v); err != nil {
+			return err
+		}
+
+		ret = append(ret, v)
+
+		return nil
+	}); err != nil {
+		return nil, fmt.Errorf("getting related files from %s: %w", t.table.table.GetTable(), err)
+	}
+
+	return ret, nil
+}
+
 func (t *relatedFilesTable) insertJoin(ctx context.Context, id int, primary bool, fileID models.FileID) error {
 	q := dialect.Insert(t.table.table).Cols(t.idColumn.GetCol(), "primary", "file_id").Vals(
 		goqu.Vals{id, primary, fileID},
