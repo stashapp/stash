@@ -113,6 +113,12 @@ export function formikUtils<V extends FormikValues>(
       value = "";
     }
 
+    // trimming leading and trailing spaces from inputs
+    const handleBlur = (e: React.ChangeEvent<HTMLInputElement>) => {
+      formik.setFieldValue(field, e.target.value.trim());
+      formik.handleBlur(e);
+    };
+
     let control: React.ReactNode;
     if (type === "checkbox") {
       control = (
@@ -141,6 +147,7 @@ export function formikUtils<V extends FormikValues>(
           className="text-input"
           placeholder={placeholder}
           {...formikProps}
+          onBlur={handleBlur}
           value={value}
           isInvalid={!!error}
         />
