@@ -18,15 +18,13 @@ import { GalleryPreviewScrubber } from "./GalleryPreviewScrubber";
 import cx from "classnames";
 import { useHistory } from "react-router-dom";
 
-interface IScenePreviewProps {
-  isPortrait?: boolean;
+interface IGalleryPreviewProps {
   gallery: GQL.SlimGalleryDataFragment;
   onScrubberClick?: (index: number) => void;
 }
 
-export const GalleryPreview: React.FC<IScenePreviewProps> = ({
+export const GalleryPreview: React.FC<IGalleryPreviewProps> = ({
   gallery,
-  isPortrait = false,
   onScrubberClick,
 }) => {
   // ignoring isPortrait property to avoid merge conflicts later
@@ -44,7 +42,7 @@ export const GalleryPreview: React.FC<IScenePreviewProps> = ({
   );
 
   return (
-    <div className={cx("gallery-card-cover", { portrait: isPortrait })}>
+    <div className={cx("gallery-card-cover")}>
       {!!imgSrc && (
         <img
           loading="lazy"
@@ -226,7 +224,6 @@ export const GalleryCard: React.FC<IProps> = (props) => {
           <GalleryPreview
             gallery={props.gallery}
             onScrubberClick={(i) => {
-              console.log(i);
               history.push(`/galleries/${props.gallery.id}/images/${i}`);
             }}
           />
