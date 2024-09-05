@@ -3,7 +3,6 @@ import { Button, Card, Form, InputGroup, ProgressBar } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Link } from "react-router-dom";
 import { HashLink } from "react-router-hash-link";
-import { useLocalForage } from "src/hooks/LocalForage";
 
 import * as GQL from "src/core/generated-graphql";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
@@ -22,13 +21,14 @@ import { ConfigurationContext } from "src/hooks/Config";
 
 import StashSearchResult from "./StashSearchResult";
 import StudioConfig from "./Config";
-import { LOCAL_FORAGE_KEY, ITaggerConfig, initialConfig } from "../constants";
+import { ITaggerConfig } from "../constants";
 import StudioModal from "../scenes/StudioModal";
 import { useUpdateStudio } from "../queries";
 import { apolloError } from "src/utils";
 import { faStar, faTags } from "@fortawesome/free-solid-svg-icons";
 import { ExternalLink } from "src/components/Shared/ExternalLink";
 import { mergeStudioStashIDs } from "../utils";
+import { useTaggerConfig } from "../config";
 
 type JobFragment = Pick<
   GQL.Job,
@@ -268,7 +268,6 @@ interface IStudioTaggerListProps {
   selectedEndpoint: { endpoint: string; index: number };
   isIdle: boolean;
   config: ITaggerConfig;
-  stashBoxes?: GQL.StashBox[];
   onBatchAdd: (studioInput: string, createParent: boolean) => void;
   onBatchUpdate: (
     ids: string[] | undefined,
@@ -282,7 +281,6 @@ const StudioTaggerList: React.FC<IStudioTaggerListProps> = ({
   selectedEndpoint,
   isIdle,
   config,
-  stashBoxes,
   onBatchAdd,
   onBatchUpdate,
 }) => {
@@ -315,7 +313,7 @@ const StudioTaggerList: React.FC<IStudioTaggerListProps> = ({
   >();
 
   const doBoxSearch = (studioID: string, searchVal: string) => {
-    stashBoxStudioQuery(searchVal, selectedEndpoint.index)
+    stashBoxStudioQuery(searchVal, selectedEndpoint.endpoint)
       .then((queryData) => {
         const s = queryData.data?.scrapeSingleStudio ?? [];
         setSearchResults({
@@ -344,17 +342,13 @@ const StudioTaggerList: React.FC<IStudioTaggerListProps> = ({
     setLoading(true);
   };
 
-  const doBoxUpdate = (
-    studioID: string,
-    stashID: string,
-    endpointIndex: number
-  ) => {
+  const doBoxUpdate = (studioID: string, stashID: string, endpoint: string) => {
     setLoadingUpdate(stashID);
     setError({
       ...error,
       [studioID]: undefined,
     });
-    stashBoxStudioQuery(stashID, endpointIndex)
+    stashBoxStudioQuery(stashID, endpoint)
       .then((queryData) => {
         const data = queryData.data?.scrapeSingleStudio ?? [];
         if (data.length > 0) {
@@ -535,29 +529,23 @@ const StudioTaggerList: React.FC<IStudioTaggerListProps> = ({
           <div className="small">{stashID.stash_id}</div>
         );
 
-        const endpointIndex =
-          stashBoxes?.findIndex((box) => box.endpoint === stashID.endpoint) ??
-          -1;
-
         subContent = (
           <div key={studio.id}>
             <InputGroup className="StudioTagger-box-link">
               <InputGroup.Text>{link}</InputGroup.Text>
               <InputGroup.Append>
-                {endpointIndex !== -1 && (
-                  <Button
-                    onClick={() =>
-                      doBoxUpdate(studio.id, stashID.stash_id, endpointIndex)
-                    }
-                    disabled={!!loadingUpdate}
-                  >
-                    {loadingUpdate === stashID.stash_id ? (
-                      <LoadingIndicator inline small message="" />
-                    ) : (
-                      <FormattedMessage id="actions.refresh" />
-                    )}
-                  </Button>
-                )}
+                <Button
+                  onClick={() =>
+                    doBoxUpdate(studio.id, stashID.stash_id, stashID.endpoint)
+                  }
+                  disabled={!!loadingUpdate}
+                >
+                  {loadingUpdate === stashID.stash_id ? (
+                    <LoadingIndicator inline small message="" />
+                  ) : (
+                    <FormattedMessage id="actions.refresh" />
+                  )}
+                </Button>
               </InputGroup.Append>
             </InputGroup>
             {error[studio.id] && (
@@ -682,10 +670,7 @@ export const StudioTagger: React.FC<ITaggerProps> = ({ studios }) => {
   const jobsSubscribe = useJobsSubscribe();
   const intl = useIntl();
   const { configuration: stashConfig } = React.useContext(ConfigurationContext);
-  const [{ data: config }, setConfig] = useLocalForage<ITaggerConfig>(
-    LOCAL_FORAGE_KEY,
-    initialConfig
-  );
+  const { config, setConfig } = useTaggerConfig();
   const [showConfig, setShowConfig] = useState(false);
   const [showManual, setShowManual] = useState(false);
 
@@ -849,7 +834,6 @@ export const StudioTagger: React.FC<ITaggerProps> = ({ studios }) => {
               }}
               isIdle={batchJobID === undefined}
               config={config}
-              stashBoxes={stashConfig?.general.stashBoxes}
               onBatchAdd={batchAdd}
               onBatchUpdate={batchUpdate}
             />

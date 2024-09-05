@@ -4,9 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
+	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -19,6 +21,7 @@ var ErrParentStudioNotExist = errors.New("parent studio does not exist")
 
 type Importer struct {
 	ReaderWriter        ImporterReaderWriter
+	TagWriter           models.TagFinderCreator
 	Input               jsonschema.Studio
 	MissingRefBehaviour models.ImportMissingRefEnum
 
@@ -34,6 +37,10 @@ func (i *Importer) PreImport(ctx context.Context) error {
 		return err
 	}
 
+	if err := i.populateTags(ctx); err != nil {
+		return err
+	}
+
 	var err error
 	if len(i.Input.Image) > 0 {
 		i.imageData, err = utils.ProcessBase64Image(i.Input.Image)
@@ -43,6 +50,74 @@ func (i *Importer) PreImport(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+func (i *Importer) populateTags(ctx context.Context) error {
+	if len(i.Input.Tags) > 0 {
+
+		tags, err := importTags(ctx, i.TagWriter, i.Input.Tags, i.MissingRefBehaviour)
+		if err != nil {
+			return err
+		}
+
+		for _, p := range tags {
+			i.studio.TagIDs.Add(p.ID)
+		}
+	}
+
+	return nil
+}
+
+func importTags(ctx context.Context, tagWriter models.TagFinderCreator, names []string, missingRefBehaviour models.ImportMissingRefEnum) ([]*models.Tag, error) {
+	tags, err := tagWriter.FindByNames(ctx, names, false)
+	if err != nil {
+		return nil, err
+	}
+
+	var pluckedNames []string
+	for _, tag := range tags {
+		pluckedNames = append(pluckedNames, tag.Name)
+	}
+
+	missingTags := sliceutil.Filter(names, func(name string) bool {
+		return !sliceutil.Contains(pluckedNames, name)
+	})
+
+	if len(missingTags) > 0 {
+		if missingRefBehaviour == models.ImportMissingRefEnumFail {
+			return nil, fmt.Errorf("tags [%s] not found", strings.Join(missingTags, ", "))
+		}
+
+		if missingRefBehaviour == models.ImportMissingRefEnumCreate {
+			createdTags, err := createTags(ctx, tagWriter, missingTags)
+			if err != nil {
+				return nil, fmt.Errorf("error creating tags: %v", err)
+			}
+
+			tags = append(tags, createdTags...)
+		}
+
+		// ignore if MissingRefBehaviour set to Ignore
+	}
+
+	return tags, nil
+}
+
+func createTags(ctx context.Context, tagWriter models.TagFinderCreator, names []string) ([]*models.Tag, error) {
+	var ret []*models.Tag
+	for _, name := range names {
+		newTag := models.NewTag()
+		newTag.Name = name
+
+		err := tagWriter.Create(ctx, &newTag)
+		if err != nil {
+			return nil, err
+		}
+
+		ret = append(ret, &newTag)
+	}
+
+	return ret, nil
 }
 
 func (i *Importer) populateParentStudio(ctx context.Context) error {
@@ -149,6 +224,7 @@ func studioJSONtoStudio(studioJSON jsonschema.Studio) models.Studio {
 		CreatedAt:     studioJSON.CreatedAt.GetTime(),
 		UpdatedAt:     studioJSON.UpdatedAt.GetTime(),
 
+		TagIDs:   models.NewRelatedIDs([]int{}),
 		StashIDs: models.NewRelatedStashIDs(studioJSON.StashIDs),
 	}
 

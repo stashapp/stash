@@ -6,6 +6,27 @@ import (
 	"strconv"
 )
 
+type OperatorFilter[T any] struct {
+	And *T `json:"AND"`
+	Or  *T `json:"OR"`
+	Not *T `json:"NOT"`
+}
+
+// SubFilter returns the subfilter of the operator filter.
+// Only one of And, Or, or Not should be set, so it returns the first of these that are not nil.
+func (f *OperatorFilter[T]) SubFilter() *T {
+	if f.And != nil {
+		return f.And
+	}
+	if f.Or != nil {
+		return f.Or
+	}
+	if f.Not != nil {
+		return f.Not
+	}
+	return nil
+}
+
 type CriterionModifier string
 
 const (

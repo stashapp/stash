@@ -23,19 +23,27 @@ type MigrateJob struct {
 	Database   *sqlite.Database
 }
 
+type databaseSchemaInfo struct {
+	CurrentSchemaVersion  uint
+	RequiredSchemaVersion uint
+	StepsRequired         uint
+}
+
 func (s *MigrateJob) Execute(ctx context.Context, progress *job.Progress) error {
-	required, err := s.required()
+	schemaInfo, err := s.required()
 	if err != nil {
 		return err
 	}
 
-	if required == 0 {
+	if schemaInfo.StepsRequired == 0 {
 		logger.Infof("database is already at the latest schema version")
 		return nil
 	}
 
+	logger.Infof("Migrating database from %d to %d", schemaInfo.CurrentSchemaVersion, schemaInfo.RequiredSchemaVersion)
+
 	// set the number of tasks = required steps + optimise
-	progress.SetTotal(int(required + 1))
+	progress.SetTotal(int(schemaInfo.StepsRequired + 1))
 
 	database := s.Database
 
@@ -79,28 +87,31 @@ func (s *MigrateJob) Execute(ctx context.Context, progress *job.Progress) error 
 		}
 	}
 
+	logger.Infof("Database migration complete")
+
 	return nil
 }
 
-func (s *MigrateJob) required() (uint, error) {
+func (s *MigrateJob) required() (ret databaseSchemaInfo, err error) {
 	database := s.Database
 
 	m, err := sqlite.NewMigrator(database)
 	if err != nil {
-		return 0, err
+		return
 	}
 
 	defer m.Close()
 
-	currentSchemaVersion := m.CurrentSchemaVersion()
-	targetSchemaVersion := m.RequiredSchemaVersion()
+	ret.CurrentSchemaVersion = m.CurrentSchemaVersion()
+	ret.RequiredSchemaVersion = m.RequiredSchemaVersion()
 
-	if targetSchemaVersion < currentSchemaVersion {
+	if ret.RequiredSchemaVersion < ret.CurrentSchemaVersion {
 		// shouldn't happen
-		return 0, nil
+		return
 	}
 
-	return targetSchemaVersion - currentSchemaVersion, nil
+	ret.StepsRequired = ret.RequiredSchemaVersion - ret.CurrentSchemaVersion
+	return
 }
 
 func (s *MigrateJob) runMigrations(ctx context.Context, progress *job.Progress) error {

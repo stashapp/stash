@@ -75,7 +75,8 @@ func (dir osFS) Open(name string) (fs.File, error) {
 	return os.DirFS(string(dir)).Open(name)
 }
 
-// Called at startup
+// Initialize creates a new [Server] instance.
+// It assumes that the [manager.Manager] instance has been initialised.
 func Initialize() (*Server, error) {
 	mgr := manager.GetInstance()
 	cfg := mgr.Config
@@ -157,11 +158,13 @@ func Initialize() (*Server, error) {
 	sceneService := mgr.SceneService
 	imageService := mgr.ImageService
 	galleryService := mgr.GalleryService
+	groupService := mgr.GroupService
 	resolver := &Resolver{
 		repository:     repo,
 		sceneService:   sceneService,
 		imageService:   imageService,
 		galleryService: galleryService,
+		groupService:   groupService,
 		hookExecutor:   pluginCache,
 	}
 
@@ -207,9 +210,10 @@ func Initialize() (*Server, error) {
 
 	r.Mount("/performer", server.getPerformerRoutes())
 	r.Mount("/scene", server.getSceneRoutes())
+	r.Mount("/gallery", server.getGalleryRoutes())
 	r.Mount("/image", server.getImageRoutes())
 	r.Mount("/studio", server.getStudioRoutes())
-	r.Mount("/movie", server.getMovieRoutes())
+	r.Mount("/group", server.getGroupRoutes())
 	r.Mount("/tag", server.getTagRoutes())
 	r.Mount("/downloads", server.getDownloadsRoutes())
 	r.Mount("/plugin", server.getPluginRoutes())
@@ -288,6 +292,9 @@ func Initialize() (*Server, error) {
 	return server, nil
 }
 
+// Start starts the server. It listens on the configured address and port.
+// It calls ListenAndServeTLS if TLS is configured, otherwise it calls ListenAndServe.
+// Calls to Start are blocked until the server is shutdown.
 func (s *Server) Start() error {
 	logger.Infof("stash is listening on " + s.Addr)
 	logger.Infof("stash is running at " + s.displayAddress)
@@ -299,6 +306,7 @@ func (s *Server) Start() error {
 	}
 }
 
+// Shutdown gracefully shuts down the server without interrupting any active connections.
 func (s *Server) Shutdown() {
 	err := s.Server.Shutdown(context.TODO())
 	if err != nil {
@@ -326,6 +334,16 @@ func (s *Server) getSceneRoutes() chi.Router {
 	}.Routes()
 }
 
+func (s *Server) getGalleryRoutes() chi.Router {
+	repo := s.manager.Repository
+	return galleryRoutes{
+		routes:        routes{txnManager: repo.TxnManager},
+		imageFinder:   repo.Image,
+		galleryFinder: repo.Gallery,
+		fileGetter:    repo.File,
+	}.Routes()
+}
+
 func (s *Server) getImageRoutes() chi.Router {
 	repo := s.manager.Repository
 	return imageRoutes{
@@ -343,11 +361,11 @@ func (s *Server) getStudioRoutes() chi.Router {
 	}.Routes()
 }
 
-func (s *Server) getMovieRoutes() chi.Router {
+func (s *Server) getGroupRoutes() chi.Router {
 	repo := s.manager.Repository
-	return movieRoutes{
+	return groupRoutes{
 		routes:      routes{txnManager: repo.TxnManager},
-		movieFinder: repo.Movie,
+		groupFinder: repo.Group,
 	}.Routes()
 }
 

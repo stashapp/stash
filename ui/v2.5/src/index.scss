@@ -6,7 +6,7 @@
 @import "src/components/Help/styles.scss";
 @import "src/components/Images/styles.scss";
 @import "src/components/List/styles.scss";
-@import "src/components/Movies/styles.scss";
+@import "src/components/Groups/styles.scss";
 @import "src/components/Performers/styles.scss";
 @import "src/components/FrontPage/styles.scss";
 @import "src/components/Scenes/styles.scss";
@@ -56,7 +56,7 @@ body {
 
 #gallery-page,
 #image-page,
-#movie-page,
+#group-page,
 #performer-page,
 #scene-page,
 #studio-page,
@@ -86,7 +86,7 @@ dd {
     display: none;
   }
 
-  .movie-name,
+  .group-name,
   .performer-name,
   .studio-name,
   .tag-name {
@@ -96,7 +96,7 @@ dd {
   .sticky.detail-header-group {
     padding: 1rem 2.5rem;
 
-    a.movie-name,
+    a.group-name,
     a.performer-name,
     a.studio-name,
     a.tag-name {
@@ -261,6 +261,15 @@ dd {
     padding: 5px 0;
   }
 
+  .item-list-header {
+    align-content: center;
+    // border-bottom: solid 2px #192127;
+    display: flex;
+    justify-content: center;
+    margin: 0;
+    padding: 5px 0 0 0;
+  }
+
   .item-list-container {
     padding-top: 15px;
 
@@ -419,7 +428,7 @@ dd {
   justify-content: center;
   padding: 0 1rem;
 
-  .movie-images {
+  .group-images {
     height: 100%;
   }
 
@@ -428,7 +437,7 @@ dd {
     height: auto;
     padding: 0;
 
-    .movie-images {
+    .group-images {
       .img {
         max-width: 100%;
       }
@@ -441,7 +450,7 @@ dd {
     transition: 0.5s;
   }
 
-  .movie-images img {
+  .group-images img {
     @media (max-width: 576px) {
       max-width: 100%;
     }
@@ -467,11 +476,11 @@ dd {
   }
 }
 
-#movie-page .detail-header-image .movie-images img {
+#group-page .detail-header-image .group-images img {
   max-width: 13rem;
 }
 
-#movie-page .detail-header-image img,
+#group-page .detail-header-image img,
 #performer-page .detail-header-image img,
 #tag-page .detail-header-image img {
   border-radius: 0.5rem;
@@ -616,7 +625,7 @@ textarea.text-input {
 .zoom-0 {
   .gallery-card-image,
   .tag-card-image {
-    max-height: 180px;
+    height: 180px;
   }
 }
 
@@ -625,7 +634,7 @@ textarea.text-input {
 
   .gallery-card-image,
   .tag-card-image {
-    max-height: 240px;
+    height: 240px;
   }
 
   .image-card-preview {
@@ -636,7 +645,7 @@ textarea.text-input {
 .zoom-2 {
   .gallery-card-image,
   .tag-card-image {
-    max-height: 360px;
+    height: 360px;
   }
 
   .image-card-preview {
@@ -647,7 +656,7 @@ textarea.text-input {
 .zoom-3 {
   .tag-card-image,
   .gallery-card-image {
-    max-height: 480px;
+    height: 480px;
   }
 
   .image-card-preview {
@@ -838,7 +847,8 @@ div.dropdown-menu {
 }
 
 .filter-container,
-.operation-container {
+.operation-container,
+.pagination {
   align-items: center;
   display: flex;
   justify-content: center;
@@ -1329,6 +1339,10 @@ $detailTabWidth: calc(100% / 3);
         width: 12.9rem;
       }
 
+      .preview-scrubber {
+        display: none;
+      }
+
       .gallery-card-image.portrait-image {
         height: 12.9rem;
         width: auto;
@@ -1632,6 +1646,11 @@ $detailTabWidth: calc(100% / 3);
 .btn-group > .dropdown:not(:last-child) > .btn {
   border-bottom-right-radius: 0;
   border-top-right-radius: 0;
+}
+
+.btn-group > .dropdown:not(:first-child) > .btn {
+  border-bottom-left-radius: 0;
+  border-top-left-radius: 0;
 }
 
 dl.details-list {

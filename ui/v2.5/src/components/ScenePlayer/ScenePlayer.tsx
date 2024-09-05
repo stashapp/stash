@@ -822,7 +822,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
   return (
     <div
-      className={cx("VideoPlayer", { portrait: isPortrait })}
+      className={cx("VideoPlayer", { portrait: isPortrait, "no-file": !file })}
       onKeyDownCapture={onKeyDown}
     >
       <div className="video-wrapper" ref={videoRef} />

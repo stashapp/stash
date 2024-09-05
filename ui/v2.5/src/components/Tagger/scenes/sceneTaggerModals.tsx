@@ -106,7 +106,7 @@ export const SceneTaggerModals: React.FC = ({ children }) => {
     setStudioCallback(() => callback);
   }
 
-  const endpoint = currentSource?.stashboxEndpoint;
+  const endpoint = currentSource?.sourceInput.stash_box_endpoint ?? undefined;
 
   return (
     <SceneTaggerModalsState.Provider

@@ -19,42 +19,23 @@ import (
 
 // Decorator adds image specific fields to a File.
 type Decorator struct {
-	FFProbe ffmpeg.FFProbe
+	FFProbe *ffmpeg.FFProbe
 }
 
 func (d *Decorator) Decorate(ctx context.Context, fs models.FS, f models.File) (models.File, error) {
 	base := f.Base()
 
-	decorateFallback := func() (models.File, error) {
-		r, err := fs.Open(base.Path)
-		if err != nil {
-			return f, fmt.Errorf("reading image file %q: %w", base.Path, err)
-		}
-		defer r.Close()
-
-		c, format, err := image.DecodeConfig(r)
-		if err != nil {
-			return f, fmt.Errorf("decoding image file %q: %w", base.Path, err)
-		}
-		return &models.ImageFile{
-			BaseFile: base,
-			Format:   format,
-			Width:    c.Width,
-			Height:   c.Height,
-		}, nil
-	}
-
 	// ignore clips in non-OsFS filesystems as ffprobe cannot read them
 	// TODO - copy to temp file if not an OsFS
 	if _, isOs := fs.(*file.OsFS); !isOs {
 		logger.Debugf("assuming ImageFile for non-OsFS file %q", base.Path)
-		return decorateFallback()
+		return decorateFallback(fs, f)
 	}
 
 	probe, err := d.FFProbe.NewVideoFile(base.Path)
 	if err != nil {
 		logger.Warnf("File %q could not be read with ffprobe: %s, assuming ImageFile", base.Path, err)
-		return decorateFallback()
+		return decorateFallback(fs, f)
 	}
 
 	// Fallback to catch non-animated avif images that FFProbe detects as video files
@@ -79,12 +60,53 @@ func (d *Decorator) Decorate(ctx context.Context, fs models.FS, f models.File) (
 		return videoFileDecorator.Decorate(ctx, fs, f)
 	}
 
-	return &models.ImageFile{
+	ret := &models.ImageFile{
 		BaseFile: base,
 		Format:   probe.VideoCodec,
 		Width:    probe.Width,
 		Height:   probe.Height,
-	}, nil
+	}
+
+	adjustForOrientation(fs, base.Path, ret)
+
+	return ret, nil
+}
+
+func decodeConfig(fs models.FS, path string) (config image.Config, format string, err error) {
+	r, err := fs.Open(path)
+	if err != nil {
+		err = fmt.Errorf("reading image file %q: %w", path, err)
+		return
+	}
+	defer r.Close()
+
+	config, format, err = image.DecodeConfig(r)
+	if err != nil {
+		err = fmt.Errorf("decoding image file %q: %w", path, err)
+		return
+	}
+	return
+}
+
+func decorateFallback(fs models.FS, f models.File) (models.File, error) {
+	base := f.Base()
+	path := base.Path
+
+	c, format, err := decodeConfig(fs, path)
+	if err != nil {
+		return f, err
+	}
+
+	ret := &models.ImageFile{
+		BaseFile: base,
+		Format:   format,
+		Width:    c.Width,
+		Height:   c.Height,
+	}
+
+	adjustForOrientation(fs, path, ret)
+
+	return ret, nil
 }
 
 func (d *Decorator) IsMissingMetadata(ctx context.Context, fs models.FS, f models.File) bool {

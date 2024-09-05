@@ -88,6 +88,14 @@
     color: $text-color;
   }
 
+  &-cover {
+    position: relative;
+  }
+
+  .preview-scrubber {
+    top: 0;
+  }
+
   &-image {
     object-fit: contain;
   }
@@ -206,7 +214,9 @@ $galleryTabWidth: 450px;
 
   .gallery-container {
     flex: 0 0 calc(100% - #{$galleryTabWidth} - 15px);
+    height: calc(100vh - 4rem);
     max-width: calc(100% - #{$galleryTabWidth} - 15px);
+    overflow: auto;
     padding-left: 0;
 
     &.expanded {

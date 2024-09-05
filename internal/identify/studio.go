@@ -46,17 +46,17 @@ func createMissingStudio(ctx context.Context, endpoint string, w models.StudioRe
 				return nil, err
 			}
 
-			studioPartial := s.Parent.ToPartial(s.Parent.StoredID, endpoint, nil, existingStashIDs)
+			studioPartial := s.Parent.ToPartial(*s.Parent.StoredID, endpoint, nil, existingStashIDs)
 			parentImage, err := s.Parent.GetImage(ctx, nil)
 			if err != nil {
 				return nil, err
 			}
 
-			if err := studio.ValidateModify(ctx, *studioPartial, w); err != nil {
+			if err := studio.ValidateModify(ctx, studioPartial, w); err != nil {
 				return nil, err
 			}
 
-			_, err = w.UpdatePartial(ctx, *studioPartial)
+			_, err = w.UpdatePartial(ctx, studioPartial)
 			if err != nil {
 				return nil, err
 			}

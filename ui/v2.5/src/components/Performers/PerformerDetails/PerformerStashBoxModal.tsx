@@ -160,7 +160,7 @@ const PerformerStashBoxModal: React.FC<IProps> = ({
   const { data, loading } = GQL.useScrapeSinglePerformerQuery({
     variables: {
       source: {
-        stash_box_index: instance.index,
+        stash_box_endpoint: instance.endpoint,
       },
       input: {
         query,

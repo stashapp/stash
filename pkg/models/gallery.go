@@ -1,9 +1,7 @@
 package models
 
 type GalleryFilterType struct {
-	And          *GalleryFilterType    `json:"AND"`
-	Or           *GalleryFilterType    `json:"OR"`
-	Not          *GalleryFilterType    `json:"NOT"`
+	OperatorFilter[GalleryFilterType]
 	ID           *IntCriterionInput    `json:"id"`
 	Title        *StringCriterionInput `json:"title"`
 	Code         *StringCriterionInput `json:"code"`
@@ -51,6 +49,16 @@ type GalleryFilterType struct {
 	URL *StringCriterionInput `json:"url"`
 	// Filter by date
 	Date *DateCriterionInput `json:"date"`
+	// Filter by related scenes that meet this criteria
+	ScenesFilter *SceneFilterType `json:"scenes_filter"`
+	// Filter by related images that meet this criteria
+	ImagesFilter *ImageFilterType `json:"images_filter"`
+	// Filter by related performers that meet this criteria
+	PerformersFilter *PerformerFilterType `json:"performers_filter"`
+	// Filter by related studios that meet this criteria
+	StudiosFilter *StudioFilterType `json:"studios_filter"`
+	// Filter by related tags that meet this criteria
+	TagsFilter *TagFilterType `json:"tags_filter"`
 	// Filter by created at
 	CreatedAt *TimestampCriterionInput `json:"created_at"`
 	// Filter by updated at

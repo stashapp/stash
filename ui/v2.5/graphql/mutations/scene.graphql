@@ -34,6 +34,18 @@ mutation SceneSaveActivity(
   )
 }
 
+mutation SceneResetActivity(
+  $id: ID!
+  $reset_resume: Boolean!
+  $reset_duration: Boolean!
+) {
+  sceneResetActivity(
+    id: $id
+    reset_resume: $reset_resume
+    reset_duration: $reset_duration
+  )
+}
+
 mutation SceneAddPlay($id: ID!, $times: [Timestamp!]) {
   sceneAddPlay(id: $id, times: $times) {
     count

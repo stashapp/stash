@@ -20,7 +20,9 @@ type TagFinder interface {
 	FindByImageID(ctx context.Context, imageID int) ([]*Tag, error)
 	FindByGalleryID(ctx context.Context, galleryID int) ([]*Tag, error)
 	FindByPerformerID(ctx context.Context, performerID int) ([]*Tag, error)
+	FindByGroupID(ctx context.Context, groupID int) ([]*Tag, error)
 	FindBySceneMarkerID(ctx context.Context, sceneMarkerID int) ([]*Tag, error)
+	FindByStudioID(ctx context.Context, studioID int) ([]*Tag, error)
 	FindByName(ctx context.Context, name string, nocase bool) (*Tag, error)
 	FindByNames(ctx context.Context, names []string, nocase bool) ([]*Tag, error)
 }
@@ -84,6 +86,7 @@ type TagReader interface {
 	TagCounter
 
 	AliasLoader
+	TagRelationLoader
 
 	All(ctx context.Context) ([]*Tag, error)
 	GetImage(ctx context.Context, tagID int) ([]byte, error)

@@ -1,3 +1,4 @@
+// Package sliceutil provides utilities for working with slices.
 package sliceutil
 
 // Index returns the first index of the provided value in the provided
@@ -145,7 +146,7 @@ func Filter[T any](vs []T, f func(T) bool) []T {
 	return ret
 }
 
-// Filter returns the result of applying f to each element of the vs slice.
+// Map returns the result of applying f to each element of the vs slice.
 func Map[T any, V any](vs []T, f func(T) V) []V {
 	ret := make([]V, len(vs))
 	for i, v := range vs {

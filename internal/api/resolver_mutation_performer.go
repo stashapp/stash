@@ -12,6 +12,11 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
+const (
+	twitterURL   = "https://twitter.com"
+	instagramURL = "https://instagram.com"
+)
+
 // used to refetch performer after hooks run
 func (r *mutationResolver) getPerformer(ctx context.Context, id int) (ret *models.Performer, err error) {
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
@@ -35,7 +40,6 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 	newPerformer.Name = input.Name
 	newPerformer.Disambiguation = translator.string(input.Disambiguation)
 	newPerformer.Aliases = models.NewRelatedStrings(input.AliasList)
-	newPerformer.URL = translator.string(input.URL)
 	newPerformer.Gender = input.Gender
 	newPerformer.Ethnicity = translator.string(input.Ethnicity)
 	newPerformer.Country = translator.string(input.Country)
@@ -47,8 +51,6 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 	newPerformer.CareerLength = translator.string(input.CareerLength)
 	newPerformer.Tattoos = translator.string(input.Tattoos)
 	newPerformer.Piercings = translator.string(input.Piercings)
-	newPerformer.Twitter = translator.string(input.Twitter)
-	newPerformer.Instagram = translator.string(input.Instagram)
 	newPerformer.Favorite = translator.bool(input.Favorite)
 	newPerformer.Rating = input.Rating100
 	newPerformer.Details = translator.string(input.Details)
@@ -57,6 +59,21 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 	newPerformer.Weight = input.Weight
 	newPerformer.IgnoreAutoTag = translator.bool(input.IgnoreAutoTag)
 	newPerformer.StashIDs = models.NewRelatedStashIDs(input.StashIds)
+
+	newPerformer.URLs = models.NewRelatedStrings([]string{})
+	if input.URL != nil {
+		newPerformer.URLs.Add(*input.URL)
+	}
+	if input.Twitter != nil {
+		newPerformer.URLs.Add(utils.URLFromHandle(*input.Twitter, twitterURL))
+	}
+	if input.Instagram != nil {
+		newPerformer.URLs.Add(utils.URLFromHandle(*input.Instagram, instagramURL))
+	}
+
+	if input.Urls != nil {
+		newPerformer.URLs.Add(input.Urls...)
+	}
 
 	var err error
 
@@ -112,6 +129,96 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 	return r.getPerformer(ctx, newPerformer.ID)
 }
 
+func (r *mutationResolver) validateNoLegacyURLs(translator changesetTranslator) error {
+	// ensure url/twitter/instagram are not included in the input
+	if translator.hasField("url") {
+		return fmt.Errorf("url field must not be included if urls is included")
+	}
+	if translator.hasField("twitter") {
+		return fmt.Errorf("twitter field must not be included if urls is included")
+	}
+	if translator.hasField("instagram") {
+		return fmt.Errorf("instagram field must not be included if urls is included")
+	}
+
+	return nil
+}
+
+func (r *mutationResolver) handleLegacyURLs(ctx context.Context, performerID int, legacyURL, legacyTwitter, legacyInstagram models.OptionalString, updatedPerformer *models.PerformerPartial) error {
+	qb := r.repository.Performer
+
+	// we need to be careful with URL/Twitter/Instagram
+	// treat URL as replacing the first non-Twitter/Instagram URL in the list
+	// twitter should replace any existing twitter URL
+	// instagram should replace any existing instagram URL
+	p, err := qb.Find(ctx, performerID)
+	if err != nil {
+		return err
+	}
+
+	if err := p.LoadURLs(ctx, qb); err != nil {
+		return fmt.Errorf("loading performer URLs: %w", err)
+	}
+
+	existingURLs := p.URLs.List()
+
+	// performer partial URLs should be empty
+	if legacyURL.Set {
+		replaced := false
+		for i, url := range existingURLs {
+			if !performer.IsTwitterURL(url) && !performer.IsInstagramURL(url) {
+				existingURLs[i] = legacyURL.Value
+				replaced = true
+				break
+			}
+		}
+
+		if !replaced {
+			existingURLs = append(existingURLs, legacyURL.Value)
+		}
+	}
+
+	if legacyTwitter.Set {
+		value := utils.URLFromHandle(legacyTwitter.Value, twitterURL)
+		found := false
+		// find and replace the first twitter URL
+		for i, url := range existingURLs {
+			if performer.IsTwitterURL(url) {
+				existingURLs[i] = value
+				found = true
+				break
+			}
+		}
+
+		if !found {
+			existingURLs = append(existingURLs, value)
+		}
+	}
+	if legacyInstagram.Set {
+		found := false
+		value := utils.URLFromHandle(legacyInstagram.Value, instagramURL)
+		// find and replace the first instagram URL
+		for i, url := range existingURLs {
+			if performer.IsInstagramURL(url) {
+				existingURLs[i] = value
+				found = true
+				break
+			}
+		}
+
+		if !found {
+			existingURLs = append(existingURLs, value)
+		}
+	}
+
+	updatedPerformer.URLs = &models.UpdateStrings{
+		Values: existingURLs,
+		Mode:   models.RelationshipUpdateModeSet,
+	}
+
+	return nil
+}
+
 func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.PerformerUpdateInput) (*models.Performer, error) {
 	performerID, err := strconv.Atoi(input.ID)
 	if err != nil {
@@ -127,7 +234,6 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 
 	updatedPerformer.Name = translator.optionalString(input.Name, "name")
 	updatedPerformer.Disambiguation = translator.optionalString(input.Disambiguation, "disambiguation")
-	updatedPerformer.URL = translator.optionalString(input.URL, "url")
 	updatedPerformer.Gender = translator.optionalString((*string)(input.Gender), "gender")
 	updatedPerformer.Ethnicity = translator.optionalString(input.Ethnicity, "ethnicity")
 	updatedPerformer.Country = translator.optionalString(input.Country, "country")
@@ -139,8 +245,6 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 	updatedPerformer.CareerLength = translator.optionalString(input.CareerLength, "career_length")
 	updatedPerformer.Tattoos = translator.optionalString(input.Tattoos, "tattoos")
 	updatedPerformer.Piercings = translator.optionalString(input.Piercings, "piercings")
-	updatedPerformer.Twitter = translator.optionalString(input.Twitter, "twitter")
-	updatedPerformer.Instagram = translator.optionalString(input.Instagram, "instagram")
 	updatedPerformer.Favorite = translator.optionalBool(input.Favorite, "favorite")
 	updatedPerformer.Rating = translator.optionalInt(input.Rating100, "rating100")
 	updatedPerformer.Details = translator.optionalString(input.Details, "details")
@@ -148,6 +252,19 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 	updatedPerformer.Weight = translator.optionalInt(input.Weight, "weight")
 	updatedPerformer.IgnoreAutoTag = translator.optionalBool(input.IgnoreAutoTag, "ignore_auto_tag")
 	updatedPerformer.StashIDs = translator.updateStashIDs(input.StashIds, "stash_ids")
+
+	if translator.hasField("urls") {
+		// ensure url/twitter/instagram are not included in the input
+		if err := r.validateNoLegacyURLs(translator); err != nil {
+			return nil, err
+		}
+
+		updatedPerformer.URLs = translator.updateStrings(input.Urls, "urls")
+	}
+
+	legacyURL := translator.optionalString(input.URL, "url")
+	legacyTwitter := translator.optionalString(input.Twitter, "twitter")
+	legacyInstagram := translator.optionalString(input.Instagram, "instagram")
 
 	updatedPerformer.Birthdate, err = translator.optionalDate(input.Birthdate, "birthdate")
 	if err != nil {
@@ -185,6 +302,12 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 	// Start the transaction and save the performer
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Performer
+
+		if legacyURL.Set || legacyTwitter.Set || legacyInstagram.Set {
+			if err := r.handleLegacyURLs(ctx, performerID, legacyURL, legacyTwitter, legacyInstagram, &updatedPerformer); err != nil {
+				return err
+			}
+		}
 
 		if err := performer.ValidateUpdate(ctx, performerID, updatedPerformer, qb); err != nil {
 			return err
@@ -225,7 +348,7 @@ func (r *mutationResolver) BulkPerformerUpdate(ctx context.Context, input BulkPe
 	updatedPerformer := models.NewPerformerPartial()
 
 	updatedPerformer.Disambiguation = translator.optionalString(input.Disambiguation, "disambiguation")
-	updatedPerformer.URL = translator.optionalString(input.URL, "url")
+
 	updatedPerformer.Gender = translator.optionalString((*string)(input.Gender), "gender")
 	updatedPerformer.Ethnicity = translator.optionalString(input.Ethnicity, "ethnicity")
 	updatedPerformer.Country = translator.optionalString(input.Country, "country")
@@ -237,14 +360,26 @@ func (r *mutationResolver) BulkPerformerUpdate(ctx context.Context, input BulkPe
 	updatedPerformer.CareerLength = translator.optionalString(input.CareerLength, "career_length")
 	updatedPerformer.Tattoos = translator.optionalString(input.Tattoos, "tattoos")
 	updatedPerformer.Piercings = translator.optionalString(input.Piercings, "piercings")
-	updatedPerformer.Twitter = translator.optionalString(input.Twitter, "twitter")
-	updatedPerformer.Instagram = translator.optionalString(input.Instagram, "instagram")
+
 	updatedPerformer.Favorite = translator.optionalBool(input.Favorite, "favorite")
 	updatedPerformer.Rating = translator.optionalInt(input.Rating100, "rating100")
 	updatedPerformer.Details = translator.optionalString(input.Details, "details")
 	updatedPerformer.HairColor = translator.optionalString(input.HairColor, "hair_color")
 	updatedPerformer.Weight = translator.optionalInt(input.Weight, "weight")
 	updatedPerformer.IgnoreAutoTag = translator.optionalBool(input.IgnoreAutoTag, "ignore_auto_tag")
+
+	if translator.hasField("urls") {
+		// ensure url/twitter/instagram are not included in the input
+		if err := r.validateNoLegacyURLs(translator); err != nil {
+			return nil, err
+		}
+
+		updatedPerformer.URLs = translator.updateStringsBulk(input.Urls, "urls")
+	}
+
+	legacyURL := translator.optionalString(input.URL, "url")
+	legacyTwitter := translator.optionalString(input.Twitter, "twitter")
+	legacyInstagram := translator.optionalString(input.Instagram, "instagram")
 
 	updatedPerformer.Birthdate, err = translator.optionalDate(input.Birthdate, "birthdate")
 	if err != nil {
@@ -277,6 +412,12 @@ func (r *mutationResolver) BulkPerformerUpdate(ctx context.Context, input BulkPe
 		qb := r.repository.Performer
 
 		for _, performerID := range performerIDs {
+			if legacyURL.Set || legacyTwitter.Set || legacyInstagram.Set {
+				if err := r.handleLegacyURLs(ctx, performerID, legacyURL, legacyTwitter, legacyInstagram, &updatedPerformer); err != nil {
+					return err
+				}
+			}
+
 			if err := performer.ValidateUpdate(ctx, performerID, updatedPerformer, qb); err != nil {
 				return err
 			}

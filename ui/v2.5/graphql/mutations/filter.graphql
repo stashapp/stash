@@ -7,7 +7,3 @@ mutation SaveFilter($input: SaveFilterInput!) {
 mutation DestroySavedFilter($input: DestroyFilterInput!) {
   destroySavedFilter(input: $input)
 }
-
-mutation SetDefaultFilter($input: SetDefaultFilterInput!) {
-  setDefaultFilter(input: $input)
-}

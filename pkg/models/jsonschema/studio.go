@@ -22,6 +22,7 @@ type Studio struct {
 	Details       string           `json:"details,omitempty"`
 	Aliases       []string         `json:"aliases,omitempty"`
 	StashIDs      []models.StashID `json:"stash_ids,omitempty"`
+	Tags          []string         `json:"tags,omitempty"`
 	IgnoreAutoTag bool             `json:"ignore_auto_tag,omitempty"`
 }
 

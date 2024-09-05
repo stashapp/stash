@@ -5,14 +5,12 @@ export const SCRAPER_PREFIX = "scraper:";
 
 export interface ITaggerSource {
   id: string;
-  stashboxEndpoint?: string;
   sourceInput: ScraperSourceInput;
   displayName: string;
   supportSceneQuery?: boolean;
   supportSceneFragment?: boolean;
 }
 
-export const LOCAL_FORAGE_KEY = "tagger";
 export const DEFAULT_BLACKLIST = [
   "\\sXXX\\s",
   "1080p",
@@ -29,10 +27,10 @@ export const DEFAULT_EXCLUDED_STUDIO_FIELDS = ["name"];
 
 export const initialConfig: ITaggerConfig = {
   blacklist: DEFAULT_BLACKLIST,
-  showMales: false,
+  showMales: true,
   mode: "auto",
   setCoverImage: true,
-  setTags: false,
+  setTags: true,
   tagOperation: "merge",
   fingerprintQueue: {},
   excludedPerformerFields: DEFAULT_EXCLUDED_PERFORMER_FIELDS,
@@ -79,10 +77,8 @@ export const PERFORMER_FIELDS = [
   "tattoos",
   "piercings",
   "career_length",
-  "url",
-  "twitter",
-  "instagram",
+  "urls",
   "details",
 ];
 
-export const STUDIO_FIELDS = ["name", "image", "url", "parent_studio"];
+export const STUDIO_FIELDS = ["name", "image", "urls", "parent_studio"];

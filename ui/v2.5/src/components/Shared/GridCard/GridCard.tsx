@@ -1,10 +1,18 @@
-import React, { MutableRefObject, useRef, useState } from "react";
+import React, {
+  MutableRefObject,
+  PropsWithChildren,
+  useRef,
+  useState,
+} from "react";
 import { Card, Form } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import cx from "classnames";
 import { TruncatedText } from "../TruncatedText";
 import ScreenUtils from "src/utils/screen";
 import useResizeObserver from "@react-hook/resize-observer";
+import { Icon } from "../Icon";
+import { faGripLines } from "@fortawesome/free-solid-svg-icons";
+import { DragSide, useDragMoveSelect } from "./dragMoveSelect";
 
 interface ICardProps {
   className?: string;
@@ -24,6 +32,10 @@ interface ICardProps {
   resumeTime?: number;
   duration?: number;
   interactiveHeatmap?: string;
+
+  // move logic - both of the following are required to enable move dragging
+  objectId?: string; // required for move dragging
+  onMove?: (srcIds: string[], targetId: string, after: boolean) => void;
   titleOnImage?: boolean;
 }
 
@@ -43,9 +55,9 @@ interface IDimension {
   height: number;
 }
 
-export const useContainerDimensions = <
-  T extends HTMLElement = HTMLDivElement
->(): [MutableRefObject<T | null>, IDimension] => {
+export const useContainerDimensions = <T extends HTMLElement = HTMLDivElement>(
+  sensitivityThreshold = 20
+): [MutableRefObject<T | null>, IDimension] => {
   const target = useRef<T | null>(null);
   const [dimension, setDimension] = useState<IDimension>({
     width: 0,
@@ -54,14 +66,92 @@ export const useContainerDimensions = <
 
   useResizeObserver(target, (entry) => {
     const { inlineSize: width, blockSize: height } = entry.contentBoxSize[0];
-    setDimension({ width, height });
+    let difference = Math.abs(dimension.width - width);
+    // Only adjust when width changed by a significant margin. This addresses the cornercase that sees
+    // the dimensions toggle back and forward when the window is adjusted perfectly such that overflow
+    // is trigger then immediable disabled because of a resize event then continues this loop endlessly.
+    // the scrollbar size varies between platforms. Windows is apparently around 17 pixels.
+    if (difference > sensitivityThreshold) {
+      setDimension({ width, height });
+    }
   });
 
   return [target, dimension];
 };
 
+const Checkbox: React.FC<{
+  cardID: string;
+  selected?: boolean;
+  onSelectedChanged?: (selected: boolean, shiftKey: boolean) => void;
+}> = ({ cardID, selected = false, onSelectedChanged }) => {
+  let shiftKey = false;
+  return (
+    <div className="checkbox-wrapper">
+      <Form.Control
+        type="checkbox"
+        id={cardID}
+        // #2750 - add mousetrap class to ensure keyboard shortcuts work
+        className="card-check mousetrap"
+        checked={selected}
+        onChange={() => onSelectedChanged!(!selected, shiftKey)}
+        onClick={(event: React.MouseEvent<HTMLInputElement, MouseEvent>) => {
+          shiftKey = event.shiftKey;
+          event.stopPropagation();
+        }}
+      />
+      <label htmlFor={cardID}>
+        <span />
+      </label>
+    </div>
+  );
+};
+
+const DragHandle: React.FC<{
+  setInHandle: (inHandle: boolean) => void;
+}> = ({ setInHandle }) => {
+  function onMouseEnter() {
+    setInHandle(true);
+  }
+
+  function onMouseLeave() {
+    setInHandle(false);
+  }
+
+  return (
+    <span onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
+      <Icon className="card-drag-handle" icon={faGripLines} />
+    </span>
+  );
+};
+
+const Controls: React.FC<PropsWithChildren<{}>> = ({ children }) => {
+  return <div className="card-controls">{children}</div>;
+};
+
+const MoveTarget: React.FC<{ dragSide: DragSide }> = ({ dragSide }) => {
+  if (dragSide === undefined) {
+    return null;
+  }
+
+  return (
+    <div
+      className={`move-target move-target-${
+        dragSide === DragSide.BEFORE ? "before" : "after"
+      }`}
+    ></div>
+  );
+};
+
 export const GridCard: React.FC<ICardProps> = (props: ICardProps) => {
+  const { setInHandle, moveTarget, dragProps } = useDragMoveSelect({
+    selecting: props.selecting || false,
+    selected: props.selected || false,
+    onSelectedChanged: props.onSelectedChanged,
+    objectId: props.objectId,
+    onMove: props.onMove,
+  });
   const cardID = props.url.substring(1).split("?")[0].replace("/", "-");
+
   function handleImageClick(event: React.MouseEvent<HTMLElement, MouseEvent>) {
     const { shiftKey } = event;
 
@@ -72,57 +162,6 @@ export const GridCard: React.FC<ICardProps> = (props: ICardProps) => {
     if (props.selecting) {
       props.onSelectedChanged(!props.selected, shiftKey);
       event.preventDefault();
-    }
-  }
-
-  function handleDrag(event: React.DragEvent<HTMLElement>) {
-    if (props.selecting) {
-      event.dataTransfer.setData("text/plain", "");
-      event.dataTransfer.setDragImage(new Image(), 0, 0);
-    }
-  }
-
-  function handleDragOver(event: React.DragEvent<HTMLElement>) {
-    const ev = event;
-    const shiftKey = false;
-
-    if (!props.onSelectedChanged) {
-      return;
-    }
-
-    if (props.selecting && !props.selected) {
-      props.onSelectedChanged(true, shiftKey);
-    }
-
-    ev.dataTransfer.dropEffect = "move";
-    ev.preventDefault();
-  }
-
-  let shiftKey = false;
-
-  function maybeRenderCheckbox() {
-    if (props.onSelectedChanged) {
-      return (
-        <div className="checkbox-wrapper">
-          <Form.Control
-            type="checkbox"
-            id={cardID}
-            // #2750 - add mousetrap class to ensure keyboard shortcuts work
-            className="card-check mousetrap"
-            checked={props.selected}
-            onChange={() => props.onSelectedChanged!(!props.selected, shiftKey)}
-            onClick={(
-              event: React.MouseEvent<HTMLInputElement, MouseEvent>
-            ) => {
-              shiftKey = event.shiftKey;
-              event.stopPropagation();
-            }}
-          />
-          <label htmlFor={cardID}>
-            <span />
-          </label>
-        </div>
-      );
     }
   }
 
@@ -159,16 +198,27 @@ export const GridCard: React.FC<ICardProps> = (props: ICardProps) => {
     <Card
       className={cx(props.className, "grid-card")}
       onClick={handleImageClick}
-      onDragStart={handleDrag}
-      onDragOver={handleDragOver}
-      draggable={props.onSelectedChanged && props.selecting}
+      {...dragProps}
       style={
         props.width && !ScreenUtils.isMobile()
           ? { width: `${props.width}px` }
           : {}
       }
     >
-      {maybeRenderCheckbox()}
+      {moveTarget !== undefined && <MoveTarget dragSide={moveTarget} />}
+      <Controls>
+        {props.onSelectedChanged && (
+          <Checkbox
+            cardID={cardID}
+            selected={props.selected}
+            onSelectedChanged={props.onSelectedChanged}
+          />
+        )}
+
+        {!!props.objectId && props.onMove && (
+          <DragHandle setInHandle={setInHandle} />
+        )}
+      </Controls>
 
       <div className={cx(props.thumbnailSectionClassName, "thumbnail-section")}>
         <Link

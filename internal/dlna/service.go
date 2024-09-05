@@ -22,7 +22,7 @@ type Repository struct {
 	StudioFinder    StudioFinder
 	TagFinder       TagFinder
 	PerformerFinder PerformerFinder
-	MovieFinder     MovieFinder
+	GroupFinder     GroupFinder
 }
 
 func NewRepository(repo models.Repository) Repository {
@@ -33,7 +33,7 @@ func NewRepository(repo models.Repository) Repository {
 		StudioFinder:    repo.Studio,
 		TagFinder:       repo.Tag,
 		PerformerFinder: repo.Performer,
-		MovieFinder:     repo.Movie,
+		GroupFinder:     repo.Group,
 	}
 }
 

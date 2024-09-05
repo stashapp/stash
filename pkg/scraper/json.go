@@ -66,7 +66,7 @@ func (s *jsonScraper) loadURL(ctx context.Context, url string) (string, error) {
 		return "", errors.New("not valid json")
 	}
 
-	if err == nil && s.config.DebugOptions != nil && s.config.DebugOptions.PrintHTML {
+	if s.config.DebugOptions != nil && s.config.DebugOptions.PrintHTML {
 		logger.Infof("loadURL (%s) response: \n%s", url, docStr)
 	}
 
@@ -81,15 +81,33 @@ func (s *jsonScraper) scrapeByURL(ctx context.Context, url string, ty ScrapeCont
 	}
 
 	q := s.getJsonQuery(doc)
+	// if these just return the return values from scraper.scrape* functions then
+	// it ends up returning ScrapedContent(nil) rather than nil
 	switch ty {
 	case ScrapeContentTypePerformer:
-		return scraper.scrapePerformer(ctx, q)
+		ret, err := scraper.scrapePerformer(ctx, q)
+		if err != nil || ret == nil {
+			return nil, err
+		}
+		return ret, nil
 	case ScrapeContentTypeScene:
-		return scraper.scrapeScene(ctx, q)
+		ret, err := scraper.scrapeScene(ctx, q)
+		if err != nil || ret == nil {
+			return nil, err
+		}
+		return ret, nil
 	case ScrapeContentTypeGallery:
-		return scraper.scrapeGallery(ctx, q)
-	case ScrapeContentTypeMovie:
-		return scraper.scrapeMovie(ctx, q)
+		ret, err := scraper.scrapeGallery(ctx, q)
+		if err != nil || ret == nil {
+			return nil, err
+		}
+		return ret, nil
+	case ScrapeContentTypeMovie, ScrapeContentTypeGroup:
+		ret, err := scraper.scrapeGroup(ctx, q)
+		if err != nil || ret == nil {
+			return nil, err
+		}
+		return ret, nil
 	}
 
 	return nil, ErrNotSupported

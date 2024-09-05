@@ -28,7 +28,7 @@ export interface IPerformerCardExtraCriteria {
   scenes?: Criterion<CriterionValue>[];
   images?: Criterion<CriterionValue>[];
   galleries?: Criterion<CriterionValue>[];
-  movies?: Criterion<CriterionValue>[];
+  groups?: Criterion<CriterionValue>[];
   performer?: ILabeledId;
 }
 
@@ -192,18 +192,18 @@ export const PerformerCard: React.FC<IPerformerCardProps> = (
     );
   }
 
-  function maybeRenderMoviesPopoverButton() {
-    if (!props.performer.movie_count) return;
+  function maybeRenderGroupsPopoverButton() {
+    if (!props.performer.group_count) return;
 
     return (
       <PopoverCountButton
-        className="movie-count"
-        type="movie"
-        count={props.performer.movie_count}
-        url={NavUtils.makePerformerMoviesUrl(
+        className="group-count"
+        type="group"
+        count={props.performer.group_count}
+        url={NavUtils.makePerformerGroupsUrl(
           props.performer,
           props.extraCriteria?.performer,
-          props.extraCriteria?.movies
+          props.extraCriteria?.groups
         )}
       />
     );
@@ -216,14 +216,14 @@ export const PerformerCard: React.FC<IPerformerCardProps> = (
       props.performer.gallery_count ||
       props.performer.tags.length > 0 ||
       props.performer.o_counter ||
-      props.performer.movie_count
+      props.performer.group_count
     ) {
       return (
         <>
           <hr />
           <ButtonGroup className="card-popovers">
             {maybeRenderScenesPopoverButton()}
-            {maybeRenderMoviesPopoverButton()}
+            {maybeRenderGroupsPopoverButton()}
             {maybeRenderImagesPopoverButton()}
             {maybeRenderGalleriesPopoverButton()}
             {maybeRenderTagPopoverButton()}
@@ -291,6 +291,8 @@ export const PerformerCard: React.FC<IPerformerCardProps> = (
           <FavoriteIcon
             favorite={props.performer.favorite}
             onToggleFavorite={onToggleFavorite}
+            size="2x"
+            className="hide-not-favorite"
           />
           {maybeRenderRatingBanner()}
           {maybeRenderFlag()}

@@ -11,7 +11,7 @@ import {
   maybeRenderShowMoreLess,
 } from "src/components/Shared/DetailItem";
 import { useContainerDimensions } from "src/components/Shared/GridCard/GridCard";
-import { MovieCard } from "src/components/Movies/MovieCard";
+import { GroupCard } from "src/components/Groups/GroupCard";
 import { GalleryCard } from "src/components/Galleries/GalleryCard";
 import { faCompress, faExpand } from "@fortawesome/free-solid-svg-icons";
 import { Icon } from "src/components/Shared/Icon";
@@ -69,17 +69,17 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
     collapsedDetails,
   ]);
 
-  const movies = useMemo(
+  const groups = useMemo(
     () =>
-      props.scene.movies.map((sceneMovie) => (
-        <MovieCard
-          key={sceneMovie.movie.id}
-          movie={sceneMovie.movie}
-          sceneIndex={sceneMovie.scene_index ?? undefined}
+      props.scene.groups.map((sceneGroup) => (
+        <GroupCard
+          key={sceneGroup.group.id}
+          group={sceneGroup.group}
+          sceneNumber={sceneGroup.scene_index ?? undefined}
           titleOnImage={true}
         />
       )),
-    [props.scene.movies]
+    [props.scene.groups]
   );
 
   const tags = useMemo(() => {
@@ -258,8 +258,8 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
               value={props.scene.performers.length ? performers : undefined}
             />
             <DetailItem
-              id="movies"
-              value={movies.length ? movies : undefined}
+              id="groups"
+              value={groups.length ? groups : undefined}
             />
             <DetailItem
               id="galleries"

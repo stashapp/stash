@@ -6,13 +6,17 @@ import {
   GridCard,
   calculateCardWidth,
 } from "src/components/Shared/GridCard/GridCard";
-import { ButtonGroup } from "react-bootstrap";
+import { HoverPopover } from "../Shared/HoverPopover";
+import { Icon } from "../Shared/Icon";
+import { TagLink } from "../Shared/TagLink";
+import { Button, ButtonGroup } from "react-bootstrap";
 import { FormattedMessage } from "react-intl";
 import { PopoverCountButton } from "../Shared/PopoverCountButton";
 import { RatingBanner } from "../Shared/RatingBanner";
 import ScreenUtils from "src/utils/screen";
 import { FavoriteIcon } from "../Shared/FavoriteIcon";
 import { useStudioUpdate } from "src/core/StashService";
+import { faTag } from "@fortawesome/free-solid-svg-icons";
 
 interface IProps {
   studio: GQL.StudioDataFragment;
@@ -55,7 +59,11 @@ function maybeRenderChildren(studio: GQL.StudioDataFragment) {
           values={{
             children: (
               <Link to={NavUtils.makeChildStudiosUrl(studio)}>
-                {studio.child_studios.length} studios
+                {studio.child_studios.length}&nbsp;
+                <FormattedMessage
+                  id="countables.studios"
+                  values={{ count: studio.child_studios.length }}
+                />
               </Link>
             ),
           }}
@@ -152,15 +160,15 @@ export const StudioCard: React.FC<IProps> = (props: IProps) => {
     );
   }
 
-  function maybeRenderMoviesPopoverButton() {
-    if (!props.studio.movie_count) return;
+  function maybeRenderGroupsPopoverButton() {
+    if (!props.studio.group_count) return;
 
     return (
       <PopoverCountButton
-        className="movie-count"
-        type="movie"
-        count={props.studio.movie_count}
-        url={NavUtils.makeStudioMoviesUrl(props.studio)}
+        className="group-count"
+        type="group"
+        count={props.studio.group_count}
+        url={NavUtils.makeStudioGroupsUrl(props.studio)}
       />
     );
   }
@@ -178,23 +186,42 @@ export const StudioCard: React.FC<IProps> = (props: IProps) => {
     );
   }
 
+  function maybeRenderTagPopoverButton() {
+    if (props.studio.tags.length <= 0) return;
+
+    const popoverContent = props.studio.tags.map((tag) => (
+      <TagLink key={tag.id} linkType="studio" tag={tag} />
+    ));
+
+    return (
+      <HoverPopover placement="bottom" content={popoverContent}>
+        <Button className="minimal tag-count">
+          <Icon icon={faTag} />
+          <span>{props.studio.tags.length}</span>
+        </Button>
+      </HoverPopover>
+    );
+  }
+
   function maybeRenderPopoverButtonGroup() {
     if (
       props.studio.scene_count ||
       props.studio.image_count ||
       props.studio.gallery_count ||
-      props.studio.movie_count ||
-      props.studio.performer_count
+      props.studio.group_count ||
+      props.studio.performer_count ||
+      props.studio.tags.length > 0
     ) {
       return (
         <>
           <hr />
           <ButtonGroup className="card-popovers">
             {maybeRenderScenesPopoverButton()}
-            {maybeRenderMoviesPopoverButton()}
+            {maybeRenderGroupsPopoverButton()}
             {maybeRenderImagesPopoverButton()}
             {maybeRenderGalleriesPopoverButton()}
             {maybeRenderPerformersPopoverButton()}
+            {maybeRenderTagPopoverButton()}
           </ButtonGroup>
         </>
       );
@@ -227,6 +254,8 @@ export const StudioCard: React.FC<IProps> = (props: IProps) => {
         <FavoriteIcon
           favorite={props.studio.favorite}
           onToggleFavorite={(v) => onToggleFavorite(v)}
+          size="2x"
+          className="hide-not-favorite"
         />
       }
       popovers={maybeRenderPopoverButtonGroup()}

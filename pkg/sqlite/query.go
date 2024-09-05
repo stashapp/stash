@@ -110,6 +110,16 @@ func (qb *queryBuilder) addArg(args ...interface{}) {
 	qb.args = append(qb.args, args...)
 }
 
+func (qb *queryBuilder) hasJoin(alias string) bool {
+	for _, j := range qb.joins {
+		if j.alias() == alias {
+			return true
+		}
+	}
+
+	return false
+}
+
 func (qb *queryBuilder) join(table, as, onClause string) {
 	newJoin := join{
 		table:    table,

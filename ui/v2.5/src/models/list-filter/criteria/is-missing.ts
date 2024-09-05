@@ -50,8 +50,6 @@ export const PerformerIsMissingCriterionOption = new IsMissingCriterionOption(
   "is_missing",
   [
     "url",
-    "twitter",
-    "instagram",
     "ethnicity",
     "country",
     "hair_color",
@@ -89,7 +87,7 @@ export const StudioIsMissingCriterionOption = new IsMissingCriterionOption(
   ["image", "stash_id", "details"]
 );
 
-export const MovieIsMissingCriterionOption = new IsMissingCriterionOption(
+export const GroupIsMissingCriterionOption = new IsMissingCriterionOption(
   "isMissing",
   "is_missing",
   ["front_image", "back_image", "scenes"]

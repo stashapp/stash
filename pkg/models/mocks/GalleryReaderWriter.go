@@ -628,6 +628,34 @@ func (_m *GalleryReaderWriter) RemoveImages(ctx context.Context, galleryID int, 
 	return r0
 }
 
+// ResetCover provides a mock function with given fields: ctx, galleryID
+func (_m *GalleryReaderWriter) ResetCover(ctx context.Context, galleryID int) error {
+	ret := _m.Called(ctx, galleryID)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int) error); ok {
+		r0 = rf(ctx, galleryID)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// SetCover provides a mock function with given fields: ctx, galleryID, coverImageID
+func (_m *GalleryReaderWriter) SetCover(ctx context.Context, galleryID int, coverImageID int) error {
+	ret := _m.Called(ctx, galleryID, coverImageID)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int, int) error); ok {
+		r0 = rf(ctx, galleryID, coverImageID)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // Update provides a mock function with given fields: ctx, updatedGallery
 func (_m *GalleryReaderWriter) Update(ctx context.Context, updatedGallery *models.Gallery) error {
 	ret := _m.Called(ctx, updatedGallery)

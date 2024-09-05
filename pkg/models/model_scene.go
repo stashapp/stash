@@ -41,7 +41,7 @@ type Scene struct {
 	GalleryIDs   RelatedIDs      `json:"gallery_ids"`
 	TagIDs       RelatedIDs      `json:"tag_ids"`
 	PerformerIDs RelatedIDs      `json:"performer_ids"`
-	Movies       RelatedMovies   `json:"movies"`
+	Groups       RelatedGroups   `json:"groups"`
 	StashIDs     RelatedStashIDs `json:"stash_ids"`
 }
 
@@ -74,7 +74,7 @@ type ScenePartial struct {
 	GalleryIDs    *UpdateIDs
 	TagIDs        *UpdateIDs
 	PerformerIDs  *UpdateIDs
-	MovieIDs      *UpdateMovieIDs
+	GroupIDs      *UpdateGroupIDs
 	StashIDs      *UpdateStashIDs
 	PrimaryFileID *FileID
 }
@@ -139,9 +139,9 @@ func (s *Scene) LoadTagIDs(ctx context.Context, l TagIDLoader) error {
 	})
 }
 
-func (s *Scene) LoadMovies(ctx context.Context, l SceneMovieLoader) error {
-	return s.Movies.load(func() ([]MoviesScenes, error) {
-		return l.GetMovies(ctx, s.ID)
+func (s *Scene) LoadGroups(ctx context.Context, l SceneGroupLoader) error {
+	return s.Groups.load(func() ([]GroupsScenes, error) {
+		return l.GetGroups(ctx, s.ID)
 	})
 }
 
@@ -168,7 +168,7 @@ func (s *Scene) LoadRelationships(ctx context.Context, l SceneReader) error {
 		return err
 	}
 
-	if err := s.LoadMovies(ctx, l); err != nil {
+	if err := s.LoadGroups(ctx, l); err != nil {
 		return err
 	}
 
@@ -210,7 +210,7 @@ func (s ScenePartial) UpdateInput(id int) SceneUpdateInput {
 		StudioID:     s.StudioID.StringPtr(),
 		GalleryIds:   s.GalleryIDs.IDStrings(),
 		PerformerIds: s.PerformerIDs.IDStrings(),
-		Movies:       s.MovieIDs.SceneMovieInputs(),
+		Movies:       s.GroupIDs.SceneMovieInputs(),
 		TagIds:       s.TagIDs.IDStrings(),
 		StashIds:     stashIDs,
 	}

@@ -1,20 +1,18 @@
+// Package javascript provides the javascript runtime for the application.
 package javascript
 
 import (
 	"fmt"
-	"net/http"
 	"os"
 	"reflect"
 
 	"github.com/dop251/goja"
+	"github.com/stashapp/stash/pkg/logger"
 )
 
+// VM is a wrapper around goja.Runtime.
 type VM struct {
 	*goja.Runtime
-
-	Progress      chan float64
-	SessionCookie *http.Cookie
-	GQLHandler    http.Handler
 }
 
 // optionalFieldNameMapper wraps a goja.FieldNameMapper and returns the field name if the wrapped mapper returns an empty string.
@@ -36,6 +34,17 @@ func (tfm optionalFieldNameMapper) MethodName(t reflect.Type, m reflect.Method) 
 
 func NewVM() *VM {
 	r := goja.New()
+
+	// enable console for backwards compatibility
+	c := console{
+		Log{
+			Logger: logger.Logger,
+		},
+	}
+
+	// there should not be any reason for this to fail
+	_ = c.AddToVM("console", &VM{Runtime: r})
+
 	r.SetFieldNameMapper(optionalFieldNameMapper{goja.TagFieldNameMapper("json", true)})
 	return &VM{Runtime: r}
 }
