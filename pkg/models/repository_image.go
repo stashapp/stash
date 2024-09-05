@@ -89,6 +89,7 @@ type ImageWriter interface {
 	ImageDestroyer
 
 	AddFileID(ctx context.Context, id int, fileID FileID) error
+	RemoveFileID(ctx context.Context, id int, fileID FileID) error
 	IncrementOCounter(ctx context.Context, id int) (int, error)
 	DecrementOCounter(ctx context.Context, id int) (int, error)
 	ResetOCounter(ctx context.Context, id int) (int, error)
