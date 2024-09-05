@@ -1339,6 +1339,10 @@ $detailTabWidth: calc(100% / 3);
         width: 12.9rem;
       }
 
+      .preview-scrubber {
+        display: none;
+      }
+
       .gallery-card-image.portrait-image {
         height: 12.9rem;
         width: auto;
