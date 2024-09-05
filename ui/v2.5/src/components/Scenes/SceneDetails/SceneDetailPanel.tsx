@@ -160,7 +160,7 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
   ]);
 
   const performers = useMemo(() => {
-    const limit = 365;
+    const limit = 165;
     const sorted = sortPerformers(props.scene.performers);
     const cards = sorted.map((performer) => (
       <PerformerCard

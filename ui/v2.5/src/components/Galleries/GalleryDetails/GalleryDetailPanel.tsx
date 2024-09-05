@@ -91,7 +91,7 @@ export const GalleryDetailPanel: React.FC<IGalleryDetailProps> = ({
   }, [gallery.tags, tagRef, tagHeight, setCollapsedTags, collapsedTags]);
 
   const performers = useMemo(() => {
-    const limit = 365;
+    const limit = 165;
     const sorted = sortPerformers(gallery.performers);
     const cards = sorted.map((performer) => (
       <PerformerCard

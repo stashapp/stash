@@ -100,7 +100,7 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
   }, [props.image.galleries]);
 
   const performers = useMemo(() => {
-    const limit = 365;
+    const limit = 165;
     const sorted = sortPerformers(props.image.performers);
     const cards = sorted.map((performer) => (
       <PerformerCard
