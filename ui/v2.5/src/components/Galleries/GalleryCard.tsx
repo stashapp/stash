@@ -27,14 +27,12 @@ export const GalleryPreview: React.FC<IGalleryPreviewProps> = ({
   gallery,
   onScrubberClick,
 }) => {
-  // ignoring isPortrait property to avoid merge conflicts later
   const [portraitImage, setPortraitImage] = React.useState(false);
 
   function identifyPortaitImage(e: React.UIEvent<HTMLImageElement>) {
     const img = e.target as HTMLImageElement;
     // set width = 200px if zero-sized image (SVG w/o intrinsic size)
     setPortraitImage(img.width < img.height);
-    console.log("portraitImage: " + portraitImage);
   }
 
   const [imgSrc, setImgSrc] = useState<string | undefined>(
