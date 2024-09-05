@@ -27,12 +27,11 @@ export const GalleryPreview: React.FC<IGalleryPreviewProps> = ({
   gallery,
   onScrubberClick,
 }) => {
-  const [portraitImage, setPortraitImage] = React.useState(false);
+  const [isPortrait, setIsPortrait] = React.useState(false);
 
   function identifyPortaitImage(e: React.UIEvent<HTMLImageElement>) {
     const img = e.target as HTMLImageElement;
-    // set width = 200px if zero-sized image (SVG w/o intrinsic size)
-    setPortraitImage(img.width < img.height);
+    setIsPortrait(img.width < img.height);
   }
 
   const [imgSrc, setImgSrc] = useState<string | undefined>(
@@ -45,7 +44,7 @@ export const GalleryPreview: React.FC<IGalleryPreviewProps> = ({
         <img
           loading="lazy"
           className={`gallery-card-image ${
-            portraitImage ? "portrait-image" : ""
+            isPortrait ? "portrait-image" : ""
           }`}
           alt={gallery.title ?? ""}
           src={imgSrc}
