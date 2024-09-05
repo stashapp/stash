@@ -111,7 +111,6 @@ const GalleryWallCard: React.FC<IProps> = ({ gallery }) => {
             defaultPath={cover ?? ""}
             imageCount={gallery.image_count}
             onClick={(i) => {
-              console.log(i);
               showLightbox(i);
             }}
             onPathChanged={setImgSrc}
