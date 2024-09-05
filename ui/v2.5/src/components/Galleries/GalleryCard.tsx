@@ -29,7 +29,6 @@ export const GalleryPreview: React.FC<IScenePreviewProps> = ({
   isPortrait = false,
   onScrubberClick,
 }) => {
-
   // ignoring isPortrait property to avoid merge conflicts later
   const [portraitImage, setPortraitImage] = React.useState(false);
 
@@ -37,7 +36,7 @@ export const GalleryPreview: React.FC<IScenePreviewProps> = ({
     const img = e.target as HTMLImageElement;
     // set width = 200px if zero-sized image (SVG w/o intrinsic size)
     setPortraitImage(img.width < img.height);
-    console.log("portraitImage: "+portraitImage)
+    console.log("portraitImage: " + portraitImage);
   }
 
   const [imgSrc, setImgSrc] = useState<string | undefined>(
@@ -49,7 +48,9 @@ export const GalleryPreview: React.FC<IScenePreviewProps> = ({
       {!!imgSrc && (
         <img
           loading="lazy"
-          className={`gallery-card-image ${ portraitImage ? "portrait-image" : ""}`}
+          className={`gallery-card-image ${
+            portraitImage ? "portrait-image" : ""
+          }`}
           alt={gallery.title ?? ""}
           src={imgSrc}
           onLoad={identifyPortaitImage}

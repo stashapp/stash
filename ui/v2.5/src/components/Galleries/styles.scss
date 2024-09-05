@@ -216,8 +216,8 @@ $galleryTabWidth: 450px;
     flex: 0 0 calc(100% - #{$galleryTabWidth} - 15px);
     height: calc(100vh - 4rem);
     max-width: calc(100% - #{$galleryTabWidth} - 15px);
-    padding-left: 0;
     overflow: auto;
+    padding-left: 0;
 
     &.expanded {
       flex: 0 0 calc(100% - 15px);
