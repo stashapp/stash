@@ -133,7 +133,7 @@ const _TagSelect: React.FC<
               </a>
             </TagPopover> */}
             <span>{name}</span>
-            {alias && <span className="alias">{` (${alias})`}</span>}
+            {alias && <span className="alias">&nbsp;({alias})</span>}
           </span>
         </TagPopover>
       ),
