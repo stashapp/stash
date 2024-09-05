@@ -18,23 +18,21 @@ import { GalleryPreviewScrubber } from "./GalleryPreviewScrubber";
 import cx from "classnames";
 import { useHistory } from "react-router-dom";
 
-interface IScenePreviewProps {
-  isPortrait?: boolean;
+interface IGalleryPreviewProps {
   gallery: GQL.SlimGalleryDataFragment;
   onScrubberClick?: (index: number) => void;
 }
 
-export const GalleryPreview: React.FC<IScenePreviewProps> = ({
+export const GalleryPreview: React.FC<IGalleryPreviewProps> = ({
   gallery,
-  isPortrait = false,
   onScrubberClick,
 }) => {
   const [imgSrc, setImgSrc] = useState<string | undefined>(
-    gallery.cover?.paths.thumbnail ?? undefined
+    gallery.paths.cover ?? undefined
   );
 
   return (
-    <div className={cx("gallery-card-cover", { portrait: isPortrait })}>
+    <div className={cx("gallery-card-cover")}>
       {!!imgSrc && (
         <img
           loading="lazy"
@@ -43,13 +41,15 @@ export const GalleryPreview: React.FC<IScenePreviewProps> = ({
           src={imgSrc}
         />
       )}
-      <GalleryPreviewScrubber
-        previewPath={gallery.paths.preview}
-        defaultPath={gallery.cover?.paths.thumbnail ?? ""}
-        imageCount={gallery.image_count}
-        onClick={onScrubberClick}
-        onPathChanged={setImgSrc}
-      />
+      {gallery.image_count > 0 && (
+        <GalleryPreviewScrubber
+          previewPath={gallery.paths.preview}
+          defaultPath={gallery.paths.cover ?? ""}
+          imageCount={gallery.image_count}
+          onClick={onScrubberClick}
+          onPathChanged={setImgSrc}
+        />
+      )}
     </div>
   );
 };
@@ -210,7 +210,6 @@ export const GalleryCard: React.FC<IProps> = (props) => {
           <GalleryPreview
             gallery={props.gallery}
             onScrubberClick={(i) => {
-              console.log(i);
               history.push(`/galleries/${props.gallery.id}/images/${i}`);
             }}
           />

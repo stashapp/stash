@@ -163,7 +163,9 @@ $galleryTabWidth: 450px;
 
   .gallery-container {
     flex: 0 0 calc(100% - #{$galleryTabWidth} - 15px);
+    height: calc(100vh - 4rem);
     max-width: calc(100% - #{$galleryTabWidth} - 15px);
+    overflow: auto;
 
     &.expanded {
       flex: 0 0 calc(100% - 15px);
@@ -178,11 +180,6 @@ $galleryTabWidth: 450px;
   padding-right: 15px;
   position: relative;
   width: 100%;
-}
-
-.gallery-container {
-  height: calc(100vh - 4rem);
-  overflow: auto;
 }
 
 @media (min-width: 1200px), (max-width: 575px) {

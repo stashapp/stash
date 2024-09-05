@@ -20,18 +20,22 @@ interface IProps {
 
 const GalleryWallCard: React.FC<IProps> = ({ gallery }) => {
   const intl = useIntl();
+  const [orientation, setOrientation] = React.useState<
+    "landscape" | "portrait"
+  >("landscape");
   const showLightbox = useGalleryLightbox(gallery.id, gallery.chapters);
 
-  const coverFile = gallery?.cover?.files.length
-    ? gallery.cover.files[0]
-    : undefined;
+  const cover = gallery?.paths.cover;
 
-  const orientation =
-    (coverFile?.width ?? 0) > (coverFile?.height ?? 0)
-      ? "landscape"
-      : "portrait";
+  function onImageLoad(e: React.SyntheticEvent<HTMLImageElement, Event>) {
+    const target = e.target as HTMLImageElement;
+    setOrientation(
+      target.naturalWidth > target.naturalHeight ? "landscape" : "portrait"
+    );
+  }
+      
   const [imgSrc, setImgSrc] = useState<string | undefined>(
-    gallery.cover?.paths.thumbnail ?? undefined
+    cover ?? undefined
   );
   const title = galleryTitle(gallery);
   const performerNames = gallery.performers.map((p) => p.name);
@@ -41,6 +45,10 @@ const GalleryWallCard: React.FC<IProps> = ({ gallery }) => {
       : performerNames;
 
   async function showLightboxStart() {
+    if (gallery.image_count === 0) {
+      return;
+    }
+
     showLightbox(0);
   }
 
@@ -76,7 +84,7 @@ const GalleryWallCard: React.FC<IProps> = ({ gallery }) => {
           </footer>
           <GalleryPreviewScrubber
             previewPath={gallery.paths.preview}
-            defaultPath={gallery.cover?.paths.thumbnail ?? ""}
+            defaultPath={cover ?? ""}
             imageCount={gallery.image_count}
             onClick={(i) => {
               console.log(i);
