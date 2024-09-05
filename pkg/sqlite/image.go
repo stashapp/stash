@@ -602,6 +602,11 @@ func (qb *ImageStore) FindByChecksum(ctx context.Context, checksum string) ([]*m
 	})
 }
 
+var defaultGalleryOrder = []exp.OrderedExpression{
+	goqu.L("COALESCE(folders.path, '') || COALESCE(files.basename, '') COLLATE NATURAL_CI").Asc(),
+	goqu.L("COALESCE(images.title, images.id) COLLATE NATURAL_CI").Asc(),
+}
+
 func (qb *ImageStore) FindByGalleryID(ctx context.Context, galleryID int) ([]*models.Image, error) {
 	table := qb.table()
 
@@ -618,7 +623,7 @@ func (qb *ImageStore) FindByGalleryID(ctx context.Context, galleryID int) ([]*mo
 		table.Col(idColumn).Eq(
 			sq,
 		),
-	).Order(goqu.L("COALESCE(folders.path, '') || COALESCE(files.basename, '') COLLATE NATURAL_CI").Asc())
+	).Order(defaultGalleryOrder...)
 
 	ret, err := qb.getMany(ctx, q)
 	if err != nil {
@@ -630,8 +635,6 @@ func (qb *ImageStore) FindByGalleryID(ctx context.Context, galleryID int) ([]*mo
 
 func (qb *ImageStore) FindByGalleryIDIndex(ctx context.Context, galleryID int, index uint) (*models.Image, error) {
 	table := qb.table()
-	fileTable := fileTableMgr.table
-	folderTable := folderTableMgr.table
 
 	q := qb.selectDataset().
 		InnerJoin(
@@ -640,7 +643,7 @@ func (qb *ImageStore) FindByGalleryIDIndex(ctx context.Context, galleryID int, i
 		).
 		Where(galleriesImagesJoinTable.Col(galleryIDColumn).Eq(galleryID)).
 		Prepared(true).
-		Order(folderTable.Col("path").Asc(), fileTable.Col("basename").Asc()).
+		Order(defaultGalleryOrder...).
 		Limit(1).Offset(index)
 
 	ret, err := qb.getMany(ctx, q)
