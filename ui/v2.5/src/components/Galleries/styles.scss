@@ -276,6 +276,11 @@ $galleryTabWidth: 450px;
     object-fit: cover;
     object-position: center 20%;
     width: 100%;
+
+    &.GalleryWallCard-img-contain {
+      object-fit: contain;
+      object-position: initial;
+    }
   }
 
   &-title {

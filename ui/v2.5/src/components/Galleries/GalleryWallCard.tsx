@@ -8,35 +8,49 @@ import { useGalleryLightbox } from "src/hooks/Lightbox/hooks";
 import { galleryTitle } from "src/core/galleries";
 import { RatingSystem } from "../Shared/Rating/RatingSystem";
 import { GalleryPreviewScrubber } from "./GalleryPreviewScrubber";
+import cx from "classnames";
 
 const CLASSNAME = "GalleryWallCard";
 const CLASSNAME_FOOTER = `${CLASSNAME}-footer`;
 const CLASSNAME_IMG = `${CLASSNAME}-img`;
 const CLASSNAME_TITLE = `${CLASSNAME}-title`;
+const CLASSNAME_IMG_CONTAIN = `${CLASSNAME}-img-contain`;
 
 interface IProps {
   gallery: GQL.SlimGalleryDataFragment;
 }
 
+type Orientation = "landscape" | "portrait";
+
+function getOrientation(width: number, height: number): Orientation {
+  return width > height ? "landscape" : "portrait";
+}
+
 const GalleryWallCard: React.FC<IProps> = ({ gallery }) => {
   const intl = useIntl();
-  const [orientation, setOrientation] = React.useState<
-    "landscape" | "portrait"
-  >("landscape");
+  const [coverOrientation, setCoverOrientation] =
+    React.useState<Orientation>("landscape");
+  const [imageOrientation, setImageOrientation] =
+    React.useState<Orientation>("landscape");
   const showLightbox = useGalleryLightbox(gallery.id, gallery.chapters);
 
   const cover = gallery?.paths.cover;
 
-  function onImageLoad(e: React.SyntheticEvent<HTMLImageElement, Event>) {
+  function onCoverLoad(e: React.SyntheticEvent<HTMLImageElement, Event>) {
     const target = e.target as HTMLImageElement;
-    setOrientation(
-      target.naturalWidth > target.naturalHeight ? "landscape" : "portrait"
+    setCoverOrientation(
+      getOrientation(target.naturalWidth, target.naturalHeight)
     );
   }
-      
-  const [imgSrc, setImgSrc] = useState<string | undefined>(
-    cover ?? undefined
-  );
+
+  function onNonCoverLoad(e: React.SyntheticEvent<HTMLImageElement, Event>) {
+    const target = e.target as HTMLImageElement;
+    setImageOrientation(
+      getOrientation(target.naturalWidth, target.naturalHeight)
+    );
+  }
+
+  const [imgSrc, setImgSrc] = useState<string | undefined>(cover ?? undefined);
   const title = galleryTitle(gallery);
   const performerNames = gallery.performers.map((p) => p.name);
   const performers =
@@ -52,17 +66,27 @@ const GalleryWallCard: React.FC<IProps> = ({ gallery }) => {
     showLightbox(0);
   }
 
+  const imgClassname =
+    imageOrientation !== coverOrientation ? CLASSNAME_IMG_CONTAIN : "";
+
   return (
     <>
       <section
-        className={`${CLASSNAME} ${CLASSNAME}-${orientation}`}
+        className={`${CLASSNAME} ${CLASSNAME}-${coverOrientation}`}
         onClick={showLightboxStart}
         onKeyPress={showLightboxStart}
         role="button"
         tabIndex={0}
       >
         <RatingSystem value={gallery.rating100} disabled withoutContext />
-        <img loading="lazy" src={imgSrc} alt="" className={CLASSNAME_IMG} />
+        <img
+          loading="lazy"
+          src={imgSrc}
+          alt=""
+          className={cx(CLASSNAME_IMG, imgClassname)}
+          // set orientation based on cover only
+          onLoad={imgSrc === cover ? onCoverLoad : onNonCoverLoad}
+        />
         <div className="lineargradient">
           <footer className={CLASSNAME_FOOTER}>
             <Link
