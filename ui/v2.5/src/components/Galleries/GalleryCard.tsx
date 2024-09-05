@@ -43,9 +43,7 @@ export const GalleryPreview: React.FC<IGalleryPreviewProps> = ({
       {!!imgSrc && (
         <img
           loading="lazy"
-          className={`gallery-card-image ${
-            isPortrait ? "portrait-image" : ""
-          }`}
+          className={`gallery-card-image ${isPortrait ? "portrait-image" : ""}`}
           alt={gallery.title ?? ""}
           src={imgSrc}
           onLoad={identifyPortaitImage}
