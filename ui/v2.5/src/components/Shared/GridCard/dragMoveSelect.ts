@@ -11,14 +11,14 @@ export enum DragSide {
  * Hook to manage drag and move selection functionality.
  * Dragging while selecting will allow the user to select multiple items.
  * Dragging from the drag handle will allow the user to move the item or selected items.
- * 
+ *
  * @param props - The properties for the hook.
  * @param props.selecting - Whether the one or more items have been selected.
  * @param props.selected - Whether this item is currently selected.
  * @param props.onSelectedChanged - Callback when the selected state changes.
  * @param props.objectId - The ID of this object.
  * @param props.onMove - Callback when a move operation occurs.
- * 
+ *
  * @returns An object containing the drag event handlers and state.
  */
 export function useDragMoveSelect(props: {
