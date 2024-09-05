@@ -60,11 +60,6 @@ export const GroupDetailsPanel: React.FC<IGroupDetailsPanel> = ({
       return (
         <>
           <DetailItem
-            id="synopsis"
-            value={group.synopsis}
-            fullWidth={fullWidth}
-          />
-          <DetailItem
             id="tags"
             value={renderTagsField()}
             fullWidth={fullWidth}
@@ -120,6 +115,8 @@ export const GroupDetailsPanel: React.FC<IGroupDetailsPanel> = ({
         }
         fullWidth={fullWidth}
       />
+
+      <DetailItem id="synopsis" value={group.synopsis} fullWidth={fullWidth} />
       {maybeRenderExtraDetails()}
     </div>
   );

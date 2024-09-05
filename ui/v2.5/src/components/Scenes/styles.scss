@@ -332,7 +332,6 @@ textarea.scene-description {
   left: 0.7rem;
 }
 
-
 .scene-studio-overlay {
   display: block;
   font-weight: 900;
@@ -1141,6 +1140,12 @@ input[type="range"].blue-slider {
   display: flex;
   justify-content: center;
   width: 100%;
+}
+
+@media (min-width: 1200px) {
+  .secondary.detail-header {
+    display: none;
+  }
 }
 
 .secondary.detail-header {
