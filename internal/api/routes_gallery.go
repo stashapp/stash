@@ -78,7 +78,7 @@ func (rs galleryRoutes) Cover(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rs.imageRoutes.serveThumbnail(w, r, i)
+	rs.imageRoutes.serveThumbnail(w, r, i, &g.UpdatedAt)
 }
 
 func (rs galleryRoutes) Preview(w http.ResponseWriter, r *http.Request) {
@@ -116,7 +116,7 @@ func (rs galleryRoutes) Preview(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rs.imageRoutes.serveThumbnail(w, r, i)
+	rs.imageRoutes.serveThumbnail(w, r, i, nil)
 }
 
 func (rs galleryRoutes) GalleryCtx(next http.Handler) http.Handler {
