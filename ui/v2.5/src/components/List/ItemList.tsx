@@ -92,6 +92,9 @@ export const ItemList = <T extends QueryResult, E extends IHasID>(
     onSelectNone,
   } = useListContext<E>();
 
+  // scroll to the top of the page when the page changes
+  useScrollToTopOnPageChange(filter.currentPage, result.loading);
+
   const { modal, showModal, closeModal } = useModal();
 
   const metadataByline = useMemo(() => {
@@ -319,9 +322,6 @@ export const ItemListContext = <T extends QueryResult, E extends IHasID>(
     emptyFilter,
     view
   );
-
-  // scroll to the top of the page when the page changes
-  useScrollToTopOnPageChange(filter.currentPage);
 
   if (defaultFilterLoading) return null;
 
