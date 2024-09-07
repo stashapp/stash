@@ -154,6 +154,38 @@
   }
 }
 
+.filter-input {
+  border: 1px solid #ffffff20;
+  border-radius: 0.25rem;
+  color: #ffffff30;
+  max-width: 125px;
+}
+
+.refresh-button {
+  align-items: center;
+  background-color: #137cbd;
+  border-radius: 0.25rem;
+  color: #fff;
+  display: flex;
+  height: 37px;
+  justify-content: center;
+  min-width: 37px;
+  padding: 6px;
+}
+
+.dropdown-menu.show > .filter-container {
+  justify-content: center;
+  margin-left: 1px;
+  width: 180px;
+}
+
+.full-width-button {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
 .scrape-dialog {
   .modal-content .dialog-container {
     max-height: calc(100vh - 14rem);
