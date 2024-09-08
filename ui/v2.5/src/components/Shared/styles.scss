@@ -640,7 +640,7 @@ button.btn.favorite-button {
   display: inline-block;
 }
 
-.dropdown-menu:has(.filter-container) {
+.dropdown-menu:has(.scraper-filter-container) {
   padding-top: 0;
 }
 
@@ -652,7 +652,7 @@ button.btn.favorite-button {
     margin: 0;
   }
 
-  .filter-container {
+  .scraper-filter-container {
     background-color: $dark-gray5;
     border-bottom: solid 1px rgba(16, 22, 26, 0.3);
     padding: 5px;

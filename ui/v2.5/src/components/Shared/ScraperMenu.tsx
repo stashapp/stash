@@ -78,7 +78,7 @@ export const ScraperMenu: React.FC<{
       <Dropdown.Toggle variant={variant}>{toggle}</Dropdown.Toggle>
 
       <Dropdown.Menu>
-        <div className="filter-container">
+        <div className="scraper-filter-container">
           <div className="btn-group">
             {maybeRenderScraperFilterInput()}
             <Button
