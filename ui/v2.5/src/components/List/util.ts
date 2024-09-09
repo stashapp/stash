@@ -338,9 +338,19 @@ export function useCachedQueryResult<T extends QueryResult>(
   return cachedResult;
 }
 
-export function useScrollToTopOnPageChange(currentPage: number) {
+export function useScrollToTopOnPageChange(
+  currentPage: number,
+  loading: boolean
+) {
+  const prevPage = usePrevious(currentPage);
+
   // scroll to the top of the page when the page changes
+  // only scroll to top if the page has changed and is not loading
   useEffect(() => {
+    if (loading || currentPage === prevPage || prevPage === undefined) {
+      return;
+    }
+
     // if the current page has a detail-header, then
     // scroll up relative to that rather than 0, 0
     const detailHeader = document.querySelector(".detail-header");
@@ -349,7 +359,7 @@ export function useScrollToTopOnPageChange(currentPage: number) {
     } else {
       window.scrollTo(0, 0);
     }
-  }, [currentPage]);
+  }, [prevPage, currentPage, loading]);
 }
 
 // handle case where page is more than there are pages
