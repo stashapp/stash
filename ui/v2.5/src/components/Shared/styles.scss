@@ -675,18 +675,9 @@ button.btn.favorite-button {
       border: unset;
     }
 
-    .reload-button.btn:first-child {
-      border-bottom-left-radius: 0.25rem;
-      border-top-left-radius: 0.25rem;
-    }
-
     .reload-button.btn {
       border-bottom-right-radius: 0.25rem;
       border-top-right-radius: 0.25rem;
-    }
-
-    .reload-button.btn svg {
-      margin-left: 0;
     }
   }
 }

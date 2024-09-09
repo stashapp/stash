@@ -1,13 +1,11 @@
 import React, { useMemo, useState } from "react";
 import { Dropdown, Button } from "react-bootstrap";
-import { FormattedMessage, useIntl } from "react-intl";
+import { useIntl } from "react-intl";
 import { Icon } from "./Icon";
 import { stashboxDisplayName } from "src/utils/stashbox";
 import { ScraperSourceInput, StashBox } from "src/core/generated-graphql";
 import { faSyncAlt } from "@fortawesome/free-solid-svg-icons";
 import { ClearableInput } from "./ClearableInput";
-
-const minFilteredScrapers = 5;
 
 export const ScraperMenu: React.FC<{
   toggle: React.ReactNode;
@@ -26,8 +24,6 @@ export const ScraperMenu: React.FC<{
 }) => {
   const intl = useIntl();
   const [filter, setFilter] = useState("");
-  const listOverflowable =
-    (stashBoxes?.length ?? 0) + scrapers.length > minFilteredScrapers;
 
   const filteredStashboxes = useMemo(() => {
     if (!stashBoxes) return [];
@@ -48,28 +44,6 @@ export const ScraperMenu: React.FC<{
     );
   }, [scrapers, filter]);
 
-  function maybeRenderScraperFilterInput() {
-    if (!listOverflowable) return;
-
-    return (
-      <ClearableInput
-        placeholder={`${intl.formatMessage({ id: "filter" })}...`}
-        value={filter}
-        setValue={setFilter}
-      />
-    );
-  }
-
-  function maybeRenderReloadLabel() {
-    if (listOverflowable) return;
-
-    return (
-      <span>
-        <FormattedMessage id="actions.reload_scrapers" />
-      </span>
-    );
-  }
-
   return (
     <Dropdown
       className="scraper-menu"
@@ -80,14 +54,17 @@ export const ScraperMenu: React.FC<{
       <Dropdown.Menu>
         <div className="scraper-filter-container">
           <div className="btn-group">
-            {maybeRenderScraperFilterInput()}
+            <ClearableInput
+              placeholder={`${intl.formatMessage({ id: "filter" })}...`}
+              value={filter}
+              setValue={setFilter}
+            />
             <Button
               onClick={onReloadScrapers}
               className="reload-button"
               title={intl.formatMessage({ id: "actions.reload_scrapers" })}
             >
               <Icon icon={faSyncAlt} />
-              {maybeRenderReloadLabel()}
             </Button>
           </div>
         </div>
