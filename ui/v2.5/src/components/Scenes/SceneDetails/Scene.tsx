@@ -6,6 +6,7 @@ import React, {
   useContext,
   useRef,
   useLayoutEffect,
+  useCallback,
 } from "react";
 import { FormattedDate, FormattedMessage, useIntl } from "react-intl";
 import { Link, RouteComponentProps } from "react-router-dom";
@@ -58,9 +59,6 @@ const ScenePlayer = lazyComponent(
   () => import("src/components/ScenePlayer/ScenePlayer")
 );
 
-const GalleryViewer = lazyComponent(
-  () => import("src/components/Galleries/GalleryViewer")
-);
 const ExternalPlayerButton = lazyComponent(
   () => import("./ExternalPlayerButton")
 );
@@ -70,10 +68,6 @@ const SceneMarkersPanel = lazyComponent(() => import("./SceneMarkersPanel"));
 const SceneFileInfoPanel = lazyComponent(() => import("./SceneFileInfoPanel"));
 const SceneDetailPanel = lazyComponent(() => import("./SceneDetailPanel"));
 const SceneHistoryPanel = lazyComponent(() => import("./SceneHistoryPanel"));
-const SceneGroupPanel = lazyComponent(() => import("./SceneGroupPanel"));
-const SceneGalleriesPanel = lazyComponent(
-  () => import("./SceneGalleriesPanel")
-);
 const DeleteScenesDialog = lazyComponent(() => import("../DeleteScenesDialog"));
 const GenerateDialog = lazyComponent(
   () => import("../../Dialogs/GenerateDialog")
@@ -117,7 +111,7 @@ const VideoFrameRateResolution: React.FC<{
 
   const divider = useMemo(() => {
     return resolution && frameRateDisplay ? (
-      <span className="divider"> | </span>
+      <span className="divider"> • </span>
     ) : undefined;
   }, [resolution, frameRateDisplay]);
 
@@ -176,6 +170,8 @@ const ScenePage: React.FC<IProps> = ({
   const [updateScene] = useSceneUpdate();
   const [generateScreenshot] = useSceneGenerateScreenshot();
   const { configuration } = useContext(ConfigurationContext);
+  const uiConfig = configuration?.ui;
+  const enableBackgroundImage = uiConfig?.enableSceneBackgroundImage ?? false;
 
   const [showDraftModal, setShowDraftModal] = useState(false);
   const boxes = configuration?.general?.stashBoxes ?? [];
@@ -199,6 +195,60 @@ const ScenePage: React.FC<IProps> = ({
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
   const [isGenerateDialogOpen, setIsGenerateDialogOpen] = useState(false);
 
+  const tabNavRef = useRef<HTMLDivElement>(null);
+  const dropDownRef = useRef<HTMLDivElement>(null);
+
+  const [dropdownWidths, setDropdownWidths] = useState<number[]>([]);
+
+  const autoCollapseTabs = useCallback(() => {
+    const nav = tabNavRef.current;
+    const dropdown = dropDownRef.current;
+    if (nav == null || dropdown == null) {
+      return;
+    }
+
+    let height = nav.clientHeight;
+    const dropdownTabs = dropdown.children[1];
+
+    const maxHeight = 40;
+    let navChildren = nav.children;
+    let dropdownChildren = dropdownTabs.children;
+    if (height >= maxHeight) {
+      dropdown.classList.remove("d-none");
+
+      while (height >= maxHeight) {
+        let { length } = navChildren;
+        dropdownWidths.push(navChildren[length - 2].clientWidth);
+        setDropdownWidths(dropdownWidths);
+        dropdownTabs.prepend(navChildren[length - 2]);
+        height = nav.clientHeight;
+      }
+    } else {
+      const padding = 15;
+      const buttonWidth = 25;
+      let width = 0;
+      for (let i = 0; i < navChildren.length - 1; i++) {
+        width += navChildren[i].clientWidth;
+      }
+      width += padding;
+
+      while (
+        height < maxHeight &&
+        navChildren.length > 0 &&
+        dropdownChildren.length > 0 &&
+        dropdownWidths[0] + width + buttonWidth < nav.clientWidth
+      ) {
+        nav.insertBefore(dropdownChildren[0], dropdown);
+        dropdownWidths.shift();
+        height = nav.clientHeight;
+      }
+
+      if (dropdownChildren.length === 0) {
+        dropdown.classList.add("d-none");
+      }
+    }
+  }, [dropdownWidths]);
+
   const onIncrementOClick = async () => {
     try {
       await incrementO();
@@ -206,6 +256,14 @@ const ScenePage: React.FC<IProps> = ({
       Toast.error(e);
     }
   };
+
+  useEffect(() => {
+    window.addEventListener("resize", autoCollapseTabs);
+  }, [autoCollapseTabs]);
+
+  useEffect(() => {
+    autoCollapseTabs(); // update on reload
+  }, [queueScenes, autoCollapseTabs]);
 
   function setRating(v: number | null) {
     updateScene({
@@ -416,139 +474,28 @@ const ScenePage: React.FC<IProps> = ({
     </Dropdown>
   );
 
-  const renderTabs = () => (
-    <Tab.Container
-      activeKey={activeTabKey}
-      onSelect={(k) => k && setActiveTabKey(k)}
-    >
-      <div>
-        <Nav variant="tabs" className="mr-auto">
-          <Nav.Item>
-            <Nav.Link eventKey="scene-details-panel">
-              <FormattedMessage id="details" />
-            </Nav.Link>
-          </Nav.Item>
-          {queueScenes.length > 0 ? (
-            <Nav.Item>
-              <Nav.Link eventKey="scene-queue-panel">
-                <FormattedMessage id="queue" />
-              </Nav.Link>
-            </Nav.Item>
-          ) : (
-            ""
-          )}
-          <Nav.Item>
-            <Nav.Link eventKey="scene-markers-panel">
-              <FormattedMessage id="markers" />
-            </Nav.Link>
-          </Nav.Item>
-          {scene.groups.length > 0 ? (
-            <Nav.Item>
-              <Nav.Link eventKey="scene-group-panel">
-                <FormattedMessage
-                  id="countables.groups"
-                  values={{ count: scene.groups.length }}
+  function maybeRenderHeaderBackgroundImage() {
+    if (enableBackgroundImage && scene != null && scene.studio != null) {
+      let image = scene.studio.image_path;
+      if (image) {
+        const imageURL = new URL(image);
+        let isDefaultImage = imageURL.searchParams.get("default");
+        if (!isDefaultImage) {
+          return (
+            <div className="background-image-container">
+              <picture>
+                <source src={image} />
+                <img
+                  className="background-image"
+                  src={image}
+                  alt={`${scene.studio.name} background`}
                 />
-              </Nav.Link>
-            </Nav.Item>
-          ) : (
-            ""
-          )}
-          {scene.galleries.length >= 1 ? (
-            <Nav.Item>
-              <Nav.Link eventKey="scene-galleries-panel">
-                <FormattedMessage
-                  id="countables.galleries"
-                  values={{ count: scene.galleries.length }}
-                />
-              </Nav.Link>
-            </Nav.Item>
-          ) : undefined}
-          <Nav.Item>
-            <Nav.Link eventKey="scene-video-filter-panel">
-              <FormattedMessage id="effect_filters.name" />
-            </Nav.Link>
-          </Nav.Item>
-          <Nav.Item>
-            <Nav.Link eventKey="scene-file-info-panel">
-              <FormattedMessage id="file_info" />
-              <Counter count={scene.files.length} hideZero hideOne />
-            </Nav.Link>
-          </Nav.Item>
-          <Nav.Item>
-            <Nav.Link eventKey="scene-history-panel">
-              <FormattedMessage id="history" />
-            </Nav.Link>
-          </Nav.Item>
-          <Nav.Item>
-            <Nav.Link eventKey="scene-edit-panel">
-              <FormattedMessage id="actions.edit" />
-            </Nav.Link>
-          </Nav.Item>
-        </Nav>
-      </div>
-
-      <Tab.Content>
-        <Tab.Pane eventKey="scene-details-panel">
-          <SceneDetailPanel scene={scene} />
-        </Tab.Pane>
-        <Tab.Pane eventKey="scene-queue-panel">
-          <QueueViewer
-            scenes={queueScenes}
-            currentID={scene.id}
-            continue={continuePlaylist}
-            setContinue={setContinuePlaylist}
-            onSceneClicked={onQueueSceneClicked}
-            onNext={onQueueNext}
-            onPrevious={onQueuePrevious}
-            onRandom={onQueueRandom}
-            start={queueStart}
-            hasMoreScenes={queueHasMoreScenes}
-            onLessScenes={onQueueLessScenes}
-            onMoreScenes={onQueueMoreScenes}
-          />
-        </Tab.Pane>
-        <Tab.Pane eventKey="scene-markers-panel">
-          <SceneMarkersPanel
-            sceneId={scene.id}
-            onClickMarker={onClickMarker}
-            isVisible={activeTabKey === "scene-markers-panel"}
-          />
-        </Tab.Pane>
-        <Tab.Pane eventKey="scene-group-panel">
-          <SceneGroupPanel scene={scene} />
-        </Tab.Pane>
-        {scene.galleries.length >= 1 && (
-          <Tab.Pane eventKey="scene-galleries-panel">
-            <SceneGalleriesPanel galleries={scene.galleries} />
-            {scene.galleries.length === 1 && (
-              <GalleryViewer galleryId={scene.galleries[0].id} />
-            )}
-          </Tab.Pane>
-        )}
-        <Tab.Pane eventKey="scene-video-filter-panel">
-          <SceneVideoFilterPanel scene={scene} />
-        </Tab.Pane>
-        <Tab.Pane className="file-info-panel" eventKey="scene-file-info-panel">
-          <SceneFileInfoPanel scene={scene} />
-        </Tab.Pane>
-        <Tab.Pane eventKey="scene-edit-panel" mountOnEnter>
-          <SceneEditPanel
-            isVisible={activeTabKey === "scene-edit-panel"}
-            scene={scene}
-            onSubmit={onSave}
-            onDelete={() => setIsDeleteAlertOpen(true)}
-          />
-        </Tab.Pane>
-        <Tab.Pane eventKey="scene-history-panel">
-          <SceneHistoryPanel scene={scene} />
-        </Tab.Pane>
-      </Tab.Content>
-    </Tab.Container>
-  );
-
-  function getCollapseButtonIcon() {
-    return collapsed ? faChevronRight : faChevronLeft;
+              </picture>
+            </div>
+          );
+        }
+      }
+    }
   }
 
   const title = objectTitle(scene);
@@ -558,30 +505,26 @@ const ScenePage: React.FC<IProps> = ({
     [scene]
   );
 
-  return (
-    <>
-      <Helmet>
-        <title>{title}</title>
-      </Helmet>
-      {maybeRenderSceneGenerateDialog()}
-      {maybeRenderDeleteDialog()}
+  function renderDetailHeader(isPrimaryHeader: boolean) {
+    return (
       <div
-        className={`scene-tabs order-xl-first order-last ${
-          collapsed ? "collapsed" : ""
-        }`}
+        className={`${isPrimaryHeader ? "primary" : "secondary"} detail-header`}
       >
-        <div>
+        {maybeRenderHeaderBackgroundImage()}
+        <div className="detail-container">
           <div className="scene-header-container">
             {scene.studio && (
-              <h1 className="text-center scene-studio-image">
-                <Link to={`/studios/${scene.studio.id}`}>
-                  <img
-                    src={scene.studio.image_path ?? ""}
-                    alt={`${scene.studio.name} logo`}
-                    className="studio-logo"
-                  />
-                </Link>
-              </h1>
+              <>
+                <h1 className="text-center scene-studio-image">
+                  <Link to={`/studios/${scene.studio.id}`}>
+                    <img
+                      src={scene.studio.image_path ?? ""}
+                      alt={`${scene.studio.name} logo`}
+                      className="studio-logo"
+                    />
+                  </Link>
+                </h1>
+              </>
             )}
             <h3 className={cx("scene-header", { "no-studio": !scene.studio })}>
               <TruncatedText lineCount={2} text={title} />
@@ -615,32 +558,169 @@ const ScenePage: React.FC<IProps> = ({
               />
             </span>
             <span className="scene-toolbar-group">
-              <span>
+              <span className="external-player-button-container">
                 <ExternalPlayerButton scene={scene} />
               </span>
-              <span>
+              <span className="view-count-button-container">
                 <ViewCountButton
                   value={scene.play_count ?? 0}
                   onIncrement={() => incrementPlayCount()}
                 />
               </span>
-              <span>
+              <span className="o-counter-button-container">
                 <OCounterButton
                   value={scene.o_counter ?? 0}
                   onIncrement={() => onIncrementOClick()}
                 />
               </span>
-              <span>
+              <span className="organized-button-container">
                 <OrganizedButton
                   loading={organizedLoading}
                   organized={scene.organized}
                   onClick={onOrganizedClick}
                 />
               </span>
-              <span>{renderOperations()}</span>
+              <span className="operations-button-container">
+                {renderOperations()}
+              </span>
             </span>
           </div>
         </div>
+      </div>
+    );
+  }
+
+  const renderTabs = () => (
+    <Tab.Container
+      activeKey={activeTabKey}
+      onSelect={(k) => k && setActiveTabKey(k)}
+    >
+      <div>
+        <Nav variant="tabs" className="mr-auto" ref={tabNavRef}>
+          <Nav.Item>
+            <Nav.Link eventKey="scene-details-panel">
+              <FormattedMessage id="details" />
+            </Nav.Link>
+          </Nav.Item>
+          {queueScenes.length > 0 ? (
+            <Nav.Item>
+              <Nav.Link eventKey="scene-queue-panel">
+                <FormattedMessage id="queue" />
+              </Nav.Link>
+            </Nav.Item>
+          ) : (
+            ""
+          )}
+          <Nav.Item>
+            <Nav.Link eventKey="scene-markers-panel">
+              <FormattedMessage id="markers" />
+            </Nav.Link>
+          </Nav.Item>
+          <Nav.Item>
+            <Nav.Link eventKey="scene-video-filter-panel">
+              <FormattedMessage id="effect_filters.name" />
+            </Nav.Link>
+          </Nav.Item>
+          <Nav.Item>
+            <Nav.Link eventKey="scene-file-info-panel">
+              <FormattedMessage id="file_info" />
+              <Counter count={scene.files.length} hideZero hideOne />
+            </Nav.Link>
+          </Nav.Item>
+          <Nav.Item>
+            <Nav.Link eventKey="scene-history-panel">
+              <FormattedMessage id="history" />
+            </Nav.Link>
+          </Nav.Item>
+          <Nav.Item>
+            <Nav.Link eventKey="scene-edit-panel">
+              <FormattedMessage id="actions.edit" />
+            </Nav.Link>
+          </Nav.Item>
+          <Dropdown ref={dropDownRef}>
+            <Dropdown.Toggle
+              variant="secondary"
+              id="tab-dropdown"
+              className="minimal"
+            >
+              <Icon icon={faEllipsisV} />
+            </Dropdown.Toggle>
+            <Dropdown.Menu
+              className="bg-secondary text-white"
+              renderOnMount={true}
+            ></Dropdown.Menu>
+          </Dropdown>
+        </Nav>
+      </div>
+
+      <Tab.Content>
+        <Tab.Pane eventKey="scene-details-panel">
+          <>
+            {renderDetailHeader(false)}
+            <SceneDetailPanel scene={scene} />
+          </>
+        </Tab.Pane>
+        <Tab.Pane eventKey="scene-queue-panel">
+          <QueueViewer
+            scenes={queueScenes}
+            currentID={scene.id}
+            continue={continuePlaylist}
+            setContinue={setContinuePlaylist}
+            onSceneClicked={onQueueSceneClicked}
+            onNext={onQueueNext}
+            onPrevious={onQueuePrevious}
+            onRandom={onQueueRandom}
+            start={queueStart}
+            hasMoreScenes={queueHasMoreScenes}
+            onLessScenes={onQueueLessScenes}
+            onMoreScenes={onQueueMoreScenes}
+          />
+        </Tab.Pane>
+        <Tab.Pane eventKey="scene-markers-panel">
+          <SceneMarkersPanel
+            sceneId={scene.id}
+            onClickMarker={onClickMarker}
+            isVisible={activeTabKey === "scene-markers-panel"}
+          />
+        </Tab.Pane>
+        <Tab.Pane eventKey="scene-video-filter-panel">
+          <SceneVideoFilterPanel scene={scene} />
+        </Tab.Pane>
+        <Tab.Pane className="file-info-panel" eventKey="scene-file-info-panel">
+          <SceneFileInfoPanel scene={scene} />
+        </Tab.Pane>
+        <Tab.Pane eventKey="scene-edit-panel" mountOnEnter>
+          <SceneEditPanel
+            isVisible={activeTabKey === "scene-edit-panel"}
+            scene={scene}
+            onSubmit={onSave}
+            onDelete={() => setIsDeleteAlertOpen(true)}
+          />
+        </Tab.Pane>
+        <Tab.Pane eventKey="scene-history-panel">
+          <SceneHistoryPanel scene={scene} />
+        </Tab.Pane>
+      </Tab.Content>
+    </Tab.Container>
+  );
+
+  function getCollapseButtonIcon() {
+    return collapsed ? faChevronRight : faChevronLeft;
+  }
+
+  return (
+    <>
+      <Helmet>
+        <title>{title}</title>
+      </Helmet>
+      {maybeRenderSceneGenerateDialog()}
+      {maybeRenderDeleteDialog()}
+      <div
+        className={`scene-tabs order-xl-first order-last ${
+          collapsed ? "collapsed" : ""
+        }`}
+      >
+        {renderDetailHeader(true)}
         {renderTabs()}
       </div>
       <div className="scene-divider d-none d-xl-block">
@@ -916,7 +996,7 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
   }
 
   return (
-    <div className="row">
+    <div id="scene-page" className="row">
       <ScenePage
         scene={scene}
         setTimestamp={setTimestamp}

@@ -54,8 +54,11 @@ body {
   }
 }
 
+#gallery-page,
+#image-page,
 #group-page,
 #performer-page,
+#scene-page,
 #studio-page,
 #tag-page {
   margin-top: -0.5rem;
@@ -276,11 +279,98 @@ dd {
   }
 }
 
-.collapsed .detail-item-value {
+.detail-header.collapsed .detail-item-value {
   -webkit-box-orient: vertical;
   display: -webkit-box;
   -webkit-line-clamp: 3;
   overflow: hidden;
+}
+
+.gallery-tabs,
+.image-tabs,
+.scene-tabs {
+  .detail-item {
+    background-color: #202b33;
+    padding-right: 1rem;
+    width: 100%;
+  }
+
+  .detail-item.studio {
+    display: none;
+  }
+
+  .gallery-performers,
+  .image-performers,
+  .scene-performers {
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .tab-content,
+  .nav-tabs {
+    padding-left: 15px;
+
+    .dropdown {
+      display: flex;
+    }
+  }
+
+  .collapsed .detail-item-value {
+    -webkit-box-orient: vertical;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    overflow: hidden;
+  }
+
+  .gallery-tags,
+  .image-tags,
+  .scene-tags,
+  .gallery-performers,
+  .image-performers,
+  .scene-performers,
+  .scene-galleries,
+  .details p.pre {
+    height: auto;
+    transition: max-height 0.3s linear;
+  }
+
+  .details .collapsed-detail p.pre {
+    -webkit-box-orient: vertical;
+    display: -webkit-box;
+    -webkit-line-clamp: 8;
+    max-height: 175px;
+    overflow-y: hidden;
+  }
+
+  .gallery-tags.collapsed-detail,
+  .image-tags.collapsed-detail,
+  .scene-tags.collapsed-detail {
+    max-height: 180px;
+    overflow-y: hidden;
+  }
+
+  .gallery-performers.collapsed-detail,
+  .image-performers.collapsed-detail,
+  .scene-performers.collapsed-detail {
+    max-height: 365px;
+    overflow-y: hidden;
+  }
+
+  .scene-galleries {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: start;
+  }
+
+  .scene-galleries.collapsed-detail {
+    max-height: 210px;
+    overflow-y: hidden;
+  }
+
+  .scene-galleries .tag-item {
+    display: none;
+  }
 }
 
 .full-width {
@@ -312,6 +402,22 @@ dd {
   .detail-item-title.parent-tags,
   .detail-item-title.sub-tags {
     padding-top: 4px;
+  }
+}
+
+.detail-item.full-width {
+  display: table;
+  padding-right: 0;
+  width: 100%;
+
+  .detail-item-title {
+    display: table-cell;
+    width: 130px;
+  }
+
+  .detail-item-value.age {
+    border-bottom: unset;
+    width: fit-content;
   }
 }
 
@@ -348,6 +454,25 @@ dd {
     @media (max-width: 576px) {
       max-width: 100%;
     }
+  }
+}
+
+.gallery-tabs,
+.image-tabs,
+.scene-tabs {
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 4rem);
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+
+  > div {
+    flex: 0 1 auto;
+  }
+
+  .detail-header {
+    min-height: unset;
+    overflow: unset;
   }
 }
 
@@ -1154,6 +1279,189 @@ $detailTabWidth: calc(100% / 3);
   width: 100%;
 }
 
+.gallery-details,
+.image-details,
+.scene-details {
+  .detail-group {
+    flex-direction: column;
+    padding-top: 0;
+  }
+
+  .details p.pre {
+    margin-bottom: 0;
+  }
+
+  .detail-item-title {
+    color: #f5f8fa;
+  }
+
+  span.detail-item-value {
+    color: #d3d0d0;
+  }
+
+  .detail-item {
+    &.studio-code,
+    &.director,
+    &.files,
+    &.created-at,
+    &.updated-at,
+    &.details .detail-item-value {
+      font-size: 1rem;
+    }
+
+    &.rating,
+    &.tags,
+    &.performers,
+    &.details {
+      flex-basis: 100%;
+    }
+
+    &:not(.full-width) .detail-item-title {
+      margin-bottom: 0.25em;
+    }
+
+    .gallery-card {
+      margin: 8px;
+      overflow: unset;
+      padding-bottom: 0;
+      transition: ease 0.5s;
+
+      .thumbnail-section {
+        background-color: white;
+        border: solid 1px black;
+        height: auto;
+        padding: 3px;
+        z-index: 10;
+      }
+
+      .gallery-card-image {
+        height: auto;
+        width: 12.9rem;
+      }
+
+      .preview-scrubber {
+        display: none;
+      }
+
+      .gallery-card-image.portrait-image {
+        height: 12.9rem;
+        width: auto;
+      }
+
+      .card-section,
+      .performer-count,
+      .scene-count,
+      .tag-count,
+      .studio-overlay,
+      hr {
+        display: none;
+      }
+
+      .image-count {
+        background-color: #00000059;
+        border-radius: 5px;
+        bottom: 0.5rem;
+        padding-bottom: 3px;
+        padding-right: 3px;
+        position: absolute;
+        right: 10px;
+        z-index: 100;
+      }
+
+      .image-count > button {
+        padding: 0;
+      }
+    }
+
+    .gallery-card:hover {
+      transform: rotate(2deg);
+    }
+
+    .gallery-card::before {
+      background-color: white;
+      border: solid 1px black;
+      content: "";
+      height: 100%;
+      position: absolute;
+      transform: rotate(-3deg);
+      transition: ease 0.5s;
+      width: 100%;
+    }
+
+    .gallery-card:hover::before {
+      transform: rotate(3deg);
+    }
+  }
+}
+
+@media (max-width: 1200px) {
+  .row .gallery-tabs,
+  .row .image-tabs {
+    height: calc(100vh - 4rem);
+  }
+
+  .row .gallery-tabs,
+  .row .gallery-container {
+    padding-left: 0;
+  }
+
+  .gallery-container,
+  .gallery-tabs.collapsed {
+    display: none;
+  }
+
+  .gallery-container.expanded {
+    display: block;
+  }
+
+  .gallery-header-container,
+  .image-header-container {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+
+    .gallery-header,
+    .image-header {
+      flex: 0 0 75%;
+      order: 1;
+    }
+
+    .gallery-studio-image,
+    .image-studio-image {
+      flex: 0 0 25%;
+      order: 2;
+    }
+  }
+
+  .gallery-tabs,
+  .image-tabs {
+    overflow: auto;
+    width: 100%;
+
+    .nav-tabs {
+      padding: 0 15px;
+    }
+  }
+
+  .gallery-tabs > .tab-content,
+  .image-tabs > .tab-content {
+    padding: 0 15px;
+  }
+
+  .gallery-tabs > div,
+  .row .gallery-container {
+    overflow-x: hidden;
+  }
+
+  .floating-gallery-divider {
+    bottom: 3rem;
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.6);
+    display: unset !important;
+    position: absolute;
+    right: 3rem;
+    z-index: 100;
+  }
+}
 @media (min-width: 768px) {
   .details-tab {
     flex: 0 0 $detailTabWidth;

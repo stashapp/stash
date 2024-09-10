@@ -51,7 +51,7 @@ const History: React.FC<{
   }
 
   return (
-    <div className="scene-history">
+    <div id="scene-history-panel" className="scene-history">
       <ul className={className}>
         {history.map((playdate, index) => (
           <li key={index}>

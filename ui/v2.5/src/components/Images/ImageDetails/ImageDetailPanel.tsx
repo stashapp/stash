@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo, useState } from "react";
 import * as GQL from "src/core/generated-graphql";
 import TextUtils from "src/utils/text";
 import { GalleryLink, TagLink } from "src/components/Shared/TagLink";
@@ -6,6 +6,11 @@ import { PerformerCard } from "src/components/Performers/PerformerCard";
 import { sortPerformers } from "src/core/performers";
 import { FormattedMessage, useIntl } from "react-intl";
 import { PhotographerLink } from "src/components/Shared/Link";
+import { useContainerDimensions } from "src/components/Shared/GridCard/GridCard";
+import {
+  DetailItem,
+  maybeRenderShowMoreLess,
+} from "src/components/Shared/DetailItem";
 interface IImageDetailProps {
   image: GQL.ImageDataFragment;
 }
@@ -13,40 +18,91 @@ interface IImageDetailProps {
 export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
   const intl = useIntl();
 
-  function renderDetails() {
-    if (!props.image.details) return;
-    return (
-      <>
-        <h6>
-          <FormattedMessage id="details" />:{" "}
-        </h6>
-        <p className="pre">{props.image.details}</p>
-      </>
-    );
-  }
+  const [collapsedDetails, setCollapsedDetails] = useState<boolean>(true);
+  const [collapsedPerformers, setCollapsedPerformers] = useState<boolean>(true);
+  const [collapsedTags, setCollapsedTags] = useState<boolean>(true);
 
-  function renderTags() {
+  const [detailsRef, { height: detailsHeight }] = useContainerDimensions();
+  const [perfRef, { height: perfHeight }] = useContainerDimensions();
+  const [tagRef, { height: tagHeight }] = useContainerDimensions();
+
+  const details = useMemo(() => {
+    const limit = 160;
+    return props.image.details?.length ? (
+      <>
+        <div
+          className={`details ${
+            collapsedDetails && detailsHeight >= limit
+              ? "collapsed-detail"
+              : "expanded-detail"
+          }`}
+        >
+          <p className="pre" ref={detailsRef}>
+            {props.image.details}
+          </p>
+        </div>
+        {maybeRenderShowMoreLess(
+          detailsHeight,
+          limit,
+          detailsRef,
+          setCollapsedDetails,
+          collapsedDetails
+        )}
+      </>
+    ) : undefined;
+  }, [
+    props.image.details,
+    detailsRef,
+    detailsHeight,
+    setCollapsedDetails,
+    collapsedDetails,
+  ]);
+
+  const tags = useMemo(() => {
+    const limit = 160;
     if (props.image.tags.length === 0) return;
-    const tags = props.image.tags.map((tag) => (
-      <TagLink key={tag.id} tag={tag} linkType="image" />
+    const imageTags = props.image.tags.map((tag) => (
+      <TagLink key={tag.id} tag={tag} />
     ));
     return (
       <>
-        <h6>
-          <FormattedMessage
-            id="countables.tags"
-            values={{ count: props.image.tags.length }}
-          />
-        </h6>
-        {tags}
+        <div
+          className={`image-tags ${
+            collapsedTags && tagHeight >= limit
+              ? "collapsed-detail"
+              : "expanded-detail"
+          }`}
+          ref={tagRef}
+        >
+          {imageTags}
+        </div>
+        {maybeRenderShowMoreLess(
+          tagHeight,
+          limit,
+          tagRef,
+          setCollapsedTags,
+          collapsedTags
+        )}
       </>
     );
-  }
+  }, [props.image.tags, tagRef, tagHeight, setCollapsedTags, collapsedTags]);
 
-  function renderPerformers() {
-    if (props.image.performers.length === 0) return;
-    const performers = sortPerformers(props.image.performers);
-    const cards = performers.map((performer) => (
+  const galleries = useMemo(() => {
+    if (props.image.galleries.length === 0) return;
+    const imageGalleries = props.image.galleries.map((gallery) => (
+      <GalleryLink key={gallery.id} gallery={gallery} />
+    ));
+    return (
+      <>
+        <div className={`image-galleries`}>{imageGalleries}</div>
+      </>
+    );
+  }, [props.image.galleries]);
+
+  const performers = useMemo(() => {
+    const limit = 365;
+    const sorted = sortPerformers(props.image.performers);
+    const cards = sorted.map((performer) => (
       <PerformerCard
         key={performer.id}
         performer={performer}
@@ -56,36 +112,33 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
 
     return (
       <>
-        <h6>
-          <FormattedMessage
-            id="countables.performers"
-            values={{ count: props.image.performers.length }}
-          />
-        </h6>
-        <div className="row justify-content-center image-performers">
+        <div
+          className={`row justify-content-center image-performers ${
+            collapsedPerformers && perfHeight >= limit
+              ? "collapsed-detail"
+              : "expanded-detail"
+          }`}
+          ref={perfRef}
+        >
           {cards}
         </div>
+        {maybeRenderShowMoreLess(
+          perfHeight,
+          limit,
+          perfRef,
+          setCollapsedPerformers,
+          collapsedPerformers
+        )}
       </>
     );
-  }
-
-  function renderGalleries() {
-    if (props.image.galleries.length === 0) return;
-    const galleries = props.image.galleries.map((gallery) => (
-      <GalleryLink key={gallery.id} gallery={gallery} />
-    ));
-    return (
-      <>
-        <h6>
-          <FormattedMessage
-            id="countables.galleries"
-            values={{ count: props.image.galleries.length }}
-          />
-        </h6>
-        {galleries}
-      </>
-    );
-  }
+  }, [
+    props.image.performers,
+    props.image.date,
+    perfRef,
+    perfHeight,
+    collapsedPerformers,
+    setCollapsedPerformers,
+  ]);
 
   // filename should use entire row if there is no studio
   const imageDetailsWidth = props.image.studio ? "col-9" : "col-12";
@@ -94,41 +147,52 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
     <>
       <div className="row">
         <div className={`${imageDetailsWidth} col-12 image-details`}>
-          {renderGalleries()}
-          {
-            <h6>
-              {" "}
-              <FormattedMessage id="created_at" />:{" "}
-              {TextUtils.formatDateTime(intl, props.image.created_at)}{" "}
-            </h6>
-          }
-          {
-            <h6>
-              <FormattedMessage id="updated_at" />:{" "}
-              {TextUtils.formatDateTime(intl, props.image.updated_at)}{" "}
-            </h6>
-          }
-          {props.image.code && (
-            <h6>
-              <FormattedMessage id="scene_code" />: {props.image.code}{" "}
-            </h6>
-          )}
-          {props.image.photographer && (
-            <h6>
-              <FormattedMessage id="photographer" />:{" "}
-              <PhotographerLink
-                photographer={props.image.photographer}
-                linkType="image"
-              />
-            </h6>
-          )}
-        </div>
-      </div>
-      <div className="row">
-        <div className="col-12">
-          {renderDetails()}
-          {renderTags()}
-          {renderPerformers()}
+          <div className="detail-group">
+            <DetailItem
+              id="studio"
+              value={props.image.studio?.name}
+              fullWidth
+            />
+            <DetailItem id="scene_code" value={props.image.code} fullWidth />
+            <DetailItem
+              id="director"
+              value={
+                props.image.photographer ? (
+                  <PhotographerLink
+                    photographer={props.image.photographer}
+                    linkType="gallery"
+                  />
+                ) : undefined
+              }
+              fullWidth
+            />
+            <DetailItem id="details" value={details} />
+            <DetailItem
+              id="tags"
+              heading={<FormattedMessage id="tags" />}
+              value={props.image.tags.length ? tags : undefined}
+            />
+            <DetailItem
+              id="performers"
+              heading={<FormattedMessage id="performers" />}
+              value={props.image.performers.length ? performers : undefined}
+            />
+            <DetailItem
+              id="galleries"
+              heading={<FormattedMessage id="galleries" />}
+              value={props.image.galleries.length ? galleries : undefined}
+            />
+            <DetailItem
+              id="created_at"
+              value={TextUtils.formatDateTime(intl, props.image.created_at)}
+              fullWidth
+            />
+            <DetailItem
+              id="updated_at"
+              value={TextUtils.formatDateTime(intl, props.image.updated_at)}
+              fullWidth
+            />
+          </div>
         </div>
       </div>
     </>

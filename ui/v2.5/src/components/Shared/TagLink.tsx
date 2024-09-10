@@ -13,6 +13,7 @@ import { Placement } from "react-bootstrap/esm/Overlay";
 import { faFolderTree } from "@fortawesome/free-solid-svg-icons";
 import { Icon } from "../Shared/Icon";
 import { FormattedMessage } from "react-intl";
+import { GalleryPopover } from "../Galleries/GalleryPopover";
 
 type SceneMarkerFragment = Pick<GQL.SceneMarker, "id" | "title" | "seconds"> & {
   scene: Pick<GQL.Scene, "id">;
@@ -196,6 +197,37 @@ export const GalleryLink: React.FC<IGalleryLinkProps> = ({
   return (
     <CommonLinkComponent link={link} className={className}>
       {title}
+    </CommonLinkComponent>
+  );
+};
+
+interface IGalleryDetailedLinkProps {
+  gallery: GQL.SlimGalleryDataFragment;
+  linkType?: "gallery";
+  className?: string;
+  hoverPlacement?: Placement;
+}
+
+export const GalleryDetailedLink: React.FC<IGalleryDetailedLinkProps> = ({
+  gallery,
+  linkType = "gallery",
+  className,
+  hoverPlacement,
+}) => {
+  const link = useMemo(() => {
+    switch (linkType) {
+      case "gallery":
+        return `/galleries/${gallery.id}`;
+    }
+  }, [gallery, linkType]);
+
+  const title = galleryTitle(gallery);
+
+  return (
+    <CommonLinkComponent link={link} className={className}>
+      <GalleryPopover gallery={gallery ?? ""} placement={hoverPlacement}>
+        {title}
+      </GalleryPopover>
     </CommonLinkComponent>
   );
 };

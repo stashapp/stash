@@ -501,7 +501,7 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = (
   updateVideoStyle();
 
   return (
-    <div className="container scene-video-filter">
+    <div id="scene-video-filter-panel" className="container scene-video-filter">
       <div className="row form-group">
         <span className="col-12">
           <h5>

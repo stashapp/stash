@@ -27,6 +27,13 @@ export const GalleryPreview: React.FC<IGalleryPreviewProps> = ({
   gallery,
   onScrubberClick,
 }) => {
+  const [isPortrait, setIsPortrait] = React.useState(false);
+
+  function identifyPortaitImage(e: React.UIEvent<HTMLImageElement>) {
+    const img = e.target as HTMLImageElement;
+    setIsPortrait(img.width < img.height);
+  }
+
   const [imgSrc, setImgSrc] = useState<string | undefined>(
     gallery.paths.cover ?? undefined
   );
@@ -36,9 +43,10 @@ export const GalleryPreview: React.FC<IGalleryPreviewProps> = ({
       {!!imgSrc && (
         <img
           loading="lazy"
-          className="gallery-card-image"
+          className={`gallery-card-image ${isPortrait ? "portrait-image" : ""}`}
           alt={gallery.title ?? ""}
           src={imgSrc}
+          onLoad={identifyPortaitImage}
         />
       )}
       {gallery.image_count > 0 && (
@@ -60,6 +68,7 @@ interface IProps {
   selecting?: boolean;
   selected?: boolean | undefined;
   zoomIndex?: number;
+  titleOnImage?: boolean;
   onSelectedChanged?: (selected: boolean, shiftKey: boolean) => void;
 }
 
@@ -236,6 +245,7 @@ export const GalleryCard: React.FC<IProps> = (props) => {
       selected={props.selected}
       selecting={props.selecting}
       onSelectedChanged={props.onSelectedChanged}
+      titleOnImage={props.titleOnImage}
     />
   );
 };

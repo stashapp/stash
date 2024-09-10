@@ -42,6 +42,7 @@ interface IProps {
   selecting?: boolean;
   selected?: boolean;
   onSelectedChanged?: (selected: boolean, shiftKey: boolean) => void;
+  titleOnImage?: boolean;
   fromGroupId?: string;
   onMove?: (srcIds: string[], targetId: string, after: boolean) => void;
 }
@@ -53,6 +54,7 @@ export const GroupCard: React.FC<IProps> = ({
   selecting,
   selected,
   onSelectedChanged,
+  titleOnImage,
   fromGroupId,
   onMove,
 }) => {
@@ -182,6 +184,7 @@ export const GroupCard: React.FC<IProps> = ({
       selecting={selecting}
       onSelectedChanged={onSelectedChanged}
       popovers={maybeRenderPopoverButtonGroup()}
+      titleOnImage={titleOnImage}
     />
   );
 };

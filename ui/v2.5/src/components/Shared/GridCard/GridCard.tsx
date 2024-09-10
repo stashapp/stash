@@ -36,6 +36,7 @@ interface ICardProps {
   // move logic - both of the following are required to enable move dragging
   objectId?: string; // required for move dragging
   onMove?: (srcIds: string[], targetId: string, after: boolean) => void;
+  titleOnImage?: boolean;
 }
 
 export const calculateCardWidth = (
@@ -213,6 +214,7 @@ export const GridCard: React.FC<ICardProps> = (props: ICardProps) => {
 
       <div className={cx(props.thumbnailSectionClassName, "thumbnail-section")}>
         <Link
+          title={props.titleOnImage ? props.title.toString() : ""}
           to={props.url}
           className={props.linkClassName}
           onClick={handleImageClick}

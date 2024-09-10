@@ -137,10 +137,12 @@ $imageTabWidth: 450px;
 
 .image-tabs,
 .image-container {
-  padding-left: 15px;
-  padding-right: 15px;
   position: relative;
   width: 100%;
+}
+
+.image-container {
+  padding-left: 15px;
 }
 
 .image-container {
@@ -153,20 +155,20 @@ $imageTabWidth: 450px;
   }
 }
 
+.image-performers {
+  .performer-card {
+    width: 13.5rem;
+
+    .card-popovers,
+    hr {
+      display: none;
+    }
+  }
+}
+
 @media (min-width: 1200px) {
   .image-container {
     height: calc(100vh - 4rem);
-  }
-}
-@media (min-width: 1200px), (max-width: 575px) {
-  .image-performers {
-    .performer-card {
-      width: 15rem;
-
-      &-image {
-        height: 22.5rem;
-      }
-    }
   }
 }
 

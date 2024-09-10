@@ -67,7 +67,7 @@ const FileInfoPanel: React.FC<IFileInfoPanelProps> = (
   }
 
   return (
-    <div>
+    <div id="scene-file-info-panel">
       <dl className="container scene-file-info details-list">
         {props.primary && (
           <>
