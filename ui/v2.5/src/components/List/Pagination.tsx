@@ -25,7 +25,7 @@ const PageCount: React.FC<{
 
   useEffect(() => {
     if (showSelectPage) {
-      // delaying the focus to stop layout shifts which is what I think was causing the page to shift.
+      // delaying the focus to the next execution loop so that rendering takes place first and stops the page from resetting.
       setTimeout(() => {
         pageFocus();
       }, 0);
