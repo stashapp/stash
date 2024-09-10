@@ -446,6 +446,7 @@ func (db *Anonymiser) anonymiseGalleries(ctx context.Context) error {
 				table.Col(idColumn),
 				table.Col("title"),
 				table.Col("details"),
+				table.Col("photographer"),
 			).Where(table.Col(idColumn).Gt(lastID)).Limit(1000)
 
 			gotSome = false
@@ -453,15 +454,17 @@ func (db *Anonymiser) anonymiseGalleries(ctx context.Context) error {
 			const single = false
 			return queryFunc(ctx, query, single, func(rows *sqlx.Rows) error {
 				var (
-					id      int
-					title   sql.NullString
-					details sql.NullString
+					id           int
+					title        sql.NullString
+					details      sql.NullString
+					photographer sql.NullString
 				)
 
 				if err := rows.Scan(
 					&id,
 					&title,
 					&details,
+					&photographer,
 				); err != nil {
 					return err
 				}
@@ -469,6 +472,7 @@ func (db *Anonymiser) anonymiseGalleries(ctx context.Context) error {
 				set := goqu.Record{}
 				db.obfuscateNullString(set, "title", title)
 				db.obfuscateNullString(set, "details", details)
+				db.obfuscateNullString(set, "photographer", photographer)
 
 				if len(set) > 0 {
 					stmt := dialect.Update(table).Set(set).Where(table.Col(idColumn).Eq(id))
@@ -493,6 +497,10 @@ func (db *Anonymiser) anonymiseGalleries(ctx context.Context) error {
 		}
 	}
 
+	if err := db.anonymiseURLs(ctx, goqu.T(galleriesURLsTable), "gallery_id"); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -508,6 +516,7 @@ func (db *Anonymiser) anonymisePerformers(ctx context.Context) error {
 			query := dialect.From(table).Select(
 				table.Col(idColumn),
 				table.Col("name"),
+				table.Col("disambiguation"),
 				table.Col("details"),
 				table.Col("tattoos"),
 				table.Col("piercings"),
@@ -518,16 +527,18 @@ func (db *Anonymiser) anonymisePerformers(ctx context.Context) error {
 			const single = false
 			return queryFunc(ctx, query, single, func(rows *sqlx.Rows) error {
 				var (
-					id        int
-					name      sql.NullString
-					details   sql.NullString
-					tattoos   sql.NullString
-					piercings sql.NullString
+					id             int
+					name           sql.NullString
+					disambiguation sql.NullString
+					details        sql.NullString
+					tattoos        sql.NullString
+					piercings      sql.NullString
 				)
 
 				if err := rows.Scan(
 					&id,
 					&name,
+					&disambiguation,
 					&details,
 					&tattoos,
 					&piercings,
@@ -537,6 +548,7 @@ func (db *Anonymiser) anonymisePerformers(ctx context.Context) error {
 
 				set := goqu.Record{}
 				db.obfuscateNullString(set, "name", name)
+				db.obfuscateNullString(set, "disambiguation", disambiguation)
 				db.obfuscateNullString(set, "details", details)
 				db.obfuscateNullString(set, "tattoos", tattoos)
 				db.obfuscateNullString(set, "piercings", piercings)
