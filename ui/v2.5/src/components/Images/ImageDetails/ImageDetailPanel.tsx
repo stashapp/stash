@@ -6,11 +6,13 @@ import { PerformerCard } from "src/components/Performers/PerformerCard";
 import { sortPerformers } from "src/core/performers";
 import { FormattedMessage, useIntl } from "react-intl";
 import { PhotographerLink } from "src/components/Shared/Link";
+import { PatchComponent } from "../../../patch";
 interface IImageDetailProps {
   image: GQL.ImageDataFragment;
 }
 
-export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
+export const ImageDetailPanel: React.FC<IImageDetailProps> =
+  PatchComponent("ImageDetailPanel", (props) => {
   const intl = useIntl();
 
   function renderDetails() {
@@ -133,4 +135,4 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
       </div>
     </>
   );
-};
+});

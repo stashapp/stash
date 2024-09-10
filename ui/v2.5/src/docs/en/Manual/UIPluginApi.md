@@ -151,6 +151,7 @@ Returns `void`.
 - `GallerySelect`
 - `GallerySelect.sort`
 - `Icon`
+- `ImageDetailPanel`
 - `ModalSetting`
 - `MovieIDSelect`
 - `MovieSelect`
