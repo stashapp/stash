@@ -776,9 +776,39 @@ button.btn.favorite-button {
 
 .scraper-menu .dropdown-menu {
   min-width: 250px;
+  padding-top: 0;
 
   .dropdown-divider {
     border-top-color: $textfield-bg;
     margin: 0;
+  }
+
+  .scraper-filter-container {
+    background-color: $secondary;
+    border-bottom: solid 1px $textfield-bg;
+    padding: 5px;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+
+    .btn-group {
+      border: solid 1px $textfield-bg;
+      border-radius: 5px;
+      width: 100%;
+    }
+
+    .clearable-text-field {
+      background-color: $textfield-bg;
+    }
+
+    .clearable-text-field-clear {
+      background-color: unset;
+      border: unset;
+    }
+
+    .reload-button.btn {
+      border-bottom-right-radius: 0.25rem;
+      border-top-right-radius: 0.25rem;
+    }
   }
 }
