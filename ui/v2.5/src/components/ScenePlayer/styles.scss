@@ -360,6 +360,10 @@ $sceneTabWidth: 450px;
         height: 1.4em;
         width: 1.4em;
       }
+
+      .vjs-source-selector .vjs-menu {
+        z-index: 9999;
+      }
     }
 
     .vjs-menu-button-popup .vjs-menu {
