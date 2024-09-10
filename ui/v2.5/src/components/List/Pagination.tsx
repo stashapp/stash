@@ -105,7 +105,6 @@ const PageCount: React.FC<{
                 className="text-input"
                 ref={pageInput}
                 defaultValue={currentPage}
-                // onKeyPress is depreciated now so changing to onKeyDown.
                 onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
                   if (e.key === "Enter") {
                     onCustomChangePage();
