@@ -19,16 +19,16 @@ const PageCount: React.FC<{
   onChangePage: (page: number) => void;
 }> = ({ totalPages, currentPage, onChangePage }) => {
   const intl = useIntl();
-
   const currentPageCtrl = useRef(null);
-
   const [pageInput, pageFocus] = useFocus();
-
   const [showSelectPage, setShowSelectPage] = useState(false);
 
   useEffect(() => {
     if (showSelectPage) {
-      pageFocus();
+      // delaying the focus to the next execution loop so that rendering takes place first and stops the page from resetting.
+      setTimeout(() => {
+        pageFocus();
+      }, 0);
     }
   }, [showSelectPage, pageFocus]);
 
@@ -105,7 +105,7 @@ const PageCount: React.FC<{
                 className="text-input"
                 ref={pageInput}
                 defaultValue={currentPage}
-                onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) => {
+                onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
                   if (e.key === "Enter") {
                     onCustomChangePage();
                     e.preventDefault();
@@ -152,7 +152,6 @@ export const Pagination: React.FC<IPaginationProps> = ({
   onChangePage,
 }) => {
   const intl = useIntl();
-
   const totalPages = useMemo(
     () => Math.ceil(totalItems / itemsPerPage),
     [totalItems, itemsPerPage]
