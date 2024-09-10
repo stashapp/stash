@@ -640,12 +640,9 @@ button.btn.favorite-button {
   display: inline-block;
 }
 
-.dropdown-menu:has(.scraper-filter-container) {
-  padding-top: 0;
-}
-
 .scraper-menu .dropdown-menu {
   min-width: 250px;
+  padding-top: 0;
 
   .dropdown-divider {
     border-top-color: $textfield-bg;
@@ -653,21 +650,21 @@ button.btn.favorite-button {
   }
 
   .scraper-filter-container {
-    background-color: $dark-gray5;
-    border-bottom: solid 1px rgba(16, 22, 26, 0.3);
+    background-color: $secondary;
+    border-bottom: solid 1px $textfield-bg;
     padding: 5px;
     position: sticky;
     top: 0;
     z-index: 1;
 
     .btn-group {
-      border: solid 1px rgba(16, 22, 26, 0.3);
+      border: solid 1px $textfield-bg;
       border-radius: 5px;
       width: 100%;
     }
 
     .clearable-text-field {
-      background-color: #26333d;
+      background-color: $textfield-bg;
     }
 
     .clearable-text-field-clear {
