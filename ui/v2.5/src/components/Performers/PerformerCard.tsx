@@ -37,6 +37,7 @@ interface IPerformerCardProps {
   containerWidth?: number;
   ageFromDate?: string;
   selecting?: boolean;
+  zoomIndex?: number;
   selected?: boolean;
   onSelectedChanged?: (selected: boolean, shiftKey: boolean) => void;
   extraCriteria?: IPerformerCardExtraCriteria;
@@ -48,6 +49,7 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
   ageFromDate,
   selecting,
   selected,
+  zoomIndex,
   onSelectedChanged,
   extraCriteria,
 }) => {
@@ -74,13 +76,24 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
   useEffect(() => {
     if (!containerWidth || ScreenUtils.isMobile()) return;
 
-    let preferredCardWidth = 300;
-    let fittedCardWidth = calculateCardWidth(
-      containerWidth,
-      preferredCardWidth!
-    );
+    let preferredCardWidth: number;
+    switch (zoomIndex) {
+      case 0:
+        preferredCardWidth = 240;
+        break;
+      case 1:
+        preferredCardWidth = 340;
+        break;
+      case 2:
+        preferredCardWidth = 480;
+        break;
+      case 3:
+        preferredCardWidth = 640;
+    }
+
+    let fittedCardWidth = calculateCardWidth(containerWidth, preferredCardWidth);
     setCardWidth(fittedCardWidth);
-  }, [containerWidth]);
+  }, [containerWidth, zoomIndex]);
 
   function onToggleFavorite(v: boolean) {
     if (performer.id) {
