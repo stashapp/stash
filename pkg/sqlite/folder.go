@@ -41,6 +41,7 @@ type folderQueryRow struct {
 
 	ZipBasename   null.String `db:"zip_basename"`
 	ZipFolderPath null.String `db:"zip_folder_path"`
+	ZipSize       null.Int    `db:"zip_size"`
 }
 
 func (r *folderQueryRow) resolve() *models.Folder {
@@ -61,6 +62,7 @@ func (r *folderQueryRow) resolve() *models.Folder {
 			ID:       *ret.ZipFileID,
 			Path:     filepath.Join(r.ZipFolderPath.String, r.ZipBasename.String),
 			Basename: r.ZipBasename.String,
+			Size:     r.ZipSize.Int64,
 		}
 	}
 
@@ -148,6 +150,8 @@ func (qb *FolderStore) selectDataset() *goqu.SelectDataset {
 		table.Col("updated_at"),
 		zipFileTable.Col("basename").As("zip_basename"),
 		zipFolderTable.Col("path").As("zip_folder_path"),
+		// size is needed to open containing zip files
+		zipFileTable.Col("size").As("zip_size"),
 	}
 
 	ret := dialect.From(table).Select(cols...)

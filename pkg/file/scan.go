@@ -341,7 +341,7 @@ func (s *scanJob) acceptEntry(ctx context.Context, path string, info fs.FileInfo
 }
 
 func (s *scanJob) scanZipFile(ctx context.Context, f scanFile) error {
-	zipFS, err := f.fs.OpenZip(f.Path)
+	zipFS, err := f.fs.OpenZip(f.Path, f.Size)
 	if err != nil {
 		if errors.Is(err, errNotReaderAt) {
 			// can't walk the zip file
@@ -838,7 +838,7 @@ func (s *scanJob) getFileFS(f *models.BaseFile) (models.FS, error) {
 	}
 
 	zipPath := f.ZipFile.Base().Path
-	return fs.OpenZip(zipPath)
+	return fs.OpenZip(zipPath, f.Size)
 }
 
 func (s *scanJob) handleRename(ctx context.Context, f models.File, fp []models.Fingerprint) (models.File, error) {
