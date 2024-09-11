@@ -702,7 +702,8 @@ func (i *Config) GetBackupDirectoryPath() string {
 func (i *Config) GetBackupDirectoryPathOrDefault() string {
 	ret := i.GetBackupDirectoryPath()
 	if ret == "" {
-		return i.GetConfigPath()
+		// #4915 - default to the same directory as the database
+		return filepath.Dir(i.GetDatabasePath())
 	}
 
 	return ret
