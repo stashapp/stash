@@ -548,7 +548,9 @@
                 "previews_desc": "短片预览和缩略图",
                 "sprites": "短片精灵",
                 "transcodes": "短片转码"
-            }
+            },
+            "rescan": "重新扫描文件",
+            "rescan_tooltip": "重新扫描路径中的每个文件。用于强制更新文件元数据和重新扫描zip文件。"
         },
         "tools": {
             "scene_duplicate_checker": "短片重复性检查工具",
