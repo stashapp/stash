@@ -549,7 +549,9 @@
                 "sprites": "Sprites de scène",
                 "transcodes": "Transcodes de scènes"
             },
-            "generate_sprites_during_scan_tooltip": "L'ensemble des images affichées en dessous du lecteur vidéo pour une navigation aisée."
+            "generate_sprites_during_scan_tooltip": "L'ensemble des images affichées en dessous du lecteur vidéo pour une navigation aisée.",
+            "rescan": "Réanalyse des fichiers",
+            "rescan_tooltip": "Réanalyse chaque fichier contenu dans le chemin d'accès. Utilisé pour forcer la mise à jour des métadonnées des fichiers et réanalyser les archives zip."
         },
         "tools": {
             "scene_duplicate_checker": "Vérificateur de doublons de scènes",
