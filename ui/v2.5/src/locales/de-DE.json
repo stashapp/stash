@@ -140,7 +140,7 @@
         "reset_cover": "Titelbild zurücksetzen",
         "remove_from_containing_group": "Von Gruppe entfernen",
         "reset_play_duration": "Spieldauer zurücksetzten",
-        "reset_resume_time": "Wiederaufnahmezeit zurücksetzten",
+        "reset_resume_time": "Forschritt zurücksetzten",
         "add_sub_groups": "Untergruppen hinzufügen"
     },
     "actions_name": "Aktionen",
