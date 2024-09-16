@@ -549,7 +549,9 @@
                 "previews_desc": "Scenförhandsvisningar och omslagsbilder",
                 "sprites": "Scensprites",
                 "transcodes": "Scenomkodningar"
-            }
+            },
+            "rescan": "Skanna om filer",
+            "rescan_tooltip": "Skanna om alla filer i sökvägen. Används för att tvångsuppdatera filmetadata och att skanna om zip-filer."
         },
         "tools": {
             "scene_duplicate_checker": "Scen Duplikat Kontroll",
