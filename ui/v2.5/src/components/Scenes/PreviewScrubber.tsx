@@ -27,6 +27,8 @@ function scaleToFit(dimensions: { w: number; h: number }, bounds: DOMRect) {
   return Math.min(rw, rh);
 }
 
+const defaultSprites = 81; // 9x9 grid by default
+
 export const PreviewScrubber: React.FC<IScenePreviewProps> = ({
   vttPath,
   onClick,
@@ -83,15 +85,16 @@ export const PreviewScrubber: React.FC<IScenePreviewProps> = ({
     return start;
   }, [sprite]);
 
-  function onScrubberClick() {
-    if (!sprite || !onClick) {
+  function onScrubberClick(index: number) {
+    if (!onClick || !spriteInfo) {
       return;
     }
 
-    onClick(sprite.start);
+    const s = spriteInfo[index];
+    onClick(s.start);
   }
 
-  if (!spriteInfo && hasLoaded) return null;
+  if (spriteInfo === null) return null;
 
   return (
     <div className="preview-scrubber">
@@ -104,7 +107,7 @@ export const PreviewScrubber: React.FC<IScenePreviewProps> = ({
         </div>
       )}
       <HoverScrubber
-        totalSprites={spriteInfo?.length ?? 0}
+        totalSprites={spriteInfo?.length ?? defaultSprites}
         activeIndex={activeIndex}
         setActiveIndex={(i) => debounceSetActiveIndex(i)}
         onClick={onScrubberClick}
