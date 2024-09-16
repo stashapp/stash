@@ -8,7 +8,7 @@ interface IHoverScrubber {
   totalSprites: number;
   activeIndex: number | undefined;
   setActiveIndex: (index: number | undefined) => void;
-  onClick?: () => void;
+  onClick?: (index: number) => void;
 }
 
 export const HoverScrubber: React.FC<IHoverScrubber> = ({
@@ -82,7 +82,10 @@ export const HoverScrubber: React.FC<IHoverScrubber> = ({
 
     e.preventDefault();
     e.stopPropagation();
-    onClick();
+
+    const i = getActiveIndex(e);
+    if (i === undefined) return;
+    onClick(i);
   }
 
   const indicatorStyle = useMemo(() => {
@@ -107,8 +110,8 @@ export const HoverScrubber: React.FC<IHoverScrubber> = ({
         onTouchMove={onMove}
         onMouseLeave={onLeave}
         onTouchEnd={onLeave}
+        onTouchCancel={onLeave}
         onClick={onScrubberClick}
-        onTouchStart={onScrubberClick}
       />
       <div className="hover-scrubber-indicator">
         {activeIndex !== undefined && (

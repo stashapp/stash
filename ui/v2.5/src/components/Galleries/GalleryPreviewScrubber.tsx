@@ -21,12 +21,12 @@ export const GalleryPreviewScrubber: React.FC<{
   const [activeIndex, setActiveIndex] = useState<number>();
   const debounceSetActiveIndex = useThrottle(setActiveIndex, 50);
 
-  function onScrubberClick() {
-    if (activeIndex === undefined || !onClick) {
+  function onScrubberClick(index: number) {
+    if (!onClick) {
       return;
     }
 
-    onClick(activeIndex);
+    onClick(index);
   }
 
   useEffect(() => {
@@ -47,7 +47,7 @@ export const GalleryPreviewScrubber: React.FC<{
         totalSprites={imageCount}
         activeIndex={activeIndex}
         setActiveIndex={(i) => debounceSetActiveIndex(i)}
-        onClick={() => onScrubberClick()}
+        onClick={onScrubberClick}
       />
     </div>
   );
