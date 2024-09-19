@@ -171,18 +171,5 @@ func (db *Database) RunAllMigrations() error {
 		}
 	}
 
-	// re-initialise the database
-	const disableForeignKeys = false
-	db.db, err = db.open(disableForeignKeys)
-	if err != nil {
-		return fmt.Errorf("re-initializing the database: %w", err)
-	}
-
-	// optimize database after migration
-	err = db.Optimise(ctx)
-	if err != nil {
-		logger.Warnf("error while performing post-migration optimisation: %v", err)
-	}
-
 	return nil
 }

@@ -17,17 +17,17 @@ import (
 )
 
 const (
-	// Number of database connections to use
+	// Number of database read connections to use
 	// The same value is used for both the maximum and idle limit,
 	// to prevent opening connections on the fly which has a notieable performance penalty.
 	// Fewer connections use less memory, more connections increase performance,
 	// but have diminishing returns.
 	// 10 was found to be a good tradeoff.
-	dbConns = 10
+	maxReadConnections = 10
 	// Idle connection timeout, in seconds
 	// Closes a connection after a period of inactivity, which saves on memory and
 	// causes the sqlite -wal and -shm files to be automatically deleted.
-	dbConnTimeout = 30
+	dbConnTimeout = 30 * time.Second
 )
 
 var appSchemaVersion uint = 67
@@ -152,7 +152,9 @@ func (db *Database) Open(dbPath string) error {
 
 	db.schemaVersion = databaseSchemaVersion
 
-	if databaseSchemaVersion == 0 {
+	isNew := databaseSchemaVersion == 0
+
+	if isNew {
 		// new database, just run the migrations
 		if err := db.RunAllMigrations(); err != nil {
 			return fmt.Errorf("error running initial schema migrations: %w", err)
@@ -174,12 +176,17 @@ func (db *Database) Open(dbPath string) error {
 		}
 	}
 
-	// RunMigrations may have opened a connection already
-	if db.db == nil {
-		const disableForeignKeys = false
-		db.db, err = db.open(disableForeignKeys)
+	const disableForeignKeys = false
+	db.db, err = db.open(disableForeignKeys)
+	if err != nil {
+		return err
+	}
+
+	if isNew {
+		// optimize database after migration
+		err = db.Optimise(context.Background())
 		if err != nil {
-			return err
+			logger.Warnf("error while performing post-migration optimisation: %v", err)
 		}
 	}
 
@@ -236,9 +243,9 @@ func (db *Database) open(disableForeignKeys bool) (*sqlx.DB, error) {
 	}
 
 	conn, err := sqlx.Open(sqlite3Driver, url)
-	conn.SetMaxOpenConns(dbConns)
-	conn.SetMaxIdleConns(dbConns)
-	conn.SetConnMaxIdleTime(dbConnTimeout * time.Second)
+	conn.SetMaxOpenConns(maxReadConnections)
+	conn.SetMaxIdleConns(maxReadConnections)
+	conn.SetConnMaxIdleTime(dbConnTimeout)
 	if err != nil {
 		return nil, fmt.Errorf("db.Open(): %w", err)
 	}
