@@ -1,11 +1,14 @@
 import React, { useMemo } from "react";
 import cx from "classnames";
 
+// #5231: TouchEvent is not defined on all browsers
+const touchEventDefined = window.TouchEvent !== undefined;
+
 interface IHoverScrubber {
   totalSprites: number;
   activeIndex: number | undefined;
   setActiveIndex: (index: number | undefined) => void;
-  onClick?: () => void;
+  onClick?: (index: number) => void;
 }
 
 export const HoverScrubber: React.FC<IHoverScrubber> = ({
@@ -24,7 +27,7 @@ export const HoverScrubber: React.FC<IHoverScrubber> = ({
     let x = 0;
     if (e.nativeEvent instanceof MouseEvent) {
       x = e.nativeEvent.offsetX;
-    } else if (e.nativeEvent instanceof TouchEvent) {
+    } else if (touchEventDefined && e.nativeEvent instanceof TouchEvent) {
       x =
         e.nativeEvent.touches[0].clientX -
         e.currentTarget.getBoundingClientRect().x;
@@ -47,7 +50,8 @@ export const HoverScrubber: React.FC<IHoverScrubber> = ({
 
     if (
       (e instanceof MouseEvent && relatedTarget !== e.target) ||
-      (e instanceof TouchEvent &&
+      (touchEventDefined &&
+        e instanceof TouchEvent &&
         document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY))
     )
       return;
@@ -70,14 +74,18 @@ export const HoverScrubber: React.FC<IHoverScrubber> = ({
 
     if (
       (e instanceof MouseEvent && relatedTarget !== e.target) ||
-      (e instanceof TouchEvent &&
+      (touchEventDefined &&
+        e instanceof TouchEvent &&
         document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY))
     )
       return;
 
     e.preventDefault();
     e.stopPropagation();
-    onClick();
+
+    const i = getActiveIndex(e);
+    if (i === undefined) return;
+    onClick(i);
   }
 
   const indicatorStyle = useMemo(() => {
@@ -102,8 +110,8 @@ export const HoverScrubber: React.FC<IHoverScrubber> = ({
         onTouchMove={onMove}
         onMouseLeave={onLeave}
         onTouchEnd={onLeave}
+        onTouchCancel={onLeave}
         onClick={onScrubberClick}
-        onTouchStart={onScrubberClick}
       />
       <div className="hover-scrubber-indicator">
         {activeIndex !== undefined && (

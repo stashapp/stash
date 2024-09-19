@@ -6,6 +6,7 @@ import { PerformerCard } from "src/components/Performers/PerformerCard";
 import { sortPerformers } from "src/core/performers";
 import { FormattedMessage, useIntl } from "react-intl";
 import { PhotographerLink } from "src/components/Shared/Link";
+import { PatchComponent } from "../../../patch";
 import { useContainerDimensions } from "src/components/Shared/GridCard/GridCard";
 import {
   DetailItem,
@@ -15,8 +16,10 @@ interface IImageDetailProps {
   image: GQL.ImageDataFragment;
 }
 
-export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
-  const intl = useIntl();
+export const ImageDetailPanel: React.FC<IImageDetailProps> = PatchComponent(
+  "ImageDetailPanel",
+  (props) => {
+    const intl = useIntl();
 
   const [collapsedDetails, setCollapsedDetails] = useState<boolean>(true);
   const [collapsedPerformers, setCollapsedPerformers] = useState<boolean>(true);
@@ -140,8 +143,8 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
     setCollapsedPerformers,
   ]);
 
-  // filename should use entire row if there is no studio
-  const imageDetailsWidth = props.image.studio ? "col-9" : "col-12";
+    // filename should use entire row if there is no studio
+    const imageDetailsWidth = props.image.studio ? "col-9" : "col-12";
 
   return (
     <>
@@ -197,4 +200,4 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
       </div>
     </>
   );
-};
+});
