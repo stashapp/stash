@@ -29,6 +29,9 @@ const (
 	// Closes a connection after a period of inactivity, which saves on memory and
 	// causes the sqlite -wal and -shm files to be automatically deleted.
 	dbConnTimeout = 30 * time.Second
+
+	// environment variable to set the cache size
+	cacheSizeEnv = "STASH_SQLITE_CACHE_SIZE"
 )
 
 var appSchemaVersion uint = 67
@@ -242,6 +245,12 @@ func (db *Database) open(disableForeignKeys bool, writable bool) (*sqlx.DB, erro
 		url += "&_txlock=immediate"
 	} else {
 		url += "&mode=ro"
+	}
+
+	// #5155 - set the cache size if the environment variable is set
+	// default is -2000 which is 2MB
+	if cacheSize := os.Getenv(cacheSizeEnv); cacheSize != "" {
+		url += "&_cache_size=" + cacheSize
 	}
 
 	conn, err := sqlx.Open(sqlite3Driver, url)
