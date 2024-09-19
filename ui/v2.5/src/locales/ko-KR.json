@@ -135,7 +135,13 @@
         "copy_to_clipboard": "클립보드에 복사",
         "reload": "새로고침",
         "remove_date": "날짜 삭제",
-        "view_history": "기록 보기"
+        "view_history": "기록 보기",
+        "set_cover": "커버로 설정",
+        "reset_cover": "커버를 기본값으로 되돌리기",
+        "reset_play_duration": "재생 시간 초기화",
+        "reset_resume_time": "마지막 재생 위치 초기화",
+        "add_sub_groups": "서브그룹 추가",
+        "remove_from_containing_group": "그룹에서 제거"
     },
     "actions_name": "액션",
     "age": "나이",
@@ -468,7 +474,7 @@
             },
             "generate_clip_previews_during_scan": "이미지 클립 미리보기 생성하기",
             "generate_desc": "이미지, 스프라이트, 비디오, vtt 등 파일을 생성합니다.",
-            "generate_phashes_during_scan": "컨텐츠 해쉬 값 생성",
+            "generate_phashes_during_scan": "컨텐츠 해시 값 생성",
             "generate_phashes_during_scan_tooltip": "중복된 파일 확인과 영상 식별에 사용됩니다.",
             "generate_previews_during_scan": "움직이는 이미지 미리보기 생성",
             "generate_previews_during_scan_tooltip": "애니메이션(webp) 미리보기 또한 생성합니다. 영상/마커 월의 미리보기 유형이 '애니메이션 이미지'로 설정된 경우에만 필요합니다. '애니메이션 미리보기'는 '비디오 미리보기'보다 CPU를 덜 사용하지만, '비디오 미리보기'에 추가적으로 '애니메이션 미리보기'가 생성되기 때문에 파일 크기가 커집니다.",
@@ -542,7 +548,9 @@
             },
             "generate_sprites_during_scan_tooltip": "영상에서 원하는 위치를 찾기 쉽게 하기 위해, 비디오 플레이어 아래에 표시되는 이미지들의 모음입니다.",
             "optimise_database_warning": "주의: 이 작업이 수행되는 동안, 데이터베이스를 수정하는 다른 모든 작업들은 실패할 것이고, 데이터베이스의 크기에 따라 작업 종료까지 몇 분이 걸릴 수 있습니다. 그리고 이 작업은 적어도 데이터베이스 크기만큼의 디스크 공간이 필요한데, 데이터베이스 크기의 1.5배의 디스크 공간을 확보하는 것을 권장합니다.",
-            "optimise_database": "모든 데이터베이스 파일을 분석하고 다시 만듦으로써, 성능을 향상시키려고 시도합니다."
+            "optimise_database": "모든 데이터베이스 파일을 분석하고 다시 만듦으로써, 성능을 향상시키려고 시도합니다.",
+            "rescan_tooltip": "경로 내의 모든 파일을 재스캔합니다. 파일 메타데이터를 강제 업데이트하고 zip 파일들을 재스캔하기 위해 사용됩니다.",
+            "rescan": "파일 재스캔"
         },
         "tools": {
             "scene_duplicate_checker": "영상 중복 체크 도구",
@@ -628,7 +636,7 @@
                 }
             },
             "funscript_offset": {
-                "description": "대화형 스크립트 재생의 시간 오프셋(밀리초)입니다.",
+                "description": "인터랙티브 스크립트 재생의 시간 오프셋(밀리초)입니다.",
                 "heading": "Funscript 오프셋 (단위: 밀리초)"
             },
             "handy_connection": {
@@ -642,7 +650,7 @@
                 "sync": "동기화"
             },
             "handy_connection_key": {
-                "description": "대화형 영상에 사용할 수 있는 Handy 연결 키입니다. 이 키를 설정하면 현재 장면 정보를 handyfeeling.com과 공유할 수 있습니다",
+                "description": "인터랙티브 영상에 사용할 수 있는 Handy 연결 키입니다. 이 키를 설정하면 현재 장면 정보를 handyfeeling.com과 공유할 수 있습니다",
                 "heading": "Handy 연결 키"
             },
             "image_lightbox": {
@@ -666,7 +674,7 @@
                     }
                 }
             },
-            "interactive_options": "상호작용 옵션",
+            "interactive_options": "인터랙티브 설정",
             "language": {
                 "heading": "언어"
             },
@@ -708,7 +716,7 @@
             "scene_player": {
                 "heading": "영상 플레이어",
                 "options": {
-                    "always_start_from_beginning": "항상 처음부터 비디오 시작하기",
+                    "always_start_from_beginning": "항상 처음부터 비디오 시작",
                     "auto_start_video": "비디오 자동 재생",
                     "auto_start_video_on_play_selected": {
                         "description": "대기열, 또는 '영상' 페이지에서 (랜덤)선택한 영상을 자동 재생",
@@ -725,7 +733,7 @@
                         "heading": "VR 태그"
                     },
                     "enable_chromecast": "크롬캐스트 활성화",
-                    "disable_mobile_media_auto_rotate": "모바일 환경에서 전체화면했을 때 자동 방향 회전 비활성화하기",
+                    "disable_mobile_media_auto_rotate": "모바일 환경에서 전체화면 시 자동 방향 회전 비활성화",
                     "show_ab_loop_controls": "구간반복 기능 활성화"
                 }
             },
@@ -798,7 +806,8 @@
         "performers": "{count, plural, one {배우} other {배우들}}",
         "scenes": "{count, plural, one {영상} other {영상들}}",
         "studios": "{count, plural, one {스튜디오} other {스튜디오들}}",
-        "tags": "{count, plural, one {태그} other {태그들}}"
+        "tags": "{count, plural, one {태그} other {태그들}}",
+        "groups": "{count, plural, one {그룹} other {그룹들}}"
     },
     "country": "국적",
     "cover_image": "커버 이미지",
@@ -897,7 +906,7 @@
             "force_transcodes_tooltip": "기본적으로 트랜스코드는 비디오 파일이 브라우저에서 지원되지 않는 경우에만 생성됩니다. 이 옵션을 선택하면 비디오 파일이 브라우저에서 지원되는 것으로 보이는 경우에도 트랜스코드가 생성됩니다.",
             "image_previews": "움직이는 이미지 미리보기",
             "image_previews_tooltip": "애니메이션(webp) 미리보기도 생성합니다. 영상/마커 월 미리보기 유형이 '애니메이션 이미지'로 설정된 경우에만 필요합니다. '비디오 미리보기'보다 CPU를 덜 사용하지만, '비디오 미리보기'에 추가적으로 생성되기 때문에 파일 크기가 커집니다.",
-            "interactive_heatmap_speed": "대화형 영상을 위한 히트맵 및 스피드 생성",
+            "interactive_heatmap_speed": "인터랙티브 영상을 위한 히트맵 및 스피드 생성",
             "marker_image_previews": "마커 움직이는 이미지 미리보기",
             "marker_image_previews_tooltip": "애니메이션(webp) 미리보기도 생성합니다. 영상/마커 월 미리보기 유형이 '애니메이션 이미지'로 설정된 경우에만 필요합니다. '비디오 미리보기'보다 CPU를 덜 사용하지만, '비디오 미리보기'에 추가적으로 생성되기 때문에 파일 크기가 커집니다.",
             "marker_screenshots": "마커 스크린샷",
@@ -1012,7 +1021,9 @@
         "lazy_component_error_help": "만약 최근에 Stash를 업그레이드했다면, 웹페이지를 새로고침하거나 브라우저 캐시를 삭제해주세요.",
         "something_went_wrong": "오류가 발생했습니다.",
         "header": "오류",
-        "loading_type": "{type}을(를) 로딩하는 중 오류가 발생했습니다"
+        "loading_type": "{type}을(를) 로딩하는 중 오류가 발생했습니다",
+        "invalid_javascript_string": "유효하지 않은 자바스크립트 코드입니다: {error}",
+        "invalid_json_string": "유효하지 않은 JSON 문자열입니다: {error}"
     },
     "ethnicity": "인종",
     "existing_value": "존재하는 값",
@@ -1023,7 +1034,7 @@
     "file": "파일",
     "file_count": "파일 개수",
     "file_info": "파일 정보",
-    "file_mod_time": "파일 변경 시간",
+    "file_mod_time": "파일 변경 시각",
     "files": "파일",
     "files_amount": "{value} 파일",
     "filesize": "파일 크기",
@@ -1075,7 +1086,7 @@
     "include_sub_studios": "자회사 스튜디오 포함",
     "include_sub_tags": "하위 태그 포함",
     "instagram": "인스타그램",
-    "interactive": "인터렉티브",
+    "interactive": "인터랙티브",
     "interactive_speed": "인터랙티브 속도",
     "isMissing": "데이터 누락됨",
     "last_played_at": "마지막 재생 날짜",
@@ -1115,7 +1126,8 @@
         "first": "처음",
         "last": "마지막",
         "next": "다음",
-        "previous": "이전"
+        "previous": "이전",
+        "current_total": "{total} 중 {current}"
     },
     "parent_of": "{children}의 상위 태그",
     "parent_studios": "모회사 스튜디오",
@@ -1333,7 +1345,7 @@
         "added_entity": "{singularEntity}을(를) 추가했습니다",
         "added_generation_job_to_queue": "생성 작업을 대기열에 추가했습니다",
         "created_entity": "{entity}를 생성했습니다",
-        "default_filter_set": "기본 필터 셋",
+        "default_filter_set": "기본 필터가 설정되었습니다",
         "delete_past_tense": "{count, plural, one {{singularEntity}} other {{pluralEntity}}}이(가) 삭제되었습니다",
         "generating_screenshot": "스크린샷을 생성하는 중…",
         "image_index_too_large": "오류: 이미지 번호가 갤러리의 이미지 개수보다 큽니다",
@@ -1461,5 +1473,22 @@
     "distance": "거리",
     "studio_and_parent": "스튜디오 & 모회사",
     "tag_parent_tooltip": "상위 태그 존재 여부",
-    "tag_sub_tag_tooltip": "하위 태그 존재 여부"
+    "tag_sub_tag_tooltip": "하위 태그 존재 여부",
+    "group": "그룹",
+    "group_count": "그룹 개수",
+    "group_scene_number": "영상 번호",
+    "groups": "그룹들",
+    "studio_tags": "스튜디오 태그",
+    "containing_groups": "그룹들 포함",
+    "containing_group_count": "그룹 개수 포함",
+    "studio_count": "스튜디오 개수",
+    "containing_group": "그룹 포함",
+    "include_sub_group_content": "서브그룹 컨텐츠 포함",
+    "sub_group_count": "서브그룹 개수",
+    "sub_group_order": "서브그룹 순서",
+    "sub_groups": "서브그룹들",
+    "sub_group": "서브그룹",
+    "sub_group_of": "{parent}의 서브그룹",
+    "include_sub_studio_content": "서브스튜디오 컨텐츠 포함",
+    "include_sub_tag_content": "서브태그 컨텐츠 포함"
 }
