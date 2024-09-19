@@ -247,7 +247,7 @@ func (m *schema45Migrator) insertImage(data []byte, id int, destTable string, de
 func (m *schema45Migrator) dropTable(ctx context.Context, table string) error {
 	if err := m.withTxn(ctx, func(tx *sqlx.Tx) error {
 		logger.Debugf("Dropping %s", table)
-		_, err := m.db.Exec(fmt.Sprintf("DROP TABLE `%s`", table))
+		_, err := tx.Exec(fmt.Sprintf("DROP TABLE `%s`", table))
 		return err
 	}); err != nil {
 		return err
