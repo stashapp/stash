@@ -238,6 +238,12 @@ func (db *Database) open(disableForeignKeys bool, writable bool) (*sqlx.DB, erro
 		url += "&_fk=true"
 	}
 
+	if writable {
+		url += "&_txlock=immediate"
+	} else {
+		url += "&mode=ro"
+	}
+
 	conn, err := sqlx.Open(sqlite3Driver, url)
 	if err != nil {
 		return nil, fmt.Errorf("db.Open(): %w", err)
