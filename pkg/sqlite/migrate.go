@@ -7,6 +7,7 @@ import (
 	"github.com/golang-migrate/migrate/v4"
 	sqlite3mig "github.com/golang-migrate/migrate/v4/database/sqlite3"
 	"github.com/golang-migrate/migrate/v4/source/iofs"
+	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/logger"
 )
 
@@ -15,8 +16,9 @@ func (db *Database) needsMigration() bool {
 }
 
 type Migrator struct {
-	db *Database
-	m  *migrate.Migrate
+	db   *Database
+	conn *sqlx.DB
+	m    *migrate.Migrate
 }
 
 func NewMigrator(db *Database) (*Migrator, error) {
@@ -24,7 +26,18 @@ func NewMigrator(db *Database) (*Migrator, error) {
 		db: db,
 	}
 
+	const disableForeignKeys = true
+	const writable = true
 	var err error
+	m.conn, err = m.db.open(disableForeignKeys, writable)
+	if err != nil {
+		return nil, err
+	}
+
+	m.conn.SetMaxOpenConns(maxReadConnections)
+	m.conn.SetMaxIdleConns(maxReadConnections)
+	m.conn.SetConnMaxIdleTime(dbConnTimeout)
+
 	m.m, err = m.getMigrate()
 	return m, err
 }
@@ -51,13 +64,7 @@ func (m *Migrator) getMigrate() (*migrate.Migrate, error) {
 		return nil, err
 	}
 
-	const disableForeignKeys = true
-	conn, err := m.db.open(disableForeignKeys)
-	if err != nil {
-		return nil, err
-	}
-
-	driver, err := sqlite3mig.WithInstance(conn.DB, &sqlite3mig.Config{})
+	driver, err := sqlite3mig.WithInstance(m.conn.DB, &sqlite3mig.Config{})
 	if err != nil {
 		return nil, err
 	}
@@ -110,14 +117,7 @@ func (m *Migrator) runCustomMigrations(ctx context.Context, fns []customMigratio
 }
 
 func (m *Migrator) runCustomMigration(ctx context.Context, fn customMigrationFunc) error {
-	const disableForeignKeys = false
-	d, err := m.db.open(disableForeignKeys)
-	if err != nil {
-		return err
-	}
-
-	defer d.Close()
-	if err := fn(ctx, d); err != nil {
+	if err := fn(ctx, m.conn); err != nil {
 		return err
 	}
 
@@ -136,14 +136,7 @@ func (db *Database) getDatabaseSchemaVersion() (uint, error) {
 }
 
 func (db *Database) ReInitialise() error {
-	const disableForeignKeys = false
-	var err error
-	db.db, err = db.open(disableForeignKeys)
-	if err != nil {
-		return fmt.Errorf("re-initializing the database: %w", err)
-	}
-
-	return nil
+	return db.initialise()
 }
 
 // RunAllMigrations runs all migrations to bring the database up to the current schema version
@@ -169,19 +162,6 @@ func (db *Database) RunAllMigrations() error {
 				return err
 			}
 		}
-	}
-
-	// re-initialise the database
-	const disableForeignKeys = false
-	db.db, err = db.open(disableForeignKeys)
-	if err != nil {
-		return fmt.Errorf("re-initializing the database: %w", err)
-	}
-
-	// optimize database after migration
-	err = db.Optimise(ctx)
-	if err != nil {
-		logger.Warnf("error while performing post-migration optimisation: %v", err)
 	}
 
 	return nil
