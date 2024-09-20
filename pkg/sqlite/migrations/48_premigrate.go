@@ -52,7 +52,7 @@ func (m *schema48PreMigrator) validateScrapedItems(ctx context.Context) error {
 func (m *schema48PreMigrator) fixStudioNames(ctx context.Context) error {
 	// First remove NULL names
 	if err := m.withTxn(ctx, func(tx *sqlx.Tx) error {
-		_, err := m.db.Exec("UPDATE studios SET name = 'NULL' WHERE name IS NULL")
+		_, err := tx.Exec("UPDATE studios SET name = 'NULL' WHERE name IS NULL")
 		return err
 	}); err != nil {
 		return err
@@ -64,7 +64,7 @@ func (m *schema48PreMigrator) fixStudioNames(ctx context.Context) error {
 
 	// collect names
 	if err := m.withTxn(ctx, func(tx *sqlx.Tx) error {
-		rows, err := m.db.Query("SELECT id, name FROM studios ORDER BY name, id")
+		rows, err := tx.Query("SELECT id, name FROM studios ORDER BY name, id")
 		if err != nil {
 			return err
 		}
@@ -114,7 +114,7 @@ func (m *schema48PreMigrator) fixStudioNames(ctx context.Context) error {
 
 					var count int
 
-					row := m.db.QueryRowx("SELECT COUNT(*) FROM studios WHERE name = ?", newName)
+					row := tx.QueryRowx("SELECT COUNT(*) FROM studios WHERE name = ?", newName)
 					err := row.Scan(&count)
 					if err != nil {
 						return err
@@ -131,7 +131,7 @@ func (m *schema48PreMigrator) fixStudioNames(ctx context.Context) error {
 				}
 
 				logger.Infof("Renaming duplicate studio id %d to %s", id, newName)
-				_, err := m.db.Exec("UPDATE studios SET name = ? WHERE id = ?", newName, id)
+				_, err := tx.Exec("UPDATE studios SET name = ? WHERE id = ?", newName, id)
 				if err != nil {
 					return err
 				}

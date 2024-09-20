@@ -28,7 +28,7 @@ type Anonymiser struct {
 }
 
 func NewAnonymiser(db *Database, outPath string) (*Anonymiser, error) {
-	if _, err := db.db.Exec(fmt.Sprintf(`VACUUM INTO "%s"`, outPath)); err != nil {
+	if _, err := db.writeDB.Exec(fmt.Sprintf(`VACUUM INTO "%s"`, outPath)); err != nil {
 		return nil, fmt.Errorf("vacuuming into %s: %w", outPath, err)
 	}
 
@@ -75,12 +75,12 @@ func (db *Anonymiser) Anonymise(ctx context.Context) error {
 }
 
 func (db *Anonymiser) truncateColumn(tableName string, column string) error {
-	_, err := db.db.Exec("UPDATE " + tableName + " SET " + column + " = NULL")
+	_, err := db.writeDB.Exec("UPDATE " + tableName + " SET " + column + " = NULL")
 	return err
 }
 
 func (db *Anonymiser) truncateTable(tableName string) error {
-	_, err := db.db.Exec("DELETE FROM " + tableName)
+	_, err := db.writeDB.Exec("DELETE FROM " + tableName)
 	return err
 }
 

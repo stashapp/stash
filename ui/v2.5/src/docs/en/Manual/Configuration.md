@@ -149,6 +149,12 @@ These options are typically not exposed in the UI and must be changed manually i
 | `no_proxy` | A list of domains for which the proxy must not be used. Default is all local LAN: localhost,127.0.0.1,192.168.0.0/16,10.0.0.0/8,172.16.0.0/12 |
 | `sequential_scanning` | Modifies behaviour of the scanning functionality to generate support files (previews/sprites/phash) at the same time as fingerprinting/screenshotting. Useful when scanning cached remote files. |
 
+The following environment variables are also supported:
+
+| Environment variable | Remarks |
+|----------------------|---------|
+| `STASH_SQLITE_CACHE_SIZE` | Sets the SQLite cache size. See https://www.sqlite.org/pragma.html#pragma_cache_size. Default is `-2000` which is 2MB. |
+
 ### Custom served folders
 
 Custom served folders are served when the server handles a request with the `/custom` URL prefix. The following is an example configuration:
