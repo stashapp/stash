@@ -1128,9 +1128,12 @@ func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindF
 
 	direction := findFilter.GetDirection()
 	switch sort {
-	case "movie_scene_number", "group_scene_number":
+	case "movie_scene_number":
 		query.join(groupsScenesTable, "", "scenes.id = groups_scenes.scene_id")
 		query.sortAndPagination += getSort("scene_index", direction, groupsScenesTable)
+	case "group_scene_number":
+		query.join(groupsScenesTable, "scene_group", "scenes.id = scene_group.scene_id")
+		query.sortAndPagination += getSort("scene_index", direction, "scene_group")
 	case "tag_count":
 		query.sortAndPagination += getCountSort(sceneTable, scenesTagsTable, sceneIDColumn, direction)
 	case "performer_count":
