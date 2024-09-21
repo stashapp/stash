@@ -993,7 +993,15 @@
       "medium": "Medium"
     },
     "search_accuracy_label": "Search Accuracy",
+    "select_all_but_specified_codec": {
+      "title": "Preferred video codec",
+      "label": "Select every file in each group, except for the file with the preferred codec",
+      "av1": "av1",
+      "hevc": "hevc",
+      "h264": "h264"
+    },
     "select_all_but_largest_file": "Select every file in each duplicated group, except the largest file",
+    "select_all_but_smallest_file": "Select every file in each duplicated group, except the smallest file",
     "select_all_but_largest_resolution": "Select every file in each duplicated group, except the file with highest resolution",
     "select_none": "Select None",
     "select_oldest": "Select the oldest file in the duplicate group",
