@@ -153,9 +153,9 @@ Returns `void`.
 - `Icon`
 - `ImageDetailPanel`
 - `ModalSetting`
-- `MovieIDSelect`
-- `MovieSelect`
-- `MovieSelect.sort`
+- `GroupIDSelect`
+- `GroupSelect`
+- `GroupSelect.sort`
 - `NumberSetting`
 - `PerformerDetailsPanel`
 - `PerformerDetailsPanel.DetailGroup`
