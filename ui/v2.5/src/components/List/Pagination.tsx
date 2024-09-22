@@ -12,6 +12,7 @@ import { FormattedMessage, FormattedNumber, useIntl } from "react-intl";
 import useFocus from "src/utils/focus";
 import { Icon } from "../Shared/Icon";
 import { faCheck, faChevronDown } from "@fortawesome/free-solid-svg-icons";
+import { useStopWheelScroll } from "src/utils/form";
 
 const PageCount: React.FC<{
   totalPages: number;
@@ -31,6 +32,8 @@ const PageCount: React.FC<{
       }, 0);
     }
   }, [showSelectPage, pageFocus]);
+
+  useStopWheelScroll(pageInput);
 
   const pageOptions = useMemo(() => {
     const maxPagesToShow = 10;
@@ -98,6 +101,7 @@ const PageCount: React.FC<{
         <Popover id="select_page_popover">
           <Form inline>
             <InputGroup>
+              {/* can't use NumberField because of the ref */}
               <Form.Control
                 type="number"
                 min={1}

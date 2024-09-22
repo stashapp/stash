@@ -25,6 +25,7 @@ import { keyboardClickHandler } from "src/utils/keyboard";
 import { useDebounce } from "src/hooks/debounce";
 import useFocus from "src/utils/focus";
 import ScreenUtils from "src/utils/screen";
+import { NumberField } from "src/utils/form";
 
 interface ISelectedItem {
   item: ILabeledId;
@@ -361,9 +362,8 @@ export const HierarchicalObjectsFilter = <
 
       {criterion.value.depth !== 0 && (
         <Form.Group>
-          <Form.Control
+          <NumberField
             className="btn-secondary"
-            type="number"
             placeholder={intl.formatMessage(messages.studio_depth)}
             onChange={(e) =>
               onDepthChanged(e.target.value ? parseInt(e.target.value, 10) : -1)
