@@ -4,6 +4,7 @@ import { defineMessages, MessageDescriptor, useIntl } from "react-intl";
 import { FilterSelect, SelectObject } from "src/components/Shared/Select";
 import { Criterion } from "src/models/list-filter/criteria/criterion";
 import { IHierarchicalLabelValue } from "src/models/list-filter/types";
+import { NumberField } from "src/utils/form";
 
 interface IHierarchicalLabelValueFilterProps {
   criterion: Criterion<IHierarchicalLabelValue>;
@@ -104,9 +105,8 @@ export const HierarchicalLabelValueFilter: React.FC<
 
       {criterion.value.depth !== 0 && (
         <Form.Group>
-          <Form.Control
+          <NumberField
             className="btn-secondary"
-            type="number"
             placeholder={intl.formatMessage(messages.studio_depth)}
             onChange={(e) =>
               onDepthChanged(e.target.value ? parseInt(e.target.value, 10) : -1)
