@@ -54,13 +54,13 @@ function sortTagsByRelevance(input: string, tags: FindTagsResult) {
 
 const tagSelectSort = PatchFunction("TagSelect.sort", sortTagsByRelevance);
 
-const _TagSelect: React.FC<
-  IFilterProps &
-    IFilterValueProps<Tag> & {
-      hoverPlacement?: Placement;
-      excludeIds?: string[];
-    }
-> = (props) => {
+export type TagSelectProps = IFilterProps &
+  IFilterValueProps<Tag> & {
+    hoverPlacement?: Placement;
+    excludeIds?: string[];
+  };
+
+const _TagSelect: React.FC<TagSelectProps> = (props) => {
   const [createTag] = useTagCreate();
 
   const { configuration } = React.useContext(ConfigurationContext);
