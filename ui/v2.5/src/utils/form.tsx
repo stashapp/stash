@@ -137,14 +137,16 @@ export function formikUtils<V extends FormikValues>(
         />
       );
     } else if (type === "number") {
-      <NumberField
-        type={type}
-        className="text-input"
-        placeholder={placeholder}
-        {...formikProps}
-        value={value}
-        isInvalid={!!error}
-      />;
+      control = (
+        <NumberField
+          type={type}
+          className="text-input"
+          placeholder={placeholder}
+          {...formikProps}
+          value={value}
+          isInvalid={!!error}
+        />
+      );
     } else {
       control = (
         <Form.Control
