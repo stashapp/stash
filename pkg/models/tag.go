@@ -22,6 +22,8 @@ type TagFilterType struct {
 	PerformerCount *IntCriterionInput `json:"performer_count"`
 	// Filter by number of studios with this tag
 	StudioCount *IntCriterionInput `json:"studio_count"`
+	// Filter by number of groups with this tag
+	GroupCount *IntCriterionInput `json:"group_count"`
 	// Filter by number of movies with this tag
 	MovieCount *IntCriterionInput `json:"movie_count"`
 	// Filter by number of markers with this tag

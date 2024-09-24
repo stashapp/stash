@@ -42,22 +42,22 @@ func TestMarkerFindBySceneMarkerID(t *testing.T) {
 	})
 }
 
-func TestTagFindByMovieID(t *testing.T) {
+func TestTagFindByGroupID(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
 		tqb := db.Tag
 
-		movieID := movieIDs[movieIdxWithTag]
+		groupID := groupIDs[groupIdxWithTag]
 
-		tags, err := tqb.FindByMovieID(ctx, movieID)
+		tags, err := tqb.FindByGroupID(ctx, groupID)
 
 		if err != nil {
 			t.Errorf("Error finding tags: %s", err.Error())
 		}
 
 		assert.Len(t, tags, 1)
-		assert.Equal(t, tagIDs[tagIdxWithMovie], tags[0].ID)
+		assert.Equal(t, tagIDs[tagIdxWithGroup], tags[0].ID)
 
-		tags, err = tqb.FindByMovieID(ctx, 0)
+		tags, err = tqb.FindByGroupID(ctx, 0)
 
 		if err != nil {
 			t.Errorf("Error finding tags: %s", err.Error())
@@ -236,7 +236,7 @@ func TestTagQuerySort(t *testing.T) {
 
 		sortBy = "movies_count"
 		tags = queryTags(ctx, t, sqb, nil, findFilter)
-		assert.Equal(tagIDs[tagIdx1WithMovie], tags[0].ID)
+		assert.Equal(tagIDs[tagIdx1WithGroup], tags[0].ID)
 
 		return nil
 	})
@@ -712,7 +712,7 @@ func TestTagQueryParent(t *testing.T) {
 		assert.Len(t, tags, 1)
 
 		// ensure id is correct
-		assert.Equal(t, sceneIDs[tagIdxWithParentTag], tags[0].ID)
+		assert.Equal(t, tagIDs[tagIdxWithParentTag], tags[0].ID)
 
 		tagCriterion.Modifier = models.CriterionModifierExcludes
 

@@ -133,3 +133,68 @@ func applyUpdate[T comparable](values []T, mode RelationshipUpdateMode, existing
 
 	return nil
 }
+
+type UpdateGroupDescriptions struct {
+	Groups []GroupIDDescription   `json:"groups"`
+	Mode   RelationshipUpdateMode `json:"mode"`
+}
+
+// Apply applies the update to a list of existing ids, returning the result.
+func (u *UpdateGroupDescriptions) Apply(existing []GroupIDDescription) []GroupIDDescription {
+	if u == nil {
+		return existing
+	}
+
+	switch u.Mode {
+	case RelationshipUpdateModeAdd:
+		return u.applyAdd(existing)
+	case RelationshipUpdateModeRemove:
+		return u.applyRemove(existing)
+	case RelationshipUpdateModeSet:
+		return u.Groups
+	}
+
+	return nil
+}
+
+func (u *UpdateGroupDescriptions) applyAdd(existing []GroupIDDescription) []GroupIDDescription {
+	// overwrite any existing values with the same id
+	ret := append([]GroupIDDescription{}, existing...)
+	for _, v := range u.Groups {
+		found := false
+		for i, vv := range ret {
+			if vv.GroupID == v.GroupID {
+				ret[i] = v
+				found = true
+				break
+			}
+		}
+
+		if !found {
+			ret = append(ret, v)
+		}
+	}
+
+	return ret
+}
+
+func (u *UpdateGroupDescriptions) applyRemove(existing []GroupIDDescription) []GroupIDDescription {
+	// remove any existing values with the same id
+	var ret []GroupIDDescription
+	for _, v := range existing {
+		found := false
+		for _, vv := range u.Groups {
+			if vv.GroupID == v.GroupID {
+				found = true
+				break
+			}
+		}
+
+		// if not found in the remove list, keep it
+		if !found {
+			ret = append(ret, v)
+		}
+	}
+
+	return ret
+}

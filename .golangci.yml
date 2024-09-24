@@ -15,11 +15,11 @@ linters:
     - unused
     # Linters added by the stash project.
     # - contextcheck
+    - copyloopvar
     - dogsled
     - errchkjson
     - errorlint
     # - exhaustive
-    - exportloopref
     - gocritic
     # - goerr113
     - gofmt

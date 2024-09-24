@@ -248,7 +248,7 @@ The following object types are supported:
 * `SceneMarker`
 * `Image`
 * `Gallery`
-* `Movie`
+* `Group`
 * `Performer`
 * `Studio`
 * `Tag`
@@ -296,7 +296,7 @@ For example, here is the `args` values for a Scene update operation:
             "studio_id":null,
             "gallery_ids":null,
             "performer_ids":null,
-            "movies":null,
+            "groups":null,
             "tag_ids":["21"],
             "cover_image":null,
             "stash_ids":null

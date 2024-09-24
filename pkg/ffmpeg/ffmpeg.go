@@ -145,6 +145,8 @@ func ResolveFFMpeg(path string, fallbackPath string) string {
 	return ret
 }
 
+var version_re = regexp.MustCompile(`ffmpeg version n?((\d+)\.(\d+)(?:\.(\d+))?)`)
+
 func (f *FFMpeg) getVersion() error {
 	var args Args
 	args = append(args, "-version")
@@ -158,7 +160,6 @@ func (f *FFMpeg) getVersion() error {
 		return err
 	}
 
-	version_re := regexp.MustCompile(`ffmpeg version ((\d+)\.(\d+)(?:\.(\d+))?)`)
 	stdoutStr := stdout.String()
 	match := version_re.FindStringSubmatchIndex(stdoutStr)
 	if match == nil {
@@ -183,20 +184,20 @@ func (f *FFMpeg) getVersion() error {
 	if i, err := strconv.Atoi(patchS); err == nil {
 		f.version.patch = i
 	}
-	logger.Debugf("FFMpeg version %d.%d.%d detected", f.version.major, f.version.minor, f.version.patch)
+	logger.Debugf("FFMpeg version %s detected", f.version.String())
 
 	return nil
 }
 
 // FFMpeg version params
-type FFMpegVersion struct {
+type Version struct {
 	major int
 	minor int
 	patch int
 }
 
 // Gteq returns true if the version is greater than or equal to the other version.
-func (v FFMpegVersion) Gteq(other FFMpegVersion) bool {
+func (v Version) Gteq(other Version) bool {
 	if v.major > other.major {
 		return true
 	}
@@ -209,10 +210,14 @@ func (v FFMpegVersion) Gteq(other FFMpegVersion) bool {
 	return false
 }
 
+func (v Version) String() string {
+	return fmt.Sprintf("%d.%d.%d", v.major, v.minor, v.patch)
+}
+
 // FFMpeg provides an interface to ffmpeg.
 type FFMpeg struct {
 	ffmpeg         string
-	version        FFMpegVersion
+	version        Version
 	hwCodecSupport []VideoCodec
 }
 

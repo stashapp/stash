@@ -8,6 +8,7 @@ import {
   SortDirectionEnum,
 } from "./generated-graphql";
 import { View } from "src/components/List/views";
+import { ITaggerConfig } from "src/components/Tagger/constants";
 
 // NOTE: double capitals aren't converted correctly in the backend
 
@@ -97,6 +98,8 @@ export interface IUIConfig {
   taskDefaults?: Record<string, {}>;
 
   defaultFilters?: DefaultFilters;
+
+  taggerConfig?: ITaggerConfig;
 }
 
 export function getFrontPageContent(
@@ -143,7 +146,7 @@ export function generateDefaultFrontPageContent(intl: IntlShape) {
   return [
     recentlyReleased(intl, FilterMode.Scenes, "scenes"),
     recentlyAdded(intl, FilterMode.Studios, "studios"),
-    recentlyReleased(intl, FilterMode.Movies, "groups"),
+    recentlyReleased(intl, FilterMode.Groups, "groups"),
     recentlyAdded(intl, FilterMode.Performers, "performers"),
     recentlyReleased(intl, FilterMode.Galleries, "galleries"),
   ];
@@ -156,8 +159,8 @@ export function generatePremadeFrontPageContent(intl: IntlShape) {
     recentlyReleased(intl, FilterMode.Galleries, "galleries"),
     recentlyAdded(intl, FilterMode.Galleries, "galleries"),
     recentlyAdded(intl, FilterMode.Images, "images"),
-    recentlyReleased(intl, FilterMode.Movies, "groups"),
-    recentlyAdded(intl, FilterMode.Movies, "groups"),
+    recentlyReleased(intl, FilterMode.Groups, "groups"),
+    recentlyAdded(intl, FilterMode.Groups, "groups"),
     recentlyAdded(intl, FilterMode.Studios, "studios"),
     recentlyAdded(intl, FilterMode.Performers, "performers"),
   ];

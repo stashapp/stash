@@ -54,7 +54,7 @@ const (
 )
 
 const (
-	sceneIdxWithMovie = iota
+	sceneIdxWithGroup = iota
 	sceneIdxWithGallery
 	sceneIdxWithPerformer
 	sceneIdx1WithPerformer
@@ -78,6 +78,7 @@ const (
 	sceneIdxWithGrandChildStudio
 	sceneIdxMissingPhash
 	sceneIdxWithPerformerParentTag
+	sceneIdxWithGroupWithParent
 	// new indexes above
 	lastSceneIdx
 
@@ -148,17 +149,23 @@ const (
 )
 
 const (
-	movieIdxWithScene = iota
-	movieIdxWithStudio
-	movieIdxWithTag
-	movieIdxWithTwoTags
-	movieIdxWithThreeTags
-	// movies with dup names start from the end
-	// create 7 more basic movies (can remove this if we add more indexes)
-	movieIdxWithDupName = movieIdxWithStudio + 7
+	groupIdxWithScene = iota
+	groupIdxWithStudio
+	groupIdxWithTag
+	groupIdxWithTwoTags
+	groupIdxWithThreeTags
+	groupIdxWithGrandChild
+	groupIdxWithChild
+	groupIdxWithParentAndChild
+	groupIdxWithParent
+	groupIdxWithGrandParent
+	groupIdxWithParentAndScene
+	groupIdxWithChildWithScene
+	// groups with dup names start from the end
+	groupIdxWithDupName
 
-	moviesNameCase   = movieIdxWithDupName
-	moviesNameNoCase = 1
+	groupsNameCase   = groupIdxWithDupName
+	groupsNameNoCase = 1
 )
 
 const (
@@ -220,10 +227,10 @@ const (
 	tagIdxWithParentAndChild
 	tagIdxWithGrandParent
 	tagIdx2WithMarkers
-	tagIdxWithMovie
-	tagIdx1WithMovie
-	tagIdx2WithMovie
-	tagIdx3WithMovie
+	tagIdxWithGroup
+	tagIdx1WithGroup
+	tagIdx2WithGroup
+	tagIdx3WithGroup
 	// new indexes above
 	// tags with dup names start from the end
 	tagIdx1WithDupName
@@ -238,7 +245,7 @@ const (
 const (
 	studioIdxWithScene = iota
 	studioIdxWithTwoScenes
-	studioIdxWithMovie
+	studioIdxWithGroup
 	studioIdxWithChildStudio
 	studioIdxWithParentStudio
 	studioIdxWithImage
@@ -278,9 +285,7 @@ const (
 )
 
 const (
-	savedFilterIdxDefaultScene = iota
-	savedFilterIdxDefaultImage
-	savedFilterIdxScene
+	savedFilterIdxScene = iota
 	savedFilterIdxImage
 
 	// new indexes above
@@ -307,7 +312,7 @@ var (
 	sceneIDs       []int
 	imageIDs       []int
 	performerIDs   []int
-	movieIDs       []int
+	groupIDs       []int
 	galleryIDs     []int
 	tagIDs         []int
 	studioIDs      []int
@@ -318,7 +323,7 @@ var (
 
 	tagNames       []string
 	studioNames    []string
-	movieNames     []string
+	groupNames     []string
 	performerNames []string
 )
 
@@ -391,8 +396,9 @@ var (
 		sceneIdxWithGallery: {galleryIdxWithScene},
 	}
 
-	sceneMovies = linkMap{
-		sceneIdxWithMovie: {movieIdxWithScene},
+	sceneGroups = linkMap{
+		sceneIdxWithGroup:           {groupIdxWithScene},
+		sceneIdxWithGroupWithParent: {groupIdxWithParentAndScene},
 	}
 
 	sceneStudios = map[int]int{
@@ -498,14 +504,14 @@ var (
 )
 
 var (
-	movieStudioLinks = [][2]int{
-		{movieIdxWithStudio, studioIdxWithMovie},
+	groupStudioLinks = [][2]int{
+		{groupIdxWithStudio, studioIdxWithGroup},
 	}
 
-	movieTags = linkMap{
-		movieIdxWithTag:       {tagIdxWithMovie},
-		movieIdxWithTwoTags:   {tagIdx1WithMovie, tagIdx2WithMovie},
-		movieIdxWithThreeTags: {tagIdx1WithMovie, tagIdx2WithMovie, tagIdx3WithMovie},
+	groupTags = linkMap{
+		groupIdxWithTag:       {tagIdxWithGroup},
+		groupIdxWithTwoTags:   {tagIdx1WithGroup, tagIdx2WithGroup},
+		groupIdxWithThreeTags: {tagIdx1WithGroup, tagIdx2WithGroup, tagIdx3WithGroup},
 	}
 )
 
@@ -543,13 +549,29 @@ var (
 	}
 )
 
+var (
+	groupParentLinks = [][2]int{
+		{groupIdxWithChild, groupIdxWithParent},
+		{groupIdxWithGrandChild, groupIdxWithParentAndChild},
+		{groupIdxWithParentAndChild, groupIdxWithGrandParent},
+		{groupIdxWithChildWithScene, groupIdxWithParentAndScene},
+	}
+)
+
 func indexesToIDs(ids []int, indexes []int) []int {
 	ret := make([]int, len(indexes))
 	for i, idx := range indexes {
-		ret[i] = ids[idx]
+		ret[i] = indexToID(ids, idx)
 	}
 
 	return ret
+}
+
+func indexToID(ids []int, idx int) int {
+	if idx < 0 {
+		return invalidID
+	}
+	return ids[idx]
 }
 
 func indexFromID(ids []int, id int) int {
@@ -655,8 +677,8 @@ func populateDB() error {
 			return fmt.Errorf("error creating tags: %s", err.Error())
 		}
 
-		if err := createMovies(ctx, db.Movie, moviesNameCase, moviesNameNoCase); err != nil {
-			return fmt.Errorf("error creating movies: %s", err.Error())
+		if err := createGroups(ctx, db.Group, groupsNameCase, groupsNameNoCase); err != nil {
+			return fmt.Errorf("error creating groups: %s", err.Error())
 		}
 
 		if err := createPerformers(ctx, performersNameCase, performersNameNoCase); err != nil {
@@ -687,8 +709,8 @@ func populateDB() error {
 			return fmt.Errorf("error creating saved filters: %s", err.Error())
 		}
 
-		if err := linkMovieStudios(ctx, db.Movie); err != nil {
-			return fmt.Errorf("error linking movie studios: %s", err.Error())
+		if err := linkGroupStudios(ctx, db.Group); err != nil {
+			return fmt.Errorf("error linking group studios: %s", err.Error())
 		}
 
 		if err := linkStudiosParent(ctx); err != nil {
@@ -696,6 +718,10 @@ func populateDB() error {
 		}
 
 		if err := linkTagsParent(ctx, db.Tag); err != nil {
+			return fmt.Errorf("error linking tags parent: %s", err.Error())
+		}
+
+		if err := linkGroupsParent(ctx, db.Group); err != nil {
 			return fmt.Errorf("error linking tags parent: %s", err.Error())
 		}
 
@@ -1071,12 +1097,12 @@ func makeScene(i int) *models.Scene {
 	pids := indexesToIDs(performerIDs, scenePerformers[i])
 	tids := indexesToIDs(tagIDs, sceneTags[i])
 
-	mids := indexesToIDs(movieIDs, sceneMovies[i])
+	mids := indexesToIDs(groupIDs, sceneGroups[i])
 
-	movies := make([]models.MoviesScenes, len(mids))
+	groups := make([]models.GroupsScenes, len(mids))
 	for i, m := range mids {
-		movies[i] = models.MoviesScenes{
-			MovieID: m,
+		groups[i] = models.GroupsScenes{
+			GroupID: m,
 		}
 	}
 
@@ -1094,7 +1120,7 @@ func makeScene(i int) *models.Scene {
 		GalleryIDs:   models.NewRelatedIDs(gids),
 		PerformerIDs: models.NewRelatedIDs(pids),
 		TagIDs:       models.NewRelatedIDs(tids),
-		Movies:       models.NewRelatedMovies(movies),
+		Groups:       models.NewRelatedGroups(groups),
 		StashIDs: models.NewRelatedStashIDs([]models.StashID{
 			sceneStashID(i),
 		}),
@@ -1322,18 +1348,18 @@ func createGalleries(ctx context.Context, n int) error {
 	return nil
 }
 
-func getMovieStringValue(index int, field string) string {
-	return getPrefixedStringValue("movie", index, field)
+func getGroupStringValue(index int, field string) string {
+	return getPrefixedStringValue("group", index, field)
 }
 
-func getMovieNullStringValue(index int, field string) string {
-	ret := getPrefixedNullStringValue("movie", index, field)
+func getGroupNullStringValue(index int, field string) string {
+	ret := getPrefixedNullStringValue("group", index, field)
 
 	return ret.String
 }
 
-func getMovieEmptyString(index int, field string) string {
-	v := getPrefixedNullStringValue("movie", index, field)
+func getGroupEmptyString(index int, field string) string {
+	v := getPrefixedNullStringValue("group", index, field)
 	if !v.Valid {
 		return ""
 	}
@@ -1341,8 +1367,8 @@ func getMovieEmptyString(index int, field string) string {
 	return v.String
 }
 
-// createMoviees creates n movies with plain Name and o movies with camel cased NaMe included
-func createMovies(ctx context.Context, mqb models.MovieReaderWriter, n int, o int) error {
+// createGroups creates n groups with plain Name and o groups with camel cased NaMe included
+func createGroups(ctx context.Context, mqb models.GroupReaderWriter, n int, o int) error {
 	const namePlain = "Name"
 	const nameNoCase = "NaMe"
 
@@ -1350,31 +1376,31 @@ func createMovies(ctx context.Context, mqb models.MovieReaderWriter, n int, o in
 		index := i
 		name := namePlain
 
-		tids := indexesToIDs(tagIDs, movieTags[i])
+		tids := indexesToIDs(tagIDs, groupTags[i])
 
 		if i >= n { // i<n tags get normal names
-			name = nameNoCase       // i>=n movies get dup names if case is not checked
+			name = nameNoCase       // i>=n groups get dup names if case is not checked
 			index = n + o - (i + 1) // for the name to be the same the number (index) must be the same also
 		} // so count backwards to 0 as needed
-		// movies [ i ] and [ n + o - i - 1  ] should have similar names with only the Name!=NaMe part different
+		// groups [ i ] and [ n + o - i - 1  ] should have similar names with only the Name!=NaMe part different
 
-		name = getMovieStringValue(index, name)
-		movie := models.Movie{
+		name = getGroupStringValue(index, name)
+		group := models.Group{
 			Name: name,
 			URLs: models.NewRelatedStrings([]string{
-				getMovieEmptyString(i, urlField),
+				getGroupEmptyString(i, urlField),
 			}),
 			TagIDs: models.NewRelatedIDs(tids),
 		}
 
-		err := mqb.Create(ctx, &movie)
+		err := mqb.Create(ctx, &group)
 
 		if err != nil {
-			return fmt.Errorf("Error creating movie [%d] %v+: %s", i, movie, err.Error())
+			return fmt.Errorf("Error creating group [%d] %v+: %s", i, group, err.Error())
 		}
 
-		movieIDs = append(movieIDs, movie.ID)
-		movieNames = append(movieNames, movie.Name)
+		groupIDs = append(groupIDs, group.ID)
+		groupNames = append(groupNames, group.Name)
 	}
 
 	return nil
@@ -1711,7 +1737,7 @@ func createStudios(ctx context.Context, n int, o int) error {
 			TagIDs:        models.NewRelatedIDs(tids),
 		}
 		// only add aliases for some scenes
-		if i == studioIdxWithMovie || i%5 == 0 {
+		if i == studioIdxWithGroup || i%5 == 0 {
 			alias := getStudioStringValue(i, "Alias")
 			studio.Aliases = models.NewRelatedStrings([]string{alias})
 		}
@@ -1777,9 +1803,9 @@ func createChapter(ctx context.Context, mqb models.GalleryChapterReaderWriter, c
 
 func getSavedFilterMode(index int) models.FilterMode {
 	switch index {
-	case savedFilterIdxScene, savedFilterIdxDefaultScene:
+	case savedFilterIdxScene:
 		return models.FilterModeScenes
-	case savedFilterIdxImage, savedFilterIdxDefaultImage:
+	case savedFilterIdxImage:
 		return models.FilterModeImages
 	default:
 		return models.FilterModeScenes
@@ -1787,11 +1813,6 @@ func getSavedFilterMode(index int) models.FilterMode {
 }
 
 func getSavedFilterName(index int) string {
-	if index <= savedFilterIdxDefaultImage {
-		// empty string for default filters
-		return ""
-	}
-
 	if index <= savedFilterIdxImage {
 		// use the same name for the first two - should be possible
 		return firstSavedFilterName
@@ -1849,12 +1870,12 @@ func doLinks(links [][2]int, fn func(idx1, idx2 int) error) error {
 	return nil
 }
 
-func linkMovieStudios(ctx context.Context, mqb models.MovieWriter) error {
-	return doLinks(movieStudioLinks, func(movieIndex, studioIndex int) error {
-		movie := models.MoviePartial{
+func linkGroupStudios(ctx context.Context, mqb models.GroupWriter) error {
+	return doLinks(groupStudioLinks, func(groupIndex, studioIndex int) error {
+		group := models.GroupPartial{
 			StudioID: models.NewOptionalInt(studioIDs[studioIndex]),
 		}
-		_, err := mqb.UpdatePartial(ctx, movieIDs[movieIndex], movie)
+		_, err := mqb.UpdatePartial(ctx, groupIDs[groupIndex], group)
 
 		return err
 	})
@@ -1889,6 +1910,24 @@ func linkTagsParent(ctx context.Context, qb models.TagReaderWriter) error {
 		parentIDs = append(parentIDs, tagIDs[parentIndex])
 
 		return qb.UpdateParentTags(ctx, tagID, parentIDs)
+	})
+}
+
+func linkGroupsParent(ctx context.Context, qb models.GroupReaderWriter) error {
+	return doLinks(groupParentLinks, func(parentIndex, childIndex int) error {
+		groupID := groupIDs[childIndex]
+
+		p := models.GroupPartial{
+			ContainingGroups: &models.UpdateGroupDescriptions{
+				Groups: []models.GroupIDDescription{
+					{GroupID: groupIDs[parentIndex]},
+				},
+				Mode: models.RelationshipUpdateModeAdd,
+			},
+		}
+
+		_, err := qb.UpdatePartial(ctx, groupID, p)
+		return err
 	})
 }
 

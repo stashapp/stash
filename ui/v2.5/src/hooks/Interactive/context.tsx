@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useContext, useEffect, useState } from "react";
 import { ConfigurationContext } from "../Config";
 import { useLocalForage } from "../LocalForage";
 import { Interactive as InteractiveAPI } from "./interactive";
@@ -208,4 +208,7 @@ export const InteractiveProvider: React.FC = ({ children }) => {
   );
 };
 
+export const useInteractive = () => {
+  return useContext(InteractiveContext);
+};
 export default InteractiveProvider;

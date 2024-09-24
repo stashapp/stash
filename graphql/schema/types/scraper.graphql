@@ -11,6 +11,7 @@ enum ScrapeType {
 enum ScrapeContentType {
   GALLERY
   MOVIE
+  GROUP
   PERFORMER
   SCENE
 }
@@ -22,6 +23,7 @@ union ScrapedContent =
   | ScrapedScene
   | ScrapedGallery
   | ScrapedMovie
+  | ScrapedGroup
   | ScrapedPerformer
 
 type ScraperSpec {
@@ -40,7 +42,9 @@ type Scraper {
   "Details for gallery scraper"
   gallery: ScraperSpec
   "Details for movie scraper"
-  movie: ScraperSpec
+  movie: ScraperSpec @deprecated(reason: "use group")
+  "Details for group scraper"
+  group: ScraperSpec
 }
 
 type ScrapedStudio {
@@ -76,7 +80,8 @@ type ScrapedScene {
   studio: ScrapedStudio
   tags: [ScrapedTag!]
   performers: [ScrapedPerformer!]
-  movies: [ScrapedMovie!]
+  movies: [ScrapedMovie!] @deprecated(reason: "use groups")
+  groups: [ScrapedGroup!]
 
   remote_site_id: String
   duration: Int
@@ -190,8 +195,17 @@ input ScrapeSingleMovieInput {
   query: String
   "Instructs to query by movie id"
   movie_id: ID
-  "Instructs to query by gallery fragment"
+  "Instructs to query by movie fragment"
   movie_input: ScrapedMovieInput
+}
+
+input ScrapeSingleGroupInput {
+  "Instructs to query by string"
+  query: String
+  "Instructs to query by group id"
+  group_id: ID
+  "Instructs to query by group fragment"
+  group_input: ScrapedGroupInput
 }
 
 input StashBoxSceneQueryInput {

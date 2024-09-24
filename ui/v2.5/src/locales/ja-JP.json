@@ -134,7 +134,12 @@
         "enable": "有効",
         "remove_date": "日付を削除",
         "create_parent_studio": "親スタジオを作成",
-        "optimise_database": "データベースを最適化"
+        "optimise_database": "データベースを最適化",
+        "reset_play_duration": "プレイ時間をリセット",
+        "add_sub_groups": "サブグループを追加",
+        "remove_from_containing_group": "グループから削除",
+        "set_cover": "カバーをセット",
+        "view_history": "履歴を表示する"
     },
     "actions_name": "操作",
     "age": "年齢",
@@ -246,7 +251,8 @@
             "successfully_cancelled_temporary_behaviour": "一時的な挙動のキャンセルに成功しました",
             "until_restart": "再起動まで",
             "video_sort_order": "デフォルトの動画ソート順序",
-            "video_sort_order_desc": "動画をデフォルト順でソートします。"
+            "video_sort_order_desc": "動画をデフォルト順でソートします。",
+            "server_port": "サーバーポート番号"
         },
         "general": {
             "auth": {
@@ -766,7 +772,6 @@
         "galleries": "{count, plural, one {Gallery} other {Galleries}}",
         "images": "{count, plural, one {Image} other {Images}}",
         "markers": "{count, plural, one {Marker} other {Markers}}",
-        "movies": "{count, plural, one {Movie} other {Movies}}",
         "performers": "{count, plural, one {Performer} other {Performers}}",
         "scenes": "{count, plural, one {Scene} other {Scenes}}",
         "studios": "{count, plural, one {Studio} other {Studios}}",
@@ -1034,9 +1039,6 @@
     },
     "megabits_per_second": "{value}Mbps",
     "metadata": "メタデータ",
-    "movie": "映画",
-    "movie_scene_number": "映画シーン数",
-    "movies": "映画",
     "name": "名前",
     "new": "新規作成",
     "none": "なし",

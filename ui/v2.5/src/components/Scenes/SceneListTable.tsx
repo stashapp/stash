@@ -126,10 +126,10 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
 
   const GroupCell = (scene: GQL.SlimSceneDataFragment) => (
     <ul className="comma-list overflowable">
-      {scene.movies.map((sceneGroup) => (
-        <li key={sceneGroup.movie.id}>
-          <Link to={NavUtils.makeGroupScenesUrl(sceneGroup.movie)}>
-            <span className="ellips-data">{sceneGroup.movie.name}</span>
+      {scene.groups.map((sceneGroup) => (
+        <li key={sceneGroup.group.id}>
+          <Link to={NavUtils.makeGroupScenesUrl(sceneGroup.group)}>
+            <span className="ellips-data">{sceneGroup.group.name}</span>
           </Link>
         </li>
       ))}

@@ -414,3 +414,72 @@ type ScrapedMovie struct {
 }
 
 func (ScrapedMovie) IsScrapedContent() {}
+
+func (m ScrapedMovie) ScrapedGroup() ScrapedGroup {
+	ret := ScrapedGroup{
+		StoredID:   m.StoredID,
+		Name:       m.Name,
+		Aliases:    m.Aliases,
+		Duration:   m.Duration,
+		Date:       m.Date,
+		Rating:     m.Rating,
+		Director:   m.Director,
+		URLs:       m.URLs,
+		Synopsis:   m.Synopsis,
+		Studio:     m.Studio,
+		Tags:       m.Tags,
+		FrontImage: m.FrontImage,
+		BackImage:  m.BackImage,
+	}
+
+	if len(m.URLs) == 0 && m.URL != nil {
+		ret.URLs = []string{*m.URL}
+	}
+
+	return ret
+}
+
+// ScrapedGroup is a group from a scraping operation
+type ScrapedGroup struct {
+	StoredID *string        `json:"stored_id"`
+	Name     *string        `json:"name"`
+	Aliases  *string        `json:"aliases"`
+	Duration *string        `json:"duration"`
+	Date     *string        `json:"date"`
+	Rating   *string        `json:"rating"`
+	Director *string        `json:"director"`
+	URLs     []string       `json:"urls"`
+	Synopsis *string        `json:"synopsis"`
+	Studio   *ScrapedStudio `json:"studio"`
+	Tags     []*ScrapedTag  `json:"tags"`
+	// This should be a base64 encoded data URL
+	FrontImage *string `json:"front_image"`
+	// This should be a base64 encoded data URL
+	BackImage *string `json:"back_image"`
+}
+
+func (ScrapedGroup) IsScrapedContent() {}
+
+func (g ScrapedGroup) ScrapedMovie() ScrapedMovie {
+	ret := ScrapedMovie{
+		StoredID:   g.StoredID,
+		Name:       g.Name,
+		Aliases:    g.Aliases,
+		Duration:   g.Duration,
+		Date:       g.Date,
+		Rating:     g.Rating,
+		Director:   g.Director,
+		URLs:       g.URLs,
+		Synopsis:   g.Synopsis,
+		Studio:     g.Studio,
+		Tags:       g.Tags,
+		FrontImage: g.FrontImage,
+		BackImage:  g.BackImage,
+	}
+
+	if len(g.URLs) > 0 {
+		ret.URL = &g.URLs[0]
+	}
+
+	return ret
+}

@@ -48,7 +48,7 @@ func (m *schema60Migrator) migrate(ctx context.Context) error {
 	if err := m.withTxn(ctx, func(tx *sqlx.Tx) error {
 		query := "SELECT id, mode, find_filter, object_filter, ui_options FROM `saved_filters` WHERE `name` = ''"
 
-		rows, err := m.db.Query(query)
+		rows, err := tx.Query(query)
 		if err != nil {
 			return err
 		}
@@ -98,7 +98,7 @@ func (m *schema60Migrator) migrate(ctx context.Context) error {
 
 		// remove the default filters from the database
 		query = "DELETE FROM `saved_filters` WHERE `name` = ''"
-		if _, err := m.db.Exec(query); err != nil {
+		if _, err := tx.Exec(query); err != nil {
 			return fmt.Errorf("deleting default filters: %w", err)
 		}
 

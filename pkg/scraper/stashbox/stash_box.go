@@ -1,3 +1,4 @@
+// Package stashbox provides a client interface to a stash-box server instance.
 package stashbox
 
 import (
@@ -1338,7 +1339,7 @@ func (c *Client) submitDraft(ctx context.Context, query string, input interface{
 		return fmt.Errorf("failed to decode data %s: %w", string(responseBytes), err)
 	}
 
-	if respGQL.Errors != nil && len(respGQL.Errors) > 0 {
+	if len(respGQL.Errors) > 0 {
 		// try to parse standard graphql error
 		errors := &client.GqlErrorList{}
 		if e := json.Unmarshal(responseBytes, errors); e != nil {

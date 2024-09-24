@@ -1,4 +1,24 @@
 .LoadingIndicator {
+  // fade in animation - delay showing
+  animation: fadeInAnimation ease 200ms;
+  animation-delay: 200ms;
+  animation-fill-mode: forwards;
+  animation-iteration-count: 1;
+
+  opacity: 0;
+}
+
+@keyframes fadeInAnimation {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+.LoadingIndicator {
   align-items: center;
   display: flex;
   flex-direction: column;
@@ -6,7 +26,7 @@
   width: 100%;
 
   &:not(.card-based) {
-    height: 70vh;
+    padding-top: 2rem;
   }
 
   &-message {
@@ -214,29 +234,47 @@ button.collapse-button.btn-primary:not(:disabled):not(.disabled):active {
     height: 5px;
   }
 
-  .card-check {
+  .card-controls {
+    align-items: center;
+    display: flex;
     left: 0.5rem;
-    margin-top: -12px;
-    opacity: 0;
-    padding-left: 15px;
+
     position: absolute;
     top: 0.7rem;
-    width: 1.2rem;
     z-index: 1;
+  }
+
+  .card-check,
+  .card-drag-handle {
+    height: 1.2rem;
+    opacity: 0;
+    width: 1.2rem;
+
+    @media (hover: none), (pointer: coarse) {
+      // always show card controls when hovering not supported
+      opacity: 0.25;
+    }
+  }
+
+  .card-drag-handle {
+    cursor: move;
+  }
+
+  .card-check {
+    padding-left: 15px;
 
     &:checked {
       opacity: 0.75;
     }
 
     @media (hover: none), (pointer: coarse) {
-      // always show card check button when hovering not supported
-      opacity: 0.25;
-      // and make it bigger
+      // and make it bigger when hovering not supported
       width: 1.5rem;
     }
   }
 
-  &:hover .card-check {
+  &:hover .card-check,
+  &:hover .card-drag-handle {
     opacity: 0.75;
     transition: opacity 0.5s;
   }
@@ -472,12 +510,14 @@ div.react-datepicker {
 
 .clearable-text-field-clear {
   background-color: $secondary;
+  bottom: 0;
   color: $muted-gray;
   font-size: 0.875rem;
   margin: 0.375rem 0.75rem;
   padding: 0;
   position: absolute;
   right: 0;
+  top: 0;
   z-index: 4;
 
   &:hover,
@@ -536,7 +576,10 @@ button.btn.favorite-button {
   &.not-favorite {
     color: rgba(191, 204, 214, 0.5);
     filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.9));
-    opacity: 0;
+
+    &.hide-not-favorite {
+      opacity: 0;
+    }
   }
 
   &.favorite {
@@ -595,4 +638,43 @@ button.btn.favorite-button {
 
 .external-links-button {
   display: inline-block;
+}
+
+.scraper-menu .dropdown-menu {
+  min-width: 250px;
+  padding-top: 0;
+
+  .dropdown-divider {
+    border-top-color: $textfield-bg;
+    margin: 0;
+  }
+
+  .scraper-filter-container {
+    background-color: $secondary;
+    border-bottom: solid 1px $textfield-bg;
+    padding: 5px;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+
+    .btn-group {
+      border: solid 1px $textfield-bg;
+      border-radius: 5px;
+      width: 100%;
+    }
+
+    .clearable-text-field {
+      background-color: $textfield-bg;
+    }
+
+    .clearable-text-field-clear {
+      background-color: unset;
+      border: unset;
+    }
+
+    .reload-button.btn {
+      border-bottom-right-radius: 0.25rem;
+      border-top-right-radius: 0.25rem;
+    }
+  }
 }

@@ -1,10 +1,12 @@
 import { faTrashAlt } from "@fortawesome/free-solid-svg-icons";
 import { FormikValues, useFormik } from "formik";
+import React, { InputHTMLAttributes, useEffect, useRef } from "react";
 import {
   Button,
   Col,
   ColProps,
   Form,
+  FormControlProps,
   FormLabelProps,
   Row,
 } from "react-bootstrap";
@@ -40,6 +42,44 @@ export function renderLabel(options: {
     </Form.Label>
   );
 }
+
+// useStopWheelScroll is a hook to provide a workaround for a bug in React/Chrome.
+// If a number field is focused and the mouse pointer is over the field, then scrolling
+// the mouse wheel will change the field value _and_ scroll the window.
+// This hook prevents the propagation that causes the window to scroll.
+export function useStopWheelScroll(ref: React.RefObject<HTMLElement>) {
+  // removed the dependency array because the underlying ref value may change
+  useEffect(() => {
+    const { current } = ref;
+
+    function stopWheelScroll(e: WheelEvent) {
+      if (current) {
+        e.stopPropagation();
+      }
+    }
+
+    if (current) {
+      current.addEventListener("wheel", stopWheelScroll);
+    }
+
+    return () => {
+      if (current) {
+        current.removeEventListener("wheel", stopWheelScroll);
+      }
+    };
+  });
+}
+
+// NumberField is a wrapper around Form.Control that prevents wheel events from scrolling the window.
+export const NumberField: React.FC<
+  InputHTMLAttributes<HTMLInputElement> & FormControlProps
+> = (props) => {
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useStopWheelScroll(inputRef);
+
+  return <Form.Control {...props} type="number" ref={inputRef} />;
+};
 
 type Formik<V extends FormikValues> = ReturnType<typeof useFormik<V>>;
 
@@ -89,6 +129,17 @@ export function formikUtils<V extends FormikValues>(
       control = (
         <Form.Control
           as="textarea"
+          className="text-input"
+          placeholder={placeholder}
+          {...formikProps}
+          value={value}
+          isInvalid={!!error}
+        />
+      );
+    } else if (type === "number") {
+      control = (
+        <NumberField
+          type={type}
           className="text-input"
           placeholder={placeholder}
           {...formikProps}

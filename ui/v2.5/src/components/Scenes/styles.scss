@@ -208,6 +208,10 @@ textarea.scene-description {
   &-preview {
     aspect-ratio: 16/9;
   }
+
+  .scene-group-scene-number {
+    text-align: center;
+  }
 }
 
 .scene-card,
@@ -335,6 +339,10 @@ input[type="range"].filter-slider {
   margin: 0;
   padding-left: 0;
   padding-right: 0;
+}
+
+.filter-slider-value {
+  cursor: pointer;
 }
 
 @mixin contrast-slider() {

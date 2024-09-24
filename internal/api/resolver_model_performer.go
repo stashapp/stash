@@ -179,15 +179,20 @@ func (r *performerResolver) GalleryCount(ctx context.Context, obj *models.Perfor
 	return ret, nil
 }
 
-func (r *performerResolver) MovieCount(ctx context.Context, obj *models.Performer) (ret int, err error) {
+func (r *performerResolver) GroupCount(ctx context.Context, obj *models.Performer) (ret int, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		ret, err = r.repository.Movie.CountByPerformerID(ctx, obj.ID)
+		ret, err = r.repository.Group.CountByPerformerID(ctx, obj.ID)
 		return err
 	}); err != nil {
 		return 0, err
 	}
 
 	return ret, nil
+}
+
+// deprecated
+func (r *performerResolver) MovieCount(ctx context.Context, obj *models.Performer) (ret int, err error) {
+	return r.GroupCount(ctx, obj)
 }
 
 func (r *performerResolver) PerformerCount(ctx context.Context, obj *models.Performer) (ret int, err error) {
@@ -252,13 +257,18 @@ func (r *performerResolver) DeathDate(ctx context.Context, obj *models.Performer
 	return nil, nil
 }
 
-func (r *performerResolver) Movies(ctx context.Context, obj *models.Performer) (ret []*models.Movie, err error) {
+func (r *performerResolver) Groups(ctx context.Context, obj *models.Performer) (ret []*models.Group, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		ret, err = r.repository.Movie.FindByPerformerID(ctx, obj.ID)
+		ret, err = r.repository.Group.FindByPerformerID(ctx, obj.ID)
 		return err
 	}); err != nil {
 		return nil, err
 	}
 
 	return ret, nil
+}
+
+// deprecated
+func (r *performerResolver) Movies(ctx context.Context, obj *models.Performer) (ret []*models.Group, err error) {
+	return r.Groups(ctx, obj)
 }

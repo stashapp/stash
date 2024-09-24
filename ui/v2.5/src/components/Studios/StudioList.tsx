@@ -9,7 +9,7 @@ import {
   useFindStudios,
   useStudiosDestroy,
 } from "src/core/StashService";
-import { makeItemList, showWhenSelected } from "../List/ItemList";
+import { ItemList, ItemListContext, showWhenSelected } from "../List/ItemList";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 import { ExportDialog } from "../Shared/ExportDialog";
@@ -18,16 +18,13 @@ import { StudioTagger } from "../Tagger/studios/StudioTagger";
 import { StudioCardGrid } from "./StudioCardGrid";
 import { View } from "../List/views";
 
-const StudioItemList = makeItemList({
-  filterMode: GQL.FilterMode.Studios,
-  useResult: useFindStudios,
-  getItems(result: GQL.FindStudiosQueryResult) {
-    return result?.data?.findStudios?.studios ?? [];
-  },
-  getCount(result: GQL.FindStudiosQueryResult) {
-    return result?.data?.findStudios?.count ?? 0;
-  },
-});
+function getItems(result: GQL.FindStudiosQueryResult) {
+  return result?.data?.findStudios?.studios ?? [];
+}
+
+function getCount(result: GQL.FindStudiosQueryResult) {
+  return result?.data?.findStudios?.count ?? 0;
+}
 
 interface IStudioList {
   fromParent?: boolean;
@@ -46,6 +43,8 @@ export const StudioList: React.FC<IStudioList> = ({
   const history = useHistory();
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
   const [isExportAll, setIsExportAll] = useState(false);
+
+  const filterMode = GQL.FilterMode.Studios;
 
   const otherOperations = [
     {
@@ -177,15 +176,23 @@ export const StudioList: React.FC<IStudioList> = ({
   }
 
   return (
-    <StudioItemList
-      selectable
+    <ItemListContext
+      filterMode={filterMode}
+      useResult={useFindStudios}
+      getItems={getItems}
+      getCount={getCount}
+      alterQuery={alterQuery}
       filterHook={filterHook}
       view={view}
-      alterQuery={alterQuery}
-      otherOperations={otherOperations}
-      addKeybinds={addKeybinds}
-      renderContent={renderContent}
-      renderDeleteDialog={renderDeleteDialog}
-    />
+      selectable
+    >
+      <ItemList
+        view={view}
+        otherOperations={otherOperations}
+        addKeybinds={addKeybinds}
+        renderContent={renderContent}
+        renderDeleteDialog={renderDeleteDialog}
+      />
+    </ItemListContext>
   );
 };

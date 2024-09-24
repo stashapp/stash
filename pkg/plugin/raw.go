@@ -76,7 +76,7 @@ func (t *rawPluginTask) Start() error {
 		if err != nil {
 			logger.Warnf("error marshalling raw command input")
 		}
-		if k, err := io.WriteString(stdin, string(inBytes)); err != nil {
+		if k, err := stdin.Write(inBytes); err != nil {
 			logger.Warnf("error writing input to plugins stdin (wrote %v bytes out of %v): %v", k, len(string(inBytes)), err)
 		}
 	}()

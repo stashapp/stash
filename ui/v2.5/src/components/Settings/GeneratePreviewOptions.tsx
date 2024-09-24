@@ -2,6 +2,7 @@ import React from "react";
 import { useIntl } from "react-intl";
 import { Form } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
+import { NumberField } from "src/utils/form";
 
 export type VideoPreviewSettingsInput = Pick<
   GQL.ConfigGeneralInput,
@@ -44,9 +45,8 @@ export const VideoPreviewInput: React.FC<IVideoPreviewInput> = ({
             id: "dialogs.scene_gen.preview_seg_count_head",
           })}
         </h6>
-        <Form.Control
+        <NumberField
           className="text-input"
-          type="number"
           value={previewSegments?.toString() ?? 1}
           min={1}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
@@ -71,9 +71,8 @@ export const VideoPreviewInput: React.FC<IVideoPreviewInput> = ({
             id: "dialogs.scene_gen.preview_seg_duration_head",
           })}
         </h6>
-        <Form.Control
+        <NumberField
           className="text-input"
-          type="number"
           value={previewSegmentDuration?.toString() ?? 0}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
             set({

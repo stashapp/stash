@@ -39,6 +39,12 @@ func (c Cache) postScrape(ctx context.Context, content ScrapedContent) (ScrapedC
 		}
 	case models.ScrapedMovie:
 		return c.postScrapeMovie(ctx, v)
+	case *models.ScrapedGroup:
+		if v != nil {
+			return c.postScrapeGroup(ctx, *v)
+		}
+	case models.ScrapedGroup:
+		return c.postScrapeGroup(ctx, v)
 	}
 
 	// If nothing matches, pass the content through
@@ -128,6 +134,38 @@ func (c Cache) postScrapeMovie(ctx context.Context, m models.ScrapedMovie) (Scra
 	return m, nil
 }
 
+func (c Cache) postScrapeGroup(ctx context.Context, m models.ScrapedGroup) (ScrapedContent, error) {
+	r := c.repository
+	if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
+		tqb := r.TagFinder
+		tags, err := postProcessTags(ctx, tqb, m.Tags)
+		if err != nil {
+			return err
+		}
+		m.Tags = tags
+
+		if m.Studio != nil {
+			if err := match.ScrapedStudio(ctx, r.StudioFinder, m.Studio, nil); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	// post-process - set the image if applicable
+	if err := setGroupFrontImage(ctx, c.client, &m, c.globalConfig); err != nil {
+		logger.Warnf("could not set front image using URL %s: %v", *m.FrontImage, err)
+	}
+	if err := setGroupBackImage(ctx, c.client, &m, c.globalConfig); err != nil {
+		logger.Warnf("could not set back image using URL %s: %v", *m.BackImage, err)
+	}
+
+	return m, nil
+}
+
 func (c Cache) postScrapeScenePerformer(ctx context.Context, p models.ScrapedPerformer) error {
 	tqb := c.repository.TagFinder
 
@@ -154,7 +192,7 @@ func (c Cache) postScrapeScene(ctx context.Context, scene ScrapedScene) (Scraped
 	r := c.repository
 	if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
 		pqb := r.PerformerFinder
-		mqb := r.MovieFinder
+		gqb := r.GroupFinder
 		tqb := r.TagFinder
 		sqb := r.StudioFinder
 
@@ -173,9 +211,38 @@ func (c Cache) postScrapeScene(ctx context.Context, scene ScrapedScene) (Scraped
 		}
 
 		for _, p := range scene.Movies {
-			err := match.ScrapedMovie(ctx, mqb, p)
+			matchedID, err := match.ScrapedGroup(ctx, gqb, p.StoredID, p.Name)
 			if err != nil {
 				return err
+			}
+
+			if matchedID != nil {
+				p.StoredID = matchedID
+			}
+		}
+
+		for _, p := range scene.Groups {
+			matchedID, err := match.ScrapedGroup(ctx, gqb, p.StoredID, p.Name)
+			if err != nil {
+				return err
+			}
+
+			if matchedID != nil {
+				p.StoredID = matchedID
+			}
+		}
+
+		// HACK - if movies was returned but not groups, add the groups from the movies
+		// if groups was returned but not movies, add the movies from the groups for backward compatibility
+		if len(scene.Movies) > 0 && len(scene.Groups) == 0 {
+			for _, m := range scene.Movies {
+				g := m.ScrapedGroup()
+				scene.Groups = append(scene.Groups, &g)
+			}
+		} else if len(scene.Groups) > 0 && len(scene.Movies) == 0 {
+			for _, g := range scene.Groups {
+				m := g.ScrapedMovie()
+				scene.Movies = append(scene.Movies, &m)
 			}
 		}
 

@@ -42,6 +42,8 @@ interface IPerformerLinkProps {
   className?: string;
 }
 
+export type PerformerLinkType = IPerformerLinkProps["linkType"];
+
 export const PerformerLink: React.FC<IPerformerLinkProps> = ({
   performer,
   linkType = "scene",
@@ -73,12 +75,14 @@ export const PerformerLink: React.FC<IPerformerLinkProps> = ({
 
 interface IGroupLinkProps {
   group: INamedObject;
-  linkType?: "scene";
+  description?: string;
+  linkType?: "scene" | "sub_group" | "details";
   className?: string;
 }
 
 export const GroupLink: React.FC<IGroupLinkProps> = ({
   group,
+  description,
   linkType = "scene",
   className,
 }) => {
@@ -86,6 +90,10 @@ export const GroupLink: React.FC<IGroupLinkProps> = ({
     switch (linkType) {
       case "scene":
         return NavUtils.makeGroupScenesUrl(group);
+      case "sub_group":
+        return NavUtils.makeSubGroupsUrl(group);
+      case "details":
+        return NavUtils.makeGroupUrl(group.id ?? "");
     }
   }, [group, linkType]);
 
@@ -93,7 +101,10 @@ export const GroupLink: React.FC<IGroupLinkProps> = ({
 
   return (
     <CommonLinkComponent link={link} className={className}>
-      {title}
+      {title}{" "}
+      {description && (
+        <span className="group-description">({description})</span>
+      )}
     </CommonLinkComponent>
   );
 };

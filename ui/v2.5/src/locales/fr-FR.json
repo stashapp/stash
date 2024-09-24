@@ -135,7 +135,13 @@
         "reload": "Actualiser",
         "remove_date": "Supprimer la date",
         "clean_generated": "Nettoyer les fichiers générés",
-        "view_history": "Voir l'historique"
+        "view_history": "Voir l'historique",
+        "reset_cover": "Rétablir la vignette par défaut",
+        "reset_play_duration": "Réinitialiser la durée de lecture",
+        "reset_resume_time": "Réinitialiser le temps de reprise",
+        "set_cover": "Définir comme vignette",
+        "remove_from_containing_group": "Supprimer du groupe",
+        "add_sub_groups": "Ajouter des groupes affiliés"
     },
     "actions_name": "Actions",
     "age": "Âge",
@@ -543,7 +549,9 @@
                 "sprites": "Sprites de scène",
                 "transcodes": "Transcodes de scènes"
             },
-            "generate_sprites_during_scan_tooltip": "L'ensemble des images affichées en dessous du lecteur vidéo pour une navigation aisée."
+            "generate_sprites_during_scan_tooltip": "L'ensemble des images affichées en dessous du lecteur vidéo pour une navigation aisée.",
+            "rescan": "Réanalyse des fichiers",
+            "rescan_tooltip": "Réanalyse chaque fichier contenu dans le chemin d'accès. Utilisé pour forcer la mise à jour des métadonnées des fichiers et réanalyser les archives zip."
         },
         "tools": {
             "scene_duplicate_checker": "Vérificateur de doublons de scènes",
@@ -796,11 +804,11 @@
         "galleries": "{count, plural, one {Galerie} other {Galeries}}",
         "images": "{count, plural, one {Image} other {Images}}",
         "markers": "{count, plural, one {Marqueur} other {Marqueurs}}",
-        "movies": "{count, plural, one {Film} other {Films}}",
         "performers": "{count, plural, one {Performeur} other {Performeurs}}",
         "scenes": "{count, plural, one {Scène} other {Scènes}}",
         "studios": "{count, plural, one {Studio} other {Studios}}",
-        "tags": "{count, plural, one {Étiquette} other {Étiquettes}}"
+        "tags": "{count, plural, one {Étiquette} other {Étiquettes}}",
+        "groups": "{count, plural, one {Groupe} other {Groupes}}"
     },
     "country": "Pays",
     "cover_image": "Vignette",
@@ -988,7 +996,7 @@
     "duplicated_phash": "Dupliqué (Empreinte)",
     "duration": "Durée",
     "effect_filters": {
-        "aspect": "Aspect",
+        "aspect": "Rapport d'image",
         "blue": "Bleu",
         "blur": "Flou",
         "brightness": "Luminosité",
@@ -1014,7 +1022,9 @@
         "lazy_component_error_help": "Si vous avez récemment mis à jour Stash, merci de recharger la page ou de vider le cache de votre navigateur.",
         "loading_type": "Erreur de chargement de {type}",
         "something_went_wrong": "Quelque chose n'a pas fonctionné.",
-        "header": "Erreur"
+        "header": "Erreur",
+        "invalid_javascript_string": "Code javascript invalide : {error}",
+        "invalid_json_string": "Chaine JSON invalide : {error}"
     },
     "ethnicity": "Ethnicité",
     "existing_value": "valeur existante",
@@ -1034,7 +1044,7 @@
     "filters": "Filtres",
     "folder": "Répertoire",
     "framerate": "Fréquence",
-    "frames_per_second": "{value} fps",
+    "frames_per_second": "{value} ips",
     "front_page": {
         "types": {
             "premade_filter": "Filtre prédéfini",
@@ -1108,9 +1118,6 @@
     },
     "megabits_per_second": "{value} mbps",
     "metadata": "Métadonnées",
-    "movie": "Film",
-    "movie_scene_number": "Numéro de scène",
-    "movies": "Films",
     "name": "Nom",
     "new": "Nouveau",
     "none": "Aucun",
@@ -1121,7 +1128,8 @@
         "first": "Première",
         "last": "Dernière",
         "next": "Suivante",
-        "previous": "Précédente"
+        "previous": "Précédente",
+        "current_total": "{current} sur {total}"
     },
     "parent_of": "Parent de {children}",
     "parent_studio": "Studio parent",
@@ -1389,9 +1397,9 @@
         "removed_entity": "{count, plural, one {{singularEntity} retiré} other {{pluralEntity} retirés}}",
         "rescanning_entity": "Réanalyse de {count, plural, one {{singularEntity}} other {{pluralEntity}}}…",
         "saved_entity": "{entity} sauvegardé·e",
-        "started_auto_tagging": "Démarrage de l'étiquetage automatique",
-        "started_generating": "Démarrage de la génération",
-        "started_importing": "Démarrage de l'importation",
+        "started_auto_tagging": "Début de l'étiquetage automatique",
+        "started_generating": "Début de la génération",
+        "started_importing": "Début d'importation",
         "updated_entity": "{entity} mis·e à jour"
     },
     "total": "Total",
@@ -1465,5 +1473,22 @@
     "playdate_recorded_no": "Aucune date de lecture enregistrée",
     "plays": "{value} lectures",
     "unknown_date": "Date inconnue",
-    "history": "Historique"
+    "history": "Historique",
+    "group_count": "Nombre de groupes",
+    "group_scene_number": "Numéro de scène",
+    "groups": "Groupes",
+    "group": "Groupe",
+    "studio_count": "Nombre de studios",
+    "studio_tags": "Étiquettes du studio",
+    "include_sub_studio_content": "Inclure le contenu des studios affiliés",
+    "include_sub_tag_content": "Inclure le contenu des étiquettes affiliées",
+    "containing_group": "Groupe contenant",
+    "containing_group_count": "Nombre de groupes contenant",
+    "containing_groups": "Groupes contenant",
+    "include_sub_group_content": "Inclure le contenu des groupes affiliés",
+    "sub_group_order": "Ordre de groupe affilié",
+    "sub_groups": "Groupes affiliés",
+    "sub_group_of": "Groupe affilié de {parent}",
+    "sub_group": "Groupe affilié",
+    "sub_group_count": "Nombre de groupes affiliés"
 }

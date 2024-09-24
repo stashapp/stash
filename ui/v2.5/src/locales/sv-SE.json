@@ -135,7 +135,13 @@
         "clear_date_data": "Rensa datumdata",
         "clean_generated": "Rensa genererade filer",
         "remove_date": "Ta bort datum",
-        "view_history": "Visningshistorik"
+        "view_history": "Visningshistorik",
+        "reset_cover": "Återställ Standardomslag",
+        "reset_play_duration": "Återställ uppspelad tid",
+        "add_sub_groups": "Lägg Till Undergrupper",
+        "remove_from_containing_group": "Ta bort från Grupp",
+        "reset_resume_time": "Återställ återupptagningstid",
+        "set_cover": "Välj som Omslag"
     },
     "actions_name": "Handlingar",
     "age": "Ålder",
@@ -543,7 +549,9 @@
                 "previews_desc": "Scenförhandsvisningar och omslagsbilder",
                 "sprites": "Scensprites",
                 "transcodes": "Scenomkodningar"
-            }
+            },
+            "rescan": "Skanna om filer",
+            "rescan_tooltip": "Skanna om alla filer i sökvägen. Används för att tvångsuppdatera filmetadata och att skanna om zip-filer."
         },
         "tools": {
             "scene_duplicate_checker": "Scen Duplikat Kontroll",
@@ -796,11 +804,11 @@
         "galleries": "{count, plural, one {Galleri} other {Gallerier}}",
         "images": "{count, plural, one {Bild} other {Bilder}}",
         "markers": "{count, plural, one {Markör} other {Markörer}}",
-        "movies": "{count, plural, one {Film} other {Filmer}}",
         "performers": "{count, plural, one {Stjärna} other {Stjärnor}}",
         "scenes": "{count, plural, one {Scen} other {Scener}}",
         "studios": "{count, plural, one {Studio} other {Studior}}",
-        "tags": "{count, plural, one {Tagg} other {Taggar}}"
+        "tags": "{count, plural, one {Tagg} other {Taggar}}",
+        "groups": "{count, plural, one {Grupp} other {Grupper}}"
     },
     "country": "Land",
     "cover_image": "Omslagsbild",
@@ -1014,7 +1022,9 @@
         "lazy_component_error_help": "Om du nyligen uppdaterade Stash ladda om sidan eller rensa din webbläsares cache.",
         "loading_type": "Fel vid laddning av {type}",
         "something_went_wrong": "Något gick fel.",
-        "header": "Fel"
+        "header": "Fel",
+        "invalid_javascript_string": "Ogiltig javascriptkod: {error}",
+        "invalid_json_string": "Ogiltig JSON-sträng: {error}"
     },
     "ethnicity": "Etnicitet",
     "existing_value": "existerande värde",
@@ -1108,9 +1118,6 @@
     },
     "megabits_per_second": "{value} mbps",
     "metadata": "Metadata",
-    "movie": "Film",
-    "movie_scene_number": "Scennummer",
-    "movies": "Filmer",
     "name": "Namn",
     "new": "Ny",
     "none": "Ingen",
@@ -1121,7 +1128,8 @@
         "first": "Första",
         "last": "Sista",
         "next": "Nästa",
-        "previous": "Föregående"
+        "previous": "Föregående",
+        "current_total": "{current} av {total}"
     },
     "parent_of": "Överordnad till {children}",
     "parent_studio": "Överordnad Studio",
@@ -1465,5 +1473,22 @@
         "websocket_connection_failed": "Kan ej etablera en websocket-uppkoppling: se webbläsarkonsolen för mer info",
         "websocket_connection_reestablished": "Websocket-uppkoppling återetablerad"
     },
-    "o_count": "Antal O"
+    "o_count": "Antal O",
+    "group": "Grupp",
+    "group_count": "Antal Grupper",
+    "group_scene_number": "Scennummer",
+    "groups": "Grupper",
+    "studio_count": "Antal Studior",
+    "studio_tags": "Studiotaggar",
+    "include_sub_studio_content": "Inkludera innehåll från underordnade studior",
+    "include_sub_tag_content": "Inkludera innehåll från underordnade taggar",
+    "containing_group": "Innehållande grupp",
+    "containing_group_count": "Antal Innehållande Grupper",
+    "containing_groups": "Innehållande Grupper",
+    "include_sub_group_content": "Inkludera innehåll från undergrupper",
+    "sub_group_count": "Antal Undergrupper",
+    "sub_group_of": "Undergrupp av {parent}",
+    "sub_group_order": "Ordning av Undergrupper",
+    "sub_groups": "Undergrupper",
+    "sub_group": "Undergrupp"
 }

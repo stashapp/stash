@@ -17,20 +17,24 @@ import (
 )
 
 const (
-	// Number of database connections to use
+	maxWriteConnections = 1
+	// Number of database read connections to use
 	// The same value is used for both the maximum and idle limit,
 	// to prevent opening connections on the fly which has a notieable performance penalty.
 	// Fewer connections use less memory, more connections increase performance,
 	// but have diminishing returns.
 	// 10 was found to be a good tradeoff.
-	dbConns = 10
+	maxReadConnections = 10
 	// Idle connection timeout, in seconds
 	// Closes a connection after a period of inactivity, which saves on memory and
 	// causes the sqlite -wal and -shm files to be automatically deleted.
-	dbConnTimeout = 30
+	dbConnTimeout = 30 * time.Second
+
+	// environment variable to set the cache size
+	cacheSizeEnv = "STASH_SQLITE_CACHE_SIZE"
 )
 
-var appSchemaVersion uint = 64
+var appSchemaVersion uint = 67
 
 //go:embed migrations/*.sql
 var migrationsBox embed.FS
@@ -74,14 +78,15 @@ type storeRepository struct {
 	SavedFilter    *SavedFilterStore
 	Studio         *StudioStore
 	Tag            *TagStore
-	Movie          *MovieStore
+	Group          *GroupStore
 }
 
 type Database struct {
 	*storeRepository
 
-	db     *sqlx.DB
-	dbPath string
+	readDB  *sqlx.DB
+	writeDB *sqlx.DB
+	dbPath  string
 
 	schemaVersion uint
 
@@ -110,7 +115,7 @@ func NewDatabase() *Database {
 		Performer:      performerStore,
 		Studio:         studioStore,
 		Tag:            tagStore,
-		Movie:          NewMovieStore(blobStore),
+		Group:          NewGroupStore(blobStore),
 		SavedFilter:    NewSavedFilterStore(),
 	}
 
@@ -128,7 +133,7 @@ func (db *Database) SetBlobStoreOptions(options BlobStoreOptions) {
 
 // Ready returns an error if the database is not ready to begin transactions.
 func (db *Database) Ready() error {
-	if db.db == nil {
+	if db.readDB == nil || db.writeDB == nil {
 		return ErrDatabaseNotInitialized
 	}
 
@@ -140,7 +145,7 @@ func (db *Database) Ready() error {
 // necessary migrations must be run separately using RunMigrations.
 // Returns true if the database is new.
 func (db *Database) Open(dbPath string) error {
-	db.lockNoCtx()
+	db.lock()
 	defer db.unlock()
 
 	db.dbPath = dbPath
@@ -152,7 +157,9 @@ func (db *Database) Open(dbPath string) error {
 
 	db.schemaVersion = databaseSchemaVersion
 
-	if databaseSchemaVersion == 0 {
+	isNew := databaseSchemaVersion == 0
+
+	if isNew {
 		// new database, just run the migrations
 		if err := db.RunAllMigrations(); err != nil {
 			return fmt.Errorf("error running initial schema migrations: %w", err)
@@ -174,31 +181,23 @@ func (db *Database) Open(dbPath string) error {
 		}
 	}
 
-	// RunMigrations may have opened a connection already
-	if db.db == nil {
-		const disableForeignKeys = false
-		db.db, err = db.open(disableForeignKeys)
+	if err := db.initialise(); err != nil {
+		return err
+	}
+
+	if isNew {
+		// optimize database after migration
+		err = db.Optimise(context.Background())
 		if err != nil {
-			return err
+			logger.Warnf("error while performing post-migration optimisation: %v", err)
 		}
 	}
 
 	return nil
 }
 
-// lock locks the database for writing.
-// This method will block until the lock is acquired of the context is cancelled.
-func (db *Database) lock(ctx context.Context) error {
-	select {
-	case <-ctx.Done():
-		return ctx.Err()
-	case db.lockChan <- struct{}{}:
-		return nil
-	}
-}
-
 // lock locks the database for writing. This method will block until the lock is acquired.
-func (db *Database) lockNoCtx() {
+func (db *Database) lock() {
 	db.lockChan <- struct{}{}
 }
 
@@ -214,36 +213,89 @@ func (db *Database) unlock() {
 }
 
 func (db *Database) Close() error {
-	db.lockNoCtx()
+	db.lock()
 	defer db.unlock()
 
-	if db.db != nil {
-		if err := db.db.Close(); err != nil {
+	if db.readDB != nil {
+		if err := db.readDB.Close(); err != nil {
 			return err
 		}
 
-		db.db = nil
+		db.readDB = nil
+	}
+	if db.writeDB != nil {
+		if err := db.writeDB.Close(); err != nil {
+			return err
+		}
+
+		db.writeDB = nil
 	}
 
 	return nil
 }
 
-func (db *Database) open(disableForeignKeys bool) (*sqlx.DB, error) {
+func (db *Database) open(disableForeignKeys bool, writable bool) (*sqlx.DB, error) {
 	// https://github.com/mattn/go-sqlite3
 	url := "file:" + db.dbPath + "?_journal=WAL&_sync=NORMAL&_busy_timeout=50"
 	if !disableForeignKeys {
 		url += "&_fk=true"
 	}
 
+	if writable {
+		url += "&_txlock=immediate"
+	} else {
+		url += "&mode=ro"
+	}
+
+	// #5155 - set the cache size if the environment variable is set
+	// default is -2000 which is 2MB
+	if cacheSize := os.Getenv(cacheSizeEnv); cacheSize != "" {
+		url += "&_cache_size=" + cacheSize
+	}
+
 	conn, err := sqlx.Open(sqlite3Driver, url)
-	conn.SetMaxOpenConns(dbConns)
-	conn.SetMaxIdleConns(dbConns)
-	conn.SetConnMaxIdleTime(dbConnTimeout * time.Second)
 	if err != nil {
 		return nil, fmt.Errorf("db.Open(): %w", err)
 	}
 
 	return conn, nil
+}
+
+func (db *Database) initialise() error {
+	if err := db.openReadDB(); err != nil {
+		return fmt.Errorf("opening read database: %w", err)
+	}
+	if err := db.openWriteDB(); err != nil {
+		return fmt.Errorf("opening write database: %w", err)
+	}
+
+	return nil
+}
+
+func (db *Database) openReadDB() error {
+	const (
+		disableForeignKeys = false
+		writable           = false
+	)
+	var err error
+	db.readDB, err = db.open(disableForeignKeys, writable)
+	db.readDB.SetMaxOpenConns(maxReadConnections)
+	db.readDB.SetMaxIdleConns(maxReadConnections)
+	db.readDB.SetConnMaxIdleTime(dbConnTimeout)
+	return err
+}
+
+func (db *Database) openWriteDB() error {
+	const (
+		disableForeignKeys = false
+		writable           = true
+	)
+	var err error
+	db.writeDB, err = db.open(disableForeignKeys, writable)
+	db.writeDB.SetMaxOpenConns(maxWriteConnections)
+	db.writeDB.SetMaxIdleConns(maxWriteConnections)
+	db.writeDB.SetConnMaxIdleTime(dbConnTimeout)
+	return err
 }
 
 func (db *Database) Remove() error {
@@ -289,7 +341,7 @@ func (db *Database) Reset() error {
 // Backup the database. If db is nil, then uses the existing database
 // connection.
 func (db *Database) Backup(backupPath string) (err error) {
-	thisDB := db.db
+	thisDB := db.writeDB
 	if thisDB == nil {
 		thisDB, err = sqlx.Connect(sqlite3Driver, "file:"+db.dbPath+"?_fk=true")
 		if err != nil {
@@ -372,13 +424,13 @@ func (db *Database) Optimise(ctx context.Context) error {
 
 // Vacuum runs a VACUUM on the database, rebuilding the database file into a minimal amount of disk space.
 func (db *Database) Vacuum(ctx context.Context) error {
-	_, err := db.db.ExecContext(ctx, "VACUUM")
+	_, err := db.writeDB.ExecContext(ctx, "VACUUM")
 	return err
 }
 
 // Analyze runs an ANALYZE on the database to improve query performance.
 func (db *Database) Analyze(ctx context.Context) error {
-	_, err := db.db.ExecContext(ctx, "ANALYZE")
+	_, err := db.writeDB.ExecContext(ctx, "ANALYZE")
 	return err
 }
 

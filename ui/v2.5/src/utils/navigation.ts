@@ -12,7 +12,12 @@ import {
   TagsCriterionOption,
 } from "src/models/list-filter/criteria/tags";
 import { ListFilterModel } from "src/models/list-filter/filter";
-import { MoviesCriterion } from "src/models/list-filter/criteria/movies";
+import {
+  ContainingGroupsCriterionOption,
+  GroupsCriterion,
+  GroupsCriterionOption,
+  SubGroupsCriterionOption,
+} from "src/models/list-filter/criteria/groups";
 import {
   Criterion,
   CriterionOption,
@@ -109,7 +114,7 @@ const makePerformerGroupsUrl = (
   extraCriteria?: Criterion<CriterionValue>[]
 ) => {
   if (!performer.id) return "#";
-  const filter = new ListFilterModel(GQL.FilterMode.Movies, undefined);
+  const filter = new ListFilterModel(GQL.FilterMode.Groups, undefined);
   const criterion = new PerformersCriterion();
   criterion.value.items = [
     { id: performer.id, label: performer.name || `Performer ${performer.id}` },
@@ -176,7 +181,7 @@ const makeStudioGalleriesUrl = (studio: Partial<GQL.StudioDataFragment>) => {
 
 const makeStudioGroupsUrl = (studio: Partial<GQL.StudioDataFragment>) => {
   if (!studio.id) return "#";
-  const filter = new ListFilterModel(GQL.FilterMode.Movies, undefined);
+  const filter = new ListFilterModel(GQL.FilterMode.Groups, undefined);
   const criterion = new StudiosCriterion();
   criterion.value = {
     items: [{ id: studio.id, label: studio.name || `Studio ${studio.id}` }],
@@ -211,13 +216,15 @@ const makeChildStudiosUrl = (studio: Partial<GQL.StudioDataFragment>) => {
   return `/studios?${filter.makeQueryParameters()}`;
 };
 
-const makeGroupScenesUrl = (group: Partial<GQL.MovieDataFragment>) => {
+const makeGroupScenesUrl = (group: Partial<GQL.GroupDataFragment>) => {
   if (!group.id) return "#";
   const filter = new ListFilterModel(GQL.FilterMode.Scenes, undefined);
-  const criterion = new MoviesCriterion();
-  criterion.value = [
-    { id: group.id, label: group.name || `Group ${group.id}` },
-  ];
+  const criterion = new GroupsCriterion(GroupsCriterionOption);
+  criterion.value = {
+    items: [{ id: group.id, label: group.name || `Group ${group.id}` }],
+    excluded: [],
+    depth: 0,
+  };
   filter.criteria.push(criterion);
   return `/scenes?${filter.makeQueryParameters()}`;
 };
@@ -299,7 +306,7 @@ const makeTagImagesUrl = (tag: INamedObject) => {
 };
 
 const makeTagGroupsUrl = (tag: INamedObject) => {
-  return `/groups?${makeTagFilter(GQL.FilterMode.Movies, tag)}`;
+  return `/groups?${makeTagFilter(GQL.FilterMode.Groups, tag)}`;
 };
 
 type SceneMarkerDataFragment = Pick<GQL.SceneMarker, "id" | "seconds"> & {
@@ -351,7 +358,7 @@ const makeDirectorScenesUrl = (director: string) => {
 
 const makeDirectorGroupsUrl = (director: string) => {
   if (director.length == 0) return "#";
-  const filter = new ListFilterModel(GQL.FilterMode.Movies, undefined);
+  const filter = new ListFilterModel(GQL.FilterMode.Groups, undefined);
   filter.criteria.push(
     stringEqualsCriterion(createStringCriterionOption("director"), director)
   );
@@ -382,6 +389,46 @@ const makePhotographerImagesUrl = (photographer: string) => {
   return `/images?${filter.makeQueryParameters()}`;
 };
 
+const makeGroupUrl = (id: string) => {
+  return `/groups/${id}`;
+};
+
+const makeContainingGroupsUrl = (group: Partial<GQL.SlimGroupDataFragment>) => {
+  if (!group.id) return "#";
+  const filter = new ListFilterModel(GQL.FilterMode.Groups, undefined);
+  const criterion = new GroupsCriterion(SubGroupsCriterionOption);
+  criterion.value = {
+    items: [
+      {
+        id: group.id,
+        label: group.name || `Group ${group.id}`,
+      },
+    ],
+    excluded: [],
+    depth: 0,
+  };
+  filter.criteria.push(criterion);
+  return `/groups?${filter.makeQueryParameters()}`;
+};
+
+const makeSubGroupsUrl = (group: INamedObject) => {
+  if (!group.id) return "#";
+  const filter = new ListFilterModel(GQL.FilterMode.Groups, undefined);
+  const criterion = new GroupsCriterion(ContainingGroupsCriterionOption);
+  criterion.value = {
+    items: [
+      {
+        id: group.id,
+        label: group.name || `Group ${group.id}`,
+      },
+    ],
+    excluded: [],
+    depth: 0,
+  };
+  filter.criteria.push(criterion);
+  return `/groups?${filter.makeQueryParameters()}`;
+};
+
 export function handleUnsavedChanges(
   intl: IntlShape,
   basepath: string,
@@ -409,6 +456,7 @@ const NavUtils = {
   makeStudioGroupsUrl: makeStudioGroupsUrl,
   makeStudioPerformersUrl,
   makeTagUrl,
+  makeGroupUrl,
   makeParentTagsUrl,
   makeChildTagsUrl,
   makeTagSceneMarkersUrl,
@@ -427,6 +475,8 @@ const NavUtils = {
   makePhotographerGalleriesUrl,
   makePhotographerImagesUrl,
   makeDirectorGroupsUrl,
+  makeContainingGroupsUrl,
+  makeSubGroupsUrl,
 };
 
 export default NavUtils;

@@ -154,6 +154,7 @@ input[type="range"].zoom-slider {
   }
 
   .modal-body {
+    max-height: min(550px, calc(100vh - 12rem));
     padding-left: 0;
     padding-right: 0;
   }
@@ -166,8 +167,6 @@ input[type="range"].zoom-slider {
   .criterion-list {
     flex-direction: column;
     flex-wrap: nowrap;
-    max-height: 550px;
-    overflow-y: auto;
 
     .pinned-criterion-divider {
       padding-bottom: 2.5rem;
@@ -570,4 +569,12 @@ input[type="range"].zoom-slider {
   &:first-child {
     border-left: none;
   }
+}
+
+.filtered-list-toolbar {
+  justify-content: center;
+}
+
+.search-term-input {
+  margin-right: 0.5rem;
 }

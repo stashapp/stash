@@ -58,7 +58,11 @@ function maybeRenderChildren(studio: GQL.StudioDataFragment) {
           values={{
             children: (
               <Link to={NavUtils.makeChildStudiosUrl(studio)}>
-                {studio.child_studios.length} studios
+                {studio.child_studios.length}&nbsp;
+                <FormattedMessage
+                  id="countables.studios"
+                  values={{ count: studio.child_studios.length }}
+                />
               </Link>
             ),
           }}
@@ -143,13 +147,13 @@ export const StudioCard: React.FC<IProps> = ({
   }
 
   function maybeRenderGroupsPopoverButton() {
-    if (!studio.movie_count) return;
+    if (!studio.group_count) return;
 
     return (
       <PopoverCountButton
         className="group-count"
         type="group"
-        count={studio.movie_count}
+        count={studio.group_count}
         url={NavUtils.makeStudioGroupsUrl(studio)}
       />
     );
@@ -190,7 +194,7 @@ export const StudioCard: React.FC<IProps> = ({
       studio.scene_count ||
       studio.image_count ||
       studio.gallery_count ||
-      studio.movie_count ||
+      studio.group_count ||
       studio.performer_count ||
       studio.tags.length > 0
     ) {
@@ -236,6 +240,8 @@ export const StudioCard: React.FC<IProps> = ({
         <FavoriteIcon
           favorite={studio.favorite}
           onToggleFavorite={(v) => onToggleFavorite(v)}
+          size="2x"
+          className="hide-not-favorite"
         />
       }
       popovers={maybeRenderPopoverButtonGroup()}

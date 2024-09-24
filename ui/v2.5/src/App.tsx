@@ -66,7 +66,7 @@ const Galleries = lazyComponent(
   () => import("./components/Galleries/Galleries")
 );
 
-const Groups = lazyComponent(() => import("./components/Movies/Movies"));
+const Groups = lazyComponent(() => import("./components/Groups/Groups"));
 const Tags = lazyComponent(() => import("./components/Tags/Tags"));
 const Images = lazyComponent(() => import("./components/Images/Images"));
 const Setup = lazyComponent(() => import("./components/Setup/Setup"));

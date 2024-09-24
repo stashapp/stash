@@ -210,43 +210,43 @@ export const queryFindImages = (filter: ListFilterModel) =>
     },
   });
 
-export const useFindMovie = (id: string) => {
+export const useFindGroup = (id: string) => {
   const skip = id === "new" || id === "";
-  return GQL.useFindMovieQuery({ variables: { id }, skip });
+  return GQL.useFindGroupQuery({ variables: { id }, skip });
 };
 
-export const useFindMovies = (filter?: ListFilterModel) =>
-  GQL.useFindMoviesQuery({
+export const useFindGroups = (filter?: ListFilterModel) =>
+  GQL.useFindGroupsQuery({
     skip: filter === undefined,
     variables: {
       filter: filter?.makeFindFilter(),
-      movie_filter: filter?.makeFilter(),
+      group_filter: filter?.makeFilter(),
     },
   });
 
-export const queryFindMovies = (filter: ListFilterModel) =>
-  client.query<GQL.FindMoviesQuery>({
-    query: GQL.FindMoviesDocument,
+export const queryFindGroups = (filter: ListFilterModel) =>
+  client.query<GQL.FindGroupsQuery>({
+    query: GQL.FindGroupsDocument,
     variables: {
       filter: filter.makeFindFilter(),
-      movie_filter: filter.makeFilter(),
+      group_filter: filter.makeFilter(),
     },
   });
 
-export const queryFindMoviesByIDForSelect = (movieIDs: string[]) =>
-  client.query<GQL.FindMoviesForSelectQuery>({
-    query: GQL.FindMoviesForSelectDocument,
+export const queryFindGroupsByIDForSelect = (groupIDs: string[]) =>
+  client.query<GQL.FindGroupsForSelectQuery>({
+    query: GQL.FindGroupsForSelectDocument,
     variables: {
-      ids: movieIDs,
+      ids: groupIDs,
     },
   });
 
-export const queryFindMoviesForSelect = (filter: ListFilterModel) =>
-  client.query<GQL.FindMoviesForSelectQuery>({
-    query: GQL.FindMoviesForSelectDocument,
+export const queryFindGroupsForSelect = (filter: ListFilterModel) =>
+  client.query<GQL.FindGroupsForSelectQuery>({
+    query: GQL.FindGroupsForSelectDocument,
     variables: {
       filter: filter.makeFindFilter(),
-      movie_filter: filter.makeFilter(),
+      group_filter: filter.makeFilter(),
     },
   });
 
@@ -273,6 +273,10 @@ export const useMarkerStrings = () => GQL.useMarkerStringsQuery();
 export const useFindGallery = (id: string) => {
   const skip = id === "new" || id === "";
   return GQL.useFindGalleryQuery({ variables: { id }, skip });
+};
+
+export const useFindGalleryImageID = (id: string, index: number) => {
+  return GQL.useFindGalleryImageIdQuery({ variables: { id, index } });
 };
 
 export const useFindGalleries = (filter?: ListFilterModel) =>
@@ -485,13 +489,13 @@ function updateO(
 }
 
 const sceneMutationImpactedTypeFields = {
-  Movie: ["scenes", "scene_count"],
+  Group: ["scenes", "scene_count"],
   Gallery: ["scenes"],
   Performer: [
     "scenes",
     "scene_count",
-    "movies",
-    "movie_count",
+    "groups",
+    "group_count",
     "performer_count",
   ],
   Studio: ["scene_count", "performer_count"],
@@ -500,7 +504,7 @@ const sceneMutationImpactedTypeFields = {
 
 const sceneMutationImpactedQueries = [
   GQL.FindScenesDocument, // various filters
-  GQL.FindMoviesDocument, // is missing scenes
+  GQL.FindGroupsDocument, // is missing scenes
   GQL.FindGalleriesDocument, // is missing scenes
   GQL.FindPerformersDocument, // filter by scene count
   GQL.FindStudiosDocument, // filter by scene count
@@ -779,6 +783,21 @@ export const useSceneResetO = (id: string) =>
         GQL.FindScenesDocument, // filter by o_counter
         GQL.FindPerformersDocument, // filter by o_counter
       ]);
+    },
+  });
+
+export const useSceneResetActivity = (
+  id: string,
+  reset_resume: boolean,
+  reset_duration: boolean
+) =>
+  GQL.useSceneResetActivityMutation({
+    variables: { id, reset_resume, reset_duration },
+    update(cache, result) {
+      if (!result.data?.sceneResetActivity) return;
+
+      evictTypeFields(cache, sceneMutationImpactedTypeFields);
+      evictQueries(cache, sceneMutationImpactedQueries);
     },
   });
 
@@ -1273,101 +1292,155 @@ export const mutateImageSetPrimaryFile = (id: string, fileID: string) =>
     },
   });
 
-const movieMutationImpactedTypeFields = {
-  Performer: ["movie_count"],
-  Studio: ["movie_count"],
+const groupMutationImpactedTypeFields = {
+  Performer: ["group_count"],
+  Studio: ["group_count"],
 };
 
-const movieMutationImpactedQueries = [
-  GQL.FindMoviesDocument, // various filters
+const groupMutationImpactedQueries = [
+  GQL.FindGroupsDocument, // various filters
 ];
 
-export const useMovieCreate = () =>
-  GQL.useMovieCreateMutation({
+export const useGroupCreate = () =>
+  GQL.useGroupCreateMutation({
     update(cache, result) {
-      const movie = result.data?.movieCreate;
-      if (!movie) return;
+      const group = result.data?.groupCreate;
+      if (!group) return;
 
       // update stats
-      updateStats(cache, "movie_count", 1);
+      updateStats(cache, "group_count", 1);
 
-      evictTypeFields(cache, movieMutationImpactedTypeFields);
-      evictQueries(cache, movieMutationImpactedQueries);
+      evictTypeFields(cache, groupMutationImpactedTypeFields);
+      evictQueries(cache, groupMutationImpactedQueries);
     },
   });
 
-export const useMovieUpdate = () =>
-  GQL.useMovieUpdateMutation({
+export const useGroupUpdate = () =>
+  GQL.useGroupUpdateMutation({
     update(cache, result) {
-      if (!result.data?.movieUpdate) return;
+      if (!result.data?.groupUpdate) return;
 
-      evictTypeFields(cache, movieMutationImpactedTypeFields);
-      evictQueries(cache, movieMutationImpactedQueries);
+      evictTypeFields(cache, groupMutationImpactedTypeFields);
+      evictQueries(cache, groupMutationImpactedQueries);
     },
   });
 
-export const useBulkMovieUpdate = (input: GQL.BulkMovieUpdateInput) =>
-  GQL.useBulkMovieUpdateMutation({
+export const useBulkGroupUpdate = (input: GQL.BulkGroupUpdateInput) =>
+  GQL.useBulkGroupUpdateMutation({
     variables: { input },
     update(cache, result) {
-      if (!result.data?.bulkMovieUpdate) return;
+      if (!result.data?.bulkGroupUpdate) return;
 
-      evictTypeFields(cache, movieMutationImpactedTypeFields);
-      evictQueries(cache, movieMutationImpactedQueries);
+      evictTypeFields(cache, groupMutationImpactedTypeFields);
+      evictQueries(cache, groupMutationImpactedQueries);
     },
   });
 
-export const useMovieDestroy = (input: GQL.MovieDestroyInput) =>
-  GQL.useMovieDestroyMutation({
+export const useGroupDestroy = (input: GQL.GroupDestroyInput) =>
+  GQL.useGroupDestroyMutation({
     variables: input,
     update(cache, result) {
-      if (!result.data?.movieDestroy) return;
+      if (!result.data?.groupDestroy) return;
 
-      const obj = { __typename: "Movie", id: input.id };
-      deleteObject(cache, obj, GQL.FindMovieDocument);
+      const obj = { __typename: "Group", id: input.id };
+      deleteObject(cache, obj, GQL.FindGroupDocument);
 
       // update stats
-      updateStats(cache, "movie_count", -1);
+      updateStats(cache, "group_count", -1);
 
       evictTypeFields(cache, {
-        Scene: ["movies"],
-        Performer: ["movie_count"],
-        Studio: ["movie_count"],
+        Scene: ["groups"],
+        Performer: ["group_count"],
+        Studio: ["group_count"],
       });
       evictQueries(cache, [
-        ...movieMutationImpactedQueries,
-        GQL.FindScenesDocument, // filter by movie
+        ...groupMutationImpactedQueries,
+        GQL.FindScenesDocument, // filter by group
       ]);
     },
   });
 
-export const useMoviesDestroy = (input: GQL.MoviesDestroyMutationVariables) =>
-  GQL.useMoviesDestroyMutation({
+export const useGroupsDestroy = (input: GQL.GroupsDestroyMutationVariables) =>
+  GQL.useGroupsDestroyMutation({
     variables: input,
     update(cache, result) {
-      if (!result.data?.moviesDestroy) return;
+      if (!result.data?.groupsDestroy) return;
 
       const { ids } = input;
 
       for (const id of ids) {
-        const obj = { __typename: "Movie", id };
-        deleteObject(cache, obj, GQL.FindMovieDocument);
+        const obj = { __typename: "Group", id };
+        deleteObject(cache, obj, GQL.FindGroupDocument);
       }
 
       // update stats
-      updateStats(cache, "movie_count", -ids.length);
+      updateStats(cache, "group_count", -ids.length);
 
       evictTypeFields(cache, {
-        Scene: ["movies"],
-        Performer: ["movie_count"],
-        Studio: ["movie_count"],
+        Scene: ["groups"],
+        Performer: ["group_count"],
+        Studio: ["group_count"],
       });
       evictQueries(cache, [
-        ...movieMutationImpactedQueries,
-        GQL.FindScenesDocument, // filter by movie
+        ...groupMutationImpactedQueries,
+        GQL.FindScenesDocument, // filter by group
       ]);
     },
   });
+
+export function useReorderSubGroupsMutation() {
+  return GQL.useReorderSubGroupsMutation({
+    update(cache) {
+      evictQueries(cache, [
+        GQL.FindGroupsDocument, // various filters
+      ]);
+    },
+  });
+}
+
+export const useAddSubGroups = () => {
+  const [addSubGroups] = GQL.useAddGroupSubGroupsMutation({
+    update(cache, result) {
+      if (!result.data?.addGroupSubGroups) return;
+
+      evictTypeFields(cache, groupMutationImpactedTypeFields);
+      evictQueries(cache, groupMutationImpactedQueries);
+    },
+  });
+
+  return (containingGroupId: string, toAdd: GQL.GroupDescriptionInput[]) => {
+    return addSubGroups({
+      variables: {
+        input: {
+          containing_group_id: containingGroupId,
+          sub_groups: toAdd,
+        },
+      },
+    });
+  };
+};
+
+export const useRemoveSubGroups = () => {
+  const [removeSubGroups] = GQL.useRemoveGroupSubGroupsMutation({
+    update(cache, result) {
+      if (!result.data?.removeGroupSubGroups) return;
+
+      evictTypeFields(cache, groupMutationImpactedTypeFields);
+      evictQueries(cache, groupMutationImpactedQueries);
+    },
+  });
+
+  return (containingGroupId: string, removeIds: string[]) => {
+    return removeSubGroups({
+      variables: {
+        input: {
+          containing_group_id: containingGroupId,
+          sub_group_ids: removeIds,
+        },
+      },
+    });
+  };
+};
 
 const sceneMarkerMutationImpactedTypeFields = {
   Tag: ["scene_marker_count"],
@@ -1519,6 +1592,34 @@ export const mutateAddGalleryImages = (input: GQL.GalleryAddInput) =>
         GQL.FindGalleriesDocument, // filter by image count
         GQL.FindImagesDocument, // filter by gallery
       ]);
+    },
+  });
+
+export const mutateSetGalleryCover = (input: GQL.GallerySetCoverInput) =>
+  client.mutate<GQL.SetGalleryCoverMutation>({
+    mutation: GQL.SetGalleryCoverDocument,
+    variables: input,
+    update(cache, result) {
+      if (!result.data?.setGalleryCover) return;
+
+      cache.evict({
+        id: cache.identify({ __typename: "Gallery", id: input.gallery_id }),
+        fieldName: "cover",
+      });
+    },
+  });
+
+export const mutateResetGalleryCover = (input: GQL.GalleryResetCoverInput) =>
+  client.mutate<GQL.ResetGalleryCoverMutation>({
+    mutation: GQL.ResetGalleryCoverDocument,
+    variables: input,
+    update(cache, result) {
+      if (!result.data?.resetGalleryCover) return;
+
+      cache.evict({
+        id: cache.identify({ __typename: "Gallery", id: input.gallery_id }),
+        fieldName: "cover",
+      });
     },
   });
 
@@ -1678,7 +1779,7 @@ export const usePerformerDestroy = () =>
       evictQueries(cache, [
         ...performerMutationImpactedQueries,
         GQL.FindPerformersDocument, // appears with
-        GQL.FindMoviesDocument, // filter by performers
+        GQL.FindGroupsDocument, // filter by performers
         GQL.FindSceneMarkersDocument, // filter by performers
       ]);
     },
@@ -1718,7 +1819,7 @@ export const usePerformersDestroy = (
       evictQueries(cache, [
         ...performerMutationImpactedQueries,
         GQL.FindPerformersDocument, // appears with
-        GQL.FindMoviesDocument, // filter by performers
+        GQL.FindGroupsDocument, // filter by performers
         GQL.FindSceneMarkersDocument, // filter by performers
       ]);
     },
@@ -1731,7 +1832,7 @@ const studioMutationImpactedTypeFields = {
 export const studioMutationImpactedQueries = [
   GQL.FindScenesDocument, // filter by studio
   GQL.FindImagesDocument, // filter by studio
-  GQL.FindMoviesDocument, // filter by studio
+  GQL.FindGroupsDocument, // filter by studio
   GQL.FindGalleriesDocument, // filter by studio
   GQL.FindPerformersDocument, // filter by studio
   GQL.FindStudiosDocument, // various filters
@@ -2161,11 +2262,11 @@ export const mutateStashBoxBatchStudioTag = (
     variables: { input },
   });
 
-export const useListMovieScrapers = () => GQL.useListMovieScrapersQuery();
+export const useListGroupScrapers = () => GQL.useListGroupScrapersQuery();
 
-export const queryScrapeMovieURL = (url: string) =>
-  client.query<GQL.ScrapeMovieUrlQuery>({
-    query: GQL.ScrapeMovieUrlDocument,
+export const queryScrapeGroupURL = (url: string) =>
+  client.query<GQL.ScrapeGroupUrlQuery>({
+    query: GQL.ScrapeGroupUrlDocument,
     variables: { url },
     fetchPolicy: "network-only",
   });
@@ -2261,7 +2362,7 @@ export const useLoggingSubscribe = () => GQL.useLoggingSubscribeSubscription();
 
 // all scraper-related queries
 export const scraperMutationImpactedQueries = [
-  GQL.ListMovieScrapersDocument,
+  GQL.ListGroupScrapersDocument,
   GQL.ListPerformerScrapersDocument,
   GQL.ListSceneScrapersDocument,
   GQL.InstalledScraperPackagesDocument,

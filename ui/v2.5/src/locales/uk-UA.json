@@ -1,8 +1,8 @@
 {
     "actions": {
-        "add": "Добавити",
-        "add_directory": "Добавити Папку",
-        "add_entity": "Добавити {entityType}",
+        "add": "Додати",
+        "add_directory": "Додати Папку",
+        "add_entity": "Додати {entityType}",
         "add_to_entity": "Добавити до {entityType}",
         "allow": "Дозволити",
         "allow_temporarily": "Дозволити Тимчасово",
@@ -214,5 +214,8 @@
             "parallel_scan_head": "Паралельне сканування/генерація",
             "preview_generation": "Генерація прев'ю"
         }
-    }
+    },
+    "video_codec": "Відео кодек",
+    "videos": "Відео",
+    "weight": "Вага"
 }

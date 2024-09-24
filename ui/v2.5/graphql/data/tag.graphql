@@ -18,8 +18,8 @@ fragment TagData on Tag {
   performer_count_all: performer_count(depth: -1)
   studio_count
   studio_count_all: studio_count(depth: -1)
-  movie_count
-  movie_count_all: movie_count(depth: -1)
+  group_count
+  group_count_all: group_count(depth: -1)
 
   parents {
     ...SlimTagData

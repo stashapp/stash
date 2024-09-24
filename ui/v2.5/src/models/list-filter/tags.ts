@@ -37,7 +37,7 @@ const sortByOptions = ["name", "random"]
     },
     {
       messageID: "group_count",
-      value: "movies_count",
+      value: "groups_count",
     },
     {
       messageID: "marker_count",
@@ -62,7 +62,7 @@ const criterionOptions = [
   createMandatoryNumberCriterionOption("gallery_count"),
   createMandatoryNumberCriterionOption("performer_count"),
   createMandatoryNumberCriterionOption("studio_count"),
-  createMandatoryNumberCriterionOption("movie_count", "group_count"),
+  createMandatoryNumberCriterionOption("group_count"),
   createMandatoryNumberCriterionOption("marker_count"),
   ParentTagsCriterionOption,
   new MandatoryNumberCriterionOption("parent_tag_count", "parent_count"),

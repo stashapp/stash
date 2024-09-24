@@ -20,7 +20,7 @@ sceneByFragment:
   <single scraper config>
 sceneByURL:
   <multiple scraper URL configs>
-movieByURL:
+groupByURL:
   <multiple scraper URL configs>
 galleryByFragment:
   <single scraper config>
@@ -42,7 +42,7 @@ The scraping types and their required fields are outlined in the following table
 | Scraper in query dropdown button in Scene Edit page | Valid `sceneByName` and `sceneByQueryFragment` configurations. |
 | Scraper in `Scrape...` dropdown button in Scene Edit page | Valid `sceneByFragment` configuration. |
 | Scrape scene from URL | Valid `sceneByURL` configuration with matching URL. |
-| Scrape movie from URL | Valid `movieByURL` configuration with matching URL. |
+| Scrape group from URL | Valid `groupByURL` configuration with matching URL. **Note:** `movieByURL` is also supported but is deprecated. |
 | Scraper in `Scrape...` dropdown button in Gallery Edit page | Valid `galleryByFragment` configuration. |
 | Scrape gallery from URL | Valid `galleryByURL` configuration with matching URL. |
 
@@ -78,7 +78,7 @@ The script is sent input and expects output based on the scraping type, as detai
 | `sceneByName` | `{"name": "<scene query string>"}` | Array of JSON-encoded scene fragments |
 | `sceneByQueryFragment`, `sceneByFragment` | JSON-encoded scene fragment | JSON-encoded scene fragment |
 | `sceneByURL` | `{"url": "<url>"}` | JSON-encoded scene fragment |
-| `movieByURL` | `{"url": "<url>"}` | JSON-encoded movie fragment |
+| `groupByURL` | `{"url": "<url>"}` | JSON-encoded group fragment |
 | `galleryByFragment` | JSON-encoded gallery fragment | JSON-encoded gallery fragment |
 | `galleryByURL` | `{"url": "<url>"}` | JSON-encoded gallery fragment |
 
@@ -225,7 +225,7 @@ sceneByFragment:
 
 The above configuration would scrape from the value of `queryURL`, replacing `{filename}` with the base filename of the scene, after it has been manipulated by the regex replacements.
 
-### scrapeXPath and scrapeJson use with `<scene|performer|gallery|movie>ByURL`
+### scrapeXPath and scrapeJson use with `<scene|performer|gallery|group>ByURL`
 
 For `sceneByURL`, `performerByURL`, `galleryByURL` the `queryURL` can also be present if we want to use `queryURLReplace`. The functionality is the same as `sceneByFragment`, the only placeholder field available though is the `url`:
 * `{url}` - the url of the scene/performer/gallery
@@ -271,9 +271,9 @@ Likewise, the top-level `jsonScrapers` field contains json scraping configuratio
 
 Collectively, these configurations are known as mapped scraping configurations. 
 
-A mapped scraping configuration may contain a `common` field, and must contain `performer`, `scene`, `movie` or `gallery` depending on the scraping type it is configured for. 
+A mapped scraping configuration may contain a `common` field, and must contain `performer`, `scene`, `group` or `gallery` depending on the scraping type it is configured for. 
 
-Within the `performer`/`scene`/`movie`/`gallery` field are key/value pairs corresponding to the [golang fields](/help/ScraperDevelopment.md#object-fields) on the performer/scene object. These fields are case-sensitive. 
+Within the `performer`/`scene`/`group`/`gallery` field are key/value pairs corresponding to the [golang fields](/help/ScraperDevelopment.md#object-fields) on the performer/scene object. These fields are case-sensitive. 
 
 The values of these may be either a simple selector value, which tells the system where to get the value of the field from, or a more advanced configuration (see below). For example, for an xpath configuration:
 
@@ -820,7 +820,7 @@ URL
 Date
 Image
 Studio (see Studio Fields)
-Movies (see Movie Fields)
+Groups (see Group Fields)
 Tags (see Tag fields)
 Performers (list of Performer fields)
 ```
@@ -835,7 +835,7 @@ URL
 Name
 ```
 
-### Movie
+### Group
 ```
 Name
 Aliases

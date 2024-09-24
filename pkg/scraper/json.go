@@ -102,8 +102,8 @@ func (s *jsonScraper) scrapeByURL(ctx context.Context, url string, ty ScrapeCont
 			return nil, err
 		}
 		return ret, nil
-	case ScrapeContentTypeMovie:
-		ret, err := scraper.scrapeMovie(ctx, q)
+	case ScrapeContentTypeMovie, ScrapeContentTypeGroup:
+		ret, err := scraper.scrapeGroup(ctx, q)
 		if err != nil || ret == nil {
 			return nil, err
 		}

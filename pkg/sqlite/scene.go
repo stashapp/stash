@@ -28,7 +28,7 @@ const (
 	performersScenesTable = "performers_scenes"
 	scenesTagsTable       = "scenes_tags"
 	scenesGalleriesTable  = "scenes_galleries"
-	moviesScenesTable     = "movies_scenes"
+	groupsScenesTable     = "groups_scenes"
 	scenesURLsTable       = "scene_urls"
 	sceneURLColumn        = "url"
 	scenesViewDatesTable  = "scenes_view_dates"
@@ -173,7 +173,7 @@ type sceneRepositoryType struct {
 	galleries  joinRepository
 	tags       joinRepository
 	performers joinRepository
-	movies     repository
+	groups     repository
 
 	files filesRepository
 
@@ -209,8 +209,8 @@ var (
 			},
 			fkColumn: performerIDColumn,
 		},
-		movies: repository{
-			tableName: moviesScenesTable,
+		groups: repository{
+			tableName: groupsScenesTable,
 			idColumn:  sceneIDColumn,
 		},
 		files: filesRepository{
@@ -343,8 +343,8 @@ func (qb *SceneStore) Create(ctx context.Context, newObject *models.Scene, fileI
 		}
 	}
 
-	if newObject.Movies.Loaded() {
-		if err := scenesMoviesTableMgr.insertJoins(ctx, id, newObject.Movies.List()); err != nil {
+	if newObject.Groups.Loaded() {
+		if err := scenesGroupsTableMgr.insertJoins(ctx, id, newObject.Groups.List()); err != nil {
 			return err
 		}
 	}
@@ -399,8 +399,8 @@ func (qb *SceneStore) UpdatePartial(ctx context.Context, id int, partial models.
 			return nil, err
 		}
 	}
-	if partial.MovieIDs != nil {
-		if err := scenesMoviesTableMgr.modifyJoins(ctx, id, partial.MovieIDs.Movies, partial.MovieIDs.Mode); err != nil {
+	if partial.GroupIDs != nil {
+		if err := scenesGroupsTableMgr.modifyJoins(ctx, id, partial.GroupIDs.Groups, partial.GroupIDs.Mode); err != nil {
 			return nil, err
 		}
 	}
@@ -451,8 +451,8 @@ func (qb *SceneStore) Update(ctx context.Context, updatedObject *models.Scene) e
 		}
 	}
 
-	if updatedObject.Movies.Loaded() {
-		if err := scenesMoviesTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.Movies.List()); err != nil {
+	if updatedObject.Groups.Loaded() {
+		if err := scenesGroupsTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.Groups.List()); err != nil {
 			return err
 		}
 	}
@@ -778,24 +778,17 @@ func (qb *SceneStore) OCountByPerformerID(ctx context.Context, performerID int) 
 	return ret, nil
 }
 
-func (qb *SceneStore) FindByMovieID(ctx context.Context, movieID int) ([]*models.Scene, error) {
-	sq := dialect.From(scenesMoviesJoinTable).Select(scenesMoviesJoinTable.Col(sceneIDColumn)).Where(
-		scenesMoviesJoinTable.Col(movieIDColumn).Eq(movieID),
+func (qb *SceneStore) FindByGroupID(ctx context.Context, groupID int) ([]*models.Scene, error) {
+	sq := dialect.From(scenesGroupsJoinTable).Select(scenesGroupsJoinTable.Col(sceneIDColumn)).Where(
+		scenesGroupsJoinTable.Col(groupIDColumn).Eq(groupID),
 	)
 	ret, err := qb.findBySubquery(ctx, sq)
 
 	if err != nil {
-		return nil, fmt.Errorf("getting scenes for movie %d: %w", movieID, err)
+		return nil, fmt.Errorf("getting scenes for group %d: %w", groupID, err)
 	}
 
 	return ret, nil
-}
-
-func (qb *SceneStore) CountByMovieID(ctx context.Context, movieID int) (int, error) {
-	joinTable := scenesMoviesJoinTable
-
-	q := dialect.Select(goqu.COUNT("*")).From(joinTable).Where(joinTable.Col(movieIDColumn).Eq(movieID))
-	return count(ctx, q)
 }
 
 func (qb *SceneStore) Count(ctx context.Context) (int, error) {
@@ -858,17 +851,11 @@ func (qb *SceneStore) PlayDuration(ctx context.Context) (float64, error) {
 	return ret, nil
 }
 
+// TODO - currently only used by unit test
 func (qb *SceneStore) CountByStudioID(ctx context.Context, studioID int) (int, error) {
 	table := qb.table()
 
 	q := dialect.Select(goqu.COUNT("*")).From(table).Where(table.Col(studioIDColumn).Eq(studioID))
-	return count(ctx, q)
-}
-
-func (qb *SceneStore) CountByTagID(ctx context.Context, tagID int) (int, error) {
-	joinTable := scenesTagsJoinTable
-
-	q := dialect.Select(goqu.COUNT("*")).From(joinTable).Where(joinTable.Col(tagIDColumn).Eq(tagID))
 	return count(ctx, q)
 }
 
@@ -1074,6 +1061,7 @@ var sceneSortOptions = sortOptions{
 	"duration",
 	"file_mod_time",
 	"framerate",
+	"group_scene_number",
 	"id",
 	"interactive",
 	"interactive_speed",
@@ -1141,8 +1129,11 @@ func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindF
 	direction := findFilter.GetDirection()
 	switch sort {
 	case "movie_scene_number":
-		query.join(moviesScenesTable, "", "scenes.id = movies_scenes.scene_id")
-		query.sortAndPagination += getSort("scene_index", direction, moviesScenesTable)
+		query.join(groupsScenesTable, "", "scenes.id = groups_scenes.scene_id")
+		query.sortAndPagination += getSort("scene_index", direction, groupsScenesTable)
+	case "group_scene_number":
+		query.join(groupsScenesTable, "scene_group", "scenes.id = scene_group.scene_id")
+		query.sortAndPagination += getSort("scene_index", direction, "scene_group")
 	case "tag_count":
 		query.sortAndPagination += getCountSort(sceneTable, scenesTagsTable, sceneIDColumn, direction)
 	case "performer_count":
@@ -1233,6 +1224,30 @@ func (qb *SceneStore) SaveActivity(ctx context.Context, id int, resumeTime *floa
 	return true, nil
 }
 
+func (qb *SceneStore) ResetActivity(ctx context.Context, id int, resetResume bool, resetDuration bool) (bool, error) {
+	if err := qb.tableMgr.checkIDExists(ctx, id); err != nil {
+		return false, err
+	}
+
+	record := goqu.Record{}
+
+	if resetResume {
+		record["resume_time"] = 0.0
+	}
+
+	if resetDuration {
+		record["play_duration"] = 0.0
+	}
+
+	if len(record) > 0 {
+		if err := qb.tableMgr.updateByID(ctx, id, record); err != nil {
+			return false, err
+		}
+	}
+
+	return true, nil
+}
+
 func (qb *SceneStore) GetURLs(ctx context.Context, sceneID int) ([]string, error) {
 	return scenesURLsTableMgr.get(ctx, sceneID)
 }
@@ -1269,11 +1284,11 @@ func (qb *SceneStore) AssignFiles(ctx context.Context, sceneID int, fileIDs []mo
 	return scenesFilesTableMgr.insertJoins(ctx, sceneID, firstPrimary, fileIDs)
 }
 
-func (qb *SceneStore) GetMovies(ctx context.Context, id int) (ret []models.MoviesScenes, err error) {
-	ret = []models.MoviesScenes{}
+func (qb *SceneStore) GetGroups(ctx context.Context, id int) (ret []models.GroupsScenes, err error) {
+	ret = []models.GroupsScenes{}
 
-	if err := sceneRepository.movies.getAll(ctx, id, func(rows *sqlx.Rows) error {
-		var ms moviesScenesRow
+	if err := sceneRepository.groups.getAll(ctx, id, func(rows *sqlx.Rows) error {
+		var ms groupsScenesRow
 		if err := rows.StructScan(&ms); err != nil {
 			return err
 		}
