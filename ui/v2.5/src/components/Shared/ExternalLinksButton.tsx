@@ -5,6 +5,7 @@ import { Icon } from "./Icon";
 import { IconDefinition, faLink } from "@fortawesome/free-solid-svg-icons";
 import { useMemo } from "react";
 import { faInstagram, faTwitter } from "@fortawesome/free-brands-svg-icons";
+import ReactDOM from "react-dom";
 
 export const ExternalLinksButton: React.FC<{
   icon?: IconDefinition;
@@ -15,25 +16,8 @@ export const ExternalLinksButton: React.FC<{
     return null;
   }
 
-  if (urls.length === 1) {
-    return (
-      <Button
-        as={ExternalLink}
-        href={TextUtils.sanitiseURL(urls[0])}
-        className={`minimal link external-links-button ${className}`}
-        title={urls[0]}
-      >
-        <Icon icon={icon} />
-      </Button>
-    );
-  }
-
-  return (
-    <Dropdown className="external-links-button">
-      <Dropdown.Toggle as={Button} className={`minimal link ${className}`}>
-        <Icon icon={icon} />
-      </Dropdown.Toggle>
-
+  const Menu = () =>
+    ReactDOM.createPortal(
       <Dropdown.Menu>
         {urls.map((url) => (
           <Dropdown.Item
@@ -45,7 +29,16 @@ export const ExternalLinksButton: React.FC<{
             {url}
           </Dropdown.Item>
         ))}
-      </Dropdown.Menu>
+      </Dropdown.Menu>,
+      document.body
+    );
+
+  return (
+    <Dropdown className="external-links-button">
+      <Dropdown.Toggle as={Button} className={`minimal link ${className}`}>
+        <Icon icon={icon} />
+      </Dropdown.Toggle>
+      <Menu />
     </Dropdown>
   );
 };
