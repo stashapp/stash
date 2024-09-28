@@ -2,6 +2,7 @@ fragment SceneMarkerData on SceneMarker {
   id
   title
   seconds
+  end_seconds
   stream
   preview
   screenshot

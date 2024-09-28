@@ -183,7 +183,12 @@ export const WallItem = <T extends WallItemType>({
       case "sceneMarker":
         const sceneMarker = data as GQL.SceneMarkerDataFragment;
         const newTitle = markerTitle(sceneMarker);
-        const seconds = TextUtils.secondsToTimestamp(sceneMarker.seconds);
+        const seconds =
+          sceneMarker.end_seconds !== -1
+            ? `${TextUtils.secondsToTimestamp(
+                sceneMarker.seconds
+              )}-${TextUtils.secondsToTimestamp(sceneMarker.end_seconds)}`
+            : TextUtils.secondsToTimestamp(sceneMarker.seconds);
         if (newTitle) {
           return `${newTitle} - ${seconds}`;
         } else {

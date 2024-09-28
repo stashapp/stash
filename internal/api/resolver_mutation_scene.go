@@ -655,6 +655,16 @@ func (r *mutationResolver) SceneMarkerCreate(ctx context.Context, input SceneMar
 	newMarker.PrimaryTagID = primaryTagID
 	newMarker.SceneID = sceneID
 
+	if input.EndSeconds != nil {
+		newMarker.EndSeconds = *input.EndSeconds
+		// Validate that end_seconds is not less than seconds when it's not -1
+		if newMarker.EndSeconds != -1 && newMarker.EndSeconds < newMarker.Seconds {
+			return nil, fmt.Errorf("end_seconds (%f) must be greater than or equal to seconds (%f)", newMarker.EndSeconds, newMarker.Seconds)
+		}
+	} else {
+		newMarker.EndSeconds = -1
+	}
+
 	tagIDs, err := stringslice.StringSliceToIntSlice(input.TagIds)
 	if err != nil {
 		return nil, fmt.Errorf("converting tag ids: %w", err)
@@ -695,6 +705,9 @@ func (r *mutationResolver) SceneMarkerUpdate(ctx context.Context, input SceneMar
 
 	updatedMarker.Title = translator.optionalString(input.Title, "title")
 	updatedMarker.Seconds = translator.optionalFloat64(input.Seconds, "seconds")
+	if input.EndSeconds != nil {
+		updatedMarker.EndSeconds = translator.optionalFloat64(input.EndSeconds, "end_seconds")
+	}
 	updatedMarker.SceneID, err = translator.optionalIntFromString(input.SceneID, "scene_id")
 	if err != nil {
 		return nil, fmt.Errorf("converting scene id: %w", err)
@@ -735,6 +748,19 @@ func (r *mutationResolver) SceneMarkerUpdate(ctx context.Context, input SceneMar
 			return fmt.Errorf("scene marker with id %d not found", markerID)
 		}
 
+		// Validate end_seconds
+		newSeconds := existingMarker.Seconds
+		if updatedMarker.Seconds.Set {
+			newSeconds = updatedMarker.Seconds.Value
+		}
+		newEndSeconds := existingMarker.EndSeconds
+		if updatedMarker.EndSeconds.Set {
+			newEndSeconds = updatedMarker.EndSeconds.Value
+		}
+		if newEndSeconds != -1 && newEndSeconds < newSeconds {
+			return fmt.Errorf("end_seconds (%f) must be greater than or equal to seconds (%f)", newEndSeconds, newSeconds)
+		}
+
 		newMarker, err := qb.UpdatePartial(ctx, markerID, updatedMarker)
 		if err != nil {
 			return err
@@ -749,7 +775,7 @@ func (r *mutationResolver) SceneMarkerUpdate(ctx context.Context, input SceneMar
 		}
 
 		// remove the marker preview if the scene changed or if the timestamp was changed
-		if existingMarker.SceneID != newMarker.SceneID || existingMarker.Seconds != newMarker.Seconds {
+		if existingMarker.SceneID != newMarker.SceneID || existingMarker.Seconds != newMarker.Seconds || existingMarker.EndSeconds != newMarker.EndSeconds {
 			seconds := int(existingMarker.Seconds)
 			if err := fileDeleter.MarkMarkerFiles(existingScene, seconds); err != nil {
 				return err
