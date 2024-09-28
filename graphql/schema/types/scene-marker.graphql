@@ -3,6 +3,7 @@ type SceneMarker {
   scene: Scene!
   title: String!
   seconds: Float!
+  end_seconds: Float!
   primary_tag: Tag!
   tags: [Tag!]!
   created_at: Time!
@@ -19,6 +20,7 @@ type SceneMarker {
 input SceneMarkerCreateInput {
   title: String!
   seconds: Float!
+  end_seconds: Float
   scene_id: ID!
   primary_tag_id: ID!
   tag_ids: [ID!]
@@ -28,6 +30,7 @@ input SceneMarkerUpdateInput {
   id: ID!
   title: String
   seconds: Float
+  end_seconds: Float
   scene_id: ID
   primary_tag_id: ID
   tag_ids: [ID!]
