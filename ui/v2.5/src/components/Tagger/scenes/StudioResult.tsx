@@ -1,6 +1,7 @@
 import React from "react";
 import { Button, ButtonGroup } from "react-bootstrap";
 import { FormattedMessage } from "react-intl";
+import { Link } from "react-router-dom";
 import cx from "classnames";
 
 import { Icon } from "src/components/Shared/Icon";
@@ -19,10 +20,21 @@ interface IStudioName {
   baseURL: string | undefined;
 }
 
-const StudioName: React.FC<IStudioName> = ({ studio, id, baseURL }) => {
+const StudioNameExternal: React.FC<IStudioName> = ({ studio, id, baseURL }) => {
   const name =
     baseURL && id ? (
       <ExternalLink href={`${baseURL}${id}`}>{studio.name}</ExternalLink>
+    ) : (
+      studio.name
+    );
+
+  return <span>{name}</span>;
+};
+
+const StudioNameInternal: React.FC<IStudioName> = ({ studio, id, baseURL }) => {
+  const name =
+    baseURL && id ? (
+      <Link to={`${baseURL}${id}`}>{studio.name}</Link>
     ) : (
       studio.name
     );
@@ -82,7 +94,7 @@ const StudioResult: React.FC<IStudioResultProps> = ({
         <div className="entity-name">
           <FormattedMessage id="countables.studios" values={{ count: 1 }} />:
           <b className="ml-2">
-            <StudioName
+            <StudioNameExternal
               studio={studio}
               id={studio.remote_site_id}
               baseURL={stashboxStudioPrefix}
@@ -101,7 +113,7 @@ const StudioResult: React.FC<IStudioResultProps> = ({
                 <FormattedMessage id="component_tagger.verb_matched" />:
               </span>
               <b className="col-3 text-right">
-                <StudioName
+                <StudioNameInternal
                   studio={matchedStudio}
                   id={matchedStudio.id}
                   baseURL={studioURLPrefix}
@@ -136,7 +148,7 @@ const StudioResult: React.FC<IStudioResultProps> = ({
       <div className="entity-name">
         <FormattedMessage id="countables.studios" values={{ count: 1 }} />:
         <b className="ml-2">
-          <StudioName
+          <StudioNameExternal
             studio={studio}
             id={studio.remote_site_id}
             baseURL={stashboxStudioPrefix}
