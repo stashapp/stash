@@ -2,8 +2,10 @@ type SceneMarker {
   id: ID!
   scene: Scene!
   title: String!
+  "The required start time of the marker (in seconds). Supports decimals."
   seconds: Float!
-  end_seconds: Float!
+  "The optional end time of the marker (in seconds). Supports decimals."
+  end_seconds: Float
   primary_tag: Tag!
   tags: [Tag!]!
   created_at: Time!
@@ -19,7 +21,9 @@ type SceneMarker {
 
 input SceneMarkerCreateInput {
   title: String!
+  "The required start time of the marker (in seconds). Supports decimals."
   seconds: Float!
+  "The optional end time of the marker (in seconds). Supports decimals."
   end_seconds: Float
   scene_id: ID!
   primary_tag_id: ID!
@@ -29,7 +33,9 @@ input SceneMarkerCreateInput {
 input SceneMarkerUpdateInput {
   id: ID!
   title: String
+  "The start time of the marker (in seconds). Supports decimals."
   seconds: Float
+  "The end time of the marker (in seconds). Supports decimals."
   end_seconds: Float
   scene_id: ID
   primary_tag_id: ID
