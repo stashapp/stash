@@ -70,7 +70,7 @@ export const HierarchicalLabelValueFilter: React.FC<
     if (inputType === "studios") {
       id = "include_sub_studios";
     } else if (inputType === "groups") {
-      id = "include-sub-groups";
+      id = "include_sub_groups";
     } else if (type === "children") {
       id = "include_parent_tags";
     } else {
