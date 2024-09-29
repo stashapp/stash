@@ -184,7 +184,8 @@ export const WallItem = <T extends WallItemType>({
         const sceneMarker = data as GQL.SceneMarkerDataFragment;
         const newTitle = markerTitle(sceneMarker);
         const seconds =
-          typeof sceneMarker.end_seconds === 'number' && sceneMarker.end_seconds !== -1
+          typeof sceneMarker.end_seconds === "number" &&
+          sceneMarker.end_seconds !== -1
             ? `${TextUtils.secondsToTimestamp(
                 sceneMarker.seconds
               )}-${TextUtils.secondsToTimestamp(sceneMarker.end_seconds)}`
