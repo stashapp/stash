@@ -53,7 +53,7 @@ export const PrimaryTags: React.FC<IPrimaryTags> = ({
             </Button>
           </div>
           <div>
-            {marker.end_seconds !== -1
+            {typeof marker.end_seconds === 'number' && marker.end_seconds !== -1
               ? `${TextUtils.secondsToTimestamp(
                   marker.seconds
                 )}-${TextUtils.secondsToTimestamp(marker.end_seconds)}`
