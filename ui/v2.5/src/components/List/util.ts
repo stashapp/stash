@@ -385,7 +385,7 @@ export function useEnsureValidPage(
     const totalPages = Math.ceil(totalCount / filter.itemsPerPage);
 
     if (totalPages > 0 && filter.currentPage > totalPages) {
-      setFilter((prevFilter) => prevFilter.changePage(1));
+      setFilter((prevFilter) => prevFilter.changePage(totalPages));
     }
   }, [filter, totalCount, setFilter]);
 }
