@@ -167,7 +167,9 @@ func (t *joinTable) invert() *joinTable {
 			table:    t.table.table,
 			idColumn: t.fkColumn,
 		},
-		fkColumn: t.table.idColumn,
+		fkColumn:     t.table.idColumn,
+		foreignTable: t.foreignTable,
+		orderBy:      t.orderBy,
 	}
 }
 
