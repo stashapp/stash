@@ -23,5 +23,13 @@ RUN apk add --no-cache --virtual .build-deps gcc python3-dev musl-dev \
     && apk del .build-deps
 ENV STASH_CONFIG_FILE=/root/.stash/config.yml
 
+# Basic build-time metadata as defined at https://github.com/opencontainers/image-spec/blob/main/annotations.md#pre-defined-annotation-keys
+LABEL org.opencontainers.image.title="Stash" \
+    org.opencontainers.image.description="An organizer for your porn, written in Go." \
+    org.opencontainers.image.url="https://stashapp.cc" \
+    org.opencontainers.image.documentation="https://docs.stashapp.cc" \
+    org.opencontainers.image.source="https://github.com/stashapp/stash" \
+    org.opencontainers.image.licenses="AGPL-3.0"
+
 EXPOSE 9999
 CMD ["stash"]
