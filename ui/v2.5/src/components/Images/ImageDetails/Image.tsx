@@ -279,7 +279,10 @@ const ImagePage: React.FC<IProps> = ({ image }) => {
   );
 
   const title = objectTitle(image);
-  const ImageView = isVideo(image.visual_files[0]) ? "video" : "img";
+  const ImageView =
+    image.visual_files.length > 0 && isVideo(image.visual_files[0])
+      ? "video"
+      : "img";
 
   const resolution = useMemo(() => {
     return file?.width && file?.height
@@ -362,19 +365,21 @@ const ImagePage: React.FC<IProps> = ({ image }) => {
         {renderTabs()}
       </div>
       <div className="image-container">
-        <ImageView
-          loop={image.visual_files[0].__typename == "VideoFile"}
-          autoPlay={image.visual_files[0].__typename == "VideoFile"}
-          controls={image.visual_files[0].__typename == "VideoFile"}
-          className="m-sm-auto no-gutter image-image"
-          style={
-            image.visual_files[0].__typename == "VideoFile"
-              ? { width: "100%", height: "100%" }
-              : {}
-          }
-          alt={title}
-          src={image.paths.image ?? ""}
-        />
+        {image.visual_files.length > 0 && (
+          <ImageView
+            loop={image.visual_files[0].__typename == "VideoFile"}
+            autoPlay={image.visual_files[0].__typename == "VideoFile"}
+            controls={image.visual_files[0].__typename == "VideoFile"}
+            className="m-sm-auto no-gutter image-image"
+            style={
+              image.visual_files[0].__typename == "VideoFile"
+                ? { width: "100%", height: "100%" }
+                : {}
+            }
+            alt={title}
+            src={image.paths.image ?? ""}
+          />
+        )}
       </div>
     </div>
   );
