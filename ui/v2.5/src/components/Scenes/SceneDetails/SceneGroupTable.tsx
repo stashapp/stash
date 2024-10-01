@@ -4,6 +4,7 @@ import * as GQL from "src/core/generated-graphql";
 import { Form, Row, Col } from "react-bootstrap";
 import { Group, GroupSelect } from "src/components/Groups/GroupSelect";
 import cx from "classnames";
+import { NumberField } from "src/utils/form";
 
 export type GroupSceneIndexMap = Map<string, number | undefined>;
 
@@ -92,9 +93,8 @@ export const SceneGroupTable: React.FC<IProps> = (props) => {
               />
             </Col>
             <Col xs={3}>
-              <Form.Control
+              <NumberField
                 className="text-input"
-                type="number"
                 value={m.scene_index ?? ""}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                   updateFieldChanged(

@@ -57,12 +57,25 @@ export function useFilterURL(
       let newFilter = prevFilter.empty();
       newFilter.configureFromQueryString(location.search);
       if (!isEqual(newFilter, prevFilter)) {
+        // filter may have changed if random seed was set, update the URL
+        const newParams = newFilter.makeQueryParameters();
+        if (newParams !== location.search) {
+          history.replace({ ...history.location, search: newParams });
+        }
+
         return newFilter;
       } else {
         return prevFilter;
       }
     });
-  }, [active, location.search, defaultFilter, setFilter, updateFilter]);
+  }, [
+    active,
+    location.search,
+    defaultFilter,
+    setFilter,
+    updateFilter,
+    history,
+  ]);
 
   return { setFilter: updateFilter };
 }
@@ -372,7 +385,7 @@ export function useEnsureValidPage(
     const totalPages = Math.ceil(totalCount / filter.itemsPerPage);
 
     if (totalPages > 0 && filter.currentPage > totalPages) {
-      setFilter((prevFilter) => prevFilter.changePage(1));
+      setFilter((prevFilter) => prevFilter.changePage(totalPages));
     }
   }, [filter, totalCount, setFilter]);
 }

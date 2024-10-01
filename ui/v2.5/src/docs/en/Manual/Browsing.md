@@ -10,7 +10,7 @@ The text field allows you to search using keywords. Keyword searching matches on
 |------|-----------------|
 | Scene | Title, Details, Path, OSHash, Checksum, Marker titles |
 | Image | Title, Path, Checksum |
-| Movie | Title |
+| Group | Title |
 | Marker | Title, Scene title |
 | Gallery | Title, Path, Checksum |
 | Performer | Name, Aliases |
