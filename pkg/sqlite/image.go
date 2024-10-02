@@ -528,7 +528,10 @@ func (qb *ImageStore) GetFiles(ctx context.Context, id int) ([]models.File, erro
 		return nil, err
 	}
 
-	return files, nil
+	ret := make([]models.File, len(files))
+	copy(ret, files)
+
+	return ret, nil
 }
 
 func (qb *ImageStore) GetManyFileIDs(ctx context.Context, ids []int) ([][]models.FileID, error) {
