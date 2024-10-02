@@ -227,12 +227,27 @@ func (s *Manager) postInit(ctx context.Context) error {
 		})
 	}
 
-	if err := s.Database.Open(s.Config.GetDatabasePath()); err != nil {
-		var migrationNeededErr *sqlite.MigrationNeededError
-		if errors.As(err, &migrationNeededErr) {
-			logger.Warn(err)
-		} else {
-			return err
+	{
+		var dbType = sqlite.DatabaseType(strings.ToUpper(s.Config.GetDatabaseType()))
+		if dbType != sqlite.SqliteBackend && dbType != sqlite.PostgresBackend {
+			dbType = sqlite.SqliteBackend
+		}
+
+		var err error
+		if dbType == sqlite.SqliteBackend {
+			sqlite.RegisterSqliteDialect()
+			err = s.Database.OpenSqlite(s.Config.GetDatabasePath())
+		} else if dbType == sqlite.PostgresBackend {
+			err = s.Database.OpenPostgres(s.Config.GetDatabaseConnectionString())
+		}
+
+		if err != nil {
+			var migrationNeededErr *sqlite.MigrationNeededError
+			if errors.As(err, &migrationNeededErr) {
+				logger.Warn(err)
+			} else {
+				return err
+			}
 		}
 	}
 

@@ -10,6 +10,8 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/doug-martin/goqu/v9"
+	"github.com/doug-martin/goqu/v9/dialect/sqlite3"
 	"github.com/jmoiron/sqlx"
 
 	"github.com/stashapp/stash/pkg/fsutil"
@@ -36,7 +38,7 @@ const (
 
 var appSchemaVersion uint = 67
 
-//go:embed migrations/*.sql
+//go:embed migrations/*.sql migrationsPostgres/*.sql
 var migrationsBox embed.FS
 
 var (
@@ -81,12 +83,21 @@ type storeRepository struct {
 	Group          *GroupStore
 }
 
+type DatabaseType string
+
+const (
+	PostgresBackend DatabaseType = "POSTGRES"
+	SqliteBackend   DatabaseType = "SQLITE"
+)
+
 type Database struct {
 	*storeRepository
 
-	readDB  *sqlx.DB
-	writeDB *sqlx.DB
-	dbPath  string
+	readDB   *sqlx.DB
+	writeDB  *sqlx.DB
+	dbPath   string
+	dbType   DatabaseType
+	dbString string
 
 	schemaVersion uint
 
@@ -140,15 +151,36 @@ func (db *Database) Ready() error {
 	return nil
 }
 
+func (db *Database) OpenPostgres(dbConnector string) error {
+	db.dbType = PostgresBackend
+	db.dbString = dbConnector
+
+	dialect = goqu.Dialect("postgres")
+
+	return db.OpenGeneric()
+}
+
+func RegisterSqliteDialect() {
+	opts := sqlite3.DialectOptions()
+	opts.SupportsReturn = true
+	goqu.RegisterDialect("sqlite3new", opts)
+}
+
+func (db *Database) OpenSqlite(dbPath string) error {
+	db.dbType = SqliteBackend
+	db.dbPath = dbPath
+
+	dialect = goqu.Dialect("sqlite3new")
+
+	return db.OpenGeneric()
+}
+
 // Open initializes the database. If the database is new, then it
 // performs a full migration to the latest schema version. Otherwise, any
 // necessary migrations must be run separately using RunMigrations.
 // Returns true if the database is new.
-func (db *Database) Open(dbPath string) error {
-	db.lock()
-	defer db.unlock()
-
-	db.dbPath = dbPath
+func (db *Database) OpenGeneric() error {
+	goqu.SetDefaultPrepared(false)
 
 	databaseSchemaVersion, err := db.getDatabaseSchemaVersion()
 	if err != nil {
@@ -234,26 +266,43 @@ func (db *Database) Close() error {
 	return nil
 }
 
-func (db *Database) open(disableForeignKeys bool, writable bool) (*sqlx.DB, error) {
+func (db *Database) open(disableForeignKeys bool, writable bool) (conn *sqlx.DB, err error) {
+	// Fail-safe
+	err = errors.New("missing backend type")
+
 	// https://github.com/mattn/go-sqlite3
-	url := "file:" + db.dbPath + "?_journal=WAL&_sync=NORMAL&_busy_timeout=50"
-	if !disableForeignKeys {
-		url += "&_fk=true"
+	if db.dbType == SqliteBackend {
+		url := "file:" + db.dbPath + "?_journal=WAL&_sync=NORMAL&_busy_timeout=50"
+		if !disableForeignKeys {
+			url += "&_fk=true"
+		}
+
+		if writable {
+			url += "&_txlock=immediate"
+		} else {
+			url += "&mode=ro"
+		}
+
+		// #5155 - set the cache size if the environment variable is set
+		// default is -2000 which is 2MB
+		if cacheSize := os.Getenv(cacheSizeEnv); cacheSize != "" {
+			url += "&_cache_size=" + cacheSize
+		}
+
+		conn, err = sqlx.Open(sqlite3Driver, url)
+	}
+	if db.dbType == PostgresBackend {
+		conn, err = sqlx.Open("postgres", db.dbString)
+		if err == nil {
+			if disableForeignKeys {
+				conn.Exec("SET session_replication_role = replica;")
+			}
+			if !writable {
+				conn.Exec("SET default_transaction_read_only = ON;")
+			}
+		}
 	}
 
-	if writable {
-		url += "&_txlock=immediate"
-	} else {
-		url += "&mode=ro"
-	}
-
-	// #5155 - set the cache size if the environment variable is set
-	// default is -2000 which is 2MB
-	if cacheSize := os.Getenv(cacheSizeEnv); cacheSize != "" {
-		url += "&_cache_size=" + cacheSize
-	}
-
-	conn, err := sqlx.Open(sqlite3Driver, url)
 	if err != nil {
 		return nil, fmt.Errorf("db.Open(): %w", err)
 	}
@@ -299,6 +348,11 @@ func (db *Database) openWriteDB() error {
 }
 
 func (db *Database) Remove() error {
+	if db.dbType == PostgresBackend {
+		logger.Warn("Postgres backend detected, ignoring Remove request")
+		return nil
+	}
+
 	databasePath := db.dbPath
 	err := db.Close()
 
@@ -326,12 +380,16 @@ func (db *Database) Remove() error {
 }
 
 func (db *Database) Reset() error {
-	databasePath := db.dbPath
+	if db.dbType == PostgresBackend {
+		logger.Warn("Postgres backend detected, ignoring Reset request")
+		return nil
+	}
+
 	if err := db.Remove(); err != nil {
 		return err
 	}
 
-	if err := db.Open(databasePath); err != nil {
+	if err := db.OpenSqlite(db.dbPath); err != nil {
 		return fmt.Errorf("[reset DB] unable to initialize: %w", err)
 	}
 
@@ -341,6 +399,11 @@ func (db *Database) Reset() error {
 // Backup the database. If db is nil, then uses the existing database
 // connection.
 func (db *Database) Backup(backupPath string) (err error) {
+	if db.dbType == PostgresBackend {
+		logger.Warn("Postgres backend detected, ignoring Backup request")
+		return nil
+	}
+
 	thisDB := db.writeDB
 	if thisDB == nil {
 		thisDB, err = sqlx.Connect(sqlite3Driver, "file:"+db.dbPath+"?_fk=true")
@@ -370,6 +433,11 @@ func (db *Database) Anonymise(outPath string) error {
 }
 
 func (db *Database) RestoreFromBackup(backupPath string) error {
+	if db.dbType == PostgresBackend {
+		logger.Warn("Postgres backend detected, ignoring RestoreFromBackup request")
+		return nil
+	}
+
 	logger.Infof("Restoring backup database %s into %s", backupPath, db.dbPath)
 	return os.Rename(backupPath, db.dbPath)
 }
@@ -434,12 +502,12 @@ func (db *Database) Analyze(ctx context.Context) error {
 	return err
 }
 
-func (db *Database) ExecSQL(ctx context.Context, query string, args []interface{}) (*int64, *int64, error) {
+func (db *Database) ExecSQL(ctx context.Context, query string, args []interface{}) (*int64, error) {
 	wrapper := dbWrapperType{}
 
 	result, err := wrapper.Exec(ctx, query, args...)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	var rowsAffected *int64
@@ -448,13 +516,7 @@ func (db *Database) ExecSQL(ctx context.Context, query string, args []interface{
 		rowsAffected = &ra
 	}
 
-	var lastInsertId *int64
-	li, err := result.LastInsertId()
-	if err == nil {
-		lastInsertId = &li
-	}
-
-	return rowsAffected, lastInsertId, nil
+	return rowsAffected, nil
 }
 
 func (db *Database) QuerySQL(ctx context.Context, query string, args []interface{}) ([]string, [][]interface{}, error) {

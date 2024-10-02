@@ -33,7 +33,7 @@ func NewAnonymiser(db *Database, outPath string) (*Anonymiser, error) {
 	}
 
 	newDB := NewDatabase()
-	if err := newDB.Open(outPath); err != nil {
+	if err := newDB.OpenSqlite(outPath); err != nil {
 		return nil, fmt.Errorf("opening %s: %w", outPath, err)
 	}
 

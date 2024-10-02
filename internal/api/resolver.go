@@ -319,12 +319,11 @@ func (r *queryResolver) Latestversion(ctx context.Context) (*LatestVersion, erro
 
 func (r *mutationResolver) ExecSQL(ctx context.Context, sql string, args []interface{}) (*SQLExecResult, error) {
 	var rowsAffected *int64
-	var lastInsertID *int64
 
 	db := manager.GetInstance().Database
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		var err error
-		rowsAffected, lastInsertID, err = db.ExecSQL(ctx, sql, args)
+		rowsAffected, err = db.ExecSQL(ctx, sql, args)
 		return err
 	}); err != nil {
 		return nil, err
@@ -332,7 +331,6 @@ func (r *mutationResolver) ExecSQL(ctx context.Context, sql string, args []inter
 
 	return &SQLExecResult{
 		RowsAffected: rowsAffected,
-		LastInsertID: lastInsertID,
 	}, nil
 }
 

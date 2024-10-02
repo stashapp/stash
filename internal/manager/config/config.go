@@ -50,7 +50,9 @@ const (
 
 	DefaultMaxSessionAge = 60 * 60 * 1 // 1 hours
 
-	Database = "database"
+	Database                 = "database"
+	DatabaseType             = "database_type"
+	DatabaseConnectionString = "database_string"
 
 	Exclude      = "exclude"
 	ImageExclude = "image_exclude"
@@ -693,6 +695,14 @@ func (i *Config) GetMetadataPath() string {
 
 func (i *Config) GetDatabasePath() string {
 	return i.getString(Database)
+}
+
+func (i *Config) GetDatabaseType() string {
+	return i.getString(DatabaseType)
+}
+
+func (i *Config) GetDatabaseConnectionString() string {
+	return i.getString(DatabaseConnectionString)
 }
 
 func (i *Config) GetBackupDirectoryPath() string {
