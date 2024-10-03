@@ -32,8 +32,8 @@ func NewAnonymiser(db *Database, outPath string) (*Anonymiser, error) {
 		return nil, fmt.Errorf("vacuuming into %s: %w", outPath, err)
 	}
 
-	newDB := NewDatabase()
-	if err := newDB.OpenSqlite(outPath); err != nil {
+	newDB := NewSQLiteDatabase(db.dbPath)
+	if err := newDB.Open(); err != nil {
 		return nil, fmt.Errorf("opening %s: %w", outPath, err)
 	}
 

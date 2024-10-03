@@ -6,16 +6,13 @@ import (
 	"embed"
 	"errors"
 	"fmt"
-	"os"
-	"path/filepath"
 	"time"
 
 	"github.com/doug-martin/goqu/v9"
-	"github.com/doug-martin/goqu/v9/dialect/sqlite3"
 	"github.com/jmoiron/sqlx"
 
-	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/models"
 )
 
 const (
@@ -90,8 +87,48 @@ const (
 	SqliteBackend   DatabaseType = "SQLITE"
 )
 
+type databaseFunctions interface {
+	Analyze(ctx context.Context) error
+	Anonymise(outPath string) error
+	AnonymousDatabasePath(backupDirectoryPath string) string
+	AppSchemaVersion() uint
+	Backup(backupPath string) (err error)
+	Begin(ctx context.Context, writable bool) (context.Context, error)
+	Open() error
+	Close() error
+	Commit(ctx context.Context) error
+	DatabaseBackupPath(backupDirectoryPath string) string
+	DatabasePath() string
+	ExecSQL(ctx context.Context, query string, args []interface{}) (*int64, error)
+	IsLocked(err error) bool
+	Optimise(ctx context.Context) error
+	QuerySQL(ctx context.Context, query string, args []interface{}) ([]string, [][]interface{}, error)
+	ReInitialise() error
+	Ready() error
+	Remove() error
+	Repository() models.Repository
+	Reset() error
+	RestoreFromBackup(backupPath string) error
+	Rollback(ctx context.Context) error
+	RunAllMigrations() error
+	SetBlobStoreOptions(options BlobStoreOptions)
+	Vacuum(ctx context.Context) error
+	Version() uint
+	WithDatabase(ctx context.Context) (context.Context, error)
+	getDatabaseSchemaVersion() (uint, error)
+	initialise() error
+	lock()
+	needsMigration() bool
+	open(disableForeignKeys bool, writable bool) (conn *sqlx.DB, err error)
+	openReadDB() error
+	openWriteDB() error
+	txnComplete(ctx context.Context)
+	unlock()
+}
+
 type Database struct {
 	*storeRepository
+	databaseFunctions
 
 	readDB   *sqlx.DB
 	writeDB  *sqlx.DB
@@ -151,35 +188,11 @@ func (db *Database) Ready() error {
 	return nil
 }
 
-func (db *Database) OpenPostgres(dbConnector string) error {
-	db.dbType = PostgresBackend
-	db.dbString = dbConnector
-
-	dialect = goqu.Dialect("postgres")
-
-	return db.OpenGeneric()
-}
-
-func RegisterSqliteDialect() {
-	opts := sqlite3.DialectOptions()
-	opts.SupportsReturn = true
-	goqu.RegisterDialect("sqlite3new", opts)
-}
-
-func (db *Database) OpenSqlite(dbPath string) error {
-	db.dbType = SqliteBackend
-	db.dbPath = dbPath
-
-	dialect = goqu.Dialect("sqlite3new")
-
-	return db.OpenGeneric()
-}
-
 // Open initializes the database. If the database is new, then it
 // performs a full migration to the latest schema version. Otherwise, any
 // necessary migrations must be run separately using RunMigrations.
 // Returns true if the database is new.
-func (db *Database) OpenGeneric() error {
+func (db *Database) Open() error {
 	goqu.SetDefaultPrepared(false)
 
 	databaseSchemaVersion, err := db.getDatabaseSchemaVersion()
@@ -266,50 +279,6 @@ func (db *Database) Close() error {
 	return nil
 }
 
-func (db *Database) open(disableForeignKeys bool, writable bool) (conn *sqlx.DB, err error) {
-	// Fail-safe
-	err = errors.New("missing backend type")
-
-	// https://github.com/mattn/go-sqlite3
-	if db.dbType == SqliteBackend {
-		url := "file:" + db.dbPath + "?_journal=WAL&_sync=NORMAL&_busy_timeout=50"
-		if !disableForeignKeys {
-			url += "&_fk=true"
-		}
-
-		if writable {
-			url += "&_txlock=immediate"
-		} else {
-			url += "&mode=ro"
-		}
-
-		// #5155 - set the cache size if the environment variable is set
-		// default is -2000 which is 2MB
-		if cacheSize := os.Getenv(cacheSizeEnv); cacheSize != "" {
-			url += "&_cache_size=" + cacheSize
-		}
-
-		conn, err = sqlx.Open(sqlite3Driver, url)
-	}
-	if db.dbType == PostgresBackend {
-		conn, err = sqlx.Open("postgres", db.dbString)
-		if err == nil {
-			if disableForeignKeys {
-				conn.Exec("SET session_replication_role = replica;")
-			}
-			if !writable {
-				conn.Exec("SET default_transaction_read_only = ON;")
-			}
-		}
-	}
-
-	if err != nil {
-		return nil, fmt.Errorf("db.Open(): %w", err)
-	}
-
-	return conn, nil
-}
-
 func (db *Database) initialise() error {
 	if err := db.openReadDB(); err != nil {
 		return fmt.Errorf("opening read database: %w", err)
@@ -347,81 +316,6 @@ func (db *Database) openWriteDB() error {
 	return err
 }
 
-func (db *Database) Remove() error {
-	if db.dbType == PostgresBackend {
-		logger.Warn("Postgres backend detected, ignoring Remove request")
-		return nil
-	}
-
-	databasePath := db.dbPath
-	err := db.Close()
-
-	if err != nil {
-		return fmt.Errorf("error closing database: %w", err)
-	}
-
-	err = os.Remove(databasePath)
-	if err != nil {
-		return fmt.Errorf("error removing database: %w", err)
-	}
-
-	// remove the -shm, -wal files ( if they exist )
-	walFiles := []string{databasePath + "-shm", databasePath + "-wal"}
-	for _, wf := range walFiles {
-		if exists, _ := fsutil.FileExists(wf); exists {
-			err = os.Remove(wf)
-			if err != nil {
-				return fmt.Errorf("error removing database: %w", err)
-			}
-		}
-	}
-
-	return nil
-}
-
-func (db *Database) Reset() error {
-	if db.dbType == PostgresBackend {
-		logger.Warn("Postgres backend detected, ignoring Reset request")
-		return nil
-	}
-
-	if err := db.Remove(); err != nil {
-		return err
-	}
-
-	if err := db.OpenSqlite(db.dbPath); err != nil {
-		return fmt.Errorf("[reset DB] unable to initialize: %w", err)
-	}
-
-	return nil
-}
-
-// Backup the database. If db is nil, then uses the existing database
-// connection.
-func (db *Database) Backup(backupPath string) (err error) {
-	if db.dbType == PostgresBackend {
-		logger.Warn("Postgres backend detected, ignoring Backup request")
-		return nil
-	}
-
-	thisDB := db.writeDB
-	if thisDB == nil {
-		thisDB, err = sqlx.Connect(sqlite3Driver, "file:"+db.dbPath+"?_fk=true")
-		if err != nil {
-			return fmt.Errorf("open database %s failed: %w", db.dbPath, err)
-		}
-		defer thisDB.Close()
-	}
-
-	logger.Infof("Backing up database into: %s", backupPath)
-	_, err = thisDB.Exec(`VACUUM INTO "` + backupPath + `"`)
-	if err != nil {
-		return fmt.Errorf("vacuum failed: %w", err)
-	}
-
-	return nil
-}
-
 func (db *Database) Anonymise(outPath string) error {
 	anon, err := NewAnonymiser(db, outPath)
 
@@ -432,42 +326,12 @@ func (db *Database) Anonymise(outPath string) error {
 	return anon.Anonymise(context.Background())
 }
 
-func (db *Database) RestoreFromBackup(backupPath string) error {
-	if db.dbType == PostgresBackend {
-		logger.Warn("Postgres backend detected, ignoring RestoreFromBackup request")
-		return nil
-	}
-
-	logger.Infof("Restoring backup database %s into %s", backupPath, db.dbPath)
-	return os.Rename(backupPath, db.dbPath)
-}
-
 func (db *Database) AppSchemaVersion() uint {
 	return appSchemaVersion
 }
 
 func (db *Database) DatabasePath() string {
 	return db.dbPath
-}
-
-func (db *Database) DatabaseBackupPath(backupDirectoryPath string) string {
-	fn := fmt.Sprintf("%s.%d.%s", filepath.Base(db.dbPath), db.schemaVersion, time.Now().Format("20060102_150405"))
-
-	if backupDirectoryPath != "" {
-		return filepath.Join(backupDirectoryPath, fn)
-	}
-
-	return fn
-}
-
-func (db *Database) AnonymousDatabasePath(backupDirectoryPath string) string {
-	fn := fmt.Sprintf("%s.anonymous.%d.%s", filepath.Base(db.dbPath), db.schemaVersion, time.Now().Format("20060102_150405"))
-
-	if backupDirectoryPath != "" {
-		return filepath.Join(backupDirectoryPath, fn)
-	}
-
-	return fn
 }
 
 func (db *Database) Version() uint {

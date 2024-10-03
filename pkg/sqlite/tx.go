@@ -35,7 +35,9 @@ func logSQL(start time.Time, query string, args ...interface{}) {
 	}
 }
 
-type dbWrapperType struct{}
+type dbWrapperType struct {
+	dbType DatabaseType
+}
 
 var dbWrapper = dbWrapperType{}
 
@@ -47,7 +49,21 @@ func sqlError(err error, sql string, args ...interface{}) error {
 	return fmt.Errorf("error executing `%s` [%v]: %w", sql, args, err)
 }
 
-func (*dbWrapperType) Get(ctx context.Context, dest interface{}, query string, args ...interface{}) error {
+func (db *dbWrapperType) Rebind(query string) string {
+	var bindType int
+
+	switch db.dbType {
+	case SqliteBackend:
+		bindType = sqlx.QUESTION
+	case PostgresBackend:
+		bindType = sqlx.DOLLAR
+	}
+
+	return sqlx.Rebind(bindType, query)
+}
+
+func (db *dbWrapperType) Get(ctx context.Context, dest interface{}, query string, args ...interface{}) error {
+	query = db.Rebind(query)
 	tx, err := getDBReader(ctx)
 	if err != nil {
 		return sqlError(err, query, args...)
@@ -60,7 +76,8 @@ func (*dbWrapperType) Get(ctx context.Context, dest interface{}, query string, a
 	return sqlError(err, query, args...)
 }
 
-func (*dbWrapperType) Select(ctx context.Context, dest interface{}, query string, args ...interface{}) error {
+func (db *dbWrapperType) Select(ctx context.Context, dest interface{}, query string, args ...interface{}) error {
+	query = db.Rebind(query)
 	tx, err := getDBReader(ctx)
 	if err != nil {
 		return sqlError(err, query, args...)
@@ -73,7 +90,8 @@ func (*dbWrapperType) Select(ctx context.Context, dest interface{}, query string
 	return sqlError(err, query, args...)
 }
 
-func (*dbWrapperType) Queryx(ctx context.Context, query string, args ...interface{}) (*sqlx.Rows, error) {
+func (db *dbWrapperType) Queryx(ctx context.Context, query string, args ...interface{}) (*sqlx.Rows, error) {
+	query = db.Rebind(query)
 	tx, err := getDBReader(ctx)
 	if err != nil {
 		return nil, sqlError(err, query, args...)
@@ -86,7 +104,8 @@ func (*dbWrapperType) Queryx(ctx context.Context, query string, args ...interfac
 	return ret, sqlError(err, query, args...)
 }
 
-func (*dbWrapperType) QueryxContext(ctx context.Context, query string, args ...interface{}) (*sqlx.Rows, error) {
+func (db *dbWrapperType) QueryxContext(ctx context.Context, query string, args ...interface{}) (*sqlx.Rows, error) {
+	query = db.Rebind(query)
 	tx, err := getDBReader(ctx)
 	if err != nil {
 		return nil, sqlError(err, query, args...)
@@ -99,7 +118,8 @@ func (*dbWrapperType) QueryxContext(ctx context.Context, query string, args ...i
 	return ret, sqlError(err, query, args...)
 }
 
-func (*dbWrapperType) NamedExec(ctx context.Context, query string, arg interface{}) (sql.Result, error) {
+func (db *dbWrapperType) NamedExec(ctx context.Context, query string, arg interface{}) (sql.Result, error) {
+	query = db.Rebind(query)
 	tx, err := getTx(ctx)
 	if err != nil {
 		return nil, sqlError(err, query, arg)
@@ -112,7 +132,8 @@ func (*dbWrapperType) NamedExec(ctx context.Context, query string, arg interface
 	return ret, sqlError(err, query, arg)
 }
 
-func (*dbWrapperType) Exec(ctx context.Context, query string, args ...interface{}) (sql.Result, error) {
+func (db *dbWrapperType) Exec(ctx context.Context, query string, args ...interface{}) (sql.Result, error) {
+	query = db.Rebind(query)
 	tx, err := getTx(ctx)
 	if err != nil {
 		return nil, sqlError(err, query, args...)
@@ -126,7 +147,8 @@ func (*dbWrapperType) Exec(ctx context.Context, query string, args ...interface{
 }
 
 // Prepare creates a prepared statement.
-func (*dbWrapperType) Prepare(ctx context.Context, query string, args ...interface{}) (*stmt, error) {
+func (db *dbWrapperType) Prepare(ctx context.Context, query string, args ...interface{}) (*stmt, error) {
+	query = db.Rebind(query)
 	tx, err := getTx(ctx)
 	if err != nil {
 		return nil, sqlError(err, query, args...)
@@ -144,7 +166,7 @@ func (*dbWrapperType) Prepare(ctx context.Context, query string, args ...interfa
 	}, nil
 }
 
-func (*dbWrapperType) ExecStmt(ctx context.Context, stmt *stmt, args ...interface{}) (sql.Result, error) {
+func (db *dbWrapperType) ExecStmt(ctx context.Context, stmt *stmt, args ...interface{}) (sql.Result, error) {
 	_, err := getTx(ctx)
 	if err != nil {
 		return nil, sqlError(err, stmt.query, args...)

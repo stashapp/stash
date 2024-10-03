@@ -35,7 +35,22 @@ import (
 func Initialize(cfg *config.Config, l *log.Logger) (*Manager, error) {
 	ctx := context.TODO()
 
-	db := sqlite.NewDatabase()
+	var db *sqlite.Database
+
+	{
+		var dbType = sqlite.DatabaseType(strings.ToUpper(cfg.GetDatabaseType()))
+		if dbType != sqlite.SqliteBackend && dbType != sqlite.PostgresBackend {
+			dbType = sqlite.SqliteBackend
+		}
+
+		if dbType == sqlite.SqliteBackend {
+			sqlite.RegisterSqliteDialect()
+			db = sqlite.NewSQLiteDatabase(cfg.GetDatabasePath())
+		} else if dbType == sqlite.PostgresBackend {
+			db = sqlite.NewPostgresDatabase(cfg.GetDatabaseConnectionString())
+		}
+	}
+
 	repo := db.Repository()
 
 	// start with empty paths
@@ -227,27 +242,12 @@ func (s *Manager) postInit(ctx context.Context) error {
 		})
 	}
 
-	{
-		var dbType = sqlite.DatabaseType(strings.ToUpper(s.Config.GetDatabaseType()))
-		if dbType != sqlite.SqliteBackend && dbType != sqlite.PostgresBackend {
-			dbType = sqlite.SqliteBackend
-		}
-
-		var err error
-		if dbType == sqlite.SqliteBackend {
-			sqlite.RegisterSqliteDialect()
-			err = s.Database.OpenSqlite(s.Config.GetDatabasePath())
-		} else if dbType == sqlite.PostgresBackend {
-			err = s.Database.OpenPostgres(s.Config.GetDatabaseConnectionString())
-		}
-
-		if err != nil {
-			var migrationNeededErr *sqlite.MigrationNeededError
-			if errors.As(err, &migrationNeededErr) {
-				logger.Warn(err)
-			} else {
-				return err
-			}
+	if err := s.Database.Open(); err != nil {
+		var migrationNeededErr *sqlite.MigrationNeededError
+		if errors.As(err, &migrationNeededErr) {
+			logger.Warn(err)
+		} else {
+			return err
 		}
 	}
 
