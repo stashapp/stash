@@ -1490,5 +1490,6 @@
     "sub_group_count": "子集合计数",
     "sub_group_of": "{parent}的子集合",
     "sub_group_order": "子集合排序",
-    "sub_groups": "子集合"
+    "sub_groups": "子集合",
+    "include_sub_groups": "包括子组"
 }
