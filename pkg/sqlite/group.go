@@ -427,7 +427,7 @@ func (qb *GroupStore) makeQuery(ctx context.Context, groupFilter *models.GroupFi
 	}
 
 	query := groupRepository.newQuery()
-	distinctIDs(&query, groupTable)
+	selectIDs(&query, groupTable)
 
 	if q := findFilter.Q; q != nil && *q != "" {
 		searchColumns := []string{"groups.name", "groups.aliases"}
@@ -529,7 +529,7 @@ func (qb *GroupStore) setGroupSort(query *queryBuilder, findFilter *models.FindF
 	}
 
 	// Whatever the sorting, always use name/id as a final sort
-	query.sortAndPagination += ", COALESCE(groups.name, groups.id) COLLATE NATURAL_CI ASC"
+	query.sortAndPagination += ", COALESCE(groups.name, cast(groups.id as text)) COLLATE NATURAL_CI ASC"
 	return nil
 }
 

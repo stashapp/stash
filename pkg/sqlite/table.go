@@ -32,7 +32,7 @@ func (e *NotFoundError) Error() string {
 }
 
 func (t *table) insert(ctx context.Context, o interface{}) (sql.Result, error) {
-	q := dialect.Insert(t.table).Prepared(true).Rows(o)
+	q := dialect.Insert(t.table).Prepared(true).Rows(o).Returning(goqu.I("id"))
 	ret, err := exec(ctx, q)
 	if err != nil {
 		return nil, fmt.Errorf("inserting into %s: %w", t.table.GetTable(), err)
@@ -830,7 +830,7 @@ func (t *relatedFilesTable) setPrimary(ctx context.Context, id int, fileID model
 	table := t.table.table
 
 	q := dialect.Update(table).Prepared(true).Set(goqu.Record{
-		"primary": 0,
+		"primary": false,
 	}).Where(t.idColumn.Eq(id), table.Col(fileIDColumn).Neq(fileID))
 
 	if _, err := exec(ctx, q); err != nil {
@@ -838,7 +838,7 @@ func (t *relatedFilesTable) setPrimary(ctx context.Context, id int, fileID model
 	}
 
 	q = dialect.Update(table).Prepared(true).Set(goqu.Record{
-		"primary": 1,
+		"primary": true,
 	}).Where(t.idColumn.Eq(id), table.Col(fileIDColumn).Eq(fileID))
 
 	if _, err := exec(ctx, q); err != nil {

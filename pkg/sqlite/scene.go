@@ -267,7 +267,7 @@ func (qb *SceneStore) selectDataset() *goqu.SelectDataset {
 		scenesFilesJoinTable,
 		goqu.On(
 			scenesFilesJoinTable.Col(sceneIDColumn).Eq(table.Col(idColumn)),
-			scenesFilesJoinTable.Col("primary").Eq(1),
+			scenesFilesJoinTable.Col("primary").IsTrue(),
 		),
 	).LeftJoin(
 		files,
@@ -630,7 +630,7 @@ func (qb *SceneStore) FindByFileID(ctx context.Context, fileID models.FileID) ([
 func (qb *SceneStore) FindByPrimaryFileID(ctx context.Context, fileID models.FileID) ([]*models.Scene, error) {
 	sq := dialect.From(scenesFilesJoinTable).Select(scenesFilesJoinTable.Col(sceneIDColumn)).Where(
 		scenesFilesJoinTable.Col(fileIDColumn).Eq(fileID),
-		scenesFilesJoinTable.Col("primary").Eq(1),
+		scenesFilesJoinTable.Col("primary").IsTrue(),
 	)
 
 	ret, err := qb.findBySubquery(ctx, sq)
@@ -915,7 +915,7 @@ func (qb *SceneStore) makeQuery(ctx context.Context, sceneFilter *models.SceneFi
 	}
 
 	query := sceneRepository.newQuery()
-	distinctIDs(&query, sceneTable)
+	selectIDs(&query, sceneTable)
 
 	if q := findFilter.Q; q != nil && *q != "" {
 		query.addJoins(
@@ -1195,7 +1195,7 @@ func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindF
 	}
 
 	// Whatever the sorting, always use title/id as a final sort
-	query.sortAndPagination += ", COALESCE(scenes.title, scenes.id) COLLATE NATURAL_CI ASC"
+	query.sortAndPagination += ", COALESCE(scenes.title, cast(scenes.id as text)) COLLATE NATURAL_CI ASC"
 
 	return nil
 }

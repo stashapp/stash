@@ -298,7 +298,7 @@ func (qb *SceneMarkerStore) makeQuery(ctx context.Context, sceneMarkerFilter *mo
 	}
 
 	query := sceneMarkerRepository.newQuery()
-	distinctIDs(&query, sceneMarkerTable)
+	selectIDs(&query, sceneMarkerTable)
 
 	if q := findFilter.Q; q != nil && *q != "" {
 		query.join(sceneTable, "", "scenes.id = scene_markers.scene_id")

@@ -596,7 +596,7 @@ func (qb *PerformerStore) makeQuery(ctx context.Context, performerFilter *models
 	}
 
 	query := performerRepository.newQuery()
-	distinctIDs(&query, performerTable)
+	selectIDs(&query, performerTable)
 
 	if q := findFilter.Q; q != nil && *q != "" {
 		query.join(performersAliasesTable, "", "performer_aliases.performer_id = performers.id")
@@ -770,7 +770,7 @@ func (qb *PerformerStore) getPerformerSort(findFilter *models.FindFilterType) (s
 	}
 
 	// Whatever the sorting, always use name/id as a final sort
-	sortQuery += ", COALESCE(performers.name, performers.id) COLLATE NATURAL_CI ASC"
+	sortQuery += ", COALESCE(performers.name, cast(performers.id as text)) COLLATE NATURAL_CI ASC"
 	return sortQuery, nil
 }
 

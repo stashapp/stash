@@ -522,7 +522,7 @@ func (qb *StudioStore) makeQuery(ctx context.Context, studioFilter *models.Studi
 	}
 
 	query := studioRepository.newQuery()
-	distinctIDs(&query, studioTable)
+	selectIDs(&query, studioTable)
 
 	if q := findFilter.Q; q != nil && *q != "" {
 		query.join(studioAliasesTable, "", "studio_aliases.studio_id = studios.id")
@@ -622,7 +622,7 @@ func (qb *StudioStore) getStudioSort(findFilter *models.FindFilterType) (string,
 	}
 
 	// Whatever the sorting, always use name/id as a final sort
-	sortQuery += ", COALESCE(studios.name, studios.id) COLLATE NATURAL_CI ASC"
+	sortQuery += ", COALESCE(studios.name, cast(studios.id as text)) COLLATE NATURAL_CI ASC"
 	return sortQuery, nil
 }
 

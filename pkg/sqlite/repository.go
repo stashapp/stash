@@ -456,10 +456,10 @@ func idToIndexMap(ids []int) map[int]int {
 func (r *filesRepository) getMany(ctx context.Context, ids []int, primaryOnly bool) ([][]models.FileID, error) {
 	var primaryClause string
 	if primaryOnly {
-		primaryClause = " AND `primary` = 1"
+		primaryClause = " AND \"primary\" = 1"
 	}
 
-	query := fmt.Sprintf("SELECT %s as id, file_id, `primary` from %s WHERE %[1]s IN %[3]s%s", r.idColumn, r.tableName, getInBinding(len(ids)), primaryClause)
+	query := fmt.Sprintf("SELECT %s as id, file_id, \"primary\" from %s WHERE %[1]s IN %[3]s%s", r.idColumn, r.tableName, getInBinding(len(ids)), primaryClause)
 
 	idi := make([]interface{}, len(ids))
 	for i, id := range ids {
@@ -500,7 +500,7 @@ func (r *filesRepository) getMany(ctx context.Context, ids []int, primaryOnly bo
 }
 
 func (r *filesRepository) get(ctx context.Context, id int) ([]models.FileID, error) {
-	query := fmt.Sprintf("SELECT file_id, `primary` from %s WHERE %s = ?", r.tableName, r.idColumn)
+	query := fmt.Sprintf("SELECT file_id, \"primary\" from %s WHERE %s = ?", r.tableName, r.idColumn)
 
 	type relatedFile struct {
 		FileID  models.FileID `db:"file_id"`

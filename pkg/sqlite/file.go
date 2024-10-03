@@ -764,7 +764,7 @@ func (qb *FileStore) IsPrimary(ctx context.Context, fileID models.FileID) (bool,
 	for _, t := range joinTables {
 		qq := dialect.From(t).Select(t.Col(fileIDColumn)).Where(
 			t.Col(fileIDColumn).Eq(fileID),
-			t.Col("primary").Eq(1),
+			t.Col("primary").IsTrue(),
 		)
 
 		if sq == nil {
@@ -849,7 +849,7 @@ func (qb *FileStore) Query(ctx context.Context, options models.FileQueryOptions)
 	query := qb.newQuery()
 	query.join(folderTable, "", "files.parent_folder_id = folders.id")
 
-	distinctIDs(&query, fileTable)
+	selectIDs(&query, fileTable)
 
 	if q := findFilter.Q; q != nil && *q != "" {
 		filepathColumn := "folders.path || '" + string(filepath.Separator) + "' || files.basename"

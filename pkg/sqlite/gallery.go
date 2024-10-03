@@ -209,7 +209,7 @@ func (qb *GalleryStore) selectDataset() *goqu.SelectDataset {
 		galleriesFilesJoinTable,
 		goqu.On(
 			galleriesFilesJoinTable.Col(galleryIDColumn).Eq(table.Col(idColumn)),
-			galleriesFilesJoinTable.Col("primary").Eq(1),
+			galleriesFilesJoinTable.Col("primary").IsTrue(),
 		),
 	).LeftJoin(
 		files,
@@ -687,7 +687,7 @@ func (qb *GalleryStore) makeQuery(ctx context.Context, galleryFilter *models.Gal
 	}
 
 	query := galleryRepository.newQuery()
-	distinctIDs(&query, galleryTable)
+	selectIDs(&query, galleryTable)
 
 	if q := findFilter.Q; q != nil && *q != "" {
 		query.addJoins(
@@ -851,7 +851,7 @@ func (qb *GalleryStore) setGallerySort(query *queryBuilder, findFilter *models.F
 	}
 
 	// Whatever the sorting, always use title/id as a final sort
-	query.sortAndPagination += ", COALESCE(galleries.title, galleries.id) COLLATE NATURAL_CI ASC"
+	query.sortAndPagination += ", COALESCE(galleries.title, cast(galleries.id as text)) COLLATE NATURAL_CI ASC"
 
 	return nil
 }

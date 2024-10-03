@@ -210,7 +210,7 @@ func (qb *ImageStore) selectDataset() *goqu.SelectDataset {
 		imagesFilesJoinTable,
 		goqu.On(
 			imagesFilesJoinTable.Col(imageIDColumn).Eq(table.Col(idColumn)),
-			imagesFilesJoinTable.Col("primary").Eq(1),
+			imagesFilesJoinTable.Col("primary").IsTrue(),
 		),
 	).LeftJoin(
 		files,
@@ -604,7 +604,7 @@ func (qb *ImageStore) FindByChecksum(ctx context.Context, checksum string) ([]*m
 
 var defaultGalleryOrder = []exp.OrderedExpression{
 	goqu.L("COALESCE(folders.path, '') || COALESCE(files.basename, '') COLLATE NATURAL_CI").Asc(),
-	goqu.L("COALESCE(images.title, images.id) COLLATE NATURAL_CI").Asc(),
+	goqu.L("COALESCE(images.title, cast(images.id as text)) COLLATE NATURAL_CI").Asc(),
 }
 
 func (qb *ImageStore) FindByGalleryID(ctx context.Context, galleryID int) ([]*models.Image, error) {
@@ -778,7 +778,7 @@ func (qb *ImageStore) makeQuery(ctx context.Context, imageFilter *models.ImageFi
 	}
 
 	query := imageRepository.newQuery()
-	distinctIDs(&query, imageTable)
+	selectIDs(&query, imageTable)
 
 	if q := findFilter.Q; q != nil && *q != "" {
 		query.addJoins(
@@ -987,7 +987,7 @@ func (qb *ImageStore) setImageSortAndPagination(q *queryBuilder, findFilter *mod
 		}
 
 		// Whatever the sorting, always use title/id as a final sort
-		sortClause += ", COALESCE(images.title, images.id) COLLATE NATURAL_CI ASC"
+		sortClause += ", COALESCE(images.title, cast(images.id as text)) COLLATE NATURAL_CI ASC"
 	}
 
 	q.sortAndPagination = sortClause + getPagination(findFilter)

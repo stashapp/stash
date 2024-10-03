@@ -19,11 +19,11 @@ func NewPostgresDatabase(dbConnector string) *Database {
 		databaseFunctions: ret,
 		storeRepository:   ret.storeRepository,
 		lockChan:          ret.lockChan,
-		dbType:            SqliteBackend,
+		dbType:            PostgresBackend,
 		dbString:          dbConnector,
 	}
 
-	dbWrapper.dbType = SqliteBackend
+	dbWrapper.dbType = PostgresBackend
 
 	return (*Database)(db)
 }

@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/doug-martin/goqu/v9"
 	"github.com/jmoiron/sqlx"
 
 	"github.com/stashapp/stash/pkg/logger"
@@ -193,8 +192,6 @@ func (db *Database) Ready() error {
 // necessary migrations must be run separately using RunMigrations.
 // Returns true if the database is new.
 func (db *Database) Open() error {
-	goqu.SetDefaultPrepared(false)
-
 	databaseSchemaVersion, err := db.getDatabaseSchemaVersion()
 	if err != nil {
 		return fmt.Errorf("getting database schema version: %w", err)

@@ -599,7 +599,7 @@ func (qb *TagStore) Query(ctx context.Context, tagFilter *models.TagFilterType, 
 	}
 
 	query := tagRepository.newQuery()
-	distinctIDs(&query, tagTable)
+	selectIDs(&query, tagTable)
 
 	if q := findFilter.Q; q != nil && *q != "" {
 		query.join(tagAliasesTable, "", "tag_aliases.tag_id = tags.id")
@@ -691,7 +691,7 @@ func (qb *TagStore) getTagSort(query *queryBuilder, findFilter *models.FindFilte
 	}
 
 	// Whatever the sorting, always use name/id as a final sort
-	sortQuery += ", COALESCE(tags.name, tags.id) COLLATE NATURAL_CI ASC"
+	sortQuery += ", COALESCE(tags.name, cast(tags.id as text)) COLLATE NATURAL_CI ASC"
 	return sortQuery, nil
 }
 
