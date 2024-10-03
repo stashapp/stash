@@ -1,6 +1,7 @@
 import React, {
   PropsWithChildren,
   useCallback,
+  useContext,
   useEffect,
   useMemo,
   useState,
@@ -36,6 +37,7 @@ import {
   IItemListOperation,
 } from "./FilteredListToolbar";
 import { PagedList } from "./PagedList";
+import { ConfigurationContext } from "src/hooks/Config";
 
 interface IItemListProps<T extends QueryResult, E extends IHasID> {
   view?: View;
@@ -304,18 +306,20 @@ export const ItemListContext = <T extends QueryResult, E extends IHasID>(
     children,
   } = props;
 
+  const { configuration: config } = useContext(ConfigurationContext);
+
   const emptyFilter = useMemo(
     () =>
       providedDefaultFilter?.clone() ??
-      new ListFilterModel(filterMode, undefined, {
+      new ListFilterModel(filterMode, config, {
         defaultSortBy: defaultSort,
       }),
-    [filterMode, defaultSort, providedDefaultFilter]
+    [config, filterMode, defaultSort, providedDefaultFilter]
   );
 
   const [filter, setFilterState] = useState<ListFilterModel>(
     () =>
-      new ListFilterModel(filterMode, undefined, { defaultSortBy: defaultSort })
+      new ListFilterModel(filterMode, config, { defaultSortBy: defaultSort })
   );
 
   const { defaultFilter, loading: defaultFilterLoading } = useDefaultFilter(
