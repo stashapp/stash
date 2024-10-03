@@ -132,7 +132,7 @@ func (db *Anonymiser) anonymiseFoldersRecurse(ctx context.Context, parentFolderI
 	if parentFolderID == 0 {
 		stmt = stmt.Set(goqu.Record{"path": goqu.Cast(table.Col(idColumn), "VARCHAR")}).Where(table.Col("parent_folder_id").IsNull())
 	} else {
-		stmt = stmt.Prepared(true).Set(goqu.Record{
+		stmt = stmt.Set(goqu.Record{
 			"path": goqu.L("? || ? || id", parentPath, string(filepath.Separator)),
 		}).Where(table.Col("parent_folder_id").Eq(parentFolderID))
 	}

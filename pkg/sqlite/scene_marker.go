@@ -181,7 +181,7 @@ func (qb *SceneMarkerStore) FindMany(ctx context.Context, ids []int) ([]*models.
 	ret := make([]*models.SceneMarker, len(ids))
 
 	table := qb.table()
-	q := qb.selectDataset().Prepared(true).Where(table.Col(idColumn).In(ids))
+	q := qb.selectDataset().Where(table.Col(idColumn).In(ids))
 	unsorted, err := qb.getMany(ctx, q)
 	if err != nil {
 		return nil, err
@@ -285,7 +285,7 @@ func (qb *SceneMarkerStore) Wall(ctx context.Context, q *string) ([]*models.Scen
 	}
 
 	table := qb.table()
-	qq := qb.selectDataset().Prepared(true).Where(table.Col("title").Like("%" + s + "%")).Order(goqu.L("RANDOM()").Asc()).Limit(80)
+	qq := qb.selectDataset().Where(table.Col("title").Like("%" + s + "%")).Order(goqu.L("RANDOM()").Asc()).Limit(80)
 	return qb.getMany(ctx, qq)
 }
 

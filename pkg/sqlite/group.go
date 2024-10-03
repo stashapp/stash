@@ -288,7 +288,7 @@ func (qb *GroupStore) FindMany(ctx context.Context, ids []int) ([]*models.Group,
 
 	table := qb.table()
 	if err := batchExec(ids, defaultBatchSize, func(batch []int) error {
-		q := qb.selectDataset().Prepared(true).Where(table.Col(idColumn).In(batch))
+		q := qb.selectDataset().Where(table.Col(idColumn).In(batch))
 		unsorted, err := qb.getMany(ctx, q)
 		if err != nil {
 			return err
@@ -369,7 +369,7 @@ func (qb *GroupStore) FindByName(ctx context.Context, name string, nocase bool) 
 	if nocase {
 		where += " COLLATE NOCASE"
 	}
-	sq := qb.selectDataset().Prepared(true).Where(goqu.L(where, name)).Limit(1)
+	sq := qb.selectDataset().Where(goqu.L(where, name)).Limit(1)
 	ret, err := qb.get(ctx, sq)
 
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
@@ -394,7 +394,7 @@ func (qb *GroupStore) FindByNames(ctx context.Context, names []string, nocase bo
 	for _, name := range names {
 		args = append(args, name)
 	}
-	sq := qb.selectDataset().Prepared(true).Where(goqu.L(where, args...))
+	sq := qb.selectDataset().Where(goqu.L(where, args...))
 	ret, err := qb.getMany(ctx, sq)
 
 	if err != nil {
@@ -638,7 +638,7 @@ func (qb *GroupStore) FindSubGroupIDs(ctx context.Context, containingID int, ids
 		WHERE gr.containing_id = :parentID AND gr.sub_id IN (:ids);
 	*/
 	table := groupRelationshipTableMgr.table
-	q := dialect.From(table).Prepared(true).
+	q := dialect.From(table).
 		Select(table.Col("sub_id")).Where(
 		table.Col("containing_id").Eq(containingID),
 		table.Col("sub_id").In(ids),
@@ -674,7 +674,7 @@ func (qb *GroupStore) FindInAncestors(ctx context.Context, ascestorIDs []int, id
 	table := qb.table()
 	const ascestors = "ancestors"
 	const parentID = "parent_id"
-	q := dialect.From(ascestors).Prepared(true).
+	q := dialect.From(ascestors).
 		WithRecursive(ascestors,
 			dialect.From(qb.table()).Select(table.Col(idColumn).As(parentID)).
 				Where(table.Col(idColumn).In(ascestorIDs)).

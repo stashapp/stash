@@ -662,7 +662,7 @@ func (qb *FileStore) FindAllInPaths(ctx context.Context, p []string, limit, offs
 	table := qb.table()
 	folderTable := folderTableMgr.table
 
-	q := dialect.From(table).Prepared(true).InnerJoin(
+	q := dialect.From(table).InnerJoin(
 		folderTable,
 		goqu.On(table.Col("parent_folder_id").Eq(folderTable.Col(idColumn))),
 	).Select(table.Col(idColumn))
@@ -695,7 +695,7 @@ func (qb *FileStore) CountAllInPaths(ctx context.Context, p []string) (int, erro
 func (qb *FileStore) findBySubquery(ctx context.Context, sq *goqu.SelectDataset) ([]models.File, error) {
 	table := qb.table()
 
-	q := qb.selectDataset().Prepared(true).Where(
+	q := qb.selectDataset().Where(
 		table.Col(idColumn).Eq(
 			sq,
 		),
@@ -720,7 +720,7 @@ func (qb *FileStore) FindByFingerprint(ctx context.Context, fp models.Fingerprin
 func (qb *FileStore) FindByZipFileID(ctx context.Context, zipFileID models.FileID) ([]models.File, error) {
 	table := qb.table()
 
-	q := qb.selectDataset().Prepared(true).Where(
+	q := qb.selectDataset().Where(
 		table.Col("zip_file_id").Eq(zipFileID),
 	)
 
@@ -733,7 +733,7 @@ func (qb *FileStore) FindByFileInfo(ctx context.Context, info fs.FileInfo, size 
 
 	modTime := info.ModTime().Format(time.RFC3339)
 
-	q := qb.selectDataset().Prepared(true).Where(
+	q := qb.selectDataset().Where(
 		table.Col("basename").Eq(info.Name()),
 		table.Col("size").Eq(size),
 		table.Col("mod_time").Eq(modTime),
@@ -745,7 +745,7 @@ func (qb *FileStore) FindByFileInfo(ctx context.Context, info fs.FileInfo, size 
 func (qb *FileStore) CountByFolderID(ctx context.Context, folderID models.FolderID) (int, error) {
 	table := qb.table()
 
-	q := qb.countDataset().Prepared(true).Where(
+	q := qb.countDataset().Where(
 		table.Col("parent_folder_id").Eq(folderID),
 	)
 
@@ -774,7 +774,7 @@ func (qb *FileStore) IsPrimary(ctx context.Context, fileID models.FileID) (bool,
 		}
 	}
 
-	q := dialect.Select(goqu.COUNT("*").As("count")).Prepared(true).From(
+	q := dialect.Select(goqu.COUNT("*").As("count")).From(
 		sq,
 	)
 

@@ -305,7 +305,7 @@ func (qb *TagStore) FindMany(ctx context.Context, ids []int) ([]*models.Tag, err
 
 	table := qb.table()
 	if err := batchExec(ids, defaultBatchSize, func(batch []int) error {
-		q := qb.selectDataset().Prepared(true).Where(table.Col(idColumn).In(batch))
+		q := qb.selectDataset().Where(table.Col(idColumn).In(batch))
 		unsorted, err := qb.getMany(ctx, q)
 		if err != nil {
 			return err
@@ -470,7 +470,7 @@ func (qb *TagStore) FindByName(ctx context.Context, name string, nocase bool) (*
 	if nocase {
 		where += " COLLATE NOCASE"
 	}
-	sq := qb.selectDataset().Prepared(true).Where(goqu.L(where, name)).Limit(1)
+	sq := qb.selectDataset().Where(goqu.L(where, name)).Limit(1)
 	ret, err := qb.get(ctx, sq)
 
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
@@ -495,7 +495,7 @@ func (qb *TagStore) FindByNames(ctx context.Context, names []string, nocase bool
 	for _, name := range names {
 		args = append(args, name)
 	}
-	sq := qb.selectDataset().Prepared(true).Where(goqu.L(where, args...))
+	sq := qb.selectDataset().Where(goqu.L(where, args...))
 	ret, err := qb.getMany(ctx, sq)
 
 	if err != nil {

@@ -158,7 +158,7 @@ func (qb *SavedFilterStore) FindMany(ctx context.Context, ids []int, ignoreNotFo
 	ret := make([]*models.SavedFilter, len(ids))
 
 	table := qb.table()
-	q := qb.selectDataset().Prepared(true).Where(table.Col(idColumn).In(ids))
+	q := qb.selectDataset().Where(table.Col(idColumn).In(ids))
 	unsorted, err := qb.getMany(ctx, q)
 	if err != nil {
 		return nil, err
@@ -242,7 +242,7 @@ func (qb *SavedFilterStore) FindByMode(ctx context.Context, mode models.FilterMo
 		whereClause = table.Col("mode").Eq(mode)
 	}
 
-	sq := qb.selectDataset().Prepared(true).Where(whereClause).Order(table.Col("name").Asc())
+	sq := qb.selectDataset().Where(whereClause).Order(table.Col("name").Asc())
 	ret, err := qb.getMany(ctx, sq)
 
 	if err != nil {

@@ -525,7 +525,7 @@ func (qb *PerformerStore) FindByNames(ctx context.Context, names []string, nocas
 		args = append(args, name)
 	}
 
-	sq := qb.selectDataset().Prepared(true).Where(
+	sq := qb.selectDataset().Where(
 		goqu.L(clause, args...),
 	)
 	ret, err := qb.getMany(ctx, sq)

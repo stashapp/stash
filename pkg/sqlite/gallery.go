@@ -405,7 +405,7 @@ func (qb *GalleryStore) FindMany(ctx context.Context, ids []int) ([]*models.Gall
 	galleries := make([]*models.Gallery, len(ids))
 
 	if err := batchExec(ids, defaultBatchSize, func(batch []int) error {
-		q := qb.selectDataset().Prepared(true).Where(qb.table().Col(idColumn).In(batch))
+		q := qb.selectDataset().Where(qb.table().Col(idColumn).In(batch))
 		unsorted, err := qb.getMany(ctx, q)
 		if err != nil {
 			return err
@@ -445,7 +445,7 @@ func (qb *GalleryStore) find(ctx context.Context, id int) (*models.Gallery, erro
 func (qb *GalleryStore) findBySubquery(ctx context.Context, sq *goqu.SelectDataset) ([]*models.Gallery, error) {
 	table := qb.table()
 
-	q := qb.selectDataset().Prepared(true).Where(
+	q := qb.selectDataset().Where(
 		table.Col(idColumn).Eq(
 			sq,
 		),

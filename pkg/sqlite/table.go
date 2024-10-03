@@ -32,7 +32,7 @@ func (e *NotFoundError) Error() string {
 }
 
 func (t *table) insert(ctx context.Context, o interface{}) (sql.Result, error) {
-	q := dialect.Insert(t.table).Prepared(true).Rows(o)
+	q := dialect.Insert(t.table).Rows(o)
 	ret, err := exec(ctx, q)
 	if err != nil {
 		return nil, fmt.Errorf("inserting into %s: %w", t.table.GetTable(), err)
@@ -42,7 +42,7 @@ func (t *table) insert(ctx context.Context, o interface{}) (sql.Result, error) {
 }
 
 func (t *table) insertID(ctx context.Context, o interface{}) (int, error) {
-	q := dialect.Insert(t.table).Prepared(true).Rows(o).Returning(goqu.I("id"))
+	q := dialect.Insert(t.table).Rows(o).Returning(goqu.I("id"))
 	val, err := execID(ctx, q)
 	if err != nil {
 		return -1, fmt.Errorf("inserting into %s: %w", t.table.GetTable(), err)
@@ -52,7 +52,7 @@ func (t *table) insertID(ctx context.Context, o interface{}) (int, error) {
 }
 
 func (t *table) updateByID(ctx context.Context, id interface{}, o interface{}) error {
-	q := dialect.Update(t.table).Prepared(true).Set(o).Where(t.byID(id))
+	q := dialect.Update(t.table).Set(o).Where(t.byID(id))
 
 	if _, err := exec(ctx, q); err != nil {
 		return fmt.Errorf("updating %s: %w", t.table.GetTable(), err)
@@ -719,7 +719,7 @@ func (t *imageGalleriesTable) setCover(ctx context.Context, id int, galleryID in
 
 	table := t.table.table
 
-	q := dialect.Update(table).Prepared(true).Set(goqu.Record{
+	q := dialect.Update(table).Set(goqu.Record{
 		"cover": true,
 	}).Where(t.idColumn.Eq(id), table.Col(galleryIDColumn).Eq(galleryID))
 
@@ -733,7 +733,7 @@ func (t *imageGalleriesTable) setCover(ctx context.Context, id int, galleryID in
 func (t *imageGalleriesTable) resetCover(ctx context.Context, galleryID int) error {
 	table := t.table.table
 
-	q := dialect.Update(table).Prepared(true).Set(goqu.Record{
+	q := dialect.Update(table).Set(goqu.Record{
 		"cover": false,
 	}).Where(
 		table.Col(galleryIDColumn).Eq(galleryID),
@@ -825,7 +825,7 @@ func (t *relatedFilesTable) destroyJoins(ctx context.Context, fileIDs []models.F
 func (t *relatedFilesTable) setPrimary(ctx context.Context, id int, fileID models.FileID) error {
 	table := t.table.table
 
-	q := dialect.Update(table).Prepared(true).Set(goqu.Record{
+	q := dialect.Update(table).Set(goqu.Record{
 		"primary": false,
 	}).Where(t.idColumn.Eq(id), table.Col(fileIDColumn).Neq(fileID))
 
@@ -833,7 +833,7 @@ func (t *relatedFilesTable) setPrimary(ctx context.Context, id int, fileID model
 		return fmt.Errorf("unsetting primary flags in %s: %w", t.table.table.GetTable(), err)
 	}
 
-	q = dialect.Update(table).Prepared(true).Set(goqu.Record{
+	q = dialect.Update(table).Set(goqu.Record{
 		"primary": true,
 	}).Where(t.idColumn.Eq(id), table.Col(fileIDColumn).Eq(fileID))
 

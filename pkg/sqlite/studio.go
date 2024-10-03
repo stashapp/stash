@@ -298,7 +298,7 @@ func (qb *StudioStore) FindMany(ctx context.Context, ids []int) ([]*models.Studi
 
 	table := qb.table()
 	if err := batchExec(ids, defaultBatchSize, func(batch []int) error {
-		q := qb.selectDataset().Prepared(true).Where(table.Col(idColumn).In(batch))
+		q := qb.selectDataset().Where(table.Col(idColumn).In(batch))
 		unsorted, err := qb.getMany(ctx, q)
 		if err != nil {
 			return err
@@ -422,7 +422,7 @@ func (qb *StudioStore) FindByName(ctx context.Context, name string, nocase bool)
 	if nocase {
 		where += " COLLATE NOCASE"
 	}
-	sq := qb.selectDataset().Prepared(true).Where(goqu.L(where, name)).Limit(1)
+	sq := qb.selectDataset().Where(goqu.L(where, name)).Limit(1)
 	ret, err := qb.get(ctx, sq)
 
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {

@@ -497,7 +497,7 @@ func (qb *SceneStore) FindMany(ctx context.Context, ids []int) ([]*models.Scene,
 
 	table := qb.table()
 	if err := batchExec(ids, defaultBatchSize, func(batch []int) error {
-		q := qb.selectDataset().Prepared(true).Where(table.Col(idColumn).In(batch))
+		q := qb.selectDataset().Where(table.Col(idColumn).In(batch))
 		unsorted, err := qb.getMany(ctx, q)
 		if err != nil {
 			return err
@@ -890,7 +890,7 @@ func (qb *SceneStore) Wall(ctx context.Context, q *string) ([]*models.Scene, err
 	}
 
 	table := qb.table()
-	qq := qb.selectDataset().Prepared(true).Where(table.Col("details").Like("%" + s + "%")).Order(goqu.L("RANDOM()").Asc()).Limit(80)
+	qq := qb.selectDataset().Where(table.Col("details").Like("%" + s + "%")).Order(goqu.L("RANDOM()").Asc()).Limit(80)
 	return qb.getMany(ctx, qq)
 }
 

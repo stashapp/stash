@@ -155,7 +155,7 @@ func (qb *GalleryChapterStore) FindMany(ctx context.Context, ids []int) ([]*mode
 	ret := make([]*models.GalleryChapter, len(ids))
 
 	table := qb.table()
-	q := qb.selectDataset().Prepared(true).Where(table.Col(idColumn).In(ids))
+	q := qb.selectDataset().Where(table.Col(idColumn).In(ids))
 	unsorted, err := qb.getMany(ctx, q)
 	if err != nil {
 		return nil, err
