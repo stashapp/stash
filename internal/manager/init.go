@@ -43,10 +43,11 @@ func Initialize(cfg *config.Config, l *log.Logger) (*Manager, error) {
 			dbType = sqlite.SqliteBackend
 		}
 
-		if dbType == sqlite.SqliteBackend {
+		switch dbType {
+		case sqlite.SqliteBackend:
 			sqlite.RegisterSqliteDialect()
 			db = sqlite.NewSQLiteDatabase(cfg.GetDatabasePath())
-		} else if dbType == sqlite.PostgresBackend {
+		case sqlite.PostgresBackend:
 			db = sqlite.NewPostgresDatabase(cfg.GetDatabaseConnectionString())
 		}
 	}

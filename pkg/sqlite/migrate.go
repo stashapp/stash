@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/golang-migrate/migrate/v4"
+	postgresmig "github.com/golang-migrate/migrate/v4/database/postgres"
 	sqlite3mig "github.com/golang-migrate/migrate/v4/database/sqlite3"
 	"github.com/golang-migrate/migrate/v4/source/iofs"
 	"github.com/jmoiron/sqlx"
@@ -12,7 +13,7 @@ import (
 )
 
 func (db *Database) needsMigration() bool {
-	return db.schemaVersion != appSchemaVersion
+	return db.schemaVersion != db.AppSchemaVersion()
 }
 
 type Migrator struct {
@@ -55,16 +56,25 @@ func (m *Migrator) CurrentSchemaVersion() uint {
 }
 
 func (m *Migrator) RequiredSchemaVersion() uint {
-	return appSchemaVersion
+	return m.db.AppSchemaVersion()
 }
 
 func (m *Migrator) getMigrate() (*migrate.Migrate, error) {
+	if m.db.DatabaseType() == PostgresBackend {
+		return m._getMigratePostgres()
+	}
+
+	return m._getMigrateSqlite()
+}
+
+func (m *Migrator) _getMigrateSqlite() (*migrate.Migrate, error) {
 	migrations, err := iofs.New(migrationsBox, "migrations")
 	if err != nil {
 		return nil, err
 	}
 
 	driver, err := sqlite3mig.WithInstance(m.conn.DB, &sqlite3mig.Config{})
+
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +83,27 @@ func (m *Migrator) getMigrate() (*migrate.Migrate, error) {
 	return migrate.NewWithInstance(
 		"iofs",
 		migrations,
-		m.db.dbPath,
+		m.db.DatabasePath(),
+		driver,
+	)
+}
+
+func (m *Migrator) _getMigratePostgres() (*migrate.Migrate, error) {
+	migrations, err := iofs.New(migrationsBox, "migrationsPostgres")
+	if err != nil {
+		return nil, err
+	}
+
+	driver, err := postgresmig.WithInstance(m.conn.DB, &postgresmig.Config{})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return migrate.NewWithInstance(
+		"iofs",
+		migrations,
+		"postgres",
 		driver,
 	)
 }
@@ -150,9 +180,9 @@ func (db *Database) RunAllMigrations() error {
 	defer m.Close()
 
 	databaseSchemaVersion, _, _ := m.m.Version()
-	stepNumber := appSchemaVersion - databaseSchemaVersion
+	stepNumber := db.AppSchemaVersion() - databaseSchemaVersion
 	if stepNumber != 0 {
-		logger.Infof("Migrating database from version %d to %d", databaseSchemaVersion, appSchemaVersion)
+		logger.Infof("Migrating database from version %d to %d", databaseSchemaVersion, db.AppSchemaVersion())
 
 		// run each migration individually, and run custom migrations as needed
 		var i uint = 1

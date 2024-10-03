@@ -23,24 +23,30 @@ func RegisterSqliteDialect() {
 
 func NewSQLiteDatabase(dbPath string) *Database {
 	dialect = goqu.Dialect("sqlite3new")
-	ret := NewDatabase()
 
 	db := &SQLiteDB{
-		databaseFunctions: ret,
-		storeRepository: ret.storeRepository,
-		lockChan: ret.lockChan,
-		dbType: SqliteBackend,
-		dbPath: dbPath,
+		storeRepository: newDatabase(),
+		lockChan:        make(chan struct{}, 1),
+		dbConfig:        dbPath,
 	}
+	db.dbInterface = db
 
 	dbWrapper.dbType = SqliteBackend
 
 	return (*Database)(db)
 }
 
+func (db *SQLiteDB) DatabaseType() DatabaseType {
+	return SqliteBackend
+}
+
+func (db *SQLiteDB) DatabasePath() string {
+	return (db.dbConfig).(string)
+}
+
 func (db *SQLiteDB) open(disableForeignKeys bool, writable bool) (conn *sqlx.DB, err error) {
 	// https://github.com/mattn/go-sqlite3
-	url := "file:" + db.dbPath + "?_journal=WAL&_sync=NORMAL&_busy_timeout=50"
+	url := "file:" + db.DatabasePath() + "?_journal=WAL&_sync=NORMAL&_busy_timeout=50"
 	if !disableForeignKeys {
 		url += "&_fk=true"
 	}
@@ -67,7 +73,7 @@ func (db *SQLiteDB) open(disableForeignKeys bool, writable bool) (conn *sqlx.DB,
 }
 
 func (db *SQLiteDB) Remove() error {
-	databasePath := db.dbPath
+	databasePath := db.DatabasePath()
 	err := db.Close()
 
 	if err != nil {
@@ -110,9 +116,9 @@ func (db *SQLiteDB) Reset() error {
 func (db *SQLiteDB) Backup(backupPath string) (err error) {
 	thisDB := db.writeDB
 	if thisDB == nil {
-		thisDB, err = sqlx.Connect(sqlite3Driver, "file:"+db.dbPath+"?_fk=true")
+		thisDB, err = sqlx.Connect(sqlite3Driver, "file:"+db.DatabasePath()+"?_fk=true")
 		if err != nil {
-			return fmt.Errorf("open database %s failed: %w", db.dbPath, err)
+			return fmt.Errorf("open database %s failed: %w", db.DatabasePath(), err)
 		}
 		defer thisDB.Close()
 	}
@@ -127,12 +133,12 @@ func (db *SQLiteDB) Backup(backupPath string) (err error) {
 }
 
 func (db *SQLiteDB) RestoreFromBackup(backupPath string) error {
-	logger.Infof("Restoring backup database %s into %s", backupPath, db.dbPath)
-	return os.Rename(backupPath, db.dbPath)
+	logger.Infof("Restoring backup database %s into %s", backupPath, db.DatabasePath())
+	return os.Rename(backupPath, db.DatabasePath())
 }
 
 func (db *SQLiteDB) DatabaseBackupPath(backupDirectoryPath string) string {
-	fn := fmt.Sprintf("%s.%d.%s", filepath.Base(db.dbPath), db.schemaVersion, time.Now().Format("20060102_150405"))
+	fn := fmt.Sprintf("%s.%d.%s", filepath.Base(db.DatabasePath()), db.schemaVersion, time.Now().Format("20060102_150405"))
 
 	if backupDirectoryPath != "" {
 		return filepath.Join(backupDirectoryPath, fn)
@@ -142,7 +148,7 @@ func (db *SQLiteDB) DatabaseBackupPath(backupDirectoryPath string) string {
 }
 
 func (db *SQLiteDB) AnonymousDatabasePath(backupDirectoryPath string) string {
-	fn := fmt.Sprintf("%s.anonymous.%d.%s", filepath.Base(db.dbPath), db.schemaVersion, time.Now().Format("20060102_150405"))
+	fn := fmt.Sprintf("%s.anonymous.%d.%s", filepath.Base(db.DatabasePath()), db.schemaVersion, time.Now().Format("20060102_150405"))
 
 	if backupDirectoryPath != "" {
 		return filepath.Join(backupDirectoryPath, fn)

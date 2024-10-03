@@ -32,7 +32,7 @@ func (e *NotFoundError) Error() string {
 }
 
 func (t *table) insert(ctx context.Context, o interface{}) (sql.Result, error) {
-	q := dialect.Insert(t.table).Prepared(true).Rows(o).Returning(goqu.I("id"))
+	q := dialect.Insert(t.table).Prepared(true).Rows(o)
 	ret, err := exec(ctx, q)
 	if err != nil {
 		return nil, fmt.Errorf("inserting into %s: %w", t.table.GetTable(), err)
@@ -42,17 +42,13 @@ func (t *table) insert(ctx context.Context, o interface{}) (sql.Result, error) {
 }
 
 func (t *table) insertID(ctx context.Context, o interface{}) (int, error) {
-	result, err := t.insert(ctx, o)
+	q := dialect.Insert(t.table).Prepared(true).Rows(o).Returning(goqu.I("id"))
+	val, err := execID(ctx, q)
 	if err != nil {
-		return 0, err
+		return -1, fmt.Errorf("inserting into %s: %w", t.table.GetTable(), err)
 	}
 
-	ret, err := result.LastInsertId()
-	if err != nil {
-		return 0, err
-	}
-
-	return int(ret), nil
+	return int(*val), nil
 }
 
 func (t *table) updateByID(ctx context.Context, id interface{}, o interface{}) error {
@@ -1134,6 +1130,28 @@ func exec(ctx context.Context, stmt sqler) (sql.Result, error) {
 	}
 
 	return ret, nil
+}
+
+// Execute, but returns an ID
+func execID(ctx context.Context, stmt sqler) (*int64, error) {
+	tx, err := getTx(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	sql, args, err := stmt.ToSQL()
+	if err != nil {
+		return nil, fmt.Errorf("generating sql: %w", err)
+	}
+
+	logger.Tracef("SQL: %s [%v]", sql, args)
+	var id int64
+	err = tx.QueryRowContext(ctx, sql, args...).Scan(&id)
+	if err != nil {
+		return nil, fmt.Errorf("executing `%s` [%v]: %w", sql, args, err)
+	}
+
+	return &id, nil
 }
 
 func count(ctx context.Context, q *goqu.SelectDataset) (int, error) {

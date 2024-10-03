@@ -86,7 +86,7 @@ const (
 	SqliteBackend   DatabaseType = "SQLITE"
 )
 
-type databaseFunctions interface {
+type dbInterface interface {
 	Analyze(ctx context.Context) error
 	Anonymise(outPath string) error
 	AnonymousDatabasePath(backupDirectoryPath string) string
@@ -98,6 +98,7 @@ type databaseFunctions interface {
 	Commit(ctx context.Context) error
 	DatabaseBackupPath(backupDirectoryPath string) string
 	DatabasePath() string
+	DatabaseType() DatabaseType
 	ExecSQL(ctx context.Context, query string, args []interface{}) (*int64, error)
 	IsLocked(err error) bool
 	Optimise(ctx context.Context) error
@@ -127,20 +128,18 @@ type databaseFunctions interface {
 
 type Database struct {
 	*storeRepository
-	databaseFunctions
+	dbInterface
 
 	readDB   *sqlx.DB
 	writeDB  *sqlx.DB
-	dbPath   string
-	dbType   DatabaseType
-	dbString string
+	dbConfig interface{}
 
 	schemaVersion uint
 
 	lockChan chan struct{}
 }
 
-func NewDatabase() *Database {
+func newDatabase() *storeRepository {
 	fileStore := NewFileStore()
 	folderStore := NewFolderStore()
 	galleryStore := NewGalleryStore(fileStore, folderStore)
@@ -166,16 +165,15 @@ func NewDatabase() *Database {
 		SavedFilter:    NewSavedFilterStore(),
 	}
 
-	ret := &Database{
-		storeRepository: r,
-		lockChan:        make(chan struct{}, 1),
-	}
-
-	return ret
+	return r
 }
 
 func (db *Database) SetBlobStoreOptions(options BlobStoreOptions) {
 	*db.Blobs = *NewBlobStore(options)
+}
+
+func (db *Database) DatabasePath() string {
+	return ""
 }
 
 // Ready returns an error if the database is not ready to begin transactions.
@@ -325,10 +323,6 @@ func (db *Database) Anonymise(outPath string) error {
 
 func (db *Database) AppSchemaVersion() uint {
 	return appSchemaVersion
-}
-
-func (db *Database) DatabasePath() string {
-	return db.dbPath
 }
 
 func (db *Database) Version() uint {

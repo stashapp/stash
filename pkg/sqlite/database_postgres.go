@@ -13,23 +13,33 @@ type PostgresDB Database
 
 func NewPostgresDatabase(dbConnector string) *Database {
 	dialect = goqu.Dialect("postgres")
-	ret := NewDatabase()
 
 	db := &PostgresDB{
-		databaseFunctions: ret,
-		storeRepository:   ret.storeRepository,
-		lockChan:          ret.lockChan,
-		dbType:            PostgresBackend,
-		dbString:          dbConnector,
+		storeRepository: newDatabase(),
+		lockChan:        make(chan struct{}, 1),
+		dbConfig:        dbConnector,
 	}
+	db.dbInterface = db
 
 	dbWrapper.dbType = PostgresBackend
 
 	return (*Database)(db)
 }
 
-func (db *Database) open(disableForeignKeys bool, writable bool) (conn *sqlx.DB, err error) {
-	conn, err = sqlx.Open("pgx", db.dbString)
+func (db *PostgresDB) DatabaseType() DatabaseType {
+	return PostgresBackend
+}
+
+/*func (db *PostgresDB) AppSchemaVersion() uint {
+	return uint(0 - (66 - int(appSchemaVersion)))
+}*/
+
+func (db *PostgresDB) DatabaseConnector() string {
+	return db.dbConfig.(string)
+}
+
+func (db *PostgresDB) open(disableForeignKeys bool, writable bool) (conn *sqlx.DB, err error) {
+	conn, err = sqlx.Open("pgx", db.DatabaseConnector())
 	if err == nil {
 		if disableForeignKeys {
 			conn.Exec("SET session_replication_role = replica;")
