@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/jmoiron/sqlx"
@@ -97,6 +98,11 @@ func (r *repository) runIdsQuery(ctx context.Context, query string, args []inter
 	for i, v := range result {
 		vsm[i] = v.Int
 	}
+
+	// We removed distinctIDs for postgresql, but now we have duplicates
+	slices.Sort(vsm)
+	vsm = slices.Compact(vsm)
+
 	return vsm, nil
 }
 
