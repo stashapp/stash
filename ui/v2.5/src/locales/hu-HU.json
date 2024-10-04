@@ -126,7 +126,14 @@
         "view_random": "Véletlenszerű megtekintés",
         "enable": "Engedélyezés",
         "open_in_external_player": "Megnyitás külső lejátszóban",
-        "reload": "Újratöltés"
+        "reload": "Újratöltés",
+        "add_sub_groups": "Al kategóriák hozzá adása",
+        "add_manual_date": "Dátum Manuális hozzá adása",
+        "add_o": "O hozzá adása",
+        "choose_date": "Válassz egy dátumot",
+        "clean_generated": "Generált fájlok takarítása",
+        "clear_date_data": "Dátum adatok törlése",
+        "copy_to_clipboard": "Vágólapra másolás"
     },
     "age": "Kor",
     "aliases": "Álnevek",
@@ -591,7 +598,10 @@
         "created_entity": "{entity} Létrehozva",
         "merged_tags": "Összevont címkék",
         "saved_entity": "{entity} Mentve",
-        "updated_entity": "{entity} Frissítve"
+        "updated_entity": "{entity} Frissítve",
+        "started_generating": "Generálás megkezdve",
+        "started_importing": "Importálás megkezdve",
+        "default_filter_set": "Alapvető szűrő beállítva"
     },
     "total": "Összesen",
     "true": "Igaz",
@@ -617,5 +627,15 @@
     },
     "captions": "Feliratok",
     "chapters": "Fejezetek",
-    "circumcised": "Körülmetélt"
+    "circumcised": "Körülmetélt",
+    "weight_kg": "Súly (kg)",
+    "sub_tags": "Al címkék",
+    "sub_group": "Al csoport",
+    "unknown_date": "Ismeretlen dátum",
+    "urls": "URL-ek",
+    "validation": {
+        "blank": "${path} nem lehet üres"
+    },
+    "studio_tags": "Stúdió címkék",
+    "type": "Típus"
 }
