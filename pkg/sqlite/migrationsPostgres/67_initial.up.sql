@@ -219,7 +219,7 @@ CREATE TABLE tags_relations (
 CREATE TABLE files_fingerprints (
   file_id integer NOT NULL,
   type varchar(255) NOT NULL,
-  fingerprint bytea NOT NULL,
+  fingerprint text NOT NULL,
   foreign key(file_id) references files(id) on delete CASCADE,
   PRIMARY KEY (file_id, type, fingerprint)
 );
