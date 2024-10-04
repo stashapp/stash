@@ -39,7 +39,11 @@ func Initialize(cfg *config.Config, l *log.Logger) (*Manager, error) {
 
 	{
 		var dbType = sqlite.DatabaseType(strings.ToUpper(cfg.GetDatabaseType()))
-		if dbType != sqlite.SqliteBackend && dbType != sqlite.PostgresBackend {
+
+		switch dbType {
+		case sqlite.SqliteBackend, sqlite.PostgresBackend:
+			// Valid case
+		default:
 			dbType = sqlite.SqliteBackend
 		}
 
