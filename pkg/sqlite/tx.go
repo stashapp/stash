@@ -55,7 +55,7 @@ func (db *dbWrapperType) Rebind(query string) string {
 	switch db.dbType {
 	case SqliteBackend:
 		bindType = sqlx.QUESTION
-	case PostgresBackend:
+	default:
 		bindType = sqlx.DOLLAR
 	}
 

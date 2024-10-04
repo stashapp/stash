@@ -492,7 +492,7 @@ func (qb *ImageStore) CoverByGalleryID(ctx context.Context, galleryID int) (*mod
 		Select(table.Col(idColumn)).
 		Where(goqu.And(
 			galleriesImagesJoinTable.Col("gallery_id").Eq(galleryID),
-			galleriesImagesJoinTable.Col("cover").Eq(true),
+			galleriesImagesJoinTable.Col("cover").IsTrue(),
 		))
 
 	q := qb.selectDataset().Where(

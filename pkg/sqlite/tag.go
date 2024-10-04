@@ -584,7 +584,7 @@ func (qb *TagStore) QueryForAutoTag(ctx context.Context, words []string) ([]*mod
 
 	whereOr := "(" + strings.Join(whereClauses, " OR ") + ")"
 	where := strings.Join([]string{
-		"tags.ignore_auto_tag = 0",
+		fmt.Sprintf("tags.ignore_auto_tag = %s", getDBBoolean(false)),
 		whereOr,
 	}, " AND ")
 	return qb.queryTags(ctx, query+" WHERE "+where, args)

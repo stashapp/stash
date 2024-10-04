@@ -455,12 +455,12 @@ func (qb *sceneFilterHandler) performerFavoriteCriterionHandler(performerfavorit
 			if *performerfavorite {
 				// contains at least one favorite
 				f.addLeftJoin("performers", "", "performers.id = performers_scenes.performer_id")
-				f.addWhere("performers.favorite = 1")
+				f.addWhere(fmt.Sprintf("performers.favorite = %s", getDBBoolean(true)))
 			} else {
 				// contains zero favorites
-				f.addLeftJoin(`(SELECT performers_scenes.scene_id as id FROM performers_scenes
+				f.addLeftJoin(fmt.Sprintf(`(SELECT performers_scenes.scene_id as id FROM performers_scenes
 JOIN performers ON performers.id = performers_scenes.performer_id
-GROUP BY performers_scenes.scene_id HAVING SUM(performers.favorite) = 0)`, "nofaves", "scenes.id = nofaves.id")
+GROUP BY performers_scenes.scene_id HAVING SUM(performers.favorite) = %s)`, getDBBoolean(false)), "nofaves", "scenes.id = nofaves.id")
 				f.addWhere("performers_scenes.scene_id IS NULL OR nofaves.id IS NOT NULL")
 			}
 		}

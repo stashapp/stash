@@ -40,17 +40,24 @@ func (db *PostgresDB) DatabaseConnector() string {
 
 func (db *PostgresDB) open(disableForeignKeys bool, writable bool) (conn *sqlx.DB, err error) {
 	conn, err = sqlx.Open("pgx", db.DatabaseConnector())
-	if err == nil {
-		if disableForeignKeys {
-			conn.Exec("SET session_replication_role = replica;")
-		}
-		if !writable {
-			conn.Exec("SET default_transaction_read_only = ON;")
-		}
-	}
 
 	if err != nil {
 		return nil, fmt.Errorf("db.Open(): %w", err)
+	}
+
+	if disableForeignKeys {
+		_, err = conn.Exec("SET session_replication_role = replica;")
+
+		if err != nil {
+			return nil, fmt.Errorf("conn.Exec(): %w", err)
+		}
+	}
+	if !writable {
+		_, err = conn.Exec("SET default_transaction_read_only = ON;")
+
+		if err != nil {
+			return nil, fmt.Errorf("conn.Exec(): %w", err)
+		}
 	}
 
 	return conn, nil

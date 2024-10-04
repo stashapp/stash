@@ -225,12 +225,7 @@ func boolCriterionHandler(c *bool, column string, addJoinFn func(f *filterBuilde
 			if addJoinFn != nil {
 				addJoinFn(f)
 			}
-			var v string
-			if *c {
-				v = "1"
-			} else {
-				v = "0"
-			}
+			v := getDBBoolean(*c)
 
 			f.addWhere(column + " = " + v)
 		}

@@ -737,7 +737,7 @@ func (t *imageGalleriesTable) resetCover(ctx context.Context, galleryID int) err
 		"cover": false,
 	}).Where(
 		table.Col(galleryIDColumn).Eq(galleryID),
-		table.Col("cover").Eq(true),
+		table.Col("cover").IsTrue(),
 	)
 
 	if _, err := exec(ctx, q); err != nil {

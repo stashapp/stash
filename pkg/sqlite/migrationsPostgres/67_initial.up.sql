@@ -1,19 +1,4 @@
 CREATE COLLATION IF NOT EXISTS NATURAL_CI (provider = icu, locale = 'en@colNumeric=yes');
-
-CREATE OR REPLACE FUNCTION regexp(re TEXT, s TEXT)
-RETURNS BOOLEAN AS $$
-BEGIN
-    RETURN s ~ re;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE OR REPLACE FUNCTION basename(str TEXT)
-RETURNS TEXT AS $$
-BEGIN
-    RETURN substring(str FROM '[^/\\]+$');
-END;
-$$ LANGUAGE plpgsql;
-
 CREATE TABLE blobs (
     checksum varchar(255) NOT NULL PRIMARY KEY,
     blob bytea

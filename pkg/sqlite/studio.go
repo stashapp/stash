@@ -501,7 +501,7 @@ func (qb *StudioStore) QueryForAutoTag(ctx context.Context, words []string) ([]*
 
 	sq = sq.Where(
 		goqu.Or(whereClauses...),
-		table.Col("ignore_auto_tag").Eq(0),
+		table.Col("ignore_auto_tag").IsFalse(),
 	)
 
 	ret, err := qb.findBySubquery(ctx, sq)

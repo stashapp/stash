@@ -6,6 +6,7 @@ import (
 	"embed"
 	"errors"
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/jmoiron/sqlx"
@@ -166,6 +167,19 @@ func newDatabase() *storeRepository {
 	}
 
 	return r
+}
+
+func getDBBoolean(val bool) string {
+	switch dbWrapper.dbType {
+	case SqliteBackend:
+		if val {
+			return "1"
+		} else {
+			return "0"
+		}
+	default:
+		return strconv.FormatBool(val)
+	}
 }
 
 func (db *Database) SetBlobStoreOptions(options BlobStoreOptions) {
