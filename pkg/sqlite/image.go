@@ -391,7 +391,7 @@ func (qb *ImageStore) FindMany(ctx context.Context, ids []int) ([]*models.Image,
 	images := make([]*models.Image, len(ids))
 
 	if err := batchExec(ids, defaultBatchSize, func(batch []int) error {
-		q := qb.selectDataset().Where(qb.table().Col(idColumn).In(batch))
+		q := qb.selectDataset().Prepared(true).Where(qb.table().Col(idColumn).In(batch))
 		unsorted, err := qb.getMany(ctx, q)
 		if err != nil {
 			return err
@@ -431,7 +431,7 @@ func (qb *ImageStore) find(ctx context.Context, id int) (*models.Image, error) {
 func (qb *ImageStore) findBySubquery(ctx context.Context, sq *goqu.SelectDataset) ([]*models.Image, error) {
 	table := qb.table()
 
-	q := qb.selectDataset().Where(
+	q := qb.selectDataset().Prepared(true).Where(
 		table.Col(idColumn).Eq(
 			sq,
 		),
@@ -495,7 +495,7 @@ func (qb *ImageStore) CoverByGalleryID(ctx context.Context, galleryID int) (*mod
 			galleriesImagesJoinTable.Col("cover").IsTrue(),
 		))
 
-	q := qb.selectDataset().Where(
+	q := qb.selectDataset().Prepared(true).Where(
 		table.Col(idColumn).Eq(
 			sq,
 		),
@@ -619,7 +619,7 @@ func (qb *ImageStore) FindByGalleryID(ctx context.Context, galleryID int) ([]*mo
 		galleriesImagesJoinTable.Col("gallery_id").Eq(galleryID),
 	)
 
-	q := qb.selectDataset().Where(
+	q := qb.selectDataset().Prepared(true).Where(
 		table.Col(idColumn).Eq(
 			sq,
 		),
@@ -642,6 +642,7 @@ func (qb *ImageStore) FindByGalleryIDIndex(ctx context.Context, galleryID int, i
 			goqu.On(table.Col(idColumn).Eq(galleriesImagesJoinTable.Col(imageIDColumn))),
 		).
 		Where(galleriesImagesJoinTable.Col(galleryIDColumn).Eq(galleryID)).
+		Prepared(true).
 		Order(defaultGalleryOrder...).
 		Limit(1).Offset(index)
 

@@ -226,7 +226,7 @@ func (qb *FolderStore) Find(ctx context.Context, id models.FolderID) (*models.Fo
 }
 
 func (qb *FolderStore) FindByPath(ctx context.Context, p string) (*models.Folder, error) {
-	q := qb.selectDataset().Where(qb.table().Col("path").Eq(p))
+	q := qb.selectDataset().Prepared(true).Where(qb.table().Col("path").Eq(p))
 
 	ret, err := qb.get(ctx, q)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
@@ -295,7 +295,7 @@ func (qb *FolderStore) CountAllInPaths(ctx context.Context, p []string) (int, er
 // func (qb *FolderStore) findBySubquery(ctx context.Context, sq *goqu.SelectDataset) ([]*file.Folder, error) {
 // 	table := qb.table()
 
-// 	q := qb.selectDataset().Where(
+// 	q := qb.selectDataset().Prepared(true).Where(
 // 		table.Col(idColumn).Eq(
 // 			sq,
 // 		),
@@ -307,7 +307,7 @@ func (qb *FolderStore) CountAllInPaths(ctx context.Context, p []string) (int, er
 func (qb *FolderStore) FindByZipFileID(ctx context.Context, zipFileID models.FileID) ([]*models.Folder, error) {
 	table := qb.table()
 
-	q := qb.selectDataset().Where(
+	q := qb.selectDataset().Prepared(true).Where(
 		table.Col("zip_file_id").Eq(zipFileID),
 	)
 
