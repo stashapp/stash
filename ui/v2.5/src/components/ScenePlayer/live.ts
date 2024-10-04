@@ -156,7 +156,7 @@ function offsetMiddleware(player: VideoJsPlayer) {
       tech.setPlaybackRate(playbackRate);
       tech.one("canplay", () => {
         player.poster(poster);
-        if (seeking === 1) {
+        if (seeking === 1 || tech.scrubbing()) {
           tech.pause();
         }
         seeking = 0;
