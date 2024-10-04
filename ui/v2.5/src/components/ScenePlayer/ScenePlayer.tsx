@@ -451,6 +451,14 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     if (!player) return;
 
     function canplay(this: VideoJsPlayer) {
+      // if we're seeking before starting, don't set the initial timestamp, and start playing
+      // when starting from the beginning, there is a small delay before the event
+      // is triggered, so we can't just check if the time is 0
+      if (this.currentTime() >= 0.1) {
+        this.play();
+        return;
+      }
+
       if (initialTimestamp.current !== -1) {
         this.currentTime(initialTimestamp.current);
         initialTimestamp.current = -1;
