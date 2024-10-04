@@ -50,16 +50,12 @@ func sqlError(err error, sql string, args ...interface{}) error {
 }
 
 func (db *dbWrapperType) Rebind(query string) string {
-	var bindType int
-
 	switch db.dbType {
-	case SqliteBackend:
-		bindType = sqlx.QUESTION
+	case PostgresBackend:
+		return sqlx.Rebind(sqlx.DOLLAR, query)
 	default:
-		bindType = sqlx.DOLLAR
+		return query
 	}
-
-	return sqlx.Rebind(bindType, query)
 }
 
 func (db *dbWrapperType) Get(ctx context.Context, dest interface{}, query string, args ...interface{}) error {
