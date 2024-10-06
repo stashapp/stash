@@ -5,12 +5,12 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"slices"
 	"strings"
 
 	"github.com/jmoiron/sqlx"
 
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sliceutil"
 )
 
 const idColumn = "id"
@@ -100,8 +100,7 @@ func (r *repository) runIdsQuery(ctx context.Context, query string, args []inter
 	}
 
 	// We removed distinctIDs for postgresql, but now we have duplicates
-	slices.Sort(vsm)
-	vsm = slices.Compact(vsm)
+	vsm = sliceutil.AppendUniques(nil, vsm)
 
 	return vsm, nil
 }
