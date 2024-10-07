@@ -420,6 +420,7 @@ Replaces `2001 to 2003` with `2001-2003`.
 Additionally, there are a number of fixed post-processing fields that are specified at the attribute level (not in `postProcess`) that are performed after the `postProcess` operations:
 * `concat`: if an xpath matches multiple elements, and `concat` is present, then all of the elements will be concatenated together
 * `split`: the inverse of `concat`. Splits a string to more elements using the separator given. For more info and examples have a look at PR [#579](https://github.com/stashapp/stash/pull/579)
+* `duplicate`: if an xpath matches multiple elements, and `duplicate` is `true`, then all of the elements will be returned without removing duplicates.
 
 Example:
 ```yaml
