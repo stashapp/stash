@@ -191,39 +191,55 @@ export function useListKeyboardShortcuts(props: {
 }
 
 export function useListSelect<T extends { id: string }>(items: T[]) {
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [itemsSelected, setItemsSelected] = useState<T[]>([]);
   const [lastClickedId, setLastClickedId] = useState<string>();
 
-  const prevItems = usePrevious(items);
-
-  useEffect(() => {
-    if (prevItems === items) {
-      return;
-    }
-
-    // filter out any selectedIds that are no longer in the list
+  const selectedIds = useMemo(() => {
     const newSelectedIds = new Set<string>();
-
-    selectedIds.forEach((id) => {
-      if (items.some((item) => item.id === id)) {
-        newSelectedIds.add(id);
-      }
+    itemsSelected.forEach((item) => {
+      newSelectedIds.add(item.id);
     });
 
-    setSelectedIds(newSelectedIds);
-  }, [prevItems, items, selectedIds]);
+    return newSelectedIds;
+  }, [itemsSelected]);
+
+  // const prevItems = usePrevious(items);
+
+  // #5341 - HACK/TODO: this is a regression of previous behaviour. I don't like the idea
+  // of keeping selected items that are no longer in the list, since its not
+  // clear to the user that the item is still selected, but there is now an expectation of
+  // this behaviour.
+  // useEffect(() => {
+  //   if (prevItems === items) {
+  //     return;
+  //   }
+
+  //   // filter out any selectedIds that are no longer in the list
+  //   const newSelectedIds = new Set<string>();
+
+  //   selectedIds.forEach((id) => {
+  //     if (items.some((item) => item.id === id)) {
+  //       newSelectedIds.add(id);
+  //     }
+  //   });
+
+  //   setSelectedIds(newSelectedIds);
+  // }, [prevItems, items, selectedIds]);
 
   function singleSelect(id: string, selected: boolean) {
     setLastClickedId(id);
 
-    const newSelectedIds = new Set(selectedIds);
-    if (selected) {
-      newSelectedIds.add(id);
-    } else {
-      newSelectedIds.delete(id);
-    }
-
-    setSelectedIds(newSelectedIds);
+    setItemsSelected((prevSelected) => {
+      if (selected) {
+        const item = items.find((i) => i.id === id);
+        if (item) {
+          return [...prevSelected, item];
+        }
+        return prevSelected;
+      } else {
+        return prevSelected.filter((item) => item.id !== id);
+      }
+    });
   }
 
   function selectRange(startIndex: number, endIndex: number) {
@@ -236,13 +252,9 @@ export function useListSelect<T extends { id: string }>(items: T[]) {
     }
 
     const subset = items.slice(start, end + 1);
-    const newSelectedIds = new Set<string>();
 
-    subset.forEach((item) => {
-      newSelectedIds.add(item.id);
-    });
-
-    setSelectedIds(newSelectedIds);
+    const newSelected = itemsSelected.concat(subset);
+    setItemsSelected(newSelected);
   }
 
   function multiSelect(id: string) {
@@ -271,32 +283,19 @@ export function useListSelect<T extends { id: string }>(items: T[]) {
   }
 
   function onSelectAll() {
-    const newSelectedIds = new Set<string>();
-    items.forEach((item) => {
-      newSelectedIds.add(item.id);
-    });
-
-    setSelectedIds(newSelectedIds);
+    // #5341 - HACK/TODO: maintaining legacy behaviour of replacing selected items with
+    // all items on the current page. To be consistent with the existing behaviour, it
+    // should probably _add_ all items on the current page to the selected items.
+    setItemsSelected([...items]);
     setLastClickedId(undefined);
   }
 
   function onSelectNone() {
-    const newSelectedIds = new Set<string>();
-    setSelectedIds(newSelectedIds);
+    setItemsSelected([]);
     setLastClickedId(undefined);
   }
 
-  const getSelected = useMemo(() => {
-    let cached: T[] | undefined;
-    return () => {
-      if (cached) {
-        return cached;
-      }
-
-      cached = items.filter((value) => selectedIds.has(value.id));
-      return cached;
-    };
-  }, [items, selectedIds]);
+  const getSelected = useCallback(() => itemsSelected, [itemsSelected]);
 
   return {
     selectedIds,
