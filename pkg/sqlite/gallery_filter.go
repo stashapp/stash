@@ -215,8 +215,8 @@ func (qb *galleryFilterHandler) pathCriterionHandler(c *models.StringCriterionIn
 						return
 					}
 					filepathColumn := fmt.Sprintf("%s || '%s' || %s", pathColumn, string(filepath.Separator), basenameColumn)
-					clause := makeClause(fmt.Sprintf("%s IS NOT NULL AND %s IS NOT NULL AND %s regexp ?", pathColumn, basenameColumn, filepathColumn), c.Value)
-					clause2 := makeClause(fmt.Sprintf("%s IS NOT NULL AND %[1]s regexp ?", folderPathColumn), c.Value)
+					clause := makeClause(fmt.Sprintf("%s IS NOT NULL AND %s IS NOT NULL AND regexp(?, %s)", pathColumn, basenameColumn, filepathColumn), c.Value)
+					clause2 := makeClause(fmt.Sprintf("%s IS NOT NULL AND regexp(?, %[1]s)", folderPathColumn), c.Value)
 					f.whereClauses = append(f.whereClauses, orClauses(clause, clause2))
 				case models.CriterionModifierNotMatchesRegex:
 					if _, err := regexp.Compile(c.Value); err != nil {
@@ -224,8 +224,8 @@ func (qb *galleryFilterHandler) pathCriterionHandler(c *models.StringCriterionIn
 						return
 					}
 					filepathColumn := fmt.Sprintf("%s || '%s' || %s", pathColumn, string(filepath.Separator), basenameColumn)
-					f.addWhere(fmt.Sprintf("%s IS NULL OR %s IS NULL OR %s NOT regexp ?", pathColumn, basenameColumn, filepathColumn), c.Value)
-					f.addWhere(fmt.Sprintf("%s IS NULL OR %[1]s NOT regexp ?", folderPathColumn), c.Value)
+					f.addWhere(fmt.Sprintf("%s IS NULL OR %s IS NULL OR NOT regexp(?, %s)", pathColumn, basenameColumn, filepathColumn), c.Value)
+					f.addWhere(fmt.Sprintf("%s IS NULL OR NOT regexp(?, %[1]s)", folderPathColumn), c.Value)
 				case models.CriterionModifierIsNull:
 					f.addWhere(fmt.Sprintf("%s IS NULL OR TRIM(%[1]s) = '' OR %s IS NULL OR TRIM(%[2]s) = ''", pathColumn, basenameColumn))
 					f.addWhere(fmt.Sprintf("%s IS NULL OR TRIM(%[1]s) = ''", folderPathColumn))

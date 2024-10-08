@@ -51,13 +51,13 @@ func stringCriterionHandler(c *models.StringCriterionInput, column string) crite
 						f.setError(err)
 						return
 					}
-					f.addWhere(fmt.Sprintf("(%s IS NOT NULL AND %[1]s regexp ?)", column), c.Value)
+					f.addWhere(fmt.Sprintf("(%s IS NOT NULL AND regexp(?, %[1]s))", column), c.Value)
 				case models.CriterionModifierNotMatchesRegex:
 					if _, err := regexp.Compile(c.Value); err != nil {
 						f.setError(err)
 						return
 					}
-					f.addWhere(fmt.Sprintf("(%s IS NULL OR %[1]s NOT regexp ?)", column), c.Value)
+					f.addWhere(fmt.Sprintf("(%s IS NULL OR NOT regexp(?, %[1]s))", column), c.Value)
 				case models.CriterionModifierIsNull:
 					f.addWhere("(" + column + " IS NULL OR TRIM(" + column + ") = '')")
 				case models.CriterionModifierNotNull:
@@ -122,14 +122,14 @@ func pathCriterionHandler(c *models.StringCriterionInput, pathColumn string, bas
 						return
 					}
 					filepathColumn := fmt.Sprintf("%s || '%s' || %s", pathColumn, string(filepath.Separator), basenameColumn)
-					f.addWhere(fmt.Sprintf("%s IS NOT NULL AND %s IS NOT NULL AND %s regexp ?", pathColumn, basenameColumn, filepathColumn), c.Value)
+					f.addWhere(fmt.Sprintf("%s IS NOT NULL AND %s IS NOT NULL AND regexp(?, %s)", pathColumn, basenameColumn, filepathColumn), c.Value)
 				case models.CriterionModifierNotMatchesRegex:
 					if _, err := regexp.Compile(c.Value); err != nil {
 						f.setError(err)
 						return
 					}
 					filepathColumn := fmt.Sprintf("%s || '%s' || %s", pathColumn, string(filepath.Separator), basenameColumn)
-					f.addWhere(fmt.Sprintf("%s IS NULL OR %s IS NULL OR %s NOT regexp ?", pathColumn, basenameColumn, filepathColumn), c.Value)
+					f.addWhere(fmt.Sprintf("%s IS NULL OR %s IS NULL OR NOT regexp(?, %s)", pathColumn, basenameColumn, filepathColumn), c.Value)
 				case models.CriterionModifierIsNull:
 					f.addWhere(fmt.Sprintf("%s IS NULL OR TRIM(%[1]s) = '' OR %s IS NULL OR TRIM(%[2]s) = ''", pathColumn, basenameColumn))
 				case models.CriterionModifierNotNull:
