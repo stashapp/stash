@@ -40,6 +40,10 @@ func (db *SQLiteDB) DatabaseType() DatabaseType {
 	return SqliteBackend
 }
 
+func (db *SQLiteDB) AppSchemaVersion() uint {
+	return appSchemaVersion
+}
+
 func (db *SQLiteDB) DatabasePath() string {
 	return (db.dbConfig).(string)
 }

@@ -219,10 +219,10 @@ func (db *Database) Open() error {
 			return fmt.Errorf("error running initial schema migrations: %w", err)
 		}
 	} else {
-		if databaseSchemaVersion > appSchemaVersion {
+		if databaseSchemaVersion > db.AppSchemaVersion() {
 			return &MismatchedSchemaVersionError{
 				CurrentSchemaVersion:  databaseSchemaVersion,
-				RequiredSchemaVersion: appSchemaVersion,
+				RequiredSchemaVersion: db.AppSchemaVersion(),
 			}
 		}
 
@@ -230,7 +230,7 @@ func (db *Database) Open() error {
 		if db.needsMigration() {
 			return &MigrationNeededError{
 				CurrentSchemaVersion:  databaseSchemaVersion,
-				RequiredSchemaVersion: appSchemaVersion,
+				RequiredSchemaVersion: db.AppSchemaVersion(),
 			}
 		}
 	}
@@ -333,10 +333,6 @@ func (db *Database) Anonymise(outPath string) error {
 	}
 
 	return anon.Anonymise(context.Background())
-}
-
-func (db *Database) AppSchemaVersion() uint {
-	return appSchemaVersion
 }
 
 func (db *Database) Version() uint {

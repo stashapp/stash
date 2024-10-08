@@ -31,9 +31,9 @@ func (db *PostgresDB) DatabaseType() DatabaseType {
 	return PostgresBackend
 }
 
-/*func (db *PostgresDB) AppSchemaVersion() uint {
+func (db *PostgresDB) AppSchemaVersion() uint {
 	return uint(0 - (66 - int(appSchemaVersion)))
-}*/
+}
 
 func (db *PostgresDB) DatabaseConnector() string {
 	return db.dbConfig.(string)
