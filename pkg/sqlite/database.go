@@ -204,6 +204,9 @@ func (db *Database) Ready() error {
 // necessary migrations must be run separately using RunMigrations.
 // Returns true if the database is new.
 func (db *Database) Open() error {
+	db.lock()
+	defer db.unlock()
+
 	databaseSchemaVersion, err := db.getDatabaseSchemaVersion()
 	if err != nil {
 		return fmt.Errorf("getting database schema version: %w", err)
