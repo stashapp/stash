@@ -17,7 +17,6 @@ func NewPostgresDatabase(dbConnector string) *Database {
 
 	db := &PostgresDB{
 		storeRepository: newDatabase(),
-		lockChan:        make(chan struct{}, 1),
 		dbConfig:        dbConnector,
 	}
 	db.dbInterface = db
@@ -26,6 +25,10 @@ func NewPostgresDatabase(dbConnector string) *Database {
 
 	return (*Database)(db)
 }
+
+// Does nothing
+func (db *PostgresDB) lock()   {}
+func (db *PostgresDB) unlock() {}
 
 func (db *PostgresDB) DatabaseType() DatabaseType {
 	return PostgresBackend

@@ -253,22 +253,6 @@ func (db *Database) Open() error {
 	return nil
 }
 
-// lock locks the database for writing. This method will block until the lock is acquired.
-func (db *Database) lock() {
-	db.lockChan <- struct{}{}
-}
-
-// unlock unlocks the database
-func (db *Database) unlock() {
-	// will block the caller if the lock is not held, so check first
-	select {
-	case <-db.lockChan:
-		return
-	default:
-		panic("database is not locked")
-	}
-}
-
 func (db *Database) Close() error {
 	db.lock()
 	defer db.unlock()
