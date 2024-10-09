@@ -36,21 +36,16 @@ func Initialize(cfg *config.Config, l *log.Logger) (*Manager, error) {
 	ctx := context.TODO()
 
 	var db *sqlite.Database
-
-	{
-		var dbType = sqlite.SqliteBackend
-
-		if strings.HasPrefix(strings.ToUpper(cfg.GetDatabaseConnectionString()), string(sqlite.PostgresBackend)) {
-			dbType = sqlite.PostgresBackend
-		}
-
-		switch dbType {
-		case sqlite.SqliteBackend:
-			sqlite.RegisterSqliteDialect()
-			db = sqlite.NewSQLiteDatabase(cfg.GetDatabasePath())
-		case sqlite.PostgresBackend:
-			db = sqlite.NewPostgresDatabase(cfg.GetDatabaseConnectionString())
-		}
+	dbUrl := cfg.GetDatabaseUrl()
+	upperUrl := strings.ToUpper(dbUrl)
+	switch {
+	case strings.HasPrefix(upperUrl, string(sqlite.PostgresBackend)+":"):
+		db = sqlite.NewPostgresDatabase(dbUrl)
+	case strings.HasPrefix(upperUrl, string(sqlite.SqliteBackend)+":"):
+		db = sqlite.NewSQLiteDatabase(dbUrl[len(sqlite.SqliteBackend)+1:])
+	default:
+		// Assume it's the path to a SQLite database - for backwards compat
+		db = sqlite.NewSQLiteDatabase(dbUrl)
 	}
 
 	repo := db.Repository()

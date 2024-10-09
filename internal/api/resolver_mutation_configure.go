@@ -127,8 +127,8 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 		return nil
 	}
 
-	existingDBPath := c.GetDatabasePath()
-	if input.DatabasePath != nil && existingDBPath != *input.DatabasePath {
+	existingDBUrl := c.GetDatabaseUrl()
+	if input.DatabasePath != nil && existingDBUrl != *input.DatabasePath {
 		if err := checkConfigOverride(config.Database); err != nil {
 			return makeConfigGeneralResult(), err
 		}
