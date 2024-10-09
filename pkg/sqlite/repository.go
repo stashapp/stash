@@ -464,7 +464,7 @@ func (r *filesRepository) getMany(ctx context.Context, ids []int, primaryOnly bo
 		primaryClause = ` AND "primary" = ` + getDBBoolean(true)
 	}
 
-	query := fmt.Sprintf("SELECT %s as id, file_id, \"primary\" from %s WHERE %[1]s IN %[3]s%s", r.idColumn, r.tableName, getInBinding(len(ids)), primaryClause)
+	query := fmt.Sprintf(`SELECT %s as id, file_id, "primary" from %s WHERE %[1]s IN %[3]s%s`, r.idColumn, r.tableName, getInBinding(len(ids)), primaryClause)
 
 	idi := make([]interface{}, len(ids))
 	for i, id := range ids {
