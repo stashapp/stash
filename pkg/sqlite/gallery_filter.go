@@ -378,12 +378,12 @@ func (qb *galleryFilterHandler) performerFavoriteCriterionHandler(performerfavor
 			if *performerfavorite {
 				// contains at least one favorite
 				f.addLeftJoin("performers", "", "performers.id = performers_galleries.performer_id")
-				f.addWhere(fmt.Sprintf("performers.favorite = %s", getDBBoolean(true)))
+				f.addWhere("performers.favorite = " + getDBBoolean(true))
 			} else {
 				// contains zero favorites
-				f.addLeftJoin(fmt.Sprintf(`(SELECT performers_galleries.gallery_id as id FROM performers_galleries 
+				f.addLeftJoin(`(SELECT performers_galleries.gallery_id as id FROM performers_galleries 
 JOIN performers ON performers.id = performers_galleries.performer_id
-GROUP BY performers_galleries.gallery_id HAVING SUM(performers.favorite) = %s)`, getDBBoolean(false)), "nofaves", "galleries.id = nofaves.id")
+GROUP BY performers_galleries.gallery_id HAVING SUM(performers.favorite) = `+getDBBoolean(false)+")", "nofaves", "galleries.id = nofaves.id")
 				f.addWhere("performers_galleries.gallery_id IS NULL OR nofaves.id IS NOT NULL")
 			}
 		}

@@ -461,7 +461,7 @@ func idToIndexMap(ids []int) map[int]int {
 func (r *filesRepository) getMany(ctx context.Context, ids []int, primaryOnly bool) ([][]models.FileID, error) {
 	var primaryClause string
 	if primaryOnly {
-		primaryClause = fmt.Sprintf(" AND \"primary\" = %s", getDBBoolean(true))
+		primaryClause = ` AND "primary" = ` + getDBBoolean(true)
 	}
 
 	query := fmt.Sprintf("SELECT %s as id, file_id, \"primary\" from %s WHERE %[1]s IN %[3]s%s", r.idColumn, r.tableName, getInBinding(len(ids)), primaryClause)
