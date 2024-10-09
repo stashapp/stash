@@ -96,7 +96,10 @@ CREATE TABLE IF NOT EXISTS images (
   organized boolean not null default FALSE,
   created_at timestamp not null,
   updated_at timestamp not null, 
-  date date, code text, photographer text, details text,
+  date date, 
+  code text, 
+  photographer text, 
+  details text,
   foreign key(studio_id) references studios(id) on delete SET NULL
 );
 CREATE TABLE image_urls (
