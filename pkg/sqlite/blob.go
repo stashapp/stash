@@ -104,9 +104,10 @@ func (qb *BlobStore) Write(ctx context.Context, data []byte) (string, error) {
 
 	// only write blob to the database if UseDatabase is true
 	// always at least write the checksum
-	var storedData []byte
+	var storedData sql.Null[[]byte]
 	if qb.options.UseDatabase {
-		storedData = data
+		storedData.V = data
+		storedData.Valid = len(storedData.V) > 0
 	}
 
 	if err := qb.write(ctx, checksum, storedData); err != nil {
@@ -122,15 +123,11 @@ func (qb *BlobStore) Write(ctx context.Context, data []byte) (string, error) {
 	return checksum, nil
 }
 
-func (qb *BlobStore) write(ctx context.Context, checksum string, data []byte) error {
-	var blobdata sql.Null[[]byte]
-	blobdata.V = data
-	blobdata.Valid = len(data) > 0
-
+func (qb *BlobStore) write(ctx context.Context, checksum string, data sql.Null[[]byte]) error {
 	table := qb.table()
 	q := dialect.Insert(table).Rows(blobRow{
 		Checksum: checksum,
-		Blob:     blobdata,
+		Blob:     data,
 	}).OnConflict(goqu.DoNothing())
 
 	_, err := exec(ctx, q)
@@ -386,9 +383,17 @@ func (qb *blobJoinQueryBuilder) UpdateImage(ctx context.Context, id int, blobCol
 		return err
 	}
 
-	sqlQuery := fmt.Sprintf("UPDATE %s SET %s = ? WHERE id = ?", qb.joinTable, blobCol)
+	sqlQuery := dialect.From(qb.joinTable).Update().
+		Set(goqu.Record{blobCol: checksum}).
+		Prepared(true).
+		Where(goqu.Ex{"id": id})
 
-	if _, err := dbWrapper.Exec(ctx, sqlQuery, checksum, id); err != nil {
+	query, args, err := sqlQuery.ToSQL()
+	if err != nil {
+		return err
+	}
+
+	if _, err := dbWrapper.Exec(ctx, query, args...); err != nil {
 		return err
 	}
 
@@ -445,7 +450,7 @@ func (qb *blobJoinQueryBuilder) DestroyImage(ctx context.Context, id int, blobCo
 		return err
 	}
 
-	if _, err = dbWrapper.Exec(ctx, query, args); err != nil {
+	if _, err = dbWrapper.Exec(ctx, query, args...); err != nil {
 		return err
 	}
 

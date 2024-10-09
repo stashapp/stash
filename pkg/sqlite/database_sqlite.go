@@ -78,7 +78,7 @@ func (db *SQLiteDB) open(disableForeignKeys bool, writable bool) (conn *sqlx.DB,
 
 func (db *SQLiteDB) Remove() error {
 	databasePath := db.DatabasePath()
-	err := db.Close()
+	err := (*Database)(db).Close()
 
 	if err != nil {
 		return fmt.Errorf("error closing database: %w", err)
@@ -108,7 +108,7 @@ func (db *SQLiteDB) Reset() error {
 		return err
 	}
 
-	if err := db.Open(); err != nil {
+	if err := (*Database)(db).Open(); err != nil {
 		return fmt.Errorf("[reset DB] unable to initialize: %w", err)
 	}
 
