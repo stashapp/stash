@@ -639,13 +639,14 @@ func runTests(m *testing.M) int {
 
 	f.Close()
 	databaseFile := f.Name()
-	db = sqlite.NewDatabase()
+	sqlite.RegisterSqliteDialect()
+	db = sqlite.NewSQLiteDatabase(databaseFile)
 	db.SetBlobStoreOptions(sqlite.BlobStoreOptions{
 		UseDatabase: true,
 		// don't use filesystem
 	})
 
-	if err := db.Open(databaseFile); err != nil {
+	if err := db.Open(); err != nil {
 		panic(fmt.Sprintf("Could not initialize database: %s", err.Error()))
 	}
 

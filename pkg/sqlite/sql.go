@@ -16,11 +16,6 @@ func selectAll(tableName string) string {
 	return "SELECT " + idColumn + " FROM " + tableName + " "
 }
 
-func distinctIDs(qb *queryBuilder, tableName string) {
-	qb.addColumn("DISTINCT " + getColumn(tableName, "id"))
-	qb.from = tableName
-}
-
 func selectIDs(qb *queryBuilder, tableName string) {
 	qb.addColumn(getColumn(tableName, "id"))
 	qb.from = tableName
