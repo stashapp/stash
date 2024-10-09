@@ -505,7 +505,7 @@ func (r *filesRepository) getMany(ctx context.Context, ids []int, primaryOnly bo
 }
 
 func (r *filesRepository) get(ctx context.Context, id int) ([]models.FileID, error) {
-	query := fmt.Sprintf("SELECT file_id, \"primary\" from %s WHERE %s = ?", r.tableName, r.idColumn)
+	query := fmt.Sprintf(`SELECT file_id, "primary" from %s WHERE %s = ?`, r.tableName, r.idColumn)
 
 	type relatedFile struct {
 		FileID  models.FileID `db:"file_id"`
