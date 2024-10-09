@@ -51,7 +51,6 @@ const (
 	DefaultMaxSessionAge = 60 * 60 * 1 // 1 hours
 
 	Database                 = "database"
-	DatabaseType             = "database_type"
 	DatabaseConnectionString = "database_string"
 
 	Exclude      = "exclude"
@@ -695,10 +694,6 @@ func (i *Config) GetMetadataPath() string {
 
 func (i *Config) GetDatabasePath() string {
 	return i.getString(Database)
-}
-
-func (i *Config) GetDatabaseType() string {
-	return i.getString(DatabaseType)
 }
 
 func (i *Config) GetDatabaseConnectionString() string {
