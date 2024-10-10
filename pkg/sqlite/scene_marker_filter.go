@@ -116,7 +116,7 @@ func (qb *sceneMarkerFilterHandler) tagsCriterionHandler(criterion *models.Hiera
 					// includes only the provided ids
 					f.addWhere("marker_tags.root_tag_id IS NOT NULL")
 					tagsLen := len(tags.Value)
-					f.addHaving(fmt.Sprintf("count(distinct marker_tags.root_tag_id) IS %d", tagsLen))
+					f.addHaving(fmt.Sprintf("count(distinct marker_tags.root_tag_id) = %d", tagsLen))
 					// decrement by one to account for primary tag id
 					f.addWhere("(SELECT COUNT(*) FROM scene_markers_tags s WHERE s.scene_marker_id = scene_markers.id) = ?", tagsLen-1)
 				case models.CriterionModifierNotEquals:

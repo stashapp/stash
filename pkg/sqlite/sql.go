@@ -328,10 +328,10 @@ func getMultiCriterionClause(primaryTable, foreignTable, joinTable, primaryFK, f
 		// includes all of the provided ids
 		if joinTable != "" {
 			whereClause = joinTable + "." + foreignFK + " IN " + getInBinding(len(criterion.Value))
-			havingClause = "count(distinct " + joinTable + "." + foreignFK + ") IS " + strconv.Itoa(len(criterion.Value))
+			havingClause = "count(distinct " + joinTable + "." + foreignFK + ") = " + strconv.Itoa(len(criterion.Value))
 		} else {
 			whereClause = foreignTable + ".id IN " + getInBinding(len(criterion.Value))
-			havingClause = "count(distinct " + foreignTable + ".id) IS " + strconv.Itoa(len(criterion.Value))
+			havingClause = "count(distinct " + foreignTable + ".id) = " + strconv.Itoa(len(criterion.Value))
 		}
 	case models.CriterionModifierExcludes:
 		// excludes all of the provided ids

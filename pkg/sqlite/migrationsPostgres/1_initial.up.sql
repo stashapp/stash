@@ -1,4 +1,5 @@
 CREATE COLLATION IF NOT EXISTS NATURAL_CI (provider = icu, locale = 'en@colNumeric=yes');
+CREATE COLLATION IF NOT EXISTS NOCASE (provider = icu, locale = 'und-u-ks-level2', deterministic = false);
 CREATE TABLE blobs (
     checksum varchar(255) NOT NULL PRIMARY KEY,
     blob bytea
@@ -50,8 +51,8 @@ CREATE TABLE IF NOT EXISTS performers (
   measurements varchar(255),
   fake_tits varchar(255),
   career_length varchar(255),
-  tattoos varchar(255),
-  piercings varchar(255),
+  tattoos text, -- For you artsy motherfuckers
+  piercings text,
   favorite boolean not null default FALSE,
   created_at timestamp not null,
   updated_at timestamp not null,
@@ -203,13 +204,13 @@ CREATE TABLE IF NOT EXISTS scenes_o_dates (
 CREATE TABLE performer_stash_ids (
   performer_id integer,
   endpoint varchar(255),
-  stash_id varchar(36),
+  stash_id uuid,
   foreign key(performer_id) references performers(id) on delete CASCADE
 );
 CREATE TABLE studio_stash_ids (
   studio_id integer,
   endpoint varchar(255),
-  stash_id varchar(36),
+  stash_id uuid,
   foreign key(studio_id) references studios(id) on delete CASCADE
 );
 CREATE TABLE tags_relations (
@@ -336,7 +337,7 @@ CREATE TABLE IF NOT EXISTS images_tags (
 CREATE TABLE IF NOT EXISTS scene_stash_ids (
   scene_id integer NOT NULL,
   endpoint varchar(255) NOT NULL,
-  stash_id varchar(36) NOT NULL,
+  stash_id uuid NOT NULL,
   foreign key(scene_id) references scenes(id) on delete CASCADE,
   PRIMARY KEY(scene_id, endpoint)
 );

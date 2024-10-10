@@ -412,7 +412,7 @@ func (m *joinedMultiCriterionHandlerBuilder) handler(c *models.MultiCriterionInp
 						"primaryFK":    m.primaryFK,
 						"primaryTable": m.primaryTable,
 					})
-					havingClause = fmt.Sprintf("count(distinct %s.%s) IS %d", joinAlias, m.foreignFK, len(criterion.Value))
+					havingClause = fmt.Sprintf("count(distinct %s.%s) = %d", joinAlias, m.foreignFK, len(criterion.Value))
 					args = append(args, len(criterion.Value))
 				case models.CriterionModifierNotEquals:
 					f.setError(fmt.Errorf("not equals modifier is not supported for multi criterion input"))
@@ -420,7 +420,7 @@ func (m *joinedMultiCriterionHandlerBuilder) handler(c *models.MultiCriterionInp
 					// includes all of the provided ids
 					m.addJoinTable(f)
 					whereClause = fmt.Sprintf("%s.%s IN %s", joinAlias, m.foreignFK, getInBinding(len(criterion.Value)))
-					havingClause = fmt.Sprintf("count(distinct %s.%s) IS %d", joinAlias, m.foreignFK, len(criterion.Value))
+					havingClause = fmt.Sprintf("count(distinct %s.%s) = %d", joinAlias, m.foreignFK, len(criterion.Value))
 				}
 
 				f.addWhere(whereClause, args...)
@@ -674,7 +674,7 @@ WHERE id in {inBinding}
 {unionClause})
 `, withClauseMap)
 
-	query := fmt.Sprintf("WITH RECURSIVE %s SELECT 'VALUES' || GROUP_CONCAT('(' || root_id || ', ' || item_id || ')') AS val FROM items", withClause)
+	query := fmt.Sprintf("WITH RECURSIVE %s SELECT 'VALUES' || string_agg('(' || root_id || ', ' || item_id || ')', ',') AS val FROM items", withClause)
 
 	var valuesClause sql.NullString
 	err := dbWrapper.Get(ctx, &valuesClause, query, args...)
@@ -699,7 +699,7 @@ func addHierarchicalConditionClauses(f *filterBuilder, criterion models.Hierarch
 		f.addWhere(fmt.Sprintf("%s.%s IS NOT NULL", table, idColumn))
 	case models.CriterionModifierIncludesAll:
 		f.addWhere(fmt.Sprintf("%s.%s IS NOT NULL", table, idColumn))
-		f.addHaving(fmt.Sprintf("count(distinct %s.%s) IS %d", table, idColumn, len(criterion.Value)))
+		f.addHaving(fmt.Sprintf("count(distinct %s.%s) = %d", table, idColumn, len(criterion.Value)))
 	case models.CriterionModifierExcludes:
 		f.addWhere(fmt.Sprintf("%s.%s IS NULL", table, idColumn))
 	}
@@ -742,6 +742,11 @@ func (m *hierarchicalMultiCriterionHandlerBuilder) handler(c *models.Hierarchica
 				criterion.Value = nil
 			}
 
+			var pgsql_fix string
+			if dbWrapper.dbType == PostgresBackend {
+				pgsql_fix = " AS v(column1, column2)"
+			}
+
 			if len(criterion.Value) > 0 {
 				valuesClause, err := getHierarchicalValues(ctx, criterion.Value, m.foreignTable, m.relationsTable, m.parentFK, m.childFK, criterion.Depth)
 				if err != nil {
@@ -751,10 +756,10 @@ func (m *hierarchicalMultiCriterionHandlerBuilder) handler(c *models.Hierarchica
 
 				switch criterion.Modifier {
 				case models.CriterionModifierIncludes:
-					f.addWhere(fmt.Sprintf("%s.%s IN (SELECT column2 FROM (%s))", m.primaryTable, m.foreignFK, valuesClause))
+					f.addWhere(fmt.Sprintf("%s.%s IN (SELECT column2 FROM (%s)%s)", m.primaryTable, m.foreignFK, valuesClause, pgsql_fix))
 				case models.CriterionModifierIncludesAll:
-					f.addWhere(fmt.Sprintf("%s.%s IN (SELECT column2 FROM (%s))", m.primaryTable, m.foreignFK, valuesClause))
-					f.addHaving(fmt.Sprintf("count(distinct %s.%s) IS %d", m.primaryTable, m.foreignFK, len(criterion.Value)))
+					f.addWhere(fmt.Sprintf("%s.%s IN (SELECT column2 FROM (%s)%s)", m.primaryTable, m.foreignFK, valuesClause, pgsql_fix))
+					f.addHaving(fmt.Sprintf("count(distinct %s.%s) = %d", m.primaryTable, m.foreignFK, len(criterion.Value)))
 				}
 			}
 
@@ -765,7 +770,7 @@ func (m *hierarchicalMultiCriterionHandlerBuilder) handler(c *models.Hierarchica
 					return
 				}
 
-				f.addWhere(fmt.Sprintf("%s.%s NOT IN (SELECT column2 FROM (%s)) OR %[1]s.%[2]s IS NULL", m.primaryTable, m.foreignFK, valuesClause))
+				f.addWhere(fmt.Sprintf("%s.%s NOT IN (SELECT column2 FROM (%s)%s) OR %[1]s.%[2]s IS NULL", m.primaryTable, m.foreignFK, valuesClause, pgsql_fix))
 			}
 		}
 	}
@@ -796,7 +801,7 @@ func (m *joinedHierarchicalMultiCriterionHandlerBuilder) addHierarchicalConditio
 	case models.CriterionModifierEquals:
 		// includes only the provided ids
 		f.addWhere(fmt.Sprintf("%s.%s IS NOT NULL", table, idColumn))
-		f.addHaving(fmt.Sprintf("count(distinct %s.%s) IS %d", table, idColumn, len(criterion.Value)))
+		f.addHaving(fmt.Sprintf("count(distinct %s.%s) = %d", table, idColumn, len(criterion.Value)))
 		f.addWhere(utils.StrFormat("(SELECT COUNT(*) FROM {joinTable} s WHERE s.{primaryFK} = {primaryTable}.{primaryKey}) = ?", utils.StrFormatMap{
 			"joinTable":    m.joinTable,
 			"primaryFK":    m.primaryFK,
