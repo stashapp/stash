@@ -2,11 +2,11 @@ package api
 
 import (
 	"context"
+	"slices"
 	"strconv"
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 )
 
@@ -95,11 +95,11 @@ func (r *queryResolver) FindImages(
 			result, err = qb.Query(ctx, models.ImageQueryOptions{
 				QueryOptions: models.QueryOptions{
 					FindFilter: filter,
-					Count:      sliceutil.Contains(fields, "count"),
+					Count:      slices.Contains(fields, "count"),
 				},
 				ImageFilter: imageFilter,
-				Megapixels:  sliceutil.Contains(fields, "megapixels"),
-				TotalSize:   sliceutil.Contains(fields, "filesize"),
+				Megapixels:  slices.Contains(fields, "megapixels"),
+				TotalSize:   slices.Contains(fields, "filesize"),
 			})
 			if err == nil {
 				images, err = result.Resolve(ctx)
