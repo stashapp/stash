@@ -143,3 +143,9 @@ func TestAppendUniques(t *testing.T) {
 		})
 	}
 }
+
+func BenchmarkAppendUniques(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		AppendUniques([]int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}, []int{3, 4, 4, 11, 12, 13, 14, 15, 16, 17, 18})
+	}
+}

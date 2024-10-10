@@ -36,7 +36,7 @@ func AppendUniques[T comparable](vs []T, toAdd []T) []T {
 // Exclude returns a copy of the vs slice, excluding all values
 // that are also present in the toExclude slice.
 func Exclude[T comparable](vs []T, toExclude []T) []T {
-	var ret []T
+	ret := make([]T, 0, len(vs))
 	for _, v := range vs {
 		if !slices.Contains(toExclude, v) {
 			ret = append(ret, v)
@@ -61,7 +61,7 @@ func Unique[T comparable](vs []T) []T {
 
 // Delete returns a copy of the vs slice with toDel values removed.
 func Delete[T comparable](vs []T, toDel T) []T {
-	var ret []T
+	ret := make([]T, 0, len(vs))
 	for _, v := range vs {
 		if v != toDel {
 			ret = append(ret, v)
