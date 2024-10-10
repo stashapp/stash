@@ -40,7 +40,7 @@ const (
 )
 
 var findExactDuplicateQuery = `
-SELECT string_agg(DISTINCT scene_id, ',') as ids
+SELECT string_agg(DISTINCT scene_id) as ids
 FROM (
 	SELECT scenes.id as scene_id
 		, video_files.duration as file_duration
