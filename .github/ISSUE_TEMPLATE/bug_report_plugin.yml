@@ -1,0 +1,84 @@
+name: 🪲 Plugin Bug
+description: Create a plugin bug report
+title: "🪲[EnterPluginNameHere] Your_Short_title"
+labels: [Plugin_Bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+       Thank you for taking the time to fill out this bug report!
+       Fields marked with an asterisk (*) are required, and remaining fields are optional, but we encourage their usage.
+       Steps to reproduce the behavior:
+        1. Go to '...'
+        2. Click on '....'
+        3. Scroll down to '....'
+        4. See error
+  - type: textarea
+    id: steps
+    attributes:
+      label: Please enter steps to reproduce the behavior.
+    validations:
+      required: true
+  - type: input
+    id: stash_ver
+    attributes:
+      label: Stash Version (from Settings -> About)
+      placeholder: e.g. v0.26.2
+    validations:
+      required: true      
+  - type: input
+    id: os
+    attributes:
+      label: What Operating System (OS)?
+      placeholder: e.g. Windows, MacOS, Linux, iOS8.1 (mobile OS)
+    validations:
+      required: true      
+  - type: input
+    id: device
+    attributes:
+      label: Phone or tablets
+      placeholder: e.g. iPhone6, Galaxy Tab A9+
+    validations:
+      required: false      
+  - type: input
+    id: browser
+    attributes:
+      label: What browser and version?
+      placeholder: e.g. Chrome Ver:127, Firefox Ver:129, Safari Ver:1.3.2, Any
+    validations:
+      required: true
+  - type: textarea
+    id: install
+    attributes:
+      label: The pip install for the plugin
+      description: pip install stashapp-tools --upgrade,  pip install pyYAML
+    validations:
+      required: true      
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected Behavior
+      description: What was the expected behavior?
+    validations:
+      required: false      
+  - type: textarea
+    id: logging
+    attributes:
+      label: Logging
+      description: Enter Stash logging and plugin logging file if applicable.
+    validations:
+      required: false      
+  - type: textarea
+    id: snapshots
+    attributes:
+      label: Snapshot(s)
+      description: Optionally attach snapshot(s) which displays the bug.
+    validations:
+      required: false      
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
+      description: Add any other context about the problem here.
+    validations:
+      required: false

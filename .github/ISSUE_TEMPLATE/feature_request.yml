@@ -1,0 +1,35 @@
+name: 💡️Feature Request
+description: Suggest improvement for this project
+title: "💡️[Enhancement]: Your_Short_title"
+labels: [Enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+       Please fill out the following fields with as much detail as possible:
+       Fields marked with an asterisk (*) are required, and remaining fields are optional, but we encourage their usage.
+  - type: textarea
+    id: problem
+    attributes:
+      label: If feature request is related to a problem, give a clear and concise description of what is the problem. Ex. I'm always frustrated when [...]
+    validations:
+      required: false
+  - type: textarea
+    id: solution 
+    attributes:
+      label: Describe the solution you'd like. A clear and concise description of what you want to happen.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives 
+    attributes:
+      label: Describe alternatives you've considered. A clear and concise description of any alternative solutions or features you've considered.
+    validations:
+      required: false
+  - type: textarea
+    id: Snapshots
+    attributes:
+      label: Snapshots / Images
+      description: Add any other context or screenshots about the feature request here, which can help explain the feature, and a description of what to look for in the image(s).
+    validations:
+      required: false      

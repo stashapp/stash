@@ -1,0 +1,42 @@
+name: 🛗Discussion / Request for Commentary [RFC] 
+description: This is for issues that will be discussed and won't necessarily result directly in commits or pull requests.
+title: "🛗[RFC]: Your_Short_title"
+labels: [RFC]
+body:
+  - type: markdown
+    attributes:
+      value: |
+       This is for issues that will be discussed and won't necessarily result directly in commits or pull requests.
+       Please ensure that you respect people's time and attention and understand that people are volunteering their time, so concision is ideal and considerate.
+       Fields marked with an asterisk (*) are required, and remaining fields are optional, but we encourage their usage.
+  - type: textarea
+    id: Title
+    attributes:
+      label: Optional title of the topic to discuss.
+    validations:
+      required: false
+  - type: textarea
+    id: Summary
+    attributes:
+      label: Describe the scope of your topic and your goals ideally within a single paragraph or TL. A summary that makes it easier for people to determine if they can contribute at a glance.
+    validations:
+      required: true
+  - type: textarea
+    id: Details
+    attributes:
+      label: Only required if summary and title doesn't cover everything.
+    validations:
+      required: false
+  - type: textarea
+    id: Examples
+    attributes:
+      label: If you can show a picture or video examples post them here. 
+    validations:
+      required: false
+  - type: textarea
+    id: snapshots
+    attributes:
+      label: Snapshot(s)
+      description: Optionally attach additional snapshot(s) which helps describe the discussion.
+    validations:
+      required: false      

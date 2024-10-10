@@ -1,0 +1,37 @@
+name: ❓Help
+description: Post your question
+title: "❓[Help]: Your_Short_title"
+labels: [Question]
+body:
+  - type: markdown
+    attributes:
+      value: |
+       Please fill out the following fields with as much detail as possible, so that we can better answer your question.
+       Fields marked with an asterisk (*) are required, and remaining fields are optional, but we encourage their usage.
+  - type: textarea
+    id: question
+    attributes:
+      label: Please enter a clear and concise detailed question.
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: What Operating System (OS)?
+      placeholder: e.g. Windows, MacOS, Linux
+    validations:
+      required: false      
+  - type: input
+    id: browser
+    attributes:
+      label: What browser and version?
+      placeholder: e.g. Chrome Ver:127, Firefox Ver:129, Safari Ver:1.3.2, Any
+    validations:
+      required: false
+  - type: textarea
+    id: snapshots
+    attributes:
+      label: Snapshot(s)
+      description: Optionally attach snapshot(s) which helps describe the question.
+    validations:
+      required: false      
