@@ -1490,5 +1490,6 @@
     "sub_group_of": "Undergrupp av {parent}",
     "sub_group_order": "Ordning av Undergrupper",
     "sub_groups": "Undergrupper",
-    "sub_group": "Undergrupp"
+    "sub_group": "Undergrupp",
+    "include_sub_groups": "Inkludera undergrupper"
 }
