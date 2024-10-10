@@ -50,7 +50,11 @@ func (db *PostgresDB) open(disableForeignKeys bool, writable bool) (conn *sqlx.D
 	}
 
 	if disableForeignKeys {
-		logger.Warn("open with disableForeignKeys is not implemented.")
+		_, err = conn.Exec("SET session_replication_role = replica;")
+
+		if err != nil {
+			return nil, fmt.Errorf("conn.Exec(): %w", err)
+		}
 	}
 	if !writable {
 		_, err = conn.Exec("SET SESSION CHARACTERISTICS AS TRANSACTION READ ONLY;")
