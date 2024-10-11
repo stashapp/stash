@@ -33,7 +33,7 @@ var existingStudioID int
 
 const expectedMatchTitle = "expected match"
 
-var db *sqlite.Database
+var db sqlite.DBInterface
 var r models.Repository
 
 func testTeardown(databaseFile string) {
@@ -57,9 +57,17 @@ func runTests(m *testing.M) int {
 	}
 
 	f.Close()
+
 	databaseFile := f.Name()
 	sqlite.RegisterSqliteDialect()
-	db = sqlite.NewSQLiteDatabase(databaseFile)
+
+	dbUrl, valid := os.LookupEnv("PGSQL_TEST")
+	if valid {
+		db = sqlite.NewPostgresDatabase(dbUrl)
+	} else {
+		db = sqlite.NewSQLiteDatabase(databaseFile)
+	}
+
 	if err := db.Open(); err != nil {
 		panic(fmt.Sprintf("Could not initialize database: %s", err.Error()))
 	}

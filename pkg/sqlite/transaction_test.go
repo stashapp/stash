@@ -36,11 +36,11 @@ import (
 // 							Title: "test",
 // 						}
 
-// 						if err := db.Scene.Create(ctx, scene, nil); err != nil {
+// 						if err := db.GetRepo().Scene.Create(ctx, scene, nil); err != nil {
 // 							return err
 // 						}
 
-// 						if err := db.Scene.Destroy(ctx, scene.ID); err != nil {
+// 						if err := db.GetRepo().Scene.Destroy(ctx, scene.ID); err != nil {
 // 							return err
 // 						}
 // 					}
@@ -94,7 +94,7 @@ func waitForOtherThread(c chan struct{}) error {
 // 				Title: "test",
 // 			}
 
-// 			if err := db.Scene.Create(ctx, scene, nil); err != nil {
+// 			if err := db.GetRepo().Scene.Create(ctx, scene, nil); err != nil {
 // 				return err
 // 			}
 
@@ -106,7 +106,7 @@ func waitForOtherThread(c chan struct{}) error {
 // 				return err
 // 			}
 
-// 			if err := db.Scene.Destroy(ctx, scene.ID); err != nil {
+// 			if err := db.GetRepo().Scene.Destroy(ctx, scene.ID); err != nil {
 // 				return err
 // 			}
 
@@ -139,7 +139,7 @@ func waitForOtherThread(c chan struct{}) error {
 // 			// expect error when we try to do this, as the other thread has already
 // 			// modified this table
 // 			// this takes time to fail, so we need to wait for it
-// 			if err := db.Scene.Create(ctx, scene, nil); err != nil {
+// 			if err := db.GetRepo().Scene.Create(ctx, scene, nil); err != nil {
 // 				if !db.IsLocked(err) {
 // 					t.Errorf("unexpected error: %v", err)
 // 				}
@@ -169,7 +169,7 @@ func TestConcurrentExclusiveAndReadTxn(t *testing.T) {
 				Title: "test",
 			}
 
-			if err := db.Scene.Create(ctx, scene, nil); err != nil {
+			if err := db.GetRepo().Scene.Create(ctx, scene, nil); err != nil {
 				return err
 			}
 
@@ -181,7 +181,7 @@ func TestConcurrentExclusiveAndReadTxn(t *testing.T) {
 				return err
 			}
 
-			if err := db.Scene.Destroy(ctx, scene.ID); err != nil {
+			if err := db.GetRepo().Scene.Destroy(ctx, scene.ID); err != nil {
 				return err
 			}
 
@@ -207,7 +207,7 @@ func TestConcurrentExclusiveAndReadTxn(t *testing.T) {
 				}
 			}()
 
-			if _, err := db.Scene.Find(ctx, sceneIDs[sceneIdx1WithPerformer]); err != nil {
+			if _, err := db.GetRepo().Scene.Find(ctx, sceneIDs[sceneIdx1WithPerformer]); err != nil {
 				t.Errorf("unexpected error: %v", err)
 				return err
 			}
@@ -241,11 +241,11 @@ func TestConcurrentExclusiveAndReadTxn(t *testing.T) {
 // 							Title: "test",
 // 						}
 
-// 						if err := db.Scene.Create(ctx, scene, nil); err != nil {
+// 						if err := db.GetRepo().Scene.Create(ctx, scene, nil); err != nil {
 // 							return err
 // 						}
 
-// 						if err := db.Scene.Destroy(ctx, scene.ID); err != nil {
+// 						if err := db.GetRepo().Scene.Destroy(ctx, scene.ID); err != nil {
 // 							return err
 // 						}
 // 					}
@@ -267,7 +267,7 @@ func TestConcurrentExclusiveAndReadTxn(t *testing.T) {
 // 			for l := 0; l < loops; l++ {
 // 				if err := txn.WithReadTxn(ctx, db, func(ctx context.Context) error {
 // 					for ll := 0; ll < innerLoops; ll++ {
-// 						if _, err := db.Scene.Find(ctx, sceneIDs[ll%totalScenes]); err != nil {
+// 						if _, err := db.GetRepo().Scene.Find(ctx, sceneIDs[ll%totalScenes]); err != nil {
 // 							return err
 // 						}
 // 					}

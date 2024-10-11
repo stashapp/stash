@@ -24,11 +24,11 @@ const (
 )
 
 type Anonymiser struct {
-	*Database
+	*SQLiteDB
 }
 
-func NewAnonymiser(db *Database, outPath string) (*Anonymiser, error) {
-	if _, err := db.writeDB.Exec(fmt.Sprintf(`VACUUM INTO "%s"`, outPath)); err != nil {
+func NewAnonymiser(db DBInterface, outPath string) (*Anonymiser, error) {
+	if _, err := db.GetWriteDB().Exec(fmt.Sprintf(`VACUUM INTO "%s"`, outPath)); err != nil {
 		return nil, fmt.Errorf("vacuuming into %s: %w", outPath, err)
 	}
 
@@ -37,7 +37,7 @@ func NewAnonymiser(db *Database, outPath string) (*Anonymiser, error) {
 		return nil, fmt.Errorf("opening %s: %w", outPath, err)
 	}
 
-	return &Anonymiser{Database: newDB}, nil
+	return &Anonymiser{SQLiteDB: newDB}, nil
 }
 
 func (db *Anonymiser) Anonymise(ctx context.Context) error {

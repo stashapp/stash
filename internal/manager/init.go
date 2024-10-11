@@ -35,7 +35,8 @@ import (
 func Initialize(cfg *config.Config, l *log.Logger) (*Manager, error) {
 	ctx := context.TODO()
 
-	var db *sqlite.Database
+	var db sqlite.DBInterface
+
 	dbUrl := cfg.GetDatabaseUrl()
 	upperUrl := strings.ToUpper(dbUrl)
 	switch {
@@ -58,30 +59,32 @@ func Initialize(cfg *config.Config, l *log.Logger) (*Manager, error) {
 
 	pluginCache := plugin.NewCache(cfg)
 
+	dbRepo := db.GetRepo()
+
 	sceneService := &scene.Service{
-		File:             db.File,
-		Repository:       db.Scene,
-		MarkerRepository: db.SceneMarker,
+		File:             dbRepo.File,
+		Repository:       dbRepo.Scene,
+		MarkerRepository: dbRepo.SceneMarker,
 		PluginCache:      pluginCache,
 		Paths:            mgrPaths,
 		Config:           cfg,
 	}
 
 	imageService := &image.Service{
-		File:       db.File,
-		Repository: db.Image,
+		File:       dbRepo.File,
+		Repository: dbRepo.Image,
 	}
 
 	galleryService := &gallery.Service{
-		Repository:   db.Gallery,
-		ImageFinder:  db.Image,
+		Repository:   dbRepo.Gallery,
+		ImageFinder:  dbRepo.Image,
 		ImageService: imageService,
-		File:         db.File,
-		Folder:       db.Folder,
+		File:         dbRepo.File,
+		Folder:       dbRepo.Folder,
 	}
 
 	groupService := &group.Service{
-		Repository: db.Group,
+		Repository: dbRepo.Group,
 	}
 
 	sceneServer := &SceneServer{

@@ -584,7 +584,7 @@ func indexFromID(ids []int, id int) int {
 	return -1
 }
 
-var db *sqlite.Database
+var db sqlite.DBInterface
 
 func TestMain(m *testing.M) {
 	// initialise empty config - needed by some migrations
@@ -640,7 +640,14 @@ func runTests(m *testing.M) int {
 	f.Close()
 	databaseFile := f.Name()
 	sqlite.RegisterSqliteDialect()
-	db = sqlite.NewSQLiteDatabase(databaseFile)
+
+	dbUrl, valid := os.LookupEnv("PGSQL_TEST")
+	if valid {
+		db = sqlite.NewPostgresDatabase(dbUrl)
+	} else {
+		db = sqlite.NewSQLiteDatabase(databaseFile)
+	}
+
 	db.SetBlobStoreOptions(sqlite.BlobStoreOptions{
 		UseDatabase: true,
 		// don't use filesystem
@@ -674,11 +681,11 @@ func populateDB() error {
 
 		// TODO - link folders to zip files
 
-		if err := createTags(ctx, db.Tag, tagsNameCase, tagsNameNoCase); err != nil {
+		if err := createTags(ctx, db.GetRepo().Tag, tagsNameCase, tagsNameNoCase); err != nil {
 			return fmt.Errorf("error creating tags: %s", err.Error())
 		}
 
-		if err := createGroups(ctx, db.Group, groupsNameCase, groupsNameNoCase); err != nil {
+		if err := createGroups(ctx, db.GetRepo().Group, groupsNameCase, groupsNameNoCase); err != nil {
 			return fmt.Errorf("error creating groups: %s", err.Error())
 		}
 
@@ -702,15 +709,15 @@ func populateDB() error {
 			return fmt.Errorf("error creating images: %s", err.Error())
 		}
 
-		if err := addTagImage(ctx, db.Tag, tagIdxWithCoverImage); err != nil {
+		if err := addTagImage(ctx, db.GetRepo().Tag, tagIdxWithCoverImage); err != nil {
 			return fmt.Errorf("error adding tag image: %s", err.Error())
 		}
 
-		if err := createSavedFilters(ctx, db.SavedFilter, totalSavedFilters); err != nil {
+		if err := createSavedFilters(ctx, db.GetRepo().SavedFilter, totalSavedFilters); err != nil {
 			return fmt.Errorf("error creating saved filters: %s", err.Error())
 		}
 
-		if err := linkGroupStudios(ctx, db.Group); err != nil {
+		if err := linkGroupStudios(ctx, db.GetRepo().Group); err != nil {
 			return fmt.Errorf("error linking group studios: %s", err.Error())
 		}
 
@@ -718,21 +725,21 @@ func populateDB() error {
 			return fmt.Errorf("error linking studios parent: %s", err.Error())
 		}
 
-		if err := linkTagsParent(ctx, db.Tag); err != nil {
+		if err := linkTagsParent(ctx, db.GetRepo().Tag); err != nil {
 			return fmt.Errorf("error linking tags parent: %s", err.Error())
 		}
 
-		if err := linkGroupsParent(ctx, db.Group); err != nil {
+		if err := linkGroupsParent(ctx, db.GetRepo().Group); err != nil {
 			return fmt.Errorf("error linking tags parent: %s", err.Error())
 		}
 
 		for _, ms := range markerSpecs {
-			if err := createMarker(ctx, db.SceneMarker, ms); err != nil {
+			if err := createMarker(ctx, db.GetRepo().SceneMarker, ms); err != nil {
 				return fmt.Errorf("error creating scene marker: %s", err.Error())
 			}
 		}
 		for _, cs := range chapterSpecs {
-			if err := createChapter(ctx, db.GalleryChapter, cs); err != nil {
+			if err := createChapter(ctx, db.GetRepo().GalleryChapter, cs); err != nil {
 				return fmt.Errorf("error creating gallery chapter: %s", err.Error())
 			}
 		}
@@ -779,7 +786,7 @@ func makeFolder(i int) models.Folder {
 }
 
 func createFolders(ctx context.Context) error {
-	qb := db.Folder
+	qb := db.GetRepo().Folder
 
 	for i := 0; i < totalFolders; i++ {
 		folder := makeFolder(i)
@@ -882,7 +889,7 @@ func makeFile(i int) models.File {
 }
 
 func createFiles(ctx context.Context) error {
-	qb := db.File
+	qb := db.GetRepo().File
 
 	for i := 0; i < totalFiles; i++ {
 		file := makeFile(i)
@@ -1131,8 +1138,8 @@ func makeScene(i int) *models.Scene {
 }
 
 func createScenes(ctx context.Context, n int) error {
-	sqb := db.Scene
-	fqb := db.File
+	sqb := db.GetRepo().Scene
+	fqb := db.GetRepo().File
 
 	for i := 0; i < n; i++ {
 		f := makeSceneFile(i)
@@ -1220,8 +1227,8 @@ func makeImage(i int) *models.Image {
 }
 
 func createImages(ctx context.Context, n int) error {
-	qb := db.Image
-	fqb := db.File
+	qb := db.GetRepo().Image
+	fqb := db.GetRepo().File
 
 	for i := 0; i < n; i++ {
 		f := makeImageFile(i)
@@ -1317,8 +1324,8 @@ func makeGallery(i int, includeScenes bool) *models.Gallery {
 }
 
 func createGalleries(ctx context.Context, n int) error {
-	gqb := db.Gallery
-	fqb := db.File
+	gqb := db.GetRepo().Gallery
+	fqb := db.GetRepo().File
 
 	for i := 0; i < n; i++ {
 		var fileIDs []models.FileID
@@ -1509,7 +1516,7 @@ func performerAliases(i int) []string {
 
 // createPerformers creates n performers with plain Name and o performers with camel cased NaMe included
 func createPerformers(ctx context.Context, n int, o int) error {
-	pqb := db.Performer
+	pqb := db.GetRepo().Performer
 
 	const namePlain = "Name"
 	const nameNoCase = "NaMe"
@@ -1714,7 +1721,7 @@ func getStudioBoolValue(index int) bool {
 
 // createStudios creates n studios with plain Name and o studios with camel cased NaMe included
 func createStudios(ctx context.Context, n int, o int) error {
-	sqb := db.Studio
+	sqb := db.GetRepo().Studio
 	const namePlain = "Name"
 	const nameNoCase = "NaMe"
 
@@ -1883,7 +1890,7 @@ func linkGroupStudios(ctx context.Context, mqb models.GroupWriter) error {
 }
 
 func linkStudiosParent(ctx context.Context) error {
-	qb := db.Studio
+	qb := db.GetRepo().Studio
 	return doLinks(studioParentLinks, func(parentIndex, childIndex int) error {
 		input := &models.StudioPartial{
 			ID:       studioIDs[childIndex],

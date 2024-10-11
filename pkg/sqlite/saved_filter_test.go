@@ -13,7 +13,7 @@ import (
 
 func TestSavedFilterFind(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		savedFilter, err := db.SavedFilter.Find(ctx, savedFilterIDs[savedFilterIdxImage])
+		savedFilter, err := db.GetRepo().SavedFilter.Find(ctx, savedFilterIDs[savedFilterIdxImage])
 
 		if err != nil {
 			t.Errorf("Error finding saved filter: %s", err.Error())
@@ -27,7 +27,7 @@ func TestSavedFilterFind(t *testing.T) {
 
 func TestSavedFilterFindByMode(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		savedFilters, err := db.SavedFilter.FindByMode(ctx, models.FilterModeScenes)
+		savedFilters, err := db.GetRepo().SavedFilter.FindByMode(ctx, models.FilterModeScenes)
 
 		if err != nil {
 			t.Errorf("Error finding saved filters: %s", err.Error())
@@ -72,7 +72,7 @@ func TestSavedFilterDestroy(t *testing.T) {
 			ObjectFilter: objectFilter,
 			UIOptions:    uiOptions,
 		}
-		err := db.SavedFilter.Create(ctx, &newFilter)
+		err := db.GetRepo().SavedFilter.Create(ctx, &newFilter)
 
 		if err == nil {
 			id = newFilter.ID
@@ -82,12 +82,12 @@ func TestSavedFilterDestroy(t *testing.T) {
 	})
 
 	withTxn(func(ctx context.Context) error {
-		return db.SavedFilter.Destroy(ctx, id)
+		return db.GetRepo().SavedFilter.Destroy(ctx, id)
 	})
 
 	// now try to find it
 	withTxn(func(ctx context.Context) error {
-		found, err := db.SavedFilter.Find(ctx, id)
+		found, err := db.GetRepo().SavedFilter.Find(ctx, id)
 		if err == nil {
 			assert.Nil(t, found)
 		}

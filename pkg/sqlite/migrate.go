@@ -17,12 +17,12 @@ func (db *Database) needsMigration() bool {
 }
 
 type Migrator struct {
-	db   *Database
+	db   DBInterface
 	conn *sqlx.DB
 	m    *migrate.Migrate
 }
 
-func NewMigrator(db *Database) (*Migrator, error) {
+func NewMigrator(db DBInterface) (*Migrator, error) {
 	m := &Migrator{
 		db: db,
 	}
@@ -131,7 +131,8 @@ func (m *Migrator) RunMigration(ctx context.Context, newVersion uint) error {
 	}
 
 	// update the schema version
-	m.db.schemaVersion, _, _ = m.m.Version()
+	schemaVersion, _, _ := m.m.Version()
+	m.db.SetSchemaVersion(schemaVersion)
 
 	return nil
 }

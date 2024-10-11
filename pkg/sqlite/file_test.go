@@ -192,7 +192,7 @@ func Test_fileFileStore_Create(t *testing.T) {
 		},
 	}
 
-	qb := db.File
+	qb := db.GetRepo().File
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -419,7 +419,7 @@ func Test_fileStore_Update(t *testing.T) {
 		},
 	}
 
-	qb := db.File
+	qb := db.GetRepo().File
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
@@ -491,7 +491,7 @@ func Test_fileStore_Find(t *testing.T) {
 		},
 	}
 
-	qb := db.File
+	qb := db.GetRepo().File
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -546,7 +546,7 @@ func Test_FileStore_FindByPath(t *testing.T) {
 		},
 	}
 
-	qb := db.File
+	qb := db.GetRepo().File
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -598,7 +598,7 @@ func TestFileStore_FindByFingerprint(t *testing.T) {
 		},
 	}
 
-	qb := db.File
+	qb := db.GetRepo().File
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -647,7 +647,7 @@ func TestFileStore_IsPrimary(t *testing.T) {
 		},
 	}
 
-	qb := db.File
+	qb := db.GetRepo().File
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {

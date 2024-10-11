@@ -13,7 +13,9 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 )
 
-type SQLiteDB Database
+type SQLiteDB struct {
+	Database
+}
 
 func RegisterSqliteDialect() {
 	opts := sqlite3.DialectOptions()
@@ -21,43 +23,25 @@ func RegisterSqliteDialect() {
 	goqu.RegisterDialect("sqlite3new", opts)
 }
 
-func NewSQLiteDatabase(dbPath string) *Database {
+func NewSQLiteDatabase(dbPath string) *SQLiteDB {
 	dialect = goqu.Dialect("sqlite3new")
 
 	db := &SQLiteDB{
-		storeRepository: newDatabase(),
-		lockChan:        make(chan struct{}, 1),
-		dbConfig:        dbPath,
+		Database: Database{
+			storeRepository: newDatabase(),
+			lockChan:        make(chan struct{}, 1),
+			dbConfig:        dbPath,
+		},
 	}
-	db.dbInterface = db
+	db.DBInterface = db
 
 	dbWrapper.dbType = SqliteBackend
 
-	return (*Database)(db)
-}
-
-// lock locks the database for writing. This method will block until the lock is acquired.
-func (db *SQLiteDB) lock() {
-	db.lockChan <- struct{}{}
-}
-
-// unlock unlocks the database
-func (db *SQLiteDB) unlock() {
-	// will block the caller if the lock is not held, so check first
-	select {
-	case <-db.lockChan:
-		return
-	default:
-		panic("database is not locked")
-	}
+	return db
 }
 
 func (db *SQLiteDB) DatabaseType() DatabaseType {
 	return SqliteBackend
-}
-
-func (db *SQLiteDB) AppSchemaVersion() uint {
-	return appSchemaVersion
 }
 
 func (db *SQLiteDB) DatabasePath() string {
@@ -94,7 +78,7 @@ func (db *SQLiteDB) open(disableForeignKeys bool, writable bool) (conn *sqlx.DB,
 
 func (db *SQLiteDB) Remove() error {
 	databasePath := db.DatabasePath()
-	err := (*Database)(db).Close()
+	err := db.Close()
 
 	if err != nil {
 		return fmt.Errorf("error closing database: %w", err)
@@ -124,7 +108,7 @@ func (db *SQLiteDB) Reset() error {
 		return err
 	}
 
-	if err := (*Database)(db).Open(); err != nil {
+	if err := db.Open(); err != nil {
 		return fmt.Errorf("[reset DB] unable to initialize: %w", err)
 	}
 

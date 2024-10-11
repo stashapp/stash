@@ -16,27 +16,27 @@ import (
 
 func loadImageRelationships(ctx context.Context, expected models.Image, actual *models.Image) error {
 	if expected.URLs.Loaded() {
-		if err := actual.LoadURLs(ctx, db.Image); err != nil {
+		if err := actual.LoadURLs(ctx, db.GetRepo().Image); err != nil {
 			return err
 		}
 	}
 	if expected.GalleryIDs.Loaded() {
-		if err := actual.LoadGalleryIDs(ctx, db.Image); err != nil {
+		if err := actual.LoadGalleryIDs(ctx, db.GetRepo().Image); err != nil {
 			return err
 		}
 	}
 	if expected.TagIDs.Loaded() {
-		if err := actual.LoadTagIDs(ctx, db.Image); err != nil {
+		if err := actual.LoadTagIDs(ctx, db.GetRepo().Image); err != nil {
 			return err
 		}
 	}
 	if expected.PerformerIDs.Loaded() {
-		if err := actual.LoadPerformerIDs(ctx, db.Image); err != nil {
+		if err := actual.LoadPerformerIDs(ctx, db.GetRepo().Image); err != nil {
 			return err
 		}
 	}
 	if expected.Files.Loaded() {
-		if err := actual.LoadFiles(ctx, db.Image); err != nil {
+		if err := actual.LoadFiles(ctx, db.GetRepo().Image); err != nil {
 			return err
 		}
 	}
@@ -153,7 +153,7 @@ func Test_imageQueryBuilder_Create(t *testing.T) {
 		},
 	}
 
-	qb := db.Image
+	qb := db.GetRepo().Image
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -360,7 +360,7 @@ func Test_imageQueryBuilder_Update(t *testing.T) {
 		},
 	}
 
-	qb := db.Image
+	qb := db.GetRepo().Image
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
@@ -511,7 +511,7 @@ func Test_imageQueryBuilder_UpdatePartial(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		qb := db.Image
+		qb := db.GetRepo().Image
 
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
@@ -785,7 +785,7 @@ func Test_imageQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		qb := db.Image
+		qb := db.GetRepo().Image
 
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
@@ -853,7 +853,7 @@ func Test_imageQueryBuilder_IncrementOCounter(t *testing.T) {
 		},
 	}
 
-	qb := db.Image
+	qb := db.GetRepo().Image
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -896,7 +896,7 @@ func Test_imageQueryBuilder_DecrementOCounter(t *testing.T) {
 		},
 	}
 
-	qb := db.Image
+	qb := db.GetRepo().Image
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -939,7 +939,7 @@ func Test_imageQueryBuilder_ResetOCounter(t *testing.T) {
 		},
 	}
 
-	qb := db.Image
+	qb := db.GetRepo().Image
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -973,7 +973,7 @@ func Test_imageQueryBuilder_Destroy(t *testing.T) {
 		},
 	}
 
-	qb := db.Image
+	qb := db.GetRepo().Image
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -1034,7 +1034,7 @@ func Test_imageQueryBuilder_Find(t *testing.T) {
 		},
 	}
 
-	qb := db.Image
+	qb := db.GetRepo().Image
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -1097,7 +1097,7 @@ func Test_imageQueryBuilder_FindMany(t *testing.T) {
 		},
 	}
 
-	qb := db.Image
+	qb := db.GetRepo().Image
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -1156,7 +1156,7 @@ func Test_imageQueryBuilder_FindByChecksum(t *testing.T) {
 		},
 	}
 
-	qb := db.Image
+	qb := db.GetRepo().Image
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -1234,7 +1234,7 @@ func Test_imageQueryBuilder_FindByFingerprints(t *testing.T) {
 		},
 	}
 
-	qb := db.Image
+	qb := db.GetRepo().Image
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -1276,7 +1276,7 @@ func Test_imageQueryBuilder_FindByGalleryID(t *testing.T) {
 		},
 	}
 
-	qb := db.Image
+	qb := db.GetRepo().Image
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -1319,7 +1319,7 @@ func Test_imageQueryBuilder_CountByGalleryID(t *testing.T) {
 		},
 	}
 
-	qb := db.Image
+	qb := db.GetRepo().Image
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -1365,7 +1365,7 @@ func Test_imageStore_FindByFileID(t *testing.T) {
 		},
 	}
 
-	qb := db.Image
+	qb := db.GetRepo().Image
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -1420,7 +1420,7 @@ func Test_imageStore_FindByFolderID(t *testing.T) {
 		},
 	}
 
-	qb := db.Image
+	qb := db.GetRepo().Image
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -1469,7 +1469,7 @@ func Test_imageStore_FindByZipFileID(t *testing.T) {
 		},
 	}
 
-	qb := db.Image
+	qb := db.GetRepo().Image
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -1503,7 +1503,7 @@ func TestImageQueryQ(t *testing.T) {
 
 		q := getImageStringValue(imageIdx, titleField)
 
-		sqb := db.Image
+		sqb := db.GetRepo().Image
 
 		imageQueryQ(ctx, t, sqb, q, imageIdx)
 
@@ -1558,7 +1558,7 @@ func verifyImageQuery(t *testing.T, filter models.ImageFilterType, verifyFn func
 	t.Helper()
 	withTxn(func(ctx context.Context) error {
 		t.Helper()
-		sqb := db.Image
+		sqb := db.GetRepo().Image
 
 		images := queryImages(ctx, t, sqb, &filter, nil)
 
@@ -1587,7 +1587,7 @@ func TestImageQueryURL(t *testing.T) {
 	verifyFn := func(ctx context.Context, o *models.Image) {
 		t.Helper()
 
-		if err := o.LoadURLs(ctx, db.Image); err != nil {
+		if err := o.LoadURLs(ctx, db.GetRepo().Image); err != nil {
 			t.Errorf("Error loading scene URLs: %v", err)
 		}
 
@@ -1639,7 +1639,7 @@ func TestImageQueryPath(t *testing.T) {
 
 func verifyImagePath(t *testing.T, pathCriterion models.StringCriterionInput, expected int) {
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Image
+		sqb := db.GetRepo().Image
 		imageFilter := models.ImageFilterType{
 			Path: &pathCriterion,
 		}
@@ -1679,7 +1679,7 @@ func TestImageQueryPathOr(t *testing.T) {
 	}
 
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Image
+		sqb := db.GetRepo().Image
 
 		images := queryImages(ctx, t, sqb, &imageFilter, nil)
 
@@ -1715,7 +1715,7 @@ func TestImageQueryPathAndRating(t *testing.T) {
 	}
 
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Image
+		sqb := db.GetRepo().Image
 
 		images := queryImages(ctx, t, sqb, &imageFilter, nil)
 
@@ -1755,7 +1755,7 @@ func TestImageQueryPathNotRating(t *testing.T) {
 	}
 
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Image
+		sqb := db.GetRepo().Image
 
 		images := queryImages(ctx, t, sqb, &imageFilter, nil)
 
@@ -1788,7 +1788,7 @@ func TestImageIllegalQuery(t *testing.T) {
 	}
 
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Image
+		sqb := db.GetRepo().Image
 
 		_, _, err := queryImagesWithCount(ctx, sqb, imageFilter, nil)
 		assert.NotNil(err)
@@ -1834,7 +1834,7 @@ func TestImageQueryRating100(t *testing.T) {
 
 func verifyImagesRating100(t *testing.T, ratingCriterion models.IntCriterionInput) {
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Image
+		sqb := db.GetRepo().Image
 		imageFilter := models.ImageFilterType{
 			Rating100: &ratingCriterion,
 		}
@@ -1873,7 +1873,7 @@ func TestImageQueryOCounter(t *testing.T) {
 
 func verifyImagesOCounter(t *testing.T, oCounterCriterion models.IntCriterionInput) {
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Image
+		sqb := db.GetRepo().Image
 		imageFilter := models.ImageFilterType{
 			OCounter: &oCounterCriterion,
 		}
@@ -1902,7 +1902,7 @@ func TestImageQueryResolution(t *testing.T) {
 
 func verifyImagesResolution(t *testing.T, resolution models.ResolutionEnum) {
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Image
+		sqb := db.GetRepo().Image
 		imageFilter := models.ImageFilterType{
 			Resolution: &models.ResolutionCriterionInput{
 				Value:    resolution,
@@ -1916,7 +1916,7 @@ func verifyImagesResolution(t *testing.T, resolution models.ResolutionEnum) {
 		}
 
 		for _, image := range images {
-			if err := image.LoadPrimaryFile(ctx, db.File); err != nil {
+			if err := image.LoadPrimaryFile(ctx, db.GetRepo().File); err != nil {
 				t.Errorf("Error loading primary file: %s", err.Error())
 				return nil
 			}
@@ -1955,7 +1955,7 @@ func verifyImageResolution(t *testing.T, height int, resolution models.Resolutio
 
 func TestImageQueryIsMissingGalleries(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Image
+		sqb := db.GetRepo().Image
 		isMissing := "galleries"
 		imageFilter := models.ImageFilterType{
 			IsMissing: &isMissing,
@@ -1992,7 +1992,7 @@ func TestImageQueryIsMissingGalleries(t *testing.T) {
 
 func TestImageQueryIsMissingStudio(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Image
+		sqb := db.GetRepo().Image
 		isMissing := "studio"
 		imageFilter := models.ImageFilterType{
 			IsMissing: &isMissing,
@@ -2027,7 +2027,7 @@ func TestImageQueryIsMissingStudio(t *testing.T) {
 
 func TestImageQueryIsMissingPerformers(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Image
+		sqb := db.GetRepo().Image
 		isMissing := "performers"
 		imageFilter := models.ImageFilterType{
 			IsMissing: &isMissing,
@@ -2064,7 +2064,7 @@ func TestImageQueryIsMissingPerformers(t *testing.T) {
 
 func TestImageQueryIsMissingTags(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Image
+		sqb := db.GetRepo().Image
 		isMissing := "tags"
 		imageFilter := models.ImageFilterType{
 			IsMissing: &isMissing,
@@ -2096,7 +2096,7 @@ func TestImageQueryIsMissingTags(t *testing.T) {
 
 func TestImageQueryIsMissingRating(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Image
+		sqb := db.GetRepo().Image
 		isMissing := "rating"
 		imageFilter := models.ImageFilterType{
 			IsMissing: &isMissing,
@@ -2120,7 +2120,7 @@ func TestImageQueryIsMissingRating(t *testing.T) {
 
 func TestImageQueryGallery(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Image
+		sqb := db.GetRepo().Image
 		galleryCriterion := models.MultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(galleryIDs[galleryIdxWithImage]),
@@ -2289,7 +2289,7 @@ func TestImageQueryPerformers(t *testing.T) {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
 
-			results, err := db.Image.Query(ctx, models.ImageQueryOptions{
+			results, err := db.GetRepo().Image.Query(ctx, models.ImageQueryOptions{
 				ImageFilter: &models.ImageFilterType{
 					Performers: &tt.filter,
 				},
@@ -2425,7 +2425,7 @@ func TestImageQueryTags(t *testing.T) {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
 
-			results, err := db.Image.Query(ctx, models.ImageQueryOptions{
+			results, err := db.GetRepo().Image.Query(ctx, models.ImageQueryOptions{
 				ImageFilter: &models.ImageFilterType{
 					Tags: &tt.filter,
 				},
@@ -2518,7 +2518,7 @@ func TestImageQueryStudio(t *testing.T) {
 		},
 	}
 
-	qb := db.Image
+	qb := db.GetRepo().Image
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -2544,7 +2544,7 @@ func TestImageQueryStudio(t *testing.T) {
 
 func TestImageQueryStudioDepth(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Image
+		sqb := db.GetRepo().Image
 		depth := 2
 		studioCriterion := models.HierarchicalMultiCriterionInput{
 			Value: []string{
@@ -2786,7 +2786,7 @@ func TestImageQueryPerformerTags(t *testing.T) {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
 
-			results, err := db.Image.Query(ctx, models.ImageQueryOptions{
+			results, err := db.GetRepo().Image.Query(ctx, models.ImageQueryOptions{
 				ImageFilter: tt.filter,
 				QueryOptions: models.QueryOptions{
 					FindFilter: tt.findFilter,
@@ -2831,7 +2831,7 @@ func TestImageQueryTagCount(t *testing.T) {
 
 func verifyImagesTagCount(t *testing.T, tagCountCriterion models.IntCriterionInput) {
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Image
+		sqb := db.GetRepo().Image
 		imageFilter := models.ImageFilterType{
 			TagCount: &tagCountCriterion,
 		}
@@ -2872,7 +2872,7 @@ func TestImageQueryPerformerCount(t *testing.T) {
 
 func verifyImagesPerformerCount(t *testing.T, performerCountCriterion models.IntCriterionInput) {
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Image
+		sqb := db.GetRepo().Image
 		imageFilter := models.ImageFilterType{
 			PerformerCount: &performerCountCriterion,
 		}
@@ -2930,7 +2930,7 @@ func TestImageQuerySorting(t *testing.T) {
 		},
 	}
 
-	qb := db.Image
+	qb := db.GetRepo().Image
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -2982,7 +2982,7 @@ func TestImageQueryPagination(t *testing.T) {
 			PerPage: &perPage,
 		}
 
-		sqb := db.Image
+		sqb := db.GetRepo().Image
 		images, _, err := queryImagesWithCount(ctx, sqb, nil, &findFilter)
 		if err != nil {
 			t.Errorf("Error querying image: %s", err.Error())

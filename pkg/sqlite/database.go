@@ -87,25 +87,35 @@ const (
 	SqliteBackend   DatabaseType = "SQLITE"
 )
 
-type dbInterface interface {
+type DBInterface interface {
 	Analyze(ctx context.Context) error
 	Anonymise(outPath string) error
 	AnonymousDatabasePath(backupDirectoryPath string) string
 	AppSchemaVersion() uint
 	Backup(backupPath string) (err error)
 	Begin(ctx context.Context, writable bool) (context.Context, error)
-	Open() error
 	Close() error
 	Commit(ctx context.Context) error
 	DatabaseBackupPath(backupDirectoryPath string) string
 	DatabasePath() string
 	DatabaseType() DatabaseType
 	ExecSQL(ctx context.Context, query string, args []interface{}) (*int64, error)
+	getDatabaseSchemaVersion() (uint, error)
+	GetReadDB() *sqlx.DB
+	GetRepo() *storeRepository
+	GetWriteDB() *sqlx.DB
+	initialise() error
 	IsLocked(err error) bool
+	lock()
+	needsMigration() bool
+	Open() error
+	open(disableForeignKeys bool, writable bool) (conn *sqlx.DB, err error)
+	openReadDB() error
+	openWriteDB() error
 	Optimise(ctx context.Context) error
 	QuerySQL(ctx context.Context, query string, args []interface{}) ([]string, [][]interface{}, error)
-	ReInitialise() error
 	Ready() error
+	ReInitialise() error
 	Remove() error
 	Repository() models.Repository
 	Reset() error
@@ -113,23 +123,17 @@ type dbInterface interface {
 	Rollback(ctx context.Context) error
 	RunAllMigrations() error
 	SetBlobStoreOptions(options BlobStoreOptions)
+	SetSchemaVersion(version uint)
+	txnComplete(ctx context.Context)
+	unlock()
 	Vacuum(ctx context.Context) error
 	Version() uint
 	WithDatabase(ctx context.Context) (context.Context, error)
-	getDatabaseSchemaVersion() (uint, error)
-	initialise() error
-	lock()
-	needsMigration() bool
-	open(disableForeignKeys bool, writable bool) (conn *sqlx.DB, err error)
-	openReadDB() error
-	openWriteDB() error
-	txnComplete(ctx context.Context)
-	unlock()
 }
 
 type Database struct {
 	*storeRepository
-	dbInterface
+	DBInterface
 
 	readDB   *sqlx.DB
 	writeDB  *sqlx.DB
@@ -180,6 +184,34 @@ func getDBBoolean(val bool) string {
 	default:
 		return strconv.FormatBool(val)
 	}
+}
+
+func (db *Database) SetSchemaVersion(version uint) {
+	db.schemaVersion = version
+}
+
+func (db *Database) GetRepo() *storeRepository {
+	return db.storeRepository
+}
+
+// lock locks the database for writing. This method will block until the lock is acquired.
+func (db *Database) lock() {
+	db.lockChan <- struct{}{}
+}
+
+// unlock unlocks the database
+func (db *Database) unlock() {
+	// will block the caller if the lock is not held, so check first
+	select {
+	case <-db.lockChan:
+		return
+	default:
+		panic("database is not locked")
+	}
+}
+
+func (db *Database) AppSchemaVersion() uint {
+	return appSchemaVersion
 }
 
 func (db *Database) SetBlobStoreOptions(options BlobStoreOptions) {
@@ -352,6 +384,14 @@ func (db *Database) Vacuum(ctx context.Context) error {
 func (db *Database) Analyze(ctx context.Context) error {
 	_, err := db.writeDB.ExecContext(ctx, "ANALYZE")
 	return err
+}
+
+func (db *Database) GetWriteDB() *sqlx.DB {
+	return db.writeDB
+}
+
+func (db *Database) GetReadDB() *sqlx.DB {
+	return db.readDB
 }
 
 func (db *Database) ExecSQL(ctx context.Context, query string, args []interface{}) (*int64, error) {

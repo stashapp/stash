@@ -10,20 +10,24 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 )
 
-type PostgresDB Database
+type PostgresDB struct {
+	Database
+}
 
-func NewPostgresDatabase(dbConnector string) *Database {
+func NewPostgresDatabase(dbConnector string) *PostgresDB {
 	dialect = goqu.Dialect("postgres")
 
 	db := &PostgresDB{
-		storeRepository: newDatabase(),
-		dbConfig:        dbConnector,
+		Database: Database{
+			storeRepository: newDatabase(),
+			dbConfig:        dbConnector,
+		},
 	}
-	db.dbInterface = db
+	db.DBInterface = db
 
 	dbWrapper.dbType = PostgresBackend
 
-	return (*Database)(db)
+	return db
 }
 
 // Does nothing
