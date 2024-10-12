@@ -97,14 +97,10 @@ button.flip {
 
 #group-page .full-width {
   .group-images {
-    height: auto;
-    margin: 0 auto 0;
-    max-width: 500px;
     position: relative;
     z-index: 1;
 
     button.btn-link {
-      line-height: 0;
       position: relative;
       transition: all 0.3s;
       z-index: 1;
@@ -115,7 +111,6 @@ button.flip {
     }
 
     button:has(.inactive) {
-      cursor: default;
       opacity: 0.5;
       padding: 0;
       transform: rotateY(180deg);
