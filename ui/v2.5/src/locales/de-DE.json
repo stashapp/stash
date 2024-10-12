@@ -545,7 +545,8 @@
                 "transcodes": "Transkodierte Szenen",
                 "sprites": "Sprites der Szenen"
             },
-            "generate_sprites_during_scan_tooltip": "Die Anzahl an Bilder, die unter dem Video Player, zur einfacheren Navigation, angezeigt werden."
+            "generate_sprites_during_scan_tooltip": "Die Anzahl an Bilder, die unter dem Video Player, zur einfacheren Navigation, angezeigt werden.",
+            "optimise_database_warning": "Achtung: Während diese Aufgabe ausgeführt wird, schlagen alle Operationen, die die Datenbank verändern, fehl, und je nach Größe Ihrer Datenbank kann es mehrere Minuten dauern, bis sie abgeschlossen ist. Außerdem wird mindestens so viel freier Speicherplatz benötigt, wie Ihre Datenbank groß ist, empfohlen wird jedoch das 1,5-fache."
         },
         "tools": {
             "scene_duplicate_checker": "Duplikatsprüfung für Szenen",

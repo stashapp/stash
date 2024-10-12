@@ -42,3 +42,13 @@ export const SubGroupsCriterionOption = new BaseGroupsCriterionOption(
   "sub_groups",
   "sub_groups"
 );
+
+// redirects to GroupsCriterion
+export const LegacyMoviesCriterionOption = new CriterionOption({
+  messageID: "groups",
+  type: "movies",
+  modifierOptions,
+  defaultModifier,
+  inputType,
+  makeCriterion: () => new GroupsCriterion(GroupsCriterionOption),
+});

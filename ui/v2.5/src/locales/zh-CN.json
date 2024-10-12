@@ -140,8 +140,8 @@
         "set_cover": "设置为封面",
         "reset_play_duration": "重置播放时长",
         "reset_resume_time": "重置恢复时间",
-        "add_sub_groups": "添加子群组",
-        "remove_from_containing_group": "从群组中移除"
+        "add_sub_groups": "添加子集合",
+        "remove_from_containing_group": "从集合中移除"
     },
     "actions_name": "操作",
     "age": "年龄",
@@ -807,7 +807,7 @@
         "scenes": "{count, plural, one {短片} other {短片}}",
         "studios": "{count, plural, one {工作室} other {工作室}}",
         "tags": "{count, plural, one {标签} other {标签}}",
-        "groups": "{count, plural, one {群组} other {群组}}"
+        "groups": "{count, plural, one {集合} other {集合}}"
     },
     "country": "国家",
     "cover_image": "封面图片",
@@ -1476,19 +1476,20 @@
     "o_count": "高潮次数",
     "studio_tags": "工作室标签",
     "studio_count": "工作室计数",
-    "group": "群组",
-    "group_count": "群组总计",
+    "group": "集合",
+    "group_count": "集合总计",
     "group_scene_number": "短片序号",
-    "groups": "群组",
+    "groups": "集合",
     "include_sub_studio_content": "包括子工作室内容",
     "include_sub_tag_content": "包括子标签内容",
-    "include_sub_group_content": "包括子群组内容",
-    "containing_group": "包含群组",
-    "containing_group_count": "包含群组计数",
-    "containing_groups": "包含群组",
-    "sub_group": "子群组",
-    "sub_group_count": "子群组计数",
-    "sub_group_of": "{parent}的子群组",
-    "sub_group_order": "子群组排序",
-    "sub_groups": "子群组"
+    "include_sub_group_content": "包括子集合内容",
+    "containing_group": "包含的集合",
+    "containing_group_count": "包含的集合计数",
+    "containing_groups": "被包含于集合",
+    "sub_group": "子集合",
+    "sub_group_count": "子集合计数",
+    "sub_group_of": "{parent}的子集合",
+    "sub_group_order": "子集合排序",
+    "sub_groups": "子集合",
+    "include_sub_groups": "包括子组"
 }

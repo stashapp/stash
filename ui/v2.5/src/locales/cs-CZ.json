@@ -135,7 +135,13 @@
         "remove_date": "Odstranit datum",
         "add_manual_date": "Přidat datum ručně",
         "add_play": "Přidat přehrávání",
-        "view_history": "Zobrazit historii"
+        "view_history": "Zobrazit historii",
+        "reset_cover": "Obnovit výchozí obal",
+        "add_sub_groups": "Přidat podskupinu",
+        "set_cover": "Nastavit jako obal",
+        "remove_from_containing_group": "Odebrat ze skupiny",
+        "reset_resume_time": "Obnovit čas pokračování",
+        "reset_play_duration": "Obnovit dobu přehrávání"
     },
     "actions_name": "Akce",
     "age": "Věk",
@@ -531,7 +537,9 @@
             "anonymise_database": "Vytvoří kopii databáze do adresáře záloh, anonymizuje všechna citlivá data. To pak může být poskytnuto ostatním pro účely odstraňování problémů a debuggování. Původní databáze se nemění. Anonymizovaná databáze používá formát názvu souboru {filename_format}.",
             "optimise_database": "Pokusit se zlepšit výkon analyzováním a opětovným sestavením celého databázového souboru.",
             "generate_clip_previews_during_scan": "Generování náhledů pro obrázkové klipy",
-            "optimise_database_warning": "Varování: Pokud je tato úloha spuštěna, všechny operace, které upravují databázi, selžou a v závislosti na velikosti databáze může její dokončení trvat několik minut. Vyžaduje také minimálně tolik volného místa na disku, jak je vaše databáze velká, ale doporučuje se 1,5x."
+            "optimise_database_warning": "Varování: Pokud je tato úloha spuštěna, všechny operace, které upravují databázi, selžou a v závislosti na velikosti databáze může její dokončení trvat několik minut. Vyžaduje také minimálně tolik volného místa na disku, jak je vaše databáze velká, ale doporučuje se 1,5x.",
+            "rescan": "Znovu skenovat soubory",
+            "rescan_tooltip": "Znovu skenovat každý soubor v cestě. Používá se k vynucení aktualizace metadat souboru a opětovnému skenování zip souborů."
         },
         "tools": {
             "scene_duplicate_checker": "Kontrola na duplikaci scén",
@@ -787,7 +795,8 @@
         "performers": "{count, plural, one {Účinkující} other {Účinkující}}",
         "scenes": "{count, plural, one {Scéna} other {Scény}}",
         "studios": "{count, plural, one {Studio} other {Studia}}",
-        "tags": "{count, plural, one {Tag} other {Tagy}}"
+        "tags": "{count, plural, one {Tag} other {Tagy}}",
+        "groups": "{count, plural, one {Skupina} other {Skupiny}}"
     },
     "country": "Země",
     "cover_image": "Obrázek obalu",
@@ -1215,7 +1224,9 @@
         "lazy_component_error_help": "Pokud jste nedávno aktualizovali Stash, znovu načtěte stránku nebo vymažte mezipaměť prohlížeče.",
         "something_went_wrong": "Něco se pokazilo.",
         "header": "Chyba",
-        "loading_type": "Chyba při načítání {type}"
+        "loading_type": "Chyba při načítání {type}",
+        "invalid_javascript_string": "Neplatný kód javascriptu : {error}",
+        "invalid_json_string": "Neplatný string JSON: {error}"
     },
     "eye_color": "Barva očí",
     "fake_tits": "Falešná prsa",
@@ -1275,7 +1286,8 @@
         "last": "Poslední",
         "next": "Další",
         "previous": "Předchozí",
-        "first": "První"
+        "first": "První",
+        "current_total": "{current} z {total}"
     },
     "parent_tag_count": "Počet nadřazených tagů",
     "parent_tags": "Nadřazené tagy",
@@ -1461,5 +1473,23 @@
     "years_old": "Let",
     "updated_at": "Aktualizováno",
     "stash_id": "Stash ID",
-    "sub_tag_of": "Počet sub-tagů od {parent}"
+    "sub_tag_of": "Počet sub-tagů od {parent}",
+    "containing_group": "Obsahující skupina",
+    "containing_group_count": "Počet obsahujících skupin",
+    "include_sub_group_content": "Zahrnout obsah podskupiny",
+    "group": "Skupina",
+    "group_count": "Počet skupin",
+    "group_scene_number": "Číslo scény",
+    "studio_count": "Počet studií",
+    "studio_tags": "Tagy studií",
+    "containing_groups": "Obsahující skupiny",
+    "groups": "Skupiny",
+    "sub_group_of": "Podskupina {parent}",
+    "sub_group_order": "Pořadí podskupin",
+    "sub_groups": "Podskupiny",
+    "sub_group": "Podskupina",
+    "sub_group_count": "Počet podskupin",
+    "include_sub_studio_content": "Zahrnout obsah podstudií",
+    "include_sub_tag_content": "Zahrnout obsah podtagů",
+    "include_sub_groups": "Zahrnout podskupiny"
 }

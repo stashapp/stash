@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Button, ButtonGroup } from "react-bootstrap";
 import { FormattedMessage } from "react-intl";
 import cx from "classnames";
@@ -12,20 +12,24 @@ import { OptionalField } from "../IncludeButton";
 import { faSave } from "@fortawesome/free-solid-svg-icons";
 import { getStashboxBase } from "src/utils/stashbox";
 import { ExternalLink } from "src/components/Shared/ExternalLink";
+import { Link } from "react-router-dom";
 
-interface IStudioName {
+const StudioLink: React.FC<{
   studio: GQL.ScrapedStudio | GQL.SlimStudioDataFragment;
-  id: string | undefined | null;
-  baseURL: string | undefined;
-}
+  url: string | undefined;
+  internal?: boolean;
+}> = ({ studio, url, internal = false }) => {
+  const name = useMemo(() => {
+    if (!url) return studio.name;
 
-const StudioName: React.FC<IStudioName> = ({ studio, id, baseURL }) => {
-  const name =
-    baseURL && id ? (
-      <ExternalLink href={`${baseURL}${id}`}>{studio.name}</ExternalLink>
+    return internal ? (
+      <Link to={url} target="_blank">
+        {studio.name}
+      </Link>
     ) : (
-      studio.name
+      <ExternalLink href={url}>{studio.name}</ExternalLink>
     );
+  }, [url, studio.name, internal]);
 
   return <span>{name}</span>;
 };
@@ -82,10 +86,9 @@ const StudioResult: React.FC<IStudioResultProps> = ({
         <div className="entity-name">
           <FormattedMessage id="countables.studios" values={{ count: 1 }} />:
           <b className="ml-2">
-            <StudioName
+            <StudioLink
               studio={studio}
-              id={studio.remote_site_id}
-              baseURL={stashboxStudioPrefix}
+              url={`${stashboxStudioPrefix}${studio.remote_site_id}`}
             />
           </b>
         </div>
@@ -101,10 +104,10 @@ const StudioResult: React.FC<IStudioResultProps> = ({
                 <FormattedMessage id="component_tagger.verb_matched" />:
               </span>
               <b className="col-3 text-right">
-                <StudioName
+                <StudioLink
                   studio={matchedStudio}
-                  id={matchedStudio.id}
-                  baseURL={studioURLPrefix}
+                  url={`${studioURLPrefix}${matchedStudio.id}`}
+                  internal
                 />
               </b>
             </div>
@@ -136,10 +139,9 @@ const StudioResult: React.FC<IStudioResultProps> = ({
       <div className="entity-name">
         <FormattedMessage id="countables.studios" values={{ count: 1 }} />:
         <b className="ml-2">
-          <StudioName
+          <StudioLink
             studio={studio}
-            id={studio.remote_site_id}
-            baseURL={stashboxStudioPrefix}
+            url={`${stashboxStudioPrefix}${studio.remote_site_id}`}
           />
         </b>
       </div>

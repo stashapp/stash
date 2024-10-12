@@ -451,9 +451,25 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     if (!player) return;
 
     function canplay(this: VideoJsPlayer) {
+      // if we're seeking before starting, don't set the initial timestamp
+      // when starting from the beginning, there is a small delay before the event
+      // is triggered, so we can't just check if the time is 0
+      if (this.currentTime() >= 0.1) {
+        return;
+      }
+
       if (initialTimestamp.current !== -1) {
         this.currentTime(initialTimestamp.current);
         initialTimestamp.current = -1;
+      }
+    }
+
+    function timeupdate(this: VideoJsPlayer) {
+      // fired when seeking
+      // check if we haven't started playing yet
+      // if so, start playing
+      if (!started.current) {
+        this.play();
       }
     }
 
@@ -477,12 +493,14 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     player.on("playing", playing);
     player.on("loadstart", loadstart);
     player.on("fullscreenchange", fullscreenchange);
+    player.on("timeupdate", timeupdate);
 
     return () => {
       player.off("canplay", canplay);
       player.off("playing", playing);
       player.off("loadstart", loadstart);
       player.off("fullscreenchange", fullscreenchange);
+      player.off("timeupdate", timeupdate);
     };
   }, [getPlayer]);
 
