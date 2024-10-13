@@ -97,10 +97,12 @@ button.flip {
 
 #group-page .full-width {
   .group-images {
+    padding: .375rem .75rem;
     position: relative;
     z-index: 1;
 
     button.btn-link {
+      padding: 0;
       position: relative;
       transition: all 0.3s;
       z-index: 1;
@@ -117,11 +119,17 @@ button.flip {
     }
 
     button.flip {
+      align-items: center;
       border-radius: 50%;
-      bottom: 0;
-      display: block;
+      bottom: -5px;
+      display: flex;
+      font-size: 20px;
+      height: 40px;
+      justify-content: center;
+      padding: 0;
       position: absolute;
-      right: 0;
+      right: -5px;
+      width: 40px;
       z-index: 2;
     }
 
