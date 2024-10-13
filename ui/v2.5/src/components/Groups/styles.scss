@@ -95,9 +95,9 @@ button.flip {
   display: none;
 }
 
-#group-page .full-width {
+#group-page .detail-header:not(.collapsed) {
   .group-images {
-    padding: .375rem .75rem;
+    padding: 0.375rem 0.75rem;
     position: relative;
     z-index: 1;
 
