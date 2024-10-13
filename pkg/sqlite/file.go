@@ -849,7 +849,7 @@ func (qb *FileStore) Query(ctx context.Context, options models.FileQueryOptions)
 	query := qb.newQuery()
 	query.join(folderTable, "", "files.parent_folder_id = folders.id")
 
-	selectIDs(&query, fileTable)
+	distinctIDs(&query, fileTable)
 
 	if q := findFilter.Q; q != nil && *q != "" {
 		filepathColumn := "folders.path || '" + string(filepath.Separator) + "' || files.basename"
@@ -898,7 +898,7 @@ func (qb *FileStore) queryGroupedFields(ctx context.Context, options models.File
 	aggregateQuery := qb.newQuery()
 
 	if options.Count {
-		aggregateQuery.addColumn("COUNT(temp.id) as total")
+		aggregateQuery.addColumn("COUNT(temp.id) as total", nil)
 	}
 
 	const includeSortPagination = false

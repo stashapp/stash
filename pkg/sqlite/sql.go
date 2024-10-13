@@ -16,9 +16,25 @@ func selectAll(tableName string) string {
 	return "SELECT " + idColumn + " FROM " + tableName + " "
 }
 
-func selectIDs(qb *queryBuilder, tableName string) {
-	qb.addColumn(getColumn(tableName, "id"))
+func distinctIDs(qb *queryBuilder, tableName string) {
+	columnId := getColumn(tableName, "id")
+	qb.addColumn("DISTINCT "+columnId, []string{columnId})
 	qb.from = tableName
+}
+
+func selectIDs(qb *queryBuilder, tableName string) {
+	columnId := getColumn(tableName, "id")
+	qb.addColumn(getColumn(tableName, "id"), []string{columnId})
+	qb.from = tableName
+}
+
+func fixDBConcat(columnName string) string {
+	switch dbWrapper.dbType {
+	case PostgresBackend:
+		return "STRING_AGG(" + columnName + "::TEXT, ',')"
+	default:
+		return "GROUP_CONCAT(" + columnName + ")"
+	}
 }
 
 func getColumn(tableName string, columnName string) string {

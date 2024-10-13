@@ -427,7 +427,7 @@ func (qb *GroupStore) makeQuery(ctx context.Context, groupFilter *models.GroupFi
 	}
 
 	query := groupRepository.newQuery()
-	selectIDs(&query, groupTable)
+	distinctIDs(&query, groupTable)
 
 	if q := findFilter.Q; q != nil && *q != "" {
 		searchColumns := []string{"groups.name", "groups.aliases"}

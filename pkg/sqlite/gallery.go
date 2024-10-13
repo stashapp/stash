@@ -687,7 +687,7 @@ func (qb *GalleryStore) makeQuery(ctx context.Context, galleryFilter *models.Gal
 	}
 
 	query := galleryRepository.newQuery()
-	selectIDs(&query, galleryTable)
+	distinctIDs(&query, galleryTable)
 
 	if q := findFilter.Q; q != nil && *q != "" {
 		query.addJoins(

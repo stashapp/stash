@@ -596,7 +596,7 @@ func (qb *PerformerStore) makeQuery(ctx context.Context, performerFilter *models
 	}
 
 	query := performerRepository.newQuery()
-	selectIDs(&query, performerTable)
+	distinctIDs(&query, performerTable)
 
 	if q := findFilter.Q; q != nil && *q != "" {
 		query.join(performersAliasesTable, "", "performer_aliases.performer_id = performers.id")

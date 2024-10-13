@@ -40,7 +40,7 @@ const (
 )
 
 var findExactDuplicateQuery = `
-SELECT GROUP_CONCAT(DISTINCT scene_id) as ids
+SELECT %s as ids
 FROM (
 	SELECT scenes.id as scene_id
 		, video_files.duration as file_duration
@@ -915,7 +915,7 @@ func (qb *SceneStore) makeQuery(ctx context.Context, sceneFilter *models.SceneFi
 	}
 
 	query := sceneRepository.newQuery()
-	selectIDs(&query, sceneTable)
+	distinctIDs(&query, sceneTable)
 
 	if q := findFilter.Q; q != nil && *q != "" {
 		query.addJoins(
@@ -991,7 +991,7 @@ func (qb *SceneStore) queryGroupedFields(ctx context.Context, options models.Sce
 	aggregateQuery := sceneRepository.newQuery()
 
 	if options.Count {
-		aggregateQuery.addColumn("COUNT(DISTINCT temp.id) as total")
+		aggregateQuery.addColumn("COUNT(DISTINCT temp.id) as total", nil)
 	}
 
 	if options.TotalDuration {
@@ -1005,8 +1005,8 @@ func (qb *SceneStore) queryGroupedFields(ctx context.Context, options models.Sce
 				onClause: "scenes_files.file_id = video_files.file_id",
 			},
 		)
-		query.addColumn("COALESCE(video_files.duration, 0) as duration")
-		aggregateQuery.addColumn("SUM(temp.duration) as duration")
+		query.addColumn("COALESCE(video_files.duration, 0) as duration", []string{"video_files.duration"})
+		aggregateQuery.addColumn("SUM(temp.duration) as duration", nil)
 	}
 
 	if options.TotalSize {
@@ -1020,8 +1020,8 @@ func (qb *SceneStore) queryGroupedFields(ctx context.Context, options models.Sce
 				onClause: "scenes_files.file_id = files.id",
 			},
 		)
-		query.addColumn("COALESCE(files.size, 0) as size")
-		aggregateQuery.addColumn("SUM(temp.size) as size")
+		query.addColumn("COALESCE(files.size, 0) as size", []string{"files.size"})
+		aggregateQuery.addColumn("SUM(temp.size) as size", nil)
 	}
 
 	const includeSortPagination = false
@@ -1331,7 +1331,9 @@ func (qb *SceneStore) FindDuplicates(ctx context.Context, distance int, duration
 	var dupeIds [][]int
 	if distance == 0 {
 		var ids []string
-		if err := dbWrapper.Select(ctx, &ids, findExactDuplicateQuery, durationDiff); err != nil {
+
+		dbfix_findExactDuplicateQuery := fmt.Sprintf(findExactDuplicateQuery, fixDBConcat("DISTINCT scene_id"))
+		if err := dbWrapper.Select(ctx, &ids, dbfix_findExactDuplicateQuery, durationDiff); err != nil {
 			return nil, err
 		}
 

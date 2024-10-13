@@ -522,7 +522,7 @@ func (qb *StudioStore) makeQuery(ctx context.Context, studioFilter *models.Studi
 	}
 
 	query := studioRepository.newQuery()
-	selectIDs(&query, studioTable)
+	distinctIDs(&query, studioTable)
 
 	if q := findFilter.Q; q != nil && *q != "" {
 		query.join(studioAliasesTable, "", "studio_aliases.studio_id = studios.id")

@@ -778,7 +778,7 @@ func (qb *ImageStore) makeQuery(ctx context.Context, imageFilter *models.ImageFi
 	}
 
 	query := imageRepository.newQuery()
-	selectIDs(&query, imageTable)
+	distinctIDs(&query, imageTable)
 
 	if q := findFilter.Q; q != nil && *q != "" {
 		query.addJoins(
@@ -849,7 +849,7 @@ func (qb *ImageStore) queryGroupedFields(ctx context.Context, options models.Ima
 	aggregateQuery := imageRepository.newQuery()
 
 	if options.Count {
-		aggregateQuery.addColumn("COUNT(DISTINCT temp.id) as total")
+		aggregateQuery.addColumn("COUNT(DISTINCT temp.id) as total", nil)
 	}
 
 	if options.Megapixels {
@@ -863,8 +863,8 @@ func (qb *ImageStore) queryGroupedFields(ctx context.Context, options models.Ima
 				onClause: "images_files.file_id = image_files.file_id",
 			},
 		)
-		query.addColumn("COALESCE(image_files.width, 0) * COALESCE(image_files.height, 0) as megapixels")
-		aggregateQuery.addColumn("COALESCE(SUM(temp.megapixels), 0) / 1000000 as megapixels")
+		query.addColumn("COALESCE(image_files.width, 0) * COALESCE(image_files.height, 0) as megapixels", []string{"image_files.width", "image_files.height"})
+		aggregateQuery.addColumn("COALESCE(SUM(temp.megapixels), 0) / 1000000 as megapixels", nil)
 	}
 
 	if options.TotalSize {
@@ -878,8 +878,8 @@ func (qb *ImageStore) queryGroupedFields(ctx context.Context, options models.Ima
 				onClause: "images_files.file_id = files.id",
 			},
 		)
-		query.addColumn("COALESCE(files.size, 0) as size")
-		aggregateQuery.addColumn("SUM(temp.size) as size")
+		query.addColumn("COALESCE(files.size, 0) as size", []string{"files.size"})
+		aggregateQuery.addColumn("SUM(temp.size) as size", nil)
 	}
 
 	const includeSortPagination = false

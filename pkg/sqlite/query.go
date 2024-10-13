@@ -14,12 +14,13 @@ type queryBuilder struct {
 	columns []string
 	from    string
 
-	joins         joins
-	whereClauses  []string
-	havingClauses []string
-	args          []interface{}
-	withClauses   []string
-	recursiveWith bool
+	joins          joins
+	whereClauses   []string
+	havingClauses  []string
+	args           []interface{}
+	withClauses    []string
+	recursiveWith  bool
+	groupByClauses []string
 
 	sortAndPagination string
 }
@@ -28,8 +29,15 @@ func (qb queryBuilder) body() string {
 	return fmt.Sprintf("SELECT %s FROM %s%s", strings.Join(qb.columns, ", "), qb.from, qb.joins.toSQL())
 }
 
-func (qb *queryBuilder) addColumn(column string) {
+func (qb *queryBuilder) addColumn(column string, nonaggregates []string) {
 	qb.columns = append(qb.columns, column)
+	if len(nonaggregates) > 0 && dbWrapper.dbType == PostgresBackend {
+		qb.addGroupBy(nonaggregates)
+	}
+}
+
+func (qb *queryBuilder) addGroupBy(aggregate []string) {
+	qb.groupByClauses = append(qb.groupByClauses, aggregate...)
 }
 
 func (qb queryBuilder) toSQL(includeSortPagination bool) string {
@@ -44,7 +52,7 @@ func (qb queryBuilder) toSQL(includeSortPagination bool) string {
 		withClause = "WITH " + recursive + strings.Join(qb.withClauses, ", ") + " "
 	}
 
-	body = withClause + qb.repository.buildQueryBody(body, qb.whereClauses, qb.havingClauses)
+	body = withClause + qb.repository.buildQueryBody(body, qb.whereClauses, qb.havingClauses, qb.groupByClauses)
 	if includeSortPagination {
 		body += qb.sortAndPagination
 	}
@@ -75,7 +83,7 @@ func (qb queryBuilder) executeCount(ctx context.Context) (int, error) {
 		withClause = "WITH " + recursive + strings.Join(qb.withClauses, ", ") + " "
 	}
 
-	body = qb.repository.buildQueryBody(body, qb.whereClauses, qb.havingClauses)
+	body = qb.repository.buildQueryBody(body, qb.whereClauses, qb.havingClauses, nil)
 	countQuery := withClause + qb.repository.buildCountQuery(body)
 	return qb.repository.runCountQuery(ctx, countQuery, qb.args)
 }

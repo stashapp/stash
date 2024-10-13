@@ -10,7 +10,6 @@ import (
 	"github.com/jmoiron/sqlx"
 
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sliceutil"
 )
 
 const idColumn = "id"
@@ -99,9 +98,6 @@ func (r *repository) runIdsQuery(ctx context.Context, query string, args []inter
 		vsm[i] = v.Int
 	}
 
-	// We removed distinctIDs for postgresql, but now we have duplicates
-	vsm = sliceutil.AppendUniques(nil, vsm)
-
 	return vsm, nil
 }
 
@@ -174,12 +170,17 @@ func (r *repository) querySimple(ctx context.Context, query string, args []inter
 	return nil
 }
 
-func (r *repository) buildQueryBody(body string, whereClauses []string, havingClauses []string) string {
+func (r *repository) buildQueryBody(body string, whereClauses []string, havingClauses []string, groupbyClauses []string) string {
 	if len(whereClauses) > 0 {
 		body = body + " WHERE " + strings.Join(whereClauses, " AND ") // TODO handle AND or OR
 	}
 	if len(havingClauses) > 0 {
-		body = body + " GROUP BY " + r.tableName + ".id "
+		groupbyClauses = append(groupbyClauses, r.tableName+".id")
+	}
+	if len(groupbyClauses) > 0 {
+		body = body + " GROUP BY " + strings.Join(groupbyClauses, ", ") + " "
+	}
+	if len(havingClauses) > 0 {
 		body = body + " HAVING " + strings.Join(havingClauses, " AND ") // TODO handle AND or OR
 	}
 
@@ -187,7 +188,7 @@ func (r *repository) buildQueryBody(body string, whereClauses []string, havingCl
 }
 
 func (r *repository) executeFindQuery(ctx context.Context, body string, args []interface{}, sortAndPagination string, whereClauses []string, havingClauses []string, withClauses []string, recursiveWith bool) ([]int, int, error) {
-	body = r.buildQueryBody(body, whereClauses, havingClauses)
+	body = r.buildQueryBody(body, whereClauses, havingClauses, nil)
 
 	withClause := ""
 	if len(withClauses) > 0 {

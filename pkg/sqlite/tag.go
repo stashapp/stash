@@ -599,7 +599,7 @@ func (qb *TagStore) Query(ctx context.Context, tagFilter *models.TagFilterType, 
 	}
 
 	query := tagRepository.newQuery()
-	selectIDs(&query, tagTable)
+	distinctIDs(&query, tagTable)
 
 	if q := findFilter.Q; q != nil && *q != "" {
 		query.join(tagAliasesTable, "", "tag_aliases.tag_id = tags.id")
