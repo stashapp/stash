@@ -1490,5 +1490,6 @@
     "sub_groups": "Alamgrupid",
     "include_sub_tag_content": "Sisalda alamsiltide sisu",
     "include_sub_studio_content": "Sisalda alamstuudiote sisu",
-    "o_count": "O Arv"
+    "o_count": "O Arv",
+    "include_sub_groups": "Sisalda alam-gruppe"
 }
