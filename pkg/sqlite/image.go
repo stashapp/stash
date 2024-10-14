@@ -998,7 +998,7 @@ func (qb *ImageStore) setImageSortAndPagination(q *queryBuilder, findFilter *mod
 	}
 
 	q.addSort(sortClause)
-	q.sortAndPagination[len(q.sortAndPagination)-1] += getPagination(findFilter)
+	q.addPagination(getPagination(findFilter))
 
 	return nil
 }

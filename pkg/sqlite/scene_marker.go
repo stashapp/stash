@@ -318,7 +318,7 @@ func (qb *SceneMarkerStore) makeQuery(ctx context.Context, sceneMarkerFilter *mo
 	if err := qb.setSceneMarkerSort(&query, findFilter); err != nil {
 		return nil, err
 	}
-	query.sortAndPagination[len(query.sortAndPagination)-1] += getPagination(findFilter)
+	query.addPagination(getPagination(findFilter))
 
 	return &query, nil
 }

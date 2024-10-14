@@ -869,7 +869,7 @@ func (qb *FileStore) Query(ctx context.Context, options models.FileQueryOptions)
 	if err := qb.setQuerySort(&query, findFilter); err != nil {
 		return nil, err
 	}
-	query.sortAndPagination[len(query.sortAndPagination)-1] += getPagination(findFilter)
+	query.addPagination(getPagination(findFilter))
 
 	result, err := qb.queryGroupedFields(ctx, options, query)
 	if err != nil {

@@ -617,7 +617,7 @@ func (qb *PerformerStore) makeQuery(ctx context.Context, performerFilter *models
 		return nil, err
 	}
 	query.addSort(add)
-	query.sortAndPagination[len(query.sortAndPagination)-1] += getPagination(findFilter)
+	query.addPagination(getPagination(findFilter))
 	query.addGroupBy(agg, true)
 
 	return &query, nil
@@ -653,12 +653,12 @@ func (qb *PerformerStore) QueryCount(ctx context.Context, performerFilter *model
 
 func (qb *PerformerStore) sortByOCounter(direction string) string {
 	// need to sum the o_counter from scenes and images
-	return " ORDER BY (" + selectPerformerOCountSQL + ") " + direction
+	return " (" + selectPerformerOCountSQL + ") " + direction
 }
 
 func (qb *PerformerStore) sortByPlayCount(direction string) string {
 	// need to sum the o_counter from scenes and images
-	return " ORDER BY (" + selectPerformerPlayCountSQL + ") " + direction
+	return " (" + selectPerformerPlayCountSQL + ") " + direction
 }
 
 // used for sorting on performer last o_date
@@ -682,7 +682,7 @@ var selectPerformerLastOAtSQL = utils.StrFormat(
 
 func (qb *PerformerStore) sortByLastOAt(direction string) string {
 	// need to get the o_dates from scenes
-	return " ORDER BY (" + selectPerformerLastOAtSQL + ") " + direction
+	return " (" + selectPerformerLastOAtSQL + ") " + direction
 }
 
 // used for sorting on performer last view_date
@@ -706,7 +706,7 @@ var selectPerformerLastPlayedAtSQL = utils.StrFormat(
 
 func (qb *PerformerStore) sortByLastPlayedAt(direction string) string {
 	// need to get the view_dates from scenes
-	return " ORDER BY (" + selectPerformerLastPlayedAtSQL + ") " + direction
+	return " (" + selectPerformerLastPlayedAtSQL + ") " + direction
 }
 
 var performerSortOptions = sortOptions{

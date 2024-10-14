@@ -446,7 +446,7 @@ func (qb *GroupStore) makeQuery(ctx context.Context, groupFilter *models.GroupFi
 		return nil, err
 	}
 
-	query.sortAndPagination[len(query.sortAndPagination)-1] += getPagination(findFilter)
+	query.addPagination(getPagination(findFilter))
 
 	return &query, nil
 }

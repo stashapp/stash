@@ -630,6 +630,18 @@ func testTeardown(databaseFile string) {
 	}
 }
 
+func getNewDB(databaseFile string) sqlite.DBInterface {
+	dbUrl, valid := os.LookupEnv("PGSQL_TEST")
+	if valid {
+		db = sqlite.NewPostgresDatabase(dbUrl)
+	} else {
+		sqlite.RegisterSqliteDialect()
+		db = sqlite.NewSQLiteDatabase(databaseFile)
+	}
+
+	return db
+}
+
 func runTests(m *testing.M) int {
 	// create the database file
 	f, err := os.CreateTemp("", "*.sqlite")

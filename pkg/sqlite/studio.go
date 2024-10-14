@@ -543,7 +543,7 @@ func (qb *StudioStore) makeQuery(ctx context.Context, studioFilter *models.Studi
 		return nil, err
 	}
 	query.addSort(add)
-	query.sortAndPagination[len(query.sortAndPagination)-1] += getPagination(findFilter)
+	query.addPagination(getPagination(findFilter))
 	query.addGroupBy(agg, true)
 
 	return &query, nil

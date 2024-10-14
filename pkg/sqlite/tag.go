@@ -383,8 +383,7 @@ func (qb *TagStore) FindBySceneID(ctx context.Context, sceneID int) ([]*models.T
 		WHERE scenes_join.scene_id = ?
 		GROUP BY tags.id
 	`
-	add, _ := qb.getDefaultTagSort()
-	query += add
+	query += qb.getDefaultTagSort()
 	args := []interface{}{sceneID}
 	return qb.queryTags(ctx, query, args)
 }
@@ -396,8 +395,7 @@ func (qb *TagStore) FindByPerformerID(ctx context.Context, performerID int) ([]*
 		WHERE performers_join.performer_id = ?
 		GROUP BY tags.id
 	`
-	add, _ := qb.getDefaultTagSort()
-	query += add
+	query += qb.getDefaultTagSort()
 	args := []interface{}{performerID}
 	return qb.queryTags(ctx, query, args)
 }
@@ -409,8 +407,7 @@ func (qb *TagStore) FindByImageID(ctx context.Context, imageID int) ([]*models.T
 		WHERE images_join.image_id = ?
 		GROUP BY tags.id
 	`
-	add, _ := qb.getDefaultTagSort()
-	query += add
+	query += qb.getDefaultTagSort()
 	args := []interface{}{imageID}
 	return qb.queryTags(ctx, query, args)
 }
@@ -422,8 +419,7 @@ func (qb *TagStore) FindByGalleryID(ctx context.Context, galleryID int) ([]*mode
 		WHERE galleries_join.gallery_id = ?
 		GROUP BY tags.id
 	`
-	add, _ := qb.getDefaultTagSort()
-	query += add
+	query += qb.getDefaultTagSort()
 	args := []interface{}{galleryID}
 	return qb.queryTags(ctx, query, args)
 }
@@ -435,8 +431,7 @@ func (qb *TagStore) FindByGroupID(ctx context.Context, groupID int) ([]*models.T
 		WHERE groups_join.group_id = ?
 		GROUP BY tags.id
 	`
-	add, _ := qb.getDefaultTagSort()
-	query += add
+	query += qb.getDefaultTagSort()
 	args := []interface{}{groupID}
 	return qb.queryTags(ctx, query, args)
 }
@@ -448,8 +443,7 @@ func (qb *TagStore) FindBySceneMarkerID(ctx context.Context, sceneMarkerID int) 
 		WHERE scene_markers_join.scene_marker_id = ?
 		GROUP BY tags.id
 	`
-	add, _ := qb.getDefaultTagSort()
-	query += add
+	query += qb.getDefaultTagSort()
 	args := []interface{}{sceneMarkerID}
 	return qb.queryTags(ctx, query, args)
 }
@@ -461,8 +455,7 @@ func (qb *TagStore) FindByStudioID(ctx context.Context, studioID int) ([]*models
 		WHERE studios_join.studio_id = ?
 		GROUP BY tags.id
 	`
-	add, _ := qb.getDefaultTagSort()
-	query += add
+	query += qb.getDefaultTagSort()
 	args := []interface{}{studioID}
 	return qb.queryTags(ctx, query, args)
 }
@@ -526,8 +519,7 @@ func (qb *TagStore) FindByParentTagID(ctx context.Context, parentID int) ([]*mod
 		INNER JOIN tags_relations ON tags_relations.child_id = tags.id
 		WHERE tags_relations.parent_id = ?
 	`
-	add, _ := qb.getDefaultTagSort()
-	query += add
+	query += qb.getDefaultTagSort()
 	args := []interface{}{parentID}
 	return qb.queryTags(ctx, query, args)
 }
@@ -538,8 +530,7 @@ func (qb *TagStore) FindByChildTagID(ctx context.Context, parentID int) ([]*mode
 		INNER JOIN tags_relations ON tags_relations.parent_id = tags.id
 		WHERE tags_relations.child_id = ?
 	`
-	add, _ := qb.getDefaultTagSort()
-	query += add
+	query += qb.getDefaultTagSort()
 	args := []interface{}{parentID}
 	return qb.queryTags(ctx, query, args)
 }
@@ -629,7 +620,7 @@ func (qb *TagStore) Query(ctx context.Context, tagFilter *models.TagFilterType, 
 		return nil, 0, err
 	}
 	query.addSort(add)
-	query.sortAndPagination[len(query.sortAndPagination)-1] += getPagination(findFilter)
+	query.addPagination(getPagination(findFilter))
 	query.addGroupBy(agg, true)
 	idsResult, countResult, err := query.executeFind(ctx)
 	if err != nil {
@@ -660,8 +651,9 @@ var tagSortOptions = sortOptions{
 	"updated_at",
 }
 
-func (qb *TagStore) getDefaultTagSort() (string, []string) {
-	return getSort("name", "ASC", "tags")
+func (qb *TagStore) getDefaultTagSort() string {
+	add, _ := getSort("name", "ASC", "tags")
+	return " ORDER BY " + add
 }
 
 func (qb *TagStore) getTagSort(query *queryBuilder, findFilter *models.FindFilterType) (string, []string, error) {
@@ -686,7 +678,7 @@ func (qb *TagStore) getTagSort(query *queryBuilder, findFilter *models.FindFilte
 	case "scenes_count":
 		sortQuery += getCountSort(tagTable, scenesTagsTable, tagIDColumn, direction)
 	case "scene_markers_count":
-		sortQuery += fmt.Sprintf(" ORDER BY (SELECT COUNT(*) FROM scene_markers_tags WHERE tags.id = scene_markers_tags.tag_id)+(SELECT COUNT(*) FROM scene_markers WHERE tags.id = scene_markers.primary_tag_id) %s", getSortDirection(direction))
+		sortQuery += fmt.Sprintf("(SELECT COUNT(*) FROM scene_markers_tags WHERE tags.id = scene_markers_tags.tag_id)+(SELECT COUNT(*) FROM scene_markers WHERE tags.id = scene_markers.primary_tag_id) %s", getSortDirection(direction))
 	case "images_count":
 		sortQuery += getCountSort(tagTable, imagesTagsTable, tagIDColumn, direction)
 	case "galleries_count":

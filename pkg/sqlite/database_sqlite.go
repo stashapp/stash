@@ -40,6 +40,26 @@ func NewSQLiteDatabase(dbPath string) *SQLiteDB {
 	return db
 }
 
+// lock locks the database for writing. This method will block until the lock is acquired.
+func (db *SQLiteDB) lock() {
+	db.lockChan <- struct{}{}
+}
+
+// unlock unlocks the database
+func (db *SQLiteDB) unlock() {
+	// will block the caller if the lock is not held, so check first
+	select {
+	case <-db.lockChan:
+		return
+	default:
+		panic("database is not locked")
+	}
+}
+
+func (db *SQLiteDB) AppSchemaVersion() uint {
+	return appSchemaVersion
+}
+
 func (db *SQLiteDB) DatabaseType() DatabaseType {
 	return SqliteBackend
 }
