@@ -48,26 +48,6 @@ func (db *SQLiteDB) DatabasePath() string {
 	return (db.dbConfig).(string)
 }
 
-func (db *SQLiteDB) AppSchemaVersion() uint {
-	return appSchemaVersion
-}
-
-// lock locks the database for writing. This method will block until the lock is acquired.
-func (db *SQLiteDB) lock() {
-	db.lockChan <- struct{}{}
-}
-
-// unlock unlocks the database
-func (db *SQLiteDB) unlock() {
-	// will block the caller if the lock is not held, so check first
-	select {
-	case <-db.lockChan:
-		return
-	default:
-		panic("database is not locked")
-	}
-}
-
 func (db *SQLiteDB) open(disableForeignKeys bool, writable bool) (conn *sqlx.DB, err error) {
 	// https://github.com/mattn/go-sqlite3
 	url := "file:" + db.DatabasePath() + "?_journal=WAL&_sync=NORMAL&_busy_timeout=50"

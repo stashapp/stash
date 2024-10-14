@@ -84,7 +84,7 @@ type storeRepository struct {
 type DatabaseType string
 
 const (
-	PostgresBackend DatabaseType = "POSTGRESQL"
+	PostgresBackend DatabaseType = "POSTGRES"
 	SqliteBackend   DatabaseType = "SQLITE"
 )
 
@@ -193,6 +193,26 @@ func (db *Database) SetSchemaVersion(version uint) {
 
 func (db *Database) GetRepo() *storeRepository {
 	return db.storeRepository
+}
+
+// lock locks the database for writing. This method will block until the lock is acquired.
+func (db *Database) lock() {
+	db.lockChan <- struct{}{}
+}
+
+// unlock unlocks the database
+func (db *Database) unlock() {
+	// will block the caller if the lock is not held, so check first
+	select {
+	case <-db.lockChan:
+		return
+	default:
+		panic("database is not locked")
+	}
+}
+
+func (db *Database) AppSchemaVersion() uint {
+	return appSchemaVersion
 }
 
 func (db *Database) SetBlobStoreOptions(options BlobStoreOptions) {
