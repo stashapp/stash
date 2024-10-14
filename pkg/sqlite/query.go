@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sliceutil"
 )
 
 type queryBuilder struct {
@@ -35,13 +36,15 @@ func (qb queryBuilder) body() string {
  */
 func (qb *queryBuilder) addColumn(column string, nonaggregates []string) {
 	qb.columns = append(qb.columns, column)
-	if len(nonaggregates) > 0 && dbWrapper.dbType == PostgresBackend {
-		qb.addGroupBy(nonaggregates)
-	}
+	qb.addGroupBy(nonaggregates, dbWrapper.dbType == PostgresBackend)
 }
 
-func (qb *queryBuilder) addGroupBy(aggregate []string) {
-	qb.groupByClauses = append(qb.groupByClauses, aggregate...)
+func (qb *queryBuilder) addGroupBy(aggregate []string, pgsqlfix bool) {
+	if !pgsqlfix || len(aggregate) == 0 {
+		return
+	}
+
+	qb.groupByClauses = sliceutil.AppendUniques(qb.groupByClauses, aggregate)
 }
 
 func (qb queryBuilder) toSQL(includeSortPagination bool) string {

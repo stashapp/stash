@@ -89,17 +89,20 @@ func getSortDirection(direction string) string {
 		return direction
 	}
 }
-func getSort(sort string, direction string, tableName string) string {
+func getSort(sort string, direction string, tableName string) (string, []string) {
 	direction = getSortDirection(direction)
+	nonaggregates := []string{}
 
 	switch {
 	case strings.HasSuffix(sort, "_count"):
 		var relationTableName = strings.TrimSuffix(sort, "_count") // TODO: pluralize?
 		colName := getColumn(relationTableName, "id")
-		return " ORDER BY COUNT(distinct " + colName + ") " + direction
+		nonaggregates = append(nonaggregates, colName)
+		return " ORDER BY COUNT(distinct " + colName + ") " + direction, nonaggregates
 	case strings.Compare(sort, "filesize") == 0:
 		colName := getColumn(tableName, "size")
-		return " ORDER BY " + colName + " " + direction
+		nonaggregates = append(nonaggregates, colName)
+		return " ORDER BY " + colName + " " + direction, nonaggregates
 	case strings.HasPrefix(sort, randomSeedPrefix):
 		// seed as a parameter from the UI
 		seedStr := sort[len(randomSeedPrefix):]
@@ -108,22 +111,24 @@ func getSort(sort string, direction string, tableName string) string {
 			// fallback to a random seed
 			seed = rand.Uint64()
 		}
-		return getRandomSort(tableName, direction, seed)
+		return getRandomSort(tableName, direction, seed), nonaggregates
 	case strings.Compare(sort, "random") == 0:
-		return getRandomSort(tableName, direction, rand.Uint64())
+		return getRandomSort(tableName, direction, rand.Uint64()), nonaggregates
 	default:
 		colName := getColumn(tableName, sort)
 		if strings.Contains(sort, ".") {
 			colName = sort
 		}
+		nonaggregates = append(nonaggregates, colName)
+
 		if strings.Compare(sort, "name") == 0 {
-			return " ORDER BY " + colName + " COLLATE NATURAL_CI " + direction
+			return " ORDER BY " + colName + " COLLATE NATURAL_CI " + direction, nonaggregates
 		}
 		if strings.Compare(sort, "title") == 0 {
-			return " ORDER BY " + colName + " COLLATE NATURAL_CI " + direction
+			return " ORDER BY " + colName + " COLLATE NATURAL_CI " + direction, nonaggregates
 		}
 
-		return " ORDER BY " + colName + " " + direction
+		return " ORDER BY " + colName + " " + direction, nonaggregates
 	}
 }
 

@@ -969,6 +969,7 @@ func (qb *ImageStore) setImageSortAndPagination(q *queryBuilder, findFilter *mod
 			addFilesJoin()
 			addFolderJoin()
 			sortClause = " ORDER BY COALESCE(folders.path, '') || COALESCE(files.basename, '') COLLATE NATURAL_CI " + direction
+			q.addGroupBy([]string{"folders.path", "files.basename"}, true)
 		case "file_count":
 			sortClause = getCountSort(imageTable, imagesFilesTable, imageIDColumn, direction)
 		case "tag_count":
@@ -977,17 +978,23 @@ func (qb *ImageStore) setImageSortAndPagination(q *queryBuilder, findFilter *mod
 			sortClause = getCountSort(imageTable, performersImagesTable, imageIDColumn, direction)
 		case "mod_time", "filesize":
 			addFilesJoin()
-			sortClause = getSort(sort, direction, "files")
+			add, agg := getSort(sort, direction, "files")
+			sortClause = add
+			q.addGroupBy(agg, true)
 		case "title":
 			addFilesJoin()
 			addFolderJoin()
 			sortClause = " ORDER BY COALESCE(images.title, files.basename) COLLATE NATURAL_CI " + direction + ", folders.path COLLATE NATURAL_CI " + direction
+			q.addGroupBy([]string{"images.title", "files.basename", "folders.path"}, true)
 		default:
-			sortClause = getSort(sort, direction, "images")
+			add, agg := getSort(sort, direction, "images")
+			sortClause = add
+			q.addGroupBy(agg, true)
 		}
 
 		// Whatever the sorting, always use title/id as a final sort
 		sortClause += ", COALESCE(images.title, cast(images.id as text)) COLLATE NATURAL_CI ASC"
+		q.addGroupBy([]string{"images.title", "images.id"}, true)
 	}
 
 	q.sortAndPagination = sortClause + getPagination(findFilter)

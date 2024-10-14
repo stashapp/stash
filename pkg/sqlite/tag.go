@@ -383,7 +383,8 @@ func (qb *TagStore) FindBySceneID(ctx context.Context, sceneID int) ([]*models.T
 		WHERE scenes_join.scene_id = ?
 		GROUP BY tags.id
 	`
-	query += qb.getDefaultTagSort()
+	add, _ := qb.getDefaultTagSort()
+	query += add
 	args := []interface{}{sceneID}
 	return qb.queryTags(ctx, query, args)
 }
@@ -395,7 +396,8 @@ func (qb *TagStore) FindByPerformerID(ctx context.Context, performerID int) ([]*
 		WHERE performers_join.performer_id = ?
 		GROUP BY tags.id
 	`
-	query += qb.getDefaultTagSort()
+	add, _ := qb.getDefaultTagSort()
+	query += add
 	args := []interface{}{performerID}
 	return qb.queryTags(ctx, query, args)
 }
@@ -407,7 +409,8 @@ func (qb *TagStore) FindByImageID(ctx context.Context, imageID int) ([]*models.T
 		WHERE images_join.image_id = ?
 		GROUP BY tags.id
 	`
-	query += qb.getDefaultTagSort()
+	add, _ := qb.getDefaultTagSort()
+	query += add
 	args := []interface{}{imageID}
 	return qb.queryTags(ctx, query, args)
 }
@@ -419,7 +422,8 @@ func (qb *TagStore) FindByGalleryID(ctx context.Context, galleryID int) ([]*mode
 		WHERE galleries_join.gallery_id = ?
 		GROUP BY tags.id
 	`
-	query += qb.getDefaultTagSort()
+	add, _ := qb.getDefaultTagSort()
+	query += add
 	args := []interface{}{galleryID}
 	return qb.queryTags(ctx, query, args)
 }
@@ -431,7 +435,8 @@ func (qb *TagStore) FindByGroupID(ctx context.Context, groupID int) ([]*models.T
 		WHERE groups_join.group_id = ?
 		GROUP BY tags.id
 	`
-	query += qb.getDefaultTagSort()
+	add, _ := qb.getDefaultTagSort()
+	query += add
 	args := []interface{}{groupID}
 	return qb.queryTags(ctx, query, args)
 }
@@ -443,7 +448,8 @@ func (qb *TagStore) FindBySceneMarkerID(ctx context.Context, sceneMarkerID int) 
 		WHERE scene_markers_join.scene_marker_id = ?
 		GROUP BY tags.id
 	`
-	query += qb.getDefaultTagSort()
+	add, _ := qb.getDefaultTagSort()
+	query += add
 	args := []interface{}{sceneMarkerID}
 	return qb.queryTags(ctx, query, args)
 }
@@ -455,7 +461,8 @@ func (qb *TagStore) FindByStudioID(ctx context.Context, studioID int) ([]*models
 		WHERE studios_join.studio_id = ?
 		GROUP BY tags.id
 	`
-	query += qb.getDefaultTagSort()
+	add, _ := qb.getDefaultTagSort()
+	query += add
 	args := []interface{}{studioID}
 	return qb.queryTags(ctx, query, args)
 }
@@ -519,7 +526,8 @@ func (qb *TagStore) FindByParentTagID(ctx context.Context, parentID int) ([]*mod
 		INNER JOIN tags_relations ON tags_relations.child_id = tags.id
 		WHERE tags_relations.parent_id = ?
 	`
-	query += qb.getDefaultTagSort()
+	add, _ := qb.getDefaultTagSort()
+	query += add
 	args := []interface{}{parentID}
 	return qb.queryTags(ctx, query, args)
 }
@@ -530,7 +538,8 @@ func (qb *TagStore) FindByChildTagID(ctx context.Context, parentID int) ([]*mode
 		INNER JOIN tags_relations ON tags_relations.parent_id = tags.id
 		WHERE tags_relations.child_id = ?
 	`
-	query += qb.getDefaultTagSort()
+	add, _ := qb.getDefaultTagSort()
+	query += add
 	args := []interface{}{parentID}
 	return qb.queryTags(ctx, query, args)
 }
@@ -616,11 +625,13 @@ func (qb *TagStore) Query(ctx context.Context, tagFilter *models.TagFilterType, 
 	}
 
 	var err error
-	query.sortAndPagination, err = qb.getTagSort(&query, findFilter)
+	var agg []string
+	query.sortAndPagination, agg, err = qb.getTagSort(&query, findFilter)
 	if err != nil {
 		return nil, 0, err
 	}
 	query.sortAndPagination += getPagination(findFilter)
+	query.addGroupBy(agg, true)
 	idsResult, countResult, err := query.executeFind(ctx)
 	if err != nil {
 		return nil, 0, err
@@ -650,11 +661,11 @@ var tagSortOptions = sortOptions{
 	"updated_at",
 }
 
-func (qb *TagStore) getDefaultTagSort() string {
+func (qb *TagStore) getDefaultTagSort() (string, []string) {
 	return getSort("name", "ASC", "tags")
 }
 
-func (qb *TagStore) getTagSort(query *queryBuilder, findFilter *models.FindFilterType) (string, error) {
+func (qb *TagStore) getTagSort(query *queryBuilder, findFilter *models.FindFilterType) (string, []string, error) {
 	var sort string
 	var direction string
 	if findFilter == nil {
@@ -667,10 +678,11 @@ func (qb *TagStore) getTagSort(query *queryBuilder, findFilter *models.FindFilte
 
 	// CVE-2024-32231 - ensure sort is in the list of allowed sorts
 	if err := tagSortOptions.validateSort(sort); err != nil {
-		return "", err
+		return "", nil, err
 	}
 
 	sortQuery := ""
+	var agg []string
 	switch sort {
 	case "scenes_count":
 		sortQuery += getCountSort(tagTable, scenesTagsTable, tagIDColumn, direction)
@@ -687,12 +699,15 @@ func (qb *TagStore) getTagSort(query *queryBuilder, findFilter *models.FindFilte
 	case "movies_count", "groups_count":
 		sortQuery += getCountSort(tagTable, groupsTagsTable, tagIDColumn, direction)
 	default:
-		sortQuery += getSort(sort, direction, "tags")
+		var add string
+		add, agg = getSort(sort, direction, "tags")
+		sortQuery += add
 	}
 
 	// Whatever the sorting, always use name/id as a final sort
 	sortQuery += ", COALESCE(tags.name, cast(tags.id as text)) COLLATE NATURAL_CI ASC"
-	return sortQuery, nil
+	agg = append(agg, "tags.name", "tags.id")
+	return sortQuery, agg, nil
 }
 
 func (qb *TagStore) queryTags(ctx context.Context, query string, args []interface{}) ([]*models.Tag, error) {
