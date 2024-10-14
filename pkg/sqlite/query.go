@@ -48,7 +48,9 @@ func (qb *queryBuilder) addGroupBy(aggregate []string, pgsqlfix bool) {
 }
 
 func (qb *queryBuilder) addSort(sortby string) {
-	qb.sortAndPagination = append(qb.sortAndPagination, sortby)
+	if len(sortby) > 0 {
+		qb.sortAndPagination = append(qb.sortAndPagination, sortby)
+	}
 }
 
 func (qb queryBuilder) toSQL(includeSortPagination bool) string {
