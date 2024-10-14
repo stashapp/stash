@@ -49,6 +49,18 @@ func testTeardown(databaseFile string) {
 	}
 }
 
+func getNewDB(databaseFile string) sqlite.DBInterface {
+	dbUrl, valid := os.LookupEnv("PGSQL_TEST")
+	if valid {
+		db = sqlite.NewPostgresDatabase(dbUrl)
+	} else {
+		sqlite.RegisterSqliteDialect()
+		db = sqlite.NewSQLiteDatabase(databaseFile)
+	}
+
+	return db
+}
+
 func runTests(m *testing.M) int {
 	// create the database file
 	f, err := os.CreateTemp("", "*.sqlite")
@@ -57,16 +69,8 @@ func runTests(m *testing.M) int {
 	}
 
 	f.Close()
-
 	databaseFile := f.Name()
-	sqlite.RegisterSqliteDialect()
-
-	dbUrl, valid := os.LookupEnv("PGSQL_TEST")
-	if valid {
-		db = sqlite.NewPostgresDatabase(dbUrl)
-	} else {
-		db = sqlite.NewSQLiteDatabase(databaseFile)
-	}
+	db = getNewDB(databaseFile)
 
 	if err := db.Open(); err != nil {
 		panic(fmt.Sprintf("Could not initialize database: %s", err.Error()))

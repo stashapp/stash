@@ -639,14 +639,7 @@ func runTests(m *testing.M) int {
 
 	f.Close()
 	databaseFile := f.Name()
-	sqlite.RegisterSqliteDialect()
-
-	dbUrl, valid := os.LookupEnv("PGSQL_TEST")
-	if valid {
-		db = sqlite.NewPostgresDatabase(dbUrl)
-	} else {
-		db = sqlite.NewSQLiteDatabase(databaseFile)
-	}
+	db = getNewDB(databaseFile)
 
 	db.SetBlobStoreOptions(sqlite.BlobStoreOptions{
 		UseDatabase: true,
