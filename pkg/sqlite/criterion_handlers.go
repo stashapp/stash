@@ -674,7 +674,7 @@ WHERE id in {inBinding}
 {unionClause})
 `, withClauseMap)
 
-	query := fmt.Sprintf("WITH RECURSIVE %s SELECT 'VALUES' || "+fixDBConcat("'(' || root_id || ', ' || item_id || ')'")+" AS val FROM items", withClause)
+	query := fmt.Sprintf("WITH RECURSIVE %s SELECT 'VALUES' || "+DBGroupConcat("'(' || root_id || ', ' || item_id || ')'")+" AS val FROM items", withClause)
 
 	var valuesClause sql.NullString
 	err := dbWrapper.Get(ctx, &valuesClause, query, args...)

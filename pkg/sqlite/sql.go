@@ -24,11 +24,11 @@ func distinctIDs(qb *queryBuilder, tableName string) {
 
 func selectIDs(qb *queryBuilder, tableName string) {
 	columnId := getColumn(tableName, "id")
-	qb.addColumn(getColumn(tableName, "id"), []string{columnId})
+	qb.addColumn(columnId, []string{columnId})
 	qb.from = tableName
 }
 
-func fixDBConcat(columnName string) string {
+func DBGroupConcat(columnName string) string {
 	switch dbWrapper.dbType {
 	case PostgresBackend:
 		return "STRING_AGG(" + columnName + "::TEXT, ',')"

@@ -29,6 +29,10 @@ func (qb queryBuilder) body() string {
 	return fmt.Sprintf("SELECT %s FROM %s%s", strings.Join(qb.columns, ", "), qb.from, qb.joins.toSQL())
 }
 
+/*
+ * Adds a column to select for the query
+ * Additionally allows doing group by on any non-aggregate columns (for pgsql)
+ */
 func (qb *queryBuilder) addColumn(column string, nonaggregates []string) {
 	qb.columns = append(qb.columns, column)
 	if len(nonaggregates) > 0 && dbWrapper.dbType == PostgresBackend {

@@ -1332,7 +1332,7 @@ func (qb *SceneStore) FindDuplicates(ctx context.Context, distance int, duration
 	if distance == 0 {
 		var ids []string
 
-		dbfix_findExactDuplicateQuery := fmt.Sprintf(findExactDuplicateQuery, fixDBConcat("DISTINCT scene_id"))
+		dbfix_findExactDuplicateQuery := fmt.Sprintf(findExactDuplicateQuery, DBGroupConcat("DISTINCT scene_id"))
 		if err := dbWrapper.Select(ctx, &ids, dbfix_findExactDuplicateQuery, durationDiff); err != nil {
 			return nil, err
 		}
