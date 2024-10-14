@@ -6,6 +6,7 @@ import (
 	"embed"
 	"errors"
 	"fmt"
+	"path/filepath"
 	"strconv"
 	"time"
 
@@ -356,6 +357,28 @@ func (db *Database) Anonymise(outPath string) error {
 
 func (db *Database) Version() uint {
 	return db.schemaVersion
+}
+
+func (db *Database) Reset() error {
+	if err := db.Remove(); err != nil {
+		return err
+	}
+
+	if err := db.Open(); err != nil {
+		return fmt.Errorf("[reset DB] unable to initialize: %w", err)
+	}
+
+	return nil
+}
+
+func (db *Database) AnonymousDatabasePath(backupDirectoryPath string) string {
+	fn := fmt.Sprintf("%s.anonymous.%d.%s", filepath.Base(db.DatabasePath()), db.schemaVersion, time.Now().Format("20060102_150405"))
+
+	if backupDirectoryPath != "" {
+		return filepath.Join(backupDirectoryPath, fn)
+	}
+
+	return fn
 }
 
 func (db *Database) Optimise(ctx context.Context) error {

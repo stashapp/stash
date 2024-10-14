@@ -103,18 +103,6 @@ func (db *SQLiteDB) Remove() error {
 	return nil
 }
 
-func (db *SQLiteDB) Reset() error {
-	if err := db.Remove(); err != nil {
-		return err
-	}
-
-	if err := db.Open(); err != nil {
-		return fmt.Errorf("[reset DB] unable to initialize: %w", err)
-	}
-
-	return nil
-}
-
 // Backup the database. If db is nil, then uses the existing database
 // connection.
 func (db *SQLiteDB) Backup(backupPath string) (err error) {
@@ -143,16 +131,6 @@ func (db *SQLiteDB) RestoreFromBackup(backupPath string) error {
 
 func (db *SQLiteDB) DatabaseBackupPath(backupDirectoryPath string) string {
 	fn := fmt.Sprintf("%s.%d.%s", filepath.Base(db.DatabasePath()), db.schemaVersion, time.Now().Format("20060102_150405"))
-
-	if backupDirectoryPath != "" {
-		return filepath.Join(backupDirectoryPath, fn)
-	}
-
-	return fn
-}
-
-func (db *SQLiteDB) AnonymousDatabasePath(backupDirectoryPath string) string {
-	fn := fmt.Sprintf("%s.anonymous.%d.%s", filepath.Base(db.DatabasePath()), db.schemaVersion, time.Now().Format("20060102_150405"))
 
 	if backupDirectoryPath != "" {
 		return filepath.Join(backupDirectoryPath, fn)

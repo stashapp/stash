@@ -50,7 +50,7 @@ func (s *MigrateJob) Execute(ctx context.Context, progress *job.Progress) error 
 	// always backup so that we can roll back to the previous version if
 	// migration fails
 	backupPath := s.BackupPath
-	if backupPath == "" {
+	if backupPath == "" || s.Database.DatabaseType() == sqlite.PostgresBackend {
 		backupPath = database.DatabaseBackupPath(s.Config.GetBackupDirectoryPath())
 	} else {
 		// check if backup path is a filename or path
