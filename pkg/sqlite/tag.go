@@ -624,13 +624,12 @@ func (qb *TagStore) Query(ctx context.Context, tagFilter *models.TagFilterType, 
 		return nil, 0, err
 	}
 
-	var err error
-	var agg []string
-	query.sortAndPagination, agg, err = qb.getTagSort(&query, findFilter)
+	add, agg, err := qb.getTagSort(&query, findFilter)
 	if err != nil {
 		return nil, 0, err
 	}
-	query.sortAndPagination += getPagination(findFilter)
+	query.addSort(add)
+	query.sortAndPagination[len(query.sortAndPagination)-1] += getPagination(findFilter)
 	query.addGroupBy(agg, true)
 	idsResult, countResult, err := query.executeFind(ctx)
 	if err != nil {

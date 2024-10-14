@@ -187,7 +187,7 @@ func (r *repository) buildQueryBody(body string, whereClauses []string, havingCl
 	return body
 }
 
-func (r *repository) executeFindQuery(ctx context.Context, body string, args []interface{}, sortAndPagination string, whereClauses []string, havingClauses []string, withClauses []string, recursiveWith bool) ([]int, int, error) {
+func (r *repository) executeFindQuery(ctx context.Context, body string, args []interface{}, sortAndPagination []string, whereClauses []string, havingClauses []string, withClauses []string, recursiveWith bool) ([]int, int, error) {
 	body = r.buildQueryBody(body, whereClauses, havingClauses, nil)
 
 	withClause := ""
@@ -200,7 +200,7 @@ func (r *repository) executeFindQuery(ctx context.Context, body string, args []i
 	}
 
 	countQuery := withClause + r.buildCountQuery(body)
-	idsQuery := withClause + body + sortAndPagination
+	idsQuery := withClause + body + " ORDER BY " + strings.Join(sortAndPagination, ", ") + " "
 
 	// Perform query and fetch result
 	var countResult int

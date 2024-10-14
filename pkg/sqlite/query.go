@@ -23,7 +23,7 @@ type queryBuilder struct {
 	recursiveWith  bool
 	groupByClauses []string
 
-	sortAndPagination string
+	sortAndPagination []string
 }
 
 func (qb queryBuilder) body() string {
@@ -47,6 +47,10 @@ func (qb *queryBuilder) addGroupBy(aggregate []string, pgsqlfix bool) {
 	qb.groupByClauses = sliceutil.AppendUniques(qb.groupByClauses, aggregate)
 }
 
+func (qb *queryBuilder) addSort(sortby string) {
+	qb.sortAndPagination = append(qb.sortAndPagination, sortby)
+}
+
 func (qb queryBuilder) toSQL(includeSortPagination bool) string {
 	body := qb.body()
 
@@ -60,8 +64,8 @@ func (qb queryBuilder) toSQL(includeSortPagination bool) string {
 	}
 
 	body = withClause + qb.repository.buildQueryBody(body, qb.whereClauses, qb.havingClauses, qb.groupByClauses)
-	if includeSortPagination {
-		body += qb.sortAndPagination
+	if includeSortPagination && len(qb.sortAndPagination) > 0 {
+		body += " ORDER BY " + strings.Join(qb.sortAndPagination, ", ") + " "
 	}
 
 	return body

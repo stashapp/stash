@@ -968,7 +968,7 @@ func (qb *ImageStore) setImageSortAndPagination(q *queryBuilder, findFilter *mod
 		case "path":
 			addFilesJoin()
 			addFolderJoin()
-			sortClause = " ORDER BY COALESCE(folders.path, '') || COALESCE(files.basename, '') COLLATE NATURAL_CI " + direction
+			sortClause = "COALESCE(folders.path, '') || COALESCE(files.basename, '') COLLATE NATURAL_CI " + direction
 			q.addGroupBy([]string{"folders.path", "files.basename"}, true)
 		case "file_count":
 			sortClause = getCountSort(imageTable, imagesFilesTable, imageIDColumn, direction)
@@ -984,7 +984,7 @@ func (qb *ImageStore) setImageSortAndPagination(q *queryBuilder, findFilter *mod
 		case "title":
 			addFilesJoin()
 			addFolderJoin()
-			sortClause = " ORDER BY COALESCE(images.title, files.basename) COLLATE NATURAL_CI " + direction + ", folders.path COLLATE NATURAL_CI " + direction
+			sortClause = "COALESCE(images.title, files.basename) COLLATE NATURAL_CI " + direction + ", folders.path COLLATE NATURAL_CI " + direction
 			q.addGroupBy([]string{"images.title", "files.basename", "folders.path"}, true)
 		default:
 			add, agg := getSort(sort, direction, "images")
@@ -997,7 +997,8 @@ func (qb *ImageStore) setImageSortAndPagination(q *queryBuilder, findFilter *mod
 		q.addGroupBy([]string{"images.title", "images.id"}, true)
 	}
 
-	q.sortAndPagination = sortClause + getPagination(findFilter)
+	q.addSort(sortClause)
+	q.sortAndPagination[len(q.sortAndPagination)-1] += getPagination(findFilter)
 
 	return nil
 }

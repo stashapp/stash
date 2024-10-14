@@ -17,8 +17,20 @@ func selectAll(tableName string) string {
 }
 
 func distinctIDs(qb *queryBuilder, tableName string) {
+	if dbWrapper.dbType == PostgresBackend {
+		distinctOnIDs(qb, tableName)
+		return
+	}
+
 	columnId := getColumn(tableName, "id")
 	qb.addColumn("DISTINCT "+columnId, []string{columnId})
+	qb.from = tableName
+}
+
+func distinctOnIDs(qb *queryBuilder, tableName string) {
+	columnId := getColumn(tableName, "id")
+	qb.addColumn("DISTINCT ON ("+columnId+") "+columnId, nil)
+	qb.addSort(columnId)
 	qb.from = tableName
 }
 
@@ -98,11 +110,11 @@ func getSort(sort string, direction string, tableName string) (string, []string)
 		var relationTableName = strings.TrimSuffix(sort, "_count") // TODO: pluralize?
 		colName := getColumn(relationTableName, "id")
 		nonaggregates = append(nonaggregates, colName)
-		return " ORDER BY COUNT(distinct " + colName + ") " + direction, nonaggregates
+		return "COUNT(distinct " + colName + ") " + direction, nonaggregates
 	case strings.Compare(sort, "filesize") == 0:
 		colName := getColumn(tableName, "size")
 		nonaggregates = append(nonaggregates, colName)
-		return " ORDER BY " + colName + " " + direction, nonaggregates
+		return colName + " " + direction, nonaggregates
 	case strings.HasPrefix(sort, randomSeedPrefix):
 		// seed as a parameter from the UI
 		seedStr := sort[len(randomSeedPrefix):]
@@ -122,13 +134,13 @@ func getSort(sort string, direction string, tableName string) (string, []string)
 		nonaggregates = append(nonaggregates, colName)
 
 		if strings.Compare(sort, "name") == 0 {
-			return " ORDER BY " + colName + " COLLATE NATURAL_CI " + direction, nonaggregates
+			return colName + " COLLATE NATURAL_CI " + direction, nonaggregates
 		}
 		if strings.Compare(sort, "title") == 0 {
-			return " ORDER BY " + colName + " COLLATE NATURAL_CI " + direction, nonaggregates
+			return colName + " COLLATE NATURAL_CI " + direction, nonaggregates
 		}
 
-		return " ORDER BY " + colName + " " + direction, nonaggregates
+		return colName + " " + direction, nonaggregates
 	}
 }
 
@@ -146,11 +158,11 @@ func getRandomSort(tableName string, direction string, seed uint64) string {
 	// ORDER BY ((n+seed)*(n+seed)*p1 + (n+seed)*p2) % p3
 	// since sqlite converts overflowing numbers to reals, a custom db function that uses uints with overflow should be faster,
 	// however in practice the overhead of calling a custom function vastly outweighs the benefits
-	return fmt.Sprintf(" ORDER BY mod((%[1]s + %[2]d) * (%[1]s + %[2]d) * 52959209 + (%[1]s + %[2]d) * 1047483763, 2147483647) %[3]s", colName, seed, direction)
+	return fmt.Sprintf("mod((%[1]s + %[2]d) * (%[1]s + %[2]d) * 52959209 + (%[1]s + %[2]d) * 1047483763, 2147483647) %[3]s", colName, seed, direction)
 }
 
 func getCountSort(primaryTable, joinTable, primaryFK, direction string) string {
-	return fmt.Sprintf(" ORDER BY (SELECT COUNT(*) FROM %s AS sort WHERE sort.%s = %s.id) %s", joinTable, primaryFK, primaryTable, getSortDirection(direction))
+	return fmt.Sprintf("(SELECT COUNT(*) FROM %s AS sort WHERE sort.%s = %s.id) %s", joinTable, primaryFK, primaryTable, getSortDirection(direction))
 }
 
 func getStringSearchClause(columns []string, q string, not bool) sqlClause {

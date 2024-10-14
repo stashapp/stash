@@ -612,13 +612,12 @@ func (qb *PerformerStore) makeQuery(ctx context.Context, performerFilter *models
 		return nil, err
 	}
 
-	var err error
-	var agg []string
-	query.sortAndPagination, agg, err = qb.getPerformerSort(findFilter)
+	add, agg, err := qb.getPerformerSort(findFilter)
 	if err != nil {
 		return nil, err
 	}
-	query.sortAndPagination += getPagination(findFilter)
+	query.addSort(add)
+	query.sortAndPagination[len(query.sortAndPagination)-1] += getPagination(findFilter)
 	query.addGroupBy(agg, true)
 
 	return &query, nil
