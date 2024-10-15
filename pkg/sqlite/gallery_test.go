@@ -209,6 +209,9 @@ func Test_galleryQueryBuilder_Create(t *testing.T) {
 				return
 			}
 
+			sortGallery(&copy)
+			sortGallery(found)
+
 			assert.Equal(copy, *found)
 
 			return
