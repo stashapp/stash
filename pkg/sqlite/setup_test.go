@@ -1039,7 +1039,7 @@ func getObjectDate(index int) *models.Date {
 
 func sceneStashID(i int) models.StashID {
 	return models.StashID{
-		StashID:  getSceneStringValue(i, "stashid"),
+		StashID:  getUUID("stashid"),
 		Endpoint: getSceneStringValue(i, "endpoint"),
 	}
 }
@@ -1504,9 +1504,14 @@ func getIgnoreAutoTag(index int) bool {
 	return index%5 == 0
 }
 
+func getUUID(_ string) string {
+	// TODO: Encode input string
+	return "00000000-0000-0000-0000-000000000000"
+}
+
 func performerStashID(i int) models.StashID {
 	return models.StashID{
-		StashID:  getPerformerStringValue(i, "stashid"),
+		StashID:  getUUID("stashid"),
 		Endpoint: getPerformerStringValue(i, "endpoint"),
 	}
 }

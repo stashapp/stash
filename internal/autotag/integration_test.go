@@ -37,13 +37,8 @@ var db sqlite.DBInterface
 var r models.Repository
 
 func testTeardown(databaseFile string) {
-	err := db.Close()
+	err := db.Remove()
 
-	if err != nil {
-		panic(err)
-	}
-
-	err = os.Remove(databaseFile)
 	if err != nil {
 		panic(err)
 	}

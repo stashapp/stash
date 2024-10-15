@@ -64,7 +64,7 @@ CREATE TABLE IF NOT EXISTS performers (
   ignore_auto_tag boolean not null default FALSE, 
   image_blob varchar(255) REFERENCES blobs(checksum), 
   penis_length float, 
-  circumcised varchar[10]
+  circumcised varchar(255)
 );
 CREATE TABLE IF NOT EXISTS studios (
   id serial not null primary key,
