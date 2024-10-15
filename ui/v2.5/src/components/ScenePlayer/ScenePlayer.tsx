@@ -243,7 +243,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   const [fullscreen, setFullscreen] = useState(false);
   const [showScrubber, setShowScrubber] = useState(false);
 
-  const initialTimestamp = useRef(-1);
   const started = useRef(false);
   const auto = useRef(false);
   const interactiveReady = useRef(false);
@@ -457,20 +456,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       if (this.currentTime() >= 0.1) {
         return;
       }
-
-      if (initialTimestamp.current !== -1) {
-        this.currentTime(initialTimestamp.current);
-        initialTimestamp.current = -1;
-      }
-    }
-
-    function timeupdate(this: VideoJsPlayer) {
-      // fired when seeking
-      // check if we haven't started playing yet
-      // if so, start playing
-      if (!started.current) {
-        this.play();
-      }
     }
 
     function playing(this: VideoJsPlayer) {
@@ -493,14 +478,12 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     player.on("playing", playing);
     player.on("loadstart", loadstart);
     player.on("fullscreenchange", fullscreenchange);
-    player.on("timeupdate", timeupdate);
 
     return () => {
       player.off("canplay", canplay);
       player.off("playing", playing);
       player.off("loadstart", loadstart);
       player.off("fullscreenchange", fullscreenchange);
-      player.off("timeupdate", timeupdate);
     };
   }, [getPlayer]);
 
@@ -675,7 +658,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       startPosition = resumeTime;
     }
 
-    initialTimestamp.current = startPosition;
     setTime(startPosition);
 
     player.load();
@@ -683,6 +665,10 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
     player.ready(() => {
       player.vttThumbnails().src(scene.paths.vtt ?? null);
+
+      if (startPosition) {
+        player.currentTime(startPosition);
+      }
     });
 
     started.current = false;
@@ -811,7 +797,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     if (started.current) {
       getPlayer()?.currentTime(seconds);
     } else {
-      initialTimestamp.current = seconds;
       setTime(seconds);
     }
   }
