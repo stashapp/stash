@@ -243,7 +243,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   const [fullscreen, setFullscreen] = useState(false);
   const [showScrubber, setShowScrubber] = useState(false);
 
-  const initialTimestamp = useRef(-1);
   const started = useRef(false);
   const auto = useRef(false);
   const interactiveReady = useRef(false);
@@ -659,7 +658,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       startPosition = resumeTime;
     }
 
-    initialTimestamp.current = startPosition;
     setTime(startPosition);
 
     player.load();
@@ -799,7 +797,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     if (started.current) {
       getPlayer()?.currentTime(seconds);
     } else {
-      initialTimestamp.current = seconds;
       setTime(seconds);
     }
   }
