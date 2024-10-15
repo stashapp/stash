@@ -15,7 +15,6 @@ import (
 	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/sqlite/blob"
-	"github.com/stashapp/stash/pkg/utils"
 	"gopkg.in/guregu/null.v4"
 )
 
@@ -70,8 +69,8 @@ func NewBlobStore(options BlobStoreOptions) *BlobStore {
 }
 
 type blobRow struct {
-	Checksum string `db:"checksum"`
-	Blob     []byte `db:"blob"`
+	Checksum string           `db:"checksum"`
+	Blob     sql.Null[[]byte] `db:"blob"`
 }
 
 func (qb *BlobStore) table() exp.IdentifierExpression {
@@ -105,9 +104,10 @@ func (qb *BlobStore) Write(ctx context.Context, data []byte) (string, error) {
 
 	// only write blob to the database if UseDatabase is true
 	// always at least write the checksum
-	var storedData []byte
+	var storedData sql.Null[[]byte]
 	if qb.options.UseDatabase {
-		storedData = data
+		storedData.V = data
+		storedData.Valid = len(storedData.V) > 0
 	}
 
 	if err := qb.write(ctx, checksum, storedData); err != nil {
@@ -123,9 +123,9 @@ func (qb *BlobStore) Write(ctx context.Context, data []byte) (string, error) {
 	return checksum, nil
 }
 
-func (qb *BlobStore) write(ctx context.Context, checksum string, data []byte) error {
+func (qb *BlobStore) write(ctx context.Context, checksum string, data sql.Null[[]byte]) error {
 	table := qb.table()
-	q := dialect.Insert(table).Prepared(true).Rows(blobRow{
+	q := dialect.Insert(table).Rows(blobRow{
 		Checksum: checksum,
 		Blob:     data,
 	}).OnConflict(goqu.DoNothing())
@@ -140,7 +140,7 @@ func (qb *BlobStore) write(ctx context.Context, checksum string, data []byte) er
 
 func (qb *BlobStore) update(ctx context.Context, checksum string, data []byte) error {
 	table := qb.table()
-	q := dialect.Update(table).Prepared(true).Set(goqu.Record{
+	q := dialect.Update(table).Set(goqu.Record{
 		"blob": data,
 	}).Where(goqu.C(blobChecksumColumn).Eq(checksum))
 
@@ -168,16 +168,21 @@ func (e *ChecksumBlobNotExistError) Error() string {
 	return fmt.Sprintf("blob for checksum %s does not exist", e.Checksum)
 }
 
-func (qb *BlobStore) readSQL(ctx context.Context, querySQL string, args ...interface{}) ([]byte, string, error) {
+func (qb *BlobStore) readSQL(ctx context.Context, querySQL sqler) ([]byte, string, error) {
 	if !qb.options.UseDatabase && !qb.options.UseFilesystem {
 		panic("no blob store configured")
+	}
+
+	query, args, err := querySQL.ToSQL()
+	if err != nil {
+		return nil, "", fmt.Errorf("reading blob tosql: %w", err)
 	}
 
 	// always try to get from the database first, even if set to use filesystem
 	var row blobRow
 	found := false
 	const single = true
-	if err := qb.queryFunc(ctx, querySQL, args, single, func(r *sqlx.Rows) error {
+	if err := qb.queryFunc(ctx, query, args, single, func(r *sqlx.Rows) error {
 		found = true
 		if err := r.StructScan(&row); err != nil {
 			return err
@@ -195,8 +200,8 @@ func (qb *BlobStore) readSQL(ctx context.Context, querySQL string, args ...inter
 
 	checksum := row.Checksum
 
-	if row.Blob != nil {
-		return row.Blob, checksum, nil
+	if row.Blob.Valid {
+		return row.Blob.V, checksum, nil
 	}
 
 	// don't use the filesystem if not configured to do so
@@ -265,8 +270,8 @@ func (qb *BlobStore) Read(ctx context.Context, checksum string) ([]byte, error) 
 		}
 	}
 
-	if ret != nil {
-		return ret, nil
+	if ret.Valid {
+		return ret.V, nil
 	}
 
 	// don't use the filesystem if not configured to do so
@@ -280,9 +285,10 @@ func (qb *BlobStore) Read(ctx context.Context, checksum string) ([]byte, error) 
 	}
 }
 
-func (qb *BlobStore) readFromDatabase(ctx context.Context, checksum string) ([]byte, error) {
+func (qb *BlobStore) readFromDatabase(ctx context.Context, checksum string) (sql.Null[[]byte], error) {
 	q := dialect.From(qb.table()).Select(qb.table().All()).Where(qb.tableMgr.byID(checksum))
 
+	var empty sql.Null[[]byte]
 	var row blobRow
 	const single = true
 	if err := queryFunc(ctx, q, single, func(r *sqlx.Rows) error {
@@ -292,7 +298,7 @@ func (qb *BlobStore) readFromDatabase(ctx context.Context, checksum string) ([]b
 
 		return nil
 	}); err != nil {
-		return nil, fmt.Errorf("querying %s: %w", qb.table(), err)
+		return empty, fmt.Errorf("querying %s: %w", qb.table(), err)
 	}
 
 	return row.Blob, nil
@@ -353,15 +359,12 @@ type blobJoinQueryBuilder struct {
 }
 
 func (qb *blobJoinQueryBuilder) GetImage(ctx context.Context, id int, blobCol string) ([]byte, error) {
-	sqlQuery := utils.StrFormat(`
-SELECT blobs.checksum, blobs.blob FROM {joinTable} INNER JOIN blobs ON {joinTable}.{joinCol} = blobs.checksum
-WHERE {joinTable}.id = ?
-`, utils.StrFormatMap{
-		"joinTable": qb.joinTable,
-		"joinCol":   blobCol,
-	})
+	sqlQuery := dialect.From(qb.joinTable).
+		Join(goqu.I("blobs"), goqu.On(goqu.I(qb.joinTable+"."+blobCol).Eq(goqu.I("blobs.checksum")))).
+		Select(goqu.I("blobs.checksum"), goqu.I("blobs.blob")).
+		Where(goqu.Ex{"id": id})
 
-	ret, _, err := qb.blobStore.readSQL(ctx, sqlQuery, id)
+	ret, _, err := qb.blobStore.readSQL(ctx, sqlQuery)
 	return ret, err
 }
 
@@ -380,8 +383,17 @@ func (qb *blobJoinQueryBuilder) UpdateImage(ctx context.Context, id int, blobCol
 		return err
 	}
 
-	sqlQuery := fmt.Sprintf("UPDATE %s SET %s = ? WHERE id = ?", qb.joinTable, blobCol)
-	if _, err := dbWrapper.Exec(ctx, sqlQuery, checksum, id); err != nil {
+	sqlQuery := dialect.From(qb.joinTable).Update().
+		Set(goqu.Record{blobCol: checksum}).
+		Prepared(true).
+		Where(goqu.Ex{"id": id})
+
+	query, args, err := sqlQuery.ToSQL()
+	if err != nil {
+		return err
+	}
+
+	if _, err := dbWrapper.Exec(ctx, query, args...); err != nil {
 		return err
 	}
 
@@ -396,15 +408,17 @@ func (qb *blobJoinQueryBuilder) UpdateImage(ctx context.Context, id int, blobCol
 }
 
 func (qb *blobJoinQueryBuilder) getChecksum(ctx context.Context, id int, blobCol string) (*string, error) {
-	sqlQuery := utils.StrFormat(`
-SELECT {joinTable}.{joinCol} FROM {joinTable} WHERE {joinTable}.id = ?
-`, utils.StrFormatMap{
-		"joinTable": qb.joinTable,
-		"joinCol":   blobCol,
-	})
+	sqlQuery := dialect.From(qb.joinTable).
+		Select(blobCol).
+		Where(goqu.Ex{"id": id})
+
+	query, args, err := sqlQuery.ToSQL()
+	if err != nil {
+		return nil, err
+	}
 
 	var checksum null.String
-	err := qb.repository.querySimple(ctx, sqlQuery, []interface{}{id}, &checksum)
+	err = qb.repository.querySimple(ctx, query, args, &checksum)
 	if err != nil {
 		return nil, err
 	}
@@ -427,8 +441,16 @@ func (qb *blobJoinQueryBuilder) DestroyImage(ctx context.Context, id int, blobCo
 		return nil
 	}
 
-	updateQuery := fmt.Sprintf("UPDATE %s SET %s = NULL WHERE id = ?", qb.joinTable, blobCol)
-	if _, err = dbWrapper.Exec(ctx, updateQuery, id); err != nil {
+	updateQuery := dialect.Update(qb.joinTable).
+		Set(goqu.Record{blobCol: nil}).
+		Where(goqu.Ex{"id": id})
+
+	query, args, err := updateQuery.ToSQL()
+	if err != nil {
+		return err
+	}
+
+	if _, err = dbWrapper.Exec(ctx, query, args...); err != nil {
 		return err
 	}
 
@@ -436,12 +458,22 @@ func (qb *blobJoinQueryBuilder) DestroyImage(ctx context.Context, id int, blobCo
 }
 
 func (qb *blobJoinQueryBuilder) HasImage(ctx context.Context, id int, blobCol string) (bool, error) {
-	stmt := utils.StrFormat("SELECT COUNT(*) as count FROM (SELECT {joinCol} FROM {joinTable} WHERE id = ? AND {joinCol} IS NOT NULL LIMIT 1)", utils.StrFormatMap{
-		"joinTable": qb.joinTable,
-		"joinCol":   blobCol,
-	})
+	ds := dialect.From(goqu.T(qb.joinTable)).
+		Select(goqu.C(blobCol)).
+		Where(
+			goqu.C("id").Eq(id),
+			goqu.C(blobCol).IsNotNull(),
+		).
+		Limit(1)
 
-	c, err := qb.repository.runCountQuery(ctx, stmt, []interface{}{id})
+	countDs := dialect.From(ds.As("subquery")).Select(goqu.COUNT("*").As("count"))
+
+	sql, params, err := countDs.ToSQL()
+	if err != nil {
+		return false, err
+	}
+
+	c, err := qb.repository.runCountQuery(ctx, sql, params)
 	if err != nil {
 		return false, err
 	}

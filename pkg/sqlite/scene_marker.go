@@ -318,7 +318,7 @@ func (qb *SceneMarkerStore) makeQuery(ctx context.Context, sceneMarkerFilter *mo
 	if err := qb.setSceneMarkerSort(&query, findFilter); err != nil {
 		return nil, err
 	}
-	query.sortAndPagination += getPagination(findFilter)
+	query.addPagination(getPagination(findFilter))
 
 	return &query, nil
 }
@@ -375,15 +375,19 @@ func (qb *SceneMarkerStore) setSceneMarkerSort(query *queryBuilder, findFilter *
 	case "scenes_updated_at":
 		sort = "updated_at"
 		query.join(sceneTable, "", "scenes.id = scene_markers.scene_id")
-		query.sortAndPagination += getSort(sort, direction, sceneTable)
+		add, agg := getSort(sort, direction, sceneTable)
+		query.addSort(add)
+		query.addGroupBy(agg, true)
 	case "title":
 		query.join(tagTable, "", "scene_markers.primary_tag_id = tags.id")
-		query.sortAndPagination += " ORDER BY COALESCE(NULLIF(scene_markers.title,''), tags.name) COLLATE NATURAL_CI " + direction
+		query.addSort("COALESCE(NULLIF(scene_markers.title,''), tags.name) COLLATE NATURAL_CI " + direction)
 	default:
-		query.sortAndPagination += getSort(sort, direction, sceneMarkerTable)
+		add, agg := getSort(sort, direction, sceneMarkerTable)
+		query.addSort(add)
+		query.addGroupBy(agg, true)
 	}
 
-	query.sortAndPagination += ", scene_markers.scene_id ASC, scene_markers.seconds ASC"
+	query.addSort("scene_markers.scene_id ASC, scene_markers.seconds ASC")
 	return nil
 }
 

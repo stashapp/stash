@@ -30,7 +30,7 @@ func (r *mutationResolver) MigrateBlobs(ctx context.Context, input MigrateBlobsI
 	mgr := manager.GetInstance()
 	t := &task.MigrateBlobsJob{
 		TxnManager: mgr.Database,
-		BlobStore:  mgr.Database.Blobs,
+		BlobStore:  mgr.Database.GetRepo().Blobs,
 		Vacuumer:   mgr.Database,
 		DeleteOld:  utils.IsTrue(input.DeleteOld),
 	}

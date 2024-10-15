@@ -17,7 +17,7 @@ import (
 
 func TestMarkerFindBySceneMarkerID(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		tqb := db.Tag
+		tqb := db.GetRepo().Tag
 
 		markerID := markerIDs[markerIdxWithTag]
 
@@ -44,7 +44,7 @@ func TestMarkerFindBySceneMarkerID(t *testing.T) {
 
 func TestTagFindByGroupID(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		tqb := db.Tag
+		tqb := db.GetRepo().Tag
 
 		groupID := groupIDs[groupIdxWithTag]
 
@@ -71,7 +71,7 @@ func TestTagFindByGroupID(t *testing.T) {
 
 func TestTagFindByName(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		tqb := db.Tag
+		tqb := db.GetRepo().Tag
 
 		name := tagNames[tagIdxWithScene] // find a tag by name
 
@@ -107,7 +107,7 @@ func TestTagQueryIgnoreAutoTag(t *testing.T) {
 			IgnoreAutoTag: &ignoreAutoTag,
 		}
 
-		sqb := db.Tag
+		sqb := db.GetRepo().Tag
 
 		tags := queryTags(ctx, t, sqb, &tagFilter, nil)
 
@@ -122,7 +122,7 @@ func TestTagQueryIgnoreAutoTag(t *testing.T) {
 
 func TestTagQueryForAutoTag(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		tqb := db.Tag
+		tqb := db.GetRepo().Tag
 
 		name := tagNames[tagIdx1WithScene] // find a tag by name
 
@@ -156,7 +156,7 @@ func TestTagFindByNames(t *testing.T) {
 	var names []string
 
 	withTxn(func(ctx context.Context) error {
-		tqb := db.Tag
+		tqb := db.GetRepo().Tag
 
 		names = append(names, tagNames[tagIdxWithScene]) // find tags by names
 
@@ -201,7 +201,7 @@ func TestTagFindByNames(t *testing.T) {
 
 func TestTagQuerySort(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Tag
+		sqb := db.GetRepo().Tag
 
 		sortBy := "scenes_count"
 		dir := models.SortDirectionEnumDesc
@@ -286,7 +286,7 @@ func TestTagQueryAlias(t *testing.T) {
 	}
 
 	verifyFn := func(ctx context.Context, tag *models.Tag) {
-		aliases, err := db.Tag.GetAliases(ctx, tag.ID)
+		aliases, err := db.GetRepo().Tag.GetAliases(ctx, tag.ID)
 		if err != nil {
 			t.Errorf("Error querying tags: %s", err.Error())
 		}
@@ -321,7 +321,7 @@ func TestTagQueryAlias(t *testing.T) {
 
 func verifyTagQuery(t *testing.T, tagFilter *models.TagFilterType, findFilter *models.FindFilterType, verifyFn func(ctx context.Context, t *models.Tag)) {
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Tag
+		sqb := db.GetRepo().Tag
 
 		tags := queryTags(ctx, t, sqb, tagFilter, findFilter)
 
@@ -345,7 +345,7 @@ func queryTags(ctx context.Context, t *testing.T, qb models.TagReader, tagFilter
 
 func TestTagQueryIsMissingImage(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		qb := db.Tag
+		qb := db.GetRepo().Tag
 		isMissing := "image"
 		tagFilter := models.TagFilterType{
 			IsMissing: &isMissing,
@@ -399,7 +399,7 @@ func TestTagQuerySceneCount(t *testing.T) {
 
 func verifyTagSceneCount(t *testing.T, sceneCountCriterion models.IntCriterionInput) {
 	withTxn(func(ctx context.Context) error {
-		qb := db.Tag
+		qb := db.GetRepo().Tag
 		tagFilter := models.TagFilterType{
 			SceneCount: &sceneCountCriterion,
 		}
@@ -438,7 +438,7 @@ func TestTagQueryMarkerCount(t *testing.T) {
 
 func verifyTagMarkerCount(t *testing.T, markerCountCriterion models.IntCriterionInput) {
 	withTxn(func(ctx context.Context) error {
-		qb := db.Tag
+		qb := db.GetRepo().Tag
 		tagFilter := models.TagFilterType{
 			MarkerCount: &markerCountCriterion,
 		}
@@ -477,7 +477,7 @@ func TestTagQueryImageCount(t *testing.T) {
 
 func verifyTagImageCount(t *testing.T, imageCountCriterion models.IntCriterionInput) {
 	withTxn(func(ctx context.Context) error {
-		qb := db.Tag
+		qb := db.GetRepo().Tag
 		tagFilter := models.TagFilterType{
 			ImageCount: &imageCountCriterion,
 		}
@@ -516,7 +516,7 @@ func TestTagQueryGalleryCount(t *testing.T) {
 
 func verifyTagGalleryCount(t *testing.T, imageCountCriterion models.IntCriterionInput) {
 	withTxn(func(ctx context.Context) error {
-		qb := db.Tag
+		qb := db.GetRepo().Tag
 		tagFilter := models.TagFilterType{
 			GalleryCount: &imageCountCriterion,
 		}
@@ -555,7 +555,7 @@ func TestTagQueryPerformerCount(t *testing.T) {
 
 func verifyTagPerformerCount(t *testing.T, imageCountCriterion models.IntCriterionInput) {
 	withTxn(func(ctx context.Context) error {
-		qb := db.Tag
+		qb := db.GetRepo().Tag
 		tagFilter := models.TagFilterType{
 			PerformerCount: &imageCountCriterion,
 		}
@@ -594,7 +594,7 @@ func TestTagQueryStudioCount(t *testing.T) {
 
 func verifyTagStudioCount(t *testing.T, imageCountCriterion models.IntCriterionInput) {
 	withTxn(func(ctx context.Context) error {
-		qb := db.Tag
+		qb := db.GetRepo().Tag
 		tagFilter := models.TagFilterType{
 			StudioCount: &imageCountCriterion,
 		}
@@ -633,7 +633,7 @@ func TestTagQueryParentCount(t *testing.T) {
 
 func verifyTagParentCount(t *testing.T, sceneCountCriterion models.IntCriterionInput) {
 	withTxn(func(ctx context.Context) error {
-		qb := db.Tag
+		qb := db.GetRepo().Tag
 		tagFilter := models.TagFilterType{
 			ParentCount: &sceneCountCriterion,
 		}
@@ -673,7 +673,7 @@ func TestTagQueryChildCount(t *testing.T) {
 
 func verifyTagChildCount(t *testing.T, sceneCountCriterion models.IntCriterionInput) {
 	withTxn(func(ctx context.Context) error {
-		qb := db.Tag
+		qb := db.GetRepo().Tag
 		tagFilter := models.TagFilterType{
 			ChildCount: &sceneCountCriterion,
 		}
@@ -695,7 +695,7 @@ func verifyTagChildCount(t *testing.T, sceneCountCriterion models.IntCriterionIn
 func TestTagQueryParent(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
 		const nameField = "Name"
-		sqb := db.Tag
+		sqb := db.GetRepo().Tag
 		tagCriterion := models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(tagIDs[tagIdxWithChildTag]),
@@ -773,7 +773,7 @@ func TestTagQueryChild(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
 		const nameField = "Name"
 
-		sqb := db.Tag
+		sqb := db.GetRepo().Tag
 		tagCriterion := models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(tagIDs[tagIdxWithParentTag]),
@@ -849,7 +849,7 @@ func TestTagQueryChild(t *testing.T) {
 
 func TestTagUpdateTagImage(t *testing.T) {
 	if err := withTxn(func(ctx context.Context) error {
-		qb := db.Tag
+		qb := db.GetRepo().Tag
 
 		// create tag to test against
 		const name = "TestTagUpdateTagImage"
@@ -869,7 +869,7 @@ func TestTagUpdateTagImage(t *testing.T) {
 
 func TestTagUpdateAlias(t *testing.T) {
 	if err := withTxn(func(ctx context.Context) error {
-		qb := db.Tag
+		qb := db.GetRepo().Tag
 
 		// create tag to test against
 		const name = "TestTagUpdateAlias"
@@ -905,8 +905,8 @@ func TestTagMerge(t *testing.T) {
 
 	// merge tests - perform these in a transaction that we'll rollback
 	if err := withRollbackTxn(func(ctx context.Context) error {
-		qb := db.Tag
-		mqb := db.SceneMarker
+		qb := db.GetRepo().Tag
+		mqb := db.GetRepo().SceneMarker
 
 		// try merging into same tag
 		err := qb.Merge(ctx, []int{tagIDs[tagIdx1WithScene]}, tagIDs[tagIdx1WithScene])
@@ -962,11 +962,11 @@ func TestTagMerge(t *testing.T) {
 		}
 
 		// ensure scene points to new tag
-		s, err := db.Scene.Find(ctx, sceneIDs[sceneIdxWithTwoTags])
+		s, err := db.GetRepo().Scene.Find(ctx, sceneIDs[sceneIdxWithTwoTags])
 		if err != nil {
 			return err
 		}
-		if err := s.LoadTagIDs(ctx, db.Scene); err != nil {
+		if err := s.LoadTagIDs(ctx, db.GetRepo().Scene); err != nil {
 			return err
 		}
 		sceneTagIDs := s.TagIDs.List()
@@ -989,19 +989,19 @@ func TestTagMerge(t *testing.T) {
 		assert.Contains(markerTagIDs, destID)
 
 		// ensure image points to new tag
-		imageTagIDs, err := db.Image.GetTagIDs(ctx, imageIDs[imageIdxWithTwoTags])
+		imageTagIDs, err := db.GetRepo().Image.GetTagIDs(ctx, imageIDs[imageIdxWithTwoTags])
 		if err != nil {
 			return err
 		}
 
 		assert.Contains(imageTagIDs, destID)
 
-		g, err := db.Gallery.Find(ctx, galleryIDs[galleryIdxWithTwoTags])
+		g, err := db.GetRepo().Gallery.Find(ctx, galleryIDs[galleryIdxWithTwoTags])
 		if err != nil {
 			return err
 		}
 
-		if err := g.LoadTagIDs(ctx, db.Gallery); err != nil {
+		if err := g.LoadTagIDs(ctx, db.GetRepo().Gallery); err != nil {
 			return err
 		}
 
@@ -1009,7 +1009,7 @@ func TestTagMerge(t *testing.T) {
 		assert.Contains(g.TagIDs.List(), destID)
 
 		// ensure performer points to new tag
-		performerTagIDs, err := db.Performer.GetTagIDs(ctx, performerIDs[performerIdxWithTwoTags])
+		performerTagIDs, err := db.GetRepo().Performer.GetTagIDs(ctx, performerIDs[performerIdxWithTwoTags])
 		if err != nil {
 			return err
 		}
@@ -1017,7 +1017,7 @@ func TestTagMerge(t *testing.T) {
 		assert.Contains(performerTagIDs, destID)
 
 		// ensure studio points to new tag
-		studioTagIDs, err := db.Studio.GetTagIDs(ctx, studioIDs[studioIdxWithTwoTags])
+		studioTagIDs, err := db.GetRepo().Studio.GetTagIDs(ctx, studioIDs[studioIdxWithTwoTags])
 		if err != nil {
 			return err
 		}

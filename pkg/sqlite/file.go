@@ -762,9 +762,9 @@ func (qb *FileStore) IsPrimary(ctx context.Context, fileID models.FileID) (bool,
 	var sq *goqu.SelectDataset
 
 	for _, t := range joinTables {
-		qq := dialect.From(t).Select(t.Col(fileIDColumn)).Where(
+		qq := dialect.From(t).Select(t.Col(fileIDColumn)).Prepared(true).Where(
 			t.Col(fileIDColumn).Eq(fileID),
-			t.Col("primary").Eq(1),
+			t.Col("primary").IsTrue(),
 		)
 
 		if sq == nil {
@@ -774,7 +774,7 @@ func (qb *FileStore) IsPrimary(ctx context.Context, fileID models.FileID) (bool,
 		}
 	}
 
-	q := dialect.Select(goqu.COUNT("*").As("count")).Prepared(true).From(
+	q := dialect.Select(goqu.COUNT("*").As("count")).From(
 		sq,
 	)
 
@@ -869,7 +869,7 @@ func (qb *FileStore) Query(ctx context.Context, options models.FileQueryOptions)
 	if err := qb.setQuerySort(&query, findFilter); err != nil {
 		return nil, err
 	}
-	query.sortAndPagination += getPagination(findFilter)
+	query.addPagination(getPagination(findFilter))
 
 	result, err := qb.queryGroupedFields(ctx, options, query)
 	if err != nil {
@@ -898,7 +898,7 @@ func (qb *FileStore) queryGroupedFields(ctx context.Context, options models.File
 	aggregateQuery := qb.newQuery()
 
 	if options.Count {
-		aggregateQuery.addColumn("COUNT(temp.id) as total")
+		aggregateQuery.addColumn("COUNT(temp.id) as total", nil)
 	}
 
 	const includeSortPagination = false
@@ -940,9 +940,12 @@ func (qb *FileStore) setQuerySort(query *queryBuilder, findFilter *models.FindFi
 	switch sort {
 	case "path":
 		// special handling for path
-		query.sortAndPagination += fmt.Sprintf(" ORDER BY folders.path %s, files.basename %[1]s", direction)
+		query.addSort(fmt.Sprintf("folders.path %s, files.basename %[1]s", direction))
+		query.addGroupBy([]string{"folders.path", "files.basename"}, true)
 	default:
-		query.sortAndPagination += getSort(sort, direction, "files")
+		add, agg := getSort(sort, direction, "files")
+		query.addSort(add)
+		query.addGroupBy(agg, true)
 	}
 
 	return nil

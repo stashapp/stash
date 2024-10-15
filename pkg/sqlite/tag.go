@@ -584,7 +584,7 @@ func (qb *TagStore) QueryForAutoTag(ctx context.Context, words []string) ([]*mod
 
 	whereOr := "(" + strings.Join(whereClauses, " OR ") + ")"
 	where := strings.Join([]string{
-		"tags.ignore_auto_tag = 0",
+		"tags.ignore_auto_tag = " + getDBBoolean(false),
 		whereOr,
 	}, " AND ")
 	return qb.queryTags(ctx, query+" WHERE "+where, args)
@@ -615,12 +615,13 @@ func (qb *TagStore) Query(ctx context.Context, tagFilter *models.TagFilterType, 
 		return nil, 0, err
 	}
 
-	var err error
-	query.sortAndPagination, err = qb.getTagSort(&query, findFilter)
+	add, agg, err := qb.getTagSort(&query, findFilter)
 	if err != nil {
 		return nil, 0, err
 	}
-	query.sortAndPagination += getPagination(findFilter)
+	query.addSort(add)
+	query.addPagination(getPagination(findFilter))
+	query.addGroupBy(agg, true)
 	idsResult, countResult, err := query.executeFind(ctx)
 	if err != nil {
 		return nil, 0, err
@@ -651,10 +652,11 @@ var tagSortOptions = sortOptions{
 }
 
 func (qb *TagStore) getDefaultTagSort() string {
-	return getSort("name", "ASC", "tags")
+	add, _ := getSort("name", "ASC", "tags")
+	return " ORDER BY " + add
 }
 
-func (qb *TagStore) getTagSort(query *queryBuilder, findFilter *models.FindFilterType) (string, error) {
+func (qb *TagStore) getTagSort(query *queryBuilder, findFilter *models.FindFilterType) (string, []string, error) {
 	var sort string
 	var direction string
 	if findFilter == nil {
@@ -667,15 +669,16 @@ func (qb *TagStore) getTagSort(query *queryBuilder, findFilter *models.FindFilte
 
 	// CVE-2024-32231 - ensure sort is in the list of allowed sorts
 	if err := tagSortOptions.validateSort(sort); err != nil {
-		return "", err
+		return "", nil, err
 	}
 
 	sortQuery := ""
+	var agg []string
 	switch sort {
 	case "scenes_count":
 		sortQuery += getCountSort(tagTable, scenesTagsTable, tagIDColumn, direction)
 	case "scene_markers_count":
-		sortQuery += fmt.Sprintf(" ORDER BY (SELECT COUNT(*) FROM scene_markers_tags WHERE tags.id = scene_markers_tags.tag_id)+(SELECT COUNT(*) FROM scene_markers WHERE tags.id = scene_markers.primary_tag_id) %s", getSortDirection(direction))
+		sortQuery += fmt.Sprintf("(SELECT COUNT(*) FROM scene_markers_tags WHERE tags.id = scene_markers_tags.tag_id)+(SELECT COUNT(*) FROM scene_markers WHERE tags.id = scene_markers.primary_tag_id) %s", getSortDirection(direction))
 	case "images_count":
 		sortQuery += getCountSort(tagTable, imagesTagsTable, tagIDColumn, direction)
 	case "galleries_count":
@@ -687,12 +690,15 @@ func (qb *TagStore) getTagSort(query *queryBuilder, findFilter *models.FindFilte
 	case "movies_count", "groups_count":
 		sortQuery += getCountSort(tagTable, groupsTagsTable, tagIDColumn, direction)
 	default:
-		sortQuery += getSort(sort, direction, "tags")
+		var add string
+		add, agg = getSort(sort, direction, "tags")
+		sortQuery += add
 	}
 
 	// Whatever the sorting, always use name/id as a final sort
-	sortQuery += ", COALESCE(tags.name, tags.id) COLLATE NATURAL_CI ASC"
-	return sortQuery, nil
+	sortQuery += ", COALESCE(tags.name, cast(tags.id as text)) COLLATE NATURAL_CI ASC"
+	agg = append(agg, "tags.name", "tags.id")
+	return sortQuery, agg, nil
 }
 
 func (qb *TagStore) queryTags(ctx context.Context, query string, args []interface{}) ([]*models.Tag, error) {

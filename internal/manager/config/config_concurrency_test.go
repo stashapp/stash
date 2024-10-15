@@ -35,7 +35,7 @@ func TestConcurrentConfigAccess(t *testing.T) {
 				i.SetInterface(Cache, i.GetCachePath())
 				i.SetInterface(Generated, i.GetGeneratedPath())
 				i.SetInterface(Metadata, i.GetMetadataPath())
-				i.SetInterface(Database, i.GetDatabasePath())
+				i.SetInterface(Database, i.GetDatabaseUrl())
 
 				// these must be set as strings since the original values are also strings
 				// setting them as []byte will cause the returned string to be corrupted

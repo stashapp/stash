@@ -18,27 +18,27 @@ var invalidID = -1
 
 func loadGalleryRelationships(ctx context.Context, expected models.Gallery, actual *models.Gallery) error {
 	if expected.URLs.Loaded() {
-		if err := actual.LoadURLs(ctx, db.Gallery); err != nil {
+		if err := actual.LoadURLs(ctx, db.GetRepo().Gallery); err != nil {
 			return err
 		}
 	}
 	if expected.SceneIDs.Loaded() {
-		if err := actual.LoadSceneIDs(ctx, db.Gallery); err != nil {
+		if err := actual.LoadSceneIDs(ctx, db.GetRepo().Gallery); err != nil {
 			return err
 		}
 	}
 	if expected.TagIDs.Loaded() {
-		if err := actual.LoadTagIDs(ctx, db.Gallery); err != nil {
+		if err := actual.LoadTagIDs(ctx, db.GetRepo().Gallery); err != nil {
 			return err
 		}
 	}
 	if expected.PerformerIDs.Loaded() {
-		if err := actual.LoadPerformerIDs(ctx, db.Gallery); err != nil {
+		if err := actual.LoadPerformerIDs(ctx, db.GetRepo().Gallery); err != nil {
 			return err
 		}
 	}
 	if expected.Files.Loaded() {
-		if err := actual.LoadFiles(ctx, db.Gallery); err != nil {
+		if err := actual.LoadFiles(ctx, db.GetRepo().Gallery); err != nil {
 			return err
 		}
 	}
@@ -52,6 +52,13 @@ func loadGalleryRelationships(ctx context.Context, expected models.Gallery, actu
 	}
 
 	return nil
+}
+
+func sortGallery(copy *models.Gallery) {
+	// Ordering is not ensured
+	copy.SceneIDs.Sort()
+	copy.PerformerIDs.Sort()
+	copy.TagIDs.Sort()
 }
 
 func Test_galleryQueryBuilder_Create(t *testing.T) {
@@ -148,7 +155,7 @@ func Test_galleryQueryBuilder_Create(t *testing.T) {
 		},
 	}
 
-	qb := db.Gallery
+	qb := db.GetRepo().Gallery
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -180,6 +187,10 @@ func Test_galleryQueryBuilder_Create(t *testing.T) {
 				return
 			}
 
+			// Ordering is not ensured
+			sortGallery(&copy)
+			sortGallery(&s)
+
 			assert.Equal(copy, s)
 
 			// ensure can find the scene
@@ -197,6 +208,9 @@ func Test_galleryQueryBuilder_Create(t *testing.T) {
 				t.Errorf("loadGalleryRelationships() error = %v", err)
 				return
 			}
+
+			sortGallery(&copy)
+			sortGallery(found)
 
 			assert.Equal(copy, *found)
 
@@ -353,7 +367,7 @@ func Test_galleryQueryBuilder_Update(t *testing.T) {
 		},
 	}
 
-	qb := db.Gallery
+	qb := db.GetRepo().Gallery
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
@@ -379,6 +393,10 @@ func Test_galleryQueryBuilder_Update(t *testing.T) {
 				t.Errorf("loadGalleryRelationships() error = %v", err)
 				return
 			}
+
+			// Ordering is not ensured
+			sortGallery(&copy)
+			sortGallery(s)
 
 			assert.Equal(copy, *s)
 
@@ -510,7 +528,7 @@ func Test_galleryQueryBuilder_UpdatePartial(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		qb := db.Gallery
+		qb := db.GetRepo().Gallery
 
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
@@ -779,7 +797,7 @@ func Test_galleryQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		qb := db.Gallery
+		qb := db.GetRepo().Gallery
 
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
@@ -808,6 +826,11 @@ func Test_galleryQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 				t.Errorf("loadGalleryRelationships() error = %v", err)
 				return
 			}
+
+			// Ordering is not ensured
+			sortGallery(s)
+			sortGallery(got)
+			sortGallery(&tt.want)
 
 			// only compare fields that were in the partial
 			if tt.partial.PerformerIDs != nil {
@@ -844,7 +867,7 @@ func Test_galleryQueryBuilder_Destroy(t *testing.T) {
 		},
 	}
 
-	qb := db.Gallery
+	qb := db.GetRepo().Gallery
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -908,7 +931,7 @@ func Test_galleryQueryBuilder_Find(t *testing.T) {
 		},
 	}
 
-	qb := db.Gallery
+	qb := db.GetRepo().Gallery
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -971,7 +994,7 @@ func Test_galleryQueryBuilder_FindMany(t *testing.T) {
 		},
 	}
 
-	qb := db.Gallery
+	qb := db.GetRepo().Gallery
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -1029,7 +1052,7 @@ func Test_galleryQueryBuilder_FindByChecksum(t *testing.T) {
 		},
 	}
 
-	qb := db.Gallery
+	qb := db.GetRepo().Gallery
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -1092,7 +1115,7 @@ func Test_galleryQueryBuilder_FindByChecksums(t *testing.T) {
 		},
 	}
 
-	qb := db.Gallery
+	qb := db.GetRepo().Gallery
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -1150,7 +1173,7 @@ func Test_galleryQueryBuilder_FindByPath(t *testing.T) {
 		},
 	}
 
-	qb := db.Gallery
+	qb := db.GetRepo().Gallery
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -1192,7 +1215,7 @@ func Test_galleryQueryBuilder_FindBySceneID(t *testing.T) {
 		},
 	}
 
-	qb := db.Gallery
+	qb := db.GetRepo().Gallery
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -1237,7 +1260,7 @@ func Test_galleryQueryBuilder_FindByImageID(t *testing.T) {
 		},
 	}
 
-	qb := db.Gallery
+	qb := db.GetRepo().Gallery
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -1279,7 +1302,7 @@ func Test_galleryQueryBuilder_CountByImageID(t *testing.T) {
 		},
 	}
 
-	qb := db.Gallery
+	qb := db.GetRepo().Gallery
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -1325,7 +1348,7 @@ func Test_galleryStore_FindByFileID(t *testing.T) {
 		},
 	}
 
-	qb := db.Gallery
+	qb := db.GetRepo().Gallery
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -1369,7 +1392,7 @@ func Test_galleryStore_FindByFolderID(t *testing.T) {
 		},
 	}
 
-	qb := db.Gallery
+	qb := db.GetRepo().Gallery
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -1409,7 +1432,7 @@ func TestGalleryQueryQ(t *testing.T) {
 }
 
 func galleryQueryQ(ctx context.Context, t *testing.T, q string, expectedGalleryIdx int) {
-	qb := db.Gallery
+	qb := db.GetRepo().Gallery
 
 	filter := models.FindFilterType{
 		Q: &q,
@@ -1484,7 +1507,7 @@ func TestGalleryQueryPath(t *testing.T) {
 		},
 	}
 
-	qb := db.Gallery
+	qb := db.GetRepo().Gallery
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -1511,7 +1534,7 @@ func verifyGalleriesPath(ctx context.Context, t *testing.T, pathCriterion models
 		Path: &pathCriterion,
 	}
 
-	sqb := db.Gallery
+	sqb := db.GetRepo().Gallery
 	galleries, _, err := sqb.Query(ctx, &galleryFilter, nil)
 	if err != nil {
 		t.Errorf("Error querying gallery: %s", err.Error())
@@ -1545,7 +1568,7 @@ func TestGalleryQueryPathOr(t *testing.T) {
 	}
 
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Gallery
+		sqb := db.GetRepo().Gallery
 
 		galleries := queryGallery(ctx, t, sqb, &galleryFilter, nil)
 
@@ -1581,7 +1604,7 @@ func TestGalleryQueryPathAndRating(t *testing.T) {
 	}
 
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Gallery
+		sqb := db.GetRepo().Gallery
 
 		galleries := queryGallery(ctx, t, sqb, &galleryFilter, nil)
 
@@ -1621,7 +1644,7 @@ func TestGalleryQueryPathNotRating(t *testing.T) {
 	}
 
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Gallery
+		sqb := db.GetRepo().Gallery
 
 		galleries := queryGallery(ctx, t, sqb, &galleryFilter, nil)
 
@@ -1654,7 +1677,7 @@ func TestGalleryIllegalQuery(t *testing.T) {
 	}
 
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Gallery
+		sqb := db.GetRepo().Gallery
 
 		_, _, err := sqb.Query(ctx, galleryFilter, nil)
 		assert.NotNil(err)
@@ -1720,7 +1743,7 @@ func TestGalleryQueryURL(t *testing.T) {
 func verifyGalleryQuery(t *testing.T, filter models.GalleryFilterType, verifyFn func(s *models.Gallery)) {
 	withTxn(func(ctx context.Context) error {
 		t.Helper()
-		sqb := db.Gallery
+		sqb := db.GetRepo().Gallery
 
 		galleries := queryGallery(ctx, t, sqb, &filter, nil)
 
@@ -1768,7 +1791,7 @@ func TestGalleryQueryRating100(t *testing.T) {
 
 func verifyGalleriesRating100(t *testing.T, ratingCriterion models.IntCriterionInput) {
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Gallery
+		sqb := db.GetRepo().Gallery
 		galleryFilter := models.GalleryFilterType{
 			Rating100: &ratingCriterion,
 		}
@@ -1788,7 +1811,7 @@ func verifyGalleriesRating100(t *testing.T, ratingCriterion models.IntCriterionI
 
 func TestGalleryQueryIsMissingScene(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		qb := db.Gallery
+		qb := db.GetRepo().Gallery
 		isMissing := "scenes"
 		galleryFilter := models.GalleryFilterType{
 			IsMissing: &isMissing,
@@ -1832,7 +1855,7 @@ func queryGallery(ctx context.Context, t *testing.T, sqb models.GalleryReader, g
 
 func TestGalleryQueryIsMissingStudio(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Gallery
+		sqb := db.GetRepo().Gallery
 		isMissing := "studio"
 		galleryFilter := models.GalleryFilterType{
 			IsMissing: &isMissing,
@@ -1861,7 +1884,7 @@ func TestGalleryQueryIsMissingStudio(t *testing.T) {
 
 func TestGalleryQueryIsMissingPerformers(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Gallery
+		sqb := db.GetRepo().Gallery
 		isMissing := "performers"
 		galleryFilter := models.GalleryFilterType{
 			IsMissing: &isMissing,
@@ -1892,7 +1915,7 @@ func TestGalleryQueryIsMissingPerformers(t *testing.T) {
 
 func TestGalleryQueryIsMissingTags(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Gallery
+		sqb := db.GetRepo().Gallery
 		isMissing := "tags"
 		galleryFilter := models.GalleryFilterType{
 			IsMissing: &isMissing,
@@ -1918,7 +1941,7 @@ func TestGalleryQueryIsMissingTags(t *testing.T) {
 
 func TestGalleryQueryIsMissingDate(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Gallery
+		sqb := db.GetRepo().Gallery
 		isMissing := "date"
 		galleryFilter := models.GalleryFilterType{
 			IsMissing: &isMissing,
@@ -2051,7 +2074,7 @@ func TestGalleryQueryPerformers(t *testing.T) {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
 
-			results, _, err := db.Gallery.Query(ctx, &models.GalleryFilterType{
+			results, _, err := db.GetRepo().Gallery.Query(ctx, &models.GalleryFilterType{
 				Performers: &tt.filter,
 			}, nil)
 			if (err != nil) != tt.wantErr {
@@ -2187,7 +2210,7 @@ func TestGalleryQueryTags(t *testing.T) {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
 
-			results, _, err := db.Gallery.Query(ctx, &models.GalleryFilterType{
+			results, _, err := db.GetRepo().Gallery.Query(ctx, &models.GalleryFilterType{
 				Tags: &tt.filter,
 			}, nil)
 			if (err != nil) != tt.wantErr {
@@ -2280,7 +2303,7 @@ func TestGalleryQueryStudio(t *testing.T) {
 		},
 	}
 
-	qb := db.Gallery
+	qb := db.GetRepo().Gallery
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -2306,7 +2329,7 @@ func TestGalleryQueryStudio(t *testing.T) {
 
 func TestGalleryQueryStudioDepth(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Gallery
+		sqb := db.GetRepo().Gallery
 		depth := 2
 		studioCriterion := models.HierarchicalMultiCriterionInput{
 			Value: []string{
@@ -2539,7 +2562,7 @@ func TestGalleryQueryPerformerTags(t *testing.T) {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
 
-			results, _, err := db.Gallery.Query(ctx, tt.filter, tt.findFilter)
+			results, _, err := db.GetRepo().Gallery.Query(ctx, tt.filter, tt.findFilter)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ImageStore.Query() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -2581,7 +2604,7 @@ func TestGalleryQueryTagCount(t *testing.T) {
 
 func verifyGalleriesTagCount(t *testing.T, tagCountCriterion models.IntCriterionInput) {
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Gallery
+		sqb := db.GetRepo().Gallery
 		galleryFilter := models.GalleryFilterType{
 			TagCount: &tagCountCriterion,
 		}
@@ -2622,7 +2645,7 @@ func TestGalleryQueryPerformerCount(t *testing.T) {
 
 func verifyGalleriesPerformerCount(t *testing.T, performerCountCriterion models.IntCriterionInput) {
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Gallery
+		sqb := db.GetRepo().Gallery
 		galleryFilter := models.GalleryFilterType{
 			PerformerCount: &performerCountCriterion,
 		}
@@ -2645,7 +2668,7 @@ func verifyGalleriesPerformerCount(t *testing.T, performerCountCriterion models.
 
 func TestGalleryQueryAverageResolution(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		qb := db.Gallery
+		qb := db.GetRepo().Gallery
 		resolution := models.ResolutionEnumLow
 		galleryFilter := models.GalleryFilterType{
 			AverageResolution: &models.ResolutionCriterionInput{
@@ -2683,7 +2706,7 @@ func TestGalleryQueryImageCount(t *testing.T) {
 
 func verifyGalleriesImageCount(t *testing.T, imageCountCriterion models.IntCriterionInput) {
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Gallery
+		sqb := db.GetRepo().Gallery
 		galleryFilter := models.GalleryFilterType{
 			ImageCount: &imageCountCriterion,
 		}
@@ -2694,7 +2717,7 @@ func verifyGalleriesImageCount(t *testing.T, imageCountCriterion models.IntCrite
 		for _, gallery := range galleries {
 			pp := 0
 
-			result, err := db.Image.Query(ctx, models.ImageQueryOptions{
+			result, err := db.GetRepo().Image.Query(ctx, models.ImageQueryOptions{
 				QueryOptions: models.QueryOptions{
 					FindFilter: &models.FindFilterType{
 						PerPage: &pp,
@@ -2749,7 +2772,7 @@ func TestGalleryQuerySorting(t *testing.T) {
 		},
 	}
 
-	qb := db.Gallery
+	qb := db.GetRepo().Gallery
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -2835,7 +2858,7 @@ func TestGalleryStore_AddImages(t *testing.T) {
 		},
 	}
 
-	qb := db.Gallery
+	qb := db.GetRepo().Gallery
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -2914,7 +2937,7 @@ func TestGalleryStore_RemoveImages(t *testing.T) {
 		},
 	}
 
-	qb := db.Gallery
+	qb := db.GetRepo().Gallery
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -2944,7 +2967,7 @@ func TestGalleryStore_RemoveImages(t *testing.T) {
 
 func TestGalleryQueryHasChapters(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Gallery
+		sqb := db.GetRepo().Gallery
 		hasChapters := "true"
 		galleryFilter := models.GalleryFilterType{
 			HasChapters: &hasChapters,
@@ -2975,25 +2998,25 @@ func TestGalleryQueryHasChapters(t *testing.T) {
 
 func TestGallerySetAndResetCover(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := db.Gallery
+		sqb := db.GetRepo().Gallery
 
 		imagePath2 := getFilePath(folderIdxWithImageFiles, getImageBasename(imageIdx2WithGallery))
 
-		result, err := db.Image.CoverByGalleryID(ctx, galleryIDs[galleryIdxWithTwoImages])
+		result, err := db.GetRepo().Image.CoverByGalleryID(ctx, galleryIDs[galleryIdxWithTwoImages])
 		assert.Nil(t, err)
 		assert.Nil(t, result)
 
 		err = sqb.SetCover(ctx, galleryIDs[galleryIdxWithTwoImages], imageIDs[imageIdx2WithGallery])
 		assert.Nil(t, err)
 
-		result, err = db.Image.CoverByGalleryID(ctx, galleryIDs[galleryIdxWithTwoImages])
+		result, err = db.GetRepo().Image.CoverByGalleryID(ctx, galleryIDs[galleryIdxWithTwoImages])
 		assert.Nil(t, err)
 		assert.Equal(t, result.Path, imagePath2)
 
 		err = sqb.ResetCover(ctx, galleryIDs[galleryIdxWithTwoImages])
 		assert.Nil(t, err)
 
-		result, err = db.Image.CoverByGalleryID(ctx, galleryIDs[galleryIdxWithTwoImages])
+		result, err = db.GetRepo().Image.CoverByGalleryID(ctx, galleryIDs[galleryIdxWithTwoImages])
 		assert.Nil(t, err)
 		assert.Nil(t, result)
 

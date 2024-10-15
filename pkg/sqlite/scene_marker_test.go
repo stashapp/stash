@@ -16,7 +16,7 @@ import (
 
 func TestMarkerFindBySceneID(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		mqb := db.SceneMarker
+		mqb := db.GetRepo().SceneMarker
 
 		sceneID := sceneIDs[sceneIdxWithMarkers]
 		markers, err := mqb.FindBySceneID(ctx, sceneID)
@@ -44,7 +44,7 @@ func TestMarkerFindBySceneID(t *testing.T) {
 
 func TestMarkerCountByTagID(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		mqb := db.SceneMarker
+		mqb := db.GetRepo().SceneMarker
 
 		markerCount, err := mqb.CountByTagID(ctx, tagIDs[tagIdxWithPrimaryMarkers])
 
@@ -77,7 +77,7 @@ func TestMarkerCountByTagID(t *testing.T) {
 func TestMarkerQueryQ(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
 		q := getSceneTitle(sceneIdxWithMarkers)
-		m, _, err := db.SceneMarker.Query(ctx, nil, &models.FindFilterType{
+		m, _, err := db.GetRepo().SceneMarker.Query(ctx, nil, &models.FindFilterType{
 			Q: &q,
 		})
 
@@ -98,7 +98,7 @@ func TestMarkerQueryQ(t *testing.T) {
 func TestMarkerQuerySortBySceneUpdated(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
 		sort := "scenes_updated_at"
-		_, _, err := db.SceneMarker.Query(ctx, nil, &models.FindFilterType{
+		_, _, err := db.GetRepo().SceneMarker.Query(ctx, nil, &models.FindFilterType{
 			Sort: &sort,
 		})
 
@@ -153,7 +153,7 @@ func TestMarkerQueryTags(t *testing.T) {
 
 	withTxn(func(ctx context.Context) error {
 		testTags := func(t *testing.T, m *models.SceneMarker, markerFilter *models.SceneMarkerFilterType) {
-			tagIDs, err := db.SceneMarker.GetTagIDs(ctx, m.ID)
+			tagIDs, err := db.GetRepo().SceneMarker.GetTagIDs(ctx, m.ID)
 			if err != nil {
 				t.Errorf("error getting marker tag ids: %v", err)
 			}
@@ -255,7 +255,7 @@ func TestMarkerQueryTags(t *testing.T) {
 
 		for _, tc := range cases {
 			t.Run(tc.name, func(t *testing.T) {
-				markers := queryMarkers(ctx, t, db.SceneMarker, tc.markerFilter, tc.findFilter)
+				markers := queryMarkers(ctx, t, db.GetRepo().SceneMarker, tc.markerFilter, tc.findFilter)
 				assert.Greater(t, len(markers), 0)
 				for _, m := range markers {
 					testTags(t, m, tc.markerFilter)
@@ -276,13 +276,13 @@ func TestMarkerQuerySceneTags(t *testing.T) {
 
 	withTxn(func(ctx context.Context) error {
 		testTags := func(t *testing.T, m *models.SceneMarker, markerFilter *models.SceneMarkerFilterType) {
-			s, err := db.Scene.Find(ctx, m.SceneID)
+			s, err := db.GetRepo().Scene.Find(ctx, m.SceneID)
 			if err != nil {
 				t.Errorf("error getting marker tag ids: %v", err)
 				return
 			}
 
-			if err := s.LoadTagIDs(ctx, db.Scene); err != nil {
+			if err := s.LoadTagIDs(ctx, db.GetRepo().Scene); err != nil {
 				t.Errorf("error getting marker tag ids: %v", err)
 				return
 			}
@@ -379,7 +379,7 @@ func TestMarkerQuerySceneTags(t *testing.T) {
 
 		for _, tc := range cases {
 			t.Run(tc.name, func(t *testing.T) {
-				markers := queryMarkers(ctx, t, db.SceneMarker, tc.markerFilter, tc.findFilter)
+				markers := queryMarkers(ctx, t, db.GetRepo().SceneMarker, tc.markerFilter, tc.findFilter)
 				assert.Greater(t, len(markers), 0)
 				for _, m := range markers {
 					testTags(t, m, tc.markerFilter)

@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sliceutil"
 )
 
 type queryBuilder struct {
@@ -14,22 +15,47 @@ type queryBuilder struct {
 	columns []string
 	from    string
 
-	joins         joins
-	whereClauses  []string
-	havingClauses []string
-	args          []interface{}
-	withClauses   []string
-	recursiveWith bool
+	joins          joins
+	whereClauses   []string
+	havingClauses  []string
+	args           []interface{}
+	withClauses    []string
+	recursiveWith  bool
+	groupByClauses []string
 
-	sortAndPagination string
+	sort       []string
+	pagination string
 }
 
 func (qb queryBuilder) body() string {
 	return fmt.Sprintf("SELECT %s FROM %s%s", strings.Join(qb.columns, ", "), qb.from, qb.joins.toSQL())
 }
 
-func (qb *queryBuilder) addColumn(column string) {
+/*
+ * Adds a column to select for the query
+ * Additionally allows doing group by on any non-aggregate columns (for pgsql)
+ */
+func (qb *queryBuilder) addColumn(column string, nonaggregates []string) {
 	qb.columns = append(qb.columns, column)
+	qb.addGroupBy(nonaggregates, dbWrapper.dbType == PostgresBackend)
+}
+
+func (qb *queryBuilder) addGroupBy(aggregate []string, pgsqlfix bool) {
+	if !pgsqlfix || len(aggregate) == 0 {
+		return
+	}
+
+	qb.groupByClauses = sliceutil.AppendUniques(qb.groupByClauses, aggregate)
+}
+
+func (qb *queryBuilder) addSort(sortby string) {
+	if len(sortby) > 0 {
+		qb.sort = append(qb.sort, sortby)
+	}
+}
+
+func (qb *queryBuilder) addPagination(pag string) {
+	qb.pagination += pag
 }
 
 func (qb queryBuilder) toSQL(includeSortPagination bool) string {
@@ -44,9 +70,12 @@ func (qb queryBuilder) toSQL(includeSortPagination bool) string {
 		withClause = "WITH " + recursive + strings.Join(qb.withClauses, ", ") + " "
 	}
 
-	body = withClause + qb.repository.buildQueryBody(body, qb.whereClauses, qb.havingClauses)
+	body = withClause + qb.repository.buildQueryBody(body, qb.whereClauses, qb.havingClauses, qb.groupByClauses)
 	if includeSortPagination {
-		body += qb.sortAndPagination
+		if len(qb.sort) > 0 {
+			body += " ORDER BY " + strings.Join(qb.sort, ", ") + " "
+		}
+		body += qb.pagination
 	}
 
 	return body
@@ -60,7 +89,7 @@ func (qb queryBuilder) findIDs(ctx context.Context) ([]int, error) {
 
 func (qb queryBuilder) executeFind(ctx context.Context) ([]int, int, error) {
 	body := qb.body()
-	return qb.repository.executeFindQuery(ctx, body, qb.args, qb.sortAndPagination, qb.whereClauses, qb.havingClauses, qb.withClauses, qb.recursiveWith)
+	return qb.repository.executeFindQuery(ctx, body, qb.args, qb.sort, qb.pagination, qb.whereClauses, qb.havingClauses, qb.withClauses, qb.recursiveWith)
 }
 
 func (qb queryBuilder) executeCount(ctx context.Context) (int, error) {
@@ -75,7 +104,7 @@ func (qb queryBuilder) executeCount(ctx context.Context) (int, error) {
 		withClause = "WITH " + recursive + strings.Join(qb.withClauses, ", ") + " "
 	}
 
-	body = qb.repository.buildQueryBody(body, qb.whereClauses, qb.havingClauses)
+	body = qb.repository.buildQueryBody(body, qb.whereClauses, qb.havingClauses, nil)
 	countQuery := withClause + qb.repository.buildCountQuery(body)
 	return qb.repository.runCountQuery(ctx, countQuery, qb.args)
 }

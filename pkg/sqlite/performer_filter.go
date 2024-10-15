@@ -519,7 +519,7 @@ func (qb *performerFilterHandler) appearsWithCriterionHandler(performers *models
 			if performers.Modifier == models.CriterionModifierIncludesAll && len(performers.Value) > 1 {
 				templStr += `
 							GROUP BY {primaryTable}2.performer_id
-							HAVING(count(distinct {primaryTable}.performer_id) IS ` + strconv.Itoa(len(performers.Value)) + `)`
+							HAVING(count(distinct {primaryTable}.performer_id) = ` + strconv.Itoa(len(performers.Value)) + `)`
 			}
 
 			var unions []string

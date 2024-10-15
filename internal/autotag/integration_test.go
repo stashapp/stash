@@ -33,20 +33,27 @@ var existingStudioID int
 
 const expectedMatchTitle = "expected match"
 
-var db *sqlite.Database
+var db sqlite.DBInterface
 var r models.Repository
 
 func testTeardown(databaseFile string) {
-	err := db.Close()
+	err := db.Remove()
 
 	if err != nil {
 		panic(err)
 	}
+}
 
-	err = os.Remove(databaseFile)
-	if err != nil {
-		panic(err)
+func getNewDB(databaseFile string) sqlite.DBInterface {
+	dbUrl, valid := os.LookupEnv("PGSQL_TEST")
+	if valid {
+		db = sqlite.NewPostgresDatabase(dbUrl)
+	} else {
+		sqlite.RegisterSqliteDialect()
+		db = sqlite.NewSQLiteDatabase(databaseFile)
 	}
+
+	return db
 }
 
 func runTests(m *testing.M) int {
@@ -58,8 +65,9 @@ func runTests(m *testing.M) int {
 
 	f.Close()
 	databaseFile := f.Name()
-	db = sqlite.NewDatabase()
-	if err := db.Open(databaseFile); err != nil {
+	db = getNewDB(databaseFile)
+
+	if err := db.Open(); err != nil {
 		panic(fmt.Sprintf("Could not initialize database: %s", err.Error()))
 	}
 
