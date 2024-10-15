@@ -188,8 +188,8 @@ func Test_galleryQueryBuilder_Create(t *testing.T) {
 			}
 
 			// Ordering is not ensured
-			sortGallery(copy)
-			sortGallery(s)
+			sortGallery(&copy)
+			sortGallery(&s)
 
 			assert.Equal(copy, s)
 
@@ -392,7 +392,7 @@ func Test_galleryQueryBuilder_Update(t *testing.T) {
 			}
 
 			// Ordering is not ensured
-			sortGallery(copy)
+			sortGallery(&copy)
 			sortGallery(s)
 
 			assert.Equal(copy, *s)
@@ -825,9 +825,9 @@ func Test_galleryQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 			}
 
 			// Ordering is not ensured
-			sortGallery(copy)
 			sortGallery(s)
 			sortGallery(got)
+			sortGallery(&tt.want)
 
 			// only compare fields that were in the partial
 			if tt.partial.PerformerIDs != nil {
