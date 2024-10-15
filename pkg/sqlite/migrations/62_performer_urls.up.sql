@@ -144,9 +144,9 @@ INSERT INTO `performer_urls`
   FROM `performers`
   WHERE `performers`.`instagram` IS NOT NULL AND `performers`.`instagram` != '';
 
-DROP INDEX `performers_name_disambiguation_unique`;
-DROP INDEX `performers_name_unique`;
-DROP TABLE `performers`;
+DROP INDEX IF EXISTS `performers_name_disambiguation_unique`;
+DROP INDEX IF EXISTS `performers_name_unique`;
+DROP TABLE IF EXISTS `performers`;
 ALTER TABLE `performers_new` rename to `performers`;
 
 CREATE UNIQUE INDEX `performers_name_disambiguation_unique` on `performers` (`name`, `disambiguation`) WHERE `disambiguation` IS NOT NULL;
