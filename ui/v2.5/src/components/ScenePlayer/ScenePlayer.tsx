@@ -464,15 +464,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       }
     }
 
-    function timeupdate(this: VideoJsPlayer) {
-      // fired when seeking
-      // check if we haven't started playing yet
-      // if so, start playing
-      if (!started.current) {
-        this.play();
-      }
-    }
-
     function playing(this: VideoJsPlayer) {
       // This still runs even if autoplay failed on Safari,
       // only set flag if actually playing
@@ -493,14 +484,12 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     player.on("playing", playing);
     player.on("loadstart", loadstart);
     player.on("fullscreenchange", fullscreenchange);
-    player.on("timeupdate", timeupdate);
 
     return () => {
       player.off("canplay", canplay);
       player.off("playing", playing);
       player.off("loadstart", loadstart);
       player.off("fullscreenchange", fullscreenchange);
-      player.off("timeupdate", timeupdate);
     };
   }, [getPlayer]);
 
