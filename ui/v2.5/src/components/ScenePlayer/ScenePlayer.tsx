@@ -457,11 +457,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       if (this.currentTime() >= 0.1) {
         return;
       }
-
-      if (initialTimestamp.current !== -1) {
-        this.currentTime(initialTimestamp.current);
-        initialTimestamp.current = -1;
-      }
     }
 
     function playing(this: VideoJsPlayer) {
@@ -672,6 +667,10 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
     player.ready(() => {
       player.vttThumbnails().src(scene.paths.vtt ?? null);
+
+      if (startPosition) {
+        player.currentTime(startPosition);
+      }
     });
 
     started.current = false;
