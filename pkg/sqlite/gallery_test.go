@@ -54,6 +54,13 @@ func loadGalleryRelationships(ctx context.Context, expected models.Gallery, actu
 	return nil
 }
 
+func sortGallery(copy *models.Gallery) {
+	// Ordering is not ensured
+	copy.SceneIDs.Sort()
+	copy.PerformerIDs.Sort()
+	copy.TagIDs.Sort()
+}
+
 func Test_galleryQueryBuilder_Create(t *testing.T) {
 	var (
 		title        = "title"
@@ -179,6 +186,10 @@ func Test_galleryQueryBuilder_Create(t *testing.T) {
 				t.Errorf("loadGalleryRelationships() error = %v", err)
 				return
 			}
+
+			// Ordering is not ensured
+			sortGallery(copy)
+			sortGallery(s)
 
 			assert.Equal(copy, s)
 
@@ -379,6 +390,10 @@ func Test_galleryQueryBuilder_Update(t *testing.T) {
 				t.Errorf("loadGalleryRelationships() error = %v", err)
 				return
 			}
+
+			// Ordering is not ensured
+			sortGallery(copy)
+			sortGallery(s)
 
 			assert.Equal(copy, *s)
 
@@ -808,6 +823,11 @@ func Test_galleryQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 				t.Errorf("loadGalleryRelationships() error = %v", err)
 				return
 			}
+
+			// Ordering is not ensured
+			sortGallery(copy)
+			sortGallery(s)
+			sortGallery(got)
 
 			// only compare fields that were in the partial
 			if tt.partial.PerformerIDs != nil {

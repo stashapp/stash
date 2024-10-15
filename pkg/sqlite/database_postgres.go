@@ -34,6 +34,25 @@ func NewPostgresDatabase(dbConnector string) *PostgresDB {
 func (db *PostgresDB) lock()   {}
 func (db *PostgresDB) unlock() {}
 
+func (db *PostgresDB) openReadDB() error {
+	const (
+		disableForeignKeys = false
+		writable           = true
+	)
+	var err error
+	db.readDB, err = db.open(disableForeignKeys, writable)
+	db.readDB.SetConnMaxIdleTime(dbConnTimeout)
+	db.writeDB = db.readDB
+	return err
+}
+
+func (db *PostgresDB) openWriteDB() error {
+	if db.writeDB == nil {
+		return db.openReadDB()
+	}
+	return nil
+}
+
 func (db *PostgresDB) DatabaseType() DatabaseType {
 	return PostgresBackend
 }
@@ -97,13 +116,11 @@ func (db *PostgresDB) Backup(backupPath string) (err error) {
 	return nil
 }
 
-// RestoreFromBackup restores the database from a backup file at the given path.
 func (db *PostgresDB) RestoreFromBackup(backupPath string) (err error) {
 	logger.Warn("Postgres backend detected, ignoring RestoreFromBackup request")
 	return nil
 }
 
-// DatabaseBackupPath returns the path to a database backup file for the given directory.
 func (db *PostgresDB) DatabaseBackupPath(backupDirectoryPath string) string {
 	logger.Warn("Postgres backend detected, ignoring DatabaseBackupPath request")
 	return ""

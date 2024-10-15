@@ -299,32 +299,6 @@ func (db *Database) initialise() error {
 	return nil
 }
 
-func (db *Database) openReadDB() error {
-	const (
-		disableForeignKeys = false
-		writable           = false
-	)
-	var err error
-	db.readDB, err = db.open(disableForeignKeys, writable)
-	db.readDB.SetMaxOpenConns(maxReadConnections)
-	db.readDB.SetMaxIdleConns(maxReadConnections)
-	db.readDB.SetConnMaxIdleTime(dbConnTimeout)
-	return err
-}
-
-func (db *Database) openWriteDB() error {
-	const (
-		disableForeignKeys = false
-		writable           = true
-	)
-	var err error
-	db.writeDB, err = db.open(disableForeignKeys, writable)
-	db.writeDB.SetMaxOpenConns(maxWriteConnections)
-	db.writeDB.SetMaxIdleConns(maxWriteConnections)
-	db.writeDB.SetConnMaxIdleTime(dbConnTimeout)
-	return err
-}
-
 func (db *Database) Anonymise(outPath string) error {
 	anon, err := NewAnonymiser(db, outPath)
 
