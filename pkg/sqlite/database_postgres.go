@@ -2,12 +2,12 @@ package sqlite
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/doug-martin/goqu/v9"
 	_ "github.com/doug-martin/goqu/v9/dialect/postgres"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/jmoiron/sqlx"
+	"github.com/stashapp/stash/pkg/logger"
 )
 
 type PostgresDB struct {
@@ -92,30 +92,19 @@ END $$;
 	return err
 }
 
-// getDBCloneCommand returns the command to clone a database from a backup file
-func getDBCloneCommand(backupPath string, dbname string) string {
-	return fmt.Sprintf(`
-SELECT pg_terminate_backend(pg_stat_activity.pid) FROM pg_stat_activity 
-WHERE pg_stat_activity.datname = '%[2]s' AND pid <> pg_backend_pid();
-CREATE DATABASE %[1]s WITH TEMPLATE %[2]s;
-`, backupPath, dbname)
-}
-
-// Backup creates a backup of the database at the given path.
 func (db *PostgresDB) Backup(backupPath string) (err error) {
-	_, err = db.writeDB.Exec(getDBCloneCommand(backupPath, "stash"))
-	return err
+	logger.Warn("Postgres backend detected, ignoring Backup request")
+	return nil
 }
 
 // RestoreFromBackup restores the database from a backup file at the given path.
 func (db *PostgresDB) RestoreFromBackup(backupPath string) (err error) {
-	sqlcmd := "DROP DATABASE stash;\n" + getDBCloneCommand("stash", backupPath)
-
-	_, err = db.writeDB.Exec(sqlcmd)
-	return err
+	logger.Warn("Postgres backend detected, ignoring RestoreFromBackup request")
+	return nil
 }
 
 // DatabaseBackupPath returns the path to a database backup file for the given directory.
 func (db *PostgresDB) DatabaseBackupPath(backupDirectoryPath string) string {
-	return fmt.Sprintf("stash_%d_%s", db.schemaVersion, time.Now().Format("20060102_150405"))
+	logger.Warn("Postgres backend detected, ignoring DatabaseBackupPath request")
+	return ""
 }
