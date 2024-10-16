@@ -52,6 +52,9 @@ hooks:
       - Tag.Create.Post
       - Tag.Update.Post
       - Tag.Destroy.Post
+      - File.Destroy.Post
+      - File.Update.Post
+      - File.Create.Post
     defaultArgs:
       mode: hook
     

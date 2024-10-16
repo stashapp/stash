@@ -47,6 +47,8 @@ type SceneFilterType struct {
 	VideoCodec *StringCriterionInput `json:"video_codec"`
 	// Filter by audio codec
 	AudioCodec *StringCriterionInput `json:"audio_codec"`
+	// Filter by File Size
+	FileSize *IntCriterionInput `json:"file_size"`
 	// Filter by duration (in seconds)
 	Duration *IntCriterionInput `json:"duration"`
 	// Filter to only include scenes which have markers. `true` or `false`
