@@ -185,6 +185,69 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes, queue }) => {
     }
   }
 
+  function maybeRenderSearchAllButton() {
+    const searchButtons = document.querySelectorAll('.input-group-append .btn.btn-primary');
+  
+    if (searchButtons.length > 0) {
+      return (
+        <Button onClick={handleSearchAllClick}>
+          <FormattedMessage id="component_tagger.verb_search_all" />
+        </Button>
+      );
+    }
+    return null;
+  }
+
+  function handleSearchAllClick() {
+    const searchButtons = document.querySelectorAll('.input-group-append .btn.btn-primary');
+  
+    searchButtons.forEach((button, index) => {
+      setTimeout(() => {
+        console.log(`Clicking button ${index + 1}:`, button);
+        
+        if (button instanceof HTMLElement) {
+          button.click();
+        }
+      }, index * 700); // 700ms delay between clicks... its a lot but if it goes too quick then the UI breaks and skips scenes.
+    });
+  }
+
+  function maybeRenderCreateAllButton() {
+    const CreateButtons = document.querySelectorAll('.row.no-gutters.align-items-center.mt-2 .btn-group .btn.btn-secondary');
+  
+    if (CreateButtons.length > 0) {
+      return (
+        <Button onClick={handleCreateAllClick}>
+          <FormattedMessage id="component_tagger.verb_create_all" />
+        </Button>
+      );
+    }
+    return null;
+  }
+
+  function handleCreateAllClick() {
+    const createButtons = document.querySelectorAll('.row.no-gutters.align-items-center.mt-2 .btn-group .btn.btn-secondary');
+  
+    createButtons.forEach((button, index) => {
+      setTimeout(() => {
+        console.log(`Clicking create button ${index + 1}:`, button);
+        
+        if (button instanceof HTMLElement) {
+          button.click();
+
+          setTimeout(() => {
+            const saveButton = document.querySelector('.ModalFooter.modal-footer .ml-2.btn.btn-primary');
+            if (saveButton instanceof HTMLElement) {
+              saveButton.click();
+            } else {
+              console.warn(`Save button not found for create button ${index + 1}`);
+            }
+          }, 500); 
+        }
+      }, index * 800);
+    });
+  }
+
   function maybeRenderSubmitFingerprintsButton() {
     if (pendingFingerprints.length) {
       return (
@@ -253,6 +316,8 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes, queue }) => {
           <div className="d-flex justify-content-between align-items-center flex-wrap">
             <div className="w-auto">{renderSourceSelector()}</div>
             <div className="d-flex">
+              {maybeRenderCreateAllButton()}
+              {maybeRenderSearchAllButton()}
               {maybeRenderShowHideUnmatchedButton()}
               {maybeRenderSubmitFingerprintsButton()}
               {renderFragmentScrapeButton()}
