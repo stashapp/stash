@@ -2,13 +2,13 @@ package autotag
 
 import (
 	"context"
+	"slices"
 
 	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scene"
-	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/txn"
 )
 
@@ -61,7 +61,7 @@ func (tagger *Tagger) TagScenes(ctx context.Context, p *models.Tag, paths []stri
 			}
 			existing := o.TagIDs.List()
 
-			if sliceutil.Contains(existing, p.ID) {
+			if slices.Contains(existing, p.ID) {
 				return false, nil
 			}
 
@@ -90,7 +90,7 @@ func (tagger *Tagger) TagImages(ctx context.Context, p *models.Tag, paths []stri
 			}
 			existing := o.TagIDs.List()
 
-			if sliceutil.Contains(existing, p.ID) {
+			if slices.Contains(existing, p.ID) {
 				return false, nil
 			}
 
@@ -119,7 +119,7 @@ func (tagger *Tagger) TagGalleries(ctx context.Context, p *models.Tag, paths []s
 			}
 			existing := o.TagIDs.List()
 
-			if sliceutil.Contains(existing, p.ID) {
+			if slices.Contains(existing, p.ID) {
 				return false, nil
 			}
 

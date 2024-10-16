@@ -2,13 +2,13 @@ package api
 
 import (
 	"context"
+	"slices"
 	"strconv"
 
 	"github.com/99designs/gqlgen/graphql"
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scene"
-	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 )
 
@@ -119,11 +119,11 @@ func (r *queryResolver) FindScenes(
 			result, err = r.repository.Scene.Query(ctx, models.SceneQueryOptions{
 				QueryOptions: models.QueryOptions{
 					FindFilter: filter,
-					Count:      sliceutil.Contains(fields, "count"),
+					Count:      slices.Contains(fields, "count"),
 				},
 				SceneFilter:   sceneFilter,
-				TotalDuration: sliceutil.Contains(fields, "duration"),
-				TotalSize:     sliceutil.Contains(fields, "filesize"),
+				TotalDuration: slices.Contains(fields, "duration"),
+				TotalSize:     slices.Contains(fields, "filesize"),
 			})
 			if err == nil {
 				scenes, err = result.Resolve(ctx)
@@ -174,11 +174,11 @@ func (r *queryResolver) FindScenesByPathRegex(ctx context.Context, filter *model
 		result, err := r.repository.Scene.Query(ctx, models.SceneQueryOptions{
 			QueryOptions: models.QueryOptions{
 				FindFilter: queryFilter,
-				Count:      sliceutil.Contains(fields, "count"),
+				Count:      slices.Contains(fields, "count"),
 			},
 			SceneFilter:   sceneFilter,
-			TotalDuration: sliceutil.Contains(fields, "duration"),
-			TotalSize:     sliceutil.Contains(fields, "filesize"),
+			TotalDuration: slices.Contains(fields, "duration"),
+			TotalSize:     slices.Contains(fields, "filesize"),
 		})
 		if err != nil {
 			return err

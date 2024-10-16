@@ -3,6 +3,7 @@ package performer
 import (
 	"context"
 	"fmt"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -75,7 +76,7 @@ func importTags(ctx context.Context, tagWriter models.TagFinderCreator, names []
 	}
 
 	missingTags := sliceutil.Filter(names, func(name string) bool {
-		return !sliceutil.Contains(pluckedNames, name)
+		return !slices.Contains(pluckedNames, name)
 	})
 
 	if len(missingTags) > 0 {

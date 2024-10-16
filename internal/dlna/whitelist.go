@@ -1,10 +1,9 @@
 package dlna
 
 import (
+	"slices"
 	"sync"
 	"time"
-
-	"github.com/stashapp/stash/pkg/sliceutil"
 )
 
 // only keep the 10 most recent IP addresses
@@ -30,7 +29,7 @@ func (m *ipWhitelistManager) addRecent(addr string) bool {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	i := sliceutil.Index(m.recentIPAddresses, addr)
+	i := slices.Index(m.recentIPAddresses, addr)
 	if i != -1 {
 		if i == 0 {
 			// don't do anything if it's already at the start

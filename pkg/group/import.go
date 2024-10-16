@@ -3,6 +3,7 @@ package group
 import (
 	"context"
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/stashapp/stash/pkg/models"
@@ -96,7 +97,7 @@ func importTags(ctx context.Context, tagWriter models.TagFinderCreator, names []
 	}
 
 	missingTags := sliceutil.Filter(names, func(name string) bool {
-		return !sliceutil.Contains(pluckedNames, name)
+		return !slices.Contains(pluckedNames, name)
 	})
 
 	if len(missingTags) > 0 {

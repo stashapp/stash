@@ -5,13 +5,13 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"slices"
 
 	"github.com/doug-martin/goqu/v9"
 	"github.com/doug-martin/goqu/v9/exp"
 	"github.com/jmoiron/sqlx"
 
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sliceutil"
 )
 
 const sceneMarkerTable = "scene_markers"
@@ -188,7 +188,7 @@ func (qb *SceneMarkerStore) FindMany(ctx context.Context, ids []int) ([]*models.
 	}
 
 	for _, s := range unsorted {
-		i := sliceutil.Index(ids, s.ID)
+		i := slices.Index(ids, s.ID)
 		ret[i] = s
 	}
 
