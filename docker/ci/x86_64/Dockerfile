@@ -10,6 +10,8 @@ RUN if [ "$TARGETPLATFORM" = "linux/arm/v6" ];   then BIN=stash-linux-arm32v6; \
     mv $BIN /stash
 
 FROM --platform=$TARGETPLATFORM alpine:latest AS app
+ARG STASH_VERSION
+LABEL org.opencontainers.image.source="https://github.com/stashapp/stash/" org.opencontainers.image.revision=${STASH_VERSION}
 COPY --from=binary /stash /usr/bin/
 
 # vips version 8.15.0-r0 breaks thumbnail generation on arm32v6
