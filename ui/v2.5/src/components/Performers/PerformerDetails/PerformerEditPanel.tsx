@@ -190,6 +190,69 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     }
   }
 
+  function translateScrapedMeasurements(scrapedMeasurements?: string) {
+    if (!scrapedMeasurements) {
+      return;
+    }
+
+    // Check for autoConvert setting in Settings->Interface->Editing
+    const autoConvert = stashConfig?.ui.autoConvertMetricMeasurements ?? '';
+    if (!autoConvert){
+      return scrapedMeasurements
+    }
+
+    // A lot of JAV sites list measurements as "B90 W80 H90", so if that's there convert it to ##-##-## format
+    const javMeasurements = scrapedMeasurements.replace(/[^0-9BWH]+/g, '').toUpperCase();
+    const javPattern = /^B(\d+)W(\d+)H(\d+)$/;
+    const javMatch = javMeasurements.match(javPattern);
+    if (javMatch){
+      const javBust = parseInt(javMatch[1]);
+      const JavWaist = parseInt(javMatch[2]);
+      const JavHips = parseInt(javMatch[3]);
+      scrapedMeasurements = `${javBust}-${JavWaist}-${JavHips}`;
+    }
+
+    // Strip out all invalid characters for measurements
+    scrapedMeasurements = scrapedMeasurements.replace('/[^0-9A-Z-\/ ]+/g', '');
+
+    // Define the regex pattern for measurements (e.g., "90D-85-90")
+    const pattern = /^(\d+)([A-Z]+)?[-\/ ](\d+)[-\/ ](\d+)$/;
+    const upperMeasurements = scrapedMeasurements.toUpperCase();
+    const match = upperMeasurements.match(pattern);
+    if (!match) {
+      return upperMeasurements;
+    }
+  
+    // With regex group matches, set values to groups
+    const bust = parseInt(match[1]);
+    const cupSize = match[2] || ''; // Cup size is optional
+    const waist = parseInt(match[3]);
+    const hips = parseInt(match[4]);
+  
+    if (bust > 50 && waist > 45 && hips > 50) {
+      // Convert centimeters to inches
+      const cmToInches = (cm: number) => Math.round(cm * 0.393701);
+  
+      const bustInches = cmToInches(bust);
+      const waistInches = cmToInches(waist);
+      const hipsInches = cmToInches(hips);
+  
+      // Convert European cup sizes to US standard
+      let newCupsize = cupSize;
+      if (newCupsize) {
+        const stringPairs = [['A', 'AA'], ['B', 'A'], ['C', 'B'], ['D', 'C'], ['E', 'D'], ['F', 'DD'], ['G', 'E'], ['H', 'F'], ['I', 'G'], ['J', 'H'], ['K', 'I']];
+        const matchedPair = stringPairs.find(([firstString]) => firstString === newCupsize);
+        newCupsize = matchedPair ? matchedPair[1] : newCupsize;
+      }
+
+      // Create the result string in the same format
+      const resultString = `${bustInches}${newCupsize}-${waistInches}-${hipsInches}`;
+  
+      return resultString;
+    }
+    return upperMeasurements;
+  }
+
   function updatePerformerEditStateFromScraper(
     state: Partial<GQL.ScrapedPerformerDataFragment>
   ) {
@@ -221,7 +284,11 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
       formik.setFieldValue("height_cm", parseInt(state.height, 10));
     }
     if (state.measurements) {
-      formik.setFieldValue("measurements", state.measurements);
+      // measurements is a string in the scraper data
+      const newMeasurements = translateScrapedMeasurements(state.measurements);
+      if (newMeasurements) {
+        formik.setFieldValue("measurements", newMeasurements);
+      }
     }
     if (state.fake_tits) {
       formik.setFieldValue("fake_tits", state.fake_tits);
@@ -623,6 +690,16 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     return renderField("tag_ids", title, tagsControl());
   }
 
+  function renderMeasurements() {
+    const newMeasurements = translateScrapedMeasurements(formik.values.measurements);
+    if (newMeasurements){
+      if (formik.values.measurements != newMeasurements){
+        formik.setFieldValue("measurements", newMeasurements)
+      }
+    }
+    return renderInputField("measurements");
+  }
+
   return (
     <>
       {renderScrapeModal()}
@@ -656,7 +733,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
         {renderSelectField("circumcised", stringCircumMap)}
 
-        {renderInputField("measurements")}
+        {renderMeasurements()}
         {renderInputField("fake_tits")}
 
         {renderInputField("tattoos", "textarea")}
