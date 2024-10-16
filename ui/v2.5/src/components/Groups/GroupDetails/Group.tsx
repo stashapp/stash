@@ -21,7 +21,7 @@ import {
   GroupDetailsPanel,
 } from "./GroupDetailsPanel";
 import { GroupEditPanel } from "./GroupEditPanel";
-import { faTrashAlt } from "@fortawesome/free-solid-svg-icons";
+import { faRefresh, faTrashAlt } from "@fortawesome/free-solid-svg-icons";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { ConfigurationContext } from "src/hooks/Config";
 import { DetailImage } from "src/components/Shared/DetailImage";
@@ -39,8 +39,9 @@ import {
   TabTitleCounter,
   useTabKey,
 } from "src/components/Shared/DetailsPage/Tabs";
-import { Tab, Tabs } from "react-bootstrap";
+import { Button, Tab, Tabs } from "react-bootstrap";
 import { GroupSubGroupsPanel } from "./GroupSubGroupsPanel";
+import { Icon } from "src/components/Shared/Icon";
 
 const validTabs = ["default", "scenes", "subgroups"] as const;
 type TabKey = (typeof validTabs)[number];
@@ -129,6 +130,8 @@ const GroupPage: React.FC<IProps> = ({ group, tabKey }) => {
   const compactExpandedDetails = uiConfig?.compactExpandedDetails ?? false;
   const showAllDetails = uiConfig?.showAllDetails ?? true;
   const abbreviateCounter = uiConfig?.abbreviateCounters ?? false;
+
+  const [focusedOnFront, setFocusedOnFront] = useState<boolean>(true);
 
   const [collapsed, setCollapsed] = useState<boolean>(!showAllDetails);
   const loadStickyHeader = useLoadStickyHeader();
@@ -328,7 +331,13 @@ const GroupPage: React.FC<IProps> = ({ group, tabKey }) => {
             <div className="group-images">
               {!!activeFrontImage && (
                 <LightboxLink images={lightboxImages}>
-                  <DetailImage alt="Front Cover" src={activeFrontImage} />
+                  <DetailImage
+                    className={`front-cover ${
+                      focusedOnFront ? "active" : "inactive"
+                    }`}
+                    alt="Front Cover"
+                    src={activeFrontImage}
+                  />
                 </LightboxLink>
               )}
               {!!activeBackImage && (
@@ -336,8 +345,22 @@ const GroupPage: React.FC<IProps> = ({ group, tabKey }) => {
                   images={lightboxImages}
                   index={lightboxImages.length - 1}
                 >
-                  <DetailImage alt="Back Cover" src={activeBackImage} />
+                  <DetailImage
+                    className={`back-cover ${
+                      !focusedOnFront ? "active" : "inactive"
+                    }`}
+                    alt="Back Cover"
+                    src={activeBackImage}
+                  />
                 </LightboxLink>
+              )}
+              {!!(activeFrontImage && activeBackImage) && (
+                <Button
+                  className="flip"
+                  onClick={() => setFocusedOnFront(!focusedOnFront)}
+                >
+                  <Icon icon={faRefresh} />
+                </Button>
               )}
             </div>
           </HeaderImage>
