@@ -48,6 +48,7 @@ import { objectTitle } from "src/core/files";
 const CLASSNAME = "duplicate-checker";
 
 const defaultDurationDiff = "1";
+const defaultSelectedCodec = "hevc";
 
 export const SceneDuplicateChecker: React.FC = () => {
   const intl = useIntl();
@@ -59,6 +60,7 @@ export const SceneDuplicateChecker: React.FC = () => {
   const durationDiff = Number.parseFloat(
     query.get("durationDiff") ?? defaultDurationDiff
   );
+  let SelectedCodec = query.get("SelectedCodec") ?? defaultSelectedCodec;
 
   const [currentPageSize, setCurrentPageSize] = useState(pageSize);
   const [isMultiDelete, setIsMultiDelete] = useState(false);
@@ -177,6 +179,19 @@ export const SceneDuplicateChecker: React.FC = () => {
     });
   };
 
+  const findSmallestScene = (group: GQL.SlimSceneDataFragment[]) => {
+    // Get maximum file size of a scene
+    const totalSize = (scene: GQL.SlimSceneDataFragment) => {
+      return scene.files.reduce((prev: number, f) => Math.max(prev, f.size), 0);
+    };
+    // Find scene object with minimum total size
+    return group.reduce((smallest, scene) => {
+      const smallestSize = totalSize(smallest);
+      const currentSize = totalSize(scene);
+      return currentSize < smallestSize ? scene : smallest;
+    });
+  };
+
   const findLargestResolutionScene = (group: GQL.SlimSceneDataFragment[]) => {
     // Get maximum resolution of a scene
     const sceneResolution = (scene: GQL.SlimSceneDataFragment) => {
@@ -256,6 +271,53 @@ export const SceneDuplicateChecker: React.FC = () => {
       });
     });
 
+    setCheckedScenes(checkedArray);
+  };
+
+  const onSelectSmallestClick = () => {
+    setSelectedScenes([]);
+    const checkedArray: Record<string, boolean> = {};
+
+    filteredScenes.forEach((group) => {
+      if (chkSafeSelect && !checkSameCodec(group)) {
+        return;
+      }
+      // Find smallest scene in group a
+      const smallest = findSmallestScene(group);
+      group.forEach((scene) => {
+        if (scene !== smallest) {
+          checkedArray[scene.id] = true;
+        }
+      });
+    });
+
+    setCheckedScenes(checkedArray);
+  };
+
+  const onSelectCodecClick = () => {
+    setSelectedScenes([]);
+    const checkedArray: Record<string, boolean> = {};
+
+    filteredScenes.forEach((group) => {
+      if (chkSafeSelect && !checkSameCodec(group)) {
+        return;
+      }
+      // select scenes where codec is not preferred
+      let hasCodec = false;
+      group.forEach((scene) => {
+        if (scene.files[0]?.video_codec != SelectedCodec) {
+          checkedArray[scene.id] = true;
+        } else if (scene.files[0]?.video_codec == SelectedCodec) {
+          hasCodec = true;
+        }
+      });
+      if (!hasCodec) {
+        // when no scenes with preferred codec are in the group select nothing
+        group.forEach((scene) => {
+          checkedArray[scene.id] = false;
+        });
+      }
+    });
     setCheckedScenes(checkedArray);
   };
 
@@ -750,6 +812,47 @@ export const SceneDuplicateChecker: React.FC = () => {
               </Col>
             </Row>
           </Form.Group>
+
+          <Form.Group>
+            <Row noGutters>
+              <Form.Label>
+                <FormattedMessage id="dupe_check.select_all_but_specified_codec.title" />
+              </Form.Label>
+              <Col xs="auto">
+                <Form.Control
+                  as="select"
+                  onChange={(e) =>
+                    setQuery({
+                      SelectedCodec:
+                        e.currentTarget.value === defaultSelectedCodec
+                          ? undefined
+                          : e.currentTarget.value,
+                      page: undefined,
+                    })
+                  }
+                  defaultValue={SelectedCodec}
+                  className="input-control ml-4"
+                >
+                  <option value={"av1"}>
+                    {intl.formatMessage({
+                      id: "dupe_check.select_all_but_specified_codec.av1",
+                    })}
+                  </option>
+                  <option value={"hevc"}>
+                    {intl.formatMessage({
+                      id: "dupe_check.select_all_but_specified_codec.hevc",
+                    })}
+                  </option>
+                  <option value={"h264"}>
+                    {intl.formatMessage({
+                      id: "dupe_check.select_all_but_specified_codec.h264",
+                    })}
+                  </option>
+                </Form.Control>
+              </Col>
+            </Row>
+          </Form.Group>
+
           <Form.Group>
             <Row noGutters>
               <Col xs="12">
@@ -760,6 +863,12 @@ export const SceneDuplicateChecker: React.FC = () => {
                   <Dropdown.Menu className="bg-secondary text-white">
                     <Dropdown.Item onClick={() => resetCheckboxSelection()}>
                       {intl.formatMessage({ id: "dupe_check.select_none" })}
+                    </Dropdown.Item>
+
+                    <Dropdown.Item onClick={() => onSelectCodecClick()}>
+                      {intl.formatMessage({
+                        id: "dupe_check.select_all_but_specified_codec.label",
+                      })}
                     </Dropdown.Item>
 
                     <Dropdown.Item
@@ -773,6 +882,12 @@ export const SceneDuplicateChecker: React.FC = () => {
                     <Dropdown.Item onClick={() => onSelectLargestClick()}>
                       {intl.formatMessage({
                         id: "dupe_check.select_all_but_largest_file",
+                      })}
+                    </Dropdown.Item>
+
+                    <Dropdown.Item onClick={() => onSelectSmallestClick()}>
+                      {intl.formatMessage({
+                        id: "dupe_check.select_all_but_smallest_file",
                       })}
                     </Dropdown.Item>
 
