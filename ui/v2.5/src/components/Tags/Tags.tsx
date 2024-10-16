@@ -5,11 +5,8 @@ import { useTitleProps } from "src/hooks/title";
 import Tag from "./TagDetails/Tag";
 import TagCreate from "./TagDetails/TagCreate";
 import { TagList } from "./TagList";
-import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
 
 const Tags: React.FC = () => {
-  useScrollToTopOnMount();
-
   return <TagList />;
 };
 
