@@ -821,7 +821,9 @@ export const SceneDuplicateChecker: React.FC = () => {
             <col className={`${CLASSNAME}-filesize`} />
             <col className={`${CLASSNAME}-resolution`} />
             <col className={`${CLASSNAME}-bitrate`} />
-            <col className={`${CLASSNAME}-codec`} />
+            <col className={`${CLASSNAME}-video-codec`} />
+            <col className={`${CLASSNAME}-audio-codec`} />
+            <col className={`${CLASSNAME}-modified-time`} />
             <col className={`${CLASSNAME}-operations`} />
           </colgroup>
           <thead>
@@ -835,6 +837,8 @@ export const SceneDuplicateChecker: React.FC = () => {
               <th>{intl.formatMessage({ id: "resolution" })}</th>
               <th>{intl.formatMessage({ id: "bitrate" })}</th>
               <th>{intl.formatMessage({ id: "media_info.video_codec" })}</th>
+              <th>{intl.formatMessage({ id: "media_info.audio_codec" })}</th>
+              <th>{intl.formatMessage({ id: "file_mod_time" })}</th>
               <th>{intl.formatMessage({ id: "actions.delete" })}</th>
             </tr>
           </thead>
@@ -927,6 +931,10 @@ export const SceneDuplicateChecker: React.FC = () => {
                         &nbsp;mbps
                       </td>
                       <td>{file?.video_codec ?? ""}</td>
+                      <td>{file?.audio_codec ?? ""}</td>
+                      <td>
+                        {file ? new Date(file.mod_time).toDateString() : ""}
+                      </td>
                       <td>
                         <Button
                           className="edit-button"
