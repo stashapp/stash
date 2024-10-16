@@ -44,6 +44,20 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
   const schema = yup.object({
     title: yup.string().ensure(),
     seconds: yup.number().min(0).required(),
+    end_seconds: yup
+      .number()
+      .min(-1)
+      .test(
+        "is-greater-than-seconds",
+        "End time must be greater than or equal to start time",
+        function (value) {
+          return (
+            value !== undefined &&
+            (value === -1 || value >= this.parent.seconds)
+          );
+        }
+      )
+      .required(),
     primary_tag_id: yup.string().required(),
     tag_ids: yup.array(yup.string().required()).defined(),
   });
@@ -53,6 +67,7 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
     () => ({
       title: marker?.title ?? "",
       seconds: marker?.seconds ?? Math.round(getPlayerPosition() ?? 0),
+      end_seconds: marker?.end_seconds ?? -1,
       primary_tag_id: marker?.primary_tag.id ?? "",
       tag_ids: marker?.tags.map((tag) => tag.id) ?? [],
     }),
@@ -205,6 +220,35 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
     return renderField("seconds", title, control);
   }
 
+  function renderEndTimeField() {
+    const { error } = formik.getFieldMeta("end_seconds");
+
+    const title = intl.formatMessage({ id: "time_end" });
+    const control = (
+      <>
+        <DurationInput
+          value={formik.values.end_seconds}
+          setValue={(v) => formik.setFieldValue("end_seconds", v)}
+          onReset={() =>
+            formik.setFieldValue(
+              "end_seconds",
+              Math.round(getPlayerPosition() ?? 0)
+            )
+          }
+          error={error}
+          allowNegative={true}
+        />
+        {formik.touched.end_seconds && formik.errors.end_seconds && (
+          <Form.Control.Feedback type="invalid">
+            {formik.errors.end_seconds}
+          </Form.Control.Feedback>
+        )}
+      </>
+    );
+
+    return renderField("end_seconds", title, control);
+  }
+
   function renderTagsField() {
     const title = intl.formatMessage({ id: "tags" });
     const control = (
@@ -225,6 +269,7 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
         {renderTitleField()}
         {renderPrimaryTagField()}
         {renderTimeField()}
+        {renderEndTimeField()}
         {renderTagsField()}
       </div>
       <div className="buttons-container px-3">
