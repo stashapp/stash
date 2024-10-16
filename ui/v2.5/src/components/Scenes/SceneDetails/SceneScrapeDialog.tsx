@@ -252,6 +252,7 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
           onChange={(value) => setPerformers(value)}
           newObjects={newPerformers}
           onCreateNew={createNewPerformer}
+          ageFromDate={date.useNewValue ? date.newValue : date.originalValue}
         />
         <ScrapedGroupsRow
           title={intl.formatMessage({ id: "groups" })}

@@ -145,6 +145,7 @@
   },
   "actions_name": "Actions",
   "age": "Age",
+  "age_on_date": "{age} on this date",
   "aliases": "Aliases",
   "all": "all",
   "also_known_as": "Also known as",

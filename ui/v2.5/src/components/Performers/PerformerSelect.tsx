@@ -71,7 +71,7 @@ const performerSelectSort = PatchFunction(
 );
 
 const _PerformerSelect: React.FC<
-  IFilterProps & IFilterValueProps<Performer>
+  IFilterProps & IFilterValueProps<Performer> & { ageFromDate?: string | null }
 > = (props) => {
   const [createPerformer] = usePerformerCreate();
 
@@ -117,6 +117,27 @@ const _PerformerSelect: React.FC<
       );
     }
 
+    const sceneAge = TextUtils.age(object.birthdate, props.ageFromDate);
+
+    const age =
+      sceneAge < 18
+        ? TextUtils.age(object.birthdate, object.death_date)
+        : sceneAge;
+
+    const ageL10nId =
+      !props.ageFromDate || sceneAge < 18
+        ? "media_info.performer_card.age"
+        : "age_on_date";
+
+    const ageL10String = intl.formatMessage({
+      id: "years_old",
+      defaultMessage: "years old",
+    });
+    const ageString = intl.formatMessage(
+      { id: ageL10nId },
+      { age, years_old: ageL10String }
+    );
+
     thisOptionProps = {
       ...optionProps,
       children: (
@@ -156,12 +177,10 @@ const _PerformerSelect: React.FC<
               )}
 
               {object.birthdate && (
-                <span className="performer-select-birthdate">{`${
-                  object.birthdate
-                } (${TextUtils.age(
-                  object.birthdate,
-                  object.death_date
-                )})`}</span>
+                <span className="performer-select-birthdate">
+                  {object.birthdate}
+                  <span className="performer-select-age">{` (${ageString})`}</span>
+                </span>
               )}
             </span>
           </span>
