@@ -92,20 +92,16 @@ func (db *PostgresDB) open(disableForeignKeys bool, writable bool) (conn *sqlx.D
 
 func (db *PostgresDB) Remove() (err error) {
 	_, err = db.writeDB.Exec(`
-DO $$ DECLARE
-    r RECORD;
+DO $$
+DECLARE 
+    r record;
 BEGIN
-    -- Disable triggers to avoid foreign key constraint violations
-    EXECUTE 'SET session_replication_role = replica';
-
-    -- Drop all tables
-    FOR r IN (SELECT tablename FROM pg_tables WHERE schemaname = 'public') LOOP
-        EXECUTE 'DROP TABLE IF EXISTS ' || quote_ident(r.tablename) || ' CASCADE';
+    FOR r IN SELECT quote_ident(tablename) AS tablename, quote_ident(schemaname) AS schemaname FROM pg_tables WHERE schemaname = 'public'
+    LOOP
+        RAISE INFO 'Dropping table %.%', r.schemaname, r.tablename;
+        EXECUTE format('DROP TABLE IF EXISTS %I.%I CASCADE', r.schemaname, r.tablename);
     END LOOP;
-
-    -- Re-enable triggers
-    EXECUTE 'SET session_replication_role = DEFAULT';
-END $$;
+END$$;
 `)
 
 	return err

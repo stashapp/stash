@@ -267,7 +267,11 @@ func (qb *galleryFilterHandler) missingCriterionHandler(isMissing *string) crite
 				galleryRepository.performers.join(f, "performers_join", "galleries.id")
 				f.addWhere("performers_join.gallery_id IS NULL")
 			case "date":
-				f.addWhere("galleries.date IS NULL OR galleries.date IS \"\"")
+				q := "galleries.date IS NULL"
+				if dbWrapper.dbType == SqliteBackend {
+					q += ` OR galleries.date IS ""`
+				}
+				f.addWhere(q)
 			case "tags":
 				galleryRepository.tags.join(f, "tags_join", "galleries.id")
 				f.addWhere("tags_join.gallery_id IS NULL")

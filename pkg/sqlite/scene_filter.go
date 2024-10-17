@@ -326,7 +326,11 @@ func (qb *sceneFilterHandler) isMissingCriterionHandler(isMissing *string) crite
 				sceneRepository.performers.join(f, "performers_join", "scenes.id")
 				f.addWhere("performers_join.scene_id IS NULL")
 			case "date":
-				f.addWhere(`scenes.date IS NULL OR scenes.date IS ""`)
+				q := "scenes.date IS NULL"
+				if dbWrapper.dbType == SqliteBackend {
+					q += ` OR scenes.date IS ""`
+				}
+				f.addWhere(q)
 			case "tags":
 				sceneRepository.tags.join(f, "tags_join", "scenes.id")
 				f.addWhere("tags_join.scene_id IS NULL")

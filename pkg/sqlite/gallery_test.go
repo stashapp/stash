@@ -6,6 +6,7 @@ package sqlite_test
 import (
 	"context"
 	"math"
+	"sort"
 	"strconv"
 	"testing"
 	"time"
@@ -59,6 +60,12 @@ func sortGallery(copy *models.Gallery) {
 	copy.SceneIDs.Sort()
 	copy.PerformerIDs.Sort()
 	copy.TagIDs.Sort()
+}
+
+func sortByID[T any](list []T, getID func(T) int) {
+	sort.Slice(list, func(i, j int) bool {
+		return getID(list[i]) < getID(list[j])
+	})
 }
 
 func Test_galleryQueryBuilder_Create(t *testing.T) {
@@ -1131,6 +1138,8 @@ func Test_galleryQueryBuilder_FindByChecksums(t *testing.T) {
 				return
 			}
 
+			sortByID(tt.want, func(g *models.Gallery) int { return g.ID })
+			sortByID(got, func(g *models.Gallery) int { return g.ID })
 			assert.Equal(tt.want, got)
 		})
 	}
@@ -1231,6 +1240,8 @@ func Test_galleryQueryBuilder_FindBySceneID(t *testing.T) {
 				return
 			}
 
+			sortByID(tt.want, func(g *models.Gallery) int { return g.ID })
+			sortByID(got, func(g *models.Gallery) int { return g.ID })
 			assert.Equal(tt.want, got)
 		})
 	}
@@ -1276,6 +1287,8 @@ func Test_galleryQueryBuilder_FindByImageID(t *testing.T) {
 				return
 			}
 
+			sortByID(tt.want, func(g *models.Gallery) int { return g.ID })
+			sortByID(got, func(g *models.Gallery) int { return g.ID })
 			assert.Equal(tt.want, got)
 		})
 	}
