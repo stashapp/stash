@@ -1,8 +1,11 @@
 package models
 
+import "time"
+
 type StashID struct {
-	StashID  string `db:"stash_id" json:"stash_id"`
-	Endpoint string `db:"endpoint" json:"endpoint"`
+	StashID   string    `db:"stash_id" json:"stash_id"`
+	Endpoint  string    `db:"endpoint" json:"endpoint"`
+	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`
 }
 
 type UpdateStashIDs struct {

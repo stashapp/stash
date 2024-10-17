@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"strconv"
 	"testing"
+	"time"
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/mocks"
@@ -548,8 +549,9 @@ func Test_sceneRelationships_stashIDs(t *testing.T) {
 		ID: sceneWithStashID,
 		StashIDs: models.NewRelatedStashIDs([]models.StashID{
 			{
-				StashID:  remoteSiteID,
-				Endpoint: existingEndpoint,
+				StashID:   remoteSiteID,
+				Endpoint:  existingEndpoint,
+				UpdatedAt: time.Time{},
 			},
 		}),
 	}
@@ -605,7 +607,13 @@ func Test_sceneRelationships_stashIDs(t *testing.T) {
 			defaultOptions,
 			existingEndpoint,
 			&remoteSiteID,
-			nil,
+			[]models.StashID{
+				{
+					StashID:   remoteSiteID,
+					Endpoint:  existingEndpoint,
+					UpdatedAt: time.Time{},
+				},
+			},
 			false,
 		},
 		{
@@ -616,8 +624,9 @@ func Test_sceneRelationships_stashIDs(t *testing.T) {
 			&newRemoteSiteID,
 			[]models.StashID{
 				{
-					StashID:  newRemoteSiteID,
-					Endpoint: existingEndpoint,
+					StashID:   newRemoteSiteID,
+					Endpoint:  existingEndpoint,
+					UpdatedAt: time.Time{},
 				},
 			},
 			false,
@@ -630,12 +639,14 @@ func Test_sceneRelationships_stashIDs(t *testing.T) {
 			&newRemoteSiteID,
 			[]models.StashID{
 				{
-					StashID:  remoteSiteID,
-					Endpoint: existingEndpoint,
+					StashID:   remoteSiteID,
+					Endpoint:  existingEndpoint,
+					UpdatedAt: time.Time{},
 				},
 				{
-					StashID:  newRemoteSiteID,
-					Endpoint: newEndpoint,
+					StashID:   newRemoteSiteID,
+					Endpoint:  newEndpoint,
+					UpdatedAt: time.Time{},
 				},
 			},
 			false,
@@ -650,8 +661,9 @@ func Test_sceneRelationships_stashIDs(t *testing.T) {
 			&newRemoteSiteID,
 			[]models.StashID{
 				{
-					StashID:  newRemoteSiteID,
-					Endpoint: newEndpoint,
+					StashID:   newRemoteSiteID,
+					Endpoint:  newEndpoint,
+					UpdatedAt: time.Time{},
 				},
 			},
 			false,
@@ -681,7 +693,8 @@ func Test_sceneRelationships_stashIDs(t *testing.T) {
 				},
 			}
 
-			got, err := tr.stashIDs(testCtx)
+			got, err := tr.stashIDs(testCtx, time.Time{})
+
 			if (err != nil) != tt.wantErr {
 				t.Errorf("sceneRelationships.stashIDs() error = %v, wantErr %v", err, tt.wantErr)
 				return

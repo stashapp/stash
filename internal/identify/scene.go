@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
@@ -182,7 +183,7 @@ func (g sceneRelationships) tags(ctx context.Context) ([]int, error) {
 	return tagIDs, nil
 }
 
-func (g sceneRelationships) stashIDs(ctx context.Context) ([]models.StashID, error) {
+func (g sceneRelationships) stashIDs(ctx context.Context, updateTime time.Time) ([]models.StashID, error) {
 	remoteSiteID := g.result.result.RemoteSiteID
 	fieldStrategy := g.fieldOptions["stash_ids"]
 	target := g.scene
@@ -210,13 +211,9 @@ func (g sceneRelationships) stashIDs(ctx context.Context) ([]models.StashID, err
 
 	for i, stashID := range stashIDs {
 		if endpoint == stashID.Endpoint {
-			// if stashID is the same, then don't set
-			if stashID.StashID == *remoteSiteID {
-				return nil, nil
-			}
-
 			// replace the stash id and return
 			stashID.StashID = *remoteSiteID
+			stashID.UpdatedAt = updateTime
 			stashIDs[i] = stashID
 			return stashIDs, nil
 		}
@@ -224,8 +221,9 @@ func (g sceneRelationships) stashIDs(ctx context.Context) ([]models.StashID, err
 
 	// not found, create new entry
 	stashIDs = append(stashIDs, models.StashID{
-		StashID:  *remoteSiteID,
-		Endpoint: endpoint,
+		StashID:   *remoteSiteID,
+		Endpoint:  endpoint,
+		UpdatedAt: updateTime,
 	})
 
 	if sliceutil.SliceSame(originalStashIDs, stashIDs) {

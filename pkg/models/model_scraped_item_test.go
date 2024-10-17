@@ -87,6 +87,11 @@ func Test_scrapedToStudioInput(t *testing.T) {
 
 			got.CreatedAt = time.Time{}
 			got.UpdatedAt = time.Time{}
+			if got.StashIDs.Loaded() && len(got.StashIDs.List()) > 0 {
+				for stid := range got.StashIDs.List() {
+					got.StashIDs.List()[stid].UpdatedAt = time.Time{}
+				}
+			}
 			assert.Equal(t, tt.want, got)
 		})
 	}
@@ -243,6 +248,12 @@ func Test_scrapedToPerformerInput(t *testing.T) {
 
 			got.CreatedAt = time.Time{}
 			got.UpdatedAt = time.Time{}
+
+			if got.StashIDs.Loaded() && len(got.StashIDs.List()) > 0 {
+				for stid := range got.StashIDs.List() {
+					got.StashIDs.List()[stid].UpdatedAt = time.Time{}
+				}
+			}
 			assert.Equal(t, tt.want, got)
 		})
 	}
@@ -263,7 +274,7 @@ func TestScrapedStudio_ToPartial(t *testing.T) {
 		images            = []string{image}
 
 		existingEndpoint = "existingEndpoint"
-		existingStashID  = StashID{"existingStashID", existingEndpoint}
+		existingStashID  = StashID{"existingStashID", existingEndpoint, time.Time{}}
 		existingStashIDs = []StashID{existingStashID}
 	)
 
@@ -362,6 +373,11 @@ func TestScrapedStudio_ToPartial(t *testing.T) {
 
 			// unset updatedAt - we don't need to compare it
 			got.UpdatedAt = OptionalTime{}
+			if got.StashIDs != nil && len(got.StashIDs.StashIDs) > 0 {
+				for stid := range got.StashIDs.StashIDs {
+					got.StashIDs.StashIDs[stid].UpdatedAt = time.Time{}
+				}
+			}
 
 			assert.Equal(t, tt.want, got)
 		})

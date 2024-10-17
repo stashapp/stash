@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
@@ -244,7 +245,8 @@ func (t *SceneIdentifier) getSceneUpdater(ctx context.Context, s *models.Scene, 
 		}
 	}
 
-	stashIDs, err := rel.stashIDs(ctx)
+	currentTime := time.Now()
+	stashIDs, err := rel.stashIDs(ctx, currentTime)
 	if err != nil {
 		return nil, err
 	}

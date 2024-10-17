@@ -28,6 +28,7 @@ fragment StudioData on Studio {
   stash_ids {
     stash_id
     endpoint
+    updated_at
   }
   details
   rating100

@@ -84,5 +84,6 @@ fragment SlimSceneData on Scene {
   stash_ids {
     endpoint
     stash_id
+    updated_at
   }
 }

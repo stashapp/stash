@@ -14,11 +14,6 @@ import (
 
 const idColumn = "id"
 
-type objectList interface {
-	Append(o interface{})
-	New() interface{}
-}
-
 type repository struct {
 	tableName string
 	idColumn  string
@@ -122,17 +117,6 @@ func (r *repository) queryFunc(ctx context.Context, query string, args []interfa
 	}
 
 	return nil
-}
-
-func (r *repository) query(ctx context.Context, query string, args []interface{}, out objectList) error {
-	return r.queryFunc(ctx, query, args, false, func(rows *sqlx.Rows) error {
-		object := out.New()
-		if err := rows.StructScan(object); err != nil {
-			return err
-		}
-		out.Append(object)
-		return nil
-	})
 }
 
 func (r *repository) queryStruct(ctx context.Context, query string, args []interface{}, out interface{}) error {
@@ -421,7 +405,7 @@ type stashIDRepository struct {
 type stashIDs []models.StashID
 
 func (s *stashIDs) Append(o interface{}) {
-	*s = append(*s, *o.(*models.StashID))
+	*s = append(*s, o.(models.StashID))
 }
 
 func (s *stashIDs) New() interface{} {
@@ -429,10 +413,17 @@ func (s *stashIDs) New() interface{} {
 }
 
 func (r *stashIDRepository) get(ctx context.Context, id int) ([]models.StashID, error) {
-	query := fmt.Sprintf("SELECT stash_id, endpoint from %s WHERE %s = ?", r.tableName, r.idColumn)
+	query := fmt.Sprintf("SELECT stash_id, endpoint, updated_at from %s WHERE %s = ?", r.tableName, r.idColumn)
 	var ret stashIDs
-	err := r.query(ctx, query, []interface{}{id}, &ret)
-	return []models.StashID(ret), err
+	err := r.queryFunc(ctx, query, []interface{}{id}, false, func(rows *sqlx.Rows) error {
+		var v stashIDRow
+		if err := rows.StructScan(&v); err != nil {
+			return err
+		}
+		ret.Append(v.resolve())
+		return nil
+	})
+	return ret, err
 }
 
 type filesRepository struct {

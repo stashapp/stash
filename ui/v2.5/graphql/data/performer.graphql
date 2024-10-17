@@ -34,6 +34,7 @@ fragment PerformerData on Performer {
   stash_ids {
     stash_id
     endpoint
+    updated_at
   }
   rating100
   details
