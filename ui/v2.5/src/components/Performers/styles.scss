@@ -40,6 +40,21 @@
   .alias {
     font-weight: bold;
   }
+
+  // the detail element ids are the same as field type name
+  // which don't follow the correct convention
+  /* stylelint-disable selector-class-pattern */
+  .collapsed {
+    .detail-item.tattoos,
+    .detail-item.piercings,
+    .detail-item.career_length,
+    .detail-item.details,
+    .detail-item.tags,
+    .detail-item.stash_ids {
+      display: none;
+    }
+  }
+  /* stylelint-enable selector-class-pattern */
 }
 
 .new-view {

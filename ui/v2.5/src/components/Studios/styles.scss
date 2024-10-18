@@ -40,4 +40,14 @@
   .rating-number .text-input {
     width: auto;
   }
+
+  // the detail element ids are the same as field type name
+  // which don't follow the correct convention
+  /* stylelint-disable selector-class-pattern */
+  .collapsed {
+    .detail-item.stash_ids {
+      display: none;
+    }
+  }
+  /* stylelint-enable selector-class-pattern */
 }

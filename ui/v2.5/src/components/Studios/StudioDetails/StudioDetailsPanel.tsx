@@ -13,7 +13,6 @@ interface IStudioDetailsPanel {
 
 export const StudioDetailsPanel: React.FC<IStudioDetailsPanel> = ({
   studio,
-  collapsed,
   fullWidth,
 }) => {
   function renderTagsField() {
@@ -47,25 +46,6 @@ export const StudioDetailsPanel: React.FC<IStudioDetailsPanel> = ({
     );
   }
 
-  function maybeRenderExtraDetails() {
-    if (!collapsed) {
-      return (
-        <>
-          <DetailItem
-            id="tags"
-            value={renderTagsField()}
-            fullWidth={fullWidth}
-          />
-          <DetailItem
-            id="stash_ids"
-            value={renderStashIDs()}
-            fullWidth={fullWidth}
-          />
-        </>
-      );
-    }
-  }
-
   return (
     <div className="detail-group">
       <DetailItem id="details" value={studio.details} fullWidth={fullWidth} />
@@ -82,7 +62,12 @@ export const StudioDetailsPanel: React.FC<IStudioDetailsPanel> = ({
         }
         fullWidth={fullWidth}
       />
-      {maybeRenderExtraDetails()}
+      <DetailItem id="tags" value={renderTagsField()} fullWidth={fullWidth} />
+      <DetailItem
+        id="stash_ids"
+        value={renderStashIDs()}
+        fullWidth={fullWidth}
+      />
     </div>
   );
 };
