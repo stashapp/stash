@@ -31,12 +31,14 @@ type sceneMarkerRow struct {
 	SceneID      int       `db:"scene_id"`
 	CreatedAt    Timestamp `db:"created_at"`
 	UpdatedAt    Timestamp `db:"updated_at"`
+	EndSeconds   float64   `db:"end_seconds"`
 }
 
 func (r *sceneMarkerRow) fromSceneMarker(o models.SceneMarker) {
 	r.ID = o.ID
 	r.Title = o.Title
 	r.Seconds = o.Seconds
+	r.EndSeconds = o.EndSeconds
 	r.PrimaryTagID = o.PrimaryTagID
 	r.SceneID = o.SceneID
 	r.CreatedAt = Timestamp{Timestamp: o.CreatedAt}
@@ -48,6 +50,7 @@ func (r *sceneMarkerRow) resolve() *models.SceneMarker {
 		ID:           r.ID,
 		Title:        r.Title,
 		Seconds:      r.Seconds,
+		EndSeconds:   r.EndSeconds,
 		PrimaryTagID: r.PrimaryTagID,
 		SceneID:      r.SceneID,
 		CreatedAt:    r.CreatedAt.Timestamp,
@@ -69,6 +72,7 @@ func (r *sceneMarkerRowRecord) fromPartial(o models.SceneMarkerPartial) {
 		r.set("title", o.Title.Value)
 	}
 	r.setFloat64("seconds", o.Seconds)
+	r.setFloat64("end_seconds", o.EndSeconds)
 	r.setInt("primary_tag_id", o.PrimaryTagID)
 	r.setInt("scene_id", o.SceneID)
 	r.setTimestamp("created_at", o.CreatedAt)
