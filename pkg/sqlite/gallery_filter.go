@@ -215,8 +215,8 @@ func (qb *galleryFilterHandler) pathCriterionHandler(c *models.StringCriterionIn
 						return
 					}
 					filepathColumn := fmt.Sprintf("%s || '%s' || %s", pathColumn, string(filepath.Separator), basenameColumn)
-					clause := makeClause(fmt.Sprintf("%s IS NOT NULL AND %s IS NOT NULL AND %s regexp ?", pathColumn, basenameColumn, filepathColumn), c.Value)
-					clause2 := makeClause(fmt.Sprintf("%s IS NOT NULL AND %[1]s regexp ?", folderPathColumn), c.Value)
+					clause := makeClause(fmt.Sprintf("%s IS NOT NULL AND %s IS NOT NULL AND regexp(?, %s)", pathColumn, basenameColumn, filepathColumn), c.Value)
+					clause2 := makeClause(fmt.Sprintf("%s IS NOT NULL AND regexp(?, %[1]s)", folderPathColumn), c.Value)
 					f.whereClauses = append(f.whereClauses, orClauses(clause, clause2))
 				case models.CriterionModifierNotMatchesRegex:
 					if _, err := regexp.Compile(c.Value); err != nil {
@@ -224,8 +224,8 @@ func (qb *galleryFilterHandler) pathCriterionHandler(c *models.StringCriterionIn
 						return
 					}
 					filepathColumn := fmt.Sprintf("%s || '%s' || %s", pathColumn, string(filepath.Separator), basenameColumn)
-					f.addWhere(fmt.Sprintf("%s IS NULL OR %s IS NULL OR %s NOT regexp ?", pathColumn, basenameColumn, filepathColumn), c.Value)
-					f.addWhere(fmt.Sprintf("%s IS NULL OR %[1]s NOT regexp ?", folderPathColumn), c.Value)
+					f.addWhere(fmt.Sprintf("%s IS NULL OR %s IS NULL OR NOT regexp(?, %s)", pathColumn, basenameColumn, filepathColumn), c.Value)
+					f.addWhere(fmt.Sprintf("%s IS NULL OR NOT regexp(?, %[1]s)", folderPathColumn), c.Value)
 				case models.CriterionModifierIsNull:
 					f.addWhere(fmt.Sprintf("%s IS NULL OR TRIM(%[1]s) = '' OR %s IS NULL OR TRIM(%[2]s) = ''", pathColumn, basenameColumn))
 					f.addWhere(fmt.Sprintf("%s IS NULL OR TRIM(%[1]s) = ''", folderPathColumn))
@@ -267,7 +267,11 @@ func (qb *galleryFilterHandler) missingCriterionHandler(isMissing *string) crite
 				galleryRepository.performers.join(f, "performers_join", "galleries.id")
 				f.addWhere("performers_join.gallery_id IS NULL")
 			case "date":
-				f.addWhere("galleries.date IS NULL OR galleries.date IS \"\"")
+				q := "galleries.date IS NULL"
+				if dbWrapper.dbType == SqliteBackend {
+					q += ` OR galleries.date IS ""`
+				}
+				f.addWhere(q)
 			case "tags":
 				galleryRepository.tags.join(f, "tags_join", "galleries.id")
 				f.addWhere("tags_join.gallery_id IS NULL")
@@ -378,12 +382,12 @@ func (qb *galleryFilterHandler) performerFavoriteCriterionHandler(performerfavor
 			if *performerfavorite {
 				// contains at least one favorite
 				f.addLeftJoin("performers", "", "performers.id = performers_galleries.performer_id")
-				f.addWhere("performers.favorite = 1")
+				f.addWhere("performers.favorite = " + getDBBoolean(true))
 			} else {
 				// contains zero favorites
 				f.addLeftJoin(`(SELECT performers_galleries.gallery_id as id FROM performers_galleries 
 JOIN performers ON performers.id = performers_galleries.performer_id
-GROUP BY performers_galleries.gallery_id HAVING SUM(performers.favorite) = 0)`, "nofaves", "galleries.id = nofaves.id")
+GROUP BY performers_galleries.gallery_id HAVING SUM(performers.favorite) = `+getDBBoolean(false)+")", "nofaves", "galleries.id = nofaves.id")
 				f.addWhere("performers_galleries.gallery_id IS NULL OR nofaves.id IS NOT NULL")
 			}
 		}
@@ -417,7 +421,7 @@ func (qb *galleryFilterHandler) averageResolutionCriterionHandler(resolution *mo
 			min := resolution.Value.GetMinResolution()
 			max := resolution.Value.GetMaxResolution()
 
-			const widthHeight = "avg(MIN(image_files.width, image_files.height))"
+			var widthHeight = "avg(" + getDBMinFunc() + "(image_files.width, image_files.height))"
 
 			switch resolution.Modifier {
 			case models.CriterionModifierEquals:

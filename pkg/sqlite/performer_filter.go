@@ -456,12 +456,12 @@ func (qb *performerFilterHandler) studiosCriterionHandler(studios *models.Hierar
 			}
 
 			const derivedPerformerStudioTable = "performer_studio"
-			valuesClause, err := getHierarchicalValues(ctx, studios.Value, studioTable, "", "parent_id", "child_id", studios.Depth)
+			valuesClause, err := getHierarchicalValues(ctx, studios.Value, studioTable, "", "parent_id", "child_id", studios.Depth, true)
 			if err != nil {
 				f.setError(err)
 				return
 			}
-			f.addWith("studio(root_id, item_id) AS (" + valuesClause + ")")
+			f.addWith("studio(root_id, item_id) AS " + valuesClause)
 
 			templStr := `SELECT performer_id FROM {primaryTable}
 	INNER JOIN {joinTable} ON {primaryTable}.id = {joinTable}.{primaryFK}
@@ -519,7 +519,7 @@ func (qb *performerFilterHandler) appearsWithCriterionHandler(performers *models
 			if performers.Modifier == models.CriterionModifierIncludesAll && len(performers.Value) > 1 {
 				templStr += `
 							GROUP BY {primaryTable}2.performer_id
-							HAVING(count(distinct {primaryTable}.performer_id) IS ` + strconv.Itoa(len(performers.Value)) + `)`
+							HAVING(count(distinct {primaryTable}.performer_id) = ` + strconv.Itoa(len(performers.Value)) + `)`
 			}
 
 			var unions []string

@@ -6,14 +6,14 @@ import (
 	"embed"
 	"errors"
 	"fmt"
-	"os"
 	"path/filepath"
+	"strconv"
 	"time"
 
 	"github.com/jmoiron/sqlx"
 
-	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/models"
 )
 
 const (
@@ -36,7 +36,7 @@ const (
 
 var appSchemaVersion uint = 68
 
-//go:embed migrations/*.sql
+//go:embed migrations/*.sql migrationsPostgres/*.sql
 var migrationsBox embed.FS
 
 var (
@@ -81,19 +81,71 @@ type storeRepository struct {
 	Group          *GroupStore
 }
 
+type DatabaseType string
+
+const (
+	PostgresBackend DatabaseType = "POSTGRESQL"
+	SqliteBackend   DatabaseType = "SQLITE"
+)
+
+type DBInterface interface {
+	Analyze(ctx context.Context) error
+	Anonymise(outPath string) error
+	AnonymousDatabasePath(backupDirectoryPath string) string
+	AppSchemaVersion() uint
+	Backup(backupPath string) (err error)
+	Begin(ctx context.Context, writable bool) (context.Context, error)
+	Close() error
+	Commit(ctx context.Context) error
+	DatabaseBackupPath(backupDirectoryPath string) string
+	DatabasePath() string
+	DatabaseType() DatabaseType
+	ExecSQL(ctx context.Context, query string, args []interface{}) (*int64, error)
+	getDatabaseSchemaVersion() (uint, error)
+	GetReadDB() *sqlx.DB
+	GetRepo() *storeRepository
+	GetWriteDB() *sqlx.DB
+	initialise() error
+	IsLocked(err error) bool
+	lock()
+	needsMigration() bool
+	Open() error
+	open(disableForeignKeys bool, writable bool) (conn *sqlx.DB, err error)
+	openReadDB() error
+	openWriteDB() error
+	Optimise(ctx context.Context) error
+	QuerySQL(ctx context.Context, query string, args []interface{}) ([]string, [][]interface{}, error)
+	Ready() error
+	ReInitialise() error
+	Remove() error
+	Repository() models.Repository
+	Reset() error
+	RestoreFromBackup(backupPath string) error
+	Rollback(ctx context.Context) error
+	RunAllMigrations() error
+	SetBlobStoreOptions(options BlobStoreOptions)
+	SetSchemaVersion(version uint)
+	txnComplete(ctx context.Context)
+	unlock()
+	Vacuum(ctx context.Context) error
+	Version() uint
+	WithDatabase(ctx context.Context) (context.Context, error)
+}
+
 type Database struct {
 	*storeRepository
+	DBInterface
 
-	readDB  *sqlx.DB
-	writeDB *sqlx.DB
-	dbPath  string
+	readDB   *sqlx.DB
+	writeDB  *sqlx.DB
+	dbConfig interface{}
 
 	schemaVersion uint
 
 	lockChan chan struct{}
 }
 
-func NewDatabase() *Database {
+func newDatabase() *storeRepository {
 	fileStore := NewFileStore()
 	folderStore := NewFolderStore()
 	galleryStore := NewGalleryStore(fileStore, folderStore)
@@ -119,16 +171,53 @@ func NewDatabase() *Database {
 		SavedFilter:    NewSavedFilterStore(),
 	}
 
-	ret := &Database{
-		storeRepository: r,
-		lockChan:        make(chan struct{}, 1),
+	return r
+}
+
+func getDBBoolean(val bool) string {
+	switch dbWrapper.dbType {
+	case SqliteBackend:
+		if val {
+			return "1"
+		} else {
+			return "0"
+		}
+	default:
+		return strconv.FormatBool(val)
+	}
+}
+
+func getDBValuesFix() (val string) {
+	if dbWrapper.dbType == PostgresBackend {
+		val = " AS v(column1, column2)"
 	}
 
-	return ret
+	return val
+}
+
+func getDBMinFunc() string {
+	switch dbWrapper.dbType {
+	case PostgresBackend:
+		return "LEAST"
+	default:
+		return "MIN"
+	}
+}
+
+func (db *Database) SetSchemaVersion(version uint) {
+	db.schemaVersion = version
+}
+
+func (db *Database) GetRepo() *storeRepository {
+	return db.storeRepository
 }
 
 func (db *Database) SetBlobStoreOptions(options BlobStoreOptions) {
 	*db.Blobs = *NewBlobStore(options)
+}
+
+func (db *Database) DatabasePath() string {
+	return ""
 }
 
 // Ready returns an error if the database is not ready to begin transactions.
@@ -144,11 +233,9 @@ func (db *Database) Ready() error {
 // performs a full migration to the latest schema version. Otherwise, any
 // necessary migrations must be run separately using RunMigrations.
 // Returns true if the database is new.
-func (db *Database) Open(dbPath string) error {
+func (db *Database) Open() error {
 	db.lock()
 	defer db.unlock()
-
-	db.dbPath = dbPath
 
 	databaseSchemaVersion, err := db.getDatabaseSchemaVersion()
 	if err != nil {
@@ -165,10 +252,10 @@ func (db *Database) Open(dbPath string) error {
 			return fmt.Errorf("error running initial schema migrations: %w", err)
 		}
 	} else {
-		if databaseSchemaVersion > appSchemaVersion {
+		if databaseSchemaVersion > db.AppSchemaVersion() {
 			return &MismatchedSchemaVersionError{
 				CurrentSchemaVersion:  databaseSchemaVersion,
-				RequiredSchemaVersion: appSchemaVersion,
+				RequiredSchemaVersion: db.AppSchemaVersion(),
 			}
 		}
 
@@ -176,7 +263,7 @@ func (db *Database) Open(dbPath string) error {
 		if db.needsMigration() {
 			return &MigrationNeededError{
 				CurrentSchemaVersion:  databaseSchemaVersion,
-				RequiredSchemaVersion: appSchemaVersion,
+				RequiredSchemaVersion: db.AppSchemaVersion(),
 			}
 		}
 	}
@@ -194,22 +281,6 @@ func (db *Database) Open(dbPath string) error {
 	}
 
 	return nil
-}
-
-// lock locks the database for writing. This method will block until the lock is acquired.
-func (db *Database) lock() {
-	db.lockChan <- struct{}{}
-}
-
-// unlock unlocks the database
-func (db *Database) unlock() {
-	// will block the caller if the lock is not held, so check first
-	select {
-	case <-db.lockChan:
-		return
-	default:
-		panic("database is not locked")
-	}
 }
 
 func (db *Database) Close() error {
@@ -234,126 +305,12 @@ func (db *Database) Close() error {
 	return nil
 }
 
-func (db *Database) open(disableForeignKeys bool, writable bool) (*sqlx.DB, error) {
-	// https://github.com/mattn/go-sqlite3
-	url := "file:" + db.dbPath + "?_journal=WAL&_sync=NORMAL&_busy_timeout=50"
-	if !disableForeignKeys {
-		url += "&_fk=true"
-	}
-
-	if writable {
-		url += "&_txlock=immediate"
-	} else {
-		url += "&mode=ro"
-	}
-
-	// #5155 - set the cache size if the environment variable is set
-	// default is -2000 which is 2MB
-	if cacheSize := os.Getenv(cacheSizeEnv); cacheSize != "" {
-		url += "&_cache_size=" + cacheSize
-	}
-
-	conn, err := sqlx.Open(sqlite3Driver, url)
-	if err != nil {
-		return nil, fmt.Errorf("db.Open(): %w", err)
-	}
-
-	return conn, nil
-}
-
 func (db *Database) initialise() error {
 	if err := db.openReadDB(); err != nil {
 		return fmt.Errorf("opening read database: %w", err)
 	}
 	if err := db.openWriteDB(); err != nil {
 		return fmt.Errorf("opening write database: %w", err)
-	}
-
-	return nil
-}
-
-func (db *Database) openReadDB() error {
-	const (
-		disableForeignKeys = false
-		writable           = false
-	)
-	var err error
-	db.readDB, err = db.open(disableForeignKeys, writable)
-	db.readDB.SetMaxOpenConns(maxReadConnections)
-	db.readDB.SetMaxIdleConns(maxReadConnections)
-	db.readDB.SetConnMaxIdleTime(dbConnTimeout)
-	return err
-}
-
-func (db *Database) openWriteDB() error {
-	const (
-		disableForeignKeys = false
-		writable           = true
-	)
-	var err error
-	db.writeDB, err = db.open(disableForeignKeys, writable)
-	db.writeDB.SetMaxOpenConns(maxWriteConnections)
-	db.writeDB.SetMaxIdleConns(maxWriteConnections)
-	db.writeDB.SetConnMaxIdleTime(dbConnTimeout)
-	return err
-}
-
-func (db *Database) Remove() error {
-	databasePath := db.dbPath
-	err := db.Close()
-
-	if err != nil {
-		return fmt.Errorf("error closing database: %w", err)
-	}
-
-	err = os.Remove(databasePath)
-	if err != nil {
-		return fmt.Errorf("error removing database: %w", err)
-	}
-
-	// remove the -shm, -wal files ( if they exist )
-	walFiles := []string{databasePath + "-shm", databasePath + "-wal"}
-	for _, wf := range walFiles {
-		if exists, _ := fsutil.FileExists(wf); exists {
-			err = os.Remove(wf)
-			if err != nil {
-				return fmt.Errorf("error removing database: %w", err)
-			}
-		}
-	}
-
-	return nil
-}
-
-func (db *Database) Reset() error {
-	databasePath := db.dbPath
-	if err := db.Remove(); err != nil {
-		return err
-	}
-
-	if err := db.Open(databasePath); err != nil {
-		return fmt.Errorf("[reset DB] unable to initialize: %w", err)
-	}
-
-	return nil
-}
-
-// Backup the database. If db is nil, then uses the existing database
-// connection.
-func (db *Database) Backup(backupPath string) (err error) {
-	thisDB := db.writeDB
-	if thisDB == nil {
-		thisDB, err = sqlx.Connect(sqlite3Driver, "file:"+db.dbPath+"?_fk=true")
-		if err != nil {
-			return fmt.Errorf("open database %s failed: %w", db.dbPath, err)
-		}
-		defer thisDB.Close()
-	}
-
-	logger.Infof("Backing up database into: %s", backupPath)
-	_, err = thisDB.Exec(`VACUUM INTO "` + backupPath + `"`)
-	if err != nil {
-		return fmt.Errorf("vacuum failed: %w", err)
 	}
 
 	return nil
@@ -369,41 +326,30 @@ func (db *Database) Anonymise(outPath string) error {
 	return anon.Anonymise(context.Background())
 }
 
-func (db *Database) RestoreFromBackup(backupPath string) error {
-	logger.Infof("Restoring backup database %s into %s", backupPath, db.dbPath)
-	return os.Rename(backupPath, db.dbPath)
+func (db *Database) Version() uint {
+	return db.schemaVersion
 }
 
-func (db *Database) AppSchemaVersion() uint {
-	return appSchemaVersion
-}
-
-func (db *Database) DatabasePath() string {
-	return db.dbPath
-}
-
-func (db *Database) DatabaseBackupPath(backupDirectoryPath string) string {
-	fn := fmt.Sprintf("%s.%d.%s", filepath.Base(db.dbPath), db.schemaVersion, time.Now().Format("20060102_150405"))
-
-	if backupDirectoryPath != "" {
-		return filepath.Join(backupDirectoryPath, fn)
+func (db *Database) Reset() error {
+	if err := db.Remove(); err != nil {
+		return err
 	}
 
-	return fn
+	if err := db.Open(); err != nil {
+		return fmt.Errorf("[reset DB] unable to initialize: %w", err)
+	}
+
+	return nil
 }
 
 func (db *Database) AnonymousDatabasePath(backupDirectoryPath string) string {
-	fn := fmt.Sprintf("%s.anonymous.%d.%s", filepath.Base(db.dbPath), db.schemaVersion, time.Now().Format("20060102_150405"))
+	fn := fmt.Sprintf("%s.anonymous.%d.%s", filepath.Base(db.DatabasePath()), db.schemaVersion, time.Now().Format("20060102_150405"))
 
 	if backupDirectoryPath != "" {
 		return filepath.Join(backupDirectoryPath, fn)
 	}
 
 	return fn
-}
-
-func (db *Database) Version() uint {
-	return db.schemaVersion
 }
 
 func (db *Database) Optimise(ctx context.Context) error {
@@ -434,12 +380,20 @@ func (db *Database) Analyze(ctx context.Context) error {
 	return err
 }
 
-func (db *Database) ExecSQL(ctx context.Context, query string, args []interface{}) (*int64, *int64, error) {
+func (db *Database) GetWriteDB() *sqlx.DB {
+	return db.writeDB
+}
+
+func (db *Database) GetReadDB() *sqlx.DB {
+	return db.readDB
+}
+
+func (db *Database) ExecSQL(ctx context.Context, query string, args []interface{}) (*int64, error) {
 	wrapper := dbWrapperType{}
 
 	result, err := wrapper.Exec(ctx, query, args...)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	var rowsAffected *int64
@@ -448,13 +402,7 @@ func (db *Database) ExecSQL(ctx context.Context, query string, args []interface{
 		rowsAffected = &ra
 	}
 
-	var lastInsertId *int64
-	li, err := result.LastInsertId()
-	if err == nil {
-		lastInsertId = &li
-	}
-
-	return rowsAffected, lastInsertId, nil
+	return rowsAffected, nil
 }
 
 func (db *Database) QuerySQL(ctx context.Context, query string, args []interface{}) ([]string, [][]interface{}, error) {

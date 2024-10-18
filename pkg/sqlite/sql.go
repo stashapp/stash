@@ -17,13 +17,36 @@ func selectAll(tableName string) string {
 }
 
 func distinctIDs(qb *queryBuilder, tableName string) {
-	qb.addColumn("DISTINCT " + getColumn(tableName, "id"))
+	if dbWrapper.dbType == PostgresBackend {
+		distinctOnIDs(qb, tableName)
+		return
+	}
+
+	columnId := getColumn(tableName, "id")
+	qb.addColumn("DISTINCT "+columnId, []string{columnId})
+	qb.from = tableName
+}
+
+func distinctOnIDs(qb *queryBuilder, tableName string) {
+	columnId := getColumn(tableName, "id")
+	qb.addColumn("DISTINCT ON ("+columnId+") "+columnId, nil)
+	qb.addSort(columnId)
 	qb.from = tableName
 }
 
 func selectIDs(qb *queryBuilder, tableName string) {
-	qb.addColumn(getColumn(tableName, "id"))
+	columnId := getColumn(tableName, "id")
+	qb.addColumn(columnId, []string{columnId})
 	qb.from = tableName
+}
+
+func DBGroupConcat(columnName string) string {
+	switch dbWrapper.dbType {
+	case PostgresBackend:
+		return "STRING_AGG(" + columnName + "::TEXT, ',')"
+	default:
+		return "GROUP_CONCAT(" + columnName + ")"
+	}
 }
 
 func getColumn(tableName string, columnName string) string {
@@ -78,17 +101,20 @@ func getSortDirection(direction string) string {
 		return direction
 	}
 }
-func getSort(sort string, direction string, tableName string) string {
+func getSort(sort string, direction string, tableName string) (string, []string) {
 	direction = getSortDirection(direction)
+	nonaggregates := []string{}
 
 	switch {
 	case strings.HasSuffix(sort, "_count"):
 		var relationTableName = strings.TrimSuffix(sort, "_count") // TODO: pluralize?
 		colName := getColumn(relationTableName, "id")
-		return " ORDER BY COUNT(distinct " + colName + ") " + direction
+		nonaggregates = append(nonaggregates, colName)
+		return "COUNT(distinct " + colName + ") " + direction, nonaggregates
 	case strings.Compare(sort, "filesize") == 0:
 		colName := getColumn(tableName, "size")
-		return " ORDER BY " + colName + " " + direction
+		nonaggregates = append(nonaggregates, colName)
+		return colName + " " + direction, nonaggregates
 	case strings.HasPrefix(sort, randomSeedPrefix):
 		// seed as a parameter from the UI
 		seedStr := sort[len(randomSeedPrefix):]
@@ -97,22 +123,24 @@ func getSort(sort string, direction string, tableName string) string {
 			// fallback to a random seed
 			seed = rand.Uint64()
 		}
-		return getRandomSort(tableName, direction, seed)
+		return getRandomSort(tableName, direction, seed), nonaggregates
 	case strings.Compare(sort, "random") == 0:
-		return getRandomSort(tableName, direction, rand.Uint64())
+		return getRandomSort(tableName, direction, rand.Uint64()), nonaggregates
 	default:
 		colName := getColumn(tableName, sort)
 		if strings.Contains(sort, ".") {
 			colName = sort
 		}
+		nonaggregates = append(nonaggregates, colName)
+
 		if strings.Compare(sort, "name") == 0 {
-			return " ORDER BY " + colName + " COLLATE NATURAL_CI " + direction
+			return colName + " COLLATE NATURAL_CI " + direction, nonaggregates
 		}
 		if strings.Compare(sort, "title") == 0 {
-			return " ORDER BY " + colName + " COLLATE NATURAL_CI " + direction
+			return colName + " COLLATE NATURAL_CI " + direction, nonaggregates
 		}
 
-		return " ORDER BY " + colName + " " + direction
+		return colName + " " + direction, nonaggregates
 	}
 }
 
@@ -130,11 +158,11 @@ func getRandomSort(tableName string, direction string, seed uint64) string {
 	// ORDER BY ((n+seed)*(n+seed)*p1 + (n+seed)*p2) % p3
 	// since sqlite converts overflowing numbers to reals, a custom db function that uses uints with overflow should be faster,
 	// however in practice the overhead of calling a custom function vastly outweighs the benefits
-	return fmt.Sprintf(" ORDER BY mod((%[1]s + %[2]d) * (%[1]s + %[2]d) * 52959209 + (%[1]s + %[2]d) * 1047483763, 2147483647) %[3]s", colName, seed, direction)
+	return fmt.Sprintf("mod((%[1]s + %[2]d) * (%[1]s + %[2]d) * 52959209 + (%[1]s + %[2]d) * 1047483763, 2147483647) %[3]s", colName, seed, direction)
 }
 
 func getCountSort(primaryTable, joinTable, primaryFK, direction string) string {
-	return fmt.Sprintf(" ORDER BY (SELECT COUNT(*) FROM %s AS sort WHERE sort.%s = %s.id) %s", joinTable, primaryFK, primaryTable, getSortDirection(direction))
+	return fmt.Sprintf("(SELECT COUNT(*) FROM %s AS sort WHERE sort.%s = %s.id) %s", joinTable, primaryFK, primaryTable, getSortDirection(direction))
 }
 
 func getStringSearchClause(columns []string, q string, not bool) sqlClause {
@@ -333,10 +361,10 @@ func getMultiCriterionClause(primaryTable, foreignTable, joinTable, primaryFK, f
 		// includes all of the provided ids
 		if joinTable != "" {
 			whereClause = joinTable + "." + foreignFK + " IN " + getInBinding(len(criterion.Value))
-			havingClause = "count(distinct " + joinTable + "." + foreignFK + ") IS " + strconv.Itoa(len(criterion.Value))
+			havingClause = "count(distinct " + joinTable + "." + foreignFK + ") = " + strconv.Itoa(len(criterion.Value))
 		} else {
 			whereClause = foreignTable + ".id IN " + getInBinding(len(criterion.Value))
-			havingClause = "count(distinct " + foreignTable + ".id) IS " + strconv.Itoa(len(criterion.Value))
+			havingClause = "count(distinct " + foreignTable + ".id) = " + strconv.Itoa(len(criterion.Value))
 		}
 	case models.CriterionModifierExcludes:
 		// excludes all of the provided ids

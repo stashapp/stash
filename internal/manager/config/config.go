@@ -691,7 +691,7 @@ func (i *Config) GetMetadataPath() string {
 	return i.getString(Metadata)
 }
 
-func (i *Config) GetDatabasePath() string {
+func (i *Config) GetDatabaseUrl() string {
 	return i.getString(Database)
 }
 
@@ -703,7 +703,7 @@ func (i *Config) GetBackupDirectoryPathOrDefault() string {
 	ret := i.GetBackupDirectoryPath()
 	if ret == "" {
 		// #4915 - default to the same directory as the database
-		return filepath.Dir(i.GetDatabasePath())
+		return filepath.Dir(i.GetDatabaseUrl())
 	}
 
 	return ret

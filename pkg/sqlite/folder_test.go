@@ -65,7 +65,7 @@ func Test_FolderStore_Create(t *testing.T) {
 		},
 	}
 
-	qb := db.Folder
+	qb := db.GetRepo().Folder
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -165,7 +165,7 @@ func Test_FolderStore_Update(t *testing.T) {
 		},
 	}
 
-	qb := db.Folder
+	qb := db.GetRepo().Folder
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
@@ -224,7 +224,7 @@ func Test_FolderStore_FindByPath(t *testing.T) {
 		},
 	}
 
-	qb := db.Folder
+	qb := db.GetRepo().Folder
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {

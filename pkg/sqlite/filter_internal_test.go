@@ -569,7 +569,7 @@ func TestStringCriterionHandlerMatchesRegex(t *testing.T) {
 	}, column))
 
 	assert.Len(f.whereClauses, 1)
-	assert.Equal(fmt.Sprintf("(%s IS NOT NULL AND %[1]s regexp ?)", column), f.whereClauses[0].sql)
+	assert.Equal(fmt.Sprintf("(%s IS NOT NULL AND regexp(?, %[1]s))", column), f.whereClauses[0].sql)
 	assert.Len(f.whereClauses[0].args, 1)
 	assert.Equal(validValue, f.whereClauses[0].args[0])
 
@@ -597,7 +597,7 @@ func TestStringCriterionHandlerNotMatchesRegex(t *testing.T) {
 	}, column))
 
 	assert.Len(f.whereClauses, 1)
-	assert.Equal(fmt.Sprintf("(%s IS NULL OR %[1]s NOT regexp ?)", column), f.whereClauses[0].sql)
+	assert.Equal(fmt.Sprintf("(%s IS NULL OR NOT regexp(?, %[1]s))", column), f.whereClauses[0].sql)
 	assert.Len(f.whereClauses[0].args, 1)
 	assert.Equal(validValue, f.whereClauses[0].args[0])
 

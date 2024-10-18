@@ -575,7 +575,7 @@ func (qb *PerformerStore) QueryForAutoTag(ctx context.Context, words []string) (
 
 	sq = sq.Where(
 		goqu.Or(whereClauses...),
-		table.Col("ignore_auto_tag").Eq(0),
+		table.Col("ignore_auto_tag").IsFalse(),
 	)
 
 	ret, err := qb.findBySubquery(ctx, sq)
@@ -612,12 +612,13 @@ func (qb *PerformerStore) makeQuery(ctx context.Context, performerFilter *models
 		return nil, err
 	}
 
-	var err error
-	query.sortAndPagination, err = qb.getPerformerSort(findFilter)
+	add, agg, err := qb.getPerformerSort(findFilter)
 	if err != nil {
 		return nil, err
 	}
-	query.sortAndPagination += getPagination(findFilter)
+	query.addSort(add)
+	query.addPagination(getPagination(findFilter))
+	query.addGroupBy(agg, true)
 
 	return &query, nil
 }
@@ -652,12 +653,12 @@ func (qb *PerformerStore) QueryCount(ctx context.Context, performerFilter *model
 
 func (qb *PerformerStore) sortByOCounter(direction string) string {
 	// need to sum the o_counter from scenes and images
-	return " ORDER BY (" + selectPerformerOCountSQL + ") " + direction
+	return " (" + selectPerformerOCountSQL + ") " + direction
 }
 
 func (qb *PerformerStore) sortByPlayCount(direction string) string {
 	// need to sum the o_counter from scenes and images
-	return " ORDER BY (" + selectPerformerPlayCountSQL + ") " + direction
+	return " (" + selectPerformerPlayCountSQL + ") " + direction
 }
 
 // used for sorting on performer last o_date
@@ -681,7 +682,7 @@ var selectPerformerLastOAtSQL = utils.StrFormat(
 
 func (qb *PerformerStore) sortByLastOAt(direction string) string {
 	// need to get the o_dates from scenes
-	return " ORDER BY (" + selectPerformerLastOAtSQL + ") " + direction
+	return " (" + selectPerformerLastOAtSQL + ") " + direction
 }
 
 // used for sorting on performer last view_date
@@ -705,7 +706,7 @@ var selectPerformerLastPlayedAtSQL = utils.StrFormat(
 
 func (qb *PerformerStore) sortByLastPlayedAt(direction string) string {
 	// need to get the view_dates from scenes
-	return " ORDER BY (" + selectPerformerLastPlayedAtSQL + ") " + direction
+	return " (" + selectPerformerLastPlayedAtSQL + ") " + direction
 }
 
 var performerSortOptions = sortOptions{
@@ -731,7 +732,7 @@ var performerSortOptions = sortOptions{
 	"weight",
 }
 
-func (qb *PerformerStore) getPerformerSort(findFilter *models.FindFilterType) (string, error) {
+func (qb *PerformerStore) getPerformerSort(findFilter *models.FindFilterType) (string, []string, error) {
 	var sort string
 	var direction string
 	if findFilter == nil {
@@ -744,9 +745,10 @@ func (qb *PerformerStore) getPerformerSort(findFilter *models.FindFilterType) (s
 
 	// CVE-2024-32231 - ensure sort is in the list of allowed sorts
 	if err := performerSortOptions.validateSort(sort); err != nil {
-		return "", err
+		return "", nil, err
 	}
 
+	var agg []string
 	sortQuery := ""
 	switch sort {
 	case "tag_count":
@@ -766,12 +768,15 @@ func (qb *PerformerStore) getPerformerSort(findFilter *models.FindFilterType) (s
 	case "last_o_at":
 		sortQuery += qb.sortByLastOAt(direction)
 	default:
-		sortQuery += getSort(sort, direction, "performers")
+		var add string
+		add, agg = getSort(sort, direction, "performers")
+		sortQuery += add
 	}
 
 	// Whatever the sorting, always use name/id as a final sort
-	sortQuery += ", COALESCE(performers.name, performers.id) COLLATE NATURAL_CI ASC"
-	return sortQuery, nil
+	sortQuery += ", COALESCE(performers.name, cast(performers.id as text)) COLLATE NATURAL_CI ASC"
+	agg = append(agg, "performers.name", "performers.id")
+	return sortQuery, agg, nil
 }
 
 func (qb *PerformerStore) GetTagIDs(ctx context.Context, id int) ([]int, error) {

@@ -12,7 +12,7 @@ import (
 
 func TestChapterFindByGalleryID(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		mqb := db.GalleryChapter
+		mqb := db.GetRepo().GalleryChapter
 
 		galleryID := galleryIDs[galleryIdxWithChapters]
 		chapters, err := mqb.FindByGalleryID(ctx, galleryID)

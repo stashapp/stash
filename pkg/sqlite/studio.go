@@ -501,7 +501,7 @@ func (qb *StudioStore) QueryForAutoTag(ctx context.Context, words []string) ([]*
 
 	sq = sq.Where(
 		goqu.Or(whereClauses...),
-		table.Col("ignore_auto_tag").Eq(0),
+		table.Col("ignore_auto_tag").IsFalse(),
 	)
 
 	ret, err := qb.findBySubquery(ctx, sq)
@@ -538,12 +538,13 @@ func (qb *StudioStore) makeQuery(ctx context.Context, studioFilter *models.Studi
 		return nil, err
 	}
 
-	var err error
-	query.sortAndPagination, err = qb.getStudioSort(findFilter)
+	add, agg, err := qb.getStudioSort(findFilter)
 	if err != nil {
 		return nil, err
 	}
-	query.sortAndPagination += getPagination(findFilter)
+	query.addSort(add)
+	query.addPagination(getPagination(findFilter))
+	query.addGroupBy(agg, true)
 
 	return &query, nil
 }
@@ -589,7 +590,7 @@ var studioSortOptions = sortOptions{
 	"updated_at",
 }
 
-func (qb *StudioStore) getStudioSort(findFilter *models.FindFilterType) (string, error) {
+func (qb *StudioStore) getStudioSort(findFilter *models.FindFilterType) (string, []string, error) {
 	var sort string
 	var direction string
 	if findFilter == nil {
@@ -602,9 +603,10 @@ func (qb *StudioStore) getStudioSort(findFilter *models.FindFilterType) (string,
 
 	// CVE-2024-32231 - ensure sort is in the list of allowed sorts
 	if err := studioSortOptions.validateSort(sort); err != nil {
-		return "", err
+		return "", nil, err
 	}
 
+	var agg []string
 	sortQuery := ""
 	switch sort {
 	case "tag_count":
@@ -618,12 +620,15 @@ func (qb *StudioStore) getStudioSort(findFilter *models.FindFilterType) (string,
 	case "child_count":
 		sortQuery += getCountSort(studioTable, studioTable, studioParentIDColumn, direction)
 	default:
-		sortQuery += getSort(sort, direction, "studios")
+		var add string
+		add, agg = getSort(sort, direction, "studios")
+		sortQuery += add
 	}
 
 	// Whatever the sorting, always use name/id as a final sort
-	sortQuery += ", COALESCE(studios.name, studios.id) COLLATE NATURAL_CI ASC"
-	return sortQuery, nil
+	sortQuery += ", COALESCE(studios.name, cast(studios.id as text)) COLLATE NATURAL_CI ASC"
+	agg = append(agg, "studios.name", "studios.id")
+	return sortQuery, agg, nil
 }
 
 func (qb *StudioStore) GetImage(ctx context.Context, studioID int) ([]byte, error) {

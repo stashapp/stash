@@ -20,7 +20,7 @@ type migrateJobConfig interface {
 type MigrateJob struct {
 	BackupPath string
 	Config     migrateJobConfig
-	Database   *sqlite.Database
+	Database   sqlite.DBInterface
 }
 
 type databaseSchemaInfo struct {

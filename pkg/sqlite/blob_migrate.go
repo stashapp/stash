@@ -63,7 +63,7 @@ func (qb *BlobStore) migrateBlobDatabase(ctx context.Context, checksum string, d
 		return fmt.Errorf("reading from database: %w", err)
 	}
 
-	if len(existing) == 0 {
+	if len(existing.V) == 0 {
 		// find the blob in the filesystem
 		blob, err := qb.fsStore.Read(ctx, checksum)
 		if err != nil {
@@ -94,14 +94,14 @@ func (qb *BlobStore) migrateBlobFilesystem(ctx context.Context, checksum string,
 		return fmt.Errorf("reading from database: %w", err)
 	}
 
-	if len(blob) == 0 {
+	if len(blob.V) == 0 {
 		// it's possible that the blob is already present in the filesystem
 		// just ignore
 		return nil
 	}
 
 	// write the blob to the filesystem
-	if err := qb.fsStore.Write(ctx, checksum, blob); err != nil {
+	if err := qb.fsStore.Write(ctx, checksum, blob.V); err != nil {
 		return fmt.Errorf("writing to filesystem: %w", err)
 	}
 

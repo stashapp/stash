@@ -97,6 +97,7 @@ func (r *repository) runIdsQuery(ctx context.Context, query string, args []inter
 	for i, v := range result {
 		vsm[i] = v.Int
 	}
+
 	return vsm, nil
 }
 
@@ -169,20 +170,25 @@ func (r *repository) querySimple(ctx context.Context, query string, args []inter
 	return nil
 }
 
-func (r *repository) buildQueryBody(body string, whereClauses []string, havingClauses []string) string {
+func (r *repository) buildQueryBody(body string, whereClauses []string, havingClauses []string, groupbyClauses []string) string {
 	if len(whereClauses) > 0 {
 		body = body + " WHERE " + strings.Join(whereClauses, " AND ") // TODO handle AND or OR
 	}
 	if len(havingClauses) > 0 {
-		body = body + " GROUP BY " + r.tableName + ".id "
+		groupbyClauses = append(groupbyClauses, r.tableName+".id")
+	}
+	if len(groupbyClauses) > 0 {
+		body = body + " GROUP BY " + strings.Join(groupbyClauses, ", ") + " "
+	}
+	if len(havingClauses) > 0 {
 		body = body + " HAVING " + strings.Join(havingClauses, " AND ") // TODO handle AND or OR
 	}
 
 	return body
 }
 
-func (r *repository) executeFindQuery(ctx context.Context, body string, args []interface{}, sortAndPagination string, whereClauses []string, havingClauses []string, withClauses []string, recursiveWith bool) ([]int, int, error) {
-	body = r.buildQueryBody(body, whereClauses, havingClauses)
+func (r *repository) executeFindQuery(ctx context.Context, body string, args []interface{}, sort []string, pagination string, whereClauses []string, havingClauses []string, withClauses []string, recursiveWith bool) ([]int, int, error) {
+	body = r.buildQueryBody(body, whereClauses, havingClauses, nil)
 
 	withClause := ""
 	if len(withClauses) > 0 {
@@ -194,7 +200,13 @@ func (r *repository) executeFindQuery(ctx context.Context, body string, args []i
 	}
 
 	countQuery := withClause + r.buildCountQuery(body)
-	idsQuery := withClause + body + sortAndPagination
+	idsQuery := withClause + body
+	if len(sort) > 0 {
+		idsQuery += " ORDER BY " + strings.Join(sort, ", ") + " "
+	}
+	if len(pagination) > 0 {
+		idsQuery += pagination
+	}
 
 	// Perform query and fetch result
 	var countResult int
@@ -456,10 +468,10 @@ func idToIndexMap(ids []int) map[int]int {
 func (r *filesRepository) getMany(ctx context.Context, ids []int, primaryOnly bool) ([][]models.FileID, error) {
 	var primaryClause string
 	if primaryOnly {
-		primaryClause = " AND `primary` = 1"
+		primaryClause = ` AND "primary" = ` + getDBBoolean(true)
 	}
 
-	query := fmt.Sprintf("SELECT %s as id, file_id, `primary` from %s WHERE %[1]s IN %[3]s%s", r.idColumn, r.tableName, getInBinding(len(ids)), primaryClause)
+	query := fmt.Sprintf(`SELECT %s as id, file_id, "primary" from %s WHERE %[1]s IN %[3]s%s`, r.idColumn, r.tableName, getInBinding(len(ids)), primaryClause)
 
 	idi := make([]interface{}, len(ids))
 	for i, id := range ids {
@@ -500,7 +512,7 @@ func (r *filesRepository) getMany(ctx context.Context, ids []int, primaryOnly bo
 }
 
 func (r *filesRepository) get(ctx context.Context, id int) ([]models.FileID, error) {
-	query := fmt.Sprintf("SELECT file_id, `primary` from %s WHERE %s = ?", r.tableName, r.idColumn)
+	query := fmt.Sprintf(`SELECT file_id, "primary" from %s WHERE %s = ?`, r.tableName, r.idColumn)
 
 	type relatedFile struct {
 		FileID  models.FileID `db:"file_id"`
