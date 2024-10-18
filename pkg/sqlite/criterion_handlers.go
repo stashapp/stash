@@ -283,7 +283,7 @@ func resolutionCriterionHandler(resolution *models.ResolutionCriterionInput, hei
 			min := resolution.Value.GetMinResolution()
 			max := resolution.Value.GetMaxResolution()
 
-			widthHeight := fmt.Sprintf("MIN(%s, %s)", widthColumn, heightColumn)
+			widthHeight := fmt.Sprintf("%s(%s, %s)", getDBMinFunc(), widthColumn, heightColumn)
 
 			switch resolution.Modifier {
 			case models.CriterionModifierEquals:
@@ -596,7 +596,7 @@ type hierarchicalMultiCriterionHandlerBuilder struct {
 	relationsTable string
 }
 
-func getHierarchicalValues(ctx context.Context, values []string, table, relationsTable, parentFK string, childFK string, depth *int) (string, error) {
+func getHierarchicalValues(ctx context.Context, values []string, table, relationsTable, parentFK string, childFK string, depth *int, parenthesis bool) (string, error) {
 	var args []interface{}
 
 	if parentFK == "" {
@@ -627,7 +627,11 @@ func getHierarchicalValues(ctx context.Context, values []string, table, relation
 		}
 
 		if valid {
-			return "VALUES" + strings.Join(valuesClauses, ","), nil
+			values := "VALUES" + strings.Join(valuesClauses, ",")
+			if parenthesis {
+				values = "(" + values + ")" + getDBValuesFix()
+			}
+			return values, nil
 		}
 	}
 
@@ -690,6 +694,10 @@ WHERE id in {inBinding}
 		valuesClause.String = "VALUES" + strings.Join(values, ",")
 	}
 
+	if parenthesis {
+		valuesClause.String = "(" + valuesClause.String + ")" + getDBValuesFix()
+	}
+
 	return valuesClause.String, nil
 }
 
@@ -742,13 +750,8 @@ func (m *hierarchicalMultiCriterionHandlerBuilder) handler(c *models.Hierarchica
 				criterion.Value = nil
 			}
 
-			var pgsql_fix string
-			if dbWrapper.dbType == PostgresBackend {
-				pgsql_fix = " AS v(column1, column2)"
-			}
-
 			if len(criterion.Value) > 0 {
-				valuesClause, err := getHierarchicalValues(ctx, criterion.Value, m.foreignTable, m.relationsTable, m.parentFK, m.childFK, criterion.Depth)
+				valuesClause, err := getHierarchicalValues(ctx, criterion.Value, m.foreignTable, m.relationsTable, m.parentFK, m.childFK, criterion.Depth, true)
 				if err != nil {
 					f.setError(err)
 					return
@@ -756,21 +759,21 @@ func (m *hierarchicalMultiCriterionHandlerBuilder) handler(c *models.Hierarchica
 
 				switch criterion.Modifier {
 				case models.CriterionModifierIncludes:
-					f.addWhere(fmt.Sprintf("%s.%s IN (SELECT column2 FROM (%s)%s)", m.primaryTable, m.foreignFK, valuesClause, pgsql_fix))
+					f.addWhere(fmt.Sprintf("%s.%s IN (SELECT column2 FROM %s)", m.primaryTable, m.foreignFK, valuesClause))
 				case models.CriterionModifierIncludesAll:
-					f.addWhere(fmt.Sprintf("%s.%s IN (SELECT column2 FROM (%s)%s)", m.primaryTable, m.foreignFK, valuesClause, pgsql_fix))
+					f.addWhere(fmt.Sprintf("%s.%s IN (SELECT column2 FROM %s)", m.primaryTable, m.foreignFK, valuesClause))
 					f.addHaving(fmt.Sprintf("count(distinct %s.%s) = %d", m.primaryTable, m.foreignFK, len(criterion.Value)))
 				}
 			}
 
 			if len(criterion.Excludes) > 0 {
-				valuesClause, err := getHierarchicalValues(ctx, criterion.Excludes, m.foreignTable, m.relationsTable, m.parentFK, m.childFK, criterion.Depth)
+				valuesClause, err := getHierarchicalValues(ctx, criterion.Excludes, m.foreignTable, m.relationsTable, m.parentFK, m.childFK, criterion.Depth, true)
 				if err != nil {
 					f.setError(err)
 					return
 				}
 
-				f.addWhere(fmt.Sprintf("%s.%s NOT IN (SELECT column2 FROM (%s)%s) OR %[1]s.%[2]s IS NULL", m.primaryTable, m.foreignFK, valuesClause, pgsql_fix))
+				f.addWhere(fmt.Sprintf("%s.%s NOT IN (SELECT column2 FROM %s) OR %[1]s.%[2]s IS NULL", m.primaryTable, m.foreignFK, valuesClause))
 			}
 		}
 	}
@@ -859,7 +862,7 @@ func (m *joinedHierarchicalMultiCriterionHandlerBuilder) handler(c *models.Hiera
 			}
 
 			if len(criterion.Value) > 0 {
-				valuesClause, err := getHierarchicalValues(ctx, criterion.Value, m.foreignTable, m.relationsTable, m.parentFK, m.childFK, criterion.Depth)
+				valuesClause, err := getHierarchicalValues(ctx, criterion.Value, m.foreignTable, m.relationsTable, m.parentFK, m.childFK, criterion.Depth, false)
 				if err != nil {
 					f.setError(err)
 					return
@@ -881,7 +884,7 @@ func (m *joinedHierarchicalMultiCriterionHandlerBuilder) handler(c *models.Hiera
 			}
 
 			if len(criterion.Excludes) > 0 {
-				valuesClause, err := getHierarchicalValues(ctx, criterion.Excludes, m.foreignTable, m.relationsTable, m.parentFK, m.childFK, criterion.Depth)
+				valuesClause, err := getHierarchicalValues(ctx, criterion.Excludes, m.foreignTable, m.relationsTable, m.parentFK, m.childFK, criterion.Depth, false)
 				if err != nil {
 					f.setError(err)
 					return
@@ -959,7 +962,7 @@ func (h *joinedPerformerTagsHandler) handle(ctx context.Context, f *filterBuilde
 		}
 
 		if len(criterion.Value) > 0 {
-			valuesClause, err := getHierarchicalValues(ctx, criterion.Value, tagTable, "tags_relations", "", "", criterion.Depth)
+			valuesClause, err := getHierarchicalValues(ctx, criterion.Value, tagTable, "tags_relations", "", "", criterion.Depth, false)
 			if err != nil {
 				f.setError(err)
 				return
@@ -977,13 +980,13 @@ INNER JOIN (`+valuesClause+`) t ON t.column2 = pt.tag_id
 		}
 
 		if len(criterion.Excludes) > 0 {
-			valuesClause, err := getHierarchicalValues(ctx, criterion.Excludes, tagTable, "tags_relations", "", "", criterion.Depth)
+			valuesClause, err := getHierarchicalValues(ctx, criterion.Excludes, tagTable, "tags_relations", "", "", criterion.Depth, true)
 			if err != nil {
 				f.setError(err)
 				return
 			}
 
-			clause := utils.StrFormat("{primaryTable}.id NOT IN (SELECT {joinTable}.{joinPrimaryKey} FROM {joinTable} INNER JOIN performers_tags ON {joinTable}.performer_id = performers_tags.performer_id WHERE performers_tags.tag_id IN (SELECT column2 FROM (%s)))", strFormatMap)
+			clause := utils.StrFormat("{primaryTable}.id NOT IN (SELECT {joinTable}.{joinPrimaryKey} FROM {joinTable} INNER JOIN performers_tags ON {joinTable}.performer_id = performers_tags.performer_id WHERE performers_tags.tag_id IN (SELECT column2 FROM %s))", strFormatMap)
 			f.addWhere(fmt.Sprintf(clause, valuesClause))
 		}
 	}

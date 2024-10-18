@@ -456,12 +456,12 @@ func (qb *performerFilterHandler) studiosCriterionHandler(studios *models.Hierar
 			}
 
 			const derivedPerformerStudioTable = "performer_studio"
-			valuesClause, err := getHierarchicalValues(ctx, studios.Value, studioTable, "", "parent_id", "child_id", studios.Depth)
+			valuesClause, err := getHierarchicalValues(ctx, studios.Value, studioTable, "", "parent_id", "child_id", studios.Depth, true)
 			if err != nil {
 				f.setError(err)
 				return
 			}
-			f.addWith("studio(root_id, item_id) AS (" + valuesClause + ")")
+			f.addWith("studio(root_id, item_id) AS " + valuesClause)
 
 			templStr := `SELECT performer_id FROM {primaryTable}
 	INNER JOIN {joinTable} ON {primaryTable}.id = {joinTable}.{primaryFK}

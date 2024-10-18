@@ -421,7 +421,7 @@ func (qb *galleryFilterHandler) averageResolutionCriterionHandler(resolution *mo
 			min := resolution.Value.GetMinResolution()
 			max := resolution.Value.GetMaxResolution()
 
-			const widthHeight = "avg(MIN(image_files.width, image_files.height))"
+			var widthHeight = "avg(" + getDBMinFunc() + "(image_files.width, image_files.height))"
 
 			switch resolution.Modifier {
 			case models.CriterionModifierEquals:

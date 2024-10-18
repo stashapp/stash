@@ -95,7 +95,7 @@ func (qb *sceneMarkerFilterHandler) tagsCriterionHandler(criterion *models.Hiera
 			}
 
 			if len(tags.Value) > 0 {
-				valuesClause, err := getHierarchicalValues(ctx, tags.Value, tagTable, "tags_relations", "parent_id", "child_id", tags.Depth)
+				valuesClause, err := getHierarchicalValues(ctx, tags.Value, tagTable, "tags_relations", "parent_id", "child_id", tags.Depth, true)
 				if err != nil {
 					f.setError(err)
 					return
@@ -103,10 +103,10 @@ func (qb *sceneMarkerFilterHandler) tagsCriterionHandler(criterion *models.Hiera
 
 				f.addWith(`marker_tags AS (
 	SELECT mt.scene_marker_id, t.column1 AS root_tag_id FROM scene_markers_tags mt
-	INNER JOIN (` + valuesClause + `) t ON t.column2 = mt.tag_id
+	INNER JOIN ` + valuesClause + ` t ON t.column2 = mt.tag_id
 	UNION
 	SELECT m.id, t.column1 FROM scene_markers m
-	INNER JOIN (` + valuesClause + `) t ON t.column2 = m.primary_tag_id
+	INNER JOIN ` + valuesClause + ` t ON t.column2 = m.primary_tag_id
 	)`)
 
 				f.addLeftJoin("marker_tags", "", "marker_tags.scene_marker_id = scene_markers.id")
@@ -127,16 +127,16 @@ func (qb *sceneMarkerFilterHandler) tagsCriterionHandler(criterion *models.Hiera
 			}
 
 			if len(criterion.Excludes) > 0 {
-				valuesClause, err := getHierarchicalValues(ctx, tags.Excludes, tagTable, "tags_relations", "parent_id", "child_id", tags.Depth)
+				valuesClause, err := getHierarchicalValues(ctx, tags.Excludes, tagTable, "tags_relations", "parent_id", "child_id", tags.Depth, true)
 				if err != nil {
 					f.setError(err)
 					return
 				}
 
-				clause := "scene_markers.id NOT IN (SELECT scene_markers_tags.scene_marker_id FROM scene_markers_tags WHERE scene_markers_tags.tag_id IN (SELECT column2 FROM (%s)))"
+				clause := "scene_markers.id NOT IN (SELECT scene_markers_tags.scene_marker_id FROM scene_markers_tags WHERE scene_markers_tags.tag_id IN (SELECT column2 FROM %s))"
 				f.addWhere(fmt.Sprintf(clause, valuesClause))
 
-				f.addWhere(fmt.Sprintf("scene_markers.primary_tag_id NOT IN (SELECT column2 FROM (%s))", valuesClause))
+				f.addWhere(fmt.Sprintf("scene_markers.primary_tag_id NOT IN (SELECT column2 FROM %s)", valuesClause))
 			}
 		}
 	}

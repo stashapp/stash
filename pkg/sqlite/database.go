@@ -187,6 +187,23 @@ func getDBBoolean(val bool) string {
 	}
 }
 
+func getDBValuesFix() (val string) {
+	if dbWrapper.dbType == PostgresBackend {
+		val = " AS v(column1, column2)"
+	}
+
+	return val
+}
+
+func getDBMinFunc() string {
+	switch dbWrapper.dbType {
+	case PostgresBackend:
+		return "LEAST"
+	default:
+		return "MIN"
+	}
+}
+
 func (db *Database) SetSchemaVersion(version uint) {
 	db.schemaVersion = version
 }

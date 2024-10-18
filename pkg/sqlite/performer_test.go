@@ -70,8 +70,8 @@ func Test_PerformerStore_Create(t *testing.T) {
 		favorite       = true
 		endpoint1      = "endpoint1"
 		endpoint2      = "endpoint2"
-		stashID1       = "stashid1"
-		stashID2       = "stashid2"
+		stashID1       = getUUID("stashid1")
+		stashID2       = getUUID("stashid2")
 		createdAt      = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 		updatedAt      = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 
@@ -217,8 +217,8 @@ func Test_PerformerStore_Update(t *testing.T) {
 		favorite       = true
 		endpoint1      = "endpoint1"
 		endpoint2      = "endpoint2"
-		stashID1       = "stashid1"
-		stashID2       = "stashid2"
+		stashID1       = getUUID("stashid1")
+		stashID2       = getUUID("stashid2")
 		createdAt      = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 		updatedAt      = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 
@@ -398,8 +398,8 @@ func Test_PerformerStore_UpdatePartial(t *testing.T) {
 		favorite       = true
 		endpoint1      = "endpoint1"
 		endpoint2      = "endpoint2"
-		stashID1       = "stashid1"
-		stashID2       = "stashid2"
+		stashID1       = getUUID("stashid1")
+		stashID2       = getUUID("stashid2")
 		createdAt      = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 		updatedAt      = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 

@@ -91,8 +91,8 @@ func Test_sceneQueryBuilder_Create(t *testing.T) {
 		sceneIndex2  = 234
 		endpoint1    = "endpoint1"
 		endpoint2    = "endpoint2"
-		stashID1     = "stashid1"
-		stashID2     = "stashid2"
+		stashID1     = getUUID("stashid1")
+		stashID2     = getUUID("stashid2")
 
 		date, _ = models.ParseDate("2003-02-01")
 
@@ -321,8 +321,8 @@ func Test_sceneQueryBuilder_Update(t *testing.T) {
 		sceneIndex2  = 234
 		endpoint1    = "endpoint1"
 		endpoint2    = "endpoint2"
-		stashID1     = "stashid1"
-		stashID2     = "stashid2"
+		stashID1     = getUUID("stashid1")
+		stashID2     = getUUID("stashid2")
 
 		date, _ = models.ParseDate("2003-02-01")
 	)
@@ -531,8 +531,8 @@ func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 		sceneIndex2  = 234
 		endpoint1    = "endpoint1"
 		endpoint2    = "endpoint2"
-		stashID1     = "stashid1"
-		stashID2     = "stashid2"
+		stashID1     = getUUID("stashid1")
+		stashID2     = getUUID("stashid2")
 
 		date, _ = models.ParseDate("2003-02-01")
 	)
@@ -725,8 +725,8 @@ func Test_sceneQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 		sceneIndex2 = 234
 		endpoint1   = "endpoint1"
 		endpoint2   = "endpoint2"
-		stashID1    = "stashid1"
-		stashID2    = "stashid2"
+		stashID1    = getUUID("stashid1")
+		stashID2    = getUUID("stashid2")
 
 		groupScenes = []models.GroupsScenes{
 			{
