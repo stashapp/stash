@@ -123,7 +123,7 @@ type handlerRequiredFilter struct {
 	GalleryFinder  galleryFinder
 	CaptionUpdater video.CaptionUpdater
 
-	FolderCache *lru.LRU
+	FolderCache *lru.LRU[bool]
 
 	videoFileNamingAlgorithm models.HashAlgorithm
 }
@@ -138,7 +138,7 @@ func newHandlerRequiredFilter(c *config.Config, repo models.Repository) *handler
 		ImageFinder:              repo.Image,
 		GalleryFinder:            repo.Gallery,
 		CaptionUpdater:           repo.File,
-		FolderCache:              lru.New(processes * 2),
+		FolderCache:              lru.New[bool](processes * 2),
 		videoFileNamingAlgorithm: c.GetVideoFileNamingAlgorithm(),
 	}
 }

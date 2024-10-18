@@ -27,6 +27,7 @@ import (
 	"github.com/go-chi/httplog"
 	"github.com/gorilla/websocket"
 	"github.com/vearutop/statigz"
+	"github.com/vektah/gqlparser/v2/ast"
 
 	"github.com/stashapp/stash/internal/api/loaders"
 	"github.com/stashapp/stash/internal/build"
@@ -185,7 +186,7 @@ func Initialize() (*Server, error) {
 		MaxUploadSize: cfg.GetMaxUploadSize(),
 	})
 
-	gqlSrv.SetQueryCache(gqlLru.New(1000))
+	gqlSrv.SetQueryCache(gqlLru.New[*ast.QueryDocument](1000))
 	gqlSrv.Use(gqlExtension.Introspection{})
 
 	gqlSrv.SetErrorPresenter(gqlErrorHandler)
