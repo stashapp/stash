@@ -21,11 +21,10 @@ func RegisterSqliteDialect() {
 	opts := sqlite3.DialectOptions()
 	opts.SupportsReturn = true
 	goqu.RegisterDialect("sqlite3new", opts)
+
 }
 
-func NewSQLiteDatabase(dbPath string) *SQLiteDB {
-	dialect = goqu.Dialect("sqlite3new")
-
+func NewSQLiteDatabase(dbPath string, init bool) *SQLiteDB {
 	db := &SQLiteDB{
 		Database: Database{
 			storeRepository: newDatabase(),
@@ -35,7 +34,10 @@ func NewSQLiteDatabase(dbPath string) *SQLiteDB {
 	}
 	db.DBInterface = db
 
-	dbWrapper.dbType = SqliteBackend
+	if init {
+		dialect = goqu.Dialect("sqlite3new")
+		dbWrapper.dbType = SqliteBackend
+	}
 
 	return db
 }

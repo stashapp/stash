@@ -47,10 +47,10 @@ func testTeardown(databaseFile string) {
 func getNewDB(databaseFile string) sqlite.DBInterface {
 	dbUrl, valid := os.LookupEnv("PGSQL_TEST")
 	if valid {
-		db = sqlite.NewPostgresDatabase(dbUrl)
+		db = sqlite.NewPostgresDatabase(dbUrl, true)
 	} else {
 		sqlite.RegisterSqliteDialect()
-		db = sqlite.NewSQLiteDatabase(databaseFile)
+		db = sqlite.NewSQLiteDatabase(databaseFile, true)
 	}
 
 	return db

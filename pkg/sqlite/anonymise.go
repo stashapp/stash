@@ -28,11 +28,15 @@ type Anonymiser struct {
 }
 
 func NewAnonymiser(db DBInterface, outPath string) (*Anonymiser, error) {
+	if dbWrapper.dbType == PostgresBackend {
+		return nil, fmt.Errorf("anonymise is not yet implemented for postgres backend")
+	}
+
 	if _, err := db.GetWriteDB().Exec(fmt.Sprintf(`VACUUM INTO "%s"`, outPath)); err != nil {
 		return nil, fmt.Errorf("vacuuming into %s: %w", outPath, err)
 	}
 
-	newDB := NewSQLiteDatabase(outPath)
+	newDB := NewSQLiteDatabase(outPath, false)
 	if err := newDB.Open(); err != nil {
 		return nil, fmt.Errorf("opening %s: %w", outPath, err)
 	}

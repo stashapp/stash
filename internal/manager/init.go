@@ -41,12 +41,12 @@ func Initialize(cfg *config.Config, l *log.Logger) (*Manager, error) {
 	upperUrl := strings.ToUpper(dbUrl)
 	switch {
 	case strings.HasPrefix(upperUrl, string(sqlite.PostgresBackend)+":"):
-		db = sqlite.NewPostgresDatabase(dbUrl)
+		db = sqlite.NewPostgresDatabase(dbUrl, true)
 	case strings.HasPrefix(upperUrl, string(sqlite.SqliteBackend)+":"):
-		db = sqlite.NewSQLiteDatabase(dbUrl[len(sqlite.SqliteBackend)+1:])
+		db = sqlite.NewSQLiteDatabase(dbUrl[len(sqlite.SqliteBackend)+1:], true)
 	default:
 		// Assume it's the path to a SQLite database - for backwards compat
-		db = sqlite.NewSQLiteDatabase(dbUrl)
+		db = sqlite.NewSQLiteDatabase(dbUrl, true)
 	}
 
 	repo := db.Repository()

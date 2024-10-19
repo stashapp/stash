@@ -14,9 +14,7 @@ type PostgresDB struct {
 	Database
 }
 
-func NewPostgresDatabase(dbConnector string) *PostgresDB {
-	dialect = goqu.Dialect("postgres")
-
+func NewPostgresDatabase(dbConnector string, init bool) *PostgresDB {
 	db := &PostgresDB{
 		Database: Database{
 			storeRepository: newDatabase(),
@@ -25,7 +23,10 @@ func NewPostgresDatabase(dbConnector string) *PostgresDB {
 	}
 	db.DBInterface = db
 
-	dbWrapper.dbType = PostgresBackend
+	if init {
+		dialect = goqu.Dialect("postgres")
+		dbWrapper.dbType = PostgresBackend
+	}
 
 	return db
 }
