@@ -3,6 +3,7 @@ package manager
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/stashapp/stash/pkg/file/video"
 	"github.com/stashapp/stash/pkg/fsutil"
@@ -36,7 +37,7 @@ func (t *GenerateInteractiveHeatmapSpeedTask) Start(ctx context.Context) {
 	err := generator.Generate(funscriptPath, heatmapPath, t.Scene.Files.Primary().Duration)
 
 	if err != nil {
-		logger.Errorf("error generating heatmap: %s", err.Error())
+		logger.Errorf("error generating heatmap for %s: %s", t.Scene.Path, err.Error())
 		return
 	}
 
@@ -50,6 +51,18 @@ func (t *GenerateInteractiveHeatmapSpeedTask) Start(ctx context.Context) {
 		return qb.Update(ctx, primaryFile)
 	}); err != nil && ctx.Err() == nil {
 		logger.Error(err.Error())
+	}
+
+	if err := r.WithTxn(ctx, func(ctx context.Context) error {
+		qb := r.Scene
+		scenePartial := models.NewScenePartial()
+		now := time.Now()
+		scenePartial.UpdatedAt = models.NewOptionalTime(now)
+
+		_, err := qb.UpdatePartial(ctx, t.Scene.ID, scenePartial)
+		return err
+	}); err != nil && ctx.Err() == nil {
+		logger.Errorf("error updating %s after heatmap generation: %s", t.Scene.Path, err.Error())
 	}
 }
 
