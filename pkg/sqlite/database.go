@@ -204,6 +204,15 @@ func getDBMinFunc() string {
 	}
 }
 
+func DBGroupConcat(columnName string) string {
+	switch dbWrapper.dbType {
+	case PostgresBackend:
+		return "STRING_AGG(" + columnName + "::TEXT, ',')"
+	default:
+		return "GROUP_CONCAT(" + columnName + ")"
+	}
+}
+
 func (db *Database) SetSchemaVersion(version uint) {
 	db.schemaVersion = version
 }

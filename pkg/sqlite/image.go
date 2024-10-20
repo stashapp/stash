@@ -849,7 +849,7 @@ func (qb *ImageStore) queryGroupedFields(ctx context.Context, options models.Ima
 	aggregateQuery := imageRepository.newQuery()
 
 	if options.Count {
-		aggregateQuery.addColumn("COUNT(DISTINCT temp.id) as total", nil)
+		aggregateQuery.addColumn("COUNT(DISTINCT temp.id) as total")
 	}
 
 	if options.Megapixels {
@@ -863,8 +863,8 @@ func (qb *ImageStore) queryGroupedFields(ctx context.Context, options models.Ima
 				onClause: "images_files.file_id = image_files.file_id",
 			},
 		)
-		query.addColumn("COALESCE(image_files.width, 0) * COALESCE(image_files.height, 0) as megapixels", []string{"image_files.width", "image_files.height"})
-		aggregateQuery.addColumn("COALESCE(SUM(temp.megapixels), 0) / 1000000 as megapixels", nil)
+		query.addColumn("COALESCE(image_files.width, 0) * COALESCE(image_files.height, 0) as megapixels")
+		aggregateQuery.addColumn("COALESCE(SUM(temp.megapixels), 0) / 1000000 as megapixels")
 	}
 
 	if options.TotalSize {
@@ -878,8 +878,8 @@ func (qb *ImageStore) queryGroupedFields(ctx context.Context, options models.Ima
 				onClause: "images_files.file_id = files.id",
 			},
 		)
-		query.addColumn("COALESCE(files.size, 0) as size", []string{"files.size"})
-		aggregateQuery.addColumn("SUM(temp.size) as size", nil)
+		query.addColumn("COALESCE(files.size, 0) as size")
+		aggregateQuery.addColumn("SUM(temp.size) as size")
 	}
 
 	const includeSortPagination = false
@@ -968,8 +968,7 @@ func (qb *ImageStore) setImageSortAndPagination(q *queryBuilder, findFilter *mod
 		case "path":
 			addFilesJoin()
 			addFolderJoin()
-			sortClause = "COALESCE(folders.path, '') || COALESCE(files.basename, '') COLLATE NATURAL_CI " + direction
-			q.addGroupBy([]string{"folders.path", "files.basename"}, true)
+			sortClause = " ORDER BY COALESCE(folders.path, '') || COALESCE(files.basename, '') COLLATE NATURAL_CI " + direction
 		case "file_count":
 			sortClause = getCountSort(imageTable, imagesFilesTable, imageIDColumn, direction)
 		case "tag_count":
@@ -978,27 +977,20 @@ func (qb *ImageStore) setImageSortAndPagination(q *queryBuilder, findFilter *mod
 			sortClause = getCountSort(imageTable, performersImagesTable, imageIDColumn, direction)
 		case "mod_time", "filesize":
 			addFilesJoin()
-			add, agg := getSort(sort, direction, "files")
-			sortClause = add
-			q.addGroupBy(agg, true)
+			sortClause = getSort(sort, direction, "files")
 		case "title":
 			addFilesJoin()
 			addFolderJoin()
-			sortClause = "COALESCE(images.title, files.basename) COLLATE NATURAL_CI " + direction + ", folders.path COLLATE NATURAL_CI " + direction
-			q.addGroupBy([]string{"images.title", "files.basename", "folders.path"}, true)
+			sortClause = " ORDER BY COALESCE(images.title, files.basename) COLLATE NATURAL_CI " + direction + ", folders.path COLLATE NATURAL_CI " + direction
 		default:
-			add, agg := getSort(sort, direction, "images")
-			sortClause = add
-			q.addGroupBy(agg, true)
+			sortClause = getSort(sort, direction, "images")
 		}
 
 		// Whatever the sorting, always use title/id as a final sort
-		sortClause += ", COALESCE(images.title, cast(images.id as text)) COLLATE NATURAL_CI ASC"
-		q.addGroupBy([]string{"images.title", "images.id"}, true)
+		sortClause += ", COALESCE(images.title, CAST(images.id as text)) COLLATE NATURAL_CI ASC"
 	}
 
-	q.addSort(sortClause)
-	q.addPagination(getPagination(findFilter))
+	q.sortAndPagination = sortClause + getPagination(findFilter)
 
 	return nil
 }

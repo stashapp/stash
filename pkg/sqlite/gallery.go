@@ -735,7 +735,7 @@ func (qb *GalleryStore) makeQuery(ctx context.Context, galleryFilter *models.Gal
 	if err := qb.setGallerySort(&query, findFilter); err != nil {
 		return nil, err
 	}
-	query.addPagination(getPagination(findFilter))
+	query.sortAndPagination += getPagination(findFilter)
 
 	return &query, nil
 }
@@ -826,39 +826,32 @@ func (qb *GalleryStore) setGallerySort(query *queryBuilder, findFilter *models.F
 
 	switch sort {
 	case "file_count":
-		query.addSort(getCountSort(galleryTable, galleriesFilesTable, galleryIDColumn, direction))
+		query.sortAndPagination += getCountSort(galleryTable, galleriesFilesTable, galleryIDColumn, direction)
 	case "images_count":
-		query.addSort(getCountSort(galleryTable, galleriesImagesTable, galleryIDColumn, direction))
+		query.sortAndPagination += getCountSort(galleryTable, galleriesImagesTable, galleryIDColumn, direction)
 	case "tag_count":
-		query.addSort(getCountSort(galleryTable, galleriesTagsTable, galleryIDColumn, direction))
+		query.sortAndPagination += getCountSort(galleryTable, galleriesTagsTable, galleryIDColumn, direction)
 	case "performer_count":
-		query.addSort(getCountSort(galleryTable, performersGalleriesTable, galleryIDColumn, direction))
+		query.sortAndPagination += getCountSort(galleryTable, performersGalleriesTable, galleryIDColumn, direction)
 	case "path":
 		// special handling for path
 		addFileTable()
 		addFolderTable()
-		query.addSort(fmt.Sprintf("COALESCE(folders.path, '') || COALESCE(file_folder.path, '') || COALESCE(files.basename, '') COLLATE NATURAL_CI %s", direction))
-		query.addGroupBy([]string{"folders.path", "file_folder.path", "files.basename"}, true)
+		query.sortAndPagination += fmt.Sprintf(" ORDER BY COALESCE(folders.path, '') || COALESCE(file_folder.path, '') || COALESCE(files.basename, '') COLLATE NATURAL_CI %s", direction)
 	case "file_mod_time":
 		sort = "mod_time"
 		addFileTable()
-		add, agg := getSort(sort, direction, fileTable)
-		query.addSort(add)
-		query.addGroupBy(agg, true)
+		query.sortAndPagination += getSort(sort, direction, fileTable)
 	case "title":
 		addFileTable()
 		addFolderTable()
-		query.addSort("COALESCE(galleries.title, files.basename, basename(COALESCE(folders.path, ''))) COLLATE NATURAL_CI " + direction + ", file_folder.path COLLATE NATURAL_CI " + direction)
-		query.addGroupBy([]string{"galleries.title", "files.basename", "folders.path", "file_folder.path"}, true)
+		query.sortAndPagination += " ORDER BY COALESCE(galleries.title, files.basename, basename(COALESCE(folders.path, ''))) COLLATE NATURAL_CI " + direction + ", file_folder.path COLLATE NATURAL_CI " + direction
 	default:
-		add, agg := getSort(sort, direction, "galleries")
-		query.addSort(add)
-		query.addGroupBy(agg, true)
+		query.sortAndPagination += getSort(sort, direction, "galleries")
 	}
 
 	// Whatever the sorting, always use title/id as a final sort
-	query.addSort("COALESCE(galleries.title, cast(galleries.id as text)) COLLATE NATURAL_CI ASC")
-	query.addGroupBy([]string{"galleries.title", "galleries.id"}, true)
+	query.sortAndPagination += ", COALESCE(galleries.title, CAST(galleries.id as text)) COLLATE NATURAL_CI ASC"
 
 	return nil
 }

@@ -538,13 +538,12 @@ func (qb *StudioStore) makeQuery(ctx context.Context, studioFilter *models.Studi
 		return nil, err
 	}
 
-	add, agg, err := qb.getStudioSort(findFilter)
+	var err error
+	query.sortAndPagination, err = qb.getStudioSort(findFilter)
 	if err != nil {
 		return nil, err
 	}
-	query.addSort(add)
-	query.addPagination(getPagination(findFilter))
-	query.addGroupBy(agg, true)
+	query.sortAndPagination += getPagination(findFilter)
 
 	return &query, nil
 }
@@ -590,7 +589,7 @@ var studioSortOptions = sortOptions{
 	"updated_at",
 }
 
-func (qb *StudioStore) getStudioSort(findFilter *models.FindFilterType) (string, []string, error) {
+func (qb *StudioStore) getStudioSort(findFilter *models.FindFilterType) (string, error) {
 	var sort string
 	var direction string
 	if findFilter == nil {
@@ -603,10 +602,9 @@ func (qb *StudioStore) getStudioSort(findFilter *models.FindFilterType) (string,
 
 	// CVE-2024-32231 - ensure sort is in the list of allowed sorts
 	if err := studioSortOptions.validateSort(sort); err != nil {
-		return "", nil, err
+		return "", err
 	}
 
-	var agg []string
 	sortQuery := ""
 	switch sort {
 	case "tag_count":
@@ -620,15 +618,12 @@ func (qb *StudioStore) getStudioSort(findFilter *models.FindFilterType) (string,
 	case "child_count":
 		sortQuery += getCountSort(studioTable, studioTable, studioParentIDColumn, direction)
 	default:
-		var add string
-		add, agg = getSort(sort, direction, "studios")
-		sortQuery += add
+		sortQuery += getSort(sort, direction, "studios")
 	}
 
 	// Whatever the sorting, always use name/id as a final sort
-	sortQuery += ", COALESCE(studios.name, cast(studios.id as text)) COLLATE NATURAL_CI ASC"
-	agg = append(agg, "studios.name", "studios.id")
-	return sortQuery, agg, nil
+	sortQuery += ", COALESCE(studios.name, CAST(studios.id as text)) COLLATE NATURAL_CI ASC"
+	return sortQuery, nil
 }
 
 func (qb *StudioStore) GetImage(ctx context.Context, studioID int) ([]byte, error) {
