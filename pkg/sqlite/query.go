@@ -61,7 +61,7 @@ func (qb queryBuilder) findIDs(ctx context.Context) ([]int, error) {
 
 func (qb queryBuilder) executeFind(ctx context.Context) ([]int, int, error) {
 	body := qb.body()
-	return qb.repository.executeFindQuery(ctx, body, qb.from, qb.args, qb.sortAndPagination, qb.whereClauses, qb.havingClauses, qb.withClauses, qb.recursiveWith)
+	return qb.repository.executeFindQuery(ctx, body, qb.args, qb.sortAndPagination, qb.whereClauses, qb.havingClauses, qb.withClauses, qb.recursiveWith)
 }
 
 func (qb queryBuilder) executeCount(ctx context.Context) (int, error) {
