@@ -130,6 +130,7 @@ type DBInterface interface {
 	Vacuum(ctx context.Context) error
 	Version() uint
 	WithDatabase(ctx context.Context) (context.Context, error)
+	TestMode()
 }
 
 type Database struct {

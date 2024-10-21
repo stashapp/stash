@@ -381,6 +381,7 @@ func (qb *SceneMarkerStore) setSceneMarkerSort(query *queryBuilder, findFilter *
 	case "title":
 		query.join(tagTable, "", "scene_markers.primary_tag_id = tags.id")
 		query.sortAndPagination += " ORDER BY COALESCE(NULLIF(scene_markers.title,''), tags.name) COLLATE NATURAL_CI " + direction
+		query.addGroupBy("scene_markers.title", "tags.name")
 	default:
 		add, agg := getSort(sort, direction, sceneMarkerTable)
 		query.sortAndPagination += add

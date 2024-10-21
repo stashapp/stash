@@ -38,20 +38,28 @@ func (db *PostgresDB) unlock() {}
 func (db *PostgresDB) openReadDB() error {
 	const (
 		disableForeignKeys = false
-		writable           = true
+		writable           = false
 	)
 	var err error
 	db.readDB, err = db.open(disableForeignKeys, writable)
 	db.readDB.SetConnMaxIdleTime(dbConnTimeout)
-	db.writeDB = db.readDB
 	return err
 }
 
 func (db *PostgresDB) openWriteDB() error {
-	if db.writeDB == nil {
-		return db.openReadDB()
-	}
-	return nil
+	const (
+		disableForeignKeys = false
+		writable           = true
+	)
+	var err error
+	db.writeDB, err = db.open(disableForeignKeys, writable)
+	db.writeDB.SetConnMaxIdleTime(dbConnTimeout)
+	return err
+}
+
+// Ensure single connection for testing to avoid race conditions
+func (db *PostgresDB) TestMode() {
+	db.readDB = db.writeDB
 }
 
 func (db *PostgresDB) DatabaseType() DatabaseType {

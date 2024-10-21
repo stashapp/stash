@@ -70,6 +70,7 @@ func runTests(m *testing.M) int {
 	if err := db.Open(); err != nil {
 		panic(fmt.Sprintf("Could not initialize database: %s", err.Error()))
 	}
+	db.TestMode()
 
 	r = db.Repository()
 

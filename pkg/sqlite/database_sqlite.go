@@ -42,6 +42,9 @@ func NewSQLiteDatabase(dbPath string, init bool) *SQLiteDB {
 	return db
 }
 
+// Does nothing
+func (db *SQLiteDB) TestMode() {}
+
 // lock locks the database for writing. This method will block until the lock is acquired.
 func (db *SQLiteDB) lock() {
 	db.lockChan <- struct{}{}
