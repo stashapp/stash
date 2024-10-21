@@ -19,7 +19,7 @@ func selectAll(tableName string) string {
 func distinctIDs(qb *queryBuilder, tableName string) {
 	columnId := getColumn(tableName, "id")
 	qb.addColumn(columnId)
-	qb.addGroupBy([]string{columnId})
+	qb.addGroupBy(columnId)
 	qb.from = tableName
 }
 

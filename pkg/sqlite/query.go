@@ -34,7 +34,7 @@ func (qb *queryBuilder) addColumn(column string) {
 	qb.columns = append(qb.columns, column)
 }
 
-func (qb *queryBuilder) addGroupBy(columns []string) {
+func (qb *queryBuilder) addGroupBy(columns ...string) {
 	if len(columns) > 0 {
 		qb.groupByClauses = sliceutil.AppendUniques(qb.groupByClauses, columns)
 	}

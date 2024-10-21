@@ -619,7 +619,7 @@ func (qb *PerformerStore) makeQuery(ctx context.Context, performerFilter *models
 		return nil, err
 	}
 	query.sortAndPagination += getPagination(findFilter)
-	query.addGroupBy(agg)
+	query.addGroupBy(agg...)
 
 	return &query, nil
 }

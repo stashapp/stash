@@ -865,6 +865,7 @@ func (qb *ImageStore) queryGroupedFields(ctx context.Context, options models.Ima
 		)
 		query.addColumn("COALESCE(image_files.width, 0) * COALESCE(image_files.height, 0) as megapixels")
 		aggregateQuery.addColumn("COALESCE(SUM(temp.megapixels), 0) / 1000000 as megapixels")
+		query.addGroupBy("image_files.width", "image_files.height")
 	}
 
 	if options.TotalSize {
@@ -880,6 +881,7 @@ func (qb *ImageStore) queryGroupedFields(ctx context.Context, options models.Ima
 		)
 		query.addColumn("COALESCE(files.size, 0) as size")
 		aggregateQuery.addColumn("SUM(temp.size) as size")
+		query.addGroupBy("files.size")
 	}
 
 	const includeSortPagination = false
@@ -969,7 +971,7 @@ func (qb *ImageStore) setImageSortAndPagination(q *queryBuilder, findFilter *mod
 			addFilesJoin()
 			addFolderJoin()
 			sortClause = " ORDER BY COALESCE(folders.path, '') || COALESCE(files.basename, '') COLLATE NATURAL_CI " + direction
-			q.addGroupBy([]string{"folders.path", "files.basename"})
+			q.addGroupBy("folders.path", "files.basename")
 		case "file_count":
 			sortClause = getCountSort(imageTable, imagesFilesTable, imageIDColumn, direction)
 		case "tag_count":
@@ -980,21 +982,21 @@ func (qb *ImageStore) setImageSortAndPagination(q *queryBuilder, findFilter *mod
 			addFilesJoin()
 			add, agg := getSort(sort, direction, "files")
 			sortClause = add
-			q.addGroupBy(agg)
+			q.addGroupBy(agg...)
 		case "title":
 			addFilesJoin()
 			addFolderJoin()
 			sortClause = " ORDER BY COALESCE(images.title, files.basename) COLLATE NATURAL_CI " + direction + ", folders.path COLLATE NATURAL_CI " + direction
-			q.addGroupBy([]string{"images.title", "files.basename", "folders.path"})
+			q.addGroupBy("images.title", "files.basename", "folders.path")
 		default:
 			add, agg := getSort(sort, direction, "images")
 			sortClause = add
-			q.addGroupBy(agg)
+			q.addGroupBy(agg...)
 		}
 
 		// Whatever the sorting, always use title/id as a final sort
 		sortClause += ", COALESCE(images.title, CAST(images.id as text)) COLLATE NATURAL_CI ASC"
-		q.addGroupBy([]string{"images.title", "images.id"})
+		q.addGroupBy("images.title", "images.id")
 	}
 
 	q.sortAndPagination = sortClause + getPagination(findFilter)

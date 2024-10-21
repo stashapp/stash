@@ -941,11 +941,11 @@ func (qb *FileStore) setQuerySort(query *queryBuilder, findFilter *models.FindFi
 	case "path":
 		// special handling for path
 		query.sortAndPagination += fmt.Sprintf(" ORDER BY folders.path %s, files.basename %[1]s", direction)
-		query.addGroupBy([]string{"folders.path", "files.basename"})
+		query.addGroupBy("folders.path", "files.basename")
 	default:
 		add, agg := getSort(sort, direction, "files")
 		query.sortAndPagination += add
-		query.addGroupBy(agg)
+		query.addGroupBy(agg...)
 	}
 
 	return nil

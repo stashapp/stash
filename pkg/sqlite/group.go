@@ -515,14 +515,14 @@ func (qb *GroupStore) setGroupSort(query *queryBuilder, findFilter *models.FindF
 		if query.hasJoin("groups_parents") {
 			add, agg := getSort("order_index", direction, "groups_parents")
 			query.sortAndPagination += add
-			query.addGroupBy(agg)
+			query.addGroupBy(agg...)
 		} else {
 			// this will give unexpected results if the query is not filtered by a parent group and
 			// the group has multiple parents and order indexes
 			query.join(groupRelationsTable, "", "groups.id = groups_relations.sub_id")
 			add, agg := getSort("order_index", direction, groupRelationsTable)
 			query.sortAndPagination += add
-			query.addGroupBy(agg)
+			query.addGroupBy(agg...)
 		}
 	case "tag_count":
 		query.sortAndPagination += getCountSort(groupTable, groupsTagsTable, groupIDColumn, direction)
@@ -531,12 +531,12 @@ func (qb *GroupStore) setGroupSort(query *queryBuilder, findFilter *models.FindF
 	default:
 		add, agg := getSort(sort, direction, "groups")
 		query.sortAndPagination += add
-		query.addGroupBy(agg)
+		query.addGroupBy(agg...)
 	}
 
 	// Whatever the sorting, always use name/id as a final sort
 	query.sortAndPagination += ", COALESCE(groups.name, CAST(groups.id as text)) COLLATE NATURAL_CI ASC"
-	query.addGroupBy([]string{"groups.name", "groups.id"})
+	query.addGroupBy("groups.name", "groups.id")
 	return nil
 }
 

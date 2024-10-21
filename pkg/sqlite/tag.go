@@ -631,7 +631,7 @@ func (qb *TagStore) Query(ctx context.Context, tagFilter *models.TagFilterType, 
 		return nil, 0, err
 	}
 	query.sortAndPagination += getPagination(findFilter)
-	query.addGroupBy(group)
+	query.addGroupBy(group...)
 	idsResult, countResult, err := query.executeFind(ctx)
 	if err != nil {
 		return nil, 0, err
