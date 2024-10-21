@@ -17,21 +17,9 @@ func selectAll(tableName string) string {
 }
 
 func distinctIDs(qb *queryBuilder, tableName string) {
-	if dbWrapper.dbType == PostgresBackend {
-		distinctPGIDs(qb, tableName)
-		return
-	}
-
 	columnId := getColumn(tableName, "id")
-	qb.addColumn("DISTINCT " + columnId)
-	qb.from = tableName
-}
-
-func distinctPGIDs(qb *queryBuilder, tableName string) {
-	columnId := getColumn(tableName, "id")
-
-	qb.addWhere("(" + columnId + " IN (SELECT DISTINCT " + columnId + " FROM " + tableName + "))")
 	qb.addColumn(columnId)
+	qb.addGroupBy([]string{columnId})
 	qb.from = tableName
 }
 
@@ -93,17 +81,17 @@ func getSortDirection(direction string) string {
 		return direction
 	}
 }
-func getSort(sort string, direction string, tableName string) string {
+func getSort(sort string, direction string, tableName string) (string, []string) {
 	direction = getSortDirection(direction)
 
 	switch {
 	case strings.HasSuffix(sort, "_count"):
 		var relationTableName = strings.TrimSuffix(sort, "_count") // TODO: pluralize?
 		colName := getColumn(relationTableName, "id")
-		return " ORDER BY COUNT(distinct " + colName + ") " + direction
+		return " ORDER BY COUNT(distinct " + colName + ") " + direction, nil
 	case strings.Compare(sort, "filesize") == 0:
 		colName := getColumn(tableName, "size")
-		return " ORDER BY " + colName + " " + direction
+		return " ORDER BY " + colName + " " + direction, []string{colName}
 	case strings.HasPrefix(sort, randomSeedPrefix):
 		// seed as a parameter from the UI
 		seedStr := sort[len(randomSeedPrefix):]
@@ -112,22 +100,22 @@ func getSort(sort string, direction string, tableName string) string {
 			// fallback to a random seed
 			seed = rand.Uint64()
 		}
-		return getRandomSort(tableName, direction, seed)
+		return getRandomSort(tableName, direction, seed), nil
 	case strings.Compare(sort, "random") == 0:
-		return getRandomSort(tableName, direction, rand.Uint64())
+		return getRandomSort(tableName, direction, rand.Uint64()), nil
 	default:
 		colName := getColumn(tableName, sort)
 		if strings.Contains(sort, ".") {
 			colName = sort
 		}
 		if strings.Compare(sort, "name") == 0 {
-			return " ORDER BY " + colName + " COLLATE NATURAL_CI " + direction
+			return " ORDER BY " + colName + " COLLATE NATURAL_CI " + direction, []string{colName}
 		}
 		if strings.Compare(sort, "title") == 0 {
-			return " ORDER BY " + colName + " COLLATE NATURAL_CI " + direction
+			return " ORDER BY " + colName + " COLLATE NATURAL_CI " + direction, []string{colName}
 		}
 
-		return " ORDER BY " + colName + " " + direction
+		return " ORDER BY " + colName + " " + direction, []string{colName}
 	}
 }
 

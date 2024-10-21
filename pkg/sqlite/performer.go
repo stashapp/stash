@@ -613,11 +613,13 @@ func (qb *PerformerStore) makeQuery(ctx context.Context, performerFilter *models
 	}
 
 	var err error
-	query.sortAndPagination, err = qb.getPerformerSort(findFilter)
+	var agg []string
+	query.sortAndPagination, agg, err = qb.getPerformerSort(findFilter)
 	if err != nil {
 		return nil, err
 	}
 	query.sortAndPagination += getPagination(findFilter)
+	query.addGroupBy(agg)
 
 	return &query, nil
 }
@@ -731,7 +733,7 @@ var performerSortOptions = sortOptions{
 	"weight",
 }
 
-func (qb *PerformerStore) getPerformerSort(findFilter *models.FindFilterType) (string, error) {
+func (qb *PerformerStore) getPerformerSort(findFilter *models.FindFilterType) (string, []string, error) {
 	var sort string
 	var direction string
 	if findFilter == nil {
@@ -744,9 +746,10 @@ func (qb *PerformerStore) getPerformerSort(findFilter *models.FindFilterType) (s
 
 	// CVE-2024-32231 - ensure sort is in the list of allowed sorts
 	if err := performerSortOptions.validateSort(sort); err != nil {
-		return "", err
+		return "", nil, err
 	}
 
+	var agg []string
 	sortQuery := ""
 	switch sort {
 	case "tag_count":
@@ -766,12 +769,15 @@ func (qb *PerformerStore) getPerformerSort(findFilter *models.FindFilterType) (s
 	case "last_o_at":
 		sortQuery += qb.sortByLastOAt(direction)
 	default:
-		sortQuery += getSort(sort, direction, "performers")
+		var add string
+		add, agg = getSort(sort, direction, "performers")
+		sortQuery += add
 	}
 
 	// Whatever the sorting, always use name/id as a final sort
 	sortQuery += ", COALESCE(performers.name, CAST(performers.id as text)) COLLATE NATURAL_CI ASC"
-	return sortQuery, nil
+	agg = append(agg, "performers.name", "performers.id")
+	return sortQuery, agg, nil
 }
 
 func (qb *PerformerStore) GetTagIDs(ctx context.Context, id int) ([]int, error) {

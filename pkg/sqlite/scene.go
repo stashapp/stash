@@ -1130,10 +1130,14 @@ func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindF
 	switch sort {
 	case "movie_scene_number":
 		query.join(groupsScenesTable, "", "scenes.id = groups_scenes.scene_id")
-		query.sortAndPagination += getSort("scene_index", direction, groupsScenesTable)
+		add, group := getSort("scene_index", direction, groupsScenesTable)
+		query.sortAndPagination += add
+		query.addGroupBy(group)
 	case "group_scene_number":
 		query.join(groupsScenesTable, "scene_group", "scenes.id = scene_group.scene_id")
-		query.sortAndPagination += getSort("scene_index", direction, "scene_group")
+		add, group := getSort("scene_index", direction, "scene_group")
+		query.sortAndPagination += add
+		query.addGroupBy(group)
 	case "tag_count":
 		query.sortAndPagination += getCountSort(sceneTable, scenesTagsTable, sceneIDColumn, direction)
 	case "performer_count":
@@ -1145,6 +1149,7 @@ func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindF
 		addFileTable()
 		addFolderTable()
 		query.sortAndPagination += fmt.Sprintf(" ORDER BY COALESCE(folders.path, '') || COALESCE(files.basename, '') COLLATE NATURAL_CI %s", direction)
+		query.addGroupBy([]string{"folders.path", "files.basename"})
 	case "perceptual_similarity":
 		// special handling for phash
 		addFileTable()
@@ -1157,31 +1162,45 @@ func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindF
 		)
 
 		query.sortAndPagination += " ORDER BY fingerprints_phash.fingerprint " + direction + ", files.size DESC"
+		query.addGroupBy([]string{"fingerprints_phash.fingerprint", "files.size"})
 	case "bitrate":
 		sort = "bit_rate"
 		addVideoFileTable()
-		query.sortAndPagination += getSort(sort, direction, videoFileTable)
+		add, group := getSort(sort, direction, videoFileTable)
+		query.sortAndPagination += add
+		query.addGroupBy(group)
 	case "file_mod_time":
 		sort = "mod_time"
 		addFileTable()
-		query.sortAndPagination += getSort(sort, direction, fileTable)
+		add, agg := getSort(sort, direction, fileTable)
+		query.sortAndPagination += add
+		query.addGroupBy(agg)
 	case "framerate":
 		sort = "frame_rate"
 		addVideoFileTable()
-		query.sortAndPagination += getSort(sort, direction, videoFileTable)
+		add, agg := getSort(sort, direction, videoFileTable)
+		query.sortAndPagination += add
+		query.addGroupBy(agg)
 	case "filesize":
 		addFileTable()
-		query.sortAndPagination += getSort(sort, direction, fileTable)
+		add, agg := getSort(sort, direction, fileTable)
+		query.sortAndPagination += add
+		query.addGroupBy(agg)
 	case "duration":
 		addVideoFileTable()
-		query.sortAndPagination += getSort(sort, direction, videoFileTable)
+		add, agg := getSort(sort, direction, videoFileTable)
+		query.sortAndPagination += add
+		query.addGroupBy(agg)
 	case "interactive", "interactive_speed":
 		addVideoFileTable()
-		query.sortAndPagination += getSort(sort, direction, videoFileTable)
+		add, agg := getSort(sort, direction, videoFileTable)
+		query.sortAndPagination += add
+		query.addGroupBy(agg)
 	case "title":
 		addFileTable()
 		addFolderTable()
 		query.sortAndPagination += " ORDER BY COALESCE(scenes.title, files.basename) COLLATE NATURAL_CI " + direction + ", folders.path COLLATE NATURAL_CI " + direction
+		query.addGroupBy([]string{"scenes.title", "files.basename", "folders.path"})
 	case "play_count":
 		query.sortAndPagination += getCountSort(sceneTable, scenesViewDatesTable, sceneIDColumn, direction)
 	case "last_played_at":
@@ -1191,11 +1210,14 @@ func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindF
 	case "o_counter":
 		query.sortAndPagination += getCountSort(sceneTable, scenesODatesTable, sceneIDColumn, direction)
 	default:
-		query.sortAndPagination += getSort(sort, direction, "scenes")
+		add, agg := getSort(sort, direction, "scenes")
+		query.sortAndPagination += add
+		query.addGroupBy(agg)
 	}
 
 	// Whatever the sorting, always use title/id as a final sort
 	query.sortAndPagination += ", COALESCE(scenes.title, CAST(scenes.id as text)) COLLATE NATURAL_CI ASC"
+	query.addGroupBy([]string{"scenes.title", "scenes.id"})
 
 	return nil
 }

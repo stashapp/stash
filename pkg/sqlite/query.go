@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sliceutil"
 )
 
 type queryBuilder struct {
@@ -14,12 +15,13 @@ type queryBuilder struct {
 	columns []string
 	from    string
 
-	joins         joins
-	whereClauses  []string
-	havingClauses []string
-	args          []interface{}
-	withClauses   []string
-	recursiveWith bool
+	joins          joins
+	whereClauses   []string
+	havingClauses  []string
+	args           []interface{}
+	withClauses    []string
+	recursiveWith  bool
+	groupByClauses []string
 
 	sortAndPagination string
 }
@@ -30,6 +32,12 @@ func (qb queryBuilder) body() string {
 
 func (qb *queryBuilder) addColumn(column string) {
 	qb.columns = append(qb.columns, column)
+}
+
+func (qb *queryBuilder) addGroupBy(columns []string) {
+	if len(columns) > 0 {
+		qb.groupByClauses = sliceutil.AppendUniques(qb.groupByClauses, columns)
+	}
 }
 
 func (qb queryBuilder) toSQL(includeSortPagination bool) string {
@@ -44,7 +52,7 @@ func (qb queryBuilder) toSQL(includeSortPagination bool) string {
 		withClause = "WITH " + recursive + strings.Join(qb.withClauses, ", ") + " "
 	}
 
-	body = withClause + qb.repository.buildQueryBody(body, qb.whereClauses, qb.havingClauses)
+	body = withClause + qb.repository.buildQueryBody(body, qb.whereClauses, qb.havingClauses, qb.groupByClauses)
 
 	if includeSortPagination {
 		body += qb.sortAndPagination
@@ -61,7 +69,7 @@ func (qb queryBuilder) findIDs(ctx context.Context) ([]int, error) {
 
 func (qb queryBuilder) executeFind(ctx context.Context) ([]int, int, error) {
 	body := qb.body()
-	return qb.repository.executeFindQuery(ctx, body, qb.args, qb.sortAndPagination, qb.whereClauses, qb.havingClauses, qb.withClauses, qb.recursiveWith)
+	return qb.repository.executeFindQuery(ctx, body, qb.args, qb.sortAndPagination, qb.whereClauses, qb.havingClauses, qb.withClauses, qb.groupByClauses, qb.recursiveWith)
 }
 
 func (qb queryBuilder) executeCount(ctx context.Context) (int, error) {
@@ -76,7 +84,7 @@ func (qb queryBuilder) executeCount(ctx context.Context) (int, error) {
 		withClause = "WITH " + recursive + strings.Join(qb.withClauses, ", ") + " "
 	}
 
-	body = qb.repository.buildQueryBody(body, qb.whereClauses, qb.havingClauses)
+	body = qb.repository.buildQueryBody(body, qb.whereClauses, qb.havingClauses, qb.groupByClauses)
 	countQuery := withClause + qb.repository.buildCountQuery(body)
 	return qb.repository.runCountQuery(ctx, countQuery, qb.args)
 }

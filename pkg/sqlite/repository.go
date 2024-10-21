@@ -170,20 +170,25 @@ func (r *repository) querySimple(ctx context.Context, query string, args []inter
 	return nil
 }
 
-func (r *repository) buildQueryBody(body string, whereClauses []string, havingClauses []string) string {
+func (r *repository) buildQueryBody(body string, whereClauses []string, havingClauses []string, groupByClauses []string) string {
 	if len(whereClauses) > 0 {
 		body = body + " WHERE " + strings.Join(whereClauses, " AND ") // TODO handle AND or OR
 	}
 	if len(havingClauses) > 0 {
-		body = body + " GROUP BY " + r.tableName + ".id "
+		groupByClauses = append(groupByClauses, r.tableName+".id")
+	}
+	if len(groupByClauses) > 0 {
+		body += " GROUP BY " + strings.Join(groupByClauses, ", ") + " "
+	}
+	if len(havingClauses) > 0 {
 		body = body + " HAVING " + strings.Join(havingClauses, " AND ") // TODO handle AND or OR
 	}
 
 	return body
 }
 
-func (r *repository) executeFindQuery(ctx context.Context, body string, args []interface{}, sortAndPagination string, whereClauses []string, havingClauses []string, withClauses []string, recursiveWith bool) ([]int, int, error) {
-	body = r.buildQueryBody(body, whereClauses, havingClauses)
+func (r *repository) executeFindQuery(ctx context.Context, body string, args []interface{}, sortAndPagination string, whereClauses []string, havingClauses []string, withClauses []string, groupByClauses []string, recursiveWith bool) ([]int, int, error) {
+	body = r.buildQueryBody(body, whereClauses, havingClauses, groupByClauses)
 
 	withClause := ""
 	if len(withClauses) > 0 {
