@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"runtime/debug"
 
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jmoiron/sqlx"
 	"github.com/mattn/go-sqlite3"
 	"github.com/stashapp/stash/pkg/logger"
@@ -108,9 +109,18 @@ func getDBReader(ctx context.Context) (dbReader, error) {
 }
 
 func (db *Database) IsLocked(err error) bool {
-	var sqliteError sqlite3.Error
-	if errors.As(err, &sqliteError) {
-		return sqliteError.Code == sqlite3.ErrBusy
+	switch dbWrapper.dbType {
+	case PostgresBackend:
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			// Class 53 — Insufficient Resources
+			return pgErr.Code[:2] == "53"
+		}
+	case SqliteBackend:
+		var sqliteError sqlite3.Error
+		if errors.As(err, &sqliteError) {
+			return sqliteError.Code == sqlite3.ErrBusy
+		}
 	}
 	return false
 }
