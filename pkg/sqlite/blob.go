@@ -308,17 +308,12 @@ func (qb *BlobStore) readFromDatabase(ctx context.Context, checksum string) (sql
 // Delete marks a checksum as no longer in use by a single reference.
 // If no references remain, the blob is deleted from the database and filesystem.
 func (qb *BlobStore) Delete(ctx context.Context, checksum string) error {
-	rollid, err := savepoint(ctx)
-	if err != nil {
-		return fmt.Errorf("savepoint %s: %w", rollid, err)
-	}
-
 	// try to delete the blob from the database
 	if err := qb.delete(ctx, checksum); err != nil {
 		if qb.isConstraintError(err) {
 			// blob is still referenced - do not delete
 			logger.Debugf("Blob %s is still referenced - not deleting", checksum)
-			return rollbackToSavepoint(ctx, rollid)
+			return nil
 		}
 
 		// unexpected error
@@ -358,11 +353,14 @@ func (qb *BlobStore) delete(ctx context.Context, checksum string) error {
 
 	q := dialect.Delete(table).Where(goqu.C(blobChecksumColumn).Eq(checksum))
 
-	_, err := exec(ctx, q)
+	err := withSavepoint(ctx, func(ctx context.Context) error {
+		_, err := exec(ctx, q)
+		return err
+	})
+
 	if err != nil {
 		return fmt.Errorf("deleting from %s: %w", table, err)
 	}
-
 	return nil
 }
 

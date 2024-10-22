@@ -12,7 +12,6 @@ import (
 	"github.com/jmoiron/sqlx"
 	"gopkg.in/guregu/null.v4"
 
-	"github.com/stashapp/stash/pkg/hash"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/sliceutil"
@@ -1153,32 +1152,6 @@ func execID(ctx context.Context, stmt sqler) (*int64, error) {
 	}
 
 	return &id, nil
-}
-
-func savepoint(ctx context.Context) (string, error) {
-	tx, err := getTx(ctx)
-	if err != nil {
-		return "", err
-	}
-
-	// Generate savepoint
-	rnd, err := hash.GenerateRandomKey(64)
-	if err != nil {
-		return "", err
-	}
-
-	_, err = tx.QueryxContext(ctx, "SAVEPOINT "+rnd)
-	return rnd, err
-}
-
-func rollbackToSavepoint(ctx context.Context, id string) error {
-	tx, err := getTx(ctx)
-	if err != nil {
-		return err
-	}
-
-	_, err = tx.QueryxContext(ctx, "ROLLBACK TO SAVEPOINT "+id)
-	return err
 }
 
 func count(ctx context.Context, q *goqu.SelectDataset) (int, error) {
