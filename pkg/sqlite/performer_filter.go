@@ -226,7 +226,7 @@ func (qb *performerFilterHandler) performerIsMissingCriterionHandler(isMissing *
 				performersAliasesTableMgr.join(f, "", "performers.id")
 				f.addWhere("performer_aliases.alias IS NULL")
 			default:
-				f.addWhere("(performers." + *isMissing + " IS NULL OR TRIM(performers." + *isMissing + ") = '')")
+				f.addWhere("(performers." + *isMissing + " IS NULL OR TRIM(CAST(performers." + *isMissing + " AS TEXT)) = '')")
 			}
 		}
 	}

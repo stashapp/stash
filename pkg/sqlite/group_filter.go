@@ -110,7 +110,7 @@ func (qb *groupFilterHandler) missingCriterionHandler(isMissing *string) criteri
 				f.addLeftJoin("groups_scenes", "", "groups_scenes.group_id = groups.id")
 				f.addWhere("groups_scenes.scene_id IS NULL")
 			default:
-				f.addWhere("(groups." + *isMissing + " IS NULL OR TRIM(groups." + *isMissing + ") = '')")
+				f.addWhere("(groups." + *isMissing + " IS NULL OR TRIM(CAST(groups." + *isMissing + " AS TEXT)) = '')")
 			}
 		}
 	}

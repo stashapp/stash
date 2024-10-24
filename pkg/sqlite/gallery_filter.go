@@ -276,7 +276,7 @@ func (qb *galleryFilterHandler) missingCriterionHandler(isMissing *string) crite
 				galleryRepository.tags.join(f, "tags_join", "galleries.id")
 				f.addWhere("tags_join.gallery_id IS NULL")
 			default:
-				f.addWhere("(galleries." + *isMissing + " IS NULL OR TRIM(galleries." + *isMissing + ") = '')")
+				f.addWhere("(galleries." + *isMissing + " IS NULL OR TRIM(CAST(galleries." + *isMissing + " AS TEXT)) = '')")
 			}
 		}
 	}

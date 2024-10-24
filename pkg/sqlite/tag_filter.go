@@ -136,7 +136,7 @@ func (qb *tagFilterHandler) isMissingCriterionHandler(isMissing *string) criteri
 			case "image":
 				f.addWhere("tags.image_blob IS NULL")
 			default:
-				f.addWhere("(tags." + *isMissing + " IS NULL OR TRIM(tags." + *isMissing + ") = '')")
+				f.addWhere("(tags." + *isMissing + " IS NULL OR TRIM(CAST(tags." + *isMissing + " AS TEXT)) = '')")
 			}
 		}
 	}

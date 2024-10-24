@@ -344,7 +344,7 @@ func (qb *sceneFilterHandler) isMissingCriterionHandler(isMissing *string) crite
 			case "cover":
 				f.addWhere("scenes.cover_blob IS NULL")
 			default:
-				f.addWhere("(scenes." + *isMissing + " IS NULL OR TRIM(scenes." + *isMissing + ") = '')")
+				f.addWhere("(scenes." + *isMissing + " IS NULL OR TRIM(CAST(scenes." + *isMissing + " AS TEXT)) = '')")
 			}
 		}
 	}
