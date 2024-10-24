@@ -111,7 +111,7 @@ func (qb *sceneFilterHandler) criterionHandler() criterionHandler {
 		criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
 			if sceneFilter.StashID != nil {
 				sceneRepository.stashIDs.join(f, "scene_stash_ids", "scenes.id")
-				stringCriterionHandler(sceneFilter.StashID, "scene_stash_ids.stash_id")(ctx, f)
+				uuidCriterionHandler(sceneFilter.StashID, "scene_stash_ids.stash_id")(ctx, f)
 			}
 		}),
 
@@ -480,7 +480,15 @@ func (qb *sceneFilterHandler) performerAgeCriterionHandler(performerAge *models.
 			f.addWhere("scenes.date != '' AND performers.birthdate != ''")
 			f.addWhere("scenes.date IS NOT NULL AND performers.birthdate IS NOT NULL")
 
-			ageCalc := "cast(strftime('%Y.%m%d', scenes.date) - strftime('%Y.%m%d', performers.birthdate) as int)"
+			var ageCalc string
+
+			switch dbWrapper.dbType {
+			case PostgresBackend:
+				ageCalc = "EXTRACT(YEAR FROM AGE(scenes.date, performers.birthdate))"
+			case SqliteBackend:
+				ageCalc = "cast(strftime('%Y.%m%d', scenes.date) - strftime('%Y.%m%d', performers.birthdate) as int)"
+			}
+
 			whereClause, args := getIntWhereClause(ageCalc, performerAge.Modifier, performerAge.Value, performerAge.Value2)
 			f.addWhere(whereClause, args...)
 		}

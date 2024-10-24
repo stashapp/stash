@@ -139,7 +139,7 @@ func (qb *performerFilterHandler) criterionHandler() criterionHandler {
 		criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
 			if filter.StashID != nil {
 				performerRepository.stashIDs.join(f, "performer_stash_ids", "performers.id")
-				stringCriterionHandler(filter.StashID, "performer_stash_ids.stash_id")(ctx, f)
+				uuidCriterionHandler(filter.StashID, "performer_stash_ids.stash_id")(ctx, f)
 			}
 		}),
 		&stashIDCriterionHandler{
@@ -235,10 +235,23 @@ func (qb *performerFilterHandler) performerIsMissingCriterionHandler(isMissing *
 func (qb *performerFilterHandler) performerAgeFilterCriterionHandler(age *models.IntCriterionInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if age != nil && age.Modifier.IsValid() {
-			clause, args := getIntCriterionWhereClause(
-				"cast(IFNULL(strftime('%Y.%m%d', performers.death_date), strftime('%Y.%m%d', 'now')) - strftime('%Y.%m%d', performers.birthdate) as int)",
-				*age,
-			)
+
+			var clause string
+			var args []interface{}
+
+			switch dbWrapper.dbType {
+			case PostgresBackend:
+				clause, args = getIntCriterionWhereClause(
+					"EXTRACT(YEAR FROM COALESCE(performers.death_date, CURRENT_DATE)) - EXTRACT(YEAR FROM performers.birthdate)",
+					*age,
+				)
+			case SqliteBackend:
+				clause, args = getIntCriterionWhereClause(
+					"cast(IFNULL(strftime('%Y.%m%d', performers.death_date), strftime('%Y.%m%d', 'now')) - strftime('%Y.%m%d', performers.birthdate) as int)",
+					*age,
+				)
+			}
+
 			f.addWhere(clause, args...)
 		}
 	}
@@ -456,12 +469,12 @@ func (qb *performerFilterHandler) studiosCriterionHandler(studios *models.Hierar
 			}
 
 			const derivedPerformerStudioTable = "performer_studio"
-			valuesClause, err := getHierarchicalValues(ctx, studios.Value, studioTable, "", "parent_id", "child_id", studios.Depth, true)
+			valuesClause, err := getHierarchicalValues(ctx, studios.Value, studioTable, "", "parent_id", "child_id", studios.Depth, false)
 			if err != nil {
 				f.setError(err)
 				return
 			}
-			f.addWith("studio(root_id, item_id) AS " + valuesClause)
+			f.addWith("studio(root_id, item_id) AS (" + valuesClause + ")")
 
 			templStr := `SELECT performer_id FROM {primaryTable}
 	INNER JOIN {joinTable} ON {primaryTable}.id = {joinTable}.{primaryFK}

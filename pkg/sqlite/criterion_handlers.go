@@ -70,6 +70,49 @@ func stringCriterionHandler(c *models.StringCriterionInput, column string) crite
 	}
 }
 
+func uuidCriterionHandler(c *models.StringCriterionInput, column string) criterionHandlerFunc {
+	if dbWrapper.dbType == SqliteBackend {
+		return stringCriterionHandler(c, column)
+	}
+
+	return func(ctx context.Context, f *filterBuilder) {
+		columnCast := "CAST(" + column + " AS TEXT)"
+
+		if c != nil {
+			if modifier := c.Modifier; c.Modifier.IsValid() {
+				switch modifier {
+				case models.CriterionModifierIncludes:
+					f.whereClauses = append(f.whereClauses, getStringSearchClause([]string{columnCast}, c.Value, false))
+				case models.CriterionModifierExcludes:
+					f.whereClauses = append(f.whereClauses, getStringSearchClause([]string{columnCast}, c.Value, true))
+				case models.CriterionModifierEquals:
+					f.addWhere(columnCast+" LIKE ?", c.Value)
+				case models.CriterionModifierNotEquals:
+					f.addWhere(columnCast+" NOT LIKE ?", c.Value)
+				case models.CriterionModifierMatchesRegex:
+					if _, err := regexp.Compile(c.Value); err != nil {
+						f.setError(err)
+						return
+					}
+					f.addWhere(fmt.Sprintf("(%s IS NOT NULL AND regexp(?, %s))", column, columnCast), c.Value)
+				case models.CriterionModifierNotMatchesRegex:
+					if _, err := regexp.Compile(c.Value); err != nil {
+						f.setError(err)
+						return
+					}
+					f.addWhere(fmt.Sprintf("(%s IS NULL OR NOT regexp(?, %s))", column, columnCast), c.Value)
+				case models.CriterionModifierIsNull:
+					f.addWhere("(" + column + " IS NULL)")
+				case models.CriterionModifierNotNull:
+					f.addWhere("(" + column + " IS NOT NULL)")
+				default:
+					panic("unsupported string filter modifier")
+				}
+			}
+		}
+	}
+}
+
 func enumCriterionHandler(modifier models.CriterionModifier, values []string, column string) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if modifier.IsValid() {
@@ -267,7 +310,16 @@ func (h *timestampCriterionHandler) handle(ctx context.Context, f *filterBuilder
 func yearFilterCriterionHandler(year *models.IntCriterionInput, col string) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if year != nil && year.Modifier.IsValid() {
-			clause, args := getIntCriterionWhereClause("cast(strftime('%Y', "+col+") as int)", *year)
+			var clause string
+			var args []interface{}
+
+			switch dbWrapper.dbType {
+			case PostgresBackend:
+				clause, args = getIntCriterionWhereClause("TO_CHAR("+col+", 'YYYY')::int", *year)
+			case SqliteBackend:
+				clause, args = getIntCriterionWhereClause("cast(strftime('%Y', "+col+") as int)", *year)
+			}
+
 			f.addWhere(clause, args...)
 		}
 	}
@@ -1022,7 +1074,7 @@ func (h *stashIDCriterionHandler) handle(ctx context.Context, f *filterBuilder) 
 		v = *h.c.StashID
 	}
 
-	stringCriterionHandler(&models.StringCriterionInput{
+	uuidCriterionHandler(&models.StringCriterionInput{
 		Value:    v,
 		Modifier: h.c.Modifier,
 	}, t+".stash_id")(ctx, f)

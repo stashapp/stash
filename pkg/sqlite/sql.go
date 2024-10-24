@@ -84,6 +84,11 @@ func getSortDirection(direction string) string {
 func getSort(sort string, direction string, tableName string) (string, []string) {
 	direction = getSortDirection(direction)
 
+	nullsfix := ""
+	if dbWrapper.dbType == PostgresBackend {
+		nullsfix = " NULLS LAST"
+	}
+
 	switch {
 	case strings.HasSuffix(sort, "_count"):
 		var relationTableName = strings.TrimSuffix(sort, "_count") // TODO: pluralize?
@@ -91,7 +96,7 @@ func getSort(sort string, direction string, tableName string) (string, []string)
 		return " ORDER BY COUNT(distinct " + colName + ") " + direction, nil
 	case strings.Compare(sort, "filesize") == 0:
 		colName := getColumn(tableName, "size")
-		return " ORDER BY " + colName + " " + direction, []string{colName}
+		return " ORDER BY " + colName + " " + direction + nullsfix, []string{colName}
 	case strings.HasPrefix(sort, randomSeedPrefix):
 		// seed as a parameter from the UI
 		seedStr := sort[len(randomSeedPrefix):]
@@ -109,13 +114,13 @@ func getSort(sort string, direction string, tableName string) (string, []string)
 			colName = sort
 		}
 		if strings.Compare(sort, "name") == 0 {
-			return " ORDER BY " + colName + " COLLATE NATURAL_CI " + direction, []string{colName}
+			return " ORDER BY " + colName + " COLLATE NATURAL_CI " + direction + nullsfix, []string{colName}
 		}
 		if strings.Compare(sort, "title") == 0 {
-			return " ORDER BY " + colName + " COLLATE NATURAL_CI " + direction, []string{colName}
+			return " ORDER BY " + colName + " COLLATE NATURAL_CI " + direction + nullsfix, []string{colName}
 		}
 
-		return " ORDER BY " + colName + " " + direction, []string{colName}
+		return " ORDER BY " + colName + " " + direction + nullsfix, []string{colName}
 	}
 }
 

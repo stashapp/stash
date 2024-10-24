@@ -403,7 +403,15 @@ func (qb *galleryFilterHandler) performerAgeCriterionHandler(performerAge *model
 			f.addWhere("galleries.date != '' AND performers.birthdate != ''")
 			f.addWhere("galleries.date IS NOT NULL AND performers.birthdate IS NOT NULL")
 
-			ageCalc := "cast(strftime('%Y.%m%d', galleries.date) - strftime('%Y.%m%d', performers.birthdate) as int)"
+			var ageCalc string
+
+			switch dbWrapper.dbType {
+			case PostgresBackend:
+				ageCalc = "EXTRACT(YEAR FROM AGE(galleries.date, performers.birthdate))"
+			case SqliteBackend:
+				ageCalc = "cast(strftime('%Y.%m%d', galleries.date) - strftime('%Y.%m%d', performers.birthdate) as int)"
+			}
+
 			whereClause, args := getIntWhereClause(ageCalc, performerAge.Modifier, performerAge.Value, performerAge.Value2)
 			f.addWhere(whereClause, args...)
 		}

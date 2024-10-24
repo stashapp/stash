@@ -63,7 +63,7 @@ func (qb *studioFilterHandler) criterionHandler() criterionHandler {
 		criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
 			if studioFilter.StashID != nil {
 				studioRepository.stashIDs.join(f, "studio_stash_ids", "studios.id")
-				stringCriterionHandler(studioFilter.StashID, "studio_stash_ids.stash_id")(ctx, f)
+				uuidCriterionHandler(studioFilter.StashID, "studio_stash_ids.stash_id")(ctx, f)
 			}
 		}),
 		&stashIDCriterionHandler{
