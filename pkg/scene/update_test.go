@@ -92,6 +92,11 @@ func TestUpdater_IsEmpty(t *testing.T) {
 	}
 }
 
+func getUUID(_ string) string {
+	// TODO: Encode input string
+	return "00000000-0000-0000-0000-000000000000"
+}
+
 func TestUpdater_Update(t *testing.T) {
 	const (
 		sceneID = iota + 1
@@ -106,7 +111,7 @@ func TestUpdater_Update(t *testing.T) {
 
 	performerIDs := []int{performerID}
 	tagIDs := []int{tagID}
-	stashID := "stashID"
+	stashID := getUUID("stashID")
 	endpoint := "endpoint"
 
 	title := "title"
@@ -234,7 +239,7 @@ func TestUpdateSet_UpdateInput(t *testing.T) {
 	performerIDStrs := intslice.IntSliceToStringSlice(performerIDs)
 	tagIDs := []int{tagID}
 	tagIDStrs := intslice.IntSliceToStringSlice(tagIDs)
-	stashID := "stashID"
+	stashID := getUUID("stashID")
 	endpoint := "endpoint"
 	stashIDs := []models.StashID{
 		{

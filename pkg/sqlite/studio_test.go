@@ -592,7 +592,7 @@ func testStudioStashIDs(ctx context.Context, t *testing.T, s *models.Studio) {
 	assert.Len(t, s.StashIDs.List(), 0)
 
 	// add stash ids
-	const stashIDStr = "stashID"
+	var stashIDStr = getUUID("stashID")
 	const endpoint = "endpoint"
 	stashID := models.StashID{
 		StashID:  stashIDStr,

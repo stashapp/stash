@@ -1703,7 +1703,7 @@ func testPerformerStashIDs(ctx context.Context, t *testing.T, s *models.Performe
 	assert.Len(t, s.StashIDs.List(), 0)
 
 	// add stash ids
-	const stashIDStr = "stashID"
+	var stashIDStr = getUUID("stashID")
 	const endpoint = "endpoint"
 	stashID := models.StashID{
 		StashID:  stashIDStr,
@@ -1969,7 +1969,7 @@ func TestPerformerStore_FindByStashID(t *testing.T) {
 		{
 			name: "non-existing",
 			stashID: models.StashID{
-				StashID:  getPerformerStringValue(performerIdxWithScene, "stashid"),
+				StashID:  getUUID(getPerformerStringValue(performerIdxWithScene, "stashid")),
 				Endpoint: "non-existing",
 			},
 			expectedIDs: []int{},
