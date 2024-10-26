@@ -205,7 +205,16 @@ func getDBMinFunc() string {
 	}
 }
 
-func DBGroupConcat(columnName string) string {
+func getDBLike() string {
+	switch dbWrapper.dbType {
+	case PostgresBackend:
+		return "ILIKE"
+	default:
+		return "LIKE"
+	}
+}
+
+func getDBGroupConcat(columnName string) string {
 	switch dbWrapper.dbType {
 	case PostgresBackend:
 		return "STRING_AGG(" + columnName + "::TEXT, ',')"

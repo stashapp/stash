@@ -254,7 +254,7 @@ func (qb *FolderStore) allInPaths(q *goqu.SelectDataset, p []string) *goqu.Selec
 	for _, pp := range p {
 		ppWildcard := pp + string(filepath.Separator) + "%"
 
-		conds = append(conds, table.Col("path").Eq(pp), table.Col("path").Like(ppWildcard))
+		conds = append(conds, table.Col("path").Eq(pp), table.Col("path").ILike(ppWildcard))
 	}
 
 	return q.Where(

@@ -1155,12 +1155,9 @@ func TestPerformerQueryForAutoTag(t *testing.T) {
 			t.Errorf("Error finding performers: %s", err.Error())
 		}
 
-		if assert.Len(t, performers, 2) {
-			assert.Equal(t, strings.ToLower(performerNames[performerIdx1WithScene]), strings.ToLower(performers[0].Name))
-			assert.Equal(t, strings.ToLower(performerNames[performerIdx1WithScene]), strings.ToLower(performers[1].Name))
-		} else {
-			t.Errorf("Skipping performer comparison as atleast 1 is missing")
-		}
+		assert.Len(t, performers, 2)
+		assert.Equal(t, strings.ToLower(performerNames[performerIdx1WithScene]), strings.ToLower(performers[0].Name))
+		assert.Equal(t, strings.ToLower(performerNames[performerIdx1WithScene]), strings.ToLower(performers[1].Name))
 
 		return nil
 	})

@@ -389,7 +389,7 @@ func (qb *sceneFilterHandler) captionCriterionHandler(captions *models.StringCri
 			excludeClause := `scenes.id NOT IN (
 				SELECT scenes_files.scene_id from scenes_files 
 				INNER JOIN video_captions on video_captions.file_id = scenes_files.file_id 
-				WHERE video_captions.language_code LIKE ?
+				WHERE video_captions.language_code " + getDBLike() + " ?
 			)`
 			f.addWhere(excludeClause, criterion.Value)
 

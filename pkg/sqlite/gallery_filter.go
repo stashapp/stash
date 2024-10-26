@@ -201,13 +201,13 @@ func (qb *galleryFilterHandler) pathCriterionHandler(c *models.StringCriterionIn
 				case models.CriterionModifierEquals:
 					addWildcards = false
 					clause := getPathSearchClause(pathColumn, basenameColumn, c.Value, addWildcards, not)
-					clause2 := makeClause(folderPathColumn+" LIKE ?", c.Value)
+					clause2 := makeClause(folderPathColumn+" "+getDBLike()+" ?", c.Value)
 					f.whereClauses = append(f.whereClauses, orClauses(clause, clause2))
 				case models.CriterionModifierNotEquals:
 					addWildcards = false
 					not = true
 					clause := getPathSearchClause(pathColumn, basenameColumn, c.Value, addWildcards, not)
-					clause2 := makeClause(folderPathColumn+" NOT LIKE ?", c.Value)
+					clause2 := makeClause(folderPathColumn+" NOT "+getDBLike()+" ?", c.Value)
 					f.whereClauses = append(f.whereClauses, orClauses(clause, clause2))
 				case models.CriterionModifierMatchesRegex:
 					if _, err := regexp.Compile(c.Value); err != nil {

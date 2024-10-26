@@ -164,14 +164,14 @@ func getStringSearchClause(columns []string, q string, not bool) sqlClause {
 		// Search for any word
 		for _, word := range queryWords {
 			for _, column := range columns {
-				likeClauses = append(likeClauses, column+notStr+" LIKE ?")
+				likeClauses = append(likeClauses, column+notStr+" "+getDBLike()+" ?")
 				args = append(args, "%"+word+"%")
 			}
 		}
 	} else {
 		// Search the exact query
 		for _, column := range columns {
-			likeClauses = append(likeClauses, column+notStr+" LIKE ?")
+			likeClauses = append(likeClauses, column+notStr+" "+getDBLike()+" ?")
 			args = append(args, "%"+trimmedQuery+"%")
 		}
 	}

@@ -190,7 +190,7 @@ func (qb *queryBuilder) parseQueryString(columns []string, q string) {
 		var clauses []string
 
 		for _, column := range columns {
-			clauses = append(clauses, column+" LIKE ?")
+			clauses = append(clauses, column+" "+getDBLike()+" ?")
 			qb.addArg(like(t))
 		}
 
@@ -199,7 +199,7 @@ func (qb *queryBuilder) parseQueryString(columns []string, q string) {
 
 	for _, t := range specs.MustNot {
 		for _, column := range columns {
-			qb.addWhere(coalesce(column) + " NOT LIKE ?")
+			qb.addWhere(coalesce(column) + " NOT " + getDBLike() + " ?")
 			qb.addArg(like(t))
 		}
 	}
@@ -209,7 +209,7 @@ func (qb *queryBuilder) parseQueryString(columns []string, q string) {
 
 		for _, column := range columns {
 			for _, v := range set {
-				clauses = append(clauses, column+" LIKE ?")
+				clauses = append(clauses, column+" "+getDBLike()+" ?")
 				qb.addArg(like(v))
 			}
 		}

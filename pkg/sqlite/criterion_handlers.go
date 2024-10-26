@@ -43,9 +43,9 @@ func stringCriterionHandler(c *models.StringCriterionInput, column string) crite
 				case models.CriterionModifierExcludes:
 					f.whereClauses = append(f.whereClauses, getStringSearchClause([]string{column}, c.Value, true))
 				case models.CriterionModifierEquals:
-					f.addWhere(column+" LIKE ?", c.Value)
+					f.addWhere(column+" "+getDBLike()+" ?", c.Value)
 				case models.CriterionModifierNotEquals:
-					f.addWhere(column+" NOT LIKE ?", c.Value)
+					f.addWhere(column+" NOT "+getDBLike()+" ?", c.Value)
 				case models.CriterionModifierMatchesRegex:
 					if _, err := regexp.Compile(c.Value); err != nil {
 						f.setError(err)
@@ -86,9 +86,9 @@ func uuidCriterionHandler(c *models.StringCriterionInput, column string) criteri
 				case models.CriterionModifierExcludes:
 					f.whereClauses = append(f.whereClauses, getStringSearchClause([]string{columnCast}, c.Value, true))
 				case models.CriterionModifierEquals:
-					f.addWhere(columnCast+" LIKE ?", c.Value)
+					f.addWhere(columnCast+" "+getDBLike()+" ?", c.Value)
 				case models.CriterionModifierNotEquals:
-					f.addWhere(columnCast+" NOT LIKE ?", c.Value)
+					f.addWhere(columnCast+" NOT "+getDBLike()+" ?", c.Value)
 				case models.CriterionModifierMatchesRegex:
 					if _, err := regexp.Compile(c.Value); err != nil {
 						f.setError(err)
@@ -191,7 +191,7 @@ func getPathSearchClause(pathColumn, basenameColumn, p string, addWildcards, not
 	}
 
 	filepathColumn := fmt.Sprintf("%s || '%s' || %s", pathColumn, string(filepath.Separator), basenameColumn)
-	ret := makeClause(fmt.Sprintf("%s LIKE ?", filepathColumn), p)
+	ret := makeClause(fmt.Sprintf("%s "+getDBLike()+" ?", filepathColumn), p)
 
 	if not {
 		ret = ret.not()
@@ -589,7 +589,7 @@ func (m *stringListCriterionHandlerBuilder) handler(criterion *models.StringCrit
 				// excludes all of the provided values
 				// need to use actual join table name for this
 				// <primaryTable>.id NOT IN (select <joinTable>.<primaryFK> from <joinTable> where <joinTable>.<foreignFK> in <values>)
-				whereClause := utils.StrFormat("{primaryTable}.id NOT IN (SELECT {joinTable}.{primaryFK} from {joinTable} where {joinTable}.{stringColumn} LIKE ?)",
+				whereClause := utils.StrFormat("{primaryTable}.id NOT IN (SELECT {joinTable}.{primaryFK} from {joinTable} where {joinTable}.{stringColumn} "+getDBLike()+" ?)",
 					utils.StrFormatMap{
 						"primaryTable": m.primaryTable,
 						"joinTable":    m.joinTable,
@@ -730,7 +730,7 @@ WHERE id in {inBinding}
 {unionClause})
 `, withClauseMap)
 
-	query := fmt.Sprintf("WITH RECURSIVE %s SELECT 'VALUES' || "+DBGroupConcat("'(' || root_id || ', ' || item_id || ')'")+" AS val FROM items", withClause)
+	query := fmt.Sprintf("WITH RECURSIVE %s SELECT 'VALUES' || "+getDBGroupConcat("'(' || root_id || ', ' || item_id || ')'")+" AS val FROM items", withClause)
 
 	var valuesClause sql.NullString
 	err := dbWrapper.Get(ctx, &valuesClause, query, args...)

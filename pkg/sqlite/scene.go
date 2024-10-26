@@ -710,8 +710,8 @@ func (qb *SceneStore) FindByPath(ctx context.Context, p string) ([]*models.Scene
 		foldersTable,
 		goqu.On(foldersTable.Col(idColumn).Eq(filesTable.Col("parent_folder_id"))),
 	).Select(scenesFilesJoinTable.Col(sceneIDColumn)).Where(
-		foldersTable.Col("path").Like(dir),
-		filesTable.Col("basename").Like(basename),
+		foldersTable.Col("path").ILike(dir),
+		filesTable.Col("basename").ILike(basename),
 	)
 
 	ret, err := qb.findBySubquery(ctx, sq)
@@ -890,7 +890,7 @@ func (qb *SceneStore) Wall(ctx context.Context, q *string) ([]*models.Scene, err
 	}
 
 	table := qb.table()
-	qq := qb.selectDataset().Prepared(true).Where(table.Col("details").Like("%" + s + "%")).Order(goqu.L("RANDOM()").Asc()).Limit(80)
+	qq := qb.selectDataset().Prepared(true).Where(table.Col("details").ILike("%" + s + "%")).Order(goqu.L("RANDOM()").Asc()).Limit(80)
 	return qb.getMany(ctx, qq)
 }
 
@@ -1356,7 +1356,7 @@ func (qb *SceneStore) FindDuplicates(ctx context.Context, distance int, duration
 	if distance == 0 {
 		var ids []string
 
-		dbfix_findExactDuplicateQuery := fmt.Sprintf(findExactDuplicateQuery, DBGroupConcat("DISTINCT scene_id"))
+		dbfix_findExactDuplicateQuery := fmt.Sprintf(findExactDuplicateQuery, getDBGroupConcat("DISTINCT scene_id"))
 		if err := dbWrapper.Select(ctx, &ids, dbfix_findExactDuplicateQuery, durationDiff); err != nil {
 			return nil, err
 		}

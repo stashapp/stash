@@ -266,7 +266,7 @@ func (qb *SceneMarkerStore) CountByTagID(ctx context.Context, tagID int) (int, e
 func (qb *SceneMarkerStore) GetMarkerStrings(ctx context.Context, q *string, sort *string) ([]*models.MarkerStringsResultType, error) {
 	query := "SELECT count(*) as `count`, scene_markers.id as id, scene_markers.title as title FROM scene_markers"
 	if q != nil {
-		query += " WHERE title LIKE '%" + *q + "%'"
+		query += " WHERE title " + getDBLike() + " '%" + *q + "%'"
 	}
 	query += " GROUP BY title"
 	if sort != nil && *sort == "count" {
@@ -285,7 +285,7 @@ func (qb *SceneMarkerStore) Wall(ctx context.Context, q *string) ([]*models.Scen
 	}
 
 	table := qb.table()
-	qq := qb.selectDataset().Prepared(true).Where(table.Col("title").Like("%" + s + "%")).Order(goqu.L("RANDOM()").Asc()).Limit(80)
+	qq := qb.selectDataset().Prepared(true).Where(table.Col("title").ILike("%" + s + "%")).Order(goqu.L("RANDOM()").Asc()).Limit(80)
 	return qb.getMany(ctx, qq)
 }
 
