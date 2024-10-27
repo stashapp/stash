@@ -606,17 +606,17 @@
                     "star_precision": {
                         "label": "Přesnost hvězd hodnocení",
                         "options": {
-                            "full": "Plná",
+                            "full": "Plné",
                             "half": "Poloviční",
-                            "quarter": "Čtvrtinová",
-                            "tenth": "Desetina"
+                            "quarter": "Čtvrtinové",
+                            "tenth": "Desetiné"
                         }
                     },
                     "type": {
                         "label": "Typ hodnocení",
                         "options": {
-                            "decimal": "Desetinný",
-                            "stars": "Hvězdy"
+                            "decimal": "Desetinné",
+                            "stars": "Hvězdičky"
                         }
                     }
                 },
@@ -1336,7 +1336,7 @@
     "primary_file": "Primární soubor",
     "primary_tag": "Primární tag",
     "queue": "Fronta",
-    "random": "Náhodný",
+    "random": "Náhodně",
     "last_o_at": "Poslední O",
     "o_history": "Historie O",
     "odate_recorded_no": "Žádný Datum O Nezaznamenán",
@@ -1369,7 +1369,7 @@
     "scene_updated_at": "Scéna aktualizována",
     "scenes": "Scény",
     "scenes_updated_at": "Scéna aktualizována",
-    "second": "Druhá",
+    "second": "Sekunda",
     "seconds": "Sekund",
     "settings": "Nastavení",
     "empty_server": "Chcete-li na této stránce zobrazit doporučení, přidejte na svůj server nějaké scény.",
