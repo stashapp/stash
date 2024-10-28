@@ -51,10 +51,10 @@ FROM (
 	INNER JOIN scenes_files ON (scenes.id = scenes_files.scene_id)
 	INNER JOIN files ON (scenes_files.file_id = files.id)
 	INNER JOIN files_fingerprints ON (scenes_files.file_id = files_fingerprints.file_id AND files_fingerprints.type = 'phash')
-	INNER JOIN video_files ON (files.id == video_files.file_id)
-)
-WHERE durationDiff <= ?1
-    OR ?1 < 0   --  Always TRUE if the parameter is negative.
+	INNER JOIN video_files ON (files.id = video_files.file_id)
+) as subq
+WHERE durationDiff <= $1
+    OR $1 < 0   --  Always TRUE if the parameter is negative.
                 --  That will disable the durationDiff checking.
 GROUP BY phash
 HAVING COUNT(phash) > 1
@@ -70,7 +70,7 @@ FROM scenes
 INNER JOIN scenes_files ON (scenes.id = scenes_files.scene_id)
 INNER JOIN files ON (scenes_files.file_id = files.id)
 INNER JOIN files_fingerprints ON (scenes_files.file_id = files_fingerprints.file_id AND files_fingerprints.type = 'phash')
-INNER JOIN video_files ON (files.id == video_files.file_id)
+INNER JOIN video_files ON (files.id = video_files.file_id)
 ORDER BY files.size DESC;
 `
 

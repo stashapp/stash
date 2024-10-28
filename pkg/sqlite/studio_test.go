@@ -1044,13 +1044,14 @@ func TestStudioQueryFast(t *testing.T) {
 
 	tsString := "test"
 	tsInt := 1
+	tsId := "1"
 
 	testStringCriterion := models.StringCriterionInput{
 		Value:    tsString,
 		Modifier: models.CriterionModifierEquals,
 	}
-	testIncludesMultiCriterion := models.MultiCriterionInput{
-		Value:    []string{tsString},
+	testIncludesMultiCriterionId := models.MultiCriterionInput{
+		Value:    []string{tsId},
 		Modifier: models.CriterionModifierIncludes,
 	}
 	testIntCriterion := models.IntCriterionInput{
@@ -1080,7 +1081,7 @@ func TestStudioQueryFast(t *testing.T) {
 		SceneCount: &testIntCriterion,
 	}
 	parentsFilter := models.StudioFilterType{
-		Parents: &testIncludesMultiCriterion,
+		Parents: &testIncludesMultiCriterionId,
 	}
 
 	filters := []models.StudioFilterType{nameFilter, aliasesFilter, stashIDFilter, urlFilter, ratingFilter, sceneCountFilter, imageCountFilter, parentsFilter}
