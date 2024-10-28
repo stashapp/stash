@@ -223,6 +223,15 @@ func getDBGroupConcat(columnName string) string {
 	}
 }
 
+func getDBRowId() string {
+	switch dbWrapper.dbType {
+	case PostgresBackend:
+		return "ctid"
+	default:
+		return "rowid"
+	}
+}
+
 func (db *Database) SetSchemaVersion(version uint) {
 	db.schemaVersion = version
 }

@@ -1073,21 +1073,23 @@ func (t *viewHistoryTable) deleteDates(ctx context.Context, id int, dates []time
 		dates = []time.Time{time.Now()}
 	}
 
+	rowIdColumn := getDBRowId()
+
 	for _, date := range dates {
 		var subquery *goqu.SelectDataset
 		if mostRecent {
 			// delete the most recent
-			subquery = dialect.Select("rowid").From(table).Where(
+			subquery = dialect.Select(rowIdColumn).From(table).Where(
 				t.idColumn.Eq(id),
 			).Order(t.dateColumn.Desc()).Limit(1)
 		} else {
-			subquery = dialect.Select("rowid").From(table).Where(
+			subquery = dialect.Select(rowIdColumn).From(table).Where(
 				t.idColumn.Eq(id),
 				t.dateColumn.Eq(UTCTimestamp{Timestamp{date}}),
 			).Limit(1)
 		}
 
-		q := dialect.Delete(table).Where(goqu.I("rowid").Eq(subquery))
+		q := dialect.Delete(table).Where(goqu.I(rowIdColumn).Eq(subquery))
 
 		if _, err := exec(ctx, q); err != nil {
 			return nil, fmt.Errorf("deleting from %s: %w", table.GetTable(), err)
