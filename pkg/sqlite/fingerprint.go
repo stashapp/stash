@@ -29,10 +29,9 @@ func (r *fingerprintQueryRow) correct() {
 	if !r.Type.Valid || strings.ToLower(r.Type.String) != "phash" {
 		return
 	}
-	switch r.Fingerprint.(type) {
-	case string:
-		i, err := strconv.ParseInt(r.Fingerprint.(string), 10, 64)
-		if err == nil {
+
+	if val, ok := r.Fingerprint.(string); ok {
+		if i, err := strconv.ParseInt(val, 10, 64); err == nil {
 			r.Fingerprint = i
 		}
 	}
