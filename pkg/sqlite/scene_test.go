@@ -75,6 +75,13 @@ func loadSceneRelationships(ctx context.Context, expected models.Scene, actual *
 	return nil
 }
 
+func sortScene(copy *models.Scene) {
+	// Ordering is not ensured
+	copy.GalleryIDs.Sort()
+	copy.TagIDs.Sort()
+	copy.PerformerIDs.Sort()
+}
+
 func Test_sceneQueryBuilder_Create(t *testing.T) {
 	var (
 		title        = "title"
@@ -267,6 +274,8 @@ func Test_sceneQueryBuilder_Create(t *testing.T) {
 				return
 			}
 
+			sortScene(&copy)
+			sortScene(&s)
 			assert.Equal(copy, s)
 
 			// ensure can find the scene
@@ -284,6 +293,7 @@ func Test_sceneQueryBuilder_Create(t *testing.T) {
 				t.Errorf("loadSceneRelationships() error = %v", err)
 				return
 			}
+			sortScene(found)
 			assert.Equal(copy, *found)
 
 			return
@@ -492,6 +502,8 @@ func Test_sceneQueryBuilder_Update(t *testing.T) {
 				return
 			}
 
+			sortScene(&copy)
+			sortScene(s)
 			assert.Equal(copy, *s)
 		})
 	}
@@ -699,6 +711,8 @@ func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 			// ignore file ids
 			clearSceneFileIDs(got)
 
+			sortScene(&tt.want)
+			sortScene(got)
 			assert.Equal(tt.want, *got)
 
 			s, err := qb.Find(ctx, tt.id)
@@ -714,6 +728,7 @@ func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 			// ignore file ids
 			clearSceneFileIDs(s)
 
+			sortScene(s)
 			assert.Equal(tt.want, *s)
 		})
 	}

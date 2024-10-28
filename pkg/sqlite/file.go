@@ -549,6 +549,8 @@ func (qb *FileStore) getMany(ctx context.Context, q *goqu.SelectDataset) ([]mode
 			return err
 		}
 
+		f.fingerprintQueryRow.correct()
+
 		rows = append(rows, f)
 		return nil
 	}); err != nil {

@@ -3,6 +3,8 @@ package sqlite
 import (
 	"context"
 	"fmt"
+	"strconv"
+	"strings"
 
 	"github.com/doug-martin/goqu/v9"
 	"github.com/doug-martin/goqu/v9/exp"
@@ -21,6 +23,19 @@ type fingerprintQueryRow struct {
 
 func (r fingerprintQueryRow) valid() bool {
 	return r.Type.Valid
+}
+
+func (r *fingerprintQueryRow) correct() {
+	if !r.Type.Valid || strings.ToLower(r.Type.String) != "phash" {
+		return
+	}
+	switch r.Fingerprint.(type) {
+	case string:
+		i, err := strconv.ParseInt(r.Fingerprint.(string), 10, 64)
+		if err == nil {
+			r.Fingerprint = i
+		}
+	}
 }
 
 func (r *fingerprintQueryRow) resolve() models.Fingerprint {
