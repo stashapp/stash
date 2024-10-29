@@ -9,7 +9,7 @@ on:
   pull_request:
 
 env:
-  COMPILER_IMAGE: stashapp/compiler:9
+  COMPILER_IMAGE: stashapp/compiler:10
 
 jobs:
   golangci:
