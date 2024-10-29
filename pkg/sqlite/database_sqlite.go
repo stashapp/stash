@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/doug-martin/goqu/v9"
-	"github.com/doug-martin/goqu/v9/dialect/sqlite3"
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
@@ -15,13 +14,6 @@ import (
 
 type SQLiteDB struct {
 	Database
-}
-
-func RegisterSqliteDialect() {
-	opts := sqlite3.DialectOptions()
-	opts.SupportsReturn = true
-	goqu.RegisterDialect("sqlite3new", opts)
-
 }
 
 func NewSQLiteDatabase(dbPath string, init bool) *SQLiteDB {
@@ -35,7 +27,7 @@ func NewSQLiteDatabase(dbPath string, init bool) *SQLiteDB {
 	db.DBInterface = db
 
 	if init {
-		dialect = goqu.Dialect("sqlite3new")
+		dialect = goqu.Dialect("sqlite3")
 		dbWrapper.dbType = SqliteBackend
 	}
 

@@ -37,8 +37,6 @@ func Initialize(cfg *config.Config, l *log.Logger) (*Manager, error) {
 
 	var db sqlite.DBInterface
 
-	sqlite.RegisterSqliteDialect()
-
 	dbUrl := cfg.GetDatabaseUrl()
 	upperUrl := strings.ToUpper(dbUrl)
 	switch {

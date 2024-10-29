@@ -635,7 +635,6 @@ func getNewDB(databaseFile string) sqlite.DBInterface {
 	if valid {
 		db = sqlite.NewPostgresDatabase(dbUrl, true)
 	} else {
-		sqlite.RegisterSqliteDialect()
 		db = sqlite.NewSQLiteDatabase(databaseFile, true)
 	}
 

@@ -14,7 +14,7 @@ require (
 	github.com/corona10/goimagehash v1.1.0
 	github.com/disintegration/imaging v1.6.2
 	github.com/dop251/goja v0.0.0-20231027120936-b396bb4c349d
-	github.com/doug-martin/goqu/v9 v9.18.0
+	github.com/doug-martin/goqu/v9 v9.19.1-0.20231214054827-21b6e6d1cb1b
 	github.com/go-chi/chi/v5 v5.0.12
 	github.com/go-chi/cors v1.2.1
 	github.com/go-chi/httplog v0.3.1
