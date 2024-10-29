@@ -7,9 +7,6 @@ exec:
   filename: internal/api/generated_exec.go
 model:
   filename: internal/api/generated_models.go
-resolver:
-  filename: internal/api/resolver.go
-  type: Resolver
 
 struct_tag: gqlgen
 
