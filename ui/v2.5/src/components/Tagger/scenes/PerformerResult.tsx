@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Button, ButtonGroup } from "react-bootstrap";
 import { FormattedMessage } from "react-intl";
 
@@ -13,24 +13,24 @@ import {
 } from "src/components/Performers/PerformerSelect";
 import { getStashboxBase } from "src/utils/stashbox";
 import { ExternalLink } from "src/components/Shared/ExternalLink";
+import { Link } from "react-router-dom";
 
-interface IPerformerName {
+const PerformerLink: React.FC<{
   performer: GQL.ScrapedPerformer | Performer;
-  id: string | undefined | null;
-  baseURL: string | undefined;
-}
+  url: string | undefined;
+  internal?: boolean;
+}> = ({ performer, url, internal = false }) => {
+  const name = useMemo(() => {
+    if (!url) return performer.name;
 
-const PerformerName: React.FC<IPerformerName> = ({
-  performer,
-  id,
-  baseURL,
-}) => {
-  const name =
-    baseURL && id ? (
-      <ExternalLink href={`${baseURL}${id}`}>{performer.name}</ExternalLink>
+    return internal ? (
+      <Link to={url} target="_blank">
+        {performer.name}
+      </Link>
     ) : (
-      performer.name
+      <ExternalLink href={url}>{performer.name}</ExternalLink>
     );
+  }, [url, performer.name, internal]);
 
   return (
     <>
@@ -115,10 +115,9 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
         <div className="entity-name">
           <FormattedMessage id="countables.performers" values={{ count: 1 }} />:
           <b className="ml-2">
-            <PerformerName
+            <PerformerLink
               performer={performer}
-              id={performer.remote_site_id}
-              baseURL={stashboxPerformerPrefix}
+              url={`${stashboxPerformerPrefix}${performer.remote_site_id}`}
             />
           </b>
         </div>
@@ -134,10 +133,10 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
                 <FormattedMessage id="component_tagger.verb_matched" />:
               </span>
               <b className="col-3 text-right">
-                <PerformerName
+                <PerformerLink
                   performer={matchedPerformer}
-                  id={matchedPerformer.id}
-                  baseURL={performerURLPrefix}
+                  url={`${performerURLPrefix}${matchedPerformer.id}`}
+                  internal
                 />
               </b>
             </div>
@@ -169,10 +168,9 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
       <div className="entity-name">
         <FormattedMessage id="countables.performers" values={{ count: 1 }} />:
         <b className="ml-2">
-          <PerformerName
+          <PerformerLink
             performer={performer}
-            id={performer.remote_site_id}
-            baseURL={stashboxPerformerPrefix}
+            url={`${stashboxPerformerPrefix}${performer.remote_site_id}`}
           />
         </b>
       </div>

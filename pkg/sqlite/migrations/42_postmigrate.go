@@ -71,7 +71,7 @@ func (m *schema42Migrator) migrate(ctx context.Context) error {
 
 			query += fmt.Sprintf(" ORDER BY `performer_id` LIMIT %d", limit)
 
-			rows, err := m.db.Query(query)
+			rows, err := tx.Query(query)
 			if err != nil {
 				return err
 			}
@@ -92,7 +92,7 @@ func (m *schema42Migrator) migrate(ctx context.Context) error {
 				gotSome = true
 				count++
 
-				if err := m.migratePerformerAliases(id, aliases); err != nil {
+				if err := m.migratePerformerAliases(tx, id, aliases); err != nil {
 					return err
 				}
 			}
@@ -114,7 +114,7 @@ func (m *schema42Migrator) migrate(ctx context.Context) error {
 	return nil
 }
 
-func (m *schema42Migrator) migratePerformerAliases(id int, aliases string) error {
+func (m *schema42Migrator) migratePerformerAliases(tx *sqlx.Tx, id int, aliases string) error {
 	// split aliases by , or /
 	aliasList := strings.FieldsFunc(aliases, func(r rune) bool {
 		return strings.ContainsRune(",/", r)
@@ -126,7 +126,7 @@ func (m *schema42Migrator) migratePerformerAliases(id int, aliases string) error
 	}
 
 	// delete the existing row
-	if _, err := m.db.Exec("DELETE FROM `performer_aliases` WHERE `performer_id` = ?", id); err != nil {
+	if _, err := tx.Exec("DELETE FROM `performer_aliases` WHERE `performer_id` = ?", id); err != nil {
 		return err
 	}
 
@@ -140,7 +140,7 @@ func (m *schema42Migrator) migratePerformerAliases(id int, aliases string) error
 
 	// insert aliases into table
 	for _, alias := range aliasList {
-		_, err := m.db.Exec("INSERT INTO `performer_aliases` (`performer_id`, `alias`) VALUES (?, ?)", id, alias)
+		_, err := tx.Exec("INSERT INTO `performer_aliases` (`performer_id`, `alias`) VALUES (?, ?)", id, alias)
 		if err != nil {
 			return err
 		}
@@ -173,7 +173,7 @@ SELECT id, name FROM performers WHERE performers.name like '% (%)'`
 
 			query += fmt.Sprintf(" ORDER BY `id` LIMIT %d", limit)
 
-			rows, err := m.db.Query(query)
+			rows, err := tx.Query(query)
 			if err != nil {
 				return err
 			}
@@ -194,7 +194,7 @@ SELECT id, name FROM performers WHERE performers.name like '% (%)'`
 				lastID = id
 				count++
 
-				if err := m.massagePerformerName(id, name); err != nil {
+				if err := m.massagePerformerName(tx, id, name); err != nil {
 					return err
 				}
 			}
@@ -220,7 +220,7 @@ SELECT id, name FROM performers WHERE performers.name like '% (%)'`
 // the format "name (disambiguation)".
 var performerDisRE = regexp.MustCompile(`^((?:[^(\s]+\s)+)\(([^)]+)\)$`)
 
-func (m *schema42Migrator) massagePerformerName(performerID int, name string) error {
+func (m *schema42Migrator) massagePerformerName(tx *sqlx.Tx, performerID int, name string) error {
 
 	r := performerDisRE.FindStringSubmatch(name)
 	if len(r) != 3 {
@@ -235,7 +235,7 @@ func (m *schema42Migrator) massagePerformerName(performerID int, name string) er
 
 	logger.Infof("Separating %q into %q and disambiguation %q", name, newName, newDis)
 
-	_, err := m.db.Exec("UPDATE performers SET name = ?, disambiguation = ? WHERE id = ?", newName, newDis, performerID)
+	_, err := tx.Exec("UPDATE performers SET name = ?, disambiguation = ? WHERE id = ?", newName, newDis, performerID)
 	if err != nil {
 		return err
 	}
@@ -266,7 +266,7 @@ SELECT id, name FROM performers WHERE performers.disambiguation IS NULL AND EXIS
 
 			query += fmt.Sprintf(" ORDER BY `id` LIMIT %d", limit)
 
-			rows, err := m.db.Query(query)
+			rows, err := tx.Query(query)
 			if err != nil {
 				return err
 			}
@@ -286,7 +286,7 @@ SELECT id, name FROM performers WHERE performers.disambiguation IS NULL AND EXIS
 				gotSome = true
 				count++
 
-				if err := m.migrateDuplicatePerformer(id, name); err != nil {
+				if err := m.migrateDuplicatePerformer(tx, id, name); err != nil {
 					return err
 				}
 			}
@@ -308,13 +308,13 @@ SELECT id, name FROM performers WHERE performers.disambiguation IS NULL AND EXIS
 	return nil
 }
 
-func (m *schema42Migrator) migrateDuplicatePerformer(performerID int, name string) error {
+func (m *schema42Migrator) migrateDuplicatePerformer(tx *sqlx.Tx, performerID int, name string) error {
 	// get the highest value of disambiguation for this performer name
 	query := `
 SELECT disambiguation FROM performers WHERE name = ? ORDER BY disambiguation DESC LIMIT 1`
 
 	var disambiguation sql.NullString
-	if err := m.db.Get(&disambiguation, query, name); err != nil {
+	if err := tx.Get(&disambiguation, query, name); err != nil {
 		return err
 	}
 
@@ -333,7 +333,7 @@ SELECT disambiguation FROM performers WHERE name = ? ORDER BY disambiguation DES
 
 	logger.Infof("Adding disambiguation '%d' for performer %q", newDisambiguation, name)
 
-	_, err := m.db.Exec("UPDATE performers SET disambiguation = ? WHERE id = ?", strconv.Itoa(newDisambiguation), performerID)
+	_, err := tx.Exec("UPDATE performers SET disambiguation = ? WHERE id = ?", strconv.Itoa(newDisambiguation), performerID)
 	if err != nil {
 		return err
 	}

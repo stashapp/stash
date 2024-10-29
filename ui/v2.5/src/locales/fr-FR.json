@@ -135,7 +135,13 @@
         "reload": "Actualiser",
         "remove_date": "Supprimer la date",
         "clean_generated": "Nettoyer les fichiers générés",
-        "view_history": "Voir l'historique"
+        "view_history": "Voir l'historique",
+        "reset_cover": "Rétablir la vignette par défaut",
+        "reset_play_duration": "Réinitialiser la durée de lecture",
+        "reset_resume_time": "Réinitialiser le temps de reprise",
+        "set_cover": "Définir comme vignette",
+        "remove_from_containing_group": "Supprimer du groupe",
+        "add_sub_groups": "Ajouter des groupes affiliés"
     },
     "actions_name": "Actions",
     "age": "Âge",
@@ -543,7 +549,9 @@
                 "sprites": "Sprites de scène",
                 "transcodes": "Transcodes de scènes"
             },
-            "generate_sprites_during_scan_tooltip": "L'ensemble des images affichées en dessous du lecteur vidéo pour une navigation aisée."
+            "generate_sprites_during_scan_tooltip": "L'ensemble des images affichées en dessous du lecteur vidéo pour une navigation aisée.",
+            "rescan": "Réanalyse des fichiers",
+            "rescan_tooltip": "Réanalyse chaque fichier contenu dans le chemin d'accès. Utilisé pour forcer la mise à jour des métadonnées des fichiers et réanalyser les archives zip."
         },
         "tools": {
             "scene_duplicate_checker": "Vérificateur de doublons de scènes",
@@ -1391,7 +1399,7 @@
         "saved_entity": "{entity} sauvegardé·e",
         "started_auto_tagging": "Début de l'étiquetage automatique",
         "started_generating": "Début de la génération",
-        "started_importing": "Début de l'importation",
+        "started_importing": "Début d'importation",
         "updated_entity": "{entity} mis·e à jour"
     },
     "total": "Total",
@@ -1471,5 +1479,17 @@
     "groups": "Groupes",
     "group": "Groupe",
     "studio_count": "Nombre de studios",
-    "studio_tags": "Étiquettes du studio"
+    "studio_tags": "Étiquettes du studio",
+    "include_sub_studio_content": "Inclure le contenu des studios affiliés",
+    "include_sub_tag_content": "Inclure le contenu des étiquettes affiliées",
+    "containing_group": "Groupe contenant",
+    "containing_group_count": "Nombre de groupes contenant",
+    "containing_groups": "Groupes contenant",
+    "include_sub_group_content": "Inclure le contenu des groupes affiliés",
+    "sub_group_order": "Ordre de groupe affilié",
+    "sub_groups": "Groupes affiliés",
+    "sub_group_of": "Groupe affilié de {parent}",
+    "sub_group": "Groupe affilié",
+    "sub_group_count": "Nombre de groupes affiliés",
+    "include_sub_groups": "Inclure les groupes affiliés"
 }

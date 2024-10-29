@@ -8,10 +8,11 @@ import {
   Overlay,
   Popover,
 } from "react-bootstrap";
-import { FormattedMessage, useIntl } from "react-intl";
+import { FormattedMessage, FormattedNumber, useIntl } from "react-intl";
 import useFocus from "src/utils/focus";
 import { Icon } from "../Shared/Icon";
 import { faCheck, faChevronDown } from "@fortawesome/free-solid-svg-icons";
+import { useStopWheelScroll } from "src/utils/form";
 
 const PageCount: React.FC<{
   totalPages: number;
@@ -19,18 +20,20 @@ const PageCount: React.FC<{
   onChangePage: (page: number) => void;
 }> = ({ totalPages, currentPage, onChangePage }) => {
   const intl = useIntl();
-
   const currentPageCtrl = useRef(null);
-
   const [pageInput, pageFocus] = useFocus();
-
   const [showSelectPage, setShowSelectPage] = useState(false);
 
   useEffect(() => {
     if (showSelectPage) {
-      pageFocus();
+      // delaying the focus to the next execution loop so that rendering takes place first and stops the page from resetting.
+      setTimeout(() => {
+        pageFocus();
+      }, 0);
     }
   }, [showSelectPage, pageFocus]);
+
+  useStopWheelScroll(pageInput);
 
   const pageOptions = useMemo(() => {
     const maxPagesToShow = 10;
@@ -98,6 +101,7 @@ const PageCount: React.FC<{
         <Popover id="select_page_popover">
           <Form inline>
             <InputGroup>
+              {/* can't use NumberField because of the ref */}
               <Form.Control
                 type="number"
                 min={1}
@@ -105,7 +109,7 @@ const PageCount: React.FC<{
                 className="text-input"
                 ref={pageInput}
                 defaultValue={currentPage}
-                onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) => {
+                onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
                   if (e.key === "Enter") {
                     onCustomChangePage();
                     e.preventDefault();
@@ -143,6 +147,8 @@ interface IPaginationIndexProps {
   metadataByline?: React.ReactNode;
 }
 
+const minPagesForCompact = 4;
+
 export const Pagination: React.FC<IPaginationProps> = ({
   itemsPerPage,
   currentPage,
@@ -150,11 +156,34 @@ export const Pagination: React.FC<IPaginationProps> = ({
   onChangePage,
 }) => {
   const intl = useIntl();
-
   const totalPages = useMemo(
     () => Math.ceil(totalItems / itemsPerPage),
     [totalItems, itemsPerPage]
   );
+
+  const pageButtons = useMemo(() => {
+    if (totalPages >= minPagesForCompact)
+      return (
+        <PageCount
+          totalPages={totalPages}
+          currentPage={currentPage}
+          onChangePage={onChangePage}
+        />
+      );
+
+    const pages = [...Array(totalPages).keys()].map((i) => i + 1);
+
+    return pages.map((page: number) => (
+      <Button
+        variant="secondary"
+        key={page}
+        active={currentPage === page}
+        onClick={() => onChangePage(page)}
+      >
+        <FormattedNumber value={page} />
+      </Button>
+    ));
+  }, [totalPages, currentPage, onChangePage]);
 
   if (totalPages <= 1) return <div />;
 
@@ -176,13 +205,7 @@ export const Pagination: React.FC<IPaginationProps> = ({
       >
         &lt;
       </Button>
-
-      <PageCount
-        totalPages={totalPages}
-        currentPage={currentPage}
-        onChangePage={onChangePage}
-      />
-
+      {pageButtons}
       <Button
         variant="secondary"
         disabled={currentPage === totalPages}

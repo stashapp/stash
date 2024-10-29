@@ -1,11 +1,14 @@
 import React, { useMemo } from "react";
 import cx from "classnames";
 
+// #5231: TouchEvent is not defined on all browsers
+const touchEventDefined = window.TouchEvent !== undefined;
+
 interface IHoverScrubber {
   totalSprites: number;
   activeIndex: number | undefined;
   setActiveIndex: (index: number | undefined) => void;
-  onClick?: () => void;
+  onClick?: (index: number) => void;
 }
 
 export const HoverScrubber: React.FC<IHoverScrubber> = ({
@@ -14,9 +17,21 @@ export const HoverScrubber: React.FC<IHoverScrubber> = ({
   setActiveIndex,
   onClick,
 }) => {
-  function getActiveIndex(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
+  function getActiveIndex(
+    e:
+      | React.MouseEvent<HTMLDivElement, MouseEvent>
+      | React.TouchEvent<HTMLDivElement>
+  ) {
     const { width } = e.currentTarget.getBoundingClientRect();
-    const x = e.nativeEvent.offsetX;
+
+    let x = 0;
+    if (e.nativeEvent instanceof MouseEvent) {
+      x = e.nativeEvent.offsetX;
+    } else if (touchEventDefined && e.nativeEvent instanceof TouchEvent) {
+      x =
+        e.nativeEvent.touches[0].clientX -
+        e.currentTarget.getBoundingClientRect().x;
+    }
 
     const i = Math.round((x / width) * (totalSprites - 1));
 
@@ -26,27 +41,51 @@ export const HoverScrubber: React.FC<IHoverScrubber> = ({
     return i;
   }
 
-  function onMouseMove(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
+  function onMove(
+    e:
+      | React.MouseEvent<HTMLDivElement, MouseEvent>
+      | React.TouchEvent<HTMLDivElement>
+  ) {
     const relatedTarget = e.currentTarget;
 
-    if (relatedTarget !== e.target) return;
+    if (
+      (e instanceof MouseEvent && relatedTarget !== e.target) ||
+      (touchEventDefined &&
+        e instanceof TouchEvent &&
+        document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY))
+    )
+      return;
 
     setActiveIndex(getActiveIndex(e));
   }
 
-  function onMouseLeave() {
+  function onLeave() {
     setActiveIndex(undefined);
   }
 
-  function onScrubberClick(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
+  function onScrubberClick(
+    e:
+      | React.MouseEvent<HTMLDivElement, MouseEvent>
+      | React.TouchEvent<HTMLDivElement>
+  ) {
     if (!onClick) return;
 
     const relatedTarget = e.currentTarget;
 
-    if (relatedTarget !== e.target) return;
+    if (
+      (e instanceof MouseEvent && relatedTarget !== e.target) ||
+      (touchEventDefined &&
+        e instanceof TouchEvent &&
+        document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY))
+    )
+      return;
 
     e.preventDefault();
-    onClick();
+    e.stopPropagation();
+
+    const i = getActiveIndex(e);
+    if (i === undefined) return;
+    onClick(i);
   }
 
   const indicatorStyle = useMemo(() => {
@@ -67,8 +106,11 @@ export const HoverScrubber: React.FC<IHoverScrubber> = ({
     >
       <div
         className="hover-scrubber-area"
-        onMouseMove={onMouseMove}
-        onMouseLeave={onMouseLeave}
+        onMouseMove={onMove}
+        onTouchMove={onMove}
+        onMouseLeave={onLeave}
+        onTouchEnd={onLeave}
+        onTouchCancel={onLeave}
         onClick={onScrubberClick}
       />
       <div className="hover-scrubber-indicator">

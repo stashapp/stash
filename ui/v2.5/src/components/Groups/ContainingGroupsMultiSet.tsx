@@ -14,6 +14,7 @@ export const ContainingGroupsMultiSet: React.FC<{
   disabled?: boolean;
   onUpdate: (value: IRelatedGroupEntry[]) => void;
   onSetMode: (mode: GQL.BulkUpdateIdMode) => void;
+  menuPortalTarget?: HTMLElement | null;
 }> = (props) => {
   const { mode, onUpdate, existingValue } = props;
 
@@ -48,12 +49,14 @@ export const ContainingGroupsMultiSet: React.FC<{
           value={props.value}
           onUpdate={props.onUpdate}
           disabled={props.disabled}
+          menuPortalTarget={props.menuPortalTarget}
         />
       ) : (
         <GroupSelect
           onSelect={(items) => onRemoveSet(items)}
           values={[]}
           isDisabled={props.disabled}
+          menuPortalTarget={props.menuPortalTarget}
         />
       )}
     </div>

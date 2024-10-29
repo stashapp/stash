@@ -135,7 +135,9 @@
         "create_parent_studio": "Crear estudio matriz",
         "enable": "Activar",
         "remove_date": "Eliminar fecha",
-        "view_history": "Ver historial"
+        "view_history": "Ver historial",
+        "add_sub_groups": "Añadir Subgrupos",
+        "remove_from_containing_group": "Eliminar del grupo"
     },
     "actions_name": "Acciones",
     "age": "Edad",

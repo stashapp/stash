@@ -243,7 +243,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   const [fullscreen, setFullscreen] = useState(false);
   const [showScrubber, setShowScrubber] = useState(false);
 
-  const initialTimestamp = useRef(-1);
   const started = useRef(false);
   const auto = useRef(false);
   const interactiveReady = useRef(false);
@@ -451,9 +450,11 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     if (!player) return;
 
     function canplay(this: VideoJsPlayer) {
-      if (initialTimestamp.current !== -1) {
-        this.currentTime(initialTimestamp.current);
-        initialTimestamp.current = -1;
+      // if we're seeking before starting, don't set the initial timestamp
+      // when starting from the beginning, there is a small delay before the event
+      // is triggered, so we can't just check if the time is 0
+      if (this.currentTime() >= 0.1) {
+        return;
       }
     }
 
@@ -657,7 +658,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       startPosition = resumeTime;
     }
 
-    initialTimestamp.current = startPosition;
     setTime(startPosition);
 
     player.load();
@@ -665,6 +665,10 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
     player.ready(() => {
       player.vttThumbnails().src(scene.paths.vtt ?? null);
+
+      if (startPosition) {
+        player.currentTime(startPosition);
+      }
     });
 
     started.current = false;
@@ -793,7 +797,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     if (started.current) {
       getPlayer()?.currentTime(seconds);
     } else {
-      initialTimestamp.current = seconds;
       setTime(seconds);
     }
   }

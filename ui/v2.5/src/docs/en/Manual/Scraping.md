@@ -15,7 +15,7 @@ Stash supports scraping of metadata from various external sources.
 |   | Fragment | Search | URL |
 |---|:---:|:---:|:---:|
 | gallery | ✔️ | | ✔️ |
-| movie | | | ✔️ |
+| group | | | ✔️ |
 | performer | | ✔️ | ✔️ |
 | scene | ✔️  | ✔️ | ✔️ |
 
@@ -94,7 +94,7 @@ When used in combination with stash-box, the user can optionally submit scene fi
 | | Has Tagger | Source Selection |
 |---|:---:|:---:|
 | gallery | | |
-| movie | | |
+| group | | |
 | performer | ✔️ | |
 | scene | ✔️ | ✔️ |
 

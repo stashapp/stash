@@ -129,6 +129,12 @@ func (m *schema58Migrator) migrateConfig() error {
 		return nil
 	}
 
+	ui := c.GetUIConfiguration()
+	if len(ui) == 0 {
+		// no UI config to migrate
+		return nil
+	}
+
 	// save a backup of the original config file
 	backupPath := fmt.Sprintf("%s.57.%s", orgPath, time.Now().Format("20060102_150405"))
 
@@ -143,7 +149,6 @@ func (m *schema58Migrator) migrateConfig() error {
 	}
 
 	// migrate the plugin and UI configs from snake_case to camelCase
-	ui := c.GetUIConfiguration()
 	if ui != nil {
 		ui = m.fromSnakeCaseMap(ui)
 

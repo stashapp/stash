@@ -230,6 +230,10 @@ func (me *Server) ssdpInterface(if_ net.Interface) {
 	stopped := make(chan struct{})
 	go func() {
 		defer close(stopped)
+		// FIXME - this currently blocks forever unless it encounters an error
+		// See https://github.com/anacrolix/dms/pull/150
+		// Needs to be fixed upstream
+		//nolint:staticcheck
 		if err := s.Serve(); err != nil {
 			logger.Errorf("%q: %q\n", if_.Name, err)
 		}

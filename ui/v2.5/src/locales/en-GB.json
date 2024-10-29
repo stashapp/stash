@@ -545,6 +545,8 @@
       "optimise_database": "Attempt to improve performance by analysing and then rebuilding the entire database file.",
       "optimise_database_warning": "Warning: while this task is running, any operations that modify the database will fail, and depending on your database size, it could take several minutes to complete. It also requires at the very minimum as much free disk space as your database is large, but 1.5x is recommended.",
       "plugin_tasks": "Plugin Tasks",
+      "rescan": "Rescan files",
+      "rescan_tooltip": "Rescan every file in the path. Used to force update file metadata and rescan zip files.",
       "scan": {
         "scanning_all_paths": "Scanning all paths",
         "scanning_paths": "Scanning the following paths"
@@ -1102,6 +1104,7 @@
   "images": "Images",
   "include_parent_tags": "Include parent tags",
   "include_sub_group_content": "Include sub-group content",
+  "include_sub_groups": "Include sub-groups",
   "include_sub_studio_content": "Include sub-studio content",
   "include_sub_studios": "Include subsidiary studios",
   "include_sub_tag_content": "Include sub-tag content",

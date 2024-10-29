@@ -42,6 +42,8 @@ interface IPerformerLinkProps {
   className?: string;
 }
 
+export type PerformerLinkType = IPerformerLinkProps["linkType"];
+
 export const PerformerLink: React.FC<IPerformerLinkProps> = ({
   performer,
   linkType = "scene",

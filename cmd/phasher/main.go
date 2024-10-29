@@ -18,7 +18,7 @@ func customUsage() {
 	flag.PrintDefaults()
 }
 
-func printPhash(ff *ffmpeg.FFMpeg, ffp ffmpeg.FFProbe, inputfile string, quiet *bool) error {
+func printPhash(ff *ffmpeg.FFMpeg, ffp *ffmpeg.FFProbe, inputfile string, quiet *bool) error {
 	ffvideoFile, err := ffp.NewVideoFile(inputfile)
 	if err != nil {
 		return err
@@ -80,7 +80,7 @@ func main() {
 	ffmpegPath, ffprobePath := getPaths()
 	encoder := ffmpeg.NewEncoder(ffmpegPath)
 	// don't need to InitHWSupport, phashing doesn't use hw acceleration
-	ffprobe := ffmpeg.FFProbe(ffprobePath)
+	ffprobe := ffmpeg.NewFFProbe(ffprobePath)
 
 	for _, item := range args {
 		if err := printPhash(encoder, ffprobe, item, quiet); err != nil {
