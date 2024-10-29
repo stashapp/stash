@@ -648,9 +648,8 @@ func performerFragmentToScrapedPerformer(p graphql.PerformerFragment) *models.Sc
 		sp.Height = &hs
 	}
 
-	if p.Birthdate != nil {
-		b := p.Birthdate.Date
-		sp.Birthdate = &b
+	if p.BirthDate != nil {
+		sp.Birthdate = padFuzzyDate(p.BirthDate)
 	}
 
 	if p.Gender != nil {
@@ -1355,4 +1354,16 @@ func (c *Client) submitDraft(ctx context.Context, query string, input interface{
 	}
 
 	return err
+}
+
+func padFuzzyDate(date *string) *string {
+	var paddedDate string
+	if len(*date) == 10 {
+		return date
+	} else if len(*date) == 7 {
+		paddedDate = fmt.Sprintf("%s-01", *date)
+	} else if len(*date) == 4 {
+		paddedDate = fmt.Sprintf("%s-01-01", *date)
+	}
+	return &paddedDate
 }

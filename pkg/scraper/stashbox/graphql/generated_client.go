@@ -139,24 +139,6 @@ func (t *TagFragment) GetID() string {
 	return t.ID
 }
 
-type FuzzyDateFragment struct {
-	Date     string           "json:\"date\" graphql:\"date\""
-	Accuracy DateAccuracyEnum "json:\"accuracy\" graphql:\"accuracy\""
-}
-
-func (t *FuzzyDateFragment) GetDate() string {
-	if t == nil {
-		t = &FuzzyDateFragment{}
-	}
-	return t.Date
-}
-func (t *FuzzyDateFragment) GetAccuracy() *DateAccuracyEnum {
-	if t == nil {
-		t = &FuzzyDateFragment{}
-	}
-	return &t.Accuracy
-}
-
 type MeasurementsFragment struct {
 	BandSize *int    "json:\"band_size,omitempty\" graphql:\"band_size\""
 	CupSize  *string "json:\"cup_size,omitempty\" graphql:\"cup_size\""
@@ -216,7 +198,7 @@ type PerformerFragment struct {
 	MergedIds       []string                    "json:\"merged_ids\" graphql:\"merged_ids\""
 	Urls            []*URLFragment              "json:\"urls\" graphql:\"urls\""
 	Images          []*ImageFragment            "json:\"images\" graphql:\"images\""
-	Birthdate       *FuzzyDateFragment          "json:\"birthdate,omitempty\" graphql:\"birthdate\""
+	BirthDate       *string                     "json:\"birth_date,omitempty\" graphql:\"birth_date\""
 	Ethnicity       *EthnicityEnum              "json:\"ethnicity,omitempty\" graphql:\"ethnicity\""
 	Country         *string                     "json:\"country,omitempty\" graphql:\"country\""
 	EyeColor        *EyeColorEnum               "json:\"eye_color,omitempty\" graphql:\"eye_color\""
@@ -278,11 +260,11 @@ func (t *PerformerFragment) GetImages() []*ImageFragment {
 	}
 	return t.Images
 }
-func (t *PerformerFragment) GetBirthdate() *FuzzyDateFragment {
+func (t *PerformerFragment) GetBirthDate() *string {
 	if t == nil {
 		t = &PerformerFragment{}
 	}
-	return t.Birthdate
+	return t.BirthDate
 }
 func (t *PerformerFragment) GetEthnicity() *EthnicityEnum {
 	if t == nil {
@@ -877,9 +859,7 @@ fragment PerformerFragment on Performer {
 	images {
 		... ImageFragment
 	}
-	birthdate {
-		... FuzzyDateFragment
-	}
+	birth_date
 	ethnicity
 	country
 	eye_color
@@ -897,10 +877,6 @@ fragment PerformerFragment on Performer {
 	piercings {
 		... BodyModificationFragment
 	}
-}
-fragment FuzzyDateFragment on FuzzyDate {
-	date
-	accuracy
 }
 fragment MeasurementsFragment on Measurements {
 	band_size
@@ -1015,9 +991,7 @@ fragment PerformerFragment on Performer {
 	images {
 		... ImageFragment
 	}
-	birthdate {
-		... FuzzyDateFragment
-	}
+	birth_date
 	ethnicity
 	country
 	eye_color
@@ -1035,10 +1009,6 @@ fragment PerformerFragment on Performer {
 	piercings {
 		... BodyModificationFragment
 	}
-}
-fragment FuzzyDateFragment on FuzzyDate {
-	date
-	accuracy
 }
 fragment MeasurementsFragment on Measurements {
 	band_size
@@ -1153,9 +1123,7 @@ fragment PerformerFragment on Performer {
 	images {
 		... ImageFragment
 	}
-	birthdate {
-		... FuzzyDateFragment
-	}
+	birth_date
 	ethnicity
 	country
 	eye_color
@@ -1173,10 +1141,6 @@ fragment PerformerFragment on Performer {
 	piercings {
 		... BodyModificationFragment
 	}
-}
-fragment FuzzyDateFragment on FuzzyDate {
-	date
-	accuracy
 }
 fragment MeasurementsFragment on Measurements {
 	band_size
@@ -1291,9 +1255,7 @@ fragment PerformerFragment on Performer {
 	images {
 		... ImageFragment
 	}
-	birthdate {
-		... FuzzyDateFragment
-	}
+	birth_date
 	ethnicity
 	country
 	eye_color
@@ -1311,10 +1273,6 @@ fragment PerformerFragment on Performer {
 	piercings {
 		... BodyModificationFragment
 	}
-}
-fragment FuzzyDateFragment on FuzzyDate {
-	date
-	accuracy
 }
 fragment MeasurementsFragment on Measurements {
 	band_size
@@ -1368,9 +1326,7 @@ fragment PerformerFragment on Performer {
 	images {
 		... ImageFragment
 	}
-	birthdate {
-		... FuzzyDateFragment
-	}
+	birth_date
 	ethnicity
 	country
 	eye_color
@@ -1398,10 +1354,6 @@ fragment ImageFragment on Image {
 	url
 	width
 	height
-}
-fragment FuzzyDateFragment on FuzzyDate {
-	date
-	accuracy
 }
 fragment MeasurementsFragment on Measurements {
 	band_size
@@ -1450,9 +1402,7 @@ fragment PerformerFragment on Performer {
 	images {
 		... ImageFragment
 	}
-	birthdate {
-		... FuzzyDateFragment
-	}
+	birth_date
 	ethnicity
 	country
 	eye_color
@@ -1480,10 +1430,6 @@ fragment ImageFragment on Image {
 	url
 	width
 	height
-}
-fragment FuzzyDateFragment on FuzzyDate {
-	date
-	accuracy
 }
 fragment MeasurementsFragment on Measurements {
 	band_size
@@ -1593,9 +1539,7 @@ fragment PerformerFragment on Performer {
 	images {
 		... ImageFragment
 	}
-	birthdate {
-		... FuzzyDateFragment
-	}
+	birth_date
 	ethnicity
 	country
 	eye_color
@@ -1613,10 +1557,6 @@ fragment PerformerFragment on Performer {
 	piercings {
 		... BodyModificationFragment
 	}
-}
-fragment FuzzyDateFragment on FuzzyDate {
-	date
-	accuracy
 }
 fragment MeasurementsFragment on Measurements {
 	band_size
