@@ -785,10 +785,7 @@ var gallerySortOptions = sortOptions{
 }
 
 func (qb *GalleryStore) setGallerySort(query *queryBuilder, findFilter *models.FindFilterType) error {
-	if findFilter == nil || findFilter.Sort == nil || *findFilter.Sort == "" {
-		return nil
-	}
-
+	models.EnsureFindFilterSorted(findFilter)
 	sort := findFilter.GetSort("path")
 	direction := findFilter.GetDirection()
 

@@ -930,74 +930,73 @@ var imageSortOptions = sortOptions{
 }
 
 func (qb *ImageStore) setImageSortAndPagination(q *queryBuilder, findFilter *models.FindFilterType) error {
+	models.EnsureFindFilterSorted(findFilter)
 	sortClause := ""
 
-	if findFilter != nil && findFilter.Sort != nil && *findFilter.Sort != "" {
-		sort := findFilter.GetSort("title")
-		direction := findFilter.GetDirection()
+	sort := findFilter.GetSort("title")
+	direction := findFilter.GetDirection()
 
-		// CVE-2024-32231 - ensure sort is in the list of allowed sorts
-		if err := imageSortOptions.validateSort(sort); err != nil {
-			return err
-		}
-
-		// translate sort field
-		if sort == "file_mod_time" {
-			sort = "mod_time"
-		}
-
-		addFilesJoin := func() {
-			q.addJoins(
-				join{
-					table:    imagesFilesTable,
-					onClause: "images_files.image_id = images.id",
-				},
-				join{
-					table:    fileTable,
-					onClause: "images_files.file_id = files.id",
-				},
-			)
-		}
-
-		addFolderJoin := func() {
-			q.addJoins(join{
-				table:    folderTable,
-				onClause: "files.parent_folder_id = folders.id",
-			})
-		}
-
-		switch sort {
-		case "path":
-			addFilesJoin()
-			addFolderJoin()
-			sortClause = " ORDER BY COALESCE(folders.path, '') || COALESCE(files.basename, '') COLLATE NATURAL_CI " + direction
-			q.addGroupBy("folders.path", "files.basename")
-		case "file_count":
-			sortClause = getCountSort(imageTable, imagesFilesTable, imageIDColumn, direction)
-		case "tag_count":
-			sortClause = getCountSort(imageTable, imagesTagsTable, imageIDColumn, direction)
-		case "performer_count":
-			sortClause = getCountSort(imageTable, performersImagesTable, imageIDColumn, direction)
-		case "mod_time", "filesize":
-			addFilesJoin()
-			add, agg := getSort(sort, direction, "files")
-			sortClause = add
-			q.addGroupBy(agg...)
-		case "title":
-			addFilesJoin()
-			addFolderJoin()
-			sortClause = " ORDER BY COALESCE(images.title, files.basename) COLLATE NATURAL_CI " + direction + ", folders.path COLLATE NATURAL_CI " + direction
-			q.addGroupBy("images.title", "files.basename", "folders.path")
-		default:
-			add, agg := getSort(sort, direction, "images")
-			sortClause = add
-			q.addGroupBy(agg...)
-		}
-
-		// Whatever the sorting, always use title/id as a final sort
-		sortClause += ", COALESCE(images.title, CAST(images.id as text)) COLLATE NATURAL_CI ASC"
-		q.addGroupBy("images.title", "images.id")
+	// CVE-2024-32231 - ensure sort is in the list of allowed sorts
+	if err := imageSortOptions.validateSort(sort); err != nil {
+		return err
 	}
+
+	// translate sort field
+	if sort == "file_mod_time" {
+		sort = "mod_time"
+	}
+
+	addFilesJoin := func() {
+		q.addJoins(
+			join{
+				table:    imagesFilesTable,
+				onClause: "images_files.image_id = images.id",
+			},
+			join{
+				table:    fileTable,
+				onClause: "images_files.file_id = files.id",
+			},
+		)
+	}
+
+	addFolderJoin := func() {
+		q.addJoins(join{
+			table:    folderTable,
+			onClause: "files.parent_folder_id = folders.id",
+		})
+	}
+
+	switch sort {
+	case "path":
+		addFilesJoin()
+		addFolderJoin()
+		sortClause = " ORDER BY COALESCE(folders.path, '') || COALESCE(files.basename, '') COLLATE NATURAL_CI " + direction
+		q.addGroupBy("folders.path", "files.basename")
+	case "file_count":
+		sortClause = getCountSort(imageTable, imagesFilesTable, imageIDColumn, direction)
+	case "tag_count":
+		sortClause = getCountSort(imageTable, imagesTagsTable, imageIDColumn, direction)
+	case "performer_count":
+		sortClause = getCountSort(imageTable, performersImagesTable, imageIDColumn, direction)
+	case "mod_time", "filesize":
+		addFilesJoin()
+		add, agg := getSort(sort, direction, "files")
+		sortClause = add
+		q.addGroupBy(agg...)
+	case "title":
+		addFilesJoin()
+		addFolderJoin()
+		sortClause = " ORDER BY COALESCE(images.title, files.basename) COLLATE NATURAL_CI " + direction + ", folders.path COLLATE NATURAL_CI " + direction
+		q.addGroupBy("images.title", "files.basename", "folders.path")
+	default:
+		add, agg := getSort(sort, direction, "images")
+		sortClause = add
+		q.addGroupBy(agg...)
+	}
+
+	// Whatever the sorting, always use title/id as a final sort
+	sortClause += ", COALESCE(images.title, CAST(images.id as text)) COLLATE NATURAL_CI ASC"
+	q.addGroupBy("images.title", "images.id")
 
 	q.sortAndPagination = sortClause + getPagination(findFilter)
 

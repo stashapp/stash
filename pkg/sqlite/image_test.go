@@ -2978,10 +2978,8 @@ func TestImageQuerySorting(t *testing.T) {
 func TestImageQueryPagination(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
 		perPage := 1
-		sortBy := "id"
 		findFilter := models.FindFilterType{
 			PerPage: &perPage,
-			Sort:    &sortBy, // Without sort, using pagination is unpredictable
 		}
 
 		sqb := db.GetRepo().Image

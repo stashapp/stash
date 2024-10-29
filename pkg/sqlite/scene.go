@@ -1086,9 +1086,7 @@ var sceneSortOptions = sortOptions{
 }
 
 func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindFilterType) error {
-	if findFilter == nil || findFilter.Sort == nil || *findFilter.Sort == "" {
-		return nil
-	}
+	models.EnsureFindFilterSorted(findFilter)
 	sort := findFilter.GetSort("title")
 
 	// CVE-2024-32231 - ensure sort is in the list of allowed sorts

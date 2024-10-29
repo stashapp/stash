@@ -928,9 +928,7 @@ var fileSortOptions = sortOptions{
 }
 
 func (qb *FileStore) setQuerySort(query *queryBuilder, findFilter *models.FindFilterType) error {
-	if findFilter == nil || findFilter.Sort == nil || *findFilter.Sort == "" {
-		return nil
-	}
+	models.EnsureFindFilterSorted(findFilter)
 	sort := findFilter.GetSort("path")
 
 	// CVE-2024-32231 - ensure sort is in the list of allowed sorts
