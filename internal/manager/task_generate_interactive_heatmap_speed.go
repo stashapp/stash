@@ -3,7 +3,6 @@ package manager
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/stashapp/stash/pkg/file/video"
 	"github.com/stashapp/stash/pkg/fsutil"
@@ -47,22 +46,18 @@ func (t *GenerateInteractiveHeatmapSpeedTask) Start(ctx context.Context) {
 	if err := r.WithTxn(ctx, func(ctx context.Context) error {
 		primaryFile := t.Scene.Files.Primary()
 		primaryFile.InteractiveSpeed = &median
-		qb := r.File
-		return qb.Update(ctx, primaryFile)
+		if err := r.File.Update(ctx, primaryFile); err != nil {
+			return fmt.Errorf("updating interactive speed for %s: %w", primaryFile.Path, err)
+		}
+
+		// update the scene UpdatedAt field
+		// NewScenePartial sets the UpdatedAt field to the current time
+		if _, err := r.Scene.UpdatePartial(ctx, t.Scene.ID, models.NewScenePartial()); err != nil {
+			return fmt.Errorf("updating UpdatedAt field for scene %d: %w", t.Scene.ID, err)
+		}
+		return nil
 	}); err != nil && ctx.Err() == nil {
 		logger.Error(err.Error())
-	}
-
-	if err := r.WithTxn(ctx, func(ctx context.Context) error {
-		qb := r.Scene
-		scenePartial := models.NewScenePartial()
-		now := time.Now()
-		scenePartial.UpdatedAt = models.NewOptionalTime(now)
-
-		_, err := qb.UpdatePartial(ctx, t.Scene.ID, scenePartial)
-		return err
-	}); err != nil && ctx.Err() == nil {
-		logger.Errorf("error updating %s after heatmap generation: %s", t.Scene.Path, err.Error())
 	}
 }
 
