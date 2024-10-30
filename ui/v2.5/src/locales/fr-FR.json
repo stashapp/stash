@@ -1491,5 +1491,11 @@
     "sub_group_of": "Groupe affilié de {parent}",
     "sub_group": "Groupe affilié",
     "sub_group_count": "Nombre de groupes affiliés",
-    "include_sub_groups": "Inclure les groupes affiliés"
+    "include_sub_groups": "Inclure les groupes affiliés",
+    "criterion_modifier_values": {
+        "none": "Aucun",
+        "only": "Uniquement",
+        "any_of": "Tous les",
+        "any": "Tous"
+    }
 }
