@@ -1357,12 +1357,17 @@ func (c *Client) submitDraft(ctx context.Context, query string, input interface{
 }
 
 func padFuzzyDate(date *string) *string {
+	if date == nil {
+		return nil
+	}
+
 	var paddedDate string
-	if len(*date) == 10 {
-		return date
-	} else if len(*date) == 7 {
+	switch len(*date) {
+	case 10:
+		paddedDate = *date
+	case 7:
 		paddedDate = fmt.Sprintf("%s-01", *date)
-	} else if len(*date) == 4 {
+	case 4:
 		paddedDate = fmt.Sprintf("%s-01-01", *date)
 	}
 	return &paddedDate
