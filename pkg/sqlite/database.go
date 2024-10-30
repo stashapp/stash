@@ -10,7 +10,9 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jmoiron/sqlx"
+	"github.com/mattn/go-sqlite3"
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
@@ -230,6 +232,23 @@ func getDBRowId() string {
 	default:
 		return "rowid"
 	}
+}
+
+func isConstraintError(err error) bool {
+	switch dbWrapper.dbType {
+	case PostgresBackend:
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			// Class 23 — Integrity Constraint Violation
+			return pgErr.Code[:2] == "23"
+		}
+	case SqliteBackend:
+		var sqliteError sqlite3.Error
+		if errors.As(err, &sqliteError) {
+			return sqliteError.Code == sqlite3.ErrConstraint
+		}
+	}
+	return false
 }
 
 func (db *Database) SetSchemaVersion(version uint) {

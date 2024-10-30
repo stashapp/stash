@@ -59,6 +59,7 @@ func (db *PostgresDB) openWriteDB() error {
 
 // Ensure single connection for testing to avoid race conditions
 func (db *PostgresDB) TestMode() {
+	db.readDB.Close()
 	db.readDB = db.writeDB
 }
 

@@ -801,16 +801,21 @@ func (qb *TagStore) Merge(ctx context.Context, source []int, destination int) er
 		"studios_tags":       "studio_id",
 	}
 
-	args = append(args, destination)
 	for table, idColumn := range tagTables {
-		_, err := dbWrapper.Exec(ctx, `UPDATE OR IGNORE `+table+`
-SET tag_id = ?
-WHERE tag_id IN `+inBinding+`
-AND NOT EXISTS(SELECT 1 FROM `+table+` o WHERE o.`+idColumn+` = `+table+`.`+idColumn+` AND o.tag_id = ?)`,
-			args...,
-		)
-		if err != nil {
-			return err
+		for _, to_migrate_id := range srcArgs {
+			err := withSavepoint(ctx, func(ctx context.Context) error {
+				_, err := dbWrapper.Exec(ctx, `UPDATE `+table+`
+	SET tag_id = $1
+	WHERE tag_id = $2
+	AND NOT EXISTS(SELECT 1 FROM `+table+` o WHERE o.`+idColumn+` = `+table+`.`+idColumn+` AND o.tag_id = $1)`,
+					destination, to_migrate_id,
+				)
+				return err
+			})
+
+			if err != nil && !isConstraintError(err) {
+				return err
+			}
 		}
 
 		// delete source tag ids from the table where they couldn't be set

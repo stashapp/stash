@@ -9,9 +9,7 @@ import (
 
 	"github.com/doug-martin/goqu/v9"
 	"github.com/doug-martin/goqu/v9/exp"
-	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jmoiron/sqlx"
-	"github.com/mattn/go-sqlite3"
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/logger"
@@ -310,7 +308,7 @@ func (qb *BlobStore) readFromDatabase(ctx context.Context, checksum string) (sql
 func (qb *BlobStore) Delete(ctx context.Context, checksum string) error {
 	// try to delete the blob from the database
 	if err := qb.delete(ctx, checksum); err != nil {
-		if qb.isConstraintError(err) {
+		if isConstraintError(err) {
 			// blob is still referenced - do not delete
 			logger.Debugf("Blob %s is still referenced - not deleting", checksum)
 			return nil
@@ -329,23 +327,6 @@ func (qb *BlobStore) Delete(ctx context.Context, checksum string) error {
 	}
 
 	return nil
-}
-
-func (qb *BlobStore) isConstraintError(err error) bool {
-	switch dbWrapper.dbType {
-	case PostgresBackend:
-		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) {
-			// Class 23 — Integrity Constraint Violation
-			return pgErr.Code[:2] == "23"
-		}
-	case SqliteBackend:
-		var sqliteError sqlite3.Error
-		if errors.As(err, &sqliteError) {
-			return sqliteError.Code == sqlite3.ErrConstraint
-		}
-	}
-	return false
 }
 
 func (qb *BlobStore) delete(ctx context.Context, checksum string) error {
