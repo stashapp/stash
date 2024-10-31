@@ -129,9 +129,6 @@ models:
     model: github.com/stashapp/stash/internal/identify.FieldStrategy
   ScraperSource:
     model: github.com/stashapp/stash/pkg/scraper.Source
-  # rebind inputs to types
-  StashIDInput:
-    model: github.com/stashapp/stash/pkg/models.StashID
   IdentifySourceInput:
     model: github.com/stashapp/stash/internal/identify.Source
   IdentifyFieldOptionsInput:

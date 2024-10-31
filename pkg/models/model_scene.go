@@ -192,9 +192,9 @@ func (s ScenePartial) UpdateInput(id int) SceneUpdateInput {
 		dateStr = &v
 	}
 
-	var stashIDs []StashID
+	var stashIDs StashIDs
 	if s.StashIDs != nil {
-		stashIDs = s.StashIDs.StashIDs
+		stashIDs = StashIDs(s.StashIDs.StashIDs)
 	}
 
 	ret := SceneUpdateInput{
@@ -212,7 +212,7 @@ func (s ScenePartial) UpdateInput(id int) SceneUpdateInput {
 		PerformerIds: s.PerformerIDs.IDStrings(),
 		Movies:       s.GroupIDs.SceneMovieInputs(),
 		TagIds:       s.TagIDs.IDStrings(),
-		StashIds:     stashIDs,
+		StashIds:     stashIDs.ToStashIDInputs(),
 	}
 
 	return ret

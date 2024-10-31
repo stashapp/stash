@@ -50,7 +50,7 @@ func (r *mutationResolver) SceneCreate(ctx context.Context, input models.SceneCr
 	newScene.Director = translator.string(input.Director)
 	newScene.Rating = input.Rating100
 	newScene.Organized = translator.bool(input.Organized)
-	newScene.StashIDs = models.NewRelatedStashIDs(input.StashIds)
+	newScene.StashIDs = models.NewRelatedStashIDs(models.StashIDInputs(input.StashIds).ToStashIDs())
 
 	newScene.Date, err = translator.datePtr(input.Date)
 	if err != nil {
