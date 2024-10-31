@@ -61,6 +61,27 @@ const GenericCriterionEditor: React.FC<IGenericCriterionEditor> = ({
 
   const { options, modifierOptions } = criterion.criterionOption;
 
+  const showModifierSelector = useMemo(() => {
+    if (
+      criterion instanceof PerformersCriterion ||
+      criterion instanceof StudiosCriterion ||
+      criterion instanceof TagsCriterion
+    ) {
+      return false;
+    }
+
+    return modifierOptions && modifierOptions.length > 1;
+  }, [criterion, modifierOptions]);
+
+  const alwaysShowFilter = useMemo(() => {
+    return (
+      criterion instanceof StashIDCriterion ||
+      criterion instanceof PerformersCriterion ||
+      criterion instanceof StudiosCriterion ||
+      criterion instanceof TagsCriterion
+    );
+  }, [criterion]);
+
   const onChangedModifierSelect = useCallback(
     (m: CriterionModifier) => {
       const newCriterion = cloneDeep(criterion);
@@ -71,7 +92,7 @@ const GenericCriterionEditor: React.FC<IGenericCriterionEditor> = ({
   );
 
   const modifierSelector = useMemo(() => {
-    if (!modifierOptions || modifierOptions.length === 0) {
+    if (!showModifierSelector) {
       return;
     }
 
@@ -90,7 +111,13 @@ const GenericCriterionEditor: React.FC<IGenericCriterionEditor> = ({
         ))}
       </Form.Group>
     );
-  }, [modifierOptions, onChangedModifierSelect, criterion.modifier, intl]);
+  }, [
+    showModifierSelector,
+    modifierOptions,
+    onChangedModifierSelect,
+    criterion.modifier,
+    intl,
+  ]);
 
   const valueControl = useMemo(() => {
     function onValueChanged(value: CriterionValue) {
@@ -108,8 +135,9 @@ const GenericCriterionEditor: React.FC<IGenericCriterionEditor> = ({
 
     // Hide the value select if the modifier is "IsNull" or "NotNull"
     if (
-      criterion.modifier === CriterionModifier.IsNull ||
-      criterion.modifier === CriterionModifier.NotNull
+      !alwaysShowFilter &&
+      (criterion.modifier === CriterionModifier.IsNull ||
+        criterion.modifier === CriterionModifier.NotNull)
     ) {
       return;
     }
@@ -229,7 +257,7 @@ const GenericCriterionEditor: React.FC<IGenericCriterionEditor> = ({
     return (
       <InputFilter criterion={criterion} onValueChanged={onValueChanged} />
     );
-  }, [criterion, setCriterion, options]);
+  }, [criterion, setCriterion, options, alwaysShowFilter]);
 
   return (
     <div>

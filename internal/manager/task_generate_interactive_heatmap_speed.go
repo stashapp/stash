@@ -36,7 +36,7 @@ func (t *GenerateInteractiveHeatmapSpeedTask) Start(ctx context.Context) {
 	err := generator.Generate(funscriptPath, heatmapPath, t.Scene.Files.Primary().Duration)
 
 	if err != nil {
-		logger.Errorf("error generating heatmap: %s", err.Error())
+		logger.Errorf("error generating heatmap for %s: %s", t.Scene.Path, err.Error())
 		return
 	}
 
@@ -46,8 +46,16 @@ func (t *GenerateInteractiveHeatmapSpeedTask) Start(ctx context.Context) {
 	if err := r.WithTxn(ctx, func(ctx context.Context) error {
 		primaryFile := t.Scene.Files.Primary()
 		primaryFile.InteractiveSpeed = &median
-		qb := r.File
-		return qb.Update(ctx, primaryFile)
+		if err := r.File.Update(ctx, primaryFile); err != nil {
+			return fmt.Errorf("updating interactive speed for %s: %w", primaryFile.Path, err)
+		}
+
+		// update the scene UpdatedAt field
+		// NewScenePartial sets the UpdatedAt field to the current time
+		if _, err := r.Scene.UpdatePartial(ctx, t.Scene.ID, models.NewScenePartial()); err != nil {
+			return fmt.Errorf("updating UpdatedAt field for scene %d: %w", t.Scene.ID, err)
+		}
+		return nil
 	}); err != nil && ctx.Err() == nil {
 		logger.Error(err.Error())
 	}
