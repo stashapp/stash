@@ -563,14 +563,17 @@ func Test_sceneRelationships_stashIDs(t *testing.T) {
 		fieldOptions: make(map[string]*FieldOptions),
 	}
 
+	setTime := time.Now()
+
 	tests := []struct {
-		name         string
-		scene        *models.Scene
-		fieldOptions *FieldOptions
-		endpoint     string
-		remoteSiteID *string
-		want         []models.StashID
-		wantErr      bool
+		name          string
+		scene         *models.Scene
+		fieldOptions  *FieldOptions
+		endpoint      string
+		remoteSiteID  *string
+		setUpdateTime bool
+		want          []models.StashID
+		wantErr       bool
 	}{
 		{
 			"ignore",
@@ -580,6 +583,7 @@ func Test_sceneRelationships_stashIDs(t *testing.T) {
 			},
 			newEndpoint,
 			&remoteSiteID,
+			false,
 			nil,
 			false,
 		},
@@ -589,6 +593,7 @@ func Test_sceneRelationships_stashIDs(t *testing.T) {
 			defaultOptions,
 			"",
 			&remoteSiteID,
+			false,
 			nil,
 			false,
 		},
@@ -598,6 +603,7 @@ func Test_sceneRelationships_stashIDs(t *testing.T) {
 			defaultOptions,
 			newEndpoint,
 			nil,
+			false,
 			nil,
 			false,
 		},
@@ -607,11 +613,22 @@ func Test_sceneRelationships_stashIDs(t *testing.T) {
 			defaultOptions,
 			existingEndpoint,
 			&remoteSiteID,
+			false,
+			nil,
+			false,
+		},
+		{
+			"merge existing set update time",
+			sceneWithStashIDs,
+			defaultOptions,
+			existingEndpoint,
+			&remoteSiteID,
+			true,
 			[]models.StashID{
 				{
 					StashID:   remoteSiteID,
 					Endpoint:  existingEndpoint,
-					UpdatedAt: time.Time{},
+					UpdatedAt: setTime,
 				},
 			},
 			false,
@@ -622,11 +639,12 @@ func Test_sceneRelationships_stashIDs(t *testing.T) {
 			defaultOptions,
 			existingEndpoint,
 			&newRemoteSiteID,
+			false,
 			[]models.StashID{
 				{
 					StashID:   newRemoteSiteID,
 					Endpoint:  existingEndpoint,
-					UpdatedAt: time.Time{},
+					UpdatedAt: setTime,
 				},
 			},
 			false,
@@ -637,6 +655,7 @@ func Test_sceneRelationships_stashIDs(t *testing.T) {
 			defaultOptions,
 			newEndpoint,
 			&newRemoteSiteID,
+			false,
 			[]models.StashID{
 				{
 					StashID:   remoteSiteID,
@@ -646,7 +665,7 @@ func Test_sceneRelationships_stashIDs(t *testing.T) {
 				{
 					StashID:   newRemoteSiteID,
 					Endpoint:  newEndpoint,
-					UpdatedAt: time.Time{},
+					UpdatedAt: setTime,
 				},
 			},
 			false,
@@ -659,11 +678,12 @@ func Test_sceneRelationships_stashIDs(t *testing.T) {
 			},
 			newEndpoint,
 			&newRemoteSiteID,
+			false,
 			[]models.StashID{
 				{
 					StashID:   newRemoteSiteID,
 					Endpoint:  newEndpoint,
-					UpdatedAt: time.Time{},
+					UpdatedAt: setTime,
 				},
 			},
 			false,
@@ -676,7 +696,26 @@ func Test_sceneRelationships_stashIDs(t *testing.T) {
 			},
 			existingEndpoint,
 			&remoteSiteID,
+			false,
 			nil,
+			false,
+		},
+		{
+			"overwrite same set update time",
+			sceneWithStashIDs,
+			&FieldOptions{
+				Strategy: FieldStrategyOverwrite,
+			},
+			existingEndpoint,
+			&remoteSiteID,
+			true,
+			[]models.StashID{
+				{
+					StashID:   remoteSiteID,
+					Endpoint:  existingEndpoint,
+					UpdatedAt: setTime,
+				},
+			},
 			false,
 		},
 	}
@@ -693,12 +732,20 @@ func Test_sceneRelationships_stashIDs(t *testing.T) {
 				},
 			}
 
-			got, err := tr.stashIDs(testCtx, time.Time{})
+			got, err := tr.stashIDs(testCtx, tt.setUpdateTime)
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("sceneRelationships.stashIDs() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
+
+			// massage updatedAt times to be consistent for comparison
+			for i := range got {
+				if !got[i].UpdatedAt.IsZero() {
+					got[i].UpdatedAt = setTime
+				}
+			}
+
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("sceneRelationships.stashIDs() = %+v, want %+v", got, tt.want)
 			}

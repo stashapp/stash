@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"slices"
 	"strconv"
-	"time"
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
@@ -246,8 +245,18 @@ func (t *SceneIdentifier) getSceneUpdater(ctx context.Context, s *models.Scene, 
 		}
 	}
 
-	currentTime := time.Now()
-	stashIDs, err := rel.stashIDs(ctx, currentTime)
+	// SetCoverImage defaults to true if unset
+	if options.SetCoverImage == nil || *options.SetCoverImage {
+		ret.CoverImage, err = rel.cover(ctx)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	// if anything changed, also update the updated at time on the applicable stash id
+	changed := !ret.IsEmpty()
+
+	stashIDs, err := rel.stashIDs(ctx, changed)
 	if err != nil {
 		return nil, err
 	}
@@ -255,14 +264,6 @@ func (t *SceneIdentifier) getSceneUpdater(ctx context.Context, s *models.Scene, 
 		ret.Partial.StashIDs = &models.UpdateStashIDs{
 			StashIDs: stashIDs,
 			Mode:     models.RelationshipUpdateModeSet,
-		}
-	}
-
-	// SetCoverImage defaults to true if unset
-	if options.SetCoverImage == nil || *options.SetCoverImage {
-		ret.CoverImage, err = rel.cover(ctx)
-		if err != nil {
-			return nil, err
 		}
 	}
 

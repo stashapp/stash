@@ -183,7 +183,13 @@ func (g sceneRelationships) tags(ctx context.Context) ([]int, error) {
 	return tagIDs, nil
 }
 
-func (g sceneRelationships) stashIDs(ctx context.Context, updateTime time.Time) ([]models.StashID, error) {
+// stashIDs returns the updated stash IDs for the scene
+// returns nil if not applicable or no changes were made
+// if setUpdateTime is true, then the updated_at field will be set to the current time
+// for the applicable matching stash ID
+func (g sceneRelationships) stashIDs(ctx context.Context, setUpdateTime bool) ([]models.StashID, error) {
+	updateTime := time.Now()
+
 	remoteSiteID := g.result.result.RemoteSiteID
 	fieldStrategy := g.fieldOptions["stash_ids"]
 	target := g.scene
@@ -200,7 +206,7 @@ func (g sceneRelationships) stashIDs(ctx context.Context, updateTime time.Time) 
 		strategy = fieldStrategy.Strategy
 	}
 
-	var stashIDs []models.StashID
+	var stashIDs models.StashIDs
 	originalStashIDs := target.StashIDs.List()
 
 	if strategy == FieldStrategyMerge {
@@ -209,8 +215,14 @@ func (g sceneRelationships) stashIDs(ctx context.Context, updateTime time.Time) 
 		stashIDs = append(stashIDs, originalStashIDs...)
 	}
 
+	// find and update the stash id if it exists
 	for i, stashID := range stashIDs {
 		if endpoint == stashID.Endpoint {
+			// if stashID is the same, then don't set
+			if !setUpdateTime && stashID.StashID == *remoteSiteID {
+				return nil, nil
+			}
+
 			// replace the stash id and return
 			stashID.StashID = *remoteSiteID
 			stashID.UpdatedAt = updateTime
@@ -226,7 +238,9 @@ func (g sceneRelationships) stashIDs(ctx context.Context, updateTime time.Time) 
 		UpdatedAt: updateTime,
 	})
 
-	if sliceutil.SliceSame(originalStashIDs, stashIDs) {
+	// don't return if nothing was changed
+	// if we're setting update time, then we always return
+	if !setUpdateTime && stashIDs.HasSameStashIDs(originalStashIDs) {
 		return nil, nil
 	}
 
