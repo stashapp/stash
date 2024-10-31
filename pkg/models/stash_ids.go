@@ -8,6 +8,64 @@ type StashID struct {
 	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`
 }
 
+func (s StashID) ToStashIDInput() StashIDInput {
+	t := s.UpdatedAt
+	return StashIDInput{
+		StashID:   s.StashID,
+		Endpoint:  s.Endpoint,
+		UpdatedAt: &t,
+	}
+}
+
+type StashIDs []StashID
+
+func (s StashIDs) ToStashIDInputs() StashIDInputs {
+	if s == nil {
+		return nil
+	}
+
+	ret := make(StashIDInputs, len(s))
+	for i, v := range s {
+		ret[i] = v.ToStashIDInput()
+	}
+	return ret
+}
+
+type StashIDInput struct {
+	StashID   string     `db:"stash_id" json:"stash_id"`
+	Endpoint  string     `db:"endpoint" json:"endpoint"`
+	UpdatedAt *time.Time `db:"updated_at" json:"updated_at"`
+}
+
+func (s StashIDInput) ToStashID() StashID {
+	ret := StashID{
+		StashID:  s.StashID,
+		Endpoint: s.Endpoint,
+	}
+	if s.UpdatedAt != nil {
+		ret.UpdatedAt = *s.UpdatedAt
+	} else {
+		// default to now if not provided
+		ret.UpdatedAt = time.Now()
+	}
+
+	return ret
+}
+
+type StashIDInputs []StashIDInput
+
+func (s StashIDInputs) ToStashIDs() StashIDs {
+	if s == nil {
+		return nil
+	}
+
+	ret := make(StashIDs, len(s))
+	for i, v := range s {
+		ret[i] = v.ToStashID()
+	}
+	return ret
+}
+
 type UpdateStashIDs struct {
 	StashIDs []StashID              `json:"stash_ids"`
 	Mode     RelationshipUpdateMode `json:"mode"`

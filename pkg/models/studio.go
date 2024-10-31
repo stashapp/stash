@@ -51,14 +51,14 @@ type StudioCreateInput struct {
 	URL      *string `json:"url"`
 	ParentID *string `json:"parent_id"`
 	// This should be a URL or a base64 encoded data URL
-	Image         *string   `json:"image"`
-	StashIds      []StashID `json:"stash_ids"`
-	Rating100     *int      `json:"rating100"`
-	Favorite      *bool     `json:"favorite"`
-	Details       *string   `json:"details"`
-	Aliases       []string  `json:"aliases"`
-	TagIds        []string  `json:"tag_ids"`
-	IgnoreAutoTag *bool     `json:"ignore_auto_tag"`
+	Image         *string        `json:"image"`
+	StashIds      []StashIDInput `json:"stash_ids"`
+	Rating100     *int           `json:"rating100"`
+	Favorite      *bool          `json:"favorite"`
+	Details       *string        `json:"details"`
+	Aliases       []string       `json:"aliases"`
+	TagIds        []string       `json:"tag_ids"`
+	IgnoreAutoTag *bool          `json:"ignore_auto_tag"`
 }
 
 type StudioUpdateInput struct {
@@ -67,12 +67,12 @@ type StudioUpdateInput struct {
 	URL      *string `json:"url"`
 	ParentID *string `json:"parent_id"`
 	// This should be a URL or a base64 encoded data URL
-	Image         *string   `json:"image"`
-	StashIds      []StashID `json:"stash_ids"`
-	Rating100     *int      `json:"rating100"`
-	Favorite      *bool     `json:"favorite"`
-	Details       *string   `json:"details"`
-	Aliases       []string  `json:"aliases"`
-	TagIds        []string  `json:"tag_ids"`
-	IgnoreAutoTag *bool     `json:"ignore_auto_tag"`
+	Image         *string        `json:"image"`
+	StashIds      []StashIDInput `json:"stash_ids"`
+	Rating100     *int           `json:"rating100"`
+	Favorite      *bool          `json:"favorite"`
+	Details       *string        `json:"details"`
+	Aliases       []string       `json:"aliases"`
+	TagIds        []string       `json:"tag_ids"`
+	IgnoreAutoTag *bool          `json:"ignore_auto_tag"`
 }
