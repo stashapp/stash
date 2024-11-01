@@ -844,6 +844,12 @@
     "not_matches_regex": "not matches regex",
     "not_null": "is not null"
   },
+  "criterion_modifier_values": {
+    "any": "Any",
+    "any_of": "Any of",
+    "none": "None",
+    "only": "Only"
+  },
   "custom": "Custom",
   "date": "Date",
   "date_format": "YYYY-MM-DD",

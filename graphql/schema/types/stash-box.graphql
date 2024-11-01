@@ -13,11 +13,13 @@ input StashBoxInput {
 type StashID {
   endpoint: String!
   stash_id: String!
+  updated_at: Time!
 }
 
 input StashIDInput {
   endpoint: String!
   stash_id: String!
+  updated_at: Time
 }
 
 input StashBoxFingerprintSubmissionInput {

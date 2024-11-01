@@ -3,7 +3,6 @@ import { Route, Switch } from "react-router-dom";
 import { Helmet } from "react-helmet";
 import { useTitleProps } from "src/hooks/title";
 import { lazyComponent } from "src/utils/lazyComponent";
-import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
 import { View } from "../List/views";
 
 const SceneList = lazyComponent(() => import("./SceneList"));
@@ -12,14 +11,10 @@ const Scene = lazyComponent(() => import("./SceneDetails/Scene"));
 const SceneCreate = lazyComponent(() => import("./SceneDetails/SceneCreate"));
 
 const Scenes: React.FC = () => {
-  useScrollToTopOnMount();
-
   return <SceneList view={View.Scenes} />;
 };
 
 const SceneMarkers: React.FC = () => {
-  useScrollToTopOnMount();
-
   const titleProps = useTitleProps({ id: "markers" });
   return (
     <>

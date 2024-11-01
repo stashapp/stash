@@ -4,12 +4,9 @@ import { Helmet } from "react-helmet";
 import { useTitleProps } from "src/hooks/title";
 import Image from "./ImageDetails/Image";
 import { ImageList } from "./ImageList";
-import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
 import { View } from "../List/views";
 
 const Images: React.FC = () => {
-  useScrollToTopOnMount();
-
   return <ImageList view={View.Images} />;
 };
 
