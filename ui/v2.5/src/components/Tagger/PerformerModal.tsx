@@ -272,6 +272,7 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({
         {
           endpoint,
           stash_id: remoteSiteID,
+          updated_at: new Date().toISOString(),
         },
       ];
     }

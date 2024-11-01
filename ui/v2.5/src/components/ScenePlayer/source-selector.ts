@@ -196,8 +196,12 @@ class SourceSelectorPlugin extends videojs.getPlugin("plugin") {
         console.log(`Trying next source in playlist: '${newSource.label}'`);
         this.menu.setSelectedSource(newSource);
 
+        const currentTime = player.currentTime();
         player.src(newSource);
         player.load();
+        player.one("canplay", () => {
+          player.currentTime(currentTime);
+        });
         player.play();
       } else {
         console.log("No more sources in playlist");

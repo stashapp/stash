@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
+	"slices"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/models"
@@ -398,7 +399,7 @@ func (qb *ImageStore) FindMany(ctx context.Context, ids []int) ([]*models.Image,
 		}
 
 		for _, s := range unsorted {
-			i := sliceutil.Index(ids, s.ID)
+			i := slices.Index(ids, s.ID)
 			images[i] = s
 		}
 
@@ -528,7 +529,10 @@ func (qb *ImageStore) GetFiles(ctx context.Context, id int) ([]models.File, erro
 		return nil, err
 	}
 
-	return files, nil
+	ret := make([]models.File, len(files))
+	copy(ret, files)
+
+	return ret, nil
 }
 
 func (qb *ImageStore) GetManyFileIDs(ctx context.Context, ids []int) ([][]models.FileID, error) {
