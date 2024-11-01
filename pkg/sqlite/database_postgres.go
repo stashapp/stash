@@ -14,6 +14,12 @@ type PostgresDB struct {
 	Database
 }
 
+const (
+	// TODO: Optimize for these
+	maxPGWriteConnections = 10
+	maxPGReadConnections  = 25
+)
+
 func NewPostgresDatabase(dbConnector string, init bool) *PostgresDB {
 	db := &PostgresDB{
 		Database: Database{
@@ -42,6 +48,8 @@ func (db *PostgresDB) openReadDB() error {
 	)
 	var err error
 	db.readDB, err = db.open(disableForeignKeys, writable)
+	db.readDB.SetMaxOpenConns(maxPGReadConnections)
+	db.readDB.SetMaxIdleConns(maxPGReadConnections)
 	db.readDB.SetConnMaxIdleTime(dbConnTimeout)
 	return err
 }
@@ -53,6 +61,8 @@ func (db *PostgresDB) openWriteDB() error {
 	)
 	var err error
 	db.writeDB, err = db.open(disableForeignKeys, writable)
+	db.writeDB.SetMaxOpenConns(maxPGWriteConnections)
+	db.writeDB.SetMaxIdleConns(maxPGWriteConnections)
 	db.writeDB.SetConnMaxIdleTime(dbConnTimeout)
 	return err
 }
