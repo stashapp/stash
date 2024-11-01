@@ -297,9 +297,13 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     sendSetTimestamp((value: number) => {
       const player = getPlayer();
       if (player && value >= 0) {
-        player.play()?.then(() => {
+        if (player.hasStarted() && player.paused()) {
           player.currentTime(value);
-        });
+        } else {
+          player.play()?.then(() => {
+            player.currentTime(value);
+          });
+        }
       }
     });
   }, [sendSetTimestamp, getPlayer]);

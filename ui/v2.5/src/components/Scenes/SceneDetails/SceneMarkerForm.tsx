@@ -19,13 +19,13 @@ import { yupFormikValidate } from "src/utils/yup";
 import { Tag, TagSelect } from "src/components/Tags/TagSelect";
 
 interface ISceneMarkerForm {
-  sceneID: string;
+  scene: Pick<GQL.SceneDataFragment, "id" | "files">;
   marker?: GQL.SceneMarkerDataFragment;
   onClose: () => void;
 }
 
 export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
-  sceneID,
+  scene,
   marker,
   onClose,
 }) => {
@@ -72,6 +72,11 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
     [marker]
   );
 
+  const frameRate = useMemo(() => {
+    if (scene.files.length === 0) return undefined;
+    return scene.files[0].frame_rate;
+  }, [scene.files]);
+
   type InputValues = yup.InferType<typeof schema>;
 
   const formik = useFormik<InputValues>({
@@ -108,6 +113,8 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
       })) ?? []
     );
   }, [marker?.tags]);
+
+  const sceneID = scene.id;
 
   async function onSave(input: InputValues) {
     try {
@@ -211,6 +218,7 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
     const control = (
       <DurationInput
         value={formik.values.seconds}
+        frameRate={frameRate}
         setValue={(v) => formik.setFieldValue("seconds", v)}
         onReset={() =>
           formik.setFieldValue("seconds", Math.round(getPlayerPosition() ?? 0))
