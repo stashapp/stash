@@ -107,10 +107,12 @@ export const DurationInput: React.FC<IProps> = ({
     }
   }, [value, tmpValue, frameRate]);
 
+  const format = frameRate ? "hh:mm:ss.ffff" : "hh:mm:ss";
+
   if (placeholder) {
-    placeholder = `${placeholder} (hh:mm:ss)`;
+    placeholder = `${placeholder} (${format})`;
   } else {
-    placeholder = "hh:mm:ss";
+    placeholder = format;
   }
 
   return (
