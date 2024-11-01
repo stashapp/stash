@@ -141,7 +141,7 @@ type Database struct {
 
 	readDB   *sqlx.DB
 	writeDB  *sqlx.DB
-	dbConfig interface{}
+	dbConfig string
 
 	schemaVersion uint
 

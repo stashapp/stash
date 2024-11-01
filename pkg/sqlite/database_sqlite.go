@@ -88,7 +88,7 @@ func (db *SQLiteDB) DatabaseType() DatabaseType {
 }
 
 func (db *SQLiteDB) DatabasePath() string {
-	return (db.dbConfig).(string)
+	return db.dbConfig
 }
 
 func (db *SQLiteDB) open(disableForeignKeys bool, writable bool) (conn *sqlx.DB, err error) {

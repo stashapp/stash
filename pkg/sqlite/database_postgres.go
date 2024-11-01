@@ -72,7 +72,7 @@ func (db *PostgresDB) AppSchemaVersion() uint {
 }
 
 func (db *PostgresDB) DatabaseConnector() string {
-	return db.dbConfig.(string)
+	return db.dbConfig
 }
 
 func (db *PostgresDB) open(disableForeignKeys bool, writable bool) (conn *sqlx.DB, err error) {
