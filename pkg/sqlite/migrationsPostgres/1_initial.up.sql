@@ -11,13 +11,12 @@ CREATE TABLE tags (
   updated_at timestamp not null, 
   ignore_auto_tag boolean not null default FALSE, 
   description text, 
-  image_blob varchar(255) 
-  REFERENCES blobs(checksum), 
+  image_blob varchar(255) REFERENCES blobs(checksum), 
   favorite boolean not null default false
 );
 CREATE TABLE folders (
   id serial not null primary key,
-  path varchar(255) NOT NULL,
+  path text NOT NULL,
   parent_folder_id integer,
   mod_time timestamp not null,
   created_at timestamp not null,
@@ -69,7 +68,7 @@ CREATE TABLE IF NOT EXISTS performers (
 CREATE TABLE IF NOT EXISTS studios (
   id serial not null primary key,
   name VARCHAR(255) NOT NULL,
-  url VARCHAR(255),
+  url VARCHAR(2048),
   parent_id INTEGER DEFAULT NULL REFERENCES studios(id) ON DELETE SET NULL,
   created_at timestamp NOT NULL,
   updated_at timestamp NOT NULL,
@@ -106,7 +105,7 @@ CREATE TABLE IF NOT EXISTS images (
 CREATE TABLE image_urls (
   image_id integer NOT NULL,
   position integer NOT NULL,
-  url varchar(255) NOT NULL,
+  url varchar(2048) NOT NULL,
   foreign key(image_id) references images(id) on delete CASCADE,
   PRIMARY KEY(image_id, position, url)
 );
@@ -120,14 +119,16 @@ CREATE TABLE IF NOT EXISTS galleries (
   rating smallint,
   organized boolean not null default FALSE,
   created_at timestamp not null,
-  updated_at timestamp not null, code text, photographer text,
+  updated_at timestamp not null, 
+  code text, 
+  photographer text,
   foreign key(studio_id) references studios(id) on delete SET NULL,
   foreign key(folder_id) references folders(id) on delete SET NULL
 );
 CREATE TABLE gallery_urls (
   gallery_id integer NOT NULL,
   position integer NOT NULL,
-  url varchar(255) NOT NULL,
+  url varchar(2048) NOT NULL,
   foreign key(gallery_id) references galleries(id) on delete CASCADE,
   PRIMARY KEY(gallery_id, position, url)
 );
@@ -166,7 +167,7 @@ CREATE TABLE IF NOT EXISTS groups (
 CREATE TABLE IF NOT EXISTS group_urls (
   "group_id" integer NOT NULL,
   position integer NOT NULL,
-  url varchar(255) NOT NULL,
+  url varchar(2048) NOT NULL,
   foreign key("group_id") references "groups"(id) on delete CASCADE,
   PRIMARY KEY("group_id", position, url)
 );
@@ -180,7 +181,7 @@ CREATE TABLE IF NOT EXISTS groups_tags (
 CREATE TABLE performer_urls (
   performer_id integer NOT NULL,
   position integer NOT NULL,
-  url varchar(255) NOT NULL,
+  url varchar(2048) NOT NULL,
   foreign key(performer_id) references performers(id) on delete CASCADE,
   PRIMARY KEY(performer_id, position, url)
 );
@@ -203,13 +204,13 @@ CREATE TABLE IF NOT EXISTS scenes_o_dates (
 );
 CREATE TABLE performer_stash_ids (
   performer_id integer,
-  endpoint varchar(255),
+  endpoint varchar(2048),
   stash_id uuid,
   foreign key(performer_id) references performers(id) on delete CASCADE
 );
 CREATE TABLE studio_stash_ids (
   studio_id integer,
-  endpoint varchar(255),
+  endpoint varchar(2048),
   stash_id uuid,
   foreign key(studio_id) references studios(id) on delete CASCADE
 );
@@ -336,7 +337,7 @@ CREATE TABLE IF NOT EXISTS images_tags (
 );
 CREATE TABLE IF NOT EXISTS scene_stash_ids (
   scene_id integer NOT NULL,
-  endpoint varchar(255) NOT NULL,
+  endpoint varchar(2048) NOT NULL,
   stash_id uuid NOT NULL,
   foreign key(scene_id) references scenes(id) on delete CASCADE,
   PRIMARY KEY(scene_id, endpoint)
@@ -407,7 +408,7 @@ CREATE TABLE galleries_chapters (
 CREATE TABLE scene_urls (
   scene_id integer NOT NULL,
   position integer NOT NULL,
-  url varchar(255) NOT NULL,
+  url varchar(2048) NOT NULL,
   foreign key(scene_id) references scenes(id) on delete CASCADE,
   PRIMARY KEY(scene_id, position, url)
 );
@@ -415,7 +416,7 @@ CREATE TABLE groups_relations (
   containing_id integer not null,
   sub_id integer not null,
   order_index integer not null,
-  description varchar(255),
+  description text,
   primary key (containing_id, sub_id),
   foreign key (containing_id) references groups(id) on delete cascade,
   foreign key (sub_id) references groups(id) on delete cascade,
