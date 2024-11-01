@@ -46,18 +46,16 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
     seconds: yup.number().min(0).required(),
     end_seconds: yup
       .number()
-      .min(-1)
+      .min(0)
+      .nullable()
+      .defined()
       .test(
         "is-greater-than-seconds",
-        "End time must be greater than or equal to start time",
+        intl.formatMessage({ id: "end_time_before_start_time" }),
         function (value) {
-          return (
-            value !== undefined &&
-            (value === -1 || value >= this.parent.seconds)
-          );
+          return value === null || value >= this.parent.seconds;
         }
-      )
-      .required(),
+      ),
     primary_tag_id: yup.string().required(),
     tag_ids: yup.array(yup.string().required()).defined(),
   });
@@ -67,7 +65,7 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
     () => ({
       title: marker?.title ?? "",
       seconds: marker?.seconds ?? Math.round(getPlayerPosition() ?? 0),
-      end_seconds: marker?.end_seconds ?? -1,
+      end_seconds: marker?.end_seconds ?? null,
       primary_tag_id: marker?.primary_tag.id ?? "",
       tag_ids: marker?.tags.map((tag) => tag.id) ?? [],
     }),
@@ -118,6 +116,8 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
           variables: {
             scene_id: sceneID,
             ...input,
+            // undefined means setting to null, not omitting the field
+            end_seconds: input.end_seconds ?? null,
           },
         });
       } else {
@@ -126,6 +126,8 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
             id: marker.id,
             scene_id: sceneID,
             ...input,
+            // undefined means setting to null, not omitting the field
+            end_seconds: input.end_seconds ?? null,
           },
         });
       }
@@ -228,7 +230,7 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
       <>
         <DurationInput
           value={formik.values.end_seconds}
-          setValue={(v) => formik.setFieldValue("end_seconds", v)}
+          setValue={(v) => formik.setFieldValue("end_seconds", v ?? null)}
           onReset={() =>
             formik.setFieldValue(
               "end_seconds",
@@ -236,7 +238,6 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
             )
           }
           error={error}
-          allowNegative={true}
         />
         {formik.touched.end_seconds && formik.errors.end_seconds && (
           <Form.Control.Feedback type="invalid">

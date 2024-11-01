@@ -1457,7 +1457,7 @@
   "tags": "Tags",
   "tattoos": "Tattoos",
   "time": "Time",
-  "time_end": "Time End",
+  "time_end": "End Time",
   "title": "Title",
   "toast": {
     "added_entity": "Added {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
@@ -1489,6 +1489,7 @@
   "validation": {
     "blank": "${path} must not be blank",
     "date_invalid_form": "${path} must be in YYYY-MM-DD form",
+    "end_time_before_start_time": "End time must be greater than or equal to start time",
     "required": "${path} is a required field",
     "unique": "${path} must be unique"
   },

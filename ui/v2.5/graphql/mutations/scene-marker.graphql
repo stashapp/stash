@@ -1,7 +1,7 @@
 mutation SceneMarkerCreate(
   $title: String!
   $seconds: Float!
-  $end_seconds: Float!
+  $end_seconds: Float
   $scene_id: ID!
   $primary_tag_id: ID!
   $tag_ids: [ID!] = []
@@ -24,7 +24,7 @@ mutation SceneMarkerUpdate(
   $id: ID!
   $title: String!
   $seconds: Float!
-  $end_seconds: Float!
+  $end_seconds: Float
   $scene_id: ID!
   $primary_tag_id: ID!
   $tag_ids: [ID!] = []
