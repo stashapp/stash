@@ -16,8 +16,8 @@ type PostgresDB struct {
 
 const (
 	// TODO: Optimize for these
-	maxPGWriteConnections = 10
-	maxPGReadConnections  = 25
+	maxPGWriteConnections = 5
+	maxPGReadConnections  = 15
 )
 
 func NewPostgresDatabase(dbConnector string, init bool) *PostgresDB {
