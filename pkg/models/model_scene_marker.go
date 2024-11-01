@@ -8,7 +8,7 @@ type SceneMarker struct {
 	ID           int       `json:"id"`
 	Title        string    `json:"title"`
 	Seconds      float64   `json:"seconds"`
-	EndSeconds   float64   `json:"end_seconds"`
+	EndSeconds   *float64  `json:"end_seconds"`
 	PrimaryTagID int       `json:"primary_tag_id"`
 	SceneID      int       `json:"scene_id"`
 	CreatedAt    time.Time `json:"created_at"`

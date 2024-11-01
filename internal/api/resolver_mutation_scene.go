@@ -656,13 +656,10 @@ func (r *mutationResolver) SceneMarkerCreate(ctx context.Context, input SceneMar
 	newMarker.SceneID = sceneID
 
 	if input.EndSeconds != nil {
-		newMarker.EndSeconds = *input.EndSeconds
-		// Validate that end_seconds is not less than seconds when it's not -1
-		if newMarker.EndSeconds != -1 && newMarker.EndSeconds < newMarker.Seconds {
-			return nil, fmt.Errorf("end_seconds (%f) must be greater than or equal to seconds (%f)", newMarker.EndSeconds, newMarker.Seconds)
+		if err := validateSceneMarkerEndSeconds(newMarker.Seconds, *input.EndSeconds); err != nil {
+			return nil, err
 		}
-	} else {
-		newMarker.EndSeconds = -1
+		newMarker.EndSeconds = input.EndSeconds
 	}
 
 	tagIDs, err := stringslice.StringSliceToIntSlice(input.TagIds)
@@ -690,6 +687,13 @@ func (r *mutationResolver) SceneMarkerCreate(ctx context.Context, input SceneMar
 	return r.getSceneMarker(ctx, newMarker.ID)
 }
 
+func validateSceneMarkerEndSeconds(seconds, endSeconds float64) error {
+	if endSeconds < seconds {
+		return fmt.Errorf("end_seconds (%f) must be greater than or equal to seconds (%f)", endSeconds, seconds)
+	}
+	return nil
+}
+
 func (r *mutationResolver) SceneMarkerUpdate(ctx context.Context, input SceneMarkerUpdateInput) (*models.SceneMarker, error) {
 	markerID, err := strconv.Atoi(input.ID)
 	if err != nil {
@@ -705,9 +709,7 @@ func (r *mutationResolver) SceneMarkerUpdate(ctx context.Context, input SceneMar
 
 	updatedMarker.Title = translator.optionalString(input.Title, "title")
 	updatedMarker.Seconds = translator.optionalFloat64(input.Seconds, "seconds")
-	if input.EndSeconds != nil {
-		updatedMarker.EndSeconds = translator.optionalFloat64(input.EndSeconds, "end_seconds")
-	}
+	updatedMarker.EndSeconds = translator.optionalFloat64(input.EndSeconds, "end_seconds")
 	updatedMarker.SceneID, err = translator.optionalIntFromString(input.SceneID, "scene_id")
 	if err != nil {
 		return nil, fmt.Errorf("converting scene id: %w", err)
@@ -749,16 +751,23 @@ func (r *mutationResolver) SceneMarkerUpdate(ctx context.Context, input SceneMar
 		}
 
 		// Validate end_seconds
-		newSeconds := existingMarker.Seconds
-		if updatedMarker.Seconds.Set {
-			newSeconds = updatedMarker.Seconds.Value
-		}
-		newEndSeconds := existingMarker.EndSeconds
-		if updatedMarker.EndSeconds.Set {
-			newEndSeconds = updatedMarker.EndSeconds.Value
-		}
-		if newEndSeconds != -1 && newEndSeconds < newSeconds {
-			return fmt.Errorf("end_seconds (%f) must be greater than or equal to seconds (%f)", newEndSeconds, newSeconds)
+		shouldValidateEndSeconds := (updatedMarker.Seconds.Set || updatedMarker.EndSeconds.Set) && !updatedMarker.EndSeconds.Null
+		if shouldValidateEndSeconds {
+			seconds := existingMarker.Seconds
+			if updatedMarker.Seconds.Set {
+				seconds = updatedMarker.Seconds.Value
+			}
+
+			endSeconds := existingMarker.EndSeconds
+			if updatedMarker.EndSeconds.Set {
+				endSeconds = &updatedMarker.EndSeconds.Value
+			}
+
+			if endSeconds != nil {
+				if err := validateSceneMarkerEndSeconds(seconds, *endSeconds); err != nil {
+					return err
+				}
+			}
 		}
 
 		newMarker, err := qb.UpdatePartial(ctx, markerID, updatedMarker)

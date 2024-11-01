@@ -10,6 +10,7 @@ import (
 	"github.com/doug-martin/goqu/v9"
 	"github.com/doug-martin/goqu/v9/exp"
 	"github.com/jmoiron/sqlx"
+	"gopkg.in/guregu/null.v4"
 
 	"github.com/stashapp/stash/pkg/models"
 )
@@ -24,21 +25,23 @@ GROUP BY scene_markers.id
 `
 
 type sceneMarkerRow struct {
-	ID           int       `db:"id" goqu:"skipinsert"`
-	Title        string    `db:"title"` // TODO: make db schema (and gql schema) nullable
-	Seconds      float64   `db:"seconds"`
-	PrimaryTagID int       `db:"primary_tag_id"`
-	SceneID      int       `db:"scene_id"`
-	CreatedAt    Timestamp `db:"created_at"`
-	UpdatedAt    Timestamp `db:"updated_at"`
-	EndSeconds   float64   `db:"end_seconds"`
+	ID           int        `db:"id" goqu:"skipinsert"`
+	Title        string     `db:"title"` // TODO: make db schema (and gql schema) nullable
+	Seconds      float64    `db:"seconds"`
+	PrimaryTagID int        `db:"primary_tag_id"`
+	SceneID      int        `db:"scene_id"`
+	CreatedAt    Timestamp  `db:"created_at"`
+	UpdatedAt    Timestamp  `db:"updated_at"`
+	EndSeconds   null.Float `db:"end_seconds"`
 }
 
 func (r *sceneMarkerRow) fromSceneMarker(o models.SceneMarker) {
 	r.ID = o.ID
 	r.Title = o.Title
 	r.Seconds = o.Seconds
-	r.EndSeconds = o.EndSeconds
+	if o.EndSeconds != nil {
+		r.EndSeconds = null.FloatFrom(*o.EndSeconds)
+	}
 	r.PrimaryTagID = o.PrimaryTagID
 	r.SceneID = o.SceneID
 	r.CreatedAt = Timestamp{Timestamp: o.CreatedAt}
@@ -50,7 +53,7 @@ func (r *sceneMarkerRow) resolve() *models.SceneMarker {
 		ID:           r.ID,
 		Title:        r.Title,
 		Seconds:      r.Seconds,
-		EndSeconds:   r.EndSeconds,
+		EndSeconds:   r.EndSeconds.Ptr(),
 		PrimaryTagID: r.PrimaryTagID,
 		SceneID:      r.SceneID,
 		CreatedAt:    r.CreatedAt.Timestamp,
@@ -72,7 +75,7 @@ func (r *sceneMarkerRowRecord) fromPartial(o models.SceneMarkerPartial) {
 		r.set("title", o.Title.Value)
 	}
 	r.setFloat64("seconds", o.Seconds)
-	r.setFloat64("end_seconds", o.EndSeconds)
+	r.setNullFloat64("end_seconds", o.EndSeconds)
 	r.setInt("primary_tag_id", o.PrimaryTagID)
 	r.setInt("scene_id", o.SceneID)
 	r.setTimestamp("created_at", o.CreatedAt)
