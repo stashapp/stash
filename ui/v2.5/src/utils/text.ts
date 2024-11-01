@@ -151,16 +151,22 @@ const fileSizeFractionalDigits = (unit: Unit) => {
   return 0;
 };
 
-// Converts seconds to a hh:mm:ss or mm:ss timestamp.
+// Converts seconds to a [hh:]mm:ss[.ffff] where hh is only shown if hours is non-zero,
+// and ffff is shown only if frameRate is set.
 // A negative input will result in a -hh:mm:ss or -mm:ss output.
 // Fractional inputs are truncated.
-const secondsToTimestamp = (seconds: number) => {
+const secondsToTimestamp = (secondsSub: number, frameRate?: number) => {
   let neg = false;
-  if (seconds < 0) {
+  if (secondsSub < 0) {
     neg = true;
-    seconds = -seconds;
+    secondsSub = -secondsSub;
   }
-  seconds = Math.trunc(seconds);
+
+  const fracSeconds = secondsSub % 1;
+  const frame =
+    frameRate !== undefined ? Math.round(fracSeconds * frameRate) : 0;
+
+  let seconds = Math.trunc(secondsSub);
 
   const s = seconds % 60;
   seconds = (seconds - s) / 60;
@@ -177,6 +183,11 @@ const secondsToTimestamp = (seconds: number) => {
     ret = String(m).padStart(2, "0") + ":" + ret;
     ret = String(h) + ":" + ret;
   }
+
+  if (frameRate !== undefined) {
+    ret += "." + frame.toString().padStart(4, "0");
+  }
+
   if (neg) {
     return "-" + ret;
   } else {
@@ -191,7 +202,10 @@ const formatTimestampRange = (start: number, end: number | undefined) => {
   return `${secondsToTimestamp(start)}-${secondsToTimestamp(end)}`;
 };
 
-const timestampToSeconds = (v: string | null | undefined) => {
+const timestampToSeconds = (
+  v: string | null | undefined,
+  frameRate?: number
+) => {
   if (!v) {
     return null;
   }
@@ -200,6 +214,25 @@ const timestampToSeconds = (v: string | null | undefined) => {
 
   if (splits.length > 3) {
     return null;
+  }
+
+  let secondsPart = splits[splits.length - 1];
+  let secondsFraction = 0;
+  if (secondsPart.includes(".") && frameRate !== undefined) {
+    const secondsParts = secondsPart.split(".");
+    if (secondsParts.length !== 2) {
+      return null;
+    }
+
+    secondsPart = secondsParts[0];
+
+    const framePart = secondsParts[1];
+    const frame = parseInt(framePart, 10);
+    if (Number.isNaN(frame)) {
+      return null;
+    }
+
+    secondsFraction = frame / frameRate;
   }
 
   let seconds = 0;
@@ -219,7 +252,7 @@ const timestampToSeconds = (v: string | null | undefined) => {
     factor *= 60;
   }
 
-  return seconds;
+  return seconds + secondsFraction;
 };
 
 const fileNameFromPath = (path: string) => {

@@ -3,7 +3,7 @@ import {
   faChevronUp,
   faClock,
 } from "@fortawesome/free-solid-svg-icons";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Button, ButtonGroup, InputGroup, Form } from "react-bootstrap";
 import { Icon } from "./Icon";
 import TextUtils from "src/utils/text";
@@ -17,6 +17,8 @@ interface IProps {
   placeholder?: string;
   error?: string;
   allowNegative?: boolean;
+  // if set, allows sub-second precision based on frames
+  frameRate?: number;
 }
 
 export const DurationInput: React.FC<IProps> = ({
@@ -28,6 +30,7 @@ export const DurationInput: React.FC<IProps> = ({
   placeholder,
   error,
   allowNegative = false,
+  frameRate,
 }) => {
   const [tmpValue, setTmpValue] = useState<string>();
 
@@ -37,7 +40,7 @@ export const DurationInput: React.FC<IProps> = ({
 
   function onBlur() {
     if (tmpValue !== undefined) {
-      updateValue(TextUtils.timestampToSeconds(tmpValue));
+      updateValue(TextUtils.timestampToSeconds(tmpValue, frameRate));
       setTmpValue(undefined);
     }
   }
@@ -96,12 +99,13 @@ export const DurationInput: React.FC<IProps> = ({
     }
   }
 
-  let inputValue = "";
-  if (tmpValue !== undefined) {
-    inputValue = tmpValue;
-  } else if (value !== null && value !== undefined) {
-    inputValue = TextUtils.secondsToTimestamp(value);
-  }
+  const inputValue = useMemo(() => {
+    if (tmpValue !== undefined) {
+      return tmpValue;
+    } else if (value !== null && value !== undefined) {
+      return TextUtils.secondsToTimestamp(value, frameRate);
+    }
+  }, [value, tmpValue, frameRate]);
 
   if (placeholder) {
     placeholder = `${placeholder} (hh:mm:ss)`;
