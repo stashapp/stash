@@ -53,11 +53,10 @@ export const PrimaryTags: React.FC<IPrimaryTags> = ({
             </Button>
           </div>
           <div>
-            {typeof marker.end_seconds === "number" && marker.end_seconds !== -1
-              ? `${TextUtils.secondsToTimestamp(
-                  marker.seconds
-                )}-${TextUtils.secondsToTimestamp(marker.end_seconds)}`
-              : TextUtils.secondsToTimestamp(marker.seconds)}
+            {TextUtils.formatTimestampRange(
+              marker.seconds,
+              marker.end_seconds ?? undefined
+            )}
           </div>
           <div className="card-section centered">{tags}</div>
         </div>
