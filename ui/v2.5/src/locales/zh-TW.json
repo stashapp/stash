@@ -1490,5 +1490,12 @@
     "sub_group_order": "子組順序",
     "sub_groups": "子組",
     "containing_group": "包含群組",
-    "sub_group": "子組"
+    "sub_group": "子組",
+    "criterion_modifier_values": {
+        "none": "不存在",
+        "only": "僅",
+        "any_of": "其中任意",
+        "any": "任意"
+    },
+    "include_sub_groups": "包括子組"
 }
