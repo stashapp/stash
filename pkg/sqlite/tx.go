@@ -179,7 +179,7 @@ func (db *dbWrapperType) ExecStmt(ctx context.Context, stmt *stmt, args ...inter
 type SavepointAction func(ctx context.Context) error
 
 // Encapsulates an action in a savepoint
-// Its mostly used to rollback if an error occured in postgres, as errors in postgres cancel the transaction.
+// Its mostly used to rollback if an error occurred in postgres, as errors in postgres cancel the transaction.
 func withSavepoint(ctx context.Context, action SavepointAction) error {
 	tx, err := getTx(ctx)
 	if err != nil {
