@@ -6,7 +6,7 @@ CREATE TABLE blobs (
 );
 CREATE TABLE tags (
   id serial not null primary key,
-  name varchar(255),
+  name text,
   created_at timestamp not null,
   updated_at timestamp not null, 
   ignore_auto_tag boolean not null default FALSE, 
@@ -39,35 +39,35 @@ CREATE TABLE files (
 ALTER TABLE folders ADD COLUMN zip_file_id integer REFERENCES files(id);
 CREATE TABLE IF NOT EXISTS performers (
   id serial not null primary key,
-  name varchar(255) not null,
-  disambiguation varchar(255),
+  name text not null,
+  disambiguation text,
   gender varchar(20),
   birthdate date,
-  ethnicity varchar(255),
-  country varchar(255),
-  eye_color varchar(255),
+  ethnicity text,
+  country text,
+  eye_color text,
   height int,
-  measurements varchar(255),
-  fake_tits varchar(255),
-  career_length varchar(255),
-  tattoos text, -- For you artsy motherfuckers
+  measurements text,
+  fake_tits text,
+  career_length text,
+  tattoos text,
   piercings text,
   favorite boolean not null default FALSE,
   created_at timestamp not null,
   updated_at timestamp not null,
   details text, 
   death_date date, 
-  hair_color varchar(255), 
+  hair_color text, 
   weight integer, 
   rating smallint, 
   ignore_auto_tag boolean not null default FALSE, 
   image_blob varchar(255) REFERENCES blobs(checksum), 
   penis_length float, 
-  circumcised varchar(255)
+  circumcised text
 );
 CREATE TABLE IF NOT EXISTS studios (
   id serial not null primary key,
-  name VARCHAR(255) NOT NULL,
+  name text NOT NULL,
   url VARCHAR(2048),
   parent_id INTEGER DEFAULT NULL REFERENCES studios(id) ON DELETE SET NULL,
   created_at timestamp NOT NULL,
@@ -81,7 +81,7 @@ CREATE TABLE IF NOT EXISTS studios (
 );
 CREATE TABLE IF NOT EXISTS saved_filters (
   id serial not null primary key,
-  name varchar(510) not null,
+  name text not null,
   mode varchar(255) not null,
   find_filter bytea,
   object_filter bytea,
@@ -89,7 +89,7 @@ CREATE TABLE IF NOT EXISTS saved_filters (
 );
 CREATE TABLE IF NOT EXISTS images (
   id serial not null primary key,
-  title varchar(255),
+  title text,
   rating smallint,
   studio_id integer,
   o_counter smallint not null default 0,
@@ -112,7 +112,7 @@ CREATE TABLE image_urls (
 CREATE TABLE IF NOT EXISTS galleries (
   id serial not null primary key,
   folder_id integer,
-  title varchar(255),
+  title text,
   date date,
   details text,
   studio_id integer,
@@ -134,7 +134,7 @@ CREATE TABLE gallery_urls (
 );
 CREATE TABLE IF NOT EXISTS scenes (
   id serial not null primary key,
-  title varchar(255),
+  title text,
   details text,
   date date,
   rating smallint,
@@ -151,13 +151,13 @@ CREATE TABLE IF NOT EXISTS scenes (
 );
 CREATE TABLE IF NOT EXISTS groups (
   id serial not null primary key,
-  name varchar(255) not null,
-  aliases varchar(255),
+  name text not null,
+  aliases text,
   duration integer,
   date date,
   rating smallint,
   studio_id integer REFERENCES studios(id) ON DELETE SET NULL,
-  director varchar(255),
+  director text,
   "description" text,
   created_at timestamp not null,
   updated_at timestamp not null, 
@@ -290,7 +290,7 @@ CREATE TABLE IF NOT EXISTS performers_scenes (
 );
 CREATE TABLE IF NOT EXISTS scene_markers (
   id serial not null primary key,
-  title VARCHAR(255) NOT NULL,
+  title text NOT NULL,
   seconds FLOAT NOT NULL,
   primary_tag_id INTEGER NOT NULL,
   scene_id INTEGER NOT NULL,
@@ -380,25 +380,25 @@ CREATE TABLE IF NOT EXISTS performers_tags (
 );
 CREATE TABLE IF NOT EXISTS tag_aliases (
   tag_id integer NOT NULL,
-  alias varchar(255) NOT NULL,
+  alias text NOT NULL,
   foreign key(tag_id) references tags(id) on delete CASCADE,
   PRIMARY KEY(tag_id, alias)
 );
 CREATE TABLE IF NOT EXISTS studio_aliases (
   studio_id integer NOT NULL,
-  alias varchar(255) NOT NULL,
+  alias text NOT NULL,
   foreign key(studio_id) references studios(id) on delete CASCADE,
   PRIMARY KEY(studio_id, alias)
 );
 CREATE TABLE performer_aliases (
   performer_id integer NOT NULL,
-  alias varchar(255) NOT NULL,
+  alias text NOT NULL,
   foreign key(performer_id) references performers(id) on delete CASCADE,
   PRIMARY KEY(performer_id, alias)
 );
 CREATE TABLE galleries_chapters (
   id serial not null primary key,
-  title varchar(255) not null,
+  title text not null,
   image_index integer not null,
   gallery_id integer not null,
   created_at timestamp not null,
