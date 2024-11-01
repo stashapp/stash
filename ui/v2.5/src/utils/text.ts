@@ -152,9 +152,8 @@ const fileSizeFractionalDigits = (unit: Unit) => {
 };
 
 // Converts seconds to a [hh:]mm:ss[.ffff] where hh is only shown if hours is non-zero,
-// and ffff is shown only if frameRate is set.
+// and ffff is shown only if frameRate is set, and the seconds includes a fractional component.
 // A negative input will result in a -hh:mm:ss or -mm:ss output.
-// Fractional inputs are truncated.
 const secondsToTimestamp = (secondsSub: number, frameRate?: number) => {
   let neg = false;
   if (secondsSub < 0) {
@@ -184,7 +183,7 @@ const secondsToTimestamp = (secondsSub: number, frameRate?: number) => {
     ret = String(h) + ":" + ret;
   }
 
-  if (frameRate !== undefined) {
+  if (frameRate !== undefined && frame > 0) {
     ret += "." + frame.toString().padStart(4, "0");
   }
 
