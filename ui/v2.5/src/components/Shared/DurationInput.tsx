@@ -19,6 +19,8 @@ interface IProps {
   allowNegative?: boolean;
 }
 
+const includeMS = true;
+
 export const DurationInput: React.FC<IProps> = ({
   disabled,
   value,
@@ -29,7 +31,6 @@ export const DurationInput: React.FC<IProps> = ({
   error,
   allowNegative = false,
 }) => {
-  const includeMS = true;
   const [tmpValue, setTmpValue] = useState<string>();
 
   function onChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -103,7 +104,7 @@ export const DurationInput: React.FC<IProps> = ({
     } else if (value !== null && value !== undefined) {
       return TextUtils.secondsToTimestamp(value, includeMS);
     }
-  }, [value, tmpValue, includeMS]);
+  }, [value, tmpValue]);
 
   const format = "hh:mm:ss.ms";
 
