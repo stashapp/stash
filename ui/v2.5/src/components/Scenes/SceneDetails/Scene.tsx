@@ -510,7 +510,7 @@ const ScenePage: React.FC<IProps> = ({
         </Tab.Pane>
         <Tab.Pane eventKey="scene-markers-panel">
           <SceneMarkersPanel
-            scene={scene}
+            sceneId={scene.id}
             onClickMarker={onClickMarker}
             isVisible={activeTabKey === "scene-markers-panel"}
           />

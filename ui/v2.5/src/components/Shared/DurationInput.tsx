@@ -17,8 +17,6 @@ interface IProps {
   placeholder?: string;
   error?: string;
   allowNegative?: boolean;
-  // if set, allows sub-second precision based on frames
-  frameRate?: number;
 }
 
 export const DurationInput: React.FC<IProps> = ({
@@ -30,8 +28,8 @@ export const DurationInput: React.FC<IProps> = ({
   placeholder,
   error,
   allowNegative = false,
-  frameRate,
 }) => {
+  const includeMS = true;
   const [tmpValue, setTmpValue] = useState<string>();
 
   function onChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -40,7 +38,7 @@ export const DurationInput: React.FC<IProps> = ({
 
   function onBlur() {
     if (tmpValue !== undefined) {
-      updateValue(TextUtils.timestampToSeconds(tmpValue, frameRate));
+      updateValue(TextUtils.timestampToSeconds(tmpValue));
       setTmpValue(undefined);
     }
   }
@@ -103,11 +101,11 @@ export const DurationInput: React.FC<IProps> = ({
     if (tmpValue !== undefined) {
       return tmpValue;
     } else if (value !== null && value !== undefined) {
-      return TextUtils.secondsToTimestamp(value, frameRate);
+      return TextUtils.secondsToTimestamp(value, includeMS);
     }
-  }, [value, tmpValue, frameRate]);
+  }, [value, tmpValue, includeMS]);
 
-  const format = frameRate ? "hh:mm:ss.ffff" : "hh:mm:ss";
+  const format = "hh:mm:ss.ms";
 
   if (placeholder) {
     placeholder = `${placeholder} (${format})`;

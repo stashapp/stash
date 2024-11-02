@@ -8,17 +8,16 @@ import { PrimaryTags } from "./PrimaryTags";
 import { SceneMarkerForm } from "./SceneMarkerForm";
 
 interface ISceneMarkersPanelProps {
-  scene: Pick<GQL.SceneDataFragment, "id" | "files">;
+  sceneId: string;
   isVisible: boolean;
   onClickMarker: (marker: GQL.SceneMarkerDataFragment) => void;
 }
 
 export const SceneMarkersPanel: React.FC<ISceneMarkersPanelProps> = ({
-  scene,
+  sceneId,
   isVisible,
   onClickMarker,
 }) => {
-  const sceneId = scene.id;
   const { data, loading } = GQL.useFindSceneMarkerTagsQuery({
     variables: { id: sceneId },
   });
@@ -52,7 +51,7 @@ export const SceneMarkersPanel: React.FC<ISceneMarkersPanelProps> = ({
   if (isEditorOpen)
     return (
       <SceneMarkerForm
-        scene={scene}
+        sceneID={sceneId}
         marker={editingMarker}
         onClose={closeEditor}
       />
