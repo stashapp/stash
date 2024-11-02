@@ -43,9 +43,9 @@ func stringCriterionHandler(c *models.StringCriterionInput, column string) crite
 				case models.CriterionModifierExcludes:
 					f.whereClauses = append(f.whereClauses, getStringSearchClause([]string{column}, c.Value, true))
 				case models.CriterionModifierEquals:
-					f.addWhere(column+" "+getDBLike()+" ?", c.Value)
+					f.addWhere("LOWER("+column+") LIKE LOWER(?)", c.Value)
 				case models.CriterionModifierNotEquals:
-					f.addWhere(column+" NOT "+getDBLike()+" ?", c.Value)
+					f.addWhere("LOWER("+column+") NOT LIKE LOWER(?)", c.Value)
 				case models.CriterionModifierMatchesRegex:
 					if _, err := regexp.Compile(c.Value); err != nil {
 						f.setError(err)
@@ -86,9 +86,9 @@ func uuidCriterionHandler(c *models.StringCriterionInput, column string) criteri
 				case models.CriterionModifierExcludes:
 					f.whereClauses = append(f.whereClauses, getStringSearchClause([]string{columnCast}, c.Value, true))
 				case models.CriterionModifierEquals:
-					f.addWhere(columnCast+" "+getDBLike()+" ?", c.Value)
+					f.addWhere("LOWER("+columnCast+") LIKE LOWER(?)", c.Value)
 				case models.CriterionModifierNotEquals:
-					f.addWhere(columnCast+" NOT "+getDBLike()+" ?", c.Value)
+					f.addWhere("LOWER("+columnCast+") NOT LIKE LOWER(?)", c.Value)
 				case models.CriterionModifierMatchesRegex:
 					if _, err := regexp.Compile(c.Value); err != nil {
 						f.setError(err)
@@ -191,7 +191,7 @@ func getPathSearchClause(pathColumn, basenameColumn, p string, addWildcards, not
 	}
 
 	filepathColumn := fmt.Sprintf("%s || '%s' || %s", pathColumn, string(filepath.Separator), basenameColumn)
-	ret := makeClause(fmt.Sprintf("%s "+getDBLike()+" ?", filepathColumn), p)
+	ret := makeClause(fmt.Sprintf("LOWER(%s) LIKE LOWER(?)", filepathColumn), p)
 
 	if not {
 		ret = ret.not()
@@ -589,7 +589,7 @@ func (m *stringListCriterionHandlerBuilder) handler(criterion *models.StringCrit
 				// excludes all of the provided values
 				// need to use actual join table name for this
 				// <primaryTable>.id NOT IN (select <joinTable>.<primaryFK> from <joinTable> where <joinTable>.<foreignFK> in <values>)
-				whereClause := utils.StrFormat("{primaryTable}.id NOT IN (SELECT {joinTable}.{primaryFK} from {joinTable} where {joinTable}.{stringColumn} "+getDBLike()+" ?)",
+				whereClause := utils.StrFormat("{primaryTable}.id NOT IN (SELECT {joinTable}.{primaryFK} from {joinTable} where LOWER({joinTable}.{stringColumn}) LIKE LOWER(?))",
 					utils.StrFormatMap{
 						"primaryTable": m.primaryTable,
 						"joinTable":    m.joinTable,

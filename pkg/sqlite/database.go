@@ -207,15 +207,6 @@ func getDBMinFunc() string {
 	}
 }
 
-func getDBLike() string {
-	switch dbWrapper.dbType {
-	case PostgresBackend:
-		return "ILIKE"
-	default:
-		return "LIKE"
-	}
-}
-
 func getDBGroupConcat(columnName string) string {
 	switch dbWrapper.dbType {
 	case PostgresBackend:

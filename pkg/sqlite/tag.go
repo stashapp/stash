@@ -583,11 +583,11 @@ func (qb *TagStore) QueryForAutoTag(ctx context.Context, words []string) ([]*mod
 
 	for _, w := range words {
 		ww := w + "%"
-		whereClauses = append(whereClauses, "tags.name "+getDBLike()+" ?")
+		whereClauses = append(whereClauses, "LOWER(tags.name) LIKE LOWER(?)")
 		args = append(args, ww)
 
 		// include aliases
-		whereClauses = append(whereClauses, "tag_aliases.alias "+getDBLike()+" ?")
+		whereClauses = append(whereClauses, "LOWER(tag_aliases.alias) LIKE LOWER(?)")
 		args = append(args, ww)
 	}
 
