@@ -184,6 +184,13 @@ const secondsToTimestamp = (seconds: number) => {
   }
 };
 
+const formatTimestampRange = (start: number, end: number | undefined) => {
+  if (end === undefined) {
+    return secondsToTimestamp(start);
+  }
+  return `${secondsToTimestamp(start)}-${secondsToTimestamp(end)}`;
+};
+
 const timestampToSeconds = (v: string | null | undefined) => {
   if (!v) {
     return null;
@@ -470,6 +477,7 @@ const TextUtils = {
   formatFileSizeUnit,
   fileSizeFractionalDigits,
   secondsToTimestamp,
+  formatTimestampRange,
   timestampToSeconds,
   fileNameFromPath,
   stringToDate,
