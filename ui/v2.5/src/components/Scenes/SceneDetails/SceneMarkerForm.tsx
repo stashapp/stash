@@ -213,7 +213,7 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
         value={formik.values.seconds}
         setValue={(v) => formik.setFieldValue("seconds", v)}
         onReset={() =>
-          formik.setFieldValue("seconds", Math.round(getPlayerPosition() ?? 0))
+          formik.setFieldValue("seconds", getPlayerPosition() ?? 0)
         }
         error={error}
       />
