@@ -1367,7 +1367,8 @@
         "date_invalid_form": "${path} 的格式必须为 YYYY-MM-DD",
         "required": "${path} 是必填字段",
         "blank": "${path}不能为空",
-        "unique": "${path}不能相同"
+        "unique": "${path}不能相同",
+        "end_time_before_start_time": "结束时间必须晚于或等于开始时间"
     },
     "videos": "视频",
     "view_all": "查看全部",
@@ -1491,5 +1492,12 @@
     "sub_group_of": "{parent}的子集合",
     "sub_group_order": "子集合排序",
     "sub_groups": "子集合",
-    "include_sub_groups": "包括子组"
+    "include_sub_groups": "包括子组",
+    "time_end": "结束时间",
+    "criterion_modifier_values": {
+        "any": "任意",
+        "any_of": "其中任意",
+        "none": "无",
+        "only": "仅"
+    }
 }
