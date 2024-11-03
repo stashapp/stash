@@ -215,6 +215,7 @@ textarea.scene-description {
 }
 
 .scene-card,
+.scene-marker-card,
 .gallery-card {
   .scene-specs-overlay {
     transition: opacity 0.5s;
@@ -272,7 +273,8 @@ textarea.scene-description {
   }
 }
 
-.scene-card.card {
+.scene-card.card,
+.scene-marker-card.card {
   overflow: hidden;
   padding: 0;
 
