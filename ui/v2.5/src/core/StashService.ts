@@ -1499,6 +1499,24 @@ export const useSceneMarkerDestroy = () =>
     },
   });
 
+export const useSceneMarkersDestroy = (
+  input: GQL.SceneMarkersDestroyMutationVariables
+) =>
+  GQL.useSceneMarkersDestroyMutation({
+    variables: input,
+    update(cache, result) {
+      if (!result.data?.sceneMarkersDestroy) return;
+
+      for (const id of input.ids) {
+        const obj = { __typename: "SceneMarker", id };
+        cache.evict({ id: cache.identify(obj) });
+      }
+
+      evictTypeFields(cache, sceneMarkerMutationImpactedTypeFields);
+      evictQueries(cache, sceneMarkerMutationImpactedQueries);
+    },
+  });
+
 const galleryMutationImpactedTypeFields = {
   Scene: ["galleries"],
   Performer: ["gallery_count", "performer_count"],

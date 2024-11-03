@@ -864,6 +864,69 @@ func (r *mutationResolver) SceneMarkerDestroy(ctx context.Context, id string) (b
 	return true, nil
 }
 
+func (r *mutationResolver) SceneMarkersDestroy(ctx context.Context, markerIDs []string) (bool, error) {
+	ids, err := stringslice.StringSliceToIntSlice(markerIDs)
+	if err != nil {
+		return false, fmt.Errorf("converting ids: %w", err)
+	}
+
+	var markers []*models.SceneMarker
+	fileNamingAlgo := manager.GetInstance().Config.GetVideoFileNamingAlgorithm()
+
+	fileDeleter := &scene.FileDeleter{
+		Deleter:        file.NewDeleter(),
+		FileNamingAlgo: fileNamingAlgo,
+		Paths:          manager.GetInstance().Paths,
+	}
+
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		qb := r.repository.SceneMarker
+		sqb := r.repository.Scene
+
+		for _, markerID := range ids {
+			marker, err := qb.Find(ctx, markerID)
+
+			if err != nil {
+				return err
+			}
+
+			if marker == nil {
+				return fmt.Errorf("scene marker with id %d not found", markerID)
+			}
+
+			s, err := sqb.Find(ctx, marker.SceneID)
+
+			if err != nil {
+				return err
+			}
+
+			if s == nil {
+				return fmt.Errorf("scene with id %d not found", marker.SceneID)
+			}
+
+			markers = append(markers, marker)
+
+			if err := scene.DestroyMarker(ctx, s, marker, qb, fileDeleter); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}); err != nil {
+		fileDeleter.Rollback()
+		return false, err
+	}
+
+	fileDeleter.Commit()
+
+	for _, marker := range markers {
+
+		r.hookExecutor.ExecutePostHooks(ctx, marker.ID, hook.SceneMarkerDestroyPost, markerIDs, nil)
+	}
+
+	return true, nil
+}
+
 func (r *mutationResolver) SceneSaveActivity(ctx context.Context, id string, resumeTime *float64, playDuration *float64) (ret bool, err error) {
 	sceneID, err := strconv.Atoi(id)
 	if err != nil {
