@@ -1475,7 +1475,8 @@
         "required": "${path}是必填欄位",
         "date_invalid_form": "${path}必須是YYYY-MM-DD形式",
         "unique": "${path}必須是唯一的",
-        "blank": "${path}不能為空"
+        "blank": "${path}不能為空",
+        "end_time_before_start_time": "結束時間必須大於或等於開始時間"
     },
     "video_codec": "影片編碼",
     "tag_sub_tag_tooltip": "有子標籤",
@@ -1497,5 +1498,6 @@
         "any_of": "其中任意",
         "any": "任意"
     },
-    "include_sub_groups": "包括子組"
+    "include_sub_groups": "包括子組",
+    "time_end": "結束時間"
 }
