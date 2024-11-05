@@ -6,7 +6,7 @@
         "add_to_entity": "新增至{entityType}",
         "allow": "允許",
         "allow_temporarily": "暫時允許",
-        "anonymise": "匿名化",
+        "anonymise": "匿名處理",
         "apply": "套用",
         "auto_tag": "自動套用標籤",
         "backup": "備份",
@@ -141,7 +141,7 @@
         "reset_resume_time": "重置恢復時間",
         "set_cover": "設為封面",
         "remove_from_containing_group": "從群組中刪除",
-        "add_sub_groups": "新增子組"
+        "add_sub_groups": "新增子分類"
     },
     "actions_name": "動作",
     "age": "年齡",
