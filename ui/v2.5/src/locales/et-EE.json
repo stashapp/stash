@@ -1362,7 +1362,8 @@
         "date_invalid_form": "${path} peab olema AAAA-KK-PP vormis",
         "required": "${path} on nõutud väli",
         "blank": "${path} ei tohi olla tühi",
-        "unique": "${path} peab olema kordumatu"
+        "unique": "${path} peab olema kordumatu",
+        "end_time_before_start_time": "Lõpuaeg peab olema suurem või võrdne algusajaga"
     },
     "videos": "Videod",
     "view_all": "Vaata Kõiki",
@@ -1491,5 +1492,12 @@
     "include_sub_tag_content": "Sisalda alamsiltide sisu",
     "include_sub_studio_content": "Sisalda alamstuudiote sisu",
     "o_count": "O Arv",
-    "include_sub_groups": "Sisalda alam-gruppe"
+    "include_sub_groups": "Sisalda alam-gruppe",
+    "time_end": "Lõpuaeg",
+    "criterion_modifier_values": {
+        "any": "Kõik",
+        "any_of": "Järgnevast",
+        "none": "Mitte Ükski",
+        "only": "Ainult"
+    }
 }
