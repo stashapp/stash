@@ -1413,7 +1413,8 @@
         "date_invalid_form": "${path} doit être au format AAAA-MM-JJ",
         "required": "${path} est un champ requis",
         "blank": "${path} ne doit pas être vide",
-        "unique": "${path} doit être unique"
+        "unique": "${path} doit être unique",
+        "end_time_before_start_time": "L'heure de fin doit être supérieure à l'heure de début"
     },
     "video_codec": "Codec vidéo",
     "videos": "Vidéos",
@@ -1497,5 +1498,6 @@
         "only": "Uniquement",
         "any_of": "Tous les",
         "any": "Tous"
-    }
+    },
+    "time_end": "Heure de fin"
 }
