@@ -127,7 +127,7 @@ func (qb *BlobStore) write(ctx context.Context, checksum string, data sql.Null[[
 	q := dialect.Insert(table).Rows(blobRow{
 		Checksum: checksum,
 		Blob:     data,
-	}).OnConflict(goqu.DoNothing())
+	}).OnConflict(goqu.DoNothing()).Prepared(true)
 
 	_, err := exec(ctx, q)
 	if err != nil {
@@ -141,7 +141,7 @@ func (qb *BlobStore) update(ctx context.Context, checksum string, data []byte) e
 	table := qb.table()
 	q := dialect.Update(table).Set(goqu.Record{
 		"blob": data,
-	}).Where(goqu.C(blobChecksumColumn).Eq(checksum))
+	}).Where(goqu.C(blobChecksumColumn).Eq(checksum)).Prepared(true)
 
 	_, err := exec(ctx, q)
 	if err != nil {
