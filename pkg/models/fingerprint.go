@@ -28,16 +28,17 @@ func (f *Fingerprint) Value() string {
 
 type Fingerprints []Fingerprint
 
-func (f *Fingerprints) Remove(type_ string) {
+func (f Fingerprints) Remove(type_ string) Fingerprints {
 	var ret Fingerprints
 
-	for _, ff := range *f {
+	for _, ff := range f {
 		if ff.Type != type_ {
 			ret = append(ret, ff)
 		}
 	}
 
-	*f = ret
+	return ret
+}
 }
 
 // Equals returns true if the contents of this slice are equal to those in the other slice.
