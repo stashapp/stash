@@ -542,7 +542,7 @@
             "rescan_tooltip": "Znovu skenovat každý soubor v cestě. Používá se k vynucení aktualizace metadat souboru a opětovnému skenování zip souborů."
         },
         "tools": {
-            "scene_duplicate_checker": "Kontrola na duplikaci scén",
+            "scene_duplicate_checker": "Detektor duplicitních scén",
             "scene_filename_parser": {
                 "add_field": "Přidat pole",
                 "capitalize_title": "Převést titul na kapitálky",
@@ -558,7 +558,7 @@
                 "whitespace_chars": "Whitespace znaky",
                 "whitespace_chars_desc": "Tyto znaky v názvu budou nahrazeny prázdným znakem (mezerou)"
             },
-            "scene_tools": "Nástroje scény"
+            "scene_tools": "Nástroje pro scény"
         },
         "ui": {
             "abbreviate_counters": {
