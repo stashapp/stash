@@ -907,12 +907,10 @@ parents AS (
 SELECT t.*, p.path FROM tags t INNER JOIN parents p ON t.id = p.parent_id
 `
 
-	excludeArgs := []interface{}{tagID}
+	args := []interface{}{tagID, tagID}
 	for _, excludeID := range excludeIDs {
-		excludeArgs = append(excludeArgs, excludeID)
+		args = append(args, excludeID)
 	}
-	args := []interface{}{tagID}
-	args = append(args, append(append(excludeArgs, excludeArgs...), excludeArgs...)...)
 
 	return qb.queryTagPaths(ctx, query, args)
 }
@@ -931,12 +929,10 @@ children AS (
 SELECT t.*, c.path FROM tags t INNER JOIN children c ON t.id = c.child_id
 `
 
-	excludeArgs := []interface{}{tagID}
+	args := []interface{}{tagID, tagID}
 	for _, excludeID := range excludeIDs {
-		excludeArgs = append(excludeArgs, excludeID)
+		args = append(args, excludeID)
 	}
-	args := []interface{}{tagID}
-	args = append(args, append(append(excludeArgs, excludeArgs...), excludeArgs...)...)
 
 	return qb.queryTagPaths(ctx, query, args)
 }
