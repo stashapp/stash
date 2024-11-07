@@ -1298,7 +1298,9 @@
     "errors": {
       "something_went_wrong": "Oh no! Something went wrong!",
       "something_went_wrong_description": "If this looks like a problem with your inputs, go ahead and click back to fix them up. Otherwise, raise a bug on the {githubLink} or seek help in the {discordLink}.",
-      "something_went_wrong_while_setting_up_your_system": "Something went wrong while setting up your system. Here is the error we received: {error}"
+      "something_went_wrong_while_setting_up_your_system": "Something went wrong while setting up your system. Here is the error we received: {error}",
+      "unable_to_retrieve_system_status": "Unable to retrieve system status: {error}",
+      "unexpected_error": "An unexpected error occurred: {error}"
     },
     "folder": {
       "file_path": "File path",
