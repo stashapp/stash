@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
+	graphql "github.com/hasura/go-graphql-client"
 	"github.com/jinzhu/copier"
-	"github.com/shurcooL/graphql"
 
 	"github.com/stashapp/stash/pkg/models"
 )
