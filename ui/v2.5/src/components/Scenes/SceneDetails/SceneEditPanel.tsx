@@ -24,7 +24,6 @@ import { IGroupEntry, SceneGroupTable } from "./SceneGroupTable";
 import { faSearch } from "@fortawesome/free-solid-svg-icons";
 import { objectTitle } from "src/core/files";
 import { galleryTitle } from "src/core/galleries";
-import { FormElement } from 'src/utils/form';
 import { lazyComponent } from "src/utils/lazyComponent";
 import isEqual from "lodash-es/isEqual";
 import {
@@ -36,7 +35,7 @@ import {
   Performer,
   PerformerSelect,
 } from "src/components/Performers/PerformerSelect";
-import { FormElement } from "src/utils/form";
+import { formikUtils } from "src/utils/form";
 import { Studio, StudioSelect } from "src/components/Studios/StudioSelect";
 import { Gallery, GallerySelect } from "src/components/Galleries/GallerySelect";
 import { Group } from "src/components/Groups/GroupSelect";
@@ -731,7 +730,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
         </Row>
         <Row className="form-container px-3">
           <Col lg={7} xl={12}>
-            {formikUtils.renderInputField("title", "textarea")}
+            {renderInputField("title", "textarea")}
             {renderInputField("code", "text", "scene_code")}
 
             {renderURLListField("urls", onScrapeSceneURL, urlScrapable)}
