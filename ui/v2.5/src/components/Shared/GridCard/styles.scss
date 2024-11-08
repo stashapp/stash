@@ -82,3 +82,13 @@
 .card-drag-handle {
   filter: drop-shadow(1px 1px 1px rgba(0, 0, 0, 0.7));
 }
+
+.title-display {
+  width: 100%;
+  
+  br {
+    display: block;
+    content: "";
+    margin: 2px 0;
+  }
+}
