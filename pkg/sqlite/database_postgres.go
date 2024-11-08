@@ -11,7 +11,7 @@ import (
 )
 
 type PostgresDB struct {
-	Database
+	*Database
 }
 
 const (
@@ -20,13 +20,12 @@ const (
 	maxPGReadConnections  = 15
 )
 
-func NewPostgresDatabase(dbConnector string, init bool) *PostgresDB {
+func NewPostgresDatabase(odb *Database, dbConnector string, init bool) *PostgresDB {
 	db := &PostgresDB{
-		Database: Database{
-			storeRepository: newDatabase(),
-			dbConfig:        dbConnector,
-		},
+		Database: odb,
 	}
+
+	db.dbConfig = dbConnector
 	db.DBInterface = db
 
 	if init {

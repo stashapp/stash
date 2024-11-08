@@ -31,7 +31,7 @@ type Anonymiser struct {
 var anon_dialect = goqu.Dialect("sqlite3")
 
 func NewAnonymiser(db DBInterface, outPath string) (*Anonymiser, error) {
-	newDB := NewSQLiteDatabase(outPath, false)
+	newDB := NewSQLiteDatabase(NewDatabase(), outPath, false)
 	if err := newDB.Open(); err != nil {
 		return nil, fmt.Errorf("opening %s: %w", outPath, err)
 	}

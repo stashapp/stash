@@ -133,6 +133,7 @@ type DBInterface interface {
 	Version() uint
 	WithDatabase(ctx context.Context) (context.Context, error)
 	TestMode()
+	Pointer() *Database
 }
 
 type Database struct {
@@ -148,7 +149,7 @@ type Database struct {
 	lockChan chan struct{}
 }
 
-func newDatabase() *storeRepository {
+func newStoreRepo() *storeRepository {
 	fileStore := NewFileStore()
 	folderStore := NewFolderStore()
 	galleryStore := NewGalleryStore(fileStore, folderStore)
@@ -175,6 +176,13 @@ func newDatabase() *storeRepository {
 	}
 
 	return r
+}
+
+func NewDatabase() *Database {
+	return &Database{
+		storeRepository: newStoreRepo(),
+		lockChan:        make(chan struct{}, 1),
+	}
 }
 
 func getDBBoolean(val bool) string {
@@ -240,6 +248,10 @@ func isConstraintError(err error) bool {
 		}
 	}
 	return false
+}
+
+func (db *Database) Pointer() *Database {
+	return db
 }
 
 func (db *Database) SetSchemaVersion(version uint) {

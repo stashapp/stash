@@ -35,19 +35,7 @@ import (
 func Initialize(cfg *config.Config, l *log.Logger) (*Manager, error) {
 	ctx := context.TODO()
 
-	var db sqlite.DBInterface
-
-	dbUrl := cfg.GetDatabaseUrl()
-	upperUrl := strings.ToUpper(dbUrl)
-	switch {
-	case strings.HasPrefix(upperUrl, string(sqlite.PostgresBackend)+":"):
-		db = sqlite.NewPostgresDatabase(dbUrl, true)
-	case strings.HasPrefix(upperUrl, string(sqlite.SqliteBackend)+":"):
-		db = sqlite.NewSQLiteDatabase(dbUrl[len(sqlite.SqliteBackend)+1:], true)
-	default:
-		// Assume it's the path to a SQLite database - for backwards compat
-		db = sqlite.NewSQLiteDatabase(dbUrl, true)
-	}
+	var db *sqlite.Database = sqlite.NewDatabase()
 
 	repo := db.Repository()
 
@@ -198,11 +186,31 @@ func initJobManager(cfg *config.Config) *job.Manager {
 	return ret
 }
 
+// Initializes the specific DB type
+func (s *Manager) RefreshDB() {
+	cfg := s.Config
+
+	var odb *sqlite.Database = s.Database.Pointer()
+
+	dbUrl := cfg.GetDatabaseUrl()
+	upperUrl := strings.ToUpper(dbUrl)
+	switch {
+	case strings.HasPrefix(upperUrl, string(sqlite.PostgresBackend)+":"):
+		s.Database = sqlite.NewPostgresDatabase(odb, dbUrl, true)
+	case strings.HasPrefix(upperUrl, string(sqlite.SqliteBackend)+":"):
+		s.Database = sqlite.NewSQLiteDatabase(odb, dbUrl[len(sqlite.SqliteBackend)+1:], true)
+	default:
+		// Assume it's the path to a SQLite database - for backwards compat
+		s.Database = sqlite.NewSQLiteDatabase(odb, dbUrl, true)
+	}
+}
+
 // postInit initialises the paths, caches and database after the initial
 // configuration has been set. Should only be called if the configuration
 // is valid.
 func (s *Manager) postInit(ctx context.Context) error {
 	s.RefreshConfig()
+	s.RefreshDB()
 
 	s.SessionStore = session.NewStore(s.Config)
 	s.PluginCache.RegisterSessionStore(s.SessionStore)

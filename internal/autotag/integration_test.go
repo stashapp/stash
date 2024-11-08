@@ -48,10 +48,10 @@ func getNewDB(databaseFile string) sqlite.DBInterface {
 	dbUrl, valid := os.LookupEnv("PGSQL_TEST")
 	if valid {
 		fmt.Printf("Postgres backend for tests detected\n")
-		db = sqlite.NewPostgresDatabase(dbUrl, true)
+		db = sqlite.NewPostgresDatabase(sqlite.NewDatabase(), dbUrl, true)
 	} else {
 		fmt.Printf("SQLite backend for tests detected\n")
-		db = sqlite.NewSQLiteDatabase(databaseFile, true)
+		db = sqlite.NewSQLiteDatabase(sqlite.NewDatabase(), databaseFile, true)
 	}
 
 	return db

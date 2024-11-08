@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -383,7 +384,12 @@ func (s *Manager) GetSystemStatus() *SystemStatus {
 	database := s.Database
 	dbSchema := int(database.Version())
 	dbPath := database.DatabasePath()
-	appSchema := int(database.AppSchemaVersion())
+	appSchema := math.MaxInt32
+
+	// Database is not initialized and cannot be used yet
+	if !s.Config.IsNewSystem() {
+		appSchema = int(database.AppSchemaVersion())
+	}
 
 	status := SystemStatusEnumOk
 	if s.Config.IsNewSystem() {

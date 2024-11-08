@@ -13,17 +13,15 @@ import (
 )
 
 type SQLiteDB struct {
-	Database
+	*Database
 }
 
-func NewSQLiteDatabase(dbPath string, init bool) *SQLiteDB {
+func NewSQLiteDatabase(odb *Database, dbPath string, init bool) *SQLiteDB {
 	db := &SQLiteDB{
-		Database: Database{
-			storeRepository: newDatabase(),
-			lockChan:        make(chan struct{}, 1),
-			dbConfig:        dbPath,
-		},
+		Database: odb,
 	}
+
+	db.dbConfig = dbPath
 	db.DBInterface = db
 
 	if init {
