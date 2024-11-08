@@ -899,3 +899,12 @@ input[type="range"].blue-slider {
     word-break: break-all;
   }
 }
+.title-display {
+  width: 100%;
+  
+  br {
+    display: block;
+    content: "";
+    margin: 2px 0;
+  }
+}
