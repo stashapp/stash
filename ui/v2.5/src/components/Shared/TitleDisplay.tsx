@@ -6,6 +6,8 @@ interface ITitleDisplayProps {
 }
 
 export const TitleDisplay: React.FC<ITitleDisplayProps> = ({ text, className }) => {
+  if (!text) return null;
+  
   return (
     <div className={className}>
       {text.split('\n').map((line, i) => (

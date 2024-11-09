@@ -231,10 +231,14 @@ export const GridCard: React.FC<ICardProps> = (props: ICardProps) => {
   {props.pretitleIcon}
   <TruncatedText
     text={
-      <TitleDisplay
-        text={typeof props.title === "string" ? props.title : String(props.title)}
-        className="title-display"
-      />
+      typeof props.title === "string" ? (
+        <TitleDisplay 
+          text={props.title}
+          className="title-display"
+        />
+      ) : (
+        props.title
+      )
     }
     lineCount={2}
   />
