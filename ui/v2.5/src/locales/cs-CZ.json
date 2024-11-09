@@ -533,7 +533,7 @@
                 "transcodes": "Transkódy scén"
             },
             "generate_sprites_during_scan_tooltip": "Sada obrázků zobrazená pod videopřehrávačem pro snadnou navigaci.",
-            "generate_video_covers_during_scan": "Generuj obaly scén",
+            "generate_video_covers_during_scan": "Generovat obaly scén",
             "anonymise_database": "Vytvoří kopii databáze do adresáře záloh, anonymizuje všechna citlivá data. To pak může být poskytnuto ostatním pro účely odstraňování problémů a debuggování. Původní databáze se nemění. Anonymizovaná databáze používá formát názvu souboru {filename_format}.",
             "optimise_database": "Pokusit se zlepšit výkon analyzováním a opětovným sestavením celého databázového souboru.",
             "generate_clip_previews_during_scan": "Generování náhledů pro obrázkové klipy",
@@ -987,7 +987,8 @@
         "required": "${path} je vyžadované pole",
         "unique": "${path} musí být jedinečná",
         "blank": "${path} nesmí být prázdná",
-        "date_invalid_form": "${path} musí být ve formátu YYYY-MM-DD (Rok-Měsíc-Den)"
+        "date_invalid_form": "${path} musí být ve formátu YYYY-MM-DD (Rok-Měsíc-Den)",
+        "end_time_before_start_time": "Čas ukončení musí být větší nebo roven času zahájení"
     },
     "type": "Typ",
     "twitter": "Twitter",
@@ -1165,7 +1166,9 @@
         "errors": {
             "something_went_wrong_description": "Pokud to vypadá na problém s vašemi vstupy, pokračujte kliknutím na tlačítko Zpět a opravte je. Jinak upozorněte na chybu na {githubLink} nebo vyhledejte pomoc na {discordLink}.",
             "something_went_wrong": "Ach ne! Něco se pokazilo!",
-            "something_went_wrong_while_setting_up_your_system": "Při nastavování systému se něco pokazilo. Zde je chyba, kterou jsme obdrželi: {error}"
+            "something_went_wrong_while_setting_up_your_system": "Při nastavování systému se něco pokazilo. Zde je chyba, kterou jsme obdrželi: {error}",
+            "unable_to_retrieve_system_status": "Nelze načíst stav systému: {error}",
+            "unexpected_error": "Došlo k neočekávané chybě: {error}"
         },
         "folder": {
             "up_dir": "Nahoru o adresář",
@@ -1491,5 +1494,12 @@
     "sub_group_count": "Počet podskupin",
     "include_sub_studio_content": "Zahrnout obsah podstudií",
     "include_sub_tag_content": "Zahrnout obsah podtagů",
-    "include_sub_groups": "Zahrnout podskupiny"
+    "include_sub_groups": "Zahrnout podskupiny",
+    "time_end": "Čas ukončení",
+    "criterion_modifier_values": {
+        "any": "Jakýkoli",
+        "any_of": "Jakýkoli z",
+        "none": "Žádný",
+        "only": "Pouze"
+    }
 }
