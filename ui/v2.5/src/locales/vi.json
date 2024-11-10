@@ -110,6 +110,73 @@
         "clear": "Xóa",
         "create_entity": "Tạo {entityType}",
         "reassign": "Gán lại",
-        "save_delete_settings": "Sử dụng các tùy chọn này theo mặc định khi xóa"
+        "save_delete_settings": "Sử dụng các tùy chọn này theo mặc định khi xóa",
+        "select_folders": "Chọn thư mục",
+        "select_none": "Không chọn",
+        "selective_auto_tag": "Chọn Tag tự động",
+        "selective_clean": "Không chọn",
+        "selective_scan": "Chọn Scan",
+        "set_as_default": "Đặt mặc định",
+        "set_back_image": "Ảnh sau…",
+        "set_cover": "Đặt làm ảnh bìa",
+        "set_image": "Đặt ảnh…",
+        "show": "Hiển thị",
+        "show_configuration": "Hiển thị cấu hình",
+        "skip": "Bỏ qua",
+        "split": "Chia",
+        "stop": "Dừng",
+        "submit": "Gửi",
+        "submit_stash_box": "Gửi đến Stash-Box",
+        "submit_update": "Gửi cập nhật",
+        "swap": "Đổi",
+        "tasks": {
+            "dry_mode_selected": "Chế độ thử nghiệm đã được chọn. Sẽ không có việc xóa thực tế nào diễn ra, chỉ ghi lại nhật ký.",
+            "clean_confirm_message": "Bạn có chắc chắn muốn làm sạch không? Thao tác này sẽ xóa thông tin cơ sở dữ liệu và nội dung đã tạo cho tất cả các cảnh và bộ sưu tập không còn tồn tại trong hệ thống tệp.",
+            "import_warning": "Bạn có chắc chắn muốn nhập không? Thao tác này sẽ xóa cơ sở dữ liệu và nhập lại từ siêu dữ liệu đã xuất của bạn."
+        },
+        "temp_disable": "Tạm thời vô hiệu hóa…",
+        "temp_enable": "Tạm thời kích hoạt…",
+        "unset": "Bỏ thiết lập",
+        "use_default": "Dùng mặc định",
+        "view_history": "Xem lịch sử",
+        "view_random": "Xem ngẫu nhiên",
+        "set_front_image": "Ảnh trước…",
+        "select_entity": "Chọn {entityType}"
+    },
+    "actions_name": "Hành động",
+    "age": "Tuổi",
+    "aliases": "Bí danh",
+    "all": "tất cả",
+    "also_known_as": "Còn được biết đến là",
+    "appears_with": "Xuất hiện với",
+    "ascending": "Tăng dần",
+    "audio_codec": "Bộ giải mã âm thanh",
+    "average_resolution": "Độ phân giải trung bình",
+    "between_and": "và",
+    "birth_year": "Năm sinh",
+    "birthdate": "Ngày sinh",
+    "bitrate": "Bit Rate",
+    "blobs_storage_type": {
+        "database": "Cơ sở dữ liệu",
+        "filesystem": "Files hệ thống"
+    },
+    "captions": "Tiêu đề",
+    "career_length": "Tuổi nghề",
+    "chapters": "Chapters",
+    "circumcised_types": {
+        "CUT": "Cắt",
+        "UNCUT": "Không cắt"
+    },
+    "circumcised": "Cắt bao quy đầu",
+    "component_tagger": {
+        "config": {
+            "blacklist_desc": "Các mục trong danh sách đen sẽ bị loại trừ khỏi các truy vấn. Lưu ý rằng chúng là các biểu thức chính quy và không phân biệt chữ hoa chữ thường. Một số ký tự cần phải được thoát bằng dấu gạch chéo ngược: {chars_require_escape}",
+            "blacklist_label": "Danh sách đen",
+            "mark_organized_desc": "Ngay lập tức đánh dấu cảnh là Đã tổ chức sau khi nhấn nút Lưu.",
+            "active_instance": "Phiên bản stash-box đang hoạt động:",
+            "mark_organized_label": "Đánh dấu là Đã tổ chức khi lưu.",
+            "query_mode_auto": "Tự động",
+            "query_mode_auto_desc": "Sử dụng siêu dữ liệu nếu có, hoặc tên tệp."
+        }
     }
 }
