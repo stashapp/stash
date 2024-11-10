@@ -41,6 +41,7 @@ func (qb *sceneMarkerFilterHandler) criterionHandler() criterionHandler {
 		qb.sceneTagsCriterionHandler(sceneMarkerFilter.SceneTags),
 		qb.performersCriterionHandler(sceneMarkerFilter.Performers),
 		qb.scenesCriterionHandler(sceneMarkerFilter.Scenes),
+		floatIntCriterionHandler(sceneMarkerFilter.Duration, "COALESCE(scene_markers.end_seconds - scene_markers.seconds, 0)", nil),
 		&timestampCriterionHandler{sceneMarkerFilter.CreatedAt, "scene_markers.created_at", nil},
 		&timestampCriterionHandler{sceneMarkerFilter.UpdatedAt, "scene_markers.updated_at", nil},
 		&dateCriterionHandler{sceneMarkerFilter.SceneDate, "scenes.date", qb.joinScenes},
