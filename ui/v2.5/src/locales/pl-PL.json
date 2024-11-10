@@ -134,7 +134,14 @@
         "clean_generated": "Wyczyść wygenerowane pliki",
         "clear_date_data": "Wyczyść dane daty",
         "create_parent_studio": "Utwórz studio nadrzędne",
-        "remove_date": "Usuń datę"
+        "remove_date": "Usuń datę",
+        "reset_play_duration": "Resetuj czas odtwarzania",
+        "reset_resume_time": "Resetuj czas wznowienia",
+        "set_cover": "Ustaw jako okładkę",
+        "remove_from_containing_group": "Usuń z grupy",
+        "reset_cover": "Przywróć domyślną okładkę",
+        "add_sub_groups": "Dodaj podgrupy",
+        "view_history": "Zobacz historię"
     },
     "actions_name": "Działania",
     "age": "Wiek",
@@ -257,7 +264,9 @@
             "successfully_cancelled_temporary_behaviour": "Pomyślnie anulowano zachowanie tymczasowe",
             "until_restart": "do ponownego uruchomienia",
             "video_sort_order": "Domyślna kolejność sortowania wideo",
-            "video_sort_order_desc": "Ustaw domyślną kolejność sortowania filmów."
+            "video_sort_order_desc": "Ustaw domyślną kolejność sortowania filmów.",
+            "server_port": "Port serwera",
+            "server_port_desc": "Port, na którym uruchomiony będzie serwer DLNA.\nWymaga restartu DLNA w przypadku zmiany."
         },
         "general": {
             "auth": {
