@@ -922,11 +922,11 @@ func (qb *SceneStore) makeQuery(ctx context.Context, sceneFilter *models.SceneFi
 		query.addJoins(
 			join{
 				table:    scenesFilesTable,
-				onClause: "scenes_files.scene_id = scenes.id",
+				onClause: "scenes_files.scene_id = scenes.id AND scenes_files.primary = " + getDBBoolean(true),
 			},
 			join{
 				table:    fileTable,
-				onClause: "scenes_files.file_id = files.id",
+				onClause: "scenes_files.file_id = files.id AND scenes_files.primary = " + getDBBoolean(true),
 			},
 			join{
 				table:    folderTable,
@@ -999,11 +999,11 @@ func (qb *SceneStore) queryGroupedFields(ctx context.Context, options models.Sce
 		query.addJoins(
 			join{
 				table:    scenesFilesTable,
-				onClause: "scenes_files.scene_id = scenes.id",
+				onClause: "scenes_files.scene_id = scenes.id AND scenes_files.primary = " + getDBBoolean(true),
 			},
 			join{
 				table:    videoFileTable,
-				onClause: "scenes_files.file_id = video_files.file_id",
+				onClause: "scenes_files.file_id = video_files.file_id AND scenes_files.primary = " + getDBBoolean(true),
 			},
 		)
 		query.addColumn("COALESCE(video_files.duration, 0) as duration")
@@ -1015,11 +1015,11 @@ func (qb *SceneStore) queryGroupedFields(ctx context.Context, options models.Sce
 		query.addJoins(
 			join{
 				table:    scenesFilesTable,
-				onClause: "scenes_files.scene_id = scenes.id",
+				onClause: "scenes_files.scene_id = scenes.id AND scenes_files.primary = " + getDBBoolean(true),
 			},
 			join{
 				table:    fileTable,
-				onClause: "scenes_files.file_id = files.id",
+				onClause: "scenes_files.file_id = files.id AND scenes_files.primary = " + getDBBoolean(true),
 			},
 		)
 		query.addColumn("COALESCE(files.size, 0) as size")
@@ -1099,11 +1099,11 @@ func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindF
 		query.addJoins(
 			join{
 				table:    scenesFilesTable,
-				onClause: "scenes_files.scene_id = scenes.id",
+				onClause: "scenes_files.scene_id = scenes.id AND scenes_files.primary = " + getDBBoolean(true),
 			},
 			join{
 				table:    fileTable,
-				onClause: "scenes_files.file_id = files.id",
+				onClause: "scenes_files.file_id = files.id AND scenes_files.primary = " + getDBBoolean(true),
 			},
 		)
 	}
@@ -1158,7 +1158,7 @@ func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindF
 			join{
 				table:    fingerprintTable,
 				as:       "fingerprints_phash",
-				onClause: "scenes_files.file_id = fingerprints_phash.file_id AND fingerprints_phash.type = 'phash'",
+				onClause: "scenes_files.file_id = fingerprints_phash.file_id AND scenes_files.primary = " + getDBBoolean(true) + " AND fingerprints_phash.type = 'phash'",
 			},
 		)
 
