@@ -13,7 +13,7 @@ import useResizeObserver from "@react-hook/resize-observer";
 import { Icon } from "../Icon";
 import { faGripLines } from "@fortawesome/free-solid-svg-icons";
 import { DragSide, useDragMoveSelect } from "./dragMoveSelect";
-import { TitleDisplay } from 'src/components/Shared/TitleDisplay';
+import { TitleDisplay } from "src/components/Shared/TitleDisplay";
 
 interface ICardProps {
   className?: string;
@@ -227,22 +227,19 @@ export const GridCard: React.FC<ICardProps> = (props: ICardProps) => {
       {maybeRenderInteractiveHeatmap()}
       <div className="card-section">
         <Link to={props.url} onClick={handleImageClick}>
-        <h5 className="card-section-title flex-aligned">
-  {props.pretitleIcon}
-  <TruncatedText
-    text={
-      typeof props.title === "string" ? (
-        <TitleDisplay 
-          text={props.title}
-          className="title-display"
-        />
-      ) : (
-        props.title
-      )
-    }
-    lineCount={2}
-  />
-</h5>
+          <h5 className="card-section-title flex-aligned">
+            {props.pretitleIcon}
+            <TruncatedText
+              text={
+                typeof props.title === "string" ? (
+                  <TitleDisplay text={props.title} className="title-display" />
+                ) : (
+                  props.title
+                )
+              }
+              lineCount={2}
+            />
+          </h5>
         </Link>
         {props.details}
       </div>
