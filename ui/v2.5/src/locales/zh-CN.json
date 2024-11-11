@@ -1228,7 +1228,9 @@
         "errors": {
             "something_went_wrong": "天啊！出错啦！",
             "something_went_wrong_description": "如果看上去是你输入的问题，请点击“回去”以修正。又或者，在{githubLink}提出这个毛病，或者在{discordLink}寻求帮助。",
-            "something_went_wrong_while_setting_up_your_system": "在设立你的系统时出错。以下是错误信息：{error}"
+            "something_went_wrong_while_setting_up_your_system": "在设立你的系统时出错。以下是错误信息：{error}",
+            "unable_to_retrieve_system_status": "无法检索系统状态： {error}",
+            "unexpected_error": "发生意外错误： {error}"
         },
         "folder": {
             "file_path": "文件路径",
