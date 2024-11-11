@@ -65,7 +65,7 @@ func (qb *sceneFilterHandler) criterionHandler() criterionHandler {
 		criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
 			if sceneFilter.Oshash != nil {
 				qb.addSceneFilesTable(f)
-				f.addLeftJoin(fingerprintTable, "fingerprints_oshash", "scenes_files.file_id = fingerprints_oshash.file_id AND scenes_files.primary = "+getDBBoolean(true)+" AND fingerprints_oshash.type = 'oshash'")
+				f.addLeftJoin(fingerprintTable, "fingerprints_oshash", "scenes_files.file_id = fingerprints_oshash.file_id AND scenes_files.\"primary\" = "+getDBBoolean(true)+" AND fingerprints_oshash.type = 'oshash'")
 			}
 
 			stringCriterionHandler(sceneFilter.Oshash, "fingerprints_oshash.fingerprint")(ctx, f)
@@ -74,7 +74,7 @@ func (qb *sceneFilterHandler) criterionHandler() criterionHandler {
 		criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
 			if sceneFilter.Checksum != nil {
 				qb.addSceneFilesTable(f)
-				f.addLeftJoin(fingerprintTable, "fingerprints_md5", "scenes_files.file_id = fingerprints_md5.file_id AND scenes_files.primary = "+getDBBoolean(true)+" AND fingerprints_md5.type = 'md5'")
+				f.addLeftJoin(fingerprintTable, "fingerprints_md5", "scenes_files.file_id = fingerprints_md5.file_id AND scenes_files.\"primary\" = "+getDBBoolean(true)+" AND fingerprints_md5.type = 'md5'")
 			}
 
 			stringCriterionHandler(sceneFilter.Checksum, "fingerprints_md5.fingerprint")(ctx, f)
@@ -214,12 +214,12 @@ func (qb *sceneFilterHandler) criterionHandler() criterionHandler {
 }
 
 func (qb *sceneFilterHandler) addSceneFilesTable(f *filterBuilder) {
-	f.addLeftJoin(scenesFilesTable, "", "scenes_files.scene_id = scenes.id AND scenes_files.primary = "+getDBBoolean(true))
+	f.addLeftJoin(scenesFilesTable, "", "scenes_files.scene_id = scenes.id AND scenes_files.\"primary\" = "+getDBBoolean(true))
 }
 
 func (qb *sceneFilterHandler) addFilesTable(f *filterBuilder) {
 	qb.addSceneFilesTable(f)
-	f.addLeftJoin(fileTable, "", "scenes_files.file_id = files.id AND scenes_files.primary = "+getDBBoolean(true))
+	f.addLeftJoin(fileTable, "", "scenes_files.file_id = files.id AND scenes_files.\"primary\" = "+getDBBoolean(true))
 }
 
 func (qb *sceneFilterHandler) addFoldersTable(f *filterBuilder) {
@@ -229,7 +229,7 @@ func (qb *sceneFilterHandler) addFoldersTable(f *filterBuilder) {
 
 func (qb *sceneFilterHandler) addVideoFilesTable(f *filterBuilder) {
 	qb.addSceneFilesTable(f)
-	f.addLeftJoin(videoFileTable, "", "video_files.file_id = scenes_files.file_id AND scenes_files.primary = "+getDBBoolean(true))
+	f.addLeftJoin(videoFileTable, "", "video_files.file_id = scenes_files.file_id AND scenes_files.\"primary\" = "+getDBBoolean(true))
 }
 
 func (qb *sceneFilterHandler) playCountCriterionHandler(count *models.IntCriterionInput) criterionHandlerFunc {
@@ -277,7 +277,7 @@ func (qb *sceneFilterHandler) phashDuplicatedCriterionHandler(duplicatedFilter *
 				v = "="
 			}
 
-			f.addInnerJoin("(SELECT file_id FROM files_fingerprints INNER JOIN (SELECT fingerprint FROM files_fingerprints WHERE type = 'phash' GROUP BY fingerprint HAVING COUNT (fingerprint) "+v+" 1) dupes on files_fingerprints.fingerprint = dupes.fingerprint)", "scph", "scenes_files.file_id = scph.file_id AND scenes_files.primary = "+getDBBoolean(true))
+			f.addInnerJoin("(SELECT file_id FROM files_fingerprints INNER JOIN (SELECT fingerprint FROM files_fingerprints WHERE type = 'phash' GROUP BY fingerprint HAVING COUNT (fingerprint) "+v+" 1) dupes on files_fingerprints.fingerprint = dupes.fingerprint)", "scph", "scenes_files.file_id = scph.file_id AND scenes_files.\"primary\" = "+getDBBoolean(true))
 		}
 	}
 }
@@ -339,7 +339,7 @@ func (qb *sceneFilterHandler) isMissingCriterionHandler(isMissing *string) crite
 				f.addWhere("scene_stash_ids.scene_id IS NULL")
 			case "phash":
 				qb.addSceneFilesTable(f)
-				f.addLeftJoin(fingerprintTable, "fingerprints_phash", "scenes_files.file_id = fingerprints_phash.file_id AND scenes_files.primary = "+getDBBoolean(true)+" AND fingerprints_phash.type = 'phash'")
+				f.addLeftJoin(fingerprintTable, "fingerprints_phash", "scenes_files.file_id = fingerprints_phash.file_id AND scenes_files.\"primary\" = "+getDBBoolean(true)+" AND fingerprints_phash.type = 'phash'")
 				f.addWhere("fingerprints_phash.fingerprint IS NULL")
 			case "cover":
 				f.addWhere("scenes.cover_blob IS NULL")
@@ -544,7 +544,7 @@ func (qb *sceneFilterHandler) phashDistanceCriterionHandler(phashDistance *model
 	return func(ctx context.Context, f *filterBuilder) {
 		if phashDistance != nil {
 			qb.addSceneFilesTable(f)
-			f.addLeftJoin(fingerprintTable, "fingerprints_phash", "scenes_files.file_id = fingerprints_phash.file_id AND scenes_files.primary = "+getDBBoolean(true)+" AND fingerprints_phash.type = 'phash'")
+			f.addLeftJoin(fingerprintTable, "fingerprints_phash", "scenes_files.file_id = fingerprints_phash.file_id AND scenes_files.\"primary\" = "+getDBBoolean(true)+" AND fingerprints_phash.type = 'phash'")
 
 			value, _ := utils.StringToPhash(phashDistance.Value)
 			distance := 0
