@@ -6,11 +6,11 @@ import (
 	"runtime"
 )
 
-//go:embed v2.5/build/*
+//go:embed v2.5/build
 var uiBox embed.FS
 var UIBox fs.FS
 
-//go:embed login/*
+//go:embed login
 var loginUIBox embed.FS
 var LoginUIBox fs.FS
 
