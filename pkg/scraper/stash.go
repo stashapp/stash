@@ -29,9 +29,21 @@ func newStashScraper(scraper scraperTypeConfig, client *http.Client, config conf
 	}
 }
 
+func setApiKeyHeader(apiKey string) func(req *http.Request) {
+	return func(req *http.Request) {
+		req.Header.Set("ApiKey", apiKey)
+	}
+}
+
 func (s *stashScraper) getStashClient() *graphql.Client {
-	url := s.config.StashServer.URL
-	return graphql.NewClient(url+"/graphql", nil)
+	url := s.config.StashServer.URL + "/graphql"
+	ret := graphql.NewClient(url, s.client)
+
+	if s.config.StashServer.ApiKey != "" {
+		ret = ret.WithRequestModifier(setApiKeyHeader(s.config.StashServer.ApiKey))
+	}
+
+	return ret
 }
 
 type stashFindPerformerNamePerformer struct {
@@ -79,6 +91,19 @@ type scrapedPerformerStash struct {
 	DeathDate    *string            `graphql:"death_date" json:"death_date"`
 	HairColor    *string            `graphql:"hair_color" json:"hair_color"`
 	Weight       *int               `graphql:"weight" json:"weight"`
+}
+
+func (s *stashScraper) imageGetter() imageGetter {
+	ret := imageGetter{
+		client:       s.client,
+		globalConfig: s.globalConfig,
+	}
+
+	if s.config.StashServer.ApiKey != "" {
+		ret.requestModifier = setApiKeyHeader(s.config.StashServer.ApiKey)
+	}
+
+	return ret
 }
 
 func (s *stashScraper) scrapeByFragment(ctx context.Context, input Input) (ScrapedContent, error) {
@@ -132,7 +157,8 @@ func (s *stashScraper) scrapeByFragment(ctx context.Context, input Input) (Scrap
 	}
 
 	// get the performer image directly
-	ret.Image, err = getStashPerformerImage(ctx, s.config.StashServer.URL, performerID, s.client, s.globalConfig)
+	ig := s.imageGetter()
+	img, err := getStashPerformerImage(ctx, s.config.StashServer.URL, performerID, ig)
 	if err != nil {
 		return nil, err
 	}
@@ -165,8 +191,9 @@ func (s *stashScraper) scrapedStashSceneToScrapedScene(ctx context.Context, scen
 		ret.File = &f
 	}
 
-	// get the performer image directly
-	ret.Image, err = getStashSceneImage(ctx, s.config.StashServer.URL, scene.ID, s.client, s.globalConfig)
+	// get the scene image directly
+	ig := s.imageGetter()
+	ret.Image, err = getStashSceneImage(ctx, s.config.StashServer.URL, scene.ID, ig)
 	if err != nil {
 		return nil, err
 	}
@@ -308,7 +335,8 @@ func (s *stashScraper) scrapeSceneByScene(ctx context.Context, scene *models.Sce
 	}
 
 	// get the performer image directly
-	ret.Image, err = getStashSceneImage(ctx, s.config.StashServer.URL, q.FindScene.ID, s.client, s.globalConfig)
+	ig := s.imageGetter()
+	ret.Image, err = getStashSceneImage(ctx, s.config.StashServer.URL, q.FindScene.ID, ig)
 	if err != nil {
 		return nil, err
 	}
