@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strconv"
+	"strings"
 
 	graphql "github.com/hasura/go-graphql-client"
 	"github.com/jinzhu/copier"
@@ -58,14 +60,12 @@ type scrapedTagStash struct {
 type scrapedPerformerStash struct {
 	Name         *string            `graphql:"name" json:"name"`
 	Gender       *string            `graphql:"gender" json:"gender"`
-	URL          *string            `graphql:"url" json:"url"`
-	Twitter      *string            `graphql:"twitter" json:"twitter"`
-	Instagram    *string            `graphql:"instagram" json:"instagram"`
+	URLs         []string           `graphql:"urls" json:"urls"`
 	Birthdate    *string            `graphql:"birthdate" json:"birthdate"`
 	Ethnicity    *string            `graphql:"ethnicity" json:"ethnicity"`
 	Country      *string            `graphql:"country" json:"country"`
 	EyeColor     *string            `graphql:"eye_color" json:"eye_color"`
-	Height       *string            `graphql:"height" json:"height"`
+	Height       *int               `graphql:"height_cm" json:"height_cm"`
 	Measurements *string            `graphql:"measurements" json:"measurements"`
 	FakeTits     *string            `graphql:"fake_tits" json:"fake_tits"`
 	PenisLength  *string            `graphql:"penis_length" json:"penis_length"`
@@ -73,12 +73,12 @@ type scrapedPerformerStash struct {
 	CareerLength *string            `graphql:"career_length" json:"career_length"`
 	Tattoos      *string            `graphql:"tattoos" json:"tattoos"`
 	Piercings    *string            `graphql:"piercings" json:"piercings"`
-	Aliases      *string            `graphql:"aliases" json:"aliases"`
+	Aliases      []string           `graphql:"alias_list" json:"alias_list"`
 	Tags         []*scrapedTagStash `graphql:"tags" json:"tags"`
 	Details      *string            `graphql:"details" json:"details"`
 	DeathDate    *string            `graphql:"death_date" json:"death_date"`
 	HairColor    *string            `graphql:"hair_color" json:"hair_color"`
-	Weight       *string            `graphql:"weight" json:"weight"`
+	Weight       *int               `graphql:"weight" json:"weight"`
 }
 
 func (s *stashScraper) scrapeByFragment(ctx context.Context, input Input) (ScrapedContent, error) {
@@ -102,12 +102,12 @@ func (s *stashScraper) scrapeByFragment(ctx context.Context, input Input) (Scrap
 
 	// get the id from the URL field
 	vars := map[string]interface{}{
-		"f": performerID,
+		"f": graphql.ID(performerID),
 	}
 
 	err := client.Query(ctx, &q, vars)
 	if err != nil {
-		return nil, err
+		return nil, convertGraphqlError(err)
 	}
 
 	// need to copy back to a scraped performer
@@ -117,11 +117,27 @@ func (s *stashScraper) scrapeByFragment(ctx context.Context, input Input) (Scrap
 		return nil, err
 	}
 
+	// convert alias list to aliases
+	aliasStr := strings.Join(q.FindPerformer.Aliases, ", ")
+	ret.Aliases = &aliasStr
+
+	// convert numeric to string
+	if q.FindPerformer.Height != nil {
+		heightStr := strconv.Itoa(*q.FindPerformer.Height)
+		ret.Height = &heightStr
+	}
+	if q.FindPerformer.Weight != nil {
+		weightStr := strconv.Itoa(*q.FindPerformer.Weight)
+		ret.Weight = &weightStr
+	}
+
 	// get the performer image directly
 	ret.Image, err = getStashPerformerImage(ctx, s.config.StashServer.URL, performerID, s.client, s.globalConfig)
 	if err != nil {
 		return nil, err
 	}
+	ret.Images = []string{*img}
+	ret.Image = img
 
 	return &ret, nil
 }
@@ -141,6 +157,12 @@ func (s *stashScraper) scrapedStashSceneToScrapedScene(ctx context.Context, scen
 	err := copier.Copy(&ret, scene)
 	if err != nil {
 		return nil, err
+	}
+
+	// convert first in files to file
+	if len(scene.Files) > 0 {
+		f := scene.Files[0].SceneFileType()
+		ret.File = &f
 	}
 
 	// get the performer image directly
@@ -175,7 +197,7 @@ func (s *stashScraper) scrapeByName(ctx context.Context, name string, ty ScrapeC
 
 		err := client.Query(ctx, &q, vars)
 		if err != nil {
-			return nil, err
+			return nil, convertGraphqlError(err)
 		}
 
 		for _, scene := range q.FindScenes.Scenes {
@@ -207,13 +229,41 @@ func (s *stashScraper) scrapeByName(ctx context.Context, name string, ty ScrapeC
 	return nil, ErrNotSupported
 }
 
+type stashVideoFile struct {
+	Size       int64   `graphql:"size" json:"size"`
+	Duration   float64 `graphql:"duration" json:"duration"`
+	VideoCodec string  `graphql:"video_codec" json:"video_codec"`
+	AudioCodec string  `graphql:"audio_codec" json:"audio_codec"`
+	Width      int     `graphql:"width" json:"width"`
+	Height     int     `graphql:"height" json:"height"`
+	Framerate  float64 `graphql:"frame_rate" json:"frame_rate"`
+	Bitrate    int     `graphql:"bit_rate" json:"bit_rate"`
+}
+
+func (f stashVideoFile) SceneFileType() models.SceneFileType {
+	ret := models.SceneFileType{
+		Duration:   &f.Duration,
+		VideoCodec: &f.VideoCodec,
+		AudioCodec: &f.AudioCodec,
+		Width:      &f.Width,
+		Height:     &f.Height,
+		Framerate:  &f.Framerate,
+		Bitrate:    &f.Bitrate,
+	}
+
+	size := strconv.FormatInt(f.Size, 10)
+	ret.Size = &size
+
+	return ret
+}
+
 type scrapedSceneStash struct {
 	ID         string                   `graphql:"id" json:"id"`
 	Title      *string                  `graphql:"title" json:"title"`
 	Details    *string                  `graphql:"details" json:"details"`
-	URL        *string                  `graphql:"url" json:"url"`
+	URLs       []string                 `graphql:"urls" json:"urls"`
 	Date       *string                  `graphql:"date" json:"date"`
-	File       *models.SceneFileType    `graphql:"file" json:"file"`
+	Files      []stashVideoFile         `graphql:"files" json:"files"`
 	Studio     *scrapedStudioStash      `graphql:"studio" json:"studio"`
 	Tags       []*scrapedTagStash       `graphql:"tags" json:"tags"`
 	Performers []*scrapedPerformerStash `graphql:"performers" json:"performers"`
@@ -239,12 +289,16 @@ func (s *stashScraper) scrapeSceneByScene(ctx context.Context, scene *models.Sce
 	}
 
 	vars := map[string]interface{}{
-		"c": &input,
+		"c": input,
 	}
 
 	client := s.getStashClient()
 	if err := client.Query(ctx, &q, vars); err != nil {
-		return nil, err
+		return nil, convertGraphqlError(err)
+	}
+
+	if q.FindScene == nil {
+		return nil, nil
 	}
 
 	// need to copy back to a scraped scene
