@@ -52,7 +52,12 @@ export const PrimaryTags: React.FC<IPrimaryTags> = ({
               <FormattedMessage id="actions.edit" />
             </Button>
           </div>
-          <div>{TextUtils.secondsToTimestamp(marker.seconds)}</div>
+          <div>
+            {TextUtils.formatTimestampRange(
+              marker.seconds,
+              marker.end_seconds ?? undefined
+            )}
+          </div>
           <div className="card-section centered">{tags}</div>
         </div>
       );
