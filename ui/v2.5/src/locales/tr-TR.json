@@ -128,7 +128,12 @@
         "clean_generated": "Oluşturulan dosyaları temizle",
         "open_in_external_player": "Harici oynatıcıda aç",
         "clear_date_data": "Tarih verisini temizle",
-        "optimise_database": "Veritabanını Optimize Et"
+        "optimise_database": "Veritabanını Optimize Et",
+        "create_parent_studio": "Ana stüdyo oluştur",
+        "migrate_scene_screenshots": "Sahne Ekran Görüntülerini Aktar",
+        "add_o": "O Ekle",
+        "add_play": "Oynatma ekle",
+        "migrate_blobs": "Blob'ları Aktar"
     },
     "actions_name": "Eylemler",
     "age": "Yaş",
@@ -484,7 +489,8 @@
                 "desktop_integration": "Masaüstü Bütünleştirmesi",
                 "skip_opening_browser": "Web Tarayıcısını Açma",
                 "skip_opening_browser_on_startup": "Başlangıçta web tarayıcısının otomatik olarak açılmasını engeller",
-                "notifications_enabled": "Bildirimleri Etkinleştir"
+                "notifications_enabled": "Bildirimleri Etkinleştir",
+                "send_desktop_notifications_for_events": "Etkinlikler için masaüstü bildirimleri gönder"
             },
             "editing": {
                 "disable_dropdown_create": {
@@ -575,10 +581,12 @@
                     },
                     "always_start_from_beginning": "Videoyu her zaman baştan başlat",
                     "vr_tag": {
-                        "heading": "VR Etiketi"
+                        "heading": "VR Etiketi",
+                        "description": "VR butonu yalnızca bu etikete sahip sahneler için görüntülenecektir."
                     },
                     "track_activity": "Sahne Oynatma Geçmişi'ni etkinleştir",
-                    "enable_chromecast": "Chromecast'i Etkinleştir"
+                    "enable_chromecast": "Chromecast'i Etkinleştir",
+                    "show_ab_loop_controls": "AB Loop eklenti kontrollerini göster"
                 }
             },
             "scene_wall": {
@@ -594,10 +602,17 @@
             },
             "title": "Kullanıcı Arayüzü",
             "detail": {
-                "heading": "Detay Sayfası"
+                "heading": "Detay Sayfası",
+                "enable_background_image": {
+                    "heading": "Arka plan resmini etkinleştir"
+                },
+                "show_all_details": {
+                    "heading": "Tüm ayrıntıları göster"
+                }
             },
             "custom_javascript": {
-                "heading": "Özel Javascript"
+                "heading": "Özel Javascript",
+                "option_label": "Özel Javascript etkin"
             },
             "custom_locales": {
                 "heading": "Özel yerelleştirme"
@@ -620,6 +635,16 @@
             },
             "abbreviate_counters": {
                 "heading": "Sayaçları kısalt"
+            },
+            "minimum_play_percent": {
+                "description": "Bir sahnenin oynatma sayısı artırılmadan önce oynatılması gereken sürenin yüzdesi.",
+                "heading": "Minimum Oynatma Yüzdesi"
+            },
+            "image_wall": {
+                "heading": "Resim Duvarı"
+            },
+            "handy_connection": {
+                "connect": "Bağlan"
             }
         },
         "advanced_mode": "Gelişmiş Mod"
@@ -699,7 +724,8 @@
                 "label": "Kaydırma Modu",
                 "pan_y": "Y Ekseninde Çevir",
                 "zoom": "Yakınlaştırma"
-            }
+            },
+            "page_header": "Sayfa {page} / {total}"
         },
         "merge_tags": {
             "destination": "Hedef Noktası",
@@ -737,7 +763,11 @@
             "transcodes": "Dönüştürülmüş Videolar",
             "transcodes_tooltip": "Desteklenmeyen video biçimleri için MP4 dönüştürmeleri",
             "video_previews": "Önizlemeler",
-            "video_previews_tooltip": "Fare sahne üzerinde iken video önizlemeleri"
+            "video_previews_tooltip": "Fare sahne üzerinde iken video önizlemeleri",
+            "covers": "Sahne kapakları",
+            "override_preview_generation_options": "Önizleme Oluşturma Seçeneklerini Geçersiz Kıl",
+            "image_thumbnails": "Resim Önizlemeleri",
+            "override_preview_generation_options_desc": "Bu işlem için Önizleme Oluşturma Seçeneklerini geçersiz kılın. Varsayılanlar Sistem -> Önizleme Oluşturma bölümünde ayarlanır."
         },
         "scenes_found": "{count} sahne bulundu",
         "scrape_entity_query": "{entity_type} Veri Toplama Sorgusu",
@@ -745,7 +775,12 @@
         "scrape_results_existing": "Mevcut",
         "scrape_results_scraped": "Toplanan",
         "set_image_url_title": "Resim Internet Adresi",
-        "unsaved_changes": "Değişiklikler kaydedilmedi. Sayfadan ayrılmak istediğinize emin misiniz?"
+        "unsaved_changes": "Değişiklikler kaydedilmedi. Sayfadan ayrılmak istediğinize emin misiniz?",
+        "clear_play_history_confirm": "Oynatma geçmişini temizlemek istediğinize emin misiniz?",
+        "merge": {
+            "source": "Kaynak"
+        },
+        "dont_show_until_updated": "Sonraki güncellemeye kadar gösterme"
     },
     "dimensions": "Boyutlar",
     "director": "Yönetmen",
@@ -767,7 +802,11 @@
             "medium": "Orta"
         },
         "search_accuracy_label": "Arama Kesinliği",
-        "title": "Kopya Sahneler"
+        "title": "Kopya Sahneler",
+        "duration_options": {
+            "equal": "Eşit"
+        },
+        "duration_diff": "Maksimum Süre Farkı"
     },
     "duration": "Süre",
     "effect_filters": {
@@ -843,7 +882,9 @@
         "phash": "PHash",
         "stream": "Yayınla",
         "video_codec": "Video Kodlayıcı",
-        "play_duration": "Oynatma Süresi"
+        "play_duration": "Oynatma Süresi",
+        "play_count": "Oynatma Sayısı",
+        "o_count": "O Sayısı"
     },
     "megabits_per_second": "Saniyede {value} megabit",
     "metadata": "Üst Veri",
@@ -857,7 +898,8 @@
         "first": "İlk",
         "last": "Son",
         "next": "Sonraki",
-        "previous": "Önceki"
+        "previous": "Önceki",
+        "current_total": "{current} / {total}"
     },
     "parent_of": "{children} öğesinin üstü",
     "parent_studios": "Üst Stüdyolar",
@@ -908,7 +950,8 @@
             "something_went_wrong": "Hata! Birşeyler yanlış gitti!",
             "something_went_wrong_description": "Hatanın sizin belirlediğiniz özel ayarlardan kaynaklanıyor olabilir, lütfen geriye giderek o ayarları değiştirin. Tekrar hata alırsanız {githubLink} veya {discordLink} adreslerini kullanarak sorunu bildirin (Şimdilik yalnızca İngilizce).",
             "something_went_wrong_while_setting_up_your_system": "Sisteminizi ayarlarken birşeyler yanlış gitti ve bu hata mesajını aldık: {error}",
-            "unexpected_error": "Beklenmeyen bir hata oluştu: {error}"
+            "unexpected_error": "Beklenmeyen bir hata oluştu: {error}",
+            "unable_to_retrieve_system_status": "Sistem durumu alınamıyor: {error}"
         },
         "folder": {
             "up_dir": "Bir dizin üste çık",
@@ -941,7 +984,10 @@
             "where_is_your_porn_located": "Porno koleksiyonunuz hangi dizinde?",
             "where_is_your_porn_located_description": "Fotoğraf ve videoların bulunduğu dizinleri ekleyin. Stash, tarama sırasında bu dizinleri kullanacaktır.",
             "where_can_stash_store_blobs": "Stash veritabanı ikili verilerini nerede saklayabilir?",
-            "where_can_stash_store_cache_files": "Stash önbellek dosyalarını nerede saklayabilir?"
+            "where_can_stash_store_cache_files": "Stash önbellek dosyalarını nerede saklayabilir?",
+            "path_to_cache_directory_empty_for_default": "önbellek dizini yolu (varsayılan için boş bırakın)",
+            "store_blobs_in_database": "Blob'ları veritabanında depola",
+            "path_to_blobs_directory_empty_for_default": "blobs dizini yolu (varsayılan için boş bırakın)"
         },
         "stash_setup_wizard": "Stash Kurulum Sihirbazı",
         "success": {
@@ -1009,7 +1055,9 @@
         "started_auto_tagging": "Otomatik etiketleme başladı",
         "started_generating": "Oluşturma işlemi başladı",
         "started_importing": "İçe aktarma başladı",
-        "updated_entity": "{entity} güncellendi"
+        "updated_entity": "{entity} güncellendi",
+        "merged_scenes": "Birleştirilmiş sahneler",
+        "reassign_past_tense": "Dosya yeniden atandı"
     },
     "total": "Toplam",
     "true": "Doğru",
@@ -1021,7 +1069,8 @@
     "years_old": "yaşında",
     "between_and": "ve",
     "connection_monitor": {
-        "websocket_connection_reestablished": "Websocket bağlantısı yeniden kuruldu"
+        "websocket_connection_reestablished": "Websocket bağlantısı yeniden kuruldu",
+        "websocket_connection_failed": "Websocket bağlantısı kurulamıyor: Ayrıntılar için tarayıcı konsoluna bakın"
     },
     "image_index": "Resim #",
     "stash_id_endpoint": "Stash ID Uç Noktası",
@@ -1030,8 +1079,28 @@
         "batch_add_studios": "Toplu Stüdyo Ekle",
         "config": {
             "excluded_fields": "Hariç tutulan alanlar:",
-            "edit_excluded_fields": "Hariç Tutulan Alanları Düzenle"
-        }
+            "edit_excluded_fields": "Hariç Tutulan Alanları Düzenle",
+            "no_fields_are_excluded": "Hiçbir alan hariç tutulmadı",
+            "create_parent_label": "Ana stüdyo oluştur",
+            "these_fields_will_not_be_changed_when_updating_studios": "Stüdyolar güncellenirken bu alanlar değişmeyecektir."
+        },
+        "batch_update_studios": "Stüdyoları Toplu Güncelle",
+        "failed_to_save_studio": "Stüdyo kaydedilemedi \"{studio}\"",
+        "query_all_studios_in_the_database": "Veritabanındaki tüm stüdyolar",
+        "status_tagging_studios": "Durum: Stüdyolar etiketleniyor",
+        "current_page": "Geçerli sayfa",
+        "create_or_tag_parent_studios": "Eksik olan ana stüdyoları oluştur ya da mevcut ana stüdyoları etiketle",
+        "no_results_found": "Sonuç bulunamadı.",
+        "number_of_studios_will_be_processed": "{studio_count} stüdyo işlenecek",
+        "network_error": "Ağ Hatası",
+        "refresh_tagged_studios": "Etiketli stüdyoları yenile",
+        "update_studio": "Stüdyoyu Güncelle",
+        "studio_already_tagged": "Stüdyo zaten etiketli",
+        "update_studios": "Stüdyoları Güncelle",
+        "studio_selection": "Stüdyo seçimi",
+        "studio_successfully_tagged": "Stüdyo başarıyla etiketlendi",
+        "tag_status": "Etiket Durumu",
+        "untagged_studios": "Etiketlenmemiş stüdyolar"
     },
     "blobs_storage_type": {
         "database": "Veritabanı",
@@ -1054,7 +1123,10 @@
         "show_all": "Tümünü göster",
         "source": {
             "name": "İsim",
-            "url": "Kaynak URL'si"
+            "url": "Kaynak URL'si",
+            "local_path": {
+                "heading": "Yerel Dizin"
+            }
         },
         "uninstall": "Kaldır",
         "unknown": "<bilinmeyen>",
@@ -1099,5 +1171,78 @@
     "include_sub_tag_content": "Alt etiket içeriğini dahil et",
     "include_sub_groups": "Alt grupları dahil et",
     "include_sub_group_content": "Alt grup içeriğini dahil et",
-    "second": "Saniye"
+    "second": "Saniye",
+    "file_count": "Dosya Sayısı",
+    "files_amount": "{value} dosya",
+    "height_cm": "Boy (cm)",
+    "errors": {
+        "header": "Hata",
+        "invalid_javascript_string": "Geçersiz javascript kodu: {error}",
+        "loading_type": "{type} yüklenirken hata oluştu",
+        "something_went_wrong": "Bir şeyler ters gitti.",
+        "lazy_component_error_help": "Stash'i yakın zamanda güncellediyseniz, lütfen sayfayı yeniden yükleyin ya da tarayıcınızın önbelleğini temizleyin."
+    },
+    "sub_group_order": "Alt Grup Sırası",
+    "validation": {
+        "end_time_before_start_time": "Bitiş zamanı, başlangıç zamanından büyük veya ona eşit olmalıdır",
+        "blank": "${path} boş olmamalıdır",
+        "date_invalid_form": "${path} YYYY-AA-GG biçiminde olmalıdır"
+    },
+    "description": "Açıklama",
+    "sub_groups": "Alt Gruplar",
+    "sub_group": "Alt Grup",
+    "sub_group_count": "Alt Grup Sayısı",
+    "date_format": "YYYY-AA-GG",
+    "datetime_format": "YYYY-AA-GG SS:DD",
+    "folder": "Klasör",
+    "front_page": {
+        "types": {
+            "premade_filter": "Hazır Filtre",
+            "saved_filter": "Kayıtlı Filtre"
+        }
+    },
+    "handy_connection_status": {
+        "connecting": "Bağlanıyor",
+        "disconnected": "Bağlantı kesildi",
+        "error": "Handy'e bağlanırken hata oluştu",
+        "ready": "Hazır"
+    },
+    "o_count": "O Sayısı",
+    "o_history": "O Geçmişi",
+    "parent_studio": "Ana Stüdyo",
+    "perceptual_similarity": "Algısal Benzerlik (pHash)",
+    "recently_released_objects": "Yeni Çıkanlar {objects}",
+    "studio_and_parent": "Stüdyo & Ana Stüdyo",
+    "studio_tags": "Stüdyo Etiketleri",
+    "subsidiary_studio_count": "Bağlı Stüdyo Sayısı",
+    "type": "Tür",
+    "urls": "URL'ler",
+    "unknown_date": "Bilinmeyen tarih",
+    "video_codec": "Görüntü Çözücü",
+    "view_all": "Tümünü Görüntüle",
+    "weight_kg": "Ağırlık (kg)",
+    "containing_group": "İçeren Grup",
+    "containing_groups": "İçeren Gruplar",
+    "empty_server": "Bu sayfadaki önerileri görüntülemek için sunucunuza bazı sahneler ekleyin.",
+    "recently_added_objects": "Son Eklenenler {objects}",
+    "zip_file_count": "Zip Dosyası Sayısı",
+    "last_played_at": "Son Oynatma Tarihi",
+    "criterion_modifier_values": {
+        "only": "Sadece"
+    },
+    "history": "Geçmiş",
+    "existing_value": "mevcut değer",
+    "gender": "Cinsiyet",
+    "gender_types": {
+        "FEMALE": "Kadın",
+        "INTERSEX": "İnterseks",
+        "MALE": "Erkek",
+        "NON_BINARY": "Non-Binary",
+        "TRANSGENDER_FEMALE": "Transseksüel Kadın",
+        "TRANSGENDER_MALE": "Transseksüel Erkek"
+    },
+    "group": "Grup",
+    "group_count": "Grup Sayısı",
+    "group_scene_number": "Sahne Numarası",
+    "groups": "Gruplar"
 }
