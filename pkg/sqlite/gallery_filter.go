@@ -414,20 +414,20 @@ func (qb *galleryFilterHandler) averageResolutionCriterionHandler(resolution *mo
 			f.addLeftJoin("images_files", "", "images.id = images_files.image_id")
 			f.addLeftJoin("image_files", "", "images_files.file_id = image_files.file_id")
 
-			min := resolution.Value.GetMinResolution()
-			max := resolution.Value.GetMaxResolution()
+			mn := resolution.Value.GetMinResolution()
+			mx := resolution.Value.GetMaxResolution()
 
 			const widthHeight = "avg(MIN(image_files.width, image_files.height))"
 
 			switch resolution.Modifier {
 			case models.CriterionModifierEquals:
-				f.addHaving(fmt.Sprintf("%s BETWEEN %d AND %d", widthHeight, min, max))
+				f.addHaving(fmt.Sprintf("%s BETWEEN %d AND %d", widthHeight, mn, mx))
 			case models.CriterionModifierNotEquals:
-				f.addHaving(fmt.Sprintf("%s NOT BETWEEN %d AND %d", widthHeight, min, max))
+				f.addHaving(fmt.Sprintf("%s NOT BETWEEN %d AND %d", widthHeight, mn, mx))
 			case models.CriterionModifierLessThan:
-				f.addHaving(fmt.Sprintf("%s < %d", widthHeight, min))
+				f.addHaving(fmt.Sprintf("%s < %d", widthHeight, mn))
 			case models.CriterionModifierGreaterThan:
-				f.addHaving(fmt.Sprintf("%s > %d", widthHeight, max))
+				f.addHaving(fmt.Sprintf("%s > %d", widthHeight, mx))
 			}
 		}
 	}
