@@ -520,7 +520,7 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
             type="submit"
             onClick={() => onExport()}
           >
-            <FormattedMessage id="actions.full_export" />…
+            <FormattedMessage id="actions.full_export" />
           </Button>
         </Setting>
 
