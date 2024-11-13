@@ -983,7 +983,8 @@
     "errors": {
         "image_index_greater_than_zero": "Bilderindex muss größer 0 sein",
         "lazy_component_error_help": "Sollten Sie kürzlich ein Update für Stash durchgeführt haben, laden Sie bitte die Seite neu oder löschen Sie den Browser-Cache.",
-        "something_went_wrong": "Etwas ist schief gelaufen."
+        "something_went_wrong": "Etwas ist schief gelaufen.",
+        "header": "Fehler"
     },
     "ethnicity": "Ethnizität",
     "existing_value": "vorhandener Wert",
@@ -1322,5 +1323,7 @@
     "weight_kg": "Gewicht (kg)",
     "years_old": "Jahre alt",
     "zip_file_count": "Anzahl der Zip-Dateien",
-    "audio_codec": "Audio Codec"
+    "audio_codec": "Audio Codec",
+    "group": "Gruppe",
+    "groups": "Gruppen"
 }
