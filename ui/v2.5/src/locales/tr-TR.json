@@ -61,7 +61,7 @@
         "previous_action": "Geri",
         "refresh": "Yenile",
         "reload_plugins": "Eklentileri yeniden yükle",
-        "reload_scrapers": "Veri Toplayıcıları yeniden yükle",
+        "reload_scrapers": "Veri toplayıcıları yeniden yükle",
         "remove": "Kaldır",
         "rename_gen_files": "Oluşturulan dosyaları yeniden adlandır",
         "rescan": "Yeniden tara",
@@ -133,7 +133,8 @@
         "migrate_scene_screenshots": "Sahne Ekran Görüntülerini Aktar",
         "add_o": "O Ekle",
         "add_play": "Oynatma ekle",
-        "migrate_blobs": "Blob'ları Aktar"
+        "migrate_blobs": "Blob'ları Aktar",
+        "assign_stashid_to_parent_studio": "Mevcut ana stüdyoya Stash ID atayın ve üstverileri güncelleyin"
     },
     "actions_name": "Eylemler",
     "age": "Yaş",
@@ -166,7 +167,7 @@
             "set_cover_label": "Sahne için kapak resmi seç",
             "set_tag_desc": "Sahneye etiket ekle (varolan etiketlerle birleştir veya üzerine yaz).",
             "set_tag_label": "Etiketleri düzenle",
-            "show_male_desc": "Erkek oyunculara etiket ekleme işlemini aç/kapat.",
+            "show_male_desc": "Erkek oyuncuları etiketleme işlemini aç/kapat.",
             "show_male_label": "Erkek oyuncuları göster",
             "source": "Kaynak"
         },
@@ -220,7 +221,8 @@
             "services": "Servisler",
             "system": "Sistem",
             "tasks": "Görevler",
-            "tools": "Araçlar"
+            "tools": "Araçlar",
+            "changelog": "Değişiklik Günlüğü"
         },
         "dlna": {
             "allow_temp_ip": "{tempIP} IP adresine izin ver",
@@ -236,7 +238,10 @@
             "until_restart": "yeniden başlatana kadar",
             "disallowed_ip": "İzin verilmeyen IP",
             "successfully_cancelled_temporary_behaviour": "Geçici davranış başarıyla iptal edildi",
-            "video_sort_order": "Varsayılan Video Sıralama Düzeni"
+            "video_sort_order": "Varsayılan Video Sıralama Düzeni",
+            "server_port": "Sunucu Bağlantı Noktası",
+            "disabled_dlna_temporarily": "DLNA geçici olarak devre dışı bırakıldı",
+            "enabled_dlna_temporarily": "DLNA geçici olarak etkinleştirildi"
         },
         "general": {
             "auth": {
@@ -268,7 +273,7 @@
             "calculate_md5_and_ohash_desc": "oshash'in yanısıra MD5 checksum'ı da hesapla. Bu özelliği etkinleştirmek tarama işlemini yavaşlatacaktır. MD5 hesaplamasını devre dışı bırakmak için dosya adı imzası (hash) oshash olarak ayarlanmalıdır.",
             "calculate_md5_and_ohash_label": "Videolar için MD5 hesapla",
             "check_for_insecure_certificates": "Güvensiz sertifikaları kontrol et",
-            "check_for_insecure_certificates_desc": "Bazı siteler güvensiz SSL sertifikası kullanıyor olabilir. Bu seçenek kapalı ise veri çekici sertifika doğrulama adımını yapmaz. Veri çekerken sertifika hatası alıyorsanız bu işareti kaldırabilirsiniz.",
+            "check_for_insecure_certificates_desc": "Bazı siteler güvensiz SSL sertifikası kullanıyor olabilir. Bu seçenek kapalı ise veri toplayıcı sertifika doğrulama adımını yapmaz. Veri toplarken sertifika hatası alıyorsanız bu işareti kaldırabilirsiniz.",
             "chrome_cdp_path": "Chrome CDP yolu",
             "chrome_cdp_path_desc": "Çalıştırılabilir Chrome dosyasının yolu veya uzak Chrome bağlantı adresi (http:// veya https:// ile başlayan, örneğin http://localhost:9222/json/version).",
             "create_galleries_from_folders_desc": "Seçili ise resim içeren dizinlerden galeriler oluşturur.",
@@ -303,7 +308,7 @@
             "number_of_parallel_task_for_scan_generation_head": "Eş zamanlı olarak çalıştırılacak Tarama/Oluşturma görev sayısı",
             "parallel_scan_head": "Eş zamanlı Tarama/Oluşturma",
             "preview_generation": "Önizleme Oluşturma",
-            "scraper_user_agent": "Veri Toplama Kimliği (User Agent)",
+            "scraper_user_agent": "Veri Toplama Kimliği",
             "scraper_user_agent_desc": "Veri Toplama sırasında HTTP istekleri için kullanılacak Kimliği (User Agent)",
             "scrapers_path": {
                 "description": "Veri Toplama yapılandırma dosyaları için dizin konumu",
@@ -334,7 +339,8 @@
             },
             "blobs_path": {
                 "heading": "İkili veri dosya sistemi yolu"
-            }
+            },
+            "gallery_cover_regex_desc": "Regexp, bir resmi galeri kapağı olarak tanımlamak için kullanılır"
         },
         "library": {
             "exclusions": "Dışta Tutulanlar",
@@ -359,7 +365,7 @@
             "search_by_name": "Ada göre ara",
             "supported_types": "Desteklenen türler",
             "supported_urls": "Internet Adresleri",
-            "installed_scrapers": "Yüklü Kazıyıcılar"
+            "installed_scrapers": "Yüklü Veri Toplayıcılar"
         },
         "stashbox": {
             "add_instance": "Stash-box oturumu ekle",
@@ -408,7 +414,7 @@
                 "and_create_missing": "ve eksik olanı oluştur",
                 "create_missing": "Eksik olanı oluştur",
                 "default_options": "Varsayılan Seçenekler",
-                "description": "Sahne üst verisini stash-box ve veri toplama kaynakları kullanarak otomatik olarak belirle.",
+                "description": "Sahne üstverisini stash-box ve veri toplama kaynaklarını kullanarak otomatik olarak belirle.",
                 "explicit_set_description": "Bu seçenekler yok saymayı özellikle belirtmediğiniz sürece kullanılacaktır.",
                 "field": "Alan",
                 "field_behaviour": "{strategy} {field}",
@@ -443,13 +449,17 @@
             "clean_generated": {
                 "description": "İlgili veritabanı girişi olmadan oluşturulan dosyaları kaldırır.",
                 "markers": "İşaretleyici Önizlemeleri",
-                "previews": "Sahne Önizlemeleri"
+                "previews": "Sahne Önizlemeleri",
+                "blob_files": "Blob dosyaları"
             },
             "migrate_blobs": {
                 "delete_old": "Eski verileri sil"
             },
             "rescan": "Dosyaları yeniden tara",
-            "generate_video_covers_during_scan": "Sahne kapakları oluştur"
+            "generate_video_covers_during_scan": "Sahne kapakları oluştur",
+            "generate_sprites_during_scan_tooltip": "Kolay gezinme için video oynatıcının altında görüntülenen resim dizisi.",
+            "optimise_database": "Tüm veritabanı dosyasını analiz ederek ve ardından yeniden oluşturarak performansı artırmaya çalışın.",
+            "optimise_database_warning": "Uyarı: Bu görev çalışırken, veritabanını değiştiren tüm işlemler başarısız olacaktır ve veritabanınızın boyutuna bağlı olarak tamamlanması birkaç dakika sürebilir. Ayrıca veritabanınızın büyüklüğü kadar boş disk alanı gerektirir, ancak 1,5 katı önerilir."
         },
         "tools": {
             "scene_duplicate_checker": "Kopya Sahne Denetçisi",
@@ -604,7 +614,8 @@
             "detail": {
                 "heading": "Detay Sayfası",
                 "enable_background_image": {
-                    "heading": "Arka plan resmini etkinleştir"
+                    "heading": "Arka plan resmini etkinleştir",
+                    "description": "Ayrıntı sayfasında arka plan resmini gösterin."
                 },
                 "show_all_details": {
                     "heading": "Tüm ayrıntıları göster"
@@ -612,7 +623,8 @@
             },
             "custom_javascript": {
                 "heading": "Özel Javascript",
-                "option_label": "Özel Javascript etkin"
+                "option_label": "Özel Javascript etkin",
+                "description": "Değişikliklerin etkili olması için sayfanın yeniden yüklenmesi gerekir. Özel Javascript ile Stash'in gelecekteki sürümleri arasında uyumluluk garantisi yoktur."
             },
             "custom_locales": {
                 "heading": "Özel yerelleştirme"
@@ -621,27 +633,31 @@
                 "heading": "Stüdyo görünümü",
                 "options": {
                     "show_child_studio_content": {
-                        "heading": "Alt stüdyo içeriğini görüntüle"
+                        "heading": "Alt stüdyo içeriğini görüntüle",
+                        "description": "Stüdyo görünümündeyken alt stüdyolardaki içeriği de görüntüleyin"
                     }
                 }
             },
             "tag_panel": {
                 "options": {
                     "show_child_tagged_content": {
-                        "heading": "Alt etiket içeriğini görüntüle"
+                        "heading": "Alt etiket içeriğini görüntüle",
+                        "description": "Etiket görünümündeyken alt etiketlerdeki içeriği de görüntüleyin"
                     }
                 },
                 "heading": "Etiket görünümü"
             },
             "abbreviate_counters": {
-                "heading": "Sayaçları kısalt"
+                "heading": "Sayaçları kısalt",
+                "description": "Kartlarda ve ayrıntı görünümü sayfalarında sayaçları kısaltın, örneğin “1831”, “1.8K” olarak biçimlendirilecektir."
             },
             "minimum_play_percent": {
                 "description": "Bir sahnenin oynatma sayısı artırılmadan önce oynatılması gereken sürenin yüzdesi.",
                 "heading": "Minimum Oynatma Yüzdesi"
             },
             "image_wall": {
-                "heading": "Resim Duvarı"
+                "heading": "Resim Duvarı",
+                "margin": "Kenar boşluğu (piksel)"
             },
             "handy_connection": {
                 "connect": "Bağlan"
@@ -658,7 +674,8 @@
         "performers": "{count, plural, one {Oyuncu} other {Oyuncular}}",
         "scenes": "{count, plural, one {Sahne} other {Sahneler}}",
         "studios": "{count, plural, one {Stüdyo} other {Stüdyolar}}",
-        "tags": "{count, plural, one {Etiket} other {Etiketler}}"
+        "tags": "{count, plural, one {Etiket} other {Etiketler}}",
+        "groups": "{count, plural, one {Grup} other {Gruplar}}"
     },
     "country": "Ülke",
     "cover_image": "Kapak Resmi",
@@ -682,7 +699,8 @@
         "not_between": "arasında olmayan",
         "not_equals": "eşit değildir",
         "not_matches_regex": "kurallı ifadeyle eşleşmeyen",
-        "not_null": "boş olmayan"
+        "not_null": "boş olmayan",
+        "format_string_excludes": "{criterion} {modifierString} {valueString} (hariç {excludedString})"
     },
     "custom": "İsteğe Bağlı",
     "date": "Tarih",
@@ -780,7 +798,16 @@
         "merge": {
             "source": "Kaynak"
         },
-        "dont_show_until_updated": "Sonraki güncellemeye kadar gösterme"
+        "dont_show_until_updated": "Sonraki güncellemeye kadar gösterme",
+        "clear_o_history_confirm": "O geçmişini temizlemek istediğinize emin misiniz?",
+        "imagewall": {
+            "direction": {
+                "description": "Sütun veya satır tabanlı düzen.",
+                "row": "Satır"
+            }
+        },
+        "performers_found": "{count} oyuncu bulundu",
+        "create_new_entity": "Yeni {entity} oluştur"
     },
     "dimensions": "Boyutlar",
     "director": "Yönetmen",
@@ -1141,12 +1168,24 @@
         "config": {
             "excluded_fields": "Hariç tutulan alanlar:",
             "edit_excluded_fields": "Hariç Tutulan Alanları Düzenle",
-            "no_fields_are_excluded": "Hiçbir alan hariç tutulmadı"
+            "no_fields_are_excluded": "Hiçbir alan hariç tutulmadı",
+            "these_fields_will_not_be_changed_when_updating_performers": "Oyuncular güncellenirken bu alanlar değiştirilmeyecektir."
         },
         "current_page": "Geçerli sayfa",
         "network_error": "Ağ Hatası",
         "no_results_found": "Sonuç bulunamadı.",
-        "tag_status": "Etiket Durumu"
+        "tag_status": "Etiket Durumu",
+        "status_tagging_job_queued": "Durum: Etiketleme işi kuyruğa alındı",
+        "batch_add_performers": "Toplu Oyuncu Ekle",
+        "batch_update_performers": "Toplu Oyuncu Güncelle",
+        "failed_to_save_performer": "Oyuncu kaydedilemedi \"{performer}\"",
+        "number_of_performers_will_be_processed": "{performer_count} oyuncu işlenecek",
+        "performer_selection": "Oyuncu seçimi",
+        "performer_successfully_tagged": "Oyuncu başarıyla etiketlendi:",
+        "update_performer": "Oyuncuyu Güncelle",
+        "update_performers": "Oyuncuları Güncelle",
+        "untagged_performers": "Etiketlenmemiş oyuncular",
+        "query_all_performers_in_the_database": "Veritabanındaki tüm oyuncular"
     },
     "photographer": "Fotoğrafçı",
     "play_count": "Oynatma Sayısı",
@@ -1244,5 +1283,8 @@
     "group": "Grup",
     "group_count": "Grup Sayısı",
     "group_scene_number": "Sahne Numarası",
-    "groups": "Gruplar"
+    "groups": "Gruplar",
+    "audio_codec": "Ses Kodlayıcı",
+    "chapters": "Bölümler",
+    "circumcised": "Sünnetli"
 }
