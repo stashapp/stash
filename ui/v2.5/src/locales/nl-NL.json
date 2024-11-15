@@ -185,95 +185,101 @@
         "results": {
             "duration_off": "De duur is minstens {number}s",
             "duration_unknown": "Onbekende duur",
-            "fp_found": "{fpCount, plural, =0 {Geen nieuwe vingerafdrukken gevonden} other {# nieuwe vingerafdruk overeenkomsten gevonden}}",
-            "fp_matches": "Duur is een overeenkomst",
-            "fp_matches_multi": "Duur wedstrijden {matchCount}/{durationsLength} vingerafdruk(ken)",
-            "hash_matches": "{hash_type} is een overeenkomst",
-            "match_failed_already_tagged": "Scène al getagd",
-            "match_failed_no_result": "Geen resultaten gevonden",
-            "match_success": "Scene succesvol getagd",
-            "phash_matches": "{count} PHashes wedstrijd",
+            "fp_found": "{fpCount, plural, =0 {Geen nieuwe vingerafdrukken gevonden} other {# nieuwe vingerafdrukken gevonden}}",
+            "fp_matches": "De duur komt overeen",
+            "fp_matches_multi": "De duur komt overeen {matchCount}/{durationsLength} met het aantal vingerafdrukken",
+            "hash_matches": "{hash_type} komt overeen",
+            "match_failed_already_tagged": "Deze scène is al gelabeld",
+            "match_failed_no_result": "Er zijn geen zoekresultaten",
+            "match_success": "De scène is gelabeld",
+            "phash_matches": "{count} PHashes komen overeen",
             "unnamed": "Naamloos"
         },
-        "verb_match_fp": "Vingerafdrukken vergelijken",
-        "verb_matched": "Bijpassend",
-        "verb_scrape_all": "Bekijk alle",
-        "verb_submit_fp": "Indienen {fpCount, plural, one{# Fingerprint} other{# Fingerprints}}",
+        "verb_match_fp": "Overeenkomen met vingerafdrukken",
+        "verb_matched": "Overeenkomstig",
+        "verb_scrape_all": "Alles scrapen",
+        "verb_submit_fp": "{fpCount, plural, one{# vingerafdruk} other{# vingerafdrukken}} indienen",
         "verb_toggle_config": "{toggle} {configuration}",
-        "verb_toggle_unmatched": "{toggle} ongeëvenaarde scènes"
+        "verb_toggle_unmatched": "{toggle} niet-overeenkomende scènes"
     },
     "config": {
         "about": {
-            "build_hash": "Bouw hash:",
+            "build_hash": "Controlesom van bouwsel:",
             "build_time": "Bouwtijd:",
-            "check_for_new_version": "Controleren op nieuwe versie",
-            "latest_version": "Laatste versie",
-            "latest_version_build_hash": "Nieuwste versie Bouw Hash:",
+            "check_for_new_version": "Controleren op updates",
+            "latest_version": "Nieuwste versie",
+            "latest_version_build_hash": "Controlesome van nieuwste versie:",
             "new_version_notice": "[NIEUW]",
-            "stash_discord": "Word lid van ons {url} kanaal",
+            "stash_discord": "Neem deel aan ons {url}-kanaal",
             "stash_home": "Stash thuis bij {url}",
             "stash_open_collective": "Steun ons via {url}",
-            "stash_wiki": "Stash {url} pagina",
-            "version": "Versie"
+            "stash_wiki": "Stash {url}-pagina",
+            "version": "Versie",
+            "release_date": "Uitgebracht op:"
         },
         "application_paths": {
-            "heading": "aplicatie pad"
+            "heading": "Programmalocaties"
         },
         "categories": {
             "about": "Over",
-            "interface": "Interface",
+            "interface": "Vormgeving",
             "logs": "Logboeken",
-            "metadata_providers": "Metadata voorzieners",
-            "plugins": "Plugins",
-            "scraping": "Schraper",
+            "metadata_providers": "Metagegevensdiensten",
+            "plugins": "Plug-ins",
+            "scraping": "Scraping",
             "security": "Beveiliging",
             "services": "Diensten",
             "system": "Systeem",
             "tasks": "Taken",
-            "tools": "Gereedschap"
+            "tools": "Hulpmiddelen",
+            "changelog": "Wijzigingslog"
         },
         "dlna": {
-            "allow_temp_ip": "Toestaan {tempIP}",
-            "allowed_ip_addresses": "Toegestane IP-adressen",
-            "allowed_ip_temporarily": "Tijdelijk toegestane IP",
-            "default_ip_whitelist": "Standaard IP witte lijst",
-            "default_ip_whitelist_desc": "Standaard IP-adressen staan toegang tot DLNA toe. Gebruik {wildcard} om alle IP-adressen toe te staan.",
+            "allow_temp_ip": "{tempIP} toestaan",
+            "allowed_ip_addresses": "Toegestane ip-adressen",
+            "allowed_ip_temporarily": "Tijdelijk toegestaan ip-adres",
+            "default_ip_whitelist": "Standaard witte lijst met ip-adressen",
+            "default_ip_whitelist_desc": "Standaard ip-adressen hebben toegang tot DLNA. Gebruik {wildcard} om alle ip-adressen toe te staan.",
             "disabled_dlna_temporarily": "DLNA tijdelijk uitschakelen",
-            "disallowed_ip": "Niet-toegestane IP",
+            "disallowed_ip": "Geweigerd ip-adres",
             "enabled_by_default": "Standaard ingeschakeld",
             "enabled_dlna_temporarily": "DLNA tijdelijk toegestaan",
-            "network_interfaces": "Gebruikersinterface",
-            "network_interfaces_desc": "Interfaces om de DLNA-server aan bloot te stellen. Een lege lijst resulteert in uitvoering op alle interfaces. Vereist een herstart van DLNA na wijziging.",
-            "recent_ip_addresses": "Recentelijk IP-adressen",
-            "server_display_name": "Naam serverweergave",
-            "server_display_name_desc": "Weergavenaam voor de DLNA-server. Wordt standaard ingesteld op {server_naam} indien leeg.",
+            "network_interfaces": "Interfaces",
+            "network_interfaces_desc": "Interfaces om de DLNA-server aan bloot te stellen. Een lege lijst resulteert in uitvoering op alle interfaces. Herstart DLNA om de wijzigingen toe te passen.",
+            "recent_ip_addresses": "Recente ip-adressen",
+            "server_display_name": "Servernaam",
+            "server_display_name_desc": "De weergavenaam van de DLNA-server. Wordt standaard ingesteld op {server_naam} indien leeg.",
             "successfully_cancelled_temporary_behaviour": "Tijdelijk gedrag geannuleerd",
-            "until_restart": "tot de herstart"
+            "until_restart": "tot aan herstart",
+            "server_port_desc": "De poort waarop de DLNA-server draait. Herstart DLNA om de wijzigingen toe te passen.",
+            "video_sort_order": "Standaard sorteervolgorde",
+            "video_sort_order_desc": "De standaard sorteervolgorde van video's.",
+            "server_port": "Serverpoort"
         },
         "general": {
             "auth": {
-                "api_key": "API Sleutel",
-                "api_key_desc": "API sleutel voor externe systemen. Alleen vereist wanneer gebruikersnaam/wachtwoord is geconfigureerd. Gebruikersnaam moet worden opgeslagen voordat API sleutel wordt gegenereerd.",
-                "authentication": "Authenticatie",
-                "clear_api_key": "Duidelijke API sleutel",
+                "api_key": "Api-sleutel",
+                "api_key_desc": "De api-sleutel van externe systemen. Alleen vereist indien gebruikersnaam en wachtwoord zijn ingesteld. De gebruikersnaam moet worden bewaard voordat api-sleutel wordt gegenereerd.",
+                "authentication": "Verificatie",
+                "clear_api_key": "Api-sleutel wissen",
                 "credentials": {
-                    "description": "Credentials om toegang to stash te beperken.",
+                    "description": "Inloggegevens om de toegang tot je verzameling te beperken.",
                     "heading": "Inloggegevens"
                 },
-                "generate_api_key": "Maak een API-sleutel",
+                "generate_api_key": "Api-sleutel genereren",
                 "log_file": "Logboek",
-                "log_file_desc": "Pad naar het bestand waar naar te loggen. Laat leeg om niet logboek niet naar bestand te schrijven. Herstarten nodig.",
-                "log_http": "HTTP toegang loggen",
-                "log_http_desc": "Log HTTP toegangsmeldingen naar de terminal. Vereist een herstart.",
-                "log_to_terminal": "Log naar het scherm",
-                "log_to_terminal_desc": "Log naar het scherm en naar een bestand. Altijd aan als loggen naar bestand is uitgeschakeld. Vereist een herstart.",
-                "maximum_session_age": "Maximale sessie lengte",
-                "maximum_session_age_desc": "Maximale tijd voordat een aanmeldsessie is verlopen, in seconden.",
+                "log_file_desc": "De locatie van het bestand waarin gelogd dient te worden. Laat leeg om niet te loggen. Herstart vereist.",
+                "log_http": "Http-toegang loggen",
+                "log_http_desc": "Log http-toegangsmeldingen naar de terminal. Herstart vereist.",
+                "log_to_terminal": "Loggen naar terminal",
+                "log_to_terminal_desc": "Log zowel naar de terminal als naar een bestand. Altijd aan als loggen naar bestand is uitgeschakeld. Herstart vereist.",
+                "maximum_session_age": "Maximale ouderdom van sessie",
+                "maximum_session_age_desc": "De maximale tijd voordat een sessie verloopt, in seconden. Herstart vereist.",
                 "password": "Wachtwoord",
-                "password_desc": "Wachtwoord om Stash te openen. Laat leeg om aanmelden uit te schakelen",
-                "stash-box_integration": "Stash-box integratie",
+                "password_desc": "Wachtwoord om je verzameling te openen. Laat leeg om inloggen uit te schakelen",
+                "stash-box_integration": "Stash-boxintegratie",
                 "username": "Gebruikersnaam",
-                "username_desc": "Gebruikersnaam om Stash te openen. Laat leeg om aanmelden uit te schakelen"
+                "username_desc": "Gebruikersnaam om je verzameling te openen. Laat leeg om inloggen uit te schakelen"
             },
             "cache_location": "Map voor de cache",
             "cache_path_head": "Cache pad",
@@ -329,7 +335,11 @@
             "sqlite_location": "Bestandspad voor de SQLite database (vereist een herstart)",
             "video_ext_desc": "Komma gescheiden lijst van bestandsextensie die worden aangemerkt als video.",
             "video_ext_head": "Video extensies",
-            "video_head": "Video"
+            "video_head": "Video",
+            "backup_directory_path": {
+                "description": "Maplocatie met SQLite-databankreservekopieën",
+                "heading": "Reservekopiemap"
+            }
         },
         "library": {
             "exclusions": "Uitzonderingen",
@@ -575,7 +585,8 @@
                 "heading": "Diavoorstellingsvertraging (in seconden)"
             },
             "title": "Gebruikers interface"
-        }
+        },
+        "advanced_mode": "Geavanceerde modus"
     },
     "configuration": "Configuratie",
     "countables": {
