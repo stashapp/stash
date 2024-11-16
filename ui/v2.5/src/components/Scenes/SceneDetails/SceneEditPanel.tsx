@@ -674,6 +674,37 @@ export const SceneEditPanel: React.FC<IProps> = ({
     return renderInputField("details", "textarea", "details", props);
   }
 
+  const [titleInput, setTitleInput] = useState(scene.title ?? "");
+
+  const handleTitleKeyPress = (
+    event: React.KeyboardEvent<HTMLInputElement>
+  ) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      const newTitle = titleInput + "\n";
+      setTitleInput(newTitle);
+      formik.setFieldValue("title", newTitle);
+    }
+  };
+
+  function renderTitleField() {
+    return (
+      <Form.Control
+        className="text-input"
+        type="text"
+        value={titleInput}
+        onChange={(e) => {
+          const newValue = e.target.value;
+          setTitleInput(newValue);
+          formik.setFieldValue("title", newValue);
+        }}
+        onKeyPress={handleTitleKeyPress}
+        style={{ whiteSpace: "pre-wrap" }}
+        isInvalid={!!formik.errors.title}
+      />
+    );
+  }
+
   return (
     <div id="scene-edit-details">
       <Prompt
@@ -730,7 +761,11 @@ export const SceneEditPanel: React.FC<IProps> = ({
         </Row>
         <Row className="form-container px-3">
           <Col lg={7} xl={12}>
-            {renderInputField("title", "textarea")}
+            {renderField(
+              "title",
+              intl.formatMessage({ id: "title" }),
+              renderTitleField()
+            )}
             {renderInputField("code", "text", "scene_code")}
 
             {renderURLListField("urls", onScrapeSceneURL, urlScrapable)}
