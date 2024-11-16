@@ -50,7 +50,6 @@ import { useRatingKeybinds } from "src/hooks/keybinds";
 import { lazyComponent } from "src/utils/lazyComponent";
 import cx from "classnames";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
-import { TitleDisplay } from "src/components/Shared/TitleDisplay";
 
 const SubmitStashBoxDraft = lazyComponent(
   () => import("src/components/Dialogs/SubmitDraft")
@@ -585,15 +584,7 @@ const ScenePage: React.FC<IProps> = ({
               </h1>
             )}
             <h3 className={cx("scene-header", { "no-studio": !scene.studio })}>
-              <TruncatedText
-                lineCount={2}
-                text={
-                  <TitleDisplay
-                    text={String(title)}
-                    className="title-display"
-                  />
-                }
-              />
+              <TruncatedText lineCount={2} text={title} />
             </h3>
           </div>
 

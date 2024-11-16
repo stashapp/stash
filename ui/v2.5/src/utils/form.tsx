@@ -189,11 +189,7 @@ export function formikUtils<V extends FormikValues>(
     props?: IProps
   ) {
     const title = intl.formatMessage({ id: messageID });
-    const control = renderFormControl(
-      field,
-      field === "title" ? "textarea" : type,
-      title
-    );
+    const control = renderFormControl(field, type, title);
 
     return renderField(field, title, control, props);
   }

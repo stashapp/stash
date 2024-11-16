@@ -23,6 +23,12 @@
   padding: 0.5rem 1rem 0 1rem;
 }
 
+input[type="text"] {
+  white-space: pre-wrap;
+  height: auto;
+  overflow-y: hidden;
+}
+
 .performer-tag-container,
 .group-tag-container {
   display: inline-block;
@@ -897,15 +903,5 @@ input[type="range"].blue-slider {
     font-weight: bold;
     width: 100%;
     word-break: break-all;
-  }
-}
-
-.title-display {
-  width: 100%;
-
-  br {
-    content: "";
-    display: block;
-    margin: 2px 0;
   }
 }
