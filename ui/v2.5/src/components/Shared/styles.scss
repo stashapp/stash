@@ -197,6 +197,15 @@ button.collapse-button.btn-primary:not(:disabled):not(.disabled):active {
   border: none;
   box-shadow: none;
   color: #f5f8fa;
+  text-align: left;
+}
+
+button.collapse-button {
+  .fa-icon {
+    margin-left: 0;
+  }
+
+  padding-left: 0;
 }
 
 .hover-popover-content {

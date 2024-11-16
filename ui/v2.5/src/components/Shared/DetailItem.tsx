@@ -3,6 +3,7 @@ import { FormattedMessage } from "react-intl";
 
 interface IDetailItem {
   id?: string | null;
+  label?: React.ReactNode;
   value?: React.ReactNode;
   title?: string;
   fullWidth?: boolean;
@@ -10,6 +11,7 @@ interface IDetailItem {
 
 export const DetailItem: React.FC<IDetailItem> = ({
   id,
+  label,
   value,
   title,
   fullWidth,
@@ -18,7 +20,7 @@ export const DetailItem: React.FC<IDetailItem> = ({
     return <></>;
   }
 
-  const message = <FormattedMessage id={id} />;
+  const message = label ?? <FormattedMessage id={id} />;
 
   return (
     // according to linter rule CSS classes shouldn't use underscores

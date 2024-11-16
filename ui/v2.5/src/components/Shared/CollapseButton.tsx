@@ -22,7 +22,7 @@ export const CollapseButton: React.FC<React.PropsWithChildren<IProps>> = (
         onClick={() => setOpen(!open)}
         className="minimal collapse-button"
       >
-        <Icon icon={open ? faChevronDown : faChevronRight} />
+        <Icon icon={open ? faChevronDown : faChevronRight} fixedWidth />
         <span>{props.text}</span>
       </Button>
       <Collapse in={open}>
@@ -44,7 +44,7 @@ export const ExpandCollapseButton: React.FC<{
         className="minimal expand-collapse"
         onClick={() => setCollapsed(!collapsed)}
       >
-        <Icon className="fa-fw" icon={buttonIcon} />
+        <Icon icon={buttonIcon} fixedWidth />
       </Button>
     </span>
   );
