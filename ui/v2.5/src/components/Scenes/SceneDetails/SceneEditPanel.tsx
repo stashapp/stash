@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useRef } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Button, Form, Col, Row, ButtonGroup } from "react-bootstrap";
 import Mousetrap from "mousetrap";
@@ -64,6 +64,8 @@ export const SceneEditPanel: React.FC<IProps> = ({
 }) => {
   const intl = useIntl();
   const Toast = useToast();
+  const titleInputRef = useRef<HTMLInputElement>(null);  // Move ref hook to top
+
 
   const [galleries, setGalleries] = useState<Gallery[]>([]);
   const [performers, setPerformers] = useState<Performer[]>([]);
@@ -674,33 +676,37 @@ export const SceneEditPanel: React.FC<IProps> = ({
     return renderInputField("details", "textarea", "details", props);
   }
 
-  const [titleInput, setTitleInput] = useState(scene.title ?? "");
-
-  const handleTitleKeyPress = (
-    event: React.KeyboardEvent<HTMLInputElement>
-  ) => {
-    if (event.key === "Enter") {
-      event.preventDefault();
-      const newTitle = titleInput + "\n";
-      setTitleInput(newTitle);
-      formik.setFieldValue("title", newTitle);
-    }
-  };
-
   function renderTitleField() {
+    const displayValue = formik.values.title.replace(/\n/g, ' ');
+    console.log("Rendering with value:", displayValue);
+    
     return (
       <Form.Control
+        ref={titleInputRef}
         className="text-input"
         type="text"
-        value={titleInput}
-        onChange={(e) => {
-          const newValue = e.target.value;
-          setTitleInput(newValue);
-          formik.setFieldValue("title", newValue);
+        value={displayValue}
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+          formik.setFieldValue("title", e.target.value);
         }}
-        onKeyPress={handleTitleKeyPress}
-        style={{ whiteSpace: "pre-wrap" }}
-        isInvalid={!!formik.errors.title}
+        onKeyDown={(event: React.KeyboardEvent<HTMLInputElement>) => {
+          if (event.key === "Enter") {
+            event.preventDefault();
+            const cursorPosition = event.currentTarget.selectionStart ?? 0;
+            const newTitle = formik.values.title.substring(0, cursorPosition) + 
+                            '\n' + 
+                            formik.values.title.substring(cursorPosition);
+            console.log("New title:", newTitle);
+            formik.setFieldValue("title", newTitle);
+            
+            // Safely restore cursor position
+            setTimeout(() => {
+              if (titleInputRef.current) {
+                titleInputRef.current.setSelectionRange(cursorPosition + 1, cursorPosition + 1);
+              }
+            }, 0);
+          }
+        }}
       />
     );
   }
