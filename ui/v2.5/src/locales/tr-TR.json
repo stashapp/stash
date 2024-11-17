@@ -223,7 +223,7 @@
             "system": "Sistem",
             "tasks": "Görevler",
             "tools": "Araçlar",
-            "changelog": "Değişiklik Günlüğü"
+            "changelog": "Sürüm Notları"
         },
         "dlna": {
             "allow_temp_ip": "{tempIP} IP adresine izin ver",
