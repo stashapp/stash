@@ -24,9 +24,9 @@
 }
 
 .text-input {
-  white-space: normal !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: normal;
 }
 
 .performer-tag-container,

@@ -64,8 +64,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
 }) => {
   const intl = useIntl();
   const Toast = useToast();
-  const titleInputRef = useRef<HTMLInputElement>(null);  // Move ref hook to top
-
+  const titleInputRef = useRef<HTMLInputElement>(null);
 
   const [galleries, setGalleries] = useState<Gallery[]>([]);
   const [performers, setPerformers] = useState<Performer[]>([]);
@@ -677,9 +676,8 @@ export const SceneEditPanel: React.FC<IProps> = ({
   }
 
   function renderTitleField() {
-    const displayValue = formik.values.title.replace(/\n/g, ' ');
-    console.log("Rendering with value:", displayValue);
-    
+    const displayValue = formik.values.title.replace(/\n/g, " ");
+
     return (
       <Form.Control
         ref={titleInputRef}
@@ -693,16 +691,18 @@ export const SceneEditPanel: React.FC<IProps> = ({
           if (event.key === "Enter") {
             event.preventDefault();
             const cursorPosition = event.currentTarget.selectionStart ?? 0;
-            const newTitle = formik.values.title.substring(0, cursorPosition) + 
-                            '\n' + 
-                            formik.values.title.substring(cursorPosition);
-            console.log("New title:", newTitle);
+            const newTitle =
+              formik.values.title.substring(0, cursorPosition) +
+              "\n" +
+              formik.values.title.substring(cursorPosition);
             formik.setFieldValue("title", newTitle);
-            
-            // Safely restore cursor position
+
             setTimeout(() => {
               if (titleInputRef.current) {
-                titleInputRef.current.setSelectionRange(cursorPosition + 1, cursorPosition + 1);
+                titleInputRef.current.setSelectionRange(
+                  cursorPosition + 1,
+                  cursorPosition + 1
+                );
               }
             }, 0);
           }
