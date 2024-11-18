@@ -57,12 +57,25 @@ export function useFilterURL(
       let newFilter = prevFilter.empty();
       newFilter.configureFromQueryString(location.search);
       if (!isEqual(newFilter, prevFilter)) {
+        // filter may have changed if random seed was set, update the URL
+        const newParams = newFilter.makeQueryParameters();
+        if (newParams !== location.search) {
+          history.replace({ ...history.location, search: newParams });
+        }
+
         return newFilter;
       } else {
         return prevFilter;
       }
     });
-  }, [active, location.search, defaultFilter, setFilter, updateFilter]);
+  }, [
+    active,
+    location.search,
+    defaultFilter,
+    setFilter,
+    updateFilter,
+    history,
+  ]);
 
   return { setFilter: updateFilter };
 }
@@ -178,39 +191,60 @@ export function useListKeyboardShortcuts(props: {
 }
 
 export function useListSelect<T extends { id: string }>(items: T[]) {
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [itemsSelected, setItemsSelected] = useState<T[]>([]);
   const [lastClickedId, setLastClickedId] = useState<string>();
 
-  const prevItems = usePrevious(items);
-
-  useEffect(() => {
-    if (prevItems === items) {
-      return;
-    }
-
-    // filter out any selectedIds that are no longer in the list
+  const selectedIds = useMemo(() => {
     const newSelectedIds = new Set<string>();
-
-    selectedIds.forEach((id) => {
-      if (items.some((item) => item.id === id)) {
-        newSelectedIds.add(id);
-      }
+    itemsSelected.forEach((item) => {
+      newSelectedIds.add(item.id);
     });
 
-    setSelectedIds(newSelectedIds);
-  }, [prevItems, items, selectedIds]);
+    return newSelectedIds;
+  }, [itemsSelected]);
+
+  // const prevItems = usePrevious(items);
+
+  // #5341 - HACK/TODO: this is a regression of previous behaviour. I don't like the idea
+  // of keeping selected items that are no longer in the list, since its not
+  // clear to the user that the item is still selected, but there is now an expectation of
+  // this behaviour.
+  // useEffect(() => {
+  //   if (prevItems === items) {
+  //     return;
+  //   }
+
+  //   // filter out any selectedIds that are no longer in the list
+  //   const newSelectedIds = new Set<string>();
+
+  //   selectedIds.forEach((id) => {
+  //     if (items.some((item) => item.id === id)) {
+  //       newSelectedIds.add(id);
+  //     }
+  //   });
+
+  //   setSelectedIds(newSelectedIds);
+  // }, [prevItems, items, selectedIds]);
 
   function singleSelect(id: string, selected: boolean) {
     setLastClickedId(id);
 
-    const newSelectedIds = new Set(selectedIds);
-    if (selected) {
-      newSelectedIds.add(id);
-    } else {
-      newSelectedIds.delete(id);
-    }
+    setItemsSelected((prevSelected) => {
+      if (selected) {
+        // prevent duplicates
+        if (prevSelected.some((v) => v.id === id)) {
+          return prevSelected;
+        }
 
-    setSelectedIds(newSelectedIds);
+        const item = items.find((i) => i.id === id);
+        if (item) {
+          return [...prevSelected, item];
+        }
+        return prevSelected;
+      } else {
+        return prevSelected.filter((item) => item.id !== id);
+      }
+    });
   }
 
   function selectRange(startIndex: number, endIndex: number) {
@@ -223,13 +257,12 @@ export function useListSelect<T extends { id: string }>(items: T[]) {
     }
 
     const subset = items.slice(start, end + 1);
-    const newSelectedIds = new Set<string>();
 
-    subset.forEach((item) => {
-      newSelectedIds.add(item.id);
-    });
+    // prevent duplicates
+    const toAdd = subset.filter((item) => !selectedIds.has(item.id));
 
-    setSelectedIds(newSelectedIds);
+    const newSelected = itemsSelected.concat(toAdd);
+    setItemsSelected(newSelected);
   }
 
   function multiSelect(id: string) {
@@ -258,32 +291,19 @@ export function useListSelect<T extends { id: string }>(items: T[]) {
   }
 
   function onSelectAll() {
-    const newSelectedIds = new Set<string>();
-    items.forEach((item) => {
-      newSelectedIds.add(item.id);
-    });
-
-    setSelectedIds(newSelectedIds);
+    // #5341 - HACK/TODO: maintaining legacy behaviour of replacing selected items with
+    // all items on the current page. To be consistent with the existing behaviour, it
+    // should probably _add_ all items on the current page to the selected items.
+    setItemsSelected([...items]);
     setLastClickedId(undefined);
   }
 
   function onSelectNone() {
-    const newSelectedIds = new Set<string>();
-    setSelectedIds(newSelectedIds);
+    setItemsSelected([]);
     setLastClickedId(undefined);
   }
 
-  const getSelected = useMemo(() => {
-    let cached: T[] | undefined;
-    return () => {
-      if (cached) {
-        return cached;
-      }
-
-      cached = items.filter((value) => selectedIds.has(value.id));
-      return cached;
-    };
-  }, [items, selectedIds]);
+  const getSelected = useCallback(() => itemsSelected, [itemsSelected]);
 
   return {
     selectedIds,
@@ -338,9 +358,19 @@ export function useCachedQueryResult<T extends QueryResult>(
   return cachedResult;
 }
 
-export function useScrollToTopOnPageChange(currentPage: number) {
+export function useScrollToTopOnPageChange(
+  currentPage: number,
+  loading: boolean
+) {
+  const prevPage = usePrevious(currentPage);
+
   // scroll to the top of the page when the page changes
+  // only scroll to top if the page has changed and is not loading
   useEffect(() => {
+    if (loading || currentPage === prevPage || prevPage === undefined) {
+      return;
+    }
+
     // if the current page has a detail-header, then
     // scroll up relative to that rather than 0, 0
     const detailHeader = document.querySelector(".detail-header");
@@ -349,7 +379,7 @@ export function useScrollToTopOnPageChange(currentPage: number) {
     } else {
       window.scrollTo(0, 0);
     }
-  }, [currentPage]);
+  }, [prevPage, currentPage, loading]);
 }
 
 // handle case where page is more than there are pages
@@ -362,7 +392,7 @@ export function useEnsureValidPage(
     const totalPages = Math.ceil(totalCount / filter.itemsPerPage);
 
     if (totalPages > 0 && filter.currentPage > totalPages) {
-      setFilter((prevFilter) => prevFilter.changePage(1));
+      setFilter((prevFilter) => prevFilter.changePage(totalPages));
     }
   }, [filter, totalCount, setFilter]);
 }

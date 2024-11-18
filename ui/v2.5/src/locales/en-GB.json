@@ -545,6 +545,8 @@
       "optimise_database": "Attempt to improve performance by analysing and then rebuilding the entire database file.",
       "optimise_database_warning": "Warning: while this task is running, any operations that modify the database will fail, and depending on your database size, it could take several minutes to complete. It also requires at the very minimum as much free disk space as your database is large, but 1.5x is recommended.",
       "plugin_tasks": "Plugin Tasks",
+      "rescan": "Rescan files",
+      "rescan_tooltip": "Rescan every file in the path. Used to force update file metadata and rescan zip files.",
       "scan": {
         "scanning_all_paths": "Scanning all paths",
         "scanning_paths": "Scanning the following paths"
@@ -842,6 +844,12 @@
     "not_matches_regex": "not matches regex",
     "not_null": "is not null"
   },
+  "criterion_modifier_values": {
+    "any": "Any",
+    "any_of": "Any of",
+    "none": "None",
+    "only": "Only"
+  },
   "custom": "Custom",
   "date": "Date",
   "date_format": "YYYY-MM-DD",
@@ -1097,6 +1105,7 @@
   "images": "Images",
   "include_parent_tags": "Include parent tags",
   "include_sub_group_content": "Include sub-group content",
+  "include_sub_groups": "Include sub-groups",
   "include_sub_studio_content": "Include sub-studio content",
   "include_sub_studios": "Include subsidiary studios",
   "include_sub_tag_content": "Include sub-tag content",
@@ -1290,7 +1299,9 @@
     "errors": {
       "something_went_wrong": "Oh no! Something went wrong!",
       "something_went_wrong_description": "If this looks like a problem with your inputs, go ahead and click back to fix them up. Otherwise, raise a bug on the {githubLink} or seek help in the {discordLink}.",
-      "something_went_wrong_while_setting_up_your_system": "Something went wrong while setting up your system. Here is the error we received: {error}"
+      "something_went_wrong_while_setting_up_your_system": "Something went wrong while setting up your system. Here is the error we received: {error}",
+      "unable_to_retrieve_system_status": "Unable to retrieve system status: {error}",
+      "unexpected_error": "An unexpected error occurred: {error}"
     },
     "folder": {
       "file_path": "File path",
@@ -1449,6 +1460,7 @@
   "tags": "Tags",
   "tattoos": "Tattoos",
   "time": "Time",
+  "time_end": "End Time",
   "title": "Title",
   "toast": {
     "added_entity": "Added {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
@@ -1480,6 +1492,7 @@
   "validation": {
     "blank": "${path} must not be blank",
     "date_invalid_form": "${path} must be in YYYY-MM-DD form",
+    "end_time_before_start_time": "End time must be greater than or equal to start time",
     "required": "${path} is a required field",
     "unique": "${path} must be unique"
   },

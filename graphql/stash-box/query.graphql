@@ -30,11 +30,6 @@ fragment TagFragment on Tag {
   id
 }
 
-fragment FuzzyDateFragment on FuzzyDate {
-  date
-  accuracy
-}
-
 fragment MeasurementsFragment on Measurements {
   band_size
   cup_size
@@ -60,9 +55,7 @@ fragment PerformerFragment on Performer {
   images {
     ...ImageFragment
   }
-  birthdate {
-    ...FuzzyDateFragment
-  }
+  birth_date
   ethnicity
   country
   eye_color

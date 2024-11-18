@@ -133,9 +133,15 @@
         "copy_to_clipboard": "In die Zwischenablage kopieren",
         "view_history": "Verlauf anzeigen",
         "add_o": "O hinzufügen",
-        "add_play": "abspielen hinzufügen",
+        "add_play": "Abspielen hinzufügen",
         "clear_date_data": "Datum-Eintrag löschen",
-        "assign_stashid_to_parent_studio": "Stash ID existierendem Elternstudio hinzufügen und Metadaten aktualisieren"
+        "assign_stashid_to_parent_studio": "Stash ID existierendem Elternstudio hinzufügen und Metadaten aktualisieren",
+        "set_cover": "Als Titelbild setzen",
+        "reset_cover": "Titelbild zurücksetzen",
+        "remove_from_containing_group": "Von Gruppe entfernen",
+        "reset_play_duration": "Spieldauer zurücksetzten",
+        "reset_resume_time": "Forschritt zurücksetzten",
+        "add_sub_groups": "Untergruppen hinzufügen"
     },
     "actions_name": "Aktionen",
     "age": "Alter",
@@ -488,7 +494,7 @@
                 "field_behaviour": "{strategy} {field}",
                 "field_options": "Feldoptionen",
                 "heading": "Identifizieren",
-                "identifying_from_paths": "Identifizieren von Szenen durch den folgenden Pfad",
+                "identifying_from_paths": "Identifiziere Szenen von folgenden Pfad",
                 "identifying_scenes": "Identifiziere {num} {scene}",
                 "include_male_performers": "Männliche Darsteller einbeziehen",
                 "set_cover_images": "Titelbild festlegen",
@@ -501,7 +507,9 @@
                 "skip_multiple_matches_tooltip": "Wenn dies nicht aktiviert ist und mehr als ein Ergebnis zurückgegeben wird, wird ein passendes zufällig ausgewählt",
                 "skip_single_name_performers": "Darsteller mit nur einem - nicht eindeutigem - Namen überspringen",
                 "skip_single_name_performers_tooltip": "Wenn dies nicht aktiviert ist, werden Darsteller, die oft generisch sind, wie Samantha oder Olga, abgeglichen",
-                "tag_skipped_matches": "Übersprungenes Tag passt zu"
+                "tag_skipped_matches": "Übersprungenes Tag passt zu",
+                "tag_skipped_matches_tooltip": "Erstellen Sie ein Tag wie 'Identifizieren: Mehrere Übereinstimmungen“, nach denen Sie in der Scene Tagger-Ansicht filtern und die richtige Übereinstimmung von Hand auswählen können",
+                "tag_skipped_performers": "Setze folgenden Tag bei übersprungenen Darstellern"
             },
             "import_from_exported_json": "Import aus exportiertem JSON im Metadatenverzeichnis. Löscht die vorhandene Datenbank.",
             "incremental_import": "Inkrementeller Import aus einer Export-ZIP-Datei.",
@@ -537,7 +545,8 @@
                 "transcodes": "Transkodierte Szenen",
                 "sprites": "Sprites der Szenen"
             },
-            "generate_sprites_during_scan_tooltip": "Die Anzahl an Bilder, die unter dem Video Player, zur einfacheren Navigation, angezeigt werden."
+            "generate_sprites_during_scan_tooltip": "Die Anzahl an Bilder, die unter dem Video Player, zur einfacheren Navigation, angezeigt werden.",
+            "optimise_database_warning": "Achtung: Während diese Aufgabe ausgeführt wird, schlagen alle Operationen, die die Datenbank verändern, fehl, und je nach Größe Ihrer Datenbank kann es mehrere Minuten dauern, bis sie abgeschlossen ist. Außerdem wird mindestens so viel freier Speicherplatz benötigt, wie Ihre Datenbank groß ist, empfohlen wird jedoch das 1,5-fache."
         },
         "tools": {
             "scene_duplicate_checker": "Duplikatsprüfung für Szenen",

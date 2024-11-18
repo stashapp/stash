@@ -13,7 +13,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Yamashou/gqlgenc/client"
+	"github.com/Yamashou/gqlgenc/clientv2"
 	"github.com/Yamashou/gqlgenc/graphqljson"
 	"github.com/gofrs/uuid/v5"
 	"golang.org/x/text/cases"
@@ -89,12 +89,13 @@ type Client struct {
 
 // NewClient returns a new instance of a stash-box client.
 func NewClient(box models.StashBox, repo Repository) *Client {
-	authHeader := func(req *http.Request) {
+	authHeader := func(ctx context.Context, req *http.Request, gqlInfo *clientv2.GQLRequestInfo, res interface{}, next clientv2.RequestInterceptorFunc) error {
 		req.Header.Set("ApiKey", box.APIKey)
+		return next(ctx, req, gqlInfo, res)
 	}
 
 	client := &graphql.Client{
-		Client: client.NewClient(http.DefaultClient, box.Endpoint, authHeader),
+		Client: clientv2.NewClient(http.DefaultClient, box.Endpoint, nil, authHeader),
 	}
 
 	return &Client{
@@ -627,7 +628,7 @@ func performerFragmentToScrapedPerformer(p graphql.PerformerFragment) *models.Sc
 		Name:           &p.Name,
 		Disambiguation: p.Disambiguation,
 		Country:        p.Country,
-		Measurements:   formatMeasurements(p.Measurements),
+		Measurements:   formatMeasurements(*p.Measurements),
 		CareerLength:   formatCareerLength(p.CareerStartYear, p.CareerEndYear),
 		Tattoos:        formatBodyModifications(p.Tattoos),
 		Piercings:      formatBodyModifications(p.Piercings),
@@ -647,9 +648,8 @@ func performerFragmentToScrapedPerformer(p graphql.PerformerFragment) *models.Sc
 		sp.Height = &hs
 	}
 
-	if p.Birthdate != nil {
-		b := p.Birthdate.Date
-		sp.Birthdate = &b
+	if p.BirthDate != nil {
+		sp.Birthdate = padFuzzyDate(p.BirthDate)
 	}
 
 	if p.Gender != nil {
@@ -805,7 +805,7 @@ func (c Client) sceneFragmentToScrapedScene(ctx context.Context, s *graphql.Scen
 		}
 
 		for _, p := range s.Performers {
-			sp := performerFragmentToScrapedPerformer(p.Performer)
+			sp := performerFragmentToScrapedPerformer(*p.Performer)
 
 			err := match.ScrapedPerformer(ctx, pqb, sp, &c.box.Endpoint)
 			if err != nil {
@@ -1281,7 +1281,7 @@ func (c *Client) submitDraft(ctx context.Context, query string, input interface{
 		"input": input,
 	}
 
-	r := &client.Request{
+	r := &clientv2.Request{
 		Query:         query,
 		Variables:     vars,
 		OperationName: "",
@@ -1341,7 +1341,7 @@ func (c *Client) submitDraft(ctx context.Context, query string, input interface{
 
 	if len(respGQL.Errors) > 0 {
 		// try to parse standard graphql error
-		errors := &client.GqlErrorList{}
+		errors := &clientv2.GqlErrorList{}
 		if e := json.Unmarshal(responseBytes, errors); e != nil {
 			return fmt.Errorf("failed to parse graphql errors. Response content %s - %w ", string(responseBytes), e)
 		}
@@ -1354,4 +1354,21 @@ func (c *Client) submitDraft(ctx context.Context, query string, input interface{
 	}
 
 	return err
+}
+
+func padFuzzyDate(date *string) *string {
+	if date == nil {
+		return nil
+	}
+
+	var paddedDate string
+	switch len(*date) {
+	case 10:
+		paddedDate = *date
+	case 7:
+		paddedDate = fmt.Sprintf("%s-01", *date)
+	case 4:
+		paddedDate = fmt.Sprintf("%s-01-01", *date)
+	}
+	return &paddedDate
 }

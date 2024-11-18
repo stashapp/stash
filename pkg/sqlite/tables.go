@@ -333,7 +333,9 @@ var (
 			table:    tagRelationsJoinTable,
 			idColumn: tagRelationsJoinTable.Col(tagChildIDColumn),
 		},
-		fkColumn: tagRelationsJoinTable.Col(tagParentIDColumn),
+		fkColumn:     tagRelationsJoinTable.Col(tagParentIDColumn),
+		foreignTable: tagTableMgr,
+		orderBy:      tagTableMgr.table.Col("name").Asc(),
 	}
 
 	tagsChildTagsTableMgr = *tagsParentTagsTableMgr.invert()

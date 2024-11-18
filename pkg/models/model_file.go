@@ -93,7 +93,7 @@ type DirEntry struct {
 func (e *DirEntry) info(fs FS, path string) (fs.FileInfo, error) {
 	if e.ZipFile != nil {
 		zipPath := e.ZipFile.Base().Path
-		zfs, err := fs.OpenZip(zipPath)
+		zfs, err := fs.OpenZip(zipPath, e.ZipFile.Base().Size)
 		if err != nil {
 			return nil, err
 		}
@@ -163,7 +163,7 @@ func (f *BaseFile) Base() *BaseFile {
 func (f *BaseFile) Open(fs FS) (io.ReadCloser, error) {
 	if f.ZipFile != nil {
 		zipPath := f.ZipFile.Base().Path
-		zfs, err := fs.OpenZip(zipPath)
+		zfs, err := fs.OpenZip(zipPath, f.ZipFile.Base().Size)
 		if err != nil {
 			return nil, err
 		}

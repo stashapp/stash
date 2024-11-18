@@ -178,6 +178,7 @@ type fileQueryRow struct {
 
 	ZipBasename   null.String `db:"zip_basename"`
 	ZipFolderPath null.String `db:"zip_folder_path"`
+	ZipSize       null.Int    `db:"zip_size"`
 
 	FolderPath null.String `db:"parent_folder_path"`
 	fingerprintQueryRow
@@ -205,6 +206,7 @@ func (r *fileQueryRow) resolve() models.File {
 			ID:       *basic.ZipFileID,
 			Path:     filepath.Join(r.ZipFolderPath.String, r.ZipBasename.String),
 			Basename: r.ZipBasename.String,
+			Size:     r.ZipSize.Int64,
 		}
 	}
 
@@ -461,6 +463,8 @@ func (qb *FileStore) selectDataset() *goqu.SelectDataset {
 		fingerprintTable.Col("fingerprint"),
 		zipFileTable.Col("basename").As("zip_basename"),
 		zipFolderTable.Col("path").As("zip_folder_path"),
+		// size is needed to open containing zip files
+		zipFileTable.Col("size").As("zip_size"),
 	}
 
 	cols = append(cols, videoFileQueryColumns()...)

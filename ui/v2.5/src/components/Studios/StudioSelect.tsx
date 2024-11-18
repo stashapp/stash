@@ -117,7 +117,7 @@ const _StudioSelect: React.FC<
       children: (
         <span className="react-select-image-option">
           <span>{name}</span>
-          {alias && <span className="alias">{` (${alias})`}</span>}
+          {alias && <span className="alias">&nbsp;({alias})</span>}
         </span>
       ),
     };

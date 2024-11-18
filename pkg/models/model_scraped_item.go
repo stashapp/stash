@@ -3,6 +3,7 @@ package models
 import (
 	"context"
 	"strconv"
+	"time"
 
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 	"github.com/stashapp/stash/pkg/utils"
@@ -29,8 +30,9 @@ func (s *ScrapedStudio) ToStudio(endpoint string, excluded map[string]bool) *Stu
 	if s.RemoteSiteID != nil && endpoint != "" {
 		ret.StashIDs = NewRelatedStashIDs([]StashID{
 			{
-				Endpoint: endpoint,
-				StashID:  *s.RemoteSiteID,
+				Endpoint:  endpoint,
+				StashID:   *s.RemoteSiteID,
+				UpdatedAt: time.Now(),
 			},
 		})
 	}
@@ -65,6 +67,7 @@ func (s *ScrapedStudio) GetImage(ctx context.Context, excluded map[string]bool) 
 func (s *ScrapedStudio) ToPartial(id string, endpoint string, excluded map[string]bool, existingStashIDs []StashID) StudioPartial {
 	ret := NewStudioPartial()
 	ret.ID, _ = strconv.Atoi(id)
+	currentTime := time.Now()
 
 	if s.Name != "" && !excluded["name"] {
 		ret.Name = NewOptionalString(s.Name)
@@ -90,8 +93,9 @@ func (s *ScrapedStudio) ToPartial(id string, endpoint string, excluded map[strin
 			Mode:     RelationshipUpdateModeSet,
 		}
 		ret.StashIDs.Set(StashID{
-			Endpoint: endpoint,
-			StashID:  *s.RemoteSiteID,
+			Endpoint:  endpoint,
+			StashID:   *s.RemoteSiteID,
+			UpdatedAt: currentTime,
 		})
 	}
 
@@ -137,6 +141,7 @@ func (ScrapedPerformer) IsScrapedContent() {}
 
 func (p *ScrapedPerformer) ToPerformer(endpoint string, excluded map[string]bool) *Performer {
 	ret := NewPerformer()
+	currentTime := time.Now()
 	ret.Name = *p.Name
 
 	if p.Aliases != nil && !excluded["aliases"] {
@@ -244,8 +249,9 @@ func (p *ScrapedPerformer) ToPerformer(endpoint string, excluded map[string]bool
 	if p.RemoteSiteID != nil && endpoint != "" {
 		ret.StashIDs = NewRelatedStashIDs([]StashID{
 			{
-				Endpoint: endpoint,
-				StashID:  *p.RemoteSiteID,
+				Endpoint:  endpoint,
+				StashID:   *p.RemoteSiteID,
+				UpdatedAt: currentTime,
 			},
 		})
 	}
@@ -375,8 +381,9 @@ func (p *ScrapedPerformer) ToPartial(endpoint string, excluded map[string]bool, 
 			Mode:     RelationshipUpdateModeSet,
 		}
 		ret.StashIDs.Set(StashID{
-			Endpoint: endpoint,
-			StashID:  *p.RemoteSiteID,
+			Endpoint:  endpoint,
+			StashID:   *p.RemoteSiteID,
+			UpdatedAt: time.Now(),
 		})
 	}
 

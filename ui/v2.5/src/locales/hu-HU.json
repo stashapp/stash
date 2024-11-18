@@ -126,7 +126,14 @@
         "view_random": "Véletlenszerű megtekintés",
         "enable": "Engedélyezés",
         "open_in_external_player": "Megnyitás külső lejátszóban",
-        "reload": "Újratöltés"
+        "reload": "Újratöltés",
+        "add_sub_groups": "Al kategóriák hozzá adása",
+        "add_manual_date": "Dátum Manuális hozzá adása",
+        "add_o": "O hozzá adása",
+        "choose_date": "Válassz egy dátumot",
+        "clean_generated": "Generált fájlok takarítása",
+        "clear_date_data": "Dátum adatok törlése",
+        "copy_to_clipboard": "Vágólapra másolás"
     },
     "age": "Kor",
     "aliases": "Álnevek",
@@ -398,7 +405,8 @@
         },
         "scene_gen": {
             "preview_exclude_end_time_desc": "Az utolsó x másodperc kihagyása a jelenetek bemutatóiból. Ez az érték lehet másodpercben, vagy a jelenet teljes hosszának százalékában (pl. 2%) is megadva.",
-            "preview_exclude_start_time_desc": "Az első x másodperc kihagyása a jelenetek bemutatóiból. Ez az érték lehet másodpercben, vagy a jelenet teljes hosszának százalékában (pl. 2%) is megadva."
+            "preview_exclude_start_time_desc": "Az első x másodperc kihagyása a jelenetek bemutatóiból. Ez az érték lehet másodpercben, vagy a jelenet teljes hosszának százalékában (pl. 2%) is megadva.",
+            "video_previews": "Előnézetek"
         },
         "scrape_results_existing": "Létező",
         "set_image_url_title": "Kép URL"
@@ -420,7 +428,10 @@
             "medium": "Közepes"
         },
         "search_accuracy_label": "Keresési Pontosság",
-        "title": "Megkettőzött Jelenetek"
+        "title": "Megkettőzött Jelenetek",
+        "duration_options": {
+            "any": "Akármelyik"
+        }
     },
     "duplicated_phash": "Megkettőzőtt (phash)",
     "duration": "Hossz",
@@ -516,7 +527,8 @@
         "network_error": "Hálózati Hiba",
         "tag_status": "Címke Státusza",
         "update_performer": "Szereplő Frissítése",
-        "update_performers": "Szereplők Frissítése"
+        "update_performers": "Szereplők Frissítése",
+        "name_already_exists": "A név már létezik"
     },
     "performer_tags": "Szereplő Címkék",
     "performers": "Szereplők",
@@ -543,7 +555,8 @@
             "nearly_there": "Már majdnem kész!"
         },
         "errors": {
-            "something_went_wrong_while_setting_up_your_system": "Valami hiba történt a rendszer beállításakor. Itt a hibaüzenet: {error}"
+            "something_went_wrong_while_setting_up_your_system": "Valami hiba történt a rendszer beállításakor. Itt a hibaüzenet: {error}",
+            "something_went_wrong": "Valami elromlott"
         },
         "folder": {
             "file_path": "Fájl elérési út"
@@ -554,18 +567,23 @@
             "migration_failed": "Sikertelen áttelepítés",
             "migration_irreversible_warning": "A séma áttelepítése nem visszafordítható folyamat. Amint az áttelepítés elkezdődik, az adatbázis összeegyeztethetetlen lesz a Stash előző verzióival.",
             "migration_required": "Áttelepítés szükséges",
-            "schema_too_old": "A jelenlegi Stash adatbázis verziója <strong>{databaseSchema}</strong> , amit át kell telepíteni <strong>{appSchema}</strong> verzióra. A Stash ezen verziója nem fog működni az adatbázis áttelepítése nélkül."
+            "schema_too_old": "A jelenlegi Stash adatbázis verziója <strong>{databaseSchema}</strong> , amit át kell telepíteni <strong>{appSchema}</strong> verzióra. A Stash ezen verziója nem fog működni az adatbázis áttelepítése nélkül.",
+            "perform_schema_migration": "sémamigráció végre hajtása"
         },
         "success": {
             "help_links": "Ha problémába ütközöl, kérdésed, vagy javaslatod van, nyugodtan jelezd {githubLink}, vagy kérdezd meg a közösségtől {discordLink}.",
-            "support_us": "Támogatás"
+            "support_us": "Támogass minket"
         },
         "welcome": {
             "config_path_logic_explained": "A Stash elöszőr a jelenlegi munkakönyvtárban próbálja a konfigurációs fájlját (<code>config.yml</code>) megkeresni. Ha ott nem találja, akkor a következő helyen próbálkozik: <code>$HOME/.stash/config.yml</code> (Windows rendszeren: <code>%USERPROFILE%\\.stash\\config.yml</code>). Meghatározhatja hogy a Stash egy bizonyos konfigurációs fájlt használjon, ammennyiben a <code>-c '<path to config file>'</code> or <code>--config '<path to config file>'</code> paraméterekkel indítja.",
             "unexpected_explained": "Amennyiben ez a képernyő váratlanul bukkant fel, próbáld újraindítani a Stasht a megfelelő munkakönyvtárban, vagy a <code>-c</code> flag-gel."
         },
         "welcome_specific_config": {
-            "unable_to_locate_specified_config": "Ha ezt olvasod, akkor a Stash nem találta meg a konfigurációs fájlt, amit megadtál a parancssorban. Ez a varázsló végigvezet a lépéseken, hogy új konfigurációs fájlt tudj beállítani."
+            "unable_to_locate_specified_config": "Ha ezt olvasod, akkor a Stash nem találta meg a konfigurációs fájlt, amit megadtál a parancssorban. Ez a varázsló végigvezet a lépéseken, hogy új konfigurációs fájlt tudj beállítani.",
+            "config_path": "A Stash a következő konfigurációs fájl útvonalat fogja használni: <code>{path}</code>"
+        },
+        "paths": {
+            "where_is_your_porn_located": "Hol található a pornód?"
         }
     },
     "stashbox": {
@@ -591,7 +609,10 @@
         "created_entity": "{entity} Létrehozva",
         "merged_tags": "Összevont címkék",
         "saved_entity": "{entity} Mentve",
-        "updated_entity": "{entity} Frissítve"
+        "updated_entity": "{entity} Frissítve",
+        "started_generating": "Generálás megkezdve",
+        "started_importing": "Importálás megkezdve",
+        "default_filter_set": "Alapvető szűrő beállítva"
     },
     "total": "Összesen",
     "true": "Igaz",
@@ -617,5 +638,33 @@
     },
     "captions": "Feliratok",
     "chapters": "Fejezetek",
-    "circumcised": "Körülmetélt"
+    "circumcised": "Körülmetélt",
+    "weight_kg": "Súly (kg)",
+    "sub_tags": "Al címkék",
+    "sub_group": "Al csoport",
+    "unknown_date": "Ismeretlen dátum",
+    "urls": "URL-ek",
+    "validation": {
+        "blank": "${path} nem lehet üres"
+    },
+    "studio_tags": "Stúdió címkék",
+    "type": "Típus",
+    "measurements": "Mérések",
+    "package_manager": {
+        "install": "Letöltés",
+        "version": "Verzió"
+    },
+    "folder": "mappa",
+    "second": "Második",
+    "studio_tagger": {
+        "current_page": "Jelenlegi oldal",
+        "network_error": "Hálózati hiba",
+        "tag_status": "Címke státusz"
+    },
+    "history": "Történet",
+    "sub_groups": "Al csoportok",
+    "sub_group_count": "Al csoportok száma",
+    "primary_file": "Elsődleges fájl",
+    "groups": "Csoportok",
+    "penis_length_cm": "Pénisz hosszúság (cm)"
 }

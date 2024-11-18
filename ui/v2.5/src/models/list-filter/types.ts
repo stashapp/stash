@@ -148,6 +148,7 @@ export type CriterionType =
   | "studios"
   | "scenes"
   | "groups"
+  | "movies" // legacy
   | "containing_groups"
   | "containing_group_count"
   | "sub_groups"

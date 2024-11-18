@@ -35,9 +35,12 @@ function getSpriteInfo(vttPath: string, response: string) {
   return sprites;
 }
 
+// useSpriteInfo is a hook that fetches a VTT file and parses it for sprite information.
+// If the vttPath is undefined, the hook will return undefined.
+// If the response is not ok, the hook will return null. This usually indicates missing sprite.
 export function useSpriteInfo(vttPath: string | undefined) {
   const [spriteInfo, setSpriteInfo] = useState<
-    ISceneSpriteInfo[] | undefined
+    ISceneSpriteInfo[] | undefined | null
   >();
 
   useEffect(() => {
@@ -48,7 +51,7 @@ export function useSpriteInfo(vttPath: string | undefined) {
 
     fetch(vttPath).then((response) => {
       if (!response.ok) {
-        setSpriteInfo(undefined);
+        setSpriteInfo(null);
         return;
       }
 

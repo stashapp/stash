@@ -10,7 +10,7 @@ The text field allows you to search using keywords. Keyword searching matches on
 |------|-----------------|
 | Scene | Title, Details, Path, OSHash, Checksum, Marker titles |
 | Image | Title, Path, Checksum |
-| Movie | Title |
+| Group | Title |
 | Marker | Title, Scene title |
 | Gallery | Title, Path, Checksum |
 | Performer | Name, Aliases |
@@ -44,6 +44,8 @@ The current sorting field is shown next to the query text field, indicating the 
 ### Saved filters
 
 Saved filters can be accessed with the bookmark button on the left of the query text field. The current filter can be saved by entering a filter name and clicking on the save button. Existing saved filters may be overwritten with the current filter by clicking on the save button next to the filter name. Saved filters may also be deleted by pressing the delete button next to the filter name.
+
+Saved filters are sorted alphabetically by title with capitalized titles sorted first.
 
 ### Default filter
 

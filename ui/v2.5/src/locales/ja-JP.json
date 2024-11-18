@@ -134,7 +134,12 @@
         "enable": "有効",
         "remove_date": "日付を削除",
         "create_parent_studio": "親スタジオを作成",
-        "optimise_database": "データベースを最適化"
+        "optimise_database": "データベースを最適化",
+        "reset_play_duration": "プレイ時間をリセット",
+        "add_sub_groups": "サブグループを追加",
+        "remove_from_containing_group": "グループから削除",
+        "set_cover": "カバーをセット",
+        "view_history": "履歴を表示する"
     },
     "actions_name": "操作",
     "age": "年齢",
@@ -246,7 +251,8 @@
             "successfully_cancelled_temporary_behaviour": "一時的な挙動のキャンセルに成功しました",
             "until_restart": "再起動まで",
             "video_sort_order": "デフォルトの動画ソート順序",
-            "video_sort_order_desc": "動画をデフォルト順でソートします。"
+            "video_sort_order_desc": "動画をデフォルト順でソートします。",
+            "server_port": "サーバーポート番号"
         },
         "general": {
             "auth": {

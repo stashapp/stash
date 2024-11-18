@@ -20,6 +20,7 @@ import (
 	"github.com/stashapp/stash/pkg/models/jsonschema"
 	"github.com/stashapp/stash/pkg/models/paths"
 	"github.com/stashapp/stash/pkg/performer"
+	"github.com/stashapp/stash/pkg/savedfilter"
 	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/studio"
 	"github.com/stashapp/stash/pkg/tag"
@@ -124,6 +125,7 @@ func (t *ImportTask) Start(ctx context.Context) {
 		}
 	}
 
+	t.ImportSavedFilters(ctx)
 	t.ImportTags(ctx)
 	t.ImportPerformers(ctx)
 	t.ImportStudios(ctx)
@@ -778,4 +780,54 @@ func (t *ImportTask) ImportImages(ctx context.Context) {
 	}
 
 	logger.Info("[images] import complete")
+}
+
+func (t *ImportTask) ImportSavedFilters(ctx context.Context) {
+	logger.Info("[saved filters] importing")
+
+	path := t.json.json.SavedFilters
+	files, err := os.ReadDir(path)
+	if err != nil {
+		if !errors.Is(err, os.ErrNotExist) {
+			logger.Errorf("[saved filters] failed to read saved filters directory: %v", err)
+		}
+
+		return
+	}
+
+	r := t.repository
+
+	for i, fi := range files {
+		index := i + 1
+		savedFilterJSON, err := jsonschema.LoadSavedFilterFile(filepath.Join(path, fi.Name()))
+		if err != nil {
+			logger.Errorf("[saved filters] failed to read json: %v", err)
+			continue
+		}
+
+		logger.Progressf("[saved filters] %d of %d", index, len(files))
+
+		if err := r.WithTxn(ctx, func(ctx context.Context) error {
+			return t.importSavedFilter(ctx, savedFilterJSON)
+		}); err != nil {
+			logger.Errorf("[saved filters] <%s> failed to import: %v", fi.Name(), err)
+			continue
+		}
+	}
+
+	logger.Info("[saved filters] import complete")
+}
+
+func (t *ImportTask) importSavedFilter(ctx context.Context, savedFilterJSON *jsonschema.SavedFilter) error {
+	importer := &savedfilter.Importer{
+		ReaderWriter:        t.repository.SavedFilter,
+		Input:               *savedFilterJSON,
+		MissingRefBehaviour: t.MissingRefBehaviour,
+	}
+
+	if err := performImport(ctx, importer, t.DuplicateBehaviour); err != nil {
+		return err
+	}
+
+	return nil
 }

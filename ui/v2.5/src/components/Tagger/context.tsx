@@ -613,12 +613,14 @@ export const TaggerContext: React.FC = ({ children }) => {
           return {
             endpoint: e.endpoint,
             stash_id: e.stash_id,
+            updated_at: e.updated_at,
           };
         });
 
         stashIDs.push({
           stash_id: performer.remote_site_id,
           endpoint: currentSource?.sourceInput.stash_box_endpoint,
+          updated_at: new Date().toISOString(),
         });
 
         await updatePerformer({
@@ -770,12 +772,14 @@ export const TaggerContext: React.FC = ({ children }) => {
           return {
             endpoint: e.endpoint,
             stash_id: e.stash_id,
+            updated_at: e.updated_at,
           };
         });
 
         stashIDs.push({
           stash_id: studio.remote_site_id,
           endpoint: currentSource?.sourceInput.stash_box_endpoint,
+          updated_at: new Date().toISOString(),
         });
 
         await updateStudio({
