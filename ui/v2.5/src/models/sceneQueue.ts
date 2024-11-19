@@ -2,7 +2,7 @@ import { FilterMode, Scene } from "src/core/generated-graphql";
 import { ListFilterModel } from "./list-filter/filter";
 import { INamedObject } from "src/utils/navigation";
 
-export type QueuedScene = Pick<Scene, "id" | "title" | "date" | "paths"> & {
+export type QueuedScene = Pick<Scene, "id" | "title" | "date" | "paths" | "files"> & {
   performers?: INamedObject[] | null;
   studio?: INamedObject | null;
 };

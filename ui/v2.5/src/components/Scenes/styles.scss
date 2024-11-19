@@ -729,10 +729,10 @@ input[type="range"].blue-slider {
   .queue-scene-performers,
   .queue-scene-date {
     margin-right: auto;
+    max-width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    width: 100%;
   }
 
   .queue-scene-studio,
@@ -743,23 +743,35 @@ input[type="range"].blue-slider {
 
   .thumbnail-container {
     aspect-ratio: 16 / 9;
+    position: relative;
     width: 40%;
 
     .scene-card-preview {
       margin: 2.5px 0;
     }
 
-    &:hover,
-    &:active {
-      .scene-card-preview-video {
-        top: 0;
-        transition-delay: 0.2s;
-      }
-    }
-
     .scene-card-preview-video {
       background-size: cover;
       object-fit: contain;
+    }
+  }
+
+  .scene-specs-overlay {
+    bottom: 0;
+    margin: 4px;
+    right: 0;
+  }
+
+  a:hover,
+  a:active {
+    .scene-card-preview-video {
+      top: 0;
+      transition-delay: 0.2s;
+    }
+
+    .scene-specs-overlay {
+      opacity: 0;
+      transition: opacity .5s;
     }
   }
 
