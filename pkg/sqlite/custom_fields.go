@@ -3,6 +3,7 @@ package sqlite
 import (
 	"context"
 	"fmt"
+	"regexp"
 
 	"github.com/doug-martin/goqu/v9"
 	"github.com/doug-martin/goqu/v9/exp"
@@ -131,4 +132,113 @@ func (s *customFieldsStore) GetCustomFieldsBulk(ctx context.Context, ids []int) 
 	}
 
 	return ret, nil
+}
+
+type customFieldsFilterHandler struct {
+	table string
+	fkCol string
+	c     []models.CustomFieldCriterionInput
+	idCol string
+}
+
+func (h *customFieldsFilterHandler) innerJoin(f *filterBuilder, as string, field string) {
+	joinOn := fmt.Sprintf("%s = %s.%s AND %s.field = ?", h.idCol, as, h.fkCol, as)
+	f.addInnerJoin(h.table, as, joinOn, field)
+}
+
+func (h *customFieldsFilterHandler) leftJoin(f *filterBuilder, as string, field string) {
+	joinOn := fmt.Sprintf("%s = %s.%s AND %s.field = ?", h.idCol, as, h.fkCol, as)
+	f.addLeftJoin(h.table, as, joinOn, field)
+}
+
+func (h *customFieldsFilterHandler) handleCriterion(f *filterBuilder, joinAs string, cc models.CustomFieldCriterionInput) {
+	switch cc.Modifier {
+	case models.CriterionModifierEquals:
+		h.innerJoin(f, joinAs, cc.Field)
+		f.addWhere(fmt.Sprintf("%s.field = ? AND %[1]s.value IN %s", joinAs, getInBinding(len(cc.Value))), cc.Value...)
+	case models.CriterionModifierNotEquals:
+		h.innerJoin(f, joinAs, cc.Field)
+		f.addWhere(fmt.Sprintf("%s.field = ? AND (%[1]s.value NOT IN %s)", joinAs, getInBinding(len(cc.Value))), cc.Value...)
+	case models.CriterionModifierIncludes:
+		clauses := make([]sqlClause, len(cc.Value))
+		for i, v := range cc.Value {
+			clauses[i] = makeClause(fmt.Sprintf("%s.value LIKE ?", joinAs), fmt.Sprintf("%%%v%%", v))
+		}
+		h.innerJoin(f, joinAs, cc.Field)
+		f.whereClauses = append(f.whereClauses, clauses...)
+	case models.CriterionModifierExcludes:
+		for _, v := range cc.Value {
+			f.addWhere(fmt.Sprintf("%[1]s.value NOT LIKE ?", joinAs), fmt.Sprintf("%%%v%%", v))
+		}
+		h.leftJoin(f, joinAs, cc.Field)
+	case models.CriterionModifierMatchesRegex:
+		for _, v := range cc.Value {
+			vs, ok := v.(string)
+			if !ok {
+				f.setError(fmt.Errorf("unsupported custom field criterion value type: %T", v))
+			}
+			if _, err := regexp.Compile(vs); err != nil {
+				f.setError(err)
+				return
+			}
+			f.addWhere(fmt.Sprintf("(%s.value regexp ?)", joinAs), v)
+		}
+		h.innerJoin(f, joinAs, cc.Field)
+	case models.CriterionModifierNotMatchesRegex:
+		for _, v := range cc.Value {
+			vs, ok := v.(string)
+			if !ok {
+				f.setError(fmt.Errorf("unsupported custom field criterion value type: %T", v))
+			}
+			if _, err := regexp.Compile(vs); err != nil {
+				f.setError(err)
+				return
+			}
+			f.addWhere(fmt.Sprintf("(%s.value IS NULL OR %[1]s.value NOT regexp ?)", joinAs), v)
+		}
+		h.leftJoin(f, joinAs, cc.Field)
+	case models.CriterionModifierIsNull:
+		h.leftJoin(f, joinAs, cc.Field)
+		f.addWhere(fmt.Sprintf("%s.value IS NULL OR TRIM(%[1]s.value) = ''", joinAs))
+	case models.CriterionModifierNotNull:
+		h.innerJoin(f, joinAs, cc.Field)
+		f.addWhere(fmt.Sprintf("TRIM(%[1]s.value) != ''", joinAs))
+	case models.CriterionModifierBetween:
+		if len(cc.Value) != 2 {
+			f.setError(fmt.Errorf("expected 2 values for custom field criterion modifier BETWEEN, got %d", len(cc.Value)))
+			return
+		}
+		h.innerJoin(f, joinAs, cc.Field)
+		f.addWhere(fmt.Sprintf("%s.value BETWEEN ? AND ?", joinAs), cc.Value[0], cc.Value[1])
+	case models.CriterionModifierNotBetween:
+		h.innerJoin(f, joinAs, cc.Field)
+		f.addWhere(fmt.Sprintf("%s.value NOT BETWEEN ? AND ?", joinAs), cc.Value[0], cc.Value[1])
+	case models.CriterionModifierLessThan:
+		if len(cc.Value) != 1 {
+			f.setError(fmt.Errorf("expected 1 value for custom field criterion modifier LESS_THAN, got %d", len(cc.Value)))
+			return
+		}
+		h.innerJoin(f, joinAs, cc.Field)
+		f.addWhere(fmt.Sprintf("%s.value < ?", joinAs), cc.Value[0])
+	case models.CriterionModifierGreaterThan:
+		if len(cc.Value) != 1 {
+			f.setError(fmt.Errorf("expected 1 value for custom field criterion modifier LESS_THAN, got %d", len(cc.Value)))
+			return
+		}
+		h.innerJoin(f, joinAs, cc.Field)
+		f.addWhere(fmt.Sprintf("%s.value > ?", joinAs), cc.Value[0])
+	default:
+		f.setError(fmt.Errorf("unsupported custom field criterion modifier: %s", cc.Modifier))
+	}
+}
+
+func (h *customFieldsFilterHandler) handle(ctx context.Context, f *filterBuilder) {
+	if len(h.c) == 0 {
+		return
+	}
+
+	for i, cc := range h.c {
+		join := fmt.Sprintf("custom_fields_%d", i)
+		h.handleCriterion(f, join, cc)
+	}
 }

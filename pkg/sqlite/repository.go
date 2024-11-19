@@ -222,8 +222,8 @@ func (r *repository) innerJoin(j joiner, as string, parentIDCol string) {
 }
 
 type joiner interface {
-	addLeftJoin(table, as, onClause string)
-	addInnerJoin(table, as, onClause string)
+	addLeftJoin(table, as, onClause string, args ...interface{})
+	addInnerJoin(table, as, onClause string, args ...interface{})
 }
 
 type joinRepository struct {
