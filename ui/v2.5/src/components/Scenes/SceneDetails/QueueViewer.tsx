@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import cx from "classnames";
 import { Button, Form, Spinner } from "react-bootstrap";
 import { Icon } from "src/components/Shared/Icon";
-import { useIntl } from "react-intl";
+import { FormattedNumber, useIntl } from "react-intl";
 import {
   faChevronDown,
   faChevronUp,
@@ -27,6 +27,7 @@ import {
   CriterionValue,
 } from "src/models/list-filter/criteria/criterion";
 import { ScenePreview } from "../SceneCard";
+import TextUtils from "src/utils/text";
 
 enum DiscoverFilterType {
   Performer = "PERFORMER",
@@ -358,6 +359,46 @@ export const QueueViewer: React.FC<IPlaylistViewer> = ({
     );
   }
 
+  function maybeRenderSceneSpecsOverlay(scene: QueuedScene) {
+    let file = scene.files.length > 0 ? scene.files[0] : undefined
+    let sizeObj = null;
+    if (file?.size) {
+      sizeObj = TextUtils.fileSize(file.size);
+    }
+    return (
+      <div className="scene-specs-overlay">
+        {sizeObj != null ? (
+          <span className="overlay-filesize extra-scene-info">
+            <FormattedNumber
+              value={sizeObj.size}
+              maximumFractionDigits={TextUtils.fileSizeFractionalDigits(
+                sizeObj.unit
+              )}
+            />
+            {TextUtils.formatFileSizeUnit(sizeObj.unit)}
+          </span>
+        ) : (
+          ""
+        )}
+        {file?.width && file?.height ? (
+          <span className="overlay-resolution">
+            {" "}
+            {TextUtils.resolution(file?.width, file?.height)}
+          </span>
+        ) : (
+          ""
+        )}
+        {(file?.duration ?? 0) >= 1 ? (
+          <span className="overlay-duration">
+            {TextUtils.secondsToTimestamp(file?.duration ?? 0)}
+          </span>
+        ) : (
+          ""
+        )}
+      </div>
+    );
+  }
+
   function renderPlaylistEntry(scene: QueuedScene) {
     const title = objectTitle(scene);
     const studio = scene?.studio?.name;
@@ -388,6 +429,7 @@ export const QueueViewer: React.FC<IPlaylistViewer> = ({
                 soundActive={false}
                 vttPath={scene.paths.vtt ?? undefined}
               />
+              {maybeRenderSceneSpecsOverlay(scene)}
             </div>
             <div className="queue-scene-details">
               <span className="queue-scene-title" title={title}>
