@@ -38,9 +38,7 @@ func (s *customFieldsStore) SetCustomFields(ctx context.Context, id int, values 
 	case values.Partial != nil:
 		partial = true
 		valMap = values.Partial
-	}
-
-	if len(valMap) == 0 {
+	default:
 		return nil
 	}
 
@@ -48,10 +46,6 @@ func (s *customFieldsStore) SetCustomFields(ctx context.Context, id int, values 
 }
 
 func (s *customFieldsStore) setCustomFields(ctx context.Context, id int, values map[string]interface{}, partial bool) error {
-	if len(values) == 0 {
-		return nil
-	}
-
 	if !partial {
 		// delete existing custom fields
 		if err := s.deleteForID(ctx, id); err != nil {
@@ -59,10 +53,14 @@ func (s *customFieldsStore) setCustomFields(ctx context.Context, id int, values 
 		}
 	}
 
+	if len(values) == 0 {
+		return nil
+	}
+
 	conflictKey := s.fk.GetCol().(string) + ", field"
 	// upsert new custom fields
 	q := dialect.Insert(s.table).Prepared(true).Cols(s.fk, "field", "value").
-		OnConflict(goqu.DoUpdate(conflictKey, goqu.Record{"value": goqu.I("excluded").Col("value")}))
+		OnConflict(goqu.DoUpdate(conflictKey, goqu.Record{"value": goqu.I("excluded.value")}))
 	r := make([]interface{}, len(values))
 	var i int
 	for key, value := range values {
@@ -84,7 +82,7 @@ func (s *customFieldsStore) GetCustomFields(ctx context.Context, id int) (map[st
 	ret := make(map[string]interface{})
 	err := queryFunc(ctx, q, single, func(rows *sqlx.Rows) error {
 		var field string
-		var value string
+		var value interface{}
 		if err := rows.Scan(&field, &value); err != nil {
 			return fmt.Errorf("scanning custom fields: %w", err)
 		}
@@ -112,7 +110,7 @@ func (s *customFieldsStore) GetCustomFieldsBulk(ctx context.Context, ids []int) 
 	err := queryFunc(ctx, q, single, func(rows *sqlx.Rows) error {
 		var id int
 		var field string
-		var value string
+		var value interface{}
 		if err := rows.Scan(&id, &field, &value); err != nil {
 			return fmt.Errorf("scanning custom fields: %w", err)
 		}
@@ -155,10 +153,10 @@ func (h *customFieldsFilterHandler) handleCriterion(f *filterBuilder, joinAs str
 	switch cc.Modifier {
 	case models.CriterionModifierEquals:
 		h.innerJoin(f, joinAs, cc.Field)
-		f.addWhere(fmt.Sprintf("%s.field = ? AND %[1]s.value IN %s", joinAs, getInBinding(len(cc.Value))), cc.Value...)
+		f.addWhere(fmt.Sprintf("%[1]s.value IN %s", joinAs, getInBinding(len(cc.Value))), cc.Value...)
 	case models.CriterionModifierNotEquals:
 		h.innerJoin(f, joinAs, cc.Field)
-		f.addWhere(fmt.Sprintf("%s.field = ? AND (%[1]s.value NOT IN %s)", joinAs, getInBinding(len(cc.Value))), cc.Value...)
+		f.addWhere(fmt.Sprintf("%[1]s.value NOT IN %s", joinAs, getInBinding(len(cc.Value))), cc.Value...)
 	case models.CriterionModifierIncludes:
 		clauses := make([]sqlClause, len(cc.Value))
 		for i, v := range cc.Value {

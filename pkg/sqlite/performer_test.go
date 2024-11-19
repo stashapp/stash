@@ -16,6 +16,12 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+var testCustomFields = map[string]interface{}{
+	"string": "aaa",
+	"int":    int64(123), // int64 to match the type of the field in the database
+	"real":   1.23,
+}
+
 func loadPerformerRelationships(ctx context.Context, expected models.Performer, actual *models.Performer) error {
 	if expected.Aliases.Loaded() {
 		if err := actual.LoadAliases(ctx, db.Performer); err != nil {
@@ -126,6 +132,7 @@ func Test_PerformerStore_Create(t *testing.T) {
 					CreatedAt: createdAt,
 					UpdatedAt: updatedAt,
 				},
+				CustomFields: testCustomFields,
 			},
 			false,
 		},
@@ -186,6 +193,15 @@ func Test_PerformerStore_Create(t *testing.T) {
 				return
 			}
 			assert.Equal(copy, *found)
+
+			// ensure custom fields are set
+			cf, err := qb.GetCustomFields(ctx, p.ID)
+			if err != nil {
+				t.Errorf("PerformerStore.GetCustomFields() error = %v", err)
+				return
+			}
+
+			assert.Equal(tt.newObject.CustomFields, cf)
 
 			return
 		})
@@ -305,6 +321,30 @@ func Test_PerformerStore_Update(t *testing.T) {
 			false,
 		},
 		{
+			"set custom fields",
+			models.UpdatePerformerInput{
+				Performer: &models.Performer{
+					ID: performerIDs[performerIdxWithGallery],
+				},
+				CustomFields: models.CustomFieldsInput{
+					Full: testCustomFields,
+				},
+			},
+			false,
+		},
+		{
+			"clear custom fields",
+			models.UpdatePerformerInput{
+				Performer: &models.Performer{
+					ID: performerIDs[performerIdxWithGallery],
+				},
+				CustomFields: models.CustomFieldsInput{
+					Full: map[string]interface{}{},
+				},
+			},
+			false,
+		},
+		{
 			"invalid tag id",
 			models.UpdatePerformerInput{
 				Performer: &models.Performer{
@@ -343,6 +383,17 @@ func Test_PerformerStore_Update(t *testing.T) {
 			}
 
 			assert.Equal(copy, *s)
+
+			// ensure custom fields are correct
+			if tt.updatedObject.CustomFields.Full != nil {
+				cf, err := qb.GetCustomFields(ctx, tt.updatedObject.ID)
+				if err != nil {
+					t.Errorf("PerformerStore.GetCustomFields() error = %v", err)
+					return
+				}
+
+				assert.Equal(tt.updatedObject.CustomFields.Full, cf)
+			}
 		})
 	}
 }
@@ -581,6 +632,79 @@ func Test_PerformerStore_UpdatePartial(t *testing.T) {
 			}
 
 			assert.Equal(tt.want, *s)
+		})
+	}
+}
+
+func Test_PerformerStore_UpdatePartialCustomFields(t *testing.T) {
+	tests := []struct {
+		name     string
+		id       int
+		partial  models.PerformerPartial
+		expected map[string]interface{} // nil to use the partial
+	}{
+		{
+			"set custom fields",
+			performerIDs[performerIdxWithGallery],
+			models.PerformerPartial{
+				CustomFields: models.CustomFieldsInput{
+					Full: testCustomFields,
+				},
+			},
+			nil,
+		},
+		{
+			"clear custom fields",
+			performerIDs[performerIdxWithGallery],
+			models.PerformerPartial{
+				CustomFields: models.CustomFieldsInput{
+					Full: map[string]interface{}{},
+				},
+			},
+			nil,
+		},
+		{
+			"partial custom fields",
+			performerIDs[performerIdxWithGallery],
+			models.PerformerPartial{
+				CustomFields: models.CustomFieldsInput{
+					Partial: map[string]interface{}{
+						"string":    "bbb",
+						"new_field": "new",
+					},
+				},
+			},
+			map[string]interface{}{
+				"int":       int64(3),
+				"real":      1.3,
+				"string":    "bbb",
+				"new_field": "new",
+			},
+		},
+	}
+	for _, tt := range tests {
+		qb := db.Performer
+
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+
+			_, err := qb.UpdatePartial(ctx, tt.id, tt.partial)
+			if err != nil {
+				t.Errorf("PerformerStore.UpdatePartial() error = %v", err)
+				return
+			}
+
+			// ensure custom fields are correct
+			cf, err := qb.GetCustomFields(ctx, tt.id)
+			if err != nil {
+				t.Errorf("PerformerStore.GetCustomFields() error = %v", err)
+				return
+			}
+			if tt.expected == nil {
+				assert.Equal(tt.partial.CustomFields.Full, cf)
+			} else {
+				assert.Equal(tt.expected, cf)
+			}
 		})
 	}
 }
@@ -1035,6 +1159,242 @@ func TestPerformerQuery(t *testing.T) {
 			assert := assert.New(t)
 
 			performers, _, err := db.Performer.Query(ctx, tt.filter, tt.findFilter)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("PerformerStore.Query() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			ids := performersToIDs(performers)
+			include := indexesToIDs(performerIDs, tt.includeIdxs)
+			exclude := indexesToIDs(performerIDs, tt.excludeIdxs)
+
+			for _, i := range include {
+				assert.Contains(ids, i)
+			}
+			for _, e := range exclude {
+				assert.NotContains(ids, e)
+			}
+		})
+	}
+}
+
+func TestPerformerQueryCustomFields(t *testing.T) {
+	tests := []struct {
+		name        string
+		filter      *models.PerformerFilterType
+		includeIdxs []int
+		excludeIdxs []int
+		wantErr     bool
+	}{
+		{
+			"equals",
+			&models.PerformerFilterType{
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierEquals,
+						Value:    []any{getPerformerStringValue(performerIdxWithGallery, "custom")},
+					},
+				},
+			},
+			[]int{performerIdxWithGallery},
+			nil,
+			false,
+		},
+		{
+			"not equals",
+			&models.PerformerFilterType{
+				Name: &models.StringCriterionInput{
+					Value:    getPerformerStringValue(performerIdxWithGallery, "Name"),
+					Modifier: models.CriterionModifierEquals,
+				},
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierNotEquals,
+						Value:    []any{getPerformerStringValue(performerIdxWithGallery, "custom")},
+					},
+				},
+			},
+			nil,
+			[]int{performerIdxWithGallery},
+			false,
+		},
+		{
+			"includes",
+			&models.PerformerFilterType{
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierIncludes,
+						Value:    []any{getPerformerStringValue(performerIdxWithGallery, "custom")[9:]},
+					},
+				},
+			},
+			[]int{performerIdxWithGallery},
+			nil,
+			false,
+		},
+		{
+			"excludes",
+			&models.PerformerFilterType{
+				Name: &models.StringCriterionInput{
+					Value:    getPerformerStringValue(performerIdxWithGallery, "Name"),
+					Modifier: models.CriterionModifierEquals,
+				},
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierExcludes,
+						Value:    []any{getPerformerStringValue(performerIdxWithGallery, "custom")[9:]},
+					},
+				},
+			},
+			nil,
+			[]int{performerIdxWithGallery},
+			false,
+		},
+		{
+			"regex",
+			&models.PerformerFilterType{
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierMatchesRegex,
+						Value:    []any{".*13_custom"},
+					},
+				},
+			},
+			[]int{performerIdxWithGallery},
+			nil,
+			false,
+		},
+		{
+			"invalid regex",
+			&models.PerformerFilterType{
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierMatchesRegex,
+						Value:    []any{"["},
+					},
+				},
+			},
+			nil,
+			nil,
+			true,
+		},
+		{
+			"not matches regex",
+			&models.PerformerFilterType{
+				Name: &models.StringCriterionInput{
+					Value:    getPerformerStringValue(performerIdxWithGallery, "Name"),
+					Modifier: models.CriterionModifierEquals,
+				},
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierNotMatchesRegex,
+						Value:    []any{".*13_custom"},
+					},
+				},
+			},
+			nil,
+			[]int{performerIdxWithGallery},
+			false,
+		},
+		{
+			"invalid not matches regex",
+			&models.PerformerFilterType{
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierNotMatchesRegex,
+						Value:    []any{"["},
+					},
+				},
+			},
+			nil,
+			nil,
+			true,
+		},
+		{
+			"null",
+			&models.PerformerFilterType{
+				Name: &models.StringCriterionInput{
+					Value:    getPerformerStringValue(performerIdxWithGallery, "Name"),
+					Modifier: models.CriterionModifierEquals,
+				},
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "not existing",
+						Modifier: models.CriterionModifierIsNull,
+					},
+				},
+			},
+			[]int{performerIdxWithGallery},
+			nil,
+			false,
+		},
+		{
+			"null",
+			&models.PerformerFilterType{
+				Name: &models.StringCriterionInput{
+					Value:    getPerformerStringValue(performerIdxWithGallery, "Name"),
+					Modifier: models.CriterionModifierEquals,
+				},
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierNotNull,
+					},
+				},
+			},
+			[]int{performerIdxWithGallery},
+			nil,
+			false,
+		},
+		{
+			"between",
+			&models.PerformerFilterType{
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "real",
+						Modifier: models.CriterionModifierBetween,
+						Value:    []any{0.05, 0.15},
+					},
+				},
+			},
+			[]int{performerIdx1WithScene},
+			nil,
+			false,
+		},
+		{
+			"not between",
+			&models.PerformerFilterType{
+				Name: &models.StringCriterionInput{
+					Value:    getPerformerStringValue(performerIdx1WithScene, "Name"),
+					Modifier: models.CriterionModifierEquals,
+				},
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "real",
+						Modifier: models.CriterionModifierNotBetween,
+						Value:    []any{0.05, 0.15},
+					},
+				},
+			},
+			nil,
+			[]int{performerIdx1WithScene},
+			false,
+		},
+	}
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+
+			performers, _, err := db.Performer.Query(ctx, tt.filter, nil)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("PerformerStore.Query() error = %v, wantErr %v", err, tt.wantErr)
 				return
