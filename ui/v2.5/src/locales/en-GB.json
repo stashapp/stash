@@ -844,6 +844,12 @@
     "not_matches_regex": "not matches regex",
     "not_null": "is not null"
   },
+  "criterion_modifier_values": {
+    "any": "Any",
+    "any_of": "Any of",
+    "none": "None",
+    "only": "Only"
+  },
   "custom": "Custom",
   "date": "Date",
   "date_format": "YYYY-MM-DD",
@@ -1293,7 +1299,9 @@
     "errors": {
       "something_went_wrong": "Oh no! Something went wrong!",
       "something_went_wrong_description": "If this looks like a problem with your inputs, go ahead and click back to fix them up. Otherwise, raise a bug on the {githubLink} or seek help in the {discordLink}.",
-      "something_went_wrong_while_setting_up_your_system": "Something went wrong while setting up your system. Here is the error we received: {error}"
+      "something_went_wrong_while_setting_up_your_system": "Something went wrong while setting up your system. Here is the error we received: {error}",
+      "unable_to_retrieve_system_status": "Unable to retrieve system status: {error}",
+      "unexpected_error": "An unexpected error occurred: {error}"
     },
     "folder": {
       "file_path": "File path",
@@ -1452,6 +1460,7 @@
   "tags": "Tags",
   "tattoos": "Tattoos",
   "time": "Time",
+  "time_end": "End Time",
   "title": "Title",
   "toast": {
     "added_entity": "Added {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
@@ -1483,6 +1492,7 @@
   "validation": {
     "blank": "${path} must not be blank",
     "date_invalid_form": "${path} must be in YYYY-MM-DD form",
+    "end_time_before_start_time": "End time must be greater than or equal to start time",
     "required": "${path} is a required field",
     "unique": "${path} must be unique"
   },

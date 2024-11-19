@@ -36,7 +36,6 @@ interface IGroupDetailsPanel {
 
 export const GroupDetailsPanel: React.FC<IGroupDetailsPanel> = ({
   group,
-  collapsed,
   fullWidth,
 }) => {
   // Network state
@@ -53,27 +52,6 @@ export const GroupDetailsPanel: React.FC<IGroupDetailsPanel> = ({
         ))}
       </ul>
     );
-  }
-
-  function maybeRenderExtraDetails() {
-    if (!collapsed) {
-      return (
-        <>
-          <DetailItem
-            id="tags"
-            value={renderTagsField()}
-            fullWidth={fullWidth}
-          />
-          {group.containing_groups.length > 0 && (
-            <DetailItem
-              id="containing_groups"
-              value={<GroupsList groups={group.containing_groups} />}
-              fullWidth={fullWidth}
-            />
-          )}
-        </>
-      );
-    }
   }
 
   return (
@@ -103,7 +81,6 @@ export const GroupDetailsPanel: React.FC<IGroupDetailsPanel> = ({
         }
         fullWidth={fullWidth}
       />
-
       <DetailItem
         id="director"
         value={
@@ -115,9 +92,15 @@ export const GroupDetailsPanel: React.FC<IGroupDetailsPanel> = ({
         }
         fullWidth={fullWidth}
       />
-
       <DetailItem id="synopsis" value={group.synopsis} fullWidth={fullWidth} />
-      {maybeRenderExtraDetails()}
+      <DetailItem id="tags" value={renderTagsField()} fullWidth={fullWidth} />
+      {group.containing_groups.length > 0 && (
+        <DetailItem
+          id="containing_groups"
+          value={<GroupsList groups={group.containing_groups} />}
+          fullWidth={fullWidth}
+        />
+      )}
     </div>
   );
 };

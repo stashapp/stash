@@ -2,6 +2,7 @@ package group
 
 import (
 	"context"
+	"slices"
 	"strings"
 
 	"github.com/stashapp/stash/pkg/models"
@@ -105,7 +106,7 @@ func (s *Service) validateUpdateGroupHierarchy(ctx context.Context, existing *mo
 	subIDs := idsFromGroupDescriptions(effectiveSubGroups)
 
 	// ensure we haven't set the group as a subgroup of itself
-	if sliceutil.Contains(containingIDs, existing.ID) || sliceutil.Contains(subIDs, existing.ID) {
+	if slices.Contains(containingIDs, existing.ID) || slices.Contains(subIDs, existing.ID) {
 		return ErrHierarchyLoop
 	}
 

@@ -229,13 +229,13 @@ export function useListSelect<T extends { id: string }>(items: T[]) {
   function singleSelect(id: string, selected: boolean) {
     setLastClickedId(id);
 
-    // prevent duplicates
-    if (selected && selectedIds.has(id)) {
-      return;
-    }
-
     setItemsSelected((prevSelected) => {
       if (selected) {
+        // prevent duplicates
+        if (prevSelected.some((v) => v.id === id)) {
+          return prevSelected;
+        }
+
         const item = items.find((i) => i.id === id);
         if (item) {
           return [...prevSelected, item];

@@ -303,6 +303,15 @@ input[type="range"].zoom-slider {
   padding-bottom: 0.15rem;
   padding-inline-start: 0;
 
+  .modifier-object {
+    font-style: italic;
+
+    .selected-object-label,
+    .unselected-object-label {
+      opacity: 0.6;
+    }
+  }
+
   .unselected-object {
     opacity: 0.8;
   }

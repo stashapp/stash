@@ -282,7 +282,10 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
       formik.setFieldValue("penis_length", state.penis_length);
     }
 
-    const remoteSiteID = state.remote_site_id;
+    updateStashIDs(state.remote_site_id);
+  }
+
+  function updateStashIDs(remoteSiteID: string | null | undefined) {
     if (remoteSiteID && (scraper as IStashBox).endpoint) {
       const newIDs =
         formik.values.stash_ids?.filter(
@@ -291,6 +294,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
       newIDs?.push({
         endpoint: (scraper as IStashBox).endpoint,
         stash_id: remoteSiteID,
+        updated_at: new Date().toISOString(),
       });
       formik.setFieldValue("stash_ids", newIDs);
     }
@@ -438,6 +442,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
       setScraper(undefined);
     } else {
       setScrapedPerformer(result);
+      updateStashIDs(performerResult.remote_site_id);
     }
   }
 
