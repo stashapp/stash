@@ -47,7 +47,7 @@ func (s *customFieldsStore) SetCustomFields(ctx context.Context, id int, values 
 	return s.setCustomFields(ctx, id, valMap, partial)
 }
 
-func (s *customFieldsStore) getSQLValueFromInput(input interface{}) (interface{}, error) {
+func getSQLValueFromCustomFieldInput(input interface{}) (interface{}, error) {
 	switch v := input.(type) {
 	case []interface{}, map[string]interface{}:
 		// TODO - if future it would be nice to convert to a JSON string
@@ -90,7 +90,7 @@ func (s *customFieldsStore) setCustomFields(ctx context.Context, id int, values 
 	r := make([]interface{}, len(values))
 	var i int
 	for key, value := range values {
-		v, err := s.getSQLValueFromInput(value)
+		v, err := getSQLValueFromCustomFieldInput(value)
 		if err != nil {
 			return fmt.Errorf("getting SQL value for field %q: %w", key, err)
 		}
@@ -180,27 +180,38 @@ func (h *customFieldsFilterHandler) leftJoin(f *filterBuilder, as string, field 
 }
 
 func (h *customFieldsFilterHandler) handleCriterion(f *filterBuilder, joinAs string, cc models.CustomFieldCriterionInput) {
+	// convert values
+	cv := make([]interface{}, len(cc.Value))
+	for i, v := range cc.Value {
+		var err error
+		cv[i], err = getSQLValueFromCustomFieldInput(v)
+		if err != nil {
+			f.setError(err)
+			return
+		}
+	}
+
 	switch cc.Modifier {
 	case models.CriterionModifierEquals:
 		h.innerJoin(f, joinAs, cc.Field)
-		f.addWhere(fmt.Sprintf("%[1]s.value IN %s", joinAs, getInBinding(len(cc.Value))), cc.Value...)
+		f.addWhere(fmt.Sprintf("%[1]s.value IN %s", joinAs, getInBinding(len(cv))), cv...)
 	case models.CriterionModifierNotEquals:
 		h.innerJoin(f, joinAs, cc.Field)
-		f.addWhere(fmt.Sprintf("%[1]s.value NOT IN %s", joinAs, getInBinding(len(cc.Value))), cc.Value...)
+		f.addWhere(fmt.Sprintf("%[1]s.value NOT IN %s", joinAs, getInBinding(len(cv))), cv...)
 	case models.CriterionModifierIncludes:
-		clauses := make([]sqlClause, len(cc.Value))
-		for i, v := range cc.Value {
+		clauses := make([]sqlClause, len(cv))
+		for i, v := range cv {
 			clauses[i] = makeClause(fmt.Sprintf("%s.value LIKE ?", joinAs), fmt.Sprintf("%%%v%%", v))
 		}
 		h.innerJoin(f, joinAs, cc.Field)
 		f.whereClauses = append(f.whereClauses, clauses...)
 	case models.CriterionModifierExcludes:
-		for _, v := range cc.Value {
+		for _, v := range cv {
 			f.addWhere(fmt.Sprintf("%[1]s.value NOT LIKE ?", joinAs), fmt.Sprintf("%%%v%%", v))
 		}
 		h.leftJoin(f, joinAs, cc.Field)
 	case models.CriterionModifierMatchesRegex:
-		for _, v := range cc.Value {
+		for _, v := range cv {
 			vs, ok := v.(string)
 			if !ok {
 				f.setError(fmt.Errorf("unsupported custom field criterion value type: %T", v))
@@ -213,7 +224,7 @@ func (h *customFieldsFilterHandler) handleCriterion(f *filterBuilder, joinAs str
 		}
 		h.innerJoin(f, joinAs, cc.Field)
 	case models.CriterionModifierNotMatchesRegex:
-		for _, v := range cc.Value {
+		for _, v := range cv {
 			vs, ok := v.(string)
 			if !ok {
 				f.setError(fmt.Errorf("unsupported custom field criterion value type: %T", v))
@@ -232,29 +243,29 @@ func (h *customFieldsFilterHandler) handleCriterion(f *filterBuilder, joinAs str
 		h.innerJoin(f, joinAs, cc.Field)
 		f.addWhere(fmt.Sprintf("TRIM(%[1]s.value) != ''", joinAs))
 	case models.CriterionModifierBetween:
-		if len(cc.Value) != 2 {
-			f.setError(fmt.Errorf("expected 2 values for custom field criterion modifier BETWEEN, got %d", len(cc.Value)))
+		if len(cv) != 2 {
+			f.setError(fmt.Errorf("expected 2 values for custom field criterion modifier BETWEEN, got %d", len(cv)))
 			return
 		}
 		h.innerJoin(f, joinAs, cc.Field)
-		f.addWhere(fmt.Sprintf("%s.value BETWEEN ? AND ?", joinAs), cc.Value[0], cc.Value[1])
+		f.addWhere(fmt.Sprintf("%s.value BETWEEN ? AND ?", joinAs), cv[0], cv[1])
 	case models.CriterionModifierNotBetween:
 		h.innerJoin(f, joinAs, cc.Field)
-		f.addWhere(fmt.Sprintf("%s.value NOT BETWEEN ? AND ?", joinAs), cc.Value[0], cc.Value[1])
+		f.addWhere(fmt.Sprintf("%s.value NOT BETWEEN ? AND ?", joinAs), cv[0], cv[1])
 	case models.CriterionModifierLessThan:
-		if len(cc.Value) != 1 {
-			f.setError(fmt.Errorf("expected 1 value for custom field criterion modifier LESS_THAN, got %d", len(cc.Value)))
+		if len(cv) != 1 {
+			f.setError(fmt.Errorf("expected 1 value for custom field criterion modifier LESS_THAN, got %d", len(cv)))
 			return
 		}
 		h.innerJoin(f, joinAs, cc.Field)
-		f.addWhere(fmt.Sprintf("%s.value < ?", joinAs), cc.Value[0])
+		f.addWhere(fmt.Sprintf("%s.value < ?", joinAs), cv[0])
 	case models.CriterionModifierGreaterThan:
-		if len(cc.Value) != 1 {
-			f.setError(fmt.Errorf("expected 1 value for custom field criterion modifier LESS_THAN, got %d", len(cc.Value)))
+		if len(cv) != 1 {
+			f.setError(fmt.Errorf("expected 1 value for custom field criterion modifier LESS_THAN, got %d", len(cv)))
 			return
 		}
 		h.innerJoin(f, joinAs, cc.Field)
-		f.addWhere(fmt.Sprintf("%s.value > ?", joinAs), cc.Value[0])
+		f.addWhere(fmt.Sprintf("%s.value > ?", joinAs), cv[0])
 	default:
 		f.setError(fmt.Errorf("unsupported custom field criterion modifier: %s", cc.Modifier))
 	}
