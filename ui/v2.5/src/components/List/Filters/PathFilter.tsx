@@ -4,12 +4,12 @@ import { FolderSelect } from "src/components/Shared/FolderSelect/FolderSelect";
 import { CriterionModifier } from "src/core/generated-graphql";
 import { ConfigurationContext } from "src/hooks/Config";
 import {
-  Criterion,
+  ModifierCriterion,
   CriterionValue,
 } from "../../../models/list-filter/criteria/criterion";
 
 interface IInputFilterProps {
-  criterion: Criterion<CriterionValue>;
+  criterion: ModifierCriterion<CriterionValue>;
   onValueChanged: (value: string) => void;
 }
 
@@ -30,7 +30,7 @@ export const PathFilter: React.FC<IInputFilterProps> = ({
       {regex ? (
         <Form.Control
           className="btn-secondary"
-          type={criterion.criterionOption.inputType}
+          type={criterion.modifierCriterionOption().inputType}
           onChange={(v) => onValueChanged(v.target.value)}
           value={criterion.value ? criterion.value.toString() : ""}
         />

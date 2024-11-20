@@ -1,5 +1,8 @@
 import { CriterionModifier } from "src/core/generated-graphql";
-import { CriterionOption, IHierarchicalLabeledIdCriterion } from "./criterion";
+import {
+  ModifierCriterionOption,
+  IHierarchicalLabeledIdCriterion,
+} from "./criterion";
 import { CriterionType } from "../types";
 
 const defaultModifierOptions = [
@@ -20,7 +23,7 @@ const withoutEqualsModifierOptions = [
 const defaultModifier = CriterionModifier.IncludesAll;
 const inputType = "tags";
 
-class BaseTagsCriterionOption extends CriterionOption {
+class BaseTagsCriterionOption extends ModifierCriterionOption {
   constructor(
     messageID: string,
     type: CriterionType,

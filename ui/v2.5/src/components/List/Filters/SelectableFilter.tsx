@@ -16,7 +16,7 @@ import {
 } from "src/models/list-filter/types";
 import { cloneDeep } from "lodash-es";
 import {
-  Criterion,
+  ModifierCriterion,
   IHierarchicalLabeledIdCriterion,
 } from "src/models/list-filter/criteria/criterion";
 import { defineMessages, MessageDescriptor, useIntl } from "react-intl";
@@ -316,7 +316,7 @@ const SelectableFilter: React.FC<ISelectableFilter> = ({
   );
 };
 
-interface IObjectsFilter<T extends Criterion<ILabeledValueListValue>> {
+interface IObjectsFilter<T extends ModifierCriterion<ILabeledValueListValue>> {
   criterion: T;
   setCriterion: (criterion: T) => void;
   useResults: (query: string) => { results: ILabeledId[]; loading: boolean };
@@ -324,7 +324,7 @@ interface IObjectsFilter<T extends Criterion<ILabeledValueListValue>> {
 }
 
 export const ObjectsFilter = <
-  T extends Criterion<ILabeledValueListValue | IHierarchicalLabelValue>
+  T extends ModifierCriterion<ILabeledValueListValue | IHierarchicalLabelValue>
 >({
   criterion,
   setCriterion,
@@ -426,9 +426,10 @@ export const ObjectsFilter = <
 
   // if excludes is not a valid modifierOption then we can use `value.excluded`
   const canExclude =
-    criterion.criterionOption.modifierOptions.find(
-      (m) => m === CriterionModifier.Excludes
-    ) === undefined;
+    criterion
+      .modifierCriterionOption()
+      .modifierOptions.find((m) => m === CriterionModifier.Excludes) ===
+    undefined;
 
   return (
     <SelectableFilter

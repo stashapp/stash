@@ -19,8 +19,8 @@ import {
   SubGroupsCriterionOption,
 } from "src/models/list-filter/criteria/groups";
 import {
-  Criterion,
-  CriterionOption,
+  ModifierCriterion,
+  ModifierCriterionOption,
   CriterionValue,
   StringCriterion,
   createStringCriterionOption,
@@ -34,8 +34,8 @@ import { MarkersScenesCriterion } from "src/models/list-filter/criteria/scenes";
 import { objectTitle } from "src/core/files";
 
 function addExtraCriteria(
-  dest: Criterion<CriterionValue>[],
-  src?: Criterion<CriterionValue>[]
+  dest: ModifierCriterion<CriterionValue>[],
+  src?: ModifierCriterion<CriterionValue>[]
 ) {
   if (src && src.length > 0) {
     dest.push(...src);
@@ -45,7 +45,7 @@ function addExtraCriteria(
 const makePerformerScenesUrl = (
   performer: Partial<GQL.PerformerDataFragment>,
   extraPerformer?: ILabeledId,
-  extraCriteria?: Criterion<CriterionValue>[]
+  extraCriteria?: ModifierCriterion<CriterionValue>[]
 ) => {
   if (!performer.id) return "#";
   const filter = new ListFilterModel(GQL.FilterMode.Scenes, undefined);
@@ -66,7 +66,7 @@ const makePerformerScenesUrl = (
 const makePerformerImagesUrl = (
   performer: Partial<GQL.PerformerDataFragment>,
   extraPerformer?: ILabeledId,
-  extraCriteria?: Criterion<CriterionValue>[]
+  extraCriteria?: ModifierCriterion<CriterionValue>[]
 ) => {
   if (!performer.id) return "#";
   const filter = new ListFilterModel(GQL.FilterMode.Images, undefined);
@@ -92,7 +92,7 @@ export interface INamedObject {
 const makePerformerGalleriesUrl = (
   performer: INamedObject,
   extraPerformer?: ILabeledId,
-  extraCriteria?: Criterion<CriterionValue>[]
+  extraCriteria?: ModifierCriterion<CriterionValue>[]
 ) => {
   if (!performer.id) return "#";
   const filter = new ListFilterModel(GQL.FilterMode.Galleries, undefined);
@@ -113,7 +113,7 @@ const makePerformerGalleriesUrl = (
 const makePerformerGroupsUrl = (
   performer: Partial<GQL.PerformerDataFragment>,
   extraPerformer?: ILabeledId,
-  extraCriteria?: Criterion<CriterionValue>[]
+  extraCriteria?: ModifierCriterion<CriterionValue>[]
 ) => {
   if (!performer.id) return "#";
   const filter = new ListFilterModel(GQL.FilterMode.Groups, undefined);
@@ -345,7 +345,7 @@ const makeScenesPHashMatchUrl = (phash: GQL.Maybe<string> | undefined) => {
 
 const makeGalleryImagesUrl = (
   gallery: Partial<GQL.GalleryDataFragment | GQL.SlimGalleryDataFragment>,
-  extraCriteria?: Criterion<CriterionValue>[]
+  extraCriteria?: ModifierCriterion<CriterionValue>[]
 ) => {
   if (!gallery.id) return "#";
   const filter = new ListFilterModel(GQL.FilterMode.Images, undefined);
@@ -356,7 +356,7 @@ const makeGalleryImagesUrl = (
   return `/images?${filter.makeQueryParameters()}`;
 };
 
-function stringEqualsCriterion(option: CriterionOption, value: string) {
+function stringEqualsCriterion(option: ModifierCriterionOption, value: string) {
   const criterion = new StringCriterion(option);
   criterion.modifier = GQL.CriterionModifier.Equals;
   criterion.value = value;

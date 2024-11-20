@@ -4,10 +4,10 @@ import { useIntl } from "react-intl";
 import { CriterionModifier } from "src/core/generated-graphql";
 import { DurationInput } from "src/components/Shared/DurationInput";
 import { INumberValue } from "src/models/list-filter/types";
-import { Criterion } from "src/models/list-filter/criteria/criterion";
+import { ModifierCriterion } from "src/models/list-filter/criteria/criterion";
 
 interface IDurationFilterProps {
-  criterion: Criterion<INumberValue>;
+  criterion: ModifierCriterion<INumberValue>;
   onValueChanged: (value: INumberValue) => void;
 }
 

@@ -1,5 +1,5 @@
 import {
-  CriterionOption,
+  ModifierCriterionOption,
   ILabeledIdCriterion,
   ILabeledIdCriterionOption,
 } from "./criterion";
@@ -28,7 +28,7 @@ const modifierOptions = [
 
 const defaultModifier = CriterionModifier.Includes;
 
-export const MarkersScenesCriterionOption = new CriterionOption({
+export const MarkersScenesCriterionOption = new ModifierCriterionOption({
   messageID: "scenes",
   type: "scenes",
   modifierOptions,

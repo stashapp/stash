@@ -3,11 +3,11 @@ import { Form } from "react-bootstrap";
 import { FilterSelect, SelectObject } from "src/components/Shared/Select";
 import { objectTitle } from "src/core/files";
 import { galleryTitle } from "src/core/galleries";
-import { Criterion } from "src/models/list-filter/criteria/criterion";
+import { ModifierCriterion } from "src/models/list-filter/criteria/criterion";
 import { ILabeledId } from "src/models/list-filter/types";
 
 interface ILabeledIdFilterProps {
-  criterion: Criterion<ILabeledId[]>;
+  criterion: ModifierCriterion<ILabeledId[]>;
   onValueChanged: (value: ILabeledId[]) => void;
 }
 
@@ -15,7 +15,7 @@ export const LabeledIdFilter: React.FC<ILabeledIdFilterProps> = ({
   criterion,
   onValueChanged,
 }) => {
-  const { criterionOption } = criterion;
+  const criterionOption = criterion.modifierCriterionOption();
   const { inputType } = criterionOption;
 
   if (

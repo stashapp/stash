@@ -29,7 +29,7 @@ import { sortByRelevance } from "src/utils/query";
 import { galleryTitle } from "src/core/galleries";
 import { PatchComponent, PatchFunction } from "src/patch";
 import {
-  Criterion,
+  ModifierCriterion,
   CriterionValue,
 } from "src/models/list-filter/criteria/criterion";
 import { PathCriterion } from "src/models/list-filter/criteria/path";
@@ -46,7 +46,7 @@ type Option = SelectOption<Gallery>;
 type ExtraGalleryProps = {
   hoverPlacement?: Placement;
   excludeIds?: string[];
-  extraCriteria?: Array<Criterion<CriterionValue>>;
+  extraCriteria?: Array<ModifierCriterion<CriterionValue>>;
 };
 
 type FindGalleriesResult = Awaited<

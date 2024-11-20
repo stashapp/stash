@@ -1,19 +1,18 @@
 import cloneDeep from "lodash-es/cloneDeep";
 import React, { useCallback, useMemo } from "react";
-import { Button, Form } from "react-bootstrap";
 import { CriterionModifier } from "src/core/generated-graphql";
 import {
   DurationCriterion,
   CriterionValue,
-  Criterion,
+  ModifierCriterion,
   IHierarchicalLabeledIdCriterion,
   NumberCriterion,
   ILabeledIdCriterion,
   DateCriterion,
   TimestampCriterion,
   BooleanCriterion,
+  Criterion,
 } from "src/models/list-filter/criteria/criterion";
-import { useIntl } from "react-intl";
 import {
   criterionIsHierarchicalLabelValue,
   criterionIsNumberValue,
@@ -45,21 +44,19 @@ import { TagsCriterion } from "src/models/list-filter/criteria/tags";
 import TagsFilter from "./Filters/TagsFilter";
 import { PhashCriterion } from "src/models/list-filter/criteria/phash";
 import { PhashFilter } from "./Filters/PhashFilter";
-import cx from "classnames";
 import { PathCriterion } from "src/models/list-filter/criteria/path";
+import { ModifierSelectorButtons } from "./ModifierSelect";
 
 interface IGenericCriterionEditor {
-  criterion: Criterion<CriterionValue>;
-  setCriterion: (c: Criterion<CriterionValue>) => void;
+  criterion: ModifierCriterion<CriterionValue>;
+  setCriterion: (c: ModifierCriterion<CriterionValue>) => void;
 }
 
 const GenericCriterionEditor: React.FC<IGenericCriterionEditor> = ({
   criterion,
   setCriterion,
 }) => {
-  const intl = useIntl();
-
-  const { options, modifierOptions } = criterion.criterionOption;
+  const { options, modifierOptions } = criterion.modifierCriterionOption();
 
   const showModifierSelector = useMemo(() => {
     if (
@@ -97,26 +94,17 @@ const GenericCriterionEditor: React.FC<IGenericCriterionEditor> = ({
     }
 
     return (
-      <Form.Group className="modifier-options">
-        {modifierOptions.map((m) => (
-          <Button
-            className={cx("modifier-option", {
-              selected: criterion.modifier === m,
-            })}
-            key={m}
-            onClick={() => onChangedModifierSelect(m)}
-          >
-            {Criterion.getModifierLabel(intl, m)}
-          </Button>
-        ))}
-      </Form.Group>
+      <ModifierSelectorButtons
+        options={modifierOptions}
+        value={criterion.modifier}
+        onChanged={onChangedModifierSelect}
+      />
     );
   }, [
     showModifierSelector,
     modifierOptions,
     onChangedModifierSelect,
     criterion.modifier,
-    intl,
   ]);
 
   const valueControl = useMemo(() => {
@@ -268,8 +256,8 @@ const GenericCriterionEditor: React.FC<IGenericCriterionEditor> = ({
 };
 
 interface ICriterionEditor {
-  criterion: Criterion<CriterionValue>;
-  setCriterion: (c: Criterion<CriterionValue>) => void;
+  criterion: Criterion;
+  setCriterion: (c: Criterion) => void;
 }
 
 export const CriterionEditor: React.FC<ICriterionEditor> = ({
@@ -283,12 +271,16 @@ export const CriterionEditor: React.FC<ICriterionEditor> = ({
       );
     }
 
-    return (
-      <GenericCriterionEditor
-        criterion={criterion}
-        setCriterion={setCriterion}
-      />
-    );
+    if (criterion instanceof ModifierCriterion) {
+      return (
+        <GenericCriterionEditor
+          criterion={criterion}
+          setCriterion={setCriterion}
+        />
+      );
+    }
+
+    return null;
   }, [criterion, setCriterion]);
 
   return <div className="criterion-editor">{filterControl}</div>;

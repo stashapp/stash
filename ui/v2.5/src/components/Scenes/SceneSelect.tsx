@@ -29,7 +29,7 @@ import { sortByRelevance } from "src/utils/query";
 import { objectTitle } from "src/core/files";
 import { PatchComponent, PatchFunction } from "src/patch";
 import {
-  Criterion,
+  ModifierCriterion,
   CriterionValue,
 } from "src/models/list-filter/criteria/criterion";
 import { TruncatedText } from "../Shared/TruncatedText";
@@ -45,7 +45,7 @@ type Option = SelectOption<Scene>;
 type ExtraSceneProps = {
   hoverPlacement?: Placement;
   excludeIds?: string[];
-  extraCriteria?: Array<Criterion<CriterionValue>>;
+  extraCriteria?: Array<ModifierCriterion<CriterionValue>>;
 };
 
 type FindScenesResult = Awaited<

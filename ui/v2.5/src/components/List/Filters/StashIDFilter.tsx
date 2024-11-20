@@ -2,11 +2,11 @@ import React from "react";
 import { Form } from "react-bootstrap";
 import { useIntl } from "react-intl";
 import { IStashIDValue } from "../../../models/list-filter/types";
-import { Criterion } from "../../../models/list-filter/criteria/criterion";
+import { ModifierCriterion } from "../../../models/list-filter/criteria/criterion";
 import { CriterionModifier } from "src/core/generated-graphql";
 
 interface IStashIDFilterProps {
-  criterion: Criterion<IStashIDValue>;
+  criterion: ModifierCriterion<IStashIDValue>;
   onValueChanged: (value: IStashIDValue) => void;
 }
 

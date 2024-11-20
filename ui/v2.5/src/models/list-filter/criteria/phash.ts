@@ -6,12 +6,12 @@ import {
 import { IPhashDistanceValue } from "../types";
 import {
   BooleanCriterionOption,
-  Criterion,
-  CriterionOption,
+  ModifierCriterion,
+  ModifierCriterionOption,
   StringCriterion,
 } from "./criterion";
 
-export const PhashCriterionOption = new CriterionOption({
+export const PhashCriterionOption = new ModifierCriterionOption({
   messageID: "media_info.phash",
   type: "phash_distance",
   inputType: "text",
@@ -24,7 +24,7 @@ export const PhashCriterionOption = new CriterionOption({
   makeCriterion: () => new PhashCriterion(),
 });
 
-export class PhashCriterion extends Criterion<IPhashDistanceValue> {
+export class PhashCriterion extends ModifierCriterion<IPhashDistanceValue> {
   constructor() {
     super(PhashCriterionOption, { value: "", distance: 0 });
   }

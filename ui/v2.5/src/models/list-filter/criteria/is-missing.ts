@@ -1,6 +1,6 @@
 import { CriterionModifier } from "src/core/generated-graphql";
 import { CriterionType } from "../types";
-import { CriterionOption, StringCriterion, Option } from "./criterion";
+import { ModifierCriterionOption, StringCriterion, Option } from "./criterion";
 
 export class IsMissingCriterion extends StringCriterion {
   public toCriterionInput(): string {
@@ -8,7 +8,7 @@ export class IsMissingCriterion extends StringCriterion {
   }
 }
 
-class IsMissingCriterionOption extends CriterionOption {
+class IsMissingCriterionOption extends ModifierCriterionOption {
   constructor(messageID: string, type: CriterionType, options: Option[]) {
     super({
       messageID,

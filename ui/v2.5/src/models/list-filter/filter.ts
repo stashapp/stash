@@ -11,12 +11,7 @@ import {
   ISavedCriterion,
 } from "./criteria/criterion";
 import { getFilterOptions } from "./factory";
-import {
-  CriterionType,
-  DisplayMode,
-  SavedObjectFilter,
-  SavedUIOptions,
-} from "./types";
+import { CriterionType, DisplayMode, SavedUIOptions } from "./types";
 import { ListFilterOptions } from "./filter-options";
 
 interface IDecodedParams {
@@ -60,7 +55,7 @@ export class ListFilterModel {
   public sortBy?: string;
   public displayMode: DisplayMode = DEFAULT_PARAMS.displayMode;
   public zoomIndex: number = 1;
-  public criteria: Array<Criterion<CriterionValue>> = [];
+  public criteria: Array<Criterion> = [];
   public randomSeed = -1;
   private defaultZoomIndex: number = 1;
 
@@ -446,15 +441,7 @@ export class ListFilterModel {
   public makeFilter() {
     const output: Record<string, unknown> = {};
     for (const c of this.criteria) {
-      output[c.criterionOption.type] = c.toCriterionInput();
-    }
-    return output;
-  }
-
-  public makeSavedFilter() {
-    const output: SavedObjectFilter = {};
-    for (const c of this.criteria) {
-      output[c.criterionOption.type] = c.toSavedCriterion();
+      c.applyToCriterionInput(output);
     }
     return output;
   }

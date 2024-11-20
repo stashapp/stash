@@ -3,12 +3,12 @@ import React from "react";
 import { Form } from "react-bootstrap";
 import {
   CriterionValue,
-  Criterion,
+  ModifierCriterion,
 } from "src/models/list-filter/criteria/criterion";
 
 interface IOptionsFilter {
-  criterion: Criterion<CriterionValue>;
-  setCriterion: (c: Criterion<CriterionValue>) => void;
+  criterion: ModifierCriterion<CriterionValue>;
+  setCriterion: (c: ModifierCriterion<CriterionValue>) => void;
 }
 
 export const OptionFilter: React.FC<IOptionsFilter> = ({
@@ -26,7 +26,7 @@ export const OptionFilter: React.FC<IOptionsFilter> = ({
     setCriterion(c);
   }
 
-  const { options } = criterion.criterionOption;
+  const { options } = criterion.modifierCriterionOption();
 
   return (
     <div className="option-list-filter">
@@ -45,8 +45,8 @@ export const OptionFilter: React.FC<IOptionsFilter> = ({
 };
 
 interface IOptionsListFilter {
-  criterion: Criterion<CriterionValue>;
-  setCriterion: (c: Criterion<CriterionValue>) => void;
+  criterion: ModifierCriterion<CriterionValue>;
+  setCriterion: (c: ModifierCriterion<CriterionValue>) => void;
 }
 
 export const OptionListFilter: React.FC<IOptionsListFilter> = ({
@@ -65,7 +65,7 @@ export const OptionListFilter: React.FC<IOptionsListFilter> = ({
     setCriterion(c);
   }
 
-  const { options } = criterion.criterionOption;
+  const { options } = criterion.modifierCriterionOption();
   const value = criterion.value as string[];
 
   return (

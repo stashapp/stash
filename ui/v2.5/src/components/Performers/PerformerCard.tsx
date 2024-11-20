@@ -12,7 +12,7 @@ import { Icon } from "../Shared/Icon";
 import { TagLink } from "../Shared/TagLink";
 import { Button, ButtonGroup } from "react-bootstrap";
 import {
-  Criterion,
+  ModifierCriterion,
   CriterionValue,
 } from "src/models/list-filter/criteria/criterion";
 import { PopoverCountButton } from "../Shared/PopoverCountButton";
@@ -25,10 +25,10 @@ import ScreenUtils from "src/utils/screen";
 import { FavoriteIcon } from "../Shared/FavoriteIcon";
 
 export interface IPerformerCardExtraCriteria {
-  scenes?: Criterion<CriterionValue>[];
-  images?: Criterion<CriterionValue>[];
-  galleries?: Criterion<CriterionValue>[];
-  groups?: Criterion<CriterionValue>[];
+  scenes?: ModifierCriterion<CriterionValue>[];
+  images?: ModifierCriterion<CriterionValue>[];
+  galleries?: ModifierCriterion<CriterionValue>[];
+  groups?: ModifierCriterion<CriterionValue>[];
   performer?: ILabeledId;
 }
 

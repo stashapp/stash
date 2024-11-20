@@ -3,11 +3,11 @@ import { Form } from "react-bootstrap";
 import { useIntl } from "react-intl";
 import { CriterionModifier } from "../../../core/generated-graphql";
 import { ITimestampValue } from "../../../models/list-filter/types";
-import { Criterion } from "../../../models/list-filter/criteria/criterion";
+import { ModifierCriterion } from "../../../models/list-filter/criteria/criterion";
 import { DateInput } from "src/components/Shared/DateInput";
 
 interface ITimestampFilterProps {
-  criterion: Criterion<ITimestampValue>;
+  criterion: ModifierCriterion<ITimestampValue>;
   onValueChanged: (value: ITimestampValue) => void;
 }
 

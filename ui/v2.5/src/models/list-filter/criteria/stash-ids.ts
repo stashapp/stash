@@ -5,9 +5,9 @@ import {
   StashIdCriterionInput,
 } from "src/core/generated-graphql";
 import { IStashIDValue } from "../types";
-import { Criterion, CriterionOption } from "./criterion";
+import { ModifierCriterion, ModifierCriterionOption } from "./criterion";
 
-export const StashIDCriterionOption = new CriterionOption({
+export const StashIDCriterionOption = new ModifierCriterionOption({
   messageID: "stash_id",
   type: "stash_id_endpoint",
   modifierOptions: [
@@ -19,7 +19,7 @@ export const StashIDCriterionOption = new CriterionOption({
   makeCriterion: () => new StashIDCriterion(),
 });
 
-export class StashIDCriterion extends Criterion<IStashIDValue> {
+export class StashIDCriterion extends ModifierCriterion<IStashIDValue> {
   constructor() {
     super(StashIDCriterionOption, {
       endpoint: "",
@@ -56,7 +56,10 @@ export class StashIDCriterion extends Criterion<IStashIDValue> {
   }
 
   public getLabel(intl: IntlShape): string {
-    const modifierString = Criterion.getModifierLabel(intl, this.modifier);
+    const modifierString = ModifierCriterion.getModifierLabel(
+      intl,
+      this.modifier
+    );
     let valueString = "";
 
     if (

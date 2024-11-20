@@ -1,6 +1,6 @@
 import { orientationStrings, stringToOrientation } from "src/utils/orientation";
 import { CriterionType } from "../types";
-import { CriterionOption, MultiStringCriterion } from "./criterion";
+import { ModifierCriterionOption, MultiStringCriterion } from "./criterion";
 import {
   OrientationCriterionInput,
   OrientationEnum,
@@ -16,7 +16,7 @@ export class OrientationCriterion extends MultiStringCriterion {
   }
 }
 
-class BaseOrientationCriterionOption extends CriterionOption {
+class BaseOrientationCriterionOption extends ModifierCriterionOption {
   constructor(value: CriterionType) {
     super({
       messageID: value,
