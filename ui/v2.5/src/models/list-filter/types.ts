@@ -219,4 +219,5 @@ export type CriterionType =
   | "code"
   | "photographer"
   | "disambiguation"
-  | "has_chapters";
+  | "has_chapters"
+  | "custom_fields";

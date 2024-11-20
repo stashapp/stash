@@ -46,6 +46,8 @@ import { PhashCriterion } from "src/models/list-filter/criteria/phash";
 import { PhashFilter } from "./Filters/PhashFilter";
 import { PathCriterion } from "src/models/list-filter/criteria/path";
 import { ModifierSelectorButtons } from "./ModifierSelect";
+import { CustomFieldsCriterion } from "src/models/list-filter/criteria/custom-fields";
+import { CustomFieldsFilter } from "./Filters/CustomFieldsFilter";
 
 interface IGenericCriterionEditor {
   criterion: ModifierCriterion<CriterionValue>;
@@ -268,6 +270,12 @@ export const CriterionEditor: React.FC<ICriterionEditor> = ({
     if (criterion instanceof BooleanCriterion) {
       return (
         <BooleanFilter criterion={criterion} setCriterion={setCriterion} />
+      );
+    }
+
+    if (criterion instanceof CustomFieldsCriterion) {
+      return (
+        <CustomFieldsFilter criterion={criterion} setCriterion={setCriterion} />
       );
     }
 

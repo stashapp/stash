@@ -855,6 +855,8 @@
   },
   "custom": "Custom",
   "custom_fields": {
+    "criteria_format_string": "{criterion} (custom field) {modifierString} {valueString}",
+    "criteria_format_string_others": "{criterion} (custom field) {modifierString} {valueString} (+{others} others)",
     "field": "Field",
     "title": "Custom Fields",
     "value": "Value"

@@ -587,3 +587,12 @@ input[type="range"].zoom-slider {
 .search-term-input {
   margin-right: 0.5rem;
 }
+
+.custom-field-filter {
+  align-items: center;
+  display: flex;
+
+  > div:first-child {
+    flex-grow: 1;
+  }
+}
