@@ -2,8 +2,10 @@ package sqlite
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"regexp"
+	"strings"
 
 	"github.com/doug-martin/goqu/v9"
 	"github.com/doug-martin/goqu/v9/exp"
@@ -45,6 +47,30 @@ func (s *customFieldsStore) SetCustomFields(ctx context.Context, id int, values 
 	return s.setCustomFields(ctx, id, valMap, partial)
 }
 
+func (s *customFieldsStore) getSQLValueFromInput(input interface{}) (interface{}, error) {
+	switch v := input.(type) {
+	case []interface{}, map[string]interface{}:
+		// TODO - if future it would be nice to convert to a JSON string
+		// however, we would need some way to differentiate between a JSON string and a regular string
+		// for now, we will not support objects and arrays
+		return nil, fmt.Errorf("unsupported custom field value type: %T", input)
+	case json.Number:
+		// for some reason, we sometimes get numbers as json.Number
+		// we need to convert them to int or float64
+		if strings.Contains(v.String(), ".") {
+			return v.Float64()
+		}
+		return v.Int64()
+	default:
+		return v, nil
+	}
+}
+
+func (s *customFieldsStore) sqlValueToValue(value interface{}) interface{} {
+	// TODO - if we ever support objects and arrays we will need to add support here
+	return value
+}
+
 func (s *customFieldsStore) setCustomFields(ctx context.Context, id int, values map[string]interface{}, partial bool) error {
 	if !partial {
 		// delete existing custom fields
@@ -64,7 +90,11 @@ func (s *customFieldsStore) setCustomFields(ctx context.Context, id int, values 
 	r := make([]interface{}, len(values))
 	var i int
 	for key, value := range values {
-		r[i] = goqu.Record{"field": key, "value": value, s.fk.GetCol().(string): id}
+		v, err := s.getSQLValueFromInput(value)
+		if err != nil {
+			return fmt.Errorf("getting SQL value for field %q: %w", key, err)
+		}
+		r[i] = goqu.Record{"field": key, "value": v, s.fk.GetCol().(string): id}
 		i++
 	}
 
@@ -86,7 +116,7 @@ func (s *customFieldsStore) GetCustomFields(ctx context.Context, id int) (map[st
 		if err := rows.Scan(&field, &value); err != nil {
 			return fmt.Errorf("scanning custom fields: %w", err)
 		}
-		ret[field] = value
+		ret[field] = s.sqlValueToValue(value)
 		return nil
 	})
 	if err != nil {
@@ -122,7 +152,7 @@ func (s *customFieldsStore) GetCustomFieldsBulk(ctx context.Context, ids []int) 
 			ret[i] = m
 		}
 
-		m[field] = value
+		m[field] = s.sqlValueToValue(value)
 		return nil
 	})
 	if err != nil {
