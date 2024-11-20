@@ -24,6 +24,7 @@ import {
   CriterionValue,
   StringCriterion,
   createStringCriterionOption,
+  Criterion,
 } from "src/models/list-filter/criteria/criterion";
 import { GalleriesCriterion } from "src/models/list-filter/criteria/galleries";
 import { PhashCriterion } from "src/models/list-filter/criteria/phash";
@@ -33,10 +34,7 @@ import { galleryTitle } from "src/core/galleries";
 import { MarkersScenesCriterion } from "src/models/list-filter/criteria/scenes";
 import { objectTitle } from "src/core/files";
 
-function addExtraCriteria(
-  dest: ModifierCriterion<CriterionValue>[],
-  src?: ModifierCriterion<CriterionValue>[]
-) {
+function addExtraCriteria(dest: Criterion[], src?: Criterion[]) {
   if (src && src.length > 0) {
     dest.push(...src);
   }

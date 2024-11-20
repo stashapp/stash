@@ -8,10 +8,7 @@ import React, {
 } from "react";
 import * as GQL from "src/core/generated-graphql";
 import { QueryResult } from "@apollo/client";
-import {
-  ModifierCriterion,
-  CriterionValue,
-} from "src/models/list-filter/criteria/criterion";
+import { Criterion } from "src/models/list-filter/criteria/criterion";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { EditFilterDialog } from "src/components/List/EditFilterDialog";
 import { FilterTags } from "./FilterTags";
@@ -220,9 +217,7 @@ export const ItemList = <T extends QueryResult, E extends IHasID>(
     result.refetch();
   }
 
-  function onRemoveCriterion(
-    removedCriterion: ModifierCriterion<CriterionValue>
-  ) {
+  function onRemoveCriterion(removedCriterion: Criterion) {
     updateFilter(filter.removeCriterion(removedCriterion.criterionOption.type));
   }
 
