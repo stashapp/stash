@@ -16,6 +16,36 @@ interface ICustomFields {
   values: CustomFieldMap;
 }
 
+function convertValue(value: unknown): string {
+  if (typeof value === "string") {
+    return value;
+  } else if (typeof value === "number") {
+    return value.toString();
+  } else if (typeof value === "boolean") {
+    return value ? "true" : "false";
+  } else if (Array.isArray(value)) {
+    return value.join(", ");
+  } else {
+    return JSON.stringify(value);
+  }
+}
+
+const CustomField: React.FC<{ field: string; value: unknown }> = ({
+  field,
+  value,
+}) => {
+  const valueStr = convertValue(value);
+
+  return (
+    <DetailItem
+      id={`custom-field-${field}`}
+      label={field}
+      value={valueStr}
+      fullWidth={true}
+    />
+  );
+};
+
 export const CustomFields: React.FC<ICustomFields> = ({ values }) => {
   const intl = useIntl();
   if (Object.keys(values).length === 0) {
@@ -27,13 +57,7 @@ export const CustomFields: React.FC<ICustomFields> = ({ values }) => {
     <div className="custom-fields">
       <CollapseButton text={intl.formatMessage({ id: "custom_fields.title" })}>
         {Object.entries(values).map(([key, value]) => (
-          <DetailItem
-            key={key}
-            id={`custom-field-${key}`}
-            label={key}
-            value={value}
-            fullWidth={true}
-          />
+          <CustomField key={key} field={key} value={value} />
         ))}
       </CollapseButton>
     </div>
@@ -85,6 +109,16 @@ const CustomFieldInput: React.FC<{
     onChange("", "");
   }
 
+  function onValueChanged(v: string) {
+    // if the value is numeric, convert it to a number
+    const num = Number(v);
+    if (!isNaN(num)) {
+      setCurrentValue(num);
+    } else {
+      setCurrentValue(v);
+    }
+  }
+
   return (
     <Row className={cx("custom-fields-row", { "custom-fields-new": isNew })}>
       <Col sm={3} xl={2}>
@@ -110,7 +144,7 @@ const CustomFieldInput: React.FC<{
             type="text"
             value={(currentValue as string) ?? ""}
             placeholder={currentField}
-            onChange={(event) => setCurrentValue(event.currentTarget.value)}
+            onChange={(event) => onValueChanged(event.currentTarget.value)}
             onBlur={onBlur}
           />
           <InputGroup.Append>
