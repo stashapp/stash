@@ -8,6 +8,7 @@ import { Button, Collapse } from "react-bootstrap";
 import { Icon } from "./Icon";
 
 interface IProps {
+  className?: string;
   text: React.ReactNode;
 }
 
@@ -17,7 +18,7 @@ export const CollapseButton: React.FC<React.PropsWithChildren<IProps>> = (
   const [open, setOpen] = useState(false);
 
   return (
-    <div>
+    <div className={props.className}>
       <Button
         onClick={() => setOpen(!open)}
         className="minimal collapse-button"

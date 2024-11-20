@@ -687,3 +687,22 @@ button.btn.favorite-button {
     }
   }
 }
+
+.custom-fields-input > .collapse-button {
+  font-weight: 700;
+}
+
+.custom-fields-row {
+  align-items: center;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 0.875rem;
+
+  .form-control,
+  .btn {
+    font-size: 0.875rem;
+  }
+
+  &.custom-fields-new > div:not(:last-child) {
+    padding-right: 0;
+  }
+}

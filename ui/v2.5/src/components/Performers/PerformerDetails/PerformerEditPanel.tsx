@@ -694,6 +694,8 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
         {renderInputField("ignore_auto_tag", "checkbox")}
 
+        <hr />
+
         <CustomFieldsInput
           values={formik.values.custom_fields}
           onChange={(v) => formik.setFieldValue("custom_fields", v)}

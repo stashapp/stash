@@ -854,6 +854,11 @@
     "only": "Only"
   },
   "custom": "Custom",
+  "custom_fields": {
+    "field": "Field",
+    "title": "Custom Fields",
+    "value": "Value"
+  },
   "date": "Date",
   "date_format": "YYYY-MM-DD",
   "datetime_format": "YYYY-MM-DD HH:MM",
