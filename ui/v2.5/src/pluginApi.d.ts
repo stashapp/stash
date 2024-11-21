@@ -689,6 +689,13 @@ declare namespace PluginApi {
     StringListSetting: React.FC<any>;
     ConstantSetting: React.FC<any>;
     SceneFileInfoPanel: React.FC<any>;
+    PerformerPage: React.FC<any>;
+    PerformerAppearsWithPanel: React.FC<any>;
+    PerformerGalleriesPanel: React.FC<any>;
+    PerformerGroupsPanel: React.FC<any>;
+    PerformerScenesPanel: React.FC<any>;
+    PerformerImagesPanel: React.FC<any>;
+    TabTitleCounter: React.FC<any>;
   };
   type PatchableComponentNames = keyof typeof components | string;
   namespace utils {
