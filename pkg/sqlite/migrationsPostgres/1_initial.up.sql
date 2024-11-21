@@ -7,8 +7,8 @@ CREATE TABLE blobs (
 CREATE TABLE tags (
   id serial not null primary key,
   name text,
-  created_at timestamp not null,
-  updated_at timestamp not null, 
+  created_at TIMESTAMP WITH TIME ZONE not null,
+  updated_at TIMESTAMP WITH TIME ZONE not null, 
   ignore_auto_tag boolean not null default FALSE, 
   description text, 
   image_blob varchar(255) REFERENCES blobs(checksum), 
@@ -18,9 +18,9 @@ CREATE TABLE folders (
   id serial not null primary key,
   path text NOT NULL,
   parent_folder_id integer,
-  mod_time timestamp not null,
-  created_at timestamp not null,
-  updated_at timestamp not null, 
+  mod_time TIMESTAMP WITH TIME ZONE not null,
+  created_at TIMESTAMP WITH TIME ZONE not null,
+  updated_at TIMESTAMP WITH TIME ZONE not null, 
   foreign key(parent_folder_id) references folders(id) on delete SET NULL
 );
 CREATE TABLE files (
@@ -29,9 +29,9 @@ CREATE TABLE files (
   zip_file_id integer,
   parent_folder_id integer not null,
   size bigint NOT NULL,
-  mod_time timestamp not null,
-  created_at timestamp not null,
-  updated_at timestamp not null,
+  mod_time TIMESTAMP WITH TIME ZONE not null,
+  created_at TIMESTAMP WITH TIME ZONE not null,
+  updated_at TIMESTAMP WITH TIME ZONE not null,
   foreign key(zip_file_id) references files(id),
   foreign key(parent_folder_id) references folders(id),
   CHECK (basename != '')
@@ -53,8 +53,8 @@ CREATE TABLE IF NOT EXISTS performers (
   tattoos text,
   piercings text,
   favorite boolean not null default FALSE,
-  created_at timestamp not null,
-  updated_at timestamp not null,
+  created_at TIMESTAMP WITH TIME ZONE not null,
+  updated_at TIMESTAMP WITH TIME ZONE not null,
   details text, 
   death_date date, 
   hair_color text, 
@@ -70,8 +70,8 @@ CREATE TABLE IF NOT EXISTS studios (
   name text NOT NULL,
   url VARCHAR(2048),
   parent_id INTEGER DEFAULT NULL REFERENCES studios(id) ON DELETE SET NULL,
-  created_at timestamp NOT NULL,
-  updated_at timestamp NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+  updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
   details TEXT,
   rating smallint,
   ignore_auto_tag BOOLEAN NOT NULL DEFAULT FALSE,
@@ -94,8 +94,8 @@ CREATE TABLE IF NOT EXISTS images (
   studio_id integer,
   o_counter smallint not null default 0,
   organized boolean not null default FALSE,
-  created_at timestamp not null,
-  updated_at timestamp not null, 
+  created_at TIMESTAMP WITH TIME ZONE not null,
+  updated_at TIMESTAMP WITH TIME ZONE not null, 
   date date, 
   code text, 
   photographer text, 
@@ -118,8 +118,8 @@ CREATE TABLE IF NOT EXISTS galleries (
   studio_id integer,
   rating smallint,
   organized boolean not null default FALSE,
-  created_at timestamp not null,
-  updated_at timestamp not null, 
+  created_at TIMESTAMP WITH TIME ZONE not null,
+  updated_at TIMESTAMP WITH TIME ZONE not null, 
   code text, 
   photographer text,
   foreign key(studio_id) references studios(id) on delete SET NULL,
@@ -140,8 +140,8 @@ CREATE TABLE IF NOT EXISTS scenes (
   rating smallint,
   studio_id integer,
   organized boolean not null default FALSE,
-  created_at timestamp not null,
-  updated_at timestamp not null, 
+  created_at TIMESTAMP WITH TIME ZONE not null,
+  updated_at TIMESTAMP WITH TIME ZONE not null, 
   code text, 
   director text, 
   resume_time float not null default 0, 
@@ -159,8 +159,8 @@ CREATE TABLE IF NOT EXISTS groups (
   studio_id integer REFERENCES studios(id) ON DELETE SET NULL,
   director text,
   "description" text,
-  created_at timestamp not null,
-  updated_at timestamp not null, 
+  created_at TIMESTAMP WITH TIME ZONE not null,
+  updated_at TIMESTAMP WITH TIME ZONE not null, 
   front_image_blob varchar(255) REFERENCES blobs(checksum), 
   back_image_blob varchar(255) REFERENCES blobs(checksum)
 );
@@ -194,12 +194,12 @@ CREATE TABLE studios_tags (
 );
 CREATE TABLE IF NOT EXISTS scenes_view_dates (
   scene_id integer not null,
-  view_date timestamp not null,
+  view_date TIMESTAMP WITH TIME ZONE not null,
   foreign key(scene_id) references scenes(id) on delete CASCADE
 );
 CREATE TABLE IF NOT EXISTS scenes_o_dates (
   scene_id integer not null,
-  o_date timestamp not null,
+  o_date TIMESTAMP WITH TIME ZONE not null,
   foreign key(scene_id) references scenes(id) on delete CASCADE
 );
 CREATE TABLE performer_stash_ids (
@@ -294,8 +294,8 @@ CREATE TABLE IF NOT EXISTS scene_markers (
   seconds FLOAT NOT NULL,
   primary_tag_id INTEGER NOT NULL,
   scene_id INTEGER NOT NULL,
-  created_at timestamp NOT NULL,
-  updated_at timestamp NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+  updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
   FOREIGN KEY(primary_tag_id) REFERENCES tags(id),
   FOREIGN KEY(scene_id) REFERENCES scenes(id)
 );
@@ -401,8 +401,8 @@ CREATE TABLE galleries_chapters (
   title text not null,
   image_index integer not null,
   gallery_id integer not null,
-  created_at timestamp not null,
-  updated_at timestamp not null,
+  created_at TIMESTAMP WITH TIME ZONE not null,
+  updated_at TIMESTAMP WITH TIME ZONE not null,
   foreign key(gallery_id) references galleries(id) on delete CASCADE
 );
 CREATE TABLE scene_urls (
