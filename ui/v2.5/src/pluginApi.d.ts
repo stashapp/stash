@@ -696,6 +696,12 @@ declare namespace PluginApi {
     PerformerScenesPanel: React.FC<any>;
     PerformerImagesPanel: React.FC<any>;
     TabTitleCounter: React.FC<any>;
+    PerformerCard: React.FC<any>;
+    "PerformerCard.Popovers": React.FC<any>;
+    "PerformerCard.Details": React.FC<any>;
+    "PerformerCard.Overlays": React.FC<any>;
+    "PerformerCard.Image": React.FC<any>;
+    "PerformerCard.Title": React.FC<any>;
   };
   type PatchableComponentNames = keyof typeof components | string;
   namespace utils {
