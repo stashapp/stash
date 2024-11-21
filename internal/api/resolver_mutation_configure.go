@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"path/filepath"
@@ -643,10 +644,14 @@ func (r *mutationResolver) ConfigureUI(ctx context.Context, input map[string]int
 	c := config.GetInstance()
 
 	if input != nil {
+		// #5483 - convert JSON numbers to float64 or int64
+		input = utils.ConvertMapJSONNumbers(input)
 		c.SetUIConfiguration(input)
 	}
 
 	if partial != nil {
+		// #5483 - convert JSON numbers to float64 or int64
+		partial = utils.ConvertMapJSONNumbers(partial)
 		// merge partial into existing config
 		existing := c.GetUIConfiguration()
 		utils.MergeMaps(existing, partial)
@@ -664,6 +669,14 @@ func (r *mutationResolver) ConfigureUISetting(ctx context.Context, key string, v
 	c := config.GetInstance()
 
 	cfg := utils.NestedMap(c.GetUIConfiguration())
+
+	// #5483 - convert JSON numbers to float64 or int64
+	if m, ok := value.(map[string]interface{}); ok {
+		value = utils.ConvertMapJSONNumbers(m)
+	} else if n, ok := value.(json.Number); ok {
+		value = utils.JSONNumberToNumber(n)
+	}
+
 	cfg.Set(key, value)
 
 	return r.ConfigureUI(ctx, cfg, nil)
@@ -671,6 +684,9 @@ func (r *mutationResolver) ConfigureUISetting(ctx context.Context, key string, v
 
 func (r *mutationResolver) ConfigurePlugin(ctx context.Context, pluginID string, input map[string]interface{}) (map[string]interface{}, error) {
 	c := config.GetInstance()
+
+	// #5483 - convert JSON numbers to float64 or int64
+	input = utils.ConvertMapJSONNumbers(input)
 	c.SetPluginConfiguration(pluginID, input)
 
 	if err := c.Write(); err != nil {
