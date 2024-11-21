@@ -845,14 +845,15 @@ input[type="range"].blue-slider {
 
   .queue-scene-details {
     display: grid;
-    margin-left: 10px;
+    margin-left: 6px;
     overflow: hidden;
+    padding-left: 0;
     position: relative;
     width: 57%;
   }
 
   .queue-scene-title {
-    font-size: 1.2rem;
+    font-size: 1.0rem;
 
     @media (max-width: 576px) {
       font-size: 1rem;
@@ -883,13 +884,7 @@ input[type="range"].blue-slider {
     max-width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .queue-scene-studio,
-  .queue-scene-performers,
-  .queue-scene-date {
-    font-size: 1.1rem;
+    white-space: pre-line;
   }
 
   .thumbnail-container {
