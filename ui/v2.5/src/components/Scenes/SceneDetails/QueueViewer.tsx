@@ -432,7 +432,7 @@ export const QueueViewer: React.FC<IPlaylistViewer> = ({
               {maybeRenderSceneSpecsOverlay(scene)}
             </div>
             <div className="queue-scene-details">
-              <span className="queue-scene-title" title={title}>
+              <span className="queue-scene-title TruncatedText" title={title}>
                 {title}
               </span>
               <span className="queue-scene-studio" title={studio}>
