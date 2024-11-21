@@ -616,6 +616,7 @@ declare namespace PluginApi {
     const FontAwesomeSolid: typeof import("@fortawesome/free-solid-svg-icons");
     const Intl: typeof import("react-intl");
     const Mousetrap: typeof import("mousetrap");
+    const ReactSelect: typeof import("react-select");
 
     // @ts-expect-error
     import { MousetrapStatic } from "mousetrap";
