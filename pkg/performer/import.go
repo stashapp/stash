@@ -33,6 +33,7 @@ type Importer struct {
 
 func (i *Importer) PreImport(ctx context.Context) error {
 	i.performer = performerJSONToPerformer(i.Input)
+	i.customFields = i.Input.CustomFields
 
 	if err := i.populateTags(ctx); err != nil {
 		return err

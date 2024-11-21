@@ -17,6 +17,7 @@ type ImageAliasStashIDGetter interface {
 	models.AliasLoader
 	models.StashIDLoader
 	models.URLLoader
+	models.CustomFieldsReader
 }
 
 // ToJSON converts a Performer object into its JSON equivalent.
@@ -86,6 +87,12 @@ func ToJSON(ctx context.Context, reader ImageAliasStashIDGetter, performer *mode
 	}
 
 	newPerformerJSON.StashIDs = performer.StashIDs.List()
+
+	var err error
+	newPerformerJSON.CustomFields, err = reader.GetCustomFields(ctx, performer.ID)
+	if err != nil {
+		return nil, fmt.Errorf("getting performer custom fields: %v", err)
+	}
 
 	image, err := reader.GetImage(ctx, performer.ID)
 	if err != nil {

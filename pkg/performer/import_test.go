@@ -53,13 +53,14 @@ func TestImporterPreImport(t *testing.T) {
 
 	assert.NotNil(t, err)
 
-	i.Input = *createFullJSONPerformer(performerName, image)
+	i.Input = *createFullJSONPerformer(performerName, image, true)
 
 	err = i.PreImport(testCtx)
 
 	assert.Nil(t, err)
 	expectedPerformer := *createFullPerformer(0, performerName)
 	assert.Equal(t, expectedPerformer, i.performer)
+	assert.Equal(t, models.CustomFieldMap(customFields), i.customFields)
 }
 
 func TestImporterPreImportWithTag(t *testing.T) {
