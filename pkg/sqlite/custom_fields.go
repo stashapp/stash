@@ -2,10 +2,8 @@ package sqlite
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"regexp"
-	"strings"
 
 	"github.com/doug-martin/goqu/v9"
 	"github.com/doug-martin/goqu/v9/exp"
@@ -50,17 +48,10 @@ func (s *customFieldsStore) SetCustomFields(ctx context.Context, id int, values 
 func getSQLValueFromCustomFieldInput(input interface{}) (interface{}, error) {
 	switch v := input.(type) {
 	case []interface{}, map[string]interface{}:
-		// TODO - if future it would be nice to convert to a JSON string
+		// TODO - in future it would be nice to convert to a JSON string
 		// however, we would need some way to differentiate between a JSON string and a regular string
 		// for now, we will not support objects and arrays
 		return nil, fmt.Errorf("unsupported custom field value type: %T", input)
-	case json.Number:
-		// for some reason, we sometimes get numbers as json.Number
-		// we need to convert them to int or float64
-		if strings.Contains(v.String(), ".") {
-			return v.Float64()
-		}
-		return v.Int64()
 	default:
 		return v, nil
 	}
