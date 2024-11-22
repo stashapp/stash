@@ -2,29 +2,6 @@ import { FilterMode, Scene, VideoFile } from "src/core/generated-graphql";
 import { ListFilterModel } from "./list-filter/filter";
 import { INamedObject } from "src/utils/navigation";
 
-// export type VideoFile = BaseFile & {
-//   __typename?: 'VideoFile';
-//   audio_codec: Scalars['String']['output'];
-//   basename: Scalars['String']['output'];
-//   bit_rate: Scalars['Int']['output'];
-//   created_at: Scalars['Time']['output'];
-//   duration: Scalars['Float']['output'];
-//   fingerprint?: Maybe<Scalars['String']['output']>;
-//   fingerprints: Array<Fingerprint>;
-//   format: Scalars['String']['output'];
-//   frame_rate: Scalars['Float']['output'];
-//   height: Scalars['Int']['output'];
-//   id: Scalars['ID']['output'];
-//   mod_time: Scalars['Time']['output'];
-//   parent_folder_id: Scalars['ID']['output'];
-//   path: Scalars['String']['output'];
-//   size: Scalars['Int64']['output'];
-//   updated_at: Scalars['Time']['output'];
-//   video_codec: Scalars['String']['output'];
-//   width: Scalars['Int']['output'];
-//   zip_file_id?: Maybe<Scalars['ID']['output']>;
-// };
-
 export interface IFileObject {
   id: string;
   duration: number;
