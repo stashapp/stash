@@ -703,7 +703,7 @@ input[type="range"].blue-slider {
   }
 
   .queue-scene-title {
-    font-size: 1.0rem;
+    font-size: 1rem;
 
     @media (max-width: 576px) {
       font-size: 1rem;
@@ -767,7 +767,7 @@ input[type="range"].blue-slider {
 
     .scene-specs-overlay {
       opacity: 0;
-      transition: opacity .5s;
+      transition: opacity 0.5s;
     }
   }
 
