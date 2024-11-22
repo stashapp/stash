@@ -63,6 +63,16 @@ interface IPerformerDetails {
   setEncodingImage: (loading: boolean) => void;
 }
 
+function customFieldInput(isNew: boolean, input: {}) {
+  if (isNew) {
+    return input;
+  } else {
+    return {
+      full: input,
+    };
+  }
+}
+
 export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   performer,
   isVisible,
@@ -153,9 +163,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   function submit(values: InputValues) {
     const input = {
       ...schema.cast(values),
-      custom_fields: {
-        full: values.custom_fields,
-      },
+      custom_fields: customFieldInput(isNew, values.custom_fields),
     };
     onSave(input);
   }
