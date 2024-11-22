@@ -1,4 +1,4 @@
-import { FilterMode, Scene, VideoFile } from "src/core/generated-graphql";
+import { FilterMode, Scene } from "src/core/generated-graphql";
 import { ListFilterModel } from "./list-filter/filter";
 import { INamedObject } from "src/utils/navigation";
 
