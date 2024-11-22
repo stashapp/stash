@@ -64,6 +64,10 @@ export const CustomFields: React.FC<ICustomFields> = ({ values }) => {
   );
 };
 
+function isNumeric(v: string) {
+  return /^-?[0-9]+(?:\.[0-9]+)?$/.test(v);
+}
+
 const CustomFieldInput: React.FC<{
   field: string;
   value: unknown;
@@ -111,9 +115,8 @@ const CustomFieldInput: React.FC<{
 
   function onValueChanged(v: string) {
     // if the value is numeric, convert it to a number
-    const num = Number(v);
-    if (!isNaN(num)) {
-      setCurrentValue(num);
+    if (isNumeric(v)) {
+      setCurrentValue(Number(v));
     } else {
       setCurrentValue(v);
     }
