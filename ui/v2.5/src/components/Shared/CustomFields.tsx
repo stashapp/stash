@@ -42,6 +42,7 @@ const CustomField: React.FC<{ field: string; value: unknown }> = ({
       label={field}
       value={valueStr}
       fullWidth={true}
+      showEmpty
     />
   );
 };

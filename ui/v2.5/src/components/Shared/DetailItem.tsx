@@ -7,6 +7,7 @@ interface IDetailItem {
   value?: React.ReactNode;
   title?: string;
   fullWidth?: boolean;
+  showEmpty?: boolean;
 }
 
 export const DetailItem: React.FC<IDetailItem> = ({
@@ -15,8 +16,9 @@ export const DetailItem: React.FC<IDetailItem> = ({
   value,
   title,
   fullWidth,
+  showEmpty = false,
 }) => {
-  if (!id || !value || value === "Na") {
+  if (!id || (!showEmpty && (!value || value === "Na"))) {
     return <></>;
   }
 
