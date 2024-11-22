@@ -192,7 +192,10 @@
             "set_tag_label": "Définir les étiquettes",
             "show_male_desc": "Cocher si les performeurs masculins seront disponibles pour le marquage.",
             "show_male_label": "Montrer les performeurs masculins",
-            "source": "Source"
+            "source": "Source",
+            "errors": {
+                "blacklist_duplicate": "Élément de liste noire en double"
+            }
         },
         "noun_query": "Requête",
         "results": {
