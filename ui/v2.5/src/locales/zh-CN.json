@@ -191,7 +191,10 @@
             "show_male_label": "展示男演员标签",
             "source": "源",
             "mark_organized_label": "保存时标记为已整理",
-            "mark_organized_desc": "点击保存按钮后，立即将短片标记为 \"已整理\"。"
+            "mark_organized_desc": "点击保存按钮后，立即将短片标记为 \"已整理\"。",
+            "errors": {
+                "blacklist_duplicate": "重复黑名单项目"
+            }
         },
         "noun_query": "查询",
         "results": {
