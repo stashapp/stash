@@ -73,7 +73,7 @@
         "scan": "Tara",
         "scrape": "Veri Topla",
         "scrape_query": "Veri Toplama sorgusu",
-        "scrape_scene_fragment": "Sahneye göre Veri Topla",
+        "scrape_scene_fragment": "Parçalara göre veri topla",
         "scrape_with": "Bununla Veri Topla…",
         "search": "Ara",
         "select_all": "Tümünü Seç",
@@ -136,7 +136,8 @@
         "migrate_blobs": "Blob'ları Aktar",
         "assign_stashid_to_parent_studio": "Mevcut ana stüdyoya Stash ID atayın ve üstverileri güncelleyin",
         "download_anonymised": "Anonim olarak indir",
-        "add_manual_date": "Elle tarih ekle"
+        "add_manual_date": "Elle tarih ekle",
+        "reset_resume_time": "Devam etme süresini sıfırla"
     },
     "actions_name": "Eylemler",
     "age": "Yaş",
@@ -383,7 +384,8 @@
                 "description": "SQLite veritabanı dosya yedekleri için dizin konumu"
             },
             "python_path": {
-                "heading": "Python Yürütülebilir Yolu"
+                "heading": "Python Yürütülebilir Yolu",
+                "description": "Python yürütülebilir dosyasının yolu (yalnızca klasörün değil). Komut dosyası veri kazıyıcılar ve eklentiler için kullanılır. Boşsa, python ortamdan çözümlenecektir"
             }
         },
         "library": {
@@ -450,7 +452,7 @@
             "generate_phashes_during_scan": "Algısal dosya imzası oluştur",
             "generate_phashes_during_scan_tooltip": "Tekrarlayan verilerin silinmesi ve sahne tanımlaması için.",
             "generate_previews_during_scan": "Hareketli resim önizlemeleri oluştur",
-            "generate_previews_during_scan_tooltip": "Önizleme türü Hareketli Görüntü olarak ayarlanmışsa hareketli WebP önizlemeleri oluştur.",
+            "generate_previews_during_scan_tooltip": "Ayrıca hareketli (webp) önizlemeler oluşturun, yalnızca Sahne/İşaretleyici Duvarı Önizleme Türü, Hareketli Görüntü olarak ayarlandığında gereklidir. Gezinirken video önizlemelerinden daha az CPU kullanırlar, ancak bunlara ek olarak oluşturulurlar ve daha büyük dosyalardır.",
             "generate_sprites_during_scan": "Basit hareketli resimler oluştur",
             "generate_thumbnails_during_scan": "Resimler için küçük önizleme resimleri oluştur",
             "generate_video_previews_during_scan": "Önizlemeler oluştur",
@@ -497,7 +499,10 @@
                 "markers": "İşaretleyici Önizlemeleri",
                 "previews": "Sahne Önizlemeleri",
                 "blob_files": "Blob dosyaları",
-                "transcodes": "Sahne Video Dönüştürmeleri"
+                "transcodes": "Sahne Video Dönüştürmeleri",
+                "image_thumbnails": "Resim Küçük Resimleri",
+                "previews_desc": "Sahne önizlemeleri ve küçük resimler",
+                "image_thumbnails_desc": "Resim küçük resimleri ve klipler"
             },
             "migrate_blobs": {
                 "delete_old": "Eski verileri sil"
@@ -511,7 +516,9 @@
             "anonymise_database": "Tüm hassas verileri anonimleştirerek veritabanının bir kopyasını yedekler dizinine alır. Bu daha sonra sorun giderme ve hata ayıklama amacıyla başkalarına sağlanabilir. Orijinal veritabanı değiştirilmez. Anonimleştirilmiş veritabanı {filename_format} dosya adı biçimini kullanır.",
             "migrate_scene_screenshots": {
                 "delete_files": "Ekran görüntülerini sil"
-            }
+            },
+            "rescan_tooltip": "Yoldaki her dosyayı yeniden tarayın. Dosya üstverilerini güncellemeyi zorlamak ve zip dosyalarını yeniden taramak için kullanılır.",
+            "generate_clip_previews_during_scan": "Resim klipleri için önizlemeler oluştur"
         },
         "tools": {
             "scene_duplicate_checker": "Yinelenen Sahne Denetleyicisi",
@@ -623,7 +630,7 @@
                 }
             },
             "preview_type": {
-                "description": "Duvar görünümündeki öğeler için ayarlar",
+                "description": "Varsayılan seçenek video (mp4) önizlemeleridir. Gezinirken daha az CPU kullanımı için hareketli görüntü (webp) önizlemelerini kullanabilirsiniz. Ancak bunların video önizlemelerine ek olarak oluşturulması gerekir ve daha büyük dosyalardır.",
                 "heading": "Önizleme Türü",
                 "options": {
                     "animated": "Hareketli Resim",
@@ -690,7 +697,8 @@
             },
             "custom_locales": {
                 "heading": "Özel yerelleştirme",
-                "option_label": "Özel yerelleştirme etkin"
+                "option_label": "Özel yerelleştirme etkin",
+                "description": "Bireysel yerel ayar dizelerini geçersiz kılın. Ana liste için https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/locales/en-GB.json adresine bakın. Değişikliklerin etkili olması için sayfanın yeniden yüklenmesi gerekir."
             },
             "studio_panel": {
                 "heading": "Stüdyo görünümü",
@@ -771,7 +779,8 @@
         "not_matches_regex": "kurallı ifadeyle eşleşmeyen",
         "not_null": "boş olmayan",
         "format_string_excludes": "{criterion} {modifierString} {valueString} (hariç {excludedString})",
-        "format_string_excludes_depth": "{criterion} {modifierString} {valueString} (hariç {excludedString}) (+{depth, plural, =-1 {tüm} other {{depth}}})"
+        "format_string_excludes_depth": "{criterion} {modifierString} {valueString} (hariç {excludedString}) (+{depth, plural, =-1 {tüm} other {{depth}}})",
+        "format_string_depth": "{criterion} {modifierString} {valueString} (+{depth, plural, =-1 {tüm} other {{derinlik}}})"
     },
     "custom": "İsteğe Bağlı",
     "date": "Tarih",
@@ -825,9 +834,9 @@
             "force_transcodes": "Dönüştürülmüş video oluşturmayı zorla",
             "force_transcodes_tooltip": "Varsayılan olarak, video yalnızca video dosyası tarayıcı tarafından desteklenmediğinde dönüştürülür. Etkinleştirildiğinde, video dosyası tarayıcı tarafından destekleniyorsa bile video dönüştürülür.",
             "image_previews": "Hareketli Resim Önizlemeleri",
-            "image_previews_tooltip": "Hareketli WebP önizlemeleri, Önizleme Türü sadece Hareketli Resim olarak seçilmişse gereklidir.",
+            "image_previews_tooltip": "Ayrıca hareketli (webp) önizlemeler oluşturun, yalnızca Sahne/İşaretleyici Duvarı Önizleme Türü, Hareketli Görüntü olarak ayarlandığında gereklidir. Gezinirken video önizlemelerinden daha az CPU kullanırlar, ancak bunlara ek olarak oluşturulurlar ve daha büyük dosyalardır.",
             "interactive_heatmap_speed": "Etkileşimli sahneler için ısı haritaları ve hız kayıtları oluştur",
-            "marker_image_previews": "Yer İmi Hareketli Resim Önizlemeleri",
+            "marker_image_previews": "İşaretleyici Hareketli Resim Önizlemeleri",
             "marker_image_previews_tooltip": "Hareketli Yer İmi WebP önizlemeleri, Önizleme Türü sadece Hareketli Resim olarak seçilmişse gereklidir.",
             "marker_screenshots": "İşaretleyici Ekran Görüntüleri",
             "marker_screenshots_tooltip": "Yer İmi hareketsiz JPG resimleri, Önizleme Türü sadece Hareketsiz Resim olarak seçilmişse gereklidir.",
@@ -835,17 +844,17 @@
             "markers_tooltip": "Belirlenen zamandan itibaren başlayan 20 saniyelik videolar.",
             "overwrite": "Varolan oluşturulmuş dosyaların üzerine yaz",
             "phash": "Algısal dosya imzaları (kopya dosyaları tespit için)",
-            "preview_exclude_end_time_desc": "Sahne önizlemelerinden son x saniyeyi çıkarır. Bu değer, saniye cinsinden veya toplam sahne uzunluğunun yüzdesi (örneğin %2) cinsinden belirlenebilir.",
-            "preview_exclude_end_time_head": "Son bölümü çıkar",
-            "preview_exclude_start_time_desc": "Sahne önizlemelerinden ilk x saniyeyi çıkarır. Bu değer, saniye cinsinden veya toplam sahne uzunluğunun yüzdesi (örneğin %2) cinsinden belirlenebilir.",
-            "preview_exclude_start_time_head": "İlk bölümü çıkar",
+            "preview_exclude_end_time_desc": "Sahne önizlemelerinde son x saniyeyi hariç tut. Bu, saniye cinsinden bir değer veya toplam sahne süresinin yüzdesi (örneğin %2) olabilir.",
+            "preview_exclude_end_time_head": "Bitiş zamanını hariç tut",
+            "preview_exclude_start_time_desc": "Sahne önizlemelerinde ilk x saniyeyi hariç tut. Bu, saniye cinsinden bir değer veya toplam sahne süresinin yüzdesi (örneğin %2) olabilir.",
+            "preview_exclude_start_time_head": "Başlangıç zamanını hariç tut",
             "preview_generation_options": "Önizleme Oluşturma Seçenekleri",
             "preview_options": "Önizleme Seçenekleri",
-            "preview_preset_desc": "Bu ön ayar, oluşturulacak önizleme boyutunu, kalitesini ve düzenleme süresini belirler. \"Yavaş\" dışındaki ayarların kullanılması tavsiye edilmez.",
+            "preview_preset_desc": "Ön ayar; önizleme oluşturmanın boyutunu, kalitesini ve kodlama süresini düzenler. “Yavaş” dışındaki ön ayarların azalan getirileri vardır ve tavsiye edilmez.",
             "preview_preset_head": "Düzenleme ön ayarı önizlemesi",
             "preview_seg_count_desc": "Önizleme dosyalarındaki bölüm sayısı.",
             "preview_seg_count_head": "Önizlemedeki bölüm sayısı",
-            "preview_seg_duration_desc": "Saniye cinsinden her önizleme bölümünün süresi.",
+            "preview_seg_duration_desc": "Her önizleme bölümünün saniye cinsinden süresi.",
             "preview_seg_duration_head": "Bölüm önizleme süresi",
             "sprites": "Basit Sahne Hareketli Görüntüleri",
             "sprites_tooltip": "Kolay gezinme için video oynatıcının altında görüntülenen resim seti.",
@@ -856,7 +865,8 @@
             "covers": "Sahne kapakları",
             "override_preview_generation_options": "Önizleme Oluşturma Seçeneklerini Geçersiz Kıl",
             "image_thumbnails": "Resim Önizlemeleri",
-            "override_preview_generation_options_desc": "Bu işlem için Önizleme Oluşturma Seçeneklerini geçersiz kılın. Varsayılanlar Sistem -> Önizleme Oluşturma bölümünde ayarlanır."
+            "override_preview_generation_options_desc": "Bu işlem için Önizleme Oluşturma Seçeneklerini geçersiz kılın. Varsayılanlar Sistem -> Önizleme Oluşturma bölümünde ayarlanır.",
+            "clip_previews": "Resim Klibi Önizlemeleri"
         },
         "scenes_found": "{count} sahne bulundu",
         "scrape_entity_query": "{entity_type} Veri Toplama Sorgusu",
@@ -916,7 +926,8 @@
         "select_none": "Hiçbirini seçme",
         "select_oldest": "Yinelenen gruptaki en eski dosyayı seç",
         "select_options": "Seçme Ayarları…",
-        "select_youngest": "Yinelenen gruptaki en yeni dosyayı seç"
+        "select_youngest": "Yinelenen gruptaki en yeni dosyayı seç",
+        "only_select_matching_codecs": "Yalnızca yinelenen gruptaki tüm kodlayıcılar eşleşiyorsa seç"
     },
     "duration": "Süre",
     "effect_filters": {
@@ -967,7 +978,7 @@
     "images": "Resimler",
     "include_parent_tags": "Bir üst etiketleri de ekle",
     "include_sub_studios": "Bağlı stüdyoları da ekle",
-    "include_sub_tags": "Bir alt etiketleri de ekle",
+    "include_sub_tags": "Alt etiketleri dahil et",
     "instagram": "Instagram",
     "interactive": "Etkileşimli",
     "interactive_speed": "Etkileşim hızı",
@@ -1112,7 +1123,8 @@
             "thanks_for_trying_stash": "Stash'i denediğiniz için teşekkürler!",
             "welcome_contrib": "Ayrıca her türlü kod katkınızı (hata düzeltme, geliştirme, yeni özellikler ekleme), uygulamayla ilgili her türlü görüş-öneri-yorum-sorunuzu bekliyoruz. Ayrıntıları uygulama içindeki Yardım belgesinde bulabilirsiniz.",
             "your_system_has_been_created": "Sistem oluşturma başarılı!",
-            "download_ffmpeg": "Ffmpeg'i indir"
+            "download_ffmpeg": "Ffmpeg'i indir",
+            "missing_ffmpeg": "Gerekli <code>ffmpeg</code> ikili dosyası eksik. Aşağıdaki kutuyu işaretleyerek yapılandırma dizininize otomatik olarak indirebilirsiniz. Alternatif olarak, Sistem Ayarlarında <code>ffmpeg</code> ve <code>ffprobe</code> ikili dosyalarına yollar sağlayabilirsiniz. Stash'in çalışması için bu ikili dosyaların mevcut olması gerekir."
         },
         "welcome": {
             "config_path_logic_explained": "Stash (<code>config.yml</code>) yapılandırma dosyasını ilk olarak mevcut dizinde bulmaya çalışır. Eğer bulamazsa, <code>$HOME/.stash/config.yml</code> dizinini (Windows işletim sistemi için <code>%USERPROFILE%\\.stash\\config.yml</code> dizini) araştırır. Öte yandan <code>-c '<path to config file>'</code> veya <code>--config '<path to config file>'</code> seçeneklerini kullanarak özelleştirilmiş bir yapılandırma dosyası da kullanabilirsiniz.",
@@ -1137,7 +1149,9 @@
         "scenes_duration": "Toplam sahne süresi",
         "scenes_size": "Toplam sahne boyutu",
         "total_play_count": "Toplam Oynatma Sayısı",
-        "total_play_duration": "Toplam Oynatma Süresi"
+        "total_play_duration": "Toplam Oynatma Süresi",
+        "scenes_played": "Oynatılan Sahneler",
+        "total_o_count": "Toplam O Sayısı"
     },
     "status": "Durum: {statusText}",
     "studio": "Stüdyo",
@@ -1212,7 +1226,8 @@
         "studio_successfully_tagged": "Stüdyo başarıyla etiketlendi",
         "tag_status": "Etiket Durumu",
         "untagged_studios": "Etiketlenmemiş stüdyolar",
-        "updating_untagged_studios_description": "Etiketlenmemiş stüdyoları güncellemek, stashid'si olmayan tüm stüdyoları eşleştirmeye ve üstverileri güncellemeye çalışacaktır."
+        "updating_untagged_studios_description": "Etiketlenmemiş stüdyoları güncellemek, stashid'si olmayan tüm stüdyoları eşleştirmeye ve üstverileri güncellemeye çalışacaktır.",
+        "name_already_exists": "Ad zaten mevcut"
     },
     "blobs_storage_type": {
         "database": "Veritabanı",
@@ -1244,7 +1259,9 @@
         "uninstall": "Kaldır",
         "unknown": "<bilinmeyen>",
         "update": "Güncelle",
-        "version": "Sürüm"
+        "version": "Sürüm",
+        "confirm_delete_source": "Kaynağı silmek istediğinize emin misiniz {name} ({url})?",
+        "required_by": "{packages} için gerekli"
     },
     "penis": "Penis",
     "penis_length": "Penis Uzunluğu",
@@ -1274,7 +1291,10 @@
         "query_all_performers_in_the_database": "Veritabanındaki tüm oyuncular",
         "name_already_exists": "Ad zaten mevcut",
         "status_tagging_performers": "Durum: Oyuncular etiketleniyor",
-        "updating_untagged_performers_description": "Etiketlenmemiş oyuncuları güncellemek, stashid'si olmayan tüm oyuncuları eşleştirmeye ve üstverileri güncellemeye çalışacaktır."
+        "updating_untagged_performers_description": "Etiketlenmemiş oyuncuları güncellemek, stashid'si olmayan tüm oyuncuları eşleştirmeye ve üstverileri güncellemeye çalışacaktır.",
+        "add_new_performers": "Yeni Oyuncular Ekle",
+        "refresh_tagged_performers": "Etiketlenmiş oyuncuları yenile",
+        "performer_already_tagged": "Oyuncu zaten etikelenmiş"
     },
     "photographer": "Fotoğrafçı",
     "play_count": "Oynatma Sayısı",
@@ -1290,7 +1310,8 @@
         "submission_failed": "Gönderim başarısız oldu",
         "submission_successful": "Gönderim başarılı",
         "selected_stash_box": "Seçilen Stash-Box uç noktası",
-        "source": "Stash-Box Kaynağı"
+        "source": "Stash-Box Kaynağı",
+        "go_review_draft": "Taslağı incelemek için {endpoint_name} adresine gidin."
     },
     "statistics": "İstatistikler",
     "studio_count": "Stüdyo Sayısı",
@@ -1336,7 +1357,8 @@
         "connecting": "Bağlanıyor",
         "disconnected": "Bağlantı kesildi",
         "error": "Handy'e bağlanırken hata oluştu",
-        "ready": "Hazır"
+        "ready": "Hazır",
+        "uploading": "Komut dosyası yükleniyor"
     },
     "o_count": "O Sayısı",
     "o_history": "O Geçmişi",
@@ -1353,7 +1375,7 @@
     "view_all": "Tümünü Görüntüle",
     "weight_kg": "Ağırlık (kg)",
     "containing_group": "İçeren Grup",
-    "containing_groups": "İçeren Gruplar",
+    "containing_groups": "İçerdiği Gruplar",
     "empty_server": "Bu sayfadaki önerileri görüntülemek için sunucunuza bazı sahneler ekleyin.",
     "recently_added_objects": "Son Eklenenler {objects}",
     "zip_file_count": "Zip Dosyası Sayısı",
@@ -1389,5 +1411,10 @@
     "scene_updated_at": "Sahne Güncelleme Tarihi",
     "ignore_auto_tag": "Otomatik Etiketi Yok Say",
     "playdate_recorded_no": "Oynatma Tarihi Kaydedilmedi",
-    "duplicated_phash": "Yinelenen (pHash)"
+    "duplicated_phash": "Yinelenen (pHash)",
+    "captions": "Alt yazılar",
+    "containing_group_count": "İçerdiği Grup Sayısı",
+    "last_o_at": "Son O Tarihi",
+    "sub_group_of": "{parent} öğesinin alt grubu",
+    "time_end": "Bitiş Zamanı"
 }
