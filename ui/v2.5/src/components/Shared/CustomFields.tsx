@@ -8,6 +8,8 @@ import { Icon } from "./Icon";
 import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 import cx from "classnames";
 
+const maxFieldNameLength = 64;
+
 export type CustomFieldMap = {
   [key: string]: unknown;
 };
@@ -100,18 +102,29 @@ const CustomFieldInput: React.FC<{
 
     // only update on existing fields
     if (!isNew) {
-      onChange(currentField, currentValue);
+      // trim the field name
+      onChange(currentField.trim(), currentValue);
     }
   }
 
   function onAdd() {
-    onChange(currentField, currentValue);
+    // trim the field name
+    onChange(currentField.trim(), currentValue);
     setCurrentField("");
     setCurrentValue("");
   }
 
   function onDelete() {
     onChange("", "");
+  }
+
+  function onFieldChanged(v: string) {
+    // ensure field name is valid
+    if (v.length > maxFieldNameLength) {
+      return;
+    }
+
+    setCurrentField(v);
   }
 
   function onValueChanged(v: string) {
@@ -133,7 +146,7 @@ const CustomFieldInput: React.FC<{
             type="text"
             value={(currentField as string) ?? ""}
             placeholder={intl.formatMessage({ id: "custom_fields.field" })}
-            onChange={(event) => setCurrentField(event.currentTarget.value)}
+            onChange={(event) => onFieldChanged(event.currentTarget.value)}
             onBlur={onBlur}
           />
         ) : (
