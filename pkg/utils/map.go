@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"encoding/json"
 	"strings"
 )
 
@@ -78,4 +79,20 @@ func MergeMaps(dest map[string]interface{}, src map[string]interface{}) {
 
 		dest[k] = v
 	}
+}
+
+// ConvertMapJSONNumbers converts all JSON numbers in a map to either float64 or int64.
+func ConvertMapJSONNumbers(m map[string]interface{}) (ret map[string]interface{}) {
+	ret = make(map[string]interface{})
+	for k, v := range m {
+		if n, ok := v.(json.Number); ok {
+			ret[k] = JSONNumberToNumber(n)
+		} else if mm, ok := v.(map[string]interface{}); ok {
+			ret[k] = ConvertMapJSONNumbers(mm)
+		} else {
+			ret[k] = v
+		}
+	}
+
+	return ret
 }

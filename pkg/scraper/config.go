@@ -114,7 +114,8 @@ func (c config) validate() error {
 }
 
 type stashServer struct {
-	URL string `yaml:"url"`
+	URL    string `yaml:"url"`
+	ApiKey string `yaml:"apiKey"`
 }
 
 type scraperTypeConfig struct {
