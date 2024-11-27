@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { CollapseButton } from "./CollapseButton";
 import { DetailItem } from "./DetailItem";
-import { Button, Col, Form, InputGroup, Row } from "react-bootstrap";
+import { Button, Col, Form, FormGroup, InputGroup, Row } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import { cloneDeep } from "@apollo/client/utilities";
 import { Icon } from "./Icon";
@@ -76,7 +76,8 @@ const CustomFieldInput: React.FC<{
   value: unknown;
   onChange: (field: string, value: unknown) => void;
   isNew?: boolean;
-}> = ({ field, value, onChange, isNew = false }) => {
+  error?: string;
+}> = ({ field, value, onChange, isNew = false, error }) => {
   const intl = useIntl();
   const [currentField, setCurrentField] = useState(field);
   const [currentValue, setCurrentValue] = useState(value);
@@ -89,42 +90,12 @@ const CustomFieldInput: React.FC<{
     setCurrentValue(value);
   }, [field, value]);
 
-  function onBlur(event: React.FocusEvent<HTMLInputElement>) {
-    // don't fire an update if the user is tabbing between fields
-    // this prevents focus being stolen from the field
-    if (
-      currentField &&
-      (event.relatedTarget === valueRef.current ||
-        event.relatedTarget === fieldRef.current)
-    ) {
-      return;
-    }
-
-    // only update on existing fields
-    if (!isNew) {
-      // trim the field name
-      onChange(currentField.trim(), currentValue);
-    }
-  }
-
-  function onAdd() {
-    // trim the field name
-    onChange(currentField.trim(), currentValue);
-    setCurrentField("");
-    setCurrentValue("");
+  function onBlur() {
+    onChange(currentField, currentValue);
   }
 
   function onDelete() {
     onChange("", "");
-  }
-
-  function onFieldChanged(v: string) {
-    // ensure field name is valid
-    if (v.length > maxFieldNameLength) {
-      return;
-    }
-
-    setCurrentField(v);
   }
 
   function onValueChanged(v: string) {
@@ -137,75 +108,141 @@ const CustomFieldInput: React.FC<{
   }
 
   return (
-    <Row className={cx("custom-fields-row", { "custom-fields-new": isNew })}>
-      <Col sm={3} xl={2}>
-        {isNew ? (
-          <Form.Control
-            ref={fieldRef}
-            className="input-control"
-            type="text"
-            value={(currentField as string) ?? ""}
-            placeholder={intl.formatMessage({ id: "custom_fields.field" })}
-            onChange={(event) => onFieldChanged(event.currentTarget.value)}
-            onBlur={onBlur}
-          />
-        ) : (
-          <Form.Label>{currentField}</Form.Label>
-        )}
-      </Col>
-      <Col sm={9} xl={7}>
-        <InputGroup>
-          <Form.Control
-            ref={valueRef}
-            className="input-control"
-            type="text"
-            value={(currentValue as string) ?? ""}
-            placeholder={currentField}
-            onChange={(event) => onValueChanged(event.currentTarget.value)}
-            onBlur={onBlur}
-          />
-          <InputGroup.Append>
-            {isNew ? (
-              <Button
-                className="custom-fields-add"
-                variant="success"
-                onClick={() => onAdd()}
-                disabled={!currentField}
-              >
-                <Icon icon={faPlus} />
-              </Button>
-            ) : (
-              <Button
-                className="custom-fields-remove"
-                variant="danger"
-                onClick={() => onDelete()}
-              >
-                <Icon icon={faMinus} />
-              </Button>
-            )}
-          </InputGroup.Append>
-        </InputGroup>
-      </Col>
-    </Row>
+    <FormGroup>
+      <Row className={cx("custom-fields-row", { "custom-fields-new": isNew })}>
+        <Col sm={3} xl={2}>
+          {isNew ? (
+            <>
+              <Form.Control
+                ref={fieldRef}
+                className="input-control"
+                type="text"
+                value={(currentField as string) ?? ""}
+                placeholder={intl.formatMessage({ id: "custom_fields.field" })}
+                onChange={(event) => setCurrentField(event.currentTarget.value)}
+                onBlur={onBlur}
+              />
+            </>
+          ) : (
+            <Form.Label>{currentField}</Form.Label>
+          )}
+        </Col>
+        <Col sm={9} xl={7}>
+          <InputGroup>
+            <Form.Control
+              ref={valueRef}
+              className="input-control"
+              type="text"
+              value={(currentValue as string) ?? ""}
+              placeholder={currentField}
+              onChange={(event) => onValueChanged(event.currentTarget.value)}
+              onBlur={onBlur}
+            />
+            <InputGroup.Append>
+              {!isNew && (
+                <Button
+                  className="custom-fields-remove"
+                  variant="danger"
+                  onClick={() => onDelete()}
+                >
+                  <Icon icon={faMinus} />
+                </Button>
+              )}
+            </InputGroup.Append>
+          </InputGroup>
+        </Col>
+      </Row>
+      <Form.Control.Feedback type="invalid">{error}</Form.Control.Feedback>
+    </FormGroup>
   );
 };
 
+interface ICustomField {
+  field: string;
+  value: unknown;
+}
+
 interface ICustomFieldsInput {
   values: CustomFieldMap;
+  error?: string;
   onChange: (values: CustomFieldMap) => void;
+  setError: (error?: string) => void;
 }
 
 export const CustomFieldsInput: React.FC<ICustomFieldsInput> = ({
   values,
+  error,
   onChange,
+  setError,
 }) => {
   const intl = useIntl();
 
+  const [newCustomField, setNewCustomField] = useState<ICustomField>({
+    field: "",
+    value: "",
+  });
+
   const fields = useMemo(() => {
-    const ret = Object.keys(values);
+    const valueCopy = cloneDeep(values);
+    if (newCustomField.field !== "" && error === undefined) {
+      delete valueCopy[newCustomField.field];
+    }
+
+    const ret = Object.keys(valueCopy);
     ret.sort();
     return ret;
-  }, [values]);
+  }, [values, newCustomField, error]);
+
+  function onSetNewField(v: ICustomField) {
+    // validate the field name
+    let newError = undefined;
+    if (v.field.length > maxFieldNameLength) {
+      newError = intl.formatMessage({
+        id: "errors.custom_fields.field_name_length",
+      });
+    }
+    if (v.field.trim() === "" && v.value !== "") {
+      newError = intl.formatMessage({
+        id: "errors.custom_fields.field_name_required",
+      });
+    }
+    if (v.field.trim() !== v.field) {
+      newError = intl.formatMessage({
+        id: "errors.custom_fields.field_name_whitespace",
+      });
+    }
+    if (fields.includes(v.field)) {
+      newError = intl.formatMessage({
+        id: "errors.custom_fields.duplicate_field",
+      });
+    }
+
+    const oldField = newCustomField;
+
+    setNewCustomField(v);
+
+    const valuesCopy = cloneDeep(values);
+    if (oldField.field !== "" && error === undefined) {
+      delete valuesCopy[oldField.field];
+    }
+
+    // if valid, pass up
+    if (!newError && v.field !== "") {
+      valuesCopy[v.field] = v.value;
+    }
+
+    onChange(valuesCopy);
+    setError(newError);
+  }
+
+  function onAdd() {
+    const newValues = {
+      ...values,
+      [newCustomField.field]: newCustomField.value,
+    };
+    setNewCustomField({ field: "", value: "" });
+    onChange(newValues);
+  }
 
   function fieldChanged(
     currentField: string,
@@ -246,13 +283,22 @@ export const CustomFieldsInput: React.FC<ICustomFieldsInput> = ({
             />
           ))}
           <CustomFieldInput
-            field=""
-            value=""
-            onChange={(field, value) => fieldChanged("", field, value)}
+            field={newCustomField.field}
+            value={newCustomField.value}
+            error={error}
+            onChange={(field, value) => onSetNewField({ field, value })}
             isNew
           />
         </Col>
       </Row>
+      <Button
+        className="custom-fields-add"
+        variant="success"
+        onClick={() => onAdd()}
+        disabled={newCustomField.field === "" || error !== undefined}
+      >
+        <Icon icon={faPlus} />
+      </Button>
     </CollapseButton>
   );
 };

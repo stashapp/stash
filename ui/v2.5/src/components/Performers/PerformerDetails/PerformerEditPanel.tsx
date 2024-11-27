@@ -160,6 +160,8 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
   type InputValues = yup.InferType<typeof schema>;
 
+  const [customFieldsError, setCustomFieldsError] = useState<string>();
+
   function submit(values: InputValues) {
     const input = {
       ...schema.cast(values),
@@ -593,7 +595,11 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
         </div>
         <Button
           variant="success"
-          disabled={(!isNew && !formik.dirty) || !isEqual(formik.errors, {})}
+          disabled={
+            (!isNew && !formik.dirty) ||
+            !isEqual(formik.errors, {}) ||
+            customFieldsError !== undefined
+          }
           onClick={() => formik.submitForm()}
         >
           <FormattedMessage id="actions.save" />
@@ -707,6 +713,8 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
         <CustomFieldsInput
           values={formik.values.custom_fields}
           onChange={(v) => formik.setFieldValue("custom_fields", v)}
+          error={customFieldsError}
+          setError={(e) => setCustomFieldsError(e)}
         />
 
         {renderButtons("mt-3")}
