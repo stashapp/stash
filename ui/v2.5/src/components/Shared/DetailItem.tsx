@@ -5,6 +5,7 @@ interface IDetailItem {
   id?: string | null;
   label?: React.ReactNode;
   value?: React.ReactNode;
+  labelTitle?: string;
   title?: string;
   fullWidth?: boolean;
   showEmpty?: boolean;
@@ -14,6 +15,7 @@ export const DetailItem: React.FC<IDetailItem> = ({
   id,
   label,
   value,
+  labelTitle,
   title,
   fullWidth,
   showEmpty = false,
@@ -27,7 +29,10 @@ export const DetailItem: React.FC<IDetailItem> = ({
   return (
     // according to linter rule CSS classes shouldn't use underscores
     <div className={`detail-item ${id}`}>
-      <span className={`detail-item-title ${id.replace("_", "-")}`}>
+      <span
+        className={`detail-item-title ${id.replace("_", "-")}`}
+        title={labelTitle}
+      >
         {message}
         {fullWidth ? ":" : ""}
       </span>

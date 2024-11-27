@@ -688,6 +688,13 @@ button.btn.favorite-button {
   }
 }
 
+.custom-fields .detail-item .detail-item-title {
+  max-width: 130px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .custom-fields-input > .collapse-button {
   font-weight: 700;
 }
@@ -696,6 +703,21 @@ button.btn.favorite-button {
   align-items: center;
   font-family: "Courier New", Courier, monospace;
   font-size: 0.875rem;
+
+  .form-label {
+    margin-bottom: 0;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+
+  // labels with titles are styled with help cursor and dotted underline elsewhere
+  div.custom-fields-field label.form-label {
+    cursor: inherit;
+    text-decoration: inherit;
+  }
 
   .form-control,
   .btn {

@@ -42,6 +42,7 @@ const CustomField: React.FC<{ field: string; value: unknown }> = ({
     <DetailItem
       id={`custom-field-${field}`}
       label={field}
+      labelTitle={field}
       value={valueStr}
       fullWidth={true}
       showEmpty
@@ -110,7 +111,7 @@ const CustomFieldInput: React.FC<{
   return (
     <FormGroup>
       <Row className={cx("custom-fields-row", { "custom-fields-new": isNew })}>
-        <Col sm={3} xl={2}>
+        <Col sm={3} xl={2} className="custom-fields-field">
           {isNew ? (
             <>
               <Form.Control
@@ -124,7 +125,7 @@ const CustomFieldInput: React.FC<{
               />
             </>
           ) : (
-            <Form.Label>{currentField}</Form.Label>
+            <Form.Label title={currentField}>{currentField}</Form.Label>
           )}
         </Col>
         <Col sm={9} xl={7}>
