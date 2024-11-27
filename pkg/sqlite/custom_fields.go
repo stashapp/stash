@@ -4,12 +4,15 @@ import (
 	"context"
 	"fmt"
 	"regexp"
+	"strings"
 
 	"github.com/doug-martin/goqu/v9"
 	"github.com/doug-martin/goqu/v9/exp"
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/models"
 )
+
+const maxCustomFieldNameLength = 64
 
 type customFieldsStore struct {
 	table exp.IdentifierExpression
@@ -42,7 +45,38 @@ func (s *customFieldsStore) SetCustomFields(ctx context.Context, id int, values 
 		return nil
 	}
 
+	if err := s.validateCustomFields(valMap); err != nil {
+		return err
+	}
+
 	return s.setCustomFields(ctx, id, valMap, partial)
+}
+
+func (s *customFieldsStore) validateCustomFields(values map[string]interface{}) error {
+	// ensure that custom field names are valid
+	// no leading or trailing whitespace, no empty strings
+	for k := range values {
+		if err := s.validateCustomFieldName(k); err != nil {
+			return fmt.Errorf("custom field name %q: %w", k, err)
+		}
+	}
+
+	return nil
+}
+
+func (s *customFieldsStore) validateCustomFieldName(fieldName string) error {
+	// ensure that custom field names are valid
+	// no leading or trailing whitespace, no empty strings
+	if strings.TrimSpace(fieldName) == "" {
+		return fmt.Errorf("custom field name cannot be empty")
+	}
+	if fieldName != strings.TrimSpace(fieldName) {
+		return fmt.Errorf("custom field name cannot have leading or trailing whitespace")
+	}
+	if len(fieldName) > maxCustomFieldNameLength {
+		return fmt.Errorf("custom field name must be less than %d characters", maxCustomFieldNameLength+1)
+	}
+	return nil
 }
 
 func getSQLValueFromCustomFieldInput(input interface{}) (interface{}, error) {

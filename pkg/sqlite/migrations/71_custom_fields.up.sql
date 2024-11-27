@@ -1,6 +1,6 @@
 CREATE TABLE `performer_custom_fields` (
   `performer_id` integer NOT NULL,
-  `field` varchar(255) NOT NULL,
+  `field` varchar(64) NOT NULL,
   `value` BLOB NOT NULL,
   PRIMARY KEY (`performer_id`, `field`),
   foreign key(`performer_id`) references `performers`(`id`) on delete CASCADE

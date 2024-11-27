@@ -1513,7 +1513,7 @@ func getPerformerCustomFields(index int) map[string]interface{} {
 
 	return map[string]interface{}{
 		"string": getPerformerStringValue(index, "custom"),
-		"int":    index % 5,
+		"int":    int64(index % 5),
 		"real":   float64(index) / 10,
 	}
 }
