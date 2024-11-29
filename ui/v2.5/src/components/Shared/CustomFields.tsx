@@ -38,9 +38,12 @@ const CustomField: React.FC<{ field: string; value: unknown }> = ({
 }) => {
   const valueStr = convertValue(value);
 
+  // replace spaces with hyphen characters for css id
+  const id = field.toLowerCase().replace(" ", "-");
+
   return (
     <DetailItem
-      id={`custom-field-${field}`}
+      id={id}
       label={field}
       labelTitle={field}
       value={valueStr}
