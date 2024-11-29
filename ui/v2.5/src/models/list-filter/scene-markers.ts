@@ -18,7 +18,7 @@ const sortByOptions = [
   "random",
   "scenes_updated_at",
 ].map(ListFilterOptions.createSortBy);
-const displayModeOptions = [DisplayMode.Wall];
+const displayModeOptions = [DisplayMode.Grid, DisplayMode.Wall];
 const criterionOptions = [
   TagsCriterionOption,
   MarkersScenesCriterionOption,

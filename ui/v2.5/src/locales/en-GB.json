@@ -939,7 +939,7 @@
       "marker_image_previews": "Marker Animated Image Previews",
       "marker_image_previews_tooltip": "Also generate animated (webp) previews, only required when Scene/Marker Wall Preview Type is set to Animated Image. When browsing they use less CPU than the video previews, but are generated in addition to them and are larger files.",
       "marker_screenshots": "Marker Screenshots",
-      "marker_screenshots_tooltip": "Marker static JPG images, only required if Preview Type is set to Static Image.",
+      "marker_screenshots_tooltip": "Marker static JPG images",
       "markers": "Marker Previews",
       "markers_tooltip": "20 second videos which begin at the given timecode.",
       "override_preview_generation_options": "Override Preview Generation Options",

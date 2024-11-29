@@ -814,11 +814,16 @@ func (r *mutationResolver) SceneMarkerUpdate(ctx context.Context, input SceneMar
 }
 
 func (r *mutationResolver) SceneMarkerDestroy(ctx context.Context, id string) (bool, error) {
-	markerID, err := strconv.Atoi(id)
+	return r.SceneMarkersDestroy(ctx, []string{id})
+}
+
+func (r *mutationResolver) SceneMarkersDestroy(ctx context.Context, markerIDs []string) (bool, error) {
+	ids, err := stringslice.StringSliceToIntSlice(markerIDs)
 	if err != nil {
-		return false, fmt.Errorf("converting id: %w", err)
+		return false, fmt.Errorf("converting ids: %w", err)
 	}
 
+	var markers []*models.SceneMarker
 	fileNamingAlgo := manager.GetInstance().Config.GetVideoFileNamingAlgorithm()
 
 	fileDeleter := &scene.FileDeleter{
@@ -831,35 +836,45 @@ func (r *mutationResolver) SceneMarkerDestroy(ctx context.Context, id string) (b
 		qb := r.repository.SceneMarker
 		sqb := r.repository.Scene
 
-		marker, err := qb.Find(ctx, markerID)
+		for _, markerID := range ids {
+			marker, err := qb.Find(ctx, markerID)
 
-		if err != nil {
-			return err
+			if err != nil {
+				return err
+			}
+
+			if marker == nil {
+				return fmt.Errorf("scene marker with id %d not found", markerID)
+			}
+
+			s, err := sqb.Find(ctx, marker.SceneID)
+
+			if err != nil {
+				return err
+			}
+
+			if s == nil {
+				return fmt.Errorf("scene with id %d not found", marker.SceneID)
+			}
+
+			markers = append(markers, marker)
+
+			if err := scene.DestroyMarker(ctx, s, marker, qb, fileDeleter); err != nil {
+				return err
+			}
 		}
 
-		if marker == nil {
-			return fmt.Errorf("scene marker with id %d not found", markerID)
-		}
-
-		s, err := sqb.Find(ctx, marker.SceneID)
-		if err != nil {
-			return err
-		}
-
-		if s == nil {
-			return fmt.Errorf("scene with id %d not found", marker.SceneID)
-		}
-
-		return scene.DestroyMarker(ctx, s, marker, qb, fileDeleter)
+		return nil
 	}); err != nil {
 		fileDeleter.Rollback()
 		return false, err
 	}
 
-	// perform the post-commit actions
 	fileDeleter.Commit()
 
-	r.hookExecutor.ExecutePostHooks(ctx, markerID, hook.SceneMarkerDestroyPost, id, nil)
+	for _, marker := range markers {
+		r.hookExecutor.ExecutePostHooks(ctx, marker.ID, hook.SceneMarkerDestroyPost, markerIDs, nil)
+	}
 
 	return true, nil
 }

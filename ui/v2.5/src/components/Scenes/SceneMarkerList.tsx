@@ -14,6 +14,8 @@ import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 import { MarkerWallPanel } from "../Wall/WallPanel";
 import { View } from "../List/views";
+import { SceneMarkerCardsGrid } from "./SceneMarkerCardsGrid";
+import { DeleteSceneMarkersDialog } from "./DeleteSceneMarkersDialog";
 
 function getItems(result: GQL.FindSceneMarkersQueryResult) {
   return result?.data?.findSceneMarkers?.scene_markers ?? [];
@@ -27,6 +29,7 @@ interface ISceneMarkerList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
   view?: View;
   alterQuery?: boolean;
+  defaultSort?: string;
 }
 
 export const SceneMarkerList: React.FC<ISceneMarkerList> = ({
@@ -84,7 +87,9 @@ export const SceneMarkerList: React.FC<ISceneMarkerList> = ({
 
   function renderContent(
     result: GQL.FindSceneMarkersQueryResult,
-    filter: ListFilterModel
+    filter: ListFilterModel,
+    selectedIds: Set<string>,
+    onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void
   ) {
     if (!result.data?.findSceneMarkers) return;
 
@@ -93,6 +98,29 @@ export const SceneMarkerList: React.FC<ISceneMarkerList> = ({
         <MarkerWallPanel markers={result.data.findSceneMarkers.scene_markers} />
       );
     }
+
+    if (filter.displayMode === DisplayMode.Grid) {
+      return (
+        <SceneMarkerCardsGrid
+          markers={result.data.findSceneMarkers.scene_markers}
+          zoomIndex={filter.zoomIndex}
+          selectedIds={selectedIds}
+          onSelectChange={onSelectChange}
+        />
+      );
+    }
+  }
+
+  function renderDeleteDialog(
+    selectedSceneMarkers: GQL.SceneMarkerDataFragment[],
+    onClose: (confirmed: boolean) => void
+  ) {
+    return (
+      <DeleteSceneMarkersDialog
+        selected={selectedSceneMarkers}
+        onClose={onClose}
+      />
+    );
   }
 
   return (
@@ -104,12 +132,15 @@ export const SceneMarkerList: React.FC<ISceneMarkerList> = ({
       alterQuery={alterQuery}
       filterHook={filterHook}
       view={view}
+      selectable
     >
       <ItemList
+        zoomable
         view={view}
         otherOperations={otherOperations}
         addKeybinds={addKeybinds}
         renderContent={renderContent}
+        renderDeleteDialog={renderDeleteDialog}
       />
     </ItemListContext>
   );

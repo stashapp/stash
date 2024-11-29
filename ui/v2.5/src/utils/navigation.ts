@@ -30,6 +30,8 @@ import { PhashCriterion } from "src/models/list-filter/criteria/phash";
 import { ILabeledId } from "src/models/list-filter/types";
 import { IntlShape } from "react-intl";
 import { galleryTitle } from "src/core/galleries";
+import { MarkersScenesCriterion } from "src/models/list-filter/criteria/scenes";
+import { objectTitle } from "src/core/files";
 
 function addExtraCriteria(
   dest: Criterion<CriterionValue>[],
@@ -127,6 +129,20 @@ const makePerformerGroupsUrl = (
   filter.criteria.push(criterion);
   addExtraCriteria(filter.criteria, extraCriteria);
   return `/groups?${filter.makeQueryParameters()}`;
+};
+
+const makePerformerSceneMarkersUrl = (
+  performer: Partial<GQL.PerformerDataFragment>
+) => {
+  if (!performer.id) return "#";
+  const filter = new ListFilterModel(GQL.FilterMode.SceneMarkers, undefined);
+  const criterion = new PerformersCriterion();
+  criterion.value.items = [
+    { id: performer.id, label: performer.name || `Performer ${performer.id}` },
+  ];
+
+  filter.criteria.push(criterion);
+  return `/scenes/markers?${filter.makeQueryParameters()}`;
 };
 
 const makePerformersCountryUrl = (
@@ -429,6 +445,15 @@ const makeSubGroupsUrl = (group: INamedObject) => {
   return `/groups?${filter.makeQueryParameters()}`;
 };
 
+const makeSceneMarkersSceneUrl = (scene: GQL.SceneMarkerSceneDataFragment) => {
+  if (!scene.id) return "#";
+  const filter = new ListFilterModel(GQL.FilterMode.SceneMarkers, undefined);
+  const criterion = new MarkersScenesCriterion();
+  criterion.value = [{ id: scene.id, label: objectTitle(scene) }];
+  filter.criteria.push(criterion);
+  return `/scenes/markers?${filter.makeQueryParameters()}`;
+};
+
 export function handleUnsavedChanges(
   intl: IntlShape,
   basepath: string,
@@ -449,6 +474,7 @@ const NavUtils = {
   makePerformerImagesUrl,
   makePerformerGalleriesUrl,
   makePerformerGroupsUrl,
+  makePerformerSceneMarkersUrl,
   makePerformersCountryUrl,
   makeStudioScenesUrl,
   makeStudioImagesUrl,
@@ -477,6 +503,7 @@ const NavUtils = {
   makeDirectorGroupsUrl,
   makeContainingGroupsUrl,
   makeSubGroupsUrl,
+  makeSceneMarkersSceneUrl,
 };
 
 export default NavUtils;
