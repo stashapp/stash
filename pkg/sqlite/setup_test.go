@@ -427,7 +427,6 @@ var (
 		{sceneIdxWithMarkers, tagIdxWithPrimaryMarkers, []int{tagIdxWithMarkers, tagIdx2WithMarkers}},
 		{sceneIdxWithMarkerAndTag, tagIdxWithPrimaryMarkers, nil},
 		{sceneIdxWithMarkerTwoTags, tagIdxWithPrimaryMarkers, nil},
-		{sceneIdxWithMarkers, tagIdxWithPrimaryMarkers, nil},
 	}
 )
 
