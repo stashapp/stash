@@ -814,54 +814,7 @@ func (r *mutationResolver) SceneMarkerUpdate(ctx context.Context, input SceneMar
 }
 
 func (r *mutationResolver) SceneMarkerDestroy(ctx context.Context, id string) (bool, error) {
-	markerID, err := strconv.Atoi(id)
-	if err != nil {
-		return false, fmt.Errorf("converting id: %w", err)
-	}
-
-	fileNamingAlgo := manager.GetInstance().Config.GetVideoFileNamingAlgorithm()
-
-	fileDeleter := &scene.FileDeleter{
-		Deleter:        file.NewDeleter(),
-		FileNamingAlgo: fileNamingAlgo,
-		Paths:          manager.GetInstance().Paths,
-	}
-
-	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		qb := r.repository.SceneMarker
-		sqb := r.repository.Scene
-
-		marker, err := qb.Find(ctx, markerID)
-
-		if err != nil {
-			return err
-		}
-
-		if marker == nil {
-			return fmt.Errorf("scene marker with id %d not found", markerID)
-		}
-
-		s, err := sqb.Find(ctx, marker.SceneID)
-		if err != nil {
-			return err
-		}
-
-		if s == nil {
-			return fmt.Errorf("scene with id %d not found", marker.SceneID)
-		}
-
-		return scene.DestroyMarker(ctx, s, marker, qb, fileDeleter)
-	}); err != nil {
-		fileDeleter.Rollback()
-		return false, err
-	}
-
-	// perform the post-commit actions
-	fileDeleter.Commit()
-
-	r.hookExecutor.ExecutePostHooks(ctx, markerID, hook.SceneMarkerDestroyPost, id, nil)
-
-	return true, nil
+	return r.SceneMarkersDestroy(ctx, []string{id})
 }
 
 func (r *mutationResolver) SceneMarkersDestroy(ctx context.Context, markerIDs []string) (bool, error) {
@@ -920,7 +873,6 @@ func (r *mutationResolver) SceneMarkersDestroy(ctx context.Context, markerIDs []
 	fileDeleter.Commit()
 
 	for _, marker := range markers {
-
 		r.hookExecutor.ExecutePostHooks(ctx, marker.ID, hook.SceneMarkerDestroyPost, markerIDs, nil)
 	}
 
