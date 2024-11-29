@@ -276,6 +276,8 @@ const (
 	markerIdxWithScene = iota
 	markerIdxWithTag
 	markerIdxWithSceneTag
+	markerIdxWithDuration
+	markerIdx2WithDuration
 	totalMarkers
 )
 
@@ -1754,10 +1756,20 @@ func createStudios(ctx context.Context, n int, o int) error {
 	return nil
 }
 
+func getMarkerEndSeconds(index int) *float64 {
+	if index != markerIdxWithDuration && index != markerIdx2WithDuration {
+		return nil
+	}
+	ret := float64(index)
+	return &ret
+}
+
 func createMarker(ctx context.Context, mqb models.SceneMarkerReaderWriter, markerSpec markerSpec) error {
+	markerIdx := len(markerIDs)
 	marker := models.SceneMarker{
 		SceneID:      sceneIDs[markerSpec.sceneIdx],
 		PrimaryTagID: tagIDs[markerSpec.primaryTagIdx],
+		EndSeconds:   getMarkerEndSeconds(markerIdx),
 	}
 
 	err := mqb.Create(ctx, &marker)

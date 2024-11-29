@@ -637,7 +637,11 @@ export function createNumberCriterionOption(
 }
 
 export class NullNumberCriterionOption extends CriterionOption {
-  constructor(messageID: string, value: CriterionType) {
+  constructor(
+    messageID: string,
+    value: CriterionType,
+    makeCriterion?: () => Criterion<CriterionValue>
+  ) {
     super({
       messageID,
       type: value,
@@ -653,7 +657,9 @@ export class NullNumberCriterionOption extends CriterionOption {
       ],
       defaultModifier: CriterionModifier.Equals,
       inputType: "number",
-      makeCriterion: () => new NumberCriterion(this),
+      makeCriterion: makeCriterion
+        ? makeCriterion
+        : () => new NumberCriterion(this),
     });
   }
 }
@@ -778,6 +784,19 @@ export function createDurationCriterionOption(
   messageID?: string
 ) {
   return new DurationCriterionOption(messageID ?? value, value);
+}
+
+export class NullDurationCriterionOption extends NullNumberCriterionOption {
+  constructor(messageID: string, value: CriterionType) {
+    super(messageID, value, () => new DurationCriterion(this));
+  }
+}
+
+export function createNullDurationCriterionOption(
+  value: CriterionType,
+  messageID?: string
+) {
+  return new NullDurationCriterionOption(messageID ?? value, value);
 }
 
 export class DurationCriterion extends Criterion<INumberValue> {
