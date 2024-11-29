@@ -6,7 +6,7 @@ import { DisplayMode } from "./types";
 import {
   createDateCriterionOption,
   createMandatoryTimestampCriterionOption,
-  createDurationCriterionOption,
+  createNullDurationCriterionOption,
 } from "./criteria/criterion";
 
 const defaultSortBy = "title";
@@ -24,7 +24,7 @@ const criterionOptions = [
   MarkersScenesCriterionOption,
   SceneTagsCriterionOption,
   PerformersCriterionOption,
-  createDurationCriterionOption("duration"),
+  createNullDurationCriterionOption("duration"),
   createMandatoryTimestampCriterionOption("created_at"),
   createMandatoryTimestampCriterionOption("updated_at"),
   createDateCriterionOption("scene_date"),

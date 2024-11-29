@@ -194,7 +194,7 @@ input SceneMarkerFilterType {
   "Filter to only include scene markers from these scenes"
   scenes: MultiCriterionInput
   "Filter by duration (in seconds)"
-  duration: IntCriterionInput
+  duration: FloatCriterionInput
   "Filter by creation time"
   created_at: TimestampCriterionInput
   "Filter by last update time"
