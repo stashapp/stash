@@ -72,7 +72,16 @@ export const CustomFields: React.FC<ICustomFields> = ({ values }) => {
 };
 
 function isNumeric(v: string) {
-  return /^-?[0-9]+(?:\.[0-9]+)?$/.test(v);
+  return /^-?(?:0|(?:[1-9][0-9]*))(?:\.[0-9]+)?$/.test(v);
+}
+
+function convertCustomValue(v: string) {
+  // if the value is numeric, convert it to a number
+  if (isNumeric(v)) {
+    return Number(v);
+  } else {
+    return v;
+  }
 }
 
 const CustomFieldInput: React.FC<{
@@ -84,31 +93,22 @@ const CustomFieldInput: React.FC<{
 }> = ({ field, value, onChange, isNew = false, error }) => {
   const intl = useIntl();
   const [currentField, setCurrentField] = useState(field);
-  const [currentValue, setCurrentValue] = useState(value);
+  const [currentValue, setCurrentValue] = useState(value as string);
 
   const fieldRef = useRef<HTMLInputElement>(null);
   const valueRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setCurrentField(field);
-    setCurrentValue(value);
+    setCurrentValue(value as string);
   }, [field, value]);
 
   function onBlur() {
-    onChange(currentField, currentValue);
+    onChange(currentField, convertCustomValue(currentValue));
   }
 
   function onDelete() {
     onChange("", "");
-  }
-
-  function onValueChanged(v: string) {
-    // if the value is numeric, convert it to a number
-    if (isNumeric(v)) {
-      setCurrentValue(Number(v));
-    } else {
-      setCurrentValue(v);
-    }
   }
 
   return (
@@ -121,7 +121,7 @@ const CustomFieldInput: React.FC<{
                 ref={fieldRef}
                 className="input-control"
                 type="text"
-                value={(currentField as string) ?? ""}
+                value={currentField ?? ""}
                 placeholder={intl.formatMessage({ id: "custom_fields.field" })}
                 onChange={(event) => setCurrentField(event.currentTarget.value)}
                 onBlur={onBlur}
@@ -139,7 +139,7 @@ const CustomFieldInput: React.FC<{
               type="text"
               value={(currentValue as string) ?? ""}
               placeholder={currentField}
-              onChange={(event) => onValueChanged(event.currentTarget.value)}
+              onChange={(event) => setCurrentValue(event.currentTarget.value)}
               onBlur={onBlur}
             />
             <InputGroup.Append>
