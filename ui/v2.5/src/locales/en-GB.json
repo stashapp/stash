@@ -173,6 +173,9 @@
       "active_instance": "Active stash-box instance:",
       "blacklist_desc": "Blacklist items are excluded from queries. Note that they are regular expressions and also case-insensitive. Certain characters must be escaped with a backslash: {chars_require_escape}",
       "blacklist_label": "Blacklist",
+      "errors": {
+        "blacklist_duplicate": "Duplicate blacklist item"
+      },
       "mark_organized_desc": "Immediately mark the scene as Organized after the Save button is clicked.",
       "mark_organized_label": "Mark as Organized on save",
       "query_mode_auto": "Auto",
@@ -1298,7 +1301,9 @@
     "errors": {
       "something_went_wrong": "Oh no! Something went wrong!",
       "something_went_wrong_description": "If this looks like a problem with your inputs, go ahead and click back to fix them up. Otherwise, raise a bug on the {githubLink} or seek help in the {discordLink}.",
-      "something_went_wrong_while_setting_up_your_system": "Something went wrong while setting up your system. Here is the error we received: {error}"
+      "something_went_wrong_while_setting_up_your_system": "Something went wrong while setting up your system. Here is the error we received: {error}",
+      "unable_to_retrieve_system_status": "Unable to retrieve system status: {error}",
+      "unexpected_error": "An unexpected error occurred: {error}"
     },
     "folder": {
       "file_path": "File path",

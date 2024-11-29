@@ -122,13 +122,19 @@ func setGroupBackImage(ctx context.Context, client *http.Client, m *models.Scrap
 	return nil
 }
 
-func getImage(ctx context.Context, url string, client *http.Client, globalConfig GlobalConfig) (*string, error) {
+type imageGetter struct {
+	client          *http.Client
+	globalConfig    GlobalConfig
+	requestModifier func(req *http.Request)
+}
+
+func (i *imageGetter) getImage(ctx context.Context, url string) (*string, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	userAgent := globalConfig.GetScraperUserAgent()
+	userAgent := i.globalConfig.GetScraperUserAgent()
 	if userAgent != "" {
 		req.Header.Set("User-Agent", userAgent)
 	}
@@ -140,7 +146,11 @@ func getImage(ctx context.Context, url string, client *http.Client, globalConfig
 		req.Header.Set("Referer", req.URL.Scheme+"://"+req.Host+"/")
 	}
 
-	resp, err := client.Do(req)
+	if i.requestModifier != nil {
+		i.requestModifier(req)
+	}
+
+	resp, err := i.client.Do(req)
 
 	if err != nil {
 		return nil, err
@@ -167,10 +177,19 @@ func getImage(ctx context.Context, url string, client *http.Client, globalConfig
 	return &img, nil
 }
 
-func getStashPerformerImage(ctx context.Context, stashURL string, performerID string, client *http.Client, globalConfig GlobalConfig) (*string, error) {
-	return getImage(ctx, stashURL+"/performer/"+performerID+"/image", client, globalConfig)
+func getImage(ctx context.Context, url string, client *http.Client, globalConfig GlobalConfig) (*string, error) {
+	g := imageGetter{
+		client:       client,
+		globalConfig: globalConfig,
+	}
+
+	return g.getImage(ctx, url)
 }
 
-func getStashSceneImage(ctx context.Context, stashURL string, sceneID string, client *http.Client, globalConfig GlobalConfig) (*string, error) {
-	return getImage(ctx, stashURL+"/scene/"+sceneID+"/screenshot", client, globalConfig)
+func getStashPerformerImage(ctx context.Context, stashURL string, performerID string, imageGetter imageGetter) (*string, error) {
+	return imageGetter.getImage(ctx, stashURL+"/performer/"+performerID+"/image")
+}
+
+func getStashSceneImage(ctx context.Context, stashURL string, sceneID string, imageGetter imageGetter) (*string, error) {
+	return imageGetter.getImage(ctx, stashURL+"/scene/"+sceneID+"/screenshot")
 }

@@ -83,6 +83,17 @@ export function prepareQueryString(
   mode: ParseMode,
   blacklist: string[]
 ) {
+  const regexs = blacklist
+    .map((b) => {
+      try {
+        return new RegExp(b, "gi");
+      } catch {
+        // ignore
+        return null;
+      }
+    })
+    .filter((r) => r !== null) as RegExp[];
+
   if ((mode === "auto" && scene.date && scene.studio) || mode === "metadata") {
     let str = [
       scene.date,
@@ -92,8 +103,8 @@ export function prepareQueryString(
     ]
       .filter((s) => s !== "")
       .join(" ");
-    blacklist.forEach((b) => {
-      str = str.replace(new RegExp(b, "gi"), " ");
+    regexs.forEach((re) => {
+      str = str.replace(re, " ");
     });
     return str;
   }
@@ -106,8 +117,9 @@ export function prepareQueryString(
   } else if (mode === "dir" && paths.length) {
     s = paths[paths.length - 1];
   }
-  blacklist.forEach((b) => {
-    s = s.replace(new RegExp(b, "gi"), " ");
+
+  regexs.forEach((re) => {
+    s = s.replace(re, " ");
   });
   s = parseDate(s);
   return s.replace(/\./g, " ").replace(/ +/g, " ");
