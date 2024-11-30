@@ -102,7 +102,28 @@
         "temp_disable": "Тимчасово відключити…",
         "temp_enable": "Тимчасово включити…",
         "use_default": "Використовувати за замовчуванням",
-        "view_random": "Дивитися випадкове"
+        "view_random": "Дивитися випадкове",
+        "swap": "Обмін",
+        "add_sub_groups": "Додати суб-групу",
+        "encoding_image": "Кодування зображення…",
+        "migrate_scene_screenshots": "Мігрувати скріншоти Сцен",
+        "optimise_database": "Оптимізувати Базу даних",
+        "add_manual_date": "Додати дату вручну",
+        "add_o": "Додати O",
+        "add_play": "Додати перегляд",
+        "anonymise": "Анонімізувати",
+        "create_chapters": "Створити Розділ",
+        "create_parent_studio": "Створити батьківську студію",
+        "download_anonymised": "Завантажити анонімізовано",
+        "enable": "Включити",
+        "disable": "Вимкнути",
+        "migrate_blobs": "Мігрувати Blobs",
+        "reload": "Перезавантажити",
+        "remove_date": "Видалити дату",
+        "split": "Розділити",
+        "submit_stash_box": "Надіслати до Stash-Box",
+        "view_history": "Переглянути історію",
+        "reassign": "Перепризначити"
     },
     "actions_name": "Дії",
     "age": "Вік",
@@ -217,5 +238,14 @@
     },
     "video_codec": "Відео кодек",
     "videos": "Відео",
-    "weight": "Вага"
+    "weight": "Вага",
+    "average_resolution": "Середня роздільна здатність",
+    "between_and": "та",
+    "ascending": "За зростанням",
+    "audio_codec": "Аудіокодек",
+    "blobs_storage_type": {
+        "database": "База даних",
+        "filesystem": "Файлова система"
+    },
+    "captions": "Заголовки"
 }
