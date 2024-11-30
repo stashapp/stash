@@ -151,8 +151,16 @@
         },
         "results": {
             "duration_unknown": "Тривалість невідома",
-            "match_failed_no_result": "Результати відсутні"
-        }
+            "match_failed_no_result": "Результати відсутні",
+            "phash_matches": "{count} PHashes співпадає",
+            "unnamed": "Без назви"
+        },
+        "verb_match_fp": "Порівняти відбитки",
+        "verb_matched": "Співпадінь",
+        "verb_scrape_all": "Скрейпити все",
+        "verb_toggle_config": "{toggle} {configuration}",
+        "verb_toggle_unmatched": "{toggle} не співпавші сцени",
+        "verb_submit_fp": "Надіслати {fpCount, plural, one{# Fingerprint} other{# Fingerprints}}"
     },
     "config": {
         "about": {
@@ -160,7 +168,14 @@
             "latest_version": "Найновіша версія",
             "stash_discord": "Приєднуйтесь до нашого {url} каналу",
             "stash_open_collective": "Підтримати нас на {url}",
-            "version": "Версія"
+            "version": "Версія",
+            "release_date": "Дата релізу:",
+            "stash_home": "Домівка Stash {url}",
+            "build_time": "Дата збірки:",
+            "build_hash": "Геш збірки:",
+            "latest_version_build_hash": "Геш збірки останньої версії:",
+            "new_version_notice": "[НОВЕ]",
+            "stash_wiki": "Stash {url} сторінка"
         },
         "categories": {
             "changelog": "Список змін",
@@ -172,7 +187,8 @@
             "services": "Сервіси",
             "system": "Система",
             "tasks": "Задачі",
-            "tools": "Інструменти"
+            "tools": "Інструменти",
+            "about": "Про програму"
         },
         "dlna": {
             "allow_temp_ip": "Дозволити {tempIP}",
@@ -186,7 +202,11 @@
             "recent_ip_addresses": "Нещодавні IP-адреси",
             "server_display_name_desc": "Відображуване ім'я DLNA-сервера. Якщо пусте, {server_name} буде використано за замовчуванням.",
             "successfully_cancelled_temporary_behaviour": "Тимчасова поведінка успішно скасована",
-            "until_restart": "до рестарту"
+            "until_restart": "до рестарту",
+            "enabled_dlna_temporarily": "Включити DLNA тимчасово",
+            "disabled_dlna_temporarily": "Вимкнути DLNA тимчасово",
+            "server_display_name": "Відображуване ім'я серверу",
+            "server_port": "Порт серверу"
         },
         "general": {
             "auth": {
@@ -234,6 +254,12 @@
             "number_of_parallel_task_for_scan_generation_head": "Кількість паралельних задач для сканування/генерації",
             "parallel_scan_head": "Паралельне сканування/генерація",
             "preview_generation": "Генерація прев'ю"
+        },
+        "advanced_mode": "Розширений режим",
+        "tasks": {
+            "identify": {
+                "source_options": "{source} Опції"
+            }
         }
     },
     "video_codec": "Відео кодек",
@@ -247,5 +273,154 @@
         "database": "База даних",
         "filesystem": "Файлова система"
     },
-    "captions": "Заголовки"
+    "captions": "Заголовки",
+    "sub_tag_of": "Вкладені мітки {parent}",
+    "dupe_check": {
+        "options": {
+            "exact": "Точний",
+            "high": "Висока",
+            "low": "Низька",
+            "medium": "Середнє"
+        }
+    },
+    "sub_tags": "Вкладені мітки",
+    "package_manager": {
+        "uninstall": "Видалити",
+        "description": "Опис",
+        "package": "Пакунок",
+        "unknown": "<невідомо>",
+        "update": "Оновити",
+        "version": "Версія",
+        "install": "Встановити",
+        "source": {
+            "name": "Назва"
+        }
+    },
+    "effect_filters": {
+        "name_transforms": "Перетворення",
+        "red": "Червоний",
+        "rotate": "Поворот",
+        "hue": "Відтінок",
+        "name": "Фільтри",
+        "saturation": "Насиченість",
+        "scale": "Масштаб",
+        "warmth": "Теплота",
+        "blur": "Розмиття",
+        "brightness": "Яскравість",
+        "contrast": "Контраст",
+        "gamma": "Гамма",
+        "green": "Зелений",
+        "blue": "Синій"
+    },
+    "duration": "Тривалість",
+    "errors": {
+        "header": "Помилка"
+    },
+    "pagination": {
+        "first": "Перша",
+        "next": "Наступна",
+        "previous": "Попередня",
+        "last": "Остання"
+    },
+    "ethnicity": "Етнічність",
+    "false": "Ні",
+    "favourite": "Улюблене",
+    "file": "файл",
+    "files": "файли",
+    "filter": "Фільтрувати",
+    "filters": "Фільтри",
+    "folder": "Тека",
+    "galleries": "Галереї",
+    "gallery": "Галерея",
+    "gender": "Стать",
+    "gender_types": {
+        "FEMALE": "Жіноча",
+        "MALE": "Чоловіча"
+    },
+    "groups": "Групи",
+    "handy_connection_status": {
+        "connecting": "Підключення",
+        "disconnected": "Роз'єднано",
+        "ready": "Готово"
+    },
+    "height": "Зріст",
+    "help": "Допомога",
+    "history": "Історія",
+    "images": "Зображення",
+    "interactive": "Інтерактивне",
+    "library": "Бібліотека",
+    "markers": "Маркери",
+    "measurements": "Виміри",
+    "media_info": {
+        "phash": "PHash",
+        "stream": "Потік",
+        "checksum": "Контрольна сума",
+        "hash": "Геш"
+    },
+    "metadata": "Метадані",
+    "new": "Нове",
+    "name": "Імʼя",
+    "none": "Відсутньо",
+    "operations": "Операції",
+    "orientation": "Орієнтація",
+    "path": "Шлях",
+    "penis": "Пеніс",
+    "performer": "Виконавець",
+    "performers": "Виконавці",
+    "photographer": "Фотограф",
+    "piercings": "Пірсинг",
+    "queue": "Черга",
+    "random": "Випадково",
+    "rating": "Рейтинг",
+    "scenes": "Сцени",
+    "statistics": "Статистика",
+    "studio_tagger": {
+        "tag_status": "Статус мітки",
+        "update_studios": "Оновити студії",
+        "update_studio": "Оновити студію"
+    },
+    "sub_tag_count": "Кількість вкладених міток",
+    "studios": "Студії",
+    "studio_tags": "Мітки студії",
+    "time": "Час",
+    "title": "Заголовок",
+    "tag_sub_tag_tooltip": "Має вкладені мітки",
+    "tattoos": "Татуювання",
+    "tags": "Мітки",
+    "group": "Група",
+    "image": "Зображення",
+    "loading": {
+        "generic": "Завантаження…"
+    },
+    "o_counter": "O-Лічильник",
+    "performer_tagger": {
+        "status_tagging_job_queued": "Статус: Задача проставлення міток в черзі"
+    },
+    "resolution": "Роздільна здатність",
+    "scene": "Сцена",
+    "search_filter": {
+        "name": "Фільтр"
+    },
+    "studio": "Студія",
+    "total": "Всього",
+    "true": "Так",
+    "twitter": "Twitter",
+    "type": "Тип",
+    "url": "Посилання",
+    "urls": "Посилання",
+    "sub_groups": "Вкладені групи",
+    "tag_parent_tooltip": "Має батьківські мітки",
+    "tag_count": "Кількість міток",
+    "instagram": "Instagram",
+    "sub_group": "Вкладена група",
+    "criterion_modifier_values": {
+        "only": "Лише",
+        "any": "Будь яке",
+        "none": "Жодного"
+    },
+    "second": "Секунда",
+    "seconds": "Секунди",
+    "settings": "Налаштування",
+    "tag": "Мітка",
+    "synopsis": "Синопсис"
 }
