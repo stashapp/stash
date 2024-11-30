@@ -923,7 +923,7 @@
             "marker_image_previews": "Aperçus animés des marqueurs",
             "marker_image_previews_tooltip": "Génère également des aperçus animés (webp), uniquement requis lorsque le mode de prévisualisation Scène/Mur de marqueurs est défini sur Image animée. Lors de la navigation, ils utilisent moins de ressources CPU que les aperçus vidéo, mais sont générés en complément de ceux-ci et constituent des fichiers plus volumineux.",
             "marker_screenshots": "Captures d'écran des marqueurs",
-            "marker_screenshots_tooltip": "Images JPG statiques des marqueurs, requis uniquement si le mode d'aperçu est défini sur Image statique.",
+            "marker_screenshots_tooltip": "Images JPG statiques des marqueurs",
             "markers": "Aperçus des marqueurs",
             "markers_tooltip": "Vidéos de 20 secondes qui débutent au repère temporel donné.",
             "override_preview_generation_options": "Remplacer les options de génération d'aperçu",
