@@ -73,10 +73,17 @@ export function useTagsEdit(
   function updateTagsStateFromScraper(
     scrapedTags?: Pick<GQL.ScrapedTag, "name" | "stored_id">[]
   ) {
-    if (scrapedTags) {
+    if (!scrapedTags) {
+      return;
+    }
+
       // map tags to their ids and filter out those not found
+    const idTags = scrapedTags.filter(
+      (t) => t.stored_id !== undefined && t.stored_id !== null
+    );
+    const newNewTags = scrapedTags.filter((t) => !t.stored_id);
       onSetTags(
-        scrapedTags.map((p) => {
+      idTags.map((p) => {
           return {
             id: p.stored_id!,
             name: p.name ?? "",
@@ -85,8 +92,7 @@ export function useTagsEdit(
         })
       );
 
-      setNewTags(scrapedTags.filter((t) => !t.stored_id));
-    }
+    setNewTags(newNewTags);
   }
 
   function renderNewTags() {
