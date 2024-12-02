@@ -26,20 +26,16 @@ export const DetailItem: React.FC<IDetailItem> = ({
 
   const message = label ?? <FormattedMessage id={id} />;
 
+  // according to linter rule CSS classes shouldn't use underscores
+  const sanitisedID = id.replace(/_/g, "-");
+
   return (
-    // according to linter rule CSS classes shouldn't use underscores
     <div className={`detail-item ${id}`}>
-      <span
-        className={`detail-item-title ${id.replace("_", "-")}`}
-        title={labelTitle}
-      >
+      <span className={`detail-item-title ${sanitisedID}`} title={labelTitle}>
         {message}
         {fullWidth ? ":" : ""}
       </span>
-      <span
-        className={`detail-item-value ${id.replace("_", "-")}`}
-        title={title}
-      >
+      <span className={`detail-item-value ${sanitisedID}`} title={title}>
         {value}
       </span>
     </div>
