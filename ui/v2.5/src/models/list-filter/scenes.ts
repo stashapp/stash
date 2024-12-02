@@ -77,7 +77,10 @@ const criterionOptions = [
   createStringCriterionOption("title"),
   createStringCriterionOption("code", "scene_code"),
   PathCriterionOption,
-  createStringCriterionOption("filename", "component_tagger.config.query_mode_filename"),
+  createStringCriterionOption(
+    "filename",
+    "component_tagger.config.query_mode_filename"
+  ),
   createStringCriterionOption("details"),
   createStringCriterionOption("director"),
   createMandatoryStringCriterionOption("oshash", "media_info.hash"),
