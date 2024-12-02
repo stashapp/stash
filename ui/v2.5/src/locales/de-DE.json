@@ -191,7 +191,10 @@
             "show_male_label": "Männliche Darsteller anzeigen",
             "source": "Quelle",
             "mark_organized_label": "Beim speichern als organisiert markieren",
-            "mark_organized_desc": "Markiere die Szene nach dem klicken auf Speichern als organisiert."
+            "mark_organized_desc": "Markiere die Szene nach dem klicken auf Speichern als organisiert.",
+            "errors": {
+                "blacklist_duplicate": "Blacklist item duplizieren"
+            }
         },
         "noun_query": "Anfrage",
         "results": {
@@ -509,7 +512,8 @@
                 "skip_single_name_performers_tooltip": "Wenn dies nicht aktiviert ist, werden Darsteller, die oft generisch sind, wie Samantha oder Olga, abgeglichen",
                 "tag_skipped_matches": "Übersprungenes Tag passt zu",
                 "tag_skipped_matches_tooltip": "Erstellen Sie ein Tag wie 'Identifizieren: Mehrere Übereinstimmungen“, nach denen Sie in der Scene Tagger-Ansicht filtern und die richtige Übereinstimmung von Hand auswählen können",
-                "tag_skipped_performers": "Setze folgenden Tag bei übersprungenen Darstellern"
+                "tag_skipped_performers": "Setze folgenden Tag bei übersprungenen Darstellern",
+                "tag_skipped_performer_tooltip": "Erstelle einen Tag wie ‘zu identifizieren: Darsteller:in mit einem Namen‘ sodass du in der Scene Tagger Ansicht danach filtern und entscheiden kannst, wie mit diesen Darstellern:innen umgegangen werden soll"
             },
             "import_from_exported_json": "Import aus exportiertem JSON im Metadatenverzeichnis. Löscht die vorhandene Datenbank.",
             "incremental_import": "Inkrementeller Import aus einer Export-ZIP-Datei.",
@@ -770,7 +774,18 @@
                     }
                 }
             },
-            "title": "Benutzeroberfläche"
+            "title": "Benutzeroberfläche",
+            "detail": {
+                "compact_expanded_details": {
+                    "heading": "Erweiterte Details einklappen",
+                    "description": "Wenn aktiviert, wird diese Option mehr Details anzeigen und dabei einen kompakten beibehalten"
+                },
+                "enable_background_image": {
+                    "heading": "Aktiviere Hintergrundbild",
+                    "description": "Hintergrundbild auf Detailseite anzeigen."
+                },
+                "heading": "Detailseite"
+            }
         },
         "advanced_mode": "Fortgeschrittener Modus"
     },
