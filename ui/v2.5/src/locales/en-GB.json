@@ -1121,7 +1121,8 @@
   "last_played_at": "Last Played At",
   "library": "Library",
   "loading": {
-    "generic": "Loading…"
+    "generic": "Loading…",
+    "plugins": "Loading plugins…"
   },
   "marker_count": "Marker Count",
   "markers": "Markers",
