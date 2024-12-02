@@ -192,6 +192,7 @@ interface ICriterionOptionsParams {
   modifierOptions?: CriterionModifier[];
   defaultModifier?: CriterionModifier;
   options?: Option[];
+  hidden?: boolean;
   makeCriterion: (
     o: CriterionOption,
     config?: ConfigDataFragment
@@ -204,6 +205,10 @@ export class CriterionOption {
   public readonly defaultModifier: CriterionModifier;
   public readonly options: Option[] | undefined;
   public readonly inputType: InputType;
+
+  // used for legacy criteria that are not shown in the UI
+  public readonly hidden: boolean = false;
+
   public readonly makeCriterionFn: (
     o: CriterionOption,
     config?: ConfigDataFragment
@@ -216,6 +221,7 @@ export class CriterionOption {
     this.defaultModifier = options.defaultModifier ?? CriterionModifier.Equals;
     this.options = options.options;
     this.inputType = options.inputType;
+    this.hidden = options.hidden ?? false;
     this.makeCriterionFn = options.makeCriterion;
   }
 

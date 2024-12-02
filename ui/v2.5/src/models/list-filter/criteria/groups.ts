@@ -50,5 +50,6 @@ export const LegacyMoviesCriterionOption = new CriterionOption({
   modifierOptions,
   defaultModifier,
   inputType,
+  hidden: true,
   makeCriterion: () => new GroupsCriterion(GroupsCriterionOption),
 });
