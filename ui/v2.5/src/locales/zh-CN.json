@@ -920,7 +920,7 @@
             "marker_image_previews": "标记动图预览",
             "marker_image_previews_tooltip": "同时生成动图（webp）预览，仅当短片/标记墙预览类型设置为动图时才需要。浏览时，它们使用的CPU比视频预览少，但会额外生成更大的文件。",
             "marker_screenshots": "标记的屏幕截图",
-            "marker_screenshots_tooltip": "标记使用静态JPG图，仅用于预览类型设为【静图】时。",
+            "marker_screenshots_tooltip": "标记使用静态JPG 图像",
             "markers": "标记预览",
             "markers_tooltip": "从给出的时间码开始20秒的视频.",
             "override_preview_generation_options": "覆盖预览生成选项",
