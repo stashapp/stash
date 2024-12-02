@@ -44,10 +44,15 @@ export function useTagsEdit(
       }
 
       // add the new tag to the new tags value
-      const newTagIds = tags
-        .map((t) => t.id)
-        .concat([result.data.tagCreate.id]);
-      setFieldValue(newTagIds);
+      onSetTags(
+        tags.concat([
+          {
+            id: result.data.tagCreate.id,
+            name: toCreate.name ?? "",
+            aliases: [],
+          },
+        ])
+      );
 
       // remove the tag from the list
       const newTagsClone = newTags!.concat();
@@ -77,20 +82,20 @@ export function useTagsEdit(
       return;
     }
 
-      // map tags to their ids and filter out those not found
+    // map tags to their ids and filter out those not found
     const idTags = scrapedTags.filter(
       (t) => t.stored_id !== undefined && t.stored_id !== null
     );
     const newNewTags = scrapedTags.filter((t) => !t.stored_id);
-      onSetTags(
+    onSetTags(
       idTags.map((p) => {
-          return {
-            id: p.stored_id!,
-            name: p.name ?? "",
-            aliases: [],
-          };
-        })
-      );
+        return {
+          id: p.stored_id!,
+          name: p.name ?? "",
+          aliases: [],
+        };
+      })
+    );
 
     setNewTags(newNewTags);
   }
