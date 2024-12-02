@@ -93,6 +93,17 @@ func enumCriterionHandler(modifier models.CriterionModifier, values []string, co
 	}
 }
 
+func filenameCriterionHandler(c *models.StringCriterionInput, basenameColumn string, addJoinFn func(f *filterBuilder)) criterionHandlerFunc {
+	return func(ctx context.Context, f *filterBuilder) {
+		if c != nil {
+			if addJoinFn != nil {
+				addJoinFn(f)
+			}
+			stringCriterionHandler(c, basenameColumn)(ctx, f)
+		}
+	}
+}
+
 func pathCriterionHandler(c *models.StringCriterionInput, pathColumn string, basenameColumn string, addJoinFn func(f *filterBuilder)) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if c != nil {

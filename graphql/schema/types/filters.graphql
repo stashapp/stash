@@ -230,6 +230,8 @@ input SceneFilterType {
   phash_distance: PhashDistanceCriterionInput
   "Filter by path"
   path: StringCriterionInput
+  "Filter by filename/basename"
+  filename: StringCriterionInput
   "Filter by file count"
   file_count: IntCriterionInput
   # rating expressed as 1-100
@@ -613,6 +615,8 @@ input ImageFilterType {
   checksum: StringCriterionInput
   "Filter by path"
   path: StringCriterionInput
+  "Filter by filename/basename"
+  filename: StringCriterionInput
   "Filter by file count"
   file_count: IntCriterionInput
   # rating expressed as 1-100

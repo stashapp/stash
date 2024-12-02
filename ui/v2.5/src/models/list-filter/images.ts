@@ -41,6 +41,7 @@ const criterionOptions = [
   createStringCriterionOption("photographer"),
   createMandatoryStringCriterionOption("checksum", "media_info.checksum"),
   PathCriterionOption,
+  createStringCriterionOption("filename", "component_tagger.config.query_mode_filename"),
   GalleriesCriterionOption,
   OrganizedCriterionOption,
   createMandatoryNumberCriterionOption("o_counter", "o_count"),
