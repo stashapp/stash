@@ -854,6 +854,11 @@
     "only": "Only"
   },
   "custom": "Custom",
+  "custom_fields": {
+    "field": "Field",
+    "title": "Custom Fields",
+    "value": "Value"
+  },
   "date": "Date",
   "date_format": "YYYY-MM-DD",
   "datetime_format": "YYYY-MM-DD HH:MM",
@@ -1035,6 +1040,12 @@
   },
   "empty_server": "Add some scenes to your server to view recommendations on this page.",
   "errors": {
+    "custom_fields": {
+      "duplicate_field": "Field name must be unique",
+      "field_name_length": "Field name must fewer than 65 characters",
+      "field_name_required": "Field name is required",
+      "field_name_whitespace": "Field name cannot have leading or trailing whitespace"
+    },
     "header": "Error",
     "image_index_greater_than_zero": "Image index must be greater than 0",
     "invalid_javascript_string": "Invalid javascript code: {error}",

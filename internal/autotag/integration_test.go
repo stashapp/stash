@@ -91,7 +91,7 @@ func createPerformer(ctx context.Context, pqb models.PerformerWriter) error {
 		Name: testName,
 	}
 
-	err := pqb.Create(ctx, &performer)
+	err := pqb.Create(ctx, &models.CreatePerformerInput{Performer: &performer})
 	if err != nil {
 		return err
 	}

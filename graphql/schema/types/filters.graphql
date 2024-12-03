@@ -91,6 +91,12 @@ input StashIDCriterionInput {
   modifier: CriterionModifier!
 }
 
+input CustomFieldCriterionInput {
+  field: String!
+  value: [Any!]
+  modifier: CriterionModifier!
+}
+
 input PerformerFilterType {
   AND: PerformerFilterType
   OR: PerformerFilterType
@@ -182,6 +188,8 @@ input PerformerFilterType {
   created_at: TimestampCriterionInput
   "Filter by last update time"
   updated_at: TimestampCriterionInput
+
+  custom_fields: [CustomFieldCriterionInput!]
 }
 
 input SceneMarkerFilterType {

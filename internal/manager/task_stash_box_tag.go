@@ -194,7 +194,7 @@ func (t *StashBoxBatchTagTask) processMatchedPerformer(ctx context.Context, p *m
 				return err
 			}
 
-			if err := qb.Create(ctx, newPerformer); err != nil {
+			if err := qb.Create(ctx, &models.CreatePerformerInput{Performer: newPerformer}); err != nil {
 				return err
 			}
 

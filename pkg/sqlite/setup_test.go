@@ -1508,6 +1508,18 @@ func performerAliases(i int) []string {
 	return []string{getPerformerStringValue(i, "alias")}
 }
 
+func getPerformerCustomFields(index int) map[string]interface{} {
+	if index%5 == 0 {
+		return nil
+	}
+
+	return map[string]interface{}{
+		"string": getPerformerStringValue(index, "custom"),
+		"int":    int64(index % 5),
+		"real":   float64(index) / 10,
+	}
+}
+
 // createPerformers creates n performers with plain Name and o performers with camel cased NaMe included
 func createPerformers(ctx context.Context, n int, o int) error {
 	pqb := db.Performer
@@ -1558,7 +1570,10 @@ func createPerformers(ctx context.Context, n int, o int) error {
 			})
 		}
 
-		err := pqb.Create(ctx, &performer)
+		err := pqb.Create(ctx, &models.CreatePerformerInput{
+			Performer:    &performer,
+			CustomFields: getPerformerCustomFields(i),
+		})
 
 		if err != nil {
 			return fmt.Errorf("Error creating performer %v+: %s", performer, err.Error())

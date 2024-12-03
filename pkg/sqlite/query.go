@@ -133,6 +133,9 @@ func (qb *queryBuilder) join(table, as, onClause string) {
 
 func (qb *queryBuilder) addJoins(joins ...join) {
 	qb.joins.add(joins...)
+	for _, j := range joins {
+		qb.args = append(qb.args, j.args...)
+	}
 }
 
 func (qb *queryBuilder) addFilter(f *filterBuilder) error {
@@ -151,6 +154,9 @@ func (qb *queryBuilder) addFilter(f *filterBuilder) error {
 		qb.args = append(args, qb.args...)
 	}
 
+	// add joins here to insert args
+	qb.addJoins(f.getAllJoins()...)
+
 	clause, args = f.generateWhereClauses()
 	if len(clause) > 0 {
 		qb.addWhere(clause)
@@ -168,8 +174,6 @@ func (qb *queryBuilder) addFilter(f *filterBuilder) error {
 	if len(args) > 0 {
 		qb.addArg(args...)
 	}
-
-	qb.addJoins(f.getAllJoins()...)
 
 	return nil
 }

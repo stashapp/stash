@@ -65,6 +65,8 @@ type Performer struct {
 	StashIDs      []models.StashID   `json:"stash_ids,omitempty"`
 	IgnoreAutoTag bool               `json:"ignore_auto_tag,omitempty"`
 
+	CustomFields map[string]interface{} `json:"custom_fields,omitempty"`
+
 	// deprecated - for import only
 	URL       string `json:"url,omitempty"`
 	Twitter   string `json:"twitter,omitempty"`
