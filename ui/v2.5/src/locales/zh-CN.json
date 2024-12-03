@@ -1026,7 +1026,13 @@
         "header": "错误",
         "loading_type": "加载 {type} 出错",
         "invalid_javascript_string": "无效的javascript代码：{error}",
-        "invalid_json_string": "无效的JSON字符串：{error}"
+        "invalid_json_string": "无效的JSON字符串：{error}",
+        "custom_fields": {
+            "field_name_required": "需要提供字段名称",
+            "field_name_whitespace": "字段名称不能有前导或尾随空格",
+            "duplicate_field": "字段名称必须唯一",
+            "field_name_length": "字段名称必须少于 65 个字符"
+        }
     },
     "ethnicity": "人种",
     "existing_value": "现值",
@@ -1095,7 +1101,8 @@
     "last_played_at": "最后播放在",
     "library": "收藏库",
     "loading": {
-        "generic": "加载中…"
+        "generic": "加载中…",
+        "plugins": "加载插件中……"
     },
     "marker_count": "标记数量",
     "markers": "标记",
@@ -1504,5 +1511,10 @@
         "any_of": "其中任意",
         "none": "无",
         "only": "仅"
+    },
+    "custom_fields": {
+        "field": "字段",
+        "title": "自定义字段",
+        "value": "数值"
     }
 }
