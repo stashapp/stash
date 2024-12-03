@@ -1027,7 +1027,13 @@
         "something_went_wrong": "Quelque chose n'a pas fonctionné.",
         "header": "Erreur",
         "invalid_javascript_string": "Code javascript invalide : {error}",
-        "invalid_json_string": "Chaine JSON invalide : {error}"
+        "invalid_json_string": "Chaine JSON invalide : {error}",
+        "custom_fields": {
+            "duplicate_field": "Le nom du champ doit être unique",
+            "field_name_whitespace": "Le nom du champ ne doit pas contenir d'espace en début ou en fin de ligne",
+            "field_name_length": "Le nom du champ doit comporter moins de 65 caractères",
+            "field_name_required": "Le nom du champ est requis"
+        }
     },
     "ethnicity": "Ethnicité",
     "existing_value": "valeur existante",
@@ -1097,7 +1103,8 @@
     "last_played_at": "Dernière lecture le",
     "library": "Bibliothèque",
     "loading": {
-        "generic": "Chargement…"
+        "generic": "Chargement…",
+        "plugins": "Chargement des plugins…"
     },
     "marker_count": "Nombre de marqueurs",
     "markers": "Marqueurs",
@@ -1504,5 +1511,10 @@
         "any_of": "Tous les",
         "any": "Tous"
     },
-    "time_end": "Heure de fin"
+    "time_end": "Heure de fin",
+    "custom_fields": {
+        "field": "Champ",
+        "title": "Champs personnalisés",
+        "value": "Valeur"
+    }
 }
