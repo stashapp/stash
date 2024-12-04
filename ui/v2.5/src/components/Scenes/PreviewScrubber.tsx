@@ -94,7 +94,7 @@ export const PreviewScrubber: React.FC<IScenePreviewProps> = ({
     onClick(s.start);
   }
 
-  if (spriteInfo === null) return null;
+  if (spriteInfo === null || !vttPath) return null;
 
   return (
     <div className="preview-scrubber">

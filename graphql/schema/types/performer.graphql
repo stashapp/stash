@@ -58,6 +58,8 @@ type Performer {
   updated_at: Time!
   groups: [Group!]!
   movies: [Movie!]! @deprecated(reason: "use groups instead")
+
+  custom_fields: Map!
 }
 
 input PerformerCreateInput {
@@ -93,6 +95,8 @@ input PerformerCreateInput {
   hair_color: String
   weight: Int
   ignore_auto_tag: Boolean
+
+  custom_fields: Map
 }
 
 input PerformerUpdateInput {
@@ -129,6 +133,8 @@ input PerformerUpdateInput {
   hair_color: String
   weight: Int
   ignore_auto_tag: Boolean
+
+  custom_fields: CustomFieldsInput
 }
 
 input BulkUpdateStrings {
@@ -167,6 +173,8 @@ input BulkPerformerUpdateInput {
   hair_color: String
   weight: Int
   ignore_auto_tag: Boolean
+
+  custom_fields: CustomFieldsInput
 }
 
 input PerformerDestroyInput {

@@ -69,6 +69,8 @@ const Scene: React.FC<{
           : undefined
       }
       showLightboxImage={showLightboxImage}
+      queue={queue}
+      index={index}
     >
       {searchResult && searchResult.results?.length ? (
         <SceneSearchResults scenes={searchResult.results} target={scene} />

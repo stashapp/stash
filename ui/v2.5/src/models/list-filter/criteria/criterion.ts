@@ -192,6 +192,7 @@ interface ICriterionOptionsParams {
   modifierOptions?: CriterionModifier[];
   defaultModifier?: CriterionModifier;
   options?: Option[];
+  hidden?: boolean;
   makeCriterion: (
     o: CriterionOption,
     config?: ConfigDataFragment
@@ -204,6 +205,10 @@ export class CriterionOption {
   public readonly defaultModifier: CriterionModifier;
   public readonly options: Option[] | undefined;
   public readonly inputType: InputType;
+
+  // used for legacy criteria that are not shown in the UI
+  public readonly hidden: boolean = false;
+
   public readonly makeCriterionFn: (
     o: CriterionOption,
     config?: ConfigDataFragment
@@ -216,6 +221,7 @@ export class CriterionOption {
     this.defaultModifier = options.defaultModifier ?? CriterionModifier.Equals;
     this.options = options.options;
     this.inputType = options.inputType;
+    this.hidden = options.hidden ?? false;
     this.makeCriterionFn = options.makeCriterion;
   }
 
@@ -637,7 +643,11 @@ export function createNumberCriterionOption(
 }
 
 export class NullNumberCriterionOption extends CriterionOption {
-  constructor(messageID: string, value: CriterionType) {
+  constructor(
+    messageID: string,
+    value: CriterionType,
+    makeCriterion?: () => Criterion<CriterionValue>
+  ) {
     super({
       messageID,
       type: value,
@@ -653,7 +663,9 @@ export class NullNumberCriterionOption extends CriterionOption {
       ],
       defaultModifier: CriterionModifier.Equals,
       inputType: "number",
-      makeCriterion: () => new NumberCriterion(this),
+      makeCriterion: makeCriterion
+        ? makeCriterion
+        : () => new NumberCriterion(this),
     });
   }
 }
@@ -778,6 +790,19 @@ export function createDurationCriterionOption(
   messageID?: string
 ) {
   return new DurationCriterionOption(messageID ?? value, value);
+}
+
+export class NullDurationCriterionOption extends NullNumberCriterionOption {
+  constructor(messageID: string, value: CriterionType) {
+    super(messageID, value, () => new DurationCriterion(this));
+  }
+}
+
+export function createNullDurationCriterionOption(
+  value: CriterionType,
+  messageID?: string
+) {
+  return new NullDurationCriterionOption(messageID ?? value, value);
 }
 
 export class DurationCriterion extends Criterion<INumberValue> {

@@ -3,34 +3,39 @@ import { FormattedMessage } from "react-intl";
 
 interface IDetailItem {
   id?: string | null;
+  label?: React.ReactNode;
   value?: React.ReactNode;
+  labelTitle?: string;
   title?: string;
   fullWidth?: boolean;
+  showEmpty?: boolean;
 }
 
 export const DetailItem: React.FC<IDetailItem> = ({
   id,
+  label,
   value,
+  labelTitle,
   title,
   fullWidth,
+  showEmpty = false,
 }) => {
-  if (!id || !value || value === "Na") {
+  if (!id || (!showEmpty && (!value || value === "Na"))) {
     return <></>;
   }
 
-  const message = <FormattedMessage id={id} />;
+  const message = label ?? <FormattedMessage id={id} />;
+
+  // according to linter rule CSS classes shouldn't use underscores
+  const sanitisedID = id.replace(/_/g, "-");
 
   return (
-    // according to linter rule CSS classes shouldn't use underscores
     <div className={`detail-item ${id}`}>
-      <span className={`detail-item-title ${id.replace("_", "-")}`}>
+      <span className={`detail-item-title ${sanitisedID}`} title={labelTitle}>
         {message}
         {fullWidth ? ":" : ""}
       </span>
-      <span
-        className={`detail-item-value ${id.replace("_", "-")}`}
-        title={title}
-      >
+      <span className={`detail-item-value ${sanitisedID}`} title={title}>
         {value}
       </span>
     </div>

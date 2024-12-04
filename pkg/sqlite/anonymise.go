@@ -600,6 +600,10 @@ func (db *Anonymiser) anonymisePerformers(ctx context.Context) error {
 		return err
 	}
 
+	if err := db.anonymiseCustomFields(ctx, goqu.T(performersCustomFieldsTable.GetTable()), "performer_id"); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -1049,4 +1053,74 @@ func (db *Anonymiser) obfuscateString(in string, dict string) string {
 	}
 
 	return out.String()
+}
+
+func (db *Anonymiser) anonymiseCustomFields(ctx context.Context, table exp.IdentifierExpression, idColumn string) error {
+	lastID := 0
+	lastField := ""
+	total := 0
+	const logEvery = 10000
+
+	for gotSome := true; gotSome; {
+		if err := txn.WithTxn(ctx, db, func(ctx context.Context) error {
+			query := dialect.From(table).Select(
+				table.Col(idColumn),
+				table.Col("field"),
+				table.Col("value"),
+			).Where(
+				goqu.L("("+idColumn+", field)").Gt(goqu.L("(?, ?)", lastID, lastField)),
+			).Order(
+				table.Col(idColumn).Asc(), table.Col("field").Asc(),
+			).Limit(1000)
+
+			gotSome = false
+
+			const single = false
+			return queryFunc(ctx, query, single, func(rows *sqlx.Rows) error {
+				var (
+					id    int
+					field string
+					value string
+				)
+
+				if err := rows.Scan(
+					&id,
+					&field,
+					&value,
+				); err != nil {
+					return err
+				}
+
+				set := goqu.Record{}
+				set["field"] = db.obfuscateString(field, letters)
+				set["value"] = db.obfuscateString(value, letters)
+
+				if len(set) > 0 {
+					stmt := dialect.Update(table).Set(set).Where(
+						table.Col(idColumn).Eq(id),
+						table.Col("field").Eq(field),
+					)
+
+					if _, err := exec(ctx, stmt); err != nil {
+						return fmt.Errorf("anonymising %s: %w", table.GetTable(), err)
+					}
+				}
+
+				lastID = id
+				lastField = field
+				gotSome = true
+				total++
+
+				if total%logEvery == 0 {
+					logger.Infof("Anonymised %d %s custom fields", total, table.GetTable())
+				}
+
+				return nil
+			})
+		}); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
