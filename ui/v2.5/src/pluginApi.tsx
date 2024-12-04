@@ -83,6 +83,7 @@ export const PluginApi = {
   loadableComponents: {
     // add components as needed for plugins that provide pages
     SceneCard: () => import("./components/Scenes/SceneCard"),
+    PerformerSelect: () => import("./components/Performers/PerformerSelect"),
   },
   components,
   utils: {
