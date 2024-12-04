@@ -1,6 +1,8 @@
 type Tag {
   id: ID!
   name: String!
+  "Value that does not appear in the UI but overrides name for sorting"
+  sort_name: String
   description: String
   aliases: [String!]!
   ignore_auto_tag: Boolean!
@@ -25,6 +27,8 @@ type Tag {
 
 input TagCreateInput {
   name: String!
+  "Value that does not appear in the UI but overrides name for sorting"
+  sort_name: String
   description: String
   aliases: [String!]
   ignore_auto_tag: Boolean
@@ -39,6 +43,8 @@ input TagCreateInput {
 input TagUpdateInput {
   id: ID!
   name: String
+  "Value that does not appear in the UI but overrides name for sorting"
+  sort_name: String
   description: String
   aliases: [String!]
   ignore_auto_tag: Boolean

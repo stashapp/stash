@@ -33,6 +33,7 @@ func (r *mutationResolver) TagCreate(ctx context.Context, input TagCreateInput) 
 	newTag := models.NewTag()
 
 	newTag.Name = input.Name
+	newTag.SortName = translator.string(input.SortName)
 	newTag.Aliases = models.NewRelatedStrings(input.Aliases)
 	newTag.Favorite = translator.bool(input.Favorite)
 	newTag.Description = translator.string(input.Description)
@@ -102,6 +103,7 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input TagUpdateInput) 
 	updatedTag := models.NewTagPartial()
 
 	updatedTag.Name = translator.optionalString(input.Name, "name")
+	updatedTag.SortName = translator.optionalString(input.SortName, "sort_name")
 	updatedTag.Favorite = translator.optionalBool(input.Favorite, "favorite")
 	updatedTag.IgnoreAutoTag = translator.optionalBool(input.IgnoreAutoTag, "ignore_auto_tag")
 	updatedTag.Description = translator.optionalString(input.Description, "description")
