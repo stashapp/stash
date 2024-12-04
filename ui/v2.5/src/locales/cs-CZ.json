@@ -180,7 +180,10 @@
             "show_male_label": "Ukázat mužské účinkující",
             "source": "Zdroj",
             "mark_organized_desc": "Po kliknutí na tlačítko Uložit okamžitě označte scénu jako Uspořádanou.",
-            "mark_organized_label": "Označit jako Uspořádané při uložení"
+            "mark_organized_label": "Označit jako Uspořádané při uložení",
+            "errors": {
+                "blacklist_duplicate": "Duplikovat položku blacklistu"
+            }
         },
         "noun_query": "Dotaz",
         "results": {
@@ -1229,7 +1232,13 @@
         "header": "Chyba",
         "loading_type": "Chyba při načítání {type}",
         "invalid_javascript_string": "Neplatný kód javascriptu : {error}",
-        "invalid_json_string": "Neplatný string JSON: {error}"
+        "invalid_json_string": "Neplatný string JSON: {error}",
+        "custom_fields": {
+            "field_name_required": "Název pole je povinný",
+            "field_name_whitespace": "Název pole nesmí obsahovat mezery ani na začátku ani na konci",
+            "duplicate_field": "Název pole musí být jedinečný",
+            "field_name_length": "Název pole musí být kratší než 65 znaků"
+        }
     },
     "eye_color": "Barva očí",
     "fake_tits": "Falešná prsa",
@@ -1259,7 +1268,8 @@
     "isMissing": "Chybí",
     "last_played_at": "Naposledy přehráno",
     "loading": {
-        "generic": "Načítání…"
+        "generic": "Načítání…",
+        "plugins": "Znovu načíst pluginy…"
     },
     "library": "Knihovna",
     "marker_count": "Počet Značek",
@@ -1501,5 +1511,10 @@
         "any_of": "Jakýkoli z",
         "none": "Žádný",
         "only": "Pouze"
+    },
+    "custom_fields": {
+        "title": "Uživatelská pole",
+        "value": "Hodnota",
+        "field": "Pole"
     }
 }
