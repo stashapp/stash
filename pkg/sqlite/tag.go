@@ -33,6 +33,7 @@ const (
 type tagRow struct {
 	ID            int         `db:"id" goqu:"skipinsert"`
 	Name          null.String `db:"name"` // TODO: make schema non-nullable
+	SortName      zero.String `db:"sort_name"`
 	Favorite      bool        `db:"favorite"`
 	Description   zero.String `db:"description"`
 	IgnoreAutoTag bool        `db:"ignore_auto_tag"`
@@ -46,6 +47,7 @@ type tagRow struct {
 func (r *tagRow) fromTag(o models.Tag) {
 	r.ID = o.ID
 	r.Name = null.StringFrom(o.Name)
+	r.SortName = zero.StringFrom((o.SortName))
 	r.Favorite = o.Favorite
 	r.Description = zero.StringFrom(o.Description)
 	r.IgnoreAutoTag = o.IgnoreAutoTag
@@ -57,6 +59,7 @@ func (r *tagRow) resolve() *models.Tag {
 	ret := &models.Tag{
 		ID:            r.ID,
 		Name:          r.Name.String,
+		SortName:      r.SortName.String,
 		Favorite:      r.Favorite,
 		Description:   r.Description.String,
 		IgnoreAutoTag: r.IgnoreAutoTag,
@@ -87,6 +90,7 @@ type tagRowRecord struct {
 
 func (r *tagRowRecord) fromPartial(o models.TagPartial) {
 	r.setString("name", o.Name)
+	r.setNullString("sort_name", o.SortName)
 	r.setNullString("description", o.Description)
 	r.setBool("favorite", o.Favorite)
 	r.setBool("ignore_auto_tag", o.IgnoreAutoTag)
@@ -672,6 +676,8 @@ func (qb *TagStore) getTagSort(query *queryBuilder, findFilter *models.FindFilte
 
 	sortQuery := ""
 	switch sort {
+	case "name":
+		sortQuery += fmt.Sprintf(" ORDER BY COALESCE(tags.sort_name, tags.name, tags.id) COLLATE NATURAL_CI %s", getSortDirection(direction))
 	case "scenes_count":
 		sortQuery += getCountSort(tagTable, scenesTagsTable, tagIDColumn, direction)
 	case "scene_markers_count":
