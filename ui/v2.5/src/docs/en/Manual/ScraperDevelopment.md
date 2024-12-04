@@ -487,7 +487,7 @@ xPathScrapers:
   sceneScraper:
     scene:
       Title: //head/title
-      Details: # shows the id/s of the the visible div/s for the Multiple targets example of the page
+      Details: # shows the id/s of the visible div/s for the Multiple targets example of the page
         selector: //div[@class="bd-example"]//div[@class="multi-collapse collapse show"]/@id
         concat: "\n\n"
 
@@ -599,7 +599,7 @@ and having a look at the log / console in debug mode.
 
 Sending request headers is possible when using a scraper.
 Headers can be set in the `driver` section and are supported for plain, CDP enabled and JSON scrapers.
-They consist of a Key and a Value. If the the Key is empty or not defined then the header is ignored.
+They consist of a Key and a Value. If the Key is empty or not defined then the header is ignored.
 
 ```yaml
 driver:
