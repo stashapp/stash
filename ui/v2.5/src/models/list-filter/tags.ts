@@ -53,6 +53,7 @@ const displayModeOptions = [DisplayMode.Grid, DisplayMode.List];
 const criterionOptions = [
   FavoriteTagCriterionOption,
   createMandatoryStringCriterionOption("name"),
+  createStringCriterionOption("sort_name"),
   TagIsMissingCriterionOption,
   createStringCriterionOption("aliases"),
   createStringCriterionOption("description"),
