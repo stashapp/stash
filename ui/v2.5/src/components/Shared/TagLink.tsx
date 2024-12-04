@@ -19,6 +19,25 @@ type SceneMarkerFragment = Pick<GQL.SceneMarker, "id" | "title" | "seconds"> & {
   primary_tag: Pick<GQL.Tag, "id" | "name">;
 };
 
+interface ISortNameLinkProps{
+  link: string
+  className?: string;
+  sortName?: string;
+}
+
+const SortNameLinkComponent: React.FC<ISortNameLinkProps> = ({
+  link,
+  sortName,
+  className,
+  children,
+}) => {
+  return (
+    <Badge data-name={className} data-sort-name={sortName} className={cx("tag-item", className)} variant="secondary">
+      <Link to={link}>{children}</Link>
+    </Badge>
+  );
+};
+
 interface ICommonLinkProps {
   link: string;
   className?: string;
@@ -263,7 +282,7 @@ export const TagLink: React.FC<ITagLinkProps> = ({
   }, [hierarchyTooltipID]);
 
   return (
-    <CommonLinkComponent link={link} className={className}>
+    <SortNameLinkComponent sortName={tag.sort_name || title} link={link} className={className}>
       <TagPopover id={tag.id ?? ""} placement={hoverPlacement}>
         {title}
         {showHierarchyIcon && (
@@ -275,6 +294,6 @@ export const TagLink: React.FC<ITagLinkProps> = ({
           </OverlayTrigger>
         )}
       </TagPopover>
-    </CommonLinkComponent>
+    </SortNameLinkComponent>
   );
 };

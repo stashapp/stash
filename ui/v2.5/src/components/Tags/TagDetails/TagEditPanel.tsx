@@ -46,6 +46,7 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
 
   const schema = yup.object({
     name: yup.string().required(),
+    sort_name: yup.string().ensure(),
     aliases: yupUniqueAliases(intl, "name"),
     description: yup.string().ensure(),
     parent_ids: yup.array(yup.string().required()).defined(),
@@ -56,6 +57,7 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
 
   const initialValues = {
     name: tag?.name ?? "",
+    sort_name: tag?.sort_name ?? "",
     aliases: tag?.aliases ?? [],
     description: tag?.description ?? "",
     parent_ids: (tag?.parents ?? []).map((t) => t.id),
@@ -203,6 +205,7 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
 
       <Form noValidate onSubmit={formik.handleSubmit} id="tag-edit">
         {renderInputField("name")}
+        {renderInputField("sort_name", "text")}
         {renderStringListField("aliases")}
         {renderInputField("description", "textarea")}
         {renderParentTagsField()}
