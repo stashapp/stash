@@ -1,7 +1,9 @@
 import React, { PropsWithChildren } from "react";
 import { useIntl } from "react-intl";
+import { Link } from "react-router-dom";
 import { TagLink } from "src/components/Shared/TagLink";
 import * as GQL from "src/core/generated-graphql";
+import NavUtils from "src/utils/navigation";
 import TextUtils from "src/utils/text";
 import { DetailItem } from "src/components/Shared/DetailItem";
 import { CountryFlag } from "src/components/Shared/CountryFlag";
@@ -99,11 +101,13 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> =
           <DetailItem
             id="country"
             value={
-              <CountryFlag
-                country={performer.country}
-                className="mr-2"
-                includeName={true}
-              />
+              <Link to={NavUtils.makePerformersCountryUrl(performer)}>
+                <CountryFlag
+                  country={performer.country}
+                  className="mr-2"
+                  includeName={true}
+                />
+              </Link>
             }
             fullWidth={fullWidth}
           />

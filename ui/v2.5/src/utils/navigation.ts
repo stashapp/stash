@@ -1,6 +1,7 @@
 import * as GQL from "src/core/generated-graphql";
 import { PerformersCriterion } from "src/models/list-filter/criteria/performers";
 import { CountryCriterion } from "src/models/list-filter/criteria/country";
+import { GenderCriterion } from "src/models/list-filter/criteria/gender";
 import {
   StudiosCriterion,
   ParentStudiosCriterion,
@@ -153,6 +154,12 @@ const makePerformersCountryUrl = (
   const criterion = new CountryCriterion();
   criterion.value = `${performer.country}`;
   filter.criteria.push(criterion);
+
+  if (performer.gender) {
+    const genderCriterion = new GenderCriterion();
+    genderCriterion.value = [`${performer.gender}`];
+    filter.criteria.push(genderCriterion);
+  }
   return `/performers?${filter.makeQueryParameters()}`;
 };
 
