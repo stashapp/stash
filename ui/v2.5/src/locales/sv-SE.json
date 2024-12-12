@@ -1027,7 +1027,13 @@
         "something_went_wrong": "Något gick fel.",
         "header": "Fel",
         "invalid_javascript_string": "Ogiltig javascriptkod: {error}",
-        "invalid_json_string": "Ogiltig JSON-sträng: {error}"
+        "invalid_json_string": "Ogiltig JSON-sträng: {error}",
+        "custom_fields": {
+            "duplicate_field": "Fältnamn måste vara unikt",
+            "field_name_length": "Fältnamnet måste vara kortare än 65 karaktärer",
+            "field_name_required": "Fältnamn är obligatoriskt",
+            "field_name_whitespace": "Fältnamn kan inte börja eller sluta med blanksteg"
+        }
     },
     "ethnicity": "Etnicitet",
     "existing_value": "existerande värde",
@@ -1097,7 +1103,8 @@
     "last_played_at": "Senast spelad",
     "library": "Bibliotek",
     "loading": {
-        "generic": "Laddar…"
+        "generic": "Laddar…",
+        "plugins": "Laddar tillägg…"
     },
     "marker_count": "Antal Markörer",
     "markers": "Markörer",
@@ -1504,5 +1511,10 @@
         "any_of": "Någon av",
         "none": "Ingen",
         "only": "Bara"
+    },
+    "custom_fields": {
+        "field": "Fält",
+        "title": "Skäddarsydda Fält",
+        "value": "Värde"
     }
 }
