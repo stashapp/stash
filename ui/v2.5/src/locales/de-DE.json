@@ -140,7 +140,7 @@
         "reset_cover": "Titelbild zurücksetzen",
         "remove_from_containing_group": "Von Gruppe entfernen",
         "reset_play_duration": "Spieldauer zurücksetzten",
-        "reset_resume_time": "Forschritt zurücksetzten",
+        "reset_resume_time": "Fortschritt zurücksetzten",
         "add_sub_groups": "Untergruppen hinzufügen"
     },
     "actions_name": "Aktionen",
@@ -408,7 +408,7 @@
             "video_ext_head": "Videodateiformate",
             "video_head": "Video",
             "plugins_path": {
-                "heading": "Plugins Pfad",
+                "heading": "Dateipfad für Plugins",
                 "description": "Speicherort der Plugin-Konfigurationsdateien"
             }
         },
@@ -702,7 +702,7 @@
                 }
             },
             "preview_type": {
-                "description": "Konfiguration für Szenenwand",
+                "description": "Die Standardoption sind Video (mp4) Vorschaubilder. Für geringeren CPU-Verbrauch beim Durchsuchen kannst du die animierten Bilder (webp) Vorschaubilder verwenden. Diese müssen jedoch zusätzlich zu den Video-Vorschaubildern erstellt werden und sind größere Dateien.",
                 "heading": "Vorschautyp",
                 "options": {
                     "animated": "Animiertes Bild",
@@ -734,7 +734,10 @@
                     "vr_tag": {
                         "description": "Der VR-Knopf wird nur für Szenen mit diesem Tag angezeigt.",
                         "heading": "VR Tag"
-                    }
+                    },
+                    "show_ab_loop_controls": "Die Steuerungselemente des AB-Loop-Plugins anzeigen",
+                    "disable_mobile_media_auto_rotate": "Deaktiviere das automatische Drehen von Vollbildmedien auf Mobilgeräten",
+                    "enable_chromecast": "Chromecast aktivieren"
                 }
             },
             "scene_wall": {
@@ -784,7 +787,15 @@
                     "heading": "Aktiviere Hintergrundbild",
                     "description": "Hintergrundbild auf Detailseite anzeigen."
                 },
-                "heading": "Detailseite"
+                "heading": "Detailseite",
+                "show_all_details": {
+                    "description": "Wenn aktiviert, werden alle Inhaltsdetails standardmäßig angezeigt, und jedes Detail passt in eine einzelne Spalte",
+                    "heading": "Alle Details anzeigen"
+                }
+            },
+            "use_stash_hosted_funscript": {
+                "description": "Wenn aktiviert, werden Funscripts direkt von Stash an dein Handy-Gerät gesendet, ohne Handy-Server von Drittanbietern zu verwenden. Erfordert, dass Stash von deinem Handy-Gerät aus zugänglich ist und ein API-Schlüssel generiert wurde, falls Stash mit Zugangsdaten konfiguriert ist.",
+                "heading": "Funscripts direkt bereitstellen"
             }
         },
         "advanced_mode": "Fortgeschrittener Modus"
@@ -798,7 +809,8 @@
         "performers": "{count, plural, one {Darsteller} other {Darsteller}}",
         "scenes": "{count, plural, one {Szene} other {Szenen}}",
         "studios": "{count, plural, one {Studio} other {Studios}}",
-        "tags": "{count, plural, one {Tag} other {Tags}}"
+        "tags": "{count, plural, one {Tag} other {Tags}}",
+        "groups": "{count, plural, one {Gruppe} other {Gruppen}}"
     },
     "country": "Land",
     "cover_image": "Titelbild",
@@ -909,7 +921,7 @@
             "marker_image_previews": "Animierte Vorschau für Markierungen",
             "marker_image_previews_tooltip": "Animierte WebP-Vorschau für Markierungen, nur erforderlich, wenn der Vorschautyp auf Animiertes Bild eingestellt ist.",
             "marker_screenshots": "Screenshots für Markierungen",
-            "marker_screenshots_tooltip": "Statische JPG-Bilder für Markierungen, nur erforderlich, wenn der Vorschautyp auf Statisches Bild eingestellt ist.",
+            "marker_screenshots_tooltip": "Statische JPG-Bilder für Markierungen",
             "markers": "Vorschau für Markierungen",
             "markers_tooltip": "20-Sekunden-Videos, die zum angegebenen Zeitpunkt beginnen.",
             "override_preview_generation_options": "Überschreibe Optionen zur Erstellung von Vorschauen",
@@ -929,11 +941,13 @@
             "preview_seg_duration_desc": "Dauer jedes Vorschausegments in Sekunden.",
             "preview_seg_duration_head": "Vorschau der Segmentdauer",
             "sprites": "Szenen-Scrubber Sprites",
-            "sprites_tooltip": "Sprites (für den Szenen-Scrubber)",
+            "sprites_tooltip": "Die Reihe von Bildern, die unter dem Video-Player angezeigt wird, um eine einfache Navigation zu ermöglichen.",
             "transcodes": "Transkodierung",
             "transcodes_tooltip": "MP4-Konvertierung von nicht unterstützten Videoformaten",
             "video_previews": "Vorschau",
-            "video_previews_tooltip": "Videovorschauen, die abgespielt werden, wenn man den Mauszeiger über eine Szene bewegt"
+            "video_previews_tooltip": "Videovorschauen, die abgespielt werden, wenn man den Mauszeiger über eine Szene bewegt",
+            "image_thumbnails": "Vorschaubilder",
+            "phash_tooltip": "Zur Duplikatbereinigung und Szenenerkennung"
         },
         "scenes_found": "{count} Szenen gefunden",
         "scrape_entity_query": "{entity_type} Scrape-Abfrage",
@@ -941,7 +955,10 @@
         "scrape_results_existing": "Vorhanden",
         "scrape_results_scraped": "Gescraped",
         "set_image_url_title": "Bild URL",
-        "unsaved_changes": "Nicht gespeicherte Änderungen. Bist du sicher dass du die Seite verlassen willst?"
+        "unsaved_changes": "Nicht gespeicherte Änderungen. Bist du sicher dass du die Seite verlassen willst?",
+        "clear_play_history_confirm": "Bist du sicher, dass du den Wiedergabeverlauf löschen möchtest?",
+        "performers_found": "{count} Darsteller:innen gefunden",
+        "clear_o_history_confirm": "Möchten Sie wirklich den O-Verlauf löschen?"
     },
     "dimensions": "Maße",
     "director": "Regisseur",
@@ -969,7 +986,14 @@
             "medium": "Mittel"
         },
         "search_accuracy_label": "Suchgenauigkeit",
-        "title": "Szenen-Duplikate"
+        "title": "Szenen-Duplikate",
+        "only_select_matching_codecs": "Nur auswählen, wenn alle Codecs in der Duplikatgruppe übereinstimmen",
+        "select_all_but_largest_file": "Wähle jede Datei in jeder Duplikatgruppe aus, außer der größten Datei",
+        "select_all_but_largest_resolution": "Wähle jede Datei in jeder Duplikatgruppe aus, außer der Datei mit der höchsten Auflösung",
+        "select_none": "Nichts auswählen",
+        "select_oldest": "Wähle die älteste Datei in der Duplikatgruppe aus",
+        "select_options": "Optionen auswählen…",
+        "select_youngest": "Wähle die jüngste Datei in der Duplikatgruppe aus"
     },
     "duplicated_phash": "Dopplung (phash)",
     "duration": "Dauer",
@@ -999,7 +1023,16 @@
         "image_index_greater_than_zero": "Bilderindex muss größer 0 sein",
         "lazy_component_error_help": "Sollten Sie kürzlich ein Update für Stash durchgeführt haben, laden Sie bitte die Seite neu oder löschen Sie den Browser-Cache.",
         "something_went_wrong": "Etwas ist schief gelaufen.",
-        "header": "Fehler"
+        "header": "Fehler",
+        "invalid_json_string": "Ungültiger JSON-Text: {error}",
+        "custom_fields": {
+            "duplicate_field": "Der Feldname muss einzigartig sein",
+            "field_name_length": "Der Feldname muss weniger als 65 Zeichen lang sein",
+            "field_name_required": "Der Feldname ist erforderlich",
+            "field_name_whitespace": "Feldname kann nicht mit Leerzeichen anfangen oder aufhören"
+        },
+        "invalid_javascript_string": "Ungültiger JavaScript-Code: {error}",
+        "loading_type": "Ladefehler {type}"
     },
     "ethnicity": "Ethnizität",
     "existing_value": "vorhandener Wert",
@@ -1068,7 +1101,8 @@
     "last_played_at": "Zuletzt Abgespielt Am",
     "library": "Bibliothek",
     "loading": {
-        "generic": "Wird geladen…"
+        "generic": "Wird geladen…",
+        "plugins": "Lade Plugins…"
     },
     "marker_count": "Anzahl an Markierungen",
     "markers": "Markierungen",
@@ -1087,7 +1121,8 @@
         "play_count": "Anzahl Wiedergaben",
         "play_duration": "Abspielzeit",
         "stream": "Stream",
-        "video_codec": "Video-Codec"
+        "video_codec": "Video-Codec",
+        "o_count": "O Anzahl"
     },
     "megabits_per_second": "{value} Megabit pro Sekunde",
     "metadata": "Metadaten",
@@ -1101,7 +1136,8 @@
         "first": "Erste",
         "last": "Letzte",
         "next": "Nächste",
-        "previous": "Vorherige"
+        "previous": "Vorherige",
+        "current_total": "{current} von {total}"
     },
     "parent_of": "Übergeordnet von {children}",
     "parent_studios": "Übergeordnete Studios",
@@ -1196,7 +1232,8 @@
             "database_file_path": "Dateipfad der Datenbank",
             "generated_directory": "Ordner der generierten Hilfsdateien",
             "nearly_there": "Fast geschafft!",
-            "stash_library_directories": "Stash Bibliotheks-Ordner"
+            "stash_library_directories": "Stash Bibliotheks-Ordner",
+            "blobs_use_database": "<benutzt Datenbank>"
         },
         "creating": {
             "creating_your_system": "Erstelle dein System"
@@ -1204,7 +1241,9 @@
         "errors": {
             "something_went_wrong": "Oh nein! Etwas ist schief gelaufen!",
             "something_went_wrong_description": "Es sieht so aus, als gäbe es Probleme mit deinen Eingaben, klicke Zurück und repariere sie. Falls du nicht weißt was du falsch gemacht hast, helfen wir gerne auf {discordLink}. Solltest du dir sicher sein einen Bug gefunden zu haben, schau doch mal auf {githubLink} vorbei.",
-            "something_went_wrong_while_setting_up_your_system": "Etwas lief bei der Erstellung des Systems falsch. Hier ist die Fehlermeldung: {error}"
+            "something_went_wrong_while_setting_up_your_system": "Etwas lief bei der Erstellung des Systems falsch. Hier ist die Fehlermeldung: {error}",
+            "unable_to_retrieve_system_status": "Systemstatus konnte nicht abgerufen werden: {error}",
+            "unexpected_error": "Ein unerwarteter Error ist aufgetreten: {error}"
         },
         "folder": {
             "file_path": "Dateipfad",
@@ -1242,7 +1281,9 @@
             "where_can_stash_store_its_generated_content": "Wo darf Stash seine generierten Hilfsdateien abspeichern?",
             "where_can_stash_store_its_generated_content_description": "Um Thumbnails, Previews und Sprites zur Verfügung zu stellen, generiert Stash diese aus deinen Videos und Bildern. Das schließt auch Transkodierungen von nicht unterstützten Dateiformaten mit ein. Standardmäßig wird Stash diese im Ordner <code>generated</code> abspeichern, der sich am Ort der Konfigurationsdatei befindet. Wenn du das ändern möchtest, gebe bitte einen absoluten oder relativen (gegenüber der aktuellen working directory) Pfad an. Stash wird den Ordner erstellen, sollte er noch nicht existieren.",
             "where_is_your_porn_located": "Wo finden wir deine Porno-Kollektion?",
-            "where_is_your_porn_located_description": "Füge Ordner hinzu in denen sich deine Porno-Videos und -Bilder befinden. Stash wird diese Ordner nutzen, um Videos und Bilder in das System einzupflegen."
+            "where_is_your_porn_located_description": "Füge Ordner hinzu in denen sich deine Porno-Videos und -Bilder befinden. Stash wird diese Ordner nutzen, um Videos und Bilder in das System einzupflegen.",
+            "path_to_blobs_directory_empty_for_default": "Pfad zum Verzeichnis der blobs (standardmäßig leer)",
+            "store_blobs_in_database": "blobs in der Datenbank speichern"
         },
         "stash_setup_wizard": "Einrichtungshelfer für Stash",
         "success": {
@@ -1255,16 +1296,20 @@
             "support_us": "Unterstütze uns",
             "thanks_for_trying_stash": "Danke fürs Ausprobieren von Stash!",
             "welcome_contrib": "Außerdem sind Beiträge in Form von Code (Bug-Fixes, Verbesserungen, Features), Tests, Bug-Reports, Ideen für Features und Verbesserungen, sowie User-Support immer willkommen. Details dazu im entsprechenden Kapitel des In-App-Benutzerhandbuchs.",
-            "your_system_has_been_created": "Geschafft! Dein System wurde erstellt!"
+            "your_system_has_been_created": "Geschafft! Dein System wurde erstellt!",
+            "download_ffmpeg": "ffmpeg herunterladen",
+            "missing_ffmpeg": "Die erforderliche <code>ffmpeg</code>-Binärdatei fehlt. Du kannst sie automatisch in deinem Konfigurationsverzeichnis herunterladen, indem du das Kästchen unten auswählst. Alternativ kannst du Pfade zu den <code>ffmpeg</code>- und <code>ffprobe</code>-Binärdateien in den Systemeinstellungen angeben. Diese Binärdateien müssen vorhanden sein, damit Stash funktioniert."
         },
         "welcome": {
             "config_path_logic_explained": "Stash versucht zunächst seine Konfigurationsdatei (<code>config.yml</code>) in dem aktuellen Arbeitsverzeichnis zu finden, wenn das nicht gelingt fällt es auf <code>$HOME/.stash/config.yml</code> (bei Windows ist das <code>%USERPROFILE%\\.stash\\config.yml</code>) zurück. Du kannst Stash auch einen Pfad beim Start durch die Kommandozeilen-Option <code>-c '<path to config file>'</code> or <code>--config '<path to config file>'</code> vorgeben.",
-            "in_current_stash_directory": "Im Verzeichnis <code>$HOME/.stash</code>",
-            "in_the_current_working_directory": "Im aktuellen Arbeitsverzeichnis",
+            "in_current_stash_directory": "Im Verzeichnis <code>$HOME/.stash</code>:",
+            "in_the_current_working_directory": "Im <code>{path}</code>, dem derzeitigen Arbeitsverzeichnis:",
             "next_step": "Nachdem das alles aus dem Weg ist, sind wir jetzt bereit ein neues System zu erstellen. Wähle dazu zunächst aus wo du die Konfigurationsdatei speichern möchtest und klicke auf Weiter.",
             "store_stash_config": "Wo möchtest du die Stash Konfigurationsdatei speichern?",
             "unable_to_locate_config": "Wenn du das hier liest, konnte Stash keine existierende Konfiguration finden. Dieser Wizard wird dich deshalb durch den Prozess führen, eine neue Konfiguration anzulegen.",
-            "unexpected_explained": "Wenn du diesen Wizard nicht erwartest, starte Stash im korrekten Arbeitsverzeichnis neu oder setze den Pfad zur Konfigurationsdatei mit der Kommandozeilenoption <code>-c</code>."
+            "unexpected_explained": "Wenn du diesen Wizard nicht erwartest, starte Stash im korrekten Arbeitsverzeichnis neu oder setze den Pfad zur Konfigurationsdatei mit der Kommandozeilenoption <code>-c</code>.",
+            "in_the_current_working_directory_disabled_macos": "Nicht unterstützt, wenn <code>Stash.app</code> ausgeführt wird<br></br>Führe <code>stash-macos</code> aus, um im Arbeitsverzeichnis einzurichten",
+            "in_the_current_working_directory_disabled": "Im <code>{path}</code>, dem Arbeitsverzeichnis:"
         },
         "welcome_specific_config": {
             "config_path": "Stash wird den folgenden Pfad für die Konfigurationsdatei verwenden: <code>{path}</code>",
@@ -1281,13 +1326,18 @@
         "selected_stash_box": "Ausgewählter Stash-Box Endpunkt",
         "submission_failed": "Einreichen fehlgeschlagen",
         "submission_successful": "Einreichen erfolgreich",
-        "submit_update": "Existiert bereits in {endpoint_name}"
+        "submit_update": "Existiert bereits in {endpoint_name}",
+        "source": "Stash-Box Quelle"
     },
     "statistics": "Statistiken",
     "stats": {
         "image_size": "Bildspeicher",
         "scenes_duration": "Szenendauer",
-        "scenes_size": "Szenenspeicher"
+        "scenes_size": "Szenenspeicher",
+        "scenes_played": "Szenen Abgespielt",
+        "total_o_count": "Insgesamt Anzahl der Os",
+        "total_play_count": "Gesamtanzahl der Wiedergaben",
+        "total_play_duration": "Spieldauer insgesamt"
     },
     "status": "Status: {statusText}",
     "studio": "Studio",
@@ -1314,7 +1364,7 @@
         "merged_scenes": "Zusammengefasste Szene",
         "merged_tags": "Zusammengeführte Tags",
         "reassign_past_tense": "Datei neu zugewiesen",
-        "removed_entity": "{count, plural, one {{singularEntity}} other {{pluralEntity}}} gelöscht",
+        "removed_entity": "{count, plural, one {{singularEntity}} other {{pluralEntity}}} entfernt",
         "rescanning_entity": "Erneutes Scannen von {count, plural, one {{singularEntity}} other {{pluralEntity}}}…",
         "saved_entity": "{entity} gespeichert",
         "started_auto_tagging": "Automatisches Tagging gestartet",
@@ -1330,7 +1380,10 @@
     "url": "URL",
     "validation": {
         "date_invalid_form": "${path} muss die Form YYYY-MM-DD haben",
-        "required": "${path} ist ein notwendiges Feld"
+        "required": "${path} ist ein notwendiges Feld",
+        "end_time_before_start_time": "Der Endzeitpunkt muss nach oder am Startzeitpunkt sein",
+        "unique": "${path} muss einzigartig sein",
+        "blank": "${path} darf nicht leer sein"
     },
     "videos": "Videos",
     "view_all": "Alle ansehen",
@@ -1340,5 +1393,128 @@
     "zip_file_count": "Anzahl der Zip-Dateien",
     "audio_codec": "Audio Codec",
     "group": "Gruppe",
-    "groups": "Gruppen"
+    "groups": "Gruppen",
+    "time_end": "Endzeitpunkt",
+    "studio_tagger": {
+        "create_or_tag_parent_studios": "Fehlende übergeordnete Studios erstellen oder bestehende übergeordnete Studios taggen",
+        "update_studio": "Studio Updaten",
+        "any_names_entered_will_be_queried": "Alle eingetragenen Namen werden bei der stash-box Instanz nachgeschlagen und hinzugefügt, wenn gefunden. Nur exakte Übereinstimmungen werden als Treffer gewertet.",
+        "config": {
+            "these_fields_will_not_be_changed_when_updating_studios": "Diese Felder werden nicht geändert, wenn Studios aktualisiert werden.",
+            "no_instances_found": "Keine Instanz gefunden",
+            "edit_excluded_fields": "Abgewählte Felder bearbeiten",
+            "excluded_fields": "Abgewähltes Feld:",
+            "no_fields_are_excluded": "Keine Felder sind abgewählt",
+            "active_stash-box_instance": "Aktive stash-box Instanz:",
+            "create_parent_desc": "Erstelle fehlende übergeordnete Studios oder tagge und aktualisiere Daten/Bilder für bestehende übergeordnete Studios mit genau passenden Namen",
+            "create_parent_label": "Übergeordnete Studios erstellen"
+        },
+        "network_error": "Netzwerkfehler",
+        "query_all_studios_in_the_database": "Alle Studios in der Datenbank",
+        "refresh_tagged_studios": "Getaggte Studios aktualisieren",
+        "refreshing_will_update_the_data": "Aktualisieren wird die daten von allen getaggten Studios der stash-box Instanz updaten.",
+        "add_new_studios": "Neue Studios hinzufügen",
+        "batch_add_studios": "Stapelverarbeitung: Studios hinzufügen",
+        "batch_update_studios": "Stapelverarbeitung: Studios updaten",
+        "current_page": "Aktuelle Seite",
+        "failed_to_save_studio": "Speichern des Studios \"{studio}\" Fehlgeschlagen",
+        "status_tagging_job_queued": "Status: Tagging Job in der Warteschlange",
+        "studio_already_tagged": "Studio schon getaggt",
+        "studio_names_separated_by_comma": "Studionamen mit Komma trennen",
+        "studio_selection": "Ausgewählte Studios",
+        "to_use_the_studio_tagger": "Um den Studiotagger zu benutzen, muss eine stash-box Instanz konfiguriert werden.",
+        "untagged_studios": "Nicht getaggte Studios",
+        "update_studios": "Studios Updaten",
+        "updating_untagged_studios_description": "Das Aktualisieren von nicht getaggten Studios versucht, alle Studios abzugleichen, die keine stashid haben, und deren Metadaten zu aktualisieren.",
+        "status_tagging_studios": "Status: Studios am Taggen",
+        "number_of_studios_will_be_processed": "Es wird/werden {studio_count} Studio(s) verarbeitet",
+        "studio_successfully_tagged": "Studios erfolgreich getaggt",
+        "tag_status": "Tag Status",
+        "name_already_exists": "Name existiert bereits",
+        "no_results_found": "Keine Ergebnisse gefunden."
+    },
+    "parent_studio": "Übergeordnetes Studio",
+    "package_manager": {
+        "edit_source": "Quelle bearbeiten",
+        "no_packages": "Keine Pakete gefunden",
+        "package": "Paket",
+        "selected_only": "Nur Auswahl",
+        "show_all": "Zeige Alles",
+        "confirm_uninstall": "Bist du sicher, dass du {number} Pakete deinstallieren möchtest?",
+        "description": "Beschreibung",
+        "hide_unselected": "Nicht ausgewählte ausblenden",
+        "install": "Installieren",
+        "installed_version": "Installierte Version",
+        "latest_version": "Aktuellste Version",
+        "no_sources": "Es sind keine Quellen konfiguriert",
+        "no_upgradable": "Keine aktualisierbaren Pakete gefunden",
+        "required_by": "Von {packages} benötigt",
+        "source": {
+            "local_path": {
+                "heading": "Lokaler Dateipfad",
+                "description": "Relativer Pfad zum Speichern von Paketen für diese Quelle. Beachten Sie, dass eine Änderung, das manuelle verschieben der Pakete erfordert."
+            },
+            "name": "Name",
+            "url": "Quellen URL"
+        },
+        "uninstall": "Deinstallieren",
+        "unknown": "<unbekannt>",
+        "update": "Update",
+        "version": "Version",
+        "check_for_updates": "Nach Updates suchen",
+        "confirm_delete_source": "Sind Sie sicher, dass Sie die Quelle {name} ({url}) löschen wollen?",
+        "add_source": "Quelle hinzufügen"
+    },
+    "photographer": "Fotograf",
+    "playdate_recorded_no": "Keine Wiedergabedaten gespeichert",
+    "urls": "URLs",
+    "play_history": "Wiedergabeverlauf",
+    "plays": "{value} wiedergaben",
+    "primary_tag": "Haupt-Tag",
+    "studio_count": "Studio Anzahl",
+    "unknown_date": "Unbekanntes Datum",
+    "criterion_modifier_values": {
+        "only": "Einzige",
+        "any": "Beliebig",
+        "any_of": "Irgendeine von",
+        "none": "Keine"
+    },
+    "o_count": "O Anzahl",
+    "studio_tags": "Studio Tags",
+    "custom_fields": {
+        "title": "Benutzerdefinierte Felder",
+        "value": "Wert",
+        "field": "Feld"
+    },
+    "distance": "Distanz",
+    "group_count": "Gruppenanzahl",
+    "group_scene_number": "Szenennummer",
+    "include_sub_group_content": "Inhalt von Untergruppen einschließen",
+    "sub_group": "Untergruppe",
+    "sub_group_count": "Untergruppen Anzahl",
+    "sub_group_of": "Untergruppen von {parent}",
+    "sub_group_order": "Untergruppen Ordnung",
+    "subsidiary_studio_count": "Anzahl der Tochterstudios",
+    "sub_groups": "Untergruppen",
+    "tag_parent_tooltip": "Hat die übergeordneten Tags",
+    "time": "Zeit",
+    "video_codec": "Video Codec",
+    "connection_monitor": {
+        "websocket_connection_failed": "WebSocket-Verbindung konnte nicht hergestellt werden: Sieh dir die Browser-Konsole für Details an",
+        "websocket_connection_reestablished": "Websocket-Verbindung wiederhergestellt"
+    },
+    "containing_group": "Enthaltende Gruppe",
+    "containing_groups": "Enthaltende Gruppen",
+    "include_sub_tag_content": "Inhalt von Untertags einschließen",
+    "index_of_total": "{index} von {total}",
+    "include_sub_studio_content": "Inhalt von Unterstudios einschließen",
+    "last_o_at": "Letztes O",
+    "o_history": "O Verlauf",
+    "odate_recorded_no": "Kein O Datum Aufgezeichnet",
+    "orientation": "Orientierung",
+    "containing_group_count": "Enthaltende Gruppen Anzahl",
+    "history": "Verlauf",
+    "tag_sub_tag_tooltip": "Hat Untertags",
+    "include_sub_groups": "Untergruppen einbeziehen",
+    "studio_and_parent": "Studio & Mutterstudio"
 }
