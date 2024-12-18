@@ -6,13 +6,16 @@ type Tag {
   ignore_auto_tag: Boolean!
   created_at: Time!
   updated_at: Time!
-
+  favorite: Boolean!
   image_path: String # Resolver
   scene_count(depth: Int): Int! # Resolver
   scene_marker_count(depth: Int): Int! # Resolver
   image_count(depth: Int): Int! # Resolver
   gallery_count(depth: Int): Int! # Resolver
   performer_count(depth: Int): Int! # Resolver
+  studio_count(depth: Int): Int! # Resolver
+  group_count(depth: Int): Int! # Resolver
+  movie_count(depth: Int): Int! @deprecated(reason: "use group_count instead") # Resolver
   parents: [Tag!]!
   children: [Tag!]!
 
@@ -25,7 +28,7 @@ input TagCreateInput {
   description: String
   aliases: [String!]
   ignore_auto_tag: Boolean
-
+  favorite: Boolean
   "This should be a URL or a base64 encoded data URL"
   image: String
 
@@ -39,7 +42,7 @@ input TagUpdateInput {
   description: String
   aliases: [String!]
   ignore_auto_tag: Boolean
-
+  favorite: Boolean
   "This should be a URL or a base64 encoded data URL"
   image: String
 
@@ -59,4 +62,15 @@ type FindTagsResultType {
 input TagsMergeInput {
   source: [ID!]!
   destination: ID!
+}
+
+input BulkTagUpdateInput {
+  ids: [ID!]
+  description: String
+  aliases: BulkUpdateStrings
+  ignore_auto_tag: Boolean
+  favorite: Boolean
+
+  parent_ids: BulkUpdateIds
+  child_ids: BulkUpdateIds
 }

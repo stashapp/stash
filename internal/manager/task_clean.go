@@ -15,6 +15,7 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
+	"github.com/stashapp/stash/pkg/plugin/hook"
 	"github.com/stashapp/stash/pkg/scene"
 )
 
@@ -31,7 +32,7 @@ type cleanJob struct {
 	scanSubs     *subscriptionManager
 }
 
-func (j *cleanJob) Execute(ctx context.Context, progress *job.Progress) {
+func (j *cleanJob) Execute(ctx context.Context, progress *job.Progress) error {
 	logger.Infof("Starting cleaning of tracked files")
 	start := time.Now()
 	if j.input.DryRun {
@@ -46,7 +47,7 @@ func (j *cleanJob) Execute(ctx context.Context, progress *job.Progress) {
 
 	if job.IsCancelled(ctx) {
 		logger.Info("Stopping due to user request")
-		return
+		return nil
 	}
 
 	j.cleanEmptyGalleries(ctx)
@@ -54,6 +55,7 @@ func (j *cleanJob) Execute(ctx context.Context, progress *job.Progress) {
 	j.scanSubs.notify()
 	elapsed := time.Since(start)
 	logger.Info(fmt.Sprintf("Finished Cleaning (%s)", elapsed))
+	return nil
 }
 
 func (j *cleanJob) cleanEmptyGalleries(ctx context.Context) {
@@ -129,7 +131,7 @@ func (j *cleanJob) deleteGallery(ctx context.Context, id int) {
 			return err
 		}
 
-		pluginCache.RegisterPostHooks(ctx, id, plugin.GalleryDestroyPost, plugin.GalleryDestroyInput{
+		pluginCache.RegisterPostHooks(ctx, id, hook.GalleryDestroyPost, plugin.GalleryDestroyInput{
 			Checksum: g.PrimaryChecksum(),
 			Path:     g.Path,
 		}, nil)
@@ -302,7 +304,7 @@ func (h *cleanHandler) handleRelatedScenes(ctx context.Context, fileDeleter *fil
 				return err
 			}
 
-			mgr.PluginCache.RegisterPostHooks(ctx, scene.ID, plugin.SceneDestroyPost, plugin.SceneDestroyInput{
+			mgr.PluginCache.RegisterPostHooks(ctx, scene.ID, hook.SceneDestroyPost, plugin.SceneDestroyInput{
 				Checksum: scene.Checksum,
 				OSHash:   scene.OSHash,
 				Path:     scene.Path,
@@ -349,7 +351,7 @@ func (h *cleanHandler) handleRelatedGalleries(ctx context.Context, fileID models
 				return err
 			}
 
-			mgr.PluginCache.RegisterPostHooks(ctx, g.ID, plugin.GalleryDestroyPost, plugin.GalleryDestroyInput{
+			mgr.PluginCache.RegisterPostHooks(ctx, g.ID, hook.GalleryDestroyPost, plugin.GalleryDestroyInput{
 				Checksum: g.PrimaryChecksum(),
 				Path:     g.Path,
 			}, nil)
@@ -389,7 +391,7 @@ func (h *cleanHandler) deleteRelatedFolderGalleries(ctx context.Context, folderI
 			return err
 		}
 
-		mgr.PluginCache.RegisterPostHooks(ctx, g.ID, plugin.GalleryDestroyPost, plugin.GalleryDestroyInput{
+		mgr.PluginCache.RegisterPostHooks(ctx, g.ID, hook.GalleryDestroyPost, plugin.GalleryDestroyInput{
 			// No checksum for folders
 			// Checksum: g.Checksum(),
 			Path: g.Path,
@@ -423,7 +425,7 @@ func (h *cleanHandler) handleRelatedImages(ctx context.Context, fileDeleter *fil
 				return err
 			}
 
-			mgr.PluginCache.RegisterPostHooks(ctx, i.ID, plugin.ImageDestroyPost, plugin.ImageDestroyInput{
+			mgr.PluginCache.RegisterPostHooks(ctx, i.ID, hook.ImageDestroyPost, plugin.ImageDestroyInput{
 				Checksum: i.Checksum,
 				Path:     i.Path,
 			}, nil)

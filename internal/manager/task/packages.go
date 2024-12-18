@@ -30,13 +30,13 @@ type InstallPackagesJob struct {
 	Packages []*models.PackageSpecInput
 }
 
-func (j *InstallPackagesJob) Execute(ctx context.Context, progress *job.Progress) {
+func (j *InstallPackagesJob) Execute(ctx context.Context, progress *job.Progress) error {
 	progress.SetTotal(len(j.Packages))
 
 	for _, p := range j.Packages {
 		if job.IsCancelled(ctx) {
 			logger.Info("Cancelled installing packages")
-			return
+			return nil
 		}
 
 		logger.Infof("Installing package %s", p.ID)
@@ -53,6 +53,7 @@ func (j *InstallPackagesJob) Execute(ctx context.Context, progress *job.Progress
 	}
 
 	logger.Infof("Finished installing packages")
+	return nil
 }
 
 type UpdatePackagesJob struct {
@@ -60,13 +61,12 @@ type UpdatePackagesJob struct {
 	Packages []*models.PackageSpecInput
 }
 
-func (j *UpdatePackagesJob) Execute(ctx context.Context, progress *job.Progress) {
+func (j *UpdatePackagesJob) Execute(ctx context.Context, progress *job.Progress) error {
 	// if no packages are specified, update all
 	if len(j.Packages) == 0 {
 		installed, err := j.PackageManager.InstalledStatus(ctx)
 		if err != nil {
-			logger.Errorf("Error getting installed packages: %v", err)
-			return
+			return fmt.Errorf("error getting installed packages: %w", err)
 		}
 
 		for _, p := range installed {
@@ -84,7 +84,7 @@ func (j *UpdatePackagesJob) Execute(ctx context.Context, progress *job.Progress)
 	for _, p := range j.Packages {
 		if job.IsCancelled(ctx) {
 			logger.Info("Cancelled updating packages")
-			return
+			return nil
 		}
 
 		logger.Infof("Updating package %s", p.ID)
@@ -101,6 +101,7 @@ func (j *UpdatePackagesJob) Execute(ctx context.Context, progress *job.Progress)
 	}
 
 	logger.Infof("Finished updating packages")
+	return nil
 }
 
 type UninstallPackagesJob struct {
@@ -108,13 +109,13 @@ type UninstallPackagesJob struct {
 	Packages []*models.PackageSpecInput
 }
 
-func (j *UninstallPackagesJob) Execute(ctx context.Context, progress *job.Progress) {
+func (j *UninstallPackagesJob) Execute(ctx context.Context, progress *job.Progress) error {
 	progress.SetTotal(len(j.Packages))
 
 	for _, p := range j.Packages {
 		if job.IsCancelled(ctx) {
 			logger.Info("Cancelled installing packages")
-			return
+			return nil
 		}
 
 		logger.Infof("Uninstalling package %s", p.ID)
@@ -131,4 +132,5 @@ func (j *UninstallPackagesJob) Execute(ctx context.Context, progress *job.Progre
 	}
 
 	logger.Infof("Finished uninstalling packages")
+	return nil
 }

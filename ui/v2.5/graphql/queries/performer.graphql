@@ -1,0 +1,39 @@
+query FindPerformers(
+  $filter: FindFilterType
+  $performer_filter: PerformerFilterType
+  $performer_ids: [Int!]
+) {
+  findPerformers(
+    filter: $filter
+    performer_filter: $performer_filter
+    performer_ids: $performer_ids
+  ) {
+    count
+    performers {
+      ...PerformerData
+    }
+  }
+}
+
+query FindPerformer($id: ID!) {
+  findPerformer(id: $id) {
+    ...PerformerData
+  }
+}
+
+query FindPerformersForSelect(
+  $filter: FindFilterType
+  $performer_filter: PerformerFilterType
+  $ids: [ID!]
+) {
+  findPerformers(
+    filter: $filter
+    performer_filter: $performer_filter
+    ids: $ids
+  ) {
+    count
+    performers {
+      ...SelectPerformerData
+    }
+  }
+}

@@ -1,6 +1,9 @@
 interface IPluginApi {
   React: typeof React;
   GQL: any;
+  Event: {
+    addEventListener: (event: string, callback: (e: CustomEvent) => void) => void;
+  };
   libraries: {
     ReactRouterDOM: {
       Link: React.FC<any>;
@@ -52,6 +55,8 @@ interface IPluginApi {
   const {
     NavUtils
   } = PluginApi.utils;
+
+  PluginApi.Event.addEventListener("stash:location", (e) => console.log("Page Changed", e.detail.data.location.pathname, e.detail.data.location.search))
 
   const ScenePerformer: React.FC<{
     performer: any;
@@ -127,16 +132,29 @@ interface IPluginApi {
     );
   }
 
+  function Overlays() {
+    return <span className="example-react-component-custom-overlay">Custom overlay</span>;
+  }
+
   PluginApi.patch.instead("SceneCard.Details", function (props: any, _: any, original: any) {
     return <SceneDetails {...props} />;
   });
 
+  PluginApi.patch.instead("SceneCard.Overlays", function (props: any, _: any, original: (props: any) => any) {  
+    return <><Overlays />{original({...props})}</>;
+  });
+
   const TestPage: React.FC = () => {
-    const componentsLoading = PluginApi.hooks.useLoadComponents([PluginApi.loadableComponents.SceneCard]);
+    const componentsToLoad = [
+      PluginApi.loadableComponents.SceneCard,
+      PluginApi.loadableComponents.PerformerSelect,
+    ];
+    const componentsLoading = PluginApi.hooks.useLoadComponents(componentsToLoad);
     
     const {
       SceneCard,
       LoadingIndicator,
+      PerformerSelect,
     } = PluginApi.components;
 
     // read a random scene and show a scene card for it
@@ -159,6 +177,9 @@ interface IPluginApi {
       <div>
         <div>This is a test page.</div>
         {!!scene && <SceneCard scene={data.findScenes.scenes[0]} />}
+        <div>
+          <PerformerSelect isMulti onSelect={() => {}} values={[]} />
+        </div>
       </div>
     );
   };

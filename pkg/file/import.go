@@ -89,7 +89,7 @@ func (i *Importer) fileJSONToFile(ctx context.Context, fileJSON jsonschema.DirEn
 		return i.baseFileJSONToBaseFile(ctx, ff)
 	}
 
-	return nil, fmt.Errorf("unknown file type")
+	return nil, errors.New("unknown file type")
 }
 
 func (i *Importer) baseFileJSONToBaseFile(ctx context.Context, baseJSON *jsonschema.BaseFile) (*models.BaseFile, error) {

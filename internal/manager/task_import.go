@@ -13,13 +13,14 @@ import (
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/gallery"
+	"github.com/stashapp/stash/pkg/group"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
 	"github.com/stashapp/stash/pkg/models/paths"
-	"github.com/stashapp/stash/pkg/movie"
 	"github.com/stashapp/stash/pkg/performer"
+	"github.com/stashapp/stash/pkg/savedfilter"
 	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/studio"
 	"github.com/stashapp/stash/pkg/tag"
@@ -124,10 +125,11 @@ func (t *ImportTask) Start(ctx context.Context) {
 		}
 	}
 
+	t.ImportSavedFilters(ctx)
 	t.ImportTags(ctx)
 	t.ImportPerformers(ctx)
 	t.ImportStudios(ctx)
-	t.ImportMovies(ctx)
+	t.ImportGroups(ctx)
 	t.ImportFiles(ctx)
 	t.ImportGalleries(ctx)
 
@@ -292,8 +294,11 @@ func (t *ImportTask) ImportStudios(ctx context.Context) {
 }
 
 func (t *ImportTask) importStudio(ctx context.Context, studioJSON *jsonschema.Studio, pendingParent map[string][]*jsonschema.Studio) error {
+	r := t.repository
+
 	importer := &studio.Importer{
 		ReaderWriter:        t.repository.Studio,
+		TagWriter:           r.Tag,
 		Input:               *studioJSON,
 		MissingRefBehaviour: t.MissingRefBehaviour,
 	}
@@ -322,14 +327,15 @@ func (t *ImportTask) importStudio(ctx context.Context, studioJSON *jsonschema.St
 	return nil
 }
 
-func (t *ImportTask) ImportMovies(ctx context.Context) {
-	logger.Info("[movies] importing")
+func (t *ImportTask) ImportGroups(ctx context.Context) {
+	logger.Info("[groups] importing")
+	pendingSubs := make(map[string][]*jsonschema.Group)
 
-	path := t.json.json.Movies
+	path := t.json.json.Groups
 	files, err := os.ReadDir(path)
 	if err != nil {
 		if !errors.Is(err, os.ErrNotExist) {
-			logger.Errorf("[movies] failed to read movies directory: %v", err)
+			logger.Errorf("[groups] failed to read movies directory: %v", err)
 		}
 
 		return
@@ -339,30 +345,79 @@ func (t *ImportTask) ImportMovies(ctx context.Context) {
 
 	for i, fi := range files {
 		index := i + 1
-		movieJSON, err := jsonschema.LoadMovieFile(filepath.Join(path, fi.Name()))
+		groupJSON, err := jsonschema.LoadGroupFile(filepath.Join(path, fi.Name()))
 		if err != nil {
-			logger.Errorf("[movies] failed to read json: %v", err)
+			logger.Errorf("[groups] failed to read json: %v", err)
 			continue
 		}
 
-		logger.Progressf("[movies] %d of %d", index, len(files))
+		logger.Progressf("[groups] %d of %d", index, len(files))
 
 		if err := r.WithTxn(ctx, func(ctx context.Context) error {
-			movieImporter := &movie.Importer{
-				ReaderWriter:        r.Movie,
-				StudioWriter:        r.Studio,
-				Input:               *movieJSON,
-				MissingRefBehaviour: t.MissingRefBehaviour,
+			return t.importGroup(ctx, groupJSON, pendingSubs, false)
+		}); err != nil {
+			var subError group.SubGroupNotExistError
+			if errors.As(err, &subError) {
+				missingSub := subError.MissingSubGroup()
+				pendingSubs[missingSub] = append(pendingSubs[missingSub], groupJSON)
+				continue
 			}
 
-			return performImport(ctx, movieImporter, t.DuplicateBehaviour)
-		}); err != nil {
-			logger.Errorf("[movies] <%s> import failed: %v", fi.Name(), err)
+			logger.Errorf("[groups] <%s> failed to import: %v", fi.Name(), err)
 			continue
 		}
 	}
 
-	logger.Info("[movies] import complete")
+	for _, s := range pendingSubs {
+		for _, orphanGroupJSON := range s {
+			if err := r.WithTxn(ctx, func(ctx context.Context) error {
+				return t.importGroup(ctx, orphanGroupJSON, nil, true)
+			}); err != nil {
+				logger.Errorf("[groups] <%s> failed to create: %v", orphanGroupJSON.Name, err)
+				continue
+			}
+		}
+	}
+
+	logger.Info("[groups] import complete")
+}
+
+func (t *ImportTask) importGroup(ctx context.Context, groupJSON *jsonschema.Group, pendingSub map[string][]*jsonschema.Group, fail bool) error {
+	r := t.repository
+
+	importer := &group.Importer{
+		ReaderWriter:        r.Group,
+		StudioWriter:        r.Studio,
+		TagWriter:           r.Tag,
+		Input:               *groupJSON,
+		MissingRefBehaviour: t.MissingRefBehaviour,
+	}
+
+	// first phase: return error if parent does not exist
+	if !fail {
+		importer.MissingRefBehaviour = models.ImportMissingRefEnumFail
+	}
+
+	if err := performImport(ctx, importer, t.DuplicateBehaviour); err != nil {
+		return err
+	}
+
+	for _, containingGroupJSON := range pendingSub[groupJSON.Name] {
+		if err := t.importGroup(ctx, containingGroupJSON, pendingSub, fail); err != nil {
+			var subError group.SubGroupNotExistError
+			if errors.As(err, &subError) {
+				missingSub := subError.MissingSubGroup()
+				pendingSub[missingSub] = append(pendingSub[missingSub], containingGroupJSON)
+				continue
+			}
+
+			return fmt.Errorf("failed to create containing group <%s>: %v", containingGroupJSON.Name, err)
+		}
+	}
+
+	delete(pendingSub, groupJSON.Name)
+
+	return nil
 }
 
 func (t *ImportTask) ImportFiles(ctx context.Context) {
@@ -644,7 +699,7 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 				MissingRefBehaviour: t.MissingRefBehaviour,
 
 				GalleryFinder:   r.Gallery,
-				MovieWriter:     r.Movie,
+				GroupWriter:     r.Group,
 				PerformerWriter: r.Performer,
 				StudioWriter:    r.Studio,
 				TagWriter:       r.Tag,
@@ -725,4 +780,54 @@ func (t *ImportTask) ImportImages(ctx context.Context) {
 	}
 
 	logger.Info("[images] import complete")
+}
+
+func (t *ImportTask) ImportSavedFilters(ctx context.Context) {
+	logger.Info("[saved filters] importing")
+
+	path := t.json.json.SavedFilters
+	files, err := os.ReadDir(path)
+	if err != nil {
+		if !errors.Is(err, os.ErrNotExist) {
+			logger.Errorf("[saved filters] failed to read saved filters directory: %v", err)
+		}
+
+		return
+	}
+
+	r := t.repository
+
+	for i, fi := range files {
+		index := i + 1
+		savedFilterJSON, err := jsonschema.LoadSavedFilterFile(filepath.Join(path, fi.Name()))
+		if err != nil {
+			logger.Errorf("[saved filters] failed to read json: %v", err)
+			continue
+		}
+
+		logger.Progressf("[saved filters] %d of %d", index, len(files))
+
+		if err := r.WithTxn(ctx, func(ctx context.Context) error {
+			return t.importSavedFilter(ctx, savedFilterJSON)
+		}); err != nil {
+			logger.Errorf("[saved filters] <%s> failed to import: %v", fi.Name(), err)
+			continue
+		}
+	}
+
+	logger.Info("[saved filters] import complete")
+}
+
+func (t *ImportTask) importSavedFilter(ctx context.Context, savedFilterJSON *jsonschema.SavedFilter) error {
+	importer := &savedfilter.Importer{
+		ReaderWriter:        t.repository.SavedFilter,
+		Input:               *savedFilterJSON,
+		MissingRefBehaviour: t.MissingRefBehaviour,
+	}
+
+	if err := performImport(ctx, importer, t.DuplicateBehaviour); err != nil {
+		return err
+	}
+
+	return nil
 }

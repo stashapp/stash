@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/stashapp/stash/internal/api/loaders"
 	"github.com/stashapp/stash/internal/api/urlbuilders"
@@ -183,20 +184,20 @@ func (r *sceneResolver) Studio(ctx context.Context, obj *models.Scene) (ret *mod
 }
 
 func (r *sceneResolver) Movies(ctx context.Context, obj *models.Scene) (ret []*SceneMovie, err error) {
-	if !obj.Movies.Loaded() {
+	if !obj.Groups.Loaded() {
 		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 			qb := r.repository.Scene
 
-			return obj.LoadMovies(ctx, qb)
+			return obj.LoadGroups(ctx, qb)
 		}); err != nil {
 			return nil, err
 		}
 	}
 
-	loader := loaders.From(ctx).MovieByID
+	loader := loaders.From(ctx).GroupByID
 
-	for _, sm := range obj.Movies.List() {
-		movie, err := loader.Load(sm.MovieID)
+	for _, sm := range obj.Groups.List() {
+		movie, err := loader.Load(sm.GroupID)
 		if err != nil {
 			return nil, err
 		}
@@ -208,6 +209,37 @@ func (r *sceneResolver) Movies(ctx context.Context, obj *models.Scene) (ret []*S
 		}
 
 		ret = append(ret, sceneMovie)
+	}
+
+	return ret, nil
+}
+
+func (r *sceneResolver) Groups(ctx context.Context, obj *models.Scene) (ret []*SceneGroup, err error) {
+	if !obj.Groups.Loaded() {
+		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+			qb := r.repository.Scene
+
+			return obj.LoadGroups(ctx, qb)
+		}); err != nil {
+			return nil, err
+		}
+	}
+
+	loader := loaders.From(ctx).GroupByID
+
+	for _, sm := range obj.Groups.List() {
+		group, err := loader.Load(sm.GroupID)
+		if err != nil {
+			return nil, err
+		}
+
+		sceneIdx := sm.SceneIndex
+		sceneGroup := &SceneGroup{
+			Group:      group,
+			SceneIndex: sceneIdx,
+		}
+
+		ret = append(ret, sceneGroup)
 	}
 
 	return ret, nil
@@ -318,4 +350,63 @@ func (r *sceneResolver) Urls(ctx context.Context, obj *models.Scene) ([]string, 
 	}
 
 	return obj.URLs.List(), nil
+}
+
+func (r *sceneResolver) OCounter(ctx context.Context, obj *models.Scene) (*int, error) {
+	ret, err := loaders.From(ctx).SceneOCount.Load(obj.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &ret, nil
+}
+
+func (r *sceneResolver) LastPlayedAt(ctx context.Context, obj *models.Scene) (*time.Time, error) {
+	ret, err := loaders.From(ctx).SceneLastPlayed.Load(obj.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+}
+
+func (r *sceneResolver) PlayCount(ctx context.Context, obj *models.Scene) (*int, error) {
+	ret, err := loaders.From(ctx).ScenePlayCount.Load(obj.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &ret, nil
+}
+
+func (r *sceneResolver) PlayHistory(ctx context.Context, obj *models.Scene) ([]*time.Time, error) {
+	ret, err := loaders.From(ctx).ScenePlayHistory.Load(obj.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	// convert to pointer slice
+	ptrRet := make([]*time.Time, len(ret))
+	for i, t := range ret {
+		tt := t
+		ptrRet[i] = &tt
+	}
+
+	return ptrRet, nil
+}
+
+func (r *sceneResolver) OHistory(ctx context.Context, obj *models.Scene) ([]*time.Time, error) {
+	ret, err := loaders.From(ctx).SceneOHistory.Load(obj.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	// convert to pointer slice
+	ptrRet := make([]*time.Time, len(ret))
+	for i, t := range ret {
+		tt := t
+		ptrRet[i] = &tt
+	}
+
+	return ptrRet, nil
 }

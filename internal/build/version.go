@@ -1,3 +1,4 @@
+// Package build provides the version information for the application.
 package build
 
 import (

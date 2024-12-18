@@ -3,7 +3,6 @@ import { Button, Card, Form, InputGroup, ProgressBar } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Link } from "react-router-dom";
 import { HashLink } from "react-router-hash-link";
-import { useLocalForage } from "src/hooks/LocalForage";
 
 import * as GQL from "src/core/generated-graphql";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
@@ -21,11 +20,13 @@ import { ConfigurationContext } from "src/hooks/Config";
 
 import StashSearchResult from "./StashSearchResult";
 import PerformerConfig from "./Config";
-import { LOCAL_FORAGE_KEY, ITaggerConfig, initialConfig } from "../constants";
+import { ITaggerConfig } from "../constants";
 import PerformerModal from "../PerformerModal";
 import { useUpdatePerformer } from "../queries";
 import { faStar, faTags } from "@fortawesome/free-solid-svg-icons";
 import { mergeStashIDs } from "src/utils/stashbox";
+import { ExternalLink } from "src/components/Shared/ExternalLink";
+import { useTaggerConfig } from "../config";
 
 type JobFragment = Pick<
   GQL.Job,
@@ -237,7 +238,6 @@ interface IPerformerTaggerListProps {
   selectedEndpoint: { endpoint: string; index: number };
   isIdle: boolean;
   config: ITaggerConfig;
-  stashBoxes?: GQL.StashBox[];
   onBatchAdd: (performerInput: string) => void;
   onBatchUpdate: (ids: string[] | undefined, refresh: boolean) => void;
 }
@@ -247,7 +247,6 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
   selectedEndpoint,
   isIdle,
   config,
-  stashBoxes,
   onBatchAdd,
   onBatchUpdate,
 }) => {
@@ -276,7 +275,7 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
   >();
 
   const doBoxSearch = (performerID: string, searchVal: string) => {
-    stashBoxPerformerQuery(searchVal, selectedEndpoint.index)
+    stashBoxPerformerQuery(searchVal, selectedEndpoint.endpoint)
       .then((queryData) => {
         const s = queryData.data?.scrapeSinglePerformer ?? [];
         setSearchResults({
@@ -308,14 +307,14 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
   const doBoxUpdate = (
     performerID: string,
     stashID: string,
-    endpointIndex: number
+    endpoint: string
   ) => {
     setLoadingUpdate(stashID);
     setError({
       ...error,
       [performerID]: undefined,
     });
-    stashBoxPerformerQuery(stashID, endpointIndex)
+    stashBoxPerformerQuery(stashID, endpoint)
       .then((queryData) => {
         const data = queryData.data?.scrapeSinglePerformer ?? [];
         if (data.length > 0) {
@@ -356,7 +355,7 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
       [performerID]: {
         message: intl.formatMessage(
           { id: "performer_tagger.failed_to_save_performer" },
-          { studio: modalPerformer?.name }
+          { performer: modalPerformer?.name }
         ),
         details:
           message === "UNIQUE constraint failed: performers.name"
@@ -466,41 +465,37 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
       if (stashID !== undefined) {
         const base = stashID.endpoint.match(/https?:\/\/.*?\//)?.[0];
         const link = base ? (
-          <a
+          <ExternalLink
             className="small d-block"
             href={`${base}performers/${stashID.stash_id}`}
-            target="_blank"
-            rel="noopener noreferrer"
           >
             {stashID.stash_id}
-          </a>
+          </ExternalLink>
         ) : (
           <div className="small">{stashID.stash_id}</div>
         );
-
-        const endpointIndex =
-          stashBoxes?.findIndex((box) => box.endpoint === stashID.endpoint) ??
-          -1;
 
         subContent = (
           <div key={performer.id}>
             <InputGroup className="PerformerTagger-box-link">
               <InputGroup.Text>{link}</InputGroup.Text>
               <InputGroup.Append>
-                {endpointIndex !== -1 && (
-                  <Button
-                    onClick={() =>
-                      doBoxUpdate(performer.id, stashID.stash_id, endpointIndex)
-                    }
-                    disabled={!!loadingUpdate}
-                  >
-                    {loadingUpdate === stashID.stash_id ? (
-                      <LoadingIndicator inline small message="" />
-                    ) : (
-                      <FormattedMessage id="actions.refresh" />
-                    )}
-                  </Button>
-                )}
+                <Button
+                  onClick={() =>
+                    doBoxUpdate(
+                      performer.id,
+                      stashID.stash_id,
+                      stashID.endpoint
+                    )
+                  }
+                  disabled={!!loadingUpdate}
+                >
+                  {loadingUpdate === stashID.stash_id ? (
+                    <LoadingIndicator inline small message="" />
+                  ) : (
+                    <FormattedMessage id="actions.refresh" />
+                  )}
+                </Button>
               </InputGroup.Append>
             </InputGroup>
             {error[performer.id] && (
@@ -626,10 +621,7 @@ export const PerformerTagger: React.FC<ITaggerProps> = ({ performers }) => {
   const jobsSubscribe = useJobsSubscribe();
   const intl = useIntl();
   const { configuration: stashConfig } = React.useContext(ConfigurationContext);
-  const [{ data: config }, setConfig] = useLocalForage<ITaggerConfig>(
-    LOCAL_FORAGE_KEY,
-    initialConfig
-  );
+  const { config, setConfig } = useTaggerConfig();
   const [showConfig, setShowConfig] = useState(false);
   const [showManual, setShowManual] = useState(false);
 
@@ -788,7 +780,6 @@ export const PerformerTagger: React.FC<ITaggerProps> = ({ performers }) => {
               }}
               isIdle={batchJobID === undefined}
               config={config}
-              stashBoxes={stashConfig?.general.stashBoxes}
               onBatchAdd={batchAdd}
               onBatchUpdate={batchUpdate}
             />

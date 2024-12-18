@@ -16,12 +16,12 @@ import (
 
 const (
 	tripwireActivatedErrMsg = "Stash is exposed to the public internet without authentication, and is not serving any more content to protect your privacy. " +
-		"More information and fixes are available at https://docs.stashapp.cc/networking/authentication-required-when-accessing-stash-from-the-internet"
+		"More information and fixes are available at https://docs.stashapp.cc/faq/setup/#protecting-against-accidental-exposure-to-the-internet"
 
 	externalAccessErrMsg = "You have attempted to access Stash over the internet, and authentication is not enabled. " +
 		"This is extremely dangerous! The whole world can see your your stash page and browse your files! " +
 		"Stash is not answering any other requests to protect your privacy. " +
-		"Please read the log entry or visit https://docs.stashapp.cc/networking/authentication-required-when-accessing-stash-from-the-internet"
+		"Please read the log entry or visit https://docs.stashapp.cc/faq/setup/#protecting-against-accidental-exposure-to-the-internet"
 )
 
 func allowUnauthenticated(r *http.Request) bool {
@@ -42,7 +42,7 @@ func authenticateHandler() func(http.Handler) http.Handler {
 
 			userID, err := manager.GetInstance().SessionStore.Authenticate(w, r)
 			if err != nil {
-				if errors.Is(err, session.ErrUnauthorized) {
+				if !errors.Is(err, session.ErrUnauthorized) {
 					http.Error(w, err.Error(), http.StatusInternalServerError)
 					return
 				}

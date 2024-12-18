@@ -31,10 +31,10 @@ import { useCompare, usePrevious } from "src/hooks/state";
 import { CriterionType } from "src/models/list-filter/types";
 import { useToast } from "src/hooks/Toast";
 import { useConfigureUI } from "src/core/StashService";
-import { IUIConfig } from "src/core/config";
 import { FilterMode } from "src/core/generated-graphql";
 import { useFocusOnce } from "src/utils/focus";
 import Mousetrap from "mousetrap";
+import ScreenUtils from "src/utils/screen";
 
 interface ICriterionList {
   criteria: string[];
@@ -193,7 +193,8 @@ const CriterionOptionList: React.FC<ICriterionList> = ({
 const FilterModeToConfigKey = {
   [FilterMode.Galleries]: "galleries",
   [FilterMode.Images]: "images",
-  [FilterMode.Movies]: "movies",
+  [FilterMode.Movies]: "groups",
+  [FilterMode.Groups]: "groups",
   [FilterMode.Performers]: "performers",
   [FilterMode.SceneMarkers]: "sceneMarkers",
   [FilterMode.Scenes]: "scenes",
@@ -229,7 +230,7 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
   );
   const [criterion, setCriterion] = useState<Criterion<CriterionValue>>();
 
-  const [searchRef, setSearchFocus] = useFocusOnce();
+  const [searchRef, setSearchFocus] = useFocusOnce(!ScreenUtils.isTouch());
 
   const { criteria } = currentFilter;
 
@@ -242,11 +243,13 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
   }, [currentFilter.mode]);
 
   const criterionOptions = useMemo(() => {
-    return [...filterOptions.criterionOptions].sort((a, b) => {
-      return intl
-        .formatMessage({ id: a.messageID })
-        .localeCompare(intl.formatMessage({ id: b.messageID }));
-    });
+    return [...filterOptions.criterionOptions]
+      .filter((c) => !c.hidden)
+      .sort((a, b) => {
+        return intl
+          .formatMessage({ id: a.messageID })
+          .localeCompare(intl.formatMessage({ id: b.messageID }));
+      });
   }, [intl, filterOptions.criterionOptions]);
 
   const optionSelected = useCallback(
@@ -270,7 +273,7 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
     [filter, criteria]
   );
 
-  const ui = (configuration?.ui ?? {}) as IUIConfig;
+  const ui = configuration?.ui ?? {};
   const [saveUI] = useConfigureUI();
 
   const filteredOptions = useMemo(() => {

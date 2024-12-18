@@ -111,7 +111,7 @@
   }
 }
 
-.movie-skeleton {
+.group-skeleton {
   max-width: 240px;
   min-height: 540px;
   min-width: 240px;
@@ -308,20 +308,17 @@
 @media (max-width: 576px) {
   .slick-list .scene-card.card,
   .slick-list .studio-card.card,
-  .slick-list .gallery-card.card {
+  .slick-list .gallery-card.card,
+  .slick-list .image-card.card {
     width: 20rem;
   }
 
-  .slick-list .movie-card.card {
+  .slick-list .group-card.card {
     width: 16rem;
   }
 
   .slick-list .performer-card.card {
     width: 16rem;
-  }
-
-  .slick-list .performer-card-image {
-    height: 24rem;
   }
 }
 

@@ -34,10 +34,39 @@ $sceneTabWidth: 450px;
   }
 }
 
+.VideoPlayer.no-file .video-js {
+  .vjs-big-play-button,
+  .vjs-control-bar {
+    display: none;
+  }
+}
+
 .video-js {
   height: 100%;
   position: absolute;
   width: 100%;
+
+  &:not(.vjs-has-started) .vjs-control-bar {
+    display: flex;
+  }
+
+  // show controls even when an error is displayed
+  /* stylelint-disable declaration-no-important */
+  &.vjs-error .vjs-control-bar {
+    display: flex !important;
+  }
+  /* stylelint-enable declaration-no-important */
+
+  // allow interaction with the controls when error is displayed
+  .vjs-error-display,
+  .vjs-error-display .vjs-modal-dialog-content {
+    position: static;
+  }
+
+  // hide spinner when error is displayed
+  &.vjs-error .vjs-loading-spinner {
+    display: none;
+  }
 
   .vjs-button {
     outline: none;
@@ -197,6 +226,14 @@ $sceneTabWidth: 450px;
       content: "\f110";
       font-family: VideoJS;
     }
+
+    .vjs-menu-item.vjs-source-menu-item-error:not(.vjs-selected) {
+      color: $text-muted;
+    }
+
+    .vjs-menu-item.vjs-source-menu-item-error {
+      font-style: italic;
+    }
   }
 
   .vjs-vr-selector {
@@ -322,6 +359,10 @@ $sceneTabWidth: 450px;
       .vjs-chromecast-button .vjs-icon-placeholder {
         height: 1.4em;
         width: 1.4em;
+      }
+
+      .vjs-source-selector .vjs-menu {
+        z-index: 9999;
       }
     }
 

@@ -10,11 +10,16 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/paths"
 	"github.com/stashapp/stash/pkg/plugin"
+	"github.com/stashapp/stash/pkg/plugin/hook"
 	"github.com/stashapp/stash/pkg/txn"
 )
 
 var (
 	ErrNotVideoFile = errors.New("not a video file")
+
+	// fingerprint types to match with
+	// only try to match by data fingerprints, _not_ perceptual fingerprints
+	matchableFingerprintTypes = []string{models.FingerprintTypeOshash, models.FingerprintTypeMD5}
 )
 
 type ScanCreatorUpdater interface {
@@ -86,7 +91,7 @@ func (h *ScanHandler) Handle(ctx context.Context, f models.File, oldFile models.
 
 	if len(existing) == 0 {
 		// try also to match file by fingerprints
-		existing, err = h.CreatorUpdater.FindByFingerprints(ctx, videoFile.Fingerprints)
+		existing, err = h.CreatorUpdater.FindByFingerprints(ctx, videoFile.Fingerprints.Filter(matchableFingerprintTypes...))
 		if err != nil {
 			return fmt.Errorf("finding existing scene by fingerprints: %w", err)
 		}
@@ -107,7 +112,7 @@ func (h *ScanHandler) Handle(ctx context.Context, f models.File, oldFile models.
 			return fmt.Errorf("creating new scene: %w", err)
 		}
 
-		h.PluginCache.RegisterPostHooks(ctx, newScene.ID, plugin.SceneCreatePost, nil, nil)
+		h.PluginCache.RegisterPostHooks(ctx, newScene.ID, hook.SceneCreatePost, nil, nil)
 
 		existing = []*models.Scene{&newScene}
 	}
@@ -164,7 +169,7 @@ func (h *ScanHandler) associateExisting(ctx context.Context, existing []*models.
 		}
 
 		if !found || updateExisting {
-			h.PluginCache.RegisterPostHooks(ctx, s.ID, plugin.SceneUpdatePost, nil, nil)
+			h.PluginCache.RegisterPostHooks(ctx, s.ID, hook.SceneUpdatePost, nil, nil)
 		}
 	}
 

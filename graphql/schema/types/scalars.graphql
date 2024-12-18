@@ -1,3 +1,6 @@
+"An RFC3339 timestamp"
+scalar Time
+
 """
 Timestamp is a point in time. It is always output as RFC3339-compatible time points.
 It can be input as a RFC3339 string, or as "<4h" for "4 hours in the past" or ">5m"
@@ -5,12 +8,18 @@ for "5 minutes in the future"
 """
 scalar Timestamp
 
-# generic JSON object
+"A String -> Any map"
 scalar Map
 
-# string, boolean map
+"A String -> Boolean map"
 scalar BoolMap
+
+"A plugin ID -> Map (String -> Any map) map"
+scalar PluginConfigMap
 
 scalar Any
 
 scalar Int64
+
+"A multipart file upload"
+scalar Upload

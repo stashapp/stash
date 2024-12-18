@@ -3,6 +3,7 @@ package performer
 import (
 	"context"
 	"fmt"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -24,13 +25,15 @@ type Importer struct {
 	Input               jsonschema.Performer
 	MissingRefBehaviour models.ImportMissingRefEnum
 
-	ID        int
-	performer models.Performer
-	imageData []byte
+	ID           int
+	performer    models.Performer
+	customFields models.CustomFieldMap
+	imageData    []byte
 }
 
 func (i *Importer) PreImport(ctx context.Context) error {
 	i.performer = performerJSONToPerformer(i.Input)
+	i.customFields = i.Input.CustomFields
 
 	if err := i.populateTags(ctx); err != nil {
 		return err
@@ -75,7 +78,7 @@ func importTags(ctx context.Context, tagWriter models.TagFinderCreator, names []
 	}
 
 	missingTags := sliceutil.Filter(names, func(name string) bool {
-		return !sliceutil.Contains(pluckedNames, name)
+		return !slices.Contains(pluckedNames, name)
 	})
 
 	if len(missingTags) > 0 {
@@ -164,7 +167,10 @@ func (i *Importer) FindExistingID(ctx context.Context) (*int, error) {
 }
 
 func (i *Importer) Create(ctx context.Context) (*int, error) {
-	err := i.ReaderWriter.Create(ctx, &i.performer)
+	err := i.ReaderWriter.Create(ctx, &models.CreatePerformerInput{
+		Performer:    &i.performer,
+		CustomFields: i.customFields,
+	})
 	if err != nil {
 		return nil, fmt.Errorf("error creating performer: %v", err)
 	}
@@ -174,9 +180,13 @@ func (i *Importer) Create(ctx context.Context) (*int, error) {
 }
 
 func (i *Importer) Update(ctx context.Context, id int) error {
-	performer := i.performer
-	performer.ID = id
-	err := i.ReaderWriter.Update(ctx, &performer)
+	i.performer.ID = id
+	err := i.ReaderWriter.Update(ctx, &models.UpdatePerformerInput{
+		Performer: &i.performer,
+		CustomFields: models.CustomFieldsInput{
+			Full: i.customFields,
+		},
+	})
 	if err != nil {
 		return fmt.Errorf("error updating existing performer: %v", err)
 	}
@@ -188,7 +198,6 @@ func performerJSONToPerformer(performerJSON jsonschema.Performer) models.Perform
 	newPerformer := models.Performer{
 		Name:           performerJSON.Name,
 		Disambiguation: performerJSON.Disambiguation,
-		URL:            performerJSON.URL,
 		Ethnicity:      performerJSON.Ethnicity,
 		Country:        performerJSON.Country,
 		EyeColor:       performerJSON.EyeColor,
@@ -198,8 +207,6 @@ func performerJSONToPerformer(performerJSON jsonschema.Performer) models.Perform
 		Tattoos:        performerJSON.Tattoos,
 		Piercings:      performerJSON.Piercings,
 		Aliases:        models.NewRelatedStrings(performerJSON.Aliases),
-		Twitter:        performerJSON.Twitter,
-		Instagram:      performerJSON.Instagram,
 		Details:        performerJSON.Details,
 		HairColor:      performerJSON.HairColor,
 		Favorite:       performerJSON.Favorite,
@@ -209,6 +216,25 @@ func performerJSONToPerformer(performerJSON jsonschema.Performer) models.Perform
 
 		TagIDs:   models.NewRelatedIDs([]int{}),
 		StashIDs: models.NewRelatedStashIDs(performerJSON.StashIDs),
+	}
+
+	if len(performerJSON.URLs) > 0 {
+		newPerformer.URLs = models.NewRelatedStrings(performerJSON.URLs)
+	} else {
+		urls := []string{}
+		if performerJSON.URL != "" {
+			urls = append(urls, performerJSON.URL)
+		}
+		if performerJSON.Twitter != "" {
+			urls = append(urls, performerJSON.Twitter)
+		}
+		if performerJSON.Instagram != "" {
+			urls = append(urls, performerJSON.Instagram)
+		}
+
+		if len(urls) > 0 {
+			newPerformer.URLs = models.NewRelatedStrings([]string{performerJSON.URL})
+		}
 	}
 
 	if performerJSON.Gender != "" {

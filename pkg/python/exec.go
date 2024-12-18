@@ -1,3 +1,4 @@
+// Package python provides utilities for working with the python executable.
 package python
 
 import (
@@ -35,7 +36,7 @@ func Resolve(configuredPythonPath string) (*Python, error) {
 		case err == nil && !isFile:
 			logger.Warnf("configured python path is not a file: %s", configuredPythonPath)
 		case err != nil:
-			logger.Warnf("unable to use configured python path: %s", err)
+			logger.Warnf("unable to use configured python path: %v", err)
 		}
 	}
 
@@ -44,7 +45,7 @@ func Resolve(configuredPythonPath string) (*Python, error) {
 	if err != nil {
 		python, err := exec.LookPath("python")
 		if err != nil {
-			return nil, fmt.Errorf("python executable not in PATH: %s", err)
+			return nil, fmt.Errorf("python executable not in PATH: %w", err)
 		}
 		ret := Python(python)
 		return &ret, nil

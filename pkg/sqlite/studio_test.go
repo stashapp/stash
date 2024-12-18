@@ -59,10 +59,12 @@ func TestStudioQueryNameOr(t *testing.T) {
 			Value:    studio1Name,
 			Modifier: models.CriterionModifierEquals,
 		},
-		Or: &models.StudioFilterType{
-			Name: &models.StringCriterionInput{
-				Value:    studio2Name,
-				Modifier: models.CriterionModifierEquals,
+		OperatorFilter: models.OperatorFilter[models.StudioFilterType]{
+			Or: &models.StudioFilterType{
+				Name: &models.StringCriterionInput{
+					Value:    studio2Name,
+					Modifier: models.CriterionModifierEquals,
+				},
 			},
 		},
 	}
@@ -90,10 +92,12 @@ func TestStudioQueryNameAndUrl(t *testing.T) {
 			Value:    studioName,
 			Modifier: models.CriterionModifierEquals,
 		},
-		And: &models.StudioFilterType{
-			URL: &models.StringCriterionInput{
-				Value:    studioUrl,
-				Modifier: models.CriterionModifierEquals,
+		OperatorFilter: models.OperatorFilter[models.StudioFilterType]{
+			And: &models.StudioFilterType{
+				URL: &models.StringCriterionInput{
+					Value:    studioUrl,
+					Modifier: models.CriterionModifierEquals,
+				},
 			},
 		},
 	}
@@ -128,8 +132,10 @@ func TestStudioQueryNameNotUrl(t *testing.T) {
 
 	studioFilter := models.StudioFilterType{
 		Name: &nameCriterion,
-		Not: &models.StudioFilterType{
-			URL: &urlCriterion,
+		OperatorFilter: models.OperatorFilter[models.StudioFilterType]{
+			Not: &models.StudioFilterType{
+				URL: &urlCriterion,
+			},
 		},
 	}
 
@@ -160,8 +166,10 @@ func TestStudioIllegalQuery(t *testing.T) {
 	}
 
 	studioFilter := &models.StudioFilterType{
-		And: &subFilter,
-		Or:  &subFilter,
+		OperatorFilter: models.OperatorFilter[models.StudioFilterType]{
+			And: &subFilter,
+			Or:  &subFilter,
+		},
 	}
 
 	withTxn(func(ctx context.Context) error {
@@ -208,7 +216,7 @@ func TestStudioQueryForAutoTag(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
 		tqb := db.Studio
 
-		name := studioNames[studioIdxWithMovie] // find a studio by name
+		name := studioNames[studioIdxWithGroup] // find a studio by name
 
 		studios, err := tqb.QueryForAutoTag(ctx, []string{name})
 
@@ -217,16 +225,16 @@ func TestStudioQueryForAutoTag(t *testing.T) {
 		}
 
 		assert.Len(t, studios, 1)
-		assert.Equal(t, strings.ToLower(studioNames[studioIdxWithMovie]), strings.ToLower(studios[0].Name))
+		assert.Equal(t, strings.ToLower(studioNames[studioIdxWithGroup]), strings.ToLower(studios[0].Name))
 
-		name = getStudioStringValue(studioIdxWithMovie, "Alias")
+		name = getStudioStringValue(studioIdxWithGroup, "Alias")
 		studios, err = tqb.QueryForAutoTag(ctx, []string{name})
 
 		if err != nil {
 			t.Errorf("Error finding studios: %s", err.Error())
 		}
 		if assert.Len(t, studios, 1) {
-			assert.Equal(t, studioIDs[studioIdxWithMovie], studios[0].ID)
+			assert.Equal(t, studioIDs[studioIdxWithGroup], studios[0].ID)
 		}
 		return nil
 	})
@@ -696,6 +704,110 @@ func TestStudioQueryRating(t *testing.T) {
 	verifyStudiosRating(t, ratingCriterion)
 }
 
+func queryStudios(ctx context.Context, t *testing.T, studioFilter *models.StudioFilterType, findFilter *models.FindFilterType) []*models.Studio {
+	t.Helper()
+	studios, _, err := db.Studio.Query(ctx, studioFilter, findFilter)
+	if err != nil {
+		t.Errorf("Error querying studio: %s", err.Error())
+	}
+
+	return studios
+}
+
+func TestStudioQueryTags(t *testing.T) {
+	withTxn(func(ctx context.Context) error {
+		tagCriterion := models.HierarchicalMultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(tagIDs[tagIdxWithStudio]),
+				strconv.Itoa(tagIDs[tagIdx1WithStudio]),
+			},
+			Modifier: models.CriterionModifierIncludes,
+		}
+
+		studioFilter := models.StudioFilterType{
+			Tags: &tagCriterion,
+		}
+
+		// ensure ids are correct
+		studios := queryStudios(ctx, t, &studioFilter, nil)
+		assert.Len(t, studios, 2)
+		for _, studio := range studios {
+			assert.True(t, studio.ID == studioIDs[studioIdxWithTag] || studio.ID == studioIDs[studioIdxWithTwoTags])
+		}
+
+		tagCriterion = models.HierarchicalMultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(tagIDs[tagIdx1WithStudio]),
+				strconv.Itoa(tagIDs[tagIdx2WithStudio]),
+			},
+			Modifier: models.CriterionModifierIncludesAll,
+		}
+
+		studios = queryStudios(ctx, t, &studioFilter, nil)
+
+		assert.Len(t, studios, 1)
+		assert.Equal(t, sceneIDs[studioIdxWithTwoTags], studios[0].ID)
+
+		tagCriterion = models.HierarchicalMultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(tagIDs[tagIdx1WithStudio]),
+			},
+			Modifier: models.CriterionModifierExcludes,
+		}
+
+		q := getSceneStringValue(studioIdxWithTwoTags, titleField)
+		findFilter := models.FindFilterType{
+			Q: &q,
+		}
+
+		studios = queryStudios(ctx, t, &studioFilter, &findFilter)
+		assert.Len(t, studios, 0)
+
+		return nil
+	})
+}
+
+func TestStudioQueryTagCount(t *testing.T) {
+	const tagCount = 1
+	tagCountCriterion := models.IntCriterionInput{
+		Value:    tagCount,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	verifyStudiosTagCount(t, tagCountCriterion)
+
+	tagCountCriterion.Modifier = models.CriterionModifierNotEquals
+	verifyStudiosTagCount(t, tagCountCriterion)
+
+	tagCountCriterion.Modifier = models.CriterionModifierGreaterThan
+	verifyStudiosTagCount(t, tagCountCriterion)
+
+	tagCountCriterion.Modifier = models.CriterionModifierLessThan
+	verifyStudiosTagCount(t, tagCountCriterion)
+}
+
+func verifyStudiosTagCount(t *testing.T, tagCountCriterion models.IntCriterionInput) {
+	withTxn(func(ctx context.Context) error {
+		sqb := db.Studio
+		studioFilter := models.StudioFilterType{
+			TagCount: &tagCountCriterion,
+		}
+
+		studios := queryStudios(ctx, t, &studioFilter, nil)
+		assert.Greater(t, len(studios), 0)
+
+		for _, studio := range studios {
+			ids, err := sqb.GetTagIDs(ctx, studio.ID)
+			if err != nil {
+				return err
+			}
+			verifyInt(t, len(ids), tagCountCriterion)
+		}
+
+		return nil
+	})
+}
+
 func verifyStudioQuery(t *testing.T, filter models.StudioFilterType, verifyFn func(ctx context.Context, s *models.Studio)) {
 	withTxn(func(ctx context.Context) error {
 		t.Helper()
@@ -799,7 +911,7 @@ func TestStudioQueryName(t *testing.T) {
 }
 
 func TestStudioQueryAlias(t *testing.T) {
-	const studioIdx = studioIdxWithMovie
+	const studioIdx = studioIdxWithGroup
 	studioName := getStudioStringValue(studioIdx, "Alias")
 
 	aliasCriterion := &models.StringCriterionInput{

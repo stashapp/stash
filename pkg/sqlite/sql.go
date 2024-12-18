@@ -21,6 +21,11 @@ func distinctIDs(qb *queryBuilder, tableName string) {
 	qb.from = tableName
 }
 
+func selectIDs(qb *queryBuilder, tableName string) {
+	qb.addColumn(getColumn(tableName, "id"))
+	qb.from = tableName
+}
+
 func getColumn(tableName string, columnName string) string {
 	return tableName + "." + columnName
 }
@@ -42,6 +47,30 @@ func getPaginationSQL(page int, perPage int) string {
 	return " LIMIT " + strconv.Itoa(perPage) + " OFFSET " + strconv.Itoa(page) + " "
 }
 
+const randomSeedPrefix = "random_" // prefix for random sort
+
+type sortOptions []string
+
+func (o sortOptions) validateSort(sort string) error {
+	if strings.HasPrefix(sort, randomSeedPrefix) {
+		// seed as a parameter from the UI
+		seedStr := sort[len(randomSeedPrefix):]
+		_, err := strconv.ParseUint(seedStr, 10, 64)
+		if err != nil {
+			return fmt.Errorf("invalid random seed: %s", seedStr)
+		}
+		return nil
+	}
+
+	for _, v := range o {
+		if v == sort {
+			return nil
+		}
+	}
+
+	return fmt.Errorf("invalid sort: %s", sort)
+}
+
 func getSortDirection(direction string) string {
 	if direction != "ASC" && direction != "DESC" {
 		return "ASC"
@@ -51,8 +80,6 @@ func getSortDirection(direction string) string {
 }
 func getSort(sort string, direction string, tableName string) string {
 	direction = getSortDirection(direction)
-
-	const randomSeedPrefix = "random_"
 
 	switch {
 	case strings.HasSuffix(sort, "_count"):
@@ -107,28 +134,7 @@ func getRandomSort(tableName string, direction string, seed uint64) string {
 }
 
 func getCountSort(primaryTable, joinTable, primaryFK, direction string) string {
-	return fmt.Sprintf(" ORDER BY (SELECT COUNT(*) FROM %s WHERE %s = %s.id) %s", joinTable, primaryFK, primaryTable, getSortDirection(direction))
-}
-
-func getMultiSumSort(sum string, primaryTable, foreignTable1, joinTable1, foreignTable2, joinTable2, primaryFK, foreignFK1, foreignFK2, direction string) string {
-	return fmt.Sprintf(" ORDER BY (SELECT SUM(%s) "+
-		"FROM ("+
-		"SELECT SUM(%s) as %s from %s s "+
-		"LEFT JOIN %s ON %s.id = s.%s "+
-		"WHERE s.%s = %s.id "+
-		"UNION ALL "+
-		"SELECT SUM(%s) as %s from %s s "+
-		"LEFT JOIN %s ON %s.id = s.%s "+
-		"WHERE s.%s = %s.id "+
-		")) %s",
-		sum,
-		sum, sum, joinTable1,
-		foreignTable1, foreignTable1, foreignFK1,
-		primaryFK, primaryTable,
-		sum, sum, joinTable2,
-		foreignTable2, foreignTable2, foreignFK2,
-		primaryFK, primaryTable,
-		getSortDirection(direction))
+	return fmt.Sprintf(" ORDER BY (SELECT COUNT(*) FROM %s AS sort WHERE sort.%s = %s.id) %s", joinTable, primaryFK, primaryTable, getSortDirection(direction))
 }
 
 func getStringSearchClause(columns []string, q string, not bool) sqlClause {
@@ -346,28 +352,6 @@ func getMultiCriterionClause(primaryTable, foreignTable, joinTable, primaryFK, f
 
 func getCountCriterionClause(primaryTable, joinTable, primaryFK string, criterion models.IntCriterionInput) (string, []interface{}) {
 	lhs := fmt.Sprintf("(SELECT COUNT(*) FROM %s s WHERE s.%s = %s.id)", joinTable, primaryFK, primaryTable)
-	return getIntCriterionWhereClause(lhs, criterion)
-}
-
-func getJoinedMultiSumCriterionClause(primaryTable, foreignTable1, joinTable1, foreignTable2, joinTable2, primaryFK string, foreignFK1 string, foreignFK2 string, sum string, criterion models.IntCriterionInput) (string, []interface{}) {
-	lhs := fmt.Sprintf("(SELECT SUM(%s) "+
-		"FROM ("+
-		"SELECT SUM(%s) as %s from %s s "+
-		"LEFT JOIN %s ON %s.id = s.%s "+
-		"WHERE s.%s = %s.id "+
-		"UNION ALL "+
-		"SELECT SUM(%s) as %s from %s s "+
-		"LEFT JOIN %s ON %s.id = s.%s "+
-		"WHERE s.%s = %s.id "+
-		"))",
-		sum,
-		sum, sum, joinTable1,
-		foreignTable1, foreignTable1, foreignFK1,
-		primaryFK, primaryTable,
-		sum, sum, joinTable2,
-		foreignTable2, foreignTable2, foreignFK2,
-		primaryFK, primaryTable,
-	)
 	return getIntCriterionWhereClause(lhs, criterion)
 }
 

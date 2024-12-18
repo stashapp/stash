@@ -1,3 +1,14 @@
+import { CriterionValue, ISavedCriterion } from "./criteria/criterion";
+
+export type SavedObjectFilter = {
+  [K in CriterionType]?: ISavedCriterion<CriterionValue>;
+};
+
+export type SavedUIOptions = {
+  display_mode?: DisplayMode;
+  zoom_index?: number;
+};
+
 // NOTE: add new enum values to the end, to ensure existing data
 // is not impacted
 export enum DisplayMode {
@@ -114,26 +125,34 @@ export interface IOptionType {
 
 export type CriterionType =
   | "path"
-  | "rating"
   | "rating100"
   | "organized"
   | "o_counter"
   | "resolution"
   | "average_resolution"
   | "framerate"
+  | "bitrate"
   | "video_codec"
   | "audio_codec"
   | "duration"
   | "filter_favorites"
+  | "favorite"
   | "has_markers"
   | "is_missing"
   | "tags"
   | "scene_tags"
   | "performer_tags"
+  | "studio_tags"
   | "tag_count"
   | "performers"
   | "studios"
-  | "movies"
+  | "scenes"
+  | "groups"
+  | "movies" // legacy
+  | "containing_groups"
+  | "containing_group_count"
+  | "sub_groups"
+  | "sub_group_count"
   | "galleries"
   | "birth_year"
   | "age"
@@ -141,7 +160,6 @@ export type CriterionType =
   | "country"
   | "hair_color"
   | "eye_color"
-  | "height"
   | "height_cm"
   | "weight"
   | "measurements"
@@ -160,19 +178,22 @@ export type CriterionType =
   | "image_count"
   | "gallery_count"
   | "performer_count"
+  | "studio_count"
+  | "group_count"
   | "death_year"
   | "url"
-  | "stash_id"
   | "interactive"
   | "interactive_speed"
   | "captions"
   | "resume_time"
   | "play_count"
   | "play_duration"
+  | "last_played_at"
   | "name"
   | "details"
   | "title"
   | "oshash"
+  | "orientation"
   | "checksum"
   | "phash_distance"
   | "director"
@@ -180,6 +201,7 @@ export type CriterionType =
   | "parent_count"
   | "child_count"
   | "performer_favorite"
+  | "favorite"
   | "performer_age"
   | "duplicated"
   | "ignore_auto_tag"

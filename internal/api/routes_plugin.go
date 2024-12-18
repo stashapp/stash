@@ -50,6 +50,7 @@ func (rs pluginRoutes) Assets(w http.ResponseWriter, r *http.Request) {
 	r.URL.Path, dir = p.UI.Assets.GetFilesystemLocation(r.URL.Path)
 	if dir == "" {
 		http.NotFound(w, r)
+		return
 	}
 
 	dir = filepath.Join(pluginDir, filepath.FromSlash(dir))

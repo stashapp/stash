@@ -12,6 +12,10 @@ An example using various aspects of `PluginApi` may be found in the source code 
 
 An instance of the React library.
 
+### `ReactDOM`
+
+An instance of the ReactDOM library.
+
 ### `GQL`
 
 This namespace contains the generated graphql client interface. This is a low-level interface. In many cases, `StashService` should be used instead.
@@ -25,6 +29,8 @@ This namespace contains the generated graphql client interface. This is a low-le
 - `Intl`
 - `FontAwesomeRegular`
 - `FontAwesomeSolid`
+- `Mousetrap`
+- `MousetrapPause`
 
 ### `register`
 
@@ -76,6 +82,7 @@ Returns a `Promise<void>` that resolves when all of the components have been loa
 
 This namespace provides access to the following core utility hooks:
 - `useSpriteInfo`
+- `useToast`
 
 It also provides plugin-specific hooks.
 
@@ -110,12 +117,12 @@ Returns `void`.
 
 #### `PluginApi.patch.instead`
 
-Registers a replacement function for a component. The provided function will be called with the arguments passed to the original render function, plus the original render function as the last argument. An error will be thrown if the component already has a replacement function registered.
+Registers a replacement function for a component. The provided function will be called with the arguments passed to the original render function, plus the next render function as the last argument. Replacement functions will be called in the order that they are registered. If a replacement function does not call the next render function then the following replacement functions will not be called or applied.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `component` | `string` | The name of the component to patch. |
-| `fn` | `Function` | The replacement function. It accepts the same arguments as the original render function, plus the original render function, and is expected to return the replacement component. |
+| `fn` | `Function` | The replacement function. It accepts the same arguments as the original render function, plus the next render function, and is expected to return the replacement component. |
 
 Returns `void`.
 
@@ -129,3 +136,60 @@ Registers an after function. An after function is called after the render functi
 | `fn` | `Function` | The after function. It accepts the same arguments as the original render function, plus the result of the original render function, and is expected to return the rendered component. |
 
 Returns `void`.
+
+#### Patchable components and functions
+
+- `App`
+- `BooleanSetting`
+- `ChangeButtonSetting`
+- `CompressedPerformerDetailsPanel`
+- `ConstantSetting`
+- `CountrySelect`
+- `DateInput`
+- `FolderSelect`
+- `GalleryIDSelect`
+- `GallerySelect`
+- `GallerySelect.sort`
+- `Icon`
+- `ImageDetailPanel`
+- `ModalSetting`
+- `GroupIDSelect`
+- `GroupSelect`
+- `GroupSelect.sort`
+- `NumberSetting`
+- `PerformerDetailsPanel`
+- `PerformerDetailsPanel.DetailGroup`
+- `PerformerIDSelect`
+- `PerformerSelect`
+- `PerformerSelect.sort`
+- `PluginRoutes`
+- `SceneCard`
+- `SceneCard.Details`
+- `SceneCard.Image`
+- `SceneCard.Overlays`
+- `SceneCard.Popovers`
+- `SceneIDSelect`
+- `SceneSelect`
+- `SceneSelect.sort`
+- `SelectSetting`
+- `Setting`
+- `SettingModal`
+- `StringSetting`
+- `StringListSetting`
+- `StudioIDSelect`
+- `StudioSelect`
+- `StudioSelect.sort`
+- `TagIDSelect`
+- `TagSelect`
+- `TagSelect.sort`
+- `PluginSettings`
+- `Setting`
+- `SettingGroup`
+
+### `PluginApi.Event`
+
+Allows plugins to listen for Stash's events.
+
+```js
+PluginApi.Event.addEventListener("stash:location", (e) => console.log("Page Changed", e.detail.data.location.pathname))
+```

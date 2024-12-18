@@ -151,16 +151,20 @@ const fileSizeFractionalDigits = (unit: Unit) => {
   return 0;
 };
 
-// Converts seconds to a hh:mm:ss or mm:ss timestamp.
+// Converts seconds to a [hh:]mm:ss[.ffff] where hh is only shown if hours is non-zero,
+// and ffff is shown only if frameRate is set, and the seconds includes a fractional component.
 // A negative input will result in a -hh:mm:ss or -mm:ss output.
-// Fractional inputs are truncated.
-const secondsToTimestamp = (seconds: number) => {
+const secondsToTimestamp = (secondsInput: number, includeMS?: boolean) => {
   let neg = false;
-  if (seconds < 0) {
+  if (secondsInput < 0) {
     neg = true;
-    seconds = -seconds;
+    secondsInput = -secondsInput;
   }
-  seconds = Math.trunc(seconds);
+
+  const fracSeconds = secondsInput % 1;
+  const ms = Math.round(fracSeconds * 1000);
+
+  let seconds = Math.trunc(secondsInput);
 
   const s = seconds % 60;
   seconds = (seconds - s) / 60;
@@ -177,11 +181,23 @@ const secondsToTimestamp = (seconds: number) => {
     ret = String(m).padStart(2, "0") + ":" + ret;
     ret = String(h) + ":" + ret;
   }
+
+  if (includeMS && ms > 0) {
+    ret += "." + ms.toString().padStart(3, "0");
+  }
+
   if (neg) {
     return "-" + ret;
   } else {
     return ret;
   }
+};
+
+const formatTimestampRange = (start: number, end: number | undefined) => {
+  if (end === undefined) {
+    return secondsToTimestamp(start);
+  }
+  return `${secondsToTimestamp(start)}-${secondsToTimestamp(end)}`;
 };
 
 const timestampToSeconds = (v: string | null | undefined) => {
@@ -193,6 +209,24 @@ const timestampToSeconds = (v: string | null | undefined) => {
 
   if (splits.length > 3) {
     return null;
+  }
+
+  let secondsPart = splits[splits.length - 1];
+  let msFrac = 0;
+  if (secondsPart.includes(".")) {
+    const secondsParts = secondsPart.split(".");
+    if (secondsParts.length !== 2) {
+      return null;
+    }
+
+    secondsPart = secondsParts[0];
+
+    const msPart = parseInt(secondsParts[1], 10);
+    if (Number.isNaN(msPart)) {
+      return null;
+    }
+
+    msFrac = msPart / 1000;
   }
 
   let seconds = 0;
@@ -212,7 +246,7 @@ const timestampToSeconds = (v: string | null | undefined) => {
     factor *= 60;
   }
 
-  return seconds;
+  return seconds + msFrac;
 };
 
 const fileNameFromPath = (path: string) => {
@@ -369,9 +403,6 @@ const resolution = (width: number, height: number) => {
   }
 };
 
-const twitterURL = new URL("https://www.twitter.com");
-const instagramURL = new URL("https://www.instagram.com");
-
 const sanitiseURL = (url?: string, siteURL?: URL) => {
   if (!url) {
     return url;
@@ -473,6 +504,7 @@ const TextUtils = {
   formatFileSizeUnit,
   fileSizeFractionalDigits,
   secondsToTimestamp,
+  formatTimestampRange,
   timestampToSeconds,
   fileNameFromPath,
   stringToDate,
@@ -485,8 +517,6 @@ const TextUtils = {
   resolution,
   sanitiseURL,
   domainFromURL,
-  twitterURL,
-  instagramURL,
   formatDate,
   formatDateTime,
   secondsAsTimeString,

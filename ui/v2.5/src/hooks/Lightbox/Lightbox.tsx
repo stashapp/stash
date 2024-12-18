@@ -855,6 +855,8 @@ export const LightboxComponent: React.FC<IProps> = ({
                 {i >= currentIndex - 1 && i <= currentIndex + 1 ? (
                   <LightboxImage
                     src={image.paths.image ?? ""}
+                    width={image.visual_files?.[0]?.width ?? 0}
+                    height={image.visual_files?.[0]?.height ?? 0}
                     displayMode={displayMode}
                     scaleUp={lightboxSettings?.scaleUp ?? false}
                     scrollMode={
@@ -923,6 +925,8 @@ export const LightboxComponent: React.FC<IProps> = ({
                 <RatingSystem
                   value={currentImage?.rating100}
                   onSetRating={(v) => setRating(v)}
+                  clickToRate
+                  withoutContext
                 />
               </>
             )}

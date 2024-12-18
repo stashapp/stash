@@ -26,6 +26,7 @@ import { IndeterminateCheckbox } from "../Shared/IndeterminateCheckbox";
 import { BulkUpdateTextInput } from "../Shared/BulkUpdateTextInput";
 import { faPencilAlt } from "@fortawesome/free-solid-svg-icons";
 import * as FormUtils from "src/utils/form";
+import { CountrySelect } from "../Shared/CountrySelect";
 
 interface IListOperationProps {
   selected: GQL.SlimPerformerDataFragment[];
@@ -35,9 +36,6 @@ interface IListOperationProps {
 const performerFields = [
   "favorite",
   "disambiguation",
-  "url",
-  "instagram",
-  "twitter",
   "rating100",
   "gender",
   "birthdate",
@@ -222,6 +220,7 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
   function render() {
     return (
       <ModalComponent
+        dialogClassName="edit-performers-dialog"
         show
         icon={faPencilAlt}
         header={intl.formatMessage(
@@ -293,9 +292,18 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
           {renderTextField("death_date", updateInput.death_date, (v) =>
             setUpdateField({ death_date: v })
           )}
-          {renderTextField("country", updateInput.country, (v) =>
-            setUpdateField({ country: v })
-          )}
+
+          <Form.Group>
+            <Form.Label>
+              <FormattedMessage id="country" />
+            </Form.Label>
+            <CountrySelect
+              value={updateInput.country ?? ""}
+              onChange={(v) => setUpdateField({ country: v })}
+              showFlag
+            />
+          </Form.Group>
+
           {renderTextField("ethnicity", updateInput.ethnicity, (v) =>
             setUpdateField({ ethnicity: v })
           )}
@@ -348,15 +356,6 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
           {renderTextField("career_length", updateInput.career_length, (v) =>
             setUpdateField({ career_length: v })
           )}
-          {renderTextField("url", updateInput.url, (v) =>
-            setUpdateField({ url: v })
-          )}
-          {renderTextField("twitter", updateInput.twitter, (v) =>
-            setUpdateField({ twitter: v })
-          )}
-          {renderTextField("instagram", updateInput.instagram, (v) =>
-            setUpdateField({ instagram: v })
-          )}
 
           <Form.Group controlId="tags">
             <Form.Label>
@@ -370,6 +369,7 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
               existingIds={existingTagIds ?? []}
               ids={tagIds.ids ?? []}
               mode={tagIds.mode}
+              menuPortalTarget={document.body}
             />
           </Form.Group>
 

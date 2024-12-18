@@ -1,21 +1,46 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Button, Card, Container, Form } from "react-bootstrap";
+import { Button, Card, Container, Form, ProgressBar } from "react-bootstrap";
 import { useIntl, FormattedMessage } from "react-intl";
 import { useHistory } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
-import { useSystemStatus, mutateMigrate } from "src/core/StashService";
+import {
+  useSystemStatus,
+  mutateMigrate,
+  postMigrate,
+  refetchSystemStatus,
+} from "src/core/StashService";
 import { migrationNotes } from "src/docs/en/MigrationNotes";
+import { ExternalLink } from "../Shared/ExternalLink";
 import { LoadingIndicator } from "../Shared/LoadingIndicator";
 import { MarkdownPage } from "../Shared/MarkdownPage";
+import { JobFragment, useMonitorJob } from "src/utils/job";
 
 export const Migrate: React.FC = () => {
+  const intl = useIntl();
+  const history = useHistory();
+
   const { data: systemStatus, loading } = useSystemStatus();
+
   const [backupPath, setBackupPath] = useState<string | undefined>();
   const [migrateLoading, setMigrateLoading] = useState(false);
   const [migrateError, setMigrateError] = useState("");
 
-  const intl = useIntl();
-  const history = useHistory();
+  const [jobID, setJobID] = useState<string | undefined>();
+
+  function onJobFinished(finishedJob?: JobFragment) {
+    setJobID(undefined);
+    setMigrateLoading(false);
+
+    if (finishedJob?.error) {
+      setMigrateError(finishedJob.error);
+    } else {
+      postMigrate();
+      // refetch the system status so that the we get redirected
+      refetchSystemStatus();
+    }
+  }
+
+  const { job } = useMonitorJob(jobID, onJobFinished);
 
   // if database path includes path separators, then this is passed through
   // to the migration path. Extract the base name of the database file.
@@ -35,18 +60,12 @@ export const Migrate: React.FC = () => {
     : "";
 
   const discordLink = (
-    <a href="https://discord.gg/2TsNFKt" target="_blank" rel="noreferrer">
-      Discord
-    </a>
+    <ExternalLink href="https://discord.gg/2TsNFKt">Discord</ExternalLink>
   );
   const githubLink = (
-    <a
-      href="https://github.com/stashapp/stash/issues"
-      target="_blank"
-      rel="noreferrer"
-    >
+    <ExternalLink href="https://github.com/stashapp/stash/issues">
       <FormattedMessage id="setup.github_repository" />
-    </a>
+    </ExternalLink>
   );
 
   useEffect(() => {
@@ -99,10 +118,32 @@ export const Migrate: React.FC = () => {
   }
 
   if (migrateLoading) {
+    const progress =
+      job && job.progress !== undefined && job.progress !== null
+        ? job.progress * 100
+        : undefined;
+
     return (
-      <LoadingIndicator
-        message={intl.formatMessage({ id: "setup.migrate.migrating_database" })}
-      />
+      <div className="migrate-loading-status">
+        <h4>
+          <LoadingIndicator inline small message="" />
+          <span>
+            <FormattedMessage id="setup.migrate.migrating_database" />
+          </span>
+        </h4>
+        {progress !== undefined && (
+          <ProgressBar
+            animated
+            now={progress}
+            label={`${progress.toFixed(0)}%`}
+          />
+        )}
+        {job?.subTasks?.map((subTask, i) => (
+          <div key={i}>
+            <p>{subTask}</p>
+          </div>
+        ))}
+      </div>
     );
   }
 
@@ -110,7 +151,7 @@ export const Migrate: React.FC = () => {
     systemStatus.systemStatus.status !== GQL.SystemStatusEnum.NeedsMigration
   ) {
     // redirect to main page
-    history.push("/");
+    history.replace("/");
     return <LoadingIndicator />;
   }
 
@@ -118,11 +159,13 @@ export const Migrate: React.FC = () => {
     try {
       setMigrateLoading(true);
       setMigrateError("");
-      await mutateMigrate({
+
+      // migrate now uses the job manager
+      const ret = await mutateMigrate({
         backupPath: backupPath ?? "",
       });
 
-      history.push("/");
+      setJobID(ret.data?.migrate);
     } catch (e) {
       if (e instanceof Error) setMigrateError(e.message ?? e.toString());
       setMigrateLoading(false);

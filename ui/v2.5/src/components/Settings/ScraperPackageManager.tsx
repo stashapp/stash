@@ -9,6 +9,7 @@ import {
   mutateUninstallScraperPackages,
   mutateInstallScraperPackages,
   scraperMutationImpactedQueries,
+  isLoading,
 } from "src/core/StashService";
 import { useMonitorJob } from "src/utils/job";
 import {
@@ -25,8 +26,10 @@ export const InstalledScraperPackages: React.FC = () => {
   const [jobID, setJobID] = useState<string>();
   const { job } = useMonitorJob(jobID, () => onPackageChanges());
 
-  const { data, previousData, refetch, loading, error } =
+  const { data, previousData, refetch, networkStatus, error } =
     useInstalledScraperPackages(loadUpgrades);
+
+  const loading = isLoading(networkStatus);
 
   async function onUpdatePackages(packages: GQL.PackageSpecInput[]) {
     const r = await mutateUpdateScraperPackages(packages);
@@ -161,6 +164,7 @@ export const AvailableScraperPackages: React.FC = () => {
           addSource={addSource}
           editSource={editSource}
           deleteSource={deleteSource}
+          allowSelectAll
         />
       </div>
     </SettingSection>

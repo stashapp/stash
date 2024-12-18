@@ -5,12 +5,18 @@ import { FormattedMessage, useIntl } from "react-intl";
 import uniq from "lodash-es/uniq";
 import { blobToBase64 } from "base64-blob";
 import { distance } from "src/utils/hamming";
+import { faCheckCircle } from "@fortawesome/free-regular-svg-icons";
+import {
+  faPlus,
+  faTriangleExclamation,
+  faXmark,
+} from "@fortawesome/free-solid-svg-icons";
 
 import * as GQL from "src/core/generated-graphql";
 import { HoverPopover } from "src/components/Shared/HoverPopover";
 import { Icon } from "src/components/Shared/Icon";
-import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { SuccessIcon } from "src/components/Shared/SuccessIcon";
+import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { TagSelect } from "src/components/Shared/Select";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
 import { OperationButton } from "src/components/Shared/OperationButton";
@@ -22,8 +28,25 @@ import { SceneTaggerModalsState } from "./sceneTaggerModals";
 import PerformerResult from "./PerformerResult";
 import StudioResult from "./StudioResult";
 import { useInitialState } from "src/hooks/state";
-import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { getStashboxBase } from "src/utils/stashbox";
+import { ExternalLink } from "src/components/Shared/ExternalLink";
+import { compareScenesForSort } from "./utils";
+
+const getDurationIcon = (matchPercentage: number) => {
+  if (matchPercentage > 65)
+    return (
+      <Icon className="SceneTaggerIcon text-success" icon={faCheckCircle} />
+    );
+  if (matchPercentage > 35)
+    return (
+      <Icon
+        className="SceneTaggerIcon text-warning"
+        icon={faTriangleExclamation}
+      />
+    );
+
+  return <Icon className="SceneTaggerIcon text-danger" icon={faXmark} />;
+};
 
 const getDurationStatus = (
   scene: IScrapedScene,
@@ -51,10 +74,12 @@ const getDurationStatus = (
   else if (scene.duration && Math.abs(scene.duration - stashDuration) < 5)
     match = <FormattedMessage id="component_tagger.results.fp_matches" />;
 
+  const matchPercentage = (matchCount / durations.length) * 100;
+
   if (match)
     return (
       <div className="font-weight-bold">
-        <SuccessIcon className="mr-2" />
+        {getDurationIcon(matchPercentage)}
         {match}
       </div>
     );
@@ -145,7 +170,7 @@ const getFingerprintStatus = (
       <div>
         {phashMatches.length > 0 && (
           <div className="font-weight-bold">
-            <SuccessIcon className="mr-2" />
+            <SuccessIcon className="SceneTaggerIcon" />
             <HoverPopover
               placement="bottom"
               content={phashList}
@@ -302,8 +327,8 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     }
   }, [isActive, loading, stashScene, index, resolveScene, scene]);
 
-  const stashBoxBaseURL = currentSource?.stashboxEndpoint
-    ? getStashboxBase(currentSource.stashboxEndpoint)
+  const stashBoxBaseURL = currentSource?.sourceInput.stash_box_endpoint
+    ? getStashboxBase(currentSource.sourceInput.stash_box_endpoint)
     : undefined;
   const stashBoxURL = useMemo(() => {
     if (stashBoxBaseURL) {
@@ -379,7 +404,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     const includeStashID = !excludedFieldList.includes("stash_ids");
     if (
       includeStashID &&
-      currentSource?.stashboxEndpoint &&
+      currentSource?.sourceInput.stash_box_endpoint &&
       scene.remote_site_id
     ) {
       sceneCreateInput.stash_ids = [
@@ -388,12 +413,16 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
             return {
               endpoint: s.endpoint,
               stash_id: s.stash_id,
+              updated_at: s.updated_at,
             };
           })
-          .filter((s) => s.endpoint !== currentSource.stashboxEndpoint) ?? []),
+          .filter(
+            (s) => s.endpoint !== currentSource.sourceInput.stash_box_endpoint
+          ) ?? []),
         {
-          endpoint: currentSource.stashboxEndpoint,
+          endpoint: currentSource.sourceInput.stash_box_endpoint,
           stash_id: scene.remote_site_id,
+          updated_at: new Date().toISOString(),
         },
       ];
     } else {
@@ -488,14 +517,9 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     const url = scene.urls?.length ? scene.urls[0] : null;
 
     const sceneTitleEl = url ? (
-      <a
-        href={url}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="scene-link"
-      >
+      <ExternalLink className="scene-link" href={url}>
         <TruncatedText text={scene.title} />
-      </a>
+      </ExternalLink>
     ) : (
       <TruncatedText text={scene.title} />
     );
@@ -592,9 +616,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
           >
             {scene.urls.map((url) => (
               <div key={url}>
-                <a href={url} target="_blank" rel="noopener noreferrer">
-                  {url}
-                </a>
+                <ExternalLink href={url}>{url}</ExternalLink>
               </div>
             ))}
           </OptionalField>
@@ -626,9 +648,9 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
             exclude={excludedFields[fields.stash_ids]}
             setExclude={(v) => setExcludedField(fields.stash_ids, v)}
           >
-            <a href={stashBoxURL} target="_blank" rel="noopener noreferrer">
+            <ExternalLink href={stashBoxURL}>
               {scene.remote_site_id}
-            </a>
+            </ExternalLink>
           </OptionalField>
         </div>
       );
@@ -644,7 +666,9 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
             selectedID={studioID}
             setSelectedID={(id) => setStudioID(id)}
             onCreate={() => showStudioModal(scene.studio!)}
-            endpoint={currentSource?.stashboxEndpoint}
+            endpoint={
+              currentSource?.sourceInput.stash_box_endpoint ?? undefined
+            }
             onLink={async () => {
               await linkStudio(scene.studio!, studioID!);
             }}
@@ -673,7 +697,9 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
               onLink={async () => {
                 await linkPerformer(performer, performerIDs[performerIndex]!);
               }}
-              endpoint={currentSource?.stashboxEndpoint}
+              endpoint={
+                currentSource?.sourceInput.stash_box_endpoint ?? undefined
+              }
               key={`${performer.name ?? performer.remote_site_id ?? ""}`}
             />
           ))}
@@ -690,27 +716,30 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     }
   }
 
-  const renderTagsField = () => (
-    <div className="mt-2">
-      <div>
-        <Form.Group controlId="tags" as={Row}>
-          {FormUtils.renderLabel({
-            title: `${intl.formatMessage({ id: "tags" })}:`,
-          })}
-          <Col sm={9} xl={12}>
-            <TagSelect
-              isMulti
-              onSelect={(items) => {
-                setTagIDs(items.map((i) => i.id));
-              }}
-              ids={tagIDs}
-            />
-          </Col>
-        </Form.Group>
-      </div>
-      {scene.tags
-        ?.filter((t) => !t.stored_id)
-        .map((t) => (
+  function maybeRenderTagsField() {
+    if (!config.setTags) return;
+
+    const createTags = scene.tags?.filter((t) => !t.stored_id);
+
+    return (
+      <div className="mt-2">
+        <div>
+          <Form.Group controlId="tags" as={Row}>
+            {FormUtils.renderLabel({
+              title: `${intl.formatMessage({ id: "tags" })}:`,
+            })}
+            <Col sm={9} xl={12}>
+              <TagSelect
+                isMulti
+                onSelect={(items) => {
+                  setTagIDs(items.map((i) => i.id));
+                }}
+                ids={tagIDs}
+              />
+            </Col>
+          </Form.Group>
+        </div>
+        {createTags?.map((t) => (
           <Badge
             className="tag-item"
             variant="secondary"
@@ -725,8 +754,9 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
             </Button>
           </Badge>
         ))}
-    </div>
-  );
+      </div>
+    );
+  }
 
   if (loading) {
     return <LoadingIndicator card />;
@@ -769,7 +799,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
         <div className="col-lg-6">
           {maybeRenderStudioField()}
           {renderPerformerField()}
-          {renderTagsField()}
+          {maybeRenderTagsField()}
 
           <div className="row no-gutters mt-2 align-items-center justify-content-end">
             <OperationButton operation={handleSave}>
@@ -789,17 +819,30 @@ export interface ISceneSearchResults {
 
 export const SceneSearchResults: React.FC<ISceneSearchResults> = ({
   target,
-  scenes,
+  scenes: unsortedScenes,
 }) => {
   const [selectedResult, setSelectedResult] = useState<number | undefined>();
 
+  const scenes = useMemo(
+    () =>
+      unsortedScenes
+        .slice()
+        .sort((scrapedSceneA, scrapedSceneB) =>
+          compareScenesForSort(target, scrapedSceneA, scrapedSceneB)
+        ),
+    [unsortedScenes, target]
+  );
+
   useEffect(() => {
-    if (!scenes) {
-      setSelectedResult(undefined);
-    } else if (scenes.length > 0 && scenes[0].resolved) {
-      setSelectedResult(0);
+    // #3198 - if the selected result is no longer in the list, reset it
+    if (!selectedResult || scenes?.length <= selectedResult) {
+      if (!scenes) {
+        setSelectedResult(undefined);
+      } else if (scenes.length > 0 && scenes[0].resolved) {
+        setSelectedResult(0);
+      }
     }
-  }, [scenes]);
+  }, [scenes, selectedResult]);
 
   function getClassName(i: number) {
     return cx("row mx-0 mt-2 search-result", {

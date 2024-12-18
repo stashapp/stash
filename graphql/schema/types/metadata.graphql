@@ -1,5 +1,3 @@
-scalar Upload
-
 input GenerateMetadataInput {
   covers: Boolean
   sprites: Boolean
@@ -14,6 +12,7 @@ input GenerateMetadataInput {
   forceTranscodes: Boolean
   phashes: Boolean
   interactiveHeatmapsSpeeds: Boolean
+  imageThumbnails: Boolean
   clipPreviews: Boolean
 
   "scene ids to generate for"
@@ -50,6 +49,7 @@ type GenerateMetadataOptions {
   transcodes: Boolean
   phashes: Boolean
   interactiveHeatmapsSpeeds: Boolean
+  imageThumbnails: Boolean
   clipPreviews: Boolean
 }
 
@@ -75,6 +75,8 @@ input ScanMetaDataFilterInput {
 input ScanMetadataInput {
   paths: [String!]
 
+  "Forces a rescan on files even if modification time is unchanged"
+  rescan: Boolean
   "Generate covers during scan"
   scanGenerateCovers: Boolean
   "Generate previews during scan"
@@ -95,6 +97,8 @@ input ScanMetadataInput {
 }
 
 type ScanMetadataOptions {
+  "Forces a rescan on files even if modification time is unchanged"
+  rescan: Boolean!
   "Generate covers during scan"
   scanGenerateCovers: Boolean!
   "Generate previews during scan"
@@ -116,6 +120,26 @@ input CleanMetadataInput {
 
   "Do a dry run. Don't delete any files"
   dryRun: Boolean!
+}
+
+input CleanGeneratedInput {
+  "Clean blob files without blob entries"
+  blobFiles: Boolean
+  "Clean sprite and vtt files without scene entries"
+  sprites: Boolean
+  "Clean preview files without scene entries"
+  screenshots: Boolean
+  "Clean scene transcodes without scene entries"
+  transcodes: Boolean
+
+  "Clean marker files without marker entries"
+  markers: Boolean
+
+  "Clean image thumbnails/clips without image entries"
+  imageThumbnails: Boolean
+
+  "Do a dry run. Don't delete any files"
+  dryRun: Boolean
 }
 
 input AutoTagMetadataInput {
@@ -260,7 +284,8 @@ input ExportObjectsInput {
   studios: ExportObjectTypeInput
   performers: ExportObjectTypeInput
   tags: ExportObjectTypeInput
-  movies: ExportObjectTypeInput
+  groups: ExportObjectTypeInput
+  movies: ExportObjectTypeInput @deprecated(reason: "Use groups instead")
   galleries: ExportObjectTypeInput
   includeDependencies: Boolean
 }
@@ -306,8 +331,17 @@ type SystemStatus {
   os: String!
   workingDir: String!
   homeDir: String!
+  ffmpegPath: String
+  ffprobePath: String
 }
 
 input MigrateInput {
   backupPath: String!
+}
+
+input CustomFieldsInput {
+  "If populated, the entire custom fields map will be replaced with this value"
+  full: Map
+  "If populated, only the keys in this map will be updated"
+  partial: Map
 }

@@ -64,6 +64,14 @@ function filterPackages<T extends IPackage>(packages: T[], filter: string) {
 
 export type InstalledPackage = Omit<GQL.Package, "requires">;
 
+function hasUpgrade(pkg: InstalledPackage) {
+  if (!pkg.date || !pkg.source_package?.date) return false;
+
+  const pkgDate = new Date(pkg.date);
+  const upgradeDate = new Date(pkg.source_package.date);
+  return upgradeDate > pkgDate;
+}
+
 const InstalledPackageRow: React.FC<{
   loading?: boolean;
   pkg: InstalledPackage;
@@ -75,11 +83,7 @@ const InstalledPackageRow: React.FC<{
 
   const updateAvailable = useMemo(() => {
     if (!updatesLoaded) return false;
-    if (!pkg.date || !pkg.source_package?.date) return false;
-
-    const pkgDate = new Date(pkg.date);
-    const upgradeDate = new Date(pkg.source_package.date);
-    return upgradeDate > pkgDate;
+    return hasUpgrade(pkg);
   }, [updatesLoaded, pkg]);
 
   return (
@@ -124,6 +128,7 @@ const InstalledPackagesList: React.FC<{
   packages: InstalledPackage[];
   checkedPackages: InstalledPackage[];
   setCheckedPackages: React.Dispatch<React.SetStateAction<InstalledPackage[]>>;
+  upgradableOnly: boolean;
 }> = ({
   filter,
   packages,
@@ -132,6 +137,7 @@ const InstalledPackagesList: React.FC<{
   updatesLoaded,
   loading,
   error,
+  upgradableOnly,
 }) => {
   const checkedMap = useMemo(() => {
     const map: Record<string, boolean> = {};
@@ -146,8 +152,10 @@ const InstalledPackagesList: React.FC<{
   }, [checkedPackages, packages]);
 
   const filteredPackages = useMemo(() => {
-    return filterPackages(packages, filter);
-  }, [filter, packages]);
+    return filterPackages(packages, filter).filter((pkg) => {
+      return !updatesLoaded || !upgradableOnly || hasUpgrade(pkg);
+    });
+  }, [packages, filter, updatesLoaded, upgradableOnly]);
 
   function toggleAllChecked() {
     setCheckedPackages(allChecked ? [] : packages.slice());
@@ -179,10 +187,13 @@ const InstalledPackagesList: React.FC<{
     }
 
     if (filteredPackages.length === 0) {
+      const id = upgradableOnly
+        ? "package_manager.no_upgradable"
+        : "package_manager.no_packages";
       return (
         <tr className="package-manager-no-results">
           <td colSpan={1000}>
-            <FormattedMessage id="package_manager.no_packages" />
+            <FormattedMessage id={id} />
           </td>
         </tr>
       );
@@ -224,6 +235,9 @@ const InstalledPackagesList: React.FC<{
               </th>
             ) : undefined}
           </tr>
+          <tr>
+            <th className="border-row" colSpan={100}></th>
+          </tr>
         </thead>
         <tbody>{renderBody()}</tbody>
       </Table>
@@ -239,6 +253,9 @@ const InstalledPackagesToolbar: React.FC<{
   onCheckForUpdates: () => void;
   onUpdatePackages: () => void;
   onUninstallPackages: () => void;
+
+  upgradableOnly: boolean;
+  setUpgradableOnly: (v: boolean) => void;
 }> = ({
   loading,
   checkedPackages,
@@ -247,8 +264,11 @@ const InstalledPackagesToolbar: React.FC<{
   onUninstallPackages,
   filter,
   setFilter,
+  upgradableOnly,
+  setUpgradableOnly,
 }) => {
   const intl = useIntl();
+
   return (
     <div className="package-manager-toolbar">
       <ClearableInput
@@ -256,6 +276,15 @@ const InstalledPackagesToolbar: React.FC<{
         value={filter}
         setValue={(v) => setFilter(v)}
       />
+      {upgradableOnly && (
+        <Button
+          size="sm"
+          variant="primary"
+          onClick={() => setUpgradableOnly(!upgradableOnly)}
+        >
+          <FormattedMessage id="package_manager.show_all" />
+        </Button>
+      )}
       <div className="flex-grow-1" />
       <Button
         variant="primary"
@@ -303,11 +332,28 @@ export const InstalledPackages: React.FC<{
     []
   );
   const [filter, setFilter] = useState("");
+  const [upgradableOnly, setUpgradableOnly] = useState(true);
   const [uninstalling, setUninstalling] = useState(false);
 
+  // sort packages so that those with updates are at the top
+  const sortedPackages = useMemo(() => {
+    return packages.slice().sort((a, b) => {
+      const aHasUpdate = hasUpgrade(a);
+      const bHasUpdate = hasUpgrade(b);
+
+      if (aHasUpdate && !bHasUpdate) return -1;
+      if (!aHasUpdate && bHasUpdate) return 1;
+
+      // sort by name
+      return a.package_id.localeCompare(b.package_id);
+    });
+  }, [packages]);
+
   const filteredPackages = useMemo(() => {
-    return filterPackages(checkedPackages, filter);
-  }, [checkedPackages, filter]);
+    return filterPackages(checkedPackages, filter).filter((pkg) => {
+      return !updatesLoaded || !upgradableOnly || hasUpgrade(pkg);
+    });
+  }, [checkedPackages, filter, updatesLoaded, upgradableOnly]);
 
   useEffect(() => {
     setCheckedPackages((prev) => {
@@ -325,6 +371,12 @@ export const InstalledPackages: React.FC<{
   function confirmUninstall() {
     onUninstallPackages(filteredPackages);
     setUninstalling(false);
+  }
+
+  function checkForUpdates() {
+    // reset to only show upgradable packages
+    setUpgradableOnly(true);
+    onCheckForUpdates();
   }
 
   return (
@@ -346,19 +398,22 @@ export const InstalledPackages: React.FC<{
           setFilter={(f) => setFilter(f)}
           loading={loading}
           checkedPackages={filteredPackages}
-          onCheckForUpdates={onCheckForUpdates}
+          onCheckForUpdates={() => checkForUpdates()}
           onUpdatePackages={() => onUpdatePackages(filteredPackages)}
           onUninstallPackages={() => setUninstalling(true)}
+          upgradableOnly={updatesLoaded && upgradableOnly}
+          setUpgradableOnly={(v) => setUpgradableOnly(v)}
         />
         <InstalledPackagesList
           filter={filter}
           loading={loading}
           error={error}
-          packages={packages}
+          packages={sortedPackages}
           // use original checked packages so that check boxes are not affected by filter
           checkedPackages={checkedPackages}
           setCheckedPackages={setCheckedPackages}
           updatesLoaded={updatesLoaded}
+          upgradableOnly={upgradableOnly}
         />
       </div>
     </>
@@ -620,6 +675,7 @@ const SourcePackagesList: React.FC<{
   loadSource: () => Promise<RemotePackage[]>;
   selectedOnly: boolean;
   selectedPackages: RemotePackage[];
+  allowSelectAll?: boolean;
   setSelectedPackages: React.Dispatch<React.SetStateAction<RemotePackage[]>>;
   renderDescription?: (pkg: RemotePackage) => React.ReactNode;
   editSource: () => void;
@@ -627,6 +683,7 @@ const SourcePackagesList: React.FC<{
 }> = ({
   source,
   loadSource,
+  allowSelectAll,
   selectedOnly,
   selectedPackages,
   setSelectedPackages,
@@ -785,7 +842,7 @@ const SourcePackagesList: React.FC<{
     <>
       <tr className="package-source">
         <td>
-          {packages !== undefined ? (
+          {allowSelectAll && packages !== undefined ? (
             <Form.Check
               checked={sourceChecked ?? false}
               onChange={() => toggleSource()}
@@ -844,6 +901,7 @@ const AvailablePackagesList: React.FC<{
     React.SetStateAction<Record<string, RemotePackage[]>>
   >;
   selectedOnly: boolean;
+  allowSourceSelectAll?: boolean;
   addSource: (src: GQL.PackageSource) => void;
   editSource: (existing: GQL.PackageSource, changed: GQL.PackageSource) => void;
   deleteSource: (source: GQL.PackageSource) => void;
@@ -859,6 +917,7 @@ const AvailablePackagesList: React.FC<{
   addSource,
   editSource,
   deleteSource,
+  allowSourceSelectAll,
 }) => {
   const [deletingSource, setDeletingSource] = useState<GQL.PackageSource>();
   const [editingSource, setEditingSource] = useState<GQL.PackageSource>();
@@ -920,6 +979,7 @@ const AvailablePackagesList: React.FC<{
             setSelectedPackages={(v) => setSelectedSourcePackages(src, v)}
             editSource={() => setEditingSource(src)}
             deleteSource={() => setDeletingSource(src)}
+            allowSelectAll={allowSourceSelectAll}
           />
         ))}
         <tr className="add-package-source">
@@ -983,6 +1043,9 @@ const AvailablePackagesList: React.FC<{
                 <FormattedMessage id="package_manager.description" />
               </th>
             </tr>
+            <tr>
+              <th className="border-row" colSpan={100}></th>
+            </tr>
           </thead>
           <tbody>{renderBody()}</tbody>
         </Table>
@@ -1000,6 +1063,7 @@ export const AvailablePackages: React.FC<{
   addSource: (src: GQL.PackageSource) => void;
   editSource: (existing: GQL.PackageSource, changed: GQL.PackageSource) => void;
   deleteSource: (source: GQL.PackageSource) => void;
+  allowSelectAll?: boolean;
 }> = ({
   sources,
   loadSource,
@@ -1009,6 +1073,7 @@ export const AvailablePackages: React.FC<{
   addSource,
   editSource,
   deleteSource,
+  allowSelectAll,
 }) => {
   const [checkedPackages, setCheckedPackages] = useState<
     Record<string, RemotePackage[]>
@@ -1060,6 +1125,7 @@ export const AvailablePackages: React.FC<{
         addSource={addSource}
         editSource={editSource}
         deleteSource={deleteSource}
+        allowSourceSelectAll={allowSelectAll}
       />
     </div>
   );

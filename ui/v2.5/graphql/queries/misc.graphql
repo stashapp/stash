@@ -1,0 +1,48 @@
+query MarkerStrings($q: String, $sort: String) {
+  markerStrings(q: $q, sort: $sort) {
+    id
+    count
+    title
+  }
+}
+
+query Stats {
+  stats {
+    scene_count
+    scenes_size
+    scenes_duration
+    image_count
+    images_size
+    gallery_count
+    performer_count
+    studio_count
+    group_count
+    tag_count
+    total_o_count
+    total_play_duration
+    total_play_count
+    scenes_played
+  }
+}
+
+query Logs {
+  logs {
+    ...LogEntryData
+  }
+}
+query Version {
+  version {
+    version
+    hash
+    build_time
+  }
+}
+
+query LatestVersion {
+  latestversion {
+    version
+    shorthash
+    release_date
+    url
+  }
+}

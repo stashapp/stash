@@ -4,7 +4,6 @@ import * as GQL from "src/core/generated-graphql";
 import * as yup from "yup";
 import Mousetrap from "mousetrap";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
-import { StudioSelect } from "src/components/Shared/Select";
 import { DetailsEditNavbar } from "src/components/Shared/DetailsEditNavbar";
 import { Form } from "react-bootstrap";
 import ImageUtils from "src/utils/image";
@@ -16,6 +15,8 @@ import { useToast } from "src/hooks/Toast";
 import { handleUnsavedChanges } from "src/utils/navigation";
 import { formikUtils } from "src/utils/form";
 import { yupFormikValidate, yupUniqueAliases } from "src/utils/yup";
+import { Studio, StudioSelect } from "../StudioSelect";
+import { useTagsEdit } from "src/hooks/tagsEdit";
 
 interface IStudioEditPanel {
   studio: Partial<GQL.StudioDataFragment>;
@@ -42,12 +43,15 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
   // Network state
   const [isLoading, setIsLoading] = useState(false);
 
+  const [parentStudio, setParentStudio] = useState<Studio | null>(null);
+
   const schema = yup.object({
     name: yup.string().required(),
     url: yup.string().ensure(),
     details: yup.string().ensure(),
     parent_id: yup.string().required().nullable(),
     aliases: yupUniqueAliases(intl, "name"),
+    tag_ids: yup.array(yup.string().required()).defined(),
     ignore_auto_tag: yup.boolean().defined(),
     stash_ids: yup.mixed<GQL.StashIdInput[]>().defined(),
     image: yup.string().nullable().optional(),
@@ -60,6 +64,7 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
     details: studio.details ?? "",
     parent_id: studio.parent_studio?.id ?? null,
     aliases: studio.aliases ?? [],
+    tag_ids: (studio.tags ?? []).map((t) => t.id),
     ignore_auto_tag: studio.ignore_auto_tag ?? false,
     stash_ids: getStashIDs(studio.stash_ids),
   };
@@ -73,9 +78,30 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
     onSubmit: (values) => onSave(schema.cast(values)),
   });
 
+  const { tagsControl } = useTagsEdit(studio.tags, (ids) =>
+    formik.setFieldValue("tag_ids", ids)
+  );
+
+  function onSetParentStudio(item: Studio | null) {
+    setParentStudio(item);
+    formik.setFieldValue("parent_id", item ? item.id : null);
+  }
+
   const encodingImage = ImageUtils.usePasteImage((imageData) =>
     formik.setFieldValue("image", imageData)
   );
+
+  useEffect(() => {
+    setParentStudio(
+      studio.parent_studio
+        ? {
+            id: studio.parent_studio.id,
+            name: studio.parent_studio.name,
+            aliases: [],
+          }
+        : null
+    );
+  }, [studio.parent_studio]);
 
   useEffect(() => {
     setImage(formik.values.image);
@@ -129,16 +155,18 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
     const control = (
       <StudioSelect
         onSelect={(items) =>
-          formik.setFieldValue(
-            "parent_id",
-            items.length > 0 ? items[0]?.id : null
-          )
+          onSetParentStudio(items.length > 0 ? items[0] : null)
         }
-        ids={formik.values.parent_id ? [formik.values.parent_id] : []}
+        values={parentStudio ? [parentStudio] : []}
       />
     );
 
     return renderField("parent_id", title, control);
+  }
+
+  function renderTagsField() {
+    const title = intl.formatMessage({ id: "tags" });
+    return renderField("tag_ids", title, tagsControl());
   }
 
   if (isLoading) return <LoadingIndicator />;
@@ -162,6 +190,7 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
         {renderInputField("url")}
         {renderInputField("details", "textarea")}
         {renderParentStudioField()}
+        {renderTagsField()}
         {renderStashIDsField("stash_ids", "studios")}
         <hr />
         {renderInputField("ignore_auto_tag", "checkbox")}

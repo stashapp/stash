@@ -134,6 +134,9 @@ type ScanOptions struct {
 	HandlerRequiredFilters []Filter
 
 	ParallelTasks int
+
+	// When true files in path will be rescanned even if they haven't changed
+	Rescan bool
 }
 
 // Scan starts the scanning process.
@@ -338,7 +341,7 @@ func (s *scanJob) acceptEntry(ctx context.Context, path string, info fs.FileInfo
 }
 
 func (s *scanJob) scanZipFile(ctx context.Context, f scanFile) error {
-	zipFS, err := f.fs.OpenZip(f.Path)
+	zipFS, err := f.fs.OpenZip(f.Path, f.Size)
 	if err != nil {
 		if errors.Is(err, errNotReaderAt) {
 			// can't walk the zip file
@@ -653,6 +656,7 @@ func (s *scanJob) handleFile(ctx context.Context, f scanFile) error {
 		}
 
 		if ff == nil {
+			// returns a file only if it is actually new
 			ff, err = s.onNewFile(ctx, f)
 			return err
 		}
@@ -740,7 +744,10 @@ func (s *scanJob) onNewFile(ctx context.Context, f scanFile) (models.File, error
 	}
 
 	if renamed != nil {
-		return renamed, nil
+		// handle rename should have already handled the contents of the zip file
+		// so shouldn't need to scan it again
+		// return nil so it doesn't
+		return nil, nil
 	}
 
 	// if not renamed, queue file for creation
@@ -831,7 +838,7 @@ func (s *scanJob) getFileFS(f *models.BaseFile) (models.FS, error) {
 	}
 
 	zipPath := f.ZipFile.Base().Path
-	return fs.OpenZip(zipPath)
+	return fs.OpenZip(zipPath, f.Size)
 }
 
 func (s *scanJob) handleRename(ctx context.Context, f models.File, fp []models.Fingerprint) (models.File, error) {
@@ -863,9 +870,11 @@ func (s *scanJob) handleRename(ctx context.Context, f models.File, fp []models.F
 			continue
 		}
 
-		if _, err := fs.Lstat(other.Base().Path); err != nil {
+		info, err := fs.Lstat(other.Base().Path)
+		switch {
+		case err != nil:
 			missing = append(missing, other)
-		} else if strings.EqualFold(f.Base().Path, other.Base().Path) {
+		case strings.EqualFold(f.Base().Path, other.Base().Path):
 			// #1426 - if file exists but is a case-insensitive match for the
 			// original filename, and the filesystem is case-insensitive
 			// then treat it as a move
@@ -873,6 +882,10 @@ func (s *scanJob) handleRename(ctx context.Context, f models.File, fp []models.F
 				// treat as a move
 				missing = append(missing, other)
 			}
+		case !s.acceptEntry(ctx, other.Base().Path, info):
+			// #4393 - if the file is no longer in the configured library paths, treat it as a move
+			logger.Debugf("File %q no longer in library paths. Treating as a move.", other.Base().Path)
+			missing = append(missing, other)
 		}
 	}
 
@@ -885,28 +898,35 @@ func (s *scanJob) handleRename(ctx context.Context, f models.File, fp []models.F
 	// assume does not exist, update existing file
 	// it's possible that there may be multiple missing files.
 	// just use the first one to rename.
+	// #4775 - using the new file instance means that any changes made to the existing
+	// file will be lost. Update the existing file instead.
 	other := missing[0]
-	otherBase := other.Base()
+	updated := other.Clone()
+	updatedBase := updated.Base()
 
-	fBase := f.Base()
+	fBaseCopy := *(f.Base())
 
-	logger.Infof("%s moved to %s. Updating path...", otherBase.Path, fBase.Path)
-	fBase.ID = otherBase.ID
-	fBase.CreatedAt = otherBase.CreatedAt
-	fBase.Fingerprints = otherBase.Fingerprints
+	oldPath := updatedBase.Path
+	newPath := fBaseCopy.Path
+
+	logger.Infof("%s moved to %s. Updating path...", oldPath, newPath)
+	fBaseCopy.ID = updatedBase.ID
+	fBaseCopy.CreatedAt = updatedBase.CreatedAt
+	fBaseCopy.Fingerprints = updatedBase.Fingerprints
+	*updatedBase = fBaseCopy
 
 	if err := s.withTxn(ctx, func(ctx context.Context) error {
-		if err := s.Repository.File.Update(ctx, f); err != nil {
-			return fmt.Errorf("updating file for rename %q: %w", fBase.Path, err)
+		if err := s.Repository.File.Update(ctx, updated); err != nil {
+			return fmt.Errorf("updating file for rename %q: %w", newPath, err)
 		}
 
-		if s.isZipFile(fBase.Basename) {
-			if err := TransferZipFolderHierarchy(ctx, s.Repository.Folder, fBase.ID, otherBase.Path, fBase.Path); err != nil {
-				return fmt.Errorf("moving folder hierarchy for renamed zip file %q: %w", fBase.Path, err)
+		if s.isZipFile(updatedBase.Basename) {
+			if err := transferZipHierarchy(ctx, s.Repository.Folder, s.Repository.File, updatedBase.ID, oldPath, newPath); err != nil {
+				return fmt.Errorf("moving zip hierarchy for renamed zip file %q: %w", newPath, err)
 			}
 		}
 
-		if err := s.fireHandlers(ctx, f, other); err != nil {
+		if err := s.fireHandlers(ctx, updated, other); err != nil {
 			return err
 		}
 
@@ -915,7 +935,7 @@ func (s *scanJob) handleRename(ctx context.Context, f models.File, fp []models.F
 		return nil, err
 	}
 
-	return f, nil
+	return updated, nil
 }
 
 func (s *scanJob) isHandlerRequired(ctx context.Context, f models.File) bool {
@@ -1006,14 +1026,20 @@ func (s *scanJob) onExistingFile(ctx context.Context, f scanFile, existing model
 
 	fileModTime := f.ModTime
 	updated := !fileModTime.Equal(base.ModTime)
+	forceRescan := s.options.Rescan
 
-	if !updated {
+	if !updated && !forceRescan {
 		return s.onUnchangedFile(ctx, f, existing)
 	}
 
 	oldBase := *base
 
-	logger.Infof("%s has been updated: rescanning", path)
+	if !updated && forceRescan {
+		logger.Infof("rescanning %s", path)
+	} else {
+		logger.Infof("%s has been updated: rescanning", path)
+	}
+
 	base.ModTime = fileModTime
 	base.Size = f.Size
 	base.UpdatedAt = time.Now()
@@ -1074,7 +1100,8 @@ func (s *scanJob) removeOutdatedFingerprints(existing models.File, fp models.Fin
 
 	// oshash has changed, MD5 is missing - remove MD5 from the existing fingerprints
 	logger.Infof("Removing outdated checksum from %s", existing.Base().Path)
-	existing.Base().Fingerprints.Remove(models.FingerprintTypeMD5)
+	b := existing.Base()
+	b.Fingerprints = b.Fingerprints.Remove(models.FingerprintTypeMD5)
 }
 
 // returns a file only if it was updated

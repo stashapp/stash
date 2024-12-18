@@ -81,6 +81,6 @@ func LogExternalAccessError(err ExternalAccessError) {
 		"You probably forwarded a port from your router. At the very least, add a password to stash in the settings. \n"+
 		"Stash will not serve requests until you edit config.yml, remove the security_tripwire_accessed_from_public_internet key and restart stash. \n"+
 		"This behaviour can be overridden (but not recommended) by setting dangerous_allow_public_without_auth to true in config.yml. \n"+
-		"More information is available at https://docs.stashapp.cc/networking/authentication-required-when-accessing-stash-from-the-internet \n"+
+		"More information is available at https://docs.stashapp.cc/faq/setup/#protecting-against-accidental-exposure-to-the-internet \n"+
 		"Stash is not answering any other requests to protect your privacy.", net.IP(err).String())
 }

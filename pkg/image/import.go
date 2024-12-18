@@ -3,6 +3,7 @@ package image
 import (
 	"context"
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/stashapp/stash/pkg/models"
@@ -239,7 +240,7 @@ func (i *Importer) populatePerformers(ctx context.Context) error {
 		}
 
 		missingPerformers := sliceutil.Filter(names, func(name string) bool {
-			return !sliceutil.Contains(pluckedNames, name)
+			return !slices.Contains(pluckedNames, name)
 		})
 
 		if len(missingPerformers) > 0 {
@@ -273,7 +274,9 @@ func (i *Importer) createPerformers(ctx context.Context, names []string) ([]*mod
 		newPerformer := models.NewPerformer()
 		newPerformer.Name = name
 
-		err := i.PerformerWriter.Create(ctx, &newPerformer)
+		err := i.PerformerWriter.Create(ctx, &models.CreatePerformerInput{
+			Performer: &newPerformer,
+		})
 		if err != nil {
 			return nil, err
 		}
@@ -375,7 +378,7 @@ func importTags(ctx context.Context, tagWriter models.TagFinderCreator, names []
 	}
 
 	missingTags := sliceutil.Filter(names, func(name string) bool {
-		return !sliceutil.Contains(pluckedNames, name)
+		return !slices.Contains(pluckedNames, name)
 	})
 
 	if len(missingTags) > 0 {

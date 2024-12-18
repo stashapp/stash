@@ -2,7 +2,6 @@ package manager
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io/fs"
 	"path/filepath"
@@ -35,12 +34,13 @@ type ScanJob struct {
 	subscriptions *subscriptionManager
 }
 
-func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
+func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) error {
+	cfg := config.GetInstance()
 	input := j.input
 
 	if job.IsCancelled(ctx) {
 		logger.Info("Stopping due to user request")
-		return
+		return nil
 	}
 
 	sp := getScanPaths(input.Paths)
@@ -56,7 +56,7 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 	start := time.Now()
 
 	const taskQueueSize = 200000
-	taskQueue := job.NewTaskQueue(ctx, progress, taskQueueSize, c.GetParallelTasksWithAutoDetection())
+	taskQueue := job.NewTaskQueue(ctx, progress, taskQueueSize, cfg.GetParallelTasksWithAutoDetection())
 
 	var minModTime time.Time
 	if j.input.Filter != nil && j.input.Filter.MinModTime != nil {
@@ -66,22 +66,24 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 	j.scanner.Scan(ctx, getScanHandlers(j.input, taskQueue, progress), file.ScanOptions{
 		Paths:                  paths,
 		ScanFilters:            []file.PathFilter{newScanFilter(c, repo, minModTime)},
-		ZipFileExtensions:      c.GetGalleryExtensions(),
-		ParallelTasks:          c.GetParallelTasksWithAutoDetection(),
-		HandlerRequiredFilters: []file.Filter{newHandlerRequiredFilter(c, repo)},
+		ZipFileExtensions:      cfg.GetGalleryExtensions(),
+		ParallelTasks:          cfg.GetParallelTasksWithAutoDetection(),
+		HandlerRequiredFilters: []file.Filter{newHandlerRequiredFilter(cfg, repo)},
+		Rescan:                 j.input.Rescan,
 	}, progress)
 
 	taskQueue.Close()
 
 	if job.IsCancelled(ctx) {
 		logger.Info("Stopping due to user request")
-		return
+		return nil
 	}
 
 	elapsed := time.Since(start)
 	logger.Info(fmt.Sprintf("Scan finished (%s)", elapsed))
 
 	j.subscriptions.notify()
+	return nil
 }
 
 type extensionConfig struct {
@@ -121,7 +123,7 @@ type handlerRequiredFilter struct {
 	GalleryFinder  galleryFinder
 	CaptionUpdater video.CaptionUpdater
 
-	FolderCache *lru.LRU
+	FolderCache *lru.LRU[bool]
 
 	videoFileNamingAlgorithm models.HashAlgorithm
 }
@@ -136,7 +138,7 @@ func newHandlerRequiredFilter(c *config.Config, repo models.Repository) *handler
 		ImageFinder:              repo.Image,
 		GalleryFinder:            repo.Gallery,
 		CaptionUpdater:           repo.File,
-		FolderCache:              lru.New(processes * 2),
+		FolderCache:              lru.New[bool](processes * 2),
 		videoFileNamingAlgorithm: c.GetVideoFileNamingAlgorithm(),
 	}
 }
@@ -177,7 +179,8 @@ func (f *handlerRequiredFilter) Accept(ctx context.Context, ff models.File) bool
 	// if create galleries from folder is enabled and the file is not in a zip
 	// file, then check if there is a folder-based gallery for the file's
 	// directory
-	if isImageFile && instance.Config.GetCreateGalleriesFromFolders() && ff.Base().ZipFileID == nil {
+	// #4611 - also check for .forcegallery
+	if isImageFile && ff.Base().ZipFileID == nil {
 		// only do this for the first time it encounters the folder
 		// the first instance should create the gallery
 		_, found := f.FolderCache.Get(ctx, ff.Base().ParentFolderID.String())
@@ -186,8 +189,22 @@ func (f *handlerRequiredFilter) Accept(ctx context.Context, ff models.File) bool
 			return false
 		}
 
-		g, _ := f.GalleryFinder.FindByFolderID(ctx, ff.Base().ParentFolderID)
 		f.FolderCache.Add(ctx, ff.Base().ParentFolderID.String(), true)
+
+		createGallery := instance.Config.GetCreateGalleriesFromFolders()
+		if !createGallery {
+			// check for presence of .forcegallery
+			forceGalleryPath := filepath.Join(filepath.Dir(path), ".forcegallery")
+			if exists, _ := fsutil.FileExists(forceGalleryPath); exists {
+				createGallery = true
+			}
+		}
+
+		if !createGallery {
+			return false
+		}
+
+		g, _ := f.GalleryFinder.FindByFolderID(ctx, ff.Base().ParentFolderID)
 
 		if len(g) == 0 {
 			// no folder gallery. Return true so that it creates one.
@@ -264,6 +281,12 @@ func (f *scanFilter) Accept(ctx context.Context, path string, info fs.FileInfo) 
 		return false
 	}
 
+	s := f.stashPaths.GetStashFromDirPath(path)
+	if s == nil {
+		logger.Debugf("Skipping %s as it is not in the stash library", path)
+		return false
+	}
+
 	isVideoFile := useAsVideo(path)
 	isImageFile := useAsImage(path)
 	isZipFile := fsutil.MatchExtension(path, f.zipExt)
@@ -285,13 +308,6 @@ func (f *scanFilter) Accept(ctx context.Context, path string, info fs.FileInfo) 
 	// #1756 - skip zero length files
 	if !info.IsDir() && info.Size() == 0 {
 		logger.Infof("Skipping zero-length file: %s", path)
-		return false
-	}
-
-	s := f.stashPaths.GetStashFromDirPath(path)
-
-	if s == nil {
-		logger.Debugf("Skipping %s as it is not in the stash library", path)
 		return false
 	}
 
@@ -411,21 +427,24 @@ func (g *imageGenerators) Generate(ctx context.Context, i *models.Image, f model
 	t := g.input
 	path := f.Base().Path
 
+	// this is a bit of a hack: the task requires files to be loaded, but
+	// we don't really need to since we already have the file
+	ii := *i
+	ii.Files = models.NewRelatedFiles([]models.File{f})
+
 	if t.ScanGenerateThumbnails {
 		// this should be quick, so always generate sequentially
-		if err := g.generateThumbnail(ctx, i, f); err != nil {
-			logger.Errorf("Error generating thumbnail for %s: %v", path, err)
+		taskThumbnail := GenerateImageThumbnailTask{
+			Image:     ii,
+			Overwrite: overwrite,
 		}
+
+		taskThumbnail.Start(ctx)
 	}
 
 	// avoid adding a task if the file isn't a video file
 	_, isVideo := f.(*models.VideoFile)
 	if isVideo && t.ScanGenerateClipPreviews {
-		// this is a bit of a hack: the task requires files to be loaded, but
-		// we don't really need to since we already have the file
-		ii := *i
-		ii.Files = models.NewRelatedFiles([]models.File{f})
-
 		progress.AddTotal(1)
 		previewsFn := func(ctx context.Context) {
 			taskPreview := GenerateClipPreviewTask{
@@ -442,54 +461,6 @@ func (g *imageGenerators) Generate(ctx context.Context, i *models.Image, f model
 		} else {
 			g.taskQueue.Add(fmt.Sprintf("Generating preview for %s", path), previewsFn)
 		}
-	}
-
-	return nil
-}
-
-func (g *imageGenerators) generateThumbnail(ctx context.Context, i *models.Image, f models.File) error {
-	thumbPath := g.paths.Generated.GetThumbnailPath(i.Checksum, models.DefaultGthumbWidth)
-	exists, _ := fsutil.FileExists(thumbPath)
-	if exists {
-		return nil
-	}
-
-	path := f.Base().Path
-
-	vf, ok := f.(models.VisualFile)
-	if !ok {
-		return fmt.Errorf("file %s is not a visual file", path)
-	}
-
-	if vf.GetHeight() <= models.DefaultGthumbWidth && vf.GetWidth() <= models.DefaultGthumbWidth {
-		return nil
-	}
-
-	logger.Debugf("Generating thumbnail for %s", path)
-
-	mgr := GetInstance()
-	c := mgr.Config
-
-	clipPreviewOptions := image.ClipPreviewOptions{
-		InputArgs:  c.GetTranscodeInputArgs(),
-		OutputArgs: c.GetTranscodeOutputArgs(),
-		Preset:     c.GetPreviewPreset().String(),
-	}
-
-	encoder := image.NewThumbnailEncoder(mgr.FFMpeg, mgr.FFProbe, clipPreviewOptions)
-	data, err := encoder.GetThumbnail(f, models.DefaultGthumbWidth)
-
-	if err != nil {
-		// don't log for animated images
-		if !errors.Is(err, image.ErrNotSupportedForThumbnail) {
-			return fmt.Errorf("getting thumbnail for image %s: %w", path, err)
-		}
-		return nil
-	}
-
-	err = fsutil.WriteFile(thumbPath, data)
-	if err != nil {
-		return fmt.Errorf("writing thumbnail for image %s: %w", path, err)
 	}
 
 	return nil

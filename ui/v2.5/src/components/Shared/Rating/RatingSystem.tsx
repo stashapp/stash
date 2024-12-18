@@ -1,5 +1,4 @@
 import React from "react";
-import { IUIConfig } from "src/core/config";
 import { ConfigurationContext } from "src/hooks/Config";
 import {
   defaultRatingStarPrecision,
@@ -14,6 +13,10 @@ export interface IRatingSystemProps {
   onSetRating?: (value: number | null) => void;
   disabled?: boolean;
   valueRequired?: boolean;
+  // if true, requires a click first to edit the rating
+  clickToRate?: boolean;
+  // true if we should indicate that this is a rating
+  withoutContext?: boolean;
 }
 
 export const RatingSystem: React.FC<IRatingSystemProps> = (
@@ -21,8 +24,7 @@ export const RatingSystem: React.FC<IRatingSystemProps> = (
 ) => {
   const { configuration: config } = React.useContext(ConfigurationContext);
   const ratingSystemOptions =
-    (config?.ui as IUIConfig)?.ratingSystemOptions ??
-    defaultRatingSystemOptions;
+    config?.ui.ratingSystemOptions ?? defaultRatingSystemOptions;
 
   if (ratingSystemOptions.type === RatingSystemType.Stars) {
     return (
@@ -42,6 +44,8 @@ export const RatingSystem: React.FC<IRatingSystemProps> = (
         value={props.value ?? null}
         onSetRating={props.onSetRating}
         disabled={props.disabled}
+        clickToRate={props.clickToRate}
+        withoutContext={props.withoutContext}
       />
     );
   }

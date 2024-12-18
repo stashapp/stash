@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/plugin"
+	"github.com/stashapp/stash/pkg/plugin/hook"
 )
 
 func (s *Service) Create(ctx context.Context, input *models.Scene, fileIDs []models.FileID, coverImage []byte) (*models.Scene, error) {
@@ -54,7 +54,7 @@ func (s *Service) Create(ctx context.Context, input *models.Scene, fileIDs []mod
 		}
 	}
 
-	s.PluginCache.RegisterPostHooks(ctx, ret.ID, plugin.SceneCreatePost, nil, nil)
+	s.PluginCache.RegisterPostHooks(ctx, ret.ID, hook.SceneCreatePost, nil, nil)
 
 	// re-find the scene so that it correctly returns file-related fields
 	return ret, nil

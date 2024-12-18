@@ -1,3 +1,5 @@
+// Package manager provides the core manager of the application.
+// This consolidates all the services and managers into a single struct.
 package manager
 
 import (
@@ -10,6 +12,7 @@ import (
 	"runtime"
 	"time"
 
+	"github.com/remeh/sizedwaitgroup"
 	"github.com/stashapp/stash/internal/dlna"
 	"github.com/stashapp/stash/internal/log"
 	"github.com/stashapp/stash/internal/manager/config"
@@ -33,10 +36,14 @@ type Manager struct {
 	Config *config.Config
 	Logger *log.Logger
 
+	// ImageThumbnailGenerateWaitGroup is the global wait group image thumbnail generation
+	// It uses the parallel tasks setting from the configuration.
+	ImageThumbnailGenerateWaitGroup sizedwaitgroup.SizedWaitGroup
+
 	Paths *paths.Paths
 
 	FFMpeg        *ffmpeg.FFMpeg
-	FFProbe       ffmpeg.FFProbe
+	FFProbe       *ffmpeg.FFProbe
 	StreamManager *ffmpeg.StreamManager
 
 	JobManager      *job.Manager
@@ -59,6 +66,7 @@ type Manager struct {
 	SceneService   SceneService
 	ImageService   ImageService
 	GalleryService GalleryService
+	GroupService   GroupService
 
 	scanSubs *subscriptionManager
 }
@@ -75,11 +83,13 @@ func GetInstance() *Manager {
 func (s *Manager) SetBlobStoreOptions() {
 	storageType := s.Config.GetBlobsStorage()
 	blobsPath := s.Config.GetBlobsPath()
+	extraBlobsPaths := s.Config.GetExtraBlobsPaths()
 
 	s.Database.SetBlobStoreOptions(sqlite.BlobStoreOptions{
-		UseFilesystem: storageType == config.BlobStorageTypeFilesystem,
-		UseDatabase:   storageType == config.BlobStorageTypeDatabase,
-		Path:          blobsPath,
+		UseFilesystem:      storageType == config.BlobStorageTypeFilesystem,
+		UseDatabase:        storageType == config.BlobStorageTypeDatabase,
+		Path:               blobsPath,
+		SupplementaryPaths: extraBlobsPaths,
 	})
 }
 
@@ -105,6 +115,8 @@ func (s *Manager) RefreshConfig() {
 		if err := fsutil.EnsureDir(s.Paths.Generated.InteractiveHeatmap); err != nil {
 			logger.Warnf("could not create interactive heatmaps directory: %v", err)
 		}
+
+		s.ImageThumbnailGenerateWaitGroup.Size = cfg.GetParallelTasksWithAutoDetection()
 	}
 }
 
@@ -236,7 +248,7 @@ func (s *Manager) Setup(ctx context.Context, input SetupInput) error {
 			}
 		}
 
-		s.Config.Set(config.Generated, input.GeneratedLocation)
+		s.Config.SetString(config.Generated, input.GeneratedLocation)
 	}
 
 	// create the cache directory if it does not exist
@@ -247,11 +259,11 @@ func (s *Manager) Setup(ctx context.Context, input SetupInput) error {
 			}
 		}
 
-		cfg.Set(config.Cache, input.CacheLocation)
+		cfg.SetString(config.Cache, input.CacheLocation)
 	}
 
 	if input.StoreBlobsInDatabase {
-		cfg.Set(config.BlobsStorage, config.BlobStorageTypeDatabase)
+		cfg.SetInterface(config.BlobsStorage, config.BlobStorageTypeDatabase)
 	} else {
 		if !cfg.HasOverride(config.BlobsPath) {
 			if exists, _ := fsutil.DirExists(input.BlobsLocation); !exists {
@@ -260,18 +272,18 @@ func (s *Manager) Setup(ctx context.Context, input SetupInput) error {
 				}
 			}
 
-			cfg.Set(config.BlobsPath, input.BlobsLocation)
+			cfg.SetString(config.BlobsPath, input.BlobsLocation)
 		}
 
-		cfg.Set(config.BlobsStorage, config.BlobStorageTypeFilesystem)
+		cfg.SetInterface(config.BlobsStorage, config.BlobStorageTypeFilesystem)
 	}
 
 	// set the configuration
 	if !cfg.HasOverride(config.Database) {
-		cfg.Set(config.Database, input.DatabaseFile)
+		cfg.SetString(config.Database, input.DatabaseFile)
 	}
 
-	cfg.Set(config.Stash, input.Stashes)
+	cfg.SetInterface(config.Stash, input.Stashes)
 
 	if err := cfg.Write(); err != nil {
 		return fmt.Errorf("error writing configuration file: %v", err)
@@ -288,55 +300,9 @@ func (s *Manager) Setup(ctx context.Context, input SetupInput) error {
 }
 
 func (s *Manager) validateFFmpeg() error {
-	if s.FFMpeg == nil || s.FFProbe == "" {
+	if s.FFMpeg == nil || s.FFProbe == nil {
 		return errors.New("missing ffmpeg and/or ffprobe")
 	}
-	return nil
-}
-
-func (s *Manager) Migrate(ctx context.Context, input MigrateInput) error {
-	database := s.Database
-
-	// always backup so that we can roll back to the previous version if
-	// migration fails
-	backupPath := input.BackupPath
-	if backupPath == "" {
-		backupPath = database.DatabaseBackupPath(s.Config.GetBackupDirectoryPath())
-	} else {
-		// check if backup path is a filename or path
-		// filename goes into backup directory, path is kept as is
-		filename := filepath.Base(backupPath)
-		if backupPath == filename {
-			backupPath = filepath.Join(s.Config.GetBackupDirectoryPathOrDefault(), filename)
-		}
-	}
-
-	// perform database backup
-	if err := database.Backup(backupPath); err != nil {
-		return fmt.Errorf("error backing up database: %s", err)
-	}
-
-	if err := database.RunMigrations(); err != nil {
-		errStr := fmt.Sprintf("error performing migration: %s", err)
-
-		// roll back to the backed up version
-		restoreErr := database.RestoreFromBackup(backupPath)
-		if restoreErr != nil {
-			errStr = fmt.Sprintf("ERROR: unable to restore database from backup after migration failure: %s\n%s", restoreErr.Error(), errStr)
-		} else {
-			errStr = "An error occurred migrating the database to the latest schema version. The backup database file was automatically renamed to restore the database.\n" + errStr
-		}
-
-		return errors.New(errStr)
-	}
-
-	// if no backup path was provided, then delete the created backup
-	if input.BackupPath == "" {
-		if err := os.Remove(backupPath); err != nil {
-			logger.Warnf("error removing unwanted database backup (%s): %s", backupPath, err.Error())
-		}
-	}
-
 	return nil
 }
 
@@ -428,6 +394,16 @@ func (s *Manager) GetSystemStatus() *SystemStatus {
 
 	configFile := s.Config.GetConfigFile()
 
+	ffmpegPath := ""
+	if s.FFMpeg != nil {
+		ffmpegPath = s.FFMpeg.Path()
+	}
+
+	ffprobePath := ""
+	if s.FFProbe != nil {
+		ffprobePath = s.FFProbe.Path()
+	}
+
 	return &SystemStatus{
 		Os:             runtime.GOOS,
 		WorkingDir:     workingDir,
@@ -437,6 +413,8 @@ func (s *Manager) GetSystemStatus() *SystemStatus {
 		AppSchema:      appSchema,
 		Status:         status,
 		ConfigPath:     &configFile,
+		FfmpegPath:     &ffmpegPath,
+		FfprobePath:    &ffprobePath,
 	}
 }
 

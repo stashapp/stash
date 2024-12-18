@@ -21,7 +21,7 @@ import { HoverPopover } from "../Shared/HoverPopover";
 import { Icon } from "../Shared/Icon";
 import {
   GalleryLink,
-  MovieLink,
+  GroupLink,
   SceneMarkerLink,
   TagLink,
 } from "../Shared/TagLink";
@@ -165,9 +165,9 @@ export const SceneDuplicateChecker: React.FC = () => {
   }
 
   const findLargestScene = (group: GQL.SlimSceneDataFragment[]) => {
-    // Get total size of a scene
+    // Get maximum file size of a scene
     const totalSize = (scene: GQL.SlimSceneDataFragment) => {
-      return scene.files.reduce((sum: number, f) => sum + (f.size || 0), 0);
+      return scene.files.reduce((prev: number, f) => Math.max(prev, f.size), 0);
     };
     // Find scene object with maximum total size
     return group.reduce((largest, scene) => {
@@ -178,10 +178,10 @@ export const SceneDuplicateChecker: React.FC = () => {
   };
 
   const findLargestResolutionScene = (group: GQL.SlimSceneDataFragment[]) => {
-    // Get resolution of a scene
+    // Get maximum resolution of a scene
     const sceneResolution = (scene: GQL.SlimSceneDataFragment) => {
       return scene.files.reduce(
-        (sum: number, f) => sum + (f.height * f.width || 0),
+        (prev: number, f) => Math.max(prev, f.height * f.width),
         0
       );
     };
@@ -386,24 +386,24 @@ export const SceneDuplicateChecker: React.FC = () => {
     return <PerformerPopoverButton performers={scene.performers} />;
   }
 
-  function maybeRenderMoviePopoverButton(scene: GQL.SlimSceneDataFragment) {
-    if (scene.movies.length <= 0) return;
+  function maybeRenderGroupPopoverButton(scene: GQL.SlimSceneDataFragment) {
+    if (scene.groups.length <= 0) return;
 
-    const popoverContent = scene.movies.map((sceneMovie) => (
-      <div className="movie-tag-container row" key="movie">
+    const popoverContent = scene.groups.map((sceneGroup) => (
+      <div className="group-tag-container row" key={sceneGroup.group.id}>
         <Link
-          to={`/movies/${sceneMovie.movie.id}`}
-          className="movie-tag col m-auto zoom-2"
+          to={`/groups/${sceneGroup.group.id}`}
+          className="group-tag col m-auto zoom-2"
         >
           <img
             className="image-thumbnail"
-            alt={sceneMovie.movie.name ?? ""}
-            src={sceneMovie.movie.front_image_path ?? ""}
+            alt={sceneGroup.group.name ?? ""}
+            src={sceneGroup.group.front_image_path ?? ""}
           />
         </Link>
-        <MovieLink
-          key={sceneMovie.movie.id}
-          movie={sceneMovie.movie}
+        <GroupLink
+          key={sceneGroup.group.id}
+          group={sceneGroup.group}
           className="d-block"
         />
       </div>
@@ -417,7 +417,7 @@ export const SceneDuplicateChecker: React.FC = () => {
       >
         <Button className="minimal">
           <Icon icon={faFilm} />
-          <span>{scene.movies.length}</span>
+          <span>{scene.groups.length}</span>
         </Button>
       </HoverPopover>
     );
@@ -511,7 +511,7 @@ export const SceneDuplicateChecker: React.FC = () => {
     if (
       scene.tags.length > 0 ||
       scene.performers.length > 0 ||
-      scene.movies.length > 0 ||
+      scene.groups.length > 0 ||
       scene.scene_markers.length > 0 ||
       scene?.o_counter ||
       scene.galleries.length > 0 ||
@@ -523,7 +523,7 @@ export const SceneDuplicateChecker: React.FC = () => {
           <ButtonGroup className="flex-wrap">
             {maybeRenderTagPopoverButton(scene)}
             {maybeRenderPerformerPopoverButton(scene)}
-            {maybeRenderMoviePopoverButton(scene)}
+            {maybeRenderGroupPopoverButton(scene)}
             {maybeRenderSceneMarkerPopoverButton(scene)}
             {maybeRenderOCounter(scene)}
             {maybeRenderGallery(scene)}

@@ -19,7 +19,6 @@ type Scene struct {
 	// Rating expressed in 1-100 scale
 	Rating    *int `json:"rating"`
 	Organized bool `json:"organized"`
-	OCounter  int  `json:"o_counter"`
 	StudioID  *int `json:"studio_id"`
 
 	// transient - not persisted
@@ -35,16 +34,14 @@ type Scene struct {
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 
-	LastPlayedAt *time.Time `json:"last_played_at"`
-	ResumeTime   float64    `json:"resume_time"`
-	PlayDuration float64    `json:"play_duration"`
-	PlayCount    int        `json:"play_count"`
+	ResumeTime   float64 `json:"resume_time"`
+	PlayDuration float64 `json:"play_duration"`
 
 	URLs         RelatedStrings  `json:"urls"`
 	GalleryIDs   RelatedIDs      `json:"gallery_ids"`
 	TagIDs       RelatedIDs      `json:"tag_ids"`
 	PerformerIDs RelatedIDs      `json:"performer_ids"`
-	Movies       RelatedMovies   `json:"movies"`
+	Groups       RelatedGroups   `json:"groups"`
 	StashIDs     RelatedStashIDs `json:"stash_ids"`
 }
 
@@ -67,20 +64,17 @@ type ScenePartial struct {
 	// Rating expressed in 1-100 scale
 	Rating       OptionalInt
 	Organized    OptionalBool
-	OCounter     OptionalInt
 	StudioID     OptionalInt
 	CreatedAt    OptionalTime
 	UpdatedAt    OptionalTime
 	ResumeTime   OptionalFloat64
 	PlayDuration OptionalFloat64
-	PlayCount    OptionalInt
-	LastPlayedAt OptionalTime
 
 	URLs          *UpdateStrings
 	GalleryIDs    *UpdateIDs
 	TagIDs        *UpdateIDs
 	PerformerIDs  *UpdateIDs
-	MovieIDs      *UpdateMovieIDs
+	GroupIDs      *UpdateGroupIDs
 	StashIDs      *UpdateStashIDs
 	PrimaryFileID *FileID
 }
@@ -145,9 +139,9 @@ func (s *Scene) LoadTagIDs(ctx context.Context, l TagIDLoader) error {
 	})
 }
 
-func (s *Scene) LoadMovies(ctx context.Context, l SceneMovieLoader) error {
-	return s.Movies.load(func() ([]MoviesScenes, error) {
-		return l.GetMovies(ctx, s.ID)
+func (s *Scene) LoadGroups(ctx context.Context, l SceneGroupLoader) error {
+	return s.Groups.load(func() ([]GroupsScenes, error) {
+		return l.GetGroups(ctx, s.ID)
 	})
 }
 
@@ -174,7 +168,7 @@ func (s *Scene) LoadRelationships(ctx context.Context, l SceneReader) error {
 		return err
 	}
 
-	if err := s.LoadMovies(ctx, l); err != nil {
+	if err := s.LoadGroups(ctx, l); err != nil {
 		return err
 	}
 
@@ -198,9 +192,9 @@ func (s ScenePartial) UpdateInput(id int) SceneUpdateInput {
 		dateStr = &v
 	}
 
-	var stashIDs []StashID
+	var stashIDs StashIDs
 	if s.StashIDs != nil {
-		stashIDs = s.StashIDs.StashIDs
+		stashIDs = StashIDs(s.StashIDs.StashIDs)
 	}
 
 	ret := SceneUpdateInput{
@@ -216,9 +210,9 @@ func (s ScenePartial) UpdateInput(id int) SceneUpdateInput {
 		StudioID:     s.StudioID.StringPtr(),
 		GalleryIds:   s.GalleryIDs.IDStrings(),
 		PerformerIds: s.PerformerIDs.IDStrings(),
-		Movies:       s.MovieIDs.SceneMovieInputs(),
+		Movies:       s.GroupIDs.SceneMovieInputs(),
 		TagIds:       s.TagIDs.IDStrings(),
-		StashIds:     stashIDs,
+		StashIds:     stashIDs.ToStashIDInputs(),
 	}
 
 	return ret

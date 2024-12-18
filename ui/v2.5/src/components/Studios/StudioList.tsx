@@ -9,44 +9,42 @@ import {
   useFindStudios,
   useStudiosDestroy,
 } from "src/core/StashService";
-import {
-  makeItemList,
-  PersistanceLevel,
-  showWhenSelected,
-} from "../List/ItemList";
+import { ItemList, ItemListContext, showWhenSelected } from "../List/ItemList";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 import { ExportDialog } from "../Shared/ExportDialog";
 import { DeleteEntityDialog } from "../Shared/DeleteEntityDialog";
-import { StudioCard } from "./StudioCard";
 import { StudioTagger } from "../Tagger/studios/StudioTagger";
+import { StudioCardGrid } from "./StudioCardGrid";
+import { View } from "../List/views";
 
-const StudioItemList = makeItemList({
-  filterMode: GQL.FilterMode.Studios,
-  useResult: useFindStudios,
-  getItems(result: GQL.FindStudiosQueryResult) {
-    return result?.data?.findStudios?.studios ?? [];
-  },
-  getCount(result: GQL.FindStudiosQueryResult) {
-    return result?.data?.findStudios?.count ?? 0;
-  },
-});
+function getItems(result: GQL.FindStudiosQueryResult) {
+  return result?.data?.findStudios?.studios ?? [];
+}
+
+function getCount(result: GQL.FindStudiosQueryResult) {
+  return result?.data?.findStudios?.count ?? 0;
+}
 
 interface IStudioList {
   fromParent?: boolean;
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
+  view?: View;
   alterQuery?: boolean;
 }
 
 export const StudioList: React.FC<IStudioList> = ({
   fromParent,
   filterHook,
+  view,
   alterQuery,
 }) => {
   const intl = useIntl();
   const history = useHistory();
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
   const [isExportAll, setIsExportAll] = useState(false);
+
+  const filterMode = GQL.FilterMode.Studios;
 
   const otherOperations = [
     {
@@ -135,20 +133,12 @@ export const StudioList: React.FC<IStudioList> = ({
 
       if (filter.displayMode === DisplayMode.Grid) {
         return (
-          <div className="row px-xl-5 justify-content-center">
-            {result.data.findStudios.studios.map((studio) => (
-              <StudioCard
-                key={studio.id}
-                studio={studio}
-                hideParent={fromParent}
-                selecting={selectedIds.size > 0}
-                selected={selectedIds.has(studio.id)}
-                onSelectedChanged={(selected: boolean, shiftKey: boolean) =>
-                  onSelectChange(studio.id, selected, shiftKey)
-                }
-              />
-            ))}
-          </div>
+          <StudioCardGrid
+            studios={result.data.findStudios.studios}
+            fromParent={fromParent}
+            selectedIds={selectedIds}
+            onSelectChange={onSelectChange}
+          />
         );
       }
       if (filter.displayMode === DisplayMode.List) {
@@ -186,15 +176,23 @@ export const StudioList: React.FC<IStudioList> = ({
   }
 
   return (
-    <StudioItemList
-      selectable
-      filterHook={filterHook}
-      persistState={fromParent ? PersistanceLevel.NONE : PersistanceLevel.ALL}
+    <ItemListContext
+      filterMode={filterMode}
+      useResult={useFindStudios}
+      getItems={getItems}
+      getCount={getCount}
       alterQuery={alterQuery}
-      otherOperations={otherOperations}
-      addKeybinds={addKeybinds}
-      renderContent={renderContent}
-      renderDeleteDialog={renderDeleteDialog}
-    />
+      filterHook={filterHook}
+      view={view}
+      selectable
+    >
+      <ItemList
+        view={view}
+        otherOperations={otherOperations}
+        addKeybinds={addKeybinds}
+        renderContent={renderContent}
+        renderDeleteDialog={renderDeleteDialog}
+      />
+    </ItemListContext>
   );
 };

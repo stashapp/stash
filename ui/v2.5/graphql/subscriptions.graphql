@@ -1,0 +1,23 @@
+subscription JobsSubscribe {
+  jobsSubscribe {
+    type
+    job {
+      id
+      status
+      subTasks
+      description
+      progress
+      error
+    }
+  }
+}
+
+subscription LoggingSubscribe {
+  loggingSubscribe {
+    ...LogEntryData
+  }
+}
+
+subscription ScanCompleteSubscribe {
+  scanCompleteSubscribe
+}

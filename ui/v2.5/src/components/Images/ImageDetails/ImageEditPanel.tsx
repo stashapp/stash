@@ -11,13 +11,10 @@ import { FormattedMessage, useIntl } from "react-intl";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
 import * as yup from "yup";
-import { TagSelect, StudioSelect } from "src/components/Shared/Select";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { useToast } from "src/hooks/Toast";
 import { useFormik } from "formik";
 import { Prompt } from "react-router-dom";
-import { useRatingKeybinds } from "src/hooks/keybinds";
-import { ConfigurationContext } from "src/hooks/Config";
 import isEqual from "lodash-es/isEqual";
 import {
   yupDateString,
@@ -39,6 +36,14 @@ import {
 } from "../../../core/StashService";
 import { ImageScrapeDialog } from "./ImageScrapeDialog";
 import { ScrapedImageDataFragment } from "src/core/generated-graphql";
+import { Studio, StudioSelect } from "src/components/Studios/StudioSelect";
+import { galleryTitle } from "src/core/galleries";
+import {
+  Gallery,
+  GallerySelect,
+  excludeFileBasedGalleries,
+} from "src/components/Galleries/GallerySelect";
+import { useTagsEdit } from "src/hooks/tagsEdit";
 
 interface IProps {
   image: GQL.ImageDataFragment;
@@ -59,9 +64,20 @@ export const ImageEditPanel: React.FC<IProps> = ({
   // Network state
   const [isLoading, setIsLoading] = useState(false);
 
-  const { configuration } = React.useContext(ConfigurationContext);
-
+  const [galleries, setGalleries] = useState<Gallery[]>([]);
   const [performers, setPerformers] = useState<Performer[]>([]);
+  const [studio, setStudio] = useState<Studio | null>(null);
+
+  useEffect(() => {
+    setGalleries(
+      image.galleries?.map((g) => ({
+        id: g.id,
+        title: galleryTitle(g),
+        files: g.files,
+        folder: g.folder,
+      })) ?? []
+    );
+  }, [image.galleries]);
 
   const Scrapers = useListImageScrapers();
   const [queryableScrapers, setQueryableScrapers] = useState<GQL.Scraper[]>([]);
@@ -74,7 +90,7 @@ export const ImageEditPanel: React.FC<IProps> = ({
     date: yupDateString(intl),
     details: yup.string().ensure(),
     photographer: yup.string().ensure(),
-    rating100: yup.number().integer().nullable().defined(),
+    gallery_ids: yup.array(yup.string().required()).defined(),
     studio_id: yup.string().required().nullable(),
     performer_ids: yup.array(yup.string().required()).defined(),
     tag_ids: yup.array(yup.string().required()).defined(),
@@ -87,7 +103,7 @@ export const ImageEditPanel: React.FC<IProps> = ({
     date: image?.date ?? "",
     details: image.details ?? "",
     photographer: image.photographer ?? "",
-    rating100: image.rating100 ?? null,
+    gallery_ids: (image.galleries ?? []).map((g) => g.id),
     studio_id: image.studio?.id ?? null,
     performer_ids: (image.performers ?? []).map((p) => p.id),
     tag_ids: (image.tags ?? []).map((t) => t.id),
@@ -102,8 +118,16 @@ export const ImageEditPanel: React.FC<IProps> = ({
     onSubmit: (values) => onSave(schema.cast(values)),
   });
 
-  function setRating(v: number) {
-    formik.setFieldValue("rating100", v);
+  const { tagsControl } = useTagsEdit(image.tags, (ids) =>
+    formik.setFieldValue("tag_ids", ids)
+  );
+
+  function onSetGalleries(items: Gallery[]) {
+    setGalleries(items);
+    formik.setFieldValue(
+      "gallery_ids",
+      items.map((i) => i.id)
+    );
   }
 
   function onSetPerformers(items: Performer[]) {
@@ -114,15 +138,18 @@ export const ImageEditPanel: React.FC<IProps> = ({
     );
   }
 
-  useRatingKeybinds(
-    true,
-    configuration?.ui?.ratingSystemOptions?.type,
-    setRating
-  );
+  function onSetStudio(item: Studio | null) {
+    setStudio(item);
+    formik.setFieldValue("studio_id", item ? item.id : null);
+  }
 
   useEffect(() => {
     setPerformers(image.performers ?? []);
   }, [image.performers]);
+
+  useEffect(() => {
+    setStudio(image.studio ?? null);
+  }, [image.studio]);
 
   useEffect(() => {
     if (isVisible) {
@@ -307,25 +334,29 @@ export const ImageEditPanel: React.FC<IProps> = ({
       xl: 12,
     },
   };
-  const {
-    renderField,
-    renderInputField,
-    renderDateField,
-    renderRatingField,
-    renderURLListField,
-  } = formikUtils(intl, formik, splitProps);
+  const { renderField, renderInputField, renderDateField, renderURLListField } =
+    formikUtils(intl, formik, splitProps);
+
+  function renderGalleriesField() {
+    const title = intl.formatMessage({ id: "galleries" });
+    const control = (
+      <GallerySelect
+        values={galleries}
+        onSelect={(items) => onSetGalleries(items)}
+        isMulti
+        extraCriteria={excludeFileBasedGalleries}
+      />
+    );
+
+    return renderField("gallery_ids", title, control);
+  }
 
   function renderStudioField() {
     const title = intl.formatMessage({ id: "studio" });
     const control = (
       <StudioSelect
-        onSelect={(items) =>
-          formik.setFieldValue(
-            "studio_id",
-            items.length > 0 ? items[0]?.id : null
-          )
-        }
-        ids={formik.values.studio_id ? [formik.values.studio_id] : []}
+        onSelect={(items) => onSetStudio(items.length > 0 ? items[0] : null)}
+        values={studio ? [studio] : []}
       />
     );
 
@@ -343,21 +374,7 @@ export const ImageEditPanel: React.FC<IProps> = ({
 
   function renderTagsField() {
     const title = intl.formatMessage({ id: "tags" });
-    const control = (
-      <TagSelect
-        isMulti
-        onSelect={(items) =>
-          formik.setFieldValue(
-            "tag_ids",
-            items.map((item) => item.id)
-          )
-        }
-        ids={formik.values.tag_ids}
-        hoverPlacement="right"
-      />
-    );
-
-    return renderField("tag_ids", title, control, fullWidthProps);
+    return renderField("tag_ids", title, tagsControl(), fullWidthProps);
   }
 
   function renderDetailsField() {
@@ -466,8 +483,8 @@ export const ImageEditPanel: React.FC<IProps> = ({
 
             {renderDateField("date")}
             {renderInputField("photographer")}
-            {renderRatingField("rating100", "rating")}
 
+            {renderGalleriesField()}
             {renderStudioField()}
             {renderPerformersField()}
             {renderTagsField()}

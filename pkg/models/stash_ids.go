@@ -1,8 +1,89 @@
 package models
 
+import (
+	"slices"
+	"time"
+)
+
 type StashID struct {
-	StashID  string `db:"stash_id" json:"stash_id"`
-	Endpoint string `db:"endpoint" json:"endpoint"`
+	StashID   string    `db:"stash_id" json:"stash_id"`
+	Endpoint  string    `db:"endpoint" json:"endpoint"`
+	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`
+}
+
+func (s StashID) ToStashIDInput() StashIDInput {
+	t := s.UpdatedAt
+	return StashIDInput{
+		StashID:   s.StashID,
+		Endpoint:  s.Endpoint,
+		UpdatedAt: &t,
+	}
+}
+
+type StashIDs []StashID
+
+func (s StashIDs) ToStashIDInputs() StashIDInputs {
+	if s == nil {
+		return nil
+	}
+
+	ret := make(StashIDInputs, len(s))
+	for i, v := range s {
+		ret[i] = v.ToStashIDInput()
+	}
+	return ret
+}
+
+// HasSameStashIDs returns true if the two lists of StashIDs are the same, ignoring order and updated at time.
+func (s StashIDs) HasSameStashIDs(other StashIDs) bool {
+	if len(s) != len(other) {
+		return false
+	}
+
+	for _, v := range s {
+		if !slices.ContainsFunc(other, func(o StashID) bool {
+			return o.StashID == v.StashID && o.Endpoint == v.Endpoint
+		}) {
+			return false
+		}
+	}
+
+	return true
+}
+
+type StashIDInput struct {
+	StashID   string     `db:"stash_id" json:"stash_id"`
+	Endpoint  string     `db:"endpoint" json:"endpoint"`
+	UpdatedAt *time.Time `db:"updated_at" json:"updated_at"`
+}
+
+func (s StashIDInput) ToStashID() StashID {
+	ret := StashID{
+		StashID:  s.StashID,
+		Endpoint: s.Endpoint,
+	}
+	if s.UpdatedAt != nil {
+		ret.UpdatedAt = *s.UpdatedAt
+	} else {
+		// default to now if not provided
+		ret.UpdatedAt = time.Now()
+	}
+
+	return ret
+}
+
+type StashIDInputs []StashIDInput
+
+func (s StashIDInputs) ToStashIDs() StashIDs {
+	if s == nil {
+		return nil
+	}
+
+	ret := make(StashIDs, len(s))
+	for i, v := range s {
+		ret[i] = v.ToStashID()
+	}
+	return ret
 }
 
 type UpdateStashIDs struct {

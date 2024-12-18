@@ -1,0 +1,53 @@
+mutation Setup($input: SetupInput!) {
+  setup(input: $input)
+}
+
+mutation Migrate($input: MigrateInput!) {
+  migrate(input: $input)
+}
+
+mutation DownloadFFMpeg {
+  downloadFFMpeg
+}
+
+mutation ConfigureGeneral($input: ConfigGeneralInput!) {
+  configureGeneral(input: $input) {
+    ...ConfigGeneralData
+  }
+}
+
+mutation ConfigureInterface($input: ConfigInterfaceInput!) {
+  configureInterface(input: $input) {
+    ...ConfigInterfaceData
+  }
+}
+
+mutation ConfigureDLNA($input: ConfigDLNAInput!) {
+  configureDLNA(input: $input) {
+    ...ConfigDLNAData
+  }
+}
+
+mutation ConfigureScraping($input: ConfigScrapingInput!) {
+  configureScraping(input: $input) {
+    ...ConfigScrapingData
+  }
+}
+
+mutation ConfigureDefaults($input: ConfigDefaultSettingsInput!) {
+  configureDefaults(input: $input) {
+    ...ConfigDefaultSettingsData
+  }
+}
+
+mutation ConfigureUI($input: Map, $partial: Map) {
+  configureUI(input: $input, partial: $partial)
+}
+
+mutation ConfigureUISetting($key: String!, $value: Any) {
+  configureUISetting(key: $key, value: $value)
+}
+
+mutation GenerateAPIKey($input: GenerateAPIKeyInput!) {
+  generateAPIKey(input: $input)
+}

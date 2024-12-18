@@ -2,11 +2,12 @@ import React, { useMemo } from "react";
 import { StashId } from "src/core/generated-graphql";
 import { ConfigurationContext } from "src/hooks/Config";
 import { getStashboxBase } from "src/utils/stashbox";
+import { ExternalLink } from "./ExternalLink";
 
 export type LinkType = "performers" | "scenes" | "studios";
 
 export const StashIDPill: React.FC<{
-  stashID: StashId;
+  stashID: Pick<StashId, "endpoint" | "stash_id">;
   linkType: LinkType;
 }> = ({ stashID, linkType }) => {
   const { configuration } = React.useContext(ConfigurationContext);
@@ -26,9 +27,7 @@ export const StashIDPill: React.FC<{
   return (
     <span className="stash-id-pill" data-endpoint={endpointName}>
       <span>{endpointName}</span>
-      <a href={link} target="_blank" rel="noopener noreferrer">
-        {stash_id}
-      </a>
+      <ExternalLink href={link}>{stash_id}</ExternalLink>
     </span>
   );
 };

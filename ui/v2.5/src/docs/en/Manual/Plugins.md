@@ -46,7 +46,7 @@ The source URL must return a yaml file containing all the available packages for
 
 Path can be a relative path to the zip file or an external URL.
 
-# Adding plugins manually
+## Adding plugins manually
 
 By default, Stash looks for plugin configurations in the `plugins` sub-directory of the directory where the stash `config.yml` is read. This will either be the `$HOME/.stash` directory or the current working directory.
 
@@ -54,13 +54,13 @@ Plugins are added by adding configuration yaml files (format: `pluginName.yml`) 
 
 Loaded plugins can be viewed in the Plugins page of the Settings. After plugins are added, removed or edited while stash is running, they can be reloaded by clicking `Reload Plugins` button.
 
-# Using plugins
+## Using plugins
 
 Plugins provide tasks which can be run from the Tasks page. 
 
-# Creating plugins
+## Creating plugins
 
-## Plugin configuration file format
+### Plugin configuration file format
 
 The basic structure of a plugin configuration file is as follows:
 
@@ -99,6 +99,16 @@ ui:
     connect-src:
       - http://alloweddomain.com
 
+  # map of setting names to be displayed in the plugins page in the UI
+  settings:
+    # internal name
+    foo:
+      # name to display in the UI
+      displayName: Foo
+      # type of the attribute to show in the UI
+      # can be BOOLEAN, NUMBER, or STRING
+      type: BOOLEAN
+
 # the following are used for plugin tasks only
 exec:
   - ...
@@ -112,7 +122,9 @@ The `name`, `description`, `version` and `url` fields are displayed on the plugi
 
 The `exec`, `interface`, `errLog` and `tasks` fields are used only for plugins with tasks.
 
-## UI Configuration
+The `settings` field is used to display plugin settings on the plugins page. Plugin settings can also be set using the graphql mutation `configurePlugin` - the settings set this way do _not_ need to be specified in the `settings` field unless they are to be displayed in the stock plugin settings UI.
+
+### UI Configuration
 
 The `css` and `javascript` field values may be relative paths to the plugin configuration file, or
 may be full external URLs.
@@ -127,12 +139,12 @@ As an example, for a plugin with id `foo` with the following `assets` value:
 ```
 assets:
   foo: bar
-  root: .
+  /: .
 ```
 The following URLs will be mapped to these locations:
 `/plugin/foo/assets/foo/file.txt` -> `{pluginDir}/bar/file.txt`
 `/plugin/foo/assets/file.txt` -> `{pluginDir}/file.txt`
-`/plugin/foo/assets/bar/file.txt` -> `{pluginDir}/bar/file.txt` (via the `root` entry)
+`/plugin/foo/assets/bar/file.txt` -> `{pluginDir}/bar/file.txt` (via the `/` entry)
 
 Mappings that try to go outside of the directory containing the plugin configuration file will be
 ignored.
@@ -144,7 +156,7 @@ See [External Plugins](/help/ExternalPlugins.md) for details for making plugins 
 
 See [Embedded Plugins](/help/EmbeddedPlugins.md) for details for making plugins with embedded tasks.
 
-## Plugin task input
+### Plugin task input
 
 Plugin tasks may accept an input from the stash server. This input is encoded according to the interface, and has the following structure (presented here in JSON format):
 ```
@@ -177,7 +189,7 @@ Plugin tasks may accept an input from the stash server. This input is encoded ac
 
 The `server_connection` field contains all the information needed for a plugin to access the parent stash server, if necessary.
 
-## Plugin task output
+### Plugin task output
 
 Plugin task output is expected in the following structure (presented here as JSON format):
 
@@ -190,7 +202,7 @@ Plugin task output is expected in the following structure (presented here as JSO
 
 The `error` field is logged in stash at the `error` log level if present. The `output` is written at the `debug` log level.
 
-## Task configuration
+### Task configuration
 
 Tasks are configured using the following structure:
 
@@ -206,7 +218,7 @@ A plugin configuration may contain multiple tasks.
 
 The `defaultArgs` field is used to add inputs to the plugin input sent to the plugin.
 
-## Hook configuration
+### Hook configuration
 
 Stash supports executing plugin operations via triggering of a hook during a stash operation.
 
@@ -224,24 +236,25 @@ hooks:
 
 **Note:** it is possible for hooks to trigger eachother or themselves if they perform mutations. For safety, hooks will not be triggered if they have already been triggered in the context of the operation. Stash uses cookies to track this context, so it's important for plugins to send cookies when performing operations.
 
-### Trigger types
+#### Trigger types
 
-Trigger types use the following format:
-`<object type>.<operation>.<hook type>`
+Trigger types use the following format: `<object type>.<operation>.<hook type>`
 
 For example, a post-hook on a scene create operation will be `Scene.Create.Post`.
 
 The following object types are supported:
+
 * `Scene`
 * `SceneMarker`
 * `Image`
 * `Gallery`
-* `Movie`
+* `Group`
 * `Performer`
 * `Studio`
 * `Tag`
 
 The following operations are supported:
+
 * `Create`
 * `Update`
 * `Destroy`
@@ -249,7 +262,7 @@ The following operations are supported:
 
 Currently, only `Post` hook types are supported. These are executed after the operation has completed and the transaction is committed.
 
-### Hook input
+#### Hook input
 
 Plugin tasks triggered by a hook include an argument named `hookContext` in the `args` object structure. The `hookContext` is structured as follows:
 
@@ -283,7 +296,7 @@ For example, here is the `args` values for a Scene update operation:
             "studio_id":null,
             "gallery_ids":null,
             "performer_ids":null,
-            "movies":null,
+            "groups":null,
             "tag_ids":["21"],
             "cover_image":null,
             "stash_ids":null

@@ -5,9 +5,19 @@ import {
   SavedFilterDataFragment,
   SortDirectionEnum,
 } from "src/core/generated-graphql";
-import { Criterion, CriterionValue } from "./criteria/criterion";
+import {
+  Criterion,
+  CriterionValue,
+  ISavedCriterion,
+} from "./criteria/criterion";
 import { getFilterOptions } from "./factory";
-import { CriterionType, DisplayMode } from "./types";
+import {
+  CriterionType,
+  DisplayMode,
+  SavedObjectFilter,
+  SavedUIOptions,
+} from "./types";
+import { ListFilterOptions } from "./filter-options";
 
 interface IDecodedParams {
   perPage?: number;
@@ -40,7 +50,8 @@ const DEFAULT_PARAMS = {
 
 // TODO: handle customCriteria
 export class ListFilterModel {
-  public mode: FilterMode;
+  public readonly mode: FilterMode;
+  public readonly options: ListFilterOptions;
   private config?: ConfigDataFragment;
   public searchTerm: string = "";
   public currentPage = DEFAULT_PARAMS.currentPage;
@@ -56,27 +67,48 @@ export class ListFilterModel {
   public constructor(
     mode: FilterMode,
     config?: ConfigDataFragment,
-    defaultSort?: string,
-    defaultDisplayMode?: DisplayMode,
-    defaultZoomIndex?: number
+    options?: {
+      defaultZoomIndex?: number;
+      defaultSortBy?: string;
+      defaultSortDir?: SortDirectionEnum;
+    }
   ) {
     this.mode = mode;
     this.config = config;
-    this.sortBy = defaultSort;
-    if (this.sortBy === "date") {
-      this.sortDirection = SortDirectionEnum.Desc;
+    this.options = getFilterOptions(mode);
+    const { defaultSortBy, displayModeOptions } = this.options;
+
+    if (options?.defaultSortBy) {
+      this.sortBy = options.defaultSortBy;
+      if (options.defaultSortDir) {
+        this.sortDirection = options.defaultSortDir;
+      }
+    } else {
+      this.sortBy = defaultSortBy;
+      if (this.sortBy === "date") {
+        this.sortDirection = SortDirectionEnum.Desc;
+      }
     }
-    if (defaultDisplayMode !== undefined) {
-      this.displayMode = defaultDisplayMode;
-    }
-    if (defaultZoomIndex !== undefined) {
-      this.defaultZoomIndex = defaultZoomIndex;
-      this.zoomIndex = defaultZoomIndex;
+    this.displayMode = displayModeOptions[0];
+    if (options?.defaultZoomIndex !== undefined) {
+      this.defaultZoomIndex = options.defaultZoomIndex;
+      this.zoomIndex = options.defaultZoomIndex;
     }
   }
 
   public clone() {
-    return Object.assign(new ListFilterModel(this.mode, this.config), this);
+    const ret = Object.assign(
+      new ListFilterModel(this.mode, this.config),
+      this
+    );
+    ret.criteria = this.criteria.map((c) => c.clone());
+    return ret;
+  }
+
+  public empty() {
+    return new ListFilterModel(this.mode, this.config, {
+      defaultZoomIndex: this.defaultZoomIndex,
+    });
   }
 
   // returns the number of filters applied
@@ -127,9 +159,12 @@ export class ListFilterModel {
     if (params.c !== undefined) {
       for (const jsonString of params.c) {
         try {
-          const encodedCriterion = JSON.parse(jsonString);
-          const criterion = this.makeCriterion(encodedCriterion.type);
-          criterion.setFromEncodedCriterion(encodedCriterion);
+          const { type: criterionType, ...savedCriterion } =
+            JSON.parse(jsonString);
+
+          const criterion = this.makeCriterion(criterionType);
+          criterion.setFromSavedCriterion(savedCriterion);
+
           this.criteria.push(criterion);
         } catch (err) {
           // eslint-disable-next-line no-console
@@ -261,8 +296,7 @@ export class ListFilterModel {
       this.sortBy = "random";
       this.randomSeed = Number.parseInt(match[1], 10);
     }
-    this.sortDirection =
-      (findFilter?.direction as SortDirectionEnum) ?? this.sortDirection;
+    this.sortDirection = findFilter?.direction ?? this.sortDirection;
     this.searchTerm = findFilter?.q ?? this.searchTerm;
 
     this.displayMode = uiOptions?.display_mode ?? this.displayMode;
@@ -272,11 +306,11 @@ export class ListFilterModel {
 
     this.criteria = [];
     if (objectFilter) {
-      Object.keys(objectFilter).forEach((key) => {
-        const criterion = this.makeCriterion(key as CriterionType);
-        criterion.setFromEncodedCriterion(objectFilter[key]);
+      for (const [k, v] of Object.entries(objectFilter)) {
+        const criterion = this.makeCriterion(k as CriterionType);
+        criterion.setFromSavedCriterion(v as ISavedCriterion<CriterionValue>);
         this.criteria.push(criterion);
-      });
+      }
     }
   }
 
@@ -353,31 +387,6 @@ export class ListFilterModel {
     };
   }
 
-  public makeSavedFilterJSON() {
-    const encodedCriteria: string[] = this.criteria.map((criterion) =>
-      criterion.toJSON()
-    );
-
-    const result = {
-      perPage: this.itemsPerPage,
-      sortby: this.getSortBy(),
-      sortdir:
-        this.sortBy === "date"
-          ? this.sortDirection === SortDirectionEnum.Asc
-            ? "asc"
-            : undefined
-          : this.sortDirection === SortDirectionEnum.Desc
-          ? "desc"
-          : undefined,
-      disp: this.displayMode,
-      q: this.searchTerm || undefined,
-      z: this.zoomIndex,
-      c: encodedCriteria,
-    };
-
-    return JSON.stringify(result);
-  }
-
   public makeQueryParameters(): string {
     const query: string[] = [];
     const params = this.getEncodedParams();
@@ -424,8 +433,6 @@ export class ListFilterModel {
     return option.makeCriterion(this.config);
   }
 
-  // TODO: These don't support multiple of the same criteria, only the last one set is used.
-
   public makeFindFilter(): FindFilterType {
     return {
       q: this.searchTerm,
@@ -438,26 +445,70 @@ export class ListFilterModel {
 
   public makeFilter() {
     const output: Record<string, unknown> = {};
-    this.criteria.forEach((criterion) => {
-      criterion.apply(output);
-    });
-
+    for (const c of this.criteria) {
+      output[c.criterionOption.type] = c.toCriterionInput();
+    }
     return output;
   }
 
-  public makeSavedFindFilter() {
-    const output: Record<string, unknown> = {};
-    this.criteria.forEach((criterion) => {
-      criterion.toSavedFilter(output);
-    });
-
+  public makeSavedFilter() {
+    const output: SavedObjectFilter = {};
+    for (const c of this.criteria) {
+      output[c.criterionOption.type] = c.toSavedCriterion();
+    }
     return output;
   }
 
-  public makeUIOptions(): Record<string, unknown> {
+  public makeSavedUIOptions(): SavedUIOptions {
     return {
       display_mode: this.displayMode,
       zoom_index: this.zoomIndex,
     };
+  }
+
+  public clearCriteria() {
+    const ret = this.clone();
+    ret.criteria = [];
+    ret.currentPage = 1;
+    return ret;
+  }
+
+  public removeCriterion(type: CriterionType) {
+    const ret = this.clone();
+    const c = ret.criteria.find((cc) => cc.criterionOption.type === type);
+
+    if (!c) return ret;
+
+    const newCriteria = ret.criteria.filter((cc) => {
+      return cc.getId() !== c.getId();
+    });
+
+    ret.criteria = newCriteria;
+    ret.currentPage = 1;
+    return ret;
+  }
+
+  public setPageSize(pageSize: number) {
+    const ret = this.clone();
+    ret.itemsPerPage = pageSize;
+    return ret;
+  }
+
+  public changePage(page: number) {
+    const ret = this.clone();
+    ret.currentPage = page;
+    return ret;
+  }
+
+  public setZoom(zoomIndex: number) {
+    const ret = this.clone();
+    ret.zoomIndex = zoomIndex;
+    return ret;
+  }
+
+  public setDisplayMode(displayMode: DisplayMode) {
+    const ret = this.clone();
+    ret.displayMode = displayMode;
+    return ret;
   }
 }

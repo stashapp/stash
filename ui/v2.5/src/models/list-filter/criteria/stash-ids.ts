@@ -27,6 +27,10 @@ export class StashIDCriterion extends Criterion<IStashIDValue> {
     });
   }
 
+  public cloneValues() {
+    this.value = { ...this.value };
+  }
+
   public get value(): IStashIDValue {
     return this._value;
   }
@@ -43,7 +47,7 @@ export class StashIDCriterion extends Criterion<IStashIDValue> {
     }
   }
 
-  protected toCriterionInput(): StashIdCriterionInput {
+  public toCriterionInput(): StashIdCriterionInput {
     return {
       endpoint: this.value.endpoint,
       stash_id: this.value.stashID,

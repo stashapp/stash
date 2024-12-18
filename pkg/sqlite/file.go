@@ -178,6 +178,7 @@ type fileQueryRow struct {
 
 	ZipBasename   null.String `db:"zip_basename"`
 	ZipFolderPath null.String `db:"zip_folder_path"`
+	ZipSize       null.Int    `db:"zip_size"`
 
 	FolderPath null.String `db:"parent_folder_path"`
 	fingerprintQueryRow
@@ -205,6 +206,7 @@ func (r *fileQueryRow) resolve() models.File {
 			ID:       *basic.ZipFileID,
 			Path:     filepath.Join(r.ZipFolderPath.String, r.ZipBasename.String),
 			Basename: r.ZipBasename.String,
+			Size:     r.ZipSize.Int64,
 		}
 	}
 
@@ -461,6 +463,8 @@ func (qb *FileStore) selectDataset() *goqu.SelectDataset {
 		fingerprintTable.Col("fingerprint"),
 		zipFileTable.Col("basename").As("zip_basename"),
 		zipFolderTable.Col("path").As("zip_folder_path"),
+		// size is needed to open containing zip files
+		zipFileTable.Col("size").As("zip_size"),
 	}
 
 	cols = append(cols, videoFileQueryColumns()...)
@@ -862,7 +866,9 @@ func (qb *FileStore) Query(ctx context.Context, options models.FileQueryOptions)
 		return nil, err
 	}
 
-	qb.setQuerySort(&query, findFilter)
+	if err := qb.setQuerySort(&query, findFilter); err != nil {
+		return nil, err
+	}
 	query.sortAndPagination += getPagination(findFilter)
 
 	result, err := qb.queryGroupedFields(ctx, options, query)
@@ -911,11 +917,24 @@ func (qb *FileStore) queryGroupedFields(ctx context.Context, options models.File
 	return ret, nil
 }
 
-func (qb *FileStore) setQuerySort(query *queryBuilder, findFilter *models.FindFilterType) {
+var fileSortOptions = sortOptions{
+	"created_at",
+	"id",
+	"path",
+	"random",
+	"updated_at",
+}
+
+func (qb *FileStore) setQuerySort(query *queryBuilder, findFilter *models.FindFilterType) error {
 	if findFilter == nil || findFilter.Sort == nil || *findFilter.Sort == "" {
-		return
+		return nil
 	}
 	sort := findFilter.GetSort("path")
+
+	// CVE-2024-32231 - ensure sort is in the list of allowed sorts
+	if err := fileSortOptions.validateSort(sort); err != nil {
+		return err
+	}
 
 	direction := findFilter.GetDirection()
 	switch sort {
@@ -925,12 +944,13 @@ func (qb *FileStore) setQuerySort(query *queryBuilder, findFilter *models.FindFi
 	default:
 		query.sortAndPagination += getSort(sort, direction, "files")
 	}
+
+	return nil
 }
 
 func (qb *FileStore) captionRepository() *captionRepository {
 	return &captionRepository{
 		repository: repository{
-			tx:        qb.tx,
 			tableName: videoCaptionsTable,
 			idColumn:  fileIDColumn,
 		},

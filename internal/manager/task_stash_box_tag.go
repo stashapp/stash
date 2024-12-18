@@ -7,6 +7,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/performer"
 	"github.com/stashapp/stash/pkg/scraper/stashbox"
 	"github.com/stashapp/stash/pkg/studio"
 )
@@ -155,6 +156,10 @@ func (t *StashBoxBatchTagTask) processMatchedPerformer(ctx context.Context, p *m
 
 			partial := p.ToPartial(t.box.Endpoint, excluded, existingStashIDs)
 
+			if err := performer.ValidateUpdate(ctx, t.performer.ID, partial, qb); err != nil {
+				return err
+			}
+
 			if _, err := qb.UpdatePartial(ctx, t.performer.ID, partial); err != nil {
 				return err
 			}
@@ -185,7 +190,11 @@ func (t *StashBoxBatchTagTask) processMatchedPerformer(ctx context.Context, p *m
 		err = r.WithTxn(ctx, func(ctx context.Context) error {
 			qb := r.Performer
 
-			if err := qb.Create(ctx, newPerformer); err != nil {
+			if err := performer.ValidateCreate(ctx, *newPerformer, qb); err != nil {
+				return err
+			}
+
+			if err := qb.Create(ctx, &models.CreatePerformerInput{Performer: newPerformer}); err != nil {
 				return err
 			}
 
@@ -302,13 +311,13 @@ func (t *StashBoxBatchTagTask) processMatchedStudio(ctx context.Context, s *mode
 				return err
 			}
 
-			partial := s.ToPartial(s.StoredID, t.box.Endpoint, excluded, existingStashIDs)
+			partial := s.ToPartial(*s.StoredID, t.box.Endpoint, excluded, existingStashIDs)
 
-			if err := studio.ValidateModify(ctx, *partial, qb); err != nil {
+			if err := studio.ValidateModify(ctx, partial, qb); err != nil {
 				return err
 			}
 
-			if _, err := qb.UpdatePartial(ctx, *partial); err != nil {
+			if _, err := qb.UpdatePartial(ctx, partial); err != nil {
 				return err
 			}
 
@@ -345,6 +354,10 @@ func (t *StashBoxBatchTagTask) processMatchedStudio(ctx context.Context, s *mode
 		r := instance.Repository
 		err = r.WithTxn(ctx, func(ctx context.Context) error {
 			qb := r.Studio
+
+			if err := studio.ValidateCreate(ctx, *newStudio, qb); err != nil {
+				return err
+			}
 
 			if err := qb.Create(ctx, newStudio); err != nil {
 				return err
@@ -422,13 +435,13 @@ func (t *StashBoxBatchTagTask) processParentStudio(ctx context.Context, parent *
 				return err
 			}
 
-			partial := parent.ToPartial(parent.StoredID, t.box.Endpoint, excluded, existingStashIDs)
+			partial := parent.ToPartial(*parent.StoredID, t.box.Endpoint, excluded, existingStashIDs)
 
-			if err := studio.ValidateModify(ctx, *partial, qb); err != nil {
+			if err := studio.ValidateModify(ctx, partial, qb); err != nil {
 				return err
 			}
 
-			if _, err := qb.UpdatePartial(ctx, *partial); err != nil {
+			if _, err := qb.UpdatePartial(ctx, partial); err != nil {
 				return err
 			}
 

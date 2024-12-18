@@ -15,7 +15,7 @@ import {
 } from "src/core/StashService";
 import { ConfigurationContext } from "src/hooks/Config";
 import { useIntl } from "react-intl";
-import { defaultMaxOptionsShown, IUIConfig } from "src/core/config";
+import { defaultMaxOptionsShown } from "src/core/config";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import {
   FilterSelectComponent,
@@ -25,6 +25,11 @@ import {
   Option as SelectOption,
 } from "../Shared/FilterSelect";
 import { useCompare } from "src/hooks/state";
+import { Link } from "react-router-dom";
+import { sortByRelevance } from "src/utils/query";
+import { PatchComponent, PatchFunction } from "src/patch";
+import { TruncatedText } from "../Shared/TruncatedText";
+import TextUtils from "src/utils/text";
 
 export type SelectObject = {
   id: string;
@@ -34,11 +39,38 @@ export type SelectObject = {
 
 export type Performer = Pick<
   GQL.Performer,
-  "id" | "name" | "alias_list" | "disambiguation" | "image_path"
+  | "id"
+  | "name"
+  | "alias_list"
+  | "disambiguation"
+  | "image_path"
+  | "birthdate"
+  | "death_date"
 >;
 type Option = SelectOption<Performer>;
 
-export const PerformerSelect: React.FC<
+type FindPerformersResult = Awaited<
+  ReturnType<typeof queryFindPerformersForSelect>
+>["data"]["findPerformers"]["performers"];
+
+function sortPerformersByRelevance(
+  input: string,
+  performers: FindPerformersResult
+) {
+  return sortByRelevance(
+    input,
+    performers,
+    (p) => p.name,
+    (p) => p.alias_list
+  );
+}
+
+const performerSelectSort = PatchFunction(
+  "PerformerSelect.sort",
+  sortPerformersByRelevance
+);
+
+const _PerformerSelect: React.FC<
   IFilterProps & IFilterValueProps<Performer>
 > = (props) => {
   const [createPerformer] = usePerformerCreate();
@@ -46,7 +78,7 @@ export const PerformerSelect: React.FC<
   const { configuration } = React.useContext(ConfigurationContext);
   const intl = useIntl();
   const maxOptionsShown =
-    (configuration?.ui as IUIConfig).maxOptionsShown ?? defaultMaxOptionsShown;
+    configuration?.ui.maxOptionsShown ?? defaultMaxOptionsShown;
   const defaultCreatable =
     !configuration?.interface.disableDropdownCreate.performer ?? true;
 
@@ -58,7 +90,10 @@ export const PerformerSelect: React.FC<
     filter.sortBy = "name";
     filter.sortDirection = GQL.SortDirectionEnum.Asc;
     const query = await queryFindPerformersForSelect(filter);
-    return query.data.findPerformers.performers.map((performer) => ({
+    return performerSelectSort(
+      input,
+      query.data.findPerformers.performers.slice()
+    ).map((performer) => ({
       value: performer.id,
       object: performer,
     }));
@@ -85,24 +120,51 @@ export const PerformerSelect: React.FC<
     thisOptionProps = {
       ...optionProps,
       children: (
-        <span>
-          <a
-            href={`/performers/${object.id}`}
-            target="_blank"
-            rel="noreferrer"
-            className="performer-select-image-link"
-          >
-            <img
-              className="performer-select-image"
-              src={object.image_path ?? ""}
-              loading="lazy"
-            />
-          </a>
-          <span>{name}</span>
-          {object.disambiguation && (
-            <span className="performer-disambiguation">{` (${object.disambiguation})`}</span>
-          )}
-          {alias && <span className="alias">{` (${alias})`}</span>}
+        <span className="performer-select-option">
+          <span className="performer-select-row">
+            <Link
+              to={`/performers/${object.id}`}
+              target="_blank"
+              className="performer-select-image-link"
+            >
+              <img
+                className="performer-select-image"
+                src={object.image_path ?? ""}
+                loading="lazy"
+              />
+            </Link>
+            <span className="performer-select-details">
+              <TruncatedText
+                className="performer-select-name"
+                text={
+                  <span>
+                    {name}
+                    {alias && (
+                      <span className="performer-select-alias">
+                        &nbsp;({alias})
+                      </span>
+                    )}
+                  </span>
+                }
+                lineCount={1}
+              />
+
+              {object.disambiguation && (
+                <span className="performer-select-disambiguation">
+                  {object.disambiguation}
+                </span>
+              )}
+
+              {object.birthdate && (
+                <span className="performer-select-birthdate">{`${
+                  object.birthdate
+                } (${TextUtils.age(
+                  object.birthdate,
+                  object.death_date
+                )})`}</span>
+              )}
+            </span>
+          </span>
         </span>
       ),
     };
@@ -119,7 +181,14 @@ export const PerformerSelect: React.FC<
 
     thisOptionProps = {
       ...optionProps,
-      children: object.name,
+      children: (
+        <span className="performer-select-value">
+          <span>{object.name}</span>
+          {object.disambiguation && (
+            <span className="performer-disambiguation">{` (${object.disambiguation})`}</span>
+          )}
+        </span>
+      ),
     };
 
     return <reactSelectComponents.MultiValueLabel {...thisOptionProps} />;
@@ -135,12 +204,12 @@ export const PerformerSelect: React.FC<
     thisOptionProps = {
       ...optionProps,
       children: (
-        <>
+        <span className="performer-select-value">
           {object.name}
           {object.disambiguation && (
             <span className="performer-disambiguation">{` (${object.disambiguation})`}</span>
           )}
-        </>
+        </span>
       ),
     };
 
@@ -223,9 +292,14 @@ export const PerformerSelect: React.FC<
   );
 };
 
-export const PerformerIDSelect: React.FC<
-  IFilterProps & IFilterIDProps<Performer>
-> = (props) => {
+export const PerformerSelect = PatchComponent(
+  "PerformerSelect",
+  _PerformerSelect
+);
+
+const _PerformerIDSelect: React.FC<IFilterProps & IFilterIDProps<Performer>> = (
+  props
+) => {
   const { ids, onSelect: onSelectValues } = props;
 
   const [values, setValues] = useState<Performer[]>([]);
@@ -237,8 +311,7 @@ export const PerformerIDSelect: React.FC<
   }
 
   async function loadObjectsByID(idsToLoad: string[]): Promise<Performer[]> {
-    const performerIDs = idsToLoad.map((id) => parseInt(id));
-    const query = await queryFindPerformersByIDForSelect(performerIDs);
+    const query = await queryFindPerformersByIDForSelect(idsToLoad);
     const { performers: loadedPerformers } = query.data.findPerformers;
 
     return loadedPerformers;
@@ -270,3 +343,8 @@ export const PerformerIDSelect: React.FC<
 
   return <PerformerSelect {...props} values={values} onSelect={onSelect} />;
 };
+
+export const PerformerIDSelect = PatchComponent(
+  "PerformerIDSelect",
+  _PerformerIDSelect
+);

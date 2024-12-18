@@ -1,0 +1,11 @@
+query FindSavedFilter($id: ID!) {
+  findSavedFilter(id: $id) {
+    ...SavedFilterData
+  }
+}
+
+query FindSavedFilters($mode: FilterMode) {
+  findSavedFilters(mode: $mode) {
+    ...SavedFilterData
+  }
+}

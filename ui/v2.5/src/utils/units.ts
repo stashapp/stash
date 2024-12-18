@@ -15,3 +15,7 @@ export function cmToInches(cm: number) {
   const inches = cm * cmInInches;
   return inches;
 }
+
+export function remToPx(rem: number) {
+  return rem * parseFloat(getComputedStyle(document.documentElement).fontSize);
+}

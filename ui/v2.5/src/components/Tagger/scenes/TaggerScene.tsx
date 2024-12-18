@@ -1,6 +1,6 @@
 import React, { useState, useContext, PropsWithChildren, useMemo } from "react";
 import * as GQL from "src/core/generated-graphql";
-import { Link } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 import { Button, Collapse, Form, InputGroup } from "react-bootstrap";
 import { FormattedMessage } from "react-intl";
 
@@ -18,6 +18,9 @@ import {
   faImage,
 } from "@fortawesome/free-solid-svg-icons";
 import { objectPath, objectTitle } from "src/core/files";
+import { ExternalLink } from "src/components/Shared/ExternalLink";
+import { ConfigurationContext } from "src/hooks/Config";
+import { SceneQueue } from "src/models/sceneQueue";
 
 interface ITaggerSceneDetails {
   scene: GQL.SlimSceneDataFragment;
@@ -90,6 +93,8 @@ interface ITaggerScene {
   scrapeSceneFragment?: (scene: GQL.SlimSceneDataFragment) => void;
   loading?: boolean;
   showLightboxImage: (imagePath: string) => void;
+  queue?: SceneQueue;
+  index?: number;
 }
 
 export const TaggerScene: React.FC<PropsWithChildren<ITaggerScene>> = ({
@@ -101,6 +106,8 @@ export const TaggerScene: React.FC<PropsWithChildren<ITaggerScene>> = ({
   errorMessage,
   children,
   showLightboxImage,
+  queue,
+  index,
 }) => {
   const { config } = useContext(TaggerStateContext);
   const [queryString, setQueryString] = useState<string>("");
@@ -123,6 +130,11 @@ export const TaggerScene: React.FC<PropsWithChildren<ITaggerScene>> = ({
   const width = file?.width ? file.width : 0;
   const height = file?.height ? file.height : 0;
   const isPortrait = height > width;
+
+  const history = useHistory();
+
+  const { configuration } = React.useContext(ConfigurationContext);
+  const cont = configuration?.interface.continuePlaylistDefault ?? false;
 
   async function query() {
     if (!doSceneQuery) return;
@@ -174,15 +186,13 @@ export const TaggerScene: React.FC<PropsWithChildren<ITaggerScene>> = ({
       const stashLinks = scene.stash_ids.map((stashID) => {
         const base = stashID.endpoint.match(/https?:\/\/.*?\//)?.[0];
         const link = base ? (
-          <a
+          <ExternalLink
             key={`${stashID.endpoint}${stashID.stash_id}`}
             className="small d-block"
             href={`${base}scenes/${stashID.stash_id}`}
-            target="_blank"
-            rel="noopener noreferrer"
           >
             {stashID.stash_id}
-          </a>
+          </ExternalLink>
         ) : (
           <div className="small">{stashID.stash_id}</div>
         );
@@ -214,6 +224,18 @@ export const TaggerScene: React.FC<PropsWithChildren<ITaggerScene>> = ({
     }
   }
 
+  function onScrubberClick(timestamp: number) {
+    const link = queue
+      ? queue.makeLink(scene.id, {
+          sceneIndex: index,
+          continue: cont,
+          start: timestamp,
+        })
+      : `/scenes/${scene.id}?t=${timestamp}`;
+
+    history.push(link);
+  }
+
   return (
     <div key={scene.id} className="mt-3 search-item">
       <div className="row">
@@ -225,6 +247,8 @@ export const TaggerScene: React.FC<PropsWithChildren<ITaggerScene>> = ({
                 video={scene.paths.preview ?? undefined}
                 isPortrait={isPortrait}
                 soundActive={false}
+                vttPath={scene.paths.vtt ?? undefined}
+                onScrubberClick={onScrubberClick}
               />
               {maybeRenderSpriteIcon()}
             </Link>

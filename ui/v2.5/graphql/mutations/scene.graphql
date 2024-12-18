@@ -1,0 +1,125 @@
+mutation SceneCreate($input: SceneCreateInput!) {
+  sceneCreate(input: $input) {
+    ...SceneData
+  }
+}
+
+mutation SceneUpdate($input: SceneUpdateInput!) {
+  sceneUpdate(input: $input) {
+    ...SceneData
+  }
+}
+
+mutation BulkSceneUpdate($input: BulkSceneUpdateInput!) {
+  bulkSceneUpdate(input: $input) {
+    ...SceneData
+  }
+}
+
+mutation ScenesUpdate($input: [SceneUpdateInput!]!) {
+  scenesUpdate(input: $input) {
+    ...SceneData
+  }
+}
+
+mutation SceneSaveActivity(
+  $id: ID!
+  $resume_time: Float
+  $playDuration: Float
+) {
+  sceneSaveActivity(
+    id: $id
+    resume_time: $resume_time
+    playDuration: $playDuration
+  )
+}
+
+mutation SceneResetActivity(
+  $id: ID!
+  $reset_resume: Boolean!
+  $reset_duration: Boolean!
+) {
+  sceneResetActivity(
+    id: $id
+    reset_resume: $reset_resume
+    reset_duration: $reset_duration
+  )
+}
+
+mutation SceneAddPlay($id: ID!, $times: [Timestamp!]) {
+  sceneAddPlay(id: $id, times: $times) {
+    count
+    history
+  }
+}
+
+mutation SceneDeletePlay($id: ID!, $times: [Timestamp!]) {
+  sceneDeletePlay(id: $id, times: $times) {
+    count
+    history
+  }
+}
+
+mutation SceneResetPlayCount($id: ID!) {
+  sceneResetPlayCount(id: $id)
+}
+
+mutation SceneAddO($id: ID!, $times: [Timestamp!]) {
+  sceneAddO(id: $id, times: $times) {
+    count
+    history
+  }
+}
+
+mutation SceneDeleteO($id: ID!, $times: [Timestamp!]) {
+  sceneDeleteO(id: $id, times: $times) {
+    count
+    history
+  }
+}
+
+mutation SceneResetO($id: ID!) {
+  sceneResetO(id: $id)
+}
+
+mutation SceneDestroy(
+  $id: ID!
+  $delete_file: Boolean
+  $delete_generated: Boolean
+) {
+  sceneDestroy(
+    input: {
+      id: $id
+      delete_file: $delete_file
+      delete_generated: $delete_generated
+    }
+  )
+}
+
+mutation ScenesDestroy(
+  $ids: [ID!]!
+  $delete_file: Boolean
+  $delete_generated: Boolean
+) {
+  scenesDestroy(
+    input: {
+      ids: $ids
+      delete_file: $delete_file
+      delete_generated: $delete_generated
+    }
+  )
+}
+
+mutation SceneGenerateScreenshot($id: ID!, $at: Float) {
+  sceneGenerateScreenshot(id: $id, at: $at)
+}
+
+mutation SceneAssignFile($input: AssignSceneFileInput!) {
+  sceneAssignFile(input: $input)
+}
+
+mutation SceneMerge($input: SceneMergeInput!) {
+  sceneMerge(input: $input) {
+    id
+  }
+}

@@ -24,6 +24,79 @@ func (r *performerResolver) AliasList(ctx context.Context, obj *models.Performer
 	return obj.Aliases.List(), nil
 }
 
+func (r *performerResolver) URL(ctx context.Context, obj *models.Performer) (*string, error) {
+	if !obj.URLs.Loaded() {
+		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+			return obj.LoadURLs(ctx, r.repository.Performer)
+		}); err != nil {
+			return nil, err
+		}
+	}
+
+	urls := obj.URLs.List()
+	if len(urls) == 0 {
+		return nil, nil
+	}
+
+	return &urls[0], nil
+}
+
+func (r *performerResolver) Twitter(ctx context.Context, obj *models.Performer) (*string, error) {
+	if !obj.URLs.Loaded() {
+		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+			return obj.LoadURLs(ctx, r.repository.Performer)
+		}); err != nil {
+			return nil, err
+		}
+	}
+
+	urls := obj.URLs.List()
+
+	// find the first twitter url
+	for _, url := range urls {
+		if performer.IsTwitterURL(url) {
+			u := url
+			return &u, nil
+		}
+	}
+
+	return nil, nil
+}
+
+func (r *performerResolver) Instagram(ctx context.Context, obj *models.Performer) (*string, error) {
+	if !obj.URLs.Loaded() {
+		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+			return obj.LoadURLs(ctx, r.repository.Performer)
+		}); err != nil {
+			return nil, err
+		}
+	}
+
+	urls := obj.URLs.List()
+
+	// find the first instagram url
+	for _, url := range urls {
+		if performer.IsInstagramURL(url) {
+			u := url
+			return &u, nil
+		}
+	}
+
+	return nil, nil
+}
+
+func (r *performerResolver) Urls(ctx context.Context, obj *models.Performer) ([]string, error) {
+	if !obj.URLs.Loaded() {
+		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+			return obj.LoadURLs(ctx, r.repository.Performer)
+		}); err != nil {
+			return nil, err
+		}
+	}
+
+	return obj.URLs.List(), nil
+}
+
 func (r *performerResolver) Height(ctx context.Context, obj *models.Performer) (*string, error) {
 	if obj.Height != nil {
 		ret := strconv.Itoa(*obj.Height)
@@ -106,15 +179,20 @@ func (r *performerResolver) GalleryCount(ctx context.Context, obj *models.Perfor
 	return ret, nil
 }
 
-func (r *performerResolver) MovieCount(ctx context.Context, obj *models.Performer) (ret int, err error) {
+func (r *performerResolver) GroupCount(ctx context.Context, obj *models.Performer) (ret int, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		ret, err = r.repository.Movie.CountByPerformerID(ctx, obj.ID)
+		ret, err = r.repository.Group.CountByPerformerID(ctx, obj.ID)
 		return err
 	}); err != nil {
 		return 0, err
 	}
 
 	return ret, nil
+}
+
+// deprecated
+func (r *performerResolver) MovieCount(ctx context.Context, obj *models.Performer) (ret int, err error) {
+	return r.GroupCount(ctx, obj)
 }
 
 func (r *performerResolver) PerformerCount(ctx context.Context, obj *models.Performer) (ret int, err error) {
@@ -179,13 +257,31 @@ func (r *performerResolver) DeathDate(ctx context.Context, obj *models.Performer
 	return nil, nil
 }
 
-func (r *performerResolver) Movies(ctx context.Context, obj *models.Performer) (ret []*models.Movie, err error) {
+func (r *performerResolver) Groups(ctx context.Context, obj *models.Performer) (ret []*models.Group, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		ret, err = r.repository.Movie.FindByPerformerID(ctx, obj.ID)
+		ret, err = r.repository.Group.FindByPerformerID(ctx, obj.ID)
 		return err
 	}); err != nil {
 		return nil, err
 	}
 
 	return ret, nil
+}
+
+func (r *performerResolver) CustomFields(ctx context.Context, obj *models.Performer) (map[string]interface{}, error) {
+	m, err := loaders.From(ctx).PerformerCustomFields.Load(obj.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	if m == nil {
+		return make(map[string]interface{}), nil
+	}
+
+	return m, nil
+}
+
+// deprecated
+func (r *performerResolver) Movies(ctx context.Context, obj *models.Performer) (ret []*models.Group, err error) {
+	return r.Groups(ctx, obj)
 }

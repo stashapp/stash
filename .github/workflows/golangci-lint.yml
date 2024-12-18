@@ -9,7 +9,7 @@ on:
   pull_request:
 
 env:
-  COMPILER_IMAGE: stashapp/compiler:8
+  COMPILER_IMAGE: stashapp/compiler:10
 
 jobs:
   golangci:
@@ -20,6 +20,11 @@ jobs:
 
       - name: Checkout
         run: git fetch --prune --unshallow --tags
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: 'go.mod'
 
       - name: Pull compiler image
         run: docker pull $COMPILER_IMAGE
@@ -33,7 +38,7 @@ jobs:
         run: docker exec -t build /bin/bash -c "make generate-backend"
 
       - name: Run golangci-lint
-        uses: golangci/golangci-lint-action@v3
+        uses: golangci/golangci-lint-action@v6
         with:
           # Optional: version of golangci-lint to use in form of v1.2 or v1.2.3 or `latest` to use the latest version
           version: latest

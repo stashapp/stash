@@ -11,6 +11,7 @@ import (
 	"net/url"
 	"path/filepath"
 
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 )
 
@@ -98,7 +99,8 @@ func (m *Manager) ListInstalledRemotes(ctx context.Context, installed LocalPacka
 	for _, remoteURL := range remoteURLs {
 		remoteList, err := m.ListRemote(ctx, remoteURL)
 		if err != nil {
-			return nil, err
+			logger.Warnf("error listing remote package %s: %v", remoteURL, err)
+			continue
 		}
 
 		allRemoteList.merge(remoteList)

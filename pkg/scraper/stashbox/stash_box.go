@@ -1,3 +1,4 @@
+// Package stashbox provides a client interface to a stash-box server instance.
 package stashbox
 
 import (
@@ -9,11 +10,10 @@ import (
 	"io"
 	"mime/multipart"
 	"net/http"
-	"regexp"
 	"strconv"
 	"strings"
 
-	"github.com/Yamashou/gqlgenc/client"
+	"github.com/Yamashou/gqlgenc/clientv2"
 	"github.com/Yamashou/gqlgenc/graphqljson"
 	"github.com/gofrs/uuid/v5"
 	"golang.org/x/text/cases"
@@ -24,6 +24,7 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scraper"
 	"github.com/stashapp/stash/pkg/scraper/stashbox/graphql"
+	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 	"github.com/stashapp/stash/pkg/txn"
 	"github.com/stashapp/stash/pkg/utils"
@@ -40,6 +41,7 @@ type PerformerReader interface {
 	match.PerformerFinder
 	models.AliasLoader
 	models.StashIDLoader
+	models.URLLoader
 	FindBySceneID(ctx context.Context, sceneID int) ([]*models.Performer, error)
 	GetImage(ctx context.Context, performerID int) ([]byte, error)
 }
@@ -87,12 +89,13 @@ type Client struct {
 
 // NewClient returns a new instance of a stash-box client.
 func NewClient(box models.StashBox, repo Repository) *Client {
-	authHeader := func(req *http.Request) {
+	authHeader := func(ctx context.Context, req *http.Request, gqlInfo *clientv2.GQLRequestInfo, res interface{}, next clientv2.RequestInterceptorFunc) error {
 		req.Header.Set("ApiKey", box.APIKey)
+		return next(ctx, req, gqlInfo, res)
 	}
 
 	client := &graphql.Client{
-		Client: client.NewClient(http.DefaultClient, box.Endpoint, authHeader),
+		Client: clientv2.NewClient(http.DefaultClient, box.Endpoint, nil, authHeader),
 	}
 
 	return &Client{
@@ -250,11 +253,13 @@ func (c Client) findStashBoxScenesByFingerprints(ctx context.Context, scenes [][
 	return ret, nil
 }
 
-func (c Client) SubmitStashBoxFingerprints(ctx context.Context, sceneIDs []string, endpoint string) (bool, error) {
+func (c Client) SubmitStashBoxFingerprints(ctx context.Context, sceneIDs []string) (bool, error) {
 	ids, err := stringslice.StringSliceToIntSlice(sceneIDs)
 	if err != nil {
 		return false, err
 	}
+
+	endpoint := c.box.Endpoint
 
 	var fingerprints []graphql.FingerprintSubmission
 
@@ -623,7 +628,7 @@ func performerFragmentToScrapedPerformer(p graphql.PerformerFragment) *models.Sc
 		Name:           &p.Name,
 		Disambiguation: p.Disambiguation,
 		Country:        p.Country,
-		Measurements:   formatMeasurements(p.Measurements),
+		Measurements:   formatMeasurements(*p.Measurements),
 		CareerLength:   formatCareerLength(p.CareerStartYear, p.CareerEndYear),
 		Tattoos:        formatBodyModifications(p.Tattoos),
 		Piercings:      formatBodyModifications(p.Piercings),
@@ -643,9 +648,8 @@ func performerFragmentToScrapedPerformer(p graphql.PerformerFragment) *models.Sc
 		sp.Height = &hs
 	}
 
-	if p.Birthdate != nil {
-		b := p.Birthdate.Date
-		sp.Birthdate = &b
+	if p.BirthDate != nil {
+		sp.Birthdate = padFuzzyDate(p.BirthDate)
 	}
 
 	if p.Gender != nil {
@@ -669,8 +673,21 @@ func performerFragmentToScrapedPerformer(p graphql.PerformerFragment) *models.Sc
 	}
 
 	if len(p.Aliases) > 0 {
+		// #4437 - stash-box may return aliases that are equal to the performer name
+		// filter these out
+		p.Aliases = sliceutil.Filter(p.Aliases, func(s string) bool {
+			return !strings.EqualFold(s, p.Name)
+		})
+
+		// #4596 - stash-box may return duplicate aliases. Filter these out
+		p.Aliases = stringslice.UniqueFold(p.Aliases)
+
 		alias := strings.Join(p.Aliases, ", ")
 		sp.Aliases = &alias
+	}
+
+	for _, u := range p.Urls {
+		sp.URLs = append(sp.URLs, u.URL)
 	}
 
 	return sp
@@ -788,7 +805,7 @@ func (c Client) sceneFragmentToScrapedScene(ctx context.Context, s *graphql.Scen
 		}
 
 		for _, p := range s.Performers {
-			sp := performerFragmentToScrapedPerformer(p.Performer)
+			sp := performerFragmentToScrapedPerformer(*p.Performer)
 
 			err := match.ScrapedPerformer(ctx, pqb, sp, &c.box.Endpoint)
 			if err != nil {
@@ -935,12 +952,13 @@ func appendFingerprintUnique(v []*graphql.FingerprintInput, toAdd *graphql.Finge
 	return append(v, toAdd)
 }
 
-func (c Client) SubmitSceneDraft(ctx context.Context, scene *models.Scene, endpoint string, cover []byte) (*string, error) {
+func (c Client) SubmitSceneDraft(ctx context.Context, scene *models.Scene, cover []byte) (*string, error) {
 	draft := graphql.SceneDraftInput{}
 	var image io.Reader
 	r := c.repository
 	pqb := r.Performer
 	sqb := r.Studio
+	endpoint := c.box.Endpoint
 
 	if scene.Title != "" {
 		draft.Title = &scene.Title
@@ -1105,12 +1123,17 @@ func (c Client) SubmitSceneDraft(ctx context.Context, scene *models.Scene, endpo
 	// return id, nil
 }
 
-func (c Client) SubmitPerformerDraft(ctx context.Context, performer *models.Performer, endpoint string) (*string, error) {
+func (c Client) SubmitPerformerDraft(ctx context.Context, performer *models.Performer) (*string, error) {
 	draft := graphql.PerformerDraftInput{}
 	var image io.Reader
 	pqb := c.repository.Performer
+	endpoint := c.box.Endpoint
 
 	if err := performer.LoadAliases(ctx, pqb); err != nil {
+		return nil, err
+	}
+
+	if err := performer.LoadURLs(ctx, pqb); err != nil {
 		return nil, err
 	}
 
@@ -1126,10 +1149,9 @@ func (c Client) SubmitPerformerDraft(ctx context.Context, performer *models.Perf
 	if performer.Name != "" {
 		draft.Name = performer.Name
 	}
-	// stash-box does not support Disambiguation currently
-	// if performer.Disambiguation != "" {
-	// 	draft.Disambiguation = performer.Disambiguation
-	// }
+	if performer.Disambiguation != "" {
+		draft.Disambiguation = &performer.Disambiguation
+	}
 	if performer.Birthdate != nil {
 		d := performer.Birthdate.String()
 		draft.Birthdate = &d
@@ -1182,28 +1204,8 @@ func (c Client) SubmitPerformerDraft(ctx context.Context, performer *models.Perf
 		}
 	}
 
-	var urls []string
-	if len(strings.TrimSpace(performer.Twitter)) > 0 {
-		reg := regexp.MustCompile(`https?:\/\/(?:www\.)?twitter\.com`)
-		if reg.MatchString(performer.Twitter) {
-			urls = append(urls, strings.TrimSpace(performer.Twitter))
-		} else {
-			urls = append(urls, "https://twitter.com/"+strings.TrimSpace(performer.Twitter))
-		}
-	}
-	if len(strings.TrimSpace(performer.Instagram)) > 0 {
-		reg := regexp.MustCompile(`https?:\/\/(?:www\.)?instagram\.com`)
-		if reg.MatchString(performer.Instagram) {
-			urls = append(urls, strings.TrimSpace(performer.Instagram))
-		} else {
-			urls = append(urls, "https://instagram.com/"+strings.TrimSpace(performer.Instagram))
-		}
-	}
-	if len(strings.TrimSpace(performer.URL)) > 0 {
-		urls = append(urls, strings.TrimSpace(performer.URL))
-	}
-	if len(urls) > 0 {
-		draft.Urls = urls
+	if len(performer.URLs.List()) > 0 {
+		draft.Urls = performer.URLs.List()
 	}
 
 	stashIDs, err := pqb.GetStashIDs(ctx, performer.ID)
@@ -1279,7 +1281,7 @@ func (c *Client) submitDraft(ctx context.Context, query string, input interface{
 		"input": input,
 	}
 
-	r := &client.Request{
+	r := &clientv2.Request{
 		Query:         query,
 		Variables:     vars,
 		OperationName: "",
@@ -1337,9 +1339,9 @@ func (c *Client) submitDraft(ctx context.Context, query string, input interface{
 		return fmt.Errorf("failed to decode data %s: %w", string(responseBytes), err)
 	}
 
-	if respGQL.Errors != nil && len(respGQL.Errors) > 0 {
+	if len(respGQL.Errors) > 0 {
 		// try to parse standard graphql error
-		errors := &client.GqlErrorList{}
+		errors := &clientv2.GqlErrorList{}
 		if e := json.Unmarshal(responseBytes, errors); e != nil {
 			return fmt.Errorf("failed to parse graphql errors. Response content %s - %w ", string(responseBytes), e)
 		}
@@ -1352,4 +1354,21 @@ func (c *Client) submitDraft(ctx context.Context, query string, input interface{
 	}
 
 	return err
+}
+
+func padFuzzyDate(date *string) *string {
+	if date == nil {
+		return nil
+	}
+
+	var paddedDate string
+	switch len(*date) {
+	case 10:
+		paddedDate = *date
+	case 7:
+		paddedDate = fmt.Sprintf("%s-01", *date)
+	case 4:
+		paddedDate = fmt.Sprintf("%s-01-01", *date)
+	}
+	return &paddedDate
 }

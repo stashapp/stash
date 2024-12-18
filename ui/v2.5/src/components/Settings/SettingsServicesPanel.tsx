@@ -19,6 +19,7 @@ import {
   StringListSetting,
   StringSetting,
   SelectSetting,
+  NumberSetting,
 } from "./Inputs";
 import { useSettings } from "./context";
 import {
@@ -30,6 +31,8 @@ import {
   faTimes,
   faUserClock,
 } from "@fortawesome/free-solid-svg-icons";
+
+const defaultDLNAPort = 1338;
 
 export const SettingsServicesPanel: React.FC = () => {
   const intl = useIntl();
@@ -137,7 +140,7 @@ export const SettingsServicesPanel: React.FC = () => {
     }
   }
 
-  function renderDeadline(until?: string) {
+  function renderDeadline(until?: string | null) {
     if (until) {
       const deadline = new Date(until);
       return `until ${intl.formatDate(deadline)}`;
@@ -415,6 +418,15 @@ export const SettingsServicesPanel: React.FC = () => {
             )}
             value={dlna.serverName ?? undefined}
             onChange={(v) => saveDLNA({ serverName: v })}
+          />
+
+          <NumberSetting
+            headingID="config.dlna.server_port"
+            subHeading={intl.formatMessage({
+              id: "config.dlna.server_port_desc",
+            })}
+            value={dlna.port ?? undefined}
+            onChange={(v) => saveDLNA({ port: v ? v : defaultDLNAPort })}
           />
 
           <BooleanSetting

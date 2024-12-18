@@ -48,6 +48,11 @@ GO_BUILD_TAGS += sqlite_stat4 sqlite_math_functions
 
 export CGO_ENABLED := 1
 
+# define COMPILER_IMAGE for cross-compilation docker container
+ifndef COMPILER_IMAGE
+  COMPILER_IMAGE := stashapp/compiler:latest
+endif
+
 .PHONY: release
 release: pre-ui generate ui build-release
 
@@ -302,7 +307,8 @@ test:
 # runs all tests - including integration tests
 .PHONY: it
 it:
-	go test -tags=integration ./...
+	$(eval GO_BUILD_TAGS += integration)
+	go test -tags "$(GO_BUILD_TAGS)" ./...
 
 # generates test mocks
 .PHONY: generate-test-mocks
@@ -348,6 +354,11 @@ endif
 ui: ui-env
 	cd ui/v2.5 && yarn build
 
+.PHONY: zip-ui
+zip-ui:
+	rm -f dist/stash-ui.zip
+	cd ui/v2.5/build && zip -r ../../../dist/stash-ui.zip .
+
 .PHONY: ui-start
 ui-start: ui-env
 	cd ui/v2.5 && yarn start --host
@@ -360,6 +371,20 @@ fmt-ui:
 .PHONY: validate-ui
 validate-ui:
 	cd ui/v2.5 && yarn run validate
+
+# these targets run the same steps as fmt-ui and validate-ui, but only on files that have changed
+fmt-ui-quick:
+	cd ui/v2.5 && yarn run prettier --write $$(git diff --name-only --relative --diff-filter d . ../../graphql)
+
+# does not run tsc checks, as they are slow
+validate-ui-quick:
+	cd ui/v2.5 && \
+	tsfiles=$$(git diff --name-only --relative --diff-filter d src | grep -e "\.tsx\?\$$"); \
+	scssfiles=$$(git diff --name-only --relative --diff-filter d src | grep "\.scss"); \
+	prettyfiles=$$(git diff --name-only --relative --diff-filter d . ../../graphql); \
+	if [ -n "$$tsfiles" ]; then yarn run eslint $$tsfiles; fi && \
+	if [ -n "$$scssfiles" ]; then yarn run stylelint $$scssfiles; fi && \
+	if [ -n "$$prettyfiles" ]; then yarn run prettier --check $$prettyfiles; fi
 
 # runs all of the backend PR-acceptance steps
 .PHONY: validate-backend
@@ -378,3 +403,16 @@ docker-build: build-info
 .PHONY: docker-cuda-build
 docker-cuda-build: build-info
 	docker build --build-arg GITHASH=$(GITHASH) --build-arg STASH_VERSION=$(STASH_VERSION) -t stash/cuda-build -f docker/build/x86_64/Dockerfile-CUDA .
+
+# start the build container - for cross compilation
+# this is adapted from the github actions build.yml file
+.PHONY: start-compiler-container
+start-compiler-container:
+	docker run -d --name build --mount type=bind,source="$(PWD)",target=/stash,consistency=delegated $(EXTRA_CONTAINER_ARGS) -w /stash $(COMPILER_IMAGE) tail -f /dev/null
+
+# run the cross-compilation using
+# docker exec -t build /bin/bash -c "make build-cc-<platform>"
+
+.PHONY: remove-compiler-container
+remove-compiler-container:
+	docker rm -f -v build

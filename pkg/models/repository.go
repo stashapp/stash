@@ -14,12 +14,13 @@ type TxnManager interface {
 type Repository struct {
 	TxnManager TxnManager
 
+	Blob           BlobReader
 	File           FileReaderWriter
 	Folder         FolderReaderWriter
 	Gallery        GalleryReaderWriter
 	GalleryChapter GalleryChapterReaderWriter
 	Image          ImageReaderWriter
-	Movie          MovieReaderWriter
+	Group          GroupReaderWriter
 	Performer      PerformerReaderWriter
 	Scene          SceneReaderWriter
 	SceneMarker    SceneMarkerReaderWriter

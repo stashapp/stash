@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Button, Form } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useFormik } from "formik";
@@ -10,16 +10,13 @@ import {
   useSceneMarkerDestroy,
 } from "src/core/StashService";
 import { DurationInput } from "src/components/Shared/DurationInput";
-import {
-  TagSelect,
-  MarkerTitleSuggest,
-  SelectObject,
-} from "src/components/Shared/Select";
+import { MarkerTitleSuggest } from "src/components/Shared/Select";
 import { getPlayerPosition } from "src/components/ScenePlayer/util";
 import { useToast } from "src/hooks/Toast";
 import isEqual from "lodash-es/isEqual";
 import { formikUtils } from "src/utils/form";
 import { yupFormikValidate } from "src/utils/yup";
+import { Tag, TagSelect } from "src/components/Tags/TagSelect";
 
 interface ISceneMarkerForm {
   sceneID: string;
@@ -39,11 +36,26 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
   const [sceneMarkerDestroy] = useSceneMarkerDestroy();
   const Toast = useToast();
 
+  const [primaryTag, setPrimaryTag] = useState<Tag>();
+  const [tags, setTags] = useState<Tag[]>([]);
+
   const isNew = marker === undefined;
 
   const schema = yup.object({
     title: yup.string().ensure(),
     seconds: yup.number().min(0).required(),
+    end_seconds: yup
+      .number()
+      .min(0)
+      .nullable()
+      .defined()
+      .test(
+        "is-greater-than-seconds",
+        intl.formatMessage({ id: "end_time_before_start_time" }),
+        function (value) {
+          return value === null || value >= this.parent.seconds;
+        }
+      ),
     primary_tag_id: yup.string().required(),
     tag_ids: yup.array(yup.string().required()).defined(),
   });
@@ -53,6 +65,7 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
     () => ({
       title: marker?.title ?? "",
       seconds: marker?.seconds ?? Math.round(getPlayerPosition() ?? 0),
+      end_seconds: marker?.end_seconds ?? null,
       primary_tag_id: marker?.primary_tag.id ?? "",
       tag_ids: marker?.tags.map((tag) => tag.id) ?? [],
     }),
@@ -68,6 +81,34 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
     onSubmit: (values) => onSave(schema.cast(values)),
   });
 
+  function onSetPrimaryTag(item: Tag) {
+    setPrimaryTag(item);
+    formik.setFieldValue("primary_tag_id", item.id);
+  }
+
+  function onSetTags(items: Tag[]) {
+    setTags(items);
+    formik.setFieldValue(
+      "tag_ids",
+      items.map((item) => item.id)
+    );
+  }
+
+  useEffect(() => {
+    setPrimaryTag(
+      marker?.primary_tag ? { ...marker.primary_tag, aliases: [] } : undefined
+    );
+  }, [marker?.primary_tag]);
+
+  useEffect(() => {
+    setTags(
+      marker?.tags.map((t) => ({
+        ...t,
+        aliases: [],
+      })) ?? []
+    );
+  }, [marker?.tags]);
+
   async function onSave(input: InputValues) {
     try {
       if (isNew) {
@@ -75,6 +116,8 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
           variables: {
             scene_id: sceneID,
             ...input,
+            // undefined means setting to null, not omitting the field
+            end_seconds: input.end_seconds ?? null,
           },
         });
       } else {
@@ -83,6 +126,8 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
             id: marker.id,
             scene_id: sceneID,
             ...input,
+            // undefined means setting to null, not omitting the field
+            end_seconds: input.end_seconds ?? null,
           },
         });
       }
@@ -103,11 +148,6 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
     } finally {
       onClose();
     }
-  }
-
-  async function onSetPrimaryTagID(tags: SelectObject[]) {
-    await formik.setFieldValue("primary_tag_id", tags[0]?.id);
-    await formik.setFieldTouched("primary_tag_id", true);
   }
 
   const splitProps = {
@@ -145,14 +185,12 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
   }
 
   function renderPrimaryTagField() {
-    const primaryTagId = formik.values.primary_tag_id;
-
     const title = intl.formatMessage({ id: "primary_tag" });
     const control = (
       <>
         <TagSelect
-          onSelect={onSetPrimaryTagID}
-          ids={primaryTagId ? [primaryTagId] : []}
+          onSelect={(t) => onSetPrimaryTag(t[0])}
+          values={primaryTag ? [primaryTag] : []}
           hoverPlacement="right"
         />
         {formik.touched.primary_tag_id && (
@@ -175,7 +213,7 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
         value={formik.values.seconds}
         setValue={(v) => formik.setFieldValue("seconds", v)}
         onReset={() =>
-          formik.setFieldValue("seconds", Math.round(getPlayerPosition() ?? 0))
+          formik.setFieldValue("seconds", getPlayerPosition() ?? 0)
         }
         error={error}
       />
@@ -184,18 +222,38 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
     return renderField("seconds", title, control);
   }
 
+  function renderEndTimeField() {
+    const { error } = formik.getFieldMeta("end_seconds");
+
+    const title = intl.formatMessage({ id: "time_end" });
+    const control = (
+      <>
+        <DurationInput
+          value={formik.values.end_seconds}
+          setValue={(v) => formik.setFieldValue("end_seconds", v ?? null)}
+          onReset={() =>
+            formik.setFieldValue("end_seconds", getPlayerPosition() ?? 0)
+          }
+          error={error}
+        />
+        {formik.touched.end_seconds && formik.errors.end_seconds && (
+          <Form.Control.Feedback type="invalid">
+            {formik.errors.end_seconds}
+          </Form.Control.Feedback>
+        )}
+      </>
+    );
+
+    return renderField("end_seconds", title, control);
+  }
+
   function renderTagsField() {
     const title = intl.formatMessage({ id: "tags" });
     const control = (
       <TagSelect
         isMulti
-        onSelect={(items) =>
-          formik.setFieldValue(
-            "tag_ids",
-            items.map((item) => item.id)
-          )
-        }
-        ids={formik.values.tag_ids}
+        onSelect={onSetTags}
+        values={tags}
         hoverPlacement="right"
       />
     );
@@ -209,6 +267,7 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
         {renderTitleField()}
         {renderPrimaryTagField()}
         {renderTimeField()}
+        {renderEndTimeField()}
         {renderTagsField()}
       </div>
       <div className="buttons-container px-3">

@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/doug-martin/goqu/v9"
 	"github.com/doug-martin/goqu/v9/exp"
@@ -154,6 +155,10 @@ func (t *table) join(j joiner, as string, parentIDCol string) {
 type joinTable struct {
 	table
 	fkColumn exp.IdentifierExpression
+
+	// required for ordering
+	foreignTable *table
+	orderBy      exp.OrderedExpression
 }
 
 func (t *joinTable) invert() *joinTable {
@@ -162,12 +167,21 @@ func (t *joinTable) invert() *joinTable {
 			table:    t.table.table,
 			idColumn: t.fkColumn,
 		},
-		fkColumn: t.table.idColumn,
+		fkColumn:     t.table.idColumn,
+		foreignTable: t.foreignTable,
+		orderBy:      t.orderBy,
 	}
 }
 
 func (t *joinTable) get(ctx context.Context, id int) ([]int, error) {
 	q := dialect.Select(t.fkColumn).From(t.table.table).Where(t.idColumn.Eq(id))
+
+	if t.orderBy != nil {
+		if t.foreignTable != nil {
+			q = q.InnerJoin(t.foreignTable.table, goqu.On(t.foreignTable.idColumn.Eq(t.fkColumn)))
+		}
+		q = q.Order(t.orderBy)
+	}
 
 	const single = false
 	var ret []int
@@ -192,8 +206,7 @@ func (t *joinTable) insertJoins(ctx context.Context, id int, foreignIDs []int) e
 	// ignore duplicates
 	q := fmt.Sprintf("INSERT INTO %s (%s, %s) VALUES (?, ?) ON CONFLICT (%[2]s, %s) DO NOTHING", t.table.table.GetTable(), t.idColumn.GetCol(), t.fkColumn.GetCol())
 
-	tx := dbWrapper{}
-	stmt, err := tx.Prepare(ctx, q)
+	stmt, err := dbWrapper.Prepare(ctx, q)
 	if err != nil {
 		return err
 	}
@@ -203,7 +216,7 @@ func (t *joinTable) insertJoins(ctx context.Context, id int, foreignIDs []int) e
 	foreignIDs = sliceutil.AppendUniques(nil, foreignIDs)
 
 	for _, fk := range foreignIDs {
-		if _, err := tx.ExecStmt(ctx, stmt, id, fk); err != nil {
+		if _, err := dbWrapper.ExecStmt(ctx, stmt, id, fk); err != nil {
 			return err
 		}
 	}
@@ -262,19 +275,21 @@ type stashIDTable struct {
 }
 
 type stashIDRow struct {
-	StashID  null.String `db:"stash_id"`
-	Endpoint null.String `db:"endpoint"`
+	StashID   null.String `db:"stash_id"`
+	Endpoint  null.String `db:"endpoint"`
+	UpdatedAt Timestamp   `db:"updated_at"`
 }
 
 func (r *stashIDRow) resolve() models.StashID {
 	return models.StashID{
-		StashID:  r.StashID.String,
-		Endpoint: r.Endpoint.String,
+		StashID:   r.StashID.String,
+		Endpoint:  r.Endpoint.String,
+		UpdatedAt: r.UpdatedAt.Timestamp,
 	}
 }
 
 func (t *stashIDTable) get(ctx context.Context, id int) ([]models.StashID, error) {
-	q := dialect.Select("endpoint", "stash_id").From(t.table.table).Where(t.idColumn.Eq(id))
+	q := dialect.Select("endpoint", "stash_id", "updated_at").From(t.table.table).Where(t.idColumn.Eq(id))
 
 	const single = false
 	var ret []models.StashID
@@ -295,8 +310,8 @@ func (t *stashIDTable) get(ctx context.Context, id int) ([]models.StashID, error
 }
 
 func (t *stashIDTable) insertJoin(ctx context.Context, id int, v models.StashID) (sql.Result, error) {
-	q := dialect.Insert(t.table.table).Cols(t.idColumn.GetCol(), "endpoint", "stash_id").Vals(
-		goqu.Vals{id, v.Endpoint, v.StashID},
+	var q = dialect.Insert(t.table.table).Cols(t.idColumn.GetCol(), "endpoint", "stash_id", "updated_at").Vals(
+		goqu.Vals{id, v.Endpoint, v.StashID, v.UpdatedAt},
 	)
 	ret, err := exec(ctx, q)
 	if err != nil {
@@ -577,30 +592,30 @@ func (t *orderedValueTable[T]) modifyJoins(ctx context.Context, id int, v []T, m
 	return nil
 }
 
-type scenesMoviesTable struct {
+type scenesGroupsTable struct {
 	table
 }
 
-type moviesScenesRow struct {
+type groupsScenesRow struct {
 	SceneID    null.Int `db:"scene_id"`
-	MovieID    null.Int `db:"movie_id"`
+	GroupID    null.Int `db:"group_id"`
 	SceneIndex null.Int `db:"scene_index"`
 }
 
-func (r moviesScenesRow) resolve(sceneID int) models.MoviesScenes {
-	return models.MoviesScenes{
-		MovieID:    int(r.MovieID.Int64),
+func (r groupsScenesRow) resolve(sceneID int) models.GroupsScenes {
+	return models.GroupsScenes{
+		GroupID:    int(r.GroupID.Int64),
 		SceneIndex: nullIntPtr(r.SceneIndex),
 	}
 }
 
-func (t *scenesMoviesTable) get(ctx context.Context, id int) ([]models.MoviesScenes, error) {
-	q := dialect.Select("movie_id", "scene_index").From(t.table.table).Where(t.idColumn.Eq(id))
+func (t *scenesGroupsTable) get(ctx context.Context, id int) ([]models.GroupsScenes, error) {
+	q := dialect.Select("group_id", "scene_index").From(t.table.table).Where(t.idColumn.Eq(id))
 
 	const single = false
-	var ret []models.MoviesScenes
+	var ret []models.GroupsScenes
 	if err := queryFunc(ctx, q, single, func(rows *sqlx.Rows) error {
-		var v moviesScenesRow
+		var v groupsScenesRow
 		if err := rows.StructScan(&v); err != nil {
 			return err
 		}
@@ -609,15 +624,15 @@ func (t *scenesMoviesTable) get(ctx context.Context, id int) ([]models.MoviesSce
 
 		return nil
 	}); err != nil {
-		return nil, fmt.Errorf("getting scene movies from %s: %w", t.table.table.GetTable(), err)
+		return nil, fmt.Errorf("getting scene groups from %s: %w", t.table.table.GetTable(), err)
 	}
 
 	return ret, nil
 }
 
-func (t *scenesMoviesTable) insertJoin(ctx context.Context, id int, v models.MoviesScenes) (sql.Result, error) {
-	q := dialect.Insert(t.table.table).Cols(t.idColumn.GetCol(), "movie_id", "scene_index").Vals(
-		goqu.Vals{id, v.MovieID, intFromPtr(v.SceneIndex)},
+func (t *scenesGroupsTable) insertJoin(ctx context.Context, id int, v models.GroupsScenes) (sql.Result, error) {
+	q := dialect.Insert(t.table.table).Cols(t.idColumn.GetCol(), "group_id", "scene_index").Vals(
+		goqu.Vals{id, v.GroupID, intFromPtr(v.SceneIndex)},
 	)
 	ret, err := exec(ctx, q)
 	if err != nil {
@@ -627,7 +642,7 @@ func (t *scenesMoviesTable) insertJoin(ctx context.Context, id int, v models.Mov
 	return ret, nil
 }
 
-func (t *scenesMoviesTable) insertJoins(ctx context.Context, id int, v []models.MoviesScenes) error {
+func (t *scenesGroupsTable) insertJoins(ctx context.Context, id int, v []models.GroupsScenes) error {
 	for _, fk := range v {
 		if _, err := t.insertJoin(ctx, id, fk); err != nil {
 			return err
@@ -637,7 +652,7 @@ func (t *scenesMoviesTable) insertJoins(ctx context.Context, id int, v []models.
 	return nil
 }
 
-func (t *scenesMoviesTable) replaceJoins(ctx context.Context, id int, v []models.MoviesScenes) error {
+func (t *scenesGroupsTable) replaceJoins(ctx context.Context, id int, v []models.GroupsScenes) error {
 	if err := t.destroy(ctx, []int{id}); err != nil {
 		return err
 	}
@@ -645,7 +660,7 @@ func (t *scenesMoviesTable) replaceJoins(ctx context.Context, id int, v []models
 	return t.insertJoins(ctx, id, v)
 }
 
-func (t *scenesMoviesTable) addJoins(ctx context.Context, id int, v []models.MoviesScenes) error {
+func (t *scenesGroupsTable) addJoins(ctx context.Context, id int, v []models.GroupsScenes) error {
 	// get existing foreign keys
 	fks, err := t.get(ctx, id)
 	if err != nil {
@@ -653,12 +668,12 @@ func (t *scenesMoviesTable) addJoins(ctx context.Context, id int, v []models.Mov
 	}
 
 	// only add values that are not already present
-	var filtered []models.MoviesScenes
+	var filtered []models.GroupsScenes
 	for _, vv := range v {
 		found := false
 
 		for _, e := range fks {
-			if vv.MovieID == e.MovieID {
+			if vv.GroupID == e.GroupID {
 				found = true
 				break
 			}
@@ -671,11 +686,11 @@ func (t *scenesMoviesTable) addJoins(ctx context.Context, id int, v []models.Mov
 	return t.insertJoins(ctx, id, filtered)
 }
 
-func (t *scenesMoviesTable) destroyJoins(ctx context.Context, id int, v []models.MoviesScenes) error {
+func (t *scenesGroupsTable) destroyJoins(ctx context.Context, id int, v []models.GroupsScenes) error {
 	for _, vv := range v {
 		q := dialect.Delete(t.table.table).Where(
 			t.idColumn.Eq(id),
-			t.table.table.Col("movie_id").Eq(vv.MovieID),
+			t.table.table.Col("group_id").Eq(vv.GroupID),
 		)
 
 		if _, err := exec(ctx, q); err != nil {
@@ -686,7 +701,7 @@ func (t *scenesMoviesTable) destroyJoins(ctx context.Context, id int, v []models
 	return nil
 }
 
-func (t *scenesMoviesTable) modifyJoins(ctx context.Context, id int, v []models.MoviesScenes, mode models.RelationshipUpdateMode) error {
+func (t *scenesGroupsTable) modifyJoins(ctx context.Context, id int, v []models.GroupsScenes, mode models.RelationshipUpdateMode) error {
 	switch mode {
 	case models.RelationshipUpdateModeSet:
 		return t.replaceJoins(ctx, id, v)
@@ -694,6 +709,45 @@ func (t *scenesMoviesTable) modifyJoins(ctx context.Context, id int, v []models.
 		return t.addJoins(ctx, id, v)
 	case models.RelationshipUpdateModeRemove:
 		return t.destroyJoins(ctx, id, v)
+	}
+
+	return nil
+}
+
+type imageGalleriesTable struct {
+	joinTable
+}
+
+func (t *imageGalleriesTable) setCover(ctx context.Context, id int, galleryID int) error {
+	if err := t.resetCover(ctx, galleryID); err != nil {
+		return err
+	}
+
+	table := t.table.table
+
+	q := dialect.Update(table).Prepared(true).Set(goqu.Record{
+		"cover": true,
+	}).Where(t.idColumn.Eq(id), table.Col(galleryIDColumn).Eq(galleryID))
+
+	if _, err := exec(ctx, q); err != nil {
+		return fmt.Errorf("setting cover flag in %s: %w", t.table.table.GetTable(), err)
+	}
+
+	return nil
+}
+
+func (t *imageGalleriesTable) resetCover(ctx context.Context, galleryID int) error {
+	table := t.table.table
+
+	q := dialect.Update(table).Prepared(true).Set(goqu.Record{
+		"cover": false,
+	}).Where(
+		table.Col(galleryIDColumn).Eq(galleryID),
+		table.Col("cover").Eq(true),
+	)
+
+	if _, err := exec(ctx, q); err != nil {
+		return fmt.Errorf("unsetting cover flags in %s: %w", t.table.table.GetTable(), err)
 	}
 
 	return nil
@@ -708,6 +762,29 @@ type relatedFilesTable struct {
 // 	Primary bool          `db:"primary"`
 // 	FileID  models.FileID `db:"file_id"`
 // }
+
+// get returns the file IDs related to the provided scene ID
+// the primary file is returned first
+func (t *relatedFilesTable) get(ctx context.Context, id int) ([]models.FileID, error) {
+	q := dialect.Select("file_id").From(t.table.table).Where(t.idColumn.Eq(id)).Order(t.table.table.Col("primary").Desc())
+
+	const single = false
+	var ret []models.FileID
+	if err := queryFunc(ctx, q, single, func(rows *sqlx.Rows) error {
+		var v models.FileID
+		if err := rows.Scan(&v); err != nil {
+			return err
+		}
+
+		ret = append(ret, v)
+
+		return nil
+	}); err != nil {
+		return nil, fmt.Errorf("getting related files from %s: %w", t.table.table.GetTable(), err)
+	}
+
+	return ret, nil
+}
 
 func (t *relatedFilesTable) insertJoin(ctx context.Context, id int, primary bool, fileID models.FileID) error {
 	q := dialect.Insert(t.table.table).Cols(t.idColumn.GetCol(), "primary", "file_id").Vals(
@@ -773,6 +850,270 @@ func (t *relatedFilesTable) setPrimary(ctx context.Context, id int, fileID model
 	return nil
 }
 
+type viewHistoryTable struct {
+	table
+	dateColumn exp.IdentifierExpression
+}
+
+func (t *viewHistoryTable) getDates(ctx context.Context, id int) ([]time.Time, error) {
+	table := t.table.table
+
+	q := dialect.Select(
+		t.dateColumn,
+	).From(table).Where(
+		t.idColumn.Eq(id),
+	).Order(t.dateColumn.Desc())
+
+	const single = false
+	var ret []time.Time
+	if err := queryFunc(ctx, q, single, func(rows *sqlx.Rows) error {
+		var date Timestamp
+		if err := rows.Scan(&date); err != nil {
+			return err
+		}
+		ret = append(ret, date.Timestamp)
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+}
+
+func (t *viewHistoryTable) getManyDates(ctx context.Context, ids []int) ([][]time.Time, error) {
+	table := t.table.table
+
+	q := dialect.Select(
+		t.idColumn,
+		t.dateColumn,
+	).From(table).Where(
+		t.idColumn.In(ids),
+	).Order(t.dateColumn.Desc())
+
+	ret := make([][]time.Time, len(ids))
+	idToIndex := idToIndexMap(ids)
+
+	const single = false
+	if err := queryFunc(ctx, q, single, func(rows *sqlx.Rows) error {
+		var id int
+		var date Timestamp
+		if err := rows.Scan(&id, &date); err != nil {
+			return err
+		}
+
+		idx := idToIndex[id]
+		ret[idx] = append(ret[idx], date.Timestamp)
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+}
+
+func (t *viewHistoryTable) getLastDate(ctx context.Context, id int) (*time.Time, error) {
+	table := t.table.table
+	q := dialect.Select(t.dateColumn).From(table).Where(
+		t.idColumn.Eq(id),
+	).Order(t.dateColumn.Desc()).Limit(1)
+
+	var date NullTimestamp
+	if err := querySimple(ctx, q, &date); err != nil {
+		return nil, err
+	}
+
+	return date.TimePtr(), nil
+}
+
+func (t *viewHistoryTable) getManyLastDate(ctx context.Context, ids []int) ([]*time.Time, error) {
+	table := t.table.table
+
+	q := dialect.Select(
+		t.idColumn,
+		goqu.MAX(t.dateColumn),
+	).From(table).Where(
+		t.idColumn.In(ids),
+	).GroupBy(t.idColumn)
+
+	ret := make([]*time.Time, len(ids))
+	idToIndex := idToIndexMap(ids)
+
+	const single = false
+	if err := queryFunc(ctx, q, single, func(rows *sqlx.Rows) error {
+		var id int
+
+		// MAX appears to return a string, so handle it manually
+		var dateString string
+
+		if err := rows.Scan(&id, &dateString); err != nil {
+			return err
+		}
+
+		t, err := time.Parse(TimestampFormat, dateString)
+		if err != nil {
+			return fmt.Errorf("parsing date %v: %w", dateString, err)
+		}
+
+		idx := idToIndex[id]
+		ret[idx] = &t
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+}
+
+func (t *viewHistoryTable) getCount(ctx context.Context, id int) (int, error) {
+	table := t.table.table
+	q := dialect.Select(goqu.COUNT("*")).From(table).Where(t.idColumn.Eq(id))
+
+	const single = true
+	var ret int
+	if err := queryFunc(ctx, q, single, func(rows *sqlx.Rows) error {
+		if err := rows.Scan(&ret); err != nil {
+			return err
+		}
+		return nil
+	}); err != nil {
+		return 0, err
+	}
+
+	return ret, nil
+}
+
+func (t *viewHistoryTable) getManyCount(ctx context.Context, ids []int) ([]int, error) {
+	table := t.table.table
+
+	q := dialect.Select(
+		t.idColumn,
+		goqu.COUNT(t.dateColumn),
+	).From(table).Where(
+		t.idColumn.In(ids),
+	).GroupBy(t.idColumn)
+
+	ret := make([]int, len(ids))
+	idToIndex := idToIndexMap(ids)
+
+	const single = false
+	if err := queryFunc(ctx, q, single, func(rows *sqlx.Rows) error {
+		var id int
+		var count int
+		if err := rows.Scan(&id, &count); err != nil {
+			return err
+		}
+
+		idx := idToIndex[id]
+		ret[idx] = count
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+}
+
+func (t *viewHistoryTable) getAllCount(ctx context.Context) (int, error) {
+	table := t.table.table
+	q := dialect.Select(goqu.COUNT("*")).From(table)
+
+	const single = true
+	var ret int
+	if err := queryFunc(ctx, q, single, func(rows *sqlx.Rows) error {
+		if err := rows.Scan(&ret); err != nil {
+			return err
+		}
+		return nil
+	}); err != nil {
+		return 0, err
+	}
+
+	return ret, nil
+}
+
+func (t *viewHistoryTable) getUniqueCount(ctx context.Context) (int, error) {
+	table := t.table.table
+	q := dialect.Select(goqu.COUNT(goqu.DISTINCT(t.idColumn))).From(table)
+
+	const single = true
+	var ret int
+	if err := queryFunc(ctx, q, single, func(rows *sqlx.Rows) error {
+		if err := rows.Scan(&ret); err != nil {
+			return err
+		}
+		return nil
+	}); err != nil {
+		return 0, err
+	}
+
+	return ret, nil
+}
+
+func (t *viewHistoryTable) addDates(ctx context.Context, id int, dates []time.Time) ([]time.Time, error) {
+	table := t.table.table
+
+	if len(dates) == 0 {
+		dates = []time.Time{time.Now()}
+	}
+
+	for _, d := range dates {
+		q := dialect.Insert(table).Cols(t.idColumn.GetCol(), t.dateColumn.GetCol()).Vals(
+			// convert all dates to UTC
+			goqu.Vals{id, UTCTimestamp{Timestamp{d}}},
+		)
+
+		if _, err := exec(ctx, q); err != nil {
+			return nil, fmt.Errorf("inserting into %s: %w", table.GetTable(), err)
+		}
+	}
+
+	return t.getDates(ctx, id)
+}
+
+func (t *viewHistoryTable) deleteDates(ctx context.Context, id int, dates []time.Time) ([]time.Time, error) {
+	table := t.table.table
+
+	mostRecent := false
+	if len(dates) == 0 {
+		mostRecent = true
+		dates = []time.Time{time.Now()}
+	}
+
+	for _, date := range dates {
+		var subquery *goqu.SelectDataset
+		if mostRecent {
+			// delete the most recent
+			subquery = dialect.Select("rowid").From(table).Where(
+				t.idColumn.Eq(id),
+			).Order(t.dateColumn.Desc()).Limit(1)
+		} else {
+			subquery = dialect.Select("rowid").From(table).Where(
+				t.idColumn.Eq(id),
+				t.dateColumn.Eq(UTCTimestamp{Timestamp{date}}),
+			).Limit(1)
+		}
+
+		q := dialect.Delete(table).Where(goqu.I("rowid").Eq(subquery))
+
+		if _, err := exec(ctx, q); err != nil {
+			return nil, fmt.Errorf("deleting from %s: %w", table.GetTable(), err)
+		}
+	}
+
+	return t.getDates(ctx, id)
+}
+
+func (t *viewHistoryTable) deleteAllDates(ctx context.Context, id int) (int, error) {
+	table := t.table.table
+	q := dialect.Delete(table).Where(t.idColumn.Eq(id))
+
+	if _, err := exec(ctx, q); err != nil {
+		return 0, fmt.Errorf("resetting dates for id %v: %w", id, err)
+	}
+
+	return t.getCount(ctx, id)
+}
+
 type sqler interface {
 	ToSQL() (sql string, params []interface{}, err error)
 }
@@ -812,8 +1153,7 @@ func queryFunc(ctx context.Context, query *goqu.SelectDataset, single bool, f fu
 		return err
 	}
 
-	wrapper := dbWrapper{}
-	rows, err := wrapper.QueryxContext(ctx, q, args...)
+	rows, err := dbWrapper.QueryxContext(ctx, q, args...)
 
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return fmt.Errorf("querying `%s` [%v]: %w", q, args, err)
@@ -842,8 +1182,7 @@ func querySimple(ctx context.Context, query *goqu.SelectDataset, out interface{}
 		return err
 	}
 
-	wrapper := dbWrapper{}
-	rows, err := wrapper.QueryxContext(ctx, q, args...)
+	rows, err := dbWrapper.QueryxContext(ctx, q, args...)
 	if err != nil {
 		return fmt.Errorf("querying `%s` [%v]: %w", q, args, err)
 	}
