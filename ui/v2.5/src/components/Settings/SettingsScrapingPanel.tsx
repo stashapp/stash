@@ -207,6 +207,7 @@ const ScrapersSection: React.FC = () => {
     performerScrapers,
     sceneScrapers,
     galleryScrapers,
+    imageScrapers,
     groupScrapers,
     filter,
   ]);
