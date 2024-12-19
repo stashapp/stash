@@ -1076,7 +1076,8 @@
     "last_played_at": "上次播放於",
     "library": "收藏庫",
     "loading": {
-        "generic": "載入中…"
+        "generic": "載入中…",
+        "plugins": "正在載入外掛程式…"
     },
     "marker_count": "章節標記數量",
     "markers": "章節標記",
@@ -1375,7 +1376,13 @@
         "invalid_json_string": "無效的 JSON 字串： {error}",
         "something_went_wrong": "出错了。",
         "loading_type": "載入{type}時出錯",
-        "lazy_component_error_help": "如果您最近升級了 Stash，請重新載入頁面或清除瀏覽器cache。"
+        "lazy_component_error_help": "如果您最近升級了 Stash，請重新載入頁面或清除瀏覽器cache。",
+        "custom_fields": {
+            "field_name_length": "欄位名稱必須少於 65 個字元",
+            "duplicate_field": "已經有其他同名的欄位",
+            "field_name_required": "必須輸入欄位名稱",
+            "field_name_whitespace": "欄位名稱的開頭與結尾不可有空白"
+        }
     },
     "group": "群組",
     "group_count": "群組計數",
@@ -1504,5 +1511,10 @@
         "any": "任意"
     },
     "include_sub_groups": "包括子組",
-    "time_end": "結束時間"
+    "time_end": "結束時間",
+    "custom_fields": {
+        "field": "欄位",
+        "title": "自訂欄位",
+        "value": "值"
+    }
 }
