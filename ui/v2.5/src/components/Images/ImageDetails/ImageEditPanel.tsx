@@ -111,7 +111,7 @@ export const ImageEditPanel: React.FC<IProps> = ({
   });
 
   const { tags, updateTagsStateFromScraper, tagsControl } = useTagsEdit(
-    image.tags, 
+    image.tags,
     (ids) => formik.setFieldValue("tag_ids", ids)
   );
 
@@ -417,7 +417,9 @@ export const ImageEditPanel: React.FC<IProps> = ({
             <Button
               className="edit-button"
               variant="primary"
-              disabled={(!isNew && !formik.dirty) || !isEqual(formik.errors, {})}
+              disabled={
+                (!isNew && !formik.dirty) || !isEqual(formik.errors, {})
+              }
               onClick={() => formik.submitForm()}
             >
               <FormattedMessage id="actions.save" />

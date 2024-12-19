@@ -219,7 +219,13 @@ const ScrapersSection: React.FC = () => {
     }
   }
 
-  if (loadingScenes || loadingGalleries || loadingPerformers || loadingGroups || loadingImages)
+  if (
+    loadingScenes ||
+    loadingGalleries ||
+    loadingPerformers ||
+    loadingGroups ||
+    loadingImages
+  )
     return (
       <SettingSection headingID="config.scraping.scrapers">
         <LoadingIndicator />
