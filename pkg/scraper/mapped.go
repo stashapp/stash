@@ -182,14 +182,6 @@ type mappedGalleryScraperConfig struct {
 	Studio     mappedConfig `yaml:"Studio"`
 }
 
-type mappedImageScraperConfig struct {
-	mappedConfig
-
-	Tags       mappedConfig `yaml:"Tags"`
-	Performers mappedConfig `yaml:"Performers"`
-	Studio     mappedConfig `yaml:"Studio"`
-}
-
 type _mappedGalleryScraperConfig mappedGalleryScraperConfig
 
 func (s *mappedGalleryScraperConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
@@ -224,6 +216,60 @@ func (s *mappedGalleryScraperConfig) UnmarshalYAML(unmarshal func(interface{}) e
 	}
 
 	*s = mappedGalleryScraperConfig(c)
+
+	yml, err = yaml.Marshal(parentMap)
+	if err != nil {
+		return err
+	}
+
+	if err := yaml.Unmarshal(yml, &s.mappedConfig); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type mappedImageScraperConfig struct {
+	mappedConfig
+
+	Tags       mappedConfig `yaml:"Tags"`
+	Performers mappedConfig `yaml:"Performers"`
+	Studio     mappedConfig `yaml:"Studio"`
+}
+type _mappedImageScraperConfig mappedImageScraperConfig
+
+func (s *mappedImageScraperConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	// HACK - unmarshal to map first, then remove known scene sub-fields, then
+	// remarshal to yaml and pass that down to the base map
+	parentMap := make(map[string]interface{})
+	if err := unmarshal(parentMap); err != nil {
+		return err
+	}
+
+	// move the known sub-fields to a separate map
+	thisMap := make(map[string]interface{})
+
+	thisMap[mappedScraperConfigSceneTags] = parentMap[mappedScraperConfigSceneTags]
+	thisMap[mappedScraperConfigScenePerformers] = parentMap[mappedScraperConfigScenePerformers]
+	thisMap[mappedScraperConfigSceneStudio] = parentMap[mappedScraperConfigSceneStudio]
+
+	delete(parentMap, mappedScraperConfigSceneTags)
+	delete(parentMap, mappedScraperConfigScenePerformers)
+	delete(parentMap, mappedScraperConfigSceneStudio)
+
+	// re-unmarshal the sub-fields
+	yml, err := yaml.Marshal(thisMap)
+	if err != nil {
+		return err
+	}
+
+	// needs to be a different type to prevent infinite recursion
+	c := _mappedImageScraperConfig{}
+	if err := yaml.Unmarshal(yml, &c); err != nil {
+		return err
+	}
+
+	*s = mappedImageScraperConfig(c)
 
 	yml, err = yaml.Marshal(parentMap)
 	if err != nil {
@@ -1046,28 +1092,16 @@ func (s mappedScraper) scrapeImage(ctx context.Context, q mappedQuery) (*Scraped
 	// now apply the performers and tags
 	if imagePerformersMap != nil {
 		logger.Debug(`Processing image performers:`)
-		performerResults := imagePerformersMap.process(ctx, q, s.Common)
-
-		for _, p := range performerResults {
-			performer := &models.ScrapedPerformer{}
-			p.apply(performer)
-			ret.Performers = append(ret.Performers, performer)
-		}
+		ret.Performers = processRelationships[models.ScrapedPerformer](ctx, s, imagePerformersMap, q)
 	}
 
 	if imageTagsMap != nil {
 		logger.Debug(`Processing image tags:`)
-		tagResults := imageTagsMap.process(ctx, q, s.Common)
-
-		for _, p := range tagResults {
-			tag := &models.ScrapedTag{}
-			p.apply(tag)
-			ret.Tags = append(ret.Tags, tag)
-		}
+		ret.Tags = processRelationships[models.ScrapedTag](ctx, s, imageTagsMap, q)
 	}
 
 	if imageStudioMap != nil {
-		logger.Debug(`Processing gallery studio:`)
+		logger.Debug(`Processing image studio:`)
 		studioResults := imageStudioMap.process(ctx, q, s.Common)
 
 		if len(studioResults) > 0 {

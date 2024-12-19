@@ -196,6 +196,9 @@ const ScrapersSection: React.FC = () => {
       galleries: galleryScrapers?.listScrapers.filter((s) =>
         filterFn(s.name, s.gallery?.urls)
       ),
+      images: imageScrapers?.listScrapers.filter((s) =>
+        filterFn(s.name, s.image?.urls)
+      ),
       groups: groupScrapers?.listScrapers.filter((s) =>
         filterFn(s.name, s.group?.urls)
       ),
@@ -216,7 +219,7 @@ const ScrapersSection: React.FC = () => {
     }
   }
 
-  if (loadingScenes || loadingGalleries || loadingPerformers || loadingGroups)
+  if (loadingScenes || loadingGalleries || loadingPerformers || loadingGroups || loadingImages)
     return (
       <SettingSection headingID="config.scraping.scrapers">
         <LoadingIndicator />
@@ -277,19 +280,18 @@ const ScrapersSection: React.FC = () => {
           </ScraperTable>
         )}
 
-        {/* TODO: Update this section to work for image scrapers */}
-        {!!filteredScrapers.galleries?.length && (
+        {!!filteredScrapers.images?.length && (
           <ScraperTable
-            entityType="gallery"
-            count={filteredScrapers.galleries?.length}
+            entityType="image"
+            count={filteredScrapers.images?.length}
           >
-            {filteredScrapers.galleries?.map((scraper) => (
+            {filteredScrapers.images?.map((scraper) => (
               <ScraperTableRow
                 key={scraper.id}
                 name={scraper.name}
-                entityType="gallery"
-                supportedScrapes={scraper.gallery?.supported_scrapes ?? []}
-                urls={scraper.gallery?.urls ?? []}
+                entityType="image"
+                supportedScrapes={scraper.image?.supported_scrapes ?? []}
+                urls={scraper.image?.urls ?? []}
               />
             ))}
           </ScraperTable>

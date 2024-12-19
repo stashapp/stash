@@ -33,6 +33,10 @@ func (c Cache) postScrape(ctx context.Context, content ScrapedContent) (ScrapedC
 		}
 	case ScrapedGallery:
 		return c.postScrapeGallery(ctx, v)
+	case *ScrapedImage:
+		if v != nil {
+			return c.postScrapeImage(ctx, *v)
+		}
 	case ScrapedImage:
 		return c.postScrapeImage(ctx, v)
 	case *models.ScrapedMovie:
@@ -317,13 +321,13 @@ func (c Cache) postScrapeGallery(ctx context.Context, g ScrapedGallery) (Scraped
 	return g, nil
 }
 
-func (c Cache) postScrapeImage(ctx context.Context, g ScrapedImage) (ScrapedContent, error) {
+func (c Cache) postScrapeImage(ctx context.Context, image ScrapedImage) (ScrapedContent, error) {
 	// set the URL/URLs field
-	if g.URL == nil && len(g.URLs) > 0 {
-		g.URL = &g.URLs[0]
+	if image.URL == nil && len(image.URLs) > 0 {
+		image.URL = &image.URLs[0]
 	}
-	if g.URL != nil && len(g.URLs) == 0 {
-		g.URLs = []string{*g.URL}
+	if image.URL != nil && len(image.URLs) == 0 {
+		image.URLs = []string{*image.URL}
 	}
 
 	r := c.repository
@@ -332,21 +336,20 @@ func (c Cache) postScrapeImage(ctx context.Context, g ScrapedImage) (ScrapedCont
 		tqb := r.TagFinder
 		sqb := r.StudioFinder
 
-		for _, p := range g.Performers {
-			err := match.ScrapedPerformer(ctx, pqb, p, nil)
-			if err != nil {
+		for _, p := range image.Performers {
+			if err := match.ScrapedPerformer(ctx, pqb, p, nil); err != nil {
 				return err
 			}
 		}
 
-		tags, err := postProcessTags(ctx, tqb, g.Tags)
+		tags, err := postProcessTags(ctx, tqb, image.Tags)
 		if err != nil {
 			return err
 		}
-		g.Tags = tags
+		image.Tags = tags
 
-		if g.Studio != nil {
-			err := match.ScrapedStudio(ctx, sqb, g.Studio, nil)
+		if image.Studio != nil {
+			err := match.ScrapedStudio(ctx, sqb, image.Studio, nil)
 			if err != nil {
 				return err
 			}
@@ -357,7 +360,7 @@ func (c Cache) postScrapeImage(ctx context.Context, g ScrapedImage) (ScrapedCont
 		return nil, err
 	}
 
-	return g, nil
+	return image, nil
 }
 
 func postProcessTags(ctx context.Context, tqb models.TagQueryer, scrapedTags []*models.ScrapedTag) ([]*models.ScrapedTag, error) {

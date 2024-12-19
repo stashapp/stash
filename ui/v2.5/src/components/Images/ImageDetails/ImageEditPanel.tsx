@@ -1,13 +1,6 @@
-import React, { useEffect, useState } from "react";
-import {
-  Button,
-  Form,
-  Col,
-  Row,
-  Dropdown,
-  DropdownButton,
-} from "react-bootstrap";
+import React, { useEffect, useMemo, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
+import { Button, Form, Col, Row } from "react-bootstrap";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
 import * as yup from "yup";
@@ -26,16 +19,13 @@ import {
   PerformerSelect,
 } from "src/components/Performers/PerformerSelect";
 import { formikUtils } from "src/utils/form";
-import { Icon } from "../../Shared/Icon";
-import { faSyncAlt } from "@fortawesome/free-solid-svg-icons";
 import {
-  mutateReloadScrapers,
   queryScrapeImage,
   queryScrapeImageURL,
   useListImageScrapers,
+  mutateReloadScrapers,
 } from "../../../core/StashService";
 import { ImageScrapeDialog } from "./ImageScrapeDialog";
-import { ScrapedImageDataFragment } from "src/core/generated-graphql";
 import { Studio, StudioSelect } from "src/components/Studios/StudioSelect";
 import { galleryTitle } from "src/core/galleries";
 import {
@@ -44,6 +34,7 @@ import {
   excludeFileBasedGalleries,
 } from "src/components/Galleries/GallerySelect";
 import { useTagsEdit } from "src/hooks/tagsEdit";
+import { ScraperMenu } from "src/components/Shared/ScraperMenu";
 
 interface IProps {
   image: GQL.ImageDataFragment;
@@ -68,6 +59,8 @@ export const ImageEditPanel: React.FC<IProps> = ({
   const [performers, setPerformers] = useState<Performer[]>([]);
   const [studio, setStudio] = useState<Studio | null>(null);
 
+  const isNew = image.id === undefined;
+
   useEffect(() => {
     setGalleries(
       image.galleries?.map((g) => ({
@@ -79,8 +72,7 @@ export const ImageEditPanel: React.FC<IProps> = ({
     );
   }, [image.galleries]);
 
-  const Scrapers = useListImageScrapers();
-  const [queryableScrapers, setQueryableScrapers] = useState<GQL.Scraper[]>([]);
+  const scrapers = useListImageScrapers();
   const [scrapedImage, setScrapedImage] = useState<GQL.ScrapedImage | null>();
 
   const schema = yup.object({
@@ -118,8 +110,9 @@ export const ImageEditPanel: React.FC<IProps> = ({
     onSubmit: (values) => onSave(schema.cast(values)),
   });
 
-  const { tagsControl } = useTagsEdit(image.tags, (ids) =>
-    formik.setFieldValue("tag_ids", ids)
+  const { tags, updateTagsStateFromScraper, tagsControl } = useTagsEdit(
+    image.tags, 
+    (ids) => formik.setFieldValue("tag_ids", ids)
   );
 
   function onSetGalleries(items: Gallery[]) {
@@ -169,13 +162,11 @@ export const ImageEditPanel: React.FC<IProps> = ({
     }
   });
 
-  useEffect(() => {
-    const newQueryableScrapers = (Scrapers?.data?.listScrapers ?? []).filter(
-      (s) => s.image?.supported_scrapes.includes(GQL.ScrapeType.Fragment)
+  const fragmentScrapers = useMemo(() => {
+    return (scrapers?.data?.listScrapers ?? []).filter((s) =>
+      s.image?.supported_scrapes.includes(GQL.ScrapeType.Fragment)
     );
-
-    setQueryableScrapers(newQueryableScrapers);
-  }, [Scrapers]);
+  }, [scrapers]);
 
   async function onSave(input: InputValues) {
     setIsLoading(true);
@@ -191,14 +182,14 @@ export const ImageEditPanel: React.FC<IProps> = ({
     setIsLoading(false);
   }
 
-  async function onScrapeClicked(scraper: GQL.Scraper) {
+  async function onScrapeClicked(s: GQL.ScraperSourceInput) {
     if (!image || !image.id) return;
 
     setIsLoading(true);
     try {
-      const result = await queryScrapeImage(scraper.id, image.id);
+      const result = await queryScrapeImage(s.scraper_id!, image.id);
       if (!result.data || !result.data.scrapeSingleImage?.length) {
-        Toast.success("No galleries found");
+        Toast.success("No images found");
         return;
       }
       setScrapedImage(result.data.scrapeSingleImage[0]);
@@ -210,7 +201,7 @@ export const ImageEditPanel: React.FC<IProps> = ({
   }
 
   function urlScrapable(scrapedUrl: string): boolean {
-    return (Scrapers?.data?.listScrapers ?? []).some((s) =>
+    return (scrapers?.data?.listScrapers ?? []).some((s) =>
       (s?.image?.urls ?? []).some((u) => scrapedUrl.includes(u))
     );
   }
@@ -243,7 +234,11 @@ export const ImageEditPanel: React.FC<IProps> = ({
     }
 
     if (imageData.studio?.stored_id) {
-      formik.setFieldValue("studio_id", imageData.studio.stored_id);
+      onSetStudio({
+        id: imageData.studio.stored_id,
+        name: imageData.studio.name ?? "",
+        aliases: [],
+      });
     }
 
     if (imageData.performers?.length) {
@@ -264,16 +259,7 @@ export const ImageEditPanel: React.FC<IProps> = ({
       }
     }
 
-    if (imageData?.tags?.length) {
-      const idTags = imageData.tags.filter((t) => {
-        return t.stored_id !== undefined && t.stored_id !== null;
-      });
-
-      if (idTags.length > 0) {
-        const newIds = idTags.map((t) => t.stored_id);
-        formik.setFieldValue("tag_ids", newIds as string[]);
-      }
-    }
+    updateTagsStateFromScraper(imageData.tags ?? undefined);
   }
 
   async function onReloadScrapers() {
@@ -287,7 +273,7 @@ export const ImageEditPanel: React.FC<IProps> = ({
     }
   }
 
-  async function onScrapeDialogClosed(data?: ScrapedImageDataFragment) {
+  async function onScrapeDialogClosed(data?: GQL.ScrapedImageDataFragment) {
     if (data) {
       updateImageFromScrapedGallery(data);
     }
@@ -406,42 +392,14 @@ export const ImageEditPanel: React.FC<IProps> = ({
     return (
       <ImageScrapeDialog
         image={currentImage}
-        imagePerformer={performers}
+        imageStudio={studio}
+        imageTags={tags}
+        imagePerformers={performers}
         scraped={scrapedImage}
         onClose={(data) => {
           onScrapeDialogClosed(data);
         }}
       />
-    );
-  }
-
-  function renderScraperMenu() {
-    /*
-    if (isNew) {
-      return;
-    }
-     */
-
-    return (
-      <DropdownButton
-        className="d-inline-block"
-        id="gallery-scrape"
-        title={intl.formatMessage({ id: "actions.scrape_with" })}
-      >
-        {queryableScrapers.map((s) => (
-          <Dropdown.Item key={s.name} onClick={() => onScrapeClicked(s)}>
-            {s.name}
-          </Dropdown.Item>
-        ))}
-        <Dropdown.Item onClick={() => onReloadScrapers()}>
-          <span className="fa-icon">
-            <Icon icon={faSyncAlt} />
-          </span>
-          <span>
-            <FormattedMessage id="actions.reload_scrapers" />
-          </span>
-        </Dropdown.Item>
-      </DropdownButton>
     );
   }
 
@@ -459,7 +417,7 @@ export const ImageEditPanel: React.FC<IProps> = ({
             <Button
               className="edit-button"
               variant="primary"
-              disabled={!formik.dirty || !isEqual(formik.errors, {})}
+              disabled={(!isNew && !formik.dirty) || !isEqual(formik.errors, {})}
               onClick={() => formik.submitForm()}
             >
               <FormattedMessage id="actions.save" />
@@ -472,7 +430,16 @@ export const ImageEditPanel: React.FC<IProps> = ({
               <FormattedMessage id="actions.delete" />
             </Button>
           </div>
-          <div className="ml-auto text-right d-flex">{renderScraperMenu()}</div>
+          <div className="ml-auto text-right d-flex">
+            {!isNew && (
+              <ScraperMenu
+                toggle={intl.formatMessage({ id: "actions.scrape_with" })}
+                scrapers={fragmentScrapers}
+                onScraperClicked={onScrapeClicked}
+                onReloadScrapers={onReloadScrapers}
+              />
+            )}
+          </div>
         </Row>
         <Row className="form-container px-3">
           <Col lg={7} xl={12}>
