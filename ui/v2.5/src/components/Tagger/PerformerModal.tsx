@@ -283,8 +283,8 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({
         performerData[k] = undefined;
       }
       // #5565 - special case aliases as the names differ
-      if (k == "alias_list" && excluded["aliases"]) {
-        performerData["alias_list"] = undefined;
+      if (k == "alias_list" && excluded.aliases) {
+        performerData.alias_list = undefined;
       }
     });
 
