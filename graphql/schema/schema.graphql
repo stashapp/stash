@@ -44,7 +44,7 @@ type Query {
   "A function which queries SceneMarker objects"
   findSceneMarkers(
     scene_marker_filter: SceneMarkerFilterType
-    filter: FindFilterType,
+    filter: FindFilterType
     ids: [ID!]
   ): FindSceneMarkersResultType!
 
