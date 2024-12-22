@@ -22,6 +22,12 @@
         "add": "Pridať",
         "customise": "Prispôsobiť",
         "export": "Exportovať",
-        "export_all": "Exportovať všetko…"
+        "export_all": "Exportovať všetko…",
+        "add_entity": "Pridať {entityType}",
+        "add_manual_date": "Pridať dátum manuálne",
+        "add_o": "Pridať O",
+        "add_to_entity": "Pridať do {entityType}",
+        "apply": "Použiť",
+        "assign_stashid_to_parent_studio": "Priraďte Stash ID existujúcemu rodičovskému štúdiu a aktualizujte metadáta"
     }
 }
