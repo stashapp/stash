@@ -1,8 +1,8 @@
 div.scene-interactive-status {
+  cursor: pointer;
   opacity: 0.75;
   padding: 0.75rem;
   position: absolute;
-  cursor: pointer;
 
   &.interactive-status-disconnected,
   &.interactive-status-error svg {
