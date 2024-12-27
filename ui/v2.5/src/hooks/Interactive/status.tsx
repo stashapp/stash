@@ -9,7 +9,7 @@ import {
 } from "./context";
 
 export const SceneInteractiveStatus: React.FC = ({}) => {
-  const { state, error } = React.useContext(InteractiveContext);
+  const { state, error, sync } = React.useContext(InteractiveContext);
 
   function getStateClass() {
     switch (state) {
@@ -35,11 +35,15 @@ export const SceneInteractiveStatus: React.FC = ({}) => {
   }
 
   return (
-    <div className={`scene-interactive-status ${getStateClass()}`}>
+    <div
+      className={`scene-interactive-status ${getStateClass()}`}
+      onClick={() => sync()}
+    >
       <FontAwesomeIcon pulse icon={faCircle} size="xs" />
       <span className="status-text">
         <FormattedMessage id={connectionStateLabel(state)} />
         {error && <span>: {error}</span>}
+        &nbsp;({serverOffset.toFixed()}ms)
       </span>
     </div>
   );
