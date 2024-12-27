@@ -43,7 +43,6 @@ export const SceneInteractiveStatus: React.FC = ({}) => {
       <span className="status-text">
         <FormattedMessage id={connectionStateLabel(state)} />
         {error && <span>: {error}</span>}
-        &nbsp;({serverOffset.toFixed()}ms)
       </span>
     </div>
   );
