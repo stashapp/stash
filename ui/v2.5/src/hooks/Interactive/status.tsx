@@ -37,7 +37,7 @@ export const SceneInteractiveStatus: React.FC = ({}) => {
   return (
     <div
       className={`scene-interactive-status ${getStateClass()}`}
-      onClick={() => sync()}
+      onClick={sync}
     >
       <FontAwesomeIcon pulse icon={faCircle} size="xs" />
       <span className="status-text">
