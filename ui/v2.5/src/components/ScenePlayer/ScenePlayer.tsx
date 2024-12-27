@@ -495,7 +495,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     const player = getPlayer();
     if (!player) return;
 
-    function onplay(this: VideoJsPlayer) {
+    function playing(this: VideoJsPlayer) {
       if (scene.interactive && interactiveReady.current) {
         interactiveClient.play(this.currentTime());
       }
@@ -520,13 +520,13 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       setTime(this.currentTime());
     }
 
-    player.on("play", onplay);
+    player.on("playing", playing);
     player.on("pause", pause);
     player.on("seeking", seeking);
     player.on("timeupdate", timeupdate);
 
     return () => {
-      player.off("play", onplay);
+      player.off("playing", playing);
       player.off("pause", pause);
       player.off("seeking", seeking);
       player.off("timeupdate", timeupdate);
