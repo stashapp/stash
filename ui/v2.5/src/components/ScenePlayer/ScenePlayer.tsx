@@ -499,9 +499,19 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     const player = getPlayer();
     if (!player) return;
 
+    // delay before second play event after a play event to adjust for video player issues
+    const DELAY_FOR_SECOND_PLAY_MS = 1000;
+    let playingTimer: number;
+
     function playing(this: VideoJsPlayer) {
       if (scene.interactive && interactiveReady.current) {
         interactiveClient.play(this.currentTime());
+        // trigger a second script play event to adjust for video player issues
+        clearTimeout(playingTimer);
+        playingTimer = setTimeout(() => {
+          if (this.paused()) return;
+          interactiveClient.play(this.currentTime());
+        }, DELAY_FOR_SECOND_PLAY_MS);
       }
     }
 
@@ -522,6 +532,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       player.off("playing", playing);
       player.off("pause", pause);
       player.off("timeupdate", timeupdate);
+      clearTimeout(playingTimer);
     };
   }, [getPlayer, interactiveClient, scene]);
 
