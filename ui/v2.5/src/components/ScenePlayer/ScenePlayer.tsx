@@ -424,6 +424,10 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       interactiveReady.current = false;
       uploadScript(scene.paths.funscript || "").then(() => {
         interactiveReady.current = true;
+        // play the script if the video started before the upload finished
+        const player = getPlayer();
+        if (player && !player.paused())
+          interactiveClient.play(player.currentTime());
       });
     }
   }, [
@@ -514,9 +518,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
     function timeupdate(this: VideoJsPlayer) {
       if (this.paused()) return;
-      if (scene.interactive && interactiveReady.current) {
-        interactiveClient.ensurePlaying(this.currentTime());
-      }
       setTime(this.currentTime());
     }
 
