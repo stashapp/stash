@@ -679,11 +679,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     });
 
     started.current = false;
-
-    return () => {
-      // stop the interactive client
-      interactiveClient.pause();
-    };
   }, [
     getPlayer,
     file,
@@ -695,6 +690,13 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     uiConfig?.disableMobileMediaAutoRotateEnabled,
     _initialTimestamp,
   ]);
+
+  useEffect(() => {
+    return () => {
+      // stop the interactive client on unmount
+      interactiveClient.pause();
+    };
+  }, []);
 
   useEffect(() => {
     const player = getPlayer();
