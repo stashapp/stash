@@ -509,13 +509,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       interactiveClient.pause();
     }
 
-    function seeking(this: VideoJsPlayer) {
-      if (this.paused()) return;
-      if (scene.interactive && interactiveReady.current) {
-        interactiveClient.play(this.currentTime());
-      }
-    }
-
     function timeupdate(this: VideoJsPlayer) {
       if (this.paused()) return;
       setTime(this.currentTime());
@@ -523,13 +516,11 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
     player.on("playing", playing);
     player.on("pause", pause);
-    player.on("seeking", seeking);
     player.on("timeupdate", timeupdate);
 
     return () => {
       player.off("playing", playing);
       player.off("pause", pause);
-      player.off("seeking", seeking);
       player.off("timeupdate", timeupdate);
     };
   }, [getPlayer, interactiveClient, scene]);
