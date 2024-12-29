@@ -62,15 +62,17 @@ export const InteractiveContext = React.createContext<IState>({
 });
 
 const LOCAL_FORAGE_KEY = "interactive";
+const TIME_BETWEEN_SYNCS = 60 * 60 * 1000; // 1 hour
 
 interface IInteractiveState {
   serverOffset: number;
+  lastSyncTime: number;
 }
 
 export const InteractiveProvider: React.FC = ({ children }) => {
   const [{ data: config }, setConfig] = useLocalForage<IInteractiveState>(
     LOCAL_FORAGE_KEY,
-    { serverOffset: 0 }
+    { serverOffset: 0, lastSyncTime: 0 }
   );
 
   const { configuration: stashConfig } = React.useContext(ConfigurationContext);
@@ -91,10 +93,14 @@ export const InteractiveProvider: React.FC = ({ children }) => {
   const initialise = useCallback(async () => {
     setError(undefined);
 
-    if (!config?.serverOffset) {
+    const shouldResync =
+      !config?.lastSyncTime ||
+      Date.now() - config?.lastSyncTime > TIME_BETWEEN_SYNCS;
+
+    if (!config?.serverOffset || shouldResync) {
       setState(ConnectionState.Syncing);
       const offset = await interactive.sync();
-      setConfig({ serverOffset: offset });
+      setConfig({ serverOffset: offset, lastSyncTime: Date.now() });
       setState(ConnectionState.Ready);
       setInitialised(true);
     } else {
@@ -159,7 +165,7 @@ export const InteractiveProvider: React.FC = ({ children }) => {
 
     setState(ConnectionState.Syncing);
     const offset = await interactive.sync();
-    setConfig({ serverOffset: offset });
+    setConfig({ serverOffset: offset, lastSyncTime: Date.now() });
     setState(ConnectionState.Ready);
   }, [interactive, state, setConfig, initialised]);
 
