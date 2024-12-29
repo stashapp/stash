@@ -424,10 +424,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       interactiveReady.current = false;
       uploadScript(scene.paths.funscript || "").then(() => {
         interactiveReady.current = true;
-        // play the script if the video started before the upload finished
-        const player = getPlayer();
-        if (player && !player.paused())
-          interactiveClient.play(player.currentTime());
       });
     }
   }, [
@@ -436,6 +432,14 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     scene.interactive,
     scene.paths.funscript,
   ]);
+
+  // play the script if video started before script upload finished
+  useEffect(() => {
+    if (interactiveState !== ConnectionState.Ready) return;
+    const player = getPlayer();
+    if (!player || player.paused()) return;
+    interactiveClient.ensurePlaying(player.currentTime());
+  }, [interactiveState, getPlayer, interactiveClient]);
 
   useEffect(() => {
     const player = getPlayer();
@@ -696,7 +700,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       // stop the interactive client on unmount
       interactiveClient.pause();
     };
-  }, []);
+  }, [interactiveClient]);
 
   useEffect(() => {
     const player = getPlayer();
