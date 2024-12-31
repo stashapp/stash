@@ -101,9 +101,9 @@ export const InteractiveProvider: React.FC = ({ children }) => {
       setState(ConnectionState.Syncing);
       const offset = await interactive.sync();
       setConfig({ serverOffset: offset, lastSyncTime: Date.now() });
-      setState(ConnectionState.Ready);
-      setInitialised(true);
-    } else {
+    }
+
+    if (config?.serverOffset) {
       interactive.setServerTimeOffset(config.serverOffset);
       setState(ConnectionState.Connecting);
       try {
