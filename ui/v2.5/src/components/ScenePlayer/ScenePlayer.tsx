@@ -505,14 +505,14 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
     // delay before second play event after a play event to adjust for video player issues
     const DELAY_FOR_SECOND_PLAY_MS = 1000;
-    let playingTimer: number;
+    const playingTimer = useRef<number>();
 
     function playing(this: VideoJsPlayer) {
       if (scene.interactive && interactiveReady.current) {
         interactiveClient.play(this.currentTime());
         // trigger a second script play event to adjust for video player issues
-        clearTimeout(playingTimer);
-        playingTimer = setTimeout(() => {
+        clearTimeout(playingTimer.current);
+        playingTimer.current = setTimeout(() => {
           if (this.paused()) return;
           interactiveClient.play(this.currentTime());
         }, DELAY_FOR_SECOND_PLAY_MS);
@@ -536,7 +536,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       player.off("playing", playing);
       player.off("pause", pause);
       player.off("timeupdate", timeupdate);
-      clearTimeout(playingTimer);
+      clearTimeout(playingTimer.current);
     };
   }, [getPlayer, interactiveClient, scene]);
 
