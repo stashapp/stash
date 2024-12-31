@@ -499,13 +499,13 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     };
   }, [getPlayer]);
 
+  // delay before second play event after a play event to adjust for video player issues
+  const DELAY_FOR_SECOND_PLAY_MS = 1000;
+  const playingTimer = useRef<number>();
+
   useEffect(() => {
     const player = getPlayer();
     if (!player) return;
-
-    // delay before second play event after a play event to adjust for video player issues
-    const DELAY_FOR_SECOND_PLAY_MS = 1000;
-    const playingTimer = useRef<number>();
 
     function playing(this: VideoJsPlayer) {
       if (scene.interactive && interactiveReady.current) {
