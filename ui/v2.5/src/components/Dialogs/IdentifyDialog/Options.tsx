@@ -6,6 +6,7 @@ import { IScraperSource } from "./constants";
 import { FieldOptionsList } from "./FieldOptions";
 import { ThreeStateBoolean } from "./ThreeStateBoolean";
 import { TagSelect } from "src/components/Shared/Select";
+import { MultiSelectDropdown } from "src/components/Shared/MultiSelectDropdown"; // Import the MultiSelectDropdown component
 
 interface IOptionsEditor {
   options: GQL.IdentifyMetadataOptionsInput;
@@ -219,6 +220,35 @@ export const OptionsEditor: React.FC<IOptionsEditor> = ({
         {...checkboxProps}
       />
       {maybeRenderPerformersTag()}
+
+      <Form.Group controlId="performer-genders" className="ml-3 mt-1 mb-0" as={Row}>
+        <Form.Label
+          column
+          sm={{ span: 4, offset: 1 }}
+          title={intl.formatMessage({
+            id: "config.tasks.identify.performer_genders_tooltip",
+          })}
+        >
+          <FormattedMessage id="config.tasks.identify.performer_genders" />
+        </Form.Label>
+        <Col sm>
+          <MultiSelectDropdown
+            options={[
+              { value: GQL.GenderEnum.Male, label: "Male" },
+              { value: GQL.GenderEnum.Female, label: "Female" },
+              { value: GQL.GenderEnum.TransgenderMale, label: "Transgender Male" },
+              { value: GQL.GenderEnum.TransgenderFemale, label: "Transgender Female" },
+              { value: GQL.GenderEnum.NonBinary, label: "Non-Binary" },
+            ]}
+            selectedValues={options.performerGenders ?? []}
+            onChange={(selected) =>
+              setOptions({
+                performerGenders: selected.map((s) => s.value as GQL.GenderEnum),
+              })
+            }
+          />
+        </Col>
+      </Form.Group>
 
       <FieldOptionsList
         fieldOptions={options.fieldOptions ?? undefined}

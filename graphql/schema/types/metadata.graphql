@@ -204,7 +204,7 @@ input IdentifyMetadataOptionsInput {
   setCoverImage: Boolean
   setOrganized: Boolean
   "defaults to true if not provided"
-  includeMalePerformers: Boolean
+  includeMalePerformers: Boolean @deprecated(reason: "Use performerGenders instead")
   "defaults to true if not provided"
   skipMultipleMatches: Boolean
   "tag to tag skipped multiple matches with"
@@ -213,6 +213,7 @@ input IdentifyMetadataOptionsInput {
   skipSingleNamePerformers: Boolean
   "tag to tag skipped single name performers with"
   skipSingleNamePerformerTag: String
+  performerGenders: [GenderEnum!]
 }
 
 input IdentifySourceInput {
@@ -249,7 +250,7 @@ type IdentifyMetadataOptions {
   setCoverImage: Boolean
   setOrganized: Boolean
   "defaults to true if not provided"
-  includeMalePerformers: Boolean
+  includeMalePerformers: Boolean @deprecated(reason: "Use performerGenders instead")
   "defaults to true if not provided"
   skipMultipleMatches: Boolean
   "tag to tag skipped multiple matches with"
@@ -258,6 +259,7 @@ type IdentifyMetadataOptions {
   skipSingleNamePerformers: Boolean
   "tag to tag skipped single name performers with"
   skipSingleNamePerformerTag: String
+  performerGenders: [GenderEnum!]
 }
 
 type IdentifySource {

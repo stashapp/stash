@@ -190,6 +190,7 @@ input PerformerFilterType {
   updated_at: TimestampCriterionInput
 
   custom_fields: [CustomFieldCriterionInput!]
+  performerGenders: [GenderEnum!]
 }
 
 input SceneMarkerFilterType {
@@ -328,6 +329,7 @@ input SceneFilterType {
   groups_filter: GroupFilterType
   "Filter by related markers that meet this criteria"
   markers_filter: SceneMarkerFilterType
+  performerGenders: [GenderEnum!]
 }
 
 input MovieFilterType {

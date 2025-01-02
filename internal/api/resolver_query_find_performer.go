@@ -48,6 +48,21 @@ func (r *queryResolver) FindPerformers(ctx context.Context, performerFilter *mod
 			return err
 		}
 
+		// Filter performers based on performerGenders field
+		if performerFilter != nil && len(performerFilter.PerformerGenders) > 0 {
+			filteredPerformers := []*models.Performer{}
+			for _, performer := range performers {
+				for _, gender := range performerFilter.PerformerGenders {
+					if performer.Gender == gender {
+						filteredPerformers = append(filteredPerformers, performer)
+						break
+					}
+				}
+			}
+			performers = filteredPerformers
+			total = len(performers)
+		}
+
 		ret = &FindPerformersResultType{
 			Count:      total,
 			Performers: performers,

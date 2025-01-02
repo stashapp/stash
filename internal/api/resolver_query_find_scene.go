@@ -134,6 +134,23 @@ func (r *queryResolver) FindScenes(
 			return err
 		}
 
+		// Filter scenes based on performerGenders field
+		if sceneFilter != nil && len(sceneFilter.PerformerGenders) > 0 {
+			filteredScenes := []*models.Scene{}
+			for _, scene := range scenes {
+				for _, performer := range scene.Performers {
+					for _, gender := range sceneFilter.PerformerGenders {
+						if performer.Gender == gender {
+							filteredScenes = append(filteredScenes, scene)
+							break
+						}
+					}
+				}
+			}
+			scenes = filteredScenes
+			result.Count = len(scenes)
+		}
+
 		ret = &FindScenesResultType{
 			Count:    result.Count,
 			Scenes:   scenes,

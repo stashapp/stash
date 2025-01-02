@@ -1,6 +1,3 @@
-// Package identify provides the scene identification functionality for the application.
-// The identify functionality uses scene scrapers to identify a given scene and
-// set its metadata based on the scraped data.
 package identify
 
 import (
@@ -159,6 +156,9 @@ func (t *SceneIdentifier) getOptions(source ScraperSource) MetadataOptions {
 	}
 	if source.Options.SkipSingleNamePerformerTag != nil && len(*source.Options.SkipSingleNamePerformerTag) > 0 {
 		options.SkipSingleNamePerformerTag = source.Options.SkipSingleNamePerformerTag
+	}
+	if source.Options.PerformerGenders != nil {
+		options.PerformerGenders = source.Options.PerformerGenders
 	}
 
 	return options

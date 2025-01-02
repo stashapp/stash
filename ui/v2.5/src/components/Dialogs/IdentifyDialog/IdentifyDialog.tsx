@@ -69,6 +69,7 @@ export const IdentifyDialog: React.FC<IIdentifyDialogProps> = ({
       skipMultipleMatchTag: undefined,
       skipSingleNamePerformers: true,
       skipSingleNamePerformerTag: undefined,
+      performerGenders: [],
     };
   }
 
