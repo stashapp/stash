@@ -1,4 +1,5 @@
 import React from "react";
+import { TagLink } from "src/components/Shared/TagLink";
 import * as GQL from "src/core/generated-graphql";
 import { DetailItem } from "src/components/Shared/DetailItem";
 import { StashIDPill } from "src/components/Shared/StashID";
@@ -12,9 +13,21 @@ interface IStudioDetailsPanel {
 
 export const StudioDetailsPanel: React.FC<IStudioDetailsPanel> = ({
   studio,
-  collapsed,
   fullWidth,
 }) => {
+  function renderTagsField() {
+    if (!studio.tags.length) {
+      return;
+    }
+    return (
+      <ul className="pl-0">
+        {(studio.tags ?? []).map((tag) => (
+          <TagLink key={tag.id} linkType="studio" tag={tag} />
+        ))}
+      </ul>
+    );
+  }
+
   function renderStashIDs() {
     if (!studio.stash_ids?.length) {
       return;
@@ -33,18 +46,6 @@ export const StudioDetailsPanel: React.FC<IStudioDetailsPanel> = ({
     );
   }
 
-  function maybeRenderExtraDetails() {
-    if (!collapsed) {
-      return (
-        <DetailItem
-          id="stash_ids"
-          value={renderStashIDs()}
-          fullWidth={fullWidth}
-        />
-      );
-    }
-  }
-
   return (
     <div className="detail-group">
       <DetailItem id="details" value={studio.details} fullWidth={fullWidth} />
@@ -61,7 +62,12 @@ export const StudioDetailsPanel: React.FC<IStudioDetailsPanel> = ({
         }
         fullWidth={fullWidth}
       />
-      {maybeRenderExtraDetails()}
+      <DetailItem id="tags" value={renderTagsField()} fullWidth={fullWidth} />
+      <DetailItem
+        id="stash_ids"
+        value={renderStashIDs()}
+        fullWidth={fullWidth}
+      />
     </div>
   );
 };

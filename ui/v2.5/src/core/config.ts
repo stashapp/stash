@@ -2,7 +2,13 @@ import { IntlShape } from "react-intl";
 import { ITypename } from "src/utils/data";
 import { ImageWallOptions } from "src/utils/imageWall";
 import { RatingSystemOptions } from "src/utils/rating";
-import { FilterMode, SortDirectionEnum } from "./generated-graphql";
+import {
+  FilterMode,
+  SavedFilterDataFragment,
+  SortDirectionEnum,
+} from "./generated-graphql";
+import { View } from "src/components/List/views";
+import { ITaggerConfig } from "src/components/Tagger/constants";
 
 // NOTE: double capitals aren't converted correctly in the backend
 
@@ -24,6 +30,10 @@ export interface ICustomFilter extends ITypename {
   sortBy: string;
   direction: SortDirectionEnum;
 }
+
+export type DefaultFilters = {
+  [P in View]?: SavedFilterDataFragment;
+};
 
 export type FrontPageContent = ISavedFilterRow | ICustomFilter;
 
@@ -86,48 +96,16 @@ export interface IUIConfig {
   advancedMode?: boolean;
 
   taskDefaults?: Record<string, {}>;
+
+  defaultFilters?: DefaultFilters;
+
+  taggerConfig?: ITaggerConfig;
 }
 
-interface ISavedFilterRowBroken extends ISavedFilterRow {
-  savedfilterid?: number;
-}
-
-interface ICustomFilterBroken extends ICustomFilter {
-  sortby?: string;
-}
-
-type FrontPageContentBroken = ISavedFilterRowBroken | ICustomFilterBroken;
-
-// #4128: deal with incorrectly insensitivised keys (sortBy and savedFilterId)
 export function getFrontPageContent(
   ui: IUIConfig | undefined
 ): FrontPageContent[] | undefined {
-  return (ui?.frontPageContent as FrontPageContentBroken[] | undefined)?.map(
-    (content) => {
-      switch (content.__typename) {
-        case "SavedFilter":
-          if (content.savedfilterid) {
-            return {
-              ...content,
-              savedFilterId: content.savedFilterId ?? content.savedfilterid,
-              savedfilterid: undefined,
-            };
-          }
-          return content;
-        case "CustomFilter":
-          if (content.sortby) {
-            return {
-              ...content,
-              sortBy: content.sortBy ?? content.sortby,
-              sortby: undefined,
-            };
-          }
-          return content;
-        default:
-          return content;
-      }
-    }
-  );
+  return ui?.frontPageContent as FrontPageContent[] | undefined;
 }
 
 function recentlyReleased(
@@ -168,7 +146,7 @@ export function generateDefaultFrontPageContent(intl: IntlShape) {
   return [
     recentlyReleased(intl, FilterMode.Scenes, "scenes"),
     recentlyAdded(intl, FilterMode.Studios, "studios"),
-    recentlyReleased(intl, FilterMode.Movies, "movies"),
+    recentlyReleased(intl, FilterMode.Groups, "groups"),
     recentlyAdded(intl, FilterMode.Performers, "performers"),
     recentlyReleased(intl, FilterMode.Galleries, "galleries"),
   ];
@@ -181,8 +159,8 @@ export function generatePremadeFrontPageContent(intl: IntlShape) {
     recentlyReleased(intl, FilterMode.Galleries, "galleries"),
     recentlyAdded(intl, FilterMode.Galleries, "galleries"),
     recentlyAdded(intl, FilterMode.Images, "images"),
-    recentlyReleased(intl, FilterMode.Movies, "movies"),
-    recentlyAdded(intl, FilterMode.Movies, "movies"),
+    recentlyReleased(intl, FilterMode.Groups, "groups"),
+    recentlyAdded(intl, FilterMode.Groups, "groups"),
     recentlyAdded(intl, FilterMode.Studios, "studios"),
     recentlyAdded(intl, FilterMode.Performers, "performers"),
   ];

@@ -6,9 +6,9 @@ import {
   ObjectScrapeResult,
   ScrapeResult,
 } from "src/components/Shared/ScrapeDialog/scrapeResult";
-import { TagSelect } from "src/components/Tags/TagSelect";
+import { TagIDSelect } from "src/components/Tags/TagSelect";
 import { StudioSelect } from "src/components/Studios/StudioSelect";
-import { MovieSelect } from "src/components/Movies/MovieSelect";
+import { GroupSelect } from "src/components/Groups/GroupSelect";
 
 interface IScrapedStudioRow {
   title: string;
@@ -54,7 +54,11 @@ export const ScrapedStudioRow: React.FC<IScrapedStudioRow> = ({
         isDisabled={!isNew}
         onSelect={(items) => {
           if (onChangeFn) {
-            onChangeFn(items[0]);
+            const { id, ...data } = items[0];
+            onChangeFn({
+              ...data,
+              stored_id: id,
+            });
           }
         }}
         values={selectValue}
@@ -192,10 +196,10 @@ export const ScrapedPerformersRow: React.FC<
   );
 };
 
-export const ScrapedMoviesRow: React.FC<
-  IScrapedObjectRowImpl<GQL.ScrapedMovie>
+export const ScrapedGroupsRow: React.FC<
+  IScrapedObjectRowImpl<GQL.ScrapedGroup>
 > = ({ title, result, onChange, newObjects, onCreateNew }) => {
-  const moviesCopy = useMemo(() => {
+  const groupsCopy = useMemo(() => {
     return (
       newObjects?.map((p) => {
         const name: string = p.name ?? "";
@@ -204,10 +208,10 @@ export const ScrapedMoviesRow: React.FC<
     );
   }, [newObjects]);
 
-  function renderScrapedMovies(
-    scrapeResult: ScrapeResult<GQL.ScrapedMovie[]>,
+  function renderScrapedGroups(
+    scrapeResult: ScrapeResult<GQL.ScrapedGroup[]>,
     isNew?: boolean,
-    onChangeFn?: (value: GQL.ScrapedMovie[]) => void
+    onChangeFn?: (value: GQL.ScrapedGroup[]) => void
   ) {
     const resultValue = isNew
       ? scrapeResult.newValue
@@ -215,7 +219,7 @@ export const ScrapedMoviesRow: React.FC<
     const value = resultValue ?? [];
 
     const selectValue = value.map((p) => {
-      const aliases: string[] = [];
+      const aliases: string = "";
       return {
         id: p.stored_id ?? "",
         name: p.name ?? "",
@@ -224,7 +228,7 @@ export const ScrapedMoviesRow: React.FC<
     });
 
     return (
-      <MovieSelect
+      <GroupSelect
         isMulti
         className="form-control react-select"
         isDisabled={!isNew}
@@ -240,12 +244,12 @@ export const ScrapedMoviesRow: React.FC<
   }
 
   return (
-    <ScrapedObjectsRow<GQL.ScrapedMovie>
+    <ScrapedObjectsRow<GQL.ScrapedGroup>
       title={title}
       result={result}
-      renderObjects={renderScrapedMovies}
+      renderObjects={renderScrapedGroups}
       onChange={onChange}
-      newObjects={moviesCopy}
+      newObjects={groupsCopy}
       onCreateNew={onCreateNew}
       getName={(value) => value.name ?? ""}
     />
@@ -265,17 +269,12 @@ export const ScrapedTagsRow: React.FC<
       : scrapeResult.originalValue;
     const value = resultValue ?? [];
 
-    const selectValue = value.map((p) => {
-      const aliases: string[] = [];
-      return {
-        id: p.stored_id ?? "",
-        name: p.name ?? "",
-        aliases,
-      };
-    });
+    const selectValue = value.map((p) => p.stored_id ?? "");
 
+    // we need to use TagIDSelect here because we want to use the local name
+    // of the tag instead of the name from the source
     return (
-      <TagSelect
+      <TagIDSelect
         isMulti
         className="form-control"
         isDisabled={!isNew}
@@ -285,7 +284,7 @@ export const ScrapedTagsRow: React.FC<
             onChangeFn(items.map((p) => ({ ...p, stored_id: p.id })));
           }
         }}
-        values={selectValue}
+        ids={selectValue}
       />
     );
   }

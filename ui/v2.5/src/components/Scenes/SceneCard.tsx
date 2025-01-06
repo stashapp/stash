@@ -1,15 +1,10 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Button, ButtonGroup, OverlayTrigger, Tooltip } from "react-bootstrap";
-import { Link, useHistory } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 import cx from "classnames";
 import * as GQL from "src/core/generated-graphql";
 import { Icon } from "../Shared/Icon";
-import {
-  GalleryLink,
-  TagLink,
-  MovieLink,
-  SceneMarkerLink,
-} from "../Shared/TagLink";
+import { GalleryLink, TagLink, SceneMarkerLink } from "../Shared/TagLink";
 import { HoverPopover } from "../Shared/HoverPopover";
 import { SweatDrops } from "../Shared/SweatDrops";
 import { TruncatedText } from "../Shared/TruncatedText";
@@ -20,7 +15,7 @@ import { ConfigurationContext } from "src/hooks/Config";
 import { PerformerPopoverButton } from "../Shared/PerformerPopoverButton";
 import { GridCard, calculateCardWidth } from "../Shared/GridCard/GridCard";
 import { RatingBanner } from "../Shared/RatingBanner";
-import { FormattedNumber } from "react-intl";
+import { FormattedMessage, FormattedNumber } from "react-intl";
 import {
   faBox,
   faCopy,
@@ -34,6 +29,7 @@ import { PreviewScrubber } from "./PreviewScrubber";
 import { PatchComponent } from "src/patch";
 import ScreenUtils from "src/utils/screen";
 import { StudioOverlay } from "../Shared/GridCard/StudioOverlay";
+import { GroupTag } from "../Groups/GroupTag";
 
 interface IScenePreviewProps {
   isPortrait: boolean;
@@ -106,7 +102,25 @@ interface ISceneCardProps {
   selected?: boolean | undefined;
   zoomIndex?: number;
   onSelectedChanged?: (selected: boolean, shiftKey: boolean) => void;
+  fromGroupId?: string;
 }
+
+const Description: React.FC<{
+  sceneNumber?: number;
+}> = ({ sceneNumber }) => {
+  if (!sceneNumber) return null;
+
+  return (
+    <>
+      <hr />
+      {sceneNumber !== undefined && (
+        <span className="scene-group-scene-number">
+          <FormattedMessage id="scene" /> #{sceneNumber}
+        </span>
+      )}
+    </>
+  );
+};
 
 const SceneCardPopovers = PatchComponent(
   "SceneCard.Popovers",
@@ -115,6 +129,17 @@ const SceneCardPopovers = PatchComponent(
       () => (props.scene.files.length > 0 ? props.scene.files[0] : undefined),
       [props.scene]
     );
+
+    const sceneNumber = useMemo(() => {
+      if (!props.fromGroupId) {
+        return undefined;
+      }
+
+      const group = props.scene.groups.find(
+        (g) => g.group.id === props.fromGroupId
+      );
+      return group?.scene_index ?? undefined;
+    }, [props.fromGroupId, props.scene.groups]);
 
     function maybeRenderTagPopoverButton() {
       if (props.scene.tags.length <= 0) return;
@@ -140,41 +165,30 @@ const SceneCardPopovers = PatchComponent(
     function maybeRenderPerformerPopoverButton() {
       if (props.scene.performers.length <= 0) return;
 
-      return <PerformerPopoverButton performers={props.scene.performers} />;
+      return (
+        <PerformerPopoverButton
+          performers={props.scene.performers}
+          linkType="scene"
+        />
+      );
     }
 
-    function maybeRenderMoviePopoverButton() {
-      if (props.scene.movies.length <= 0) return;
+    function maybeRenderGroupPopoverButton() {
+      if (props.scene.groups.length <= 0) return;
 
-      const popoverContent = props.scene.movies.map((sceneMovie) => (
-        <div className="movie-tag-container row" key="movie">
-          <Link
-            to={`/movies/${sceneMovie.movie.id}`}
-            className="movie-tag col m-auto zoom-2"
-          >
-            <img
-              className="image-thumbnail"
-              alt={sceneMovie.movie.name ?? ""}
-              src={sceneMovie.movie.front_image_path ?? ""}
-            />
-          </Link>
-          <MovieLink
-            key={sceneMovie.movie.id}
-            movie={sceneMovie.movie}
-            className="d-block"
-          />
-        </div>
+      const popoverContent = props.scene.groups.map((sceneGroup) => (
+        <GroupTag key={sceneGroup.group.id} group={sceneGroup.group} />
       ));
 
       return (
         <HoverPopover
           placement="bottom"
           content={popoverContent}
-          className="movie-count tag-tooltip"
+          className="group-count tag-tooltip"
         >
           <Button className="minimal">
             <Icon icon={faFilm} />
-            <span>{props.scene.movies.length}</span>
+            <span>{props.scene.groups.length}</span>
           </Button>
         </HoverPopover>
       );
@@ -279,19 +293,21 @@ const SceneCardPopovers = PatchComponent(
         !props.compact &&
         (props.scene.tags.length > 0 ||
           props.scene.performers.length > 0 ||
-          props.scene.movies.length > 0 ||
+          props.scene.groups.length > 0 ||
           props.scene.scene_markers.length > 0 ||
           props.scene?.o_counter ||
           props.scene.galleries.length > 0 ||
-          props.scene.organized)
+          props.scene.organized ||
+          sceneNumber !== undefined)
       ) {
         return (
           <>
+            <Description sceneNumber={sceneNumber} />
             <hr />
             <ButtonGroup className="card-popovers">
               {maybeRenderTagPopoverButton()}
               {maybeRenderPerformerPopoverButton()}
-              {maybeRenderMoviePopoverButton()}
+              {maybeRenderGroupPopoverButton()}
               {maybeRenderSceneMarkerPopoverButton()}
               {maybeRenderOCounter()}
               {maybeRenderGallery()}
@@ -373,9 +389,13 @@ const SceneCardImage = PatchComponent(
           ) : (
             ""
           )}
-          {(file?.duration ?? 0) >= 1
-            ? TextUtils.secondsToTimestamp(file?.duration ?? 0)
-            : ""}
+          {(file?.duration ?? 0) >= 1 ? (
+            <span className="overlay-duration">
+              {TextUtils.secondsToTimestamp(file?.duration ?? 0)}
+            </span>
+          ) : (
+            ""
+          )}
         </div>
       );
     }

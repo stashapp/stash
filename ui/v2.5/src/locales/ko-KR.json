@@ -57,9 +57,9 @@
         "import_from_file": "파일 불러오기",
         "logout": "로그아웃",
         "make_primary": "첫 번째로 만들기",
-        "merge": "합치기",
-        "merge_from": "...에서 합치기",
-        "merge_into": "...로 합치기",
+        "merge": "병합",
+        "merge_from": "...에서 병합",
+        "merge_into": "...로 병합",
         "migrate_blobs": "Blob 마이그레이션",
         "migrate_scene_screenshots": "영상 스크린샷 마이그레이션",
         "next_action": "다음",
@@ -119,7 +119,29 @@
         "temp_enable": "임시 활성화…",
         "unset": "설정 해제",
         "use_default": "기본값 사용",
-        "view_random": "랜덤 보기"
+        "view_random": "랜덤 보기",
+        "add_manual_date": "직접 날짜 추가",
+        "choose_date": "날짜 선택",
+        "encoding_image": "이미지 인코딩 중…",
+        "create_parent_studio": "부모 스튜디오 만들기",
+        "optimise_database": "데이터베이스 최적화",
+        "disable": "비활성화",
+        "enable": "활성화",
+        "add_play": "재생 기록 추가",
+        "add_o": "싸버린 기록 추가",
+        "assign_stashid_to_parent_studio": "기존 부모 스튜디오에 Stash ID를 할당하고 메타데이터를 업데이트합니다",
+        "clean_generated": "생성된 파일들 정리",
+        "clear_date_data": "날짜 데이터 삭제",
+        "copy_to_clipboard": "클립보드에 복사",
+        "reload": "새로고침",
+        "remove_date": "날짜 삭제",
+        "view_history": "기록 보기",
+        "set_cover": "커버로 설정",
+        "reset_cover": "커버를 기본값으로 되돌리기",
+        "reset_play_duration": "재생 시간 초기화",
+        "reset_resume_time": "마지막 재생 위치 초기화",
+        "add_sub_groups": "서브그룹 추가",
+        "remove_from_containing_group": "그룹에서 제거"
     },
     "actions_name": "액션",
     "age": "나이",
@@ -163,11 +185,13 @@
             "query_mode_path_desc": "전체 파일 경로 사용",
             "set_cover_desc": "영상 커버가 있다면 그 이미지로 교체합니다.",
             "set_cover_label": "영상 커버 이미지 설정",
-            "set_tag_desc": "영상에 이미 존재하는 태그들을 덮어쓰기/합치기 함으로써 태그를 영상에 추가합니다.",
+            "set_tag_desc": "영상에 이미 존재하는 태그들을 덮어쓰거나 병합함으로써 태그를 영상에 추가합니다.",
             "set_tag_label": "태그 설정",
             "show_male_desc": "남성 배우들의 태그 가능 여부 설정을 켜거나 끕니다.",
             "show_male_label": "남성 배우 보여주기",
-            "source": "출처"
+            "source": "출처",
+            "mark_organized_desc": "저장 버튼을 클릭하면 곧바로 영상을 '정리됨' 상태로 만듭니다.",
+            "mark_organized_label": "저장 시 '정리됨' 상태로 만들기"
         },
         "noun_query": "쿼리",
         "results": {
@@ -240,7 +264,9 @@
             "successfully_cancelled_temporary_behaviour": "임시 설정을 취소하는 데에 성공했습니다",
             "until_restart": "재시작 전까지",
             "video_sort_order": "기본 비디오 정렬 순서",
-            "video_sort_order_desc": "비디오를 정렬할 기본값 순서입니다."
+            "video_sort_order_desc": "비디오를 정렬할 기본값 순서입니다.",
+            "server_port": "서버 포트",
+            "server_port_desc": "DLNA 서버를 동작시킬 포트입니다. 변경 이후 DLNA 재시작이 필요합니다."
         },
         "general": {
             "auth": {
@@ -260,7 +286,7 @@
                 "log_to_terminal": "터미널에 로깅하기",
                 "log_to_terminal_desc": "파일뿐만 아니라 터미널에도 로깅을 합니다. 파일 로깅이 비활성화되어있다면 이 기능이 항상 켜집니다. 설정 변경 후 재시작해야 합니다.",
                 "maximum_session_age": "최대 접속 시간",
-                "maximum_session_age_desc": "사용되지 않을 때 자동으로 로그아웃되기까지의 시간입니다 (단위: 초).",
+                "maximum_session_age_desc": "사용되지 않을 때 자동으로 로그아웃되기까지의 시간입니다 (단위: 초). 설정하려면 재시작해야 합니다.",
                 "password": "비밀번호",
                 "password_desc": "Stash에 접속하기 위한 비밀번호입니다. 로그인 과정을 생략하려면 빈 칸으로 두십시오",
                 "stash-box_integration": "Stash-box 통합",
@@ -320,6 +346,18 @@
                         "desc": "고급 설정: 비디오를 생성할 때, 출력 필드 이전에 ffmpeg에 전달될 추가적인 매개변수입니다.",
                         "heading": "FFmpeg 트랜스코딩 출력 매개변수"
                     }
+                },
+                "download_ffmpeg": {
+                    "heading": "FFmpeg 다운로드",
+                    "description": "FFmpeg를 설정 폴더에 다운로드하고 ffmpeg와 ffprobe 경로를 초기화해, Stash가 이 둘을 설정 폴더에서 찾을 수 있도록 합니다."
+                },
+                "ffmpeg_path": {
+                    "description": "ffmpeg 실행파일의 경로입니다. (ffmpeg가 포함된 폴더의 경로가 아님) 만약 비어 있다면, ffmpeg의 위치를 환경변수로부터 찾습니다. ($PATH, 설정 폴더, $HOME/.stash)",
+                    "heading": "FFmpeg 실행파일 경로"
+                },
+                "ffprobe_path": {
+                    "description": "ffprobe 실행파일의 경로입니다. (ffprobe가 포함된 폴더의 경로가 아님) 만약 비어 있다면, ffprobe의 위치를 환경변수로부터 찾습니다. ($PATH, 설정 폴더, $HOME/.stash)",
+                    "heading": "FFprobe 실행파일 경로"
                 }
             },
             "funscript_heatmap_draw_range": "히트맵에 범위 포함",
@@ -352,8 +390,8 @@
             "parallel_scan_head": "병렬 스캔/생성",
             "preview_generation": "미리보기 생성",
             "python_path": {
-                "description": "파이썬 실행 파일의 위치입니다. 스크립트 스크레이퍼와 플러그인의 실행에 사용됩니다. 빈 칸으로 두면, 시스템 환경 설정으로부터 위치를 받아 옵니다",
-                "heading": "Python 경로"
+                "description": "파이썬 실행파일의 위치입니다. (실행파일이 들어 있는 폴더가 아님) 스크립트 스크레이퍼와 플러그인의 실행에 사용됩니다. 빈 칸으로 두면, 시스템 환경 설정으로부터 위치를 받아 옵니다",
+                "heading": "Python 실행파일 경로"
             },
             "scraper_user_agent": "스크레이퍼 사용자 에이전트",
             "scraper_user_agent_desc": "HTTP 요청 스크레이핑 중 사용되는 사용자 에이전트 문자열",
@@ -365,7 +403,11 @@
             "sqlite_location": "SQLite 데이터베이스의 파일 위치입니다 (설정 변경 후 재시작이 필요합니다). 경고: 데이터베이스를 Stash 서버가 실행되는 곳이 아닌 다른 시스템에 저장하는 것(즉, 네트워크 바깥)은 지원되지 않습니다!",
             "video_ext_desc": "비디오로 인식될 파일 확장자입니다 (쉼표로 구분합니다).",
             "video_ext_head": "비디오 확장 프로그램",
-            "video_head": "비디오"
+            "video_head": "비디오",
+            "plugins_path": {
+                "description": "플러그인 설정 파일의 폴더 위치",
+                "heading": "플러그인 경로"
+            }
         },
         "library": {
             "exclusions": "제외",
@@ -377,7 +419,9 @@
         },
         "plugins": {
             "hooks": "후크",
-            "triggers_on": "트리거 켜기"
+            "triggers_on": "트리거 켜기",
+            "available_plugins": "사용 가능한 플러그인",
+            "installed_plugins": "설치된 플러그인"
         },
         "scraping": {
             "entity_metadata": "{entityType} 메타데이터",
@@ -388,7 +432,9 @@
             "scrapers": "스크레이퍼",
             "search_by_name": "이름으로 찾기",
             "supported_types": "지원되는 형식",
-            "supported_urls": "URL"
+            "supported_urls": "URL",
+            "available_scrapers": "사용 가능한 스크레이퍼",
+            "installed_scrapers": "설치된 스크레이퍼"
         },
         "stashbox": {
             "add_instance": "stash-box 인스턴스 추가",
@@ -428,10 +474,10 @@
             },
             "generate_clip_previews_during_scan": "이미지 클립 미리보기 생성하기",
             "generate_desc": "이미지, 스프라이트, 비디오, vtt 등 파일을 생성합니다.",
-            "generate_phashes_during_scan": "컨텐츠 해쉬 값 생성",
+            "generate_phashes_during_scan": "컨텐츠 해시 값 생성",
             "generate_phashes_during_scan_tooltip": "중복된 파일 확인과 영상 식별에 사용됩니다.",
             "generate_previews_during_scan": "움직이는 이미지 미리보기 생성",
-            "generate_previews_during_scan_tooltip": "애니메이션 WebP 미리보기를 생성합니다. 미리보기 유형이 애니메이션 이미지로 설정된 경우에만 필요합니다.",
+            "generate_previews_during_scan_tooltip": "애니메이션(webp) 미리보기 또한 생성합니다. 영상/마커 월의 미리보기 유형이 '애니메이션 이미지'로 설정된 경우에만 필요합니다. '애니메이션 미리보기'는 '비디오 미리보기'보다 CPU를 덜 사용하지만, '비디오 미리보기'에 추가적으로 '애니메이션 미리보기'가 생성되기 때문에 파일 크기가 커집니다.",
             "generate_sprites_during_scan": "스크러버 스프라이트 생성",
             "generate_thumbnails_during_scan": "이미지 썸네일 생성",
             "generate_video_covers_during_scan": "영상 커버 생성",
@@ -456,7 +502,15 @@
                 "source": "소스",
                 "source_options": "{source} 옵션",
                 "sources": "소스",
-                "strategy": "방법"
+                "strategy": "방법",
+                "skip_single_name_performers_tooltip": "만약 이 옵션이 설정되지 않은 경우, 'Samantha' 혹은 'Olga'와 같은 흔한 이름들이 매칭될 것입니다",
+                "tag_skipped_performer_tooltip": "이 옵션에 해당하는 배우들에 대해, 나중에 영상 태거 뷰에서 배우 정보를 원하는 대로 다룰 수 있도록, '식별: 한 단어 이름 배우' 등과 같은 태그를 만듭니다",
+                "skip_multiple_matches_tooltip": "만약 이 옵션이 설정되지 않은 상태에서 여러 개의 결과가 도출된 경우, 여러 개의 결과 중 무작위로 하나가 선택될 것입니다",
+                "skip_single_name_performers": "다른 배우의 이름과 겹치지 않으면서도 한 단어의 이름으로 이뤄진 배우의 경우, 처리하지 않고 건너뛰기",
+                "skip_multiple_matches": "여러 개의 매칭 결과가 나왔을 때, 처리하지 않고 건너뛰기",
+                "tag_skipped_matches": "처리하지 않고 건너뛴 항목들에 대해 다음과 같이 태그하기",
+                "tag_skipped_matches_tooltip": "다수 식별 결과가 도출된 항목들을 대상으로, 실제로 일치하는 식별 결과를 영상 태거 뷰에서 직접 고를 수 있도록, '식별: 다수 매칭' 등과 같은 태그를 만듭니다",
+                "tag_skipped_performers": "처리하지 않고 건너뛴 배우들에 대해 다음과 같이 태그하기"
             },
             "import_from_exported_json": "메타데이터 폴더에서 내보낸 JSON 파일에서 가져오기 작업을 합니다. 기존 데이터베이스를 지웁니다.",
             "incremental_import": "내보낸 zip 파일에서 증가한 부분만 가져옵니다.",
@@ -480,7 +534,23 @@
                 "scanning_paths": "다음 경로 스캔 중"
             },
             "scan_for_content_desc": "새로운 컨텐츠를 스캔하고 데이터베이스에 추가합니다.",
-            "set_name_date_details_from_metadata_if_present": "파일 속성값으로 이름, 날짜, 세부 사항을 설정"
+            "set_name_date_details_from_metadata_if_present": "파일 속성값으로 이름, 날짜, 세부 사항을 설정",
+            "clean_generated": {
+                "image_thumbnails": "이미지 썸네일",
+                "image_thumbnails_desc": "이미지 썸네일과 클립",
+                "markers": "마커 미리보기",
+                "previews": "영상 미리보기",
+                "previews_desc": "영상 미리보기와 썸네일",
+                "sprites": "영상 스프라이트",
+                "transcodes": "영상 트랜스코드",
+                "blob_files": "Blob 파일",
+                "description": "생성된 파일들에 대응되는 항목이 데이터베이스에 없을 경우, 생성된 파일들을 삭제합니다."
+            },
+            "generate_sprites_during_scan_tooltip": "영상에서 원하는 위치를 찾기 쉽게 하기 위해, 비디오 플레이어 아래에 표시되는 이미지들의 모음입니다.",
+            "optimise_database_warning": "주의: 이 작업이 수행되는 동안, 데이터베이스를 수정하는 다른 모든 작업들은 실패할 것이고, 데이터베이스의 크기에 따라 작업 종료까지 몇 분이 걸릴 수 있습니다. 그리고 이 작업은 적어도 데이터베이스 크기만큼의 디스크 공간이 필요한데, 데이터베이스 크기의 1.5배의 디스크 공간을 확보하는 것을 권장합니다.",
+            "optimise_database": "모든 데이터베이스 파일을 분석하고 다시 만듦으로써, 성능을 향상시키려고 시도합니다.",
+            "rescan_tooltip": "경로 내의 모든 파일을 재스캔합니다. 파일 메타데이터를 강제 업데이트하고 zip 파일들을 재스캔하기 위해 사용됩니다.",
+            "rescan": "파일 재스캔"
         },
         "tools": {
             "scene_duplicate_checker": "영상 중복 체크 도구",
@@ -566,7 +636,7 @@
                 }
             },
             "funscript_offset": {
-                "description": "대화형 스크립트 재생의 시간 오프셋(밀리초)입니다.",
+                "description": "인터랙티브 스크립트 재생의 시간 오프셋(밀리초)입니다.",
                 "heading": "Funscript 오프셋 (단위: 밀리초)"
             },
             "handy_connection": {
@@ -580,7 +650,7 @@
                 "sync": "동기화"
             },
             "handy_connection_key": {
-                "description": "대화형 영상에 사용할 수 있는 Handy 연결 키입니다. 이 키를 설정하면 현재 장면 정보를 handyfeeling.com과 공유할 수 있습니다",
+                "description": "인터랙티브 영상에 사용할 수 있는 Handy 연결 키입니다. 이 키를 설정하면 현재 장면 정보를 handyfeeling.com과 공유할 수 있습니다",
                 "heading": "Handy 연결 키"
             },
             "image_lightbox": {
@@ -604,7 +674,7 @@
                     }
                 }
             },
-            "interactive_options": "상호작용 옵션",
+            "interactive_options": "인터랙티브 설정",
             "language": {
                 "heading": "언어"
             },
@@ -629,7 +699,7 @@
                 }
             },
             "preview_type": {
-                "description": "미리보기를 설정합니다",
+                "description": "옵션 기본값은 비디오(mp4) 미리보기입니다. CPU 사용량을 줄이려면 애니메이션(webp) 미리보기를 사용할 수 있습니다. 하지만 '애니메이션 미리보기'는 '비디오 미리보기'에 추가로 생성되어야 하기 때문에 파일 크기가 커집니다.",
                 "heading": "미리보기 형식",
                 "options": {
                     "animated": "움직이는 이미지",
@@ -638,15 +708,15 @@
                 }
             },
             "scene_list": {
-                "heading": "영상 목록",
+                "heading": "그리드 뷰",
                 "options": {
-                    "show_studio_as_text": "스튜디오를 텍스트로 보여주기"
+                    "show_studio_as_text": "스튜디오 로고를 텍스트로 표시"
                 }
             },
             "scene_player": {
                 "heading": "영상 플레이어",
                 "options": {
-                    "always_start_from_beginning": "항상 처음부터 비디오 시작하기",
+                    "always_start_from_beginning": "항상 처음부터 비디오 시작",
                     "auto_start_video": "비디오 자동 재생",
                     "auto_start_video_on_play_selected": {
                         "description": "대기열, 또는 '영상' 페이지에서 (랜덤)선택한 영상을 자동 재생",
@@ -657,11 +727,14 @@
                         "heading": "플레이리스트 이어보기"
                     },
                     "show_scrubber": "스크러버 보이기",
-                    "track_activity": "활동 트래킹",
+                    "track_activity": "영상 재생 기록 활성화",
                     "vr_tag": {
                         "description": "VR 버튼은 이 태그를 가진 영상에서만 보여질 것입니다.",
                         "heading": "VR 태그"
-                    }
+                    },
+                    "enable_chromecast": "크롬캐스트 활성화",
+                    "disable_mobile_media_auto_rotate": "모바일 환경에서 전체화면 시 자동 방향 회전 비활성화",
+                    "show_ab_loop_controls": "구간반복 기능 활성화"
                 }
             },
             "scene_wall": {
@@ -701,8 +774,28 @@
                     }
                 }
             },
-            "title": "UI"
-        }
+            "title": "UI",
+            "use_stash_hosted_funscript": {
+                "heading": "funscript 직접 전달",
+                "description": "활성화되면, 서드 파티 Handy 서버를 사용하지 않고 Stash로부터 Handy 디바이스로 곧바로 funscript가 전달될 것입니다. Stash가 Handy 디바이스에 접근 가능한 상태여야 하고, Stash에서 인증이 설정된 상태라면 API 키가 생성되어 있어야 합니다."
+            },
+            "detail": {
+                "enable_background_image": {
+                    "description": "세부사항 페이지에서 배경 이미지를 보여줍니다.",
+                    "heading": "배경 이미지 활성화"
+                },
+                "heading": "세부사항 페이지",
+                "compact_expanded_details": {
+                    "description": "활성화되면, 더 간결한 형태로 확장된 세부사항이 보여집니다",
+                    "heading": "확장된 세부사항들 간결화"
+                },
+                "show_all_details": {
+                    "description": "활성화되면, 모든 컨텐츠 세부사항이 기본값으로 보여지게 되고, 각각의 세부사항들이 하나의 열에 위아래로 정렬됩니다",
+                    "heading": "모든 세부사항 보여주기"
+                }
+            }
+        },
+        "advanced_mode": "고급 설정 모드"
     },
     "configuration": "설정",
     "countables": {
@@ -710,11 +803,11 @@
         "galleries": "{count, plural, one {갤러리} other {갤러리들}}",
         "images": "{count, plural, one {이미지} other {이미지들}}",
         "markers": "{count, plural, one {마커} other {마커들}}",
-        "movies": "{count, plural, one {영화} other {영화들}}",
         "performers": "{count, plural, one {배우} other {배우들}}",
         "scenes": "{count, plural, one {영상} other {영상들}}",
         "studios": "{count, plural, one {스튜디오} other {스튜디오들}}",
-        "tags": "{count, plural, one {태그} other {태그들}}"
+        "tags": "{count, plural, one {태그} other {태그들}}",
+        "groups": "{count, plural, one {그룹} other {그룹들}}"
     },
     "country": "국적",
     "cover_image": "커버 이미지",
@@ -738,7 +831,10 @@
         "not_between": "구간 밖",
         "not_equals": "≠",
         "not_matches_regex": "정규표현식 불일치",
-        "not_null": "값 존재함"
+        "not_null": "값 존재함",
+        "format_string_excludes": "{criterion} {modifierString} {valueString} ({excludedString} 제외)",
+        "format_string_excludes_depth": "{criterion} {modifierString} {valueString} ({excludedString} 제외) (+{depth, plural, =-1 {all} other {{depth}}})",
+        "format_string_depth": "{criterion} {modifierString} {valueString} (+{depth, plural, =-1 {all} other {{depth}}})"
     },
     "custom": "커스텀",
     "date": "날짜",
@@ -809,10 +905,10 @@
             "force_transcodes": "강제 트랜스코드 생성",
             "force_transcodes_tooltip": "기본적으로 트랜스코드는 비디오 파일이 브라우저에서 지원되지 않는 경우에만 생성됩니다. 이 옵션을 선택하면 비디오 파일이 브라우저에서 지원되는 것으로 보이는 경우에도 트랜스코드가 생성됩니다.",
             "image_previews": "움직이는 이미지 미리보기",
-            "image_previews_tooltip": "애니메이션 WebP 미리보기로, 미리보기 유형이 애니메이션 이미지로 설정된 경우에만 필요합니다.",
-            "interactive_heatmap_speed": "대화형 영상을 위한 히트맵 및 스피드 생성",
+            "image_previews_tooltip": "애니메이션(webp) 미리보기도 생성합니다. 영상/마커 월 미리보기 유형이 '애니메이션 이미지'로 설정된 경우에만 필요합니다. '비디오 미리보기'보다 CPU를 덜 사용하지만, '비디오 미리보기'에 추가적으로 생성되기 때문에 파일 크기가 커집니다.",
+            "interactive_heatmap_speed": "인터랙티브 영상을 위한 히트맵 및 스피드 생성",
             "marker_image_previews": "마커 움직이는 이미지 미리보기",
-            "marker_image_previews_tooltip": "애니메이션 마커 WebP 미리보기로, 미리보기 유형이 애니메이션 이미지로 설정된 경우에만 필요합니다.",
+            "marker_image_previews_tooltip": "애니메이션(webp) 미리보기도 생성합니다. 영상/마커 월 미리보기 유형이 '애니메이션 이미지'로 설정된 경우에만 필요합니다. '비디오 미리보기'보다 CPU를 덜 사용하지만, '비디오 미리보기'에 추가적으로 생성되기 때문에 파일 크기가 커집니다.",
             "marker_screenshots": "마커 스크린샷",
             "marker_screenshots_tooltip": "마커 JPG 이미지. 미리보기 유형이 이미지로 설정된 경우에만 필요합니다.",
             "markers": "마커 미리보기",
@@ -820,7 +916,7 @@
             "override_preview_generation_options": "미리보기 생성 옵션 재정의",
             "override_preview_generation_options_desc": "이 작업에 대한 미리보기 생성 옵션을 재정의합니다. 기본값은 '시스템' -> '미리보기 생성'에서 설정됩니다.",
             "overwrite": "기존 파일들 덮어쓰기",
-            "phash": "해쉬 (중복 방지용)",
+            "phash": "해시",
             "preview_exclude_end_time_desc": "영상 미리보기에서 마지막 x 초를 제외합니다. 초 단위, 혹은 전체 영상 재생 길이 중 비율(예: 2%)로 나타낼 수 있습니다.",
             "preview_exclude_end_time_head": "마지막 영상 부분 제외",
             "preview_exclude_start_time_desc": "영상 미리보기에서 처음 x 초를 제외합니다. 초 단위, 혹은 전체 영상 재생 길이 중 비율(예: 2%)로 나타낼 수 있습니다.",
@@ -834,11 +930,13 @@
             "preview_seg_duration_desc": "미리보기 사진이 표시되는 시간입니다 (초).",
             "preview_seg_duration_head": "미리보기 사진 길이",
             "sprites": "영상 스크러버 스프라이트",
-            "sprites_tooltip": "스프라이트 (영상 스크러버 용)",
+            "sprites_tooltip": "원하는 위치를 쉽게 찾기 위해, 비디오 플레이어 아래에 표시되는 이미지들의 모음입니다.",
             "transcodes": "트랜스코딩",
-            "transcodes_tooltip": "지원되지 않는 비디오 형식을 MP4로 변환하기",
+            "transcodes_tooltip": "모든 컨텐츠에 대해 MP4 트랜스코드 파일이 미리 생성될 것입니다. 느린 컴퓨터에서 유용하지만 디스크 용량을 더 차지합니다",
             "video_previews": "미리보기",
-            "video_previews_tooltip": "영상 위로 마우스를 올렸을 때 표시되는 비디오 미리보기"
+            "video_previews_tooltip": "영상 위로 마우스를 올렸을 때 표시되는 비디오 미리보기",
+            "image_thumbnails": "이미지 썸네일",
+            "phash_tooltip": "중복 방지와 영상 식별에 사용됩니다"
         },
         "scenes_found": "{count}개의 영상을 찾았습니다",
         "scrape_entity_query": "{entity_type} 스크레이핑 쿼리",
@@ -846,7 +944,18 @@
         "scrape_results_existing": "존재",
         "scrape_results_scraped": "스크레이핑됨",
         "set_image_url_title": "이미지 URL",
-        "unsaved_changes": "저장되지 않은 변경 사항들이 있습니다. 그래도 나가겠습니까?"
+        "unsaved_changes": "저장되지 않은 변경 사항들이 있습니다. 그래도 나가겠습니까?",
+        "performers_found": "{count} 명의 배우들을 찾았습니다",
+        "clear_o_history_confirm": "정말 싸버린 기록을 삭제하시겠습니까?",
+        "clear_play_history_confirm": "정말 재생 기록을 삭제하시겠습니까?",
+        "merge": {
+            "destination": "~으로 병합 (병합 결과)",
+            "source": "~을 (병합 대상)",
+            "empty_results": "병합 결과 값이 바뀌지 않을 것입니다."
+        },
+        "reassign_files": {
+            "destination": "~으로 재지정"
+        }
     },
     "dimensions": "해상도",
     "director": "감독",
@@ -874,9 +983,16 @@
             "medium": "중간"
         },
         "search_accuracy_label": "검색 정밀도",
-        "title": "중복된 영상"
+        "title": "중복된 영상",
+        "select_oldest": "각 중복 그룹 내에서 가장 오래된 파일 선택",
+        "only_select_matching_codecs": "중복 그룹 내에서 코덱이 모두 일치하는 경우에만 선택",
+        "select_all_but_largest_file": "각 중복 그룹 내에서 가장 큰 파일을 제외한 모든 파일 선택",
+        "select_all_but_largest_resolution": "각 중복 그룹 내에서 가장 해상도가 높은 파일을 제외한 모든 파일 선택",
+        "select_youngest": "각 중복 그룹 내에서 가장 최근 파일 선택",
+        "select_options": "옵션 선택…",
+        "select_none": "아무 것도 선택하지 않음"
     },
-    "duplicated_phash": "중복됨 (phash)",
+    "duplicated_phash": "중복됨 (pHash)",
     "duration": "길이",
     "effect_filters": {
         "aspect": "방향",
@@ -903,7 +1019,11 @@
     "errors": {
         "image_index_greater_than_zero": "이미지 인덱스는 0보다 커야 합니다",
         "lazy_component_error_help": "만약 최근에 Stash를 업그레이드했다면, 웹페이지를 새로고침하거나 브라우저 캐시를 삭제해주세요.",
-        "something_went_wrong": "오류가 발생했습니다."
+        "something_went_wrong": "오류가 발생했습니다.",
+        "header": "오류",
+        "loading_type": "{type}을(를) 로딩하는 중 오류가 발생했습니다",
+        "invalid_javascript_string": "유효하지 않은 자바스크립트 코드입니다: {error}",
+        "invalid_json_string": "유효하지 않은 JSON 문자열입니다: {error}"
     },
     "ethnicity": "인종",
     "existing_value": "존재하는 값",
@@ -914,7 +1034,7 @@
     "file": "파일",
     "file_count": "파일 개수",
     "file_info": "파일 정보",
-    "file_mod_time": "파일 변경 시간",
+    "file_mod_time": "파일 변경 시각",
     "files": "파일",
     "files_amount": "{value} 파일",
     "filesize": "파일 크기",
@@ -923,7 +1043,7 @@
     "filters": "필터",
     "folder": "폴더",
     "framerate": "프레임 레이트",
-    "frames_per_second": "초당 프레임: {value}",
+    "frames_per_second": "fps: {value}",
     "front_page": {
         "types": {
             "premade_filter": "사전에 생성된 필터",
@@ -966,10 +1086,10 @@
     "include_sub_studios": "자회사 스튜디오 포함",
     "include_sub_tags": "하위 태그 포함",
     "instagram": "인스타그램",
-    "interactive": "인터렉티브",
+    "interactive": "인터랙티브",
     "interactive_speed": "인터랙티브 속도",
     "isMissing": "데이터 누락됨",
-    "last_played_at": "마지막으로 재생",
+    "last_played_at": "마지막 재생 날짜",
     "library": "라이브러리",
     "loading": {
         "generic": "로드 중…"
@@ -991,13 +1111,11 @@
         "play_count": "재생 횟수",
         "play_duration": "재생 길이",
         "stream": "스트림",
-        "video_codec": "비디오 코덱"
+        "video_codec": "비디오 코덱",
+        "o_count": "싼 횟수"
     },
-    "megabits_per_second": "초당 {value} 메가비트",
+    "megabits_per_second": "{value} mbps",
     "metadata": "메타데이터",
-    "movie": "영화",
-    "movie_scene_number": "영화 씬 번호",
-    "movies": "영화",
     "name": "이름",
     "new": "새로 만들기",
     "none": "없음",
@@ -1008,7 +1126,8 @@
         "first": "처음",
         "last": "마지막",
         "next": "다음",
-        "previous": "이전"
+        "previous": "이전",
+        "current_total": "{current} / {total}"
     },
     "parent_of": "{children}의 상위 태그",
     "parent_studios": "모회사 스튜디오",
@@ -1019,7 +1138,7 @@
     "penis": "자지",
     "penis_length": "자지 크기",
     "penis_length_cm": "자지 크기 (cm)",
-    "perceptual_similarity": "유사도 (phash)",
+    "perceptual_similarity": "유사도 (pHash)",
     "performer": "배우",
     "performer_age": "배우 나이",
     "performer_count": "배우 수",
@@ -1103,11 +1222,11 @@
             "database_file_path": "데이터베이스 파일 경로",
             "generated_directory": "생성된 컨텐츠 폴더",
             "nearly_there": "거의 끝났습니다!",
-            "stash_library_directories": "Stash 라이브러리 폴더"
+            "stash_library_directories": "Stash 라이브러리 폴더",
+            "blobs_use_database": "<데이터베이스 사용 중>"
         },
         "creating": {
-            "creating_your_system": "시스템 생성 중",
-            "ffmpeg_notice": "설정한 경로에 <code>ffmpeg</code>가 아직 없다면, 다운로드될 때까지 기다려 주세요. 다운로드 진행 과정을 보려면 콘솔 출력을 확인하세요."
+            "creating_your_system": "시스템 생성 중"
         },
         "errors": {
             "something_went_wrong": "오류가 발생했습니다!",
@@ -1150,7 +1269,9 @@
             "where_can_stash_store_its_generated_content": "생성된 컨텐츠를 어디에 저장할까요?",
             "where_can_stash_store_its_generated_content_description": "Stash에서는 썸네일, 미리보기, 스프라이트로 사용할 이미지와 비디오 파일을 생성합니다. 여기에는 지원되지 않는 파일 형식들의 변환본도 포함됩니다. Stash에서는 기본값으로, 설정 파일이 위치한 폴더 안에 <code>generated</code> 폴더를 만들 것입니다. 생성된 미디어 파일들이 저장되는 위치를 변경하고 싶다면, 절대 경로 혹은 상대 경로(현재 폴더 기준)를 적어주세요. 적혀진 경로에 해당 폴더가 없다면 자동으로 생성됩니다.",
             "where_is_your_porn_located": "야동이 있는 위치가 어딘가요?",
-            "where_is_your_porn_located_description": "야동 폴더를 추가하세요. 비디오와 이미지를 스캐닝할 때 사용됩니다."
+            "where_is_your_porn_located_description": "야동 폴더를 추가하세요. 비디오와 이미지를 스캐닝할 때 사용됩니다.",
+            "path_to_blobs_directory_empty_for_default": "Blob 폴더 경로 (빈 칸으로 두면 기본값을 사용합니다)",
+            "store_blobs_in_database": "데이터베이스에 Blob 저장"
         },
         "stash_setup_wizard": "Stash 설정 마법사",
         "success": {
@@ -1163,16 +1284,20 @@
             "support_us": "후원",
             "thanks_for_trying_stash": "Stash를 사용해주셔서 감사합니다!",
             "welcome_contrib": "프로그래밍, 테스팅, 버그 제보, 개선 또는 기능 추가 요청, 사용자 지원 등에 기여하는 것을 환영합니다. Stash 인앱 매뉴얼의 '기여' 항목에서 세부사항을 확인할 수 있습니다.",
-            "your_system_has_been_created": "성공했습니다! 시스템이 생성되었습니다!"
+            "your_system_has_been_created": "성공했습니다! 시스템이 생성되었습니다!",
+            "missing_ffmpeg": "필수 실행파일인 <code>ffmpeg</code>가 없습니다. 아래 체크박스에 체크함으로써 설정 파일에 ffmpeg를 자동으로 다운로드할 수 있습니다. 또는, '시스템 설정'에서 <code>ffmpeg</code>와 <code>ffprobe</code> 실행파일의 경로를 따로 적어줄 수도 있습니다. 이 실행파일들은 Stash가 작동하는 데에 필수적입니다.",
+            "download_ffmpeg": "ffmpeg 다운로드"
         },
         "welcome": {
-            "config_path_logic_explained": "Stash에서는 설정 파일을 현재 폴더에서 먼저 찾아보고, 없다면 <code>%USERPROFILE%\\.stash\\config.yml</code>을 찾습니다 (윈도우가 아닌 운영체제에서는 <code>$HOME/.stash/config.yml</code>을 찾습니다). 또는 Stash를 <code>-c '<설정 파일 경로>'</code> 또는 <code>--config '<설정 파일 경로>'</code> 옵션을 사용해 실행시켜 특정한 설정 파일을 읽도록 할 수 있습니다.",
-            "in_current_stash_directory": "<code>$HOME/.stash</code> 폴더 안",
-            "in_the_current_working_directory": "현재 폴더 안",
-            "next_step": "그 모든 것을 제외하고, 새로운 시스템 설정을 시작할 준비가 되었다면, 어디에 설정 파일을 저장할지 선택한 뒤 '다음' 버튼을 누르세요.",
+            "config_path_logic_explained": "Stash에서는 설정 파일(<code>config.yml</code>)을 현재 폴더에서 먼저 찾아보고, 없다면 <code>{fallback_path}</code>에서 찾아봅니다. 또는 Stash를 <code>-c '<설정 파일 경로>'</code> 또는 <code>--config '<설정 파일 경로>'</code> 옵션을 사용해 실행시켜 Stash가 특정한 설정 파일을 읽도록 할 수 있습니다.",
+            "in_current_stash_directory": "<code>{path}</code> 폴더 안:",
+            "in_the_current_working_directory": "<code>{path}</code> 안, 현재 작업 폴더:",
+            "next_step": "그 모든 것을 제외하고, 새로운 시스템 설정을 시작할 준비가 되었다면, 어디에 설정 파일을 저장할지 선택해주세요.",
             "store_stash_config": "어디에 Stash 설정 파일을 저장할까요?",
             "unable_to_locate_config": "이 화면이 나온다면, 설정 파일을 찾는 데에 실패한 것입니다. 새로운 설정 파일을 만드는 과정을 거쳐야 합니다.",
-            "unexpected_explained": "예상치 못하게 이 화면이 나온다면, 올바른 폴더에서 Stash를 재실행하거나, 터미널의 경우 <code>-c</code> 플래그와 함께 실행해보세요."
+            "unexpected_explained": "예상치 못하게 이 화면이 나온다면, 올바른 폴더에서 Stash를 재실행하거나, 터미널의 경우 <code>-c</code> 플래그와 함께 실행해보세요.",
+            "in_the_current_working_directory_disabled": "<code>{path}</code> 안, 작업 폴더:",
+            "in_the_current_working_directory_disabled_macos": "<code>Stash.app</code>의 실행에 지원되지 않습니다,<br></br> <code>stash-macos</code>를 실행해 작업 중인 폴더 안에서 설정하세요"
         },
         "welcome_specific_config": {
             "config_path": "Stash에서 다음 설정 파일 경로를 사용합니다: <code>{path}</code>",
@@ -1189,13 +1314,18 @@
         "selected_stash_box": "Stash-Box 엔드포인트를 선택했습니다",
         "submission_failed": "데이터 제출 실패",
         "submission_successful": "데이터 제출 성공",
-        "submit_update": "이미 {endpoint_name}에 있음"
+        "submit_update": "이미 {endpoint_name}에 있음",
+        "source": "Stash-Box 소스"
     },
     "statistics": "통계",
     "stats": {
         "image_size": "전체 이미지 크기",
-        "scenes_duration": "전체 영상 재생 길이",
-        "scenes_size": "전체 영상 크기"
+        "scenes_duration": "전체 영상 길이",
+        "scenes_size": "전체 영상 크기",
+        "scenes_played": "재생된 영상",
+        "total_o_count": "싸버린 총 횟수",
+        "total_play_count": "총 재생 횟수",
+        "total_play_duration": "총 재생 길이"
     },
     "status": "상태: {statusText}",
     "studio": "스튜디오",
@@ -1215,11 +1345,11 @@
         "added_entity": "{singularEntity}을(를) 추가했습니다",
         "added_generation_job_to_queue": "생성 작업을 대기열에 추가했습니다",
         "created_entity": "{entity}를 생성했습니다",
-        "default_filter_set": "기본 필터 셋",
+        "default_filter_set": "기본 필터가 설정되었습니다",
         "delete_past_tense": "{count, plural, one {{singularEntity}} other {{pluralEntity}}}이(가) 삭제되었습니다",
         "generating_screenshot": "스크린샷을 생성하는 중…",
         "image_index_too_large": "오류: 이미지 번호가 갤러리의 이미지 개수보다 큽니다",
-        "merged_scenes": "병합된 영상",
+        "merged_scenes": "영상들을 합쳤습니다",
         "merged_tags": "병합된 태그",
         "reassign_past_tense": "재할당된 파일",
         "removed_entity": "{singularEntity}을(를) 제거했습니다",
@@ -1238,12 +1368,127 @@
     "url": "URL",
     "validation": {
         "date_invalid_form": "${path}는 YYYY-MM-DD 형태여야 합니다",
-        "required": "${path}는 필수 항목입니다"
+        "required": "${path}는 필수 항목입니다",
+        "unique": "${path}은(는) 유일해야 합니다",
+        "blank": "${path}를 빈 칸으로 둘 수 없습니다"
     },
     "videos": "비디오",
     "view_all": "모두 보기",
     "weight": "몸무게",
     "weight_kg": "무게 (kg)",
     "years_old": "살",
-    "zip_file_count": "zip 파일 개수"
+    "zip_file_count": "zip 파일 개수",
+    "studio_tagger": {
+        "config": {
+            "excluded_fields": "제외된 항목들:",
+            "create_parent_label": "부모 스튜디오 생성",
+            "edit_excluded_fields": "제외 항목 수정",
+            "active_stash-box_instance": "stash-box 인스턴스 활성화:",
+            "create_parent_desc": "누락된 부모 스튜디오를 만들거나, 정확히 이름이 일치하며 이미 존재하는 부모 스튜디오를 태그하고 데이터/이미지를 업데이트합니다",
+            "no_fields_are_excluded": "제외된 항목 없음",
+            "no_instances_found": "인스턴스 없음",
+            "these_fields_will_not_be_changed_when_updating_studios": "이 항목들은 스튜디오를 업데이트할 때 변경되지 않을 것입니다."
+        },
+        "batch_update_studios": "스튜디오 일괄 업데이트",
+        "name_already_exists": "이름이 이미 존재합니다",
+        "studio_already_tagged": "스튜디오가 이미 태그되었음",
+        "updating_untagged_studios_description": "태그되지 않은 스튜디오를 업데이트하면, stashid가 없는 스튜디오들을 확인하고 메타데이터를 업데이트할 것입니다.",
+        "studio_names_separated_by_comma": "스튜디오 이름들 (쉼표(,)로 구분)",
+        "current_page": "현재 페이지",
+        "failed_to_save_studio": "\"{studio}\" 스튜디오를 저장하는 데에 실패했습니다",
+        "refresh_tagged_studios": "태그된 스튜디오 새로고침",
+        "add_new_studios": "새 스튜디오 추가",
+        "any_names_entered_will_be_queried": "기입된 이름은 원격 Stash-Box 인스턴스에 검색되고, 만약 해당하는 이름의 스튜디오가 있으면 추가합니다. 이름이 정확히 같은 경우만 고려합니다.",
+        "create_or_tag_parent_studios": "존재하지 않는 부모 스튜디오를 만드거나, 이미 존재하는 부모 스튜디오 태그",
+        "network_error": "네트워크 오류",
+        "no_results_found": "결과가 없습니다.",
+        "number_of_studios_will_be_processed": "{studio_count}개의 스튜디오가 처리됩니다",
+        "query_all_studios_in_the_database": "데이터베이스의 모든 스튜디오",
+        "refreshing_will_update_the_data": "stash-box 인스턴스로부터 태그된 스튜디오의 데이터를 업데이트합니다.",
+        "studio_successfully_tagged": "스튜디오 태깅 성공",
+        "tag_status": "태그 상태",
+        "batch_add_studios": "스튜디오 일괄 추가",
+        "status_tagging_job_queued": "작업 상태: 태그 작업 제출됨",
+        "status_tagging_studios": "작업 상태: 스튜디오 태그 중",
+        "to_use_the_studio_tagger": "스튜디오 태거를 사용하려면, stash-box 인스턴스가 설정되어야 합니다.",
+        "update_studios": "스튜디오 업데이트",
+        "untagged_studios": "태그되지 않은 스튜디오",
+        "update_studio": "스튜디오 업데이트",
+        "studio_selection": "스튜디오 선택"
+    },
+    "audio_codec": "오디오 코덱",
+    "connection_monitor": {
+        "websocket_connection_failed": "웹소켓 연결 불가: 세부적인 이유는 브라우저의 콘솔을 확인하세요 (F12 -> Console)",
+        "websocket_connection_reestablished": "웹소켓이 다시 연결되었습니다"
+    },
+    "plays": "{value}회 재생",
+    "photographer": "사진가",
+    "history": "기록",
+    "index_of_total": "총 {total}개 중 {index}",
+    "o_history": "싸버린 기록",
+    "odate_recorded_no": "싸버린 날짜 기록 없음",
+    "package_manager": {
+        "no_upgradable": "업그레이드 가능한 패키지 없음",
+        "package": "패키지",
+        "uninstall": "삭제",
+        "unknown": "<알 수 없음>",
+        "confirm_delete_source": "정말 패키지 소스 {name} ({url})을 삭제하시겠습니까?",
+        "confirm_uninstall": "정말 {number} 개의 패키지를 삭제하시겠습니까?",
+        "description": "설명",
+        "edit_source": "패키지 소스 수정",
+        "hide_unselected": "선택되지 않은 요소 숨기기",
+        "source": {
+            "name": "이름",
+            "url": "패키지 소스 URL",
+            "local_path": {
+                "description": "이 패키지 소스의 패키지들을 저장하기 위한 상대경로입니다. 이 항목을 변경하면 패키지들을 수동으로 옮겨주어야 합니다.",
+                "heading": "로컬 경로"
+            }
+        },
+        "install": "설치",
+        "add_source": "패키지 소스 추가",
+        "check_for_updates": "업데이트 확인",
+        "installed_version": "설치된 버전",
+        "latest_version": "최신 버전",
+        "no_packages": "패키지 없음",
+        "no_sources": "패키지 소스 없음",
+        "version": "버전",
+        "show_all": "모두 보여주기",
+        "update": "업데이트",
+        "selected_only": "선택된 것만",
+        "required_by": "{packages}로 인해 요구됨"
+    },
+    "o_count": "싼 횟수",
+    "orientation": "방향",
+    "parent_studio": "부모 스튜디오",
+    "subsidiary_studio_count": "자회사 스튜디오 개수",
+    "time": "시간",
+    "video_codec": "비디오 코덱",
+    "last_o_at": "마지막으로 싼 날짜",
+    "playdate_recorded_no": "재생 날짜 기록 없음",
+    "play_history": "재생 기록",
+    "primary_tag": "주 태그",
+    "unknown_date": "날짜 미상",
+    "urls": "URL",
+    "distance": "거리",
+    "studio_and_parent": "스튜디오 & 모회사",
+    "tag_parent_tooltip": "상위 태그 존재 여부",
+    "tag_sub_tag_tooltip": "하위 태그 존재 여부",
+    "group": "그룹",
+    "group_count": "그룹 개수",
+    "group_scene_number": "영상 번호",
+    "groups": "그룹",
+    "studio_tags": "스튜디오 태그",
+    "containing_groups": "그룹 포함",
+    "containing_group_count": "그룹 개수 포함",
+    "studio_count": "스튜디오 개수",
+    "containing_group": "그룹 포함",
+    "include_sub_group_content": "서브그룹 컨텐츠 포함",
+    "sub_group_count": "서브그룹 개수",
+    "sub_group_order": "서브그룹 순서",
+    "sub_groups": "서브그룹",
+    "sub_group": "서브그룹",
+    "sub_group_of": "{parent}의 서브그룹",
+    "include_sub_studio_content": "서브스튜디오 컨텐츠 포함",
+    "include_sub_tag_content": "서브태그 컨텐츠 포함"
 }

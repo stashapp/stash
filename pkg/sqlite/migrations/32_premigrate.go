@@ -65,7 +65,7 @@ func (m *schema32PreMigrator) migrate(ctx context.Context) error {
 
 			query += fmt.Sprintf("ORDER BY `id` LIMIT %d", limit)
 
-			rows, err := m.db.Query(query)
+			rows, err := tx.Query(query)
 			if err != nil {
 				return err
 			}
@@ -100,7 +100,7 @@ func (m *schema32PreMigrator) migrate(ctx context.Context) error {
 
 				logger.Infof("Correcting %q gallery to be zip-based.", p)
 
-				_, err = m.db.Exec("UPDATE `galleries` SET `zip` = '1' WHERE `id` = ?", id)
+				_, err = tx.Exec("UPDATE `galleries` SET `zip` = '1' WHERE `id` = ?", id)
 				if err != nil {
 					return err
 				}

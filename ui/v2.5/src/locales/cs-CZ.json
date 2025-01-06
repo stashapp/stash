@@ -80,7 +80,7 @@
         "save_delete_settings": "Použít tyto možnosti defaultně při mazání",
         "save_filter": "Uložit filtr",
         "scan": "Skenovat",
-        "scrape": "Scrape",
+        "scrape": "Stáhnout informace",
         "scrape_query": "Scrape dotaz",
         "scrape_scene_fragment": "Scrape dle fragmentu",
         "scrape_with": "Scrape pomocí…",
@@ -106,7 +106,7 @@
         "submit_update": "Publikovat aktualizaci",
         "swap": "Prohodit",
         "tasks": {
-            "clean_confirm_message": "Jste si jistý, že chcete čistit? Tato operace vymaže informace z databáze a generovaný obsah pro všechny scény a galerie, které nejsou nalezeny v souborovém systému.",
+            "clean_confirm_message": "Jste si jistý, že chcete vyčistit databázi? Tato operace vymaže informace z databáze a generovaný obsah pro všechny scény a galerie, které se již nenacházejí v souborovém systému.",
             "dry_mode_selected": "Vybrán \"Dry Mode\". Nic nebude smazáno, pouze logováno.",
             "import_warning": "Jste si jisti, že chcete importovat? Tato operace smaže databázi a znovu importuje z Vašich exportovaných metadat."
         },
@@ -133,7 +133,15 @@
         "reload": "Načíst znovu",
         "clean_generated": "Vyčistěte vygenerované soubory",
         "remove_date": "Odstranit datum",
-        "add_manual_date": "Přidat datum ručně"
+        "add_manual_date": "Přidat datum ručně",
+        "add_play": "Přidat přehrávání",
+        "view_history": "Zobrazit historii",
+        "reset_cover": "Obnovit výchozí obal",
+        "add_sub_groups": "Přidat podskupinu",
+        "set_cover": "Nastavit jako obal",
+        "remove_from_containing_group": "Odebrat ze skupiny",
+        "reset_resume_time": "Obnovit čas pokračování",
+        "reset_play_duration": "Obnovit dobu přehrávání"
     },
     "actions_name": "Akce",
     "age": "Věk",
@@ -164,15 +172,15 @@
             "query_mode_metadata_desc": "Používá pouze metadata",
             "query_mode_path": "Cesta",
             "query_mode_path_desc": "Používá úplnou cestu k souboru",
-            "set_cover_desc": "Nahradit obálku scény, pokud je nalezena.",
-            "set_cover_label": "Nastavit obrázek obálky scény",
+            "set_cover_desc": "Nahradit obal scény, pokud je nějaký nalezen.",
+            "set_cover_label": "Nastavit obrázek obalu scény",
             "set_tag_desc": "Přidat tagy ke scéně, buď přepsáním nebo sloučením existujících tagů na scéně.",
             "set_tag_label": "Nastavit tagy",
             "show_male_desc": "Zapnout / vypnout, zda mají být mužští umělci tagováni.",
-            "show_male_label": "Ukázat mužské umělce",
+            "show_male_label": "Ukázat mužské účinkující",
             "source": "Zdroj",
             "mark_organized_desc": "Po kliknutí na tlačítko Uložit okamžitě označte scénu jako Uspořádanou.",
-            "mark_organized_label": "Označit jako Uspořádané při uložení."
+            "mark_organized_label": "Označit jako Uspořádané při uložení"
         },
         "noun_query": "Dotaz",
         "results": {
@@ -191,7 +199,7 @@
         "verb_match_fp": "Identifikovat otisky",
         "verb_matched": "Identifikováno",
         "verb_scrape_all": "Scrape vše",
-        "verb_submit_fp": "Publikovat {fpCount, plural, one{# otisk} other{# otisk}}",
+        "verb_submit_fp": "Publikovat {fpCount, plural, one{# otisk} other{# otisky}}",
         "verb_toggle_config": "{toggle} {configuration}",
         "verb_toggle_unmatched": "{toggle} neidentifikované scény"
     },
@@ -244,7 +252,10 @@
             "server_display_name_desc": "Název DLNA serveru. Výchozí hodnota {} pokud je pole prázdné.",
             "successfully_cancelled_temporary_behaviour": "Úspěšně zrušeno dočasné chování",
             "until_restart": "pouze do restartu",
-            "video_sort_order": "Výchozí řazení videa"
+            "video_sort_order": "Výchozí řazení videa",
+            "video_sort_order_desc": "Nastav řazení videí na výchozí.",
+            "server_port": "Port serveru",
+            "server_port_desc": "Port, na kterém poběží DLNA server. Po změně, vyžaduje DLNA restart."
         },
         "general": {
             "auth": {
@@ -275,7 +286,7 @@
                 "description": "Adresář umístění záloh databáze SQLite",
                 "heading": "Cesta k adresáři záloh"
             },
-            "cache_location": "Složka pro mezipaměť",
+            "cache_location": "Umístění adresáře mezipaměti. Vyžaduje se při streamování pomocí HLS (například na zařízeních Apple) nebo DASH.",
             "cache_path_head": "Cesta k mezipaměti",
             "calculate_md5_and_ohash_desc": "Spočítat MD5 kontrolní součet kromě oshashe. Zapnutí zpomalí následující skenování. Hash dle názvu souboru musí být nastaven na oshash pro zrušení výpočtu MD5.",
             "calculate_md5_and_ohash_label": "Spočíst MD5 pro videa",
@@ -316,7 +327,7 @@
             "parallel_scan_head": "Paralelní skenování / generování",
             "preview_generation": "Generování náhledů",
             "python_path": {
-                "description": "Umístění exe python interpreteru. Používáno pro scrapery a pluginy. Pokud je pole prázdné, bude python identifikován dle proměnných prostředí",
+                "description": "Cesta ke spustitelnému souboru pythonu (nejen ke složce). Používá se pro script scrappery a pluginy. Pokud je prázdné, python bude vyřešen z prostředí",
                 "heading": "Cesta k Pythonu"
             },
             "scraper_user_agent": "Scraper User Agent",
@@ -326,14 +337,47 @@
                 "heading": "Cesta ke scraperům"
             },
             "scraping": "Scrapování",
-            "sqlite_location": "Umístění souboru se SQLite databází (vyžaduje restart)",
+            "sqlite_location": "Umístění souboru pro databázi SQLite (vyžaduje restart). VAROVÁNÍ: Uložení databáze na jiný systém, než ze kterého je spuštěn Stash server (tj. přes síť), není podporováno!",
             "video_ext_desc": "Seznam koncovek souborů, oddělený čárkou, které budou identifikovány jako videa.",
             "video_ext_head": "Koncovky video souborů",
             "video_head": "Video",
             "database": "Databáze",
             "ffmpeg": {
                 "hardware_acceleration": {
-                    "heading": "Hardwarové kódování FFmpeg"
+                    "heading": "Hardwarové kódování FFmpeg",
+                    "desc": "Používá dostupný hardware k enkódování videa pro živé transkódování."
+                },
+                "transcode": {
+                    "input_args": {
+                        "heading": "Vstupní argumenty ffmpeg pro transkódování",
+                        "desc": "Pokročilé: Další argumenty, které jsou předány ffmpeg před vstupní pole při generování videa."
+                    },
+                    "output_args": {
+                        "desc": "Advanced: Další argumenty, které jsou předány ffmpeg před výstupní pole při generování videa.",
+                        "heading": "Výstupní argumenty FFmpeg pro transkódování"
+                    }
+                },
+                "download_ffmpeg": {
+                    "description": "Stáhne FFmpeg do konfiguračního adresáře a vymaže cesty ffmpeg a ffprobe k vyřešení z konfiguračního adresáře.",
+                    "heading": "Stáhni FFmpeg"
+                },
+                "ffprobe_path": {
+                    "heading": "Cesta ke spustitelnému souboru FFprobe",
+                    "description": "Cesta ke spustitelnému souboru ffprobe (nejen ke složce). Pokud je prázdný, ffprobe bude použit ze složky přes $PATH, konfigurační adresář nebo z $HOME/.stash"
+                },
+                "live_transcode": {
+                    "input_args": {
+                        "heading": "Vstupní argumenty FFmpeg pro živé transkódování",
+                        "desc": "Pokročilé: Další argumenty, které se mají předat ffmpeg před vstupní pole při živém transkódování videa."
+                    },
+                    "output_args": {
+                        "heading": "Výstupní argumenty FFmpeg pro živé transkódování",
+                        "desc": "Pokročilé: Další argumenty, které jsou předány ffmpeg před výstupní pole při živém transkódováním videa."
+                    }
+                },
+                "ffmpeg_path": {
+                    "description": "Cesta ke spustitelnému souboru ffmpeg (nejen ke složce). Pokud je prázdný, ffmpeg bude použit ze složky přes $PATH, konfiguračního adresáře nebo z $HOME/.stash",
+                    "heading": "Cesta ke spustitelnému souboru FFmpeg"
                 }
             },
             "gallery_cover_regex_desc": "Regexp používaný k identifikaci obrázku jako obalu galerie",
@@ -343,8 +387,16 @@
             },
             "funscript_heatmap_draw_range": "Zahrnout rozsah do vygenerovaných heatmap",
             "funscript_heatmap_draw_range_desc": "Nakreslete rozsah pohybu na ose y vygenerované heatmapy. Stávající heatmapy bude nutné po změně zregenerovat.",
-            "gallery_cover_regex_label": "Vzor obálky galerie",
-            "heatmap_generation": "Generace heatmapy funscriptu"
+            "gallery_cover_regex_label": "Vzor obalu galerií",
+            "heatmap_generation": "Generace heatmapy funscriptu",
+            "blobs_storage": {
+                "description": "Kde ukládat binární data, jako jsou obaly scén, účinkující, studia a obrázky tagů. Po změně této hodnoty musí být stávající data zmigrována pomocí úlohy Zmigrování blobů. Podívej se na stránku Úloh pro migraci.",
+                "heading": "Binární typ úložení dat"
+            },
+            "blobs_path": {
+                "description": "Kde v souborovém systému ukládat binární data. Použitelné pouze při použití uložiště typu souborového systému blobů. UPOZORNĚNÍ: převrácení těchto údajů vyžaduje ruční přesun existujících dat.",
+                "heading": "Cesta binárních dat souborového systému"
+            }
         },
         "library": {
             "exclusions": "Výjimky",
@@ -369,16 +421,16 @@
             "scrapers": "Scrapery",
             "search_by_name": "Hledat dle názvu",
             "supported_types": "Podporované typy",
-            "supported_urls": "URLs",
+            "supported_urls": "URL odkazy",
             "installed_scrapers": "Nainstalované Scrappery",
             "available_scrapers": "Dostupné Scrappery"
         },
         "stashbox": {
             "add_instance": "Přidat stash-box instanci",
             "api_key": "API klíč",
-            "description": "Stash-box zjednodušuje automatizované tagování scén a herců na základě otisků a názvu souborů\nEndpoint a API klíč naleznete na stránce Vašeho účtu stash-box instance. Pojmenování je požadováno, pokud je přidáno vícero instancí.",
-            "endpoint": "Endpoint",
-            "graphql_endpoint": "GraphQL endpoint",
+            "description": "Stash-box zjednodušuje automatizované tagování scén a účinkujicích na základě otisků a názvu souborů.\nEndpoint a API klíč naleznete na stránce Vašeho účtu stash-box instance. Pojmenování je požadováno, pokud je přidáno vícero instancí.",
+            "endpoint": "Koncový bod",
+            "graphql_endpoint": "Koncový bod GraphQL",
             "name": "Název",
             "title": "Stash-box Endpointy"
         },
@@ -410,7 +462,7 @@
             "generate_phashes_during_scan": "Generovat PHASHe",
             "generate_phashes_during_scan_tooltip": "Pro deduplikaci a identifikaci scén.",
             "generate_previews_during_scan": "Generovat animované náhledy",
-            "generate_previews_during_scan_tooltip": "Generovat animované WebP náhledy (požadováno pouze pokud typ náhledu je nastaven na \"animovaný obrázek\").",
+            "generate_previews_during_scan_tooltip": "Vytvářet také animované (webp) náhledy, které jsou vyžadovány pouze v případě, že je Typ náhledu scény/značky nastaven na Animovaný obrázek. Při procházení nevytěžují tolik procesor než náhledy videí, ale jsou generovány navíc a jsou to větší soubory.",
             "generate_sprites_during_scan": "Generovat sprity scrubberu",
             "generate_thumbnails_during_scan": "Generovat náhledy obrázků",
             "generate_video_previews_during_scan": "Generovat náhledy videí",
@@ -428,20 +480,20 @@
                 "heading": "Identifikovat",
                 "identifying_from_paths": "Identifikovat scény z následujících cest",
                 "identifying_scenes": "Identifikuji {num} {scene}",
-                "include_male_performers": "Zahrnout mužské umělce",
-                "set_cover_images": "Nastavit titulní obrázky",
+                "include_male_performers": "Zahrnout mužské účinkující",
+                "set_cover_images": "Nastav obrázky obalů",
                 "set_organized": "Nastavit příznak \"organizovaný\"",
                 "source": "Zdroj",
                 "source_options": "Možnosti {source}",
                 "sources": "Zdroje",
                 "strategy": "Strategie",
                 "skip_multiple_matches": "Přeskočte shody, které mají více než jeden výsledek",
-                "skip_single_name_performers": "Přeskočte umělce/umělkyně s jedním jménem bez jednoznačného označení",
+                "skip_single_name_performers": "Přeskočte účinkující s jedním jménem bez jednoznačného označení",
                 "tag_skipped_performers": "Označte přeskočené umělce/umělkyně pomocí",
                 "tag_skipped_performer_tooltip": "Vytvořte štítek jako „Identifikuj: Umělec/umělkyně s jedním jménem“, který můžete filtrovat v taggeru scén a zvolit, jak chcete s těmito účinkujícími zacházet",
                 "skip_multiple_matches_tooltip": "Pokud toto není povoleno a vrátí se více než jeden výsledek, bude náhodně jeden vybrán ke shodě",
                 "tag_skipped_matches": "Označte přeskočené shody pomocí",
-                "skip_single_name_performers_tooltip": "Pokud toto není povoleno, budou přiřazeni umělci, kteří jsou často generičtí jako Samantha nebo Olga",
+                "skip_single_name_performers_tooltip": "Pokud toto není povoleno, budou přiřazeni účinkující, kteří jsou často generičtí jako Samantha nebo Olga",
                 "tag_skipped_matches_tooltip": "Vytvořte značku jako „Identifikuj: Více shod“, kterou můžete filtrovat taggeru scén a ručně vybrat správnou shodu"
             },
             "import_from_exported_json": "Importovat z exportovaného JSONu z metadata složky. Přemaže existující databázi.",
@@ -485,7 +537,9 @@
             "anonymise_database": "Vytvoří kopii databáze do adresáře záloh, anonymizuje všechna citlivá data. To pak může být poskytnuto ostatním pro účely odstraňování problémů a debuggování. Původní databáze se nemění. Anonymizovaná databáze používá formát názvu souboru {filename_format}.",
             "optimise_database": "Pokusit se zlepšit výkon analyzováním a opětovným sestavením celého databázového souboru.",
             "generate_clip_previews_during_scan": "Generování náhledů pro obrázkové klipy",
-            "optimise_database_warning": "Varování: Pokud je tato úloha spuštěna, všechny operace, které upravují databázi, selžou a v závislosti na velikosti databáze může její dokončení trvat několik minut. Vyžaduje také minimálně tolik volného místa na disku, jak je vaše databáze velká, ale doporučuje se 1,5x."
+            "optimise_database_warning": "Varování: Pokud je tato úloha spuštěna, všechny operace, které upravují databázi, selžou a v závislosti na velikosti databáze může její dokončení trvat několik minut. Vyžaduje také minimálně tolik volného místa na disku, jak je vaše databáze velká, ale doporučuje se 1,5x.",
+            "rescan": "Znovu skenovat soubory",
+            "rescan_tooltip": "Znovu skenovat každý soubor v cestě. Používá se k vynucení aktualizace metadat souboru a opětovnému skenování zip souborů."
         },
         "tools": {
             "scene_duplicate_checker": "Kontrola na duplikaci scén",
@@ -629,7 +683,7 @@
                 }
             },
             "preview_type": {
-                "description": "Konfigurace pro předměty na zdi",
+                "description": "Výchozí možností jsou náhledy videa (mp4). Pro menší využití procesoru při procházení můžete použít náhledy animovaných obrázků (webp). Musí však být generovány navíc k náhledům videa a jedná se o větší soubory.",
                 "heading": "Typ náhledu",
                 "options": {
                     "animated": "Animovaný obrázek",
@@ -638,9 +692,9 @@
                 }
             },
             "scene_list": {
-                "heading": "Seznam scén",
+                "heading": "Zobrazení v mřížce",
                 "options": {
-                    "show_studio_as_text": "Zobrazit studia jako text"
+                    "show_studio_as_text": "Zobrazit studiové překrytí jako text"
                 }
             },
             "scene_player": {
@@ -657,7 +711,7 @@
                         "heading": "(Výchozí nastavení) Pokračovat v playlistu"
                     },
                     "show_scrubber": "Zobrazit Scrubber",
-                    "track_activity": "Sledování činností",
+                    "track_activity": "Povolit historii přehrávání scén",
                     "disable_mobile_media_auto_rotate": "Zakázat automatické otáčení médií na celou obrazovku v mobilu",
                     "enable_chromecast": "Povolit Chromecast",
                     "show_ab_loop_controls": "Zobrazit ovládací prvky pluginu AB Loop",
@@ -726,7 +780,7 @@
                 "heading": "Zobrazení tagů"
             },
             "use_stash_hosted_funscript": {
-                "description": "Je-li povoleno, budou funscripty poskytovány přímo ze Stash do vašeho zařízení Handy bez použití serveru Handy třetí strany. Vyžaduje, aby byl Stash dostupný z vašeho zařízení Handy.",
+                "description": "Je-li povoleno, budou funscripty poskytovány přímo ze Stash do vašeho zařízení Handy bez použití serveru Handy třetí strany. Vyžaduje, aby byl Stash dostupný z vašeho zařízení Handy a vygenerovaný API klíč, pokud má stash nakonfigurované údaje.",
                 "heading": "Funscripty podávejte přímo"
             }
         },
@@ -738,14 +792,14 @@
         "galleries": "{count, plural, one {Galerie} other {Galerie}}",
         "images": "{count, plural, one {Obrázek} other {Obrázky}}",
         "markers": "{count, plural, one {Marker} other {Markery}}",
-        "movies": "{count, plural, one {Film} other {Filmy}}",
-        "performers": "{count, plural, one {Umělěc} other {Umělci}}",
+        "performers": "{count, plural, one {Účinkující} other {Účinkující}}",
         "scenes": "{count, plural, one {Scéna} other {Scény}}",
         "studios": "{count, plural, one {Studio} other {Studia}}",
-        "tags": "{count, plural, one {Tag} other {Tagy}}"
+        "tags": "{count, plural, one {Tag} other {Tagy}}",
+        "groups": "{count, plural, one {Skupina} other {Skupiny}}"
     },
     "country": "Země",
-    "cover_image": "Titulní obrázek",
+    "cover_image": "Obrázek obalu",
     "created_at": "Vytvořeno",
     "criterion": {
         "greater_than": "Větší než",
@@ -769,7 +823,7 @@
         "not_null": "není null",
         "format_string_excludes_depth": "{criterion} {modifierString} {valueString} (vylučuje {excludedString}) (+{depth, plural, =-1 {all} other {{depth}}})",
         "format_string_depth": "{criterion} {modifierString} {valueString} (+{depth, plural, =-1 {all} other {{depth}}})",
-        "format_string_excludes": "{criterion} {modifierString} {valueString} (excludes {excludedString})"
+        "format_string_excludes": "{criterion} {modifierString} {valueString} (vyřazeno: {excludedString})"
     },
     "custom": "Vlastní",
     "date": "Datum",
@@ -825,10 +879,10 @@
             "force_transcodes": "Vynutit generování Transkódu",
             "force_transcodes_tooltip": "Ve výchozím nastavení, transkódy jsou generovány pouze tehdy, když video soubor není podporován prohlížečem. V případě aktivování, transkódy budou generovány i v ostatních případech.",
             "image_previews": "Animované náhledy obrázků",
-            "image_previews_tooltip": "Animobané WebP náhledy, vyžadovány pouze pokud Typ náhledu je nastaven na \"Animovaný obrázek\".",
+            "image_previews_tooltip": "Vytvářejte také animované (webp) náhledy, které jsou vyžadovány pouze v případě, že je Typ náhledu scény/značky nastaven na Animovaný obrázek. Při procházení využívají zatěžují procesor méně než náhledy videí, ale jsou generovány navíc a jsou to větší soubory.",
             "interactive_heatmap_speed": "Generovat heatmapy a rychlosti pro interaktivní scény",
             "marker_image_previews": "Animované náhledy markerů",
-            "marker_image_previews_tooltip": "Animované WebP náhledy markerů, nezbytné pouze tehdy, pokud je Typ náhledu nastaven na \"Animovaný obrázek\".",
+            "marker_image_previews_tooltip": "Vytvářejte také animované (webp) náhledy, které jsou vyžadovány pouze v případě, že je Typ náhledu scény/značky nastaven na Animovaný obrázek. Při procházení využívají zatěžují procesor méně než náhledy videí, ale jsou generovány navíc a jsou to větší soubory.",
             "marker_screenshots": "Screenshoty markerů",
             "preview_exclude_start_time_desc": "Vyloučit prvních x sekund z náhledů scén. Může to být hodnota v sekundách nebo procentech (např. 2 %) z celkové doby trvání scény.",
             "preview_exclude_start_time_head": "Vyloučit čas zahájení",
@@ -848,7 +902,7 @@
             "preview_preset_desc": "Předvolba reguluje velikost, kvalitu a čas enkódování generování náhledu. Předvolby větší než „pomalý“ mají snižjicí se účinek a nedoporučují se.",
             "preview_seg_count_head": "Počet segmentů v náhledech",
             "preview_seg_duration_head": "Doba trvání segmentu náhledu",
-            "covers": "Obálky scén",
+            "covers": "Obaly scén",
             "sprites": "Sprity scrubberu scén",
             "markers": "Náhledy značek",
             "markers_tooltip": "20sekundová videa, která začínají v daném časovém kódu.",
@@ -888,7 +942,7 @@
         "clear_o_history_confirm": "Opravdu chcete vymazat historii O?",
         "clear_play_history_confirm": "Opravdu chcete vymazat historii přehrávání?",
         "delete_entity_simple_desc": "{count, plural, one {Opravdu chcete smazat tuto {singularEntity}?} other {Opravdu chcete smazat tyto {pluralEntity}?}}",
-        "performers_found": "{count} nalezených umělců/umělkyň"
+        "performers_found": "{count} nalezených účinkujících"
     },
     "chapters": "Kapitoly",
     "circumcised": "Obřezán",
@@ -905,7 +959,13 @@
         "started_auto_tagging": "Zahájeno automatické tagování",
         "saved_entity": "Uloženo {entity}",
         "started_importing": "Zahájeno importování",
-        "started_generating": "Zahájeno generování"
+        "started_generating": "Zahájeno generování",
+        "added_entity": "Přidáno {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
+        "delete_past_tense": "Odstraněno {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
+        "rescanning_entity": "Přeskenování {count, plural, one {{singularEntity}} other {{pluralEntity}}}…",
+        "removed_entity": "Odebráno {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
+        "image_index_too_large": "Chyba: Index obrázku je větší než počet obrázků v galerii",
+        "reassign_past_tense": "Soubor byl znovu přidělen"
     },
     "urls": "Odkazy",
     "url": "Odkaz",
@@ -991,7 +1051,8 @@
         "select_all_but_largest_file": "Vyber každý soubor v každé duplikované skupině kromě největšího souboru",
         "select_none": "Nevybírat",
         "select_oldest": "Vyber nejstarší soubor v duplicitní skupině",
-        "select_options": "Vyberte možnosti…"
+        "select_options": "Vyberte možnosti…",
+        "found_sets": "{setCount, plural, one{# nalezen duplikát.} other {# nalezena sada duplikátů.}}"
     },
     "duplicated_phash": "Duplicitní (phash)",
     "duration": "Doba trvání",
@@ -1031,43 +1092,43 @@
     "performer_tagger": {
         "batch_update_performers": "Hromadná aktualizace účinkujicích",
         "performer_selection": "Výběr účinkujících",
-        "status_tagging_performers": "Stav: Tagování umělců",
-        "add_new_performers": "Přidat nové Herce/Herečky",
+        "status_tagging_performers": "Stav: Tagování Účinkujících",
+        "add_new_performers": "Přidat nové Účinkující",
         "config": {
             "active_stash-box_instance": "Aktivní instance stash-box:",
             "edit_excluded_fields": "Upravit vyloučená pole",
             "excluded_fields": "Vyloučená pole:",
             "no_fields_are_excluded": "Nejsou vyloučena žádná pole",
-            "these_fields_will_not_be_changed_when_updating_performers": "Tato pole se při aktualizaci umělců nezmění.",
+            "these_fields_will_not_be_changed_when_updating_performers": "Tato pole se při aktualizaci účinkujících nezmění.",
             "no_instances_found": "Nebyly nalezeny žádné instance"
         },
         "current_page": "Aktuální stránka",
         "no_results_found": "Nebyly nalezeny žádné výsledky.",
-        "number_of_performers_will_be_processed": "{performer_count} účinkujících bude zpracováno.",
+        "number_of_performers_will_be_processed": "{performer_count} účinkujících bude zpracováno",
         "performer_successfully_tagged": "Účinkujicí úspěšně označen:",
         "query_all_performers_in_the_database": "Všichni účinkující v databázi",
         "refresh_tagged_performers": "Obnovit označené učinkujicí",
         "to_use_the_performer_tagger": "Chcete-li použít označovač účinkujicích, je třeba nakonfigurovat instanci stash-boxu.",
         "tag_status": "Stav Tagu",
-        "untagged_performers": "Netagnutí umělci",
+        "untagged_performers": "Netagnutí účinkující",
         "any_names_entered_will_be_queried": "Všechna zadaná jména budou dotázána ze vzdálené instance Stash-Box a přidána, pokud budou nalezena. Za shodu budou považovány pouze přesné shody.",
         "batch_add_performers": "Hromadné přidání účinkujících",
         "failed_to_save_performer": "Nepodařilo se uložit umělce „{performer}“",
         "network_error": "Chyba sítě",
         "performer_already_tagged": "Účinkujicí již byl označen",
         "performer_names_separated_by_comma": "Jména účinkujících oddělená čárkou",
-        "refreshing_will_update_the_data": "Obnovení aktualizuje data všech označených umělců z instance stash-boxu.",
+        "refreshing_will_update_the_data": "Obnovení aktualizuje data všech označených účinkujících z instance stash-boxu.",
         "status_tagging_job_queued": "Stav: Úloha tagování ve frontě",
         "name_already_exists": "Název již existuje",
-        "update_performers": "Aktualizovat umělce/umělkyně",
-        "updating_untagged_performers_description": "Aktualizování nepřiřazených umělců/umělkyň se pokusí nalézt všechny umělce/umělkyně, kteří postrádají StashID, a aktualizovat metadata.",
-        "update_performer": "Aktualizovat umělce/umělkyni"
+        "update_performers": "Aktualizovat Účinkující",
+        "updating_untagged_performers_description": "Aktualizování nepřiřazených účinkujících se pokusí nalézt všechny účinkující, kteří postrádají StashID, a aktualizovat metadata.",
+        "update_performer": "Aktualizovat Účinkující"
     },
     "setup": {
         "paths": {
             "where_can_stash_store_its_generated_content_description": "Aby Stash mohl poskytovat miniatury, náhledy a sprity generuje Stash obrázky a videa. To zahrnuje také transkódování pro nepodporované formáty souborů. Ve výchozím nastavení Stash vytvoří <code>generated</code> adresář v adresáři obsahujícím váš konfigurační soubor. Pokud chcete změnit, kam se budou tato generovaná media ukládat, zadejte prosím absolutní nebo relativní (k aktuálnímu pracovnímu adresáři) cestu. Stash vytvoří tento adresář, pokud ještě neexistuje.",
             "where_is_your_porn_located_description": "Přidejte adresáře obsahující vaše porno videa a obrázky. Stash použije tyto adresáře k vyhledání videí a obrázků během skenování.",
-            "where_can_stash_store_blobs_description": "Kam může Stash ukládat binární data jako jsou obaly scén, umělce, studia a obrázky tagů, buď v databázi nebo v souborovém systému. Ve výchozím nastavení bude tato data ukládat do souborového systému v podadresáři <code>blobs</code> v adresáři obsahujícím váš konfigurační soubor. Pokud to chcete změnit, zadejte prosím absolutní nebo relativní (k aktuálnímu pracovnímu adresáři) cestu. Stash vytvoří tento adresář, pokud ještě neexistuje.",
+            "where_can_stash_store_blobs_description": "Kam může Stash ukládat binární data jako jsou obaly scén, účinkující, studia a obrázky tagů, buď v databázi nebo v souborovém systému. Ve výchozím nastavení bude tato data ukládat do souborového systému v podadresáři <code>blobs</code> v adresáři obsahujícím váš konfigurační soubor. Pokud to chcete změnit, zadejte prosím absolutní nebo relativní (k aktuálnímu pracovnímu adresáři) cestu. Stash vytvoří tento adresář, pokud ještě neexistuje.",
             "path_to_cache_directory_empty_for_default": "cesta k adresáři mezipaměti (ve výchozím nastavení prázdné)",
             "path_to_generated_directory_empty_for_default": "cesta k adresáři vygenerovaných souborů (ve výchozím nastavení prázdné)",
             "set_up_your_paths": "Nastavte vaše cesty",
@@ -1096,7 +1157,10 @@
             "next_config_step_two": "Až budete s těmito nastaveními spokojeni, můžete začít skenovat svůj obsah do Stash kliknutím na <code>{localized_task}</code> a poté na <code>{localized_scan}</code>.",
             "support_us": "Podpoř nás",
             "thanks_for_trying_stash": "Díky za vyzkoušení Stash!",
-            "your_system_has_been_created": "Úspěch! Váš systém byl vytvořen!"
+            "your_system_has_been_created": "Úspěch! Váš systém byl vytvořen!",
+            "download_ffmpeg": "Stáhnout ffmpeg",
+            "missing_ffmpeg": "Chybí vám požadovaný binární soubor <code>ffmpeg</code>. Zaškrtnutím políčka níže si jej můžete automaticky stáhnout do svého konfiguračního adresáře. Případně můžete zadat cesty k binárním souborům <code>ffmpeg</code> a <code>ffprobe</code> v nastavení systému. Aby Stash fungoval, musí být tyto binární soubory přítomny.",
+            "welcome_contrib": "Vítáme také příspěvky ve formě kódu (opravy chyb, vylepšení a nových funkcí), testování, hlášení chyb, požadavků na vylepšení/funkce a uživatelskou podporu. Podrobnosti najdete v sekci Příspěveků v příručce v aplikaci."
         },
         "errors": {
             "something_went_wrong_description": "Pokud to vypadá na problém s vašemi vstupy, pokračujte kliknutím na tlačítko Zpět a opravte je. Jinak upozorněte na chybu na {githubLink} nebo vyhledejte pomoc na {discordLink}.",
@@ -1132,10 +1196,26 @@
             "cache_directory": "Adresář mezipaměti"
         },
         "creating": {
-            "creating_your_system": "Vytváření vašeho systému",
-            "ffmpeg_notice": "Pokud <code>ffmpeg</code> ještě není ve vašem adresáři, buďte prosím trpěliví, než si ho stash stáhne. Prohlédněte si výstup konzole, abyste viděli průběh stahování."
+            "creating_your_system": "Vytváření vašeho systému"
         },
-        "github_repository": "Github repozitář"
+        "github_repository": "Github repozitář",
+        "welcome": {
+            "unable_to_locate_config": "Pokud toto čtete, Stash nemohla najít existující konfiguraci. Tento průvodce vás provede procesem nastavení nové konfigurace.",
+            "in_the_current_working_directory_disabled_macos": "Nepodporováno, když je spuštěna <code>Stash.app</code>,<br></br>spusťte <code>stash-macos</code> pro nastavení v pracovním adresáři",
+            "store_stash_config": "Kam chcete uložit konfiguraci Stash?",
+            "in_the_current_working_directory": "V <code>{cesta}</code>, pracovním adresáři, aktuálně:",
+            "in_the_current_working_directory_disabled": "V <code>{cesta}</code>, pracovní adresář:",
+            "next_step": "Se vším vysvětleným, pokud jste připraveni pokračovat v nastavení nového systému, vyberte prosím, kde byste chtěli uložit svůj konfigurační soubor.",
+            "unexpected_explained": "Pokud se tato obrazovka nečekaně zobrazuje, zkuste restartovat Stash ve správném pracovním adresáři nebo s příznakem <code>-c</code>.",
+            "config_path_logic_explained": "Stash se nejprve pokusí najít svůj konfigurační soubor (<code>config.yml</code>) z aktuálního pracovního adresáře, a pokud jej tam nenajde, vrátí se zpět do <code>{fallback_path}</code>. Stash můžete také nechat číst z konkrétního konfiguračního souboru spuštěním s <code>-c '<cesta ke konfiguračnímu souboru>'</code> nebo <code>--config '<cesta ke konfiguračnímu souboru>'</ kód> možnosti.",
+            "in_current_stash_directory": "V adresáři <code>{cesta}</code>:"
+        },
+        "welcome_to_stash": "Vítejte v Stash",
+        "welcome_specific_config": {
+            "config_path": "Stash použije následující cestu konfiguračního souboru: <code>{cesta}</code>",
+            "next_step": "Až budete připraveni pokračovat v nastavení nového systému, klikněte na Další.",
+            "unable_to_locate_specified_config": "Pokud toto čtete, Stash nemohla najít konfigurační soubor zadaný v příkazovém řádku nebo v prostředí. Tento průvodce vás provede procesem nastavení nové konfigurace."
+        }
     },
     "dimensions": "Rozměry",
     "disambiguation": "Jednoznačnost",
@@ -1144,7 +1224,9 @@
         "lazy_component_error_help": "Pokud jste nedávno aktualizovali Stash, znovu načtěte stránku nebo vymažte mezipaměť prohlížeče.",
         "something_went_wrong": "Něco se pokazilo.",
         "header": "Chyba",
-        "loading_type": "Chyba při načítání {type}"
+        "loading_type": "Chyba při načítání {type}",
+        "invalid_javascript_string": "Neplatný kód javascriptu : {error}",
+        "invalid_json_string": "Neplatný string JSON: {error}"
     },
     "eye_color": "Barva očí",
     "fake_tits": "Falešná prsa",
@@ -1198,20 +1280,19 @@
         "o_count": "Počet O"
     },
     "megabits_per_second": "{value} mbps",
-    "movie": "Film",
-    "movie_scene_number": "Číslo scény",
     "o_counter": "O-Počítadlo",
     "none": "Žádný",
     "pagination": {
         "last": "Poslední",
         "next": "Další",
         "previous": "Předchozí",
-        "first": "První"
+        "first": "První",
+        "current_total": "{current} z {total}"
     },
     "parent_tag_count": "Počet nadřazených tagů",
     "parent_tags": "Nadřazené tagy",
     "perceptual_similarity": "Percepční podobnost (phash)",
-    "performer": "Herec/Herečka",
+    "performer": "Účinkující",
     "play_duration": "Délka přehrávání",
     "rating": "Hodnocení",
     "recently_added_objects": "Nedávno přidané {objects}",
@@ -1246,7 +1327,6 @@
     "ignore_auto_tag": "Ignoruj automatické tagování",
     "instagram": "Instragram",
     "metadata": "Metadata",
-    "movies": "Filmy",
     "name": "Jméno",
     "new": "Nový",
     "organized": "Organizovaný",
@@ -1269,7 +1349,7 @@
     "penis_length_cm": "Délka penisu (cm)",
     "performer_age": "Věk Herce/Herečky",
     "performer_count": "Počet Účinkujících",
-    "performer_favorite": "Oblíbení Hereci/Herečky",
+    "performer_favorite": "Oblíbení Účinkující",
     "performer_image": "Fotka Herce/Herečky",
     "piercings": "Piercingy",
     "play_count": "Počet přehrání",
@@ -1314,7 +1394,102 @@
     "operations": "Operace",
     "performers": "Účinkujicí",
     "index_of_total": "{index} z {total}",
-    "performer_tags": "Tagy umělců/umělkyň",
+    "performer_tags": "Tagy účinkujících",
     "tag_sub_tag_tooltip": "Má dílčí tagy",
-    "date_format": "YYYY-MM-DD (rok-měsíc-den)"
+    "date_format": "YYYY-MM-DD (rok-měsíc-den)",
+    "status": "Status: {statusText}",
+    "studio_tagger": {
+        "no_results_found": "Nebyly nalezeny žádné výsledky.",
+        "untagged_studios": "Neoznačená studia",
+        "add_new_studios": "Přidat nová studia",
+        "config": {
+            "create_parent_label": "Vytvořit nadřazená studia",
+            "these_fields_will_not_be_changed_when_updating_studios": "Tato pole se při aktualizaci studií nezmění.",
+            "active_stash-box_instance": "Aktivní stash-box instance:",
+            "create_parent_desc": "Vytvořte chybějící nadřazená studia nebo označte a aktualizujte data/obrázeky pro stávající nadřazená studia s přesnými shodami názvů",
+            "edit_excluded_fields": "Upravit vyloučená pole",
+            "excluded_fields": "Vyloučená pole:",
+            "no_fields_are_excluded": "Nejsou vyloučena žádná pole",
+            "no_instances_found": "Nebyly nalezeny žádné instance"
+        },
+        "number_of_studios_will_be_processed": "Bude zpracováno {studio_count} studií",
+        "to_use_the_studio_tagger": "Chcete-li použít studio Tagger, je třeba nakonfigurovat instanci stash-boxu.",
+        "update_studio": "Aktualizovat studio",
+        "update_studios": "Aktualizovat studia",
+        "any_names_entered_will_be_queried": "Všechna zadaná jména budou dotázána ze vzdálené instance Stash-Box a přidána, pokud budou nalezena. Za shodu budou považovány pouze přesné shody.",
+        "updating_untagged_studios_description": "Aktualizace neoznačených studií se pokusí porovnat všechna studia, která postrádají stash ID, a aktualizuje metadata.",
+        "create_or_tag_parent_studios": "Vytvořte chybějící nebo označte existujicí nadřazená studia",
+        "current_page": "Aktuální stránka",
+        "failed_to_save_studio": "Nepodařilo se uložit studio \"{studio}\"",
+        "name_already_exists": "Název již existuje",
+        "batch_add_studios": "Přidání více studií",
+        "batch_update_studios": "Aktualizovat více studií",
+        "query_all_studios_in_the_database": "Všechna studia v databázi",
+        "refresh_tagged_studios": "Obnovit označená studia",
+        "refreshing_will_update_the_data": "Aktualizace aktualizuje data všech označených studií z instance stash-boxu.",
+        "status_tagging_job_queued": "Status: Úloha označování zařazena do fronty",
+        "status_tagging_studios": "Status: Označování studií",
+        "studio_already_tagged": "Studio již označeno",
+        "studio_names_separated_by_comma": "Názvy studií oddělené čárkou",
+        "tag_status": "Status označení",
+        "network_error": "Chyba sítě",
+        "studio_selection": "Výběr studia",
+        "studio_successfully_tagged": "Studio úspěšně označeno"
+    },
+    "synopsis": "Souhrn",
+    "stashbox": {
+        "submit_update": "Již existuje v {endpoint_name}",
+        "submission_successful": "Odeslání úspěšné",
+        "submission_failed": "Odeslání selhalo",
+        "selected_stash_box": "Vyberte koncový bod Stash-Box",
+        "source": "Zdroj Stash-Box",
+        "go_review_draft": "Přejít do {endpoint_name} ke zkontrolování návrhu."
+    },
+    "studios": "Studia",
+    "subsidiary_studio_count": "Počet Sub-Studií",
+    "subsidiary_studios": "Sub-Studia",
+    "connection_monitor": {
+        "websocket_connection_failed": "Nelze vytvořit připojení websocket: podrobnosti naleznete v konzoly prohlížeče",
+        "websocket_connection_reestablished": "Připojení Websocket bylo obnoveno"
+    },
+    "o_count": "Počet O",
+    "stash_id_endpoint": "Koncový bod Stash ID",
+    "stash_ids": "Stash IDs",
+    "statistics": "Statistiky",
+    "stats": {
+        "image_size": "Velikost obrázků",
+        "scenes_duration": "Trvání scén",
+        "scenes_played": "Přehrátých scén",
+        "total_o_count": "Celkový Počet O",
+        "total_play_duration": "Celková doba přehrávání",
+        "scenes_size": "Velikost scén",
+        "total_play_count": "Celkový počet přehrátí"
+    },
+    "studio": "Studio",
+    "studio_and_parent": "Studio & Nadřazené studio",
+    "studio_depth": "Úrovně (prázdné pro všechny)",
+    "sub_tag_count": "Počet sub-tagů",
+    "sub_tags": "Sub-Tagy",
+    "years_old": "Let",
+    "updated_at": "Aktualizováno",
+    "stash_id": "Stash ID",
+    "sub_tag_of": "Počet sub-tagů od {parent}",
+    "containing_group": "Obsahující skupina",
+    "containing_group_count": "Počet obsahujících skupin",
+    "include_sub_group_content": "Zahrnout obsah podskupiny",
+    "group": "Skupina",
+    "group_count": "Počet skupin",
+    "group_scene_number": "Číslo scény",
+    "studio_count": "Počet studií",
+    "studio_tags": "Tagy studií",
+    "containing_groups": "Obsahující skupiny",
+    "groups": "Skupiny",
+    "sub_group_of": "Podskupina {parent}",
+    "sub_group_order": "Pořadí podskupin",
+    "sub_groups": "Podskupiny",
+    "sub_group": "Podskupina",
+    "sub_group_count": "Počet podskupin",
+    "include_sub_studio_content": "Zahrnout obsah podstudií",
+    "include_sub_tag_content": "Zahrnout obsah podtagů",
+    "include_sub_groups": "Zahrnout podskupiny"
 }

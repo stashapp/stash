@@ -307,7 +307,8 @@ test:
 # runs all tests - including integration tests
 .PHONY: it
 it:
-	go test -tags=integration ./...
+	$(eval GO_BUILD_TAGS += integration)
+	go test -tags "$(GO_BUILD_TAGS)" ./...
 
 # generates test mocks
 .PHONY: generate-test-mocks
@@ -353,6 +354,11 @@ endif
 ui: ui-env
 	cd ui/v2.5 && yarn build
 
+.PHONY: zip-ui
+zip-ui:
+	rm -f dist/stash-ui.zip
+	cd ui/v2.5/build && zip -r ../../../dist/stash-ui.zip .
+
 .PHONY: ui-start
 ui-start: ui-env
 	cd ui/v2.5 && yarn start --host
@@ -365,6 +371,20 @@ fmt-ui:
 .PHONY: validate-ui
 validate-ui:
 	cd ui/v2.5 && yarn run validate
+
+# these targets run the same steps as fmt-ui and validate-ui, but only on files that have changed
+fmt-ui-quick:
+	cd ui/v2.5 && yarn run prettier --write $$(git diff --name-only --relative --diff-filter d . ../../graphql)
+
+# does not run tsc checks, as they are slow
+validate-ui-quick:
+	cd ui/v2.5 && \
+	tsfiles=$$(git diff --name-only --relative --diff-filter d src | grep -e "\.tsx\?\$$"); \
+	scssfiles=$$(git diff --name-only --relative --diff-filter d src | grep "\.scss"); \
+	prettyfiles=$$(git diff --name-only --relative --diff-filter d . ../../graphql); \
+	if [ -n "$$tsfiles" ]; then yarn run eslint $$tsfiles; fi && \
+	if [ -n "$$scssfiles" ]; then yarn run stylelint $$scssfiles; fi && \
+	if [ -n "$$prettyfiles" ]; then yarn run prettier --check $$prettyfiles; fi
 
 # runs all of the backend PR-acceptance steps
 .PHONY: validate-backend

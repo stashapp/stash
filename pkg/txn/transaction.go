@@ -1,3 +1,4 @@
+// Package txn provides functions for running transactions.
 package txn
 
 import (
@@ -6,7 +7,7 @@ import (
 )
 
 type Manager interface {
-	Begin(ctx context.Context, exclusive bool) (context.Context, error)
+	Begin(ctx context.Context, writable bool) (context.Context, error)
 	Commit(ctx context.Context) error
 	Rollback(ctx context.Context) error
 
@@ -27,34 +28,30 @@ type MustFunc func(ctx context.Context)
 
 // WithTxn executes fn in a transaction. If fn returns an error then
 // the transaction is rolled back. Otherwise it is committed.
-// Transaction is exclusive. Only one thread may run a transaction
-// using this function at a time. This function will wait until the
-// lock is available before executing.
+// This function will call m.Begin with writable = true.
 // This function should be used for making changes to the database.
 func WithTxn(ctx context.Context, m Manager, fn TxnFunc) error {
 	const (
 		execComplete = true
-		exclusive    = true
+		writable     = true
 	)
-	return withTxn(ctx, m, fn, exclusive, execComplete)
+	return withTxn(ctx, m, fn, writable, execComplete)
 }
 
 // WithReadTxn executes fn in a transaction. If fn returns an error then
 // the transaction is rolled back. Otherwise it is committed.
-// Transaction is not exclusive and does not enforce read-only restrictions.
-// Multiple threads can run transactions using this function concurrently,
-// but concurrent writes may result in locked database error.
+// This function will call m.Begin with writable = false.
 func WithReadTxn(ctx context.Context, m Manager, fn TxnFunc) error {
 	const (
 		execComplete = true
-		exclusive    = false
+		writable     = false
 	)
-	return withTxn(ctx, m, fn, exclusive, execComplete)
+	return withTxn(ctx, m, fn, writable, execComplete)
 }
 
-func withTxn(ctx context.Context, m Manager, fn TxnFunc, exclusive bool, execCompleteOnLocked bool) error {
+func withTxn(ctx context.Context, m Manager, fn TxnFunc, writable bool, execCompleteOnLocked bool) error {
 	// post-hooks should be executed with the outside context
-	txnCtx, err := begin(ctx, m, exclusive)
+	txnCtx, err := begin(ctx, m, writable)
 	if err != nil {
 		return err
 	}
@@ -93,9 +90,9 @@ func withTxn(ctx context.Context, m Manager, fn TxnFunc, exclusive bool, execCom
 	return err
 }
 
-func begin(ctx context.Context, m Manager, exclusive bool) (context.Context, error) {
+func begin(ctx context.Context, m Manager, writable bool) (context.Context, error) {
 	var err error
-	ctx, err = m.Begin(ctx, exclusive)
+	ctx, err = m.Begin(ctx, writable)
 	if err != nil {
 		return nil, err
 	}

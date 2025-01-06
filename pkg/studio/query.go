@@ -2,6 +2,7 @@ package studio
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/stashapp/stash/pkg/models"
 )
@@ -52,4 +53,16 @@ func ByAlias(ctx context.Context, qb models.StudioQueryer, alias string) (*model
 	}
 
 	return nil, nil
+}
+
+func CountByTagID(ctx context.Context, qb models.StudioQueryer, id int, depth *int) (int, error) {
+	filter := &models.StudioFilterType{
+		Tags: &models.HierarchicalMultiCriterionInput{
+			Value:    []string{strconv.Itoa(id)},
+			Modifier: models.CriterionModifierIncludes,
+			Depth:    depth,
+		},
+	}
+
+	return qb.QueryCount(ctx, filter, nil)
 }

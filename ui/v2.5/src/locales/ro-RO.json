@@ -332,8 +332,6 @@
     },
     "megabits_per_second": "{value} megabiți pe secundă",
     "metadata": "Metadate",
-    "movie": "Film",
-    "movies": "Filme",
     "name": "Nume",
     "new": "Nou",
     "o_counter": "O-Contor",
@@ -402,8 +400,7 @@
             "nearly_there": "Aproape de final!"
         },
         "creating": {
-            "creating_your_system": "Crearea sistemului dvs",
-            "ffmpeg_notice": "Dacă <code>ffmpeg</code> nu se află încă în căile dvs. de acces, vă rugăm să aveți răbdare în timp ce stash îl descarcă. Vizualizați consola pentru a vedea progresul descărcării."
+            "creating_your_system": "Crearea sistemului dvs"
         },
         "errors": {
             "something_went_wrong": "O nu! Ceva nu a mers bine!",

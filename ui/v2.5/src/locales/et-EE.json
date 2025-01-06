@@ -126,7 +126,22 @@
         "assign_stashid_to_parent_studio": "Määra eksisteerivale vanemstuudiole Stash ID ja uuenda metaandmeid",
         "create_parent_studio": "Loo vanemstuudio",
         "encoding_image": "Pildi kodeerimine…",
-        "optimise_database": "Optimiseeri Andmebaasi"
+        "optimise_database": "Optimiseeri Andmebaasi",
+        "clean_generated": "Puhasta genereeritud faile",
+        "choose_date": "Vali kuupäev",
+        "copy_to_clipboard": "Kopeeri lõikelauale",
+        "reset_cover": "Lähtesta Vaikimise Kaanepilt",
+        "reset_play_duration": "Lähtesta vaatamise kestus",
+        "reset_resume_time": "Lähtesta jätkamise aeg",
+        "set_cover": "Märgi Kaanepildiks",
+        "add_sub_groups": "Lisa Alam-grupid",
+        "remove_date": "Eemalda kuupäev",
+        "add_manual_date": "Lisa manuaalne kuupäev",
+        "add_o": "Lisa O",
+        "add_play": "Lisa mängimine",
+        "clear_date_data": "Eemalda kuupäeva andmed",
+        "view_history": "Vaata ajalugu",
+        "remove_from_containing_group": "Eemalda Grupist"
     },
     "actions_name": "Tegevused",
     "age": "Vanus",
@@ -244,7 +259,9 @@
             "successfully_cancelled_temporary_behaviour": "Edukalt tühistatud ajutine käitumine",
             "until_restart": "restardini",
             "video_sort_order": "Videote Sorteerimise Vaikeväärtus",
-            "video_sort_order_desc": "Viis, kuidas vaikimisi videoid sorteerida."
+            "video_sort_order_desc": "Viis, kuidas vaikimisi videoid sorteerida.",
+            "server_port": "Serveri port",
+            "server_port_desc": "Port DLNA serveri jaoks. Vajab peale muutmist DLNA taaskäivitust."
         },
         "general": {
             "auth": {
@@ -324,6 +341,18 @@
                         "desc": "Edasijõudnutele: Lisaargumendid mida edastada ffmpegi väljundväljale video genereerimisel.",
                         "heading": "FFmpeg Transkodeerimise Väljundargumendid"
                     }
+                },
+                "ffprobe_path": {
+                    "heading": "FFprobe Käivitava Faili Tee",
+                    "description": "ffprobe käivitatava faili tee (mitte ainult kaust). Kui see on tühi, lahendatakse ffprobe keskkonnast $PATHi, konfiguratsioonikataloogi või $HOME/.stash kaudu"
+                },
+                "ffmpeg_path": {
+                    "heading": "FFmpegi Käivitava Faili Tee",
+                    "description": "ffmpegi käivitatava faili tee (mitte ainult kaust). Kui see on tühi, lahendatakse ffmpeg keskkonnast $PATHi, konfiguratsioonikataloogi või $HOME/.stash kaudu"
+                },
+                "download_ffmpeg": {
+                    "description": "Laadib FFmpegi alla konfiguratsioonikataloogi ja tühjendab ffmpegi ja ffprobe'i teed konfiguratsioonikataloogist lahendamiseks.",
+                    "heading": "Lae alla FFmpeg"
                 }
             },
             "funscript_heatmap_draw_range": "Kaasa vahemik genereeritud kuumkaartidel",
@@ -503,7 +532,20 @@
             "generate_clip_previews_during_scan": "Loo pildiklippide eelvaateid",
             "generate_sprites_during_scan_tooltip": "Pildivalik video mängija all lihtsaks navigeerimiseks.",
             "optimise_database": "Proovige jõudlust parandada, analüüsides ja seejärel kogu andmebaasifaili uuesti üles ehitades.",
-            "optimise_database_warning": "Hoiatus: selle ülesande täitmise ajal nurjuvad kõik andmebaasi muutvad toimingud ja sõltuvalt teie andmebaasi suurusest võib selle lõpuleviimiseks kuluda mitu minutit. See nõuab ka minimaalselt nii palju vaba kettaruumi, kui suur on teie andmebaas, kuid soovitatav on 1,5x."
+            "optimise_database_warning": "Hoiatus: selle ülesande täitmise ajal nurjuvad kõik andmebaasi muutvad toimingud ja sõltuvalt teie andmebaasi suurusest võib selle lõpuleviimiseks kuluda mitu minutit. See nõuab ka minimaalselt nii palju vaba kettaruumi, kui suur on teie andmebaas, kuid soovitatav on 1,5x.",
+            "clean_generated": {
+                "blob_files": "Blobi failid",
+                "markers": "Markeri Eelvaated",
+                "image_thumbnails": "Piltide Pisipildid",
+                "image_thumbnails_desc": "Piltide pisipildid ning klipid",
+                "previews": "Stseenide Eelvaated",
+                "previews_desc": "Stseenide eelvaated ja pisipildid",
+                "sprites": "Stseeni Spraidid",
+                "transcodes": "Stseeni Transkodeeringud",
+                "description": "Eemaldab genereeritud failid ilma vastava andmebaasi kirjeta."
+            },
+            "rescan": "Skaneeri failid uuesti",
+            "rescan_tooltip": "Kontrollige uuesti kõiki teel olevaid faile. Kasutatakse faili metaandmete värskendamiseks ja ZIP-failide uuesti skannimiseks."
         },
         "tools": {
             "scene_duplicate_checker": "Duplikaatstseenide Kontroll",
@@ -756,11 +798,11 @@
         "galleries": "{count, plural, one {Galerii} other {Galleriid}}",
         "images": "{count, plural, one {Pilt} other {Pilti}}",
         "markers": "{count, plural, one {Marker} other {Markerit}}",
-        "movies": "{count, plural, one {Film} other {Filmi}}",
         "performers": "{count, plural, one {Näitleja} other {Näitlejat}}",
         "scenes": "{count, plural, one {Stseen} other {Stseeni}}",
         "studios": "{count, plural, one {Stuudio} other {Stuudiot}}",
-        "tags": "{count, plural, one {Silt} other {Silti}}"
+        "tags": "{count, plural, one {Silt} other {Silti}}",
+        "groups": "{count, plural, one {Grupp} other {Grupid}}"
     },
     "country": "Riik",
     "cover_image": "Kaanepilt",
@@ -896,7 +938,8 @@
             "video_previews": "Eelvaated",
             "video_previews_tooltip": "Video eelvaated, mis esitatakse kursorit stseeni kohal hoides",
             "clip_previews": "Pildiklipi Eelvaated",
-            "phash_tooltip": "De-dubleerimiseks ja stseeni tuvastamiseks"
+            "phash_tooltip": "De-dubleerimiseks ja stseeni tuvastamiseks",
+            "image_thumbnails": "Piltide Pisipildid"
         },
         "scenes_found": "Leiti {count} stseeni",
         "scrape_entity_query": "{entity_type} Kraapija Päring",
@@ -905,7 +948,9 @@
         "scrape_results_scraped": "Kraabitud",
         "set_image_url_title": "Pildi URL",
         "unsaved_changes": "Salvestamata muudatused. Kas soovid kindlasti lahkuda?",
-        "performers_found": "Leiti {count} esinejat"
+        "performers_found": "Leiti {count} esinejat",
+        "clear_o_history_confirm": "Kas oled kindel, et soovid puhastada O ajaloo?",
+        "clear_play_history_confirm": "Kas oled kindel, et soovid puhastada vaatamise ajaloo?"
     },
     "dimensions": "Dimensioonid",
     "director": "Režissöör",
@@ -970,7 +1015,10 @@
         "image_index_greater_than_zero": "Pildi indeks peab olema suurem kui 0",
         "lazy_component_error_help": "Kui uuendasid Stashi hiljuti, palun taaslae leht või tühjenda oma brauseri cache.",
         "something_went_wrong": "Midagi läks valesti.",
-        "loading_type": "Viga {type} laadimisel"
+        "loading_type": "Viga {type} laadimisel",
+        "header": "Viga",
+        "invalid_javascript_string": "Vigane JavaScripti kood: {error}",
+        "invalid_json_string": "Vigane JSON-string: {error}"
     },
     "ethnicity": "Rahvus",
     "existing_value": "eksisteeriv väärtus",
@@ -1058,13 +1106,11 @@
         "play_count": "Esituste Arv",
         "play_duration": "Esitamisaeg",
         "stream": "Striim",
-        "video_codec": "Video Koodek"
+        "video_codec": "Video Koodek",
+        "o_count": "O Arv"
     },
     "megabits_per_second": "{value} mbps",
     "metadata": "Metaandmed",
-    "movie": "Film",
-    "movie_scene_number": "Filmi Stseeninumber",
-    "movies": "Filmid",
     "name": "Nimi",
     "new": "Uus",
     "none": "Puudub",
@@ -1075,7 +1121,8 @@
         "first": "Esimene",
         "last": "Viimane",
         "next": "Järgmine",
-        "previous": "Eelmine"
+        "previous": "Eelmine",
+        "current_total": "{current} {total}st"
     },
     "parent_of": "{children} vanem-silt",
     "parent_studios": "Vanem-stuudiod",
@@ -1171,8 +1218,7 @@
             "blobs_use_database": "<kasutades andmebaasi>"
         },
         "creating": {
-            "creating_your_system": "Loon sulle süsteemi",
-            "ffmpeg_notice": "Kui <code>ffmpeg</code>-i pole veel olemas, ole kannatlik, kuni stash selle alla laadib. Allalaadimise edenemise vaatamiseks vaata konsooli väljundit."
+            "creating_your_system": "Loon sulle süsteemi"
         },
         "errors": {
             "something_went_wrong": "Oi ei! Midagi läks valesti!",
@@ -1230,7 +1276,9 @@
             "support_us": "Toeta meid",
             "thanks_for_trying_stash": "Aitäh Stashi proovimise eest!",
             "welcome_contrib": "Ootame ka panust koodi (veaparandused, täiustused ja uued funktsioonid), testimise, veaaruannete, parendus- ja funktsioonitaotluste ning kasutajatoe kujul. Üksikasjad leiad rakendusesisese juhendi jaotisest Contribution.",
-            "your_system_has_been_created": "Edukas! Su süsteem on loodud!"
+            "your_system_has_been_created": "Edukas! Su süsteem on loodud!",
+            "download_ffmpeg": "Lae ffmpeg alla",
+            "missing_ffmpeg": "Teil puudub nõutav binaarfail <code>ffmpeg</code>. Saate selle automaatselt oma konfiguratsioonikataloogi alla laadida, märkides alloleva kasti. Teise võimalusena saate süsteemiseadetes anda teed binaarfailidele <code>ffmpeg</code> ja <code>ffprobe</code>. Stashi toimimiseks peavad need kahendfailid olemas olema."
         },
         "welcome": {
             "config_path_logic_explained": "Stash püüab esmalt leida oma konfiguratsioonifaili (<code>config.yml</code>) praegusest töökataloogist ja kui ta seda sealt ei leia, läheb tagasi kausta <code>{fallback_path}</code>. Samuti saad panna Stashi lugema konkreetsest konfiguratsioonifailist, käivitades selle suvanditega <code>-c '<konfiguratsioonifaili tee>'</code> või <code>--config '<konfiguratsioonifaili tee>'</code>.",
@@ -1355,7 +1403,8 @@
         "add_source": "Lisa Allikas",
         "check_for_updates": "Kontrolli Uuendusi",
         "hide_unselected": "Peida valimata",
-        "installed_version": "Installitud Versioon"
+        "installed_version": "Installitud Versioon",
+        "no_upgradable": "Uuendatavaid pakette ei leitud"
     },
     "penis_length_cm": "Peenise Pikkus (cm)",
     "parent_studio": "Vanemstuudio",
@@ -1412,5 +1461,34 @@
     "subsidiary_studio_count": "Alamstuudiote Arv",
     "tag_parent_tooltip": "Sellel on vanemamärked",
     "tag_sub_tag_tooltip": "Sellel on alammärked",
-    "time": "Aeg"
+    "time": "Aeg",
+    "o_history": "O Ajalugu",
+    "containing_group_count": "Sisalduvate Rühmade Arv",
+    "containing_groups": "Sisalduvad Rühmad",
+    "group": "Grupp",
+    "last_o_at": "Viimane O",
+    "odate_recorded_no": "O Kuupäevi Pole Salvestatud",
+    "play_history": "Vaatamise Ajalugu",
+    "playdate_recorded_no": "Vaatamise Kuupäevi Pole Salvestatud",
+    "studio_count": "Stuudiote Arv",
+    "studio_tags": "Stuudio Sildid",
+    "unknown_date": "Teadmata Kuupäev",
+    "connection_monitor": {
+        "websocket_connection_failed": "Websocketiga ei saa ühendust luua: vaadake üksikasju brauseri konsoolist",
+        "websocket_connection_reestablished": "Websocketi ühendus taastatud"
+    },
+    "containing_group": "Sisaldab Rühma",
+    "group_count": "Gruppide Arv",
+    "group_scene_number": "Stseeni Number",
+    "groups": "Grupid",
+    "history": "Ajalugu",
+    "include_sub_group_content": "Sisalda alamgruppide sisu",
+    "sub_group": "Alamgrupp",
+    "sub_group_count": "Alamgruppide Arv",
+    "sub_group_of": "{parent}i Alamgrupp",
+    "sub_group_order": "Alamgruppide Järjekord",
+    "sub_groups": "Alamgrupid",
+    "include_sub_tag_content": "Sisalda alamsiltide sisu",
+    "include_sub_studio_content": "Sisalda alamstuudiote sisu",
+    "o_count": "O Arv"
 }

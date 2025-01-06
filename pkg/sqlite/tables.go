@@ -25,15 +25,25 @@ var (
 	scenesTagsJoinTable       = goqu.T(scenesTagsTable)
 	scenesPerformersJoinTable = goqu.T(performersScenesTable)
 	scenesStashIDsJoinTable   = goqu.T("scene_stash_ids")
-	scenesMoviesJoinTable     = goqu.T(moviesScenesTable)
+	scenesGroupsJoinTable     = goqu.T(groupsScenesTable)
 	scenesURLsJoinTable       = goqu.T(scenesURLsTable)
 
 	performersAliasesJoinTable  = goqu.T(performersAliasesTable)
+	performersURLsJoinTable     = goqu.T(performerURLsTable)
 	performersTagsJoinTable     = goqu.T(performersTagsTable)
 	performersStashIDsJoinTable = goqu.T("performer_stash_ids")
+	performersCustomFieldsTable = goqu.T("performer_custom_fields")
 
 	studiosAliasesJoinTable  = goqu.T(studioAliasesTable)
+	studiosTagsJoinTable     = goqu.T(studiosTagsTable)
 	studiosStashIDsJoinTable = goqu.T("studio_stash_ids")
+
+	groupsURLsJoinTable     = goqu.T(groupURLsTable)
+	groupsTagsJoinTable     = goqu.T(groupsTagsTable)
+	groupRelationsJoinTable = goqu.T(groupRelationsTable)
+
+	tagsAliasesJoinTable  = goqu.T(tagAliasesTable)
+	tagRelationsJoinTable = goqu.T(tagRelationsTable)
 )
 
 var (
@@ -49,12 +59,14 @@ var (
 		},
 	}
 
-	imageGalleriesTableMgr = &joinTable{
-		table: table{
-			table:    galleriesImagesJoinTable,
-			idColumn: galleriesImagesJoinTable.Col(imageIDColumn),
+	imageGalleriesTableMgr = &imageGalleriesTable{
+		joinTable: joinTable{
+			table: table{
+				table:    galleriesImagesJoinTable,
+				idColumn: galleriesImagesJoinTable.Col(imageIDColumn),
+			},
+			fkColumn: galleriesImagesJoinTable.Col(galleryIDColumn),
 		},
-		fkColumn: galleriesImagesJoinTable.Col(galleryIDColumn),
 	}
 
 	imagesTagsTableMgr = &joinTable{
@@ -176,10 +188,10 @@ var (
 		},
 	}
 
-	scenesMoviesTableMgr = &scenesMoviesTable{
+	scenesGroupsTableMgr = &scenesGroupsTable{
 		table: table{
-			table:    scenesMoviesJoinTable,
-			idColumn: scenesMoviesJoinTable.Col(sceneIDColumn),
+			table:    scenesGroupsJoinTable,
+			idColumn: scenesGroupsJoinTable.Col(sceneIDColumn),
 		},
 	}
 
@@ -249,6 +261,14 @@ var (
 		stringColumn: performersAliasesJoinTable.Col(performerAliasColumn),
 	}
 
+	performersURLsTableMgr = &orderedValueTable[string]{
+		table: table{
+			table:    performersURLsJoinTable,
+			idColumn: performersURLsJoinTable.Col(performerIDColumn),
+		},
+		valueColumn: performersURLsJoinTable.Col(performerURLColumn),
+	}
+
 	performersTagsTableMgr = &joinTable{
 		table: table{
 			table:    performersTagsJoinTable,
@@ -279,6 +299,14 @@ var (
 		stringColumn: studiosAliasesJoinTable.Col(studioAliasColumn),
 	}
 
+	studiosTagsTableMgr = &joinTable{
+		table: table{
+			table:    studiosTagsJoinTable,
+			idColumn: studiosTagsJoinTable.Col(studioIDColumn),
+		},
+		fkColumn: studiosTagsJoinTable.Col(tagIDColumn),
+	}
+
 	studiosStashIDsTableMgr = &stashIDTable{
 		table: table{
 			table:    studiosStashIDsJoinTable,
@@ -292,12 +320,54 @@ var (
 		table:    goqu.T(tagTable),
 		idColumn: goqu.T(tagTable).Col(idColumn),
 	}
+
+	tagsAliasesTableMgr = &stringTable{
+		table: table{
+			table:    tagsAliasesJoinTable,
+			idColumn: tagsAliasesJoinTable.Col(tagIDColumn),
+		},
+		stringColumn: tagsAliasesJoinTable.Col(tagAliasColumn),
+	}
+
+	tagsParentTagsTableMgr = &joinTable{
+		table: table{
+			table:    tagRelationsJoinTable,
+			idColumn: tagRelationsJoinTable.Col(tagChildIDColumn),
+		},
+		fkColumn:     tagRelationsJoinTable.Col(tagParentIDColumn),
+		foreignTable: tagTableMgr,
+		orderBy:      tagTableMgr.table.Col("name").Asc(),
+	}
+
+	tagsChildTagsTableMgr = *tagsParentTagsTableMgr.invert()
 )
 
 var (
-	movieTableMgr = &table{
-		table:    goqu.T(movieTable),
-		idColumn: goqu.T(movieTable).Col(idColumn),
+	groupTableMgr = &table{
+		table:    goqu.T(groupTable),
+		idColumn: goqu.T(groupTable).Col(idColumn),
+	}
+
+	groupsURLsTableMgr = &orderedValueTable[string]{
+		table: table{
+			table:    groupsURLsJoinTable,
+			idColumn: groupsURLsJoinTable.Col(groupIDColumn),
+		},
+		valueColumn: groupsURLsJoinTable.Col(groupURLColumn),
+	}
+
+	groupsTagsTableMgr = &joinTable{
+		table: table{
+			table:    groupsTagsJoinTable,
+			idColumn: groupsTagsJoinTable.Col(groupIDColumn),
+		},
+		fkColumn:     groupsTagsJoinTable.Col(tagIDColumn),
+		foreignTable: tagTableMgr,
+		orderBy:      tagTableMgr.table.Col("name").Asc(),
+	}
+
+	groupRelationshipTableMgr = &table{
+		table: groupRelationsJoinTable,
 	}
 )
 

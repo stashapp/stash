@@ -8,89 +8,7 @@ import React, {
 import { useSpriteInfo } from "src/hooks/sprite";
 import { useThrottle } from "src/hooks/throttle";
 import TextUtils from "src/utils/text";
-import cx from "classnames";
-
-interface IHoverScrubber {
-  totalSprites: number;
-  activeIndex: number | undefined;
-  setActiveIndex: (index: number | undefined) => void;
-  onClick?: () => void;
-}
-
-const HoverScrubber: React.FC<IHoverScrubber> = ({
-  totalSprites,
-  activeIndex,
-  setActiveIndex,
-  onClick,
-}) => {
-  function getActiveIndex(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
-    const { width } = e.currentTarget.getBoundingClientRect();
-    const x = e.nativeEvent.offsetX;
-
-    const i = Math.floor((x / width) * totalSprites);
-
-    // clamp to [0, totalSprites)
-    if (i < 0) return 0;
-    if (i >= totalSprites) return totalSprites - 1;
-    return i;
-  }
-
-  function onMouseMove(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
-    const relatedTarget = e.currentTarget;
-
-    if (relatedTarget !== e.target) return;
-
-    setActiveIndex(getActiveIndex(e));
-  }
-
-  function onMouseLeave() {
-    setActiveIndex(undefined);
-  }
-
-  function onScrubberClick(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
-    if (!onClick) return;
-
-    const relatedTarget = e.currentTarget;
-
-    if (relatedTarget !== e.target) return;
-
-    e.preventDefault();
-    onClick();
-  }
-
-  const indicatorStyle = useMemo(() => {
-    if (activeIndex === undefined || !totalSprites) return {};
-
-    const width = (activeIndex / totalSprites) * 100;
-
-    return {
-      width: `${width}%`,
-    };
-  }, [activeIndex, totalSprites]);
-
-  return (
-    <div
-      className={cx("hover-scrubber", {
-        "hover-scrubber-inactive": !totalSprites,
-      })}
-    >
-      <div
-        className="hover-scrubber-area"
-        onMouseMove={onMouseMove}
-        onMouseLeave={onMouseLeave}
-        onClick={onScrubberClick}
-      />
-      <div className="hover-scrubber-indicator">
-        {activeIndex !== undefined && (
-          <div
-            className="hover-scrubber-indicator-marker"
-            style={indicatorStyle}
-          ></div>
-        )}
-      </div>
-    </div>
-  );
-};
+import { HoverScrubber } from "../Shared/HoverScrubber";
 
 interface IScenePreviewProps {
   vttPath: string | undefined;
@@ -108,6 +26,8 @@ function scaleToFit(dimensions: { w: number; h: number }, bounds: DOMRect) {
 
   return Math.min(rw, rh);
 }
+
+const defaultSprites = 81; // 9x9 grid by default
 
 export const PreviewScrubber: React.FC<IScenePreviewProps> = ({
   vttPath,
@@ -165,15 +85,16 @@ export const PreviewScrubber: React.FC<IScenePreviewProps> = ({
     return start;
   }, [sprite]);
 
-  function onScrubberClick() {
-    if (!sprite || !onClick) {
+  function onScrubberClick(index: number) {
+    if (!onClick || !spriteInfo) {
       return;
     }
 
-    onClick(sprite.start);
+    const s = spriteInfo[index];
+    onClick(s.start);
   }
 
-  if (!spriteInfo && hasLoaded) return null;
+  if (spriteInfo === null || !vttPath) return null;
 
   return (
     <div className="preview-scrubber">
@@ -186,7 +107,7 @@ export const PreviewScrubber: React.FC<IScenePreviewProps> = ({
         </div>
       )}
       <HoverScrubber
-        totalSprites={spriteInfo?.length ?? 0}
+        totalSprites={spriteInfo?.length ?? defaultSprites}
         activeIndex={activeIndex}
         setActiveIndex={(i) => debounceSetActiveIndex(i)}
         onClick={onScrubberClick}

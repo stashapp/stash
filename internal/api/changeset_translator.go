@@ -335,43 +335,86 @@ func (t changesetTranslator) updateStringsBulk(value *BulkUpdateStrings, field s
 	}
 }
 
-func (t changesetTranslator) updateStashIDs(value []models.StashID, field string) *models.UpdateStashIDs {
+func (t changesetTranslator) updateStashIDs(value models.StashIDInputs, field string) *models.UpdateStashIDs {
 	if !t.hasField(field) {
 		return nil
 	}
 
 	return &models.UpdateStashIDs{
-		StashIDs: value,
+		StashIDs: value.ToStashIDs(),
 		Mode:     models.RelationshipUpdateModeSet,
 	}
 }
 
-func (t changesetTranslator) relatedMovies(value []models.SceneMovieInput) (models.RelatedMovies, error) {
-	moviesScenes, err := models.MoviesScenesFromInput(value)
+func (t changesetTranslator) relatedGroupsFromMovies(value []models.SceneMovieInput) (models.RelatedGroups, error) {
+	groupsScenes, err := models.GroupsScenesFromInput(value)
 	if err != nil {
-		return models.RelatedMovies{}, err
+		return models.RelatedGroups{}, err
 	}
 
-	return models.NewRelatedMovies(moviesScenes), nil
+	return models.NewRelatedGroups(groupsScenes), nil
 }
 
-func (t changesetTranslator) updateMovieIDs(value []models.SceneMovieInput, field string) (*models.UpdateMovieIDs, error) {
+func groupsScenesFromGroupInput(input []models.SceneGroupInput) ([]models.GroupsScenes, error) {
+	ret := make([]models.GroupsScenes, len(input))
+
+	for i, v := range input {
+		mID, err := strconv.Atoi(v.GroupID)
+		if err != nil {
+			return nil, fmt.Errorf("invalid group ID: %s", v.GroupID)
+		}
+
+		ret[i] = models.GroupsScenes{
+			GroupID:    mID,
+			SceneIndex: v.SceneIndex,
+		}
+	}
+
+	return ret, nil
+}
+
+func (t changesetTranslator) relatedGroups(value []models.SceneGroupInput) (models.RelatedGroups, error) {
+	groupsScenes, err := groupsScenesFromGroupInput(value)
+	if err != nil {
+		return models.RelatedGroups{}, err
+	}
+
+	return models.NewRelatedGroups(groupsScenes), nil
+}
+
+func (t changesetTranslator) updateGroupIDsFromMovies(value []models.SceneMovieInput, field string) (*models.UpdateGroupIDs, error) {
 	if !t.hasField(field) {
 		return nil, nil
 	}
 
-	moviesScenes, err := models.MoviesScenesFromInput(value)
+	groupsScenes, err := models.GroupsScenesFromInput(value)
 	if err != nil {
 		return nil, err
 	}
 
-	return &models.UpdateMovieIDs{
-		Movies: moviesScenes,
+	return &models.UpdateGroupIDs{
+		Groups: groupsScenes,
 		Mode:   models.RelationshipUpdateModeSet,
 	}, nil
 }
 
-func (t changesetTranslator) updateMovieIDsBulk(value *BulkUpdateIds, field string) (*models.UpdateMovieIDs, error) {
+func (t changesetTranslator) updateGroupIDs(value []models.SceneGroupInput, field string) (*models.UpdateGroupIDs, error) {
+	if !t.hasField(field) {
+		return nil, nil
+	}
+
+	groupsScenes, err := groupsScenesFromGroupInput(value)
+	if err != nil {
+		return nil, err
+	}
+
+	return &models.UpdateGroupIDs{
+		Groups: groupsScenes,
+		Mode:   models.RelationshipUpdateModeSet,
+	}, nil
+}
+
+func (t changesetTranslator) updateGroupIDsBulk(value *BulkUpdateIds, field string) (*models.UpdateGroupIDs, error) {
 	if !t.hasField(field) || value == nil {
 		return nil, nil
 	}
@@ -381,13 +424,74 @@ func (t changesetTranslator) updateMovieIDsBulk(value *BulkUpdateIds, field stri
 		return nil, fmt.Errorf("converting ids [%v]: %w", value.Ids, err)
 	}
 
-	movies := make([]models.MoviesScenes, len(ids))
+	groups := make([]models.GroupsScenes, len(ids))
 	for i, id := range ids {
-		movies[i] = models.MoviesScenes{MovieID: id}
+		groups[i] = models.GroupsScenes{GroupID: id}
 	}
 
-	return &models.UpdateMovieIDs{
-		Movies: movies,
+	return &models.UpdateGroupIDs{
+		Groups: groups,
+		Mode:   value.Mode,
+	}, nil
+}
+
+func groupsDescriptionsFromGroupInput(input []*GroupDescriptionInput) ([]models.GroupIDDescription, error) {
+	ret := make([]models.GroupIDDescription, len(input))
+
+	for i, v := range input {
+		gID, err := strconv.Atoi(v.GroupID)
+		if err != nil {
+			return nil, fmt.Errorf("invalid group ID: %s", v.GroupID)
+		}
+
+		ret[i] = models.GroupIDDescription{
+			GroupID: gID,
+		}
+		if v.Description != nil {
+			ret[i].Description = *v.Description
+		}
+	}
+
+	return ret, nil
+}
+
+func (t changesetTranslator) groupIDDescriptions(value []*GroupDescriptionInput) (models.RelatedGroupDescriptions, error) {
+	groupsScenes, err := groupsDescriptionsFromGroupInput(value)
+	if err != nil {
+		return models.RelatedGroupDescriptions{}, err
+	}
+
+	return models.NewRelatedGroupDescriptions(groupsScenes), nil
+}
+
+func (t changesetTranslator) updateGroupIDDescriptions(value []*GroupDescriptionInput, field string) (*models.UpdateGroupDescriptions, error) {
+	if !t.hasField(field) {
+		return nil, nil
+	}
+
+	groupsScenes, err := groupsDescriptionsFromGroupInput(value)
+	if err != nil {
+		return nil, err
+	}
+
+	return &models.UpdateGroupDescriptions{
+		Groups: groupsScenes,
+		Mode:   models.RelationshipUpdateModeSet,
+	}, nil
+}
+
+func (t changesetTranslator) updateGroupIDDescriptionsBulk(value *BulkUpdateGroupDescriptionsInput, field string) (*models.UpdateGroupDescriptions, error) {
+	if !t.hasField(field) || value == nil {
+		return nil, nil
+	}
+
+	groups, err := groupsDescriptionsFromGroupInput(value.Groups)
+	if err != nil {
+		return nil, err
+	}
+
+	return &models.UpdateGroupDescriptions{
+		Groups: groups,
 		Mode:   value.Mode,
 	}, nil
 }

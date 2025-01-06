@@ -146,7 +146,8 @@
         "temp_enable": "Aktifkan sementara…",
         "use_default": "Gunakan bawaan",
         "view_random": "Lihat Acak",
-        "unset": "Tidak disetel"
+        "unset": "Tidak disetel",
+        "view_history": "Lihat histori"
     },
     "circumcised_types": {
         "CUT": "Disunat",
@@ -234,12 +235,17 @@
             "match_failed_no_result": "Tidak menemukan hasil",
             "match_success": "Adegan berhasil ditag",
             "phash_matches": "{count} PHash cocok",
-            "unnamed": "Belum dinamai"
+            "unnamed": "Belum dinamai",
+            "fp_matches_multi": "Durasi cocok {matchCount}/{durationsLength} sidik jari",
+            "fp_found": "{fpCount, plural, =0 {Tidak ditemukan kecocokan sidik jari baru} other {# kecocokan sidik jari baru ditemukan}}"
         },
         "verb_scrape_all": "Gali Semua",
         "noun_query": "Kueri",
         "verb_matched": "Dicocokkan",
-        "verb_toggle_unmatched": "{toggle} adegan yang tidak cocok"
+        "verb_toggle_unmatched": "{toggle} adegan yang tidak cocok",
+        "verb_match_fp": "Cocokkan Sidik Jari",
+        "verb_submit_fp": "Masukkan {fpCount, plural, one{# Sidik jari} other{# Sidik jari}}",
+        "verb_toggle_config": "{toggle} {configuration}"
     },
     "config": {
         "categories": {
@@ -349,7 +355,11 @@
                 "heading": "Jalur Penggali"
             },
             "scraper_user_agent_desc": "String Agen-Pengguna yang digunakan selama permintaan http penggalian data",
-            "video_ext_head": "Ekstensi Video"
+            "video_ext_head": "Ekstensi Video",
+            "blobs_path": {
+                "description": "Dimana pada sistem berkas untuk menyimpan data biner. Hanya berlaku saat menggunakan jenis penyimpanan blob Sistem Berkas. PERINGATAN: mengubah ini memerlukan pemindahan data yang ada secara manual.",
+                "heading": "Jalur sistem berkas data biner"
+            }
         },
         "library": {
             "exclusions": "Pengecualian"
@@ -372,7 +382,14 @@
                 "auto_tagging_paths": "Memberi Tag Otomatis pada jalur berikut"
             },
             "auto_tag_based_on_filenames": "Memberi tag otomatis pada konten berdasarkan jalur berkas.",
-            "auto_tagging": "Pemberian Tag Otomatis"
+            "auto_tagging": "Pemberian Tag Otomatis",
+            "clean_generated": {
+                "markers": "Pratinjau Penanda",
+                "image_thumbnails": "Keluku Gambar",
+                "image_thumbnails_desc": "Keluku dan klip gambar",
+                "previews": "Pratinjau Adegan"
+            },
+            "added_job_to_queue": "{operation_name} ditambahkan ke antrean tugas"
         },
         "ui": {
             "editing": {
@@ -425,7 +442,11 @@
             "stash_home": "Beranda Stash di {url}",
             "stash_open_collective": "Dukung kami melalui {url}",
             "version": "Versi",
-            "check_for_new_version": "Periksa versi terbaru"
+            "check_for_new_version": "Periksa versi terbaru",
+            "build_time": "Waktu dibangun::",
+            "latest_version_build_hash": "Build Hash Versi Terbaru:",
+            "build_hash": "Versi hash:",
+            "stash_wiki": "Halaman {url} Stash"
         },
         "scraping": {
             "scraper": "Penggali data",
@@ -634,8 +655,6 @@
         "generic": "Memuat…"
     },
     "tag": "Tag",
-    "movie": "Film",
-    "movies": "Film",
     "o_counter": "Penghitung Crot",
     "operations": "Operasi",
     "organized": "Terorganisir",

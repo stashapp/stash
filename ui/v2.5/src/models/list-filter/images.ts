@@ -16,6 +16,7 @@ import { OrientationCriterionOption } from "./criteria/orientation";
 import { StudiosCriterionOption } from "./criteria/studios";
 import {
   PerformerTagsCriterionOption,
+  // StudioTagsCriterionOption,
   TagsCriterionOption,
 } from "./criteria/tags";
 import { ListFilterOptions, MediaSortByOptions } from "./filter-options";
@@ -24,14 +25,14 @@ import { GalleriesCriterionOption } from "./criteria/galleries";
 
 const defaultSortBy = "path";
 
-const sortByOptions = [
-  "o_counter",
-  "filesize",
-  "file_count",
-  "date",
-  ...MediaSortByOptions,
-].map(ListFilterOptions.createSortBy);
-
+const sortByOptions = ["filesize", "file_count", "date", ...MediaSortByOptions]
+  .map(ListFilterOptions.createSortBy)
+  .concat([
+    {
+      messageID: "o_count",
+      value: "o_counter",
+    },
+  ]);
 const displayModeOptions = [DisplayMode.Grid, DisplayMode.Wall];
 const criterionOptions = [
   createStringCriterionOption("title"),
@@ -42,7 +43,7 @@ const criterionOptions = [
   PathCriterionOption,
   GalleriesCriterionOption,
   OrganizedCriterionOption,
-  createMandatoryNumberCriterionOption("o_counter"),
+  createMandatoryNumberCriterionOption("o_counter", "o_count"),
   ResolutionCriterionOption,
   OrientationCriterionOption,
   ImageIsMissingCriterionOption,
@@ -54,6 +55,7 @@ const criterionOptions = [
   createMandatoryNumberCriterionOption("performer_count"),
   createMandatoryNumberCriterionOption("performer_age"),
   PerformerFavoriteCriterionOption,
+  // StudioTagsCriterionOption,
   StudiosCriterionOption,
   createStringCriterionOption("url"),
   createDateCriterionOption("date"),

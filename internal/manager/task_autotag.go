@@ -25,7 +25,7 @@ type autoTagJob struct {
 	cache match.Cache
 }
 
-func (j *autoTagJob) Execute(ctx context.Context, progress *job.Progress) {
+func (j *autoTagJob) Execute(ctx context.Context, progress *job.Progress) error {
 	begin := time.Now()
 
 	input := j.input
@@ -38,6 +38,7 @@ func (j *autoTagJob) Execute(ctx context.Context, progress *job.Progress) {
 	}
 
 	logger.Infof("Finished auto-tag after %s", time.Since(begin).String())
+	return nil
 }
 
 func (j *autoTagJob) isFileBasedAutoTag(input AutoTagMetadataInput) bool {

@@ -27,7 +27,9 @@ import {
 import { useCompare } from "src/hooks/state";
 import { Link } from "react-router-dom";
 import { sortByRelevance } from "src/utils/query";
-import { PatchComponent } from "src/patch";
+import { PatchComponent, PatchFunction } from "src/patch";
+import { TruncatedText } from "../Shared/TruncatedText";
+import TextUtils from "src/utils/text";
 
 export type SelectObject = {
   id: string;
@@ -37,9 +39,36 @@ export type SelectObject = {
 
 export type Performer = Pick<
   GQL.Performer,
-  "id" | "name" | "alias_list" | "disambiguation" | "image_path"
+  | "id"
+  | "name"
+  | "alias_list"
+  | "disambiguation"
+  | "image_path"
+  | "birthdate"
+  | "death_date"
 >;
 type Option = SelectOption<Performer>;
+
+type FindPerformersResult = Awaited<
+  ReturnType<typeof queryFindPerformersForSelect>
+>["data"]["findPerformers"]["performers"];
+
+function sortPerformersByRelevance(
+  input: string,
+  performers: FindPerformersResult
+) {
+  return sortByRelevance(
+    input,
+    performers,
+    (p) => p.name,
+    (p) => p.alias_list
+  );
+}
+
+const performerSelectSort = PatchFunction(
+  "PerformerSelect.sort",
+  sortPerformersByRelevance
+);
 
 const _PerformerSelect: React.FC<
   IFilterProps & IFilterValueProps<Performer>
@@ -61,11 +90,9 @@ const _PerformerSelect: React.FC<
     filter.sortBy = "name";
     filter.sortDirection = GQL.SortDirectionEnum.Asc;
     const query = await queryFindPerformersForSelect(filter);
-    return sortByRelevance(
+    return performerSelectSort(
       input,
-      query.data.findPerformers.performers,
-      (p) => p.name,
-      (p) => p.alias_list
+      query.data.findPerformers.performers.slice()
     ).map((performer) => ({
       value: performer.id,
       object: performer,
@@ -93,23 +120,51 @@ const _PerformerSelect: React.FC<
     thisOptionProps = {
       ...optionProps,
       children: (
-        <span className="react-select-image-option performer-select-option">
-          <Link
-            to={`/performers/${object.id}`}
-            target="_blank"
-            className="performer-select-image-link"
-          >
-            <img
-              className="performer-select-image"
-              src={object.image_path ?? ""}
-              loading="lazy"
-            />
-          </Link>
-          <span>{name}</span>
-          {object.disambiguation && (
-            <span className="performer-disambiguation">{` (${object.disambiguation})`}</span>
-          )}
-          {alias && <span className="alias">{` (${alias})`}</span>}
+        <span className="performer-select-option">
+          <span className="performer-select-row">
+            <Link
+              to={`/performers/${object.id}`}
+              target="_blank"
+              className="performer-select-image-link"
+            >
+              <img
+                className="performer-select-image"
+                src={object.image_path ?? ""}
+                loading="lazy"
+              />
+            </Link>
+            <span className="performer-select-details">
+              <TruncatedText
+                className="performer-select-name"
+                text={
+                  <span>
+                    {name}
+                    {alias && (
+                      <span className="performer-select-alias">
+                        &nbsp;({alias})
+                      </span>
+                    )}
+                  </span>
+                }
+                lineCount={1}
+              />
+
+              {object.disambiguation && (
+                <span className="performer-select-disambiguation">
+                  {object.disambiguation}
+                </span>
+              )}
+
+              {object.birthdate && (
+                <span className="performer-select-birthdate">{`${
+                  object.birthdate
+                } (${TextUtils.age(
+                  object.birthdate,
+                  object.death_date
+                )})`}</span>
+              )}
+            </span>
+          </span>
         </span>
       ),
     };

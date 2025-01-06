@@ -11,7 +11,7 @@ declare namespace PluginApi {
     const BlobsStorageType: { [key: string]: any };
     const BulkGalleryUpdateDocument: { [key: string]: any };
     const BulkImageUpdateDocument: { [key: string]: any };
-    const BulkMovieUpdateDocument: { [key: string]: any };
+    const BulkGroupUpdateDocument: { [key: string]: any };
     const BulkPerformerUpdateDocument: { [key: string]: any };
     const BulkSceneUpdateDocument: { [key: string]: any };
     const BulkUpdateIdMode: { [key: string]: any };
@@ -39,7 +39,6 @@ declare namespace PluginApi {
     const EnableDlnaDocument: { [key: string]: any };
     const ExportObjectsDocument: { [key: string]: any };
     const FilterMode: { [key: string]: any };
-    const FindDefaultFilterDocument: { [key: string]: any };
     const FindDuplicateScenesDocument: { [key: string]: any };
     const FindGalleriesDocument: { [key: string]: any };
     const FindGalleriesForSelectDocument: { [key: string]: any };
@@ -47,9 +46,9 @@ declare namespace PluginApi {
     const FindImageDocument: { [key: string]: any };
     const FindImagesDocument: { [key: string]: any };
     const FindJobDocument: { [key: string]: any };
-    const FindMovieDocument: { [key: string]: any };
-    const FindMoviesDocument: { [key: string]: any };
-    const FindMoviesForSelectDocument: { [key: string]: any };
+    const FindGroupDocument: { [key: string]: any };
+    const FindGroupsDocument: { [key: string]: any };
+    const FindGroupsForSelectDocument: { [key: string]: any };
     const FindPerformerDocument: { [key: string]: any };
     const FindPerformersDocument: { [key: string]: any };
     const FindPerformersForSelectDocument: { [key: string]: any };
@@ -110,7 +109,7 @@ declare namespace PluginApi {
     const JobsSubscribeDocument: { [key: string]: any };
     const LatestVersionDocument: { [key: string]: any };
     const ListGalleryScrapersDocument: { [key: string]: any };
-    const ListMovieScrapersDocument: { [key: string]: any };
+    const ListGroupScrapersDocument: { [key: string]: any };
     const ListPerformerScrapersDocument: { [key: string]: any };
     const ListSceneScrapersDocument: { [key: string]: any };
     const LogEntryDataFragmentDoc: { [key: string]: any };
@@ -130,11 +129,11 @@ declare namespace PluginApi {
     const MigrateDocument: { [key: string]: any };
     const MigrateHashNamingDocument: { [key: string]: any };
     const MigrateSceneScreenshotsDocument: { [key: string]: any };
-    const MovieCreateDocument: { [key: string]: any };
-    const MovieDataFragmentDoc: { [key: string]: any };
-    const MovieDestroyDocument: { [key: string]: any };
-    const MovieUpdateDocument: { [key: string]: any };
-    const MoviesDestroyDocument: { [key: string]: any };
+    const GroupCreateDocument: { [key: string]: any };
+    const GroupDataFragmentDoc: { [key: string]: any };
+    const GroupDestroyDocument: { [key: string]: any };
+    const GroupUpdateDocument: { [key: string]: any };
+    const GroupsDestroyDocument: { [key: string]: any };
     const OptimiseDatabaseDocument: { [key: string]: any };
     const OrientationEnum: { [key: string]: any };
     const PackageDataFragmentDoc: { [key: string]: any };
@@ -180,7 +179,7 @@ declare namespace PluginApi {
     const ScenesUpdateDocument: { [key: string]: any };
     const ScrapeContentType: { [key: string]: any };
     const ScrapeGalleryUrlDocument: { [key: string]: any };
-    const ScrapeMovieUrlDocument: { [key: string]: any };
+    const ScrapeGroupUrlDocument: { [key: string]: any };
     const ScrapeMultiPerformersDocument: { [key: string]: any };
     const ScrapeMultiScenesDocument: { [key: string]: any };
     const ScrapePerformerUrlDocument: { [key: string]: any };
@@ -191,11 +190,11 @@ declare namespace PluginApi {
     const ScrapeSingleStudioDocument: { [key: string]: any };
     const ScrapeType: { [key: string]: any };
     const ScrapedGalleryDataFragmentDoc: { [key: string]: any };
-    const ScrapedMovieDataFragmentDoc: { [key: string]: any };
-    const ScrapedMovieStudioDataFragmentDoc: { [key: string]: any };
+    const ScrapedGroupDataFragmentDoc: { [key: string]: any };
+    const ScrapedGroupStudioDataFragmentDoc: { [key: string]: any };
     const ScrapedPerformerDataFragmentDoc: { [key: string]: any };
     const ScrapedSceneDataFragmentDoc: { [key: string]: any };
-    const ScrapedSceneMovieDataFragmentDoc: { [key: string]: any };
+    const ScrapedSceneGroupDataFragmentDoc: { [key: string]: any };
     const ScrapedScenePerformerDataFragmentDoc: { [key: string]: any };
     const ScrapedSceneStudioDataFragmentDoc: { [key: string]: any };
     const ScrapedSceneTagDataFragmentDoc: { [key: string]: any };
@@ -204,16 +203,15 @@ declare namespace PluginApi {
     const ScrapedStudioDataFragmentDoc: { [key: string]: any };
     const ScraperSourceDataFragmentDoc: { [key: string]: any };
     const SelectGalleryDataFragmentDoc: { [key: string]: any };
-    const SelectMovieDataFragmentDoc: { [key: string]: any };
+    const SelectGroupDataFragmentDoc: { [key: string]: any };
     const SelectPerformerDataFragmentDoc: { [key: string]: any };
     const SelectStudioDataFragmentDoc: { [key: string]: any };
     const SelectTagDataFragmentDoc: { [key: string]: any };
-    const SetDefaultFilterDocument: { [key: string]: any };
     const SetPluginsEnabledDocument: { [key: string]: any };
     const SetupDocument: { [key: string]: any };
     const SlimGalleryDataFragmentDoc: { [key: string]: any };
     const SlimImageDataFragmentDoc: { [key: string]: any };
-    const SlimMovieDataFragmentDoc: { [key: string]: any };
+    const SlimGroupDataFragmentDoc: { [key: string]: any };
     const SlimPerformerDataFragmentDoc: { [key: string]: any };
     const SlimSceneDataFragmentDoc: { [key: string]: any };
     const SlimStudioDataFragmentDoc: { [key: string]: any };
@@ -254,7 +252,6 @@ declare namespace PluginApi {
     function refetchConfigurationQuery(...args: any[]): any;
     function refetchDirectoryQuery(...args: any[]): any;
     function refetchDlnaStatusQuery(...args: any[]): any;
-    function refetchFindDefaultFilterQuery(...args: any[]): any;
     function refetchFindDuplicateScenesQuery(...args: any[]): any;
     function refetchFindGalleriesForSelectQuery(...args: any[]): any;
     function refetchFindGalleriesQuery(...args: any[]): any;
@@ -262,9 +259,9 @@ declare namespace PluginApi {
     function refetchFindImageQuery(...args: any[]): any;
     function refetchFindImagesQuery(...args: any[]): any;
     function refetchFindJobQuery(...args: any[]): any;
-    function refetchFindMovieQuery(...args: any[]): any;
-    function refetchFindMoviesForSelectQuery(...args: any[]): any;
-    function refetchFindMoviesQuery(...args: any[]): any;
+    function refetchFindGroupQuery(...args: any[]): any;
+    function refetchFindGroupsForSelectQuery(...args: any[]): any;
+    function refetchFindGroupsQuery(...args: any[]): any;
     function refetchFindPerformerQuery(...args: any[]): any;
     function refetchFindPerformersForSelectQuery(...args: any[]): any;
     function refetchFindPerformersQuery(...args: any[]): any;
@@ -288,7 +285,7 @@ declare namespace PluginApi {
     function refetchJobQueueQuery(...args: any[]): any;
     function refetchLatestVersionQuery(...args: any[]): any;
     function refetchListGalleryScrapersQuery(...args: any[]): any;
-    function refetchListMovieScrapersQuery(...args: any[]): any;
+    function refetchListGroupScrapersQuery(...args: any[]): any;
     function refetchListPerformerScrapersQuery(...args: any[]): any;
     function refetchListSceneScrapersQuery(...args: any[]): any;
     function refetchLogsQuery(...args: any[]): any;
@@ -300,7 +297,7 @@ declare namespace PluginApi {
     function refetchSceneStreamsQuery(...args: any[]): any;
     function refetchSceneWallQuery(...args: any[]): any;
     function refetchScrapeGalleryUrlQuery(...args: any[]): any;
-    function refetchScrapeMovieUrlQuery(...args: any[]): any;
+    function refetchScrapeGroupUrlQuery(...args: any[]): any;
     function refetchScrapeMultiPerformersQuery(...args: any[]): any;
     function refetchScrapeMultiScenesQuery(...args: any[]): any;
     function refetchScrapePerformerUrlQuery(...args: any[]): any;
@@ -325,7 +322,7 @@ declare namespace PluginApi {
     function useBackupDatabaseMutation(...args: any[]): any;
     function useBulkGalleryUpdateMutation(...args: any[]): any;
     function useBulkImageUpdateMutation(...args: any[]): any;
-    function useBulkMovieUpdateMutation(...args: any[]): any;
+    function useBulkGroupUpdateMutation(...args: any[]): any;
     function useBulkPerformerUpdateMutation(...args: any[]): any;
     function useBulkSceneUpdateMutation(...args: any[]): any;
     function useConfigurationLazyQuery(...args: any[]): any;
@@ -349,9 +346,6 @@ declare namespace PluginApi {
     function useDlnaStatusSuspenseQuery(...args: any[]): any;
     function useEnableDlnaMutation(...args: any[]): any;
     function useExportObjectsMutation(...args: any[]): any;
-    function useFindDefaultFilterLazyQuery(...args: any[]): any;
-    function useFindDefaultFilterQuery(...args: any[]): any;
-    function useFindDefaultFilterSuspenseQuery(...args: any[]): any;
     function useFindDuplicateScenesLazyQuery(...args: any[]): any;
     function useFindDuplicateScenesQuery(...args: any[]): any;
     function useFindDuplicateScenesSuspenseQuery(...args: any[]): any;
@@ -373,15 +367,15 @@ declare namespace PluginApi {
     function useFindJobLazyQuery(...args: any[]): any;
     function useFindJobQuery(...args: any[]): any;
     function useFindJobSuspenseQuery(...args: any[]): any;
-    function useFindMovieLazyQuery(...args: any[]): any;
-    function useFindMovieQuery(...args: any[]): any;
-    function useFindMovieSuspenseQuery(...args: any[]): any;
-    function useFindMoviesForSelectLazyQuery(...args: any[]): any;
-    function useFindMoviesForSelectQuery(...args: any[]): any;
-    function useFindMoviesForSelectSuspenseQuery(...args: any[]): any;
-    function useFindMoviesLazyQuery(...args: any[]): any;
-    function useFindMoviesQuery(...args: any[]): any;
-    function useFindMoviesSuspenseQuery(...args: any[]): any;
+    function useFindGroupLazyQuery(...args: any[]): any;
+    function useFindGroupQuery(...args: any[]): any;
+    function useFindGroupSuspenseQuery(...args: any[]): any;
+    function useFindGroupsForSelectLazyQuery(...args: any[]): any;
+    function useFindGroupsForSelectQuery(...args: any[]): any;
+    function useFindGroupsForSelectSuspenseQuery(...args: any[]): any;
+    function useFindGroupsLazyQuery(...args: any[]): any;
+    function useFindGroupsQuery(...args: any[]): any;
+    function useFindGroupsSuspenseQuery(...args: any[]): any;
     function useFindPerformerLazyQuery(...args: any[]): any;
     function useFindPerformerQuery(...args: any[]): any;
     function useFindPerformerSuspenseQuery(...args: any[]): any;
@@ -472,9 +466,9 @@ declare namespace PluginApi {
     function useListGalleryScrapersLazyQuery(...args: any[]): any;
     function useListGalleryScrapersQuery(...args: any[]): any;
     function useListGalleryScrapersSuspenseQuery(...args: any[]): any;
-    function useListMovieScrapersLazyQuery(...args: any[]): any;
-    function useListMovieScrapersQuery(...args: any[]): any;
-    function useListMovieScrapersSuspenseQuery(...args: any[]): any;
+    function useListGroupScrapersLazyQuery(...args: any[]): any;
+    function useListGroupScrapersQuery(...args: any[]): any;
+    function useListGroupScrapersSuspenseQuery(...args: any[]): any;
     function useListPerformerScrapersLazyQuery(...args: any[]): any;
     function useListPerformerScrapersQuery(...args: any[]): any;
     function useListPerformerScrapersSuspenseQuery(...args: any[]): any;
@@ -502,10 +496,10 @@ declare namespace PluginApi {
     function useMigrateHashNamingMutation(...args: any[]): any;
     function useMigrateMutation(...args: any[]): any;
     function useMigrateSceneScreenshotsMutation(...args: any[]): any;
-    function useMovieCreateMutation(...args: any[]): any;
-    function useMovieDestroyMutation(...args: any[]): any;
-    function useMovieUpdateMutation(...args: any[]): any;
-    function useMoviesDestroyMutation(...args: any[]): any;
+    function useGroupCreateMutation(...args: any[]): any;
+    function useGroupDestroyMutation(...args: any[]): any;
+    function useGroupUpdateMutation(...args: any[]): any;
+    function useGroupsDestroyMutation(...args: any[]): any;
     function useOptimiseDatabaseMutation(...args: any[]): any;
     function useParseSceneFilenamesLazyQuery(...args: any[]): any;
     function useParseSceneFilenamesQuery(...args: any[]): any;
@@ -552,9 +546,9 @@ declare namespace PluginApi {
     function useScrapeGalleryUrlLazyQuery(...args: any[]): any;
     function useScrapeGalleryUrlQuery(...args: any[]): any;
     function useScrapeGalleryUrlSuspenseQuery(...args: any[]): any;
-    function useScrapeMovieUrlLazyQuery(...args: any[]): any;
-    function useScrapeMovieUrlQuery(...args: any[]): any;
-    function useScrapeMovieUrlSuspenseQuery(...args: any[]): any;
+    function useScrapeGroupUrlLazyQuery(...args: any[]): any;
+    function useScrapeGroupUrlQuery(...args: any[]): any;
+    function useScrapeGroupUrlSuspenseQuery(...args: any[]): any;
     function useScrapeMultiPerformersLazyQuery(...args: any[]): any;
     function useScrapeMultiPerformersQuery(...args: any[]): any;
     function useScrapeMultiPerformersSuspenseQuery(...args: any[]): any;
@@ -670,8 +664,10 @@ declare namespace PluginApi {
     StudioIDSelect: React.FC<any>;
     GallerySelect: React.FC<any>;
     GalleryIDSelect: React.FC<any>;
-    MovieSelect: React.FC<any>;
-    MovieIDSelect: React.FC<any>;
+    GroupSelect: React.FC<any>;
+    GroupIDSelect: React.FC<any>;
+    SceneSelect: React.FC<any>;
+    SceneIDSelect: React.FC<any>;
     DateInput: React.FC<any>;
     CountrySelect: React.FC<any>;
     FolderSelect: React.FC<any>;
@@ -679,19 +675,32 @@ declare namespace PluginApi {
     "SceneCard.Details": React.FC<any>;
     "SceneCard.Overlays": React.FC<any>;
     "SceneCard.Image": React.FC<any>;
-    SceneCard: React.FC<any>;
+    PluginSettings: React.FC<any>;
+    Setting: React.FC<any>;
+    SettingGroup: React.FC<any>;
+    BooleanSetting: React.FC<any>;
+    SelectSetting: React.FC<any>;
+    ChangeButtonSetting: React.FC<any>;
+    SettingModal: React.FC<any>;
+    ModalSetting: React.FC<any>;
+    StringSetting: React.FC<any>;
+    NumberSetting: React.FC<any>;
+    StringListSetting: React.FC<any>;
+    ConstantSetting: React.FC<any>;
+    SceneFileInfoPanel: React.FC<any>;
   };
+  type PatchableComponentNames = keyof typeof components | string;
   namespace utils {
     namespace NavUtils {
       function makePerformerScenesUrl(...args: any[]): any;
       function makePerformerImagesUrl(...args: any[]): any;
       function makePerformerGalleriesUrl(...args: any[]): any;
-      function makePerformerMoviesUrl(...args: any[]): any;
+      function makePerformerGroupsUrl(...args: any[]): any;
       function makePerformersCountryUrl(...args: any[]): any;
       function makeStudioScenesUrl(...args: any[]): any;
       function makeStudioImagesUrl(...args: any[]): any;
       function makeStudioGalleriesUrl(...args: any[]): any;
-      function makeStudioMoviesUrl(...args: any[]): any;
+      function makeStudioGroupsUrl(...args: any[]): any;
       function makeStudioPerformersUrl(...args: any[]): any;
       function makeTagUrl(...args: any[]): any;
       function makeParentTagsUrl(...args: any[]): any;
@@ -703,7 +712,7 @@ declare namespace PluginApi {
       function makeTagImagesUrl(...args: any[]): any;
       function makeScenesPHashMatchUrl(...args: any[]): any;
       function makeSceneMarkerUrl(...args: any[]): any;
-      function makeMovieScenesUrl(...args: any[]): any;
+      function makeGroupScenesUrl(...args: any[]): any;
       function makeChildStudiosUrl(...args: any[]): any;
       function makeGalleryImagesUrl(...args: any[]): any;
     }
@@ -760,9 +769,9 @@ declare namespace PluginApi {
       function queryFindGalleriesByIDForSelect(...args: any[]): any;
       function queryFindGalleriesForSelect(...args: any[]): any;
       function queryFindImages(...args: any[]): any;
-      function queryFindMovies(...args: any[]): any;
-      function queryFindMoviesByIDForSelect(...args: any[]): any;
-      function queryFindMoviesForSelect(...args: any[]): any;
+      function queryFindGroups(...args: any[]): any;
+      function queryFindGroupsByIDForSelect(...args: any[]): any;
+      function queryFindGroupsForSelect(...args: any[]): any;
       function queryFindPerformer(...args: any[]): any;
       function queryFindPerformers(...args: any[]): any;
       function queryFindPerformersByIDForSelect(...args: any[]): any;
@@ -782,7 +791,7 @@ declare namespace PluginApi {
       function querySceneByPathRegex(...args: any[]): any;
       function queryScrapeGallery(...args: any[]): any;
       function queryScrapeGalleryURL(...args: any[]): any;
-      function queryScrapeMovieURL(...args: any[]): any;
+      function queryScrapeGroupURL(...args: any[]): any;
       function queryScrapePerformer(...args: any[]): any;
       function queryScrapePerformerURL(...args: any[]): any;
       function queryScrapeScene(...args: any[]): any;
@@ -795,7 +804,7 @@ declare namespace PluginApi {
       function useAddTempDLNAIP(...args: any[]): any;
       function useBulkGalleryUpdate(...args: any[]): any;
       function useBulkImageUpdate(...args: any[]): any;
-      function useBulkMovieUpdate(...args: any[]): any;
+      function useBulkGroupUpdate(...args: any[]): any;
       function useBulkPerformerUpdate(...args: any[]): any;
       function useBulkSceneUpdate(...args: any[]): any;
       function useConfiguration(...args: any[]): any;
@@ -815,8 +824,8 @@ declare namespace PluginApi {
       function useFindGallery(...args: any[]): any;
       function useFindImage(...args: any[]): any;
       function useFindImages(...args: any[]): any;
-      function useFindMovie(...args: any[]): any;
-      function useFindMovies(...args: any[]): any;
+      function useFindGroup(...args: any[]): any;
+      function useFindGroups(...args: any[]): any;
       function useFindPerformer(...args: any[]): any;
       function useFindPerformers(...args: any[]): any;
       function useFindSavedFilter(...args: any[]): any;
@@ -846,16 +855,16 @@ declare namespace PluginApi {
       function useJobsSubscribe(...args: any[]): any;
       function useLatestVersion(...args: any[]): any;
       function useListGalleryScrapers(...args: any[]): any;
-      function useListMovieScrapers(...args: any[]): any;
+      function useListGroupScrapers(...args: any[]): any;
       function useListPerformerScrapers(...args: any[]): any;
       function useListSceneScrapers(...args: any[]): any;
       function useLoggingSubscribe(...args: any[]): any;
       function useLogs(...args: any[]): any;
       function useMarkerStrings(...args: any[]): any;
-      function useMovieCreate(...args: any[]): any;
-      function useMovieDestroy(...args: any[]): any;
-      function useMovieUpdate(...args: any[]): any;
-      function useMoviesDestroy(...args: any[]): any;
+      function useGroupCreate(...args: any[]): any;
+      function useGroupDestroy(...args: any[]): any;
+      function useGroupUpdate(...args: any[]): any;
+      function useGroupsDestroy(...args: any[]): any;
       function usePerformerCreate(...args: any[]): any;
       function usePerformerDestroy(...args: any[]): any;
       function usePerformerUpdate(...args: any[]): any;
@@ -920,11 +929,82 @@ declare namespace PluginApi {
       success(message: JSX.Element | string): void;
       error(error: unknown): void;
     };
+
+    function useSettings(): {
+      loading: boolean;
+      error: any | undefined;
+      general: any;
+      interface: any;
+      defaults: any;
+      scraping: any;
+      dlna: any;
+      ui: any;
+      plugins: any;
+
+      advancedMode: boolean;
+
+      // apikey isn't directly settable, so expose it here
+      apiKey: string;
+
+      saveGeneral: (input: any) => void;
+      saveInterface: (input: any) => void;
+      saveDefaults: (input: any) => void;
+      saveScraping: (input: any) => void;
+      saveDLNA: (input: any) => void;
+      saveUI: (input: any) => void;
+      savePluginSettings: (pluginID: string, input: {}) => void;
+      setAdvancedMode: (value: boolean) => void;
+
+      refetch: () => void;
+    };
+    export enum ConnectionState {
+      Missing,
+      Disconnected,
+      Error,
+      Connecting,
+      Syncing,
+      Uploading,
+      Ready,
+    }
+
+    type Handy = typeof import("thehandy").default;
+    export type InteractiveAPI = {
+      readonly _connected: boolean;
+      readonly _playing: boolean;
+      readonly _scriptOffset: number;
+      readonly _handy: Handy;
+      readonly _useStashHostedFunscript: boolean;
+      connect(): Promise<void>;
+      set handyKey(key: string);
+      get handyKey(): string;
+      set useStashHostedFunscript(useStashHostedFunscript: boolean);
+      get useStashHostedFunscript(): boolean;
+      set scriptOffset(offset: number);
+      uploadScript(funscriptPath: string, apiKey?: string): Promise<void>;
+      sync(): Promise<number>;
+      setServerTimeOffset(offset: number): void;
+      play(position: number): Promise<void>;
+      pause(): Promise<void>;
+      ensurePlaying(position: number): Promise<void>;
+      setLooping(looping: boolean): Promise<void>;
+    };
+
+    function useInteractive(): {
+      interactive: InteractiveAPI;
+      state: ConnectionState;
+      serverOffset: number;
+      initialised: boolean;
+      currentScript?: string;
+      error?: string;
+      initialise: () => Promise<void>;
+      uploadScript: (funscriptPath: string) => Promise<void>;
+      sync: () => Promise<void>;
+    };
   }
   namespace patch {
-    function before(target: string, fn: Function): void;
-    function instead(target: string, fn: Function): void;
-    function after(target: string, fn: Function): void;
+    function before(target: PatchableComponentNames, fn: Function): void;
+    function instead(target: PatchableComponentNames, fn: Function): void;
+    function after(target: PatchableComponentNames, fn: Function): void;
   }
   namespace register {
     function route(path: string, component: React.FC<any>): void;

@@ -4,6 +4,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"os/exec"
 
 	flag "github.com/spf13/pflag"
 	"github.com/stashapp/stash/pkg/ffmpeg"
@@ -17,7 +18,7 @@ func customUsage() {
 	flag.PrintDefaults()
 }
 
-func printPhash(ff *ffmpeg.FFMpeg, ffp ffmpeg.FFProbe, inputfile string, quiet *bool) error {
+func printPhash(ff *ffmpeg.FFMpeg, ffp *ffmpeg.FFProbe, inputfile string, quiet *bool) error {
 	ffvideoFile, err := ffp.NewVideoFile(inputfile)
 	if err != nil {
 		return err
@@ -45,6 +46,13 @@ func printPhash(ff *ffmpeg.FFMpeg, ffp ffmpeg.FFProbe, inputfile string, quiet *
 	return nil
 }
 
+func getPaths() (string, string) {
+	ffmpegPath, _ := exec.LookPath("ffmpeg")
+	ffprobePath, _ := exec.LookPath("ffprobe")
+
+	return ffmpegPath, ffprobePath
+}
+
 func main() {
 	flag.Usage = customUsage
 	quiet := flag.BoolP("quiet", "q", false, "print only the phash")
@@ -69,10 +77,10 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Example: parallel %v ::: *.mp4\n", os.Args[0])
 	}
 
-	ffmpegPath, ffprobePath := ffmpeg.GetPaths(nil)
+	ffmpegPath, ffprobePath := getPaths()
 	encoder := ffmpeg.NewEncoder(ffmpegPath)
 	// don't need to InitHWSupport, phashing doesn't use hw acceleration
-	ffprobe := ffmpeg.FFProbe(ffprobePath)
+	ffprobe := ffmpeg.NewFFProbe(ffprobePath)
 
 	for _, item := range args {
 		if err := printPhash(encoder, ffprobe, item, quiet); err != nil {

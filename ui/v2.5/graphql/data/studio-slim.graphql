@@ -5,6 +5,7 @@ fragment SlimStudioData on Studio {
   stash_ids {
     endpoint
     stash_id
+    updated_at
   }
   parent_studio {
     id
@@ -12,4 +13,8 @@ fragment SlimStudioData on Studio {
   details
   rating100
   aliases
+  tags {
+    id
+    name
+  }
 }

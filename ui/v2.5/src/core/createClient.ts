@@ -46,8 +46,8 @@ const typePolicies: TypePolicies = {
       findStudio: {
         read: readReference("Studio"),
       },
-      findMovie: {
-        read: readReference("Movie"),
+      findGroup: {
+        read: readReference("Group"),
       },
       findGallery: {
         read: readReference("Gallery"),
@@ -60,9 +60,6 @@ const typePolicies: TypePolicies = {
       },
       findSavedFilter: {
         read: readReference("SavedFilter"),
-      },
-      findDefaultFilter: {
-        read: readDanglingNull,
       },
     },
   },
@@ -83,7 +80,7 @@ const typePolicies: TypePolicies = {
       },
     },
   },
-  Movie: {
+  Group: {
     fields: {
       studio: {
         read: readDanglingNull,
@@ -144,15 +141,15 @@ export const createClient = () => {
 
   const httpLink = createUploadLink({ uri: url.toString() });
 
-  const wsLink = new GraphQLWsLink(
-    createWSClient({
-      url: wsUrl.toString(),
-      retryAttempts: Infinity,
-      shouldRetry() {
-        return true;
-      },
-    })
-  );
+  const wsClient = createWSClient({
+    url: wsUrl.toString(),
+    retryAttempts: Infinity,
+    shouldRetry() {
+      return true;
+    },
+  });
+
+  const wsLink = new GraphQLWsLink(wsClient);
 
   const errorLink = onError(({ networkError }) => {
     // handle graphql unauthorized error
@@ -211,5 +208,6 @@ Please disable it on the server and refresh the page.`);
   return {
     cache,
     client,
+    wsClient,
   };
 };

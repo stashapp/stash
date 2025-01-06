@@ -8,8 +8,6 @@ import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { useToast } from "src/hooks/Toast";
 import { useFormik } from "formik";
 import { Prompt } from "react-router-dom";
-import { useRatingKeybinds } from "src/hooks/keybinds";
-import { ConfigurationContext } from "src/hooks/Config";
 import isEqual from "lodash-es/isEqual";
 import {
   yupDateString,
@@ -21,7 +19,6 @@ import {
   PerformerSelect,
 } from "src/components/Performers/PerformerSelect";
 import { formikUtils } from "src/utils/form";
-import { Tag, TagSelect } from "src/components/Tags/TagSelect";
 import { Studio, StudioSelect } from "src/components/Studios/StudioSelect";
 import { galleryTitle } from "src/core/galleries";
 import {
@@ -29,6 +26,7 @@ import {
   GallerySelect,
   excludeFileBasedGalleries,
 } from "src/components/Galleries/GallerySelect";
+import { useTagsEdit } from "src/hooks/tagsEdit";
 
 interface IProps {
   image: GQL.ImageDataFragment;
@@ -49,11 +47,8 @@ export const ImageEditPanel: React.FC<IProps> = ({
   // Network state
   const [isLoading, setIsLoading] = useState(false);
 
-  const { configuration } = React.useContext(ConfigurationContext);
-
   const [galleries, setGalleries] = useState<Gallery[]>([]);
   const [performers, setPerformers] = useState<Performer[]>([]);
-  const [tags, setTags] = useState<Tag[]>([]);
   const [studio, setStudio] = useState<Studio | null>(null);
 
   useEffect(() => {
@@ -74,7 +69,6 @@ export const ImageEditPanel: React.FC<IProps> = ({
     date: yupDateString(intl),
     details: yup.string().ensure(),
     photographer: yup.string().ensure(),
-    rating100: yup.number().integer().nullable().defined(),
     gallery_ids: yup.array(yup.string().required()).defined(),
     studio_id: yup.string().required().nullable(),
     performer_ids: yup.array(yup.string().required()).defined(),
@@ -88,7 +82,6 @@ export const ImageEditPanel: React.FC<IProps> = ({
     date: image?.date ?? "",
     details: image.details ?? "",
     photographer: image.photographer ?? "",
-    rating100: image.rating100 ?? null,
     gallery_ids: (image.galleries ?? []).map((g) => g.id),
     studio_id: image.studio?.id ?? null,
     performer_ids: (image.performers ?? []).map((p) => p.id),
@@ -104,9 +97,9 @@ export const ImageEditPanel: React.FC<IProps> = ({
     onSubmit: (values) => onSave(schema.cast(values)),
   });
 
-  function setRating(v: number) {
-    formik.setFieldValue("rating100", v);
-  }
+  const { tagsControl } = useTagsEdit(image.tags, (ids) =>
+    formik.setFieldValue("tag_ids", ids)
+  );
 
   function onSetGalleries(items: Gallery[]) {
     setGalleries(items);
@@ -124,32 +117,14 @@ export const ImageEditPanel: React.FC<IProps> = ({
     );
   }
 
-  function onSetTags(items: Tag[]) {
-    setTags(items);
-    formik.setFieldValue(
-      "tag_ids",
-      items.map((item) => item.id)
-    );
-  }
-
   function onSetStudio(item: Studio | null) {
     setStudio(item);
     formik.setFieldValue("studio_id", item ? item.id : null);
   }
 
-  useRatingKeybinds(
-    true,
-    configuration?.ui.ratingSystemOptions?.type,
-    setRating
-  );
-
   useEffect(() => {
     setPerformers(image.performers ?? []);
   }, [image.performers]);
-
-  useEffect(() => {
-    setTags(image.tags ?? []);
-  }, [image.tags]);
 
   useEffect(() => {
     setStudio(image.studio ?? null);
@@ -209,13 +184,8 @@ export const ImageEditPanel: React.FC<IProps> = ({
       xl: 12,
     },
   };
-  const {
-    renderField,
-    renderInputField,
-    renderDateField,
-    renderRatingField,
-    renderURLListField,
-  } = formikUtils(intl, formik, splitProps);
+  const { renderField, renderInputField, renderDateField, renderURLListField } =
+    formikUtils(intl, formik, splitProps);
 
   function renderGalleriesField() {
     const title = intl.formatMessage({ id: "galleries" });
@@ -254,16 +224,7 @@ export const ImageEditPanel: React.FC<IProps> = ({
 
   function renderTagsField() {
     const title = intl.formatMessage({ id: "tags" });
-    const control = (
-      <TagSelect
-        isMulti
-        onSelect={onSetTags}
-        values={tags}
-        hoverPlacement="right"
-      />
-    );
-
-    return renderField("tag_ids", title, control, fullWidthProps);
+    return renderField("tag_ids", title, tagsControl(), fullWidthProps);
   }
 
   function renderDetailsField() {
@@ -318,7 +279,6 @@ export const ImageEditPanel: React.FC<IProps> = ({
 
             {renderDateField("date")}
             {renderInputField("photographer")}
-            {renderRatingField("rating100", "rating")}
 
             {renderGalleriesField()}
             {renderStudioField()}

@@ -62,11 +62,13 @@ func createFullStudio(id int, parentID int) models.Studio {
 		Name:          studioName,
 		URL:           url,
 		Details:       details,
+		Favorite:      true,
 		CreatedAt:     createTime,
 		UpdatedAt:     updateTime,
 		Rating:        &rating,
 		IgnoreAutoTag: autoTagIgnored,
 		Aliases:       models.NewRelatedStrings(aliases),
+		TagIDs:        models.NewRelatedIDs([]int{}),
 		StashIDs:      models.NewRelatedStashIDs(stashIDs),
 	}
 
@@ -83,15 +85,17 @@ func createEmptyStudio(id int) models.Studio {
 		CreatedAt: createTime,
 		UpdatedAt: updateTime,
 		Aliases:   models.NewRelatedStrings([]string{}),
+		TagIDs:    models.NewRelatedIDs([]int{}),
 		StashIDs:  models.NewRelatedStashIDs([]models.StashID{}),
 	}
 }
 
 func createFullJSONStudio(parentStudio, image string, aliases []string) *jsonschema.Studio {
 	return &jsonschema.Studio{
-		Name:    studioName,
-		URL:     url,
-		Details: details,
+		Name:     studioName,
+		URL:      url,
+		Details:  details,
+		Favorite: true,
 		CreatedAt: json.JSONTime{
 			Time: createTime,
 		},

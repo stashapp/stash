@@ -34,12 +34,13 @@ type ScanJob struct {
 	subscriptions *subscriptionManager
 }
 
-func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
+func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) error {
+	cfg := config.GetInstance()
 	input := j.input
 
 	if job.IsCancelled(ctx) {
 		logger.Info("Stopping due to user request")
-		return
+		return nil
 	}
 
 	sp := getScanPaths(input.Paths)
@@ -55,7 +56,7 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 	start := time.Now()
 
 	const taskQueueSize = 200000
-	taskQueue := job.NewTaskQueue(ctx, progress, taskQueueSize, c.GetParallelTasksWithAutoDetection())
+	taskQueue := job.NewTaskQueue(ctx, progress, taskQueueSize, cfg.GetParallelTasksWithAutoDetection())
 
 	var minModTime time.Time
 	if j.input.Filter != nil && j.input.Filter.MinModTime != nil {
@@ -65,22 +66,24 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 	j.scanner.Scan(ctx, getScanHandlers(j.input, taskQueue, progress), file.ScanOptions{
 		Paths:                  paths,
 		ScanFilters:            []file.PathFilter{newScanFilter(c, repo, minModTime)},
-		ZipFileExtensions:      c.GetGalleryExtensions(),
-		ParallelTasks:          c.GetParallelTasksWithAutoDetection(),
-		HandlerRequiredFilters: []file.Filter{newHandlerRequiredFilter(c, repo)},
+		ZipFileExtensions:      cfg.GetGalleryExtensions(),
+		ParallelTasks:          cfg.GetParallelTasksWithAutoDetection(),
+		HandlerRequiredFilters: []file.Filter{newHandlerRequiredFilter(cfg, repo)},
+		Rescan:                 j.input.Rescan,
 	}, progress)
 
 	taskQueue.Close()
 
 	if job.IsCancelled(ctx) {
 		logger.Info("Stopping due to user request")
-		return
+		return nil
 	}
 
 	elapsed := time.Since(start)
 	logger.Info(fmt.Sprintf("Scan finished (%s)", elapsed))
 
 	j.subscriptions.notify()
+	return nil
 }
 
 type extensionConfig struct {
@@ -120,7 +123,7 @@ type handlerRequiredFilter struct {
 	GalleryFinder  galleryFinder
 	CaptionUpdater video.CaptionUpdater
 
-	FolderCache *lru.LRU
+	FolderCache *lru.LRU[bool]
 
 	videoFileNamingAlgorithm models.HashAlgorithm
 }
@@ -135,7 +138,7 @@ func newHandlerRequiredFilter(c *config.Config, repo models.Repository) *handler
 		ImageFinder:              repo.Image,
 		GalleryFinder:            repo.Gallery,
 		CaptionUpdater:           repo.File,
-		FolderCache:              lru.New(processes * 2),
+		FolderCache:              lru.New[bool](processes * 2),
 		videoFileNamingAlgorithm: c.GetVideoFileNamingAlgorithm(),
 	}
 }

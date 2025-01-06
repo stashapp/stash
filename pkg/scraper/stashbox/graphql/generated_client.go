@@ -6,251 +6,784 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/Yamashou/gqlgenc/client"
+	"github.com/Yamashou/gqlgenc/clientv2"
 )
 
 type StashBoxGraphQLClient interface {
-	FindSceneByFingerprint(ctx context.Context, fingerprint FingerprintQueryInput, httpRequestOptions ...client.HTTPRequestOption) (*FindSceneByFingerprint, error)
-	FindScenesByFullFingerprints(ctx context.Context, fingerprints []*FingerprintQueryInput, httpRequestOptions ...client.HTTPRequestOption) (*FindScenesByFullFingerprints, error)
-	FindScenesBySceneFingerprints(ctx context.Context, fingerprints [][]*FingerprintQueryInput, httpRequestOptions ...client.HTTPRequestOption) (*FindScenesBySceneFingerprints, error)
-	SearchScene(ctx context.Context, term string, httpRequestOptions ...client.HTTPRequestOption) (*SearchScene, error)
-	SearchPerformer(ctx context.Context, term string, httpRequestOptions ...client.HTTPRequestOption) (*SearchPerformer, error)
-	FindPerformerByID(ctx context.Context, id string, httpRequestOptions ...client.HTTPRequestOption) (*FindPerformerByID, error)
-	FindSceneByID(ctx context.Context, id string, httpRequestOptions ...client.HTTPRequestOption) (*FindSceneByID, error)
-	FindStudio(ctx context.Context, id *string, name *string, httpRequestOptions ...client.HTTPRequestOption) (*FindStudio, error)
-	SubmitFingerprint(ctx context.Context, input FingerprintSubmission, httpRequestOptions ...client.HTTPRequestOption) (*SubmitFingerprint, error)
-	Me(ctx context.Context, httpRequestOptions ...client.HTTPRequestOption) (*Me, error)
-	SubmitSceneDraft(ctx context.Context, input SceneDraftInput, httpRequestOptions ...client.HTTPRequestOption) (*SubmitSceneDraft, error)
-	SubmitPerformerDraft(ctx context.Context, input PerformerDraftInput, httpRequestOptions ...client.HTTPRequestOption) (*SubmitPerformerDraft, error)
+	FindSceneByFingerprint(ctx context.Context, fingerprint FingerprintQueryInput, interceptors ...clientv2.RequestInterceptor) (*FindSceneByFingerprint, error)
+	FindScenesByFullFingerprints(ctx context.Context, fingerprints []*FingerprintQueryInput, interceptors ...clientv2.RequestInterceptor) (*FindScenesByFullFingerprints, error)
+	FindScenesBySceneFingerprints(ctx context.Context, fingerprints [][]*FingerprintQueryInput, interceptors ...clientv2.RequestInterceptor) (*FindScenesBySceneFingerprints, error)
+	SearchScene(ctx context.Context, term string, interceptors ...clientv2.RequestInterceptor) (*SearchScene, error)
+	SearchPerformer(ctx context.Context, term string, interceptors ...clientv2.RequestInterceptor) (*SearchPerformer, error)
+	FindPerformerByID(ctx context.Context, id string, interceptors ...clientv2.RequestInterceptor) (*FindPerformerByID, error)
+	FindSceneByID(ctx context.Context, id string, interceptors ...clientv2.RequestInterceptor) (*FindSceneByID, error)
+	FindStudio(ctx context.Context, id *string, name *string, interceptors ...clientv2.RequestInterceptor) (*FindStudio, error)
+	SubmitFingerprint(ctx context.Context, input FingerprintSubmission, interceptors ...clientv2.RequestInterceptor) (*SubmitFingerprint, error)
+	Me(ctx context.Context, interceptors ...clientv2.RequestInterceptor) (*Me, error)
+	SubmitSceneDraft(ctx context.Context, input SceneDraftInput, interceptors ...clientv2.RequestInterceptor) (*SubmitSceneDraft, error)
+	SubmitPerformerDraft(ctx context.Context, input PerformerDraftInput, interceptors ...clientv2.RequestInterceptor) (*SubmitPerformerDraft, error)
 }
 
 type Client struct {
-	Client *client.Client
+	Client *clientv2.Client
 }
 
-func NewClient(cli *http.Client, baseURL string, options ...client.HTTPRequestOption) StashBoxGraphQLClient {
-	return &Client{Client: client.NewClient(cli, baseURL, options...)}
+func NewClient(cli *http.Client, baseURL string, options *clientv2.Options, interceptors ...clientv2.RequestInterceptor) StashBoxGraphQLClient {
+	return &Client{Client: clientv2.NewClient(cli, baseURL, options, interceptors...)}
 }
 
-type Query struct {
-	FindPerformer                 *Performer                   "json:\"findPerformer\" graphql:\"findPerformer\""
-	QueryPerformers               QueryPerformersResultType    "json:\"queryPerformers\" graphql:\"queryPerformers\""
-	FindStudio                    *Studio                      "json:\"findStudio\" graphql:\"findStudio\""
-	QueryStudios                  QueryStudiosResultType       "json:\"queryStudios\" graphql:\"queryStudios\""
-	FindTag                       *Tag                         "json:\"findTag\" graphql:\"findTag\""
-	QueryTags                     QueryTagsResultType          "json:\"queryTags\" graphql:\"queryTags\""
-	FindTagCategory               *TagCategory                 "json:\"findTagCategory\" graphql:\"findTagCategory\""
-	QueryTagCategories            QueryTagCategoriesResultType "json:\"queryTagCategories\" graphql:\"queryTagCategories\""
-	FindScene                     *Scene                       "json:\"findScene\" graphql:\"findScene\""
-	FindSceneByFingerprint        []*Scene                     "json:\"findSceneByFingerprint\" graphql:\"findSceneByFingerprint\""
-	FindScenesByFingerprints      []*Scene                     "json:\"findScenesByFingerprints\" graphql:\"findScenesByFingerprints\""
-	FindScenesByFullFingerprints  []*Scene                     "json:\"findScenesByFullFingerprints\" graphql:\"findScenesByFullFingerprints\""
-	FindScenesBySceneFingerprints [][]*Scene                   "json:\"findScenesBySceneFingerprints\" graphql:\"findScenesBySceneFingerprints\""
-	QueryScenes                   QueryScenesResultType        "json:\"queryScenes\" graphql:\"queryScenes\""
-	FindSite                      *Site                        "json:\"findSite\" graphql:\"findSite\""
-	QuerySites                    QuerySitesResultType         "json:\"querySites\" graphql:\"querySites\""
-	FindEdit                      *Edit                        "json:\"findEdit\" graphql:\"findEdit\""
-	QueryEdits                    QueryEditsResultType         "json:\"queryEdits\" graphql:\"queryEdits\""
-	FindUser                      *User                        "json:\"findUser\" graphql:\"findUser\""
-	QueryUsers                    QueryUsersResultType         "json:\"queryUsers\" graphql:\"queryUsers\""
-	Me                            *User                        "json:\"me\" graphql:\"me\""
-	SearchPerformer               []*Performer                 "json:\"searchPerformer\" graphql:\"searchPerformer\""
-	SearchScene                   []*Scene                     "json:\"searchScene\" graphql:\"searchScene\""
-	SearchTag                     []*Tag                       "json:\"searchTag\" graphql:\"searchTag\""
-	FindDraft                     *Draft                       "json:\"findDraft\" graphql:\"findDraft\""
-	FindDrafts                    []*Draft                     "json:\"findDrafts\" graphql:\"findDrafts\""
-	QueryExistingScene            QueryExistingSceneResult     "json:\"queryExistingScene\" graphql:\"queryExistingScene\""
-	Version                       Version                      "json:\"version\" graphql:\"version\""
-	GetConfig                     StashBoxConfig               "json:\"getConfig\" graphql:\"getConfig\""
-}
-type Mutation struct {
-	SceneCreate          *Scene                "json:\"sceneCreate\" graphql:\"sceneCreate\""
-	SceneUpdate          *Scene                "json:\"sceneUpdate\" graphql:\"sceneUpdate\""
-	SceneDestroy         bool                  "json:\"sceneDestroy\" graphql:\"sceneDestroy\""
-	PerformerCreate      *Performer            "json:\"performerCreate\" graphql:\"performerCreate\""
-	PerformerUpdate      *Performer            "json:\"performerUpdate\" graphql:\"performerUpdate\""
-	PerformerDestroy     bool                  "json:\"performerDestroy\" graphql:\"performerDestroy\""
-	StudioCreate         *Studio               "json:\"studioCreate\" graphql:\"studioCreate\""
-	StudioUpdate         *Studio               "json:\"studioUpdate\" graphql:\"studioUpdate\""
-	StudioDestroy        bool                  "json:\"studioDestroy\" graphql:\"studioDestroy\""
-	TagCreate            *Tag                  "json:\"tagCreate\" graphql:\"tagCreate\""
-	TagUpdate            *Tag                  "json:\"tagUpdate\" graphql:\"tagUpdate\""
-	TagDestroy           bool                  "json:\"tagDestroy\" graphql:\"tagDestroy\""
-	UserCreate           *User                 "json:\"userCreate\" graphql:\"userCreate\""
-	UserUpdate           *User                 "json:\"userUpdate\" graphql:\"userUpdate\""
-	UserDestroy          bool                  "json:\"userDestroy\" graphql:\"userDestroy\""
-	ImageCreate          *Image                "json:\"imageCreate\" graphql:\"imageCreate\""
-	ImageDestroy         bool                  "json:\"imageDestroy\" graphql:\"imageDestroy\""
-	NewUser              *string               "json:\"newUser\" graphql:\"newUser\""
-	ActivateNewUser      *User                 "json:\"activateNewUser\" graphql:\"activateNewUser\""
-	GenerateInviteCode   *string               "json:\"generateInviteCode\" graphql:\"generateInviteCode\""
-	RescindInviteCode    bool                  "json:\"rescindInviteCode\" graphql:\"rescindInviteCode\""
-	GrantInvite          int                   "json:\"grantInvite\" graphql:\"grantInvite\""
-	RevokeInvite         int                   "json:\"revokeInvite\" graphql:\"revokeInvite\""
-	TagCategoryCreate    *TagCategory          "json:\"tagCategoryCreate\" graphql:\"tagCategoryCreate\""
-	TagCategoryUpdate    *TagCategory          "json:\"tagCategoryUpdate\" graphql:\"tagCategoryUpdate\""
-	TagCategoryDestroy   bool                  "json:\"tagCategoryDestroy\" graphql:\"tagCategoryDestroy\""
-	SiteCreate           *Site                 "json:\"siteCreate\" graphql:\"siteCreate\""
-	SiteUpdate           *Site                 "json:\"siteUpdate\" graphql:\"siteUpdate\""
-	SiteDestroy          bool                  "json:\"siteDestroy\" graphql:\"siteDestroy\""
-	RegenerateAPIKey     string                "json:\"regenerateAPIKey\" graphql:\"regenerateAPIKey\""
-	ResetPassword        bool                  "json:\"resetPassword\" graphql:\"resetPassword\""
-	ChangePassword       bool                  "json:\"changePassword\" graphql:\"changePassword\""
-	SceneEdit            Edit                  "json:\"sceneEdit\" graphql:\"sceneEdit\""
-	PerformerEdit        Edit                  "json:\"performerEdit\" graphql:\"performerEdit\""
-	StudioEdit           Edit                  "json:\"studioEdit\" graphql:\"studioEdit\""
-	TagEdit              Edit                  "json:\"tagEdit\" graphql:\"tagEdit\""
-	SceneEditUpdate      Edit                  "json:\"sceneEditUpdate\" graphql:\"sceneEditUpdate\""
-	PerformerEditUpdate  Edit                  "json:\"performerEditUpdate\" graphql:\"performerEditUpdate\""
-	StudioEditUpdate     Edit                  "json:\"studioEditUpdate\" graphql:\"studioEditUpdate\""
-	TagEditUpdate        Edit                  "json:\"tagEditUpdate\" graphql:\"tagEditUpdate\""
-	EditVote             Edit                  "json:\"editVote\" graphql:\"editVote\""
-	EditComment          Edit                  "json:\"editComment\" graphql:\"editComment\""
-	ApplyEdit            Edit                  "json:\"applyEdit\" graphql:\"applyEdit\""
-	CancelEdit           Edit                  "json:\"cancelEdit\" graphql:\"cancelEdit\""
-	SubmitFingerprint    bool                  "json:\"submitFingerprint\" graphql:\"submitFingerprint\""
-	SubmitSceneDraft     DraftSubmissionStatus "json:\"submitSceneDraft\" graphql:\"submitSceneDraft\""
-	SubmitPerformerDraft DraftSubmissionStatus "json:\"submitPerformerDraft\" graphql:\"submitPerformerDraft\""
-	DestroyDraft         bool                  "json:\"destroyDraft\" graphql:\"destroyDraft\""
-	FavoritePerformer    bool                  "json:\"favoritePerformer\" graphql:\"favoritePerformer\""
-	FavoriteStudio       bool                  "json:\"favoriteStudio\" graphql:\"favoriteStudio\""
-}
 type URLFragment struct {
 	URL  string "json:\"url\" graphql:\"url\""
 	Type string "json:\"type\" graphql:\"type\""
 }
+
+func (t *URLFragment) GetURL() string {
+	if t == nil {
+		t = &URLFragment{}
+	}
+	return t.URL
+}
+func (t *URLFragment) GetType() string {
+	if t == nil {
+		t = &URLFragment{}
+	}
+	return t.Type
+}
+
 type ImageFragment struct {
 	ID     string "json:\"id\" graphql:\"id\""
 	URL    string "json:\"url\" graphql:\"url\""
 	Width  int    "json:\"width\" graphql:\"width\""
 	Height int    "json:\"height\" graphql:\"height\""
 }
-type StudioFragment struct {
-	Name   string         "json:\"name\" graphql:\"name\""
-	ID     string         "json:\"id\" graphql:\"id\""
-	Urls   []*URLFragment "json:\"urls\" graphql:\"urls\""
-	Parent *struct {
-		Name string "json:\"name\" graphql:\"name\""
-		ID   string "json:\"id\" graphql:\"id\""
-	} "json:\"parent\" graphql:\"parent\""
-	Images []*ImageFragment "json:\"images\" graphql:\"images\""
+
+func (t *ImageFragment) GetID() string {
+	if t == nil {
+		t = &ImageFragment{}
+	}
+	return t.ID
 }
+func (t *ImageFragment) GetURL() string {
+	if t == nil {
+		t = &ImageFragment{}
+	}
+	return t.URL
+}
+func (t *ImageFragment) GetWidth() int {
+	if t == nil {
+		t = &ImageFragment{}
+	}
+	return t.Width
+}
+func (t *ImageFragment) GetHeight() int {
+	if t == nil {
+		t = &ImageFragment{}
+	}
+	return t.Height
+}
+
+type StudioFragment struct {
+	Name   string                 "json:\"name\" graphql:\"name\""
+	ID     string                 "json:\"id\" graphql:\"id\""
+	Urls   []*URLFragment         "json:\"urls\" graphql:\"urls\""
+	Parent *StudioFragment_Parent "json:\"parent,omitempty\" graphql:\"parent\""
+	Images []*ImageFragment       "json:\"images\" graphql:\"images\""
+}
+
+func (t *StudioFragment) GetName() string {
+	if t == nil {
+		t = &StudioFragment{}
+	}
+	return t.Name
+}
+func (t *StudioFragment) GetID() string {
+	if t == nil {
+		t = &StudioFragment{}
+	}
+	return t.ID
+}
+func (t *StudioFragment) GetUrls() []*URLFragment {
+	if t == nil {
+		t = &StudioFragment{}
+	}
+	return t.Urls
+}
+func (t *StudioFragment) GetParent() *StudioFragment_Parent {
+	if t == nil {
+		t = &StudioFragment{}
+	}
+	return t.Parent
+}
+func (t *StudioFragment) GetImages() []*ImageFragment {
+	if t == nil {
+		t = &StudioFragment{}
+	}
+	return t.Images
+}
+
 type TagFragment struct {
 	Name string "json:\"name\" graphql:\"name\""
 	ID   string "json:\"id\" graphql:\"id\""
 }
-type FuzzyDateFragment struct {
-	Date     string           "json:\"date\" graphql:\"date\""
-	Accuracy DateAccuracyEnum "json:\"accuracy\" graphql:\"accuracy\""
+
+func (t *TagFragment) GetName() string {
+	if t == nil {
+		t = &TagFragment{}
+	}
+	return t.Name
 }
+func (t *TagFragment) GetID() string {
+	if t == nil {
+		t = &TagFragment{}
+	}
+	return t.ID
+}
+
 type MeasurementsFragment struct {
-	BandSize *int    "json:\"band_size\" graphql:\"band_size\""
-	CupSize  *string "json:\"cup_size\" graphql:\"cup_size\""
-	Waist    *int    "json:\"waist\" graphql:\"waist\""
-	Hip      *int    "json:\"hip\" graphql:\"hip\""
+	BandSize *int    "json:\"band_size,omitempty\" graphql:\"band_size\""
+	CupSize  *string "json:\"cup_size,omitempty\" graphql:\"cup_size\""
+	Waist    *int    "json:\"waist,omitempty\" graphql:\"waist\""
+	Hip      *int    "json:\"hip,omitempty\" graphql:\"hip\""
 }
+
+func (t *MeasurementsFragment) GetBandSize() *int {
+	if t == nil {
+		t = &MeasurementsFragment{}
+	}
+	return t.BandSize
+}
+func (t *MeasurementsFragment) GetCupSize() *string {
+	if t == nil {
+		t = &MeasurementsFragment{}
+	}
+	return t.CupSize
+}
+func (t *MeasurementsFragment) GetWaist() *int {
+	if t == nil {
+		t = &MeasurementsFragment{}
+	}
+	return t.Waist
+}
+func (t *MeasurementsFragment) GetHip() *int {
+	if t == nil {
+		t = &MeasurementsFragment{}
+	}
+	return t.Hip
+}
+
 type BodyModificationFragment struct {
 	Location    string  "json:\"location\" graphql:\"location\""
-	Description *string "json:\"description\" graphql:\"description\""
+	Description *string "json:\"description,omitempty\" graphql:\"description\""
 }
+
+func (t *BodyModificationFragment) GetLocation() string {
+	if t == nil {
+		t = &BodyModificationFragment{}
+	}
+	return t.Location
+}
+func (t *BodyModificationFragment) GetDescription() *string {
+	if t == nil {
+		t = &BodyModificationFragment{}
+	}
+	return t.Description
+}
+
 type PerformerFragment struct {
 	ID              string                      "json:\"id\" graphql:\"id\""
 	Name            string                      "json:\"name\" graphql:\"name\""
-	Disambiguation  *string                     "json:\"disambiguation\" graphql:\"disambiguation\""
+	Disambiguation  *string                     "json:\"disambiguation,omitempty\" graphql:\"disambiguation\""
 	Aliases         []string                    "json:\"aliases\" graphql:\"aliases\""
-	Gender          *GenderEnum                 "json:\"gender\" graphql:\"gender\""
+	Gender          *GenderEnum                 "json:\"gender,omitempty\" graphql:\"gender\""
 	MergedIds       []string                    "json:\"merged_ids\" graphql:\"merged_ids\""
 	Urls            []*URLFragment              "json:\"urls\" graphql:\"urls\""
 	Images          []*ImageFragment            "json:\"images\" graphql:\"images\""
-	Birthdate       *FuzzyDateFragment          "json:\"birthdate\" graphql:\"birthdate\""
-	Ethnicity       *EthnicityEnum              "json:\"ethnicity\" graphql:\"ethnicity\""
-	Country         *string                     "json:\"country\" graphql:\"country\""
-	EyeColor        *EyeColorEnum               "json:\"eye_color\" graphql:\"eye_color\""
-	HairColor       *HairColorEnum              "json:\"hair_color\" graphql:\"hair_color\""
-	Height          *int                        "json:\"height\" graphql:\"height\""
-	Measurements    MeasurementsFragment        "json:\"measurements\" graphql:\"measurements\""
-	BreastType      *BreastTypeEnum             "json:\"breast_type\" graphql:\"breast_type\""
-	CareerStartYear *int                        "json:\"career_start_year\" graphql:\"career_start_year\""
-	CareerEndYear   *int                        "json:\"career_end_year\" graphql:\"career_end_year\""
-	Tattoos         []*BodyModificationFragment "json:\"tattoos\" graphql:\"tattoos\""
-	Piercings       []*BodyModificationFragment "json:\"piercings\" graphql:\"piercings\""
+	BirthDate       *string                     "json:\"birth_date,omitempty\" graphql:\"birth_date\""
+	Ethnicity       *EthnicityEnum              "json:\"ethnicity,omitempty\" graphql:\"ethnicity\""
+	Country         *string                     "json:\"country,omitempty\" graphql:\"country\""
+	EyeColor        *EyeColorEnum               "json:\"eye_color,omitempty\" graphql:\"eye_color\""
+	HairColor       *HairColorEnum              "json:\"hair_color,omitempty\" graphql:\"hair_color\""
+	Height          *int                        "json:\"height,omitempty\" graphql:\"height\""
+	Measurements    *MeasurementsFragment       "json:\"measurements\" graphql:\"measurements\""
+	BreastType      *BreastTypeEnum             "json:\"breast_type,omitempty\" graphql:\"breast_type\""
+	CareerStartYear *int                        "json:\"career_start_year,omitempty\" graphql:\"career_start_year\""
+	CareerEndYear   *int                        "json:\"career_end_year,omitempty\" graphql:\"career_end_year\""
+	Tattoos         []*BodyModificationFragment "json:\"tattoos,omitempty\" graphql:\"tattoos\""
+	Piercings       []*BodyModificationFragment "json:\"piercings,omitempty\" graphql:\"piercings\""
 }
+
+func (t *PerformerFragment) GetID() string {
+	if t == nil {
+		t = &PerformerFragment{}
+	}
+	return t.ID
+}
+func (t *PerformerFragment) GetName() string {
+	if t == nil {
+		t = &PerformerFragment{}
+	}
+	return t.Name
+}
+func (t *PerformerFragment) GetDisambiguation() *string {
+	if t == nil {
+		t = &PerformerFragment{}
+	}
+	return t.Disambiguation
+}
+func (t *PerformerFragment) GetAliases() []string {
+	if t == nil {
+		t = &PerformerFragment{}
+	}
+	return t.Aliases
+}
+func (t *PerformerFragment) GetGender() *GenderEnum {
+	if t == nil {
+		t = &PerformerFragment{}
+	}
+	return t.Gender
+}
+func (t *PerformerFragment) GetMergedIds() []string {
+	if t == nil {
+		t = &PerformerFragment{}
+	}
+	return t.MergedIds
+}
+func (t *PerformerFragment) GetUrls() []*URLFragment {
+	if t == nil {
+		t = &PerformerFragment{}
+	}
+	return t.Urls
+}
+func (t *PerformerFragment) GetImages() []*ImageFragment {
+	if t == nil {
+		t = &PerformerFragment{}
+	}
+	return t.Images
+}
+func (t *PerformerFragment) GetBirthDate() *string {
+	if t == nil {
+		t = &PerformerFragment{}
+	}
+	return t.BirthDate
+}
+func (t *PerformerFragment) GetEthnicity() *EthnicityEnum {
+	if t == nil {
+		t = &PerformerFragment{}
+	}
+	return t.Ethnicity
+}
+func (t *PerformerFragment) GetCountry() *string {
+	if t == nil {
+		t = &PerformerFragment{}
+	}
+	return t.Country
+}
+func (t *PerformerFragment) GetEyeColor() *EyeColorEnum {
+	if t == nil {
+		t = &PerformerFragment{}
+	}
+	return t.EyeColor
+}
+func (t *PerformerFragment) GetHairColor() *HairColorEnum {
+	if t == nil {
+		t = &PerformerFragment{}
+	}
+	return t.HairColor
+}
+func (t *PerformerFragment) GetHeight() *int {
+	if t == nil {
+		t = &PerformerFragment{}
+	}
+	return t.Height
+}
+func (t *PerformerFragment) GetMeasurements() *MeasurementsFragment {
+	if t == nil {
+		t = &PerformerFragment{}
+	}
+	return t.Measurements
+}
+func (t *PerformerFragment) GetBreastType() *BreastTypeEnum {
+	if t == nil {
+		t = &PerformerFragment{}
+	}
+	return t.BreastType
+}
+func (t *PerformerFragment) GetCareerStartYear() *int {
+	if t == nil {
+		t = &PerformerFragment{}
+	}
+	return t.CareerStartYear
+}
+func (t *PerformerFragment) GetCareerEndYear() *int {
+	if t == nil {
+		t = &PerformerFragment{}
+	}
+	return t.CareerEndYear
+}
+func (t *PerformerFragment) GetTattoos() []*BodyModificationFragment {
+	if t == nil {
+		t = &PerformerFragment{}
+	}
+	return t.Tattoos
+}
+func (t *PerformerFragment) GetPiercings() []*BodyModificationFragment {
+	if t == nil {
+		t = &PerformerFragment{}
+	}
+	return t.Piercings
+}
+
 type PerformerAppearanceFragment struct {
-	As        *string           "json:\"as\" graphql:\"as\""
-	Performer PerformerFragment "json:\"performer\" graphql:\"performer\""
+	As        *string            "json:\"as,omitempty\" graphql:\"as\""
+	Performer *PerformerFragment "json:\"performer\" graphql:\"performer\""
 }
+
+func (t *PerformerAppearanceFragment) GetAs() *string {
+	if t == nil {
+		t = &PerformerAppearanceFragment{}
+	}
+	return t.As
+}
+func (t *PerformerAppearanceFragment) GetPerformer() *PerformerFragment {
+	if t == nil {
+		t = &PerformerAppearanceFragment{}
+	}
+	return t.Performer
+}
+
 type FingerprintFragment struct {
 	Algorithm FingerprintAlgorithm "json:\"algorithm\" graphql:\"algorithm\""
 	Hash      string               "json:\"hash\" graphql:\"hash\""
 	Duration  int                  "json:\"duration\" graphql:\"duration\""
 }
+
+func (t *FingerprintFragment) GetAlgorithm() *FingerprintAlgorithm {
+	if t == nil {
+		t = &FingerprintFragment{}
+	}
+	return &t.Algorithm
+}
+func (t *FingerprintFragment) GetHash() string {
+	if t == nil {
+		t = &FingerprintFragment{}
+	}
+	return t.Hash
+}
+func (t *FingerprintFragment) GetDuration() int {
+	if t == nil {
+		t = &FingerprintFragment{}
+	}
+	return t.Duration
+}
+
 type SceneFragment struct {
 	ID           string                         "json:\"id\" graphql:\"id\""
-	Title        *string                        "json:\"title\" graphql:\"title\""
-	Code         *string                        "json:\"code\" graphql:\"code\""
-	Details      *string                        "json:\"details\" graphql:\"details\""
-	Director     *string                        "json:\"director\" graphql:\"director\""
-	Duration     *int                           "json:\"duration\" graphql:\"duration\""
-	Date         *string                        "json:\"date\" graphql:\"date\""
+	Title        *string                        "json:\"title,omitempty\" graphql:\"title\""
+	Code         *string                        "json:\"code,omitempty\" graphql:\"code\""
+	Details      *string                        "json:\"details,omitempty\" graphql:\"details\""
+	Director     *string                        "json:\"director,omitempty\" graphql:\"director\""
+	Duration     *int                           "json:\"duration,omitempty\" graphql:\"duration\""
+	Date         *string                        "json:\"date,omitempty\" graphql:\"date\""
 	Urls         []*URLFragment                 "json:\"urls\" graphql:\"urls\""
 	Images       []*ImageFragment               "json:\"images\" graphql:\"images\""
-	Studio       *StudioFragment                "json:\"studio\" graphql:\"studio\""
+	Studio       *StudioFragment                "json:\"studio,omitempty\" graphql:\"studio\""
 	Tags         []*TagFragment                 "json:\"tags\" graphql:\"tags\""
 	Performers   []*PerformerAppearanceFragment "json:\"performers\" graphql:\"performers\""
 	Fingerprints []*FingerprintFragment         "json:\"fingerprints\" graphql:\"fingerprints\""
 }
+
+func (t *SceneFragment) GetID() string {
+	if t == nil {
+		t = &SceneFragment{}
+	}
+	return t.ID
+}
+func (t *SceneFragment) GetTitle() *string {
+	if t == nil {
+		t = &SceneFragment{}
+	}
+	return t.Title
+}
+func (t *SceneFragment) GetCode() *string {
+	if t == nil {
+		t = &SceneFragment{}
+	}
+	return t.Code
+}
+func (t *SceneFragment) GetDetails() *string {
+	if t == nil {
+		t = &SceneFragment{}
+	}
+	return t.Details
+}
+func (t *SceneFragment) GetDirector() *string {
+	if t == nil {
+		t = &SceneFragment{}
+	}
+	return t.Director
+}
+func (t *SceneFragment) GetDuration() *int {
+	if t == nil {
+		t = &SceneFragment{}
+	}
+	return t.Duration
+}
+func (t *SceneFragment) GetDate() *string {
+	if t == nil {
+		t = &SceneFragment{}
+	}
+	return t.Date
+}
+func (t *SceneFragment) GetUrls() []*URLFragment {
+	if t == nil {
+		t = &SceneFragment{}
+	}
+	return t.Urls
+}
+func (t *SceneFragment) GetImages() []*ImageFragment {
+	if t == nil {
+		t = &SceneFragment{}
+	}
+	return t.Images
+}
+func (t *SceneFragment) GetStudio() *StudioFragment {
+	if t == nil {
+		t = &SceneFragment{}
+	}
+	return t.Studio
+}
+func (t *SceneFragment) GetTags() []*TagFragment {
+	if t == nil {
+		t = &SceneFragment{}
+	}
+	return t.Tags
+}
+func (t *SceneFragment) GetPerformers() []*PerformerAppearanceFragment {
+	if t == nil {
+		t = &SceneFragment{}
+	}
+	return t.Performers
+}
+func (t *SceneFragment) GetFingerprints() []*FingerprintFragment {
+	if t == nil {
+		t = &SceneFragment{}
+	}
+	return t.Fingerprints
+}
+
+type StudioFragment_Parent struct {
+	Name string "json:\"name\" graphql:\"name\""
+	ID   string "json:\"id\" graphql:\"id\""
+}
+
+func (t *StudioFragment_Parent) GetName() string {
+	if t == nil {
+		t = &StudioFragment_Parent{}
+	}
+	return t.Name
+}
+func (t *StudioFragment_Parent) GetID() string {
+	if t == nil {
+		t = &StudioFragment_Parent{}
+	}
+	return t.ID
+}
+
+type SceneFragment_Studio_StudioFragment_Parent struct {
+	Name string "json:\"name\" graphql:\"name\""
+	ID   string "json:\"id\" graphql:\"id\""
+}
+
+func (t *SceneFragment_Studio_StudioFragment_Parent) GetName() string {
+	if t == nil {
+		t = &SceneFragment_Studio_StudioFragment_Parent{}
+	}
+	return t.Name
+}
+func (t *SceneFragment_Studio_StudioFragment_Parent) GetID() string {
+	if t == nil {
+		t = &SceneFragment_Studio_StudioFragment_Parent{}
+	}
+	return t.ID
+}
+
+type FindSceneByFingerprint_FindSceneByFingerprint_SceneFragment_Studio_StudioFragment_Parent struct {
+	Name string "json:\"name\" graphql:\"name\""
+	ID   string "json:\"id\" graphql:\"id\""
+}
+
+func (t *FindSceneByFingerprint_FindSceneByFingerprint_SceneFragment_Studio_StudioFragment_Parent) GetName() string {
+	if t == nil {
+		t = &FindSceneByFingerprint_FindSceneByFingerprint_SceneFragment_Studio_StudioFragment_Parent{}
+	}
+	return t.Name
+}
+func (t *FindSceneByFingerprint_FindSceneByFingerprint_SceneFragment_Studio_StudioFragment_Parent) GetID() string {
+	if t == nil {
+		t = &FindSceneByFingerprint_FindSceneByFingerprint_SceneFragment_Studio_StudioFragment_Parent{}
+	}
+	return t.ID
+}
+
+type FindScenesByFullFingerprints_FindScenesByFullFingerprints_SceneFragment_Studio_StudioFragment_Parent struct {
+	Name string "json:\"name\" graphql:\"name\""
+	ID   string "json:\"id\" graphql:\"id\""
+}
+
+func (t *FindScenesByFullFingerprints_FindScenesByFullFingerprints_SceneFragment_Studio_StudioFragment_Parent) GetName() string {
+	if t == nil {
+		t = &FindScenesByFullFingerprints_FindScenesByFullFingerprints_SceneFragment_Studio_StudioFragment_Parent{}
+	}
+	return t.Name
+}
+func (t *FindScenesByFullFingerprints_FindScenesByFullFingerprints_SceneFragment_Studio_StudioFragment_Parent) GetID() string {
+	if t == nil {
+		t = &FindScenesByFullFingerprints_FindScenesByFullFingerprints_SceneFragment_Studio_StudioFragment_Parent{}
+	}
+	return t.ID
+}
+
+type FindScenesBySceneFingerprints_FindScenesBySceneFingerprints_SceneFragment_Studio_StudioFragment_Parent struct {
+	Name string "json:\"name\" graphql:\"name\""
+	ID   string "json:\"id\" graphql:\"id\""
+}
+
+func (t *FindScenesBySceneFingerprints_FindScenesBySceneFingerprints_SceneFragment_Studio_StudioFragment_Parent) GetName() string {
+	if t == nil {
+		t = &FindScenesBySceneFingerprints_FindScenesBySceneFingerprints_SceneFragment_Studio_StudioFragment_Parent{}
+	}
+	return t.Name
+}
+func (t *FindScenesBySceneFingerprints_FindScenesBySceneFingerprints_SceneFragment_Studio_StudioFragment_Parent) GetID() string {
+	if t == nil {
+		t = &FindScenesBySceneFingerprints_FindScenesBySceneFingerprints_SceneFragment_Studio_StudioFragment_Parent{}
+	}
+	return t.ID
+}
+
+type SearchScene_SearchScene_SceneFragment_Studio_StudioFragment_Parent struct {
+	Name string "json:\"name\" graphql:\"name\""
+	ID   string "json:\"id\" graphql:\"id\""
+}
+
+func (t *SearchScene_SearchScene_SceneFragment_Studio_StudioFragment_Parent) GetName() string {
+	if t == nil {
+		t = &SearchScene_SearchScene_SceneFragment_Studio_StudioFragment_Parent{}
+	}
+	return t.Name
+}
+func (t *SearchScene_SearchScene_SceneFragment_Studio_StudioFragment_Parent) GetID() string {
+	if t == nil {
+		t = &SearchScene_SearchScene_SceneFragment_Studio_StudioFragment_Parent{}
+	}
+	return t.ID
+}
+
+type FindSceneByID_FindScene_SceneFragment_Studio_StudioFragment_Parent struct {
+	Name string "json:\"name\" graphql:\"name\""
+	ID   string "json:\"id\" graphql:\"id\""
+}
+
+func (t *FindSceneByID_FindScene_SceneFragment_Studio_StudioFragment_Parent) GetName() string {
+	if t == nil {
+		t = &FindSceneByID_FindScene_SceneFragment_Studio_StudioFragment_Parent{}
+	}
+	return t.Name
+}
+func (t *FindSceneByID_FindScene_SceneFragment_Studio_StudioFragment_Parent) GetID() string {
+	if t == nil {
+		t = &FindSceneByID_FindScene_SceneFragment_Studio_StudioFragment_Parent{}
+	}
+	return t.ID
+}
+
+type FindStudio_FindStudio_StudioFragment_Parent struct {
+	Name string "json:\"name\" graphql:\"name\""
+	ID   string "json:\"id\" graphql:\"id\""
+}
+
+func (t *FindStudio_FindStudio_StudioFragment_Parent) GetName() string {
+	if t == nil {
+		t = &FindStudio_FindStudio_StudioFragment_Parent{}
+	}
+	return t.Name
+}
+func (t *FindStudio_FindStudio_StudioFragment_Parent) GetID() string {
+	if t == nil {
+		t = &FindStudio_FindStudio_StudioFragment_Parent{}
+	}
+	return t.ID
+}
+
+type Me_Me struct {
+	Name string "json:\"name\" graphql:\"name\""
+}
+
+func (t *Me_Me) GetName() string {
+	if t == nil {
+		t = &Me_Me{}
+	}
+	return t.Name
+}
+
+type SubmitSceneDraft_SubmitSceneDraft struct {
+	ID *string "json:\"id,omitempty\" graphql:\"id\""
+}
+
+func (t *SubmitSceneDraft_SubmitSceneDraft) GetID() *string {
+	if t == nil {
+		t = &SubmitSceneDraft_SubmitSceneDraft{}
+	}
+	return t.ID
+}
+
+type SubmitPerformerDraft_SubmitPerformerDraft struct {
+	ID *string "json:\"id,omitempty\" graphql:\"id\""
+}
+
+func (t *SubmitPerformerDraft_SubmitPerformerDraft) GetID() *string {
+	if t == nil {
+		t = &SubmitPerformerDraft_SubmitPerformerDraft{}
+	}
+	return t.ID
+}
+
 type FindSceneByFingerprint struct {
 	FindSceneByFingerprint []*SceneFragment "json:\"findSceneByFingerprint\" graphql:\"findSceneByFingerprint\""
 }
+
+func (t *FindSceneByFingerprint) GetFindSceneByFingerprint() []*SceneFragment {
+	if t == nil {
+		t = &FindSceneByFingerprint{}
+	}
+	return t.FindSceneByFingerprint
+}
+
 type FindScenesByFullFingerprints struct {
 	FindScenesByFullFingerprints []*SceneFragment "json:\"findScenesByFullFingerprints\" graphql:\"findScenesByFullFingerprints\""
 }
+
+func (t *FindScenesByFullFingerprints) GetFindScenesByFullFingerprints() []*SceneFragment {
+	if t == nil {
+		t = &FindScenesByFullFingerprints{}
+	}
+	return t.FindScenesByFullFingerprints
+}
+
 type FindScenesBySceneFingerprints struct {
 	FindScenesBySceneFingerprints [][]*SceneFragment "json:\"findScenesBySceneFingerprints\" graphql:\"findScenesBySceneFingerprints\""
 }
+
+func (t *FindScenesBySceneFingerprints) GetFindScenesBySceneFingerprints() [][]*SceneFragment {
+	if t == nil {
+		t = &FindScenesBySceneFingerprints{}
+	}
+	return t.FindScenesBySceneFingerprints
+}
+
 type SearchScene struct {
 	SearchScene []*SceneFragment "json:\"searchScene\" graphql:\"searchScene\""
 }
+
+func (t *SearchScene) GetSearchScene() []*SceneFragment {
+	if t == nil {
+		t = &SearchScene{}
+	}
+	return t.SearchScene
+}
+
 type SearchPerformer struct {
 	SearchPerformer []*PerformerFragment "json:\"searchPerformer\" graphql:\"searchPerformer\""
 }
+
+func (t *SearchPerformer) GetSearchPerformer() []*PerformerFragment {
+	if t == nil {
+		t = &SearchPerformer{}
+	}
+	return t.SearchPerformer
+}
+
 type FindPerformerByID struct {
-	FindPerformer *PerformerFragment "json:\"findPerformer\" graphql:\"findPerformer\""
+	FindPerformer *PerformerFragment "json:\"findPerformer,omitempty\" graphql:\"findPerformer\""
 }
+
+func (t *FindPerformerByID) GetFindPerformer() *PerformerFragment {
+	if t == nil {
+		t = &FindPerformerByID{}
+	}
+	return t.FindPerformer
+}
+
 type FindSceneByID struct {
-	FindScene *SceneFragment "json:\"findScene\" graphql:\"findScene\""
+	FindScene *SceneFragment "json:\"findScene,omitempty\" graphql:\"findScene\""
 }
+
+func (t *FindSceneByID) GetFindScene() *SceneFragment {
+	if t == nil {
+		t = &FindSceneByID{}
+	}
+	return t.FindScene
+}
+
 type FindStudio struct {
-	FindStudio *StudioFragment "json:\"findStudio\" graphql:\"findStudio\""
+	FindStudio *StudioFragment "json:\"findStudio,omitempty\" graphql:\"findStudio\""
 }
+
+func (t *FindStudio) GetFindStudio() *StudioFragment {
+	if t == nil {
+		t = &FindStudio{}
+	}
+	return t.FindStudio
+}
+
 type SubmitFingerprint struct {
 	SubmitFingerprint bool "json:\"submitFingerprint\" graphql:\"submitFingerprint\""
 }
+
+func (t *SubmitFingerprint) GetSubmitFingerprint() bool {
+	if t == nil {
+		t = &SubmitFingerprint{}
+	}
+	return t.SubmitFingerprint
+}
+
 type Me struct {
-	Me *struct {
-		Name string "json:\"name\" graphql:\"name\""
-	} "json:\"me\" graphql:\"me\""
+	Me *Me_Me "json:\"me,omitempty\" graphql:\"me\""
 }
+
+func (t *Me) GetMe() *Me_Me {
+	if t == nil {
+		t = &Me{}
+	}
+	return t.Me
+}
+
 type SubmitSceneDraft struct {
-	SubmitSceneDraft struct {
-		ID *string "json:\"id\" graphql:\"id\""
-	} "json:\"submitSceneDraft\" graphql:\"submitSceneDraft\""
+	SubmitSceneDraft SubmitSceneDraft_SubmitSceneDraft "json:\"submitSceneDraft\" graphql:\"submitSceneDraft\""
 }
+
+func (t *SubmitSceneDraft) GetSubmitSceneDraft() *SubmitSceneDraft_SubmitSceneDraft {
+	if t == nil {
+		t = &SubmitSceneDraft{}
+	}
+	return &t.SubmitSceneDraft
+}
+
 type SubmitPerformerDraft struct {
-	SubmitPerformerDraft struct {
-		ID *string "json:\"id\" graphql:\"id\""
-	} "json:\"submitPerformerDraft\" graphql:\"submitPerformerDraft\""
+	SubmitPerformerDraft SubmitPerformerDraft_SubmitPerformerDraft "json:\"submitPerformerDraft\" graphql:\"submitPerformerDraft\""
+}
+
+func (t *SubmitPerformerDraft) GetSubmitPerformerDraft() *SubmitPerformerDraft_SubmitPerformerDraft {
+	if t == nil {
+		t = &SubmitPerformerDraft{}
+	}
+	return &t.SubmitPerformerDraft
 }
 
 const FindSceneByFingerprintDocument = `query FindSceneByFingerprint ($fingerprint: FingerprintQueryInput!) {
 	findSceneByFingerprint(fingerprint: $fingerprint) {
 		... SceneFragment
 	}
-}
-fragment FingerprintFragment on Fingerprint {
-	algorithm
-	hash
-	duration
 }
 fragment SceneFragment on Scene {
 	id
@@ -279,27 +812,15 @@ fragment SceneFragment on Scene {
 		... FingerprintFragment
 	}
 }
+fragment URLFragment on URL {
+	url
+	type
+}
 fragment ImageFragment on Image {
 	id
 	url
 	width
 	height
-}
-fragment TagFragment on Tag {
-	name
-	id
-}
-fragment FuzzyDateFragment on FuzzyDate {
-	date
-	accuracy
-}
-fragment BodyModificationFragment on BodyModification {
-	location
-	description
-}
-fragment URLFragment on URL {
-	url
-	type
 }
 fragment StudioFragment on Studio {
 	name
@@ -314,6 +835,10 @@ fragment StudioFragment on Studio {
 	images {
 		... ImageFragment
 	}
+}
+fragment TagFragment on Tag {
+	name
+	id
 }
 fragment PerformerAppearanceFragment on PerformerAppearance {
 	as
@@ -334,9 +859,7 @@ fragment PerformerFragment on Performer {
 	images {
 		... ImageFragment
 	}
-	birthdate {
-		... FuzzyDateFragment
-	}
+	birth_date
 	ethnicity
 	country
 	eye_color
@@ -361,15 +884,28 @@ fragment MeasurementsFragment on Measurements {
 	waist
 	hip
 }
+fragment BodyModificationFragment on BodyModification {
+	location
+	description
+}
+fragment FingerprintFragment on Fingerprint {
+	algorithm
+	hash
+	duration
+}
 `
 
-func (c *Client) FindSceneByFingerprint(ctx context.Context, fingerprint FingerprintQueryInput, httpRequestOptions ...client.HTTPRequestOption) (*FindSceneByFingerprint, error) {
-	vars := map[string]interface{}{
+func (c *Client) FindSceneByFingerprint(ctx context.Context, fingerprint FingerprintQueryInput, interceptors ...clientv2.RequestInterceptor) (*FindSceneByFingerprint, error) {
+	vars := map[string]any{
 		"fingerprint": fingerprint,
 	}
 
 	var res FindSceneByFingerprint
-	if err := c.Client.Post(ctx, "FindSceneByFingerprint", FindSceneByFingerprintDocument, &res, vars, httpRequestOptions...); err != nil {
+	if err := c.Client.Post(ctx, "FindSceneByFingerprint", FindSceneByFingerprintDocument, &res, vars, interceptors...); err != nil {
+		if c.Client.ParseDataWhenErrors {
+			return &res, err
+		}
+
 		return nil, err
 	}
 
@@ -381,75 +917,6 @@ const FindScenesByFullFingerprintsDocument = `query FindScenesByFullFingerprints
 		... SceneFragment
 	}
 }
-fragment MeasurementsFragment on Measurements {
-	band_size
-	cup_size
-	waist
-	hip
-}
-fragment FingerprintFragment on Fingerprint {
-	algorithm
-	hash
-	duration
-}
-fragment ImageFragment on Image {
-	id
-	url
-	width
-	height
-}
-fragment TagFragment on Tag {
-	name
-	id
-}
-fragment PerformerAppearanceFragment on PerformerAppearance {
-	as
-	performer {
-		... PerformerFragment
-	}
-}
-fragment PerformerFragment on Performer {
-	id
-	name
-	disambiguation
-	aliases
-	gender
-	merged_ids
-	urls {
-		... URLFragment
-	}
-	images {
-		... ImageFragment
-	}
-	birthdate {
-		... FuzzyDateFragment
-	}
-	ethnicity
-	country
-	eye_color
-	hair_color
-	height
-	measurements {
-		... MeasurementsFragment
-	}
-	breast_type
-	career_start_year
-	career_end_year
-	tattoos {
-		... BodyModificationFragment
-	}
-	piercings {
-		... BodyModificationFragment
-	}
-}
-fragment FuzzyDateFragment on FuzzyDate {
-	date
-	accuracy
-}
-fragment BodyModificationFragment on BodyModification {
-	location
-	description
-}
 fragment SceneFragment on Scene {
 	id
 	title
@@ -481,6 +948,12 @@ fragment URLFragment on URL {
 	url
 	type
 }
+fragment ImageFragment on Image {
+	id
+	url
+	width
+	height
+}
 fragment StudioFragment on Studio {
 	name
 	id
@@ -495,15 +968,76 @@ fragment StudioFragment on Studio {
 		... ImageFragment
 	}
 }
+fragment TagFragment on Tag {
+	name
+	id
+}
+fragment PerformerAppearanceFragment on PerformerAppearance {
+	as
+	performer {
+		... PerformerFragment
+	}
+}
+fragment PerformerFragment on Performer {
+	id
+	name
+	disambiguation
+	aliases
+	gender
+	merged_ids
+	urls {
+		... URLFragment
+	}
+	images {
+		... ImageFragment
+	}
+	birth_date
+	ethnicity
+	country
+	eye_color
+	hair_color
+	height
+	measurements {
+		... MeasurementsFragment
+	}
+	breast_type
+	career_start_year
+	career_end_year
+	tattoos {
+		... BodyModificationFragment
+	}
+	piercings {
+		... BodyModificationFragment
+	}
+}
+fragment MeasurementsFragment on Measurements {
+	band_size
+	cup_size
+	waist
+	hip
+}
+fragment BodyModificationFragment on BodyModification {
+	location
+	description
+}
+fragment FingerprintFragment on Fingerprint {
+	algorithm
+	hash
+	duration
+}
 `
 
-func (c *Client) FindScenesByFullFingerprints(ctx context.Context, fingerprints []*FingerprintQueryInput, httpRequestOptions ...client.HTTPRequestOption) (*FindScenesByFullFingerprints, error) {
-	vars := map[string]interface{}{
+func (c *Client) FindScenesByFullFingerprints(ctx context.Context, fingerprints []*FingerprintQueryInput, interceptors ...clientv2.RequestInterceptor) (*FindScenesByFullFingerprints, error) {
+	vars := map[string]any{
 		"fingerprints": fingerprints,
 	}
 
 	var res FindScenesByFullFingerprints
-	if err := c.Client.Post(ctx, "FindScenesByFullFingerprints", FindScenesByFullFingerprintsDocument, &res, vars, httpRequestOptions...); err != nil {
+	if err := c.Client.Post(ctx, "FindScenesByFullFingerprints", FindScenesByFullFingerprintsDocument, &res, vars, interceptors...); err != nil {
+		if c.Client.ParseDataWhenErrors {
+			return &res, err
+		}
+
 		return nil, err
 	}
 
@@ -515,93 +1049,6 @@ const FindScenesBySceneFingerprintsDocument = `query FindScenesBySceneFingerprin
 		... SceneFragment
 	}
 }
-fragment ImageFragment on Image {
-	id
-	url
-	width
-	height
-}
-fragment TagFragment on Tag {
-	name
-	id
-}
-fragment PerformerAppearanceFragment on PerformerAppearance {
-	as
-	performer {
-		... PerformerFragment
-	}
-}
-fragment MeasurementsFragment on Measurements {
-	band_size
-	cup_size
-	waist
-	hip
-}
-fragment BodyModificationFragment on BodyModification {
-	location
-	description
-}
-fragment FingerprintFragment on Fingerprint {
-	algorithm
-	hash
-	duration
-}
-fragment URLFragment on URL {
-	url
-	type
-}
-fragment StudioFragment on Studio {
-	name
-	id
-	urls {
-		... URLFragment
-	}
-	parent {
-		name
-		id
-	}
-	images {
-		... ImageFragment
-	}
-}
-fragment PerformerFragment on Performer {
-	id
-	name
-	disambiguation
-	aliases
-	gender
-	merged_ids
-	urls {
-		... URLFragment
-	}
-	images {
-		... ImageFragment
-	}
-	birthdate {
-		... FuzzyDateFragment
-	}
-	ethnicity
-	country
-	eye_color
-	hair_color
-	height
-	measurements {
-		... MeasurementsFragment
-	}
-	breast_type
-	career_start_year
-	career_end_year
-	tattoos {
-		... BodyModificationFragment
-	}
-	piercings {
-		... BodyModificationFragment
-	}
-}
-fragment FuzzyDateFragment on FuzzyDate {
-	date
-	accuracy
-}
 fragment SceneFragment on Scene {
 	id
 	title
@@ -629,15 +1076,100 @@ fragment SceneFragment on Scene {
 		... FingerprintFragment
 	}
 }
+fragment URLFragment on URL {
+	url
+	type
+}
+fragment ImageFragment on Image {
+	id
+	url
+	width
+	height
+}
+fragment StudioFragment on Studio {
+	name
+	id
+	urls {
+		... URLFragment
+	}
+	parent {
+		name
+		id
+	}
+	images {
+		... ImageFragment
+	}
+}
+fragment TagFragment on Tag {
+	name
+	id
+}
+fragment PerformerAppearanceFragment on PerformerAppearance {
+	as
+	performer {
+		... PerformerFragment
+	}
+}
+fragment PerformerFragment on Performer {
+	id
+	name
+	disambiguation
+	aliases
+	gender
+	merged_ids
+	urls {
+		... URLFragment
+	}
+	images {
+		... ImageFragment
+	}
+	birth_date
+	ethnicity
+	country
+	eye_color
+	hair_color
+	height
+	measurements {
+		... MeasurementsFragment
+	}
+	breast_type
+	career_start_year
+	career_end_year
+	tattoos {
+		... BodyModificationFragment
+	}
+	piercings {
+		... BodyModificationFragment
+	}
+}
+fragment MeasurementsFragment on Measurements {
+	band_size
+	cup_size
+	waist
+	hip
+}
+fragment BodyModificationFragment on BodyModification {
+	location
+	description
+}
+fragment FingerprintFragment on Fingerprint {
+	algorithm
+	hash
+	duration
+}
 `
 
-func (c *Client) FindScenesBySceneFingerprints(ctx context.Context, fingerprints [][]*FingerprintQueryInput, httpRequestOptions ...client.HTTPRequestOption) (*FindScenesBySceneFingerprints, error) {
-	vars := map[string]interface{}{
+func (c *Client) FindScenesBySceneFingerprints(ctx context.Context, fingerprints [][]*FingerprintQueryInput, interceptors ...clientv2.RequestInterceptor) (*FindScenesBySceneFingerprints, error) {
+	vars := map[string]any{
 		"fingerprints": fingerprints,
 	}
 
 	var res FindScenesBySceneFingerprints
-	if err := c.Client.Post(ctx, "FindScenesBySceneFingerprints", FindScenesBySceneFingerprintsDocument, &res, vars, httpRequestOptions...); err != nil {
+	if err := c.Client.Post(ctx, "FindScenesBySceneFingerprints", FindScenesBySceneFingerprintsDocument, &res, vars, interceptors...); err != nil {
+		if c.Client.ParseDataWhenErrors {
+			return &res, err
+		}
+
 		return nil, err
 	}
 
@@ -676,27 +1208,6 @@ fragment SceneFragment on Scene {
 		... FingerprintFragment
 	}
 }
-fragment PerformerAppearanceFragment on PerformerAppearance {
-	as
-	performer {
-		... PerformerFragment
-	}
-}
-fragment FuzzyDateFragment on FuzzyDate {
-	date
-	accuracy
-}
-fragment MeasurementsFragment on Measurements {
-	band_size
-	cup_size
-	waist
-	hip
-}
-fragment FingerprintFragment on Fingerprint {
-	algorithm
-	hash
-	duration
-}
 fragment URLFragment on URL {
 	url
 	type
@@ -725,6 +1236,12 @@ fragment TagFragment on Tag {
 	name
 	id
 }
+fragment PerformerAppearanceFragment on PerformerAppearance {
+	as
+	performer {
+		... PerformerFragment
+	}
+}
 fragment PerformerFragment on Performer {
 	id
 	name
@@ -738,9 +1255,7 @@ fragment PerformerFragment on Performer {
 	images {
 		... ImageFragment
 	}
-	birthdate {
-		... FuzzyDateFragment
-	}
+	birth_date
 	ethnicity
 	country
 	eye_color
@@ -759,19 +1274,34 @@ fragment PerformerFragment on Performer {
 		... BodyModificationFragment
 	}
 }
+fragment MeasurementsFragment on Measurements {
+	band_size
+	cup_size
+	waist
+	hip
+}
 fragment BodyModificationFragment on BodyModification {
 	location
 	description
 }
+fragment FingerprintFragment on Fingerprint {
+	algorithm
+	hash
+	duration
+}
 `
 
-func (c *Client) SearchScene(ctx context.Context, term string, httpRequestOptions ...client.HTTPRequestOption) (*SearchScene, error) {
-	vars := map[string]interface{}{
+func (c *Client) SearchScene(ctx context.Context, term string, interceptors ...clientv2.RequestInterceptor) (*SearchScene, error) {
+	vars := map[string]any{
 		"term": term,
 	}
 
 	var res SearchScene
-	if err := c.Client.Post(ctx, "SearchScene", SearchSceneDocument, &res, vars, httpRequestOptions...); err != nil {
+	if err := c.Client.Post(ctx, "SearchScene", SearchSceneDocument, &res, vars, interceptors...); err != nil {
+		if c.Client.ParseDataWhenErrors {
+			return &res, err
+		}
+
 		return nil, err
 	}
 
@@ -796,9 +1326,7 @@ fragment PerformerFragment on Performer {
 	images {
 		... ImageFragment
 	}
-	birthdate {
-		... FuzzyDateFragment
-	}
+	birth_date
 	ethnicity
 	country
 	eye_color
@@ -827,10 +1355,6 @@ fragment ImageFragment on Image {
 	width
 	height
 }
-fragment FuzzyDateFragment on FuzzyDate {
-	date
-	accuracy
-}
 fragment MeasurementsFragment on Measurements {
 	band_size
 	cup_size
@@ -843,13 +1367,17 @@ fragment BodyModificationFragment on BodyModification {
 }
 `
 
-func (c *Client) SearchPerformer(ctx context.Context, term string, httpRequestOptions ...client.HTTPRequestOption) (*SearchPerformer, error) {
-	vars := map[string]interface{}{
+func (c *Client) SearchPerformer(ctx context.Context, term string, interceptors ...clientv2.RequestInterceptor) (*SearchPerformer, error) {
+	vars := map[string]any{
 		"term": term,
 	}
 
 	var res SearchPerformer
-	if err := c.Client.Post(ctx, "SearchPerformer", SearchPerformerDocument, &res, vars, httpRequestOptions...); err != nil {
+	if err := c.Client.Post(ctx, "SearchPerformer", SearchPerformerDocument, &res, vars, interceptors...); err != nil {
+		if c.Client.ParseDataWhenErrors {
+			return &res, err
+		}
+
 		return nil, err
 	}
 
@@ -861,26 +1389,6 @@ const FindPerformerByIDDocument = `query FindPerformerByID ($id: ID!) {
 		... PerformerFragment
 	}
 }
-fragment ImageFragment on Image {
-	id
-	url
-	width
-	height
-}
-fragment FuzzyDateFragment on FuzzyDate {
-	date
-	accuracy
-}
-fragment MeasurementsFragment on Measurements {
-	band_size
-	cup_size
-	waist
-	hip
-}
-fragment BodyModificationFragment on BodyModification {
-	location
-	description
-}
 fragment PerformerFragment on Performer {
 	id
 	name
@@ -894,9 +1402,7 @@ fragment PerformerFragment on Performer {
 	images {
 		... ImageFragment
 	}
-	birthdate {
-		... FuzzyDateFragment
-	}
+	birth_date
 	ethnicity
 	country
 	eye_color
@@ -919,15 +1425,35 @@ fragment URLFragment on URL {
 	url
 	type
 }
+fragment ImageFragment on Image {
+	id
+	url
+	width
+	height
+}
+fragment MeasurementsFragment on Measurements {
+	band_size
+	cup_size
+	waist
+	hip
+}
+fragment BodyModificationFragment on BodyModification {
+	location
+	description
+}
 `
 
-func (c *Client) FindPerformerByID(ctx context.Context, id string, httpRequestOptions ...client.HTTPRequestOption) (*FindPerformerByID, error) {
-	vars := map[string]interface{}{
+func (c *Client) FindPerformerByID(ctx context.Context, id string, interceptors ...clientv2.RequestInterceptor) (*FindPerformerByID, error) {
+	vars := map[string]any{
 		"id": id,
 	}
 
 	var res FindPerformerByID
-	if err := c.Client.Post(ctx, "FindPerformerByID", FindPerformerByIDDocument, &res, vars, httpRequestOptions...); err != nil {
+	if err := c.Client.Post(ctx, "FindPerformerByID", FindPerformerByIDDocument, &res, vars, interceptors...); err != nil {
+		if c.Client.ParseDataWhenErrors {
+			return &res, err
+		}
+
 		return nil, err
 	}
 
@@ -938,93 +1464,6 @@ const FindSceneByIDDocument = `query FindSceneByID ($id: ID!) {
 	findScene(id: $id) {
 		... SceneFragment
 	}
-}
-fragment StudioFragment on Studio {
-	name
-	id
-	urls {
-		... URLFragment
-	}
-	parent {
-		name
-		id
-	}
-	images {
-		... ImageFragment
-	}
-}
-fragment TagFragment on Tag {
-	name
-	id
-}
-fragment PerformerAppearanceFragment on PerformerAppearance {
-	as
-	performer {
-		... PerformerFragment
-	}
-}
-fragment FuzzyDateFragment on FuzzyDate {
-	date
-	accuracy
-}
-fragment FingerprintFragment on Fingerprint {
-	algorithm
-	hash
-	duration
-}
-fragment ImageFragment on Image {
-	id
-	url
-	width
-	height
-}
-fragment URLFragment on URL {
-	url
-	type
-}
-fragment PerformerFragment on Performer {
-	id
-	name
-	disambiguation
-	aliases
-	gender
-	merged_ids
-	urls {
-		... URLFragment
-	}
-	images {
-		... ImageFragment
-	}
-	birthdate {
-		... FuzzyDateFragment
-	}
-	ethnicity
-	country
-	eye_color
-	hair_color
-	height
-	measurements {
-		... MeasurementsFragment
-	}
-	breast_type
-	career_start_year
-	career_end_year
-	tattoos {
-		... BodyModificationFragment
-	}
-	piercings {
-		... BodyModificationFragment
-	}
-}
-fragment MeasurementsFragment on Measurements {
-	band_size
-	cup_size
-	waist
-	hip
-}
-fragment BodyModificationFragment on BodyModification {
-	location
-	description
 }
 fragment SceneFragment on Scene {
 	id
@@ -1053,15 +1492,100 @@ fragment SceneFragment on Scene {
 		... FingerprintFragment
 	}
 }
+fragment URLFragment on URL {
+	url
+	type
+}
+fragment ImageFragment on Image {
+	id
+	url
+	width
+	height
+}
+fragment StudioFragment on Studio {
+	name
+	id
+	urls {
+		... URLFragment
+	}
+	parent {
+		name
+		id
+	}
+	images {
+		... ImageFragment
+	}
+}
+fragment TagFragment on Tag {
+	name
+	id
+}
+fragment PerformerAppearanceFragment on PerformerAppearance {
+	as
+	performer {
+		... PerformerFragment
+	}
+}
+fragment PerformerFragment on Performer {
+	id
+	name
+	disambiguation
+	aliases
+	gender
+	merged_ids
+	urls {
+		... URLFragment
+	}
+	images {
+		... ImageFragment
+	}
+	birth_date
+	ethnicity
+	country
+	eye_color
+	hair_color
+	height
+	measurements {
+		... MeasurementsFragment
+	}
+	breast_type
+	career_start_year
+	career_end_year
+	tattoos {
+		... BodyModificationFragment
+	}
+	piercings {
+		... BodyModificationFragment
+	}
+}
+fragment MeasurementsFragment on Measurements {
+	band_size
+	cup_size
+	waist
+	hip
+}
+fragment BodyModificationFragment on BodyModification {
+	location
+	description
+}
+fragment FingerprintFragment on Fingerprint {
+	algorithm
+	hash
+	duration
+}
 `
 
-func (c *Client) FindSceneByID(ctx context.Context, id string, httpRequestOptions ...client.HTTPRequestOption) (*FindSceneByID, error) {
-	vars := map[string]interface{}{
+func (c *Client) FindSceneByID(ctx context.Context, id string, interceptors ...clientv2.RequestInterceptor) (*FindSceneByID, error) {
+	vars := map[string]any{
 		"id": id,
 	}
 
 	var res FindSceneByID
-	if err := c.Client.Post(ctx, "FindSceneByID", FindSceneByIDDocument, &res, vars, httpRequestOptions...); err != nil {
+	if err := c.Client.Post(ctx, "FindSceneByID", FindSceneByIDDocument, &res, vars, interceptors...); err != nil {
+		if c.Client.ParseDataWhenErrors {
+			return &res, err
+		}
+
 		return nil, err
 	}
 
@@ -1099,14 +1623,18 @@ fragment ImageFragment on Image {
 }
 `
 
-func (c *Client) FindStudio(ctx context.Context, id *string, name *string, httpRequestOptions ...client.HTTPRequestOption) (*FindStudio, error) {
-	vars := map[string]interface{}{
+func (c *Client) FindStudio(ctx context.Context, id *string, name *string, interceptors ...clientv2.RequestInterceptor) (*FindStudio, error) {
+	vars := map[string]any{
 		"id":   id,
 		"name": name,
 	}
 
 	var res FindStudio
-	if err := c.Client.Post(ctx, "FindStudio", FindStudioDocument, &res, vars, httpRequestOptions...); err != nil {
+	if err := c.Client.Post(ctx, "FindStudio", FindStudioDocument, &res, vars, interceptors...); err != nil {
+		if c.Client.ParseDataWhenErrors {
+			return &res, err
+		}
+
 		return nil, err
 	}
 
@@ -1118,13 +1646,17 @@ const SubmitFingerprintDocument = `mutation SubmitFingerprint ($input: Fingerpri
 }
 `
 
-func (c *Client) SubmitFingerprint(ctx context.Context, input FingerprintSubmission, httpRequestOptions ...client.HTTPRequestOption) (*SubmitFingerprint, error) {
-	vars := map[string]interface{}{
+func (c *Client) SubmitFingerprint(ctx context.Context, input FingerprintSubmission, interceptors ...clientv2.RequestInterceptor) (*SubmitFingerprint, error) {
+	vars := map[string]any{
 		"input": input,
 	}
 
 	var res SubmitFingerprint
-	if err := c.Client.Post(ctx, "SubmitFingerprint", SubmitFingerprintDocument, &res, vars, httpRequestOptions...); err != nil {
+	if err := c.Client.Post(ctx, "SubmitFingerprint", SubmitFingerprintDocument, &res, vars, interceptors...); err != nil {
+		if c.Client.ParseDataWhenErrors {
+			return &res, err
+		}
+
 		return nil, err
 	}
 
@@ -1138,11 +1670,15 @@ const MeDocument = `query Me {
 }
 `
 
-func (c *Client) Me(ctx context.Context, httpRequestOptions ...client.HTTPRequestOption) (*Me, error) {
-	vars := map[string]interface{}{}
+func (c *Client) Me(ctx context.Context, interceptors ...clientv2.RequestInterceptor) (*Me, error) {
+	vars := map[string]any{}
 
 	var res Me
-	if err := c.Client.Post(ctx, "Me", MeDocument, &res, vars, httpRequestOptions...); err != nil {
+	if err := c.Client.Post(ctx, "Me", MeDocument, &res, vars, interceptors...); err != nil {
+		if c.Client.ParseDataWhenErrors {
+			return &res, err
+		}
+
 		return nil, err
 	}
 
@@ -1156,13 +1692,17 @@ const SubmitSceneDraftDocument = `mutation SubmitSceneDraft ($input: SceneDraftI
 }
 `
 
-func (c *Client) SubmitSceneDraft(ctx context.Context, input SceneDraftInput, httpRequestOptions ...client.HTTPRequestOption) (*SubmitSceneDraft, error) {
-	vars := map[string]interface{}{
+func (c *Client) SubmitSceneDraft(ctx context.Context, input SceneDraftInput, interceptors ...clientv2.RequestInterceptor) (*SubmitSceneDraft, error) {
+	vars := map[string]any{
 		"input": input,
 	}
 
 	var res SubmitSceneDraft
-	if err := c.Client.Post(ctx, "SubmitSceneDraft", SubmitSceneDraftDocument, &res, vars, httpRequestOptions...); err != nil {
+	if err := c.Client.Post(ctx, "SubmitSceneDraft", SubmitSceneDraftDocument, &res, vars, interceptors...); err != nil {
+		if c.Client.ParseDataWhenErrors {
+			return &res, err
+		}
+
 		return nil, err
 	}
 
@@ -1176,15 +1716,34 @@ const SubmitPerformerDraftDocument = `mutation SubmitPerformerDraft ($input: Per
 }
 `
 
-func (c *Client) SubmitPerformerDraft(ctx context.Context, input PerformerDraftInput, httpRequestOptions ...client.HTTPRequestOption) (*SubmitPerformerDraft, error) {
-	vars := map[string]interface{}{
+func (c *Client) SubmitPerformerDraft(ctx context.Context, input PerformerDraftInput, interceptors ...clientv2.RequestInterceptor) (*SubmitPerformerDraft, error) {
+	vars := map[string]any{
 		"input": input,
 	}
 
 	var res SubmitPerformerDraft
-	if err := c.Client.Post(ctx, "SubmitPerformerDraft", SubmitPerformerDraftDocument, &res, vars, httpRequestOptions...); err != nil {
+	if err := c.Client.Post(ctx, "SubmitPerformerDraft", SubmitPerformerDraftDocument, &res, vars, interceptors...); err != nil {
+		if c.Client.ParseDataWhenErrors {
+			return &res, err
+		}
+
 		return nil, err
 	}
 
 	return &res, nil
+}
+
+var DocumentOperationNames = map[string]string{
+	FindSceneByFingerprintDocument:        "FindSceneByFingerprint",
+	FindScenesByFullFingerprintsDocument:  "FindScenesByFullFingerprints",
+	FindScenesBySceneFingerprintsDocument: "FindScenesBySceneFingerprints",
+	SearchSceneDocument:                   "SearchScene",
+	SearchPerformerDocument:               "SearchPerformer",
+	FindPerformerByIDDocument:             "FindPerformerByID",
+	FindSceneByIDDocument:                 "FindSceneByID",
+	FindStudioDocument:                    "FindStudio",
+	SubmitFingerprintDocument:             "SubmitFingerprint",
+	MeDocument:                            "Me",
+	SubmitSceneDraftDocument:              "SubmitSceneDraft",
+	SubmitPerformerDraftDocument:          "SubmitPerformerDraft",
 }

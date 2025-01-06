@@ -80,11 +80,11 @@ func (_m *PerformerReaderWriter) CountByTagID(ctx context.Context, tagID int) (i
 }
 
 // Create provides a mock function with given fields: ctx, newPerformer
-func (_m *PerformerReaderWriter) Create(ctx context.Context, newPerformer *models.Performer) error {
+func (_m *PerformerReaderWriter) Create(ctx context.Context, newPerformer *models.CreatePerformerInput) error {
 	ret := _m.Called(ctx, newPerformer)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *models.Performer) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *models.CreatePerformerInput) error); ok {
 		r0 = rf(ctx, newPerformer)
 	} else {
 		r0 = ret.Error(0)
@@ -314,6 +314,52 @@ func (_m *PerformerReaderWriter) GetAliases(ctx context.Context, relatedID int) 
 	return r0, r1
 }
 
+// GetCustomFields provides a mock function with given fields: ctx, id
+func (_m *PerformerReaderWriter) GetCustomFields(ctx context.Context, id int) (map[string]interface{}, error) {
+	ret := _m.Called(ctx, id)
+
+	var r0 map[string]interface{}
+	if rf, ok := ret.Get(0).(func(context.Context, int) map[string]interface{}); ok {
+		r0 = rf(ctx, id)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(map[string]interface{})
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, id)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetCustomFieldsBulk provides a mock function with given fields: ctx, ids
+func (_m *PerformerReaderWriter) GetCustomFieldsBulk(ctx context.Context, ids []int) ([]models.CustomFieldMap, error) {
+	ret := _m.Called(ctx, ids)
+
+	var r0 []models.CustomFieldMap
+	if rf, ok := ret.Get(0).(func(context.Context, []int) []models.CustomFieldMap); ok {
+		r0 = rf(ctx, ids)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]models.CustomFieldMap)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, []int) error); ok {
+		r1 = rf(ctx, ids)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetImage provides a mock function with given fields: ctx, performerID
 func (_m *PerformerReaderWriter) GetImage(ctx context.Context, performerID int) ([]byte, error) {
 	ret := _m.Called(ctx, performerID)
@@ -370,6 +416,29 @@ func (_m *PerformerReaderWriter) GetTagIDs(ctx context.Context, relatedID int) (
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]int)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, relatedID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetURLs provides a mock function with given fields: ctx, relatedID
+func (_m *PerformerReaderWriter) GetURLs(ctx context.Context, relatedID int) ([]string, error) {
+	ret := _m.Called(ctx, relatedID)
+
+	var r0 []string
+	if rf, ok := ret.Get(0).(func(context.Context, int) []string); ok {
+		r0 = rf(ctx, relatedID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]string)
 		}
 	}
 
@@ -479,11 +548,11 @@ func (_m *PerformerReaderWriter) QueryForAutoTag(ctx context.Context, words []st
 }
 
 // Update provides a mock function with given fields: ctx, updatedPerformer
-func (_m *PerformerReaderWriter) Update(ctx context.Context, updatedPerformer *models.Performer) error {
+func (_m *PerformerReaderWriter) Update(ctx context.Context, updatedPerformer *models.UpdatePerformerInput) error {
 	ret := _m.Called(ctx, updatedPerformer)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *models.Performer) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *models.UpdatePerformerInput) error); ok {
 		r0 = rf(ctx, updatedPerformer)
 	} else {
 		r0 = ret.Error(0)

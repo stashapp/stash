@@ -30,6 +30,7 @@ import StudioResult from "./StudioResult";
 import { useInitialState } from "src/hooks/state";
 import { getStashboxBase } from "src/utils/stashbox";
 import { ExternalLink } from "src/components/Shared/ExternalLink";
+import { compareScenesForSort } from "./utils";
 
 const getDurationIcon = (matchPercentage: number) => {
   if (matchPercentage > 65)
@@ -326,8 +327,8 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     }
   }, [isActive, loading, stashScene, index, resolveScene, scene]);
 
-  const stashBoxBaseURL = currentSource?.stashboxEndpoint
-    ? getStashboxBase(currentSource.stashboxEndpoint)
+  const stashBoxBaseURL = currentSource?.sourceInput.stash_box_endpoint
+    ? getStashboxBase(currentSource.sourceInput.stash_box_endpoint)
     : undefined;
   const stashBoxURL = useMemo(() => {
     if (stashBoxBaseURL) {
@@ -403,7 +404,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     const includeStashID = !excludedFieldList.includes("stash_ids");
     if (
       includeStashID &&
-      currentSource?.stashboxEndpoint &&
+      currentSource?.sourceInput.stash_box_endpoint &&
       scene.remote_site_id
     ) {
       sceneCreateInput.stash_ids = [
@@ -412,12 +413,16 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
             return {
               endpoint: s.endpoint,
               stash_id: s.stash_id,
+              updated_at: s.updated_at,
             };
           })
-          .filter((s) => s.endpoint !== currentSource.stashboxEndpoint) ?? []),
+          .filter(
+            (s) => s.endpoint !== currentSource.sourceInput.stash_box_endpoint
+          ) ?? []),
         {
-          endpoint: currentSource.stashboxEndpoint,
+          endpoint: currentSource.sourceInput.stash_box_endpoint,
           stash_id: scene.remote_site_id,
+          updated_at: new Date().toISOString(),
         },
       ];
     } else {
@@ -661,7 +666,9 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
             selectedID={studioID}
             setSelectedID={(id) => setStudioID(id)}
             onCreate={() => showStudioModal(scene.studio!)}
-            endpoint={currentSource?.stashboxEndpoint}
+            endpoint={
+              currentSource?.sourceInput.stash_box_endpoint ?? undefined
+            }
             onLink={async () => {
               await linkStudio(scene.studio!, studioID!);
             }}
@@ -690,7 +697,9 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
               onLink={async () => {
                 await linkPerformer(performer, performerIDs[performerIndex]!);
               }}
-              endpoint={currentSource?.stashboxEndpoint}
+              endpoint={
+                currentSource?.sourceInput.stash_box_endpoint ?? undefined
+              }
               key={`${performer.name ?? performer.remote_site_id ?? ""}`}
             />
           ))}
@@ -810,17 +819,30 @@ export interface ISceneSearchResults {
 
 export const SceneSearchResults: React.FC<ISceneSearchResults> = ({
   target,
-  scenes,
+  scenes: unsortedScenes,
 }) => {
   const [selectedResult, setSelectedResult] = useState<number | undefined>();
 
+  const scenes = useMemo(
+    () =>
+      unsortedScenes
+        .slice()
+        .sort((scrapedSceneA, scrapedSceneB) =>
+          compareScenesForSort(target, scrapedSceneA, scrapedSceneB)
+        ),
+    [unsortedScenes, target]
+  );
+
   useEffect(() => {
-    if (!scenes) {
-      setSelectedResult(undefined);
-    } else if (scenes.length > 0 && scenes[0].resolved) {
-      setSelectedResult(0);
+    // #3198 - if the selected result is no longer in the list, reset it
+    if (!selectedResult || scenes?.length <= selectedResult) {
+      if (!scenes) {
+        setSelectedResult(undefined);
+      } else if (scenes.length > 0 && scenes[0].resolved) {
+        setSelectedResult(0);
+      }
     }
-  }, [scenes]);
+  }, [scenes, selectedResult]);
 
   function getClassName(i: number) {
     return cx("row mx-0 mt-2 search-result", {

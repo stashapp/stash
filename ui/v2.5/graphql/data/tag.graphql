@@ -4,6 +4,7 @@ fragment TagData on Tag {
   description
   aliases
   ignore_auto_tag
+  favorite
   image_path
   scene_count
   scene_count_all: scene_count(depth: -1)
@@ -15,6 +16,10 @@ fragment TagData on Tag {
   gallery_count_all: gallery_count(depth: -1)
   performer_count
   performer_count_all: performer_count(depth: -1)
+  studio_count
+  studio_count_all: studio_count(depth: -1)
+  group_count
+  group_count_all: group_count(depth: -1)
 
   parents {
     ...SlimTagData
@@ -28,6 +33,7 @@ fragment TagData on Tag {
 fragment SelectTagData on Tag {
   id
   name
+  favorite
   description
   aliases
   image_path

@@ -16,6 +16,7 @@ import { handleUnsavedChanges } from "src/utils/navigation";
 import { formikUtils } from "src/utils/form";
 import { yupFormikValidate, yupUniqueAliases } from "src/utils/yup";
 import { Studio, StudioSelect } from "../StudioSelect";
+import { useTagsEdit } from "src/hooks/tagsEdit";
 
 interface IStudioEditPanel {
   studio: Partial<GQL.StudioDataFragment>;
@@ -50,6 +51,7 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
     details: yup.string().ensure(),
     parent_id: yup.string().required().nullable(),
     aliases: yupUniqueAliases(intl, "name"),
+    tag_ids: yup.array(yup.string().required()).defined(),
     ignore_auto_tag: yup.boolean().defined(),
     stash_ids: yup.mixed<GQL.StashIdInput[]>().defined(),
     image: yup.string().nullable().optional(),
@@ -62,6 +64,7 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
     details: studio.details ?? "",
     parent_id: studio.parent_studio?.id ?? null,
     aliases: studio.aliases ?? [],
+    tag_ids: (studio.tags ?? []).map((t) => t.id),
     ignore_auto_tag: studio.ignore_auto_tag ?? false,
     stash_ids: getStashIDs(studio.stash_ids),
   };
@@ -74,6 +77,10 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
     validate: yupFormikValidate(schema),
     onSubmit: (values) => onSave(schema.cast(values)),
   });
+
+  const { tagsControl } = useTagsEdit(studio.tags, (ids) =>
+    formik.setFieldValue("tag_ids", ids)
+  );
 
   function onSetParentStudio(item: Studio | null) {
     setParentStudio(item);
@@ -157,6 +164,11 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
     return renderField("parent_id", title, control);
   }
 
+  function renderTagsField() {
+    const title = intl.formatMessage({ id: "tags" });
+    return renderField("tag_ids", title, tagsControl());
+  }
+
   if (isLoading) return <LoadingIndicator />;
 
   return (
@@ -178,6 +190,7 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
         {renderInputField("url")}
         {renderInputField("details", "textarea")}
         {renderParentStudioField()}
+        {renderTagsField()}
         {renderStashIDsField("stash_ids", "studios")}
         <hr />
         {renderInputField("ignore_auto_tag", "checkbox")}

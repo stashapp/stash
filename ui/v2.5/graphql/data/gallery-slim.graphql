@@ -15,15 +15,6 @@ fragment SlimGalleryData on Gallery {
     ...FolderData
   }
   image_count
-  cover {
-    id
-    files {
-      ...ImageFileData
-    }
-    paths {
-      thumbnail
-    }
-  }
   chapters {
     id
     title
@@ -47,5 +38,9 @@ fragment SlimGalleryData on Gallery {
   }
   scenes {
     ...SlimSceneData
+  }
+  paths {
+    cover
+    preview
   }
 }

@@ -26,7 +26,8 @@ import { faTableColumns } from "@fortawesome/free-solid-svg-icons";
 import { TagIDSelect } from "../Tags/TagSelect";
 import { StudioIDSelect } from "../Studios/StudioSelect";
 import { GalleryIDSelect } from "../Galleries/GallerySelect";
-import { MovieIDSelect } from "../Movies/MovieSelect";
+import { GroupIDSelect } from "../Groups/GroupSelect";
+import { SceneIDSelect } from "../Scenes/SceneSelect";
 
 export type SelectObject = {
   id: string;
@@ -42,7 +43,8 @@ interface ITypeProps {
     | "tags"
     | "scene_tags"
     | "performer_tags"
-    | "movies"
+    | "scenes"
+    | "groups"
     | "galleries";
 }
 interface IFilterProps {
@@ -254,54 +256,10 @@ export const GallerySelect: React.FC<
   return <GalleryIDSelect {...props} />;
 };
 
-export const SceneSelect: React.FC<ITitledSelect> = (props) => {
-  const [query, setQuery] = useState<string>("");
-  const { data, loading } = GQL.useFindScenesQuery({
-    skip: query === "",
-    variables: {
-      filter: {
-        q: query,
-      },
-    },
-  });
-
-  const scenes = data?.findScenes.scenes ?? [];
-  const items = scenes.map((s) => ({
-    label: objectTitle(s),
-    value: s.id,
-  }));
-
-  const onInputChange = useDebounce(setQuery, 500);
-
-  const onChange = (selectedItems: OnChangeValue<Option, boolean>) => {
-    const selected = getSelectedItems(selectedItems);
-    props.onSelect(
-      (selected ?? []).map((s) => ({
-        id: s.value,
-        title: s.label,
-      }))
-    );
-  };
-
-  const options = props.selected.map((s) => ({
-    value: s.id,
-    label: s.title,
-  }));
-
-  return (
-    <SelectComponent
-      onChange={onChange}
-      onInputChange={onInputChange}
-      isLoading={loading}
-      items={items}
-      selectedOptions={options}
-      isMulti={props.isMulti ?? false}
-      placeholder="Search for scene..."
-      noOptionsMessage={query === "" ? null : "No scenes found."}
-      showDropdown={false}
-      isDisabled={props.disabled}
-    />
-  );
+export const SceneSelect: React.FC<IFilterProps & { excludeIds?: string[] }> = (
+  props
+) => {
+  return <SceneIDSelect {...props} />;
 };
 
 export const ImageSelect: React.FC<ITitledSelect> = (props) => {
@@ -406,8 +364,8 @@ export const StudioSelect: React.FC<
   return <StudioIDSelect {...props} />;
 };
 
-export const MovieSelect: React.FC<IFilterProps> = (props) => {
-  return <MovieIDSelect {...props} />;
+export const GroupSelect: React.FC<IFilterProps> = (props) => {
+  return <GroupIDSelect {...props} />;
 };
 
 export const TagSelect: React.FC<
@@ -422,8 +380,10 @@ export const FilterSelect: React.FC<IFilterProps & ITypeProps> = (props) => {
       return <PerformerSelect {...props} creatable={false} />;
     case "studios":
       return <StudioSelect {...props} creatable={false} />;
-    case "movies":
-      return <MovieSelect {...props} creatable={false} />;
+    case "scenes":
+      return <SceneSelect {...props} creatable={false} />;
+    case "groups":
+      return <GroupSelect {...props} creatable={false} />;
     case "galleries":
       return <GallerySelect {...props} />;
     default:

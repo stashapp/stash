@@ -43,12 +43,12 @@ type PerformerCounter interface {
 
 // PerformerCreator provides methods to create performers.
 type PerformerCreator interface {
-	Create(ctx context.Context, newPerformer *Performer) error
+	Create(ctx context.Context, newPerformer *CreatePerformerInput) error
 }
 
 // PerformerUpdater provides methods to update performers.
 type PerformerUpdater interface {
-	Update(ctx context.Context, updatedPerformer *Performer) error
+	Update(ctx context.Context, updatedPerformer *UpdatePerformerInput) error
 	UpdatePartial(ctx context.Context, id int, updatedPerformer PerformerPartial) (*Performer, error)
 	UpdateImage(ctx context.Context, performerID int, image []byte) error
 }
@@ -78,6 +78,9 @@ type PerformerReader interface {
 	AliasLoader
 	StashIDLoader
 	TagIDLoader
+	URLLoader
+
+	CustomFieldsReader
 
 	All(ctx context.Context) ([]*Performer, error)
 	GetImage(ctx context.Context, performerID int) ([]byte, error)

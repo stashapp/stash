@@ -34,18 +34,17 @@ func CreateIdentifyJob(input identify.Options) *IdentifyJob {
 	}
 }
 
-func (j *IdentifyJob) Execute(ctx context.Context, progress *job.Progress) {
+func (j *IdentifyJob) Execute(ctx context.Context, progress *job.Progress) error {
 	j.progress = progress
 
 	// if no sources provided - just return
 	if len(j.input.Sources) == 0 {
-		return
+		return nil
 	}
 
 	sources, err := j.getSources()
 	if err != nil {
-		logger.Error(err)
-		return
+		return err
 	}
 
 	// if scene ids provided, use those
@@ -84,8 +83,10 @@ func (j *IdentifyJob) Execute(ctx context.Context, progress *job.Progress) {
 
 		return nil
 	}); err != nil {
-		logger.Errorf("Error encountered while identifying scenes: %v", err)
+		return fmt.Errorf("error encountered while identifying scenes: %w", err)
 	}
+
+	return nil
 }
 
 func (j *IdentifyJob) identifyAllScenes(ctx context.Context, sources []identify.ScraperSource) error {

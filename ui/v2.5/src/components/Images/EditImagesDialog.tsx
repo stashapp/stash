@@ -171,7 +171,7 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
     setExistingTagIds(updateTagIds);
     setExistingGalleryIds(updateGalleryIds);
     setOrganized(updateOrganized);
-  }, [props.selected, performerMode, tagMode]);
+  }, [props.selected]);
 
   useEffect(() => {
     if (checkboxRef.current) {
@@ -237,6 +237,7 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
                 }
                 ids={studioId ? [studioId] : []}
                 isDisabled={isUpdating}
+                menuPortalTarget={document.body}
               />
             </Col>
           </Form.Group>
@@ -253,6 +254,7 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
               existingIds={existingPerformerIds ?? []}
               ids={performerIds ?? []}
               mode={performerMode}
+              menuPortalTarget={document.body}
             />
           </Form.Group>
 
@@ -268,6 +270,7 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
               existingIds={existingTagIds ?? []}
               ids={tagIds ?? []}
               mode={tagMode}
+              menuPortalTarget={document.body}
             />
           </Form.Group>
 
@@ -283,6 +286,7 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
               existingIds={existingGalleryIds ?? []}
               ids={galleryIds ?? []}
               mode={galleryMode}
+              menuPortalTarget={document.body}
             />
           </Form.Group>
 

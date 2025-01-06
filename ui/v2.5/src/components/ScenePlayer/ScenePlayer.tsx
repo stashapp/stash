@@ -243,12 +243,11 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   const [fullscreen, setFullscreen] = useState(false);
   const [showScrubber, setShowScrubber] = useState(false);
 
-  const initialTimestamp = useRef(-1);
   const started = useRef(false);
   const auto = useRef(false);
   const interactiveReady = useRef(false);
   const minimumPlayPercent = uiConfig?.minimumPlayPercent ?? 0;
-  const trackActivity = uiConfig?.trackActivity ?? false;
+  const trackActivity = uiConfig?.trackActivity ?? true;
   const vrTag = uiConfig?.vrTag ?? undefined;
 
   useScript(
@@ -298,9 +297,13 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     sendSetTimestamp((value: number) => {
       const player = getPlayer();
       if (player && value >= 0) {
-        player.play()?.then(() => {
+        if (player.hasStarted() && player.paused()) {
           player.currentTime(value);
-        });
+        } else {
+          player.play()?.then(() => {
+            player.currentTime(value);
+          });
+        }
       }
     });
   }, [sendSetTimestamp, getPlayer]);
@@ -451,9 +454,11 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     if (!player) return;
 
     function canplay(this: VideoJsPlayer) {
-      if (initialTimestamp.current !== -1) {
-        this.currentTime(initialTimestamp.current);
-        initialTimestamp.current = -1;
+      // if we're seeking before starting, don't set the initial timestamp
+      // when starting from the beginning, there is a small delay before the event
+      // is triggered, so we can't just check if the time is 0
+      if (this.currentTime() >= 0.1) {
+        return;
       }
     }
 
@@ -657,7 +662,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       startPosition = resumeTime;
     }
 
-    initialTimestamp.current = startPosition;
     setTime(startPosition);
 
     player.load();
@@ -665,6 +669,10 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
     player.ready(() => {
       player.vttThumbnails().src(scene.paths.vtt ?? null);
+
+      if (startPosition) {
+        player.currentTime(startPosition);
+      }
     });
 
     started.current = false;
@@ -793,7 +801,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     if (started.current) {
       getPlayer()?.currentTime(seconds);
     } else {
-      initialTimestamp.current = seconds;
       setTime(seconds);
     }
   }
@@ -822,7 +829,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
   return (
     <div
-      className={cx("VideoPlayer", { portrait: isPortrait })}
+      className={cx("VideoPlayer", { portrait: isPortrait, "no-file": !file })}
       onKeyDownCapture={onKeyDown}
     >
       <div className="video-wrapper" ref={videoRef} />

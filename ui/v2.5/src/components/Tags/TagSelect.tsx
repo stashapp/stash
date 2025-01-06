@@ -28,7 +28,7 @@ import { useCompare } from "src/hooks/state";
 import { TagPopover } from "./TagPopover";
 import { Placement } from "react-bootstrap/esm/Overlay";
 import { sortByRelevance } from "src/utils/query";
-import { PatchComponent } from "src/patch";
+import { PatchComponent, PatchFunction } from "src/patch";
 
 export type SelectObject = {
   id: string;
@@ -39,13 +39,28 @@ export type SelectObject = {
 export type Tag = Pick<GQL.Tag, "id" | "name" | "aliases" | "image_path">;
 type Option = SelectOption<Tag>;
 
-const _TagSelect: React.FC<
-  IFilterProps &
-    IFilterValueProps<Tag> & {
-      hoverPlacement?: Placement;
-      excludeIds?: string[];
-    }
-> = (props) => {
+type FindTagsResult = Awaited<
+  ReturnType<typeof queryFindTagsForSelect>
+>["data"]["findTags"]["tags"];
+
+function sortTagsByRelevance(input: string, tags: FindTagsResult) {
+  return sortByRelevance(
+    input,
+    tags,
+    (t) => t.name,
+    (t) => t.aliases
+  );
+}
+
+const tagSelectSort = PatchFunction("TagSelect.sort", sortTagsByRelevance);
+
+export type TagSelectProps = IFilterProps &
+  IFilterValueProps<Tag> & {
+    hoverPlacement?: Placement;
+    excludeIds?: string[];
+  };
+
+const _TagSelect: React.FC<TagSelectProps> = (props) => {
   const [createTag] = useTagCreate();
 
   const { configuration } = React.useContext(ConfigurationContext);
@@ -71,12 +86,7 @@ const _TagSelect: React.FC<
       return !exclude.includes(tag.id.toString());
     });
 
-    return sortByRelevance(
-      input,
-      ret,
-      (t) => t.name,
-      (t) => t.aliases
-    ).map((tag) => ({
+    return tagSelectSort(input, ret).map((tag) => ({
       value: tag.id,
       object: tag,
     }));
@@ -123,7 +133,7 @@ const _TagSelect: React.FC<
               </a>
             </TagPopover> */}
             <span>{name}</span>
-            {alias && <span className="alias">{` (${alias})`}</span>}
+            {alias && <span className="alias">&nbsp;({alias})</span>}
           </span>
         </TagPopover>
       ),

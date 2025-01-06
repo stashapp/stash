@@ -1,14 +1,6 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-import {
-  Button,
-  Dropdown,
-  DropdownButton,
-  Form,
-  Col,
-  Row,
-  ButtonGroup,
-} from "react-bootstrap";
+import { Button, Form, Col, Row, ButtonGroup } from "react-bootstrap";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
 import * as yup from "yup";
@@ -28,12 +20,10 @@ import { getStashIDs } from "src/utils/stashIds";
 import { useFormik } from "formik";
 import { Prompt } from "react-router-dom";
 import { ConfigurationContext } from "src/hooks/Config";
-import { stashboxDisplayName } from "src/utils/stashbox";
-import { IMovieEntry, SceneMovieTable } from "./SceneMovieTable";
-import { faSearch, faSyncAlt } from "@fortawesome/free-solid-svg-icons";
+import { IGroupEntry, SceneGroupTable } from "./SceneGroupTable";
+import { faSearch } from "@fortawesome/free-solid-svg-icons";
 import { objectTitle } from "src/core/files";
 import { galleryTitle } from "src/core/galleries";
-import { useRatingKeybinds } from "src/hooks/keybinds";
 import { lazyComponent } from "src/utils/lazyComponent";
 import isEqual from "lodash-es/isEqual";
 import {
@@ -46,10 +36,11 @@ import {
   PerformerSelect,
 } from "src/components/Performers/PerformerSelect";
 import { formikUtils } from "src/utils/form";
-import { Tag, TagSelect } from "src/components/Tags/TagSelect";
 import { Studio, StudioSelect } from "src/components/Studios/StudioSelect";
 import { Gallery, GallerySelect } from "src/components/Galleries/GallerySelect";
-import { Movie } from "src/components/Movies/MovieSelect";
+import { Group } from "src/components/Groups/GroupSelect";
+import { useTagsEdit } from "src/hooks/tagsEdit";
+import { ScraperMenu } from "src/components/Shared/ScraperMenu";
 
 const SceneScrapeDialog = lazyComponent(() => import("./SceneScrapeDialog"));
 const SceneQueryModal = lazyComponent(() => import("./SceneQueryModal"));
@@ -76,8 +67,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
   const [galleries, setGalleries] = useState<Gallery[]>([]);
   const [performers, setPerformers] = useState<Performer[]>([]);
-  const [movies, setMovies] = useState<Movie[]>([]);
-  const [tags, setTags] = useState<Tag[]>([]);
+  const [groups, setGroups] = useState<Group[]>([]);
   const [studio, setStudio] = useState<Studio | null>(null);
 
   const Scrapers = useListSceneScrapers();
@@ -106,12 +96,8 @@ export const SceneEditPanel: React.FC<IProps> = ({
   }, [scene.performers]);
 
   useEffect(() => {
-    setMovies(scene.movies?.map((m) => m.movie) ?? []);
-  }, [scene.movies]);
-
-  useEffect(() => {
-    setTags(scene.tags ?? []);
-  }, [scene.tags]);
+    setGroups(scene.groups?.map((m) => m.group) ?? []);
+  }, [scene.groups]);
 
   useEffect(() => {
     setStudio(scene.studio ?? null);
@@ -128,14 +114,13 @@ export const SceneEditPanel: React.FC<IProps> = ({
     urls: yupUniqueStringList(intl),
     date: yupDateString(intl),
     director: yup.string().ensure(),
-    rating100: yup.number().integer().nullable().defined(),
     gallery_ids: yup.array(yup.string().required()).defined(),
     studio_id: yup.string().required().nullable(),
     performer_ids: yup.array(yup.string().required()).defined(),
-    movies: yup
+    groups: yup
       .array(
         yup.object({
-          movie_id: yup.string().required(),
+          group_id: yup.string().required(),
           scene_index: yup.number().integer().nullable().defined(),
         })
       )
@@ -153,12 +138,11 @@ export const SceneEditPanel: React.FC<IProps> = ({
       urls: scene.urls ?? [],
       date: scene.date ?? "",
       director: scene.director ?? "",
-      rating100: scene.rating100 ?? null,
       gallery_ids: (scene.galleries ?? []).map((g) => g.id),
       studio_id: scene.studio?.id ?? null,
       performer_ids: (scene.performers ?? []).map((p) => p.id),
-      movies: (scene.movies ?? []).map((m) => {
-        return { movie_id: m.movie.id, scene_index: m.scene_index ?? null };
+      groups: (scene.groups ?? []).map((m) => {
+        return { group_id: m.group.id, scene_index: m.scene_index ?? null };
       }),
       tag_ids: (scene.tags ?? []).map((t) => t.id),
       stash_ids: getStashIDs(scene.stash_ids),
@@ -177,6 +161,11 @@ export const SceneEditPanel: React.FC<IProps> = ({
     onSubmit: (values) => onSave(schema.cast(values)),
   });
 
+  const { tags, updateTagsStateFromScraper, tagsControl } = useTagsEdit(
+    scene.tags,
+    (ids) => formik.setFieldValue("tag_ids", ids)
+  );
+
   const coverImagePreview = useMemo(() => {
     const sceneImage = scene.paths?.screenshot;
     const formImage = formik.values.cover_image;
@@ -190,20 +179,16 @@ export const SceneEditPanel: React.FC<IProps> = ({
     return sceneImage;
   }, [formik.values.cover_image, scene.paths?.screenshot]);
 
-  const movieEntries = useMemo(() => {
-    return formik.values.movies
+  const groupEntries = useMemo(() => {
+    return formik.values.groups
       .map((m) => {
         return {
-          movie: movies.find((mm) => mm.id === m.movie_id),
+          group: groups.find((mm) => mm.id === m.group_id),
           scene_index: m.scene_index,
         };
       })
-      .filter((m) => m.movie !== undefined) as IMovieEntry[];
-  }, [formik.values.movies, movies]);
-
-  function setRating(v: number) {
-    formik.setFieldValue("rating100", v);
-  }
+      .filter((m) => m.group !== undefined) as IGroupEntry[];
+  }, [formik.values.groups, groups]);
 
   function onSetGalleries(items: Gallery[]) {
     setGalleries(items);
@@ -221,24 +206,10 @@ export const SceneEditPanel: React.FC<IProps> = ({
     );
   }
 
-  function onSetTags(items: Tag[]) {
-    setTags(items);
-    formik.setFieldValue(
-      "tag_ids",
-      items.map((item) => item.id)
-    );
-  }
-
   function onSetStudio(item: Studio | null) {
     setStudio(item);
     formik.setFieldValue("studio_id", item ? item.id : null);
   }
-
-  useRatingKeybinds(
-    isVisible,
-    stashConfig?.ui.ratingSystemOptions?.type,
-    setRating
-  );
 
   useEffect(() => {
     if (isVisible) {
@@ -274,24 +245,24 @@ export const SceneEditPanel: React.FC<IProps> = ({
     setQueryableScrapers(newQueryableScrapers);
   }, [Scrapers, stashConfig]);
 
-  function onSetMovies(items: Movie[]) {
-    setMovies(items);
+  function onSetGroups(items: Group[]) {
+    setGroups(items);
 
-    const existingMovies = formik.values.movies;
+    const existingGroups = formik.values.groups;
 
-    const newMovies = items.map((m) => {
-      const existing = existingMovies.find((mm) => mm.movie_id === m.id);
+    const newGroups = items.map((m) => {
+      const existing = existingGroups.find((mm) => mm.group_id === m.id);
       if (existing) {
         return existing;
       }
 
       return {
-        movie_id: m.id,
+        group_id: m.id,
         scene_index: null,
       };
     });
 
-    formik.setFieldValue("movies", newMovies);
+    formik.setFieldValue("groups", newGroups);
   }
 
   async function onSave(input: InputValues) {
@@ -407,7 +378,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
         sceneStudio={studio}
         sceneTags={tags}
         scenePerformers={performers}
-        sceneMovies={movies}
+        sceneGroups={groups}
         scraped={scrapedScene}
         endpoint={endpoint}
         onClose={(s) => onScrapeDialogClosed(s)}
@@ -415,56 +386,10 @@ export const SceneEditPanel: React.FC<IProps> = ({
     );
   }
 
-  function renderScrapeQueryMenu() {
-    const stashBoxes = stashConfig?.general.stashBoxes ?? [];
-
-    if (stashBoxes.length === 0 && queryableScrapers.length === 0) return;
-
-    return (
-      <Dropdown title={intl.formatMessage({ id: "actions.scrape_query" })}>
-        <Dropdown.Toggle variant="secondary">
-          <Icon icon={faSearch} />
-        </Dropdown.Toggle>
-
-        <Dropdown.Menu>
-          {stashBoxes.map((s, index) => (
-            <Dropdown.Item
-              key={s.endpoint}
-              onClick={() =>
-                onScrapeQueryClicked({
-                  stash_box_index: index,
-                  stash_box_endpoint: s.endpoint,
-                })
-              }
-            >
-              {stashboxDisplayName(s.name, index)}
-            </Dropdown.Item>
-          ))}
-          {queryableScrapers.map((s) => (
-            <Dropdown.Item
-              key={s.name}
-              onClick={() => onScrapeQueryClicked({ scraper_id: s.id })}
-            >
-              {s.name}
-            </Dropdown.Item>
-          ))}
-          <Dropdown.Item onClick={() => onReloadScrapers()}>
-            <span className="fa-icon">
-              <Icon icon={faSyncAlt} />
-            </span>
-            <span>
-              <FormattedMessage id="actions.reload_scrapers" />
-            </span>
-          </Dropdown.Item>
-        </Dropdown.Menu>
-      </Dropdown>
-    );
-  }
-
   function onSceneSelected(s: GQL.ScrapedSceneDataFragment) {
     if (!scraper) return;
 
-    if (scraper?.stash_box_index !== undefined) {
+    if (scraper?.stash_box_endpoint !== undefined) {
       // must be stash-box - assume full scene
       setScrapedScene(s);
     } else {
@@ -489,48 +414,6 @@ export const SceneEditPanel: React.FC<IProps> = ({
       />
     );
   };
-
-  function renderScraperMenu() {
-    const stashBoxes = stashConfig?.general.stashBoxes ?? [];
-
-    return (
-      <DropdownButton
-        className="d-inline-block"
-        id="scene-scrape"
-        title={intl.formatMessage({ id: "actions.scrape_with" })}
-      >
-        {stashBoxes.map((s, index) => (
-          <Dropdown.Item
-            key={s.endpoint}
-            onClick={() =>
-              onScrapeClicked({
-                stash_box_index: index,
-                stash_box_endpoint: s.endpoint,
-              })
-            }
-          >
-            {stashboxDisplayName(s.name, index)}
-          </Dropdown.Item>
-        ))}
-        {fragmentScrapers.map((s) => (
-          <Dropdown.Item
-            key={s.name}
-            onClick={() => onScrapeClicked({ scraper_id: s.id })}
-          >
-            {s.name}
-          </Dropdown.Item>
-        ))}
-        <Dropdown.Item onClick={() => onReloadScrapers()}>
-          <span className="fa-icon">
-            <Icon icon={faSyncAlt} />
-          </span>
-          <span>
-            <FormattedMessage id="actions.reload_scrapers" />
-          </span>
-        </Dropdown.Item>
-      </DropdownButton>
-    );
-  }
 
   function urlScrapable(scrapedUrl: string): boolean {
     return (Scrapers?.data?.listScrapers ?? []).some((s) =>
@@ -591,13 +474,13 @@ export const SceneEditPanel: React.FC<IProps> = ({
       }
     }
 
-    if (updatedScene.movies && updatedScene.movies.length > 0) {
-      const idMovis = updatedScene.movies.filter((p) => {
+    if (updatedScene.groups && updatedScene.groups.length > 0) {
+      const idMovis = updatedScene.groups.filter((p) => {
         return p.stored_id !== undefined && p.stored_id !== null;
       });
 
       if (idMovis.length > 0) {
-        onSetMovies(
+        onSetGroups(
           idMovis.map((p) => {
             return {
               id: p.stored_id!,
@@ -608,23 +491,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
       }
     }
 
-    if (updatedScene?.tags?.length) {
-      const idTags = updatedScene.tags.filter((p) => {
-        return p.stored_id !== undefined && p.stored_id !== null;
-      });
-
-      if (idTags.length > 0) {
-        onSetTags(
-          idTags.map((p) => {
-            return {
-              id: p.stored_id!,
-              name: p.name ?? "",
-              aliases: [],
-            };
-          })
-        );
-      }
-    }
+    updateTagsStateFromScraper(updatedScene.tags ?? undefined);
 
     if (updatedScene.image) {
       // image is a base64 string
@@ -641,6 +508,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
             return {
               endpoint,
               stash_id: updatedScene.remote_site_id,
+              updated_at: new Date().toISOString(),
             };
           }
 
@@ -654,6 +522,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
           formik.values.stash_ids.concat({
             endpoint,
             stash_id: updatedScene.remote_site_id,
+            updated_at: new Date().toISOString(),
           })
         );
       }
@@ -726,7 +595,6 @@ export const SceneEditPanel: React.FC<IProps> = ({
     renderField,
     renderInputField,
     renderDateField,
-    renderRatingField,
     renderURLListField,
     renderStashIDsField,
   } = formikUtils(intl, formik, splitProps);
@@ -765,38 +633,29 @@ export const SceneEditPanel: React.FC<IProps> = ({
     return renderField("performer_ids", title, control, fullWidthProps);
   }
 
-  function onSetMovieEntries(input: IMovieEntry[]) {
-    setMovies(input.map((m) => m.movie));
+  function onSetGroupEntries(input: IGroupEntry[]) {
+    setGroups(input.map((m) => m.group));
 
-    const newMovies = input.map((m) => ({
-      movie_id: m.movie.id,
+    const newGroups = input.map((m) => ({
+      group_id: m.group.id,
       scene_index: m.scene_index,
     }));
 
-    formik.setFieldValue("movies", newMovies);
+    formik.setFieldValue("groups", newGroups);
   }
 
-  function renderMoviesField() {
-    const title = intl.formatMessage({ id: "movies" });
+  function renderGroupsField() {
+    const title = intl.formatMessage({ id: "groups" });
     const control = (
-      <SceneMovieTable value={movieEntries} onUpdate={onSetMovieEntries} />
+      <SceneGroupTable value={groupEntries} onUpdate={onSetGroupEntries} />
     );
 
-    return renderField("movies", title, control, fullWidthProps);
+    return renderField("groups", title, control, fullWidthProps);
   }
 
   function renderTagsField() {
     const title = intl.formatMessage({ id: "tags" });
-    const control = (
-      <TagSelect
-        isMulti
-        onSelect={onSetTags}
-        values={tags}
-        hoverPlacement="right"
-      />
-    );
-
-    return renderField("tag_ids", title, control, fullWidthProps);
+    return renderField("tag_ids", title, tagsControl(), fullWidthProps);
   }
 
   function renderDetailsField() {
@@ -850,8 +709,21 @@ export const SceneEditPanel: React.FC<IProps> = ({
           {!isNew && (
             <div className="ml-auto text-right d-flex">
               <ButtonGroup className="scraper-group">
-                {renderScraperMenu()}
-                {renderScrapeQueryMenu()}
+                <ScraperMenu
+                  toggle={intl.formatMessage({ id: "actions.scrape_with" })}
+                  stashBoxes={stashConfig?.general.stashBoxes ?? []}
+                  scrapers={fragmentScrapers}
+                  onScraperClicked={onScrapeClicked}
+                  onReloadScrapers={onReloadScrapers}
+                />
+                <ScraperMenu
+                  variant="secondary"
+                  toggle={<Icon icon={faSearch} />}
+                  stashBoxes={stashConfig?.general.stashBoxes ?? []}
+                  scrapers={queryableScrapers}
+                  onScraperClicked={onScrapeQueryClicked}
+                  onReloadScrapers={onReloadScrapers}
+                />
               </ButtonGroup>
             </div>
           )}
@@ -865,12 +737,11 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
             {renderDateField("date")}
             {renderInputField("director")}
-            {renderRatingField("rating100", "rating")}
 
             {renderGalleriesField()}
             {renderStudioField()}
             {renderPerformersField()}
-            {renderMoviesField()}
+            {renderGroupsField()}
             {renderTagsField()}
 
             {renderStashIDsField(

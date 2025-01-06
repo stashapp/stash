@@ -134,7 +134,14 @@
         "choose_date": "Välj ett datum",
         "clear_date_data": "Rensa datumdata",
         "clean_generated": "Rensa genererade filer",
-        "remove_date": "Ta bort datum"
+        "remove_date": "Ta bort datum",
+        "view_history": "Visningshistorik",
+        "reset_cover": "Återställ Standardomslag",
+        "reset_play_duration": "Återställ uppspelad tid",
+        "add_sub_groups": "Lägg Till Undergrupper",
+        "remove_from_containing_group": "Ta bort från Grupp",
+        "reset_resume_time": "Återställ återupptagningstid",
+        "set_cover": "Välj som Omslag"
     },
     "actions_name": "Handlingar",
     "age": "Ålder",
@@ -258,7 +265,9 @@
             "successfully_cancelled_temporary_behaviour": "Lyckad avbrytning av temporärt beteende",
             "until_restart": "tills omstart",
             "video_sort_order": "Standard Scen Sorteringsordning",
-            "video_sort_order_desc": "Ordningen som scener sorteras i som standard."
+            "video_sort_order_desc": "Ordningen som scener sorteras i som standard.",
+            "server_port_desc": "Port att köra DLNA-servern från. Kräver omstart av DLNA efter ändring.",
+            "server_port": "Serverport"
         },
         "general": {
             "auth": {
@@ -338,6 +347,18 @@
                         "desc": "Avancerat: Ytterligare argument att skicka till ffmpeg innan output-fältet vid videogenerering.",
                         "heading": "FFmpeg Omkodning Output Argument"
                     }
+                },
+                "ffmpeg_path": {
+                    "heading": "FFmpeg Program Sökväg",
+                    "description": "Sökväg till ffmpeg-programmet (inte bara mappen). Om tom kommer ffmpeg att hittas från miljön via $PATH, konfigurationsmappen, eller från $HOME/.stash"
+                },
+                "ffprobe_path": {
+                    "description": "Sökväg till ffprobe-programmet (inte bara mappen). Om tom kommer ffprobe att hittas från miljön via $PATH, konfigurationsmappen, eller från $HOME/.stash",
+                    "heading": "FFprobe Program Sökväg"
+                },
+                "download_ffmpeg": {
+                    "description": "Laddar ner FFmpeg till konfigurationsmappen och nollställer ffmpeg- och ffprobe-sökvägarna för att istället använda konfigurationsmappen.",
+                    "heading": "Ladda ner FFmpeg"
                 }
             },
             "funscript_heatmap_draw_range": "Inkludera räckvidd i genererade värmekartor",
@@ -528,7 +549,9 @@
                 "previews_desc": "Scenförhandsvisningar och omslagsbilder",
                 "sprites": "Scensprites",
                 "transcodes": "Scenomkodningar"
-            }
+            },
+            "rescan": "Skanna om filer",
+            "rescan_tooltip": "Skanna om alla filer i sökvägen. Används för att tvångsuppdatera filmetadata och att skanna om zip-filer."
         },
         "tools": {
             "scene_duplicate_checker": "Scen Duplikat Kontroll",
@@ -723,7 +746,7 @@
                     "enable_chromecast": "Aktivera Chromecast",
                     "show_ab_loop_controls": "Visa AB-loop plugin kontroller",
                     "show_scrubber": "Visa skrubbaren",
-                    "track_activity": "Spåra Aktivitet",
+                    "track_activity": "Spåra Scenvisningshistorik",
                     "vr_tag": {
                         "description": "VR-knappen kommer endast visas för scener med denna tagg.",
                         "heading": "VR Tagg"
@@ -769,7 +792,7 @@
             },
             "title": "Användargränssnitt",
             "use_stash_hosted_funscript": {
-                "description": "När aktiverat kommer funscripts att skickas direkt från Stash till din Handy-enhet utan att använda tredjeparts Handy-servern. Kräver att Stash kan nås från din Handy-enhet.",
+                "description": "När aktiverat kommer funscripts att skickas direkt från Stash till din Handy-enhet utan att använda tredjeparts Handy-servern. Kräver att Stash kan nås från din Handy-enhet och att en API-nyckel är genererad om stash har lösenord aktiverat.",
                 "heading": "Skicka funscripts direkt"
             }
         },
@@ -781,11 +804,11 @@
         "galleries": "{count, plural, one {Galleri} other {Gallerier}}",
         "images": "{count, plural, one {Bild} other {Bilder}}",
         "markers": "{count, plural, one {Markör} other {Markörer}}",
-        "movies": "{count, plural, one {Film} other {Filmer}}",
         "performers": "{count, plural, one {Stjärna} other {Stjärnor}}",
         "scenes": "{count, plural, one {Scen} other {Scener}}",
         "studios": "{count, plural, one {Studio} other {Studior}}",
-        "tags": "{count, plural, one {Tagg} other {Taggar}}"
+        "tags": "{count, plural, one {Tagg} other {Taggar}}",
+        "groups": "{count, plural, one {Grupp} other {Grupper}}"
     },
     "country": "Land",
     "cover_image": "Omslagsbild",
@@ -823,7 +846,7 @@
     "descending": "Fallande",
     "description": "Beskrivning",
     "detail": "Beskrivning",
-    "details": "Beskrivningar",
+    "details": "Beskrivning",
     "developmentVersion": "Utvecklingsversion",
     "dialogs": {
         "create_new_entity": "Skapa ny {entity}",
@@ -970,7 +993,7 @@
         "select_youngest": "Välj den yngsta filen i duplikatgruppen",
         "select_oldest": "Välj den äldsta filen i duplikatgruppen"
     },
-    "duplicated_phash": "Duplikat (phash)",
+    "duplicated_phash": "Duplikat (pHash)",
     "duration": "Varaktighet",
     "effect_filters": {
         "aspect": "Bildförhållande",
@@ -999,7 +1022,9 @@
         "lazy_component_error_help": "Om du nyligen uppdaterade Stash ladda om sidan eller rensa din webbläsares cache.",
         "loading_type": "Fel vid laddning av {type}",
         "something_went_wrong": "Något gick fel.",
-        "header": "Fel"
+        "header": "Fel",
+        "invalid_javascript_string": "Ogiltig javascriptkod: {error}",
+        "invalid_json_string": "Ogiltig JSON-sträng: {error}"
     },
     "ethnicity": "Etnicitet",
     "existing_value": "existerande värde",
@@ -1064,7 +1089,7 @@
     "index_of_total": "{index} av {total}",
     "instagram": "Instagram",
     "interactive": "Interaktiv",
-    "interactive_speed": "Interaktiv hastighet",
+    "interactive_speed": "Interaktiv Hastighet",
     "isMissing": "Saknas",
     "last_played_at": "Senast spelad",
     "library": "Bibliotek",
@@ -1079,7 +1104,7 @@
         "checksum": "Checksumma",
         "downloaded_from": "Nedladdad från",
         "hash": "Hash",
-        "interactive_speed": "Interaktiv hastighet",
+        "interactive_speed": "Interaktiv Hastighet",
         "performer_card": {
             "age": "{age} {years_old}",
             "age_context": "{age} {years_old} i den här scenen"
@@ -1093,9 +1118,6 @@
     },
     "megabits_per_second": "{value} mbps",
     "metadata": "Metadata",
-    "movie": "Film",
-    "movie_scene_number": "Scennummer",
-    "movies": "Filmer",
     "name": "Namn",
     "new": "Ny",
     "none": "Ingen",
@@ -1106,7 +1128,8 @@
         "first": "Första",
         "last": "Sista",
         "next": "Nästa",
-        "previous": "Föregående"
+        "previous": "Föregående",
+        "current_total": "{current} av {total}"
     },
     "parent_of": "Överordnad till {children}",
     "parent_studio": "Överordnad Studio",
@@ -1118,7 +1141,7 @@
     "penis": "Penis",
     "penis_length": "Penislängd",
     "penis_length_cm": "Penislängd (cm)",
-    "perceptual_similarity": "Perceptuell likhet (phash)",
+    "perceptual_similarity": "Perceptuell likhet (pHash)",
     "performer": "Stjärna",
     "performer_age": "Ålder på stjärna",
     "performer_count": "Antal Stjärnor",
@@ -1206,8 +1229,7 @@
             "stash_library_directories": "Stash bibliotekssökväg"
         },
         "creating": {
-            "creating_your_system": "Skapar ditt system",
-            "ffmpeg_notice": "Om <code>ffmpeg</code> inte är i dina sökvägar, vänta medan stash laddar ner den. Se konsolens output för att se hur nedladdningen går."
+            "creating_your_system": "Skapar ditt system"
         },
         "errors": {
             "something_went_wrong": "Nej! Något gick fel!",
@@ -1265,7 +1287,9 @@
             "support_us": "Stötta oss",
             "thanks_for_trying_stash": "Tack för att du testar Stash!",
             "welcome_contrib": "Vi välkomnar också starkt bidrag i form av kod (buggfixar, förbättringar och nya funktioner), testande, buggrapportering, förslag på förbättringar och funktioner, översättningar,och användarstöd. Mer detaljer kan hittas i Bidragsfliken i manualen.",
-            "your_system_has_been_created": "Framgång! Ditt system har skapats!"
+            "your_system_has_been_created": "Framgång! Ditt system har skapats!",
+            "download_ffmpeg": "Ladda ner ffmpeg",
+            "missing_ffmpeg": "Du saknar den obligatoriska <code>ffmpeg</code>-programmet. Du kan automatiskt ladda ner den till konfigurationsmappen genom att bocka i rutan under. Alternativt, kan du skriva sökvägarna till <code>ffmpeg</code>- och <code>ffprobe</code>-programmen i Systeminställningarna. Dessa program måste finnas för att Stash ska fungera."
         },
         "welcome": {
             "config_path_logic_explained": "Stash försöker att hitta sin konfigurationsfil (<code>config.yml</code>) från den nuvarande arbetsmappen först, och om den inte finns där, letar den i <code>{fallback_path}</code>. Du kan också låta Stash läsa en specifik konfigurationsfil genom att starta med flaggan <code>-c '<path to config file>'</code> eller <code>--config '<path to config file>'</code>.",
@@ -1444,5 +1468,27 @@
     "playdate_recorded_no": "Inga Registrerade Uppspelningsdatum",
     "unknown_date": "Okänt datum",
     "play_history": "Uppspelningshistorik",
-    "last_o_at": "Senaste O Vid"
+    "last_o_at": "Senaste O Vid",
+    "connection_monitor": {
+        "websocket_connection_failed": "Kan ej etablera en websocket-uppkoppling: se webbläsarkonsolen för mer info",
+        "websocket_connection_reestablished": "Websocket-uppkoppling återetablerad"
+    },
+    "o_count": "Antal O",
+    "group": "Grupp",
+    "group_count": "Antal Grupper",
+    "group_scene_number": "Scennummer",
+    "groups": "Grupper",
+    "studio_count": "Antal Studior",
+    "studio_tags": "Studiotaggar",
+    "include_sub_studio_content": "Inkludera innehåll från underordnade studior",
+    "include_sub_tag_content": "Inkludera innehåll från underordnade taggar",
+    "containing_group": "Innehållande grupp",
+    "containing_group_count": "Antal Innehållande Grupper",
+    "containing_groups": "Innehållande Grupper",
+    "include_sub_group_content": "Inkludera innehåll från undergrupper",
+    "sub_group_count": "Antal Undergrupper",
+    "sub_group_of": "Undergrupp av {parent}",
+    "sub_group_order": "Ordning av Undergrupper",
+    "sub_groups": "Undergrupper",
+    "sub_group": "Undergrupp"
 }

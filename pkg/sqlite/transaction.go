@@ -17,7 +17,7 @@ type key int
 const (
 	txnKey key = iota + 1
 	dbKey
-	exclusiveKey
+	writableKey
 )
 
 func (db *Database) WithDatabase(ctx context.Context) (context.Context, error) {
@@ -26,10 +26,10 @@ func (db *Database) WithDatabase(ctx context.Context) (context.Context, error) {
 		return ctx, nil
 	}
 
-	return context.WithValue(ctx, dbKey, db.db), nil
+	return context.WithValue(ctx, dbKey, db.readDB), nil
 }
 
-func (db *Database) Begin(ctx context.Context, exclusive bool) (context.Context, error) {
+func (db *Database) Begin(ctx context.Context, writable bool) (context.Context, error) {
 	if tx, _ := getTx(ctx); tx != nil {
 		// log the stack trace so we can see
 		logger.Error(string(debug.Stack()))
@@ -37,22 +37,17 @@ func (db *Database) Begin(ctx context.Context, exclusive bool) (context.Context,
 		return nil, fmt.Errorf("already in transaction")
 	}
 
-	if exclusive {
-		if err := db.lock(ctx); err != nil {
-			return nil, err
-		}
+	dbtx := db.readDB
+	if writable {
+		dbtx = db.writeDB
 	}
 
-	tx, err := db.db.BeginTxx(ctx, nil)
+	tx, err := dbtx.BeginTxx(ctx, nil)
 	if err != nil {
-		// begin failed, unlock
-		if exclusive {
-			db.unlock()
-		}
 		return nil, fmt.Errorf("beginning transaction: %w", err)
 	}
 
-	ctx = context.WithValue(ctx, exclusiveKey, exclusive)
+	ctx = context.WithValue(ctx, writableKey, writable)
 
 	return context.WithValue(ctx, txnKey, tx), nil
 }
@@ -88,9 +83,6 @@ func (db *Database) Rollback(ctx context.Context) error {
 }
 
 func (db *Database) txnComplete(ctx context.Context) {
-	if exclusive := ctx.Value(exclusiveKey).(bool); exclusive {
-		db.unlock()
-	}
 }
 
 func getTx(ctx context.Context) (*sqlx.Tx, error) {
@@ -132,7 +124,7 @@ func (db *Database) Repository() models.Repository {
 		Gallery:        db.Gallery,
 		GalleryChapter: db.GalleryChapter,
 		Image:          db.Image,
-		Movie:          db.Movie,
+		Group:          db.Group,
 		Performer:      db.Performer,
 		Scene:          db.Scene,
 		SceneMarker:    db.SceneMarker,

@@ -4,6 +4,7 @@ type Query {
   findSavedFilter(id: ID!): SavedFilter
   findSavedFilters(mode: FilterMode): [SavedFilter!]!
   findDefaultFilter(mode: FilterMode!): SavedFilter
+    @deprecated(reason: "default filter now stored in UI config")
 
   "Find a scene by ID or Checksum"
   findScene(id: ID, checksum: String): Scene
@@ -76,13 +77,22 @@ type Query {
   ): FindStudiosResultType!
 
   "Find a movie by ID"
-  findMovie(id: ID!): Movie
+  findMovie(id: ID!): Movie @deprecated(reason: "Use findGroup instead")
   "A function which queries Movie objects"
   findMovies(
     movie_filter: MovieFilterType
     filter: FindFilterType
     ids: [ID!]
-  ): FindMoviesResultType!
+  ): FindMoviesResultType! @deprecated(reason: "Use findGroups instead")
+
+  "Find a group by ID"
+  findGroup(id: ID!): Group
+  "A function which queries Group objects"
+  findGroups(
+    group_filter: GroupFilterType
+    filter: FindFilterType
+    ids: [ID!]
+  ): FindGroupsResultType!
 
   findGallery(id: ID!): Gallery
   findGalleries(
@@ -155,7 +165,13 @@ type Query {
   scrapeSingleMovie(
     source: ScraperSourceInput!
     input: ScrapeSingleMovieInput!
-  ): [ScrapedMovie!]!
+  ): [ScrapedMovie!]! @deprecated(reason: "Use scrapeSingleGroup instead")
+
+  "Scrape for a single group"
+  scrapeSingleGroup(
+    source: ScraperSourceInput!
+    input: ScrapeSingleGroupInput!
+  ): [ScrapedGroup!]!
 
   "Scrapes content based on a URL"
   scrapeURL(url: String!, ty: ScrapeContentType!): ScrapedContent
@@ -168,6 +184,9 @@ type Query {
   scrapeGalleryURL(url: String!): ScrapedGallery
   "Scrapes a complete movie record based on a URL"
   scrapeMovieURL(url: String!): ScrapedMovie
+    @deprecated(reason: "Use scrapeGroupURL instead")
+  "Scrapes a complete group record based on a URL"
+  scrapeGroupURL(url: String!): ScrapedGroup
 
   # Plugins
   "List loaded plugins"
@@ -213,7 +232,7 @@ type Query {
   allPerformers: [Performer!]!
   allTags: [Tag!]! @deprecated(reason: "Use findTags instead")
   allStudios: [Studio!]! @deprecated(reason: "Use findStudios instead")
-  allMovies: [Movie!]! @deprecated(reason: "Use findMovies instead")
+  allMovies: [Movie!]! @deprecated(reason: "Use findGroups instead")
 
   # Get everything with minimal metadata
 
@@ -226,7 +245,12 @@ type Query {
 
 type Mutation {
   setup(input: SetupInput!): Boolean!
-  migrate(input: MigrateInput!): Boolean!
+
+  "Migrates the schema to the required version. Returns the job ID"
+  migrate(input: MigrateInput!): ID!
+
+  "Downloads and installs ffmpeg and ffprobe binaries into the configuration directory. Returns the job ID."
+  downloadFFMpeg: ID!
 
   sceneCreate(input: SceneCreateInput!): Scene
   sceneUpdate(input: SceneUpdateInput!): Scene
@@ -252,6 +276,13 @@ type Mutation {
   "Sets the resume time point (if provided) and adds the provided duration to the scene's play duration"
   sceneSaveActivity(id: ID!, resume_time: Float, playDuration: Float): Boolean!
 
+  "Resets the resume time point and play duration"
+  sceneResetActivity(
+    id: ID!
+    reset_resume: Boolean
+    reset_duration: Boolean
+  ): Boolean!
+
   "Increments the play count for the scene. Returns the new play count value."
   sceneIncrementPlayCount(id: ID!): Int!
     @deprecated(reason: "Use sceneAddPlay instead")
@@ -269,6 +300,7 @@ type Mutation {
   sceneMarkerCreate(input: SceneMarkerCreateInput!): SceneMarker
   sceneMarkerUpdate(input: SceneMarkerUpdateInput!): SceneMarker
   sceneMarkerDestroy(id: ID!): Boolean!
+  sceneMarkersDestroy(ids: [ID!]!): Boolean!
 
   sceneAssignFile(input: AssignSceneFileInput!): Boolean!
 
@@ -293,6 +325,8 @@ type Mutation {
 
   addGalleryImages(input: GalleryAddInput!): Boolean!
   removeGalleryImages(input: GalleryRemoveInput!): Boolean!
+  setGalleryCover(input: GallerySetCoverInput!): Boolean!
+  resetGalleryCover(input: GalleryResetCoverInput!): Boolean!
 
   galleryChapterCreate(input: GalleryChapterCreateInput!): GalleryChapter
   galleryChapterUpdate(input: GalleryChapterUpdateInput!): GalleryChapter
@@ -310,16 +344,34 @@ type Mutation {
   studiosDestroy(ids: [ID!]!): Boolean!
 
   movieCreate(input: MovieCreateInput!): Movie
+    @deprecated(reason: "Use groupCreate instead")
   movieUpdate(input: MovieUpdateInput!): Movie
+    @deprecated(reason: "Use groupUpdate instead")
   movieDestroy(input: MovieDestroyInput!): Boolean!
+    @deprecated(reason: "Use groupDestroy instead")
   moviesDestroy(ids: [ID!]!): Boolean!
+    @deprecated(reason: "Use groupsDestroy instead")
   bulkMovieUpdate(input: BulkMovieUpdateInput!): [Movie!]
+    @deprecated(reason: "Use bulkGroupUpdate instead")
+
+  groupCreate(input: GroupCreateInput!): Group
+  groupUpdate(input: GroupUpdateInput!): Group
+  groupDestroy(input: GroupDestroyInput!): Boolean!
+  groupsDestroy(ids: [ID!]!): Boolean!
+  bulkGroupUpdate(input: BulkGroupUpdateInput!): [Group!]
+
+  addGroupSubGroups(input: GroupSubGroupAddInput!): Boolean!
+  removeGroupSubGroups(input: GroupSubGroupRemoveInput!): Boolean!
+
+  "Reorder sub groups within a group. Returns true if successful."
+  reorderSubGroups(input: ReorderSubGroupsInput!): Boolean!
 
   tagCreate(input: TagCreateInput!): Tag
   tagUpdate(input: TagUpdateInput!): Tag
   tagDestroy(input: TagDestroyInput!): Boolean!
   tagsDestroy(ids: [ID!]!): Boolean!
   tagsMerge(input: TagsMergeInput!): Tag
+  bulkTagUpdate(input: BulkTagUpdateInput!): [Tag!]
 
   """
   Moves the given files to the given destination. Returns true if successful.
@@ -339,6 +391,7 @@ type Mutation {
   saveFilter(input: SaveFilterInput!): SavedFilter!
   destroySavedFilter(input: DestroyFilterInput!): Boolean!
   setDefaultFilter(input: SetDefaultFilterInput!): Boolean!
+    @deprecated(reason: "now uses UI config")
 
   "Change general configuration options"
   configureGeneral(input: ConfigGeneralInput!): ConfigGeneralResult!
@@ -349,12 +402,19 @@ type Mutation {
     input: ConfigDefaultSettingsInput!
   ): ConfigDefaultSettingsResult!
 
-  # overwrites the entire plugin configuration for the given plugin
+  "overwrites the entire plugin configuration for the given plugin"
   configurePlugin(plugin_id: ID!, input: Map!): Map!
 
-  # overwrites the entire UI configuration
-  configureUI(input: Map!): Map!
-  # sets a single UI key value
+  """
+  overwrites the UI configuration
+  if input is provided, then the entire UI configuration is replaced
+  if partial is provided, then the partial UI configuration is merged into the existing UI configuration
+  """
+  configureUI(input: Map, partial: Map): Map!
+  """
+  sets a single UI key value
+  key is a dot separated path to the value
+  """
   configureUISetting(key: String!, value: Any): Map!
 
   "Generate and set (or clear) API key"

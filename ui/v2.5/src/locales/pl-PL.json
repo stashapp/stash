@@ -728,7 +728,6 @@
         "galleries": "{count, plural, one {Galeria} few {Galerie} other {Galerii}}",
         "images": "{count, plural, one {Obraz} few {Obrazy} other {Obrazów}}",
         "markers": "{count, plural, one {Znacznik} few {Znaczniki} other {Znaczników}}",
-        "movies": "{count, plural, one {Film} few {Filmy} other {Filmów}}",
         "performers": "{count, plural, one {Aktor} few {Aktorów} other {Aktorów}}",
         "scenes": "{count, plural, one {Scena} few {Sceny} other {Scen}}",
         "studios": "{count, plural, one {Studio} few {Studia} other {Studiów}}",
@@ -1021,9 +1020,6 @@
     },
     "megabits_per_second": "{value} megabitów na sekundę",
     "metadata": "Metadane",
-    "movie": "Film",
-    "movie_scene_number": "Numer sceny filmu",
-    "movies": "Filmy",
     "name": "Nazwa",
     "new": "Dodaj",
     "none": "Brak",
@@ -1132,8 +1128,7 @@
             "stash_library_directories": "Katalogi biblioteki Stash"
         },
         "creating": {
-            "creating_your_system": "Tworzenie systemu",
-            "ffmpeg_notice": "Jeśli <code>ffmpeg</code> nie znajduje się jeszcze w twoich ścieżkach, zachowaj cierpliwość, gdy stash go pobierze. Zobacz wyjście konsoli, aby zobaczyć postęp pobierania."
+            "creating_your_system": "Tworzenie systemu"
         },
         "errors": {
             "something_went_wrong": "O nie! Coś poszło nie tak!",

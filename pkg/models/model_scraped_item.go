@@ -3,6 +3,7 @@ package models
 import (
 	"context"
 	"strconv"
+	"time"
 
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 	"github.com/stashapp/stash/pkg/utils"
@@ -29,8 +30,9 @@ func (s *ScrapedStudio) ToStudio(endpoint string, excluded map[string]bool) *Stu
 	if s.RemoteSiteID != nil && endpoint != "" {
 		ret.StashIDs = NewRelatedStashIDs([]StashID{
 			{
-				Endpoint: endpoint,
-				StashID:  *s.RemoteSiteID,
+				Endpoint:  endpoint,
+				StashID:   *s.RemoteSiteID,
+				UpdatedAt: time.Now(),
 			},
 		})
 	}
@@ -62,9 +64,10 @@ func (s *ScrapedStudio) GetImage(ctx context.Context, excluded map[string]bool) 
 	return nil, nil
 }
 
-func (s *ScrapedStudio) ToPartial(id *string, endpoint string, excluded map[string]bool, existingStashIDs []StashID) *StudioPartial {
+func (s *ScrapedStudio) ToPartial(id string, endpoint string, excluded map[string]bool, existingStashIDs []StashID) StudioPartial {
 	ret := NewStudioPartial()
-	ret.ID, _ = strconv.Atoi(*id)
+	ret.ID, _ = strconv.Atoi(id)
+	currentTime := time.Now()
 
 	if s.Name != "" && !excluded["name"] {
 		ret.Name = NewOptionalString(s.Name)
@@ -82,8 +85,6 @@ func (s *ScrapedStudio) ToPartial(id *string, endpoint string, excluded map[stri
 				ret.ParentID = NewOptionalInt(parentID)
 			}
 		}
-	} else {
-		ret.ParentID = NewOptionalIntPtr(nil)
 	}
 
 	if s.RemoteSiteID != nil && endpoint != "" {
@@ -92,12 +93,13 @@ func (s *ScrapedStudio) ToPartial(id *string, endpoint string, excluded map[stri
 			Mode:     RelationshipUpdateModeSet,
 		}
 		ret.StashIDs.Set(StashID{
-			Endpoint: endpoint,
-			StashID:  *s.RemoteSiteID,
+			Endpoint:  endpoint,
+			StashID:   *s.RemoteSiteID,
+			UpdatedAt: currentTime,
 		})
 	}
 
-	return &ret
+	return ret
 }
 
 // A performer from a scraping operation...
@@ -107,9 +109,10 @@ type ScrapedPerformer struct {
 	Name           *string       `json:"name"`
 	Disambiguation *string       `json:"disambiguation"`
 	Gender         *string       `json:"gender"`
-	URL            *string       `json:"url"`
-	Twitter        *string       `json:"twitter"`
-	Instagram      *string       `json:"instagram"`
+	URLs           []string      `json:"urls"`
+	URL            *string       `json:"url"`       // deprecated
+	Twitter        *string       `json:"twitter"`   // deprecated
+	Instagram      *string       `json:"instagram"` // deprecated
 	Birthdate      *string       `json:"birthdate"`
 	Ethnicity      *string       `json:"ethnicity"`
 	Country        *string       `json:"country"`
@@ -125,7 +128,7 @@ type ScrapedPerformer struct {
 	Aliases        *string       `json:"aliases"`
 	Tags           []*ScrapedTag `json:"tags"`
 	// This should be a base64 encoded data URL
-	Image        *string  `json:"image"`
+	Image        *string  `json:"image"` // deprecated: use Images
 	Images       []string `json:"images"`
 	Details      *string  `json:"details"`
 	DeathDate    *string  `json:"death_date"`
@@ -138,6 +141,7 @@ func (ScrapedPerformer) IsScrapedContent() {}
 
 func (p *ScrapedPerformer) ToPerformer(endpoint string, excluded map[string]bool) *Performer {
 	ret := NewPerformer()
+	currentTime := time.Now()
 	ret.Name = *p.Name
 
 	if p.Aliases != nil && !excluded["aliases"] {
@@ -191,9 +195,7 @@ func (p *ScrapedPerformer) ToPerformer(endpoint string, excluded map[string]bool
 			ret.Weight = &w
 		}
 	}
-	if p.Instagram != nil && !excluded["instagram"] {
-		ret.Instagram = *p.Instagram
-	}
+
 	if p.Measurements != nil && !excluded["measurements"] {
 		ret.Measurements = *p.Measurements
 	}
@@ -221,18 +223,35 @@ func (p *ScrapedPerformer) ToPerformer(endpoint string, excluded map[string]bool
 			ret.Circumcised = &v
 		}
 	}
-	if p.Twitter != nil && !excluded["twitter"] {
-		ret.Twitter = *p.Twitter
-	}
-	if p.URL != nil && !excluded["url"] {
-		ret.URL = *p.URL
+
+	// if URLs are provided, only use those
+	if len(p.URLs) > 0 {
+		if !excluded["urls"] {
+			ret.URLs = NewRelatedStrings(p.URLs)
+		}
+	} else {
+		urls := []string{}
+		if p.URL != nil && !excluded["url"] {
+			urls = append(urls, *p.URL)
+		}
+		if p.Twitter != nil && !excluded["twitter"] {
+			urls = append(urls, *p.Twitter)
+		}
+		if p.Instagram != nil && !excluded["instagram"] {
+			urls = append(urls, *p.Instagram)
+		}
+
+		if len(urls) > 0 {
+			ret.URLs = NewRelatedStrings(urls)
+		}
 	}
 
 	if p.RemoteSiteID != nil && endpoint != "" {
 		ret.StashIDs = NewRelatedStashIDs([]StashID{
 			{
-				Endpoint: endpoint,
-				StashID:  *p.RemoteSiteID,
+				Endpoint:  endpoint,
+				StashID:   *p.RemoteSiteID,
+				UpdatedAt: currentTime,
 			},
 		})
 	}
@@ -309,9 +328,6 @@ func (p *ScrapedPerformer) ToPartial(endpoint string, excluded map[string]bool, 
 			ret.Weight = NewOptionalInt(w)
 		}
 	}
-	if p.Instagram != nil && !excluded["instagram"] {
-		ret.Instagram = NewOptionalString(*p.Instagram)
-	}
 	if p.Measurements != nil && !excluded["measurements"] {
 		ret.Measurements = NewOptionalString(*p.Measurements)
 	}
@@ -330,11 +346,33 @@ func (p *ScrapedPerformer) ToPartial(endpoint string, excluded map[string]bool, 
 	if p.Tattoos != nil && !excluded["tattoos"] {
 		ret.Tattoos = NewOptionalString(*p.Tattoos)
 	}
-	if p.Twitter != nil && !excluded["twitter"] {
-		ret.Twitter = NewOptionalString(*p.Twitter)
-	}
-	if p.URL != nil && !excluded["url"] {
-		ret.URL = NewOptionalString(*p.URL)
+
+	// if URLs are provided, only use those
+	if len(p.URLs) > 0 {
+		if !excluded["urls"] {
+			ret.URLs = &UpdateStrings{
+				Values: p.URLs,
+				Mode:   RelationshipUpdateModeSet,
+			}
+		}
+	} else {
+		urls := []string{}
+		if p.URL != nil && !excluded["url"] {
+			urls = append(urls, *p.URL)
+		}
+		if p.Twitter != nil && !excluded["twitter"] {
+			urls = append(urls, *p.Twitter)
+		}
+		if p.Instagram != nil && !excluded["instagram"] {
+			urls = append(urls, *p.Instagram)
+		}
+
+		if len(urls) > 0 {
+			ret.URLs = &UpdateStrings{
+				Values: urls,
+				Mode:   RelationshipUpdateModeSet,
+			}
+		}
 	}
 
 	if p.RemoteSiteID != nil && endpoint != "" {
@@ -343,8 +381,9 @@ func (p *ScrapedPerformer) ToPartial(endpoint string, excluded map[string]bool, 
 			Mode:     RelationshipUpdateModeSet,
 		}
 		ret.StashIDs.Set(StashID{
-			Endpoint: endpoint,
-			StashID:  *p.RemoteSiteID,
+			Endpoint:  endpoint,
+			StashID:   *p.RemoteSiteID,
+			UpdatedAt: time.Now(),
 		})
 	}
 
@@ -368,13 +407,86 @@ type ScrapedMovie struct {
 	Date     *string        `json:"date"`
 	Rating   *string        `json:"rating"`
 	Director *string        `json:"director"`
-	URL      *string        `json:"url"`
+	URLs     []string       `json:"urls"`
 	Synopsis *string        `json:"synopsis"`
 	Studio   *ScrapedStudio `json:"studio"`
+	Tags     []*ScrapedTag  `json:"tags"`
+	// This should be a base64 encoded data URL
+	FrontImage *string `json:"front_image"`
+	// This should be a base64 encoded data URL
+	BackImage *string `json:"back_image"`
+
+	// deprecated
+	URL *string `json:"url"`
+}
+
+func (ScrapedMovie) IsScrapedContent() {}
+
+func (m ScrapedMovie) ScrapedGroup() ScrapedGroup {
+	ret := ScrapedGroup{
+		StoredID:   m.StoredID,
+		Name:       m.Name,
+		Aliases:    m.Aliases,
+		Duration:   m.Duration,
+		Date:       m.Date,
+		Rating:     m.Rating,
+		Director:   m.Director,
+		URLs:       m.URLs,
+		Synopsis:   m.Synopsis,
+		Studio:     m.Studio,
+		Tags:       m.Tags,
+		FrontImage: m.FrontImage,
+		BackImage:  m.BackImage,
+	}
+
+	if len(m.URLs) == 0 && m.URL != nil {
+		ret.URLs = []string{*m.URL}
+	}
+
+	return ret
+}
+
+// ScrapedGroup is a group from a scraping operation
+type ScrapedGroup struct {
+	StoredID *string        `json:"stored_id"`
+	Name     *string        `json:"name"`
+	Aliases  *string        `json:"aliases"`
+	Duration *string        `json:"duration"`
+	Date     *string        `json:"date"`
+	Rating   *string        `json:"rating"`
+	Director *string        `json:"director"`
+	URLs     []string       `json:"urls"`
+	Synopsis *string        `json:"synopsis"`
+	Studio   *ScrapedStudio `json:"studio"`
+	Tags     []*ScrapedTag  `json:"tags"`
 	// This should be a base64 encoded data URL
 	FrontImage *string `json:"front_image"`
 	// This should be a base64 encoded data URL
 	BackImage *string `json:"back_image"`
 }
 
-func (ScrapedMovie) IsScrapedContent() {}
+func (ScrapedGroup) IsScrapedContent() {}
+
+func (g ScrapedGroup) ScrapedMovie() ScrapedMovie {
+	ret := ScrapedMovie{
+		StoredID:   g.StoredID,
+		Name:       g.Name,
+		Aliases:    g.Aliases,
+		Duration:   g.Duration,
+		Date:       g.Date,
+		Rating:     g.Rating,
+		Director:   g.Director,
+		URLs:       g.URLs,
+		Synopsis:   g.Synopsis,
+		Studio:     g.Studio,
+		Tags:       g.Tags,
+		FrontImage: g.FrontImage,
+		BackImage:  g.BackImage,
+	}
+
+	if len(g.URLs) > 0 {
+		ret.URL = &g.URLs[0]
+	}
+
+	return ret
+}

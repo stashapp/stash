@@ -1,6 +1,136 @@
-import React from "react";
-import { Button, ButtonGroup } from "react-bootstrap";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import {
+  Button,
+  ButtonGroup,
+  Dropdown,
+  Form,
+  InputGroup,
+  Overlay,
+  Popover,
+} from "react-bootstrap";
 import { FormattedMessage, FormattedNumber, useIntl } from "react-intl";
+import useFocus from "src/utils/focus";
+import { Icon } from "../Shared/Icon";
+import { faCheck, faChevronDown } from "@fortawesome/free-solid-svg-icons";
+import { useStopWheelScroll } from "src/utils/form";
+
+const PageCount: React.FC<{
+  totalPages: number;
+  currentPage: number;
+  onChangePage: (page: number) => void;
+}> = ({ totalPages, currentPage, onChangePage }) => {
+  const intl = useIntl();
+  const currentPageCtrl = useRef(null);
+  const [pageInput, pageFocus] = useFocus();
+  const [showSelectPage, setShowSelectPage] = useState(false);
+
+  useEffect(() => {
+    if (showSelectPage) {
+      // delaying the focus to the next execution loop so that rendering takes place first and stops the page from resetting.
+      setTimeout(() => {
+        pageFocus();
+      }, 0);
+    }
+  }, [showSelectPage, pageFocus]);
+
+  useStopWheelScroll(pageInput);
+
+  const pageOptions = useMemo(() => {
+    const maxPagesToShow = 10;
+    const min = Math.max(1, currentPage - maxPagesToShow / 2);
+    const max = Math.min(min + maxPagesToShow, totalPages);
+    const pages = [];
+    for (let i = min; i <= max; i++) {
+      pages.push(i);
+    }
+    return pages;
+  }, [totalPages, currentPage]);
+
+  function onCustomChangePage() {
+    const newPage = Number.parseInt(pageInput.current?.value ?? "0");
+    if (newPage) {
+      onChangePage(newPage);
+    }
+    setShowSelectPage(false);
+  }
+
+  return (
+    <div className="page-count-container">
+      <ButtonGroup>
+        <Button
+          variant="secondary"
+          className="page-count"
+          ref={currentPageCtrl}
+          onClick={() => {
+            setShowSelectPage(true);
+            pageFocus();
+          }}
+        >
+          <FormattedMessage
+            id="pagination.current_total"
+            values={{
+              current: intl.formatNumber(currentPage),
+              total: intl.formatNumber(totalPages),
+            }}
+          />
+        </Button>
+        <Dropdown>
+          <Dropdown.Toggle variant="secondary" className="page-count-dropdown">
+            <Icon size="xs" icon={faChevronDown} />
+          </Dropdown.Toggle>
+          <Dropdown.Menu>
+            {pageOptions.map((s) => (
+              <Dropdown.Item
+                key={s}
+                active={s === currentPage}
+                onClick={() => onChangePage(s)}
+              >
+                {s}
+              </Dropdown.Item>
+            ))}
+          </Dropdown.Menu>
+        </Dropdown>
+      </ButtonGroup>
+      <Overlay
+        target={currentPageCtrl.current}
+        show={showSelectPage}
+        placement="bottom"
+        rootClose
+        onHide={() => setShowSelectPage(false)}
+      >
+        <Popover id="select_page_popover">
+          <Form inline>
+            <InputGroup>
+              {/* can't use NumberField because of the ref */}
+              <Form.Control
+                type="number"
+                min={1}
+                max={totalPages}
+                className="text-input"
+                ref={pageInput}
+                defaultValue={currentPage}
+                onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+                  if (e.key === "Enter") {
+                    onCustomChangePage();
+                    e.preventDefault();
+                  }
+                }}
+                onFocus={(e: React.FocusEvent<HTMLInputElement>) =>
+                  e.target.select()
+                }
+              />
+              <InputGroup.Append>
+                <Button variant="primary" onClick={() => onCustomChangePage()}>
+                  <Icon icon={faCheck} />
+                </Button>
+              </InputGroup.Append>
+            </InputGroup>
+          </Form>
+        </Popover>
+      </Overlay>
+    </div>
+  );
+};
 
 interface IPaginationProps {
   itemsPerPage: number;
@@ -17,97 +147,80 @@ interface IPaginationIndexProps {
   metadataByline?: React.ReactNode;
 }
 
+const minPagesForCompact = 4;
+
 export const Pagination: React.FC<IPaginationProps> = ({
   itemsPerPage,
   currentPage,
   totalItems,
   onChangePage,
 }) => {
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
-
-  let startPage: number;
-  let endPage: number;
-  if (totalPages <= 10) {
-    // less than 10 total pages so show all
-    startPage = 1;
-    endPage = totalPages;
-  } else if (currentPage <= 6) {
-    startPage = 1;
-    endPage = 10;
-  } else if (currentPage + 4 >= totalPages) {
-    startPage = totalPages - 9;
-    endPage = totalPages;
-  } else {
-    startPage = currentPage - 5;
-    endPage = currentPage + 4;
-  }
-
-  const pages = [...Array(endPage + 1 - startPage).keys()].map(
-    (i) => startPage + i
+  const intl = useIntl();
+  const totalPages = useMemo(
+    () => Math.ceil(totalItems / itemsPerPage),
+    [totalItems, itemsPerPage]
   );
 
-  const calculatePageClass = (buttonPage: number) => {
-    if (pages.length <= 4) return "";
+  const pageButtons = useMemo(() => {
+    if (totalPages >= minPagesForCompact)
+      return (
+        <PageCount
+          totalPages={totalPages}
+          currentPage={currentPage}
+          onChangePage={onChangePage}
+        />
+      );
 
-    if (currentPage === 1 && buttonPage <= 4) return "";
-    const maxPage = pages[pages.length - 1];
-    if (currentPage === maxPage && buttonPage > maxPage - 3) return "";
-    if (Math.abs(buttonPage - currentPage) <= 1) return "";
-    return "d-none d-sm-block";
-  };
+    const pages = [...Array(totalPages).keys()].map((i) => i + 1);
 
-  const pageButtons = pages.map((page: number) => (
-    <Button
-      variant="secondary"
-      className={calculatePageClass(page)}
-      key={page}
-      active={currentPage === page}
-      onClick={() => onChangePage(page)}
-    >
-      <FormattedNumber value={page} />
-    </Button>
-  ));
+    return pages.map((page: number) => (
+      <Button
+        variant="secondary"
+        key={page}
+        active={currentPage === page}
+        onClick={() => onChangePage(page)}
+      >
+        <FormattedNumber value={page} />
+      </Button>
+    ));
+  }, [totalPages, currentPage, onChangePage]);
 
-  if (pages.length <= 1) return <div />;
+  if (totalPages <= 1) return <div />;
 
   return (
-    <ButtonGroup className="filter-container pagination">
+    <ButtonGroup className="pagination">
       <Button
         variant="secondary"
         disabled={currentPage === 1}
         onClick={() => onChangePage(1)}
+        title={intl.formatMessage({ id: "pagination.first" })}
       >
-        <span className="d-none d-sm-inline">
-          <FormattedMessage id="pagination.first" />
-        </span>
-        <span className="d-inline d-sm-none">&#x300a;</span>
+        <span>«</span>
       </Button>
       <Button
-        className="d-none d-sm-block"
         variant="secondary"
         disabled={currentPage === 1}
         onClick={() => onChangePage(currentPage - 1)}
+        title={intl.formatMessage({ id: "pagination.previous" })}
       >
-        <FormattedMessage id="pagination.previous" />
+        &lt;
       </Button>
       {pageButtons}
       <Button
-        className="d-none d-sm-block"
         variant="secondary"
         disabled={currentPage === totalPages}
         onClick={() => onChangePage(currentPage + 1)}
+        title={intl.formatMessage({ id: "pagination.next" })}
       >
-        <FormattedMessage id="pagination.next" />
+        &gt;
       </Button>
       <Button
         variant="secondary"
         disabled={currentPage === totalPages}
         onClick={() => onChangePage(totalPages)}
+        title={intl.formatMessage({ id: "pagination.last" })}
       >
-        <span className="d-none d-sm-inline">
-          <FormattedMessage id="pagination.last" />
-        </span>
-        <span className="d-inline d-sm-none">&#x300b;</span>
+        <span>»</span>
       </Button>
     </ButtonGroup>
   );

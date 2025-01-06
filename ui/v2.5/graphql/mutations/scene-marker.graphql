@@ -1,6 +1,7 @@
 mutation SceneMarkerCreate(
   $title: String!
   $seconds: Float!
+  $end_seconds: Float
   $scene_id: ID!
   $primary_tag_id: ID!
   $tag_ids: [ID!] = []
@@ -9,6 +10,7 @@ mutation SceneMarkerCreate(
     input: {
       title: $title
       seconds: $seconds
+      end_seconds: $end_seconds
       scene_id: $scene_id
       primary_tag_id: $primary_tag_id
       tag_ids: $tag_ids
@@ -22,6 +24,7 @@ mutation SceneMarkerUpdate(
   $id: ID!
   $title: String!
   $seconds: Float!
+  $end_seconds: Float
   $scene_id: ID!
   $primary_tag_id: ID!
   $tag_ids: [ID!] = []
@@ -31,6 +34,7 @@ mutation SceneMarkerUpdate(
       id: $id
       title: $title
       seconds: $seconds
+      end_seconds: $end_seconds
       scene_id: $scene_id
       primary_tag_id: $primary_tag_id
       tag_ids: $tag_ids
@@ -42,4 +46,8 @@ mutation SceneMarkerUpdate(
 
 mutation SceneMarkerDestroy($id: ID!) {
   sceneMarkerDestroy(id: $id)
+}
+
+mutation SceneMarkersDestroy($ids: [ID!]!) {
+  sceneMarkersDestroy(ids: $ids)
 }

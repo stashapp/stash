@@ -6,6 +6,10 @@ mutation Migrate($input: MigrateInput!) {
   migrate(input: $input)
 }
 
+mutation DownloadFFMpeg {
+  downloadFFMpeg
+}
+
 mutation ConfigureGeneral($input: ConfigGeneralInput!) {
   configureGeneral(input: $input) {
     ...ConfigGeneralData
@@ -36,8 +40,12 @@ mutation ConfigureDefaults($input: ConfigDefaultSettingsInput!) {
   }
 }
 
-mutation ConfigureUI($input: Map!) {
-  configureUI(input: $input)
+mutation ConfigureUI($input: Map, $partial: Map) {
+  configureUI(input: $input, partial: $partial)
+}
+
+mutation ConfigureUISetting($key: String!, $value: Any) {
+  configureUISetting(key: $key, value: $value)
 }
 
 mutation GenerateAPIKey($input: GenerateAPIKeyInput!) {

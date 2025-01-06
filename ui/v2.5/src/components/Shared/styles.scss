@@ -1,4 +1,24 @@
 .LoadingIndicator {
+  // fade in animation - delay showing
+  animation: fadeInAnimation ease 200ms;
+  animation-delay: 200ms;
+  animation-fill-mode: forwards;
+  animation-iteration-count: 1;
+
+  opacity: 0;
+}
+
+@keyframes fadeInAnimation {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+.LoadingIndicator {
   align-items: center;
   display: flex;
   flex-direction: column;
@@ -6,7 +26,7 @@
   width: 100%;
 
   &:not(.card-based) {
-    height: 70vh;
+    padding-top: 2rem;
   }
 
   &-message {
@@ -177,6 +197,15 @@ button.collapse-button.btn-primary:not(:disabled):not(.disabled):active {
   border: none;
   box-shadow: none;
   color: #f5f8fa;
+  text-align: left;
+}
+
+button.collapse-button {
+  .fa-icon {
+    margin-left: 0;
+  }
+
+  padding-left: 0;
 }
 
 .hover-popover-content {
@@ -214,22 +243,47 @@ button.collapse-button.btn-primary:not(:disabled):not(.disabled):active {
     height: 5px;
   }
 
-  .card-check {
+  .card-controls {
+    align-items: center;
+    display: flex;
     left: 0.5rem;
-    margin-top: -12px;
-    opacity: 0;
-    padding-left: 15px;
+
     position: absolute;
     top: 0.7rem;
-    width: 1.2rem;
     z-index: 1;
+  }
+
+  .card-check,
+  .card-drag-handle {
+    height: 1.2rem;
+    opacity: 0;
+    width: 1.2rem;
+
+    @media (hover: none), (pointer: coarse) {
+      // always show card controls when hovering not supported
+      opacity: 0.25;
+    }
+  }
+
+  .card-drag-handle {
+    cursor: move;
+  }
+
+  .card-check {
+    padding-left: 15px;
 
     &:checked {
       opacity: 0.75;
     }
+
+    @media (hover: none), (pointer: coarse) {
+      // and make it bigger when hovering not supported
+      width: 1.5rem;
+    }
   }
 
-  &:hover .card-check {
+  &:hover .card-check,
+  &:hover .card-drag-handle {
     opacity: 0.75;
     transition: opacity 0.5s;
   }
@@ -465,12 +519,14 @@ div.react-datepicker {
 
 .clearable-text-field-clear {
   background-color: $secondary;
+  bottom: 0;
   color: $muted-gray;
   font-size: 0.875rem;
   margin: 0.375rem 0.75rem;
   padding: 0;
   position: absolute;
   right: 0;
+  top: 0;
   z-index: 4;
 
   &:hover,
@@ -520,4 +576,155 @@ div.react-datepicker {
 .react-select-image-option {
   align-items: baseline;
   display: flex;
+}
+
+button.btn.favorite-button {
+  opacity: 1;
+  transition: opacity 0.5s;
+
+  &.not-favorite {
+    color: rgba(191, 204, 214, 0.5);
+    filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.9));
+
+    &.hide-not-favorite {
+      opacity: 0;
+    }
+  }
+
+  &.favorite {
+    color: #ff7373;
+    filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.9));
+  }
+
+  &:hover,
+  &:active,
+  &:focus,
+  &:active:focus {
+    background: none;
+    box-shadow: none;
+  }
+}
+
+.count-button {
+  border-radius: 5px;
+
+  &:hover {
+    background: rgba(138, 155, 168, 0.15);
+    color: #f5f8fa;
+  }
+
+  .count-icon {
+    padding-left: 0.5rem;
+    padding-right: 0.25rem;
+  }
+
+  .count-value {
+    padding-left: 0.25rem;
+    padding-right: 0.5rem;
+  }
+
+  button.count-icon,
+  &.increment-only button.count-value {
+    &:hover {
+      background: none;
+      color: #f5f8fa;
+    }
+  }
+
+  button.btn-secondary.count-icon,
+  button.btn-secondary.count-value {
+    &:focus {
+      border: none;
+      box-shadow: none;
+      color: #f5f8fa;
+
+      &:not(:hover) {
+        background: none;
+      }
+    }
+  }
+}
+
+.external-links-button {
+  display: inline-block;
+}
+
+.scraper-menu .dropdown-menu {
+  min-width: 250px;
+  padding-top: 0;
+
+  .dropdown-divider {
+    border-top-color: $textfield-bg;
+    margin: 0;
+  }
+
+  .scraper-filter-container {
+    background-color: $secondary;
+    border-bottom: solid 1px $textfield-bg;
+    padding: 5px;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+
+    .btn-group {
+      border: solid 1px $textfield-bg;
+      border-radius: 5px;
+      width: 100%;
+    }
+
+    .clearable-text-field {
+      background-color: $textfield-bg;
+    }
+
+    .clearable-text-field-clear {
+      background-color: unset;
+      border: unset;
+    }
+
+    .reload-button.btn {
+      border-bottom-right-radius: 0.25rem;
+      border-top-right-radius: 0.25rem;
+    }
+  }
+}
+
+.custom-fields .detail-item .detail-item-title {
+  max-width: 130px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.custom-fields-input > .collapse-button {
+  font-weight: 700;
+}
+
+.custom-fields-row {
+  align-items: center;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 0.875rem;
+
+  .form-label {
+    margin-bottom: 0;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+
+  // labels with titles are styled with help cursor and dotted underline elsewhere
+  div.custom-fields-field label.form-label {
+    cursor: inherit;
+    text-decoration: inherit;
+  }
+
+  .form-control,
+  .btn {
+    font-size: 0.875rem;
+  }
+
+  &.custom-fields-new > div:not(:last-child) {
+    padding-right: 0;
+  }
 }

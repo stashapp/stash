@@ -1,23 +1,16 @@
 import React from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { IconDefinition, SizeProp } from "@fortawesome/fontawesome-svg-core";
+import {
+  FontAwesomeIcon,
+  FontAwesomeIconProps,
+} from "@fortawesome/react-fontawesome";
 import { PatchComponent } from "src/patch";
 
-interface IIcon {
-  icon: IconDefinition;
-  className?: string;
-  color?: string;
-  size?: SizeProp;
-}
-
-export const Icon: React.FC<IIcon> = PatchComponent(
+export const Icon: React.FC<FontAwesomeIconProps> = PatchComponent(
   "Icon",
-  ({ icon, className, color, size }) => (
+  (props) => (
     <FontAwesomeIcon
-      icon={icon}
-      className={`fa-icon ${className ?? ""}`}
-      color={color}
-      size={size}
+      {...props}
+      className={`fa-icon ${props.className ?? ""}`}
     />
   )
 );

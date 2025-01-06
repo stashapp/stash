@@ -26,9 +26,15 @@ const (
 	GalleryChapterUpdatePost  TriggerEnum = "GalleryChapter.Update.Post"
 	GalleryChapterDestroyPost TriggerEnum = "GalleryChapter.Destroy.Post"
 
+	// deprecated - use Group hooks instead
+	// for now, both movie and group hooks will be executed
 	MovieCreatePost  TriggerEnum = "Movie.Create.Post"
 	MovieUpdatePost  TriggerEnum = "Movie.Update.Post"
 	MovieDestroyPost TriggerEnum = "Movie.Destroy.Post"
+
+	GroupCreatePost  TriggerEnum = "Group.Create.Post"
+	GroupUpdatePost  TriggerEnum = "Group.Update.Post"
+	GroupDestroyPost TriggerEnum = "Group.Destroy.Post"
 
 	PerformerCreatePost  TriggerEnum = "Performer.Create.Post"
 	PerformerUpdatePost  TriggerEnum = "Performer.Update.Post"

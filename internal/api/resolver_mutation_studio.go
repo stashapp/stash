@@ -35,16 +35,22 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input models.Studio
 	newStudio.Name = input.Name
 	newStudio.URL = translator.string(input.URL)
 	newStudio.Rating = input.Rating100
+	newStudio.Favorite = translator.bool(input.Favorite)
 	newStudio.Details = translator.string(input.Details)
 	newStudio.IgnoreAutoTag = translator.bool(input.IgnoreAutoTag)
 	newStudio.Aliases = models.NewRelatedStrings(input.Aliases)
-	newStudio.StashIDs = models.NewRelatedStashIDs(input.StashIds)
+	newStudio.StashIDs = models.NewRelatedStashIDs(models.StashIDInputs(input.StashIds).ToStashIDs())
 
 	var err error
 
 	newStudio.ParentID, err = translator.intPtrFromString(input.ParentID)
 	if err != nil {
 		return nil, fmt.Errorf("converting parent id: %w", err)
+	}
+
+	newStudio.TagIDs, err = translator.relatedIds(input.TagIds)
+	if err != nil {
+		return nil, fmt.Errorf("converting tag ids: %w", err)
 	}
 
 	// Process the base 64 encoded image string
@@ -103,6 +109,7 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 	updatedStudio.URL = translator.optionalString(input.URL, "url")
 	updatedStudio.Details = translator.optionalString(input.Details, "details")
 	updatedStudio.Rating = translator.optionalInt(input.Rating100, "rating100")
+	updatedStudio.Favorite = translator.optionalBool(input.Favorite, "favorite")
 	updatedStudio.IgnoreAutoTag = translator.optionalBool(input.IgnoreAutoTag, "ignore_auto_tag")
 	updatedStudio.Aliases = translator.updateStrings(input.Aliases, "aliases")
 	updatedStudio.StashIDs = translator.updateStashIDs(input.StashIds, "stash_ids")
@@ -110,6 +117,11 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 	updatedStudio.ParentID, err = translator.optionalIntFromString(input.ParentID, "parent_id")
 	if err != nil {
 		return nil, fmt.Errorf("converting parent id: %w", err)
+	}
+
+	updatedStudio.TagIDs, err = translator.updateIds(input.TagIds, "tag_ids")
+	if err != nil {
+		return nil, fmt.Errorf("converting tag ids: %w", err)
 	}
 
 	// Process the base 64 encoded image string

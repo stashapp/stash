@@ -18,7 +18,6 @@ import locales, { registerCountry } from "src/locales";
 import {
   useConfiguration,
   useConfigureUI,
-  usePlugins,
   useSystemStatus,
 } from "src/core/StashService";
 import flattenMessages from "./utils/flattenMessages";
@@ -40,15 +39,14 @@ import { releaseNotes } from "./docs/en/ReleaseNotes";
 import { getPlatformURL } from "./core/createClient";
 import { lazyComponent } from "./utils/lazyComponent";
 import { isPlatformUniquelyRenderedByApple } from "./utils/apple";
-import useScript, { useCSS } from "./hooks/useScript";
-import { useMemoOnce } from "./hooks/state";
 import Event from "./hooks/event";
-import { uniq } from "lodash-es";
 
-import { PluginRoutes } from "./plugins";
+import { PluginRoutes, PluginsLoader } from "./plugins";
 
 // import plugin_api to run code
 import "./pluginApi";
+import { ConnectionMonitor } from "./ConnectionMonitor";
+import { PatchFunction } from "./patch";
 
 const Performers = lazyComponent(
   () => import("./components/Performers/Performers")
@@ -64,7 +62,7 @@ const Galleries = lazyComponent(
   () => import("./components/Galleries/Galleries")
 );
 
-const Movies = lazyComponent(() => import("./components/Movies/Movies"));
+const Groups = lazyComponent(() => import("./components/Groups/Groups"));
 const Tags = lazyComponent(() => import("./components/Tags/Tags"));
 const Images = lazyComponent(() => import("./components/Images/Images"));
 const Setup = lazyComponent(() => import("./components/Setup/Setup"));
@@ -95,53 +93,12 @@ function languageMessageString(language: string) {
   return language.replace(/-/, "");
 }
 
-type PluginList = NonNullable<Required<GQL.PluginsQuery["plugins"]>>;
-
-// sort plugins by their dependencies
-function sortPlugins(plugins: PluginList) {
-  type Node = { id: string; afters: string[] };
-
-  let nodes: Record<string, Node> = {};
-  let sorted: PluginList = [];
-  let visited: Record<string, boolean> = {};
-
-  plugins.forEach((v) => {
-    let from = v.id;
-
-    if (!nodes[from]) nodes[from] = { id: from, afters: [] };
-
-    v.requires?.forEach((to) => {
-      if (!nodes[to]) nodes[to] = { id: to, afters: [] };
-      if (!nodes[to].afters.includes(from)) nodes[to].afters.push(from);
-    });
-  });
-
-  function visit(idstr: string, ancestors: string[] = []) {
-    let node = nodes[idstr];
-    const { id } = node;
-
-    if (visited[idstr]) return;
-
-    ancestors.push(id);
-    visited[idstr] = true;
-    node.afters.forEach(function (afterID) {
-      if (ancestors.indexOf(afterID) >= 0)
-        throw new Error("closed chain : " + afterID + " is in " + id);
-      visit(afterID.toString(), ancestors.slice());
-    });
-
-    const plugin = plugins.find((v) => v.id === id);
-    if (plugin) {
-      sorted.unshift(plugin);
-    }
+const AppContainer: React.FC<React.PropsWithChildren<{}>> = PatchFunction(
+  "App",
+  (props: React.PropsWithChildren<{}>) => {
+    return <>{props.children}</>;
   }
-
-  Object.keys(nodes).forEach((n) => {
-    visit(n);
-  });
-
-  return sorted;
-}
+) as React.FC;
 
 export const App: React.FC = () => {
   const config = useConfiguration();
@@ -206,46 +163,6 @@ export const App: React.FC = () => {
     setLocale();
   }, [customMessages, language]);
 
-  const {
-    data: plugins,
-    loading: pluginsLoading,
-    error: pluginsError,
-  } = usePlugins();
-
-  const sortedPlugins = useMemoOnce(() => {
-    return [
-      sortPlugins(plugins?.plugins ?? []),
-      !pluginsLoading && !pluginsError,
-    ];
-  }, [plugins?.plugins, pluginsLoading, pluginsError]);
-
-  const pluginJavascripts = useMemoOnce(() => {
-    return [
-      uniq(
-        sortedPlugins
-          ?.filter((plugin) => plugin.enabled && plugin.paths.javascript)
-          .map((plugin) => plugin.paths.javascript!)
-          .flat() ?? []
-      ),
-      !!sortedPlugins && !pluginsLoading && !pluginsError,
-    ];
-  }, [sortedPlugins, pluginsLoading, pluginsError]);
-
-  const pluginCSS = useMemoOnce(() => {
-    return [
-      uniq(
-        sortedPlugins
-          ?.filter((plugin) => plugin.enabled && plugin.paths.css)
-          .map((plugin) => plugin.paths.css!)
-          .flat() ?? []
-      ),
-      !!sortedPlugins && !pluginsLoading && !pluginsError,
-    ];
-  }, [sortedPlugins, pluginsLoading, pluginsError]);
-
-  useScript(pluginJavascripts ?? [], !pluginsLoading && !pluginsError);
-  useCSS(pluginCSS ?? [], !pluginsLoading && !pluginsError);
-
   const location = useLocation();
   const history = useHistory();
   const setupMatch = useRouteMatch(["/setup", "/migrate"]);
@@ -276,7 +193,7 @@ export const App: React.FC = () => {
       status === GQL.SystemStatusEnum.NeedsMigration
     ) {
       // redirect to migrate page
-      history.push("/migrate");
+      history.replace("/migrate");
     }
   }, [systemStatusData, setupMatch, history, location]);
 
@@ -303,7 +220,7 @@ export const App: React.FC = () => {
             <Route path="/performers" component={Performers} />
             <Route path="/tags" component={Tags} />
             <Route path="/studios" component={Studios} />
-            <Route path="/movies" component={Movies} />
+            <Route path="/groups" component={Groups} />
             <Route path="/stats" component={Stats} />
             <Route path="/settings" component={Settings} />
             <Route
@@ -363,31 +280,36 @@ export const App: React.FC = () => {
           messages={messages}
           formats={intlFormats}
         >
-          <ConfigurationProvider
-            configuration={config.data?.configuration}
-            loading={config.loading}
-          >
-            {maybeRenderReleaseNotes()}
-            <ToastProvider>
-              <Suspense fallback={<LoadingIndicator />}>
-                <LightboxProvider>
-                  <ManualProvider>
-                    <InteractiveProvider>
-                      <Helmet {...titleProps} />
-                      {maybeRenderNavbar()}
-                      <div
-                        className={`main container-fluid ${
-                          appleRendering ? "apple" : ""
-                        }`}
-                      >
-                        {renderContent()}
-                      </div>
-                    </InteractiveProvider>
-                  </ManualProvider>
-                </LightboxProvider>
-              </Suspense>
-            </ToastProvider>
-          </ConfigurationProvider>
+          <PluginsLoader>
+            <AppContainer>
+              <ConfigurationProvider
+                configuration={config.data?.configuration}
+                loading={config.loading}
+              >
+                {maybeRenderReleaseNotes()}
+                <ToastProvider>
+                  <ConnectionMonitor />
+                  <Suspense fallback={<LoadingIndicator />}>
+                    <LightboxProvider>
+                      <ManualProvider>
+                        <InteractiveProvider>
+                          <Helmet {...titleProps} />
+                          {maybeRenderNavbar()}
+                          <div
+                            className={`main container-fluid ${
+                              appleRendering ? "apple" : ""
+                            }`}
+                          >
+                            {renderContent()}
+                          </div>
+                        </InteractiveProvider>
+                      </ManualProvider>
+                    </LightboxProvider>
+                  </Suspense>
+                </ToastProvider>
+              </ConfigurationProvider>
+            </AppContainer>
+          </PluginsLoader>
         </IntlProvider>
       ) : null}
     </ErrorBoundary>

@@ -108,6 +108,7 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
     <RatingSystem
       value={performer.rating100}
       onSetRating={(value) => setRating(value, performer.id)}
+      clickToRate
     />
   );
 
@@ -350,7 +351,7 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
     },
     {
       value: "o_counter",
-      label: intl.formatMessage({ id: "o_counter" }),
+      label: intl.formatMessage({ id: "o_count" }),
       defaultShow: true,
       render: OCounterCell,
     },

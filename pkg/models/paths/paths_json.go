@@ -12,14 +12,15 @@ type JSONPaths struct {
 
 	ScrapedFile string
 
-	Performers string
-	Scenes     string
-	Images     string
-	Galleries  string
-	Studios    string
-	Tags       string
-	Movies     string
-	Files      string
+	Performers   string
+	Scenes       string
+	Images       string
+	Galleries    string
+	Studios      string
+	Tags         string
+	Groups       string
+	Files        string
+	SavedFilters string
 }
 
 func newJSONPaths(baseDir string) *JSONPaths {
@@ -31,9 +32,10 @@ func newJSONPaths(baseDir string) *JSONPaths {
 	jp.Images = filepath.Join(baseDir, "images")
 	jp.Galleries = filepath.Join(baseDir, "galleries")
 	jp.Studios = filepath.Join(baseDir, "studios")
-	jp.Movies = filepath.Join(baseDir, "movies")
+	jp.Groups = filepath.Join(baseDir, "movies")
 	jp.Tags = filepath.Join(baseDir, "tags")
 	jp.Files = filepath.Join(baseDir, "files")
+	jp.SavedFilters = filepath.Join(baseDir, "saved_filters")
 	return &jp
 }
 
@@ -49,9 +51,10 @@ func EmptyJSONDirs(baseDir string) {
 	_ = fsutil.EmptyDir(jsonPaths.Galleries)
 	_ = fsutil.EmptyDir(jsonPaths.Performers)
 	_ = fsutil.EmptyDir(jsonPaths.Studios)
-	_ = fsutil.EmptyDir(jsonPaths.Movies)
+	_ = fsutil.EmptyDir(jsonPaths.Groups)
 	_ = fsutil.EmptyDir(jsonPaths.Tags)
 	_ = fsutil.EmptyDir(jsonPaths.Files)
+	_ = fsutil.EmptyDir(jsonPaths.SavedFilters)
 }
 
 func EnsureJSONDirs(baseDir string) {
@@ -74,13 +77,16 @@ func EnsureJSONDirs(baseDir string) {
 	if err := fsutil.EnsureDir(jsonPaths.Studios); err != nil {
 		logger.Warnf("couldn't create directories for Studios: %v", err)
 	}
-	if err := fsutil.EnsureDir(jsonPaths.Movies); err != nil {
-		logger.Warnf("couldn't create directories for Movies: %v", err)
+	if err := fsutil.EnsureDir(jsonPaths.Groups); err != nil {
+		logger.Warnf("couldn't create directories for Groups: %v", err)
 	}
 	if err := fsutil.EnsureDir(jsonPaths.Tags); err != nil {
 		logger.Warnf("couldn't create directories for Tags: %v", err)
 	}
 	if err := fsutil.EnsureDir(jsonPaths.Files); err != nil {
 		logger.Warnf("couldn't create directories for Files: %v", err)
+	}
+	if err := fsutil.EnsureDir(jsonPaths.SavedFilters); err != nil {
+		logger.Warnf("couldn't create directories for Saved Filters: %v", err)
 	}
 }

@@ -5,13 +5,14 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"slices"
 
 	"github.com/doug-martin/goqu/v9"
 	"github.com/doug-martin/goqu/v9/exp"
 	"github.com/jmoiron/sqlx"
+	"gopkg.in/guregu/null.v4"
 
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sliceutil"
 )
 
 const sceneMarkerTable = "scene_markers"
@@ -24,19 +25,23 @@ GROUP BY scene_markers.id
 `
 
 type sceneMarkerRow struct {
-	ID           int       `db:"id" goqu:"skipinsert"`
-	Title        string    `db:"title"` // TODO: make db schema (and gql schema) nullable
-	Seconds      float64   `db:"seconds"`
-	PrimaryTagID int       `db:"primary_tag_id"`
-	SceneID      int       `db:"scene_id"`
-	CreatedAt    Timestamp `db:"created_at"`
-	UpdatedAt    Timestamp `db:"updated_at"`
+	ID           int        `db:"id" goqu:"skipinsert"`
+	Title        string     `db:"title"` // TODO: make db schema (and gql schema) nullable
+	Seconds      float64    `db:"seconds"`
+	PrimaryTagID int        `db:"primary_tag_id"`
+	SceneID      int        `db:"scene_id"`
+	CreatedAt    Timestamp  `db:"created_at"`
+	UpdatedAt    Timestamp  `db:"updated_at"`
+	EndSeconds   null.Float `db:"end_seconds"`
 }
 
 func (r *sceneMarkerRow) fromSceneMarker(o models.SceneMarker) {
 	r.ID = o.ID
 	r.Title = o.Title
 	r.Seconds = o.Seconds
+	if o.EndSeconds != nil {
+		r.EndSeconds = null.FloatFrom(*o.EndSeconds)
+	}
 	r.PrimaryTagID = o.PrimaryTagID
 	r.SceneID = o.SceneID
 	r.CreatedAt = Timestamp{Timestamp: o.CreatedAt}
@@ -48,6 +53,7 @@ func (r *sceneMarkerRow) resolve() *models.SceneMarker {
 		ID:           r.ID,
 		Title:        r.Title,
 		Seconds:      r.Seconds,
+		EndSeconds:   r.EndSeconds.Ptr(),
 		PrimaryTagID: r.PrimaryTagID,
 		SceneID:      r.SceneID,
 		CreatedAt:    r.CreatedAt.Timestamp,
@@ -69,30 +75,48 @@ func (r *sceneMarkerRowRecord) fromPartial(o models.SceneMarkerPartial) {
 		r.set("title", o.Title.Value)
 	}
 	r.setFloat64("seconds", o.Seconds)
+	r.setNullFloat64("end_seconds", o.EndSeconds)
 	r.setInt("primary_tag_id", o.PrimaryTagID)
 	r.setInt("scene_id", o.SceneID)
 	r.setTimestamp("created_at", o.CreatedAt)
 	r.setTimestamp("updated_at", o.UpdatedAt)
 }
 
-type SceneMarkerStore struct {
+type sceneMarkerRepositoryType struct {
 	repository
 
-	tableMgr *table
+	scenes repository
+	tags   joinRepository
 }
 
-func NewSceneMarkerStore() *SceneMarkerStore {
-	return &SceneMarkerStore{
+var (
+	sceneMarkerRepository = sceneMarkerRepositoryType{
 		repository: repository{
 			tableName: sceneMarkerTable,
 			idColumn:  idColumn,
 		},
-		tableMgr: sceneMarkerTableMgr,
+		scenes: repository{
+			tableName: sceneTable,
+			idColumn:  idColumn,
+		},
+		tags: joinRepository{
+			repository: repository{
+				tableName: "scene_markers_tags",
+				idColumn:  "scene_marker_id",
+			},
+			fkColumn: tagIDColumn,
+		},
 	}
+)
+
+type SceneMarkerStore struct{}
+
+func NewSceneMarkerStore() *SceneMarkerStore {
+	return &SceneMarkerStore{}
 }
 
 func (qb *SceneMarkerStore) table() exp.IdentifierExpression {
-	return qb.tableMgr.table
+	return sceneMarkerTableMgr.table
 }
 
 func (qb *SceneMarkerStore) selectDataset() *goqu.SelectDataset {
@@ -103,7 +127,7 @@ func (qb *SceneMarkerStore) Create(ctx context.Context, newObject *models.SceneM
 	var r sceneMarkerRow
 	r.fromSceneMarker(*newObject)
 
-	id, err := qb.tableMgr.insertID(ctx, r)
+	id, err := sceneMarkerTableMgr.insertID(ctx, r)
 	if err != nil {
 		return err
 	}
@@ -128,7 +152,7 @@ func (qb *SceneMarkerStore) UpdatePartial(ctx context.Context, id int, partial m
 	r.fromPartial(partial)
 
 	if len(r.Record) > 0 {
-		if err := qb.tableMgr.updateByID(ctx, id, r.Record); err != nil {
+		if err := sceneMarkerTableMgr.updateByID(ctx, id, r.Record); err != nil {
 			return nil, err
 		}
 	}
@@ -140,7 +164,7 @@ func (qb *SceneMarkerStore) Update(ctx context.Context, updatedObject *models.Sc
 	var r sceneMarkerRow
 	r.fromSceneMarker(*updatedObject)
 
-	if err := qb.tableMgr.updateByID(ctx, updatedObject.ID, r); err != nil {
+	if err := sceneMarkerTableMgr.updateByID(ctx, updatedObject.ID, r); err != nil {
 		return err
 	}
 
@@ -148,7 +172,7 @@ func (qb *SceneMarkerStore) Update(ctx context.Context, updatedObject *models.Sc
 }
 
 func (qb *SceneMarkerStore) Destroy(ctx context.Context, id int) error {
-	return qb.destroyExisting(ctx, []int{id})
+	return sceneMarkerRepository.destroyExisting(ctx, []int{id})
 }
 
 // returns nil, nil if not found
@@ -171,7 +195,7 @@ func (qb *SceneMarkerStore) FindMany(ctx context.Context, ids []int) ([]*models.
 	}
 
 	for _, s := range unsorted {
-		i := sliceutil.Index(ids, s.ID)
+		i := slices.Index(ids, s.ID)
 		ret[i] = s
 	}
 
@@ -186,7 +210,7 @@ func (qb *SceneMarkerStore) FindMany(ctx context.Context, ids []int) ([]*models.
 
 // returns nil, sql.ErrNoRows if not found
 func (qb *SceneMarkerStore) find(ctx context.Context, id int) (*models.SceneMarker, error) {
-	q := qb.selectDataset().Where(qb.tableMgr.byID(id))
+	q := qb.selectDataset().Where(sceneMarkerTableMgr.byID(id))
 
 	ret, err := qb.get(ctx, q)
 	if err != nil {
@@ -243,7 +267,7 @@ func (qb *SceneMarkerStore) FindBySceneID(ctx context.Context, sceneID int) ([]*
 
 func (qb *SceneMarkerStore) CountByTagID(ctx context.Context, tagID int) (int, error) {
 	args := []interface{}{tagID, tagID}
-	return qb.runCountQuery(ctx, qb.buildCountQuery(countSceneMarkersForTagQuery), args)
+	return sceneMarkerRepository.runCountQuery(ctx, sceneMarkerRepository.buildCountQuery(countSceneMarkersForTagQuery), args)
 }
 
 func (qb *SceneMarkerStore) GetMarkerStrings(ctx context.Context, q *string, sort *string) ([]*models.MarkerStringsResultType, error) {
@@ -272,21 +296,6 @@ func (qb *SceneMarkerStore) Wall(ctx context.Context, q *string) ([]*models.Scen
 	return qb.getMany(ctx, qq)
 }
 
-func (qb *SceneMarkerStore) makeFilter(ctx context.Context, sceneMarkerFilter *models.SceneMarkerFilterType) *filterBuilder {
-	query := &filterBuilder{}
-
-	query.handleCriterion(ctx, sceneMarkerTagIDCriterionHandler(qb, sceneMarkerFilter.TagID))
-	query.handleCriterion(ctx, sceneMarkerTagsCriterionHandler(qb, sceneMarkerFilter.Tags))
-	query.handleCriterion(ctx, sceneMarkerSceneTagsCriterionHandler(qb, sceneMarkerFilter.SceneTags))
-	query.handleCriterion(ctx, sceneMarkerPerformersCriterionHandler(qb, sceneMarkerFilter.Performers))
-	query.handleCriterion(ctx, timestampCriterionHandler(sceneMarkerFilter.CreatedAt, "scene_markers.created_at"))
-	query.handleCriterion(ctx, timestampCriterionHandler(sceneMarkerFilter.UpdatedAt, "scene_markers.updated_at"))
-	query.handleCriterion(ctx, dateCriterionHandler(sceneMarkerFilter.SceneDate, "scenes.date"))
-	query.handleCriterion(ctx, timestampCriterionHandler(sceneMarkerFilter.SceneCreatedAt, "scenes.created_at"))
-	query.handleCriterion(ctx, timestampCriterionHandler(sceneMarkerFilter.SceneUpdatedAt, "scenes.updated_at"))
-
-	return query
-}
 func (qb *SceneMarkerStore) makeQuery(ctx context.Context, sceneMarkerFilter *models.SceneMarkerFilterType, findFilter *models.FindFilterType) (*queryBuilder, error) {
 	if sceneMarkerFilter == nil {
 		sceneMarkerFilter = &models.SceneMarkerFilterType{}
@@ -295,22 +304,27 @@ func (qb *SceneMarkerStore) makeQuery(ctx context.Context, sceneMarkerFilter *mo
 		findFilter = &models.FindFilterType{}
 	}
 
-	query := qb.newQuery()
+	query := sceneMarkerRepository.newQuery()
 	distinctIDs(&query, sceneMarkerTable)
 
 	if q := findFilter.Q; q != nil && *q != "" {
+		query.join(sceneTable, "", "scenes.id = scene_markers.scene_id")
 		query.join(tagTable, "", "scene_markers.primary_tag_id = tags.id")
 		searchColumns := []string{"scene_markers.title", "scenes.title", "tags.name"}
 		query.parseQueryString(searchColumns, *q)
 	}
 
-	filter := qb.makeFilter(ctx, sceneMarkerFilter)
+	filter := filterBuilderFromHandler(ctx, &sceneMarkerFilterHandler{
+		sceneMarkerFilter: sceneMarkerFilter,
+	})
 
 	if err := query.addFilter(filter); err != nil {
 		return nil, err
 	}
 
-	qb.setSceneMarkerSort(&query, findFilter)
+	if err := qb.setSceneMarkerSort(&query, findFilter); err != nil {
+		return nil, err
+	}
 	query.sortAndPagination += getPagination(findFilter)
 
 	return &query, nil
@@ -344,138 +358,26 @@ func (qb *SceneMarkerStore) QueryCount(ctx context.Context, sceneMarkerFilter *m
 	return query.executeCount(ctx)
 }
 
-func sceneMarkerTagIDCriterionHandler(qb *SceneMarkerStore, tagID *string) criterionHandlerFunc {
-	return func(ctx context.Context, f *filterBuilder) {
-		if tagID != nil {
-			f.addLeftJoin("scene_markers_tags", "", "scene_markers_tags.scene_marker_id = scene_markers.id")
-
-			f.addWhere("(scene_markers.primary_tag_id = ? OR scene_markers_tags.tag_id = ?)", *tagID, *tagID)
-		}
-	}
+var sceneMarkerSortOptions = sortOptions{
+	"created_at",
+	"id",
+	"title",
+	"random",
+	"scene_id",
+	"scenes_updated_at",
+	"seconds",
+	"updated_at",
+	"duration",
 }
 
-func sceneMarkerTagsCriterionHandler(qb *SceneMarkerStore, criterion *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
-	return func(ctx context.Context, f *filterBuilder) {
-		if criterion != nil {
-			tags := criterion.CombineExcludes()
-
-			if tags.Modifier == models.CriterionModifierIsNull || tags.Modifier == models.CriterionModifierNotNull {
-				var notClause string
-				if tags.Modifier == models.CriterionModifierNotNull {
-					notClause = "NOT"
-				}
-
-				f.addLeftJoin("scene_markers_tags", "", "scene_markers.id = scene_markers_tags.scene_marker_id")
-
-				f.addWhere(fmt.Sprintf("%s scene_markers_tags.tag_id IS NULL", notClause))
-				return
-			}
-
-			if tags.Modifier == models.CriterionModifierEquals && tags.Depth != nil && *tags.Depth != 0 {
-				f.setError(fmt.Errorf("depth is not supported for equals modifier for marker tag filtering"))
-				return
-			}
-
-			if len(tags.Value) == 0 && len(tags.Excludes) == 0 {
-				return
-			}
-
-			if len(tags.Value) > 0 {
-				valuesClause, err := getHierarchicalValues(ctx, qb.tx, tags.Value, tagTable, "tags_relations", "parent_id", "child_id", tags.Depth)
-				if err != nil {
-					f.setError(err)
-					return
-				}
-
-				f.addWith(`marker_tags AS (
-	SELECT mt.scene_marker_id, t.column1 AS root_tag_id FROM scene_markers_tags mt
-	INNER JOIN (` + valuesClause + `) t ON t.column2 = mt.tag_id
-	UNION
-	SELECT m.id, t.column1 FROM scene_markers m
-	INNER JOIN (` + valuesClause + `) t ON t.column2 = m.primary_tag_id
-	)`)
-
-				f.addLeftJoin("marker_tags", "", "marker_tags.scene_marker_id = scene_markers.id")
-
-				switch tags.Modifier {
-				case models.CriterionModifierEquals:
-					// includes only the provided ids
-					f.addWhere("marker_tags.root_tag_id IS NOT NULL")
-					tagsLen := len(tags.Value)
-					f.addHaving(fmt.Sprintf("count(distinct marker_tags.root_tag_id) IS %d", tagsLen))
-					// decrement by one to account for primary tag id
-					f.addWhere("(SELECT COUNT(*) FROM scene_markers_tags s WHERE s.scene_marker_id = scene_markers.id) = ?", tagsLen-1)
-				case models.CriterionModifierNotEquals:
-					f.setError(fmt.Errorf("not equals modifier is not supported for scene marker tags"))
-				default:
-					addHierarchicalConditionClauses(f, tags, "marker_tags", "root_tag_id")
-				}
-			}
-
-			if len(criterion.Excludes) > 0 {
-				valuesClause, err := getHierarchicalValues(ctx, dbWrapper{}, tags.Excludes, tagTable, "tags_relations", "parent_id", "child_id", tags.Depth)
-				if err != nil {
-					f.setError(err)
-					return
-				}
-
-				clause := "scene_markers.id NOT IN (SELECT scene_markers_tags.scene_marker_id FROM scene_markers_tags WHERE scene_markers_tags.tag_id IN (SELECT column2 FROM (%s)))"
-				f.addWhere(fmt.Sprintf(clause, valuesClause))
-
-				f.addWhere(fmt.Sprintf("scene_markers.primary_tag_id NOT IN (SELECT column2 FROM (%s))", valuesClause))
-			}
-		}
-	}
-}
-
-func sceneMarkerSceneTagsCriterionHandler(qb *SceneMarkerStore, tags *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
-	return func(ctx context.Context, f *filterBuilder) {
-		if tags != nil {
-			f.addLeftJoin("scenes_tags", "", "scene_markers.scene_id = scenes_tags.scene_id")
-
-			h := joinedHierarchicalMultiCriterionHandlerBuilder{
-				tx: qb.tx,
-
-				primaryTable: "scene_markers",
-				primaryKey:   sceneIDColumn,
-				foreignTable: tagTable,
-				foreignFK:    tagIDColumn,
-
-				relationsTable: "tags_relations",
-				joinTable:      "scenes_tags",
-				joinAs:         "marker_scenes_tags",
-				primaryFK:      sceneIDColumn,
-			}
-
-			h.handler(tags).handle(ctx, f)
-		}
-	}
-}
-
-func sceneMarkerPerformersCriterionHandler(qb *SceneMarkerStore, performers *models.MultiCriterionInput) criterionHandlerFunc {
-	h := joinedMultiCriterionHandlerBuilder{
-		primaryTable: sceneTable,
-		joinTable:    performersScenesTable,
-		joinAs:       "performers_join",
-		primaryFK:    sceneIDColumn,
-		foreignFK:    performerIDColumn,
-
-		addJoinTable: func(f *filterBuilder) {
-			f.addLeftJoin(performersScenesTable, "performers_join", "performers_join.scene_id = scene_markers.scene_id")
-		},
-	}
-
-	handler := h.handler(performers)
-	return func(ctx context.Context, f *filterBuilder) {
-		// Make sure scenes is included, otherwise excludes filter fails
-		f.addLeftJoin(sceneTable, "", "scenes.id = scene_markers.scene_id")
-		handler(ctx, f)
-	}
-}
-
-func (qb *SceneMarkerStore) setSceneMarkerSort(query *queryBuilder, findFilter *models.FindFilterType) {
+func (qb *SceneMarkerStore) setSceneMarkerSort(query *queryBuilder, findFilter *models.FindFilterType) error {
 	sort := findFilter.GetSort("title")
 	direction := findFilter.GetDirection()
+
+	// CVE-2024-32231 - ensure sort is in the list of allowed sorts
+	if err := sceneMarkerSortOptions.validateSort(sort); err != nil {
+		return err
+	}
 
 	switch sort {
 	case "scenes_updated_at":
@@ -485,17 +387,21 @@ func (qb *SceneMarkerStore) setSceneMarkerSort(query *queryBuilder, findFilter *
 	case "title":
 		query.join(tagTable, "", "scene_markers.primary_tag_id = tags.id")
 		query.sortAndPagination += " ORDER BY COALESCE(NULLIF(scene_markers.title,''), tags.name) COLLATE NATURAL_CI " + direction
+	case "duration":
+		sort = "(scene_markers.end_seconds - scene_markers.seconds)"
+		query.sortAndPagination += getSort(sort, direction, sceneMarkerTable)
 	default:
 		query.sortAndPagination += getSort(sort, direction, sceneMarkerTable)
 	}
 
 	query.sortAndPagination += ", scene_markers.scene_id ASC, scene_markers.seconds ASC"
+	return nil
 }
 
 func (qb *SceneMarkerStore) querySceneMarkers(ctx context.Context, query string, args []interface{}) ([]*models.SceneMarker, error) {
 	const single = false
 	var ret []*models.SceneMarker
-	if err := qb.queryFunc(ctx, query, args, single, func(r *sqlx.Rows) error {
+	if err := sceneMarkerRepository.queryFunc(ctx, query, args, single, func(r *sqlx.Rows) error {
 		var f sceneMarkerRow
 		if err := r.StructScan(&f); err != nil {
 			return err
@@ -513,7 +419,7 @@ func (qb *SceneMarkerStore) querySceneMarkers(ctx context.Context, query string,
 }
 
 func (qb *SceneMarkerStore) queryMarkerStringsResultType(ctx context.Context, query string, args []interface{}) ([]*models.MarkerStringsResultType, error) {
-	rows, err := qb.tx.Queryx(ctx, query, args...)
+	rows, err := dbWrapper.Queryx(ctx, query, args...)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return nil, err
 	}
@@ -535,24 +441,13 @@ func (qb *SceneMarkerStore) queryMarkerStringsResultType(ctx context.Context, qu
 	return markerStrings, nil
 }
 
-func (qb *SceneMarkerStore) tagsRepository() *joinRepository {
-	return &joinRepository{
-		repository: repository{
-			tx:        qb.tx,
-			tableName: "scene_markers_tags",
-			idColumn:  "scene_marker_id",
-		},
-		fkColumn: tagIDColumn,
-	}
-}
-
 func (qb *SceneMarkerStore) GetTagIDs(ctx context.Context, id int) ([]int, error) {
-	return qb.tagsRepository().getIDs(ctx, id)
+	return sceneMarkerRepository.tags.getIDs(ctx, id)
 }
 
 func (qb *SceneMarkerStore) UpdateTags(ctx context.Context, id int, tagIDs []int) error {
 	// Delete the existing joins and then create new ones
-	return qb.tagsRepository().replace(ctx, id, tagIDs)
+	return sceneMarkerRepository.tags.replace(ctx, id, tagIDs)
 }
 
 func (qb *SceneMarkerStore) Count(ctx context.Context) (int, error) {

@@ -89,6 +89,14 @@ export abstract class Criterion<V extends CriterionValue> {
     this.value = value;
   }
 
+  public clone() {
+    const ret = Object.assign(Object.create(Object.getPrototypeOf(this)), this);
+    ret.cloneValues();
+    return ret;
+  }
+
+  protected cloneValues() {}
+
   public static getModifierLabel(intl: IntlShape, modifier: CriterionModifier) {
     const modifierMessageID = modifierMessageIDs[modifier];
 
@@ -171,8 +179,9 @@ export type InputType =
   | "studios"
   | "tags"
   | "performer_tags"
+  | "scenes"
   | "scene_tags"
-  | "movies"
+  | "groups"
   | "galleries"
   | undefined;
 
@@ -183,6 +192,7 @@ interface ICriterionOptionsParams {
   modifierOptions?: CriterionModifier[];
   defaultModifier?: CriterionModifier;
   options?: Option[];
+  hidden?: boolean;
   makeCriterion: (
     o: CriterionOption,
     config?: ConfigDataFragment
@@ -195,6 +205,10 @@ export class CriterionOption {
   public readonly defaultModifier: CriterionModifier;
   public readonly options: Option[] | undefined;
   public readonly inputType: InputType;
+
+  // used for legacy criteria that are not shown in the UI
+  public readonly hidden: boolean = false;
+
   public readonly makeCriterionFn: (
     o: CriterionOption,
     config?: ConfigDataFragment
@@ -207,6 +221,7 @@ export class CriterionOption {
     this.defaultModifier = options.defaultModifier ?? CriterionModifier.Equals;
     this.options = options.options;
     this.inputType = options.inputType;
+    this.hidden = options.hidden ?? false;
     this.makeCriterionFn = options.makeCriterion;
   }
 
@@ -250,6 +265,14 @@ export class ILabeledIdCriterionOption extends CriterionOption {
 }
 
 export class ILabeledIdCriterion extends Criterion<ILabeledId[]> {
+  constructor(type: CriterionOption, value: ILabeledId[] = []) {
+    super(type, value);
+  }
+
+  public cloneValues() {
+    this.value = this.value.map((v) => ({ ...v }));
+  }
+
   protected getLabelValue(_intl: IntlShape): string {
     return this.value.map((v) => v.label).join(", ");
   }
@@ -271,21 +294,26 @@ export class ILabeledIdCriterion extends Criterion<ILabeledId[]> {
 
     return this.value.length > 0;
   }
-
-  constructor(type: CriterionOption) {
-    super(type, []);
-  }
 }
 
 export class IHierarchicalLabeledIdCriterion extends Criterion<IHierarchicalLabelValue> {
-  constructor(type: CriterionOption) {
-    const value: IHierarchicalLabelValue = {
+  constructor(
+    type: CriterionOption,
+    value: IHierarchicalLabelValue = {
       items: [],
       excluded: [],
       depth: 0,
-    };
-
+    }
+  ) {
     super(type, value);
+  }
+
+  public cloneValues() {
+    this.value = {
+      ...this.value,
+      items: this.value.items.map((v) => ({ ...v })),
+      excluded: this.value.excluded.map((v) => ({ ...v })),
+    };
   }
 
   override get modifier(): CriterionModifier {
@@ -297,6 +325,7 @@ export class IHierarchicalLabeledIdCriterion extends Criterion<IHierarchicalLabe
     // excluded only makes sense for includes and includes all
     // so reset it for other modifiers
     if (
+      this.value &&
       value !== CriterionModifier.Includes &&
       value !== CriterionModifier.IncludesAll
     ) {
@@ -499,9 +528,13 @@ export class StringCriterion extends Criterion<string> {
   }
 }
 
-export class MultiStringCriterion extends Criterion<string[]> {
-  constructor(type: CriterionOption) {
-    super(type, []);
+export abstract class MultiStringCriterion extends Criterion<string[]> {
+  constructor(type: CriterionOption, value: string[] = []) {
+    super(type, value);
+  }
+
+  public cloneValues() {
+    this.value = this.value.slice();
   }
 
   protected getLabelValue(_intl: IntlShape) {
@@ -610,7 +643,11 @@ export function createNumberCriterionOption(
 }
 
 export class NullNumberCriterionOption extends CriterionOption {
-  constructor(messageID: string, value: CriterionType) {
+  constructor(
+    messageID: string,
+    value: CriterionType,
+    makeCriterion?: () => Criterion<CriterionValue>
+  ) {
     super({
       messageID,
       type: value,
@@ -626,7 +663,9 @@ export class NullNumberCriterionOption extends CriterionOption {
       ],
       defaultModifier: CriterionModifier.Equals,
       inputType: "number",
-      makeCriterion: () => new NumberCriterion(this),
+      makeCriterion: makeCriterion
+        ? makeCriterion
+        : () => new NumberCriterion(this),
     });
   }
 }
@@ -672,6 +711,14 @@ export function createMandatoryNumberCriterionOption(
 }
 
 export class NumberCriterion extends Criterion<INumberValue> {
+  constructor(type: CriterionOption) {
+    super(type, { value: undefined, value2: undefined });
+  }
+
+  public cloneValues() {
+    this.value = { ...this.value };
+  }
+
   public get value(): INumberValue {
     return this._value;
   }
@@ -730,10 +777,6 @@ export class NumberCriterion extends Criterion<INumberValue> {
 
     return true;
   }
-
-  constructor(type: CriterionOption) {
-    super(type, { value: undefined, value2: undefined });
-  }
 }
 
 export class DurationCriterionOption extends MandatoryNumberCriterionOption {
@@ -749,9 +792,26 @@ export function createDurationCriterionOption(
   return new DurationCriterionOption(messageID ?? value, value);
 }
 
+export class NullDurationCriterionOption extends NullNumberCriterionOption {
+  constructor(messageID: string, value: CriterionType) {
+    super(messageID, value, () => new DurationCriterion(this));
+  }
+}
+
+export function createNullDurationCriterionOption(
+  value: CriterionType,
+  messageID?: string
+) {
+  return new NullDurationCriterionOption(messageID ?? value, value);
+}
+
 export class DurationCriterion extends Criterion<INumberValue> {
   constructor(type: CriterionOption) {
     super(type, { value: undefined, value2: undefined });
+  }
+
+  public cloneValues() {
+    this.value = { ...this.value };
   }
 
   public toCriterionInput(): IntCriterionInput {
@@ -827,6 +887,14 @@ export function createDateCriterionOption(value: CriterionType) {
 }
 
 export class DateCriterion extends Criterion<IDateValue> {
+  constructor(type: CriterionOption) {
+    super(type, { value: "", value2: undefined });
+  }
+
+  public cloneValues() {
+    this.value = { ...this.value };
+  }
+
   public encodeValue() {
     return {
       value: this.value.value,
@@ -872,10 +940,6 @@ export class DateCriterion extends Criterion<IDateValue> {
     }
 
     return true;
-  }
-
-  constructor(type: CriterionOption) {
-    super(type, { value: "", value2: undefined });
   }
 }
 
@@ -926,6 +990,14 @@ export function createMandatoryTimestampCriterionOption(value: CriterionType) {
 }
 
 export class TimestampCriterion extends Criterion<ITimestampValue> {
+  constructor(type: CriterionOption) {
+    super(type, { value: "", value2: undefined });
+  }
+
+  public cloneValues() {
+    this.value = { ...this.value };
+  }
+
   public encodeValue() {
     return {
       value: this.value?.value,
@@ -982,9 +1054,5 @@ export class TimestampCriterion extends Criterion<ITimestampValue> {
     }
 
     return true;
-  }
-
-  constructor(type: CriterionOption) {
-    super(type, { value: "", value2: undefined });
   }
 }

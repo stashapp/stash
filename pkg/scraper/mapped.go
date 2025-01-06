@@ -11,9 +11,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/robertkrimen/otto"
 	"gopkg.in/yaml.v2"
 
+	"github.com/stashapp/stash/pkg/javascript"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/sliceutil"
@@ -284,11 +284,13 @@ type mappedMovieScraperConfig struct {
 	mappedConfig
 
 	Studio mappedConfig `yaml:"Studio"`
+	Tags   mappedConfig `yaml:"Tags"`
 }
 type _mappedMovieScraperConfig mappedMovieScraperConfig
 
 const (
 	mappedScraperConfigMovieStudio = "Studio"
+	mappedScraperConfigMovieTags   = "Tags"
 )
 
 func (s *mappedMovieScraperConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
@@ -303,8 +305,10 @@ func (s *mappedMovieScraperConfig) UnmarshalYAML(unmarshal func(interface{}) err
 	thisMap := make(map[string]interface{})
 
 	thisMap[mappedScraperConfigMovieStudio] = parentMap[mappedScraperConfigMovieStudio]
-
 	delete(parentMap, mappedScraperConfigMovieStudio)
+
+	thisMap[mappedScraperConfigMovieTags] = parentMap[mappedScraperConfigMovieTags]
+	delete(parentMap, mappedScraperConfigMovieTags)
 
 	// re-unmarshal the sub-fields
 	yml, err := yaml.Marshal(thisMap)
@@ -528,19 +532,34 @@ func (p *postProcessLbToKg) Apply(ctx context.Context, value string, q mappedQue
 type postProcessJavascript string
 
 func (p *postProcessJavascript) Apply(ctx context.Context, value string, q mappedQuery) string {
-	vm := otto.New()
+	vm := javascript.NewVM()
 	if err := vm.Set("value", value); err != nil {
 		logger.Warnf("javascript failed to set value: %v", err)
 		return value
 	}
 
-	script, err := vm.Compile("", "(function() { "+string(*p)+"})()")
+	log := &javascript.Log{
+		Logger:       logger.Logger,
+		Prefix:       "",
+		ProgressChan: make(chan float64),
+	}
+
+	if err := log.AddToVM("log", vm); err != nil {
+		logger.Logger.Errorf("error adding log API: %w", err)
+	}
+
+	util := &javascript.Util{}
+	if err := util.AddToVM("util", vm); err != nil {
+		logger.Logger.Errorf("error adding util API: %w", err)
+	}
+
+	script, err := javascript.CompileScript("", "(function() { "+string(*p)+"})()")
 	if err != nil {
 		logger.Warnf("javascript failed to compile: %v", err)
 		return value
 	}
 
-	output, err := vm.Run(script)
+	output, err := vm.RunProgram(script)
 	if err != nil {
 		logger.Warnf("javascript failed to run: %v", err)
 		return value
@@ -1060,7 +1079,7 @@ func (s mappedScraper) scrapeGallery(ctx context.Context, q mappedQuery) (*Scrap
 	return &ret, nil
 }
 
-func (s mappedScraper) scrapeMovie(ctx context.Context, q mappedQuery) (*models.ScrapedMovie, error) {
+func (s mappedScraper) scrapeGroup(ctx context.Context, q mappedQuery) (*models.ScrapedMovie, error) {
 	var ret models.ScrapedMovie
 
 	movieScraperConfig := s.Movie
@@ -1071,6 +1090,7 @@ func (s mappedScraper) scrapeMovie(ctx context.Context, q mappedQuery) (*models.
 	movieMap := movieScraperConfig.mappedConfig
 
 	movieStudioMap := movieScraperConfig.Studio
+	movieTagsMap := movieScraperConfig.Tags
 
 	results := movieMap.process(ctx, q, s.Common)
 
@@ -1085,7 +1105,19 @@ func (s mappedScraper) scrapeMovie(ctx context.Context, q mappedQuery) (*models.
 		}
 	}
 
-	if len(results) == 0 && ret.Studio == nil {
+	// now apply the tags
+	if movieTagsMap != nil {
+		logger.Debug(`Processing movie tags:`)
+		tagResults := movieTagsMap.process(ctx, q, s.Common)
+
+		for _, p := range tagResults {
+			tag := &models.ScrapedTag{}
+			p.apply(tag)
+			ret.Tags = append(ret.Tags, tag)
+		}
+	}
+
+	if len(results) == 0 && ret.Studio == nil && len(ret.Tags) == 0 {
 		return nil, nil
 	}
 

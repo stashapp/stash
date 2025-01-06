@@ -190,27 +190,6 @@ func (_m *SceneReaderWriter) CountByFileID(ctx context.Context, fileID models.Fi
 	return r0, r1
 }
 
-// CountByMovieID provides a mock function with given fields: ctx, movieID
-func (_m *SceneReaderWriter) CountByMovieID(ctx context.Context, movieID int) (int, error) {
-	ret := _m.Called(ctx, movieID)
-
-	var r0 int
-	if rf, ok := ret.Get(0).(func(context.Context, int) int); ok {
-		r0 = rf(ctx, movieID)
-	} else {
-		r0 = ret.Get(0).(int)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
-		r1 = rf(ctx, movieID)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // CountByPerformerID provides a mock function with given fields: ctx, performerID
 func (_m *SceneReaderWriter) CountByPerformerID(ctx context.Context, performerID int) (int, error) {
 	ret := _m.Called(ctx, performerID)
@@ -225,48 +204,6 @@ func (_m *SceneReaderWriter) CountByPerformerID(ctx context.Context, performerID
 	var r1 error
 	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
 		r1 = rf(ctx, performerID)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// CountByStudioID provides a mock function with given fields: ctx, studioID
-func (_m *SceneReaderWriter) CountByStudioID(ctx context.Context, studioID int) (int, error) {
-	ret := _m.Called(ctx, studioID)
-
-	var r0 int
-	if rf, ok := ret.Get(0).(func(context.Context, int) int); ok {
-		r0 = rf(ctx, studioID)
-	} else {
-		r0 = ret.Get(0).(int)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
-		r1 = rf(ctx, studioID)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// CountByTagID provides a mock function with given fields: ctx, tagID
-func (_m *SceneReaderWriter) CountByTagID(ctx context.Context, tagID int) (int, error) {
-	ret := _m.Called(ctx, tagID)
-
-	var r0 int
-	if rf, ok := ret.Get(0).(func(context.Context, int) int); ok {
-		r0 = rf(ctx, tagID)
-	} else {
-		r0 = ret.Get(0).(int)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
-		r1 = rf(ctx, tagID)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -589,13 +526,13 @@ func (_m *SceneReaderWriter) FindByGalleryID(ctx context.Context, performerID in
 	return r0, r1
 }
 
-// FindByMovieID provides a mock function with given fields: ctx, movieID
-func (_m *SceneReaderWriter) FindByMovieID(ctx context.Context, movieID int) ([]*models.Scene, error) {
-	ret := _m.Called(ctx, movieID)
+// FindByGroupID provides a mock function with given fields: ctx, groupID
+func (_m *SceneReaderWriter) FindByGroupID(ctx context.Context, groupID int) ([]*models.Scene, error) {
+	ret := _m.Called(ctx, groupID)
 
 	var r0 []*models.Scene
 	if rf, ok := ret.Get(0).(func(context.Context, int) []*models.Scene); ok {
-		r0 = rf(ctx, movieID)
+		r0 = rf(ctx, groupID)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*models.Scene)
@@ -604,7 +541,7 @@ func (_m *SceneReaderWriter) FindByMovieID(ctx context.Context, movieID int) ([]
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
-		r1 = rf(ctx, movieID)
+		r1 = rf(ctx, groupID)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -840,6 +777,29 @@ func (_m *SceneReaderWriter) GetGalleryIDs(ctx context.Context, relatedID int) (
 	return r0, r1
 }
 
+// GetGroups provides a mock function with given fields: ctx, id
+func (_m *SceneReaderWriter) GetGroups(ctx context.Context, id int) ([]models.GroupsScenes, error) {
+	ret := _m.Called(ctx, id)
+
+	var r0 []models.GroupsScenes
+	if rf, ok := ret.Get(0).(func(context.Context, int) []models.GroupsScenes); ok {
+		r0 = rf(ctx, id)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]models.GroupsScenes)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, id)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetManyFileIDs provides a mock function with given fields: ctx, ids
 func (_m *SceneReaderWriter) GetManyFileIDs(ctx context.Context, ids []int) ([][]models.FileID, error) {
 	ret := _m.Called(ctx, ids)
@@ -971,29 +931,6 @@ func (_m *SceneReaderWriter) GetManyViewDates(ctx context.Context, ids []int) ([
 	var r1 error
 	if rf, ok := ret.Get(1).(func(context.Context, []int) error); ok {
 		r1 = rf(ctx, ids)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// GetMovies provides a mock function with given fields: ctx, id
-func (_m *SceneReaderWriter) GetMovies(ctx context.Context, id int) ([]models.MoviesScenes, error) {
-	ret := _m.Called(ctx, id)
-
-	var r0 []models.MoviesScenes
-	if rf, ok := ret.Get(0).(func(context.Context, int) []models.MoviesScenes); ok {
-		r0 = rf(ctx, id)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]models.MoviesScenes)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
-		r1 = rf(ctx, id)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1260,6 +1197,27 @@ func (_m *SceneReaderWriter) QueryCount(ctx context.Context, sceneFilter *models
 	var r1 error
 	if rf, ok := ret.Get(1).(func(context.Context, *models.SceneFilterType, *models.FindFilterType) error); ok {
 		r1 = rf(ctx, sceneFilter, findFilter)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// ResetActivity provides a mock function with given fields: ctx, sceneID, resetResume, resetDuration
+func (_m *SceneReaderWriter) ResetActivity(ctx context.Context, sceneID int, resetResume bool, resetDuration bool) (bool, error) {
+	ret := _m.Called(ctx, sceneID, resetResume, resetDuration)
+
+	var r0 bool
+	if rf, ok := ret.Get(0).(func(context.Context, int, bool, bool) bool); ok {
+		r0 = rf(ctx, sceneID, resetResume, resetDuration)
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, int, bool, bool) error); ok {
+		r1 = rf(ctx, sceneID, resetResume, resetDuration)
 	} else {
 		r1 = ret.Error(1)
 	}

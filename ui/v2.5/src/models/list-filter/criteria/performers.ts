@@ -33,6 +33,14 @@ export class PerformersCriterion extends Criterion<ILabeledValueListValue> {
     super(PerformersCriterionOption, { items: [], excluded: [] });
   }
 
+  public cloneValues() {
+    this.value = {
+      ...this.value,
+      items: this.value.items.map((v) => ({ ...v })),
+      excluded: this.value.excluded.map((v) => ({ ...v })),
+    };
+  }
+
   override get modifier(): CriterionModifier {
     return this._modifier;
   }

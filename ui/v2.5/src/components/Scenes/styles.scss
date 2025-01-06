@@ -24,7 +24,7 @@
 }
 
 .performer-tag-container,
-.movie-tag-container {
+.group-tag-container {
   display: inline-block;
   margin: 5px;
 }
@@ -34,7 +34,7 @@
 }
 
 .performer-tag.image,
-.movie-tag.image {
+.group-tag.image {
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
@@ -63,9 +63,67 @@
   max-width: 100%;
 }
 
+@include media-breakpoint-only(lg) {
+  .scene-header-container {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+
+    .scene-header {
+      flex: 0 0 75%;
+      order: 1;
+    }
+
+    .scene-studio-image {
+      flex: 0 0 25%;
+      order: 2;
+    }
+  }
+}
+
 .scene-header {
   flex-basis: auto;
+  font-size: 1.5rem;
   margin-top: 30px;
+
+  @include media-breakpoint-down(xl) {
+    font-size: 1.75rem;
+  }
+}
+
+.scene-subheader {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.5rem;
+
+  .date {
+    color: $text-muted;
+  }
+
+  .resolution {
+    font-weight: bold;
+  }
+}
+
+.scene-toolbar {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.25rem;
+  margin-top: 0.5rem;
+  padding-bottom: 0.25rem;
+  width: 100%;
+
+  .scene-toolbar-group {
+    align-items: center;
+    column-gap: 0.25rem;
+    display: flex;
+    width: 100%;
+
+    &:last-child {
+      justify-content: flex-end;
+    }
+  }
 }
 
 #scene-details-container {
@@ -150,9 +208,14 @@ textarea.scene-description {
   &-preview {
     aspect-ratio: 16/9;
   }
+
+  .scene-group-scene-number {
+    text-align: center;
+  }
 }
 
 .scene-card,
+.scene-marker-card,
 .gallery-card {
   .scene-specs-overlay {
     transition: opacity 0.5s;
@@ -210,7 +273,8 @@ textarea.scene-description {
   }
 }
 
-.scene-card.card {
+.scene-card.card,
+.scene-marker-card.card {
   overflow: hidden;
   padding: 0;
 
@@ -230,19 +294,19 @@ textarea.scene-description {
   max-width: 100%;
 }
 
-.movie-image {
+.group-image {
   max-width: 100%;
 }
 
-.movie-table {
+.group-table {
   width: 100%;
 
-  .movie-row {
+  .group-row {
     align-items: center;
     margin-bottom: 0.25rem;
   }
 
-  .movie-scene-number-header {
+  .group-scene-number-header {
     color: $text-muted;
     font-size: 0.8em;
     padding-bottom: 0;
@@ -250,7 +314,7 @@ textarea.scene-description {
   }
 }
 
-.movie-table.no-movies .movie-table-header {
+.group-table.no-groups .group-table-header {
   display: none;
 }
 
@@ -277,6 +341,10 @@ input[type="range"].filter-slider {
   margin: 0;
   padding-left: 0;
   padding-right: 0;
+}
+
+.filter-slider-value {
+  cursor: pointer;
 }
 
 @mixin contrast-slider() {
@@ -782,5 +850,54 @@ input[type="range"].blue-slider {
       display: flex;
       justify-content: space-between;
     }
+  }
+}
+
+.scene-select-option {
+  .scene-select-row {
+    align-items: center;
+    display: flex;
+    width: 100%;
+
+    .scene-select-image {
+      background-color: $body-bg;
+      margin-right: 0.4em;
+      max-height: 50px;
+      max-width: 89px;
+      object-fit: contain;
+      object-position: center;
+    }
+
+    .scene-select-details {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      max-height: 4.1rem;
+      overflow: hidden;
+
+      .scene-select-title {
+        flex-shrink: 0;
+        white-space: pre-wrap;
+        word-break: break-all;
+      }
+
+      .scene-select-date,
+      .scene-select-studio,
+      .scene-select-code {
+        color: $text-muted;
+        flex-shrink: 0;
+        font-size: 0.9rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+    }
+  }
+
+  .scene-select-alias {
+    font-size: 0.8rem;
+    font-weight: bold;
+    width: 100%;
+    word-break: break-all;
   }
 }

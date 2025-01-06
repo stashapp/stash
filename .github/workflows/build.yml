@@ -12,7 +12,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  COMPILER_IMAGE: stashapp/compiler:8
+  COMPILER_IMAGE: stashapp/compiler:10
 
 jobs:
   build:
@@ -22,6 +22,11 @@ jobs:
 
     - name: Checkout
       run: git fetch --prune --unshallow --tags
+
+    - name: Setup Go
+      uses: actions/setup-go@v5
+      with:
+        go-version-file: 'go.mod'
 
     - name: Pull compiler image
       run: docker pull $COMPILER_IMAGE
@@ -92,20 +97,23 @@ jobs:
         docker exec -t build /bin/bash -c "make build-cc-linux-arm32v6"
         docker exec -t build /bin/bash -c "make build-cc-freebsd"
 
+    - name: Zip UI
+      run: docker exec -t build /bin/bash -c "make zip-ui"
+
     - name: Cleanup build container
       run: docker rm -f -v build
 
     - name: Generate checksums
       run: |
         git describe --tags --exclude latest_develop | tee CHECKSUMS_SHA1
-        sha1sum dist/Stash.app.zip dist/stash-* | sed 's/dist\///g' | tee -a CHECKSUMS_SHA1
+        sha1sum dist/Stash.app.zip dist/stash-* dist/stash-ui.zip | sed 's/dist\///g' | tee -a CHECKSUMS_SHA1
         echo "STASH_VERSION=$(git describe --tags --exclude latest_develop)" >> $GITHUB_ENV
         echo "RELEASE_DATE=$(date +'%Y-%m-%d %H:%M:%S %Z')" >> $GITHUB_ENV
 
     - name: Upload Windows binary
       # only upload binaries for pull requests
       if: ${{ github.event_name == 'pull_request' && github.base_ref != 'refs/heads/develop' && github.base_ref != 'refs/heads/master'}}
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: stash-win.exe
         path: dist/stash-win.exe
@@ -113,7 +121,7 @@ jobs:
     - name: Upload macOS binary
       # only upload binaries for pull requests
       if: ${{ github.event_name == 'pull_request' && github.base_ref != 'refs/heads/develop' && github.base_ref != 'refs/heads/master'}}
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: stash-macos
         path: dist/stash-macos
@@ -121,10 +129,18 @@ jobs:
     - name: Upload Linux binary
       # only upload binaries for pull requests
       if: ${{ github.event_name == 'pull_request' && github.base_ref != 'refs/heads/develop' && github.base_ref != 'refs/heads/master'}}
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: stash-linux
         path: dist/stash-linux
+
+    - name: Upload UI
+      # only upload for pull requests
+      if: ${{ github.event_name == 'pull_request' && github.base_ref != 'refs/heads/develop' && github.base_ref != 'refs/heads/master'}}
+      uses: actions/upload-artifact@v4
+      with:
+        name: stash-ui.zip
+        path: dist/stash-ui.zip
 
     - name: Update latest_develop tag
       if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' }}
@@ -147,6 +163,7 @@ jobs:
           dist/stash-linux-arm32v7
           dist/stash-linux-arm32v6
           dist/stash-freebsd
+          dist/stash-ui.zip
           CHECKSUMS_SHA1
 
     - name: Master release
@@ -166,6 +183,7 @@ jobs:
           dist/stash-linux-arm32v7
           dist/stash-linux-arm32v6
           dist/stash-freebsd
+          dist/stash-ui.zip
           CHECKSUMS_SHA1
         gzip: false
 

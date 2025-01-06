@@ -7,13 +7,26 @@
     padding-right: 15px;
     transition: none;
 
+    &.page-count {
+      padding-right: 5px;
+    }
+
+    &.page-count-dropdown {
+      padding-left: 5px;
+    }
+
     &:first-child {
       border-left: none;
+      border-right: none;
     }
 
     &:last-child {
       border-right: none;
     }
+  }
+
+  .page-count-container .btn {
+    border-radius: 0;
   }
 }
 
@@ -73,6 +86,8 @@ input[type="range"].zoom-slider {
   .set-as-default-button {
     float: right;
     margin-right: 0.5rem;
+    padding: 0.25rem 0.5rem;
+    width: auto;
   }
 
   .LoadingIndicator {
@@ -139,6 +154,7 @@ input[type="range"].zoom-slider {
   }
 
   .modal-body {
+    max-height: min(550px, calc(100vh - 12rem));
     padding-left: 0;
     padding-right: 0;
   }
@@ -151,8 +167,6 @@ input[type="range"].zoom-slider {
   .criterion-list {
     flex-direction: column;
     flex-wrap: nowrap;
-    max-height: 550px;
-    overflow-y: auto;
 
     .pinned-criterion-divider {
       padding-bottom: 2.5rem;
@@ -288,6 +302,15 @@ input[type="range"].zoom-slider {
   // to prevent unnecessary vertical scrollbar
   padding-bottom: 0.15rem;
   padding-inline-start: 0;
+
+  .modifier-object {
+    font-style: italic;
+
+    .selected-object-label,
+    .unselected-object-label {
+      opacity: 0.6;
+    }
+  }
 
   .unselected-object {
     opacity: 0.8;
@@ -429,13 +452,42 @@ input[type="range"].zoom-slider {
     }
   }
 
+  .newline-list {
+    list-style: none;
+    margin: 0;
+    padding: 4px 2px;
+
+    li {
+      display: inline;
+      white-space: pre-wrap;
+    }
+
+    li::after {
+      content: "\A";
+    }
+
+    li:last-child::after {
+      content: "";
+    }
+  }
+
+  .newline-list.overflowable,
   .comma-list.overflowable {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  .comma-list.overflowable {
     width: 190px;
   }
 
+  .newline-list.overflowable {
+    -webkit-line-clamp: 1;
+    width: 700px;
+  }
+
+  .newline-list.overflowable:hover,
   .comma-list.overflowable:hover {
     background: #28343c;
     border: 1px solid #414c53;
@@ -444,7 +496,6 @@ input[type="range"].zoom-slider {
     height: auto;
     margin-left: -0.4rem;
     margin-top: -0.9rem;
-    max-width: 40rem;
     overflow: hidden;
     padding: 0.1rem 0.5rem;
     position: absolute;
@@ -454,6 +505,11 @@ input[type="range"].zoom-slider {
     z-index: 100;
   }
 
+  .comma-list.overflowable:hover {
+    max-width: 40rem;
+  }
+
+  .newline-list.overflowable li .ellips-data:hover,
   .comma-list.overflowable li .ellips-data:hover {
     max-width: fit-content;
   }
@@ -522,4 +578,12 @@ input[type="range"].zoom-slider {
   &:first-child {
     border-left: none;
   }
+}
+
+.filtered-list-toolbar {
+  justify-content: center;
+}
+
+.search-term-input {
+  margin-right: 0.5rem;
 }

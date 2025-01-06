@@ -1,5 +1,5 @@
 import React from "react";
-import { useIntl } from "react-intl";
+import { IntlShape, useIntl } from "react-intl";
 
 import * as GQL from "src/core/generated-graphql";
 import { Button, ButtonGroup } from "react-bootstrap";
@@ -10,13 +10,14 @@ import {
 } from "../Galleries/GallerySelect";
 
 interface IMultiSetProps {
-  type: "performers" | "studios" | "tags" | "movies" | "galleries";
+  type: "performers" | "studios" | "tags" | "groups" | "galleries";
   existingIds?: string[];
   ids?: string[];
   mode: GQL.BulkUpdateIdMode;
   disabled?: boolean;
   onUpdate: (ids: string[]) => void;
   onSetMode: (mode: GQL.BulkUpdateIdMode) => void;
+  menuPortalTarget?: HTMLElement | null;
 }
 
 const Select: React.FC<IMultiSetProps> = (props) => {
@@ -36,6 +37,7 @@ const Select: React.FC<IMultiSetProps> = (props) => {
         ids={props.ids ?? []}
         // exclude file-based galleries when setting galleries
         extraCriteria={excludeFileBasedGalleries}
+        menuPortalTarget={props.menuPortalTarget}
       />
     );
   }
@@ -48,74 +50,101 @@ const Select: React.FC<IMultiSetProps> = (props) => {
       isClearable={false}
       onSelect={onUpdate}
       ids={props.ids ?? []}
+      menuPortalTarget={props.menuPortalTarget}
     />
   );
 };
 
-export const MultiSet: React.FC<IMultiSetProps> = (props) => {
-  const intl = useIntl();
-  const modes = [
-    GQL.BulkUpdateIdMode.Set,
-    GQL.BulkUpdateIdMode.Add,
-    GQL.BulkUpdateIdMode.Remove,
-  ];
-
-  function getModeText(mode: GQL.BulkUpdateIdMode) {
-    switch (mode) {
-      case GQL.BulkUpdateIdMode.Set:
-        return intl.formatMessage({
-          id: "actions.overwrite",
-          defaultMessage: "Overwrite",
-        });
-      case GQL.BulkUpdateIdMode.Add:
-        return intl.formatMessage({ id: "actions.add", defaultMessage: "Add" });
-      case GQL.BulkUpdateIdMode.Remove:
-        return intl.formatMessage({
-          id: "actions.remove",
-          defaultMessage: "Remove",
-        });
-    }
+function getModeText(intl: IntlShape, mode: GQL.BulkUpdateIdMode) {
+  switch (mode) {
+    case GQL.BulkUpdateIdMode.Set:
+      return intl.formatMessage({
+        id: "actions.overwrite",
+        defaultMessage: "Overwrite",
+      });
+    case GQL.BulkUpdateIdMode.Add:
+      return intl.formatMessage({ id: "actions.add", defaultMessage: "Add" });
+    case GQL.BulkUpdateIdMode.Remove:
+      return intl.formatMessage({
+        id: "actions.remove",
+        defaultMessage: "Remove",
+      });
   }
+}
 
-  function onSetMode(mode: GQL.BulkUpdateIdMode) {
-    if (mode === props.mode) {
+export const MultiSetModeButton: React.FC<{
+  mode: GQL.BulkUpdateIdMode;
+  active: boolean;
+  onClick: () => void;
+  disabled?: boolean;
+}> = ({ mode, active, onClick, disabled }) => {
+  const intl = useIntl();
+
+  return (
+    <Button
+      key={mode}
+      variant="primary"
+      active={active}
+      size="sm"
+      onClick={onClick}
+      disabled={disabled}
+    >
+      {getModeText(intl, mode)}
+    </Button>
+  );
+};
+
+const modes = [
+  GQL.BulkUpdateIdMode.Set,
+  GQL.BulkUpdateIdMode.Add,
+  GQL.BulkUpdateIdMode.Remove,
+];
+
+export const MultiSetModeButtons: React.FC<{
+  mode: GQL.BulkUpdateIdMode;
+  onSetMode: (mode: GQL.BulkUpdateIdMode) => void;
+  disabled?: boolean;
+}> = ({ mode, onSetMode, disabled }) => {
+  return (
+    <ButtonGroup className="button-group-above">
+      {modes.map((m) => (
+        <MultiSetModeButton
+          key={m}
+          mode={m}
+          active={mode === m}
+          onClick={() => onSetMode(m)}
+          disabled={disabled}
+        />
+      ))}
+    </ButtonGroup>
+  );
+};
+
+export const MultiSet: React.FC<IMultiSetProps> = (props) => {
+  const { mode, onUpdate, existingIds } = props;
+
+  function onSetMode(m: GQL.BulkUpdateIdMode) {
+    if (m === mode) {
       return;
     }
 
     // if going to Set, set the existing ids
-    if (mode === GQL.BulkUpdateIdMode.Set && props.existingIds) {
-      props.onUpdate(props.existingIds);
+    if (m === GQL.BulkUpdateIdMode.Set && existingIds) {
+      onUpdate(existingIds);
       // if going from Set, wipe the ids
     } else if (
-      mode !== GQL.BulkUpdateIdMode.Set &&
-      props.mode === GQL.BulkUpdateIdMode.Set
+      m !== GQL.BulkUpdateIdMode.Set &&
+      mode === GQL.BulkUpdateIdMode.Set
     ) {
-      props.onUpdate([]);
+      onUpdate([]);
     }
 
-    props.onSetMode(mode);
-  }
-
-  function renderModeButton(mode: GQL.BulkUpdateIdMode) {
-    return (
-      <Button
-        key={mode}
-        variant="primary"
-        active={props.mode === mode}
-        size="sm"
-        onClick={() => onSetMode(mode)}
-        disabled={props.disabled}
-      >
-        {getModeText(mode)}
-      </Button>
-    );
+    props.onSetMode(m);
   }
 
   return (
     <div className="multi-set">
-      <ButtonGroup className="button-group-above">
-        {modes.map((m) => renderModeButton(m))}
-      </ButtonGroup>
+      <MultiSetModeButtons mode={mode} onSetMode={onSetMode} />
       <Select {...props} />
     </div>
   );

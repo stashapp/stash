@@ -12,22 +12,19 @@
 
   .scene-card-preview {
     border-radius: 3px;
+    color: $text-color;
+    height: 100px;
     margin-bottom: 0;
-    max-height: 100px;
     overflow: hidden;
-    width: 150px;
-
-    &-video {
-      background-color: #495b68;
-    }
+    width: auto;
   }
 
   .sprite-button {
-    bottom: 5px;
     filter: drop-shadow(1px 1px 1px #222);
     padding: 0;
     position: absolute;
     right: 5px;
+    top: 5px;
   }
 
   .sub-content {
@@ -47,6 +44,7 @@
   .scene-details {
     display: flex;
     flex-direction: column;
+    overflow-wrap: anywhere;
     width: 100%;
   }
 
@@ -163,6 +161,12 @@
     .fa-icon {
       width: 12px;
     }
+  }
+
+  &-value ul {
+    font-size: 0.8em;
+    list-style-type: none;
+    padding-inline-start: 0;
   }
 }
 
@@ -402,12 +406,14 @@ li.active .optional-field.excluded .scene-link {
 //   margin-left: 1rem;
 // }
 
-.scene-details,
-.original-scene-details {
-  margin-top: 0.5rem;
+.tagger-container {
+  .scene-details,
+  .original-scene-details {
+    margin-top: 0.5rem;
 
-  > .row {
-    width: 100%;
+    > .row {
+      width: 100%;
+    }
   }
 }
 

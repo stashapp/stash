@@ -108,9 +108,7 @@ type CircumcisionCriterionInput struct {
 }
 
 type PerformerFilterType struct {
-	And            *PerformerFilterType  `json:"AND"`
-	Or             *PerformerFilterType  `json:"OR"`
-	Not            *PerformerFilterType  `json:"NOT"`
+	OperatorFilter[PerformerFilterType]
 	Name           *StringCriterionInput `json:"name"`
 	Disambiguation *StringCriterionInput `json:"disambiguation"`
 	Details        *StringCriterionInput `json:"details"`
@@ -160,6 +158,8 @@ type PerformerFilterType struct {
 	ImageCount *IntCriterionInput `json:"image_count"`
 	// Filter by gallery count
 	GalleryCount *IntCriterionInput `json:"gallery_count"`
+	// Filter by play count
+	PlayCount *IntCriterionInput `json:"play_count"`
 	// Filter by O count
 	OCounter *IntCriterionInput `json:"o_counter"`
 	// Filter by StashID
@@ -186,16 +186,28 @@ type PerformerFilterType struct {
 	Birthdate *DateCriterionInput `json:"birth_date"`
 	// Filter by death date
 	DeathDate *DateCriterionInput `json:"death_date"`
+	// Filter by related scenes that meet this criteria
+	ScenesFilter *SceneFilterType `json:"scenes_filter"`
+	// Filter by related images that meet this criteria
+	ImagesFilter *ImageFilterType `json:"images_filter"`
+	// Filter by related galleries that meet this criteria
+	GalleriesFilter *GalleryFilterType `json:"galleries_filter"`
+	// Filter by related tags that meet this criteria
+	TagsFilter *TagFilterType `json:"tags_filter"`
 	// Filter by created at
 	CreatedAt *TimestampCriterionInput `json:"created_at"`
 	// Filter by updated at
 	UpdatedAt *TimestampCriterionInput `json:"updated_at"`
+
+	// Filter by custom fields
+	CustomFields []CustomFieldCriterionInput `json:"custom_fields"`
 }
 
 type PerformerCreateInput struct {
 	Name           string          `json:"name"`
 	Disambiguation *string         `json:"disambiguation"`
-	URL            *string         `json:"url"`
+	URL            *string         `json:"url"` // deprecated
+	Urls           []string        `json:"urls"`
 	Gender         *GenderEnum     `json:"gender"`
 	Birthdate      *string         `json:"birthdate"`
 	Ethnicity      *string         `json:"ethnicity"`
@@ -212,26 +224,29 @@ type PerformerCreateInput struct {
 	Piercings      *string         `json:"piercings"`
 	Aliases        *string         `json:"aliases"`
 	AliasList      []string        `json:"alias_list"`
-	Twitter        *string         `json:"twitter"`
-	Instagram      *string         `json:"instagram"`
+	Twitter        *string         `json:"twitter"`   // deprecated
+	Instagram      *string         `json:"instagram"` // deprecated
 	Favorite       *bool           `json:"favorite"`
 	TagIds         []string        `json:"tag_ids"`
 	// This should be a URL or a base64 encoded data URL
-	Image         *string   `json:"image"`
-	StashIds      []StashID `json:"stash_ids"`
-	Rating100     *int      `json:"rating100"`
-	Details       *string   `json:"details"`
-	DeathDate     *string   `json:"death_date"`
-	HairColor     *string   `json:"hair_color"`
-	Weight        *int      `json:"weight"`
-	IgnoreAutoTag *bool     `json:"ignore_auto_tag"`
+	Image         *string        `json:"image"`
+	StashIds      []StashIDInput `json:"stash_ids"`
+	Rating100     *int           `json:"rating100"`
+	Details       *string        `json:"details"`
+	DeathDate     *string        `json:"death_date"`
+	HairColor     *string        `json:"hair_color"`
+	Weight        *int           `json:"weight"`
+	IgnoreAutoTag *bool          `json:"ignore_auto_tag"`
+
+	CustomFields map[string]interface{} `json:"custom_fields"`
 }
 
 type PerformerUpdateInput struct {
 	ID             string          `json:"id"`
 	Name           *string         `json:"name"`
 	Disambiguation *string         `json:"disambiguation"`
-	URL            *string         `json:"url"`
+	URL            *string         `json:"url"` // deprecated
+	Urls           []string        `json:"urls"`
 	Gender         *GenderEnum     `json:"gender"`
 	Birthdate      *string         `json:"birthdate"`
 	Ethnicity      *string         `json:"ethnicity"`
@@ -248,17 +263,19 @@ type PerformerUpdateInput struct {
 	Piercings      *string         `json:"piercings"`
 	Aliases        *string         `json:"aliases"`
 	AliasList      []string        `json:"alias_list"`
-	Twitter        *string         `json:"twitter"`
-	Instagram      *string         `json:"instagram"`
+	Twitter        *string         `json:"twitter"`   // deprecated
+	Instagram      *string         `json:"instagram"` // deprecated
 	Favorite       *bool           `json:"favorite"`
 	TagIds         []string        `json:"tag_ids"`
 	// This should be a URL or a base64 encoded data URL
-	Image         *string   `json:"image"`
-	StashIds      []StashID `json:"stash_ids"`
-	Rating100     *int      `json:"rating100"`
-	Details       *string   `json:"details"`
-	DeathDate     *string   `json:"death_date"`
-	HairColor     *string   `json:"hair_color"`
-	Weight        *int      `json:"weight"`
-	IgnoreAutoTag *bool     `json:"ignore_auto_tag"`
+	Image         *string        `json:"image"`
+	StashIds      []StashIDInput `json:"stash_ids"`
+	Rating100     *int           `json:"rating100"`
+	Details       *string        `json:"details"`
+	DeathDate     *string        `json:"death_date"`
+	HairColor     *string        `json:"hair_color"`
+	Weight        *int           `json:"weight"`
+	IgnoreAutoTag *bool          `json:"ignore_auto_tag"`
+
+	CustomFields CustomFieldsInput `json:"custom_fields"`
 }

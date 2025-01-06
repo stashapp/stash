@@ -27,6 +27,7 @@ import (
 	"github.com/go-chi/httplog"
 	"github.com/gorilla/websocket"
 	"github.com/vearutop/statigz"
+	"github.com/vektah/gqlparser/v2/ast"
 
 	"github.com/stashapp/stash/internal/api/loaders"
 	"github.com/stashapp/stash/internal/build"
@@ -53,7 +54,30 @@ type Server struct {
 	manager *manager.Manager
 }
 
-// Called at startup
+// TODO - os.DirFS doesn't implement ReadDir, so re-implement it here
+// This can be removed when we upgrade go
+type osFS string
+
+func (dir osFS) ReadDir(name string) ([]os.DirEntry, error) {
+	fullname := string(dir) + "/" + name
+	entries, err := os.ReadDir(fullname)
+	if err != nil {
+		var e *os.PathError
+		if errors.As(err, &e) {
+			// See comment in dirFS.Open.
+			e.Path = name
+		}
+		return nil, err
+	}
+	return entries, nil
+}
+
+func (dir osFS) Open(name string) (fs.File, error) {
+	return os.DirFS(string(dir)).Open(name)
+}
+
+// Initialize creates a new [Server] instance.
+// It assumes that the [manager.Manager] instance has been initialised.
 func Initialize() (*Server, error) {
 	mgr := manager.GetInstance()
 	cfg := mgr.Config
@@ -135,11 +159,13 @@ func Initialize() (*Server, error) {
 	sceneService := mgr.SceneService
 	imageService := mgr.ImageService
 	galleryService := mgr.GalleryService
+	groupService := mgr.GroupService
 	resolver := &Resolver{
 		repository:     repo,
 		sceneService:   sceneService,
 		imageService:   imageService,
 		galleryService: galleryService,
+		groupService:   groupService,
 		hookExecutor:   pluginCache,
 	}
 
@@ -160,7 +186,7 @@ func Initialize() (*Server, error) {
 		MaxUploadSize: cfg.GetMaxUploadSize(),
 	})
 
-	gqlSrv.SetQueryCache(gqlLru.New(1000))
+	gqlSrv.SetQueryCache(gqlLru.New[*ast.QueryDocument](1000))
 	gqlSrv.Use(gqlExtension.Introspection{})
 
 	gqlSrv.SetErrorPresenter(gqlErrorHandler)
@@ -185,9 +211,10 @@ func Initialize() (*Server, error) {
 
 	r.Mount("/performer", server.getPerformerRoutes())
 	r.Mount("/scene", server.getSceneRoutes())
+	r.Mount("/gallery", server.getGalleryRoutes())
 	r.Mount("/image", server.getImageRoutes())
 	r.Mount("/studio", server.getStudioRoutes())
-	r.Mount("/movie", server.getMovieRoutes())
+	r.Mount("/group", server.getGroupRoutes())
 	r.Mount("/tag", server.getTagRoutes())
 	r.Mount("/downloads", server.getDownloadsRoutes())
 	r.Mount("/plugin", server.getPluginRoutes())
@@ -213,25 +240,31 @@ func Initialize() (*Server, error) {
 		r.Mount("/custom", getCustomRoutes(customServedFolders))
 	}
 
-	customUILocation := cfg.GetCustomUILocation()
-	staticUI := statigz.FileServer(ui.UIBox.(fs.ReadDirFS))
+	var uiFS fs.FS
+	var staticUI *statigz.Server
+	customUILocation := cfg.GetUILocation()
+	if customUILocation != "" {
+		logger.Debugf("Serving UI from %s", customUILocation)
+		uiFS = osFS(customUILocation)
+		staticUI = statigz.FileServer(uiFS.(fs.ReadDirFS))
+	} else {
+		logger.Debug("Serving embedded UI")
+		uiFS = ui.UIBox
+		staticUI = statigz.FileServer(ui.UIBox.(fs.ReadDirFS))
+	}
 
 	// Serve the web app
 	r.HandleFunc("/*", func(w http.ResponseWriter, r *http.Request) {
 		ext := path.Ext(r.URL.Path)
 
-		if customUILocation != "" {
-			if r.URL.Path == "index.html" || ext == "" {
-				r.URL.Path = "/"
-			}
-
-			http.FileServer(http.Dir(customUILocation)).ServeHTTP(w, r)
-			return
+		if ext == ".html" || ext == "" {
+			w.Header().Set("Content-Type", "text/html")
+			setPageSecurityHeaders(w, r, pluginCache.ListPlugins())
 		}
 
-		if ext == ".html" || ext == "" {
+		if ext == "" || r.URL.Path == "/" || r.URL.Path == "/index.html" {
 			themeColor := cfg.GetThemeColor()
-			data, err := fs.ReadFile(ui.UIBox, "index.html")
+			data, err := fs.ReadFile(uiFS, "index.html")
 			if err != nil {
 				panic(err)
 			}
@@ -240,9 +273,6 @@ func Initialize() (*Server, error) {
 			prefix := getProxyPrefix(r)
 			indexHtml = strings.ReplaceAll(indexHtml, "%COLOR%", themeColor)
 			indexHtml = strings.Replace(indexHtml, `<base href="/"`, fmt.Sprintf(`<base href="%s/"`, prefix), 1)
-
-			w.Header().Set("Content-Type", "text/html")
-			setPageSecurityHeaders(w, r, pluginCache.ListPlugins())
 
 			utils.ServeStaticContent(w, r, []byte(indexHtml))
 		} else {
@@ -263,6 +293,9 @@ func Initialize() (*Server, error) {
 	return server, nil
 }
 
+// Start starts the server. It listens on the configured address and port.
+// It calls ListenAndServeTLS if TLS is configured, otherwise it calls ListenAndServe.
+// Calls to Start are blocked until the server is shutdown.
 func (s *Server) Start() error {
 	logger.Infof("stash is listening on " + s.Addr)
 	logger.Infof("stash is running at " + s.displayAddress)
@@ -274,6 +307,7 @@ func (s *Server) Start() error {
 	}
 }
 
+// Shutdown gracefully shuts down the server without interrupting any active connections.
 func (s *Server) Shutdown() {
 	err := s.Server.Shutdown(context.TODO())
 	if err != nil {
@@ -301,6 +335,16 @@ func (s *Server) getSceneRoutes() chi.Router {
 	}.Routes()
 }
 
+func (s *Server) getGalleryRoutes() chi.Router {
+	repo := s.manager.Repository
+	return galleryRoutes{
+		routes:        routes{txnManager: repo.TxnManager},
+		imageFinder:   repo.Image,
+		galleryFinder: repo.Gallery,
+		fileGetter:    repo.File,
+	}.Routes()
+}
+
 func (s *Server) getImageRoutes() chi.Router {
 	repo := s.manager.Repository
 	return imageRoutes{
@@ -318,11 +362,11 @@ func (s *Server) getStudioRoutes() chi.Router {
 	}.Routes()
 }
 
-func (s *Server) getMovieRoutes() chi.Router {
+func (s *Server) getGroupRoutes() chi.Router {
 	repo := s.manager.Repository
-	return movieRoutes{
+	return groupRoutes{
 		routes:      routes{txnManager: repo.TxnManager},
-		movieFinder: repo.Movie,
+		groupFinder: repo.Group,
 	}.Routes()
 }
 

@@ -161,7 +161,7 @@ func (m *schema45Migrator) migrateImagesTable(ctx context.Context, options migra
 
 			query += fmt.Sprintf(" LIMIT %d", limit)
 
-			rows, err := m.db.Query(query)
+			rows, err := tx.Query(query)
 			if err != nil {
 				return err
 			}
@@ -191,7 +191,7 @@ func (m *schema45Migrator) migrateImagesTable(ctx context.Context, options migra
 					image := result[i+1].(*[]byte)
 
 					if len(*image) > 0 {
-						if err := m.insertImage(*image, id, options.destTable, col.destCol); err != nil {
+						if err := m.insertImage(tx, *image, id, options.destTable, col.destCol); err != nil {
 							return err
 						}
 					}
@@ -202,7 +202,7 @@ func (m *schema45Migrator) migrateImagesTable(ctx context.Context, options migra
 					"joinTable": options.joinTable,
 					"joinIDCol": options.joinIDCol,
 				})
-				if _, err := m.db.Exec(deleteSQL, id); err != nil {
+				if _, err := tx.Exec(deleteSQL, id); err != nil {
 					return err
 				}
 			}
@@ -224,11 +224,11 @@ func (m *schema45Migrator) migrateImagesTable(ctx context.Context, options migra
 	return nil
 }
 
-func (m *schema45Migrator) insertImage(data []byte, id int, destTable string, destCol string) error {
+func (m *schema45Migrator) insertImage(tx *sqlx.Tx, data []byte, id int, destTable string, destCol string) error {
 	// calculate checksum and insert into blobs table
 	checksum := md5.FromBytes(data)
 
-	if _, err := m.db.Exec("INSERT INTO `blobs` (`checksum`, `blob`) VALUES (?, ?) ON CONFLICT DO NOTHING", checksum, data); err != nil {
+	if _, err := tx.Exec("INSERT INTO `blobs` (`checksum`, `blob`) VALUES (?, ?) ON CONFLICT DO NOTHING", checksum, data); err != nil {
 		return err
 	}
 
@@ -237,7 +237,7 @@ func (m *schema45Migrator) insertImage(data []byte, id int, destTable string, de
 		"destTable": destTable,
 		"destCol":   destCol,
 	})
-	if _, err := m.db.Exec(updateSQL, checksum, id); err != nil {
+	if _, err := tx.Exec(updateSQL, checksum, id); err != nil {
 		return err
 	}
 
@@ -247,7 +247,7 @@ func (m *schema45Migrator) insertImage(data []byte, id int, destTable string, de
 func (m *schema45Migrator) dropTable(ctx context.Context, table string) error {
 	if err := m.withTxn(ctx, func(tx *sqlx.Tx) error {
 		logger.Debugf("Dropping %s", table)
-		_, err := m.db.Exec(fmt.Sprintf("DROP TABLE `%s`", table))
+		_, err := tx.Exec(fmt.Sprintf("DROP TABLE `%s`", table))
 		return err
 	}); err != nil {
 		return err
@@ -273,7 +273,7 @@ func (m *schema45Migrator) migrateConfig(ctx context.Context) error {
 	}
 
 	logger.Infof("Setting blobs storage to %s", defaultStorage.String())
-	c.Set(config.BlobsStorage, defaultStorage)
+	c.SetInterface(config.BlobsStorage, defaultStorage)
 	if err := c.Write(); err != nil {
 		logger.Errorf("Error while writing configuration file: %s", err.Error())
 	}
@@ -282,7 +282,7 @@ func (m *schema45Migrator) migrateConfig(ctx context.Context) error {
 	scanDefaults := c.GetDefaultScanSettings()
 	if scanDefaults != nil {
 		scanDefaults.ScanGenerateCovers = true
-		c.Set(config.DefaultScanSettings, scanDefaults)
+		c.SetInterface(config.DefaultScanSettings, scanDefaults)
 		if err := c.Write(); err != nil {
 			logger.Errorf("Error while writing configuration file: %s", err.Error())
 		}
