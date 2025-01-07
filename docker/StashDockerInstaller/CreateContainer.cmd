@@ -13,7 +13,7 @@
 :: Example skipping docker-compose:
 ::					CreateContainer.cmd ContainerName "stashapp/stash:v0.26.2" 9992 C:\Videos SKIP
 set NewContainerName=%1
-:: Example image arguments:stashapp/stash:latest, stashapp/stash:v0.27.2, stashapp/stash:v0.26.2
+:: Example image arguments:  stashapp/stash:latest, stashapp/stash:v0.27.2, stashapp/stash:v0.26.2
 set Image=%2
 :: Example Port Numbers: 9999, 9990, 9991, 9995, 9998
 set STASH_PORT=%3
@@ -101,7 +101,6 @@ if /I [%STASH_PORT%]==[DLNA] 	(set DLNAFunctionality=yes) & (set STASH_PORT=)
 if /I [%STASH_PORT%]==[SKIP] 	(set SkipDockerCompose=yes) & (set STASH_PORT=)
 if /I [%STASH_PORT%]==[IMAGE]	(set PullDockerStashImage=yes) & (set STASH_PORT=)
 if /I [%STASH_PORT%]==[PULL] 	(set PullDockerStashImage=yes) & (set STASH_PORT=)
-echo SkipDockerCompose = %SkipDockerCompose% ; DLNAFunctionality = %DLNAFunctionality%
 set DockerComposeFile="docker-compose.yml"
 
 if [%NewContainerName%]==[] goto :MissingArgumentNewContainerName
@@ -114,8 +113,9 @@ if [%NewContainerName%]==[] call:ExitWithError 160 "ERROR_BAD_ARGUMENTS"
 if [%Image%]==[] goto :MissingArgumentImage
 goto :HaveVariableImage
 :MissingArgumentImage
-set /p Image="Enter the image name: "
-if [%Image%]==[] call:ExitWithError 160 "ERROR_BAD_ARGUMENTS"
+SET "Image=stashapp/stash:latest"
+set /p Image="Enter image name (or press enter to use default <%Image%>): "
+echo Image name=%Image%
 :HaveVariableImage
 
 :CHECK_STASH_PORT
@@ -126,12 +126,15 @@ goto :HaveVariableSTASH_PORT
 echo Error ******************
 echo Argument #3 requires a numeric value for Stash-Port.  You entered "%STASH_PORT%" instead.  Please enter a numberic value for Stash Port.
 :MissingArgumentSTASH_PORT
-set STASH_PORT=
-set /p STASH_PORT="Enter the Stash port number: "
-if [%STASH_PORT%]==[] call:ExitWithError 160 "ERROR_BAD_ARGUMENTS"
+set STASH_PORT=9999
+set /p STASH_PORT="Enter the Stash port number (or press enter to use default <%STASH_PORT%>): "
 goto :CHECK_STASH_PORT
 :HaveVariableSTASH_PORT
 
+if [%STASH_PORT%]==[9999] (set DLNAFunctionality=yes)
+
+
+echo STASH_PORT = %STASH_PORT%; SkipDockerCompose = %SkipDockerCompose%; DLNAFunctionality = %DLNAFunctionality%
 if exist %NewContainerName%\ (
   echo %NewContainerName% already exists. 
 ) else (
