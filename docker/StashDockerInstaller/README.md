@@ -40,6 +40,7 @@ If any of the above arguments are missing, the script will prompt user for each 
 ### DLNA Functionality
 - The script can create a Stash container with DLNA Functionality. To add DLNA Functionality, append **DLNA** to the command line.
   - Example:`CreateContainer.cmd v272 "stashapp/stash:v0.27.2" 9996 DLNA`
+- If the stash port is set to 9999, DLNA is automatically enabled.
 
 ### Skip docker-compose
 - By default, `docker-compose up -d` is called after the script creates the **docker-compose.yml** file. To skip this call, append SKIP to the command line.
