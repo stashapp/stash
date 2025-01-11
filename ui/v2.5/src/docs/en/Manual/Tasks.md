@@ -16,7 +16,7 @@ The scan task accepts the following options:
 |--------|-------------|
 | Generate scene covers | Generates scene covers for video files. |
 | Generate previews | Generates video previews (mp4) which play when hovering over a scene. |
-| Generate animated image previews | *Accessible in Advanced Mode* - Also generate animated (webp) previews, only required when Scene/Marker Wall Preview Type is set to Animated Image. When browsing they use less CPU than the video previews, but are generated in addition to them and are larger files.|
+| Generate animated image previews* | *Accessible in Advanced Mode* - Also generate animated (webp) previews, only required when Scene/Marker Wall Preview Type is set to Animated Image. When browsing they use less CPU than the video previews, but are generated in addition to them and are larger files.|
 | Generate scrubber sprites | The set of images displayed below the video player for easy navigation. |
 | Generate perceptual hashes | Generates perceptual hashes for scene deduplication and identification. |
 | Generate thumbnails for images | Generates thumbnails for image files. | 
@@ -51,7 +51,7 @@ The generate task accepts the following options:
 | Markers Previews | Generates 20 second video previews (mp4) which begin at the marker timecode. |
 | Marker Animated Image Previews | *Accessible in Advanced Mode* - Also generate animated (webp) previews, only required when Scene/Marker Wall Preview Type is set to Animated Image. When browsing they use less CPU than the video previews, but are generated in addition to them and are larger files. |
 | Marker Screenshots | Generates static JPG images for markers. Only required if Preview Type is set to Static Image. Requires Marker Previews to be enabled. | 
-| Transcodes | MP4 conversions of unsupported video formats. Allows direct streaming instead of live transcoding. |
+| Transcodes | *Accessible in Advanced Mode* - MP4 conversions of unsupported video formats. Allows direct streaming instead of live transcoding. |
 | Perceptual hashes (for deduplication) | Generates perceptual hashes for scene deduplication and identification. |
 | Generate heatmaps and speeds for interactive scenes | Generates heatmaps and speeds for interactive scenes. |
 | Image Clip Previews | Generates a gif/looping video as thumbnail for image clips/gifs. |
