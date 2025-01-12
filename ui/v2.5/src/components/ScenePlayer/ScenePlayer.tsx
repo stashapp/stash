@@ -203,6 +203,7 @@ interface IScenePlayerProps {
   autoplay?: boolean;
   permitLoop?: boolean;
   initialTimestamp: number;
+  initialEndstamp: number;
   sendSetTimestamp: (setTimestamp: (value: number) => void) => void;
   onComplete: () => void;
   onNext: () => void;
@@ -215,6 +216,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   autoplay,
   permitLoop = true,
   initialTimestamp: _initialTimestamp,
+  initialEndstamp,
   sendSetTimestamp,
   onComplete,
   onNext,
@@ -790,6 +792,21 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
     return () => player.off("ended");
   }, [getPlayer, onComplete]);
+
+  // Try to detect that the player has passed the end point of a Marker
+  useEffect(() => {
+    const player = getPlayer();
+    if (!player || !initialEndstamp) return;
+    player.on("timeupdate", function () {
+      if (
+        player.currentTime() >= initialEndstamp &&
+        player.currentTime() <= initialEndstamp + 0.5
+      ) {
+        player.pause();
+        onComplete();
+      }
+    });
+  }, [getPlayer, initialEndstamp, onComplete]);
 
   function onScrubberScroll() {
     if (started.current) {

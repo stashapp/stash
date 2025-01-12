@@ -16,12 +16,14 @@ import { objectTitle } from "src/core/files";
 import { PerformerPopoverButton } from "../Shared/PerformerPopoverButton";
 import { ScenePreview } from "./SceneCard";
 import { TruncatedText } from "../Shared/TruncatedText";
+import { SceneQueue } from "src/models/sceneQueue";
 
 interface ISceneMarkerCardProps {
   marker: GQL.SceneMarkerDataFragment;
   containerWidth?: number;
   previewHeight?: number;
   index?: number;
+  queue?: SceneQueue;
   compact?: boolean;
   selecting?: boolean;
   selected?: boolean | undefined;
@@ -194,10 +196,20 @@ export const SceneMarkerCard = (props: ISceneMarkerCardProps) => {
     setCardWidth(fittedCardWidth);
   }, [props, props.containerWidth, props.zoomIndex]);
 
+  const sceneMarkerLink = props.queue
+    ? props.queue.makeLink(props.marker.scene.id, {
+        sceneIndex: props.index,
+        continue: undefined,
+        start: props.marker.seconds,
+        end: props.marker.end_seconds,
+        mode: "scene_marker",
+      })
+    : NavUtils.makeSceneMarkerUrl(props.marker);
+
   return (
     <GridCard
       className={`scene-marker-card ${zoomIndex()}`}
-      url={NavUtils.makeSceneMarkerUrl(props.marker)}
+      url={sceneMarkerLink}
       title={markerTitle(props.marker)}
       width={cardWidth}
       linkClassName="scene-marker-card-link"

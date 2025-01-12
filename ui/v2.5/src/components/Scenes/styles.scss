@@ -601,14 +601,20 @@ input[type="range"].blue-slider {
 
 @media (min-width: 1200px) {
   #queue-viewer {
-    .queue-scene-details {
+    .queue-scene-details,
+    .queue-marker-details {
       width: 245px;
     }
 
     .queue-scene-title,
     .queue-scene-studio,
     .queue-scene-performers,
-    .queue-scene-date {
+    .queue-scene-date,
+    .queue-scene-date,
+    .queue-marker-title,
+    .queue-marker-scene,
+    .queue-marker-performers,
+    .queue-marker-tags {
       margin-right: auto;
       min-width: 245px;
       overflow: hidden;
@@ -621,7 +627,11 @@ input[type="range"].blue-slider {
     .queue-scene-title:hover,
     .queue-scene-studio:hover,
     .queue-scene-performers:hover,
-    .queue-scene-date:hover {
+    .queue-scene-date:hover,
+    .queue-marker-title:hover,
+    .queue-marker-scene:hover,
+    .queue-marker-performers:hover,
+    .queue-marker-tags:hover {
       transform: translateX(calc(245px - 100%));
     }
   }
@@ -640,13 +650,15 @@ input[type="range"].blue-slider {
     z-index: 100;
   }
 
-  .queue-scene-details {
+  .queue-scene-details,
+  .queue-marker-details {
     display: grid;
     overflow: hidden;
     position: relative;
   }
 
-  .queue-scene-title {
+  .queue-scene-title,
+  .queue-marker-title {
     font-size: 1.2rem;
 
     @media (max-width: 576px) {
@@ -654,13 +666,16 @@ input[type="range"].blue-slider {
     }
   }
 
-  .queue-scene-studio {
+  .queue-scene-studio,
+  .queue-marker-scene {
     color: #d3d0d0;
     font-weight: 600;
   }
 
   .queue-scene-performers,
-  .queue-scene-date {
+  .queue-scene-date,
+  .queue-marker-performers,
+  .queue-marker-tags {
     color: #d3d0d0;
     font-size: 0.9rem;
     font-weight: 400;
