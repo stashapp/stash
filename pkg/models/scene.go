@@ -71,6 +71,8 @@ type SceneFilterType struct {
 	PerformerFavorite *bool `json:"performer_favorite"`
 	// Filter scenes by performer age at time of scene
 	PerformerAge *IntCriterionInput `json:"performer_age"`
+	// Filter by performer gender
+	PerformerGender *GenderCriterionInput `json:"performer_gender"`
 	// Filter to only include scenes with these performers
 	Performers *MultiCriterionInput `json:"performers"`
 	// Filter by performer count

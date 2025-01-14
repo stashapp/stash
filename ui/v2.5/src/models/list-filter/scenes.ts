@@ -35,6 +35,7 @@ import { StashIDCriterionOption } from "./criteria/stash-ids";
 import { RatingCriterionOption } from "./criteria/rating";
 import { PathCriterionOption } from "./criteria/path";
 import { OrientationCriterionOption } from "./criteria/orientation";
+import { GenderCriterionOption } from "./criteria/gender";
 
 const defaultSortBy = "date";
 const sortByOptions = [
@@ -74,6 +75,7 @@ const displayModeOptions = [
 ];
 
 const criterionOptions = [
+  GenderCriterionOption,
   createStringCriterionOption("title"),
   createStringCriterionOption("code", "scene_code"),
   PathCriterionOption,

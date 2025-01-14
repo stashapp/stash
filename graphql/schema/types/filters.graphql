@@ -288,6 +288,8 @@ input SceneFilterType {
   performers: MultiCriterionInput
   "Filter by performer count"
   performer_count: IntCriterionInput
+  "Filter by performer gender"
+  performer_gender: GenderCriterionInput
   "Filter by StashID"
   stash_id_endpoint: StashIDCriterionInput
   "Filter by url"
