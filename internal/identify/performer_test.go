@@ -24,8 +24,8 @@ func Test_getPerformerID(t *testing.T) {
 
 	db := mocks.NewDatabase()
 
-	db.Performer.On("Create", testCtx, mock.Anything).Run(func(args mock.Arguments) {
-		p := args.Get(1).(*models.Performer)
+	db.Performer.On("Create", testCtx, mock.AnythingOfType("*models.CreatePerformerInput")).Run(func(args mock.Arguments) {
+		p := args.Get(1).(*models.CreatePerformerInput)
 		p.ID = validStoredID
 	}).Return(nil)
 
@@ -154,14 +154,14 @@ func Test_createMissingPerformer(t *testing.T) {
 
 	db := mocks.NewDatabase()
 
-	db.Performer.On("Create", testCtx, mock.MatchedBy(func(p *models.Performer) bool {
+	db.Performer.On("Create", testCtx, mock.MatchedBy(func(p *models.CreatePerformerInput) bool {
 		return p.Name == validName
 	})).Run(func(args mock.Arguments) {
-		p := args.Get(1).(*models.Performer)
+		p := args.Get(1).(*models.CreatePerformerInput)
 		p.ID = performerID
 	}).Return(nil)
 
-	db.Performer.On("Create", testCtx, mock.MatchedBy(func(p *models.Performer) bool {
+	db.Performer.On("Create", testCtx, mock.MatchedBy(func(p *models.CreatePerformerInput) bool {
 		return p.Name == invalidName
 	})).Return(errors.New("error creating performer"))
 

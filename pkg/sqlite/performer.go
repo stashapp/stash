@@ -226,6 +226,7 @@ var (
 
 type PerformerStore struct {
 	blobJoinQueryBuilder
+	customFieldsStore
 
 	tableMgr *table
 }
@@ -235,6 +236,10 @@ func NewPerformerStore(blobStore *BlobStore) *PerformerStore {
 		blobJoinQueryBuilder: blobJoinQueryBuilder{
 			blobStore: blobStore,
 			joinTable: performerTable,
+		},
+		customFieldsStore: customFieldsStore{
+			table: performersCustomFieldsTable,
+			fk:    performersCustomFieldsTable.Col(performerIDColumn),
 		},
 		tableMgr: performerTableMgr,
 	}
@@ -248,9 +253,9 @@ func (qb *PerformerStore) selectDataset() *goqu.SelectDataset {
 	return dialect.From(qb.table()).Select(qb.table().All())
 }
 
-func (qb *PerformerStore) Create(ctx context.Context, newObject *models.Performer) error {
+func (qb *PerformerStore) Create(ctx context.Context, newObject *models.CreatePerformerInput) error {
 	var r performerRow
-	r.fromPerformer(*newObject)
+	r.fromPerformer(*newObject.Performer)
 
 	id, err := qb.tableMgr.insertID(ctx, r)
 	if err != nil {
@@ -282,12 +287,17 @@ func (qb *PerformerStore) Create(ctx context.Context, newObject *models.Performe
 		}
 	}
 
+	const partial = false
+	if err := qb.setCustomFields(ctx, id, newObject.CustomFields, partial); err != nil {
+		return err
+	}
+
 	updated, err := qb.find(ctx, id)
 	if err != nil {
 		return fmt.Errorf("finding after create: %w", err)
 	}
 
-	*newObject = *updated
+	*newObject.Performer = *updated
 
 	return nil
 }
@@ -330,12 +340,16 @@ func (qb *PerformerStore) UpdatePartial(ctx context.Context, id int, partial mod
 		}
 	}
 
+	if err := qb.SetCustomFields(ctx, id, partial.CustomFields); err != nil {
+		return nil, err
+	}
+
 	return qb.find(ctx, id)
 }
 
-func (qb *PerformerStore) Update(ctx context.Context, updatedObject *models.Performer) error {
+func (qb *PerformerStore) Update(ctx context.Context, updatedObject *models.UpdatePerformerInput) error {
 	var r performerRow
-	r.fromPerformer(*updatedObject)
+	r.fromPerformer(*updatedObject.Performer)
 
 	if err := qb.tableMgr.updateByID(ctx, updatedObject.ID, r); err != nil {
 		return err
@@ -363,6 +377,10 @@ func (qb *PerformerStore) Update(ctx context.Context, updatedObject *models.Perf
 		if err := performersStashIDsTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.StashIDs.List()); err != nil {
 			return err
 		}
+	}
+
+	if err := qb.SetCustomFields(ctx, updatedObject.ID, updatedObject.CustomFields); err != nil {
+		return err
 	}
 
 	return nil

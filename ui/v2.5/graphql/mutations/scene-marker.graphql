@@ -47,3 +47,7 @@ mutation SceneMarkerUpdate(
 mutation SceneMarkerDestroy($id: ID!) {
   sceneMarkerDestroy(id: $id)
 }
+
+mutation SceneMarkersDestroy($ids: [ID!]!) {
+  sceneMarkersDestroy(ids: $ids)
+}

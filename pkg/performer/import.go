@@ -25,13 +25,15 @@ type Importer struct {
 	Input               jsonschema.Performer
 	MissingRefBehaviour models.ImportMissingRefEnum
 
-	ID        int
-	performer models.Performer
-	imageData []byte
+	ID           int
+	performer    models.Performer
+	customFields models.CustomFieldMap
+	imageData    []byte
 }
 
 func (i *Importer) PreImport(ctx context.Context) error {
 	i.performer = performerJSONToPerformer(i.Input)
+	i.customFields = i.Input.CustomFields
 
 	if err := i.populateTags(ctx); err != nil {
 		return err
@@ -165,7 +167,10 @@ func (i *Importer) FindExistingID(ctx context.Context) (*int, error) {
 }
 
 func (i *Importer) Create(ctx context.Context) (*int, error) {
-	err := i.ReaderWriter.Create(ctx, &i.performer)
+	err := i.ReaderWriter.Create(ctx, &models.CreatePerformerInput{
+		Performer:    &i.performer,
+		CustomFields: i.customFields,
+	})
 	if err != nil {
 		return nil, fmt.Errorf("error creating performer: %v", err)
 	}
@@ -175,9 +180,13 @@ func (i *Importer) Create(ctx context.Context) (*int, error) {
 }
 
 func (i *Importer) Update(ctx context.Context, id int) error {
-	performer := i.performer
-	performer.ID = id
-	err := i.ReaderWriter.Update(ctx, &performer)
+	i.performer.ID = id
+	err := i.ReaderWriter.Update(ctx, &models.UpdatePerformerInput{
+		Performer: &i.performer,
+		CustomFields: models.CustomFieldsInput{
+			Full: i.customFields,
+		},
+	})
 	if err != nil {
 		return fmt.Errorf("error updating existing performer: %v", err)
 	}

@@ -367,6 +367,7 @@ var sceneMarkerSortOptions = sortOptions{
 	"scenes_updated_at",
 	"seconds",
 	"updated_at",
+	"duration",
 }
 
 func (qb *SceneMarkerStore) setSceneMarkerSort(query *queryBuilder, findFilter *models.FindFilterType) error {
@@ -389,6 +390,11 @@ func (qb *SceneMarkerStore) setSceneMarkerSort(query *queryBuilder, findFilter *
 		query.join(tagTable, "", "scene_markers.primary_tag_id = tags.id")
 		query.sortAndPagination += " ORDER BY COALESCE(NULLIF(scene_markers.title,''), tags.name) COLLATE NATURAL_CI " + direction
 		query.addGroupBy("scene_markers.title", "tags.name")
+	case "duration":
+		sort = "(scene_markers.end_seconds - scene_markers.seconds)"
+		add, _ := getSort(sort, direction, sceneMarkerTable)
+		query.sortAndPagination += add
+		query.addGroupBy("scene_markers.end_seconds", "scene_markers.seconds")
 	default:
 		add, agg := getSort(sort, direction, sceneMarkerTable)
 		query.sortAndPagination += add

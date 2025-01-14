@@ -41,7 +41,7 @@ func createMissingPerformer(ctx context.Context, endpoint string, w PerformerCre
 		return nil, err
 	}
 
-	err = w.Create(ctx, newPerformer)
+	err = w.Create(ctx, &models.CreatePerformerInput{Performer: newPerformer})
 	if err != nil {
 		return nil, fmt.Errorf("error creating performer: %w", err)
 	}

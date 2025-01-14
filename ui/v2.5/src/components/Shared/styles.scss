@@ -197,6 +197,15 @@ button.collapse-button.btn-primary:not(:disabled):not(.disabled):active {
   border: none;
   box-shadow: none;
   color: #f5f8fa;
+  text-align: left;
+}
+
+button.collapse-button {
+  .fa-icon {
+    margin-left: 0;
+  }
+
+  padding-left: 0;
 }
 
 .hover-popover-content {
@@ -676,5 +685,46 @@ button.btn.favorite-button {
       border-bottom-right-radius: 0.25rem;
       border-top-right-radius: 0.25rem;
     }
+  }
+}
+
+.custom-fields .detail-item .detail-item-title {
+  max-width: 130px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.custom-fields-input > .collapse-button {
+  font-weight: 700;
+}
+
+.custom-fields-row {
+  align-items: center;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 0.875rem;
+
+  .form-label {
+    margin-bottom: 0;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+
+  // labels with titles are styled with help cursor and dotted underline elsewhere
+  div.custom-fields-field label.form-label {
+    cursor: inherit;
+    text-decoration: inherit;
+  }
+
+  .form-control,
+  .btn {
+    font-size: 0.875rem;
+  }
+
+  &.custom-fields-new > div:not(:last-child) {
+    padding-right: 0;
   }
 }

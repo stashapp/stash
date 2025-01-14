@@ -38,7 +38,7 @@ const CommonLinkComponent: React.FC<ICommonLinkProps> = ({
 
 interface IPerformerLinkProps {
   performer: INamedObject & { disambiguation?: string | null };
-  linkType?: "scene" | "gallery" | "image";
+  linkType?: "scene" | "gallery" | "image" | "scene_marker";
   className?: string;
 }
 
@@ -55,6 +55,8 @@ export const PerformerLink: React.FC<IPerformerLinkProps> = ({
         return NavUtils.makePerformerGalleriesUrl(performer);
       case "image":
         return NavUtils.makePerformerImagesUrl(performer);
+      case "scene_marker":
+        return NavUtils.makePerformerSceneMarkersUrl(performer);
       case "scene":
       default:
         return NavUtils.makePerformerScenesUrl(performer);
@@ -209,7 +211,8 @@ interface ITagLinkProps {
     | "details"
     | "performer"
     | "group"
-    | "studio";
+    | "studio"
+    | "scene_marker";
   className?: string;
   hoverPlacement?: Placement;
   showHierarchyIcon?: boolean;
@@ -238,6 +241,8 @@ export const TagLink: React.FC<ITagLinkProps> = ({
         return NavUtils.makeTagImagesUrl(tag);
       case "group":
         return NavUtils.makeTagGroupsUrl(tag);
+      case "scene_marker":
+        return NavUtils.makeTagSceneMarkersUrl(tag);
       case "details":
         return NavUtils.makeTagUrl(tag.id ?? "");
     }

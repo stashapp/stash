@@ -145,11 +145,16 @@ interface IPluginApi {
   });
 
   const TestPage: React.FC = () => {
-    const componentsLoading = PluginApi.hooks.useLoadComponents([PluginApi.loadableComponents.SceneCard]);
+    const componentsToLoad = [
+      PluginApi.loadableComponents.SceneCard,
+      PluginApi.loadableComponents.PerformerSelect,
+    ];
+    const componentsLoading = PluginApi.hooks.useLoadComponents(componentsToLoad);
     
     const {
       SceneCard,
       LoadingIndicator,
+      PerformerSelect,
     } = PluginApi.components;
 
     // read a random scene and show a scene card for it
@@ -172,6 +177,9 @@ interface IPluginApi {
       <div>
         <div>This is a test page.</div>
         {!!scene && <SceneCard scene={data.findScenes.scenes[0]} />}
+        <div>
+          <PerformerSelect isMulti onSelect={() => {}} values={[]} />
+        </div>
       </div>
     );
   };

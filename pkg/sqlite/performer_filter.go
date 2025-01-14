@@ -203,6 +203,13 @@ func (qb *performerFilterHandler) criterionHandler() criterionHandler {
 				performerRepository.tags.innerJoin(f, "performer_tag", "performers.id")
 			},
 		},
+
+		&customFieldsFilterHandler{
+			table: performersCustomFieldsTable.GetTable(),
+			fkCol: performerIDColumn,
+			c:     filter.CustomFields,
+			idCol: "performers.id",
+		},
 	}
 }
 

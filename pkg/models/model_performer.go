@@ -39,6 +39,18 @@ type Performer struct {
 	StashIDs RelatedStashIDs `json:"stash_ids"`
 }
 
+type CreatePerformerInput struct {
+	*Performer
+
+	CustomFields map[string]interface{} `json:"custom_fields"`
+}
+
+type UpdatePerformerInput struct {
+	*Performer
+
+	CustomFields CustomFieldsInput `json:"custom_fields"`
+}
+
 func NewPerformer() Performer {
 	currentTime := time.Now()
 	return Performer{
@@ -80,6 +92,8 @@ type PerformerPartial struct {
 	Aliases  *UpdateStrings
 	TagIDs   *UpdateIDs
 	StashIDs *UpdateStashIDs
+
+	CustomFields CustomFieldsInput
 }
 
 func NewPerformerPartial() PerformerPartial {
