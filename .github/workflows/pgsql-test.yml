@@ -1,0 +1,78 @@
+name: Test with PostgreSQL
+
+on:
+  push:
+    tags:
+      - v*
+    branches:
+      - master
+      - develop
+  pull_request:
+
+env:
+  COMPILER_IMAGE: stashapp/compiler:10
+
+jobs:
+  postgresql-test:
+    name: Test with PostgreSQL
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_USER: username
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: dbname
+        options: >-
+          --health-cmd "pg_isready -U username -d dbname"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Checkout
+        run: git fetch --prune --unshallow --tags
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: 'go.mod'
+
+      - name: Pull compiler image
+        run: docker pull $COMPILER_IMAGE
+
+      - name: Start build container
+        run: |
+          mkdir -p .go-cache
+          docker run -d --name build \
+            --mount type=bind,source="$(pwd)",target=/stash,consistency=delegated \
+            --mount type=bind,source="$(pwd)/.go-cache",target=/root/.cache/go-build,consistency=delegated \
+            -w /stash $COMPILER_IMAGE tail -f /dev/null
+
+      - name: Generate Backend
+        run: docker exec -t build /bin/bash -c "make generate-backend"
+
+      - name: Wait for PostgreSQL
+        run: |
+          for i in {1..10}; do
+            if pg_isready -h localhost -U username -d dbname; then
+              echo "PostgreSQL is ready!";
+              break;
+            fi;
+            echo "Waiting for PostgreSQL...";
+            sleep 5;
+          done
+
+      - name: Run tests with PostgreSQL
+        env:
+          PGSQL_TEST: 'postgresql://username:password@localhost/dbname'
+        run: |
+          docker exec -t build /bin/bash -c "PGSQL_TEST='postgresql://username:password@localhost/dbname' \
+            go test -tags \"sqlite_stat4 sqlite_math_functions integration\" ./..."
+
+      - name: Cleanup build container
+        run: docker rm -f -v build
