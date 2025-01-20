@@ -62,6 +62,12 @@
 | `,` | Hide/Show sidebar |
 | `.` | Hide/Show scene scrubber |
 | `o` | Increment O-Counter |
+| Ratings ||
+| `r {1-5}` | Set rating (stars) |
+| `r 0` | Unset rating (stars) |
+| `r {0-9} {0-9}` | Set rating (decimal - `00` for `10.0`) |
+| ``r ` `` | Unset rating (decimal) |
+| Playback ||
 | `p n` | Play next scene in queue |
 | `p p` | Play previous scene in queue |
 | `p r` | Play random scene in queue |
@@ -88,14 +94,10 @@
 |-------------------|--------|
 | `n` | Display Create Markers dialog |
 
-### Edit Scene tab shortcuts
+### Scene Edit tab shortcuts
 
 | Keyboard sequence | Action |
 |-------------------|--------|
-| `r {1-5}` | Set rating (stars) |
-| `r 0` | Unset rating (stars) |
-| `r {0-9} {0-9}` | Set rating (decimal - `00` for `10.0`) |
-| ``r ` `` | Unset rating (decimal) |
 | `s s` | Save Scene |
 | `d d` | Delete Scene |
 | `Ctrl + v` | Paste Scene cover |
@@ -106,6 +108,25 @@
 [//]: # "(| `p` | Focus Performers selector |)"
 [//]: # "(| `v` | Focus Groups selector |)"
 [//]: # "(| `t` | Focus Tags selector |)"
+
+## Image Page shortcuts
+
+| Keyboard sequence | Action |
+|-------------------|--------|
+| `e` | Edit tab |
+| `o` | Increment O-Counter |
+| Ratings ||
+| `r {1-5}` | Set rating (stars) |
+| `r 0` | Unset rating (stars) |
+| `r {0-9} {0-9}` | Set rating (decimal - `00` for `10.0`) |
+| ``r ` `` | Unset rating (decimal) |
+
+### Image Edit tab shortcuts
+
+| Keyboard sequence | Action |
+|-------------------|--------|
+| `s s` | Save Scene |
+| `d d` | Delete Scene |
 
 ## Groups Page shortcuts
 
@@ -120,12 +141,13 @@
 | `e` | Edit Group |
 | `s s` | Save Group |
 | `d d` | Delete Group |
-| `r {1-5}` | [Edit mode] Set rating (stars) |
-| `r 0` | [Edit mode] Unset rating (stars) |
-| `r {0-9} {0-9}` | [Edit mode] Set rating (decimal - `r 0 0` for `10.0`) |
 | ``r ` `` | [Edit mode] Unset rating (decimal) |
 | `,` | Expand/Collapse Details |
 | `Ctrl + v` | Paste Group image |
+| Ratings ||
+| `r {1-5}` | [Edit mode] Set rating (stars) |
+| `r 0` | [Edit mode] Unset rating (stars) |
+| `r {0-9} {0-9}` | [Edit mode] Set rating (decimal - `r 0 0` for `10.0`) |
 
 [//]: # "Commented until implementation is dealt with"
 [//]: # "(| `u` | Focus Studio selector (in edit mode) |)"
