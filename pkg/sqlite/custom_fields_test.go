@@ -147,7 +147,7 @@ func TestSetCustomFields(t *testing.T) {
 	}
 
 	// use performer custom fields store
-	store := db.Performer
+	store := db.GetRepo().Performer
 	id := performerIDs[performerIdx]
 
 	assert := assert.New(t)

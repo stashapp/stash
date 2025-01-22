@@ -20,5 +20,6 @@ func RegisterPreMigration(schemaVersion uint, fn customMigrationFunc) {
 	preMigrations[schemaVersion] = v
 }
 
+// TODO: Custom postgres migrations
 var postMigrations = make(map[uint][]customMigrationFunc)
 var preMigrations = make(map[uint][]customMigrationFunc)

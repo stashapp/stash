@@ -3,7 +3,9 @@ package sqlite
 import (
 	"context"
 	"fmt"
+	"reflect"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/doug-martin/goqu/v9"
@@ -91,9 +93,25 @@ func getSQLValueFromCustomFieldInput(input interface{}) (interface{}, error) {
 	}
 }
 
-func (s *customFieldsStore) sqlValueToValue(value interface{}) interface{} {
+func (s *customFieldsStore) sqlValueToValue(value interface{}, gotype string) (interface{}, error) {
 	// TODO - if we ever support objects and arrays we will need to add support here
-	return value
+	if val, ok := value.([]byte); dbWrapper.dbType == PostgresBackend && ok {
+		str := string(val)
+
+		if gotype == "string" {
+			return str, nil
+		}
+		if gotype == "int64" {
+			return strconv.ParseInt(str, 10, 64)
+		}
+		if gotype == "float64" {
+			return strconv.ParseFloat(str, 64)
+		}
+
+		return val, fmt.Errorf("no suitable conversion type")
+	}
+
+	return value, nil
 }
 
 func (s *customFieldsStore) setCustomFields(ctx context.Context, id int, values map[string]interface{}, partial bool) error {
@@ -110,8 +128,8 @@ func (s *customFieldsStore) setCustomFields(ctx context.Context, id int, values 
 
 	conflictKey := s.fk.GetCol().(string) + ", field"
 	// upsert new custom fields
-	q := dialect.Insert(s.table).Prepared(true).Cols(s.fk, "field", "value").
-		OnConflict(goqu.DoUpdate(conflictKey, goqu.Record{"value": goqu.I("excluded.value")}))
+	q := dialect.Insert(s.table).Prepared(true).Cols(s.fk, "field", "value", "type").
+		OnConflict(goqu.DoUpdate(conflictKey, goqu.Record{"value": goqu.I("excluded.value"), "type": goqu.I("excluded.type")}))
 	r := make([]interface{}, len(values))
 	var i int
 	for key, value := range values {
@@ -119,7 +137,17 @@ func (s *customFieldsStore) setCustomFields(ctx context.Context, id int, values 
 		if err != nil {
 			return fmt.Errorf("getting SQL value for field %q: %w", key, err)
 		}
-		r[i] = goqu.Record{"field": key, "value": v, s.fk.GetCol().(string): id}
+
+		if dbWrapper.dbType == PostgresBackend {
+			v = goqu.L("CAST(? AS TEXT)::BYTEA", fmt.Sprintf("%v", v))
+		}
+
+		r[i] = goqu.Record{
+			"field":                key,
+			"value":                v,
+			"type":                 reflect.TypeOf(value).String(),
+			s.fk.GetCol().(string): id,
+		}
 		i++
 	}
 
@@ -131,18 +159,20 @@ func (s *customFieldsStore) setCustomFields(ctx context.Context, id int, values 
 }
 
 func (s *customFieldsStore) GetCustomFields(ctx context.Context, id int) (map[string]interface{}, error) {
-	q := dialect.Select("field", "value").From(s.table).Where(s.fk.Eq(id))
+	q := dialect.Select("field", "value", "type").From(s.table).Where(s.fk.Eq(id))
 
 	const single = false
 	ret := make(map[string]interface{})
 	err := queryFunc(ctx, q, single, func(rows *sqlx.Rows) error {
+		var err error
 		var field string
 		var value interface{}
-		if err := rows.Scan(&field, &value); err != nil {
+		var gotype string
+		if err := rows.Scan(&field, &value, &gotype); err != nil {
 			return fmt.Errorf("scanning custom fields: %w", err)
 		}
-		ret[field] = s.sqlValueToValue(value)
-		return nil
+		ret[field], err = s.sqlValueToValue(value, gotype)
+		return err
 	})
 	if err != nil {
 		return nil, fmt.Errorf("getting custom fields: %w", err)
@@ -152,7 +182,7 @@ func (s *customFieldsStore) GetCustomFields(ctx context.Context, id int) (map[st
 }
 
 func (s *customFieldsStore) GetCustomFieldsBulk(ctx context.Context, ids []int) ([]models.CustomFieldMap, error) {
-	q := dialect.Select(s.fk.As("id"), "field", "value").From(s.table).Where(s.fk.In(ids))
+	q := dialect.Select(s.fk.As("id"), "field", "value", "type").From(s.table).Where(s.fk.In(ids))
 
 	const single = false
 	ret := make([]models.CustomFieldMap, len(ids))
@@ -163,10 +193,12 @@ func (s *customFieldsStore) GetCustomFieldsBulk(ctx context.Context, ids []int) 
 	}
 
 	err := queryFunc(ctx, q, single, func(rows *sqlx.Rows) error {
+		var err error
 		var id int
 		var field string
 		var value interface{}
-		if err := rows.Scan(&id, &field, &value); err != nil {
+		var gotype string
+		if err := rows.Scan(&id, &field, &value, &gotype); err != nil {
 			return fmt.Errorf("scanning custom fields: %w", err)
 		}
 
@@ -177,8 +209,8 @@ func (s *customFieldsStore) GetCustomFieldsBulk(ctx context.Context, ids []int) 
 			ret[i] = m
 		}
 
-		m[field] = s.sqlValueToValue(value)
-		return nil
+		m[field], err = s.sqlValueToValue(value, gotype)
+		return err
 	})
 	if err != nil {
 		return nil, fmt.Errorf("getting custom fields: %w", err)
@@ -216,23 +248,28 @@ func (h *customFieldsFilterHandler) handleCriterion(f *filterBuilder, joinAs str
 		}
 	}
 
+	pgMod := fmt.Sprintf("%s.value", joinAs)
+	if dbWrapper.dbType == PostgresBackend {
+		pgMod = fmt.Sprintf("encode(%s, 'escape')", pgMod)
+	}
+
 	switch cc.Modifier {
 	case models.CriterionModifierEquals:
 		h.innerJoin(f, joinAs, cc.Field)
-		f.addWhere(fmt.Sprintf("%[1]s.value IN %s", joinAs, getInBinding(len(cv))), cv...)
+		f.addWhere(fmt.Sprintf("LOWER(%s) LIKE LOWER(%s)", pgMod, getInBinding(len(cv))), cv...)
 	case models.CriterionModifierNotEquals:
 		h.innerJoin(f, joinAs, cc.Field)
-		f.addWhere(fmt.Sprintf("%[1]s.value NOT IN %s", joinAs, getInBinding(len(cv))), cv...)
+		f.addWhere(fmt.Sprintf("LOWER(%s) NOT LIKE LOWER(%s)", pgMod, getInBinding(len(cv))), cv...)
 	case models.CriterionModifierIncludes:
 		clauses := make([]sqlClause, len(cv))
 		for i, v := range cv {
-			clauses[i] = makeClause(fmt.Sprintf("%s.value LIKE ?", joinAs), fmt.Sprintf("%%%v%%", v))
+			clauses[i] = makeClause(fmt.Sprintf("LOWER(%s) LIKE LOWER(?)", pgMod), fmt.Sprintf("%%%v%%", v))
 		}
 		h.innerJoin(f, joinAs, cc.Field)
 		f.whereClauses = append(f.whereClauses, clauses...)
 	case models.CriterionModifierExcludes:
 		for _, v := range cv {
-			f.addWhere(fmt.Sprintf("%[1]s.value NOT LIKE ?", joinAs), fmt.Sprintf("%%%v%%", v))
+			f.addWhere(fmt.Sprintf("LOWER(%s) NOT LIKE LOWER(?)", pgMod), fmt.Sprintf("%%%v%%", v))
 		}
 		h.leftJoin(f, joinAs, cc.Field)
 	case models.CriterionModifierMatchesRegex:
@@ -245,7 +282,7 @@ func (h *customFieldsFilterHandler) handleCriterion(f *filterBuilder, joinAs str
 				f.setError(err)
 				return
 			}
-			f.addWhere(fmt.Sprintf("(%s.value regexp ?)", joinAs), v)
+			f.addWhere(fmt.Sprintf("regexp(?, %s)", pgMod), v)
 		}
 		h.innerJoin(f, joinAs, cc.Field)
 	case models.CriterionModifierNotMatchesRegex:
@@ -258,39 +295,59 @@ func (h *customFieldsFilterHandler) handleCriterion(f *filterBuilder, joinAs str
 				f.setError(err)
 				return
 			}
-			f.addWhere(fmt.Sprintf("(%s.value IS NULL OR %[1]s.value NOT regexp ?)", joinAs), v)
+			f.addWhere(fmt.Sprintf("(%s.value IS NULL OR NOT regexp(?, %s))", joinAs, pgMod), v)
 		}
 		h.leftJoin(f, joinAs, cc.Field)
 	case models.CriterionModifierIsNull:
 		h.leftJoin(f, joinAs, cc.Field)
-		f.addWhere(fmt.Sprintf("%s.value IS NULL OR TRIM(%[1]s.value) = ''", joinAs))
+		f.addWhere(fmt.Sprintf("%s.value IS NULL OR TRIM(%s) = ''", joinAs, pgMod))
 	case models.CriterionModifierNotNull:
 		h.innerJoin(f, joinAs, cc.Field)
-		f.addWhere(fmt.Sprintf("TRIM(%[1]s.value) != ''", joinAs))
+		f.addWhere(fmt.Sprintf("TRIM(%s) != ''", pgMod))
 	case models.CriterionModifierBetween:
 		if len(cv) != 2 {
 			f.setError(fmt.Errorf("expected 2 values for custom field criterion modifier BETWEEN, got %d", len(cv)))
 			return
 		}
 		h.innerJoin(f, joinAs, cc.Field)
-		f.addWhere(fmt.Sprintf("%s.value BETWEEN ? AND ?", joinAs), cv[0], cv[1])
+		if dbWrapper.dbType == PostgresBackend {
+			f.addWhere(fmt.Sprintf("%s.type IN ('int64', 'float64')", joinAs))
+			f.addWhere(fmt.Sprintf("%s::numeric BETWEEN ? AND ?", pgMod), cv[0], cv[1])
+		} else {
+			f.addWhere(fmt.Sprintf("%s.value BETWEEN ? AND ?", joinAs), cv[0], cv[1])
+		}
 	case models.CriterionModifierNotBetween:
 		h.innerJoin(f, joinAs, cc.Field)
-		f.addWhere(fmt.Sprintf("%s.value NOT BETWEEN ? AND ?", joinAs), cv[0], cv[1])
+		if dbWrapper.dbType == PostgresBackend {
+			f.addWhere(fmt.Sprintf("%s.type IN ('int64', 'float64')", joinAs))
+			f.addWhere(fmt.Sprintf("%s::numeric NOT BETWEEN ? AND ?", pgMod), cv[0], cv[1])
+		} else {
+			f.addWhere(fmt.Sprintf("%s.value NOT BETWEEN ? AND ?", joinAs), cv[0], cv[1])
+		}
 	case models.CriterionModifierLessThan:
 		if len(cv) != 1 {
 			f.setError(fmt.Errorf("expected 1 value for custom field criterion modifier LESS_THAN, got %d", len(cv)))
 			return
 		}
 		h.innerJoin(f, joinAs, cc.Field)
-		f.addWhere(fmt.Sprintf("%s.value < ?", joinAs), cv[0])
+		if dbWrapper.dbType == PostgresBackend {
+			f.addWhere(fmt.Sprintf("%s.type IN ('int64', 'float64')", joinAs))
+			f.addWhere(fmt.Sprintf("%s::numeric < ?", pgMod), cv[0])
+		} else {
+			f.addWhere(fmt.Sprintf("%s.value < ?", joinAs), cv[0])
+		}
 	case models.CriterionModifierGreaterThan:
 		if len(cv) != 1 {
 			f.setError(fmt.Errorf("expected 1 value for custom field criterion modifier LESS_THAN, got %d", len(cv)))
 			return
 		}
 		h.innerJoin(f, joinAs, cc.Field)
-		f.addWhere(fmt.Sprintf("%s.value > ?", joinAs), cv[0])
+		if dbWrapper.dbType == PostgresBackend {
+			f.addWhere(fmt.Sprintf("%s.type IN ('int64', 'float64')", joinAs))
+			f.addWhere(fmt.Sprintf("%s::numeric > ?", pgMod), cv[0])
+		} else {
+			f.addWhere(fmt.Sprintf("%s.value > ?", joinAs), cv[0])
+		}
 	default:
 		f.setError(fmt.Errorf("unsupported custom field criterion modifier: %s", cc.Modifier))
 	}

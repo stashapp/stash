@@ -475,7 +475,7 @@ func TestMarkerQueryDuration(t *testing.T) {
 		},
 	}
 
-	qb := db.SceneMarker
+	qb := db.GetRepo().SceneMarker
 
 	for _, tt := range cases {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {

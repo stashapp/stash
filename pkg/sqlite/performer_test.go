@@ -683,7 +683,7 @@ func Test_PerformerStore_UpdatePartialCustomFields(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		qb := db.Performer
+		qb := db.GetRepo().Performer
 
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
@@ -1394,7 +1394,7 @@ func TestPerformerQueryCustomFields(t *testing.T) {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
 
-			performers, _, err := db.Performer.Query(ctx, tt.filter, nil)
+			performers, _, err := db.GetRepo().Performer.Query(ctx, tt.filter, nil)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("PerformerStore.Query() error = %v, wantErr %v", err, tt.wantErr)
 				return
