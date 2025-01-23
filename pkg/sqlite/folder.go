@@ -49,12 +49,12 @@ func (r *folderQueryRow) resolve() *models.Folder {
 		ID: r.ID,
 		DirEntry: models.DirEntry{
 			ZipFileID: nullIntFileIDPtr(r.ZipFileID),
-			ModTime:   r.ModTime.Timestamp,
+			ModTime:   r.ModTime.Timestamp.UTC(),
 		},
 		Path:           string(r.Path),
 		ParentFolderID: nullIntFolderIDPtr(r.ParentFolderID),
-		CreatedAt:      r.CreatedAt.Timestamp,
-		UpdatedAt:      r.UpdatedAt.Timestamp,
+		CreatedAt:      r.CreatedAt.Timestamp.UTC(),
+		UpdatedAt:      r.UpdatedAt.Timestamp.UTC(),
 	}
 
 	if ret.ZipFileID != nil && r.ZipFolderPath.Valid && r.ZipBasename.Valid {

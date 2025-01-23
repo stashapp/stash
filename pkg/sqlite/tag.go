@@ -60,8 +60,8 @@ func (r *tagRow) resolve() *models.Tag {
 		Favorite:      r.Favorite,
 		Description:   r.Description.String,
 		IgnoreAutoTag: r.IgnoreAutoTag,
-		CreatedAt:     r.CreatedAt.Timestamp,
-		UpdatedAt:     r.UpdatedAt.Timestamp,
+		CreatedAt:     r.CreatedAt.Timestamp.UTC(),
+		UpdatedAt:     r.UpdatedAt.Timestamp.UTC(),
 	}
 
 	return ret

@@ -84,8 +84,8 @@ func (r *imageQueryRow) resolve() *models.Image {
 		PrimaryFileID: nullIntFileIDPtr(r.PrimaryFileID),
 		Checksum:      r.PrimaryFileChecksum.String,
 
-		CreatedAt: r.CreatedAt.Timestamp,
-		UpdatedAt: r.UpdatedAt.Timestamp,
+		CreatedAt: r.CreatedAt.Timestamp.UTC(),
+		UpdatedAt: r.UpdatedAt.Timestamp.UTC(),
 	}
 
 	if r.PrimaryFileFolderPath.Valid && r.PrimaryFileBasename.Valid {

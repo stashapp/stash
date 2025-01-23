@@ -280,7 +280,7 @@ func (r *stashIDRow) resolve() models.StashID {
 	return models.StashID{
 		StashID:   r.StashID.String,
 		Endpoint:  r.Endpoint.String,
-		UpdatedAt: r.UpdatedAt.Timestamp,
+		UpdatedAt: r.UpdatedAt.Timestamp.UTC(),
 	}
 }
 

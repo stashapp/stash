@@ -191,14 +191,14 @@ func (r *fileQueryRow) resolve() models.File {
 		ID: models.FileID(r.FileID.Int64),
 		DirEntry: models.DirEntry{
 			ZipFileID: nullIntFileIDPtr(r.ZipFileID),
-			ModTime:   r.ModTime.Timestamp,
+			ModTime:   r.ModTime.Timestamp.UTC(),
 		},
 		Path:           filepath.Join(r.FolderPath.String, r.Basename.String),
 		ParentFolderID: models.FolderID(r.ParentFolderID.Int64),
 		Basename:       r.Basename.String,
 		Size:           r.Size.Int64,
-		CreatedAt:      r.CreatedAt.Timestamp,
-		UpdatedAt:      r.UpdatedAt.Timestamp,
+		CreatedAt:      r.CreatedAt.Timestamp.UTC(),
+		UpdatedAt:      r.UpdatedAt.Timestamp.UTC(),
 	}
 
 	if basic.ZipFileID != nil && r.ZipFolderPath.Valid && r.ZipBasename.Valid {

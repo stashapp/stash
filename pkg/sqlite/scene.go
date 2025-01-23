@@ -136,8 +136,8 @@ func (r *sceneQueryRow) resolve() *models.Scene {
 		OSHash:        r.PrimaryFileOshash.String,
 		Checksum:      r.PrimaryFileChecksum.String,
 
-		CreatedAt: r.CreatedAt.Timestamp,
-		UpdatedAt: r.UpdatedAt.Timestamp,
+		CreatedAt: r.CreatedAt.Timestamp.UTC(),
+		UpdatedAt: r.UpdatedAt.Timestamp.UTC(),
 
 		ResumeTime:   r.ResumeTime,
 		PlayDuration: r.PlayDuration,

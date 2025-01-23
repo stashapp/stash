@@ -56,8 +56,8 @@ func (r *sceneMarkerRow) resolve() *models.SceneMarker {
 		EndSeconds:   r.EndSeconds.Ptr(),
 		PrimaryTagID: r.PrimaryTagID,
 		SceneID:      r.SceneID,
-		CreatedAt:    r.CreatedAt.Timestamp,
-		UpdatedAt:    r.UpdatedAt.Timestamp,
+		CreatedAt:    r.CreatedAt.Timestamp.UTC(),
+		UpdatedAt:    r.UpdatedAt.Timestamp.UTC(),
 	}
 
 	return ret

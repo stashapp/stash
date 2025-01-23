@@ -82,8 +82,8 @@ func (r *galleryQueryRow) resolve() *models.Gallery {
 		StudioID:      nullIntPtr(r.StudioID),
 		FolderID:      nullIntFolderIDPtr(r.FolderID),
 		PrimaryFileID: nullIntFileIDPtr(r.PrimaryFileID),
-		CreatedAt:     r.CreatedAt.Timestamp,
-		UpdatedAt:     r.UpdatedAt.Timestamp,
+		CreatedAt:     r.CreatedAt.Timestamp.UTC(),
+		UpdatedAt:     r.UpdatedAt.Timestamp.UTC(),
 	}
 
 	if r.PrimaryFileFolderPath.Valid && r.PrimaryFileBasename.Valid {

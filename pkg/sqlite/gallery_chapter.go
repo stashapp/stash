@@ -42,8 +42,8 @@ func (r *galleryChapterRow) resolve() *models.GalleryChapter {
 		Title:      r.Title,
 		ImageIndex: r.ImageIndex,
 		GalleryID:  r.GalleryID,
-		CreatedAt:  r.CreatedAt.Timestamp,
-		UpdatedAt:  r.UpdatedAt.Timestamp,
+		CreatedAt:  r.CreatedAt.Timestamp.UTC(),
+		UpdatedAt:  r.UpdatedAt.Timestamp.UTC(),
 	}
 
 	return ret

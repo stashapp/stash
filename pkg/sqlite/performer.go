@@ -110,8 +110,8 @@ func (r *performerRow) resolve() *models.Performer {
 		Tattoos:        r.Tattoos.String,
 		Piercings:      r.Piercings.String,
 		Favorite:       r.Favorite,
-		CreatedAt:      r.CreatedAt.Timestamp,
-		UpdatedAt:      r.UpdatedAt.Timestamp,
+		CreatedAt:      r.CreatedAt.Timestamp.UTC(),
+		UpdatedAt:      r.UpdatedAt.Timestamp.UTC(),
 		// expressed as 1-100
 		Rating:        nullIntPtr(r.Rating),
 		Details:       r.Details.String,
