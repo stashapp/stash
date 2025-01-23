@@ -53,19 +53,6 @@ jobs:
             --mount type=bind,source="$(pwd)/.go-cache",target=/root/.cache/go-build,consistency=delegated \
             -w /stash $COMPILER_IMAGE tail -f /dev/null
 
-      - name: Install PostgreSQL development libraries
-        run: |
-          sudo apt-get update && sudo apt-get install -y postgresql-server-dev-16
-
-      - name: Clone PostgreSQL DLL project
-        run: |
-          git clone --recursive https://github.com/NodudeWasTaken/stash_pge.git
-
-      - name: Install PostgreSQL DLL
-        run: |
-          cd stash_pge
-          make install PGVER=16 DBNAME=dbname
-
       - name: Generate Backend
         run: docker exec -t build /bin/bash -c "make generate-backend"
 
@@ -79,6 +66,19 @@ jobs:
             echo "Waiting for PostgreSQL...";
             sleep 5;
           done
+
+      - name: Install PostgreSQL development libraries
+        run: |
+          sudo apt-get update && sudo apt-get install -y postgresql-server-dev-16
+
+      - name: Clone PostgreSQL DLL project
+        run: |
+          git clone --recursive https://github.com/NodudeWasTaken/stash_pge.git
+
+      - name: Install PostgreSQL DLL
+        run: |
+          cd stash_pge
+          make install PGVER=16 DBNAME=dbname
 
       - name: Run tests with PostgreSQL
         env:
