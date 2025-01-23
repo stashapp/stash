@@ -249,7 +249,7 @@ func (qb *performerFilterHandler) performerAgeFilterCriterionHandler(age *models
 			switch dbWrapper.dbType {
 			case PostgresBackend:
 				clause, args = getIntCriterionWhereClause(
-					"EXTRACT(YEAR FROM COALESCE(performers.death_date, CURRENT_DATE)) - EXTRACT(YEAR FROM performers.birthdate)",
+					"EXTRACT(YEAR FROM AGE(COALESCE(performers.death_date, CURRENT_DATE), performers.birthdate))",
 					*age,
 				)
 			case SqliteBackend:
