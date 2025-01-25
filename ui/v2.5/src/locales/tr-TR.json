@@ -1416,5 +1416,8 @@
     "containing_group_count": "İçerdiği Grup Sayısı",
     "last_o_at": "Son O Tarihi",
     "sub_group_of": "{parent} öğesinin alt grubu",
-    "time_end": "Bitiş Zamanı"
+    "time_end": "Bitiş Zamanı",
+    "custom_fields": {
+        "value": "Değer"
+    }
 }
