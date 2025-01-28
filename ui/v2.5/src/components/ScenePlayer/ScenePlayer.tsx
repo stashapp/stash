@@ -45,6 +45,7 @@ import airplay from "@silvermine/videojs-airplay";
 import chromecast from "@silvermine/videojs-chromecast";
 import abLoopPlugin from "videojs-abloop";
 import ScreenUtils from "src/utils/screen";
+import { IMarker } from "./markers";
 
 // register videojs plugins
 airplay(videojs);
@@ -697,20 +698,46 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     const player = getPlayer();
     if (!player) return;
 
-    const markers = player.markers();
-    markers.clearMarkers();
-    for (const marker of scene.scene_markers) {
-      markers.addMarker({
+    // Ensure markers are added after player is fully ready and sources are loaded
+    player.on('loadedmetadata', () => {
+      const markerData = scene.scene_markers.map(marker => ({
         title: getMarkerTitle(marker),
-        time: marker.seconds,
-      });
-    }
+        seconds: marker.seconds,
+        end_seconds: marker.end_seconds ?? null,
+        primaryTag: marker.primary_tag
+      }));
 
-    if (scene.paths.screenshot) {
-      player.poster(scene.paths.screenshot);
-    } else {
-      player.poster("");
-    }
+      const markers = player.markers();
+      markers.clearMarkers();
+      const uniqueTagNames = markerData.map(marker => marker.primaryTag.name).filter((value, index, self) => self.indexOf(value) === index);
+      markers.findColors(uniqueTagNames);
+      
+      const timestampMarkers: IMarker[] = [];
+      const rangeMarkers: IMarker[] = [];
+      for (const marker of markerData) {
+        if (marker.end_seconds === null) {
+          timestampMarkers.push(marker);
+        } else {
+          rangeMarkers.push(marker);
+        }
+      }
+      // Add markers in chunks to avoid blocking
+      const CHUNK_SIZE = 10;
+      for (let i = 0; i < timestampMarkers.length; i += CHUNK_SIZE) {
+        const chunk = timestampMarkers.slice(i, i + CHUNK_SIZE);
+        requestAnimationFrame(() => {
+          chunk.forEach(m => markers.addDotMarker(m));
+        });
+      }
+
+      requestAnimationFrame(() => {
+        markers.addRangeMarkersNew(rangeMarkers);
+      });
+    });
+
+    return () => {
+      player.off('loadedmetadata');
+    };
   }, [getPlayer, scene]);
 
   useEffect(() => {
