@@ -18,25 +18,9 @@
 
 .vjs-marker-range {
   position: absolute;
-  background-color: rgba(0, 255, 255, 0.4);
+  background-color: rgba(255, 255, 255, 0.4);
   height: 8px;
-}
-
-
-.contained-marker-range {
-  background-color: rgba(59, 130, 246, 0.4);
-  z-index: 0;
-  transform: translateY(-15px);
-}
-
-.marker-time-label {
-  position: absolute;
-  font-size: 10px;
-  color: white;
-  background: rgba(0, 0, 0, 0.7);
-  padding: 2px 4px;
   border-radius: 2px;
-  transform: translateY(-100%);
-  white-space: nowrap;
-  z-index: 2;
+  transform: translateY(-10px);
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }

@@ -5,7 +5,6 @@ export interface IMarker {
   title: string;
   seconds: number;
   end_seconds?: number | null;
-  layer?: number;
 }
 
 interface IMarkersOptions {
@@ -21,8 +20,6 @@ class MarkersPlugin extends videojs.getPlugin("plugin") {
   }[] = [];
   private markerTooltip: HTMLElement | null = null;
   private defaultTooltip: HTMLElement | null = null;
-
-  private layers: IMarker[][] = [];
 
   private layerHeight: number = 9;
 
@@ -59,12 +56,6 @@ class MarkersPlugin extends videojs.getPlugin("plugin") {
     if (this.defaultTooltip) this.defaultTooltip.style.visibility = "visible";
   }
 
-  private formatTime(seconds: number): string {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = Math.floor(seconds % 60);
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
-  }
-
   addDotMarker(marker: IMarker) {
     const duration = this.player.duration();
     const markerSet: {
@@ -85,6 +76,10 @@ class MarkersPlugin extends videojs.getPlugin("plugin") {
     markerSet.dot.addEventListener("click", () => this.player.currentTime(marker.seconds));
     markerSet.dot.toggleAttribute("marker-tooltip-shown", true);
 
+    // Set background color based on tag (if available)
+    if (marker.title && this.tagColors[marker.title]) {
+      markerSet.dot.style.backgroundColor = this.tagColors[marker.title];
+    }
     markerSet.dot.addEventListener("mouseenter", () => {
       this.showMarkerTooltip(marker.title);
       markerSet.dot?.toggleAttribute("marker-tooltip-shown", true);
@@ -126,7 +121,7 @@ class MarkersPlugin extends videojs.getPlugin("plugin") {
 
     rangeDiv.style.left = `${startPercent}%`;
     rangeDiv.style.width = `${width}%`;
-    rangeDiv.style.bottom = `${layer * this.layerHeight + 10}px`; // Adjust height based on layer
+    rangeDiv.style.bottom = `${layer * this.layerHeight}px`; // Adjust height based on layer
     rangeDiv.style.display = 'none'; // Initially hidden
 
     // Set background color based on tag (if available)
@@ -150,23 +145,23 @@ class MarkersPlugin extends videojs.getPlugin("plugin") {
     this.markerDivs.push(markerSet);
   }
 
-  addRangeMarkersNew(markers: IMarker[]) {
+  addRangeMarkers(markers: IMarker[]) {
     let remainingMarkers = [...markers];
-    this.layers = [];
     let layerNum = 0;
 
     while (remainingMarkers.length > 0) {
+      // Get the set of markers that currently have the highest total duration that don't overlap. We do this layer by layer to prioritize filling
+      // the lower layers when possible
       const mwis = this.findMWIS(remainingMarkers);
       if (!mwis.length) break;
 
-      this.layers.push(mwis);
-      console.log("Rendering layer", layerNum, mwis);
       this.renderRangeMarkers(mwis, layerNum);
       remainingMarkers = remainingMarkers.filter(marker => !mwis.includes(marker));
       layerNum++;
     }
   }
 
+  // Use dynamic programming to find maximum weight independent set (ie the set of markers that have the highest total duration that don't overlap)
   private findMWIS(markers: IMarker[]): IMarker[] {
     if (!markers.length) return [];
 
@@ -174,7 +169,7 @@ class MarkersPlugin extends videojs.getPlugin("plugin") {
     markers = markers.slice().sort((a, b) => (a.end_seconds || 0) - (b.end_seconds || 0));
     const n = markers.length;
 
-    // Compute p(j) for each marker
+    // Compute p(j) for each marker. This is the index of the marker that has the highest end time that doesn't overlap with marker j
     const p: number[] = new Array(n).fill(-1);
     for (let j = 0; j < n; j++) {
       for (let i = j - 1; i >= 0; i--) {
@@ -184,8 +179,9 @@ class MarkersPlugin extends videojs.getPlugin("plugin") {
         }
       }
     }
-
+    
     // Initialize M[j]
+    // Compute M[j] for each marker. This is the maximum total duration of markers that don't overlap with marker j
     const M: number[] = new Array(n).fill(0);
     for (let j = 0; j < n; j++) {
       const include = (markers[j].end_seconds || 0) - markers[j].seconds + (M[p[j]] || 0);
@@ -242,7 +238,7 @@ class MarkersPlugin extends videojs.getPlugin("plugin") {
     // Adjust hues to avoid similar colors
     const adjustedHues = this.adjustHues(baseHues);
 
-    // Convert adjusted hues to colors and store in tagColors
+    // Convert adjusted hues to colors and store in tagColors dictionary
     for (const tag of tagNames) {
       this.tagColors[tag] = this.hueToColor(adjustedHues[tag]);
     }
@@ -264,7 +260,7 @@ class MarkersPlugin extends videojs.getPlugin("plugin") {
 
   // Calculate minimum acceptable hue difference based on number of tags
   private calculateDeltaMin(N: number): number {
-    const maxDeltaNeeded = 30;
+    const maxDeltaNeeded = 35;
     let scalingFactor: number;
 
     if (N <= 4) {

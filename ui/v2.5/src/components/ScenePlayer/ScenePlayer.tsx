@@ -731,7 +731,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       }
 
       requestAnimationFrame(() => {
-        markers.addRangeMarkersNew(rangeMarkers);
+        markers.addRangeMarkers(rangeMarkers);
       });
     });
 
