@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { CustomFieldsCriterion } from "src/models/list-filter/criteria/custom-fields";
 import { Button, Col, Form, Row } from "react-bootstrap";
 import {
@@ -9,12 +9,15 @@ import { cloneDeep } from "@apollo/client/utilities";
 import { ModifierSelect } from "../ModifierSelect";
 import { useIntl } from "react-intl";
 import { Icon } from "src/components/Shared/Icon";
-import { faPlus, faTimes } from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faPencil, faTimes } from "@fortawesome/free-solid-svg-icons";
+import { FilterTag } from "../FilterTags";
+import { ModifierCriterion } from "src/models/list-filter/criteria/criterion";
 
 interface ICustomFieldCriterionEditor {
   criterion?: CustomFieldCriterionInput;
   setCriterion: (c: CustomFieldCriterionInput) => void;
-  onRemove: () => void;
+  cancel: () => void;
+  editing?: boolean;
 }
 
 function getValue(v: string) {
@@ -30,7 +33,8 @@ function getValue(v: string) {
 const CustomFieldCriterionEditor: React.FC<ICustomFieldCriterionEditor> = ({
   criterion,
   setCriterion,
-  onRemove,
+  editing = false,
+  cancel,
 }) => {
   const intl = useIntl();
 
@@ -72,23 +76,9 @@ const CustomFieldCriterionEditor: React.FC<ICustomFieldCriterionEditor> = ({
     if (m === CriterionModifier.IsNull || m === CriterionModifier.NotNull) {
       setValue(undefined);
     }
-
-    if (field === "") {
-      return;
-    }
-
-    setCriterion({
-      field,
-      value,
-      modifier: m,
-    });
   }
 
-  function onBlur() {
-    if (field === "") {
-      return;
-    }
-
+  function onConfirm() {
     setCriterion({
       field,
       value,
@@ -109,7 +99,7 @@ const CustomFieldCriterionEditor: React.FC<ICustomFieldCriterionEditor> = ({
   return (
     <Form.Group className="custom-field-filter">
       <div>
-        <Row>
+        <Row noGutters>
           <Col xs={6}>
             <Form.Control
               className="btn-secondary"
@@ -117,7 +107,6 @@ const CustomFieldCriterionEditor: React.FC<ICustomFieldCriterionEditor> = ({
               placeholder={intl.formatMessage({ id: "custom_fields.field" })}
               onChange={(e) => setField(e.target.value)}
               value={field}
-              onBlur={onBlur}
             />
           </Col>
           <Col xs={6}>
@@ -127,7 +116,7 @@ const CustomFieldCriterionEditor: React.FC<ICustomFieldCriterionEditor> = ({
             />
           </Col>
         </Row>
-        <Row>
+        <Row noGutters>
           {modifier !== CriterionModifier.IsNull &&
             modifier !== CriterionModifier.NotNull && (
               <Col xs={hasTwoValues ? 6 : 12}>
@@ -137,7 +126,6 @@ const CustomFieldCriterionEditor: React.FC<ICustomFieldCriterionEditor> = ({
                   type="text"
                   onChange={(e) => setFirstValue(e.target.value)}
                   value={firstValue}
-                  onBlur={onBlur}
                 />
               </Col>
             )}
@@ -150,22 +138,90 @@ const CustomFieldCriterionEditor: React.FC<ICustomFieldCriterionEditor> = ({
                 type="text"
                 onChange={(e) => setSecondValue(e.target.value)}
                 value={secondValue}
-                onBlur={onBlur}
               />
             </Col>
           )}
         </Row>
       </div>
-      <div>
-        <Button
-          variant="minimal"
-          className="text-danger"
-          onClick={() => onRemove()}
-        >
-          <Icon icon={faTimes} />
+      <div className="custom-field-filter-buttons">
+        <Button variant="success" onClick={() => onConfirm()} disabled={!field}>
+          <Icon icon={faCheck} />
         </Button>
+        {editing && (
+          <Button variant="secondary" onClick={() => cancel()}>
+            <Icon icon={faTimes} />
+          </Button>
+        )}
       </div>
     </Form.Group>
+  );
+};
+
+function valueToString(value: unknown[] | undefined | null) {
+  if (!value) return "";
+  return value.map((v) => v as string).join(", ");
+}
+
+const CustomFieldFilterTag: React.FC<{
+  criterion: CustomFieldCriterionInput;
+  editing?: boolean;
+  onEditCriterion: () => void;
+  onRemoveCriterion: () => void;
+}> = ({ criterion, editing, onEditCriterion, onRemoveCriterion }) => {
+  const intl = useIntl();
+
+  const label = useMemo(() => {
+    const { field, modifier, value } = criterion;
+    const modifierString = ModifierCriterion.getModifierLabel(intl, modifier);
+
+    const str = intl.formatMessage(
+      { id: "criterion_modifier.format_string" },
+      {
+        criterion: field,
+        modifierString,
+        valueString: valueToString(value),
+      }
+    );
+
+    if (editing) {
+      return (
+        <span>
+          <Icon icon={faPencil} />
+          {str}
+        </span>
+      );
+    }
+
+    return <>{str}</>;
+  }, [criterion, editing, intl]);
+
+  return (
+    <FilterTag
+      label={label}
+      onClick={onEditCriterion}
+      onRemove={onRemoveCriterion}
+    />
+  );
+};
+
+const CustomFieldsCriteriaPills: React.FC<{
+  criteria: CustomFieldCriterionInput[];
+  editIndex?: number;
+  onEditCriterion: (index: number) => void;
+  onRemoveCriterion: (index: number) => void;
+}> = ({ criteria, editIndex, onEditCriterion, onRemoveCriterion }) => {
+  return (
+    <div className="d-flex justify-content-center mb-2 wrap-tags filter-tags">
+      {criteria.map((c, index) => (
+        <CustomFieldFilterTag
+          key={index}
+          editing={index === editIndex}
+          criterion={c}
+          onEditCriterion={() => onEditCriterion(index)}
+          onRemoveCriterion={() => onRemoveCriterion(index)}
+        />
+      ))}
+    </div>
   );
 };
 
@@ -177,16 +233,15 @@ interface ICustomFieldsFilter {
 function initCriterion(
   criterion: CustomFieldsCriterion
 ): CustomFieldsCriterion {
-  const c = cloneDeep(criterion);
-  if (c.value.length === 0) {
-    c.value.push({
-      field: "",
-      value: [],
-      modifier: CriterionModifier.Equals,
-    });
-  }
+  return cloneDeep(criterion);
+}
 
-  return c;
+function createNewCriterion(): CustomFieldCriterionInput {
+  return {
+    field: "",
+    value: [],
+    modifier: CriterionModifier.Equals,
+  };
 }
 
 export const CustomFieldsFilter: React.FC<ICustomFieldsFilter> = ({
@@ -197,6 +252,12 @@ export const CustomFieldsFilter: React.FC<ICustomFieldsFilter> = ({
     initCriterion(criterion)
   );
 
+  const [editCriterion, setEditCriterion] = useState(createNewCriterion());
+  const editIndex = useMemo(
+    () => localCriterion.value.indexOf(editCriterion),
+    [localCriterion, editCriterion]
+  );
+
   function updateCriteria(newCriteria: CustomFieldCriterionInput[]) {
     // update the parent - filter out invalid criteria
     const validCriteria = newCriteria.filter((c) => c.field !== "");
@@ -205,26 +266,19 @@ export const CustomFieldsFilter: React.FC<ICustomFieldsFilter> = ({
     setCriterion(newValue);
   }
 
-  function onChange(index: number, nv: CustomFieldCriterionInput) {
-    const newValue = cloneDeep(criterion);
-    const newCriteria = newValue.value.slice();
-    newCriteria[index] = nv;
-    newValue.value = newCriteria;
+  function onChange(nv: CustomFieldCriterionInput) {
+    const newValue = cloneDeep(localCriterion);
+
+    // if the criterion is new, add it to the list
+    if (editIndex === -1) {
+      newValue.value.push(nv);
+    } else {
+      newValue.value[editIndex] = nv;
+    }
 
     setLocalCriterion(newValue);
-    updateCriteria(newCriteria);
-  }
-
-  function onNewCriterion() {
-    const c = cloneDeep(localCriterion);
-
-    c.value.push({
-      field: "",
-      value: [],
-      modifier: CriterionModifier.Equals,
-    });
-
-    setLocalCriterion(c);
+    updateCriteria(newValue.value);
+    setEditCriterion(createNewCriterion());
   }
 
   function onRemove(index: number) {
@@ -232,21 +286,27 @@ export const CustomFieldsFilter: React.FC<ICustomFieldsFilter> = ({
     c.value.splice(index, 1);
     setLocalCriterion(c);
     updateCriteria(c.value);
+    if (index === editIndex) {
+      setEditCriterion(createNewCriterion());
+    }
   }
 
   return (
     <Form.Group>
-      {localCriterion.value.map((cv, index) => (
-        <CustomFieldCriterionEditor
-          key={index}
-          criterion={cv}
-          setCriterion={(c) => onChange(index, c)}
-          onRemove={() => onRemove(index)}
-        />
-      ))}
-      <Button variant="success" onClick={() => onNewCriterion()}>
-        <Icon icon={faPlus} />
-      </Button>
+      <CustomFieldCriterionEditor
+        criterion={editCriterion}
+        editing={editCriterion.field !== ""}
+        setCriterion={onChange}
+        cancel={() => setEditCriterion(createNewCriterion())}
+      />
+      <CustomFieldsCriteriaPills
+        criteria={localCriterion.value}
+        editIndex={editIndex !== -1 ? editIndex : undefined}
+        onEditCriterion={(index) =>
+          setEditCriterion(localCriterion.value[index])
+        }
+        onRemoveCriterion={(index) => onRemove(index)}
+      />
     </Form.Group>
   );
 };

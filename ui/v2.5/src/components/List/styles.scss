@@ -595,4 +595,21 @@ input[type="range"].zoom-slider {
   > div:first-child {
     flex-grow: 1;
   }
+
+  .custom-field-filter-buttons {
+    display: flex;
+    flex-direction: column;
+    margin-left: 0.25rem;
+
+    .btn {
+      border-radius: 0.2rem;
+      font-size: 0.875rem;
+      line-height: 1.5;
+      padding: 0.25rem 0.5rem;
+
+      &:first-child {
+        margin-bottom: 0.25rem;
+      }
+    }
+  }
 }
