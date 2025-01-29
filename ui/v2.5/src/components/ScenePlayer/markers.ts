@@ -25,7 +25,7 @@ class MarkersPlugin extends videojs.getPlugin("plugin") {
 
   private tagColors: { [tag: string]: string } = {};
 
-  constructor(player: VideoJsPlayer, options?: IMarkersOptions) {
+  constructor(player: VideoJsPlayer) {
     super(player);
     player.ready(() => {
       const tooltip = videojs.dom.createEl("div") as HTMLElement;
@@ -381,6 +381,7 @@ class MarkersPlugin extends videojs.getPlugin("plugin") {
 
 videojs.registerPlugin("markers", MarkersPlugin);
 
+/* eslint-disable @typescript-eslint/naming-convention */
 declare module "video.js" {
   interface VideoJsPlayer {
     markers: () => MarkersPlugin;

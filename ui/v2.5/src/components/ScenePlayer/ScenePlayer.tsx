@@ -17,7 +17,8 @@ import "./live";
 import "./PlaylistButtons";
 import "./source-selector";
 import "./persist-volume";
-import "./markers";
+import MarkersPlugin, { type IMarker } from "./markers";
+void MarkersPlugin;
 import "./vtt-thumbnails";
 import "./big-buttons";
 import "./track-activity";
@@ -45,7 +46,6 @@ import airplay from "@silvermine/videojs-airplay";
 import chromecast from "@silvermine/videojs-chromecast";
 import abLoopPlugin from "videojs-abloop";
 import ScreenUtils from "src/utils/screen";
-import { IMarker } from "./markers";
 
 // register videojs plugins
 airplay(videojs);
