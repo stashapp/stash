@@ -32,13 +32,17 @@ class MarkersPlugin extends videojs.getPlugin("plugin") {
       tooltip.className = "vjs-marker-tooltip";
       tooltip.style.visibility = "hidden";
 
-      const parent = player.el().querySelector(".vjs-progress-holder .vjs-mouse-display");
+      const parent = player
+        .el()
+        .querySelector(".vjs-progress-holder .vjs-mouse-display");
       if (parent) parent.appendChild(tooltip);
       this.markerTooltip = tooltip;
 
-      this.defaultTooltip = player.el().querySelector<HTMLElement>(
-        ".vjs-progress-holder .vjs-mouse-display .vjs-time-tooltip"
-      );
+      this.defaultTooltip = player
+        .el()
+        .querySelector<HTMLElement>(
+          ".vjs-progress-holder .vjs-mouse-display .vjs-time-tooltip"
+        );
     });
   }
 
@@ -66,14 +70,18 @@ class MarkersPlugin extends videojs.getPlugin("plugin") {
     if (marker.end_seconds) {
       throw new Error("Cannot add range marker with addDotMarker");
     }
-    markerSet.dot = videojs.dom.createEl("div") as HTMLDivElement
+    markerSet.dot = videojs.dom.createEl("div") as HTMLDivElement;
     markerSet.dot.className = "vjs-marker-dot";
     if (duration) {
-      markerSet.dot.style.left = `calc(${(marker.seconds / duration) * 100}% - 3px)`;
+      markerSet.dot.style.left = `calc(${
+        (marker.seconds / duration) * 100
+      }% - 3px)`;
     }
 
     // Add event listeners to dot
-    markerSet.dot.addEventListener("click", () => this.player.currentTime(marker.seconds));
+    markerSet.dot.addEventListener("click", () =>
+      this.player.currentTime(marker.seconds)
+    );
     markerSet.dot.toggleAttribute("marker-tooltip-shown", true);
 
     // Set background color based on tag (if available)
@@ -100,12 +108,17 @@ class MarkersPlugin extends videojs.getPlugin("plugin") {
     const seekBar = this.player.el().querySelector(".vjs-progress-holder");
     if (!seekBar || !duration) return;
 
-    markers.forEach(marker => {
+    markers.forEach((marker) => {
       this.renderRangeMarker(marker, layer, duration, seekBar);
     });
   }
 
-  private renderRangeMarker(marker: IMarker, layer: number, duration: number, seekBar: Element) {
+  private renderRangeMarker(
+    marker: IMarker,
+    layer: number,
+    duration: number,
+    seekBar: Element
+  ) {
     if (!marker.end_seconds) return;
 
     const markerSet: {
@@ -122,7 +135,7 @@ class MarkersPlugin extends videojs.getPlugin("plugin") {
     rangeDiv.style.left = `${startPercent}%`;
     rangeDiv.style.width = `${width}%`;
     rangeDiv.style.bottom = `${layer * this.layerHeight}px`; // Adjust height based on layer
-    rangeDiv.style.display = 'none'; // Initially hidden
+    rangeDiv.style.display = "none"; // Initially hidden
 
     // Set background color based on tag (if available)
     if (marker.title && this.tagColors[marker.title]) {
@@ -130,7 +143,7 @@ class MarkersPlugin extends videojs.getPlugin("plugin") {
     }
 
     markerSet.range = rangeDiv;
-    markerSet.range.style.display = 'block';
+    markerSet.range.style.display = "block";
     markerSet.range.addEventListener("mouseenter", () => {
       this.showMarkerTooltip(marker.title, layer);
       markerSet.range?.toggleAttribute("marker-tooltip-shown", true);
@@ -156,7 +169,9 @@ class MarkersPlugin extends videojs.getPlugin("plugin") {
       if (!mwis.length) break;
 
       this.renderRangeMarkers(mwis, layerNum);
-      remainingMarkers = remainingMarkers.filter(marker => !mwis.includes(marker));
+      remainingMarkers = remainingMarkers.filter(
+        (marker) => !mwis.includes(marker)
+      );
       layerNum++;
     }
   }
@@ -166,7 +181,9 @@ class MarkersPlugin extends videojs.getPlugin("plugin") {
     if (!markers.length) return [];
 
     // Sort markers by end time
-    markers = markers.slice().sort((a, b) => (a.end_seconds || 0) - (b.end_seconds || 0));
+    markers = markers
+      .slice()
+      .sort((a, b) => (a.end_seconds || 0) - (b.end_seconds || 0));
     const n = markers.length;
 
     // Compute p(j) for each marker. This is the index of the marker that has the highest end time that doesn't overlap with marker j
@@ -179,12 +196,13 @@ class MarkersPlugin extends videojs.getPlugin("plugin") {
         }
       }
     }
-    
+
     // Initialize M[j]
     // Compute M[j] for each marker. This is the maximum total duration of markers that don't overlap with marker j
     const M: number[] = new Array(n).fill(0);
     for (let j = 0; j < n; j++) {
-      const include = (markers[j].end_seconds || 0) - markers[j].seconds + (M[p[j]] || 0);
+      const include =
+        (markers[j].end_seconds || 0) - markers[j].seconds + (M[p[j]] || 0);
       const exclude = j > 0 ? M[j - 1] : 0;
       M[j] = Math.max(include, exclude);
     }
@@ -192,7 +210,8 @@ class MarkersPlugin extends videojs.getPlugin("plugin") {
     // Reconstruct optimal solution
     const findSolution = (j: number): IMarker[] => {
       if (j < 0) return [];
-      const include = (markers[j].end_seconds || 0) - markers[j].seconds + (M[p[j]] || 0);
+      const include =
+        (markers[j].end_seconds || 0) - markers[j].seconds + (M[p[j]] || 0);
       const exclude = j > 0 ? M[j - 1] : 0;
       if (include >= exclude) {
         return [...findSolution(p[j]), markers[j]];
@@ -250,9 +269,11 @@ class MarkersPlugin extends videojs.getPlugin("plugin") {
   private async computeBaseHue(tag: string): Promise<number> {
     const encoder = new TextEncoder();
     const data = encoder.encode(tag);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashBuffer = await crypto.subtle.digest("SHA-256", data);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
-    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    const hashHex = hashArray
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("");
     const hashInt = BigInt(`0x${hashHex}`);
     const baseHue = Number(hashInt % BigInt(360)); // Map to [0, 360)
     return baseHue;
@@ -276,7 +297,9 @@ class MarkersPlugin extends videojs.getPlugin("plugin") {
   }
 
   // Adjust hues to ensure minimum difference
-  private adjustHues(baseHues: { [tag: string]: number }): { [tag: string]: number } {
+  private adjustHues(baseHues: { [tag: string]: number }): {
+    [tag: string]: number;
+  } {
     const adjustedHues: { [tag: string]: number } = {};
     const tags = Object.keys(baseHues);
     const N = tags.length;
@@ -285,7 +308,7 @@ class MarkersPlugin extends videojs.getPlugin("plugin") {
     // Sort the tags by base hue
     const sortedTags = tags.sort((a, b) => baseHues[a] - baseHues[b]);
     // Get sorted base hues
-    const baseHuesSorted = sortedTags.map(tag => baseHues[tag]);
+    const baseHuesSorted = sortedTags.map((tag) => baseHues[tag]);
 
     // Unwrap hues to handle circular nature
     const unwrappedHues = [...baseHuesSorted];
@@ -304,7 +327,7 @@ class MarkersPlugin extends videojs.getPlugin("plugin") {
     }
 
     // Handle wrap-around difference
-    const endGap = (unwrappedHues[0] + 360) - unwrappedHues[N - 1];
+    const endGap = unwrappedHues[0] + 360 - unwrappedHues[N - 1];
     if (endGap < deltaMin) {
       // Adjust first and last hues minimally to increase end gap
       const adjustmentNeeded = (deltaMin - endGap) / 2;
@@ -318,7 +341,7 @@ class MarkersPlugin extends videojs.getPlugin("plugin") {
     }
 
     // Wrap adjusted hues back to [0, 360)
-    const adjustedHuesList = unwrappedHues.map(hue => hue % 360);
+    const adjustedHuesList = unwrappedHues.map((hue) => hue % 360);
 
     // Map adjusted hues back to tags
     for (let i = 0; i < N; i++) {
@@ -336,7 +359,9 @@ class MarkersPlugin extends videojs.getPlugin("plugin") {
     const value = 0.95;
     const rgb = this.hsvToRgb(hueNormalized, saturation, value);
     const alpha = 0.6; // Set the desired alpha value here
-    const rgbColor = `#${this.toHex(rgb[0])}${this.toHex(rgb[1])}${this.toHex(rgb[2])}${this.toHex(Math.round(alpha * 255))}`;
+    const rgbColor = `#${this.toHex(rgb[0])}${this.toHex(rgb[1])}${this.toHex(
+      rgb[2]
+    )}${this.toHex(Math.round(alpha * 255))}`;
     return rgbColor;
   }
 
@@ -351,31 +376,48 @@ class MarkersPlugin extends videojs.getPlugin("plugin") {
     let r, g, b;
     switch (i % 6) {
       case 0:
-        r = v; g = t; b = p; break;
+        r = v;
+        g = t;
+        b = p;
+        break;
       case 1:
-        r = q; g = v; b = p; break;
+        r = q;
+        g = v;
+        b = p;
+        break;
       case 2:
-        r = p; g = v; b = t; break;
+        r = p;
+        g = v;
+        b = t;
+        break;
       case 3:
-        r = p; g = q; b = v; break;
+        r = p;
+        g = q;
+        b = v;
+        break;
       case 4:
-        r = t; g = p; b = v; break;
+        r = t;
+        g = p;
+        b = v;
+        break;
       case 5:
-        r = v; g = p; b = q; break;
+        r = v;
+        g = p;
+        b = q;
+        break;
       default:
-        r = v; g = t; b = p; break;
+        r = v;
+        g = t;
+        b = p;
+        break;
     }
 
-    return [
-      Math.round(r * 255),
-      Math.round(g * 255),
-      Math.round(b * 255)
-    ];
+    return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
   }
 
   // Convert a number to two-digit hex string
   private toHex(value: number): string {
-    return value.toString(16).padStart(2, '0');
+    return value.toString(16).padStart(2, "0");
   }
 }
 

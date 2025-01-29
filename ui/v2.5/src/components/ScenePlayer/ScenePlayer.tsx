@@ -699,19 +699,21 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     if (!player) return;
 
     // Ensure markers are added after player is fully ready and sources are loaded
-    player.on('loadedmetadata', () => {
-      const markerData = scene.scene_markers.map(marker => ({
+    player.on("loadedmetadata", () => {
+      const markerData = scene.scene_markers.map((marker) => ({
         title: getMarkerTitle(marker),
         seconds: marker.seconds,
         end_seconds: marker.end_seconds ?? null,
-        primaryTag: marker.primary_tag
+        primaryTag: marker.primary_tag,
       }));
 
       const markers = player.markers();
       markers.clearMarkers();
-      const uniqueTagNames = markerData.map(marker => marker.primaryTag.name).filter((value, index, self) => self.indexOf(value) === index);
+      const uniqueTagNames = markerData
+        .map((marker) => marker.primaryTag.name)
+        .filter((value, index, self) => self.indexOf(value) === index);
       markers.findColors(uniqueTagNames);
-      
+
       const timestampMarkers: IMarker[] = [];
       const rangeMarkers: IMarker[] = [];
       for (const marker of markerData) {
@@ -726,7 +728,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       for (let i = 0; i < timestampMarkers.length; i += CHUNK_SIZE) {
         const chunk = timestampMarkers.slice(i, i + CHUNK_SIZE);
         requestAnimationFrame(() => {
-          chunk.forEach(m => markers.addDotMarker(m));
+          chunk.forEach((m) => markers.addDotMarker(m));
         });
       }
 
@@ -736,7 +738,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     });
 
     return () => {
-      player.off('loadedmetadata');
+      player.off("loadedmetadata");
     };
   }, [getPlayer, scene]);
 
