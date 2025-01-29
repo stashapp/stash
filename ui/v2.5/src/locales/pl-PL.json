@@ -1268,7 +1268,9 @@
     "url": "URL",
     "validation": {
         "date_invalid_form": "${path} musi być w formacie RRRR-MM-DD",
-        "required": "${path} jest wymagana"
+        "required": "${path} jest wymagana",
+        "unique": "${path} musi być unikalny",
+        "blank": "${path} nie może być puste"
     },
     "videos": "Filmy wideo",
     "view_all": "Pokaż wszystko",
@@ -1276,5 +1278,12 @@
     "weight_kg": "Waga (kg)",
     "years_old": "lat(a)",
     "zip_file_count": "Liczba plików zip",
-    "audio_codec": "Kodek audio"
+    "audio_codec": "Kodek audio",
+    "sub_group": "Podgrupa",
+    "sub_group_count": "Ilość Podgrup",
+    "sub_group_of": "Podgrupa {parent}",
+    "sub_group_order": "Kolejność podgrup",
+    "sub_groups": "Podgrupy",
+    "unknown_date": "Nieznana data",
+    "video_codec": "Kodek Wideo"
 }
