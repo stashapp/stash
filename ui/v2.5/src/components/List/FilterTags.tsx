@@ -5,6 +5,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { Icon } from "../Shared/Icon";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import { BsPrefixProps, ReplaceProps } from "react-bootstrap/esm/helpers";
+import { CustomFieldsCriterion } from "src/models/list-filter/criteria/custom-fields";
 
 type TagItemProps = PropsWithChildren<
   ReplaceProps<"span", BsPrefixProps<"span"> & BadgeProps>
@@ -43,7 +44,7 @@ export const FilterTag: React.FC<{
 interface IFilterTagsProps {
   criteria: Criterion[];
   onEditCriterion: (c: Criterion) => void;
-  onRemoveCriterion: (c: Criterion) => void;
+  onRemoveCriterion: (c: Criterion, valueIndex?: number) => void;
   onRemoveAll: () => void;
 }
 
@@ -57,12 +58,13 @@ export const FilterTags: React.FC<IFilterTagsProps> = ({
 
   function onRemoveCriterionTag(
     criterion: Criterion,
-    $event: React.MouseEvent<HTMLElement, MouseEvent>
+    $event: React.MouseEvent<HTMLElement, MouseEvent>,
+    valueIndex?: number
   ) {
     if (!criterion) {
       return;
     }
-    onRemoveCriterion(criterion);
+    onRemoveCriterion(criterion, valueIndex);
     $event.stopPropagation();
   }
 
@@ -70,37 +72,47 @@ export const FilterTags: React.FC<IFilterTagsProps> = ({
     onEditCriterion(criterion);
   }
 
-  function renderFilterTags() {
-    return criteria.map((criterion) => (
+  function renderFilterTags(criterion: Criterion) {
+    if (
+      criterion instanceof CustomFieldsCriterion &&
+      criterion.value.length > 1
+    ) {
+      return criterion.value.map((value, index) => {
+        return (
+          <FilterTag
+            key={index}
+            label={criterion.getValueLabel(intl, value)}
+            onClick={() => onClickCriterionTag(criterion)}
+            onRemove={($event) =>
+              onRemoveCriterionTag(criterion, $event, index)
+            }
+          />
+        );
+      });
+    }
+
+    return (
       <FilterTag
         key={criterion.getId()}
         label={criterion.getLabel(intl)}
         onClick={() => onClickCriterionTag(criterion)}
         onRemove={($event) => onRemoveCriterionTag(criterion, $event)}
       />
-    ));
-  }
-
-  function maybeRenderClearAll() {
-    if (criteria.length < 3) {
-      return;
-    }
-
-    return (
-      <Button
-        variant="minimal"
-        className="clear-all-button"
-        onClick={() => onRemoveAll()}
-      >
-        <FormattedMessage id="actions.clear" />
-      </Button>
     );
   }
 
   return (
     <div className="d-flex justify-content-center mb-2 wrap-tags filter-tags">
-      {renderFilterTags()}
-      {maybeRenderClearAll()}
+      {criteria.map(renderFilterTags)}
+      {criteria.length >= 3 && (
+        <Button
+          variant="minimal"
+          className="clear-all-button"
+          onClick={() => onRemoveAll()}
+        >
+          <FormattedMessage id="actions.clear" />
+        </Button>
+      )}
     </div>
   );
 };

@@ -217,8 +217,19 @@ export const ItemList = <T extends QueryResult, E extends IHasID>(
     result.refetch();
   }
 
-  function onRemoveCriterion(removedCriterion: Criterion) {
-    updateFilter(filter.removeCriterion(removedCriterion.criterionOption.type));
+  function onRemoveCriterion(removedCriterion: Criterion, valueIndex?: number) {
+    if (valueIndex === undefined) {
+      updateFilter(
+        filter.removeCriterion(removedCriterion.criterionOption.type)
+      );
+    } else {
+      updateFilter(
+        filter.removeCustomFieldCriterion(
+          removedCriterion.criterionOption.type,
+          valueIndex
+        )
+      );
+    }
   }
 
   function onClearAllCriteria() {

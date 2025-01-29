@@ -13,6 +13,7 @@ import {
 import { getFilterOptions } from "./factory";
 import { CriterionType, DisplayMode, SavedUIOptions } from "./types";
 import { ListFilterOptions } from "./filter-options";
+import { CustomFieldsCriterion } from "./criteria/custom-fields";
 
 interface IDecodedParams {
   perPage?: number;
@@ -472,6 +473,20 @@ export class ListFilterModel {
 
     ret.criteria = newCriteria;
     ret.currentPage = 1;
+    return ret;
+  }
+
+  public removeCustomFieldCriterion(type: CriterionType, index: number) {
+    const ret = this.clone();
+    const c = ret.criteria.find((cc) => cc.criterionOption.type === type);
+
+    if (!c) return ret;
+
+    if (c instanceof CustomFieldsCriterion) {
+      const newCriteria = c.value.filter((_, i) => i !== index);
+      c.value = newCriteria;
+    }
+
     return ret;
   }
 

@@ -396,18 +396,26 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
     setCriterion(c);
   }
 
-  function removeCriterion(c: Criterion) {
-    const newFilter = cloneDeep(currentFilter);
+  function removeCriterion(c: Criterion, valueIndex?: number) {
+    if (valueIndex !== undefined) {
+      setCurrentFilter(
+        currentFilter.removeCustomFieldCriterion(
+          c.criterionOption.type,
+          valueIndex
+        )
+      );
+    } else {
+      const newFilter = cloneDeep(currentFilter);
+      const newCriteria = criteria.filter((cc) => {
+        return cc.getId() !== c.getId();
+      });
 
-    const newCriteria = criteria.filter((cc) => {
-      return cc.getId() !== c.getId();
-    });
+      newFilter.criteria = newCriteria;
 
-    newFilter.criteria = newCriteria;
-
-    setCurrentFilter(newFilter);
-    if (criterion?.getId() === c.getId()) {
-      optionSelected(undefined);
+      setCurrentFilter(newFilter);
+      if (criterion?.getId() === c.getId()) {
+        optionSelected(undefined);
+      }
     }
   }
 
@@ -461,7 +469,7 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
                 <FilterTags
                   criteria={criteria}
                   onEditCriterion={(c) => optionSelected(c.criterionOption)}
-                  onRemoveCriterion={(c) => removeCriterion(c)}
+                  onRemoveCriterion={removeCriterion}
                   onRemoveAll={() => onClearAll()}
                 />
               </div>

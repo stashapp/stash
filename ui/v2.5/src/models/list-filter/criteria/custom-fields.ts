@@ -66,6 +66,31 @@ export class CustomFieldsCriterion extends Criterion {
     return intl.formatMessage({ id: messageID }, opts);
   }
 
+  public getValueLabel(intl: IntlShape, v: CustomFieldCriterionInput): string {
+    let valueString = "";
+
+    if (
+      v.modifier !== CriterionModifier.IsNull &&
+      v.modifier !== CriterionModifier.NotNull &&
+      (v.value?.length ?? 0) > 0
+    ) {
+      valueString = (v.value![0] as string) ?? "";
+    }
+
+    const modifierString = ModifierCriterion.getModifierLabel(intl, v.modifier);
+    const opts = {
+      criterion: v.field,
+      modifierString,
+      valueString,
+      others: "",
+    };
+
+    return intl.formatMessage(
+      { id: "custom_fields.criteria_format_string" },
+      opts
+    );
+  }
+
   public toJSON(): string {
     const encodedCriterion = {
       type: this.criterionOption.type,
