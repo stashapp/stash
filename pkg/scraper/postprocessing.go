@@ -2,6 +2,7 @@ package scraper
 
 import (
 	"context"
+	"strings"
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/match"
@@ -84,8 +85,12 @@ func (c Cache) postScrapePerformer(ctx context.Context, p models.ScrapedPerforme
 			urls = append(urls, *p.URL)
 		}
 		if p.Twitter != nil && *p.Twitter != "" {
-			// handle twitter profile names
-			u := utils.URLFromHandle(*p.Twitter, "https://twitter.com")
+			// handle twitter profile names, either twitter.com or x.com
+			baseURL := "https://twitter.com"
+			if strings.HasPrefix(*p.Twitter, "x.com") {
+				baseURL = "https://x.com"
+			}
+			u := utils.URLFromHandle(*p.Twitter, baseURL)
 			urls = append(urls, u)
 		}
 		if p.Instagram != nil && *p.Instagram != "" {
