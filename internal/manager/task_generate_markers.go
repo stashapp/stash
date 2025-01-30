@@ -105,11 +105,11 @@ func (t *GenerateMarkersTask) generateSceneMarkers(ctx context.Context) {
 
 func (t *GenerateMarkersTask) generateMarker(videoFile *models.VideoFile, scene *models.Scene, sceneMarker *models.SceneMarker) {
 	sceneHash := scene.GetHash(t.fileNamingAlgorithm)
-	seconds := int(sceneMarker.Seconds)
+	seconds := float64(sceneMarker.Seconds)
 
 	g := t.generator
 
-	if err := g.MarkerPreviewVideo(context.TODO(), videoFile.Path, sceneHash, seconds, instance.Config.GetPreviewAudio()); err != nil {
+	if err := g.MarkerPreviewVideo(context.TODO(), videoFile.Path, sceneHash, seconds, sceneMarker.EndSeconds, instance.Config.GetPreviewAudio()); err != nil {
 		logger.Errorf("[generator] failed to generate marker video: %v", err)
 		logErrorOutput(err)
 	}
