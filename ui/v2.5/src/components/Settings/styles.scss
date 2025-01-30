@@ -293,6 +293,11 @@
     width: 100%;
   }
 
+  .job-description {
+    display: flex;
+    justify-content: space-between;
+  }
+
   .stop:not(:disabled),
   .stopping .fa-icon,
   .cancelled .fa-icon {

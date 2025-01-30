@@ -48,6 +48,8 @@ import "./pluginApi";
 import { ConnectionMonitor } from "./ConnectionMonitor";
 import { PatchFunction } from "./patch";
 
+import moment from "moment/min/moment-with-locales";
+
 const Performers = lazyComponent(
   () => import("./components/Performers/Performers")
 );
@@ -158,6 +160,7 @@ export const App: React.FC = () => {
       });
 
       setMessages(newMessages);
+      moment.locale([language, defaultLocale]);
     };
 
     setLocale();

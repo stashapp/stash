@@ -1054,6 +1054,7 @@
     "loading_type": "Error loading {type}",
     "something_went_wrong": "Something went wrong."
   },
+  "eta": "ETA",
   "ethnicity": "Ethnicity",
   "existing_value": "existing value",
   "eye_color": "Eye Colour",

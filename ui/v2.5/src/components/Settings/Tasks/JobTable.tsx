@@ -1,13 +1,3 @@
-import React, { useState, useEffect } from "react";
-import { Button, Card, ProgressBar } from "react-bootstrap";
-import {
-  mutateStopJob,
-  useJobQueue,
-  useJobsSubscribe,
-} from "src/core/StashService";
-import * as GQL from "src/core/generated-graphql";
-import { Icon } from "src/components/Shared/Icon";
-import { useIntl } from "react-intl";
 import {
   faBan,
   faCheck,
@@ -17,10 +7,27 @@ import {
   faHourglassStart,
   faTimes,
 } from "@fortawesome/free-solid-svg-icons";
+import moment from "moment/min/moment-with-locales";
+import React, { useEffect, useState } from "react";
+import { Button, Card, ProgressBar } from "react-bootstrap";
+import { FormattedMessage, useIntl } from "react-intl";
+import { Icon } from "src/components/Shared/Icon";
+import {
+  mutateStopJob,
+  useJobQueue,
+  useJobsSubscribe,
+} from "src/core/StashService";
+import * as GQL from "src/core/generated-graphql";
 
 type JobFragment = Pick<
   GQL.Job,
-  "id" | "status" | "subTasks" | "description" | "progress" | "error"
+  | "id"
+  | "status"
+  | "subTasks"
+  | "description"
+  | "progress"
+  | "error"
+  | "startTime"
 >;
 
 interface IJob {
@@ -124,6 +131,29 @@ const Task: React.FC<IJob> = ({ job }) => {
     }
   }
 
+  function maybeRenderETA() {
+    if (
+      job.status === GQL.JobStatus.Running &&
+      job.startTime !== null &&
+      job.startTime !== undefined &&
+      job.progress !== null &&
+      job.progress !== undefined &&
+      job.progress > 0
+    ) {
+      const now = new Date();
+      const start = new Date(job.startTime);
+      const nowMS = now.valueOf();
+      const startMS = start.valueOf();
+      const estimatedLength = (nowMS - startMS) / job.progress;
+      const estLenStr = moment.duration(estimatedLength).humanize();
+      return (
+        <span className="job-eta">
+          <FormattedMessage id="eta" />: {estLenStr}
+        </span>
+      );
+    }
+  }
+
   function maybeRenderSubTasks() {
     if (
       job.status === GQL.JobStatus.Running ||
@@ -159,9 +189,12 @@ const Task: React.FC<IJob> = ({ job }) => {
           <Icon icon={faTimes} />
         </Button>
         <div className={`job-status ${getStatusClass()}`}>
-          <div>
-            {getStatusIcon()}
-            <span>{job.description}</span>
+          <div className="job-description">
+            <div>
+              {getStatusIcon()}
+              <span>{job.description}</span>
+            </div>
+            {maybeRenderETA()}
           </div>
           <div>{maybeRenderProgress()}</div>
           {maybeRenderSubTasks()}
