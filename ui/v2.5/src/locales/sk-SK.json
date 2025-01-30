@@ -1,0 +1,33 @@
+{
+    "actions": {
+        "cancel": "Zrušiť",
+        "next_action": "Ďaľšie",
+        "add_directory": "Pridať priečinok",
+        "add_sub_groups": "Pridať podskupiny",
+        "allow": "Povoliť",
+        "allow_temporarily": "Dočasne povoliť",
+        "anonymise": "Zanonymizovať",
+        "backup": "Záloha",
+        "choose_date": "Vybrať dátum",
+        "confirm": "Potvrdiť",
+        "continue": "Pokračovať",
+        "create": "Vytvoriť",
+        "create_chapters": "Nová kapitola",
+        "delete": "Vymazať",
+        "find": "Nájsť",
+        "identify": "Identifikovať",
+        "logout": "Odhlásiť",
+        "optimise_database": "Optimalizovať databázu",
+        "overwrite": "Prepísať",
+        "add": "Pridať",
+        "customise": "Prispôsobiť",
+        "export": "Exportovať",
+        "export_all": "Exportovať všetko…",
+        "add_entity": "Pridať {entityType}",
+        "add_manual_date": "Pridať dátum manuálne",
+        "add_o": "Pridať O",
+        "add_to_entity": "Pridať do {entityType}",
+        "apply": "Použiť",
+        "assign_stashid_to_parent_studio": "Priraďte Stash ID existujúcemu rodičovskému štúdiu a aktualizujte metadáta"
+    }
+}
