@@ -11,7 +11,7 @@ import (
 
 const (
 	markerPreviewWidth        = 640
-	markerPreviewDuration     = 20
+	maxMarkerPreviewDuration  = 20
 	markerPreviewAudioBitrate = "64k"
 
 	markerImageDuration = 5
@@ -31,8 +31,10 @@ func (g Generator) MarkerPreviewVideo(ctx context.Context, input string, hash st
 		}
 	}
 
-	duration := float64(markerPreviewDuration)
-	if endSeconds != nil {
+	duration := float64(maxMarkerPreviewDuration)
+
+	// don't allow preview to exceed max duration
+	if endSeconds != nil && *endSeconds-seconds < maxMarkerPreviewDuration {
 		duration = float64(*endSeconds) - seconds
 	}
 
