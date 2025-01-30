@@ -7,10 +7,10 @@ import {
   faHourglassStart,
   faTimes,
 } from "@fortawesome/free-solid-svg-icons";
-import moment from "moment";
+import moment from "moment/min/moment-with-locales";
 import React, { useEffect, useState } from "react";
 import { Button, Card, ProgressBar } from "react-bootstrap";
-import { useIntl } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import { Icon } from "src/components/Shared/Icon";
 import {
   mutateStopJob,
@@ -142,11 +142,15 @@ const Task: React.FC<IJob> = ({ job }) => {
     ) {
       const now = new Date();
       const start = new Date(job.startTime);
-      const now_ms = now.valueOf();
-      const start_ms = start.valueOf();
-      const estimated_length = (now_ms - start_ms) / job.progress;
-      const est_len_str = moment.duration(estimated_length).humanize();
-      return <span>ETA: {est_len_str}</span>;
+      const nowMS = now.valueOf();
+      const startMS = start.valueOf();
+      const estimatedLength = (nowMS - startMS) / job.progress;
+      const estLenStr = moment.duration(estimatedLength).humanize();
+      return (
+        <span className="job-eta">
+          <FormattedMessage id="eta" />: {estLenStr}
+        </span>
+      );
     }
   }
 
@@ -185,12 +189,7 @@ const Task: React.FC<IJob> = ({ job }) => {
           <Icon icon={faTimes} />
         </Button>
         <div className={`job-status ${getStatusClass()}`}>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-            }}
-          >
+          <div className="job-description">
             <div>
               {getStatusIcon()}
               <span>{job.description}</span>
