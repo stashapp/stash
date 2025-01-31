@@ -430,6 +430,7 @@ CREATE UNIQUE INDEX index_files_on_parent_folder_id_basename_unique on files (pa
 CREATE INDEX index_files_on_basename on files (basename);
 CREATE INDEX index_folders_on_zip_file_id on folders (zip_file_id) WHERE zip_file_id IS NOT NULL;
 CREATE INDEX index_fingerprint_type_fingerprint ON files_fingerprints (type, fingerprint);
+CREATE INDEX index_files_fingerprints_file_id ON files_fingerprints (file_id);
 CREATE INDEX index_images_files_on_file_id on images_files (file_id);
 CREATE UNIQUE INDEX unique_index_images_files_on_primary on images_files (image_id) WHERE "primary" = TRUE;
 CREATE INDEX index_galleries_files_file_id ON galleries_files (file_id);
