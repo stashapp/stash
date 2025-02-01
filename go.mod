@@ -19,9 +19,9 @@ require (
 	github.com/go-chi/cors v1.2.1
 	github.com/go-chi/httplog v0.3.1
 	github.com/go-toast/toast v0.0.0-20190211030409-01e6764cf0a4
-	github.com/gofrs/uuid/v5 v5.1.0
 	github.com/golang-jwt/jwt/v4 v4.5.1
 	github.com/golang-migrate/migrate/v4 v4.16.2
+	github.com/google/uuid v1.6.0
 	github.com/gorilla/securecookie v1.1.1
 	github.com/gorilla/sessions v1.2.1
 	github.com/gorilla/websocket v1.5.0
@@ -78,7 +78,6 @@ require (
 	github.com/gobwas/ws v1.3.0 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/google/pprof v0.0.0-20230207041349-798e818bf904 // indirect
-	github.com/google/uuid v1.6.0 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
