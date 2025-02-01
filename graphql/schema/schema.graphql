@@ -45,6 +45,7 @@ type Query {
   findSceneMarkers(
     scene_marker_filter: SceneMarkerFilterType
     filter: FindFilterType
+    ids: [ID!]
   ): FindSceneMarkersResultType!
 
   findImage(id: ID, checksum: String): Image

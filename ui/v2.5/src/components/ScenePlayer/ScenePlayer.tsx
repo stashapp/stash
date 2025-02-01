@@ -551,7 +551,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
     // always stop the interactive client on initialisation
     interactiveClient.pause();
-    interactiveReady.current = false;
 
     const isSafari = UAParser().browser.name?.includes("Safari");
     const isLandscape = file.height && file.width && file.width > file.height;
