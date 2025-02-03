@@ -116,7 +116,7 @@ export const SceneMarkerList: React.FC<ISceneMarkerList> = ({
           config.configuration?.interface.autostartVideoOnPlaySelected ?? false;
         const url = queue.makeLink(marker.scene.id, {
           sceneIndex: index,
-          continue: autoPlay,
+          autoPlay: autoPlay,
           start: marker.seconds,
           end: marker.end_seconds,
           mode: "scene_marker",
