@@ -21,6 +21,7 @@ import {
   queryFindScenesByID,
   useSceneIncrementPlayCount,
   queryFindSceneMarkers,
+  queryFindSceneMarkersByID,
 } from "src/core/StashService";
 
 import { SceneEditPanel } from "./SceneEditPanel";
@@ -781,6 +782,14 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
     setQueueStart((filter.currentPage - 1) * filter.itemsPerPage + 1);
   }
 
+  async function getQueueSceneMarkers(sceneMarkerIDs: number[]) {
+    const query = await queryFindSceneMarkersByID(sceneMarkerIDs);
+    const { scene_markers, count } = query.data.findSceneMarkers;
+    setQueueScenes(scene_markers);
+    setQueueTotal(count);
+    setQueueStart(1);
+  }
+
   useEffect(() => {
     if (sceneQueue.query) {
       if (sceneQueue.query.mode == FilterMode.SceneMarkers) {
@@ -790,6 +799,8 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
       }
     } else if (sceneQueue.sceneIDs) {
       getQueueScenes(sceneQueue.sceneIDs);
+    } else if (sceneQueue.sceneMarkerIDs) {
+      getQueueSceneMarkers(sceneQueue.sceneMarkerIDs);
     }
   }, [sceneQueue]);
 

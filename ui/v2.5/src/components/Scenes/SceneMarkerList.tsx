@@ -6,9 +6,10 @@ import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
 import {
   queryFindSceneMarkers,
+  queryFindSceneMarkersByID,
   useFindSceneMarkers,
 } from "src/core/StashService";
-import { ItemList, ItemListContext } from "../List/ItemList";
+import { ItemList, ItemListContext, showWhenSelected } from "../List/ItemList";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 import { MarkerWallPanel } from "../Wall/WallPanel";
@@ -17,6 +18,7 @@ import { SceneMarkerCardsGrid } from "./SceneMarkerCardsGrid";
 import { DeleteSceneMarkersDialog } from "./DeleteSceneMarkersDialog";
 import { SceneQueue } from "src/models/sceneQueue";
 import { ConfigurationContext } from "src/hooks/Config";
+import { faPlay } from "@fortawesome/free-solid-svg-icons";
 
 function getItems(result: GQL.FindSceneMarkersQueryResult) {
   return result?.data?.findSceneMarkers?.scene_markers ?? [];
@@ -45,6 +47,12 @@ export const SceneMarkerList: React.FC<ISceneMarkerList> = ({
 
   const otherOperations = [
     {
+      text: intl.formatMessage({ id: "actions.play_selected" }),
+      onClick: playSelected,
+      isDisplayed: showWhenSelected,
+      icon: faPlay,
+    },
+    {
       text: intl.formatMessage({ id: "actions.play_random" }),
       onClick: playRandom,
     },
@@ -61,6 +69,29 @@ export const SceneMarkerList: React.FC<ISceneMarkerList> = ({
     return () => {
       Mousetrap.unbind("p r");
     };
+  }
+
+  async function playSelected(
+    result: GQL.FindSceneMarkersQueryResult,
+    filter: ListFilterModel,
+    selectedIds: Set<string>
+  ) {
+    // populate queue and go to first scene
+    const sceneMarkerIDs = Array.from(selectedIds.values());
+    const queue = SceneQueue.fromSceneMarkerIDList(sceneMarkerIDs);
+    const autoPlay =
+      config.configuration?.interface.autostartVideoOnPlaySelected ?? false;
+
+    // Fetch the first marker.
+    const query = await queryFindSceneMarkersByID([Number(sceneMarkerIDs[0])]);
+    const { scene_markers } = query.data.findSceneMarkers;
+    const url = queue.makeLink(scene_markers[0].scene.id, {
+      autoPlay: autoPlay,
+      start: scene_markers[0].seconds,
+      end: scene_markers[0].end_seconds,
+    });
+
+    history.push(url);
   }
 
   async function playRandom(

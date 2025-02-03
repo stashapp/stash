@@ -268,6 +268,14 @@ export const queryFindSceneMarkers = (filter: ListFilterModel) =>
     },
   });
 
+export const queryFindSceneMarkersByID = (sceneMarkerIDs: number[]) =>
+  client.query<GQL.FindSceneMarkersQuery>({
+    query: GQL.FindSceneMarkersDocument,
+    variables: {
+      ids: sceneMarkerIDs,
+    },
+  });
+
 export const useMarkerStrings = () => GQL.useMarkerStringsQuery();
 
 export const useFindGallery = (id: string) => {

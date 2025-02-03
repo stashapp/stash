@@ -41,6 +41,7 @@ export interface IPlaySceneOptions {
 export class SceneQueue {
   public query?: ListFilterModel;
   public sceneIDs?: number[];
+  public sceneMarkerIDs?: number[];
   private originalQueryPage?: number;
   private originalQueryPageSize?: number;
 
@@ -60,6 +61,12 @@ export class SceneQueue {
   public static fromSceneIDList(sceneIDs: string[]) {
     const ret = new SceneQueue();
     ret.sceneIDs = sceneIDs.map((v) => Number(v));
+    return ret;
+  }
+
+  public static fromSceneMarkerIDList(sceneMarkerIDs: string[]) {
+    const ret = new SceneQueue();
+    ret.sceneMarkerIDs = sceneMarkerIDs.map((v) => Number(v));
     return ret;
   }
 
@@ -110,6 +117,10 @@ export class SceneQueue {
       for (const id of this.sceneIDs) {
         ret.push(`qs=${id}`);
       }
+    } else if (this.sceneMarkerIDs && this.sceneMarkerIDs.length > 0) {
+      for (const id of this.sceneMarkerIDs) {
+        ret.push(`qm=${id}`);
+      }
     }
 
     return ret.join("&");
@@ -141,6 +152,9 @@ export class SceneQueue {
     } else if (params.has("qs")) {
       // must be scene list
       ret.sceneIDs = params.getAll("qs").map((v) => Number(v));
+    } else if (params.has("qm")) {
+      // must be marker list
+      ret.sceneMarkerIDs = params.getAll("qm").map((v) => Number(v));
     }
 
     return ret;
