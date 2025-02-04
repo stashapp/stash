@@ -66,7 +66,7 @@ class MarkersPlugin extends videojs.getPlugin("plugin") {
       dot?: HTMLDivElement;
       range?: HTMLDivElement;
     } = {};
-    const seekBar = this.player.el().querySelector(".vjs-progress-holder");
+    const seekBar = this.player.el().querySelector(".vjs-progress-control");
     if (marker.end_seconds) {
       throw new Error("Cannot add range marker with addDotMarker");
     }
@@ -105,7 +105,7 @@ class MarkersPlugin extends videojs.getPlugin("plugin") {
 
   private renderRangeMarkers(markers: IMarker[], layer: number) {
     const duration = this.player.duration();
-    const seekBar = this.player.el().querySelector(".vjs-progress-holder");
+    const seekBar = this.player.el().querySelector(".vjs-progress-control");
     if (!seekBar || !duration) return;
 
     markers.forEach((marker) => {
@@ -144,6 +144,15 @@ class MarkersPlugin extends videojs.getPlugin("plugin") {
 
     markerSet.range = rangeDiv;
     markerSet.range.style.display = "block";
+    markerSet.range.addEventListener("pointermove", (e) => {
+      e.stopPropagation();
+    });
+    markerSet.range.addEventListener("pointerover", (e) => {
+      e.stopPropagation();
+    });
+    markerSet.range.addEventListener("pointerout", (e) => {
+      e.stopPropagation();
+    });
     markerSet.range.addEventListener("mouseenter", () => {
       this.showMarkerTooltip(marker.title, layer);
       markerSet.range?.toggleAttribute("marker-tooltip-shown", true);
