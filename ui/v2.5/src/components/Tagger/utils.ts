@@ -29,6 +29,8 @@ const MMddyyRegex = new RegExp(
   `(${months.join("|")})\\.?.(\\d{1,2}),?.(\\d{4})`,
   "i"
 );
+const javcodeRegex = /([a-zA-Z|tT28|tT38]+)-?(\d+[zZeE]?)/;
+
 const parseDate = (input: string): string => {
   let output = input;
   const ddmmyy = output.match(ddmmyyRegex);
@@ -73,6 +75,13 @@ const parseDate = (input: string): string => {
       output.slice(yyyymmdd, yyyymmdd + 10).replace(/\./g, "-") +
       output.slice(yyyymmdd + 10).replace(/-/g, " ")
     );
+
+  const javcode = output.search(javcodeRegex);
+  if (javcode !== -1)
+    return (
+      output
+    );
+  
   return output.replace(/-/g, " ");
 };
 
