@@ -15,7 +15,7 @@ import (
 
 	"github.com/Yamashou/gqlgenc/clientv2"
 	"github.com/Yamashou/gqlgenc/graphqljson"
-	"github.com/gofrs/uuid/v5"
+	"github.com/google/uuid"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 
@@ -890,7 +890,7 @@ func (c Client) FindStashBoxPerformerByName(ctx context.Context, name string) (*
 func (c Client) FindStashBoxStudio(ctx context.Context, query string) (*models.ScrapedStudio, error) {
 	var studio *graphql.FindStudio
 
-	_, err := uuid.FromString(query)
+	_, err := uuid.Parse(query)
 	if err == nil {
 		// Confirmed the user passed in a Stash ID
 		studio, err = c.client.FindStudio(ctx, &query, nil)
