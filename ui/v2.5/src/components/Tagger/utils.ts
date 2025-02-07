@@ -76,9 +76,9 @@ const parseString = (input: string): string => {
       output.slice(yyyymmdd + 10).replace(/-/g, " ")
     );
 
-  const javcode = output.search(javcodeRegex);
+  const javcode_index = output.search(javcodeRegex);
   if (javcode_index !== -1) {
-    javcode_length = output.match(javcodeRegex)[1].length;
+    const javcode_length = output.match(javcodeRegex)[1].length;
     return (
       output.slice(0, javcode_index).replace(/-/g, " ") +
       output.slice(javcode_index, javcode_index + javcode_length) +
