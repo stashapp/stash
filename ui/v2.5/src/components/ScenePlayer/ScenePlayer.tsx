@@ -757,7 +757,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     return () => {
       player.off("loadedmetadata");
     };
-  }, [getPlayer, scene]);
+  }, [getPlayer, scene, interfaceConfig]);
 
   useEffect(() => {
     const player = getPlayer();
