@@ -157,6 +157,10 @@ func (qb *SavedFilterStore) Find(ctx context.Context, id int) (*models.SavedFilt
 func (qb *SavedFilterStore) FindMany(ctx context.Context, ids []int, ignoreNotFound bool) ([]*models.SavedFilter, error) {
 	ret := make([]*models.SavedFilter, len(ids))
 
+	if len(ids) == 0 {
+		return ret, nil
+	}
+
 	table := qb.table()
 	q := qb.selectDataset().Prepared(true).Where(table.Col(idColumn).In(ids))
 	unsorted, err := qb.getMany(ctx, q)

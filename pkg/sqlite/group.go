@@ -286,6 +286,10 @@ func (qb *GroupStore) Find(ctx context.Context, id int) (*models.Group, error) {
 func (qb *GroupStore) FindMany(ctx context.Context, ids []int) ([]*models.Group, error) {
 	ret := make([]*models.Group, len(ids))
 
+	if len(ids) == 0 {
+		return ret, nil
+	}
+
 	table := qb.table()
 	if err := batchExec(ids, defaultBatchSize, func(batch []int) error {
 		q := qb.selectDataset().Prepared(true).Where(table.Col(idColumn).In(batch))

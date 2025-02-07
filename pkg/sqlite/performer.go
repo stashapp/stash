@@ -408,6 +408,10 @@ func (qb *PerformerStore) FindMany(ctx context.Context, ids []int) ([]*models.Pe
 	tableMgr := performerTableMgr
 	ret := make([]*models.Performer, len(ids))
 
+	if len(ids) == 0 {
+		return ret, nil
+	}
+
 	if err := batchExec(ids, defaultBatchSize, func(batch []int) error {
 		q := goqu.Select("*").From(tableMgr.table).Where(tableMgr.byIDInts(batch...))
 		unsorted, err := qb.getMany(ctx, q)

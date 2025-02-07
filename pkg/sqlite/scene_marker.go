@@ -187,6 +187,10 @@ func (qb *SceneMarkerStore) Find(ctx context.Context, id int) (*models.SceneMark
 func (qb *SceneMarkerStore) FindMany(ctx context.Context, ids []int) ([]*models.SceneMarker, error) {
 	ret := make([]*models.SceneMarker, len(ids))
 
+	if len(ids) == 0 {
+		return ret, nil
+	}
+
 	table := qb.table()
 	q := qb.selectDataset().Prepared(true).Where(table.Col(idColumn).In(ids))
 	unsorted, err := qb.getMany(ctx, q)

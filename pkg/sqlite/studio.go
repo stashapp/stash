@@ -296,6 +296,10 @@ func (qb *StudioStore) Find(ctx context.Context, id int) (*models.Studio, error)
 func (qb *StudioStore) FindMany(ctx context.Context, ids []int) ([]*models.Studio, error) {
 	ret := make([]*models.Studio, len(ids))
 
+	if len(ids) == 0 {
+		return ret, nil
+	}
+
 	table := qb.table()
 	if err := batchExec(ids, defaultBatchSize, func(batch []int) error {
 		q := qb.selectDataset().Prepared(true).Where(table.Col(idColumn).In(batch))

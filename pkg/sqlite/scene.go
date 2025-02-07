@@ -496,6 +496,10 @@ func (qb *SceneStore) Find(ctx context.Context, id int) (*models.Scene, error) {
 func (qb *SceneStore) FindMany(ctx context.Context, ids []int) ([]*models.Scene, error) {
 	scenes := make([]*models.Scene, len(ids))
 
+	if len(ids) == 0 {
+		return scenes, nil
+	}
+
 	table := qb.table()
 	if err := batchExec(ids, defaultBatchSize, func(batch []int) error {
 		q := qb.selectDataset().Prepared(true).Where(table.Col(idColumn).In(batch))
