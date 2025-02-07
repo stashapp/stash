@@ -76,15 +76,15 @@ const parseString = (input: string): string => {
       output.slice(yyyymmdd + 10).replace(/-/g, " ")
     );
 
-  if (javcode_index !== -1)
-    const javcode = output.match(javcodeRegex);
-    const javcode_length = `${javcode[1]}`.length;
+  const javcode = output.search(javcodeRegex);
+  if (javcode_index !== -1) {
+    javcode_length = output.match(javcodeRegex)[1].length;
     return (
       output.slice(0, javcode_index).replace(/-/g, " ") +
       output.slice(javcode_index, javcode_index + javcode_length) +
       output.slice(javcode_index + javcode_length).replace(/-/g, " ")
     );
-  
+  }
   return output.replace(/-/g, " ");
 };
 
