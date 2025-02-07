@@ -718,7 +718,9 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         // Wait for colors
         await markers.findColors(uniqueTagNames);
 
-        const showRangeTags = interfaceConfig?.showRangeMarkers ?? true;
+        const showRangeTags =
+          !ScreenUtils.isMobile() &&
+          (interfaceConfig?.showRangeMarkers ?? true);
         const timestampMarkers: IMarker[] = [];
         const rangeMarkers: IMarker[] = [];
 
