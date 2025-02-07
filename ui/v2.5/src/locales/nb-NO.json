@@ -139,7 +139,9 @@
         "rescan": "Skann på nytt",
         "reshuffle": "Stokk om",
         "rename_gen_files": "Gi nytt navn til genererte filer",
-        "selective_auto_tag": "Selektiv Automatisk Tagging"
+        "selective_auto_tag": "Selektiv Automatisk Tagging",
+        "set_image": "Velg bilde…",
+        "selective_clean": "Selektiv Rens"
     },
     "component_tagger": {
         "config": {
@@ -160,7 +162,13 @@
             "query_mode_path": "Filbane",
             "query_mode_path_desc": "Bruker hele filbanen",
             "set_cover_desc": "Bytt ut scenens omslag hvis en finnes.",
-            "source": "Kilde"
+            "source": "Kilde",
+            "set_cover_label": "Velg scene omslag bilde",
+            "set_tag_label": "Velg tagg",
+            "errors": {
+                "blacklist_duplicate": "Dupliser svartelist gjenstand"
+            },
+            "set_tag_desc": "Legg til tagg til scene, enten ved overskriving eller fusjonering med eksisterende tags i scenen."
         }
     },
     "config": {
@@ -249,5 +257,6 @@
         "CUT": "Omskåret",
         "UNCUT": "Ikke omskåret"
     },
-    "birth_year": "Fødselsår"
+    "birth_year": "Fødselsår",
+    "all": "alle"
 }

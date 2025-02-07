@@ -6,7 +6,7 @@
         "add_to_entity": "新增至{entityType}",
         "allow": "允許",
         "allow_temporarily": "暫時允許",
-        "anonymise": "匿名化",
+        "anonymise": "匿名處理",
         "apply": "套用",
         "auto_tag": "自動套用標籤",
         "backup": "備份",
@@ -141,7 +141,7 @@
         "reset_resume_time": "重置恢復時間",
         "set_cover": "設為封面",
         "remove_from_containing_group": "從群組中刪除",
-        "add_sub_groups": "新增子組"
+        "add_sub_groups": "新增子分類"
     },
     "actions_name": "動作",
     "age": "年齡",
@@ -185,7 +185,10 @@
             "show_male_label": "顯示男優",
             "source": "來源",
             "mark_organized_desc": "點選儲存後立即將短片標為已整理。",
-            "mark_organized_label": "儲存時標記為已整理"
+            "mark_organized_label": "儲存時標記為已整理",
+            "errors": {
+                "blacklist_duplicate": "複製黑名單項目"
+            }
         },
         "noun_query": "關鍵字",
         "results": {
@@ -1073,7 +1076,8 @@
     "last_played_at": "上次播放於",
     "library": "收藏庫",
     "loading": {
-        "generic": "載入中…"
+        "generic": "載入中…",
+        "plugins": "正在載入外掛程式…"
     },
     "marker_count": "章節標記數量",
     "markers": "章節標記",
@@ -1192,7 +1196,7 @@
     "settings": "設定",
     "setup": {
         "confirm": {
-            "almost_ready": "我們快要設定完了，請確認以下設定是否正確。若有任何不正確的內容，您可以回上一步進行修改。若一切看起來正確，請點選下方的「確認」按鈕以完成設定。",
+            "almost_ready": "設定即將完成，請再次確認以下設定是否正確。若有任何不正確的內容，您可以按下「上一步」以進行修改。若一切無誤，請點選下方的「確認」按鈕以完成設定。",
             "configuration_file_location": "設定檔案路徑：",
             "database_file_path": "資料庫檔案路徑",
             "generated_directory": "生成媒體路徑",
@@ -1208,7 +1212,9 @@
         "errors": {
             "something_went_wrong": "噢不！好像出了些問題！",
             "something_went_wrong_description": "如果您所輸入的資料看起來有問題，請點選上一步返回以更正您的資料。否則，請在 {githubLink} 上提出錯誤或在 {discordLink} 中尋求幫助。",
-            "something_went_wrong_while_setting_up_your_system": "設定系統時出了些問題。以下是我們收到的錯誤：{error}"
+            "something_went_wrong_while_setting_up_your_system": "設定系統時出了些問題。以下是我們收到的錯誤：{error}",
+            "unexpected_error": "發生一個無法辨認的錯誤: {error}",
+            "unable_to_retrieve_system_status": "無法取得系統狀態"
         },
         "folder": {
             "file_path": "檔案路徑",
@@ -1370,7 +1376,13 @@
         "invalid_json_string": "無效的 JSON 字串： {error}",
         "something_went_wrong": "出错了。",
         "loading_type": "載入{type}時出錯",
-        "lazy_component_error_help": "如果您最近升級了 Stash，請重新載入頁面或清除瀏覽器cache。"
+        "lazy_component_error_help": "如果您最近升級了 Stash，請重新載入頁面或清除瀏覽器cache。",
+        "custom_fields": {
+            "field_name_length": "欄位名稱必須少於 65 個字元",
+            "duplicate_field": "已經有其他同名的欄位",
+            "field_name_required": "必須輸入欄位名稱",
+            "field_name_whitespace": "欄位名稱的開頭與結尾不可有空白"
+        }
     },
     "group": "群組",
     "group_count": "群組計數",
@@ -1475,7 +1487,8 @@
         "required": "${path}是必填欄位",
         "date_invalid_form": "${path}必須是YYYY-MM-DD形式",
         "unique": "${path}必須是唯一的",
-        "blank": "${path}不能為空"
+        "blank": "${path}不能為空",
+        "end_time_before_start_time": "結束時間必須大於或等於開始時間"
     },
     "video_codec": "影片編碼",
     "tag_sub_tag_tooltip": "有子標籤",
@@ -1490,5 +1503,18 @@
     "sub_group_order": "子組順序",
     "sub_groups": "子組",
     "containing_group": "包含群組",
-    "sub_group": "子組"
+    "sub_group": "子組",
+    "criterion_modifier_values": {
+        "none": "不存在",
+        "only": "僅",
+        "any_of": "其中任意",
+        "any": "任意"
+    },
+    "include_sub_groups": "包括子組",
+    "time_end": "結束時間",
+    "custom_fields": {
+        "field": "欄位",
+        "title": "自訂欄位",
+        "value": "值"
+    }
 }
