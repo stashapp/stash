@@ -1,5 +1,6 @@
 import videojs, { VideoJsPlayer } from "video.js";
 import "./markers.css";
+import CryptoJS from "crypto-js";
 
 export interface IMarker {
   title: string;
@@ -276,13 +277,8 @@ class MarkersPlugin extends videojs.getPlugin("plugin") {
 
   // Compute base hue from tag name
   private async computeBaseHue(tag: string): Promise<number> {
-    const encoder = new TextEncoder();
-    const data = encoder.encode(tag);
-    const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    const hashHex = hashArray
-      .map((b) => b.toString(16).padStart(2, "0"))
-      .join("");
+    const hash = CryptoJS.SHA256(tag);
+    const hashHex = hash.toString(CryptoJS.enc.Hex);
     const hashInt = BigInt(`0x${hashHex}`);
     const baseHue = Number(hashInt % BigInt(360)); // Map to [0, 360)
     return baseHue;
