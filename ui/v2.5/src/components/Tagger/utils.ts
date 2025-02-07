@@ -29,9 +29,9 @@ const MMddyyRegex = new RegExp(
   `(${months.join("|")})\\.?.(\\d{1,2}),?.(\\d{4})`,
   "i"
 );
-const javcodeRegex = /([a-zA-Z|tT28|tT38]+)-?(\d+[zZeE]?)/;
+const javcodeRegex = /([a-zA-Z|tT28|tT38]+-\d+[zZeE]?)/;
 
-const parseDate = (input: string): string => {
+const parseString = (input: string): string => {
   let output = input;
   const ddmmyy = output.match(ddmmyyRegex);
   if (ddmmyy) {
@@ -76,10 +76,13 @@ const parseDate = (input: string): string => {
       output.slice(yyyymmdd + 10).replace(/-/g, " ")
     );
 
-  const javcode = output.search(javcodeRegex);
-  if (javcode !== -1)
+  if (javcode_index !== -1)
+    const javcode = output.match(javcodeRegex);
+    const javcode_length = `${javcode[1]}`.length;
     return (
-      output
+      output.slice(0, javcode_index).replace(/-/g, " ") +
+      output.slice(javcode_index, javcode_index + javcode_length) +
+      output.slice(javcode_index + javcode_length).replace(/-/g, " ")
     );
   
   return output.replace(/-/g, " ");
@@ -130,7 +133,7 @@ export function prepareQueryString(
   regexs.forEach((re) => {
     s = s.replace(re, " ");
   });
-  s = parseDate(s);
+  s = parseString(s);
   return s.replace(/\./g, " ").replace(/ +/g, " ");
 }
 
