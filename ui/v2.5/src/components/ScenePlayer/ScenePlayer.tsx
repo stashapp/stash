@@ -718,13 +718,21 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         // Wait for colors
         await markers.findColors(uniqueTagNames);
 
+        const showRangeTags = interfaceConfig?.showRangeMarkers ?? true;
         const timestampMarkers: IMarker[] = [];
         const rangeMarkers: IMarker[] = [];
-        for (const marker of markerData) {
-          if (marker.end_seconds === null) {
+
+        if (!showRangeTags) {
+          for (const marker of markerData) {
             timestampMarkers.push(marker);
-          } else {
-            rangeMarkers.push(marker);
+          }
+        } else {
+          for (const marker of markerData) {
+            if (marker.end_seconds === null) {
+              timestampMarkers.push(marker);
+            } else {
+              rangeMarkers.push(marker);
+            }
           }
         }
 

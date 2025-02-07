@@ -352,6 +352,12 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
             onChange={(v) => saveInterface({ showScrubber: v })}
           />
           <BooleanSetting
+            id="show-rangemarkers"
+            headingID="config.ui.scene_player.options.show_rangemarkers"
+            checked={iface.showRangeMarkers ?? undefined}
+            onChange={(v) => saveInterface({ showRangeMarkers: v })}
+          />
+          <BooleanSetting
             id="always-start-from-beginning"
             headingID="config.ui.scene_player.options.always_start_from_beginning"
             checked={ui.alwaysStartFromBeginning ?? undefined}

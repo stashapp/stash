@@ -68,9 +68,7 @@ class MarkersPlugin extends videojs.getPlugin("plugin") {
       range?: HTMLDivElement;
     } = {};
     const seekBar = this.player.el().querySelector(".vjs-progress-control");
-    if (marker.end_seconds) {
-      throw new Error("Cannot add range marker with addDotMarker");
-    }
+
     markerSet.dot = videojs.dom.createEl("div") as HTMLDivElement;
     markerSet.dot.className = "vjs-marker-dot";
     if (duration) {

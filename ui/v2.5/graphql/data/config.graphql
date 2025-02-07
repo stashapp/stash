@@ -75,6 +75,7 @@ fragment ConfigInterfaceData on ConfigInterfaceResult {
   wallShowTitle
   wallPlayback
   showScrubber
+  showRangeMarkers
   maximumLoopDuration
   noBrowser
   notificationsEnabled
