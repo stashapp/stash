@@ -652,6 +652,10 @@ func performerFragmentToScrapedPerformer(p graphql.PerformerFragment) *models.Sc
 		sp.Birthdate = padFuzzyDate(p.BirthDate)
 	}
 
+	if p.DeathDate != nil {
+		sp.DeathDate = padFuzzyDate(p.DeathDate)
+	}
+
 	if p.Gender != nil {
 		sp.Gender = translateGender(p.Gender)
 	}

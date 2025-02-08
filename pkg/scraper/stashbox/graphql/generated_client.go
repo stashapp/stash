@@ -199,6 +199,7 @@ type PerformerFragment struct {
 	Urls            []*URLFragment              "json:\"urls\" graphql:\"urls\""
 	Images          []*ImageFragment            "json:\"images\" graphql:\"images\""
 	BirthDate       *string                     "json:\"birth_date,omitempty\" graphql:\"birth_date\""
+	DeathDate       *string                     "json:\"death_date,omitempty\" graphql:\"death_date\""
 	Ethnicity       *EthnicityEnum              "json:\"ethnicity,omitempty\" graphql:\"ethnicity\""
 	Country         *string                     "json:\"country,omitempty\" graphql:\"country\""
 	EyeColor        *EyeColorEnum               "json:\"eye_color,omitempty\" graphql:\"eye_color\""
@@ -265,6 +266,12 @@ func (t *PerformerFragment) GetBirthDate() *string {
 		t = &PerformerFragment{}
 	}
 	return t.BirthDate
+}
+func (t *PerformerFragment) GetDeathDate() *string {
+	if t == nil {
+		t = &PerformerFragment{}
+	}
+	return t.DeathDate
 }
 func (t *PerformerFragment) GetEthnicity() *EthnicityEnum {
 	if t == nil {
@@ -860,6 +867,7 @@ fragment PerformerFragment on Performer {
 		... ImageFragment
 	}
 	birth_date
+	death_date
 	ethnicity
 	country
 	eye_color
@@ -992,6 +1000,7 @@ fragment PerformerFragment on Performer {
 		... ImageFragment
 	}
 	birth_date
+	death_date
 	ethnicity
 	country
 	eye_color
@@ -1124,6 +1133,7 @@ fragment PerformerFragment on Performer {
 		... ImageFragment
 	}
 	birth_date
+	death_date
 	ethnicity
 	country
 	eye_color
@@ -1256,6 +1266,7 @@ fragment PerformerFragment on Performer {
 		... ImageFragment
 	}
 	birth_date
+	death_date
 	ethnicity
 	country
 	eye_color
@@ -1327,6 +1338,7 @@ fragment PerformerFragment on Performer {
 		... ImageFragment
 	}
 	birth_date
+	death_date
 	ethnicity
 	country
 	eye_color
@@ -1403,6 +1415,7 @@ fragment PerformerFragment on Performer {
 		... ImageFragment
 	}
 	birth_date
+	death_date
 	ethnicity
 	country
 	eye_color
@@ -1540,6 +1553,7 @@ fragment PerformerFragment on Performer {
 		... ImageFragment
 	}
 	birth_date
+	death_date
 	ethnicity
 	country
 	eye_color
