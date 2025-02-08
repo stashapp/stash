@@ -136,6 +136,7 @@ const VideoFrameRateResolution: React.FC<{
 interface IProps {
   scene: GQL.SceneDataFragment;
   setTimestamp: (num: number) => void;
+  setEndstamp: (num: number) => void;
   queueScenes: QueuedItem[];
   onQueueNext: () => void;
   onQueuePrevious: () => void;
@@ -710,6 +711,7 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
   );
 
   const _setTimestamp = useRef<(value: number) => void>();
+  const _setEndstamp = useRef<(value: number | null) => void>();
   const initialTimestamp = useMemo(() => {
     return Number.parseInt(queryParams.get("t")?.split(",")[0] ?? "0", 10);
   }, [queryParams]);
@@ -746,6 +748,12 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
   function setTimestamp(value: number) {
     if (_setTimestamp.current) {
       _setTimestamp.current(value);
+    }
+  }
+
+  function setEndstamp(value: number | null) {
+    if (_setEndstamp.current) {
+      _setEndstamp.current(value);
     }
   }
 
@@ -887,6 +895,9 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
       // Scene page does not reload if the sceneid is the same so move timeline to marker.
       if (queuedScene.scene.id == id) {
         setTimestamp(queuedScene.seconds);
+        // Set new marker endtime.
+        const end_seconds = queuedScene.end_seconds ?? null;
+        setEndstamp(end_seconds);
       }
     } else if (queuedScene.__typename == "Scene") {
       loadScene(
@@ -1041,6 +1052,7 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
       <ScenePage
         scene={scene}
         setTimestamp={setTimestamp}
+        setEndstamp={setEndstamp}
         queueScenes={queueScenes}
         queueStart={queueStart}
         onDelete={onDelete}
@@ -1065,7 +1077,7 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
           autoplay={autoplay}
           permitLoop={!continuePlaylist}
           initialTimestamp={initialTimestamp}
-          initialEndstamp={initialEndstamp}
+          endTime={initialEndstamp}
           sendSetTimestamp={getSetTimestamp}
           onComplete={onComplete}
           onNext={() => queueNext(true)}
