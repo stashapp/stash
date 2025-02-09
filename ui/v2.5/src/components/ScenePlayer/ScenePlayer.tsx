@@ -216,7 +216,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   autoplay,
   permitLoop = true,
   initialTimestamp: _initialTimestamp,
-  endTime: endTime,
+  endTime,
   sendSetTimestamp,
   onComplete,
   onNext,
