@@ -38,6 +38,7 @@ type Importer struct {
 func (i *Importer) PreImport(ctx context.Context) error {
 	i.tag = models.Tag{
 		Name:          i.Input.Name,
+		SortName:      i.Input.SortName,
 		Description:   i.Input.Description,
 		Favorite:      i.Input.Favorite,
 		IgnoreAutoTag: i.Input.IgnoreAutoTag,
