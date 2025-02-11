@@ -129,8 +129,12 @@ class MarkersPlugin extends videojs.getPlugin("plugin") {
 
     const startPercent = (marker.seconds / duration) * 100;
     const endPercent = (marker.end_seconds / duration) * 100;
-    const width = endPercent - startPercent;
-
+    let width = endPercent - startPercent;
+    // Ensure the width is at least 8px
+    const minWidth = (10 / seekBar.clientWidth) * 100; // Convert 8px to percentage
+    if (width < minWidth) {
+      width = minWidth;
+    }
     rangeDiv.style.left = `${startPercent}%`;
     rangeDiv.style.width = `${width}%`;
     rangeDiv.style.bottom = `${layer * this.layerHeight}px`; // Adjust height based on layer
