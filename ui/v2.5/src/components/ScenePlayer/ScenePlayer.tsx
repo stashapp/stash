@@ -701,14 +701,15 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     // Ensure markers are added after player is fully ready and sources are loaded
     if (player.readyState() >= 1) {
       loadMarkers();
+      return;
     } else {
       player.on("loadedmetadata", () => {
         loadMarkers();
       });
+      return () => {
+        player.off("loadedmetadata", loadMarkers);
+      };
     }
-    return () => {
-      player.off("loadedmetadata", loadMarkers);
-    };
   }, [getPlayer, scene]);
 
   useEffect(() => {
