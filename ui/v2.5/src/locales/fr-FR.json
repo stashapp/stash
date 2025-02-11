@@ -1517,5 +1517,6 @@
         "title": "Champs personnalisés",
         "value": "Valeur"
     },
-    "eta": "TAE"
+    "eta": "TAE",
+    "sort_name": "Nom de tri"
 }
