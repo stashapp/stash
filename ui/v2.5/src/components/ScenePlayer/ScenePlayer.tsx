@@ -710,7 +710,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         player.off("loadedmetadata", loadMarkers);
       };
     }
-  }, [getPlayer, scene]);
+  }, [getPlayer, scene, loadMarkers]);
 
   useEffect(() => {
     const player = getPlayer();
