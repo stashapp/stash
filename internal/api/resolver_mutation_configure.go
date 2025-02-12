@@ -457,7 +457,6 @@ func (r *mutationResolver) ConfigureInterface(ctx context.Context, input ConfigI
 	r.setConfigBool(config.NotificationsEnabled, input.NotificationsEnabled)
 
 	r.setConfigBool(config.ShowScrubber, input.ShowScrubber)
-	r.setConfigBool(config.ShowRangeMarkers, input.ShowRangeMarkers)
 
 	r.setConfigString(config.WallPlayback, input.WallPlayback)
 	r.setConfigInt(config.MaximumLoopDuration, input.MaximumLoopDuration)

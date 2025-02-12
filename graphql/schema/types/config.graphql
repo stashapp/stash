@@ -355,9 +355,6 @@ input ConfigInterfaceInput {
   "Show scene scrubber by default"
   showScrubber: Boolean
 
-  "Show scene range markers by default"
-  showRangeMarkers: Boolean
-
   "Maximum duration (in seconds) in which a scene video will loop in the scene player"
   maximumLoopDuration: Int
   "If true, video will autostart on load in the scene player"

@@ -719,7 +719,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
         const showRangeTags =
           !ScreenUtils.isMobile() &&
-          (interfaceConfig?.showRangeMarkers ?? true);
+          (uiConfig?.showRangeMarkers ?? true);
         const timestampMarkers: IMarker[] = [];
         const rangeMarkers: IMarker[] = [];
 
@@ -766,7 +766,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         player.off("loadedmetadata", loadMarkers);
       };
     }
-  }, [getPlayer, scene, interfaceConfig]);
+  }, [getPlayer, scene, uiConfig]);
 
   useEffect(() => {
     const player = getPlayer();

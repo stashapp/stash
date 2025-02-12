@@ -195,9 +195,6 @@ const (
 	ShowScrubber        = "show_scrubber"
 	showScrubberDefault = true
 
-	ShowRangeMarkers    = "show_rangemarkers"
-	showRangeMarkersDef = true
-
 	WallPlayback        = "wall_playback"
 	defaultWallPlayback = "video"
 
@@ -1213,10 +1210,6 @@ func (i *Config) GetWallPlayback() string {
 
 func (i *Config) GetShowScrubber() bool {
 	return i.getBoolDefault(ShowScrubber, showScrubberDefault)
-}
-
-func (i *Config) GetShowRangeMarkers() bool {
-	return i.getBoolDefault(ShowRangeMarkers, showRangeMarkersDef)
 }
 
 func (i *Config) GetMaximumLoopDuration() int {
