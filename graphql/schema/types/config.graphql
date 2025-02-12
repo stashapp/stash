@@ -421,9 +421,6 @@ type ConfigInterfaceResult {
   "Show scene scrubber by default"
   showScrubber: Boolean
 
-  "Show scene range markers by default"
-  showRangeMarkers: Boolean
-
   "Maximum duration (in seconds) in which a scene video will loop in the scene player"
   maximumLoopDuration: Int
   "True if we should not auto-open a browser window on startup"
