@@ -2,8 +2,8 @@
     "actions": {
         "add": "Ajouter",
         "add_directory": "Ajouter un répertoire",
-        "add_entity": "Ajouter {entityType}",
-        "add_to_entity": "Ajouter à {entityType}",
+        "add_entity": "Ajouter une entité",
+        "add_to_entity": "Ajouter à l'entité",
         "allow": "Autoriser",
         "allow_temporarily": "Autoriser temporairement",
         "anonymise": "Anonymiser",
