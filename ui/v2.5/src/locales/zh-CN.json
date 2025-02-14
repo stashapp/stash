@@ -2,8 +2,8 @@
     "actions": {
         "add": "新增",
         "add_directory": "新增目录",
-        "add_entity": "新增{entityType}",
-        "add_to_entity": "新增至{entityType}",
+        "add_entity": "添加实体",
+        "add_to_entity": "新增至实体",
         "allow": "允许",
         "allow_temporarily": "暂时允许",
         "anonymise": "匿名化",
