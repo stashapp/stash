@@ -175,7 +175,7 @@
 | `f` | Toggle favourite |
 | `,` | Expand/Collapse Details |
 
-### Edit Performer tab shortcuts
+### Performer Edit tab shortcuts
 
 | Keyboard sequence | Action |
 |-------------------|--------|
