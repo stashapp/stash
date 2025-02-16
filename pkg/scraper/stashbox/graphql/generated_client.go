@@ -196,6 +196,8 @@ type PerformerFragment struct {
 	Aliases         []string                    "json:\"aliases\" graphql:\"aliases\""
 	Gender          *GenderEnum                 "json:\"gender,omitempty\" graphql:\"gender\""
 	MergedIds       []string                    "json:\"merged_ids\" graphql:\"merged_ids\""
+	Deleted         bool                        "json:\"deleted\" graphql:\"deleted\""
+	MergedIntoID    *string                     "json:\"merged_into_id,omitempty\" graphql:\"merged_into_id\""
 	Urls            []*URLFragment              "json:\"urls\" graphql:\"urls\""
 	Images          []*ImageFragment            "json:\"images\" graphql:\"images\""
 	BirthDate       *string                     "json:\"birth_date,omitempty\" graphql:\"birth_date\""
@@ -248,6 +250,18 @@ func (t *PerformerFragment) GetMergedIds() []string {
 		t = &PerformerFragment{}
 	}
 	return t.MergedIds
+}
+func (t *PerformerFragment) GetDeleted() bool {
+	if t == nil {
+		t = &PerformerFragment{}
+	}
+	return t.Deleted
+}
+func (t *PerformerFragment) GetMergedIntoID() *string {
+	if t == nil {
+		t = &PerformerFragment{}
+	}
+	return t.MergedIntoID
 }
 func (t *PerformerFragment) GetUrls() []*URLFragment {
 	if t == nil {
@@ -860,6 +874,8 @@ fragment PerformerFragment on Performer {
 	aliases
 	gender
 	merged_ids
+	deleted
+	merged_into_id
 	urls {
 		... URLFragment
 	}
@@ -993,6 +1009,8 @@ fragment PerformerFragment on Performer {
 	aliases
 	gender
 	merged_ids
+	deleted
+	merged_into_id
 	urls {
 		... URLFragment
 	}
@@ -1126,6 +1144,8 @@ fragment PerformerFragment on Performer {
 	aliases
 	gender
 	merged_ids
+	deleted
+	merged_into_id
 	urls {
 		... URLFragment
 	}
@@ -1259,6 +1279,8 @@ fragment PerformerFragment on Performer {
 	aliases
 	gender
 	merged_ids
+	deleted
+	merged_into_id
 	urls {
 		... URLFragment
 	}
@@ -1331,6 +1353,8 @@ fragment PerformerFragment on Performer {
 	aliases
 	gender
 	merged_ids
+	deleted
+	merged_into_id
 	urls {
 		... URLFragment
 	}
@@ -1408,6 +1432,8 @@ fragment PerformerFragment on Performer {
 	aliases
 	gender
 	merged_ids
+	deleted
+	merged_into_id
 	urls {
 		... URLFragment
 	}
@@ -1546,6 +1572,8 @@ fragment PerformerFragment on Performer {
 	aliases
 	gender
 	merged_ids
+	deleted
+	merged_into_id
 	urls {
 		... URLFragment
 	}

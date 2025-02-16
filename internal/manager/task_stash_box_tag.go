@@ -119,6 +119,18 @@ func (t *StashBoxBatchTagTask) findStashBoxPerformer(ctx context.Context) (*mode
 		}
 		if remoteID != "" {
 			performer, err = client.FindStashBoxPerformerByID(ctx, remoteID)
+
+			if performer != nil && performer.RemoteMergedIntoId != nil {
+				mergedPerformer, err := client.FindStashBoxPerformerByID(ctx, *performer.RemoteMergedIntoId)
+				if err != nil {
+					logger.Errorf("Error loading merged performer %s from stashbox", *performer.RemoteMergedIntoId)
+				} else if mergedPerformer.StoredID != nil && *mergedPerformer.StoredID != *performer.StoredID {
+					logger.Warnf("Performer %s merged into %s, but both exist locally, not merging", *performer.StoredID, *mergedPerformer.StoredID)
+				} else {
+					mergedPerformer.StoredID = performer.StoredID
+					performer = mergedPerformer
+				}
+			}
 		}
 	} else {
 		var name string
