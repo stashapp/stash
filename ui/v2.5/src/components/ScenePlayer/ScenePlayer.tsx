@@ -697,6 +697,12 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     const player = getPlayer();
     if (!player) return;
 
+    if (scene.paths.screenshot) {
+      player.poster(scene.paths.screenshot);
+    } else {
+      player.poster("");
+    }
+
     function loadMarkers() {
       const loadMarkersAsync = async () => {
         const markerData = scene.scene_markers.map((marker) => ({
