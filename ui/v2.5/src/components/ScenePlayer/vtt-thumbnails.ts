@@ -151,8 +151,8 @@ class VTTThumbnailsPlugin extends videojs.getPlugin("plugin") {
       this.player.$(".vjs-mouse-display")?.classList.add("vjs-hidden");
     }
 
-    progressBar.addEventListener("pointerenter", this.onBarPointerEnter);
-    progressBar.addEventListener("pointerleave", this.onBarPointerLeave);
+    progressBar.addEventListener("pointerover", this.onBarPointerEnter);
+    progressBar.addEventListener("pointerout", this.onBarPointerLeave);
   }
 
   private onBarPointerEnter = () => {
