@@ -6,7 +6,7 @@
       "src": "stash_icon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
-      "purpose":"maskable any"
+      "purpose": "maskable any"
     },
     {
       "src": "stash_icon.png",
@@ -18,7 +18,7 @@
       "src": "favicon.png",
       "sizes": "256x256 64x64 32x32 24x24 16x16",
       "type": "image/png",
-      "purpose":"monochrome"
+      "purpose": "monochrome"
     }
   ],
   "start_url": "/",
