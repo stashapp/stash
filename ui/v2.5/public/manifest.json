@@ -5,17 +5,20 @@
     {
       "src": "stash_icon.svg",
       "sizes": "any",
-      "type": "image/svg+xml"
+      "type": "image/svg+xml",
+      "purpose":"maskable any"
+    },
+    {
+      "src": "stash_icon.png",
+      "sizes": "256x256 64x64 32x32 24x24 16x16",
+      "type": "image/png",
+      "purpose": "maskable any"
     },
     {
       "src": "favicon.png",
       "sizes": "256x256 64x64 32x32 24x24 16x16",
-      "type": "image/png"
-    },
-    {
-      "src": "favicon.ico",
-      "sizes": "256x256 64x64 32x32 24x24 16x16",
-      "type": "image/x-icon"
+      "type": "image/png",
+      "purpose":"monochrome"
     }
   ],
   "start_url": "/",
