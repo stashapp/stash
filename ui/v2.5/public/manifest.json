@@ -4,16 +4,17 @@
   "icons": [
     {
       "src": "stash_icon.svg",
-      "sizes": "any"
+      "sizes": "any",
+      "type": "image/svg+xml"
     },
     {
       "src": "favicon.png",
-      "sizes": "256x256",
+      "sizes": "256x256 64x64 32x32 24x24 16x16",
       "type": "image/png"
     },
     {
       "src": "favicon.ico",
-      "sizes": "256x256",
+      "sizes": "256x256 64x64 32x32 24x24 16x16",
       "type": "image/x-icon"
     }
   ],
