@@ -696,14 +696,14 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   useEffect(() => {
     const player = getPlayer();
     if (!player) return;
-
+  
     if (scene.paths.screenshot) {
       player.poster(scene.paths.screenshot);
     } else {
       player.poster("");
     }
-
-    function loadMarkers() {
+  
+    const loadMarkers = () => {
       const loadMarkersAsync = async () => {
         const markerData = scene.scene_markers.map((marker) => ({
           title: getMarkerTitle(marker),
@@ -711,22 +711,22 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
           end_seconds: marker.end_seconds ?? null,
           primaryTag: marker.primary_tag,
         }));
-
+  
         const markers = player!.markers();
         markers.clearMarkers();
-
+  
         const uniqueTagNames = markerData
           .map((marker) => marker.primaryTag.name)
           .filter((value, index, self) => self.indexOf(value) === index);
-
+  
         // Wait for colors
         await markers.findColors(uniqueTagNames);
-
+  
         const showRangeTags =
           !ScreenUtils.isMobile() && (uiConfig?.showRangeMarkers ?? true);
         const timestampMarkers: IMarker[] = [];
         const rangeMarkers: IMarker[] = [];
-
+  
         if (!showRangeTags) {
           for (const marker of markerData) {
             timestampMarkers.push(marker);
@@ -740,7 +740,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
             }
           }
         }
-
+  
         // Add markers in chunks
         const CHUNK_SIZE = 10;
         for (let i = 0; i < timestampMarkers.length; i += CHUNK_SIZE) {
@@ -749,27 +749,31 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
             chunk.forEach((m) => markers.addDotMarker(m));
           });
         }
-
+  
         requestAnimationFrame(() => {
           markers.addRangeMarkers(rangeMarkers);
         });
       };
-
+  
       // Call our async function
       void loadMarkersAsync();
-    }
+    };
+  
+    // Define the event handler outside the useEffect
+    const handleLoadMetadata = () => {
+      loadMarkers();
+    };
+  
     // Ensure markers are added after player is fully ready and sources are loaded
     if (player.readyState() >= 1) {
       loadMarkers();
-      return;
     } else {
-      player.on("loadedmetadata", () => {
-        loadMarkers();
-      });
-      return () => {
-        player.off("loadedmetadata", loadMarkers);
-      };
+      player.on("loadedmetadata", handleLoadMetadata);
     }
+  
+    return () => {
+      player.off("loadedmetadata", handleLoadMetadata);
+    };
   }, [getPlayer, scene, uiConfig]);
 
   useEffect(() => {
