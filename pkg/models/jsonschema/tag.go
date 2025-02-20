@@ -11,6 +11,7 @@ import (
 
 type Tag struct {
 	Name          string        `json:"name,omitempty"`
+	SortName      string        `json:"sort_name,omitempty"`
 	Description   string        `json:"description,omitempty"`
 	Favorite      bool          `json:"favorite,omitempty"`
 	Aliases       []string      `json:"aliases,omitempty"`

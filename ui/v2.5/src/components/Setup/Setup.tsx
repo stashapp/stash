@@ -790,7 +790,7 @@ const ErrorStep: React.FC<{ error: string; goBack: () => void }> = ({
         <p>
           <FormattedMessage
             id="setup.errors.something_went_wrong_description"
-            values={{ GithubLink, DiscordLink }}
+            values={{ githubLink: GithubLink, discordLink: DiscordLink }}
           />
         </p>
       </section>
@@ -881,7 +881,7 @@ const SuccessStep: React.FC<{}> = () => {
         <p>
           <FormattedMessage
             id="setup.success.help_links"
-            values={{ DiscordLink, GithubLink }}
+            values={{ discordLink: DiscordLink, githubLink: GithubLink }}
           />
         </p>
       </section>

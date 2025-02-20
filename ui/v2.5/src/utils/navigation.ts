@@ -85,6 +85,7 @@ const makePerformerImagesUrl = (
 export interface INamedObject {
   id: string;
   name?: string;
+  sort_name?: string | null;
 }
 
 const makePerformerGalleriesUrl = (
