@@ -697,59 +697,54 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     const player = getPlayer();
     if (!player) return;
 
-    const loadMarkersAsync = async () => {
-      const markerData = scene.scene_markers.map((marker) => ({
-        title: getMarkerTitle(marker),
-        seconds: marker.seconds,
-        end_seconds: marker.end_seconds ?? null,
-        primaryTag: marker.primary_tag,
-      }));
+    const markerData = scene.scene_markers.map((marker) => ({
+      title: getMarkerTitle(marker),
+      seconds: marker.seconds,
+      end_seconds: marker.end_seconds ?? null,
+      primaryTag: marker.primary_tag,
+    }));
 
-      const markers = player!.markers();
-      markers.clearMarkers();
+    const markers = player!.markers();
+    markers.clearMarkers();
 
-      const uniqueTagNames = markerData
-        .map((marker) => marker.primaryTag.name)
-        .filter((value, index, self) => self.indexOf(value) === index);
+    const uniqueTagNames = markerData
+      .map((marker) => marker.primaryTag.name)
+      .filter((value, index, self) => self.indexOf(value) === index);
 
-      // Wait for colors
-      await markers.findColors(uniqueTagNames);
+    // Wait for colors
+    markers.findColors(uniqueTagNames);
 
-      const showRangeTags =
-        !ScreenUtils.isMobile() && (uiConfig?.showRangeMarkers ?? true);
-      const timestampMarkers: IMarker[] = [];
-      const rangeMarkers: IMarker[] = [];
+    const showRangeTags =
+      !ScreenUtils.isMobile() && (uiConfig?.showRangeMarkers ?? true);
+    const timestampMarkers: IMarker[] = [];
+    const rangeMarkers: IMarker[] = [];
 
-      if (!showRangeTags) {
-        for (const marker of markerData) {
+    if (!showRangeTags) {
+      for (const marker of markerData) {
+        timestampMarkers.push(marker);
+      }
+    } else {
+      for (const marker of markerData) {
+        if (marker.end_seconds === null) {
           timestampMarkers.push(marker);
-        }
-      } else {
-        for (const marker of markerData) {
-          if (marker.end_seconds === null) {
-            timestampMarkers.push(marker);
-          } else {
-            rangeMarkers.push(marker);
-          }
+        } else {
+          rangeMarkers.push(marker);
         }
       }
+    }
 
-      // Add markers in chunks
-      const CHUNK_SIZE = 10;
-      for (let i = 0; i < timestampMarkers.length; i += CHUNK_SIZE) {
-        const chunk = timestampMarkers.slice(i, i + CHUNK_SIZE);
-        requestAnimationFrame(() => {
-          chunk.forEach((m) => markers.addDotMarker(m));
-        });
-      }
-
+    // Add markers in chunks
+    const CHUNK_SIZE = 10;
+    for (let i = 0; i < timestampMarkers.length; i += CHUNK_SIZE) {
+      const chunk = timestampMarkers.slice(i, i + CHUNK_SIZE);
       requestAnimationFrame(() => {
-        markers.addRangeMarkers(rangeMarkers);
+        chunk.forEach((m) => markers.addDotMarker(m));
       });
-    };
+    }
 
-    // Call our async function
-    loadMarkersAsync();
+    requestAnimationFrame(() => {
+      markers.addRangeMarkers(rangeMarkers);
+    });
   }, [getPlayer, scene, uiConfig]);
 
   useEffect(() => {
