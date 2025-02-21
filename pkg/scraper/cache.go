@@ -470,7 +470,7 @@ func (c Cache) getImage(ctx context.Context, imageID int) (*models.Image, error)
 		}
 
 		if ret == nil {
-			return fmt.Errorf("gallery with id %d not found", imageID)
+			return fmt.Errorf("image with id %d not found", imageID)
 		}
 
 		err = ret.LoadFiles(ctx, qb)
