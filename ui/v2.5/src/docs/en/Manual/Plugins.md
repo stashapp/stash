@@ -99,15 +99,15 @@ ui:
     connect-src:
       - http://alloweddomain.com
 
-  # map of setting names to be displayed in the plugins page in the UI
-  settings:
-    # internal name
-    foo:
-      # name to display in the UI
-      displayName: Foo
-      # type of the attribute to show in the UI
-      # can be BOOLEAN, NUMBER, or STRING
-      type: BOOLEAN
+# map of setting names to be displayed in the plugins page in the UI
+settings:
+  # internal name
+  foo:
+  # name to display in the UI
+  displayName: Foo
+  # type of the attribute to show in the UI
+  # can be BOOLEAN, NUMBER, or STRING
+  type: BOOLEAN
 
 # the following are used for plugin tasks only
 exec:

@@ -4,14 +4,31 @@ import (
 	"context"
 
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 )
 
-func (r *queryResolver) FindSceneMarkers(ctx context.Context, sceneMarkerFilter *models.SceneMarkerFilterType, filter *models.FindFilterType) (ret *FindSceneMarkersResultType, err error) {
+func (r *queryResolver) FindSceneMarkers(ctx context.Context, sceneMarkerFilter *models.SceneMarkerFilterType, filter *models.FindFilterType, ids []string) (ret *FindSceneMarkersResultType, err error) {
+	idInts, err := stringslice.StringSliceToIntSlice(ids)
+	if err != nil {
+		return nil, err
+	}
+
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		sceneMarkers, total, err := r.repository.SceneMarker.Query(ctx, sceneMarkerFilter, filter)
+		var sceneMarkers []*models.SceneMarker
+		var err error
+		var total int
+
+		if len(idInts) > 0 {
+			sceneMarkers, err = r.repository.SceneMarker.FindMany(ctx, idInts)
+			total = len(sceneMarkers)
+		} else {
+			sceneMarkers, total, err = r.repository.SceneMarker.Query(ctx, sceneMarkerFilter, filter)
+		}
+
 		if err != nil {
 			return err
 		}
+
 		ret = &FindSceneMarkersResultType{
 			Count:        total,
 			SceneMarkers: sceneMarkers,

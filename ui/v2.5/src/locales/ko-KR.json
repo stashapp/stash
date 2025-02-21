@@ -1231,7 +1231,9 @@
         "errors": {
             "something_went_wrong": "오류가 발생했습니다!",
             "something_went_wrong_description": "작성했던 내용에 문제가 있는 것 같다면, 뒤로 가서 수정해주세요. 그렇지 않다면, {githubLink}에 버그를 제보하거나 {discordLink}에서 해결 방법을 찾아보세요.",
-            "something_went_wrong_while_setting_up_your_system": "시스템을 설정하던 도중 오류가 발생했습니다. 오류 내용은 다음과 같습니다: {error}"
+            "something_went_wrong_while_setting_up_your_system": "시스템을 설정하던 도중 오류가 발생했습니다. 오류 내용은 다음과 같습니다: {error}",
+            "unable_to_retrieve_system_status": "시스템 상태를 복구할 수 없습니다: {error}",
+            "unexpected_error": "예상치 못한 오류가 발생했습니다: {error}"
         },
         "folder": {
             "file_path": "파일 경로",
@@ -1370,7 +1372,8 @@
         "date_invalid_form": "${path}는 YYYY-MM-DD 형태여야 합니다",
         "required": "${path}는 필수 항목입니다",
         "unique": "${path}은(는) 유일해야 합니다",
-        "blank": "${path}를 빈 칸으로 둘 수 없습니다"
+        "blank": "${path}를 빈 칸으로 둘 수 없습니다",
+        "end_time_before_start_time": "종료 시간은 시작 시간보다 크거나 같아야 합니다"
     },
     "videos": "비디오",
     "view_all": "모두 보기",
@@ -1490,5 +1493,7 @@
     "sub_group": "서브그룹",
     "sub_group_of": "{parent}의 서브그룹",
     "include_sub_studio_content": "서브스튜디오 컨텐츠 포함",
-    "include_sub_tag_content": "서브태그 컨텐츠 포함"
+    "include_sub_tag_content": "서브태그 컨텐츠 포함",
+    "time_end": "종료 시간",
+    "include_sub_groups": "서브그룹 포함"
 }

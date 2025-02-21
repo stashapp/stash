@@ -18,7 +18,7 @@ import {
   faSearch,
   faTag,
 } from "@fortawesome/free-solid-svg-icons";
-import { objectTitle } from "src/core/files";
+import { imageTitle } from "src/core/files";
 import { TruncatedText } from "../Shared/TruncatedText";
 import ScreenUtils from "src/utils/screen";
 import { StudioOverlay } from "../Shared/GridCard/StudioOverlay";
@@ -197,7 +197,7 @@ export const ImageCard: React.FC<IImageCardProps> = (
       className={`image-card zoom-${props.zoomIndex}`}
       url={`/images/${props.image.id}`}
       width={cardWidth}
-      title={objectTitle(props.image)}
+      title={imageTitle(props.image)}
       linkClassName="image-card-link"
       image={
         <>

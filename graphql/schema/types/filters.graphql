@@ -542,6 +542,9 @@ input TagFilterType {
   "Filter by tag name"
   name: StringCriterionInput
 
+  "Filter by tag sort_name"
+  sort_name: StringCriterionInput
+
   "Filter by tag aliases"
   aliases: StringCriterionInput
 

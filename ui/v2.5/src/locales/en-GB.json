@@ -750,6 +750,7 @@
           "enable_chromecast": "Enable Chromecast",
           "show_ab_loop_controls": "Show AB Loop plugin controls",
           "show_scrubber": "Show Scrubber",
+          "show_range_markers": "Show Range Markers",
           "track_activity": "Enable Scene Play history",
           "vr_tag": {
             "description": "The VR button will only be displayed for scenes with this tag.",
@@ -1054,6 +1055,7 @@
     "loading_type": "Error loading {type}",
     "something_went_wrong": "Something went wrong."
   },
+  "eta": "ETA",
   "ethnicity": "Ethnicity",
   "existing_value": "existing value",
   "eye_color": "Eye Colour",
@@ -1158,6 +1160,7 @@
   "megabits_per_second": "{value} mbps",
   "metadata": "Metadata",
   "name": "Name",
+  "sort_name": "Sort Name",
   "new": "New",
   "none": "None",
   "o_count": "O Count",

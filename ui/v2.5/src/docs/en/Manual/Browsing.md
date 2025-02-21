@@ -35,7 +35,7 @@ Note that only one filter criterion per criterion type may be assigned.
 
 #### Regex modifiers
 
-Some filters have regex modifier as an option. Regex modifiers are always case-sensitive.
+Some filters have regex modifier as an option. Regex modifiers are case-sensitive by default.
 
 ### Sorting and page size
 

@@ -191,7 +191,10 @@
             "show_male_label": "展示男演员标签",
             "source": "源",
             "mark_organized_label": "保存时标记为已整理",
-            "mark_organized_desc": "点击保存按钮后，立即将短片标记为 \"已整理\"。"
+            "mark_organized_desc": "点击保存按钮后，立即将短片标记为 \"已整理\"。",
+            "errors": {
+                "blacklist_duplicate": "重复黑名单项目"
+            }
         },
         "noun_query": "查询",
         "results": {
@@ -917,7 +920,7 @@
             "marker_image_previews": "标记动图预览",
             "marker_image_previews_tooltip": "同时生成动图（webp）预览，仅当短片/标记墙预览类型设置为动图时才需要。浏览时，它们使用的CPU比视频预览少，但会额外生成更大的文件。",
             "marker_screenshots": "标记的屏幕截图",
-            "marker_screenshots_tooltip": "标记使用静态JPG图，仅用于预览类型设为【静图】时。",
+            "marker_screenshots_tooltip": "标记使用静态JPG 图像",
             "markers": "标记预览",
             "markers_tooltip": "从给出的时间码开始20秒的视频.",
             "override_preview_generation_options": "覆盖预览生成选项",
@@ -1023,7 +1026,13 @@
         "header": "错误",
         "loading_type": "加载 {type} 出错",
         "invalid_javascript_string": "无效的javascript代码：{error}",
-        "invalid_json_string": "无效的JSON字符串：{error}"
+        "invalid_json_string": "无效的JSON字符串：{error}",
+        "custom_fields": {
+            "field_name_required": "需要提供字段名称",
+            "field_name_whitespace": "字段名称不能有前导或尾随空格",
+            "duplicate_field": "字段名称必须唯一",
+            "field_name_length": "字段名称必须少于 65 个字符"
+        }
     },
     "ethnicity": "人种",
     "existing_value": "现值",
@@ -1092,7 +1101,8 @@
     "last_played_at": "最后播放在",
     "library": "收藏库",
     "loading": {
-        "generic": "加载中…"
+        "generic": "加载中…",
+        "plugins": "加载插件中……"
     },
     "marker_count": "标记数量",
     "markers": "标记",
@@ -1228,7 +1238,9 @@
         "errors": {
             "something_went_wrong": "天啊！出错啦！",
             "something_went_wrong_description": "如果看上去是你输入的问题，请点击“回去”以修正。又或者，在{githubLink}提出这个毛病，或者在{discordLink}寻求帮助。",
-            "something_went_wrong_while_setting_up_your_system": "在设立你的系统时出错。以下是错误信息：{error}"
+            "something_went_wrong_while_setting_up_your_system": "在设立你的系统时出错。以下是错误信息：{error}",
+            "unable_to_retrieve_system_status": "无法检索系统状态： {error}",
+            "unexpected_error": "发生意外错误： {error}"
         },
         "folder": {
             "file_path": "文件路径",
@@ -1367,7 +1379,8 @@
         "date_invalid_form": "${path} 的格式必须为 YYYY-MM-DD",
         "required": "${path} 是必填字段",
         "blank": "${path}不能为空",
-        "unique": "${path}不能相同"
+        "unique": "${path}不能相同",
+        "end_time_before_start_time": "结束时间必须晚于或等于开始时间"
     },
     "videos": "视频",
     "view_all": "查看全部",
@@ -1491,5 +1504,17 @@
     "sub_group_of": "{parent}的子集合",
     "sub_group_order": "子集合排序",
     "sub_groups": "子集合",
-    "include_sub_groups": "包括子组"
+    "include_sub_groups": "包括子组",
+    "time_end": "结束时间",
+    "criterion_modifier_values": {
+        "any": "任意",
+        "any_of": "其中任意",
+        "none": "无",
+        "only": "仅"
+    },
+    "custom_fields": {
+        "field": "字段",
+        "title": "自定义字段",
+        "value": "数值"
+    }
 }

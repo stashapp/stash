@@ -23,6 +23,10 @@ type EditTarget interface {
 	IsEditTarget()
 }
 
+type NotificationData interface {
+	IsNotificationData()
+}
+
 type SceneDraftPerformer interface {
 	IsSceneDraftPerformer()
 }
@@ -37,7 +41,6 @@ type SceneDraftTag interface {
 
 type ActivateNewUserInput struct {
 	Name          string `json:"name"`
-	Email         string `json:"email"`
 	ActivationKey string `json:"activation_key"`
 	Password      string `json:"password"`
 }
@@ -71,10 +74,34 @@ type CancelEditInput struct {
 	ID string `json:"id"`
 }
 
+type CommentCommentedEdit struct {
+	Comment *EditComment `json:"comment"`
+}
+
+func (CommentCommentedEdit) IsNotificationData() {}
+
+type CommentOwnEdit struct {
+	Comment *EditComment `json:"comment"`
+}
+
+func (CommentOwnEdit) IsNotificationData() {}
+
+type CommentVotedEdit struct {
+	Comment *EditComment `json:"comment"`
+}
+
+func (CommentVotedEdit) IsNotificationData() {}
+
 type DateCriterionInput struct {
 	Value    string            `json:"value"`
 	Modifier CriterionModifier `json:"modifier"`
 }
+
+type DownvoteOwnEdit struct {
+	Edit *Edit `json:"edit"`
+}
+
+func (DownvoteOwnEdit) IsNotificationData() {}
 
 type Draft struct {
 	ID      string    `json:"id"`
@@ -132,6 +159,8 @@ type Edit struct {
 	Destructive bool           `json:"destructive"`
 	Status      VoteStatusEnum `json:"status"`
 	Applied     bool           `json:"applied"`
+	UpdateCount int            `json:"update_count"`
+	Updatable   bool           `json:"updatable"`
 	Created     time.Time      `json:"created"`
 	Updated     *time.Time     `json:"updated,omitempty"`
 	Closed      *time.Time     `json:"closed,omitempty"`
@@ -143,6 +172,7 @@ type EditComment struct {
 	User    *User     `json:"user,omitempty"`
 	Date    time.Time `json:"date"`
 	Comment string    `json:"comment"`
+	Edit    *Edit     `json:"edit"`
 }
 
 type EditCommentInput struct {
@@ -206,14 +236,50 @@ type EyeColorCriterionInput struct {
 	Modifier CriterionModifier `json:"modifier"`
 }
 
+type FailedOwnEdit struct {
+	Edit *Edit `json:"edit"`
+}
+
+func (FailedOwnEdit) IsNotificationData() {}
+
+type FavoritePerformerEdit struct {
+	Edit *Edit `json:"edit"`
+}
+
+func (FavoritePerformerEdit) IsNotificationData() {}
+
+type FavoritePerformerScene struct {
+	Scene *Scene `json:"scene"`
+}
+
+func (FavoritePerformerScene) IsNotificationData() {}
+
+type FavoriteStudioEdit struct {
+	Edit *Edit `json:"edit"`
+}
+
+func (FavoriteStudioEdit) IsNotificationData() {}
+
+type FavoriteStudioScene struct {
+	Scene *Scene `json:"scene"`
+}
+
+func (FavoriteStudioScene) IsNotificationData() {}
+
 type Fingerprint struct {
-	Hash          string               `json:"hash"`
-	Algorithm     FingerprintAlgorithm `json:"algorithm"`
-	Duration      int                  `json:"duration"`
-	Submissions   int                  `json:"submissions"`
-	Created       time.Time            `json:"created"`
-	Updated       time.Time            `json:"updated"`
-	UserSubmitted bool                 `json:"user_submitted"`
+	Hash      string               `json:"hash"`
+	Algorithm FingerprintAlgorithm `json:"algorithm"`
+	Duration  int                  `json:"duration"`
+	// number of times this fingerprint has been submitted (excluding reports)
+	Submissions int `json:"submissions"`
+	// number of times this fingerprint has been reported
+	Reports int       `json:"reports"`
+	Created time.Time `json:"created"`
+	Updated time.Time `json:"updated"`
+	// true if the current user submitted this fingerprint
+	UserSubmitted bool `json:"user_submitted"`
+	// true if the current user reported this fingerprint
+	UserReported bool `json:"user_reported"`
 }
 
 type FingerprintEditInput struct {
@@ -240,10 +306,17 @@ type FingerprintQueryInput struct {
 }
 
 type FingerprintSubmission struct {
-	SceneID     string            `json:"scene_id"`
-	Fingerprint *FingerprintInput `json:"fingerprint"`
-	Unmatch     *bool             `json:"unmatch,omitempty"`
+	SceneID     string                     `json:"scene_id"`
+	Fingerprint *FingerprintInput          `json:"fingerprint"`
+	Unmatch     *bool                      `json:"unmatch,omitempty"`
+	Vote        *FingerprintSubmissionType `json:"vote,omitempty"`
 }
+
+type FingerprintedSceneEdit struct {
+	Edit *Edit `json:"edit"`
+}
+
+func (FingerprintedSceneEdit) IsNotificationData() {}
 
 type FuzzyDate struct {
 	Date     string           `json:"date"`
@@ -303,6 +376,11 @@ type InviteKey struct {
 	Expires *time.Time `json:"expires,omitempty"`
 }
 
+type MarkNotificationReadInput struct {
+	Type NotificationEnum `json:"type"`
+	ID   string           `json:"id"`
+}
+
 type Measurements struct {
 	CupSize  *string `json:"cup_size,omitempty"`
 	BandSize *int    `json:"band_size,omitempty"`
@@ -328,6 +406,12 @@ type NewUserInput struct {
 	InviteKey *string `json:"invite_key,omitempty"`
 }
 
+type Notification struct {
+	Created time.Time        `json:"created"`
+	Read    bool             `json:"read"`
+	Data    NotificationData `json:"data"`
+}
+
 type Performer struct {
 	ID             string         `json:"id"`
 	Name           string         `json:"name"`
@@ -337,6 +421,7 @@ type Performer struct {
 	Urls           []*URL         `json:"urls"`
 	Birthdate      *FuzzyDate     `json:"birthdate,omitempty"`
 	BirthDate      *string        `json:"birth_date,omitempty"`
+	DeathDate      *string        `json:"death_date,omitempty"`
 	Age            *int           `json:"age,omitempty"`
 	Ethnicity      *EthnicityEnum `json:"ethnicity,omitempty"`
 	Country        *string        `json:"country,omitempty"`
@@ -359,11 +444,14 @@ type Performer struct {
 	Edits           []*Edit             `json:"edits"`
 	SceneCount      int                 `json:"scene_count"`
 	Scenes          []*Scene            `json:"scenes"`
-	MergedIds       []string            `json:"merged_ids"`
-	Studios         []*PerformerStudio  `json:"studios"`
-	IsFavorite      bool                `json:"is_favorite"`
-	Created         time.Time           `json:"created"`
-	Updated         time.Time           `json:"updated"`
+	// IDs of performers that were merged into this one
+	MergedIds []string `json:"merged_ids"`
+	// ID of performer that replaces this one
+	MergedIntoID *string            `json:"merged_into_id,omitempty"`
+	Studios      []*PerformerStudio `json:"studios"`
+	IsFavorite   bool               `json:"is_favorite"`
+	Created      time.Time          `json:"created"`
+	Updated      time.Time          `json:"updated"`
 }
 
 func (Performer) IsEditTarget() {}
@@ -389,6 +477,7 @@ type PerformerCreateInput struct {
 	Gender          *GenderEnum              `json:"gender,omitempty"`
 	Urls            []*URLInput              `json:"urls,omitempty"`
 	Birthdate       *string                  `json:"birthdate,omitempty"`
+	Deathdate       *string                  `json:"deathdate,omitempty"`
 	Ethnicity       *EthnicityEnum           `json:"ethnicity,omitempty"`
 	Country         *string                  `json:"country,omitempty"`
 	EyeColor        *EyeColorEnum            `json:"eye_color,omitempty"`
@@ -418,6 +507,7 @@ type PerformerDraft struct {
 	Aliases         *string  `json:"aliases,omitempty"`
 	Gender          *string  `json:"gender,omitempty"`
 	Birthdate       *string  `json:"birthdate,omitempty"`
+	Deathdate       *string  `json:"deathdate,omitempty"`
 	Urls            []string `json:"urls,omitempty"`
 	Ethnicity       *string  `json:"ethnicity,omitempty"`
 	Country         *string  `json:"country,omitempty"`
@@ -442,6 +532,7 @@ type PerformerDraftInput struct {
 	Aliases         *string         `json:"aliases,omitempty"`
 	Gender          *string         `json:"gender,omitempty"`
 	Birthdate       *string         `json:"birthdate,omitempty"`
+	Deathdate       *string         `json:"deathdate,omitempty"`
 	Urls            []string        `json:"urls,omitempty"`
 	Ethnicity       *string         `json:"ethnicity,omitempty"`
 	Country         *string         `json:"country,omitempty"`
@@ -466,6 +557,7 @@ type PerformerEdit struct {
 	AddedUrls      []*URL         `json:"added_urls,omitempty"`
 	RemovedUrls    []*URL         `json:"removed_urls,omitempty"`
 	Birthdate      *string        `json:"birthdate,omitempty"`
+	Deathdate      *string        `json:"deathdate,omitempty"`
 	Ethnicity      *EthnicityEnum `json:"ethnicity,omitempty"`
 	Country        *string        `json:"country,omitempty"`
 	EyeColor       *EyeColorEnum  `json:"eye_color,omitempty"`
@@ -502,6 +594,7 @@ type PerformerEditDetailsInput struct {
 	Gender          *GenderEnum              `json:"gender,omitempty"`
 	Urls            []*URLInput              `json:"urls,omitempty"`
 	Birthdate       *string                  `json:"birthdate,omitempty"`
+	Deathdate       *string                  `json:"deathdate,omitempty"`
 	Ethnicity       *EthnicityEnum           `json:"ethnicity,omitempty"`
 	Country         *string                  `json:"country,omitempty"`
 	EyeColor        *EyeColorEnum            `json:"eye_color,omitempty"`
@@ -554,6 +647,7 @@ type PerformerQueryInput struct {
 	// Filter to search urls - assumes like query unless quoted
 	URL             *string                         `json:"url,omitempty"`
 	Birthdate       *DateCriterionInput             `json:"birthdate,omitempty"`
+	Deathdate       *DateCriterionInput             `json:"deathdate,omitempty"`
 	BirthYear       *IntCriterionInput              `json:"birth_year,omitempty"`
 	Age             *IntCriterionInput              `json:"age,omitempty"`
 	Ethnicity       *EthnicityFilterEnum            `json:"ethnicity,omitempty"`
@@ -604,6 +698,7 @@ type PerformerUpdateInput struct {
 	Gender          *GenderEnum              `json:"gender,omitempty"`
 	Urls            []*URLInput              `json:"urls,omitempty"`
 	Birthdate       *string                  `json:"birthdate,omitempty"`
+	Deathdate       *string                  `json:"deathdate,omitempty"`
 	Ethnicity       *EthnicityEnum           `json:"ethnicity,omitempty"`
 	Country         *string                  `json:"country,omitempty"`
 	EyeColor        *EyeColorEnum            `json:"eye_color,omitempty"`
@@ -630,6 +725,17 @@ type QueryEditsResultType struct {
 	Edits []*Edit `json:"edits"`
 }
 
+type QueryExistingPerformerInput struct {
+	Name           *string  `json:"name,omitempty"`
+	Disambiguation *string  `json:"disambiguation,omitempty"`
+	Urls           []string `json:"urls"`
+}
+
+type QueryExistingPerformerResult struct {
+	Edits      []*Edit      `json:"edits"`
+	Performers []*Performer `json:"performers"`
+}
+
 type QueryExistingSceneInput struct {
 	Title        *string             `json:"title,omitempty"`
 	StudioID     *string             `json:"studio_id,omitempty"`
@@ -639,6 +745,18 @@ type QueryExistingSceneInput struct {
 type QueryExistingSceneResult struct {
 	Edits  []*Edit  `json:"edits"`
 	Scenes []*Scene `json:"scenes"`
+}
+
+type QueryNotificationsInput struct {
+	Page       int               `json:"page"`
+	PerPage    int               `json:"per_page"`
+	Type       *NotificationEnum `json:"type,omitempty"`
+	UnreadOnly *bool             `json:"unread_only,omitempty"`
+}
+
+type QueryNotificationsResult struct {
+	Count         int             `json:"count"`
+	Notifications []*Notification `json:"notifications"`
 }
 
 type QueryPerformersResultType struct {
@@ -691,41 +809,43 @@ type RoleCriterionInput struct {
 }
 
 type Scene struct {
-	ID           string                 `json:"id"`
-	Title        *string                `json:"title,omitempty"`
-	Details      *string                `json:"details,omitempty"`
-	Date         *string                `json:"date,omitempty"`
-	ReleaseDate  *string                `json:"release_date,omitempty"`
-	Urls         []*URL                 `json:"urls"`
-	Studio       *Studio                `json:"studio,omitempty"`
-	Tags         []*Tag                 `json:"tags"`
-	Images       []*Image               `json:"images"`
-	Performers   []*PerformerAppearance `json:"performers"`
-	Fingerprints []*Fingerprint         `json:"fingerprints"`
-	Duration     *int                   `json:"duration,omitempty"`
-	Director     *string                `json:"director,omitempty"`
-	Code         *string                `json:"code,omitempty"`
-	Deleted      bool                   `json:"deleted"`
-	Edits        []*Edit                `json:"edits"`
-	Created      time.Time              `json:"created"`
-	Updated      time.Time              `json:"updated"`
+	ID             string                 `json:"id"`
+	Title          *string                `json:"title,omitempty"`
+	Details        *string                `json:"details,omitempty"`
+	Date           *string                `json:"date,omitempty"`
+	ReleaseDate    *string                `json:"release_date,omitempty"`
+	ProductionDate *string                `json:"production_date,omitempty"`
+	Urls           []*URL                 `json:"urls"`
+	Studio         *Studio                `json:"studio,omitempty"`
+	Tags           []*Tag                 `json:"tags"`
+	Images         []*Image               `json:"images"`
+	Performers     []*PerformerAppearance `json:"performers"`
+	Fingerprints   []*Fingerprint         `json:"fingerprints"`
+	Duration       *int                   `json:"duration,omitempty"`
+	Director       *string                `json:"director,omitempty"`
+	Code           *string                `json:"code,omitempty"`
+	Deleted        bool                   `json:"deleted"`
+	Edits          []*Edit                `json:"edits"`
+	Created        time.Time              `json:"created"`
+	Updated        time.Time              `json:"updated"`
 }
 
 func (Scene) IsEditTarget() {}
 
 type SceneCreateInput struct {
-	Title        *string                     `json:"title,omitempty"`
-	Details      *string                     `json:"details,omitempty"`
-	Urls         []*URLInput                 `json:"urls,omitempty"`
-	Date         string                      `json:"date"`
-	StudioID     *string                     `json:"studio_id,omitempty"`
-	Performers   []*PerformerAppearanceInput `json:"performers,omitempty"`
-	TagIds       []string                    `json:"tag_ids,omitempty"`
-	ImageIds     []string                    `json:"image_ids,omitempty"`
-	Fingerprints []*FingerprintEditInput     `json:"fingerprints"`
-	Duration     *int                        `json:"duration,omitempty"`
-	Director     *string                     `json:"director,omitempty"`
-	Code         *string                     `json:"code,omitempty"`
+	Title          *string                     `json:"title,omitempty"`
+	Details        *string                     `json:"details,omitempty"`
+	Urls           []*URLInput                 `json:"urls,omitempty"`
+	Date           string                      `json:"date"`
+	ProductionDate *string                     `json:"production_date,omitempty"`
+	StudioID       *string                     `json:"studio_id,omitempty"`
+	Performers     []*PerformerAppearanceInput `json:"performers,omitempty"`
+	TagIds         []string                    `json:"tag_ids,omitempty"`
+	ImageIds       []string                    `json:"image_ids,omitempty"`
+	Fingerprints   []*FingerprintEditInput     `json:"fingerprints"`
+	Duration       *int                        `json:"duration,omitempty"`
+	Director       *string                     `json:"director,omitempty"`
+	Code           *string                     `json:"code,omitempty"`
 }
 
 type SceneDestroyInput struct {
@@ -733,29 +853,31 @@ type SceneDestroyInput struct {
 }
 
 type SceneDraft struct {
-	ID           *string               `json:"id,omitempty"`
-	Title        *string               `json:"title,omitempty"`
-	Code         *string               `json:"code,omitempty"`
-	Details      *string               `json:"details,omitempty"`
-	Director     *string               `json:"director,omitempty"`
-	URL          *URL                  `json:"url,omitempty"`
-	Date         *string               `json:"date,omitempty"`
-	Studio       SceneDraftStudio      `json:"studio,omitempty"`
-	Performers   []SceneDraftPerformer `json:"performers"`
-	Tags         []SceneDraftTag       `json:"tags,omitempty"`
-	Image        *Image                `json:"image,omitempty"`
-	Fingerprints []*DraftFingerprint   `json:"fingerprints"`
+	ID             *string               `json:"id,omitempty"`
+	Title          *string               `json:"title,omitempty"`
+	Code           *string               `json:"code,omitempty"`
+	Details        *string               `json:"details,omitempty"`
+	Director       *string               `json:"director,omitempty"`
+	Urls           []string              `json:"urls,omitempty"`
+	Date           *string               `json:"date,omitempty"`
+	ProductionDate *string               `json:"production_date,omitempty"`
+	Studio         SceneDraftStudio      `json:"studio,omitempty"`
+	Performers     []SceneDraftPerformer `json:"performers"`
+	Tags           []SceneDraftTag       `json:"tags,omitempty"`
+	Image          *Image                `json:"image,omitempty"`
+	Fingerprints   []*DraftFingerprint   `json:"fingerprints"`
 }
 
 func (SceneDraft) IsDraftData() {}
 
 type SceneEdit struct {
-	Title       *string `json:"title,omitempty"`
-	Details     *string `json:"details,omitempty"`
-	AddedUrls   []*URL  `json:"added_urls,omitempty"`
-	RemovedUrls []*URL  `json:"removed_urls,omitempty"`
-	Date        *string `json:"date,omitempty"`
-	Studio      *Studio `json:"studio,omitempty"`
+	Title          *string `json:"title,omitempty"`
+	Details        *string `json:"details,omitempty"`
+	AddedUrls      []*URL  `json:"added_urls,omitempty"`
+	RemovedUrls    []*URL  `json:"removed_urls,omitempty"`
+	Date           *string `json:"date,omitempty"`
+	ProductionDate *string `json:"production_date,omitempty"`
+	Studio         *Studio `json:"studio,omitempty"`
 	// Added or modified performer appearance entries
 	AddedPerformers     []*PerformerAppearance `json:"added_performers,omitempty"`
 	RemovedPerformers   []*PerformerAppearance `json:"removed_performers,omitempty"`
@@ -779,19 +901,20 @@ type SceneEdit struct {
 func (SceneEdit) IsEditDetails() {}
 
 type SceneEditDetailsInput struct {
-	Title        *string                     `json:"title,omitempty"`
-	Details      *string                     `json:"details,omitempty"`
-	Urls         []*URLInput                 `json:"urls,omitempty"`
-	Date         *string                     `json:"date,omitempty"`
-	StudioID     *string                     `json:"studio_id,omitempty"`
-	Performers   []*PerformerAppearanceInput `json:"performers,omitempty"`
-	TagIds       []string                    `json:"tag_ids,omitempty"`
-	ImageIds     []string                    `json:"image_ids,omitempty"`
-	Duration     *int                        `json:"duration,omitempty"`
-	Director     *string                     `json:"director,omitempty"`
-	Code         *string                     `json:"code,omitempty"`
-	Fingerprints []*FingerprintInput         `json:"fingerprints,omitempty"`
-	DraftID      *string                     `json:"draft_id,omitempty"`
+	Title          *string                     `json:"title,omitempty"`
+	Details        *string                     `json:"details,omitempty"`
+	Urls           []*URLInput                 `json:"urls,omitempty"`
+	Date           *string                     `json:"date,omitempty"`
+	ProductionDate *string                     `json:"production_date,omitempty"`
+	StudioID       *string                     `json:"studio_id,omitempty"`
+	Performers     []*PerformerAppearanceInput `json:"performers,omitempty"`
+	TagIds         []string                    `json:"tag_ids,omitempty"`
+	ImageIds       []string                    `json:"image_ids,omitempty"`
+	Duration       *int                        `json:"duration,omitempty"`
+	Director       *string                     `json:"director,omitempty"`
+	Code           *string                     `json:"code,omitempty"`
+	Fingerprints   []*FingerprintInput         `json:"fingerprints,omitempty"`
+	DraftID        *string                     `json:"draft_id,omitempty"`
 }
 
 type SceneEditInput struct {
@@ -809,6 +932,8 @@ type SceneQueryInput struct {
 	URL *string `json:"url,omitempty"`
 	// Filter by date
 	Date *DateCriterionInput `json:"date,omitempty"`
+	// Filter by production date
+	ProductionDate *DateCriterionInput `json:"production_date,omitempty"`
 	// Filter to only include scenes with this studio
 	Studios *MultiIDCriterionInput `json:"studios,omitempty"`
 	// Filter to only include scenes with this studio as primary or parent
@@ -832,19 +957,20 @@ type SceneQueryInput struct {
 }
 
 type SceneUpdateInput struct {
-	ID           string                      `json:"id"`
-	Title        *string                     `json:"title,omitempty"`
-	Details      *string                     `json:"details,omitempty"`
-	Urls         []*URLInput                 `json:"urls,omitempty"`
-	Date         *string                     `json:"date,omitempty"`
-	StudioID     *string                     `json:"studio_id,omitempty"`
-	Performers   []*PerformerAppearanceInput `json:"performers,omitempty"`
-	TagIds       []string                    `json:"tag_ids,omitempty"`
-	ImageIds     []string                    `json:"image_ids,omitempty"`
-	Fingerprints []*FingerprintEditInput     `json:"fingerprints,omitempty"`
-	Duration     *int                        `json:"duration,omitempty"`
-	Director     *string                     `json:"director,omitempty"`
-	Code         *string                     `json:"code,omitempty"`
+	ID             string                      `json:"id"`
+	Title          *string                     `json:"title,omitempty"`
+	Details        *string                     `json:"details,omitempty"`
+	Urls           []*URLInput                 `json:"urls,omitempty"`
+	Date           *string                     `json:"date,omitempty"`
+	ProductionDate *string                     `json:"production_date,omitempty"`
+	StudioID       *string                     `json:"studio_id,omitempty"`
+	Performers     []*PerformerAppearanceInput `json:"performers,omitempty"`
+	TagIds         []string                    `json:"tag_ids,omitempty"`
+	ImageIds       []string                    `json:"image_ids,omitempty"`
+	Fingerprints   []*FingerprintEditInput     `json:"fingerprints,omitempty"`
+	Duration       *int                        `json:"duration,omitempty"`
+	Director       *string                     `json:"director,omitempty"`
+	Code           *string                     `json:"code,omitempty"`
 }
 
 type Site struct {
@@ -890,6 +1016,8 @@ type StashBoxConfig struct {
 	MinDestructiveVotingPeriod int    `json:"min_destructive_voting_period"`
 	VoteCronInterval           string `json:"vote_cron_interval"`
 	GuidelinesURL              string `json:"guidelines_url"`
+	RequireSceneDraft          bool   `json:"require_scene_draft"`
+	EditUpdateLimit            int    `json:"edit_update_limit"`
 }
 
 type StringCriterionInput struct {
@@ -900,6 +1028,7 @@ type StringCriterionInput struct {
 type Studio struct {
 	ID           string                     `json:"id"`
 	Name         string                     `json:"name"`
+	Aliases      []string                   `json:"aliases"`
 	Urls         []*URL                     `json:"urls"`
 	Parent       *Studio                    `json:"parent,omitempty"`
 	ChildStudios []*Studio                  `json:"child_studios"`
@@ -917,6 +1046,7 @@ func (Studio) IsSceneDraftStudio() {}
 
 type StudioCreateInput struct {
 	Name     string      `json:"name"`
+	Aliases  []string    `json:"aliases,omitempty"`
 	Urls     []*URLInput `json:"urls,omitempty"`
 	ParentID *string     `json:"parent_id,omitempty"`
 	ImageIds []string    `json:"image_ids,omitempty"`
@@ -929,19 +1059,22 @@ type StudioDestroyInput struct {
 type StudioEdit struct {
 	Name *string `json:"name,omitempty"`
 	// Added and modified URLs
-	AddedUrls     []*URL   `json:"added_urls,omitempty"`
-	RemovedUrls   []*URL   `json:"removed_urls,omitempty"`
-	Parent        *Studio  `json:"parent,omitempty"`
-	AddedImages   []*Image `json:"added_images,omitempty"`
-	RemovedImages []*Image `json:"removed_images,omitempty"`
-	Images        []*Image `json:"images"`
-	Urls          []*URL   `json:"urls"`
+	AddedUrls      []*URL   `json:"added_urls,omitempty"`
+	RemovedUrls    []*URL   `json:"removed_urls,omitempty"`
+	Parent         *Studio  `json:"parent,omitempty"`
+	AddedImages    []*Image `json:"added_images,omitempty"`
+	RemovedImages  []*Image `json:"removed_images,omitempty"`
+	AddedAliases   []string `json:"added_aliases,omitempty"`
+	RemovedAliases []string `json:"removed_aliases,omitempty"`
+	Images         []*Image `json:"images"`
+	Urls           []*URL   `json:"urls"`
 }
 
 func (StudioEdit) IsEditDetails() {}
 
 type StudioEditDetailsInput struct {
 	Name     *string     `json:"name,omitempty"`
+	Aliases  []string    `json:"aliases,omitempty"`
 	Urls     []*URLInput `json:"urls,omitempty"`
 	ParentID *string     `json:"parent_id,omitempty"`
 	ImageIds []string    `json:"image_ids,omitempty"`
@@ -956,7 +1089,7 @@ type StudioEditInput struct {
 type StudioQueryInput struct {
 	// Filter to search name - assumes like query unless quoted
 	Name *string `json:"name,omitempty"`
-	// Filter to search studio and parent studio name - assumes like query unless quoted
+	// Filter to search studio name, aliases and parent studio name - assumes like query unless quoted
 	Names *string `json:"names,omitempty"`
 	// Filter to search url - assumes like query unless quoted
 	URL       *string           `json:"url,omitempty"`
@@ -973,6 +1106,7 @@ type StudioQueryInput struct {
 type StudioUpdateInput struct {
 	ID       string      `json:"id"`
 	Name     *string     `json:"name,omitempty"`
+	Aliases  []string    `json:"aliases,omitempty"`
 	Urls     []*URLInput `json:"urls,omitempty"`
 	ParentID *string     `json:"parent_id,omitempty"`
 	ImageIds []string    `json:"image_ids,omitempty"`
@@ -1087,6 +1221,12 @@ type URLInput struct {
 	SiteID string `json:"site_id"`
 }
 
+type UpdatedEdit struct {
+	Edit *Edit `json:"edit"`
+}
+
+func (UpdatedEdit) IsNotificationData() {}
+
 type User struct {
 	ID   string `json:"id"`
 	Name string `json:"name"`
@@ -1095,7 +1235,8 @@ type User struct {
 	// Should not be visible to other users
 	Email *string `json:"email,omitempty"`
 	// Should not be visible to other users
-	APIKey *string `json:"api_key,omitempty"`
+	APIKey                    *string            `json:"api_key,omitempty"`
+	NotificationSubscriptions []NotificationEnum `json:"notification_subscriptions"`
 	//  Vote counts by type
 	VoteCount *UserVoteCount `json:"vote_count"`
 	//  Edit counts by status
@@ -1106,6 +1247,12 @@ type User struct {
 	InviteTokens      *int         `json:"invite_tokens,omitempty"`
 	ActiveInviteCodes []string     `json:"active_invite_codes,omitempty"`
 	InviteCodes       []*InviteKey `json:"invite_codes,omitempty"`
+}
+
+type UserChangeEmailInput struct {
+	ExistingEmailToken *string `json:"existing_email_token,omitempty"`
+	NewEmailToken      *string `json:"new_email_token,omitempty"`
+	NewEmail           *string `json:"new_email,omitempty"`
 }
 
 type UserChangePasswordInput struct {
@@ -1621,6 +1768,52 @@ func (e FingerprintAlgorithm) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
+type FingerprintSubmissionType string
+
+const (
+	// Positive vote
+	FingerprintSubmissionTypeValid FingerprintSubmissionType = "VALID"
+	// Report as invalid
+	FingerprintSubmissionTypeInvalid FingerprintSubmissionType = "INVALID"
+	// Remove vote
+	FingerprintSubmissionTypeRemove FingerprintSubmissionType = "REMOVE"
+)
+
+var AllFingerprintSubmissionType = []FingerprintSubmissionType{
+	FingerprintSubmissionTypeValid,
+	FingerprintSubmissionTypeInvalid,
+	FingerprintSubmissionTypeRemove,
+}
+
+func (e FingerprintSubmissionType) IsValid() bool {
+	switch e {
+	case FingerprintSubmissionTypeValid, FingerprintSubmissionTypeInvalid, FingerprintSubmissionTypeRemove:
+		return true
+	}
+	return false
+}
+
+func (e FingerprintSubmissionType) String() string {
+	return string(e)
+}
+
+func (e *FingerprintSubmissionType) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = FingerprintSubmissionType(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid FingerprintSubmissionType", str)
+	}
+	return nil
+}
+
+func (e FingerprintSubmissionType) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
 type GenderEnum string
 
 const (
@@ -1732,6 +1925,7 @@ const (
 	HairColorEnumGrey     HairColorEnum = "GREY"
 	HairColorEnumBald     HairColorEnum = "BALD"
 	HairColorEnumVarious  HairColorEnum = "VARIOUS"
+	HairColorEnumWhite    HairColorEnum = "WHITE"
 	HairColorEnumOther    HairColorEnum = "OTHER"
 )
 
@@ -1744,12 +1938,13 @@ var AllHairColorEnum = []HairColorEnum{
 	HairColorEnumGrey,
 	HairColorEnumBald,
 	HairColorEnumVarious,
+	HairColorEnumWhite,
 	HairColorEnumOther,
 }
 
 func (e HairColorEnum) IsValid() bool {
 	switch e {
-	case HairColorEnumBlonde, HairColorEnumBrunette, HairColorEnumBlack, HairColorEnumRed, HairColorEnumAuburn, HairColorEnumGrey, HairColorEnumBald, HairColorEnumVarious, HairColorEnumOther:
+	case HairColorEnumBlonde, HairColorEnumBrunette, HairColorEnumBlack, HairColorEnumRed, HairColorEnumAuburn, HairColorEnumGrey, HairColorEnumBald, HairColorEnumVarious, HairColorEnumWhite, HairColorEnumOther:
 		return true
 	}
 	return false
@@ -1773,6 +1968,65 @@ func (e *HairColorEnum) UnmarshalGQL(v interface{}) error {
 }
 
 func (e HairColorEnum) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type NotificationEnum string
+
+const (
+	NotificationEnumFavoritePerformerScene NotificationEnum = "FAVORITE_PERFORMER_SCENE"
+	NotificationEnumFavoritePerformerEdit  NotificationEnum = "FAVORITE_PERFORMER_EDIT"
+	NotificationEnumFavoriteStudioScene    NotificationEnum = "FAVORITE_STUDIO_SCENE"
+	NotificationEnumFavoriteStudioEdit     NotificationEnum = "FAVORITE_STUDIO_EDIT"
+	NotificationEnumCommentOwnEdit         NotificationEnum = "COMMENT_OWN_EDIT"
+	NotificationEnumDownvoteOwnEdit        NotificationEnum = "DOWNVOTE_OWN_EDIT"
+	NotificationEnumFailedOwnEdit          NotificationEnum = "FAILED_OWN_EDIT"
+	NotificationEnumCommentCommentedEdit   NotificationEnum = "COMMENT_COMMENTED_EDIT"
+	NotificationEnumCommentVotedEdit       NotificationEnum = "COMMENT_VOTED_EDIT"
+	NotificationEnumUpdatedEdit            NotificationEnum = "UPDATED_EDIT"
+	NotificationEnumFingerprintedSceneEdit NotificationEnum = "FINGERPRINTED_SCENE_EDIT"
+)
+
+var AllNotificationEnum = []NotificationEnum{
+	NotificationEnumFavoritePerformerScene,
+	NotificationEnumFavoritePerformerEdit,
+	NotificationEnumFavoriteStudioScene,
+	NotificationEnumFavoriteStudioEdit,
+	NotificationEnumCommentOwnEdit,
+	NotificationEnumDownvoteOwnEdit,
+	NotificationEnumFailedOwnEdit,
+	NotificationEnumCommentCommentedEdit,
+	NotificationEnumCommentVotedEdit,
+	NotificationEnumUpdatedEdit,
+	NotificationEnumFingerprintedSceneEdit,
+}
+
+func (e NotificationEnum) IsValid() bool {
+	switch e {
+	case NotificationEnumFavoritePerformerScene, NotificationEnumFavoritePerformerEdit, NotificationEnumFavoriteStudioScene, NotificationEnumFavoriteStudioEdit, NotificationEnumCommentOwnEdit, NotificationEnumDownvoteOwnEdit, NotificationEnumFailedOwnEdit, NotificationEnumCommentCommentedEdit, NotificationEnumCommentVotedEdit, NotificationEnumUpdatedEdit, NotificationEnumFingerprintedSceneEdit:
+		return true
+	}
+	return false
+}
+
+func (e NotificationEnum) String() string {
+	return string(e)
+}
+
+func (e *NotificationEnum) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = NotificationEnum(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid NotificationEnum", str)
+	}
+	return nil
+}
+
+func (e NotificationEnum) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
@@ -1826,6 +2080,7 @@ type PerformerSortEnum string
 const (
 	PerformerSortEnumName            PerformerSortEnum = "NAME"
 	PerformerSortEnumBirthdate       PerformerSortEnum = "BIRTHDATE"
+	PerformerSortEnumDeathdate       PerformerSortEnum = "DEATHDATE"
 	PerformerSortEnumSceneCount      PerformerSortEnum = "SCENE_COUNT"
 	PerformerSortEnumCareerStartYear PerformerSortEnum = "CAREER_START_YEAR"
 	PerformerSortEnumDebut           PerformerSortEnum = "DEBUT"
@@ -1837,6 +2092,7 @@ const (
 var AllPerformerSortEnum = []PerformerSortEnum{
 	PerformerSortEnumName,
 	PerformerSortEnumBirthdate,
+	PerformerSortEnumDeathdate,
 	PerformerSortEnumSceneCount,
 	PerformerSortEnumCareerStartYear,
 	PerformerSortEnumDebut,
@@ -1847,7 +2103,7 @@ var AllPerformerSortEnum = []PerformerSortEnum{
 
 func (e PerformerSortEnum) IsValid() bool {
 	switch e {
-	case PerformerSortEnumName, PerformerSortEnumBirthdate, PerformerSortEnumSceneCount, PerformerSortEnumCareerStartYear, PerformerSortEnumDebut, PerformerSortEnumLastScene, PerformerSortEnumCreatedAt, PerformerSortEnumUpdatedAt:
+	case PerformerSortEnumName, PerformerSortEnumBirthdate, PerformerSortEnumDeathdate, PerformerSortEnumSceneCount, PerformerSortEnumCareerStartYear, PerformerSortEnumDebut, PerformerSortEnumLastScene, PerformerSortEnumCreatedAt, PerformerSortEnumUpdatedAt:
 		return true
 	}
 	return false
@@ -2188,6 +2444,55 @@ func (e *TargetTypeEnum) UnmarshalGQL(v interface{}) error {
 }
 
 func (e TargetTypeEnum) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type UserChangeEmailStatus string
+
+const (
+	UserChangeEmailStatusConfirmOld   UserChangeEmailStatus = "CONFIRM_OLD"
+	UserChangeEmailStatusConfirmNew   UserChangeEmailStatus = "CONFIRM_NEW"
+	UserChangeEmailStatusExpired      UserChangeEmailStatus = "EXPIRED"
+	UserChangeEmailStatusInvalidToken UserChangeEmailStatus = "INVALID_TOKEN"
+	UserChangeEmailStatusSuccess      UserChangeEmailStatus = "SUCCESS"
+	UserChangeEmailStatusError        UserChangeEmailStatus = "ERROR"
+)
+
+var AllUserChangeEmailStatus = []UserChangeEmailStatus{
+	UserChangeEmailStatusConfirmOld,
+	UserChangeEmailStatusConfirmNew,
+	UserChangeEmailStatusExpired,
+	UserChangeEmailStatusInvalidToken,
+	UserChangeEmailStatusSuccess,
+	UserChangeEmailStatusError,
+}
+
+func (e UserChangeEmailStatus) IsValid() bool {
+	switch e {
+	case UserChangeEmailStatusConfirmOld, UserChangeEmailStatusConfirmNew, UserChangeEmailStatusExpired, UserChangeEmailStatusInvalidToken, UserChangeEmailStatusSuccess, UserChangeEmailStatusError:
+		return true
+	}
+	return false
+}
+
+func (e UserChangeEmailStatus) String() string {
+	return string(e)
+}
+
+func (e *UserChangeEmailStatus) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = UserChangeEmailStatus(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid UserChangeEmailStatus", str)
+	}
+	return nil
+}
+
+func (e UserChangeEmailStatus) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 

@@ -182,7 +182,7 @@ const ImageListImages: React.FC<IImageListImages> = ({
   const handleImageOpen = useCallback(
     (index) => {
       setSlideshowRunning(true);
-      showLightbox(index, true);
+      showLightbox({ initialIndex: index, slideshowEnabled: true });
     },
     [showLightbox, setSlideshowRunning]
   );
