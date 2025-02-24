@@ -48,7 +48,7 @@ type config struct {
 	// Configuration for querying an image by a URL
 	ImageByURL []*scrapeByURLConfig `yaml:"imageByURL"`
 
-	// Configuration for querying gallery by an Image fragment
+	// Configuration for querying image by an Image fragment
 	ImageByFragment *scraperTypeConfig `yaml:"imageByFragment"`
 
 	// Configuration for querying a movie by a URL
