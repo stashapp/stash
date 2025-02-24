@@ -389,7 +389,7 @@ func (s *stashScraper) scrapeGalleryByGallery(ctx context.Context, gallery *mode
 }
 
 func (s *stashScraper) scrapeImageByImage(ctx context.Context, image *models.Image) (*ScrapedImage, error) {
-	panic("Not implemented")
+	return nil, ErrNotSupported
 }
 
 func (s *stashScraper) scrapeByURL(_ context.Context, _ string, _ ScrapeContentType) (ScrapedContent, error) {
