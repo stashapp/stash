@@ -1,5 +1,8 @@
 import { CriterionModifier } from "src/core/generated-graphql";
-import { CriterionOption, IHierarchicalLabeledIdCriterion } from "./criterion";
+import {
+  ModifierCriterionOption,
+  IHierarchicalLabeledIdCriterion,
+} from "./criterion";
 import { CriterionType } from "../types";
 
 const inputType = "groups";
@@ -13,7 +16,7 @@ const modifierOptions = [
 
 const defaultModifier = CriterionModifier.Includes;
 
-class BaseGroupsCriterionOption extends CriterionOption {
+class BaseGroupsCriterionOption extends ModifierCriterionOption {
   constructor(messageID: string, type: CriterionType) {
     super({
       messageID,
@@ -44,7 +47,7 @@ export const SubGroupsCriterionOption = new BaseGroupsCriterionOption(
 );
 
 // redirects to GroupsCriterion
-export const LegacyMoviesCriterionOption = new CriterionOption({
+export const LegacyMoviesCriterionOption = new ModifierCriterionOption({
   messageID: "groups",
   type: "movies",
   modifierOptions,
