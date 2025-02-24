@@ -804,11 +804,44 @@ type mappedResults []mappedResult
 func (r mappedResult) apply(dest interface{}) {
 	destVal := reflect.ValueOf(dest).Elem()
 
+	// all fields are either string pointers or string slices
 	for key, value := range r {
-		field := destVal.FieldByName(key)
-		fieldType := field.Type()
+		if err := mapFieldValue(destVal, key, value); err != nil {
+			logger.Errorf("Error mapping field %s in %T: %v", key, dest, err)
+		}
+	}
+}
 
-		if field.IsValid() && field.CanSet() {
+func mapFieldValue(destVal reflect.Value, key string, value interface{}) error {
+	field := destVal.FieldByName(key)
+	fieldType := field.Type()
+
+	if field.IsValid() && field.CanSet() {
+		switch v := value.(type) {
+		case string:
+			// if the field is a pointer to a string, then we need to convert the string to a pointer
+			// if the field is a string slice, then we need to convert the string to a slice
+			switch {
+			case fieldType.Kind() == reflect.String:
+				field.SetString(v)
+			case fieldType.Kind() == reflect.Ptr && fieldType.Elem().Kind() == reflect.String:
+				ptr := reflect.New(fieldType.Elem())
+				ptr.Elem().SetString(v)
+				field.Set(ptr)
+			case fieldType.Kind() == reflect.Slice && fieldType.Elem().Kind() == reflect.String:
+				field.Set(reflect.ValueOf([]string{v}))
+			default:
+				return fmt.Errorf("cannot convert %T to %s", value, fieldType)
+			}
+		case []string:
+			// expect the field to be a string slice
+			if fieldType.Kind() == reflect.Slice && fieldType.Elem().Kind() == reflect.String {
+				field.Set(reflect.ValueOf(v))
+			} else {
+				return fmt.Errorf("cannot convert %T to %s", value, fieldType)
+			}
+		default:
+			// fallback to reflection
 			reflectValue := reflect.ValueOf(value)
 			reflectValueType := reflectValue.Type()
 
@@ -820,12 +853,14 @@ func (r mappedResult) apply(dest interface{}) {
 				ptr.Elem().Set(reflectValue.Convert(fieldType.Elem()))
 				field.Set(ptr)
 			default:
-				logger.Errorf("Cannot convert %T to %s for field %s", value, fieldType, key)
+				return fmt.Errorf("cannot convert %T to %s", value, fieldType)
 			}
-		} else {
-			logger.Errorf("Field %s does not exist or cannot be set in %T", key, dest)
 		}
+	} else {
+		return fmt.Errorf("field does not exist or cannot be set")
 	}
+
+	return nil
 }
 
 func (r mappedResults) setSingleValue(index int, key string, value string) mappedResults {
@@ -895,6 +930,7 @@ func (s mappedScraper) scrapePerformers(ctx context.Context, q mappedQuery) ([]*
 		return nil, nil
 	}
 
+	// isMulti is nil because it will behave incorrect when scraping multiple performers
 	results := performerMap.process(ctx, q, s.Common, nil)
 	for _, r := range results {
 		var p models.ScrapedPerformer
@@ -948,7 +984,8 @@ func (s mappedScraper) processPerformers(ctx context.Context, performersMap mapp
 	// now apply the performers and tags
 	if performersMap.mappedConfig != nil {
 		logger.Debug(`Processing performers:`)
-		performerResults := performersMap.process(ctx, q, s.Common, urlsIsMulti)
+		// isMulti is nil because it will behave incorrect when scraping multiple performers
+		performerResults := performersMap.process(ctx, q, s.Common, nil)
 
 		scenePerformerTagsMap := performersMap.Tags
 
@@ -999,6 +1036,7 @@ func (s mappedScraper) scrapeScenes(ctx context.Context, q mappedQuery) ([]*Scra
 	}
 
 	logger.Debug(`Processing scenes:`)
+	// urlsIsMulti is nil because it will behave incorrect when scraping multiple scenes
 	results := sceneMap.process(ctx, q, s.Common, nil)
 	for i, r := range results {
 		logger.Debug(`Processing scene:`)
@@ -1021,7 +1059,7 @@ func (s mappedScraper) scrapeScene(ctx context.Context, q mappedQuery) (*Scraped
 	sceneMap := sceneScraperConfig.mappedConfig
 
 	logger.Debug(`Processing scene:`)
-	results := sceneMap.process(ctx, q, s.Common, nil)
+	results := sceneMap.process(ctx, q, s.Common, urlsIsMulti)
 
 	var ret ScrapedScene
 	if len(results) > 0 {

@@ -584,7 +584,7 @@ func makeSceneXPathConfig() mappedScraper {
 
 	performerConfig := make(mappedConfig)
 	performerConfig["Name"] = makeSimpleAttrConfig(`$performerElem/@data-mxptext`)
-	performerConfig["URL"] = makeSimpleAttrConfig(`$performerElem/@href`)
+	performerConfig["URLs"] = makeSimpleAttrConfig(`$performerElem/@href`)
 	config.Performers.mappedConfig = performerConfig
 
 	studioConfig := make(mappedConfig)
@@ -668,8 +668,8 @@ func verifyPerformers(t *testing.T, expectedNames []string, expectedURLs []strin
 		}
 		if i < len(actualPerformers) {
 			actualName = *actualPerformers[i].Name
-			if actualPerformers[i].URL != nil {
-				actualURL = *actualPerformers[i].URL
+			if len(actualPerformers[i].URLs) == 1 {
+				actualURL = actualPerformers[i].URLs[0]
 			}
 		}
 
