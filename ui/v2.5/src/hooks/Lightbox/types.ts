@@ -8,6 +8,7 @@ interface IImagePaths {
 
 interface IFiles {
   __typename?: string;
+  path: string;
   width: number;
   height: number;
   video_codec?: GQL.Maybe<string>;
@@ -19,7 +20,7 @@ export interface ILightboxImage {
   rating100?: GQL.Maybe<number>;
   o_counter?: GQL.Maybe<number>;
   paths: IImagePaths;
-  visual_files?: GQL.Maybe<IFiles>[];
+  visual_files?: IFiles[];
 }
 
 export interface IChapter {
