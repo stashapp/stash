@@ -259,11 +259,11 @@ class MarkersPlugin extends videojs.getPlugin("plugin") {
   }
 
   // Implementing the findColors method
-  async findColors(tagNames: string[]) {
+  findColors(tagNames: string[]) {
     // Compute base hues for each tag
     const baseHues: { [tag: string]: number } = {};
     for (const tag of tagNames) {
-      baseHues[tag] = await this.computeBaseHue(tag);
+      baseHues[tag] = this.computeBaseHue(tag);
     }
 
     // Adjust hues to avoid similar colors
@@ -278,7 +278,7 @@ class MarkersPlugin extends videojs.getPlugin("plugin") {
   // Helper methods translated from Python
 
   // Compute base hue from tag name
-  private async computeBaseHue(tag: string): Promise<number> {
+  private computeBaseHue(tag: string): number {
     const hash = CryptoJS.SHA256(tag);
     const hashHex = hash.toString(CryptoJS.enc.Hex);
     const hashInt = BigInt(`0x${hashHex}`);
