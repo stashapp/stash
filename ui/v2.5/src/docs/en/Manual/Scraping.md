@@ -15,6 +15,7 @@ Stash supports scraping of metadata from various external sources.
 |   | Fragment | Search | URL |
 |---|:---:|:---:|:---:|
 | gallery | ✔️ | | ✔️ |
+| image | ✔️ | | ✔️ |
 | group | | | ✔️ |
 | performer | | ✔️ | ✔️ |
 | scene | ✔️  | ✔️ | ✔️ |

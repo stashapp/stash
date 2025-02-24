@@ -190,6 +190,7 @@ type mappedGalleryScraperConfig struct {
 	Performers mappedConfig `yaml:"Performers"`
 	Studio     mappedConfig `yaml:"Studio"`
 }
+
 type _mappedGalleryScraperConfig mappedGalleryScraperConfig
 
 func (s *mappedGalleryScraperConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
@@ -224,6 +225,60 @@ func (s *mappedGalleryScraperConfig) UnmarshalYAML(unmarshal func(interface{}) e
 	}
 
 	*s = mappedGalleryScraperConfig(c)
+
+	yml, err = yaml.Marshal(parentMap)
+	if err != nil {
+		return err
+	}
+
+	if err := yaml.Unmarshal(yml, &s.mappedConfig); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type mappedImageScraperConfig struct {
+	mappedConfig
+
+	Tags       mappedConfig `yaml:"Tags"`
+	Performers mappedConfig `yaml:"Performers"`
+	Studio     mappedConfig `yaml:"Studio"`
+}
+type _mappedImageScraperConfig mappedImageScraperConfig
+
+func (s *mappedImageScraperConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	// HACK - unmarshal to map first, then remove known scene sub-fields, then
+	// remarshal to yaml and pass that down to the base map
+	parentMap := make(map[string]interface{})
+	if err := unmarshal(parentMap); err != nil {
+		return err
+	}
+
+	// move the known sub-fields to a separate map
+	thisMap := make(map[string]interface{})
+
+	thisMap[mappedScraperConfigSceneTags] = parentMap[mappedScraperConfigSceneTags]
+	thisMap[mappedScraperConfigScenePerformers] = parentMap[mappedScraperConfigScenePerformers]
+	thisMap[mappedScraperConfigSceneStudio] = parentMap[mappedScraperConfigSceneStudio]
+
+	delete(parentMap, mappedScraperConfigSceneTags)
+	delete(parentMap, mappedScraperConfigScenePerformers)
+	delete(parentMap, mappedScraperConfigSceneStudio)
+
+	// re-unmarshal the sub-fields
+	yml, err := yaml.Marshal(thisMap)
+	if err != nil {
+		return err
+	}
+
+	// needs to be a different type to prevent infinite recursion
+	c := _mappedImageScraperConfig{}
+	if err := yaml.Unmarshal(yml, &c); err != nil {
+		return err
+	}
+
+	*s = mappedImageScraperConfig(c)
 
 	yml, err = yaml.Marshal(parentMap)
 	if err != nil {
@@ -794,6 +849,7 @@ type mappedScraper struct {
 	Common    commonMappedConfig            `yaml:"common"`
 	Scene     *mappedSceneScraperConfig     `yaml:"scene"`
 	Gallery   *mappedGalleryScraperConfig   `yaml:"gallery"`
+	Image     *mappedImageScraperConfig     `yaml:"image"`
 	Performer *mappedPerformerScraperConfig `yaml:"performer"`
 	Movie     *mappedMovieScraperConfig     `yaml:"movie"`
 }
@@ -1075,6 +1131,57 @@ func (s mappedScraper) scrapeScene(ctx context.Context, q mappedQuery) (*Scraped
 	}
 
 	return nil, nil
+}
+
+func (s mappedScraper) scrapeImage(ctx context.Context, q mappedQuery) (*ScrapedImage, error) {
+	var ret ScrapedImage
+
+	imageScraperConfig := s.Image
+	if imageScraperConfig == nil {
+		return nil, nil
+	}
+
+	imageMap := imageScraperConfig.mappedConfig
+
+	imagePerformersMap := imageScraperConfig.Performers
+	imageTagsMap := imageScraperConfig.Tags
+	imageStudioMap := imageScraperConfig.Studio
+
+	logger.Debug(`Processing image:`)
+	results := imageMap.process(ctx, q, s.Common)
+
+	// now apply the performers and tags
+	if imagePerformersMap != nil {
+		logger.Debug(`Processing image performers:`)
+		ret.Performers = processRelationships[models.ScrapedPerformer](ctx, s, imagePerformersMap, q)
+	}
+
+	if imageTagsMap != nil {
+		logger.Debug(`Processing image tags:`)
+		ret.Tags = processRelationships[models.ScrapedTag](ctx, s, imageTagsMap, q)
+	}
+
+	if imageStudioMap != nil {
+		logger.Debug(`Processing image studio:`)
+		studioResults := imageStudioMap.process(ctx, q, s.Common)
+
+		if len(studioResults) > 0 {
+			studio := &models.ScrapedStudio{}
+			studioResults[0].apply(studio)
+			ret.Studio = studio
+		}
+	}
+
+	// if no basic fields are populated, and no relationships, then return nil
+	if len(results) == 0 && len(ret.Performers) == 0 && len(ret.Tags) == 0 && ret.Studio == nil {
+		return nil, nil
+	}
+
+	if len(results) > 0 {
+		results[0].apply(&ret)
+	}
+
+	return &ret, nil
 }
 
 func (s mappedScraper) scrapeGallery(ctx context.Context, q mappedQuery) (*ScrapedGallery, error) {

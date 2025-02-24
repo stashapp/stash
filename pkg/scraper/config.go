@@ -45,6 +45,13 @@ type config struct {
 	// Configuration for querying a gallery by a URL
 	GalleryByURL []*scrapeByURLConfig `yaml:"galleryByURL"`
 
+	// Configuration for querying an image by a URL
+	ImageByURL []*scrapeByURLConfig `yaml:"imageByURL"`
+
+	// Configuration for querying image by an Image fragment
+	ImageByFragment *scraperTypeConfig `yaml:"imageByFragment"`
+
+	// Configuration for querying a movie by a URL
 	// Configuration for querying a movie by a URL - deprecated, use GroupByURL
 	MovieByURL []*scrapeByURLConfig `yaml:"movieByURL"`
 	GroupByURL []*scrapeByURLConfig `yaml:"groupByURL"`
@@ -295,6 +302,21 @@ func (c config) spec() Scraper {
 		ret.Gallery = &gallery
 	}
 
+	image := ScraperSpec{}
+	if c.ImageByFragment != nil {
+		image.SupportedScrapes = append(image.SupportedScrapes, ScrapeTypeFragment)
+	}
+	if len(c.ImageByURL) > 0 {
+		image.SupportedScrapes = append(image.SupportedScrapes, ScrapeTypeURL)
+		for _, v := range c.ImageByURL {
+			image.Urls = append(image.Urls, v.URL...)
+		}
+	}
+
+	if len(image.SupportedScrapes) > 0 {
+		ret.Image = &image
+	}
+
 	group := ScraperSpec{}
 	if len(c.MovieByURL) > 0 || len(c.GroupByURL) > 0 {
 		group.SupportedScrapes = append(group.SupportedScrapes, ScrapeTypeURL)
@@ -319,6 +341,8 @@ func (c config) supports(ty ScrapeContentType) bool {
 		return (c.SceneByName != nil && c.SceneByQueryFragment != nil) || c.SceneByFragment != nil || len(c.SceneByURL) > 0
 	case ScrapeContentTypeGallery:
 		return c.GalleryByFragment != nil || len(c.GalleryByURL) > 0
+	case ScrapeContentTypeImage:
+		return c.ImageByFragment != nil || len(c.ImageByURL) > 0
 	case ScrapeContentTypeMovie, ScrapeContentTypeGroup:
 		return len(c.MovieByURL) > 0 || len(c.GroupByURL) > 0
 	}
@@ -342,6 +366,12 @@ func (c config) matchesURL(url string, ty ScrapeContentType) bool {
 		}
 	case ScrapeContentTypeGallery:
 		for _, scraper := range c.GalleryByURL {
+			if scraper.matchesURL(url) {
+				return true
+			}
+		}
+	case ScrapeContentTypeImage:
+		for _, scraper := range c.ImageByURL {
 			if scraper.matchesURL(url) {
 				return true
 			}

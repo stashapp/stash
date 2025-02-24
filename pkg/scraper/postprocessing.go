@@ -33,6 +33,12 @@ func (c Cache) postScrape(ctx context.Context, content ScrapedContent) (ScrapedC
 		}
 	case ScrapedGallery:
 		return c.postScrapeGallery(ctx, v)
+	case *ScrapedImage:
+		if v != nil {
+			return c.postScrapeImage(ctx, *v)
+		}
+	case ScrapedImage:
+		return c.postScrapeImage(ctx, v)
 	case *models.ScrapedMovie:
 		if v != nil {
 			return c.postScrapeMovie(ctx, *v)
@@ -313,6 +319,40 @@ func (c Cache) postScrapeGallery(ctx context.Context, g ScrapedGallery) (Scraped
 	}
 
 	return g, nil
+}
+
+func (c Cache) postScrapeImage(ctx context.Context, image ScrapedImage) (ScrapedContent, error) {
+	r := c.repository
+	if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
+		pqb := r.PerformerFinder
+		tqb := r.TagFinder
+		sqb := r.StudioFinder
+
+		for _, p := range image.Performers {
+			if err := match.ScrapedPerformer(ctx, pqb, p, nil); err != nil {
+				return err
+			}
+		}
+
+		tags, err := postProcessTags(ctx, tqb, image.Tags)
+		if err != nil {
+			return err
+		}
+		image.Tags = tags
+
+		if image.Studio != nil {
+			err := match.ScrapedStudio(ctx, sqb, image.Studio, nil)
+			if err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return image, nil
 }
 
 func postProcessTags(ctx context.Context, tqb models.TagQueryer, scrapedTags []*models.ScrapedTag) ([]*models.ScrapedTag, error) {

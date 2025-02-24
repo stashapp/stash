@@ -48,6 +48,7 @@ import {
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { useDebounce } from "../debounce";
 import { isVideo } from "src/utils/visualFile";
+import { imageTitle } from "src/core/files";
 
 const CLASSNAME = "Lightbox";
 const CLASSNAME_HEADER = `${CLASSNAME}-header`;
@@ -689,6 +690,7 @@ export const LightboxComponent: React.FC<IProps> = ({
     }
 
     const currentImage: ILightboxImage | undefined = images[currentIndex];
+    const title = currentImage ? imageTitle(currentImage) : undefined;
 
     function setRating(v: number | null) {
       if (currentImage?.id) {
@@ -932,9 +934,9 @@ export const LightboxComponent: React.FC<IProps> = ({
             )}
           </div>
           <div>
-            {currentImage?.title && (
+            {currentImage && (
               <Link to={`/images/${currentImage.id}`} onClick={() => close()}>
-                {currentImage.title ?? ""}
+                {title ?? ""}
               </Link>
             )}
           </div>
