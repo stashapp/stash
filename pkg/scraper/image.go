@@ -12,23 +12,15 @@ import (
 )
 
 type ScrapedImage struct {
-	Title        *string  `json:"title"`
-	Code         *string  `json:"code"`
-	Details      *string  `json:"details"`
-	Photographer *string  `json:"photographer"`
-	Director     *string  `json:"director"`
-	URL          *string  `json:"url"`
-	URLs         []string `json:"urls"`
-	Date         *string  `json:"date"`
-	// This should be a base64 encoded data URL
-	Scene        *string                       `json:"scene"`
-	File         *models.SceneFileType         `json:"file"`
-	Studio       *models.ScrapedStudio         `json:"studio"`
-	Tags         []*models.ScrapedTag          `json:"tags"`
-	Performers   []*models.ScrapedPerformer    `json:"performers"`
-	Movies       []*models.ScrapedMovie        `json:"movies"`
-	RemoteSiteID *string                       `json:"remote_site_id"`
-	Fingerprints []*models.StashBoxFingerprint `json:"fingerprints"`
+	Title        *string                    `json:"title"`
+	Code         *string                    `json:"code"`
+	Details      *string                    `json:"details"`
+	Photographer *string                    `json:"photographer"`
+	URLs         []string                   `json:"urls"`
+	Date         *string                    `json:"date"`
+	Studio       *models.ScrapedStudio      `json:"studio"`
+	Tags         []*models.ScrapedTag       `json:"tags"`
+	Performers   []*models.ScrapedPerformer `json:"performers"`
 }
 
 func (ScrapedImage) IsScrapedContent() {}

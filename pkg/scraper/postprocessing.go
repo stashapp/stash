@@ -322,14 +322,6 @@ func (c Cache) postScrapeGallery(ctx context.Context, g ScrapedGallery) (Scraped
 }
 
 func (c Cache) postScrapeImage(ctx context.Context, image ScrapedImage) (ScrapedContent, error) {
-	// set the URL/URLs field
-	if image.URL == nil && len(image.URLs) > 0 {
-		image.URL = &image.URLs[0]
-	}
-	if image.URL != nil && len(image.URLs) == 0 {
-		image.URLs = []string{*image.URL}
-	}
-
 	r := c.repository
 	if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
 		pqb := r.PerformerFinder
