@@ -32,6 +32,7 @@ const htmlDoc1 = `
 							</td>
 							<td class="paramvalue">
 								<a href="/html/m_links/Mia_Malkova/">Mia Malkova</a>&nbsp;
+								<a href="/html/m_links/Mia_Malkova/second_url">Mia Malkova</a>&nbsp;
 							</td>
 						</tr>
 						<tr>
@@ -206,6 +207,8 @@ func makeXPathConfig() mappedPerformerScraperConfig {
 	}
 
 	config.mappedConfig["Name"] = makeSimpleAttrConfig(makeCommonXPath("Babe Name:") + `/a`)
+	config.mappedConfig["URL"] = makeSimpleAttrConfig(makeCommonXPath("Babe Name:") + `/a/@href`)
+	config.mappedConfig["URLs"] = makeSimpleAttrConfig(makeCommonXPath("Babe Name:") + `/a/@href`)
 	config.mappedConfig["Ethnicity"] = makeSimpleAttrConfig(makeCommonXPath("Ethnicity:"))
 	config.mappedConfig["Aliases"] = makeSimpleAttrConfig(makeCommonXPath("Aliases:"))
 	config.mappedConfig["EyeColor"] = makeSimpleAttrConfig(makeCommonXPath("Eye Color:"))
@@ -321,6 +324,8 @@ func TestScrapePerformerXPath(t *testing.T) {
 	}
 
 	const performerName = "Mia Malkova"
+	const url = "/html/m_links/Mia_Malkova/"
+	const secondURL = "/html/m_links/Mia_Malkova/second_url"
 	const ethnicity = "Caucasian"
 	const country = "United States"
 	const birthdate = "1992-07-01"
@@ -338,6 +343,16 @@ func TestScrapePerformerXPath(t *testing.T) {
 	const weight = "57" // 126 lb
 
 	verifyField(t, performerName, performer.Name, "Name")
+	verifyField(t, url, performer.URL, "URL")
+
+	// #5294 - test multiple URLs
+	if len(performer.URLs) != 2 {
+		t.Errorf("Expected 2 URLs, got %d", len(performer.URLs))
+	} else {
+		verifyField(t, url, &performer.URLs[0], "URLs[0]")
+		verifyField(t, secondURL, &performer.URLs[1], "URLs[1]")
+	}
+
 	verifyField(t, gender, performer.Gender, "Gender")
 	verifyField(t, ethnicity, performer.Ethnicity, "Ethnicity")
 	verifyField(t, country, performer.Country, "Country")
@@ -805,7 +820,7 @@ func TestLoadInvalidXPath(t *testing.T) {
 		doc: doc,
 	}
 
-	config.process(context.Background(), q, nil)
+	config.process(context.Background(), q, nil, nil)
 }
 
 type mockGlobalConfig struct{}
