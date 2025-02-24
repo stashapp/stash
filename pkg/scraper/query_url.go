@@ -73,6 +73,24 @@ func queryURLParametersFromGallery(gallery *models.Gallery) queryURLParameters {
 	return ret
 }
 
+func queryURLParametersFromImage(image *models.Image) queryURLParameters {
+	ret := make(queryURLParameters)
+	ret["checksum"] = image.Checksum
+
+	if image.Path != "" {
+		ret["filename"] = filepath.Base(image.Path)
+	}
+	if image.Title != "" {
+		ret["title"] = image.Title
+	}
+
+	if len(image.URLs.List()) > 0 {
+		ret["url"] = image.URLs.List()[0]
+	}
+
+	return ret
+}
+
 func (p queryURLParameters) applyReplacements(r queryURLReplacements) {
 	for k, v := range p {
 		rpl, found := r[k]
