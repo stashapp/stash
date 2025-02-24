@@ -26,6 +26,10 @@ galleryByFragment:
   <single scraper config>
 galleryByURL:
   <multiple scraper URL configs>
+imageByFragment:
+  <single scraper config>
+imageByURL:
+  <multiple scraper URL configs>
 <other configurations>
 ```
 
@@ -81,6 +85,8 @@ The script is sent input and expects output based on the scraping type, as detai
 | `groupByURL` | `{"url": "<url>"}` | JSON-encoded group fragment |
 | `galleryByFragment` | JSON-encoded gallery fragment | JSON-encoded gallery fragment |
 | `galleryByURL` | `{"url": "<url>"}` | JSON-encoded gallery fragment |
+| `imageByFragment` | JSON-encoded image fragment | JSON-encoded image fragment |
+| `imageByURL` | `{"url": "<url>"}` | JSON-encoded image fragment |
 
 For `performerByName`, only `name` is required in the returned performer fragments. One entire object is sent back to `performerByFragment` to scrape a specific performer, so the other fields may be included to assist in scraping a performer. For example, the `url` field may be filled in for the specific performer page, then `performerByFragment` can extract by using its value.
   
