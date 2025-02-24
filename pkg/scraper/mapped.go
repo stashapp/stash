@@ -1148,7 +1148,7 @@ func (s mappedScraper) scrapeImage(ctx context.Context, q mappedQuery) (*Scraped
 	imageStudioMap := imageScraperConfig.Studio
 
 	logger.Debug(`Processing image:`)
-	results := imageMap.process(ctx, q, s.Common)
+	results := imageMap.process(ctx, q, s.Common, urlsIsMulti)
 
 	// now apply the performers and tags
 	if imagePerformersMap != nil {
@@ -1163,7 +1163,7 @@ func (s mappedScraper) scrapeImage(ctx context.Context, q mappedQuery) (*Scraped
 
 	if imageStudioMap != nil {
 		logger.Debug(`Processing image studio:`)
-		studioResults := imageStudioMap.process(ctx, q, s.Common)
+		studioResults := imageStudioMap.process(ctx, q, s.Common, nil)
 
 		if len(studioResults) > 0 {
 			studio := &models.ScrapedStudio{}
