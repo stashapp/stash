@@ -43,7 +43,9 @@ func (s mappedConfig) applyCommon(c commonMappedConfig, src string) string {
 	return ret
 }
 
-func (s mappedConfig) process(ctx context.Context, q mappedQuery, common commonMappedConfig) mappedResults {
+type isMultiFunc func(key string) bool
+
+func (s mappedConfig) process(ctx context.Context, q mappedQuery, common commonMappedConfig, isMulti isMultiFunc) mappedResults {
 	var ret mappedResults
 
 	for k, attrConfig := range s {
@@ -51,7 +53,7 @@ func (s mappedConfig) process(ctx context.Context, q mappedQuery, common commonM
 		if attrConfig.Fixed != "" {
 			// TODO - not sure if this needs to set _all_ indexes for the key
 			const i = 0
-			ret = ret.setKey(i, k, attrConfig.Fixed)
+			ret = ret.setSingleValue(i, k, attrConfig.Fixed)
 		} else {
 			selector := attrConfig.Selector
 			selector = s.applyCommon(common, selector)
@@ -63,8 +65,15 @@ func (s mappedConfig) process(ctx context.Context, q mappedQuery, common commonM
 
 			if len(found) > 0 {
 				result := s.postProcess(ctx, q, attrConfig, found)
-				for i, text := range result {
-					ret = ret.setKey(i, k, text)
+
+				// HACK - if the key is URLs, then we need to set the value as a multi-value
+				isMulti := isMulti != nil && isMulti(k)
+				if isMulti {
+					ret = ret.setMultiValue(0, k, result)
+				} else {
+					for i, text := range result {
+						ret = ret.setSingleValue(i, k, text)
+					}
 				}
 			}
 		}
@@ -845,37 +854,72 @@ type mappedScraper struct {
 	Movie     *mappedMovieScraperConfig     `yaml:"movie"`
 }
 
-type mappedResult map[string]string
+type mappedResult map[string]interface{}
 type mappedResults []mappedResult
 
 func (r mappedResult) apply(dest interface{}) {
-	destVal := reflect.ValueOf(dest)
+	destVal := reflect.ValueOf(dest).Elem()
 
-	// dest should be a pointer
-	destVal = destVal.Elem()
-
+	// all fields are either string pointers or string slices
 	for key, value := range r {
-		field := destVal.FieldByName(key)
-
-		if field.IsValid() {
-			var reflectValue reflect.Value
-			if field.Kind() == reflect.Ptr {
-				// need to copy the value, otherwise everything is set to the
-				// same pointer
-				localValue := value
-				reflectValue = reflect.ValueOf(&localValue)
-			} else {
-				reflectValue = reflect.ValueOf(value)
-			}
-
-			field.Set(reflectValue)
-		} else {
-			logger.Errorf("Field %s does not exist in %T", key, dest)
+		if err := mapFieldValue(destVal, key, value); err != nil {
+			logger.Errorf("Error mapping field %s in %T: %v", key, dest, err)
 		}
 	}
 }
 
-func (r mappedResults) setKey(index int, key string, value string) mappedResults {
+func mapFieldValue(destVal reflect.Value, key string, value interface{}) error {
+	field := destVal.FieldByName(key)
+	fieldType := field.Type()
+
+	if field.IsValid() && field.CanSet() {
+		switch v := value.(type) {
+		case string:
+			// if the field is a pointer to a string, then we need to convert the string to a pointer
+			// if the field is a string slice, then we need to convert the string to a slice
+			switch {
+			case fieldType.Kind() == reflect.String:
+				field.SetString(v)
+			case fieldType.Kind() == reflect.Ptr && fieldType.Elem().Kind() == reflect.String:
+				ptr := reflect.New(fieldType.Elem())
+				ptr.Elem().SetString(v)
+				field.Set(ptr)
+			case fieldType.Kind() == reflect.Slice && fieldType.Elem().Kind() == reflect.String:
+				field.Set(reflect.ValueOf([]string{v}))
+			default:
+				return fmt.Errorf("cannot convert %T to %s", value, fieldType)
+			}
+		case []string:
+			// expect the field to be a string slice
+			if fieldType.Kind() == reflect.Slice && fieldType.Elem().Kind() == reflect.String {
+				field.Set(reflect.ValueOf(v))
+			} else {
+				return fmt.Errorf("cannot convert %T to %s", value, fieldType)
+			}
+		default:
+			// fallback to reflection
+			reflectValue := reflect.ValueOf(value)
+			reflectValueType := reflectValue.Type()
+
+			switch {
+			case reflectValueType.ConvertibleTo(fieldType):
+				field.Set(reflectValue.Convert(fieldType))
+			case fieldType.Kind() == reflect.Pointer && reflectValueType.ConvertibleTo(fieldType.Elem()):
+				ptr := reflect.New(fieldType.Elem())
+				ptr.Elem().Set(reflectValue.Convert(fieldType.Elem()))
+				field.Set(ptr)
+			default:
+				return fmt.Errorf("cannot convert %T to %s", value, fieldType)
+			}
+		}
+	} else {
+		return fmt.Errorf("field does not exist or cannot be set")
+	}
+
+	return nil
+}
+
+func (r mappedResults) setSingleValue(index int, key string, value string) mappedResults {
 	if index >= len(r) {
 		r = append(r, make(mappedResult))
 	}
@@ -883,6 +927,20 @@ func (r mappedResults) setKey(index int, key string, value string) mappedResults
 	logger.Debugf(`[%d][%s] = %s`, index, key, value)
 	r[index][key] = value
 	return r
+}
+
+func (r mappedResults) setMultiValue(index int, key string, value []string) mappedResults {
+	if index >= len(r) {
+		r = append(r, make(mappedResult))
+	}
+
+	logger.Debugf(`[%d][%s] = %s`, index, key, value)
+	r[index][key] = value
+	return r
+}
+
+func urlsIsMulti(key string) bool {
+	return key == "URLs"
 }
 
 func (s mappedScraper) scrapePerformer(ctx context.Context, q mappedQuery) (*models.ScrapedPerformer, error) {
@@ -895,12 +953,12 @@ func (s mappedScraper) scrapePerformer(ctx context.Context, q mappedQuery) (*mod
 
 	performerTagsMap := performerMap.Tags
 
-	results := performerMap.process(ctx, q, s.Common)
+	results := performerMap.process(ctx, q, s.Common, urlsIsMulti)
 
 	// now apply the tags
 	if performerTagsMap != nil {
 		logger.Debug(`Processing performer tags:`)
-		tagResults := performerTagsMap.process(ctx, q, s.Common)
+		tagResults := performerTagsMap.process(ctx, q, s.Common, nil)
 
 		for _, p := range tagResults {
 			tag := &models.ScrapedTag{}
@@ -928,7 +986,8 @@ func (s mappedScraper) scrapePerformers(ctx context.Context, q mappedQuery) ([]*
 		return nil, nil
 	}
 
-	results := performerMap.process(ctx, q, s.Common)
+	// isMulti is nil because it will behave incorrect when scraping multiple performers
+	results := performerMap.process(ctx, q, s.Common, nil)
 	for _, r := range results {
 		var p models.ScrapedPerformer
 		r.apply(&p)
@@ -957,7 +1016,7 @@ func (s mappedScraper) processSceneRelationships(ctx context.Context, q mappedQu
 
 	if sceneStudioMap != nil {
 		logger.Debug(`Processing scene studio:`)
-		studioResults := sceneStudioMap.process(ctx, q, s.Common)
+		studioResults := sceneStudioMap.process(ctx, q, s.Common, nil)
 
 		if len(studioResults) > 0 && resultIndex < len(studioResults) {
 			studio := &models.ScrapedStudio{}
@@ -981,14 +1040,15 @@ func (s mappedScraper) processPerformers(ctx context.Context, performersMap mapp
 	// now apply the performers and tags
 	if performersMap.mappedConfig != nil {
 		logger.Debug(`Processing performers:`)
-		performerResults := performersMap.process(ctx, q, s.Common)
+		// isMulti is nil because it will behave incorrect when scraping multiple performers
+		performerResults := performersMap.process(ctx, q, s.Common, nil)
 
 		scenePerformerTagsMap := performersMap.Tags
 
 		// process performer tags once
 		var performerTagResults mappedResults
 		if scenePerformerTagsMap != nil {
-			performerTagResults = scenePerformerTagsMap.process(ctx, q, s.Common)
+			performerTagResults = scenePerformerTagsMap.process(ctx, q, s.Common, nil)
 		}
 
 		for _, p := range performerResults {
@@ -1011,7 +1071,7 @@ func (s mappedScraper) processPerformers(ctx context.Context, performersMap mapp
 func processRelationships[T any](ctx context.Context, s mappedScraper, relationshipMap mappedConfig, q mappedQuery) []*T {
 	var ret []*T
 
-	results := relationshipMap.process(ctx, q, s.Common)
+	results := relationshipMap.process(ctx, q, s.Common, nil)
 
 	for _, p := range results {
 		var value T
@@ -1032,7 +1092,8 @@ func (s mappedScraper) scrapeScenes(ctx context.Context, q mappedQuery) ([]*Scra
 	}
 
 	logger.Debug(`Processing scenes:`)
-	results := sceneMap.process(ctx, q, s.Common)
+	// urlsIsMulti is nil because it will behave incorrect when scraping multiple scenes
+	results := sceneMap.process(ctx, q, s.Common, nil)
 	for i, r := range results {
 		logger.Debug(`Processing scene:`)
 
@@ -1054,7 +1115,7 @@ func (s mappedScraper) scrapeScene(ctx context.Context, q mappedQuery) (*Scraped
 	sceneMap := sceneScraperConfig.mappedConfig
 
 	logger.Debug(`Processing scene:`)
-	results := sceneMap.process(ctx, q, s.Common)
+	results := sceneMap.process(ctx, q, s.Common, urlsIsMulti)
 
 	var ret ScrapedScene
 	if len(results) > 0 {
@@ -1087,7 +1148,7 @@ func (s mappedScraper) scrapeImage(ctx context.Context, q mappedQuery) (*Scraped
 	imageStudioMap := imageScraperConfig.Studio
 
 	logger.Debug(`Processing image:`)
-	results := imageMap.process(ctx, q, s.Common)
+	results := imageMap.process(ctx, q, s.Common, urlsIsMulti)
 
 	// now apply the performers and tags
 	if imagePerformersMap != nil {
@@ -1102,7 +1163,7 @@ func (s mappedScraper) scrapeImage(ctx context.Context, q mappedQuery) (*Scraped
 
 	if imageStudioMap != nil {
 		logger.Debug(`Processing image studio:`)
-		studioResults := imageStudioMap.process(ctx, q, s.Common)
+		studioResults := imageStudioMap.process(ctx, q, s.Common, nil)
 
 		if len(studioResults) > 0 {
 			studio := &models.ScrapedStudio{}
@@ -1138,12 +1199,12 @@ func (s mappedScraper) scrapeGallery(ctx context.Context, q mappedQuery) (*Scrap
 	galleryStudioMap := galleryScraperConfig.Studio
 
 	logger.Debug(`Processing gallery:`)
-	results := galleryMap.process(ctx, q, s.Common)
+	results := galleryMap.process(ctx, q, s.Common, urlsIsMulti)
 
 	// now apply the performers and tags
 	if galleryPerformersMap != nil {
 		logger.Debug(`Processing gallery performers:`)
-		performerResults := galleryPerformersMap.process(ctx, q, s.Common)
+		performerResults := galleryPerformersMap.process(ctx, q, s.Common, urlsIsMulti)
 
 		for _, p := range performerResults {
 			performer := &models.ScrapedPerformer{}
@@ -1154,7 +1215,7 @@ func (s mappedScraper) scrapeGallery(ctx context.Context, q mappedQuery) (*Scrap
 
 	if galleryTagsMap != nil {
 		logger.Debug(`Processing gallery tags:`)
-		tagResults := galleryTagsMap.process(ctx, q, s.Common)
+		tagResults := galleryTagsMap.process(ctx, q, s.Common, nil)
 
 		for _, p := range tagResults {
 			tag := &models.ScrapedTag{}
@@ -1165,7 +1226,7 @@ func (s mappedScraper) scrapeGallery(ctx context.Context, q mappedQuery) (*Scrap
 
 	if galleryStudioMap != nil {
 		logger.Debug(`Processing gallery studio:`)
-		studioResults := galleryStudioMap.process(ctx, q, s.Common)
+		studioResults := galleryStudioMap.process(ctx, q, s.Common, nil)
 
 		if len(studioResults) > 0 {
 			studio := &models.ScrapedStudio{}
@@ -1199,11 +1260,11 @@ func (s mappedScraper) scrapeGroup(ctx context.Context, q mappedQuery) (*models.
 	movieStudioMap := movieScraperConfig.Studio
 	movieTagsMap := movieScraperConfig.Tags
 
-	results := movieMap.process(ctx, q, s.Common)
+	results := movieMap.process(ctx, q, s.Common, urlsIsMulti)
 
 	if movieStudioMap != nil {
 		logger.Debug(`Processing movie studio:`)
-		studioResults := movieStudioMap.process(ctx, q, s.Common)
+		studioResults := movieStudioMap.process(ctx, q, s.Common, nil)
 
 		if len(studioResults) > 0 {
 			studio := &models.ScrapedStudio{}
@@ -1215,7 +1276,7 @@ func (s mappedScraper) scrapeGroup(ctx context.Context, q mappedQuery) (*models.
 	// now apply the tags
 	if movieTagsMap != nil {
 		logger.Debug(`Processing movie tags:`)
-		tagResults := movieTagsMap.process(ctx, q, s.Common)
+		tagResults := movieTagsMap.process(ctx, q, s.Common, nil)
 
 		for _, p := range tagResults {
 			tag := &models.ScrapedTag{}
