@@ -100,6 +100,12 @@ class MarkersPlugin extends videojs.getPlugin("plugin") {
     if (seekBar) {
       seekBar.appendChild(markerSet.dot);
     }
+    this.markers.push(marker);
+    this.markerDivs.push(markerSet);
+  }
+
+  addDotMarkers(markers: IMarker[]) {
+    markers.forEach(this.addDotMarker, this);
   }
 
   private renderRangeMarkers(markers: IMarker[], layer: number) {
@@ -255,7 +261,16 @@ class MarkersPlugin extends videojs.getPlugin("plugin") {
   }
 
   clearMarkers() {
-    this.removeMarkers([...this.markers]);
+    for (const markerSet of this.markerDivs) {
+      if (markerSet.dot?.hasAttribute("marker-tooltip-shown")) {
+        this.hideMarkerTooltip();
+      }
+
+      markerSet.dot?.remove();
+      if (markerSet.range) markerSet.range.remove();
+    }
+    this.markers = [];
+    this.markerDivs = [];
   }
 
   // Implementing the findColors method

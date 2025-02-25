@@ -733,16 +733,8 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       }
     }
 
-    // Add markers in chunks
-    const CHUNK_SIZE = 10;
-    for (let i = 0; i < timestampMarkers.length; i += CHUNK_SIZE) {
-      const chunk = timestampMarkers.slice(i, i + CHUNK_SIZE);
-      requestAnimationFrame(() => {
-        chunk.forEach((m) => markers.addDotMarker(m));
-      });
-    }
-
     requestAnimationFrame(() => {
+      markers.addDotMarkers(timestampMarkers);
       markers.addRangeMarkers(rangeMarkers);
     });
   }, [getPlayer, scene, uiConfig]);
