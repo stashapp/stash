@@ -705,7 +705,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     }));
 
     const markers = player!.markers();
-    markers.clearMarkers();
 
     const uniqueTagNames = markerData
       .map((marker) => marker.primaryTag.name)
@@ -771,6 +770,8 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
     return () => {
       player.off("loadedmetadata", handleLoadMetadata);
+      const markers = player!.markers();
+      markers.clearMarkers();
     };
   }, [getPlayer, scene, loadMarkers]);
 
