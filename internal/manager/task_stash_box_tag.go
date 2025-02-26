@@ -122,13 +122,13 @@ func (t *StashBoxBatchTagTask) findStashBoxPerformer(ctx context.Context) (*mode
 			performer, err = client.FindStashBoxPerformerByID(ctx, remoteID)
 
 			if performer != nil && performer.RemoteMergedIntoId != nil {
-				mergedPerformer, err := client.FindStashBoxPerformerByID(ctx, *performer.RemoteMergedIntoId)
+				mergedPerformer, err := t.handleMergedPerformer(ctx, performer, client)
 				if err != nil {
-					logger.Errorf("Error loading merged performer %s from stashbox", *performer.RemoteMergedIntoId)
-				} else if mergedPerformer.StoredID != nil && *mergedPerformer.StoredID != *performer.StoredID {
-					logger.Warnf("Performer %s merged into %s, but both exist locally, not merging", *performer.StoredID, *mergedPerformer.StoredID)
-				} else {
-					mergedPerformer.StoredID = performer.StoredID
+					return nil, err
+				}
+
+				if mergedPerformer != nil {
+					logger.Infof("Performer id %s merged into %s, updating local performer", remoteID, *performer.RemoteMergedIntoId)
 					performer = mergedPerformer
 				}
 			}
@@ -144,6 +144,21 @@ func (t *StashBoxBatchTagTask) findStashBoxPerformer(ctx context.Context) (*mode
 	}
 
 	return performer, err
+}
+
+func (t *StashBoxBatchTagTask) handleMergedPerformer(ctx context.Context, performer *models.ScrapedPerformer, client *stashbox.Client) (mergedPerformer *models.ScrapedPerformer, err error) {
+	mergedPerformer, err = client.FindStashBoxPerformerByID(ctx, *performer.RemoteMergedIntoId)
+	if err != nil {
+		return nil, fmt.Errorf("loading merged performer %s from stashbox", *performer.RemoteMergedIntoId)
+	}
+
+	if mergedPerformer.StoredID != nil && *mergedPerformer.StoredID != *performer.StoredID {
+		logger.Warnf("Performer %s merged into %s, but both exist locally, not merging", *performer.StoredID, *mergedPerformer.StoredID)
+		return nil, nil
+	}
+
+	mergedPerformer.StoredID = performer.StoredID
+	return mergedPerformer, nil
 }
 
 func (t *StashBoxBatchTagTask) processMatchedPerformer(ctx context.Context, p *models.ScrapedPerformer, excluded map[string]bool) {
