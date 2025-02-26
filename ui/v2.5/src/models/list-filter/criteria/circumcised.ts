@@ -4,9 +4,9 @@ import {
   CriterionModifier,
 } from "src/core/generated-graphql";
 import { circumcisedStrings, stringToCircumcised } from "src/utils/circumcised";
-import { CriterionOption, MultiStringCriterion } from "./criterion";
+import { ModifierCriterionOption, MultiStringCriterion } from "./criterion";
 
-export const CircumcisedCriterionOption = new CriterionOption({
+export const CircumcisedCriterionOption = new ModifierCriterionOption({
   messageID: "circumcised",
   type: "circumcised",
   modifierOptions: [

@@ -133,12 +133,14 @@ func Test_sceneQueryBuilder_Create(t *testing.T) {
 				}),
 				StashIDs: models.NewRelatedStashIDs([]models.StashID{
 					{
-						StashID:  stashID1,
-						Endpoint: endpoint1,
+						StashID:   stashID1,
+						Endpoint:  endpoint1,
+						UpdatedAt: epochTime,
 					},
 					{
-						StashID:  stashID2,
-						Endpoint: endpoint2,
+						StashID:   stashID2,
+						Endpoint:  endpoint2,
+						UpdatedAt: epochTime,
 					},
 				}),
 				ResumeTime:   float64(resumeTime),
@@ -178,12 +180,14 @@ func Test_sceneQueryBuilder_Create(t *testing.T) {
 				}),
 				StashIDs: models.NewRelatedStashIDs([]models.StashID{
 					{
-						StashID:  stashID1,
-						Endpoint: endpoint1,
+						StashID:   stashID1,
+						Endpoint:  endpoint1,
+						UpdatedAt: epochTime,
 					},
 					{
-						StashID:  stashID2,
-						Endpoint: endpoint2,
+						StashID:   stashID2,
+						Endpoint:  endpoint2,
+						UpdatedAt: epochTime,
 					},
 				}),
 				ResumeTime:   resumeTime,
@@ -362,12 +366,14 @@ func Test_sceneQueryBuilder_Update(t *testing.T) {
 				}),
 				StashIDs: models.NewRelatedStashIDs([]models.StashID{
 					{
-						StashID:  stashID1,
-						Endpoint: endpoint1,
+						StashID:   stashID1,
+						Endpoint:  endpoint1,
+						UpdatedAt: epochTime,
 					},
 					{
-						StashID:  stashID2,
-						Endpoint: endpoint2,
+						StashID:   stashID2,
+						Endpoint:  endpoint2,
+						UpdatedAt: epochTime,
 					},
 				}),
 				ResumeTime:   resumeTime,
@@ -590,12 +596,14 @@ func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 				StashIDs: &models.UpdateStashIDs{
 					StashIDs: []models.StashID{
 						{
-							StashID:  stashID1,
-							Endpoint: endpoint1,
+							StashID:   stashID1,
+							Endpoint:  endpoint1,
+							UpdatedAt: epochTime,
 						},
 						{
-							StashID:  stashID2,
-							Endpoint: endpoint2,
+							StashID:   stashID2,
+							Endpoint:  endpoint2,
+							UpdatedAt: epochTime,
 						},
 					},
 					Mode: models.RelationshipUpdateModeSet,
@@ -634,12 +642,14 @@ func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 				}),
 				StashIDs: models.NewRelatedStashIDs([]models.StashID{
 					{
-						StashID:  stashID1,
-						Endpoint: endpoint1,
+						StashID:   stashID1,
+						Endpoint:  endpoint1,
+						UpdatedAt: epochTime,
 					},
 					{
-						StashID:  stashID2,
-						Endpoint: endpoint2,
+						StashID:   stashID2,
+						Endpoint:  endpoint2,
+						UpdatedAt: epochTime,
 					},
 				}),
 				ResumeTime:   resumeTime,
@@ -741,12 +751,14 @@ func Test_sceneQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 
 		stashIDs = []models.StashID{
 			{
-				StashID:  stashID1,
-				Endpoint: endpoint1,
+				StashID:   stashID1,
+				Endpoint:  endpoint1,
+				UpdatedAt: epochTime,
 			},
 			{
-				StashID:  stashID2,
-				Endpoint: endpoint2,
+				StashID:   stashID2,
+				Endpoint:  endpoint2,
+				UpdatedAt: epochTime,
 			},
 		}
 	)
@@ -4377,8 +4389,9 @@ func testSceneStashIDs(ctx context.Context, t *testing.T, s *models.Scene) {
 	const stashIDStr = "stashID"
 	const endpoint = "endpoint"
 	stashID := models.StashID{
-		StashID:  stashIDStr,
-		Endpoint: endpoint,
+		StashID:   stashIDStr,
+		Endpoint:  endpoint,
+		UpdatedAt: epochTime,
 	}
 
 	qb := db.Scene

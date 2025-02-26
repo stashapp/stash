@@ -1,6 +1,6 @@
 import { CriterionModifier } from "src/core/generated-graphql";
 import {
-  CriterionOption,
+  ModifierCriterionOption,
   IHierarchicalLabeledIdCriterion,
   ILabeledIdCriterion,
   ILabeledIdCriterionOption,
@@ -15,7 +15,7 @@ const modifierOptions = [
 const defaultModifier = CriterionModifier.Includes;
 const inputType = "studios";
 
-export const StudiosCriterionOption = new CriterionOption({
+export const StudiosCriterionOption = new ModifierCriterionOption({
   messageID: "studios",
   type: "studios",
   modifierOptions,

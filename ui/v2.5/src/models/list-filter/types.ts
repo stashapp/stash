@@ -220,4 +220,5 @@ export type CriterionType =
   | "photographer"
   | "disambiguation"
   | "has_chapters"
-  | "sort_name";
+  | "sort_name"
+  | "custom_fields";

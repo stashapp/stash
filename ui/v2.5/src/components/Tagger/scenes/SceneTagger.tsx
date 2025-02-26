@@ -153,7 +153,7 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes, queue }) => {
   });
   function showLightboxImage(imagePath: string) {
     setSpriteImage(imagePath);
-    showLightbox();
+    showLightbox({ images: lightboxImage });
   }
 
   const filteredScenes = useMemo(

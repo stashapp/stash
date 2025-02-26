@@ -750,6 +750,7 @@
           "enable_chromecast": "Enable Chromecast",
           "show_ab_loop_controls": "Show AB Loop plugin controls",
           "show_scrubber": "Show Scrubber",
+          "show_range_markers": "Show Range Markers",
           "track_activity": "Enable Scene Play history",
           "vr_tag": {
             "description": "The VR button will only be displayed for scenes with this tag.",
@@ -855,6 +856,8 @@
   },
   "custom": "Custom",
   "custom_fields": {
+    "criteria_format_string": "{criterion} (custom field) {modifierString} {valueString}",
+    "criteria_format_string_others": "{criterion} (custom field) {modifierString} {valueString} (+{others} others)",
     "field": "Field",
     "title": "Custom Fields",
     "value": "Value"
