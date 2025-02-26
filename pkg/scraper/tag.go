@@ -1,0 +1,72 @@
+package scraper
+
+import (
+	"context"
+	"regexp"
+	"strings"
+
+	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/match"
+	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sliceutil"
+)
+
+func postProcessTags(ctx context.Context, tqb models.TagQueryer, scrapedTags []*models.ScrapedTag) (ret []*models.ScrapedTag, err error) {
+	ret = make([]*models.ScrapedTag, 0, len(scrapedTags))
+
+	for _, t := range scrapedTags {
+		err := match.ScrapedTag(ctx, tqb, t)
+		if err != nil {
+			return nil, err
+		}
+		ret = append(ret, t)
+	}
+
+	return ret, err
+}
+
+// filterSceneTags removes tags matching excluded tag patterns from the provided scraped scenes
+func filterTags(excludeRegexps []*regexp.Regexp, tags []*models.ScrapedTag) (newTags []*models.ScrapedTag, ignoredTags []string) {
+	if len(excludeRegexps) == 0 {
+		return tags, nil
+	}
+
+	for _, t := range tags {
+		ignore := false
+		for _, reg := range excludeRegexps {
+			if reg.MatchString(strings.ToLower(t.Name)) {
+				ignore = true
+				ignoredTags = sliceutil.AppendUnique(ignoredTags, t.Name)
+				break
+			}
+		}
+
+		if !ignore {
+			newTags = append(newTags, t)
+		}
+	}
+
+	return newTags, ignoredTags
+}
+
+func compileRegexps(patterns []string) []*regexp.Regexp {
+	excludePatterns := patterns
+	var excludeRegexps []*regexp.Regexp
+
+	for _, excludePattern := range excludePatterns {
+		reg, err := regexp.Compile(strings.ToLower(excludePattern))
+		if err != nil {
+			logger.Errorf("Invalid tag exclusion pattern: %v", err)
+		} else {
+			excludeRegexps = append(excludeRegexps, reg)
+		}
+	}
+
+	return excludeRegexps
+}
+
+func logIgnoredTags(ignoredTags []string) {
+	if len(ignoredTags) > 0 {
+		logger.Debugf("Scraping ignored tags: %s", strings.Join(ignoredTags, ", "))
+	}
+}
