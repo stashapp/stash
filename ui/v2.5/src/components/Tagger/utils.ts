@@ -31,7 +31,7 @@ const MMddyyRegex = new RegExp(
 );
 const javcodeRegex = /([a-zA-Z|tT28|tT38]+-\d+[zZeE]?)/;
 
-const parseString = (input: string): string => {
+const handleSpecialStrings = (input: string): string => {
   let output = input;
   const ddmmyy = output.match(ddmmyyRegex);
   if (ddmmyy) {
@@ -69,6 +69,8 @@ const parseString = (input: string): string => {
   }
 
   const yyyymmdd = output.search(yyyymmddRegex);
+  // if we find a date, then replace hyphens with spaces outside of the date
+  // replace dots with hyphens in the date
   if (yyyymmdd !== -1)
     return (
       output.slice(0, yyyymmdd).replace(/-/g, " ") +
@@ -76,15 +78,17 @@ const parseString = (input: string): string => {
       output.slice(yyyymmdd + 10).replace(/-/g, " ")
     );
 
-  const javcode_index = output.search(javcodeRegex);
-  if (javcode_index !== -1) {
-    const javcode_length = output.match(javcodeRegex)![1].length;
+  const javcodeIndex = output.search(javcodeRegex);
+  // if we find a javcode, then replace hyphens with spaces outside of the javcode
+  if (javcodeIndex !== -1) {
+    const javcodeLength = output.match(javcodeRegex)![1].length;
     return (
-      output.slice(0, javcode_index).replace(/-/g, " ") +
-      output.slice(javcode_index, javcode_index + javcode_length) +
-      output.slice(javcode_index + javcode_length).replace(/-/g, " ")
+      output.slice(0, javcodeIndex).replace(/-/g, " ") +
+      output.slice(javcodeIndex, javcodeIndex + javcodeLength) +
+      output.slice(javcodeIndex + javcodeLength).replace(/-/g, " ")
     );
   }
+  // otherwise just replace hyphens with spaces
   return output.replace(/-/g, " ");
 };
 
@@ -133,7 +137,7 @@ export function prepareQueryString(
   regexs.forEach((re) => {
     s = s.replace(re, " ");
   });
-  s = parseString(s);
+  s = handleSpecialStrings(s);
   return s.replace(/\./g, " ").replace(/ +/g, " ");
 }
 
