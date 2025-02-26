@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strings"
 	"time"
@@ -15,6 +16,7 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/txn"
 )
 
@@ -40,6 +42,7 @@ type GlobalConfig interface {
 	GetScraperCertCheck() bool
 	GetPythonPath() string
 	GetProxy() string
+	GetScraperExcludeTagPatterns() []string
 }
 
 func isCDPPathHTTP(c GlobalConfig) bool {
@@ -235,6 +238,10 @@ func (c Cache) findScraper(scraperID string) scraper {
 	return nil
 }
 
+func (c Cache) compileExcludeTagPatterns() []*regexp.Regexp {
+	return CompileExclusionRegexps(c.globalConfig.GetScraperExcludeTagPatterns())
+}
+
 func (c Cache) ScrapeName(ctx context.Context, id, query string, ty ScrapeContentType) ([]ScrapedContent, error) {
 	// find scraper with the provided id
 	s := c.findScraper(id)
@@ -255,12 +262,19 @@ func (c Cache) ScrapeName(ctx context.Context, id, query string, ty ScrapeConten
 		return nil, fmt.Errorf("error while name scraping with scraper %s: %w", id, err)
 	}
 
+	ignoredRegex := c.compileExcludeTagPatterns()
+
+	var ignoredTags []string
 	for i, cc := range content {
-		content[i], err = c.postScrape(ctx, cc)
+		var thisIgnoredTags []string
+		content[i], thisIgnoredTags, err = c.postScrape(ctx, cc, ignoredRegex)
 		if err != nil {
 			return nil, fmt.Errorf("error while post-scraping with scraper %s: %w", id, err)
 		}
+		ignoredTags = sliceutil.AppendUniques(ignoredTags, thisIgnoredTags)
 	}
+
+	LogIgnoredTags(ignoredTags)
 
 	return content, nil
 }
@@ -285,7 +299,7 @@ func (c Cache) ScrapeFragment(ctx context.Context, id string, input Input) (Scra
 		return nil, fmt.Errorf("error while fragment scraping with scraper %s: %w", id, err)
 	}
 
-	return c.postScrape(ctx, content)
+	return c.postScrapeSingle(ctx, content)
 }
 
 // ScrapeURL scrapes a given url for the given content. Searches the scraper cache
@@ -307,7 +321,7 @@ func (c Cache) ScrapeURL(ctx context.Context, url string, ty ScrapeContentType) 
 				return ret, nil
 			}
 
-			return c.postScrape(ctx, ret)
+			return c.postScrapeSingle(ctx, ret)
 		}
 	}
 
@@ -392,7 +406,7 @@ func (c Cache) ScrapeID(ctx context.Context, scraperID string, id int, ty Scrape
 		}
 	}
 
-	return c.postScrape(ctx, ret)
+	return c.postScrapeSingle(ctx, ret)
 }
 
 func (c Cache) getScene(ctx context.Context, sceneID int) (*models.Scene, error) {
