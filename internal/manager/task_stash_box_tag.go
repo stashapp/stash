@@ -9,6 +9,7 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/performer"
 	"github.com/stashapp/stash/pkg/scraper/stashbox"
+	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/studio"
 )
 
@@ -167,6 +168,19 @@ func (t *StashBoxBatchTagTask) processMatchedPerformer(ctx context.Context, p *m
 			}
 
 			partial := p.ToPartial(t.box.Endpoint, excluded, existingStashIDs)
+
+			// if we're setting the performer's aliases, and not the name, then filter out the name
+			// from the aliases to avoid duplicates
+			// add the name to the aliases if it's not already there
+			if partial.Aliases != nil && !partial.Name.Set {
+				partial.Aliases.Values = sliceutil.Filter(partial.Aliases.Values, func(s string) bool {
+					return s != t.performer.Name
+				})
+
+				if p.Name != nil && t.performer.Name != *p.Name {
+					partial.Aliases.Values = sliceutil.AppendUnique(partial.Aliases.Values, *p.Name)
+				}
+			}
 
 			if err := performer.ValidateUpdate(ctx, t.performer.ID, partial, qb); err != nil {
 				return err
