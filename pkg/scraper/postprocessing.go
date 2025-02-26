@@ -67,7 +67,7 @@ func (c Cache) postScrapeSingle(ctx context.Context, content ScrapedContent) (Sc
 		return nil, err
 	}
 
-	logIgnoredTags(ignoredTags)
+	LogIgnoredTags(ignoredTags)
 	return ret, nil
 }
 
@@ -80,7 +80,7 @@ func (c Cache) postScrapePerformer(ctx context.Context, p models.ScrapedPerforme
 		if err != nil {
 			return err
 		}
-		p.Tags, ignoredTags = filterTags(excludeTagRE, tags)
+		p.Tags, ignoredTags = FilterTags(excludeTagRE, tags)
 
 		return nil
 	}); err != nil {
@@ -130,7 +130,7 @@ func (c Cache) postScrapeMovie(ctx context.Context, m models.ScrapedMovie, exclu
 		if err != nil {
 			return err
 		}
-		m.Tags, ignoredTags = filterTags(excludeTagRE, tags)
+		m.Tags, ignoredTags = FilterTags(excludeTagRE, tags)
 
 		if m.Studio != nil {
 			if err := match.ScrapedStudio(ctx, r.StudioFinder, m.Studio, nil); err != nil {
@@ -162,7 +162,7 @@ func (c Cache) postScrapeGroup(ctx context.Context, m models.ScrapedGroup, exclu
 		if err != nil {
 			return err
 		}
-		m.Tags, ignoredTags = filterTags(excludeTagRE, tags)
+		m.Tags, ignoredTags = FilterTags(excludeTagRE, tags)
 
 		if m.Studio != nil {
 			if err := match.ScrapedStudio(ctx, r.StudioFinder, m.Studio, nil); err != nil {
@@ -194,7 +194,7 @@ func (c Cache) postScrapeScenePerformer(ctx context.Context, p models.ScrapedPer
 		return nil, err
 	}
 	p.Tags = tags
-	p.Tags, ignoredTags = filterTags(excludeTagRE, tags)
+	p.Tags, ignoredTags = FilterTags(excludeTagRE, tags)
 
 	p.Country = resolveCountryName(p.Country)
 
@@ -274,7 +274,7 @@ func (c Cache) postScrapeScene(ctx context.Context, scene ScrapedScene, excludeT
 		if err != nil {
 			return err
 		}
-		scene.Tags, ignoredTags = filterTags(excludeTagRE, tags)
+		scene.Tags, ignoredTags = FilterTags(excludeTagRE, tags)
 
 		if scene.Studio != nil {
 			err := match.ScrapedStudio(ctx, sqb, scene.Studio, nil)
@@ -322,7 +322,7 @@ func (c Cache) postScrapeGallery(ctx context.Context, g ScrapedGallery, excludeT
 		if err != nil {
 			return err
 		}
-		g.Tags, ignoredTags = filterTags(excludeTagRE, tags)
+		g.Tags, ignoredTags = FilterTags(excludeTagRE, tags)
 
 		if g.Studio != nil {
 			err := match.ScrapedStudio(ctx, sqb, g.Studio, nil)
@@ -357,7 +357,7 @@ func (c Cache) postScrapeImage(ctx context.Context, image ScrapedImage, excludeT
 			return err
 		}
 
-		image.Tags, ignoredTags = filterTags(excludeTagRE, tags)
+		image.Tags, ignoredTags = FilterTags(excludeTagRE, tags)
 
 		if image.Studio != nil {
 			err := match.ScrapedStudio(ctx, sqb, image.Studio, nil)

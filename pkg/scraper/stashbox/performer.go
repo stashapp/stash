@@ -11,6 +11,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/scraper"
 	"github.com/stashapp/stash/pkg/scraper/stashbox/graphql"
 	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
@@ -49,10 +50,19 @@ func (c Client) queryStashBoxPerformer(ctx context.Context, queryStr string) ([]
 	performerFragments := performers.SearchPerformer
 
 	var ret []*models.ScrapedPerformer
+	var ignoredTags []string
 	for _, fragment := range performerFragments {
 		performer := performerFragmentToScrapedPerformer(*fragment)
+
+		// exclude tags that match the excludeTagRE
+		var thisIgnoredTags []string
+		performer.Tags, thisIgnoredTags = scraper.FilterTags(c.excludeTagRE, performer.Tags)
+		ignoredTags = sliceutil.AppendUniques(ignoredTags, thisIgnoredTags)
+
 		ret = append(ret, performer)
 	}
+
+	scraper.LogIgnoredTags(ignoredTags)
 
 	return ret, nil
 }

@@ -239,7 +239,7 @@ func (c Cache) findScraper(scraperID string) scraper {
 }
 
 func (c Cache) compileExcludeTagPatterns() []*regexp.Regexp {
-	return compileRegexps(c.globalConfig.GetScraperExcludeTagPatterns())
+	return CompileExclusionRegexps(c.globalConfig.GetScraperExcludeTagPatterns())
 }
 
 func (c Cache) ScrapeName(ctx context.Context, id, query string, ty ScrapeContentType) ([]ScrapedContent, error) {
@@ -274,7 +274,7 @@ func (c Cache) ScrapeName(ctx context.Context, id, query string, ty ScrapeConten
 		ignoredTags = sliceutil.AppendUniques(ignoredTags, thisIgnoredTags)
 	}
 
-	logIgnoredTags(ignoredTags)
+	LogIgnoredTags(ignoredTags)
 
 	return content, nil
 }

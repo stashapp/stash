@@ -9,6 +9,7 @@ import (
 	"github.com/Yamashou/gqlgenc/clientv2"
 	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/scraper"
 	"github.com/stashapp/stash/pkg/scraper/stashbox/graphql"
 	"github.com/stashapp/stash/pkg/txn"
 )
@@ -74,7 +75,7 @@ type Client struct {
 }
 
 // NewClient returns a new instance of a stash-box client.
-func NewClient(box models.StashBox, repo Repository, excludeTagRE []*regexp.Regexp) *Client {
+func NewClient(box models.StashBox, repo Repository, excludeTagPatterns []string) *Client {
 	authHeader := func(ctx context.Context, req *http.Request, gqlInfo *clientv2.GQLRequestInfo, res interface{}, next clientv2.RequestInterceptorFunc) error {
 		req.Header.Set("ApiKey", box.APIKey)
 		return next(ctx, req, gqlInfo, res)
@@ -88,7 +89,7 @@ func NewClient(box models.StashBox, repo Repository, excludeTagRE []*regexp.Rege
 		client:       client,
 		repository:   repo,
 		box:          box,
-		excludeTagRE: excludeTagRE,
+		excludeTagRE: scraper.CompileExclusionRegexps(excludeTagPatterns),
 	}
 }
 

@@ -25,8 +25,9 @@ func postProcessTags(ctx context.Context, tqb models.TagQueryer, scrapedTags []*
 	return ret, err
 }
 
-// filterSceneTags removes tags matching excluded tag patterns from the provided scraped scenes
-func filterTags(excludeRegexps []*regexp.Regexp, tags []*models.ScrapedTag) (newTags []*models.ScrapedTag, ignoredTags []string) {
+// FilterTags removes tags matching excluded tag patterns from the list of scraped tags
+// It returns the filtered list of tags and a list of the excluded tags
+func FilterTags(excludeRegexps []*regexp.Regexp, tags []*models.ScrapedTag) (newTags []*models.ScrapedTag, ignoredTags []string) {
 	if len(excludeRegexps) == 0 {
 		return tags, nil
 	}
@@ -49,7 +50,8 @@ func filterTags(excludeRegexps []*regexp.Regexp, tags []*models.ScrapedTag) (new
 	return newTags, ignoredTags
 }
 
-func compileRegexps(patterns []string) []*regexp.Regexp {
+// CompileExclusionRegexps compiles a list of tag exclusion patterns into a list of regular expressions
+func CompileExclusionRegexps(patterns []string) []*regexp.Regexp {
 	excludePatterns := patterns
 	var excludeRegexps []*regexp.Regexp
 
@@ -65,8 +67,9 @@ func compileRegexps(patterns []string) []*regexp.Regexp {
 	return excludeRegexps
 }
 
-func logIgnoredTags(ignoredTags []string) {
+// LogIgnoredTags logs the list of ignored tags
+func LogIgnoredTags(ignoredTags []string) {
 	if len(ignoredTags) > 0 {
-		logger.Debugf("Scraping ignored tags: %s", strings.Join(ignoredTags, ", "))
+		logger.Debugf("Tags ignored for matching exclusion patterns: %s", strings.Join(ignoredTags, ", "))
 	}
 }

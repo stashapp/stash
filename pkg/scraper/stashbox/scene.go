@@ -3,14 +3,19 @@ package stashbox
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"io"
+	"net/http"
 	"strings"
 
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scraper"
 	"github.com/stashapp/stash/pkg/scraper/stashbox/graphql"
+	"github.com/stashapp/stash/pkg/sliceutil"
+	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -24,13 +29,21 @@ func (c Client) QueryStashBoxScene(ctx context.Context, queryStr string) ([]*scr
 	sceneFragments := scenes.SearchScene
 
 	var ret []*scraper.ScrapedScene
+	var ignoredTags []string
 	for _, s := range sceneFragments {
 		ss, err := c.sceneFragmentToScrapedScene(ctx, s)
 		if err != nil {
 			return nil, err
 		}
+
+		var thisIgnoredTags []string
+		ss.Tags, thisIgnoredTags = scraper.FilterTags(c.excludeTagRE, ss.Tags)
+		ignoredTags = sliceutil.AppendUniques(ignoredTags, thisIgnoredTags)
+
 		ret = append(ret, ss)
 	}
+
+	scraper.LogIgnoredTags(ignoredTags)
 
 	return ret, nil
 }
@@ -120,6 +133,8 @@ func (c Client) findStashBoxScenesByFingerprints(ctx context.Context, scenes [][
 		}
 	}
 
+	var ignoredTags []string
+
 	for i := 0; i < len(validScenes); i += 40 {
 		end := i + 40
 		if end > len(validScenes) {
@@ -138,11 +153,18 @@ func (c Client) findStashBoxScenesByFingerprints(ctx context.Context, scenes [][
 				if err != nil {
 					return nil, err
 				}
+
+				var thisIgnoredTags []string
+				ss.Tags, thisIgnoredTags = scraper.FilterTags(c.excludeTagRE, ss.Tags)
+				ignoredTags = sliceutil.AppendUniques(ignoredTags, thisIgnoredTags)
+
 				sceneResults = append(sceneResults, ss)
 			}
 			results = append(results, sceneResults)
 		}
 	}
+
+	scraper.LogIgnoredTags(ignoredTags)
 
 	// repopulate the results to be the same order as the input
 	ret := make([][]*scraper.ScrapedScene, len(scenes))
