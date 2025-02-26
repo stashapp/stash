@@ -8,6 +8,7 @@ import (
 type Tag struct {
 	ID            int       `json:"id"`
 	Name          string    `json:"name"`
+	SortName      string    `json:"sort_name"`
 	Favorite      bool      `json:"favorite"`
 	Description   string    `json:"description"`
 	IgnoreAutoTag bool      `json:"ignore_auto_tag"`
@@ -47,6 +48,7 @@ func (s *Tag) LoadChildIDs(ctx context.Context, l TagRelationLoader) error {
 
 type TagPartial struct {
 	Name          OptionalString
+	SortName      OptionalString
 	Description   OptionalString
 	Favorite      OptionalBool
 	IgnoreAutoTag OptionalBool

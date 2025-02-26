@@ -816,6 +816,7 @@ func (db *Anonymiser) anonymiseTags(ctx context.Context) error {
 			query := dialect.From(table).Select(
 				table.Col(idColumn),
 				table.Col("name"),
+				table.Col("sort_name"),
 				table.Col("description"),
 			).Where(table.Col(idColumn).Gt(lastID)).Limit(1000)
 
@@ -826,12 +827,14 @@ func (db *Anonymiser) anonymiseTags(ctx context.Context) error {
 				var (
 					id          int
 					name        sql.NullString
+					sortName    sql.NullString
 					description sql.NullString
 				)
 
 				if err := rows.Scan(
 					&id,
 					&name,
+					&sortName,
 					&description,
 				); err != nil {
 					return err
@@ -839,6 +842,7 @@ func (db *Anonymiser) anonymiseTags(ctx context.Context) error {
 
 				set := goqu.Record{}
 				db.obfuscateNullString(set, "name", name)
+				db.obfuscateNullString(set, "sort_name", sortName)
 				db.obfuscateNullString(set, "description", description)
 
 				if len(set) > 0 {

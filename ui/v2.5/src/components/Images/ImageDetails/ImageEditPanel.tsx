@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
-import { Button, Form, Col, Row } from "react-bootstrap";
+import React, { useEffect, useMemo, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
+import { Button, Form, Col, Row } from "react-bootstrap";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
 import * as yup from "yup";
@@ -19,6 +19,13 @@ import {
   PerformerSelect,
 } from "src/components/Performers/PerformerSelect";
 import { formikUtils } from "src/utils/form";
+import {
+  queryScrapeImage,
+  queryScrapeImageURL,
+  useListImageScrapers,
+  mutateReloadScrapers,
+} from "../../../core/StashService";
+import { ImageScrapeDialog } from "./ImageScrapeDialog";
 import { Studio, StudioSelect } from "src/components/Studios/StudioSelect";
 import { galleryTitle } from "src/core/galleries";
 import {
@@ -27,6 +34,7 @@ import {
   excludeFileBasedGalleries,
 } from "src/components/Galleries/GallerySelect";
 import { useTagsEdit } from "src/hooks/tagsEdit";
+import { ScraperMenu } from "src/components/Shared/ScraperMenu";
 
 interface IProps {
   image: GQL.ImageDataFragment;
@@ -51,6 +59,8 @@ export const ImageEditPanel: React.FC<IProps> = ({
   const [performers, setPerformers] = useState<Performer[]>([]);
   const [studio, setStudio] = useState<Studio | null>(null);
 
+  const isNew = image.id === undefined;
+
   useEffect(() => {
     setGalleries(
       image.galleries?.map((g) => ({
@@ -61,6 +71,9 @@ export const ImageEditPanel: React.FC<IProps> = ({
       })) ?? []
     );
   }, [image.galleries]);
+
+  const scrapers = useListImageScrapers();
+  const [scrapedImage, setScrapedImage] = useState<GQL.ScrapedImage | null>();
 
   const schema = yup.object({
     title: yup.string().ensure(),
@@ -97,8 +110,9 @@ export const ImageEditPanel: React.FC<IProps> = ({
     onSubmit: (values) => onSave(schema.cast(values)),
   });
 
-  const { tagsControl } = useTagsEdit(image.tags, (ids) =>
-    formik.setFieldValue("tag_ids", ids)
+  const { tags, updateTagsStateFromScraper, tagsControl } = useTagsEdit(
+    image.tags,
+    (ids) => formik.setFieldValue("tag_ids", ids)
   );
 
   function onSetGalleries(items: Gallery[]) {
@@ -148,6 +162,12 @@ export const ImageEditPanel: React.FC<IProps> = ({
     }
   });
 
+  const fragmentScrapers = useMemo(() => {
+    return (scrapers?.data?.listScrapers ?? []).filter((s) =>
+      s.image?.supported_scrapes.includes(GQL.ScrapeType.Fragment)
+    );
+  }, [scrapers]);
+
   async function onSave(input: InputValues) {
     setIsLoading(true);
     try {
@@ -160,6 +180,122 @@ export const ImageEditPanel: React.FC<IProps> = ({
       Toast.error(e);
     }
     setIsLoading(false);
+  }
+
+  async function onScrapeClicked(s: GQL.ScraperSourceInput) {
+    if (!image || !image.id) return;
+
+    setIsLoading(true);
+    try {
+      const result = await queryScrapeImage(s.scraper_id!, image.id);
+      if (!result.data || !result.data.scrapeSingleImage?.length) {
+        Toast.success("No images found");
+        return;
+      }
+      setScrapedImage(result.data.scrapeSingleImage[0]);
+    } catch (e) {
+      Toast.error(e);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  function urlScrapable(scrapedUrl: string): boolean {
+    return (scrapers?.data?.listScrapers ?? []).some((s) =>
+      (s?.image?.urls ?? []).some((u) => scrapedUrl.includes(u))
+    );
+  }
+
+  function updateImageFromScrapedGallery(
+    imageData: GQL.ScrapedImageDataFragment
+  ) {
+    if (imageData.title) {
+      formik.setFieldValue("title", imageData.title);
+    }
+
+    if (imageData.code) {
+      formik.setFieldValue("code", imageData.code);
+    }
+
+    if (imageData.details) {
+      formik.setFieldValue("details", imageData.details);
+    }
+
+    if (imageData.photographer) {
+      formik.setFieldValue("photographer", imageData.photographer);
+    }
+
+    if (imageData.date) {
+      formik.setFieldValue("date", imageData.date);
+    }
+
+    if (imageData.urls) {
+      formik.setFieldValue("urls", imageData.urls);
+    }
+
+    if (imageData.studio?.stored_id) {
+      onSetStudio({
+        id: imageData.studio.stored_id,
+        name: imageData.studio.name ?? "",
+        aliases: [],
+      });
+    }
+
+    if (imageData.performers?.length) {
+      const idPerfs = imageData.performers.filter((p) => {
+        return p.stored_id !== undefined && p.stored_id !== null;
+      });
+
+      if (idPerfs.length > 0) {
+        onSetPerformers(
+          idPerfs.map((p) => {
+            return {
+              id: p.stored_id!,
+              name: p.name ?? "",
+              alias_list: [],
+            };
+          })
+        );
+      }
+    }
+
+    updateTagsStateFromScraper(imageData.tags ?? undefined);
+  }
+
+  async function onReloadScrapers() {
+    setIsLoading(true);
+    try {
+      await mutateReloadScrapers();
+    } catch (e) {
+      Toast.error(e);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function onScrapeDialogClosed(data?: GQL.ScrapedImageDataFragment) {
+    if (data) {
+      updateImageFromScrapedGallery(data);
+    }
+    setScrapedImage(undefined);
+  }
+
+  async function onScrapeImageURL(url: string) {
+    if (!url) {
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const result = await queryScrapeImageURL(url);
+      if (!result || !result.data || !result.data.scrapeImageURL) {
+        return;
+      }
+      setScrapedImage(result.data.scrapeImageURL);
+    } catch (e) {
+      Toast.error(e);
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   if (isLoading) return <LoadingIndicator />;
@@ -243,6 +379,30 @@ export const ImageEditPanel: React.FC<IProps> = ({
     return renderInputField("details", "textarea", "details", props);
   }
 
+  function maybeRenderScrapeDialog() {
+    if (!scrapedImage) {
+      return;
+    }
+
+    const currentImage = {
+      id: image.id!,
+      ...formik.values,
+    };
+
+    return (
+      <ImageScrapeDialog
+        image={currentImage}
+        imageStudio={studio}
+        imageTags={tags}
+        imagePerformers={performers}
+        scraped={scrapedImage}
+        onClose={(data) => {
+          onScrapeDialogClosed(data);
+        }}
+      />
+    );
+  }
+
   return (
     <div id="image-edit-details">
       <Prompt
@@ -250,13 +410,16 @@ export const ImageEditPanel: React.FC<IProps> = ({
         message={intl.formatMessage({ id: "dialogs.unsaved_changes" })}
       />
 
+      {maybeRenderScrapeDialog()}
       <Form noValidate onSubmit={formik.handleSubmit}>
         <Row className="form-container edit-buttons-container px-3 pt-3">
           <div className="edit-buttons mb-3 pl-0">
             <Button
               className="edit-button"
               variant="primary"
-              disabled={!formik.dirty || !isEqual(formik.errors, {})}
+              disabled={
+                (!isNew && !formik.dirty) || !isEqual(formik.errors, {})
+              }
               onClick={() => formik.submitForm()}
             >
               <FormattedMessage id="actions.save" />
@@ -269,13 +432,23 @@ export const ImageEditPanel: React.FC<IProps> = ({
               <FormattedMessage id="actions.delete" />
             </Button>
           </div>
+          <div className="ml-auto text-right d-flex">
+            {!isNew && (
+              <ScraperMenu
+                toggle={intl.formatMessage({ id: "actions.scrape_with" })}
+                scrapers={fragmentScrapers}
+                onScraperClicked={onScrapeClicked}
+                onReloadScrapers={onReloadScrapers}
+              />
+            )}
+          </div>
         </Row>
         <Row className="form-container px-3">
           <Col lg={7} xl={12}>
             {renderInputField("title")}
             {renderInputField("code", "text", "scene_code")}
 
-            {renderURLListField("urls")}
+            {renderURLListField("urls", onScrapeImageURL, urlScrapable)}
 
             {renderDateField("date")}
             {renderInputField("photographer")}
