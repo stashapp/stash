@@ -50,7 +50,7 @@ func (r *mutationResolver) SceneCreate(ctx context.Context, input models.SceneCr
 	newScene.Director = translator.string(input.Director)
 	newScene.Rating = input.Rating100
 	newScene.Organized = translator.bool(input.Organized)
-	newScene.StashIDs = models.NewRelatedStashIDs(input.StashIds)
+	newScene.StashIDs = models.NewRelatedStashIDs(models.StashIDInputs(input.StashIds).ToStashIDs())
 
 	newScene.Date, err = translator.datePtr(input.Date)
 	if err != nil {
@@ -655,6 +655,13 @@ func (r *mutationResolver) SceneMarkerCreate(ctx context.Context, input SceneMar
 	newMarker.PrimaryTagID = primaryTagID
 	newMarker.SceneID = sceneID
 
+	if input.EndSeconds != nil {
+		if err := validateSceneMarkerEndSeconds(newMarker.Seconds, *input.EndSeconds); err != nil {
+			return nil, err
+		}
+		newMarker.EndSeconds = input.EndSeconds
+	}
+
 	tagIDs, err := stringslice.StringSliceToIntSlice(input.TagIds)
 	if err != nil {
 		return nil, fmt.Errorf("converting tag ids: %w", err)
@@ -680,6 +687,13 @@ func (r *mutationResolver) SceneMarkerCreate(ctx context.Context, input SceneMar
 	return r.getSceneMarker(ctx, newMarker.ID)
 }
 
+func validateSceneMarkerEndSeconds(seconds, endSeconds float64) error {
+	if endSeconds < seconds {
+		return fmt.Errorf("end_seconds (%f) must be greater than or equal to seconds (%f)", endSeconds, seconds)
+	}
+	return nil
+}
+
 func (r *mutationResolver) SceneMarkerUpdate(ctx context.Context, input SceneMarkerUpdateInput) (*models.SceneMarker, error) {
 	markerID, err := strconv.Atoi(input.ID)
 	if err != nil {
@@ -695,6 +709,7 @@ func (r *mutationResolver) SceneMarkerUpdate(ctx context.Context, input SceneMar
 
 	updatedMarker.Title = translator.optionalString(input.Title, "title")
 	updatedMarker.Seconds = translator.optionalFloat64(input.Seconds, "seconds")
+	updatedMarker.EndSeconds = translator.optionalFloat64(input.EndSeconds, "end_seconds")
 	updatedMarker.SceneID, err = translator.optionalIntFromString(input.SceneID, "scene_id")
 	if err != nil {
 		return nil, fmt.Errorf("converting scene id: %w", err)
@@ -735,6 +750,26 @@ func (r *mutationResolver) SceneMarkerUpdate(ctx context.Context, input SceneMar
 			return fmt.Errorf("scene marker with id %d not found", markerID)
 		}
 
+		// Validate end_seconds
+		shouldValidateEndSeconds := (updatedMarker.Seconds.Set || updatedMarker.EndSeconds.Set) && !updatedMarker.EndSeconds.Null
+		if shouldValidateEndSeconds {
+			seconds := existingMarker.Seconds
+			if updatedMarker.Seconds.Set {
+				seconds = updatedMarker.Seconds.Value
+			}
+
+			endSeconds := existingMarker.EndSeconds
+			if updatedMarker.EndSeconds.Set {
+				endSeconds = &updatedMarker.EndSeconds.Value
+			}
+
+			if endSeconds != nil {
+				if err := validateSceneMarkerEndSeconds(seconds, *endSeconds); err != nil {
+					return err
+				}
+			}
+		}
+
 		newMarker, err := qb.UpdatePartial(ctx, markerID, updatedMarker)
 		if err != nil {
 			return err
@@ -749,7 +784,7 @@ func (r *mutationResolver) SceneMarkerUpdate(ctx context.Context, input SceneMar
 		}
 
 		// remove the marker preview if the scene changed or if the timestamp was changed
-		if existingMarker.SceneID != newMarker.SceneID || existingMarker.Seconds != newMarker.Seconds {
+		if existingMarker.SceneID != newMarker.SceneID || existingMarker.Seconds != newMarker.Seconds || existingMarker.EndSeconds != newMarker.EndSeconds {
 			seconds := int(existingMarker.Seconds)
 			if err := fileDeleter.MarkMarkerFiles(existingScene, seconds); err != nil {
 				return err
@@ -779,11 +814,16 @@ func (r *mutationResolver) SceneMarkerUpdate(ctx context.Context, input SceneMar
 }
 
 func (r *mutationResolver) SceneMarkerDestroy(ctx context.Context, id string) (bool, error) {
-	markerID, err := strconv.Atoi(id)
+	return r.SceneMarkersDestroy(ctx, []string{id})
+}
+
+func (r *mutationResolver) SceneMarkersDestroy(ctx context.Context, markerIDs []string) (bool, error) {
+	ids, err := stringslice.StringSliceToIntSlice(markerIDs)
 	if err != nil {
-		return false, fmt.Errorf("converting id: %w", err)
+		return false, fmt.Errorf("converting ids: %w", err)
 	}
 
+	var markers []*models.SceneMarker
 	fileNamingAlgo := manager.GetInstance().Config.GetVideoFileNamingAlgorithm()
 
 	fileDeleter := &scene.FileDeleter{
@@ -796,35 +836,45 @@ func (r *mutationResolver) SceneMarkerDestroy(ctx context.Context, id string) (b
 		qb := r.repository.SceneMarker
 		sqb := r.repository.Scene
 
-		marker, err := qb.Find(ctx, markerID)
+		for _, markerID := range ids {
+			marker, err := qb.Find(ctx, markerID)
 
-		if err != nil {
-			return err
+			if err != nil {
+				return err
+			}
+
+			if marker == nil {
+				return fmt.Errorf("scene marker with id %d not found", markerID)
+			}
+
+			s, err := sqb.Find(ctx, marker.SceneID)
+
+			if err != nil {
+				return err
+			}
+
+			if s == nil {
+				return fmt.Errorf("scene with id %d not found", marker.SceneID)
+			}
+
+			markers = append(markers, marker)
+
+			if err := scene.DestroyMarker(ctx, s, marker, qb, fileDeleter); err != nil {
+				return err
+			}
 		}
 
-		if marker == nil {
-			return fmt.Errorf("scene marker with id %d not found", markerID)
-		}
-
-		s, err := sqb.Find(ctx, marker.SceneID)
-		if err != nil {
-			return err
-		}
-
-		if s == nil {
-			return fmt.Errorf("scene with id %d not found", marker.SceneID)
-		}
-
-		return scene.DestroyMarker(ctx, s, marker, qb, fileDeleter)
+		return nil
 	}); err != nil {
 		fileDeleter.Rollback()
 		return false, err
 	}
 
-	// perform the post-commit actions
 	fileDeleter.Commit()
 
-	r.hookExecutor.ExecutePostHooks(ctx, markerID, hook.SceneMarkerDestroyPost, id, nil)
+	for _, marker := range markers {
+		r.hookExecutor.ExecutePostHooks(ctx, marker.ID, hook.SceneMarkerDestroyPost, markerIDs, nil)
+	}
 
 	return true, nil
 }

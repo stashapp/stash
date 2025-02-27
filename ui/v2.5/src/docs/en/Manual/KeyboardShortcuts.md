@@ -12,7 +12,7 @@
 |-------------------|--------|
 | `g s` | Scenes |
 | `g i` | Images |
-| `g v` | Movies |
+| `g v` | Groups |
 | `g k` | Markers |
 | `g l` | Galleries |
 | `g p` | Performers |
@@ -104,28 +104,28 @@
 [//]: # "(| `l` | Focus Gallery selector |)"
 [//]: # "(| `u` | Focus Studio selector |)"
 [//]: # "(| `p` | Focus Performers selector |)"
-[//]: # "(| `v` | Focus Movies selector |)"
+[//]: # "(| `v` | Focus Groups selector |)"
 [//]: # "(| `t` | Focus Tags selector |)"
 
-## Movies Page shortcuts
+## Groups Page shortcuts
 
 | Keyboard sequence | Action |
 |-------------------|--------|
-| `n` | New Movie |
+| `n` | New Group |
 
-## Movie Page shortcuts
+## Group Page shortcuts
 
 | Keyboard sequence | Action |
 |-------------------|--------|
-| `e` | Edit Movie |
-| `s s` | Save Movie |
-| `d d` | Delete Movie |
+| `e` | Edit Group |
+| `s s` | Save Group |
+| `d d` | Delete Group |
 | `r {1-5}` | [Edit mode] Set rating (stars) |
 | `r 0` | [Edit mode] Unset rating (stars) |
 | `r {0-9} {0-9}` | [Edit mode] Set rating (decimal - `r 0 0` for `10.0`) |
 | ``r ` `` | [Edit mode] Unset rating (decimal) |
 | `,` | Expand/Collapse Details |
-| `Ctrl + v` | Paste Movie image |
+| `Ctrl + v` | Paste Group image |
 
 [//]: # "Commented until implementation is dealt with"
 [//]: # "(| `u` | Focus Studio selector (in edit mode) |)"

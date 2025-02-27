@@ -5,7 +5,6 @@ import { useTitleProps } from "src/hooks/title";
 import Gallery from "./GalleryDetails/Gallery";
 import GalleryCreate from "./GalleryDetails/GalleryCreate";
 import { GalleryList } from "./GalleryList";
-import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
 import { View } from "../List/views";
 import { LoadingIndicator } from "../Shared/LoadingIndicator";
 import { ErrorMessage } from "../Shared/ErrorMessage";
@@ -41,8 +40,6 @@ const GalleryImage: React.FC<RouteComponentProps<IGalleryImageParams>> = ({
 };
 
 const Galleries: React.FC = () => {
-  useScrollToTopOnMount();
-
   return <GalleryList view={View.Galleries} />;
 };
 

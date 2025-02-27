@@ -197,6 +197,15 @@ button.collapse-button.btn-primary:not(:disabled):not(.disabled):active {
   border: none;
   box-shadow: none;
   color: #f5f8fa;
+  text-align: left;
+}
+
+button.collapse-button {
+  .fa-icon {
+    margin-left: 0;
+  }
+
+  padding-left: 0;
 }
 
 .hover-popover-content {
@@ -642,9 +651,80 @@ button.btn.favorite-button {
 
 .scraper-menu .dropdown-menu {
   min-width: 250px;
+  padding-top: 0;
 
   .dropdown-divider {
     border-top-color: $textfield-bg;
     margin: 0;
+  }
+
+  .scraper-filter-container {
+    background-color: $secondary;
+    border-bottom: solid 1px $textfield-bg;
+    padding: 5px;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+
+    .btn-group {
+      border: solid 1px $textfield-bg;
+      border-radius: 5px;
+      width: 100%;
+    }
+
+    .clearable-text-field {
+      background-color: $textfield-bg;
+    }
+
+    .clearable-text-field-clear {
+      background-color: unset;
+      border: unset;
+    }
+
+    .reload-button.btn {
+      border-bottom-right-radius: 0.25rem;
+      border-top-right-radius: 0.25rem;
+    }
+  }
+}
+
+.custom-fields .detail-item .detail-item-title {
+  max-width: 130px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.custom-fields-input > .collapse-button {
+  font-weight: 700;
+}
+
+.custom-fields-row {
+  align-items: center;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 0.875rem;
+
+  .form-label {
+    margin-bottom: 0;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+
+  // labels with titles are styled with help cursor and dotted underline elsewhere
+  div.custom-fields-field label.form-label {
+    cursor: inherit;
+    text-decoration: inherit;
+  }
+
+  .form-control,
+  .btn {
+    font-size: 0.875rem;
+  }
+
+  &.custom-fields-new > div:not(:last-child) {
+    padding-right: 0;
   }
 }

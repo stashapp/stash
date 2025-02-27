@@ -19,6 +19,30 @@ type SceneMarkerFragment = Pick<GQL.SceneMarker, "id" | "title" | "seconds"> & {
   primary_tag: Pick<GQL.Tag, "id" | "name">;
 };
 
+interface ISortNameLinkProps {
+  link: string;
+  className?: string;
+  sortName?: string;
+}
+
+const SortNameLinkComponent: React.FC<ISortNameLinkProps> = ({
+  link,
+  sortName,
+  className,
+  children,
+}) => {
+  return (
+    <Badge
+      data-name={className}
+      data-sort-name={sortName}
+      className={cx("tag-item", className)}
+      variant="secondary"
+    >
+      <Link to={link}>{children}</Link>
+    </Badge>
+  );
+};
+
 interface ICommonLinkProps {
   link: string;
   className?: string;
@@ -38,9 +62,11 @@ const CommonLinkComponent: React.FC<ICommonLinkProps> = ({
 
 interface IPerformerLinkProps {
   performer: INamedObject & { disambiguation?: string | null };
-  linkType?: "scene" | "gallery" | "image";
+  linkType?: "scene" | "gallery" | "image" | "scene_marker";
   className?: string;
 }
+
+export type PerformerLinkType = IPerformerLinkProps["linkType"];
 
 export const PerformerLink: React.FC<IPerformerLinkProps> = ({
   performer,
@@ -53,6 +79,8 @@ export const PerformerLink: React.FC<IPerformerLinkProps> = ({
         return NavUtils.makePerformerGalleriesUrl(performer);
       case "image":
         return NavUtils.makePerformerImagesUrl(performer);
+      case "scene_marker":
+        return NavUtils.makePerformerSceneMarkersUrl(performer);
       case "scene":
       default:
         return NavUtils.makePerformerScenesUrl(performer);
@@ -207,7 +235,8 @@ interface ITagLinkProps {
     | "details"
     | "performer"
     | "group"
-    | "studio";
+    | "studio"
+    | "scene_marker";
   className?: string;
   hoverPlacement?: Placement;
   showHierarchyIcon?: boolean;
@@ -236,6 +265,8 @@ export const TagLink: React.FC<ITagLinkProps> = ({
         return NavUtils.makeTagImagesUrl(tag);
       case "group":
         return NavUtils.makeTagGroupsUrl(tag);
+      case "scene_marker":
+        return NavUtils.makeTagSceneMarkersUrl(tag);
       case "details":
         return NavUtils.makeTagUrl(tag.id ?? "");
     }
@@ -256,7 +287,11 @@ export const TagLink: React.FC<ITagLinkProps> = ({
   }, [hierarchyTooltipID]);
 
   return (
-    <CommonLinkComponent link={link} className={className}>
+    <SortNameLinkComponent
+      sortName={tag.sort_name || title}
+      link={link}
+      className={className}
+    >
       <TagPopover id={tag.id ?? ""} placement={hoverPlacement}>
         {title}
         {showHierarchyIcon && (
@@ -268,6 +303,6 @@ export const TagLink: React.FC<ITagLinkProps> = ({
           </OverlayTrigger>
         )}
       </TagPopover>
-    </CommonLinkComponent>
+    </SortNameLinkComponent>
   );
 };

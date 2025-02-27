@@ -43,14 +43,12 @@ export const GalleryListTable: React.FC<IGalleryListTableProps> = (
 
     return (
       <Link to={`/galleries/${gallery.id}`}>
-        {gallery.cover ? (
-          <img
-            loading="lazy"
-            alt={title}
-            className="image-thumbnail"
-            src={`${gallery.cover.paths.thumbnail}`}
-          />
-        ) : undefined}
+        <img
+          loading="lazy"
+          alt={title}
+          className="image-thumbnail"
+          src={gallery.paths.cover}
+        />
       </Link>
     );
   };

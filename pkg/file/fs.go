@@ -58,13 +58,8 @@ func (f *OsFS) Open(name string) (fs.ReadDirFile, error) {
 	return os.Open(name)
 }
 
-func (f *OsFS) OpenZip(name string) (models.ZipFS, error) {
-	info, err := f.Lstat(name)
-	if err != nil {
-		return nil, err
-	}
-
-	return newZipFS(f, name, info)
+func (f *OsFS) OpenZip(name string, size int64) (models.ZipFS, error) {
+	return newZipFS(f, name, size)
 }
 
 func (f *OsFS) IsPathCaseSensitive(path string) (bool, error) {

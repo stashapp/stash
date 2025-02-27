@@ -15,9 +15,11 @@ import (
 )
 
 const (
-	performerID = 1
-	noImageID   = 2
-	errImageID  = 3
+	performerID       = 1
+	noImageID         = 2
+	errImageID        = 3
+	customFieldsID    = 4
+	errCustomFieldsID = 5
 )
 
 const (
@@ -50,6 +52,11 @@ var (
 	penisLength     = 1.23
 	circumcisedEnum = models.CircumisedEnumCut
 	circumcised     = circumcisedEnum.String()
+
+	emptyCustomFields = make(map[string]interface{})
+	customFields      = map[string]interface{}{
+		"customField1": "customValue1",
+	}
 )
 
 var imageBytes = []byte("imageBytes")
@@ -118,8 +125,8 @@ func createEmptyPerformer(id int) models.Performer {
 	}
 }
 
-func createFullJSONPerformer(name string, image string) *jsonschema.Performer {
-	return &jsonschema.Performer{
+func createFullJSONPerformer(name string, image string, withCustomFields bool) *jsonschema.Performer {
+	ret := &jsonschema.Performer{
 		Name:           name,
 		Disambiguation: disambiguation,
 		URLs:           []string{url, twitter, instagram},
@@ -152,7 +159,13 @@ func createFullJSONPerformer(name string, image string) *jsonschema.Performer {
 		Weight:        weight,
 		StashIDs:      stashIDs,
 		IgnoreAutoTag: autoTagIgnored,
+		CustomFields:  emptyCustomFields,
 	}
+
+	if withCustomFields {
+		ret.CustomFields = customFields
+	}
+	return ret
 }
 
 func createEmptyJSONPerformer() *jsonschema.Performer {
@@ -166,13 +179,15 @@ func createEmptyJSONPerformer() *jsonschema.Performer {
 		UpdatedAt: json.JSONTime{
 			Time: updateTime,
 		},
+		CustomFields: emptyCustomFields,
 	}
 }
 
 type testScenario struct {
-	input    models.Performer
-	expected *jsonschema.Performer
-	err      bool
+	input        models.Performer
+	customFields map[string]interface{}
+	expected     *jsonschema.Performer
+	err          bool
 }
 
 var scenarios []testScenario
@@ -181,19 +196,35 @@ func initTestTable() {
 	scenarios = []testScenario{
 		{
 			*createFullPerformer(performerID, performerName),
-			createFullJSONPerformer(performerName, image),
+			emptyCustomFields,
+			createFullJSONPerformer(performerName, image, false),
+			false,
+		},
+		{
+			*createFullPerformer(customFieldsID, performerName),
+			customFields,
+			createFullJSONPerformer(performerName, image, true),
 			false,
 		},
 		{
 			createEmptyPerformer(noImageID),
+			emptyCustomFields,
 			createEmptyJSONPerformer(),
 			false,
 		},
 		{
 			*createFullPerformer(errImageID, performerName),
-			createFullJSONPerformer(performerName, ""),
+			emptyCustomFields,
+			createFullJSONPerformer(performerName, "", false),
 			// failure to get image should not cause an error
 			false,
+		},
+		{
+			*createFullPerformer(errCustomFieldsID, performerName),
+			customFields,
+			nil,
+			// failure to get custom fields should cause an error
+			true,
 		},
 	}
 }
@@ -204,10 +235,18 @@ func TestToJSON(t *testing.T) {
 	db := mocks.NewDatabase()
 
 	imageErr := errors.New("error getting image")
+	customFieldsErr := errors.New("error getting custom fields")
 
 	db.Performer.On("GetImage", testCtx, performerID).Return(imageBytes, nil).Once()
+	db.Performer.On("GetImage", testCtx, customFieldsID).Return(imageBytes, nil).Once()
 	db.Performer.On("GetImage", testCtx, noImageID).Return(nil, nil).Once()
 	db.Performer.On("GetImage", testCtx, errImageID).Return(nil, imageErr).Once()
+
+	db.Performer.On("GetCustomFields", testCtx, performerID).Return(emptyCustomFields, nil).Once()
+	db.Performer.On("GetCustomFields", testCtx, customFieldsID).Return(customFields, nil).Once()
+	db.Performer.On("GetCustomFields", testCtx, noImageID).Return(emptyCustomFields, nil).Once()
+	db.Performer.On("GetCustomFields", testCtx, errImageID).Return(emptyCustomFields, nil).Once()
+	db.Performer.On("GetCustomFields", testCtx, errCustomFieldsID).Return(nil, customFieldsErr).Once()
 
 	for i, s := range scenarios {
 		tag := s.input

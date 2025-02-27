@@ -12,22 +12,19 @@
 
   .scene-card-preview {
     border-radius: 3px;
+    color: $text-color;
+    height: 100px;
     margin-bottom: 0;
-    max-height: 100px;
     overflow: hidden;
-    width: 150px;
-
-    &-video {
-      background-color: #495b68;
-    }
+    width: auto;
   }
 
   .sprite-button {
-    bottom: 5px;
     filter: drop-shadow(1px 1px 1px #222);
     padding: 0;
     position: absolute;
     right: 5px;
+    top: 5px;
   }
 
   .sub-content {

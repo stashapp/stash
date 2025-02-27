@@ -1,13 +1,11 @@
 import React, { useMemo, useState } from "react";
-import { Dropdown } from "react-bootstrap";
-import { FormattedMessage, useIntl } from "react-intl";
+import { Dropdown, Button } from "react-bootstrap";
+import { useIntl } from "react-intl";
 import { Icon } from "./Icon";
 import { stashboxDisplayName } from "src/utils/stashbox";
 import { ScraperSourceInput, StashBox } from "src/core/generated-graphql";
 import { faSyncAlt } from "@fortawesome/free-solid-svg-icons";
 import { ClearableInput } from "./ClearableInput";
-
-const minFilteredScrapers = 5;
 
 export const ScraperMenu: React.FC<{
   toggle: React.ReactNode;
@@ -54,22 +52,22 @@ export const ScraperMenu: React.FC<{
       <Dropdown.Toggle variant={variant}>{toggle}</Dropdown.Toggle>
 
       <Dropdown.Menu>
-        <Dropdown.Item onClick={() => onReloadScrapers()}>
-          <span className="fa-icon">
-            <Icon icon={faSyncAlt} />
-          </span>
-          <span>
-            <FormattedMessage id="actions.reload_scrapers" />
-          </span>
-        </Dropdown.Item>
-
-        {(stashBoxes?.length ?? 0) + scrapers.length > minFilteredScrapers && (
-          <ClearableInput
-            placeholder={`${intl.formatMessage({ id: "filter" })}...`}
-            value={filter}
-            setValue={setFilter}
-          />
-        )}
+        <div className="scraper-filter-container">
+          <div className="btn-group">
+            <ClearableInput
+              placeholder={`${intl.formatMessage({ id: "filter" })}...`}
+              value={filter}
+              setValue={setFilter}
+            />
+            <Button
+              onClick={onReloadScrapers}
+              className="reload-button"
+              title={intl.formatMessage({ id: "actions.reload_scrapers" })}
+            >
+              <Icon icon={faSyncAlt} />
+            </Button>
+          </div>
+        </div>
 
         {filteredStashboxes.map((s, index) => (
           <Dropdown.Item

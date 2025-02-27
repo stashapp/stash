@@ -21,6 +21,47 @@ type SliderRange = {
   divider: number;
 };
 
+function getMatrixValue(value: number, range: SliderRange) {
+  return (value - range.default) / range.divider;
+}
+
+interface ISliderProps {
+  title: string;
+  className?: string;
+  range: SliderRange;
+  value: number;
+  setValue: (value: React.SetStateAction<number>) => void;
+  displayValue: string;
+}
+
+const Slider: React.FC<ISliderProps> = (sliderProps: ISliderProps) => {
+  return (
+    <div className="row form-group">
+      <span className="col-sm-3">{sliderProps.title}</span>
+      <span className="col-sm-7">
+        <Form.Control
+          className={`filter-slider d-inline-flex ml-sm-3 ${sliderProps.className}`}
+          type="range"
+          min={sliderProps.range.min}
+          max={sliderProps.range.max}
+          value={sliderProps.value}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            sliderProps.setValue(Number.parseInt(e.currentTarget.value, 10))
+          }
+        />
+      </span>
+      <span
+        className="col-sm-2 filter-slider-value"
+        role="presentation"
+        onClick={() => sliderProps.setValue(sliderProps.range.default)}
+        onKeyPress={() => sliderProps.setValue(sliderProps.range.default)}
+      >
+        <TruncatedText text={sliderProps.displayValue} />
+      </span>
+    </div>
+  );
+};
+
 export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = (
   props: ISceneVideoFilterPanelProps
 ) => {
@@ -64,7 +105,7 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = (
     min: 0,
     default: 100,
     max: 200,
-    divider: 1,
+    divider: 100,
   };
   const blurRange: SliderRange = { min: 0, default: 0, max: 250, divider: 10 };
   const rotateRange: SliderRange = {
@@ -231,20 +272,20 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = (
         "http://www.w3.org/2000/svg",
         "feColorMatrix"
       );
+
+      const wbMatrixValue = getMatrixValue(
+        whiteBalanceValue,
+        whiteBalanceRange
+      );
+
       feColorMatrix.setAttribute(
         "values",
         `${
-          1 +
-          (whiteBalanceValue - whiteBalanceRange.default) /
-            whiteBalanceRange.divider +
-          (redValue - colourRange.default) / colourRange.divider
+          1 + wbMatrixValue + getMatrixValue(redValue, colourRange)
         } 0 0 0 0   0 ${
-          1.0 + (greenValue - colourRange.default) / colourRange.divider
+          1.0 + getMatrixValue(greenValue, colourRange)
         } 0 0 0   0 0 ${
-          1 -
-          (whiteBalanceValue - whiteBalanceRange.default) /
-            whiteBalanceRange.divider +
-          (blueValue - colourRange.default) / colourRange.divider
+          1 - wbMatrixValue + getMatrixValue(blueValue, colourRange)
         } 0 0   0 0 0 1.0 0`
       );
       videoFilter.appendChild(feColorMatrix);
@@ -322,195 +363,6 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = (
       // assume only one svg... maybe issue
       filterContainer.replaceChild(svg1, filterContainerSvgs[0]);
     }
-  }
-
-  interface ISliderProps {
-    title: string;
-    className?: string;
-    range: SliderRange;
-    value: number;
-    setValue: (value: React.SetStateAction<number>) => void;
-    displayValue: string;
-  }
-
-  function renderSlider(sliderProps: ISliderProps) {
-    return (
-      <div className="row form-group">
-        <span className="col-sm-3">{sliderProps.title}</span>
-        <span className="col-sm-7">
-          <Form.Control
-            className={`filter-slider d-inline-flex ml-sm-3 ${sliderProps.className}`}
-            type="range"
-            min={sliderProps.range.min}
-            max={sliderProps.range.max}
-            value={sliderProps.value}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              sliderProps.setValue(Number.parseInt(e.currentTarget.value, 10))
-            }
-          />
-        </span>
-        <span
-          className="col-sm-2"
-          role="presentation"
-          onClick={() => sliderProps.setValue(sliderProps.range.default)}
-          onKeyPress={() => sliderProps.setValue(sliderProps.range.default)}
-        >
-          <TruncatedText text={sliderProps.displayValue} />
-        </span>
-      </div>
-    );
-  }
-
-  function renderBlur() {
-    return renderSlider({
-      title: intl.formatMessage({ id: "effect_filters.blur" }),
-      range: blurRange,
-      value: blurValue,
-      setValue: setBlurValue,
-      displayValue: `${blurValue / blurRange.divider}px`,
-    });
-  }
-
-  function renderContrast() {
-    return renderSlider({
-      title: intl.formatMessage({ id: "effect_filters.contrast" }),
-      className: "contrast-slider",
-      range: contrastRange,
-      value: contrastValue,
-      setValue: setContrastValue,
-      displayValue: `${contrastValue / brightnessRange.divider}%`,
-    });
-  }
-
-  function renderBrightness() {
-    return renderSlider({
-      title: intl.formatMessage({ id: "effect_filters.brightness" }),
-      className: "brightness-slider",
-      range: brightnessRange,
-      value: brightnessValue,
-      setValue: setBrightnessValue,
-      displayValue: `${brightnessValue / brightnessRange.divider}%`,
-    });
-  }
-
-  function renderGammaSlider() {
-    return renderSlider({
-      title: intl.formatMessage({ id: "effect_filters.gamma" }),
-      className: "gamma-slider",
-      range: gammaRange,
-      value: gammaValue,
-      setValue: setGammaValue,
-      displayValue: `${(gammaValue - gammaRange.default) / gammaRange.divider}`,
-    });
-  }
-
-  function renderSaturate() {
-    return renderSlider({
-      title: intl.formatMessage({ id: "effect_filters.saturation" }),
-      className: "saturation-slider",
-      range: saturateRange,
-      value: saturateValue,
-      setValue: setSaturateValue,
-      displayValue: `${saturateValue / saturateRange.divider}%`,
-    });
-  }
-
-  function renderHueRotateSlider() {
-    return renderSlider({
-      title: intl.formatMessage({ id: "effect_filters.hue" }),
-      className: "hue-rotate-slider",
-      range: hueRotateRange,
-      value: hueRotateValue,
-      setValue: setHueRotateValue,
-      displayValue: `${hueRotateValue / hueRotateRange.divider}\xB0`,
-    });
-  }
-
-  function renderWhiteBalance() {
-    return renderSlider({
-      title: intl.formatMessage({ id: "effect_filters.warmth" }),
-      className: "white-balance-slider",
-      range: whiteBalanceRange,
-      value: whiteBalanceValue,
-      setValue: setWhiteBalanceValue,
-      displayValue: `${
-        (whiteBalanceValue - whiteBalanceRange.default) /
-        whiteBalanceRange.divider
-      }`,
-    });
-  }
-
-  function renderRedSlider() {
-    return renderSlider({
-      title: intl.formatMessage({ id: "effect_filters.red" }),
-      className: "red-slider",
-      range: colourRange,
-      value: redValue,
-      setValue: setRedValue,
-      displayValue: `${
-        (redValue - colourRange.default) / colourRange.divider
-      }%`,
-    });
-  }
-
-  function renderGreenSlider() {
-    return renderSlider({
-      title: intl.formatMessage({ id: "effect_filters.green" }),
-      className: "green-slider",
-      range: colourRange,
-      value: greenValue,
-      setValue: setGreenValue,
-      displayValue: `${
-        (greenValue - colourRange.default) / colourRange.divider
-      }%`,
-    });
-  }
-
-  function renderBlueSlider() {
-    return renderSlider({
-      title: intl.formatMessage({ id: "effect_filters.blue" }),
-      className: "blue-slider",
-      range: colourRange,
-      value: blueValue,
-      setValue: setBlueValue,
-      displayValue: `${
-        (blueValue - colourRange.default) / colourRange.divider
-      }%`,
-    });
-  }
-
-  function renderRotate() {
-    return renderSlider({
-      title: intl.formatMessage({ id: "effect_filters.rotate" }),
-      range: rotateRange,
-      value: rotateValue,
-      setValue: setRotateValue,
-      displayValue: `${
-        (rotateValue - rotateRange.default) / rotateRange.divider
-      }\xB0`,
-    });
-  }
-
-  function renderScale() {
-    return renderSlider({
-      title: intl.formatMessage({ id: "effect_filters.scale" }),
-      range: scaleRange,
-      value: scaleValue,
-      setValue: setScaleValue,
-      displayValue: `${scaleValue / scaleRange.divider}%`,
-    });
-  }
-
-  function renderAspectRatio() {
-    return renderSlider({
-      title: intl.formatMessage({ id: "effect_filters.aspect" }),
-      range: aspectRatioRange,
-      value: aspectRatioValue,
-      setValue: setAspectRatioValue,
-      displayValue: `${
-        (aspectRatioValue - aspectRatioRange.default) / aspectRatioRange.divider
-      }`,
-    });
   }
 
   function onRotateAndScale(direction: number) {
@@ -657,16 +509,91 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = (
           </h5>
         </span>
       </div>
-      {renderBrightness()}
-      {renderContrast()}
-      {renderGammaSlider()}
-      {renderSaturate()}
-      {renderHueRotateSlider()}
-      {renderWhiteBalance()}
-      {renderRedSlider()}
-      {renderGreenSlider()}
-      {renderBlueSlider()}
-      {renderBlur()}
+      <Slider
+        title={intl.formatMessage({ id: "effect_filters.brightness" })}
+        className="brightness-slider"
+        range={brightnessRange}
+        value={brightnessValue}
+        setValue={setBrightnessValue}
+        displayValue={`${brightnessValue / brightnessRange.divider}%`}
+      />
+      <Slider
+        title={intl.formatMessage({ id: "effect_filters.contrast" })}
+        className="contrast-slider"
+        range={contrastRange}
+        value={contrastValue}
+        setValue={setContrastValue}
+        displayValue={`${contrastValue / brightnessRange.divider}%`}
+      />
+      <Slider
+        title={intl.formatMessage({ id: "effect_filters.gamma" })}
+        className="gamma-slider"
+        range={gammaRange}
+        value={gammaValue}
+        setValue={setGammaValue}
+        displayValue={`${
+          (gammaValue - gammaRange.default) / gammaRange.divider
+        }`}
+      />
+      <Slider
+        title={intl.formatMessage({ id: "effect_filters.saturation" })}
+        className="saturation-slider"
+        range={saturateRange}
+        value={saturateValue}
+        setValue={setSaturateValue}
+        displayValue={`${saturateValue / saturateRange.divider}%`}
+      />
+      <Slider
+        title={intl.formatMessage({ id: "effect_filters.hue" })}
+        className="hue-rotate-slider"
+        range={hueRotateRange}
+        value={hueRotateValue}
+        setValue={setHueRotateValue}
+        displayValue={`${hueRotateValue / hueRotateRange.divider}\xB0`}
+      />
+      <Slider
+        title={intl.formatMessage({ id: "effect_filters.warmth" })}
+        className="white-balance-slider"
+        range={whiteBalanceRange}
+        value={whiteBalanceValue}
+        setValue={setWhiteBalanceValue}
+        displayValue={`${
+          (whiteBalanceValue - whiteBalanceRange.default) /
+          whiteBalanceRange.divider
+        }`}
+      />
+      <Slider
+        title={intl.formatMessage({ id: "effect_filters.red" })}
+        className="red-slider"
+        range={colourRange}
+        value={redValue}
+        setValue={setRedValue}
+        displayValue={`${redValue}%`}
+      />
+      <Slider
+        title={intl.formatMessage({ id: "effect_filters.green" })}
+        className="green-slider"
+        range={colourRange}
+        value={greenValue}
+        setValue={setGreenValue}
+        displayValue={`${greenValue}%`}
+      />
+      <Slider
+        title={intl.formatMessage({ id: "effect_filters.blue" })}
+        className="blue-slider"
+        range={colourRange}
+        value={blueValue}
+        setValue={setBlueValue}
+        displayValue={`${blueValue}%`}
+      />
+      <Slider
+        title={intl.formatMessage({ id: "effect_filters.blur" })}
+        range={blurRange}
+        value={blurValue}
+        setValue={setBlurValue}
+        displayValue={`${blurValue / blurRange.divider}px`}
+      />
+
       <div className="row form-group">
         <span className="col-12">
           <h5>
@@ -674,9 +601,32 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = (
           </h5>
         </span>
       </div>
-      {renderRotate()}
-      {renderScale()}
-      {renderAspectRatio()}
+      <Slider
+        title={intl.formatMessage({ id: "effect_filters.rotate" })}
+        range={rotateRange}
+        value={rotateValue}
+        setValue={setRotateValue}
+        displayValue={`${
+          (rotateValue - rotateRange.default) / rotateRange.divider
+        }\xB0`}
+      />
+      <Slider
+        title={intl.formatMessage({ id: "effect_filters.scale" })}
+        range={scaleRange}
+        value={scaleValue}
+        setValue={setScaleValue}
+        displayValue={`${scaleValue / scaleRange.divider}%`}
+      />
+      <Slider
+        title={intl.formatMessage({ id: "effect_filters.aspect" })}
+        range={aspectRatioRange}
+        value={aspectRatioValue}
+        setValue={setAspectRatioValue}
+        displayValue={`${
+          (aspectRatioValue - aspectRatioRange.default) /
+          aspectRatioRange.divider
+        }`}
+      />
       <div className="row form-group">
         <span className="col-12">
           <h5>

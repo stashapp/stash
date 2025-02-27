@@ -79,7 +79,9 @@ const StudioTabs: React.FC<{
   abbreviateCounter: boolean;
   showAllCounts?: boolean;
 }> = ({ tabKey, studio, abbreviateCounter, showAllCounts = false }) => {
-  const [showAllDetails, setShowAllDetails] = useState<boolean>(showAllCounts);
+  const [showAllDetails, setShowAllDetails] = useState<boolean>(
+    showAllCounts && studio.child_studios.length > 0
+  );
 
   const sceneCount =
     (showAllDetails ? studio.scene_count_all : studio.scene_count) ?? 0;
@@ -125,8 +127,12 @@ const StudioTabs: React.FC<{
     baseURL: `/studios/${studio.id}`,
   });
 
-  const contentSwitch = useMemo(
-    () => (
+  const contentSwitch = useMemo(() => {
+    if (!studio.child_studios.length) {
+      return null;
+    }
+
+    return (
       <div className="item-list-header">
         <Form.Check
           id="showSubContent"
@@ -136,9 +142,8 @@ const StudioTabs: React.FC<{
           label={<FormattedMessage id="include_sub_studio_content" />}
         />
       </div>
-    ),
-    [showAllDetails]
-  );
+    );
+  }, [showAllDetails, studio.child_studios.length]);
 
   return (
     <Tabs

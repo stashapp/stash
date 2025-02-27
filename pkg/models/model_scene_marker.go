@@ -8,6 +8,7 @@ type SceneMarker struct {
 	ID           int       `json:"id"`
 	Title        string    `json:"title"`
 	Seconds      float64   `json:"seconds"`
+	EndSeconds   *float64  `json:"end_seconds"`
 	PrimaryTagID int       `json:"primary_tag_id"`
 	SceneID      int       `json:"scene_id"`
 	CreatedAt    time.Time `json:"created_at"`
@@ -27,6 +28,7 @@ func NewSceneMarker() SceneMarker {
 type SceneMarkerPartial struct {
 	Title        OptionalString
 	Seconds      OptionalFloat64
+	EndSeconds   OptionalFloat64
 	PrimaryTagID OptionalInt
 	SceneID      OptionalInt
 	CreatedAt    OptionalTime

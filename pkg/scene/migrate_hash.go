@@ -65,6 +65,17 @@ func migrateSceneFiles(oldName, newName string) {
 
 // #2481: migrate vtt file contents in addition to renaming
 func migrateVttFile(vttPath, oldSpritePath, newSpritePath string) {
+	// #3356 - don't try to migrate if the file doesn't exist
+	exists, err := fsutil.FileExists(vttPath)
+	if err != nil && !os.IsNotExist(err) {
+		logger.Errorf("Error checking existence of %s: %s", vttPath, err.Error())
+		return
+	}
+
+	if !exists {
+		return
+	}
+
 	contents, err := os.ReadFile(vttPath)
 	if err != nil {
 		logger.Errorf("Error reading %s for vtt migration: %v", vttPath, err)

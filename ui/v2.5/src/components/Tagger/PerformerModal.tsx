@@ -272,6 +272,7 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({
         {
           endpoint,
           stash_id: remoteSiteID,
+          updated_at: new Date().toISOString(),
         },
       ];
     }
@@ -280,6 +281,10 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({
     Object.keys(performerData).forEach((k) => {
       if (excluded[k] || !performerData[k]) {
         performerData[k] = undefined;
+      }
+      // #5565 - special case aliases as the names differ
+      if (k == "alias_list" && excluded.aliases) {
+        performerData.alias_list = undefined;
       }
     });
 

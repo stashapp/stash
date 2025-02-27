@@ -1,16 +1,14 @@
 import React, {
   PropsWithChildren,
   useCallback,
+  useContext,
   useEffect,
   useMemo,
   useState,
 } from "react";
 import * as GQL from "src/core/generated-graphql";
 import { QueryResult } from "@apollo/client";
-import {
-  Criterion,
-  CriterionValue,
-} from "src/models/list-filter/criteria/criterion";
+import { Criterion } from "src/models/list-filter/criteria/criterion";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { EditFilterDialog } from "src/components/List/EditFilterDialog";
 import { FilterTags } from "./FilterTags";
@@ -36,6 +34,7 @@ import {
   IItemListOperation,
 } from "./FilteredListToolbar";
 import { PagedList } from "./PagedList";
+import { ConfigurationContext } from "src/hooks/Config";
 
 interface IItemListProps<T extends QueryResult, E extends IHasID> {
   view?: View;
@@ -91,6 +90,9 @@ export const ItemList = <T extends QueryResult, E extends IHasID>(
     onSelectAll,
     onSelectNone,
   } = useListContext<E>();
+
+  // scroll to the top of the page when the page changes
+  useScrollToTopOnPageChange(filter.currentPage, result.loading);
 
   const { modal, showModal, closeModal } = useModal();
 
@@ -215,8 +217,19 @@ export const ItemList = <T extends QueryResult, E extends IHasID>(
     result.refetch();
   }
 
-  function onRemoveCriterion(removedCriterion: Criterion<CriterionValue>) {
-    updateFilter(filter.removeCriterion(removedCriterion.criterionOption.type));
+  function onRemoveCriterion(removedCriterion: Criterion, valueIndex?: number) {
+    if (valueIndex === undefined) {
+      updateFilter(
+        filter.removeCriterion(removedCriterion.criterionOption.type)
+      );
+    } else {
+      updateFilter(
+        filter.removeCustomFieldCriterion(
+          removedCriterion.criterionOption.type,
+          valueIndex
+        )
+      );
+    }
   }
 
   function onClearAllCriteria() {
@@ -301,27 +314,26 @@ export const ItemListContext = <T extends QueryResult, E extends IHasID>(
     children,
   } = props;
 
+  const { configuration: config } = useContext(ConfigurationContext);
+
   const emptyFilter = useMemo(
     () =>
       providedDefaultFilter?.clone() ??
-      new ListFilterModel(filterMode, undefined, {
+      new ListFilterModel(filterMode, config, {
         defaultSortBy: defaultSort,
       }),
-    [filterMode, defaultSort, providedDefaultFilter]
+    [config, filterMode, defaultSort, providedDefaultFilter]
   );
 
   const [filter, setFilterState] = useState<ListFilterModel>(
     () =>
-      new ListFilterModel(filterMode, undefined, { defaultSortBy: defaultSort })
+      new ListFilterModel(filterMode, config, { defaultSortBy: defaultSort })
   );
 
   const { defaultFilter, loading: defaultFilterLoading } = useDefaultFilter(
     emptyFilter,
     view
   );
-
-  // scroll to the top of the page when the page changes
-  useScrollToTopOnPageChange(filter.currentPage);
 
   if (defaultFilterLoading) return null;
 

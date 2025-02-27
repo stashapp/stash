@@ -6,7 +6,7 @@ import {
   ObjectScrapeResult,
   ScrapeResult,
 } from "src/components/Shared/ScrapeDialog/scrapeResult";
-import { TagSelect } from "src/components/Tags/TagSelect";
+import { TagIDSelect } from "src/components/Tags/TagSelect";
 import { StudioSelect } from "src/components/Studios/StudioSelect";
 import { GroupSelect } from "src/components/Groups/GroupSelect";
 
@@ -269,17 +269,12 @@ export const ScrapedTagsRow: React.FC<
       : scrapeResult.originalValue;
     const value = resultValue ?? [];
 
-    const selectValue = value.map((p) => {
-      const aliases: string[] = [];
-      return {
-        id: p.stored_id ?? "",
-        name: p.name ?? "",
-        aliases,
-      };
-    });
+    const selectValue = value.map((p) => p.stored_id ?? "");
 
+    // we need to use TagIDSelect here because we want to use the local name
+    // of the tag instead of the name from the source
     return (
-      <TagSelect
+      <TagIDSelect
         isMulti
         className="form-control"
         isDisabled={!isNew}
@@ -289,7 +284,7 @@ export const ScrapedTagsRow: React.FC<
             onChangeFn(items.map((p) => ({ ...p, stored_id: p.id })));
           }
         }}
-        values={selectValue}
+        ids={selectValue}
       />
     );
   }

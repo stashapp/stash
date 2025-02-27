@@ -7,7 +7,7 @@ import { ExternalLink } from "./ExternalLink";
 export type LinkType = "performers" | "scenes" | "studios";
 
 export const StashIDPill: React.FC<{
-  stashID: StashId;
+  stashID: Pick<StashId, "endpoint" | "stash_id">;
   linkType: LinkType;
 }> = ({ stashID, linkType }) => {
   const { configuration } = React.useContext(ConfigurationContext);

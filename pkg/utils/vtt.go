@@ -26,12 +26,12 @@ func GetVTTTime(fracSeconds float64) string {
 		return "00:00:00.000"
 	}
 
-	var msec, sec, min, hour int
+	var msec, sec, mnt, hour int
 	msec = int(fracSeconds * 1000)
 	sec, msec = norm(sec, msec, 1000)
-	min, sec = norm(min, sec, 60)
-	hour, min = norm(hour, min, 60)
+	mnt, sec = norm(mnt, sec, 60)
+	hour, mnt = norm(hour, mnt, 60)
 
-	return fmt.Sprintf("%02d:%02d:%02d.%03d", hour, min, sec, msec)
+	return fmt.Sprintf("%02d:%02d:%02d.%03d", hour, mnt, sec, msec)
 
 }

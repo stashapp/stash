@@ -16,6 +16,10 @@ import (
 
 var (
 	ErrNotVideoFile = errors.New("not a video file")
+
+	// fingerprint types to match with
+	// only try to match by data fingerprints, _not_ perceptual fingerprints
+	matchableFingerprintTypes = []string{models.FingerprintTypeOshash, models.FingerprintTypeMD5}
 )
 
 type ScanCreatorUpdater interface {
@@ -87,7 +91,7 @@ func (h *ScanHandler) Handle(ctx context.Context, f models.File, oldFile models.
 
 	if len(existing) == 0 {
 		// try also to match file by fingerprints
-		existing, err = h.CreatorUpdater.FindByFingerprints(ctx, videoFile.Fingerprints)
+		existing, err = h.CreatorUpdater.FindByFingerprints(ctx, videoFile.Fingerprints.Filter(matchableFingerprintTypes...))
 		if err != nil {
 			return fmt.Errorf("finding existing scene by fingerprints: %w", err)
 		}

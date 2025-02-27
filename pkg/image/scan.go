@@ -6,13 +6,13 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/paths"
 	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/plugin/hook"
-	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/txn"
 )
 
@@ -356,7 +356,7 @@ func (h *ScanHandler) getGalleryToAssociate(ctx context.Context, newImage *model
 		return nil, err
 	}
 
-	if g != nil && !sliceutil.Contains(newImage.GalleryIDs.List(), g.ID) {
+	if g != nil && !slices.Contains(newImage.GalleryIDs.List(), g.ID) {
 		return g, nil
 	}
 

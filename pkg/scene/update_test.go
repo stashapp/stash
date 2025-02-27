@@ -4,6 +4,7 @@ import (
 	"errors"
 	"strconv"
 	"testing"
+	"time"
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/mocks"
@@ -236,16 +237,19 @@ func TestUpdateSet_UpdateInput(t *testing.T) {
 	tagIDStrs := intslice.IntSliceToStringSlice(tagIDs)
 	stashID := "stashID"
 	endpoint := "endpoint"
+	updatedAt := time.Now()
 	stashIDs := []models.StashID{
 		{
-			StashID:  stashID,
-			Endpoint: endpoint,
+			StashID:   stashID,
+			Endpoint:  endpoint,
+			UpdatedAt: updatedAt,
 		},
 	}
-	stashIDInputs := []models.StashID{
+	stashIDInputs := []models.StashIDInput{
 		{
-			StashID:  stashID,
-			Endpoint: endpoint,
+			StashID:   stashID,
+			Endpoint:  endpoint,
+			UpdatedAt: &updatedAt,
 		},
 	}
 

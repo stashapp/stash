@@ -1,3 +1,4 @@
+import { debounce } from "lodash-es";
 import videojs, { VideoJsPlayer } from "video.js";
 
 export interface ISource extends videojs.Tech.SourceObject {
@@ -9,6 +10,9 @@ interface ICue extends TextTrackCue {
   _startTime?: number;
   _endTime?: number;
 }
+
+// delay before loading new source after setting currentTime
+const loadDelay = 200;
 
 function offsetMiddleware(player: VideoJsPlayer) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- allow access to private tech methods
@@ -49,6 +53,34 @@ function offsetMiddleware(player: VideoJsPlayer) {
       }
     }
   }
+
+  const loadSource = debounce(
+    (seconds: number) => {
+      const srcUrl = new URL(source.src);
+      srcUrl.searchParams.set("start", seconds.toString());
+      source.src = srcUrl.toString();
+
+      const poster = player.poster();
+      const playbackRate = tech.playbackRate();
+      seeking = tech.paused() ? 1 : 2;
+      player.poster("");
+      tech.setSource(source);
+      tech.setPlaybackRate(playbackRate);
+      tech.one("canplay", () => {
+        player.poster(poster);
+        if (seeking === 1 || tech.scrubbing()) {
+          tech.pause();
+        }
+        seeking = 0;
+      });
+      tech.trigger("timeupdate");
+      tech.trigger("pause");
+      tech.trigger("seeking");
+      tech.play();
+    },
+    loadDelay,
+    { leading: true }
+  );
 
   return {
     setTech(newTech: videojs.Tech) {
@@ -144,27 +176,7 @@ function offsetMiddleware(player: VideoJsPlayer) {
 
       updateOffsetStart(seconds);
 
-      const srcUrl = new URL(source.src);
-      srcUrl.searchParams.set("start", seconds.toString());
-      source.src = srcUrl.toString();
-
-      const poster = player.poster();
-      const playbackRate = tech.playbackRate();
-      seeking = tech.paused() ? 1 : 2;
-      player.poster("");
-      tech.setSource(source);
-      tech.setPlaybackRate(playbackRate);
-      tech.one("canplay", () => {
-        player.poster(poster);
-        if (seeking === 1) {
-          tech.pause();
-        }
-        seeking = 0;
-      });
-      tech.trigger("timeupdate");
-      tech.trigger("pause");
-      tech.trigger("seeking");
-      tech.play();
+      loadSource(seconds);
 
       return 0;
     },

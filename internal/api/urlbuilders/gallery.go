@@ -21,3 +21,7 @@ func NewGalleryURLBuilder(baseURL string, gallery *models.Gallery) GalleryURLBui
 func (b GalleryURLBuilder) GetPreviewURL() string {
 	return b.BaseURL + "/gallery/" + b.GalleryID + "/preview"
 }
+
+func (b GalleryURLBuilder) GetCoverURL() string {
+	return b.BaseURL + "/gallery/" + b.GalleryID + "/cover"
+}

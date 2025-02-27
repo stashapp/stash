@@ -226,6 +226,7 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
         ids={ids ?? []}
         existingIds={existingIds ?? []}
         mode={mode}
+        menuPortalTarget={document.body}
       />
     );
   }
@@ -288,6 +289,7 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
                 }
                 ids={studioId ? [studioId] : []}
                 isDisabled={isUpdating}
+                menuPortalTarget={document.body}
               />
             </Col>
           </Form.Group>

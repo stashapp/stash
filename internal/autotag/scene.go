@@ -2,11 +2,11 @@ package autotag
 
 import (
 	"context"
+	"slices"
 
 	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scene"
-	"github.com/stashapp/stash/pkg/sliceutil"
 )
 
 type SceneFinderUpdater interface {
@@ -44,7 +44,7 @@ func ScenePerformers(ctx context.Context, s *models.Scene, rw ScenePerformerUpda
 		}
 		existing := s.PerformerIDs.List()
 
-		if sliceutil.Contains(existing, otherID) {
+		if slices.Contains(existing, otherID) {
 			return false, nil
 		}
 
@@ -82,7 +82,7 @@ func SceneTags(ctx context.Context, s *models.Scene, rw SceneTagUpdater, tagRead
 		}
 		existing := s.TagIDs.List()
 
-		if sliceutil.Contains(existing, otherID) {
+		if slices.Contains(existing, otherID) {
 			return false, nil
 		}
 

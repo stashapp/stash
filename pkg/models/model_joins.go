@@ -33,7 +33,7 @@ func (u *UpdateGroupIDs) SceneMovieInputs() []SceneMovieInput {
 		return nil
 	}
 
-	ret := make([]SceneMovieInput, len(u.Groups))
+	ret := make([]SceneMovieInput, 0, len(u.Groups))
 	for _, id := range u.Groups {
 		ret = append(ret, id.SceneMovieInput())
 	}

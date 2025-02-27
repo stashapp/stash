@@ -17,6 +17,7 @@ interface IMultiSetProps {
   disabled?: boolean;
   onUpdate: (ids: string[]) => void;
   onSetMode: (mode: GQL.BulkUpdateIdMode) => void;
+  menuPortalTarget?: HTMLElement | null;
 }
 
 const Select: React.FC<IMultiSetProps> = (props) => {
@@ -36,6 +37,7 @@ const Select: React.FC<IMultiSetProps> = (props) => {
         ids={props.ids ?? []}
         // exclude file-based galleries when setting galleries
         extraCriteria={excludeFileBasedGalleries}
+        menuPortalTarget={props.menuPortalTarget}
       />
     );
   }
@@ -48,6 +50,7 @@ const Select: React.FC<IMultiSetProps> = (props) => {
       isClearable={false}
       onSelect={onUpdate}
       ids={props.ids ?? []}
+      menuPortalTarget={props.menuPortalTarget}
     />
   );
 };

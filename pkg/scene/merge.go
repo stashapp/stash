@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"time"
 
 	"github.com/stashapp/stash/pkg/fsutil"
@@ -28,7 +29,7 @@ func (s *Service) Merge(ctx context.Context, sourceIDs []int, destinationID int,
 	sourceIDs = sliceutil.AppendUniques(nil, sourceIDs)
 
 	// ensure destination is not in source list
-	if sliceutil.Contains(sourceIDs, destinationID) {
+	if slices.Contains(sourceIDs, destinationID) {
 		return errors.New("destination scene cannot be in source list")
 	}
 

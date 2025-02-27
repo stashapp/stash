@@ -7,6 +7,7 @@ import {
   useListPerformerScrapers,
   useListSceneScrapers,
   useListGalleryScrapers,
+  useListImageScrapers,
 } from "src/core/StashService";
 import { useToast } from "src/hooks/Toast";
 import TextUtils from "src/utils/text";
@@ -178,6 +179,8 @@ const ScrapersSection: React.FC = () => {
     useListSceneScrapers();
   const { data: galleryScrapers, loading: loadingGalleries } =
     useListGalleryScrapers();
+  const { data: imageScrapers, loading: loadingImages } =
+    useListImageScrapers();
   const { data: groupScrapers, loading: loadingGroups } =
     useListGroupScrapers();
 
@@ -193,6 +196,9 @@ const ScrapersSection: React.FC = () => {
       galleries: galleryScrapers?.listScrapers.filter((s) =>
         filterFn(s.name, s.gallery?.urls)
       ),
+      images: imageScrapers?.listScrapers.filter((s) =>
+        filterFn(s.name, s.image?.urls)
+      ),
       groups: groupScrapers?.listScrapers.filter((s) =>
         filterFn(s.name, s.group?.urls)
       ),
@@ -201,6 +207,7 @@ const ScrapersSection: React.FC = () => {
     performerScrapers,
     sceneScrapers,
     galleryScrapers,
+    imageScrapers,
     groupScrapers,
     filter,
   ]);
@@ -213,7 +220,13 @@ const ScrapersSection: React.FC = () => {
     }
   }
 
-  if (loadingScenes || loadingGalleries || loadingPerformers || loadingGroups)
+  if (
+    loadingScenes ||
+    loadingGalleries ||
+    loadingPerformers ||
+    loadingGroups ||
+    loadingImages
+  )
     return (
       <SettingSection headingID="config.scraping.scrapers">
         <LoadingIndicator />
@@ -269,6 +282,23 @@ const ScrapersSection: React.FC = () => {
                 entityType="gallery"
                 supportedScrapes={scraper.gallery?.supported_scrapes ?? []}
                 urls={scraper.gallery?.urls ?? []}
+              />
+            ))}
+          </ScraperTable>
+        )}
+
+        {!!filteredScrapers.images?.length && (
+          <ScraperTable
+            entityType="image"
+            count={filteredScrapers.images?.length}
+          >
+            {filteredScrapers.images?.map((scraper) => (
+              <ScraperTableRow
+                key={scraper.id}
+                name={scraper.name}
+                entityType="image"
+                supportedScrapes={scraper.image?.supported_scrapes ?? []}
+                urls={scraper.image?.urls ?? []}
               />
             ))}
           </ScraperTable>

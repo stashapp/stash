@@ -165,7 +165,12 @@ const SceneCardPopovers = PatchComponent(
     function maybeRenderPerformerPopoverButton() {
       if (props.scene.performers.length <= 0) return;
 
-      return <PerformerPopoverButton performers={props.scene.performers} />;
+      return (
+        <PerformerPopoverButton
+          performers={props.scene.performers}
+          linkType="scene"
+        />
+      );
     }
 
     function maybeRenderGroupPopoverButton() {

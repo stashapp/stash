@@ -1,26 +1,14 @@
 // Package sliceutil provides utilities for working with slices.
 package sliceutil
 
-// Index returns the first index of the provided value in the provided
-// slice. It returns -1 if it is not found.
-func Index[T comparable](vs []T, t T) int {
-	for i, v := range vs {
-		if v == t {
-			return i
-		}
-	}
-	return -1
-}
-
-// Contains returns whether the vs slice contains t.
-func Contains[T comparable](vs []T, t T) bool {
-	return Index(vs, t) >= 0
-}
+import (
+	"slices"
+)
 
 // AppendUnique appends toAdd to the vs slice if toAdd does not already
 // exist in the slice. It returns the new or unchanged slice.
 func AppendUnique[T comparable](vs []T, toAdd T) []T {
-	if Contains(vs, toAdd) {
+	if slices.Contains(vs, toAdd) {
 		return vs
 	}
 
@@ -31,6 +19,13 @@ func AppendUnique[T comparable](vs []T, toAdd T) []T {
 // appends values that do not already exist in the slice.
 // It returns the new or unchanged slice.
 func AppendUniques[T comparable](vs []T, toAdd []T) []T {
+	if len(toAdd) == 0 {
+		return vs
+	}
+
+	// Extend the slice's capacity to avoid multiple re-allocations even in the worst case
+	vs = slices.Grow(vs, len(toAdd))
+
 	for _, v := range toAdd {
 		vs = AppendUnique(vs, v)
 	}
@@ -41,9 +36,9 @@ func AppendUniques[T comparable](vs []T, toAdd []T) []T {
 // Exclude returns a copy of the vs slice, excluding all values
 // that are also present in the toExclude slice.
 func Exclude[T comparable](vs []T, toExclude []T) []T {
-	var ret []T
+	ret := make([]T, 0, len(vs))
 	for _, v := range vs {
-		if !Contains(toExclude, v) {
+		if !slices.Contains(toExclude, v) {
 			ret = append(ret, v)
 		}
 	}
@@ -53,8 +48,8 @@ func Exclude[T comparable](vs []T, toExclude []T) []T {
 
 // Unique returns a copy of the vs slice, with non-unique values removed.
 func Unique[T comparable](vs []T) []T {
-	distinctValues := make(map[T]struct{})
-	var ret []T
+	distinctValues := make(map[T]struct{}, len(vs))
+	ret := make([]T, 0, len(vs))
 	for _, v := range vs {
 		if _, exists := distinctValues[v]; !exists {
 			distinctValues[v] = struct{}{}
@@ -66,7 +61,7 @@ func Unique[T comparable](vs []T) []T {
 
 // Delete returns a copy of the vs slice with toDel values removed.
 func Delete[T comparable](vs []T, toDel T) []T {
-	var ret []T
+	ret := make([]T, 0, len(vs))
 	for _, v := range vs {
 		if v != toDel {
 			ret = append(ret, v)
@@ -79,7 +74,7 @@ func Delete[T comparable](vs []T, toDel T) []T {
 func Intersect[T comparable](a []T, b []T) []T {
 	var ret []T
 	for _, v := range a {
-		if Contains(b, v) {
+		if slices.Contains(b, v) {
 			ret = append(ret, v)
 		}
 	}
@@ -91,13 +86,13 @@ func Intersect[T comparable](a []T, b []T) []T {
 func NotIntersect[T comparable](a []T, b []T) []T {
 	var ret []T
 	for _, v := range a {
-		if !Contains(b, v) {
+		if !slices.Contains(b, v) {
 			ret = append(ret, v)
 		}
 	}
 
 	for _, v := range b {
-		if !Contains(a, v) {
+		if !slices.Contains(a, v) {
 			ret = append(ret, v)
 		}
 	}
@@ -166,8 +161,9 @@ func PtrsToValues[T any](vs []*T) []T {
 func ValuesToPtrs[T any](vs []T) []*T {
 	ret := make([]*T, len(vs))
 	for i, v := range vs {
-		vv := v
-		ret[i] = &vv
+		// We can do this safely because go.mod indicates Go 1.22
+		// See: https://go.dev/blog/loopvar-preview
+		ret[i] = &v
 	}
 	return ret
 }

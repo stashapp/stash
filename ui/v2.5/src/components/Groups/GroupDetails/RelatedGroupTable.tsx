@@ -19,6 +19,7 @@ export const RelatedGroupTable: React.FC<{
   excludeIDs?: string[];
   filterHook?: (f: ListFilterModel) => ListFilterModel;
   disabled?: boolean;
+  menuPortalTarget?: HTMLElement | null;
 }> = (props) => {
   const { value, onUpdate } = props;
 
@@ -101,6 +102,7 @@ export const RelatedGroupTable: React.FC<{
               excludeIds={excludeIDs}
               filterHook={props.filterHook}
               isDisabled={props.disabled}
+              menuPortalTarget={props.menuPortalTarget}
             />
           </Col>
           <Col xs={3}>
@@ -129,6 +131,7 @@ export const RelatedGroupTable: React.FC<{
             excludeIds={excludeIDs}
             filterHook={props.filterHook}
             isDisabled={props.disabled}
+            menuPortalTarget={props.menuPortalTarget}
           />
         </Col>
       </Row>

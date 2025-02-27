@@ -145,9 +145,15 @@ These options are typically not exposed in the UI and must be changed manually i
 | `max_upload_size` | Maximum file upload size for import files. Defaults to 1GB. |
 | `theme_color` | Sets the `theme-color` property in the UI. |
 | `gallery_cover_regex` | The regex responsible for selecting images as gallery covers |
-| `proxy` | The url of a HTTP(S) proxy to be used when stash makes calls to online services Example: https://user:password@my.proxy:8080 |
+| `proxy` | The url of a HTTP(S) proxy to be used when stash makes calls to online services. Example: https://user:password@my.proxy:8080. Note: SOCKS5 proxies are unsupported. |
 | `no_proxy` | A list of domains for which the proxy must not be used. Default is all local LAN: localhost,127.0.0.1,192.168.0.0/16,10.0.0.0/8,172.16.0.0/12 |
 | `sequential_scanning` | Modifies behaviour of the scanning functionality to generate support files (previews/sprites/phash) at the same time as fingerprinting/screenshotting. Useful when scanning cached remote files. |
+
+The following environment variables are also supported:
+
+| Environment variable | Remarks |
+|----------------------|---------|
+| `STASH_SQLITE_CACHE_SIZE` | Sets the SQLite cache size. See https://www.sqlite.org/pragma.html#pragma_cache_size. Default is `-2000` which is 2MB. |
 
 ### Custom served folders
 

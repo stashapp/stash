@@ -19,22 +19,22 @@ import {
   SubGroupsCriterionOption,
 } from "src/models/list-filter/criteria/groups";
 import {
-  Criterion,
-  CriterionOption,
+  ModifierCriterion,
+  ModifierCriterionOption,
   CriterionValue,
   StringCriterion,
   createStringCriterionOption,
+  Criterion,
 } from "src/models/list-filter/criteria/criterion";
 import { GalleriesCriterion } from "src/models/list-filter/criteria/galleries";
 import { PhashCriterion } from "src/models/list-filter/criteria/phash";
 import { ILabeledId } from "src/models/list-filter/types";
 import { IntlShape } from "react-intl";
 import { galleryTitle } from "src/core/galleries";
+import { MarkersScenesCriterion } from "src/models/list-filter/criteria/scenes";
+import { objectTitle } from "src/core/files";
 
-function addExtraCriteria(
-  dest: Criterion<CriterionValue>[],
-  src?: Criterion<CriterionValue>[]
-) {
+function addExtraCriteria(dest: Criterion[], src?: Criterion[]) {
   if (src && src.length > 0) {
     dest.push(...src);
   }
@@ -43,7 +43,7 @@ function addExtraCriteria(
 const makePerformerScenesUrl = (
   performer: Partial<GQL.PerformerDataFragment>,
   extraPerformer?: ILabeledId,
-  extraCriteria?: Criterion<CriterionValue>[]
+  extraCriteria?: ModifierCriterion<CriterionValue>[]
 ) => {
   if (!performer.id) return "#";
   const filter = new ListFilterModel(GQL.FilterMode.Scenes, undefined);
@@ -64,7 +64,7 @@ const makePerformerScenesUrl = (
 const makePerformerImagesUrl = (
   performer: Partial<GQL.PerformerDataFragment>,
   extraPerformer?: ILabeledId,
-  extraCriteria?: Criterion<CriterionValue>[]
+  extraCriteria?: ModifierCriterion<CriterionValue>[]
 ) => {
   if (!performer.id) return "#";
   const filter = new ListFilterModel(GQL.FilterMode.Images, undefined);
@@ -85,12 +85,13 @@ const makePerformerImagesUrl = (
 export interface INamedObject {
   id: string;
   name?: string;
+  sort_name?: string | null;
 }
 
 const makePerformerGalleriesUrl = (
   performer: INamedObject,
   extraPerformer?: ILabeledId,
-  extraCriteria?: Criterion<CriterionValue>[]
+  extraCriteria?: ModifierCriterion<CriterionValue>[]
 ) => {
   if (!performer.id) return "#";
   const filter = new ListFilterModel(GQL.FilterMode.Galleries, undefined);
@@ -111,7 +112,7 @@ const makePerformerGalleriesUrl = (
 const makePerformerGroupsUrl = (
   performer: Partial<GQL.PerformerDataFragment>,
   extraPerformer?: ILabeledId,
-  extraCriteria?: Criterion<CriterionValue>[]
+  extraCriteria?: ModifierCriterion<CriterionValue>[]
 ) => {
   if (!performer.id) return "#";
   const filter = new ListFilterModel(GQL.FilterMode.Groups, undefined);
@@ -127,6 +128,20 @@ const makePerformerGroupsUrl = (
   filter.criteria.push(criterion);
   addExtraCriteria(filter.criteria, extraCriteria);
   return `/groups?${filter.makeQueryParameters()}`;
+};
+
+const makePerformerSceneMarkersUrl = (
+  performer: Partial<GQL.PerformerDataFragment>
+) => {
+  if (!performer.id) return "#";
+  const filter = new ListFilterModel(GQL.FilterMode.SceneMarkers, undefined);
+  const criterion = new PerformersCriterion();
+  criterion.value.items = [
+    { id: performer.id, label: performer.name || `Performer ${performer.id}` },
+  ];
+
+  filter.criteria.push(criterion);
+  return `/scenes/markers?${filter.makeQueryParameters()}`;
 };
 
 const makePerformersCountryUrl = (
@@ -329,7 +344,7 @@ const makeScenesPHashMatchUrl = (phash: GQL.Maybe<string> | undefined) => {
 
 const makeGalleryImagesUrl = (
   gallery: Partial<GQL.GalleryDataFragment | GQL.SlimGalleryDataFragment>,
-  extraCriteria?: Criterion<CriterionValue>[]
+  extraCriteria?: ModifierCriterion<CriterionValue>[]
 ) => {
   if (!gallery.id) return "#";
   const filter = new ListFilterModel(GQL.FilterMode.Images, undefined);
@@ -340,7 +355,7 @@ const makeGalleryImagesUrl = (
   return `/images?${filter.makeQueryParameters()}`;
 };
 
-function stringEqualsCriterion(option: CriterionOption, value: string) {
+function stringEqualsCriterion(option: ModifierCriterionOption, value: string) {
   const criterion = new StringCriterion(option);
   criterion.modifier = GQL.CriterionModifier.Equals;
   criterion.value = value;
@@ -429,6 +444,15 @@ const makeSubGroupsUrl = (group: INamedObject) => {
   return `/groups?${filter.makeQueryParameters()}`;
 };
 
+const makeSceneMarkersSceneUrl = (scene: GQL.SceneMarkerSceneDataFragment) => {
+  if (!scene.id) return "#";
+  const filter = new ListFilterModel(GQL.FilterMode.SceneMarkers, undefined);
+  const criterion = new MarkersScenesCriterion();
+  criterion.value = [{ id: scene.id, label: objectTitle(scene) }];
+  filter.criteria.push(criterion);
+  return `/scenes/markers?${filter.makeQueryParameters()}`;
+};
+
 export function handleUnsavedChanges(
   intl: IntlShape,
   basepath: string,
@@ -449,6 +473,7 @@ const NavUtils = {
   makePerformerImagesUrl,
   makePerformerGalleriesUrl,
   makePerformerGroupsUrl,
+  makePerformerSceneMarkersUrl,
   makePerformersCountryUrl,
   makeStudioScenesUrl,
   makeStudioImagesUrl,
@@ -477,6 +502,7 @@ const NavUtils = {
   makeDirectorGroupsUrl,
   makeContainingGroupsUrl,
   makeSubGroupsUrl,
+  makeSceneMarkersSceneUrl,
 };
 
 export default NavUtils;

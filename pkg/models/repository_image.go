@@ -25,6 +25,9 @@ type ImageFinder interface {
 type ImageQueryer interface {
 	Query(ctx context.Context, options ImageQueryOptions) (*ImageQueryResult, error)
 	QueryCount(ctx context.Context, imageFilter *ImageFilterType, findFilter *FindFilterType) (int, error)
+}
+
+type GalleryCoverFinder interface {
 	CoverByGalleryID(ctx context.Context, galleryId int) (*Image, error)
 }
 
@@ -73,6 +76,8 @@ type ImageReader interface {
 	TagIDLoader
 	FileLoader
 
+	GalleryCoverFinder
+
 	All(ctx context.Context) ([]*Image, error)
 	Size(ctx context.Context) (float64, error)
 }
@@ -84,6 +89,7 @@ type ImageWriter interface {
 	ImageDestroyer
 
 	AddFileID(ctx context.Context, id int, fileID FileID) error
+	RemoveFileID(ctx context.Context, id int, fileID FileID) error
 	IncrementOCounter(ctx context.Context, id int) (int, error)
 	DecrementOCounter(ctx context.Context, id int) (int, error)
 	ResetOCounter(ctx context.Context, id int) (int, error)

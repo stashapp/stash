@@ -135,7 +135,13 @@
         "clear_date_data": "Rensa datumdata",
         "clean_generated": "Rensa genererade filer",
         "remove_date": "Ta bort datum",
-        "view_history": "Visningshistorik"
+        "view_history": "Visningshistorik",
+        "reset_cover": "Återställ Standardomslag",
+        "reset_play_duration": "Återställ uppspelad tid",
+        "add_sub_groups": "Lägg Till Undergrupper",
+        "remove_from_containing_group": "Ta bort från Grupp",
+        "reset_resume_time": "Återställ återupptagningstid",
+        "set_cover": "Välj som Omslag"
     },
     "actions_name": "Handlingar",
     "age": "Ålder",
@@ -186,7 +192,10 @@
             "set_tag_label": "Tagga",
             "show_male_desc": "Välj huruvida manliga stjärnor kommer vara tillgängliga att tagga.",
             "show_male_label": "Visa manliga stjärnor",
-            "source": "Källa"
+            "source": "Källa",
+            "errors": {
+                "blacklist_duplicate": "Duplicera svartlistat objekt"
+            }
         },
         "noun_query": "Query",
         "results": {
@@ -543,7 +552,9 @@
                 "previews_desc": "Scenförhandsvisningar och omslagsbilder",
                 "sprites": "Scensprites",
                 "transcodes": "Scenomkodningar"
-            }
+            },
+            "rescan": "Skanna om filer",
+            "rescan_tooltip": "Skanna om alla filer i sökvägen. Används för att tvångsuppdatera filmetadata och att skanna om zip-filer."
         },
         "tools": {
             "scene_duplicate_checker": "Scen Duplikat Kontroll",
@@ -912,7 +923,7 @@
             "marker_image_previews": "Markörer Animerad bildförhandsvisning",
             "marker_image_previews_tooltip": "Generera också Animerad (webp) föhandsvisning, krävs bara när Förhandsvisning i Scen/Markörvägg är Animerad Bild. Vid surfande använder de mindre CPU än videoförhandsvisngar, men genereras bredvid de och är större filer.",
             "marker_screenshots": "Markörskärmklipp",
-            "marker_screenshots_tooltip": "Markör statiska JPG-bilder, krävs bara om Typ av Förhandsvisning är Statisk Bild.",
+            "marker_screenshots_tooltip": "Markör statiska JPG-bilder",
             "markers": "Markörförhandsvisningar",
             "markers_tooltip": "20-sekunders videor som börjar vid angiven tidsstämpel.",
             "override_preview_generation_options": "Åsidosätt Inställningar för Förhandsvisningsgeneration",
@@ -1016,7 +1027,13 @@
         "something_went_wrong": "Något gick fel.",
         "header": "Fel",
         "invalid_javascript_string": "Ogiltig javascriptkod: {error}",
-        "invalid_json_string": "Ogiltig JSON-sträng: {error}"
+        "invalid_json_string": "Ogiltig JSON-sträng: {error}",
+        "custom_fields": {
+            "duplicate_field": "Fältnamn måste vara unikt",
+            "field_name_length": "Fältnamnet måste vara kortare än 65 karaktärer",
+            "field_name_required": "Fältnamn är obligatoriskt",
+            "field_name_whitespace": "Fältnamn kan inte börja eller sluta med blanksteg"
+        }
     },
     "ethnicity": "Etnicitet",
     "existing_value": "existerande värde",
@@ -1086,7 +1103,8 @@
     "last_played_at": "Senast spelad",
     "library": "Bibliotek",
     "loading": {
-        "generic": "Laddar…"
+        "generic": "Laddar…",
+        "plugins": "Laddar tillägg…"
     },
     "marker_count": "Antal Markörer",
     "markers": "Markörer",
@@ -1226,7 +1244,9 @@
         "errors": {
             "something_went_wrong": "Nej! Något gick fel!",
             "something_went_wrong_description": "Om det här ser ut som ett problem med dina inputs, klicka bakåt för att fixa det. Annars, vänligen skapa en buggvarning på {githublink} eller hitta hjälp på {githublink}.",
-            "something_went_wrong_while_setting_up_your_system": "Något gick fel i uppstarten av ditt system. Här är felet vi fick: {error}"
+            "something_went_wrong_while_setting_up_your_system": "Något gick fel i uppstarten av ditt system. Här är felet vi fick: {error}",
+            "unexpected_error": "Ett oförväntat fel inträffade: {error}",
+            "unable_to_retrieve_system_status": "Misslyckades med att hämta systemstatus: {error}"
         },
         "folder": {
             "file_path": "Filsökväg",
@@ -1404,7 +1424,8 @@
         "date_invalid_form": "${path} måste vara i formatet ÅÅÅÅ-MM-DD",
         "required": "${path} är ett obligatoriskt fält",
         "unique": "${path} måste vara unik",
-        "blank": "${path} får inte lämnas tom"
+        "blank": "${path} får inte lämnas tom",
+        "end_time_before_start_time": "Sluttiden måste var större eller lika med starttiden"
     },
     "video_codec": "Videocodec",
     "videos": "Videor",
@@ -1471,5 +1492,29 @@
     "group_scene_number": "Scennummer",
     "groups": "Grupper",
     "studio_count": "Antal Studior",
-    "studio_tags": "Studiotaggar"
+    "studio_tags": "Studiotaggar",
+    "include_sub_studio_content": "Inkludera innehåll från underordnade studior",
+    "include_sub_tag_content": "Inkludera innehåll från underordnade taggar",
+    "containing_group": "Innehållande grupp",
+    "containing_group_count": "Antal Innehållande Grupper",
+    "containing_groups": "Innehållande Grupper",
+    "include_sub_group_content": "Inkludera innehåll från undergrupper",
+    "sub_group_count": "Antal Undergrupper",
+    "sub_group_of": "Undergrupp av {parent}",
+    "sub_group_order": "Ordning av Undergrupper",
+    "sub_groups": "Undergrupper",
+    "sub_group": "Undergrupp",
+    "include_sub_groups": "Inkludera undergrupper",
+    "time_end": "Sluttid",
+    "criterion_modifier_values": {
+        "any": "Någon",
+        "any_of": "Någon av",
+        "none": "Ingen",
+        "only": "Bara"
+    },
+    "custom_fields": {
+        "field": "Fält",
+        "title": "Skäddarsydda Fält",
+        "value": "Värde"
+    }
 }

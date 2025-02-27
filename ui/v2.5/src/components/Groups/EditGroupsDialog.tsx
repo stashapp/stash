@@ -227,6 +227,7 @@ export const EditGroupsDialog: React.FC<IListOperationProps> = (
                 }
                 ids={studioId ? [studioId] : []}
                 isDisabled={isUpdating}
+                menuPortalTarget={document.body}
               />
             </Col>
           </Form.Group>
@@ -241,6 +242,7 @@ export const EditGroupsDialog: React.FC<IListOperationProps> = (
               existingValue={existingContainingGroups ?? []}
               value={containingGroups ?? []}
               mode={containingGroupsMode}
+              menuPortalTarget={document.body}
             />
           </Form.Group>
           <Form.Group controlId="director">
@@ -267,6 +269,7 @@ export const EditGroupsDialog: React.FC<IListOperationProps> = (
               existingIds={existingTagIds ?? []}
               ids={tagIds ?? []}
               mode={tagMode}
+              menuPortalTarget={document.body}
             />
           </Form.Group>
         </Form>

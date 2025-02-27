@@ -638,6 +638,20 @@ func (_m *ImageReaderWriter) QueryCount(ctx context.Context, imageFilter *models
 	return r0, r1
 }
 
+// RemoveFileID provides a mock function with given fields: ctx, id, fileID
+func (_m *ImageReaderWriter) RemoveFileID(ctx context.Context, id int, fileID models.FileID) error {
+	ret := _m.Called(ctx, id, fileID)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int, models.FileID) error); ok {
+		r0 = rf(ctx, id, fileID)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // ResetOCounter provides a mock function with given fields: ctx, id
 func (_m *ImageReaderWriter) ResetOCounter(ctx context.Context, id int) (int, error) {
 	ret := _m.Called(ctx, id)

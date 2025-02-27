@@ -163,8 +163,8 @@ func TestImporterPreImportWithMissingPerformer(t *testing.T) {
 	}
 
 	db.Performer.On("FindByNames", testCtx, []string{missingPerformerName}, false).Return(nil, nil).Times(3)
-	db.Performer.On("Create", testCtx, mock.AnythingOfType("*models.Performer")).Run(func(args mock.Arguments) {
-		performer := args.Get(1).(*models.Performer)
+	db.Performer.On("Create", testCtx, mock.AnythingOfType("*models.CreatePerformerInput")).Run(func(args mock.Arguments) {
+		performer := args.Get(1).(*models.CreatePerformerInput)
 		performer.ID = existingPerformerID
 	}).Return(nil)
 
@@ -197,7 +197,7 @@ func TestImporterPreImportWithMissingPerformerCreateErr(t *testing.T) {
 	}
 
 	db.Performer.On("FindByNames", testCtx, []string{missingPerformerName}, false).Return(nil, nil).Once()
-	db.Performer.On("Create", testCtx, mock.AnythingOfType("*models.Performer")).Return(errors.New("Create error"))
+	db.Performer.On("Create", testCtx, mock.AnythingOfType("*models.CreatePerformerInput")).Return(errors.New("Create error"))
 
 	err := i.PreImport(testCtx)
 	assert.NotNil(t, err)

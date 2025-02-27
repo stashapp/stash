@@ -135,7 +135,13 @@
         "reload": "Actualiser",
         "remove_date": "Supprimer la date",
         "clean_generated": "Nettoyer les fichiers générés",
-        "view_history": "Voir l'historique"
+        "view_history": "Voir l'historique",
+        "reset_cover": "Rétablir la vignette par défaut",
+        "reset_play_duration": "Réinitialiser la durée de lecture",
+        "reset_resume_time": "Réinitialiser le temps de reprise",
+        "set_cover": "Définir comme vignette",
+        "remove_from_containing_group": "Supprimer du groupe",
+        "add_sub_groups": "Ajouter des groupes affiliés"
     },
     "actions_name": "Actions",
     "age": "Âge",
@@ -186,7 +192,10 @@
             "set_tag_label": "Définir les étiquettes",
             "show_male_desc": "Cocher si les performeurs masculins seront disponibles pour le marquage.",
             "show_male_label": "Montrer les performeurs masculins",
-            "source": "Source"
+            "source": "Source",
+            "errors": {
+                "blacklist_duplicate": "Élément de liste noire en double"
+            }
         },
         "noun_query": "Requête",
         "results": {
@@ -543,7 +552,9 @@
                 "sprites": "Sprites de scène",
                 "transcodes": "Transcodes de scènes"
             },
-            "generate_sprites_during_scan_tooltip": "L'ensemble des images affichées en dessous du lecteur vidéo pour une navigation aisée."
+            "generate_sprites_during_scan_tooltip": "L'ensemble des images affichées en dessous du lecteur vidéo pour une navigation aisée.",
+            "rescan": "Réanalyse des fichiers",
+            "rescan_tooltip": "Réanalyse chaque fichier contenu dans le chemin d'accès. Utilisé pour forcer la mise à jour des métadonnées des fichiers et réanalyser les archives zip."
         },
         "tools": {
             "scene_duplicate_checker": "Vérificateur de doublons de scènes",
@@ -912,7 +923,7 @@
             "marker_image_previews": "Aperçus animés des marqueurs",
             "marker_image_previews_tooltip": "Génère également des aperçus animés (webp), uniquement requis lorsque le mode de prévisualisation Scène/Mur de marqueurs est défini sur Image animée. Lors de la navigation, ils utilisent moins de ressources CPU que les aperçus vidéo, mais sont générés en complément de ceux-ci et constituent des fichiers plus volumineux.",
             "marker_screenshots": "Captures d'écran des marqueurs",
-            "marker_screenshots_tooltip": "Images JPG statiques des marqueurs, requis uniquement si le mode d'aperçu est défini sur Image statique.",
+            "marker_screenshots_tooltip": "Images JPG statiques des marqueurs",
             "markers": "Aperçus des marqueurs",
             "markers_tooltip": "Vidéos de 20 secondes qui débutent au repère temporel donné.",
             "override_preview_generation_options": "Remplacer les options de génération d'aperçu",
@@ -1016,7 +1027,13 @@
         "something_went_wrong": "Quelque chose n'a pas fonctionné.",
         "header": "Erreur",
         "invalid_javascript_string": "Code javascript invalide : {error}",
-        "invalid_json_string": "Chaine JSON invalide : {error}"
+        "invalid_json_string": "Chaine JSON invalide : {error}",
+        "custom_fields": {
+            "duplicate_field": "Le nom du champ doit être unique",
+            "field_name_whitespace": "Le nom du champ ne doit pas contenir d'espace en début ou en fin de ligne",
+            "field_name_length": "Le nom du champ doit comporter moins de 65 caractères",
+            "field_name_required": "Le nom du champ est requis"
+        }
     },
     "ethnicity": "Ethnicité",
     "existing_value": "valeur existante",
@@ -1086,7 +1103,8 @@
     "last_played_at": "Dernière lecture le",
     "library": "Bibliothèque",
     "loading": {
-        "generic": "Chargement…"
+        "generic": "Chargement…",
+        "plugins": "Chargement des plugins…"
     },
     "marker_count": "Nombre de marqueurs",
     "markers": "Marqueurs",
@@ -1226,7 +1244,9 @@
         "errors": {
             "something_went_wrong": "Oh non ! Quelque chose a mal tourné !",
             "something_went_wrong_description": "Si cela ressemble à un problème avec vos saisies, continuez et cliquez sur retour pour les corriger. Sinon, créez un bogue sur {githubLink} ou demandez de l'aide sur {discordLink}.",
-            "something_went_wrong_while_setting_up_your_system": "Un problème est survenu lors de la configuration de votre système. Voici l'erreur que nous avons reçue : {error}"
+            "something_went_wrong_while_setting_up_your_system": "Un problème est survenu lors de la configuration de votre système. Voici l'erreur que nous avons reçue : {error}",
+            "unexpected_error": "Une erreur inattendue s'est produite : {error}",
+            "unable_to_retrieve_system_status": "Impossible de récupérer l'état du système : {error}"
         },
         "folder": {
             "file_path": "Chemin de fichier",
@@ -1391,7 +1411,7 @@
         "saved_entity": "{entity} sauvegardé·e",
         "started_auto_tagging": "Début de l'étiquetage automatique",
         "started_generating": "Début de la génération",
-        "started_importing": "Début de l'importation",
+        "started_importing": "Début d'importation",
         "updated_entity": "{entity} mis·e à jour"
     },
     "total": "Total",
@@ -1405,7 +1425,8 @@
         "date_invalid_form": "${path} doit être au format AAAA-MM-JJ",
         "required": "${path} est un champ requis",
         "blank": "${path} ne doit pas être vide",
-        "unique": "${path} doit être unique"
+        "unique": "${path} doit être unique",
+        "end_time_before_start_time": "L'heure de fin doit être supérieure ou égale à l'heure de début"
     },
     "video_codec": "Codec vidéo",
     "videos": "Vidéos",
@@ -1471,5 +1492,29 @@
     "groups": "Groupes",
     "group": "Groupe",
     "studio_count": "Nombre de studios",
-    "studio_tags": "Étiquettes du studio"
+    "studio_tags": "Étiquettes du studio",
+    "include_sub_studio_content": "Inclure le contenu des studios affiliés",
+    "include_sub_tag_content": "Inclure le contenu des étiquettes affiliées",
+    "containing_group": "Groupe contenant",
+    "containing_group_count": "Nombre de groupes contenant",
+    "containing_groups": "Groupes contenant",
+    "include_sub_group_content": "Inclure le contenu des groupes affiliés",
+    "sub_group_order": "Ordre de groupe affilié",
+    "sub_groups": "Groupes affiliés",
+    "sub_group_of": "Groupe affilié de {parent}",
+    "sub_group": "Groupe affilié",
+    "sub_group_count": "Nombre de groupes affiliés",
+    "include_sub_groups": "Inclure les groupes affiliés",
+    "criterion_modifier_values": {
+        "none": "Aucun",
+        "only": "Uniquement",
+        "any_of": "Tous les",
+        "any": "Tous"
+    },
+    "time_end": "Heure de fin",
+    "custom_fields": {
+        "field": "Champ",
+        "title": "Champs personnalisés",
+        "value": "Valeur"
+    }
 }

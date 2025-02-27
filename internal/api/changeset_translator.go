@@ -335,13 +335,13 @@ func (t changesetTranslator) updateStringsBulk(value *BulkUpdateStrings, field s
 	}
 }
 
-func (t changesetTranslator) updateStashIDs(value []models.StashID, field string) *models.UpdateStashIDs {
+func (t changesetTranslator) updateStashIDs(value models.StashIDInputs, field string) *models.UpdateStashIDs {
 	if !t.hasField(field) {
 		return nil
 	}
 
 	return &models.UpdateStashIDs{
-		StashIDs: value,
+		StashIDs: value.ToStashIDs(),
 		Mode:     models.RelationshipUpdateModeSet,
 	}
 }

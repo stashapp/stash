@@ -5,12 +5,9 @@ import { useTitleProps } from "src/hooks/title";
 import Performer from "./PerformerDetails/Performer";
 import PerformerCreate from "./PerformerDetails/PerformerCreate";
 import { PerformerList } from "./PerformerList";
-import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
 import { View } from "../List/views";
 
 const Performers: React.FC = () => {
-  useScrollToTopOnMount();
-
   return <PerformerList view={View.Performers} />;
 };
 

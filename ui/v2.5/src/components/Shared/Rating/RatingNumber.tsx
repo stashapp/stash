@@ -3,6 +3,7 @@ import { Button } from "react-bootstrap";
 import { Icon } from "../Icon";
 import { faPencil, faStar } from "@fortawesome/free-solid-svg-icons";
 import { useFocusOnce } from "src/utils/focus";
+import { useStopWheelScroll } from "src/utils/form";
 
 export interface IRatingNumberProps {
   value: number | null;
@@ -26,6 +27,7 @@ export const RatingNumber: React.FC<IRatingNumberProps> = (
   const showTextField = !props.disabled && (editing || !props.clickToRate);
 
   const [ratingRef] = useFocusOnce(editing, true);
+  useStopWheelScroll(ratingRef);
 
   const effectiveValue = editing ? valueStage : props.value;
 

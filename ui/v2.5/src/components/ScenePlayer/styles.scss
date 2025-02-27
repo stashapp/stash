@@ -183,6 +183,7 @@ $sceneTabWidth: 450px;
     pointer-events: none;
     position: absolute;
     transition: opacity 0.2s;
+    z-index: 100;
   }
 
   .vjs-big-play-button,
@@ -359,6 +360,10 @@ $sceneTabWidth: 450px;
       .vjs-chromecast-button .vjs-icon-placeholder {
         height: 1.4em;
         width: 1.4em;
+      }
+
+      .vjs-source-selector .vjs-menu {
+        z-index: 9999;
       }
     }
 

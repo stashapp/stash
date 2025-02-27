@@ -35,6 +35,7 @@ import { FilterButton } from "./Filters/FilterButton";
 import { useDebounce } from "src/hooks/debounce";
 import { View } from "./views";
 import { ClearableInput } from "../Shared/ClearableInput";
+import { useStopWheelScroll } from "src/utils/form";
 
 export function useDebouncedSearchInput(
   filter: ListFilterModel,
@@ -126,6 +127,8 @@ export const PageSizeSelector: React.FC<{
     }
   }, [customPageSizeShowing, perPageFocus]);
 
+  useStopWheelScroll(perPageInput);
+
   const pageSizeOptions = useMemo(() => {
     const ret = PAGE_SIZE_OPTIONS.map((o) => {
       return {
@@ -190,6 +193,7 @@ export const PageSizeSelector: React.FC<{
         <Popover id="custom_pagesize_popover">
           <Form inline>
             <InputGroup>
+              {/* can't use NumberField because of the ref */}
               <Form.Control
                 type="number"
                 min={1}

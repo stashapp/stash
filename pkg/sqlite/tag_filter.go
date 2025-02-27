@@ -62,6 +62,7 @@ func (qb *tagFilterHandler) criterionHandler() criterionHandler {
 	tagFilter := qb.tagFilter
 	return compoundHandler{
 		stringCriterionHandler(tagFilter.Name, tagTable+".name"),
+		stringCriterionHandler(tagFilter.SortName, tagTable+".sort_name"),
 		qb.aliasCriterionHandler(tagFilter.Aliases),
 
 		boolCriterionHandler(tagFilter.Favorite, tagTable+".favorite", nil),

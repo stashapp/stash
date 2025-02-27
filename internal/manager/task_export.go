@@ -23,6 +23,7 @@ import (
 	"github.com/stashapp/stash/pkg/models/jsonschema"
 	"github.com/stashapp/stash/pkg/models/paths"
 	"github.com/stashapp/stash/pkg/performer"
+	"github.com/stashapp/stash/pkg/savedfilter"
 	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
@@ -176,6 +177,7 @@ func (t *ExportTask) Start(ctx context.Context, wg *sync.WaitGroup) {
 		t.ExportPerformers(ctx, workerCount)
 		t.ExportStudios(ctx, workerCount)
 		t.ExportTags(ctx, workerCount)
+		t.ExportSavedFilters(ctx, workerCount)
 
 		return nil
 	})
@@ -1183,6 +1185,65 @@ func (t *ExportTask) exportGroup(ctx context.Context, wg *sync.WaitGroup, jobCha
 
 		if err := t.json.saveGroup(fn, newGroupJSON); err != nil {
 			logger.Errorf("[groups] <%s> failed to save json: %v", m.Name, err)
+		}
+	}
+}
+
+func (t *ExportTask) ExportSavedFilters(ctx context.Context, workers int) {
+	// don't export saved filters unless we're doing a full export
+	if !t.full {
+		return
+	}
+
+	var wg sync.WaitGroup
+
+	reader := t.repository.SavedFilter
+	var filters []*models.SavedFilter
+	var err error
+	filters, err = reader.All(ctx)
+
+	if err != nil {
+		logger.Errorf("[saved filters] failed to fetch saved filters: %v", err)
+	}
+
+	logger.Info("[saved filters] exporting")
+	startTime := time.Now()
+
+	jobCh := make(chan *models.SavedFilter, workers*2) // make a buffered channel to feed workers
+
+	for w := 0; w < workers; w++ { // create export Saved Filter workers
+		wg.Add(1)
+		go t.exportSavedFilter(ctx, &wg, jobCh)
+	}
+
+	for i, savedFilter := range filters {
+		index := i + 1
+		logger.Progressf("[saved filters] %d of %d", index, len(filters))
+
+		jobCh <- savedFilter // feed workers
+	}
+
+	close(jobCh)
+	wg.Wait()
+
+	logger.Infof("[saved filters] export complete in %s. %d workers used.", time.Since(startTime), workers)
+}
+
+func (t *ExportTask) exportSavedFilter(ctx context.Context, wg *sync.WaitGroup, jobChan <-chan *models.SavedFilter) {
+	defer wg.Done()
+
+	for thisFilter := range jobChan {
+		newJSON, err := savedfilter.ToJSON(ctx, thisFilter)
+
+		if err != nil {
+			logger.Errorf("[saved filter] <%s> error getting saved filter JSON: %v", thisFilter.Name, err)
+			continue
+		}
+
+		fn := newJSON.Filename()
+
+		if err := t.json.saveSavedFilter(fn, newJSON); err != nil {
+			logger.Errorf("[saved filter] <%s> failed to save json: %v", fn, err)
 		}
 	}
 }
