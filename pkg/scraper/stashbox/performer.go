@@ -297,16 +297,18 @@ func performerFragmentToScrapedPerformer(p graphql.PerformerFragment) *models.Sc
 	}
 
 	sp := &models.ScrapedPerformer{
-		Name:           &p.Name,
-		Disambiguation: p.Disambiguation,
-		Country:        p.Country,
-		Measurements:   formatMeasurements(*p.Measurements),
-		CareerLength:   formatCareerLength(p.CareerStartYear, p.CareerEndYear),
-		Tattoos:        formatBodyModifications(p.Tattoos),
-		Piercings:      formatBodyModifications(p.Piercings),
-		Twitter:        findURL(p.Urls, "TWITTER"),
-		RemoteSiteID:   &p.ID,
-		Images:         images,
+		Name:               &p.Name,
+		Disambiguation:     p.Disambiguation,
+		Country:            p.Country,
+		Measurements:       formatMeasurements(*p.Measurements),
+		CareerLength:       formatCareerLength(p.CareerStartYear, p.CareerEndYear),
+		Tattoos:            formatBodyModifications(p.Tattoos),
+		Piercings:          formatBodyModifications(p.Piercings),
+		Twitter:            findURL(p.Urls, "TWITTER"),
+		RemoteSiteID:       &p.ID,
+		RemoteDeleted:      p.Deleted,
+		RemoteMergedIntoId: p.MergedIntoID,
+		Images:             images,
 		// TODO - tags not currently supported
 		// graphql schema change to accommodate this. Leave off for now.
 	}
