@@ -3,20 +3,20 @@ import { IntlShape } from "react-intl";
 // Typescript currently does not implement the intl Unit interface
 type Unit =
   | "byte"
-  | "kilobyte"
-  | "megabyte"
-  | "gigabyte"
-  | "terabyte"
-  | "petabyte";
+  | "kibibyte"
+  | "mebibyte"
+  | "gibibyte"
+  | "tebibyte"
+  | "pebibyte";
 const Units: Unit[] = [
   "byte",
-  "kilobyte",
-  "megabyte",
-  "gigabyte",
-  "terabyte",
-  "petabyte",
+  "kibibyte",
+  "mebibyte",
+  "gibibyte",
+  "tebibyte",
+  "pebibyte",
 ];
-const shortUnits = ["B", "KB", "MB", "GB", "TB", "PB"];
+const shortUnits = ["B", "KiB", "MiB", "GiB", "TiB", "PiB"];
 
 const fileSize = (bytes: number = 0) => {
   if (Number.isNaN(parseFloat(String(bytes))) || !Number.isFinite(bytes))
@@ -24,6 +24,7 @@ const fileSize = (bytes: number = 0) => {
 
   let unit = 0;
   let count = bytes;
+  // calculating base 2 units
   while (count >= 1024 && unit + 1 < Units.length) {
     count /= 1024;
     unit++;
