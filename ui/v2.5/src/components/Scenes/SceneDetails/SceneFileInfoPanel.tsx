@@ -17,6 +17,7 @@ import NavUtils from "src/utils/navigation";
 import TextUtils from "src/utils/text";
 import { TextField, URLField, URLsField } from "src/utils/field";
 import { StashIDPill } from "src/components/Shared/StashID";
+import { PatchComponent } from "../../../patch";
 
 interface IFileInfoPanelProps {
   sceneID: string;
@@ -174,7 +175,7 @@ interface ISceneFileInfoPanelProps {
   scene: GQL.SceneDataFragment;
 }
 
-export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
+const _SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
   props: ISceneFileInfoPanelProps
 ) => {
   const Toast = useToast();
@@ -315,4 +316,8 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
   );
 };
 
+export const SceneFileInfoPanel = PatchComponent(
+  "SceneFileInfoPanel",
+  _SceneFileInfoPanel
+);
 export default SceneFileInfoPanel;

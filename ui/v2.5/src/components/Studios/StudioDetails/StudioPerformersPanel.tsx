@@ -8,11 +8,13 @@ import { View } from "src/components/List/views";
 interface IStudioPerformersPanel {
   active: boolean;
   studio: GQL.StudioDataFragment;
+  showChildStudioContent?: boolean;
 }
 
 export const StudioPerformersPanel: React.FC<IStudioPerformersPanel> = ({
   active,
   studio,
+  showChildStudioContent,
 }) => {
   const studioCriterion = new StudiosCriterion();
   studioCriterion.value = {
@@ -28,7 +30,7 @@ export const StudioPerformersPanel: React.FC<IStudioPerformersPanel> = ({
     groups: [studioCriterion],
   };
 
-  const filterHook = useStudioFilterHook(studio);
+  const filterHook = useStudioFilterHook(studio, showChildStudioContent);
 
   return (
     <PerformerList

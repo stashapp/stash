@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"net/url"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -283,7 +284,7 @@ const (
 
 // slice default values
 var (
-	defaultVideoExtensions   = []string{"m4v", "mp4", "mov", "wmv", "avi", "mpg", "mpeg", "rmvb", "rm", "flv", "asf", "mkv", "webm"}
+	defaultVideoExtensions   = []string{"m4v", "mp4", "mov", "wmv", "avi", "mpg", "mpeg", "rmvb", "rm", "flv", "asf", "mkv", "webm", "f4v"}
 	defaultImageExtensions   = []string{"png", "jpg", "jpeg", "gif", "webp"}
 	defaultGalleryExtensions = []string{"zip", "cbz"}
 	defaultMenuItems         = []string{"scenes", "images", "movies", "markers", "galleries", "performers", "studios", "tags"}
@@ -701,7 +702,8 @@ func (i *Config) GetBackupDirectoryPath() string {
 func (i *Config) GetBackupDirectoryPathOrDefault() string {
 	ret := i.GetBackupDirectoryPath()
 	if ret == "" {
-		return i.GetConfigPath()
+		// #4915 - default to the same directory as the database
+		return filepath.Dir(i.GetDatabasePath())
 	}
 
 	return ret
@@ -1097,7 +1099,10 @@ func (i *Config) ValidateCredentials(username string, password string) bool {
 	return username == authUser && err == nil
 }
 
-var stashBoxRe = regexp.MustCompile("^http.*graphql$")
+func stashBoxValidate(str string) bool {
+	u, err := url.Parse(str)
+	return err == nil && u.Scheme != "" && u.Host != "" && strings.HasSuffix(u.Path, "/graphql")
+}
 
 type StashBoxInput struct {
 	Endpoint string `json:"endpoint"`
@@ -1118,7 +1123,7 @@ func (i *Config) ValidateStashBoxes(boxes []*StashBoxInput) error {
 			return &StashBoxError{msg: "endpoint cannot be blank"}
 		}
 
-		if !stashBoxRe.Match([]byte(box.Endpoint)) {
+		if !stashBoxValidate(box.Endpoint) {
 			return &StashBoxError{msg: "endpoint is invalid"}
 		}
 
@@ -1528,7 +1533,7 @@ func (i *Config) GetDefaultGenerateSettings() *models.GenerateMetadataOptions {
 }
 
 // GetDangerousAllowPublicWithoutAuth determines if the security feature is enabled.
-// See https://docs.stashapp.cc/networking/authentication-required-when-accessing-stash-from-the-internet
+// See https://docs.stashapp.cc/faq/setup/#protecting-against-accidental-exposure-to-the-internet
 func (i *Config) GetDangerousAllowPublicWithoutAuth() bool {
 	return i.getBool(dangerousAllowPublicWithoutAuth)
 }

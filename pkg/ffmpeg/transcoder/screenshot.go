@@ -24,13 +24,13 @@ func (o *ScreenshotOptions) setDefaults() {
 }
 
 type ScreenshotOutputType struct {
-	codec  ffmpeg.VideoCodec
+	codec  *ffmpeg.VideoCodec
 	format ffmpeg.Format
 }
 
 func (t ScreenshotOutputType) Args() []string {
 	var ret []string
-	if t.codec != "" {
+	if t.codec != nil {
 		ret = append(ret, t.codec.Args()...)
 	}
 	if t.format != "" {
@@ -45,7 +45,7 @@ var (
 		format: "image2",
 	}
 	ScreenshotOutputTypeBMP = ScreenshotOutputType{
-		codec:  ffmpeg.VideoCodecBMP,
+		codec:  &ffmpeg.VideoCodecBMP,
 		format: "rawvideo",
 	}
 )

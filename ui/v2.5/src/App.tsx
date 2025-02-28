@@ -18,7 +18,6 @@ import locales, { registerCountry } from "src/locales";
 import {
   useConfiguration,
   useConfigureUI,
-  usePlugins,
   useSystemStatus,
 } from "src/core/StashService";
 import flattenMessages from "./utils/flattenMessages";
@@ -40,17 +39,16 @@ import { releaseNotes } from "./docs/en/ReleaseNotes";
 import { getPlatformURL } from "./core/createClient";
 import { lazyComponent } from "./utils/lazyComponent";
 import { isPlatformUniquelyRenderedByApple } from "./utils/apple";
-import useScript, { useCSS } from "./hooks/useScript";
-import { useMemoOnce } from "./hooks/state";
 import Event from "./hooks/event";
-import { uniq } from "lodash-es";
 
-import { PluginRoutes } from "./plugins";
+import { PluginRoutes, PluginsLoader } from "./plugins";
 
 // import plugin_api to run code
 import "./pluginApi";
 import { ConnectionMonitor } from "./ConnectionMonitor";
 import { PatchFunction } from "./patch";
+
+import moment from "moment/min/moment-with-locales";
 
 const Performers = lazyComponent(
   () => import("./components/Performers/Performers")
@@ -97,60 +95,23 @@ function languageMessageString(language: string) {
   return language.replace(/-/, "");
 }
 
-type PluginList = NonNullable<Required<GQL.PluginsQuery["plugins"]>>;
-
-// sort plugins by their dependencies
-function sortPlugins(plugins: PluginList) {
-  type Node = { id: string; afters: string[] };
-
-  let nodes: Record<string, Node> = {};
-  let sorted: PluginList = [];
-  let visited: Record<string, boolean> = {};
-
-  plugins.forEach((v) => {
-    let from = v.id;
-
-    if (!nodes[from]) nodes[from] = { id: from, afters: [] };
-
-    v.requires?.forEach((to) => {
-      if (!nodes[to]) nodes[to] = { id: to, afters: [] };
-      if (!nodes[to].afters.includes(from)) nodes[to].afters.push(from);
-    });
-  });
-
-  function visit(idstr: string, ancestors: string[] = []) {
-    let node = nodes[idstr];
-    const { id } = node;
-
-    if (visited[idstr]) return;
-
-    ancestors.push(id);
-    visited[idstr] = true;
-    node.afters.forEach(function (afterID) {
-      if (ancestors.indexOf(afterID) >= 0)
-        throw new Error("closed chain : " + afterID + " is in " + id);
-      visit(afterID.toString(), ancestors.slice());
-    });
-
-    const plugin = plugins.find((v) => v.id === id);
-    if (plugin) {
-      sorted.unshift(plugin);
-    }
-  }
-
-  Object.keys(nodes).forEach((n) => {
-    visit(n);
-  });
-
-  return sorted;
-}
-
 const AppContainer: React.FC<React.PropsWithChildren<{}>> = PatchFunction(
   "App",
   (props: React.PropsWithChildren<{}>) => {
     return <>{props.children}</>;
   }
 ) as React.FC;
+
+function translateLanguageLocale(l: string) {
+  // intl doesn't support all locales, so we need to map some to supported ones
+  switch (l) {
+    case "nn-NO":
+      // use other Norwegian locale for intl
+      return "nb-NO";
+    default:
+      return l;
+  }
+}
 
 export const App: React.FC = () => {
   const config = useConfiguration();
@@ -160,6 +121,7 @@ export const App: React.FC = () => {
 
   const language =
     config.data?.configuration?.interface?.language ?? defaultLocale;
+  const intlLanguage = translateLanguageLocale(language);
 
   // use en-GB as default messages if any messages aren't found in the chosen language
   const [messages, setMessages] = useState<{}>();
@@ -210,50 +172,11 @@ export const App: React.FC = () => {
       });
 
       setMessages(newMessages);
+      moment.locale([language, defaultLocale]);
     };
 
     setLocale();
   }, [customMessages, language]);
-
-  const {
-    data: plugins,
-    loading: pluginsLoading,
-    error: pluginsError,
-  } = usePlugins();
-
-  const sortedPlugins = useMemoOnce(() => {
-    return [
-      sortPlugins(plugins?.plugins ?? []),
-      !pluginsLoading && !pluginsError,
-    ];
-  }, [plugins?.plugins, pluginsLoading, pluginsError]);
-
-  const pluginJavascripts = useMemoOnce(() => {
-    return [
-      uniq(
-        sortedPlugins
-          ?.filter((plugin) => plugin.enabled && plugin.paths.javascript)
-          .map((plugin) => plugin.paths.javascript!)
-          .flat() ?? []
-      ),
-      !!sortedPlugins && !pluginsLoading && !pluginsError,
-    ];
-  }, [sortedPlugins, pluginsLoading, pluginsError]);
-
-  const pluginCSS = useMemoOnce(() => {
-    return [
-      uniq(
-        sortedPlugins
-          ?.filter((plugin) => plugin.enabled && plugin.paths.css)
-          .map((plugin) => plugin.paths.css!)
-          .flat() ?? []
-      ),
-      !!sortedPlugins && !pluginsLoading && !pluginsError,
-    ];
-  }, [sortedPlugins, pluginsLoading, pluginsError]);
-
-  useScript(pluginJavascripts ?? [], !pluginsLoading && !pluginsError);
-  useCSS(pluginCSS ?? [], !pluginsLoading && !pluginsError);
 
   const location = useLocation();
   const history = useHistory();
@@ -365,43 +288,45 @@ export const App: React.FC = () => {
   const titleProps = makeTitleProps();
 
   return (
-    <AppContainer>
-      <ErrorBoundary>
-        {messages ? (
-          <IntlProvider
-            locale={language}
-            messages={messages}
-            formats={intlFormats}
-          >
-            <ConfigurationProvider
-              configuration={config.data?.configuration}
-              loading={config.loading}
-            >
-              {maybeRenderReleaseNotes()}
-              <ToastProvider>
-                <ConnectionMonitor />
-                <Suspense fallback={<LoadingIndicator />}>
-                  <LightboxProvider>
-                    <ManualProvider>
-                      <InteractiveProvider>
-                        <Helmet {...titleProps} />
-                        {maybeRenderNavbar()}
-                        <div
-                          className={`main container-fluid ${
-                            appleRendering ? "apple" : ""
-                          }`}
-                        >
-                          {renderContent()}
-                        </div>
-                      </InteractiveProvider>
-                    </ManualProvider>
-                  </LightboxProvider>
-                </Suspense>
-              </ToastProvider>
-            </ConfigurationProvider>
-          </IntlProvider>
-        ) : null}
-      </ErrorBoundary>
-    </AppContainer>
+    <ErrorBoundary>
+      {messages ? (
+        <IntlProvider
+          locale={intlLanguage}
+          messages={messages}
+          formats={intlFormats}
+        >
+          <PluginsLoader>
+            <AppContainer>
+              <ConfigurationProvider
+                configuration={config.data?.configuration}
+                loading={config.loading}
+              >
+                {maybeRenderReleaseNotes()}
+                <ToastProvider>
+                  <ConnectionMonitor />
+                  <Suspense fallback={<LoadingIndicator />}>
+                    <LightboxProvider>
+                      <ManualProvider>
+                        <InteractiveProvider>
+                          <Helmet {...titleProps} />
+                          {maybeRenderNavbar()}
+                          <div
+                            className={`main container-fluid ${
+                              appleRendering ? "apple" : ""
+                            }`}
+                          >
+                            {renderContent()}
+                          </div>
+                        </InteractiveProvider>
+                      </ManualProvider>
+                    </LightboxProvider>
+                  </Suspense>
+                </ToastProvider>
+              </ConfigurationProvider>
+            </AppContainer>
+          </PluginsLoader>
+        </IntlProvider>
+      ) : null}
+    </ErrorBoundary>
   );
 };

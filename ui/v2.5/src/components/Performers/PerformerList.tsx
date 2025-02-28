@@ -9,7 +9,7 @@ import {
   useFindPerformers,
   usePerformersDestroy,
 } from "src/core/StashService";
-import { makeItemList, showWhenSelected } from "../List/ItemList";
+import { ItemList, ItemListContext, showWhenSelected } from "../List/ItemList";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 import { PerformerTagger } from "../Tagger/performers/PerformerTagger";
@@ -23,16 +23,13 @@ import TextUtils from "src/utils/text";
 import { PerformerCardGrid } from "./PerformerCardGrid";
 import { View } from "../List/views";
 
-const PerformerItemList = makeItemList({
-  filterMode: GQL.FilterMode.Performers,
-  useResult: useFindPerformers,
-  getItems(result: GQL.FindPerformersQueryResult) {
-    return result?.data?.findPerformers?.performers ?? [];
-  },
-  getCount(result: GQL.FindPerformersQueryResult) {
-    return result?.data?.findPerformers?.count ?? 0;
-  },
-});
+function getItems(result: GQL.FindPerformersQueryResult) {
+  return result?.data?.findPerformers?.performers ?? [];
+}
+
+function getCount(result: GQL.FindPerformersQueryResult) {
+  return result?.data?.findPerformers?.count ?? 0;
+}
 
 export const FormatHeight = (height?: number | null) => {
   const intl = useIntl();
@@ -174,6 +171,8 @@ export const PerformerList: React.FC<IPerformerList> = ({
   const history = useHistory();
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
   const [isExportAll, setIsExportAll] = useState(false);
+
+  const filterMode = GQL.FilterMode.Performers;
 
   const otherOperations = [
     {
@@ -319,16 +318,24 @@ export const PerformerList: React.FC<IPerformerList> = ({
   }
 
   return (
-    <PerformerItemList
-      selectable
+    <ItemListContext
+      filterMode={filterMode}
+      useResult={useFindPerformers}
+      getItems={getItems}
+      getCount={getCount}
+      alterQuery={alterQuery}
       filterHook={filterHook}
       view={view}
-      alterQuery={alterQuery}
-      otherOperations={otherOperations}
-      addKeybinds={addKeybinds}
-      renderContent={renderContent}
-      renderEditDialog={renderEditDialog}
-      renderDeleteDialog={renderDeleteDialog}
-    />
+      selectable
+    >
+      <ItemList
+        view={view}
+        otherOperations={otherOperations}
+        addKeybinds={addKeybinds}
+        renderContent={renderContent}
+        renderEditDialog={renderEditDialog}
+        renderDeleteDialog={renderDeleteDialog}
+      />
+    </ItemListContext>
   );
 };

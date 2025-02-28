@@ -5,7 +5,28 @@ import TextUtils from "src/utils/text";
 import { DetailItem } from "src/components/Shared/DetailItem";
 import { Link } from "react-router-dom";
 import { DirectorLink } from "src/components/Shared/Link";
-import { TagLink } from "src/components/Shared/TagLink";
+import { GroupLink, TagLink } from "src/components/Shared/TagLink";
+
+interface IGroupDescription {
+  group: GQL.SlimGroupDataFragment;
+  description?: string | null;
+}
+
+const GroupsList: React.FC<{ groups: IGroupDescription[] }> = ({ groups }) => {
+  if (!groups.length) {
+    return null;
+  }
+
+  return (
+    <ul className="groups-list">
+      {groups.map((entry) => (
+        <li key={entry.group.id}>
+          <GroupLink group={entry.group} linkType="details" />
+        </li>
+      ))}
+    </ul>
+  );
+};
 
 interface IGroupDetailsPanel {
   group: GQL.GroupDataFragment;
@@ -15,7 +36,6 @@ interface IGroupDetailsPanel {
 
 export const GroupDetailsPanel: React.FC<IGroupDetailsPanel> = ({
   group,
-  collapsed,
   fullWidth,
 }) => {
   // Network state
@@ -32,25 +52,6 @@ export const GroupDetailsPanel: React.FC<IGroupDetailsPanel> = ({
         ))}
       </ul>
     );
-  }
-
-  function maybeRenderExtraDetails() {
-    if (!collapsed) {
-      return (
-        <>
-          <DetailItem
-            id="synopsis"
-            value={group.synopsis}
-            fullWidth={fullWidth}
-          />
-          <DetailItem
-            id="tags"
-            value={renderTagsField()}
-            fullWidth={fullWidth}
-          />
-        </>
-      );
-    }
   }
 
   return (
@@ -80,7 +81,6 @@ export const GroupDetailsPanel: React.FC<IGroupDetailsPanel> = ({
         }
         fullWidth={fullWidth}
       />
-
       <DetailItem
         id="director"
         value={
@@ -92,7 +92,15 @@ export const GroupDetailsPanel: React.FC<IGroupDetailsPanel> = ({
         }
         fullWidth={fullWidth}
       />
-      {maybeRenderExtraDetails()}
+      <DetailItem id="synopsis" value={group.synopsis} fullWidth={fullWidth} />
+      <DetailItem id="tags" value={renderTagsField()} fullWidth={fullWidth} />
+      {group.containing_groups.length > 0 && (
+        <DetailItem
+          id="containing_groups"
+          value={<GroupsList groups={group.containing_groups} />}
+          fullWidth={fullWidth}
+        />
+      )}
     </div>
   );
 };

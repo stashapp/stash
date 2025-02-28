@@ -3,6 +3,7 @@ package models
 import (
 	"context"
 	"strconv"
+	"time"
 
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 	"github.com/stashapp/stash/pkg/utils"
@@ -29,8 +30,9 @@ func (s *ScrapedStudio) ToStudio(endpoint string, excluded map[string]bool) *Stu
 	if s.RemoteSiteID != nil && endpoint != "" {
 		ret.StashIDs = NewRelatedStashIDs([]StashID{
 			{
-				Endpoint: endpoint,
-				StashID:  *s.RemoteSiteID,
+				Endpoint:  endpoint,
+				StashID:   *s.RemoteSiteID,
+				UpdatedAt: time.Now(),
 			},
 		})
 	}
@@ -65,6 +67,7 @@ func (s *ScrapedStudio) GetImage(ctx context.Context, excluded map[string]bool) 
 func (s *ScrapedStudio) ToPartial(id string, endpoint string, excluded map[string]bool, existingStashIDs []StashID) StudioPartial {
 	ret := NewStudioPartial()
 	ret.ID, _ = strconv.Atoi(id)
+	currentTime := time.Now()
 
 	if s.Name != "" && !excluded["name"] {
 		ret.Name = NewOptionalString(s.Name)
@@ -90,8 +93,9 @@ func (s *ScrapedStudio) ToPartial(id string, endpoint string, excluded map[strin
 			Mode:     RelationshipUpdateModeSet,
 		}
 		ret.StashIDs.Set(StashID{
-			Endpoint: endpoint,
-			StashID:  *s.RemoteSiteID,
+			Endpoint:  endpoint,
+			StashID:   *s.RemoteSiteID,
+			UpdatedAt: currentTime,
 		})
 	}
 
@@ -124,19 +128,22 @@ type ScrapedPerformer struct {
 	Aliases        *string       `json:"aliases"`
 	Tags           []*ScrapedTag `json:"tags"`
 	// This should be a base64 encoded data URL
-	Image        *string  `json:"image"` // deprecated: use Images
-	Images       []string `json:"images"`
-	Details      *string  `json:"details"`
-	DeathDate    *string  `json:"death_date"`
-	HairColor    *string  `json:"hair_color"`
-	Weight       *string  `json:"weight"`
-	RemoteSiteID *string  `json:"remote_site_id"`
+	Image              *string  `json:"image"` // deprecated: use Images
+	Images             []string `json:"images"`
+	Details            *string  `json:"details"`
+	DeathDate          *string  `json:"death_date"`
+	HairColor          *string  `json:"hair_color"`
+	Weight             *string  `json:"weight"`
+	RemoteSiteID       *string  `json:"remote_site_id"`
+	RemoteDeleted      bool     `json:"remote_deleted"`
+	RemoteMergedIntoId *string  `json:"remote_merged_into_id"`
 }
 
 func (ScrapedPerformer) IsScrapedContent() {}
 
 func (p *ScrapedPerformer) ToPerformer(endpoint string, excluded map[string]bool) *Performer {
 	ret := NewPerformer()
+	currentTime := time.Now()
 	ret.Name = *p.Name
 
 	if p.Aliases != nil && !excluded["aliases"] {
@@ -244,8 +251,9 @@ func (p *ScrapedPerformer) ToPerformer(endpoint string, excluded map[string]bool
 	if p.RemoteSiteID != nil && endpoint != "" {
 		ret.StashIDs = NewRelatedStashIDs([]StashID{
 			{
-				Endpoint: endpoint,
-				StashID:  *p.RemoteSiteID,
+				Endpoint:  endpoint,
+				StashID:   *p.RemoteSiteID,
+				UpdatedAt: currentTime,
 			},
 		})
 	}
@@ -375,8 +383,9 @@ func (p *ScrapedPerformer) ToPartial(endpoint string, excluded map[string]bool, 
 			Mode:     RelationshipUpdateModeSet,
 		}
 		ret.StashIDs.Set(StashID{
-			Endpoint: endpoint,
-			StashID:  *p.RemoteSiteID,
+			Endpoint:  endpoint,
+			StashID:   *p.RemoteSiteID,
+			UpdatedAt: time.Now(),
 		})
 	}
 

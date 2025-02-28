@@ -4,7 +4,7 @@ import cloneDeep from "lodash-es/cloneDeep";
 import { useHistory } from "react-router-dom";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
-import { makeItemList, showWhenSelected } from "../List/ItemList";
+import { ItemList, ItemListContext, showWhenSelected } from "../List/ItemList";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 import { queryFindGalleries, useFindGalleries } from "src/core/StashService";
@@ -16,16 +16,13 @@ import { GalleryListTable } from "./GalleryListTable";
 import { GalleryCardGrid } from "./GalleryGridCard";
 import { View } from "../List/views";
 
-const GalleryItemList = makeItemList({
-  filterMode: GQL.FilterMode.Galleries,
-  useResult: useFindGalleries,
-  getItems(result: GQL.FindGalleriesQueryResult) {
-    return result?.data?.findGalleries?.galleries ?? [];
-  },
-  getCount(result: GQL.FindGalleriesQueryResult) {
-    return result?.data?.findGalleries?.count ?? 0;
-  },
-});
+function getItems(result: GQL.FindGalleriesQueryResult) {
+  return result?.data?.findGalleries?.galleries ?? [];
+}
+
+function getCount(result: GQL.FindGalleriesQueryResult) {
+  return result?.data?.findGalleries?.count ?? 0;
+}
 
 interface IGalleryList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
@@ -42,6 +39,8 @@ export const GalleryList: React.FC<IGalleryList> = ({
   const history = useHistory();
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
   const [isExportAll, setIsExportAll] = useState(false);
+
+  const filterMode = GQL.FilterMode.Galleries;
 
   const otherOperations = [
     {
@@ -185,17 +184,25 @@ export const GalleryList: React.FC<IGalleryList> = ({
   }
 
   return (
-    <GalleryItemList
-      zoomable
-      selectable
+    <ItemListContext
+      filterMode={filterMode}
+      useResult={useFindGalleries}
+      getItems={getItems}
+      getCount={getCount}
+      alterQuery={alterQuery}
       filterHook={filterHook}
       view={view}
-      alterQuery={alterQuery}
-      otherOperations={otherOperations}
-      addKeybinds={addKeybinds}
-      renderContent={renderContent}
-      renderEditDialog={renderEditDialog}
-      renderDeleteDialog={renderDeleteDialog}
-    />
+      selectable
+    >
+      <ItemList
+        zoomable
+        view={view}
+        otherOperations={otherOperations}
+        addKeybinds={addKeybinds}
+        renderContent={renderContent}
+        renderEditDialog={renderEditDialog}
+        renderDeleteDialog={renderDeleteDialog}
+      />
+    </ItemListContext>
   );
 };

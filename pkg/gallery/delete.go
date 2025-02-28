@@ -22,8 +22,8 @@ func (s *Service) Destroy(ctx context.Context, i *models.Gallery, fileDeleter *i
 	imgsDestroyed = zipImgsDestroyed
 
 	// only delete folder based gallery images if we're deleting the folder
-	if deleteFile {
-		folderImgsDestroyed, err := s.destroyFolderImages(ctx, i, fileDeleter, deleteGenerated, deleteFile)
+	if deleteFile && i.FolderID != nil {
+		folderImgsDestroyed, err := s.ImageService.DestroyFolderImages(ctx, *i.FolderID, fileDeleter, deleteGenerated, deleteFile)
 		if err != nil {
 			return nil, err
 		}
@@ -82,39 +82,6 @@ func (s *Service) destroyZipFileImages(ctx context.Context, i *models.Gallery, f
 				return nil, err
 			}
 		}
-	}
-
-	return imgsDestroyed, nil
-}
-
-func (s *Service) destroyFolderImages(ctx context.Context, i *models.Gallery, fileDeleter *image.FileDeleter, deleteGenerated, deleteFile bool) ([]*models.Image, error) {
-	if i.FolderID == nil {
-		return nil, nil
-	}
-
-	var imgsDestroyed []*models.Image
-
-	// find images in this folder
-	imgs, err := s.ImageFinder.FindByFolderID(ctx, *i.FolderID)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, img := range imgs {
-		if err := img.LoadGalleryIDs(ctx, s.ImageFinder); err != nil {
-			return nil, err
-		}
-
-		// only destroy images that are not attached to other galleries
-		if len(img.GalleryIDs.List()) > 1 {
-			continue
-		}
-
-		if err := s.ImageService.Destroy(ctx, img, fileDeleter, deleteGenerated, deleteFile); err != nil {
-			return nil, err
-		}
-
-		imgsDestroyed = append(imgsDestroyed, img)
 	}
 
 	return imgsDestroyed, nil

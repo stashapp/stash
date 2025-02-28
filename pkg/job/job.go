@@ -1,3 +1,4 @@
+// Package job provides the job execution and management functionality for the application.
 package job
 
 import (

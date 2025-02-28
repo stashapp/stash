@@ -167,7 +167,9 @@ func (t *joinTable) invert() *joinTable {
 			table:    t.table.table,
 			idColumn: t.fkColumn,
 		},
-		fkColumn: t.table.idColumn,
+		fkColumn:     t.table.idColumn,
+		foreignTable: t.foreignTable,
+		orderBy:      t.orderBy,
 	}
 }
 
@@ -273,19 +275,21 @@ type stashIDTable struct {
 }
 
 type stashIDRow struct {
-	StashID  null.String `db:"stash_id"`
-	Endpoint null.String `db:"endpoint"`
+	StashID   null.String `db:"stash_id"`
+	Endpoint  null.String `db:"endpoint"`
+	UpdatedAt Timestamp   `db:"updated_at"`
 }
 
 func (r *stashIDRow) resolve() models.StashID {
 	return models.StashID{
-		StashID:  r.StashID.String,
-		Endpoint: r.Endpoint.String,
+		StashID:   r.StashID.String,
+		Endpoint:  r.Endpoint.String,
+		UpdatedAt: r.UpdatedAt.Timestamp,
 	}
 }
 
 func (t *stashIDTable) get(ctx context.Context, id int) ([]models.StashID, error) {
-	q := dialect.Select("endpoint", "stash_id").From(t.table.table).Where(t.idColumn.Eq(id))
+	q := dialect.Select("endpoint", "stash_id", "updated_at").From(t.table.table).Where(t.idColumn.Eq(id))
 
 	const single = false
 	var ret []models.StashID
@@ -305,9 +309,17 @@ func (t *stashIDTable) get(ctx context.Context, id int) ([]models.StashID, error
 	return ret, nil
 }
 
+var epochTime = time.Unix(0, 0).UTC()
+
 func (t *stashIDTable) insertJoin(ctx context.Context, id int, v models.StashID) (sql.Result, error) {
-	q := dialect.Insert(t.table.table).Cols(t.idColumn.GetCol(), "endpoint", "stash_id").Vals(
-		goqu.Vals{id, v.Endpoint, v.StashID},
+	// #5563 - it's possible that zero-value updated at timestamps are provided via import
+	// replace them with the epoch time
+	if v.UpdatedAt.IsZero() {
+		v.UpdatedAt = epochTime
+	}
+
+	var q = dialect.Insert(t.table.table).Cols(t.idColumn.GetCol(), "endpoint", "stash_id", "updated_at").Vals(
+		goqu.Vals{id, v.Endpoint, v.StashID, v.UpdatedAt},
 	)
 	ret, err := exec(ctx, q)
 	if err != nil {
@@ -594,7 +606,7 @@ type scenesGroupsTable struct {
 
 type groupsScenesRow struct {
 	SceneID    null.Int `db:"scene_id"`
-	GroupID    null.Int `db:"movie_id"`
+	GroupID    null.Int `db:"group_id"`
 	SceneIndex null.Int `db:"scene_index"`
 }
 
@@ -606,7 +618,7 @@ func (r groupsScenesRow) resolve(sceneID int) models.GroupsScenes {
 }
 
 func (t *scenesGroupsTable) get(ctx context.Context, id int) ([]models.GroupsScenes, error) {
-	q := dialect.Select("movie_id", "scene_index").From(t.table.table).Where(t.idColumn.Eq(id))
+	q := dialect.Select("group_id", "scene_index").From(t.table.table).Where(t.idColumn.Eq(id))
 
 	const single = false
 	var ret []models.GroupsScenes
@@ -627,7 +639,7 @@ func (t *scenesGroupsTable) get(ctx context.Context, id int) ([]models.GroupsSce
 }
 
 func (t *scenesGroupsTable) insertJoin(ctx context.Context, id int, v models.GroupsScenes) (sql.Result, error) {
-	q := dialect.Insert(t.table.table).Cols(t.idColumn.GetCol(), "movie_id", "scene_index").Vals(
+	q := dialect.Insert(t.table.table).Cols(t.idColumn.GetCol(), "group_id", "scene_index").Vals(
 		goqu.Vals{id, v.GroupID, intFromPtr(v.SceneIndex)},
 	)
 	ret, err := exec(ctx, q)
@@ -686,7 +698,7 @@ func (t *scenesGroupsTable) destroyJoins(ctx context.Context, id int, v []models
 	for _, vv := range v {
 		q := dialect.Delete(t.table.table).Where(
 			t.idColumn.Eq(id),
-			t.table.table.Col("movie_id").Eq(vv.GroupID),
+			t.table.table.Col("group_id").Eq(vv.GroupID),
 		)
 
 		if _, err := exec(ctx, q); err != nil {
@@ -710,6 +722,45 @@ func (t *scenesGroupsTable) modifyJoins(ctx context.Context, id int, v []models.
 	return nil
 }
 
+type imageGalleriesTable struct {
+	joinTable
+}
+
+func (t *imageGalleriesTable) setCover(ctx context.Context, id int, galleryID int) error {
+	if err := t.resetCover(ctx, galleryID); err != nil {
+		return err
+	}
+
+	table := t.table.table
+
+	q := dialect.Update(table).Prepared(true).Set(goqu.Record{
+		"cover": true,
+	}).Where(t.idColumn.Eq(id), table.Col(galleryIDColumn).Eq(galleryID))
+
+	if _, err := exec(ctx, q); err != nil {
+		return fmt.Errorf("setting cover flag in %s: %w", t.table.table.GetTable(), err)
+	}
+
+	return nil
+}
+
+func (t *imageGalleriesTable) resetCover(ctx context.Context, galleryID int) error {
+	table := t.table.table
+
+	q := dialect.Update(table).Prepared(true).Set(goqu.Record{
+		"cover": false,
+	}).Where(
+		table.Col(galleryIDColumn).Eq(galleryID),
+		table.Col("cover").Eq(true),
+	)
+
+	if _, err := exec(ctx, q); err != nil {
+		return fmt.Errorf("unsetting cover flags in %s: %w", t.table.table.GetTable(), err)
+	}
+
+	return nil
+}
+
 type relatedFilesTable struct {
 	table
 }
@@ -719,6 +770,29 @@ type relatedFilesTable struct {
 // 	Primary bool          `db:"primary"`
 // 	FileID  models.FileID `db:"file_id"`
 // }
+
+// get returns the file IDs related to the provided scene ID
+// the primary file is returned first
+func (t *relatedFilesTable) get(ctx context.Context, id int) ([]models.FileID, error) {
+	q := dialect.Select("file_id").From(t.table.table).Where(t.idColumn.Eq(id)).Order(t.table.table.Col("primary").Desc())
+
+	const single = false
+	var ret []models.FileID
+	if err := queryFunc(ctx, q, single, func(rows *sqlx.Rows) error {
+		var v models.FileID
+		if err := rows.Scan(&v); err != nil {
+			return err
+		}
+
+		ret = append(ret, v)
+
+		return nil
+	}); err != nil {
+		return nil, fmt.Errorf("getting related files from %s: %w", t.table.table.GetTable(), err)
+	}
+
+	return ret, nil
+}
 
 func (t *relatedFilesTable) insertJoin(ctx context.Context, id int, primary bool, fileID models.FileID) error {
 	q := dialect.Insert(t.table.table).Cols(t.idColumn.GetCol(), "primary", "file_id").Vals(

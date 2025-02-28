@@ -1,3 +1,5 @@
+// Package image provides the application logic for images.
+// The functionality is exposed via the [Service] type.
 package image
 
 import (

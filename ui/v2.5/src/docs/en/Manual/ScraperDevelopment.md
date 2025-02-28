@@ -26,6 +26,10 @@ galleryByFragment:
   <single scraper config>
 galleryByURL:
   <multiple scraper URL configs>
+imageByFragment:
+  <single scraper config>
+imageByURL:
+  <multiple scraper URL configs>
 <other configurations>
 ```
 
@@ -81,6 +85,8 @@ The script is sent input and expects output based on the scraping type, as detai
 | `groupByURL` | `{"url": "<url>"}` | JSON-encoded group fragment |
 | `galleryByFragment` | JSON-encoded gallery fragment | JSON-encoded gallery fragment |
 | `galleryByURL` | `{"url": "<url>"}` | JSON-encoded gallery fragment |
+| `imageByFragment` | JSON-encoded image fragment | JSON-encoded image fragment |
+| `imageByURL` | `{"url": "<url>"}` | JSON-encoded image fragment |
 
 For `performerByName`, only `name` is required in the returned performer fragments. One entire object is sent back to `performerByFragment` to scrape a specific performer, so the other fields may be included to assist in scraping a performer. For example, the `url` field may be filled in for the specific performer page, then `performerByFragment` can extract by using its value.
   
@@ -247,7 +253,7 @@ sceneByURL:
 
 A different stash server can be configured as a scraping source. This action applies only to `performerByName`, `performerByFragment`, and `sceneByFragment` types. This action requires that the top-level `stashServer` field is configured.
 
-`stashServer` contains a single `url` field for the remote stash server. The username and password can be embedded in this string using `username:password@host`.
+`stashServer` contains a single `url` field for the remote stash server. The username and password can be embedded in this string using `username:password@host`. Alternatively, the `apiKey` field can be used to authenticate with the remote stash server.
 
 An example stash scrape configuration is below:
 
@@ -260,6 +266,7 @@ performerByFragment:
 sceneByFragment:
   action: stash
 stashServer:
+  apiKey: <api key>
   url: http://stashserver.com:9999
 ```
   
@@ -486,7 +493,7 @@ xPathScrapers:
   sceneScraper:
     scene:
       Title: //head/title
-      Details: # shows the id/s of the the visible div/s for the Multiple targets example of the page
+      Details: # shows the id/s of the visible div/s for the Multiple targets example of the page
         selector: //div[@class="bd-example"]//div[@class="multi-collapse collapse show"]/@id
         concat: "\n\n"
 
@@ -598,7 +605,7 @@ and having a look at the log / console in debug mode.
 
 Sending request headers is possible when using a scraper.
 Headers can be set in the `driver` section and are supported for plain, CDP enabled and JSON scrapers.
-They consist of a Key and a Value. If the the Key is empty or not defined then the header is ignored.
+They consist of a Key and a Value. If the Key is empty or not defined then the header is ignored.
 
 ```yaml
 driver:

@@ -26,11 +26,10 @@ var (
 type zipFS struct {
 	*zip.Reader
 	zipFileCloser io.Closer
-	zipInfo       fs.FileInfo
 	zipPath       string
 }
 
-func newZipFS(fs models.FS, path string, info fs.FileInfo) (*zipFS, error) {
+func newZipFS(fs models.FS, path string, size int64) (*zipFS, error) {
 	reader, err := fs.Open(path)
 	if err != nil {
 		return nil, err
@@ -42,7 +41,7 @@ func newZipFS(fs models.FS, path string, info fs.FileInfo) (*zipFS, error) {
 		return nil, errNotReaderAt
 	}
 
-	zipReader, err := zip.NewReader(asReaderAt, info.Size())
+	zipReader, err := zip.NewReader(asReaderAt, size)
 	if err != nil {
 		reader.Close()
 		return nil, err
@@ -89,7 +88,6 @@ func newZipFS(fs models.FS, path string, info fs.FileInfo) (*zipFS, error) {
 	return &zipFS{
 		Reader:        zipReader,
 		zipFileCloser: reader,
-		zipInfo:       info,
 		zipPath:       path,
 	}, nil
 }
@@ -125,7 +123,7 @@ func (f *zipFS) Lstat(name string) (fs.FileInfo, error) {
 	return f.Stat(name)
 }
 
-func (f *zipFS) OpenZip(name string) (models.ZipFS, error) {
+func (f *zipFS) OpenZip(name string, size int64) (models.ZipFS, error) {
 	return nil, errZipFSOpenZip
 }
 

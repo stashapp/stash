@@ -42,44 +42,48 @@ xPathScrapers:
         selector: //h1
         postProcess:
           - replace:
-              - regex: \sBio\s*$
-                with: ""
+              - regex: (.+)\sidentifies.+
+                with: $1
       URL: //link[@rel="alternate" and @hreflang="x-default"]/@href
-      Twitter: //a[not(starts-with(@href,'https://twitter.com/FreeOnes'))][contains(@href,'twitter.com/')]/@href
-      Instagram: //a[contains(@href,'instagram.com/')]/@href
+      Twitter: //form//a[contains(@href,'twitter.com/')]/@href
+      Instagram: //form//a[contains(@href,'instagram.com/')]/@href
       Birthdate:
-        selector: //span[contains(text(),'Born On')]
+        selector: //span[@data-test="link_span_dateOfBirth"]/text()
         postProcess:
-          - replace:
-              - regex: Born On
-                with:
           - parseDate: January 2, 2006
       Ethnicity:
-        selector: //a[@data-test="link_ethnicity"]/span/text()
+        selector: //span[@data-test="link_span_ethnicity"]
         postProcess:
           - map:
               Asian: Asian
               Caucasian: White
               Black: Black
               Latin: Hispanic
-      Country: //a[@data-test="link-country"]/span/text()
-      EyeColor: //span[text()='Eye Color']/following-sibling::span/a
+      Country:
+        selector: //a[@data-test="link_placeOfBirth"][contains(@href, 'country')]/span/text()
+        postProcess:
+          - map:
+              United States: "USA"
+      EyeColor: //span[text()='Eye Color:']/following-sibling::span/a/span/text()
       Height:
-        selector: //span[text()='Height']/following-sibling::span/a
+        selector: //span[text()='Height:']/following-sibling::span/a
         postProcess:
           - replace:
-              - regex: \D+[\s\S]+
-                with: ""
+            - regex: \scm
+              with: ""
           - map:
               Unknown: ""
       Measurements:
-        selector: //span[text()='Measurements']/following-sibling::span/span/a
+        selector: //span[(@data-test='link_span_bra') or (@data-test='link_span_waist') or (@data-test='link_span_hip')]
         concat: " - "
         postProcess:
+          - replace:
+              - regex: \sIn
+                with: ""
           - map:
               Unknown: ""
       FakeTits:
-        selector: //span[text()='Boobs']/following-sibling::span/a
+        selector: //span[text()='Boobs:']/following-sibling::span/a
         postProcess:
           - map:
               Unknown: ""
@@ -88,14 +92,16 @@ xPathScrapers:
       CareerLength:
         selector: //div[contains(@class,'timeline-horizontal')]//p[@class='m-0']
         concat: "-"
-      Aliases: //p[@data-test='p_aliases']/text()
+      Aliases:
+        selector: //span[@data-test='link_span_aliases']/text()
+        concat: ", "
       Tattoos:
-        selector: //span[text()='Tattoos']/following-sibling::span/span
+        selector: //span[text()='Tattoo locations:']/following-sibling::span
         postProcess:
           - map:
               Unknown: ""
       Piercings:
-        selector: //span[text()='Piercings']/following-sibling::span/span
+        selector: //span[text()='Piercing locations:']/following-sibling::span
         postProcess:
           - map:
               Unknown: ""
@@ -103,7 +109,6 @@ xPathScrapers:
         selector: //div[contains(@class,'image-container')]//a/img/@src
       Gender:
         fixed: "Female"
-      Details: //div[@data-test="biography"]
       DeathDate:
         selector: //div[contains(text(),'Passed away on')]
         postProcess:
@@ -111,15 +116,15 @@ xPathScrapers:
               - regex: Passed away on (.+) at the age of \d+
                 with: $1
           - parseDate: January 2, 2006
-      HairColor: //span[text()='Hair Color']/following-sibling::span/a
+      HairColor: //span[@data-test="link_span_hair_color"]
       Weight:
-        selector: //span[text()='Weight']/following-sibling::span/a
+        selector: //span[@data-test="link_span_weight"]
         postProcess:
-        - replace:
-            - regex: \D+[\s\S]+
+          - replace:
+            - regex: \skg
               with: ""
 
-# Last updated April 13, 2021
+# Last Updated January 2, 2024
 `
 
 func getFreeonesScraper(globalConfig GlobalConfig) scraper {

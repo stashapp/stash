@@ -1,3 +1,5 @@
+// Package manager provides the core manager of the application.
+// This consolidates all the services and managers into a single struct.
 package manager
 
 import (
@@ -41,7 +43,7 @@ type Manager struct {
 	Paths *paths.Paths
 
 	FFMpeg        *ffmpeg.FFMpeg
-	FFProbe       ffmpeg.FFProbe
+	FFProbe       *ffmpeg.FFProbe
 	StreamManager *ffmpeg.StreamManager
 
 	JobManager      *job.Manager
@@ -64,6 +66,7 @@ type Manager struct {
 	SceneService   SceneService
 	ImageService   ImageService
 	GalleryService GalleryService
+	GroupService   GroupService
 
 	scanSubs *subscriptionManager
 }
@@ -297,7 +300,7 @@ func (s *Manager) Setup(ctx context.Context, input SetupInput) error {
 }
 
 func (s *Manager) validateFFmpeg() error {
-	if s.FFMpeg == nil || s.FFProbe == "" {
+	if s.FFMpeg == nil || s.FFProbe == nil {
 		return errors.New("missing ffmpeg and/or ffprobe")
 	}
 	return nil
@@ -397,7 +400,7 @@ func (s *Manager) GetSystemStatus() *SystemStatus {
 	}
 
 	ffprobePath := ""
-	if s.FFProbe != "" {
+	if s.FFProbe != nil {
 		ffprobePath = s.FFProbe.Path()
 	}
 

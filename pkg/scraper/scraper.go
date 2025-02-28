@@ -1,3 +1,5 @@
+// Package scraper provides interfaces to interact with the scraper subsystem.
+// The [Cache] type is the main entry point to the scraper subsystem.
 package scraper
 
 import (
@@ -34,6 +36,7 @@ const (
 	ScrapeContentTypeGroup     ScrapeContentType = "GROUP"
 	ScrapeContentTypePerformer ScrapeContentType = "PERFORMER"
 	ScrapeContentTypeScene     ScrapeContentType = "SCENE"
+	ScrapeContentTypeImage     ScrapeContentType = "IMAGE"
 )
 
 var AllScrapeContentType = []ScrapeContentType{
@@ -42,11 +45,12 @@ var AllScrapeContentType = []ScrapeContentType{
 	ScrapeContentTypeGroup,
 	ScrapeContentTypePerformer,
 	ScrapeContentTypeScene,
+	ScrapeContentTypeImage,
 }
 
 func (e ScrapeContentType) IsValid() bool {
 	switch e {
-	case ScrapeContentTypeGallery, ScrapeContentTypeMovie, ScrapeContentTypeGroup, ScrapeContentTypePerformer, ScrapeContentTypeScene:
+	case ScrapeContentTypeGallery, ScrapeContentTypeMovie, ScrapeContentTypeGroup, ScrapeContentTypePerformer, ScrapeContentTypeScene, ScrapeContentTypeImage:
 		return true
 	}
 	return false
@@ -82,6 +86,8 @@ type Scraper struct {
 	Scene *ScraperSpec `json:"scene"`
 	// Details for gallery scraper
 	Gallery *ScraperSpec `json:"gallery"`
+	// Details for image scraper
+	Image *ScraperSpec `json:"image"`
 	// Details for movie scraper
 	Group *ScraperSpec `json:"group"`
 	// Details for movie scraper
@@ -159,6 +165,7 @@ type Input struct {
 	Performer *ScrapedPerformerInput
 	Scene     *ScrapedSceneInput
 	Gallery   *ScrapedGalleryInput
+	Image     *ScrapedImageInput
 }
 
 // populateURL populates the URL field of the input based on the
@@ -221,6 +228,14 @@ type sceneScraper interface {
 	scraper
 
 	viaScene(ctx context.Context, client *http.Client, scene *models.Scene) (*ScrapedScene, error)
+}
+
+// imageScraper is a scraper which supports image scrapes with
+// image data as the input.
+type imageScraper interface {
+	scraper
+
+	viaImage(ctx context.Context, client *http.Client, image *models.Image) (*ScrapedImage, error)
 }
 
 // galleryScraper is a scraper which supports gallery scrapes with

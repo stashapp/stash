@@ -712,7 +712,7 @@ func TestTagQueryParent(t *testing.T) {
 		assert.Len(t, tags, 1)
 
 		// ensure id is correct
-		assert.Equal(t, sceneIDs[tagIdxWithParentTag], tags[0].ID)
+		assert.Equal(t, tagIDs[tagIdxWithParentTag], tags[0].ID)
 
 		tagCriterion.Modifier = models.CriterionModifierExcludes
 

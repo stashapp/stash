@@ -10,19 +10,21 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"testing"
 	"time"
 
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/txn"
 
 	// necessary to register custom migrations
 	_ "github.com/stashapp/stash/pkg/sqlite/migrations"
 )
+
+var epochTime = time.Unix(0, 0).UTC()
 
 const (
 	spacedSceneTitle = "zzz yyy xxx"
@@ -78,6 +80,7 @@ const (
 	sceneIdxWithGrandChildStudio
 	sceneIdxMissingPhash
 	sceneIdxWithPerformerParentTag
+	sceneIdxWithGroupWithParent
 	// new indexes above
 	lastSceneIdx
 
@@ -153,9 +156,15 @@ const (
 	groupIdxWithTag
 	groupIdxWithTwoTags
 	groupIdxWithThreeTags
+	groupIdxWithGrandChild
+	groupIdxWithChild
+	groupIdxWithParentAndChild
+	groupIdxWithParent
+	groupIdxWithGrandParent
+	groupIdxWithParentAndScene
+	groupIdxWithChildWithScene
 	// groups with dup names start from the end
-	// create 7 more basic groups (can remove this if we add more indexes)
-	groupIdxWithDupName = groupIdxWithStudio + 7
+	groupIdxWithDupName
 
 	groupsNameCase   = groupIdxWithDupName
 	groupsNameNoCase = 1
@@ -269,6 +278,8 @@ const (
 	markerIdxWithScene = iota
 	markerIdxWithTag
 	markerIdxWithSceneTag
+	markerIdxWithDuration
+	markerIdx2WithDuration
 	totalMarkers
 )
 
@@ -390,7 +401,8 @@ var (
 	}
 
 	sceneGroups = linkMap{
-		sceneIdxWithGroup: {groupIdxWithScene},
+		sceneIdxWithGroup:           {groupIdxWithScene},
+		sceneIdxWithGroupWithParent: {groupIdxWithParentAndScene},
 	}
 
 	sceneStudios = map[int]int{
@@ -541,13 +553,29 @@ var (
 	}
 )
 
+var (
+	groupParentLinks = [][2]int{
+		{groupIdxWithChild, groupIdxWithParent},
+		{groupIdxWithGrandChild, groupIdxWithParentAndChild},
+		{groupIdxWithParentAndChild, groupIdxWithGrandParent},
+		{groupIdxWithChildWithScene, groupIdxWithParentAndScene},
+	}
+)
+
 func indexesToIDs(ids []int, indexes []int) []int {
 	ret := make([]int, len(indexes))
 	for i, idx := range indexes {
-		ret[i] = ids[idx]
+		ret[i] = indexToID(ids, idx)
 	}
 
 	return ret
+}
+
+func indexToID(ids []int, idx int) int {
+	if idx < 0 {
+		return invalidID
+	}
+	return ids[idx]
 }
 
 func indexFromID(ids []int, id int) int {
@@ -694,6 +722,10 @@ func populateDB() error {
 		}
 
 		if err := linkTagsParent(ctx, db.Tag); err != nil {
+			return fmt.Errorf("error linking tags parent: %s", err.Error())
+		}
+
+		if err := linkGroupsParent(ctx, db.Group); err != nil {
 			return fmt.Errorf("error linking tags parent: %s", err.Error())
 		}
 
@@ -998,8 +1030,9 @@ func getObjectDate(index int) *models.Date {
 
 func sceneStashID(i int) models.StashID {
 	return models.StashID{
-		StashID:  getSceneStringValue(i, "stashid"),
-		Endpoint: getSceneStringValue(i, "endpoint"),
+		StashID:   getSceneStringValue(i, "stashid"),
+		Endpoint:  getSceneStringValue(i, "endpoint"),
+		UpdatedAt: epochTime,
 	}
 }
 
@@ -1478,6 +1511,18 @@ func performerAliases(i int) []string {
 	return []string{getPerformerStringValue(i, "alias")}
 }
 
+func getPerformerCustomFields(index int) map[string]interface{} {
+	if index%5 == 0 {
+		return nil
+	}
+
+	return map[string]interface{}{
+		"string": getPerformerStringValue(index, "custom"),
+		"int":    int64(index % 5),
+		"real":   float64(index) / 10,
+	}
+}
+
 // createPerformers creates n performers with plain Name and o performers with camel cased NaMe included
 func createPerformers(ctx context.Context, n int, o int) error {
 	pqb := db.Performer
@@ -1528,7 +1573,10 @@ func createPerformers(ctx context.Context, n int, o int) error {
 			})
 		}
 
-		err := pqb.Create(ctx, &performer)
+		err := pqb.Create(ctx, &models.CreatePerformerInput{
+			Performer:    &performer,
+			CustomFields: getPerformerCustomFields(i),
+		})
 
 		if err != nil {
 			return fmt.Errorf("Error creating performer %v+: %s", performer, err.Error())
@@ -1557,7 +1605,7 @@ func getTagMarkerCount(id int) int {
 	count := 0
 	idx := indexFromID(tagIDs, id)
 	for _, s := range markerSpecs {
-		if s.primaryTagIdx == idx || sliceutil.Contains(s.tagIdxs, idx) {
+		if s.primaryTagIdx == idx || slices.Contains(s.tagIdxs, idx) {
 			count++
 		}
 	}
@@ -1726,10 +1774,20 @@ func createStudios(ctx context.Context, n int, o int) error {
 	return nil
 }
 
+func getMarkerEndSeconds(index int) *float64 {
+	if index != markerIdxWithDuration && index != markerIdx2WithDuration {
+		return nil
+	}
+	ret := float64(index)
+	return &ret
+}
+
 func createMarker(ctx context.Context, mqb models.SceneMarkerReaderWriter, markerSpec markerSpec) error {
+	markerIdx := len(markerIDs)
 	marker := models.SceneMarker{
 		SceneID:      sceneIDs[markerSpec.sceneIdx],
 		PrimaryTagID: tagIDs[markerSpec.primaryTagIdx],
+		EndSeconds:   getMarkerEndSeconds(markerIdx),
 	}
 
 	err := mqb.Create(ctx, &marker)
@@ -1882,6 +1940,24 @@ func linkTagsParent(ctx context.Context, qb models.TagReaderWriter) error {
 		parentIDs = append(parentIDs, tagIDs[parentIndex])
 
 		return qb.UpdateParentTags(ctx, tagID, parentIDs)
+	})
+}
+
+func linkGroupsParent(ctx context.Context, qb models.GroupReaderWriter) error {
+	return doLinks(groupParentLinks, func(parentIndex, childIndex int) error {
+		groupID := groupIDs[childIndex]
+
+		p := models.GroupPartial{
+			ContainingGroups: &models.UpdateGroupDescriptions{
+				Groups: []models.GroupIDDescription{
+					{GroupID: groupIDs[parentIndex]},
+				},
+				Mode: models.RelationshipUpdateModeAdd,
+			},
+		}
+
+		_, err := qb.UpdatePartial(ctx, groupID, p)
+		return err
 	})
 }
 

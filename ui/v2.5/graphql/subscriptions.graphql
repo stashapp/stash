@@ -8,6 +8,7 @@ subscription JobsSubscribe {
       description
       progress
       error
+      startTime
     }
   }
 }

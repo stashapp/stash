@@ -149,7 +149,7 @@ func (qb *sceneFilterHandler) criterionHandler() criterionHandler {
 		studioCriterionHandler(sceneTable, sceneFilter.Studios),
 
 		qb.groupsCriterionHandler(sceneFilter.Groups),
-		qb.groupsCriterionHandler(sceneFilter.Movies),
+		qb.moviesCriterionHandler(sceneFilter.Movies),
 
 		qb.galleriesCriterionHandler(sceneFilter.Galleries),
 		qb.performerTagsCriterionHandler(sceneFilter.PerformerTags),
@@ -194,7 +194,7 @@ func (qb *sceneFilterHandler) criterionHandler() criterionHandler {
 		},
 
 		&relatedFilterHandler{
-			relatedIDCol:   "movies_scenes.movie_id",
+			relatedIDCol:   "groups_scenes.group_id",
 			relatedRepo:    groupRepository.repository,
 			relatedHandler: &groupFilterHandler{sceneFilter.MoviesFilter},
 			joinFn: func(f *filterBuilder) {
@@ -320,8 +320,8 @@ func (qb *sceneFilterHandler) isMissingCriterionHandler(isMissing *string) crite
 			case "studio":
 				f.addWhere("scenes.studio_id IS NULL")
 			case "movie":
-				sceneRepository.groups.join(f, "movies_join", "scenes.id")
-				f.addWhere("movies_join.scene_id IS NULL")
+				sceneRepository.groups.join(f, "groups_join", "scenes.id")
+				f.addWhere("groups_join.scene_id IS NULL")
 			case "performers":
 				sceneRepository.performers.join(f, "performers_join", "scenes.id")
 				f.addWhere("performers_join.scene_id IS NULL")
@@ -483,13 +483,31 @@ func (qb *sceneFilterHandler) performerAgeCriterionHandler(performerAge *models.
 	}
 }
 
-func (qb *sceneFilterHandler) groupsCriterionHandler(movies *models.MultiCriterionInput) criterionHandlerFunc {
+// legacy handler
+func (qb *sceneFilterHandler) moviesCriterionHandler(movies *models.MultiCriterionInput) criterionHandlerFunc {
 	addJoinsFunc := func(f *filterBuilder) {
 		sceneRepository.groups.join(f, "", "scenes.id")
-		f.addLeftJoin("movies", "", "movies_scenes.movie_id = movies.id")
+		f.addLeftJoin("groups", "", "groups_scenes.group_id = groups.id")
 	}
-	h := qb.getMultiCriterionHandlerBuilder(groupTable, groupsScenesTable, "movie_id", addJoinsFunc)
+	h := qb.getMultiCriterionHandlerBuilder(groupTable, groupsScenesTable, "group_id", addJoinsFunc)
 	return h.handler(movies)
+}
+
+func (qb *sceneFilterHandler) groupsCriterionHandler(groups *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
+	h := joinedHierarchicalMultiCriterionHandlerBuilder{
+		primaryTable: sceneTable,
+		foreignTable: groupTable,
+		foreignFK:    "group_id",
+
+		relationsTable: groupRelationsTable,
+		parentFK:       "containing_id",
+		childFK:        "sub_id",
+		joinAs:         "scene_group",
+		joinTable:      groupsScenesTable,
+		primaryFK:      sceneIDColumn,
+	}
+
+	return h.handler(groups)
 }
 
 func (qb *sceneFilterHandler) galleriesCriterionHandler(galleries *models.MultiCriterionInput) criterionHandlerFunc {

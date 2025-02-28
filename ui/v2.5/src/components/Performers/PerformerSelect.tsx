@@ -161,7 +161,9 @@ const _PerformerSelect: React.FC<
                   <span>
                     {name}
                     {alias && (
-                      <span className="performer-select-alias">{` (${alias})`}</span>
+                      <span className="performer-select-alias">
+                        &nbsp;({alias})
+                      </span>
                     )}
                   </span>
                 }

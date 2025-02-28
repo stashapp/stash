@@ -48,6 +48,7 @@ function Tags(props: {
         existingIds={existingTagIds ?? []}
         ids={tagIDs.ids ?? []}
         mode={tagIDs.mode}
+        menuPortalTarget={document.body}
       />
     </Form.Group>
   );

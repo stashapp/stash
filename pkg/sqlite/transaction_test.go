@@ -77,80 +77,83 @@ func waitForOtherThread(c chan struct{}) error {
 	}
 }
 
-func TestConcurrentReadTxn(t *testing.T) {
-	var wg sync.WaitGroup
-	ctx := context.Background()
-	c := make(chan struct{})
+// this test is left commented as it's no longer possible to write to the database
+// with a read-only transaction.
 
-	// first thread
-	wg.Add(2)
-	go func() {
-		defer wg.Done()
-		if err := txn.WithReadTxn(ctx, db, func(ctx context.Context) error {
-			scene := &models.Scene{
-				Title: "test",
-			}
+// func TestConcurrentReadTxn(t *testing.T) {
+// 	var wg sync.WaitGroup
+// 	ctx := context.Background()
+// 	c := make(chan struct{})
 
-			if err := db.Scene.Create(ctx, scene, nil); err != nil {
-				return err
-			}
+// 	// first thread
+// 	wg.Add(2)
+// 	go func() {
+// 		defer wg.Done()
+// 		if err := txn.WithReadTxn(ctx, db, func(ctx context.Context) error {
+// 			scene := &models.Scene{
+// 				Title: "test",
+// 			}
 
-			// wait for other thread to start
-			if err := signalOtherThread(c); err != nil {
-				return err
-			}
-			if err := waitForOtherThread(c); err != nil {
-				return err
-			}
+// 			if err := db.Scene.Create(ctx, scene, nil); err != nil {
+// 				return err
+// 			}
 
-			if err := db.Scene.Destroy(ctx, scene.ID); err != nil {
-				return err
-			}
+// 			// wait for other thread to start
+// 			if err := signalOtherThread(c); err != nil {
+// 				return err
+// 			}
+// 			if err := waitForOtherThread(c); err != nil {
+// 				return err
+// 			}
 
-			return nil
-		}); err != nil {
-			t.Errorf("unexpected error in first thread: %v", err)
-		}
-	}()
+// 			if err := db.Scene.Destroy(ctx, scene.ID); err != nil {
+// 				return err
+// 			}
 
-	// second thread
-	go func() {
-		defer wg.Done()
-		_ = txn.WithReadTxn(ctx, db, func(ctx context.Context) error {
-			// wait for first thread
-			if err := waitForOtherThread(c); err != nil {
-				t.Errorf(err.Error())
-				return err
-			}
+// 			return nil
+// 		}); err != nil {
+// 			t.Errorf("unexpected error in first thread: %v", err)
+// 		}
+// 	}()
 
-			defer func() {
-				if err := signalOtherThread(c); err != nil {
-					t.Errorf(err.Error())
-				}
-			}()
+// 	// second thread
+// 	go func() {
+// 		defer wg.Done()
+// 		_ = txn.WithReadTxn(ctx, db, func(ctx context.Context) error {
+// 			// wait for first thread
+// 			if err := waitForOtherThread(c); err != nil {
+// 				t.Errorf(err.Error())
+// 				return err
+// 			}
 
-			scene := &models.Scene{
-				Title: "test",
-			}
+// 			defer func() {
+// 				if err := signalOtherThread(c); err != nil {
+// 					t.Errorf(err.Error())
+// 				}
+// 			}()
 
-			// expect error when we try to do this, as the other thread has already
-			// modified this table
-			// this takes time to fail, so we need to wait for it
-			if err := db.Scene.Create(ctx, scene, nil); err != nil {
-				if !db.IsLocked(err) {
-					t.Errorf("unexpected error: %v", err)
-				}
-				return err
-			} else {
-				t.Errorf("expected locked error in second thread")
-			}
+// 			scene := &models.Scene{
+// 				Title: "test",
+// 			}
 
-			return nil
-		})
-	}()
+// 			// expect error when we try to do this, as the other thread has already
+// 			// modified this table
+// 			// this takes time to fail, so we need to wait for it
+// 			if err := db.Scene.Create(ctx, scene, nil); err != nil {
+// 				if !db.IsLocked(err) {
+// 					t.Errorf("unexpected error: %v", err)
+// 				}
+// 				return err
+// 			} else {
+// 				t.Errorf("expected locked error in second thread")
+// 			}
 
-	wg.Wait()
-}
+// 			return nil
+// 		})
+// 	}()
+
+// 	wg.Wait()
+// }
 
 func TestConcurrentExclusiveAndReadTxn(t *testing.T) {
 	var wg sync.WaitGroup

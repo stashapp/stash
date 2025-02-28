@@ -12,7 +12,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  COMPILER_IMAGE: stashapp/compiler:9
+  COMPILER_IMAGE: stashapp/compiler:10
 
 jobs:
   build:
@@ -113,7 +113,7 @@ jobs:
     - name: Upload Windows binary
       # only upload binaries for pull requests
       if: ${{ github.event_name == 'pull_request' && github.base_ref != 'refs/heads/develop' && github.base_ref != 'refs/heads/master'}}
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: stash-win.exe
         path: dist/stash-win.exe
@@ -121,7 +121,7 @@ jobs:
     - name: Upload macOS binary
       # only upload binaries for pull requests
       if: ${{ github.event_name == 'pull_request' && github.base_ref != 'refs/heads/develop' && github.base_ref != 'refs/heads/master'}}
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: stash-macos
         path: dist/stash-macos
@@ -129,7 +129,7 @@ jobs:
     - name: Upload Linux binary
       # only upload binaries for pull requests
       if: ${{ github.event_name == 'pull_request' && github.base_ref != 'refs/heads/develop' && github.base_ref != 'refs/heads/master'}}
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: stash-linux
         path: dist/stash-linux
@@ -137,7 +137,7 @@ jobs:
     - name: Upload UI
       # only upload for pull requests
       if: ${{ github.event_name == 'pull_request' && github.base_ref != 'refs/heads/develop' && github.base_ref != 'refs/heads/master'}}
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: stash-ui.zip
         path: dist/stash-ui.zip
@@ -199,7 +199,7 @@ jobs:
         docker buildx create --name builder --use
         docker buildx inspect --bootstrap
         docker buildx ls
-        bash ./docker/ci/x86_64/docker_push.sh development
+        bash ./docker/ci/x86_64/docker_push.sh "${{ env.STASH_VERSION }}" development
 
     - name: Release Docker
       # NOTE: this isn't perfect, but should cover most scenarios
@@ -215,4 +215,4 @@ jobs:
         docker buildx create --name builder --use
         docker buildx inspect --bootstrap
         docker buildx ls
-        bash ./docker/ci/x86_64/docker_push.sh latest "${{ github.event.release.tag_name }}"
+        bash ./docker/ci/x86_64/docker_push.sh "${{ env.STASH_VERSION }}" latest "${{ github.event.release.tag_name }}"

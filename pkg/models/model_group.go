@@ -21,6 +21,9 @@ type Group struct {
 
 	URLs   RelatedStrings `json:"urls"`
 	TagIDs RelatedIDs     `json:"tag_ids"`
+
+	ContainingGroups RelatedGroupDescriptions `json:"containing_groups"`
+	SubGroups        RelatedGroupDescriptions `json:"sub_groups"`
 }
 
 func NewGroup() Group {
@@ -43,20 +46,34 @@ func (m *Group) LoadTagIDs(ctx context.Context, l TagIDLoader) error {
 	})
 }
 
+func (m *Group) LoadContainingGroupIDs(ctx context.Context, l ContainingGroupLoader) error {
+	return m.ContainingGroups.load(func() ([]GroupIDDescription, error) {
+		return l.GetContainingGroupDescriptions(ctx, m.ID)
+	})
+}
+
+func (m *Group) LoadSubGroupIDs(ctx context.Context, l SubGroupLoader) error {
+	return m.SubGroups.load(func() ([]GroupIDDescription, error) {
+		return l.GetSubGroupDescriptions(ctx, m.ID)
+	})
+}
+
 type GroupPartial struct {
 	Name     OptionalString
 	Aliases  OptionalString
 	Duration OptionalInt
 	Date     OptionalDate
 	// Rating expressed in 1-100 scale
-	Rating    OptionalInt
-	StudioID  OptionalInt
-	Director  OptionalString
-	Synopsis  OptionalString
-	URLs      *UpdateStrings
-	TagIDs    *UpdateIDs
-	CreatedAt OptionalTime
-	UpdatedAt OptionalTime
+	Rating           OptionalInt
+	StudioID         OptionalInt
+	Director         OptionalString
+	Synopsis         OptionalString
+	URLs             *UpdateStrings
+	TagIDs           *UpdateIDs
+	ContainingGroups *UpdateGroupDescriptions
+	SubGroups        *UpdateGroupDescriptions
+	CreatedAt        OptionalTime
+	UpdatedAt        OptionalTime
 }
 
 func NewGroupPartial() GroupPartial {

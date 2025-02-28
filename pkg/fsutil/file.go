@@ -8,8 +8,6 @@ import (
 	"regexp"
 	"runtime"
 	"strings"
-
-	"github.com/stashapp/stash/pkg/logger"
 )
 
 // CopyFile copies the contents of the file at srcpath to a regular file at dstpath.
@@ -56,6 +54,7 @@ func CopyFile(srcpath, dstpath string) (err error) {
 }
 
 // SafeMove attempts to move the file with path src to dest using os.Rename. If this fails, then it copies src to dest, then deletes src.
+// If the copy fails, or the delete fails, the function will return an error.
 func SafeMove(src, dst string) error {
 	err := os.Rename(src, dst)
 
@@ -65,9 +64,11 @@ func SafeMove(src, dst string) error {
 			return fmt.Errorf("copying file during SaveMove failed with: '%w'; renaming file failed previously with: '%v'", copyErr, err)
 		}
 
-		err = os.Remove(src)
-		if err != nil {
-			logger.Errorf("error removing old file %s during SafeMove: %v", src, err)
+		removeErr := os.Remove(src)
+		if removeErr != nil {
+			// if we can't remove the old file, remove the new one and fail
+			_ = os.Remove(dst)
+			return fmt.Errorf("removing old file during SafeMove failed with: '%w'; renaming file failed previously with: '%v'", removeErr, err)
 		}
 	}
 

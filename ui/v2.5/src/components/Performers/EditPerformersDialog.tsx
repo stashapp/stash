@@ -369,6 +369,7 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
               existingIds={existingTagIds ?? []}
               ids={tagIds.ids ?? []}
               mode={tagIds.mode}
+              menuPortalTarget={document.body}
             />
           </Form.Group>
 

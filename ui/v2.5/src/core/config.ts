@@ -8,6 +8,7 @@ import {
   SortDirectionEnum,
 } from "./generated-graphql";
 import { View } from "src/components/List/views";
+import { ITaggerConfig } from "src/components/Tagger/constants";
 
 // NOTE: double capitals aren't converted correctly in the backend
 
@@ -69,6 +70,8 @@ export interface IUIConfig {
   // if true the fullscreen mobile media auto-rotate option will be disabled
   disableMobileMediaAutoRotateEnabled?: boolean;
 
+  // if true markers with end times will display with a horizontal bar in the scene player
+  showRangeMarkers?: boolean;
   // if true continue scene will always play from the beginning
   alwaysStartFromBeginning?: boolean;
   // if true enable activity tracking
@@ -97,6 +100,8 @@ export interface IUIConfig {
   taskDefaults?: Record<string, {}>;
 
   defaultFilters?: DefaultFilters;
+
+  taggerConfig?: ITaggerConfig;
 }
 
 export function getFrontPageContent(

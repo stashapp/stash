@@ -45,6 +45,7 @@ type Query {
   findSceneMarkers(
     scene_marker_filter: SceneMarkerFilterType
     filter: FindFilterType
+    ids: [ID!]
   ): FindSceneMarkersResultType!
 
   findImage(id: ID, checksum: String): Image
@@ -173,6 +174,12 @@ type Query {
     input: ScrapeSingleGroupInput!
   ): [ScrapedGroup!]!
 
+  "Scrape for a single image"
+  scrapeSingleImage(
+    source: ScraperSourceInput!
+    input: ScrapeSingleImageInput!
+  ): [ScrapedImage!]!
+
   "Scrapes content based on a URL"
   scrapeURL(url: String!, ty: ScrapeContentType!): ScrapedContent
 
@@ -182,6 +189,8 @@ type Query {
   scrapeSceneURL(url: String!): ScrapedScene
   "Scrapes a complete gallery record based on a URL"
   scrapeGalleryURL(url: String!): ScrapedGallery
+  "Scrapes a complete image record based on a URL"
+  scrapeImageURL(url: String!): ScrapedImage
   "Scrapes a complete movie record based on a URL"
   scrapeMovieURL(url: String!): ScrapedMovie
     @deprecated(reason: "Use scrapeGroupURL instead")
@@ -276,6 +285,13 @@ type Mutation {
   "Sets the resume time point (if provided) and adds the provided duration to the scene's play duration"
   sceneSaveActivity(id: ID!, resume_time: Float, playDuration: Float): Boolean!
 
+  "Resets the resume time point and play duration"
+  sceneResetActivity(
+    id: ID!
+    reset_resume: Boolean
+    reset_duration: Boolean
+  ): Boolean!
+
   "Increments the play count for the scene. Returns the new play count value."
   sceneIncrementPlayCount(id: ID!): Int!
     @deprecated(reason: "Use sceneAddPlay instead")
@@ -293,6 +309,7 @@ type Mutation {
   sceneMarkerCreate(input: SceneMarkerCreateInput!): SceneMarker
   sceneMarkerUpdate(input: SceneMarkerUpdateInput!): SceneMarker
   sceneMarkerDestroy(id: ID!): Boolean!
+  sceneMarkersDestroy(ids: [ID!]!): Boolean!
 
   sceneAssignFile(input: AssignSceneFileInput!): Boolean!
 
@@ -317,6 +334,8 @@ type Mutation {
 
   addGalleryImages(input: GalleryAddInput!): Boolean!
   removeGalleryImages(input: GalleryRemoveInput!): Boolean!
+  setGalleryCover(input: GallerySetCoverInput!): Boolean!
+  resetGalleryCover(input: GalleryResetCoverInput!): Boolean!
 
   galleryChapterCreate(input: GalleryChapterCreateInput!): GalleryChapter
   galleryChapterUpdate(input: GalleryChapterUpdateInput!): GalleryChapter
@@ -349,6 +368,12 @@ type Mutation {
   groupDestroy(input: GroupDestroyInput!): Boolean!
   groupsDestroy(ids: [ID!]!): Boolean!
   bulkGroupUpdate(input: BulkGroupUpdateInput!): [Group!]
+
+  addGroupSubGroups(input: GroupSubGroupAddInput!): Boolean!
+  removeGroupSubGroups(input: GroupSubGroupRemoveInput!): Boolean!
+
+  "Reorder sub groups within a group. Returns true if successful."
+  reorderSubGroups(input: ReorderSubGroupsInput!): Boolean!
 
   tagCreate(input: TagCreateInput!): Tag
   tagUpdate(input: TagUpdateInput!): Tag

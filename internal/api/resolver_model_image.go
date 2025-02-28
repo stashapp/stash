@@ -18,11 +18,6 @@ func (r *imageResolver) getFiles(ctx context.Context, obj *models.Image) ([]mode
 	return files, firstError(errs)
 }
 
-func (r *imageResolver) Title(ctx context.Context, obj *models.Image) (*string, error) {
-	ret := obj.GetTitle()
-	return &ret, nil
-}
-
 func (r *imageResolver) VisualFiles(ctx context.Context, obj *models.Image) ([]VisualFile, error) {
 	files, err := r.getFiles(ctx, obj)
 	if err != nil {

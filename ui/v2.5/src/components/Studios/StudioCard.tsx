@@ -58,7 +58,11 @@ function maybeRenderChildren(studio: GQL.StudioDataFragment) {
           values={{
             children: (
               <Link to={NavUtils.makeChildStudiosUrl(studio)}>
-                {studio.child_studios.length} studios
+                {studio.child_studios.length}&nbsp;
+                <FormattedMessage
+                  id="countables.studios"
+                  values={{ count: studio.child_studios.length }}
+                />
               </Link>
             ),
           }}

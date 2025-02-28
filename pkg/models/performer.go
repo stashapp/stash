@@ -198,6 +198,9 @@ type PerformerFilterType struct {
 	CreatedAt *TimestampCriterionInput `json:"created_at"`
 	// Filter by updated at
 	UpdatedAt *TimestampCriterionInput `json:"updated_at"`
+
+	// Filter by custom fields
+	CustomFields []CustomFieldCriterionInput `json:"custom_fields"`
 }
 
 type PerformerCreateInput struct {
@@ -226,14 +229,16 @@ type PerformerCreateInput struct {
 	Favorite       *bool           `json:"favorite"`
 	TagIds         []string        `json:"tag_ids"`
 	// This should be a URL or a base64 encoded data URL
-	Image         *string   `json:"image"`
-	StashIds      []StashID `json:"stash_ids"`
-	Rating100     *int      `json:"rating100"`
-	Details       *string   `json:"details"`
-	DeathDate     *string   `json:"death_date"`
-	HairColor     *string   `json:"hair_color"`
-	Weight        *int      `json:"weight"`
-	IgnoreAutoTag *bool     `json:"ignore_auto_tag"`
+	Image         *string        `json:"image"`
+	StashIds      []StashIDInput `json:"stash_ids"`
+	Rating100     *int           `json:"rating100"`
+	Details       *string        `json:"details"`
+	DeathDate     *string        `json:"death_date"`
+	HairColor     *string        `json:"hair_color"`
+	Weight        *int           `json:"weight"`
+	IgnoreAutoTag *bool          `json:"ignore_auto_tag"`
+
+	CustomFields map[string]interface{} `json:"custom_fields"`
 }
 
 type PerformerUpdateInput struct {
@@ -263,12 +268,14 @@ type PerformerUpdateInput struct {
 	Favorite       *bool           `json:"favorite"`
 	TagIds         []string        `json:"tag_ids"`
 	// This should be a URL or a base64 encoded data URL
-	Image         *string   `json:"image"`
-	StashIds      []StashID `json:"stash_ids"`
-	Rating100     *int      `json:"rating100"`
-	Details       *string   `json:"details"`
-	DeathDate     *string   `json:"death_date"`
-	HairColor     *string   `json:"hair_color"`
-	Weight        *int      `json:"weight"`
-	IgnoreAutoTag *bool     `json:"ignore_auto_tag"`
+	Image         *string        `json:"image"`
+	StashIds      []StashIDInput `json:"stash_ids"`
+	Rating100     *int           `json:"rating100"`
+	Details       *string        `json:"details"`
+	DeathDate     *string        `json:"death_date"`
+	HairColor     *string        `json:"hair_color"`
+	Weight        *int           `json:"weight"`
+	IgnoreAutoTag *bool          `json:"ignore_auto_tag"`
+
+	CustomFields CustomFieldsInput `json:"custom_fields"`
 }

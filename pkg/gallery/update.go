@@ -52,6 +52,22 @@ func (s *Service) RemoveImages(ctx context.Context, g *models.Gallery, toRemove 
 	return s.Updated(ctx, g.ID)
 }
 
+func (s *Service) SetCover(ctx context.Context, g *models.Gallery, coverImageID int) error {
+	if err := s.Repository.SetCover(ctx, g.ID, coverImageID); err != nil {
+		return fmt.Errorf("failed to set cover: %w", err)
+	}
+
+	return s.Updated(ctx, g.ID)
+}
+
+func (s *Service) ResetCover(ctx context.Context, g *models.Gallery) error {
+	if err := s.Repository.ResetCover(ctx, g.ID); err != nil {
+		return fmt.Errorf("failed to reset cover: %w", err)
+	}
+
+	return s.Updated(ctx, g.ID)
+}
+
 func AddPerformer(ctx context.Context, qb models.GalleryUpdater, o *models.Gallery, performerID int) error {
 	galleryPartial := models.NewGalleryPartial()
 	galleryPartial.PerformerIDs = &models.UpdateIDs{

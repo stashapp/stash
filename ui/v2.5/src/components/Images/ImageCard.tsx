@@ -18,7 +18,7 @@ import {
   faSearch,
   faTag,
 } from "@fortawesome/free-solid-svg-icons";
-import { objectTitle } from "src/core/files";
+import { imageTitle } from "src/core/files";
 import { TruncatedText } from "../Shared/TruncatedText";
 import ScreenUtils from "src/utils/screen";
 import { StudioOverlay } from "../Shared/GridCard/StudioOverlay";
@@ -100,7 +100,12 @@ export const ImageCard: React.FC<IImageCardProps> = (
   function maybeRenderPerformerPopoverButton() {
     if (props.image.performers.length <= 0) return;
 
-    return <PerformerPopoverButton performers={props.image.performers} />;
+    return (
+      <PerformerPopoverButton
+        performers={props.image.performers}
+        linkType="image"
+      />
+    );
   }
 
   function maybeRenderOCounter() {
@@ -192,7 +197,7 @@ export const ImageCard: React.FC<IImageCardProps> = (
       className={`image-card zoom-${props.zoomIndex}`}
       url={`/images/${props.image.id}`}
       width={cardWidth}
-      title={objectTitle(props.image)}
+      title={imageTitle(props.image)}
       linkClassName="image-card-link"
       image={
         <>

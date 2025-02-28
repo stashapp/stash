@@ -16,6 +16,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/sliceutil"
+	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -132,12 +133,14 @@ func Test_sceneQueryBuilder_Create(t *testing.T) {
 				}),
 				StashIDs: models.NewRelatedStashIDs([]models.StashID{
 					{
-						StashID:  stashID1,
-						Endpoint: endpoint1,
+						StashID:   stashID1,
+						Endpoint:  endpoint1,
+						UpdatedAt: epochTime,
 					},
 					{
-						StashID:  stashID2,
-						Endpoint: endpoint2,
+						StashID:   stashID2,
+						Endpoint:  endpoint2,
+						UpdatedAt: epochTime,
 					},
 				}),
 				ResumeTime:   float64(resumeTime),
@@ -177,12 +180,14 @@ func Test_sceneQueryBuilder_Create(t *testing.T) {
 				}),
 				StashIDs: models.NewRelatedStashIDs([]models.StashID{
 					{
-						StashID:  stashID1,
-						Endpoint: endpoint1,
+						StashID:   stashID1,
+						Endpoint:  endpoint1,
+						UpdatedAt: epochTime,
 					},
 					{
-						StashID:  stashID2,
-						Endpoint: endpoint2,
+						StashID:   stashID2,
+						Endpoint:  endpoint2,
+						UpdatedAt: epochTime,
 					},
 				}),
 				ResumeTime:   resumeTime,
@@ -361,12 +366,14 @@ func Test_sceneQueryBuilder_Update(t *testing.T) {
 				}),
 				StashIDs: models.NewRelatedStashIDs([]models.StashID{
 					{
-						StashID:  stashID1,
-						Endpoint: endpoint1,
+						StashID:   stashID1,
+						Endpoint:  endpoint1,
+						UpdatedAt: epochTime,
 					},
 					{
-						StashID:  stashID2,
-						Endpoint: endpoint2,
+						StashID:   stashID2,
+						Endpoint:  endpoint2,
+						UpdatedAt: epochTime,
 					},
 				}),
 				ResumeTime:   resumeTime,
@@ -589,12 +596,14 @@ func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 				StashIDs: &models.UpdateStashIDs{
 					StashIDs: []models.StashID{
 						{
-							StashID:  stashID1,
-							Endpoint: endpoint1,
+							StashID:   stashID1,
+							Endpoint:  endpoint1,
+							UpdatedAt: epochTime,
 						},
 						{
-							StashID:  stashID2,
-							Endpoint: endpoint2,
+							StashID:   stashID2,
+							Endpoint:  endpoint2,
+							UpdatedAt: epochTime,
 						},
 					},
 					Mode: models.RelationshipUpdateModeSet,
@@ -633,12 +642,14 @@ func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 				}),
 				StashIDs: models.NewRelatedStashIDs([]models.StashID{
 					{
-						StashID:  stashID1,
-						Endpoint: endpoint1,
+						StashID:   stashID1,
+						Endpoint:  endpoint1,
+						UpdatedAt: epochTime,
 					},
 					{
-						StashID:  stashID2,
-						Endpoint: endpoint2,
+						StashID:   stashID2,
+						Endpoint:  endpoint2,
+						UpdatedAt: epochTime,
 					},
 				}),
 				ResumeTime:   resumeTime,
@@ -740,12 +751,14 @@ func Test_sceneQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 
 		stashIDs = []models.StashID{
 			{
-				StashID:  stashID1,
-				Endpoint: endpoint1,
+				StashID:   stashID1,
+				Endpoint:  endpoint1,
+				UpdatedAt: epochTime,
 			},
 			{
-				StashID:  stashID2,
-				Endpoint: endpoint2,
+				StashID:   stashID2,
+				Endpoint:  endpoint2,
+				UpdatedAt: epochTime,
 			},
 		}
 	)
@@ -2217,7 +2230,7 @@ func TestSceneQuery(t *testing.T) {
 				},
 			})
 			if (err != nil) != tt.wantErr {
-				t.Errorf("PerformerStore.Query() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("SceneStore.Query() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 
@@ -3873,6 +3886,100 @@ func TestSceneQueryStudioDepth(t *testing.T) {
 	})
 }
 
+func TestSceneGroups(t *testing.T) {
+	type criterion struct {
+		valueIdxs []int
+		modifier  models.CriterionModifier
+		depth     int
+	}
+
+	tests := []struct {
+		name        string
+		c           criterion
+		q           string
+		includeIdxs []int
+		excludeIdxs []int
+	}{
+		{
+			"includes",
+			criterion{
+				[]int{groupIdxWithScene},
+				models.CriterionModifierIncludes,
+				0,
+			},
+			"",
+			[]int{sceneIdxWithGroup},
+			nil,
+		},
+		{
+			"excludes",
+			criterion{
+				[]int{groupIdxWithScene},
+				models.CriterionModifierExcludes,
+				0,
+			},
+			getSceneStringValue(sceneIdxWithGroup, titleField),
+			nil,
+			[]int{sceneIdxWithGroup},
+		},
+		{
+			"includes (depth = 1)",
+			criterion{
+				[]int{groupIdxWithChildWithScene},
+				models.CriterionModifierIncludes,
+				1,
+			},
+			"",
+			[]int{sceneIdxWithGroupWithParent},
+			nil,
+		},
+	}
+
+	for _, tt := range tests {
+		valueIDs := indexesToIDs(groupIDs, tt.c.valueIdxs)
+
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+
+			sceneFilter := &models.SceneFilterType{
+				Groups: &models.HierarchicalMultiCriterionInput{
+					Value:    intslice.IntSliceToStringSlice(valueIDs),
+					Modifier: tt.c.modifier,
+				},
+			}
+
+			if tt.c.depth != 0 {
+				sceneFilter.Groups.Depth = &tt.c.depth
+			}
+
+			findFilter := &models.FindFilterType{}
+			if tt.q != "" {
+				findFilter.Q = &tt.q
+			}
+
+			results, err := db.Scene.Query(ctx, models.SceneQueryOptions{
+				SceneFilter: sceneFilter,
+				QueryOptions: models.QueryOptions{
+					FindFilter: findFilter,
+				},
+			})
+			if err != nil {
+				t.Errorf("SceneStore.Query() error = %v", err)
+				return
+			}
+
+			include := indexesToIDs(sceneIDs, tt.includeIdxs)
+			exclude := indexesToIDs(sceneIDs, tt.excludeIdxs)
+
+			assert.Subset(results.IDs, include)
+
+			for _, e := range exclude {
+				assert.NotContains(results.IDs, e)
+			}
+		})
+	}
+}
+
 func TestSceneQueryMovies(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
 		sqb := db.Scene
@@ -4188,78 +4295,6 @@ func verifyScenesPerformerCount(t *testing.T, performerCountCriterion models.Int
 	})
 }
 
-func TestSceneCountByTagID(t *testing.T) {
-	withTxn(func(ctx context.Context) error {
-		sqb := db.Scene
-
-		sceneCount, err := sqb.CountByTagID(ctx, tagIDs[tagIdxWithScene])
-
-		if err != nil {
-			t.Errorf("error calling CountByTagID: %s", err.Error())
-		}
-
-		assert.Equal(t, 1, sceneCount)
-
-		sceneCount, err = sqb.CountByTagID(ctx, 0)
-
-		if err != nil {
-			t.Errorf("error calling CountByTagID: %s", err.Error())
-		}
-
-		assert.Equal(t, 0, sceneCount)
-
-		return nil
-	})
-}
-
-func TestSceneCountByGroupID(t *testing.T) {
-	withTxn(func(ctx context.Context) error {
-		sqb := db.Scene
-
-		sceneCount, err := sqb.CountByGroupID(ctx, groupIDs[groupIdxWithScene])
-
-		if err != nil {
-			t.Errorf("error calling CountByGroupID: %s", err.Error())
-		}
-
-		assert.Equal(t, 1, sceneCount)
-
-		sceneCount, err = sqb.CountByGroupID(ctx, 0)
-
-		if err != nil {
-			t.Errorf("error calling CountByGroupID: %s", err.Error())
-		}
-
-		assert.Equal(t, 0, sceneCount)
-
-		return nil
-	})
-}
-
-func TestSceneCountByStudioID(t *testing.T) {
-	withTxn(func(ctx context.Context) error {
-		sqb := db.Scene
-
-		sceneCount, err := sqb.CountByStudioID(ctx, studioIDs[studioIdxWithScene])
-
-		if err != nil {
-			t.Errorf("error calling CountByStudioID: %s", err.Error())
-		}
-
-		assert.Equal(t, 1, sceneCount)
-
-		sceneCount, err = sqb.CountByStudioID(ctx, 0)
-
-		if err != nil {
-			t.Errorf("error calling CountByStudioID: %s", err.Error())
-		}
-
-		assert.Equal(t, 0, sceneCount)
-
-		return nil
-	})
-}
-
 func TestFindByMovieID(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
 		sqb := db.Scene
@@ -4354,8 +4389,9 @@ func testSceneStashIDs(ctx context.Context, t *testing.T, s *models.Scene) {
 	const stashIDStr = "stashID"
 	const endpoint = "endpoint"
 	stashID := models.StashID{
-		StashID:  stashIDStr,
-		Endpoint: endpoint,
+		StashID:   stashIDStr,
+		Endpoint:  endpoint,
+		UpdatedAt: epochTime,
 	}
 
 	qb := db.Scene

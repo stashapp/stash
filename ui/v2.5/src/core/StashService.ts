@@ -275,6 +275,10 @@ export const useFindGallery = (id: string) => {
   return GQL.useFindGalleryQuery({ variables: { id }, skip });
 };
 
+export const useFindGalleryImageID = (id: string, index: number) => {
+  return GQL.useFindGalleryImageIdQuery({ variables: { id, index } });
+};
+
 export const useFindGalleries = (filter?: ListFilterModel) =>
   GQL.useFindGalleriesQuery({
     skip: filter === undefined,
@@ -779,6 +783,21 @@ export const useSceneResetO = (id: string) =>
         GQL.FindScenesDocument, // filter by o_counter
         GQL.FindPerformersDocument, // filter by o_counter
       ]);
+    },
+  });
+
+export const useSceneResetActivity = (
+  id: string,
+  reset_resume: boolean,
+  reset_duration: boolean
+) =>
+  GQL.useSceneResetActivityMutation({
+    variables: { id, reset_resume, reset_duration },
+    update(cache, result) {
+      if (!result.data?.sceneResetActivity) return;
+
+      evictTypeFields(cache, sceneMutationImpactedTypeFields);
+      evictQueries(cache, sceneMutationImpactedQueries);
     },
   });
 
@@ -1369,6 +1388,60 @@ export const useGroupsDestroy = (input: GQL.GroupsDestroyMutationVariables) =>
     },
   });
 
+export function useReorderSubGroupsMutation() {
+  return GQL.useReorderSubGroupsMutation({
+    update(cache) {
+      evictQueries(cache, [
+        GQL.FindGroupsDocument, // various filters
+      ]);
+    },
+  });
+}
+
+export const useAddSubGroups = () => {
+  const [addSubGroups] = GQL.useAddGroupSubGroupsMutation({
+    update(cache, result) {
+      if (!result.data?.addGroupSubGroups) return;
+
+      evictTypeFields(cache, groupMutationImpactedTypeFields);
+      evictQueries(cache, groupMutationImpactedQueries);
+    },
+  });
+
+  return (containingGroupId: string, toAdd: GQL.GroupDescriptionInput[]) => {
+    return addSubGroups({
+      variables: {
+        input: {
+          containing_group_id: containingGroupId,
+          sub_groups: toAdd,
+        },
+      },
+    });
+  };
+};
+
+export const useRemoveSubGroups = () => {
+  const [removeSubGroups] = GQL.useRemoveGroupSubGroupsMutation({
+    update(cache, result) {
+      if (!result.data?.removeGroupSubGroups) return;
+
+      evictTypeFields(cache, groupMutationImpactedTypeFields);
+      evictQueries(cache, groupMutationImpactedQueries);
+    },
+  });
+
+  return (containingGroupId: string, removeIds: string[]) => {
+    return removeSubGroups({
+      variables: {
+        input: {
+          containing_group_id: containingGroupId,
+          sub_group_ids: removeIds,
+        },
+      },
+    });
+  };
+};
+
 const sceneMarkerMutationImpactedTypeFields = {
   Tag: ["scene_marker_count"],
 };
@@ -1420,6 +1493,24 @@ export const useSceneMarkerDestroy = () =>
 
       const obj = { __typename: "SceneMarker", id: variables.id };
       cache.evict({ id: cache.identify(obj) });
+
+      evictTypeFields(cache, sceneMarkerMutationImpactedTypeFields);
+      evictQueries(cache, sceneMarkerMutationImpactedQueries);
+    },
+  });
+
+export const useSceneMarkersDestroy = (
+  input: GQL.SceneMarkersDestroyMutationVariables
+) =>
+  GQL.useSceneMarkersDestroyMutation({
+    variables: input,
+    update(cache, result) {
+      if (!result.data?.sceneMarkersDestroy) return;
+
+      for (const id of input.ids) {
+        const obj = { __typename: "SceneMarker", id };
+        cache.evict({ id: cache.identify(obj) });
+      }
 
       evictTypeFields(cache, sceneMarkerMutationImpactedTypeFields);
       evictQueries(cache, sceneMarkerMutationImpactedQueries);
@@ -1519,6 +1610,34 @@ export const mutateAddGalleryImages = (input: GQL.GalleryAddInput) =>
         GQL.FindGalleriesDocument, // filter by image count
         GQL.FindImagesDocument, // filter by gallery
       ]);
+    },
+  });
+
+export const mutateSetGalleryCover = (input: GQL.GallerySetCoverInput) =>
+  client.mutate<GQL.SetGalleryCoverMutation>({
+    mutation: GQL.SetGalleryCoverDocument,
+    variables: input,
+    update(cache, result) {
+      if (!result.data?.setGalleryCover) return;
+
+      cache.evict({
+        id: cache.identify({ __typename: "Gallery", id: input.gallery_id }),
+        fieldName: "cover",
+      });
+    },
+  });
+
+export const mutateResetGalleryCover = (input: GQL.GalleryResetCoverInput) =>
+  client.mutate<GQL.ResetGalleryCoverMutation>({
+    mutation: GQL.ResetGalleryCoverDocument,
+    variables: input,
+    update(cache, result) {
+      if (!result.data?.resetGalleryCover) return;
+
+      cache.evict({
+        id: cache.identify({ __typename: "Gallery", id: input.gallery_id }),
+        fieldName: "cover",
+      });
     },
   });
 
@@ -2172,6 +2291,8 @@ export const queryScrapeGroupURL = (url: string) =>
 
 export const useListGalleryScrapers = () => GQL.useListGalleryScrapersQuery();
 
+export const useListImageScrapers = () => GQL.useListImageScrapersQuery();
+
 export const queryScrapeGallery = (scraperId: string, galleryId: string) =>
   client.query<GQL.ScrapeSingleGalleryQuery>({
     query: GQL.ScrapeSingleGalleryDocument,
@@ -2189,6 +2310,27 @@ export const queryScrapeGallery = (scraperId: string, galleryId: string) =>
 export const queryScrapeGalleryURL = (url: string) =>
   client.query<GQL.ScrapeGalleryUrlQuery>({
     query: GQL.ScrapeGalleryUrlDocument,
+    variables: { url },
+    fetchPolicy: "network-only",
+  });
+
+export const queryScrapeImage = (scraperId: string, imageId: string) =>
+  client.query<GQL.ScrapeSingleImageQuery>({
+    query: GQL.ScrapeSingleImageDocument,
+    variables: {
+      source: {
+        scraper_id: scraperId,
+      },
+      input: {
+        image_id: imageId,
+      },
+    },
+    fetchPolicy: "network-only",
+  });
+
+export const queryScrapeImageURL = (url: string) =>
+  client.query<GQL.ScrapeImageUrlQuery>({
+    query: GQL.ScrapeImageUrlDocument,
     variables: { url },
     fetchPolicy: "network-only",
   });
@@ -2264,6 +2406,7 @@ export const scraperMutationImpactedQueries = [
   GQL.ListGroupScrapersDocument,
   GQL.ListPerformerScrapersDocument,
   GQL.ListSceneScrapersDocument,
+  GQL.ListImageScrapersDocument,
   GQL.InstalledScraperPackagesDocument,
   GQL.InstalledScraperPackagesStatusDocument,
 ];

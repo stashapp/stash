@@ -135,7 +135,13 @@
         "remove_date": "Odstranit datum",
         "add_manual_date": "Přidat datum ručně",
         "add_play": "Přidat přehrávání",
-        "view_history": "Zobrazit historii"
+        "view_history": "Zobrazit historii",
+        "reset_cover": "Obnovit výchozí obal",
+        "add_sub_groups": "Přidat podskupinu",
+        "set_cover": "Nastavit jako obal",
+        "remove_from_containing_group": "Odebrat ze skupiny",
+        "reset_resume_time": "Obnovit čas pokračování",
+        "reset_play_duration": "Obnovit dobu přehrávání"
     },
     "actions_name": "Akce",
     "age": "Věk",
@@ -174,7 +180,10 @@
             "show_male_label": "Ukázat mužské účinkující",
             "source": "Zdroj",
             "mark_organized_desc": "Po kliknutí na tlačítko Uložit okamžitě označte scénu jako Uspořádanou.",
-            "mark_organized_label": "Označit jako Uspořádané při uložení"
+            "mark_organized_label": "Označit jako Uspořádané při uložení",
+            "errors": {
+                "blacklist_duplicate": "Duplikovat položku blacklistu"
+            }
         },
         "noun_query": "Dotaz",
         "results": {
@@ -527,14 +536,16 @@
                 "transcodes": "Transkódy scén"
             },
             "generate_sprites_during_scan_tooltip": "Sada obrázků zobrazená pod videopřehrávačem pro snadnou navigaci.",
-            "generate_video_covers_during_scan": "Generuj obaly scén",
+            "generate_video_covers_during_scan": "Generovat obaly scén",
             "anonymise_database": "Vytvoří kopii databáze do adresáře záloh, anonymizuje všechna citlivá data. To pak může být poskytnuto ostatním pro účely odstraňování problémů a debuggování. Původní databáze se nemění. Anonymizovaná databáze používá formát názvu souboru {filename_format}.",
             "optimise_database": "Pokusit se zlepšit výkon analyzováním a opětovným sestavením celého databázového souboru.",
             "generate_clip_previews_during_scan": "Generování náhledů pro obrázkové klipy",
-            "optimise_database_warning": "Varování: Pokud je tato úloha spuštěna, všechny operace, které upravují databázi, selžou a v závislosti na velikosti databáze může její dokončení trvat několik minut. Vyžaduje také minimálně tolik volného místa na disku, jak je vaše databáze velká, ale doporučuje se 1,5x."
+            "optimise_database_warning": "Varování: Pokud je tato úloha spuštěna, všechny operace, které upravují databázi, selžou a v závislosti na velikosti databáze může její dokončení trvat několik minut. Vyžaduje také minimálně tolik volného místa na disku, jak je vaše databáze velká, ale doporučuje se 1,5x.",
+            "rescan": "Znovu skenovat soubory",
+            "rescan_tooltip": "Znovu skenovat každý soubor v cestě. Používá se k vynucení aktualizace metadat souboru a opětovnému skenování zip souborů."
         },
         "tools": {
-            "scene_duplicate_checker": "Kontrola na duplikaci scén",
+            "scene_duplicate_checker": "Detektor duplicitních scén",
             "scene_filename_parser": {
                 "add_field": "Přidat pole",
                 "capitalize_title": "Převést titul na kapitálky",
@@ -550,7 +561,7 @@
                 "whitespace_chars": "Whitespace znaky",
                 "whitespace_chars_desc": "Tyto znaky v názvu budou nahrazeny prázdným znakem (mezerou)"
             },
-            "scene_tools": "Nástroje scény"
+            "scene_tools": "Nástroje pro scény"
         },
         "ui": {
             "abbreviate_counters": {
@@ -598,17 +609,17 @@
                     "star_precision": {
                         "label": "Přesnost hvězd hodnocení",
                         "options": {
-                            "full": "Plná",
+                            "full": "Plné",
                             "half": "Poloviční",
-                            "quarter": "Čtvrtinová",
-                            "tenth": "Desetina"
+                            "quarter": "Čtvrtinové",
+                            "tenth": "Desetiné"
                         }
                     },
                     "type": {
                         "label": "Typ hodnocení",
                         "options": {
-                            "decimal": "Desetinný",
-                            "stars": "Hvězdy"
+                            "decimal": "Desetinné",
+                            "stars": "Hvězdičky"
                         }
                     }
                 },
@@ -784,11 +795,11 @@
         "galleries": "{count, plural, one {Galerie} other {Galerie}}",
         "images": "{count, plural, one {Obrázek} other {Obrázky}}",
         "markers": "{count, plural, one {Marker} other {Markery}}",
-        "movies": "{count, plural, one {Film} other {Filmy}}",
         "performers": "{count, plural, one {Účinkující} other {Účinkující}}",
         "scenes": "{count, plural, one {Scéna} other {Scény}}",
         "studios": "{count, plural, one {Studio} other {Studia}}",
-        "tags": "{count, plural, one {Tag} other {Tagy}}"
+        "tags": "{count, plural, one {Tag} other {Tagy}}",
+        "groups": "{count, plural, one {Skupina} other {Skupiny}}"
     },
     "country": "Země",
     "cover_image": "Obrázek obalu",
@@ -979,7 +990,8 @@
         "required": "${path} je vyžadované pole",
         "unique": "${path} musí být jedinečná",
         "blank": "${path} nesmí být prázdná",
-        "date_invalid_form": "${path} musí být ve formátu YYYY-MM-DD (Rok-Měsíc-Den)"
+        "date_invalid_form": "${path} musí být ve formátu YYYY-MM-DD (Rok-Měsíc-Den)",
+        "end_time_before_start_time": "Čas ukončení musí být větší nebo roven času zahájení"
     },
     "type": "Typ",
     "twitter": "Twitter",
@@ -1157,7 +1169,9 @@
         "errors": {
             "something_went_wrong_description": "Pokud to vypadá na problém s vašemi vstupy, pokračujte kliknutím na tlačítko Zpět a opravte je. Jinak upozorněte na chybu na {githubLink} nebo vyhledejte pomoc na {discordLink}.",
             "something_went_wrong": "Ach ne! Něco se pokazilo!",
-            "something_went_wrong_while_setting_up_your_system": "Při nastavování systému se něco pokazilo. Zde je chyba, kterou jsme obdrželi: {error}"
+            "something_went_wrong_while_setting_up_your_system": "Při nastavování systému se něco pokazilo. Zde je chyba, kterou jsme obdrželi: {error}",
+            "unable_to_retrieve_system_status": "Nelze načíst stav systému: {error}",
+            "unexpected_error": "Došlo k neočekávané chybě: {error}"
         },
         "folder": {
             "up_dir": "Nahoru o adresář",
@@ -1216,7 +1230,15 @@
         "lazy_component_error_help": "Pokud jste nedávno aktualizovali Stash, znovu načtěte stránku nebo vymažte mezipaměť prohlížeče.",
         "something_went_wrong": "Něco se pokazilo.",
         "header": "Chyba",
-        "loading_type": "Chyba při načítání {type}"
+        "loading_type": "Chyba při načítání {type}",
+        "invalid_javascript_string": "Neplatný kód javascriptu : {error}",
+        "invalid_json_string": "Neplatný string JSON: {error}",
+        "custom_fields": {
+            "field_name_required": "Název pole je povinný",
+            "field_name_whitespace": "Název pole nesmí obsahovat mezery ani na začátku ani na konci",
+            "duplicate_field": "Název pole musí být jedinečný",
+            "field_name_length": "Název pole musí být kratší než 65 znaků"
+        }
     },
     "eye_color": "Barva očí",
     "fake_tits": "Falešná prsa",
@@ -1246,7 +1268,8 @@
     "isMissing": "Chybí",
     "last_played_at": "Naposledy přehráno",
     "loading": {
-        "generic": "Načítání…"
+        "generic": "Načítání…",
+        "plugins": "Znovu načíst pluginy…"
     },
     "library": "Knihovna",
     "marker_count": "Počet Značek",
@@ -1270,15 +1293,14 @@
         "o_count": "Počet O"
     },
     "megabits_per_second": "{value} mbps",
-    "movie": "Film",
-    "movie_scene_number": "Číslo scény",
     "o_counter": "O-Počítadlo",
     "none": "Žádný",
     "pagination": {
         "last": "Poslední",
         "next": "Další",
         "previous": "Předchozí",
-        "first": "První"
+        "first": "První",
+        "current_total": "{current} z {total}"
     },
     "parent_tag_count": "Počet nadřazených tagů",
     "parent_tags": "Nadřazené tagy",
@@ -1318,7 +1340,6 @@
     "ignore_auto_tag": "Ignoruj automatické tagování",
     "instagram": "Instragram",
     "metadata": "Metadata",
-    "movies": "Filmy",
     "name": "Jméno",
     "new": "Nový",
     "organized": "Organizovaný",
@@ -1328,7 +1349,7 @@
     "primary_file": "Primární soubor",
     "primary_tag": "Primární tag",
     "queue": "Fronta",
-    "random": "Náhodný",
+    "random": "Náhodně",
     "last_o_at": "Poslední O",
     "o_history": "Historie O",
     "odate_recorded_no": "Žádný Datum O Nezaznamenán",
@@ -1361,7 +1382,7 @@
     "scene_updated_at": "Scéna aktualizována",
     "scenes": "Scény",
     "scenes_updated_at": "Scéna aktualizována",
-    "second": "Druhá",
+    "second": "Sekunda",
     "seconds": "Sekund",
     "settings": "Nastavení",
     "empty_server": "Chcete-li na této stránce zobrazit doporučení, přidejte na svůj server nějaké scény.",
@@ -1465,5 +1486,35 @@
     "years_old": "Let",
     "updated_at": "Aktualizováno",
     "stash_id": "Stash ID",
-    "sub_tag_of": "Počet sub-tagů od {parent}"
+    "sub_tag_of": "Počet sub-tagů od {parent}",
+    "containing_group": "Obsahující skupina",
+    "containing_group_count": "Počet obsahujících skupin",
+    "include_sub_group_content": "Zahrnout obsah podskupiny",
+    "group": "Skupina",
+    "group_count": "Počet skupin",
+    "group_scene_number": "Číslo scény",
+    "studio_count": "Počet studií",
+    "studio_tags": "Tagy studií",
+    "containing_groups": "Obsahující skupiny",
+    "groups": "Skupiny",
+    "sub_group_of": "Podskupina {parent}",
+    "sub_group_order": "Pořadí podskupin",
+    "sub_groups": "Podskupiny",
+    "sub_group": "Podskupina",
+    "sub_group_count": "Počet podskupin",
+    "include_sub_studio_content": "Zahrnout obsah podstudií",
+    "include_sub_tag_content": "Zahrnout obsah podtagů",
+    "include_sub_groups": "Zahrnout podskupiny",
+    "time_end": "Čas ukončení",
+    "criterion_modifier_values": {
+        "any": "Jakýkoli",
+        "any_of": "Jakýkoli z",
+        "none": "Žádný",
+        "only": "Pouze"
+    },
+    "custom_fields": {
+        "title": "Uživatelská pole",
+        "value": "Hodnota",
+        "field": "Pole"
+    }
 }

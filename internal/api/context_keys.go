@@ -5,8 +5,8 @@ package api
 type key int
 
 const (
-	// galleryKey key = 0
-	performerKey key = iota + 1
+	galleryKey key = 0
+	performerKey
 	sceneKey
 	studioKey
 	groupKey

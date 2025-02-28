@@ -28,3 +28,11 @@ query FindGalleriesForSelect(
     }
   }
 }
+
+query FindGalleryImageID($id: ID!, $index: Int!) {
+  findGallery(id: $id) {
+    image(index: $index) {
+      id
+    }
+  }
+}

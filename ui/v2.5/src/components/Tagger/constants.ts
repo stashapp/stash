@@ -11,7 +11,6 @@ export interface ITaggerSource {
   supportSceneFragment?: boolean;
 }
 
-export const LOCAL_FORAGE_KEY = "tagger";
 export const DEFAULT_BLACKLIST = [
   "\\sXXX\\s",
   "1080p",
@@ -28,10 +27,10 @@ export const DEFAULT_EXCLUDED_STUDIO_FIELDS = ["name"];
 
 export const initialConfig: ITaggerConfig = {
   blacklist: DEFAULT_BLACKLIST,
-  showMales: false,
+  showMales: true,
   mode: "auto",
   setCoverImage: true,
-  setTags: false,
+  setTags: true,
   tagOperation: "merge",
   fingerprintQueue: {},
   excludedPerformerFields: DEFAULT_EXCLUDED_PERFORMER_FIELDS,

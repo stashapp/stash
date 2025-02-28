@@ -91,6 +91,12 @@ input StashIDCriterionInput {
   modifier: CriterionModifier!
 }
 
+input CustomFieldCriterionInput {
+  field: String!
+  value: [Any!]
+  modifier: CriterionModifier!
+}
+
 input PerformerFilterType {
   AND: PerformerFilterType
   OR: PerformerFilterType
@@ -182,6 +188,8 @@ input PerformerFilterType {
   created_at: TimestampCriterionInput
   "Filter by last update time"
   updated_at: TimestampCriterionInput
+
+  custom_fields: [CustomFieldCriterionInput!]
 }
 
 input SceneMarkerFilterType {
@@ -191,6 +199,10 @@ input SceneMarkerFilterType {
   scene_tags: HierarchicalMultiCriterionInput
   "Filter to only include scene markers with these performers"
   performers: MultiCriterionInput
+  "Filter to only include scene markers from these scenes"
+  scenes: MultiCriterionInput
+  "Filter by duration (in seconds)"
+  duration: FloatCriterionInput
   "Filter by creation time"
   created_at: TimestampCriterionInput
   "Filter by last update time"
@@ -259,7 +271,7 @@ input SceneFilterType {
   "Filter to only include scenes with this movie"
   movies: MultiCriterionInput @deprecated(reason: "use groups instead")
   "Filter to only include scenes with this group"
-  groups: MultiCriterionInput
+  groups: HierarchicalMultiCriterionInput
   "Filter to only include scenes with this gallery"
   galleries: MultiCriterionInput
   "Filter to only include scenes with these tags"
@@ -387,6 +399,15 @@ input GroupFilterType {
   created_at: TimestampCriterionInput
   "Filter by last update time"
   updated_at: TimestampCriterionInput
+
+  "Filter by containing groups"
+  containing_groups: HierarchicalMultiCriterionInput
+  "Filter by sub groups"
+  sub_groups: HierarchicalMultiCriterionInput
+  "Filter by number of containing groups the group has"
+  containing_group_count: IntCriterionInput
+  "Filter by number of sub-groups the group has"
+  sub_group_count: IntCriterionInput
 
   "Filter by related scenes that meet this criteria"
   scenes_filter: SceneFilterType
@@ -520,6 +541,9 @@ input TagFilterType {
 
   "Filter by tag name"
   name: StringCriterionInput
+
+  "Filter by tag sort_name"
+  sort_name: StringCriterionInput
 
   "Filter by tag aliases"
   aliases: StringCriterionInput

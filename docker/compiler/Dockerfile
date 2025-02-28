@@ -1,4 +1,4 @@
-FROM golang:1.22
+FROM golang:1.22.8
 
 LABEL maintainer="https://discord.gg/2TsNFKt"
 
@@ -26,9 +26,9 @@ RUN apt-get update && \
 
 # FreeBSD cross-compilation setup
 # https://github.com/smartmontools/docker-build/blob/6b8c92560d17d325310ba02d9f5a4b250cb0764a/Dockerfile#L66
-ENV FREEBSD_VERSION       12.4
+ENV FREEBSD_VERSION       13.4
 ENV FREEBSD_DOWNLOAD_URL  http://ftp.plusline.de/FreeBSD/releases/amd64/${FREEBSD_VERSION}-RELEASE/base.txz
-ENV FREEBSD_SHA           581c7edacfd2fca2bdf5791f667402d22fccd8a5e184635e0cac075564d57aa8
+ENV FREEBSD_SHA           8e13b0a93daba349b8d28ad246d7beb327659b2ef4fe44d89f447392daec5a7c
 
 RUN cd /tmp && \
     curl -o base.txz $FREEBSD_DOWNLOAD_URL && \

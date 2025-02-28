@@ -2,11 +2,11 @@ package autotag
 
 import (
 	"context"
+	"slices"
 
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sliceutil"
 )
 
 type ImageFinderUpdater interface {
@@ -44,7 +44,7 @@ func ImagePerformers(ctx context.Context, s *models.Image, rw ImagePerformerUpda
 		}
 		existing := s.PerformerIDs.List()
 
-		if sliceutil.Contains(existing, otherID) {
+		if slices.Contains(existing, otherID) {
 			return false, nil
 		}
 
@@ -82,7 +82,7 @@ func ImageTags(ctx context.Context, s *models.Image, rw ImageTagUpdater, tagRead
 		}
 		existing := s.TagIDs.List()
 
-		if sliceutil.Contains(existing, otherID) {
+		if slices.Contains(existing, otherID) {
 			return false, nil
 		}
 

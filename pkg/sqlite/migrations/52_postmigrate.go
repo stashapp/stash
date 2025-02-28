@@ -34,7 +34,7 @@ func (m *schema52Migrator) migrate(ctx context.Context) error {
 		query := "SELECT `folders`.`id`, `folders`.`path`, `parent_folder`.`path` FROM `folders` " +
 			"INNER JOIN `folders` AS `parent_folder` ON `parent_folder`.`id` = `folders`.`parent_folder_id`"
 
-		rows, err := m.db.Query(query)
+		rows, err := tx.Query(query)
 		if err != nil {
 			return err
 		}
@@ -64,7 +64,7 @@ func (m *schema52Migrator) migrate(ctx context.Context) error {
 
 				// ensure the correct path is unique
 				var v int
-				isEmptyErr := m.db.Get(&v, "SELECT 1 FROM folders WHERE path = ?", correctPath)
+				isEmptyErr := tx.Get(&v, "SELECT 1 FROM folders WHERE path = ?", correctPath)
 				if isEmptyErr != nil && !errors.Is(isEmptyErr, sql.ErrNoRows) {
 					return fmt.Errorf("error checking if correct path %s is unique: %w", correctPath, isEmptyErr)
 				}
@@ -75,7 +75,7 @@ func (m *schema52Migrator) migrate(ctx context.Context) error {
 					continue
 				}
 
-				if _, err := m.db.Exec("UPDATE folders SET path = ? WHERE id = ?", correctPath, id); err != nil {
+				if _, err := tx.Exec("UPDATE folders SET path = ? WHERE id = ?", correctPath, id); err != nil {
 					return fmt.Errorf("error updating folder path %s to %s: %w", folderPath, correctPath, err)
 				}
 			}

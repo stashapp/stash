@@ -1,3 +1,4 @@
+// Package static provides the static files embedded in the application.
 package static
 
 import (
@@ -7,7 +8,7 @@ import (
 	"io/fs"
 )
 
-//go:embed performer performer_male scene image tag studio group
+//go:embed performer performer_male scene image gallery tag studio group
 var data embed.FS
 
 const (
@@ -20,6 +21,9 @@ const (
 	Image             = "image"
 	DefaultImageImage = "image/image.svg"
 
+	Gallery             = "gallery"
+	DefaultGalleryImage = "gallery/gallery.svg"
+
 	Tag             = "tag"
 	DefaultTagImage = "tag/tag.svg"
 
@@ -27,7 +31,7 @@ const (
 	DefaultStudioImage = "studio/studio.svg"
 
 	Group             = "group"
-	DefaultGroupImage = "group/group.png"
+	DefaultGroupImage = "group/group.svg"
 )
 
 // Sub returns an FS rooted at path, using fs.Sub.

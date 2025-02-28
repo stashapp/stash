@@ -5,12 +5,9 @@ import { useTitleProps } from "src/hooks/title";
 import Group from "./GroupDetails/Group";
 import GroupCreate from "./GroupDetails/GroupCreate";
 import { GroupList } from "./GroupList";
-import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
 import { View } from "../List/views";
 
 const Groups: React.FC = () => {
-  useScrollToTopOnMount();
-
   return <GroupList view={View.Groups} />;
 };
 

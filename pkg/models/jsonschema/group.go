@@ -11,21 +11,27 @@ import (
 	"github.com/stashapp/stash/pkg/models/json"
 )
 
+type SubGroupDescription struct {
+	Group       string `json:"name,omitempty"`
+	Description string `json:"description,omitempty"`
+}
+
 type Group struct {
-	Name       string        `json:"name,omitempty"`
-	Aliases    string        `json:"aliases,omitempty"`
-	Duration   int           `json:"duration,omitempty"`
-	Date       string        `json:"date,omitempty"`
-	Rating     int           `json:"rating,omitempty"`
-	Director   string        `json:"director,omitempty"`
-	Synopsis   string        `json:"synopsis,omitempty"`
-	FrontImage string        `json:"front_image,omitempty"`
-	BackImage  string        `json:"back_image,omitempty"`
-	URLs       []string      `json:"urls,omitempty"`
-	Studio     string        `json:"studio,omitempty"`
-	Tags       []string      `json:"tags,omitempty"`
-	CreatedAt  json.JSONTime `json:"created_at,omitempty"`
-	UpdatedAt  json.JSONTime `json:"updated_at,omitempty"`
+	Name       string                `json:"name,omitempty"`
+	Aliases    string                `json:"aliases,omitempty"`
+	Duration   int                   `json:"duration,omitempty"`
+	Date       string                `json:"date,omitempty"`
+	Rating     int                   `json:"rating,omitempty"`
+	Director   string                `json:"director,omitempty"`
+	Synopsis   string                `json:"synopsis,omitempty"`
+	FrontImage string                `json:"front_image,omitempty"`
+	BackImage  string                `json:"back_image,omitempty"`
+	URLs       []string              `json:"urls,omitempty"`
+	Studio     string                `json:"studio,omitempty"`
+	Tags       []string              `json:"tags,omitempty"`
+	SubGroups  []SubGroupDescription `json:"sub_groups,omitempty"`
+	CreatedAt  json.JSONTime         `json:"created_at,omitempty"`
+	UpdatedAt  json.JSONTime         `json:"updated_at,omitempty"`
 
 	// deprecated - for import only
 	URL string `json:"url,omitempty"`

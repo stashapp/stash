@@ -148,6 +148,11 @@ export type CriterionType =
   | "studios"
   | "scenes"
   | "groups"
+  | "movies" // legacy
+  | "containing_groups"
+  | "containing_group_count"
+  | "sub_groups"
+  | "sub_group_count"
   | "galleries"
   | "birth_year"
   | "age"
@@ -214,4 +219,6 @@ export type CriterionType =
   | "code"
   | "photographer"
   | "disambiguation"
-  | "has_chapters";
+  | "has_chapters"
+  | "sort_name"
+  | "custom_fields";

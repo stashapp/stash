@@ -7,10 +7,15 @@ import { View } from "src/components/List/views";
 interface ITagImagesPanel {
   active: boolean;
   tag: GQL.TagDataFragment;
+  showSubTagContent?: boolean;
 }
 
-export const TagImagesPanel: React.FC<ITagImagesPanel> = ({ active, tag }) => {
-  const filterHook = useTagFilterHook(tag);
+export const TagImagesPanel: React.FC<ITagImagesPanel> = ({
+  active,
+  tag,
+  showSubTagContent,
+}) => {
+  const filterHook = useTagFilterHook(tag, showSubTagContent);
   return (
     <ImageList
       filterHook={filterHook}

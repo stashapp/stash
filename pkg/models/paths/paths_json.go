@@ -12,14 +12,15 @@ type JSONPaths struct {
 
 	ScrapedFile string
 
-	Performers string
-	Scenes     string
-	Images     string
-	Galleries  string
-	Studios    string
-	Tags       string
-	Groups     string
-	Files      string
+	Performers   string
+	Scenes       string
+	Images       string
+	Galleries    string
+	Studios      string
+	Tags         string
+	Groups       string
+	Files        string
+	SavedFilters string
 }
 
 func newJSONPaths(baseDir string) *JSONPaths {
@@ -34,6 +35,7 @@ func newJSONPaths(baseDir string) *JSONPaths {
 	jp.Groups = filepath.Join(baseDir, "movies")
 	jp.Tags = filepath.Join(baseDir, "tags")
 	jp.Files = filepath.Join(baseDir, "files")
+	jp.SavedFilters = filepath.Join(baseDir, "saved_filters")
 	return &jp
 }
 
@@ -52,6 +54,7 @@ func EmptyJSONDirs(baseDir string) {
 	_ = fsutil.EmptyDir(jsonPaths.Groups)
 	_ = fsutil.EmptyDir(jsonPaths.Tags)
 	_ = fsutil.EmptyDir(jsonPaths.Files)
+	_ = fsutil.EmptyDir(jsonPaths.SavedFilters)
 }
 
 func EnsureJSONDirs(baseDir string) {
@@ -82,5 +85,8 @@ func EnsureJSONDirs(baseDir string) {
 	}
 	if err := fsutil.EnsureDir(jsonPaths.Files); err != nil {
 		logger.Warnf("couldn't create directories for Files: %v", err)
+	}
+	if err := fsutil.EnsureDir(jsonPaths.SavedFilters); err != nil {
+		logger.Warnf("couldn't create directories for Saved Filters: %v", err)
 	}
 }

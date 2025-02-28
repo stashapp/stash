@@ -17,7 +17,8 @@ import "./live";
 import "./PlaylistButtons";
 import "./source-selector";
 import "./persist-volume";
-import "./markers";
+import MarkersPlugin, { type IMarker } from "./markers";
+void MarkersPlugin;
 import "./vtt-thumbnails";
 import "./big-buttons";
 import "./track-activity";
@@ -243,7 +244,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   const [fullscreen, setFullscreen] = useState(false);
   const [showScrubber, setShowScrubber] = useState(false);
 
-  const initialTimestamp = useRef(-1);
   const started = useRef(false);
   const auto = useRef(false);
   const interactiveReady = useRef(false);
@@ -298,9 +298,13 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     sendSetTimestamp((value: number) => {
       const player = getPlayer();
       if (player && value >= 0) {
-        player.play()?.then(() => {
+        if (player.hasStarted() && player.paused()) {
           player.currentTime(value);
-        });
+        } else {
+          player.play()?.then(() => {
+            player.currentTime(value);
+          });
+        }
       }
     });
   }, [sendSetTimestamp, getPlayer]);
@@ -451,9 +455,11 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     if (!player) return;
 
     function canplay(this: VideoJsPlayer) {
-      if (initialTimestamp.current !== -1) {
-        this.currentTime(initialTimestamp.current);
-        initialTimestamp.current = -1;
+      // if we're seeking before starting, don't set the initial timestamp
+      // when starting from the beginning, there is a small delay before the event
+      // is triggered, so we can't just check if the time is 0
+      if (this.currentTime() >= 0.1) {
+        return;
       }
     }
 
@@ -544,7 +550,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
     // always stop the interactive client on initialisation
     interactiveClient.pause();
-    interactiveReady.current = false;
 
     const isSafari = UAParser().browser.name?.includes("Safari");
     const isLandscape = file.height && file.width && file.width > file.height;
@@ -657,7 +662,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       startPosition = resumeTime;
     }
 
-    initialTimestamp.current = startPosition;
     setTime(startPosition);
 
     player.load();
@@ -665,6 +669,10 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
     player.ready(() => {
       player.vttThumbnails().src(scene.paths.vtt ?? null);
+
+      if (startPosition) {
+        player.currentTime(startPosition);
+      }
     });
 
     started.current = false;
@@ -685,25 +693,78 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     _initialTimestamp,
   ]);
 
-  useEffect(() => {
+  const loadMarkers = useCallback(() => {
     const player = getPlayer();
     if (!player) return;
 
-    const markers = player.markers();
+    const markerData = scene.scene_markers.map((marker) => ({
+      title: getMarkerTitle(marker),
+      seconds: marker.seconds,
+      end_seconds: marker.end_seconds ?? null,
+      primaryTag: marker.primary_tag,
+    }));
+
+    const markers = player!.markers();
     markers.clearMarkers();
-    for (const marker of scene.scene_markers) {
-      markers.addMarker({
-        title: getMarkerTitle(marker),
-        time: marker.seconds,
-      });
+
+    const uniqueTagNames = markerData
+      .map((marker) => marker.primaryTag.name)
+      .filter((value, index, self) => self.indexOf(value) === index);
+
+    // Wait for colors
+    markers.findColors(uniqueTagNames);
+
+    const showRangeTags =
+      !ScreenUtils.isMobile() && (uiConfig?.showRangeMarkers ?? true);
+    const timestampMarkers: IMarker[] = [];
+    const rangeMarkers: IMarker[] = [];
+
+    if (!showRangeTags) {
+      for (const marker of markerData) {
+        timestampMarkers.push(marker);
+      }
+    } else {
+      for (const marker of markerData) {
+        if (marker.end_seconds === null) {
+          timestampMarkers.push(marker);
+        } else {
+          rangeMarkers.push(marker);
+        }
+      }
     }
+
+    requestAnimationFrame(() => {
+      markers.addDotMarkers(timestampMarkers);
+      markers.addRangeMarkers(rangeMarkers);
+    });
+  }, [getPlayer, scene, uiConfig]);
+
+  useEffect(() => {
+    const player = getPlayer();
+    if (!player) return;
 
     if (scene.paths.screenshot) {
       player.poster(scene.paths.screenshot);
     } else {
       player.poster("");
     }
-  }, [getPlayer, scene]);
+
+    // Define the event handler outside the useEffect
+    const handleLoadMetadata = () => {
+      loadMarkers();
+    };
+
+    // Ensure markers are added after player is fully ready and sources are loaded
+    if (player.readyState() >= 1) {
+      loadMarkers();
+    } else {
+      player.on("loadedmetadata", handleLoadMetadata);
+    }
+
+    return () => {
+      player.off("loadedmetadata", handleLoadMetadata);
+    };
+  }, [getPlayer, scene, loadMarkers]);
 
   useEffect(() => {
     const player = getPlayer();
@@ -793,7 +854,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     if (started.current) {
       getPlayer()?.currentTime(seconds);
     } else {
-      initialTimestamp.current = seconds;
       setTime(seconds);
     }
   }
@@ -822,7 +882,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
   return (
     <div
-      className={cx("VideoPlayer", { portrait: isPortrait })}
+      className={cx("VideoPlayer", { portrait: isPortrait, "no-file": !file })}
       onKeyDownCapture={onKeyDown}
     >
       <div className="video-wrapper" ref={videoRef} />

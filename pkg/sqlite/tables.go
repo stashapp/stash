@@ -32,13 +32,15 @@ var (
 	performersURLsJoinTable     = goqu.T(performerURLsTable)
 	performersTagsJoinTable     = goqu.T(performersTagsTable)
 	performersStashIDsJoinTable = goqu.T("performer_stash_ids")
+	performersCustomFieldsTable = goqu.T("performer_custom_fields")
 
 	studiosAliasesJoinTable  = goqu.T(studioAliasesTable)
 	studiosTagsJoinTable     = goqu.T(studiosTagsTable)
 	studiosStashIDsJoinTable = goqu.T("studio_stash_ids")
 
-	groupsURLsJoinTable = goqu.T(groupURLsTable)
-	groupsTagsJoinTable = goqu.T(groupsTagsTable)
+	groupsURLsJoinTable     = goqu.T(groupURLsTable)
+	groupsTagsJoinTable     = goqu.T(groupsTagsTable)
+	groupRelationsJoinTable = goqu.T(groupRelationsTable)
 
 	tagsAliasesJoinTable  = goqu.T(tagAliasesTable)
 	tagRelationsJoinTable = goqu.T(tagRelationsTable)
@@ -57,12 +59,14 @@ var (
 		},
 	}
 
-	imageGalleriesTableMgr = &joinTable{
-		table: table{
-			table:    galleriesImagesJoinTable,
-			idColumn: galleriesImagesJoinTable.Col(imageIDColumn),
+	imageGalleriesTableMgr = &imageGalleriesTable{
+		joinTable: joinTable{
+			table: table{
+				table:    galleriesImagesJoinTable,
+				idColumn: galleriesImagesJoinTable.Col(imageIDColumn),
+			},
+			fkColumn: galleriesImagesJoinTable.Col(galleryIDColumn),
 		},
-		fkColumn: galleriesImagesJoinTable.Col(galleryIDColumn),
 	}
 
 	imagesTagsTableMgr = &joinTable{
@@ -330,7 +334,9 @@ var (
 			table:    tagRelationsJoinTable,
 			idColumn: tagRelationsJoinTable.Col(tagChildIDColumn),
 		},
-		fkColumn: tagRelationsJoinTable.Col(tagParentIDColumn),
+		fkColumn:     tagRelationsJoinTable.Col(tagParentIDColumn),
+		foreignTable: tagTableMgr,
+		orderBy:      tagTableMgr.table.Col("name").Asc(),
 	}
 
 	tagsChildTagsTableMgr = *tagsParentTagsTableMgr.invert()
@@ -358,6 +364,10 @@ var (
 		fkColumn:     groupsTagsJoinTable.Col(tagIDColumn),
 		foreignTable: tagTableMgr,
 		orderBy:      tagTableMgr.table.Col("name").Asc(),
+	}
+
+	groupRelationshipTableMgr = &table{
+		table: groupRelationsJoinTable,
 	}
 )
 

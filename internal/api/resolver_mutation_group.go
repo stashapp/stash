@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/stashapp/stash/internal/static"
+	"github.com/stashapp/stash/pkg/group"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin/hook"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
@@ -41,6 +42,16 @@ func groupFromGroupCreateInput(ctx context.Context, input GroupCreateInput) (*mo
 	newGroup.TagIDs, err = translator.relatedIds(input.TagIds)
 	if err != nil {
 		return nil, fmt.Errorf("converting tag ids: %w", err)
+	}
+
+	newGroup.ContainingGroups, err = translator.groupIDDescriptions(input.ContainingGroups)
+	if err != nil {
+		return nil, fmt.Errorf("converting containing group ids: %w", err)
+	}
+
+	newGroup.SubGroups, err = translator.groupIDDescriptions(input.SubGroups)
+	if err != nil {
+		return nil, fmt.Errorf("converting containing group ids: %w", err)
 	}
 
 	if input.Urls != nil {
@@ -82,24 +93,8 @@ func (r *mutationResolver) GroupCreate(ctx context.Context, input GroupCreateInp
 
 	// Start the transaction and save the group
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		qb := r.repository.Group
-
-		err = qb.Create(ctx, newGroup)
-		if err != nil {
+		if err = r.groupService.Create(ctx, newGroup, frontimageData, backimageData); err != nil {
 			return err
-		}
-
-		// update image table
-		if len(frontimageData) > 0 {
-			if err := qb.UpdateFrontImage(ctx, newGroup.ID, frontimageData); err != nil {
-				return err
-			}
-		}
-
-		if len(backimageData) > 0 {
-			if err := qb.UpdateBackImage(ctx, newGroup.ID, backimageData); err != nil {
-				return err
-			}
 		}
 
 		return nil
@@ -141,6 +136,18 @@ func groupPartialFromGroupUpdateInput(translator changesetTranslator, input Grou
 		return
 	}
 
+	updatedGroup.ContainingGroups, err = translator.updateGroupIDDescriptions(input.ContainingGroups, "containing_groups")
+	if err != nil {
+		err = fmt.Errorf("converting containing group ids: %w", err)
+		return
+	}
+
+	updatedGroup.SubGroups, err = translator.updateGroupIDDescriptions(input.SubGroups, "sub_groups")
+	if err != nil {
+		err = fmt.Errorf("converting containing group ids: %w", err)
+		return
+	}
+
 	updatedGroup.URLs = translator.updateStrings(input.Urls, "urls")
 
 	return updatedGroup, nil
@@ -179,26 +186,20 @@ func (r *mutationResolver) GroupUpdate(ctx context.Context, input GroupUpdateInp
 		}
 	}
 
-	// Start the transaction and save the group
-	var group *models.Group
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		qb := r.repository.Group
-		group, err = qb.UpdatePartial(ctx, groupID, updatedGroup)
+		frontImage := group.ImageInput{
+			Image: frontimageData,
+			Set:   frontImageIncluded,
+		}
+
+		backImage := group.ImageInput{
+			Image: backimageData,
+			Set:   backImageIncluded,
+		}
+
+		_, err = r.groupService.UpdatePartial(ctx, groupID, updatedGroup, frontImage, backImage)
 		if err != nil {
 			return err
-		}
-
-		// update image table
-		if frontImageIncluded {
-			if err := qb.UpdateFrontImage(ctx, group.ID, frontimageData); err != nil {
-				return err
-			}
-		}
-
-		if backImageIncluded {
-			if err := qb.UpdateBackImage(ctx, group.ID, backimageData); err != nil {
-				return err
-			}
 		}
 
 		return nil
@@ -207,9 +208,9 @@ func (r *mutationResolver) GroupUpdate(ctx context.Context, input GroupUpdateInp
 	}
 
 	// for backwards compatibility - run both movie and group hooks
-	r.hookExecutor.ExecutePostHooks(ctx, group.ID, hook.GroupUpdatePost, input, translator.getFields())
-	r.hookExecutor.ExecutePostHooks(ctx, group.ID, hook.MovieUpdatePost, input, translator.getFields())
-	return r.getGroup(ctx, group.ID)
+	r.hookExecutor.ExecutePostHooks(ctx, groupID, hook.GroupUpdatePost, input, translator.getFields())
+	r.hookExecutor.ExecutePostHooks(ctx, groupID, hook.MovieUpdatePost, input, translator.getFields())
+	return r.getGroup(ctx, groupID)
 }
 
 func groupPartialFromBulkGroupUpdateInput(translator changesetTranslator, input BulkGroupUpdateInput) (ret models.GroupPartial, err error) {
@@ -227,6 +228,18 @@ func groupPartialFromBulkGroupUpdateInput(translator changesetTranslator, input 
 	updatedGroup.TagIDs, err = translator.updateIdsBulk(input.TagIds, "tag_ids")
 	if err != nil {
 		err = fmt.Errorf("converting tag ids: %w", err)
+		return
+	}
+
+	updatedGroup.ContainingGroups, err = translator.updateGroupIDDescriptionsBulk(input.ContainingGroups, "containing_groups")
+	if err != nil {
+		err = fmt.Errorf("converting containing group ids: %w", err)
+		return
+	}
+
+	updatedGroup.SubGroups, err = translator.updateGroupIDDescriptionsBulk(input.SubGroups, "sub_groups")
+	if err != nil {
+		err = fmt.Errorf("converting containing group ids: %w", err)
 		return
 	}
 
@@ -254,10 +267,8 @@ func (r *mutationResolver) BulkGroupUpdate(ctx context.Context, input BulkGroupU
 	ret := []*models.Group{}
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		qb := r.repository.Group
-
 		for _, groupID := range groupIDs {
-			group, err := qb.UpdatePartial(ctx, groupID, updatedGroup)
+			group, err := r.groupService.UpdatePartial(ctx, groupID, updatedGroup, group.ImageInput{}, group.ImageInput{})
 			if err != nil {
 				return err
 			}
@@ -329,6 +340,73 @@ func (r *mutationResolver) GroupsDestroy(ctx context.Context, groupIDs []string)
 		// for backwards compatibility - run both movie and group hooks
 		r.hookExecutor.ExecutePostHooks(ctx, id, hook.GroupDestroyPost, groupIDs, nil)
 		r.hookExecutor.ExecutePostHooks(ctx, id, hook.MovieDestroyPost, groupIDs, nil)
+	}
+
+	return true, nil
+}
+
+func (r *mutationResolver) AddGroupSubGroups(ctx context.Context, input GroupSubGroupAddInput) (bool, error) {
+	groupID, err := strconv.Atoi(input.ContainingGroupID)
+	if err != nil {
+		return false, fmt.Errorf("converting group id: %w", err)
+	}
+
+	subGroups, err := groupsDescriptionsFromGroupInput(input.SubGroups)
+	if err != nil {
+		return false, fmt.Errorf("converting sub group ids: %w", err)
+	}
+
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		return r.groupService.AddSubGroups(ctx, groupID, subGroups, input.InsertIndex)
+	}); err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
+
+func (r *mutationResolver) RemoveGroupSubGroups(ctx context.Context, input GroupSubGroupRemoveInput) (bool, error) {
+	groupID, err := strconv.Atoi(input.ContainingGroupID)
+	if err != nil {
+		return false, fmt.Errorf("converting group id: %w", err)
+	}
+
+	subGroupIDs, err := stringslice.StringSliceToIntSlice(input.SubGroupIds)
+	if err != nil {
+		return false, fmt.Errorf("converting sub group ids: %w", err)
+	}
+
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		return r.groupService.RemoveSubGroups(ctx, groupID, subGroupIDs)
+	}); err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
+
+func (r *mutationResolver) ReorderSubGroups(ctx context.Context, input ReorderSubGroupsInput) (bool, error) {
+	groupID, err := strconv.Atoi(input.GroupID)
+	if err != nil {
+		return false, fmt.Errorf("converting group id: %w", err)
+	}
+
+	subGroupIDs, err := stringslice.StringSliceToIntSlice(input.SubGroupIds)
+	if err != nil {
+		return false, fmt.Errorf("converting sub group ids: %w", err)
+	}
+
+	insertPointID, err := strconv.Atoi(input.InsertAtID)
+	if err != nil {
+		return false, fmt.Errorf("converting insert at id: %w", err)
+	}
+
+	insertAfter := utils.IsTrue(input.InsertAfter)
+
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		return r.groupService.ReorderSubGroups(ctx, groupID, subGroupIDs, insertPointID, insertAfter)
+	}); err != nil {
+		return false, err
 	}
 
 	return true, nil

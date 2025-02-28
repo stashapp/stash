@@ -338,3 +338,10 @@ type SystemStatus {
 input MigrateInput {
   backupPath: String!
 }
+
+input CustomFieldsInput {
+  "If populated, the entire custom fields map will be replaced with this value"
+  full: Map
+  "If populated, only the keys in this map will be updated"
+  partial: Map
+}

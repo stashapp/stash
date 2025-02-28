@@ -1,5 +1,6 @@
 import * as GQL from "src/core/generated-graphql";
 import isEqual from "lodash-es/isEqual";
+import { IHasID } from "./data";
 
 interface IHasRating {
   rating100?: GQL.Maybe<number> | undefined;
@@ -19,10 +20,6 @@ export function getAggregateRating(state: IHasRating[]) {
   });
 
   return ret;
-}
-
-interface IHasID {
-  id: string;
 }
 
 interface IHasStudio {
@@ -48,8 +45,11 @@ export function getAggregateStudioId(state: IHasStudio[]) {
   return ret;
 }
 
-export function getAggregateIds(sortedLists: string[][]) {
-  let ret: string[] = [];
+export function getAggregateIds<T>(
+  sortedLists: T[][],
+  isEqualFn: (a: T[], b: T[]) => boolean = isEqual
+) {
+  let ret: T[] = [];
   let first = true;
 
   sortedLists.forEach((l) => {
@@ -57,7 +57,7 @@ export function getAggregateIds(sortedLists: string[][]) {
       ret = l;
       first = false;
     } else {
-      if (!isEqual(ret, l)) {
+      if (!isEqualFn(ret, l)) {
         ret = [];
       }
     }

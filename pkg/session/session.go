@@ -1,3 +1,4 @@
+// Package session provides session authentication and management for the application.
 package session
 
 import (

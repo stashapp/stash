@@ -57,10 +57,41 @@ const modifierMessageIDs = {
   [CriterionModifier.NotBetween]: "criterion_modifier.not_between",
 };
 
-// V = criterion value type
-export abstract class Criterion<V extends CriterionValue> {
+export abstract class Criterion {
   public criterionOption: CriterionOption;
 
+  constructor(type: CriterionOption) {
+    this.criterionOption = type;
+  }
+
+  public isValid(): boolean {
+    return true;
+  }
+
+  public clone() {
+    const ret = Object.assign(Object.create(Object.getPrototypeOf(this)), this);
+    ret.cloneValues();
+    return ret;
+  }
+
+  protected cloneValues() {}
+
+  public abstract getLabel(intl: IntlShape): string;
+
+  public getId(): string {
+    return `${this.criterionOption.type}`;
+  }
+
+  public abstract toJSON(): string;
+
+  public abstract applyToCriterionInput(input: Record<string, unknown>): void;
+  public abstract setFromSavedCriterion(criterion: unknown): void;
+}
+
+// V = criterion value type
+export abstract class ModifierCriterion<
+  V extends CriterionValue
+> extends Criterion {
   protected _modifier!: CriterionModifier;
   public get modifier(): CriterionModifier {
     return this._modifier;
@@ -83,11 +114,23 @@ export abstract class Criterion<V extends CriterionValue> {
 
   protected abstract getLabelValue(intl: IntlShape): string;
 
-  constructor(type: CriterionOption, value: V) {
-    this.criterionOption = type;
+  constructor(type: ModifierCriterionOption, value: V) {
+    super(type);
     this.modifier = type.defaultModifier;
     this.value = value;
   }
+
+  public modifierCriterionOption() {
+    return this.criterionOption as ModifierCriterionOption;
+  }
+
+  public clone() {
+    const ret = Object.assign(Object.create(Object.getPrototypeOf(this)), this);
+    ret.cloneValues();
+    return ret;
+  }
+
+  protected cloneValues() {}
 
   public static getModifierLabel(intl: IntlShape, modifier: CriterionModifier) {
     const modifierMessageID = modifierMessageIDs[modifier];
@@ -98,7 +141,10 @@ export abstract class Criterion<V extends CriterionValue> {
   }
 
   public getLabel(intl: IntlShape): string {
-    const modifierString = Criterion.getModifierLabel(intl, this.modifier);
+    const modifierString = ModifierCriterion.getModifierLabel(
+      intl,
+      this.modifier
+    );
     let valueString = "";
 
     if (
@@ -116,10 +162,6 @@ export abstract class Criterion<V extends CriterionValue> {
         valueString,
       }
     );
-  }
-
-  public getId(): string {
-    return `${this.criterionOption.type}-${this.modifier.toString()}`; // TODO add values?
   }
 
   public toJSON() {
@@ -149,14 +191,11 @@ export abstract class Criterion<V extends CriterionValue> {
     this.modifier = criterion.modifier;
   }
 
-  public toCriterionInput(): unknown {
-    return {
-      value: this.value,
-      modifier: this.modifier,
-    };
+  public applyToCriterionInput(input: Record<string, unknown>) {
+    input[this.criterionOption.type] = this.toCriterionInput();
   }
 
-  public toSavedCriterion(): ISavedCriterion<V> {
+  public toCriterionInput(): unknown {
     return {
       value: this.value,
       modifier: this.modifier,
@@ -177,38 +216,31 @@ export type InputType =
   | "galleries"
   | undefined;
 
-interface ICriterionOptionsParams {
+type MakeCriterionFn = (
+  o: CriterionOption,
+  config?: ConfigDataFragment
+) => Criterion;
+
+interface ICriterionOptionParams {
   messageID: string;
   type: CriterionType;
-  inputType?: InputType;
-  modifierOptions?: CriterionModifier[];
-  defaultModifier?: CriterionModifier;
-  options?: Option[];
-  makeCriterion: (
-    o: CriterionOption,
-    config?: ConfigDataFragment
-  ) => Criterion<CriterionValue>;
+  makeCriterion: MakeCriterionFn;
+  hidden?: boolean;
 }
-export class CriterionOption {
-  public readonly messageID: string;
-  public readonly type: CriterionType;
-  public readonly modifierOptions: CriterionModifier[];
-  public readonly defaultModifier: CriterionModifier;
-  public readonly options: Option[] | undefined;
-  public readonly inputType: InputType;
-  public readonly makeCriterionFn: (
-    o: CriterionOption,
-    config?: ConfigDataFragment
-  ) => Criterion<CriterionValue>;
 
-  constructor(options: ICriterionOptionsParams) {
-    this.messageID = options.messageID;
+export class CriterionOption {
+  public readonly type: CriterionType;
+  public readonly messageID: string;
+  public readonly makeCriterionFn: MakeCriterionFn;
+
+  // used for legacy criteria that are not shown in the UI
+  public readonly hidden: boolean = false;
+
+  constructor(options: ICriterionOptionParams) {
     this.type = options.type;
-    this.modifierOptions = options.modifierOptions ?? [];
-    this.defaultModifier = options.defaultModifier ?? CriterionModifier.Equals;
-    this.options = options.options;
-    this.inputType = options.inputType;
+    this.messageID = options.messageID;
     this.makeCriterionFn = options.makeCriterion;
+    this.hidden = options.hidden ?? false;
   }
 
   public makeCriterion(config?: ConfigDataFragment) {
@@ -216,13 +248,35 @@ export class CriterionOption {
   }
 }
 
-export class ILabeledIdCriterionOption extends CriterionOption {
+interface IModifierCriterionOptionParams extends ICriterionOptionParams {
+  inputType?: InputType;
+  modifierOptions?: CriterionModifier[];
+  defaultModifier?: CriterionModifier;
+  options?: Option[];
+}
+
+export class ModifierCriterionOption extends CriterionOption {
+  public readonly modifierOptions: CriterionModifier[];
+  public readonly defaultModifier: CriterionModifier;
+  public readonly options: Option[] | undefined;
+  public readonly inputType: InputType;
+
+  constructor(options: IModifierCriterionOptionParams) {
+    super(options);
+    this.modifierOptions = options.modifierOptions ?? [];
+    this.defaultModifier = options.defaultModifier ?? CriterionModifier.Equals;
+    this.options = options.options;
+    this.inputType = options.inputType;
+  }
+}
+
+export class ILabeledIdCriterionOption extends ModifierCriterionOption {
   constructor(
     messageID: string,
     value: CriterionType,
     includeAll: boolean,
     inputType: InputType,
-    makeCriterion?: () => Criterion<CriterionValue>
+    makeCriterion?: () => ModifierCriterion<CriterionValue>
   ) {
     const modifierOptions = [
       CriterionModifier.Includes,
@@ -250,7 +304,15 @@ export class ILabeledIdCriterionOption extends CriterionOption {
   }
 }
 
-export class ILabeledIdCriterion extends Criterion<ILabeledId[]> {
+export class ILabeledIdCriterion extends ModifierCriterion<ILabeledId[]> {
+  constructor(type: ModifierCriterionOption, value: ILabeledId[] = []) {
+    super(type, value);
+  }
+
+  public cloneValues() {
+    this.value = this.value.map((v) => ({ ...v }));
+  }
+
   protected getLabelValue(_intl: IntlShape): string {
     return this.value.map((v) => v.label).join(", ");
   }
@@ -272,21 +334,26 @@ export class ILabeledIdCriterion extends Criterion<ILabeledId[]> {
 
     return this.value.length > 0;
   }
-
-  constructor(type: CriterionOption) {
-    super(type, []);
-  }
 }
 
-export class IHierarchicalLabeledIdCriterion extends Criterion<IHierarchicalLabelValue> {
-  constructor(type: CriterionOption) {
-    const value: IHierarchicalLabelValue = {
+export class IHierarchicalLabeledIdCriterion extends ModifierCriterion<IHierarchicalLabelValue> {
+  constructor(
+    type: ModifierCriterionOption,
+    value: IHierarchicalLabelValue = {
       items: [],
       excluded: [],
       depth: 0,
-    };
-
+    }
+  ) {
     super(type, value);
+  }
+
+  public cloneValues() {
+    this.value = {
+      ...this.value,
+      items: this.value.items.map((v) => ({ ...v })),
+      excluded: this.value.excluded.map((v) => ({ ...v })),
+    };
   }
 
   override get modifier(): CriterionModifier {
@@ -298,6 +365,7 @@ export class IHierarchicalLabeledIdCriterion extends Criterion<IHierarchicalLabe
     // excluded only makes sense for includes and includes all
     // so reset it for other modifiers
     if (
+      this.value &&
       value !== CriterionModifier.Includes &&
       value !== CriterionModifier.IncludesAll
     ) {
@@ -318,14 +386,16 @@ export class IHierarchicalLabeledIdCriterion extends Criterion<IHierarchicalLabe
       };
     }
 
+    const modifierOptions =
+      (this.criterionOption as ModifierCriterionOption).modifierOptions ?? [];
+
     // if the previous modifier was excludes, replace it with the equivalent includes criterion
     // this is what is done on the backend
     // only replace if excludes is not a valid modifierOption
     if (
       modifier === CriterionModifier.Excludes &&
-      this.criterionOption.modifierOptions.find(
-        (m) => m === CriterionModifier.Excludes
-      ) === undefined
+      modifierOptions.find((m) => m === CriterionModifier.Excludes) ===
+        undefined
     ) {
       this.modifier = CriterionModifier.Includes;
       this.value.excluded = [...this.value.excluded, ...this.value.items];
@@ -379,7 +449,10 @@ export class IHierarchicalLabeledIdCriterion extends Criterion<IHierarchicalLabe
 
   public getLabel(intl: IntlShape): string {
     let id = "criterion_modifier.format_string";
-    let modifierString = Criterion.getModifierLabel(intl, this.modifier);
+    let modifierString = ModifierCriterion.getModifierLabel(
+      intl,
+      this.modifier
+    );
     let valueString = "";
     let excludedString = "";
 
@@ -391,7 +464,7 @@ export class IHierarchicalLabeledIdCriterion extends Criterion<IHierarchicalLabe
 
       if (this.value.excluded && this.value.excluded.length > 0) {
         if (this.value.items.length === 0) {
-          modifierString = Criterion.getModifierLabel(
+          modifierString = ModifierCriterion.getModifierLabel(
             intl,
             CriterionModifier.Excludes
           );
@@ -420,11 +493,11 @@ export class IHierarchicalLabeledIdCriterion extends Criterion<IHierarchicalLabe
   }
 }
 
-export class StringCriterionOption extends CriterionOption {
+export class StringCriterionOption extends ModifierCriterionOption {
   constructor(
     messageID: string,
     value: CriterionType,
-    makeCriterion?: () => Criterion<CriterionValue>
+    makeCriterion?: () => ModifierCriterion<CriterionValue>
   ) {
     super({
       messageID,
@@ -455,7 +528,7 @@ export function createStringCriterionOption(
   return new StringCriterionOption(messageID ?? type, type);
 }
 
-export class MandatoryStringCriterionOption extends CriterionOption {
+export class MandatoryStringCriterionOption extends ModifierCriterionOption {
   constructor(messageID: string, value: CriterionType) {
     super({
       messageID,
@@ -482,8 +555,8 @@ export function createMandatoryStringCriterionOption(
   return new MandatoryStringCriterionOption(messageID ?? value, value);
 }
 
-export class StringCriterion extends Criterion<string> {
-  constructor(type: CriterionOption) {
+export class StringCriterion extends ModifierCriterion<string> {
+  constructor(type: ModifierCriterionOption) {
     super(type, "");
   }
 
@@ -500,9 +573,13 @@ export class StringCriterion extends Criterion<string> {
   }
 }
 
-export class MultiStringCriterion extends Criterion<string[]> {
-  constructor(type: CriterionOption) {
-    super(type, []);
+export abstract class MultiStringCriterion extends ModifierCriterion<string[]> {
+  constructor(type: ModifierCriterionOption, value: string[] = []) {
+    super(type, value);
+  }
+
+  public cloneValues() {
+    this.value = this.value.slice();
   }
 
   protected getLabelValue(_intl: IntlShape) {
@@ -518,11 +595,11 @@ export class MultiStringCriterion extends Criterion<string[]> {
   }
 }
 
-export class BooleanCriterionOption extends CriterionOption {
+export class BooleanCriterionOption extends ModifierCriterionOption {
   constructor(
     messageID: string,
     value: CriterionType,
-    makeCriterion?: () => Criterion<CriterionValue>
+    makeCriterion?: () => ModifierCriterion<CriterionValue>
   ) {
     super({
       messageID,
@@ -554,11 +631,11 @@ export class BooleanCriterion extends StringCriterion {
   }
 }
 
-export class StringBooleanCriterionOption extends CriterionOption {
+export class StringBooleanCriterionOption extends ModifierCriterionOption {
   constructor(
     messageID: string,
     value: CriterionType,
-    makeCriterion?: () => Criterion<CriterionValue>
+    makeCriterion?: () => ModifierCriterion<CriterionValue>
   ) {
     super({
       messageID,
@@ -581,7 +658,7 @@ export class StringBooleanCriterion extends StringCriterion {
   }
 }
 
-export class NumberCriterionOption extends CriterionOption {
+export class NumberCriterionOption extends ModifierCriterionOption {
   constructor(messageID: string, value: CriterionType) {
     super({
       messageID,
@@ -610,8 +687,12 @@ export function createNumberCriterionOption(
   return new NumberCriterionOption(messageID ?? value, value);
 }
 
-export class NullNumberCriterionOption extends CriterionOption {
-  constructor(messageID: string, value: CriterionType) {
+export class NullNumberCriterionOption extends ModifierCriterionOption {
+  constructor(
+    messageID: string,
+    value: CriterionType,
+    makeCriterion?: MakeCriterionFn
+  ) {
     super({
       messageID,
       type: value,
@@ -627,7 +708,9 @@ export class NullNumberCriterionOption extends CriterionOption {
       ],
       defaultModifier: CriterionModifier.Equals,
       inputType: "number",
-      makeCriterion: () => new NumberCriterion(this),
+      makeCriterion: makeCriterion
+        ? makeCriterion
+        : () => new NumberCriterion(this),
     });
   }
 }
@@ -639,11 +722,11 @@ export function createNullNumberCriterionOption(
   return new NullNumberCriterionOption(messageID ?? value, value);
 }
 
-export class MandatoryNumberCriterionOption extends CriterionOption {
+export class MandatoryNumberCriterionOption extends ModifierCriterionOption {
   constructor(
     messageID: string,
     value: CriterionType,
-    makeCriterion?: () => Criterion<CriterionValue>
+    makeCriterion?: () => ModifierCriterion<CriterionValue>
   ) {
     super({
       messageID,
@@ -672,7 +755,15 @@ export function createMandatoryNumberCriterionOption(
   return new MandatoryNumberCriterionOption(messageID ?? value, value);
 }
 
-export class NumberCriterion extends Criterion<INumberValue> {
+export class NumberCriterion extends ModifierCriterion<INumberValue> {
+  constructor(type: ModifierCriterionOption) {
+    super(type, { value: undefined, value2: undefined });
+  }
+
+  public cloneValues() {
+    this.value = { ...this.value };
+  }
+
   public get value(): INumberValue {
     return this._value;
   }
@@ -731,10 +822,6 @@ export class NumberCriterion extends Criterion<INumberValue> {
 
     return true;
   }
-
-  constructor(type: CriterionOption) {
-    super(type, { value: undefined, value2: undefined });
-  }
 }
 
 export class DurationCriterionOption extends MandatoryNumberCriterionOption {
@@ -750,9 +837,26 @@ export function createDurationCriterionOption(
   return new DurationCriterionOption(messageID ?? value, value);
 }
 
-export class DurationCriterion extends Criterion<INumberValue> {
-  constructor(type: CriterionOption) {
+export class NullDurationCriterionOption extends NullNumberCriterionOption {
+  constructor(messageID: string, value: CriterionType) {
+    super(messageID, value, () => new DurationCriterion(this));
+  }
+}
+
+export function createNullDurationCriterionOption(
+  value: CriterionType,
+  messageID?: string
+) {
+  return new NullDurationCriterionOption(messageID ?? value, value);
+}
+
+export class DurationCriterion extends ModifierCriterion<INumberValue> {
+  constructor(type: ModifierCriterionOption) {
     super(type, { value: undefined, value2: undefined });
+  }
+
+  public cloneValues() {
+    this.value = { ...this.value };
   }
 
   public toCriterionInput(): IntCriterionInput {
@@ -801,7 +905,7 @@ export class DurationCriterion extends Criterion<INumberValue> {
   }
 }
 
-export class DateCriterionOption extends CriterionOption {
+export class DateCriterionOption extends ModifierCriterionOption {
   constructor(messageID: string, value: CriterionType) {
     super({
       messageID,
@@ -827,7 +931,15 @@ export function createDateCriterionOption(value: CriterionType) {
   return new DateCriterionOption(value, value);
 }
 
-export class DateCriterion extends Criterion<IDateValue> {
+export class DateCriterion extends ModifierCriterion<IDateValue> {
+  constructor(type: ModifierCriterionOption) {
+    super(type, { value: "", value2: undefined });
+  }
+
+  public cloneValues() {
+    this.value = { ...this.value };
+  }
+
   public encodeValue() {
     return {
       value: this.value.value,
@@ -874,13 +986,9 @@ export class DateCriterion extends Criterion<IDateValue> {
 
     return true;
   }
-
-  constructor(type: CriterionOption) {
-    super(type, { value: "", value2: undefined });
-  }
 }
 
-export class TimestampCriterionOption extends CriterionOption {
+export class TimestampCriterionOption extends ModifierCriterionOption {
   constructor(messageID: string, value: CriterionType) {
     super({
       messageID,
@@ -904,7 +1012,7 @@ export function createTimestampCriterionOption(value: CriterionType) {
   return new TimestampCriterionOption(value, value);
 }
 
-export class MandatoryTimestampCriterionOption extends CriterionOption {
+export class MandatoryTimestampCriterionOption extends ModifierCriterionOption {
   constructor(messageID: string, value: CriterionType) {
     super({
       messageID,
@@ -926,7 +1034,15 @@ export function createMandatoryTimestampCriterionOption(value: CriterionType) {
   return new MandatoryTimestampCriterionOption(value, value);
 }
 
-export class TimestampCriterion extends Criterion<ITimestampValue> {
+export class TimestampCriterion extends ModifierCriterion<ITimestampValue> {
+  constructor(type: ModifierCriterionOption) {
+    super(type, { value: "", value2: undefined });
+  }
+
+  public cloneValues() {
+    this.value = { ...this.value };
+  }
+
   public encodeValue() {
     return {
       value: this.value?.value,
@@ -983,9 +1099,5 @@ export class TimestampCriterion extends Criterion<ITimestampValue> {
     }
 
     return true;
-  }
-
-  constructor(type: CriterionOption) {
-    super(type, { value: "", value2: undefined });
   }
 }

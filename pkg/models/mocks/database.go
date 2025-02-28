@@ -1,3 +1,4 @@
+// Package mocks provides mocks for various interfaces in [models].
 package mocks
 
 import (

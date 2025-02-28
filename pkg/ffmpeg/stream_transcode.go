@@ -1,6 +1,7 @@
 package ffmpeg
 
 import (
+	"context"
 	"errors"
 	"io"
 	"net/http"
@@ -45,12 +46,31 @@ func CodecInit(codec VideoCodec) (args Args) {
 			"-rc", "vbr",
 			"-cq", "15",
 		)
-	case VideoCodecI264:
+	case VideoCodecN264H:
+		args = append(args,
+			"-profile", "p7",
+			"-tune", "hq",
+			"-profile", "high",
+			"-rc", "vbr",
+			"-rc-lookahead", "60",
+			"-surfaces", "64",
+			"-spatial-aq", "1",
+			"-aq-strength", "15",
+			"-cq", "15",
+			"-coder", "cabac",
+			"-b_ref_mode", "middle",
+		)
+	case VideoCodecI264, VideoCodecIVP9:
 		args = append(args,
 			"-global_quality", "20",
 			"-preset", "faster",
 		)
-	case VideoCodecV264:
+	case VideoCodecI264C:
+		args = append(args,
+			"-q", "20",
+			"-preset", "faster",
+		)
+	case VideoCodecV264, VideoCodecVVP9:
 		args = append(args,
 			"-qp", "20",
 		)
@@ -66,15 +86,6 @@ func CodecInit(codec VideoCodec) (args Args) {
 		args = append(args,
 			"-preset", "superfast",
 			"-crf", "25",
-		)
-	case VideoCodecIVP9:
-		args = append(args,
-			"-global_quality", "20",
-			"-preset", "faster",
-		)
-	case VideoCodecVVP9:
-		args = append(args,
-			"-qp", "20",
 		)
 	}
 
@@ -220,7 +231,10 @@ func (sm *StreamManager) ServeTranscode(w http.ResponseWriter, r *http.Request, 
 	handler, err := sm.getTranscodeStream(lockCtx, options)
 
 	if err != nil {
-		logger.Errorf("[transcode] error transcoding video file: %v", err)
+		// don't log context canceled errors
+		if !errors.Is(err, context.Canceled) {
+			logger.Errorf("[transcode] error transcoding video file: %v", err)
+		}
 		w.WriteHeader(http.StatusBadRequest)
 		if _, err := w.Write([]byte(err.Error())); err != nil {
 			logger.Warnf("[transcode] error writing response: %v", err)

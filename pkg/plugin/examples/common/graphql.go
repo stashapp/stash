@@ -8,7 +8,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/shurcooL/graphql"
+	graphql "github.com/hasura/go-graphql-client"
 	"github.com/stashapp/stash/pkg/plugin/common/log"
 )
 

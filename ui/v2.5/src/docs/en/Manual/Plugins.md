@@ -99,15 +99,15 @@ ui:
     connect-src:
       - http://alloweddomain.com
 
-  # map of setting names to be displayed in the plugins page in the UI
-  settings:
-    # internal name
-    foo:
-      # name to display in the UI
-      displayName: Foo
-      # type of the attribute to show in the UI
-      # can be BOOLEAN, NUMBER, or STRING
-      type: BOOLEAN
+# map of setting names to be displayed in the plugins page in the UI
+settings:
+  # internal name
+  foo:
+  # name to display in the UI
+  displayName: Foo
+  # type of the attribute to show in the UI
+  # can be BOOLEAN, NUMBER, or STRING
+  type: BOOLEAN
 
 # the following are used for plugin tasks only
 exec:
@@ -248,7 +248,7 @@ The following object types are supported:
 * `SceneMarker`
 * `Image`
 * `Gallery`
-* `Movie`
+* `Group`
 * `Performer`
 * `Studio`
 * `Tag`
@@ -296,7 +296,7 @@ For example, here is the `args` values for a Scene update operation:
             "studio_id":null,
             "gallery_ids":null,
             "performer_ids":null,
-            "movies":null,
+            "groups":null,
             "tag_ids":["21"],
             "cover_image":null,
             "stash_ids":null

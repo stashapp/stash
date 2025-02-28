@@ -1,9 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import {
-  initialConfig,
-  ITaggerConfig,
-  LOCAL_FORAGE_KEY,
-} from "src/components/Tagger/constants";
+import { initialConfig, ITaggerConfig } from "src/components/Tagger/constants";
 import * as GQL from "src/core/generated-graphql";
 import {
   queryFindPerformer,
@@ -20,12 +16,12 @@ import {
   useStudioUpdate,
   useTagCreate,
 } from "src/core/StashService";
-import { useLocalForage } from "src/hooks/LocalForage";
 import { useToast } from "src/hooks/Toast";
 import { ConfigurationContext } from "src/hooks/Config";
 import { ITaggerSource, SCRAPER_PREFIX, STASH_BOX_PREFIX } from "./constants";
 import { errorToString } from "src/utils";
 import { mergeStudioStashIDs } from "./utils";
+import { useTaggerConfig } from "./config";
 
 export interface ITaggerContextState {
   config: ITaggerConfig;
@@ -110,11 +106,6 @@ export interface ISceneQueryResult {
 }
 
 export const TaggerContext: React.FC = ({ children }) => {
-  const [{ data: config }, setConfig] = useLocalForage<ITaggerConfig>(
-    LOCAL_FORAGE_KEY,
-    initialConfig
-  );
-
   const [loading, setLoading] = useState(false);
   const [loadingMulti, setLoadingMulti] = useState(false);
   const [sources, setSources] = useState<ITaggerSource[]>([]);
@@ -127,6 +118,8 @@ export const TaggerContext: React.FC = ({ children }) => {
   const stopping = useRef(false);
 
   const { configuration: stashConfig } = React.useContext(ConfigurationContext);
+  const { config, setConfig } = useTaggerConfig();
+
   const Scrapers = useListSceneScrapers();
 
   const Toast = useToast();
@@ -620,12 +613,14 @@ export const TaggerContext: React.FC = ({ children }) => {
           return {
             endpoint: e.endpoint,
             stash_id: e.stash_id,
+            updated_at: e.updated_at,
           };
         });
 
         stashIDs.push({
           stash_id: performer.remote_site_id,
           endpoint: currentSource?.sourceInput.stash_box_endpoint,
+          updated_at: new Date().toISOString(),
         });
 
         await updatePerformer({
@@ -777,12 +772,14 @@ export const TaggerContext: React.FC = ({ children }) => {
           return {
             endpoint: e.endpoint,
             stash_id: e.stash_id,
+            updated_at: e.updated_at,
           };
         });
 
         stashIDs.push({
           stash_id: studio.remote_site_id,
           endpoint: currentSource?.sourceInput.stash_box_endpoint,
+          updated_at: new Date().toISOString(),
         });
 
         await updateStudio({

@@ -285,20 +285,20 @@ func resolutionCriterionHandler(resolution *models.ResolutionCriterionInput, hei
 				addJoinFn(f)
 			}
 
-			min := resolution.Value.GetMinResolution()
-			max := resolution.Value.GetMaxResolution()
+			mn := resolution.Value.GetMinResolution()
+			mx := resolution.Value.GetMaxResolution()
 
 			widthHeight := fmt.Sprintf("MIN(%s, %s)", widthColumn, heightColumn)
 
 			switch resolution.Modifier {
 			case models.CriterionModifierEquals:
-				f.addWhere(fmt.Sprintf("%s BETWEEN %d AND %d", widthHeight, min, max))
+				f.addWhere(fmt.Sprintf("%s BETWEEN %d AND %d", widthHeight, mn, mx))
 			case models.CriterionModifierNotEquals:
-				f.addWhere(fmt.Sprintf("%s NOT BETWEEN %d AND %d", widthHeight, min, max))
+				f.addWhere(fmt.Sprintf("%s NOT BETWEEN %d AND %d", widthHeight, mn, mx))
 			case models.CriterionModifierLessThan:
-				f.addWhere(fmt.Sprintf("%s < %d", widthHeight, min))
+				f.addWhere(fmt.Sprintf("%s < %d", widthHeight, mn))
 			case models.CriterionModifierGreaterThan:
-				f.addWhere(fmt.Sprintf("%s > %d", widthHeight, max))
+				f.addWhere(fmt.Sprintf("%s > %d", widthHeight, mx))
 			}
 		}
 	}

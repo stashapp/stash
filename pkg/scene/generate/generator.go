@@ -1,3 +1,4 @@
+// Package generate provides functions to generate media assets from scenes.
 package generate
 
 import (

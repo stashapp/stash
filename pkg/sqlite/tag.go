@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/doug-martin/goqu/v9"
@@ -14,7 +15,6 @@ import (
 	"gopkg.in/guregu/null.v4/zero"
 
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sliceutil"
 )
 
 const (
@@ -33,6 +33,7 @@ const (
 type tagRow struct {
 	ID            int         `db:"id" goqu:"skipinsert"`
 	Name          null.String `db:"name"` // TODO: make schema non-nullable
+	SortName      zero.String `db:"sort_name"`
 	Favorite      bool        `db:"favorite"`
 	Description   zero.String `db:"description"`
 	IgnoreAutoTag bool        `db:"ignore_auto_tag"`
@@ -46,6 +47,7 @@ type tagRow struct {
 func (r *tagRow) fromTag(o models.Tag) {
 	r.ID = o.ID
 	r.Name = null.StringFrom(o.Name)
+	r.SortName = zero.StringFrom((o.SortName))
 	r.Favorite = o.Favorite
 	r.Description = zero.StringFrom(o.Description)
 	r.IgnoreAutoTag = o.IgnoreAutoTag
@@ -57,6 +59,7 @@ func (r *tagRow) resolve() *models.Tag {
 	ret := &models.Tag{
 		ID:            r.ID,
 		Name:          r.Name.String,
+		SortName:      r.SortName.String,
 		Favorite:      r.Favorite,
 		Description:   r.Description.String,
 		IgnoreAutoTag: r.IgnoreAutoTag,
@@ -87,6 +90,7 @@ type tagRowRecord struct {
 
 func (r *tagRowRecord) fromPartial(o models.TagPartial) {
 	r.setString("name", o.Name)
+	r.setNullString("sort_name", o.SortName)
 	r.setNullString("description", o.Description)
 	r.setBool("favorite", o.Favorite)
 	r.setBool("ignore_auto_tag", o.IgnoreAutoTag)
@@ -312,7 +316,7 @@ func (qb *TagStore) FindMany(ctx context.Context, ids []int) ([]*models.Tag, err
 		}
 
 		for _, s := range unsorted {
-			i := sliceutil.Index(ids, s.ID)
+			i := slices.Index(ids, s.ID)
 			ret[i] = s
 		}
 
@@ -424,15 +428,15 @@ func (qb *TagStore) FindByGalleryID(ctx context.Context, galleryID int) ([]*mode
 	return qb.queryTags(ctx, query, args)
 }
 
-func (qb *TagStore) FindByGroupID(ctx context.Context, movieID int) ([]*models.Tag, error) {
+func (qb *TagStore) FindByGroupID(ctx context.Context, groupID int) ([]*models.Tag, error) {
 	query := `
 		SELECT tags.* FROM tags
-		LEFT JOIN movies_tags as movies_join on movies_join.tag_id = tags.id
-		WHERE movies_join.movie_id = ?
+		LEFT JOIN groups_tags as groups_join on groups_join.tag_id = tags.id
+		WHERE groups_join.group_id = ?
 		GROUP BY tags.id
 	`
 	query += qb.getDefaultTagSort()
-	args := []interface{}{movieID}
+	args := []interface{}{groupID}
 	return qb.queryTags(ctx, query, args)
 }
 
@@ -672,6 +676,8 @@ func (qb *TagStore) getTagSort(query *queryBuilder, findFilter *models.FindFilte
 
 	sortQuery := ""
 	switch sort {
+	case "name":
+		sortQuery += fmt.Sprintf(" ORDER BY COALESCE(tags.sort_name, tags.name) COLLATE NATURAL_CI %s", getSortDirection(direction))
 	case "scenes_count":
 		sortQuery += getCountSort(tagTable, scenesTagsTable, tagIDColumn, direction)
 	case "scene_markers_count":
@@ -690,8 +696,8 @@ func (qb *TagStore) getTagSort(query *queryBuilder, findFilter *models.FindFilte
 		sortQuery += getSort(sort, direction, "tags")
 	}
 
-	// Whatever the sorting, always use name/id as a final sort
-	sortQuery += ", COALESCE(tags.name, tags.id) COLLATE NATURAL_CI ASC"
+	// Whatever the sorting, always use sort_name/name/id as a final sort
+	sortQuery += ", COALESCE(tags.sort_name, tags.name, tags.id) COLLATE NATURAL_CI ASC"
 	return sortQuery, nil
 }
 

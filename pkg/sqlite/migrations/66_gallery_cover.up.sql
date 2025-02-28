@@ -1,0 +1,2 @@
+ALTER TABLE `galleries_images` ADD COLUMN `cover` BOOLEAN NOT NULL DEFAULT 0;
+CREATE UNIQUE INDEX `index_galleries_images_gallery_id_cover` on `galleries_images` (`gallery_id`, `cover`) WHERE `cover` = 1;

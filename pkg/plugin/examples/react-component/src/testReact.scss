@@ -33,4 +33,15 @@
 .scene-performer-popover .image-thumbnail {
   margin: 1em;
 }
-  
+
+.example-react-component-custom-overlay {
+  display: block;
+  font-weight: 900;
+  height: 100%;
+  opacity: 0.25;
+  position: absolute;
+  text-align: center;
+  top: 0;
+  width: 100%;
+  z-index: 8;
+}

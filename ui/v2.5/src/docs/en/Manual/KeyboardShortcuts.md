@@ -12,7 +12,7 @@
 |-------------------|--------|
 | `g s` | Scenes |
 | `g i` | Images |
-| `g v` | Movies |
+| `g v` | Groups |
 | `g k` | Markers |
 | `g l` | Galleries |
 | `g p` | Performers |
@@ -62,6 +62,12 @@
 | `,` | Hide/Show sidebar |
 | `.` | Hide/Show scene scrubber |
 | `o` | Increment O-Counter |
+| Ratings ||
+| `r {1-5}` | Set rating (stars) |
+| `r 0` | Unset rating (stars) |
+| `r {0-9} {0-9}` | Set rating (decimal - `00` for `10.0`) |
+| ``r ` `` | Unset rating (decimal) |
+| Playback ||
 | `p n` | Play next scene in queue |
 | `p p` | Play previous scene in queue |
 | `p r` | Play random scene in queue |
@@ -88,14 +94,10 @@
 |-------------------|--------|
 | `n` | Display Create Markers dialog |
 
-### Edit Scene tab shortcuts
+### Scene Edit tab shortcuts
 
 | Keyboard sequence | Action |
 |-------------------|--------|
-| `r {1-5}` | Set rating (stars) |
-| `r 0` | Unset rating (stars) |
-| `r {0-9} {0-9}` | Set rating (decimal - `00` for `10.0`) |
-| ``r ` `` | Unset rating (decimal) |
 | `s s` | Save Scene |
 | `d d` | Delete Scene |
 | `Ctrl + v` | Paste Scene cover |
@@ -104,28 +106,48 @@
 [//]: # "(| `l` | Focus Gallery selector |)"
 [//]: # "(| `u` | Focus Studio selector |)"
 [//]: # "(| `p` | Focus Performers selector |)"
-[//]: # "(| `v` | Focus Movies selector |)"
+[//]: # "(| `v` | Focus Groups selector |)"
 [//]: # "(| `t` | Focus Tags selector |)"
 
-## Movies Page shortcuts
+## Image Page shortcuts
 
 | Keyboard sequence | Action |
 |-------------------|--------|
-| `n` | New Movie |
+| `e` | Edit tab |
+| `o` | Increment O-Counter |
+| Ratings ||
+| `r {1-5}` | Set rating (stars) |
+| `r 0` | Unset rating (stars) |
+| `r {0-9} {0-9}` | Set rating (decimal - `00` for `10.0`) |
+| ``r ` `` | Unset rating (decimal) |
 
-## Movie Page shortcuts
+### Image Edit tab shortcuts
 
 | Keyboard sequence | Action |
 |-------------------|--------|
-| `e` | Edit Movie |
-| `s s` | Save Movie |
-| `d d` | Delete Movie |
+| `s s` | Save Scene |
+| `d d` | Delete Scene |
+
+## Groups Page shortcuts
+
+| Keyboard sequence | Action |
+|-------------------|--------|
+| `n` | New Group |
+
+## Group Page shortcuts
+
+| Keyboard sequence | Action |
+|-------------------|--------|
+| `e` | Edit Group |
+| `s s` | Save Group |
+| `d d` | Delete Group |
+| ``r ` `` | [Edit mode] Unset rating (decimal) |
+| `,` | Expand/Collapse Details |
+| `Ctrl + v` | Paste Group image |
+| Ratings ||
 | `r {1-5}` | [Edit mode] Set rating (stars) |
 | `r 0` | [Edit mode] Unset rating (stars) |
 | `r {0-9} {0-9}` | [Edit mode] Set rating (decimal - `r 0 0` for `10.0`) |
-| ``r ` `` | [Edit mode] Unset rating (decimal) |
-| `,` | Expand/Collapse Details |
-| `Ctrl + v` | Paste Movie image |
 
 [//]: # "Commented until implementation is dealt with"
 [//]: # "(| `u` | Focus Studio selector (in edit mode) |)"
@@ -153,7 +175,7 @@
 | `f` | Toggle favourite |
 | `,` | Expand/Collapse Details |
 
-### Edit Performer tab shortcuts
+### Performer Edit tab shortcuts
 
 | Keyboard sequence | Action |
 |-------------------|--------|

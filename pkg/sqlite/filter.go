@@ -95,6 +95,7 @@ type join struct {
 	as       string
 	onClause string
 	joinType string
+	args     []interface{}
 }
 
 // equals returns true if the other join alias/table is equal to this one
@@ -229,12 +230,13 @@ func (f *filterBuilder) not(n *filterBuilder) {
 // The AS is omitted if as is empty.
 // This method does not add a join if it its alias/table name is already
 // present in another existing join.
-func (f *filterBuilder) addLeftJoin(table, as, onClause string) {
+func (f *filterBuilder) addLeftJoin(table, as, onClause string, args ...interface{}) {
 	newJoin := join{
 		table:    table,
 		as:       as,
 		onClause: onClause,
 		joinType: "LEFT",
+		args:     args,
 	}
 
 	f.joins.add(newJoin)
@@ -245,12 +247,13 @@ func (f *filterBuilder) addLeftJoin(table, as, onClause string) {
 // The AS is omitted if as is empty.
 // This method does not add a join if it its alias/table name is already
 // present in another existing join.
-func (f *filterBuilder) addInnerJoin(table, as, onClause string) {
+func (f *filterBuilder) addInnerJoin(table, as, onClause string, args ...interface{}) {
 	newJoin := join{
 		table:    table,
 		as:       as,
 		onClause: onClause,
 		joinType: "INNER",
+		args:     args,
 	}
 
 	f.joins.add(newJoin)

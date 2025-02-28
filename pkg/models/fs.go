@@ -15,7 +15,7 @@ type FS interface {
 	Stat(name string) (fs.FileInfo, error)
 	Lstat(name string) (fs.FileInfo, error)
 	Open(name string) (fs.ReadDirFile, error)
-	OpenZip(name string) (ZipFS, error)
+	OpenZip(name string, size int64) (ZipFS, error)
 	IsPathCaseSensitive(path string) (bool, error)
 }
 

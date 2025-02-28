@@ -3,6 +3,7 @@ package scene
 import (
 	"context"
 	"fmt"
+	"slices"
 	"strings"
 	"time"
 
@@ -150,7 +151,7 @@ func (i *Importer) populateViewHistory() {
 }
 
 func (i *Importer) populateOHistory() {
-	i.viewHistory = getHistory(
+	i.oHistory = getHistory(
 		i.Input.OHistory,
 		i.Input.OCounter,
 		i.Input.CreatedAt, // no last o count date
@@ -290,7 +291,7 @@ func (i *Importer) populatePerformers(ctx context.Context) error {
 		}
 
 		missingPerformers := sliceutil.Filter(names, func(name string) bool {
-			return !sliceutil.Contains(pluckedNames, name)
+			return !slices.Contains(pluckedNames, name)
 		})
 
 		if len(missingPerformers) > 0 {
@@ -324,7 +325,9 @@ func (i *Importer) createPerformers(ctx context.Context, names []string) ([]*mod
 		newPerformer := models.NewPerformer()
 		newPerformer.Name = name
 
-		err := i.PerformerWriter.Create(ctx, &newPerformer)
+		err := i.PerformerWriter.Create(ctx, &models.CreatePerformerInput{
+			Performer: &newPerformer,
+		})
 		if err != nil {
 			return nil, err
 		}
@@ -517,7 +520,7 @@ func importTags(ctx context.Context, tagWriter models.TagFinderCreator, names []
 	}
 
 	missingTags := sliceutil.Filter(names, func(name string) bool {
-		return !sliceutil.Contains(pluckedNames, name)
+		return !slices.Contains(pluckedNames, name)
 	})
 
 	if len(missingTags) > 0 {

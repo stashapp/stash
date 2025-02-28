@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -28,7 +29,7 @@ const (
 	performersScenesTable = "performers_scenes"
 	scenesTagsTable       = "scenes_tags"
 	scenesGalleriesTable  = "scenes_galleries"
-	groupsScenesTable     = "movies_scenes"
+	groupsScenesTable     = "groups_scenes"
 	scenesURLsTable       = "scene_urls"
 	sceneURLColumn        = "url"
 	scenesViewDatesTable  = "scenes_view_dates"
@@ -200,7 +201,7 @@ var (
 			},
 			fkColumn:     tagIDColumn,
 			foreignTable: tagTable,
-			orderBy:      "tags.name ASC",
+			orderBy:      "COALESCE(tags.sort_name, tags.name) ASC",
 		},
 		performers: joinRepository{
 			repository: repository{
@@ -504,7 +505,7 @@ func (qb *SceneStore) FindMany(ctx context.Context, ids []int) ([]*models.Scene,
 		}
 
 		for _, s := range unsorted {
-			i := sliceutil.Index(ids, s.ID)
+			i := slices.Index(ids, s.ID)
 			scenes[i] = s
 		}
 
@@ -791,13 +792,6 @@ func (qb *SceneStore) FindByGroupID(ctx context.Context, groupID int) ([]*models
 	return ret, nil
 }
 
-func (qb *SceneStore) CountByGroupID(ctx context.Context, groupID int) (int, error) {
-	joinTable := scenesGroupsJoinTable
-
-	q := dialect.Select(goqu.COUNT("*")).From(joinTable).Where(joinTable.Col(groupIDColumn).Eq(groupID))
-	return count(ctx, q)
-}
-
 func (qb *SceneStore) Count(ctx context.Context) (int, error) {
 	q := dialect.Select(goqu.COUNT("*")).From(qb.table())
 	return count(ctx, q)
@@ -858,17 +852,11 @@ func (qb *SceneStore) PlayDuration(ctx context.Context) (float64, error) {
 	return ret, nil
 }
 
+// TODO - currently only used by unit test
 func (qb *SceneStore) CountByStudioID(ctx context.Context, studioID int) (int, error) {
 	table := qb.table()
 
 	q := dialect.Select(goqu.COUNT("*")).From(table).Where(table.Col(studioIDColumn).Eq(studioID))
-	return count(ctx, q)
-}
-
-func (qb *SceneStore) CountByTagID(ctx context.Context, tagID int) (int, error) {
-	joinTable := scenesTagsJoinTable
-
-	q := dialect.Select(goqu.COUNT("*")).From(joinTable).Where(joinTable.Col(tagIDColumn).Eq(tagID))
 	return count(ctx, q)
 }
 
@@ -1141,9 +1129,12 @@ func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindF
 
 	direction := findFilter.GetDirection()
 	switch sort {
-	case "movie_scene_number", "group_scene_number":
-		query.join(groupsScenesTable, "", "scenes.id = movies_scenes.scene_id")
+	case "movie_scene_number":
+		query.join(groupsScenesTable, "", "scenes.id = groups_scenes.scene_id")
 		query.sortAndPagination += getSort("scene_index", direction, groupsScenesTable)
+	case "group_scene_number":
+		query.join(groupsScenesTable, "scene_group", "scenes.id = scene_group.scene_id")
+		query.sortAndPagination += getSort("scene_index", direction, "scene_group")
 	case "tag_count":
 		query.sortAndPagination += getCountSort(sceneTable, scenesTagsTable, sceneIDColumn, direction)
 	case "performer_count":
@@ -1223,6 +1214,30 @@ func (qb *SceneStore) SaveActivity(ctx context.Context, id int, resumeTime *floa
 
 	if playDuration != nil {
 		record["play_duration"] = goqu.L("play_duration + ?", playDuration)
+	}
+
+	if len(record) > 0 {
+		if err := qb.tableMgr.updateByID(ctx, id, record); err != nil {
+			return false, err
+		}
+	}
+
+	return true, nil
+}
+
+func (qb *SceneStore) ResetActivity(ctx context.Context, id int, resetResume bool, resetDuration bool) (bool, error) {
+	if err := qb.tableMgr.checkIDExists(ctx, id); err != nil {
+		return false, err
+	}
+
+	record := goqu.Record{}
+
+	if resetResume {
+		record["resume_time"] = 0.0
+	}
+
+	if resetDuration {
+		record["play_duration"] = 0.0
 	}
 
 	if len(record) > 0 {

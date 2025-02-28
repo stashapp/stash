@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Button, ButtonGroup } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
 import { GridCard, calculateCardWidth } from "../Shared/GridCard/GridCard";
@@ -10,25 +10,65 @@ import { FormattedMessage } from "react-intl";
 import { RatingBanner } from "../Shared/RatingBanner";
 import { faPlayCircle, faTag } from "@fortawesome/free-solid-svg-icons";
 import ScreenUtils from "src/utils/screen";
+import { RelatedGroupPopoverButton } from "./RelatedGroupPopover";
+
+const Description: React.FC<{
+  sceneNumber?: number;
+  description?: string;
+}> = ({ sceneNumber, description }) => {
+  if (!sceneNumber && !description) return null;
+
+  return (
+    <>
+      <hr />
+      {sceneNumber !== undefined && (
+        <span className="group-scene-number">
+          <FormattedMessage id="scene" /> #{sceneNumber}
+        </span>
+      )}
+      {description !== undefined && (
+        <span className="group-containing-group-description">
+          {description}
+        </span>
+      )}
+    </>
+  );
+};
 
 interface IProps {
   group: GQL.GroupDataFragment;
   containerWidth?: number;
-  sceneIndex?: number;
+  sceneNumber?: number;
   selecting?: boolean;
   selected?: boolean;
   onSelectedChanged?: (selected: boolean, shiftKey: boolean) => void;
+  fromGroupId?: string;
+  onMove?: (srcIds: string[], targetId: string, after: boolean) => void;
 }
 
 export const GroupCard: React.FC<IProps> = ({
   group,
-  sceneIndex,
+  sceneNumber,
   containerWidth,
   selecting,
   selected,
   onSelectedChanged,
+  fromGroupId,
+  onMove,
 }) => {
   const [cardWidth, setCardWidth] = useState<number>();
+
+  const groupDescription = useMemo(() => {
+    if (!fromGroupId) {
+      return undefined;
+    }
+
+    const containingGroup = group.containing_groups.find(
+      (cg) => cg.group.id === fromGroupId
+    );
+
+    return containingGroup?.description ?? undefined;
+  }, [fromGroupId, group.containing_groups]);
 
   useEffect(() => {
     if (!containerWidth || ScreenUtils.isMobile()) return;
@@ -40,19 +80,6 @@ export const GroupCard: React.FC<IProps> = ({
     );
     setCardWidth(fittedCardWidth);
   }, [containerWidth]);
-
-  function maybeRenderSceneNumber() {
-    if (!sceneIndex) return;
-
-    return (
-      <>
-        <hr />
-        <span className="group-scene-number">
-          <FormattedMessage id="scene" /> #{sceneIndex}
-        </span>
-      </>
-    );
-  }
 
   function maybeRenderScenesPopoverButton() {
     if (group.scenes.length === 0) return;
@@ -93,14 +120,28 @@ export const GroupCard: React.FC<IProps> = ({
   }
 
   function maybeRenderPopoverButtonGroup() {
-    if (sceneIndex || group.scenes.length > 0 || group.tags.length > 0) {
+    if (
+      sceneNumber ||
+      groupDescription ||
+      group.scenes.length > 0 ||
+      group.tags.length > 0 ||
+      group.containing_groups.length > 0 ||
+      group.sub_group_count > 0
+    ) {
       return (
         <>
-          {maybeRenderSceneNumber()}
+          <Description
+            sceneNumber={sceneNumber}
+            description={groupDescription}
+          />
           <hr />
           <ButtonGroup className="card-popovers">
             {maybeRenderScenesPopoverButton()}
             {maybeRenderTagPopoverButton()}
+            {(group.sub_group_count > 0 ||
+              group.containing_groups.length > 0) && (
+              <RelatedGroupPopoverButton group={group} />
+            )}
           </ButtonGroup>
         </>
       );
@@ -110,6 +151,8 @@ export const GroupCard: React.FC<IProps> = ({
   return (
     <GridCard
       className="group-card"
+      objectId={group.id}
+      onMove={onMove}
       url={`/groups/${group.id}`}
       width={cardWidth}
       title={group.name}

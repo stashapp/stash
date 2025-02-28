@@ -66,6 +66,8 @@ type GroupReader interface {
 	GroupCounter
 	URLLoader
 	TagIDLoader
+	ContainingGroupLoader
+	SubGroupLoader
 
 	All(ctx context.Context) ([]*Group, error)
 	GetFrontImage(ctx context.Context, groupID int) ([]byte, error)
