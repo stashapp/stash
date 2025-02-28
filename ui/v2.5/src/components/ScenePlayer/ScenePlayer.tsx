@@ -434,6 +434,14 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     scene.paths.funscript,
   ]);
 
+  // play the script if video started before script upload finished
+  useEffect(() => {
+    if (interactiveState !== ConnectionState.Ready) return;
+    const player = getPlayer();
+    if (!player || player.paused()) return;
+    interactiveClient.ensurePlaying(player.currentTime());
+  }, [interactiveState, getPlayer, interactiveClient]);
+
   useEffect(() => {
     const player = getPlayer();
     if (!player) return;
@@ -492,13 +500,23 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     };
   }, [getPlayer]);
 
+  // delay before second play event after a play event to adjust for video player issues
+  const DELAY_FOR_SECOND_PLAY_MS = 1000;
+  const playingTimer = useRef<number>();
+
   useEffect(() => {
     const player = getPlayer();
     if (!player) return;
 
-    function onplay(this: VideoJsPlayer) {
+    function playing(this: VideoJsPlayer) {
       if (scene.interactive && interactiveReady.current) {
         interactiveClient.play(this.currentTime());
+        // trigger a second script play event to adjust for video player issues
+        clearTimeout(playingTimer.current);
+        playingTimer.current = setTimeout(() => {
+          if (this.paused()) return;
+          interactiveClient.play(this.currentTime());
+        }, DELAY_FOR_SECOND_PLAY_MS);
       }
     }
 
@@ -506,31 +524,20 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       interactiveClient.pause();
     }
 
-    function seeking(this: VideoJsPlayer) {
-      if (this.paused()) return;
-      if (scene.interactive && interactiveReady.current) {
-        interactiveClient.play(this.currentTime());
-      }
-    }
-
     function timeupdate(this: VideoJsPlayer) {
       if (this.paused()) return;
-      if (scene.interactive && interactiveReady.current) {
-        interactiveClient.ensurePlaying(this.currentTime());
-      }
       setTime(this.currentTime());
     }
 
-    player.on("play", onplay);
+    player.on("playing", playing);
     player.on("pause", pause);
-    player.on("seeking", seeking);
     player.on("timeupdate", timeupdate);
 
     return () => {
-      player.off("play", onplay);
+      player.off("playing", playing);
       player.off("pause", pause);
-      player.off("seeking", seeking);
       player.off("timeupdate", timeupdate);
+      clearTimeout(playingTimer.current);
     };
   }, [getPlayer, interactiveClient, scene]);
 
@@ -676,11 +683,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     });
 
     started.current = false;
-
-    return () => {
-      // stop the interactive client
-      interactiveClient.pause();
-    };
   }, [
     getPlayer,
     file,
@@ -692,6 +694,13 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     uiConfig?.disableMobileMediaAutoRotateEnabled,
     _initialTimestamp,
   ]);
+
+  useEffect(() => {
+    return () => {
+      // stop the interactive client on unmount
+      interactiveClient.pause();
+    };
+  }, [interactiveClient]);
 
   const loadMarkers = useCallback(() => {
     const player = getPlayer();
