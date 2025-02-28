@@ -1,0 +1,38 @@
+fragment GroupData on Group {
+  id
+  name
+  aliases
+  duration
+  date
+  rating100
+  director
+
+  studio {
+    ...SlimStudioData
+  }
+
+  tags {
+    ...SlimTagData
+  }
+
+  containing_groups {
+    group {
+      ...SlimGroupData
+    }
+    description
+  }
+
+  synopsis
+  urls
+  front_image_path
+  back_image_path
+  scene_count
+  scene_count_all: scene_count(depth: -1)
+  sub_group_count
+  sub_group_count_all: sub_group_count(depth: -1)
+
+  scenes {
+    id
+    title
+  }
+}

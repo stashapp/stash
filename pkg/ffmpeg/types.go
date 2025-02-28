@@ -94,4 +94,7 @@ type FFProbeStream struct {
 	MaxBitRate    string `json:"max_bit_rate,omitempty"`
 	SampleFmt     string `json:"sample_fmt,omitempty"`
 	SampleRate    string `json:"sample_rate,omitempty"`
+	SideDataList  []struct {
+		Rotation int `json:"rotation"`
+	} `json:"side_data_list"`
 }

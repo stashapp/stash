@@ -20,7 +20,7 @@ type Repository struct {
 	Gallery        GalleryReaderWriter
 	GalleryChapter GalleryChapterReaderWriter
 	Image          ImageReaderWriter
-	Movie          MovieReaderWriter
+	Group          GroupReaderWriter
 	Performer      PerformerReaderWriter
 	Scene          SceneReaderWriter
 	SceneMarker    SceneMarkerReaderWriter

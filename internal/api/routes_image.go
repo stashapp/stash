@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os/exec"
 	"strconv"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 
@@ -46,14 +47,22 @@ func (rs imageRoutes) Routes() chi.Router {
 }
 
 func (rs imageRoutes) Thumbnail(w http.ResponseWriter, r *http.Request) {
-	mgr := manager.GetInstance()
 	img := r.Context().Value(imageKey).(*models.Image)
+	rs.serveThumbnail(w, r, img, nil)
+}
+
+func (rs imageRoutes) serveThumbnail(w http.ResponseWriter, r *http.Request, img *models.Image, modTime *time.Time) {
+	mgr := manager.GetInstance()
 	filepath := mgr.Paths.Generated.GetThumbnailPath(img.Checksum, models.DefaultGthumbWidth)
 
 	// if the thumbnail doesn't exist, encode on the fly
 	exists, _ := fsutil.FileExists(filepath)
 	if exists {
-		utils.ServeStaticFile(w, r, filepath)
+		if modTime == nil {
+			utils.ServeStaticFile(w, r, filepath)
+		} else {
+			utils.ServeStaticFileModTime(w, r, filepath, *modTime)
+		}
 	} else {
 		const useDefault = true
 

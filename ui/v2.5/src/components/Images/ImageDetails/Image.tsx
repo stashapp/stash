@@ -25,7 +25,7 @@ import { ImageEditPanel } from "./ImageEditPanel";
 import { ImageDetailPanel } from "./ImageDetailPanel";
 import { DeleteImagesDialog } from "../DeleteImagesDialog";
 import { faEllipsisV } from "@fortawesome/free-solid-svg-icons";
-import { objectPath, objectTitle } from "src/core/files";
+import { imagePath, imageTitle } from "src/core/files";
 import { isVideo } from "src/utils/visualFile";
 import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
 import { useRatingKeybinds } from "src/hooks/keybinds";
@@ -94,7 +94,8 @@ const ImagePage: React.FC<IProps> = ({ image }) => {
     }
 
     await mutateMetadataScan({
-      paths: [objectPath(image)],
+      paths: [imagePath(image)],
+      rescan: true,
     });
 
     Toast.success(
@@ -207,7 +208,7 @@ const ImagePage: React.FC<IProps> = ({ image }) => {
             onClick={() => setIsDeleteAlertOpen(true)}
           >
             <FormattedMessage
-              id="actions.delete_entity"
+              id="actions.delete"
               values={{ entityType: intl.formatMessage({ id: "image" }) }}
             />
           </Dropdown.Item>
@@ -289,12 +290,15 @@ const ImagePage: React.FC<IProps> = ({ image }) => {
   });
 
   const file = useMemo(
-    () => (image.files.length > 0 ? image.files[0] : undefined),
+    () => (image.visual_files.length > 0 ? image.visual_files[0] : undefined),
     [image]
   );
 
-  const title = objectTitle(image);
-  const ImageView = isVideo(image.visual_files[0]) ? "video" : "img";
+  const title = imageTitle(image);
+  const ImageView =
+    image.visual_files.length > 0 && isVideo(image.visual_files[0])
+      ? "video"
+      : "img";
 
   const resolution = useMemo(() => {
     return file?.width && file?.height
@@ -377,19 +381,21 @@ const ImagePage: React.FC<IProps> = ({ image }) => {
         {renderTabs()}
       </div>
       <div className="image-container">
-        <ImageView
-          loop={image.visual_files[0].__typename == "VideoFile"}
-          autoPlay={image.visual_files[0].__typename == "VideoFile"}
-          controls={image.visual_files[0].__typename == "VideoFile"}
-          className="m-sm-auto no-gutter image-image"
-          style={
-            image.visual_files[0].__typename == "VideoFile"
-              ? { width: "100%", height: "100%" }
-              : {}
-          }
-          alt={title}
-          src={image.paths.image ?? ""}
-        />
+        {image.visual_files.length > 0 && (
+          <ImageView
+            loop={image.visual_files[0].__typename == "VideoFile"}
+            autoPlay={image.visual_files[0].__typename == "VideoFile"}
+            controls={image.visual_files[0].__typename == "VideoFile"}
+            className="m-sm-auto no-gutter image-image"
+            style={
+              image.visual_files[0].__typename == "VideoFile"
+                ? { width: "100%", height: "100%" }
+                : {}
+            }
+            alt={title}
+            src={image.paths.image ?? ""}
+          />
+        )}
       </div>
     </div>
   );

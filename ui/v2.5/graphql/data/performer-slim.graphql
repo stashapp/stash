@@ -27,6 +27,7 @@ fragment SlimPerformerData on Performer {
   stash_ids {
     endpoint
     stash_id
+    updated_at
   }
   rating100
   death_date
@@ -39,4 +40,6 @@ fragment SelectPerformerData on Performer {
   disambiguation
   alias_list
   image_path
+  birthdate
+  death_date
 }

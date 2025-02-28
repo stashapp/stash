@@ -106,6 +106,7 @@ export const TagMergeModal: React.FC<ITagMergeModalProps> = ({
                   onSelect={(items) => setSrc(items)}
                   values={src}
                   excludeIds={tag?.id ? [tag.id] : []}
+                  menuPortalTarget={document.body}
                 />
               </Col>
             </Form.Group>
@@ -129,6 +130,7 @@ export const TagMergeModal: React.FC<ITagMergeModalProps> = ({
                   onSelect={(items) => setDest(items[0])}
                   values={dest ? [dest] : undefined}
                   excludeIds={tag?.id ? [tag.id] : []}
+                  menuPortalTarget={document.body}
                 />
               </Col>
             </Form.Group>

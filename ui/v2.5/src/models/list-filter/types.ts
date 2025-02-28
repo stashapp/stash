@@ -147,7 +147,12 @@ export type CriterionType =
   | "performers"
   | "studios"
   | "scenes"
-  | "movies"
+  | "groups"
+  | "movies" // legacy
+  | "containing_groups"
+  | "containing_group_count"
+  | "sub_groups"
+  | "sub_group_count"
   | "galleries"
   | "birth_year"
   | "age"
@@ -174,7 +179,7 @@ export type CriterionType =
   | "gallery_count"
   | "performer_count"
   | "studio_count"
-  | "movie_count"
+  | "group_count"
   | "death_year"
   | "url"
   | "interactive"
@@ -214,4 +219,6 @@ export type CriterionType =
   | "code"
   | "photographer"
   | "disambiguation"
-  | "has_chapters";
+  | "has_chapters"
+  | "sort_name"
+  | "custom_fields";

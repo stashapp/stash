@@ -15,11 +15,11 @@ linters:
     - unused
     # Linters added by the stash project.
     # - contextcheck
+    - copyloopvar
     - dogsled
     - errchkjson
     - errorlint
     # - exhaustive
-    - exportloopref
     - gocritic
     # - goerr113
     - gofmt
@@ -48,8 +48,6 @@ linters-settings:
     ignore-generated-header: true
     severity: error
     confidence: 0.8
-    error-code: 1
-    warning-code: 1
     rules:
       - name: blank-imports
         disabled: true

@@ -6,14 +6,14 @@ import NavUtils from "src/utils/navigation";
 
 export const DirectorLink: React.FC<{
   director: string;
-  linkType: "scene" | "movie";
+  linkType: "scene" | "group";
 }> = ({ director: director, linkType = "scene" }) => {
   const link = useMemo(() => {
     switch (linkType) {
       case "scene":
         return NavUtils.makeDirectorScenesUrl(director);
-      case "movie":
-        return NavUtils.makeDirectorMoviesUrl(director);
+      case "group":
+        return NavUtils.makeDirectorGroupsUrl(director);
     }
   }, [director, linkType]);
 

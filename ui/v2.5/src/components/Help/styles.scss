@@ -21,6 +21,11 @@
     padding-left: 2rem;
   }
 
+  .modal-body {
+    // reset max-height so that we don't end up with two scroll bars
+    max-height: initial;
+  }
+
   .manual-content,
   .manual-toc {
     max-height: calc(100vh - 10rem);

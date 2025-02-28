@@ -14,6 +14,7 @@ import {
   FormatWeight,
 } from "../PerformerList";
 import { PatchComponent } from "src/patch";
+import { CustomFields } from "src/components/Shared/CustomFields";
 
 interface IPerformerDetails {
   performer: GQL.PerformerDataFragment;
@@ -28,7 +29,7 @@ const PerformerDetailGroup: React.FC<PropsWithChildren<IPerformerDetails>> =
 
 export const PerformerDetailsPanel: React.FC<IPerformerDetails> =
   PatchComponent("PerformerDetailsPanel", (props) => {
-    const { performer, collapsed, fullWidth } = props;
+    const { performer, fullWidth } = props;
 
     // Network state
     const intl = useIntl();
@@ -62,45 +63,9 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> =
       );
     }
 
-    function maybeRenderExtraDetails() {
-      if (!collapsed) {
-        /* Remove extra urls provided in details since they will be present by perfomr name */
-        /* This code can be removed once multple urls are supported for performers */
-        let details = performer?.details
-          ?.replace(/\[((?:http|www\.)[^\n\]]+)\]/gm, "")
-          .trim();
-        return (
-          <>
-            <DetailItem
-              id="tattoos"
-              value={performer?.tattoos}
-              fullWidth={fullWidth}
-            />
-            <DetailItem
-              id="piercings"
-              value={performer?.piercings}
-              fullWidth={fullWidth}
-            />
-            <DetailItem
-              id="career_length"
-              value={performer?.career_length}
-              fullWidth={fullWidth}
-            />
-            <DetailItem id="details" value={details} fullWidth={fullWidth} />
-            <DetailItem
-              id="tags"
-              value={renderTagsField()}
-              fullWidth={fullWidth}
-            />
-            <DetailItem
-              id="stash_ids"
-              value={renderStashIDs()}
-              fullWidth={fullWidth}
-            />
-          </>
-        );
-      }
-    }
+    let details = performer?.details
+      ?.replace(/\[((?:http|www\.)[^\n\]]+)\]/gm, "")
+      .trim();
 
     return (
       <PerformerDetailGroup {...props}>
@@ -190,7 +155,29 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> =
           value={performer?.fake_tits}
           fullWidth={fullWidth}
         />
-        {maybeRenderExtraDetails()}
+        <DetailItem
+          id="tattoos"
+          value={performer?.tattoos}
+          fullWidth={fullWidth}
+        />
+        <DetailItem
+          id="piercings"
+          value={performer?.piercings}
+          fullWidth={fullWidth}
+        />
+        <DetailItem
+          id="career_length"
+          value={performer?.career_length}
+          fullWidth={fullWidth}
+        />
+        <DetailItem id="details" value={details} fullWidth={fullWidth} />
+        <DetailItem id="tags" value={renderTagsField()} fullWidth={fullWidth} />
+        <DetailItem
+          id="stash_ids"
+          value={renderStashIDs()}
+          fullWidth={fullWidth}
+        />
+        {fullWidth && <CustomFields values={performer.custom_fields} />}
       </PerformerDetailGroup>
     );
   });

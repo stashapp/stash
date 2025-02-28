@@ -40,6 +40,32 @@
   .alias {
     font-weight: bold;
   }
+
+  // the detail element ids are the same as field type name
+  // which don't follow the correct convention
+  /* stylelint-disable selector-class-pattern */
+  .collapsed {
+    .detail-item.tattoos,
+    .detail-item.piercings,
+    .detail-item.career_length,
+    .detail-item.details,
+    .detail-item.tags,
+    .detail-item.stash_ids {
+      display: none;
+    }
+  }
+
+  .detail-group .custom-fields .collapse-button {
+    display: table-cell;
+    font-weight: 700;
+    padding-left: 0;
+  }
+
+  .custom-fields .detail-item-title,
+  .custom-fields .detail-item-value {
+    font-family: "Courier New", Courier, monospace;
+  }
+  /* stylelint-enable selector-class-pattern */
 }
 
 .new-view {
@@ -150,6 +176,7 @@
   color: #f38cac;
 }
 
+.fa-transgender,
 .fa-transgender-alt {
   color: #c8a2c8;
 }
@@ -198,24 +225,50 @@
   }
 }
 
-.performer-select {
-  .performer-disambiguation {
-    white-space: pre;
-  }
+.performer-select-value .performer-disambiguation {
+  color: initial;
+}
 
-  .performer-select-value .performer-disambiguation {
-    color: initial;
-  }
+.performer-select-option {
+  .performer-select-row {
+    align-items: center;
+    display: flex;
+    width: 100%;
 
-  .alias {
-    font-weight: bold;
-    white-space: pre;
-  }
+    .performer-select-image {
+      margin-right: 0.4em;
+      max-height: 50px;
+      max-width: 50px;
+    }
 
-  .performer-select-image {
-    margin-right: 0.5em;
-    max-height: 50px;
-    max-width: 50px;
+    .performer-select-details {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      max-height: 4.1rem;
+      overflow: hidden;
+
+      .performer-select-name {
+        flex-shrink: 0;
+        white-space: pre-wrap;
+        word-break: break-all;
+
+        .performer-select-alias {
+          font-size: 0.8rem;
+          font-weight: bold;
+        }
+      }
+
+      .performer-select-disambiguation,
+      .performer-select-birthdate {
+        color: $text-muted;
+        flex-shrink: 0;
+        font-size: 0.9rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+    }
   }
 }
 

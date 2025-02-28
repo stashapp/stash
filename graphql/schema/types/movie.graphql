@@ -18,7 +18,7 @@ type Movie {
 
   front_image_path: String # Resolver
   back_image_path: String # Resolver
-  scene_count: Int! # Resolver
+  scene_count(depth: Int): Int! # Resolver
   scenes: [Scene!]!
 }
 

@@ -13,7 +13,8 @@ type Studio {
   image_count(depth: Int): Int! # Resolver
   gallery_count(depth: Int): Int! # Resolver
   performer_count(depth: Int): Int! # Resolver
-  movie_count(depth: Int): Int! # Resolver
+  group_count(depth: Int): Int! # Resolver
+  movie_count(depth: Int): Int! @deprecated(reason: "use group_count instead") # Resolver
   stash_ids: [StashID!]!
   # rating expressed as 1-100
   rating100: Int
@@ -21,7 +22,8 @@ type Studio {
   details: String
   created_at: Time!
   updated_at: Time!
-  movies: [Movie!]!
+  groups: [Group!]!
+  movies: [Movie!]! @deprecated(reason: "use groups instead")
 }
 
 input StudioCreateInput {

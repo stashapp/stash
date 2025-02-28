@@ -16,8 +16,8 @@ type PerformerFinder interface {
 	FindByStashID(ctx context.Context, stashID models.StashID) ([]*models.Performer, error)
 }
 
-type MovieNamesFinder interface {
-	FindByNames(ctx context.Context, names []string, nocase bool) ([]*models.Movie, error)
+type GroupNamesFinder interface {
+	FindByNames(ctx context.Context, names []string, nocase bool) ([]*models.Group, error)
 }
 
 // ScrapedPerformer matches the provided performer with the
@@ -118,27 +118,27 @@ func ScrapedStudio(ctx context.Context, qb StudioFinder, s *models.ScrapedStudio
 	return nil
 }
 
-// ScrapedMovie matches the provided movie with the movies
-// in the database and sets the ID field if one is found.
-func ScrapedMovie(ctx context.Context, qb MovieNamesFinder, m *models.ScrapedMovie) error {
-	if m.StoredID != nil || m.Name == nil {
-		return nil
+// ScrapedGroup matches the provided movie with the movies
+// in the database and returns the ID field if one is found.
+func ScrapedGroup(ctx context.Context, qb GroupNamesFinder, storedID *string, name *string) (matchedID *string, err error) {
+	if storedID != nil || name == nil {
+		return
 	}
 
-	movies, err := qb.FindByNames(ctx, []string{*m.Name}, true)
+	movies, err := qb.FindByNames(ctx, []string{*name}, true)
 
 	if err != nil {
-		return err
+		return
 	}
 
 	if len(movies) != 1 {
 		// ignore - cannot match
-		return nil
+		return
 	}
 
 	id := strconv.Itoa(movies[0].ID)
-	m.StoredID = &id
-	return nil
+	matchedID = &id
+	return
 }
 
 // ScrapedTag matches the provided tag with the tags

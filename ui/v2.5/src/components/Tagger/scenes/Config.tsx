@@ -1,5 +1,5 @@
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
-import React, { useRef, useContext } from "react";
+import React, { useContext, useState } from "react";
 import {
   Badge,
   Button,
@@ -14,6 +14,102 @@ import { Icon } from "src/components/Shared/Icon";
 import { ParseMode, TagOperation } from "../constants";
 import { TaggerStateContext } from "../context";
 
+const Blacklist: React.FC<{
+  list: string[];
+  setList: (blacklist: string[]) => void;
+}> = ({ list, setList }) => {
+  const intl = useIntl();
+
+  const [currentValue, setCurrentValue] = useState("");
+  const [error, setError] = useState<string>();
+
+  function addBlacklistItem() {
+    if (!currentValue) return;
+
+    // don't add duplicate items
+    if (list.includes(currentValue)) {
+      setError(
+        intl.formatMessage({
+          id: "component_tagger.config.errors.blacklist_duplicate",
+        })
+      );
+      return;
+    }
+
+    // validate regex
+    try {
+      new RegExp(currentValue);
+    } catch (e) {
+      setError((e as SyntaxError).message);
+      return;
+    }
+
+    setList([...list, currentValue]);
+
+    setCurrentValue("");
+  }
+
+  function removeBlacklistItem(index: number) {
+    const newBlacklist = [...list];
+    newBlacklist.splice(index, 1);
+    setList(newBlacklist);
+  }
+
+  return (
+    <div>
+      <h5>
+        <FormattedMessage id="component_tagger.config.blacklist_label" />
+      </h5>
+      <Form.Group>
+        <InputGroup hasValidation>
+          <Form.Control
+            className="text-input"
+            value={currentValue}
+            onChange={(e) => {
+              setCurrentValue(e.currentTarget.value);
+              setError(undefined);
+            }}
+            onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+              if (e.key === "Enter") {
+                addBlacklistItem();
+                e.preventDefault();
+              }
+            }}
+            isInvalid={!!error}
+          />
+          <InputGroup.Append>
+            <Button onClick={() => addBlacklistItem()}>
+              <FormattedMessage id="actions.add" />
+            </Button>
+          </InputGroup.Append>
+          <Form.Control.Feedback type="invalid">{error}</Form.Control.Feedback>
+        </InputGroup>
+      </Form.Group>
+      <div>
+        {intl.formatMessage(
+          { id: "component_tagger.config.blacklist_desc" },
+          { chars_require_escape: <code>[\^$.|?*+()</code> }
+        )}
+      </div>
+      {list.map((item, index) => (
+        <Badge
+          className="tag-item d-inline-block"
+          variant="secondary"
+          key={item}
+        >
+          {item.toString()}
+          <Button
+            className="minimal ml-2"
+            onClick={() => removeBlacklistItem(index)}
+          >
+            <Icon icon={faTimes} />
+          </Button>
+        </Badge>
+      ))}
+    </div>
+  );
+};
+
 interface IConfigProps {
   show: boolean;
 }
@@ -21,33 +117,6 @@ interface IConfigProps {
 const Config: React.FC<IConfigProps> = ({ show }) => {
   const { config, setConfig } = useContext(TaggerStateContext);
   const intl = useIntl();
-  const blacklistRef = useRef<HTMLInputElement | null>(null);
-
-  function addBlacklistItem() {
-    if (!blacklistRef.current) return;
-
-    const input = blacklistRef.current.value;
-    if (!input) return;
-
-    // don't add duplicate items
-    if (!config.blacklist.includes(input)) {
-      setConfig({
-        ...config,
-        blacklist: [...config.blacklist, input],
-      });
-    }
-
-    blacklistRef.current.value = "";
-  }
-
-  function removeBlacklistItem(index: number) {
-    const newBlacklist = [...config.blacklist];
-    newBlacklist.splice(index, 1);
-    setConfig({
-      ...config,
-      blacklist: newBlacklist,
-    });
-  }
 
   return (
     <Collapse in={show}>
@@ -198,47 +267,10 @@ const Config: React.FC<IConfigProps> = ({ show }) => {
             </Form.Group>
           </Form>
           <div className="col-md-6">
-            <h5>
-              <FormattedMessage id="component_tagger.config.blacklist_label" />
-            </h5>
-            <InputGroup>
-              <Form.Control
-                className="text-input"
-                ref={blacklistRef}
-                onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) => {
-                  if (e.key === "Enter") {
-                    addBlacklistItem();
-                    e.preventDefault();
-                  }
-                }}
-              />
-              <InputGroup.Append>
-                <Button onClick={() => addBlacklistItem()}>
-                  <FormattedMessage id="actions.add" />
-                </Button>
-              </InputGroup.Append>
-            </InputGroup>
-            <div>
-              {intl.formatMessage(
-                { id: "component_tagger.config.blacklist_desc" },
-                { chars_require_escape: <code>[\^$.|?*+()</code> }
-              )}
-            </div>
-            {config.blacklist.map((item, index) => (
-              <Badge
-                className="tag-item d-inline-block"
-                variant="secondary"
-                key={item}
-              >
-                {item.toString()}
-                <Button
-                  className="minimal ml-2"
-                  onClick={() => removeBlacklistItem(index)}
-                >
-                  <Icon icon={faTimes} />
-                </Button>
-              </Badge>
-            ))}
+            <Blacklist
+              list={config.blacklist}
+              setList={(blacklist) => setConfig({ ...config, blacklist })}
+            />
           </div>
         </div>
       </Card>

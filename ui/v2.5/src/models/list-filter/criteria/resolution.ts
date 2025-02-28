@@ -5,16 +5,16 @@ import {
 import { stringToResolution, resolutionStrings } from "src/utils/resolution";
 import { CriterionType } from "../types";
 import {
-  Criterion,
-  CriterionOption,
+  ModifierCriterion,
+  ModifierCriterionOption,
   CriterionValue,
   StringCriterion,
 } from "./criterion";
 
-class BaseResolutionCriterionOption extends CriterionOption {
+class BaseResolutionCriterionOption extends ModifierCriterionOption {
   constructor(
     value: CriterionType,
-    makeCriterion: () => Criterion<CriterionValue>
+    makeCriterion: () => ModifierCriterion<CriterionValue>
   ) {
     super({
       messageID: value,

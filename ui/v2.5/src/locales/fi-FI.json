@@ -129,7 +129,11 @@
         "enable": "Ota käyttöön",
         "remove_date": "Poista päivä",
         "encoding_image": "Enkoodataan kuvaa…",
-        "clear_date_data": "Tyhjennä päivämäärä"
+        "clear_date_data": "Tyhjennä päivämäärä",
+        "add_o": "Lisää O",
+        "add_manual_date": "Lisää päivämäärä käsin",
+        "add_play": "Lisää toistokerta",
+        "view_history": "Näytä historia"
     },
     "actions_name": "Toiminnot",
     "age": "Ikä",
@@ -178,7 +182,8 @@
             "show_male_desc": "Valitse käytetäänkö miesesiintyjiä automaattisessa tunnisteiden asettamisessa.",
             "show_male_label": "Näytä miesesiintyjät",
             "source": "Lähde",
-            "mark_organized_label": "Merkitse järjestetyksi kun tallennetaan"
+            "mark_organized_label": "Merkitse järjestetyksi kun tallennetaan",
+            "mark_organized_desc": "Merkitsee kohtauksen järjestellyksi hetki kun Tallenna -painiketta on painettu."
         },
         "noun_query": "Haku",
         "results": {
@@ -250,7 +255,9 @@
             "server_display_name_desc": "DLNA -palvelimen nimi. Oletuksena {server_name}, jos tyhjä.",
             "until_restart": "uudelleenkäynnistykseen asti",
             "video_sort_order": "Videoiden oletusjärjestys",
-            "video_sort_order_desc": "Videoiden oletusjärjestys."
+            "video_sort_order_desc": "Videoiden oletusjärjestys.",
+            "server_port": "Palvelimen portti",
+            "server_port_desc": "Portti, jota DLNA palvelin kuuntelee. DLNA palvelin pitää käynnistää uudelleen muuttamisen jälkeen."
         },
         "general": {
             "auth": {
@@ -339,6 +346,9 @@
             "ffmpeg": {
                 "hardware_acceleration": {
                     "heading": "FFmpeg laitteistokoodaus"
+                },
+                "download_ffmpeg": {
+                    "heading": "Lataa FFmpeg"
                 }
             }
         },
@@ -554,7 +564,7 @@
                 }
             },
             "preview_type": {
-                "description": "Seinän kohteiden asetukset",
+                "description": "Oletuksena on videoesikatselut (mp4). Jos haluat vähentää suorittimen käyttöä kun selaillaan kirjastoa, käytä animoituja kuvia (webp). Ne pitää kuitenkin generoida erikseen videoesikatseluiden lisäksi ja ovat kooltaan isompia.",
                 "heading": "Esikatselun tyyppi",
                 "options": {
                     "animated": "Animoitu kuva",
@@ -625,8 +635,7 @@
         "galleries": "{count, plural, one {Galleria} other {Galleriaa}}",
         "images": "{count, plural, one {Kuva} other {Kuvaa}}",
         "markers": "{count, plural, one {Merkki} other {Merkkiä}}",
-        "movies": "{count, plural, one {Elokuva} other {Elokuvat}}",
-        "performers": "{count, plural, one {Esiintyjä} other {Esiintyjää}}",
+        "performers": "{count, plural, one {Esiintyjä} other {Esiintyjät}}",
         "scenes": "{count, plural, one {Kohtaus} other {Kohtausta}}",
         "studios": "{count, plural, one {Studio} other {Studiota}}",
         "tags": "{count, plural, one {Tunniste} other {Tunnistetta}}"
@@ -876,9 +885,6 @@
     },
     "megabits_per_second": "{value} megabittiä sekunnissa",
     "metadata": "Metadata",
-    "movie": "Elokuva",
-    "movie_scene_number": "Kohtauksen numero",
-    "movies": "Elokuvat",
     "name": "Nimi",
     "new": "Uusi",
     "none": "Ei mitään",
@@ -1067,7 +1073,9 @@
         "started_auto_tagging": "Aloiteettin automaattinen tunnisteiden asetus",
         "started_generating": "Aloitettiin generointi",
         "started_importing": "Aloitettiin tuonti",
-        "updated_entity": "{entity} päivitetty"
+        "updated_entity": "{entity} päivitetty",
+        "merged_scenes": "Yhdistetyt kohtaukset",
+        "removed_entity": "Poistettu {count, plural, one {{singularEntity}} other {{pluralEntity}}}"
     },
     "total": "Yhteensä",
     "true": "On",
@@ -1082,5 +1090,26 @@
     "audio_codec": "Audiokodekki",
     "play_count": "Toistomäärä",
     "play_duration": "Toistettu aika",
-    "primary_file": "Ensisijainen tiedosto"
+    "primary_file": "Ensisijainen tiedosto",
+    "studio_tagger": {
+        "network_error": "Verkkovirhe",
+        "name_already_exists": "Nimi on jo olemassa",
+        "failed_to_save_studio": "Ei voitu tallentaa studiota \"{studio}\"",
+        "current_page": "Nykyinen sivu",
+        "query_all_studios_in_the_database": "Kaikki studiot tietokannassa",
+        "no_results_found": "Ei tuloksia.",
+        "studio_names_separated_by_comma": "Studion nimet eriteltynä pilkuilla",
+        "studio_successfully_tagged": "Studion tunnisteiden asettaminen onnistui",
+        "studio_selection": "Studion valinta",
+        "update_studios": "Päivitä studiot",
+        "update_studio": "Päivitä studio",
+        "untagged_studios": "Studiot ilman tunnisteita"
+    },
+    "studio_tags": "Studion tunnisteet",
+    "tag_sub_tag_tooltip": "On alitunnisteita",
+    "tag_parent_tooltip": "On ylätunniste",
+    "time": "Aika",
+    "urls": "URLit",
+    "unknown_date": "Tuntematon päivä",
+    "type": "Tyyppi"
 }

@@ -5,11 +5,11 @@ package sqlite_test
 
 import (
 	"context"
+	"slices"
 	"strconv"
 	"testing"
 
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 	"github.com/stretchr/testify/assert"
 )
@@ -74,6 +74,27 @@ func TestMarkerCountByTagID(t *testing.T) {
 	})
 }
 
+func TestMarkerQueryQ(t *testing.T) {
+	withTxn(func(ctx context.Context) error {
+		q := getSceneTitle(sceneIdxWithMarkers)
+		m, _, err := db.SceneMarker.Query(ctx, nil, &models.FindFilterType{
+			Q: &q,
+		})
+
+		if err != nil {
+			t.Errorf("Error querying scene markers: %s", err.Error())
+		}
+
+		if !assert.Greater(t, len(m), 0) {
+			return nil
+		}
+
+		assert.Equal(t, sceneIDs[sceneIdxWithMarkers], m[0].SceneID)
+
+		return nil
+	})
+}
+
 func TestMarkerQuerySortBySceneUpdated(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
 		sort := "scenes_updated_at"
@@ -112,7 +133,7 @@ func verifyIDs(t *testing.T, modifier models.CriterionModifier, values []int, re
 	case models.CriterionModifierNotEquals:
 		foundAll := true
 		for _, v := range values {
-			if !sliceutil.Contains(results, v) {
+			if !slices.Contains(results, v) {
 				foundAll = false
 				break
 			}
@@ -368,6 +389,116 @@ func TestMarkerQuerySceneTags(t *testing.T) {
 
 		return nil
 	})
+}
+
+func markersToIDs(i []*models.SceneMarker) []int {
+	ret := make([]int, len(i))
+	for i, v := range i {
+		ret[i] = v.ID
+	}
+
+	return ret
+}
+
+func TestMarkerQueryDuration(t *testing.T) {
+	type test struct {
+		name         string
+		markerFilter *models.SceneMarkerFilterType
+		include      []int
+		exclude      []int
+	}
+
+	cases := []test{
+		{
+			"is null",
+			&models.SceneMarkerFilterType{
+				Duration: &models.FloatCriterionInput{
+					Modifier: models.CriterionModifierIsNull,
+				},
+			},
+			[]int{markerIdxWithScene},
+			[]int{markerIdxWithDuration},
+		},
+		{
+			"not null",
+			&models.SceneMarkerFilterType{
+				Duration: &models.FloatCriterionInput{
+					Modifier: models.CriterionModifierNotNull,
+				},
+			},
+			[]int{markerIdxWithDuration},
+			[]int{markerIdxWithScene},
+		},
+		{
+			"equals",
+			&models.SceneMarkerFilterType{
+				Duration: &models.FloatCriterionInput{
+					Modifier: models.CriterionModifierEquals,
+					Value:    markerIdxWithDuration,
+				},
+			},
+			[]int{markerIdxWithDuration},
+			[]int{markerIdx2WithDuration, markerIdxWithScene},
+		},
+		{
+			"not equals",
+			&models.SceneMarkerFilterType{
+				Duration: &models.FloatCriterionInput{
+					Modifier: models.CriterionModifierNotEquals,
+					Value:    markerIdx2WithDuration,
+				},
+			},
+			[]int{markerIdxWithDuration},
+			[]int{markerIdx2WithDuration, markerIdxWithScene},
+		},
+		{
+			"greater than",
+			&models.SceneMarkerFilterType{
+				Duration: &models.FloatCriterionInput{
+					Modifier: models.CriterionModifierGreaterThan,
+					Value:    markerIdxWithDuration,
+				},
+			},
+			[]int{markerIdx2WithDuration},
+			[]int{markerIdxWithDuration, markerIdxWithScene},
+		},
+		{
+			"less than",
+			&models.SceneMarkerFilterType{
+				Duration: &models.FloatCriterionInput{
+					Modifier: models.CriterionModifierLessThan,
+					Value:    markerIdx2WithDuration,
+				},
+			},
+			[]int{markerIdxWithDuration},
+			[]int{markerIdx2WithDuration, markerIdxWithScene},
+		},
+	}
+
+	qb := db.SceneMarker
+
+	for _, tt := range cases {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+			got, _, err := qb.Query(ctx, tt.markerFilter, nil)
+			if err != nil {
+				t.Errorf("SceneMarkerStore.Query() error = %v", err)
+				return
+			}
+
+			ids := markersToIDs(got)
+			include := indexesToIDs(markerIDs, tt.include)
+			exclude := indexesToIDs(markerIDs, tt.exclude)
+
+			for _, i := range include {
+				assert.Contains(ids, i)
+			}
+			for _, e := range exclude {
+				assert.NotContains(ids, e)
+			}
+		})
+	}
+
 }
 
 func queryMarkers(ctx context.Context, t *testing.T, sqb models.SceneMarkerReader, markerFilter *models.SceneMarkerFilterType, findFilter *models.FindFilterType) []*models.SceneMarker {

@@ -12,7 +12,7 @@ import { Icon } from "../Shared/Icon";
 import { TagLink } from "../Shared/TagLink";
 import { Button, ButtonGroup } from "react-bootstrap";
 import {
-  Criterion,
+  ModifierCriterion,
   CriterionValue,
 } from "src/models/list-filter/criteria/criterion";
 import { PopoverCountButton } from "../Shared/PopoverCountButton";
@@ -25,10 +25,10 @@ import ScreenUtils from "src/utils/screen";
 import { FavoriteIcon } from "../Shared/FavoriteIcon";
 
 export interface IPerformerCardExtraCriteria {
-  scenes?: Criterion<CriterionValue>[];
-  images?: Criterion<CriterionValue>[];
-  galleries?: Criterion<CriterionValue>[];
-  movies?: Criterion<CriterionValue>[];
+  scenes?: ModifierCriterion<CriterionValue>[];
+  images?: ModifierCriterion<CriterionValue>[];
+  galleries?: ModifierCriterion<CriterionValue>[];
+  groups?: ModifierCriterion<CriterionValue>[];
   performer?: ILabeledId;
 }
 
@@ -178,18 +178,18 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
     );
   }
 
-  function maybeRenderMoviesPopoverButton() {
-    if (!performer.movie_count) return;
+  function maybeRenderGroupsPopoverButton() {
+    if (!performer.group_count) return;
 
     return (
       <PopoverCountButton
-        className="movie-count"
-        type="movie"
-        count={performer.movie_count}
-        url={NavUtils.makePerformerMoviesUrl(
+        className="group-count"
+        type="group"
+        count={performer.group_count}
+        url={NavUtils.makePerformerGroupsUrl(
           performer,
           extraCriteria?.performer,
-          extraCriteria?.movies
+          extraCriteria?.groups
         )}
       />
     );
@@ -202,14 +202,14 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
       performer.gallery_count ||
       performer.tags.length > 0 ||
       performer.o_counter ||
-      performer.movie_count
+      performer.group_count
     ) {
       return (
         <>
           <hr />
           <ButtonGroup className="card-popovers">
             {maybeRenderScenesPopoverButton()}
-            {maybeRenderMoviesPopoverButton()}
+            {maybeRenderGroupsPopoverButton()}
             {maybeRenderImagesPopoverButton()}
             {maybeRenderGalleriesPopoverButton()}
             {maybeRenderTagPopoverButton()}
@@ -277,6 +277,8 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
           <FavoriteIcon
             favorite={performer.favorite}
             onToggleFavorite={onToggleFavorite}
+            size="2x"
+            className="hide-not-favorite"
           />
           {maybeRenderRatingBanner()}
           {maybeRenderFlag()}

@@ -10,7 +10,9 @@ enum ScrapeType {
 "Type of the content a scraper generates"
 enum ScrapeContentType {
   GALLERY
+  IMAGE
   MOVIE
+  GROUP
   PERFORMER
   SCENE
 }
@@ -21,7 +23,9 @@ union ScrapedContent =
   | ScrapedTag
   | ScrapedScene
   | ScrapedGallery
+  | ScrapedImage
   | ScrapedMovie
+  | ScrapedGroup
   | ScrapedPerformer
 
 type ScraperSpec {
@@ -39,8 +43,12 @@ type Scraper {
   scene: ScraperSpec
   "Details for gallery scraper"
   gallery: ScraperSpec
+  "Details for image scraper"
+  image: ScraperSpec
   "Details for movie scraper"
-  movie: ScraperSpec
+  movie: ScraperSpec @deprecated(reason: "use group")
+  "Details for group scraper"
+  group: ScraperSpec
 }
 
 type ScrapedStudio {
@@ -76,7 +84,8 @@ type ScrapedScene {
   studio: ScrapedStudio
   tags: [ScrapedTag!]
   performers: [ScrapedPerformer!]
-  movies: [ScrapedMovie!]
+  movies: [ScrapedMovie!] @deprecated(reason: "use groups")
+  groups: [ScrapedGroup!]
 
   remote_site_id: String
   duration: Int
@@ -121,6 +130,26 @@ input ScrapedGalleryInput {
   date: String
 
   # no studio, tags or performers
+}
+
+type ScrapedImage {
+  title: String
+  code: String
+  details: String
+  photographer: String
+  urls: [String!]
+  date: String
+  studio: ScrapedStudio
+  tags: [ScrapedTag!]
+  performers: [ScrapedPerformer!]
+}
+
+input ScrapedImageInput {
+  title: String
+  code: String
+  details: String
+  urls: [String!]
+  date: String
 }
 
 input ScraperSourceInput {
@@ -185,13 +214,31 @@ input ScrapeSingleGalleryInput {
   gallery_input: ScrapedGalleryInput
 }
 
+input ScrapeSingleImageInput {
+  "Instructs to query by string"
+  query: String
+  "Instructs to query by image id"
+  image_id: ID
+  "Instructs to query by image fragment"
+  image_input: ScrapedImageInput
+}
+
 input ScrapeSingleMovieInput {
   "Instructs to query by string"
   query: String
   "Instructs to query by movie id"
   movie_id: ID
-  "Instructs to query by gallery fragment"
+  "Instructs to query by movie fragment"
   movie_input: ScrapedMovieInput
+}
+
+input ScrapeSingleGroupInput {
+  "Instructs to query by string"
+  query: String
+  "Instructs to query by group id"
+  group_id: ID
+  "Instructs to query by group fragment"
+  group_input: ScrapedGroupInput
 }
 
 input StashBoxSceneQueryInput {

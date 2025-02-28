@@ -112,7 +112,7 @@ type schema49Migrator struct {
 
 func (m *schema49Migrator) migrateSavedFilters(ctx context.Context) error {
 	if err := m.withTxn(ctx, func(tx *sqlx.Tx) error {
-		rows, err := m.db.Query("SELECT id, mode, find_filter FROM saved_filters ORDER BY id")
+		rows, err := tx.Query("SELECT id, mode, find_filter FROM saved_filters ORDER BY id")
 		if err != nil {
 			return err
 		}
@@ -147,7 +147,7 @@ func (m *schema49Migrator) migrateSavedFilters(ctx context.Context) error {
 				return fmt.Errorf("failed to get display options for saved filter  %s : %w", findFilter, err)
 			}
 
-			_, err = m.db.Exec("UPDATE saved_filters SET find_filter = ?, object_filter = ?, ui_options = ? WHERE id = ?", newFindFilter, objectFilter, uiOptions, id)
+			_, err = tx.Exec("UPDATE saved_filters SET find_filter = ?, object_filter = ?, ui_options = ? WHERE id = ?", newFindFilter, objectFilter, uiOptions, id)
 			if err != nil {
 				return fmt.Errorf("failed to update saved filter %d: %w", id, err)
 			}

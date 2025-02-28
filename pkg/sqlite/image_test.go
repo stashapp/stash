@@ -2053,7 +2053,7 @@ func TestImageQueryIsMissingPerformers(t *testing.T) {
 
 		assert.True(t, len(images) > 0)
 
-		// ensure non of the ids equal the one with movies
+		// ensure non of the ids equal the one with performers
 		for _, image := range images {
 			assert.NotEqual(t, imageIDs[imageIdxWithPerformer], image.ID)
 		}

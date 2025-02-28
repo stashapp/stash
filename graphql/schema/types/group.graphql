@@ -1,0 +1,137 @@
+"GroupDescription represents a relationship to a group with a description of the relationship"
+type GroupDescription {
+  group: Group!
+  description: String
+}
+
+type Group {
+  id: ID!
+  name: String!
+  aliases: String
+  "Duration in seconds"
+  duration: Int
+  date: String
+  # rating expressed as 1-100
+  rating100: Int
+  studio: Studio
+  director: String
+  synopsis: String
+  urls: [String!]!
+  tags: [Tag!]!
+  created_at: Time!
+  updated_at: Time!
+
+  containing_groups: [GroupDescription!]!
+  sub_groups: [GroupDescription!]!
+
+  front_image_path: String # Resolver
+  back_image_path: String # Resolver
+  scene_count(depth: Int): Int! # Resolver
+  sub_group_count(depth: Int): Int! # Resolver
+  scenes: [Scene!]!
+}
+
+input GroupDescriptionInput {
+  group_id: ID!
+  description: String
+}
+
+input GroupCreateInput {
+  name: String!
+  aliases: String
+  "Duration in seconds"
+  duration: Int
+  date: String
+  # rating expressed as 1-100
+  rating100: Int
+  studio_id: ID
+  director: String
+  synopsis: String
+  urls: [String!]
+  tag_ids: [ID!]
+
+  containing_groups: [GroupDescriptionInput!]
+  sub_groups: [GroupDescriptionInput!]
+
+  "This should be a URL or a base64 encoded data URL"
+  front_image: String
+  "This should be a URL or a base64 encoded data URL"
+  back_image: String
+}
+
+input GroupUpdateInput {
+  id: ID!
+  name: String
+  aliases: String
+  duration: Int
+  date: String
+  # rating expressed as 1-100
+  rating100: Int
+  studio_id: ID
+  director: String
+  synopsis: String
+  urls: [String!]
+  tag_ids: [ID!]
+
+  containing_groups: [GroupDescriptionInput!]
+  sub_groups: [GroupDescriptionInput!]
+
+  "This should be a URL or a base64 encoded data URL"
+  front_image: String
+  "This should be a URL or a base64 encoded data URL"
+  back_image: String
+}
+
+input BulkUpdateGroupDescriptionsInput {
+  groups: [GroupDescriptionInput!]!
+  mode: BulkUpdateIdMode!
+}
+
+input BulkGroupUpdateInput {
+  clientMutationId: String
+  ids: [ID!]
+  # rating expressed as 1-100
+  rating100: Int
+  studio_id: ID
+  director: String
+  urls: BulkUpdateStrings
+  tag_ids: BulkUpdateIds
+
+  containing_groups: BulkUpdateGroupDescriptionsInput
+  sub_groups: BulkUpdateGroupDescriptionsInput
+}
+
+input GroupDestroyInput {
+  id: ID!
+}
+
+input ReorderSubGroupsInput {
+  "ID of the group to reorder sub groups for"
+  group_id: ID!
+  """
+  IDs of the sub groups to reorder. These must be a subset of the current sub groups.
+  Sub groups will be inserted in this order at the insert_index
+  """
+  sub_group_ids: [ID!]!
+  "The sub-group ID at which to insert the sub groups"
+  insert_at_id: ID!
+  "If true, the sub groups will be inserted after the insert_index, otherwise they will be inserted before"
+  insert_after: Boolean
+}
+
+type FindGroupsResultType {
+  count: Int!
+  groups: [Group!]!
+}
+
+input GroupSubGroupAddInput {
+  containing_group_id: ID!
+  sub_groups: [GroupDescriptionInput!]!
+  "The index at which to insert the sub groups. If not provided, the sub groups will be appended to the end"
+  insert_index: Int
+}
+
+input GroupSubGroupRemoveInput {
+  containing_group_id: ID!
+  sub_group_ids: [ID!]!
+}

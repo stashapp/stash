@@ -40,6 +40,7 @@ import (
 	"path"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/anacrolix/dms/soap"
@@ -67,8 +68,8 @@ type PerformerFinder interface {
 	All(ctx context.Context) ([]*models.Performer, error)
 }
 
-type MovieFinder interface {
-	All(ctx context.Context) ([]*models.Movie, error)
+type GroupFinder interface {
+	All(ctx context.Context) ([]*models.Group, error)
 }
 
 const (
@@ -229,6 +230,10 @@ func (me *Server) ssdpInterface(if_ net.Interface) {
 	stopped := make(chan struct{})
 	go func() {
 		defer close(stopped)
+		// FIXME - this currently blocks forever unless it encounters an error
+		// See https://github.com/anacrolix/dms/pull/150
+		// Needs to be fixed upstream
+		//nolint:staticcheck
 		if err := s.Serve(); err != nil {
 			logger.Errorf("%q: %q\n", if_.Name, err)
 		}
@@ -274,6 +279,8 @@ type Server struct {
 	sceneServer        sceneServer
 	ipWhitelistManager *ipWhitelistManager
 	VideoSortOrder     string
+
+	subscribeLock sync.Mutex
 }
 
 // UPnP SOAP service.
@@ -537,13 +544,14 @@ func (me *Server) contentDirectoryEventSubHandler(w http.ResponseWriter, r *http
 	// The following code is a work in progress. It partially implements
 	// the spec on eventing but hasn't been completed as I have nothing to
 	// test it with.
-	service := me.services["ContentDirectory"]
 	switch {
 	case r.Method == "SUBSCRIBE" && r.Header.Get("SID") == "":
 		urls := upnp.ParseCallbackURLs(r.Header.Get("CALLBACK"))
 		var timeout int
 		_, _ = fmt.Sscanf(r.Header.Get("TIMEOUT"), "Second-%d", &timeout)
-		sid, timeout, _ := service.Subscribe(urls, timeout)
+
+		sid, timeout, _ := me.subscribe(urls, timeout)
+
 		w.Header()["SID"] = []string{sid}
 		w.Header()["TIMEOUT"] = []string{fmt.Sprintf("Second-%d", timeout)}
 		// TODO: Shouldn't have to do this to get headers logged.
@@ -557,6 +565,16 @@ func (me *Server) contentDirectoryEventSubHandler(w http.ResponseWriter, r *http
 	default:
 		logger.Debugf("unhandled event method: %s", r.Method)
 	}
+}
+
+// wrapper around service.Subscribe which requires concurrency protection
+// TODO - this should be addressed upstream
+func (me *Server) subscribe(urls []*url.URL, timeout int) (sid string, actualTimeout int, err error) {
+	me.subscribeLock.Lock()
+	defer me.subscribeLock.Unlock()
+
+	service := me.services["ContentDirectory"]
+	return service.Subscribe(urls, timeout)
 }
 
 func (me *Server) initMux(mux *http.ServeMux) {

@@ -12,11 +12,11 @@ import (
 
 // Decorator adds video specific fields to a File.
 type Decorator struct {
-	FFProbe ffmpeg.FFProbe
+	FFProbe *ffmpeg.FFProbe
 }
 
 func (d *Decorator) Decorate(ctx context.Context, fs models.FS, f models.File) (models.File, error) {
-	if d.FFProbe == "" {
+	if d.FFProbe == nil {
 		return f, errors.New("ffprobe not configured")
 	}
 

@@ -1881,7 +1881,7 @@ func TestGalleryQueryIsMissingPerformers(t *testing.T) {
 
 		assert.True(t, len(galleries) > 0)
 
-		// ensure non of the ids equal the one with movies
+		// ensure non of the ids equal the one with galleries
 		for _, gallery := range galleries {
 			assert.NotEqual(t, galleryIDs[galleryIdxWithPerformer], gallery.ID)
 		}
@@ -2968,6 +2968,34 @@ func TestGalleryQueryHasChapters(t *testing.T) {
 		galleries = queryGallery(ctx, t, sqb, &galleryFilter, &findFilter)
 
 		assert.NotEqual(t, 0, len(galleries))
+
+		return nil
+	})
+}
+
+func TestGallerySetAndResetCover(t *testing.T) {
+	withTxn(func(ctx context.Context) error {
+		sqb := db.Gallery
+
+		imagePath2 := getFilePath(folderIdxWithImageFiles, getImageBasename(imageIdx2WithGallery))
+
+		result, err := db.Image.CoverByGalleryID(ctx, galleryIDs[galleryIdxWithTwoImages])
+		assert.Nil(t, err)
+		assert.Nil(t, result)
+
+		err = sqb.SetCover(ctx, galleryIDs[galleryIdxWithTwoImages], imageIDs[imageIdx2WithGallery])
+		assert.Nil(t, err)
+
+		result, err = db.Image.CoverByGalleryID(ctx, galleryIDs[galleryIdxWithTwoImages])
+		assert.Nil(t, err)
+		assert.Equal(t, result.Path, imagePath2)
+
+		err = sqb.ResetCover(ctx, galleryIDs[galleryIdxWithTwoImages])
+		assert.Nil(t, err)
+
+		result, err = db.Image.CoverByGalleryID(ctx, galleryIDs[galleryIdxWithTwoImages])
+		assert.Nil(t, err)
+		assert.Nil(t, result)
 
 		return nil
 	})

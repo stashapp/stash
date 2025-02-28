@@ -1,0 +1,17 @@
+fragment SlimGroupData on Group {
+  id
+  name
+  front_image_path
+  rating100
+}
+
+fragment SelectGroupData on Group {
+  id
+  name
+  aliases
+  date
+  studio {
+    name
+  }
+  front_image_path
+}

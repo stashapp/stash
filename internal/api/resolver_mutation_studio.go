@@ -39,7 +39,7 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input models.Studio
 	newStudio.Details = translator.string(input.Details)
 	newStudio.IgnoreAutoTag = translator.bool(input.IgnoreAutoTag)
 	newStudio.Aliases = models.NewRelatedStrings(input.Aliases)
-	newStudio.StashIDs = models.NewRelatedStashIDs(input.StashIds)
+	newStudio.StashIDs = models.NewRelatedStashIDs(models.StashIDInputs(input.StashIds).ToStashIDs())
 
 	var err error
 

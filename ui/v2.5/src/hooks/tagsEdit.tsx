@@ -1,7 +1,7 @@
 import * as GQL from "src/core/generated-graphql";
 import { useTagCreate } from "src/core/StashService";
 import { useEffect, useState } from "react";
-import { Tag, TagSelect } from "src/components/Tags/TagSelect";
+import { Tag, TagSelect, TagSelectProps } from "src/components/Tags/TagSelect";
 import { useToast } from "src/hooks/Toast";
 import { useIntl } from "react-intl";
 import { Badge, Button } from "react-bootstrap";
@@ -44,10 +44,15 @@ export function useTagsEdit(
       }
 
       // add the new tag to the new tags value
-      const newTagIds = tags
-        .map((t) => t.id)
-        .concat([result.data.tagCreate.id]);
-      setFieldValue(newTagIds);
+      onSetTags(
+        tags.concat([
+          {
+            id: result.data.tagCreate.id,
+            name: toCreate.name ?? "",
+            aliases: [],
+          },
+        ])
+      );
 
       // remove the tag from the list
       const newTagsClone = newTags!.concat();
@@ -73,20 +78,26 @@ export function useTagsEdit(
   function updateTagsStateFromScraper(
     scrapedTags?: Pick<GQL.ScrapedTag, "name" | "stored_id">[]
   ) {
-    if (scrapedTags) {
-      // map tags to their ids and filter out those not found
-      onSetTags(
-        scrapedTags.map((p) => {
-          return {
-            id: p.stored_id!,
-            name: p.name ?? "",
-            aliases: [],
-          };
-        })
-      );
-
-      setNewTags(scrapedTags.filter((t) => !t.stored_id));
+    if (!scrapedTags) {
+      return;
     }
+
+    // map tags to their ids and filter out those not found
+    const idTags = scrapedTags.filter(
+      (t) => t.stored_id !== undefined && t.stored_id !== null
+    );
+    const newNewTags = scrapedTags.filter((t) => !t.stored_id);
+    onSetTags(
+      idTags.map((p) => {
+        return {
+          id: p.stored_id!,
+          name: p.name ?? "",
+          aliases: [],
+        };
+      })
+    );
+
+    setNewTags(newNewTags);
   }
 
   function renderNewTags() {
@@ -125,15 +136,10 @@ export function useTagsEdit(
     return ret;
   }
 
-  function tagsControl() {
+  function tagsControl(props?: TagSelectProps) {
     return (
       <>
-        <TagSelect
-          menuPortalTarget={document.body}
-          isMulti
-          onSelect={onSetTags}
-          values={tags}
-        />
+        <TagSelect isMulti onSelect={onSetTags} values={tags} {...props} />
         {renderNewTags()}
       </>
     );

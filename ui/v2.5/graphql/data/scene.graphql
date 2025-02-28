@@ -53,9 +53,9 @@ fragment SceneData on Scene {
     ...SlimStudioData
   }
 
-  movies {
-    movie {
-      ...MovieData
+  groups {
+    group {
+      ...GroupData
     }
     scene_index
   }
@@ -71,6 +71,7 @@ fragment SceneData on Scene {
   stash_ids {
     endpoint
     stash_id
+    updated_at
   }
 
   sceneStreams {

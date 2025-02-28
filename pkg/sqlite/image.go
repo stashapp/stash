@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
+	"slices"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/models"
@@ -176,7 +177,7 @@ var (
 			},
 			fkColumn:     tagIDColumn,
 			foreignTable: tagTable,
-			orderBy:      "tags.name ASC",
+			orderBy:      "COALESCE(tags.sort_name, tags.name) ASC",
 		},
 	}
 )
@@ -398,7 +399,7 @@ func (qb *ImageStore) FindMany(ctx context.Context, ids []int) ([]*models.Image,
 		}
 
 		for _, s := range unsorted {
-			i := sliceutil.Index(ids, s.ID)
+			i := slices.Index(ids, s.ID)
 			images[i] = s
 		}
 
@@ -480,6 +481,42 @@ func (qb *ImageStore) getMany(ctx context.Context, q *goqu.SelectDataset) ([]*mo
 	return ret, nil
 }
 
+// Returns the custom cover for the gallery, if one has been set.
+func (qb *ImageStore) CoverByGalleryID(ctx context.Context, galleryID int) (*models.Image, error) {
+	table := qb.table()
+
+	sq := dialect.From(table).
+		InnerJoin(
+			galleriesImagesJoinTable,
+			goqu.On(table.Col(idColumn).Eq(galleriesImagesJoinTable.Col(imageIDColumn))),
+		).
+		Select(table.Col(idColumn)).
+		Where(goqu.And(
+			galleriesImagesJoinTable.Col("gallery_id").Eq(galleryID),
+			galleriesImagesJoinTable.Col("cover").Eq(true),
+		))
+
+	q := qb.selectDataset().Prepared(true).Where(
+		table.Col(idColumn).Eq(
+			sq,
+		),
+	)
+
+	ret, err := qb.getMany(ctx, q)
+	if err != nil {
+		return nil, fmt.Errorf("getting cover for gallery %d: %w", galleryID, err)
+	}
+
+	switch {
+	case len(ret) > 1:
+		return nil, fmt.Errorf("internal error: multiple covers returned for gallery %d", galleryID)
+	case len(ret) == 1:
+		return ret[0], nil
+	default:
+		return nil, nil
+	}
+}
+
 func (qb *ImageStore) GetFiles(ctx context.Context, id int) ([]models.File, error) {
 	fileIDs, err := imageRepository.files.get(ctx, id)
 	if err != nil {
@@ -492,7 +529,10 @@ func (qb *ImageStore) GetFiles(ctx context.Context, id int) ([]models.File, erro
 		return nil, err
 	}
 
-	return files, nil
+	ret := make([]models.File, len(files))
+	copy(ret, files)
+
+	return ret, nil
 }
 
 func (qb *ImageStore) GetManyFileIDs(ctx context.Context, ids []int) ([][]models.FileID, error) {
@@ -566,10 +606,13 @@ func (qb *ImageStore) FindByChecksum(ctx context.Context, checksum string) ([]*m
 	})
 }
 
+var defaultGalleryOrder = []exp.OrderedExpression{
+	goqu.L("COALESCE(folders.path, '') || COALESCE(files.basename, '') COLLATE NATURAL_CI").Asc(),
+	goqu.L("COALESCE(images.title, images.id) COLLATE NATURAL_CI").Asc(),
+}
+
 func (qb *ImageStore) FindByGalleryID(ctx context.Context, galleryID int) ([]*models.Image, error) {
 	table := qb.table()
-	fileTable := fileTableMgr.table
-	folderTable := folderTableMgr.table
 
 	sq := dialect.From(table).
 		InnerJoin(
@@ -584,7 +627,7 @@ func (qb *ImageStore) FindByGalleryID(ctx context.Context, galleryID int) ([]*mo
 		table.Col(idColumn).Eq(
 			sq,
 		),
-	).Order(folderTable.Col("path").Asc(), fileTable.Col("basename").Asc())
+	).Order(defaultGalleryOrder...)
 
 	ret, err := qb.getMany(ctx, q)
 	if err != nil {
@@ -592,6 +635,31 @@ func (qb *ImageStore) FindByGalleryID(ctx context.Context, galleryID int) ([]*mo
 	}
 
 	return ret, nil
+}
+
+func (qb *ImageStore) FindByGalleryIDIndex(ctx context.Context, galleryID int, index uint) (*models.Image, error) {
+	table := qb.table()
+
+	q := qb.selectDataset().
+		InnerJoin(
+			galleriesImagesJoinTable,
+			goqu.On(table.Col(idColumn).Eq(galleriesImagesJoinTable.Col(imageIDColumn))),
+		).
+		Where(galleriesImagesJoinTable.Col(galleryIDColumn).Eq(galleryID)).
+		Prepared(true).
+		Order(defaultGalleryOrder...).
+		Limit(1).Offset(index)
+
+	ret, err := qb.getMany(ctx, q)
+	if err != nil {
+		return nil, fmt.Errorf("getting images for gallery %d: %w", galleryID, err)
+	}
+
+	if len(ret) == 0 {
+		return nil, nil
+	}
+
+	return ret[0], nil
 }
 
 func (qb *ImageStore) CountByGalleryID(ctx context.Context, galleryID int) (int, error) {
@@ -934,6 +1002,21 @@ func (qb *ImageStore) setImageSortAndPagination(q *queryBuilder, findFilter *mod
 func (qb *ImageStore) AddFileID(ctx context.Context, id int, fileID models.FileID) error {
 	const firstPrimary = false
 	return imagesFilesTableMgr.insertJoins(ctx, id, firstPrimary, []models.FileID{fileID})
+}
+
+// RemoveFileID removes the file ID from the image.
+// If the file ID is the primary file, then the next file in the list is set as the primary file.
+func (qb *ImageStore) RemoveFileID(ctx context.Context, id int, fileID models.FileID) error {
+	fileIDs, err := imagesFilesTableMgr.get(ctx, id)
+	if err != nil {
+		return fmt.Errorf("getting file IDs for image %d: %w", id, err)
+	}
+
+	fileIDs = sliceutil.Filter(fileIDs, func(f models.FileID) bool {
+		return f != fileID
+	})
+
+	return imagesFilesTableMgr.replaceJoins(ctx, id, fileIDs)
 }
 
 func (qb *ImageStore) GetGalleryIDs(ctx context.Context, imageID int) ([]int, error) {

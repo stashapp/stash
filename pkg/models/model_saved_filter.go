@@ -15,6 +15,7 @@ const (
 	FilterModeGalleries    FilterMode = "GALLERIES"
 	FilterModeSceneMarkers FilterMode = "SCENE_MARKERS"
 	FilterModeMovies       FilterMode = "MOVIES"
+	FilterModeGroups       FilterMode = "GROUPS"
 	FilterModeTags         FilterMode = "TAGS"
 	FilterModeImages       FilterMode = "IMAGES"
 )
@@ -25,6 +26,7 @@ var AllFilterMode = []FilterMode{
 	FilterModeStudios,
 	FilterModeGalleries,
 	FilterModeSceneMarkers,
+	FilterModeGroups,
 	FilterModeMovies,
 	FilterModeTags,
 	FilterModeImages,
@@ -32,7 +34,7 @@ var AllFilterMode = []FilterMode{
 
 func (e FilterMode) IsValid() bool {
 	switch e {
-	case FilterModeScenes, FilterModePerformers, FilterModeStudios, FilterModeGalleries, FilterModeSceneMarkers, FilterModeMovies, FilterModeTags, FilterModeImages:
+	case FilterModeScenes, FilterModePerformers, FilterModeStudios, FilterModeGalleries, FilterModeSceneMarkers, FilterModeMovies, FilterModeGroups, FilterModeTags, FilterModeImages:
 		return true
 	}
 	return false

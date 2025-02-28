@@ -134,7 +134,14 @@
         "clean_generated": "Wyczyść wygenerowane pliki",
         "clear_date_data": "Wyczyść dane daty",
         "create_parent_studio": "Utwórz studio nadrzędne",
-        "remove_date": "Usuń datę"
+        "remove_date": "Usuń datę",
+        "reset_play_duration": "Resetuj czas odtwarzania",
+        "reset_resume_time": "Resetuj czas wznowienia",
+        "set_cover": "Ustaw jako okładkę",
+        "remove_from_containing_group": "Usuń z grupy",
+        "reset_cover": "Przywróć domyślną okładkę",
+        "add_sub_groups": "Dodaj podgrupy",
+        "view_history": "Zobacz historię"
     },
     "actions_name": "Działania",
     "age": "Wiek",
@@ -257,7 +264,9 @@
             "successfully_cancelled_temporary_behaviour": "Pomyślnie anulowano zachowanie tymczasowe",
             "until_restart": "do ponownego uruchomienia",
             "video_sort_order": "Domyślna kolejność sortowania wideo",
-            "video_sort_order_desc": "Ustaw domyślną kolejność sortowania filmów."
+            "video_sort_order_desc": "Ustaw domyślną kolejność sortowania filmów.",
+            "server_port": "Port serwera",
+            "server_port_desc": "Port, na którym uruchomiony będzie serwer DLNA.\nWymaga restartu DLNA w przypadku zmiany."
         },
         "general": {
             "auth": {
@@ -728,7 +737,6 @@
         "galleries": "{count, plural, one {Galeria} few {Galerie} other {Galerii}}",
         "images": "{count, plural, one {Obraz} few {Obrazy} other {Obrazów}}",
         "markers": "{count, plural, one {Znacznik} few {Znaczniki} other {Znaczników}}",
-        "movies": "{count, plural, one {Film} few {Filmy} other {Filmów}}",
         "performers": "{count, plural, one {Aktor} few {Aktorów} other {Aktorów}}",
         "scenes": "{count, plural, one {Scena} few {Sceny} other {Scen}}",
         "studios": "{count, plural, one {Studio} few {Studia} other {Studiów}}",
@@ -1021,9 +1029,6 @@
     },
     "megabits_per_second": "{value} megabitów na sekundę",
     "metadata": "Metadane",
-    "movie": "Film",
-    "movie_scene_number": "Numer sceny filmu",
-    "movies": "Filmy",
     "name": "Nazwa",
     "new": "Dodaj",
     "none": "Brak",
@@ -1263,7 +1268,9 @@
     "url": "URL",
     "validation": {
         "date_invalid_form": "${path} musi być w formacie RRRR-MM-DD",
-        "required": "${path} jest wymagana"
+        "required": "${path} jest wymagana",
+        "unique": "${path} musi być unikalny",
+        "blank": "${path} nie może być puste"
     },
     "videos": "Filmy wideo",
     "view_all": "Pokaż wszystko",
@@ -1271,5 +1278,12 @@
     "weight_kg": "Waga (kg)",
     "years_old": "lat(a)",
     "zip_file_count": "Liczba plików zip",
-    "audio_codec": "Kodek audio"
+    "audio_codec": "Kodek audio",
+    "sub_group": "Podgrupa",
+    "sub_group_count": "Ilość Podgrup",
+    "sub_group_of": "Podgrupa {parent}",
+    "sub_group_order": "Kolejność podgrup",
+    "sub_groups": "Podgrupy",
+    "unknown_date": "Nieznana data",
+    "video_codec": "Kodek Wideo"
 }

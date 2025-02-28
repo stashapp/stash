@@ -1,27 +1,27 @@
-query FindMovies($filter: FindFilterType, $movie_filter: MovieFilterType) {
-  findMovies(filter: $filter, movie_filter: $movie_filter) {
+query FindGroups($filter: FindFilterType, $group_filter: GroupFilterType) {
+  findGroups(filter: $filter, group_filter: $group_filter) {
     count
-    movies {
-      ...MovieData
+    groups {
+      ...GroupData
     }
   }
 }
 
-query FindMovie($id: ID!) {
-  findMovie(id: $id) {
-    ...MovieData
+query FindGroup($id: ID!) {
+  findGroup(id: $id) {
+    ...GroupData
   }
 }
 
-query FindMoviesForSelect(
+query FindGroupsForSelect(
   $filter: FindFilterType
-  $movie_filter: MovieFilterType
+  $group_filter: GroupFilterType
   $ids: [ID!]
 ) {
-  findMovies(filter: $filter, movie_filter: $movie_filter, ids: $ids) {
+  findGroups(filter: $filter, group_filter: $group_filter, ids: $ids) {
     count
-    movies {
-      ...SelectMovieData
+    groups {
+      ...SelectGroupData
     }
   }
 }

@@ -3,7 +3,7 @@ import {
   faChevronUp,
   faClock,
 } from "@fortawesome/free-solid-svg-icons";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Button, ButtonGroup, InputGroup, Form } from "react-bootstrap";
 import { Icon } from "./Icon";
 import TextUtils from "src/utils/text";
@@ -18,6 +18,8 @@ interface IProps {
   error?: string;
   allowNegative?: boolean;
 }
+
+const includeMS = true;
 
 export const DurationInput: React.FC<IProps> = ({
   disabled,
@@ -96,17 +98,20 @@ export const DurationInput: React.FC<IProps> = ({
     }
   }
 
-  let inputValue = "";
-  if (tmpValue !== undefined) {
-    inputValue = tmpValue;
-  } else if (value !== null && value !== undefined) {
-    inputValue = TextUtils.secondsToTimestamp(value);
-  }
+  const inputValue = useMemo(() => {
+    if (tmpValue !== undefined) {
+      return tmpValue;
+    } else if (value !== null && value !== undefined) {
+      return TextUtils.secondsToTimestamp(value, includeMS);
+    }
+  }, [value, tmpValue]);
+
+  const format = "hh:mm:ss.ms";
 
   if (placeholder) {
-    placeholder = `${placeholder} (hh:mm:ss)`;
+    placeholder = `${placeholder} (${format})`;
   } else {
-    placeholder = "hh:mm:ss";
+    placeholder = format;
   }
 
   return (

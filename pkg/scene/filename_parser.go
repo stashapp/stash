@@ -204,7 +204,7 @@ type sceneHolder struct {
 	mm         string
 	dd         string
 	performers []string
-	movies     []string
+	groups     []string
 	studio     string
 	tags       []string
 }
@@ -340,7 +340,7 @@ func (h *sceneHolder) setField(field parserField, value interface{}) {
 	case "studio":
 		h.studio = value.(string)
 	case "movie":
-		h.movies = append(h.movies, value.(string))
+		h.groups = append(h.groups, value.(string))
 	case "tag":
 		h.tags = append(h.tags, value.(string))
 	case "yyyy":
@@ -413,7 +413,7 @@ type FilenameParser struct {
 	repository     FilenameParserRepository
 	performerCache map[string]*models.Performer
 	studioCache    map[string]*models.Studio
-	movieCache     map[string]*models.Movie
+	groupCache     map[string]*models.Group
 	tagCache       map[string]*models.Tag
 }
 
@@ -427,7 +427,7 @@ func NewFilenameParser(filter *models.FindFilterType, config models.SceneParserI
 
 	p.performerCache = make(map[string]*models.Performer)
 	p.studioCache = make(map[string]*models.Studio)
-	p.movieCache = make(map[string]*models.Movie)
+	p.groupCache = make(map[string]*models.Group)
 	p.tagCache = make(map[string]*models.Tag)
 
 	p.initWhiteSpaceRegex()
@@ -455,7 +455,7 @@ type FilenameParserRepository struct {
 	Scene     models.SceneQueryer
 	Performer PerformerNamesFinder
 	Studio    models.StudioQueryer
-	Movie     MovieNameFinder
+	Group     GroupNameFinder
 	Tag       models.TagQueryer
 }
 
@@ -464,7 +464,7 @@ func NewFilenameParserRepository(repo models.Repository) FilenameParserRepositor
 		Scene:     repo.Scene,
 		Performer: repo.Performer,
 		Studio:    repo.Studio,
-		Movie:     repo.Movie,
+		Group:     repo.Group,
 		Tag:       repo.Tag,
 	}
 }
@@ -578,23 +578,23 @@ func (p *FilenameParser) queryStudio(ctx context.Context, qb models.StudioQuerye
 	return ret
 }
 
-type MovieNameFinder interface {
-	FindByName(ctx context.Context, name string, nocase bool) (*models.Movie, error)
+type GroupNameFinder interface {
+	FindByName(ctx context.Context, name string, nocase bool) (*models.Group, error)
 }
 
-func (p *FilenameParser) queryMovie(ctx context.Context, qb MovieNameFinder, movieName string) *models.Movie {
-	// massage the movie name
-	movieName = delimiterRE.ReplaceAllString(movieName, " ")
+func (p *FilenameParser) queryGroup(ctx context.Context, qb GroupNameFinder, groupName string) *models.Group {
+	// massage the group name
+	groupName = delimiterRE.ReplaceAllString(groupName, " ")
 
 	// check cache first
-	if ret, found := p.movieCache[movieName]; found {
+	if ret, found := p.groupCache[groupName]; found {
 		return ret
 	}
 
-	ret, _ := qb.FindByName(ctx, movieName, true)
+	ret, _ := qb.FindByName(ctx, groupName, true)
 
 	// add result to cache
-	p.movieCache[movieName] = ret
+	p.groupCache[groupName] = ret
 
 	return ret
 }
@@ -665,18 +665,18 @@ func (p *FilenameParser) setStudio(ctx context.Context, qb models.StudioQueryer,
 	}
 }
 
-func (p *FilenameParser) setMovies(ctx context.Context, qb MovieNameFinder, h sceneHolder, result *models.SceneParserResult) {
-	// query for each movie
-	moviesSet := make(map[int]bool)
-	for _, movieName := range h.movies {
-		if movieName != "" {
-			movie := p.queryMovie(ctx, qb, movieName)
-			if movie != nil {
-				if _, found := moviesSet[movie.ID]; !found {
+func (p *FilenameParser) setGroups(ctx context.Context, qb GroupNameFinder, h sceneHolder, result *models.SceneParserResult) {
+	// query for each group
+	groupsSet := make(map[int]bool)
+	for _, groupName := range h.groups {
+		if groupName != "" {
+			group := p.queryGroup(ctx, qb, groupName)
+			if group != nil {
+				if _, found := groupsSet[group.ID]; !found {
 					result.Movies = append(result.Movies, &models.SceneMovieID{
-						MovieID: strconv.Itoa(movie.ID),
+						MovieID: strconv.Itoa(group.ID),
 					})
-					moviesSet[movie.ID] = true
+					groupsSet[group.ID] = true
 				}
 			}
 		}
@@ -714,7 +714,7 @@ func (p *FilenameParser) setParserResult(ctx context.Context, h sceneHolder, res
 	}
 	p.setStudio(ctx, r.Studio, h, result)
 
-	if len(h.movies) > 0 {
-		p.setMovies(ctx, r.Movie, h, result)
+	if len(h.groups) > 0 {
+		p.setGroups(ctx, r.Group, h, result)
 	}
 }

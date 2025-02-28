@@ -1,6 +1,8 @@
 type Tag {
   id: ID!
   name: String!
+  "Value that does not appear in the UI but overrides name for sorting"
+  sort_name: String
   description: String
   aliases: [String!]!
   ignore_auto_tag: Boolean!
@@ -14,7 +16,8 @@ type Tag {
   gallery_count(depth: Int): Int! # Resolver
   performer_count(depth: Int): Int! # Resolver
   studio_count(depth: Int): Int! # Resolver
-  movie_count(depth: Int): Int! # Resolver
+  group_count(depth: Int): Int! # Resolver
+  movie_count(depth: Int): Int! @deprecated(reason: "use group_count instead") # Resolver
   parents: [Tag!]!
   children: [Tag!]!
 
@@ -24,6 +27,8 @@ type Tag {
 
 input TagCreateInput {
   name: String!
+  "Value that does not appear in the UI but overrides name for sorting"
+  sort_name: String
   description: String
   aliases: [String!]
   ignore_auto_tag: Boolean
@@ -38,6 +43,8 @@ input TagCreateInput {
 input TagUpdateInput {
   id: ID!
   name: String
+  "Value that does not appear in the UI but overrides name for sorting"
+  sort_name: String
   description: String
   aliases: [String!]
   ignore_auto_tag: Boolean

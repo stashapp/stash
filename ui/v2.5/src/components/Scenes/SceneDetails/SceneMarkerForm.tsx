@@ -44,6 +44,18 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
   const schema = yup.object({
     title: yup.string().ensure(),
     seconds: yup.number().min(0).required(),
+    end_seconds: yup
+      .number()
+      .min(0)
+      .nullable()
+      .defined()
+      .test(
+        "is-greater-than-seconds",
+        intl.formatMessage({ id: "end_time_before_start_time" }),
+        function (value) {
+          return value === null || value >= this.parent.seconds;
+        }
+      ),
     primary_tag_id: yup.string().required(),
     tag_ids: yup.array(yup.string().required()).defined(),
   });
@@ -53,6 +65,7 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
     () => ({
       title: marker?.title ?? "",
       seconds: marker?.seconds ?? Math.round(getPlayerPosition() ?? 0),
+      end_seconds: marker?.end_seconds ?? null,
       primary_tag_id: marker?.primary_tag.id ?? "",
       tag_ids: marker?.tags.map((tag) => tag.id) ?? [],
     }),
@@ -103,6 +116,8 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
           variables: {
             scene_id: sceneID,
             ...input,
+            // undefined means setting to null, not omitting the field
+            end_seconds: input.end_seconds ?? null,
           },
         });
       } else {
@@ -111,6 +126,8 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
             id: marker.id,
             scene_id: sceneID,
             ...input,
+            // undefined means setting to null, not omitting the field
+            end_seconds: input.end_seconds ?? null,
           },
         });
       }
@@ -196,13 +213,38 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
         value={formik.values.seconds}
         setValue={(v) => formik.setFieldValue("seconds", v)}
         onReset={() =>
-          formik.setFieldValue("seconds", Math.round(getPlayerPosition() ?? 0))
+          formik.setFieldValue("seconds", getPlayerPosition() ?? 0)
         }
         error={error}
       />
     );
 
     return renderField("seconds", title, control);
+  }
+
+  function renderEndTimeField() {
+    const { error } = formik.getFieldMeta("end_seconds");
+
+    const title = intl.formatMessage({ id: "time_end" });
+    const control = (
+      <>
+        <DurationInput
+          value={formik.values.end_seconds}
+          setValue={(v) => formik.setFieldValue("end_seconds", v ?? null)}
+          onReset={() =>
+            formik.setFieldValue("end_seconds", getPlayerPosition() ?? 0)
+          }
+          error={error}
+        />
+        {formik.touched.end_seconds && formik.errors.end_seconds && (
+          <Form.Control.Feedback type="invalid">
+            {formik.errors.end_seconds}
+          </Form.Control.Feedback>
+        )}
+      </>
+    );
+
+    return renderField("end_seconds", title, control);
   }
 
   function renderTagsField() {
@@ -225,6 +267,7 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
         {renderTitleField()}
         {renderPrimaryTagField()}
         {renderTimeField()}
+        {renderEndTimeField()}
         {renderTagsField()}
       </div>
       <div className="buttons-container px-3">

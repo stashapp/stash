@@ -18,12 +18,17 @@ type ImageFinder interface {
 	FindByFolderID(ctx context.Context, fileID FolderID) ([]*Image, error)
 	FindByZipFileID(ctx context.Context, zipFileID FileID) ([]*Image, error)
 	FindByGalleryID(ctx context.Context, galleryID int) ([]*Image, error)
+	FindByGalleryIDIndex(ctx context.Context, galleryID int, index uint) (*Image, error)
 }
 
 // ImageQueryer provides methods to query images.
 type ImageQueryer interface {
 	Query(ctx context.Context, options ImageQueryOptions) (*ImageQueryResult, error)
 	QueryCount(ctx context.Context, imageFilter *ImageFilterType, findFilter *FindFilterType) (int, error)
+}
+
+type GalleryCoverFinder interface {
+	CoverByGalleryID(ctx context.Context, galleryId int) (*Image, error)
 }
 
 // ImageCounter provides methods to count images.
@@ -71,6 +76,8 @@ type ImageReader interface {
 	TagIDLoader
 	FileLoader
 
+	GalleryCoverFinder
+
 	All(ctx context.Context) ([]*Image, error)
 	Size(ctx context.Context) (float64, error)
 }
@@ -82,6 +89,7 @@ type ImageWriter interface {
 	ImageDestroyer
 
 	AddFileID(ctx context.Context, id int, fileID FileID) error
+	RemoveFileID(ctx context.Context, id int, fileID FileID) error
 	IncrementOCounter(ctx context.Context, id int) (int, error)
 	DecrementOCounter(ctx context.Context, id int) (int, error)
 	ResetOCounter(ctx context.Context, id int) (int, error)

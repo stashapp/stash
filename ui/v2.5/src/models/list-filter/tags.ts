@@ -36,8 +36,8 @@ const sortByOptions = ["name", "random"]
       value: "scenes_count",
     },
     {
-      messageID: "movie_count",
-      value: "movies_count",
+      messageID: "group_count",
+      value: "groups_count",
     },
     {
       messageID: "marker_count",
@@ -53,6 +53,7 @@ const displayModeOptions = [DisplayMode.Grid, DisplayMode.List];
 const criterionOptions = [
   FavoriteTagCriterionOption,
   createMandatoryStringCriterionOption("name"),
+  createStringCriterionOption("sort_name"),
   TagIsMissingCriterionOption,
   createStringCriterionOption("aliases"),
   createStringCriterionOption("description"),
@@ -62,7 +63,7 @@ const criterionOptions = [
   createMandatoryNumberCriterionOption("gallery_count"),
   createMandatoryNumberCriterionOption("performer_count"),
   createMandatoryNumberCriterionOption("studio_count"),
-  createMandatoryNumberCriterionOption("movie_count"),
+  createMandatoryNumberCriterionOption("group_count"),
   createMandatoryNumberCriterionOption("marker_count"),
   ParentTagsCriterionOption,
   new MandatoryNumberCriterionOption("parent_tag_count", "parent_count"),

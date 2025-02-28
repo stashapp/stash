@@ -2,12 +2,13 @@ fragment SceneMarkerData on SceneMarker {
   id
   title
   seconds
+  end_seconds
   stream
   preview
   screenshot
 
   scene {
-    id
+    ...SceneMarkerSceneData
   }
 
   primary_tag {
@@ -18,5 +19,20 @@ fragment SceneMarkerData on SceneMarker {
   tags {
     id
     name
+  }
+}
+
+fragment SceneMarkerSceneData on Scene {
+  id
+  title
+  files {
+    width
+    height
+    path
+  }
+  performers {
+    id
+    name
+    image_path
   }
 }

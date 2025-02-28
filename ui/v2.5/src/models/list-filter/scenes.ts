@@ -8,7 +8,10 @@ import {
 } from "./criteria/criterion";
 import { HasMarkersCriterionOption } from "./criteria/has-markers";
 import { SceneIsMissingCriterionOption } from "./criteria/is-missing";
-import { MoviesCriterionOption } from "./criteria/movies";
+import {
+  GroupsCriterionOption,
+  LegacyMoviesCriterionOption,
+} from "./criteria/groups";
 import { GalleriesCriterionOption } from "./criteria/galleries";
 import { OrganizedCriterionOption } from "./criteria/organized";
 import { PerformersCriterionOption } from "./criteria/performers";
@@ -47,7 +50,6 @@ const sortByOptions = [
   "resume_time",
   "play_duration",
   "play_count",
-  "movie_scene_number",
   "interactive",
   "interactive_speed",
   "perceptual_similarity",
@@ -58,6 +60,10 @@ const sortByOptions = [
     {
       messageID: "o_count",
       value: "o_counter",
+    },
+    {
+      messageID: "group_scene_number",
+      value: "group_scene_number",
     },
   ]);
 const displayModeOptions = [
@@ -102,7 +108,8 @@ const criterionOptions = [
   PerformerFavoriteCriterionOption,
   // StudioTagsCriterionOption,
   StudiosCriterionOption,
-  MoviesCriterionOption,
+  GroupsCriterionOption,
+  LegacyMoviesCriterionOption,
   GalleriesCriterionOption,
   createStringCriterionOption("url"),
   StashIDCriterionOption,

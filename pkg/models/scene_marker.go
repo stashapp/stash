@@ -9,6 +9,10 @@ type SceneMarkerFilterType struct {
 	SceneTags *HierarchicalMultiCriterionInput `json:"scene_tags"`
 	// Filter to only include scene markers with these performers
 	Performers *MultiCriterionInput `json:"performers"`
+	// Filter to only include scene markers from these scenes
+	Scenes *MultiCriterionInput `json:"scenes"`
+	// Filter by duration (in seconds)
+	Duration *FloatCriterionInput `json:"duration"`
 	// Filter by created at
 	CreatedAt *TimestampCriterionInput `json:"created_at"`
 	// Filter by updated at

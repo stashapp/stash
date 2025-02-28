@@ -31,7 +31,7 @@ func (m *schema55Migrator) migrate(ctx context.Context) error {
 	if err := m.withTxn(ctx, func(tx *sqlx.Tx) error {
 		query := "SELECT DISTINCT `scene_id`, `view_date` FROM `scenes_view_dates`"
 
-		rows, err := m.db.Query(query)
+		rows, err := tx.Query(query)
 		if err != nil {
 			return err
 		}
@@ -53,7 +53,7 @@ func (m *schema55Migrator) migrate(ctx context.Context) error {
 			}
 
 			// convert the timestamp to the correct format
-			if _, err := m.db.Exec("UPDATE scenes_view_dates SET view_date = ? WHERE view_date = ?", utcTimestamp, viewDate.Timestamp); err != nil {
+			if _, err := tx.Exec("UPDATE scenes_view_dates SET view_date = ? WHERE view_date = ?", utcTimestamp, viewDate.Timestamp); err != nil {
 				return fmt.Errorf("error correcting view date %s to %s: %w", viewDate.Timestamp, viewDate, err)
 			}
 		}

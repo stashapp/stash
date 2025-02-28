@@ -10,7 +10,6 @@ import React, {
 import { Accordion, Button, Card, Form, Modal } from "react-bootstrap";
 import cx from "classnames";
 import {
-  CriterionValue,
   Criterion,
   CriterionOption,
 } from "src/models/list-filter/criteria/criterion";
@@ -38,8 +37,8 @@ import ScreenUtils from "src/utils/screen";
 
 interface ICriterionList {
   criteria: string[];
-  currentCriterion?: Criterion<CriterionValue>;
-  setCriterion: (c: Criterion<CriterionValue>) => void;
+  currentCriterion?: Criterion;
+  setCriterion: (c: Criterion) => void;
   criterionOptions: CriterionOption[];
   pinnedCriterionOptions: CriterionOption[];
   selected?: CriterionOption;
@@ -193,7 +192,8 @@ const CriterionOptionList: React.FC<ICriterionList> = ({
 const FilterModeToConfigKey = {
   [FilterMode.Galleries]: "galleries",
   [FilterMode.Images]: "images",
-  [FilterMode.Movies]: "movies",
+  [FilterMode.Movies]: "groups",
+  [FilterMode.Groups]: "groups",
   [FilterMode.Performers]: "performers",
   [FilterMode.SceneMarkers]: "sceneMarkers",
   [FilterMode.Scenes]: "scenes",
@@ -227,7 +227,7 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
   const [currentFilter, setCurrentFilter] = useState<ListFilterModel>(
     cloneDeep(filter)
   );
-  const [criterion, setCriterion] = useState<Criterion<CriterionValue>>();
+  const [criterion, setCriterion] = useState<Criterion>();
 
   const [searchRef, setSearchFocus] = useFocusOnce(!ScreenUtils.isTouch());
 
@@ -242,11 +242,13 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
   }, [currentFilter.mode]);
 
   const criterionOptions = useMemo(() => {
-    return [...filterOptions.criterionOptions].sort((a, b) => {
-      return intl
-        .formatMessage({ id: a.messageID })
-        .localeCompare(intl.formatMessage({ id: b.messageID }));
-    });
+    return [...filterOptions.criterionOptions]
+      .filter((c) => !c.hidden)
+      .sort((a, b) => {
+        return intl
+          .formatMessage({ id: a.messageID })
+          .localeCompare(intl.formatMessage({ id: b.messageID }));
+      });
   }, [intl, filterOptions.criterionOptions]);
 
   const optionSelected = useCallback(
@@ -361,7 +363,7 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
     }
   }
 
-  function replaceCriterion(c: Criterion<CriterionValue>) {
+  function replaceCriterion(c: Criterion) {
     const newFilter = cloneDeep(currentFilter);
 
     if (!c.isValid()) {
@@ -394,18 +396,26 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
     setCriterion(c);
   }
 
-  function removeCriterion(c: Criterion<CriterionValue>) {
-    const newFilter = cloneDeep(currentFilter);
+  function removeCriterion(c: Criterion, valueIndex?: number) {
+    if (valueIndex !== undefined) {
+      setCurrentFilter(
+        currentFilter.removeCustomFieldCriterion(
+          c.criterionOption.type,
+          valueIndex
+        )
+      );
+    } else {
+      const newFilter = cloneDeep(currentFilter);
+      const newCriteria = criteria.filter((cc) => {
+        return cc.getId() !== c.getId();
+      });
 
-    const newCriteria = criteria.filter((cc) => {
-      return cc.getId() !== c.getId();
-    });
+      newFilter.criteria = newCriteria;
 
-    newFilter.criteria = newCriteria;
-
-    setCurrentFilter(newFilter);
-    if (criterion?.getId() === c.getId()) {
-      optionSelected(undefined);
+      setCurrentFilter(newFilter);
+      if (criterion?.getId() === c.getId()) {
+        optionSelected(undefined);
+      }
     }
   }
 
@@ -459,7 +469,7 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
                 <FilterTags
                   criteria={criteria}
                   onEditCriterion={(c) => optionSelected(c.criterionOption)}
-                  onRemoveCriterion={(c) => removeCriterion(c)}
+                  onRemoveCriterion={removeCriterion}
                   onRemoveAll={() => onClearAll()}
                 />
               </div>

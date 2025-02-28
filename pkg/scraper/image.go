@@ -11,6 +11,28 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
+type ScrapedImage struct {
+	Title        *string                    `json:"title"`
+	Code         *string                    `json:"code"`
+	Details      *string                    `json:"details"`
+	Photographer *string                    `json:"photographer"`
+	URLs         []string                   `json:"urls"`
+	Date         *string                    `json:"date"`
+	Studio       *models.ScrapedStudio      `json:"studio"`
+	Tags         []*models.ScrapedTag       `json:"tags"`
+	Performers   []*models.ScrapedPerformer `json:"performers"`
+}
+
+func (ScrapedImage) IsScrapedContent() {}
+
+type ScrapedImageInput struct {
+	Title   *string  `json:"title"`
+	Code    *string  `json:"code"`
+	Details *string  `json:"details"`
+	URLs    []string `json:"urls"`
+	Date    *string  `json:"date"`
+}
+
 func setPerformerImage(ctx context.Context, client *http.Client, p *models.ScrapedPerformer, globalConfig GlobalConfig) error {
 	// backwards compatibility: we fetch the image if it's a URL and set it to the first image
 	// Image is deprecated, so only do this if Images is unset
@@ -88,13 +110,53 @@ func setMovieBackImage(ctx context.Context, client *http.Client, m *models.Scrap
 	return nil
 }
 
-func getImage(ctx context.Context, url string, client *http.Client, globalConfig GlobalConfig) (*string, error) {
+func setGroupFrontImage(ctx context.Context, client *http.Client, m *models.ScrapedGroup, globalConfig GlobalConfig) error {
+	// don't try to get the image if it doesn't appear to be a URL
+	if m.FrontImage == nil || !strings.HasPrefix(*m.FrontImage, "http") {
+		// nothing to do
+		return nil
+	}
+
+	img, err := getImage(ctx, *m.FrontImage, client, globalConfig)
+	if err != nil {
+		return err
+	}
+
+	m.FrontImage = img
+
+	return nil
+}
+
+func setGroupBackImage(ctx context.Context, client *http.Client, m *models.ScrapedGroup, globalConfig GlobalConfig) error {
+	// don't try to get the image if it doesn't appear to be a URL
+	if m.BackImage == nil || !strings.HasPrefix(*m.BackImage, "http") {
+		// nothing to do
+		return nil
+	}
+
+	img, err := getImage(ctx, *m.BackImage, client, globalConfig)
+	if err != nil {
+		return err
+	}
+
+	m.BackImage = img
+
+	return nil
+}
+
+type imageGetter struct {
+	client          *http.Client
+	globalConfig    GlobalConfig
+	requestModifier func(req *http.Request)
+}
+
+func (i *imageGetter) getImage(ctx context.Context, url string) (*string, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	userAgent := globalConfig.GetScraperUserAgent()
+	userAgent := i.globalConfig.GetScraperUserAgent()
 	if userAgent != "" {
 		req.Header.Set("User-Agent", userAgent)
 	}
@@ -106,7 +168,11 @@ func getImage(ctx context.Context, url string, client *http.Client, globalConfig
 		req.Header.Set("Referer", req.URL.Scheme+"://"+req.Host+"/")
 	}
 
-	resp, err := client.Do(req)
+	if i.requestModifier != nil {
+		i.requestModifier(req)
+	}
+
+	resp, err := i.client.Do(req)
 
 	if err != nil {
 		return nil, err
@@ -133,10 +199,19 @@ func getImage(ctx context.Context, url string, client *http.Client, globalConfig
 	return &img, nil
 }
 
-func getStashPerformerImage(ctx context.Context, stashURL string, performerID string, client *http.Client, globalConfig GlobalConfig) (*string, error) {
-	return getImage(ctx, stashURL+"/performer/"+performerID+"/image", client, globalConfig)
+func getImage(ctx context.Context, url string, client *http.Client, globalConfig GlobalConfig) (*string, error) {
+	g := imageGetter{
+		client:       client,
+		globalConfig: globalConfig,
+	}
+
+	return g.getImage(ctx, url)
 }
 
-func getStashSceneImage(ctx context.Context, stashURL string, sceneID string, client *http.Client, globalConfig GlobalConfig) (*string, error) {
-	return getImage(ctx, stashURL+"/scene/"+sceneID+"/screenshot", client, globalConfig)
+func getStashPerformerImage(ctx context.Context, stashURL string, performerID string, imageGetter imageGetter) (*string, error) {
+	return imageGetter.getImage(ctx, stashURL+"/performer/"+performerID+"/image")
+}
+
+func getStashSceneImage(ctx context.Context, stashURL string, sceneID string, imageGetter imageGetter) (*string, error) {
+	return imageGetter.getImage(ctx, stashURL+"/scene/"+sceneID+"/screenshot")
 }

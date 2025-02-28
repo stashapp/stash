@@ -1,5 +1,5 @@
-import { Button, Tabs, Tab } from "react-bootstrap";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { Tabs, Tab, Form } from "react-bootstrap";
+import React, { useEffect, useMemo, useState } from "react";
 import { useHistory, Redirect, RouteComponentProps } from "react-router-dom";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Helmet } from "react-helmet";
@@ -13,14 +13,12 @@ import {
   useStudioDestroy,
   mutateMetadataAutoTag,
 } from "src/core/StashService";
-import { Counter } from "src/components/Shared/Counter";
 import { DetailsEditNavbar } from "src/components/Shared/DetailsEditNavbar";
 import { ModalComponent } from "src/components/Shared/Modal";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { ErrorMessage } from "src/components/Shared/ErrorMessage";
 import { useToast } from "src/hooks/Toast";
 import { ConfigurationContext } from "src/hooks/Config";
-import { Icon } from "src/components/Shared/Icon";
 import { StudioScenesPanel } from "./StudioScenesPanel";
 import { StudioGalleriesPanel } from "./StudioGalleriesPanel";
 import { StudioImagesPanel } from "./StudioImagesPanel";
@@ -31,21 +29,24 @@ import {
   CompressedStudioDetailsPanel,
   StudioDetailsPanel,
 } from "./StudioDetailsPanel";
-import { StudioMoviesPanel } from "./StudioMoviesPanel";
-import {
-  faTrashAlt,
-  faLink,
-  faChevronDown,
-  faChevronUp,
-  faHeart,
-} from "@fortawesome/free-solid-svg-icons";
-import TextUtils from "src/utils/text";
+import { StudioGroupsPanel } from "./StudioGroupsPanel";
+import { faTrashAlt } from "@fortawesome/free-solid-svg-icons";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { DetailImage } from "src/components/Shared/DetailImage";
 import { useRatingKeybinds } from "src/hooks/keybinds";
 import { useLoadStickyHeader } from "src/hooks/detailsPanel";
 import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
-import { ExternalLink } from "src/components/Shared/ExternalLink";
+import { BackgroundImage } from "src/components/Shared/DetailsPage/BackgroundImage";
+import {
+  TabTitleCounter,
+  useTabKey,
+} from "src/components/Shared/DetailsPage/Tabs";
+import { DetailTitle } from "src/components/Shared/DetailsPage/DetailTitle";
+import { ExpandCollapseButton } from "src/components/Shared/CollapseButton";
+import { FavoriteIcon } from "src/components/Shared/FavoriteIcon";
+import { ExternalLinkButtons } from "src/components/Shared/ExternalLinksButton";
+import { AliasList } from "src/components/Shared/DetailsPage/AliasList";
+import { HeaderImage } from "src/components/Shared/DetailsPage/HeaderImage";
 
 interface IProps {
   studio: GQL.StudioDataFragment;
@@ -63,7 +64,7 @@ const validTabs = [
   "galleries",
   "images",
   "performers",
-  "movies",
+  "groups",
   "childstudios",
 ] as const;
 type TabKey = (typeof validTabs)[number];
@@ -71,6 +72,190 @@ type TabKey = (typeof validTabs)[number];
 function isTabKey(tab: string): tab is TabKey {
   return validTabs.includes(tab as TabKey);
 }
+
+const StudioTabs: React.FC<{
+  tabKey?: TabKey;
+  studio: GQL.StudioDataFragment;
+  abbreviateCounter: boolean;
+  showAllCounts?: boolean;
+}> = ({ tabKey, studio, abbreviateCounter, showAllCounts = false }) => {
+  const [showAllDetails, setShowAllDetails] = useState<boolean>(
+    showAllCounts && studio.child_studios.length > 0
+  );
+
+  const sceneCount =
+    (showAllDetails ? studio.scene_count_all : studio.scene_count) ?? 0;
+  const galleryCount =
+    (showAllDetails ? studio.gallery_count_all : studio.gallery_count) ?? 0;
+  const imageCount =
+    (showAllDetails ? studio.image_count_all : studio.image_count) ?? 0;
+  const performerCount =
+    (showAllDetails ? studio.performer_count_all : studio.performer_count) ?? 0;
+  const groupCount =
+    (showAllDetails ? studio.group_count_all : studio.group_count) ?? 0;
+
+  const populatedDefaultTab = useMemo(() => {
+    let ret: TabKey = "scenes";
+    if (sceneCount == 0) {
+      if (galleryCount != 0) {
+        ret = "galleries";
+      } else if (imageCount != 0) {
+        ret = "images";
+      } else if (performerCount != 0) {
+        ret = "performers";
+      } else if (groupCount != 0) {
+        ret = "groups";
+      } else if (studio.child_studios.length != 0) {
+        ret = "childstudios";
+      }
+    }
+
+    return ret;
+  }, [
+    sceneCount,
+    galleryCount,
+    imageCount,
+    performerCount,
+    groupCount,
+    studio,
+  ]);
+
+  const { setTabKey } = useTabKey({
+    tabKey,
+    validTabs,
+    defaultTabKey: populatedDefaultTab,
+    baseURL: `/studios/${studio.id}`,
+  });
+
+  const contentSwitch = useMemo(() => {
+    if (!studio.child_studios.length) {
+      return null;
+    }
+
+    return (
+      <div className="item-list-header">
+        <Form.Check
+          id="showSubContent"
+          checked={showAllDetails}
+          onChange={() => setShowAllDetails(!showAllDetails)}
+          type="switch"
+          label={<FormattedMessage id="include_sub_studio_content" />}
+        />
+      </div>
+    );
+  }, [showAllDetails, studio.child_studios.length]);
+
+  return (
+    <Tabs
+      id="studio-tabs"
+      mountOnEnter
+      unmountOnExit
+      activeKey={tabKey}
+      onSelect={setTabKey}
+    >
+      <Tab
+        eventKey="scenes"
+        title={
+          <TabTitleCounter
+            messageID="scenes"
+            count={sceneCount}
+            abbreviateCounter={abbreviateCounter}
+          />
+        }
+      >
+        {contentSwitch}
+        <StudioScenesPanel
+          active={tabKey === "scenes"}
+          studio={studio}
+          showChildStudioContent={showAllDetails}
+        />
+      </Tab>
+      <Tab
+        eventKey="galleries"
+        title={
+          <TabTitleCounter
+            messageID="galleries"
+            count={galleryCount}
+            abbreviateCounter={abbreviateCounter}
+          />
+        }
+      >
+        {contentSwitch}
+        <StudioGalleriesPanel
+          active={tabKey === "galleries"}
+          studio={studio}
+          showChildStudioContent={showAllDetails}
+        />
+      </Tab>
+      <Tab
+        eventKey="images"
+        title={
+          <TabTitleCounter
+            messageID="images"
+            count={imageCount}
+            abbreviateCounter={abbreviateCounter}
+          />
+        }
+      >
+        {contentSwitch}
+        <StudioImagesPanel
+          active={tabKey === "images"}
+          studio={studio}
+          showChildStudioContent={showAllDetails}
+        />
+      </Tab>
+      <Tab
+        eventKey="performers"
+        title={
+          <TabTitleCounter
+            messageID="performers"
+            count={performerCount}
+            abbreviateCounter={abbreviateCounter}
+          />
+        }
+      >
+        {contentSwitch}
+        <StudioPerformersPanel
+          active={tabKey === "performers"}
+          studio={studio}
+          showChildStudioContent={showAllDetails}
+        />
+      </Tab>
+      <Tab
+        eventKey="groups"
+        title={
+          <TabTitleCounter
+            messageID="groups"
+            count={groupCount}
+            abbreviateCounter={abbreviateCounter}
+          />
+        }
+      >
+        {contentSwitch}
+        <StudioGroupsPanel
+          active={tabKey === "groups"}
+          studio={studio}
+          showChildStudioContent={showAllDetails}
+        />
+      </Tab>
+      <Tab
+        eventKey="childstudios"
+        title={
+          <TabTitleCounter
+            messageID="subsidiary_studios"
+            count={studio.child_studios.length}
+            abbreviateCounter={abbreviateCounter}
+          />
+        }
+      >
+        <StudioChildrenPanel
+          active={tabKey === "childstudios"}
+          studio={studio}
+        />
+      </Tab>
+    </Tabs>
+  );
+};
 
 const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
   const history = useHistory();
@@ -100,60 +285,26 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
   const [deleteStudio] = useStudioDestroy({ id: studio.id });
 
   const showAllCounts = uiConfig?.showChildStudioContent;
-  const sceneCount =
-    (showAllCounts ? studio.scene_count_all : studio.scene_count) ?? 0;
-  const galleryCount =
-    (showAllCounts ? studio.gallery_count_all : studio.gallery_count) ?? 0;
-  const imageCount =
-    (showAllCounts ? studio.image_count_all : studio.image_count) ?? 0;
-  const performerCount =
-    (showAllCounts ? studio.performer_count_all : studio.performer_count) ?? 0;
-  const movieCount =
-    (showAllCounts ? studio.movie_count_all : studio.movie_count) ?? 0;
 
-  const populatedDefaultTab = useMemo(() => {
-    let ret: TabKey = "scenes";
-    if (sceneCount == 0) {
-      if (galleryCount != 0) {
-        ret = "galleries";
-      } else if (imageCount != 0) {
-        ret = "images";
-      } else if (performerCount != 0) {
-        ret = "performers";
-      } else if (movieCount != 0) {
-        ret = "movies";
-      } else if (studio.child_studios.length != 0) {
-        ret = "childstudios";
+  // make array of url so that it doesn't re-render on every change
+  const urls = useMemo(() => {
+    return studio?.url ? [studio.url] : [];
+  }, [studio.url]);
+
+  const studioImage = useMemo(() => {
+    const existingPath = studio.image_path;
+    if (isEditing) {
+      if (image === null && existingPath) {
+        const studioImageURL = new URL(existingPath);
+        studioImageURL.searchParams.set("default", "true");
+        return studioImageURL.toString();
+      } else if (image) {
+        return image;
       }
     }
 
-    return ret;
-  }, [
-    sceneCount,
-    galleryCount,
-    imageCount,
-    performerCount,
-    movieCount,
-    studio,
-  ]);
-
-  const setTabKey = useCallback(
-    (newTabKey: string | null) => {
-      if (!newTabKey) newTabKey = populatedDefaultTab;
-      if (newTabKey === tabKey) return;
-
-      if (isTabKey(newTabKey)) {
-        history.replace(`/studios/${studio.id}/${newTabKey}`);
-      }
-    },
-    [populatedDefaultTab, tabKey, history, studio.id]
-  );
-
-  useEffect(() => {
-    if (!tabKey) {
-      setTabKey(populatedDefaultTab);
-    }
-  }, [setTabKey, populatedDefaultTab, tabKey]);
+    return existingPath;
+  }, [isEditing, image, studio.image_path]);
 
   function setFavorite(v: boolean) {
     if (studio.id) {
@@ -256,20 +407,6 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
     );
   }
 
-  function maybeRenderAliases() {
-    if (studio?.aliases?.length) {
-      return (
-        <div>
-          <span className="alias-head">{studio?.aliases?.join(", ")}</span>
-        </div>
-      );
-    }
-  }
-
-  function getCollapseButtonIcon() {
-    return collapsed ? faChevronDown : faChevronUp;
-  }
-
   function toggleEditing(value?: boolean) {
     if (value !== undefined) {
       setIsEditing(value);
@@ -278,46 +415,6 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
     }
     setImage(undefined);
   }
-
-  function renderImage() {
-    let studioImage = studio.image_path;
-    if (isEditing) {
-      if (image === null && studioImage) {
-        const studioImageURL = new URL(studioImage);
-        studioImageURL.searchParams.set("default", "true");
-        studioImage = studioImageURL.toString();
-      } else if (image) {
-        studioImage = image;
-      }
-    }
-
-    if (studioImage) {
-      return (
-        <DetailImage className="logo" alt={studio.name} src={studioImage} />
-      );
-    }
-  }
-
-  const renderClickableIcons = () => (
-    <span className="name-icons">
-      <Button
-        className={cx("minimal", studio.favorite ? "favorite" : "not-favorite")}
-        onClick={() => setFavorite(!studio.favorite)}
-      >
-        <Icon icon={faHeart} />
-      </Button>
-      {studio.url && (
-        <Button
-          as={ExternalLink}
-          href={TextUtils.sanitiseURL(studio.url)}
-          className="minimal link"
-          title={studio.url}
-        >
-          <Icon icon={faLink} />
-        </Button>
-      )}
-    </span>
-  );
 
   function setRating(v: number | null) {
     if (studio.id) {
@@ -329,205 +426,6 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
           },
         },
       });
-    }
-  }
-
-  function maybeRenderDetails() {
-    if (!isEditing) {
-      return (
-        <StudioDetailsPanel
-          studio={studio}
-          collapsed={collapsed}
-          fullWidth={!collapsed && !compactExpandedDetails}
-        />
-      );
-    }
-  }
-
-  function maybeRenderShowCollapseButton() {
-    if (!isEditing) {
-      return (
-        <span className="detail-expand-collapse">
-          <Button
-            className="minimal expand-collapse"
-            onClick={() => setCollapsed(!collapsed)}
-          >
-            <Icon className="fa-fw" icon={getCollapseButtonIcon()} />
-          </Button>
-        </span>
-      );
-    }
-  }
-
-  function maybeRenderCompressedDetails() {
-    if (!isEditing && loadStickyHeader) {
-      return <CompressedStudioDetailsPanel studio={studio} />;
-    }
-  }
-
-  const renderTabs = () => (
-    <Tabs
-      id="studio-tabs"
-      mountOnEnter
-      unmountOnExit
-      activeKey={tabKey}
-      onSelect={setTabKey}
-    >
-      <Tab
-        eventKey="scenes"
-        title={
-          <>
-            {intl.formatMessage({ id: "scenes" })}
-            <Counter
-              abbreviateCounter={abbreviateCounter}
-              count={sceneCount}
-              hideZero
-            />
-          </>
-        }
-      >
-        <StudioScenesPanel active={tabKey === "scenes"} studio={studio} />
-      </Tab>
-      <Tab
-        eventKey="galleries"
-        title={
-          <>
-            {intl.formatMessage({ id: "galleries" })}
-            <Counter
-              abbreviateCounter={abbreviateCounter}
-              count={galleryCount}
-              hideZero
-            />
-          </>
-        }
-      >
-        <StudioGalleriesPanel active={tabKey === "galleries"} studio={studio} />
-      </Tab>
-      <Tab
-        eventKey="images"
-        title={
-          <>
-            {intl.formatMessage({ id: "images" })}
-            <Counter
-              abbreviateCounter={abbreviateCounter}
-              count={imageCount}
-              hideZero
-            />
-          </>
-        }
-      >
-        <StudioImagesPanel active={tabKey === "images"} studio={studio} />
-      </Tab>
-      <Tab
-        eventKey="performers"
-        title={
-          <>
-            {intl.formatMessage({ id: "performers" })}
-            <Counter
-              abbreviateCounter={abbreviateCounter}
-              count={performerCount}
-              hideZero
-            />
-          </>
-        }
-      >
-        <StudioPerformersPanel
-          active={tabKey === "performers"}
-          studio={studio}
-        />
-      </Tab>
-      <Tab
-        eventKey="movies"
-        title={
-          <>
-            {intl.formatMessage({ id: "movies" })}
-            <Counter
-              abbreviateCounter={abbreviateCounter}
-              count={movieCount}
-              hideZero
-            />
-          </>
-        }
-      >
-        <StudioMoviesPanel active={tabKey === "movies"} studio={studio} />
-      </Tab>
-      <Tab
-        eventKey="childstudios"
-        title={
-          <>
-            {intl.formatMessage({ id: "subsidiary_studios" })}
-            <Counter
-              abbreviateCounter={false}
-              count={studio.child_studios.length}
-              hideZero
-            />
-          </>
-        }
-      >
-        <StudioChildrenPanel
-          active={tabKey === "childstudios"}
-          studio={studio}
-        />
-      </Tab>
-    </Tabs>
-  );
-
-  function maybeRenderHeaderBackgroundImage() {
-    let studioImage = studio.image_path;
-    if (enableBackgroundImage && !isEditing && studioImage) {
-      const studioImageURL = new URL(studioImage);
-      let isDefaultImage = studioImageURL.searchParams.get("default");
-      if (!isDefaultImage) {
-        return (
-          <div className="background-image-container">
-            <picture>
-              <source src={studioImage} />
-              <img
-                className="background-image"
-                src={studioImage}
-                alt={`${studio.name} background`}
-              />
-            </picture>
-          </div>
-        );
-      }
-    }
-  }
-
-  function maybeRenderTab() {
-    if (!isEditing) {
-      return renderTabs();
-    }
-  }
-
-  function maybeRenderEditPanel() {
-    if (isEditing) {
-      return (
-        <StudioEditPanel
-          studio={studio}
-          onSubmit={onSave}
-          onCancel={() => toggleEditing()}
-          onDelete={onDelete}
-          setImage={setImage}
-          setEncodingImage={setEncodingImage}
-        />
-      );
-    }
-    {
-      return (
-        <DetailsEditNavbar
-          objectName={studio.name ?? intl.formatMessage({ id: "studio" })}
-          isNew={false}
-          isEditing={isEditing}
-          onToggleEdit={() => toggleEditing()}
-          onSave={() => {}}
-          onImageChange={() => {}}
-          onClearImage={() => {}}
-          onAutoTag={onAutoTag}
-          autoTagDisabled={studio.ignore_auto_tag}
-          onDelete={onDelete}
-        />
-      );
     }
   }
 
@@ -544,41 +442,98 @@ const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
       </Helmet>
 
       <div className={headerClassName}>
-        {maybeRenderHeaderBackgroundImage()}
+        <BackgroundImage
+          imagePath={studio.image_path ?? undefined}
+          show={enableBackgroundImage && !isEditing}
+        />
         <div className="detail-container">
-          <div className="detail-header-image">
-            {encodingImage ? (
-              <LoadingIndicator
-                message={intl.formatMessage({ id: "actions.encoding_image" })}
+          <HeaderImage encodingImage={encodingImage}>
+            {studioImage && (
+              <DetailImage
+                className="logo"
+                alt={studio.name}
+                src={studioImage}
               />
-            ) : (
-              renderImage()
             )}
-          </div>
+          </HeaderImage>
           <div className="row">
             <div className="studio-head col">
-              <h2>
-                <span className="studio-name">{studio.name}</span>
-                {maybeRenderShowCollapseButton()}
-                {renderClickableIcons()}
-              </h2>
-              {maybeRenderAliases()}
+              <DetailTitle name={studio.name ?? ""} classNamePrefix="studio">
+                {!isEditing && (
+                  <ExpandCollapseButton
+                    collapsed={collapsed}
+                    setCollapsed={(v) => setCollapsed(v)}
+                  />
+                )}
+                <span className="name-icons">
+                  <FavoriteIcon
+                    favorite={studio.favorite}
+                    onToggleFavorite={(v) => setFavorite(v)}
+                  />
+                  <ExternalLinkButtons urls={urls} />
+                </span>
+              </DetailTitle>
+
+              <AliasList aliases={studio.aliases} />
               <RatingSystem
                 value={studio.rating100}
                 onSetRating={(value) => setRating(value)}
                 clickToRate
                 withoutContext
               />
-              {maybeRenderDetails()}
-              {maybeRenderEditPanel()}
+              {!isEditing && (
+                <StudioDetailsPanel
+                  studio={studio}
+                  collapsed={collapsed}
+                  fullWidth={!collapsed && !compactExpandedDetails}
+                />
+              )}
+              {isEditing ? (
+                <StudioEditPanel
+                  studio={studio}
+                  onSubmit={onSave}
+                  onCancel={() => toggleEditing()}
+                  onDelete={onDelete}
+                  setImage={setImage}
+                  setEncodingImage={setEncodingImage}
+                />
+              ) : (
+                <DetailsEditNavbar
+                  objectName={
+                    studio.name ?? intl.formatMessage({ id: "studio" })
+                  }
+                  isNew={false}
+                  isEditing={isEditing}
+                  onToggleEdit={() => toggleEditing()}
+                  onSave={() => {}}
+                  onImageChange={() => {}}
+                  onClearImage={() => {}}
+                  onAutoTag={onAutoTag}
+                  autoTagDisabled={studio.ignore_auto_tag}
+                  onDelete={onDelete}
+                />
+              )}
             </div>
           </div>
         </div>
       </div>
-      {maybeRenderCompressedDetails()}
+
+      {!isEditing && loadStickyHeader && (
+        <CompressedStudioDetailsPanel studio={studio} />
+      )}
+
       <div className="detail-body">
         <div className="studio-body">
-          <div className="studio-tabs">{maybeRenderTab()}</div>
+          <div className="studio-tabs">
+            {!isEditing && (
+              <StudioTabs
+                studio={studio}
+                tabKey={tabKey}
+                abbreviateCounter={abbreviateCounter}
+                showAllCounts={showAllCounts}
+              />
+            )}
+          </div>
         </div>
       </div>
       {renderDeleteAlert()}

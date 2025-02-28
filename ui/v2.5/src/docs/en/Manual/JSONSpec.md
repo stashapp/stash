@@ -8,7 +8,7 @@ The metadata given to Stash can be exported into the JSON format. This structure
 * `performers`
 * `scenes`
 * `studios`
-* `movies`
+* `groups`
 
 ## File naming
 
@@ -22,7 +22,7 @@ When exported, files are named with different formats depending on the object ty
 | Performers | `<name>.json` |
 | Scenes | `<title or first file basename>.<hash>.json` |
 | Studios | `<name>.json` |
-| Movies | `<name>.json` |
+| Groups | `<name>.json` |
 
 Note that the file naming is not significant when importing. All json files will be read from the subdirectories.
   

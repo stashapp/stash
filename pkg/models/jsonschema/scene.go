@@ -33,8 +33,8 @@ type SceneFile struct {
 	Bitrate    int           `json:"bitrate"`
 }
 
-type SceneMovie struct {
-	MovieName  string `json:"movieName,omitempty"`
+type SceneGroup struct {
+	GroupName  string `json:"movieName,omitempty"`
 	SceneIndex int    `json:"scene_index,omitempty"`
 }
 
@@ -58,7 +58,7 @@ type Scene struct {
 	Director   string        `json:"director,omitempty"`
 	Galleries  []GalleryRef  `json:"galleries,omitempty"`
 	Performers []string      `json:"performers,omitempty"`
-	Movies     []SceneMovie  `json:"movies,omitempty"`
+	Groups     []SceneGroup  `json:"movies,omitempty"`
 	Tags       []string      `json:"tags,omitempty"`
 	Markers    []SceneMarker `json:"markers,omitempty"`
 	Files      []string      `json:"files,omitempty"`

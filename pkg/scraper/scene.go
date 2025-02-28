@@ -18,6 +18,7 @@ type ScrapedScene struct {
 	Studio       *models.ScrapedStudio         `json:"studio"`
 	Tags         []*models.ScrapedTag          `json:"tags"`
 	Performers   []*models.ScrapedPerformer    `json:"performers"`
+	Groups       []*models.ScrapedGroup        `json:"groups"`
 	Movies       []*models.ScrapedMovie        `json:"movies"`
 	RemoteSiteID *string                       `json:"remote_site_id"`
 	Duration     *int                          `json:"duration"`

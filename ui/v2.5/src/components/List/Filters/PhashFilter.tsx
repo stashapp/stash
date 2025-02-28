@@ -2,11 +2,12 @@ import React from "react";
 import { Form } from "react-bootstrap";
 import { useIntl } from "react-intl";
 import { IPhashDistanceValue } from "../../../models/list-filter/types";
-import { Criterion } from "../../../models/list-filter/criteria/criterion";
+import { ModifierCriterion } from "../../../models/list-filter/criteria/criterion";
 import { CriterionModifier } from "src/core/generated-graphql";
+import { NumberField } from "src/utils/form";
 
 interface IPhashFilterProps {
-  criterion: Criterion<IPhashDistanceValue>;
+  criterion: ModifierCriterion<IPhashDistanceValue>;
   onValueChanged: (value: IPhashDistanceValue) => void;
 }
 
@@ -49,10 +50,9 @@ export const PhashFilter: React.FC<IPhashFilterProps> = ({
       {criterion.modifier !== CriterionModifier.IsNull &&
         criterion.modifier !== CriterionModifier.NotNull && (
           <Form.Group>
-            <Form.Control
+            <NumberField
               className="btn-secondary"
               onChange={distanceChanged}
-              type="number"
               value={value ? value.distance : ""}
               placeholder={intl.formatMessage({ id: "distance" })}
             />

@@ -50,10 +50,10 @@ export const Stats: React.FC = () => {
         </div>
         <div className="stats-element">
           <p className="title">
-            <FormattedNumber value={data.stats.movie_count} />
+            <FormattedNumber value={data.stats.group_count} />
           </p>
           <p className="heading">
-            <FormattedMessage id="movies" />
+            <FormattedMessage id="groups" />
           </p>
         </div>
         <div className="stats-element">

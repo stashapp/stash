@@ -26,8 +26,8 @@ const (
 	noTagsID  = 11
 	errTagsID = 12
 
-	noMoviesID     = 13
-	errFindMovieID = 15
+	noGroupsID     = 13
+	errFindGroupID = 15
 
 	noMarkersID         = 16
 	errMarkersID        = 17
@@ -49,15 +49,15 @@ var (
 	studioName = "studioName"
 	// galleryChecksum = "galleryChecksum"
 
-	validMovie1  = 1
-	validMovie2  = 2
-	invalidMovie = 3
+	validGroup1  = 1
+	validGroup2  = 2
+	invalidGroup = 3
 
-	movie1Name = "movie1Name"
-	movie2Name = "movie2Name"
+	group1Name = "group1Name"
+	group2Name = "group2Name"
 
-	movie1Scene = 1
-	movie2Scene = 2
+	group1Scene = 1
+	group2Scene = 2
 )
 
 var names = []string{
@@ -330,82 +330,82 @@ func TestGetTagNames(t *testing.T) {
 	db.AssertExpectations(t)
 }
 
-type sceneMoviesTestScenario struct {
+type sceneGroupsTestScenario struct {
 	input    models.Scene
-	expected []jsonschema.SceneMovie
+	expected []jsonschema.SceneGroup
 	err      bool
 }
 
-var validMovies = models.NewRelatedMovies([]models.MoviesScenes{
+var validGroups = models.NewRelatedGroups([]models.GroupsScenes{
 	{
-		MovieID:    validMovie1,
-		SceneIndex: &movie1Scene,
+		GroupID:    validGroup1,
+		SceneIndex: &group1Scene,
 	},
 	{
-		MovieID:    validMovie2,
-		SceneIndex: &movie2Scene,
-	},
-})
-
-var invalidMovies = models.NewRelatedMovies([]models.MoviesScenes{
-	{
-		MovieID:    invalidMovie,
-		SceneIndex: &movie1Scene,
+		GroupID:    validGroup2,
+		SceneIndex: &group2Scene,
 	},
 })
 
-var getSceneMoviesJSONScenarios = []sceneMoviesTestScenario{
+var invalidGroups = models.NewRelatedGroups([]models.GroupsScenes{
+	{
+		GroupID:    invalidGroup,
+		SceneIndex: &group1Scene,
+	},
+})
+
+var getSceneGroupsJSONScenarios = []sceneGroupsTestScenario{
 	{
 		models.Scene{
 			ID:     sceneID,
-			Movies: validMovies,
+			Groups: validGroups,
 		},
-		[]jsonschema.SceneMovie{
+		[]jsonschema.SceneGroup{
 			{
-				MovieName:  movie1Name,
-				SceneIndex: movie1Scene,
+				GroupName:  group1Name,
+				SceneIndex: group1Scene,
 			},
 			{
-				MovieName:  movie2Name,
-				SceneIndex: movie2Scene,
+				GroupName:  group2Name,
+				SceneIndex: group2Scene,
 			},
 		},
 		false,
 	},
 	{
 		models.Scene{
-			ID:     noMoviesID,
-			Movies: models.NewRelatedMovies([]models.MoviesScenes{}),
+			ID:     noGroupsID,
+			Groups: models.NewRelatedGroups([]models.GroupsScenes{}),
 		},
 		nil,
 		false,
 	},
 	{
 		models.Scene{
-			ID:     errFindMovieID,
-			Movies: invalidMovies,
+			ID:     errFindGroupID,
+			Groups: invalidGroups,
 		},
 		nil,
 		true,
 	},
 }
 
-func TestGetSceneMoviesJSON(t *testing.T) {
+func TestGetSceneGroupsJSON(t *testing.T) {
 	db := mocks.NewDatabase()
 
-	movieErr := errors.New("error getting movie")
+	groupErr := errors.New("error getting group")
 
-	db.Movie.On("Find", testCtx, validMovie1).Return(&models.Movie{
-		Name: movie1Name,
+	db.Group.On("Find", testCtx, validGroup1).Return(&models.Group{
+		Name: group1Name,
 	}, nil).Once()
-	db.Movie.On("Find", testCtx, validMovie2).Return(&models.Movie{
-		Name: movie2Name,
+	db.Group.On("Find", testCtx, validGroup2).Return(&models.Group{
+		Name: group2Name,
 	}, nil).Once()
-	db.Movie.On("Find", testCtx, invalidMovie).Return(nil, movieErr).Once()
+	db.Group.On("Find", testCtx, invalidGroup).Return(nil, groupErr).Once()
 
-	for i, s := range getSceneMoviesJSONScenarios {
+	for i, s := range getSceneGroupsJSONScenarios {
 		scene := s.input
-		json, err := GetSceneMoviesJSON(testCtx, db.Movie, &scene)
+		json, err := GetSceneGroupsJSON(testCtx, db.Group, &scene)
 
 		switch {
 		case !s.err && err != nil:

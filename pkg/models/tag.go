@@ -4,6 +4,8 @@ type TagFilterType struct {
 	OperatorFilter[TagFilterType]
 	// Filter by tag name
 	Name *StringCriterionInput `json:"name"`
+	// Filter by tag sort_name
+	SortName *StringCriterionInput `json:"sort_name"`
 	// Filter by tag aliases
 	Aliases *StringCriterionInput `json:"aliases"`
 	// Filter by tag favorites
@@ -22,6 +24,8 @@ type TagFilterType struct {
 	PerformerCount *IntCriterionInput `json:"performer_count"`
 	// Filter by number of studios with this tag
 	StudioCount *IntCriterionInput `json:"studio_count"`
+	// Filter by number of groups with this tag
+	GroupCount *IntCriterionInput `json:"group_count"`
 	// Filter by number of movies with this tag
 	MovieCount *IntCriterionInput `json:"movie_count"`
 	// Filter by number of markers with this tag

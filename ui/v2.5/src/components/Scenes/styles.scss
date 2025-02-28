@@ -24,7 +24,7 @@
 }
 
 .performer-tag-container,
-.movie-tag-container {
+.group-tag-container {
   display: inline-block;
   margin: 5px;
 }
@@ -34,7 +34,7 @@
 }
 
 .performer-tag.image,
-.movie-tag.image {
+.group-tag.image {
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
@@ -208,9 +208,14 @@ textarea.scene-description {
   &-preview {
     aspect-ratio: 16/9;
   }
+
+  .scene-group-scene-number {
+    text-align: center;
+  }
 }
 
 .scene-card,
+.scene-marker-card,
 .gallery-card {
   .scene-specs-overlay {
     transition: opacity 0.5s;
@@ -268,7 +273,8 @@ textarea.scene-description {
   }
 }
 
-.scene-card.card {
+.scene-card.card,
+.scene-marker-card.card {
   overflow: hidden;
   padding: 0;
 
@@ -288,19 +294,19 @@ textarea.scene-description {
   max-width: 100%;
 }
 
-.movie-image {
+.group-image {
   max-width: 100%;
 }
 
-.movie-table {
+.group-table {
   width: 100%;
 
-  .movie-row {
+  .group-row {
     align-items: center;
     margin-bottom: 0.25rem;
   }
 
-  .movie-scene-number-header {
+  .group-scene-number-header {
     color: $text-muted;
     font-size: 0.8em;
     padding-bottom: 0;
@@ -308,7 +314,7 @@ textarea.scene-description {
   }
 }
 
-.movie-table.no-movies .movie-table-header {
+.group-table.no-groups .group-table-header {
   display: none;
 }
 
@@ -335,6 +341,10 @@ input[type="range"].filter-slider {
   margin: 0;
   padding-left: 0;
   padding-right: 0;
+}
+
+.filter-slider-value {
+  cursor: pointer;
 }
 
 @mixin contrast-slider() {

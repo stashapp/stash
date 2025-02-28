@@ -173,7 +173,7 @@ func (j *IdentifyJob) getSources() ([]identify.ScraperSource, error) {
 			src = identify.ScraperSource{
 				Name: "stash-box: " + stashBox.Endpoint,
 				Scraper: stashboxSource{
-					stashbox.NewClient(*stashBox, stashboxRepository),
+					stashbox.NewClient(*stashBox, stashboxRepository, instance.Config.GetScraperExcludeTagPatterns()),
 					stashBox.Endpoint,
 				},
 				RemoteSite: stashBox.Endpoint,

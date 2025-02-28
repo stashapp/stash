@@ -6,12 +6,12 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
+	"slices"
 
 	"github.com/doug-martin/goqu/v9"
 	"github.com/doug-martin/goqu/v9/exp"
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sliceutil"
 	"gopkg.in/guregu/null.v4"
 	"gopkg.in/guregu/null.v4/zero"
 )
@@ -155,7 +155,7 @@ var (
 			},
 			fkColumn:     "tag_id",
 			foreignTable: tagTable,
-			orderBy:      "tags.name ASC",
+			orderBy:      "COALESCE(tags.sort_name, tags.name) ASC",
 		},
 		images: joinRepository{
 			repository: repository{
@@ -412,7 +412,7 @@ func (qb *GalleryStore) FindMany(ctx context.Context, ids []int) ([]*models.Gall
 		}
 
 		for _, s := range unsorted {
-			i := sliceutil.Index(ids, s.ID)
+			i := slices.Index(ids, s.ID)
 			galleries[i] = s
 		}
 
@@ -888,6 +888,14 @@ func (qb *GalleryStore) RemoveImages(ctx context.Context, galleryID int, imageID
 func (qb *GalleryStore) UpdateImages(ctx context.Context, galleryID int, imageIDs []int) error {
 	// Delete the existing joins and then create new ones
 	return galleryRepository.images.replace(ctx, galleryID, imageIDs)
+}
+
+func (qb *GalleryStore) SetCover(ctx context.Context, galleryID int, coverImageID int) error {
+	return imageGalleriesTableMgr.setCover(ctx, coverImageID, galleryID)
+}
+
+func (qb *GalleryStore) ResetCover(ctx context.Context, galleryID int) error {
+	return imageGalleriesTableMgr.resetCover(ctx, galleryID)
 }
 
 func (qb *GalleryStore) GetSceneIDs(ctx context.Context, id int) ([]int, error) {

@@ -1,7 +1,7 @@
 import { useToast } from "src/hooks/Toast";
 import * as GQL from "src/core/generated-graphql";
 import {
-  useMovieCreate,
+  useGroupCreate,
   usePerformerCreate,
   useStudioCreate,
   useTagCreate,
@@ -9,7 +9,7 @@ import {
 import { ObjectScrapeResult, ScrapeResult } from "./scrapeResult";
 import { useIntl } from "react-intl";
 import { scrapedPerformerToCreateInput } from "src/core/performers";
-import { scrapedMovieToCreateInput } from "src/core/movies";
+import { scrapedGroupToCreateInput } from "src/core/groups";
 
 function useCreateObject<T>(
   entityTypeID: string,
@@ -123,24 +123,24 @@ export function useCreateScrapedPerformer(
   return useCreateObject("performer", createNewPerformer);
 }
 
-export function useCreateScrapedMovie(
-  props: IUseCreateNewObjectProps<GQL.ScrapedMovie>
+export function useCreateScrapedGroup(
+  props: IUseCreateNewObjectProps<GQL.ScrapedGroup>
 ) {
   const { scrapeResult, setScrapeResult, newObjects, setNewObjects } = props;
-  const [createMovie] = useMovieCreate();
+  const [createGroup] = useGroupCreate();
 
-  async function createNewMovie(toCreate: GQL.ScrapedMovie) {
-    const input = scrapedMovieToCreateInput(toCreate);
+  async function createNewGroup(toCreate: GQL.ScrapedGroup) {
+    const input = scrapedGroupToCreateInput(toCreate);
 
-    const result = await createMovie({
+    const result = await createGroup({
       variables: { input: input },
     });
 
     const newValue = [...(scrapeResult.newValue ?? [])];
-    if (result.data?.movieCreate)
+    if (result.data?.groupCreate)
       newValue.push({
-        stored_id: result.data.movieCreate.id,
-        name: result.data.movieCreate.name,
+        stored_id: result.data.groupCreate.id,
+        name: result.data.groupCreate.name,
       });
 
     // add the new object to the new object value
@@ -150,14 +150,14 @@ export function useCreateScrapedMovie(
     // remove the object from the list
     const newObjectsClone = newObjects.concat();
     const pIndex = newObjectsClone.findIndex((p) => p.name === toCreate.name);
-    if (pIndex === -1) throw new Error("Could not find movie to remove");
+    if (pIndex === -1) throw new Error("Could not find group to remove");
 
     newObjectsClone.splice(pIndex, 1);
 
     setNewObjects(newObjectsClone);
   }
 
-  return useCreateObject("movie", createNewMovie);
+  return useCreateObject("group", createNewGroup);
 }
 
 export function useCreateScrapedTag(

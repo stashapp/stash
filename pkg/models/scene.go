@@ -55,6 +55,8 @@ type SceneFilterType struct {
 	IsMissing *string `json:"is_missing"`
 	// Filter to only include scenes with this studio
 	Studios *HierarchicalMultiCriterionInput `json:"studios"`
+	// Filter to only include scenes with this group
+	Groups *HierarchicalMultiCriterionInput `json:"groups"`
 	// Filter to only include scenes with this movie
 	Movies *MultiCriterionInput `json:"movies"`
 	// Filter to only include scenes with this gallery
@@ -103,8 +105,10 @@ type SceneFilterType struct {
 	StudiosFilter *StudioFilterType `json:"studios_filter"`
 	// Filter by related tags that meet this criteria
 	TagsFilter *TagFilterType `json:"tags_filter"`
+	// Filter by related groups that meet this criteria
+	GroupsFilter *GroupFilterType `json:"groups_filter"`
 	// Filter by related movies that meet this criteria
-	MoviesFilter *MovieFilterType `json:"movies_filter"`
+	MoviesFilter *GroupFilterType `json:"movies_filter"`
 	// Filter by related markers that meet this criteria
 	MarkersFilter *SceneMarkerFilterType `json:"markers_filter"`
 	// Filter by created at
@@ -131,8 +135,14 @@ type SceneQueryResult struct {
 	resolveErr error
 }
 
+// SceneMovieInput is used for groups and movies
 type SceneMovieInput struct {
 	MovieID    string `json:"movie_id"`
+	SceneIndex *int   `json:"scene_index"`
+}
+
+type SceneGroupInput struct {
+	GroupID    string `json:"group_id"`
 	SceneIndex *int   `json:"scene_index"`
 }
 
@@ -150,10 +160,11 @@ type SceneCreateInput struct {
 	GalleryIds   []string          `json:"gallery_ids"`
 	PerformerIds []string          `json:"performer_ids"`
 	Movies       []SceneMovieInput `json:"movies"`
+	Groups       []SceneGroupInput `json:"groups"`
 	TagIds       []string          `json:"tag_ids"`
 	// This should be a URL or a base64 encoded data URL
-	CoverImage *string   `json:"cover_image"`
-	StashIds   []StashID `json:"stash_ids"`
+	CoverImage *string        `json:"cover_image"`
+	StashIds   []StashIDInput `json:"stash_ids"`
 	// The first id will be assigned as primary.
 	// Files will be reassigned from existing scenes if applicable.
 	// Files must not already be primary for another scene.
@@ -177,14 +188,15 @@ type SceneUpdateInput struct {
 	GalleryIds       []string          `json:"gallery_ids"`
 	PerformerIds     []string          `json:"performer_ids"`
 	Movies           []SceneMovieInput `json:"movies"`
+	Groups           []SceneGroupInput `json:"groups"`
 	TagIds           []string          `json:"tag_ids"`
 	// This should be a URL or a base64 encoded data URL
-	CoverImage    *string   `json:"cover_image"`
-	StashIds      []StashID `json:"stash_ids"`
-	ResumeTime    *float64  `json:"resume_time"`
-	PlayDuration  *float64  `json:"play_duration"`
-	PlayCount     *int      `json:"play_count"`
-	PrimaryFileID *string   `json:"primary_file_id"`
+	CoverImage    *string        `json:"cover_image"`
+	StashIds      []StashIDInput `json:"stash_ids"`
+	ResumeTime    *float64       `json:"resume_time"`
+	PlayDuration  *float64       `json:"play_duration"`
+	PlayCount     *int           `json:"play_count"`
+	PrimaryFileID *string        `json:"primary_file_id"`
 }
 
 type SceneDestroyInput struct {

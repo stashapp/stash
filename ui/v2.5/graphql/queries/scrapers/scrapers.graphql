@@ -31,11 +31,22 @@ query ListGalleryScrapers {
   }
 }
 
-query ListMovieScrapers {
-  listScrapers(types: [MOVIE]) {
+query ListImageScrapers {
+  listScrapers(types: [IMAGE]) {
     id
     name
-    movie {
+    image {
+      urls
+      supported_scrapes
+    }
+  }
+}
+
+query ListGroupScrapers {
+  listScrapers(types: [GROUP]) {
+    id
+    name
+    group {
       urls
       supported_scrapes
     }
@@ -108,15 +119,30 @@ query ScrapeSingleGallery(
   }
 }
 
+query ScrapeSingleImage(
+  $source: ScraperSourceInput!
+  $input: ScrapeSingleImageInput!
+) {
+  scrapeSingleImage(source: $source, input: $input) {
+    ...ScrapedImageData
+  }
+}
+
 query ScrapeGalleryURL($url: String!) {
   scrapeGalleryURL(url: $url) {
     ...ScrapedGalleryData
   }
 }
 
-query ScrapeMovieURL($url: String!) {
-  scrapeMovieURL(url: $url) {
-    ...ScrapedMovieData
+query ScrapeImageURL($url: String!) {
+  scrapeImageURL(url: $url) {
+    ...ScrapedImageData
+  }
+}
+
+query ScrapeGroupURL($url: String!) {
+  scrapeGroupURL(url: $url) {
+    ...ScrapedGroupData
   }
 }
 
