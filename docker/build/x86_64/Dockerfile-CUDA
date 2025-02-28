@@ -1,7 +1,7 @@
 # This dockerfile should be built with `make docker-cuda-build` from the stash root.
 
 # Build Frontend
-FROM node:alpine as frontend
+FROM node:alpine AS frontend
 RUN apk add --no-cache make git
 ## cache node_modules separately
 COPY ./ui/v2.5/package.json ./ui/v2.5/yarn.lock /stash/ui/v2.5/
@@ -16,7 +16,7 @@ ARG STASH_VERSION
 RUN BUILD_DATE=$(date +"%Y-%m-%d %H:%M:%S") make ui
 
 # Build Backend
-FROM golang:1.22-bullseye as backend
+FROM golang:1.22-bullseye AS backend
 RUN apt update && apt install -y build-essential golang
 WORKDIR /stash
 COPY ./go* ./*.go Makefile gqlgen.yml .gqlgenc.yml /stash/
@@ -34,8 +34,41 @@ RUN make flags-release flags-pie stash
 FROM nvidia/cuda:12.0.1-base-ubuntu22.04
 ARG STASH_VERSION
 LABEL org.opencontainers.image.source="https://github.com/stashapp/stash/" org.opencontainers.image.revision=${STASH_VERSION}
-RUN apt update && apt upgrade -y && apt install -y ca-certificates libvips-tools ffmpeg wget intel-media-va-driver-non-free vainfo
-RUN rm -rf /var/lib/apt/lists/*
+ENV TZ=US/Pacific \
+    DEBIAN_FRONTEND=noninteractive
+ARG PYTHON_VERSION=3.12
+RUN echo "deb https://ppa.launchpadcontent.net/deadsnakes/ppa/ubuntu jammy main" | tee /etc/apt/sources.list.d/deadsnakes.list \
+    && echo "deb-src https://ppa.launchpadcontent.net/deadsnakes/ppa/ubuntu jammy main" | tee -a /etc/apt/sources.list.d/deadsnakes.list \
+    && apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys F23C5A6CF475977595C89F51BA6932366A755776 \
+    && apt update && apt upgrade -y && apt install -y ca-certificates libvips-tools wget intel-media-va-driver-non-free \
+    vainfo \
+    # install python3.12 && set python3.12 as default python
+    && apt install -y python3.12 \
+    && update-alternatives --install /usr/bin/python python /usr/bin/python$PYTHON_VERSION 1 \
+    && update-alternatives --install /usr/bin/python3 python3 /usr/bin/python$PYTHON_VERSION 1 \
+    && update-alternatives --set python /usr/bin/python$PYTHON_VERSION \
+    && update-alternatives --set python3 /usr/bin/python$PYTHON_VERSION \
+    # install ffmpeg 6 with nvenc support
+    && wget https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2023-03-31-12-50/ffmpeg-n6.0-11-g3980415627-linux64-gpl-6.0.tar.xz \
+    && tar -xf ffmpeg-n6.0-11-g3980415627-linux64-gpl-6.0.tar.xz \
+    && mv ffmpeg-n6.0-11-g3980415627-linux64-gpl-6.0/bin/ffmpeg /usr/bin/ffmpeg \
+    && mv ffmpeg-n6.0-11-g3980415627-linux64-gpl-6.0/bin/ffprobe /usr/bin/ffprobe \
+    && chmod +x /usr/bin/ffmpeg /usr/bin/ffprobe \
+    && rm -rf ffmpeg-n6.0-11-g3980415627-linux64-gpl-6.0.tar.xz ffmpeg-n6.0-11-g3980415627-linux64-gpl-6.0 \
+    # clean apt cache
+    && apt autoremove -y \
+    && apt autoclean -y \
+    && apt clean && rm -rf \
+    /var/cache/debconf/* \
+    /var/lib/apt/lists/* \
+    /var/log/* \
+    /var/tmp/* \
+    && rm -rf /tmp/*
+# install some python packages
+RUN wget -qO- https://bootstrap.pypa.io/get-pip.py | python3.12 \
+    && pip install cloudscraper bs4 stashapp-tools lxml \
+    # clean pip cache
+    && rm -rf /root/.cache/pip
 COPY --from=backend /stash/stash /usr/bin/
 
 # NVENC Patch
@@ -44,8 +77,8 @@ RUN wget https://raw.githubusercontent.com/keylase/nvidia-patch/master/patch.sh 
 RUN wget https://raw.githubusercontent.com/keylase/nvidia-patch/master/docker-entrypoint.sh -O /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/patch.sh /usr/local/bin/docker-entrypoint.sh /usr/bin/stash
 
-ENV LANG C.UTF-8
-ENV NVIDIA_VISIBLE_DEVICES all
+ENV LANG=C.UTF-8
+ENV NVIDIA_VISIBLE_DEVICES=all
 ENV NVIDIA_DRIVER_CAPABILITIES=video,utility
 ENV STASH_CONFIG_FILE=/root/.stash/config.yml
 EXPOSE 9999
