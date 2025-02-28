@@ -32,6 +32,8 @@ RUN make flags-release flags-pie stash
 
 # Final Runnable Image
 FROM alpine:latest
+ARG STASH_VERSION
+LABEL org.opencontainers.image.source="https://github.com/stashapp/stash/" org.opencontainers.image.revision=${STASH_VERSION}
 RUN apk add --no-cache ca-certificates vips-tools ffmpeg
 COPY --from=backend /stash/stash /usr/bin/
 ENV STASH_CONFIG_FILE=/root/.stash/config.yml

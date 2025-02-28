@@ -1,23 +1,30 @@
 {
-  "actions": {
-    "customise": "Customize"
-  },
-  "config": {
-    "tools": {
-      "scene_filename_parser": {
-        "ignore_organized": "Ignore organized scenes"
-      }
+    "actions": {
+        "customise": "Customize",
+        "add_sub_groups": "Add Sub-Groups",
+        "add": "Add",
+        "add_directory": "Add Directory",
+        "add_entity": "Add {entityType}",
+        "add_manual_date": "Add manual date",
+        "add_o": "Add O",
+        "add_play": "Add play"
     },
-    "ui": {
-      "custom_locales": {
-        "heading": "Custom localization",
-        "option_label": "Custom localization enabled"
-      }
-    }
-  },
-  "eye_color": "Eye Color",
-  "favourite": "Favorite",
-  "hair_color": "Hair Color",
-  "organized": "Organized",
-  "performer_favorite": "Performer Favorited"
+    "config": {
+        "tools": {
+            "scene_filename_parser": {
+                "ignore_organized": "Ignore organized scenes"
+            }
+        },
+        "ui": {
+            "custom_locales": {
+                "heading": "Custom localization",
+                "option_label": "Custom localization enabled"
+            }
+        }
+    },
+    "eye_color": "Eye Color",
+    "favourite": "Favorite",
+    "hair_color": "Hair Color",
+    "organized": "Organized",
+    "performer_favorite": "Performer Favorited"
 }

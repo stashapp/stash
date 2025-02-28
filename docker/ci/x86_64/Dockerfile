@@ -10,6 +10,8 @@ RUN if [ "$TARGETPLATFORM" = "linux/arm/v6" ];   then BIN=stash-linux-arm32v6; \
     mv $BIN /stash
 
 FROM --platform=$TARGETPLATFORM alpine:latest AS app
+ARG STASH_VERSION
+LABEL org.opencontainers.image.source="https://github.com/stashapp/stash/" org.opencontainers.image.revision=${STASH_VERSION}
 COPY --from=binary /stash /usr/bin/
 
 RUN apk add --no-cache ca-certificates python3 py3-requests py3-requests-toolbelt py3-lxml py3-pip ffmpeg ruby tzdata vips vips-tools \

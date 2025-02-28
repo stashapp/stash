@@ -37,7 +37,55 @@
         "play_random": "Spel av tilfeldig",
         "submit_update": "Send inn oppdatering",
         "view_random": "Vis tilfeldig",
-        "add_directory": "Legg til mappe"
+        "add_directory": "Legg til mappe",
+        "add_sub_groups": "Legg til undergrupper",
+        "clear_image": "Fjern bilete",
+        "find": "Finn",
+        "finish": "Fullfør",
+        "from_file": "Frå fil …",
+        "from_url": "Frå nettadresse …",
+        "full_export": "Fullstendig eksportering",
+        "full_import": "Fullstendig importering",
+        "generate": "Generer",
+        "hash_migration": "hash-migrering",
+        "next_action": "Neste",
+        "not_running": "køyrer ikkje",
+        "open_in_external_player": "Opna i ekstern avspelar",
+        "optimise_database": "Optimiser database",
+        "overwrite": "Skriv over",
+        "play_selected": "Spel av valde",
+        "preview": "Førehandsvis",
+        "previous_action": "Tilbake",
+        "reassign": "Tilordna på nytt",
+        "refresh": "Oppdater",
+        "reload_plugins": "Last inn tillegg på nytt",
+        "reload": "Last på nytt",
+        "remove_from_containing_group": "Fjern frå gruppe",
+        "remove_from_gallery": "Fjern frå galleri",
+        "rename_gen_files": "Endra namn på genererte filer",
+        "rescan": "Skann på nytt",
+        "anonymise": "Anonymiser",
+        "clear_back_image": "Fjern baksidebilete",
+        "clear_front_image": "Fjern framsidebilete",
+        "download": "Last ned",
+        "download_backup": "Last ned reservekopi",
+        "edit": "Rediger",
+        "edit_entity": "Rediger {entityType}",
+        "enable": "Slå på",
+        "export": "Eksporter",
+        "export_all": "Eksporter alle …",
+        "ignore": "Ignorer",
+        "import": "Importer …",
+        "identify": "Identifiser",
+        "import_from_file": "Importer frå fil",
+        "logout": "Logg ut",
+        "make_primary": "Set som føretrekt",
+        "merge": "Flett",
+        "merge_into": "Flett inn i",
+        "migrate_scene_screenshots": "Migrer skjermbilete av scener",
+        "download_anonymised": "Last ned anonymisert",
+        "disallow": "Ikkje tillat",
+        "merge_from": "Flett frå"
     },
     "countables": {
         "groups": "{count, plural, one {Gruppe} other {Grupper}}",
@@ -81,7 +129,9 @@
                 "previews_desc": "Førehandsvisingar og miniatyrbilete av scener",
                 "image_thumbnails_desc": "Miniatyrbilete og -klipp",
                 "transcodes": "Omkodingar av scener"
-            }
+            },
+            "anonymise_and_download": "Opprettar ein anonymisert kopi av databasen og lastar ned den ferdige fila.",
+            "anonymise_database": "Anonymiserer sensitive data og opprettar ein kopi av databasen i mappa «backups». Han kan då delast med andre for å kunna brukast til feilsøking. Den opphavlege databasen vert ikkje endra. Filnamnet til den anonymiserte databasen vert i formatet {filename_format}."
         },
         "ui": {
             "editing": {
@@ -97,6 +147,9 @@
         },
         "about": {
             "release_date": "Utgjevingsdato:"
+        },
+        "categories": {
+            "plugins": "Tillegg"
         }
     },
     "dupe_check": {
@@ -170,5 +223,11 @@
     },
     "zip_file_count": "Tal på zippa filer",
     "image_count": "Tal på bilete",
-    "scene_count": "Tal på scener"
+    "scene_count": "Tal på scener",
+    "sub_groups": "Undergrupper",
+    "include_sub_groups": "Ta med undergrupper",
+    "sub_group": "Undergruppe",
+    "sub_group_count": "Tal på undergrupper",
+    "sub_group_of": "Undergruppe av {parent}",
+    "sub_group_order": "Undergruppesortert"
 }

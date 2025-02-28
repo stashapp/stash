@@ -388,6 +388,33 @@ func (s *stashScraper) scrapeGalleryByGallery(ctx context.Context, gallery *mode
 	return &ret, nil
 }
 
+func (s *stashScraper) scrapeImageByImage(ctx context.Context, image *models.Image) (*ScrapedImage, error) {
+	return nil, ErrNotSupported
+}
+
 func (s *stashScraper) scrapeByURL(_ context.Context, _ string, _ ScrapeContentType) (ScrapedContent, error) {
 	return nil, ErrNotSupported
+}
+
+func imageToUpdateInput(gallery *models.Image) models.ImageUpdateInput {
+	dateToStringPtr := func(s *models.Date) *string {
+		if s != nil {
+			v := s.String()
+			return &v
+		}
+
+		return nil
+	}
+
+	// fallback to file basename if title is empty
+	title := gallery.GetTitle()
+	urls := gallery.URLs.List()
+
+	return models.ImageUpdateInput{
+		ID:      strconv.Itoa(gallery.ID),
+		Title:   &title,
+		Details: &gallery.Details,
+		Urls:    urls,
+		Date:    dateToStringPtr(gallery.Date),
+	}
 }
