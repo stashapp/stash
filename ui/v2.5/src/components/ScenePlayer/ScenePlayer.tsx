@@ -701,7 +701,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       interactiveClient.pause();
     };
   }, [interactiveClient]);
-  
+
   const loadMarkers = useCallback(() => {
     const player = getPlayer();
     if (!player) return;
