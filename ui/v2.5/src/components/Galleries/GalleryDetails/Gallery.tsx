@@ -43,7 +43,7 @@ import cx from "classnames";
 import { useRatingKeybinds } from "src/hooks/keybinds";
 import { ConfigurationContext } from "src/hooks/Config";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
-import { PatchComponent } from "src/patch";
+import { PatchComponent, PatchContainerComponent } from "src/patch";
 
 interface IProps {
   gallery: GQL.GalleryDataFragment;
@@ -59,15 +59,8 @@ interface IGalleryDropdownItemProps {
   galleryId: string;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const _GalleryDropdownItem = (props: IGalleryDropdownItemProps) => {
-  return null;
-};
-
-export const GalleryDropdownItem = PatchComponent(
-  "GalleryDropdownItem",
-  _GalleryDropdownItem
-);
+export const GalleryPagePluginOperations: React.FC<React.PropsWithChildren<IGalleryDropdownItemProps>> =
+PatchContainerComponent("GalleryPage.PluginOperations") as React.FC;
 
 export const GalleryPage: React.FC<IProps> = ({ gallery, add }) => {
   const history = useHistory();
@@ -232,7 +225,7 @@ export const GalleryPage: React.FC<IProps> = ({ gallery, add }) => {
               values={{ entityType: intl.formatMessage({ id: "gallery" }) }}
             />
           </Dropdown.Item>
-          <GalleryDropdownItem galleryId={gallery.id} />
+          <GalleryPagePluginOperations galleryId={gallery.id} />
         </Dropdown.Menu>
       </Dropdown>
     );
