@@ -15,6 +15,9 @@ interface IPluginApi {
       Nav: React.FC<any> & {
         Link: React.FC<any>;
       };
+      Dropdown: {
+        Item: React.FC<any>;
+      }
     },
     FontAwesomeSolid: {
       faEthernet: any;
@@ -45,7 +48,7 @@ interface IPluginApi {
   const React = PluginApi.React;
   const GQL = PluginApi.GQL;
 
-  const { Button } = PluginApi.libraries.Bootstrap;
+  const { Button, Dropdown } = PluginApi.libraries.Bootstrap;
   const { faEthernet } = PluginApi.libraries.FontAwesomeSolid;
   const {
     Link,
@@ -237,5 +240,23 @@ interface IPluginApi {
         )
       }
     ]
-  })
+  });
+
+  PluginApi.patch.before("GalleryPage.PluginOperations", function (props: any) {
+    return [
+      {
+        children: (
+          <>
+            {props.children}
+            <Dropdown.Item
+              className="bg-secondary text-white"
+              onClick={() => { console.log("Menu item selected")}}
+            >
+              Test React
+            </Dropdown.Item>
+          </>
+        )
+      }
+    ]
+  });
 })();

@@ -43,7 +43,7 @@ import cx from "classnames";
 import { useRatingKeybinds } from "src/hooks/keybinds";
 import { ConfigurationContext } from "src/hooks/Config";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
-import { PatchComponent, PatchContainerComponent } from "src/patch";
+import { PatchContainerComponent } from "src/patch";
 
 interface IProps {
   gallery: GQL.GalleryDataFragment;
@@ -59,8 +59,9 @@ interface IGalleryDropdownItemProps {
   galleryId: string;
 }
 
-export const GalleryPagePluginOperations: React.FC<React.PropsWithChildren<IGalleryDropdownItemProps>> =
-PatchContainerComponent("GalleryPage.PluginOperations") as React.FC;
+export const GalleryPagePluginOperations: React.FC<
+  React.PropsWithChildren<IGalleryDropdownItemProps>
+> = PatchContainerComponent("GalleryPage.PluginOperations") as React.FC;
 
 export const GalleryPage: React.FC<IProps> = ({ gallery, add }) => {
   const history = useHistory();
