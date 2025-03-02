@@ -182,9 +182,9 @@ func (r *queryResolver) ScrapeSingleScene(ctx context.Context, source scraper.So
 
 		switch {
 		case input.SceneID != nil:
-			ret, err = client.FindStashBoxSceneByFingerprints(ctx, sceneID)
+			ret, err = client.FindSceneByFingerprints(ctx, sceneID)
 		case input.Query != nil:
-			ret, err = client.QueryStashBoxScene(ctx, *input.Query)
+			ret, err = client.QueryScene(ctx, *input.Query)
 		default:
 			return nil, fmt.Errorf("%w: scene_id or query must be set", ErrInput)
 		}
@@ -215,7 +215,7 @@ func (r *queryResolver) ScrapeMultiScenes(ctx context.Context, source scraper.So
 			return nil, err
 		}
 
-		return client.FindStashBoxScenesByFingerprints(ctx, sceneIDs)
+		return client.FindScenesByFingerprints(ctx, sceneIDs)
 	}
 
 	return nil, errors.New("scraper_id or stash_box_index must be set")
@@ -231,7 +231,7 @@ func (r *queryResolver) ScrapeSingleStudio(ctx context.Context, source scraper.S
 		client := r.newStashBoxClient(*b)
 
 		var ret []*models.ScrapedStudio
-		out, err := client.FindStashBoxStudio(ctx, *input.Query)
+		out, err := client.FindStudio(ctx, *input.Query)
 
 		if err != nil {
 			return nil, err
@@ -285,12 +285,12 @@ func (r *queryResolver) ScrapeSinglePerformer(ctx context.Context, source scrape
 
 		client := r.newStashBoxClient(*b)
 
-		var res []*stashbox.StashBoxPerformerQueryResult
+		var res []*stashbox.PerformerQueryResult
 		switch {
 		case input.PerformerID != nil:
-			res, err = client.FindStashBoxPerformersByNames(ctx, []string{*input.PerformerID})
+			res, err = client.FindPerformersByNames(ctx, []string{*input.PerformerID})
 		case input.Query != nil:
-			res, err = client.QueryStashBoxPerformer(ctx, *input.Query)
+			res, err = client.QueryPerformer(ctx, *input.Query)
 		default:
 			return nil, ErrNotImplemented
 		}

@@ -250,7 +250,7 @@ type stashboxSource struct {
 }
 
 func (s stashboxSource) ScrapeScenes(ctx context.Context, sceneID int) ([]*scraper.ScrapedScene, error) {
-	results, err := s.FindStashBoxSceneByFingerprints(ctx, sceneID)
+	results, err := s.FindSceneByFingerprints(ctx, sceneID)
 	if err != nil {
 		return nil, fmt.Errorf("error querying stash-box using scene ID %d: %w", sceneID, err)
 	}

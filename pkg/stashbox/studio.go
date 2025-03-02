@@ -9,7 +9,7 @@ import (
 	"github.com/stashapp/stash/pkg/stashbox/graphql"
 )
 
-func (c Client) FindStashBoxStudio(ctx context.Context, query string) (*models.ScrapedStudio, error) {
+func (c Client) FindStudio(ctx context.Context, query string) (*models.ScrapedStudio, error) {
 	var studio *graphql.FindStudio
 
 	_, err := uuid.Parse(query)

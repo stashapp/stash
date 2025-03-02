@@ -20,11 +20,11 @@ import (
 	"golang.org/x/text/language"
 )
 
-// QueryStashBoxPerformer queries stash-box for performers using a query string.
-func (c Client) QueryStashBoxPerformer(ctx context.Context, queryStr string) ([]*StashBoxPerformerQueryResult, error) {
-	performers, err := c.queryStashBoxPerformer(ctx, queryStr)
+// QueryPerformer queries stash-box for performers using a query string.
+func (c Client) QueryPerformer(ctx context.Context, queryStr string) ([]*PerformerQueryResult, error) {
+	performers, err := c.queryPerformer(ctx, queryStr)
 
-	res := []*StashBoxPerformerQueryResult{
+	res := []*PerformerQueryResult{
 		{
 			Query:   queryStr,
 			Results: performers,
@@ -41,7 +41,7 @@ func (c Client) QueryStashBoxPerformer(ctx context.Context, queryStr string) ([]
 	return res, err
 }
 
-func (c Client) queryStashBoxPerformer(ctx context.Context, queryStr string) ([]*models.ScrapedPerformer, error) {
+func (c Client) queryPerformer(ctx context.Context, queryStr string) ([]*models.ScrapedPerformer, error) {
 	performers, err := c.client.SearchPerformer(ctx, queryStr)
 	if err != nil {
 		return nil, err
@@ -67,8 +67,8 @@ func (c Client) queryStashBoxPerformer(ctx context.Context, queryStr string) ([]
 	return ret, nil
 }
 
-// FindStashBoxPerformersByNames queries stash-box for performers by name
-func (c Client) FindStashBoxPerformersByNames(ctx context.Context, performerIDs []string) ([]*StashBoxPerformerQueryResult, error) {
+// FindPerformersByNames queries stash-box for performers by name
+func (c Client) FindPerformersByNames(ctx context.Context, performerIDs []string) ([]*PerformerQueryResult, error) {
 	ids, err := stringslice.StringSliceToIntSlice(performerIDs)
 	if err != nil {
 		return nil, err
@@ -99,7 +99,7 @@ func (c Client) FindStashBoxPerformersByNames(ctx context.Context, performerIDs 
 		return nil, err
 	}
 
-	return c.findStashBoxPerformersByNames(ctx, performers)
+	return c.findPerformersByNames(ctx, performers)
 }
 
 func (c Client) FindStashBoxPerformersByPerformerNames(ctx context.Context, performerIDs []string) ([][]*models.ScrapedPerformer, error) {
@@ -134,7 +134,7 @@ func (c Client) FindStashBoxPerformersByPerformerNames(ctx context.Context, perf
 		return nil, err
 	}
 
-	results, err := c.findStashBoxPerformersByNames(ctx, performers)
+	results, err := c.findPerformersByNames(ctx, performers)
 	if err != nil {
 		return nil, err
 	}
@@ -147,16 +147,16 @@ func (c Client) FindStashBoxPerformersByPerformerNames(ctx context.Context, perf
 	return ret, nil
 }
 
-func (c Client) findStashBoxPerformersByNames(ctx context.Context, performers []*models.Performer) ([]*StashBoxPerformerQueryResult, error) {
-	var ret []*StashBoxPerformerQueryResult
+func (c Client) findPerformersByNames(ctx context.Context, performers []*models.Performer) ([]*PerformerQueryResult, error) {
+	var ret []*PerformerQueryResult
 	for _, performer := range performers {
 		if performer.Name != "" {
-			performerResults, err := c.queryStashBoxPerformer(ctx, performer.Name)
+			performerResults, err := c.queryPerformer(ctx, performer.Name)
 			if err != nil {
 				return nil, err
 			}
 
-			result := StashBoxPerformerQueryResult{
+			result := PerformerQueryResult{
 				Query:   strconv.Itoa(performer.ID),
 				Results: performerResults,
 			}
@@ -388,7 +388,7 @@ func padFuzzyDate(date *string) *string {
 	return &paddedDate
 }
 
-func (c Client) FindStashBoxPerformerByID(ctx context.Context, id string) (*models.ScrapedPerformer, error) {
+func (c Client) FindPerformerByID(ctx context.Context, id string) (*models.ScrapedPerformer, error) {
 	performer, err := c.client.FindPerformerByID(ctx, id)
 	if err != nil {
 		return nil, err
@@ -411,7 +411,7 @@ func (c Client) FindStashBoxPerformerByID(ctx context.Context, id string) (*mode
 	return ret, nil
 }
 
-func (c Client) FindStashBoxPerformerByName(ctx context.Context, name string) (*models.ScrapedPerformer, error) {
+func (c Client) FindPerformerByName(ctx context.Context, name string) (*models.ScrapedPerformer, error) {
 	performers, err := c.client.SearchPerformer(ctx, name)
 	if err != nil {
 		return nil, err

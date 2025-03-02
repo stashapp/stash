@@ -16,7 +16,7 @@ func (r *mutationResolver) SubmitStashBoxFingerprints(ctx context.Context, input
 	}
 
 	client := r.newStashBoxClient(*b)
-	return client.SubmitStashBoxFingerprints(ctx, input.SceneIds)
+	return client.SubmitFingerprints(ctx, input.SceneIds)
 }
 
 func (r *mutationResolver) StashBoxBatchPerformerTag(ctx context.Context, input manager.StashBoxBatchTagInput) (string, error) {
