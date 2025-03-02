@@ -7,7 +7,7 @@ import (
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/scraper/stashbox"
+	"github.com/stashapp/stash/pkg/stashbox"
 )
 
 func (r *Resolver) newStashBoxClient(box models.StashBox) *stashbox.Client {
