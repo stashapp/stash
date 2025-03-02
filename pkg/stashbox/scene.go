@@ -50,8 +50,8 @@ func (c Client) QueryScene(ctx context.Context, queryStr string) ([]*scraper.Scr
 
 // FindStashBoxScenesByFingerprints queries stash-box for a scene using the
 // scene's MD5/OSHASH checksum, or PHash.
-func (c Client) FindSceneByFingerprints(ctx context.Context, sceneID int) ([]*scraper.ScrapedScene, error) {
-	res, err := c.FindScenesByFingerprints(ctx, []int{sceneID})
+func (c Client) FindSceneByFingerprints(ctx context.Context, fps models.Fingerprints) ([]*scraper.ScrapedScene, error) {
+	res, err := c.FindScenesByFingerprints(ctx, []models.Fingerprints{fps})
 	if len(res) > 0 {
 		return res[0], err
 	}
@@ -61,65 +61,43 @@ func (c Client) FindSceneByFingerprints(ctx context.Context, sceneID int) ([]*sc
 // FindScenesByFingerprints queries stash-box for scenes using every
 // scene's MD5/OSHASH checksum, or PHash, and returns results in the same order
 // as the input slice.
-func (c Client) FindScenesByFingerprints(ctx context.Context, ids []int) ([][]*scraper.ScrapedScene, error) {
+func (c Client) FindScenesByFingerprints(ctx context.Context, fps []models.Fingerprints) ([][]*scraper.ScrapedScene, error) {
 	var fingerprints [][]*graphql.FingerprintQueryInput
 
-	r := c.repository
-	if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
-		qb := r.Scene
-
-		for _, sceneID := range ids {
-			scene, err := qb.Find(ctx, sceneID)
-			if err != nil {
-				return err
-			}
-
-			if scene == nil {
-				return fmt.Errorf("scene with id %d not found", sceneID)
-			}
-
-			if err := scene.LoadFiles(ctx, r.Scene); err != nil {
-				return err
-			}
-
-			var sceneFPs []*graphql.FingerprintQueryInput
-
-			for _, f := range scene.Files.List() {
-				checksum := f.Fingerprints.GetString(models.FingerprintTypeMD5)
-				if checksum != "" {
-					sceneFPs = append(sceneFPs, &graphql.FingerprintQueryInput{
-						Hash:      checksum,
-						Algorithm: graphql.FingerprintAlgorithmMd5,
-					})
-				}
-
-				oshash := f.Fingerprints.GetString(models.FingerprintTypeOshash)
-				if oshash != "" {
-					sceneFPs = append(sceneFPs, &graphql.FingerprintQueryInput{
-						Hash:      oshash,
-						Algorithm: graphql.FingerprintAlgorithmOshash,
-					})
-				}
-
-				phash := f.Fingerprints.GetInt64(models.FingerprintTypePhash)
-				if phash != 0 {
-					phashStr := utils.PhashToString(phash)
-					sceneFPs = append(sceneFPs, &graphql.FingerprintQueryInput{
-						Hash:      phashStr,
-						Algorithm: graphql.FingerprintAlgorithmPhash,
-					})
-				}
-			}
-
-			fingerprints = append(fingerprints, sceneFPs)
-		}
-
-		return nil
-	}); err != nil {
-		return nil, err
+	for _, fp := range fps {
+		fingerprints = append(fingerprints, convertFingerprints(fp))
 	}
 
 	return c.findScenesByFingerprints(ctx, fingerprints)
+}
+
+func convertFingerprints(fps models.Fingerprints) []*graphql.FingerprintQueryInput {
+	var ret []*graphql.FingerprintQueryInput
+
+	for _, f := range fps {
+		var i = &graphql.FingerprintQueryInput{}
+		switch f.Type {
+		case models.FingerprintTypeMD5:
+			i.Algorithm = graphql.FingerprintAlgorithmMd5
+			i.Hash = f.String()
+		case models.FingerprintTypeOshash:
+			i.Algorithm = graphql.FingerprintAlgorithmOshash
+			i.Hash = f.String()
+		case models.FingerprintTypePhash:
+			i.Algorithm = graphql.FingerprintAlgorithmPhash
+			i.Hash = utils.PhashToString(f.Int64())
+		default:
+			continue
+		}
+
+		if !i.Algorithm.IsValid() {
+			continue
+		}
+
+		ret = append(ret, i)
+	}
+
+	return ret
 }
 
 func (c Client) findScenesByFingerprints(ctx context.Context, scenes [][]*graphql.FingerprintQueryInput) ([][]*scraper.ScrapedScene, error) {

@@ -182,7 +182,11 @@ func (r *queryResolver) ScrapeSingleScene(ctx context.Context, source scraper.So
 
 		switch {
 		case input.SceneID != nil:
-			ret, err = client.FindSceneByFingerprints(ctx, sceneID)
+			fps, err := r.getScenesFingerprints(ctx, []int{sceneID})
+			if err != nil {
+				return nil, err
+			}
+			ret, err = client.FindSceneByFingerprints(ctx, fps[0])
 		case input.Query != nil:
 			ret, err = client.QueryScene(ctx, *input.Query)
 		default:
@@ -215,10 +219,52 @@ func (r *queryResolver) ScrapeMultiScenes(ctx context.Context, source scraper.So
 			return nil, err
 		}
 
-		return client.FindScenesByFingerprints(ctx, sceneIDs)
+		fps, err := r.getScenesFingerprints(ctx, sceneIDs)
+		if err != nil {
+			return nil, err
+		}
+
+		return client.FindScenesByFingerprints(ctx, fps)
 	}
 
 	return nil, errors.New("scraper_id or stash_box_index must be set")
+}
+
+func (r *queryResolver) getScenesFingerprints(ctx context.Context, ids []int) ([]models.Fingerprints, error) {
+	fingerprints := make([]models.Fingerprints, len(ids))
+
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+		qb := r.repository.Scene
+
+		for i, sceneID := range ids {
+			scene, err := qb.Find(ctx, sceneID)
+			if err != nil {
+				return err
+			}
+
+			if scene == nil {
+				return fmt.Errorf("scene with id %d not found", sceneID)
+			}
+
+			if err := scene.LoadFiles(ctx, qb); err != nil {
+				return err
+			}
+
+			var sceneFPs models.Fingerprints
+
+			for _, f := range scene.Files.List() {
+				sceneFPs = append(sceneFPs, f.Fingerprints...)
+			}
+
+			fingerprints[i] = sceneFPs
+		}
+
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return fingerprints, nil
 }
 
 func (r *queryResolver) ScrapeSingleStudio(ctx context.Context, source scraper.Source, input ScrapeSingleStudioInput) ([]*models.ScrapedStudio, error) {
