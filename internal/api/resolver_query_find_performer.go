@@ -33,7 +33,9 @@ func (r *queryResolver) FindPerformers(ctx context.Context, performerFilter *mod
 	}
 
 	// #5682 - convert JSON numbers to float64 or int64
-	performerFilter.CustomFields = convertCustomFieldCriterionInputJSONNumbers(performerFilter.CustomFields)
+	if performerFilter != nil {
+		performerFilter.CustomFields = convertCustomFieldCriterionInputJSONNumbers(performerFilter.CustomFields)
+	}
 
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		var performers []*models.Performer
