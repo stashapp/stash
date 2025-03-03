@@ -7,6 +7,7 @@ import {
   MultiCriterionInput,
   TimestampCriterionInput,
   ConfigDataFragment,
+  DateCriterionInput,
 } from "src/core/generated-graphql";
 import TextUtils from "src/utils/text";
 import {
@@ -1034,6 +1035,14 @@ export class DateCriterion extends ModifierCriterion<IDateValue> {
 
   protected encodeValue(): unknown {
     return encodeRangeValue(this.modifier, this.value);
+  }
+
+  public toCriterionInput(): DateCriterionInput {
+    return {
+      modifier: this.modifier,
+      value: this.value?.value ?? "",
+      value2: this.value?.value2,
+    };
   }
 
   protected getLabelValue() {
