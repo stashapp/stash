@@ -618,6 +618,9 @@ func testStudioStashIDs(ctx context.Context, t *testing.T, s *models.Studio) {
 		return
 	}
 
+	// #5563 - set the UpdatedAt field to epoch
+	stashID.UpdatedAt = epochTime
+
 	assert.Equal(t, []models.StashID{stashID}, s.StashIDs.List())
 
 	// remove stash ids and ensure was updated

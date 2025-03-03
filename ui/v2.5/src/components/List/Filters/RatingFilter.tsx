@@ -2,11 +2,11 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import { CriterionModifier } from "../../../core/generated-graphql";
 import { INumberValue } from "../../../models/list-filter/types";
-import { Criterion } from "../../../models/list-filter/criteria/criterion";
+import { ModifierCriterion } from "../../../models/list-filter/criteria/criterion";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 
 interface IRatingFilterProps {
-  criterion: Criterion<INumberValue>;
+  criterion: ModifierCriterion<INumberValue>;
   onValueChanged: (value: INumberValue) => void;
 }
 

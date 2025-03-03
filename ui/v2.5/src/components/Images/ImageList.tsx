@@ -23,11 +23,11 @@ import "flexbin/flexbin.css";
 import Gallery from "react-photo-gallery";
 import { ExportDialog } from "../Shared/ExportDialog";
 import { objectTitle } from "src/core/files";
-import TextUtils from "src/utils/text";
 import { ConfigurationContext } from "src/hooks/Config";
 import { ImageGridCard } from "./ImageGridCard";
 import { View } from "../List/views";
 import { IItemListOperation } from "../List/FilteredListToolbar";
+import { FileSize } from "../Shared/FileSize";
 
 interface IImageWallProps {
   images: GQL.SlimImageDataFragment[];
@@ -182,7 +182,7 @@ const ImageListImages: React.FC<IImageListImages> = ({
   const handleImageOpen = useCallback(
     (index) => {
       setSlideshowRunning(true);
-      showLightbox(index, true);
+      showLightbox({ initialIndex: index, slideshowEnabled: true });
     },
     [showLightbox, setSlideshowRunning]
   );
@@ -230,7 +230,6 @@ function getCount(result: GQL.FindImagesQueryResult) {
 function renderMetadataByline(result: GQL.FindImagesQueryResult) {
   const megapixels = result?.data?.findImages?.megapixels;
   const size = result?.data?.findImages?.filesize;
-  const filesize = size ? TextUtils.fileSize(size) : undefined;
 
   if (!megapixels && !size) {
     return;
@@ -247,15 +246,9 @@ function renderMetadataByline(result: GQL.FindImagesQueryResult) {
         </span>
       ) : undefined}
       {separator}
-      {size && filesize ? (
+      {size ? (
         <span className="images-size">
-          <FormattedNumber
-            value={filesize.size}
-            maximumFractionDigits={TextUtils.fileSizeFractionalDigits(
-              filesize.unit
-            )}
-          />
-          {` ${TextUtils.formatFileSizeUnit(filesize.unit)}`}
+          <FileSize size={size} />
         </span>
       ) : undefined}
       )

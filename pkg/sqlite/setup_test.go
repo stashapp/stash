@@ -24,6 +24,8 @@ import (
 	_ "github.com/stashapp/stash/pkg/sqlite/migrations"
 )
 
+var epochTime = time.Unix(0, 0).UTC()
+
 const (
 	spacedSceneTitle = "zzz yyy xxx"
 )
@@ -1028,8 +1030,9 @@ func getObjectDate(index int) *models.Date {
 
 func sceneStashID(i int) models.StashID {
 	return models.StashID{
-		StashID:  getSceneStringValue(i, "stashid"),
-		Endpoint: getSceneStringValue(i, "endpoint"),
+		StashID:   getSceneStringValue(i, "stashid"),
+		Endpoint:  getSceneStringValue(i, "endpoint"),
+		UpdatedAt: epochTime,
 	}
 }
 

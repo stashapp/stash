@@ -48,6 +48,8 @@ import "./pluginApi";
 import { ConnectionMonitor } from "./ConnectionMonitor";
 import { PatchFunction } from "./patch";
 
+import moment from "moment/min/moment-with-locales";
+
 const Performers = lazyComponent(
   () => import("./components/Performers/Performers")
 );
@@ -100,6 +102,17 @@ const AppContainer: React.FC<React.PropsWithChildren<{}>> = PatchFunction(
   }
 ) as React.FC;
 
+function translateLanguageLocale(l: string) {
+  // intl doesn't support all locales, so we need to map some to supported ones
+  switch (l) {
+    case "nn-NO":
+      // use other Norwegian locale for intl
+      return "nb-NO";
+    default:
+      return l;
+  }
+}
+
 export const App: React.FC = () => {
   const config = useConfiguration();
   const [saveUI] = useConfigureUI();
@@ -108,6 +121,7 @@ export const App: React.FC = () => {
 
   const language =
     config.data?.configuration?.interface?.language ?? defaultLocale;
+  const intlLanguage = translateLanguageLocale(language);
 
   // use en-GB as default messages if any messages aren't found in the chosen language
   const [messages, setMessages] = useState<{}>();
@@ -158,6 +172,7 @@ export const App: React.FC = () => {
       });
 
       setMessages(newMessages);
+      moment.locale([language, defaultLocale]);
     };
 
     setLocale();
@@ -276,7 +291,7 @@ export const App: React.FC = () => {
     <ErrorBoundary>
       {messages ? (
         <IntlProvider
-          locale={language}
+          locale={intlLanguage}
           messages={messages}
           formats={intlFormats}
         >
