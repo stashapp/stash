@@ -7,6 +7,8 @@ import (
 
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/stashbox"
 )
 
 func (r *mutationResolver) SubmitStashBoxFingerprints(ctx context.Context, input StashBoxFingerprintSubmissionInput) (bool, error) {
@@ -69,15 +71,74 @@ func (r *mutationResolver) SubmitStashBoxSceneDraft(ctx context.Context, input S
 			logger.Errorf("Error getting scene cover: %v", err)
 		}
 
-		if err := scene.LoadURLs(ctx, r.repository.Scene); err != nil {
-			return fmt.Errorf("loading scene URLs: %w", err)
+		draft, err := r.makeSceneDraft(ctx, scene, cover)
+		if err != nil {
+			return err
 		}
 
-		res, err = client.SubmitSceneDraft(ctx, scene, cover)
+		res, err = client.SubmitSceneDraft(ctx, *draft)
 		return err
 	})
 
 	return res, err
+}
+
+func (r *mutationResolver) makeSceneDraft(ctx context.Context, scene *models.Scene, cover []byte) (*stashbox.SceneDraft, error) {
+	if err := scene.LoadURLs(ctx, r.repository.Scene); err != nil {
+		return nil, fmt.Errorf("loading scene URLs: %w", err)
+	}
+
+	if err := scene.LoadStashIDs(ctx, r.repository.Scene); err != nil {
+		return nil, err
+	}
+
+	draft := &stashbox.SceneDraft{
+		Scene: scene,
+	}
+
+	pqb := r.repository.Performer
+	sqb := r.repository.Studio
+
+	if scene.StudioID != nil {
+		var err error
+		draft.Studio, err = sqb.Find(ctx, *scene.StudioID)
+		if err != nil {
+			return nil, err
+		}
+		if draft.Studio == nil {
+			return nil, fmt.Errorf("studio with id %d not found", *scene.StudioID)
+		}
+
+		if err := draft.Studio.LoadStashIDs(ctx, r.repository.Studio); err != nil {
+			return nil, err
+		}
+	}
+
+	// submit all file fingerprints
+	if err := scene.LoadFiles(ctx, r.repository.Scene); err != nil {
+		return nil, err
+	}
+
+	scenePerformers, err := pqb.FindBySceneID(ctx, scene.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, p := range scenePerformers {
+		if err := p.LoadStashIDs(ctx, pqb); err != nil {
+			return nil, err
+		}
+	}
+	draft.Performers = scenePerformers
+
+	draft.Tags, err = r.repository.Tag.FindBySceneID(ctx, scene.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	draft.Cover = cover
+
+	return draft, nil
 }
 
 func (r *mutationResolver) SubmitStashBoxPerformerDraft(ctx context.Context, input StashBoxDraftSubmissionInput) (*string, error) {

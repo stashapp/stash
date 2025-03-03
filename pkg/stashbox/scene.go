@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	"fmt"
 	"io"
 	"net/http"
 	"strings"
@@ -281,13 +280,45 @@ func getFingerprints(scene *graphql.SceneFragment) []*models.StashBoxFingerprint
 	return fingerprints
 }
 
-func (c Client) SubmitSceneDraft(ctx context.Context, scene *models.Scene, cover []byte) (*string, error) {
-	draft := graphql.SceneDraftInput{}
+type SceneDraft struct {
+	// Files, URLs, StashIDs must be loaded
+	Scene *models.Scene
+	// StashIDs must be loaded
+	Performers []*models.Performer
+	// StashIDs must be loaded
+	Studio *models.Studio
+	Tags   []*models.Tag
+	Cover  []byte
+}
+
+func (c Client) SubmitSceneDraft(ctx context.Context, d SceneDraft) (*string, error) {
+	draft := newSceneDraftInput(d, c.box.Endpoint)
 	var image io.Reader
-	r := c.repository
-	pqb := r.Performer
-	sqb := r.Studio
-	endpoint := c.box.Endpoint
+
+	if len(d.Cover) > 0 {
+		image = bytes.NewReader(d.Cover)
+	}
+
+	var id *string
+	var ret graphql.SubmitSceneDraft
+	err := c.submitDraft(ctx, graphql.SubmitSceneDraftDocument, draft, image, &ret)
+	id = ret.SubmitSceneDraft.ID
+
+	return id, err
+
+	// ret, err := c.client.SubmitSceneDraft(ctx, draft, uploadImage(image))
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	// id := ret.SubmitSceneDraft.ID
+	// return id, nil
+}
+
+func newSceneDraftInput(d SceneDraft, endpoint string) graphql.SceneDraftInput {
+	scene := d.Scene
+
+	draft := graphql.SceneDraftInput{}
 
 	if scene.Title != "" {
 		draft.Title = &scene.Title
@@ -311,23 +342,14 @@ func (c Client) SubmitSceneDraft(ctx context.Context, scene *models.Scene, cover
 		draft.Date = &v
 	}
 
-	if scene.StudioID != nil {
-		studio, err := sqb.Find(ctx, *scene.StudioID)
-		if err != nil {
-			return nil, err
-		}
-		if studio == nil {
-			return nil, fmt.Errorf("studio with id %d not found", *scene.StudioID)
-		}
+	if d.Studio != nil {
+		studio := d.Studio
 
 		studioDraft := graphql.DraftEntityInput{
 			Name: studio.Name,
 		}
 
-		stashIDs, err := sqb.GetStashIDs(ctx, studio.ID)
-		if err != nil {
-			return nil, err
-		}
+		stashIDs := studio.StashIDs.List()
 		for _, stashID := range stashIDs {
 			c := stashID
 			if stashID.Endpoint == endpoint {
@@ -340,61 +362,24 @@ func (c Client) SubmitSceneDraft(ctx context.Context, scene *models.Scene, cover
 
 	fingerprints := []*graphql.FingerprintInput{}
 
-	// submit all file fingerprints
-	if err := scene.LoadFiles(ctx, r.Scene); err != nil {
-		return nil, err
-	}
-
 	for _, f := range scene.Files.List() {
 		duration := f.Duration
 
 		if duration != 0 {
-			if oshash := f.Fingerprints.GetString(models.FingerprintTypeOshash); oshash != "" {
-				fingerprint := graphql.FingerprintInput{
-					Hash:      oshash,
-					Algorithm: graphql.FingerprintAlgorithmOshash,
-					Duration:  int(duration),
-				}
-				fingerprints = appendFingerprintUnique(fingerprints, &fingerprint)
-			}
-
-			if checksum := f.Fingerprints.GetString(models.FingerprintTypeMD5); checksum != "" {
-				fingerprint := graphql.FingerprintInput{
-					Hash:      checksum,
-					Algorithm: graphql.FingerprintAlgorithmMd5,
-					Duration:  int(duration),
-				}
-				fingerprints = appendFingerprintUnique(fingerprints, &fingerprint)
-			}
-
-			if phash := f.Fingerprints.GetInt64(models.FingerprintTypePhash); phash != 0 {
-				fingerprint := graphql.FingerprintInput{
-					Hash:      utils.PhashToString(phash),
-					Algorithm: graphql.FingerprintAlgorithmPhash,
-					Duration:  int(duration),
-				}
-				fingerprints = appendFingerprintUnique(fingerprints, &fingerprint)
-			}
+			fingerprints = appendFingerprintsUnique(fingerprints, fileFingerprintsToInputGraphQL(f.Fingerprints, int(duration))...)
 		}
 	}
 	draft.Fingerprints = fingerprints
 
-	scenePerformers, err := pqb.FindBySceneID(ctx, scene.ID)
-	if err != nil {
-		return nil, err
-	}
+	scenePerformers := d.Performers
 
-	performers := []*graphql.DraftEntityInput{}
+	inputPerformers := []*graphql.DraftEntityInput{}
 	for _, p := range scenePerformers {
 		performerDraft := graphql.DraftEntityInput{
 			Name: p.Name,
 		}
 
-		stashIDs, err := pqb.GetStashIDs(ctx, p.ID)
-		if err != nil {
-			return nil, err
-		}
-
+		stashIDs := p.StashIDs.List()
 		for _, stashID := range stashIDs {
 			c := stashID
 			if stashID.Endpoint == endpoint {
@@ -403,27 +388,16 @@ func (c Client) SubmitSceneDraft(ctx context.Context, scene *models.Scene, cover
 			}
 		}
 
-		performers = append(performers, &performerDraft)
+		inputPerformers = append(inputPerformers, &performerDraft)
 	}
-	draft.Performers = performers
+	draft.Performers = inputPerformers
 
 	var tags []*graphql.DraftEntityInput
-	sceneTags, err := r.Tag.FindBySceneID(ctx, scene.ID)
-	if err != nil {
-		return nil, err
-	}
+	sceneTags := d.Tags
 	for _, tag := range sceneTags {
 		tags = append(tags, &graphql.DraftEntityInput{Name: tag.Name})
 	}
 	draft.Tags = tags
-
-	if len(cover) > 0 {
-		image = bytes.NewReader(cover)
-	}
-
-	if err := scene.LoadStashIDs(ctx, r.Scene); err != nil {
-		return nil, err
-	}
 
 	stashIDs := scene.StashIDs.List()
 	var stashID *string
@@ -436,20 +410,38 @@ func (c Client) SubmitSceneDraft(ctx context.Context, scene *models.Scene, cover
 	}
 	draft.ID = stashID
 
-	var id *string
-	var ret graphql.SubmitSceneDraft
-	err = c.submitDraft(ctx, graphql.SubmitSceneDraftDocument, draft, image, &ret)
-	id = ret.SubmitSceneDraft.ID
+	return draft
+}
 
-	return id, err
+func fileFingerprintsToInputGraphQL(fps models.Fingerprints, duration int) []*graphql.FingerprintInput {
+	var ret []*graphql.FingerprintInput
 
-	// ret, err := c.client.SubmitSceneDraft(ctx, draft, uploadImage(image))
-	// if err != nil {
-	// 	return nil, err
-	// }
+	for _, f := range fps {
+		var i = &graphql.FingerprintInput{
+			Duration: duration,
+		}
+		switch f.Type {
+		case models.FingerprintTypeMD5:
+			i.Algorithm = graphql.FingerprintAlgorithmMd5
+			i.Hash = f.String()
+		case models.FingerprintTypeOshash:
+			i.Algorithm = graphql.FingerprintAlgorithmOshash
+			i.Hash = f.String()
+		case models.FingerprintTypePhash:
+			i.Algorithm = graphql.FingerprintAlgorithmPhash
+			i.Hash = utils.PhashToString(f.Int64())
+		default:
+			continue
+		}
 
-	// id := ret.SubmitSceneDraft.ID
-	// return id, nil
+		if !i.Algorithm.IsValid() {
+			continue
+		}
+
+		ret = appendFingerprintUnique(ret, i)
+	}
+
+	return ret
 }
 
 func (c Client) SubmitFingerprints(ctx context.Context, sceneIDs []string) (bool, error) {
@@ -564,4 +556,12 @@ func appendFingerprintUnique(v []*graphql.FingerprintInput, toAdd *graphql.Finge
 	}
 
 	return append(v, toAdd)
+}
+
+func appendFingerprintsUnique(v []*graphql.FingerprintInput, toAdd ...*graphql.FingerprintInput) []*graphql.FingerprintInput {
+	for _, a := range toAdd {
+		v = appendFingerprintUnique(v, a)
+	}
+
+	return v
 }
