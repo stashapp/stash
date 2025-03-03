@@ -10,7 +10,11 @@ import {
   IntCriterionInput,
 } from "src/core/generated-graphql";
 import { INumberValue } from "../types";
-import { ModifierCriterion, ModifierCriterionOption } from "./criterion";
+import {
+  encodeRangeValue,
+  ModifierCriterion,
+  ModifierCriterionOption,
+} from "./criterion";
 
 const modifierOptions = [
   CriterionModifier.Equals,
@@ -70,6 +74,19 @@ export class RatingCriterion extends ModifierCriterion<INumberValue> {
       value: this.value.value ?? 0,
       value2: this.value.value2,
     };
+  }
+
+  public setFromSavedCriterion(c: {
+    modifier: CriterionModifier;
+    value: number | INumberValue;
+    value2?: number;
+  }) {
+    super.setFromSavedCriterion(c);
+    // this.value = decodeRangeValue(c);
+  }
+
+  protected encodeValue(): unknown {
+    return encodeRangeValue(this.modifier, this.value);
   }
 
   protected getLabelValue() {
