@@ -120,11 +120,11 @@ build-flags: build-info
 	$(eval BUILD_FLAGS := -v -tags "$(GO_BUILD_TAGS)" $(GO_BUILD_FLAGS) -ldflags "$(BUILD_LDFLAGS)")
 
 .PHONY: stash
-stash: build-flags
+stash: build-flags generate-backend
 	go build $(STASH_OUTPUT) $(BUILD_FLAGS) ./cmd/stash
 
 .PHONY: phasher
-phasher: build-flags
+phasher: build-flags generate-backend
 	go build $(PHASHER_OUTPUT) $(BUILD_FLAGS) ./cmd/phasher
 
 # builds dynamically-linked debug binaries
@@ -274,7 +274,7 @@ endif
 generate: generate-backend generate-ui
 
 .PHONY: generate-ui
-generate-ui:
+generate-ui: pre-ui
 	cd ui/v2.5 && yarn run gqlgen
 
 .PHONY: generate-backend
@@ -351,7 +351,7 @@ ifdef STASH_SOURCEMAPS
 endif
 
 .PHONY: ui
-ui: ui-env
+ui: ui-env generate-ui
 	cd ui/v2.5 && yarn build
 
 .PHONY: zip-ui
