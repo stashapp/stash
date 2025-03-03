@@ -60,9 +60,9 @@ func (log *Logger) Init(logFile string, logOut bool, logLevel string) {
 
 	if logFile != "" {
 		rollingLogger = &lumberjack.Logger{
-			Filename:   logFile,
-			MaxSize:    1, // megabytes
-			Compress:   true,
+			Filename: logFile,
+			MaxSize:  1, // megabytes
+			Compress: true,
 		}
 	}
 
