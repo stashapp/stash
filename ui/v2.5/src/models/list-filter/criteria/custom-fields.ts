@@ -27,6 +27,10 @@ export class CustomFieldsCriterion extends Criterion {
     input.custom_fields = cloneDeep(this.value);
   }
 
+  public applyToSavedCriterion(input: Record<string, unknown>): void {
+    input.custom_fields = cloneDeep(this.value);
+  }
+
   public getLabel(intl: IntlShape): string {
     // show first criterion
     if (this.value.length === 0) {
@@ -91,19 +95,20 @@ export class CustomFieldsCriterion extends Criterion {
     );
   }
 
-  public toJSON(): string {
+  public toQueryParams(): Record<string, unknown> {
     const encodedCriterion = {
       type: this.criterionOption.type,
       value: this.value,
     };
-    return JSON.stringify(encodedCriterion);
+    return encodedCriterion;
   }
 
-  public setFromSavedCriterion(criterion: {
-    type: string;
-    value: CustomFieldCriterionInput[];
-  }): void {
-    const { value } = criterion;
-    this.value = cloneDeep(value);
+  public fromDecodedParams(i: unknown): void {
+    const criterion = i as { value: CustomFieldCriterionInput[] };
+    this.value = cloneDeep(criterion.value);
+  }
+
+  public setFromSavedCriterion(input: CustomFieldCriterionInput[]): void {
+    this.value = cloneDeep(input);
   }
 }

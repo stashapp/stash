@@ -5,9 +5,9 @@ import {
   HierarchicalMultiCriterionInput,
   IntCriterionInput,
   MultiCriterionInput,
-  DateCriterionInput,
   TimestampCriterionInput,
   ConfigDataFragment,
+  DateCriterionInput,
 } from "src/core/generated-graphql";
 import TextUtils from "src/utils/text";
 import {
@@ -21,11 +21,13 @@ import {
   ITimestampValue,
   ILabeledValueListValue,
   IPhashDistanceValue,
+  IRangeValue,
 } from "../types";
 
 export type Option = string | number | IOptionType;
 export type CriterionValue =
   | string
+  | boolean
   | string[]
   | ILabeledId[]
   | IHierarchicalLabelValue
@@ -36,7 +38,7 @@ export type CriterionValue =
   | ITimestampValue
   | IPhashDistanceValue;
 
-export interface ISavedCriterion<T extends CriterionValue> {
+export interface ISavedCriterion<T> {
   modifier: CriterionModifier;
   value: T | undefined;
 }
@@ -82,9 +84,15 @@ export abstract class Criterion {
     return `${this.criterionOption.type}`;
   }
 
-  public abstract toJSON(): string;
+  public abstract toQueryParams(): Record<string, unknown>;
+
+  // fromDecodedParams is used to set the criterion from the query string
+  // i is the decoded parameter object
+  public abstract fromDecodedParams(i: Record<string, unknown>): void;
 
   public abstract applyToCriterionInput(input: Record<string, unknown>): void;
+
+  public abstract applyToSavedCriterion(input: Record<string, unknown>): void;
   public abstract setFromSavedCriterion(criterion: unknown): void;
 }
 
@@ -164,38 +172,61 @@ export abstract class ModifierCriterion<
     );
   }
 
-  public toJSON() {
-    let encodedCriterion;
+  public toQueryParams(): Record<string, unknown> {
+    let encodedCriterion: Record<string, unknown> = {
+      type: this.criterionOption.type,
+      modifier: this.modifier,
+    };
+
     if (
-      this.modifier === CriterionModifier.IsNull ||
-      this.modifier === CriterionModifier.NotNull
+      this.modifier !== CriterionModifier.IsNull &&
+      this.modifier !== CriterionModifier.NotNull
     ) {
-      encodedCriterion = {
-        type: this.criterionOption.type,
-        modifier: this.modifier,
-      };
-    } else {
-      encodedCriterion = {
-        type: this.criterionOption.type,
-        value: this.value,
-        modifier: this.modifier,
-      };
+      encodedCriterion.value = this.encodeValue();
     }
-    return JSON.stringify(encodedCriterion);
+
+    return encodedCriterion;
   }
 
-  public setFromSavedCriterion(criterion: ISavedCriterion<V>) {
-    if (criterion.value !== undefined && criterion.value !== null) {
-      this.value = criterion.value;
+  protected encodeValue(): unknown {
+    return this.value;
+  }
+
+  protected decodeValue(v: unknown) {
+    if (v !== undefined && v !== null) {
+      this.value = v as V;
     }
-    this.modifier = criterion.modifier;
+  }
+
+  public fromDecodedParams(i: unknown): void {
+    // use same logic as from saved criterion by default
+    const c = i as ISavedCriterion<V>;
+    this.modifier = c.modifier;
+    this.decodeValue(c.value);
+  }
+
+  public setFromSavedCriterion(criterion: unknown) {
+    const c = criterion as ISavedCriterion<V>;
+    if (c.value !== undefined && c.value !== null) {
+      this.value = c.value;
+    }
+    this.modifier = c.modifier;
   }
 
   public applyToCriterionInput(input: Record<string, unknown>) {
     input[this.criterionOption.type] = this.toCriterionInput();
   }
 
-  public toCriterionInput(): unknown {
+  // TODO - saved criterion _should_ be criterion input
+  // kicking this can down the road a little further
+  public applyToSavedCriterion(input: Record<string, unknown>): void {
+    input[this.criterionOption.type] = {
+      value: this.value,
+      modifier: this.modifier,
+    };
+  }
+
+  protected toCriterionInput(): unknown {
     return {
       value: this.value,
       modifier: this.modifier,
@@ -755,6 +786,33 @@ export function createMandatoryNumberCriterionOption(
   return new MandatoryNumberCriterionOption(messageID ?? value, value);
 }
 
+export function encodeRangeValue<V>(
+  modifier: CriterionModifier,
+  value: IRangeValue<V>
+): unknown {
+  // only encode value2 if modifier is between/not between
+  if (
+    modifier === CriterionModifier.Between ||
+    modifier === CriterionModifier.NotBetween
+  ) {
+    return { value: value.value, value2: value.value2 };
+  }
+
+  return { value: value.value };
+}
+
+export function decodeRangeValue<V>(v: {
+  value: V | IRangeValue<V>;
+  value2?: V;
+}): IRangeValue<V> {
+  // handle backwards compatible value
+  if (typeof v.value === "object") {
+    return v.value as IRangeValue<V>;
+  } else {
+    return { value: v.value, value2: v.value2 };
+  }
+}
+
 export class NumberCriterion extends ModifierCriterion<INumberValue> {
   constructor(type: ModifierCriterionOption) {
     super(type, { value: undefined, value2: undefined });
@@ -785,6 +843,19 @@ export class NumberCriterion extends ModifierCriterion<INumberValue> {
       value: this.value?.value ?? 0,
       value2: this.value?.value2,
     };
+  }
+
+  public setFromSavedCriterion(c: {
+    modifier: CriterionModifier;
+    value: number | INumberValue;
+    value2?: number;
+  }) {
+    super.setFromSavedCriterion(c);
+    // this.value = decodeRangeValue(c);
+  }
+
+  protected encodeValue(): unknown {
+    return encodeRangeValue(this.modifier, this.value);
   }
 
   protected getLabelValue(_intl: IntlShape) {
@@ -867,6 +938,19 @@ export class DurationCriterion extends ModifierCriterion<INumberValue> {
     };
   }
 
+  public setFromSavedCriterion(c: {
+    modifier: CriterionModifier;
+    value: number | INumberValue;
+    value2?: number;
+  }) {
+    super.setFromSavedCriterion(c);
+    // this.value = decodeRangeValue(c);
+  }
+
+  protected encodeValue(): unknown {
+    return encodeRangeValue(this.modifier, this.value);
+  }
+
   protected getLabelValue(_intl: IntlShape) {
     const value = TextUtils.secondsToTimestamp(this.value.value ?? 0);
     const value2 = TextUtils.secondsToTimestamp(this.value.value2 ?? 0);
@@ -940,17 +1024,23 @@ export class DateCriterion extends ModifierCriterion<IDateValue> {
     this.value = { ...this.value };
   }
 
-  public encodeValue() {
-    return {
-      value: this.value.value,
-      value2: this.value.value2,
-    };
+  public setFromSavedCriterion(c: {
+    modifier: CriterionModifier;
+    value: string | IDateValue;
+    value2?: string;
+  }) {
+    super.setFromSavedCriterion(c);
+    // this.value = decodeRangeValue(c);
+  }
+
+  protected encodeValue(): unknown {
+    return encodeRangeValue(this.modifier, this.value);
   }
 
   public toCriterionInput(): DateCriterionInput {
     return {
       modifier: this.modifier,
-      value: this.value?.value,
+      value: this.value?.value ?? "",
       value2: this.value?.value2,
     };
   }
@@ -1043,21 +1133,27 @@ export class TimestampCriterion extends ModifierCriterion<ITimestampValue> {
     this.value = { ...this.value };
   }
 
-  public encodeValue() {
-    return {
-      value: this.value?.value,
-      value2: this.value?.value2,
-    };
-  }
-
   public toCriterionInput(): TimestampCriterionInput {
     return {
       modifier: this.modifier,
-      value: this.transformValueToInput(this.value.value),
+      value: this.transformValueToInput(this.value.value ?? ""),
       value2: this.value.value2
         ? this.transformValueToInput(this.value.value2)
         : null,
     };
+  }
+
+  public setFromSavedCriterion(c: {
+    modifier: CriterionModifier;
+    value: string | ITimestampValue;
+    value2?: string;
+  }) {
+    this.setFromSavedCriterion(c);
+    // this.value = decodeRangeValue(c);
+  }
+
+  protected encodeValue(): unknown {
+    return encodeRangeValue(this.modifier, this.value);
   }
 
   protected getLabelValue() {
