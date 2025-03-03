@@ -14,12 +14,6 @@ import (
 	"github.com/stashapp/stash/pkg/txn"
 )
 
-type SceneReader interface {
-	models.SceneGetter
-	models.StashIDLoader
-	models.VideoFileLoader
-}
-
 type PerformerReader interface {
 	models.PerformerGetter
 	match.PerformerFinder
@@ -44,7 +38,6 @@ type TagFinder interface {
 type Repository struct {
 	TxnManager models.TxnManager
 
-	Scene     SceneReader
 	Performer PerformerReader
 	Tag       TagFinder
 	Studio    StudioReader
@@ -53,7 +46,6 @@ type Repository struct {
 func NewRepository(repo models.Repository) Repository {
 	return Repository{
 		TxnManager: repo.TxnManager,
-		Scene:      repo.Scene,
 		Performer:  repo.Performer,
 		Tag:        repo.Tag,
 		Studio:     repo.Studio,

@@ -13,7 +13,6 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scraper"
 	"github.com/stashapp/stash/pkg/sliceutil"
-	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 	"github.com/stashapp/stash/pkg/stashbox/graphql"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -444,94 +443,39 @@ func fileFingerprintsToInputGraphQL(fps models.Fingerprints, duration int) []*gr
 	return ret
 }
 
-func (c Client) SubmitFingerprints(ctx context.Context, sceneIDs []string) (bool, error) {
-	ids, err := stringslice.StringSliceToIntSlice(sceneIDs)
-	if err != nil {
-		return false, err
-	}
-
+func (c Client) SubmitFingerprints(ctx context.Context, scenes []*models.Scene) (bool, error) {
 	endpoint := c.box.Endpoint
 
 	var fingerprints []graphql.FingerprintSubmission
 
-	r := c.repository
-	if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
-		qb := r.Scene
-
-		for _, sceneID := range ids {
-			scene, err := qb.Find(ctx, sceneID)
-			if err != nil {
-				return err
-			}
-
-			if scene == nil {
-				continue
-			}
-
-			if err := scene.LoadStashIDs(ctx, qb); err != nil {
-				return err
-			}
-
-			if err := scene.LoadFiles(ctx, qb); err != nil {
-				return err
-			}
-
-			stashIDs := scene.StashIDs.List()
-			sceneStashID := ""
-			for _, stashID := range stashIDs {
-				if stashID.Endpoint == endpoint {
-					sceneStashID = stashID.StashID
-				}
-			}
-
-			if sceneStashID != "" {
-				for _, f := range scene.Files.List() {
-					duration := f.Duration
-
-					if duration != 0 {
-						if checksum := f.Fingerprints.GetString(models.FingerprintTypeMD5); checksum != "" {
-							fingerprint := graphql.FingerprintInput{
-								Hash:      checksum,
-								Algorithm: graphql.FingerprintAlgorithmMd5,
-								Duration:  int(duration),
-							}
-							fingerprints = append(fingerprints, graphql.FingerprintSubmission{
-								SceneID:     sceneStashID,
-								Fingerprint: &fingerprint,
-							})
-						}
-
-						if oshash := f.Fingerprints.GetString(models.FingerprintTypeOshash); oshash != "" {
-							fingerprint := graphql.FingerprintInput{
-								Hash:      oshash,
-								Algorithm: graphql.FingerprintAlgorithmOshash,
-								Duration:  int(duration),
-							}
-							fingerprints = append(fingerprints, graphql.FingerprintSubmission{
-								SceneID:     sceneStashID,
-								Fingerprint: &fingerprint,
-							})
-						}
-
-						if phash := f.Fingerprints.GetInt64(models.FingerprintTypePhash); phash != 0 {
-							fingerprint := graphql.FingerprintInput{
-								Hash:      utils.PhashToString(phash),
-								Algorithm: graphql.FingerprintAlgorithmPhash,
-								Duration:  int(duration),
-							}
-							fingerprints = append(fingerprints, graphql.FingerprintSubmission{
-								SceneID:     sceneStashID,
-								Fingerprint: &fingerprint,
-							})
-						}
-					}
-				}
+	for _, scene := range scenes {
+		stashIDs := scene.StashIDs.List()
+		sceneStashID := ""
+		for _, stashID := range stashIDs {
+			if stashID.Endpoint == endpoint {
+				sceneStashID = stashID.StashID
 			}
 		}
 
-		return nil
-	}); err != nil {
-		return false, err
+		if sceneStashID == "" {
+			continue
+		}
+
+		for _, f := range scene.Files.List() {
+			duration := f.Duration
+
+			if duration == 0 {
+				continue
+			}
+
+			fps := fileFingerprintsToInputGraphQL(f.Fingerprints, int(duration))
+			for _, fp := range fps {
+				fingerprints = append(fingerprints, graphql.FingerprintSubmission{
+					SceneID:     sceneStashID,
+					Fingerprint: fp,
+				})
+			}
+		}
 	}
 
 	return c.submitFingerprints(ctx, fingerprints)
