@@ -165,7 +165,7 @@ type Input struct {
 	Performer *ScrapedPerformerInput
 	Scene     *models.ScrapedSceneInput
 	Gallery   *ScrapedGalleryInput
-	Image     *ScrapedImageInput
+	Image     *models.ScrapedImageInput
 }
 
 // populateURL populates the URL field of the input based on the
@@ -235,7 +235,7 @@ type sceneScraper interface {
 type imageScraper interface {
 	scraper
 
-	viaImage(ctx context.Context, client *http.Client, image *models.Image) (*ScrapedImage, error)
+	viaImage(ctx context.Context, client *http.Client, image *models.Image) (*models.ScrapedImage, error)
 }
 
 // galleryScraper is a scraper which supports gallery scrapes with

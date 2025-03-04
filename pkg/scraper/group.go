@@ -78,7 +78,7 @@ func (g group) viaGallery(ctx context.Context, client *http.Client, gallery *mod
 	return s.scrapeGalleryByGallery(ctx, gallery)
 }
 
-func (g group) viaImage(ctx context.Context, client *http.Client, gallery *models.Image) (*ScrapedImage, error) {
+func (g group) viaImage(ctx context.Context, client *http.Client, gallery *models.Image) (*models.ScrapedImage, error) {
 	if g.config.ImageByFragment == nil {
 		return nil, ErrNotSupported
 	}

@@ -35,11 +35,11 @@ func (c Cache) postScrape(ctx context.Context, content ScrapedContent, excludeTa
 		}
 	case ScrapedGallery:
 		return c.postScrapeGallery(ctx, v, excludeTagRE)
-	case *ScrapedImage:
+	case *models.ScrapedImage:
 		if v != nil {
 			return c.postScrapeImage(ctx, *v, excludeTagRE)
 		}
-	case ScrapedImage:
+	case models.ScrapedImage:
 		return c.postScrapeImage(ctx, v, excludeTagRE)
 	case *models.ScrapedMovie:
 		if v != nil {
@@ -339,7 +339,7 @@ func (c Cache) postScrapeGallery(ctx context.Context, g ScrapedGallery, excludeT
 	return g, ignoredTags, nil
 }
 
-func (c Cache) postScrapeImage(ctx context.Context, image ScrapedImage, excludeTagRE []*regexp.Regexp) (_ ScrapedContent, ignoredTags []string, err error) {
+func (c Cache) postScrapeImage(ctx context.Context, image models.ScrapedImage, excludeTagRE []*regexp.Regexp) (_ ScrapedContent, ignoredTags []string, err error) {
 	r := c.repository
 	if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
 		pqb := r.PerformerFinder

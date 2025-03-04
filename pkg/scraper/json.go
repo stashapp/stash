@@ -231,7 +231,7 @@ func (s *jsonScraper) scrapeByFragment(ctx context.Context, input Input) (Scrape
 	return scraper.scrapeScene(ctx, q)
 }
 
-func (s *jsonScraper) scrapeImageByImage(ctx context.Context, image *models.Image) (*ScrapedImage, error) {
+func (s *jsonScraper) scrapeImageByImage(ctx context.Context, image *models.Image) (*models.ScrapedImage, error) {
 	// construct the URL
 	queryURL := queryURLParametersFromImage(image)
 	if s.scraper.QueryURLReplacements != nil {

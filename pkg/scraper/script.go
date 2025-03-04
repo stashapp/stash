@@ -389,7 +389,7 @@ func (s *scriptScraper) scrape(ctx context.Context, input string, ty ScrapeConte
 		err := s.runScraperScript(ctx, input, &movie)
 		return movie, err
 	case ScrapeContentTypeImage:
-		var image *ScrapedImage
+		var image *models.ScrapedImage
 		err := s.runScraperScript(ctx, input, &image)
 		return image, err
 	}
@@ -425,14 +425,14 @@ func (s *scriptScraper) scrapeGalleryByGallery(ctx context.Context, gallery *mod
 	return ret, err
 }
 
-func (s *scriptScraper) scrapeImageByImage(ctx context.Context, image *models.Image) (*ScrapedImage, error) {
+func (s *scriptScraper) scrapeImageByImage(ctx context.Context, image *models.Image) (*models.ScrapedImage, error) {
 	inString, err := json.Marshal(imageToUpdateInput(image))
 
 	if err != nil {
 		return nil, err
 	}
 
-	var ret *ScrapedImage
+	var ret *models.ScrapedImage
 
 	err = s.runScraperScript(ctx, string(inString), &ret)
 

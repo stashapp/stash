@@ -11,28 +11,6 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
-type ScrapedImage struct {
-	Title        *string                    `json:"title"`
-	Code         *string                    `json:"code"`
-	Details      *string                    `json:"details"`
-	Photographer *string                    `json:"photographer"`
-	URLs         []string                   `json:"urls"`
-	Date         *string                    `json:"date"`
-	Studio       *models.ScrapedStudio      `json:"studio"`
-	Tags         []*models.ScrapedTag       `json:"tags"`
-	Performers   []*models.ScrapedPerformer `json:"performers"`
-}
-
-func (ScrapedImage) IsScrapedContent() {}
-
-type ScrapedImageInput struct {
-	Title   *string  `json:"title"`
-	Code    *string  `json:"code"`
-	Details *string  `json:"details"`
-	URLs    []string `json:"urls"`
-	Date    *string  `json:"date"`
-}
-
 func setPerformerImage(ctx context.Context, client *http.Client, p *models.ScrapedPerformer, globalConfig GlobalConfig) error {
 	// backwards compatibility: we fetch the image if it's a URL and set it to the first image
 	// Image is deprecated, so only do this if Images is unset

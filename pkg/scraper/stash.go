@@ -388,7 +388,7 @@ func (s *stashScraper) scrapeGalleryByGallery(ctx context.Context, gallery *mode
 	return &ret, nil
 }
 
-func (s *stashScraper) scrapeImageByImage(ctx context.Context, image *models.Image) (*ScrapedImage, error) {
+func (s *stashScraper) scrapeImageByImage(ctx context.Context, image *models.Image) (*models.ScrapedImage, error) {
 	return nil, ErrNotSupported
 }
 

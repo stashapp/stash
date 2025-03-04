@@ -1133,8 +1133,8 @@ func (s mappedScraper) scrapeScene(ctx context.Context, q mappedQuery) (*models.
 	return nil, nil
 }
 
-func (s mappedScraper) scrapeImage(ctx context.Context, q mappedQuery) (*ScrapedImage, error) {
-	var ret ScrapedImage
+func (s mappedScraper) scrapeImage(ctx context.Context, q mappedQuery) (*models.ScrapedImage, error) {
+	var ret models.ScrapedImage
 
 	imageScraperConfig := s.Image
 	if imageScraperConfig == nil {

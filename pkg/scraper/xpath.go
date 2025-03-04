@@ -234,7 +234,7 @@ func (s *xpathScraper) scrapeGalleryByGallery(ctx context.Context, gallery *mode
 	return scraper.scrapeGallery(ctx, q)
 }
 
-func (s *xpathScraper) scrapeImageByImage(ctx context.Context, image *models.Image) (*ScrapedImage, error) {
+func (s *xpathScraper) scrapeImageByImage(ctx context.Context, image *models.Image) (*models.ScrapedImage, error) {
 	// construct the URL
 	queryURL := queryURLParametersFromImage(image)
 	if s.scraper.QueryURLReplacements != nil {

@@ -75,7 +75,7 @@ func (r *queryResolver) ScrapeGalleryURL(ctx context.Context, url string) (*scra
 	return ret, nil
 }
 
-func (r *queryResolver) ScrapeImageURL(ctx context.Context, url string) (*scraper.ScrapedImage, error) {
+func (r *queryResolver) ScrapeImageURL(ctx context.Context, url string) (*models.ScrapedImage, error) {
 	content, err := r.scraperCache().ScrapeURL(ctx, url, scraper.ScrapeContentTypeImage)
 	if err != nil {
 		return nil, err
@@ -415,7 +415,7 @@ func (r *queryResolver) ScrapeSingleGallery(ctx context.Context, source scraper.
 	return ret, nil
 }
 
-func (r *queryResolver) ScrapeSingleImage(ctx context.Context, source scraper.Source, input ScrapeSingleImageInput) ([]*scraper.ScrapedImage, error) {
+func (r *queryResolver) ScrapeSingleImage(ctx context.Context, source scraper.Source, input ScrapeSingleImageInput) ([]*models.ScrapedImage, error) {
 	if source.StashBoxIndex != nil {
 		return nil, ErrNotSupported
 	}

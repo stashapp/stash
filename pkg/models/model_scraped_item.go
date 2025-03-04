@@ -526,3 +526,25 @@ type ScrapedSceneInput struct {
 	Date         *string  `json:"date"`
 	RemoteSiteID *string  `json:"remote_site_id"`
 }
+
+type ScrapedImage struct {
+	Title        *string             `json:"title"`
+	Code         *string             `json:"code"`
+	Details      *string             `json:"details"`
+	Photographer *string             `json:"photographer"`
+	URLs         []string            `json:"urls"`
+	Date         *string             `json:"date"`
+	Studio       *ScrapedStudio      `json:"studio"`
+	Tags         []*ScrapedTag       `json:"tags"`
+	Performers   []*ScrapedPerformer `json:"performers"`
+}
+
+func (ScrapedImage) IsScrapedContent() {}
+
+type ScrapedImageInput struct {
+	Title   *string  `json:"title"`
+	Code    *string  `json:"code"`
+	Details *string  `json:"details"`
+	URLs    []string `json:"urls"`
+	Date    *string  `json:"date"`
+}
