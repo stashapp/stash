@@ -9,6 +9,28 @@ import (
 	"github.com/stashapp/stash/pkg/stashbox/graphql"
 )
 
+func (c Client) resolveStudio(ctx context.Context, s *graphql.StudioFragment) (*models.ScrapedStudio, error) {
+	scraped := studioFragmentToScrapedStudio(*s)
+
+	if s.Parent != nil {
+		parentStudio, err := c.client.FindStudio(ctx, &s.Parent.ID, nil)
+		if err != nil {
+			return nil, err
+		}
+
+		if parentStudio.FindStudio == nil {
+			return scraped, nil
+		}
+
+		scraped.Parent, err = c.resolveStudio(ctx, parentStudio.FindStudio)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return scraped, nil
+}
+
 func (c Client) FindStudio(ctx context.Context, query string) (*models.ScrapedStudio, error) {
 	var studio *graphql.FindStudio
 
