@@ -377,10 +377,10 @@
             "add_instance": "Voeg stash-box instance toe",
             "api_key": "API sleutel",
             "description": "Stash-box faciliteert geautomatiseerde tagging van scenes en artiesten op basis van fingerprints en bestandsnamen.\nEndpoint en API sleutel kunnen op de account pagina worden gevonden op de stash-box instance. Namen zijn verplicht als er meer dan één instance wordt toegevoegd.",
-            "endpoint": "Endpoint",
-            "graphql_endpoint": "GraphQL endpoint",
+            "endpoint": "Eindpunt",
+            "graphql_endpoint": "GraphQL eindpunt",
             "name": "Naam",
-            "title": "Stash-box Endpoints"
+            "title": "Stash-box Eindpunten"
         },
         "system": {
             "transcoding": "Transcoderen"
@@ -709,7 +709,7 @@
             "preview_seg_duration_head": "Voorbeeld Segment Duur",
             "sprites": "Scene Scrubber Sprites",
             "sprites_tooltip": "De set afbeeldingen die onder de videospeler worden weergegeven voor eenvoudige navigatie.",
-            "transcodes": "Transcodes",
+            "transcodes": "Transcoderingen",
             "transcodes_tooltip": "MP4-conversies van niet-ondersteunde video-indelingen",
             "video_previews": "Voorbeelden",
             "video_previews_tooltip": "Videovoorbeelden die worden afgespeeld wanneer u over een scène beweegt"
@@ -831,7 +831,7 @@
         "generic": "Laden…"
     },
     "marker_count": "Marker Aantal",
-    "markers": "Markers",
+    "markers": "Markeringen",
     "measurements": "Afmetingen",
     "media_info": {
         "audio_codec": "Audio Codec",
