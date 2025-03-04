@@ -737,7 +737,8 @@
                     },
                     "show_ab_loop_controls": "显示 AB 循环控制组件",
                     "disable_mobile_media_auto_rotate": "在移动设备中针对全屏幕媒体禁用自动旋转",
-                    "enable_chromecast": "启用Chromecast"
+                    "enable_chromecast": "启用Chromecast",
+                    "show_range_markers": "展示范围标记"
                 }
             },
             "scene_wall": {
