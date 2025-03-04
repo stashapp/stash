@@ -147,10 +147,12 @@ Returns `void`.
 - `CountrySelect`
 - `DateInput`
 - `FolderSelect`
+- `GalleryDropdownItem`
 - `GalleryIDSelect`
 - `GallerySelect`
 - `GallerySelect.sort`
 - `Icon`
+- `ImageDropdownItem`
 - `ImageDetailPanel`
 - `ModalSetting`
 - `GroupIDSelect`
@@ -164,6 +166,7 @@ Returns `void`.
 - `PerformerSelect.sort`
 - `PluginRoutes`
 - `SceneCard`
+- `SceneDropdownItem`
 - `SceneCard.Details`
 - `SceneCard.Image`
 - `SceneCard.Overlays`
