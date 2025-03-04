@@ -11,7 +11,6 @@ import (
 	"github.com/stashapp/stash/pkg/scraper"
 	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
-	"github.com/stashapp/stash/pkg/stashbox"
 )
 
 func (r *queryResolver) ScrapeURL(ctx context.Context, url string, ty scraper.ScrapeContentType) (scraper.ScrapedContent, error) {
@@ -385,22 +384,28 @@ func (r *queryResolver) ScrapeSinglePerformer(ctx context.Context, source scrape
 
 		client := r.newStashBoxClient(*b)
 
-		var res []*stashbox.PerformerQueryResult
+		var query string
 		switch {
 		case input.PerformerID != nil:
-			res, err = client.FindPerformersByNames(ctx, []string{*input.PerformerID})
+			names, err := r.findPerformerNames(ctx, []string{*input.PerformerID})
+			if err != nil {
+				return nil, err
+			}
+
+			query = names[0]
 		case input.Query != nil:
-			res, err = client.QueryPerformer(ctx, *input.Query)
+			query = *input.Query
 		default:
 			return nil, ErrNotImplemented
 		}
 
+		if query == "" {
+			return nil, nil
+		}
+		ret, err = client.QueryPerformer(ctx, query)
+
 		if err != nil {
 			return nil, err
-		}
-
-		if len(res) > 0 {
-			ret = res[0].Results
 		}
 	default:
 		return nil, errors.New("scraper_id or stash_box_index must be set")
@@ -413,6 +418,11 @@ func (r *queryResolver) ScrapeMultiPerformers(ctx context.Context, source scrape
 	if source.ScraperID != nil {
 		return nil, ErrNotImplemented
 	} else if source.StashBoxIndex != nil || source.StashBoxEndpoint != nil {
+		names, err := r.findPerformerNames(ctx, input.PerformerIds)
+		if err != nil {
+			return nil, err
+		}
+
 		b, err := resolveStashBox(source.StashBoxIndex, source.StashBoxEndpoint)
 		if err != nil {
 			return nil, err
@@ -420,10 +430,36 @@ func (r *queryResolver) ScrapeMultiPerformers(ctx context.Context, source scrape
 
 		client := r.newStashBoxClient(*b)
 
-		return client.FindStashBoxPerformersByPerformerNames(ctx, input.PerformerIds)
+		return client.QueryPerformers(ctx, names)
 	}
 
 	return nil, errors.New("scraper_id or stash_box_index must be set")
+}
+
+func (r *queryResolver) findPerformerNames(ctx context.Context, performerIDs []string) ([]string, error) {
+	ids, err := stringslice.StringSliceToIntSlice(performerIDs)
+	if err != nil {
+		return nil, err
+	}
+
+	names := make([]string, len(ids))
+
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+		p, err := r.repository.Performer.FindMany(ctx, ids)
+		if err != nil {
+			return err
+		}
+
+		for i, pp := range p {
+			names[i] = pp.Name
+		}
+
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return names, nil
 }
 
 func (r *queryResolver) ScrapeSingleGallery(ctx context.Context, source scraper.Source, input ScrapeSingleGalleryInput) ([]*models.ScrapedGallery, error) {

@@ -20,24 +20,17 @@ import (
 )
 
 // QueryPerformer queries stash-box for performers using a query string.
-func (c Client) QueryPerformer(ctx context.Context, queryStr string) ([]*PerformerQueryResult, error) {
+func (c Client) QueryPerformer(ctx context.Context, queryStr string) ([]*models.ScrapedPerformer, error) {
 	performers, err := c.queryPerformer(ctx, queryStr)
 
-	res := []*PerformerQueryResult{
-		{
-			Query:   queryStr,
-			Results: performers,
-		},
-	}
-
 	// set the deprecated image field
-	for _, p := range res[0].Results {
+	for _, p := range performers {
 		if len(p.Images) > 0 {
 			p.Image = &p.Images[0]
 		}
 	}
 
-	return res, err
+	return performers, err
 }
 
 func (c Client) queryPerformer(ctx context.Context, queryStr string) ([]*models.ScrapedPerformer, error) {
@@ -66,101 +59,18 @@ func (c Client) queryPerformer(ctx context.Context, queryStr string) ([]*models.
 	return ret, nil
 }
 
-// FindPerformersByNames queries stash-box for performers by name
-func (c Client) FindPerformersByNames(ctx context.Context, performerIDs []string) ([]*PerformerQueryResult, error) {
-	ids, err := stringslice.StringSliceToIntSlice(performerIDs)
-	if err != nil {
-		return nil, err
-	}
-
-	var performers []*models.Performer
-	r := c.repository
-	if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
-		qb := r.Performer
-
-		for _, performerID := range ids {
-			performer, err := qb.Find(ctx, performerID)
-			if err != nil {
-				return err
-			}
-
-			if performer == nil {
-				return fmt.Errorf("performer with id %d not found", performerID)
-			}
-
-			if performer.Name != "" {
-				performers = append(performers, performer)
-			}
+// QueryPerformers queries stash-box for performers using a list of names.
+func (c Client) QueryPerformers(ctx context.Context, names []string) ([][]*models.ScrapedPerformer, error) {
+	ret := make([][]*models.ScrapedPerformer, len(names))
+	for i, name := range names {
+		if name != "" {
+			continue
 		}
 
-		return nil
-	}); err != nil {
-		return nil, err
-	}
-
-	return c.findPerformersByNames(ctx, performers)
-}
-
-func (c Client) FindStashBoxPerformersByPerformerNames(ctx context.Context, performerIDs []string) ([][]*models.ScrapedPerformer, error) {
-	ids, err := stringslice.StringSliceToIntSlice(performerIDs)
-	if err != nil {
-		return nil, err
-	}
-
-	var performers []*models.Performer
-
-	r := c.repository
-	if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
-		qb := r.Performer
-
-		for _, performerID := range ids {
-			performer, err := qb.Find(ctx, performerID)
-			if err != nil {
-				return err
-			}
-
-			if performer == nil {
-				return fmt.Errorf("performer with id %d not found", performerID)
-			}
-
-			if performer.Name != "" {
-				performers = append(performers, performer)
-			}
-		}
-
-		return nil
-	}); err != nil {
-		return nil, err
-	}
-
-	results, err := c.findPerformersByNames(ctx, performers)
-	if err != nil {
-		return nil, err
-	}
-
-	var ret [][]*models.ScrapedPerformer
-	for _, r := range results {
-		ret = append(ret, r.Results)
-	}
-
-	return ret, nil
-}
-
-func (c Client) findPerformersByNames(ctx context.Context, performers []*models.Performer) ([]*PerformerQueryResult, error) {
-	var ret []*PerformerQueryResult
-	for _, performer := range performers {
-		if performer.Name != "" {
-			performerResults, err := c.queryPerformer(ctx, performer.Name)
-			if err != nil {
-				return nil, err
-			}
-
-			result := PerformerQueryResult{
-				Query:   strconv.Itoa(performer.ID),
-				Results: performerResults,
-			}
-
-			ret = append(ret, &result)
+		var err error
+		ret[i], err = c.queryPerformer(ctx, name)
+		if err != nil {
+			return nil, err
 		}
 	}
 
@@ -387,6 +297,7 @@ func padFuzzyDate(date *string) *string {
 	return &paddedDate
 }
 
+// FindPerformerByID queries stash-box for a performer by ID.
 func (c Client) FindPerformerByID(ctx context.Context, id string) (*models.ScrapedPerformer, error) {
 	performer, err := c.client.FindPerformerByID(ctx, id)
 	if err != nil {
@@ -402,6 +313,8 @@ func (c Client) FindPerformerByID(ctx context.Context, id string) (*models.Scrap
 	return ret, nil
 }
 
+// FindPerformerByName queries stash-box for a performer by name.
+// Unlike QueryPerformer, this function will only return a performer if the name matches exactly.
 func (c Client) FindPerformerByName(ctx context.Context, name string) (*models.ScrapedPerformer, error) {
 	performers, err := c.client.SearchPerformer(ctx, name)
 	if err != nil {
