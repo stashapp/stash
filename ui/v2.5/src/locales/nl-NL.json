@@ -116,7 +116,7 @@
         "reset_cover": "Standaardomslag herstellen",
         "anonymise": "Anonimiseren",
         "assign_stashid_to_parent_studio": "Stash-id toevoegen aan studio en metagegevens bijwerken",
-        "add_sub_groups": "Subgroepen maken",
+        "add_sub_groups": "Voeg subgroepen toe",
         "choose_date": "Kies een datum",
         "clear_date_data": "Datumgegevens wissen",
         "create_chapters": "Hoofdstuk maken",
@@ -135,7 +135,7 @@
         "split": "Splitsen",
         "view_history": "Geschiedenis tonen",
         "add_play": "Toevoegen aan afspeellijst",
-        "add_manual_date": "Datum invoeren",
+        "add_manual_date": "Voeg handmatige datum toe",
         "add_o": "O toevoegen",
         "clean_generated": "Gegenereerde bestanden wissen",
         "make_primary": "Als primair aanduiden",
@@ -281,7 +281,7 @@
                 "username": "Gebruikersnaam",
                 "username_desc": "Gebruikersnaam om je verzameling te openen. Laat leeg om inloggen uit te schakelen"
             },
-            "cache_location": "Map voor de cache",
+            "cache_location": "Locatie van de cachemap. Vereist als je streamt via HLS (zoals op Apple apparaten) of DASH.",
             "cache_path_head": "Cache pad",
             "calculate_md5_and_ohash_desc": "Bereken MD5-checksum naast de oshash. Inschakelen zal de eerste scans trager maken. Bestandsnaam hash moet op oshash staan om MD5 hash uit te schakelen.",
             "calculate_md5_and_ohash_label": "Bereken MD5 voor video's",
@@ -331,14 +331,23 @@
                 "description": "Map locatie van schraper configuratie bestanden",
                 "heading": "Schrapers Pad"
             },
-            "scraping": "Schrapen",
-            "sqlite_location": "Bestandspad voor de SQLite database (vereist een herstart)",
+            "scraping": "Scraping",
+            "sqlite_location": "Bestandslocatie voor de SQLite-database (herstart vereist). WAARSCHUWING: het opslaan van de database op een ander systeem dan waar de Stash-server wordt uitgevoerd (bijv. via het netwerk) wordt niet ondersteund!",
             "video_ext_desc": "Komma gescheiden lijst van bestandsextensie die worden aangemerkt als video.",
             "video_ext_head": "Video extensies",
             "video_head": "Video",
             "backup_directory_path": {
                 "description": "Maplocatie met SQLite-databankreservekopieën",
                 "heading": "Reservekopiemap"
+            },
+            "database": "Database",
+            "ffmpeg": {
+                "download_ffmpeg": {
+                    "heading": "Download FFmpeg"
+                },
+                "hardware_acceleration": {
+                    "heading": "FFmpeg hardwarecodering"
+                }
             }
         },
         "library": {
@@ -541,7 +550,7 @@
                 }
             },
             "preview_type": {
-                "description": "Configuratie voor wanditems",
+                "description": "De standaardoptie is videovoorbeeld (mp4). Voor minder CPU-gebruik tijdens het browsen kunt u de geanimeerde afbeeldingsvoorbeelden (webp) gebruiken. Deze moeten echter worden gegenereerd naast de videovoorbeelden en zijn grotere bestanden.",
                 "heading": "Voorbeeld Type",
                 "options": {
                     "animated": "Geanimeerde afbeelding",
@@ -679,7 +688,7 @@
             "marker_image_previews": "Voorvertoningen van geanimeerde markeringen",
             "marker_image_previews_tooltip": "Geanimeerde markering WebP-voorbeelden, alleen vereist als Voorbeeldtype is ingesteld op Geanimeerde afbeelding.",
             "marker_screenshots": "Markeer Screenshots",
-            "marker_screenshots_tooltip": "Markeer statische JPG-afbeeldingen, alleen vereist als Voorbeeldtype is ingesteld op Statische afbeelding.",
+            "marker_screenshots_tooltip": "Markeer statische JPG-afbeeldingen",
             "markers": "Marker Voorbeelden",
             "markers_tooltip": "Video's van 20 seconden die beginnen op de opgegeven tijdcode.",
             "override_preview_generation_options": "Opties voor het genereren van voorvertoningen overschrijven",
@@ -699,7 +708,7 @@
             "preview_seg_duration_desc": "Duur van elk voorbeeldsegment, in seconden.",
             "preview_seg_duration_head": "Voorbeeld Segment Duur",
             "sprites": "Scene Scrubber Sprites",
-            "sprites_tooltip": "Sprites (voor de scene scrubber)",
+            "sprites_tooltip": "De set afbeeldingen die onder de videospeler worden weergegeven voor eenvoudige navigatie.",
             "transcodes": "Transcodes",
             "transcodes_tooltip": "MP4-conversies van niet-ondersteunde video-indelingen",
             "video_previews": "Voorbeelden",
@@ -967,12 +976,13 @@
         },
         "welcome": {
             "config_path_logic_explained": "Stash probeert eerst zijn configuratiebestand (<code>config.yml</code>) uit de huidige werkdirectory te vinden, en als het daar niet gevonden wordt, valt het terug naar <code>$HOME/.stash/config. yml</code> (in Windows is dit <code>%USERPROFILE%\\.stash\\config.yml</code>). Je kunt Stash ook laten lezen uit een specifiek configuratiebestand door het uit te voeren met de opties <code>-c '<pad naar configuratie bestand>'</code> of <code>--config '<pad naar configuratie bestand>'</code>.",
-            "in_current_stash_directory": "In de <code>$HOME/.stash</code> map",
-            "in_the_current_working_directory": "In de huidige werkdirectory",
+            "in_current_stash_directory": "In de <code>{path}</code> map:",
+            "in_the_current_working_directory": "In <code>{path}</code>, de werkmap, momenteel:",
             "next_step": "Met dat alles uit de weg, als u klaar bent om door te gaan met het opzetten van een nieuw systeem, kiest u waar u uw configuratiebestand wilt opslaan en klikt u op Volgende.",
             "store_stash_config": "Waar wil jij je Stash-configuratie opslaan?",
             "unable_to_locate_config": "Als je dit leest, kan Stash geen bestaande configuratie vinden. Deze wizard leidt u door het proces van het opzetten van een nieuwe configuratie.",
-            "unexpected_explained": "Als je dit scherm onverwachts krijgt, probeer dan Stash opnieuw op te starten in de juiste werkmap of met de <code>-c</code> vlag."
+            "unexpected_explained": "Als je dit scherm onverwachts krijgt, probeer dan Stash opnieuw op te starten in de juiste werkmap of met de <code>-c</code> vlag.",
+            "in_the_current_working_directory_disabled": "In <code>{path}</code>, de werkmap:"
         },
         "welcome_specific_config": {
             "config_path": "Stash gebruikt het volgende configuratiebestandspad: <code>{path}</code>",
