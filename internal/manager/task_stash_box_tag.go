@@ -144,6 +144,14 @@ func (t *StashBoxBatchTagTask) findStashBoxPerformer(ctx context.Context) (*mode
 		performer, err = client.FindPerformerByName(ctx, name)
 	}
 
+	if performer != nil {
+		if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
+			return match.ScrapedPerformer(ctx, r.Performer, performer, t.box.Endpoint)
+		}); err != nil {
+			return nil, err
+		}
+	}
+
 	return performer, err
 }
 

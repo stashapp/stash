@@ -9,7 +9,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scraper"
 	"github.com/stashapp/stash/pkg/sliceutil"
@@ -400,14 +399,6 @@ func (c Client) FindPerformerByID(ctx context.Context, id string) (*models.Scrap
 
 	ret := performerFragmentToScrapedPerformer(*performer.FindPerformer)
 
-	r := c.repository
-	if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
-		err := match.ScrapedPerformer(ctx, r.Performer, ret, c.box.Endpoint)
-		return err
-	}); err != nil {
-		return nil, err
-	}
-
 	return ret, nil
 }
 
@@ -422,18 +413,6 @@ func (c Client) FindPerformerByName(ctx context.Context, name string) (*models.S
 		if strings.EqualFold(performer.Name, name) {
 			ret = performerFragmentToScrapedPerformer(*performer)
 		}
-	}
-
-	if ret == nil {
-		return nil, nil
-	}
-
-	r := c.repository
-	if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
-		err := match.ScrapedPerformer(ctx, r.Performer, ret, c.box.Endpoint)
-		return err
-	}); err != nil {
-		return nil, err
 	}
 
 	return ret, nil
