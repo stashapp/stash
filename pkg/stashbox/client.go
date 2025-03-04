@@ -30,16 +30,10 @@ type StudioReader interface {
 	models.StashIDLoader
 }
 
-type TagFinder interface {
-	models.TagQueryer
-	FindBySceneID(ctx context.Context, sceneID int) ([]*models.Tag, error)
-}
-
 type Repository struct {
 	TxnManager models.TxnManager
 
 	Performer PerformerReader
-	Tag       TagFinder
 	Studio    StudioReader
 }
 
@@ -47,7 +41,6 @@ func NewRepository(repo models.Repository) Repository {
 	return Repository{
 		TxnManager: repo.TxnManager,
 		Performer:  repo.Performer,
-		Tag:        repo.Tag,
 		Studio:     repo.Studio,
 	}
 }
