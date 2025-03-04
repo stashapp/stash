@@ -183,7 +183,22 @@ func (r *mutationResolver) SubmitStashBoxPerformerDraft(ctx context.Context, inp
 			return fmt.Errorf("performer with id %d not found", id)
 		}
 
-		res, err = client.SubmitPerformerDraft(ctx, performer)
+		pqb := r.repository.Performer
+		if err := performer.LoadAliases(ctx, pqb); err != nil {
+			return err
+		}
+
+		if err := performer.LoadURLs(ctx, pqb); err != nil {
+			return err
+		}
+
+		if err := performer.LoadStashIDs(ctx, pqb); err != nil {
+			return err
+		}
+
+		img, _ := pqb.GetImage(ctx, performer.ID)
+
+		res, err = client.SubmitPerformerDraft(ctx, performer, img)
 		return err
 	})
 

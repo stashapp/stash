@@ -331,26 +331,14 @@ func (c Client) FindPerformerByName(ctx context.Context, name string) (*models.S
 	return ret, nil
 }
 
-func (c Client) SubmitPerformerDraft(ctx context.Context, performer *models.Performer) (*string, error) {
+// SubmitPerformerDraft submits a performer draft to stash-box.
+// The performer parameter must have aliases, URLs and stash IDs loaded.
+func (c Client) SubmitPerformerDraft(ctx context.Context, performer *models.Performer, img []byte) (*string, error) {
 	draft := graphql.PerformerDraftInput{}
 	var image io.Reader
-	pqb := c.repository.Performer
 	endpoint := c.box.Endpoint
 
-	if err := performer.LoadAliases(ctx, pqb); err != nil {
-		return nil, err
-	}
-
-	if err := performer.LoadURLs(ctx, pqb); err != nil {
-		return nil, err
-	}
-
-	if err := performer.LoadStashIDs(ctx, pqb); err != nil {
-		return nil, err
-	}
-
-	img, _ := pqb.GetImage(ctx, performer.ID)
-	if img != nil {
+	if len(img) > 0 {
 		image = bytes.NewReader(img)
 	}
 
@@ -416,12 +404,8 @@ func (c Client) SubmitPerformerDraft(ctx context.Context, performer *models.Perf
 		draft.Urls = performer.URLs.List()
 	}
 
-	stashIDs, err := pqb.GetStashIDs(ctx, performer.ID)
-	if err != nil {
-		return nil, err
-	}
 	var stashID *string
-	for _, v := range stashIDs {
+	for _, v := range performer.StashIDs.List() {
 		c := v
 		if v.Endpoint == endpoint {
 			stashID = &c.StashID
@@ -432,7 +416,7 @@ func (c Client) SubmitPerformerDraft(ctx context.Context, performer *models.Perf
 
 	var id *string
 	var ret graphql.SubmitPerformerDraft
-	err = c.submitDraft(ctx, graphql.SubmitPerformerDraftDocument, draft, image, &ret)
+	err := c.submitDraft(ctx, graphql.SubmitPerformerDraftDocument, draft, image, &ret)
 	id = ret.SubmitPerformerDraft.ID
 
 	return id, err
