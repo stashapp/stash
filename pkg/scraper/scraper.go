@@ -163,7 +163,7 @@ var (
 // set to nil.
 type Input struct {
 	Performer *ScrapedPerformerInput
-	Scene     *ScrapedSceneInput
+	Scene     *models.ScrapedSceneInput
 	Gallery   *ScrapedGalleryInput
 	Image     *ScrapedImageInput
 }
@@ -227,7 +227,7 @@ type fragmentScraper interface {
 type sceneScraper interface {
 	scraper
 
-	viaScene(ctx context.Context, client *http.Client, scene *models.Scene) (*ScrapedScene, error)
+	viaScene(ctx context.Context, client *http.Client, scene *models.Scene) (*models.ScrapedScene, error)
 }
 
 // imageScraper is a scraper which supports image scrapes with

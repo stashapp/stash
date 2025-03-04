@@ -259,7 +259,7 @@ type sceneFingerprintGetter interface {
 	GetScenesFingerprints(ctx context.Context, ids []int) ([]models.Fingerprints, error)
 }
 
-func (s stashboxSource) ScrapeScenes(ctx context.Context, sceneID int) ([]*scraper.ScrapedScene, error) {
+func (s stashboxSource) ScrapeScenes(ctx context.Context, sceneID int) ([]*models.ScrapedScene, error) {
 	var fps []models.Fingerprints
 	if err := txn.WithReadTxn(ctx, s.txnManager, func(ctx context.Context) error {
 		var err error
@@ -290,7 +290,7 @@ type scraperSource struct {
 	scraperID string
 }
 
-func (s scraperSource) ScrapeScenes(ctx context.Context, sceneID int) ([]*scraper.ScrapedScene, error) {
+func (s scraperSource) ScrapeScenes(ctx context.Context, sceneID int) ([]*models.ScrapedScene, error) {
 	content, err := s.cache.ScrapeID(ctx, s.scraperID, sceneID, scraper.ScrapeContentTypeScene)
 	if err != nil {
 		return nil, err
@@ -301,8 +301,8 @@ func (s scraperSource) ScrapeScenes(ctx context.Context, sceneID int) ([]*scrape
 		return nil, nil
 	}
 
-	if scene, ok := content.(scraper.ScrapedScene); ok {
-		return []*scraper.ScrapedScene{&scene}, nil
+	if scene, ok := content.(models.ScrapedScene); ok {
+		return []*models.ScrapedScene{&scene}, nil
 	}
 
 	return nil, errors.New("could not convert content to scene")

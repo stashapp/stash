@@ -151,7 +151,7 @@ func (s *xpathScraper) scrapeByName(ctx context.Context, name string, ty ScrapeC
 	return nil, ErrNotSupported
 }
 
-func (s *xpathScraper) scrapeSceneByScene(ctx context.Context, scene *models.Scene) (*ScrapedScene, error) {
+func (s *xpathScraper) scrapeSceneByScene(ctx context.Context, scene *models.Scene) (*models.ScrapedScene, error) {
 	// construct the URL
 	queryURL := queryURLParametersFromScene(scene)
 	if s.scraper.QueryURLReplacements != nil {

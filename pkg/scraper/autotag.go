@@ -89,8 +89,8 @@ func autotagMatchTags(ctx context.Context, path string, tagReader models.TagAuto
 	return ret, nil
 }
 
-func (s autotagScraper) viaScene(ctx context.Context, _client *http.Client, scene *models.Scene) (*ScrapedScene, error) {
-	var ret *ScrapedScene
+func (s autotagScraper) viaScene(ctx context.Context, _client *http.Client, scene *models.Scene) (*models.ScrapedScene, error) {
+	var ret *models.ScrapedScene
 	const trimExt = false
 
 	// populate performers, studio and tags based on scene path
@@ -115,7 +115,7 @@ func (s autotagScraper) viaScene(ctx context.Context, _client *http.Client, scen
 		}
 
 		if len(performers) > 0 || studio != nil || len(tags) > 0 {
-			ret = &ScrapedScene{
+			ret = &models.ScrapedScene{
 				Performers: performers,
 				Studio:     studio,
 				Tags:       tags,

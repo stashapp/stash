@@ -29,7 +29,7 @@ func (r *queryResolver) ScrapePerformerURL(ctx context.Context, url string) (*mo
 	return marshalScrapedPerformer(content)
 }
 
-func (r *queryResolver) ScrapeSceneQuery(ctx context.Context, scraperID string, query string) ([]*scraper.ScrapedScene, error) {
+func (r *queryResolver) ScrapeSceneQuery(ctx context.Context, scraperID string, query string) ([]*models.ScrapedScene, error) {
 	if query == "" {
 		return nil, nil
 	}
@@ -47,7 +47,7 @@ func (r *queryResolver) ScrapeSceneQuery(ctx context.Context, scraperID string, 
 	return ret, nil
 }
 
-func (r *queryResolver) ScrapeSceneURL(ctx context.Context, url string) (*scraper.ScrapedScene, error) {
+func (r *queryResolver) ScrapeSceneURL(ctx context.Context, url string) (*models.ScrapedScene, error) {
 	content, err := r.scraperCache().ScrapeURL(ctx, url, scraper.ScrapeContentTypeScene)
 	if err != nil {
 		return nil, err
@@ -129,8 +129,8 @@ func (r *queryResolver) ScrapeGroupURL(ctx context.Context, url string) (*models
 	return group, nil
 }
 
-func (r *queryResolver) ScrapeSingleScene(ctx context.Context, source scraper.Source, input ScrapeSingleSceneInput) ([]*scraper.ScrapedScene, error) {
-	var ret []*scraper.ScrapedScene
+func (r *queryResolver) ScrapeSingleScene(ctx context.Context, source scraper.Source, input ScrapeSingleSceneInput) ([]*models.ScrapedScene, error) {
+	var ret []*models.ScrapedScene
 
 	var sceneID int
 	if input.SceneID != nil {
@@ -203,7 +203,7 @@ func (r *queryResolver) ScrapeSingleScene(ctx context.Context, source scraper.So
 	return ret, nil
 }
 
-func (r *queryResolver) ScrapeMultiScenes(ctx context.Context, source scraper.Source, input ScrapeMultiScenesInput) ([][]*scraper.ScrapedScene, error) {
+func (r *queryResolver) ScrapeMultiScenes(ctx context.Context, source scraper.Source, input ScrapeMultiScenesInput) ([][]*models.ScrapedScene, error) {
 	if source.ScraperID != nil {
 		return nil, ErrNotImplemented
 	} else if source.StashBoxIndex != nil || source.StashBoxEndpoint != nil {

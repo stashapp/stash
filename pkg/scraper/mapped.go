@@ -997,8 +997,8 @@ func (s mappedScraper) scrapePerformers(ctx context.Context, q mappedQuery) ([]*
 	return ret, nil
 }
 
-// processSceneRelationships sets the relationships on the ScrapedScene. It returns true if any relationships were set.
-func (s mappedScraper) processSceneRelationships(ctx context.Context, q mappedQuery, resultIndex int, ret *ScrapedScene) bool {
+// processSceneRelationships sets the relationships on the models.ScrapedScene. It returns true if any relationships were set.
+func (s mappedScraper) processSceneRelationships(ctx context.Context, q mappedQuery, resultIndex int, ret *models.ScrapedScene) bool {
 	sceneScraperConfig := s.Scene
 
 	scenePerformersMap := sceneScraperConfig.Performers
@@ -1082,8 +1082,8 @@ func processRelationships[T any](ctx context.Context, s mappedScraper, relations
 	return ret
 }
 
-func (s mappedScraper) scrapeScenes(ctx context.Context, q mappedQuery) ([]*ScrapedScene, error) {
-	var ret []*ScrapedScene
+func (s mappedScraper) scrapeScenes(ctx context.Context, q mappedQuery) ([]*models.ScrapedScene, error) {
+	var ret []*models.ScrapedScene
 
 	sceneScraperConfig := s.Scene
 	sceneMap := sceneScraperConfig.mappedConfig
@@ -1097,7 +1097,7 @@ func (s mappedScraper) scrapeScenes(ctx context.Context, q mappedQuery) ([]*Scra
 	for i, r := range results {
 		logger.Debug(`Processing scene:`)
 
-		var thisScene ScrapedScene
+		var thisScene models.ScrapedScene
 		r.apply(&thisScene)
 		s.processSceneRelationships(ctx, q, i, &thisScene)
 		ret = append(ret, &thisScene)
@@ -1106,7 +1106,7 @@ func (s mappedScraper) scrapeScenes(ctx context.Context, q mappedQuery) ([]*Scra
 	return ret, nil
 }
 
-func (s mappedScraper) scrapeScene(ctx context.Context, q mappedQuery) (*ScrapedScene, error) {
+func (s mappedScraper) scrapeScene(ctx context.Context, q mappedQuery) (*models.ScrapedScene, error) {
 	sceneScraperConfig := s.Scene
 	if sceneScraperConfig == nil {
 		return nil, nil
@@ -1117,7 +1117,7 @@ func (s mappedScraper) scrapeScene(ctx context.Context, q mappedQuery) (*Scraped
 	logger.Debug(`Processing scene:`)
 	results := sceneMap.process(ctx, q, s.Common, urlsIsMulti)
 
-	var ret ScrapedScene
+	var ret models.ScrapedScene
 	if len(results) > 0 {
 		results[0].apply(&ret)
 	}

@@ -328,7 +328,7 @@ func (s *scriptScraper) scrapeByName(ctx context.Context, name string, ty Scrape
 			}
 		}
 	case ScrapeContentTypeScene:
-		var scenes []ScrapedScene
+		var scenes []models.ScrapedScene
 		err = s.runScraperScript(ctx, input, &scenes)
 		if err == nil {
 			for _, s := range scenes {
@@ -381,7 +381,7 @@ func (s *scriptScraper) scrape(ctx context.Context, input string, ty ScrapeConte
 		err := s.runScraperScript(ctx, input, &gallery)
 		return gallery, err
 	case ScrapeContentTypeScene:
-		var scene *ScrapedScene
+		var scene *models.ScrapedScene
 		err := s.runScraperScript(ctx, input, &scene)
 		return scene, err
 	case ScrapeContentTypeMovie, ScrapeContentTypeGroup:
@@ -397,14 +397,14 @@ func (s *scriptScraper) scrape(ctx context.Context, input string, ty ScrapeConte
 	return nil, ErrNotSupported
 }
 
-func (s *scriptScraper) scrapeSceneByScene(ctx context.Context, scene *models.Scene) (*ScrapedScene, error) {
+func (s *scriptScraper) scrapeSceneByScene(ctx context.Context, scene *models.Scene) (*models.ScrapedScene, error) {
 	inString, err := json.Marshal(sceneInputFromScene(scene))
 
 	if err != nil {
 		return nil, err
 	}
 
-	var ret *ScrapedScene
+	var ret *models.ScrapedScene
 
 	err = s.runScraperScript(ctx, string(inString), &ret)
 

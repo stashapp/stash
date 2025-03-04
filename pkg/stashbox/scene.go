@@ -18,7 +18,7 @@ import (
 )
 
 // QueryScene queries stash-box for scenes using a query string.
-func (c Client) QueryScene(ctx context.Context, queryStr string) ([]*scraper.ScrapedScene, error) {
+func (c Client) QueryScene(ctx context.Context, queryStr string) ([]*models.ScrapedScene, error) {
 	scenes, err := c.client.SearchScene(ctx, queryStr)
 	if err != nil {
 		return nil, err
@@ -26,7 +26,7 @@ func (c Client) QueryScene(ctx context.Context, queryStr string) ([]*scraper.Scr
 
 	sceneFragments := scenes.SearchScene
 
-	var ret []*scraper.ScrapedScene
+	var ret []*models.ScrapedScene
 	var ignoredTags []string
 	for _, s := range sceneFragments {
 		ss, err := c.sceneFragmentToScrapedScene(ctx, s)
@@ -48,7 +48,7 @@ func (c Client) QueryScene(ctx context.Context, queryStr string) ([]*scraper.Scr
 
 // FindStashBoxScenesByFingerprints queries stash-box for a scene using the
 // scene's MD5/OSHASH checksum, or PHash.
-func (c Client) FindSceneByFingerprints(ctx context.Context, fps models.Fingerprints) ([]*scraper.ScrapedScene, error) {
+func (c Client) FindSceneByFingerprints(ctx context.Context, fps models.Fingerprints) ([]*models.ScrapedScene, error) {
 	res, err := c.FindScenesByFingerprints(ctx, []models.Fingerprints{fps})
 	if len(res) > 0 {
 		return res[0], err
@@ -59,7 +59,7 @@ func (c Client) FindSceneByFingerprints(ctx context.Context, fps models.Fingerpr
 // FindScenesByFingerprints queries stash-box for scenes using every
 // scene's MD5/OSHASH checksum, or PHash, and returns results in the same order
 // as the input slice.
-func (c Client) FindScenesByFingerprints(ctx context.Context, fps []models.Fingerprints) ([][]*scraper.ScrapedScene, error) {
+func (c Client) FindScenesByFingerprints(ctx context.Context, fps []models.Fingerprints) ([][]*models.ScrapedScene, error) {
 	var fingerprints [][]*graphql.FingerprintQueryInput
 
 	for _, fp := range fps {
@@ -98,8 +98,8 @@ func convertFingerprints(fps models.Fingerprints) []*graphql.FingerprintQueryInp
 	return ret
 }
 
-func (c Client) findScenesByFingerprints(ctx context.Context, scenes [][]*graphql.FingerprintQueryInput) ([][]*scraper.ScrapedScene, error) {
-	var results [][]*scraper.ScrapedScene
+func (c Client) findScenesByFingerprints(ctx context.Context, scenes [][]*graphql.FingerprintQueryInput) ([][]*models.ScrapedScene, error) {
+	var results [][]*models.ScrapedScene
 
 	// filter out nils
 	var validScenes [][]*graphql.FingerprintQueryInput
@@ -123,7 +123,7 @@ func (c Client) findScenesByFingerprints(ctx context.Context, scenes [][]*graphq
 		}
 
 		for _, sceneFragments := range scenes.FindScenesBySceneFingerprints {
-			var sceneResults []*scraper.ScrapedScene
+			var sceneResults []*models.ScrapedScene
 			for _, scene := range sceneFragments {
 				ss, err := c.sceneFragmentToScrapedScene(ctx, scene)
 				if err != nil {
@@ -143,7 +143,7 @@ func (c Client) findScenesByFingerprints(ctx context.Context, scenes [][]*graphq
 	scraper.LogIgnoredTags(ignoredTags)
 
 	// repopulate the results to be the same order as the input
-	ret := make([][]*scraper.ScrapedScene, len(scenes))
+	ret := make([][]*models.ScrapedScene, len(scenes))
 	upTo := 0
 
 	for i, v := range scenes {
@@ -156,10 +156,10 @@ func (c Client) findScenesByFingerprints(ctx context.Context, scenes [][]*graphq
 	return ret, nil
 }
 
-func (c Client) sceneFragmentToScrapedScene(ctx context.Context, s *graphql.SceneFragment) (*scraper.ScrapedScene, error) {
+func (c Client) sceneFragmentToScrapedScene(ctx context.Context, s *graphql.SceneFragment) (*models.ScrapedScene, error) {
 	stashID := s.ID
 
-	ss := &scraper.ScrapedScene{
+	ss := &models.ScrapedScene{
 		Title:        s.Title,
 		Code:         s.Code,
 		Date:         s.Date,

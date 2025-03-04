@@ -29,7 +29,7 @@ type scraperActionImpl interface {
 	scrapeByName(ctx context.Context, name string, ty ScrapeContentType) ([]ScrapedContent, error)
 	scrapeByFragment(ctx context.Context, input Input) (ScrapedContent, error)
 
-	scrapeSceneByScene(ctx context.Context, scene *models.Scene) (*ScrapedScene, error)
+	scrapeSceneByScene(ctx context.Context, scene *models.Scene) (*models.ScrapedScene, error)
 	scrapeGalleryByGallery(ctx context.Context, gallery *models.Gallery) (*ScrapedGallery, error)
 	scrapeImageByImage(ctx context.Context, image *models.Image) (*ScrapedImage, error)
 }

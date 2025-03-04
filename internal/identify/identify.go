@@ -13,7 +13,6 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scene"
-	"github.com/stashapp/stash/pkg/scraper"
 	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/txn"
 	"github.com/stashapp/stash/pkg/utils"
@@ -32,7 +31,7 @@ func (e *MultipleMatchesFoundError) Error() string {
 }
 
 type SceneScraper interface {
-	ScrapeScenes(ctx context.Context, sceneID int) ([]*scraper.ScrapedScene, error)
+	ScrapeScenes(ctx context.Context, sceneID int) ([]*models.ScrapedScene, error)
 }
 
 type SceneUpdatePostHookExecutor interface {
@@ -96,7 +95,7 @@ func (t *SceneIdentifier) Identify(ctx context.Context, scene *models.Scene) err
 }
 
 type scrapeResult struct {
-	result *scraper.ScrapedScene
+	result *models.ScrapedScene
 	source ScraperSource
 }
 
@@ -374,7 +373,7 @@ func getFieldOptions(options []MetadataOptions) map[string]*FieldOptions {
 	return ret
 }
 
-func getScenePartial(scene *models.Scene, scraped *scraper.ScrapedScene, fieldOptions map[string]*FieldOptions, setOrganized bool) models.ScenePartial {
+func getScenePartial(scene *models.Scene, scraped *models.ScrapedScene, fieldOptions map[string]*FieldOptions, setOrganized bool) models.ScenePartial {
 	partial := models.ScenePartial{}
 
 	if scraped.Title != nil && (scene.Title != *scraped.Title) {

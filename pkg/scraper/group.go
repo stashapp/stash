@@ -60,7 +60,7 @@ func (g group) viaFragment(ctx context.Context, client *http.Client, input Input
 	return s.scrapeByFragment(ctx, input)
 }
 
-func (g group) viaScene(ctx context.Context, client *http.Client, scene *models.Scene) (*ScrapedScene, error) {
+func (g group) viaScene(ctx context.Context, client *http.Client, scene *models.Scene) (*models.ScrapedScene, error) {
 	if g.config.SceneByFragment == nil {
 		return nil, ErrNotSupported
 	}
