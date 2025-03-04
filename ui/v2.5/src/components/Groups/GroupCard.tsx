@@ -41,6 +41,7 @@ interface IProps {
   sceneNumber?: number;
   selecting?: boolean;
   selected?: boolean;
+  zoomIndex?: number;
   onSelectedChanged?: (selected: boolean, shiftKey: boolean) => void;
   fromGroupId?: string;
   onMove?: (srcIds: string[], targetId: string, after: boolean) => void;
@@ -52,6 +53,7 @@ export const GroupCard: React.FC<IProps> = ({
   containerWidth,
   selecting,
   selected,
+  zoomIndex,
   onSelectedChanged,
   fromGroupId,
   onMove,
@@ -71,15 +73,30 @@ export const GroupCard: React.FC<IProps> = ({
   }, [fromGroupId, group.containing_groups]);
 
   useEffect(() => {
-    if (!containerWidth || ScreenUtils.isMobile()) return;
+    if (!containerWidth || zoomIndex === undefined || ScreenUtils.isMobile())
+      return;
 
-    let preferredCardWidth = 250;
+    let zoomValue = zoomIndex;
+    let preferredCardWidth: number;
+    switch (zoomValue) {
+      case 0:
+        preferredCardWidth = 210;
+        break;
+      case 1:
+        preferredCardWidth = 250;
+        break;
+      case 2:
+        preferredCardWidth = 300;
+        break;
+      case 3:
+        preferredCardWidth = 375;
+    }
     let fittedCardWidth = calculateCardWidth(
       containerWidth,
       preferredCardWidth!
     );
     setCardWidth(fittedCardWidth);
-  }, [containerWidth]);
+  }, [containerWidth, zoomIndex]);
 
   function maybeRenderScenesPopoverButton() {
     if (group.scenes.length === 0) return;
@@ -150,7 +167,7 @@ export const GroupCard: React.FC<IProps> = ({
 
   return (
     <GridCard
-      className="group-card"
+      className={`group-card zoom-${zoomIndex}`}
       objectId={group.id}
       onMove={onMove}
       url={`/groups/${group.id}`}

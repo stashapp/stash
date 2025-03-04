@@ -6,6 +6,7 @@ import { useContainerDimensions } from "../Shared/GridCard/GridCard";
 interface IGroupCardGrid {
   groups: GQL.GroupDataFragment[];
   selectedIds: Set<string>;
+  zoomIndex: number;
   onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void;
   fromGroupId?: string;
   onMove?: (srcIds: string[], targetId: string, after: boolean) => void;
@@ -14,6 +15,7 @@ interface IGroupCardGrid {
 export const GroupCardGrid: React.FC<IGroupCardGrid> = ({
   groups,
   selectedIds,
+  zoomIndex,
   onSelectChange,
   fromGroupId,
   onMove,
@@ -26,6 +28,7 @@ export const GroupCardGrid: React.FC<IGroupCardGrid> = ({
           key={p.id}
           containerWidth={width}
           group={p}
+          zoomIndex={zoomIndex}
           selecting={selectedIds.size > 0}
           selected={selectedIds.has(p.id)}
           onSelectedChanged={(selected: boolean, shiftKey: boolean) =>

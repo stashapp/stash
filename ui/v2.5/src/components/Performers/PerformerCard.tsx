@@ -38,6 +38,7 @@ interface IPerformerCardProps {
   ageFromDate?: string;
   selecting?: boolean;
   selected?: boolean;
+  zoomIndex?: number;
   onSelectedChanged?: (selected: boolean, shiftKey: boolean) => void;
   extraCriteria?: IPerformerCardExtraCriteria;
 }
@@ -48,6 +49,7 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
   ageFromDate,
   selecting,
   selected,
+  zoomIndex,
   onSelectedChanged,
   extraCriteria,
 }) => {
@@ -72,15 +74,30 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
   const [cardWidth, setCardWidth] = useState<number>();
 
   useEffect(() => {
-    if (!containerWidth || ScreenUtils.isMobile()) return;
+    if (!containerWidth || zoomIndex === undefined || ScreenUtils.isMobile())
+      return;
 
-    let preferredCardWidth = 300;
+    let zoomValue = zoomIndex;
+    let preferredCardWidth: number;
+    switch (zoomValue) {
+      case 0:
+        preferredCardWidth = 240;
+        break;
+      case 1:
+        preferredCardWidth = 300;
+        break;
+      case 2:
+        preferredCardWidth = 375;
+        break;
+      case 3:
+        preferredCardWidth = 470;
+    }
     let fittedCardWidth = calculateCardWidth(
       containerWidth,
       preferredCardWidth!
     );
     setCardWidth(fittedCardWidth);
-  }, [containerWidth]);
+  }, [containerWidth, zoomIndex]);
 
   function onToggleFavorite(v: boolean) {
     if (performer.id) {
@@ -246,7 +263,7 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
 
   return (
     <GridCard
-      className="performer-card"
+      className={`performer-card zoom-${zoomIndex}`}
       url={`/performers/${performer.id}`}
       width={cardWidth}
       pretitleIcon={
