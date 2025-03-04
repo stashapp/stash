@@ -76,15 +76,22 @@ export const ImageWallPanel: React.FC<IImageWallPanelProps> = ({
 
 interface IMarkerWallPanelProps {
   markers: GQL.SceneMarkerDataFragment[];
+  sceneQueue?: SceneQueue;
   clickHandler?: (e: MouseEvent, item: GQL.SceneMarkerDataFragment) => void;
 }
 
 export const MarkerWallPanel: React.FC<IMarkerWallPanelProps> = ({
   markers,
+  sceneQueue,
   clickHandler,
 }) => {
   return (
-    <WallPanel type="sceneMarker" data={markers} clickHandler={clickHandler} />
+    <WallPanel
+      type="sceneMarker"
+      data={markers}
+      sceneQueue={sceneQueue}
+      clickHandler={clickHandler}
+    />
   );
 };
 

@@ -6,16 +6,19 @@ import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
 import {
   queryFindSceneMarkers,
+  queryFindSceneMarkersByID,
   useFindSceneMarkers,
 } from "src/core/StashService";
-import NavUtils from "src/utils/navigation";
-import { ItemList, ItemListContext } from "../List/ItemList";
+import { ItemList, ItemListContext, showWhenSelected } from "../List/ItemList";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 import { MarkerWallPanel } from "../Wall/WallPanel";
 import { View } from "../List/views";
 import { SceneMarkerCardsGrid } from "./SceneMarkerCardsGrid";
 import { DeleteSceneMarkersDialog } from "./DeleteSceneMarkersDialog";
+import { SceneQueue } from "src/models/sceneQueue";
+import { ConfigurationContext } from "src/hooks/Config";
+import { faPlay } from "@fortawesome/free-solid-svg-icons";
 
 function getItems(result: GQL.FindSceneMarkersQueryResult) {
   return result?.data?.findSceneMarkers?.scene_markers ?? [];
@@ -39,10 +42,16 @@ export const SceneMarkerList: React.FC<ISceneMarkerList> = ({
 }) => {
   const intl = useIntl();
   const history = useHistory();
-
+  const config = React.useContext(ConfigurationContext);
   const filterMode = GQL.FilterMode.SceneMarkers;
 
   const otherOperations = [
+    {
+      text: intl.formatMessage({ id: "actions.play_selected" }),
+      onClick: playSelected,
+      isDisplayed: showWhenSelected,
+      icon: faPlay,
+    },
     {
       text: intl.formatMessage({ id: "actions.play_random" }),
       onClick: playRandom,
@@ -62,6 +71,29 @@ export const SceneMarkerList: React.FC<ISceneMarkerList> = ({
     };
   }
 
+  async function playSelected(
+    result: GQL.FindSceneMarkersQueryResult,
+    filter: ListFilterModel,
+    selectedIds: Set<string>
+  ) {
+    // populate queue and go to first scene
+    const sceneMarkerIDs = Array.from(selectedIds.values());
+    const queue = SceneQueue.fromSceneMarkerIDList(sceneMarkerIDs);
+    const autoPlay =
+      config.configuration?.interface.autostartVideoOnPlaySelected ?? false;
+
+    // Fetch the first marker.
+    const query = await queryFindSceneMarkersByID([Number(sceneMarkerIDs[0])]);
+    const { scene_markers } = query.data.findSceneMarkers;
+    const url = queue.makeLink(scene_markers[0].scene.id, {
+      autoPlay: autoPlay,
+      start: scene_markers[0].seconds,
+      end: scene_markers[0].end_seconds,
+    });
+
+    history.push(url);
+  }
+
   async function playRandom(
     result: GQL.FindSceneMarkersQueryResult,
     filter: ListFilterModel
@@ -69,17 +101,26 @@ export const SceneMarkerList: React.FC<ISceneMarkerList> = ({
     // query for a random scene
     if (result.data?.findSceneMarkers) {
       const { count } = result.data.findSceneMarkers;
-
-      const index = Math.floor(Math.random() * count);
+      const pages = Math.ceil(count / filter.itemsPerPage);
+      const page = Math.floor(Math.random() * pages) + 1;
+      const indexMax = Math.min(filter.itemsPerPage, count);
+      const index = Math.floor(Math.random() * indexMax);
       const filterCopy = cloneDeep(filter);
-      filterCopy.itemsPerPage = 1;
-      filterCopy.currentPage = index + 1;
-      const singleResult = await queryFindSceneMarkers(filterCopy);
-      if (singleResult.data.findSceneMarkers.scene_markers.length === 1) {
-        // navigate to the scene player page
-        const url = NavUtils.makeSceneMarkerUrl(
-          singleResult.data.findSceneMarkers.scene_markers[0]
-        );
+      filterCopy.currentPage = page;
+      filterCopy.sortBy = "random";
+      const queryResults = await queryFindSceneMarkers(filterCopy);
+      const marker = queryResults.data.findSceneMarkers.scene_markers[index];
+      if (marker) {
+        const queue = SceneQueue.fromListFilterModel(filterCopy);
+        const autoPlay =
+          config.configuration?.interface.autostartVideoOnPlaySelected ?? false;
+        const url = queue.makeLink(marker.scene.id, {
+          sceneIndex: index,
+          autoPlay: autoPlay,
+          start: marker.seconds,
+          end: marker.end_seconds,
+          mode: "scene_marker",
+        });
         history.push(url);
       }
     }
@@ -93,9 +134,14 @@ export const SceneMarkerList: React.FC<ISceneMarkerList> = ({
   ) {
     if (!result.data?.findSceneMarkers) return;
 
+    const queue = SceneQueue.fromListFilterModel(filter);
+
     if (filter.displayMode === DisplayMode.Wall) {
       return (
-        <MarkerWallPanel markers={result.data.findSceneMarkers.scene_markers} />
+        <MarkerWallPanel
+          markers={result.data.findSceneMarkers.scene_markers}
+          sceneQueue={queue}
+        />
       );
     }
 
@@ -103,6 +149,7 @@ export const SceneMarkerList: React.FC<ISceneMarkerList> = ({
       return (
         <SceneMarkerCardsGrid
           markers={result.data.findSceneMarkers.scene_markers}
+          queue={queue}
           zoomIndex={filter.zoomIndex}
           selectedIds={selectedIds}
           onSelectChange={onSelectChange}

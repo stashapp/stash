@@ -167,7 +167,14 @@ export const WallItem = <T extends WallItemType>({
           : `/scenes/${scene.id}`;
       case "sceneMarker":
         const sceneMarker = data as GQL.SceneMarkerDataFragment;
-        return NavUtils.makeSceneMarkerUrl(sceneMarker);
+        return sceneQueue
+          ? sceneQueue.makeLink(sceneMarker.scene.id, {
+              sceneIndex: index,
+              start: sceneMarker.seconds,
+              end: sceneMarker.end_seconds,
+              mode: "scene_marker",
+            })
+          : NavUtils.makeSceneMarkerUrl(sceneMarker);
       case "image":
         const image = data as GQL.SlimImageDataFragment;
         return `/images/${image.id}`;

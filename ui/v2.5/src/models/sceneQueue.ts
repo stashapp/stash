@@ -1,11 +1,32 @@
-import { FilterMode, Scene } from "src/core/generated-graphql";
+import {
+  FilterMode,
+  Scene,
+  SceneMarker,
+  Tag,
+} from "src/core/generated-graphql";
 import { ListFilterModel } from "./list-filter/filter";
 import { INamedObject } from "src/utils/navigation";
 
-export type QueuedScene = Pick<Scene, "id" | "title" | "date" | "paths"> & {
+export type QueuedScene = Pick<
+  Scene,
+  "__typename" | "id" | "title" | "date" | "paths"
+> & {
   performers?: INamedObject[] | null;
   studio?: INamedObject | null;
 };
+
+export type QueuedSceneMarker = Pick<
+  SceneMarker,
+  "__typename" | "id" | "seconds" | "title" | "screenshot" | "end_seconds"
+> & {
+  tags?: INamedObject[] | null;
+  primary_tag: Pick<Tag, "id" | "name">;
+  scene: Pick<Scene, "id" | "title"> & {
+    performers?: INamedObject[] | null;
+  };
+};
+
+export type QueuedItem = QueuedScene | QueuedSceneMarker;
 
 export interface IPlaySceneOptions {
   sceneIndex?: number;
@@ -13,11 +34,14 @@ export interface IPlaySceneOptions {
   autoPlay?: boolean;
   continue?: boolean;
   start?: number;
+  end?: number | null;
+  mode?: "scene" | "scene_marker";
 }
 
 export class SceneQueue {
   public query?: ListFilterModel;
   public sceneIDs?: number[];
+  public sceneMarkerIDs?: number[];
   private originalQueryPage?: number;
   private originalQueryPageSize?: number;
 
@@ -40,7 +64,17 @@ export class SceneQueue {
     return ret;
   }
 
-  private makeQueryParameters(sceneIndex?: number, page?: number) {
+  public static fromSceneMarkerIDList(sceneMarkerIDs: string[]) {
+    const ret = new SceneQueue();
+    ret.sceneMarkerIDs = sceneMarkerIDs.map((v) => Number(v));
+    return ret;
+  }
+
+  private makeQueryParameters(
+    sceneIndex?: number,
+    page?: number,
+    mode?: string
+  ) {
     const ret: string[] = [];
 
     if (this.query) {
@@ -75,9 +109,17 @@ export class SceneQueue {
         qfp = String(newPage);
       }
       ret.push(`qfp=${qfp}`);
+
+      if (mode) {
+        ret.push(`qfm=${mode}`);
+      }
     } else if (this.sceneIDs && this.sceneIDs.length > 0) {
       for (const id of this.sceneIDs) {
         ret.push(`qs=${id}`);
+      }
+    } else if (this.sceneMarkerIDs && this.sceneMarkerIDs.length > 0) {
+      for (const id of this.sceneMarkerIDs) {
+        ret.push(`qm=${id}`);
       }
     }
 
@@ -95,13 +137,24 @@ export class SceneQueue {
         p: params.get("qfp"),
         c: params.getAll("qfc"),
       };
+
+      const filtermode =
+        params.get("qfm") === "scene_marker"
+          ? FilterMode.SceneMarkers
+          : params.get("qfm") === "scene"
+          ? FilterMode.Scenes
+          : FilterMode.Scenes;
+
       const decoded = ListFilterModel.decodeParams(translated);
-      const query = new ListFilterModel(FilterMode.Scenes);
+      const query = new ListFilterModel(filtermode);
       query.configureFromDecodedParams(decoded);
       ret.query = query;
     } else if (params.has("qs")) {
       // must be scene list
       ret.sceneIDs = params.getAll("qs").map((v) => Number(v));
+    } else if (params.has("qm")) {
+      // must be marker list
+      ret.sceneMarkerIDs = params.getAll("qm").map((v) => Number(v));
     }
 
     return ret;
@@ -109,7 +162,11 @@ export class SceneQueue {
 
   public makeLink(sceneID: string, options: IPlaySceneOptions) {
     let params = [
-      this.makeQueryParameters(options.sceneIndex, options.newPage),
+      this.makeQueryParameters(
+        options.sceneIndex,
+        options.newPage,
+        options.mode
+      ),
     ];
     if (options.autoPlay) {
       params.push("autoplay=true");
@@ -118,7 +175,11 @@ export class SceneQueue {
       params.push("continue=" + options.continue);
     }
     if (options.start !== undefined) {
-      params.push("t=" + options.start);
+      if (options.end) {
+        params.push("t=" + options.start + "," + options.end);
+      } else {
+        params.push("t=" + options.start);
+      }
     }
     return `/scenes/${sceneID}${params.length ? "?" + params.join("&") : ""}`;
   }

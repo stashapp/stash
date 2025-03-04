@@ -1,8 +1,13 @@
 query FindSceneMarkers(
   $filter: FindFilterType
   $scene_marker_filter: SceneMarkerFilterType
+  $ids: [ID!]
 ) {
-  findSceneMarkers(filter: $filter, scene_marker_filter: $scene_marker_filter) {
+  findSceneMarkers(
+    filter: $filter
+    scene_marker_filter: $scene_marker_filter
+    ids: $ids
+  ) {
     count
     scene_markers {
       ...SceneMarkerData
