@@ -14,6 +14,81 @@
   }
 }
 
+.discover-filter-container {
+  background-color: #202b33;
+  height: 45px;
+  padding: 0 20px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+
+  /* stylelint-disable declaration-no-important */
+  .slick-disabled {
+    display: none !important; // important is necesary here due to slick slider inlining display: block;
+  }
+  /* stylelint-enable declaration-no-important */
+
+  .slick-arrow {
+    z-index: 1;
+  }
+
+  .slick-arrow:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 5px;
+  }
+
+  .slick-prev {
+    box-shadow: 12px 0 6px 0 rgb(32 43 51 / 90%);
+  }
+
+  .slick-prev::before {
+    content: "<";
+    display: block;
+    font-family: cursive;
+    font-size: 2rem;
+    height: 100%;
+    line-height: normal;
+  }
+
+  .slick-next {
+    box-shadow: -20px 0 6px 0 rgb(32 43 51 / 90%);
+  }
+
+  .slick-next::before {
+    content: ">";
+    display: block;
+    font-family: cursive;
+    font-size: 2rem;
+    height: 100%;
+    line-height: normal;
+  }
+
+  .slick-slide {
+    margin: 8px;
+    margin-left: 0;
+  }
+
+  .discover-filter {
+    background-color: #394b59;
+    border-radius: 5px;
+    font-weight: 500;
+    height: fit-content;
+    padding: 4px 12px;
+
+    svg {
+      padding-right: 5px;
+    }
+  }
+
+  .discover-filter.active {
+    background-color: #137cbd;
+  }
+
+  .discover-filter:hover {
+    cursor: pointer;
+  }
+}
+
 .video-section {
   position: relative;
 }
@@ -599,35 +674,14 @@ input[type="range"].blue-slider {
   padding-right: 0.25rem;
 }
 
-@media (min-width: 1200px) {
-  #queue-viewer {
-    .queue-scene-details {
-      width: 245px;
-    }
-
-    .queue-scene-title,
-    .queue-scene-studio,
-    .queue-scene-performers,
-    .queue-scene-date {
-      margin-right: auto;
-      min-width: 245px;
-      overflow: hidden;
-      position: relative;
-      transform: translateX(0);
-      transition: 2s;
-      white-space: nowrap;
-    }
-
-    .queue-scene-title:hover,
-    .queue-scene-studio:hover,
-    .queue-scene-performers:hover,
-    .queue-scene-date:hover {
-      transform: translateX(calc(245px - 100%));
-    }
-  }
+.tab-pane #discover-content ol {
+  list-style: none;
+  padding-left: 0;
 }
 
 #queue-viewer {
+  margin-right: 5px;
+
   .queue-controls {
     align-items: center;
     background-color: $body-bg;
@@ -636,18 +690,22 @@ input[type="range"].blue-slider {
     height: 30px;
     justify-content: space-between;
     position: sticky;
-    top: 0;
+    top: 45px;
     z-index: 100;
   }
 
   .queue-scene-details {
     display: grid;
+    margin-bottom: auto;
+    margin-left: 6px;
     overflow: hidden;
+    padding-left: 0;
     position: relative;
+    width: 57%;
   }
 
   .queue-scene-title {
-    font-size: 1.2rem;
+    font-size: 1rem;
 
     @media (max-width: 576px) {
       font-size: 1rem;
@@ -670,13 +728,49 @@ input[type="range"].blue-slider {
     }
   }
 
+  .queue-scene-title,
+  .queue-scene-studio,
+  .queue-scene-performers,
+  .queue-scene-date {
+    margin-right: auto;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: pre-line;
+  }
+
   .thumbnail-container {
-    height: 80px;
-    margin-bottom: 5px;
-    margin-right: 0.75rem;
-    margin-top: 5px;
-    min-width: 142px;
-    width: 142px;
+    aspect-ratio: 16 / 9;
+    position: relative;
+    width: 40%;
+
+    .scene-card-preview {
+      margin: 2.5px 0;
+    }
+
+    .scene-card-preview-video {
+      background-size: cover;
+      object-fit: contain;
+    }
+  }
+
+  .scene-specs-overlay {
+    bottom: 0;
+    margin: 4px;
+    right: 0;
+  }
+
+  a:hover,
+  a:active {
+    .scene-card-preview-video {
+      top: 0;
+      transition-delay: 0.2s;
+    }
+
+    .scene-specs-overlay {
+      opacity: 0;
+      transition: opacity 0.5s;
+    }
   }
 
   ol {
@@ -692,8 +786,10 @@ input[type="range"].blue-slider {
 
   a {
     color: $text-color;
+    display: inline-block;
     font-weight: 500;
     text-decoration: none;
+    vertical-align: middle;
   }
 
   .current {

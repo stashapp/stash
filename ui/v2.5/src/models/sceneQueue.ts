@@ -2,9 +2,19 @@ import { FilterMode, Scene } from "src/core/generated-graphql";
 import { ListFilterModel } from "./list-filter/filter";
 import { INamedObject } from "src/utils/navigation";
 
+export interface IFileObject {
+  id: string;
+  duration: number;
+  height: number;
+  path: string;
+  width: number;
+  size: number;
+}
+
 export type QueuedScene = Pick<Scene, "id" | "title" | "date" | "paths"> & {
   performers?: INamedObject[] | null;
   studio?: INamedObject | null;
+  files: IFileObject[];
 };
 
 export interface IPlaySceneOptions {
