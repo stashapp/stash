@@ -1516,5 +1516,6 @@
         "field": "Fält",
         "title": "Skäddarsydda Fält",
         "value": "Värde"
-    }
+    },
+    "eta": "Uppskattad återstående tid"
 }
