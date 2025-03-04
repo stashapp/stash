@@ -9,6 +9,7 @@ import (
 	"github.com/stashapp/stash/internal/identify"
 	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/scraper"
@@ -171,13 +172,21 @@ func (j *IdentifyJob) getSources() ([]identify.ScraperSource, error) {
 		var src identify.ScraperSource
 		if stashBox != nil {
 			stashboxRepository := stashbox.NewRepository(instance.Repository)
+
+			matcher := match.SceneRelationships{
+				PerformerFinder: instance.Repository.Performer,
+				TagFinder:       instance.Repository.Tag,
+				StudioFinder:    instance.Repository.Studio,
+			}
+
 			src = identify.ScraperSource{
 				Name: "stash-box: " + stashBox.Endpoint,
 				Scraper: stashboxSource{
-					stashbox.NewClient(*stashBox, stashboxRepository, instance.Config.GetScraperExcludeTagPatterns()),
-					stashBox.Endpoint,
-					instance.Repository.TxnManager,
-					instance.SceneService,
+					Client:                 stashbox.NewClient(*stashBox, stashboxRepository, instance.Config.GetScraperExcludeTagPatterns()),
+					endpoint:               stashBox.Endpoint,
+					txnManager:             instance.Repository.TxnManager,
+					sceneFingerprintGetter: instance.SceneService,
+					matcher:                matcher,
 				},
 				RemoteSite: stashBox.Endpoint,
 			}
@@ -253,6 +262,7 @@ type stashboxSource struct {
 
 	txnManager             models.TxnManager
 	sceneFingerprintGetter sceneFingerprintGetter
+	matcher                match.SceneRelationships
 }
 
 type sceneFingerprintGetter interface {
@@ -272,6 +282,17 @@ func (s stashboxSource) ScrapeScenes(ctx context.Context, sceneID int) ([]*model
 	results, err := s.FindSceneByFingerprints(ctx, fps[0])
 	if err != nil {
 		return nil, fmt.Errorf("error querying stash-box using scene ID %d: %w", sceneID, err)
+	}
+
+	if err := txn.WithReadTxn(ctx, s.txnManager, func(ctx context.Context) error {
+		for _, ret := range results {
+			if err := s.matcher.MatchRelationships(ctx, ret, s.endpoint); err != nil {
+				return err
+			}
+		}
+		return nil
+	}); err != nil {
+		return nil, fmt.Errorf("error matching scene relationships: %w", err)
 	}
 
 	if len(results) > 0 {

@@ -133,7 +133,7 @@ func (c Cache) postScrapeMovie(ctx context.Context, m models.ScrapedMovie, exclu
 		m.Tags, ignoredTags = FilterTags(excludeTagRE, tags)
 
 		if m.Studio != nil {
-			if err := match.ScrapedStudio(ctx, r.StudioFinder, m.Studio, nil); err != nil {
+			if err := match.ScrapedStudio(ctx, r.StudioFinder, m.Studio, ""); err != nil {
 				return err
 			}
 		}
@@ -165,7 +165,7 @@ func (c Cache) postScrapeGroup(ctx context.Context, m models.ScrapedGroup, exclu
 		m.Tags, ignoredTags = FilterTags(excludeTagRE, tags)
 
 		if m.Studio != nil {
-			if err := match.ScrapedStudio(ctx, r.StudioFinder, m.Studio, nil); err != nil {
+			if err := match.ScrapedStudio(ctx, r.StudioFinder, m.Studio, ""); err != nil {
 				return err
 			}
 		}
@@ -227,7 +227,7 @@ func (c Cache) postScrapeScene(ctx context.Context, scene models.ScrapedScene, e
 				return err
 			}
 
-			if err := match.ScrapedPerformer(ctx, pqb, p, nil); err != nil {
+			if err := match.ScrapedPerformer(ctx, pqb, p, ""); err != nil {
 				return err
 			}
 
@@ -277,7 +277,7 @@ func (c Cache) postScrapeScene(ctx context.Context, scene models.ScrapedScene, e
 		scene.Tags, ignoredTags = FilterTags(excludeTagRE, tags)
 
 		if scene.Studio != nil {
-			err := match.ScrapedStudio(ctx, sqb, scene.Studio, nil)
+			err := match.ScrapedStudio(ctx, sqb, scene.Studio, "")
 			if err != nil {
 				return err
 			}
@@ -312,7 +312,7 @@ func (c Cache) postScrapeGallery(ctx context.Context, g models.ScrapedGallery, e
 		sqb := r.StudioFinder
 
 		for _, p := range g.Performers {
-			err := match.ScrapedPerformer(ctx, pqb, p, nil)
+			err := match.ScrapedPerformer(ctx, pqb, p, "")
 			if err != nil {
 				return err
 			}
@@ -325,7 +325,7 @@ func (c Cache) postScrapeGallery(ctx context.Context, g models.ScrapedGallery, e
 		g.Tags, ignoredTags = FilterTags(excludeTagRE, tags)
 
 		if g.Studio != nil {
-			err := match.ScrapedStudio(ctx, sqb, g.Studio, nil)
+			err := match.ScrapedStudio(ctx, sqb, g.Studio, "")
 			if err != nil {
 				return err
 			}
@@ -347,7 +347,7 @@ func (c Cache) postScrapeImage(ctx context.Context, image models.ScrapedImage, e
 		sqb := r.StudioFinder
 
 		for _, p := range image.Performers {
-			if err := match.ScrapedPerformer(ctx, pqb, p, nil); err != nil {
+			if err := match.ScrapedPerformer(ctx, pqb, p, ""); err != nil {
 				return err
 			}
 		}
@@ -360,7 +360,7 @@ func (c Cache) postScrapeImage(ctx context.Context, image models.ScrapedImage, e
 		image.Tags, ignoredTags = FilterTags(excludeTagRE, tags)
 
 		if image.Studio != nil {
-			err := match.ScrapedStudio(ctx, sqb, image.Studio, nil)
+			err := match.ScrapedStudio(ctx, sqb, image.Studio, "")
 			if err != nil {
 				return err
 			}

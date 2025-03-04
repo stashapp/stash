@@ -31,7 +31,7 @@ func (c Client) FindStudio(ctx context.Context, query string) (*models.ScrapedSt
 		if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
 			ret = studioFragmentToScrapedStudio(*studio.FindStudio)
 
-			err = match.ScrapedStudio(ctx, r.Studio, ret, &c.box.Endpoint)
+			err = match.ScrapedStudio(ctx, r.Studio, ret, c.box.Endpoint)
 			if err != nil {
 				return err
 			}
@@ -45,7 +45,7 @@ func (c Client) FindStudio(ctx context.Context, query string) (*models.ScrapedSt
 				if parentStudio.FindStudio != nil {
 					ret.Parent = studioFragmentToScrapedStudio(*parentStudio.FindStudio)
 
-					err = match.ScrapedStudio(ctx, r.Studio, ret.Parent, &c.box.Endpoint)
+					err = match.ScrapedStudio(ctx, r.Studio, ret.Parent, c.box.Endpoint)
 					if err != nil {
 						return err
 					}

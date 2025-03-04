@@ -20,18 +20,52 @@ type GroupNamesFinder interface {
 	FindByNames(ctx context.Context, names []string, nocase bool) ([]*models.Group, error)
 }
 
+type SceneRelationships struct {
+	PerformerFinder PerformerFinder
+	TagFinder       models.TagQueryer
+	StudioFinder    StudioFinder
+}
+
+// MatchRelationships accepts a scraped scene and attempts to match its relationships to existing stash models.
+func (r SceneRelationships) MatchRelationships(ctx context.Context, s *models.ScrapedScene, endpoint string) error {
+	thisStudio := s.Studio
+	for thisStudio != nil {
+		if err := ScrapedStudio(ctx, r.StudioFinder, s.Studio, endpoint); err != nil {
+			return err
+		}
+
+		thisStudio = thisStudio.Parent
+	}
+
+	for _, p := range s.Performers {
+		err := ScrapedPerformer(ctx, r.PerformerFinder, p, endpoint)
+		if err != nil {
+			return err
+		}
+	}
+
+	for _, t := range s.Tags {
+		err := ScrapedTag(ctx, r.TagFinder, t)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 // ScrapedPerformer matches the provided performer with the
 // performers in the database and sets the ID field if one is found.
-func ScrapedPerformer(ctx context.Context, qb PerformerFinder, p *models.ScrapedPerformer, stashBoxEndpoint *string) error {
+func ScrapedPerformer(ctx context.Context, qb PerformerFinder, p *models.ScrapedPerformer, stashBoxEndpoint string) error {
 	if p.StoredID != nil || p.Name == nil {
 		return nil
 	}
 
 	// Check if a performer with the StashID already exists
-	if stashBoxEndpoint != nil && p.RemoteSiteID != nil {
+	if stashBoxEndpoint != "" && p.RemoteSiteID != nil {
 		performers, err := qb.FindByStashID(ctx, models.StashID{
 			StashID:  *p.RemoteSiteID,
-			Endpoint: *stashBoxEndpoint,
+			Endpoint: stashBoxEndpoint,
 		})
 		if err != nil {
 			return err
@@ -73,16 +107,16 @@ type StudioFinder interface {
 
 // ScrapedStudio matches the provided studio with the studios
 // in the database and sets the ID field if one is found.
-func ScrapedStudio(ctx context.Context, qb StudioFinder, s *models.ScrapedStudio, stashBoxEndpoint *string) error {
+func ScrapedStudio(ctx context.Context, qb StudioFinder, s *models.ScrapedStudio, stashBoxEndpoint string) error {
 	if s.StoredID != nil {
 		return nil
 	}
 
 	// Check if a studio with the StashID already exists
-	if stashBoxEndpoint != nil && s.RemoteSiteID != nil {
+	if stashBoxEndpoint != "" && s.RemoteSiteID != nil {
 		studios, err := qb.FindByStashID(ctx, models.StashID{
 			StashID:  *s.RemoteSiteID,
-			Endpoint: *stashBoxEndpoint,
+			Endpoint: stashBoxEndpoint,
 		})
 		if err != nil {
 			return err

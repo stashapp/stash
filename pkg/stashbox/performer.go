@@ -402,7 +402,7 @@ func (c Client) FindPerformerByID(ctx context.Context, id string) (*models.Scrap
 
 	r := c.repository
 	if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
-		err := match.ScrapedPerformer(ctx, r.Performer, ret, &c.box.Endpoint)
+		err := match.ScrapedPerformer(ctx, r.Performer, ret, c.box.Endpoint)
 		return err
 	}); err != nil {
 		return nil, err
@@ -430,7 +430,7 @@ func (c Client) FindPerformerByName(ctx context.Context, name string) (*models.S
 
 	r := c.repository
 	if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
-		err := match.ScrapedPerformer(ctx, r.Performer, ret, &c.box.Endpoint)
+		err := match.ScrapedPerformer(ctx, r.Performer, ret, c.box.Endpoint)
 		return err
 	}); err != nil {
 		return nil, err

@@ -6,8 +6,10 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scraper"
+	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 	"github.com/stashapp/stash/pkg/stashbox"
 )
@@ -182,7 +184,8 @@ func (r *queryResolver) ScrapeSingleScene(ctx context.Context, source scraper.So
 
 		switch {
 		case input.SceneID != nil:
-			fps, err := r.getScenesFingerprints(ctx, []int{sceneID})
+			var fps []models.Fingerprints
+			fps, err = r.getScenesFingerprints(ctx, []int{sceneID})
 			if err != nil {
 				return nil, err
 			}
@@ -194,6 +197,11 @@ func (r *queryResolver) ScrapeSingleScene(ctx context.Context, source scraper.So
 		}
 
 		if err != nil {
+			return nil, err
+		}
+
+		// TODO - this should happen after any scene is scraped
+		if err := r.matchScenesRelationships(ctx, ret, *source.StashBoxEndpoint); err != nil {
 			return nil, err
 		}
 	default:
@@ -224,7 +232,20 @@ func (r *queryResolver) ScrapeMultiScenes(ctx context.Context, source scraper.So
 			return nil, err
 		}
 
-		return client.FindScenesByFingerprints(ctx, fps)
+		ret, err := client.FindScenesByFingerprints(ctx, fps)
+		if err != nil {
+			return nil, err
+		}
+
+		// match relationships - this mutates the existing scenes so we can
+		// just flatten the slice and pass it in
+		flat := sliceutil.Flatten(ret)
+
+		if err := r.matchScenesRelationships(ctx, flat, *source.StashBoxEndpoint); err != nil {
+			return nil, err
+		}
+
+		return ret, nil
 	}
 
 	return nil, errors.New("scraper_id or stash_box_index must be set")
@@ -265,6 +286,28 @@ func (r *queryResolver) getScenesFingerprints(ctx context.Context, ids []int) ([
 	}
 
 	return fingerprints, nil
+}
+
+// matchSceneRelationships accepts scraped scenes and attempts to match its relationships to existing stash models.
+func (r *queryResolver) matchScenesRelationships(ctx context.Context, ss []*models.ScrapedScene, endpoint string) error {
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+		matcher := match.SceneRelationships{
+			PerformerFinder: r.repository.Performer,
+			TagFinder:       r.repository.Tag,
+			StudioFinder:    r.repository.Studio,
+		}
+
+		for _, s := range ss {
+			if err := matcher.MatchRelationships(ctx, s, endpoint); err != nil {
+				return err
+			}
+		}
+		return nil
+	}); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (r *queryResolver) ScrapeSingleStudio(ctx context.Context, source scraper.Source, input ScrapeSingleStudioInput) ([]*models.ScrapedStudio, error) {

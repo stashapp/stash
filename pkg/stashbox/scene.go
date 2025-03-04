@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scraper"
 	"github.com/stashapp/stash/pkg/sliceutil"
@@ -187,71 +186,38 @@ func (c Client) sceneFragmentToScrapedScene(ctx context.Context, s *graphql.Scen
 		ss.Image = getFirstImage(ctx, c.getHTTPClient(), s.Images)
 	}
 
-	if ss.URL == nil && len(s.Urls) > 0 {
-		// The scene in Stash-box may not have a Studio URL but it does have another URL.
-		// For example it has a www.manyvids.com URL, which is auto set as type ManyVids.
-		// This should be re-visited once Stashapp can support more than one URL.
-		ss.URL = &s.Urls[0].URL
+	ss.URLs = make([]string, len(s.Urls))
+	for i, u := range s.Urls {
+		ss.URLs[i] = u.URL
 	}
 
-	r := c.repository
-	if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
-		pqb := r.Performer
-		tqb := r.Tag
+	if s.Studio != nil {
+		ss.Studio = studioFragmentToScrapedStudio(*s.Studio)
 
-		if s.Studio != nil {
-			ss.Studio = studioFragmentToScrapedStudio(*s.Studio)
-
-			err := match.ScrapedStudio(ctx, r.Studio, ss.Studio, &c.box.Endpoint)
+		var parentStudio *graphql.FindStudio
+		if s.Studio.Parent != nil {
+			var err error
+			parentStudio, err = c.client.FindStudio(ctx, &s.Studio.Parent.ID, nil)
 			if err != nil {
-				return err
+				return nil, err
 			}
 
-			var parentStudio *graphql.FindStudio
-			if s.Studio.Parent != nil {
-				parentStudio, err = c.client.FindStudio(ctx, &s.Studio.Parent.ID, nil)
-				if err != nil {
-					return err
-				}
-
-				if parentStudio.FindStudio != nil {
-					ss.Studio.Parent = studioFragmentToScrapedStudio(*parentStudio.FindStudio)
-
-					err = match.ScrapedStudio(ctx, r.Studio, ss.Studio.Parent, &c.box.Endpoint)
-					if err != nil {
-						return err
-					}
-				}
+			if parentStudio.FindStudio != nil {
+				ss.Studio.Parent = studioFragmentToScrapedStudio(*parentStudio.FindStudio)
 			}
 		}
+	}
 
-		for _, p := range s.Performers {
-			sp := performerFragmentToScrapedPerformer(*p.Performer)
+	for _, p := range s.Performers {
+		sp := performerFragmentToScrapedPerformer(*p.Performer)
+		ss.Performers = append(ss.Performers, sp)
+	}
 
-			err := match.ScrapedPerformer(ctx, pqb, sp, &c.box.Endpoint)
-			if err != nil {
-				return err
-			}
-
-			ss.Performers = append(ss.Performers, sp)
+	for _, t := range s.Tags {
+		st := &models.ScrapedTag{
+			Name: t.Name,
 		}
-
-		for _, t := range s.Tags {
-			st := &models.ScrapedTag{
-				Name: t.Name,
-			}
-
-			err := match.ScrapedTag(ctx, tqb, st)
-			if err != nil {
-				return err
-			}
-
-			ss.Tags = append(ss.Tags, st)
-		}
-
-		return nil
-	}); err != nil {
-		return nil, err
+		ss.Tags = append(ss.Tags, st)
 	}
 
 	return ss, nil
