@@ -13,7 +13,6 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin/hook"
 	"github.com/stashapp/stash/pkg/scraper"
-	"github.com/stashapp/stash/pkg/stashbox"
 )
 
 var (
@@ -136,10 +135,6 @@ func (r *Resolver) withTxn(ctx context.Context, fn func(ctx context.Context) err
 
 func (r *Resolver) withReadTxn(ctx context.Context, fn func(ctx context.Context) error) error {
 	return r.repository.WithReadTxn(ctx, fn)
-}
-
-func (r *Resolver) stashboxRepository() stashbox.Repository {
-	return stashbox.NewRepository(r.repository)
 }
 
 func (r *queryResolver) MarkerWall(ctx context.Context, q *string) (ret []*models.SceneMarker, err error) {

@@ -171,8 +171,6 @@ func (j *IdentifyJob) getSources() ([]identify.ScraperSource, error) {
 
 		var src identify.ScraperSource
 		if stashBox != nil {
-			stashboxRepository := stashbox.NewRepository(instance.Repository)
-
 			matcher := match.SceneRelationships{
 				PerformerFinder: instance.Repository.Performer,
 				TagFinder:       instance.Repository.Tag,
@@ -182,7 +180,7 @@ func (j *IdentifyJob) getSources() ([]identify.ScraperSource, error) {
 			src = identify.ScraperSource{
 				Name: "stash-box: " + stashBox.Endpoint,
 				Scraper: stashboxSource{
-					Client:                 stashbox.NewClient(*stashBox, stashboxRepository, instance.Config.GetScraperExcludeTagPatterns()),
+					Client:                 stashbox.NewClient(*stashBox, instance.Config.GetScraperExcludeTagPatterns()),
 					endpoint:               stashBox.Endpoint,
 					txnManager:             instance.Repository.TxnManager,
 					sceneFingerprintGetter: instance.SceneService,

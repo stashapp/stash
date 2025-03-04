@@ -11,7 +11,7 @@ import (
 )
 
 func (r *Resolver) newStashBoxClient(box models.StashBox) *stashbox.Client {
-	return stashbox.NewClient(box, r.stashboxRepository(), manager.GetInstance().Config.GetScraperExcludeTagPatterns())
+	return stashbox.NewClient(box, manager.GetInstance().Config.GetScraperExcludeTagPatterns())
 }
 
 func resolveStashBoxFn(indexField, endpointField string) func(index *int, endpoint *string) (*models.StashBox, error) {
