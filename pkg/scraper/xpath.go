@@ -210,7 +210,7 @@ func (s *xpathScraper) scrapeByFragment(ctx context.Context, input Input) (Scrap
 	return scraper.scrapeScene(ctx, q)
 }
 
-func (s *xpathScraper) scrapeGalleryByGallery(ctx context.Context, gallery *models.Gallery) (*ScrapedGallery, error) {
+func (s *xpathScraper) scrapeGalleryByGallery(ctx context.Context, gallery *models.Gallery) (*models.ScrapedGallery, error) {
 	// construct the URL
 	queryURL := queryURLParametersFromGallery(gallery)
 	if s.scraper.QueryURLReplacements != nil {

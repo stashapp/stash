@@ -164,7 +164,7 @@ var (
 type Input struct {
 	Performer *ScrapedPerformerInput
 	Scene     *models.ScrapedSceneInput
-	Gallery   *ScrapedGalleryInput
+	Gallery   *models.ScrapedGalleryInput
 	Image     *models.ScrapedImageInput
 }
 
@@ -243,5 +243,5 @@ type imageScraper interface {
 type galleryScraper interface {
 	scraper
 
-	viaGallery(ctx context.Context, client *http.Client, gallery *models.Gallery) (*ScrapedGallery, error)
+	viaGallery(ctx context.Context, client *http.Client, gallery *models.Gallery) (*models.ScrapedGallery, error)
 }

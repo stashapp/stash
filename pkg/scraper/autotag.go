@@ -130,7 +130,7 @@ func (s autotagScraper) viaScene(ctx context.Context, _client *http.Client, scen
 	return ret, nil
 }
 
-func (s autotagScraper) viaGallery(ctx context.Context, _client *http.Client, gallery *models.Gallery) (*ScrapedGallery, error) {
+func (s autotagScraper) viaGallery(ctx context.Context, _client *http.Client, gallery *models.Gallery) (*models.ScrapedGallery, error) {
 	path := gallery.Path
 	if path == "" {
 		// not valid for non-path-based galleries
@@ -140,7 +140,7 @@ func (s autotagScraper) viaGallery(ctx context.Context, _client *http.Client, ga
 	// only trim extension if gallery is file-based
 	trimExt := gallery.PrimaryFileID != nil
 
-	var ret *ScrapedGallery
+	var ret *models.ScrapedGallery
 
 	// populate performers, studio and tags based on scene path
 	if err := txn.WithReadTxn(ctx, s.txnManager, func(ctx context.Context) error {
@@ -160,7 +160,7 @@ func (s autotagScraper) viaGallery(ctx context.Context, _client *http.Client, ga
 		}
 
 		if len(performers) > 0 || studio != nil || len(tags) > 0 {
-			ret = &ScrapedGallery{
+			ret = &models.ScrapedGallery{
 				Performers: performers,
 				Studio:     studio,
 				Tags:       tags,

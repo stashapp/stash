@@ -61,7 +61,7 @@ func (r *queryResolver) ScrapeSceneURL(ctx context.Context, url string) (*models
 	return ret, nil
 }
 
-func (r *queryResolver) ScrapeGalleryURL(ctx context.Context, url string) (*scraper.ScrapedGallery, error) {
+func (r *queryResolver) ScrapeGalleryURL(ctx context.Context, url string) (*models.ScrapedGallery, error) {
 	content, err := r.scraperCache().ScrapeURL(ctx, url, scraper.ScrapeContentTypeGallery)
 	if err != nil {
 		return nil, err
@@ -372,8 +372,8 @@ func (r *queryResolver) ScrapeMultiPerformers(ctx context.Context, source scrape
 	return nil, errors.New("scraper_id or stash_box_index must be set")
 }
 
-func (r *queryResolver) ScrapeSingleGallery(ctx context.Context, source scraper.Source, input ScrapeSingleGalleryInput) ([]*scraper.ScrapedGallery, error) {
-	var ret []*scraper.ScrapedGallery
+func (r *queryResolver) ScrapeSingleGallery(ctx context.Context, source scraper.Source, input ScrapeSingleGalleryInput) ([]*models.ScrapedGallery, error) {
+	var ret []*models.ScrapedGallery
 
 	if source.StashBoxIndex != nil || source.StashBoxEndpoint != nil {
 		return nil, ErrNotSupported

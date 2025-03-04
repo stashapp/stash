@@ -1184,8 +1184,8 @@ func (s mappedScraper) scrapeImage(ctx context.Context, q mappedQuery) (*models.
 	return &ret, nil
 }
 
-func (s mappedScraper) scrapeGallery(ctx context.Context, q mappedQuery) (*ScrapedGallery, error) {
-	var ret ScrapedGallery
+func (s mappedScraper) scrapeGallery(ctx context.Context, q mappedQuery) (*models.ScrapedGallery, error) {
+	var ret models.ScrapedGallery
 
 	galleryScraperConfig := s.Gallery
 	if galleryScraperConfig == nil {

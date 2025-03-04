@@ -69,7 +69,7 @@ func (g group) viaScene(ctx context.Context, client *http.Client, scene *models.
 	return s.scrapeSceneByScene(ctx, scene)
 }
 
-func (g group) viaGallery(ctx context.Context, client *http.Client, gallery *models.Gallery) (*ScrapedGallery, error) {
+func (g group) viaGallery(ctx context.Context, client *http.Client, gallery *models.Gallery) (*models.ScrapedGallery, error) {
 	if g.config.GalleryByFragment == nil {
 		return nil, ErrNotSupported
 	}

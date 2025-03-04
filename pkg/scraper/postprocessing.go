@@ -29,11 +29,11 @@ func (c Cache) postScrape(ctx context.Context, content ScrapedContent, excludeTa
 		}
 	case models.ScrapedScene:
 		return c.postScrapeScene(ctx, v, excludeTagRE)
-	case *ScrapedGallery:
+	case *models.ScrapedGallery:
 		if v != nil {
 			return c.postScrapeGallery(ctx, *v, excludeTagRE)
 		}
-	case ScrapedGallery:
+	case models.ScrapedGallery:
 		return c.postScrapeGallery(ctx, v, excludeTagRE)
 	case *models.ScrapedImage:
 		if v != nil {
@@ -296,7 +296,7 @@ func (c Cache) postScrapeScene(ctx context.Context, scene models.ScrapedScene, e
 	return scene, ignoredTags, nil
 }
 
-func (c Cache) postScrapeGallery(ctx context.Context, g ScrapedGallery, excludeTagRE []*regexp.Regexp) (_ ScrapedContent, ignoredTags []string, err error) {
+func (c Cache) postScrapeGallery(ctx context.Context, g models.ScrapedGallery, excludeTagRE []*regexp.Regexp) (_ ScrapedContent, ignoredTags []string, err error) {
 	// set the URL/URLs field
 	if g.URL == nil && len(g.URLs) > 0 {
 		g.URL = &g.URLs[0]
