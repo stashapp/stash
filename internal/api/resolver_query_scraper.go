@@ -329,6 +329,17 @@ func (r *queryResolver) ScrapeSingleStudio(ctx context.Context, source scraper.S
 		}
 
 		if len(ret) > 0 {
+			if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+				for _, studio := range ret {
+					if err := match.ScrapedStudioHierarchy(ctx, r.repository.Studio, studio, *source.StashBoxEndpoint); err != nil {
+						return err
+					}
+				}
+
+				return nil
+			}); err != nil {
+				return nil, err
+			}
 			return ret, nil
 		}
 

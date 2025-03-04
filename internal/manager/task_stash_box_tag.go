@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/performer"
 	"github.com/stashapp/stash/pkg/sliceutil"
@@ -319,6 +320,18 @@ func (t *StashBoxBatchTagTask) findStashBoxStudio(ctx context.Context) (*models.
 			name = t.studio.Name
 		}
 		studio, err = client.FindStudio(ctx, name)
+	}
+
+	if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
+		if studio != nil {
+			if err := match.ScrapedStudioHierarchy(ctx, r.Studio, studio, t.box.Endpoint); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}); err != nil {
+		return nil, err
 	}
 
 	return studio, err

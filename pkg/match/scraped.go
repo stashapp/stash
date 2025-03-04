@@ -152,6 +152,19 @@ func ScrapedStudio(ctx context.Context, qb StudioFinder, s *models.ScrapedStudio
 	return nil
 }
 
+// ScrapedStudioHierarchy executes ScrapedStudio for the provided studio and its parents recursively.
+func ScrapedStudioHierarchy(ctx context.Context, qb StudioFinder, s *models.ScrapedStudio, stashBoxEndpoint string) error {
+	if err := ScrapedStudio(ctx, qb, s, stashBoxEndpoint); err != nil {
+		return err
+	}
+
+	if s.Parent == nil {
+		return nil
+	}
+
+	return ScrapedStudioHierarchy(ctx, qb, s.Parent, stashBoxEndpoint)
+}
+
 // ScrapedGroup matches the provided movie with the movies
 // in the database and returns the ID field if one is found.
 func ScrapedGroup(ctx context.Context, qb GroupNamesFinder, storedID *string, name *string) (matchedID *string, err error) {

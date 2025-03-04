@@ -24,24 +24,16 @@ type PerformerReader interface {
 	GetImage(ctx context.Context, performerID int) ([]byte, error)
 }
 
-type StudioReader interface {
-	models.StudioGetter
-	match.StudioFinder
-	models.StashIDLoader
-}
-
 type Repository struct {
 	TxnManager models.TxnManager
 
 	Performer PerformerReader
-	Studio    StudioReader
 }
 
 func NewRepository(repo models.Repository) Repository {
 	return Repository{
 		TxnManager: repo.TxnManager,
 		Performer:  repo.Performer,
-		Studio:     repo.Studio,
 	}
 }
 

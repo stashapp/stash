@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/google/uuid"
-	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/stashbox/graphql"
 )
@@ -49,32 +48,8 @@ func (c Client) FindStudio(ctx context.Context, query string) (*models.ScrapedSt
 
 	var ret *models.ScrapedStudio
 	if studio.FindStudio != nil {
-		r := c.repository
-		if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
-			ret = studioFragmentToScrapedStudio(*studio.FindStudio)
-
-			err = match.ScrapedStudio(ctx, r.Studio, ret, c.box.Endpoint)
-			if err != nil {
-				return err
-			}
-
-			if studio.FindStudio.Parent != nil {
-				parentStudio, err := c.client.FindStudio(ctx, &studio.FindStudio.Parent.ID, nil)
-				if err != nil {
-					return err
-				}
-
-				if parentStudio.FindStudio != nil {
-					ret.Parent = studioFragmentToScrapedStudio(*parentStudio.FindStudio)
-
-					err = match.ScrapedStudio(ctx, r.Studio, ret.Parent, c.box.Endpoint)
-					if err != nil {
-						return err
-					}
-				}
-			}
-			return nil
-		}); err != nil {
+		ret, err = c.resolveStudio(ctx, studio.FindStudio)
+		if err != nil {
 			return nil, err
 		}
 	}
