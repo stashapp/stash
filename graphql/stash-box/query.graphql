@@ -49,6 +49,8 @@ fragment PerformerFragment on Performer {
   aliases
   gender
   merged_ids
+  deleted
+  merged_into_id
   urls {
     ...URLFragment
   }

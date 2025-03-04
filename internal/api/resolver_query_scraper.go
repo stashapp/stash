@@ -4,16 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"regexp"
 	"strconv"
-	"strings"
 
-	"github.com/stashapp/stash/internal/manager"
-	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scraper"
 	"github.com/stashapp/stash/pkg/scraper/stashbox"
-	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 )
 
@@ -49,116 +44,7 @@ func (r *queryResolver) ScrapeSceneQuery(ctx context.Context, scraperID string, 
 		return nil, err
 	}
 
-	filterSceneTags(ret)
 	return ret, nil
-}
-
-func compileRegexps(patterns []string) []*regexp.Regexp {
-	excludePatterns := patterns
-	var excludeRegexps []*regexp.Regexp
-
-	for _, excludePattern := range excludePatterns {
-		reg, err := regexp.Compile(strings.ToLower(excludePattern))
-		if err != nil {
-			logger.Errorf("Invalid tag exclusion pattern: %v", err)
-		} else {
-			excludeRegexps = append(excludeRegexps, reg)
-		}
-	}
-
-	return excludeRegexps
-}
-
-// filterSceneTags removes tags matching excluded tag patterns from the provided scraped scenes
-func filterTags(excludeRegexps []*regexp.Regexp, tags []*models.ScrapedTag) (newTags []*models.ScrapedTag, ignoredTags []string) {
-	if len(excludeRegexps) == 0 {
-		return tags, nil
-	}
-
-	for _, t := range tags {
-		ignore := false
-		for _, reg := range excludeRegexps {
-			if reg.MatchString(strings.ToLower(t.Name)) {
-				ignore = true
-				ignoredTags = sliceutil.AppendUnique(ignoredTags, t.Name)
-				break
-			}
-		}
-
-		if !ignore {
-			newTags = append(newTags, t)
-		}
-	}
-
-	return
-}
-
-// filterSceneTags removes tags matching excluded tag patterns from the provided scraped scenes
-func filterSceneTags(scenes []*scraper.ScrapedScene) {
-	excludeRegexps := compileRegexps(manager.GetInstance().Config.GetScraperExcludeTagPatterns())
-
-	var ignoredTags []string
-
-	for _, s := range scenes {
-		var ignored []string
-		s.Tags, ignored = filterTags(excludeRegexps, s.Tags)
-		ignoredTags = sliceutil.AppendUniques(ignoredTags, ignored)
-	}
-
-	if len(ignoredTags) > 0 {
-		logger.Debugf("Scraping ignored tags: %s", strings.Join(ignoredTags, ", "))
-	}
-}
-
-// filterGalleryTags removes tags matching excluded tag patterns from the provided scraped galleries
-func filterGalleryTags(g []*scraper.ScrapedGallery) {
-	excludeRegexps := compileRegexps(manager.GetInstance().Config.GetScraperExcludeTagPatterns())
-
-	var ignoredTags []string
-
-	for _, s := range g {
-		var ignored []string
-		s.Tags, ignored = filterTags(excludeRegexps, s.Tags)
-		ignoredTags = sliceutil.AppendUniques(ignoredTags, ignored)
-	}
-
-	if len(ignoredTags) > 0 {
-		logger.Debugf("Scraping ignored tags: %s", strings.Join(ignoredTags, ", "))
-	}
-}
-
-// filterGalleryTags removes tags matching excluded tag patterns from the provided scraped galleries
-func filterPerformerTags(p []*models.ScrapedPerformer) {
-	excludeRegexps := compileRegexps(manager.GetInstance().Config.GetScraperExcludeTagPatterns())
-
-	var ignoredTags []string
-
-	for _, s := range p {
-		var ignored []string
-		s.Tags, ignored = filterTags(excludeRegexps, s.Tags)
-		ignoredTags = sliceutil.AppendUniques(ignoredTags, ignored)
-	}
-
-	if len(ignoredTags) > 0 {
-		logger.Debugf("Scraping ignored tags: %s", strings.Join(ignoredTags, ", "))
-	}
-}
-
-// filterGroupTags removes tags matching excluded tag patterns from the provided scraped movies
-func filterGroupTags(p []*models.ScrapedMovie) {
-	excludeRegexps := compileRegexps(manager.GetInstance().Config.GetScraperExcludeTagPatterns())
-
-	var ignoredTags []string
-
-	for _, s := range p {
-		var ignored []string
-		s.Tags, ignored = filterTags(excludeRegexps, s.Tags)
-		ignoredTags = sliceutil.AppendUniques(ignoredTags, ignored)
-	}
-
-	if len(ignoredTags) > 0 {
-		logger.Debugf("Scraping ignored tags: %s", strings.Join(ignoredTags, ", "))
-	}
 }
 
 func (r *queryResolver) ScrapeSceneURL(ctx context.Context, url string) (*scraper.ScrapedScene, error) {
@@ -170,10 +56,6 @@ func (r *queryResolver) ScrapeSceneURL(ctx context.Context, url string) (*scrape
 	ret, err := marshalScrapedScene(content)
 	if err != nil {
 		return nil, err
-	}
-
-	if ret != nil {
-		filterSceneTags([]*scraper.ScrapedScene{ret})
 	}
 
 	return ret, nil
@@ -190,11 +72,16 @@ func (r *queryResolver) ScrapeGalleryURL(ctx context.Context, url string) (*scra
 		return nil, err
 	}
 
-	if ret != nil {
-		filterGalleryTags([]*scraper.ScrapedGallery{ret})
+	return ret, nil
+}
+
+func (r *queryResolver) ScrapeImageURL(ctx context.Context, url string) (*scraper.ScrapedImage, error) {
+	content, err := r.scraperCache().ScrapeURL(ctx, url, scraper.ScrapeContentTypeImage)
+	if err != nil {
+		return nil, err
 	}
 
-	return ret, nil
+	return marshalScrapedImage(content)
 }
 
 func (r *queryResolver) ScrapeMovieURL(ctx context.Context, url string) (*models.ScrapedMovie, error) {
@@ -207,8 +94,6 @@ func (r *queryResolver) ScrapeMovieURL(ctx context.Context, url string) (*models
 	if err != nil {
 		return nil, err
 	}
-
-	filterGroupTags([]*models.ScrapedMovie{ret})
 
 	return ret, nil
 }
@@ -223,8 +108,6 @@ func (r *queryResolver) ScrapeGroupURL(ctx context.Context, url string) (*models
 	if err != nil {
 		return nil, err
 	}
-
-	filterGroupTags([]*models.ScrapedMovie{ret})
 
 	// convert to scraped group
 	group := &models.ScrapedGroup{
@@ -312,8 +195,6 @@ func (r *queryResolver) ScrapeSingleScene(ctx context.Context, source scraper.So
 	default:
 		return nil, fmt.Errorf("%w: scraper_id or stash_box_index must be set", ErrInput)
 	}
-
-	filterSceneTags(ret)
 
 	return ret, nil
 }
@@ -425,8 +306,6 @@ func (r *queryResolver) ScrapeSinglePerformer(ctx context.Context, source scrape
 		return nil, errors.New("scraper_id or stash_box_index must be set")
 	}
 
-	filterPerformerTags(ret)
-
 	return ret, nil
 }
 
@@ -487,8 +366,40 @@ func (r *queryResolver) ScrapeSingleGallery(ctx context.Context, source scraper.
 		return nil, ErrNotImplemented
 	}
 
-	filterGalleryTags(ret)
 	return ret, nil
+}
+
+func (r *queryResolver) ScrapeSingleImage(ctx context.Context, source scraper.Source, input ScrapeSingleImageInput) ([]*scraper.ScrapedImage, error) {
+	if source.StashBoxIndex != nil {
+		return nil, ErrNotSupported
+	}
+
+	if source.ScraperID == nil {
+		return nil, fmt.Errorf("%w: scraper_id must be set", ErrInput)
+	}
+
+	var c scraper.ScrapedContent
+
+	switch {
+	case input.ImageID != nil:
+		imageID, err := strconv.Atoi(*input.ImageID)
+		if err != nil {
+			return nil, fmt.Errorf("%w: image id is not an integer: '%s'", ErrInput, *input.ImageID)
+		}
+		c, err = r.scraperCache().ScrapeID(ctx, *source.ScraperID, imageID, scraper.ScrapeContentTypeImage)
+		if err != nil {
+			return nil, err
+		}
+		return marshalScrapedImages([]scraper.ScrapedContent{c})
+	case input.ImageInput != nil:
+		c, err := r.scraperCache().ScrapeFragment(ctx, *source.ScraperID, scraper.Input{Image: input.ImageInput})
+		if err != nil {
+			return nil, err
+		}
+		return marshalScrapedImages([]scraper.ScrapedContent{c})
+	default:
+		return nil, ErrNotImplemented
+	}
 }
 
 func (r *queryResolver) ScrapeSingleMovie(ctx context.Context, source scraper.Source, input ScrapeSingleMovieInput) ([]*models.ScrapedMovie, error) {

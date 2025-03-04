@@ -24,6 +24,7 @@ interface IProps {
   hideParent?: boolean;
   selecting?: boolean;
   selected?: boolean;
+  zoomIndex?: number;
   onSelectedChanged?: (selected: boolean, shiftKey: boolean) => void;
 }
 
@@ -78,21 +79,38 @@ export const StudioCard: React.FC<IProps> = ({
   hideParent,
   selecting,
   selected,
+  zoomIndex,
   onSelectedChanged,
 }) => {
   const [updateStudio] = useStudioUpdate();
   const [cardWidth, setCardWidth] = useState<number>();
 
   useEffect(() => {
-    if (!containerWidth || ScreenUtils.isMobile()) return;
+    if (!containerWidth || zoomIndex === undefined || ScreenUtils.isMobile())
+      return;
 
-    let preferredCardWidth = 340;
+    let zoomValue = zoomIndex;
+    console.log(zoomValue);
+    let preferredCardWidth: number;
+    switch (zoomValue) {
+      case 0:
+        preferredCardWidth = 280;
+        break;
+      case 1:
+        preferredCardWidth = 340;
+        break;
+      case 2:
+        preferredCardWidth = 420;
+        break;
+      case 3:
+        preferredCardWidth = 560;
+    }
     let fittedCardWidth = calculateCardWidth(
       containerWidth,
       preferredCardWidth!
     );
     setCardWidth(fittedCardWidth);
-  }, [containerWidth]);
+  }, [containerWidth, zoomIndex]);
 
   function onToggleFavorite(v: boolean) {
     if (studio.id) {
@@ -216,7 +234,7 @@ export const StudioCard: React.FC<IProps> = ({
 
   return (
     <GridCard
-      className="studio-card"
+      className={`studio-card zoom-${zoomIndex}`}
       url={`/studios/${studio.id}`}
       width={cardWidth}
       title={studio.name}

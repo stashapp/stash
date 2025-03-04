@@ -183,6 +183,7 @@ $sceneTabWidth: 450px;
     pointer-events: none;
     position: absolute;
     transition: opacity 0.2s;
+    z-index: 100;
   }
 
   .vjs-big-play-button,

@@ -3,15 +3,13 @@ import { useStats } from "src/core/StashService";
 import { FormattedMessage, FormattedNumber } from "react-intl";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import TextUtils from "src/utils/text";
+import { FileSize } from "./Shared/FileSize";
 
 export const Stats: React.FC = () => {
   const { data, error, loading } = useStats();
 
   if (error) return <span>{error.message}</span>;
   if (loading || !data) return <LoadingIndicator />;
-
-  const scenesSize = TextUtils.fileSize(data.stats.scenes_size);
-  const imagesSize = TextUtils.fileSize(data.stats.images_size);
 
   const scenesDuration = TextUtils.secondsAsTimeString(
     data.stats.scenes_duration,
@@ -28,13 +26,7 @@ export const Stats: React.FC = () => {
       <div className="col col-sm-8 m-sm-auto row stats">
         <div className="stats-element">
           <p className="title">
-            <FormattedNumber
-              value={scenesSize.size}
-              maximumFractionDigits={TextUtils.fileSizeFractionalDigits(
-                scenesSize.unit
-              )}
-            />
-            {` ${TextUtils.formatFileSizeUnit(scenesSize.unit)}`}
+            <FileSize size={data.stats.scenes_size} />
           </p>
           <p className="heading">
             <FormattedMessage id="stats.scenes_size" />
@@ -74,13 +66,7 @@ export const Stats: React.FC = () => {
       <div className="col col-sm-8 m-sm-auto row stats">
         <div className="stats-element">
           <p className="title">
-            <FormattedNumber
-              value={imagesSize.size}
-              maximumFractionDigits={TextUtils.fileSizeFractionalDigits(
-                imagesSize.unit
-              )}
-            />
-            {` ${TextUtils.formatFileSizeUnit(imagesSize.unit)}`}
+            <FileSize size={data.stats.images_size} />
           </p>
           <p className="heading">
             <FormattedMessage id="stats.image_size" />

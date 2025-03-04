@@ -17,7 +17,8 @@ import "./live";
 import "./PlaylistButtons";
 import "./source-selector";
 import "./persist-volume";
-import "./markers";
+import MarkersPlugin, { type IMarker } from "./markers";
+void MarkersPlugin;
 import "./vtt-thumbnails";
 import "./big-buttons";
 import "./track-activity";
@@ -433,6 +434,14 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     scene.paths.funscript,
   ]);
 
+  // play the script if video started before script upload finished
+  useEffect(() => {
+    if (interactiveState !== ConnectionState.Ready) return;
+    const player = getPlayer();
+    if (!player || player.paused()) return;
+    interactiveClient.ensurePlaying(player.currentTime());
+  }, [interactiveState, getPlayer, interactiveClient]);
+
   useEffect(() => {
     const player = getPlayer();
     if (!player) return;
@@ -491,13 +500,23 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     };
   }, [getPlayer]);
 
+  // delay before second play event after a play event to adjust for video player issues
+  const DELAY_FOR_SECOND_PLAY_MS = 1000;
+  const playingTimer = useRef<number>();
+
   useEffect(() => {
     const player = getPlayer();
     if (!player) return;
 
-    function onplay(this: VideoJsPlayer) {
+    function playing(this: VideoJsPlayer) {
       if (scene.interactive && interactiveReady.current) {
         interactiveClient.play(this.currentTime());
+        // trigger a second script play event to adjust for video player issues
+        clearTimeout(playingTimer.current);
+        playingTimer.current = setTimeout(() => {
+          if (this.paused()) return;
+          interactiveClient.play(this.currentTime());
+        }, DELAY_FOR_SECOND_PLAY_MS);
       }
     }
 
@@ -505,31 +524,20 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       interactiveClient.pause();
     }
 
-    function seeking(this: VideoJsPlayer) {
-      if (this.paused()) return;
-      if (scene.interactive && interactiveReady.current) {
-        interactiveClient.play(this.currentTime());
-      }
-    }
-
     function timeupdate(this: VideoJsPlayer) {
       if (this.paused()) return;
-      if (scene.interactive && interactiveReady.current) {
-        interactiveClient.ensurePlaying(this.currentTime());
-      }
       setTime(this.currentTime());
     }
 
-    player.on("play", onplay);
+    player.on("playing", playing);
     player.on("pause", pause);
-    player.on("seeking", seeking);
     player.on("timeupdate", timeupdate);
 
     return () => {
-      player.off("play", onplay);
+      player.off("playing", playing);
       player.off("pause", pause);
-      player.off("seeking", seeking);
       player.off("timeupdate", timeupdate);
+      clearTimeout(playingTimer.current);
     };
   }, [getPlayer, interactiveClient, scene]);
 
@@ -675,11 +683,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     });
 
     started.current = false;
-
-    return () => {
-      // stop the interactive client
-      interactiveClient.pause();
-    };
   }, [
     getPlayer,
     file,
@@ -693,24 +696,85 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   ]);
 
   useEffect(() => {
+    return () => {
+      // stop the interactive client on unmount
+      interactiveClient.pause();
+    };
+  }, [interactiveClient]);
+
+  const loadMarkers = useCallback(() => {
     const player = getPlayer();
     if (!player) return;
 
-    const markers = player.markers();
-    markers.clearMarkers();
-    for (const marker of scene.scene_markers) {
-      markers.addMarker({
-        title: getMarkerTitle(marker),
-        time: marker.seconds,
-      });
+    const markerData = scene.scene_markers.map((marker) => ({
+      title: getMarkerTitle(marker),
+      seconds: marker.seconds,
+      end_seconds: marker.end_seconds ?? null,
+      primaryTag: marker.primary_tag,
+    }));
+
+    const markers = player!.markers();
+
+    const uniqueTagNames = markerData
+      .map((marker) => marker.primaryTag.name)
+      .filter((value, index, self) => self.indexOf(value) === index);
+
+    // Wait for colors
+    markers.findColors(uniqueTagNames);
+
+    const showRangeTags =
+      !ScreenUtils.isMobile() && (uiConfig?.showRangeMarkers ?? true);
+    const timestampMarkers: IMarker[] = [];
+    const rangeMarkers: IMarker[] = [];
+
+    if (!showRangeTags) {
+      for (const marker of markerData) {
+        timestampMarkers.push(marker);
+      }
+    } else {
+      for (const marker of markerData) {
+        if (marker.end_seconds === null) {
+          timestampMarkers.push(marker);
+        } else {
+          rangeMarkers.push(marker);
+        }
+      }
     }
+
+    requestAnimationFrame(() => {
+      markers.addDotMarkers(timestampMarkers);
+      markers.addRangeMarkers(rangeMarkers);
+    });
+  }, [getPlayer, scene, uiConfig]);
+
+  useEffect(() => {
+    const player = getPlayer();
+    if (!player) return;
 
     if (scene.paths.screenshot) {
       player.poster(scene.paths.screenshot);
     } else {
       player.poster("");
     }
-  }, [getPlayer, scene]);
+
+    // Define the event handler outside the useEffect
+    const handleLoadMetadata = () => {
+      loadMarkers();
+    };
+
+    // Ensure markers are added after player is fully ready and sources are loaded
+    if (player.readyState() >= 1) {
+      loadMarkers();
+    } else {
+      player.on("loadedmetadata", handleLoadMetadata);
+    }
+
+    return () => {
+      player.off("loadedmetadata", handleLoadMetadata);
+      const markers = player!.markers();
+      markers.clearMarkers();
+    };
+  }, [getPlayer, scene, loadMarkers]);
 
   useEffect(() => {
     const player = getPlayer();

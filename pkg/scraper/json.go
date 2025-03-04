@@ -102,6 +102,12 @@ func (s *jsonScraper) scrapeByURL(ctx context.Context, url string, ty ScrapeCont
 			return nil, err
 		}
 		return ret, nil
+	case ScrapeContentTypeImage:
+		ret, err := scraper.scrapeImage(ctx, q)
+		if err != nil || ret == nil {
+			return nil, err
+		}
+		return ret, nil
 	case ScrapeContentTypeMovie, ScrapeContentTypeGroup:
 		ret, err := scraper.scrapeGroup(ctx, q)
 		if err != nil || ret == nil {
@@ -223,6 +229,30 @@ func (s *jsonScraper) scrapeByFragment(ctx context.Context, input Input) (Scrape
 
 	q := s.getJsonQuery(doc)
 	return scraper.scrapeScene(ctx, q)
+}
+
+func (s *jsonScraper) scrapeImageByImage(ctx context.Context, image *models.Image) (*ScrapedImage, error) {
+	// construct the URL
+	queryURL := queryURLParametersFromImage(image)
+	if s.scraper.QueryURLReplacements != nil {
+		queryURL.applyReplacements(s.scraper.QueryURLReplacements)
+	}
+	url := queryURL.constructURL(s.scraper.QueryURL)
+
+	scraper := s.getJsonScraper()
+
+	if scraper == nil {
+		return nil, errors.New("json scraper with name " + s.scraper.Scraper + " not found in config")
+	}
+
+	doc, err := s.loadURL(ctx, url)
+
+	if err != nil {
+		return nil, err
+	}
+
+	q := s.getJsonQuery(doc)
+	return scraper.scrapeImage(ctx, q)
 }
 
 func (s *jsonScraper) scrapeGalleryByGallery(ctx context.Context, gallery *models.Gallery) (*ScrapedGallery, error) {

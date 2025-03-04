@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 import NavUtils from "src/utils/navigation";
 import TextUtils from "src/utils/text";
-import { FormattedMessage, FormattedNumber, useIntl } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import { objectTitle } from "src/core/files";
 import { galleryTitle } from "src/core/galleries";
 import SceneQueue from "src/models/sceneQueue";
@@ -11,6 +11,7 @@ import { RatingSystem } from "../Shared/Rating/RatingSystem";
 import { useSceneUpdate } from "src/core/StashService";
 import { IColumn, ListTable } from "../List/ListTable";
 import { useTableColumns } from "src/hooks/useTableColumns";
+import { FileSize } from "../Shared/FileSize";
 
 interface ISceneListTableProps {
   scenes: GQL.SlimSceneDataFragment[];
@@ -169,24 +170,12 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
     </ul>
   );
 
-  function renderFileSize(file: { size: number | undefined }) {
-    const { size, unit } = TextUtils.fileSize(file.size);
-
-    return (
-      <FormattedNumber
-        value={size}
-        style="unit"
-        unit={unit}
-        unitDisplay="narrow"
-        maximumFractionDigits={2}
-      />
-    );
-  }
-
   const FileSizeCell = (scene: GQL.SlimSceneDataFragment) => (
     <ul className="comma-list">
       {scene.files.map((file) => (
-        <li key={file.id}>{renderFileSize(file)}</li>
+        <li key={file.id}>
+          <FileSize size={file.size} />
+        </li>
       ))}
     </ul>
   );

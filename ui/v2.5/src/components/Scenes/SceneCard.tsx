@@ -15,7 +15,7 @@ import { ConfigurationContext } from "src/hooks/Config";
 import { PerformerPopoverButton } from "../Shared/PerformerPopoverButton";
 import { GridCard, calculateCardWidth } from "../Shared/GridCard/GridCard";
 import { RatingBanner } from "../Shared/RatingBanner";
-import { FormattedMessage, FormattedNumber } from "react-intl";
+import { FormattedMessage } from "react-intl";
 import {
   faBox,
   faCopy,
@@ -30,6 +30,7 @@ import { PatchComponent } from "src/patch";
 import ScreenUtils from "src/utils/screen";
 import { StudioOverlay } from "../Shared/GridCard/StudioOverlay";
 import { GroupTag } from "../Groups/GroupTag";
+import { FileSize } from "../Shared/FileSize";
 
 interface IScenePreviewProps {
   isPortrait: boolean;
@@ -362,21 +363,11 @@ const SceneCardImage = PatchComponent(
     );
 
     function maybeRenderSceneSpecsOverlay() {
-      let sizeObj = null;
-      if (file?.size) {
-        sizeObj = TextUtils.fileSize(file.size);
-      }
       return (
         <div className="scene-specs-overlay">
-          {sizeObj != null ? (
+          {file?.size !== undefined ? (
             <span className="overlay-filesize extra-scene-info">
-              <FormattedNumber
-                value={sizeObj.size}
-                maximumFractionDigits={TextUtils.fileSizeFractionalDigits(
-                  sizeObj.unit
-                )}
-              />
-              {TextUtils.formatFileSizeUnit(sizeObj.unit)}
+              <FileSize size={file.size} />
             </span>
           ) : (
             ""
@@ -483,7 +474,7 @@ export const SceneCard = PatchComponent(
       let preferredCardWidth: number;
       switch (zoomValue) {
         case 0:
-          preferredCardWidth = 240;
+          preferredCardWidth = 280;
           break;
         case 1:
           preferredCardWidth = 340; // this value is intentionally higher than 320
@@ -499,7 +490,7 @@ export const SceneCard = PatchComponent(
         preferredCardWidth!
       );
       setCardWidth(fittedCardWidth);
-    }, [props, props.containerWidth, props.zoomIndex]);
+    }, [props.containerWidth, props.zoomIndex]);
 
     const cont = configuration?.interface.continuePlaylistDefault ?? false;
 
