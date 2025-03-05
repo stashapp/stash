@@ -14,7 +14,11 @@ interface IPluginApi {
       Button: React.FC<any>;
       Nav: React.FC<any> & {
         Link: React.FC<any>;
+        Item: React.FC<any>;
       };
+      Tab: React.FC<any> & {
+        Pane: React.FC<any>;
+      }
     },
     FontAwesomeSolid: {
       faEthernet: any;
@@ -45,7 +49,7 @@ interface IPluginApi {
   const React = PluginApi.React;
   const GQL = PluginApi.GQL;
 
-  const { Button } = PluginApi.libraries.Bootstrap;
+  const { Button, Nav, Tab } = PluginApi.libraries.Bootstrap;
   const { faEthernet } = PluginApi.libraries.FontAwesomeSolid;
   const {
     Link,
@@ -237,5 +241,37 @@ interface IPluginApi {
         )
       }
     ]
-  })
+  });
+
+  PluginApi.patch.before("ScenePage.Tabs", function (props: any) {
+    return [
+      {
+        children: (
+          <>
+            {props.children}
+            <Nav.Item>
+              <Nav.Link eventKey="test-react-tab">
+                Test React tab
+              </Nav.Link>
+            </Nav.Item>
+          </>
+        ),
+      },
+    ];
+  });
+
+  PluginApi.patch.before("ScenePage.TabContent", function (props: any) {
+    return [
+      {
+        children: (
+          <>
+            {props.children}
+            <Tab.Pane eventKey="test-react-tab">
+              Test React tab content {props.scene.id}
+            </Tab.Pane>
+          </>
+        ),
+      },
+    ];
+  });
 })();
