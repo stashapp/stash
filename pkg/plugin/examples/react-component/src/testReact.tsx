@@ -148,6 +148,10 @@ interface IPluginApi {
     return <><Overlays />{original({...props})}</>;
   });
 
+  PluginApi.patch.instead("FrontPage", function (props: any, _: any, original: (props: any) => any) {  
+    return <><p>Hello from Test React!</p>{original({...props})}</>;
+  });
+
   const TestPage: React.FC = () => {
     const componentsToLoad = [
       PluginApi.loadableComponents.SceneCard,
