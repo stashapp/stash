@@ -53,6 +53,7 @@ interface IProps {
   url: string;
   type: PopoverLinkType;
   count: number;
+  showZero?: boolean;
 }
 
 export const PopoverCountButton: React.FC<IProps> = ({
@@ -60,8 +61,13 @@ export const PopoverCountButton: React.FC<IProps> = ({
   url,
   type,
   count,
+  showZero = true,
 }) => {
   const intl = useIntl();
+
+  if (!showZero && count === 0) {
+    return null;
+  }
 
   // TODO - refactor - create SceneIcon, ImageIcon etc components
   function getIcon() {
