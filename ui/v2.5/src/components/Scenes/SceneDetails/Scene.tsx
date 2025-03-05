@@ -50,6 +50,7 @@ import { useRatingKeybinds } from "src/hooks/keybinds";
 import { lazyComponent } from "src/utils/lazyComponent";
 import cx from "classnames";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
+import { PatchComponent } from "src/patch";
 
 const SubmitStashBoxDraft = lazyComponent(
   () => import("src/components/Dialogs/SubmitDraft")
@@ -153,511 +154,522 @@ interface ISceneParams {
   id: string;
 }
 
-const ScenePage: React.FC<IProps> = ({
-  scene,
-  setTimestamp,
-  queueScenes,
-  onQueueNext,
-  onQueuePrevious,
-  onQueueRandom,
-  onQueueSceneClicked,
-  onDelete,
-  continuePlaylist,
-  queueHasMoreScenes,
-  onQueueMoreScenes,
-  onQueueLessScenes,
-  queueStart,
-  collapsed,
-  setCollapsed,
-  setContinuePlaylist,
-}) => {
-  const Toast = useToast();
-  const intl = useIntl();
-  const [updateScene] = useSceneUpdate();
-  const [generateScreenshot] = useSceneGenerateScreenshot();
-  const { configuration } = useContext(ConfigurationContext);
+const ScenePage: React.FC<IProps> = PatchComponent(
+  "ScenePage",
+  ({
+    scene,
+    setTimestamp,
+    queueScenes,
+    onQueueNext,
+    onQueuePrevious,
+    onQueueRandom,
+    onQueueSceneClicked,
+    onDelete,
+    continuePlaylist,
+    queueHasMoreScenes,
+    onQueueMoreScenes,
+    onQueueLessScenes,
+    queueStart,
+    collapsed,
+    setCollapsed,
+    setContinuePlaylist,
+  }) => {
+    const Toast = useToast();
+    const intl = useIntl();
+    const [updateScene] = useSceneUpdate();
+    const [generateScreenshot] = useSceneGenerateScreenshot();
+    const { configuration } = useContext(ConfigurationContext);
 
-  const [showDraftModal, setShowDraftModal] = useState(false);
-  const boxes = configuration?.general?.stashBoxes ?? [];
+    const [showDraftModal, setShowDraftModal] = useState(false);
+    const boxes = configuration?.general?.stashBoxes ?? [];
 
-  const [incrementO] = useSceneIncrementO(scene.id);
+    const [incrementO] = useSceneIncrementO(scene.id);
 
-  const [incrementPlay] = useSceneIncrementPlayCount();
+    const [incrementPlay] = useSceneIncrementPlayCount();
 
-  function incrementPlayCount() {
-    incrementPlay({
-      variables: {
-        id: scene.id,
-      },
-    });
-  }
-
-  const [organizedLoading, setOrganizedLoading] = useState(false);
-
-  const [activeTabKey, setActiveTabKey] = useState("scene-details-panel");
-
-  const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
-  const [isGenerateDialogOpen, setIsGenerateDialogOpen] = useState(false);
-
-  const onIncrementOClick = async () => {
-    try {
-      await incrementO();
-    } catch (e) {
-      Toast.error(e);
+    function incrementPlayCount() {
+      incrementPlay({
+        variables: {
+          id: scene.id,
+        },
+      });
     }
-  };
 
-  function setRating(v: number | null) {
-    updateScene({
-      variables: {
-        input: {
-          id: scene.id,
-          rating100: v,
-        },
-      },
-    });
-  }
+    const [organizedLoading, setOrganizedLoading] = useState(false);
 
-  useRatingKeybinds(
-    true,
-    configuration?.ui.ratingSystemOptions?.type,
-    setRating
-  );
+    const [activeTabKey, setActiveTabKey] = useState("scene-details-panel");
 
-  // set up hotkeys
-  useEffect(() => {
-    Mousetrap.bind("a", () => setActiveTabKey("scene-details-panel"));
-    Mousetrap.bind("q", () => setActiveTabKey("scene-queue-panel"));
-    Mousetrap.bind("e", () => setActiveTabKey("scene-edit-panel"));
-    Mousetrap.bind("k", () => setActiveTabKey("scene-markers-panel"));
-    Mousetrap.bind("i", () => setActiveTabKey("scene-file-info-panel"));
-    Mousetrap.bind("h", () => setActiveTabKey("scene-history-panel"));
-    Mousetrap.bind("o", () => {
-      onIncrementOClick();
-    });
-    Mousetrap.bind("p n", () => onQueueNext());
-    Mousetrap.bind("p p", () => onQueuePrevious());
-    Mousetrap.bind("p r", () => onQueueRandom());
-    Mousetrap.bind(",", () => setCollapsed(!collapsed));
+    const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
+    const [isGenerateDialogOpen, setIsGenerateDialogOpen] = useState(false);
 
-    return () => {
-      Mousetrap.unbind("a");
-      Mousetrap.unbind("q");
-      Mousetrap.unbind("e");
-      Mousetrap.unbind("k");
-      Mousetrap.unbind("i");
-      Mousetrap.unbind("h");
-      Mousetrap.unbind("o");
-      Mousetrap.unbind("p n");
-      Mousetrap.unbind("p p");
-      Mousetrap.unbind("p r");
-      Mousetrap.unbind(",");
+    const onIncrementOClick = async () => {
+      try {
+        await incrementO();
+      } catch (e) {
+        Toast.error(e);
+      }
     };
-  });
 
-  async function onSave(input: GQL.SceneCreateInput) {
-    await updateScene({
-      variables: {
-        input: {
-          id: scene.id,
-          ...input,
+    function setRating(v: number | null) {
+      updateScene({
+        variables: {
+          input: {
+            id: scene.id,
+            rating100: v,
+          },
         },
-      },
-    });
-    Toast.success(
-      intl.formatMessage(
-        { id: "toast.updated_entity" },
-        { entity: intl.formatMessage({ id: "scene" }).toLocaleLowerCase() }
-      )
-    );
-  }
+      });
+    }
 
-  const onOrganizedClick = async () => {
-    try {
-      setOrganizedLoading(true);
+    useRatingKeybinds(
+      true,
+      configuration?.ui.ratingSystemOptions?.type,
+      setRating
+    );
+
+    // set up hotkeys
+    useEffect(() => {
+      Mousetrap.bind("a", () => setActiveTabKey("scene-details-panel"));
+      Mousetrap.bind("q", () => setActiveTabKey("scene-queue-panel"));
+      Mousetrap.bind("e", () => setActiveTabKey("scene-edit-panel"));
+      Mousetrap.bind("k", () => setActiveTabKey("scene-markers-panel"));
+      Mousetrap.bind("i", () => setActiveTabKey("scene-file-info-panel"));
+      Mousetrap.bind("h", () => setActiveTabKey("scene-history-panel"));
+      Mousetrap.bind("o", () => {
+        onIncrementOClick();
+      });
+      Mousetrap.bind("p n", () => onQueueNext());
+      Mousetrap.bind("p p", () => onQueuePrevious());
+      Mousetrap.bind("p r", () => onQueueRandom());
+      Mousetrap.bind(",", () => setCollapsed(!collapsed));
+
+      return () => {
+        Mousetrap.unbind("a");
+        Mousetrap.unbind("q");
+        Mousetrap.unbind("e");
+        Mousetrap.unbind("k");
+        Mousetrap.unbind("i");
+        Mousetrap.unbind("h");
+        Mousetrap.unbind("o");
+        Mousetrap.unbind("p n");
+        Mousetrap.unbind("p p");
+        Mousetrap.unbind("p r");
+        Mousetrap.unbind(",");
+      };
+    });
+
+    async function onSave(input: GQL.SceneCreateInput) {
       await updateScene({
         variables: {
           input: {
             id: scene.id,
-            organized: !scene.organized,
+            ...input,
           },
         },
       });
-    } catch (e) {
-      Toast.error(e);
-    } finally {
-      setOrganizedLoading(false);
+      Toast.success(
+        intl.formatMessage(
+          { id: "toast.updated_entity" },
+          { entity: intl.formatMessage({ id: "scene" }).toLocaleLowerCase() }
+        )
+      );
     }
-  };
 
-  function onClickMarker(marker: GQL.SceneMarkerDataFragment) {
-    setTimestamp(marker.seconds);
-  }
+    const onOrganizedClick = async () => {
+      try {
+        setOrganizedLoading(true);
+        await updateScene({
+          variables: {
+            input: {
+              id: scene.id,
+              organized: !scene.organized,
+            },
+          },
+        });
+      } catch (e) {
+        Toast.error(e);
+      } finally {
+        setOrganizedLoading(false);
+      }
+    };
 
-  async function onRescan() {
-    await mutateMetadataScan({
-      paths: [objectPath(scene)],
-      rescan: true,
-    });
+    function onClickMarker(marker: GQL.SceneMarkerDataFragment) {
+      setTimestamp(marker.seconds);
+    }
 
-    Toast.success(
-      intl.formatMessage(
-        { id: "toast.rescanning_entity" },
-        {
-          count: 1,
-          singularEntity: intl
-            .formatMessage({ id: "scene" })
-            .toLocaleLowerCase(),
-        }
-      )
+    async function onRescan() {
+      await mutateMetadataScan({
+        paths: [objectPath(scene)],
+        rescan: true,
+      });
+
+      Toast.success(
+        intl.formatMessage(
+          { id: "toast.rescanning_entity" },
+          {
+            count: 1,
+            singularEntity: intl
+              .formatMessage({ id: "scene" })
+              .toLocaleLowerCase(),
+          }
+        )
+      );
+    }
+
+    async function onGenerateScreenshot(at?: number) {
+      await generateScreenshot({
+        variables: {
+          id: scene.id,
+          at,
+        },
+      });
+      Toast.success(intl.formatMessage({ id: "toast.generating_screenshot" }));
+    }
+
+    function onDeleteDialogClosed(deleted: boolean) {
+      setIsDeleteAlertOpen(false);
+      if (deleted) {
+        onDelete();
+      }
+    }
+
+    function maybeRenderDeleteDialog() {
+      if (isDeleteAlertOpen) {
+        return (
+          <DeleteScenesDialog
+            selected={[scene]}
+            onClose={onDeleteDialogClosed}
+          />
+        );
+      }
+    }
+
+    function maybeRenderSceneGenerateDialog() {
+      if (isGenerateDialogOpen) {
+        return (
+          <GenerateDialog
+            selectedIds={[scene.id]}
+            onClose={() => {
+              setIsGenerateDialogOpen(false);
+            }}
+            type="scene"
+          />
+        );
+      }
+    }
+
+    const renderOperations = () => (
+      <Dropdown>
+        <Dropdown.Toggle
+          variant="secondary"
+          id="operation-menu"
+          className="minimal"
+          title={intl.formatMessage({ id: "operations" })}
+        >
+          <Icon icon={faEllipsisV} />
+        </Dropdown.Toggle>
+        <Dropdown.Menu className="bg-secondary text-white">
+          {!!scene.files.length && (
+            <Dropdown.Item
+              key="rescan"
+              className="bg-secondary text-white"
+              onClick={() => onRescan()}
+            >
+              <FormattedMessage id="actions.rescan" />
+            </Dropdown.Item>
+          )}
+          <Dropdown.Item
+            key="generate"
+            className="bg-secondary text-white"
+            onClick={() => setIsGenerateDialogOpen(true)}
+          >
+            <FormattedMessage id="actions.generate" />
+          </Dropdown.Item>
+          <Dropdown.Item
+            key="generate-screenshot"
+            className="bg-secondary text-white"
+            onClick={() => onGenerateScreenshot(getPlayerPosition())}
+          >
+            <FormattedMessage id="actions.generate_thumb_from_current" />
+          </Dropdown.Item>
+          <Dropdown.Item
+            key="generate-default"
+            className="bg-secondary text-white"
+            onClick={() => onGenerateScreenshot()}
+          >
+            <FormattedMessage id="actions.generate_thumb_default" />
+          </Dropdown.Item>
+          {boxes.length > 0 && (
+            <Dropdown.Item
+              key="submit"
+              className="bg-secondary text-white"
+              onClick={() => setShowDraftModal(true)}
+            >
+              <FormattedMessage id="actions.submit_stash_box" />
+            </Dropdown.Item>
+          )}
+          <Dropdown.Item
+            key="delete-scene"
+            className="bg-secondary text-white"
+            onClick={() => setIsDeleteAlertOpen(true)}
+          >
+            <FormattedMessage
+              id="actions.delete"
+              values={{ entityType: intl.formatMessage({ id: "scene" }) }}
+            />
+          </Dropdown.Item>
+        </Dropdown.Menu>
+      </Dropdown>
     );
-  }
 
-  async function onGenerateScreenshot(at?: number) {
-    await generateScreenshot({
-      variables: {
-        id: scene.id,
-        at,
-      },
-    });
-    Toast.success(intl.formatMessage({ id: "toast.generating_screenshot" }));
-  }
-
-  function onDeleteDialogClosed(deleted: boolean) {
-    setIsDeleteAlertOpen(false);
-    if (deleted) {
-      onDelete();
-    }
-  }
-
-  function maybeRenderDeleteDialog() {
-    if (isDeleteAlertOpen) {
-      return (
-        <DeleteScenesDialog selected={[scene]} onClose={onDeleteDialogClosed} />
-      );
-    }
-  }
-
-  function maybeRenderSceneGenerateDialog() {
-    if (isGenerateDialogOpen) {
-      return (
-        <GenerateDialog
-          selectedIds={[scene.id]}
-          onClose={() => {
-            setIsGenerateDialogOpen(false);
-          }}
-          type="scene"
-        />
-      );
-    }
-  }
-
-  const renderOperations = () => (
-    <Dropdown>
-      <Dropdown.Toggle
-        variant="secondary"
-        id="operation-menu"
-        className="minimal"
-        title={intl.formatMessage({ id: "operations" })}
-      >
-        <Icon icon={faEllipsisV} />
-      </Dropdown.Toggle>
-      <Dropdown.Menu className="bg-secondary text-white">
-        {!!scene.files.length && (
-          <Dropdown.Item
-            key="rescan"
-            className="bg-secondary text-white"
-            onClick={() => onRescan()}
-          >
-            <FormattedMessage id="actions.rescan" />
-          </Dropdown.Item>
-        )}
-        <Dropdown.Item
-          key="generate"
-          className="bg-secondary text-white"
-          onClick={() => setIsGenerateDialogOpen(true)}
-        >
-          <FormattedMessage id="actions.generate" />
-        </Dropdown.Item>
-        <Dropdown.Item
-          key="generate-screenshot"
-          className="bg-secondary text-white"
-          onClick={() => onGenerateScreenshot(getPlayerPosition())}
-        >
-          <FormattedMessage id="actions.generate_thumb_from_current" />
-        </Dropdown.Item>
-        <Dropdown.Item
-          key="generate-default"
-          className="bg-secondary text-white"
-          onClick={() => onGenerateScreenshot()}
-        >
-          <FormattedMessage id="actions.generate_thumb_default" />
-        </Dropdown.Item>
-        {boxes.length > 0 && (
-          <Dropdown.Item
-            key="submit"
-            className="bg-secondary text-white"
-            onClick={() => setShowDraftModal(true)}
-          >
-            <FormattedMessage id="actions.submit_stash_box" />
-          </Dropdown.Item>
-        )}
-        <Dropdown.Item
-          key="delete-scene"
-          className="bg-secondary text-white"
-          onClick={() => setIsDeleteAlertOpen(true)}
-        >
-          <FormattedMessage
-            id="actions.delete"
-            values={{ entityType: intl.formatMessage({ id: "scene" }) }}
-          />
-        </Dropdown.Item>
-      </Dropdown.Menu>
-    </Dropdown>
-  );
-
-  const renderTabs = () => (
-    <Tab.Container
-      activeKey={activeTabKey}
-      onSelect={(k) => k && setActiveTabKey(k)}
-    >
-      <div>
-        <Nav variant="tabs" className="mr-auto">
-          <Nav.Item>
-            <Nav.Link eventKey="scene-details-panel">
-              <FormattedMessage id="details" />
-            </Nav.Link>
-          </Nav.Item>
-          {queueScenes.length > 0 ? (
-            <Nav.Item>
-              <Nav.Link eventKey="scene-queue-panel">
-                <FormattedMessage id="queue" />
-              </Nav.Link>
-            </Nav.Item>
-          ) : (
-            ""
-          )}
-          <Nav.Item>
-            <Nav.Link eventKey="scene-markers-panel">
-              <FormattedMessage id="markers" />
-            </Nav.Link>
-          </Nav.Item>
-          {scene.groups.length > 0 ? (
-            <Nav.Item>
-              <Nav.Link eventKey="scene-group-panel">
-                <FormattedMessage
-                  id="countables.groups"
-                  values={{ count: scene.groups.length }}
-                />
-              </Nav.Link>
-            </Nav.Item>
-          ) : (
-            ""
-          )}
-          {scene.galleries.length >= 1 ? (
-            <Nav.Item>
-              <Nav.Link eventKey="scene-galleries-panel">
-                <FormattedMessage
-                  id="countables.galleries"
-                  values={{ count: scene.galleries.length }}
-                />
-              </Nav.Link>
-            </Nav.Item>
-          ) : undefined}
-          <Nav.Item>
-            <Nav.Link eventKey="scene-video-filter-panel">
-              <FormattedMessage id="effect_filters.name" />
-            </Nav.Link>
-          </Nav.Item>
-          <Nav.Item>
-            <Nav.Link eventKey="scene-file-info-panel">
-              <FormattedMessage id="file_info" />
-              <Counter count={scene.files.length} hideZero hideOne />
-            </Nav.Link>
-          </Nav.Item>
-          <Nav.Item>
-            <Nav.Link eventKey="scene-history-panel">
-              <FormattedMessage id="history" />
-            </Nav.Link>
-          </Nav.Item>
-          <Nav.Item>
-            <Nav.Link eventKey="scene-edit-panel">
-              <FormattedMessage id="actions.edit" />
-            </Nav.Link>
-          </Nav.Item>
-        </Nav>
-      </div>
-
-      <Tab.Content>
-        <Tab.Pane eventKey="scene-details-panel">
-          <SceneDetailPanel scene={scene} />
-        </Tab.Pane>
-        <Tab.Pane eventKey="scene-queue-panel">
-          <QueueViewer
-            scenes={queueScenes}
-            currentID={scene.id}
-            continue={continuePlaylist}
-            setContinue={setContinuePlaylist}
-            onSceneClicked={onQueueSceneClicked}
-            onNext={onQueueNext}
-            onPrevious={onQueuePrevious}
-            onRandom={onQueueRandom}
-            start={queueStart}
-            hasMoreScenes={queueHasMoreScenes}
-            onLessScenes={onQueueLessScenes}
-            onMoreScenes={onQueueMoreScenes}
-          />
-        </Tab.Pane>
-        <Tab.Pane eventKey="scene-markers-panel">
-          <SceneMarkersPanel
-            sceneId={scene.id}
-            onClickMarker={onClickMarker}
-            isVisible={activeTabKey === "scene-markers-panel"}
-          />
-        </Tab.Pane>
-        <Tab.Pane eventKey="scene-group-panel">
-          <SceneGroupPanel scene={scene} />
-        </Tab.Pane>
-        {scene.galleries.length >= 1 && (
-          <Tab.Pane eventKey="scene-galleries-panel">
-            <SceneGalleriesPanel galleries={scene.galleries} />
-            {scene.galleries.length === 1 && (
-              <GalleryViewer galleryId={scene.galleries[0].id} />
-            )}
-          </Tab.Pane>
-        )}
-        <Tab.Pane eventKey="scene-video-filter-panel">
-          <SceneVideoFilterPanel scene={scene} />
-        </Tab.Pane>
-        <Tab.Pane className="file-info-panel" eventKey="scene-file-info-panel">
-          <SceneFileInfoPanel scene={scene} />
-        </Tab.Pane>
-        <Tab.Pane eventKey="scene-edit-panel" mountOnEnter>
-          <SceneEditPanel
-            isVisible={activeTabKey === "scene-edit-panel"}
-            scene={scene}
-            onSubmit={onSave}
-            onDelete={() => setIsDeleteAlertOpen(true)}
-          />
-        </Tab.Pane>
-        <Tab.Pane eventKey="scene-history-panel">
-          <SceneHistoryPanel scene={scene} />
-        </Tab.Pane>
-      </Tab.Content>
-    </Tab.Container>
-  );
-
-  function getCollapseButtonIcon() {
-    return collapsed ? faChevronRight : faChevronLeft;
-  }
-
-  const title = objectTitle(scene);
-
-  const file = useMemo(
-    () => (scene.files.length > 0 ? scene.files[0] : undefined),
-    [scene]
-  );
-
-  return (
-    <>
-      <Helmet>
-        <title>{title}</title>
-      </Helmet>
-      {maybeRenderSceneGenerateDialog()}
-      {maybeRenderDeleteDialog()}
-      <div
-        className={`scene-tabs order-xl-first order-last ${
-          collapsed ? "collapsed" : ""
-        }`}
+    const renderTabs = () => (
+      <Tab.Container
+        activeKey={activeTabKey}
+        onSelect={(k) => k && setActiveTabKey(k)}
       >
         <div>
-          <div className="scene-header-container">
-            {scene.studio && (
-              <h1 className="text-center scene-studio-image">
-                <Link to={`/studios/${scene.studio.id}`}>
-                  <img
-                    src={scene.studio.image_path ?? ""}
-                    alt={`${scene.studio.name} logo`}
-                    className="studio-logo"
-                  />
-                </Link>
-              </h1>
+          <Nav variant="tabs" className="mr-auto">
+            <Nav.Item>
+              <Nav.Link eventKey="scene-details-panel">
+                <FormattedMessage id="details" />
+              </Nav.Link>
+            </Nav.Item>
+            {queueScenes.length > 0 ? (
+              <Nav.Item>
+                <Nav.Link eventKey="scene-queue-panel">
+                  <FormattedMessage id="queue" />
+                </Nav.Link>
+              </Nav.Item>
+            ) : (
+              ""
             )}
-            <h3 className={cx("scene-header", { "no-studio": !scene.studio })}>
-              <TruncatedText lineCount={2} text={title} />
-            </h3>
-          </div>
-
-          <div className="scene-subheader">
-            <span className="date" data-value={scene.date}>
-              {!!scene.date && (
-                <FormattedDate
-                  value={scene.date}
-                  format="long"
-                  timeZone="utc"
-                />
-              )}
-            </span>
-            <VideoFrameRateResolution
-              width={file?.width}
-              height={file?.height}
-              frameRate={file?.frame_rate}
-            />
-          </div>
-
-          <div className="scene-toolbar">
-            <span className="scene-toolbar-group">
-              <RatingSystem
-                value={scene.rating100}
-                onSetRating={setRating}
-                clickToRate
-                withoutContext
-              />
-            </span>
-            <span className="scene-toolbar-group">
-              <span>
-                <ExternalPlayerButton scene={scene} />
-              </span>
-              <span>
-                <ViewCountButton
-                  value={scene.play_count ?? 0}
-                  onIncrement={() => incrementPlayCount()}
-                />
-              </span>
-              <span>
-                <OCounterButton
-                  value={scene.o_counter ?? 0}
-                  onIncrement={() => onIncrementOClick()}
-                />
-              </span>
-              <span>
-                <OrganizedButton
-                  loading={organizedLoading}
-                  organized={scene.organized}
-                  onClick={onOrganizedClick}
-                />
-              </span>
-              <span>{renderOperations()}</span>
-            </span>
-          </div>
+            <Nav.Item>
+              <Nav.Link eventKey="scene-markers-panel">
+                <FormattedMessage id="markers" />
+              </Nav.Link>
+            </Nav.Item>
+            {scene.groups.length > 0 ? (
+              <Nav.Item>
+                <Nav.Link eventKey="scene-group-panel">
+                  <FormattedMessage
+                    id="countables.groups"
+                    values={{ count: scene.groups.length }}
+                  />
+                </Nav.Link>
+              </Nav.Item>
+            ) : (
+              ""
+            )}
+            {scene.galleries.length >= 1 ? (
+              <Nav.Item>
+                <Nav.Link eventKey="scene-galleries-panel">
+                  <FormattedMessage
+                    id="countables.galleries"
+                    values={{ count: scene.galleries.length }}
+                  />
+                </Nav.Link>
+              </Nav.Item>
+            ) : undefined}
+            <Nav.Item>
+              <Nav.Link eventKey="scene-video-filter-panel">
+                <FormattedMessage id="effect_filters.name" />
+              </Nav.Link>
+            </Nav.Item>
+            <Nav.Item>
+              <Nav.Link eventKey="scene-file-info-panel">
+                <FormattedMessage id="file_info" />
+                <Counter count={scene.files.length} hideZero hideOne />
+              </Nav.Link>
+            </Nav.Item>
+            <Nav.Item>
+              <Nav.Link eventKey="scene-history-panel">
+                <FormattedMessage id="history" />
+              </Nav.Link>
+            </Nav.Item>
+            <Nav.Item>
+              <Nav.Link eventKey="scene-edit-panel">
+                <FormattedMessage id="actions.edit" />
+              </Nav.Link>
+            </Nav.Item>
+          </Nav>
         </div>
-        {renderTabs()}
-      </div>
-      <div className="scene-divider d-none d-xl-block">
-        <Button onClick={() => setCollapsed(!collapsed)}>
-          <Icon className="fa-fw" icon={getCollapseButtonIcon()} />
-        </Button>
-      </div>
-      <SubmitStashBoxDraft
-        type="scene"
-        boxes={boxes}
-        entity={scene}
-        show={showDraftModal}
-        onHide={() => setShowDraftModal(false)}
-      />
-    </>
-  );
-};
+
+        <Tab.Content>
+          <Tab.Pane eventKey="scene-details-panel">
+            <SceneDetailPanel scene={scene} />
+          </Tab.Pane>
+          <Tab.Pane eventKey="scene-queue-panel">
+            <QueueViewer
+              scenes={queueScenes}
+              currentID={scene.id}
+              continue={continuePlaylist}
+              setContinue={setContinuePlaylist}
+              onSceneClicked={onQueueSceneClicked}
+              onNext={onQueueNext}
+              onPrevious={onQueuePrevious}
+              onRandom={onQueueRandom}
+              start={queueStart}
+              hasMoreScenes={queueHasMoreScenes}
+              onLessScenes={onQueueLessScenes}
+              onMoreScenes={onQueueMoreScenes}
+            />
+          </Tab.Pane>
+          <Tab.Pane eventKey="scene-markers-panel">
+            <SceneMarkersPanel
+              sceneId={scene.id}
+              onClickMarker={onClickMarker}
+              isVisible={activeTabKey === "scene-markers-panel"}
+            />
+          </Tab.Pane>
+          <Tab.Pane eventKey="scene-group-panel">
+            <SceneGroupPanel scene={scene} />
+          </Tab.Pane>
+          {scene.galleries.length >= 1 && (
+            <Tab.Pane eventKey="scene-galleries-panel">
+              <SceneGalleriesPanel galleries={scene.galleries} />
+              {scene.galleries.length === 1 && (
+                <GalleryViewer galleryId={scene.galleries[0].id} />
+              )}
+            </Tab.Pane>
+          )}
+          <Tab.Pane eventKey="scene-video-filter-panel">
+            <SceneVideoFilterPanel scene={scene} />
+          </Tab.Pane>
+          <Tab.Pane
+            className="file-info-panel"
+            eventKey="scene-file-info-panel"
+          >
+            <SceneFileInfoPanel scene={scene} />
+          </Tab.Pane>
+          <Tab.Pane eventKey="scene-edit-panel" mountOnEnter>
+            <SceneEditPanel
+              isVisible={activeTabKey === "scene-edit-panel"}
+              scene={scene}
+              onSubmit={onSave}
+              onDelete={() => setIsDeleteAlertOpen(true)}
+            />
+          </Tab.Pane>
+          <Tab.Pane eventKey="scene-history-panel">
+            <SceneHistoryPanel scene={scene} />
+          </Tab.Pane>
+        </Tab.Content>
+      </Tab.Container>
+    );
+
+    function getCollapseButtonIcon() {
+      return collapsed ? faChevronRight : faChevronLeft;
+    }
+
+    const title = objectTitle(scene);
+
+    const file = useMemo(
+      () => (scene.files.length > 0 ? scene.files[0] : undefined),
+      [scene]
+    );
+
+    return (
+      <>
+        <Helmet>
+          <title>{title}</title>
+        </Helmet>
+        {maybeRenderSceneGenerateDialog()}
+        {maybeRenderDeleteDialog()}
+        <div
+          className={`scene-tabs order-xl-first order-last ${
+            collapsed ? "collapsed" : ""
+          }`}
+        >
+          <div>
+            <div className="scene-header-container">
+              {scene.studio && (
+                <h1 className="text-center scene-studio-image">
+                  <Link to={`/studios/${scene.studio.id}`}>
+                    <img
+                      src={scene.studio.image_path ?? ""}
+                      alt={`${scene.studio.name} logo`}
+                      className="studio-logo"
+                    />
+                  </Link>
+                </h1>
+              )}
+              <h3
+                className={cx("scene-header", { "no-studio": !scene.studio })}
+              >
+                <TruncatedText lineCount={2} text={title} />
+              </h3>
+            </div>
+
+            <div className="scene-subheader">
+              <span className="date" data-value={scene.date}>
+                {!!scene.date && (
+                  <FormattedDate
+                    value={scene.date}
+                    format="long"
+                    timeZone="utc"
+                  />
+                )}
+              </span>
+              <VideoFrameRateResolution
+                width={file?.width}
+                height={file?.height}
+                frameRate={file?.frame_rate}
+              />
+            </div>
+
+            <div className="scene-toolbar">
+              <span className="scene-toolbar-group">
+                <RatingSystem
+                  value={scene.rating100}
+                  onSetRating={setRating}
+                  clickToRate
+                  withoutContext
+                />
+              </span>
+              <span className="scene-toolbar-group">
+                <span>
+                  <ExternalPlayerButton scene={scene} />
+                </span>
+                <span>
+                  <ViewCountButton
+                    value={scene.play_count ?? 0}
+                    onIncrement={() => incrementPlayCount()}
+                  />
+                </span>
+                <span>
+                  <OCounterButton
+                    value={scene.o_counter ?? 0}
+                    onIncrement={() => onIncrementOClick()}
+                  />
+                </span>
+                <span>
+                  <OrganizedButton
+                    loading={organizedLoading}
+                    organized={scene.organized}
+                    onClick={onOrganizedClick}
+                  />
+                </span>
+                <span>{renderOperations()}</span>
+              </span>
+            </div>
+          </div>
+          {renderTabs()}
+        </div>
+        <div className="scene-divider d-none d-xl-block">
+          <Button onClick={() => setCollapsed(!collapsed)}>
+            <Icon className="fa-fw" icon={getCollapseButtonIcon()} />
+          </Button>
+        </div>
+        <SubmitStashBoxDraft
+          type="scene"
+          boxes={boxes}
+          entity={scene}
+          show={showDraftModal}
+          onHide={() => setShowDraftModal(false)}
+        />
+      </>
+    );
+  }
+);
 
 const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
   location,
