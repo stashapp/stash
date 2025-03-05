@@ -50,7 +50,7 @@ import { useRatingKeybinds } from "src/hooks/keybinds";
 import { lazyComponent } from "src/utils/lazyComponent";
 import cx from "classnames";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
-import { PatchComponent } from "src/patch";
+import { PatchComponent, PatchContainerComponent } from "src/patch";
 
 const SubmitStashBoxDraft = lazyComponent(
   () => import("src/components/Dialogs/SubmitDraft")
@@ -154,9 +154,13 @@ interface ISceneParams {
   id: string;
 }
 
-const ScenePage: React.FC<IProps> = PatchComponent(
-  "ScenePage",
-  ({
+const ScenePageTabs = PatchContainerComponent<IProps>("ScenePage.Tabs");
+const ScenePageTabContent = PatchContainerComponent<IProps>(
+  "ScenePage.TabContent"
+);
+
+const ScenePage: React.FC<IProps> = PatchComponent("ScenePage", (props) => {
+  const {
     scene,
     setTimestamp,
     queueScenes,
@@ -173,262 +177,261 @@ const ScenePage: React.FC<IProps> = PatchComponent(
     collapsed,
     setCollapsed,
     setContinuePlaylist,
-  }) => {
-    const Toast = useToast();
-    const intl = useIntl();
-    const [updateScene] = useSceneUpdate();
-    const [generateScreenshot] = useSceneGenerateScreenshot();
-    const { configuration } = useContext(ConfigurationContext);
+  } = props;
 
-    const [showDraftModal, setShowDraftModal] = useState(false);
-    const boxes = configuration?.general?.stashBoxes ?? [];
+  const Toast = useToast();
+  const intl = useIntl();
+  const [updateScene] = useSceneUpdate();
+  const [generateScreenshot] = useSceneGenerateScreenshot();
+  const { configuration } = useContext(ConfigurationContext);
 
-    const [incrementO] = useSceneIncrementO(scene.id);
+  const [showDraftModal, setShowDraftModal] = useState(false);
+  const boxes = configuration?.general?.stashBoxes ?? [];
 
-    const [incrementPlay] = useSceneIncrementPlayCount();
+  const [incrementO] = useSceneIncrementO(scene.id);
 
-    function incrementPlayCount() {
-      incrementPlay({
-        variables: {
-          id: scene.id,
-        },
-      });
-    }
+  const [incrementPlay] = useSceneIncrementPlayCount();
 
-    const [organizedLoading, setOrganizedLoading] = useState(false);
-
-    const [activeTabKey, setActiveTabKey] = useState("scene-details-panel");
-
-    const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
-    const [isGenerateDialogOpen, setIsGenerateDialogOpen] = useState(false);
-
-    const onIncrementOClick = async () => {
-      try {
-        await incrementO();
-      } catch (e) {
-        Toast.error(e);
-      }
-    };
-
-    function setRating(v: number | null) {
-      updateScene({
-        variables: {
-          input: {
-            id: scene.id,
-            rating100: v,
-          },
-        },
-      });
-    }
-
-    useRatingKeybinds(
-      true,
-      configuration?.ui.ratingSystemOptions?.type,
-      setRating
-    );
-
-    // set up hotkeys
-    useEffect(() => {
-      Mousetrap.bind("a", () => setActiveTabKey("scene-details-panel"));
-      Mousetrap.bind("q", () => setActiveTabKey("scene-queue-panel"));
-      Mousetrap.bind("e", () => setActiveTabKey("scene-edit-panel"));
-      Mousetrap.bind("k", () => setActiveTabKey("scene-markers-panel"));
-      Mousetrap.bind("i", () => setActiveTabKey("scene-file-info-panel"));
-      Mousetrap.bind("h", () => setActiveTabKey("scene-history-panel"));
-      Mousetrap.bind("o", () => {
-        onIncrementOClick();
-      });
-      Mousetrap.bind("p n", () => onQueueNext());
-      Mousetrap.bind("p p", () => onQueuePrevious());
-      Mousetrap.bind("p r", () => onQueueRandom());
-      Mousetrap.bind(",", () => setCollapsed(!collapsed));
-
-      return () => {
-        Mousetrap.unbind("a");
-        Mousetrap.unbind("q");
-        Mousetrap.unbind("e");
-        Mousetrap.unbind("k");
-        Mousetrap.unbind("i");
-        Mousetrap.unbind("h");
-        Mousetrap.unbind("o");
-        Mousetrap.unbind("p n");
-        Mousetrap.unbind("p p");
-        Mousetrap.unbind("p r");
-        Mousetrap.unbind(",");
-      };
+  function incrementPlayCount() {
+    incrementPlay({
+      variables: {
+        id: scene.id,
+      },
     });
+  }
 
-    async function onSave(input: GQL.SceneCreateInput) {
+  const [organizedLoading, setOrganizedLoading] = useState(false);
+
+  const [activeTabKey, setActiveTabKey] = useState("scene-details-panel");
+
+  const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
+  const [isGenerateDialogOpen, setIsGenerateDialogOpen] = useState(false);
+
+  const onIncrementOClick = async () => {
+    try {
+      await incrementO();
+    } catch (e) {
+      Toast.error(e);
+    }
+  };
+
+  function setRating(v: number | null) {
+    updateScene({
+      variables: {
+        input: {
+          id: scene.id,
+          rating100: v,
+        },
+      },
+    });
+  }
+
+  useRatingKeybinds(
+    true,
+    configuration?.ui.ratingSystemOptions?.type,
+    setRating
+  );
+
+  // set up hotkeys
+  useEffect(() => {
+    Mousetrap.bind("a", () => setActiveTabKey("scene-details-panel"));
+    Mousetrap.bind("q", () => setActiveTabKey("scene-queue-panel"));
+    Mousetrap.bind("e", () => setActiveTabKey("scene-edit-panel"));
+    Mousetrap.bind("k", () => setActiveTabKey("scene-markers-panel"));
+    Mousetrap.bind("i", () => setActiveTabKey("scene-file-info-panel"));
+    Mousetrap.bind("h", () => setActiveTabKey("scene-history-panel"));
+    Mousetrap.bind("o", () => {
+      onIncrementOClick();
+    });
+    Mousetrap.bind("p n", () => onQueueNext());
+    Mousetrap.bind("p p", () => onQueuePrevious());
+    Mousetrap.bind("p r", () => onQueueRandom());
+    Mousetrap.bind(",", () => setCollapsed(!collapsed));
+
+    return () => {
+      Mousetrap.unbind("a");
+      Mousetrap.unbind("q");
+      Mousetrap.unbind("e");
+      Mousetrap.unbind("k");
+      Mousetrap.unbind("i");
+      Mousetrap.unbind("h");
+      Mousetrap.unbind("o");
+      Mousetrap.unbind("p n");
+      Mousetrap.unbind("p p");
+      Mousetrap.unbind("p r");
+      Mousetrap.unbind(",");
+    };
+  });
+
+  async function onSave(input: GQL.SceneCreateInput) {
+    await updateScene({
+      variables: {
+        input: {
+          id: scene.id,
+          ...input,
+        },
+      },
+    });
+    Toast.success(
+      intl.formatMessage(
+        { id: "toast.updated_entity" },
+        { entity: intl.formatMessage({ id: "scene" }).toLocaleLowerCase() }
+      )
+    );
+  }
+
+  const onOrganizedClick = async () => {
+    try {
+      setOrganizedLoading(true);
       await updateScene({
         variables: {
           input: {
             id: scene.id,
-            ...input,
+            organized: !scene.organized,
           },
         },
       });
-      Toast.success(
-        intl.formatMessage(
-          { id: "toast.updated_entity" },
-          { entity: intl.formatMessage({ id: "scene" }).toLocaleLowerCase() }
-        )
-      );
+    } catch (e) {
+      Toast.error(e);
+    } finally {
+      setOrganizedLoading(false);
     }
+  };
 
-    const onOrganizedClick = async () => {
-      try {
-        setOrganizedLoading(true);
-        await updateScene({
-          variables: {
-            input: {
-              id: scene.id,
-              organized: !scene.organized,
-            },
-          },
-        });
-      } catch (e) {
-        Toast.error(e);
-      } finally {
-        setOrganizedLoading(false);
-      }
-    };
+  function onClickMarker(marker: GQL.SceneMarkerDataFragment) {
+    setTimestamp(marker.seconds);
+  }
 
-    function onClickMarker(marker: GQL.SceneMarkerDataFragment) {
-      setTimestamp(marker.seconds);
-    }
+  async function onRescan() {
+    await mutateMetadataScan({
+      paths: [objectPath(scene)],
+      rescan: true,
+    });
 
-    async function onRescan() {
-      await mutateMetadataScan({
-        paths: [objectPath(scene)],
-        rescan: true,
-      });
-
-      Toast.success(
-        intl.formatMessage(
-          { id: "toast.rescanning_entity" },
-          {
-            count: 1,
-            singularEntity: intl
-              .formatMessage({ id: "scene" })
-              .toLocaleLowerCase(),
-          }
-        )
-      );
-    }
-
-    async function onGenerateScreenshot(at?: number) {
-      await generateScreenshot({
-        variables: {
-          id: scene.id,
-          at,
-        },
-      });
-      Toast.success(intl.formatMessage({ id: "toast.generating_screenshot" }));
-    }
-
-    function onDeleteDialogClosed(deleted: boolean) {
-      setIsDeleteAlertOpen(false);
-      if (deleted) {
-        onDelete();
-      }
-    }
-
-    function maybeRenderDeleteDialog() {
-      if (isDeleteAlertOpen) {
-        return (
-          <DeleteScenesDialog
-            selected={[scene]}
-            onClose={onDeleteDialogClosed}
-          />
-        );
-      }
-    }
-
-    function maybeRenderSceneGenerateDialog() {
-      if (isGenerateDialogOpen) {
-        return (
-          <GenerateDialog
-            selectedIds={[scene.id]}
-            onClose={() => {
-              setIsGenerateDialogOpen(false);
-            }}
-            type="scene"
-          />
-        );
-      }
-    }
-
-    const renderOperations = () => (
-      <Dropdown>
-        <Dropdown.Toggle
-          variant="secondary"
-          id="operation-menu"
-          className="minimal"
-          title={intl.formatMessage({ id: "operations" })}
-        >
-          <Icon icon={faEllipsisV} />
-        </Dropdown.Toggle>
-        <Dropdown.Menu className="bg-secondary text-white">
-          {!!scene.files.length && (
-            <Dropdown.Item
-              key="rescan"
-              className="bg-secondary text-white"
-              onClick={() => onRescan()}
-            >
-              <FormattedMessage id="actions.rescan" />
-            </Dropdown.Item>
-          )}
-          <Dropdown.Item
-            key="generate"
-            className="bg-secondary text-white"
-            onClick={() => setIsGenerateDialogOpen(true)}
-          >
-            <FormattedMessage id="actions.generate" />
-          </Dropdown.Item>
-          <Dropdown.Item
-            key="generate-screenshot"
-            className="bg-secondary text-white"
-            onClick={() => onGenerateScreenshot(getPlayerPosition())}
-          >
-            <FormattedMessage id="actions.generate_thumb_from_current" />
-          </Dropdown.Item>
-          <Dropdown.Item
-            key="generate-default"
-            className="bg-secondary text-white"
-            onClick={() => onGenerateScreenshot()}
-          >
-            <FormattedMessage id="actions.generate_thumb_default" />
-          </Dropdown.Item>
-          {boxes.length > 0 && (
-            <Dropdown.Item
-              key="submit"
-              className="bg-secondary text-white"
-              onClick={() => setShowDraftModal(true)}
-            >
-              <FormattedMessage id="actions.submit_stash_box" />
-            </Dropdown.Item>
-          )}
-          <Dropdown.Item
-            key="delete-scene"
-            className="bg-secondary text-white"
-            onClick={() => setIsDeleteAlertOpen(true)}
-          >
-            <FormattedMessage
-              id="actions.delete"
-              values={{ entityType: intl.formatMessage({ id: "scene" }) }}
-            />
-          </Dropdown.Item>
-        </Dropdown.Menu>
-      </Dropdown>
+    Toast.success(
+      intl.formatMessage(
+        { id: "toast.rescanning_entity" },
+        {
+          count: 1,
+          singularEntity: intl
+            .formatMessage({ id: "scene" })
+            .toLocaleLowerCase(),
+        }
+      )
     );
+  }
 
-    const renderTabs = () => (
-      <Tab.Container
-        activeKey={activeTabKey}
-        onSelect={(k) => k && setActiveTabKey(k)}
+  async function onGenerateScreenshot(at?: number) {
+    await generateScreenshot({
+      variables: {
+        id: scene.id,
+        at,
+      },
+    });
+    Toast.success(intl.formatMessage({ id: "toast.generating_screenshot" }));
+  }
+
+  function onDeleteDialogClosed(deleted: boolean) {
+    setIsDeleteAlertOpen(false);
+    if (deleted) {
+      onDelete();
+    }
+  }
+
+  function maybeRenderDeleteDialog() {
+    if (isDeleteAlertOpen) {
+      return (
+        <DeleteScenesDialog selected={[scene]} onClose={onDeleteDialogClosed} />
+      );
+    }
+  }
+
+  function maybeRenderSceneGenerateDialog() {
+    if (isGenerateDialogOpen) {
+      return (
+        <GenerateDialog
+          selectedIds={[scene.id]}
+          onClose={() => {
+            setIsGenerateDialogOpen(false);
+          }}
+          type="scene"
+        />
+      );
+    }
+  }
+
+  const renderOperations = () => (
+    <Dropdown>
+      <Dropdown.Toggle
+        variant="secondary"
+        id="operation-menu"
+        className="minimal"
+        title={intl.formatMessage({ id: "operations" })}
       >
-        <div>
-          <Nav variant="tabs" className="mr-auto">
+        <Icon icon={faEllipsisV} />
+      </Dropdown.Toggle>
+      <Dropdown.Menu className="bg-secondary text-white">
+        {!!scene.files.length && (
+          <Dropdown.Item
+            key="rescan"
+            className="bg-secondary text-white"
+            onClick={() => onRescan()}
+          >
+            <FormattedMessage id="actions.rescan" />
+          </Dropdown.Item>
+        )}
+        <Dropdown.Item
+          key="generate"
+          className="bg-secondary text-white"
+          onClick={() => setIsGenerateDialogOpen(true)}
+        >
+          <FormattedMessage id="actions.generate" />
+        </Dropdown.Item>
+        <Dropdown.Item
+          key="generate-screenshot"
+          className="bg-secondary text-white"
+          onClick={() => onGenerateScreenshot(getPlayerPosition())}
+        >
+          <FormattedMessage id="actions.generate_thumb_from_current" />
+        </Dropdown.Item>
+        <Dropdown.Item
+          key="generate-default"
+          className="bg-secondary text-white"
+          onClick={() => onGenerateScreenshot()}
+        >
+          <FormattedMessage id="actions.generate_thumb_default" />
+        </Dropdown.Item>
+        {boxes.length > 0 && (
+          <Dropdown.Item
+            key="submit"
+            className="bg-secondary text-white"
+            onClick={() => setShowDraftModal(true)}
+          >
+            <FormattedMessage id="actions.submit_stash_box" />
+          </Dropdown.Item>
+        )}
+        <Dropdown.Item
+          key="delete-scene"
+          className="bg-secondary text-white"
+          onClick={() => setIsDeleteAlertOpen(true)}
+        >
+          <FormattedMessage
+            id="actions.delete"
+            values={{ entityType: intl.formatMessage({ id: "scene" }) }}
+          />
+        </Dropdown.Item>
+      </Dropdown.Menu>
+    </Dropdown>
+  );
+
+  const renderTabs = () => (
+    <Tab.Container
+      activeKey={activeTabKey}
+      onSelect={(k) => k && setActiveTabKey(k)}
+    >
+      <div>
+        <Nav variant="tabs" className="mr-auto">
+          <ScenePageTabs {...props}>
             <Nav.Item>
               <Nav.Link eventKey="scene-details-panel">
                 <FormattedMessage id="details" />
@@ -491,10 +494,12 @@ const ScenePage: React.FC<IProps> = PatchComponent(
                 <FormattedMessage id="actions.edit" />
               </Nav.Link>
             </Nav.Item>
-          </Nav>
-        </div>
+          </ScenePageTabs>
+        </Nav>
+      </div>
 
-        <Tab.Content>
+      <Tab.Content>
+        <ScenePageTabContent {...props}>
           <Tab.Pane eventKey="scene-details-panel">
             <SceneDetailPanel scene={scene} />
           </Tab.Pane>
@@ -552,124 +557,122 @@ const ScenePage: React.FC<IProps> = PatchComponent(
           <Tab.Pane eventKey="scene-history-panel">
             <SceneHistoryPanel scene={scene} />
           </Tab.Pane>
-        </Tab.Content>
-      </Tab.Container>
-    );
+        </ScenePageTabContent>
+      </Tab.Content>
+    </Tab.Container>
+  );
 
-    function getCollapseButtonIcon() {
-      return collapsed ? faChevronRight : faChevronLeft;
-    }
+  function getCollapseButtonIcon() {
+    return collapsed ? faChevronRight : faChevronLeft;
+  }
 
-    const title = objectTitle(scene);
+  const title = objectTitle(scene);
 
-    const file = useMemo(
-      () => (scene.files.length > 0 ? scene.files[0] : undefined),
-      [scene]
-    );
+  const file = useMemo(
+    () => (scene.files.length > 0 ? scene.files[0] : undefined),
+    [scene]
+  );
 
-    return (
-      <>
-        <Helmet>
-          <title>{title}</title>
-        </Helmet>
-        {maybeRenderSceneGenerateDialog()}
-        {maybeRenderDeleteDialog()}
-        <div
-          className={`scene-tabs order-xl-first order-last ${
-            collapsed ? "collapsed" : ""
-          }`}
-        >
-          <div>
-            <div className="scene-header-container">
-              {scene.studio && (
-                <h1 className="text-center scene-studio-image">
-                  <Link to={`/studios/${scene.studio.id}`}>
-                    <img
-                      src={scene.studio.image_path ?? ""}
-                      alt={`${scene.studio.name} logo`}
-                      className="studio-logo"
-                    />
-                  </Link>
-                </h1>
-              )}
-              <h3
-                className={cx("scene-header", { "no-studio": !scene.studio })}
-              >
-                <TruncatedText lineCount={2} text={title} />
-              </h3>
-            </div>
-
-            <div className="scene-subheader">
-              <span className="date" data-value={scene.date}>
-                {!!scene.date && (
-                  <FormattedDate
-                    value={scene.date}
-                    format="long"
-                    timeZone="utc"
+  return (
+    <>
+      <Helmet>
+        <title>{title}</title>
+      </Helmet>
+      {maybeRenderSceneGenerateDialog()}
+      {maybeRenderDeleteDialog()}
+      <div
+        className={`scene-tabs order-xl-first order-last ${
+          collapsed ? "collapsed" : ""
+        }`}
+      >
+        <div>
+          <div className="scene-header-container">
+            {scene.studio && (
+              <h1 className="text-center scene-studio-image">
+                <Link to={`/studios/${scene.studio.id}`}>
+                  <img
+                    src={scene.studio.image_path ?? ""}
+                    alt={`${scene.studio.name} logo`}
+                    className="studio-logo"
                   />
-                )}
-              </span>
-              <VideoFrameRateResolution
-                width={file?.width}
-                height={file?.height}
-                frameRate={file?.frame_rate}
-              />
-            </div>
+                </Link>
+              </h1>
+            )}
+            <h3 className={cx("scene-header", { "no-studio": !scene.studio })}>
+              <TruncatedText lineCount={2} text={title} />
+            </h3>
+          </div>
 
-            <div className="scene-toolbar">
-              <span className="scene-toolbar-group">
-                <RatingSystem
-                  value={scene.rating100}
-                  onSetRating={setRating}
-                  clickToRate
-                  withoutContext
+          <div className="scene-subheader">
+            <span className="date" data-value={scene.date}>
+              {!!scene.date && (
+                <FormattedDate
+                  value={scene.date}
+                  format="long"
+                  timeZone="utc"
+                />
+              )}
+            </span>
+            <VideoFrameRateResolution
+              width={file?.width}
+              height={file?.height}
+              frameRate={file?.frame_rate}
+            />
+          </div>
+
+          <div className="scene-toolbar">
+            <span className="scene-toolbar-group">
+              <RatingSystem
+                value={scene.rating100}
+                onSetRating={setRating}
+                clickToRate
+                withoutContext
+              />
+            </span>
+            <span className="scene-toolbar-group">
+              <span>
+                <ExternalPlayerButton scene={scene} />
+              </span>
+              <span>
+                <ViewCountButton
+                  value={scene.play_count ?? 0}
+                  onIncrement={() => incrementPlayCount()}
                 />
               </span>
-              <span className="scene-toolbar-group">
-                <span>
-                  <ExternalPlayerButton scene={scene} />
-                </span>
-                <span>
-                  <ViewCountButton
-                    value={scene.play_count ?? 0}
-                    onIncrement={() => incrementPlayCount()}
-                  />
-                </span>
-                <span>
-                  <OCounterButton
-                    value={scene.o_counter ?? 0}
-                    onIncrement={() => onIncrementOClick()}
-                  />
-                </span>
-                <span>
-                  <OrganizedButton
-                    loading={organizedLoading}
-                    organized={scene.organized}
-                    onClick={onOrganizedClick}
-                  />
-                </span>
-                <span>{renderOperations()}</span>
+              <span>
+                <OCounterButton
+                  value={scene.o_counter ?? 0}
+                  onIncrement={() => onIncrementOClick()}
+                />
               </span>
-            </div>
+              <span>
+                <OrganizedButton
+                  loading={organizedLoading}
+                  organized={scene.organized}
+                  onClick={onOrganizedClick}
+                />
+              </span>
+              <span>{renderOperations()}</span>
+            </span>
           </div>
-          {renderTabs()}
         </div>
-        <div className="scene-divider d-none d-xl-block">
-          <Button onClick={() => setCollapsed(!collapsed)}>
-            <Icon className="fa-fw" icon={getCollapseButtonIcon()} />
-          </Button>
-        </div>
-        <SubmitStashBoxDraft
-          type="scene"
-          boxes={boxes}
-          entity={scene}
-          show={showDraftModal}
-          onHide={() => setShowDraftModal(false)}
-        />
-      </>
-    );
-  }
-);
+        {renderTabs()}
+      </div>
+      <div className="scene-divider d-none d-xl-block">
+        <Button onClick={() => setCollapsed(!collapsed)}>
+          <Icon className="fa-fw" icon={getCollapseButtonIcon()} />
+        </Button>
+      </div>
+      <SubmitStashBoxDraft
+        type="scene"
+        boxes={boxes}
+        entity={scene}
+        show={showDraftModal}
+        onHide={() => setShowDraftModal(false)}
+      />
+    </>
+  );
+});
 
 const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
   location,

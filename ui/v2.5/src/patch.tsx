@@ -111,10 +111,12 @@ export function PatchComponent<T>(
 }
 
 // patches a component and registers it in the pluginapi components object
-export function PatchContainerComponent(
+export function PatchContainerComponent<T = {}>(
   component: string
-): React.FC<React.PropsWithChildren<{}>> {
-  const fn = (props: React.PropsWithChildren<{}>) => {
+): React.FC<React.PropsWithChildren<T>> {
+  const fn: React.FC<React.PropsWithChildren<T>> = (
+    props: React.PropsWithChildren<T>
+  ) => {
     return <>{props.children}</>;
   };
 
