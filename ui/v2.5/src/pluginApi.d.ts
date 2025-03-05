@@ -702,6 +702,16 @@ declare namespace PluginApi {
     "PerformerCard.Overlays": React.FC<any>;
     "PerformerCard.Image": React.FC<any>;
     "PerformerCard.Title": React.FC<any>;
+    "TagCard.Popovers": React.FC<any>;
+    "TagCard.Details": React.FC<any>;
+    "TagCard.Overlays": React.FC<any>;
+    "TagCard.Image": React.FC<any>;
+    "TagCard.Title": React.FC<any>;
+    ScenePage: React.FC<any>;
+    "ScenePage.Tabs": React.FC<any>;
+    "ScenePage.TabContent": React.FC<any>;
+    ScenePlayer: React.FC<any>;
+    FrontPage: React.FC<any>;
   };
   type PatchableComponentNames = keyof typeof components | string;
   namespace utils {
