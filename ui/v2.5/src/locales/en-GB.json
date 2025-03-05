@@ -145,6 +145,7 @@
   },
   "actions_name": "Actions",
   "age": "Age",
+  "age_on_date": "{age} at production",
   "aliases": "Aliases",
   "all": "all",
   "also_known_as": "Also known as",
@@ -1151,7 +1152,7 @@
     "o_count": "O Count",
     "performer_card": {
       "age": "{age} {years_old}",
-      "age_context": "{age} {years_old} in this scene"
+      "age_context": "{age} {years_old} at production"
     },
     "phash": "PHash",
     "play_count": "Play Count",
