@@ -67,23 +67,17 @@ RUN --mount=type=cache,id=go,target=/root/.cache/go-build \
     --mount=type=bind,source=./ui/ui.go,target=/stash/ui/ui.go \
     CGO_ENABLED=0 make flags-release flags-pie stash
 
+# Build a virtualenv using the appropriate Debian release
+FROM debian:12-slim AS build-venv
+RUN apt-get update && \
+    apt-get install --no-install-suggests --no-install-recommends --yes python3-venv gcc libpython3-dev && \
+    python3 -m venv /venv && \
+    /venv/bin/pip install --upgrade pip setuptools wheel requests
+
 # Final Runnable Image
-FROM nvidia/cuda:12.8.0-base-ubuntu24.04
-RUN apt update -y && apt install -y --no-install-recommends ca-certificates libvips-tools ffmpeg wget intel-media-va-driver-non-free vainfo python3-requests \
-    && rm -rf /var/lib/apt/lists/*
+FROM gcr.io/distroless/python3-debian12
+COPY --link --from=build-venv /venv /venv
 COPY --link --from=backend /stash/stash /usr/bin/
-
-# NVENC Patch
-RUN mkdir -p /usr/local/bin /patched-lib \
-    && wget https://raw.githubusercontent.com/keylase/nvidia-patch/master/patch.sh -O /usr/local/bin/patch.sh \
-    && wget https://raw.githubusercontent.com/keylase/nvidia-patch/master/docker-entrypoint.sh -O /usr/local/bin/docker-entrypoint.sh \
-    && chmod +x /usr/local/bin/patch.sh /usr/local/bin/docker-entrypoint.sh /usr/bin/stash
-
-ENV LANG=C.UTF-8
-ENV NVIDIA_VISIBLE_DEVICES=all
-ENV NVIDIA_DRIVER_CAPABILITIES=video,utility
 ENV STASH_CONFIG_FILE=/root/.stash/config.yml
 EXPOSE 9999
-ENTRYPOINT ["docker-entrypoint.sh", "stash"]
-
-# vim: ft=dockerfile
+ENTRYPOINT ["stash"]

@@ -3,27 +3,29 @@
 # Build GQL
 FROM node:lts AS gqlgen
 RUN npm i -g corepack --force && corepack install -g yarn && corepack enable
-WORKDIR /stash/ui/v2.5
+WORKDIR /stash
 RUN --mount=type=cache,id=yarn,target=/home/root/.yarn \
+    --mount=type=bind,source=./Makefile,target=/stash/Makefile \
     --mount=type=bind,source=./ui/v2.5/package.json,target=/stash/ui/v2.5/package.json \
     --mount=type=bind,source=./ui/v2.5/yarn.lock,target=/stash/ui/v2.5/yarn.lock \
-    yarn install --frozen-lockfile
-RUN --mount=type=bind,source=./ui/v2.5/package.json,target=/stash/ui/v2.5/package.json \
+    make pre-ui
+RUN --mount=type=bind,source=./Makefile,target=/stash/Makefile \
+    --mount=type=bind,source=./ui/v2.5/package.json,target=/stash/ui/v2.5/package.json \
     --mount=type=bind,source=./ui/v2.5/yarn.lock,target=/stash/ui/v2.5/yarn.lock \
     --mount=type=bind,source=./graphql/,target=/stash/graphql \
     --mount=type=bind,source=./ui/v2.5/graphql/,target=/stash/ui/v2.5/graphql \
     --mount=type=bind,source=./ui/v2.5/codegen.ts,target=/stash/ui/v2.5/codegen.ts \
-    yarn run gqlgen
+    make generate-ui
 
 # Build Frontend
 FROM node:lts AS frontend
 RUN npm i -g corepack --force && corepack install -g yarn && corepack enable
-WORKDIR /stash/ui/v2.5
+WORKDIR /stash
 RUN --mount=type=cache,id=yarn,target=/home/root/.yarn \
+    --mount=type=bind,source=./Makefile,target=/stash/Makefile \
     --mount=type=bind,source=./ui/v2.5/package.json,target=/stash/ui/v2.5/package.json \
     --mount=type=bind,source=./ui/v2.5/yarn.lock,target=/stash/ui/v2.5/yarn.lock \
-    yarn install --frozen-lockfile
-WORKDIR /stash
+    make pre-ui
 ARG GITHASH
 ARG STASH_VERSION
 COPY ./ui/v2.5/src /stash/ui/v2.5/src/
@@ -39,11 +41,13 @@ RUN --mount=type=bind,source=./.git,target=/stash/.git \
     BUILD_DATE=$(date +"%Y-%m-%d %H:%M:%S") make ui
 
 # Build Backend
-FROM golang:1.24 AS backend
+FROM golang:1.24-alpine AS backend
+RUN apk add --no-cache git gcc libc-dev make
 WORKDIR /stash
 COPY go.mod go.sum /stash/
 COPY ./internal /stash/internal
 RUN --mount=type=cache,id=go,target=/root/.cache/go-build \
+    --mount=type=bind,source=./Makefile,target=/stash/Makefile \
     --mount=type=bind,source=./gqlgen.yml,target=/stash/gqlgen.yml \
     --mount=type=bind,source=./.gqlgenc.yml,target=/stash/.gqlgenc.yml \
     --mount=type=bind,source=./cmd,target=/stash/cmd \
@@ -54,18 +58,20 @@ RUN --mount=type=cache,id=go,target=/root/.cache/go-build \
 ARG GITHASH
 ARG STASH_VERSION
 COPY --from=frontend /stash/ui/v2.5/build /stash/ui/v2.5/build
-RUN --mount=type=bind,source=./.git,target=/stash/.git \
+RUN --mount=type=cache,id=go,target=/root/.cache/go-build \
+    --mount=type=bind,source=./.git,target=/stash/.git \
     --mount=type=bind,source=./Makefile,target=/stash/Makefile \
     --mount=type=bind,source=./scripts,target=/stash/scripts \
     --mount=type=bind,source=./pkg,target=/stash/pkg \
     --mount=type=bind,source=./cmd,target=/stash/cmd \
     --mount=type=bind,source=./ui/login,target=/stash/ui/login \
     --mount=type=bind,source=./ui/ui.go,target=/stash/ui/ui.go \
-    CGO_ENABLED=0 make flags-release flags-pie stash
+    make flags-release flags-pie stash
 
 # Final Runnable Image
-FROM gcr.io/distroless/base-nossl
-COPY --link --from=backend /stash/stash /usr/bin/stash
+FROM alpine:latest
+RUN apk add --no-cache py3-requests
+COPY --link --from=backend /stash/stash /usr/bin/
 ENV STASH_CONFIG_FILE=/root/.stash/config.yml
 EXPOSE 9999
-CMD ["/usr/bin/stash"]
+CMD ["stash"]
