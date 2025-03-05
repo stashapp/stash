@@ -2,8 +2,8 @@
     "actions": {
         "add": "Ajouter",
         "add_directory": "Ajouter un répertoire",
-        "add_entity": "Ajouter une entité",
-        "add_to_entity": "Ajouter à l'entité",
+        "add_entity": "Ajout de {entityType}",
+        "add_to_entity": "Ajouter à {entityType}",
         "allow": "Autoriser",
         "allow_temporarily": "Autoriser temporairement",
         "anonymise": "Anonymiser",
@@ -1117,7 +1117,7 @@
         "interactive_speed": "Vitesse interactive",
         "performer_card": {
             "age": "{age} {years_old}",
-            "age_context": "{age} {years_old} dans cette scène"
+            "age_context": "{age} {years_old} de production"
         },
         "phash": "Empreinte",
         "play_count": "Compteur de lecture",
@@ -1515,8 +1515,11 @@
     "custom_fields": {
         "field": "Champ",
         "title": "Champs personnalisés",
-        "value": "Valeur"
+        "value": "Valeur",
+        "criteria_format_string_others": "{criterion} (champ personnalisé) {modifierString} {valueString} (+{others} autres)",
+        "criteria_format_string": "{criterion} (custom field) {modifierString} {valueString}"
     },
     "eta": "TAE",
-    "sort_name": "Nom de tri"
+    "sort_name": "Nom de tri",
+    "age_on_date": "{age} de production"
 }
