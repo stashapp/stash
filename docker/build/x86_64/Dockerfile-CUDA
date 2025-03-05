@@ -1,49 +1,83 @@
 # This dockerfile should be built with `make docker-cuda-build` from the stash root.
 
+# Build GQL
+FROM node:lts AS gqlgen
+RUN npm i -g corepack --force && corepack install -g yarn && corepack enable
+WORKDIR /stash/ui/v2.5
+RUN --mount=type=cache,id=yarn,target=/home/root/.yarn \
+    --mount=type=bind,source=./ui/v2.5/package.json,target=/stash/ui/v2.5/package.json \
+    --mount=type=bind,source=./ui/v2.5/yarn.lock,target=/stash/ui/v2.5/yarn.lock \
+    yarn install --frozen-lockfile
+RUN --mount=type=bind,source=./ui/v2.5/package.json,target=/stash/ui/v2.5/package.json \
+    --mount=type=bind,source=./ui/v2.5/yarn.lock,target=/stash/ui/v2.5/yarn.lock \
+    --mount=type=bind,source=./graphql/,target=/stash/graphql \
+    --mount=type=bind,source=./ui/v2.5/graphql/,target=/stash/ui/v2.5/graphql \
+    --mount=type=bind,source=./ui/v2.5/codegen.ts,target=/stash/ui/v2.5/codegen.ts \
+    yarn run gqlgen
+
 # Build Frontend
-FROM node:alpine as frontend
-RUN apk add --no-cache make git
-## cache node_modules separately
-COPY ./ui/v2.5/package.json ./ui/v2.5/yarn.lock /stash/ui/v2.5/
+FROM node:lts AS frontend
+RUN npm i -g corepack --force && corepack install -g yarn && corepack enable
+WORKDIR /stash/ui/v2.5
+RUN --mount=type=cache,id=yarn,target=/home/root/.yarn \
+    --mount=type=bind,source=./ui/v2.5/package.json,target=/stash/ui/v2.5/package.json \
+    --mount=type=bind,source=./ui/v2.5/yarn.lock,target=/stash/ui/v2.5/yarn.lock \
+    yarn install --frozen-lockfile
 WORKDIR /stash
-COPY Makefile /stash/
-COPY ./graphql /stash/graphql/
-COPY ./ui /stash/ui/
-RUN make pre-ui
-RUN make generate-ui
 ARG GITHASH
 ARG STASH_VERSION
-RUN BUILD_DATE=$(date +"%Y-%m-%d %H:%M:%S") make ui
+COPY ./ui/v2.5/src /stash/ui/v2.5/src/
+RUN --mount=type=bind,source=./.git,target=/stash/.git \
+    --mount=type=bind,source=./Makefile,target=/stash/Makefile \
+    --mount=type=bind,source=./ui/v2.5/public,target=/stash/ui/v2.5/public \
+    --mount=type=bind,source=./ui/v2.5/package.json,target=/stash/ui/v2.5/package.json \
+    --mount=type=bind,source=./ui/v2.5/yarn.lock,target=/stash/ui/v2.5/yarn.lock \
+    --mount=type=bind,source=./ui/v2.5/index.html,target=/stash/ui/v2.5/index.html \
+    --mount=type=bind,source=./ui/v2.5/vite.config.js,target=/stash/ui/v2.5/vite.config.js \
+    --mount=type=bind,source=./ui/v2.5/tsconfig.json,target=/stash/ui/v2.5/tsconfig.json \
+    --mount=type=bind,from=gqlgen,source=/stash/ui/v2.5/src/core/generated-graphql.ts,target=/stash/ui/v2.5/src/core/generated-graphql.ts \
+    BUILD_DATE=$(date +"%Y-%m-%d %H:%M:%S") make ui
 
 # Build Backend
-FROM golang:1.22-bullseye as backend
-RUN apt update && apt install -y build-essential golang
+FROM golang:1.24 AS backend
 WORKDIR /stash
-COPY ./go* ./*.go Makefile gqlgen.yml .gqlgenc.yml /stash/
-COPY ./scripts /stash/scripts/
-COPY ./pkg /stash/pkg/
-COPY ./cmd /stash/cmd
+COPY go.mod go.sum /stash/
 COPY ./internal /stash/internal
-COPY --from=frontend /stash /stash/
-RUN make generate-backend
+RUN --mount=type=cache,id=go,target=/root/.cache/go-build \
+    --mount=type=bind,source=./gqlgen.yml,target=/stash/gqlgen.yml \
+    --mount=type=bind,source=./.gqlgenc.yml,target=/stash/.gqlgenc.yml \
+    --mount=type=bind,source=./cmd,target=/stash/cmd \
+    --mount=type=bind,source=./pkg,target=/stash/pkg \
+    --mount=type=bind,source=./ui,target=/stash/ui \
+    --mount=type=bind,source=./graphql/,target=/stash/graphql \
+    go generate ./cmd/stash
 ARG GITHASH
 ARG STASH_VERSION
-RUN make flags-release flags-pie stash
+COPY --from=frontend /stash/ui/v2.5/build /stash/ui/v2.5/build
+RUN --mount=type=bind,source=./.git,target=/stash/.git \
+    --mount=type=bind,source=./Makefile,target=/stash/Makefile \
+    --mount=type=bind,source=./scripts,target=/stash/scripts \
+    --mount=type=bind,source=./pkg,target=/stash/pkg \
+    --mount=type=bind,source=./cmd,target=/stash/cmd \
+    --mount=type=bind,source=./ui/login,target=/stash/ui/login \
+    --mount=type=bind,source=./ui/ui.go,target=/stash/ui/ui.go \
+    make flags-release flags-pie stash
 
 # Final Runnable Image
-FROM nvidia/cuda:12.0.1-base-ubuntu22.04
-RUN apt update && apt upgrade -y && apt install -y ca-certificates libvips-tools ffmpeg wget intel-media-va-driver-non-free vainfo
-RUN rm -rf /var/lib/apt/lists/*
-COPY --from=backend /stash/stash /usr/bin/
+FROM nvidia/cuda:12.8.0-base-ubuntu24.04
+RUN apt update -y && apt install -y --no-install-recommends ca-certificates libvips-tools ffmpeg wget intel-media-va-driver-non-free vainfo python3-pip \
+    && pip install requests --break-system-packages \
+    && rm -rf /var/lib/apt/lists/*
+COPY --link --from=backend /stash/stash /usr/bin/
 
 # NVENC Patch
-RUN mkdir -p /usr/local/bin /patched-lib
-RUN wget https://raw.githubusercontent.com/keylase/nvidia-patch/master/patch.sh -O /usr/local/bin/patch.sh
-RUN wget https://raw.githubusercontent.com/keylase/nvidia-patch/master/docker-entrypoint.sh -O /usr/local/bin/docker-entrypoint.sh
-RUN chmod +x /usr/local/bin/patch.sh /usr/local/bin/docker-entrypoint.sh /usr/bin/stash
+RUN mkdir -p /usr/local/bin /patched-lib \
+    && wget https://raw.githubusercontent.com/keylase/nvidia-patch/master/patch.sh -O /usr/local/bin/patch.sh \
+    && wget https://raw.githubusercontent.com/keylase/nvidia-patch/master/docker-entrypoint.sh -O /usr/local/bin/docker-entrypoint.sh \
+    && chmod +x /usr/local/bin/patch.sh /usr/local/bin/docker-entrypoint.sh /usr/bin/stash
 
-ENV LANG C.UTF-8
-ENV NVIDIA_VISIBLE_DEVICES all
+ENV LANG=C.UTF-8
+ENV NVIDIA_VISIBLE_DEVICES=all
 ENV NVIDIA_DRIVER_CAPABILITIES=video,utility
 ENV STASH_CONFIG_FILE=/root/.stash/config.yml
 EXPOSE 9999
