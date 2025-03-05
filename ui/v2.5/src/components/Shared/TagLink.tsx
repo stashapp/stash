@@ -13,6 +13,7 @@ import { Placement } from "react-bootstrap/esm/Overlay";
 import { faFolderTree } from "@fortawesome/free-solid-svg-icons";
 import { Icon } from "../Shared/Icon";
 import { FormattedMessage } from "react-intl";
+import { PatchComponent } from "src/patch";
 
 type SceneMarkerFragment = Pick<GQL.SceneMarker, "id" | "title" | "seconds"> & {
   scene: Pick<GQL.Scene, "id">;
@@ -243,66 +244,69 @@ interface ITagLinkProps {
   hierarchyTooltipID?: string;
 }
 
-export const TagLink: React.FC<ITagLinkProps> = ({
-  tag,
-  linkType = "scene",
-  className,
-  hoverPlacement,
-  showHierarchyIcon = false,
-  hierarchyTooltipID,
-}) => {
-  const link = useMemo(() => {
-    switch (linkType) {
-      case "scene":
-        return NavUtils.makeTagScenesUrl(tag);
-      case "performer":
-        return NavUtils.makeTagPerformersUrl(tag);
-      case "studio":
-        return NavUtils.makeTagStudiosUrl(tag);
-      case "gallery":
-        return NavUtils.makeTagGalleriesUrl(tag);
-      case "image":
-        return NavUtils.makeTagImagesUrl(tag);
-      case "group":
-        return NavUtils.makeTagGroupsUrl(tag);
-      case "scene_marker":
-        return NavUtils.makeTagSceneMarkersUrl(tag);
-      case "details":
-        return NavUtils.makeTagUrl(tag.id ?? "");
-    }
-  }, [tag, linkType]);
+export const TagLink: React.FC<ITagLinkProps> = PatchComponent(
+  "TagLink",
+  ({
+    tag,
+    linkType = "scene",
+    className,
+    hoverPlacement,
+    showHierarchyIcon = false,
+    hierarchyTooltipID,
+  }) => {
+    const link = useMemo(() => {
+      switch (linkType) {
+        case "scene":
+          return NavUtils.makeTagScenesUrl(tag);
+        case "performer":
+          return NavUtils.makeTagPerformersUrl(tag);
+        case "studio":
+          return NavUtils.makeTagStudiosUrl(tag);
+        case "gallery":
+          return NavUtils.makeTagGalleriesUrl(tag);
+        case "image":
+          return NavUtils.makeTagImagesUrl(tag);
+        case "group":
+          return NavUtils.makeTagGroupsUrl(tag);
+        case "scene_marker":
+          return NavUtils.makeTagSceneMarkersUrl(tag);
+        case "details":
+          return NavUtils.makeTagUrl(tag.id ?? "");
+      }
+    }, [tag, linkType]);
 
-  const title = tag.name || "";
+    const title = tag.name || "";
 
-  const tooltip = useMemo(() => {
-    if (!hierarchyTooltipID) {
-      return <></>;
-    }
+    const tooltip = useMemo(() => {
+      if (!hierarchyTooltipID) {
+        return <></>;
+      }
+
+      return (
+        <Tooltip id="tag-hierarchy-tooltip">
+          <FormattedMessage id={hierarchyTooltipID} />
+        </Tooltip>
+      );
+    }, [hierarchyTooltipID]);
 
     return (
-      <Tooltip id="tag-hierarchy-tooltip">
-        <FormattedMessage id={hierarchyTooltipID} />
-      </Tooltip>
+      <SortNameLinkComponent
+        sortName={tag.sort_name || title}
+        link={link}
+        className={className}
+      >
+        <TagPopover id={tag.id ?? ""} placement={hoverPlacement}>
+          {title}
+          {showHierarchyIcon && (
+            <OverlayTrigger placement="top" overlay={tooltip}>
+              <span className="icon-wrapper">
+                <span className="vertical-line">|</span>
+                <Icon icon={faFolderTree} className="tag-icon" />
+              </span>
+            </OverlayTrigger>
+          )}
+        </TagPopover>
+      </SortNameLinkComponent>
     );
-  }, [hierarchyTooltipID]);
-
-  return (
-    <SortNameLinkComponent
-      sortName={tag.sort_name || title}
-      link={link}
-      className={className}
-    >
-      <TagPopover id={tag.id ?? ""} placement={hoverPlacement}>
-        {title}
-        {showHierarchyIcon && (
-          <OverlayTrigger placement="top" overlay={tooltip}>
-            <span className="icon-wrapper">
-              <span className="vertical-line">|</span>
-              <Icon icon={faFolderTree} className="tag-icon" />
-            </span>
-          </OverlayTrigger>
-        )}
-      </TagPopover>
-    </SortNameLinkComponent>
-  );
-};
+  }
+);

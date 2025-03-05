@@ -50,6 +50,7 @@ import { useRatingKeybinds } from "src/hooks/keybinds";
 import { lazyComponent } from "src/utils/lazyComponent";
 import cx from "classnames";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
+import { PatchComponent, PatchContainerComponent } from "src/patch";
 
 const SubmitStashBoxDraft = lazyComponent(
   () => import("src/components/Dialogs/SubmitDraft")
@@ -153,24 +154,31 @@ interface ISceneParams {
   id: string;
 }
 
-const ScenePage: React.FC<IProps> = ({
-  scene,
-  setTimestamp,
-  queueScenes,
-  onQueueNext,
-  onQueuePrevious,
-  onQueueRandom,
-  onQueueSceneClicked,
-  onDelete,
-  continuePlaylist,
-  queueHasMoreScenes,
-  onQueueMoreScenes,
-  onQueueLessScenes,
-  queueStart,
-  collapsed,
-  setCollapsed,
-  setContinuePlaylist,
-}) => {
+const ScenePageTabs = PatchContainerComponent<IProps>("ScenePage.Tabs");
+const ScenePageTabContent = PatchContainerComponent<IProps>(
+  "ScenePage.TabContent"
+);
+
+const ScenePage: React.FC<IProps> = PatchComponent("ScenePage", (props) => {
+  const {
+    scene,
+    setTimestamp,
+    queueScenes,
+    onQueueNext,
+    onQueuePrevious,
+    onQueueRandom,
+    onQueueSceneClicked,
+    onDelete,
+    continuePlaylist,
+    queueHasMoreScenes,
+    onQueueMoreScenes,
+    onQueueLessScenes,
+    queueStart,
+    collapsed,
+    setCollapsed,
+    setContinuePlaylist,
+  } = props;
+
   const Toast = useToast();
   const intl = useIntl();
   const [updateScene] = useSceneUpdate();
@@ -423,126 +431,133 @@ const ScenePage: React.FC<IProps> = ({
     >
       <div>
         <Nav variant="tabs" className="mr-auto">
-          <Nav.Item>
-            <Nav.Link eventKey="scene-details-panel">
-              <FormattedMessage id="details" />
-            </Nav.Link>
-          </Nav.Item>
-          {queueScenes.length > 0 ? (
+          <ScenePageTabs {...props}>
             <Nav.Item>
-              <Nav.Link eventKey="scene-queue-panel">
-                <FormattedMessage id="queue" />
+              <Nav.Link eventKey="scene-details-panel">
+                <FormattedMessage id="details" />
               </Nav.Link>
             </Nav.Item>
-          ) : (
-            ""
-          )}
-          <Nav.Item>
-            <Nav.Link eventKey="scene-markers-panel">
-              <FormattedMessage id="markers" />
-            </Nav.Link>
-          </Nav.Item>
-          {scene.groups.length > 0 ? (
+            {queueScenes.length > 0 ? (
+              <Nav.Item>
+                <Nav.Link eventKey="scene-queue-panel">
+                  <FormattedMessage id="queue" />
+                </Nav.Link>
+              </Nav.Item>
+            ) : (
+              ""
+            )}
             <Nav.Item>
-              <Nav.Link eventKey="scene-group-panel">
-                <FormattedMessage
-                  id="countables.groups"
-                  values={{ count: scene.groups.length }}
-                />
+              <Nav.Link eventKey="scene-markers-panel">
+                <FormattedMessage id="markers" />
               </Nav.Link>
             </Nav.Item>
-          ) : (
-            ""
-          )}
-          {scene.galleries.length >= 1 ? (
+            {scene.groups.length > 0 ? (
+              <Nav.Item>
+                <Nav.Link eventKey="scene-group-panel">
+                  <FormattedMessage
+                    id="countables.groups"
+                    values={{ count: scene.groups.length }}
+                  />
+                </Nav.Link>
+              </Nav.Item>
+            ) : (
+              ""
+            )}
+            {scene.galleries.length >= 1 ? (
+              <Nav.Item>
+                <Nav.Link eventKey="scene-galleries-panel">
+                  <FormattedMessage
+                    id="countables.galleries"
+                    values={{ count: scene.galleries.length }}
+                  />
+                </Nav.Link>
+              </Nav.Item>
+            ) : undefined}
             <Nav.Item>
-              <Nav.Link eventKey="scene-galleries-panel">
-                <FormattedMessage
-                  id="countables.galleries"
-                  values={{ count: scene.galleries.length }}
-                />
+              <Nav.Link eventKey="scene-video-filter-panel">
+                <FormattedMessage id="effect_filters.name" />
               </Nav.Link>
             </Nav.Item>
-          ) : undefined}
-          <Nav.Item>
-            <Nav.Link eventKey="scene-video-filter-panel">
-              <FormattedMessage id="effect_filters.name" />
-            </Nav.Link>
-          </Nav.Item>
-          <Nav.Item>
-            <Nav.Link eventKey="scene-file-info-panel">
-              <FormattedMessage id="file_info" />
-              <Counter count={scene.files.length} hideZero hideOne />
-            </Nav.Link>
-          </Nav.Item>
-          <Nav.Item>
-            <Nav.Link eventKey="scene-history-panel">
-              <FormattedMessage id="history" />
-            </Nav.Link>
-          </Nav.Item>
-          <Nav.Item>
-            <Nav.Link eventKey="scene-edit-panel">
-              <FormattedMessage id="actions.edit" />
-            </Nav.Link>
-          </Nav.Item>
+            <Nav.Item>
+              <Nav.Link eventKey="scene-file-info-panel">
+                <FormattedMessage id="file_info" />
+                <Counter count={scene.files.length} hideZero hideOne />
+              </Nav.Link>
+            </Nav.Item>
+            <Nav.Item>
+              <Nav.Link eventKey="scene-history-panel">
+                <FormattedMessage id="history" />
+              </Nav.Link>
+            </Nav.Item>
+            <Nav.Item>
+              <Nav.Link eventKey="scene-edit-panel">
+                <FormattedMessage id="actions.edit" />
+              </Nav.Link>
+            </Nav.Item>
+          </ScenePageTabs>
         </Nav>
       </div>
 
       <Tab.Content>
-        <Tab.Pane eventKey="scene-details-panel">
-          <SceneDetailPanel scene={scene} />
-        </Tab.Pane>
-        <Tab.Pane eventKey="scene-queue-panel">
-          <QueueViewer
-            scenes={queueScenes}
-            currentID={scene.id}
-            continue={continuePlaylist}
-            setContinue={setContinuePlaylist}
-            onSceneClicked={onQueueSceneClicked}
-            onNext={onQueueNext}
-            onPrevious={onQueuePrevious}
-            onRandom={onQueueRandom}
-            start={queueStart}
-            hasMoreScenes={queueHasMoreScenes}
-            onLessScenes={onQueueLessScenes}
-            onMoreScenes={onQueueMoreScenes}
-          />
-        </Tab.Pane>
-        <Tab.Pane eventKey="scene-markers-panel">
-          <SceneMarkersPanel
-            sceneId={scene.id}
-            onClickMarker={onClickMarker}
-            isVisible={activeTabKey === "scene-markers-panel"}
-          />
-        </Tab.Pane>
-        <Tab.Pane eventKey="scene-group-panel">
-          <SceneGroupPanel scene={scene} />
-        </Tab.Pane>
-        {scene.galleries.length >= 1 && (
-          <Tab.Pane eventKey="scene-galleries-panel">
-            <SceneGalleriesPanel galleries={scene.galleries} />
-            {scene.galleries.length === 1 && (
-              <GalleryViewer galleryId={scene.galleries[0].id} />
-            )}
+        <ScenePageTabContent {...props}>
+          <Tab.Pane eventKey="scene-details-panel">
+            <SceneDetailPanel scene={scene} />
           </Tab.Pane>
-        )}
-        <Tab.Pane eventKey="scene-video-filter-panel">
-          <SceneVideoFilterPanel scene={scene} />
-        </Tab.Pane>
-        <Tab.Pane className="file-info-panel" eventKey="scene-file-info-panel">
-          <SceneFileInfoPanel scene={scene} />
-        </Tab.Pane>
-        <Tab.Pane eventKey="scene-edit-panel" mountOnEnter>
-          <SceneEditPanel
-            isVisible={activeTabKey === "scene-edit-panel"}
-            scene={scene}
-            onSubmit={onSave}
-            onDelete={() => setIsDeleteAlertOpen(true)}
-          />
-        </Tab.Pane>
-        <Tab.Pane eventKey="scene-history-panel">
-          <SceneHistoryPanel scene={scene} />
-        </Tab.Pane>
+          <Tab.Pane eventKey="scene-queue-panel">
+            <QueueViewer
+              scenes={queueScenes}
+              currentID={scene.id}
+              continue={continuePlaylist}
+              setContinue={setContinuePlaylist}
+              onSceneClicked={onQueueSceneClicked}
+              onNext={onQueueNext}
+              onPrevious={onQueuePrevious}
+              onRandom={onQueueRandom}
+              start={queueStart}
+              hasMoreScenes={queueHasMoreScenes}
+              onLessScenes={onQueueLessScenes}
+              onMoreScenes={onQueueMoreScenes}
+            />
+          </Tab.Pane>
+          <Tab.Pane eventKey="scene-markers-panel">
+            <SceneMarkersPanel
+              sceneId={scene.id}
+              onClickMarker={onClickMarker}
+              isVisible={activeTabKey === "scene-markers-panel"}
+            />
+          </Tab.Pane>
+          <Tab.Pane eventKey="scene-group-panel">
+            <SceneGroupPanel scene={scene} />
+          </Tab.Pane>
+          {scene.galleries.length >= 1 && (
+            <Tab.Pane eventKey="scene-galleries-panel">
+              <SceneGalleriesPanel galleries={scene.galleries} />
+              {scene.galleries.length === 1 && (
+                <GalleryViewer galleryId={scene.galleries[0].id} />
+              )}
+            </Tab.Pane>
+          )}
+          <Tab.Pane eventKey="scene-video-filter-panel">
+            <SceneVideoFilterPanel scene={scene} />
+          </Tab.Pane>
+          <Tab.Pane
+            className="file-info-panel"
+            eventKey="scene-file-info-panel"
+          >
+            <SceneFileInfoPanel scene={scene} />
+          </Tab.Pane>
+          <Tab.Pane eventKey="scene-edit-panel" mountOnEnter>
+            <SceneEditPanel
+              isVisible={activeTabKey === "scene-edit-panel"}
+              scene={scene}
+              onSubmit={onSave}
+              onDelete={() => setIsDeleteAlertOpen(true)}
+            />
+          </Tab.Pane>
+          <Tab.Pane eventKey="scene-history-panel">
+            <SceneHistoryPanel scene={scene} />
+          </Tab.Pane>
+        </ScenePageTabContent>
       </Tab.Content>
     </Tab.Container>
   );
@@ -657,7 +672,7 @@ const ScenePage: React.FC<IProps> = ({
       />
     </>
   );
-};
+});
 
 const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
   location,
