@@ -1,13 +1,6 @@
 import React from "react";
-import { HoverPopover } from "./components/Shared/HoverPopover";
-import { TagLink } from "./components/Shared/TagLink";
-import { LoadingIndicator } from "./components/Shared/LoadingIndicator";
 
-export const components: Record<string, Function> = {
-  HoverPopover,
-  TagLink,
-  LoadingIndicator,
-};
+export let components: Record<string, Function> = {};
 
 const beforeFns: Record<string, Function[]> = {};
 const insteadFns: Record<string, Function[]> = {};
