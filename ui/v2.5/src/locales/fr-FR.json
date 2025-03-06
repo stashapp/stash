@@ -753,7 +753,8 @@
                     "vr_tag": {
                         "description": "Le bouton VR est uniquement affiché pour les scènes comportant cette étiquette.",
                         "heading": "Étiquette VR"
-                    }
+                    },
+                    "show_range_markers": "Afficher les marqueurs de position"
                 }
             },
             "scene_wall": {
