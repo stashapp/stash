@@ -528,6 +528,14 @@ input[type="range"].zoom-slider {
   }
 }
 
+.sidebar-list-filter > .extra {
+  padding-top: 0.25rem;
+}
+
+.sidebar-list-filter .extra {
+  min-height: 2em;
+}
+
 .tilted {
   transform: rotate(45deg);
 }

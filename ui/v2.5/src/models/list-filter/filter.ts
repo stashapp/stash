@@ -463,6 +463,19 @@ export class ListFilterModel {
     };
   }
 
+  public criteriaFor(type: CriterionType) {
+    return this.criteria.filter((c) => c.criterionOption.type === type);
+  }
+
+  public replaceCriteria(type: CriterionType, newCriteria: Criterion[]) {
+    const criteria = [
+      ...this.criteria.filter((c) => c.criterionOption.type !== type),
+      ...newCriteria,
+    ];
+
+    return this.setCriteria(criteria);
+  }
+
   public clearCriteria() {
     const ret = this.clone();
     ret.criteria = [];

@@ -288,6 +288,10 @@ export const SidebarListFilter: React.FC<{
   canExclude?: boolean;
   query?: string;
   setQuery?: (query: string) => void;
+  preSelected?: React.ReactNode;
+  postSelected?: React.ReactNode;
+  preCandidates?: React.ReactNode;
+  postCandidates?: React.ReactNode;
 }> = ({
   title,
   selected,
@@ -299,6 +303,10 @@ export const SidebarListFilter: React.FC<{
   query,
   setQuery,
   singleValue = false,
+  preCandidates,
+  postCandidates,
+  preSelected,
+  postSelected,
 }) => {
   // TODO - sort items?
 
@@ -334,6 +342,7 @@ export const SidebarListFilter: React.FC<{
       text={title}
       outsideCollapse={
         <>
+          {preSelected ? <div className="extra">{preSelected}</div> : null}
           <SelectedList
             items={selected}
             onUnselect={(i) => unselectHook(i, false)}
@@ -345,9 +354,11 @@ export const SidebarListFilter: React.FC<{
               excluded
             />
           )}
+          {postSelected ? <div className="extra">{postSelected}</div> : null}
         </>
       }
     >
+      {preCandidates ? <div className="extra">{preCandidates}</div> : null}
       <CandidateList
         items={candidates}
         onSelect={selectHook}
@@ -357,6 +368,7 @@ export const SidebarListFilter: React.FC<{
         setQuery={setQuery}
         singleValue={singleValue}
       />
+      {postCandidates ? <div className="extra">{postCandidates}</div> : null}
     </SidebarSection>
   );
 };

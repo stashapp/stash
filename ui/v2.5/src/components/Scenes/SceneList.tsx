@@ -49,6 +49,9 @@ import { SidebarIcon } from "../Shared/Icon";
 import { Button, ButtonToolbar } from "react-bootstrap";
 import { FilterButton } from "../List/Filters/FilterButton";
 import cx from "classnames";
+import { RatingCriterionOption } from "src/models/list-filter/criteria/rating";
+import { SidebarRatingFilter } from "../List/Filters/RatingFilter";
+import { CriterionOption } from "src/models/list-filter/criteria/criterion";
 
 function renderMetadataByline(result: GQL.FindScenesQueryResult) {
   const duration = result?.data?.findScenes?.duration;
@@ -202,7 +205,20 @@ const SceneList: React.FC<{
   return null;
 };
 
-const optionContent = [
+interface ISidebarFilterProps {
+  title?: React.ReactNode;
+  option: CriterionOption;
+  filter: ListFilterModel;
+  setFilter: (f: ListFilterModel) => void;
+}
+
+interface ISidebarContentProps {
+  messageID: string;
+  option: CriterionOption;
+  component: React.FC<ISidebarFilterProps>;
+}
+
+const optionContent: ISidebarContentProps[] = [
   {
     messageID: "studios",
     option: StudiosCriterionOption,
@@ -217,6 +233,11 @@ const optionContent = [
     messageID: "tags",
     option: TagsCriterionOption,
     component: TagsQuickFilter,
+  },
+  {
+    messageID: "rating",
+    option: RatingCriterionOption,
+    component: SidebarRatingFilter,
   },
 ];
 
