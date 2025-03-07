@@ -17,6 +17,53 @@ import {
   faThLarge,
 } from "@fortawesome/free-solid-svg-icons";
 
+interface IZoomSelectProps {
+  minZoom: number;
+  maxZoom: number;
+  zoomIndex: number;
+  onChangeZoom: (v: number) => void;
+}
+
+export const ZoomSelect: React.FC<IZoomSelectProps> = ({
+  minZoom,
+  maxZoom,
+  zoomIndex,
+  onChangeZoom,
+}) => {
+  useEffect(() => {
+    Mousetrap.bind("+", () => {
+      if (zoomIndex !== undefined && zoomIndex < maxZoom) {
+        onChangeZoom(zoomIndex + 1);
+      }
+    });
+    Mousetrap.bind("-", () => {
+      if (zoomIndex !== undefined && zoomIndex > minZoom) {
+        onChangeZoom(zoomIndex - 1);
+      }
+    });
+
+    return () => {
+      Mousetrap.unbind("+");
+      Mousetrap.unbind("-");
+    };
+  });
+
+  return (
+    <Form.Control
+      className="zoom-slider"
+      type="range"
+      min={minZoom}
+      max={maxZoom}
+      value={zoomIndex}
+      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+        onChangeZoom(Number.parseInt(e.currentTarget.value, 10));
+        e.preventDefault();
+        e.stopPropagation();
+      }}
+    />
+  );
+};
+
 interface IListViewOptionsProps {
   zoomIndex?: number;
   onSetZoom?: (zoomIndex: number) => void;
@@ -53,23 +100,11 @@ export const ListViewOptions: React.FC<IListViewOptionsProps> = ({
         onSetDisplayMode(DisplayMode.Wall);
       }
     });
-    Mousetrap.bind("+", () => {
-      if (onSetZoom && zoomIndex !== undefined && zoomIndex < maxZoom) {
-        onSetZoom(zoomIndex + 1);
-      }
-    });
-    Mousetrap.bind("-", () => {
-      if (onSetZoom && zoomIndex !== undefined && zoomIndex > minZoom) {
-        onSetZoom(zoomIndex - 1);
-      }
-    });
 
     return () => {
       Mousetrap.unbind("v g");
       Mousetrap.unbind("v l");
       Mousetrap.unbind("v w");
-      Mousetrap.unbind("+");
-      Mousetrap.unbind("-");
     };
   });
 
@@ -137,29 +172,21 @@ export const ListViewOptions: React.FC<IListViewOptionsProps> = ({
     }
   }
 
-  function maybeRenderZoom() {
-    if (onSetZoom && displayMode === DisplayMode.Grid) {
-      return (
-        <div className="ml-2 d-none d-sm-inline-flex">
-          <Form.Control
-            className="zoom-slider ml-1"
-            type="range"
-            min={minZoom}
-            max={maxZoom}
-            value={zoomIndex}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              onChangeZoom(Number.parseInt(e.currentTarget.value, 10))
-            }
-          />
-        </div>
-      );
-    }
-  }
-
   return (
     <>
       {maybeRenderDisplayModeOptions()}
-      {maybeRenderZoom()}
+      {onSetZoom &&
+      zoomIndex !== undefined &&
+      displayMode === DisplayMode.Grid ? (
+        <div className="zoom-slider-container ml-2 mb-2 d-none d-sm-inline-flex">
+          <ZoomSelect
+            minZoom={minZoom}
+            maxZoom={maxZoom}
+            zoomIndex={zoomIndex}
+            onChangeZoom={onChangeZoom}
+          />
+        </div>
+      ) : null}
     </>
   );
 };
