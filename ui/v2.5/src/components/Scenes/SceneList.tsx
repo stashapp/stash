@@ -376,17 +376,17 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
           zoomable
         />
 
-        <FilterTags
-          criteria={filter.criteria}
-          onEditCriterion={(c) => showEditFilter(c.criterionOption.type)}
-          onRemoveCriterion={removeCriterion}
-          onRemoveAll={() => clearAllCriteria()}
-        />
-
         <SidebarPane>
           <Sidebar hide={!showSidebar}>
           </Sidebar>
           <div>
+            <FilterTags
+              criteria={filter.criteria}
+              onEditCriterion={(c) => showEditFilter(c.criterionOption.type)}
+              onRemoveCriterion={removeCriterion}
+              onRemoveAll={() => clearAllCriteria()}
+            />
+
             <PagedList
               result={result}
               cachedResult={cachedResult}
