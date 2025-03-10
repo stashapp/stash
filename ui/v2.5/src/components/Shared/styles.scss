@@ -728,3 +728,30 @@ button.btn.favorite-button {
     padding-right: 0;
   }
 }
+
+$sidebar-width: 250px;
+
+.sidebar-pane {
+  display: flex;
+
+  .sidebar {
+    // TODO - use different colours for sidebar and toolbar
+    // background-color: $textfield-bg;
+    flex: $sidebar-width;
+    flex-grow: 0;
+    flex-shrink: 0;
+    // max-height: calc(100vh - 4rem);
+    // overflow-y: auto;
+    transition: margin-left 0.05s;
+  }
+
+  .sidebar.hide {
+    margin-left: -$sidebar-width;
+  }
+
+  > :nth-child(2) {
+    flex-grow: 1;
+    // max-height: calc(100vh - 4rem);
+    // overflow-y: auto;
+  }
+}
