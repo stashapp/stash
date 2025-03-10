@@ -51,6 +51,7 @@ const PerformersFilter: React.FC<IPerformersFilter> = ({
   );
 };
 
+// FIXME - implment this better
 export const PerformersQuickFilter: React.FC<{
   option: CriterionOption;
   filter: ListFilterModel;

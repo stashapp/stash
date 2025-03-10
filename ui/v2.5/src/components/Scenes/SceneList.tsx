@@ -1,6 +1,6 @@
 import React, { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import cloneDeep from "lodash-es/cloneDeep";
-import { useIntl } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import { useHistory } from "react-router-dom";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
@@ -33,6 +33,11 @@ import { useFilteredItemList } from "../List/ItemList";
 import { FilterTags } from "../List/FilterTags";
 import { Sidebar, SidebarPane, SidebarSection } from "../Shared/Sidebar";
 import { PerformersQuickFilter } from "../List/Filters/PerformersFilter";
+import { StudiosQuickFilter } from "../List/Filters/StudiosFilter";
+import { PerformersCriterionOption } from "src/models/list-filter/criteria/performers";
+import { StudiosCriterionOption } from "src/models/list-filter/criteria/studios";
+import { TagsCriterionOption } from "src/models/list-filter/criteria/tags";
+import { TagsQuickFilter } from "../List/Filters/TagsFilter";
 
 function renderMetadataByline(result: GQL.FindScenesQueryResult) {
   const duration = result?.data?.findScenes?.duration;
@@ -186,23 +191,40 @@ const SceneList: React.FC<{
   return null;
 };
 
+const optionContent = [
+  {
+    messageID: "studios",
+    option: StudiosCriterionOption,
+    component: StudiosQuickFilter,
+  },
+  {
+    messageID: "performers",
+    option: PerformersCriterionOption,
+    component: PerformersQuickFilter,
+  },
+  {
+    messageID: "tags",
+    option: TagsCriterionOption,
+    component: TagsQuickFilter,
+  },
+]
+
 const SidebarContent: React.FC<{
   filter: ListFilterModel;
   setFilter: (filter: ListFilterModel) => void;
 }> = ({ filter, setFilter }) => {
   return (
     <>
-      <SidebarSection text="Performers">
-        <PerformersQuickFilter
-          option={
-            filter.options.criterionOptions.find(
-              (o) => o.type === "performers"
-            )!
-          }
-          filter={filter}
-          setFilter={setFilter}
-        />
-      </SidebarSection>
+      {/* FIXME - add saved filters control */}
+      {optionContent.map((content) => (
+        <SidebarSection key={content.messageID} text={<FormattedMessage id={content.messageID} />}>
+          <content.component
+            option={content.option}
+            filter={filter}
+            setFilter={setFilter}
+          />
+        </SidebarSection>
+      ))}
     </>
   );
 };
