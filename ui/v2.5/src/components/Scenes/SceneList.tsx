@@ -31,7 +31,8 @@ import { IListFilterOperation } from "../List/ListOperationButtons";
 import { FilteredListToolbar } from "../List/FilteredListToolbar";
 import { useFilteredItemList } from "../List/ItemList";
 import { FilterTags } from "../List/FilterTags";
-import { Sidebar, SidebarPane } from "../Shared/Sidebar";
+import { Sidebar, SidebarPane, SidebarSection } from "../Shared/Sidebar";
+import { PerformersQuickFilter } from "../List/Filters/PerformersFilter";
 
 function renderMetadataByline(result: GQL.FindScenesQueryResult) {
   const duration = result?.data?.findScenes?.duration;
@@ -183,6 +184,27 @@ const SceneList: React.FC<{
   }
 
   return null;
+};
+
+const SidebarContent: React.FC<{
+  filter: ListFilterModel;
+  setFilter: (filter: ListFilterModel) => void;
+}> = ({ filter, setFilter }) => {
+  return (
+    <>
+      <SidebarSection text="Performers">
+        <PerformersQuickFilter
+          option={
+            filter.options.criterionOptions.find(
+              (o) => o.type === "performers"
+            )!
+          }
+          filter={filter}
+          setFilter={setFilter}
+        />
+      </SidebarSection>
+    </>
+  );
 };
 
 interface IFilteredScenes {
@@ -378,6 +400,7 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
 
         <SidebarPane>
           <Sidebar hide={!showSidebar}>
+            <SidebarContent filter={filter} setFilter={setFilter} />
           </Sidebar>
           <div>
             <FilterTags

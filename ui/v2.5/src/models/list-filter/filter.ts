@@ -470,6 +470,12 @@ export class ListFilterModel {
     return ret;
   }
 
+  public setCriteria(criteria: Criterion[]) {
+    const ret = this.clone();
+    ret.criteria = criteria;
+    return ret;
+  }
+
   public removeCriterion(type: CriterionType) {
     const ret = this.clone();
     const c = ret.criteria.find((cc) => cc.criterionOption.type === type);
