@@ -1,9 +1,11 @@
 import React, { PropsWithChildren } from "react";
 import { CollapseButton } from "./CollapseButton";
 
-export const Sidebar: React.FC<PropsWithChildren<{
-  hide?: boolean;
-}>> = ({ hide, children }) => {
+export const Sidebar: React.FC<
+  PropsWithChildren<{
+    hide?: boolean;
+  }>
+> = ({ hide, children }) => {
   const hideClass = hide ? "hide" : "";
   return <div className={`sidebar ${hideClass}`}>{children}</div>;
 };
@@ -20,8 +22,16 @@ export const SidebarSection: React.FC<
     text: React.ReactNode;
   }>
 > = ({ text, children }) => {
+  const collapseProps = {
+    mountOnEnter: true,
+    unmountOnExit: true,
+  };
   return (
-    <CollapseButton className="sidebar-section" text={text}>
+    <CollapseButton
+      className="sidebar-section"
+      collapseProps={collapseProps}
+      text={text}
+    >
       {children}
     </CollapseButton>
   );

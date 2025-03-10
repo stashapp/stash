@@ -742,7 +742,8 @@ $sidebar-width: 250px;
     flex-shrink: 0;
     // max-height: calc(100vh - 4rem);
     // overflow-y: auto;
-    transition: margin-left 0.05s;
+    padding-left: 15px;
+    transition: margin-left 0.1s;
   }
 
   .sidebar.hide {
@@ -751,6 +752,7 @@ $sidebar-width: 250px;
 
   > :nth-child(2) {
     flex-grow: 1;
+    padding-left: 15px;
     // max-height: calc(100vh - 4rem);
     // overflow-y: auto;
   }

@@ -4,12 +4,13 @@ import {
   faChevronUp,
 } from "@fortawesome/free-solid-svg-icons";
 import React, { useState } from "react";
-import { Button, Collapse } from "react-bootstrap";
+import { Button, Collapse, CollapseProps } from "react-bootstrap";
 import { Icon } from "./Icon";
 
 interface IProps {
   className?: string;
   text: React.ReactNode;
+  collapseProps?: Partial<CollapseProps>;
 }
 
 export const CollapseButton: React.FC<React.PropsWithChildren<IProps>> = (
@@ -26,7 +27,7 @@ export const CollapseButton: React.FC<React.PropsWithChildren<IProps>> = (
         <Icon icon={open ? faChevronDown : faChevronRight} fixedWidth />
         <span>{props.text}</span>
       </Button>
-      <Collapse in={open}>
+      <Collapse in={open} {...props.collapseProps}>
         <div>{props.children}</div>
       </Collapse>
     </div>

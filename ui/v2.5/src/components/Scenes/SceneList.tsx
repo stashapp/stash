@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect, useMemo } from "react";
+import React, { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import cloneDeep from "lodash-es/cloneDeep";
 import { useIntl } from "react-intl";
 import { useHistory } from "react-router-dom";
@@ -31,6 +31,7 @@ import { IListFilterOperation } from "../List/ListOperationButtons";
 import { FilteredListToolbar } from "../List/FilteredListToolbar";
 import { useFilteredItemList } from "../List/ItemList";
 import { FilterTags } from "../List/FilterTags";
+import { Sidebar, SidebarPane } from "../Shared/Sidebar";
 
 function renderMetadataByline(result: GQL.FindScenesQueryResult) {
   const duration = result?.data?.findScenes?.duration;
@@ -199,6 +200,8 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
   const { filterHook, defaultSort, view, alterQuery, fromGroupId } = props;
 
   // States
+  const [showSidebar, setShowSidebar] = useState(true);
+
   const { filterState, queryResult, modalState, listSelect, showEditFilter } =
     useFilteredItemList({
       filterStateProps: {
@@ -380,22 +383,28 @@ export const FilteredSceneList = (props: IFilteredScenes) => {
           onRemoveAll={() => clearAllCriteria()}
         />
 
-        <PagedList
-          result={result}
-          cachedResult={cachedResult}
-          filter={filter}
-          totalCount={totalCount}
-          onChangePage={setPage}
-          metadataByline={metadataByline}
-        >
-          <SceneList
-            filter={effectiveFilter}
-            scenes={items}
-            selectedIds={selectedIds}
-            onSelectChange={onSelectChange}
-            fromGroupId={fromGroupId}
-          />
-        </PagedList>
+        <SidebarPane>
+          <Sidebar hide={!showSidebar}>
+          </Sidebar>
+          <div>
+            <PagedList
+              result={result}
+              cachedResult={cachedResult}
+              filter={filter}
+              totalCount={totalCount}
+              onChangePage={setPage}
+              metadataByline={metadataByline}
+            >
+              <SceneList
+                filter={effectiveFilter}
+                scenes={items}
+                selectedIds={selectedIds}
+                onSelectChange={onSelectChange}
+                fromGroupId={fromGroupId}
+              />
+            </PagedList>
+          </div>
+        </SidebarPane>
       </div>
     </TaggerContext>
   );
